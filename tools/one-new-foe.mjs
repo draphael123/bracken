@@ -81,7 +81,7 @@ assert.equal(C.order.length, rows.length, 'the walk placed ' + C.order.length + 
 
 /* A LEVEL DANIEL GAVE A NUMBER OF NEW FOES (the floor is one; this is exact). THE FOG CANAL (claude/canal, Daniel 2026-09-30): the rule is lifted to TWO for it -
    the GRINDYLOW and the WILL-O'-THE-WISP - and its bargees and archers are the game's own (the gaffer and the archer), so it brings those two and no other */
-const NEW_EXACTLY = { canal: ['grindylow', 'willowisp'], welltown: ['waterthief'] }, exact = [];   /* THE WELL TOWN (claude/welltown, the desert-arc concept 2026-10-01: MAX ONE new foe a level): the water-thief alone - its bowmen are the archer reskinned, its knives the caravan's cutthroats */
+const NEW_EXACTLY = { canal: ['grindylow', 'willowisp'], welltown: ['waterthief'], redgorge: ['raptor'] }, exact = [];   /* THE RED GORGE (claude/redgorge, the desert-arc concept: MAX ONE new foe a level): the cliff raptor - its slingers and knives are the caravan's, its scorpions the desert's */   /* THE WELL TOWN (claude/welltown, the desert-arc concept 2026-10-01: MAX ONE new foe a level): the water-thief alone - its bowmen are the archer reskinned, its knives the caravan's cutthroats */
 const seen = new Set();
 const fresh = [], failed = [], stale = [];
 for (const id of C.order) {

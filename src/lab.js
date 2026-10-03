@@ -16,6 +16,7 @@ import { greenteethPlan, gtOpen } from './jenny-greenteeth.js';   /* JENNY GREEN
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
 import { puppetPlan } from './puppeteer.js';
 import { queenPlan, qOpen } from './cistern-queen.js'; import { glPlan, glOpen } from './gang-leader.js';   /* THE CISTERN QUEEN and THE GANG LEADER (claude/welltown3): the bot reads their tells off their own modules, and works the skin */
+import { gorgeCrabPlan, crabOpen } from './gorge-crab.js';   /* THE GREAT RED CRAB (claude/redgorge): the bot reads his tells, the dam's water and his channel off his own module, and works the sluice gate */
 import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
@@ -1058,6 +1059,22 @@ async function runbossLab(BK, opts) {
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
         if((h!=='paladin'||P.st>=44)&&!guard&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='gorgecrab'){
+        /* THE GREAT RED CRAB (claude/redgorge): src/gorge-crab.js gorgeCrabPlan reads what a player sees - his tells a quarter-second late (some misread), the boulders'
+           marks, the dam's water (the horn, a flood running, the gate holding one) - and works the level's machine: it shuts the gate at a wheel, waits for a flood to
+           bank, baits him into the channel, releases (INTERACT) and cuts him on his back. It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const CH=BK.gorgeCrabHands(),F=CH&&CH.fight(),Wt=CH?CH.water():{};
+        if(f===0||!P.labGcMem)P.labGcMem={};
+        const pl=F?gorgeCrabPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},F,e:boss,water:Wt,wheels:BK.L.arena.wheels,ch:BK.L.arena.ch,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labGcMem}):{gx:null,face:P.face};
+        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.block)k.block=true;
+        if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:F?crabOpen(F):false,why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='cisternqueen'){
         /* THE CISTERN QUEEN (claude/welltown3): src/cistern-queen.js queenPlan reads what a player sees - her tells a quarter-second late (some misread), the mound

@@ -1,11 +1,13 @@
 // THE MUSIC CREDITS (Daniel, 2026-10-01: CC-BY tracks are allowed WITH their credit, in the game and in audio/CREDITS.txt).
 // A page of the title menu's CREDITS (and the victory card's X): every outside composer whose music the game plays, read back
-// from MUSIC_CREDITS so a new track's credit line is one edit, and the licence of the two CC-BY tracks named in full.
+// from MUSIC_CREDITS so a new track's credit line is one edit, and the licence of each CC-BY track named in full (Kevin MacLeod's in his own wording).
 // Everything else is CC0 or public domain from OpenGameArt.org (the exact files and links are in audio/CREDITS.txt).
 // Pure data and layout: no drawing here (src/main.js drawCredits), so tools/textfit.mjs can drive it in the page.
-export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence] - the licence names the version; creativecommons.org/licenses/by/3.0/ */
-  ['harvestfair', 'Dark Carnival', 'Machine', 'CC-BY 3.0'],
-  ['mineworks', 'At Work', 'HorrorPen', 'CC-BY 3.0'],
+export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the licence's url, the credit's own lines (when the licensor names its wording)] */
+  ['harvestfair', 'Dark Carnival', 'Machine', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],
+  ['mineworks', 'At Work', 'HorrorPen', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],
+  /* THE RED GORGE (claude/redgorge-fix, Daniel 10-02): Kevin MacLeod asks for this credit word for word - the page shows it whole, a line at a time */
+  ['redgorge', 'Old Road', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Old Road" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],
 ];
 /* the one composer a few credit lines spell two ways (MUSIC_CREDITS is kept short to fit the Sound Test row) */
 const ALIAS = { Spring: 'Spring Spring', Centurion: 'Centurion_of_war', 'trad., Spring': 'Spring Spring', cynicm: 'cynicmusic', 'C. Kauffman': 'CleytonKauffman' };

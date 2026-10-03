@@ -1,4 +1,4 @@
-Music (CC0 / public domain, and - from 2026-10-01, with Daniel's say-so - CC-BY tracks WITH their credit here and in the Sound Test, from OpenGameArt.org; 'Dark Carnival' and 'At Work' below are the CC-BY ones):
+Music (CC0 / public domain, and - from 2026-10-01, with Daniel's say-so - CC-BY tracks WITH their credit here and in the Sound Test, from OpenGameArt.org; 'Dark Carnival', 'At Work' and 'Old Road' below are the CC-BY ones):
 - theme.ogg = "Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg" from "4 Chiptunes (Adventure)" by Juhani Junkala (SubspaceAudio)
   https://opengameart.org/content/4-chiptunes-adventure
 
@@ -228,3 +228,9 @@ THE WELL TOWN (2026-10-02, claude/welltown-fix, Daniel's pick):
   intro once and then loops from 7.000 s (src/audio.js TRACK_INTRO). Raised 5.6 dB under a peak limiter (-1.5 dBFS) to about -12.5 LUFS integrated like the
   rest of the library, and encoded to OGG Vorbis q4, 44.1 kHz stereo. The pack's Negev-Fight intro and loop are not used (the game has no combat-layer swap).
 - banditking (no file) = THE BANDIT KING's theme, synthesised for this game (src/boss-music.js): 6/8 war drums under a Phrygian-dominant drone, a zurna lead.
+THE RED GORGE (2026-10-02, claude/redgorge-fix, Daniel's pick; the file fetched with his yes - the lane downloaded nothing):
+- redgorge.ogg = "Old Road" by Kevin MacLeod, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://incompetech.com - THE RED GORGE's level track.
+  Credit, exactly as the licensor asks: "Old Road" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/
+  Changes: resampled to 44.1 kHz; the last 2.0 s crossfaded onto the first 2.0 s so it loops seamlessly (111.95 s); raised 4.1 dB under a peak limiter
+  (-1.5 dBFS) to about -12.4 LUFS integrated like the rest of the library; encoded to OGG Vorbis q4 stereo.
+- gorgecrab (no file) = THE GREAT RED CRAB's theme, synthesised for this game (src/boss-music.js): a clacking stop-start march at 110 bpm over a Phrygian drone.

@@ -11,7 +11,8 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   sleepers: './audio/sleepers.ogg', trench: './audio/trench.ogg', barrows: './audio/barrows.ogg', quarry: './audio/quarry.ogg', skysail: './audio/skysail.ogg',
   frogking: './audio/frogking.ogg', sporemother: './audio/sporemother.ogg', ramlord: './audio/ramlord.ogg', owlreeve: './audio/owlreeve.ogg', herald: './audio/herald.ogg', reefmaw: './audio/reefmaw.ogg', closedhelm: './audio/closedhelm.ogg',
   quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', causeway: './audio/causeway.ogg', kraken: './audio/kraken.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg', fields: './audio/fields.ogg', scarecrowking: './audio/scarecrowking.ogg',
-  burning: './audio/burning.mp3', pyroboss: './audio/pyroboss.ogg', minicharge: './audio/minicharge.ogg', monastery: './audio/monastery.ogg', northumberland: './audio/northumberland.mp3', windcaller: './audio/windcaller.ogg', hangingvillage: './audio/hangingvillage.ogg', sporewood: './audio/sporewood.mp3', duneworm: './audio/duneworm.ogg', lance: './audio/lance.ogg', caravan: './audio/caravan.ogg', monasterygolem: './audio/monasterygolem.ogg' };
+  burning: './audio/burning.mp3', pyroboss: './audio/pyroboss.ogg', minicharge: './audio/minicharge.ogg', monastery: './audio/monastery.ogg', northumberland: './audio/northumberland.mp3', windcaller: './audio/windcaller.ogg', hangingvillage: './audio/hangingvillage.ogg', sporewood: './audio/sporewood.mp3', duneworm: './audio/duneworm.ogg', lance: './audio/lance.ogg', caravan: './audio/caravan.ogg', monasterygolem: './audio/monasterygolem.ogg',
+  redgorge: './audio/redgorge.ogg' };   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -1372,7 +1373,7 @@ Object.assign(SFX, {
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen'];
+export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'redgorge', 'gorgecrab'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall'];
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0 or CC-BY (Daniel's 10-01 rule change) WITH its credit line here and in CREDITS.txt - 'Dark Carnival' and 'At Work' are the CC-BY ones; see the credited lanes' own reports). Three tracks have
@@ -1380,6 +1381,9 @@ export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town',
 // all note they were synthesised for this game in CREDITS.txt); the Sound Test shows nothing under a track this map does not name.
 // Kept short on purpose: this line sits on ONE row under the list (tools/textfit.mjs 'soundtest'), so the title is
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
+/* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
+   (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
+export const MUSIC_CREDITS_ROW = { redgorge: '"Old Road" — K. MacLeod, CC-BY' };
 export const MUSIC_CREDITS = {
   harvestfair: '"Dark Carnival" — Machine, CC-BY', wickerqueen: '"Ring Master" — Bobjt',   /* (claude/fairfix3: CC-BY tracks are allowed WITH a credit, Daniel 2026-10-01; the licence's version, 3.0, is in audio/CREDITS.txt - the Sound Test row fits 32 characters) */
   theme: '"Stage 1" — Juhani Junkala', theme2: '"Stage 2" — Juhani Junkala',
@@ -1422,4 +1426,6 @@ export const MUSIC_CREDITS = {
   store: '"The Warm Counter" — BRACKEN',
   deep: '"Underwater II" — C. Kauffman', underleaf: '"Mossy Grotto" — Tarush Singhal', mineworks: '"At Work" — HorrorPen (CC-BY)',
   deepdread: '"The Abyss" — Umplix',
+  redgorge: '"Old Road" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/redgorge-fix: the credit EXACTLY as the licence asks; the Sound Test row trims it to fit, the credits page and audio/CREDITS.txt carry it whole) */
+  gorgecrab: '"The Great Red Crab" — BRACKEN',
 };

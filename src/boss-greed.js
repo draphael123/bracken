@@ -96,6 +96,7 @@ export const OPEN_RULE = {
   duneworm: e => !!(e.st && wormOpen(e.st)),                                 // tangled in the awning
   wickerqueen: e => wqOpen(e),                                               // burning
   puppeteer: e => pupOpen(e),
+  gorgecrab: e => e.mode === 'open',                                         // THE GREAT RED CRAB: thrown on his back by a released burst (claude/redgorge)
   grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   cisternqueen: e => qOpen(e),                                               // soaked out of her burrow, on her back off her wall, rearing from a broken grab (claude/welltown3)

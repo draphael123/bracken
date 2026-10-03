@@ -29,11 +29,12 @@ assert.equal(arena('crown').music, 'goblinroyal', "the Goblin Queen's arena is n
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
 assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
+assert.equal(arena('redgorge').music, 'gorgecrab', "THE GREAT RED CRAB's arena is not on his clacking march");
 assert.equal(arena('welltown').music, 'cisternqueen', "THE CISTERN QUEEN's hall is not on her own theme");
 assert.equal(LEVELS.find(l => l.id === 'welltown').build().mini.music, 'banditking', "THE GANG LEADER's courtyard is not on the old King's theme (his mini keeps it, claude/welltown3)");
 assert.ok(A.MUSIC_NAMES.includes('cisternqueen') && A.MUSIC_CREDITS.cisternqueen, 'THE CISTERN QUEEN has no Sound Test entry of her own');
 assert.ok(A.MUSIC_NAMES.includes('banditking') && A.MUSIC_CREDITS.banditking, 'THE BANDIT KING has no Sound Test entry of his own');
-for (const n of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
+for (const n of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
 for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
 
@@ -49,7 +50,7 @@ const grab = async (name, loops) => {
 const fmt = e => e.kind + ':' + e.type + ':' + (e.f === null ? '' : Math.round(e.f * 10) / 10);
 const results = {};
 const MAXGAP = { drownedking: 3 };   /* (the Bandit King's 6/8 has a drum or a tek on every eighth but the second) */   /* the dirge is in 6/8: its beats are three eighths apart, and the drone and choir ring across the gap */
-for (const name of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'banditking', 'banditking:p2', 'cisternqueen', 'cisternqueen:p2', 'cisternqueen:p3']) {
+for (const name of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'banditking', 'banditking:p2', 'cisternqueen', 'cisternqueen:p2', 'cisternqueen:p3', 'gorgecrab']) {
   const { S, len, ev } = await grab(name, 2);
   const tonal = ev.filter(e => e.kind === 'osc'), T0 = Math.min(...tonal.map(e => e.t)) - 1e-6, first = tonal.filter(e => e.t >= T0 && e.t < T0 + len - 1e-6), sec = tonal.filter(e => e.t >= T0 + len - 1e-6 && e.t < T0 + 2 * len - 1e-6);
   assert.ok(first.length > 150, name + ': only ' + first.length + ' notes in a loop');
@@ -89,6 +90,9 @@ assert.notEqual(results.archmage.hash, results['archmage:undead'].hash, 'the und
   assert.ok(Q2.step < Q.step * 0.85, 'the well shaft is not quicker (' + Q2.step + ' s against ' + Q.step + ' s)');
   assert.ok([...Q2.pitches].some(p => Math.abs(p - BM.nf('G#5') * 0.88) <= 1), 'the well shaft does not take her motif up an octave');
   assert.ok(Q3.oscPerLoop > Q2.oscPerLoop + 40 && [...Q3.pitches].some(p => p >= 1400 && p <= 2300 && !Q2.pitches.has(p)), 'the flood does not add the water (drips) to her theme'); }
+/* THE GREAT RED CRAB's PHASE TWO (src/gorge-crab-hands.js sets it): the hats double and the flood surges - more clacks, and a slide up */
+{ BM.BOSS_PHASE.gorgecrab = 2; const { ev, len } = await grab('gorgecrab', 1); BM.BOSS_PHASE.gorgecrab = 1; const T0 = ev.length ? ev[0].t : 0;
+  const c2 = ev.filter(e => e.kind === 'src' && e.t >= T0 && e.t < T0 + len - 1e-6).length; assert.ok(c2 > results.gorgecrab.clicks * 1.3, 'the crab phase two does not double his clacks: ' + c2 + ' against ' + results.gorgecrab.clicks); }
 const hs = Object.values(results).map(r => r.hash); assert.equal(new Set(hs).size, hs.length, 'two of the boss themes play the same notes');
 assert.equal(errors.length, 0, 'the scheduler threw: ' + (errors[0] && errors[0].message));
 const gainNow = A.debugAudio().musicGain.gain; A.music.play('archmage'); assert.ok(A.debugAudio().wantTrack === 'archmage');

@@ -36,6 +36,8 @@
      THE CISTERN QUEEN flood her burrow (a pour on her mound): SOAKED; a pour down her wall from its ledge: ON HER BACK; her claw struck as it comes: REARING -
                        each open; E at her on the open floor pours nothing; a minute of her left alone opens nothing. THE GANG LEADER (a mini): his bottle
                        struck home sets him alight, open, a third of him a burning (claude/welltown3)
+     THE GREAT RED CRAB  shut the dam's gate, let a flood bank, release it while he is in the spillway: thrown on his back, open; a release with him
+                       out of it opens nothing, and a minute of him with the floods running (gate open) opens nothing (claude/redgorge)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -223,6 +225,14 @@ try {
    let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;const bt=F.bottles.find(q=>!q.back);if(bt&&P.atk<0){P.x=bt.x-14;P.y=Math.min(M.floor,bt.y+12);P.face=1;BK.press('atk');}BK.sim(1);o=Math.max(o,b.open||0);}
    const hp0=b.hp,cap=b.maxHp*(await import('/src/gang-leader.js')).GL.capK;for(let k=0;k<12&&b.mode==='burning';k++){BKT.hurtAs('light',b,60,b.x-10,false);BK.sim(2);}const took=hp0-b.hp;
    out.gangleader={alone:+alone.toFixed(1),open:+o.toFixed(1),reflects:F.n.reflects,took:Math.round(took),cap:Math.round(cap)};}
+  /* THE GREAT RED CRAB (claude/redgorge): a minute of him with the dam's gate open and the floods running opens nothing; a release with him out of the
+     spillway opens nothing (water wasted); a release with him in it throws him on his back - open (THE RED GORGE holds him) */
+  {const b=boot('redgorge');const A=BK.L.arena,P=BK.P,G=()=>BK.redgorge(),dam=()=>G().gates.find(g=>g.id==='dam'),c=()=>BK.gorgeCrab();let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+40;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   const bank=()=>{for(let i=0;i<60*30&&dam().state!=='full';i++){P.hp=P.maxHp;if(dam().state==='open'&&i%20===0){P.x=A.wheels[0];BK.press('talk');}BK.sim(1);}};
+   bank();let wasted=0;for(let i=0;i<60*20&&dam().state==='full';i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0],near=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[0]:A.wheels[1];P.x=near;if(!c().inChannel&&b.mode!=='open'&&dam().state==='full')BK.press('talk');BK.sim(1);wasted=Math.max(wasted,b.open||0);}
+   for(let i=0;i<20;i++){P.hp=P.maxHp;BK.sim(1);wasted=Math.max(wasted,b.open||0);}const w0=c().n.wasted;bank();let op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0];P.x=far;if(dam().state==='full'&&c().inChannel&&b.mode!=='open')BK.press('talk');BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
+   out.gorgecrab={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:w0,mode,open:+op.toFixed(1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -308,6 +318,9 @@ try {
   assert.equal(r.gangleader.alone, 0, 'THE GANG LEADER: a minute of him left alone opened him: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.open >= 3 && r.gangleader.reflects >= 1, 'his bottle struck back did not set him alight for 3 s or more: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.took <= r.gangleader.cap + 1 && r.gangleader.took >= r.gangleader.cap * 0.6, 'one burning took more than his cap (GL.capK, inside the third Daniel allows) or nothing like it: ' + JSON.stringify(r.gangleader));
+  assert.equal(r.gorgecrab.alone, 0, 'THE GREAT RED CRAB: a minute of him with the floods running opened him: ' + JSON.stringify(r.gorgecrab));
+  assert.ok(r.gorgecrab.wasted === 0 && r.gorgecrab.wastedN >= 1, 'a release with him out of the spillway opened him (or was not counted as wasted): ' + JSON.stringify(r.gorgecrab));
+  assert.ok(r.gorgecrab.mode === 'open' && r.gorgecrab.open >= 3, 'a release with him in the spillway did not throw him open for 3 s or more (the boss rule): ' + JSON.stringify(r.gorgecrab));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

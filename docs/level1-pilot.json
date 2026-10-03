@@ -58,5 +58,17 @@
   "lifts": 113,
   "walked": 100,
   "bare": true
+ },
+ "redgorge": {
+  "hash": "9acbdfcbea5c",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 12,
+  "deaths": 3,
+  "kills": 0,
+  "lifts": 45,
+  "walked": 100,
+  "bare": true
  }
 }
