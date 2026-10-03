@@ -35,7 +35,7 @@ import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
 import { gtOpen } from './jenny-greenteeth.js';
 import { qOpen } from './cistern-queen.js';
-import { glOpen } from './gang-leader.js';
+import { glOpen } from './gang-leader.js'; import { djOpen } from './djinn.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
 import { brOpen, bkOpen } from './unburied-foes.js';
@@ -99,7 +99,7 @@ export const OPEN_RULE = {
   gorgecrab: e => e.mode === 'open',                                         // THE GREAT RED CRAB: thrown on his back by a released burst (claude/redgorge)
   grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
-  cisternqueen: e => qOpen(e),                                               // soaked out of her burrow, on her back off her wall, rearing from a broken grab (claude/welltown3)
+  cisternqueen: e => qOpen(e) || e.sting > 0,                                             // soaked out of her burrow, on her back off her wall (doused), rearing from a broken grab (claude/welltown3); her STUCK STINGER (claude/welltown5)
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
   gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.crackT > 0 || e.mode === 'stagger',
@@ -107,6 +107,7 @@ export const OPEN_RULE = {
   greathound: e => e.open > 0,   // (claude/bosswave1) its lunge taken on a shield (it skids), or its pups killed in time (it whines)
   bosun: e => e.open > 0,   // (claude/bosswave1, the mini) his belaying pin parried
   barrowrider: e => brOpen(e), sexton: e => sextonOpen(e), hedgewarden: e => hedgeOpen(e),
+  djinn: e => djOpen(e) || e.hand > 0,                                      // THE DJINN (claude/welltown5): mud, doused, bailed out by the bucket - and his slammed hand
   gangleader: e => glOpen(e),                                                // burning: his own bottle, struck home (claude/welltown3)
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */

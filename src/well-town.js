@@ -38,7 +38,7 @@
 // The roofs' bandits stand IN their roof's awning: the shade is taken from them.
 import { SLOPE } from './slopes.js';
 import { stageGangLeader } from './gang-leader.js';
-import { stageCisternQueen } from './cistern-queen.js';
+import { stageDjinn } from './djinn.js';   /* (claude/welltown5, Daniel 10-03: THE DJINN OF THE GREAT WELL is the town's boss; THE CISTERN QUEEN is benched for a level of her own - src/cistern-queen.js stageCisternQueen is kept, unplaced) */
 import { SHADE_OF } from './redraw/desert.js';
 
 export const WELLTOWN = { W: 584, H: 60, street: 30 };
@@ -63,7 +63,13 @@ export function buildWellTown({ painter, T, TS }) {
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const foe = (t, x, y, squad, o) => ent(t, x, y, Object.assign({ face: -1, squad }, o || {}));
   const bowman = (x, y, squad, o) => foe('archer', x, y, squad, Object.assign({ bandit: true }, o || {}));   /* THE BANDIT BOWMAN: the archer's draw and loose (RESKINNED, a man's height) */
-  const thief = (x, y, squad) => foe('waterthief', x, y, squad);                                             /* THE WATER-THIEF: the cutthroat's feint and cut (RESKINNED), and he cuts your skin */
+  const thief = (x, y, squad) => foe('waterthief', x, y, squad);
+  /* (claude/desertfoes, Daniel 10-03: the town was mostly cutthroats - a good chunk of them are swapped for these) THE FIRE SCORPION (the scorpion's AI in ember: its sting
+     and its death leave a BURNING PATCH that the POUR puts out), THE VENOM SCORPION (the Cistern Queen's brood: its sting slows your stamina), THE VULTURE (its
+     shadow is moving shade on the roofs: src/sunstroke.js vultureShade). src/desert-foes2.js */
+  const fireScorp = (x, y, squad) => foe('scorpion', x, y, squad, { cnSkin: 'firescorpion' });
+  const venomScorp = (x, y, squad) => foe('scorpion', x, y, squad, { cnSkin: 'venomscorpion' });
+  const vulture = (x, y, squad) => foe('vulture', x, y, squad);                                             /* THE WATER-THIEF: the cutthroat's feint and cut (RESKINNED), and he cuts your skin */
   const well = (x, y, o) => ent('skinwell', x, y, o || {});
   const shade = [], cast = [], mudWalls = [], vaultDoors = [], moversExtra = [], interiors = [];
   /* A MUD WALL is a bricked-up DOORWAY: the house wall runs on above it (so it cannot be jumped), and only a pour opens it */
@@ -74,6 +80,13 @@ export function buildWellTown({ painter, T, TS }) {
      awning: its canvas is 52 px wide, centred on the tile) */
   const awn = (x, y, torn) => { ent('deco', x, y, { kind: torn ? 'awningTorn' : 'awning' }); const left = x * TS + 8 - 26, g = (y + 1) * TS, A = SHADE_OF.awning;
     cast.push([left + A.x0, left + A.x1, g - A.h, g + 1]); };
+  /* THE SHADE'S CASTERS (claude/welltown5, Daniel played it 10-03: "some sections where it's not clear that things will actually give you shade"): every
+     tinted shade sits UNDER a thing drawn overhead - an awning (above), the tiles of a roof, a lintel, a balcony, a parapet or a vault, or one of these:
+     A CLOTH CANOPY strung on a rope over columns x0..x1, its cloth at row `row`, over the floor row `floor` (src/redraw/welltown_props.js drawCaster), and
+     its shade from the cloth down; or A WELL-HOUSE ROOF on two posts. tools/welltown.mjs THE SHADE HAS A CASTER holds both ways */
+  const casters = [];
+  const canopy = (x0, x1, row, floor, o = {}) => { casters.push({ kind: 'cloth', x0: x0 * TS, x1: (x1 + 1) * TS, y: row * TS, yb: row * TS + 12, floor: floor * TS, ...o }); shade.push([x0 * TS, (x1 + 1) * TS, row * TS + 10, floor * TS + 1]); };
+  const wellRoof = (x0, x1, row, floor) => { casters.push({ kind: 'roof', x0: x0 * TS, x1: (x1 + 1) * TS, y: row * TS, yb: row * TS + 9, floor: floor * TS }); shade.push([x0 * TS, (x1 + 1) * TS, row * TS + 9, floor * TS + 1]); };
 
   // ================= 1. THE CARAVAN GATE (0-63) =================
   ground(0, 15, S);
@@ -96,13 +109,12 @@ export function buildWellTown({ painter, T, TS }) {
   mudWalls.push({ x0: 46, x1: 46, y0: S - 3, y1: S - 1, optional: true }); ent('mudwall', 46, S - 1, { x1: 46, optional: true });
   skin(50, S - 1);                                                            /* WATER-SKIN ONE */
   interiors.push([47, 52, S - 3, S - 1, 'wtHouse']);
-  foe('cutthroat', 44, S - 3, 'gate'); foe('cutthroat', 45, S - 3, 'gate');
+  foe('cutthroat', 44, S - 3, 'gate'); thief(45, S - 3, 'gate');            /* (claude/desertfoes: a knife and a thief - the skin's cut is met where the first well can mend it) */
   awn(43, S - 3, true);                                                      /* their awning at the foot of the gatehouse ladder: the gate's fight is not the sun's (the first well, out in the open, teaches the sun) */   /* the gate's two knives, ON THE HOUSE'S STEPS: the optional pour is taught with them watching (its sip refills at 77) */
 
   // ================= 2. THE LOWER MARKET (64-149) =================
   ground(64, 89, S);
-  ent('deco', 66, S - 1, { kind: 'awning' }); ent('deco', 73, S - 1, { kind: 'awningTorn' });   /* the stalls' awnings: shade */
-  shade.push([64 * TS, 76 * TS, (S - 4) * TS, S * TS + 1]);
+  for (const x of [65, 68, 71, 74]) awn(x, S - 1, x % 2 === 0);              /* the stalls' awnings, a row of them (claude/welltown5: the shade is theirs, under them - no tinted box over them any more) */
   thief(70, S - 1, 'stalls');                                                 /* a water-thief working the stalls */
   well(77, S - 1);                                                            /* THE MARKET WELL */
   ent('check', 82, S - 1);                                                    /* CHECKPOINT ONE: THE MARKET SHRINE - lit, it is the arc's shop (buy here: src/store.js mayBuy) */
@@ -115,7 +127,7 @@ export function buildWellTown({ painter, T, TS }) {
   ladder(90, 23, S - 1); ladder(131, 23, S - 1);
   for (let x = 98; x < 128; x += 10) block(x, x, 25, 25);                    /* the roof's beams hang a row */
   shade.push([92 * TS, 130 * TS, 25 * TS, S * TS + 1]);
-  foe('cutthroat', 103, S - 1, 'bazaar'); thief(107, S - 1, 'bazaar');
+  fireScorp(103, S - 1, 'bazaar'); thief(107, S - 1, 'bazaar');             /* (claude/desertfoes) a FIRE SCORPION under the bazaar roof by the stall fire: the pour, developed - its patch is a fire you made it make */
   fire(121, S - 1, { stall: true });                                         /* THE STALL FIRE: under the roof, across the way */
   bowman(110, 22, 'bazaarRoof'); bowman(117, 22, 'bazaarRoof');
   ent('silver', 128, 22);                                                     /* SILVER ONE: on the roof walk, in the sun */
@@ -141,7 +153,7 @@ export function buildWellTown({ painter, T, TS }) {
   block(193, 197, 13, Q - 1); ground(193, 197, 13);
   sign(190, Q - 1, 'THE STREET IS DOWN.');
   const gang = stageGangLeader({ set, block, ent, air }, T, TS, 152, Q);
-  shade.push([151 * TS, 193 * TS, (Q - 16) * TS, Q * TS + 1]);                /* the market's canopies are strung across the square (awnings, their rope and the cloth between): his fight is not the sun's */
+  canopy(151, 192, Q - 6, Q);                                                 /* the market's CLOTHS strung across the square on a rope, wall to wall (claude/welltown5: drawn, and the shade is under them): his fight is not the sun's */
   for (const x of [156, 166, 184]) awn(x, Q - 1, x === 166);
 
   // ================= 4. THE CISTERNS (166-258, rows 34-40, under the square and the mud quarter) =================
@@ -159,9 +171,9 @@ export function buildWellTown({ painter, T, TS }) {
   ent('windlass', gx + 2, 39, { bucket: 'great', top: false });              /* the bucket's foot: the bottom windlass winds it back up */
   ent('check', 194, 39);                                                      /* CHECKPOINT TWO: past the cistern's well, at the foot of the gallery's ladder (earned: the well's scorpions are behind it) */
   skin(234, 33);                                                              /* WATER-SKIN TWO: at the end of the gallery (the round way pays) */
-  foe('scorpion', 206, 33, 'gallery'); foe('scorpion', 213, 33, 'gallery');  /* (claude/welltown3) the round way is not free: two of the Queen's brood on the pillar caps */
+  foe('scorpion', 206, 33, 'gallery'); venomScorp(213, 33, 'gallery');  /* (claude/welltown3) the round way is not free: two of the Queen's brood on the pillar caps */
   foe('scorpion', 183, 39, 'cistern'); foe('scorpion', 186, 39, 'cistern');  /* THE CISTERN'S OWN WELL IS HELD: the refill at the bucket's foot is a fight */
-  thief(218, 39, 'sump'); foe('scorpion', 222, 39, 'sump');
+  thief(218, 39, 'sump'); venomScorp(222, 39, 'sump');                       /* (claude/desertfoes) THE VENOM SCORPIONS: the Queen's brood in her cisterns (one on the gallery, one at the sump) */
   /* THE OLD STINGER: the cistern's elite holds the gate in front of the rungs up (eliteGates: it opens when he dies) */
   ent('scorpion', 244, 39, { face: -1, elite: true, gate: 251 });
   /* the rungs up into the mud quarter: a shaft through the street */
@@ -170,7 +182,7 @@ export function buildWellTown({ painter, T, TS }) {
 
   // ================= 5. THE MUD QUARTER (259-325) =================
   mudDoor(262, 263, 17, S);                                                   /* MUD WALL ONE: the first lane, bricked */
-  foe('cutthroat', 264, S - 1, 'wallOne'); foe('cutthroat', 266, S - 1, 'wallOne');   /* behind it, in their awning's shade: the pour opens onto them */
+  foe('cutthroat', 264, S - 1, 'wallOne'); fireScorp(266, S - 1, 'wallOne');   /* (claude/desertfoes: a knife and a fire scorpion) */   /* behind it, in their awning's shade: the pour opens onto them */
   awn(265, S - 1);
   ground(268, 277, S - 2); boards(270, 275, 24);                              /* a step up, and a balcony over it */
   bowman(272, 23, 'balcony');
@@ -198,7 +210,7 @@ export function buildWellTown({ painter, T, TS }) {
   ladder(337, 18, S - 1);
   house(340, 350, 20); boards(345, 349, 15); ladder(347, 15, 19);          /* a perch on a pole over house B's roof: the bowman's */
   bowman(347, 14, 'perch1');
-  foe('cutthroat', 342, 19, 'roofB'); foe('cutthroat', 344, 19, 'roofB'); awn(342, 19);   /* roof B's pair holds its awning */
+  foe('cutthroat', 342, 19, 'roofB'); vulture(344, 19, 'roofB'); awn(342, 19);   /* (claude/desertfoes: his knife, and a VULTURE wheeling over roof B - in the open sun its shadow is shade, and its dive the price of standing in it) */   /* roof B's pair holds its awning */
   ladder(353, 17, S - 1);
   house(354, 366, 17);
   thief(360, 16, 'roofC'); awn(360, 16, true);
@@ -211,7 +223,7 @@ export function buildWellTown({ painter, T, TS }) {
   shade.push([372 * TS, 385 * TS, 17 * TS, 19 * TS + 1]);
   ladder(387, 19, S - 1);
   house(388, 400, 21);
-  foe('cutthroat', 392, 20, 'roofE'); foe('cutthroat', 395, 20, 'roofE'); awn(393, 20);   /* roof E's pair holds its awning */
+  fireScorp(392, 20, 'roofE'); vulture(395, 20, 'roofE'); awn(393, 20);   /* (claude/desertfoes: a fire scorpion on roof E and a vulture over it, past the barricade - the skin's last sips are fire or sun) */   /* roof E's pair holds its awning */
   house(401, 420, 24); boards(401, 405, 18);                                  /* a lower terrace, and a chimney ledge over it (a hop up from house E) */
   skin(404, 17);                                                              /* WATER-SKIN FOUR: up on the chimney ledge */
   thief(413, 23, 'terrace'); bowman(418, 23, 'terrace'); awn(413, 23, true);
@@ -245,7 +257,7 @@ export function buildWellTown({ painter, T, TS }) {
      is the floor; a ledge is a fight from above that a pour does not reach, so the skin is for the well, not the wall */
   ground(473, 583, K);
   block(473, 473, K - 16, K - 7); block(514, 514, K - 16, K - 7);             /* the gateways' walls (they were the mini's door and gate) */
-  shade.push([473 * TS, 515 * TS, (K - 16) * TS, K * TS + 1]);                /* the courtyard lies in the shadow of the Kasbah's walls */
+  canopy(473, 514, K - 5, K, { v: 1 });                                       /* the garrison's cloths strung over the yard from wall to wall under its galleries, low enough to be seen (claude/welltown5: it was a tint with nothing over it) */
   boards(480, 485, K - 6); ladder(479, K - 6, K - 1); bowman(483, K - 7, 'kasbahArch');   /* a gallery on the west wall, over the gateway's lintel */
   foe('cutthroat', 490, K - 1, 'court'); foe('cutthroat', 496, K - 1, 'court'); thief(500, K - 1, 'court'); awn(493, K - 1, true);   /* the knives hold the yard under its awning (the exam's last well is behind you: no refill here, the old well's skin comes full) */
   boards(504, 509, K - 6); ladder(510, K - 6, K - 1); bowman(507, K - 7, 'kasbahArch2');   /* and a second gallery over the east gateway */
@@ -253,13 +265,14 @@ export function buildWellTown({ painter, T, TS }) {
      stageCisternQueen): forty tiles of dry cistern, fifteen rows high, under the street from 528. You drop in down the shaft */
   ent('check', 519, K - 1);                                                   /* CHECKPOINT FIVE: the old well's head, the boss's door */
   awn(521, K - 1, true);
-  sign(523, K - 1, 'THE OLD WELL. IT RAN DRY THE YEAR SHE CAME.');
-  foe('scorpion', 516, K - 1, 'oldwell'); foe('scorpion', 526, K - 1, 'oldwell');   /* HER BROOD, up out of the shaft onto the street: the old well's mouth is held (the Old Stinger in the cisterns is one of hers) */
+  sign(523, K - 1, 'THE OLD WELL. SOMETHING IS BOUND AT THE BOTTOM.');
+  foe('scorpion', 516, K - 1, 'oldwell'); foe('scorpion', 526, K - 1, 'oldwell');   /* (the desert's scorpions, up out of the dry shaft onto the street) HER BROOD, up out of the shaft onto the street: the old well's mouth is held (the Old Stinger in the cisterns is one of hers) */
   const QF = 56;                                                              /* the cistern hall's floor row */
   block(524, 571, K + 1, H - 1);                                              /* the rock under the street, the hall carved out of it */
-  const queen = stageCisternQueen({ set, block, ent, air }, T, TS, 528, QF, K);
+  const queen = stageDjinn({ set, block, ent, air }, T, TS, 528, QF, K);   /* THE GREAT WELL's deep cistern: THE DJINN's hall (the same forty tiles the Queen's hall was) */
   for (const n of queen.ladders) nets.push(n);
-  shade.push([528 * TS, 568 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);
+  shade.push([528 * TS, 568 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);          /* her hall: under the street's rock - and under the shaft, the old well's roof (below) */
+  wellRoof(545, 550, K - 4, K);                                               /* THE OLD WELL's head: a well-house roof on two posts over the shaft (claude/welltown5: the light down the shaft is under it) */
   interiors.push([528, 567, QF - 15, QF - 1, 'wtQueen'], [545, 550, QF, QF + 1, 'wtQueen']);   /* (and the sump under the shaft) */
   /* THE WAY OUT: her east wall opens when she dies (the arena's own wall) onto the cistern's old outflow, and the road out of town */
   air(569, 579, QF - 6, QF - 1);
@@ -275,6 +288,7 @@ export function buildWellTown({ painter, T, TS }) {
     welltown: true,
     mudWalls, vaultDoors,
     shade: [...shade, ...cast], shadeArt: shade.slice(),   /* (an awning paints its own shade: only the rest is tinted) */
+    casters,                                               /* the cloths and the well-house roof over the tinted shade (src/well-town-hands.js drawWorld draws them) */
     quest: { n: 4, item: 'waterskin', name: 'WATER-SKINS', done: 'FOUR SKINS: POUR THEM IN THE DRY CISTERN', thanks: 'THE CISTERN IS FULL' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

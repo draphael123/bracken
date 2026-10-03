@@ -14,7 +14,8 @@ const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.t
   spit: s => (s.spit || s.hiss)(), sweep: s => (s.slash || s.heavy)(), slam: s => { (s.heavy || s.thud)(); (s.rubble || s.thud)(); }, drop: s => (s.leap || s.thud)(),
   skitter: s => (s.chitin || s.step || s.thud)(), thrash: s => (s.wave || s.splash)(), snap: s => (s.crack || s.clank)(), roll: s => (s.waveBreak || s.splash)(), whip: s => (s.slash || s.splash)(),
   call: s => (s.hiss || s.roar)(), sting: s => (s.sting || s.crack)(), soak: s => { (s.splash)(); (s.hiss || s.thud)(); }, fall: s => (s.heavy || s.thud)(), rear: s => (s.roar || s.heavy)(),
-  windlass: s => { (s.clank)(); s.ratchet && s.ratchet(); }, splash: s => (s.whirlpool || s.splash)(), rock: s => (s.stone || s.thud)(), flood: s => { (s.whirlpool || s.splash)(); (s.roar || s.heavy)(); } };
+  windlass: s => { (s.clank)(); s.ratchet && s.ratchet(); }, splash: s => (s.whirlpool || s.splash)(), rock: s => (s.stone || s.thud)(), flood: s => { (s.whirlpool || s.splash)(); (s.roar || s.heavy)(); },
+  flare: s => (s.fireWhoosh || s.hiss || s.crack)() };
 
 export function makeCisternQueenHands(ctx) {
   let S = null, wl = null;
@@ -56,6 +57,8 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
         else if (k === 'land' || k === 'stuck') { ctx.dust(x, y, 12); ctx.burst(x, y - 4, 8, ['#c9a46a', '#8a6a3e'], 60, 0.5); }
         else if (k === 'lance') ctx.burst(x, y - 4, 8, ['#ffd36b', '#c9a46a'], 70, 0.4);
         else if (k === 'runoff') ctx.burst(x, y + 10, 14, ['#7ab8e8', '#e8f4f8'], 50, 0.8);
+        else if (k === 'flare') { ctx.burst(x, y - 30, 22, ['#ff9a3c', '#ffd36b', '#d84a14'], 90, 0.8); }
+        else if (k === 'steam') { ctx.burst(x, y - 30, 20, ['#e8f4f8', '#c8d0d8', '#9aa39a'], 50, 1.0); try { (ctx.sfx.hiss || ctx.sfx.splash)(); } catch {} }
         else if (k === 'stoneLand') ctx.dust(x, y, 3); },
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
         if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, o.duck ? ctx.duckBox(P) : ctx.box(P)) || keyed(pp, o.key || name)) return;
@@ -88,7 +91,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     CQG.stepQueen(e, S, dt, hs, c);
     /* her body's box follows her pose: long and low on the floor, tall on a wall, nothing under the sand or up the shaft */
     if (S.pose === 'wall' && (e.mode === 'cling' || e.mode === 'climb' || /Tell$/.test(e.mode) || e.mode === 'spit' || e.mode === 'slam' || e.mode === 'sweepLow' || e.mode === 'sweepHigh')) { e.w = 34; e.h = 82; }
-    else { e.w = CQ.w; e.h = CQ.h; }
+    else { e.w = CQ.w; e.h = CQ.h; const st = CQG.stingerOut(S); if (st && S.pose === 'floor') e.w = 2 * Math.max(CQ.w / 2, Math.abs(st.x - e.x) + CQ.stingR + 2); }   /* (claude/welltown5: her stuck stinger is part of her - a blow can reach it) */
     e.phase = S.ph; e.burrowed = S.pose === 'burrow';
     /* THE CLAW, struck as it comes (a counter) or while it holds you: the grab is broken and she rears - OPEN */
     const hb = ctx.attackBox();
@@ -100,11 +103,18 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     /* HER VENOM wears off, a stack at a time; while it is in you, stamina comes back slower */
     for (const pp of ctx.players) { const v = pp.cqVenom || []; for (let i = 0; i < v.length; i++) v[i] -= dt; pp.cqVenom = v.filter(t => t > 0); pp.venomSlow = Math.max(0.1, 1 - CQ.venom.slow * pp.cqVenom.length); }
     /* THE FIRST TIME: what her claws do, and where the water is */
-    if (!S.told.guard && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.guard = 1; ctx.number(e.x, e.y - 90, 'HER CLAWS TURN YOU: FLOOD HER BURROW', '#ffd36b'); }
+    if (!S.told.guard && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.guard = 1; ctx.number(e.x, e.y - 90, 'HER SHELL TURNS BLADES: HIT HER STINGER, OR FLOOD HER', '#ffd36b'); }
   };
-  /* ---------- A BLOW ON HER: in an opening x openMul; her raised claws turn a frontal one outside it (0); from behind, the global chip ---------- */
+  /* ---------- A BLOW ON HER (claude/welltown5): in an opening x openMul; outside one HER SHELL turns it (0, front or back) - unless it lands on her STUCK
+     STINGER (x stingMul, one sting's worth at most stingCap); and in phase two, while she BURNS, her hot shell turns even that ---------- */
   H.take = (e, dmg) => { if (!S) return dmg; const P = ctx.hero();
-    if (CQG.guarded(e, P.x)) { e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; if (!S.told.claws) { S.told.claws = 1; ctx.number(e.x, e.y - 80, 'HER CLAWS TURN IT: GET BEHIND, OR GET WATER ON HER', '#9aa39a'); } return 0; }
+    if (CQG.shelled(e)) { const st = CQG.stingerOut(S), hb = ctx.attackBox();
+      if (S.burn || S.flare > 0) { e.chipHit = ctx.time(); S.n.burnTurned++; e.guardFx = 0.2; ctx.burst(P.x + (P.face || 1) * 12, P.y - 14, 5, ['#ff9a3c', '#ffd36b'], 50, 0.4);
+        if (!S.told.hot) { S.told.hot = 1; ctx.number(e.x, Math.min(e.y, S.G.floor) - 96, 'HER SHELL BURNS: PUT HER OUT WITH WATER', '#ff9a5c'); } return 0; }
+      if (st && hb && ctx.overlap(hb, CQG.stingBox(st))) { const cap = e.maxHp * CQ.stingCap, d = Math.min(dmg * CQ.stingMul, Math.max(0, cap - (S.stingTaken || 0))); S.stingTaken = (S.stingTaken || 0) + d; S.n.stingHits++;
+        ctx.sparks(st.x, st.y - 4, P.face || 1, 6); ctx.burst(st.x, st.y - 4, 6, ['#ffb84a', '#fff2c0'], 60, 0.4);
+        if (S.stingTaken >= cap - 0.01 && st.t > 0.2) { st.t = 0.2; ctx.number(st.x, S.G.floor - 40, 'SHE TUGS IT FREE', '#9aa39a'); } return d; }
+      e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; if (!S.told.claws) { S.told.claws = 1; ctx.number(e.x, e.y - 80, 'THE SHELL TURNS IT: STRIKE HER STINGER', '#9aa39a'); } return 0; }
     if (CQG.qOpen(e)) { const cap = e.maxHp * CQ.openCap, d = Math.min(dmg * CQ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
       if (S.openTaken >= cap - 0.01 && e.open > 0.4) { e.open = 0.4; ctx.number(e.x, e.y - 70, 'SHE RIGHTS HERSELF', '#9aa39a'); S.n.capped = (S.n.capped || 0) + 1; } return d; }
     return dmg; };
@@ -131,6 +141,16 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
   /* over everything: the water, the mound, her tells' marks on the floor (the strike's bulge, the lance's spot, the rubble's shadows, the pounce's
      shadow, the bands lit), what flies, the venom puddles, the claw, her opening's clock */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'cisternqueen') return;
-    CQA.drawOver(g, e, S, cx, cy, time, CQ); };
+    CQA.drawOver(g, e, S, cx, cy, time, CQ);
+    /* (claude/welltown5) HER STUCK STINGER GLINTS: a pulsing ring and a white star where it lies, and its clock */
+    const st = CQG.stingerOut(S); if (st) { const x = R(st.x - cx), y = R(st.y - cy), p = 0.5 + 0.5 * Math.sin(time * 14), hot = S.burn || S.flare > 0;
+      g.strokeStyle = hot ? 'rgba(255,154,60,' + (0.5 + 0.4 * p) + ')' : 'rgba(255,255,255,' + (0.55 + 0.45 * p) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - 2, 10 + p * 4, 0, Math.PI * 2); g.stroke();
+      if (!hot) { g.fillStyle = '#ffffff'; const k = 2 + Math.round(p * 2); g.fillRect(x, y - 10 - k, 1, 2 * k + 1); g.fillRect(x - k, y - 10, 2 * k + 1, 1); }
+      const tk = Math.max(0, st.t / (CQ.stuck[st.k] || 1)); g.fillStyle = '#1b1626'; g.fillRect(x - 10, y + 6, 20, 2); g.fillStyle = hot ? '#ff9a5c' : '#8fd160'; g.fillRect(x - 10, y + 6, R(20 * tk), 2); }
+    /* HER FIRE: flames over her shell while she burns; sparks gathering while she flares */
+    if ((S.burn || S.flare > 0) && !(e.gone && e.mode !== 'pounce')) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : S.G.floor - 40, bh = wall ? 84 : 26, n = S.burn ? 10 : 4;
+      for (let i = 0; i < n; i++) { const fx = bx + ((i * 37 + R(time * 3)) % bw), fy = top + ((i * 19) % bh), h = 6 + 5 * Math.abs(Math.sin(time * 9 + i)); g.globalAlpha = S.burn ? 0.9 : 0.5 + 0.5 * Math.sin(time * 20 + i);
+        g.fillStyle = i % 2 ? '#ff9a3c' : '#ffd36b'; g.fillRect(R(fx - cx), R(fy - h - cy), 3, R(h)); g.fillStyle = '#d84a14'; g.fillRect(R(fx - cx), R(fy - 2 - cy), 3, 2); } g.globalAlpha = 1; }
+  };
   return H;
 }

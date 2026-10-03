@@ -23,7 +23,7 @@ export const GOBLIN_KINDS = new Set(['sprig', 'shield', 'thorn', 'archer', 'sapp
   'burngob', 'hearthgob', 'stormshaman', 'sailer', 'horn', 'thief', 'miner', 'sheargob', 'gaffer', 'kite', 'sandgob', 'chief', 'lance', 'snuffer',
   'propman', 'tippler', 'scalder', 'sentry', 'pike', 'temperer']);
 /* the levels whose goblins are reskinned (a lane adds its level here when it fixes it) */
-export const FIXED = ['canal'];
+export const FIXED = ['canal', 'redgorge'];   /* (claude/desertfoes: THE RED GORGE's dynamite bandit and shield guard are the sapper and the shieldgob under men's skins) */
 
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const beasts = main.slice(main.indexOf('const BEASTS = ['), main.indexOf('];', main.indexOf('const BEASTS = [')));

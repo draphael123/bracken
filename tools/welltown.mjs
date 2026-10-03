@@ -19,7 +19,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { CQ, STAGE as QSTAGE } from '../src/cistern-queen.js';
+import { DJ, STAGE as QSTAGE } from '../src/djinn.js';   /* (claude/welltown5: THE DJINN OF THE GREAT WELL is the town's boss; the Cistern Queen is benched - tools/cistern-queen.mjs still holds her) */
 import { GL, STAGE as GSTAGE } from '../src/gang-leader.js';
 import { OPEN_RULE, OWN_WARD, NO_OPENING, GREED } from '../src/boss-greed.js';
 import { ROLES } from './level-quality.mjs';
@@ -73,6 +73,24 @@ const sunLong = [];
   const props = L.ents.filter(e => e.t === 'deco' && /^awning/.test(e.kind)).length;
   ok(props >= 12 && shaded((159 + 0.5) * TS, 26 * TS) && shaded((182 + 0.5) * TS, 26 * TS) && shaded((322 + 0.5) * TS, 20 * TS) && shaded((495 + 0.5) * TS, 28 * TS),
     'THE SHADE IS CAST BY THINGS: ' + props + " awnings over the fights, the market courtyard's canopies (the Gang Leader's fight is in shade, both ends), the Kasbah courtyard's walls, the inside of the dovecote (its 18 rungs are the breather before the roost)"); }
+// ---- THE SHADE HAS A CASTER (claude/welltown5, Daniel played it 10-03: "not clear that things will actually give you shade") ----
+/* BOTH WAYS. (1) every shade zone (L.shade: the tinted rects and the awnings' own) has a CASTER over every column of it: looking straight up from the
+   zone's first open cell the eye meets a caster prop (an awning, a strung cloth, the well-house roof: L.casters) or a tile (a roof, a lintel, boards, a
+   vault) before the sky. (2) every caster prop has its shade under it: each of its columns lies in a zone whose top is the prop's own underside */
+{ const tileCast = (x, y) => { const c = L.grid[Math.floor(y / TS) * W + Math.floor(x / TS)]; return c === T.SOLID || c === T.ONEWAY || c === T.NET; };
+  const props = [...L.ents.filter(e => e.t === 'deco' && /^awning/.test(e.kind)).map(e => { const left = e.x * TS + 8 - 26, g = (e.y + 1) * TS; return { kind: e.kind + '@' + e.x, x0: left + 3, x1: left + 49, y: g - 30, yb: g - 17 }; }),
+    ...(L.casters || []).map(k => ({ ...k, kind: k.kind + '@' + Math.floor(k.x0 / TS) }))];
+  const bare = [];
+  for (const z of L.shade) { const cols = [];
+    for (let x = z[0] + 2; x <= z[1] - 2; x += 4) { let y = z[2]; while (y <= z[3] && tileCast(x, y)) y += 4; if (y > z[3]) continue;
+      let hit = false; for (let py = y; py >= 0 && !hit; py -= 2) hit = tileCast(x, py) || props.some(p => x >= p.x0 && x <= p.x1 && py >= p.y && py <= p.yb);
+      if (!hit) cols.push(Math.floor(x / TS)); }
+    if (cols.length) bare.push('cols ' + Math.min(...cols) + '-' + Math.max(...cols) + ' rows ' + Math.floor(z[2] / TS) + '-' + Math.floor(z[3] / TS)); }
+  ok(!bare.length, 'THE SHADE HAS A CASTER: every one of ' + L.shade.length + ' shade zones has an awning, a strung cloth, a roof or a lintel over every column of it' + (bare.length ? ' - BARE (a tint with nothing over it): ' + bare.join('; ') : ''));
+  const dry = [];
+  for (const p of props) { const cols = []; for (let x = p.x0 + 2; x <= p.x1 - 2; x += 4) if (!L.shade.some(z => x >= z[0] && x <= z[1] && z[2] >= p.y - 2 && z[2] <= p.yb + 4)) cols.push(Math.floor(x / TS));
+    if (cols.length) dry.push(p.kind + ' (cols ' + Math.min(...cols) + '-' + Math.max(...cols) + ')'); }
+  ok(props.length >= 14 && !dry.length, 'AND EVERY CASTER CASTS: each of ' + props.length + ' awnings, cloths and roofs has its shade under it, from its own underside' + (dry.length ? ' - NO SHADE UNDER: ' + dry.join('; ') : '')); }
 // ---- THE WATER BUDGET ----
 { const wells = L.ents.filter(e => e.t === 'skinwell' && !e.arena && !e.jar).map(e => [e.x, 'well']), jars = L.ents.filter(e => e.t === 'skinwell' && e.jar).map(e => [e.x, 'jar']), pours = required.map(([w, m]) => [m.x0, w]);
   const thieves = [...new Set(L.ents.filter(e => e.t === 'waterthief' && !(e.x >= ax0 && e.x <= ax1)).map(e => e.squad))].map(q => [Math.min(...L.ents.filter(e => e.squad === q).map(e => e.x)), 'thief ' + q]);
@@ -106,15 +124,15 @@ const sunLong = [];
 { const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   ok(L.ents.some(e => e.t === 'check' && e.x >= 64 && e.x < 90) && L.ents.some(e => e.t === 'sign' && /SHRINE KEEPS A SHOP/.test(e.text)), 'THE MARKET SHRINE: a checkpoint in the market, and the sign that says a lit shrine is a shop');
   ok(LEVELS.some(l => l.id === 'shopWell' && l.hidden && l.build().shop) && /id: 'wellstore', kind: 'store', shop: 'shopWell'/.test(main), "THE WELL STORE: the desert's walk-in room (shopWell) and its map node");
-  /* THE CISTERN QUEEN (claude/welltown3): her hall is forty tiles of dry cistern under the old well, its two springs, its windlass, the shaft down from the street */
-  const wells = L.ents.filter(e => e.t === 'skinwell' && e.arena && e.x >= ax0 && e.x <= ax1), wl = L.ents.find(e => e.t === 'qwindlass');
-  ok(A.boss === 'cisternqueen' && A.music === 'cisternqueen' && wells.length === 2 && wl && wl.x > ax0 && wl.x < ax1 && A.x1 - A.x0 === QSTAGE.W * TS,
-    "THE CISTERN QUEEN's hall: " + QSTAGE.W + ' tiles, two springs and the windlass in it, on her own theme');
-  { const q = A.queen, sh = [q.sx + QSTAGE.shaft[0], q.sx + QSTAGE.shaft[1]]; let open = true; for (let y = q.top; y <= q.vault; y++) for (let x = sh[0]; x <= sh[1]; x++) if (L.grid[y * W + x] !== T.AIR) open = false;
+  /* THE DJINN OF THE GREAT WELL (claude/welltown5): his hall is the deep cistern under the old well, its two springs, its windlass on the floor and its crank on a ledge, the shaft down from the street */
+  const wells = L.ents.filter(e => e.t === 'skinwell' && e.arena && e.x >= ax0 && e.x <= ax1), wls = L.ents.filter(e => e.t === 'djwindlass' && e.x > ax0 && e.x < ax1);
+  ok(A.boss === 'djinn' && A.music === 'cisternqueen' && wells.length === 2 && wls.length === 2 && wls.some(w => w.crank) && A.x1 - A.x0 === QSTAGE.W * TS && !L.ents.some(e => e.t === 'cisternqueen'),
+    "THE DJINN's hall: " + QSTAGE.W + ' tiles, two springs, the windlass and the crank on a ledge, on the boss room\'s theme (and no Queen: she is benched)');
+  { const q = A.djinn, sh = [q.sx + QSTAGE.shaft[0], q.sx + QSTAGE.shaft[1]]; let open = true; for (let y = q.top; y <= q.vault; y++) for (let x = sh[0]; x <= sh[1]; x++) if (L.grid[y * W + x] !== T.AIR) open = false;
     ok(open && reaches(L, inArena), 'THE OLD WELL: its shaft runs open from the street down through the vault into her hall, and the hall is reached'); }
-  ok(CQ.openT >= 3 && OPEN_RULE.cisternqueen && OPEN_RULE.cisternqueen({ mode: 'soaked', open: 2 }) && OPEN_RULE.cisternqueen({ mode: 'fallen', open: 1 }) && OPEN_RULE.cisternqueen({ mode: 'rear', open: 1 }) && !OPEN_RULE.cisternqueen({ mode: 'walk', open: 0 })
-    && !OWN_WARD.has('cisternqueen') && !NO_OPENING.cisternqueen && GREED.chip === 0.05 && GREED.chipBy.cisternqueen === undefined,
-    'her openings (SOAKED, ON HER BACK, REARING) are ' + CQ.openT + ' s (>= 3), her OPEN_RULE row, and outside them the global x0.05');
+  ok(DJ.openT >= 3 && OPEN_RULE.djinn && OPEN_RULE.djinn({ mode: 'mud', open: 2 }) && OPEN_RULE.djinn({ mode: 'doused', open: 1 }) && OPEN_RULE.djinn({ mode: 'bailed', open: 1 }) && OPEN_RULE.djinn({ mode: 'reach', open: 0, hand: 1 }) && !OPEN_RULE.djinn({ mode: 'walk', open: 0 })
+    && !OWN_WARD.has('djinn') && !NO_OPENING.djinn && GREED.chip === 0.05 && GREED.chipBy.djinn === undefined,
+    'his openings (MUD, DOUSED, BAILED OUT) are ' + DJ.openT + ' s (>= 3), his OPEN_RULE row (and his slammed hand), and outside them a blade does nothing');
   /* THE GANG LEADER: the courtyard's mini (Daniel 10-02: the Bandit King "feels like a mini") */
   const M = L0.mini;
   ok(M && M.boss === 'gangleader' && /GANG LEADER/.test(M.name) && M.music === 'banditking' && L.ents.some(e => e.t === 'gangleader' && e.mini) && (M.x1 - M.x0) / TS === GSTAGE.W && L.ents.some(e => e.t === 'skinwell' && e.arena && e.x * TS >= M.x0 && e.x * TS <= M.x1),
@@ -129,5 +147,5 @@ const sunLong = [];
     ok(reaches(L, inArena) && !reaches(shut, inArena), 'the way on to the old well runs through his courtyard: with his wall shut (' + rows.length + ' rows) the cisterns and the old well are out of reach, until he falls and it opens'); }
   { const k = L0.ents.filter(e => e.x > 473 && e.x < 515 && /^(cutthroat|archer|waterthief)$/.test(e.t)), sq = new Set(k.map(e => e.squad));
     ok(k.length >= 5 && k.some(e => e.t === 'archer') && sq.size >= 3, 'THE KASBAH COURTYARD is not empty: ' + k.length + ' of the garrison in ' + sq.size + ' squads (two bowmen on ledges, a pair of knives and a thief in the yard)'); }
-  ok(!L.ents.some(e => e.t === 'banditking'), 'no Bandit King: the courtyard is the Gang Leader\'s, the boss is the Queen\'s'); }
+  ok(!L.ents.some(e => e.t === 'banditking'), 'no Bandit King: the courtyard is the Gang Leader\'s, the boss is the Djinn\'s'); }
 console.log('welltown: ' + n + ' checks pass');

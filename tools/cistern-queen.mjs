@@ -63,6 +63,26 @@ ok(CQ.openT >= 3 && CQ.openCap > 0 && CQ.openCap <= 0.2, 'her openings last ' + 
   ok(new Set(chains.map(c => c.join(','))).size === chains.length, 'every one of his cycles is a different order');
   for (const [m, mk] of Object.entries(GLM.GL_MODES)) ok(BY_HAND['gangleader|' + m] === mk && MARK['gangleader|' + m] === mk, 'gangleader|' + m + ' wears ' + mk);
   ok(GLM.GL.openT >= 3 && GLM.GL.capK <= 1 / 3 + 1e-9 && GLM.GL.dodge > 0 && GLM.GL.dodge < 1 && GLM.GL.recoverT >= 0.3 && GLM.GL.reflectR >= 12, 'his opening (burning) is ' + GLM.GL.openT + ' s, a third of him at most; he slips ' + GLM.GL.dodge * 100 + '% of the blows while he stalks you (never off balance: ' + GLM.GL.recoverT + ' s after each of his blows), and his bottle is easy to strike back (' + GLM.GL.reflectR + ' px)'); }
+/* THE GANG LEADER'S WATER (claude/welltown5, Daniel 10-03): his hands stepped against a fake world - a puddle in his path trips him (down, every blow
+   whole); burning, a puddle puts him out; his fire catches you and a pour on yourself puts it out; burning blows land x1.5 up to the cap; the dodge is rare */
+{ const said = [], mini = { x0: 0, x1: 640, floor: 400, well: 300, boss: 'gangleader' }, hero = { x: 100, y: 400, face: 1, ground: true, hp: 200, maxHp: 200, dead: false, skin: { sips: 3, max: 3 } };
+  let foe = null; const ctx = { L: { mini }, players: [hero], TS: 16, EHP: { gangleader: GLM.GL.hp }, sfx: {}, hero: () => hero, enemies: () => (foe ? [foe] : []), time: () => 0,
+    number: (x, y, t) => said.push(t), text() {}, burst() {}, sparks() {}, dust() {}, shake() {}, damagePlayer: (x, d) => { hero.hp -= d; }, asPlayer: (p, fn) => fn(), upright: () => true,
+    overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, box: b => ({ l: b.x - 5, r: b.x + 5, t: b.y - 20, b: b.y }), attackBox: () => null, enrage() {}, music() {} };
+  const H = GLM.makeGangLeaderHands(ctx); foe = H.spawn({ x: 400, y: 400, alive: true }); foe.alive = true;
+  for (let i = 0; i < 120; i++) H.update(foe, 1 / 60);                      /* awake: he walks at you */
+  ok(said.includes('POUR WATER WHERE HE RUNS: HE SLIPS') && hero.skin.sips === 3, 'his fight starts told (POUR WATER WHERE HE RUNS) and with a full skin');
+  const a = H.pourable.aim(hero); ok(a && a.what === 'floor' && Math.abs(a.x - (hero.x + GLM.GL.pourAt)) < 1, 'a pour in his courtyard aims at the floor a step in front of you (the HUD says POUR)');
+  H.pourable.pour(hero); ok(H.fight().puddles.length === 1 && said.includes('A PUDDLE: HE SLIPS IF HE RUNS IN IT'), 'it leaves a told puddle');
+  foe.mode = 'walk'; foe.modeT = 5; let slipped = false; const tr = []; for (let i = 0; i < 400 && !slipped; i++) { H.update(foe, 1 / 60); slipped = foe.mode === 'slipped'; if (i % 20 === 0) tr.push(foe.mode + '@' + Math.round(foe.x)); } if (!slipped) console.log(tr.join(' '), JSON.stringify(H.fight().puddles));
+  ok(slipped && said.includes('HE SLIPS: CUT HIM') && !H.fight().puddles.some(q => !q.dead), 'he runs into it and SLIPS (told), and the puddle is spent');
+  ok(H.take(foe, 10, hero.x) === 10, 'down, he takes a blow whole');
+  for (let i = 0; i < 200 && foe.mode === 'slipped'; i++) H.update(foe, 1 / 60); ok(foe.mode !== 'slipped', 'and he is up again in ' + GLM.GL.slipT + ' s');
+  H.lightForTest(foe); ok(GLM.glOpen(foe) && H.take(foe, 10, hero.x) === 10 * GLM.GL.openMul, 'alight, a blow lands x' + GLM.GL.openMul);
+  H.puddleAt(foe.x + 20); for (let i = 0; i < 120 && GLM.glOpen(foe); i++) H.update(foe, 1 / 60);
+  ok(!GLM.glOpen(foe) && said.includes('THE WATER PUTS HIM OUT') && H.fight().n.doused === 1, 'burning, a puddle under him PUTS HIM OUT (told)');
+  hero.glBurn = 1; const s = H.pourable.aim(hero); ok(s && s.what === 'self' && H.pourable.pour(hero) === 'self' && !(hero.glBurn > 0) && said.includes('THE WATER PUTS YOU OUT'), 'alight yourself, the pour goes over you and puts you out');
+  ok(GLM.GL.dodge <= 0.25 && GLM.GL.dodgeCd >= 4, 'the dodge is rare (' + GLM.GL.dodge * 100 + '%, once in ' + GLM.GL.dodgeCd + ' s at most): he is open to your blows otherwise'); }
 /* THE VENOM ICON (claude/welltown-polish, src/venom-hud.js): a drop a stack under the stamina bar, the stacks as the hands keep them (P.cqVenom), the cap, the slow */
 { const { venomIcon, drawVenomIcon, VENOM_HUD } = await import('../src/venom-hud.js'), V = CQ.venom;
   ok(VENOM_HUD.max === V.max && VENOM_HUD.stackT === V.t, 'the venom icon holds as many drops as her venom stacks (' + V.max + ') and a drop empties over the whole clock of a stack (' + V.t + ' s)');

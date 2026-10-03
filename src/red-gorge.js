@@ -62,6 +62,13 @@ export function buildRedGorge({ painter, T, TS }) {
   const basket = (id, x, low, high, wheelRow) => { baskets.push({ id, x, low, high, wheelRow });
     moversExtra.push({ kind: 'lift', gorge: id, x: x * TS, y: low * TS, y0: low * TS, y1: high * TS, w: 32, h: 8, speed: 0, wheelRow }); ent('waterwheel', x < CX ? x + 3 : x - 1, wheelRow, { basket: id }); };   /* the wheel turns in the channel's edge */
   const feather = (x, y) => ent('stray', x, y, { kind: 'feather' });
+  /* (claude/desertfoes, Daniel 10-03: the gorge was half cutthroats - a good chunk are swapped for these, src/desert-foes2.js) THE SHIELD GUARD (the shieldgob's AI
+     under a man's skin: the front turns every blow - get behind him, break it heavy, or come down on him; in the channel the flood takes half of him), THE DYNAMITE
+     BANDIT (the sapper's: he lights a stick at range and throws it where you stand - and THE FLOOD DOUSES THE FUSE), THE VENOM SCORPION (the Cistern Queen's brood),
+     and THE SANDWORM in the dry riverbed (the one new foe: the flood's horn drives it under) */
+  const shieldGuard = (x, y, squad, o) => foe('shield', x, y, squad, Object.assign({ cnSkin: 'shieldguard' }, o || {}));
+  const dynamiter = (x, y, squad, o) => foe('sapper', x, y, squad, Object.assign({ cnSkin: 'dynamiter' }, o || {}));
+  const venomScorp = (x, y, squad, o) => foe('scorpion', x, y, squad, Object.assign({ cnSkin: 'venomscorpion' }, o || {}));
 
   // ================= THE ROCK: everything, then the gorge and the plateau carved out of it =================
   block(0, W - 1, 0, H - 1);
@@ -72,7 +79,8 @@ export function buildRedGorge({ painter, T, TS }) {
   // ================= 1. THE GORGE MOUTH (142-166): climb WEST =================
   ent('deco', 33, F - 1, { kind: 'scrub' }); ent('deco', 8, F - 1, { kind: 'oxSkull' });
   sign(37, F - 1, 'THE RED GORGE. AT THE HORN, GET OUT OF THE CHANNEL.');
-  foe('cutthroat', 11, F - 1, 'mouth'); foe('cutthroat', 15, F - 1, 'mouth');   /* the bandits who hold the mouth, on the far side of the first crossing */
+  foe('cutthroat', 11, F - 1, 'mouth'); dynamiter(15, F - 1, 'mouth');
+  ent('sandworm', CX, F - 1, { squad: 'riverbed', bed: [C0, C1] });          /* THE SANDWORM in the DRY RIVERBED: the channel's floor, crossed under the dynamite bandit's sticks - and the horn drives it under (the flood that douses his fuse) */   /* the bandits who hold the mouth, on the far side of the first crossing */
   ledge(14, 20, 163); ledge(8, 15, 160); ledge(13, 19, 157); ledge(5, 14, 154); ledge(11, 17, 151); ledge(4, 12, 148); ledge(10, 18, 145);
   /* the slinger across the channel: a shelf on the east lip, throwing at the west climb */
   block(29, 33, 156, 156); foe('slinger', 30, 155, 'mouthSling', { face: -1 });
@@ -105,9 +113,9 @@ export function buildRedGorge({ painter, T, TS }) {
   set(17, 118, T.AIR); set(18, 118, T.AIR);                                   /* the basket's berth in the bridge */
   basket('ledges', 17, 118, 100, 112);                                       /* THE FIRST BASKET: its wheel at the channel's lip, row 112 */
   sign(20, 117, 'THE WHEEL TURNS WHEN THE WATER RUNS.');
-  foe('cutthroat', 30, 117, 'basketFoot', { face: -1 }); foe('cutthroat', 34, 117, 'basketFoot', { face: -1 }); foe('slinger', 38, 117, 'basketFoot', { face: -1 });   /* they come along the bridge at you while you wait on the basket for a flood */
+  shieldGuard(30, 117, 'basketFoot', { face: -1 }); foe('cutthroat', 34, 117, 'basketFoot', { face: -1 }); foe('slinger', 38, 117, 'basketFoot', { face: -1 });   /* they come along the bridge at you while you wait on the basket for a flood */
   ledge(9, 15, 97);
-  foe('cutthroat', 6, 99, 'ledgeTop', { face: 1 }); foe('cutthroat', 12, 99, 'ledgeTop', { face: -1 }); foe('slinger', 4, 99, 'ledgeTop', { face: 1 });   /* they wait at the basket's top */
+  foe('cutthroat', 6, 99, 'ledgeTop', { face: 1 }); dynamiter(12, 99, 'ledgeTop', { face: -1 }); foe('slinger', 4, 99, 'ledgeTop', { face: 1 });   /* they wait at the basket's top */
   ent('raptor', CX, 106, { squad: 'raptorShaft', guard: 112 });                 /* a raptor over the basket's shaft and the bridge */
   /* the nest pocket on the east, under bridge three (FEATHER TWO): drop through the bridge and down the ledges */
   ledge(38, 44, 97); ledge(31, 37, 100); ledge(38, 44, 103); block(27, 44, 104, 111);   /* the pocket stands on rock: nothing to fall to */
@@ -119,7 +127,7 @@ export function buildRedGorge({ painter, T, TS }) {
   // ================= 4. THE CAVE OF HANDS (70-94): climb EAST; THE JAM =================
   ledge(28, 33, 91); ledge(33, 40, 88);
   ledge(29, 35, 85); ledge(35, 44, 82);
-  foe('cutthroat', 23, 93, 'caveLedge', { face: 1 }); foe('cutthroat', 25, 93, 'caveLedge', { face: -1 });   /* on BRIDGE THREE's span over the channel: meet them in it - time the horn, or fight in the water's road */
+  shieldGuard(23, 93, 'caveLedge', { face: 1 }); foe('cutthroat', 25, 93, 'caveLedge', { face: -1 });   /* on BRIDGE THREE's span over the channel: meet them in it - time the horn, or fight in the water's road */
   /* THE CAVE OF HANDS: cut into the east wall off the ledge at row 82 - painted hands, a silver, FEATHER THREE */
   air(45, 53, 78, 81); block(45, 53, 82, 82);
   decor.push({ kind: 'hands', x: 47, y: 79 }, { kind: 'hands', x: 50, y: 78 }); ent('silver', 52, 81); feather(50, 81);
@@ -152,7 +160,7 @@ export function buildRedGorge({ painter, T, TS }) {
   set(17, 70, T.AIR); set(18, 70, T.AIR);                                     /* the second basket's berth */
   basket('narrows', 17, 70, 65, 66);                                         /* THE SECOND BASKET: up five rows on the flood, to the landing */
   wheel(20, 69, 'narrows');                                                   /* the narrows' gate: a wheel at the basket's foot... */
-  ledge(19, 21, 65); wheel(10, 64, 'narrows'); foe('cutthroat', 9, 64, 'narrowsTop', { face: 1 }); foe('cutthroat', 14, 64, 'narrowsTop', { face: -1 });   /* the landing: two knives at the basket's top, by the wheel you need */ gate('narrows', 39);          /* ...and one at its top, over the rope */
+  ledge(19, 21, 65); wheel(10, 64, 'narrows'); venomScorp(9, 64, 'narrowsTop', { face: 1 }); foe('cutthroat', 14, 64, 'narrowsTop', { face: -1 });   /* the landing: two knives at the basket's top, by the wheel you need */ gate('narrows', 39);          /* ...and one at its top, over the rope */
   block(8, 21, 43, 59);                                                       /* the west mass over the landing: the only way on is the rope in the channel */
   rope(22, 43, 62);                                                           /* THE NARROWS' ROPE: twenty rows in the channel (its foot eight rows over bridge four: no jump from the bridge reaches it) */
   ent('raptor', CX, 50, { squad: 'raptorsB', guard: 58 });                   /* a raptor over the rope: it hunts the rope's lower half too */
@@ -163,10 +171,10 @@ export function buildRedGorge({ painter, T, TS }) {
   ledge(3, 44, 42);                                                           /* BRIDGE FIVE */
 
   // ================= 6. THE SUMMIT (22-42): climb EAST; the old nest west =================
-  foe('cutthroat', 31, 41, 'bridge5', { face: -1 }); foe('cutthroat', 35, 41, 'bridge5', { face: -1 }); foe('cutthroat', 39, 41, 'bridge5', { face: -1 });   /* the bridge's east head, as you come off the rope */
+  foe('cutthroat', 31, 41, 'bridge5', { face: -1 }); shieldGuard(35, 41, 'bridge5', { face: -1 }); foe('cutthroat', 39, 41, 'bridge5', { face: -1 });   /* the bridge's east head, as you come off the rope */
   ledge(36, 44, 39); ledge(29, 35, 36); ledge(35, 43, 33); ledge(30, 36, 30); ledge(36, 44, 27); ledge(33, 39, 25);
-  foe('cutthroat', 33, 35, 'summit', { face: 1 }); foe('cutthroat', 24, 31, 'summitNest', { face: 1 });   /* one on the climb; one on THE OLD NEST's bridge over the channel: the vault walk crosses a fight at the horn */
-  foe('slinger', 41, 26, 'summitSling', { face: -1 }); foe('cutthroat', 37, 26, 'summitKnife', { face: 1 });   /* his knife beside him */
+  venomScorp(33, 35, 'summit', { face: 1 }); foe('cutthroat', 24, 31, 'summitNest', { face: 1 });   /* one on the climb; one on THE OLD NEST's bridge over the channel: the vault walk crosses a fight at the horn */
+  foe('slinger', 41, 26, 'summitSling', { face: -1 }); dynamiter(37, 26, 'summitKnife', { face: 1 });   /* his knife beside him */
   ent('raptor', CX + 6, 32, { squad: 'raptorsC', guard: 36 });
   /* THE OLD NEST: across a rope bridge at row 31 (over the channel) to the west wall: its vault behind a wall of woven branches */
   ledge(17, 29, 32); block(3, 16, 32, 33);

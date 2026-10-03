@@ -15,7 +15,7 @@ import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (
 import { greenteethPlan, gtOpen } from './jenny-greenteeth.js';   /* JENNY GREENTEETH (claude/lockkeeper): the bot reads her rings, bands, hand and paddles off her own module */
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
 import { puppetPlan } from './puppeteer.js';
-import { queenPlan, qOpen } from './cistern-queen.js'; import { glPlan, glOpen } from './gang-leader.js';   /* THE CISTERN QUEEN and THE GANG LEADER (claude/welltown3): the bot reads their tells off their own modules, and works the skin */
+import { queenPlan, qOpen } from './cistern-queen.js'; import { glPlan, glOpen } from './gang-leader.js'; import { djinnPlan, djOpen } from './djinn.js';   /* (claude/welltown5) THE DJINN OF THE GREAT WELL: the bot works the skin on him, the crank and his hand */   /* THE CISTERN QUEEN and THE GANG LEADER (claude/welltown3): the bot reads their tells off their own modules, and works the skin */
 import { gorgeCrabPlan, crabOpen } from './gorge-crab.js';   /* THE GREAT RED CRAB (claude/redgorge): the bot reads his tells, the dam's water and his channel off his own module, and works the sluice gate */
 import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
@@ -530,7 +530,7 @@ async function runbossLab(BK, opts) {
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1096,6 +1096,25 @@ async function runbossLab(BK, opts) {
         if(OPEN(boss,BK)&&!wasOpen)opened++;wasOpen=!!OPEN(boss,BK);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:qOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
+      if(boss.t==='djinn'){
+        /* THE DJINN OF THE GREAT WELL (claude/welltown5): src/djinn.js djinnPlan reads what a player sees - his tells a quarter-second late (some misread), the
+           marks on the floor, the devil and the waves, his hand on a ledge - and works the level's verb: it fills the skin at a spring, pours on him (mud, then
+           the douse), douses itself, climbs to the east ledge in the flood and strikes the crank, and cuts in his openings. It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const DH=BK.djinnHands(),S=DH&&DH.show();
+        if(f===0||!P.labDjMem)P.labDjMem={};
+        const pl=S?djinnPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.down)k.down=true;if(pl.up)k.up=true;
+        if(pl.block)k.block=h==='warden'?DEFLECT_TAP(f):true;
+        if(!pl.block&&!(pl.down&&P.ground&&!pl.jump)&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(OPEN(boss,BK)&&!wasOpen)opened++;wasOpen=!!OPEN(boss,BK);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:djOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='gangleader'){
         /* THE GANG LEADER (claude/welltown3): src/gang-leader.js glPlan - his tells a quarter-second late (some misread), a bottle struck back when it comes in
            reach (some let go), cuts between his blows a blow short of greed, the whirl and the fire stepped out of, hard cuts while he burns */
@@ -1103,12 +1122,13 @@ async function runbossLab(BK, opts) {
         const GH=BK.gangLeaderHands(),F=GH&&GH.fight();
         if(f===0||!P.labGlMem)P.labGlMem={};
         const greed=BK.greed?BK.greed.count(boss):0;
-        const pl=F?glPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};
+        const pl=F?glPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if(pl.block)k.block=true;
+        if(pl.block)k.block=h==='warden'?DEFLECT_TAP(f):true;   /* (the warden's deflect is a sweep on the beat, tapped) */
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(OPEN(boss,BK)&&!wasOpen)opened++;wasOpen=!!OPEN(boss,BK);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:glOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
