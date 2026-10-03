@@ -19,18 +19,18 @@
 // main.js calls makeGangLeaderHands(ctx): spawn, owns, update, take, pourable, frame, barName, drawOver, end, read. The bot's reading is glPlan (src/lab.js).
 
 export const GL = {
-  hp: 2900, w: 16, h: 30, markH: 44,                 /* (claude/welltown5: every blow lands whole now - 1000 went in 25-40 s for the human bot) */
+  hp: 1500, w: 16, h: 30, markH: 44,                 /* (claude/glhotfix, Daniel 10-03: 2900 -> 1500 - he is a MINI) */
   openMul: 1.5, openT: 3.2, capK: 0.2,   /* (Daniel 10-03: burning x1.5, and the per-burn cap stays - no more than a third of him a burning, a fifth here)
   */
-  walk: 78, dash: 250, dashAt: 84, keep: 26, gap: [0.26, 0.2],   /* phase two (half health): quicker between blows */
+  walk: 70, dash: 225, dashAt: 84, keep: 26, gap: [0.26, 0.2],   /* phase two (half health): quicker between blows */
   dashTell: 0.36, dashMax: 0.55, dashCd: 2.2, dashReach: 30,      /* THE DASH (!!): stood off beyond dashAt he gathers and DASHES in with a cut - roll through it, jump it, or pour in his path */
-  cutTell: 0.42, cutT: 0.14, cut2Tell: 0.24, crossTell: 0.2, cutReach: 34, cutStep: 80,   /* (each cut steps in at cutStep px/s: a quick man's cut follows you) */
+  cutTell: 0.42, cutT: 0.14, cut2Tell: 0.24, crossTell: 0.2, cutReach: 34, cutStep: 72,   /* (each cut steps in at cutStep px/s: a quick man's cut follows you) */
   whirlTell: 0.62, whirlT: 0.5, whirlR: 40,
   throwTell: 0.5, fly: 0.85, fireT: 3.2, fireR: 18, fireTick: 0.5,
   dodge: 0.18, dodgeT: 0.28, dodgeDist: 64, dodgeCd: 5.0, riposteTell: 0.42, recoverT: 0.35,   /* (claude/welltown5: the dodge is RARE now - it was 75%, and it beat the Warden's shield game) */
   reflectR: 16, back: 340,
-  burnWalk: 34,                                     /* burning, he staggers away from you beating at the flames */
-  puddleT: 6, puddleR: 16, pourAt: 30, slipT: 1.6,  /* THE WATER: a pour's puddle lasts puddleT s, pourAt px in front of you; a slip downs him slipT s */
+  mudSlow: 0.4,                           /* MUD (Daniel 10-03): a poured puddle is mud - he moves x mudSlow in it and will not step into it from dry ground (he stops at its edge) */
+  puddleT: 9, puddleR: 22, pourAt: 30, slipT: 1.6,  /* THE WATER: a pour's puddle lasts puddleT s, pourAt px in front of you; a slip downs him slipT s */
   burnT: 2.6, burnTick: 0.5,                        /* his fire CATCHES you: you burn this long unless you douse yourself */
   dmg: { cut: 34, whirl: 44, bottle: 16, fire: 7, riposte: 28, burn: 4, dash: 28 },
 };
@@ -42,7 +42,7 @@ export const CHAINS = {
 };
 export const GL_MODES = { cutTell: '!', cut2Tell: '!', crossTell: '!', whirlTell: '!!', throwTell: '!', riposteTell: '!!', dashTell: '!!' };
 const PARRY = new Set(['cut', 'cut2', 'cross']);                 /* (only while a blade is moving: claude/welltown5) */
-const SLIPPY = new Set(['walk', 'dash', 'dodge', 'riposte', 'riposteTell', 'burning']);   /* the modes he is on his feet and moving in: a puddle takes him (or puts him out) */
+const SLIPPY = new Set(['dash', 'dodge', 'riposte', 'riposteTell', 'burning']);   /* the modes he is moving FAST in: a puddle takes him (or puts him out) - walking he will not step in it, and in it he is mud-slowed (GL.mudSlow) */
 export const glOpen = e => !!e && e.mode === 'burning' && (e.open || 0) > 0;
 
 /* THE MARKET COURTYARD (claude/welltown-polish, Daniel 10-02: he moved from the Kasbah to the market). sx: its first column; R: its floor row. Forty columns,
@@ -104,7 +104,8 @@ export function glPlan(s) {
   /* THE WATER: he comes at you - pour in his path (once per approach, and not every time) */
   const wet = (F.puddles || []).some(q => Math.sign(q.x - P.x) === toHim && Math.abs(q.x - P.x) < ad + 10);
   if (m === 'walk' && sips > 0 && ad > 44 && ad < 130 && P.ground && !wet && !roll('pour' + F.act, PLAN.missPour)) { out.face = toHim; out.talk = true; out.why = 'pour in his path'; return out; }
-  if (m === 'walk' && wet && ad > 40) { out.face = toHim; out.why = 'wait behind the puddle'; return out; }
+  /* MUD ZONING (claude/glhotfix): he will not step into it - hold the line a step beyond the reach of his blades, strike what he sends, cut him if the weapon reaches */
+  if (wet && ad > 40 && /^(walk|recover|cut|cut2|cross|cutTell|cut2Tell|crossTell|throwTell|throw|whirlTell)$/.test(m)) { out.gx = clamp(e.x + side * Math.max(52, Math.min(70, reach + 20))); out.face = toHim; out.atk = ad < reach + 4 && P.atk < 0 && (s.greed || 0) < 3 && m !== 'whirlTell' && m !== 'cutTell'; out.why = 'hold the mud line'; return out; }
   /* a dry skin: the well head (it glints), when he is not on you */
   if (sips <= 0 && A.well != null && (ad > 60 || m === 'recover') && !(F.puddles || []).length) { if (Math.abs(P.x - A.well) < 10 && P.ground) { out.talk = true; out.why = 'fill the skin at the well head'; return out; } out.gx = A.well; out.why = 'to the well head'; return out; }
   /* between his blows, and as he walks in: cut him (a blow short of greed), from where his reach is not */
@@ -155,6 +156,9 @@ export function makeGangLeaderHands(ctx) {
     F.n.slips++; F.cur = { k: 'slip', id: ++F.act }; e.dashing = false; set(e, 'slipped', GL.slipT); ctx.shake(3); ctx.dust(e.x, e.y, 8);
     if (F.n.slips === 1) ctx.number(e.x, e.y - 56, 'HE SLIPS: CUT HIM', '#8fd160'); else ctx.number(e.x, e.y - 56, 'HE SLIPS', '#8fd160');
   }
+  /* MUD: a puddle under x. A step from dry ground into it is refused (he stops at its edge); inside it he is slowed. */
+  const mudAt = x => F.puddles.some(q => Math.abs(q.x - x) < GL.puddleR + 2);
+  const mudStep = (e, dx) => { if (!dx) return 0; if (mudAt(e.x)) return dx * GL.mudSlow; return mudAt(e.x + dx + Math.sign(dx) * 2) ? 0 : dx; };
   H.update = (e, dt) => {
     if (!F || !e.alive) return; const Ar = F.A, P = nearest(e), fl = Ar.floor; e.y = fl;
     if (e.mode === 'sleep') { set(e, 'wake', 1.4); for (const pp of ctx.players) if (pp.skin) pp.skin.sips = pp.skin.max || 3; }   /* (the square's door checkpoint is a step behind you and refills the skin: he is fought with water, as the Queen is) */
@@ -165,11 +169,11 @@ export function makeGangLeaderHands(ctx) {
     e.dashing = false;
     switch (e.mode) {
       case 'wake': if (e.modeT <= 0) { F.chain = CHAINS[1][0].slice(); F.step = 0; set(e, 'walk', 0.5);
-        if (!F.said.water) { F.said.water = 1; ctx.number(e.x, e.y - 64, 'POUR WATER WHERE HE RUNS: HE SLIPS', '#7ab8e8'); } } break;
+        if (!F.said.water) { F.said.water = 1; ctx.number(e.x, e.y - 64, 'WET GROUND SLOWS HIM: POUR TO PEN HIM IN', '#7ab8e8'); } } break;
       case 'recover': if (!F.saidOff && F.n.cuts + F.n.whirls > 0) { F.saidOff = 1; ctx.number(e.x, e.y - 50, 'OFF BALANCE AFTER HIS BLOWS: CUT HIM THEN', '#ffd36b'); } if (e.modeT <= 0) set(e, 'walk', F.gapNext ?? 0.3); break;
       case 'walk': { const d = P.x - e.x, ad = Math.abs(d); e.face = Math.sign(d) || e.face;
         if (ad > GL.dashAt && F.dashCd <= 0) { F.dashCd = GL.dashCd; F.cur = { k: 'dash', id: ++F.act }; F.n.dashes = (F.n.dashes || 0) + 1; tell(e, 'dashTell', GL.dashTell); break; }   /* stood off: he gathers to DASH */
-        if (ad > GL.keep) e.x += Math.sign(d) * Math.min(ad - GL.keep, GL.walk * dt);
+        if (ad > GL.keep) e.x += mudStep(e, Math.sign(d) * Math.min(ad - GL.keep, GL.walk * dt));
         if (e.modeT <= 0) next(e); break; }
       case 'dashTell': if (e.modeT <= 0) { set(e, 'dash', GL.dashMax); ctx.sfx.dodge && ctx.sfx.dodge(); } break;
       case 'dash': { const d = P.x - e.x; e.dashing = true; e.x += fx * GL.dash * dt; if (Math.random() < dt * 20) ctx.dust(e.x - fx * 6, fl, 2);
@@ -177,7 +181,7 @@ export function makeGangLeaderHands(ctx) {
         if (e.modeT <= 0 || fx * d < 6 || e.x <= Ar.x0 + 14 || e.x >= Ar.x1 - 14) after(e); break; }
       case 'slipped': if (e.modeT <= 0) { F.gapNext = 0.25; set(e, 'recover', 0.3); } break;   /* up again: on with his cycle */
       case 'cutTell': if (e.modeT <= 0) set(e, 'cut', GL.cutT); break;
-      case 'cut': case 'cut2': case 'cross': e.x += fx * GL.cutStep * dt; if (e.mode === 'cut2') { hit(e, front(GL.cutReach), GL.dmg.cut, 'HIS SWORDS', { key: key + 'b', blockable: true }); if (e.modeT <= 0) { F.n.cuts++; after(e); } break; } if (e.mode === 'cross') { hit(e, front(GL.cutReach), GL.dmg.cut, 'HIS SWORDS', { key: key + 'x', blockable: true }); if (e.modeT <= 0) { F.cur.k = 'cut'; tell(e, 'cut2Tell', GL.crossTell); } break; }
+      case 'cut': case 'cut2': case 'cross': e.x += mudStep(e, fx * GL.cutStep * dt); if (e.mode === 'cut2') { hit(e, front(GL.cutReach), GL.dmg.cut, 'HIS SWORDS', { key: key + 'b', blockable: true }); if (e.modeT <= 0) { F.n.cuts++; after(e); } break; } if (e.mode === 'cross') { hit(e, front(GL.cutReach), GL.dmg.cut, 'HIS SWORDS', { key: key + 'x', blockable: true }); if (e.modeT <= 0) { F.cur.k = 'cut'; tell(e, 'cut2Tell', GL.crossTell); } break; }
         hit(e, front(GL.cutReach), GL.dmg.cut, 'HIS SWORDS', { key: key + 'a', blockable: true }); if (e.modeT <= 0) tell(e, 'cut2Tell', GL.cut2Tell); break;
       case 'cut2Tell': if (e.modeT <= 0) set(e, 'cut2', GL.cutT); break;
       case 'crossTell': if (e.modeT <= 0) set(e, 'cross', GL.cutT); break;
@@ -188,7 +192,7 @@ export function makeGangLeaderHands(ctx) {
       case 'dodge': { e.x += -fx * GL.dodgeDist / GL.dodgeT * dt; e.x = Math.max(Ar.x0 + 16, Math.min(Ar.x1 - 16, e.x)); if (e.modeT <= 0) { F.cur = { k: 'riposte', id: ++F.act }; tell(e, 'riposteTell', GL.riposteTell); } break; }
       case 'riposteTell': if (e.modeT <= 0) { set(e, 'riposte', GL.cutT + 0.1); e.x += fx * 26; } break;
       case 'riposte': hit(e, front(GL.cutReach + 16), GL.dmg.riposte, 'HIS RIPOSTE', { key: key + 'r' }); if (e.modeT <= 0) { F.n.ripostes++; after(e); } break;
-      case 'burning': { const d = e.x - P.x; e.x += (Math.sign(d) || 1) * GL.burnWalk * dt; e.x = Math.max(Ar.x0 + 16, Math.min(Ar.x1 - 16, e.x));   /* he staggers off, beating at the flames */
+      case 'burning': { e.face = Math.sign(P.x - e.x) || e.face;   /* ROOTED and staggered (Daniel 10-03): he stands beating at the flames - no step, no back-pedal */
         if (e.open <= 0) { F.gapNext = 0.2; set(e, 'recover', 0.4); F.openTaken = 0; } break; }
       default: if (e.modeT <= -1) after(e);
     }
@@ -233,7 +237,7 @@ export function makeGangLeaderHands(ctx) {
       if (!P.ground || Math.abs(P.y - Ar.floor) > 4) return null; const x = Math.max(Ar.x0 + 14, Math.min(Ar.x1 - 14, P.x + (P.face || 1) * GL.pourAt)); return { x, y: Ar.floor - 2, what: 'floor' }; },
     pour: P => { const a = H.pourable.aim(P); if (!a) return null;
       if (a.what === 'self') { P.glBurn = 0; F.n.selfDoused++; ctx.burst(P.x, P.y - 16, 12, ['#e8f4f8', '#7ab8e8', '#9aa39a'], 50, 0.7); ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.splash && ctx.sfx.splash(); ctx.number(P.x, P.y - 30, 'THE WATER PUTS YOU OUT', '#7ab8e8'); return 'self'; }
-      H.puddleAt(a.x); ctx.sfx.splash && ctx.sfx.splash(); if (!F.said.puddle) { F.said.puddle = 1; ctx.number(a.x, F.A.floor - 30, 'A PUDDLE: HE SLIPS IF HE RUNS IN IT', '#7ab8e8'); } return 'puddle'; },
+      H.puddleAt(a.x); ctx.sfx.splash && ctx.sfx.splash(); if (!F.said.puddle) { F.said.puddle = 1; ctx.number(a.x, F.A.floor - 30, 'MUD: HE STOPS AT ITS EDGE. A DASH SLIPS HIM', '#7ab8e8'); } return 'puddle'; },
   };
   /* A BLOW ON HIM (minis keep their damage): while he burns x GL.openMul up to GL.capK of him; down in a puddle, whole; otherwise whole - unless a blade
      of his is MOVING (the other guards a frontal blow), or he DODGES it (rarely, from the front, as he walks in: and the riposte comes) */
@@ -256,8 +260,9 @@ export function makeGangLeaderHands(ctx) {
   H.read = () => F && { n: { ...F.n }, ph: F.ph, cycle: F.cycle, hurt: { ...F.hurt }, bottles: F.bottles.length, fires: F.fires.length, puddles: F.puddles.length };
   /* DRAWING: the puddles, his bottles (lit), the burning floor, his flames and his clock, and a hero alight */
   H.drawOver = (g, cx, cy, time) => { if (!F) return; const fl = F.A.floor, e = live();
-    for (const q of F.puddles) { const x = R(q.x - cx), y = R(fl - cy), k = Math.min(1, q.t), r = GL.puddleR; g.globalAlpha = 0.75 * k;
-      g.fillStyle = '#2c5a8a'; g.fillRect(x - r, y - 2, r * 2, 3); g.fillStyle = '#4a8ac8'; g.fillRect(x - r + 3, y - 3, r * 2 - 6, 2); g.fillStyle = '#c4ecff'; g.fillRect(x - r + 5 + R(Math.sin(time * 3 + q.x) * 2), y - 3, 4, 1); g.fillRect(x + 3, y - 2, 2, 1);
+    for (const q of F.puddles) { const x = R(q.x - cx), y = R(fl - cy), k = Math.min(1, q.t), r = GL.puddleR; g.globalAlpha = 0.85 * k;   /* MUD: a dark wet patch, a lighter rim, a slow ripple */
+      g.fillStyle = '#2a2018'; g.fillRect(x - r, y - 2, r * 2, 3); g.fillStyle = '#3e2f22'; g.fillRect(x - r + 2, y - 3, r * 2 - 4, 2); g.fillStyle = '#5a7a9a'; g.fillRect(x - r + 6, y - 3, r * 2 - 12, 1);
+      const rp = (time * 10 + q.x) % 16; g.fillStyle = '#9ac4e4'; g.fillRect(x - R(rp), y - 3, 2, 1); g.fillRect(x + R(rp) - 2, y - 3, 2, 1); g.fillStyle = '#c4ecff'; g.fillRect(x - r + 3 + R(Math.sin(time * 3 + q.x) * 2), y - 3, 3, 1);
       g.globalAlpha = 1; }
     for (const f of F.fires) { const x = R(f.x - cx), y = R(fl - cy); for (let k = -GL.fireR; k < GL.fireR; k += 4) { const h = 5 + 4 * Math.abs(Math.sin(time * 11 + k + f.x)); g.fillStyle = (k / 4) % 2 ? '#ff9a3c' : '#ffd36b'; g.fillRect(x + k, y - h, 3, h); } g.fillStyle = '#3a2a12'; g.fillRect(x - GL.fireR, y - 1, GL.fireR * 2, 1); }
     for (const b of F.bottles) { const x = R(b.x - cx), y = R(b.y - cy); g.fillStyle = '#5a7a4a'; g.fillRect(x - 2, y - 3, 5, 6); g.fillStyle = '#c9b27c'; g.fillRect(x - 1, y - 5, 2, 2); g.fillStyle = Math.floor(time * 20) % 2 ? '#ffd36b' : '#ff6a2a'; g.fillRect(x - 1, y - 8, 3, 3);
