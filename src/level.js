@@ -4490,7 +4490,12 @@ function longWater() {
   }
   /* the ferry run gave its sirens back to the sea: two more eels in the river where they sang (final columns) */
   G3.ent('eel', 196, 32); G3.ent('eel', 302, 31);
+  /* THE TIDE IS REQUIRED, THREE TIMES (claude/ruleuse, the rule-use audit: 'the street is swim-at-high-or-walk-at-low, both work, so the sluice and the tide were optional'). Each is a full-height portcullis column that
+     stands shut and lifts on the sea's own clock (src/main.js updateTideGates): the BORE gate at the top of the Reach lifts while the Bore runs up past it, so you stand on a stone and let it go by; the QUAY gate at the
+     west end of Saltreach's street lifts at HIGH water; the FLATS gate at its east end lifts at LOW water - or the sluice wheel holds the sea out, and that is the wheel's job now. FINAL columns (written after the grows). */
+  for (const [x, y1, mode] of [[362, 26, 'bore'], [387, 26, 'high'], [419, 28, 'low']]) { for (let y = 0; y <= y1; y++) G3.set(x, y, T.PORT); G3.ent('tidegate', x, 22, { y0: 0, y1, mode }); }
   const R4 = G3.done();
+  R4.tidegates = true;   /* (src/main.js updateTideGates reads the tidegate ents of this level only) */
   R4.bore = { ...R4.bore, x0: 180 * TS, x1: 366 * TS };   /* from the dock to the mouth: the ferry run and the reach */
   R4.fresh = [0, 365]; R4.turn = [230, 430];              /* river water to the reach, the sea by the Sluice Stair (src/sea_looks.js) */
   return R4;
