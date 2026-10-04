@@ -51,7 +51,7 @@
 </script>
 <script>
   window.addEventListener('error', e => { const b = document.getElementById('boot'); if (b) { b.textContent = 'ERROR: ' + e.message + ' @' + (e.filename||'').split('/').pop() + ':' + e.lineno; b.style.color = '#ff7a6b'; } });
-  setTimeout(() => { const b = document.getElementById('boot'); if (b && !window.BK) { b.textContent = 'still booting after 8s — check console'; } }, 8000);
+  setTimeout(() => { const b = document.getElementById('boot'); if (b && !window.BK) { b.textContent = /[?&]debug\b/.test(location.search) ? 'still booting after 8s - check console' : 'STILL LOADING - SLOW CONNECTION?'; } }, 8000);
 
   // FULL SCREEN ON A PHONE. A browser only grants it inside a real gesture, so the first touch asks for it (and
   // for landscape, where the platform allows). Desktop is left alone: there a key or the menu asks instead.
