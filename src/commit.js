@@ -25,6 +25,8 @@ export const COMMIT = {   /* WEIGHT-T (10-04): the brief's numbers x0.6, measure
   paladin:   { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
   reaper:    { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
 };
+/* THE LIGHT SWING'S PRICE for the heroes whose swing is not their sword's (the rest pay sword().cost): the freebooter 9 -> 10 (brief) */
+export const SWING_COST = { paladin: 28, pirate: 10, reaper: 23 };
 export const PISTOL_BLAST = 0.45;   /* the freebooter's shot: blastT 0.34 -> 0.45, and it is a commit like a swing */
 export const PLUNGE_WHIFF = 0.10;   /* a plunge that met nothing lands this much heavier (a CAUGHT plunge - the pogo - is untouched) */
 
