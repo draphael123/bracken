@@ -4350,7 +4350,7 @@ function longWater() {
   for (const [x, v] of [[291, 0], [297, 1]]) ent('deco', x, 26, { kind: 'fishCottage', v });
   block(300, 331, 29, H - 1); plat(300, 26, 32); // the low street, and the jetty over it
   pools.push({ x0: 300 * TS, x1: 332 * TS, y: 29 * TS + 2, base: 29 * TS, tideLo: 2, tideHi: -28, tidePeriod: 20, swim: true, shallow: true, depth: 0, bottom: 29 * TS, streetTide: true });
-  ent('sign', 300, 25, { text: 'AT HIGH WATER THE LOW STREET IS A CANAL. AT LOW WATER, SILVER ON THE FLATS.' });
+  ent('sign', 301, 25, { text: 'AT HIGH WATER THE LOW STREET IS A CANAL. AT LOW WATER, SILVER ON THE FLATS.' });   /* (batch62: was col 300, beside ruleuse's QUAY gate column 299 (388 here): the sign's edge ran through the portcullis, tools/headless.mjs floats) */
   ent('sluice', 302, 25); ent('sign', 305, 25, { text: 'STRIKE THE SLUICE WHEEL TO DRAIN THE STREET A WHILE, BEFORE THE SEA RETURNS.' });
   ent('deco', 303, 28, { kind: 'rowboat' }); ent('deco', 327, 28, { kind: 'netPoles' }); ent('coin', 330, 28); // the sand flats under the jetty's far end: walk them at low tide, swim them at high
   ent('tideguard', 309, 28, { face: -1 });
