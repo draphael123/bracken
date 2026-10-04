@@ -234,3 +234,10 @@ THE RED GORGE (2026-10-02, claude/redgorge-fix, Daniel's pick; the file fetched 
   Changes: resampled to 44.1 kHz; the last 2.0 s crossfaded onto the first 2.0 s so it loops seamlessly (111.95 s); raised 4.1 dB under a peak limiter
   (-1.5 dBFS) to about -12.4 LUFS integrated like the rest of the library; encoded to OGG Vorbis q4 stereo.
 - gorgecrab (no file) = THE GREAT RED CRAB's theme, synthesised for this game (src/boss-music.js): a clacking stop-start march at 110 bpm over a Phrygian drone.
+
+THE UNDEAD ARCHMAGE (2026-10-04, claude/archmage2b, Daniel's pick; the file was on disk with his yes - the lane downloaded nothing):
+- undeadmage.ogg = "Colossal Boss Battle Theme" by Matthew Pablo (http://www.matthewpablo.com), Creative Commons Attribution 3.0
+  (CC BY 3.0, CREDIT REQUIRED) - https://opengameart.org/content/colossal-boss-battle-theme - "Blackmoor Colossus Loop.wav", the loop
+  WITH the choir, encoded to Ogg Vorbis (q3). The licence field was read on the OpenGameArt page on 2026-10-02; the page points to
+  matthewpablo.com/services for attribution wording and that page 404s, so the standard CC-BY credit is used. His stair chase and his
+  fight in the sky. It replaces the synth 'archmage:undead' voicing (src/boss-music.js), which nothing else played.

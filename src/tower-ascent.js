@@ -396,7 +396,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
     /* THE SKY IS THE ARENA. trigger is never walked past: the carpet starts the fight when it is boarded (carpet.js) */
-    arena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: TOWER.W - 1, boss: 'undeadmage', carpet: true, music: 'archmage:undead', tint: '#30334e', tintA: 0.06 },
+    arena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: TOWER.W - 1, boss: 'undeadmage', carpet: true, music: 'undeadmage',   /* (claude/archmage2b: his own recording - audio/undeadmage.ogg - not the synth voicing) */ tint: '#30334e', tintA: 0.06 },
   };
 }
 

@@ -6,6 +6,7 @@
 export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the licence's url, the credit's own lines (when the licensor names its wording)] */
   ['harvestfair', 'Dark Carnival', 'Machine', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],
   ['mineworks', 'At Work', 'HorrorPen', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],
+  ['undeadmage', 'Colossal Boss Battle Theme', 'Matthew Pablo', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],   /* THE UNDEAD ARCHMAGE (claude/archmage2b): matthewpablo.com */
   /* THE RED GORGE (claude/redgorge-fix, Daniel 10-02): Kevin MacLeod asks for this credit word for word - the page shows it whole, a line at a time */
   ['redgorge', 'Old Road', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Old Road" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],
 ];

@@ -10,8 +10,8 @@
 //                step up the chord (root-third-fifth then a bell an octave over). The chords go Dm - Bb - Gm - A7, then
 //                Eb (the flat second: Phrygian) - Cm - Bdim - A7 held, and the second eight bars come round with the
 //                organ doubled at the octave, the arpeggio an octave up and the motif doubled below. No drum kit: the only percussion is the timpani.
-//                'archmage:undead' is the Undead Archmage's own CORRUPTED ECHO of it (see THE UNDEAD ARCHMAGE below): the same spell motif,
-//                slower, a semitone flat, a darker mode, on a detuned pipe organ, a low choir, bone percussion and a slow bell.
+//                (its 'archmage:undead' voicing, the Undead Archmage's corrupted echo, is gone: claude/archmage2b gave his fight a real
+//                recording - audio/undeadmage.ogg, Matthew Pablo's "Colossal Boss Battle Theme", CC-BY 3.0 - and no other track used it)
 //   'goblinroyal' THE GOBLIN ROYALS' THEME. F Phrygian dominant, 4/4 marched at 116 (eighth = 0.259 s), 16 bars = 33 s.
 //                War drums (a low kick on 1 and 3, a cracked snare on 2 and 4, toms falling over every fourth bar),
 //                low brass stabs on a swaggering 3+3+2, a CRUDE FANFARE (a sawtooth trumpet, dotted and a little sharp,
@@ -33,7 +33,7 @@
 //                ':p2' (the well shaft) quicker with the motif an octave up, ':p3' (the flood) adds the water: a surge and drips.
 export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1 };
 
-/* 'archmage:undead' is one name for the sound test and two for the scheduler: split it once, here. */
+/* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
 export function splitTrack(name) { const s = String(name || ''), i = s.indexOf(':'); return i < 0 ? [s, ''] : [s.slice(0, i), s.slice(i + 1)]; }
 export const bossSynthOf = name => { const [b, v] = splitTrack(name); return BOSS_SYNTH_BASE[b] ? { base: b, variant: v, ...SYNTH_BOSS[b], ...(SYNTH_VARIANT[b + ':' + v] || null) } : null; };
@@ -97,47 +97,6 @@ function archmage(i, delay, variant, env) {
     const k = s - 4, n = nf(motif[k]);
     pluck(env, 'triangle', n, AM_STEP * (k === 2 ? 3.2 : 1.3), 0.11 * g, delay); pluck(env, 'sine', n * 2, AM_STEP * (k === 2 ? 3.6 : 1.2), 0.05 * g, delay); if (second) pluck(env, 'square', n * 0.5, AM_STEP * (k === 2 ? 3 : 1.2), 0.03 * g, delay, { lp: 1500 });
     if (k === 2 && bar % 4 === 3) noise(env, 0.5, 0.05 * g, 5200, 0.9, delay);   // a shimmer at the end of the phrase
-  }
-}
-
-// ---------------------------------------------------------------- THE UNDEAD ARCHMAGE: HIS THEME, ROTTED
-// A CORRUPTED ECHO of 'archmage' (Daniel, 2026-10-01: "needs to sound a bit different"). The same 16 bars of 7/8 and the same SPELL MOTIF
-// (three notes climbing the chord on the last three eighths of the bar, so you know whose it is), but: slower (eighth = 0.30 s against 0.17,
-// the loop 33.6 s against 19), a SEMITONE FLAT (everything x 2^(-1/12)), and darker - the fifth of every organ chord is dropped a semitone
-// (a Locrian cloud: Dm becomes Db-with-a-flat-fifth, and the Phrygian Eb bar lands a tone under the tonic), the motif's held last note slips a
-// semitone more at the end of each four-bar phrase, and no note is quite in tune. The voices change too: a DETUNED PIPE ORGAN carries the
-// motif and the chords (no harpsichord), a LOW CHOIR breathes under every four bars, BONE PERCUSSION (dry clicks and knocks on the 2+2+3, a
-// rattle of three before each phrase turns) stands in for the timpani, and a slow BELL TOLLS every other bar. The only randomness is
-// seeded by the step number, so it repeats exactly on every loop.
-export const UD_STEP = 0.30, UD_LEN = AM_LEN;
-const FLAT = Math.pow(2, -1 / 12);
-const seeded = n => { let t = (n * 2654435761 + 0x6D2B79F5) | 0; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };   /* a repeatable 0..1 per number */
-function undeadmage(i, delay, variant, env) {
-  const bar = Math.floor(i / UD_LEN), s = i % UD_LEN, second = bar >= 8, b = bar % 8, [bass, organ, , motif] = AM_BARS[b], long = UD_STEP * UD_LEN, g = env.gain;
-  const drift = k => FLAT * Math.pow(2, (seeded(i * 7 + k) - 0.5) * 0.033);   /* each note a little out of tune, up to about 20 cents either way, from the step number alone */
-  if (s === 0) {   // the bar: a muffled knock instead of a timpani, the bass, the detuned organ and (every four bars) the choir
-    pluck(env, 'sine', 58, 0.6, 0.4 * g, delay, { to: 32 });
-    pluck(env, 'sine', nf(bass) * FLAT, long * 0.9, 0.42 * g, delay);
-    organ.forEach((n, k) => {   // THE PIPE ORGAN: two saws a wide way apart, its fifth dropped (Bdim's already flat), and a quiet 4-foot square above in the second half
-      const f = nf(n) * FLAT * (k === 1 && b !== 6 ? FLAT : 1);
-      held(env, 'sawtooth', f, long * 1.02, (second ? 0.058 : 0.045) * g, delay, { lp: 560, att: 0.12, hold: 0.88, det: 26 });
-      if (second) held(env, 'square', f * 2, long * 1.0, 0.016 * g, delay, { lp: 900, att: 0.14, hold: 0.85, det: 17 });
-    });
-    if (bar % 4 === 0) for (const n of organ) held(env, 'sawtooth', nf(n) * FLAT, long * 4 * 0.98, (second ? 0.05 : 0.036) * g, delay, { lp: 430, att: 1.2, hold: 0.7, det: 38 });   // THE LOW CHOIR: the chord itself, not an octave up, four bars a breath
-    if (bar % 4 === 0) noise(env, long * 1.6, 0.045 * g, 220, 0.6, delay);   // a low breath under the bar
-    if (bar % 2 === 0) for (const [r, m] of [[1, 1], [2.76, 0.4], [5.4, 0.25]]) pluck(env, 'sine', 174 * FLAT * r, 3.4 / (1 + r * 0.2), 0.17 * m * g, delay);   // THE BELL TOLLS, slow: every other bar, a note lower than the living tune's
-  }
-  // BONE PERCUSSION on the 2+2+3: a knock on the one, a dry click on the 2 and the 4 (a little behind or ahead, seeded), a rattle before the phrase turns
-  const late = (seeded(i) - 0.5) * 0.03;
-  if (s === 0) { pluck(env, 'sine', 190 * (0.9 + seeded(i + 1) * 0.2), 0.07, 0.2 * g, delay, { to: 110 }); noise(env, 0.03, 0.12 * g, 2600, 6, delay); }
-  if (s === 2 || s === 4) { noise(env, 0.025, (s === 2 ? 0.16 : 0.12) * g, 3400 + seeded(i + 2) * 900, 8, delay + late); if (second) pluck(env, 'square', 420 * (0.9 + seeded(i + 3) * 0.2), 0.03, 0.04 * g, delay + late, { lp: 1800 }); }
-  if (s === 6 && b % 4 === 3) for (let k = 0; k < 3; k++) noise(env, 0.02, 0.1 * g, 3000 + k * 450, 9, delay + k * 0.07 + 0.02);   // the rattle
-  if (s === 2 || s === 4) pluck(env, 'sine', nf(bass) * FLAT * 1.5, UD_STEP * 2.2, 0.15 * g, delay);   // the 2+2+3 in the bass, as before
-  if (s >= 4) {         // THE SPELL, the same three notes up, now on the pipe organ: each a semitone flat and out of tune, the held last one slipping more at the phrase end
-    const k = s - 4, slip = k === 2 && b % 4 === 3 ? FLAT : 1, n = nf(motif[k]) * drift(k) * slip, len = UD_STEP * (k === 2 ? 3.2 : 1.35);
-    held(env, 'sawtooth', n, len, 0.07 * g, delay, { lp: 1100, att: 0.05, hold: 0.55, det: 21 });
-    held(env, 'sawtooth', n * 0.5, len, 0.045 * g, delay, { lp: 480, att: 0.07, hold: 0.55, det: 15 });
-    if (second) held(env, 'square', n * 2, len, 0.02 * g, delay, { lp: 1300, att: 0.06, hold: 0.5, det: 25 });
   }
 }
 
@@ -416,7 +375,7 @@ export const SYNTH_BOSS = {
   gargoyle: { step: GG_STEP, total: GG_LEN * GG_BARSN, play: gargoyle },
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
-export const SYNTH_VARIANT = { 'archmage:undead': { step: UD_STEP, total: UD_LEN * AM_BARSN, play: undeadmage },
+export const SYNTH_VARIANT = {
   'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking },
   'cisternqueen:p2': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen }, 'cisternqueen:p3': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen } };   /* THE BANDIT KING's second phase: faster, the zurna an octave up */
 /* the whole track's loudness, next to a file track's 0.5 x the file's own level (audio.js trackVol) */

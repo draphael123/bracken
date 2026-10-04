@@ -8,7 +8,8 @@ import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row i
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK, HEIGHT } from './marks.js';
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
-import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
+import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
+import { boneGaps as mageBoneGaps, MAGE as UMAGE } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
@@ -671,6 +672,13 @@ async function runbossLab(BK, opts) {
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const away=(x,y,r,w=1)=>{const ex=P.x-x,ey=py-y,d=Math.hypot(ex,ey)||1;if(d<r){vx+=ex/d*w;vy+=ey/d*w;threat=true;}};
         if(m==='stormTell'&&Math.abs(P.x-boss.markX)<44){vx+=P.x>=boss.markX?1:-1;threat=true;}
+        /* ARCHMAGE2 (claude/archmage2b): THE BONE STORM - once the skulls are loosed it flies out along the nearest gap (where the gap will be a
+           beat on); HIS ECHO's lightning - out of its pale column; THE GRAVE PULL - it leans away from the void while it drags */
+        {const B=boss.bones;if(B&&B.live){const k=B.t/UMAGE.bone.secs,R=UMAGE.bone.r0+(UMAGE.bone.r1-UMAGE.bone.r0)*k,d0=Math.hypot(P.x-B.cx,py-B.cy);
+          if(d0<R+14){const me=Math.atan2(py-B.cy,P.x-B.cx);let best=null,bd=9;for(const a of mageBoneGaps(B,Math.min(1,k+0.18))){let d=Math.abs(((a-me)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI);if(d<bd){bd=d;best=a;}}
+            if(best!==null){const tx=B.cx+Math.cos(best)*(R+40),ty=B.cy+Math.sin(best)*(R+40),ex=tx-P.x,ey=ty-py,dd=Math.hypot(ex,ey)||1;vx+=ex/dd*3;vy+=ey/dd*3;threat=true;}}}}
+        for(const q of boss.echoes||[])if(q.markX!==null&&q.markX!==undefined&&Math.abs(P.x-q.markX)<44){vx+=P.x>=q.markX?1:-1;threat=true;}
+        if(boss.void&&boss.void.live){const V=boss.void,ex=P.x-V.x,ey=py-V.y,d=Math.hypot(ex,ey)||1;if(d<200){vx+=ex/d*1.6;vy+=ey/d*0.8;}if(d<70)threat=true;}
         if(boss.deathMark)away(boss.deathMark.x,boss.deathMark.y,boss.deathMark.r+18,2);
         for(const c of boss.clouds||[])away(c.x,c.y,c.r+30,3);
         /* HIS RINGS (Falling Tower round 2): a FLARED exit by you is his step coming - with the stamina for it the bot DODGES THROUGH it
