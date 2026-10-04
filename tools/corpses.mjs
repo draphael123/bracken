@@ -18,13 +18,13 @@ try {
     BK.manualSimulation = true; BK.SET.hud = 'minimal'; BK.setHero('knight'); BK.reset({ fresh: true });
     const foes = () => typeof BK.enemies === 'function' ? BK.enemies() : BK.enemies, corp = () => typeof BK.corpses === 'function' ? BK.corpses() : BK.corpses;
     const flag = e => e.cnSkin ? 'cn:' + e.cnSkin : e.lamplighter ? 'lamplighter' : e.shy ? 'shy' : e.juggler ? 'juggler' : e.flyman ? 'flyman' : e.prompter ? 'prompter' : e.bandit ? 'bandit' : e.usher ? 'usher' : e.patron ? 'patron' : e.footlights ? 'footlights' : (e.bone && e.t === 'archer') ? 'bonearcher' : null;
-    for (const id of ['canal', 'fair', 'theatre', 'welltown', 'redgorge', 'undercrown', 'lamplit', 'witchlight', 'fallingtower', 'burial', 'unburied', 'flotilla', 'keep', 'deep']) { const li = LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
+    for (const id of ['canal', 'fair', 'theatre', 'welltown', 'redgorge', 'undercrown', 'lamplit', 'witchlight', 'fallingtower', 'burial', 'unburied', 'flotilla', 'keep', 'deep', 'longwater', 'causeway']) { const li = LEVELS.findIndex(l => l.id === id); if (li < 0) continue;
       const kinds = []; BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(4);
       for (const e0 of foes()) { const f = flag(e0); if (f && !kinds.some(k => k.f === f)) kinds.push({ f, t: e0.t, x: e0.x, y: e0.y, i: foes().indexOf(e0) }); }
       for (const k of kinds) { const row = { level: id, flag: k.f, t: k.t, errs: [] };
         BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(4); if (BK.canal && BK.canal()) for (const f of BK.canal().fogs) { f.fade = 0; f.clear = 9999; }
         const e = foes().find(q => flag(q) === k.f && q.t === k.t); if (!e) { row.errs.push('foe not found after reload'); res.push(row); continue; }
-        if (e.pool) { BK.P.x = e.x - 48; BK.P.y = e.y; BK.P.vx = 0; BK.P.vy = 0; } else { e.x = BK.P.x + 48; e.y = BK.P.y; } e.vx = 0; e.vy = 0;   /* (a water foe is held to its pool: the hero goes to it) */ e.hp = 99; e.frozen = 9; e.waiting = false; for (let q = 0; q < (e.pool ? 240 : 40); q++) BK.step(1);   /* (the camera has a long way to come to a hero moved to a pool) */
+        if (e.cnSkin === 'tidecrab') { e.noBurrow = true; e.tideUp = true; e.mode = 'walk'; e.gone = 0; }   /* a buried tide crab is not to be hit: bring it up first */ if (e.pool) { BK.P.x = e.x - 48; BK.P.y = e.y; BK.P.vx = 0; BK.P.vy = 0; } else { e.x = BK.P.x + 48; e.y = BK.P.y; } e.vx = 0; e.vy = 0;   /* (a water foe is held to its pool: the hero goes to it) */ e.hp = 99; e.frozen = 9; e.waiting = false; for (let q = 0; q < (e.pool ? 240 : 40); q++) BK.step(1);   /* (the camera has a long way to come to a hero moved to a pool) */
         const alive = e.lastSet; row.liveSame = alive === BK.SPR[e.t]; if (alive && row.liveSame) row.errs.push('the living foe wears the BASE sheet (' + e.t + '), not its reskin'); if (!alive) row.errs.push('the living foe was never drawn (off screen?)');
         e.hurtT = 0.3; e.flash = 0.2; BK.step(1);
         const hurtF = e.lastFrame; if (e.lastSet !== alive) row.errs.push('the hurt frame drew a different set from the living one');
