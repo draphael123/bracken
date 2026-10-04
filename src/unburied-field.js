@@ -51,10 +51,50 @@ export const UF = Object.assign({}, GEOM, {
   ARENA: { x0: X(GEOM.ARENA.x0), x1: X(GEOM.ARENA.x1) },
   ENGINES: GEOM.ENGINES.map(([x, t]) => [X(x), t]),
   BRIDGES: BRG,
+  /* THE GLINT SPOTS (tools/unburied-look.mjs 6): where a hero stands to be shown each thing the route needs next (hero), where he stands to have it OFF screen (far), and the engine that ends it */
+  GLINTS: [{ id: 'ub-ballista-130', hero: [124, 36], far: [113, 36], engine: { t: 'ballista', x: 130 } }, { id: 'ub-ballista-188', hero: [183, 28], far: [170, 28], engine: { t: 'ballista', x: 188 } },
+    { id: 'ub-oil-200', hero: [196, 41], engine: { t: 'oilbarrel', x: 200 } }, { id: 'ub-trebuchet-230', hero: [223, 36], far: [215, 36], engine: { t: 'trebuchet', x: 230 } },
+    { id: 'ub-rope-ladder', hero: [277, 45], far: [305, 45] }, { id: 'ub-oil-396', hero: [390, 36], engine: { t: 'oilbarrel', x: 396 } }, { id: 'ub-ballista-418', hero: [412, 36], engine: { t: 'ballista', x: 418 } }],
 });
 
+/* THE SET PIECES, in FINAL columns: [id, kind, col, standing row, sprite w px, h px, opts]. A deco stands on its row (bottom-centre on the tile); the bbox it fills in tiles is
+   what UF.SETPIECES lists for tools/unburied-look.mjs (a set piece on every screen). The art is src/redraw/unburied_sets.js (+ unburied_siege.js, unburied_chapel.js). */
+const G0 = GEOM.G, SET = [];
+const S = (id, kind, x, y, w, h, o = {}) => SET.push({ id, kind, x, y, w, h, o });
+const bbox = s => ({ id: s.id, x0: Math.floor((s.x * 16 + 8 - s.w / 2) / 16), x1: Math.floor((s.x * 16 + 8 + s.w / 2 - 1) / 16), y0: Math.floor(((s.y + 1) * 16 - s.h) / 16), y1: s.y });
+/* THE DEAD CAMP (0-20): the host's slate and raven, a cold fire, the rack, and the last brazier still lit */
+S('camp-brazier', 'ubBrazier', 1, G0, 18, 34); S('camp-rack', 'ubRack', 3, G0, 34, 36); S('camp-ring', 'ubFireRing', 6, G0, 44, 26); S('camp-tent', 'ubTent', 17, G0, 76, 60);
+/* THE MASS-GRAVE PITS: the dead laid in rows, the spoil heaped at the lips with the spades in it, the handcart, the crosses stacked waiting */
+S('pit-1', 'ubPit', 27, G0 + 4, 176, 22, { w: 11 }); S('spoil-1a', 'ubSpoil', 21, G0, 46, 24); S('spoil-1b', 'ubSpoil', 33, G0, 46, 24, { v: 1 }); S('handcart', 'ubHandcart', 38, G0, 44, 30);
+S('pit-2', 'ubPit', 65, G0 + 4, 240, 22, { w: 15, v: 1 }); S('spoil-2a', 'ubSpoil', 57, G0, 46, 24, { v: 1 }); S('spoil-2b', 'ubSpoil', 72, G0, 46, 24);
+S('crosses', 'ubCrosses', 86, G0, 30, 34); S('pit-3', 'ubPit', 102, G0 + 4, 208, 22, { w: 13, v: 2 }); S('spoil-3a', 'ubSpoil', 94, G0, 46, 24); S('spoil-3b', 'ubSpoil', 109, G0, 46, 24, { v: 1 });
+S('mound-dead', 'ubMoundDead', 116, G0 + 3, 80, 64);
+S('line-brazier-a', 'ubBrazier', 88, G0, 18, 34); S('line-brazier-b', 'ubBrazier', 122, G0, 18, 34);
+S('shield-wall', 'ubShieldWall', 78, G0 + 2, 144, 46, { w: 144 });
+/* WHERE THE CHARGE BROKE: fallen warhorses in both armies' barding, the snapped lances on the stake lines, the supply wagons overturned in the lane - two of them burning */
+S('horse-field-a', 'ubHorse', 50, G0, 60, 34); S('horse-field-b', 'ubHorse', 140, G0, 60, 34, { v: 1 });
+S('horse-lane-a', 'ubHorse', 165, G0 + 5, 60, 34); S('horse-lane-b', 'ubHorse', 191, G0 + 5, 60, 34, { v: 1 }); S('horse-lane-c', 'ubHorse', 215, G0 + 5, 60, 34);
+for (const [x, v, burning] of [[158, 0, false], [171, 1, false], [184, 0, true], [197, 0, false], [210, 1, true], [220, 1, false]]) S('wagon-' + x, 'ubWagon', x, G0 + 5, 64, 64, { v, burning });
+for (const x of [35, 91, 145, 365]) S('lances-' + x, 'ubLances', x, G0, 56, 38, { w: 56, v: x % 3 });
+/* THE SIEGE WORKS: the trebuchet's emplacement, the gun-deck's furniture (racks, dead ballistae, the one hanging off the edge, mantlets, the working ballista's barbette) and the gantries the swings hang from */
+S('treb-emplace', 'ubEmplace', 230, G0, 112, 36);
+S('barbette-188', 'ubBarbette', 188, 30, 46, 38);
+S('gantry-168', 'ubGantry', 168, 28, 48, 126); S('gantry-196', 'ubGantry', 196, 28, 48, 126);
+S('rack-156', 'ubBoltRack', 156, 29, 26, 32); S('rack-175', 'ubBoltRack', 175, 30, 26, 32); S('rack-203', 'ubBoltRack', 203, 30, 26, 32);
+S('bdead-162', 'ubBallistaDead', 162, 30, 46, 36); S('bdead-183', 'ubBallistaDead', 183, 28, 46, 36, { v: 1 }); S('bdead-209', 'ubBallistaDead', 209, 29, 46, 36);
+S('bhang-153', 'ubBallistaHang', 153, 34, 34, 44);
+S('mantlet-177', 'ubMantlet', 177, 30, 30, 34); S('mantlet-198', 'ubMantlet', 198, 28, 30, 34, { v: 1 });
+/* THE GUN-DECK: one timber battery on trestles - the twelve runs of the high route (row, first col, length), a trestle bent under each (R.structures kind 'ubtrestle') */
+const DECK_RUNS = [[148, 32, 6], [155, 30, 5], [161, 31, 6], [168, 29, 5], [174, 31, 6], [181, 29, 6], [188, 31, 5], [194, 29, 6], [201, 31, 5], [207, 30, 6], [214, 31, 6], [221, 32, 5]];
+const FIRE_AT = SET.filter(s => s.o.burning).map(s => ({ id: s.id, x: s.x, y: GEOM.G + 2, up: 14, burning: true }));   /* the fire stands on the bed (row G+3's top is y = (G+3)*16) */
+
+UF.SETPIECES = SET.filter(s => s.w >= 32 && s.h >= 24).map(bbox);   /* what tools/unburied-look.mjs counts: a set piece on every screen */
+UF.SETPIECES.push(...DECK_RUNS.map(([x, row, n]) => ({ id: 'deck-' + x, x0: x, x1: x + n - 1, y0: row, y1: 42 })), { id: 'tower-decks', x0: 228, x1: 245, y0: 17, y1: 36 }, { id: 'tower-shell', x0: 246, x1: 259, y0: 17, y1: 36 });
+UF.SETPIECES.push(...[[130, 36, 40, 34], [188, 28, 40, 34], [200, 41, 44, 30], [230, 36, 56, 56], [396, 36, 44, 30], [418, 36, 40, 34]].map(([x, y, w, h]) => bbox({ id: 'engine-' + x, x, y, w, h })));
+UF.FIRES = [...FIRE_AT, { id: 'camp-brazier', x: 1, y: GEOM.G, up: 18 }];
+
 /* THE TILE KIT'S MAP (final columns): the field's ground BY SECTION of the road, and its ledges BY WHAT THEY ARE (first match wins) - src/redraw/unburied_tiles.js */
-const TILEKIT = { G: GEOM.G, bed: BRG.bed, ravine: [BRG.at, BRG.at + BRG.n - 1], gap: BRG.ravine, stoneFrom: 360, gateStone: [355, 357], hide: [246, 247],
+const TILEKIT = { G: GEOM.G, bed: BRG.bed, ravine: [BRG.at, BRG.at + BRG.n - 1], gap: BRG.ravine, stoneFrom: 360, gateStone: [355, 357], hide: [246, 247], towerBase: [257, 258, 20, GEOM.G],
   zones: [['camp', [0, 20]], ['spoil', [21, 129]], ['mud', [130, 229]], ['works', [230, 264]], ['approach', [265, 359]]],
   pits: GEOM.TRENCHES, revet: [[21, 32], [57, 72], [72, 84], [95, 108], [148, 228]],
   ledges: [[148, 228, 29, 32, 'deck'], ...[157, 170, 183, 196, 209, 219].map(x => [x, x + 2, GEOM.G + 3, GEOM.G + 3, 'wagon']), [332, 334, GEOM.G - 2, GEOM.G - 2, 'wagon'], [346, 348, GEOM.G - 2, GEOM.G - 2, 'wagon'],
@@ -190,7 +230,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
      grey on the east, and both where they met. Scenery only: deco collides with nothing, and the crows sit on all of it. */
   for (const [kind, x, y, v] of [['plantedSpears', 38, G, 0], ['plantedSpears', 143, G, 1], ['plantedSpears', 243, G, 1], ['shieldPile', 94, G, 0], ['shieldPile', 110, G, 1], ['shieldPile', 318, G, 0],
     ['catapultWreck', 137, G, 0], ['batteringRam', 299, G, 0], ['barrowMound', 49, G, 1], ['barrowMound', 278, G, 0], ['barrowMound', 291, G, 1],
-    ['armyBanner', 20, G, 0], ['armyBanner', 88, G - 2, 0], ['armyBanner', 128, G, 1], ['armyBanner', 238, G, 0], ['armyBanner', 261, 20, 1], ['armyBanner', 317, G, 1],
+    ['armyBanner', 88, G - 2, 1], ['armyBanner', 128, G, 1], ['armyBanner', 238, G, 1], ['armyBanner', 261, 20, 1], ['armyBanner', 317, G, 0],   /* (Daniel 10-03: the armies' colours as you walk - the host's slate in the west, the Order's red on the chapel in the east) */
     ['trenchRevet', 74, G + 2, 1], ['trenchRevet', 82, G + 2, 0],
     ['brokenCart', 273, G, 0], ['brokenCart', 287, G, 0]]) ent('deco', x, y, { kind, v });   /* the Barrow Rider's two ledges are what is left of these carts' beds (B9: they are held up by something) */
   /* THE GARRISON ROW the brief asks for, kept small: the encounters are the level and this is the battle going on round them.
@@ -263,6 +303,11 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
   for (const [kind, x, y, v] of [['brokenSpears', 268, G, 0], ['fallenBanner', 322, G, 1], ['bones', 285, bed - 1, 0], ['bones', 308, bed - 1, 1], ['stuckShield', 291, bed - 1, 0]]) bent('deco', x, y, { kind, v });
   /* THE TOLD VOLLEY over the bridges (stepField in src/unburied-foes.js): px, the stretch it covers; period, whistle and fall in seconds */
   R.bridgeVolley = { x0: c0 * TS, x1: (c1 + 1) * TS, period: 4.6, whistle: 1.2, spread: 44, r: 12 };
+  for (const s of SET) Bp.ent('deco', s.x, s.y, Object.assign({ kind: s.kind }, s.o));   /* the set pieces */
+  R.ubFires = FIRE_AT.map(f => ({ x: f.x * TS + 8, y: (GEOM.G + 3) * TS, w: 40, h: 24 }));   /* live flame on the burning wagons' beds */
+  R.noDress = SET.map(bbox).map(b => [b.x0 - 1, b.x1 + 1, b.y0 - 1, b.y1 + 1]);   /* the sprinkler leaves them be */
+  R.structures.push(...DECK_RUNS.map(([x, row, n]) => ({ x0: x, x1: x + n - 1, top: row + 1, floor: GEOM.G + 6, kind: 'ubtrestle' })));   /* B9: every plank of the gun-deck stands on a trestle */
+  R.facades = (R.facades || []).concat([[228, 264, 17, 36, 'ubtower']]);   /* THE TOPPLED TOWER, drawn */
   R.unburied = TILEKIT;   /* the field's own tile kit reads this (src/redraw/unburied_tiles.js; main.js hooks it beside the canal's and the theatre's) */
   return Bp.done();
 }

@@ -27,10 +27,11 @@ const results = [];
 const note = (n, name, ok, detail) => { results.push([n, name, ok]); console.log((ok ? '  ok   ' : '  FAIL ') + String(n).padStart(2) + ' ' + name.padEnd(26) + (detail || '')); };
 const PRELUDE = `const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.hud='minimal';BK.SET.weather=false;
   const fi=LEVELS.findIndex(l=>l.id==='unburied');
-  const fresh=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(fi);BK.state='play';BK.god=true;BK.sim(150);BK.step(1);for(const e of BK.enemies())e.alive=false;};
-  const L=()=>BK.L; const TS=16;
+  const fresh=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(fi);BK.state='play';BK.god=true;BK.sim(260);BK.step(1);for(const e of BK.enemies())e.alive=false;};   /* 2.6 s: the level's fade-in is over */
+  const L=()=>BK.L; const TS=16, TPS=100;   /* one sim tick is a hundredth of a second */
   const ground=x=>{const l=BK.L;for(let y=18;y<l.H;y++){const q=l.grid[y*l.W+x];if(q!==0&&q!==3&&l.grid[(y-1)*l.W+x]===0)return y-1;}return l.H-3;};
   const px=()=>{const c=BK.view.buf;const g=c.getContext('2d');return g.getImageData(0,0,c.width,c.height).data;};
+  const bright=()=>{const d=px();let s=0;for(let i=0;i<d.length;i+=64)s+=d[i]+d[i+1]+d[i+2];return s;};   /* the level's fade-in is over once the frame is lit */
   const lum=(d,i)=>0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
   const stand=(x,y)=>{const P=BK.P;P.x=x*TS+8;P.y=(y+1)*TS;P.vx=P.vy=0;};`;
 
@@ -81,8 +82,10 @@ try {
       for(let k=0;k<25;k++){const x=4+19*k;const gy=ground(x);const v=BK.look(x,gy);const A=px().slice();BK.hide.deco=true;BK.look(x,gy);const B=px().slice();BK.hide.deco=false;
         const vw=BK.view.VW,vh=BK.view.VH;
         for(const d of BK.drawables()){if(!d.bg||d.what==='sign'||d.what==='checkpoint')continue;const c=d.c;const sx=d.x-v.cx,sy=d.y-v.cy;if(sx+c.width<0||sx>vw||sy+c.height<0||sy>vh)continue;
+          const vis=(Math.min(vw,sx+c.width)-Math.max(0,sx))*(Math.min(vh,sy+c.height)-Math.max(0,sy))/(c.width*c.height);if(vis<0.35)continue;   /* a deco only just in the view is judged on the screen where it is in it */
+          const od=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let opq=0;for(let q=3;q<od.length;q+=4)if(od[q]>40)opq++;
           let ch=0,sum=0;for(let y=Math.max(0,Math.round(sy));y<Math.min(vh,Math.round(sy)+c.height);y++)for(let xx=Math.max(0,Math.round(sx));xx<Math.min(vw,Math.round(sx)+c.width);xx++){const i=(y*vw+xx)*4;const dd=Math.abs(lum(A,i)-lum(B,i));if(dd>3){ch++;sum+=dd;}}
-          n++;const mean=ch?sum/ch:0;if(ch<20||mean<12)bad.push(d.what+'@'+Math.round(d.x/TS)+' (mean '+mean.toFixed(1)+', '+ch+' px)');}}
+          n++;const mean=ch?sum/ch:0;if(ch<Math.min(20,0.25*opq*vis)||mean<12)bad.push(d.what+'@'+Math.round(d.x/TS)+' (mean '+mean.toFixed(1)+', '+ch+' px)');}}
       return {n,bad};`);
     note(5, 'dressing reads', r.bad.length === 0 && r.n > 0, r.n + ' deco on the 25 screens, ' + r.bad.length + ' under the margin' + (r.bad.length ? ': ' + r.bad.slice(0, 6).join('; ') : ''));
   }
@@ -108,28 +111,28 @@ try {
   /* ---------------- 6. THE GLINT ---------------- */
   if (run(6)) {
     const SPOTS = UF.GLINTS || [];
-    const r = await ev(`const SPOTS=${JSON.stringify(SPOTS)};fresh();const out=[];if(!BK.guide)return{err:'no guide'};
+    const r = await ev(`const SPOTS=${JSON.stringify(SPOTS)};fresh();const out=[];if(!BKT.guide)return{err:'no guide'};
       const frame=()=>{BK.step(1);return px().slice();};
       for(const s of SPOTS){fresh();const F=BK.unbField();const en=s.engine?F.engines.find(e=>e.t===s.engine.t&&e.tx===s.engine.x):null;
         const row={id:s.id};
         const place=dx=>{stand(s.hero[0]+dx,s.hero[1]);BK.sim(2);};
-        place(0);BK.sim(30);const rd=BK.guide.read();row.targets=rd.targets.length;row.key=rd.key;
+        place(0);BK.sim(30);const rd=BKT.guide.read();row.targets=rd.targets.length;row.key=rd.key;
         if(rd.targets.length){const t=rd.targets[0];
           /* the glint pulses: two frames 0.2 s apart differ round the target */
-          const vw=BK.view.VW,vh=BK.view.VH;const sample=()=>{const v=BK.look(s.hero[0],s.hero[1]);const d=px().slice();return {v,d};};
-          const a=sample();BK.sim(12);const b=sample();const sx=Math.round(t.x-a.v.cx),sy=Math.round(t.y-18-a.v.cy);let diff=0;
+          const vw=BK.view.VW,vh=BK.view.VH;const sample=(at=s.hero)=>{const v=BK.look(at[0],at[1]);const d=px().slice();return {v,d};};
+          const a=sample();BK.sim(TPS/5);const b=sample();const sx=Math.round(t.x-a.v.cx),sy=Math.round(t.y-18-a.v.cy);let diff=0;
           for(let y=sy-12;y<=sy+12;y++)for(let x=sx-12;x<=sx+12;x++){if(x<0||y<0||x>=vw||y>=vh)continue;const i=(y*vw+x)*4;if(Math.abs(lum(a.d,i)-lum(b.d,i))>8)diff++;}
           row.pulse=diff;row.onscreen=sx>=0&&sx<vw&&sy>=0&&sy<vh;
           /* off screen: a chevron on the edge */
-          if(s.far){stand(s.far[0],s.far[1]);BK.sim(30);const a2=sample();BK.sim(12);const b2=sample();const rd2=BK.guide.read();let ed=0;
+          if(s.far){stand(s.far[0],s.far[1]);BK.sim(30);const a2=sample(s.far);BK.sim(TPS/5);const b2=sample(s.far);const rd2=BKT.guide.read();let ed=0;
             if(rd2.targets.length){const t2=rd2.targets[0];const sx2=t2.x-a2.v.cx,sy2=t2.y-18-a2.v.cy;row.farOff=!(sx2>=-8&&sx2<=vw+8&&sy2>=-8&&sy2<=vh+8);
               for(let y=0;y<vh;y++)for(const x of [0,1,2,3,4,5,6,7,8,9,10,11,vw-12,vw-11,vw-10,vw-9,vw-8,vw-7,vw-6,vw-5,vw-4,vw-3,vw-2,vw-1]){const i=(y*vw+x)*4;if(Math.abs(lum(a2.d,i)-lum(b2.d,i))>8)ed++;}}
             row.edge=ed;}
           /* the nudge: ten seconds of standing still names the thing, once, and not again inside 25 s */
-          fresh();stand(s.hero[0],s.hero[1]);BK.sim(2);const n0=BK.guide.read().nudges;BK.sim(60*10+30);const n1=BK.guide.read().nudges;const line=BK.guide.read().lastNudge;BK.sim(60*20);const n2=BK.guide.read().nudges;BK.sim(60*7);const n3=BK.guide.read().nudges;
+          fresh();stand(s.hero[0],s.hero[1]);BK.sim(2);const n0=BKT.guide.read().nudges;BK.sim(TPS*10+30);const n1=BKT.guide.read().nudges;const line=BKT.guide.read().lastNudge;BK.sim(TPS*20);const n2=BKT.guide.read().nudges;BK.sim(TPS*7);const n3=BKT.guide.read().nudges;
           row.nudge=[n0,n1,n2,n3];row.line=line;}
         /* after use: no glint */
-        if(en){fresh();const F2=BK.unbField();const e2=F2.engines.find(e=>e.t===s.engine.t&&e.tx===s.engine.x);if(e2.t==='ballista')e2.fired=true;else e2.state='spent';stand(s.hero[0],s.hero[1]);BK.sim(30);row.after=BK.guide.read().targets.length;}
+        if(en){fresh();const F2=BK.unbField();const e2=F2.engines.find(e=>e.t===s.engine.t&&e.tx===s.engine.x);if(e2.t==='ballista')e2.fired=true;else e2.state='spent';stand(s.hero[0],s.hero[1]);BK.sim(30);row.after=BKT.guide.read().targets.length;}
         out.push(row);}
       return out;`);
     if (r.err) note(6, 'the glint', false, r.err);
@@ -147,7 +150,7 @@ try {
   if (run(7)) {
     const FIRES = UF.FIRES || [];
     const r = await ev(`const FIRES=${JSON.stringify(FIRES)};fresh();const out=[];
-      for(const f of FIRES){const v=BK.look(f.x,f.y);BK.step(1);const A=px().slice();const saved=BK.lights().splice(0);BK.step(1);BK.look(f.x,f.y);const B=px().slice();for(const s of saved)BK.lights().push(s);
+      for(const f of FIRES){const v=BK.look(f.x,f.y);BK.step(1);const A=px().slice();const saved=BKT.lights().splice(0);BK.step(1);BK.look(f.x,f.y);const B=px().slice();for(const s of saved)BKT.lights().push(s);
         const vw=BK.view.VW,vh=BK.view.VH;const cx=Math.round(f.x*TS+8-v.cx),cy=Math.round((f.y+1)*TS-(f.up||14)-v.cy);let a=0,b=0,n=0;
         for(let y=cy-24;y<=cy+24;y++)for(let x=cx-24;x<=cx+24;x++){if(x<0||y<0||x>=vw||y>=vh)continue;const i=(y*vw+x)*4;a+=lum(A,i);b+=lum(B,i);n++;}
         out.push({id:f.id,gain:n?(a-b)/n:0});}

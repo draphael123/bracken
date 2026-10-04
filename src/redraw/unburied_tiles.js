@@ -33,14 +33,14 @@ const shade = (g, a) => { g.globalAlpha = a; rect(g, 0, 0, 16, 16, '#000'); g.gl
 // ---------------------------------------------------------------- GROUND MATERIALS (by section) ----------------------------------------------------------------
 const MAT = {
   camp:   { body: UT.peat2, spk: [UT.peat1, UT.peat3, UT.straw0], deep: UT.peat1 },
-  spoil:  { body: UT.peat3, spk: [UT.peat2, UT.peat4, UT.peat1, UT.lime1], deep: UT.peat2 },
+  spoil:  { body: UT.peat3, spk: [UT.peat2, UT.peat4, UT.peat1], deep: UT.peat2 },
   mud:    { body: UT.mud1, spk: [UT.mud0, UT.mud2, UT.mud3], deep: UT.mud0 },
   works:  { body: UT.peat3, spk: [UT.peat2, UT.peat4, UT.wood1], deep: UT.peat2 },
   approach: { body: UT.peat3, spk: [UT.peat2, UT.peat4, UT.straw0], deep: UT.peat2 },
 };
 function earthFill(kind, v, deep, bones) {
   return once('ef' + kind + v + deep + bones, () => { const [c, g] = canvas(16, 16), r = mulberry(v * 71 + kind.length * 13 + deep * 5), M = MAT[kind]; rect(g, 0, 0, 16, 16, M.body); grain(g, r, M.spk, 46);
-    if (kind === 'spoil') { grain(g, r, [UT.lime1, UT.lime2], 3 + v); for (let i = 0; i < 2; i++) { const x = (r() * 12) | 0, y = (r() * 15) | 0; rect2(g, x, y, 2 + ((r() * 3) | 0), 1, UT.lime1); } }
+    if (kind === 'spoil') { if (v === 1) grain(g, r, [UT.lime1], 2); if (v === 2) { const x = (r() * 10) | 0, y = 2 + ((r() * 12) | 0); rect2(g, x, y, 3 + ((r() * 3) | 0), 1, UT.lime1); } }   /* lime in the spoil: a streak in a third of it, not salt */
     if (kind === 'mud') { for (let y = 3; y < 16; y += 5) rect2(g, (v * 3) % 5, y, 11, 1, UT.mud0); grain(g, r, [UT.mud4], 5); }
     if (kind === 'works') { /* a bearer timber laid in the earth every few courses, the lashings showing */ if (v === 0) { rect2(g, 0, 6, 16, 4, UT.wood2); rect2(g, 0, 6, 16, 1, UT.wood4); rect2(g, 0, 9, 16, 1, UT.wood0); for (let x = 3; x < 16; x += 6) px2(g, x, 8, UT.iron3); } else grain(g, r, [UT.wood2, UT.peat5], 5); }
     if (kind === 'approach') { grain(g, r, [UT.peat5, UT.straw1], 5); }
@@ -230,6 +230,15 @@ function portcullis(v, foot) {
     if (v === 1) { for (let y = 0; y < 16; y += 3) px2(g, 5, y, UT.rust); } return c; });
 }
 
+/* THE TOWER'S FALLEN BASE (the solid block at 257-258): heavy upright timbers, iron-strapped, the crest a lit cap - the foot of the tower the host built */
+function timberWall(v, top, l, r, row) {
+  return once('tw' + v + top + l + r + (row % 3), () => { const [c, g] = canvas(16, 16); rect(g, 0, 0, 16, 16, UT.wood2);
+    for (let x = 0; x < 16; x += 4) { rect2(g, x, 0, 3, 16, ((x >> 2) + v) % 2 ? UT.wood3 : UT.wood2); rect2(g, x, 0, 1, 16, UT.wood4); rect2(g, x + 3, 0, 1, 16, UT.wood0); }
+    if (row % 3 === 0) { rect2(g, 0, 5, 16, 3, UT.iron1); rect2(g, 0, 5, 16, 1, UT.iron3); nails(g, 2, 6, 3, 5, UT.iron4); }
+    if (l) rect2(g, 0, 0, 2, 16, UT.wood1); if (r) rect2(g, 14, 0, 2, 16, UT.wood1);
+    if (top) { rect2(g, 0, 0, 16, 3, UT.wood4); rect2(g, 0, 0, 16, 1, UT.wood6); rect2(g, 0, 3, 16, 1, UT.wood0); nails(g, 2, 1, 4, 4, UT.iron4); } return c; });
+}
+
 // ---------------------------------------------------------------- THE HOOK ----------------------------------------------------------------
 /* the section a column belongs to; the borders are blended (a few columns either side take the neighbour's ground) so no seam is a straight line */
 function zoneOf(D, x, y) {
@@ -253,6 +262,7 @@ export function unburiedTile(t, x, y, at, T, L) {
   if (t === T.SOLID) {
     const top = air(0, -1) || at(x, y - 1) === T.SPIKE || at(x, y - 1) === T.NET || at(x, y - 1) === T.ONEWAY, l = walk(at(x - 1, y)), r = walk(at(x + 1, y)), below = walk(at(x, y + 1));
     let depth = 0; for (let k = 1; k <= 10; k++) { const q = at(x, y - k); if (q === T.AIR || q === T.ONEWAY || q === T.SPIKE) break; depth++; }
+    if (D.towerBase && x >= D.towerBase[0] && x <= D.towerBase[1] && y >= D.towerBase[2] && y <= D.towerBase[3]) return timberWall(v, at(x, y - 1) !== T.SOLID, x === D.towerBase[0], x === D.towerBase[1], y);   /* the tower's base is its timber, not the field's earth */
     if (stoneZone) {
       if (top) return flag(l, r, v, 'flag');
       if (depth >= 1 || l || r || below) return ashlar(v, depth, (x * 5 + y * 3) % 17 === 0);
