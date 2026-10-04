@@ -36,7 +36,7 @@ export const KB_DEFAULT = {
 };
 /* the pad's defaults: A jump, X swing, B dodge, Y skill one, RT skill two, LB/RB C, BACK the emote, START pause, the d-pad to move (the stick always moves too).
    skill three / four (L3, R3) have no menu row (the game has two skill slots) but keep their buttons. */
-export const PAD_DEFAULT = { jump: [0], atk: [2], dodge: [1], throw: [3], skill2: [7], skill3: [10], skill4: [11], skill5: [], talk: [12, 6], block: [4, 5], dance: [8], pause: [9],
+export const PAD_DEFAULT = { jump: [0], atk: [2], dodge: [1], throw: [3], skill2: [7], skill3: [10], skill4: [11], talk: [12, 6], block: [4, 5], dance: [8], pause: [9],
   left: [14], right: [15], up: [12], down: [13], map: [], talents: [] };
 const ALL_PAD_ACTIONS = Object.keys(PAD_DEFAULT);
 
@@ -132,7 +132,7 @@ export function padTable(binds, prof) {
 /* a pad's pressed state through a table: the same fields padState always returned, the stick still moving */
 export function padStateOf(gp, table) {
   const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), any = a => table[a].some(b), ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
-  return { jump: any('jump'), atk: any('atk'), dodge: any('dodge'), throw: any('throw'), skill2: any('skill2'), skill3: any('skill3'), skill4: any('skill4'), skill5: any('skill5'), talk: any('talk'), block: any('block'), dance: any('dance'),
+  return { jump: any('jump'), atk: any('atk'), dodge: any('dodge'), throw: any('throw'), skill2: any('skill2'), skill3: any('skill3'), skill4: any('skill4'), talk: any('talk'), block: any('block'), dance: any('dance'),
     pause: any('pause'), map: any('map'), talents: any('talents'), left: any('left') || ax < -0.5, right: any('right') || ax > 0.5, up: any('up') || ay < -0.5, down: any('down') || ay > 0.5 };
 }
 

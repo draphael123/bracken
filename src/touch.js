@@ -39,15 +39,15 @@ const ACTIONS = {
   coop: [['confirm', 'OK'], ['atk', 'ALLY']],
   title: [],   // the rows are the buttons: a tap picks and goes in
 };
-const PLAY_BTNS = ['atk', 'jump', 'dodge', 'block', 'throw', 'skill2', 'skill3', 'skill4', 'skill5', 'interact'];
+const PLAY_BTNS = ['atk', 'jump', 'dodge', 'block', 'throw', 'skill2', 'skill3', 'skill4', 'interact'];
 const HOLD = { atk: 'atk', jump: 'jump', dodge: 'dodge', block: 'block', throw: 'throw' };   /* the keys[] entry each button holds down while it is touched */
-const SKILL_OF = { throw: 0, skill2: 1, skill3: 2, skill4: 3, skill5: 4 };   /* (the fifth: LEVELING, it opens at level 24; shown only once it holds an ability) */
+const SKILL_OF = { throw: 0, skill2: 1, skill3: 2, skill4: 3 };
 /* where every button sits, in units of s (the button size), from the thumb's rest point P: [dx, dy, radius]. Right-handed; left-handed mirrors dx. */
 const SPOT = {
   atk: [0, 0, 0.78], jump: [-0.55, -1.75, 0.7], dodge: [-1.95, -0.35, 0.52], block: [-2.35, -1.55, 0.52],
-  interact: [-0.4, -3.2, 0.6], throw: [-1.75, -3.0, 0.4], skill2: [-2.85, -2.5, 0.4], skill3: [-3.75, -1.6, 0.4], skill4: [-4.2, -0.4, 0.4], skill5: [-4.65, -1.75, 0.4],
+  interact: [-0.4, -3.2, 0.6], throw: [-1.75, -3.0, 0.4], skill2: [-2.85, -2.5, 0.4], skill3: [-3.75, -1.6, 0.4], skill4: [-4.2, -0.4, 0.4],
 };
-const LABEL = { throw: 'F', skill2: 'G', skill3: '3', skill4: '4', skill5: '5' };
+const LABEL = { throw: 'F', skill2: 'G', skill3: '3', skill4: '4' };
 
 export function createTouch(env) {
   const { disp, q, SET } = env;

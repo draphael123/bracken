@@ -39,7 +39,7 @@
 //             creature leaves its water over a tide (src/floatlab.js)
 //   deadends  every dead end pays: loot, a heart or a coin cache at the far end of every pocket (land, water, up high)
 //   leveling  (node) THE LEVELING LANE (2026-10-03): the curve to fifty never rises, the level-up card and its milestones, the soft XP cap,
-//             slots at 8/16/24, heroes for silver and co-op with the second, the old-save migrations (tools/leveling.mjs)
+//             a third slot at 16 (three at most), heroes for silver and co-op with the second, the old-save migrations (tools/leveling.mjs)
 //   textfit   (headless) no text runs past its plate or off the screen, is cut, clipped, smeared, overprinted or laid over the hero,
 //             and no meter is drawn across a word (every boss plate is drawn in its fight: 'plates')
 //   textfit-full (headless, ~8 min, 10 min budget) the unscoped textfit --strict: every talk page of every level for every hero, every boss fight

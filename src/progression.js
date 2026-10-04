@@ -9,11 +9,11 @@ export const PROGRESSION_VERSION = 2;
 export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer'];   /* THE GEOMANCER (2026-09-24): a third starter */
 const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const clone = v => JSON.parse(JSON.stringify(v));
-/* THE SLOTS OPEN WITH LEVELS (LEVELING, Daniel 2026-10-03; it was two at every level from 2026-09-23): two from the start, the third at
-   level 8, the fourth at 16, the fifth at 24 - in step with the nine-ability ladders, so five slots stay a choice. A save that had more
-   equipped than its level opens keeps them owned; equipped() only reads the slots the level has. */
-export const MAX_SLOTS = 5;
-export const SLOT_LEVELS = [0, 0, 8, 16, 24];
+/* THE THIRD SLOT OPENS AT LEVEL 16, AND THREE IS THE MOST (Daniel 2026-10-04; it was two at every level from 2026-09-23): two from the start,
+   a third at 16. A save with a fourth slot filled (the old four-slot days) keeps that ability LEARNED and unslotted (trimSlots, before the save
+   is judged). equipped() only reads the slots the level has. */
+export const MAX_SLOTS = 3;
+export const SLOT_LEVELS = [0, 0, 16];
 export const slotsAt = lv => SLOT_LEVELS.filter(n => (lv || 0) >= n).length;
 /* THE TOP OF THE LADDER IS DEARER (LEVELING, audit-econ sec.7E: 520 for an L20 capstone was 1.8 woods of gold): the knight's, the Warden's and
    the Geomancer's L12/L14/L17/L20 actives cost 600/700/800/900 (they were 360/400/460/520). The catalog keeps its history; the price is set here. */
@@ -135,9 +135,11 @@ function renameSkills(p){
   const own=p.skillOwned&&object(p.skillOwned[h])?p.skillOwned[h]:null;if(own&&own[from]!==undefined){if(own[from]===true)own[to]=true;delete own[from];}
   const lo=p.loadouts&&Array.isArray(p.loadouts[h])?p.loadouts[h]:null;if(lo)for(let i=0;i<lo.length;i++)if(lo[i]===from)lo[i]=lo.includes(to)?null:to;}
 }
+/* MORE THAN MAX_SLOTS IN A LOADOUT (a save from the four-slot days): the extra slots are dropped - the abilities in them stay owned (skillOwned), only unslotted */
+export function trimSlots(p){if(!object(p)||!object(p.loadouts))return false;let cut=false;for(const h of Object.keys(p.loadouts)){const v=p.loadouts[h];if(Array.isArray(v)&&v.length>MAX_SLOTS){p.loadouts[h]=v.slice(0,MAX_SLOTS);cut=true;}}return cut;}
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
- validateProgress(parsed);const p=clone(parsed);
+ trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
  if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
  if(!(p.progressionVersion>=1))talentsToSkills(p,parsed,source,campaignIds);
  passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);

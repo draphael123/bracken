@@ -217,7 +217,7 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', skill5Key: '5', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
+const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
 const TIER = { welltown: 2.45, redgorge: 2.5, caravan: 2.4, unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
@@ -762,7 +762,7 @@ const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { 
 const skillsOwned = () => skillsFor(hero()).filter(n => n.active && (PROG.skillOwned[hero()]?.[n.id] || trialLend?.has(n.id)));
 const skillAt = index => { const id = equipped(PROG, hero(), heroLevel())[index]; if (skillFor(hero(), id)?.active) return id; if (trialLend) return [...trialLend].filter(k => skillFor(hero(), k)?.active)[index] || null; return null; };
 const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
-const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press, skill5Press].some((pressed,i) => pressed && skillAt(i) === k);
+const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press].some((pressed,i) => pressed && skillAt(i) === k);
 applySkin(); LS.heroReady(K); await LS.step('hero');   /* the hero first, so the loading screen has his dance to show */
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null }; await LS.step('art1');
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); SPR.boo = FF.bakeBoo(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
@@ -1187,8 +1187,8 @@ const upright = p => !p.dead && !(p.down > 0);
 /* the held keys and the one-shot presses, read and written as a set: these are the hands, and a pass swaps them */
 const keysRead = () => { const o = {}; for (const k in keys) o[k] = keys[k]; return o; };
 const keysWrite = o => { for (const k in keys) delete keys[k]; Object.assign(keys, o); };
-const pressRead = () => ({ jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, skill5: skill5Press, talk: talkPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
-const pressWrite = o => { jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; skill5Press = !!o.skill5; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+const pressRead = () => ({ jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
+const pressWrite = o => { jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
 function asPlayer(p, fn) {
   if (!coop()) return fn();                                        /* the single-player call, unchanged */
   if (p === players[0]) { const wP = P, wPass = passOn; P = p; passOn = p; try { return fn(); } finally { P = wP; passOn = wPass; } }
@@ -1423,7 +1423,7 @@ function allyLoad() {
     .then(([a, b]) => { LABMOD = a; PTMOD = b; return true; }).catch(() => { allyLoading = null; return false; });
   return allyLoading;
 }
-const apress = k => { if (k === 'atk') atkPress = true; else if (k === 'jump') jumpPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true;if(k==='skill5')skill5Press=true; };
+const apress = k => { if (k === 'atk') atkPress = true; else if (k === 'jump') jumpPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true; };
 /* NEVER STAND IN A HAZARD: spikes on the tile it would stand on, or a pool the level marked harm */
 function allySafeGoal(gx) {
   const tx = Math.floor(gx / TS), ty = Math.floor(P.y / TS);
@@ -3958,7 +3958,7 @@ function updateSkills(dt) {
  const n=ns[treeI],say=m=>{treeMsg=m;treeMsgT=3;SFX.ui();};
  if(confirmPress&&n&&!n.active){say(passiveOn(PROG,hero(),n.id,heroLevel())?n.name+' is always on':'Arrives at level '+n.level);}
  else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else if(PROG.skillOwned[hero()]?.[n.id]){const error=rankUp(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' is rank '+skillRank(PROG,hero(),n.id)+': it hits harder');SFX.coin();}}else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}   /* (Z on an owned ability: its next RANK, LEVELING) */
- [throwPress,skill2Press,skill3Press,skill4Press,skill5Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
+ [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
  /* (leaving is the store's: ESC; and Q is the tab before) */
 }
 const TREE_ICON = {};
@@ -4117,7 +4117,7 @@ const treePreview = (n, x, y, w, h) => { if (!n) return;
 function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F and G, the abilities and passives, and the live preview of the one under the cursor */
  const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/limit;
  text('LEVEL '+lv,VW/2,6,UI.dim,'center',6);
- for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),lab=sk&&!sk.active?'PASSIVE':['F','G',SET.skill3Key.toUpperCase(),SET.skill4Key.toUpperCase(),SET.skill5Key.toUpperCase()][i],lw=inkW(lab,6)+8;g.fillStyle='#302c3e';g.fillRect(x,38,width-3,11);text(lab,x+4,40,UI.gold,'left',6);text(fitName(sk?sk.name:'EMPTY',width-lw-8,6),x+4+lw,40,UI.text,'left',6);}
+ for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),lab=sk&&!sk.active?'PASSIVE':['F','G',SET.skill3Key.toUpperCase()][i],lw=inkW(lab,6)+8;g.fillStyle='#302c3e';g.fillRect(x,38,width-3,11);text(lab,x+4,40,UI.gold,'left',6);text(fitName(sk?sk.name:'EMPTY',width-lw-8,6),x+4+lw,40,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,51,91,11);text(tab===0?'ACTIVES':'PASSIVES',x+45,53,treeBranch===tab?UI.gold:UI.dim,'center',6);}
  const LW=192,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=64+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
   /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
@@ -4877,7 +4877,7 @@ function selectStart() {
 
 // ---------- input ----------
 const keys = {};
-let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, skill5Press = false, talkPress = false, padLast = false; // padLast: the last press came from a gamepad (prompts show pad glyphs)
+let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false; // padLast: the last press came from a gamepad (prompts show pad glyphs)
 let jumpUpKey = false;   /* the jump press this frame came from a key that is UP too (ArrowUp, W): see UP_SLASH */
 let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false, anyPress = false, upPress = false, downPress = false, leftPress = false, rightPress = false, confirmPress = false, talentsPress = false, mapPress = false;
 const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
@@ -4909,7 +4909,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.dodge)) { dodgePress = true; keys.dodge = true; }
   if (isKey(e, KEYS.throw)) { throwPress = true; keys.throw = true; }   /* held, for the Death Knight's HOLD F */
   if (isKey(e, KEYS.skill2)) skill2Press = true;
-  if(e.key.toLowerCase()===SET.skill3Key)skill3Press=true;if(e.key.toLowerCase()===SET.skill4Key)skill4Press=true;if(e.key.toLowerCase()===SET.skill5Key)skill5Press=true;   /* THE FIFTH SLOT (LEVELING: it opens at level 24) */
+  if(e.key.toLowerCase()===SET.skill3Key)skill3Press=true;if(e.key.toLowerCase()===SET.skill4Key)skill4Press=true;
   if (isKey(e, KEYS.talk)) talkPress = true;
   padLast = false;
   if (isKey(e, KEYS.left)) { keys.left = true; leftPress = true; }
@@ -4968,7 +4968,7 @@ function padIntoPlayer(gp, st, p) {
   const now = padState(gp, 'pad2'), rose = k => now[k] && !st.prev[k];
   if (Object.values(now).some(Boolean)) initAudio();
   const pr = p.press;
-  for (const k of ['jump', 'atk', 'dodge', 'throw', 'skill2', 'skill3', 'skill4', 'skill5', 'talk', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
+  for (const k of ['jump', 'atk', 'dodge', 'throw', 'skill2', 'skill3', 'skill4', 'talk', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { if (now[k]) p.keys[k] = true; else if (st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
   st.prev = now;
 }
@@ -4982,7 +4982,7 @@ function pollGamepad() {
   if (used) { pad.prev = now; return; }
   const rose = k => now[k] && !pad.prev[k];
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; } }
-  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('skill5'))skill5Press=true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
+  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
   pad.prev = now;
@@ -5040,7 +5040,7 @@ function padRawTick(gps) {
 // a TOUCH settings tab, assists and haptics. This is only the glue: what a press MEANS lives here, what a thumb DOES lives there.
 const touchPressName = k => { initAudio(); anyPress = true; padLast = false;
   if (k === 'jump') { jumpPress = true; jumpUpKey = false; } else if (k === 'confirm') confirmPress = true; else if (k === 'atk') atkPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true;
-  else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'skill5') skill5Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true;
+  else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true;
   else if (k === 'left') leftPress = true; else if (k === 'right') rightPress = true; else if (k === 'up') upPress = true; else if (k === 'down') downPress = true; };
 /* WHAT INTERACT WOULD DO NOW (src/touch-interact.js reads the same reach tests the keyboard path does) */
 const touchVerbNow = () => interactVerb({ P, state, props, talkers, L, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
@@ -5057,7 +5057,7 @@ Object.assign(SETTING_TIPS, TCH.tips);
 {
   if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
 const drawTouch = () => TCH.draw();
-function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = skill5Press = talkPress = talentsPress = mapPress = false; jumpUpKey = false;
+function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = false; jumpUpKey = false;
   if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
 // ---------- collision ----------
@@ -28575,7 +28575,7 @@ function render() {
         else { const ready = P.skReady && P.skReady[sk]; if (ready > 0) { g.globalAlpha = ready; g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(x - 0.5, 10.5, 15, 17); g.globalAlpha = 1; } }
         g.strokeStyle = busy ? '#4a4658' : col; g.lineWidth = 1; g.strokeRect(x + 0.5, 11.5, 13, 15);
         text(key, x + 7, 27, busy ? '#7a7a84' : col, 'center', 6); };
-      const load=equipped(PROG,hero(),heroLevel());slot(load[0]||skillNow(),74,'F','#c9d1dc');slot(load[1]||skill2Now(),92,'G','#8fd160');slot(load[2],110,SET.skill3Key.toUpperCase(),'#8fb8ff');slot(load[3],128,SET.skill4Key.toUpperCase(),'#e6a8e0');slot(load[4],146,SET.skill5Key.toUpperCase(),'#ffd36b'); }
+      const load=equipped(PROG,hero(),heroLevel());slot(load[0]||skillNow(),74,'F','#c9d1dc');slot(load[1]||skill2Now(),92,'G','#8fd160');slot(load[2],110,SET.skill3Key.toUpperCase(),'#8fb8ff');slot(load[3],128,SET.skill4Key.toUpperCase(),'#e6a8e0'); }
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160'); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1);
     { const vi = venomIcon(P, CQG.CQ.venom); if (vi) drawVenomIcon(g, text, 16, 21, vi, time); }   /* VENOM: green drops under the stamina bar, one a stack (src/venom-hud.js) */

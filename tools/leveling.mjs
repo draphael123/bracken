@@ -5,7 +5,7 @@
 //   2. THE CARD: an even spread at L24 beats the old automatic growth (the relic buffs are paid back, not added); a stat stops at 25 picks; a
 //      pick is refused when none is owed; milestones at 25..50 offer three untaken perks each, every perk once; a respec puts it all back.
 //   3. THE SOFT CAP: full pay to E+2, half to E+5, a fifth beyond (E = depth + 1), and it never pays less than one.
-//   4. THE SLOTS: two, then the third at 8, the fourth at 16, the fifth at 24; equipSkill refuses a slot the level has not opened.
+//   4. THE SLOTS: two, then the third at 16 and no more (Daniel 2026-10-04); equipSkill refuses a slot the level has not opened.
 //   5. HEROES FOR SILVER: a new game owns nothing and co-op is shut until a second hero is owned; an OLD save keeps every starter it played,
 //      and co-op (coopLegacy); the migration runs once.
 //   6. THE CARD'S MIGRATION: an old save's heroes get their levels as an even spread and one free respec, milestones owed; idempotent; and the
@@ -65,10 +65,12 @@ check('soft cap', () => {
 });
 
 check('slots', () => {
-  assert.deepEqual([0, 7, 8, 15, 16, 23, 24, 50].map(PR.slotsAt), [2, 2, 3, 3, 4, 4, 5, 5]); assert.equal(PR.MAX_SLOTS, 5);
+  assert.deepEqual([0, 7, 8, 15, 16, 23, 24, 50].map(PR.slotsAt), [2, 2, 2, 2, 3, 3, 3, 3]); assert.equal(PR.MAX_SLOTS, 3);
   const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active); p.coins = 9999; p.skillOwned.knight = { [n.id]: true };
-  assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 7, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 4, 24, true), null);
-  assert.equal(PR.equipped(p, 'knight', 8).length, 3); assert.equal(PR.equipped(p, 'knight', 24)[4], n.id); assert.equal(PR.equipped(p, 'knight', 23).length, 4);
+  assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 15, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 3, 50, true), 'Slot is locked'); assert.equal(PR.equipSkill(p, 'knight', n.id, 2, 16, true), null);
+  assert.equal(PR.equipped(p, 'knight', 15).length, 2); assert.equal(PR.equipped(p, 'knight', 16)[2], n.id); assert.equal(PR.equipped(p, 'knight', 50).length, 3);
+  const four = PR.skillsFor('warden').filter(s => s.active).slice(0, 4).map(s => s.id), old = PR.migrateProgress(JSON.stringify({ progressionVersion: 2, hero: 'warden', heroes: { warden: true }, xp: { warden: XP.xpFloor(20) }, skillOwned: { warden: Object.fromEntries(four.map(id => [id, true])) }, loadouts: { warden: four } })).progress;
+  assert.deepEqual(old.loadouts.warden, four.slice(0, 3), 'a four-slot save was not cut to three'); assert(four.every(id => old.skillOwned.warden[id]), 'the fourth ability was lost, not just unslotted');
 });
 
 check('heroes for silver', () => {
@@ -116,4 +118,4 @@ check('skill ranks', () => {
 
 for (const n of notes) console.log('  ' + n);
 if (fails.length) { console.log('LEVELING: ' + fails.length + ' problem(s)\n' + fails.map(f => '  - ' + f).join('\n')); process.exitCode = 1; }
-else console.log('Leveling: the curve to fifty never rises, the card beats the old growth evenly spread and caps at 25, milestones offer six untaken perks, the soft cap halves at E+3 and fifths at E+6, slots open at 8/16/24, a new game owns one hero and co-op opens with the second, old saves keep heroes, co-op and a free respec.');
+else console.log('Leveling: the curve to fifty never rises, the card beats the old growth evenly spread and caps at 25, milestones offer six untaken perks, the soft cap halves at E+3 and fifths at E+6, a third slot at 16 (three at most; an old fourth is unslotted, not lost), a new game owns one hero and co-op opens with the second, old saves keep heroes, co-op and a free respec.');
