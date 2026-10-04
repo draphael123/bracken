@@ -157,7 +157,7 @@ if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headles
 if (take('slopes-trace')) results.push(run('slopes-trace', process.execPath, ['tools/slopes-trace.mjs'], { PORT: String(portFor(7)) }));
 /* THE WORDS FIT: every hint, the bestiary, the store, the talent trees, the pause menu and every hero's HUD, drawn and measured (tools/textfit.mjs;
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
-if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,practice,bossjump,plates,bossfix,soundtest', '--strict'], { PORT: String(portFor(4)) }));
+if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,card,practice,bossjump,plates,bossfix,soundtest', '--strict'], { PORT: String(portFor(4)) }));
 /* THE FULL WORDS RUN, UNSCOPED AND STRICT: every sign and NPC page of every level for every hero, every boss fight. ~8 min, so it has its
    own step and its own 10 minute budget (a hang is a FAIL by name, not a stalled release). It runs in the full gate only: a subset runs it
    when it is NAMED exactly ('textfit-full'), never because 'textfit' matched (Daniel, 2026-10-03: the strict run found what the scoped one cannot) */

@@ -19,6 +19,7 @@
 //   node tools/textfit.mjs hints,talk       only those screens (hints talk bestiary store tree menu settings hud boss pick practice)
 //   plates    every boss and mini's plate at the foot of the screen, in its fight (only the band under VH - 40): in the suite
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
+//   card      THE LEVEL-UP CARD (LEVELING): every hero's stat card, a milestone, a full card with every perk, the respec line, and the co-op lock
 //   practice  THE PRACTICE YARDS list, each row selected in turn
 //   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
 //   slots     THE FIVE SAVE SLOTS (title > play): five full saves with the longest words, then a mix of full and empty, each card selected in turn
@@ -31,7 +32,7 @@ import { openPage, ROOT } from './cdp.mjs';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'card', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -163,12 +164,21 @@ async function pageTextFit(input) {
     await yieldNow(); }
 
   /* THE HERO PICK (2026-09-24), drawn BEFORE the menu (whose pause map stays up and lays its window over later screens): seven cards across a 320-pixel screen, a name under each - DEATH KNIGHT ran off the right edge, unseen here */
-  if (want('pick')) { const n = 7;
+  if (want('pick')) { const n = 3;   /* (LEVELING: a new game picks one of the three default heroes) */
     /* drawn once unrecorded first: each card's hero is baked (preview) the first time it is drawn, and a bake's own rectangles on its
        own canvas are not plates the words are on */
     for (let i = 0; i < n; i++) { BK.state = 'heropick'; BK.ui.heroPickI = i; BK.step(1); }
     for (let i = 0; i < n; i++) frame('pick #' + i, () => { BK.state = 'heropick'; BK.ui.heroPickI = i; }, { settle: 20 });
     await yieldNow(); }
+  /* THE LEVEL-UP CARD (LEVELING, 2026-10-03): the three stat cards with counts and the stats they give, a milestone's three perks, a full card's perk
+     line (the longest), the respec prompt and message, and the co-op lock card. The save is put back after. */
+  if (want('card')) { const xp = await import('/src/xp.js'), pr = BKT.PROG, keep = JSON.stringify({ xp: pr.xp, card: pr.card, cardFree: pr.cardFree, heroes: pr.heroes, coopLegacy: pr.coopLegacy, silverSpent: pr.silverSpent });
+    const CARDS = [[4, { v: 1, e: 1, m: 1, ms: {} }], [25, { v: 9, e: 8, m: 7, ms: {} }], [45, { v: 25, e: 19, m: 0, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane' } }], [50, { v: 25, e: 15, m: 10, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane', 45: 'heart', 50: 'leech' } }]];
+    for (const h of [...HEROES, 'geomancer']) { BK.setHero(h); for (const [lv, c] of CARDS) frame('card [' + h + '] L' + lv, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); }
+    frame('card respec prompt', () => { BK.cardOpen('menu', true); BK.cardUi.msg = 'X AGAIN: RESPEC FOR 3 SILVER'; BK.cardUi.msgT = 2; }, { settle: 1 });
+    frame('card respec short', () => { BK.cardOpen('menu', true); BK.cardUi.msg = 'A RESPEC IS 3 SILVER: NEED 3 MORE'; BK.cardUi.msgT = 2; }, { settle: 1 });
+    frame('coop locked', () => { pr.heroes = { knight: true }; delete pr.coopLegacy; BK.state = 'coop'; }, { settle: 2 });
+    Object.assign(pr, JSON.parse(keep)); BK.state = 'title'; await yieldNow(); }
   if (want('slots')) { const ls = localStorage, was = {}; for (let i = 0; i < 5; i++) was[i] = ls.getItem('bracken.progress.' + i);
     /* FIVE FULL SAVES, the worst words: the longest hero names, a three-digit level, a big purse, every wood cleared (COMPLETE), a long medal count */
     const xp = await import('/src/xp.js'), done = {}; for (const l of lvm.LEVELS) if (!l.hidden) done[l.id] = { cleared: true, medal: 3 };

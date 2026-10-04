@@ -13,6 +13,8 @@
 import assert from 'node:assert/strict';
 import * as XP from '../src/xp.js';
 import * as PR from '../src/progression.js';
+import * as DC from '../src/death-cost.js';
+import { readFileSync } from 'node:fs';
 
 const fails = [], notes = [];
 const check = (name, fn) => { try { fn(); } catch (e) { fails.push(name + ': ' + String(e && e.message || e).replace(/\s+/g, ' ').slice(0, 300)); } };
@@ -90,6 +92,17 @@ check('card migration', () => {
   const store = new Map(), mem = { getItem: k => store.has(k) ? store.get(k) : null, setItem: (k, v) => store.set(k, v), removeItem: k => store.delete(k) };
   const first = PR.loadProgress(mem, 'slot', raw); assert.equal(first.progress.cardV, 1); const second = PR.migrateProgress(JSON.stringify(first.progress)); assert.equal(JSON.stringify(second.progress.card), JSON.stringify(first.progress.card));   /* (a same-version save is migrated in memory; the next save writes it) */
 });
+
+/* 7. WEAPONS ARE LOOKS AND THE SINKS (read from src/main.js's own tables: no page) */
+{ const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), at = src.indexOf('const SWORDS = ['), block = src.slice(at, src.indexOf('];', at));
+  check('weapons are looks', () => { const rows = block.split(/\r?\n/).filter(l => /\{ id: '/.test(l)); assert(rows.length >= 9, 'weapon rows: ' + rows.length);
+    for (const r of rows) { assert(!/\b(burn|freeze|leech|heavy|gold): true/.test(r), 'a weapon keeps a stat: ' + r.slice(0, 60)); assert(/dmg: 10, cost: 15/.test(r), 'a weapon cuts differently: ' + r.slice(0, 60));
+      const p = +r.match(/price: (\d+)/)[1], silver = /silver: true/.test(r), id = r.match(/id: '(\w+)'/)[1]; if (id === 'steel') continue;
+      assert(silver ? p >= 6 && p <= 10 : p >= 150 && p <= 400, id + ' priced ' + p); } });
+  check('sinks', () => { assert(/id: 'tonic'[^\n]*max: 5/.test(src), 'tonics do not reach five'); assert(/id: 'edge4'/.test(src) && /id: 'mail2'/.test(src), 'no late smith');
+    for (const n of PR.SKILLS.filter(n => n.active && ['knight', 'warden', 'geomancer'].includes(n.hero) && PR.TOP_PRICE[n.level])) assert.equal(n.price, PR.TOP_PRICE[n.level], n.id);
+    assert.equal(DC.bankStake(400), 0); assert.equal(DC.bankStake(900), 100); assert.equal(DC.bankStake(5000), 300); assert.equal(DC.bankStake(-5), 0);
+    notes.push('bank stake on death: bank 1k ' + DC.bankStake(1000) + ', 2k ' + DC.bankStake(2000) + ', 5k ' + DC.bankStake(5000)); }); }
 
 for (const n of notes) console.log('  ' + n);
 if (fails.length) { console.log('LEVELING: ' + fails.length + ' problem(s)\n' + fails.map(f => '  - ' + f).join('\n')); process.exitCode = 1; }

@@ -3323,7 +3323,7 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
     else text('ONCE, FOR GOOD', x + cw / 2, top + ch - 12, UI.gold, 'center', 6);
     TCH.hit(x, top, cw, ch, () => { if (!c) return; if (u.i === i) cardTake(i); else { u.i = i; SFX.ui(); } }); });
   const perks = Object.entries(cd.ms || {}).sort((a, b) => a[0] - b[0]).map(([, id]) => (PERKS.find(k => k.id === id) || {}).name).filter(Boolean);
-  if (perks.length) text(fitName('PERKS: ' + perks.join(', '), VW - 20, 6), VW / 2, top + ch + 6, UI.sel, 'center', 6);
+  if (perks.length) wrap('PERKS: ' + perks.join(', '), VW - 20, 6).slice(0, 3).forEach((ln, j) => text(ln, VW / 2, top + ch + 6 + j * 9, UI.sel, 'center', 6));
   const help = u.msgT > 0 ? u.msg : c ? 'LEFT/RIGHT  Z TAKE IT  ESC LATER  ' + moreKey() + ' RESPEC' : 'Z OR ESC BACK   ' + moreKey() + ' RESPEC (' + ((PROG.cardFree || {})[h] ? 'FREE ONCE' : RESPEC_SILVER + ' SILVER') + ')';
   text(fitName(help, VW - 16, 6), VW / 2, VH - 12, u.msgT > 0 ? UI.gold : UI.sel, 'center', 6); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
@@ -4776,7 +4776,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
       if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(VW / 2 - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
       else text(ln, VW / 2, yy, UI.dim, 'center', 6); }); }
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
-  text('the others are 10 silver each: buy one and co-op opens', VW / 2, VH - 10, UI.dim, 'center', 6);
+  text('others: 10 silver each. a second opens co-op', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
 /* THE CO-OP PICK. Player one keeps the save's hero, his level and his talents; player two takes any hero the save
    owns that player one is not already holding - and both starters are always there, because a friend on the sofa
