@@ -393,12 +393,12 @@ export function buildHarvestFair({ painter, T, TS }) {
   foe('barker', 553, { y: 18, elite: true, squad: 'caller2' });
   post(597); ent('check', 600, S);                        /* the door's checkpoint: the last one the road passes before the green */
   /* THE BACK LOT (claude/fairfix2: TICKETS ARE KEYS; it was the prize booth; claude/fairfix3: it opens on 30 of the 35 now, and stands past the shrine): a hatch in the road
-     and a sign - SHOW 30 TICKETS. Hold that many and the hatch drops open into the stall men's back lot: THE FORTUNE-TELLER'S GLASS (the fair's own relic) and a silver, and a stair back up */
-  ent('sign', 604, S, { text: 'THE BACK LOT. SHOW 30 TICKETS.' });   /* (claude/fairfix5: the stall that stood at 606 is the FORTUNE-TELLER's caravan now - fairDress - by the hatch to her glass) */
+     and a sign - SHOW 30 TICKETS. Hold that many and the hatch drops open into the stall men's back lot: a silver, and a stair back up */
+  ent('sign', 604, S, { text: 'THE BACK LOT. SHOW 30 TICKETS.' });   /* (claude/fairfix5: the stall that stood at 606 is the FORTUNE-TELLER's caravan now - fairDress - by the hatch) */
   for (let y = R + 1; y <= R + 6; y++) for (let x = 597; x <= 608; x++) set(x, y, T.AIR);
   plat(604, R + 4, 3); plat(602, R + 2, 2);   /* the stair back up through the hatch */
   ticketGates.push({ x: 602, w: 2, y0: R, y1: R, all: true, need: 30, hatch: true, name: 'THE BACK LOT' });
-  ent('relic', 598, R + 6, { kind: 'handglass' }); ent('silver', 600, R + 6); coins([599, R + 6], [601, R + 6], [607, R + 6]);
+  ent('vault', 598, R + 6); ent('silver', 600, R + 6); coins([599, R + 6], [601, R + 6], [607, R + 6]);
   const backLot = { x0: 597, x1: 608, y0: R + 1, y1: R + 6 };
   /* THE BLIND STALL (moved past the shrine by claude/fairfix3; the yard took its road): a stall's back wall, two high, across the road in the dark. You cannot see through it, so the
      mummer behind it creeps up to the wall while you come - listen for bells */
@@ -417,7 +417,6 @@ export function buildHarvestFair({ painter, T, TS }) {
   block(669, 671, 0, R - 1);                              /* the wall behind the gate */
   sign(616, 'SHE MOVES WHEN YOU LOOK AWAY. SPEAR HIGH: DUCK. LOW: JUMP. FLOOR BURNS: RIDE.');   /* outside the door, beside its checkpoint: read before the walls close */
   ent('wickerqueen', 634, S, { face: -1 });               /* THE WICKER QUEEN, UPSTREAM of her fire: the first lesson is the ride's - hold her in your look and it carries her onto it. After a burn she is flung off downstream, and then you turn your back to draw her across it against the ride */
-  ent('relic', 646, S, { kind: 'maypole', bossDrop: true });   /* THE FAIR'S ONE RELIC is hers now (the maypole ribbon: your look reaches half as far again; the felted soles stay in the levels that hold them): hidden until she falls, then it lies where she burned (spawn case 'relic') */
   ent('gate', 666, S);                                    /* and the road goes on from here once she is down (gateAfterBoss) */
   const arena = { x0: 623 * TS, x1: 667 * TS, floor: R * TS, y0: (R - 14) * TS, trigger: 627 * TS, wallL: 622, wallR: 667, boss: 'wickerqueen', music: 'wickerqueen', tint: '#2a1a30', tintA: 0.12, fx: 'embers' };
   /* THE HORSES: platforms (movers of kind 'carhorse', turned by main.js from the ride's state), placed where the ride stands before she wakes */

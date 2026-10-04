@@ -1,7 +1,7 @@
 // tools/map-spacing.mjs - THE WORLD MAP MUST BE READABLE: no two level nodes may sit so close that their name plates
 // stack. Reads the node tables out of src/main.js (the same vm slice tools/map-grammar.mjs uses), lays the plates out with the
 // game's OWN placement function (src/map-plates.js), at the map's real draw size (1 map px = 1 buffer px, plates at their
-// two-line size with the medal/silver/quest/relic strip, the worst case) and fails on:
+// two-line size with the medal/silver/quest strip, the worst case) and fails on:
 //   1. two nodes closer than MIN_NODE_GAP (their discs and flags read as one blob);
 //   2. a plate that found no free side (it is drawn on its default spot, on top of something);
 //   3. any final overlap: plate-plate, plate-node box (any other node), node box-node box;

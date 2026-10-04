@@ -10,7 +10,7 @@ assert.equal(LEGACY_NODES.length,181);
    `price` is kept as HISTORY - what a version-1 save paid for one, which src/progression.js passivesToLevels pays back - so it must
    still be one of the four old passive tiers, and must never be changed. */
 const PASSIVE_PAID=new Set([60,120,220,360]);
-const PRICE_AT={1:60,3:100,4:120,5:140,7:190,8:220,9:240,12:360,14:400,17:460,20:520};
+const PRICE_AT={1:60,3:100,4:120,5:140,7:190,8:220,9:240,12:600,14:700,17:800,20:900};   /* LEVELING (2026-10-03): the top four re-priced (src/progression.js TOP_PRICE) */
 for(const n of SKILLS){assert(s.includes("tal('"+n.id+"')")||s.includes("skillPress('"+n.id+"')"),n.hero+'/'+n.id+' has no consumer');if(!n.active){assert(PASSIVE_PAID.has(n.price),n.hero+'/'+n.id+': a passive keeps the price it was once sold for (60/120/220/360), not '+n.price);continue;}assert(PRICE_AT[n.level]!==undefined,n.hero+'/'+n.id+' unlocks at level '+n.level+', which is on no ladder');assert.equal(n.price,PRICE_AT[n.level],n.hero+'/'+n.id+': a level-'+n.level+' skill costs '+PRICE_AT[n.level]);}
 assert(s.includes('const TREE = LEGACY_NODES'));assert(!s.includes('PROG.talentVersion = 2'));
 /* NO TWO SKILLS SHARE A NAME (2026-09-24): the tree shows a bare name with no hero tag, and RIPOSTE (knight/pirate)
