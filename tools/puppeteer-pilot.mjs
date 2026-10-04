@@ -14,7 +14,7 @@ const pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (const salt of salts) for (const h of heroes) { await pg.reload();
     const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const phases={},ns={},why={};let cyc=0;
-      ${DEPTH ? `{const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp[${JSON.stringify(h)}]=xpFloor(${lvl});P0.skillOwned[${JSON.stringify(h)}]={};P0.loadouts[${JSON.stringify(h)}]=[];if(P0.talents)P0.talents[${JSON.stringify(h)}]={};}` : ''}
+      ${DEPTH ? `{const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;BKT.setHeroLevel(${JSON.stringify(h)},${lvl});P0.skillOwned[${JSON.stringify(h)}]={};P0.loadouts[${JSON.stringify(h)}]=[];if(P0.talents)P0.talents[${JSON.stringify(h)}]={};}` : ''}
       const o=await BK.bossLab({bosses:[${JSON.stringify(level)}],heroes:[${JSON.stringify(h)}],healthMode:'normal',maxSecs:360,modes:true,salt:${salt},onFrame:({boss,h,why:w})=>{phases[h]=Math.max(phases[h]||1,boss.phase||1);why[w||'-']=(why[w||'-']||0)+1;const sh=BK.puppeteerHands().show();if(sh){cyc=sh.cycle;ns[h]={bossHp:Math.round(boss.hp)+'/'+boss.maxHp,n:Object.fromEntries(Object.entries(sh.n).filter(([k,v])=>v)),hurt:{...(sh.hurt||{})}};}}});
       const top=Object.entries(why).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>k+':'+Math.round(v/60)+'s');
       return o.rows.map(r=>({h:r.h,salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),maxHp:BK.P.maxHp,bossLeft:r.hpLeftPct,phase:phases[r.h],cycle:cyc,n:ns[r.h],hitBy:r.hitBy,why:top}));})()`, 3600000);
