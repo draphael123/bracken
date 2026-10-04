@@ -19,6 +19,8 @@ export const CALL_LINES = new Set([
   /* claude/fairfix3: her ball, her ribbon sweep, her fires (src/wicker-queen.js, src/main.js wqBallsStep / wqLightPit) */
   /* claude/fairfix4: her ball struck back into her, and THE BONFIRE RING (the ball's line was 'THE WICKER BALL: JUMP IT') */
   'THE WICKER BALL: STRIKE IT BACK', 'STRUCK BACK', 'HER OWN FIRE: SHE CATCHES', 'THE BONFIRE RING: FIND THE GAP',
+  /* claude/fairfix5: every fire attack sets HERSELF alight (src/wicker-queen.js selfAlight) */
+  'HER OWN FIRE CAUGHT HER: CUT HER',
   'THE RIBBONS SWEEP LOW: JUMP TWICE', 'THE RIBBONS SWEEP HIGH: DUCK', 'THAT FIRE IS SPENT', 'THE BALL RELIGHTS THE FIRE',
   /* the states that mean "hit him now" / "the ward is down" */
   'OPEN', 'WARDED', 'HE IS OPEN', 'DOUSED - HE IS OPEN', 'HIS HEAD IS UP. HE IS OPEN', 'HER SIDE IS OPEN', 'HER GUARD IS BROKEN',

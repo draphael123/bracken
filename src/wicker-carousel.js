@@ -22,11 +22,11 @@ export const RING = {
   speed: [16, 24, 34],             // px/s by her phase (a hero runs 92; she walks 58, alight 88: against the ride she still comes to you)
   ease: 16,                        // px/s per second: the ride eases up to a new speed, never jumps
   warn: 1.5,                       // THE QUICKENING is told this long before it comes in
-  horses: 10, w: 22, h: 6,         // the horses on the ring (five on the front run), and a saddle's platform
+  horses: 12, w: 22, h: 6,         // the horses on the ring (six on the front run; claude/fairfix5, Daniel: a couple more - it was 10), and a saddle's platform
   pad: 14,                         // a horse's middle comes no nearer the walls than this
   lo: 16, hi: 40,                  // the saddle's height over the boards, bottom and top of its bob (a hero stands 14: he walks under a low one)
   bob: [3.6, 2.8, 2.2],            // seconds a bob, by phase
-  beat: [i => (i % 2) * Math.PI, i => i * Math.PI / 2, i => i * Math.PI * 2 / 3],   /* (ten horses: the alternation and the quarter-steps come round even; the thirds leave one pair in step at the join) */   // each horse's place in the bob, by phase
+  beat: [i => (i % 2) * Math.PI, i => i * Math.PI / 2, i => i * Math.PI * 2 / 3],   /* (twelve horses: the alternation, the quarter-steps and the thirds all come round even at the join) */   // each horse's place in the bob, by phase
   beatEase: 1.2,                   // radians per second a horse moves toward its new beat when the phase changes (no horse jumps)
 };
 /* a fresh ride over the arena A {x0, x1, floor}: standing still until she wakes */

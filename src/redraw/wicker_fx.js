@@ -21,8 +21,18 @@ export function drawReal(g, cx, cy, q, time) {
   if (!q || !q.alive || q.mode === 'burn' || q.mode === 'catch') return; const f = q.face || 1, x = Math.round(q.x - cx), y = Math.round(q.y - cy);
   for (let i = 0; i < 5; i++) { const fx = x + f + (i - 2) * 2, h = 2 + Math.round(2 * Math.abs(Math.sin(time * 13 + i * 1.7))), cols = ['#f08a28', '#ffc850', '#fff0b0'];   /* her crown: real fire */
     for (let k = 0; k < h; k++) { g.fillStyle = cols[Math.min(2, k)]; g.fillRect(fx, y - 84 - k, 1, 1); } }
+  if (q.alight > 0) drawAlight(g, x, y, f, q, time);   /* (claude/fairfix5) her own fire caught her: only the real Queen burns like this */
   const RB2 = ['#b8382c', '#e8c23a', '#3a7ab8'];
   for (let i = 0; i < 3; i++) for (let k = 0; k < 14; k++) { const wx = x - f * (4 + k), wy = y - 76 + i * 2 + Math.round(Math.sin(time * 9 - k * 0.55 + i) * (k / 5)); g.fillStyle = RB2[i]; g.fillRect(wx, wy, 1, 1); }   /* her ribbons, in the wind */
+}
+/* (claude/fairfix5) HER OWN FIRE CAUGHT HER: the first breath a FLARE runs up her spear arm into the wicker (the catch), then tongues of fire climb her skirts and
+   bodice for the whole window, guttering as it runs out (the window's clock is the fire's height) */
+export function drawAlight(g, x, y, f, q, time) {
+  const k = Math.max(0, Math.min(1, q.alight / WQ.alightT)), fresh = WQ.alightT - q.alight < 0.35;
+  if (fresh) { const u = (WQ.alightT - q.alight) / 0.35; g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,200,90,' + (0.7 * (1 - u)).toFixed(2) + ')'; g.beginPath(); g.arc(x + f * 12, y - 40 - u * 20, 10 + u * 16, 0, 6.3); g.fill(); g.globalCompositeOperation = 'source-over'; }
+  g.globalCompositeOperation = 'lighter'; const gl = g.createRadialGradient(x, y - 34, 2, x, y - 34, 34); gl.addColorStop(0, 'rgba(255,150,50,' + (0.35 * k + 0.1).toFixed(2) + ')'); gl.addColorStop(1, 'rgba(255,120,30,0)'); g.fillStyle = gl; g.fillRect(x - 34, y - 68, 68, 68); g.globalCompositeOperation = 'source-over';
+  for (let i = 0; i < 9; i++) { const fx = x - 10 + i * 2.5, base = y - 4 - ((i * 7) % 5) * 6, h = Math.round((6 + 10 * k) * (0.5 + 0.5 * Math.abs(Math.sin(time * 12 + i * 1.9)))), cols = ['#c8401a', '#f08a28', '#ffc850', '#fff0b0'];
+    for (let j = 0; j < h; j++) { g.fillStyle = cols[Math.min(3, Math.floor(j / Math.max(1, h / 4)))]; g.fillRect(Math.round(fx), Math.round(base - j * 2), 2, 2); } }
 }
 export function drawRing(g, cx, cy, VW, q, A, floor, time) {
   if (!q || (q.mode !== 'ringTell' && q.mode !== 'ring')) return; const [ga, gb] = gapOf(q), ly = Math.round(floor - 100 - cy), k = q.mode === 'ringTell' ? 1 - Math.max(0, q.modeT) / WQ.ringTell : 1;

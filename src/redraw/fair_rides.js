@@ -7,7 +7,8 @@
 import { nightK, hallsOf } from '../fair-games.js';
 import { beamLive } from '../chase.js';
 import * as FB from './fair_backdrop.js';
-import * as NR from './fair_newrides.js';   /* (claude/fairfix3) the swingboats, the chair-o-plane, the prize floors */
+import * as NR from './fair_newrides.js';
+import * as FTL from './fair_tiles.js';   /* (claude/fairfix5) the kit's lip colours */   /* (claude/fairfix3) the swingboats, the chair-o-plane, the prize floors */
 const TS = 16;
 const K = { wood: '#7a5230', woodL: '#a67a48', woodD: '#4e321a', woodDD: '#2e1e10', brass: '#e8c23a', brassD: '#a87a18', red: '#b8382c', redD: '#7a2418', cream: '#ece0c4', creamD: '#c8b890', gold: '#f0c840',
   wick: '#8a6a34', wickL: '#b89050', wickD: '#4e3a1a', straw: '#e6c95c', strawD: '#b8962e', blue: '#3a7ab8', ink: '#120e14', glass: '#9fb8c8', glassD: '#5a7286', steel: '#8a919c' };
@@ -306,6 +307,22 @@ export function drawFoeExtras(g, e, cx, cy, time) {
 export function lipRun(g, x, y, w, time, seed = 0) {
   r(g, x, y, w, 2, '#f0c060'); r(g, x, y + 2, w, 1, '#8a5a20');
   for (let i = 2; i < w - 1; i += 4) { const on = (Math.floor(time * 5) + ((i >> 2) + seed)) % 4 !== 0; r(g, x + i, y, 2, 1, on ? '#fff4c0' : '#c89a40'); }
+}
+/* EVERY STANDABLE TOP IN THE DARK (claude/fairfix5, the brief: "every standable edge carries a LIT LIP, drawn so it survives the height night"): over the night, each top
+   whose row the dark has reached gets its kit's lip (src/redraw/fair_tiles.js lipAt) - bulbs on the awnings, the iron and the railway's track, a pale edge on the rest -
+   brighter the darker it is there. The footing is never blind; what stands on it is still the night's */
+const STAND = new Set([1, 2, 8, 10]);
+export function drawTopLips(g, cx, cy, VW, VH, L, time) {
+  const N = L.fairNight; if (!N || !L.fairKit) return; const W = L.W, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= L.H) ? 1 : L.grid[y * W + x];
+  const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, PLANK: 8 }, halls = hallsOf(L), unlit = L.unlit || [];
+  const tx0 = Math.max(0, Math.floor(cx / TS)), tx1 = Math.min(W - 1, Math.floor((cx + VW) / TS)), ty0 = Math.max(1, Math.floor(cy / TS)), ty1 = Math.min(L.H - 1, Math.floor((cy + VH) / TS));
+  for (let ty = ty0; ty <= ty1; ty++) { const kRow = nightK(N, ty * TS);
+    for (let tx = tx0; tx <= tx1; tx++) { const t = at(tx, ty); if (!STAND.has(t) || at(tx, ty - 1) !== 0) continue;
+      const inHall = halls.some(H => tx >= H.x0 && tx <= H.x1 && ty > H.roof && ty <= H.floor), dark = Math.max(kRow, inHall || unlit.some(([a, b]) => tx >= a && tx <= b) ? 0.6 : 0); if (dark < 0.2) continue;
+      const col = FTL.lipAt(L, tx, ty, t, at, T); if (!col) continue; const sx = tx * TS - cx, sy = ty * TS - cy;
+      g.globalAlpha = Math.min(1, 0.35 + dark * 0.8); r(g, sx, sy, TS, 1, col);
+      if (col === '#e8c040' || col === '#c9d1dc') for (let i = 1; i < TS; i += 4) { const on = (Math.floor(time * 4) + ((tx * 4 + i) >> 2)) % 5 !== 0; if (on) r(g, sx + i, sy, 2, 1, '#fff4c0'); }   /* chase bulbs */
+      g.globalAlpha = 1; } }
 }
 export function drawLips(g, cx, cy, VW, L, F, time) {
   const G = F && F.games; if (!G) return;

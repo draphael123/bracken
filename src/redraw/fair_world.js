@@ -124,13 +124,17 @@ const FIG = (v) => once('fig' + v, () => { const [c, g] = canvas(9, 22), k = '#2
   fillPoly(g, [[2, 9], [7, 9], [8, 21], [1, 21]], k); rect(g, 3, 3, 3, 6, kk); rect(g, 2, 1, 5, 2, k); px(g, 4, 0, k); if (v & 1) { rect(g, 0, 10, 2, 8, k); rect(g, 7, 10, 2, 8, k); }
   px(g, 3, 5, '#8a7a9a'); px(g, 5, 5, '#8a7a9a'); return c; });
 let FIGS = null;
-export function drawCrowd(g, cx, cy, VW, L, dusk, time) {
+/* (claude/fairfix5) THE GHOST CROWD SWAYS - and FREEZES while you face it: the fair's rule, as dressing only (a figure on the side you face holds where it stood; at your back
+   it sways and shifts). hero: { x, face } */
+export function drawCrowd(g, cx, cy, VW, L, dusk, time, hero) {
   const W = L.W * TS, PAR = 0.6, floor = (L.green ? L.green.floor : 28) * TS;
   if (!FIGS) { const r = mulberry(1913); FIGS = Array.from({ length: 150 }, () => { const at = r() * W; return { at, vx: at * PAR + 60, k: r(), v: (r() * 4) | 0, h: (r() * 3) | 0 }; }); }
   g.globalAlpha = Math.min(0.72, 0.2 + dusk * 0.6); const gy = Math.round(floor - cy - 20);
   for (const f of FIGS) { if (f.at < 20 * TS || f.k > (f.at / (620 * TS)) * 0.95 - 0.12) continue;   // none at the gate; the further along, the more of them stand there
     const sx = Math.round(f.vx - cx * PAR); if (sx < -12 || sx > VW + 12) continue;
-    g.drawImage(FIG(f.v), sx, gy + f.h * 2 - 4 + Math.round(Math.sin(time * 0.5 + f.at) * 0.4)); }
+    const faced = hero && Math.sign(sx - (hero.x - cx)) === (hero.face || 1);
+    if (!faced) { f.ox = Math.sin(time * 1.3 + f.at) * 1.8; f.oy = Math.round(Math.sin(time * 0.9 + f.at * 1.7) * 0.6); }
+    g.drawImage(FIG(f.v), sx + Math.round(f.ox || 0), gy + f.h * 2 - 4 + (f.oy || 0)); }
   g.globalAlpha = 1; }
 
 // ---------------- THE MASK'S GLOW: an additive halo behind a mummer whose mask has gone red (the glow tell, so it reads in the dusk) ----------------
@@ -138,3 +142,64 @@ export function drawGlow(g, x, y, time) {
   g.globalCompositeOperation = 'lighter'; const r = 26 + Math.sin(time * 26) * 3, gr = g.createRadialGradient(x, y, 2, x, y, r);
   gr.addColorStop(0, 'rgba(255,50,30,0.75)'); gr.addColorStop(0.5, 'rgba(255,40,20,0.3)'); gr.addColorStop(1, 'rgba(255,30,10,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); g.globalCompositeOperation = 'source-over'; }
 
+
+// ================= THE LIVING DRESSING (claude/fairfix5; the review: "the fair is not in the play layer - you never stand INSIDE the fair") =================
+// Drawn in the play layer (drawFair, after the tiles, before the foes) from the level's L.fairDress: [{ k, x (left col), w (cols), row (the ground row it stands on) }].
+// Each stands wholly on flat ground and covers no footing. The bulbs on the stall fronts and the arch come on along the road (`lit`: by how far along it stands and
+// the dusk), so the dark is lit by the fair itself. Kinds:
+//   arch       the entrance arch of corn sheaves with HARVEST FAIR in lit letters       booth     the ticket booth with its turnstile
+//   fence      a rope-and-stake queue fence                                             sign      a tin sign on a post
+//   hoopla     a hoopla stall front (pegs and rings)   shy  the coconut shy's front      prizes    a prize shelf (dolls and jars)
+//   generator  the showman's steam generator: flywheel, chimney puffing, cables          organ     the band organ's front with its figures
+//   pumpkins   prize pumpkins and sheaves with a rosette                                stooks    sheaves stood in the stubble
+//   tarp       a ride packed away under a tarpaulin                                     wagon     a showman's living wagon     caravan  the fortune-teller's caravan
+//   flags      a pole of pennants that flutter
+const D = { wood: '#6a4428', woodL: '#9a6a3c', woodD: '#3a2416', red: '#b8382c', redD: '#7a2418', cream: '#ece0c4', gold: '#f0c840', brass: '#e8c23a', blue: '#2f5f9a', green: '#3f7a4a',
+  plum: '#6a2a5a', straw: '#e2c070', strawD: '#a8802c', iron: '#2e2e3a', ironL: '#5a5a6e', canvas: '#7a7058', canvasD: '#4e4838', pump: '#d8701c', pumpD: '#8a3a10', ink: '#140e14', bulb: '#fff0b0', bulbOff: '#5a4a32' };
+const rr = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+const bulbs = (g, x0, x1, y, lit, time, step = 6, seed = 0) => { for (let x = x0, i = 0; x <= x1; x += step, i++) { const on = lit > 0.15 && (Math.floor(time * 5) + i + seed) % 5 !== 0; rr(g, x, y, 2, 2, on ? D.bulb : D.bulbOff);
+  if (on && lit > 0.4) { g.globalAlpha = 0.25 * lit; rr(g, x - 1, y - 1, 4, 4, '#ffd36b'); g.globalAlpha = 1; } } };
+const LETTERS = { H: ['101', '111', '101'], A: ['010', '111', '101'], R: ['110', '111', '101'], V: ['101', '101', '010'], E: ['111', '110', '111'], S: ['011', '010', '110'], T: ['111', '010', '010'], F: ['111', '110', '100'], I: ['111', '010', '111'] };
+function word(g, s, x, y, col, k = 2) { for (const ch of s) { const Lt = LETTERS[ch]; if (Lt) for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) if (Lt[r][c] === '1') rr(g, x + c * k, y + r * k, k, k, col); x += 4 * k; } }
+function sheaf(g, x, y, h) { for (let i = -3; i <= 3; i++) { g.strokeStyle = i & 1 ? D.strawD : D.straw; g.lineWidth = 1; g.beginPath(); g.moveTo(x + i * 0.6 + 0.5, y); g.lineTo(x + i * 1.6 + 0.5, y - h); g.stroke(); } rr(g, x - 3, y - h * 0.45, 7, 2, D.woodD); for (let i = -2; i <= 2; i++) rr(g, x + i * 2, y - h - 2, 1, 2, D.straw); }
+export function drawDressing(g, cx, cy, VW, L, time, dusk) {
+  for (const it of L.fairDress || []) { const x = it.x * 16 - cx, w = (it.w || 1) * 16, gy = it.row * 16 - cy; if (x > VW + 40 || x + w < -40) continue;
+    const lit = Math.min(1, 0.25 + dusk * 0.9 + it.x / 900);
+    switch (it.k) {
+      case 'arch': { const h = 70; for (const px0 of [x + 2, x + w - 12]) { rr(g, px0, gy - h, 10, h, D.strawD); for (let y = gy - h; y < gy; y += 6) { rr(g, px0, y, 10, 3, D.straw); rr(g, px0 + 2, y + 3, 6, 1, D.woodD); } }   /* two pillars of corn sheaves */
+        rr(g, x - 2, gy - h - 16, w + 4, 18, D.woodD); rr(g, x - 2, gy - h - 16, w + 4, 2, D.gold); rr(g, x, gy - h - 13, w, 12, D.redD);
+        word(g, 'HARVEST FAIR', x + Math.round((w - 12 * 8) / 2) + 2, gy - h - 11, lit > 0.3 && Math.floor(time * 2) % 7 ? '#ffe9a0' : '#c89a40', 2);   /* the lit letters */
+        bulbs(g, x, x + w, gy - h - 18, lit, time, 6); for (let i = 0; i < 5; i++) sheaf(g, x + 6 + i * (w - 12) / 4, gy - h - 16, 10); break; }
+      case 'booth': { rr(g, x + 2, gy - 34, w - 4, 34, D.blue); rr(g, x + 2, gy - 34, w - 4, 2, D.gold); rr(g, x + 6, gy - 26, w - 12, 10, '#1a1420'); rr(g, x + 6, gy - 26, w - 12, 1, D.brass);
+        g.fillStyle = D.red; g.beginPath(); g.moveTo(x, gy - 34); g.lineTo(x + w / 2, gy - 46); g.lineTo(x + w, gy - 34); g.fill(); word(g, 'TI', x + 8, gy - 13, D.cream, 1);
+        const tx = x + w + 4, ta = time * 0.8; rr(g, tx, gy - 18, 3, 18, D.ironL); for (let i = 0; i < 3; i++) { const a = ta + i * 2.09; rr(g, tx + 1 + Math.cos(a) * 8, gy - 12 + Math.sin(a) * 2, 8 * Math.abs(Math.cos(a)) + 1, 2, D.iron); } break; }   /* the turnstile's arms */
+      case 'fence': { for (let i = 0; i <= it.w; i++) { const sx = x + i * 16; rr(g, sx, gy - 14, 2, 14, D.woodD); rr(g, sx, gy - 14, 2, 1, D.woodL); if (i < it.w) { g.strokeStyle = '#b8a070'; g.lineWidth = 1; g.beginPath(); g.moveTo(sx + 1, gy - 12); g.quadraticCurveTo(sx + 8, gy - 8, sx + 16, gy - 12); g.stroke(); } } break; }
+      case 'sign': { rr(g, x + 7, gy - 26, 2, 26, D.woodD); rr(g, x, gy - 30, 16, 10, D.cream); rr(g, x, gy - 30, 16, 1, D.ink); rr(g, x + 1, gy - 28, 14, 6, [D.red, D.blue, D.green][it.x % 3]); rr(g, x + 3, gy - 26, 10, 1, D.cream); rr(g, x + 13, gy - 29, 2, 2, '#8a5a3a'); break; }
+      case 'hoopla': case 'shy': case 'prizes': { const top = gy - (it.h || 40); rr(g, x, top, w, gy - top, D.woodD); rr(g, x + 2, top + 2, w - 4, gy - top - 14, '#1c1418'); rr(g, x, gy - 12, w, 12, D.red); rr(g, x, gy - 12, w, 2, D.gold);   /* the front and its counter */
+        if (it.k === 'hoopla') for (let i = 0; i < w / 10 - 1; i++) { const px0 = x + 8 + i * 10, py = top + 12 + (i % 2) * 8; rr(g, px0, py, 2, 8, D.woodL); g.strokeStyle = [D.red, D.gold, D.blue][i % 3]; g.lineWidth = 1; g.beginPath(); g.ellipse(px0 + 1, py + 6, 4, 1.5, 0, 0, 6.3); g.stroke(); }
+        if (it.k === 'shy') for (let i = 0; i < w / 12 - 1; i++) { const px0 = x + 10 + i * 12; rr(g, px0, top + 12, 2, gy - top - 26, D.woodL); g.fillStyle = '#5a3a1e'; g.beginPath(); g.arc(px0 + 1, top + 10, 3, 0, 6.3); g.fill(); }
+        if (it.k === 'prizes') for (let s = 0; s < 2; s++) { rr(g, x + 3, top + 10 + s * 12, w - 6, 1, D.woodL); for (let i = 0; i < w / 8 - 1; i++) { const px0 = x + 6 + i * 8; rr(g, px0, top + 4 + s * 12, 4, 6, [D.plum, '#c8d8f0', D.green, D.pump][(i + s) % 4]); rr(g, px0 + 1, top + 4 + s * 12, 2, 1, '#ffffff'); } }
+        bulbs(g, x + 2, x + w - 2, top - 2, lit, time, 6, it.x); break; }
+      case 'generator': { rr(g, x, gy - 26, w - 10, 26, '#3a2e2a'); rr(g, x, gy - 26, w - 10, 2, D.brass); rr(g, x + 4, gy - 22, w - 18, 10, D.red); word(g, 'TH', x + 8, gy - 20, D.gold, 1);
+        rr(g, x + w - 26, gy - 40, 7, 16, D.iron); rr(g, x + w - 27, gy - 42, 9, 2, D.brass);   /* the chimney */
+        for (let i = 0; i < 4; i++) { const p = (time * 0.6 + i / 4) % 1; g.fillStyle = 'rgba(200,190,180,' + ((1 - p) * 0.45).toFixed(2) + ')'; g.beginPath(); g.arc(x + w - 22 + p * 10 + Math.sin(time * 2 + i) * 2, gy - 44 - p * 30, 3 + p * 6, 0, 6.3); g.fill(); }
+        const fx = x + w - 6, fy = gy - 14, a = time * 4; g.strokeStyle = D.ironL; g.lineWidth = 2; g.beginPath(); g.arc(fx, fy, 10, 0, 6.3); g.stroke(); g.lineWidth = 1; for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + Math.cos(a + i) * 10, fy + Math.sin(a + i) * 10); g.stroke(); }   /* the flywheel */
+        if (it.to) { g.strokeStyle = '#1a1614'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 6, gy - 26); g.quadraticCurveTo((x + 6 + it.to * 16 - cx) / 2, gy - 60, it.to * 16 - cx, gy - 70); g.stroke(); } break; }   /* a cable slung to the ride */
+      case 'organ': { const top = gy - 44; rr(g, x, top, w, 44, D.plum); rr(g, x, top, w, 3, D.gold); g.fillStyle = D.gold; g.beginPath(); g.moveTo(x, top); g.quadraticCurveTo(x + w / 2, top - 14, x + w, top); g.fill();
+        for (let i = 0; i < 8; i++) { const ph = x + 8 + i * ((w - 16) / 8); rr(g, ph, top + 10 - (i % 4) * 2, 3, 20 + (i % 4) * 2, '#d8c070'); rr(g, ph, top + 10 - (i % 4) * 2, 3, 1, '#fff0c0'); }   /* its pipes */
+        for (const fxp of [x + 4, x + w - 10]) { const b = Math.sin(time * 6 + fxp) > 0 ? 1 : 0; rr(g, fxp, top + 22 - b, 6, 12, D.cream); rr(g, fxp + 1, top + 18 - b, 4, 4, '#e8b890'); rr(g, fxp, top + 34 - b, 6, 2, D.red); }   /* the figures striking their bells */
+        bulbs(g, x + 2, x + w - 2, top + 4, lit, time, 5, 3); break; }
+      case 'pumpkins': { for (let i = 0; i < (it.w || 2) * 2; i++) { const px0 = x + 4 + i * 7 + (i % 2) * 2, s = 4 + (i * 3) % 4; g.fillStyle = D.pump; g.beginPath(); g.ellipse(px0, gy - s, s + 1, s, 0, 0, 6.3); g.fill(); g.fillStyle = D.pumpD; g.fillRect(Math.round(px0) - 1, gy - s * 2 + 1, 1, s * 2 - 2); rr(g, px0, gy - s * 2 - 2, 1, 3, D.green); }
+        sheaf(g, x + w - 4, gy, 22); rr(g, x + 8, gy - 20, 6, 6, D.blue); rr(g, x + 10, gy - 14, 2, 4, D.red); break; }   /* and a rosette */
+      case 'stooks': { for (let i = 0; i < (it.w || 2); i++) { const sx = x + 8 + i * 16; sheaf(g, sx - 3, gy, 18); sheaf(g, sx + 3, gy, 18); } break; }
+      case 'tarp': { g.fillStyle = D.canvasD; g.beginPath(); g.moveTo(x, gy); g.lineTo(x + 6, gy - 30); g.quadraticCurveTo(x + w / 2, gy - 40, x + w - 6, gy - 26); g.lineTo(x + w, gy); g.fill();
+        g.fillStyle = D.canvas; g.beginPath(); g.moveTo(x + 4, gy); g.lineTo(x + 9, gy - 28); g.quadraticCurveTo(x + w / 2, gy - 36, x + w - 10, gy - 24); g.lineTo(x + w - 6, gy); g.fill();
+        for (let i = 1; i < 4; i++) rr(g, x + i * w / 4, gy - 30 + Math.abs(i - 2) * 4, 1, 30 - Math.abs(i - 2) * 4, '#2e2a20'); rr(g, x + w / 2 - 4, gy - 8, 8, 8, D.gold); break; }   /* a gilded horse's hoof under it */
+      case 'wagon': case 'caravan': { const top = gy - 38, col = it.k === 'caravan' ? D.plum : D.green; rr(g, x + 2, top, w - 4, 28, col); g.fillStyle = it.k === 'caravan' ? '#3a1a3a' : '#24502e'; g.beginPath(); g.moveTo(x, top); g.quadraticCurveTo(x + w / 2, top - 12, x + w, top); g.fill();
+        rr(g, x + 2, top, w - 4, 2, D.gold); rr(g, x + 2, top + 26, w - 4, 2, D.gold); const win = it.k === 'caravan' || it.x % 2; rr(g, x + w / 2 - 5, top + 7, 10, 9, win ? '#ffcf70' : '#1a1418'); rr(g, x + w / 2 - 5, top + 7, 10, 1, D.gold);
+        if (win) { g.globalAlpha = 0.25; rr(g, x + w / 2 - 12, top + 2, 24, 20, '#ffcf70'); g.globalAlpha = 1; }   /* one lit window */
+        for (const wx of [x + 10, x + w - 10]) { g.strokeStyle = D.woodD; g.lineWidth = 2; g.beginPath(); g.arc(wx, gy - 6, 6, 0, 6.3); g.stroke(); g.lineWidth = 1; rr(g, wx - 1, gy - 7, 2, 2, D.gold); }
+        if (it.k === 'caravan') { word(g, 'FATE', x + 6, top + 18, D.gold, 1); g.fillStyle = 'rgba(160,200,255,0.5)'; g.beginPath(); g.arc(x + w / 2, top + 12, 2 + Math.sin(time * 3), 0, 6.3); g.fill(); } break; }   /* the crystal glowing in the window */
+      case 'flags': { const h = it.h || 60; rr(g, x + 7, gy - h, 2, h, D.woodD); for (let i = 0; i < 4; i++) { const fy = gy - h + 4 + i * 9, fl = Math.sin(time * 5 + i + it.x) * 2; g.fillStyle = [D.red, D.gold, D.blue, D.green][(i + it.x) % 4]; g.beginPath(); g.moveTo(x + 9, fy); g.lineTo(x + 19 + fl, fy + 3); g.lineTo(x + 9, fy + 6); g.fill(); } break; }
+    } }
+}

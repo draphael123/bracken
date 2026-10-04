@@ -367,7 +367,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   post(597); ent('check', 600, S);                        /* the door's checkpoint: the last one the road passes before the green */
   /* THE BACK LOT (claude/fairfix2: TICKETS ARE KEYS; it was the prize booth; claude/fairfix3: it opens on 30 of the 35 now, and stands past the shrine): a hatch in the road
      and a sign - SHOW 30 TICKETS. Hold that many and the hatch drops open into the stall men's back lot: THE FORTUNE-TELLER'S GLASS (the fair's own relic) and a silver, and a stair back up */
-  ent('deco', 606, S, { kind: 'stall', v: 0 }); ent('sign', 604, S, { text: 'THE BACK LOT. SHOW 30 TICKETS.' });
+  ent('sign', 604, S, { text: 'THE BACK LOT. SHOW 30 TICKETS.' });   /* (claude/fairfix5: the stall that stood at 606 is the FORTUNE-TELLER's caravan now - fairDress - by the hatch to her glass) */
   for (let y = R + 1; y <= R + 6; y++) for (let x = 597; x <= 608; x++) set(x, y, T.AIR);
   plat(604, R + 4, 3); plat(602, R + 2, 2);   /* the stair back up through the hatch */
   ticketGates.push({ x: 602, w: 2, y0: R, y1: R, all: true, need: 30, hatch: true, name: 'THE BACK LOT' });
@@ -424,11 +424,22 @@ export function buildHarvestFair({ painter, T, TS }) {
     checkRun: 200,   /* the level filler adds no shrine inside a run shorter than the game's ceiling (claude/fairfix: five shrines, placed by hand) */
     fairNight: NIGHT,   /* (not `night`: the game reads L.night as its camp-night wash) */
     music: 'harvestfair', duskStart: 120 * TS, duskLen: 520 * TS,         /* sunset at the gate; dusk by the last round */
-    palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
+    /* (claude/fairfix5) THE FAIR'S OWN GROUND, BY ZONE (src/redraw/fair_tiles.js): the turnstiles and the midway, the rides yard, the barns and the corn, the bonfire field, the back lot.
+       ledges: the runs that are not what their zone and height make them; blocks: the stall buildings (the terrace, the high stall, the roof streets); keep: none */
+    fairKit: { R, zones: [[0, 245, 'turf'], [246, 371, 'iron'], [372, 465, 'barn'], [466, 524, 'field'], [525, 619, 'mud'], [620, W, 'green']],
+      ledges: [[82, 94, 19, 19, 'boardwalk'], [157, 163, 19, 19, 'boardwalk'], [176, 195, 13, 13, 'boardwalk'], [198, 214, R + 1, R + 5, 'boardwalk'], [321, 337, R + 1, R + 5, 'boardwalk'], [563, 594, 14, 15, 'track'], [577, 588, 16, 27, 'wagon'], [596, 606, 16, R + 5, 'wagon']],
+      blocks: [[52, 67, R - 3, R - 1], [104, 117, R - 2, R - 1], [162, 185, R - 6, H - 1], [229, 235, R - 6, R - 1]] },
+    /* (claude/fairfix5) THE LIVING DRESSING in the play layer (src/redraw/fair_world.js drawDressing): each on flat road, none over a footing */
+    fairDress: [{ k: 'arch', x: 1, w: 7, row: R }, { k: 'booth', x: 9, w: 2, row: R }, { k: 'fence', x: 23, w: 4, row: R }, { k: 'shy', x: 17, w: 5, row: R, h: 44 }, { k: 'flags', x: 30, row: R },
+      { k: 'sign', x: 40, row: R }, { k: 'fence', x: 76, w: 4, row: R }, { k: 'prizes', x: 89, w: 3, row: R, h: 40 }, { k: 'hoopla', x: 119, w: 5, row: R, h: 40 }, { k: 'sign', x: 132, row: R }, { k: 'prizes', x: 144, w: 4, row: R, h: 38 },
+      { k: 'flags', x: 209, row: R }, { k: 'generator', x: 247, w: 6, row: R, to: 264 }, { k: 'sign', x: 256, row: R }, { k: 'organ', x: 293, w: 5, row: R }, { k: 'flags', x: 312, row: R }, { k: 'sign', x: 350, row: R },
+      { k: 'pumpkins', x: 379, w: 3, row: R }, { k: 'pumpkins', x: 396, w: 2, row: R }, { k: 'tarp', x: 442, w: 5, row: R }, { k: 'stooks', x: 464, w: 2, row: R },
+      { k: 'caravan', x: 603, w: 4, row: R }, { k: 'wagon', x: 610, w: 5, row: R }, { k: 'flags', x: 597, row: R, h: 50 }],
+    palette: { set: 'fair', dress: 'fair', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',   /* (claude/fairfix5: its own - it was Waymeet's set, dress, mine-staging ledges and green grass) */
       haze: 'rgba(230,160,110,0.14)', murkCol: '#2e2a34', darkCol: '10,6,16', darkRim: ['#c8905c', 0.16, 0.22],   /* THE WICKER QUEEN's full dark (claude/fair3): a warm ember-lit edge on what moves in it, not the mines' cold white */
-      grass: '#6a8a46', grassL: '#8fb060', grassD: '#47612e', dirt: '#7a6248', dirtL: '#8f7458', dirtD: '#54402c',
-      canopy: ['#2a3a24', '#3a5230', '#4a6a3c', '#5e8248'] },
-    weather: [{ x0: 0, x1: 99999, kind: 'pollen' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'town' }],
+      grass: '#c89a50', grassL: '#e2c070', grassD: '#8a6a34', dirt: '#56361f', dirtL: '#6e4628', dirtD: '#3e2618',   /* straw and russet earth: no Waymeet green */
+      canopy: ['#3a2418', '#5a3420', '#7a4a28', '#9a6232'] },
+    weather: [],   /* (claude/fairfix5: its own weather is drawn by src/redraw/fair_backdrop.js drawMotes - chaff and straw at the gate, ash after the effigy; Waymeet's pollen is gone) */
+    ambient: [{ x0: 0, x1: 524, kind: 'fair' }, { x0: 525, x1: 99999, kind: 'fairlot' }],   /* (claude/fairfix5) its own air (src/audio.js SYNTH_BEDS fair / fairlot): the crowd far off, then the back lot's silence - it was Waymeet's smithy */
   };
 }

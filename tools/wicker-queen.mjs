@@ -154,7 +154,10 @@ const lure = (turnAt, o = {}) => { const r = rig({ ...QUIETCD, ...o }); const h 
   const unseen = rig({ ...QUIETCD, heroes: [hero(10200, -1)] }); const um = new Set(); for (let i = 0; i < 60 * 8; i++) { unseen.step(); um.add(unseen.e.mode); if (unseen.e.mode === 'stabTell') break; }
   ok(unseen.e.x < EMB.x0 && !um.has('catch') && !um.has('burn'), 'crossing the embers UNSEEN opened her: ' + [...um]);
   const alone = rig({ heroes: [hero(10300, 1)], embers: null }); let op = 0; for (let i = 0; i < 60 * 60; i++) { alone.step(); op = Math.max(op, alone.e.open || 0); if (alone.e.mode === 'stab') alone.e.mode = 'still'; }
-  ok(op === 0 && !alone.e.n.burn, 'A11: left to her own attacks for a minute she opened by herself: ' + op);
+  /* (claude/fairfix5, Daniel 10-02: "every fire attack sets HERSELF alight") A11 still holds for THE BURN - she never burns open by herself - and the one window her own
+     attacks make is the self-alight after a FIRE attack (the floor, the ring, the ball): never more of them than her fire attacks, never longer than alightT, at the burn's x */
+  const nAl = alone.e.n.alight || 0, nFire = alone.e.n.floor + alone.e.n.ring + alone.e.n.toss;
+  ok(!alone.e.n.burn && op <= W.WQ.alightT + 1e-6 && nAl >= 1 && nAl <= nFire && W.WQ.alightT >= 3 && W.WQ.alightMul === W.WQ.burnMul, 'A11: left to her own attacks for a minute she BURNED open by herself, or her self-alight windows are not one per fire attack, >= 3 s, at the burn x: ' + JSON.stringify({ op, burn: alone.e.n.burn, alight: nAl, fire: nFire }));
   const r = on.r; for (let i = 0; i < 60 * 5 && r.e.mode !== 'still'; i++) r.step();
   ok(r.e.bank > 0 && !W.onEmbers(r.e.x, EMB), 'after the burn she was not flung off the embers, or they were not banked: ' + JSON.stringify({ x: r.e.x, bank: r.e.bank }));
   r.e.x = EMB.mid; r.c.heroes[0].face = 1; r.c.heroes[0].x = EMB.mid - 150; for (let i = 0; i < 30; i++) r.step();
@@ -241,7 +244,7 @@ ok(W.WQ.burnT >= 3 && W.WQ.burnTP3 >= 3 && W.WQ.ward <= 0.05, 'her burn is not a
   for (let i = 0; i < 60 * 40; i++) { C.ringStep(r, DT); const hs = Array.from({ length: R.horses }, (_, k) => C.horseAt(r, k)), fr = hs.filter(h => h.front);
     fronts.add(fr.length); for (const h of fr) { lifts.push(h.lift); if (h.lift < R.lo - 0.01 || h.lift > R.hi + 0.01) badLift++; }
     if (i % 10 === 0) for (let x = r.x0; x <= r.x1; x += 8) worst = Math.max(worst, Math.min(...fr.map(h => Math.abs(h.x - x)))); }
-  ok([...fronts].every(n => n >= 3 && n <= 5), 'the front run does not always hold three to five horses: ' + [...fronts]);
+  ok([...fronts].every(n => n >= 4 && n <= 6), 'the front run does not always hold four to six horses (claude/fairfix5: twelve on the ring, six on the front run; it was ten and three to five): ' + [...fronts]);
   ok(badLift === 0 && Math.max(...lifts) - Math.min(...lifts) > (R.hi - R.lo) * 0.9, 'a horse bobbed outside its pole, or did not bob: ' + badLift);
   /* the horses ride the boards as he does, so what counts is his run against the ring (92 px/s) through the floor's told time */
   ok(worst <= 92 * W.WQ.floorTell, 'a point of the boards stood ' + Math.round(worst) + ' px from the nearest horse: more than a run of ' + W.WQ.floorTell + ' s (a burning floor must leave one in reach)');
@@ -408,7 +411,7 @@ try {
     // 12c. (claude/fairfix4) THE BONFIRE RING in the page: outside the gap on the boards it burns; in the gap, or up on a horse, it does not
     const ringAs = act => { quiet(); q.hp = q.maxHp; q.mode = 'still'; q.x = A.x0 + 120; q.ringCd = 0; q.bank = 99; { const F2 = BK.fair(); F2.wqPits = (F2.wqPits || []).filter(p => p.fire); } BK.god = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; const hp0 = BK.P.hp; let told = 0, burnF = 0, mark = null;
       if (act === 'ride') onHorse(); else hold(A.x0 + 360, 1);
-      for (let i = 0; i < 60 * 9; i++) { const r0 = q.ringCd; quiet(); q.ringCd = r0; BK.P.inv = 0; none(); BK.P.face = -1;
+      for (let i = 0; i < 60 * 14; i++) { const r0 = q.ringCd; quiet(); q.ringCd = r0;   /* (claude/fairfix5: 14 s, from 9 - the tell is 3 s now and the ring did not finish inside the old cap) */ BK.P.inv = 0; none(); BK.P.face = -1;
         if (q.mode === 'ringTell') { told++; if (!mark) mark = BK.markOf(q); if (act === 'gap') hold(q.gapX, -1); }
         if (q.mode === 'ring') { burnF++; if (act === 'gap') hold(q.gapX, -1); else if (act === 'stand') hold(Math.max(A.x0 + 30, Math.min(A.x1 - 30, q.gapX + (q.gapX < A.x1 - 140 ? 100 : -100))), -1); }
         else if (act !== 'ride' && q.mode !== 'ringTell') hold(A.x0 + 360, -1);

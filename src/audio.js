@@ -53,7 +53,7 @@ export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -619,6 +619,27 @@ function loopNoise(freq, q, gain, type = 'bandpass') {
 function lfoOn(param, hz, depth) { const o = ac.createOscillator(); o.frequency.value = hz; const d = ac.createGain(); d.gain.value = depth; o.connect(d); d.connect(param); o.start(); ambNodes.push(o); }
 let ambTick = null, ambTickMs = 500;
 const SYNTH_BEDS = {
+  /* (claude/fairfix5) THE HARVEST FAIR's own air, all synth (no file): a far crowd murmur that never comes closer, with a laugh carried on the wind; canvas flapping;
+     a ride creaking on its chains; the showman's generator chugging; bells on the wind. 'fairlot' is the back lot's: the crowd gone, a generator dying, one creak */
+  fair() {
+    const crowd = loopNoise(420, 1.2, 0.55, 'bandpass'); lfoOn(crowd.g.gain, 0.13, 0.2); lfoOn(crowd.f.frequency, 0.07, 90);
+    const air = loopNoise(260, 1.4, 0.35); lfoOn(air.g.gain, 0.09, 0.22);
+    let chug = 0;
+    ambTick = () => { chug++; if (chug % 2 === 0) tone('sine', 52, 44, 0.12, 0.05);                                                            /* the generator: a low chug every half second */
+      if (Math.random() < 0.035) for (let i = 0; i < 3 + ((Math.random() * 3) | 0); i++) tone('triangle', 300 + Math.random() * 120, 240, 0.08, 0.008, i * 0.11);   /* a laugh, far off */
+      if (Math.random() < 0.06) noise(0.18 + Math.random() * 0.14, 0.06, 900, 0.5);                                                             /* canvas flapping */
+      if (Math.random() < 0.04) { tone('sawtooth', 120 + Math.random() * 40, 90, 0.5, 0.012); tone('square', 1900, 1700, 0.03, 0.01, 0.3); }      /* a ride creaks; its chain clinks */
+      if (Math.random() < 0.025) { const f = 900 + Math.random() * 500; tone('sine', f, f, 0.9, 0.012); tone('sine', f * 2.4, f * 2.4, 0.5, 0.004); } };   /* a bell on the wind */
+    ambTickMs = 250;
+  },
+  fairlot() {
+    const air = loopNoise(220, 1.5, 0.5); lfoOn(air.g.gain, 0.08, 0.3); lfoOn(air.f.frequency, 0.05, 70);
+    let chug = 0;
+    ambTick = () => { chug++; if (chug % 5 === 0 && Math.random() < 0.6) tone('sine', 46, 38, 0.16, 0.035);                                     /* the generator, dying: a chug that misses */
+      if (Math.random() < 0.03) tone('sawtooth', 100 + Math.random() * 30, 80, 0.6, 0.01);                                                      /* one creak */
+      if (Math.random() < 0.012) { const f = 700 + Math.random() * 300; tone('sine', f, f * 0.97, 1.2, 0.006); } };                            /* a far bell, out of tune */
+    ambTickMs = 300;
+  },
   fire() {
     const roar = loopNoise(260, 0.7, 0.9, 'lowpass'); lfoOn(roar.g.gain, 0.23, 0.35);
     const hiss = loopNoise(3200, 0.6, 0.22); lfoOn(hiss.g.gain, 0.5, 0.1);
@@ -1411,7 +1432,7 @@ Object.assign(SFX, {
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'redgorge', 'gorgecrab'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot'];
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0 or CC-BY (Daniel's 10-01 rule change) WITH its credit line here and in CREDITS.txt - 'Dark Carnival' and 'At Work' are the CC-BY ones; see the credited lanes' own reports). Three tracks have
 // no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial

@@ -405,7 +405,7 @@ console.log('harvest-fair pure + level: ok');
   let RF;
   try {
     RF = await pgF.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; const fi = LEVELS.findIndex(l => l.id === 'fair');
-      BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(fi); BK.state = 'play'; BK.god = true; BK.sim(5); for (const e of BK.enemies()) if (!e.gate) e.alive = false; BK.sim(150);   /* (straight into play - no level card over the frame - and past the opening iris; the door guard lives, or its death's banner lies over the top of the frame) */
+      BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(fi); BK.state = 'play'; BK.god = true; BK.sim(5); for (const e of BK.enemies()) if (!e.gate) e.alive = false; BK.sim(150); BK.look(5, 26); BK.sim(90); BK.look(5, 26);   /* (one frame drawn, then a second and a half: the screen change's iris runs on the drawn clock, and is open after it) */   /* (straight into play - no level card over the frame - and past the opening iris; the door guard lives, or its death's banner lies over the top of the frame) */
       const L = BK.L, G = BK.fair().games, TS = 16, VW = BK.view.VW, VH = BK.view.VH, at = (x, y) => L.grid[y * L.W + x];
       const frame = (tx, ty, hide) => { const sv = G.galleries; if (hide) G.galleries = []; const c = BK.look(tx, ty); const d = BK.buf.getContext('2d').getImageData(0, 0, VW, VH).data; G.galleries = sv; return { c, d }; };
       const lum = (d, x, y) => { if (x < 0 || y < 0 || x >= VW || y >= VH) return null; const i = (y * VW + x) * 4; return 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; };
