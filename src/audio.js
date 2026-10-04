@@ -12,7 +12,8 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   frogking: './audio/frogking.ogg', sporemother: './audio/sporemother.ogg', ramlord: './audio/ramlord.ogg', owlreeve: './audio/owlreeve.ogg', herald: './audio/herald.ogg', reefmaw: './audio/reefmaw.ogg', closedhelm: './audio/closedhelm.ogg',
   quartermaster: './audio/quartermaster.ogg', houndmaster: './audio/houndmaster.ogg', masthead: './audio/masthead.ogg', causeway: './audio/causeway.ogg', kraken: './audio/kraken.ogg', hilltroll: './audio/hilltroll.ogg', rimewright: './audio/rimewright.ogg', captain: './audio/captain.ogg', tollmaster: './audio/tollmaster.ogg', grandmother: './audio/grandmother.ogg', fields: './audio/fields.ogg', scarecrowking: './audio/scarecrowking.ogg',
   burning: './audio/burning.mp3', pyroboss: './audio/pyroboss.ogg', minicharge: './audio/minicharge.ogg', monastery: './audio/monastery.ogg', northumberland: './audio/northumberland.mp3', windcaller: './audio/windcaller.ogg', hangingvillage: './audio/hangingvillage.ogg', sporewood: './audio/sporewood.mp3', duneworm: './audio/duneworm.ogg', lance: './audio/lance.ogg', caravan: './audio/caravan.ogg', monasterygolem: './audio/monasterygolem.ogg',
-  redgorge: './audio/redgorge.ogg' };   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
+  redgorge: './audio/redgorge.ogg',
+  puppeteer: './audio/puppeteer.ogg' };   /* THE PUPPETEER: 'Dissonant Waltz' by Yubatake, CC-BY 4.0 - Daniel's pick, 10-02 (claude/puppeteer2; audio/CREDITS.txt) */   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
@@ -459,7 +460,7 @@ export function loopCopy(ctx, b, len, dest, at, first, off = 0) {
 const TRACK_LAYER = { deep: { file: 'deepdread', gain: 0.5 } };
 // AN INTRO, THEN THE LOOP (claude/welltown-fix): a file that is an intro and then a seamless loop names where the loop begins (s). The first
 // pass plays the whole file; every pass after it starts there. welltown.ogg = Dizzy Crow's Negev-Desert-Intro (7.000 s) + Negev-Desert-Loop.
-export const TRACK_INTRO = { welltown: 7.0 };
+export const TRACK_INTRO = { welltown: 7.0, puppeteer: 34.135 };   /* (claude/puppeteer2: 'Dissonant Waltz' plays its opening once, then loops 34.135 s to its end at 234.239 s - a 200.1 s loop on the waltz's return) */
 let layerFor = null;
 function addLayer(name) {
   const L = TRACK_LAYER[name]; if (!L || !ac || currentTrack !== name || !trackG || trackG === layerFor || !trackBuf[L.file]) return;
@@ -530,13 +531,8 @@ const WAY_BASS = ['D3', 'F3', 'A2', 'D3'];
 // at the ride's full speed) is gone, and so is the synth MUSIC BOX that wound down over the level on top of it (claude/fairfix4, Daniel 2026-10-02: "the old music"): the fair
 // plays its file track and nothing else.
 
-// THE PUPPETEER'S OVERTURE (claude/puppeteer): no file - a D-minor march for a toy theatre, a music-box line over an organ bass and a timpani on
-// the bar. It runs at 132 and does not let up: the strings are always moving. (Played for arena.music 'puppeteer'.)
-const PUP_N = { D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, 'G#4': 415.3, A4: 440, Bb4: 466.16, 'C#5': 554.37, D5: 587.33, E5: 659.25, F5: 698.46, D2: 73.42, A1: 55, Bb1: 58.27, C2: 65.41 };
-const PUP_LEAD = [['D5', 'A4', 'F4', 'A4', 'D5', 'E5', 'F5', 'E5'], ['C#5', 'A4', 'E4', 'A4', 'C#5', 'D5', 'E5', 'C#5'],
-  ['D5', 'A4', 'F4', 'D4', 'Bb4', 'A4', 'G4', 'F4'], ['E4', 'F4', 'G4', 'A4', 'Bb4', 'A4', 'G#4', 'A4']];
-const PUP_BASS = ['D2', 'A1', 'Bb1', 'A1'];
-const STEP_PUP = 60 / 132 / 2;
+// THE PUPPETEER (claude/puppeteer2, Daniel 10-02: real music): 'Dissonant Waltz' by Yubatake, CC-BY 4.0 (audio/puppeteer.ogg, TRACK_INTRO). The synth overture that stood here is gone.
+
 // JENNY GREENTEETH (claude/lockkeeper): no file - a folk lament drowned in a canal at night. A thin whistle line in D that keeps falling back to
 // where it started, over a drone of an open fifth that never moves; water dripping off the gates at odd beats, and a bell somewhere in the fog.
 // Slow (66), and it never builds: she does not need it to. (Played for arena.music 'greenteeth'.)
@@ -557,20 +553,13 @@ export function theatreAct(n) {   // told: main.js sets it as the show's acts ch
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
-  const SB = bossSynthOf(wantTrack), pupT = wantTrack === 'puppeteer', town = wantTrack === 'waymeet', gtT = wantTrack === 'greenteeth', SL = gtT ? STEP_GT : pupT ? STEP_PUP : SB ? SB.step : town ? STEP_TOWN : STEP;
+  const SB = bossSynthOf(wantTrack), town = wantTrack === 'waymeet', gtT = wantTrack === 'greenteeth', SL = gtT ? STEP_GT : SB ? SB.step : town ? STEP_TOWN : STEP;
   while (nextT < ac.currentTime + 0.25) {
     const bar = Math.floor(step / 8) % 4, i = step % 8;
     if (musicOn) {
       const delay = nextT - ac.currentTime;
       if (SB) SB.play(step % SB.total, delay, SB.variant, { ac, dest: musicGain, noise, gain: 1 });   /* src/boss-music.js: the Archmages' and the Goblin royals' themes */
-      else if (pupT) {
-        const nm = PUP_N[PUP_LEAD[bar][i]];
-        tone('square', nm, nm, SL * 0.7, i % 4 === 0 ? 0.07 : 0.05, delay, musicGain); tone('sine', nm * 2, nm * 2, SL * 0.4, 0.03, delay, musicGain);   /* the music box */
-        if (i === 0 || i === 4) { const b = PUP_N[PUP_BASS[bar]]; tone('sawtooth', b * 2, b * 2, SL * 3.6, 0.07, delay, musicGain); tone('sine', b, b, SL * 3.8, 0.22, delay, musicGain); }   /* the organ */
-        if (i === 0) tone('sine', 72, 48, 0.35, 0.3, delay, musicGain);   /* the timpani */
-        if (i === 6 && bar === 3) tone('sine', 72, 48, 0.3, 0.24, delay, musicGain);
-        if (i === 2 || i === 6) tone('square', 2400, 2300, 0.02, 0.018, delay, musicGain);   /* a tick: the strings */
-      } else if (gtT) {
+      else if (gtT) {
         const nm = GT_LEAD[bar][i];
         if (nm) { tone('triangle', N[nm], N[nm] * 0.994, SL * 1.8, 0.1, delay, musicGain); tone('sine', N[nm] * 2, N[nm] * 1.99, SL * 1.2, 0.025, delay + 0.02, musicGain); }   /* the whistle, a little flat at the end of every note */
         if (i === 0) { tone('sine', 73.42, 73.2, SL * 8.6, 0.26, delay, musicGain); tone('sine', 110, 109.6, SL * 8.6, 0.12, delay, musicGain); }   /* the drone: D and the A over it */
@@ -1420,8 +1409,9 @@ export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town',
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
 /* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
    (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
-export const MUSIC_CREDITS_ROW = { redgorge: '"Old Road" — K. MacLeod, CC-BY' };
+export const MUSIC_CREDITS_ROW = { redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake' };
 export const MUSIC_CREDITS = {
+  puppeteer: '"Dissonant Waltz" — Yubatake, CC-BY',   /* (claude/puppeteer2: CC-BY 4.0, credited here, on the credits page and in audio/CREDITS.txt) */
   harvestfair: '"Dark Carnival" — Machine, CC-BY', wickerqueen: '"Ring Master" — Bobjt',   /* (claude/fairfix3: CC-BY tracks are allowed WITH a credit, Daniel 2026-10-01; the licence's version, 3.0, is in audio/CREDITS.txt - the Sound Test row fits 32 characters) */
   theme: '"Stage 1" — Juhani Junkala', theme2: '"Stage 2" — Juhani Junkala',
   theme3: '"Level 3" — Juhani Junkala', theme4: '"Level 1" — Juhani Junkala',
