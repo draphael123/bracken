@@ -26,7 +26,7 @@ try {
   till('dry');tp(28,69);P.face=-1;BK.press('talk');BK.sim(3);till('flood');BK.sim(5);out.jamGate=G().gates.find(g=>g.id==='jam').state;
   till('dry');tp(28,69);BK.press('talk');BK.sim(40);const Lg=BK.L.grid,W=BK.L.W;out.jam={open:G().jams[0].open,cell:Lg[66*W+24]};
   /* A BASKET: it rides up on running water, and sinks back after */
-  const m=BK.movers().find(q=>q.gorge==='ledges');m.y=m.y0;till('dry');till('flood');BK.sim(140);out.basketUp=[Math.round(m.y),m.y1];for(let i=0;i<60*12;i++)BK.sim(1);out.basketDown=G().phase==='flood'?'flood':Math.round(m.y)>m.y1;
+  const m=BK.movers().find(q=>q.gorge==='ledges');m.y=m.y0;till('dry');till('flood');for(let i=0;i<400&&G().phase==='flood'&&m.y>m.y1;i++)BK.sim(1);   /* (until it tops out or the flood ends: not a fixed frame count - the world runs at 60% so the 2.4 s flood is 240 frames, and a basket needs 200) */out.basketUp=[Math.round(m.y),m.y1];for(let i=0;i<60*12;i++)BK.sim(1);out.basketDown=G().phase==='flood'?'flood':Math.round(m.y)>m.y1;
   /* THE FEATHERS and THE OLD NEST */
   for(const pr of BK.props().filter(p=>p.t==='stray'&&!p.got)){BK.P.x=pr.x;BK.P.y=pr.y;BK.sim(3);}out.feathers=BK.village().saved();
   tp(13,31);BK.press('talk');BK.sim(3);out.nest={open:G().nest.open,vault:G().vault.map(v=>v.open),cell:Lg[29*W+9]};

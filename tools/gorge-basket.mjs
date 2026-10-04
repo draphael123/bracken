@@ -14,11 +14,12 @@ try {
     for(const e of BK.enemies())e.alive=false;
     const G=()=>BK.redgorge(),out={baskets:{}};
     for(const id of ['mouth','ledges','narrows']){const m=BK.movers().find(q=>q.gorge===id);BK.tp(m.x/16+6,Math.round(m.y0/16)-1);BK.sim(4);
-      let floods=0,prev='',dwell=0,best=[],cur=0,lowest=1e9;
+      let floods=0,prev='',dwell=0,best=[],cur=0,lowest=1e9,fy=0,top=false,tops=[];
       for(let i=0;i<60*75&&floods<7;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);const ph=G().phase;
-        if(ph==='flood'&&prev!=='flood'){floods++;if(floods>1)best.push(+(cur/60).toFixed(2));cur=0;}
+        if(ph==='flood'&&prev!=='flood'){floods++;if(floods>1){best.push(+(cur/60).toFixed(2));tops.push(fy>=m.y0-0.5?(top?1:0):-1);}cur=0;fy=m.y;top=false;}
+        if(ph==='flood'&&m.y<=m.y1+0.5)top=true;
         if(m.y>=m.y0-0.5)cur++; prev=ph;}
-      out.baskets[id]={rows:[m.y0/16,m.y1/16],dwells:best};}
+      out.baskets[id]={rows:[m.y0/16,m.y1/16],dwells:best,tops};}
     /* the ropes: the glint, the told prompt */
     BK.god=true;BK.tp(30,135);BK.sim(3);out.glintFalls=G().glint&&G().glint.key;
     { const fw=G().wheels.find(q=>q.gate==='falls');BK.tp((fw.x-8)/16,134);BK.sim(3);BK.press('talk');BK.sim(6);out.fallsShut=G().gates.find(q=>q.id==='falls').state;out.glintHold=G().glint&&G().glint.key;
@@ -27,6 +28,8 @@ try {
     BK.tp(21,135);BK.sim(5);out.toldRope=!!G().said.rope;
     return out;})()`, 240000);
   for (const [id, b] of Object.entries(r.baskets)) ok(b.dwells.length >= 3 && b.dwells.every(d => d >= MIN_DWELL), 'basket ' + id + ' (rows ' + b.rows.join('->') + '): back at its foot for >= ' + MIN_DWELL + ' s before each flood: ' + JSON.stringify(b.dwells));
+  /* THE RISE (claude/basketfix, 10-03): the flood runs GORGE.run s and a basket climbs its whole shaft in BASKET.rise s of it; a basket at its foot when a flood starts must TOP OUT before that flood ends (game-seconds: the world runs at SET.speed, so never count frames - the probe tools/redgorge-probe.mjs did, at 140 frames, and read a basket that had a burst's head start) */
+  for (const [id, b] of Object.entries(r.baskets)) { const t = b.tops.filter(x => x >= 0); ok(t.length >= 3 && t.every(x => x === 1), 'basket ' + id + ': from its foot, it reaches its top within the flood that lifts it (1 = topped, -1 = not at its foot): ' + JSON.stringify(b.tops)); }
   ok(r.glintFalls === 'fallsWheel', 'the falls WHEEL (not the rope) glints from its terrace while the gate is open: ' + r.glintFalls);
   ok(r.fallsShut === 'shut' && r.glintHold === 'fallsHold', 'E at the wheel shuts the falls gate, the glint stays on the wheel and the nudge says wait: ' + r.fallsShut + ' / ' + r.glintHold);
   ok(r.fallsFull === 'full' && r.glintRope === 'fallsRope', 'once the gate holds the flood the glint moves to the rope: ' + r.fallsFull + ' / ' + r.glintRope);
