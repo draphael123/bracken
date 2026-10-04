@@ -148,7 +148,8 @@ function drawGallery(g, cx, cy, VW, Y, time, FL) {
   if (!(FL && FL.open)) { r(g, x0 + 3, top + 6, x1 - x0 - 6, fy - top - 6, '#2a1a22');   // the back board: to the floor's top line, never over it
     for (let i = 0; i < 5; i++) r(g, x0 + 6 + i * ((x1 - x0 - 12) / 5), top + 12, 1, 18, 'rgba(255,200,120,0.15)'); }
   for (const t of Y.targets) { const x = Math.round(t.x * TS + 8 - cx), y = Math.round(t.row * TS + 8 - cy), hit = t.hit;
-    r(g, x - 1, y - 20, 2, 12, K.woodD);                                                                           // its hanger
+    if (FL && FL.open) { const q = FL.cols.find(c => c.c === t.x), fy2 = q && q.row !== null ? q.row * TS - cy : y + 24; r(g, x + 9, y - 22, 2, fy2 - y + 22, '#3a2414'); r(g, x + 9, y - 22, 1, fy2 - y + 22, '#5a3a20'); r(g, x + 1, y - 22, 10, 2, '#3a2414'); r(g, x - 1, y - 20, 2, 12, K.woodD); r(g, x + 8, y - 27, 4, 5, (Math.floor(time * 3 + t.x) % 4) ? '#ffcf70' : '#8a6a3a'); }   /* (claude/fairfix5) THE SCENIC RAILWAY: each target hangs from one of the track's lamp posts */
+    else r(g, x - 1, y - 20, 2, 12, K.woodD);                                                                           // its hanger
     g.fillStyle = hit ? '#5a5060' : K.cream; g.beginPath(); g.arc(x, y, 7, 0, 6.3); g.fill(); g.fillStyle = hit ? '#3a3040' : K.red; g.beginPath(); g.arc(x, y, 5, 0, 6.3); g.fill();
     g.fillStyle = hit ? '#5a5060' : K.cream; g.beginPath(); g.arc(x, y, 3, 0, 6.3); g.fill(); g.fillStyle = hit ? '#3a3040' : K.gold; g.fillRect(x - 1, y - 1, 2, 2);
     if (t.flash > 0) { g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,220,120,' + t.flash * 2 + ')'; g.beginPath(); g.arc(x, y, 12, 0, 6.3); g.fill(); g.globalCompositeOperation = 'source-over'; } }

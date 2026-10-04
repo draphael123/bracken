@@ -454,7 +454,7 @@ export function buildHarvestFair({ painter, T, TS }) {
     /* (claude/fairfix5) THE FAIR'S OWN GROUND, BY ZONE (src/redraw/fair_tiles.js): the turnstiles and the midway, the rides yard, the barns and the corn, the bonfire field, the back lot.
        ledges: the runs that are not what their zone and height make them; blocks: the stall buildings (the terrace, the high stall, the roof streets); keep: none */
     fairKit: { R, zones: [[0, 245, 'turf'], [246, 371, 'iron'], [372, 465, 'barn'], [466, 524, 'field'], [525, 619, 'mud'], [620, W, 'green']],
-      ledges: [[82, 94, 19, 19, 'boardwalk'], [157, 163, 19, 19, 'boardwalk'], [176, 195, 13, 13, 'boardwalk'], [198, 214, R + 1, R + 5, 'boardwalk'], [321, 337, R + 1, R + 5, 'boardwalk'], [563, 594, 14, 15, 'track'], [577, 588, 16, 27, 'wagon'], [596, 606, 16, R + 5, 'wagon']],
+      ledges: [[82, 94, 19, 19, 'boardwalk'], [122, 124, R - 6, R - 6, 'boardwalk'], [400, 401, R - 4, R - 4, 'beam'], [157, 163, 19, 19, 'boardwalk'], [176, 195, 13, 13, 'boardwalk'], [198, 214, R + 1, R + 5, 'boardwalk'], [321, 337, R + 1, R + 5, 'boardwalk'], [563, 594, 14, 15, 'track'], [577, 588, 16, 27, 'wagon'], [596, 606, 16, R + 5, 'wagon']],
       blocks: [[52, 67, R - 3, R - 1], [104, 117, R - 2, R - 1], [162, 185, R - 6, H - 1], [229, 235, R - 6, R - 1]] },
     /* (claude/fairfix5) THE LIVING DRESSING in the play layer (src/redraw/fair_world.js drawDressing): each on flat road, none over a footing */
     fairDress: [{ k: 'arch', x: 1, w: 7, row: R }, { k: 'booth', x: 9, w: 2, row: R }, { k: 'fence', x: 23, w: 4, row: R }, { k: 'shy', x: 17, w: 5, row: R, h: 44 }, { k: 'flags', x: 30, row: R },
