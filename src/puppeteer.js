@@ -362,7 +362,7 @@ export function stepShow(e, show, dt, c) {
         c.number(e.x, e.y - 60, 'HE THROWS YOU OFF THE GALLERY', '#ff9a5c'); }
       return ev; }
     case 'knockTell': if (e.modeT <= 0) { e.mode = 'knock'; e.modeT = PUP.knockT; show.n.knock++; ev.push({ t: 'knock' }); c.sound('knock');
-        for (const h of heroes) if (onLoft(show, h) || (h.y < A.floor - 20 && h.y <= A.gallery + 8)) { show.n.thrown++; c.fling(h, Math.sign(h.x - e.x) || 1); } }
+        for (const h of heroes) if (onLoft(show, h) || (h.y < A.floor - 20 && h.y <= A.gallery + 8)) { show.n.thrown++; c.fling(h, 1); }   /* (always out over the stage, away from the batten's well at the door) */ }
       return ev;
     case 'knock': if (e.modeT <= 0 && e.noScene) { e.noScene = false; e.mode = 'work'; return ev; }   /* (a hero thrown off the gallery outside a visit: no new scene) */
       if (e.modeT <= 0) { show.cycle++; show.nextScene = nextSceneOf(show); e.mode = 'scene'; e.modeT = PUP.sceneT; ev.push({ t: 'sceneTell', to: show.nextScene }); c.sound('sceneTell');

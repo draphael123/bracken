@@ -229,7 +229,7 @@ try {
     const boot=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='theatre'));BK.state='play';BK.god=true;BK.sim(10);
       const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);return BK.boss;};
     const e=boot(),PH=BK.puppeteerHands(),S=PH.show(),A=BK.L.arena,P=BK.P,bat=S.batten;S.overCd=1e9;
-    out.woke=BK.bossActive&&e&&e.t==='puppeteer';out.iron=PH.read().iron;out.scene=PH.read().sceneKey;
+    out.woke=BK.bossActive&&e&&e.t==='puppeteer';out.iron=PH.read().iron;for(let i=0;i<240&&PH.read().sceneKey==='bare';i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}out.scene=PH.read().sceneKey;
     /* THE LEVER, CHAINED: a real swing at it from the batten clunks; the batten stays down */
     P.x=A.stage.pinX-12;P.y=A.floor;P.face=1;P.vx=0;BK.sim(2);P.face=1;BK.press('atk');BK.sim(16);out.locked={free:S.free,bat:bat.st,n:S.n.locked};
     const bru=S.puppets.find(p=>p.t==='marionette'),har=S.puppets.find(p=>p.t==='harlequin');
