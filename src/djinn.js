@@ -34,7 +34,7 @@
 
 export const DJ = {
   hp: 1000, w: 34, h: 64, markH: 92,
-  openMul: 1.9, openT: 3.2, mudT: 2.5, bailT: 4.2, openCap: 0.055, /* a water opening: x openMul, one takes no more than openCap of him; mud is
+  openMul: 1.9, openT: 3.2, mudT: 2.5, bailT: 4.2, openCap: 0.0525, /* a water opening: x openMul, one takes no more than openCap of him; mud is
                                                                     shorter (claude/djinn2: 3.2 -> 2.5, the mud is flung off sooner) and the bail
                                                                     longer (you wade in to him) */
   wardT: 3.0, wardHeatR: 34,                     /* THE WARD after every opening (claude/djinn2): this long; white-hot, his heat reaches this far */
@@ -48,8 +48,8 @@ export const DJ = {
   spearTell: 0.75, spearGap: 0.38, spearN: 4, spearT: 0.3, spearR: 15,
   /* P2 FIRE */
   breathTell: 0.8, breathT: 0.7, breathReach: 150,
-  pillarTell: 0.9, pillarT: 0.45, pillarR: 18,
-  fdevilTell: 0.8, fdevilLife: 5.0, fdevilSpeed: 120, fdevilH: 32,
+  pillarTell: 1.0, pillarT: 0.45, pillarR: 18,
+  fdevilTell: 0.8, fdevilLife: 5.0, fdevilSpeed: 105, fdevilH: 26,
   heatTick: 0.6, heatR: 14,
   burnT: 2.6, burnTick: 0.5,                     /* a hero set alight: this long, a tick each burnTick, unless doused */
   /* P3 FLOOD */
@@ -59,7 +59,7 @@ export const DJ = {
   slamTell: 0.8, slamT: 0.25, slamStay: 1.5, handR: 16, handCap: 0.06, handMul: 1.0,
   whirlTell: 0.9, whirlT: 3.2, whirlPull: 72, whirlR: 30, whirlTick: 0.5,
   bucketFall: 0.55, bucketCd: 8, pourR: 66,
-  dmg: { lash: 17, blast: 8, devil: 22, spear: 17, flash: 17, breath: 22, pillar: 22, fdevil: 11, heat: 6, burn: 3, spout: 12, held: 22, wave: 19, slam: 21, whirl: 8, flood: 1 },
+  dmg: { lash: 17, blast: 8, devil: 24, spear: 19, flash: 17, breath: 22, pillar: 20, fdevil: 11, heat: 6, burn: 3, spout: 16, held: 24, wave: 26, slam: 26, whirl: 10, flood: 1 },
 };
 export const CYCLES = {
   1: [['lash', 'spears', 'devil', 'blast'], ['devil', 'lash', 'spears', 'lash', 'blast'], ['blast', 'spears', 'lash', 'devil'], ['spears', 'lash', 'devil', 'blast', 'lash']],
