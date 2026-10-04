@@ -7,7 +7,7 @@ for(const h of ['knight','pyro','paladin','pirate','reaper','warden','geomancer'
 }
 for(const [h,id]of[['knight','flurry'],['pyro','heatShield'],['paladin','sanctuary'],['pirate','shareOut'],['reaper','gleaner'],['warden','keenPoint'],['geomancer','geoRumble'],['berserker','bzCool']]){const values=[];const node=SKILLS.find(n=>n.hero===h&&n.id===id),lv0=node.level;for(const enabled of [false,true]){
  /* OFF is the passive's level moved out of reach (it is on at 24 by its level alone now); ON is its own level */node.level=enabled?lv0:99;prep(h,[]);let value;
- if(h==='knight'){const st=BK.P.st;BK.press('atk');BK.sim(1);value=st-BK.P.st;}
+ if(h==='knight'){/* FLURRY is the THIRD CUT FREE now (WEIGHT, Daniel 10-03: halving every swing wrecked the stamina budget): the third cut of a run is what is measured */let value0=null;for(let i=0;i<200&&value0===null;i++){const st=BK.P.st,a0=BK.P.atk;BK.press('atk');BK.sim(1);if(BK.P.atk>=0&&(a0<0||BK.P.atk<a0)&&BK.P.heavySwing&&!BK.P.heavy)value0=st-BK.P.st;BK.P.st=BK.P.maxSt;BK.P.winded=false;}value=value0??-1;}
  if(h==='pyro'){BK.P.heat=60;const hp=BK.P.hp;BKT.damagePlayer(BK.P.x-30,40,{unblockable:true});value=hp-BK.P.hp;}
  if(h==='paladin'){const hp=BK.P.hp;BK.keys.block=true;BK.sim(60);BK.keys.block=false;value=BK.P.hp-hp;}
  if(h==='pirate'){const hp=BK.P.hp;BKT.acorns().push({x:BK.P.x,y:BK.P.y-6,got:false,ph:0});BK.sim(3);value=BK.P.hp-hp;}

@@ -101,6 +101,8 @@ export function rollCost(P, h, { back = false, shave = 0 } = {}) {
 }
 
 export const winded = P => !!P.winded;
+/* a fresh start (a reset, a respawn, a new level): no recovery, no held press, not winded */
+export function clearCommit(P) { P.atkRec = 0; P.winded = false; P.exhaustT = 0; P.windedNew = false; P.sbuf = null; P.sbufFresh = false; P.holdK = null; P.holdPrev = null; }
 export function exhaust(P) { P.st = 0; P.winded = true; P.exhaustT = STAM.exhausted; P.windedNew = true; }
 /* SPEND, WITH LAST WIND: enough - pay it; not enough but something left and not winded - pay it all and be exhausted; else refused */
 export function trySpend(P, cost) {
