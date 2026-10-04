@@ -135,10 +135,10 @@ export function buildSpiral(k, T) {
      one checkpoint stands beside it, just under the rising dark's start line (src/chase.js's rule) */
   ent('ringdoor', S.arrive, S.floor - 1, { id: 'spiral-foot' });
   ent('check', S.check, S.floor - 1);
-  ent('sign', S.x1, S.floor - 1, { text: 'HIS DARK RISES UNDER YOU FROM HERE: KEEP CLIMBING. IT BURNS AND THROWS YOU, AND IT WAITS UNDER EVERY LANDING YOU HAVE NOT REACHED.' });
+  ent('sign', S.x1 - 1, S.floor - 1, { text: 'HIS DARK RISES UNDER YOU FROM HERE: KEEP CLIMBING. IT BURNS AND THROWS YOU, AND IT WAITS UNDER EVERY LANDING YOU HAVE NOT REACHED.' });
   /* THE NEW FLIGHTS ARE SIGNED where they begin, on the landing under them, by its wall (claude/archmage2b): the verb, not the trick */
   FLIGHTS.forEach((F, k) => { const say = F.pend ? 'THE CLOCK\'S WEIGHTS SWING OVER THE GAPS: LET ONE SWING BACK OVER YOU, AND GO AS IT TURNS.' : F.frost ? 'HIS FROST FREEZES THE STEPS IT FALLS ON: THEY ARE SLICK FOR A FEW BEATS.' : F.books ? 'HIS BOOKS FLY DOWN THIS STAIR AT YOU: GUARD THEM, OR JUMP THEM.' : null;
-    if (!say || !k) return; const [lx, ll, lr] = FLIGHTS[k - 1].land; ent('sign', F.dir > 0 ? lx : lx + ll - 1, lr - 1, { text: say }); });
+    if (!say || !k) return; const [lx, ll, lr] = FLIGHTS[k - 1].land; ent('sign', F.dir > 0 ? lx + 1 : lx + ll - 2, lr - 1, { text: say });   /* (a tile in from the wall: a sign against it runs into the stone) */ });
   ent('magechase', FLIGHTS[0].land[0] + 2, FLIGHTS[0].land[2] - CHASE.up, { face: -1 });
   return { ...S, flights: FLIGHTS.map(F => ({ ...F })), carpet: { ...TOP } };
 }

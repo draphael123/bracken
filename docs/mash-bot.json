@@ -5642,7 +5642,7 @@
   }
  },
  "fallingtower": {
-  "hash": "488f3581e56e",
+  "hash": "3d3626963cd7",
   "boss": {
    "boss": "undeadmage",
    "wins": 0,
@@ -5842,7 +5842,7 @@
    ]
   },
   "carried": {
-   "from": "bdb7ba16052d",
+   "from": "488f3581e56e",
    "parts": [
     "boss",
     "mini"
