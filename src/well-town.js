@@ -41,9 +41,9 @@ import { stageGangLeader } from './gang-leader.js';
 import { stageDjinn } from './djinn.js';   /* (claude/welltown5, Daniel 10-03: THE DJINN OF THE GREAT WELL is the town's boss; THE CISTERN QUEEN is benched for a level of her own - src/cistern-queen.js stageCisternQueen is kept, unplaced) */
 import { SHADE_OF } from './redraw/desert.js';
 
-export const WELLTOWN = { W: 584, H: 60, street: 30 };
+export const WELLTOWN = { W: 664, H: 60, street: 30 };   /* (claude/djinn2: 584 -> 664, THE BINDING WORKS under the Kasbah before his hall) */
 export const SECTIONS = [['THE CARAVAN GATE', 0], ['THE LOWER MARKET', 64], ['THE WELL SQUARE', 150], ['THE CISTERNS', 166], ['THE MUD QUARTER', 259],
-  ["THE BANDITS' ROOST", 326], ['THE KASBAH', 426]];
+  ["THE BANDITS' ROOST", 326], ['THE KASBAH', 426], ['THE BINDING WORKS', 514]];
 /* each mechanic's arc (tile columns) - TAUGHT, DEVELOPED, TWISTED, COMBINED/EXAMINED - read by tools/welltown.mjs and the concept page */
 export const ARCS = {
   fill: { teach: [8, 14], develop: [76, 80], twist: [282, 292], exam: [446, 456] },               /* the wells: the first in the open; held by thieves later */
@@ -255,28 +255,73 @@ export function buildWellTown({ painter, T, TS }) {
   /* THE KASBAH'S COURTYARD: the garrison's last stand (it was the Gang Leader's; he is in the market now - claude/welltown-polish). Two gateways in the
      Kasbah's walls (473 and 514, a passage six rows high), a pair of knives and a thief holding the yard, a bowman on each of two ledges. The route
      is the floor; a ledge is a fight from above that a pour does not reach, so the skin is for the well, not the wall */
-  ground(473, 583, K);
+  ground(473, W - 1, K);
   block(473, 473, K - 16, K - 7); block(514, 514, K - 16, K - 7);             /* the gateways' walls (they were the mini's door and gate) */
   canopy(473, 514, K - 5, K, { v: 1 });                                       /* the garrison's cloths strung over the yard from wall to wall under its galleries, low enough to be seen (claude/welltown5: it was a tint with nothing over it) */
   boards(480, 485, K - 6); ladder(479, K - 6, K - 1); bowman(483, K - 7, 'kasbahArch');   /* a gallery on the west wall, over the gateway's lintel */
   foe('cutthroat', 490, K - 1, 'court'); foe('cutthroat', 496, K - 1, 'court'); thief(500, K - 1, 'court'); awn(493, K - 1, true);   /* the knives hold the yard under its awning (the exam's last well is behind you: no refill here, the old well's skin comes full) */
   boards(504, 509, K - 6); ladder(510, K - 6, K - 1); bowman(507, K - 7, 'kasbahArch2');   /* and a second gallery over the east gateway */
-  /* THE OLD WELL: past his gate, the Kasbah's own well, dry - its shaft goes down through the street into THE QUEEN'S CISTERN (src/cistern-queen.js
-     stageCisternQueen): forty tiles of dry cistern, fifteen rows high, under the street from 528. You drop in down the shaft */
-  ent('check', 519, K - 1);                                                   /* CHECKPOINT FIVE: the old well's head, the boss's door */
-  awn(521, K - 1, true);
-  sign(523, K - 1, 'THE OLD WELL. SOMETHING IS BOUND AT THE BOTTOM.');
-  foe('scorpion', 516, K - 1, 'oldwell'); foe('scorpion', 526, K - 1, 'oldwell');   /* (the desert's scorpions, up out of the dry shaft onto the street) HER BROOD, up out of the shaft onto the street: the old well's mouth is held (the Old Stinger in the cisterns is one of hers) */
-  const QF = 56;                                                              /* the cistern hall's floor row */
-  block(524, 571, K + 1, H - 1);                                              /* the rock under the street, the hall carved out of it */
-  const queen = stageDjinn({ set, block, ent, air }, T, TS, 528, QF, K);   /* THE GREAT WELL's deep cistern: THE DJINN's hall (the same forty tiles the Queen's hall was) */
+  /* THE OLD WELL: at the courtyard's end, the Kasbah's own well, dry - its shaft is the way down into THE BINDING WORKS (claude/djinn2, below). The
+     Kasbah's back wall shuts the street there */
+  sign(517, K - 1, 'THE OLD WELL. SOMETHING IS BOUND AT THE BOTTOM.');
+  foe('scorpion', 512, K - 1, 'oldwell'); foe('scorpion', 515, K - 1, 'oldwell');   /* (the desert's scorpions, up out of the dry shaft onto the street) the old well's mouth is held */
+  block(523, 527, 4, K - 1);                                                  /* THE KASBAH'S BACK WALL: the street ends at the old well */
+  air(520, 521, K, 35); ladder(520, K, 35);                                   /* THE OLD WELL's shaft, a rope down it */
+  interiors.push([520, 521, K + 1, 30, 'wtQueen']);
+  /* ================= 8. THE BINDING WORKS (514-607, rows 29-56): the descent to him (claude/djinn2, Daniel 10-03: "so he doesn't come from nowhere") =================
+     The old cistern works under the Kasbah - dry channels, a sluice, a conduit - and the BINDING SEALS carved on their walls, brighter the deeper you
+     go (L.seals: src/well-town-hands.js draws them, src/redraw/djinn_art.js drawSeal); sand trickles from cracks in the vault (L.cracks) and the ground
+     shakes, more often as you go down (L.works). The BANDIT MYSTICS (src/bandit-mystic.js: the goblin mage's AI under men's skins - casters, and
+     LAMP-BEARERS whose warding light halves your blows) chant at the seals to free him. No sun down here: all shade.
+       THE WELL'S FOOT (514-531)   the shaft's foot, the old well's LAST WATER (fill here), the first seal, dim
+       THE DRY CHANNEL (532-559)   TEACH: a lamp-bearer warding a knife in the channel's trough - pour on the lamp, or kill him and take it
+       THE SLUICE (560-577)        the sluice chamber, down ledge by ledge (each hero's plain jump and drop), casters on the ledges, the second seal
+       THE CONDUIT (578-589)       REMIX: down the conduit's steps into a bearer warding casters; throw his lamp at them
+       THE SEAL HALL (590-606)     EXAM: the last mystics chanting at the brightest seals by his door, a spring; the checkpoint at the door
+     At the bottom THE LAST SEAL, on his hall's back wall, breaks when you come in (src/djinn-hands.js: told, cutscene-lite) and he rises. */
+  const mystic = (x, y, squad) => foe('gobmage', x, y, squad, { cnSkin: 'banditmystic' });
+  const bearer = (x, y, squad) => foe('gobmage', x, y, squad, { cnSkin: 'lampbearer' });
+  const seals = [], cracks = [];
+  const seal = (x, y, glow) => seals.push({ x: x * TS + 8, y: y * TS + 8, glow });
+  /* THE WELL'S FOOT and THE DRY CHANNEL: a tunnel five rows high, a trough in the channel's bed, the vault's ribs hanging */
+  air(514, 559, 31, 35);
+  air(538, 550, 36, 37); air(551, 551, 36, 36);                               /* the channel's trough (two rows down), a step out of it */
+  for (const x of [530, 544, 556]) block(x, x, 31, 31);                       /* the vault's ribs */
+  well(516, 35, { lastWater: true, works: true });                                         /* THE OLD WELL'S LAST WATER: fill your skin before the works */
+  sign(518, 35, 'THE BINDING WORKS. THE SEALS HOLD IT DOWN.');
+  seal(526, 33, 0.3);
+  bearer(548, 37, 'channel'); foe('cutthroat', 544, 37, 'channel');          /* TEACH: a knife in the lamp's light (half a blow on him) and the bearer behind him */
+  cracks.push([535, 31], [553, 31]);
+  interiors.push([514, 559, 31, 35, 'wtQueen'], [538, 551, 36, 37, 'wtQueen']);
+  /* THE SLUICE: a chamber seventeen rows deep, down three ledges (two-row and three-row drops) to its floor */
+  air(560, 577, 31, 47);
+  boards(560, 566, 38); boards(570, 577, 41); boards(561, 567, 44);
+  mystic(573, 40, 'sluiceLedge'); venomScorp(566, 47, 'sluice');                  /* a caster on the middle ledge, the Queen's brood on the floor */
+  seal(569, 34, 0.55);
+  cracks.push([563, 31], [575, 31], [571, 31]);
+  interiors.push([560, 577, 31, 47, 'wtQueen']);
+  /* THE CONDUIT: down its steps from the sluice's floor to the hall's (rows 48 -> 56), its roof at row 44 */
+  { const F2 = [49, 49, 50, 50, 51, 51, 52, 53, 54, 54, 55, 56]; for (let i = 0; i < F2.length; i++) { const x = 578 + i; air(x, x, 44, F2[i] - 1); block(x, x, F2[i], H - 1); } }
+  bearer(581, 49, 'conduitTop'); mystic(587, 53, 'conduitLow'); foe('cutthroat', 584, 51, 'conduit');   /* REMIX: the bearer above, his light over a caster and a knife on the steps below */
+  cracks.push([583, 44]);
+  interiors.push([578, 589, 44, 55, 'wtQueen']);
+  /* THE SEAL HALL: the last mystics chant at the brightest seals by his door; a spring; the checkpoint at the door */
+  air(590, 606, 44, 55);
+  well(592, 55, { sealSpring: true, works: true });
+  mystic(597, 55, 'sealhall'); bearer(601, 55, 'sealhall'); mystic(599, 51, 'sealhallStep'); boards(597, 601, 52);   /* EXAM: two casters (one on a step over the floor) and the bearer between them */
+  seal(595, 48, 0.8); seal(603, 47, 1.0);
+  cracks.push([593, 44], [600, 44], [605, 44]);
+  ent('check', 605, 55);                                                      /* CHECKPOINT FIVE: the sealed door, the boss's door (a death in his hall is not the descent again) */
+  interiors.push([590, 606, 44, 55, 'wtQueen']);
+  shade.push([514 * TS, 520 * TS, 29 * TS, 57 * TS + 1], [522 * TS, 608 * TS, 29 * TS, 57 * TS + 1]);   /* (underground: no sun - but down the old well's open shaft, the sky) */
+  const QF = 56;                                                              /* the hall's floor row */
+  const queen = stageDjinn({ set, block, ent, air }, T, TS, 608, QF, K + 3, { westDoor: 3 });   /* THE GREAT WELL's deep cistern: THE DJINN's hall, its door off the seal hall (its shaft capped under the street) */
   for (const n of queen.ladders) nets.push(n);
-  shade.push([528 * TS, 568 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);          /* her hall: under the street's rock - and under the shaft, the old well's roof (below) */
-  wellRoof(545, 550, K - 4, K);                                               /* THE OLD WELL's head: a well-house roof on two posts over the shaft (claude/welltown5: the light down the shaft is under it) */
-  interiors.push([528, 567, QF - 15, QF - 1, 'wtQueen'], [545, 550, QF, QF + 1, 'wtQueen']);   /* (and the sump under the shaft) */
-  /* THE WAY OUT: her east wall opens when she dies (the arena's own wall) onto the cistern's old outflow, and the road out of town */
-  air(569, 579, QF - 6, QF - 1);
-  ent('gate', 576, QF - 1);
+  shade.push([608 * TS, 648 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);
+  interiors.push([608, 647, QF - 15, QF - 1, 'wtQueen'], [625, 630, QF, QF + 1, 'wtQueen']);   /* (and the sump under the shaft) */
+  /* THE WAY OUT: his east wall opens when he falls (the arena's own wall) onto the cistern's old outflow, and the road out of town */
+  air(649, 659, QF - 6, QF - 1);
+  ent('gate', 656, QF - 1);
   block(W - 2, W - 1, 0, H - 1);
   // ================= THE LADDERS, LAST =================
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
@@ -289,6 +334,7 @@ export function buildWellTown({ painter, T, TS }) {
     mudWalls, vaultDoors,
     shade: [...shade, ...cast], shadeArt: shade.slice(),   /* (an awning paints its own shade: only the rest is tinted) */
     casters,                                               /* the cloths and the well-house roof over the tinted shade (src/well-town-hands.js drawWorld draws them) */
+    seals, cracks: cracks.map(([x, y]) => ({ x: x * TS + 8, y: y * TS + 16 })), works: { x0: 514, x1: 607, y0: 29, y1: 56 },   /* (claude/djinn2) THE BINDING WORKS: its seals, the cracks sand trickles from, the zone the ground shakes in (src/well-town-hands.js) */
     quest: { n: 4, item: 'waterskin', name: 'WATER-SKINS', done: 'FOUR SKINS: POUR THEM IN THE DRY CISTERN', thanks: 'THE CISTERN IS FULL' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

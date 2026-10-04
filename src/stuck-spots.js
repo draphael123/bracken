@@ -10,6 +10,11 @@
 //     steps: [ {zone?, at/ats/mover, line, done?, when?}, ... ] }   an ordered chain: the first step that is not done
 // Columns and rows are the FINAL built tiles (the same numbers the signs and entities carry).
 export const STUCK = {
+  welltown: [   /* (claude/djinn2) THE BINDING WORKS: down the old well, down the sluice to the conduit, and the sealed door to his hall */
+    { id: 'wt-old-well', zone: [498, 18, 522, 27], at: [520, 29], glint: 'stall', line: 'THE OLD WELL IS THE WAY ON: DOWN ITS ROPE' },
+    { id: 'wt-sluice', zone: [556, 30, 577, 47], at: [578, 48], glint: 'stall', line: 'THE SLUICE GOES DOWN: THE CONDUIT AT ITS FOOT' },
+    { id: 'wt-seal-door', zone: [588, 44, 606, 55], at: [607, 54], glint: 'stall', line: 'THE SEALED DOOR: HIS HALL IS PAST IT' },
+  ],
   causeway: [
     { id: 'cw-boom', zone: [421, 0, 478, 43], ats: [[479, 17], [464, 17]], glint: 'stall', line: 'THE BOOM LIFTS AT HIGH WATER: THE TOWER BELL TURNS THE TIDE' },
   ],

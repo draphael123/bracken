@@ -92,7 +92,7 @@ const sunLong = [];
     if (cols.length) dry.push(p.kind + ' (cols ' + Math.min(...cols) + '-' + Math.max(...cols) + ')'); }
   ok(props.length >= 14 && !dry.length, 'AND EVERY CASTER CASTS: each of ' + props.length + ' awnings, cloths and roofs has its shade under it, from its own underside' + (dry.length ? ' - NO SHADE UNDER: ' + dry.join('; ') : '')); }
 // ---- THE WATER BUDGET ----
-{ const wells = L.ents.filter(e => e.t === 'skinwell' && !e.arena && !e.jar).map(e => [e.x, 'well']), jars = L.ents.filter(e => e.t === 'skinwell' && e.jar).map(e => [e.x, 'jar']), pours = required.map(([w, m]) => [m.x0, w]);
+{ const wells = L.ents.filter(e => e.t === 'skinwell' && !e.arena && !e.jar && !e.works).map(e => [e.x, 'well'])   /* (claude/djinn2: THE BINDING WORKS' two springs are past the Kasbah's exam, on the way to him - like his hall's basins, they are not the town's water budget) */, jars = L.ents.filter(e => e.t === 'skinwell' && e.jar).map(e => [e.x, 'jar']), pours = required.map(([w, m]) => [m.x0, w]);
   const thieves = [...new Set(L.ents.filter(e => e.t === 'waterthief' && !(e.x >= ax0 && e.x <= ax1)).map(e => e.squad))].map(q => [Math.min(...L.ents.filter(e => e.squad === q).map(e => e.x)), 'thief ' + q]);
   const drinks = sunLong.map(q => [q.x1, 'drink']);
   const rank = { well: 0, jar: 1, thief: 2, drink: 3 }, kindOf = k => k.split(' ')[0];
