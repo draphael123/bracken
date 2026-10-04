@@ -47,7 +47,8 @@ try {
   for (const h of HEROES) {
     if (only && !only.includes(h)) continue;
     for (const verb of VERBS) for (const it of INTS) {
-      if (verb === 'heavy' && h === 'pirate' && it === 'c') continue;   /* his C while the pistol smokes is the blast's own (blastT), unchanged */
+      if (verb === 'heavy' && h === 'pirate' && it === 'c') continue;
+      if (verb === 'third' && h === 'berserker') continue;   /* HIS RUN GOES ON ONLY WHILE THE CHOPS LAND: against the air there is no third (tools/berserker.mjs 'chain' holds his third against a foe) */   /* his C while the pistol smokes is the blast's own (blastT), unchanged */
       const r = await pg.evalp(`(()=>{const h=${JSON.stringify(h)},verb=${JSON.stringify(verb)},it=${JSON.stringify(it)},sk=${JSON.stringify(SKILL[h])};
         __prep(h,20);const P=BK.P,K=BK.keys;
         /* start the verb; t0 = the frame its swing (or landing) begins, artEnd = the frame its art ends */

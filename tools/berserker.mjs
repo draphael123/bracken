@@ -27,8 +27,8 @@ try {
     return 1})()`);
   const r = await pg.evalp(`(()=>{const out={},P=()=>BK.P,K=BK.keys,Z=()=>BK.bz();
     /* chain */
-    __bz();let e=__foe(18);BK.sim(2);const combos=[];for(let i=0;i<3;i++){P().st=P().maxSt;BK.press('atk');for(let f=0;f<22;f++){BK.sim(1);e.x=P().x+18;}combos.push(P().combo);}
-    e.alive=false;P().st=P().maxSt;BK.press('atk');BK.sim(22);combos.push(P().combo);P().st=P().maxSt;BK.press('atk');BK.sim(4);combos.push(P().combo);out.chain={combos,chainN:Z().chain};
+    __bz();let e=__foe(18);BK.sim(2);const combos=[];for(let i=0;i<3;i++){P().st=P().maxSt;BK.press('atk');for(let f=0;f<30;f++){BK.sim(1);e.x=P().x+18;}combos.push(P().combo);}
+    e.alive=false;P().st=P().maxSt;BK.press('atk');BK.sim(40);combos.push(P().combo);P().st=P().maxSt;BK.press('atk');BK.sim(4);combos.push(P().combo);out.chain={combos,chainN:Z().chain};
     /* the cross-chop on a mini's bar (70) */
     const poiseOf=h=>{__bz();
       const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;BK.sim(2);P().st=P().maxSt;K.atk=true;for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0,heavy=false;for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;heavy=heavy||P().heavy;most=Math.max(most,b.poise||0,b.broken>0?100:0);}return {most,heavy,hit:b.hp0-b.hp};};
