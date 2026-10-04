@@ -170,6 +170,25 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
   assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'THE BARROW RIDER holds the way on');
   ok('the mini and the boss', 'mini ' + mw + ' tiles, arena ' + aw + ' tiles, the gate holds'); }
 
+/* ---- 5b. THE TWO ENGINES THAT CHANGE THE ROUTE (claude/unburiedart, Daniel 2026-10-03/04) ----
+   THE STANDING TOWER'S DRAWBRIDGE IS THE WAY INTO THE CHAPEL (the Rider's gate stays shut): with the gate solid the fill stops at it (above); with the drawbridge's seven cells laid it gets through, over the gate, down the rope ladder into the yard -
+   and the tower's ladder, deck, gallery and the leaf's gap are what the brief says. THE MANGONEL IS NEVER REQUIRED: the far bank's palisade is two rows (a hop, the mounds' E4), and the bridges cross to the Rider and the arena with it standing. */
+{ const tow = of('drawbridge'), mg = of('mangonel'); assert.equal(tow.length, 1, 'one standing tower with one drawbridge'); assert.equal(mg.length, 1, 'one mangonel'); const db = tow[0], [s0, s1] = db.span, row = db.row;
+  assert.equal(db.x, 346); assert.ok(s1 - s0 + 1 >= 7, 'the leaf is seven cells: more than a jump (' + (s1 - s0 + 1) + ')');
+  const gate = UF.MINI.gate, S1 = build(); for (let y = 0; y < S1.H; y++) if (S1.grid[y * S1.W + gate] === T.PORT) S1.grid[y * S1.W + gate] = T.SOLID;
+  const f1 = fill(S1); assert.ok(!f1.seen.some(([x, y]) => x > gate + 1 && y >= G - 1 && y <= G + 1), 'the ground gate holds, the tower and its gallery do not let you round it (the tower deck to the lintel is a jump too far)');
+  const S2 = build(); for (let y = 0; y < S2.H; y++) if (S2.grid[y * S2.W + gate] === T.PORT) S2.grid[y * S2.W + gate] = T.SOLID;
+  for (let x = s0; x <= s1; x++) if (S2.grid[row * S2.W + x] === T.AIR) S2.grid[row * S2.W + x] = T.ONEWAY;
+  const f2 = fill(S2); assert.ok(f2.seen.some(([x, y]) => x >= 365 && y === G), 'with the drawbridge down the way into the yard is open: ladder, deck, bridge, gallery, rope ladder, ground');
+  assert.ok(f2.seen.some(([x, y]) => x >= 440 && y === G), 'and on into the arena');
+  /* the mangonel: never required. The palisade at the far bank is <= 2 rows tall and the fill crosses it as built */
+  const pal = []; for (let y = 0; y < L.H; y++) for (let x = 0; x < W; x++) if (L.grid[y * W + x] === T.PALISADE && x >= 318 && x <= 324) pal.push([x, y]);
+  assert.ok(pal.length >= 2 && Math.max(...pal.map(p => p[1])) - Math.min(...pal.map(p => p[1])) <= 1, 'the far bank palisade is at most two rows (a hop)');
+  assert.ok(seen.some(([x, y]) => x >= 325 && y === G), 'the far bank, the Barrow Rider and his barrow are reached with the mangonel untouched and the palisade standing');
+  assert.equal(mg[0].knocks, 'farbank'); assert.ok(mg[0].x < 273 && mg[0].aim[0] >= 318 && mg[0].aim[0] <= 324, 'the mangonel stands on the near bank, aimed at the far bank');
+  ok('the drawbridge, the mangonel', 'a seven-cell leaf is the way in (the gate holds, the fill passes with it down); a two-row palisade, never required'); }
+
+
 /* ---- 6. RULE Q: ONE AMBUSH, ONE WAVE, ONE CAPTAIN ---- */
 { assert.equal(L.ambushes.length, 1, 'rule Q: one ambush room a level, at most');
   const A2 = L.ambushes[0], wide = A2.wallR - A2.wallL;

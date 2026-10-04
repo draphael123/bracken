@@ -460,8 +460,8 @@ export const unbFrame = e => e.t === 'bloodknight' ? bkFrame(e) : e.t === 'death
 export function newField(L, TS = 16) {
   if (!L || !L.volleys) return null;
   const G = L.cavalry ? L.cavalry.row : 36;
-  const props = (L.ents || []).filter(e => ['cover', 'ballista', 'trebuchet', 'oilbarrel'].includes(e.t)).map(e => ({ t: e.t, kind: e.kind, x: e.x * TS + 8, y: (e.y + 1) * TS, tx: e.x, ty: e.y,
-    aim: e.aim ? { x: e.aim[0] * TS + 8, y: (e.aim[1] + 1) * TS } : null, spill: e.spill ? [e.spill[0] * TS, (e.spill[1] + 1) * TS] : null, knocks: e.knocks || null, cd: 0, state: 'ready', t2: 0 }));
+  const props = (L.ents || []).filter(e => ['cover', 'ballista', 'trebuchet', 'oilbarrel', 'mangonel', 'drawbridge'].includes(e.t)).map(e => ({ t: e.t, kind: e.kind, x: e.x * TS + 8, y: (e.y + 1) * TS, tx: e.x, ty: e.y,
+    aim: e.aim ? { x: e.aim[0] * TS + 8, y: (e.aim[1] + 1) * TS } : null, spill: e.spill ? [e.spill[0] * TS, (e.spill[1] + 1) * TS] : null, knocks: e.knocks || null, span: e.span || null, bridgeRow: e.row, cd: 0, state: 'ready', t2: 0 }));
   return {
     TS, G,
     volleys: L.volleys.map((v, i) => ({ ...v, t: (i * 2.1) % v.period, quiet: false, warn: false, fell: 0 })),
@@ -523,13 +523,21 @@ export function stepField(F, dt, c) {
       const dx = en.aim.x - en.x, dy = en.aim.y - 8 - (en.y - 12), d = Math.hypot(dx, dy) || 1; F.bolts.push({ x: en.x, y: en.y - 12, vx: dx / d * 520, vy: dy / d * 520, t: d / 520 + 0.05, hit: new Set() }); }
     if (en.t === 'trebuchet') { if (en.state === 'ready' && c.struck(en.x - 18, en.y - 36, 36, 36, en)) { en.state = 'wind'; en.t2 = 1.0; c.sound('crank'); c.say(en.x, en.y - 50, 'THE COUNTERWEIGHT DROPS', '#ffd36b'); }
       else if (en.state === 'wind') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; const T = 1.4; F.stones.push({ x: en.x, y: en.y - 40, vx: (en.aim.x - en.x) / T, vy: (en.aim.y - (en.y - 40) - 0.5 * 400 * T * T) / T, t: T, knocks: en.knocks }); c.sound('whoosh'); } } }
+    /* THE MANGONEL AT THE BRIDGEHEAD (2026-10-04, Daniel: the field's second engine you work): strike it and its skein lets go - the spoon throws a stone over the ravine, and the stone smashes the bowmen's palisade on the far bank (knocks: 'farbank'). It is NEVER required: the palisade is two rows, a hop, and the bridges cross without it */
+    if (en.t === 'mangonel') { if (en.state === 'ready' && c.struck(en.x - 26, en.y - 36, 52, 36, en)) { en.state = 'wind'; en.t2 = 0.9; c.sound('crank'); c.say(en.x, en.y - 52, 'THE SKEIN LETS GO', '#ffd36b'); }
+      else if (en.state === 'wind') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; const T = 1.9; F.stones.push({ x: en.x + 18, y: en.y - 30, vx: (en.aim.x - en.x - 18) / T, vy: (en.aim.y - 18 - (en.y - 30) - 0.5 * 400 * T * T) / T, t: T, knocks: en.knocks }); c.sound('whoosh'); c.shake && c.shake(3); } } }
+    /* THE TOWER THAT STANDS AT THE WALL: its drawbridge is tied off to a cleat on the deck. Strike the rope and the leaf runs down across the gap onto the curtain wall's walk - the way into the chapel (the ground gate stays shut) */
+    if (en.t === 'drawbridge') { if (en.state === 'ready' && c.struck(en.x - 14, en.y - 34, 28, 34, en)) { en.state = 'drop'; en.t2 = 1.3; c.sound('crank'); c.say(en.x, en.y - 66, 'THE ROPE PARTS: THE DRAWBRIDGE RUNS DOWN', '#ffd36b'); }
+      else if (en.state === 'drop') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'down'; F.bridgeDown = true; c.drawbridge(en); } } }
     if (en.t === 'oilbarrel') { if (en.state === 'ready' && c.struck(en.x - 9, en.y - 16, 18, 16, en)) { en.state = 'tip'; en.t2 = 0.6; c.say(en.x, en.y - 30, 'THE PITCH SPILLS', '#ff9a5c'); c.sound('crack'); }
       else if (en.state === 'tip') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; c.spill(en.spill[0], en.spill[1], en.y); c.sound('fire'); } } }
   }
   for (const b of F.bolts) { b.x += b.vx * dt; b.y += b.vy * dt; b.t -= dt;
     for (const q of c.foes()) if (q.alive && !b.hit.has(q) && Math.abs(q.x - b.x) < 12 && q.y > b.y - 6 && q.y - (q.h || 16) < b.y + 6) { b.hit.add(q); c.hurtFoe(q, q.maxHp ? 30 : 60, b.x - Math.sign(b.vx) * 10); } }
   F.bolts = F.bolts.filter(b => b.t > 0);
-  for (const s of F.stones) { s.vy += 400 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt; if (s.t <= 0 && !s.done) { s.done = true; if (s.knocks === 'tower') { F.breach = true; c.breach(); } } }
+  for (const s of F.stones) { s.vy += 400 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt; if (s.t <= 0 && !s.done) { s.done = true; if (s.knocks === 'tower') { F.breach = true; c.breach(); }
+      if (s.knocks === 'farbank') { F.farbank = true; c.farbank(s.x); c.say(s.x, s.y - 40, "THE BOWMEN'S PALISADE SPLINTERS", '#ffd36b');
+        for (const q of c.foes()) if (q.alive && !q.maxHp && Math.abs(q.x - s.x) < 72 && Math.abs(q.y - s.y) < 60) c.hurtFoe(q, 90, s.x - 30); } } }   /* the two bowmen of THE FAR BANK are thrown down (hurtFoe, as the ballista does) */
   F.stones = F.stones.filter(s => s.t > -0.1);
   for (const a of F.arrows) { a.y += a.vy * dt; a.t -= dt; } F.arrows = F.arrows.filter(a => a.t > 0);
   stepBridgeVolley(F, dt, c);
@@ -694,7 +702,12 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
     if (en.t === 'ballista') SG.drawBallista(g, x, y, en.cd <= 0, Math.round(en.aim.x - cx), Math.round(en.aim.y - 8 - cy));
     if (en.t === 'trebuchet') SG.drawTrebuchet(g, x, y, en.state, en.t2, en.state === 'ready', Math.round(en.aim.x - cx), Math.round(en.aim.y - cy));
     if (en.t === 'oilbarrel') SG.drawOil(g, x, y, en.state, en.state === 'tip' ? 1 - en.t2 / 0.6 : 0, time);
+    if (en.t === 'mangonel') SG.drawMangonel(g, x, y, en.state === 'ready' ? -0.5 : en.state === 'wind' ? -0.5 + (1 - Math.max(0, en.t2) / 0.9) * 1.5 : 1.0, en.state, en.state === 'ready', Math.round(en.aim.x - cx), Math.round(en.aim.y - cy), time);
+    if (en.t === 'drawbridge') { const hx = en.span[0] * TS - cx, hy = en.bridgeRow * TS - cy, e = en.state === 'drop' ? 1 - Math.max(0, en.t2) / 1.3 : en.state === 'down' ? 1 : 0;
+      SG.drawDrawbridge(g, Math.round(hx), Math.round(hy), -Math.PI / 2 * (1 - e * e), en.state, time); SG.drawCleat(g, x, y, en.state === 'ready');
+      if (en.state === 'ready') { g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 5); g.strokeStyle = '#ffd36b'; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(x, y - 14); g.lineTo(Math.round(hx + 100), Math.round(hy - 2)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; } }   /* the dotted line to where the leaf will land: half of the glint */
   }
+  if (F.farbank) SG.drawFarbankRubble(g, cx, cy, F.G, VW);   /* the bowmen's palisade, smashed */
   if (F.breach) SG.drawBreach(g, cx, cy, F.G, VW);   /* the tower's base, opened */
   for (const b of F.bolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), f = Math.sign(b.vx) || 1; R(g, f > 0 ? x - 14 : x, y, 14, 2, '#c8c8d0'); R(g, f > 0 ? x : x - 3, y - 1, 3, 4, '#e8e8f0'); }
   for (const s of F.stones) { const sx = Math.round(s.x - cx), sy = Math.round(s.y - cy); g.fillStyle = '#1b1626'; g.beginPath(); g.arc(sx, sy, 6, 0, 7); g.fill(); g.fillStyle = '#6c6866'; g.beginPath(); g.arc(sx, sy, 5, 0, 7); g.fill(); g.fillStyle = '#9c968e'; g.fillRect(sx - 3, sy - 3, 3, 2); g.fillStyle = '#4c4848'; g.fillRect(sx + 1, sy + 1, 3, 3); }   /* a stone that tumbles */

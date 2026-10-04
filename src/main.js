@@ -1978,7 +1978,7 @@ function* loadLevelG(i) {
   { const sl = SEA.seaLoad(LEVELS[i].id, L); if (sl && sl.mid) BG.mid = sl.mid; if (sl && sl.murk) { MURK = sl.murk; MURK_ID = LEVELS[i].id; } }   /* a sea level that paints its own middle distance (or, in a dark one, its own murk) */
   // a mini you have already put down stays down, and the gate it was standing in front of starts open
   miniDone = !!((PROG[LEVELS[i].id] || {}).mini);
-  if (miniDone && L.mini && L.mini.gate !== undefined) { for (let ty = 0; ty < LH; ty++) { const j = ty * LW + L.mini.gate; if (L.grid[j] === T.PORT) L.grid[j] = T.AIR; } }
+  if (miniDone && L.mini && L.mini.gate !== undefined && !L.unburied) { for (let ty = 0; ty < LH; ty++) { const j = ty * LW + L.mini.gate; if (L.grid[j] === T.PORT) L.grid[j] = T.AIR; } }
   grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); mending = []; marks = new Set(); straysGot = new Set(); strayLast = null; for (const p of (L.pools || [])) { p.y0 = p.y; p.shallow0 = p.shallow; p.depth0 = p.depth; } tileSpr = new Array(LW * LH).fill(null); resolveTiles();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
@@ -8516,7 +8516,7 @@ function miniEnd(e) {
   if (!L.mini) return;
   if(e?.salvage)for(const s of seeds)if(s.owner===e||s.from===e)s.dead=true;
   if (e) for (let i = 0; i < 4; i++) bossFx.push({ t: 0.06 + i * 0.12, x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * (e.h || 20), big: i === 3 });   /* a shorter run for a named fight */
-  openGate(L.mini.gate, 0, LH - 1, true);
+  if (!L.unburied) openGate(L.mini.gate, 0, LH - 1, true);   /* (the Unburied Field's gate stays shut: the standing tower's drawbridge is the way into the chapel, Daniel 10-03) */
   setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null;
   if (!rushOn()) { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].mini = true; saveProgress(); }
   number(e.x, e.y - 30, MINI_DONE[e.t] || 'THE WAY OPENS', '#8fd160'); SFX.heavy(); music.play(L.music || 'theme');
@@ -18574,12 +18574,16 @@ function updateUnburied(dt) {
     pegs: (p, on) => { for (const r of p.rows) { const i = r * LW + p.x - 1; if (on) { if (!(r in p.orig)) p.orig[r] = L.grid[i]; if (L.grid[i] === T.AIR) L.grid[i] = T.ONEWAY; } else if (r in p.orig) { L.grid[i] = p.orig[r]; delete p.orig[r]; } tileSpr[i] = null; } },
     spill: (x0, x1, y) => { const mid = (x0 + x1) / 2; for (let x = x0; x < x1; x += TS) fires.push({ x: x + 8, y, life: 7, delay: 0.1 + Math.abs(x - mid) / 500, dmg: DMG.fire, unb: true });
       for (const q of enemies) if (q.alive && !q.maxHp && q.x > x0 && q.x < x1 && Math.abs(q.y - y) < 24) q.burn = Math.max(q.burn || 0, 3); },
+    farbank: () => { const D = L.unburied; if (!D || !D.farbank) return; let ch = false; for (const x of [D.farbank[0], D.farbank[1]]) { const i = (F.G - 1) * LW + x; if (L.grid[i] === T.PALISADE) { L.grid[i] = T.AIR; tileSpr[i] = null; ch = true; burst(x * TS + 8, (F.G - 1) * TS + 8, 8, ['#684a2c', '#8a6a3e'], 110, 0.6); } }
+      if (ch) resolveTiles(); shakeCam(8); SFX.heavy(); SFX.crack(); },   /* THE MANGONEL's stone: the top row of the far bank's palisade is gone and the bottom row stays as a step (claude/unburiedart) */
+    drawbridge: en => { for (let x = en.span[0]; x <= en.span[1]; x++) { const i = en.bridgeRow * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; burst(x * TS + 8, en.bridgeRow * TS, 3, ['#8a6a3e', '#7a6150'], 70, 0.5); } }
+      resolveTiles(); shakeCam(9); SFX.heavy(); SFX.crack(); number(en.span[1] * TS, en.bridgeRow * TS - 40, 'THE DRAWBRIDGE LANDS ON THE WALL-WALK', '#ffd36b'); },   /* THE STANDING TOWER's bridge: the leaf becomes a floor (a ONEWAY row) across the gap to the gatehouse's gallery */
     breach: () => { for (let y = F.G - 5; y <= F.G; y++) for (const x of [246, 247, 257, 258]) { const i = y * LW + x; if (L.grid[i] !== T.AIR) { L.grid[i] = T.AIR; tileSpr[i] = null; burst(x * TS + 8, y * TS + 8, 4, ['#6a6a74', '#5a3e26'], 90, 0.6); } }
       shakeCam(8); SFX.heavy(); SFX.crack(); number(252 * TS, (F.G - 7) * TS, 'THE TOWER BREAKS OPEN AT THE FOOT', '#ffd36b'); } });
   /* the pitch keeps burning what stands in it: a corpse burned stays down */
   for (const f of fires) if (f.unb && f.delay <= 0) for (const q of enemies) if (q.alive && !q.maxHp && Math.abs(q.x - f.x) < 10 && Math.abs(q.y - f.y) < 12) q.burn = Math.max(q.burn || 0, 1.5);
 }
-function unbState(n) { return n === 'gate' && L && L.mini ? (L.grid[(L.mini.gate) * 0 + (UNB_FIELD ? UNB_FIELD.G : 36) * LW + L.mini.gate] === T.PORT ? 'shut' : 'open') : ''; }   /* the Rider's gate: shut (a portcullis on its column) or open */
+function unbState(n) { if (!L || !L.mini) return ''; if (n === 'rider') return miniDone ? 'down' : 'up'; if (n === 'gate') return L.grid[(UNB_FIELD ? UNB_FIELD.G : 36) * LW + L.mini.gate] === T.PORT ? 'shut' : 'open'; return ''; }   /* the Rider (down once he is beaten) and his gate (shut until the standing tower's bridge is down) */
 function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UBS.flicker(lights, time); UBS.drawFires(g, L.ubFires || [], cx, cy, time, VW); UNBF.drawField(g, UNB_FIELD, cx, cy, time, VW, VH); UNBF.drawUnbWorld(g, enemies, cx, cy, time); }
 
 /* ================= THE HARVEST FAIR (src/harvest-fair.js builds it; src/mummer.js is THE FACING RULE, pure and proved in tools/harvest-fair.mjs;

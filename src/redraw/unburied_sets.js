@@ -237,6 +237,7 @@ export function decoSet(e) {
     case 'ubGlow': return { ubGlow: [once('glow', () => canvas(1, 1)[0]), false] };
     case 'ubFascines': return { ubFascines: [once('fasc' + v, () => ubFascines(v)), false] };
     case 'ubBedDead': return { ubBedDead: [once('bedd' + v, () => ubBedDead(v)), false] };
+    case 'ubFiringStep': return { ubFiringStep: [once('fstep', SG.ubFiringStep), false] };
     case 'ubEmplace': return { ubEmplace: [once('emplace', SG.ubEmplacement), false] };
     default: return null;
   }
@@ -245,5 +246,6 @@ export function decoSet(e) {
 export const drawTrestle = SG.drawTrestle;
 export function bakeFacade(kind, tw, th, seed, o) {
   if (kind === 'ubtower') return SG.bakeTower();
+  if (kind === 'ubtower2') return SG.bakeTower2();
   return CH.bakeFacade(kind);
 }

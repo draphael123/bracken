@@ -236,3 +236,73 @@ export function drawBreach(g, cx, cy, G, VW) {
     for (let k = 0; k < 9; k++) { const rx = x0 + 2 + ((k * 13 + c0 * 3) % (w - 8)), ry = y0 + h - 4 - ((k * 5) % 7); g.fillStyle = k % 3 ? K.st4 : K.wood3; g.fillRect(rx, ry, 5 + (k % 3) * 2, 3 + (k % 2)); g.fillStyle = K.st6; g.fillRect(rx, ry, 2, 1); }   /* rubble across the opened road */
   }
 }
+
+// ================================================================ THE STANDING SIEGE TOWER AND ITS DRAWBRIDGE ================================================================
+/* THE TOWER THAT STILL STANDS (the Order's wall stopped the first one; this one reached it): facade [341, 364, 18, 36], 24 x 19 tiles = 384 x 304, origin (341, 18). The tower body is cols 343..350 against the
+   curtain wall in the Rider's arena's east end, wet hides over a timber frame, its ladder (the NET) up its west face, its top deck (the ONEWAY row 24) under a hoarding with the host's raven pennant, and the
+   drawbridge's hinge on its east face; the wall-walk gallery (357-362) is hung off the gatehouse's east tower. All behind the tiles: the floor under the tower stays a fighting floor */
+export function bakeTower2() {
+  const W = 27 * 16, H = 19 * 16, [c, g] = canvas(W, H), X = col => (col - 338) * 16, Y = row => (row - 18) * 16;
+  const x0 = X(340), x1 = X(348), top = Y(21);
+  /* the body: a frame of posts and floors, hide panels hung over it, the wet dark showing between */
+  rect(g, x0, top, x1 - x0, H - top, '#2a1e16'); for (let x = x0 + 4; x < x1; x += 8) rect(g, x, top, 1, H - top, '#1e1610');
+  for (const fy of [Y(24), Y(28), Y(32), Y(36)]) { rect(g, x0 - 3, fy + 8, x1 - x0 + 6, 6, K.wood3); rect(g, x0 - 3, fy + 8, x1 - x0 + 6, 1, K.wood5); rect(g, x0 - 3, fy + 13, x1 - x0 + 6, 1, K.wood0); }
+  for (const px0 of [x0 - 3, X(344) - 2, x1 - 3]) { rect(g, px0, top - 8, 6, H - top + 8, K.wood2); rect(g, px0, top - 8, 2, H - top + 8, K.wood4); rect(g, px0 + 5, top - 8, 1, H - top + 8, K.wood0); }
+  for (const [pa, pb, ya, yb] of [[x0, X(344), 25, 28], [X(344), x1, 29, 32], [x0, X(344), 33, 36]]) hidePanel(g, pa + 5, Y(ya) + 14, pb - pa - 10, Y(yb) - Y(ya) - 10, ya * 3);
+  timber(g, x0, Y(28) + 8, X(344), Y(32) + 6, 3); timber(g, X(344), Y(28) + 8, x0, Y(32) + 6, 3); timber(g, X(344), Y(32) + 8, x1, Y(36) + 6, 3);
+  /* the top: a hoarding of planks and hides round the deck, the raven pennant on a pole */
+  rect(g, x0 - 4, top, x1 - x0 + 8, 6, K.wood3); rect(g, x0 - 4, top, x1 - x0 + 8, 1, K.wood6); for (let x = x0 - 4; x < x1 + 4; x += 12) { rect(g, x, top - 10, 9, 10, K.wood2); rect(g, x, top - 10, 9, 1, K.wood4); }
+  hidePanel(g, x0, top + 6, X(344) - x0 - 2, 28, 5); rect(g, X(344) + 12, top - 38, 1, 40, K.wood2); fillPoly(g, [[X(344) + 13, top - 38], [X(344) + 42, top - 32], [X(344) + 13, top - 22]], K.raven); line(g, X(344) + 14, top - 33, X(344) + 32, top - 31, K.silver);
+  /* the wheels: two heavy wheels at the foot, iron-shod, mud to the hubs */
+  wheel(g, X(342) + 8, H - 18, 22, 10, 0.2, K.wood3, K.iron2); wheel(g, X(346) + 4, H - 18, 22, 10, 0.5, K.wood3, K.iron2);
+  for (const wx of [X(342) + 8, X(346) + 4]) alpha(g, 0.7, () => ellipse(g, wx, H - 4, 20, 5, K.peat3));
+  /* the drawbridge's hinge on the east face: a big iron pin in a timber knee, its chains running up to a pulley block at the top */
+  rect(g, x1 - 2, Y(24) - 2, 12, 12, K.iron1); rect(g, x1 - 2, Y(24) - 2, 12, 1, K.iron3); circle(g, x1 + 4, Y(24) + 4, 3, K.iron3);
+  line(g, x1 - 12, Y(21) - 4, x1 + 2, Y(24) - 2, K.iron3); rect(g, x1 - 16, Y(21) - 8, 10, 8, K.iron1); circle(g, x1 - 11, Y(21) - 4, 3, K.iron2);
+  /* THE GALLERY on the gatehouse's east face (cols 353-363): a timber hoarding hung off it on corbels, its floor the ONEWAY row 24, a rail and a roof of slats */
+  const gx0 = X(353), gx1 = X(363);
+  rect(g, gx0, Y(24) + 8, gx1 - gx0 + 4, 7, K.wood3); rect(g, gx0, Y(24) + 8, gx1 - gx0 + 4, 1, K.wood5);
+  for (let x = gx0 + 6; x < gx1; x += 22) { rect(g, x, Y(24) + 15, 4, 20, K.wood2); timber(g, x + 2, Y(24) + 33, x + 20, Y(24) + 15, 3, true); }
+  for (const x of [gx0 + 4, gx0 + 52, gx0 + 100]) { rect(g, x, Y(22), 3, 24, K.wood2); rect(g, x, Y(22), 1, 24, K.wood4); }
+  rect(g, gx0, Y(22), gx1 - gx0, 3, K.wood3); rect(g, gx0, Y(22), gx1 - gx0, 1, K.wood5); for (let x = gx0 + 2; x < gx1; x += 5) rect(g, x, Y(21) + 6, 3, 10, K.wood2);
+  return outline(c, K.out);
+}
+/* THE DRAWBRIDGE LEAF, drawn live: hinged at (hx, hy) (the top surface level on the tower's east face), seven tiles long, raised (ang -PI/2: standing up against the tower) to flat (0: lying across the gap). Two chains
+   from its tip to the pulley block at the tower's top. down: the chains slack, a little dust at the far end */
+export function drawDrawbridge(g, hx, hy, ang, state, time) {
+  const len = 112, th = 8, ca = Math.cos(ang), sa = Math.sin(ang), tx = Math.round(hx + ca * len), ty = Math.round(hy + sa * len), nx = -sa, ny = ca;
+  const pulley = [hx - 11, hy - 52];
+  g.fillStyle = K.iron3; const chain = (x0, y0, x1, y1, slack) => { const n = 14; for (let i = 0; i <= n; i++) { const t = i / n, sag = slack ? Math.sin(t * Math.PI) * 9 : 0; g.fillRect(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t + sag), 1, i % 2 ? 2 : 1); } };
+  chain(pulley[0], pulley[1], tx, ty - 2, state === 'down'); chain(pulley[0] + 6, pulley[1] + 2, Math.round(hx + ca * len * 0.62), Math.round(hy + sa * len * 0.62) - 2, state === 'down');
+  if (state !== 'down') {
+    const quad = [[hx, hy], [hx + ca * len, hy + sa * len], [hx + ca * len + nx * th, hy + sa * len + ny * th], [hx + nx * th, hy + ny * th]];
+    fillPoly(g, quad.map(([a, b]) => [Math.round(a), Math.round(b)]), K.wood3);
+    for (let k = 1; k < 8; k++) { const f = k / 8; line(g, Math.round(hx + ca * len * f), Math.round(hy + sa * len * f), Math.round(hx + ca * len * f + nx * th), Math.round(hy + sa * len * f + ny * th), K.wood1); }
+    line(g, Math.round(hx), Math.round(hy), tx, ty, K.wood5); line(g, Math.round(hx + nx * th), Math.round(hy + ny * th), Math.round(hx + ca * len + nx * th), Math.round(hy + sa * len + ny * th), K.wood0);
+    for (const f of [0.18, 0.5, 0.82]) { const ix = hx + ca * len * f, iy = hy + sa * len * f; line(g, Math.round(ix), Math.round(iy), Math.round(ix + nx * th), Math.round(iy + ny * th), K.iron1, 2); }
+  }
+  circle(g, Math.round(hx), Math.round(hy + 1), 2.2, K.iron3);
+  if (state === 'down' && time % 3 < 0.5) { g.globalAlpha = 0.5 - (time % 3); g.fillStyle = K.peat5; for (let i = 0; i < 4; i++) g.fillRect(tx + 4 + i * 3, ty - 3 - i, 2, 1); g.globalAlpha = 1; }
+}
+/* THE CLEAT: the rope the tower's bridge is tied off to, on the deck - the thing to strike (it glints). tied: the rope taut up to the raised leaf; cut: it hangs slack */
+export function drawCleat(g, x, y, tied) {
+  rect(g, x - 5, y - 9, 10, 9, K.wood2); rect(g, x - 5, y - 9, 10, 1, K.wood5); rect(g, x - 7, y - 12, 14, 3, K.iron2); rect(g, x - 7, y - 12, 14, 1, K.iron4);
+  if (tied) { for (let i = 0; i < 4; i++) line(g, x - 4, y - 8 + i * 2, x + 4, y - 7 + i * 2, K.straw2); line(g, x, y - 12, x + 3, y - 60, K.straw1); }
+  else { line(g, x, y - 12, x - 6, y - 4, K.straw1); line(g, x - 6, y - 4, x - 10, y, K.straw1); }
+}
+
+// ================================================================ THE FAR BANK'S BOWMEN ================================================================
+/* THE BOWMEN'S FIRING STEP behind the palisade: a low plank platform, a barrel of arrows, the raven pennant on a pole. 60 x 46 */
+export function ubFiringStep() {
+  const [c, g] = canvas(60, 46); shadow(g, 30, 44, 26);
+  rect(g, 4, 30, 52, 6, K.wood3); rect(g, 4, 30, 52, 1, K.wood5); for (const x of [8, 26, 44]) rect(g, x, 36, 5, 8, K.wood2);
+  rect(g, 40, 14, 12, 16, K.wood2); rect(g, 40, 14, 12, 1, K.wood5); rect(g, 40, 19, 12, 2, K.iron2); for (let i = 0; i < 5; i++) { line(g, 42 + i * 2, 14, 41 + i * 2, 4, K.cloth2); px(g, 41 + i * 2, 3, K.silver); }
+  pennant(g, 12, 32, 30, K.raven, 14, false, K.silver);
+  return outline(c, K.out);
+}
+/* THE PALISADE, SMASHED (drawn over the cells where the top row has gone): splintered planks, a heap of rubble. cx, cy: the camera; G: the field's row */
+export function drawFarbankRubble(g, cx, cy, G, VW) {
+  const x0 = 320 * 16 - cx; if (x0 > VW + 20 || x0 < -80) return; const y = (G + 1) * 16 - cy;
+  for (let i = 0; i < 9; i++) { const rx = x0 - 4 + i * 5, ry = y - 4 - ((i * 7) % 6), w = 7 + ((i * 3) % 6); g.fillStyle = i % 2 ? K.wood3 : K.wood2; g.fillRect(rx, ry, w, 4); g.fillStyle = K.wood5; g.fillRect(rx, ry, w, 1); }
+  for (let i = 0; i < 4; i++) { g.fillStyle = K.wood4; g.fillRect(x0 + 2 + i * 8, y - 14 + (i % 2) * 3, 2, 10 - (i % 2) * 3); g.fillRect(x0 + 1 + i * 8, y - 15 + (i % 2) * 3, 4, 1); }
+}

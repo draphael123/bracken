@@ -231,6 +231,14 @@ function portcullis(v, foot) {
     if (v === 1) { for (let y = 0; y < 16; y += 3) px2(g, 5, y, UT.rust); } return c; });
 }
 
+/* THE BOWMEN'S PALISADE on the far bank: upright planks lashed to a rail, each sharpened at the top */
+function stakeWall(v, top, l, r, row) {
+  return once('sw' + v + top + l + r + (row & 1), () => { const [c, g] = canvas(16, 16); rect(g, 0, 0, 16, 16, UT.wood1);
+    for (let x = 0; x < 16; x += 5) { rect2(g, x, 0, 4, 16, ((x / 5 | 0) + v) % 2 ? UT.wood3 : UT.wood2); rect2(g, x, 0, 1, 16, UT.wood4); rect2(g, x + 4, 0, 1, 16, UT.wood0); }
+    rect2(g, 0, 6, 16, 2, UT.iron1); rect2(g, 0, 6, 16, 1, UT.iron3); nails(g, 2, 7, 3, 5, UT.iron4);
+    if (top) for (let x = 0; x < 16; x += 5) { fillPoly(g, [[x, 3], [x + 2, 0], [x + 4, 3]], UT.wood1); rect2(g, x, 3, 4, 13, ((x / 5 | 0) + v) % 2 ? UT.wood3 : UT.wood2); px2(g, x + 2, 0, UT.wood6); px2(g, x + 2, 1, UT.wood5); }
+    return c; });
+}
 /* THE TOWER'S FALLEN BASE (the solid block at 257-258): heavy upright timbers, iron-strapped, the crest a lit cap - the foot of the tower the host built */
 function timberWall(v, top, l, r, row) {
   return once('tw' + v + top + l + r + (row % 3), () => { const [c, g] = canvas(16, 16); rect(g, 0, 0, 16, 16, UT.wood2);
@@ -288,6 +296,7 @@ export function unburiedTile(t, x, y, at, T, L) {
   }
   if (t === T.PLANK) return sapperDeck(!same(-1, t), !same(1, t), v);
   if (t === T.SPIKE) return stakes(v, x >= D.gap[0] && x <= D.gap[1] && y >= D.bed);
+  if (t === T.PALISADE && D.farbank && x >= D.farbank[0] && x <= D.farbank[1]) return stakeWall(v, at(x, y - 1) !== t, x === D.farbank[0], x === D.farbank[1], y);   /* the far bank's bowmen's palisade */
   if (t === T.PALISADE) { const top = at(x, y - 1) !== t, l = at(x - 1, y) !== t; return x >= D.hide[0] && x <= D.hide[1] ? hideWall(v, l, top, y) : gabion(v, l, !l ? at(x + 1, y) !== t : false, top, y); }
   if (t === T.SOFT) return mound(v, !same(-1, t), !same(1, t));
   if (t === T.PORT) return portcullis(v, at(x, y + 1) !== t);

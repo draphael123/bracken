@@ -136,7 +136,7 @@ try {
           fresh();stand(s.hero[0],s.hero[1]);BK.sim(2);const n0=BKT.guide.read().nudges;BK.sim(TPS*10+30);const n1=BKT.guide.read().nudges;const line=BKT.guide.read().lastNudge;BK.sim(TPS*20);const n2=BKT.guide.read().nudges;BK.sim(TPS*7);const n3=BKT.guide.read().nudges;
           row.nudge=[n0,n1,n2,n3];row.line=line;}
         /* after use: no glint */
-        if(en){fresh();const F2=BK.unbField();const e2=F2.engines.find(e=>e.t===s.engine.t&&e.tx===s.engine.x);if(e2.t==='ballista')e2.fired=true;else e2.state='spent';stand(s.hero[0],s.hero[1]);BK.sim(30);row.after=BKT.guide.read().targets.length;}
+        if(en){fresh();const F2=BK.unbField();const e2=F2.engines.find(e=>e.t===s.engine.t&&e.tx===s.engine.x);if(e2.t==='ballista')e2.fired=true;else e2.state='spent';stand(s.hero[0],s.hero[1]);BK.sim(30);row.after=BKT.guide.read().key===s.id?1:0;   /* (another need may take over once this one is done: it must not be THIS glint) */}
         out.push(row);}
       return out;`);
     if (r.err) note(6, 'the glint', false, r.err);
