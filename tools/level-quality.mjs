@@ -129,7 +129,7 @@ export const MASH_ENFORCE = true, MASH_HP = 40;
    a level with no row from day one, EXCEPT the parts listed below: the ones the mash bot still beats after the combat pass (the boss waves'
    TODO list, docs/BOSS-AUDIT.md). The list may only SHRINK: a listed part that now holds fails until its entry is taken out. */
 /* (measured 2026-10-01 after the combat pass, docs/mash-bot.json: 9 bosses, 12 minis and 4 level runs the mash bot still beats) */
-export const MASH_REPORT_ONLY = { spore: ['boss'], hanging: ['mini'], storm: ['level'], crown: ['mini'], lamplit: ['mini'], keep: ['level'], causeway: ['level'], fields: ['mini'], burial: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'] };
+export const MASH_REPORT_ONLY = { spore: ['boss'], hanging: ['mini'], storm: ['level'], crown: ['mini'], lamplit: ['mini'], keep: ['level'], causeway: ['level'], fields: ['mini'], burial: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'], spire: ['level'], longwater: ['level'], theatre: ['level'] };   /* (Daniel 10-03: the per-hero sweep (claude/mashmachines) found the MONASTERY, LONG WATER and THE THEATRE run mashable by warden / pyro; COMBAT PART 2 fixes them. DEEP stays OFF the list: it holds.) */
 /* THE GATE ON ONE LEVEL: { ok, hard: parts beaten and not listed, stale: listed parts that hold now, msg } */
 export function mashGate(lv) {
   const v = mashVerdict(lv), soft = MASH_REPORT_ONLY[lv.id] || [];
