@@ -32,7 +32,7 @@
 
 export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
-  ward: 0.05, openMul: 1.0,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
+  ward: 0.05, openMul: 0.7,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
   staggerT: 3.0,                       // ON THE GALLERY: he is staggered this long (boss-openings asserts >= 3 s)
   visitCap: 1 / 3,                     // A VISIT takes at most this share of his health (then the knockback comes at once)
   slackT: 12.0,                        // BOTH PUPPETS DOWN: the lever is free and his bar slack this long (x cycleK) - the time to ride up
@@ -54,9 +54,9 @@ export const PUP = {
   night: { half: 42, speed: 24, dark: 0.6 },
   inferno: { first: 2.5, tell: 1.3, burn: 1.4, rest: 0.9, dmg: 22, top: 30, hitEvery: 0.6 },
   sea: { first: 3.5, every: 4.8, tell: 1.3, speed: 150, half: 9, dmg: 22 },
-  harl: { hp: 40, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 2, jabReach: 26, jab: 10, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 12,
+  harl: { hp: 50, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 2, jabReach: 26, jab: 10, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 12,
     rest: 0.6, still: 0.7, dart: 2.2 },
-  brute: { hp: 110, speed: 58, chopTell: 1.0, chopReach: 40, chop: 32, slamTell: 1.15, slamReach: 70, slamTop: 12, slam: 34, grabTell: 1.0, grabReach: 30, grab: 35,
+  brute: { hp: 150, speed: 58, chopTell: 1.0, chopReach: 40, chop: 32, slamTell: 1.15, slamReach: 70, slamTop: 12, slam: 34, grabTell: 1.0, grabReach: 30, grab: 35,
     recover: 1.2, range: 44, scale: 1.5 },
   master: { hp: 150, swatTell: 0.9, swatReach: 58, swatTop: 64, swat: 24, stompTell: 1.1, stompHalf: 24, stomp: 30, reachTell: 1.0, reachT: 0.45, reachSpan: 200, reach: 22,
     recover: 2.2, speed: 34, lowerT: 1.6 },
