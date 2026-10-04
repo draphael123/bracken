@@ -2452,7 +2452,7 @@ function spawnEnt(e) {
           if (!isSolid(e.x, ty - 1)) break;                 /* nothing to hang it from: it does not exist */
           gy = ty; }
         /* a standing one was set down on its floor at load (groundEnts) */ const pyg = (gy + 1) * TS; /* snapped onto the surface: a spire a row low sank into the rock, a row high floated */ const onPlank = !e.hang && tileAt(e.x, gy + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
-        deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? gy * TS - spritePad(c)[0] : pyg - c.height + spritePad(c)[1] + (onPlank ? 3 : 0), c, bg: true, anim: K[2] || null, ph: Math.random() * 6, stand: decoStands(e), hang: decoHangs(e), moor: e.kind === 'airBell' ? moorOf(e.x, gy) : 0 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (L.unburied) { const ul = UBS.lightOf(e, px, pyg); if (ul) lights.push(ul); }   /* the field's fires and windows (claude/unburiedart) */ if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
+        deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? gy * TS - spritePad(c)[0] : pyg - c.height + spritePad(c)[1] + (onPlank && !L.unburied ? 3 : 0), c, bg: true, anim: K[2] || null, ph: Math.random() * 6, stand: decoStands(e), hang: decoHangs(e), moor: e.kind === 'airBell' ? moorOf(e.x, gy) : 0 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (L.unburied) { const ul = UBS.lightOf(e, px, pyg); if (ul) lights.push(ul); }   /* the field's fires and windows (claude/unburiedart) */ if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
         if (e.kind === 'lanternDeck' && e.v !== 0) lights.push({ x: px, y: pyg - 18, r: 36, torch: true });
         if (e.kind === 'lamppost') lights.push({ x: px, y: pyg - 28, r: 44, glow: true }); if (e.kind === 'candelabra') lights.push({ x: px, y: pyg - 22, r: 34, glow: true, warm: true });   /* THE MAGE'S FOLLY: its lamps and its candles */
         if (e.kind === 'cookPot') lights.push({ x: px, y: pyg - 8, r: 26, torch: true });
@@ -20993,7 +20993,7 @@ const HUNG_DECO = new Set(['portrait', 'spire', 'icicle', 'cobweb', 'drip', 'han
 // left where it was put, and tools/headless.mjs floats says so.
 const DECO_AIR = new Set(['hallWindow', 'window', 'gunport', 'sternWindows', 'grating', 'rigging', 'sailRag', 'boardingNet', 'strut', 'bracket', 'ropeBeam', 'pillar', 'axle', 'timber',
   'hammock', 'washing', 'bunting', 'pennant', 'crowNest', 'hiveBg', 'bough', 'cobweb',
-  'lilyLantern', 'buoy', 'lanternBuoy', 'ubLances', 'ubBallistaHang',   /* (the field's lance hedge stands on the stake line's notch: it stays where the level put it) */ /* slung between two things, bolted to a wall, or riding the water */
+  'lilyLantern', 'buoy', 'lanternBuoy', 'ubLances', 'ubBallistaHang', 'ubGlow',   /* (the field's lance hedge stands on the stake line's notch: it stays where the level put it) */ /* slung between two things, bolted to a wall, or riding the water */
   'airBell']);   /* AN AIR BELL IS WHERE YOU BREATHE: set down on the bed it moved the air with it, and seven of the Deep's twelve had no bed near enough and were gone. It stays where the level put it, moored to the bed by a chain (moorOf) */
 const decoHangs = e => !!e.hang || (HUNG_DECO.has(e.kind) && e.kind !== 'banner' && e.kind !== 'hangCage' && e.kind !== 'spire');   /* a banner, a cage and a spire each come standing too */
 const decoStands = e => !decoHangs(e) && !DECO_AIR.has(e.kind);
@@ -26085,6 +26085,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (L.welltown) WTB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE WELL TOWN's own dunes, oasis line, skyline, dovecote and Kasbah (src/redraw/welltown_backdrop.js), not the caravan's mesas */
   else if (FAIR) FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full');   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
+  if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
   else drawCastleBack(cx, cy);
   SEA.seaFar(g, cx, cy, VW, VH, time);   /* a sea level's far water: under the haze and the depth, so they sink into it */

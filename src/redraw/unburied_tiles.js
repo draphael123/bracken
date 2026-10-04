@@ -177,7 +177,8 @@ function sapperDeck(l, r, v) {
     for (let x = 2 + (v & 1); x < 16; x += 4) rect2(g, x, 4, 1, 4, UT.wood1); rect2(g, 0, 11, 16, 1, UT.wood0);
     for (const x of [1, 11 - v]) { rect2(g, x, 3, 2, 8, UT.straw1); px2(g, x, 5, UT.straw0); px2(g, x + 1, 7, UT.straw0); }   /* lashings */
     px2(g, 5, 4, UT.mud3); px2(g, 6, 4, UT.mud3); px2(g, 12, 5, UT.mud2);
-    if (l) { rect2(g, 0, 3, 2, 8, UT.wood5); } if (r) { rect2(g, 14, 3, 2, 8, UT.wood5); } return c; });
+    if (l) { rect2(g, 0, 3, 2, 8, UT.wood5); } if (r) { rect2(g, 14, 3, 2, 8, UT.wood5); }
+    const [c2, g2] = canvas(16, 16); g2.drawImage(c, 0, -2); return c2; });   /* the hero's feet are on the tile's top: the board's lip sits two pixels under it, not three over it */
 }
 
 // ---------------------------------------------------------------- HAZARD, WALLS, MOUND, GATE ----------------------------------------------------------------
@@ -298,7 +299,7 @@ export function drawMud(g, p, x0, x1, y, h, cx, time, surface) {
   const d = p.depth || 12;
   if (!surface) { g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(96,70,58,0.82)'; g.fillRect(x0, y, x1 - x0, d); g.globalCompositeOperation = 'source-over'; return; }
   /* over the legs of whoever wades: a dark, slow surface with a sky-pink sheen and the odd slow bubble - never a blue crest */
-  const gr = g.createLinearGradient(0, y, 0, y + d); gr.addColorStop(0, 'rgba(72,52,44,0.62)'); gr.addColorStop(1, 'rgba(42,30,26,0.78)'); g.fillStyle = gr; g.fillRect(x0, y, x1 - x0, d);
+  const gr = g.createLinearGradient(0, y, 0, y + d); gr.addColorStop(0, 'rgba(72,52,44,0.5)'); gr.addColorStop(1, 'rgba(42,30,26,0.64)'); g.fillStyle = gr; g.fillRect(x0, y, x1 - x0, d);
   g.fillStyle = UT.mud4; g.fillRect(x0, y, x1 - x0, 1); g.fillStyle = UT.mud0; g.fillRect(x0, y + 1, x1 - x0, 1);
   g.fillStyle = UT.pud2; g.globalAlpha = 0.5; for (let x = p.x0 + 5; x < p.x1; x += 17) { const sx = x + Math.round(Math.sin(time * 0.5 + x * 0.3) * 2) - cx; if (sx > x0 && sx < x1 - 5) g.fillRect(sx, y + 1, 5, 1); } g.globalAlpha = 1;
   g.fillStyle = UT.mud5; for (let k = 0; k < 3; k++) { const t = (time * 0.3 + k * 0.41) % 1, bx = p.x0 + 9 + ((k * 61) % Math.max(1, p.x1 - p.x0 - 18)) - cx, by = y + d - t * (d - 2); if (bx > x0 && bx < x1 && t > 0.1) g.fillRect(bx, by, 2, 1); }

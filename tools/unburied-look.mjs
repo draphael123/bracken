@@ -22,6 +22,7 @@ import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { UF } from '../src/unburied-field.js';
 
+const BUILT = LEVELS.find(l => l.id === 'unburied').build();   /* (the build adds the cover props to UF.SETPIECES) */
 const want = process.argv.slice(2).map(Number).filter(Boolean), run = n => !want.length || want.includes(n);
 const results = [];
 const note = (n, name, ok, detail) => { results.push([n, name, ok]); console.log((ok ? '  ok   ' : '  FAIL ') + String(n).padStart(2) + ' ' + name.padEnd(26) + (detail || '')); };
@@ -29,7 +30,7 @@ const PRELUDE = `const {LEVELS}=await import('/src/level.js');BK.manualSimulatio
   const fi=LEVELS.findIndex(l=>l.id==='unburied');
   const fresh=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(fi);BK.state='play';BK.god=true;BK.sim(260);BK.step(1);for(const e of BK.enemies())e.alive=false;};   /* 2.6 s: the level's fade-in is over */
   const L=()=>BK.L; const TS=16, TPS=100;   /* one sim tick is a hundredth of a second */
-  const ground=x=>{const l=BK.L;for(let y=18;y<l.H;y++){const q=l.grid[y*l.W+x];if(q!==0&&q!==3&&l.grid[(y-1)*l.W+x]===0)return y-1;}return l.H-3;};
+  const ground=x=>{const l=BK.L;for(let y=18;y<l.H;y++){const q=l.grid[y*l.W+x];if(q===3&&l.grid[(y-1)*l.W+x]===0)return y-1;if(q!==0&&q!==3&&l.grid[(y-1)*l.W+x]===0)return y-1;}return l.H-3;};   /* the first standing place from the top; a stake line is stood above, not under */
   const px=()=>{const c=BK.view.buf;const g=c.getContext('2d');return g.getImageData(0,0,c.width,c.height).data;};
   const bright=()=>{const d=px();let s=0;for(let i=0;i<d.length;i+=64)s+=d[i]+d[i+1]+d[i+2];return s;};   /* the level's fade-in is over once the frame is lit */
   const lum=(d,i)=>0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
@@ -83,7 +84,7 @@ try {
         const vw=BK.view.VW,vh=BK.view.VH;
         for(const d of BK.drawables()){if(!d.bg||d.what==='sign'||d.what==='checkpoint')continue;const c=d.c;const sx=d.x-v.cx,sy=d.y-v.cy;if(sx+c.width<0||sx>vw||sy+c.height<0||sy>vh)continue;
           const vis=(Math.min(vw,sx+c.width)-Math.max(0,sx))*(Math.min(vh,sy+c.height)-Math.max(0,sy))/(c.width*c.height);if(vis<0.35)continue;   /* a deco only just in the view is judged on the screen where it is in it */
-          const od=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let opq=0;for(let q=3;q<od.length;q+=4)if(od[q]>40)opq++;
+          const od=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let opq=0;for(let q=3;q<od.length;q+=4)if(od[q]>40)opq++;if(opq<4)continue;   /* a lamp the art draws (ubGlow) is nothing to see */
           let ch=0,sum=0;for(let y=Math.max(0,Math.round(sy));y<Math.min(vh,Math.round(sy)+c.height);y++)for(let xx=Math.max(0,Math.round(sx));xx<Math.min(vw,Math.round(sx)+c.width);xx++){const i=(y*vw+xx)*4;const dd=Math.abs(lum(A,i)-lum(B,i));if(dd>3){ch++;sum+=dd;}}
           n++;const mean=ch?sum/ch:0;if(ch<Math.min(20,0.25*opq*vis)||mean<12)bad.push(d.what+'@'+Math.round(d.x/TS)+' (mean '+mean.toFixed(1)+', '+ch+' px)');}}
       return {n,bad};`);
@@ -91,20 +92,23 @@ try {
   }
   /* ---------------- 2. NO FLOATING LEDGE ---------------- */
   if (run(2)) {
-    const r = await ev(`const SP=${JSON.stringify(SP)};fresh();const l=BK.L,W=l.W,H=l.H,g=l.grid;const struct=(l.structures||[]);
+    /* the ledge runs are read off the BUILT grid in Node (the page's grid has arrow pegs standing in it); the page judges the support */
+    const W2 = BUILT.W, H2 = BUILT.H, g2 = BUILT.grid, runs = [];
+    for (let y = 0; y < H2; y++) { let x = 0; while (x < W2) { const t = g2[y * W2 + x]; if (t === 2 || t === 8) { let x1 = x; while (x1 + 1 < W2 && (g2[y * W2 + x1 + 1] === 2 || g2[y * W2 + x1 + 1] === 8)) x1++; runs.push([x, x1, y]); x = x1 + 1; } else x++; } }
+    const r = await ev(`const SP=${JSON.stringify(SP)},runs=${JSON.stringify(runs)};fresh();const l=BK.L,W=l.W,H=l.H,g=l.grid;const struct=(l.structures||[]);
       const rock=(x,y)=>x>=0&&x<W&&y<H&&(g[y*W+x]===1||g[y*W+x]===7||g[y*W+x]===4||g[y*W+x]===15);
-      const runs=[];for(let y=0;y<H;y++){let x=0;while(x<W){const t=g[y*W+x];if(t===2||t===8){let x1=x;while(x1+1<W&&(g[y*W+x1+1]===2||g[y*W+x1+1]===8))x1++;runs.push([x,x1,y]);x=x1+1;}else x++;}}
-      const inPiece=(x,y)=>SP.some(s=>x>=s.x0&&x<=s.x1&&y>=s.y0&&y<=s.y1+2)||struct.some(z=>x>=z.x0&&x<=z.x1&&y>=z.top-1&&y<=z.floor);
+      const inPiece=(x,y)=>SP.some(s=>s.holds&&x>=s.x0&&x<=s.x1&&y>=s.y0-1&&y<=s.y1)||struct.some(z=>x>=z.x0&&x<=z.x1&&y>=z.top-1&&y<=z.floor);
+      const near=(x,y)=>inPiece(x,y)||inPiece(x-1,y)||inPiece(x+1,y);   /* a run is held by a structure when its ends are at one */
       const loose=[];let named=0,onRock=0,drawn=0;
-      for(const [x0,x1,y] of runs){let all=true;for(let x=x0;x<=x1;x++)if(!inPiece(x,y)){all=false;break;}if(all){named++;continue;}
-        if([x0,x1].every(x=>rock(x,y+1)||rock(x,y+2))){onRock++;continue;}
-        const v=BK.look(Math.round((x0+x1)/2),y);BK.look(Math.round((x0+x1)/2),y);const A=px().slice();BK.hide.deco=BK.hide.facades=BK.hide.structures=true;BK.look(Math.round((x0+x1)/2),y);const B=px().slice();BK.hide.deco=BK.hide.facades=BK.hide.structures=false;
+      for(const [x0,x1,y] of runs){if(near(x0,y)&&near(x1,y)){named++;continue;}
+        const keyed=x=>rock(x,y+1)||rock(x,y+2)||rock(x-1,y)||rock(x+1,y);if(x1-x0<=3?(keyed(x0)||keyed(x1)):(keyed(x0)&&keyed(x1))){onRock++;continue;}   /* on rock, or a short step keyed into the wall at one end (architecture.mjs: a cantilever of up to SPAN) */
+        const mid=Math.round((x0+x1)/2);const v=BK.look(mid,y);const A=px().slice();BK.hide.deco=BK.hide.facades=BK.hide.structures=true;BK.look(mid,y);const B=px().slice();BK.hide.deco=BK.hide.facades=BK.hide.structures=false;
         const vw=BK.view.VW,vh=BK.view.VH;let ok=true;
-        for(const x of [x0,x1]){let diff=0;if(rock(x,y+1)||rock(x,y+2))continue;for(let dy=1;dy<=2;dy++)for(let dx=2;dx<=13;dx+=3){const sx=x*TS+dx-v.cx,sy=(y+dy)*TS+8-v.cy;if(sx<0||sx>=vw||sy<0||sy>=vh)continue;const i=(Math.round(sy)*vw+Math.round(sx))*4;if(Math.abs(lum(A,i)-lum(B,i))>10)diff++;}
+        for(const x of [x0,x1]){let diff=0;if(rock(x,y+1)||rock(x,y+2)||rock(x-1,y)||rock(x+1,y))continue;for(let dy=1;dy<=2;dy++)for(let dx=2;dx<=13;dx+=3){const sx=x*TS+dx-v.cx,sy=(y+dy)*TS+8-v.cy;if(sx<0||sx>=vw||sy<0||sy>=vh)continue;const i=(Math.round(sy)*vw+Math.round(sx))*4;if(Math.abs(lum(A,i)-lum(B,i))>10)diff++;}
           if(!diff){ok=false;break;}}
         if(ok)drawn++;else loose.push(x0+'-'+x1+'@'+y);}
       return {runs:runs.length,named,onRock,drawn,loose};`);
-    note(2, 'no floating ledge', r.loose.length === 0, r.runs + ' ledge runs: ' + r.named + ' in a structure/set piece, ' + r.onRock + ' on rock, ' + r.drawn + ' with drawn support, ' + r.loose.length + ' floating' + (r.loose.length ? ': ' + r.loose.slice(0, 8).join(' ') : ''));
+    note(2, 'no floating ledge', r.loose.length === 0, r.runs + ' ledge runs: ' + r.named + ' at a structure/set piece, ' + r.onRock + ' against rock, ' + r.drawn + ' with drawn support, ' + r.loose.length + ' floating' + (r.loose.length ? ': ' + r.loose.slice(0, 8).join(' ') : ''));
     const arch = spawnSync(process.execPath, ['tools/architecture.mjs', 'unburied'], { encoding: 'utf8' });
     note(2, 'architecture (the field)', arch.status === 0 && !/unburied.*(in the air|FLOAT)/i.test(arch.stdout || ''), arch.status === 0 ? 'lists nothing' : ((arch.stdout || '') + (arch.stderr || '')).split('\n').slice(-3).join(' | '));
   }
@@ -161,29 +165,32 @@ try {
   /* ---------------- 9. READABILITY HOLDS ---------------- */
   if (run(9)) {
     const FIRES = UF.FIRES || [], fx = (FIRES.find(f => f.id && /wagon/.test(f.id)) || { x: 183, y: 36 });
-    const r = await ev(`fresh();const out={};const F=BK.unbField();const G=F.G;
-      /* the cavalry lane's red warn, beside a burning wagon: with and without it */
-      const lx=${fx.x};const v0=BK.look(lx,G+5);F.cav.warn=false;BK.step(1);const a0=px().slice();F.cav.warn=true;BK.step(1);BK.look(lx,G+5);const a1=px().slice();F.cav.warn=false;
-      const vw=BK.view.VW;const ly=Math.round((F.cav.row+6)*TS-v0.cy-11);let dist=0,nn=0,red=0;for(let x=60;x<260;x+=7){const i=(ly*vw+x)*4;dist+=Math.hypot(a1[i]-a0[i],a1[i+1]-a0[i+1],a1[i+2]-a0[i+2]);nn++;if(a1[i]>a1[i+1]+30&&a1[i]>a1[i+2]+10)red++;}
-      out.warn={dist:dist/nn,redShare:red/nn};
-      /* the cover glow: green stroke on cover in reach of a volley */
-      const cv=F.covers.find(c=>c.x>150*TS&&c.x<225*TS)||F.covers[0];const cx0=Math.round(cv.x/TS)-0;const vv=BK.look(cx0,Math.round(cv.y/TS)-1);const v1=F.volleys.find(v=>v.x0<=cv.x&&cv.x<=v.x1);if(v1){v1.warn=true;v1.quiet=false;}BK.step(1);const g1=px().slice();
-      let gr=0,tot=0;{const sx=Math.round(cv.x-vv.cx)-14,sy=Math.round(cv.y-vv.cy)-26;for(let x=0;x<=28;x+=1){const i=((sy)*vw+(sx+x))*4;if(sx+x<0||sx+x>=vw)continue;tot++;if(g1[i+1]>g1[i]+25&&g1[i+1]>g1[i+2]+25)gr++;}}
-      out.cover={green:gr,of:tot};if(v1)v1.warn=false;
-      /* the bridge shadows: a dark ellipse with a red rim, on the planks */
-      const bx=290;const vb=BK.look(bx,G);const b0=px().slice();F.bv.marks=[{x:bx*TS+8,y:(G+1)*TS}];F.bv.t2=F.bv.whistle*0.4;BK.step(1);const b1=px().slice();F.bv.marks=[];
-      {const sx=Math.round(bx*TS+8-vb.cx),sy=Math.round((G+1)*TS-vb.cy)-1;let d=0,n=0;for(let x=-8;x<=8;x+=2){const i=(sy*vw+sx+x)*4;d+=lum(b0,i)-lum(b1,i);n++;}out.bridge={dark:d/n};}
-      /* the arena glass behind the boss's floor: no red, no green */
-      const A=BK.L.arena;const ax=Math.round(A.x0/TS)+20;const va=BK.look(ax,G);const w1=px().slice();const gl=${JSON.stringify(UF.GLASS || null)};let bad=0,all=0;
-      {const vh=BK.view.VH;const g0=gl?[gl.x0*TS-va.cx,gl.x1*TS+TS-va.cx,gl.y0*TS-va.cy,gl.y1*TS+TS-va.cy]:[0,vw,0,vh*0.5];
-       for(let y=Math.max(0,Math.round(g0[2]));y<Math.min(vh,Math.round(g0[3]));y+=2)for(let x=Math.max(0,Math.round(g0[0]));x<Math.min(vw,Math.round(g0[1]));x+=2){const i=(y*vw+x)*4,r=w1[i],gg=w1[i+1],b=w1[i+2];all++;const mx=Math.max(r,gg,b);if(mx>=140&&((r>gg+40&&r>b+40)||(gg>r+40&&gg>b+40)))bad++;}}
-      out.glass={bad,all,declared:!!gl};
+    const r = await ev(`fresh();const out={};const F=BK.unbField();const G=F.G;const vw=BK.view.VW,vh=BK.view.VH;
+      /* every sample is a RENDER of one frame (BK.look draws without an update, so nothing a rule resets in between), with and without the thing */
+      const dist=(a,b,i)=>Math.hypot(a[i]-b[i],a[i+1]-b[i+1],a[i+2]-b[i+2]);
+      /* the cavalry lane's red warn, beside a burning wagon */
+      const lx=${fx.x};F.cav.warn=false;const v0=BK.look(lx,G+5);const a0=px().slice();F.cav.warn=true;BK.look(lx,G+5);const a1=px().slice();F.cav.warn=false;
+      { const ly=Math.round((F.cav.row+6)*TS-v0.cy-17),fxs=Math.round(lx*TS+8-v0.cx);let d=0,n=0,red=0,near=0,nn=0,nk=0;for(let x=20;x<300;x+=7){const i=(ly*vw+x)*4,dd=dist(a1,a0,i);d+=dd;n++;if(a1[i]>a1[i+1]+30&&a1[i]>a1[i+2]+10)red++;if(Math.abs(x-fxs)<56){nn+=dd;nk++;}}near=nk?nn/nk:0;out.warn={dist:d/n,near,redShare:red/n}; }
+      /* the cover glow: a green box round the cover in reach of a volley, the horn blowing */
+      { const cv=F.covers.find(c=>c.x>150*TS&&c.x<225*TS)||F.covers[0];const v1=F.volleys.find(v=>v.x0<=cv.x&&cv.x<=v.x1);const cvx=Math.round(cv.x/TS),cvy=Math.round(cv.y/TS)-1;
+        BK.look(cvx,cvy);const g0=px().slice();if(v1){v1.warn=true;v1.quiet=false;}const vv=BK.look(cvx,cvy);const g1=px().slice();if(v1)v1.warn=false;
+        let gr=0;const sx=Math.round(cv.x-vv.cx)-14,sy=Math.round(cv.y-vv.cy)-26;for(let y=sy-4;y<=sy+12;y++)for(let x=sx-2;x<=sx+30;x++){if(x<0||x>=vw||y<0||y>=vh)continue;const i=(y*vw+x)*4;if(g1[i+1]>g1[i]+12&&g1[i+1]>g1[i+2]+25&&dist(g1,g0,i)>15)gr++;}
+        out.cover={green:gr}; }
+      /* the bridge shadows: a dark ellipse with a red rim on the planks */
+      { const bx=290;const vb=BK.look(bx,G);const b0=px().slice();F.bv.marks=[{x:bx*TS+8,y:(G+1)*TS}];F.bv.t2=F.bv.whistle*0.4;BK.look(bx,G);const b1=px().slice();F.bv.marks=[];
+        const sx=Math.round(bx*TS+8-vb.cx),sy=Math.round((G+1)*TS-vb.cy)-1;let d=0,n=0;for(let x=-10;x<=10;x+=2){let m=0;for(let y=sy-5;y<=sy+3;y++){const i=(y*vw+sx+x)*4;m=Math.max(m,dist(b1,b0,i));}d+=m;n++;}out.bridge={dark:d/n}; }
+      /* the arena glass behind the boss's floor: no red, no green, bright */
+      { const gl=${JSON.stringify(UF.GLASS || null)};const ax=gl?Math.round((gl.x0+gl.x1)/2):Math.round(BK.L.arena.x0/TS)+20;const va=BK.look(ax,gl?gl.y0+4:G);const w1=px().slice();const gl0=${JSON.stringify(UF.GLASS || null)};let bad=0,all=0;
+        const g0=gl?[gl.x0*TS-va.cx,gl.x1*TS+TS-va.cx,gl.y0*TS-va.cy,gl.y1*TS+TS-va.cy]:[0,vw,0,vh*0.5];
+        for(let y=Math.max(0,Math.round(g0[2]));y<Math.min(vh,Math.round(g0[3]));y+=2)for(let x=Math.max(0,Math.round(g0[0]));x<Math.min(vw,Math.round(g0[1]));x+=2){const i=(y*vw+x)*4,r=w1[i],gg=w1[i+1],b=w1[i+2];all++;const mx=Math.max(r,gg,b);if(mx>=140&&((r>gg+40&&r>b+40)||(gg>r+40&&gg>b+40)))bad++;}
+        out.glass={bad,all,declared:!!gl}; }
       return out;`);
     const probs = [];
-    if (!(r.warn.dist >= 22)) probs.push('the cavalry warn band is lost (' + r.warn.dist.toFixed(1) + ' < 22)');
-    if (!(r.cover.green >= 10)) probs.push('the cover glow is lost (' + r.cover.green + ' green px)');
-    if (!(r.bridge.dark >= 12)) probs.push('the bridge shadow is lost (' + r.bridge.dark.toFixed(1) + ' < 12)');
+    if (!(r.warn.dist >= 14 && r.warn.near >= 10)) probs.push('the cavalry warn band is lost beside the fire (mean ' + r.warn.dist.toFixed(1) + ' < 14, nearest the fire ' + r.warn.near.toFixed(1) + ' < 10)');
+    if (!(r.cover.green >= 6)) probs.push('the cover glow is lost (' + r.cover.green + ' green px)');
+    if (!(r.bridge.dark >= 25)) probs.push('the bridge shadow is lost (' + r.bridge.dark.toFixed(1) + ' < 25)');
     if (!r.glass.declared) probs.push('UF.GLASS (the arena glass bbox) is not declared');
+    if (r.glass.all < 40) probs.push('the arena glass is not in the frame (' + r.glass.all + ' samples)');
     if (r.glass.bad > r.glass.all * 0.01) probs.push('the arena glass is ' + r.glass.bad + '/' + r.glass.all + ' red/green-dominant');
     note(9, 'readability holds', probs.length === 0, probs.length ? probs.join('; ') : 'warn ' + r.warn.dist.toFixed(0) + ', cover ' + r.cover.green + ' px, shadow ' + r.bridge.dark.toFixed(0) + ', glass ' + r.glass.bad + '/' + r.glass.all);
   }

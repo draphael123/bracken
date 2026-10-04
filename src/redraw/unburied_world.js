@@ -26,6 +26,7 @@
 //   boneSoil(tiles, seed)        paints the field's dead into a share of the dirt tiles: ribs, a skull, a long bone, a helm
 import { canvas, px, rect, fillPoly, line, circle, outline, mulberry } from '../px.js';
 import { OUT } from '../art.js';
+export { fortRect, hideFort, drawFort } from './unburied_chapel.js';   /* THE CHAPEL-FORT on the skyline (claude/unburiedart): drawn between the far and the mid layer */
 
 const TAU = Math.PI * 2;
 const hsh = (x, y, s = 0) => { let t = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s | 0, 982451653)) >>> 0; t = Math.imul(t ^ (t >>> 13), 1274126177); return ((t ^ (t >>> 16)) >>> 0) / 4294967296; };

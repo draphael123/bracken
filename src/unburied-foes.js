@@ -659,11 +659,14 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   for (const v of F.volleys) { v.fade = v.quiet ? Math.max(0, (v.fade ?? 1) - fdt / 1.8) : 1; if (v.fade <= 0) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;
     ghostRank(g, x0, x1, Math.round((F.G - 13) * TS - cy * 0.6), cx, time, v.fade, v.warn);   /* pale helms, spears, shields and standards, lit cold, swaying - and fading when their stretch goes quiet */
     if (v.warn && !v.quiet) { const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.07 + 0.08 * k; R(g, x0, 0, x1 - x0, VH, '#ff6b6b'); g.globalAlpha = 1;
-      /* C5: the escape, lit from inside the danger - every cover prop in reach glows */
-      for (const cv of F.covers) { const sx = cv.x - cx; if (sx < x0 - 20 || sx > x1 + 20) continue; g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(Math.round(sx) - 14, Math.round(cv.y - cy) - 26, 28, 26); R(g, sx - 1, cv.y - cy - 34 - k * 3, 3, 5, '#8fd160'); g.globalAlpha = 1; } } }
+      /* (C5: the escape, lit from inside the danger - every cover prop in reach glows: drawn after the cover, below) */ } }
   for (const a of F.arrows) { const x = Math.round(a.x - cx), y = Math.round(a.y - cy); R(g, x, y - 7, 1, 7, '#5a4a36'); R(g, x - 1, y - 8, 3, 2, '#c8b6ff'); }
   /* COVER: wheeled pavises, a supply wagon, the overturned cart, the line of ghost shieldmen - baked pictures (src/redraw/unburied_siege.js), no crate shapes */
   for (const cv of F.covers) { const x = Math.round(cv.x - cx), y = Math.round(cv.y - cy); if (x < -40 || x > VW + 40) continue; const sp = SG.coverSprite(cv.kind); g.drawImage(sp, x - (sp.width >> 1), y - sp.height + 2); }
+  /* C5: THE ESCAPE, LIT FROM INSIDE THE DANGER - every cover prop in reach of a horn that is blowing glows green, over the cover (so a bigger picture never hides it) */
+  { const k = 0.5 + 0.5 * Math.sin(time * 16); for (const v of F.volleys) { if (!v.warn || v.quiet) continue; const gx0 = v.x0 - cx, gx1 = v.x1 - cx;
+      for (const cv of F.covers) { const sx = cv.x - cx; if (sx < gx0 - 20 || sx > gx1 + 20 || sx < -40 || sx > VW + 40) continue; const sp = SG.coverSprite(cv.kind), w = sp.width, h = sp.height - 3, by = Math.round(cv.y - cy);
+        g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(Math.round(sx - w / 2) + 0.5, by - h + 0.5, w - 1, h); R(g, sx - 1, by - h - 8 - k * 3, 3, 5, '#8fd160'); g.globalAlpha = 1; } } }
   /* THE BRIDGES' VOLLEY, TOLD: every shadow darkening and closing as the arrows come down onto it, a red rim round it, the arrows
      themselves in the last half of the whistle; the cover in reach lit green (C5); and the arrows left standing in the planks */
   if (F.bv) { const bv = F.bv;
@@ -673,7 +676,7 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
       if (k > 0.5) for (let i = 0; i < 3; i++) { const ax = x - 6 + i * 6, ay = Math.round(y - 10 - (1 - k) * 220 - i * 9); R(g, ax, ay - 8, 1, 8, '#5a4a36'); R(g, ax - 1, ay, 3, 2, '#c8b6ff'); } }
     if (bv.marks.length) { const k = 0.5 + 0.5 * Math.sin(time * 16);
       for (const cv of F.covers) { if (cv.x < bv.x0 || cv.x > bv.x1) continue; const sx = Math.round(cv.x - cx); if (sx < -30 || sx > VW + 30) continue;
-        g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(sx - 14, Math.round(cv.y - cy) - 26, 28, 26); g.globalAlpha = 1; } }
+        g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; { const sp = SG.coverSprite(cv.kind), w = sp.width, h = sp.height - 3; g.strokeRect(Math.round(sx - w / 2) + 0.5, Math.round(cv.y - cy) - h + 0.5, w - 1, h); } g.globalAlpha = 1; } }
     for (const s of bv.stuck) { if (s.t < 0.4 && Math.floor(time * 14) % 2) continue; const x = Math.round(s.x - cx), y = Math.round(s.y - cy);
       for (let i = 0; i < 3; i++) { R(g, x - 6 + i * 6, y - 7 + (i % 2), 1, 7, '#6a5236'); R(g, x - 7 + i * 6, y - 8 + (i % 2), 3, 2, '#c8b6ff'); } } }
   /* PEGS: the arrows standing in the palisade, going out in the last second */

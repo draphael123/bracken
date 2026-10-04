@@ -7,6 +7,7 @@
 // (decoSet: kind -> [canvas, bulky, frames]; lightOf: a fire's lamp). Deco is softened and drawn at 0.78 behind the play (main.js drawScenery), so the colours here are a step brighter.
 import { K, canvas, px, rect, fillPoly, line, circle, ellipse, outline, beam, post, wheel, sack, pennant, shroud, flame, flameFrames, planks, rnd } from './unburied_art.js';
 import * as SG from './unburied_siege.js';
+import * as CH from './unburied_chapel.js';
 
 const alpha = (g, a, fn) => { g.globalAlpha = a; fn(); g.globalAlpha = 1; };
 const shadow = (g, cx, y, rx) => alpha(g, 0.28, () => ellipse(g, cx, y, rx, 2, '#000000'));
@@ -143,14 +144,14 @@ export function ubLances(w = 60, seed = 1) {
    spilled at the foot. 64 x 64, the foot on the trench floor; the bed's top is at y 16. burning: charred, one board out */
 export function ubWagon(v = 0, burning = false) {
   const [c, g] = canvas(64, 64), r = rnd(v * 13 + 5); shadow(g, 32, 62, 30);
-  const body = burning ? '#3a2418' : '#5a3e26', lit = burning ? '#5a3822' : '#7a5634', dk = burning ? K.ash0 : K.wood1;
+  const body = burning ? '#5c3a22' : '#5a3e26', lit = burning ? '#8a5a30' : '#7a5634', dk = burning ? '#1c1210' : K.wood1;   /* (a burning one is scorched, not black: it has to read against the dusk) */
   rect(g, 8, 26, 48, 36, body); rect(g, 8, 26, 48, 2, lit); for (let x = 12; x < 56; x += 6) rect(g, x, 28, 1, 34, dk);
   for (const y of [34, 50]) { rect(g, 8, y, 48, 2, burning ? K.iron0 : K.iron1); rect(g, 8, y, 48, 1, K.iron2); for (let x = 12; x < 56; x += 10) px(g, x, y, K.iron4); }
   rect(g, 6, 26, 3, 36, burning ? K.ash1 : K.wood2); rect(g, 55, 26, 3, 36, burning ? K.ash1 : K.wood2);   /* the end boards */
   if (burning) { for (const [x, y, w, h] of [[14, 38, 8, 10], [34, 44, 10, 12]]) { rect(g, x, y, w, h, K.ash0); rect(g, x + 1, y + 1, w - 2, 2, K.ember); } }
   else if (v === 1) { rect(g, 30, 40, 9, 12, K.wood0); rect(g, 31, 41, 7, 2, K.wood3); }   /* a board stove in */
-  wheel(g, 52, 12, 11, 8, 0.5, burning ? '#3a2418' : K.wood4, K.iron2, 3);   /* the wheel that came off, standing against it, spokes gone */
-  wheel(g, 10, 55, 8, 8, 0.2, burning ? '#3a2418' : K.wood3, K.iron2, 2);
+  wheel(g, 52, 12, 11, 8, 0.5, burning ? '#6a4428' : K.wood4, K.iron2, 3);   /* the wheel that came off, standing against it, spokes gone */
+  wheel(g, 10, 55, 8, 8, 0.2, burning ? '#6a4428' : K.wood3, K.iron2, 2);
   line(g, 3, 60, 18, 52, K.wood3, 2); rect(g, 1, 59, 4, 2, K.iron3);   /* the shaft, snapped */
   sack(g, 24, 52, 11, 12, K.burlap2, K.burlap1); sack(g, 37, 54, 12, 10, K.burlap3, K.burlap1); sack(g, 51, 56, 10, 8, K.burlap2, K.burlap1);
   for (let i = 0; i < 14; i++) px(g, 20 + ((r() * 40) | 0), 60 + ((r() * 3) | 0), K.straw3);   /* grain, spilled */
@@ -169,12 +170,32 @@ export function ubShieldWall(w = 150) {
   return c;
 }
 
+// ================================================================ THE SAPPERS' BRIDGES ================================================================
+/* FASCINES: bundles of brushwood bound with withy, stacked in a pyramid and chocked - what the sappers laid on a ditch. 44 x 24 */
+export function ubFascines(v = 0) {
+  const [c, g] = canvas(46, 26), r = rnd(v * 5 + 3); shadow(g, 23, 24, 21);
+  const row = (n, y, x0) => { for (let i = 0; i < n; i++) { const x = x0 + i * 13; rect(g, x, y, 13, 8, '#6a5230'); rect(g, x, y, 13, 2, '#8a6e44'); rect(g, x, y + 6, 13, 2, '#3e2e1a');
+    for (let k = 0; k < 6; k++) px(g, x + 1 + ((r() * 11) | 0), y + 1 + ((r() * 6) | 0), r() < 0.5 ? '#a88a58' : '#4a381f');
+    for (const lx of [x + 3, x + 9]) { rect(g, lx, y, 1, 8, K.straw2); } circle(g, x + 13, y + 4, 3.8, '#7a5e38'); circle(g, x + 13, y + 4, 1.4, '#3e2e1a'); } };
+  row(3, 16, 3); row(2, 8, 9.5); row(1, 1, 16);
+  return outline(c, K.out);
+}
+/* WHERE SAPPERS DIED: the stream bed under the bridges - fascines that never reached the deck, a spear or two, and the drowned face down in the cold water. 64 x 22 */
+export function ubBedDead(v = 0) {
+  const [c, g] = canvas(66, 24), r = rnd(v * 9 + 4);
+  alpha(g, 0.7, () => { ellipse(g, 33, 20, 30, 3, '#3a5460'); });
+  for (let i = 0; i < 2; i++) { const x = 4 + i * 22 + v * 3, y = 14 - i * 2; rect(g, x, y, 18, 7, '#4a3a24'); rect(g, x, y, 18, 2, '#6a5434'); rect(g, x, y + 5, 18, 2, '#2a2014'); for (const lx of [x + 5, x + 12]) rect(g, lx, y, 1, 7, K.straw1); circle(g, x + 18, y + 3.5, 3.5, '#5a4630'); }
+  for (let i = 0; i < 2; i++) { const x = 34 + i * 17 - v * 4, y = 13 + i * 2, len = 22; ellipse(g, x + len / 2, y + 4, len / 2, 3.4, i ? '#7a8498' : '#8a96a8'); ellipse(g, x + 3, y + 3, 3, 3, '#9aa6b8'); rect(g, x + 8, y + 1, len - 8, 1, '#a8b4c4'); line(g, x + 10, y + 6, x + len, y + 7, '#4a5468'); px(g, x + 1, y + 3, K.ash0); }   /* two drowned men, slate-coated, face down */
+  line(g, 28, 22, 60, 6 + v * 3, K.cloth2); px(g, 60, 5 + v * 3, K.silver);
+  return outline(c, K.out);
+}
+
 // ================================================================ LIGHT (every fire is a lamp) ================================================================
 /* a deco ent's lamp, or null: { x, y, r, torch, bare } - torch tints it fire-orange and bare keeps main.js from drawing a torch sprite on it; ubFlick (below) gutters the radius */
 export function lightOf(e, px, pyg) {
   if (e.kind === 'ubBrazier') return { x: px, y: pyg - 20, r: 64, r0: 64, torch: true, bare: true, ubFlick: 0.14, holder: false };
   if (e.kind === 'ubWagon' && e.burning) return { x: px, y: pyg - 30, r: 86, r0: 86, torch: true, bare: true, ubFlick: 0.2 };
-  if (e.kind === 'ubFireRing') return null;
+  if (e.kind === 'ubGlow') return { x: px, y: pyg - (e.up || 0), r: e.r || 56, warm: true, glow: !!e.cold };   /* a lit window or lamp the art draws: the lamp only (nothing to see of it) */
   return null;
 }
 /* the lamps gutter: fires are never steady. Called every frame by main.js with the level's lights */
@@ -213,6 +234,9 @@ export function decoSet(e) {
     case 'ubBallistaHang': return { ubBallistaHang: [once('bhang', SG.ubBallistaHang), false] };
     case 'ubGantry': return { ubGantry: [once('gantry', SG.ubGantry), false] };
     case 'ubBarbette': return { ubBarbette: [once('barbette', SG.ubBarbette), false] };
+    case 'ubGlow': return { ubGlow: [once('glow', () => canvas(1, 1)[0]), false] };
+    case 'ubFascines': return { ubFascines: [once('fasc' + v, () => ubFascines(v)), false] };
+    case 'ubBedDead': return { ubBedDead: [once('bedd' + v, () => ubBedDead(v)), false] };
     case 'ubEmplace': return { ubEmplace: [once('emplace', SG.ubEmplacement), false] };
     default: return null;
   }
@@ -221,5 +245,5 @@ export function decoSet(e) {
 export const drawTrestle = SG.drawTrestle;
 export function bakeFacade(kind, tw, th, seed, o) {
   if (kind === 'ubtower') return SG.bakeTower();
-  return null;
+  return CH.bakeFacade(kind);
 }
