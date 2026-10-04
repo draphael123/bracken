@@ -1450,7 +1450,7 @@ export const AMBIENT_SOURCES = { battlefield: ['synth:wind', 'synth:dead-grass',
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
 /* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
    (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
-export const MUSIC_CREDITS_ROW = { redgorge: '"Old Road" — K. MacLeod, CC-BY', unburied: '"March of the Wizards" — Aureolus_Omicron, CC-BY' };
+export const MUSIC_CREDITS_ROW = { redgorge: '"Old Road" — K. MacLeod, CC-BY', unburied: 'Aureolus_Omicron, CC-BY 4.0' };   /* (the Sound Test's one row fits ~32 characters: the author and the licence here, the title and the exact credit on the credits page and in audio/CREDITS.txt) */
 export const MUSIC_CREDITS = {
   harvestfair: '"Dark Carnival" — Machine, CC-BY', wickerqueen: '"Ring Master" — Bobjt',   /* (claude/fairfix3: CC-BY tracks are allowed WITH a credit, Daniel 2026-10-01; the licence's version, 3.0, is in audio/CREDITS.txt - the Sound Test row fits 32 characters) */
   theme: '"Stage 1" — Juhani Junkala', theme2: '"Stage 2" — Juhani Junkala',
