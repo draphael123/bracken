@@ -95,7 +95,7 @@ export function buildWitchlight({ painter, T, TS }) {
   ent('check', 80, PIER); ent('check', 106, PIER);   /* 106, the pier's near end: at 108 it stood under THE SECOND PIER's husk (tools/elites.mjs) */
   ent('sign', 51, PIER, { text: "THE AQUEDUCT'S ARCHES FLOAT. SOME SINK UNDER YOU. A FALL IS A CLIMB BACK UP." });
   coins([57, PIER - 1], [61, PIER - 1], [69, PIER - 1], [93, PIER - 4], [95, PIER - 4], [115, PIER - 1], [126, PIER - 1]);
-  meet('THE BROOMS OVER THE FIRST GAP', 54, 82, [['broom', 60, PIER - 5, { sweep: true }], ['broom', 72, PIER - 6, { sweep: true }], ['zombie', 80, PIER], ['bonearcher', 82, PIER]]);
+  meet('THE BROOMS OVER THE FIRST GAP', 54, 82, [['broom', 60, PIER - 5, { sweep: true }], ['broom', 72, PIER - 6, { sweep: true }], ['hound', 80, PIER, { cnSkin: 'gravehound' }], ['bonearcher', 82, PIER]]);
   meet('THE DEAD IN THE GORGE', 96, 104, [['zombie', 96, GORGE], ['husk', 100, GORGE], ['zombie', 104, GORGE]]);
   meet('THE SECOND PIER', 106, 110, [['husk', 110, PIER], ['imp', 109, PIER - 5], ['bonegob', 109, PIER]]);
   meet('THE WIDE GAP', 111, 139, [['broom', 118, PIER - 5, { sweep: true }], ['broom', 128, PIER - 6, { sweep: true }], ['zombie', 137, PIER], ['bonearcher', 139, PIER]]);
