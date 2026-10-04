@@ -167,7 +167,7 @@ try {
      row.opened=b.mode;{const t=rec();row.openCue=R.cueDrawn;row.openSaid=t.some(x=>x.s==='OPEN x2');row.openBanner=R.bannerDrawn;row.tintOpen=R.tint;}const h1=b.hp;BKT.hurtEnemy(b,20,b.x-10,false);row.doubled=h1-b.hp;row.floorHeld=b.hp>=MR.REALM.at[k+1]*b.hp0-1||k===2;
      for(let n=0;n<60*12&&b.realm;n++){BK.P.hp=BK.P.maxHp;BK.sim(1);}row.back=!b.realm&&b.realmN===k+1;row.after=[b.mode,b.modeT,b.realmN,!!b.realm];
      out.realms.push(row);}
-   b.open=9;b.mode='gather';b.modeT=3;BKT.hurtEnemy(b,99999,b.x-10,false);BK.sim(500);out.dead=!b.alive;out.door=!!(BK.L.sanctum&&BK.L.sanctum.open);out.fightOver=!BK.bossActive;
+   b.open=9;b.mode='gather';b.modeT=3;BKT.hurtEnemy(b,99999,b.x-10,false);for(let f=0;f<500;f++){if(BK.state==='card')BK.cardClose();BK.sim(1);}out.dead=!b.alive;out.door=!!(BK.L.sanctum&&BK.L.sanctum.open);out.fightOver=!BK.bossActive;
    return out;})()`, 600000);
 } finally { pg.close(); }
 assert.ok(r.fight && r.view >= REALM.w + 24, 'the fight does not start, or its view is narrower than a realm: ' + JSON.stringify(r));

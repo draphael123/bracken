@@ -16,7 +16,7 @@ const pg = await openPage({ audio: false, fonts: false }); try {
  const clear=()=>{for(const e of BK.enemies())if(e!==BK.boss&&e.alive&&!e.mini&&!(e.dying>0)&&Math.abs(e.x-BK.P.x)<400)BKT.hurtEnemy(e,99999,e.x-10,false);};
  /* 1. THE ARCADE WALK */
  for(const h of ${JSON.stringify(heroes)}){const L=boot(h),P=BK.P,K=BK.keys,segs=WALK.segs;BK.tp(DESCENT.piers[0][0]+2,DESCENT.pier-1);BK.sim(10);const coins0=BK.stats().got;let hold=0,f=0,best=0,log=[],onChain=true;
-  for(f=0;f<60*90&&!P.dead;f++){clear();P.hp=Math.max(P.hp,P.maxHp*0.5);for(const k in K)K[k]=false;const tx=P.x/TS,ty=P.y/TS;
+  for(f=0;f<60*90&&!P.dead;f++){if(BK.state==='card')BK.cardClose();clear();P.hp=Math.max(P.hp,P.maxHp*0.5);for(const k in K)K[k]=false;const tx=P.x/TS,ty=P.y/TS;
    if(onChain&&P.ground&&ty<=WALK.top+1.2&&tx>WALK.chain+0.8)onChain=false;if(onChain){ if(tx<WALK.chain+0.5&&!P.climb)K.right=true; else if(tx>WALK.chain+0.7&&!P.climb)K.left=true; K.up=true; if(P.climb&&ty<WALK.top+0.6){K.right=true;BK.press('jump');hold=10;} }   /* to the chain, up it, and off its top onto the first ledge */
    else { K.right=true; const s=segs.find(q=>tx>=q[0]-0.2&&tx<=q[1]+1); if(P.ground&&s&&tx>s[1]+0.55&&s!==segs[segs.length-1]){BK.press('jump');hold=26;} }   /* a gap ahead: a held jump from the lip */
    if(hold>0){K.jump=true;hold--;}BK.sim(1);best=Math.max(best,P.ground&&P.y<=(WALK.top+1)*TS?P.x/TS:0);

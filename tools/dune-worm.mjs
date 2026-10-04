@@ -55,8 +55,8 @@ try {
   /* THE GATE: not while he lives; once he is dead, yes */
   const G=BK.L.ents.find(e=>e.t==='gate');const stand=()=>{P.x=G.x*16+8;P.y=(G.y+1)*16;P.vx=0;};
   W2.mode='sleepy';for(let f=0;f<60;f++){stand();W2.mode='sleepy';BK.sim(1);}out.gate={alive:BK.state};
-  W2.mode='surfaced';W2.t=9;BKT.hurtEnemy(b,99999,b.x-10,false);   /* up out of the sand, where a blow lands */for(let f=0;f<60*4&&!BK.L.gateOpen;f++)BK.sim(1);out.gate.dead=b.alive;out.gate.open=!!BK.L.gateOpen;out.gate.stormAfter=!!BK.caravan().storm;
-  for(let f=0;f<60*3&&BK.state==='play';f++){stand();BK.sim(1);}out.gate.after=BK.state;
+  W2.mode='surfaced';W2.t=9;BKT.hurtEnemy(b,99999,b.x-10,false);   /* up out of the sand, where a blow lands */for(let f=0;f<60*4&&!BK.L.gateOpen;f++){if(BK.state==='card')BK.cardClose();BK.sim(1);}out.gate.dead=b.alive;out.gate.open=!!BK.L.gateOpen;out.gate.stormAfter=!!BK.caravan().storm;
+  for(let f=0;f<60*3&&(BK.state==='play'||BK.state==='card');f++){if(BK.state==='card')BK.cardClose();stand();BK.sim(1);}out.gate.after=BK.state;
   return out;})()`, 600000);
   console.log(JSON.stringify(r));
   assert.equal(r.spawn.t, 'duneworm'); assert.equal(r.spawn.mode, 'sleep', 'he sleeps under the sand until the hollow is crossed');
