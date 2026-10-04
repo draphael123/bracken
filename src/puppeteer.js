@@ -32,7 +32,7 @@
 
 export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
-  ward: 0.05, openMul: 0.62,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
+  ward: 0.05, openMul: 0.58,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
   staggerT: 3.0,                       // ON THE GALLERY: he is staggered this long (boss-openings asserts >= 3 s)
   visitCap: 1 / 3,                     // A VISIT takes at most this share of his health (then the knockback comes at once)
   slackT: 12.0,                        // BOTH PUPPETS DOWN: the lever is free and his bar slack this long (x cycleK) - the time to ride up
