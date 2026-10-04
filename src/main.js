@@ -11719,7 +11719,7 @@ function updateMage(dt, hb) {
     if (s.fire && Math.random() < dt * 30) flame(s.x, s.y, 1, 2, 30, 2);
     const hitP = !P.dead && Math.abs(P.x - s.x) < P.w / 2 + 5 && s.y > P.y - P.h - 4 && s.y < P.y + 4, hitG = isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS));
     if (hitP || hitG || s.t <= 0 || s.x < camX - 200 || s.x > camX + VW + 200) { s.dead = true;
-      if (hitP) { const res = damagePlayer(s.x, s.dmg); if (res === 'blocked') { sparks(s.x, s.y, -P.face, 4); } if (res === 'hit' && s.owner) s.owner.trickHit = true; if (res === 'hit' && s.venom) { if (!(P.venomT > 0)) { number(P.x, P.y - 30, 'POISONED', '#a6e04a'); SFX.hiss(); } P.venomT = Math.max(P.venomT || 0, 2.4); } if (res === 'hit' && s.ember) for (const dx of [-10, 0, 10]) fires.push({ x: P.x + dx, y: Math.floor(P.y / TS) * TS, life: 1.4, delay: 0 }); }   /* (the Homunculus's pound: a wave that lands keeps its jar on) */
+      if (hitP) { const res = damagePlayer(s.x, s.dmg); if (res === 'blocked') { sparks(s.x, s.y, -P.face, 4); } if (res === 'hit' && s.owner) s.owner.trickHit = true; if (res === 'hit' && s.venom) poisonPlayer(); if (res === 'hit' && s.ember) for (const dx of [-10, 0, 10]) fires.push({ x: P.x + dx, y: Math.floor(P.y / TS) * TS, life: 1.4, delay: 0 }); }   /* (the Homunculus's pound: a wave that lands keeps its jar on) */
       burst(s.x, s.y, 8, s.venom ? ['#4ad02a', '#d8ff98'] : s.fire ? ['#ff9a5c', '#ffd36b'] : s.gob ? ['#9a4ad0', '#e0c8ff'] : s.book ? ['#e8dcc0', '#5a2a3a', '#6a5038'] : [MVIO[2], MVIO[3]], 70, 0.4); if (s.fire) { SFX.puff(); for (const dx of (s.ember ? [-16, -8, 8, 16] : s.venom ? [] : [-8, 8])) if (hitG) fires.push({ x: s.x + dx, y: Math.floor(s.y / TS) * TS, life: 1.6, delay: 0 }); } } }
   MG.shots = MG.shots.filter(s => !s.dead);
   for (const K of MG.locks || []) { if (K.open) continue; if (K.wait) lockReraise(K);
@@ -11896,8 +11896,10 @@ function lightAt(x, y) {
   for (const f of fires) if (f.delay <= 0 && Math.abs(x - f.x) < 20 && Math.abs(y - f.y) < 24) return true;
   return false;
 }
+/* ONE POISONING (batch62: the venom imp's jar and the hands' venom said it twice, and the hint-shown audit counts every number() literal) */
+function poisonPlayer() { if (!(P.venomT > 0)) { number(P.x, P.y - 30, 'POISONED', '#a6e04a'); SFX.hiss(); } P.venomT = Math.max(P.venomT || 0, 2.4); }
 function graveHoundShy(e) {
-  if (lightAt(e.x, e.y)) { if (!e.shyNote) { e.shyNote = true; number(e.x, e.y - 14, 'THE LIGHT', '#ffe9a0'); mageHint('graveHound', 'THE GRAVE HOUND WILL NOT CROSS LIGHT. STAND IN A CANDLE OR A BURNING VENT AND IT STOPS AT THE EDGE.'); } return -1; }
+  if (lightAt(e.x, e.y)) { if (!e.shyNote) { e.shyNote = true; mageHint('graveHound', 'THE GRAVE HOUND WILL NOT CROSS LIGHT. STAND IN A CANDLE OR A BURNING VENT AND IT STOPS AT THE EDGE.'); } return -1; }
   return lightAt(e.x + e.face * 26, e.y) ? 1 : 0;
 }
 /* THE IMP: it hovers a little off the floor, throws fire on a yellow mark, and hunches into smoke before it hops elsewhere */
@@ -16612,7 +16614,7 @@ function updateUndeadMage(e,dt){
   /* THROUGH HIS TEAR, AND BACK: a flash and a snap - a portal is not a flight */
   pull:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.45);shakeCam(7);zoomKick(1.14,.5);SFX.mageBolt?SFX.mageBolt():SFX.leap();burst(P.x,P.y-8,28,C,160,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;number(P.x,P.y-40,REALM.name[kind],C[0]);},
   leave:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.4);shakeCam(6);SFX.stone();burst(P.x,P.y-8,24,C,150,.8,0,2);number(P.x,P.y-40,'THE REALM TEARS: BACK TO HIS HALL','#e0c8ff');},
-  venom:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);},
+  venom:()=>poisonPlayer(),
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
   /* HIS RINGS WORK BOTH WAYS (round 2): a dodge on the carpet through an open exit ring carries you out beside him */
   dodging:()=>!!P.carpet&&P.dodge>0,
@@ -22945,7 +22947,7 @@ function updateEnemies(dt) {
       let want = 0;
       if (e.mode === 'walk') { if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 26 ? e.face * e.speed : 0;
         if (ad <= 30) { e.mode = e.tokWantHeavy || Math.random() < 0.5 ? 'raise' : 'wind';   /* (part 2: an overhead turned away by the purse is the blow he throws when his turn comes - src/attack-tokens.js) */ e.modeT = e.mode === 'raise' ? 0.9 : 0.5; number(e.x, e.y - e.h - 12, e.mode === 'raise' ? '!!' : '!', e.mode === 'raise' ? '#ff6b6b' : '#ffd36b'); SFX.charge(); } } }
-      else if (e.mode === 'raise' && e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.35; shakeCam(4); SFX.heavy(); dust(e.x + e.face * 14, e.y, 8); if (e.cnSkin === 'strongman' && FAIR && FAIR.games) for (const st of FAIR.games.strikers || []) if (Math.abs(st.pad.x - (e.x + e.face * 14)) < 28 && Math.abs(st.pad.y - e.y) < 14) { st.ring = 1; number(st.pad.x, st.pad.y - 30, 'DING', '#ffd36b'); }   /* (claude/variety) the mallet rings the high striker's bell: no launch, no ticket, only the bell */ if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 30 && Math.abs(P.y - e.y) < 20) damagePlayer(e.x, DMG.bruteOver, { unblockable: true }); }
+      else if (e.mode === 'raise' && e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.35; shakeCam(4); SFX.heavy(); dust(e.x + e.face * 14, e.y, 8); if (e.cnSkin === 'strongman' && FAIR && FAIR.games) for (const st of FAIR.games.strikers || []) if (Math.abs(st.pad.x - (e.x + e.face * 14)) < 28 && Math.abs(st.pad.y - e.y) < 14) { st.ring = 1;  }   /* (claude/variety) the mallet rings the high striker's bell: no launch, no ticket, only the bell */ if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 30 && Math.abs(P.y - e.y) < 20) damagePlayer(e.x, DMG.bruteOver, { unblockable: true }); }
       else if (e.mode === 'wind' && e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 44 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.bruteSweep); if (res === 'blocked') e.stagger = 0.6; } }
       else if ((e.mode === 'slam' || e.mode === 'sweep') && e.modeT <= 0) { e.mode = 'rest'; e.modeT = e.mode === 'slam' ? 1.1 : 0.6; }
       else if (e.mode === 'rest' && e.modeT <= 0) e.mode = 'walk';
