@@ -524,10 +524,10 @@ export function stepField(F, dt, c) {
     if (en.t === 'trebuchet') { if (en.state === 'ready' && c.struck(en.x - 18, en.y - 36, 36, 36, en)) { en.state = 'wind'; en.t2 = 1.0; c.sound('crank'); c.say(en.x, en.y - 50, 'THE COUNTERWEIGHT DROPS', '#ffd36b'); }
       else if (en.state === 'wind') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; const T = 1.4; F.stones.push({ x: en.x, y: en.y - 40, vx: (en.aim.x - en.x) / T, vy: (en.aim.y - (en.y - 40) - 0.5 * 400 * T * T) / T, t: T, knocks: en.knocks }); c.sound('whoosh'); } } }
     /* THE MANGONEL AT THE BRIDGEHEAD (2026-10-04, Daniel: the field's second engine you work): strike it and its skein lets go - the spoon throws a stone over the ravine, and the stone smashes the bowmen's palisade on the far bank (knocks: 'farbank'). It is NEVER required: the palisade is two rows, a hop, and the bridges cross without it */
-    if (en.t === 'mangonel') { if (en.state === 'ready' && c.struck(en.x - 26, en.y - 36, 52, 36, en)) { en.state = 'wind'; en.t2 = 0.9; c.sound('crank'); c.say(en.x, en.y - 52, 'THE SKEIN LETS GO', '#ffd36b'); }
+    if (en.t === 'mangonel') { if (en.state === 'ready' && c.struck(en.x - 26, en.y - 36, 52, 36, en)) { en.state = 'wind'; en.t2 = 0.9; c.sound('crank'); c.number(en.x, en.y - 52, 'THE SKEIN LETS GO', '#ffd36b');   /* (c.number: the teaching lines are literal number() texts, tools/hint-shown.mjs) */ }
       else if (en.state === 'wind') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; const T = 1.9; F.stones.push({ x: en.x + 18, y: en.y - 30, vx: (en.aim.x - en.x - 18) / T, vy: (en.aim.y - 18 - (en.y - 30) - 0.5 * 400 * T * T) / T, t: T, knocks: en.knocks }); c.sound('whoosh'); c.shake && c.shake(3); } } }
     /* THE TOWER THAT STANDS AT THE WALL: its drawbridge is tied off to a cleat on the deck. Strike the rope and the leaf runs down across the gap onto the curtain wall's walk - the way into the chapel (the ground gate stays shut) */
-    if (en.t === 'drawbridge') { if (en.state === 'ready' && c.struck(en.x - 14, en.y - 34, 28, 34, en)) { en.state = 'drop'; en.t2 = 1.3; c.sound('crank'); c.say(en.x, en.y - 66, 'THE ROPE PARTS: THE DRAWBRIDGE RUNS DOWN', '#ffd36b'); }
+    if (en.t === 'drawbridge') { if (en.state === 'ready' && c.struck(en.x - 14, en.y - 34, 28, 34, en)) { en.state = 'drop'; en.t2 = 1.3; c.sound('crank'); c.number(en.x, en.y - 66, 'THE ROPE PARTS: THE DRAWBRIDGE RUNS DOWN', '#ffd36b'); }
       else if (en.state === 'drop') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'down'; F.bridgeDown = true; c.drawbridge(en); } } }
     if (en.t === 'oilbarrel') { if (en.state === 'ready' && c.struck(en.x - 9, en.y - 16, 18, 16, en)) { en.state = 'tip'; en.t2 = 0.6; c.say(en.x, en.y - 30, 'THE PITCH SPILLS', '#ff9a5c'); c.sound('crack'); }
       else if (en.state === 'tip') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; c.spill(en.spill[0], en.spill[1], en.y); c.sound('fire'); } } }
@@ -536,7 +536,7 @@ export function stepField(F, dt, c) {
     for (const q of c.foes()) if (q.alive && !b.hit.has(q) && Math.abs(q.x - b.x) < 12 && q.y > b.y - 6 && q.y - (q.h || 16) < b.y + 6) { b.hit.add(q); c.hurtFoe(q, q.maxHp ? 30 : 60, b.x - Math.sign(b.vx) * 10); } }
   F.bolts = F.bolts.filter(b => b.t > 0);
   for (const s of F.stones) { s.vy += 400 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt; if (s.t <= 0 && !s.done) { s.done = true; if (s.knocks === 'tower') { F.breach = true; c.breach(); }
-      if (s.knocks === 'farbank') { F.farbank = true; c.farbank(s.x); c.say(s.x, s.y - 40, "THE BOWMEN'S PALISADE SPLINTERS", '#ffd36b');
+      if (s.knocks === 'farbank') { F.farbank = true; c.farbank(s.x); c.number(s.x, s.y - 40, "THE BOWMEN'S PALISADE SPLINTERS", '#ffd36b');
         for (const q of c.foes()) if (q.alive && !q.maxHp && Math.abs(q.x - s.x) < 72 && Math.abs(q.y - s.y) < 60) c.hurtFoe(q, 90, s.x - 30); } } }   /* the two bowmen of THE FAR BANK are thrown down (hurtFoe, as the ballista does) */
   F.stones = F.stones.filter(s => s.t > -0.1);
   for (const a of F.arrows) { a.y += a.vy * dt; a.t -= dt; } F.arrows = F.arrows.filter(a => a.t > 0);
@@ -606,7 +606,8 @@ export function drawUnbWorld(g, foes, cx, cy, time) {
       g.globalAlpha = 0.14 + 0.06 * Math.sin(time * 3); g.fillStyle = '#b07cf0'; g.fillRect(fx - UNB.bannerR, fy - 2, UNB.bannerR * 2, 2); g.globalAlpha = 1;   /* the ground its standard holds */
       drawStandard(g, fx, fy, time, false, false); }
     if (e.t === 'barrowrider') drawRiderWorld(g, e, x, fy, cx, cy, time);
-    if (e.t === 'corpse' && e.mode === 'riseTell') { for (let i = 0; i < 3; i++) R(g, x - 8 + i * 7 + Math.round(Math.sin(time * 14 + i) * 2), fy - 3 - ((time * 30 + i * 5) % 8), 2, 2, '#c8b6ff'); }
+    if (e.t === 'corpse' && e.mode === 'riseTell') { for (let i = 0; i < 3; i++) R(g, x - 8 + i * 7 + Math.round(Math.sin(time * 14 + i) * 2), fy - 3 - ((time * 30 + i * 5) % 8), 2, 2, '#c8b6ff');
+      g.globalAlpha = 0.7; for (let i = 0; i < 7; i++) { const t = (time * 2.2 + i * 0.37) % 1; R(g, x - 10 + i * 3 + Math.round(Math.sin(time * 5 + i * 2) * 3), fy - 2 - Math.round(t * 16), 2 + (i % 2), 2, i % 2 ? '#ece8d8' : '#bdb8a4'); } g.globalAlpha = 1; }   /* and the lime dust of the pit they lay in lifts off them */
     if (e.t === 'deathknight') { const D = UNB.dk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 12);
       /* BLOOD BOIL: where it will come up (bubbles, red), and the pools while they boil */
       if (e.mode === 'boilTell' && Number.isFinite(e.boilX)) { const bx = Math.round(e.boilX - cx); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, fy - 2, D.boilR, 5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;

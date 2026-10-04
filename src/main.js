@@ -18631,7 +18631,7 @@ function unbReset() {
 }
 function updateUnburied(dt) {
   const F = UNB_FIELD; if (!F) return;
-  UNBF.stepField(F, dt, { P, sound: unbSnd, say: (x, y, m, col) => number(x, y, m, col), foes: () => enemies,
+  UNBF.stepField(F, dt, { P, sound: unbSnd, say: (x, y, m, col) => number(x, y, m, col), number: (x, y, m, col) => number(x, y, m, col), foes: () => enemies,
     bearerAlive: name => enemies.some(q => q.alive && q.t === 'bannerbearer' && q.enc === name),
     hurtP: (x, d, name) => damagePlayer(x, d, { unblockable: true, name }),
     /* THE BRIDGES' ARROWS come from straight overhead: fromX is the hero's own x, so every guard held up turns them (damagePlayer) */

@@ -170,6 +170,18 @@ export function ubShieldWall(w = 150) {
   return c;
 }
 
+// ================================================================ THE CRATERS ================================================================
+/* a crater's floor: the earth scorched black in a ring, thrown stones, a charred timber, a split shield, the fire's last embers - the battle's engines were not only on the walls. w tiles wide (sprite w*16 x 22) */
+export function ubCrater(w = 6, v = 0) {
+  const W = w * 16, [c, g] = canvas(W, 22), r = rnd(W + v * 7);
+  alpha(g, 0.85, () => { ellipse(g, W / 2, 19, W / 2 - 3, 4.5, '#120c0c'); ellipse(g, W / 2, 19, W / 2 - 12, 3, '#1c1412'); });
+  for (let i = 0; i < 14; i++) { const x = 6 + ((r() * (W - 12)) | 0), y = 14 + ((r() * 6) | 0); rect(g, x, y, 3 + ((r() * 4) | 0), 2 + ((r() * 2) | 0), i % 3 ? K.st3 : K.st4); px(g, x, y, K.st6); }
+  beam(g, 8, 20, 8 + W * 0.3, 8 + (v ? 6 : 0), 3, '#2a1c14', '#4a3428'); px(g, 8 + W * 0.3, 8 + (v ? 6 : 0), K.ember);
+  circle(g, W * 0.68, 16, 5, K.iron1); circle(g, W * 0.68, 16, 3.6, v ? K.slate1 : K.red1); line(g, W * 0.68 - 3, 12, W * 0.68 + 3, 20, K.ash0);
+  for (let i = 0; i < 8; i++) px(g, 8 + ((r() * (W - 16)) | 0), 16 + ((r() * 5) | 0), i % 2 ? K.ember : K.fire1);
+  return outline(c, K.out);
+}
+
 // ================================================================ THE SAPPERS' BRIDGES ================================================================
 /* FASCINES: bundles of brushwood bound with withy, stacked in a pyramid and chocked - what the sappers laid on a ditch. 44 x 24 */
 export function ubFascines(v = 0) {
@@ -235,6 +247,7 @@ export function decoSet(e) {
     case 'ubGantry': return { ubGantry: [once('gantry', SG.ubGantry), false] };
     case 'ubBarbette': return { ubBarbette: [once('barbette', SG.ubBarbette), false] };
     case 'ubGlow': return { ubGlow: [once('glow', () => canvas(1, 1)[0]), false] };
+    case 'ubCrater': return { ubCrater: [once('crater' + (e.w || 6) + 's' + v, () => ubCrater(e.w || 6, v)), false] };
     case 'ubFascines': return { ubFascines: [once('fasc' + v, () => ubFascines(v)), false] };
     case 'ubBedDead': return { ubBedDead: [once('bedd' + v, () => ubBedDead(v)), false] };
     case 'ubFiringStep': return { ubFiringStep: [once('fstep', SG.ubFiringStep), false] };

@@ -22,7 +22,7 @@ const levels = new Map(LEVELS.map(l => [l.id, l]));
 /* a level's props and movers the way main.js has them, as far as the guide reads them: type, pixel position, the state fields false */
 const envOf = (L, flags = new Set()) => {
   const props = (L.ents || []).map(e => ({ t: e.t, x: e.x * TS + 8, y: e.y * TS + 16, kind: e.kind, ent: e })).map(p => { for (const f of flags) if (f.t === p.t && Math.abs(p.x / TS - f.c - 0.5) <= 1.5 && Math.abs(p.y / TS - f.r) <= 2.5) p[f.f] = true; return p; });
-  const movers = (L.moversExtra || []).map(m => ({ ...m, x: m.x ?? 0, y: m.y ?? 0 })); return { TS, props, movers, hero: null, state: n => (n === 'rider' ? 'down' : '') };   /* (static: a named state of the level's hands holds - the Unburied Field's rider is down) */
+  const movers = (L.moversExtra || []).map(m => ({ ...m, x: m.x ?? 0, y: m.y ?? 0 })); return { TS, props, movers, hero: null };
 };
 const solidAt = (L, x, y) => x < 0 || y < 0 || x >= L.W || y >= L.H || SOLIDS.has(L.grid[y * L.W + x]);
 const waterAt = (L, x, y) => (L.pools || []).some(p => x * TS >= p.x0 - 4 && x * TS <= p.x1 + 4 && y * TS >= p.y - 2);

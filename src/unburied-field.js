@@ -55,7 +55,7 @@ export const UF = Object.assign({}, GEOM, {
   GLINTS: [{ id: 'ub-ballista-130', hero: [124, 36], far: [113, 36], engine: { t: 'ballista', x: 130 } }, { id: 'ub-ballista-188', hero: [183, 28], far: [170, 28], engine: { t: 'ballista', x: 188 } },
     { id: 'ub-oil-200', hero: [196, 41], engine: { t: 'oilbarrel', x: 200 } }, { id: 'ub-trebuchet-230', hero: [223, 36], far: [215, 36], engine: { t: 'trebuchet', x: 230 } },
     { id: 'ub-rope-ladder', hero: [277, 45], far: [305, 45] }, { id: 'ub-mangonel', hero: [265, 36], engine: { t: 'mangonel', x: 268 } }, { id: 'ub-drawbridge', hero: [343, 23], engine: { t: 'drawbridge', x: 346 } },
-    { id: 'ub-oil-396', hero: [390, 36], engine: { t: 'oilbarrel', x: 396 } }, { id: 'ub-ballista-418', hero: [412, 36], engine: { t: 'ballista', x: 418 } }],
+    { id: 'ub-ballista-418', hero: [412, 36], engine: { t: 'ballista', x: 418 } }],
 });
 
 const FINALUF = UF;   /* (buildUnburiedField has its own UF: the greybox's) */
@@ -78,6 +78,8 @@ S('horse-field-a', 'ubHorse', 50, G0, 60, 34); S('horse-field-b', 'ubHorse', 140
 S('horse-lane-a', 'ubHorse', 165, G0 + 5, 60, 34); S('horse-lane-b', 'ubHorse', 191, G0 + 5, 60, 34, { v: 1 }); S('horse-lane-c', 'ubHorse', 215, G0 + 5, 60, 34);
 for (const [x, v, burning] of [[158, 0, false], [171, 1, false], [184, 0, true], [197, 0, false], [210, 1, true], [220, 1, false]]) S('wagon-' + x, 'ubWagon', x, G0 + 5, 64, 64, { v, burning });
 for (const x of [35, 91, 145, 365]) S('lances-' + x, 'ubLances', x, G0, 56, 38, { w: 56, v: x % 3 });
+/* THE CRATERS get their scorch and debris (the crater is a one-row notch: the sprite stands in it) */
+for (const [a, b, v] of [[8, 13, 0], [52, 56, 1], [130, 134, 0], [232, 235, 1], [368, 372, 0]]) { const w = b - a + 1; S('crater-' + a, 'ubCrater', Math.floor((a + b) / 2), G0 + 1, w * 16, 22, { w, v }); }
 /* THE SIEGE WORKS: the trebuchet's emplacement, the gun-deck's furniture (racks, dead ballistae, the one hanging off the edge, mantlets, the working ballista's barbette) and the gantries the swings hang from */
 S('treb-emplace', 'ubEmplace', 230, G0, 112, 36);
 S('far-step', 'ubFiringStep', 323, G0, 60, 46);

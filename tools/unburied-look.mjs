@@ -41,13 +41,15 @@ const ev = (body, t = 900000) => pg.evalp(`(async()=>{${PRELUDE}\n${body}\n})()`
 try {
   /* ---------------- 1. NO BORROWED TILES ---------------- */
   if (run(1)) {
-    const r = await ev(`fresh();BK.step(2);const l=BK.L,spr=BK.tileSpr(),{TILE,LEDGE_SETS}=BK.tileArt();const T={SOLID:1,ONEWAY:2,SPIKE:3,PALISADE:7};
+    /* the cells are the BUILT level's (the page's grid has arrow pegs standing in it for a few seconds at a time: they are drawn as arrows, not as tiles) */
+    const idx = []; for (let i = 0; i < BUILT.grid.length; i++) { const t = BUILT.grid[i]; if (t === 1 || t === 2 || t === 3 || t === 7) idx.push(i); }
+    const r = await ev(`const idx=${JSON.stringify(idx)};fresh();BK.step(2);const l=BK.L,spr=BK.tileSpr(),{TILE,LEDGE_SETS}=BK.tileArt();
       const bad=new Set();const walk=(o,tag)=>{if(!o)return;if(o instanceof HTMLCanvasElement){bad.add(o);return;}if(Array.isArray(o)){o.forEach(q=>walk(q,tag));return;}if(typeof o==='object')for(const k of Object.keys(o))walk(o[k],tag);};
       for(const k of ['top','dirt','deep','edge','roots','thorns','palisade','log','logL','logR','ledge','ledgeL','ledgeR','silt','soft','crate'])walk(TILE[k]);
       for(const k of Object.keys(TILE))if(/^beam|^log|^castle|^masonry|^stone/i.test(k))walk(TILE[k]);
       for(const k of ['beam','masonry'])walk(LEDGE_SETS[k]);
       let n=0,borrowed=0;const first=[];const kinds={};
-      for(let i=0;i<l.grid.length;i++){const t=l.grid[i];if(t!==T.SOLID&&t!==T.ONEWAY&&t!==T.SPIKE&&t!==T.PALISADE)continue;n++;
+      for(const i of idx){const t=l.grid[i];n++;
         if(!spr[i]||bad.has(spr[i])){borrowed++;kinds[t]=(kinds[t]||0)+1;if(first.length<6)first.push((i%l.W)+','+Math.floor(i/l.W));}}
       return {n,borrowed,first,kinds};`);
     note(1, 'no borrowed tiles', r.borrowed === 0, r.n + ' cells, ' + r.borrowed + ' drawn from the forest kit ' + JSON.stringify(r.kinds) + (r.borrowed ? ' e.g. ' + r.first.join(' ') : ''));
