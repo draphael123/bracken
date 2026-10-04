@@ -93,6 +93,16 @@ check('card migration', () => {
   const first = PR.loadProgress(mem, 'slot', raw); assert.equal(first.progress.cardV, 1); const second = PR.migrateProgress(JSON.stringify(first.progress)); assert.equal(JSON.stringify(second.progress.card), JSON.stringify(first.progress.card));   /* (a same-version save is migrated in memory; the next save writes it) */
 });
 
+check('skill ranks', () => {
+  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active && s.level === 1); p.coins = 100000;
+  assert.equal(PR.skillRank(p, 'knight', n.id), 0); assert.equal(PR.rankUp(p, 'knight', n.id, 30), 'Learn it first');
+  assert.equal(PR.buySkill(p, 'knight', n.id, 1), null); assert.equal(PR.skillRank(p, 'knight', n.id), 1);
+  assert.equal(PR.rankUp(p, 'knight', n.id, 5), 'Rank 2 at level 6'); const c0 = p.coins; assert.equal(PR.rankUp(p, 'knight', n.id, 6), null); assert.equal(c0 - p.coins, PR.rankPrice(n, 2));
+  assert.equal(PR.rankUp(p, 'knight', n.id, 10), 'Rank 3 at level 11'); assert.equal(PR.rankUp(p, 'knight', n.id, 11), null); assert.equal(PR.skillRank(p, 'knight', n.id), 3); assert.equal(PR.rankUp(p, 'knight', n.id, 50), 'Top rank');
+  const all = PR.HERO_IDS.reduce((s, h) => s + PR.skillsFor(h).filter(x => x.active).reduce((t, x) => t + PR.rankPrice(x, 2) + PR.rankPrice(x, 3), 0), 0);
+  notes.push('skill ranks 2+3 for every ability of every hero: ' + all + ' gold (knight alone ' + PR.skillsFor('knight').filter(x => x.active).reduce((t, x) => t + PR.rankPrice(x, 2) + PR.rankPrice(x, 3), 0) + ')');
+  PR.validateProgress(p);
+});
 /* 7. WEAPONS ARE LOOKS AND THE SINKS (read from src/main.js's own tables: no page) */
 { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), at = src.indexOf('const SWORDS = ['), block = src.slice(at, src.indexOf('];', at));
   check('weapons are looks', () => { const rows = block.split(/\r?\n/).filter(l => /\{ id: '/.test(l)); assert(rows.length >= 9, 'weapon rows: ' + rows.length);

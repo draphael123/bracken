@@ -93,7 +93,7 @@ import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, X
 import * as ART from './art.js';
 import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, PERKS, RESPEC_SILVER, cardOf, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
@@ -542,7 +542,7 @@ function resetTalents(h) { PROG.talents = PROG.talents || {}; PROG.talents[h] = 
 const LV_GROW = h => grow(h || hero(), heroLevel(h)).ranks;
 const perk = id => perkOn(PROG, hero(), id);   /* a MILESTONE PERK this hero took (src/progression.js PERKS) */
 const cdOf = k => (k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3) * (perk('focus') ? 0.85 : 1);
-const amul = k => grow(hero(), heroLevel()).skillMultiplier; // skill damage grows (and MASTERY, a perk), cooldowns and invulnerability do not
+const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPressName(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
@@ -3957,7 +3957,7 @@ function updateSkills(dt) {
  if(old!==treeI){treePage=0;SFX.ui();}if(morePress()&&treePages>1)treePage=(treePage+1)%treePages;
  const n=ns[treeI],say=m=>{treeMsg=m;treeMsgT=3;SFX.ui();};
  if(confirmPress&&n&&!n.active){say(passiveOn(PROG,hero(),n.id,heroLevel())?n.name+' is always on':'Arrives at level '+n.level);}
- else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
+ else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else if(PROG.skillOwned[hero()]?.[n.id]){const error=rankUp(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' is rank '+skillRank(PROG,hero(),n.id)+': it hits harder');SFX.coin();}}else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}   /* (Z on an owned ability: its next RANK, LEVELING) */
  [throwPress,skill2Press,skill3Press,skill4Press,skill5Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
  /* (leaving is the store's: ESC; and Q is the tab before) */
 }
@@ -4122,12 +4122,13 @@ function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F a
  const LW=192,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=64+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
   /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
   if(!q.active){const on=passiveOn(PROG,h,q.id,lv),bg=on?'ON':'LV '+q.level;text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,on?UI.sel:UI.dim,'left',6);text(bg,9+LW-4,y,on?UI.sel:UI.dim,'right',6);continue;}
-  const bg=eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price;text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,eq?UI.sel:UI.title,'left',6);text(bg,9+LW-4,y,owned?UI.sel:UI.gold,'right',6);}
+  const rk=skillRank(PROG,h,q.id),bg=(eq?'EQUIPPED':owned?'OWNED':'LV '+q.level+' / '+q.price)+(rk>1?' R'+rk:'');text(fitName(q.name,LW-10-inkW(bg,6)-4,6),13,y,eq?UI.sel:UI.title,'left',6);text(bg,9+LW-4,y,owned?UI.sel:UI.gold,'right',6);}
  treePreview(n,9+LW+6,51,VW-9-(9+LW+6),76);
- if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+skillScale(lv).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,128,UI.gold,'left',6);
+ if(n){text((n.active?(n.id==='rum'?'HEAL '+Math.round(P.maxHp*.2)+' HP':n.id==='divineShield'?'INVULNERABLE 2s':['warCry','blackSpot','deathGrip','harrier','fullStretch','ironclad'].includes(n.id)?'ACTIVE TECHNIQUE':'DAMAGE x'+amul(n.id).toFixed(2))+'  CD '+cdOf(n.id)+'s'+(n.id==='shieldThrow'?' AFTER CATCH':''):passiveOn(PROG,h,n.id,lv)?'PASSIVE  ALWAYS ON':'PASSIVE  ARRIVES AT LEVEL '+n.level),12,128,UI.gold,'left',6);
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,137+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?STORE_HELP.skillsLook:treeBranch===1?STORE_HELP.passives:STORE_HELP.skills;text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ const rkN=n&&n.active&&PROG.skillOwned[h]?.[n.id]?skillRank(PROG,h,n.id):0,rankHelp=rkN&&rkN<RANK_MAX?'Z: RANK '+(rkN+1)+' FOR '+rankPrice(n,rkN+1)+' GOLD'+(lv<rankLevel(n,rkN+1)?' AT LV '+rankLevel(n,rkN+1):''):null;
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?STORE_HELP.skillsLook:rankHelp?rankHelp:treeBranch===1?STORE_HELP.passives:STORE_HELP.skills;text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
 }
 function updateStore(dt) {
   if (PROG.refundNote) { storeMsg = PROG.refundNote + ' gold refunded from older training'; storeMsgT = 4; PROG.refundNote = 0; saveProgress(); }

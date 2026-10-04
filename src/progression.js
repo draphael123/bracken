@@ -119,7 +119,7 @@ export function validateProgress(p){
  for(const value of Object.values(p.done||{}))if(!object(value))throw Error('Invalid completion history. Original retained.');
  if(p.progressionVersion && p.progressionVersion>PROGRESSION_VERSION)throw Error('This save needs a newer version of BRACKEN.');
  for(const k of ['coins','silverSpent'])if(p[k]!==undefined&&(!Number.isFinite(p[k])||p[k]<0))throw Error('Invalid '+k+'. Original save retained.');
- for(const k of ['xp','done','talents','skillOwned','loadouts','heroes','items','card','cardFree'])if(p[k]!==undefined&&!object(p[k]))throw Error('Invalid '+k+'. Original save retained.');
+ for(const k of ['xp','done','talents','skillOwned','loadouts','heroes','items','card','cardFree','skillRank'])if(p[k]!==undefined&&!object(p[k]))throw Error('Invalid '+k+'. Original save retained.');
  for(const [h,c] of Object.entries(p.card||{})){if(!object(c))throw Error('Invalid card: '+h);for(const k of ['v','e','m'])if(c[k]!==undefined&&(!Number.isInteger(c[k])||c[k]<0||c[k]>CARD_CAP))throw Error('Invalid card pick: '+h);if(c.ms!==undefined&&!object(c.ms))throw Error('Invalid card milestones: '+h);}
  for(const v of Object.values(p.xp||{}))if(!Number.isFinite(v)||v<0)throw Error('Invalid XP. Original save retained.');
  for(const [h,v] of Object.entries(p.skillOwned||{})){if(!object(v))throw Error('Invalid skill ownership: '+h);for(const [id,on] of Object.entries(v))if(on!==true||!skillFor(h,id))throw Error('Invalid owned skill: '+id);}
@@ -210,6 +210,19 @@ export const equipped = (p,h,lv) => (p.loadouts?.[h]||[]).slice(0,slotsAt(lv)).m
 export function buySkill(p,h,id,lv){
  const n=skillFor(h,id);if(!n)return 'Unknown skill';if(!n.active)return 'Passives come with levels';if(p.skillOwned?.[h]?.[id])return 'Already owned';if(lv<n.level)return 'Requires level '+n.level;if((p.coins||0)<n.price)return 'Need '+(n.price-(p.coins||0))+' more coins';
  p.skillOwned=p.skillOwned||{};p.skillOwned[h]=p.skillOwned[h]||{};p.skillOwned[h][id]=true;p.coins-=n.price;return null;
+}
+/* SKILL RANKS (LEVELING, audit-econ sec.7E: a gold sink past wood 8). An owned ability may be raised to RANK 2 and RANK 3: each rank hits a quarter
+   harder (RANK_MUL on its damage, main.js amul), costs 1.5x / 2.5x its price (to the nearest ten), and waits for the hero's level to pass the
+   skill's own by 5 / 10. p.skillRank[hero][id] = 2 or 3; a skill with none is rank 1. */
+export const RANK_MAX = 3, RANK_MUL = 0.25;
+const RANK_COST = [0, 0, 1.5, 2.5], RANK_GAP = [0, 0, 5, 10];
+export const skillRank = (p,h,id) => p?.skillOwned?.[h]?.[id] ? Math.min(RANK_MAX, Math.max(1, p?.skillRank?.[h]?.[id] || 1)) : 0;
+export const rankPrice = (n,r) => Math.round(n.price * (RANK_COST[r] || 0) / 10) * 10;
+export const rankLevel = (n,r) => n.level + (RANK_GAP[r] || 0);
+export function rankUp(p,h,id,lv){
+ const n=skillFor(h,id);if(!n||!n.active)return 'Only abilities have ranks';if(!p.skillOwned?.[h]?.[id])return 'Learn it first';const r=skillRank(p,h,id);if(r>=RANK_MAX)return 'Top rank';
+ const next=r+1,need=rankLevel(n,next),price=rankPrice(n,next);if(lv<need)return 'Rank '+next+' at level '+need;if((p.coins||0)<price)return 'Need '+(price-(p.coins||0))+' more coins';
+ p.skillRank=object(p.skillRank)?p.skillRank:{};p.skillRank[h]=object(p.skillRank[h])?p.skillRank[h]:{};p.skillRank[h][id]=next;p.coins-=price;return null;
 }
 export function equipSkill(p,h,id,index,lv,safe){
  if(!safe)return 'Change skills at a shop, map or safe shrine';if(index<0||index>=slotsAt(lv))return 'Slot is locked';if(id!==null&&isPassive(h,id))return 'Passives are always on';if(id!==null&&!p.skillOwned?.[h]?.[id])return 'Learn it first';
