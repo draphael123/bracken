@@ -22,7 +22,7 @@ import { openPage, ROOT } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const out = await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');const {mulberry}=await import('/src/px.js');const real=Math.random;const rows={};
-    const setup=(h,lv)=>{Math.random=mulberry(7);for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(lv);
+    const setup=(h,lv)=>{Math.random=mulberry(7);for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero(h);BK.reset({fresh:true});BKT.setHeroLevel(h,lv);
       BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();BK.load(0);BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');
       const L=BK.L;for(let x=2;x<60;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;BK.tp(20,21);BK.sim(30);const P=BK.P;P.hp=P.maxHp;P.inv=0;P.st=P.maxSt;P.face=1;return P;};
     const K=BK.keys,blow=(P,x,d,o={})=>{P.inv=0;P.hurt=0;return BKT.damagePlayer(x,d,o);};

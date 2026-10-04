@@ -42,7 +42,7 @@ const pageSrc = `(() => {
   const rnd = (async () => (await import('/src/px.js')).mulberry)();
   const prep = async (o) => {   /* a fresh hero of o.lvl, no skills, on a seeded dice; returns the restore */
     const { xpFloor } = await import('/src/xp.js'), mulberry = await rnd, real = Math.random;
-    const P0 = BKT.PROG; P0.xp[o.hero] = o.lvl > 0 ? xpFloor(o.lvl) : 0; P0.skillOwned[o.hero] = {}; P0.loadouts[o.hero] = []; if (P0.talents) P0.talents[o.hero] = {};
+    const P0 = BKT.PROG; BKT.setHeroLevel(o.hero, o.lvl); P0.skillOwned[o.hero] = {}; P0.loadouts[o.hero] = []; if (P0.talents) P0.talents[o.hero] = {};
     Math.random = mulberry(hash(o.id + '|' + o.hero + '|' + o.seed + '|' + (o.mini ? 'm' : 'a') + o.lvl)); return () => { Math.random = real; }; };
   window.__mashBoss = async (o) => {
     BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'), { LAB_REACH } = await import('/src/lab.js'), TS = 16;

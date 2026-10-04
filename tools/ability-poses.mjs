@@ -46,7 +46,7 @@ const REPORT = process.argv.includes('--report');
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
-    window.__kit=(hero,ids,foes)=>{BK.manualSimulation=true;BK.SET.speed=1;BK.setHero(hero);BK.reset({fresh:true});BKT.PROG.xp[hero]=xpFloor(24);
+    window.__kit=(hero,ids,foes)=>{BK.manualSimulation=true;BK.SET.speed=1;BK.setHero(hero);BK.reset({fresh:true});BKT.setHeroLevel(hero,24);
       BKT.PROG.skillOwned[hero]=Object.fromEntries(ids.map(i=>[i,true]));BKT.PROG.loadouts[hero]=ids.slice(0,4);BK.applyUpgrades();BK.load(0);BK.state='play';
       BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const L=BK.L;for(let x=2;x<40;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;
       BK.tp(10,21);BK.sim(120);BK.P.hp=BK.P.maxHp;BK.P.inv=0;BK.P.st=BK.P.maxSt;BK.P.face=1;
@@ -110,7 +110,7 @@ try {
      distinct frames (impact, settle, stand) while standing still. */
   const arcs = {};
   for (const h of ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer'])
-    arcs[h] = await pg.evalp(`(()=>{__kit('${h}',[],[]);BKT.PROG.xp['${h}']=0;/* THE PLAIN JUMP: at level 24 passives now arrive by level, and the Warden's VAULTER turns her jump into the vault */const P=BK.P;BK.step(1);BK.keys.jump=true;BK.press('jump');const air=[],land=[];let n=0;
+    arcs[h] = await pg.evalp(`(()=>{__kit('${h}',[],[]);BKT.setHeroLevel('${h}',0);/* THE PLAIN JUMP: at level 24 passives now arrive by level, and the Warden's VAULTER turns her jump into the vault */const P=BK.P;BK.step(1);BK.keys.jump=true;BK.press('jump');const air=[],land=[];let n=0;
       for(let i=0;i<120;i++){BK.step(1);if(!P.ground)air.push(P.lastKey+':'+P.lastFrame);else if(air.length){BK.keys.jump=false;land.push(P.lastKey+':'+P.lastFrame);if(++n>=24)break;}}
       return {air:[...new Set(air)],land:[...new Set(land.filter(k=>k.startsWith('land:')))]}})()`);
   console.log('JUMP ARCS: ' + Object.entries(arcs).map(([h, a]) => h + ' air ' + a.air.length + ' [' + a.air.join(' ') + '] land ' + a.land.length).join('; '));

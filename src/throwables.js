@@ -26,6 +26,7 @@ export const THROW_KIND = {
   // respawns and hurts a fire foe harder) true for a generic reader of the table, even though nothing in the hoist
   // ever consults them.
   ballast: { vx: 150, vy: -120, g: 640, respawn: 3, hitSmall: 1, hitFire: 2, carrySpeed: 58, carrySpeedSwim: 54 },
+  lamp: { vx: 190, vy: -150, g: 600, respawn: 1, hitSmall: 1, hitFire: 2, carrySpeed: 62, carrySpeedSwim: 54 },   /* (claude/djinn2) A LAMP-BEARER's LAMP (src/bandit-mystic-hands.js): its flight and its burst are the mystic hands' own (a blow of MYSTIC.hitDmg and a lamp fire); only vx/vy/g/carrySpeed are read - it never goes back to a rack */
 };
 // THE FIRE FOES a thrown water kind (a bucket) does more to, and douses instead of merely hurting - the burning
 // goblin's straw-ignite pauses under `doused` (main.js, updateVillage's burngob loop). The Pyromancer is not in
