@@ -102,8 +102,10 @@ assert.ok(wood, 'Bracken Wood is not in LEVELS');
 const L = wood.build();
 const blockEnts = L.ents.filter(e => e.t === 'pushblock');
 assert.equal(blockEnts.length, 1, 'the brief asks for exactly one teaching placement; brackenWood has ' + blockEnts.length);
-const otherLevels = LEVELS.filter(l => l.id !== 'wood').map(l => l.build());
-for (const R of otherLevels) assert.equal((R.ents || []).filter(e => e.t === 'pushblock').length, 0, R.id + ' places a pushblock too - the brief is one demo, for the design lanes to build on');
+/* (claude/fairfix5) THE DESIGN LANES BUILD ON IT: THE HARVEST FAIR's barns place one hay bale (its brief's teach - an optional loft ledge, never the way on) */
+const PLACED = { fair: 1 };
+const otherLevels = LEVELS.filter(l => l.id !== 'wood').map(l => [l.id, l.build()]);
+for (const [id, R] of otherLevels) assert.equal((R.ents || []).filter(e => e.t === 'pushblock').length, PLACED[id] || 0, id + ' places a pushblock it is not allowed (PLACED) - the brief is one demo, for the design lanes to build on');
 
 // NO SOFT-LOCK: the route a real jump can flood-fill through Bracken Wood does not depend on the block at all -
 // floodReach never reads L.ents for a pushblock (it only knows tiles), so if the section still floods end to end

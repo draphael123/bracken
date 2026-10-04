@@ -196,7 +196,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   tk(270, R - 7);   /* 27 tiles is 4.7 s at a run: a 3.6 s turn turns everyone once (claude/fairfix: at 5 s you could run it and never be turned) */
   for (const x of [264, 277, 290]) ent('carousel', x, R - 3);   /* (its three brass poles: the ride's marks for the tools) */
   foe('mummer', 269, { y: R - 3, squad: 'ride' });        /* two riders already aboard, one at each end of the ride */
-  foe('hobbyhorse', 286, { ride: 5, rideFair: 'galhorse', squad: 'ride' });   /* (claude/fairfix5) the far-end horse RIDES A GALLOPER now (it was standing on the disc's end)   /* (claude/fairfix2) a HORSE rides the far end now: the ride turns your back to it, and its charge runs you off the disc */
+  foe('hobbyhorse', 286, { y: R - 3, ride: 5, rideFair: 'galhorse', squad: 'ride' });   /* (claude/fairfix5) the far-end horse RIDES A GALLOPER now (it was standing on the disc's end)   /* (claude/fairfix2) a HORSE rides the far end now: the ride turns your back to it, and its charge runs you off the disc */
   coins([274, S - 3], [277, S - 3], [280, S - 3]);
   ent('deco', 294, S - 7, { kind: 'bunting', hang: true }); coins([292, S - 1], [294, S - 1]);
   /* A KNIFE JUGGLER ON THE NEAR BANK (claude/fairfix3: he stood on the far bank, ahead of you - and he keeps the rule now, so ahead of you he only juggled): on a stall roof behind
