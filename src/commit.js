@@ -74,7 +74,8 @@ export const STAM = {
   windedMul: 0.6,     /* the regen until the bar is back to WINDED_TO */
   windedTo: 0.3,      /* of the max: until here, no roll and no guard */
   refundCap: 12,      /* the most any one stamina refund gives (EVASION, FREE HAND, MERCY, PERFECT GUARD, PARRY, STOKE, RANSOM ...) */
-  breakStagger: 0.9, breakTired: 1.2,   /* a guard broken: staggered, then the guard stays down */
+  breakStagger: 0.9, breakTired: 1.2,
+  pauseRecovery: true,   /* no regen through a swing's recovery either (false: only through the swing itself) - a tuning knob, see the lane report */   /* a guard broken: staggered, then the guard stays down */
 };
 /* THE ROLL: what it costs and how long it is untouchable. Heavy heroes roll heavier (Daniel 10-02, Q4) */
 export const ROLL_COST = { knight: 24, warden: 24, pyro: 24, geomancer: 24, pirate: 22, paladin: 28, reaper: 28 };
@@ -113,7 +114,7 @@ export const blockCost = (dmg, steady = 0) => Math.round(Math.min(35, 8 + 0.6 * 
 /* may a guard (shield, aegis, ward, rune-ward) be RAISED? */
 export const guardOk = P => !P.winded;
 /* regen is paused while he is committed (the whole recovery, window and all), rolling or holding a guard */
-export const regenPaused = P => P.atk >= 0 || (P.atkRec || 0) > 0 || P.dodge > 0 || !!P.block || !!P.aegis || !!P.warding || !!P.geoGuard;
+export const regenPaused = P => P.atk >= 0 || (STAM.pauseRecovery && (P.atkRec || 0) > 0) || P.dodge > 0 || !!P.block || !!P.aegis || !!P.warding || !!P.geoGuard;
 
 /* ONE FRAME OF THE BAR (every player-update path calls this instead of its own regen line). `extra` multiplies the regen
    (the venom's slow); `hold` is true where regen must wait anyway (a live plunge chain). */

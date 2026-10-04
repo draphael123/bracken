@@ -7723,7 +7723,7 @@ function updatePlayer(dt) {
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel');
   if (P.landT > 0 && (P.jbuf > 0 || P.dbuf > 0)) P.landT = 0; // a landing can always be left early: the controls never take the wheel
-  CM.staminaTick(P, dt, { extra: P.venomSlow || 1, hold: P.plungeN > 0 }); if (P.windedNew) { P.windedNew = false; number(P.x, P.y - 22, 'WINDED', '#ff6b6b'); }   /* WEIGHT: no regen while committed, rolling or guarding; EXHAUSTED at 0 (src/commit.js staminaTick) */   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
+  CM.staminaTick(P, dt, { extra: P.venomSlow || 1, hold: P.plungeN > 0 }); if (P.windedNew) { P.windedNew = false; number(P.x, P.y - 22, 'WINDED: NO ROLL, NO GUARD', '#ff6b6b'); }   /* WEIGHT: no regen while committed, rolling or guarding; EXHAUSTED at 0 (src/commit.js staminaTick) */   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
   // sleep spores: stay in the violet and you drop; block holds your breath; mash to wake
   const haven = props.some(pr => pr.t === 'glow' && pr.dark <= 0 && Math.abs(pr.x - P.x) < 30 && Math.abs(pr.y - P.y) < 30);
