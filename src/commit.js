@@ -78,6 +78,7 @@ export const STAM = {
   pauseRecovery: true,
   rollInv: 0.20,                       /* s of grace at the start of a roll (the TAIL is hittable) */
   blockBase: 8, blockPerDmg: 0.6, blockCap: 35,   /* the shield's price: base + perDmg x the blow, capped */
+  busyRegen: 0,        /* the share of the regen that still runs while committed, rolling or guarding (0: none, as briefed) */
   jumpLock: true,      /* no jump out of a commit (Daniel 10-02, Q5) */
   plungeWhiff: 0.10,   /* a plunge that met nothing lands this much heavier */
   stepFree: true, stepDelay: 0.2,   /* THE WARDEN'S STEP (coordinator 10-04: she collapsed under WEIGHT): her short back-step is spacing - it keeps the regen running and only a 0.2 s delay */   /* no regen through a swing's recovery either (false: only through the swing itself) - a tuning knob, see the lane report */   /* a guard broken: staggered, then the guard stays down */
@@ -129,8 +130,9 @@ export function staminaTick(P, dt, { extra = 1, hold = false } = {}) {
   if (P.st <= 1e-6 && !P.winded) exhaust(P);
   P.regenOff = false;
   if ((P.exhaustT || 0) > 0) { P.exhaustT = Math.max(0, P.exhaustT - dt); P.regenOff = true; return; }
-  if (regenPaused(P)) { P.stDelay = Math.max(P.stDelay || 0, STAM.delay); P.regenOff = true; return; }
+  const paused = regenPaused(P);
+  if (paused && !(STAM.busyRegen > 0)) { P.stDelay = Math.max(P.stDelay || 0, STAM.delay); P.regenOff = true; return; }
   if (P.stDelay > 0 || hold) { P.regenOff = true; return; }
-  if (P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + STAM.regen * staminaOf(P).regenMul * (P.winded ? STAM.windedMul : 1) * extra * dt);
+  if (P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + STAM.regen * staminaOf(P).regenMul * (P.winded ? STAM.windedMul : 1) * (paused ? STAM.busyRegen : 1) * extra * dt);
   if (P.winded && P.st >= STAM.windedTo * P.maxSt) P.winded = false;
 }
