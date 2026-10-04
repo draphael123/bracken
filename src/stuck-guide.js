@@ -5,8 +5,8 @@
 //   - THE WAY ARROW's stall feed: a stalled spot hands main.js its target, so the edge arrow (Settings: Way-on arrow = STALL by default) points at cranks,
 //     winches, ropes, baskets and wells too, not only keys, shrines and the exit.
 // WHERE the guide applies is DATA: src/stuck-spots.js holds each level's route list ("spots": a hero zone, the target tile(s), the nudge line, what is done).
-// The canal feeds the same glint / stall clock from its own live target (holdTarget); the Red Gorge still carries its own copy of the code (batch59 is on
-// src/red-gorge*.js) and moves onto this module after that merges. Greybox art: a star and a ring, plain shapes.
+// The canal feeds the same glint / stall clock from its own live target (holdTarget); the Red Gorge (src/red-gorge-hands.js, claude/gorgemodule) runs resolve
+// over its own list STUCK_HANDS (levels whose hands drive the glint themselves, so the global guide below skips them) with the same stallTick and drawGlint. Greybox art: a star and a ring, plain shapes.
 import { STUCK } from './stuck-spots.js';
 
 export const NUDGE = { after: 10, again: 25, near: 48 };   /* s without headway before the nudge, s before it says it again, px of headway that counts (3 tiles) */
@@ -38,10 +38,17 @@ function holds(env, [t, c, r, f]) {
   return p ? (neg ? !p[k] : !!p[k]) : false;
 }
 const matches = (o, want) => !!o && Object.keys(want).every(k => o[k] === want[k]);
+/* THE HERO'S EXACT PLACE (the hands' levels, where the tile box is too coarse): rows: [lo, hi] = lo < y/TS <= hi, colGt / colLt = x/TS beyond / short of, noClimb = not on a rope.
+   Only tested when the caller hands a hero (the static tool has none) */
+function heroFits(env, s) {
+  const P = env.hero; if (!P || P.x === undefined) return true; const row = P.y / env.TS, col = P.x / env.TS;
+  if (s.rows && !(row > s.rows[0] && row <= s.rows[1])) return false; if (s.colGt !== undefined && !(col > s.colGt)) return false; if (s.colLt !== undefined && !(col < s.colLt)) return false;
+  return !(s.noClimb && P.climb);
+}
 /* a target to pixels: a tile (col, row) = the middle of that tile's foot; a mover = its middle, a little above the top */
 function pixelsOf(env, s) {
-  if (s.mover) return env.movers.filter(q => matches(q, s.mover)).map(m => ({ x: m.x + (m.w || 16) / 2, y: m.y + 6 }));
-  const list = s.ats || (s.at ? [s.at] : []); return list.map(([c, r]) => ({ x: c * env.TS + 8, y: (r + 1) * env.TS }));
+  if (s.mover) return env.movers.filter(q => matches(q, s.mover)).map(m => ({ x: m.x + (m.w || 16) / 2, y: m.y + (s.dy ?? 6) }));
+  const list = s.ats || (s.at ? [s.at] : []); return list.map(([c, r]) => ({ x: c * env.TS + 8, y: (r + 1) * env.TS + (s.dy || 0) }));   /* (dy: the glint's lift over the target, px) */
 }
 /* WHAT THE ROUTE NEEDS NEXT FOR A HERO AT (col, row) on `levelId`: the first spot whose zone holds him, and in it the first step that is not done.
    { id, key, line, targets: [{x, y}], glint } or null. Pure (the tool runs it against the built level). */
@@ -51,10 +58,12 @@ export function resolve(levelId, col, row, env, spots = STUCK) {
     const steps = sp.steps || [sp];
     for (let i = 0; i < steps.length; i++) { const s = steps[i];
       if (s.zone && (col < s.zone[0] || col > s.zone[2] + 1 || row < s.zone[1] || row > s.zone[3] + 1)) continue;
+      if (!heroFits(env, s)) continue;
+      if (s.is && (env.state ? env.state(s.is[0]) : '') !== s.is[1]) continue;   /* a named state of the level's hands: [name, value] */
       if (s.off && env.hero && matches(env.hero.onMover, s.off)) continue;   /* (not while he stands on it) */
       if (s.when && !holds(env, s.when)) continue; if (s.done && holds(env, s.done)) continue;
       const targets = pixelsOf(env, s); if (!targets.length) continue;
-      return { id: sp.id, key: sp.id + (sp.steps ? '#' + i : ''), line: s.line || sp.line, targets, glint: s.glint || sp.glint || 'always' }; }
+      return { id: sp.id, key: s.key || sp.id + (sp.steps ? '#' + i : ''), line: s.line || sp.line, targets, glint: s.glint || sp.glint || 'always' }; }
   }
   return null;
 }

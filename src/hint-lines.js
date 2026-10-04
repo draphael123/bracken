@@ -4,6 +4,7 @@
    The lines that TEACH - name an opening, say what to strike or jump, say a way is open - are listed here. number() routes them to callout()
    (main.js), which draws them in the hint box (one line, 1.8 s, never over a longer hint being read). Everything else number() drops is the
    old silent flavour, counted in tools/hint-shown-silent.txt so that no NEW dead line can be added (tools/hint-shown.mjs). */
+import { STUCK_HANDS } from './stuck-spots.js';
 export const CALL_LINES = new Set([
   /* claude/slide: the first slope a hero stands on */
   'HOLD DOWN TO SLIDE: FEET FIRST',
@@ -78,7 +79,7 @@ export const CALL_LINES = new Set([
   'THE HORN: THE FLOOD IS COMING', 'THE GATE HOLDS THE FLOOD', 'THE GATE IS SHUT: IT HOLDS THE NEXT FLOOD', 'THE GATE IS OPEN', 'RELEASED: THE WATER COMES DOWN', 'THE JAM BREAKS',
   'THE FLOOD TAKES YOU', 'E AT THE WHEEL: SHUT THE GATE, OR RELEASE WHAT IT HOLDS', 'A JAM: ONLY A RELEASED BURST MOVES IT', 'THE WHEEL TURNS WHEN THE WATER RUNS',
   'THE OLD NEST WANTS FOUR FEATHERS', 'THE OLD NEST OPENS', 'THE WATER THROWS HIM: CUT HIM', 'HE SMELLS THE HELD WATER', 'HE IS NOT IN THE CHANNEL: THE WATER IS WASTED', 'THE SPRAY DAMPS YOUR FIRE',
-  'HIS SHELL TURNS A BLADE: RELEASE THE DAM ON HIM', 'THE FLOOD TAKES HIM', 'SWEPT AWAY', 'CLIMB THE ROPE: UP', 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY', 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP', 'THE WHEEL: PRESS E AT IT. THE GATE SHUTS AND HOLDS THE FLOOD', 'THE GATE IS SHUT: WAIT FOR THE HORN, THEN CLIMB THE DRY ROPE', 'THE WHEEL: SHUT THE GATE, LET IT FILL, THEN RELEASE IT',
+  'HIS SHELL TURNS A BLADE: RELEASE THE DAM ON HIM', 'THE FLOOD TAKES HIM', 'SWEPT AWAY', 'CLIMB THE ROPE: UP',
   /* claude/desertfoes: the fire scorpion's burning patch, the venom scorpion's sting, the sandworm and the flood, the dynamite bandit's fuse (src/desert-foes2-hands.js) */
   'WATER PUTS IT OUT', 'THE PATCH GOES OUT', 'VENOM: YOUR STAMINA COMES BACK SLOWER', 'THE HORN DRIVES IT UNDER', 'THE FLOOD DOUSES THE FUSE',
 ]);
@@ -89,6 +90,8 @@ export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 
   door: 'THE DOOR IS TOO HIGH: THE LOCK UNDER HER IS LOW' };
 /* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
-export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
+/* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
+export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
+export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || SPOT_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
 /* what is drawn: the line, with the boss-name double space read as a colon ("THE GOBLIN QUEEN: OPEN") */
 export const calloutText = txt => txt.replace(/ {2,}/g, ': ');
