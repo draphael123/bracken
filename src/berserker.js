@@ -98,7 +98,7 @@ export function makeBerserker(api) {
     if (foe) { foe.stagger = Math.max(foe.stagger || 0, foe.maxHp ? 0.35 : BZ.brace.stagger * (T().braceBack ? 1.6 : 1)); foe.flash = 0.18;
       if (!foe.maxHp && !foe.mini) { foe.vx = Math.sign(foe.x - p.x) * (T().braceBack ? 230 : 120); if (T().braceBack) { foe.vy = Math.min(foe.vy || 0, -120); foe.knock = Math.max(foe.knock || 0, BZ.brace.back); } } }
     api.SFX.bzBraced && api.SFX.bzBraced(); api.hitstop(0.08); api.shakeCam(3, -p.face * 2); api.zoomKick(1.04, 0.16);
-    api.ringAt(p.x + p.face * 8, p.y - 12, 16, '#ff6b4a', 0.3); api.sparks(p.x + p.face * 8, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BRACED', '#ff9a5c');
+    api.ringAt(p.x + p.face * 8, p.y - 12, 16, '#ff6b4a', 0.3); api.sparks(p.x + p.face * 8, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BRACED IT', '#ff9a5c');
     api.trialEvent('block'); return 'blocked'; }
 
   /* ---- FRENZY ---- */

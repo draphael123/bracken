@@ -1,0 +1,141 @@
+wood BOSS expected L1 berserker#1: DEAD 30.8s, hero lost 100%, boss left 97%, 1/1340 blows
+wood BOSS expected L1 berserker#2: DEAD 115s, hero lost 100%, boss left 80%, 8/5354 blows
+wood LEVEL L1 berserker: lowest hp 0%, hp lost 417%, deaths 2, walked 100% of waypoints, 0 rides {}, 0 pulls, 3 boarding lifts, 45 lifts, 14 blows taken
+marsh BOSS expected L1 berserker#1: DEAD 75.3s, hero lost 100%, boss left 98%, 4/3691 blows
+marsh BOSS expected L1 berserker#2: DEAD 49s, hero lost 100%, boss left 100%, 0/2771 blows
+marsh LEVEL L1 berserker: lowest hp 0%, hp lost 628%, deaths 3, walked 100% of waypoints, 10 rides {"pad":9,"raft":1}, 3 pulls, 8 boarding lifts, 32 lifts, 43 blows taken
+stockade BOSS expected L2 berserker#1: TIMEOUT 150s, hero lost 0%, boss left 100%, 0/7012 blows
+stockade BOSS expected L2 berserker#2: TIMEOUT 150s, hero lost 0%, boss left 100%, 0/7012 blows
+stockade LEVEL L2 berserker: lowest hp 0%, hp lost 262%, deaths 2, walked 100% of waypoints, 1 rides {"cart":1}, 10 pulls, 1 boarding lifts, 35 lifts, 18 blows taken
+spore BOSS expected L3 berserker#1: DEAD 52.4s, hero lost 100%, boss left 100%, 0/2349 blows
+spore BOSS expected L3 berserker#2: DEAD 44.5s, hero lost 100%, boss left 100%, 0/1967 blows
+spore LEVEL L3 berserker: lowest hp 0%, hp lost 421%, deaths 2, walked 100% of waypoints, 12 rides {"growcap":8,"mover":3,"swing":1}, 0 pulls, 12 boarding lifts, 28 lifts, 21 blows taken
+kings BOSS expected L4 berserker#1: TIMEOUT 150s, hero lost 51%, boss left 100%, 0/7048 blows
+kings BOSS expected L4 berserker#2: TIMEOUT 150s, hero lost 51%, boss left 100%, 0/7048 blows
+kings MINI expected L4 berserker#1: DEAD 65.7s, hero lost 100%, boss left 50%, 25/2957 blows
+kings MINI expected L4 berserker#2: DEAD 71.7s, hero lost 100%, boss left 69%, 22/3236 blows
+kings LEVEL L4 berserker: lowest hp 0%, hp lost 212%, deaths 1, walked 100% of waypoints, 3 rides {"swing":3}, 1 pulls, 7 boarding lifts, 42 lifts, 13 blows taken
+scree BOSS expected L5 berserker#1: DEAD 21.1s, hero lost 100%, boss left 100%, 0/833 blows
+scree BOSS expected L5 berserker#2: DEAD 21.5s, hero lost 100%, boss left 100%, 0/891 blows
+scree LEVEL L5 berserker: lowest hp 0%, hp lost 277%, deaths 2, walked 100% of waypoints, 1 rides {"wheel":1}, 0 pulls, 2 boarding lifts, 45 lifts, 12 blows taken
+hanging BOSS expected L6 berserker#1: DEAD 63.6s, hero lost 100%, boss left 89%, 6/2901 blows
+hanging BOSS expected L6 berserker#2: DEAD 105.6s, hero lost 100%, boss left 91%, 8/4856 blows
+hanging MINI expected L6 berserker#1: DEAD 23.7s, hero lost 100%, boss left 74%, 4/995 blows
+hanging MINI expected L6 berserker#2: DEAD 23.7s, hero lost 100%, boss left 74%, 4/995 blows
+hanging LEVEL L6 berserker: lowest hp 0%, hp lost 268%, deaths 2, walked 100% of waypoints, 12 rides {"swing":6,"mover":3,"wheel":3}, 0 pulls, 14 boarding lifts, 39 lifts, 18 blows taken
+spire BOSS expected L7 berserker#1: DEAD 35.1s, hero lost 100%, boss left 100%, 4/1513 blows
+spire BOSS expected L7 berserker#2: DEAD 41.9s, hero lost 100%, boss left 100%, 5/1843 blows
+spire MINI expected L7 berserker#1: DEAD 26.6s, hero lost 100%, boss left 100%, 0/1128 blows
+spire MINI expected L7 berserker#2: DEAD 26.6s, hero lost 100%, boss left 100%, 0/1128 blows
+spire LEVEL L7 berserker: lowest hp 0%, hp lost 296%, deaths 2, walked 100% of waypoints, 4 rides {"lift":4}, 4 pulls, 2 boarding lifts, 48 lifts, 21 blows taken
+moor BOSS expected L8 berserker#1: DEAD 124.8s, hero lost 100%, boss left 68%, 19/5747 blows
+moor BOSS expected L8 berserker#2: DEAD 38.6s, hero lost 100%, boss left 97%, 6/1696 blows
+moor LEVEL L8 berserker: lowest hp 0%, hp lost 621%, deaths 5, walked 100% of waypoints, 1 rides {"wheel":1}, 0 pulls, 1 boarding lifts, 52 lifts, 35 blows taken
+storm BOSS expected L10 berserker#1: DEAD 29.2s, hero lost 100%, boss left 100%, 0/1263 blows
+storm BOSS expected L10 berserker#2: DEAD 29.2s, hero lost 100%, boss left 100%, 0/1263 blows
+storm LEVEL L10 berserker: lowest hp 0%, hp lost 406%, deaths 3, walked 100% of waypoints, 0 rides {}, 3 pulls, 0 boarding lifts, 53 lifts, 24 blows taken
+crown BOSS expected L11 berserker#1: DEAD 47.7s, hero lost 100%, boss left 100%, 0/2119 blows
+crown BOSS expected L11 berserker#2: DEAD 47.7s, hero lost 100%, boss left 100%, 0/2119 blows
+crown MINI expected L11 berserker#1: DEAD 55s, hero lost 100%, boss left 64%, 11/2440 blows
+crown MINI expected L11 berserker#2: DEAD 55s, hero lost 100%, boss left 64%, 11/2440 blows
+crown LEVEL L11 berserker: lowest hp 0%, hp lost 1167%, deaths 9, walked 100% of waypoints, 5 rides {"swing":1,"lift":2,"cart":2}, 8 pulls, 5 boarding lifts, 98 lifts, 44 blows taken
+longwater BOSS expected L12 berserker#1: TIMEOUT 150s, hero lost 63%, boss left 100%, 0/8412 blows
+longwater BOSS expected L12 berserker#2: TIMEOUT 150s, hero lost 63%, boss left 100%, 0/8412 blows
+longwater LEVEL L12 berserker: lowest hp 20%, hp lost 149%, deaths 0, walked 100% of waypoints, 1 rides {"raft":1}, 0 pulls, 0 boarding lifts, 43 lifts, 16 blows taken
+reef BOSS expected L13 berserker#1: DEAD 36.6s, hero lost 100%, boss left 99%, 7/1593 blows
+reef BOSS expected L13 berserker#2: DEAD 36.6s, hero lost 100%, boss left 99%, 7/1593 blows
+reef LEVEL L13 berserker: lowest hp 0%, hp lost 187%, deaths 1, walked 100% of waypoints, 3 rides {"mover":2,"lift":1}, 6 pulls, 4 boarding lifts, 29 lifts, 17 blows taken
+flotilla BOSS expected L14 berserker#1: DEAD 36.2s, hero lost 100%, boss left 87%, 11/1560 blows
+flotilla BOSS expected L14 berserker#2: DEAD 36.2s, hero lost 100%, boss left 87%, 11/1560 blows
+flotilla LEVEL L14 berserker: lowest hp 0%, hp lost 395%, deaths 3, walked 100% of waypoints, 3 rides {"swing":1,"mover":2}, 0 pulls, 6 boarding lifts, 21 lifts, 48 blows taken
+hurricane BOSS expected L15 berserker#1: DEAD 49.7s, hero lost 100%, boss left 99%, 12/2200 blows
+hurricane BOSS expected L15 berserker#2: DEAD 49.7s, hero lost 100%, boss left 99%, 12/2200 blows
+hurricane LEVEL L15 berserker: lowest hp 0%, hp lost 459%, deaths 2, walked 100% of waypoints, 7 rides {"swing":2,"mover":4,"lifeboat":1}, 1 pulls, 14 boarding lifts, 43 lifts, 44 blows taken
+lamplit BOSS expected L16 berserker#1: DEAD 44.8s, hero lost 100%, boss left 94%, 13/1956 blows
+lamplit BOSS expected L16 berserker#2: DEAD 44.8s, hero lost 100%, boss left 94%, 13/1956 blows
+lamplit MINI expected L16 berserker#1: DEAD 51s, hero lost 100%, boss left 68%, 16/2250 blows
+lamplit MINI expected L16 berserker#2: DEAD 51s, hero lost 100%, boss left 68%, 16/2250 blows
+lamplit LEVEL L16 berserker: lowest hp 0%, hp lost 181%, deaths 1, walked 100% of waypoints, 3 rides {"swing":3}, 1 pulls, 5 boarding lifts, 50 lifts, 14 blows taken
+underleaf BOSS expected L5 berserker#1: DEAD 26.9s, hero lost 100%, boss left 99%, 3/1146 blows
+underleaf BOSS expected L5 berserker#2: DEAD 26.9s, hero lost 100%, boss left 99%, 3/1146 blows
+underleaf LEVEL L5 berserker: lowest hp 3%, hp lost 229%, deaths 0, walked 100% of waypoints, 0 rides {}, 0 pulls, 1 boarding lifts, 35 lifts, 12 blows taken
+deep BOSS expected L17 berserker#1: DEAD 14.1s, hero lost 100%, boss left 100%, 3/635 blows
+deep BOSS expected L17 berserker#2: DEAD 14.1s, hero lost 100%, boss left 100%, 3/635 blows
+deep LEVEL L17 berserker: lowest hp 0%, hp lost 201%, deaths 1, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 54 lifts, 37 blows taken
+keep BOSS expected L18 berserker#1: DEAD 97.8s, hero lost 100%, boss left 100%, 0/4564 blows
+keep BOSS expected L18 berserker#2: DEAD 68.5s, hero lost 100%, boss left 100%, 0/3155 blows
+keep LEVEL L18 berserker: lowest hp 28%, hp lost 133%, deaths 0, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 59 lifts, 15 blows taken
+causeway BOSS expected L19 berserker#1: DEAD 38.2s, hero lost 100%, boss left 92%, 4/1637 blows
+causeway BOSS expected L19 berserker#2: DEAD 38.2s, hero lost 100%, boss left 92%, 4/1637 blows
+causeway LEVEL L19 berserker: lowest hp 0%, hp lost 122%, deaths 1, walked 100% of waypoints, 1 rides {"vmover":1}, 2 pulls, 2 boarding lifts, 44 lifts, 20 blows taken
+harbor BOSS expected L20 berserker#1: DEAD 53.2s, hero lost 100%, boss left 93%, 16/2313 blows
+harbor BOSS expected L20 berserker#2: DEAD 53.2s, hero lost 100%, boss left 93%, 16/2313 blows
+harbor MINI expected L20 berserker#1: DEAD 78.3s, hero lost 100%, boss left 98%, 21/3490 blows
+harbor MINI expected L20 berserker#2: DEAD 78.3s, hero lost 100%, boss left 98%, 21/3490 blows
+harbor LEVEL L20 berserker: lowest hp 0%, hp lost 404%, deaths 1, walked 100% of waypoints, 1 rides {"lift":1}, 0 pulls, 1 boarding lifts, 72 lifts, 30 blows taken
+waymeet BOSS expected L20 berserker#1: DEAD 41.1s, hero lost 100%, boss left 100%, 0/1761 blows
+waymeet BOSS expected L20 berserker#2: DEAD 41.1s, hero lost 100%, boss left 100%, 0/1761 blows
+waymeet MINI expected L20 berserker#1: TIMEOUT 150s, hero lost 26%, boss left 90%, 53/6820 blows
+waymeet MINI expected L20 berserker#2: TIMEOUT 150s, hero lost 26%, boss left 90%, 53/6820 blows
+waymeet LEVEL L20 berserker: lowest hp 0%, hp lost 151%, deaths 1, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 63 lifts, 9 blows taken
+undercrown BOSS expected L12 berserker#1: DEAD 38.7s, hero lost 100%, boss left 96%, 10/1656 blows
+undercrown BOSS expected L12 berserker#2: DEAD 38.7s, hero lost 100%, boss left 96%, 10/1656 blows
+undercrown LEVEL L12 berserker: lowest hp 0%, hp lost 509%, deaths 5, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 39 lifts, 5 blows taken
+fields BOSS expected L24 berserker#1: TIMEOUT 150s, hero lost 0%, boss left 100%, 0/6849 blows
+fields BOSS expected L24 berserker#2: TIMEOUT 150s, hero lost 0%, boss left 100%, 0/6843 blows
+fields MINI expected L24 berserker#1: DEAD 42.5s, hero lost 100%, boss left 83%, 15/1785 blows
+fields MINI expected L24 berserker#2: DEAD 42.5s, hero lost 100%, boss left 83%, 15/1785 blows
+fields LEVEL L24 berserker: lowest hp 0%, hp lost 173%, deaths 1, walked 100% of waypoints, 6 rides {"hexvine":6}, 0 pulls, 5 boarding lifts, 64 lifts, 12 blows taken
+burial BOSS expected L25 berserker#1: DEAD 58.6s, hero lost 100%, boss left 99%, 20/2637 blows
+burial BOSS expected L25 berserker#2: DEAD 58.6s, hero lost 100%, boss left 99%, 20/2637 blows
+burial MINI expected L25 berserker#1: DEAD 68.7s, hero lost 100%, boss left 100%, 0/3078 blows
+burial MINI expected L25 berserker#2: DEAD 68.7s, hero lost 100%, boss left 100%, 0/3078 blows
+burial LEVEL L25 berserker: lowest hp 0%, hp lost 347%, deaths 1, walked 100% of waypoints, 2 rides {"swing":1,"bier":1}, 0 pulls, 21 boarding lifts, 55 lifts, 43 blows taken
+mage BOSS expected L27 berserker#1: DEAD 82.3s, hero lost 100%, boss left 100%, 5/3697 blows
+mage BOSS expected L27 berserker#2: DEAD 69.5s, hero lost 100%, boss left 100%, 1/3073 blows
+mage MINI expected L27 berserker#1: DEAD 42.6s, hero lost 100%, boss left 98%, 16/1783 blows
+mage MINI expected L27 berserker#2: DEAD 42.6s, hero lost 100%, boss left 98%, 16/1783 blows
+mage LEVEL L27 berserker: lowest hp 0%, hp lost 362%, deaths 2, walked 100% of waypoints, 6 rides {"mover":1,"bookcase":2,"book":2,"wheel":1}, 0 pulls, 6 boarding lifts, 45 lifts, 25 blows taken
+fallingtower BOSS expected L28 berserker#1: DEAD 95.4s, hero lost 100%, boss left 88%, 11/4093 blows
+fallingtower BOSS expected L28 berserker#2: DEAD 82.8s, hero lost 100%, boss left 93%, 11/3520 blows
+fallingtower MINI expected L28 berserker#1: DEAD 20.7s, hero lost 100%, boss left 67%, 20/751 blows
+fallingtower MINI expected L28 berserker#2: DEAD 28.8s, hero lost 100%, boss left 52%, 30/1124 blows
+fallingtower LEVEL L28 berserker: lowest hp 0%, hp lost 536%, deaths 4, walked 100% of waypoints, 3 rides {"swing":3}, 0 pulls, 3 boarding lifts, 68 lifts, 24 blows taken
+burning BOSS expected L3 berserker#1: DEAD 61.5s, hero lost 100%, boss left 91%, 13/2823 blows
+burning BOSS expected L3 berserker#2: DEAD 56.5s, hero lost 100%, boss left 96%, 8/2572 blows
+burning LEVEL L3 berserker: lowest hp 9%, hp lost 236%, deaths 0, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 34 lifts, 20 blows taken
+witchlight BOSS expected L26 berserker#1: DEAD 76.3s, hero lost 100%, boss left 86%, 1/3392 blows
+witchlight BOSS expected L26 berserker#2: DEAD 101.7s, hero lost 100%, boss left 100%, 0/4565 blows
+witchlight MINI expected L26 berserker#1: DEAD 61.2s, hero lost 100%, boss left 68%, 24/2667 blows
+witchlight MINI expected L26 berserker#2: DEAD 55.8s, hero lost 100%, boss left 71%, 21/2403 blows
+witchlight LEVEL L26 berserker: lowest hp 0%, hp lost 189%, deaths 1, walked 100% of waypoints, 3 rides {"mover":3}, 0 pulls, 4 boarding lifts, 55 lifts, 20 blows taken
+oreroad BOSS expected L9 berserker#1: TIMEOUT 150s, hero lost 99%, boss left 100%, 0/6816 blows
+oreroad BOSS expected L9 berserker#2: TIMEOUT 150s, hero lost 99%, boss left 100%, 0/6816 blows
+oreroad LEVEL L9 berserker: lowest hp 0%, hp lost 295%, deaths 2, walked 100% of waypoints, 8 rides {"bucket":8}, 0 pulls, 12 boarding lifts, 23 lifts, 15 blows taken
+unburied BOSS expected L27 berserker#1: DEAD 96.9s, hero lost 100%, boss left 98%, 29/4331 blows
+unburied BOSS expected L27 berserker#2: DEAD 96.9s, hero lost 100%, boss left 98%, 29/4331 blows
+unburied MINI expected L27 berserker#1: DEAD 39.3s, hero lost 100%, boss left 74%, 13/1627 blows
+unburied MINI expected L27 berserker#2: DEAD 39.3s, hero lost 100%, boss left 74%, 13/1627 blows
+unburied LEVEL L27 berserker: lowest hp 0%, hp lost 202%, deaths 1, walked 100% of waypoints, 3 rides {"swing":3}, 0 pulls, 2 boarding lifts, 32 lifts, 16 blows taken
+caravan BOSS expected L29 berserker#1: DEAD 45.5s, hero lost 100%, boss left 99%, 12/1952 blows
+caravan BOSS expected L29 berserker#2: DEAD 53s, hero lost 100%, boss left 99%, 11/2321 blows
+caravan LEVEL L29 berserker: lowest hp 4%, hp lost 126%, deaths 0, walked 100% of waypoints, 1 rides {"swing":1}, 0 pulls, 1 boarding lifts, 46 lifts, 23 blows taken
+fair BOSS expected L23 berserker#1: DEAD 44.5s, hero lost 100%, boss left 96%, 16/1899 blows
+fair BOSS expected L23 berserker#2: DEAD 44.5s, hero lost 100%, boss left 96%, 16/1899 blows
+fair LEVEL L23 berserker: lowest hp 0%, hp lost 445%, deaths 3, walked 100% of waypoints, 12 rides {"swing":7,"wheel":2,"chairo":2,"carhorse":1}, 0 pulls, 12 boarding lifts, 42 lifts, 45 blows taken
+theatre BOSS expected L22 berserker#1: DEAD 94.3s, hero lost 100%, boss left 100%, 0/4238 blows
+theatre BOSS expected L22 berserker#2: DEAD 94.3s, hero lost 100%, boss left 100%, 0/4238 blows
+theatre LEVEL L22 berserker: lowest hp 0%, hp lost 163%, deaths 1, walked 100% of waypoints, 4 rides {"fly":3,"lift":1}, 0 pulls, 3 boarding lifts, 30 lifts, 17 blows taken
+canal BOSS expected L21 berserker#1: DEAD 94s, hero lost 100%, boss left 93%, 43/4265 blows
+canal BOSS expected L21 berserker#2: DEAD 94s, hero lost 100%, boss left 93%, 43/4265 blows
+canal LEVEL L21 berserker: lowest hp 0%, hp lost 503%, deaths 4, walked 100% of waypoints, 9 rides {"barge":5,"lift":4}, 0 pulls, 8 boarding lifts, 27 lifts, 57 blows taken
+welltown BOSS expected L30 berserker#1: DEAD 79s, hero lost 100%, boss left 100%, 0/3561 blows
+welltown BOSS expected L30 berserker#2: DEAD 79s, hero lost 100%, boss left 100%, 0/3561 blows
+welltown MINI expected L30 berserker#1: DEAD 18.9s, hero lost 100%, boss left 97%, 3/671 blows
+welltown MINI expected L30 berserker#2: DEAD 18.9s, hero lost 100%, boss left 97%, 3/671 blows
+welltown LEVEL L30 berserker: lowest hp 0%, hp lost 175%, deaths 1, walked 100% of waypoints, 1 rides {"lift":1}, 0 pulls, 1 boarding lifts, 47 lifts, 24 blows taken
+redgorge BOSS expected L31 berserker#1: DEAD 40.6s, hero lost 100%, boss left 100%, 13/1695 blows
+redgorge BOSS expected L31 berserker#2: DEAD 40.6s, hero lost 100%, boss left 100%, 13/1695 blows
+redgorge LEVEL L31 berserker: lowest hp 0%, hp lost 136%, deaths 1, walked 100% of waypoints, 4 rides {"lift":4}, 0 pulls, 5 boarding lifts, 27 lifts, 11 blows taken
+wrote raw rows to C:\Users\DANIEL~1\AppData\Local\Temp/bz-mash.json
+errors []
