@@ -141,14 +141,14 @@ assert.ok(L.cavalry.x0 >= UF.LOW[0] * TS - TS && L.cavalry.x1 <= (UF.LOW[1] + 1)
 assert.ok(of('oilbarrel').length >= 2 && of('oilbarrel').every(b => b.spill), 'BURNING PITCH: siege-oil barrels that spill a line of fire');
 ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake lines, volleys');
 
-/* ---- 4b. ONE TRACK, FIELD AND FIGHT (Daniel, 2026-09-25: "the level plays deathknight and the boss fight keeps the SAME track,
-   no switch or restart"). The arena names the track the level already plays, and music.play of the track that is playing returns
-   without touching it (playFile in src/audio.js), so the chapel door neither switches nor restarts the music. ---- */
+/* ---- 4b. THE FIELD'S OWN TRACK, THE FIGHT'S OWN TRACK (Daniel, 2026-10-03, replacing 2026-09-25's one track: the level plays "March of the Wizards"
+   by Aureolus_Omicron, CC-BY, audio/unburied.ogg; the Death Knight's fight is the boss lane's own track). The arena must name a real track, and
+   music.play of the track that is playing still returns without touching it (playFile in src/audio.js), so a door never restarts a track. ---- */
 { const AUD = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
-  assert.equal(L.music, 'deathknight', 'the level plays Night on Bald Mountain (deathknight), not ' + L.music);
-  assert.equal(L.arena.music, L.music, 'the arena switches the music to ' + L.arena.music + ': the fight must keep the level\'s own track');
+  assert.equal(L.music, 'unburied', 'the level plays "March of the Wizards" (unburied), not ' + L.music);
+  assert.ok(L.arena.music && /^[a-z0-9]+$/.test(L.arena.music), 'the arena names its own track: ' + L.arena.music);
   assert.ok(/function playFile\(name\) \{\s*if \(!ac \|\| !trackBuf\[name\] \|\| currentTrack === name\) return;/.test(AUD), 'playFile no longer returns on the track already playing: the same name would restart it');
-  ok('one track, field and fight', L.music); }
+  ok('field track, fight track', L.music + ' / ' + L.arena.music); }
 
 /* ---- 5. THE MINI, THE BOSS AND THEIR ROOMS ---- */
 { const m = L.mini, a = L.arena;

@@ -53,6 +53,12 @@ export const UF = Object.assign({}, GEOM, {
   BRIDGES: BRG,
 });
 
+/* THE TILE KIT'S MAP (final columns): the field's ground BY SECTION of the road, and its ledges BY WHAT THEY ARE (first match wins) - src/redraw/unburied_tiles.js */
+const TILEKIT = { G: GEOM.G, bed: BRG.bed, ravine: [BRG.at, BRG.at + BRG.n - 1], gap: BRG.ravine, stoneFrom: 360, gateStone: [355, 357], hide: [246, 247],
+  zones: [['camp', [0, 20]], ['spoil', [21, 129]], ['mud', [130, 229]], ['works', [230, 264]], ['approach', [265, 359]]],
+  pits: GEOM.TRENCHES, revet: [[21, 32], [57, 72], [72, 84], [95, 108], [148, 228]],
+  ledges: [[148, 228, 29, 32, 'deck'], ...[157, 170, 183, 196, 209, 219].map(x => [x, x + 2, GEOM.G + 3, GEOM.G + 3, 'wagon']), [332, 334, GEOM.G - 2, GEOM.G - 2, 'wagon'], [346, 348, GEOM.G - 2, GEOM.G - 2, 'wagon'],
+    [230, 264, 18, 35, 'tower'], [380, 384, GEOM.G - 2, GEOM.G - 2, 'tomb'], [442, 445, GEOM.G - 2, GEOM.G - 2, 'tomb'], [462, 465, GEOM.G - 2, GEOM.G - 2, 'tomb'], [360, 479, 0, 47, 'stone']] };
 export function buildUnburiedField({ painter, T, TS, grow }) {
   const UF = GEOM, { W, H, G } = GEOM;   /* the greybox's columns, all of them: the bridges are grown in at the end */
   const L = painter(W, H), { set, block, floor, plat, ent, coins } = L;
@@ -63,7 +69,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
   const meet = (name, x0, x1, foes) => { encounters.push({ name, x0, x1, n: foes.length }); for (const [t, x, y, o] of foes) ent(t, x, y, Object.assign({ face: -1, enc: name }, o || {})); };
   const cover = (x, kind, row = G) => ent('cover', x, row, { kind });        // a shield wall, a wagon, a mantlet: the volleys stop at it
   /* CHURNED MUD: a row dug out of the floor with shallow water in it. Wading is slow, and the trench is where the crowd is. */
-  const mud = (x0, x1, top) => { air(x0, x1, top, top); pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: true, depth: 12 }); };
+  const mud = (x0, x1, top) => { air(x0, x1, top, top); pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, shallow: true, depth: 12, mud: true }); };
   /* A STAKE LINE: a three-wide notch with the stakes standing in it. Hop it, or take the hurt - never a pit you cannot leave. */
   const stakes = (x0, x1) => { air(x0, x1, G + 1, G + 1); spikeRow(x0, x1, G + 1); };
   const crater = (x0, x1) => air(x0, x1, G + 1, G + 1);
@@ -195,7 +201,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
     /* ONE TRACK, FIELD AND FIGHT (Daniel, 2026-09-25): the whole level plays Night on Bald Mountain, and the arena names the same
        track, so the chapel door neither switches nor restarts it (playFile returns on the track already playing). The field's own
        loop, audio/unburied.ogg ("Haunting Chiptune Loop"), stays in the library and the sound test; no level plays it now. */
-    music: 'deathknight',
+    music: 'unburied',   /* (claude/unburiedart, Daniel 2026-10-03) "March of the Wizards" by Aureolus_Omicron, CC-BY 4.0 (audio/unburied.ogg; credit in MUSIC_CREDITS and audio/CREDITS.txt): the field's own track again. The arena still names deathknight (the boss lane's) */
     /* THE LOOK (Daniel 2026-09-24: "it uses the forest theme/tiles ... it needs a graveyard theme, something similar to the level
        that is after Waymeet"). The Hexed Fields' graveyard family - its graves and crosses, fog in the hollows, rim-lit dark
        layers, a night wash - but its own hour and its own horizon: an EMBER DUSK over a ridge where the ghost army still stands,
@@ -206,7 +212,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
       stone: '#77716c', stoneD: '#4c4844', stoneL: '#9c968e', canopy: ['#1a1418', '#261c22', '#32242c'], nearCol: '#3e3428', nearDark: '#241c17', grade: ['#b0685a', 0.12] },   /* grade: an ember soft-light, where the default is the wood's green */
     night: true, nightA: 0.1,   /* a light wash, so the lamps and the hero's glow read; the dusk is in the sky, not in a navy blanket */
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }],   /* low ground fog, the whole field */
-    ambient: [{ x0: 0, x1: 318 * TS, kind: 'wind' }, { x0: 318 * TS, x1: 99999, kind: 'hall' }],   /* a wind over the dead field, and the stone's hush under the chapel (claude/identity0: it had no zone and played the wood's birdsong) */
+    ambient: [{ x0: 0, x1: 300 * TS, kind: 'battlefield' }, { x0: 300 * TS, x1: 99999, kind: 'hall', bell: true }],   /* a wind over the dead field, and the stone's hush under the chapel (claude/identity0: it had no zone and played the wood's birdsong) */
     tints: [[318, 419, [34, 28, 52], 0.14]],   /* under the chapel's walls the light goes cold and grey */
     masonry: [[318, W - 1, 20, H - 1], [295, 297, G - 9, G - 5]],   /* THE CHAPEL OF THE FALLEN ORDER is laid stone from its crypt door to the Death Knight's back wall, and so is the gate's lintel */   /* (its old loop, "Haunting Chiptune Loop [Void Estate]", CC0 - audio/CREDITS.txt - is retired from the level: see music below) */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G }, pools, falls: [], moversExtra, interiors: [], gusts: [], encounters, pegs, garrison, elites,
@@ -257,5 +263,6 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
   for (const [kind, x, y, v] of [['brokenSpears', 268, G, 0], ['fallenBanner', 322, G, 1], ['bones', 285, bed - 1, 0], ['bones', 308, bed - 1, 1], ['stuckShield', 291, bed - 1, 0]]) bent('deco', x, y, { kind, v });
   /* THE TOLD VOLLEY over the bridges (stepField in src/unburied-foes.js): px, the stretch it covers; period, whistle and fall in seconds */
   R.bridgeVolley = { x0: c0 * TS, x1: (c1 + 1) * TS, period: 4.6, whistle: 1.2, spread: 44, r: 12 };
+  R.unburied = TILEKIT;   /* the field's own tile kit reads this (src/redraw/unburied_tiles.js; main.js hooks it beside the canal's and the theatre's) */
   return Bp.done();
 }

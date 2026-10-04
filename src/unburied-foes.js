@@ -647,10 +647,9 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   /* LOW GROUND MIST (the rework, 2026-09-24): a band along the ground's own line, pooling in trenches and craters. It is drawn here,
      under the creatures and their marks, and it never lies over a stake line - readability first, weather second */
   if (F.surf) { const G = F.G, x0 = Math.max(0, Math.floor(cx / TS)), x1 = Math.min(F.surf.length - 1, Math.ceil((cx + VW) / TS));
-    for (let tx = x0; tx <= x1; tx++) { const r = F.surf[tx]; if (r < 0) continue; const deep = Math.max(0, r - (G + 1)), sx = tx * TS - cx, top = r * TS - cy;
+    for (let tx = x0; tx <= x1; tx++) { const r = F.surf[tx]; if (r < 0) continue; const sx = tx * TS - cx, top = r * TS - cy;
       for (let q = 0; q < TS; q += 4) { const n = 0.5 + 0.5 * Math.sin((tx * TS + q) * 0.07 + time * 0.6) * Math.sin((tx * TS + q) * 0.023 - time * 0.35);
-        g.globalAlpha = 0.07 + 0.07 * n; R(g, sx + q, top - 6 - Math.round(n * 3), 4, 6 + Math.round(n * 3), '#b8aec4');
-        if (deep) { g.globalAlpha = 0.09 + 0.05 * n; R(g, sx + q, top - deep * TS, 4, deep * TS, '#a89cb6'); } } }
+        g.globalAlpha = 0.07 + 0.07 * n; R(g, sx + q, top - 6 - Math.round(n * 3), 4, 6 + Math.round(n * 3), '#b8aec4'); } }   /* (claude/unburiedart) the old pale columns up every trench step - the 'vertical slabs' of the identity review - are gone: mist lies, it does not stand */
     g.globalAlpha = 1; }
   /* THE GHOST ARMY on the ridge, over every stretch that is still fighting - and nothing over the ones you have ended */
   for (const v of F.volleys) { if (v.quiet) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;

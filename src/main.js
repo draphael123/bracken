@@ -112,6 +112,7 @@ import { bakePuffer, bakeJellyfish, bakeLamprey, bakeManta } from './redraw/sea_
 import { bakeCutlass, bakeBoarder, bakeMarine, bakeBosun, bakeLookout, bakeQuarter, bakeCaptain } from './redraw/pirates.js';
 import { bakeMasthead } from './redraw/masthead.js';
 import * as KRA from './redraw/kraken.js';
+import * as UBT from './redraw/unburied_tiles.js';   /* THE UNBURIED FIELD's own tile kit: straw, spoil, mud, siege works, wet stone, flagstones; wattle, stakes, hide, gabions, decks (claude/unburiedart) */
 import * as UW from './redraw/unburied_world.js';   /* THE UNBURIED FIELD's own look: its dusk, the ghost army's ridge, the wreck of the battle, its dressing and the bones in its soil */
 import * as FW from './redraw/fields_world.js';   /* THE HEXED FIELDS: its sky, its layers, its props and its movers */
 import * as FF from './redraw/fields_foes.js';
@@ -1014,7 +1015,7 @@ function resolveTiles() {
     const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : ZG || RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
-    if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
+    if (underPool) { let us = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; if (L.unburied) { const ts = UBT.unburiedTile(t, x, y, tileAt, T, L); if (ts) us = ts; } tileSpr[y * LW + x] = us; continue; }   /* (the field's mud trenches wear the field's own ground, not the shallows' blue silt) */
     if (t === T.SOLID) {
       const up = tileAt(x, y - 1), l = tileAt(x - 1, y), r = tileAt(x + 1, y);
       const inZone = (L.stone || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) || (L.scree || []).some(z => x >= z.x0 && x <= z.x1 && y === z.y);
@@ -1110,6 +1111,7 @@ function resolveTiles() {
     if (L.welltown) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE WELL TOWN's tile kit: sandstone streets, mudbrick houses, the cisterns' cut stone, palm boards, rope ladders (src/redraw/welltown_tiles.js) */
     if (L.redgorge) { const ts = RGT.gorgeTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE RED GORGE's tile kit: strata, lit lips, the scoured channel, lashed bridges (src/redraw/redgorge_tiles.js) */
     if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
+    if (L.unburied) { const ts = UBT.unburiedTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNBURIED FIELD's tile kit (src/redraw/unburied_tiles.js) */
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
       tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
@@ -22352,7 +22354,7 @@ function placeLandmarks() {
   if (dress === 'crag') { put(PROP.cart, 20, 0); put(PROP.fence[0], 40, 0); put(PROP.lanternPost, 60, 0); put(PROP.bones[1], 30, 0); }
   if (dress === 'marsh') { put(PROP.oldOak[1], 8, 0); put(PROP.oldOak[0], 8, 0); }
   if (dress === 'camp') { put(PROP.totem[0], 20, 0); put(PROP.totem[1], 20, 0); }
-  if (dress === 'battlefield') { put(ub().wreck, 10, 0); put(PROP.lychgate, 20, 0); put(ub().standard, 6, 0); put(ub().wreck, 30, 0); put(ub().standard, 12, 0); }   /* THE UNBURIED FIELD: the engines they lost, the old standards, and the churchyard gate the Hexed Fields have too */
+  if (dress === 'battlefield') { put(ub().wreck, 10, 0); put(ub().standard, 6, 0); put(ub().wreck, 30, 0); put(ub().standard, 12, 0); }   /* THE UNBURIED FIELD: the engines they lost and the old standards (no lychgate: that is the Hexed Fields' and Waymeet's, claude/unburiedart) */
   for (const e of villageLandmarks(lmId, dress)) lmPut(e);
   if (dress === 'myc') { put(PROP.giantCap, 0, 0); }
 }
@@ -24669,13 +24671,13 @@ function updateWeather(dt) {
   for (const d of decor) { if (d.sway > 0) d.sway = Math.max(0, d.sway - dt); if (d.wob > 0) d.wob = Math.max(0, d.wob - dt); }
   zoomT = Math.max(0, zoomT - dt); if (zoomT <= 0) zoomAmt = 1;
   // ambient bed by zone, and the music ducks while something winds up nearby
-  let amb = 'forest'; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) amb = z.kind;
+  let amb = 'forest', ambBell = false; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) { amb = z.kind; ambBell = !!z.bell; }
   /* THE SECOND LAYER: step inside a room and the place goes behind a wall - the inn's common room, a ship's hold, a hollow trunk */
   { const tx = P.x / TS, ty = P.y / TS, room = !L.colosseum && (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
     if (room) amb = ({ town: 'tavern', ship: 'hold', shore: 'hold', forest: 'hall', wind: 'hall', rain: 'hall', water: 'hall' })[amb] || amb;
     /* and a room has walls: the blows and the cries come back off them. Only on the step in and the step out, so a warp's own reverb is left alone */
     if (!!room !== !!P.revRoom) { P.revRoom = !!room; setReverb(room ? (L.dark ? 0.4 : 0.28) : (L.dark ? 0.34 : 0.04)); } }
-  ambient.set(amb);
+  ambient.set(amb); ambient.bell(ambBell && amb === 'hall');   /* (claude/unburiedart) the chapel's slow distant bell */
   /* THE THINGS IN THE WORLD MAKE THEIR OWN NOISE: a forge rings, a mill wheel knocks, a fire talks - from where they are */
   /* one smith, one hammer: an anvil beside a forge is the same man, so only the forge strikes; and slower, a strike every few seconds, not a metronome */
   { const EM = { forge: ['forgeHammer', 3.4], anvil: ['forgeHammer', 4.6], mill: ['thud', 3.4], hearth: ['fuse', 2.8], cookPot: ['fuse', 3.2], campfire: ['fuse', 3] };
@@ -25536,6 +25538,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     if (!surfaceOnly) {
       if (p.fire) { drawFirePool(p, x0, x1, y, h, cx, cy, false); continue; }
       if (p.capped || p.streetTide || p.clear) continue; // rock over it, a tide standing on real ground, or any water you can see the bottom of: it goes OVER what is in it, or it would be a blue rectangle
+      if (p.mud) { UBT.drawMud(g, p, x0, x1, y, h, cx, time, false); continue; }   /* the field's trenches hold mud, not blue water */
       if (p.shallow) {
         const d = p.depth || 22;
         g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(70,120,160,0.7)'; g.fillRect(x0, y, x1 - x0, d); g.globalCompositeOperation = 'source-over';
@@ -25554,6 +25557,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     }
     if (p.swim && !p.shallow) { g.globalAlpha = p.wash ?? (p.capped ? 0.42 : p.runTide ? 0.46 : p.streetTide ? 0.46 : p.clear ? 0.5 : 0.5); g.fillStyle = p.harm ? (p.foulColD || '#3a4a1e') : sea ? '#2e7a88' : '#3b7fae'; g.fillRect(x0, y + 3, x1 - x0, h - 3); g.globalAlpha = 1;
       if ((p.capped || p.streetTide || p.runTide || p.clear) && p.grad !== false) { const gr2 = g.createLinearGradient(0, y, 0, y + h);   /* a pool that is a whole LEVEL tall carries its own depth gloom instead */ gr2.addColorStop(0, 'rgba(10,26,32,0.45)'); gr2.addColorStop(0.3, 'rgba(10,26,32,0)'); gr2.addColorStop(1, 'rgba(6,16,22,0.5)'); g.fillStyle = gr2; g.fillRect(x0, y, x1 - x0, h); } } // over whoever is swimming in it: they are IN the water
+    if (p.mud) { UBT.drawMud(g, p, x0, x1, y, h, cx, time, true); continue; }
     if (p.shallow) { // the water itself, over the legs of whoever is wading; lighter near the surface
       const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(90,175,215,0.5)'); gr.addColorStop(1, 'rgba(40,110,150,0.55)');
       g.fillStyle = gr; g.fillRect(x0, y, x1 - x0, h);
