@@ -25980,6 +25980,7 @@ function bakeBarnWall(tw, th, seed) { const W = tw * TS, H = th * TS, rnd = mulb
   for (let k = 0; k < Math.max(2, tw / 12); k++) { const x = Math.floor(rnd() * (W - 20)), y = Math.floor(H * 0.2 + rnd() * H * 0.45); q.fillStyle = '#ff7a2c'; q.fillRect(x, y, 1, 8 + Math.floor(rnd() * 10)); q.fillStyle = '#7a2a14'; q.fillRect(x + 1, y + 2, 1, 6); }
   return c; }
 function drawFacades(cx, cy) {
+  if (HIDE.facades) return;
   for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f;
     const sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy), w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
@@ -26008,15 +26009,17 @@ function softScenery(c){
     p[k]=Math.round(p[k]*.88+17);p[k+1]=Math.round(p[k+1]*.88+15);p[k+2]=Math.round(p[k+2]*.88+15);
   }cg.putImageData(im,0,0);SOFT_SCENERY.set(c,out);return out;
 }
+const HIDE = {};   /* (claude/unburiedart) BK.hide.deco / .facades / .structures: a layer the look checks switch off to see what it was holding up (tools/unburied-look.mjs) */
 function drawScenery(cx,cy){
   g.save();g.globalAlpha=.78;
-  for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx,d.y-cy);
+  if(!HIDE.deco)for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx,d.y-cy);
     if(d.kind==='hangingHouse'||d.kind==='villageHall'){paintHouseSmoke(g,d.x+d.c.width-25-cx,d.y+10-cy,time+d.ph);g.globalAlpha=.78;}}
   for(const d of decor){if(d.x<cx-d.c.width||d.x>cx+VW)continue;const c=d.fire?PROP.campfire[Math.floor(time*9+d.x)%3]:d.c;const sway=d.sway>0?Math.round(Math.sin(time*28)*d.sway*3):0;g.drawImage(softScenery(c),d.x-cx+sway,d.y-cy);}
   g.restore();
 }
 
 function drawStructures(cx,cy) {
+  if(HIDE.structures)return;
   for(const z of L.structures||[]){const l=z.x0*TS-cx,r=(z.x1+1)*TS-cx,t=z.top*TS-cy,b=z.floor*TS-cy;if(r<0||l>VW||b<0||t>VH)continue;
     if(z.kind==='seam'){drawBurialSeam(g,l,r,t,b);continue;}
     if(z.kind==='cryptPier'){drawCryptPier(g,l,r,t,b);continue;}   /* a pier of the Drowned Ossuary's arcade under its stone walkway */   /* a pillar where two of the Burial Caverns' backdrops meet (src/burial-looks.js) */
@@ -28840,7 +28843,7 @@ await LS.step('final');
 document.getElementById('boot').remove();
 window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
-  P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
+  hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
