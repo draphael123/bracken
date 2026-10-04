@@ -105,8 +105,12 @@ for (const meet of [true, false]) { const r = awake(rig({ meet })); r.place('wal
   ok(r.e.modeT >= 3 && M.gtTake(r.e) === GT.openMul && Math.abs(r.e.y - A.wreck.y) < 1 && r.e.x > A.wreck.x0 && r.e.x < A.wreck.x1, 'aground on the boat she is not open for 3 s on its back: ' + JSON.stringify({ t: r.e.modeT, x: r.e.x, y: r.e.y }));
   ok(r.log.lines.includes('AGROUND ON THE BOAT: CUT HER'), 'her running aground was not said');
   const q = toPhase(awake(rig({ hp: GT.hp * 0.3 })), 3); q.show.cyc[3] = 1; M.applyCycle(q.show, 3, q.c); ok(!q.show.C.lure, 'the fog\'s second cycle is a lure too (every cycle changes)');
-  q.place('boat'); let crossed = 0; q.run(60 * 25, i => { q.place('boat'); if (i > 120 && q.e.x > A.wreck.x0 + 4 && q.e.x < A.wreck.x1 - 4) crossed++; });
-  ok(crossed === 0 && q.show.n.lure === 0, 'without the lure she still went over the boat\'s back (' + crossed + ' frames)'); }
+  q.place('boat'); q.run(60 * 25, () => q.place('boat'));
+  ok(q.show.n.lure === 0 && q.show.n.strand === 0, 'without the lure her charge still ran aground on the boat (' + q.show.n.lure + ')');
+  /* a hero beyond the boat: she drags herself over it (slowly, her arms busy), never stuck the far side throwing arms across the lock */
+  const w = toPhase(awake(rig({ hp: GT.hp * 0.3, ex: A.wreck.x0 - 60 })), 3); w.show.cyc[3] = 1; M.applyCycle(w.show, 3, w.c); w.e.x = A.wreck.x0 - 60; w.place('walerE'); let over = false;
+  w.run(60 * 20, () => { w.place('walerE'); if (w.e.x > A.wreck.x1) over = true; });
+  ok(over, 'with the hero beyond the boat she never came over it (x ' + Math.round(w.e.x) + ')'); }
 ok(GT.stuckT >= 3 && GT.dazeT >= 3 && GT.strandT >= 3 && GT.flushT >= 3, 'an opening is under 3 s (stuck ' + GT.stuckT + ', dazed ' + GT.dazeT + ', strand ' + GT.strandT + ', flush ' + GT.flushT + ')');
 
 // ---- ONE MACHINE BEAT A PHASE; a paddle is one timed strike ----

@@ -36,14 +36,14 @@
 
 export const GT = {
   hp: 720, w: 30, h: 46, markH: 54,   /* (claude/jenny2: redrawn at her own size - the box is her head, shoulders and the body under the water's skin) */
-  ward: 0.05, openMul: 1.1, beatMul: 1.4,
+  ward: 0.05, openMul: 1.35, beatMul: 1.7,
   /* THE WATER: its heights over the bed. SHOAL leaves the narrowboat's back (two rows high) a hand under the surface */
   lv: { dry: 0, shoal: 40, low: 48, half: 80, high: 112 },
   drainRate: 40, fillRate: 60, wakeRate: 32, aground: 26,
   /* THE OPENINGS: each at least three seconds */
   stuckT: 3.2, dazeT: 3.0, strandT: 3.2, flushT: 3.2, crawl: 30, dragT: 0.7, wrenchT: 0.45, wardT: 3.0,
   /* HER BODY */
-  swim: { low: 100, half: 125, high: 150 }, keep: 26,
+  swim: { low: 100, half: 125, high: 150 }, keep: 26, boatCrawl: 40, armRange: 170,
   /* HER BLOWS */
   armUp: 40, armDown: 72,
   grabTell: 0.9, grabFollow: 0.45, grabT: 0.25, grabHold: 1.4, grabR: 12, grabTick: 0.5,
@@ -61,7 +61,7 @@ export const GT = {
   dmg: { grab: 14, drag: 4, lash: 20, reach: 20, bite: 22, surge: 18, slam: 24, charge: 20, net: 8 },
   p2: 2 / 3, p3: 1 / 3,
   /* SHE FIGHTS IN THE BEAT'S OPENINGS: stranded or flushed she still SNAPS (a yellow !: the shield turns it, or step back) and SWIPES low (a red !!:
-     jump it) at a hero beside her. Stuck by her arm she only snaps; dazed she does nothing */
+     jump it) at a hero beside her. Stuck by her claws or dazed she does nothing (stagger means still) */
   oa: { first: 0.6, every: 0.9, snapTell: 0.5, snapR: 52, snapDmg: 20, swipeTell: 0.55, swipeR: 64, swipeDmg: 18, near: 90 },
 };
 /* THE MOVES: tell (s), blow (s), the mark's promise, the answer, the height (the marks table's rows are src/marks.js) */
@@ -349,13 +349,15 @@ function chooseBlow(e, show, h, c, ev) {
   const hs = heroState(show, h), C = show.C || {}, ph = e.phase, A = show.A, surf = surfY(show);
   const dist = Math.abs(h.x - e.x), opts = new Set();
   if (hs.grabbable) opts.add('grab');
-  if (hs.atSurface || (hs.footing && hs.atGate)) opts.add('lash');
-  if (hs.reachable) opts.add('reach');
+  const gateNear = hs.atGate && Math.abs(e.x - A[hs.atGate].face) < GT.armRange;
+  if ((hs.atSurface && dist < GT.lashReach) || (hs.footing && hs.atGate && gateNear)) opts.add('lash');
+  if (hs.reachable && dist < GT.armRange) opts.add('reach');
   if (dist < GT.biteRange && h.y > surf - 44 && h.y < surf + 30 && show.water.depth > 12 && !waryOf(show, 'bite')) opts.add('bite');
   if (C.tear && h.onWeed >= 0 && show.weed[h.onWeed] && show.weed[h.onWeed].firm) opts.add('tear');
   if (!waryOf(show, 'slam') && h.ground && (hs.ledge || h.onWeed >= 0) && !hs.onBoat && dist < GT.slamRange && h.y >= surf - GT.slamUp && h.y <= surf + 4) opts.add('slam');
   if (ph >= 2 && !waryOf(show, 'charge') && show.water.depth > 20 && dist > 50 && h.y > surf - 30 && !hs.ledge) opts.add('charge');
   if (ph >= 3 && dist < 170 && (h.ground || h.swim)) opts.add('net');
+  if (e.onBoat) opts.clear();   /* (dragging herself over the boat's back, her arms are busy) */
   if (!opts.size) return false;
   show.turns++;
   /* A PAIR: two arms told together, always answerable - high then low, or a ring then a reach, or (the fog) two rings with a way out between */
@@ -401,7 +403,7 @@ export function stepShow(e, show, dt, c) {
       if (e.modeT <= 0) { e.mode = e.base = 'lurk'; show.gap = 1.0; c.number(e.x, surf - 50, 'THE BRIGHT WEED HOLDS. THE DARK WEED IS WATER', '#ffd36b'); show.tellDrainAt = 9; } return ev;
     case 'slamBack': swimY(e, show); if (e.modeT <= 0) e.mode = e.base; return ev;
     case 'charge': stepCharge(e, show, dt, c, ev); return ev;
-    case 'stuck': openFight(e, show, dt, c, heroes, ev, true); if (e.modeT <= 0) { e.mode = 'wrench'; e.modeT = GT.wrenchT; e.claw = null; closeOpening(e, show, ev, c); c.sound('wrench'); } return ev;
+    case 'stuck': if (e.modeT <= 0) { e.mode = 'wrench'; e.modeT = GT.wrenchT; e.claw = null; closeOpening(e, show, ev, c); c.sound('wrench'); } return ev;
     case 'wrench': { const tx = clampIn(A, e.x); e.x += (tx - e.x) * Math.min(1, dt * 6); e.y += (Math.min(A.bed, surf + Math.round(GT.h * 0.5)) - e.y) * Math.min(1, dt * 8); if (e.modeT <= 0) { e.mode = e.base; swimY(e, show); } return ev; }
     case 'dazed': e.y = surf + Math.round(GT.h * 0.5); if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 0.4; closeOpening(e, show, ev, c); } return ev;
     case 'stranded': { openFight(e, show, dt, c, heroes, ev, false);
@@ -442,12 +444,13 @@ export function stepShow(e, show, dt, c) {
   else if (e.base === 'shift') { const G = A[show.hide]; tx = G.cul.x; if (Math.abs(e.x - tx) < 6) { e.base = 'culvert'; if (!armsBusy(show)) e.mode = 'culvert'; ev.push({ t: 'inCulvert', side: show.hide }); } }
   else if (hero) { /* she hunts you: in the water near you, never under a gate's ledge, and (the fog's shallows) never across the boat's back unless she charges */
     tx = clampIn(A, hero.x + (hero.x > A.mid ? -GT.keep : GT.keep));
-    if (wreckShallow(show)) { const m = 22; if (tx > A.wreck.x0 - m && tx < A.wreck.x1 + m) tx = Math.abs(tx - (A.wreck.x0 - m)) < Math.abs(tx - (A.wreck.x1 + m)) ? A.wreck.x0 - m : A.wreck.x1 + m;
-      if ((e.x < A.wreck.x0) !== (tx < A.wreck.x0) && e.x < A.wreck.x1 + m && e.x > A.wreck.x0 - m) tx = e.x < A.wreck.x0 ? A.wreck.x0 - m : A.wreck.x1 + m; } }
-  const sp = depth < 12 ? 0 : depth < GT.lv.half - 10 ? GT.swim.low : depth < GT.lv.high - 10 ? GT.swim.half : GT.swim.high, dx = tx - e.x;
+    if (wreckShallow(show)) { const m = 22, onIt = x => x > A.wreck.x0 - m && x < A.wreck.x1 + m; if (onIt(tx) && !onIt(e.x)) tx = e.x < A.wreck.x0 ? A.wreck.x0 - m : A.wreck.x1 + m;   /* (she waits off the boat for a hero on it: the charge is how she comes) */
+      else if (onIt(tx) && onIt(e.x)) tx = Math.abs(e.x - (A.wreck.x0 - m)) < Math.abs(e.x - (A.wreck.x1 + m)) ? A.wreck.x0 - m : A.wreck.x1 + m; } }
+  e.onBoat = wreckShallow(show) && e.x > A.wreck.x0 - 6 && e.x < A.wreck.x1 + 6;
+  const sp = e.onBoat ? GT.boatCrawl : depth < 12 ? 0 : depth < GT.lv.half - 10 ? GT.swim.low : depth < GT.lv.high - 10 ? GT.swim.half : GT.swim.high, dx = tx - e.x;
   const held = show.arms.some(a => a.st === 'hold' || a.st === 'blow'), k = armsBusy(show) && e.base !== 'shift' ? (held ? 0 : 0.4) : 1;   /* (she drifts while she tells, and holds still while an arm is out) */
   if (Math.abs(dx) > 3 && k > 0 && !show.arms.some(a => a.k === 'slam' || a.k === 'bite')) { e.vx = Math.sign(dx) * sp * k; e.x += Math.sign(dx) * Math.min(Math.abs(dx), sp * k * dt); }
-  if (e.base !== 'culvert') swimY(e, show);
+  if (e.base !== 'culvert') { swimY(e, show); if (e.onBoat) e.y = A.wreck.y; }
   if (hero && !show.arms.some(a => a.k === 'bite')) e.face = Math.sign(hero.x - e.x) || e.face;
   /* ---- A BLOW ---- */
   if (hero && (show.gap <= 0 || (show.quick > 0 && show.gap <= GT.gap[e.phase - 1] - GT.netQuick)) && !armsBusy(show) && e.base !== 'culvert' && e.base !== 'shift') {
@@ -588,9 +591,7 @@ export function greenteethPlan(s) {
       if (inRange && Math.abs(P.y - a.fy) < 30) { if (P.swim) { out.down = true; out.why = 'dive the lash'; } else { out.jump = true; out.why = 'jump the lash'; } return out; } }
     if (a.k === 'reach' && Math.abs(P.y - a.fy) < 4 && a.t < 0.3) { out.down = true; out.why = 'duck the reach'; return out; }
     if (a.k === 'bite' && Math.abs(P.x - e.x) < GT.biteLunge + 34) { const late = roll(key + 'm', PLAN.missMeet);
-      if (s.shield && a.t < 0.4 && !late) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'meet the bite'; return out; }
-      if (!s.shield && a.t < 0.13 && !late && P.dodge <= 0) { out.dodge = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'roll through the bite'; return out; }
-      if (!s.shield && !late) { out.gx = P.x; out.face = Math.sign(e.x - P.x) || 1; out.why = 'wait for the bite'; return out; }
+      if (!late && a.st === 'tell') { out.meet = a.t; out.gx = null; out.face = Math.sign(e.x - P.x) || 1; if (s.shield && a.t < 0.4) out.block = true; out.why = 'meet the bite'; return out; }
       if (P.swim && a.t < 0.35) { out.down = true; out.why = 'dive the bite'; return out; } if (P.ground && a.t < 0.15) { out.jump = true; out.why = 'jump the bite'; return out; }
       out.gx = clamp(e.x + (P.x < e.x ? -1 : 1) * (GT.biteLunge + 36)); out.why = 'back off the bite'; return out; }
     if (a.k === 'tear' && P.onWeed === a.patch) { const firm = show.weed.map((p, i) => ({ p, i })).filter(o => o.i !== a.patch && o.p.firm && !(o.p.broken > 0)).sort((p, q) => Math.abs((p.p.x0 + p.p.x1) / 2 - P.x) - Math.abs((q.p.x0 + q.p.x1) / 2 - P.x))[0];
@@ -613,11 +614,12 @@ export function greenteethPlan(s) {
   /* ---- 3. THE BEAT: a paddle, once ---- */
   const strikePad = side => { const G = A[side]; out.gx = G.paddle.x + (side === 'W' ? 14 : -14); out.face = side === 'W' ? -1 : 1;
     if (Math.abs(P.x - out.gx) < 4 && P.atk < 0 && !(show.pad[side].cd > 0)) out.atk = true; out.why = 'the ' + side + ' paddle'; };
-  const climbTo = (side, ly) => { const G = A[side];
-    if (P.ground && Math.abs(P.y - ly) < 3 && ledgeAt(A, P.x, P.y) && ledgeAt(A, P.x, P.y).side === side) return true;
-    if (P.ground && P.y < ly - 3 && ledgeAt(A, P.x, P.y)) { out.gx = G.stand; out.down = true; out.drop = true; out.why = 'down to the ledge'; return false; }
-    out.gx = G.stand; if (Math.abs(P.x - G.stand) < 14) { out.why = 'up the gate'; if (P.swim) { out.up = true; if (P.y - surf < 26) out.jump = true; } else if (P.ground) out.jump = true; }
-    else { out.why = 'to the ' + side + ' gate'; if (P.swim) out.up = P.y - surf > 18; if (P.ground && rng() < 0.02) out.jump = true; }
+  const climbTo = (side, ly) => { const G = A[side], L0 = P.ground ? ledgeAt(A, P.x, P.y) : null;
+    if (L0 && L0.side === side && Math.abs(P.y - ly) < 4) { mem.onLedge = t; return true; }
+    if (!P.ground && !P.swim && mem.onLedge !== undefined && t - mem.onLedge < 0.6 && Math.abs(P.y - ly) < 30) { out.gx = null; out.why = 'on the ledge'; return true; }   /* (a hop on the ledge - a jumped lash - is still the ledge) */
+    if (L0 && P.y < ly - 3) { out.gx = G.stand; out.drop = true; out.why = 'down to the ledge'; return false; }
+    out.gx = G.stand; if (Math.abs(P.x - G.stand) < 14) { out.why = 'up the gate'; if (P.swim) { out.up = true; if (P.y - surf < 26) out.jump = true; } else if (P.ground && P.y > ly + 3) out.jump = true; }
+    else { out.why = 'to the ' + side + ' gate'; if (P.swim) out.up = P.y - surf > 18; if (P.ground && !L0 && rng() < 0.02) out.jump = true; }
     return false; };
   if (e.phase === 2 && (e.base === 'culvert' || e.base === 'shift') && show.beat[2] === 'ready' && show.hide) { if (climbTo(show.hide, A.walk)) strikePad(show.hide); return out; }
   /* ---- 4. WHERE TO FIGHT HER: a gate's ledge just over the water (her slam goes into its timber, her bite comes to its edge); in the fog's shallows,
@@ -627,12 +629,12 @@ export function greenteethPlan(s) {
     const onB = P.ground && P.x > A.wreck.x0 + 8 && P.x < A.wreck.x1 - 8 && Math.abs(P.y - A.wreck.y) < 6; const mid = (A.wreck.x0 + A.wreck.x1) / 2;
     if (onB) { out.gx = e.x < mid ? A.wreck.x1 - 30 : A.wreck.x0 + 30; out.face = Math.sign(e.x - P.x) || 1; out.why = 'on the boat'; return out; }
     out.gx = mid; out.why = 'to the boat'; if (P.swim) { out.up = true; if (Math.abs(P.x - mid) < 60) out.jump = true; } else if (P.ground && Math.abs(P.x - mid) < 120 && P.y > A.wreck.y + 2) out.jump = true; return out; }
-  const lv = show.water.depth, ledgeY = [...A.W.walers, A.walk].filter(y => A.bed - y > lv + 10).sort((p, q) => q - p)[0] ?? A.walk;
-  let side = e.phase === 1 && show.beat[1] === 'ready' ? 'E' : (mem.side || (P.x > A.mid ? 'E' : 'W'));
+  const lv = show.water.depth, drainUp = e.phase === 1 && show.beat[1] === 'ready';
+  const ledgeY = drainUp ? A.walk : [...A.W.walers, A.walk].filter(y => A.bed - y > lv + 10).sort((p, q) => q - p)[0] ?? A.walk;   /* (phase one's drain still to work: up on the east walkway by its paddle) */
+  let side = drainUp ? 'E' : (mem.side || (P.x > A.mid ? 'E' : 'W'));
   mem.side = side;
   if (climbTo(side, ledgeY)) { const G = A[side];
-    if (e.phase === 1 && side === 'E' && show.beat[1] === 'ready' && atGate(e, show, 'E') && !roll('late' + Math.floor(t * 2), PLAN.late)) {
-      if (climbTo('E', A.walk)) strikePad('E'); return out; }
+    if (drainUp && atGate(e, show, 'E') && !roll('late' + Math.floor(t * 2), PLAN.late)) { strikePad('E'); return out; }
     const L = ledgeAt(A, P.x, P.y), outer = L ? L.end - L.dir * 12 : G.stand; out.gx = outer; out.face = G.dir; out.why = 'hold the ledge'; }
   return out;
 }
@@ -641,7 +643,7 @@ export function greenteethPlan(s) {
 export function gtFrame(e) {
   const a = e.anim || 0, m = e.mode || '';
   if (m === 'stranded') return GT_F.stranded[Math.floor(a * 3) % 2];
-  if (m === 'drag') return GT_F.drag;
+  if (m === 'drag' || (e.onBoat && (m === 'lurk' || m === 'shift'))) return GT_F.drag;
   if (m === 'flushed') return GT_F.flushed;
   if (m === 'stuck') return GT_F.stuck;
   if (m === 'dazed') return GT_F.dazed;
