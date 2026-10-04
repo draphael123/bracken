@@ -56,6 +56,15 @@ export const POSE_BEATS = {
   gFault: [0.12],              /* FAULT LINE: the butt set in the ground, then dragged along the line of the crack */
   gGolem: [0.18],              /* GOLEM: the stave raised to call it, then the other hand beckoning it up */
   gAval: [0.3],                /* AVALANCHE: arms up at the sky, then the butt hammered in */
+  /* THE BERSERKER (claude/berserker: told by what the axes do, and the mane goes up when he roars) */
+  bzThrow: [0.1],              /* THE AXE THROW: the off axe cocked back over his shoulder, then hurled */
+  bzRoar: [0.14],              /* BATTLE ROAR: the breath in, axes down, then fists at the sky */
+  bzHarden: [0.14],            /* HARDEN: the axes dropped, then every muscle set */
+  bzCleave: [0.1],             /* GREAT CLEAVE: up behind him in both hands, then the long cut */
+  bzShrug: [0.14],             /* SHRUG IT OFF: the shoulders rolled, the head shaken */
+  bzStand: [0.18],             /* LAST STAND: down on a knee, an axe planted, the other raised */
+  bzUnch: [0.16],              /* UNCHAINED: fists to his chest, then flung out */
+  bzStorm: [0.12],             /* AXE STORM: one hatchet underhand, then the fan overhand */
 };
 /* A POSE THAT FOLLOWS THE BODY, not a clock: the frame is chosen from the hero's own state, and null ends it early (HAMMER LEAP
    plays his arc - maul up on the rise, over at the top, down on the drop - for as long as he is off the ground, and no longer) */
@@ -63,7 +72,7 @@ export const POSE_PICK = { leap: P => P.ground ? null : P.vy < -120 ? 0 : P.vy <
 /* ABILITIES THAT ARE A DODGE: they set the dodge timer (its invulnerability is the point), so the roll would draw over them; the
    draw lets these poses in ahead of the roll (main.js) */
 export const POSE_DASH = { charge: true, cinder: true };
-export const POSE_CYCLE = { whirl: 30 };   /* WHIRLWIND: the blade out ahead, behind, and across, round and round (frames a second) */
+export const POSE_CYCLE = { whirl: 30, bzSpin: 18, bzRamp: 10 };   /* (THE BERSERKER's SPIN turns, and his RAMPAGE runs) */   /* WHIRLWIND: the blade out ahead, behind, and across, round and round (frames a second) */
 /* THE JUMP ARC. Every hero keeps his old air frames (jump 0/1 by the climb, apex near the top, fall 0/1 by the drop); a hero with a
    TAKE-OFF frame shows it for the first beat off the ground, while the push is still in him. */
 export function airPose(P, frames) {

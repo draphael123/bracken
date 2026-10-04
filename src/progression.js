@@ -6,7 +6,7 @@ export {LEGACY_NODES, SKILLS};
 /* 2 (2026-09-24): PASSIVES COME WITH LEVELS, ABILITIES ARE BOUGHT (docs/briefs/hero-kits.md 1b). A passive is no longer sold
    or slotted: it is on from the hero level the catalog gives it. Version 1 saves are migrated by passivesToLevels below. */
 export const PROGRESSION_VERSION = 2;
-export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer'];   /* THE GEOMANCER (2026-09-24): a third starter */
+export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer','berserker'];   /* THE GEOMANCER (2026-09-24): a third starter; THE BERSERKER (2026-10-04): the fourth default */
 const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const clone = v => JSON.parse(JSON.stringify(v));
 /* THE THIRD SLOT OPENS AT LEVEL 16, AND THREE IS THE MOST (Daniel 2026-10-04; it was two at every level from 2026-09-23): two from the start,
@@ -18,7 +18,7 @@ export const slotsAt = lv => SLOT_LEVELS.filter(n => (lv || 0) >= n).length;
 /* THE TOP OF THE LADDER IS DEARER (LEVELING, audit-econ sec.7E: 520 for an L20 capstone was 1.8 woods of gold): the knight's, the Warden's and
    the Geomancer's L12/L14/L17/L20 actives cost 600/700/800/900 (they were 360/400/460/520). The catalog keeps its history; the price is set here. */
 export const TOP_PRICE = { 12: 600, 14: 700, 17: 800, 20: 900 };
-for (const n of SKILLS) if (n.active && TOP_PRICE[n.level] && ['knight', 'warden', 'geomancer'].includes(n.hero)) n.price = TOP_PRICE[n.level];
+for (const n of SKILLS) if (n.active && TOP_PRICE[n.level] && ['knight', 'warden', 'geomancer', 'berserker'].includes(n.hero)) n.price = TOP_PRICE[n.level];
 const BY_HERO=Object.fromEntries(HERO_IDS.map(h=>[h,SKILLS.filter(n=>n.hero===h)]));
 const BY_ID=Object.fromEntries(HERO_IDS.map(h=>[h,Object.fromEntries(BY_HERO[h].map(n=>[n.id,n]))]));
 export const growthNodes=Object.fromEntries(HERO_IDS.map(h=>[h,new Set(LEGACY_NODES.filter(n=>n.hero===h&&n.destination==='growth').map(n=>n.id))]));
@@ -88,7 +88,7 @@ export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m =
 export function growthAt(h,lv,card){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12,c=card===undefined?evenCard(lv):(card||{v:0,e:0,m:0,ms:{}}),ms=Object.values(c.ms||{});
  const v=Math.min(CARD_CAP,c.v||0),e=Math.min(CARD_CAP,c.e||0),m=Math.min(CARD_CAP,c.m||0);
- const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95}[h]||100)+2*lv+8*v;
+ const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105}[h]||100)+2*lv+8*v;
  return {hp:Math.round(hp0*(ms.includes('heart')?1.1:1)),stamina:100+2*lv+12*e,damage:Math.floor(lv/4)+Math.floor(ranks*(h==='reaper'?1.5:1))+m,ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)*(ms.includes('arcane')?1.15:1),picks:{v,e,m}};
 }
 /* THE CARD'S MIGRATION (cardV 1): a save from before the card has levels and no picks. Every hero with XP gets his levels as an even spread
@@ -102,7 +102,7 @@ export function migrateCard(p) {
    extra hero opens CO-OP (the AI partners and the co-op hub with it): coopOpen() is "owns two heroes", or a save from before this. OLD SAVES
    (heroFlow 1 migration): a save with any progress keeps every starter it has played as owned and keeps co-op (coopLegacy: its sofa
    friend may still take any starter, as before). */
-export const DEFAULT_HEROES = ['knight', 'warden', 'geomancer'];   /* + the Berserker when he lands */
+export const DEFAULT_HEROES = ['knight', 'warden', 'geomancer', 'berserker'];   /* THE BERSERKER (claude/berserker, 2026-10-04) is the fourth */
 export const coopOpen = p => !!p && (!!p.coopLegacy || Object.keys(p.heroes || {}).filter(h => p.heroes[h]).length >= 2);
 export function migrateHeroes(p) {
  if (p.heroFlow === 1) return false;

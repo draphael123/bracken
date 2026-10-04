@@ -77,8 +77,9 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
    body centre stays at BX+8 and the set's single anchor still reads: drawSet mirrors with `c.width - set.ax`, which
    is measured off each frame's own canvas, so a 52-wide thrust flips to the right place beside a 34-wide idle.
    The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
-let SPEARLESS = false;   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null }) {
+let SPEARLESS = false;
+let ONEAXE = false;   /* THE BERSERKER's BARE set (his off axe is thrown): every frame, the lead axe only */   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null, axe = null, axe2 = null }) {
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
@@ -93,7 +94,24 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   draw(LEGS[legs], BX + dx, BY + 11 + legsDy);
   if (kite && !kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* on the off arm across his front: under the sword arm, over the tabard */
   if (arm2) line(g, arm2[0] + dx, arm2[1] + dy, arm2[2] + dx, arm2[3] + dy, KP.S, 2);   /* THE OFF ARM, drawn only where an ability puts it to work (a throw, a cry): over the kite, under the sword arm */
+  /* THE BERSERKER'S HAND AXES (claude/berserker). Given [hand x, hand y, head x, head y, side]: a short oak haft out of the fist (its knob two
+     past the hand), and at the end a BEARDED HEAD - a blade three pixels out on the +side, longest at its lower horn, with a bright edge, and a
+     stub of spike on the back. side +1 puts the edge forward when the axe is held up (and down when it is held out level). Only the head takes
+     a weapon skin (WT/WL). axe2 is the off hand's, drawn under the lead arm; ONEAXE (the bare set) leaves it out. */
+  const axeAt = (spec, mine) => { if (!spec) return; const [x0, y0, x1, y1] = spec.slice(0, 4).map((v, i) => v + (i & 1 ? dy : dx)), side = spec[4] || 1;
+    const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, len = Math.min(12, len0), ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay * side, qy = ax * side;   /* A HAND AXE IS SHORT: a pose that asks for more reach (the rising cut, the sweep) gets the head at the haft's own length along it */
+    const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
+    for (let t = -2; t <= len - 1; t += 0.5) px(g, ...at(t), t < 1 ? '#4a2e18' : '#7a5230');   /* the haft, the grip darker */
+    px(g, ...at(-2), '#2e1c0e');                                                                 /* the knob */
+    for (const [t, o, k] of [[len - 3, 1, 0.35], [len - 2, 1, 0.45], [len - 1, 1, 0.5], [len, 1, 0.45], [len - 2, 2, 0.6], [len - 1, 2, 0.7], [len, 2, 0.65], [len + 1, 2, 0.55], [len - 3, 2, 0.5]]) px(g, ...at(t, o), WT('#9aa4b2', k));   /* the cheek of the blade */
+    for (const t of [len - 3, len - 2, len - 1, len, len + 1]) px(g, ...at(t, 3), WL('#e8eef6'));   /* THE EDGE: the brightest thing he owns */
+    px(g, ...at(len + 1, 3.6), WL('#ffffff'));                                                    /* the beard's horn */
+    px(g, ...at(len - 1, 0), '#4a4e56'); px(g, ...at(len, 0), WT('#6a727e', 0.2));                /* the socket over the haft */
+    px(g, ...at(len - 0.5, -1), WT('#5a626e', 0.15));                                             /* the spike on its back */
+    if (mine) { const tp = at(len + 1, 2); c.axeTip = [tp[0], tp[1] + top]; } };
+  axeAt(ONEAXE ? null : axe2, false);
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
+  axeAt(axe, true);   /* (the lead axe over the lead arm's fist) */
   if (sword) {
     const [x0, y0, x1, y1] = sword.map((v, i) => v + (i & 1 ? dy : dx));
     line(g, x0, y0, x1, y1, WL(KP.s), 2); if (WP) line(g, x0, y0 + 1, x1, y1 + 1, WP.S, 1);   /* the blade (and, in a weapon skin, its dark edge) */
@@ -330,7 +348,7 @@ const AIRUP_BODY = [
 const AIRUP_ANG = [4, 48, 102, 134], AIRUP_HAND = [[4, -9], [7, -15], [3, -22], [-1, -18]];
 const AIRUP_WEAPON = { sword: { len: 21 }, cutlass: { len: 19, free: true }, greatsword: { len: 23, two: true, hand: [[3, -8], [6, -14], [2, -20], [-1, -17]] },
   maul: { len: 21, two: true, hand: [[3, -8], [6, -14], [2, -20], [-1, -17]] }, spear: { len: 27, free: true, hand: [[3, -8], [6, -13], [2, -17], [-1, -15]] },
-  staff: { len: 22, two: true }, stave: { len: 23, two: true } };
+  staff: { len: 22, two: true }, stave: { len: 23, two: true }, axe: { len: 11 } };   /* (THE BERSERKER: a hand axe; the off one stays at his guard, given in extra) */
 function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = false, scale = 1 } = {}) {
   padHeroFrames(F);
   const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : ['maul', 'greatsword', 'staff'].includes(weapon) ? 34 : 28;
@@ -4354,6 +4372,187 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
   return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
+}
+
+/* ==== THE BERSERKER (claude/berserker, 2026-10-04, scratch/brief-berserker.md): the fourth default hero. TWO HAND AXES, no shield, no helm.
+   What says BERSERKER at game scale, none of it a goblin's (the goblin berserker is green and bald; he is a man):
+   - a WILD COPPER MANE and beard round a bare face, the only hero with his head uncovered;
+   - BARE ARMS AND CHEST under a FUR MANTLE on the shoulders (the widest, shaggiest thing at shoulder height), blue war-paint on the chest;
+   - a belted KILT (the cloth a skin recolours) over bare legs, cross-gartered, and fur boots;
+   - and the AXES: a hand axe in each fist, a short oak haft and a bearded steel head - the head is the read, and the only thing a WEAPON
+     skin recolours (chars.js withWeapon: WT/WL on the head, never the haft or the man). */
+const BZ_BODY = [
+  '..hHhh....',     /* 0  the mane */
+  '.hhhhhH...',     /* 1 */
+  'hhhkkkhH..',     /* 2  the brow, the hair falling either side */
+  '.hkkvkkh..',     /* 3  the eye on the side he faces */
+  '.hkkkkk...',     /* 4 */
+  '..HHHHk...',     /* 5  the beard */
+  'FfkkkkfF..',     /* 6  THE FUR MANTLE on both shoulders, his bare chest between */
+  'FfkpkkfF..',     /* 7  the war-paint */
+  '.fkkkpk...',     /* 8 */
+  '.WyWWyW...',     /* 9  the belt, iron-studded */
+  '.bBbBbb...',     /* 10 the kilt (a skin's colour) */
+];
+const BZ_PLUME = [
+  ['..hHhh....', '.hhhhhH...', 'hhhkkkhH..'],
+  ['.hhHh.....', 'hhhhhhH...', '.hhkkkhH..'],   /* the mane tossed back a pixel as he breathes */
+  ['..hHhhh...', '.hhhhhhH..', 'hhhkkkhH..'],
+];
+/* s/S: his skin (S is the arm, drawn as a line, and the bare thigh); k his face and chest; h/H the copper mane; f/F the fur; p the paint; b/B the kilt;
+   w the garters, W the belt and the boots, y the iron studs. */
+const BZ_PAL = { s: '#f0c49c', S: '#d49a70', k: '#e2a77e', v: '#2a1a14', h: '#c0602e', H: '#7a3a1c', f: '#9a8466', F: '#5e4a36', p: '#3a6ab0', b: '#6a4a2a', B: '#4a3018', w: '#9a8a62', W: '#3e2e20', y: '#a8a8b0', r: '#c0602e' };
+/* ONEAXE (declared by SPEARLESS): baking the BARE set (his OFF AXE is thrown and out of his hand): every frame, the lead axe only */
+export function bakeBerserkerHero(skin = {}, previewOnly = false) {
+  KP = Object.assign({}, KP0, BZ_PAL, skin); BODY_REF = BZ_BODY; PLUME_REF = BZ_PLUME;
+  const sh = [BX + 8, BY + 7], [X, Y] = sh, OFF = [BX + 2, BY + 7], WIDE = 10;
+  const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
+  const D = '#c9b27c', M = '#8c8a7e', R = '#ff6b4a';
+  const KF = f => knightFrame(f);
+  /* AT GUARD: both axes up, the lead one forward of his chest with the blade out at them, the off one crossed back over his belly - a V of
+     steel heads over his fists, and his weight forward on the front foot */
+  const guard = (d = 0) => ({ arm: [X, Y, X + 3, Y + 2 + d], axe: [X + 3, Y + 2 + d, X + 5, Y - 7 + d], arm2: [OFF[0], OFF[1], X - 4, Y + 4 + d], axe2: [X - 4, Y + 4 + d, X - 10, Y + d] });
+  const lead = (hx, hy, tx, ty, s = 1) => ({ arm: [X, Y, X + hx, Y + hy], axe: [X + hx, Y + hy, X + tx, Y + ty, s] });
+  const off = (hx, hy, tx, ty, s = 1) => ({ arm2: [OFF[0], OFF[1], X + hx, Y + hy], axe2: [X + hx, Y + hy, X + tx, Y + ty, s] });
+  const card = {
+    idle: () => ((previewOnly === 'icon' ? BREATH.slice(0, 1) : BREATH).map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, ...guard(-dy) }))),
+    atk: () => ([   /* THE LEAD CHOP: up behind his head, over, down through the front, and through to the follow */
+      () => KF({ dx: -1, legs: 'wide', ...lead(1, -5, -4, -12), ...off(-4, 4, -10, -1), plume: 1 }),
+      () => KF({ wide: WIDE, dx: 1, legs: 'runC', ...lead(4, -4, 9, -11), ...off(-4, 4, -10, 0), plume: 2 }),
+      () => KF({ wide: WIDE, dx: 2, legs: 'runC', ...lead(5, 1, 14, 3), ...off(-4, 4, -10, 1), plume: 2, bits: [o(16, 6, '#ffffff')] }),
+      () => KF({ wide: WIDE, dx: 1, legs: 'wide', ...lead(4, 4, 10, 11), ...off(-4, 4, -10, 0), plume: 0 }),
+      () => KF({ legs: 'stand', ...guard(), plume: 0 }),
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 2) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make())),
+  };
+  if (previewOnly) return storeFrames(card, false, previewOnly);
+  const F = {
+    idle: card.idle(),
+    run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, k], i) =>   /* the axes pumped low at his sides like fists */
+      KF({ legs: l, dy, plume: i % 3, ...lead(2 + k, 3, 7 + k, -4), ...off(-3 - k, 4, -8 - k, -2) })),
+    jump: [KF({ legs: 'jump', dy: -1, ...lead(3, -1, 7, -9), ...off(-4, 2, -9, -5), plume: 1 }), KF({ legs: 'jump2', ...lead(3, -2, 8, -10), ...off(-4, 1, -9, -6), plume: 1 })],
+    fall: [KF({ legs: 'fall', ...lead(4, -3, 9, -10), ...off(-5, -1, -10, -8), plume: 2 }), KF({ legs: 'fall2', dy: -1, ...lead(4, -4, 8, -12), ...off(-5, -2, -9, -10), plume: 2 })],
+    /* THE LANDING is a heavy man's: both fists and both heads down to the ground as his knees take it, the settle, and up */
+    land: [KF({ legs: 'crouch', legsDy: 3, dy: 4, ...lead(4, 4, 9, 9, -1), ...off(-3, 5, -8, 9, -1), plume: 2, bits: [o(9, 9, D), o(-8, 9, D)] }), KF({ legs: 'land', dy: 2, ...guard(1), plume: 0 }), KF({ legs: 'stand', dy: 1, ...guard(), plume: 1 })],
+    takeoff: KF({ legs: 'push', dy: -2, sho: 1, ...lead(3, -3, 6, -12), ...off(-4, 0, -8, -8), plume: 2 }),
+    apex: KF({ legs: 'jump2', dy: -1, ...lead(4, -4, 10, -9), ...off(-5, -2, -11, -6), plume: 0 }),
+    skid: KF({ dx: -2, legs: 'wide', ...lead(2, 3, -4, 8, -1), ...off(-4, 3, -10, 7, -1), plume: 2 }),
+    climb: [KF({ legs: 'climbA', arm: [X, Y, X + 2, Y - 7], bits: [o(-4, 4, M), o(-5, 5, '#6a4428'), o(-6, 6, '#6a4428')], plume: 0 }), KF({ legs: 'climbB', dy: 1, arm: [X, Y, X + 3, Y - 3], bits: [o(-4, 4, M), o(-5, 5, '#6a4428'), o(-6, 6, '#6a4428')], plume: 1 })],   /* (the axes through his belt) */
+    atk: card.atk(),
+    /* AXEFALL (his plunge): both axes driven straight down under him, heads first */
+    plunge: KF({ legs: 'tuck', hy: 1, ...lead(1, 3, 2, 13, -1), ...off(-2, 3, -3, 13, 1), plume: 2 }),
+    hurt: [KF({ dx: -1, dy: 1, legs: 'fall', ...lead(2, 3, 8, 6, -1), ...off(-5, 2, -11, 0), plume: 2 }), KF({ dx: -2, dy: 2, legs: 'land', ...lead(1, 4, 6, 10, -1), ...off(-5, 4, -10, 8, -1), plume: 1 })],
+    crouch: KF({ dy: 3, legs: 'crouch', legsDy: 3, ...lead(3, 4, 8, -2), ...off(-3, 5, -8, 0) }),
+    slide: [0, 1].map(i => KF({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, ...lead(-2, 4, -9, 0), ...off(-4, 3, -11, -2) })),
+    /* THE BRACE (tap C): no shield - his chest. Feet set wide, both axes crossed down and out to the sides, shoulders squared and his chin up,
+       daring the blow; on the second beat the fur bristles (a pixel of each mantle up) */
+    block: [0, 1].map(i => KF({ dy: 1, legs: 'wide', sho: i, ...lead(4, 4, 10, 8, -1), ...off(-5, 4, -11, 8, -1), plume: i + 1 })),
+  };
+  /* THE SHOULDER ROLL's DASH ATTACK (X early in it): his shoulder down and the lead axe swung low through what he barges, then the stumble */
+  F.dashAtk = [KF({ wide: 4, dx: 2, dy: 2, legs: 'runC', sho: 1, ...lead(4, 3, 12, 6, -1), ...off(-4, 2, -9, -4), plume: 2 }),
+    KF({ wide: 6, dx: 4, dy: 2, legs: 'run1', sho: 1, ...lead(6, 2, 15, 1, -1), ...off(-3, 3, -8, -3), plume: 2 }),
+    KF({ dx: 1, dy: 2, legs: 'land', ...lead(4, 4, 9, 10, -1), ...off(-4, 4, -8, 0), plume: 0 })];
+  /* THE OFF CHOP (the second of his run): the other axe over his head and down, the lead one pulled back out of its way */
+  F.atkB = [KF({ dx: -1, legs: 'wide', ...lead(-1, 4, -6, -1), ...off(-4, -5, -8, -12), plume: 1 }),
+    KF({ wide: WIDE, dx: 1, legs: 'runC', ...lead(-1, 4, -6, -2), ...off(1, -5, 6, -12), plume: 2 }),
+    KF({ wide: WIDE, dx: 2, legs: 'runC', ...lead(0, 4, -5, -2), ...off(4, 1, 13, 3), plume: 2, bits: [o(15, 6, '#ffffff')] }),
+    KF({ wide: WIDE, dx: 1, legs: 'wide', ...lead(0, 4, -5, -1), ...off(3, 4, 9, 11), plume: 0 }),
+    F.atk[4]];
+  /* THE THIRD: both axes taken back low and swept round level through the front together - the run's heavy, two heads in one line */
+  F.atkC = [KF({ dx: -2, legs: 'wide', ...lead(-2, 2, -10, -1), ...off(-4, 3, -12, 1), plume: 1 }),
+    KF({ wide: WIDE, legs: 'runC', sho: 1, ...lead(3, 0, 11, -3), ...off(1, 2, 9, 0), plume: 2 }),
+    KF({ wide: WIDE + 2, dx: 2, legs: 'runC', ...lead(5, 0, 14, 0), ...off(4, 3, 13, 4), plume: 2, bits: [o(16, 0, '#ffffff'), o(15, 5, '#ffffff')] }),
+    KF({ wide: WIDE, dx: 1, dy: 1, legs: 'wide', ...lead(4, 3, 9, 9, -1), ...off(3, 4, 7, 10, -1), plume: 0 }),
+    F.atk[4]];
+  F.air = [KF({ legs: 'jump2', dy: -1, ...lead(1, -5, -4, -12), ...off(-4, 2, -9, -4), plume: 1 }),
+    KF({ wide: WIDE, legs: 'jump2', dy: -1, ...lead(4, -4, 9, -11), ...off(-4, 2, -9, -4), plume: 2 }),
+    KF({ wide: WIDE, legs: 'jump', dy: -1, ...lead(5, 1, 14, 3), ...off(-4, 2, -8, -5), plume: 2 }),
+    KF({ wide: WIDE, legs: 'jump', ...lead(4, 4, 10, 11), ...off(-4, 2, -8, -5), plume: 1 }),
+    F.jump[1]];
+  /* A CAST he has no frame of his own for: the axes struck together over his head */
+  F.cast = [0, 1].map(i => KF({ dy: i, legs: 'wide', ...lead(2, -6 + i, 6, -13 + i), ...off(-2, -6 + i, -6, -13 + i), bits: i ? [o(0, -14, '#ffffff'), o(-1, -15, '#fff6c8'), o(1, -15, '#fff6c8')] : [] }));
+  /* HIS FIDGET: an axe tossed up end over end out of the lead hand and caught by the haft, and a roll of the neck */
+  { const up = (y, tx, ty) => KF({ ...off(-4, 4, -10, 0), arm: [X, Y, X + 3, Y - 4], bits: [] , axe: [X + 3, Y - 4 - y, X + 3 + tx, Y - 4 - y + ty] });
+    F.fidget = holdFrames([[F.idle[0], 2], [KF({ ...guard(), plume: 1 }), 2], [up(0, 4, -8), 2], [up(3, 8, 2), 2], [up(5, -4, 8), 2], [up(3, -8, -2), 2], [up(0, 4, -8), 2], [KF({ ...guard(), hy: 1, plume: 2 }), 3], [F.idle[0], 2]]); }
+  /* HIS DANCE: THE AXE DRUM. The two heads beaten together over his head on the beat, a stamp of the foot under each, the mane tossing */
+  { const beat = (k) => KF({ wide: 4, legs: k % 2 ? 'wide' : 'runC', dy: k % 2, plume: k % 3, ...lead(2, -6 + (k % 2), 6, -13 + (k % 2)), ...off(-2, -6 + (k % 2), -6, -13 + (k % 2)),
+      bits: k % 2 ? [o(0, -14, '#ffffff'), o(-2, -15, '#fff6c8'), o(2, -15, '#fff6c8'), o(0, -16, '#fff6c8')] : [o(-6, 9, D), o(6, 9, D)] });
+    F.dance = holdFrames([0, 1, 2, 3, 4, 5].map(k => [beat(k), 2])); }
+  /* HIS SLUMP: the axes hanging from slack fists, heads in the dirt, the mane fallen over his face */
+  { const sag = d => KF({ dy: 1 + d, hy: 2, sho: -1, legs: 'stand', plume: 0, ...lead(1, 5, 3, 9, -1), ...off(-3, 5, -4, 9, -1) });
+    F.slump = [sag(0), sag(1)]; }
+  /* HIS SWIM: both axes through the belt at his back */
+  { const S = swimRig(knightFrame, sh, { carry: { bits: [o(-5, 4, M), o(-6, 5, '#6a4428'), o(-7, 6, '#6a4428'), o(-4, 5, M)] }, tread: i => ({ bits: [o(-5, 4 + TREAD_DY[i], M), o(-6, 5 + TREAD_DY[i], '#6a4428')] }) });
+    F.swim = S.swim; F.tread = S.tread; }
+  /* THE SHOULDER ROLL (his dodge): a tuck over the shoulder, the axes hugged in */
+  const tuck = KF({ dy: 4, legs: 'crouch', ...lead(2, 2, 6, -3), ...off(-2, 3, -5, -2) });
+  F.roll = [0, 1, 2, 3].map(q => rotQuarter(tuck, q));
+  /* WORKING UP (src/crouch-c.js): crouched, the two heads ground edge on edge in front of his face, sparks off them, the beard thrust out
+     growling - two frames, the axes drawn across each other one way and back */
+  F.grind = [0, 1].map(i => KF({ dy: 3, legs: 'crouch', legsDy: 3, hy: 1, ...lead(3, 1, 7 + i * 2, -7), ...off(-1, 2, 5 - i * 2, -7, -1), plume: i,
+    bits: i ? [o(7, -9, '#ffd36b'), o(9, -10, '#fff6c8'), o(4, -10, '#ffd36b')] : [o(6, -9, '#fff6c8')] }));
+  const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  directionalPoses(F, 'axe', { make: KF, extra: off(-4, 4, -10, 0) });   /* (the off axe kept at guard through the rising cut, the low sweep and the air up-slash) */
+  const TK = f => KF({ top: ATTACK_HEADROOM, ...f });
+  /* THE CROSS-CHOP (his held X): the WIND-UP takes both axes up over his head, crossed, and cocks them back as the hold grows; the CHOP brings
+     both down together through the front, the hafts crossing as they come, into the ground ahead of him */
+  F.windup = [TK({ legs: 'wide', ...lead(2, -6, 0, -15), ...off(-2, -6, 2, -15), plume: 1 }),
+    TK({ legs: 'wide', dy: -1, sho: 1, ...lead(1, -8, -4, -16), ...off(-1, -8, -6, -15), plume: 2 }),
+    TK({ legs: 'wide', dx: -1, dy: -1, sho: 1, ...lead(0, -8, -7, -14), ...off(-2, -7, -9, -12), plume: 2, bits: [o(-6, -15, '#ffffff')] })];
+  F.heavy = [TK({ wide: WIDE, dx: 1, legs: 'wide', ...lead(3, -7, 9, -15), ...off(1, -7, 8, -16), plume: 2 }),
+    TK({ wide: WIDE, dx: 2, legs: 'runC', ...lead(5, -1, 13, 4, 1), ...off(4, 1, 13, -4, -1), plume: 2 }),
+    TK({ wide: WIDE, dx: 3, dy: 2, legs: 'wide', ...lead(5, 3, 11, 9, -1), ...off(4, 4, 13, 9, -1), plume: 0, bits: [o(12, 9, D), o(14, 9, D), o(10, 9, D), o(13, 8, '#ffffff')] })];
+  /* FRENZY (a full bar, C): the roar - head thrown back, both axes flung out wide and high, chest out - then the stamp down into it */
+  F.blast = [TK({ dy: -1, legs: 'wide', sho: 1, hy: -1, ...lead(4, -6, 10, -12), ...off(-5, -6, -11, -12), plume: 2, bits: [o(1, -4, R), o(2, -5, R)] }),
+    TK({ dy: 2, legs: 'wide', ...lead(5, 1, 11, -5), ...off(-5, 1, -11, -5), plume: 1, bits: [o(-6, 9, D), o(6, 9, D)] })];
+  /* THE AXE THROW (UP and C): the off axe cocked back over his shoulder and hurled; the lead one held */
+  F.bzThrow = [TK({ dx: -1, legs: 'wide', ...lead(3, 2, 6, -7), ...off(-5, -5, -9, -11), plume: 1 }),
+    TK({ wide: 6, dx: 2, legs: 'runC', ...lead(2, 3, 6, -6), arm2: [OFF[0], OFF[1], X + 6, Y - 3], plume: 2 })];
+  bzKitPoses(F, sh);
+  if (ONEAXE) F.atkB = F.atk;   /* ONE-HANDED: no off chop - the lead axe cuts every blow of the run */
+  const RR = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
+  const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
+  const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
+  KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
+  const set = { R: RR, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
+  if (!ONEAXE) { ONEAXE = true; try { set.bare = bakeBerserkerHero(skin); } finally { ONEAXE = false; } }   /* drawn while the OFF AXE is thrown: the cue that it is gone */
+  return set;
+}
+/* EVERY ABILITY HAS A BODY: THE BERSERKER'S NINE (src/hero-poses.js plays them; tools/ability-poses.mjs holds him to it). Told by what the
+   AXES do - and by the mane, which goes up whenever he roars */
+function bzKitPoses(F, sh) {
+  const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
+  const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
+  const lead = (hx, hy, tx, ty, s = 1) => ({ arm: [X, Y, X + hx, Y + hy], axe: [X + hx, Y + hy, X + tx, Y + ty, s] });
+  const off = (hx, hy, tx, ty, s = 1) => ({ arm2: [OFF[0], OFF[1], X + hx, Y + hy], axe2: [X + hx, Y + hy, X + tx, Y + ty, s] });
+  const D = '#c9b27c', R = '#ff6b4a', W2 = '#ffffff';
+  /* BATTLE ROAR: the breath in, axes down and back; then head back, both fists punched up at the sky, the roar's lines off his mouth */
+  F.bzRoar = [KF({ dy: 1, legs: 'wide', ...lead(1, 4, -4, 9, -1), ...off(-4, 4, -9, 9, -1), plume: 0 }),
+    KF({ dy: -1, legs: 'wide', sho: 1, hy: -1, ...lead(3, -8, 5, -17), ...off(-3, -8, -5, -17), plume: 2, bits: [o(2, -4, R), o(4, -5, R), o(5, -3, R)] })];
+  /* THE SPIN: arms out, one head ahead and one behind, turning (a cycle of three) */
+  F.bzSpin = [KF({ wide: 8, legs: 'runC', ...lead(5, 0, 14, -1, -1), ...off(-7, 0, -15, 1, -1), plume: 1 }),
+    KF({ wide: 8, legs: 'wide', dy: 1, ...lead(2, 2, 6, 5, -1), ...off(-2, 2, -6, 5, -1), plume: 2, bits: [o(13, 0, W2), o(-13, 0, W2)] }),
+    KF({ wide: 8, legs: 'runC', ...lead(-7, 0, -15, -1, -1), ...off(5, 0, 14, 1, -1), plume: 0 })];
+  /* HARDEN: the axes dropped, fists clenched at his sides, every muscle set - his skin goes to leather (dark bits on the arms and chest) */
+  F.bzHarden = [KF({ legs: 'wide', ...lead(2, 6, 4, 10, -1), ...off(-2, 6, -4, 10, -1), plume: 0 }),
+    KF({ legs: 'wide', dy: 1, sho: 1, ...lead(3, 5, 6, 10, -1), ...off(-3, 5, -6, 10, -1), plume: 1, bits: [o(-2, 0, '#8a5a3a'), o(0, 1, '#8a5a3a'), o(-1, 3, '#8a5a3a')] })];
+  /* GREAT CLEAVE: both hands on one axe, up behind him, then brought round in one long cut at full stretch */
+  F.bzCleave = [KF({ dx: -2, legs: 'wide', ...lead(-1, -6, -8, -13), ...off(-2, -5, -9, -11), plume: 1 }),
+    KF({ wide: 12, dx: 3, legs: 'runC', ...lead(7, 0, 17, 1, -1), ...off(6, 1, 15, 3, -1), plume: 2, bits: [o(19, 1, W2), o(18, 3, W2), o(17, 5, W2)] })];
+  /* RAMPAGE: head down, both axes out in front like horns, at a run */
+  F.bzRamp = [KF({ wide: 6, dx: 2, dy: 2, legs: 'run1', sho: 1, ...lead(5, 1, 12, -4), ...off(3, 2, 10, -3), plume: 2 }),
+    KF({ wide: 6, dx: 2, dy: 1, legs: 'run4', sho: 1, ...lead(5, 2, 12, -3), ...off(3, 3, 10, -2), plume: 1 })];
+  /* SHRUG IT OFF: shoulders rolled and the head shaken, the mane flying */
+  F.bzShrug = [KF({ legs: 'wide', sho: 1, hy: -1, ...lead(3, 3, 7, -5), ...off(-4, 3, -8, -5), plume: 2 }),
+    KF({ legs: 'stand', dy: 1, ...lead(3, 2, 6, -7), ...off(-3, 3, -7, -5), plume: 1, bits: [o(-6, -7, D), o(5, -8, D)] })];
+  /* LAST STAND: one knee down, an axe planted in the ground before him like a standard, the other raised */
+  F.bzStand = [KF({ dy: 2, legs: 'kneel', ...lead(5, 4, 8, 10, -1), ...off(-2, -6, -2, -15), plume: 1 }),
+    KF({ dy: 2, legs: 'kneel', hy: -1, ...lead(5, 4, 8, 10, -1), ...off(-2, -7, -1, -16), plume: 2, bits: [o(-1, -18, R)] })];
+  /* UNCHAINED: he tears at nothing - fists to his chest, then flung out, the war-paint glowing */
+  F.bzUnch = [KF({ dy: 1, legs: 'wide', ...lead(1, 1, 4, -7), ...off(-1, 1, -4, -7), plume: 0, bits: [o(-2, 1, R), o(0, 2, R)] }),
+    KF({ dy: -2, legs: 'wide', sho: 1, hy: -1, ...lead(6, -4, 13, -10), ...off(-7, -4, -14, -10), plume: 2, bits: [o(-2, 1, R), o(0, 2, R), o(-1, 4, R), o(1, -3, R)] })];
+  /* AXE STORM: a hatchet from the belt flung underhand, then another overhand - the fan comes out of his arm */
+  F.bzStorm = [KF({ dx: -1, legs: 'wide', ...lead(-2, 3, -6, -5), arm2: [OFF[0], OFF[1], X - 2, Y + 6], plume: 1, bits: [o(-2, 7, '#8c8a7e')] }),
+    KF({ wide: 6, dx: 2, legs: 'runC', ...lead(4, -1, 8, -9), arm2: [OFF[0], OFF[1], X + 7, Y - 2], plume: 2, bits: [o(10, -4, W2), o(12, -2, W2), o(11, 0, W2)] })];
 }
 /* EVERY ABILITY HAS A BODY: THE GEOMANCER'S NINE (src/hero-poses.js plays them; tools/ability-poses.mjs holds her to it). Every
    one is told by what the STAVE does - and every spell begins with the butt going into the ground, so most of them start there. */

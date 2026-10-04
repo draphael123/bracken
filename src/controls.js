@@ -153,6 +153,7 @@ const HEROES_C = {
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
   warden:     ['the deflect', tk => 'TAP ' + tk.c + '  (FULL: PHALANX)'],
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],
+  berserker:  ['brace / frenzy', tk => 'TAP ' + tk.c + '  (FULL RAGE: FRENZY)'],
 };
 export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1', swapZX = false, blockToggle = false } = {}) {
   const kb = a => labelFor(binds, 'kb', a), pd = a => labelFor(binds, prof, a), k1 = a => first(binds, 'kb', a);
@@ -167,7 +168,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['jump', jumpKeys, pd('jump')],
     ['swing', atkKeys, pd('atk')],
     ['plunge', k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
-    [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : 'heavy blow', hero === 'geomancer' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
+    [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'cross-chop' : 'heavy blow', hero === 'geomancer' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
     ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],
     ['rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
@@ -176,6 +177,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
     ...(hero === 'pyro' ? [['ember flare', 'TAP ' + k1('down') + ' ON A HIT', 'TAP ' + pd('down')]] : []),
     [cRow[0], cRow[1](tk), pd('block')],
+    ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
     ['dodge', hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],
     hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (equipped)', pd('throw')],

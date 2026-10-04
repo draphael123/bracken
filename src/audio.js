@@ -103,7 +103,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
 const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 }, geomancer: { kit: 'f3', rate: 0.82, lp: 3200 } };   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 }, geomancer: { kit: 'f3', rate: 0.82, lp: 3200 }, berserker: { kit: 'm5', rate: 0.8, lp: 2300 } };   /* THE BERSERKER: the knight's man, pitched down and roughened - the loudest throat of them */   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
@@ -1394,6 +1394,7 @@ Object.assign(SFX, {
     else if (h === 'pirate') { T('square', [392, 494, 587, 494, 587, 784, 587, 494, 392], 0.11, 0.06, 0.1); T('triangle', [196, 196, 196, 196], 0.14, 0.12, 0.225); }
     else if (h === 'reaper') { bell(147, 1.1, 0.16); bell(110, 1.3, 0.16, 0.55); pad('sawtooth', 110, 165, 1.1, 0.05, 0.6, 700); T('triangle', [220, 277, 330], 0.5, 0.06, 0.15, 0.75); }
     else if (h === 'geomancer') { [165, 220, 165, 196, 247, 196].forEach((f, i) => { tone('sine', f, f * 0.6, 0.16, 0.16, i * 0.15); noise(0.05, 0.12, 700 + (i % 3) * 250, 1.2, i * 0.15); }); pad('triangle', 165, 220, 1.0, 0.05, 0.05, 900); }
+    else if (h === 'berserker') { [0, 1, 2, 3, 4, 5].forEach(i => { tone('square', i % 2 ? 1180 : 980, 600, 0.05, 0.05, i * 0.16); tone('sine', 82, 50, 0.14, 0.2, i * 0.16 + 0.08); }); pad('sawtooth', 98, 110, 0.9, 0.04, 0.1, 700); }   /* THE AXE DRUM: steel on steel, a stamp under each */
     else if (h === 'warden') { noise(0.3, 0.1, 2600, 1.1); tone('triangle', 300, 1200, 0.28, 0.06); T('triangle', [440, 587, 740, 880], 0.2, 0.09, 0.11, 0.3); bell(1760, 0.6, 0.05, 0.75); }
     else if (h === 'paladin') { pad('sine', 262, 262, 1.3, 0.08, 0, 1400, 0.25); pad('sine', 330, 330, 1.3, 0.07, 0.1, 1400, 0.25); pad('sine', 392, 392, 1.3, 0.07, 0.2, 1400, 0.25); bell(1568, 1.0, 0.07, 0.7); }
     else { T('square', [392, 392, 523, 659, 784], 0.16, 0.06, 0.13); T('triangle', [392, 392, 523, 659, 784], 0.16, 0.1, 0.13); bell(2093, 0.8, 0.05, 0.7); noise(0.08, 0.1, 3800, 1.6, 0.66); }
@@ -1408,6 +1409,21 @@ Object.assign(SFX, {
   realm() { bell(523, 0.9, 0.06); bell(659, 0.9, 0.05, 0.05); bell(784, 0.9, 0.05, 0.1); bell(1046, 1.1, 0.05, 0.16); noise(0.5, 0.08, 3000, 0.6); },
   realmWave(big) { tone('triangle', vary(big ? 500 : 800), vary(big ? 1400 : 1600), big ? 0.25 : 0.14, big ? 0.06 : 0.035); noise(big ? 0.25 : 0.12, 0.08, 3500, 1); },
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
+  /* THE BERSERKER (claude/berserker): a hand axe's short bite, the brace (a grunt and a stamp), a blow taken on it (a thump on a chest), the ROAR
+     that starts a frenzy (his own voice, then a low swell), the frenzy running out, the throw (a spinning whoosh) and the catch, the growl of
+     WORKING UP (a low throat, a rasp of steel on steel), the shrug, the harden, and a kill in a frenzy giving him back a little. */
+  bzChop() { noise(0.1, 0.16, 1700, 0.8); tone('triangle', vary(520), vary(240), 0.08, 0.05); },
+  bzHeavy() { noise(0.22, 0.22, 1100, 0.6); tone('sawtooth', vary(330), vary(110), 0.2, 0.08); tone('sine', 90, 45, 0.25, 0.18, 0.06); },
+  bzBrace() { if (gate('heroShout', 0.8)) heroVo('effort', 0.35); tone('sine', 110, 70, 0.12, 0.18); noise(0.06, 0.12, 400, 0.7); },
+  bzBraced() { tone('sine', 140, 55, 0.22, 0.34); noise(0.1, 0.22, 600, 0.6); tone('square', vary(200), 90, 0.08, 0.06); heroVo('heavy', 0.4); },
+  bzRoar() { heroVo('attack', 0.6) || heroVo('heavy', 0.6); tone('sawtooth', 98, 82, 0.7, 0.1); pad('sawtooth', 73, 92, 0.9, 0.06, 0.05, 900); noise(0.5, 0.12, 300, 0.5, 0.05); },
+  bzFrenzyEnd() { tone('sawtooth', 120, 60, 0.4, 0.06); noise(0.3, 0.06, 500, 0.5); },
+  bzThrow() { noise(0.3, 0.16, 2200, 1.2); for (let i = 0; i < 3; i++) tone('triangle', vary(700), 500, 0.05, 0.035, i * 0.08); },
+  bzCatch() { tone('square', vary(320), 220, 0.05, 0.06); noise(0.04, 0.1, 1200, 0.9); },
+  bzGrowl() { if (!gate('bzGrowl', 0.6)) return; heroVo('effort', 0.3); tone('sawtooth', vary(70), 62, 0.6, 0.08); noise(0.5, 0.06, 240, 0.6); noise(0.25, 0.05, 3600, 1.3, 0.1); },
+  bzShrug() { heroVo('heavy', 0.4); tone('sine', 160, 90, 0.18, 0.12); noise(0.1, 0.1, 900, 0.7); },
+  bzHarden() { tone('sine', 82, 70, 0.5, 0.18); noise(0.3, 0.08, 500, 0.6); bell(330, 0.4, 0.03, 0.05); },
+  bzKillHeal() { tone('triangle', 330, 494, 0.18, 0.05); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'redgorge', 'gorgecrab'];
