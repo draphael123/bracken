@@ -5,11 +5,10 @@
    (main.js), which draws them in the hint box (one line, 1.8 s, never over a longer hint being read). Everything else number() drops is the
    old silent flavour, counted in tools/hint-shown-silent.txt so that no NEW dead line can be added (tools/hint-shown.mjs). */
 import { STUCK_HANDS } from './stuck-spots.js';
+import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
   /* claude/slide: the first slope a hero stands on */
   'HOLD DOWN TO SLIDE: FEET FIRST',
-  /* claude/dk3: THE DEATH KNIGHT's openings, his coil healing him and his dodge (src/unburied-foes.js BK_LINES - his tells keep their sound, mark and floor colour) */
-  'THE BLADE IS IN THE FLOOR: HE IS OPEN', 'THE WARD BREAKS: HE IS OPEN', 'THE WARD IS FULL: STRIKE IT AGAIN', 'HE DRINKS YOUR BLOOD', 'THE PASSING: HE SLIPS YOUR BLOW', 'HE SURGES: EVERYTHING COMES SOONER',
   /* claude/croucha + crouchb + weakboss (batch49): the crouch twists' feedback and the three reworked bosses' openings */
   'GUARD BREAK', 'HOLDS', 'UNDER THE SHIELD', 'IMPALED', 'BLOOD', 'READY', 'STEADY',
   'HE REACHES FOR YOUR LIGHT', 'FROM THE DARK', 'HOODING IT: STRIKE THE LAMP', 'HE LEAVES ONE BURNING', 'YOUR LIGHT IS OUT: RELIGHT IT AT A LAMP',
@@ -94,6 +93,8 @@ export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
-export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || SPOT_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
+/* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */
+export const SAY_LINES = new Set(BK_LINES);
+export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || SPOT_LINES.has(txt) || SAY_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
 /* what is drawn: the line, with the boss-name double space read as a colon ("THE GOBLIN QUEEN: OPEN") */
 export const calloutText = txt => txt.replace(/ {2,}/g, ': ');

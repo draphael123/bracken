@@ -1413,6 +1413,7 @@ async function runbossLab(BK, opts) {
         const coil = S && (boss.coils || []).find(q => q.t < S.coilT - 0.25 && Math.abs(q.x - P.x) < 46 && Math.abs(q.y - (P.y - 12)) < 30);   /* (seen a quarter-second after it leaves his hand) */
         if (m === 'stuck' || m === 'wrench' || m === 'reel') { goal = boss.x; strike = true; }
         else if (coil) { strike = false; if (shield || h === 'warden') { goal = null; P.face = Math.sign(coil.x - P.x) || P.face; k.block = shield ? true : DEFLECT_TAP(f); } else if (Math.abs(coil.x - P.x) < 26 && !(P.dodge > 0) && P.st >= 10) { BK.press('dodge'); goal = null; } else goal = null; }
+        else if ((shield || h === 'warden') && Math.abs(P.x - boss.x) < (S ? S.swingR : 54) + 16 && (m === 'swing' || (m === 'swingTell' && boss.strLeft > 0 && !boss.punish))) guard();   /* inside a string the guard stays up between its cuts (a player holds it through) */
         else if (!seen && /Tell$/.test(m)) { goal = boss.x; strike = !(P.labRest); }   /* not read yet */
         else if (m === 'swingTell') { if (Math.abs(P.x - boss.x) < (S ? S.swingR : 54) + 16 && boss.modeT < 0.24) guard(); else { goal = boss.x + side * ((S ? S.swingR : 54) + 24); strike = false; } }
         else if (m === 'cleaveTell') { strike = false;
