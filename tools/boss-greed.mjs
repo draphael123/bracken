@@ -16,7 +16,7 @@
    Red on master 3fd06c78: no src/boss-greed.js (and BK.greed undefined). Run: node tools/boss-greed.mjs */
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
-import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped, CHIP_MINI } from '../src/boss-greed.js';
+import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped, CHIP_MINI, FULL_DAMAGE } from '../src/boss-greed.js';
 import { openPage } from './cdp.mjs';
 
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
@@ -32,6 +32,9 @@ for (const lv of campaign) {
 ok(bosses >= 30, 'only ' + bosses + ' campaign bosses found');
 for (const t of CHIP_MINI) { ok(OPEN_RULE[t], 'the mini ' + t + ' is on the chip with no opening rule'); ok(chipped({ t, xpRole: 'mini' }, false), t + ' is on CHIP_MINI and must be chipped'); }
 ok(!chipped({ t: 'spider', xpRole: 'mini' }, false), 'a mini with no opening (the spider) keeps full damage');
+/* (claude/dk3) A DUELIST ON FULL DAMAGE (THE DEATH KNIGHT, Daniel 10-03): never chipped, but his openings are still named, so greed still counts outside them */
+for (const t of Object.keys(FULL_DAMAGE || {})) { ok(!chipped({ t }, true), t + ' is on FULL_DAMAGE and must never be chipped'); ok(OPEN_RULE[t], t + ' is on FULL_DAMAGE but has no opening rule: greed would never count'); }
+ok(FULL_DAMAGE && FULL_DAMAGE.bloodknight && Object.keys(FULL_DAMAGE).length === 1, 'FULL_DAMAGE is the Death Knight alone (nobody else is taken off the chip): ' + Object.keys(FULL_DAMAGE || {}));
 for (const t of Object.keys(NO_OPENING)) ok(!chipped({ t }, true), t + ' is on NO_OPENING and must never be chipped (left at full damage, never made unbeatable)');
 
 const pg = await openPage({ audio: false, fonts: false });

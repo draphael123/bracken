@@ -8,6 +8,8 @@ import { STUCK_HANDS } from './stuck-spots.js';
 export const CALL_LINES = new Set([
   /* claude/slide: the first slope a hero stands on */
   'HOLD DOWN TO SLIDE: FEET FIRST',
+  /* claude/dk3: THE DEATH KNIGHT's openings, his coil healing him and his dodge (src/unburied-foes.js BK_LINES - his tells keep their sound, mark and floor colour) */
+  'THE BLADE IS IN THE FLOOR: HE IS OPEN', 'THE WARD BREAKS: HE IS OPEN', 'THE WARD IS FULL: STRIKE IT AGAIN', 'HE DRINKS YOUR BLOOD', 'THE PASSING: HE SLIPS YOUR BLOW', 'HE SURGES: EVERYTHING COMES SOONER',
   /* claude/croucha + crouchb + weakboss (batch49): the crouch twists' feedback and the three reworked bosses' openings */
   'GUARD BREAK', 'HOLDS', 'UNDER THE SHIELD', 'IMPALED', 'BLOOD', 'READY', 'STEADY',
   'HE REACHES FOR YOUR LIGHT', 'FROM THE DARK', 'HOODING IT: STRIKE THE LAMP', 'HE LEAVES ONE BURNING', 'YOUR LIGHT IS OUT: RELIGHT IT AT A LAMP',

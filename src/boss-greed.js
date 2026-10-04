@@ -92,7 +92,7 @@ export const OPEN_RULE = {
   pyromancer: e => e.open > 0,                                               // overheated, venting
   gargoyle: e => gargOpen(e),                                                // stunned on the spikes (only a stomp lands anyway)
   winchmaster: e => winchOpen(e),                                            // the jammed drum has him down
-  bloodknight: e => bkOpen(e),                                               // stuck
+  bloodknight: e => bkOpen(e),                                               // the blade stuck in the floor, or reeling from his broken ward (claude/dk3: his openings pay x1.6; he is on FULL_DAMAGE, below - the chip never applies, greed still counts)
   duneworm: e => !!(e.st && wormOpen(e.st)),                                 // tangled in the awning
   wickerqueen: e => wqOpen(e),                                               // burning
   puppeteer: e => pupOpen(e),
@@ -121,6 +121,11 @@ export const NO_OPENING = {
   kraken: 'no blade reaches the body; the arms carry his openings (knelled, pinned, looking) in krakenHurt',
 };
 /* MINIS WITH NO OPENING IN CODE: every blow on them counts toward their greed (they keep their damage, so nothing is made unbeatable) */
+/* A DUELIST, NOT A PUZZLE: full damage on every hero blow (no chip), his own defence instead - ward faces, dodges, guards (the design standard, B2).
+   His OPEN_RULE still names his openings (they pay more in his own code), and greed is still counted outside them (the mash reprisal stays). */
+export const FULL_DAMAGE = {
+  bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",
+};
 export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */
 /* MINIS ON THE CHIP (claude/bosswave1, Daniel 10-02: "give each a real opening first, then put minis on the chip"): each has a told opening of
    3 s or more in OPEN_RULE and in its own code, and outside it a hero's blow lands at GREED.chip like a boss's. The rest keep full damage. */
@@ -136,7 +141,7 @@ export function openOf(e) {
   try { return !!r(e); } catch { return null; }
 }
 /* DOES THE CHIP APPLY TO HIM? (a boss, with a rule, not on the no-opening list) */
-export const chipped = (e, isBoss) => !!(e && (isBoss || (e.xpRole === 'mini' && CHIP_MINI.has(e.t))) && OPEN_RULE[e.t] && !NO_OPENING[e.t]);
+export const chipped = (e, isBoss) => !!(e && (isBoss || (e.xpRole === 'mini' && CHIP_MINI.has(e.t))) && OPEN_RULE[e.t] && !NO_OPENING[e.t] && !FULL_DAMAGE[e.t]);
 
 /* THE CHIP, at the tail of wardedDamage: dmg is what his own code made of the blow, raw what the blow was before any of it.
    Returns what comes off the bar. Called only for a hero's blow (or his burn) on THE boss. */

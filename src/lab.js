@@ -1397,29 +1397,49 @@ async function runbossLab(BK, opts) {
         }else if(['stuck','reel','recoil'].includes(boss.mode)){goal=mawIn;strike=true;}
         else {goal=mawIn;strike=true;}
       }
-      /* THE DEATH KNIGHT (the hero as the boss, 2026-09-25), played the way his fight teaches it. THE CLEAVE: stand in its reach while he
-         lifts it (that is what makes him commit), and the moment he has COMMITTED - the reach goes red - dodge out of it, away from him:
-         the blade goes into the floor, and the bot goes in and cuts the stuck blade's man. A hero who would rather take it on a guard
-         (the knight, the paladin) guards the Cleave he cannot get out of. THE PLANTED BLADE: walk to the middle of the widest gap
-         between the spots the bolts will land on, or out past the end of the fan. THE RUSH: jump it as it arrives. THE WARD: its face
-         stops the blow - go round and cut his back, or wait it out. THE SURGE: get out of its ring. His dead are cut when they come close. */
+      /* THE DEATH KNIGHT (the hero as the boss; rebuilt from his kit, claude/dk3), played the way his fight teaches it, at a human's speed: the
+         hands see a new move of his ~250 ms after it begins (P.labDkM/P.labDkF) and until then carry on with what they were doing.
+         HIS CUTS (gold): guarded (a shield; the warden's deflect), or stepped back out of. THE CLEAVE: stand in its reach while he lifts it
+         (that is what makes him commit), and once he has COMMITTED dodge out of it, away: the blade goes into the floor and the hands cut the
+         stuck man. His recoveries (after a cut, a cleave, the bolts) are cut too: every blow lands whole now. THE PLANTED BLADE: the middle
+         of the widest gap. DEATH GRIP: jump the chain as it arrives. BLOOD BOIL: out of its ring. DEATH COIL: on the shield, or dodged as it
+         arrives. GRAVE TIDE: round behind him. THE WARD: from behind his back is cut; on its face the hands FILL it and break it (he reels
+         open), and back off before a nova they did not break. NOVA, SURGE: out of the ring. His dead are cut when they come close. */
       else if (boss.t === 'bloodknight') { const S = BK.unbU ? BK.unbU.UNB.bk : null, side = Math.sign(P.x - boss.x) || 1, m = boss.mode;
+        if (P.labDkM !== m) { P.labDkM = m; P.labDkF = f; } const seen = f - P.labDkF >= 15, shield = SHIELDED(h);
+        const guard = () => { goal = null; strike = false; P.face = -side; if (shield) k.block = true; else if (h === 'warden') k.block = DEFLECT_TAP(f); else { goal = boss.x + side * ((S ? S.swingR : 54) + 24); } };
         const add = BK.enemies().filter(q => q.alive && q.t === 'corpse' && q.from === boss && q.mode !== 'down' && Math.abs(q.y - P.y) < 24).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-        if (m === 'stuck' || m === 'wrench') { goal = boss.x; strike = true; }
+        const pool = S && (boss.pools || []).find(p => Math.abs(P.x - p.x) < S.boilR + 6);
+        const coil = S && (boss.coils || []).find(q => q.t < S.coilT - 0.25 && Math.abs(q.x - P.x) < 46 && Math.abs(q.y - (P.y - 12)) < 30);   /* (seen a quarter-second after it leaves his hand) */
+        if (m === 'stuck' || m === 'wrench' || m === 'reel') { goal = boss.x; strike = true; }
+        else if (coil) { strike = false; if (shield || h === 'warden') { goal = null; P.face = Math.sign(coil.x - P.x) || P.face; k.block = shield ? true : DEFLECT_TAP(f); } else if (Math.abs(coil.x - P.x) < 26 && !(P.dodge > 0) && P.st >= 10) { BK.press('dodge'); goal = null; } else goal = null; }
+        else if (!seen && /Tell$/.test(m)) { goal = boss.x; strike = !(P.labRest); }   /* not read yet */
+        else if (m === 'swingTell') { if (Math.abs(P.x - boss.x) < (S ? S.swingR : 54) + 16 && boss.modeT < 0.24) guard(); else { goal = boss.x + side * ((S ? S.swingR : 54) + 24); strike = false; } }
         else if (m === 'cleaveTell') { strike = false;
-          if (!boss.committed) goal = boss.x + side * 36;   /* in its reach: bait the commit */
+          if (!boss.committed) { goal = boss.x + side * 36; P.labDkC = f; }   /* in its reach: bait the commit */
+          else if (f - (P.labDkC ?? f) < 12) goal = boss.x + side * 36;   /* (the commit is seen a fifth of a second late) */
           else if (!(P.dodge > 0) && P.st >= 10) { k.left = side < 0; k.right = side > 0; BK.press('dodge'); goal = null; }
-          else goal = boss.x + side * 120; }
-        else if (m === 'cleave') { goal = boss.x + side * 90; strike = false; }
-        else if (m === 'bladeTell' || m === 'blade') { strike = false; const xs = (boss.boltAt || []).slice().sort((a, b) => a - b), spots = [];
+          else if (shield) guard(); else goal = boss.x + side * 120; }
+        else if (m === 'swing' || m === 'cleave' || m === 'blade' || m === 'coil' || m === 'rest') { goal = pool ? pool.x + side * (S.boilR + 20) : boss.x; strike = !pool && !(P.labRest); }
+        else if (m === 'bladeTell') { strike = false; const xs = (boss.boltAt || []).slice().sort((a, b) => a - b), spots = [];
           for (let i = 0; i + 1 < xs.length; i++) spots.push((xs[i] + xs[i + 1]) / 2); if (xs.length) { spots.push(xs[0] - 44, xs[xs.length - 1] + 44); }
           goal = spots.filter(x => x > A.x0 + 20 && x < A.x1 - 20).sort((a, b) => Math.abs(a - P.x) - Math.abs(b - P.x))[0] ?? P.x; }
-        else if (m === 'rushTell' || m === 'rush') { strike = false; goal = null;
-          if (P.ground && ((m === 'rushTell' && boss.modeT < 0.12) || (m === 'rush' && Math.abs(boss.x - P.x) < 70 && (P.x - boss.x) * boss.face > 0))) { BK.press('jump'); P.labJump = 20; } }
+        else if (m === 'gripTell') { goal = null; strike = false; }
+        else if (m === 'grip') { goal = null; strike = false; if (P.ground && Number.isFinite(boss.chainX) && Math.abs(boss.chainX - P.x) < 60 && (P.x - boss.chainX) * boss.face > 0) { BK.press('jump'); P.labJump = 18; } }
+        else if (m === 'boilTell') { strike = false; goal = Number.isFinite(boss.boilX) ? boss.boilX + (Math.sign(P.x - boss.boilX) || side) * ((S ? S.boilR : 28) + 26) : null; }
+        else if (m === 'coilTell') { goal = null; strike = false; }
+        else if (m === 'tideTell' || m === 'tide') { strike = false; goal = boss.x - boss.face * 44; if (m === 'tide' && P.ground && (boss.hands || []).some(q => Math.abs(q.x - P.x) < 20 && q.delay < 0.15)) { BK.press('jump'); P.labJump = 16; } }
         else if (m === 'wardTell' || m === 'ward') { const back = (P.x - boss.x) * (boss.wardFace || boss.face) < 0;
-          if (back) { goal = boss.x; strike = true; } else { goal = boss.x + side * 70; strike = false; } }
+          const R = S ? S.novaR + S.novaPer * (boss.wardFill || 0) : 90;
+          if (back) { goal = boss.x; strike = true; }
+          else if (!boss.wardLock && (boss.wardFill || 0) >= (S ? S.wardFull : 3) - 0 && boss.modeT > 0.25) { goal = boss.x; strike = true; }   /* full: break it */
+          else if (!boss.wardLock && boss.modeT > 0.6) { goal = boss.x; strike = true; }   /* fill it */
+          else { goal = boss.x + side * (R + 26); strike = false; } }
+        else if (m === 'novaTell' || m === 'nova') { strike = false; goal = boss.x + side * ((S ? S.novaR + S.novaPer * (boss.wardFill || 0) : 90) + 30); }
         else if (m === 'surgeTell' || m === 'surge') { strike = false; goal = boss.x + side * ((S ? S.surgeR : 90) + 40); }
+        else if (m === 'pass' || m === 'drag') { goal = null; strike = false; }
         else if (add && Math.abs(add.x - P.x) < 60) { goal = add.x; strike = false; if (Math.abs(add.x - P.x) < LAB_REACH[h] + 6 && P.atk < 0) { P.face = Math.sign(add.x - P.x) || P.face; BK.press('atk'); swings++; } }
+        else if (pool) { goal = pool.x + side * (S.boilR + 20); strike = false; }
         else { goal = boss.x; strike = !(P.labRest); }
         if (goal !== null) goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, goal)); }
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
