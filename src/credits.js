@@ -8,6 +8,7 @@ export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the li
   ['mineworks', 'At Work', 'HorrorPen', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],
   ['blacklord', 'For the Black Lord', 'Ronhul Maggot', 'CC-BY 4.0', 'creativecommons.org/licenses/by/4.0'],   /* THE DEATH KNIGHT's theme (claude/dk3) */
   ['undeadmage', 'Colossal Boss Battle Theme', 'Matthew Pablo', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],   /* THE UNDEAD ARCHMAGE (claude/archmage2b): matthewpablo.com */
+  ['puppeteer', 'Dissonant Waltz', 'Yubatake', 'CC-BY 4.0', 'creativecommons.org/licenses/by/4.0'],   /* THE PUPPETEER's fight (claude/puppeteer2, Daniel's pick 10-02) */
   /* THE RED GORGE (claude/redgorge-fix, Daniel 10-02): Kevin MacLeod asks for this credit word for word - the page shows it whole, a line at a time */
   ['redgorge', 'Old Road', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Old Road" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],
 ];
@@ -22,10 +23,12 @@ export const composers = credits => {
   }
   return [...seen.values()].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 };
-/* PAGES: 0 is the CC-BY credit in full; the rest are the composers, ROWS to a column, two columns to a page */
+/* PAGES: first the CC-BY credits in full, CCBY_PER to a page (claude/puppeteer2: a fourth would not fit on one), then the composers, ROWS to a column, two columns to a page */
+export const CCBY_PER = 2;
 export const CREDIT_ROWS = 8;
 export function creditPages(credits) {
-  const names = composers(credits), per = CREDIT_ROWS * 2, pages = [{ kind: 'ccby' }];
+  const names = composers(credits), per = CREDIT_ROWS * 2, pages = [];
+  for (let i = 0; i < CC_BY.length; i += CCBY_PER) pages.push({ kind: 'ccby', items: CC_BY.slice(i, i + CCBY_PER), last: i + CCBY_PER >= CC_BY.length });
   for (let i = 0; i < names.length; i += per) pages.push({ kind: 'names', names: names.slice(i, i + per) });
   return pages;
 }

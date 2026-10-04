@@ -245,3 +245,9 @@ THE UNDEAD ARCHMAGE (2026-10-04, claude/archmage2b, Daniel's pick; the file was 
   WITH the choir, encoded to Ogg Vorbis (q3). The licence field was read on the OpenGameArt page on 2026-10-02; the page points to
   matthewpablo.com/services for attribution wording and that page 404s, so the standard CC-BY credit is used. His stair chase and his
   fight in the sky. It replaces the synth 'archmage:undead' voicing (src/boss-music.js), which nothing else played.
+- puppeteer.ogg = "Dissonant Waltz" by Yubatake, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/, CREDIT REQUIRED) -
+  https://opengameart.org/content/dissonant-waltz - THE PUPPETEER's arena track (claude/puppeteer2, Daniel's pick 10-02; the file he approved, nothing downloaded here).
+  Credit: "Dissonant Waltz" by Yubatake (OpenGameArt.org), CC-BY 4.0. Changes: cut to the first 234.239 s of the 5:09 original; the game plays the opening
+  once and then loops 34.135 s - 234.239 s (a 200.1 s loop on the waltz's return: band/pitch-class match 0.77 over 4 s, waveform 0.48 at the seam, 30 ms
+  crossfade in the player); raised 0.7 dB under a peak limiter to about -14.1 LUFS integrated, -1.0 dBTP; resampled to 44.1 kHz; OGG Vorbis q4 stereo.
+  It replaces the synthesised music-box overture the Puppeteer fought to before.
