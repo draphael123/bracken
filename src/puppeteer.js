@@ -32,7 +32,7 @@
 
 export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
-  ward: 0.05, openMul: 1.0,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
+  ward: 0.05, openMul: 0.8,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
   staggerT: 3.0,                       // ON THE GALLERY: he is staggered this long (boss-openings asserts >= 3 s)
   visitCap: 1 / 3,                     // A VISIT takes at most this share of his health (then the knockback comes at once)
   slackT: 12.0,                        // BOTH PUPPETS DOWN: the lever is free and his bar slack this long (x cycleK) - the time to ride up
@@ -47,13 +47,13 @@ export const PUP = {
   flySpeed: 170,
   /* HIS TWO SLOW ATTACKS, taking turns, never both at once: the rest after one ends before the next is told (by phase) */
   over: { first: 3.0, gap: [4.0, 3.8, 3.5] },
-  drop: { tell: 1.4, half: 20, dmg: 24, top: 26 },                         // THE PROP DROP: a growing shadow, then the sandbag (!!, no shield turns it)
-  snare: { tell: 1.3, speed: 115, dmg: 20, hold: 0.6, bar: 12 },           // THE SNARE LINE: told at the wing it starts from, then swept across (115 px/s)
+  drop: { tell: 1.4, half: 20, dmg: 30, top: 26 },                         // THE PROP DROP: a growing shadow, then the sandbag (!!, no shield turns it)
+  snare: { tell: 1.3, speed: 115, dmg: 26, hold: 0.6, bar: 12 },           // THE SNARE LINE: told at the wing it starts from, then swept across (115 px/s)
   /* THE SCENES */
   storm: { first: 3.0, every: 5.0, tell: 1.4, on: 2.6, shove: 150, pup: 40 },
   night: { half: 42, speed: 24, dark: 0.6 },
-  inferno: { first: 2.5, tell: 1.3, burn: 1.4, rest: 0.9, dmg: 22, top: 30, hitEvery: 0.6 },
-  sea: { first: 3.5, every: 4.8, tell: 1.3, speed: 150, half: 9, dmg: 22 },
+  inferno: { first: 2.5, tell: 1.3, burn: 1.4, rest: 0.9, dmg: 28, top: 30, hitEvery: 0.6 },
+  sea: { first: 3.5, every: 4.8, tell: 1.3, speed: 150, half: 9, dmg: 28 },
   harl: { hp: 70, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 2, jabReach: 26, jab: 10, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 12,
     rest: 0.6, still: 0.7, dart: 2.2 },
   brute: { hp: 220, speed: 58, chopTell: 1.0, chopReach: 40, chop: 32, slamTell: 1.15, slamReach: 70, slamTop: 12, slam: 34, grabTell: 1.0, grabReach: 30, grab: 35,

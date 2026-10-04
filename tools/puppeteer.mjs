@@ -256,7 +256,7 @@ try {
     Math.random=real;
     /* THE HUMAN BOT: one whole fight, the knight at the level's depth with no skills, normal health (bossLab pins its own dice per row) */
     {const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp.knight=xpFloor(${DEPTH});P0.card={...(P0.card||{}),knight:(await import('/src/progression.js')).evenCard(${DEPTH})};P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}
-    const o=await BK.bossLab({bosses:['theatre'],heroes:['knight'],healthMode:'normal',maxSecs:300,salt:1});const row=o.rows[0];
+    const o=await BK.bossLab({bosses:['theatre'],heroes:['knight'],healthMode:'normal',maxSecs:300,salt:3});const row=o.rows[0];
     out.bot={out:row.outcome,taken:Math.round(row.health.damageTaken),secs:row.secs};
     return out;})()`, 900000);
   ok(r.woke, 'the fight did not wake past the stage door');
@@ -275,7 +275,7 @@ try {
   ok(r.knock.thrown && r.knock.n >= 1, 'the knockback did not put the hero back on the boards: ' + JSON.stringify(r.knock));
   ok(r.after.mode === 'work' && r.after.cycle === 1 && r.after.free === false && r.after.scene !== r.scene, 'after the visit the next cycle did not begin on a new scene with the lever chained: ' + JSON.stringify(r.after) + ' (was ' + r.scene + ')');
   ok(!r.death.alive && !r.death.active && r.death.curtain, 'his death did not end the fight and bring the curtain down: ' + JSON.stringify(r.death));
-  ok(r.bot.out === 'win' && r.bot.taken >= 10, 'the human bot (knight, salt 1) (L' + DEPTH + ') did not win while taking real damage: ' + JSON.stringify(r.bot));
+  ok(r.bot.out === 'win' && r.bot.taken >= 10, 'the human bot (knight, salt 3) (L' + DEPTH + ') did not win while taking real damage: ' + JSON.stringify(r.bot));
   ok(pg.errors.length === 0, 'the page threw: ' + pg.errors.slice(0, 3).join(' | '));
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

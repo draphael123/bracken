@@ -10,7 +10,7 @@ const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x
 const heroes = opt('heroes', 'knight,warden,pyro').split(','), salts = +opt('salts', 7), secs = +opt('secs', 300), OUT = opt('out', ''), lvl = Math.max(1, depthsOf(LEVELS).theatre ?? 1);
 const rows = []; let pg = await openPage({ audio: false, fonts: false });
 try {
-  for (let s = 1; s <= salts; s++) for (const h of heroes) { let row;
+  for (let s = +opt('from', 1); s <= salts; s++) for (const h of heroes) { let row;
     try { await pg.reload();
       row = await pg.evalp(`(async()=>{BK.manualSimulation=true;const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp[${JSON.stringify(h)}]=xpFloor(${lvl});P0.card={...(P0.card||{}),[${JSON.stringify(h)}]:(await import('/src/progression.js')).evenCard(${lvl})};P0.skillOwned[${JSON.stringify(h)}]={};P0.loadouts[${JSON.stringify(h)}]=[];if(P0.talents)P0.talents[${JSON.stringify(h)}]={};
         let mx={cycle:0,stag:0,thrown:0,scenes:[]};const r=(await BK.bossLab({bosses:['theatre'],heroes:[${JSON.stringify(h)}],maxSecs:${secs},healthMode:'normal',salt:${s},onFrame:()=>{const q=BK.puppeteer();if(q){mx.cycle=q.cycle;mx.stag=q.n.stagger;mx.thrown=q.n.thrown;mx.slack=q.n.slack;mx.restrung=q.n.restrung;if(!mx.scenes.includes(q.sceneKey))mx.scenes.push(q.sceneKey);mx.hurt=q.hurt;}}})).rows[0]||{};
