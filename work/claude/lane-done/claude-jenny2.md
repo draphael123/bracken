@@ -1,6 +1,6 @@
 # claude/jenny2 - JENNY GREENTEETH reworked: fight HER, not the plumbing (Opus, 2026-10-04)
 
-Base: origin/master 1dd5b181. Merged before the final measure: origin/master (batch64 fixer, 44c8e47d) and **origin/claude/weight** (bb65aba7, commitment + stamina). Both merged clean. Every number below the "after WEIGHT" line was measured on the merged tree.
+Base: origin/master 1dd5b181. Merged before the final measure: origin/master (batch64 fixer, 44c8e47d) and **origin/claude/weight** (to e5387e1b: commitment + stamina, the bot's rollWhenDue, the WINDED line; the pilot was re-run after the last weight merge and came out the same 13/21). Both merged clean. Every number below the "after WEIGHT" line was measured on the merged tree.
 Brief: scratch/brief-jenny2.md. Daniel said "very repetitive and kind of annoying" and "sprite looks a bit odd".
 
 ## What changed
@@ -60,7 +60,7 @@ The human-speed bot is `tools/greenteeth-pilot.mjs` (now one fight per page): 7 
 - **Also green:** boss-fight-end (51 fights), pixels (`headless floats`).
 - **hint-shown:** green.
   - My three new-move lines were not literals. Fixed.
-  - `tools/hint-shown-silent.txt` was rewritten with `--write`. The one line it dropped, WINDED, was removed by the WEIGHT merge, not by me.
+  - `tools/hint-shown-silent.txt` was rewritten with `--write` after each WEIGHT merge, so it matches the merged tree (WINDED as WEIGHT left it).
 - **slopes-trace:** green after `--rebase=canal`.
   - Before the rebase, canal differed at frame 2043 of 2080: a lip probe at x 6038, inside her lock, where vy was -3 and is now -1.5.
   - On master + WEIGHT without this lane, the trace is identical. So the difference is her new water timeline, not the mover.
