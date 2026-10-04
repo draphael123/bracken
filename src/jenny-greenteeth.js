@@ -36,7 +36,7 @@
 
 export const GT = {
   hp: 720, w: 30, h: 46, markH: 54,   /* (claude/jenny2: redrawn at her own size - the box is her head, shoulders and the body under the water's skin) */
-  ward: 0.05, openMul: 1.35, beatMul: 1.7,
+  ward: 0.05, openMul: 1.25, beatMul: 1.7,
   /* THE WATER: its heights over the bed. SHOAL leaves the narrowboat's back (two rows high) a hand under the surface */
   lv: { dry: 0, shoal: 40, low: 48, half: 80, high: 112 },
   drainRate: 40, fillRate: 60, wakeRate: 32, aground: 26,
@@ -62,7 +62,7 @@ export const GT = {
   p2: 2 / 3, p3: 1 / 3,
   /* SHE FIGHTS IN THE BEAT'S OPENINGS: stranded or flushed she still SNAPS (a yellow !: the shield turns it, or step back) and SWIPES low (a red !!:
      jump it) at a hero beside her. Stuck by her claws or dazed she does nothing (stagger means still) */
-  oa: { first: 0.6, every: 0.9, snapTell: 0.5, snapR: 52, snapDmg: 20, swipeTell: 0.55, swipeR: 64, swipeDmg: 18, near: 90 },
+  oa: { first: 0.8, every: 1.1, snapTell: 0.5, snapR: 52, snapDmg: 16, swipeTell: 0.55, swipeR: 64, swipeDmg: 16, near: 90 },
 };
 /* THE MOVES: tell (s), blow (s), the mark's promise, the answer, the height (the marks table's rows are src/marks.js) */
 export const MOVES = {

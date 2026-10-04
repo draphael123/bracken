@@ -26906,7 +26906,7 @@ function drawWorld(cx, cy, showPlayer) {
     { const dx0 = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx + Math.round(recoilX(e)), dy0 = e.y - cy + bob + ps.dy;
       /* REMEMBERED FOR THE PASSES THAT COME AFTER THE WATER AND THE DARK (drawSwimmers, drawDarkRims): a creature in the water is
          painted over by the water, and one in the dark by the dark, and both used to vanish into what was over them */
-      if (sprSet && e.alive && !e.harmless && (inWater || inGloom)) { const q = { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot, white: e.flash > 0, a: g.globalAlpha }; if (inWater) swimQ.push(q); if (inGloom) darkQ.push(q); }
+      if (sprSet && e.alive && !e.harmless && (inWater || inGloom)) { const q = { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot, white: e.flash > 0, a: g.globalAlpha }; if (inWater && e.t !== 'greenteeth') swimQ.push(q); if (inGloom) darkQ.push(q); }   /* (claude/jenny2: not JENNY GREENTEETH - she is half out of her own water, and the swimmers' pale wash over the whole of her made her a ghost; her lower half reads under the lock's green) */
       if (e.elite && e.alive && sprSet.white) drawEliteTrim(sprSet, frame, dx0, dy0, ps.face, pSX, pSY, pRot);
       if (wind && sprSet.white && !e.harmless) drawTellRim(sprSet, frame, dx0, dy0, ps.face, pSX, pSY, pRot, 0.55 + 0.45 * Math.sin(e.anim * 22));
       if (!(e.flash > 0)) drawWarm('rim', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);

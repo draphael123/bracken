@@ -10,7 +10,7 @@ const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
 const level = process.argv[4] || 'canal';
 const pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
-  for (const salt of salts) for (const h of heroes) { await pg.reload();
+  for (const salt of salts) for (const h of heroes) { try { await pg.reload(); } catch { await pg.reload(); }   /* (a slow machine: one retry of the fresh page) */
     const r = await pg.evalp(`(async()=>{const MM=await import('/src/jenny-greenteeth.js');if(!MM.NEW_MOVE)throw new Error('the page is serving another tree');BK.manualSimulation=true;let phase=1,q=null;
       const o=await BK.bossLab({bosses:[${JSON.stringify(level)}],heroes:[${JSON.stringify(h)}],healthMode:'normal',maxSecs:300,modes:true,salt:${salt},onFrame:({boss})=>{phase=Math.max(phase,boss.phase||1);const g=BK.greenteeth();if(g)q={cyc:g.cycle,n:g.n,hurt:g.hurt};}});
       const r=o.rows[0],n=(q&&q.n)||{};return {h:r.h,salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),bossLeft:r.hpLeftPct,phase,cycles:q&&q.cyc,
