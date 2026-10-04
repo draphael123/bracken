@@ -124,7 +124,7 @@ log('THE WIRING (read off the source)');
   ok(/case 'sandworm':/.test(main) && /sandworm: DF2\.SANDWORM\.hp/.test(main) && /CV_FOES = new Set\(\[[^\]]*'sandworm'/.test(main) && /CV_STEP = \{[^}]*sandworm: DF2\.sandwormStep/.test(main), 'THE SANDWORM: a spawn case, its health, and it runs on the desert\'s hands (CV_FOES, CV_STEP)');
   ok([...skins, 'sandworm'].every(k => new RegExp('SPR\\.' + k + '\\s*=').test(main) && cards.has(k)), 'every new face has a sprite and a bestiary card: ' + [...skins, 'sandworm'].join(', '));
   ok(/if \(e\.cnSkin\) for \(let i = n0; i < enemies\.length; i\+\+\) \{ enemies\[i\]\.cnSkin = e\.cnSkin;/.test(main) && /if \(e\.cnSkin && SPR\[e\.cnSkin\]\) sprSet = SPR\[e\.cnSkin\]/.test(main), 'a reskin rides from the ent onto the foe (cnSkin) and is drawn in its own skin');
-  ok(/DF2_CORPSE = \{ firescorpion: 6, venomscorpion: 6, shieldguard: 4, dynamiter: 4, powderboy: 4 \}/.test(main) && /c\.t = e\.cnSkin; c\.frame = DF2_CORPSE\[e\.cnSkin\]/.test(main) && /HAS_HURT\.add\('sandworm'\)/.test(main), 'THE CORPSES: a reskin lies in its own skin (not the goblin\'s), the worm in its hurt pose');
+  ok(/DF2_CORPSE = \{ firescorpion: 6, venomscorpion: 6, shieldguard: 4, dynamiter: 4, powderboy: 4[ ,]/.test(main)   /* (claude/djinn2: the bandit mystics' two skins follow them) */ && /c\.t = e\.cnSkin; c\.frame = DF2_CORPSE\[e\.cnSkin\]/.test(main) && /HAS_HURT\.add\('sandworm'\)/.test(main), 'THE CORPSES: a reskin lies in its own skin (not the goblin\'s), the worm in its hurt pose');
   ok(BY_HAND['sandworm|lungeTell'] === '!!' && MARK['sandworm|lungeTell'] === '!!' && ANSWER['sandworm|lungeTell'] === 'dodge' && HEIGHT['sandworm|lungeTell'] === 'low', 'its mark (!!), its answer (dodge) and its height (low)');
   ok(THREAT.sandworm > 0, 'a threat weight (' + THREAT.sandworm + ')');
   ok(['WATER PUTS IT OUT', 'THE PATCH GOES OUT', 'VENOM: YOUR STAMINA COMES BACK SLOWER', 'THE HORN DRIVES IT UNDER', 'THE FLOOD DOUSES THE FUSE'].every(l => CALL_LINES.has(l)), 'its teaching lines are hint lines (number() shows them)');
@@ -133,7 +133,7 @@ log('THE WIRING (read off the source)');
 
 // ================= THE PLACEMENT =================
 log('THE PLACEMENT');
-const roster = L => { const c = {}; for (const e of L.ents) { if (!/^(cutthroat|slinger|scorpion|raptor|vulture|waterthief|archer|shield|sapper|sandworm)$/.test(e.t)) continue; const k = e.cnSkin || e.t; c[k] = (c[k] || 0) + 1; } return c; };
+const roster = L => { const c = {}; for (const e of L.ents) { if (L.works && e.x >= L.works.x0 && e.y > L.works.y0) continue;   /* (claude/djinn2: THE BINDING WORKS under the Kasbah is a new section past the town this swap counted - its foes are its own) */ if (!/^(cutthroat|slinger|scorpion|raptor|vulture|waterthief|archer|shield|sapper|sandworm)$/.test(e.t)) continue; const k = e.cnSkin || e.t; c[k] = (c[k] || 0) + 1; } return c; };
 { const W = LEVELS.find(l => l.id === 'welltown').build(), c = roster(W), n = Object.values(c).reduce((a, b) => a + b, 0);
   ok((c.cutthroat || 0) <= 6 && (c.firescorpion || 0) >= 3 && (c.vulture || 0) >= 2 && (c.waterthief || 0) >= 11 && (c.venomscorpion || 0) >= 2, 'THE WELL TOWN swaps its cutthroats (11 -> ' + c.cutthroat + ') for fire scorpions (' + c.firescorpion + '), vultures (' + c.vulture + '), a water-thief (' + c.waterthief + ' in all), and two of its cistern scorpions are the Queen\'s venom brood: ' + JSON.stringify(c));
   ok(n === 40, 'a swap, not a heap: ' + n + ' foes, as before (40)'); }

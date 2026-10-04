@@ -59,7 +59,7 @@ export function makeMysticHands(ctx) {
       if (l.state === 'held' && l.bearer && !l.bearer.alive) H.onDeath(l.bearer);
       if (l.state === 'carried') { const P = l.holder; if (!P || P.dead || P.carry !== l) { if (P && P.carry === l) P.carry = null; if (l.state === 'carried') { l.state = 'rest'; const gy = P ? groundY(P.x, P.y) : null; if (gy !== null) l.y = gy; } continue; }
         l.x = P.x + (P.face || 1) * 7; l.y = P.y - 4;
-        if (P.hurt > 0 && !l.hurtWas) { P.carry = null; l.state = 'rest'; l.y = P.y; l.hurtWas = true; ctx.number(P.x, P.y - 30, 'DROPPED', '#ff9a5c'); continue; } l.hurtWas = P.hurt > 0; continue; }
+        if (P.hurt > 0 && !l.hurtWas) { P.carry = null; l.state = 'rest'; l.y = P.y; l.hurtWas = true; ctx.number(P.x, P.y - 30, 'THE LAMP FALLS FROM YOUR HANDS', '#ff9a5c'); continue; } l.hurtWas = P.hurt > 0; continue; }
       if (l.state === 'fly') { const k = THROW_KIND.lamp; l.vy += k.g * dt; l.x += l.vx * dt; l.y += l.vy * dt; M.n.thrown += l.counted ? 0 : 1; l.counted = true;
         const hitFoe = ctx.enemies().find(e => e.alive && !e.harmless && Math.abs(e.x - l.x) < (e.w || 10) / 2 + 4 && l.y > e.y - (e.h || 16) - 4 && l.y < e.y + 2);
         const tx = Math.floor(l.x / ctx.TS), ty = Math.floor((l.y + 2) / ctx.TS);

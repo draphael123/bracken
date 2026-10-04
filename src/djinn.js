@@ -133,8 +133,9 @@ export const inFlood = (S, q) => S.water > 4 && !q.onLedge && !q.climb && q.y > 
 
 /* THE WARD: after every opening ends (claude/djinn2) - told, and he goes on fighting through it */
 function startWard(e, S, c) {
-  S.ward = DJ.wardT; S.n.wards++; const [t, col] = WARD_LINE[S.ph] || WARD_LINE[1];
-  c.number(e.x, e.y - (S.pose === 'column' ? 160 : 100), t, col); c.sound('ward');
+  S.ward = DJ.wardT; S.n.wards++; const y = e.y - (S.pose === 'column' ? 160 : 100);
+  if (S.ph === 1) c.number(e.x, y, 'THE SAND HARDENS: WATER RUNS OFF HIM', '#e8d8a0'); else if (S.ph === 2) c.number(e.x, y, 'HE FLARES WHITE-HOT: STAND BACK', '#fff2c0'); else c.number(e.x, y, 'A SHROUD OF WATER SPINS ROUND HIM', '#bfe4ff');   /* (WARD_LINE, as literals) */
+  c.sound('ward');
   if (S.ph === 2) { S.burn = true; S.flare = 0; c.fx('flare', e.x, S.G.floor); }
   if (S.ph === 1) c.fx('sand', e.x, S.G.floor);
 }
@@ -174,7 +175,8 @@ export function stepDjinn(e, S, dt, h, c) {
 function nextMove(e, S, P, c) {
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; }
   const k = S.script[S.step++], G = S.G; S.n.moves[k] = (S.n.moves[k] || 0) + 1; S.act++; S.cur = { k, id: S.act }; e.face = Math.sign(P.x - e.x) || e.face;
-  if (FIRST_LINE[k] && !S.told['first' + k]) { S.told['first' + k] = 1; c.number(e.x, e.y - (S.pose === 'column' ? 175 : 118), FIRST_LINE[k][0], FIRST_LINE[k][1]); }
+  if (FIRST_LINE[k] && !S.told['first' + k]) { S.told['first' + k] = 1; const y = e.y - (S.pose === 'column' ? 175 : 118);   /* (FIRST_LINE, as literals) */
+    if (k === 'spears') c.number(e.x, y, 'SAND SPEARS: THE GLOW UNDER YOU - MOVE', '#ffd36b'); else if (k === 'firedevil') c.number(e.x, y, 'A FIRE DEVIL: JUMP IT OR GET UP', '#ff9a5c'); else c.number(e.x, y, 'THE WELL TURNS: WADE AGAINST IT', '#7ab8e8'); }
   switch (k) {
     case 'lash': return tell(e, 'lashTell', DJ.lashTell, c);
     case 'flash': return tell(e, 'flashTell', DJ.lashTell, c);
