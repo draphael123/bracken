@@ -192,7 +192,7 @@ try {
   {const b=boot('theatre');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+60;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let cutF=0,op=0,mode=null;S.overCd=1e9;if(S.scene===2)S.scene=0;   /* (his two attacks kept quiet; the NIGHT's dark is a scene rule - tools/puppeteer.mjs - not this row's) */
-   for(let i=0;i<60*40&&!(op>0)&&b.mode!=='slack';i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&(/Tell$/.test(q.mode)||q.mode==='recover'||q.mode==='stagger'));
+   for(let i=0;i<60*120&&!(op>0)&&b.mode!=='slack';i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&(/Tell$/.test(q.mode)||q.mode==='recover'||q.mode==='stagger'));
      if(p&&P.atk<0){P.x=p.x-(p.t==='harlequin'?14:18);P.y=A.floor;P.face=1;P.vx=0;BK.press('atk');cutF++;}BK.sim(1);op=Math.max(op,b.open||0);}
    const slackMode=b.mode,free=S.free;let slackOpen=0;for(let i=0;i<60*3;i++){P.hp=P.maxHp;P.x=A.x0+200;P.y=A.floor;BK.sim(1);slackOpen=Math.max(slackOpen,b.open||0);}   /* (both down, the lever free: nothing opens on its own) */
    if(b.mode==='slack'){P.x=A.stage.gx0+30;P.y=A.stage.gallery;P.vx=0;P.vy=0;for(let i=0;i<30&&b.mode!=='staggered';i++){P.hp=P.maxHp;BK.sim(1);}}   /* up on the gallery */
