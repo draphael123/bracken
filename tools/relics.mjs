@@ -52,7 +52,8 @@ for (const [id, v] of Object.entries(VAULT_SILVER)) {
   const L = built(id), sv = L.ents.filter(e => e.t === 'silver');
   ok(sv.some(e => e.x === v.x && e.y === v.y), id + ': no silver lies where the relic did (' + v.x + ',' + v.y + ')');
   ok(sv[v.idx] && sv[v.idx].x === v.x && sv[v.idx].y === v.y, id + ': the vault silver is not silver #' + v.idx + ' (a save\'s bit 1<<' + v.idx + ' would point at another)');
-  ok(v.add ? sv.length >= 2 && sv.length <= 3 : sv.length === 3, id + ': ' + sv.length + ' silvers after the vault'); }
+  ok(sv.length === 3, id + ': ' + sv.length + ' silvers after the vault'); }
+{ const sv = built('moor').ents.filter(e => e.t === 'silver'); ok(sv.length === 3 && sv[2].x === 416 && sv[2].y === 22, 'moor: the third silver is not #2 in the valley at 416,22: ' + JSON.stringify(sv)); }
 for (const [id, [x, y]] of Object.entries(SAME_CACHE)) { const sv = built(id).ents.filter(e => e.t === 'silver'); ok(sv.some(e => Math.hypot(e.x - x, e.y - y) <= 15), id + ': no silver in the former relic cache at ' + x + ',' + y); }
 { const sv = built('fair').ents.filter(e => e.t === 'silver'); ok(sv.some(e => e.x === 600 && e.y === 34), 'fair: the back lot lost its silver'); }
 /* a moved silver must still be reachable: the collection check (node tools/collectables.mjs) fails the suite on any pickup with no ground; here: not inside rock */
