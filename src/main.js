@@ -1962,7 +1962,7 @@ function questDone(x, y) {
 }
 function drainPool(pr) { const p = (L.pools || []).find(p => p.x0 === pr.pool); if (!p) return; marks.add('pool:' + pr.pool); pr.open = true; p.yTo = pr.to * TS + 4; p.draining = true; number(pr.x, pr.y - 30, 'THE CHANNEL DRAINS', '#bfe6f5'); SFX.splash(); SFX.heavy(); shakeCam(2); }
 
-function loadLevel(i) { for (const _ of loadLevelG(i)); }   /* synchronous, as it always was: BK.load, the labs and the tools */
+function loadLevel(i) { for (const _ of loadLevelG(i)); if (P) CM.clearCommit(P); }   /* synchronous, as it always was: BK.load, the labs and the tools */
 /* THE PLAYER'S OWN LOADS (map to wood, restart, a trial) go through the loading screen: fast ones run straight through as before, slow ones show the bar and the dancing hero (LS.drive) */
 const loadThen = (i, cont) => LS.drive(loadLevelG(i), cont, { heroes: [K, players && players[1] && players[1].set] });
 /* THE SAME LOAD AS A GENERATOR, for the loading screen (src/loading-screen.js drive()): it yields a step id after each stage and does no work of its own between them */
@@ -3040,7 +3040,7 @@ function shrineLights(s, px, py, swim) {
   for (let ty = Math.floor((py - 8) / TS); ty < Math.floor(s.y / TS); ty++) if (isSolid(tx, ty)) return false;
   return (L.pools || []).some(p => p.swim && !p.dry && s.x >= p.x0 && s.x <= p.x1 && py - 8 >= p.y);
 }
-function respawn() { P.windRide = null; P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
+function respawn() { CM.clearCommit(P); P.windRide = null; P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, kPoseT: 0, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
@@ -7723,7 +7723,7 @@ function updatePlayer(dt) {
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel');
   if (P.landT > 0 && (P.jbuf > 0 || P.dbuf > 0)) P.landT = 0; // a landing can always be left early: the controls never take the wheel
-  CM.staminaTick(P, dt, { extra: P.venomSlow || 1, hold: P.plungeN > 0 }); if (P.windedNew) { P.windedNew = false; number(P.x, P.y - 22, 'WINDED', '#ff6b6b'); }   /* WEIGHT: no regen while committed, rolling or guarding; EXHAUSTED at 0 (src/commit.js staminaTick) */   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
+  CM.staminaTick(P, dt, { extra: P.venomSlow || 1, hold: P.plungeN > 0 }); if (P.windedNew) { P.windedNew = false; number(P.x, P.y - 22, 'WINDED: NO ROLL, NO GUARD', '#ff6b6b'); }   /* WEIGHT: no regen while committed, rolling or guarding; EXHAUSTED at 0 (src/commit.js staminaTick) */   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
   // sleep spores: stay in the violet and you drop; block holds your breath; mash to wake
   const haven = props.some(pr => pr.t === 'glow' && pr.dark <= 0 && Math.abs(pr.x - P.x) < 30 && Math.abs(pr.y - P.y) < 30);
@@ -28929,7 +28929,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
      above the fourth storey, a room wall that stops a row short. Walking there to see it takes a minute a frame. This
      puts the hero and the camera on a tile and draws one frame, nothing updated, so a sweep of a level is a loop. */
   look(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; camX = P.x - VW / 2; camY = P.y - VH * 0.6; render(); return { cx: Math.round(Math.max(0, Math.min(LW * TS - VW, camX))), cy: Math.round(Math.max(0, Math.min(LH * TS - VH, camY))) }; },
-  reset({ fresh = false } = {}) {
+  reset({ fresh = false } = {}) { CM.clearCommit(P);
     if (fresh) {
       const identity = { n: P.n, hero: hero(), keys: P.keys, press: P.press, source: P.source, score: P.score };
       for (const k of Object.keys(P)) delete P[k];
