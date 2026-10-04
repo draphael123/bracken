@@ -2437,14 +2437,49 @@
   }
  },
  "longwater": {
-  "hash": "7ff6ee27d25c",
+  "hash": "7c2c6ab2f37e",
+  "level": {
+   "knight": {
+    "deaths": 0,
+    "minHpPct": 29,
+    "hpLostPct": 110,
+    "hits": 14,
+    "walked": 100,
+    "lifts": 44,
+    "frames": 11655,
+    "kills": 13,
+    "heroLevel": 12
+   },
+   "warden": {
+    "deaths": 0,
+    "minHpPct": 40,
+    "hpLostPct": 94,
+    "hits": 13,
+    "walked": 100,
+    "lifts": 44,
+    "frames": 11605,
+    "kills": 10,
+    "heroLevel": 12
+   },
+   "pyro": {
+    "deaths": 0,
+    "minHpPct": 50,
+    "hpLostPct": 85,
+    "hits": 12,
+    "walked": 100,
+    "lifts": 45,
+    "frames": 11646,
+    "kills": 9,
+    "heroLevel": 12
+   }
+  },
   "boss": {
    "boss": "herald",
    "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "timeout:56/96",
+     "timeout:59/100",
      "timeout:59/100"
     ],
     "warden": [
@@ -2463,37 +2498,12 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 56,
-     "bossLeftPct": 96,
-     "landed": 32,
-     "swings": 7239,
+     "hpLostPct": 59,
+     "bossLeftPct": 100,
+     "landed": 0,
+     "swings": 7287,
      "reprisalPct": 0,
-     "chip": [
-      {
-       "f": 240,
-       "mul": 0.2,
-       "open": false,
-       "mode": "stride"
-      },
-      {
-       "f": 720,
-       "mul": 0.2,
-       "open": false,
-       "mode": "stride"
-      },
-      {
-       "f": 1500,
-       "mul": 0.2,
-       "open": false,
-       "mode": "wave"
-      },
-      {
-       "f": 3000,
-       "mul": 0.2,
-       "open": false,
-       "mode": "thrustTell"
-      }
-     ]
+     "chip": []
     },
     {
      "hero": "knight",
@@ -2559,60 +2569,8 @@
      "swings": 6959,
      "reprisalPct": 0,
      "chip": []
-    },
-    {
-     "hero": "knight",
-     "seed": 1,
-     "tag": "l1",
-     "out": "timeout",
-     "secs": 150,
-     "hpLostPct": 69,
-     "bossLeftPct": 98,
-     "landed": 6,
-     "swings": 7109,
-     "reprisalPct": 0,
-     "chip": []
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 112,
-     "hpLostPct": 100,
-     "bossLeftPct": 95,
-     "landed": 12,
-     "swings": 5022,
-     "reprisalPct": 0,
-     "chip": []
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "l1",
-     "out": "timeout",
-     "secs": 150,
-     "hpLostPct": 97,
-     "bossLeftPct": 99,
-     "landed": 5,
-     "swings": 7113,
-     "reprisalPct": 0,
-     "chip": []
     }
    ]
-  },
-  "level": {
-   "knight": {
-    "deaths": 0,
-    "minHpPct": 28,
-    "hpLostPct": 115,
-    "hits": 16,
-    "walked": 100,
-    "lifts": 44,
-    "frames": 11575,
-    "kills": 10,
-    "heroLevel": 12
-   }
   }
  },
  "reef": {
@@ -3872,7 +3830,42 @@
   }
  },
  "causeway": {
-  "hash": "e3a4b9fa509a",
+  "hash": "a980f5adbb53",
+  "level": {
+   "knight": {
+    "deaths": 0,
+    "minHpPct": 58,
+    "hpLostPct": 42,
+    "hits": 9,
+    "walked": 100,
+    "lifts": 45,
+    "frames": 12168,
+    "kills": 2,
+    "heroLevel": 19
+   },
+   "warden": {
+    "deaths": 0,
+    "minHpPct": 84,
+    "hpLostPct": 22,
+    "hits": 5,
+    "walked": 100,
+    "lifts": 45,
+    "frames": 12263,
+    "kills": 2,
+    "heroLevel": 19
+   },
+   "pyro": {
+    "deaths": 0,
+    "minHpPct": 34,
+    "hpLostPct": 66,
+    "hits": 10,
+    "walked": 100,
+    "lifts": 45,
+    "frames": 12175,
+    "kills": 1,
+    "heroLevel": 19
+   }
+  },
   "boss": {
    "boss": "kraken",
    "wins": 0,
@@ -3903,32 +3896,7 @@
      "landed": 4,
      "swings": 457,
      "reprisalPct": 0,
-     "chip": [
-      {
-       "f": 240,
-       "mul": 0,
-       "open": null,
-       "mode": "emerge"
-      },
-      {
-       "f": 720,
-       "mul": 0,
-       "open": null,
-       "mode": "sweepTell"
-      },
-      {
-       "f": 1500,
-       "mul": 0,
-       "open": null,
-       "mode": "slamTell"
-      },
-      {
-       "f": 3000,
-       "mul": 0,
-       "open": null,
-       "mode": "stride"
-      }
-     ]
+     "chip": []
     },
     {
      "hero": "knight",
@@ -3994,60 +3962,8 @@
      "swings": 524,
      "reprisalPct": 0,
      "chip": []
-    },
-    {
-     "hero": "knight",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 44.4,
-     "hpLostPct": 100,
-     "bossLeftPct": 80,
-     "landed": 10,
-     "swings": 594,
-     "reprisalPct": 0,
-     "chip": []
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 29,
-     "hpLostPct": 100,
-     "bossLeftPct": 90,
-     "landed": 7,
-     "swings": 376,
-     "reprisalPct": 0,
-     "chip": []
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "l1",
-     "out": "dead",
-     "secs": 29.1,
-     "hpLostPct": 100,
-     "bossLeftPct": 82,
-     "landed": 9,
-     "swings": 363,
-     "reprisalPct": 0,
-     "chip": []
     }
    ]
-  },
-  "level": {
-   "knight": {
-    "deaths": 0,
-    "minHpPct": 59,
-    "hpLostPct": 41,
-    "hits": 8,
-    "walked": 100,
-    "lifts": 45,
-    "frames": 12168,
-    "kills": 2,
-    "heroLevel": 19
-   }
   }
  },
  "harbor": {
