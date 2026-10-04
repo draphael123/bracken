@@ -4391,6 +4391,7 @@ const BEASTS = [
   { t: 'flyman', name: 'THE FLYMAN', sub: 'sandbags from the grid', desc: 'A stagehand on the flies, up where the ropes run, who has been told to bring the house down. He lobs a sandbag down onto you on a red mark that no blade turns: be off the ground it lands on. Cut him down or climb to him, and the grid is yours.' },
   { t: 'prompter', name: 'THE PROMPTER', sub: 'reads them their lines', desc: 'A man in black in the prompt corner, reading the cast their lines: while he reads, they mend and stand firmer. Cut him first. A fight with him alive is a fight against everyone he is reading to.' },
   { t: 'powderboy', name: 'THE POWDER MONKEY', sub: 'he has the kegs to light', desc: 'A powder-boy off the ships, in a navy jersey with a bandolier of red sticks, who is far too happy among the kegs. He lights one and holds it high, spitting (a red mark: nothing turns a blast), then throws it where you stand. It lies fizzing inside a red ring: be out of the ring when it goes. A stick that lands by a keg lights the keg, and the next, and the next: draw him away from the powder, or let him light it under the crew.' },
+  { t: 'tidecrab', name: 'THE TIDE CRAB', sub: 'two eyes in the sand', desc: 'A mud-green shore crab that lies buried in the sand at low water with only its two eye-stalks showing, harmless and not to be hit, and comes up when the flood comes in. Surfaced it is a crab: claws up when you swing, a told ! before the pinch, over it goes if you land on its back. When the water drops it burrows again, and the eyes are all you will see. The stalks stand up and flick just before the sea turns.' },
   { t: 'shockeel', name: 'THE SHOCK EEL', sub: 'the water bites back', desc: 'An eel gone blue and bright from living by the old drowned wheels. It does not lunge. It hangs under you and charges (a red mark and a ring on the water that is its whole reach), then the ring goes off: everything swimming in it is shocked, and nothing turns it. A swimmer is the only thing it hurts: wade, hop the rocks, or be out of the ring before it goes.' },
   { t: 'navvy', name: 'THE NAVVY', sub: 'pick and candle', desc: 'A pitman in a flat cap with a candle stuck in it, who has been digging under the castle so long he no longer looks up. Digs through soft rock toward you and leaves the tunnel behind for you to use. Swings a pick with a slow, heavy tell: block it and he is open. Across a gap he THROWS it - and then he has nothing at all until he walks over and picks it up again. Drops his lamp when he dies, and the lamp stays lit.' },
   { t: 'bonechucker', name: 'THE BONE-CHUCKER', sub: 'it kept the rock', desc: 'Whatever dug in here first never left: bones in a ribcage of rags, a skull under the rock it carries, and a lantern it lobs from a distance and then nothing at all. The fire it throws is a problem and a favour at once. Close the distance and it has nothing.' },
@@ -10229,6 +10230,34 @@ function updateManta(e, dt) {
     if (e.modeT <= 0 && e.cd <= 0 && !P.dead && P.ground && ad < 220) { e.mode = 'diveTell'; e.modeT = 0.85; e.tx = P.x; e.cd = 4.5; number(e.x, e.y - 12, '!', '#ffd36b'); SFX.caw(); }
   }
 }
+/* THE TIDE CRAB (claude/tidecrab, VARIETY's unfinished item): the shore crab's own AI, on the level's tide clock. At LOW water it lies BURIED in the sand (harmless, untargetable: e.gone, the river eel's own flag; two eye-stalks showing is the tell);
+   when the FLOOD comes in (the gates' own rule: k >= 0.6) it SURFACES (0.8 s of sand and rising stalks, still harmless), then fights as a crab (claws up, the told ! pinch); when the water drops (k <= 0.4) it BURROWS again (0.7 s)
+   and is untouchable once more. The stalks stand taller and flick while the sea is about to turn (k past 0.42 and rising, the Causeway's bells). Long Water: the Saltreach street pool's k; Causeway: CT.k. A level with no tide leaves it surfaced. */
+function tideNow() { if (L.causeTide && CT) return CT.k; const sp = (L.pools || []).find(q => q.streetTide); return sp ? (sp.lastK !== undefined ? sp.lastK : 0) : null; }
+function tideCrab(e, dt) {
+  const k = tideNow();
+  if (k === null || e.noBurrow) e.tideUp = true;
+  else { if (e.tideUp === undefined) e.tideUp = k >= 0.6; if (k >= 0.6) e.tideUp = true; else if (k <= 0.4) e.tideUp = false;
+    e.tideSoon = !e.tideUp && ((L.causeTide && CT && (CT.ph === 'warn' || CT.ph === 'rise')) || (k > 0.42 && k > (e.pk || 0))); e.pk = k; }
+  if (!e.tideInit) { e.tideInit = true; if (!e.tideUp) { e.mode = 'buried'; e.gone = 1; e.vx = 0; } }
+  const m = e.mode;
+  if (m === 'buried') { e.gone = 1; e.vx = 0; e.guardT = 0;
+    if (!P.dead && Math.abs(P.x - e.x) < 150 && Math.abs(P.y - e.y) < 60) mageHint('tideCrab', 'TWO EYES IN THE SAND ARE A CRAB. BURIED AT LOW WATER IT IS HARMLESS; IT COMES UP WITH THE FLOOD.');
+    if (e.tideUp) { e.mode = 'rise'; e.modeT = 0.8; if (Math.abs(P.x - e.x) < 260) { SFX.splash && SFX.splash(); burst(e.x, e.y - 2, 8, ['#d8c890', '#a89868', '#e8e0b0'], 50, 0.4); } }
+    return true; }
+  if (m === 'rise') { e.gone = 1; e.vx = 0; if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 12, y: e.y - 2, vx: (Math.random() - 0.5) * 30, vy: -40, life: 0.3, max: 0.3, col: '#d8c890', size: 1, grav: 200 });
+    if (e.modeT <= 0) { e.mode = 'walk'; e.gone = 0; e.cd = 0.9; e.face = Math.sign(P.x - e.x) || e.face; } return true; }
+  if (m === 'sink') { e.gone = 1; e.vx = 0; if (e.modeT <= 0) e.mode = 'buried'; return true; }
+  if (!e.tideUp && m === 'walk' && !(e.stagger > 0)) { e.mode = 'sink'; e.modeT = 0.7; e.gone = 1; if (Math.abs(P.x - e.x) < 260) burst(e.x, e.y - 2, 6, ['#d8c890', '#a89868'], 40, 0.35); return true; }
+  return false;
+}
+function drawTideCrab(e, set, cx, cy) {   /* the buried crab: a low mound of sand and two eye-stalks; rising or sinking it comes out of the mound, clipped at the sand line */
+  const x = Math.round(e.x - cx), y = Math.round(e.y - cy), m = e.mode, f = m === 'rise' ? 1 - e.modeT / 0.8 : m === 'sink' ? e.modeT / 0.7 : 0, t = time * (e.tideSoon ? 9 : 2.2) + e.x;
+  if (f > 0.03) { g.save(); g.beginPath(); g.rect(x - 20, y - 30, 40, 30); g.clip(); drawSet(set, null, 0, x, y + Math.round((1 - Math.min(1, f)) * 12), e.face || 1, false, 1, 1, 1, 0); g.restore(); }
+  const sd = Math.max(0, 1 - f * 1.6), h = Math.round(sd * (3 + (e.tideSoon ? 3 : 0) + Math.sin(t) * (e.tideSoon ? 1.5 : 0.6)));
+  if (h > 0) for (const dx of [-3, 3]) { g.fillStyle = '#3e5f48'; g.fillRect(x + dx, y - 2 - h, 1, h); g.fillStyle = '#ffffff'; g.fillRect(x + dx - 1, y - 4 - h, 3, 2); g.fillStyle = '#2a1a1a'; g.fillRect(x + dx, y - 4 - h + (Math.sin(t * 0.7) > 0 ? 1 : 0), 1, 1); }
+  g.fillStyle = '#7a6a48'; g.fillRect(x - 8, y - 1, 16, 2); g.fillStyle = '#c8b88a'; g.fillRect(x - 6, y - 3, 12, 2); g.fillStyle = '#e8dcb0'; g.fillRect(x - 3, y - 4, 6, 1);
+}
 function updateShore(e, dt) {
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(e.y - P.y);
   e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt);
@@ -10261,7 +10290,8 @@ function updateShore(e, dt) {
     else if (e.mode === 'strike') { if (e.modeT <= 0) { e.mode = 'stand'; e.cd = 1.6; } }
     else { e.mode = 'stand'; if (near && e.cd <= 0) { e.face = Math.sign(d) || e.face; if (ad < 40) { e.mode = 'strikeTell'; e.modeT = 0.5; number(e.x, e.y - e.h - 6, '!', '#ffd36b'); } else { want = e.face * 30; e.stepT = (e.stepT || 0) + dt; } } }
   } else if (e.t === 'crab') { near = ad < 140 && dy < 30 && !P.dead;
-    if (e.mode === 'flipped') { if (e.modeT <= 0) { e.mode = 'walk'; e.vy = -120; } }
+    if (e.cnSkin === 'tidecrab' && tideCrab(e, dt)) { want = 0; }   /* (claude/tidecrab) buried / surfacing / sinking: no attack, no target */
+    else if (e.mode === 'flipped') { if (e.modeT <= 0) { e.mode = 'walk'; e.vy = -120; } }
     else if (e.mode === 'pinchTell') { if (e.modeT <= 0) { e.mode = 'pinch'; e.modeT = 0.25; SFX.clank(); if (!P.dead && ad < 26 && dy < 16) { const res = damagePlayer(e.x, DMG.crab); if (res === 'hit') P.vx = Math.sign(d || 1) * 170; } } }
     else if (e.mode === 'pinch') { if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 1.2; } }
     else { e.mode = 'walk'; if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = (ad > 20 || e.flanking) ? e.face * e.speed : 0; e.guardCd = Math.max(0, (e.guardCd || 0) - dt); if (ad < 50 && P.atk >= 0 && e.guardCd <= 0) { e.guardT = 0.5; e.guardCd = 1.8; }   /* the claw comes up, then it has to come down: a crab was unkillable except by the flip */ if (ad < 22 && e.cd <= 0) { e.mode = 'pinchTell'; e.modeT = 0.35; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); } } else want = e.face * e.speed * 0.4; }
@@ -26835,6 +26865,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin];   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
     if (e.shy && SPR.shy) sprSet = SPR.shy; else if (e.juggler && SPR.juggler) sprSet = SPR.juggler; else if (e.bandit && SPR.banditArcher) sprSet = SPR.banditArcher;   /* THE HARVEST FAIR's ranged pair (claude/fairfix2) */   /* THE THEATRE's own cast: the masked patron, the usher, the house's ghosts, the flying props */
+    if (e.cnSkin === 'tidecrab' && e.alive && (e.mode === 'buried' || e.mode === 'rise' || e.mode === 'sink')) { drawTideCrab(e, sprSet, cx, cy); g.globalAlpha = 1; continue; }   /* (claude/tidecrab) lying in the sand: a mound and two eyes */
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
     const bigF = e.t === 'winchmaster' ? WINCH.scale : e.t === 'marionette' ? PM.PUP.brute.scale : e.t === 'bloodknight' ? UNBF.BK_SCALE : e.t === 'strawking' ? (e.grown || 1) : e.t === 'ploughman' ? 1 : e.miniBig ? 1.25 : e.t === 'tollmaster' ? 1.25 : e.t === 'lampreeve' ? 1.12 : e.t === 'captain' ? 1.3 : e.t === 'masthead' ? 1.2 : e.t === 'quarter' ? 1.25 : e.t === 'lance' ? 1.15 : e.big ? (e.t === 'spider' ? 2.1 : 1.7) : e.elite ? EL.big : 1; const sq = e.sq > 0 ? e.sq / 0.16 : 0;
     if (e.t === 'windcaller' && (e.mode === 'blink' || e.mode === 'appear')) g.globalAlpha = 0.3 + 0.25 * Math.sin(time * 40);
