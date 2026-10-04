@@ -236,7 +236,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* the ticket yard, and THE TOWER'S STAIR: three flights up to the landing (a mummer waits there under a lantern that gutters), then the step to the tower top */
   sign(346, 'THE HELTER-SKELTER. THE STAIR IS DARK. HOLD DOWN ON THE SLIDE AND RIDE IT.');
   plat(348, R - 3, 3); plat(351, R - 6, 3); plat(354, R - 9, 5); plat(359, R - 12, 2);   /* rows 25, 22, 19 (the landing, cols 354-358), 16: a 3-row step each; the tower top is row 14 */
-  foe('brute', 357, { y: S - 9, cnSkin: 'strongman', squad: 'stair' });       /* on the landing: your dusk is short here; it is held only in the lantern's light or within arm's length. It drops after you (claude/fairfix2) */
+  foe('mummer', 357, { y: S - 9, squad: 'stair' });       /* (batch62: stays a MUMMER - the knife juggler over the ticket yard covers THIS squad and only a look-held foe makes his knives mean anything; the strongmen are the other five) on the landing: your dusk is short here; it is held only in the lantern's light or within arm's length. It drops after you (claude/fairfix2) */
   plat(343, 19, 2); foe('archer', 343, { y: 18, juggler: true, squad: 'stairTop', cover: 'stair' });   /* and a KNIFE JUGGLER on a perch over the ticket yard (claude/fairfix2; claude/fairfix3: he stood on the
      tower top, ahead of the climb, where a look held him): behind you as you climb, his knives come up the stair at your back while the landing's mummer holds your look */
   post(355, 18, 0.5);

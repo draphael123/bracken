@@ -186,6 +186,7 @@ if (fair) {
   ok(ids.indexOf('waymeet') >= 0 && ids.indexOf('canal') === ids.indexOf('waymeet') + 1 && ids.indexOf('theatre') === ids.indexOf('canal') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1 && ids.indexOf('fields') === ids.indexOf('fair') + 1, 'the map does not run Waymeet, the canal, the theatre, the fair, the Hexed Fields in that order (claude/canalfix: the fog canal between Waymeet and the playhouse): ' + ids.join(','));
   ok(existsSync(new URL('../docs/briefs/harvest-fair.md', import.meta.url)), 'docs/briefs/harvest-fair.md (the brief) is not committed');
   const L = fair.build(), T = { BOUNCER: 10, SPIKE: 3 }, TS = 16;
+  const strongman = e => e.t === 'brute' && e.cnSkin === 'strongman';   /* (claude/variety, Daniel 10-03) five of the fair's mummers are STRONGMEN now: the same squads and places, a fairground brute that walks at you whether or not you look */
   const facers = L.ents.filter(e => e.t === 'mummer' || e.t === 'hobbyhorse'), mum = L.ents.filter(e => e.t === 'mummer'), horse = L.ents.filter(e => e.t === 'hobbyhorse');
   const endX = (L.green ? L.green.x0 : L.W);
   ok(L.W >= 560 && L.W <= 720, 'the fair is ' + L.W + ' columns: not the 560-720 the brief plans');
@@ -210,7 +211,7 @@ if (fair) {
       const lane = on(563, 595, 12, 14).filter(e => e.t === 'mummer'); ok(lane.length >= 1 && lane.every(e => (L.lamps || []).some(l => l.life === 0.5 && Math.abs(l.x - e.x) <= 3 && Math.abs(l.y - e.y) <= 2)), 'the night lane has no mummer held only in a guttering lantern\'s light: ' + lane.map(e => e.x));
       ok(on(410, 438, 10, 11).some(e => e.t === 'mummer' && e.scare), 'the corn-top walk has no scarecrow that is not straw'); }
     ok(mum.indexOf(mum.slice().sort((a, b) => a.x - b.x)[0]) >= 0 && mum.slice().sort((a, b) => a.x - b.x)[0].x >= arc.teach[0] && mum.slice().sort((a, b) => a.x - b.x)[0].x < arc.teach[1], 'the first mummer in the level is not in the TEACH section');
-    const dv = inn('develop', 'mummer'), st = L.stair || {}; ok(dv.length >= 3 && dv.filter(e => e.x < st.x0).length >= 2 && dv.some(e => e.x >= st.top), 'the DEVELOP section is not a pincer: two mummers at the foot of the climb (' + JSON.stringify(st) + ') and one at its top (' + dv.map(e => e.x).join(',') + ')');
+    const dv = L.ents.filter(e => (e.t === 'mummer' || strongman(e)) && e.x >= arc.develop[0] && e.x < arc.develop[1]), st = L.stair || {}; ok(dv.length >= 3 && dv.filter(e => e.x < st.x0).length >= 2 && dv.some(e => e.x >= st.top), 'the DEVELOP section is not a pincer: two mummers at the foot of the climb (' + JSON.stringify(st) + ') and one at its top (' + dv.map(e => e.x).join(',') + ')');
     ok(L.grid.some(t => t === 22) && L.grid.some(t => t === 23) && L.grid.some(t => t === 24), 'the climb is not built of slopes (a mummer must be able to walk up it)');
     ok(inn('twist', 'mummer').length >= 2, 'the TWIST section (the carousel) has fewer than two mummers');
     ok(inn('combine', 'hobbyhorse').length >= 1, 'the COMBINE section has no hobby-horse');
@@ -283,12 +284,12 @@ if (fair) {
   delete globalThis.document; }
 // ---- THE VERTICAL REBUILD (claude/fairlevel, 2026-09-30): the fairground climbs and loops; three fair mechanics are taught, developed, twisted and examined; two secrets; a set piece ----
 { const fair = LEVELS.find(l => l.id === 'fair'), L = fair.build(), R = 28, TS3 = 16, TT = (await import('../src/level.js')).T, { floodReach } = await import('../src/reachcore.js');
-  const cnt = t => L.ents.filter(e => e.t === t).length, at = (x, y) => L.grid[y * L.W + x];
+  const strongman = e => e.t === 'brute' && e.cnSkin === 'strongman', cnt = t => L.ents.filter(e => e.t === t).length, at = (x, y) => L.grid[y * L.W + x];
   // FEWER, BETTER FOES: 12 mummers, 3 horses (the door guard among them); the last count was 13 and a grid of them
   // FEWER, BETTER FOES, EVERY ONE IN A DESIGNED ENCOUNTER (claude/fairfix): 18 mummers, 4 horses, 3 marionettes, 2 barkers - 27 - and every one a squad or an elite (no padding)
   /* (claude/fairfix2) the RANGED reskins join them - a coconut shy, four knife jugglers, two crows - and two horses at edges: 37, still every one a squad or an elite */
   { const fs2 = L.ents.filter(e => ['mummer', 'hobbyhorse', 'stringjack', 'barker', 'drunk', 'archer', 'crow'].includes(e.t));
-    ok(cnt('mummer') === 20 && cnt('hobbyhorse') === 6 && cnt('stringjack') === 3 && cnt('barker') === 2 && cnt('drunk') === 1 && cnt('archer') === 4 && cnt('crow') === 0, 'the fair foe count moved (claude/fairfix3: 20 mummers - the boardwalk\'s cut, two riding the chair-o-plane - + 6 horses + 3 string-jacks + 2 barkers + 1 shy + 4 jugglers, and no crows): ' + [cnt('mummer'), cnt('hobbyhorse'), cnt('stringjack'), cnt('barker'), cnt('drunk'), cnt('archer'), cnt('crow')]);
+    ok(cnt('mummer') === 15 && L.ents.filter(strongman).length === 5 && cnt('hobbyhorse') === 6 && cnt('stringjack') === 3 && cnt('barker') === 2 && cnt('drunk') === 1 && cnt('archer') === 4 && cnt('crow') === 0, 'the fair foe count moved (claude/fairfix3: 20 mummers, claude/variety: 15 mummers + 5 STRONGMEN (the 6th figure below) - the boardwalk\'s cut, two riding the chair-o-plane - + 6 horses + 3 string-jacks + 2 barkers + 1 shy + 4 jugglers, and no crows): ' + [cnt('mummer'), L.ents.filter(strongman).length, cnt('hobbyhorse'), cnt('stringjack'), cnt('barker'), cnt('drunk'), cnt('archer'), cnt('crow')]);
     ok(fs2.every(e => e.squad || e.elite) && cnt('barker') === L.ents.filter(e => e.t === 'barker' && e.elite).length, 'a fair foe is not in a designed encounter (a squad or an elite), or a barker is not an elite'); }
   // HEIGHT BANDS: the reach fill (with the rides) stands in five bands of height - the cellars, the road, the roofs, the boardwalk, the tops - and nothing is a corridor
   { const seen = floodReach(L, TT, { rides: true }).seen, rows = new Set([...seen].map(k => +k.split(',')[1])), band = r => r >= 29 ? 0 : r >= 24 ? 1 : r >= 19 ? 2 : r >= 15 ? 3 : 4, bands = new Set([...rows].map(band));
@@ -373,7 +374,7 @@ if (fair) {
     ok(C && C.curve.length >= 3 && C.curve.slice(1).every(r => r[2]) && C.beams.length >= 3 && C.beams.every(b => b.period > b.up && b.up > 0.6) && new Set(C.beams.map(b => b.period)).size === C.beams.length, 'the chase has no told speed-ups, or its beams are not timed (three, each down part of a period, never all lifting together)');
     const CH = await import('../src/chase.js'), cps = L.ents.filter(e => e.t === 'check').map(e => ({ x: e.x * 16 + 8, y: (e.y + 1) * 16 }));
     ok(C && CH.chaseProblems(L.chases, cps).length === 0, 'the effigy\'s fire fails the chase lint: ' + (C && CH.chaseProblems(L.chases, cps).join('; ')));
-    const tm = L.ents.filter(e => e.t === 'mummer' && e.x * 16 > C.trigger && e.x * 16 < C.end && e.y === R + 2);
+    const tm = L.ents.filter(e => (e.t === 'mummer' || strongman(e)) && e.x * 16 > C.trigger && e.x * 16 < C.end && e.y === R + 2);
     ok(tm.length >= 2 && tm.every(e => C.beams.some(b => b.x0 / 16 > e.x && b.x0 / 16 - e.x <= 8)), 'the chase does not put mummers in the way, each a few steps before a beam: ' + tm.map(e => e.x));
     ok(!L.ents.some(e => e.t === 'mend' && e.x >= G.x0 && e.x <= G.x1) && !L.ents.some(e => e.t === 'mend' && e.x >= L.arc.exam[0] && e.x < L.green.door && e.y >= 26), 'a free heart lies in the cutting or on the exam\'s road (the review cut 470 and 597)'); }
   // THE WICKER EFFIGY going up behind the fair, five stages, passed again and again
@@ -514,7 +515,7 @@ ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= 5, 'a frozen mummer took '
   FGM.step(G0, L0, [{ x: 0, y: 0, box: { l: t.px - 4, r: t.px + 4, t: t.py - 4, b: t.py + 4 }, hit: new Set() }], fx, DT); ok(got && got[0].length === 1 && got[1].length === 1 && G0.galleries[0].open && said, 'a bull\'s-eye struck on its ride did not open its planks and bars: ' + JSON.stringify(got)); }
 // ---- FAIRFIX2 (2026-10-01; Daniel: "it needs RANGED foes, real PLATFORMING, it's INCREDIBLY EASY at level 1 with no abilities, tickets are unclear, bull's-eyes / hidden paths are underused") ----
 { const fair = LEVELS.find(l => l.id === 'fair'), L = fair.build(), R = 28, TT = (await import('../src/level.js')).T, at = (x, y) => L.grid[y * L.W + x];
-  const foes = L.ents.filter(e => ['mummer', 'hobbyhorse', 'stringjack', 'barker', 'drunk', 'archer', 'crow'].includes(e.t)), sq = n => foes.filter(e => e.squad === n);
+  const foes = L.ents.filter(e => ['mummer', 'hobbyhorse', 'stringjack', 'barker', 'drunk', 'archer', 'crow'].includes(e.t) || (e.t === 'brute' && e.cnSkin === 'strongman')), sq = n => foes.filter(e => e.squad === n);
   const spikedPit = (x0, x1) => { for (let x = x0; x <= x1; x++) if (at(x, R) !== 0 || at(x, R + 1) !== TT.SPIKE) return false; return true; };
   // RANGED, REUSED AND RESKINNED: the Waymeet drunk as the coconut shy, the goblin archer as the knife juggler, the storm crows - each in a designed encounter WITH a facing foe,
   // so it hits your back while you hold a mummer (a ranged foe alone would be sprinkle)
@@ -700,7 +701,7 @@ try {
     // 5. THE GHOST TRAIN: cross the start line and stand still - it kills; with god on, a mummer left behind in the cutting is run over
     load(); { const C = BK.L.chases[0]; BK.god = false; BK.P.hp = BK.P.maxHp; BK.tp(Math.floor(C.trigger / 16) + 1, 30); BK.sim(2); let dead = false, t = 0;
       for (let i = 0; i < 60 * 14 && !dead; i++) { none(); BK.sim(1); t = i; dead = !!BK.P.dead || BK.P.hp <= 0; } out.trainKills = { dead, secs: +(t / 60).toFixed(1) }; }
-    load(e => e.t === 'mummer' && e.y === 30 * 16 + 16); { const C = BK.L.chases[0], mm = BK.enemies().filter(e => e.t === 'mummer' && e.alive); const r0 = BK.fair().runOver; BK.tp(Math.floor(C.trigger / 16) + 1, 30); BK.sim(2);
+    load(e => (e.t === 'mummer' || e.cnSkin === 'strongman') && e.y === 30 * 16 + 16); { const C = BK.L.chases[0], mm = BK.enemies().filter(e => (e.t === 'mummer' || e.cnSkin === 'strongman') && e.alive); const r0 = BK.fair().runOver; BK.tp(Math.floor(C.trigger / 16) + 1, 30); BK.sim(2);
       for (let i = 0; i < 60 * 12 && BK.P.x < C.end - 120; i++) { K.right = true; BK.sim(1); } none(); for (const e of mm) if (e.alive) e.stagger = 30;   /* (claude/fairfix2: the fair's mummers creep after you faster than the fire comes at first - stun the ones left behind, and wait for it) */
       for (let i = 0; i < 60 * 10 && BK.fair().runOver === r0 && !BK.P.dead; i++) BK.sim(1); for (let i = 0; i < 60 * 4 && BK.P.x < C.end + 16; i++) { K.right = true; BK.sim(1); } none(); out.runOver = { mummers: mm.length, runOver: BK.fair().runOver - r0 }; }
     return out; })()`, 900000);
