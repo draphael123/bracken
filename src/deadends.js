@@ -15,7 +15,7 @@
 // What is NOT a dead end: an open room (the far corner of the trench is not a corridor), a boss or mini arena or an
 // ambush room, the few tiles behind the start, anything with a doorway, gate, keeper or lever in it (that is the point
 // of going), and anything under five tiles.
-// What PAYS: a silver, a quest stray, a relic, a key, a heart put down for good ('mend'), or a cache of four coins or
+// What PAYS: a silver, a quest stray, a key, a heart put down for good ('mend'), or a cache of four coins or
 // more - within reach of the last six tiles of the pocket. A single coin or a sign does not.
 import { floodReach } from './reachcore.js';
 
@@ -23,8 +23,8 @@ const TS = 16;
 export const DEADEND_MIN = 5;          /* tiles past the last way on before a pocket has to pay */
 export const CACHE_COINS = 4;          /* a coin cache is this many at the far end */
 const POINT = new Set(['doorway', 'gate', 'lockgate', 'npc', 'shop', 'lever', 'exit', 'shrine', 'winch', 'crank']);
-const ANCHOR = new Set(['check', 'sign', 'stray', 'silver', 'key', 'relic', 'npc', 'gate', 'doorway']);
-export const LOOT = new Set(['silver', 'stray', 'relic', 'key', 'mend']);
+const ANCHOR = new Set(['check', 'sign', 'stray', 'silver', 'key', 'npc', 'gate', 'doorway']);
+export const LOOT = new Set(['silver', 'stray', 'key', 'mend']);
 
 export function findDeadEnds(L, T, opts = {}) {
   const MIN = opts.min || DEADEND_MIN;

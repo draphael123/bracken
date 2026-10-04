@@ -59,8 +59,8 @@ export function buildCaravan({ T, TS }) {
   /* 4. the quest: three of the caravan's own coffers lost along the road */
   for (const e of L.ents) if (e.t === 'stray') e.kind = 'coffer';
   L.quest = { n: 3, item: 'coffer', name: "TRADER'S COFFER", done: "THE CARAVAN'S TAKINGS ARE FOUND", thanks: "THE TRADER'S THANKS" };
-  /* 5. the relic, in the trader's tent: a veil against the sun (RELICS.veil in src/main.js) */
-  for (const e of L.ents) if (e.t === 'relic') e.kind = 'veil';
+  /* 5. no relic in the trader's tent (Daniel 10-02): the draft's veil is cut; the tent's cache pays a silver (src/relics.js, VAULT_SILVER.caravan) */
+  L.ents = L.ents.filter(e => e.t !== 'relic');
   /* 6. THE HOLLOW: THE DUNE WORM's arena (docs/briefs/dune-worm.md). Forty tiles, entered from the left (RULES I).
        +2..+8   the rim's overhang (the draft's): the one shade he can never take
        +8, +32  two wagon wrecks: dressing and sun-shade. The greybox's middle wreck at +20 goes - the awning stands there now
