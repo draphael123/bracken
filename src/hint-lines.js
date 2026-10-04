@@ -25,6 +25,8 @@ export const CALL_LINES = new Set([
   /* claude/fairfix5: every fire attack sets HERSELF alight (src/wicker-queen.js selfAlight) */
   'HER OWN FIRE CAUGHT HER: CUT HER',
   'THE RIBBONS SWEEP LOW: JUMP TWICE', 'THE RIBBONS SWEEP HIGH: DUCK', 'THAT FIRE IS SPENT', 'THE BALL RELIGHTS THE FIRE',
+  /* claude/unburiedart: the field's second engine and the tower's bridge */
+  'THE SKEIN LETS GO', "THE BOWMEN'S PALISADE SPLINTERS", 'THE ROPE PARTS: THE DRAWBRIDGE RUNS DOWN', 'THE DRAWBRIDGE LANDS ON THE WALL-WALK',
   /* the states that mean "hit him now" / "the ward is down" */
   'OPEN', 'WARDED', 'HE IS OPEN', 'DOUSED - HE IS OPEN', 'HIS HEAD IS UP. HE IS OPEN', 'HER SIDE IS OPEN', 'HER GUARD IS BROKEN',
   'THE GOBLIN QUEEN  OPEN', "THE QUEEN'S LANCE  OPEN", 'THE PALADIN  THE WARD IS DOWN', 'THE RAM LORD  DAZED', 'THE ROC  GROUNDED', 'THE RIMEWRIGHT  THAWED',

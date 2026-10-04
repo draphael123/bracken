@@ -71,7 +71,7 @@ export function resolve(levelId, col, row, env, spots = STUCK) {
 /* ---------------- THE LIVE GUIDE (main.js hands it a context) ---------------- */
 export function makeGuide(ctx) {
   let lv = null, C = newStall(), cur = null, clock = 0, n = { nudges: 0 }, last = null;
-  const env = () => ({ TS: ctx.TS, props: ctx.props(), movers: ctx.movers() });
+  const env = () => ({ TS: ctx.TS, props: ctx.extra ? ctx.props().concat(ctx.extra() || []) : ctx.props(), movers: ctx.movers(), state: ctx.state });   /* (claude/unburiedart: extra = props the level keeps outside main's list - the Unburied Field's engines - and state(name) = a named state of the level's hands) */
   const G = {
     reset(levelId) { lv = levelId; C = newStall(); cur = null; clock = 0; n = { nudges: 0 }; last = null; },
     on: () => !!lv && !!STUCK[lv],

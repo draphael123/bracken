@@ -5,7 +5,7 @@ export const GROUND_KITS = {
   "burning": {"density":0.34,"kinds":["tuft","rock","stump"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
   "harbor": {"density":0,"kinds":[]},
   "burial": {"density":0,"kinds":[]},
-  "unburied": {"density":0.22,"kinds":["tuft","rock","stone","tuft","bones"]},   /* THE UNBURIED FIELD: a trampled battlefield - dead grass, thrown stones, no flowers, and bones in the turf */
+  "unburied": {"density":0.22,"kinds":["tuft","rock","tuft","bones"]},   /* THE UNBURIED FIELD: a trampled battlefield - dead grass, thrown stones, no flowers, and bones in the turf (claude/unburiedart: no 'stone' - it is the crags' grey cairn, and stood by the toppled tower like a stone lantern) */
   "trial_warden": {"density":0.38,"kinds":["tuft","fern"]},   /* THE WARDEN'S TRIAL (2026-09-24) */
   "trial_geomancer": {"density":0.38,"kinds":["rock","stone"]},   /* THE GEOMANCER'S TRIAL: her yard is stony */
   "wood": {
@@ -261,7 +261,7 @@ export const ALLOWED_DECORATIONS = {
   "burning": ["tuft","rock","stump","campfire","barrels","fence","cart","hayBale","brokenCart","milkChurn","waterPump","crookedFence","lanternPost"],
   "harbor": ["stall","pierPost","rumBarrels","wreckBow","anchor","mastStump","kegStack","chartTable","seaChest","plunder","capstan","coiledCable","lanternDeck","waterButt","cannon","netPoles","snow","stem"],
   "burial": ["grave","bones","coffer","candelabra","snow","stem"],
-  "unburied": ["tuft","rock","stone","grave","bones","coffer","brokenCart","crookedFence","fieldGrave","crookedCross","brokenSpears","stuckShield","fallenBanner","siegeWreck","brokenPillar","oldStandard","plantedSpears","shieldPile","catapultWreck","batteringRam","barrowMound","armyBanner","trenchRevet"],   /* the look pass (2026-09-24): the Hexed Fields' graves, the battle's wreckage, the chapel's columns */
+  "unburied": ["tuft","rock","stone","grave","bones","coffer","brokenCart","crookedFence","fieldGrave","crookedCross","brokenSpears","stuckShield","fallenBanner","siegeWreck","brokenPillar","oldStandard","plantedSpears","shieldPile","catapultWreck","batteringRam","barrowMound","armyBanner","trenchRevet","ubBrazier","ubRack","ubFireRing","ubTent","ubPit","ubSpoil","ubHandcart","ubCrosses","ubMoundDead","ubHorse","ubLances","ubWagon","ubShieldWall","ubBoltRack","ubMantlet","ubBallistaDead","ubBallistaHang","ubGantry","ubBarbette","ubEmplace","ubGlow","ubFascines","ubBedDead","ubFiringStep","ubCrater"],   /* the look pass (2026-09-24): the Hexed Fields' graves, the battle's wreckage, the chapel's columns */
   "wood": [
     "beehive",
     "birdhouse",

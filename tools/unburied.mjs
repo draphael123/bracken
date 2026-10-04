@@ -141,14 +141,14 @@ assert.ok(L.cavalry.x0 >= UF.LOW[0] * TS - TS && L.cavalry.x1 <= (UF.LOW[1] + 1)
 assert.ok(of('oilbarrel').length >= 2 && of('oilbarrel').every(b => b.spill), 'BURNING PITCH: siege-oil barrels that spill a line of fire');
 ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake lines, volleys');
 
-/* ---- 4b. ONE TRACK, FIELD AND FIGHT (Daniel, 2026-09-25: "the level plays deathknight and the boss fight keeps the SAME track,
-   no switch or restart"). The arena names the track the level already plays, and music.play of the track that is playing returns
-   without touching it (playFile in src/audio.js), so the chapel door neither switches nor restarts the music. ---- */
+/* ---- 4b. THE FIELD'S OWN TRACK, THE FIGHT'S OWN TRACK (Daniel, 2026-10-03, replacing 2026-09-25's one track: the level plays "March of the Wizards"
+   by Aureolus_Omicron, CC-BY, audio/unburied.ogg; the Death Knight's fight is the boss lane's own track). The arena must name a real track, and
+   music.play of the track that is playing still returns without touching it (playFile in src/audio.js), so a door never restarts a track. ---- */
 { const AUD = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
-  assert.equal(L.music, 'deathknight', 'the level plays Night on Bald Mountain (deathknight), not ' + L.music);
+  assert.equal(L.music, 'unburied', 'the level plays "March of the Wizards" (unburied), not ' + L.music);
   assert.equal(L.arena.music, 'blacklord', 'THE DEATH KNIGHT fights to his own theme, For the Black Lord (claude/dk3, Daniel\'s pick 10-03; the level keeps its own track): ' + L.arena.music);
   assert.ok(/function playFile\(name\) \{\s*if \(!ac \|\| !trackBuf\[name\] \|\| currentTrack === name\) return;/.test(AUD), 'playFile no longer returns on the track already playing: the same name would restart it');
-  ok('one track, field and fight', L.music); }
+  ok('field track, fight track', L.music + ' / ' + L.arena.music); }
 
 /* ---- 5. THE MINI, THE BOSS AND THEIR ROOMS ---- */
 { const m = L.mini, a = L.arena;
@@ -169,6 +169,25 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
   const S = build(); for (let y = 0; y < S.H; y++) if (S.grid[y * S.W + UF.MINI.gate] === T.PORT) S.grid[y * S.W + UF.MINI.gate] = T.SOLID;
   assert.ok(!fill(S).seen.some(([x]) => x > UF.MINI.gate + 1), 'THE BARROW RIDER holds the way on');
   ok('the mini and the boss', 'mini ' + mw + ' tiles, arena ' + aw + ' tiles, the gate holds'); }
+
+/* ---- 5b. THE TWO ENGINES THAT CHANGE THE ROUTE (claude/unburiedart, Daniel 2026-10-03/04) ----
+   THE STANDING TOWER'S DRAWBRIDGE IS THE WAY INTO THE CHAPEL (the Rider's gate stays shut): with the gate solid the fill stops at it (above); with the drawbridge's seven cells laid it gets through, over the gate, down the rope ladder into the yard -
+   and the tower's ladder, deck, gallery and the leaf's gap are what the brief says. THE MANGONEL IS NEVER REQUIRED: the far bank's palisade is two rows (a hop, the mounds' E4), and the bridges cross to the Rider and the arena with it standing. */
+{ const tow = of('drawbridge'), mg = of('mangonel'); assert.equal(tow.length, 1, 'one standing tower with one drawbridge'); assert.equal(mg.length, 1, 'one mangonel'); const db = tow[0], [s0, s1] = db.span, row = db.row;
+  assert.equal(db.x, 346); assert.ok(s1 - s0 + 1 >= 7, 'the leaf is seven cells: more than a jump (' + (s1 - s0 + 1) + ')');
+  const gate = UF.MINI.gate, S1 = build(); for (let y = 0; y < S1.H; y++) if (S1.grid[y * S1.W + gate] === T.PORT) S1.grid[y * S1.W + gate] = T.SOLID;
+  const f1 = fill(S1); assert.ok(!f1.seen.some(([x, y]) => x > gate + 1 && y >= G - 1 && y <= G + 1), 'the ground gate holds, the tower and its gallery do not let you round it (the tower deck to the lintel is a jump too far)');
+  const S2 = build(); for (let y = 0; y < S2.H; y++) if (S2.grid[y * S2.W + gate] === T.PORT) S2.grid[y * S2.W + gate] = T.SOLID;
+  for (let x = s0; x <= s1; x++) if (S2.grid[row * S2.W + x] === T.AIR) S2.grid[row * S2.W + x] = T.ONEWAY;
+  const f2 = fill(S2); assert.ok(f2.seen.some(([x, y]) => x >= 365 && y === G), 'with the drawbridge down the way into the yard is open: ladder, deck, bridge, gallery, rope ladder, ground');
+  assert.ok(f2.seen.some(([x, y]) => x >= 440 && y === G), 'and on into the arena');
+  /* the mangonel: never required. The palisade at the far bank is <= 2 rows tall and the fill crosses it as built */
+  const pal = []; for (let y = 0; y < L.H; y++) for (let x = 0; x < W; x++) if (L.grid[y * W + x] === T.PALISADE && x >= 318 && x <= 324) pal.push([x, y]);
+  assert.ok(pal.length >= 2 && Math.max(...pal.map(p => p[1])) - Math.min(...pal.map(p => p[1])) <= 1, 'the far bank palisade is at most two rows (a hop)');
+  assert.ok(seen.some(([x, y]) => x >= 325 && y === G), 'the far bank, the Barrow Rider and his barrow are reached with the mangonel untouched and the palisade standing');
+  assert.equal(mg[0].knocks, 'farbank'); assert.ok(mg[0].x < 273 && mg[0].aim[0] >= 318 && mg[0].aim[0] <= 324, 'the mangonel stands on the near bank, aimed at the far bank');
+  ok('the drawbridge, the mangonel', 'a seven-cell leaf is the way in (the gate holds, the fill passes with it down); a two-row palisade, never required'); }
+
 
 /* ---- 6. RULE Q: ONE AMBUSH, ONE WAVE, ONE CAPTAIN ---- */
 { assert.equal(L.ambushes.length, 1, 'rule Q: one ambush room a level, at most');

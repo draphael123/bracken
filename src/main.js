@@ -114,6 +114,8 @@ import { bakePuffer, bakeJellyfish, bakeLamprey, bakeManta } from './redraw/sea_
 import { bakeCutlass, bakeBoarder, bakeMarine, bakeBosun, bakeLookout, bakeQuarter, bakeCaptain } from './redraw/pirates.js';
 import { bakeMasthead } from './redraw/masthead.js';
 import * as KRA from './redraw/kraken.js';
+import * as UBT from './redraw/unburied_tiles.js';   /* THE UNBURIED FIELD's own tile kit: straw, spoil, mud, siege works, wet stone, flagstones; wattle, stakes, hide, gabions, decks (claude/unburiedart) */
+import * as UBS from './redraw/unburied_sets.js';   /* THE UNBURIED FIELD's set pieces: camp, pits, horses, lances, wagons, siege engines, the chapel (claude/unburiedart) */
 import * as UW from './redraw/unburied_world.js';   /* THE UNBURIED FIELD's own look: its dusk, the ghost army's ridge, the wreck of the battle, its dressing and the bones in its soil */
 import * as FW from './redraw/fields_world.js';   /* THE HEXED FIELDS: its sky, its layers, its props and its movers */
 import * as FF from './redraw/fields_foes.js';
@@ -548,7 +550,7 @@ const perk = id => perkOn(PROG, hero(), id);   /* a MILESTONE PERK this hero too
 const cdOf = k => (k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3) * (perk('focus') ? 0.85 : 1);
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
-window.BKT = { get PROG() { return PROG; },
+window.BKT = { lights: () => lights, get PROG() { return PROG; },
   /* THE HARNESS LEVEL (HARNESSCARD): a bot hero at level n is n XP-levels AND n card picks spread evenly (the migrated-save spread), the stats a real player who spent his picks has; xp alone reads a no-card hero (-8 hp a Vigor pick, -12 stamina an Endurance pick, -1 damage a Might). Tools only: a real player chooses his own picks. */
   setHeroLevel: (h, n) => { PROG.xp = PROG.xp || {}; PROG.card = PROG.card || {}; PROG.xp[h] = n > 0 ? xpFloor(n) : 0; PROG.card[h] = evenCard(n > 0 ? n : 0); return heroLevel(h); }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPressName(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
@@ -1027,7 +1029,7 @@ function resolveTiles() {
     const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : ZG || RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
-    if (underPool) { tileSpr[y * LW + x] = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; continue; }
+    if (underPool) { let us = SET2 ? SET2.silt[(rnd() * 3) | 0] : TILE.silt[(rnd() * 3) | 0]; if (L.unburied) { const ts = UBT.unburiedTile(t, x, y, tileAt, T, L); if (ts) us = ts; } tileSpr[y * LW + x] = us; continue; }   /* (the field's mud trenches wear the field's own ground, not the shallows' blue silt) */
     if (t === T.SOLID) {
       const up = tileAt(x, y - 1), l = tileAt(x - 1, y), r = tileAt(x + 1, y);
       const inZone = (L.stone || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) || (L.scree || []).some(z => x >= z.x0 && x <= z.x1 && y === z.y);
@@ -1124,6 +1126,7 @@ function resolveTiles() {
     if (L.redgorge) { const ts = RGT.gorgeTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE RED GORGE's tile kit: strata, lit lips, the scoured channel, lashed bridges (src/redraw/redgorge_tiles.js) */
     if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
     if (L.fairKit) { const ts = FTL.fairTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE HARVEST FAIR's tile kit (claude/fairfix5): sawdust and straw, iron decks, barn boards, wagon ruts; awnings, boardwalk, the scenic railway (src/redraw/fair_tiles.js) */
+    if (L.unburied) { const ts = UBT.unburiedTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNBURIED FIELD's tile kit (src/redraw/unburied_tiles.js) */
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
       tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
@@ -1986,7 +1989,7 @@ function* loadLevelG(i) {
   { const sl = SEA.seaLoad(LEVELS[i].id, L); if (sl && sl.mid) BG.mid = sl.mid; if (sl && sl.murk) { MURK = sl.murk; MURK_ID = LEVELS[i].id; } }   /* a sea level that paints its own middle distance (or, in a dark one, its own murk) */
   // a mini you have already put down stays down, and the gate it was standing in front of starts open
   miniDone = !!((PROG[LEVELS[i].id] || {}).mini);
-  if (miniDone && L.mini && L.mini.gate !== undefined) { for (let ty = 0; ty < LH; ty++) { const j = ty * LW + L.mini.gate; if (L.grid[j] === T.PORT) L.grid[j] = T.AIR; } }
+  if (miniDone && L.mini && L.mini.gate !== undefined && !L.unburied) { for (let ty = 0; ty < LH; ty++) { const j = ty * LW + L.mini.gate; if (L.grid[j] === T.PORT) L.grid[j] = T.AIR; } }
   grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); mending = []; marks = new Set(); straysGot = new Set(); strayLast = null; for (const p of (L.pools || [])) { p.y0 = p.y; p.shallow0 = p.shallow; p.depth0 = p.depth; } tileSpr = new Array(LW * LH).fill(null); resolveTiles();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
@@ -2434,7 +2437,7 @@ function spawnEnt(e) {
          the Undercrown and had no row here, so the map lookup came back undefined and the whole case broke
          out - a prop in the level list, a prop in the entity count, and nothing on the screen. (The coffer
          even had its sprite baked and waiting in PROP.) tools/content-audit.mjs is what catches this. */
-      case 'deco': { const K = { ...cvDeco(e), hangingHouse: [hangingHouseOf(false,e.style),true], villageHall: [hangingHouseOf(true,e.style),true], ropeCoil: [HV.hvDeco('ropeCoil'), false], cocoon: [HV.hvDeco('cocoon' + ((e.v || 0) % 3)), false], hempBale: [HV.hvDeco('hempBale'), false], flourSacks: [HV.hvDeco('flourSacks'), false], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
+      case 'deco': { const K = { ...cvDeco(e), ...(L.unburied ? UBS.decoSet(e) : null), hangingHouse: [hangingHouseOf(false,e.style),true], villageHall: [hangingHouseOf(true,e.style),true], ropeCoil: [HV.hvDeco('ropeCoil'), false], cocoon: [HV.hvDeco('cocoon' + ((e.v || 0) % 3)), false], hempBale: [HV.hvDeco('hempBale'), false], flourSacks: [HV.hvDeco('flourSacks'), false], fern: [PROP.fern[(e.v || 0) % PROP.fern.length], false], mushroom: [PROP.mushroom[(e.v || 0) % PROP.mushroom.length], false], stump: [PROP.stump[(e.v || 0) % PROP.stump.length], true], rock: [PROP.rock[(e.v || 0) % PROP.rock.length], true], flower: [PROP.flower[(e.v || 0) % PROP.flower.length], false], cattail: [PROP.cattail[(e.v || 0) % PROP.cattail.length], false], moss: [PROP.moss[(e.v || 0) % PROP.moss.length], false], bushDeco: [PROP.bush[(e.v || 0) % PROP.bush.length], true],   /* the wood's own small things, placeable like any prop */
         longTable: [PROP.town.longTable[(e.v || 0) % 2], false], bench: [PROP.town.bench, false], hearth: [PROP.town.hearth[0], true], caskRack: [PROP.town.caskRack, true], mugShelf: [PROP.town.mugShelf, true], hayBale: [PROP.town.hayBale[(e.v || 0) % 2], false], bunting: [PROP.town.bunting, true], shopSign: [PROP.town.shopSign[(e.v || 0) % 4], false], innSign: [PROP.innSign, true], pot: [PROP.flot.cookPot, false], punt: [PROP.lw.rowboat, true], coffer: [PROP.coffer, false],
         gardenWall: [PROP.gardenWall[e.v || 0], false], beanpoles: [PROP.beanpoles[e.v || 0], false],
         scarePost: [fa().scarePost, false], deadCorn: [fa().corn[(e.v || 0) % 3], false], crookedFence: [fa().fence[(e.v || 0) % 2], false], pumpkinPatch: [fa().patch, false], hayStack: [fa().stack[(e.v || 0) % 2], false], farmLantern: [fa().lantern[1], false], leaningBarn: [fa().barn, true], brokenCart: [fa().cart, false], plough: [fa().plough, false], milkChurn: [fa().churn, false], waterPump: [fa().pump, false], fieldGrave: [fa().grave[(e.v || 0) % 3], false], portrait: [fa().portrait, true], candle: [fa().candle[1], false], ghostCow: [fa().cow[0], true, fa().cow],   /* THE HEXED FIELDS */
@@ -2459,7 +2462,7 @@ function spawnEnt(e) {
           if (!isSolid(e.x, ty - 1)) break;                 /* nothing to hang it from: it does not exist */
           gy = ty; }
         /* a standing one was set down on its floor at load (groundEnts) */ const pyg = (gy + 1) * TS; /* snapped onto the surface: a spire a row low sank into the rock, a row high floated */ const onPlank = !e.hang && tileAt(e.x, gy + 1) === T.PLANK; // a bridge plank's board sits a few pixels down its tile: stand things on the board, not in the air over it
-        deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? gy * TS - spritePad(c)[0] : pyg - c.height + spritePad(c)[1] + (onPlank ? 3 : 0), c, bg: true, anim: K[2] || null, ph: Math.random() * 6, stand: decoStands(e), hang: decoHangs(e), moor: e.kind === 'airBell' ? moorOf(e.x, gy) : 0 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
+        deco.push({ k: 'deco', kind: e.kind, x: px - Math.floor(c.width / 2), y: e.hang ? gy * TS - spritePad(c)[0] : pyg - c.height + spritePad(c)[1] + (onPlank && !L.unburied ? 3 : 0), c, bg: true, anim: K[2] || null, ph: Math.random() * 6, stand: decoStands(e), hang: decoHangs(e), moor: e.kind === 'airBell' ? moorOf(e.x, gy) : 0 }); if (e.kind === 'lilyLantern') lights.push({ x: px, y: pyg - 6, r: 34, glow: true, pink: true }); if (e.kind === 'bothy') lights.push({ x: px + 8, y: pyg - 12, r: 44, glow: true }); if (e.kind === 'cabin') lights.push({ x: px - 11, y: pyg - 11, r: 40, glow: true }); if (L.unburied) { const ul = UBS.lightOf(e, px, pyg); if (ul) lights.push(ul); }   /* the field's fires and windows (claude/unburiedart) */ if (e.kind === 'airBell') lights.push({ x: px, y: pyg - 16, r: 52, torch: true });
         if (e.kind === 'lanternDeck' && e.v !== 0) lights.push({ x: px, y: pyg - 18, r: 36, torch: true });
         if (e.kind === 'lamppost') lights.push({ x: px, y: pyg - 28, r: 44, glow: true }); if (e.kind === 'candelabra') lights.push({ x: px, y: pyg - 22, r: 34, glow: true, warm: true });   /* THE MAGE'S FOLLY: its lamps and its candles */
         if (e.kind === 'cookPot') lights.push({ x: px, y: pyg - 8, r: 26, torch: true });
@@ -8599,7 +8602,7 @@ function miniEnd(e) {
   if (!L.mini) return;
   if(e?.salvage)for(const s of seeds)if(s.owner===e||s.from===e)s.dead=true;
   if (e) for (let i = 0; i < 4; i++) bossFx.push({ t: 0.06 + i * 0.12, x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * (e.h || 20), big: i === 3 });   /* a shorter run for a named fight */
-  openGate(L.mini.gate, 0, LH - 1, true);
+  if (!L.unburied) openGate(L.mini.gate, 0, LH - 1, true);   /* (the Unburied Field's gate stays shut: the standing tower's drawbridge is the way into the chapel, Daniel 10-03) */
   setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null;
   if (!rushOn()) { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].mini = true; saveProgress(); }
   number(e.x, e.y - 30, MINI_DONE[e.t] || 'THE WAY OPENS', '#8fd160'); SFX.heavy(); music.play(L.music || 'theme');
@@ -18647,7 +18650,7 @@ function unbReset() {
 }
 function updateUnburied(dt) {
   const F = UNB_FIELD; if (!F) return;
-  UNBF.stepField(F, dt, { P, sound: unbSnd, say: (x, y, m, col) => number(x, y, m, col), foes: () => enemies,
+  UNBF.stepField(F, dt, { P, sound: unbSnd, say: (x, y, m, col) => number(x, y, m, col), number: (x, y, m, col) => number(x, y, m, col), foes: () => enemies,
     bearerAlive: name => enemies.some(q => q.alive && q.t === 'bannerbearer' && q.enc === name),
     hurtP: (x, d, name) => damagePlayer(x, d, { unblockable: true, name }),
     /* THE BRIDGES' ARROWS come from straight overhead: fromX is the hero's own x, so every guard held up turns them (damagePlayer) */
@@ -18658,12 +18661,17 @@ function updateUnburied(dt) {
     pegs: (p, on) => { for (const r of p.rows) { const i = r * LW + p.x - 1; if (on) { if (!(r in p.orig)) p.orig[r] = L.grid[i]; if (L.grid[i] === T.AIR) L.grid[i] = T.ONEWAY; } else if (r in p.orig) { L.grid[i] = p.orig[r]; delete p.orig[r]; } tileSpr[i] = null; } },
     spill: (x0, x1, y) => { const mid = (x0 + x1) / 2; for (let x = x0; x < x1; x += TS) fires.push({ x: x + 8, y, life: 7, delay: 0.1 + Math.abs(x - mid) / 500, dmg: DMG.fire, unb: true });
       for (const q of enemies) if (q.alive && !q.maxHp && q.x > x0 && q.x < x1 && Math.abs(q.y - y) < 24) q.burn = Math.max(q.burn || 0, 3); },
+    farbank: () => { const D = L.unburied; if (!D || !D.farbank) return; let ch = false; for (const x of [D.farbank[0], D.farbank[1]]) { const i = (F.G - 1) * LW + x; if (L.grid[i] === T.PALISADE) { L.grid[i] = T.AIR; tileSpr[i] = null; ch = true; burst(x * TS + 8, (F.G - 1) * TS + 8, 8, ['#684a2c', '#8a6a3e'], 110, 0.6); } }
+      if (ch) resolveTiles(); shakeCam(8); SFX.heavy(); SFX.crack(); },   /* THE MANGONEL's stone: the top row of the far bank's palisade is gone and the bottom row stays as a step (claude/unburiedart) */
+    drawbridge: en => { for (let x = en.span[0]; x <= en.span[1]; x++) { const i = en.bridgeRow * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; burst(x * TS + 8, en.bridgeRow * TS, 3, ['#8a6a3e', '#7a6150'], 70, 0.5); } }
+      resolveTiles(); shakeCam(9); SFX.heavy(); SFX.crack(); number(en.span[1] * TS, en.bridgeRow * TS - 40, 'THE DRAWBRIDGE LANDS ON THE WALL-WALK', '#ffd36b'); },   /* THE STANDING TOWER's bridge: the leaf becomes a floor (a ONEWAY row) across the gap to the gatehouse's gallery */
     breach: () => { for (let y = F.G - 5; y <= F.G; y++) for (const x of [246, 247, 257, 258]) { const i = y * LW + x; if (L.grid[i] !== T.AIR) { L.grid[i] = T.AIR; tileSpr[i] = null; burst(x * TS + 8, y * TS + 8, 4, ['#6a6a74', '#5a3e26'], 90, 0.6); } }
       shakeCam(8); SFX.heavy(); SFX.crack(); number(252 * TS, (F.G - 7) * TS, 'THE TOWER BREAKS OPEN AT THE FOOT', '#ffd36b'); } });
   /* the pitch keeps burning what stands in it: a corpse burned stays down */
   for (const f of fires) if (f.unb && f.delay <= 0) for (const q of enemies) if (q.alive && !q.maxHp && Math.abs(q.x - f.x) < 10 && Math.abs(q.y - f.y) < 12) q.burn = Math.max(q.burn || 0, 1.5);
 }
-function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UNBF.drawField(g, UNB_FIELD, cx, cy, time, VW, VH); UNBF.drawUnbWorld(g, enemies, cx, cy, time); }
+function unbState(n) { if (!L || !L.mini) return ''; if (n === 'rider') return miniDone ? 'down' : 'up'; if (n === 'gate') return L.grid[(UNB_FIELD ? UNB_FIELD.G : 36) * LW + L.mini.gate] === T.PORT ? 'shut' : 'open'; return ''; }   /* the Rider (down once he is beaten) and his gate (shut until the standing tower's bridge is down) */
+function drawUnburied(cx, cy) { if (!UNB_FIELD) return; UBS.flicker(lights, time); UBS.drawFires(g, L.ubFires || [], cx, cy, time, VW); UNBF.drawField(g, UNB_FIELD, cx, cy, time, VW, VH); UNBF.drawUnbWorld(g, enemies, cx, cy, time); }
 
 /* ================= THE HARVEST FAIR (src/harvest-fair.js builds it; src/mummer.js is THE FACING RULE, pure and proved in tools/harvest-fair.mjs;
    this is only its hands). DON'T TURN YOUR BACK ON THEM: a mummer moves only while NO hero faces it (co-op: any hero facing it freezes it), its bells jingle as
@@ -21114,7 +21122,7 @@ const HUNG_DECO = new Set(['portrait', 'spire', 'icicle', 'cobweb', 'drip', 'han
 // left where it was put, and tools/headless.mjs floats says so.
 const DECO_AIR = new Set(['hallWindow', 'window', 'gunport', 'sternWindows', 'grating', 'rigging', 'sailRag', 'boardingNet', 'strut', 'bracket', 'ropeBeam', 'pillar', 'axle', 'timber',
   'hammock', 'washing', 'bunting', 'pennant', 'crowNest', 'hiveBg', 'bough', 'cobweb',
-  'lilyLantern', 'buoy', 'lanternBuoy',   /* slung between two things, bolted to a wall, or riding the water */
+  'lilyLantern', 'buoy', 'lanternBuoy', 'ubLances', 'ubBallistaHang', 'ubGlow',   /* (the field's lance hedge stands on the stake line's notch: it stays where the level put it) */ /* slung between two things, bolted to a wall, or riding the water */
   'airBell']);   /* AN AIR BELL IS WHERE YOU BREATHE: set down on the bed it moved the air with it, and seven of the Deep's twelve had no bed near enough and were gone. It stays where the level put it, moored to the bed by a chain (moorOf) */
 const decoHangs = e => !!e.hang || (HUNG_DECO.has(e.kind) && e.kind !== 'banner' && e.kind !== 'hangCage' && e.kind !== 'spire');   /* a banner, a cage and a spire each come standing too */
 const decoStands = e => !decoHangs(e) && !DECO_AIR.has(e.kind);
@@ -22477,7 +22485,7 @@ function placeLandmarks() {
   if (dress === 'crag') { put(PROP.cart, 20, 0); put(PROP.fence[0], 40, 0); put(PROP.lanternPost, 60, 0); put(PROP.bones[1], 30, 0); }
   if (dress === 'marsh') { put(PROP.oldOak[1], 8, 0); put(PROP.oldOak[0], 8, 0); }
   if (dress === 'camp') { put(PROP.totem[0], 20, 0); put(PROP.totem[1], 20, 0); }
-  if (dress === 'battlefield') { put(ub().wreck, 10, 0); put(PROP.lychgate, 20, 0); put(ub().standard, 6, 0); put(ub().wreck, 30, 0); put(ub().standard, 12, 0); }   /* THE UNBURIED FIELD: the engines they lost, the old standards, and the churchyard gate the Hexed Fields have too */
+  if (dress === 'battlefield') { put(ub().wreck, 10, 0); put(ub().standard, 6, 0); put(ub().wreck, 30, 0); put(ub().standard, 12, 0); }   /* THE UNBURIED FIELD: the engines they lost and the old standards (no lychgate: that is the Hexed Fields' and Waymeet's, claude/unburiedart) */
   for (const e of villageLandmarks(lmId, dress)) lmPut(e);
   if (dress === 'myc') { put(PROP.giantCap, 0, 0); }
 }
@@ -23503,7 +23511,7 @@ CQH = makeCisternQueenHands({ get L() { return L; }, get players() { return play
   spawnBrood: (x, y) => { const n0 = enemies.length; spawnEnt({ t: 'scorpion', x: Math.floor(x / TS), y: Math.floor(y / TS) - 1, face: -1, brood: true }); const b = enemies[n0]; if (b) { b.brood = true; b.woke = 1; } return b || null; } });
 /* THE RED GORGE'S HANDS (src/red-gorge-hands.js) and THE GREAT RED CRAB'S (src/gorge-crab-hands.js): main.js owns the world; the modules own the flood, the gates, the
    jams, the baskets, the old nest, the raptor's leash and the crab's fight (claude/redgorge) */
-STK = makeGuide({ TS, props: () => props, movers: () => movers, players: () => players || [P], hint: m => { hintT = 4.5; hintMsg = m; } });
+STK = makeGuide({ TS, props: () => props, movers: () => movers, players: () => players || [P], hint: m => { hintT = 4.5; hintMsg = m; }, extra: () => (UNB_FIELD ? UNBF.engineProps(UNB_FIELD) : []), state: n => unbState(n) });   /* (claude/unburiedart: the field's engines and the Rider's gate are fed to the guide) */
 RGH = makeRedGorgeHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), asPlayer: (p, fn) => asPlayer(p, fn), VW: () => VW, VH: () => VH,
   hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false), moveHero: dx => moveBody(P, dx, 0, false), moveFoe: (e, dx) => { moveBody(e, dx, 0, false); if (e.st) e.st.x = e.x; },
@@ -24803,13 +24811,13 @@ function updateWeather(dt) {
   for (const d of decor) { if (d.sway > 0) d.sway = Math.max(0, d.sway - dt); if (d.wob > 0) d.wob = Math.max(0, d.wob - dt); }
   zoomT = Math.max(0, zoomT - dt); if (zoomT <= 0) zoomAmt = 1;
   // ambient bed by zone, and the music ducks while something winds up nearby
-  let amb = 'forest'; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) amb = z.kind;
+  let amb = 'forest', ambBell = false; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) { amb = z.kind; ambBell = !!z.bell; }
   /* THE SECOND LAYER: step inside a room and the place goes behind a wall - the inn's common room, a ship's hold, a hollow trunk */
   { const tx = P.x / TS, ty = P.y / TS, room = !L.colosseum && (L.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
     if (room) amb = ({ town: 'tavern', ship: 'hold', shore: 'hold', forest: 'hall', wind: 'hall', rain: 'hall', water: 'hall' })[amb] || amb;
     /* and a room has walls: the blows and the cries come back off them. Only on the step in and the step out, so a warp's own reverb is left alone */
     if (!!room !== !!P.revRoom) { P.revRoom = !!room; setReverb(room ? (L.dark ? 0.4 : 0.28) : (L.dark ? 0.34 : 0.04)); } }
-  ambient.set(amb);
+  ambient.set(amb); ambient.bell(ambBell && amb === 'hall');   /* (claude/unburiedart) the chapel's slow distant bell */
   /* THE THINGS IN THE WORLD MAKE THEIR OWN NOISE: a forge rings, a mill wheel knocks, a fire talks - from where they are */
   /* one smith, one hammer: an anvil beside a forge is the same man, so only the forge strikes; and slower, a strike every few seconds, not a metronome */
   { const EM = { forge: ['forgeHammer', 3.4], anvil: ['forgeHammer', 4.6], mill: ['thud', 3.4], hearth: ['fuse', 2.8], cookPot: ['fuse', 3.2], campfire: ['fuse', 3] };
@@ -25673,6 +25681,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     if (!surfaceOnly) {
       if (p.fire) { drawFirePool(p, x0, x1, y, h, cx, cy, false); continue; }
       if (p.capped || p.streetTide || p.clear) continue; // rock over it, a tide standing on real ground, or any water you can see the bottom of: it goes OVER what is in it, or it would be a blue rectangle
+      if (p.mud) { UBT.drawMud(g, p, x0, x1, y, h, cx, time, false); continue; }   /* the field's trenches hold mud, not blue water */
       if (p.shallow) {
         const d = p.depth || 22;
         g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(70,120,160,0.7)'; g.fillRect(x0, y, x1 - x0, d); g.globalCompositeOperation = 'source-over';
@@ -25691,6 +25700,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     }
     if (p.swim && !p.shallow) { g.globalAlpha = p.wash ?? (p.capped ? 0.42 : p.runTide ? 0.46 : p.streetTide ? 0.46 : p.clear ? 0.5 : 0.5); g.fillStyle = p.harm ? (p.foulColD || '#3a4a1e') : sea ? '#2e7a88' : '#3b7fae'; g.fillRect(x0, y + 3, x1 - x0, h - 3); g.globalAlpha = 1;
       if ((p.capped || p.streetTide || p.runTide || p.clear) && p.grad !== false) { const gr2 = g.createLinearGradient(0, y, 0, y + h);   /* a pool that is a whole LEVEL tall carries its own depth gloom instead */ gr2.addColorStop(0, 'rgba(10,26,32,0.45)'); gr2.addColorStop(0.3, 'rgba(10,26,32,0)'); gr2.addColorStop(1, 'rgba(6,16,22,0.5)'); g.fillStyle = gr2; g.fillRect(x0, y, x1 - x0, h); } } // over whoever is swimming in it: they are IN the water
+    if (p.mud) { UBT.drawMud(g, p, x0, x1, y, h, cx, time, true); continue; }
     if (p.shallow) { // the water itself, over the legs of whoever is wading; lighter near the surface
       const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(90,175,215,0.5)'); gr.addColorStop(1, 'rgba(40,110,150,0.55)');
       g.fillStyle = gr; g.fillRect(x0, y, x1 - x0, h);
@@ -26117,6 +26127,7 @@ function bakeBarnWall(tw, th, seed) { const W = tw * TS, H = th * TS, rnd = mulb
   for (let k = 0; k < Math.max(2, tw / 12); k++) { const x = Math.floor(rnd() * (W - 20)), y = Math.floor(H * 0.2 + rnd() * H * 0.45); q.fillStyle = '#ff7a2c'; q.fillRect(x, y, 1, 8 + Math.floor(rnd() * 10)); q.fillStyle = '#7a2a14'; q.fillRect(x + 1, y + 2, 1, 6); }
   return c; }
 function drawFacades(cx, cy) {
+  if (HIDE.facades) return;
   for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f;
     const sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy), w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
@@ -26124,6 +26135,7 @@ function drawFacades(cx, cy) {
     if (!f.spr && kind === 'barn') f.spr = bakeBarnWall(x1 - x0 + 1, y1 - y0 + 1, x0);   /* THE BURNING VILLAGE's barn: its back wall, so its ambush is a PLACE (RULES Q1) */
     if (!f.spr && kind === 'ruin') f.spr = CR.bakeRuinFace(x1 - x0 + 1, y1 - y0 + 1, x0 * 7 + y0);
     if (!f.spr && kind === 'ruindoor') f.spr = CR.bakeRuinDoor(y1 - y0 + 1);   /* the foot of a ruin's wall either side of its door */   /* THE SUNKEN CARAVAN's ruins: a lintel's piers, and the old town's walls behind the dunes */
+    if (!f.spr && String(kind).startsWith('ub')) f.spr = UBS.bakeFacade(kind, x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7, o);   /* THE UNBURIED FIELD's own: the toppled tower, the chapel-fort (src/redraw/unburied_sets.js) */
     if (!f.spr) f.spr = (String(kind).startsWith('monk') ? MON.bakeFacade : CRT.bakeFacade)(kind, x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7, Object.assign({}, o || {}, o && o.arch ? { arch: [o.arch[0] - y0, o.arch[1] - y0] } : {}));
     g.drawImage(f.spr, sx, sy);
     if (kind === 'burning') { g.globalAlpha = 0.045 + 0.03 * Math.sin(time * 7 + x0) + 0.015 * Math.sin(time * 17 + y0); g.fillStyle = '#ff8a3c'; g.fillRect(Math.max(0, sx), Math.max(0, sy + (h >> 2)), Math.min(VW, sx + w) - Math.max(0, sx), h - (h >> 2)); g.globalAlpha = 1; }
@@ -26145,18 +26157,21 @@ function softScenery(c){
     p[k]=Math.round(p[k]*.88+17);p[k+1]=Math.round(p[k+1]*.88+15);p[k+2]=Math.round(p[k+2]*.88+15);
   }cg.putImageData(im,0,0);SOFT_SCENERY.set(c,out);return out;
 }
+const HIDE = {};   /* (claude/unburiedart) BK.hide.deco / .facades / .structures: a layer the look checks switch off to see what it was holding up (tools/unburied-look.mjs) */
 function drawScenery(cx,cy){
   g.save();g.globalAlpha=.78;
-  for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx,d.y-cy);
+  if(!HIDE.deco)for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx,d.y-cy);
     if(d.kind==='hangingHouse'||d.kind==='villageHall'){paintHouseSmoke(g,d.x+d.c.width-25-cx,d.y+10-cy,time+d.ph);g.globalAlpha=.78;}}
   for(const d of decor){if(d.x<cx-d.c.width||d.x>cx+VW)continue;const c=d.fire?PROP.campfire[Math.floor(time*9+d.x)%3]:d.c;const sway=d.sway>0?Math.round(Math.sin(time*28)*d.sway*3):0;g.drawImage(softScenery(c),d.x-cx+sway,d.y-cy);}
   g.restore();
 }
 
 function drawStructures(cx,cy) {
+  if(HIDE.structures)return;
   for(const z of L.structures||[]){const l=z.x0*TS-cx,r=(z.x1+1)*TS-cx,t=z.top*TS-cy,b=z.floor*TS-cy;if(r<0||l>VW||b<0||t>VH)continue;
     if(z.kind==='seam'){drawBurialSeam(g,l,r,t,b);continue;}
     if(z.kind==='cryptPier'){drawCryptPier(g,l,r,t,b);continue;}   /* a pier of the Drowned Ossuary's arcade under its stone walkway */   /* a pillar where two of the Burial Caverns' backdrops meet (src/burial-looks.js) */
+    if(z.kind==='ubtrestle'){UBS.drawTrestle(g,l,r,t,b,z.x0);continue;}   /* the field's gun-deck trestles: real siege timber (src/redraw/unburied_siege.js) */
     if(z.kind==='chains'){for(const x of [l+4,r-5])for(let yy=t;yy<b;yy+=4){g.fillStyle=(yy/4)&1?'#5d594e':'#9a958c';g.fillRect(x,yy,(yy/4)&1?1:3,3);g.fillStyle='#3a3630';g.fillRect(x+((yy/4)&1?0:1),yy+1,1,1);}continue;}   /* a platform HUNG from the roof on two chains (B9), not stood on a pier: the Buried Dead's crown bier */
     g.fillStyle=z.kind==='timber'?'#755b43':'#827a67';
     for(const x of [l+3,r-7]){g.fillRect(x,t,z.kind==='timber'?4:10,b-t);g.fillStyle=z.kind==='timber'?'#a18a61':'#b3a58b';g.fillRect(x,t,1,b-t);if(z.kind!=='timber'){g.fillStyle='#5d594e';for(let yy=t+8;yy<b;yy+=8)g.fillRect(x,yy,10,1);}}
@@ -26211,6 +26226,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (L.welltown) WTB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE WELL TOWN's own dunes, oasis line, skyline, dovecote and Kasbah (src/redraw/welltown_backdrop.js), not the caravan's mesas */
   else if (FAIR) FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full');   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
+  if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
   else drawCastleBack(cx, cy);
   SEA.seaFar(g, cx, cy, VW, VH, time);   /* a sea level's far water: under the haze and the depth, so they sink into it */
@@ -26646,7 +26662,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const rt of roots) { const x = Math.round(rt.x - cx), y = Math.round(rt.y - cy); if (rt.t >= rt.tell) { const k = Math.min(1, (rt.t - rt.tell) / 0.12) * Math.min(1, (rt.tell + rt.up - rt.t) / 0.15 + 0.2); const h = Math.round(22 * k); g.fillStyle = '#5a4a3a'; g.beginPath(); g.moveTo(x - 6, y); g.lineTo(x, y - h); g.lineTo(x + 6, y); g.closePath(); g.fill(); g.fillStyle = '#8a7a6a'; g.beginPath(); g.moveTo(x - 2, y); g.lineTo(x, y - h + 3); g.lineTo(x + 2, y); g.closePath(); g.fill(); } else { g.fillStyle = 'rgba(255,220,120,0.5)'; g.fillRect(x - 7, y - 1, 14, 2); } }
   for (const z of (L.sleeps || [])) { if (z.x1 < cx || z.x0 > cx + VW) continue; g.fillStyle = 'rgba(150,90,220,0.16)'; g.fillRect(z.x0 - cx, z.y0 - cy, z.x1 - z.x0, z.y1 - z.y0); for (let i = 0; i < 12; i++) { const mx = z.x0 + ((i * 53 + time * 9) % (z.x1 - z.x0)), my = z.y0 + ((i * 37 + Math.sin(time + i) * 6 + 100) % (z.y1 - z.y0)); g.drawImage(PROP.moteV, Math.round(mx - cx), Math.round(my - cy)); } }
   for (const c of clouds2) { g.globalAlpha = Math.min(0.55, c.life * 0.3); g.fillStyle = c.sleep ? '#9a5aa8' : '#c8bcb0'; g.beginPath(); g.ellipse(Math.round(c.x - cx), Math.round(c.y - cy), c.r, c.r * 0.7, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
-  for (const lt of lights) if (lt.torch && lt.x > cx - 20 && lt.x < cx + VW + 20) g.drawImage(PROP.torch, Math.round(lt.x) - 3 - cx, Math.round(lt.y) - 4 - cy);
+  for (const lt of lights) if (lt.torch && !lt.bare && lt.x > cx - 20 && lt.x < cx + VW + 20) g.drawImage(PROP.torch, Math.round(lt.x) - 3 - cx, Math.round(lt.y) - 4 - cy);
   if (L.arena && L.arena.boss === 'queen') { for (let ty = 0; ty < LH; ty++) for (let tx = Math.floor(L.arena.x0 / TS); tx < Math.floor(L.arena.x1 / TS); tx++) if (L.grid[ty * LW + tx] === T.ONEWAY && L.grid[ty * LW + tx - 1] !== T.ONEWAY) { let n = 1; while (L.grid[ty * LW + tx + n] === T.ONEWAY) n++; const gx = tx * TS - cx, gy = ty * TS + 6 - cy; const gr = g.createRadialGradient(gx + n * 8, gy, 4, gx + n * 8, gy, n * 10 + 8); gr.addColorStop(0, 'rgba(255,220,120,0.35)'); gr.addColorStop(1, 'rgba(255,200,80,0)'); g.fillStyle = gr; g.fillRect(gx - 12, gy - 14, n * TS + 24, 28); } }
   if (bossActive && L.arena && L.arena.tint && SET.tint !== 'off') { g.globalAlpha = (L.arena.tintA || 0.14) * (SET.tint === 'half' ? 0.5 : 1); g.fillStyle = L.arena.tint; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }
   drawEscape(cx, cy);
@@ -28982,7 +28998,7 @@ await LS.step('final');
 document.getElementById('boot').remove();
 window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
-  P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
+  hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
