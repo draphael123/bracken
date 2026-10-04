@@ -111,13 +111,13 @@ Notes:
 
 `node tools/mash-bot.mjs --all --l1 --probe --write`, run alone.
 
-| | before (batch64) | as briefed | WEIGHT-T on harness |
+| | master + harness | as briefed (card-less bots) | WEIGHT-T + harness (ships) |
 |---|---|---|---|
-| bosses beaten at least once | 1/37 (spore) | 1/37 | see MASH below |
-| minis beaten at least once | 8/14 | 0/14 | |
-| mini fights won by mashing | 25/84 | 0/84 | |
+| bosses beaten at least once | 1/37 (spore) | 1/37 | 1/37 (spore, unchanged) |
+| minis beaten at least once | 8/14 | 0/14 | 4/14 (fields 2/6, falling tower 4/6, witchlight 3/6, unburied 2/6) |
+| mini fights won by mashing | 25/84 | 0/84 | 11/84 |
 
-MASH: (filled in below once the harness run ends)
+The mash bot did not win anywhere it had lost before. **MASH_REPORT_ONLY shrank from 16 parts to 8.** These parts now hold and were taken out: the hanging mini and run; the crown, lamplit and burial minis; the causeway, spire, theatre and redgorge runs. docs/mash-bot.json was re-stamped by `mash-bot.mjs --all`, and mash-gate is green.
 
 ## Pyromancer numbers (no nerf here)
 
