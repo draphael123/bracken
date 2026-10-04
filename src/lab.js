@@ -711,7 +711,7 @@ async function runbossLab(BK, opts) {
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
           if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
-          if(SHIELDED(h)&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
+          if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
         /* HIS SPELL REALMS (claude/undead3, round undead4: "teach the bot the three openings"). In a realm his ward holds, so the bot does
            not close on him: it reads the realm's hazards and goes for its ONE opening - FIRE: over or under his wall going out, and a DODGE
