@@ -53,7 +53,7 @@ try {
       hurricane: b => { b.mode = 'idle'; b.modeT = 9; }, lamplit: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; }, spire: b => { b.mode = 'idle'; b.modeT = 9; },
       theatre: b => { b.mode = 'idle'; b.modeT = 9; }, underleaf: b => { b.mode = 'walk'; b.alpha = 1; b.modeT = 9; b.listenT = b.sweepT = b.teleT = b.fireT = b.callT = b.feelT = 99; b.stagger = 0; }, burning: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; } };
     const opener = { wood: b => { b.mode = 'winded'; b.modeT = 9; }, hurricane: b => { b.mode = 'beach'; b.modeT = 9; }, lamplit: b => { b.open = 3; b.onFoot = true; }, spire: b => { b.mode = 'downed'; b.modeT = 9; },
-      theatre: b => { b.mode = 'downed'; b.modeT = 9; }, burning: b => { b.open = 3; }, underleaf: b => { b.mode = 'rap'; b.modeT = 9; } };   /* (claude/bosswave1: her rap after a silent listen) */
+      theatre: b => { b.mode = 'staggered'; b.modeT = 9; b.openT = 9; const S = BK.puppeteerHands().show(); if (S) S.visitLeft = 999; }, burning: b => { b.open = 3; }, underleaf: b => { b.mode = 'rap'; b.modeT = 9; } };   /* (claude/bosswave1: her rap after a silent listen) */
     for (const id of ['wood', 'hurricane', 'lamplit', 'spire', 'theatre', 'underleaf', 'burning']) {
       const b = boot(id); if (!b) { out[id] = { missing: true }; continue; }
       const o = { t: b.t, bossActive: BK.bossActive !== undefined ? BK.bossActive : null };

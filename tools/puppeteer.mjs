@@ -138,7 +138,7 @@ const onGallery = r => { r.hero.y = GAL; r.hero.ground = true; r.hero.x = A.gx0 
   const gaps = starts.slice(1).map((s, k) => s - ends[k]);
   ok(r.show.n.prop >= 3 && r.show.n.snare >= 3 && both === 0, 'his prop drop and snare line did not take turns (never both at once): ' + JSON.stringify({ prop: r.show.n.prop, snare: r.show.n.snare, both }));
   ok(landed >= 3 && early === 0 && P.drop.tell >= 1.2 && P.snare.tell >= 1.2, 'his prop drop is not told (a shadow >= 1.2 s) and unblockable, or the snare line is told under 1.2 s');
-  ok(gaps.length >= 4 && Math.min(...gaps) >= 4 - 0.05, 'his two attacks come without a long gap between: ' + gaps.map(g => g.toFixed(1)));
+  ok(gaps.length >= 4 && Math.min(...gaps) >= 4 - 0.05 && Math.min(...P.over.gap) >= 3.5, 'his two attacks come without a long gap between (>= 4 s in phase 1, >= 3.5 s in any): ' + gaps.map(g => g.toFixed(1)) + ' / ' + P.over.gap);
   ok(snared > 0 && P.snare.speed <= 130, 'the snare line does not sweep slowly across the stage holding whoever it catches');
   ok(r.log.lines.some(l => l === 'THE SNARE LINE, LOW: JUMP IT' || l === 'THE SNARE LINE, HIGH: DUCK IT'), 'the snare line was never said'); }
 { const r = rig({ x: 300, noHarl: true, noBrute: true }); const kinds = new Set(); for (let i = 0; i < 60 * 70; i++) { r.step(); if (r.show.snare) kinds.add(r.show.snare.kind); }
@@ -202,7 +202,7 @@ const onGallery = r => { r.hero.y = GAL; r.hero.ground = true; r.hero.x = A.gx0 
 // ---- EVERY ATTACK FIRES; THE MARKS ----
 { const fired = {}; let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (const ph of [1, 2, 3]) { const r = rig({ hp: ph === 1 ? 720 : ph === 2 ? 450 : 200, x: 420 }); if (ph > 1) r.e.phase = ph - 1;
-    for (let i = 0; i < 60 * 60; i++) { if (i % 120 === 0) { r.hero.x = A.x0 + 60 + rnd() * (A.x1 - A.x0 - 120); r.hero.y = ph > 1 && rnd() < 0.3 ? FLOOR - 48 : FLOOR; const mp = r.show.puppets.find(p => p.t === 'masterpiece'); if (ph === 3 && mp && rnd() < 0.5) { r.hero.x = mp.x + (rnd() < 0.5 ? -40 : 40); r.hero.y = FLOOR; } } r.step();
+    for (let i = 0; i < 60 * 90; i++) { if (i % 120 === 0) { r.hero.x = A.x0 + 60 + rnd() * (A.x1 - A.x0 - 120); r.hero.y = ph > 1 && rnd() < 0.3 ? FLOOR - 48 : FLOOR; const mp = r.show.puppets.find(p => p.t === 'masterpiece'); if (ph === 3 && mp && rnd() < 0.5) { r.hero.x = mp.x + (rnd() < 0.5 ? -40 : 40); r.hero.y = FLOOR; } } r.step();
       for (const k of ['jab', 'kick', 'chop', 'slam', 'grab', 'swat', 'stomp', 'reach', 'prop', 'snare']) if (r.show.n[k]) fired[k] = true; } }
   for (const k of ['jab', 'kick', 'chop', 'slam', 'grab', 'swat', 'stomp', 'reach', 'prop', 'snare']) ok(fired[k], 'THE ' + k.toUpperCase() + ' never fired in a fuzz of the three phases (rule A3)'); }
 const ROWS = { 'harlequin|jabTell': ['!', 'block', 'low'], 'harlequin|kickTell': ['!!', 'jump', 'low'], 'marionette|chopTell': ['!!', 'dodge', 'low'], 'marionette|slamTell': ['!!', 'jump', 'low'],

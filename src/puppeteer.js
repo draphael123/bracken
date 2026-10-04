@@ -33,27 +33,27 @@
 export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
   ward: 0.05, openMul: 1.0,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
-  staggerT: 4.0,                       // ON THE GALLERY: he is staggered this long (boss-openings asserts >= 3 s)
+  staggerT: 3.0,                       // ON THE GALLERY: he is staggered this long (boss-openings asserts >= 3 s)
   visitCap: 1 / 3,                     // A VISIT takes at most this share of his health (then the knockback comes at once)
   slackT: 12.0,                        // BOTH PUPPETS DOWN: the lever is free and his bar slack this long (x cycleK) - the time to ride up
   slumpX: 72, slumpSpeed: 150,          // SLACK: he stumbles along the gallery to this far past its batten end (so a visit is a fight, not a walk)
-  knockTell: 1.0, knockT: 0.3, knockVx: 150,   // THE KNOCKBACK: told (his bar whirls, the gallery glows red), then every hero on the gallery is thrown down
+  knockTell: 1.0, knockT: 0.3, knockVx: 150, knockDmg: 12,   // THE KNOCKBACK: told (his bar whirls, the gallery glows red), then every hero on the gallery is thrown down
   hangLow: 56,                         // one puppet down: his bar sinks this far below the gallery (still out of reach from the boards)
   riseT: 0.8,
   sceneT: 1.6,
-  downT: { harlequin: 6.0, marionette: 8.0, masterpiece: 9.0 },   // a dropped puppet stays down this long (x cycleK), then he strings it again
-  restring: 0.15, restringMin: 0.55,   // EACH CYCLE he re-strings faster: his down and slack times x (1 - restring x cycle), never under restringMin
+  downT: { harlequin: 3.5, marionette: 4.5, masterpiece: 5.5 },   // a dropped puppet stays down this long (x cycleK), then he strings it again
+  restring: 0.08, restringMin: 0.75,   // EACH CYCLE he re-strings faster: his down and slack times x (1 - restring x cycle), never under restringMin
   cutStun: 0.7,                        // a GOLD cut: the puppet staggers this long (and glows green: it can be hurt)
   flySpeed: 170,
   /* HIS TWO SLOW ATTACKS, taking turns, never both at once: the rest after one ends before the next is told (by phase) */
-  over: { first: 5.0, gap: [6.5, 5.5, 4.8] },
-  drop: { tell: 1.4, half: 20, dmg: 16, top: 26 },                         // THE PROP DROP: a growing shadow, then the sandbag (!!, no shield turns it)
-  snare: { tell: 1.3, speed: 115, dmg: 12, hold: 0.6, bar: 12 },           // THE SNARE LINE: told at the wing it starts from, then swept across (115 px/s)
+  over: { first: 3.0, gap: [4.0, 3.8, 3.5] },
+  drop: { tell: 1.4, half: 20, dmg: 24, top: 26 },                         // THE PROP DROP: a growing shadow, then the sandbag (!!, no shield turns it)
+  snare: { tell: 1.3, speed: 115, dmg: 20, hold: 0.6, bar: 12 },           // THE SNARE LINE: told at the wing it starts from, then swept across (115 px/s)
   /* THE SCENES */
-  storm: { first: 3.0, every: 7.0, tell: 1.4, on: 2.6, shove: 150, pup: 40 },
+  storm: { first: 3.0, every: 5.0, tell: 1.4, on: 2.6, shove: 150, pup: 40 },
   night: { half: 42, speed: 24, dark: 0.6 },
-  inferno: { first: 2.5, tell: 1.3, burn: 1.4, rest: 1.6, dmg: 14, top: 30, hitEvery: 0.6 },
-  sea: { first: 3.5, every: 7.5, tell: 1.3, speed: 150, half: 9, dmg: 14 },
+  inferno: { first: 2.5, tell: 1.3, burn: 1.4, rest: 0.9, dmg: 22, top: 30, hitEvery: 0.6 },
+  sea: { first: 3.5, every: 4.8, tell: 1.3, speed: 150, half: 9, dmg: 22 },
   harl: { hp: 40, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 2, jabReach: 26, jab: 10, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 12,
     rest: 0.6, still: 0.7, dart: 2.2 },
   brute: { hp: 110, speed: 58, chopTell: 1.0, chopReach: 40, chop: 32, slamTell: 1.15, slamReach: 70, slamTop: 12, slam: 34, grabTell: 1.0, grabReach: 30, grab: 35,
@@ -62,7 +62,7 @@ export const PUP = {
     recover: 2.2, speed: 34, lowerT: 1.6 },
   slamPitT: 4.0, slamPitHalf: 1,       // phase 2: the slam breaks the boards (its column and one each side) for this long
   lowTop: 10, highTop: 24, highBot: 10,
-  gap: [0.9, 0.6, 0.6],                // P1: the rest between one duo blow and the next
+  gap: [0.6, 0.45, 0.45],                // P1: the rest between one duo blow and the next
   pace: 26, keep: 72, mW: 34, mH: 92,
   p2: 2 / 3, p3: 1 / 3,
 };
@@ -340,7 +340,7 @@ export function stepShow(e, show, dt, c) {
     const may = !busy && (e.phase >= 2 || !show.turn || show.turn === p || (p.t === 'harlequin' && show.turn && show.turn.t !== 'harlequin' && !/Tell$/.test(show.turn.mode) ? true : p.t === 'harlequin' && show.turn && show.turn.mode.endsWith('Tell') && show.turn.modeT < show.turn.tellLen - 0.4));   /* (phase 1: they do not START together; the Harlequin may come in while the Brute is well into a windup or a swing) */
     puppetStep(p, e, show, dt, c, ev, stageHero, may); }
   /* HIS TWO SLOW ATTACKS and THE SCENE's rule (only while the duo fights: the visit and the scene change are clean) */
-  hazardsStep(e, show, dt, c, ev, stageHero, heroes, fighting && !show.change);
+  hazardsStep(e, show, dt, c, ev, stageHero, heroes, fighting && !show.change, (fighting || e.mode === 'slack') && !show.change);   /* (his drops keep coming while you make for the lever and ride: up under fire) */
   /* ---- HIS OWN BEATS ---- */
   switch (e.mode) {
     case 'scene': if (e.modeT <= 0) { sceneLay(show, c); for (const p of stage) { restring(p); p.mode = p.t === 'masterpiece' ? 'lower' : 'rise'; p.modeT = p.t === 'masterpiece' ? PUP.master.lowerT : PUP.riseT; if (p.t !== 'masterpiece') p.y = A.floor; }
@@ -362,7 +362,7 @@ export function stepShow(e, show, dt, c) {
         c.number(e.x, e.y - 60, 'HE THROWS YOU OFF THE GALLERY', '#ff9a5c'); }
       return ev; }
     case 'knockTell': if (e.modeT <= 0) { e.mode = 'knock'; e.modeT = PUP.knockT; show.n.knock++; ev.push({ t: 'knock' }); c.sound('knock');
-        for (const h of heroes) if (onLoft(show, h) || (h.y < A.floor - 20 && h.y <= A.gallery + 8)) { show.n.thrown++; c.fling(h, 1); }   /* (always out over the stage, away from the batten's well at the door) */ }
+        for (const h of heroes) if (onLoft(show, h) || (h.y < A.floor - 20 && h.y <= A.gallery + 8)) { show.n.thrown++; c.hit([h.x - 4, h.x + 4, h.y - 30, h.y + 2], PUP.knockDmg, 'THE KNOCKBACK', { from: e.x, unblockable: true }); c.fling(h, 1); }   /* (still up there when it comes: it hurts - told a second ahead, so drop off first) */   /* (always out over the stage, away from the batten's well at the door) */ }
       return ev;
     case 'knock': if (e.modeT <= 0 && e.noScene) { e.noScene = false; e.mode = 'work'; return ev; }   /* (a hero thrown off the gallery outside a visit: no new scene) */
       if (e.modeT <= 0) { show.cycle++; show.nextScene = nextSceneOf(show); e.mode = 'scene'; e.modeT = PUP.sceneT; ev.push({ t: 'sceneTell', to: show.nextScene }); c.sound('sceneTell');
@@ -409,10 +409,10 @@ function slackClock(e, show, dt, c, ev, stage) {
 /* A TELL IS RUNNING (his or the scene's): nothing else may start one - one windup at a time */
 export const tellRunning = show => !!(show.drops.length || (show.snare && show.snare.ph === 'tell') || (show.gust && show.gust.ph === 'tell') || (show.trap && show.trap.ph === 'tell') || (show.wave && show.wave.ph === 'tell'));
 const hisBusy = show => !!(show.drops.length || show.snare);
-function hazardsStep(e, show, dt, c, ev, hero, heroes, on) {
+function hazardsStep(e, show, dt, c, ev, hero, heroes, on, onHis) {
   const A = show.A;
   /* ---- THE PROP DROP and THE SNARE LINE, taking turns ---- */
-  if (on && hero && !hisBusy(show)) { show.overCd -= dt;
+  if (onHis && hero && !hisBusy(show)) { show.overCd -= dt;
     if (show.overCd <= 0 && !tellRunning(show)) { const kind = show.overN % 2 === 0 ? 'drop' : 'snare'; show.overN++; show.overArmed = true;
       if (kind === 'drop') { const D = PUP.drop, fy = heroFloor(show, hero) <= A.gallery + 4 ? A.floor : heroFloor(show, hero);
         const d = { id: (show.dropN = (show.dropN || 0) + 1), x: Math.max(A.x0 + 8, Math.min(A.x1 - 8, hero.x)), fy, t: D.tell, len: D.tell, half: D.half, dmg: D.dmg, bag: true, piece: show.dropN % 2 === 0 };
