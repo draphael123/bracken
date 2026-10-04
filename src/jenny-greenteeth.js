@@ -58,11 +58,11 @@ export const GT = {
   hideMax: 9.0, gateNear: 120,
   floodTell: 2.0, fogTell: 2.0,
   gap: [0.6, 0.5, 0.45], pairEvery: 3, pairGap: 0.55,
-  dmg: { grab: 14, drag: 4, lash: 20, reach: 20, bite: 22, surge: 18, slam: 24, charge: 20, net: 8 },
+  dmg: { grab: 14, drag: 4, lash: 20, reach: 20, bite: 18, surge: 18, slam: 24, charge: 20, net: 8 },
   p2: 2 / 3, p3: 1 / 3,
   /* SHE FIGHTS IN THE BEAT'S OPENINGS: stranded or flushed she still SNAPS (a yellow !: the shield turns it, or step back) and SWIPES low (a red !!:
      jump it) at a hero beside her. Stuck by her claws or dazed she does nothing (stagger means still) */
-  oa: { first: 0.8, every: 1.1, snapTell: 0.5, snapR: 52, snapDmg: 16, swipeTell: 0.55, swipeR: 64, swipeDmg: 16, near: 90 },
+  oa: { first: 0.9, every: 1.3, snapTell: 0.5, snapR: 52, snapDmg: 16, swipeTell: 0.55, swipeR: 64, swipeDmg: 16, near: 90 },
 };
 /* THE MOVES: tell (s), blow (s), the mark's promise, the answer, the height (the marks table's rows are src/marks.js) */
 export const MOVES = {
@@ -469,9 +469,9 @@ function openFight(e, show, dt, c, heroes, ev, snapOnly) {
     return; }
   if (e.oaCd === undefined || e.oaFor !== e.tellId) { e.oaCd = O.first + (snapOnly ? 0.5 : 0); e.oaFor = e.tellId; }
   e.oaCd -= dt; if (e.oaCd > 0 || !h || Math.abs(h.x - e.x) > O.near || Math.abs(h.y - e.y) > 60 || e.modeT < 0.6) return;
-  const k = snapOnly || show.n.openAtk % 2 === 0 ? 'snap' : 'swipe'; e.oa = { k, t: k === 'snap' ? O.snapTell : O.swipeTell, len: k === 'snap' ? O.snapTell : O.swipeTell, dir: Math.sign(h.x - e.x) || 1, id: ++show.armN };
+  const k = snapOnly ? 'snap' : 'swipe';   /* (claude/jenny2, measured: her snaps in the beat's openings were half the damage a warden or a pyromancer took - she swipes low there now, a jump every hero has) */ e.oa = { k, t: k === 'snap' ? O.snapTell : O.swipeTell, len: k === 'snap' ? O.snapTell : O.swipeTell, dir: Math.sign(h.x - e.x) || 1, id: ++show.armN };
   if (!snapOnly) e.face = e.oa.dir; c.say(k === 'snap' ? '!' : '!!'); c.sound(k === 'snap' ? 'biteTell' : 'lashTell'); ev.push({ t: k + 'Tell' });
-  if (!show.told.openAtk) { show.told.openAtk = true; c.number(e.x, e.y - 60, 'SHE STILL BITES: BLOCK IT OR JUMP IT', '#ffd36b'); }
+  if (!show.told.openAtk) { show.told.openAtk = true; c.number(e.x, e.y - 60, 'SHE STILL CLAWS: JUMP IT', '#ffd36b'); }
 }
 const clampX = (A, x) => Math.max(A.x0 + 14, Math.min(A.x1 - 14, x));
 /* HER WATER: she keeps five tiles off the gates' faces (her arms reach up them; her body is never under a walker's ledge) */
