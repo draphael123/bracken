@@ -84,7 +84,7 @@ const exitOf = r => r.e.rings.find(q => q.kind === 'exit' && !q.spare);
   const s2 = rig({ hp: 650 }); run(s2, 0.02); force(s2, 'trap'); run(s2, MAGE.tell.trap + 0.02); assert.equal(s2.e.shots.filter(q => q.kind === 'trap').length, MAGE.trapN[1], 'stage two: a heavier drop');
   assert.equal(MARK['undeadmage|trapTell'], '!'); assert.equal(MARK['undeadmage|decoyTell'], ''); }
 // ---- ROUND 3 KEPT HIS DIFFICULTY ----
-{ assert.equal(MAGE.order.length, 12, 'his order is as long as it was'); assert.equal(MAGE.breachT, 2.0, 'the dodge-through opening is not shortened'); assert.equal(MAGE.openMul, 2); }
+{ assert.equal(MAGE.order.length, 14, 'his order is as long as it was (12, and claude/archmage2b added the bone storm and the grave pull - the pull skipped before his third stage)'); assert.equal(MAGE.order.filter(s => s !== 'bone' && s !== 'pull').length, 12, 'round 3 moves are not all still in his order'); assert.equal(MAGE.breachT, 2.0, 'the dodge-through opening is not shortened'); assert.equal(MAGE.openMul, 2); }
 // ---- STAGES ----
 { const r = rig({ hp: 650 }); run(r, 0.02); assert.equal(mageStage(r.e), 2); assert.ok(r.said.includes('HIS RINGS STAY OPEN'), 'stage two is announced');
   force(r, 'step'); run(r, MAGE.tell.step + 0.05); const spare = r.e.rings.find(q => q.spare); assert.ok(spare && spare.life >= MAGE.spareLife, 'stage two: a spare exit stays open by you');

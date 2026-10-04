@@ -23,7 +23,9 @@ const A = await import('../src/audio.js');
 const BM = await import('../src/boss-music.js');
 const arena = id => LEVELS.find(l => l.id === id).build().arena;
 assert.equal(arena('mage').music, 'archmage', "the Archmage's arena is not on the Archmages' theme");
-assert.equal(arena('fallingtower').music, 'archmage:undead', "the Undead Archmage's arena is not on the undead voicing of the Archmages' theme (his stair chase plays arena.music from the first step)");
+assert.equal(arena('fallingtower').music, 'undeadmage', "the Undead Archmage's arena is not on his own recording (claude/archmage2b: audio/undeadmage.ogg; his stair chase plays arena.music from the first step)");
+assert.ok(A.MUSIC_NAMES.includes('undeadmage') && /Matthew Pablo/.test(A.MUSIC_CREDITS.undeadmage || '') && !A.MUSIC_NAMES.includes('archmage:undead'), 'the Undead Archmage\'s recording has no credited Sound Test row (or the old synth voicing is still listed)');
+assert.ok(!('archmage:undead' in BM.SYNTH_VARIANT), 'the undead synth voicing is still in boss-music.js - nothing plays it now');
 assert.equal(arena('kings').music, 'goblinroyal', "the Goblin King's arena is not on the Goblin royals' theme");
 assert.equal(arena('crown').music, 'goblinroyal', "the Goblin Queen's arena is not on the Goblin royals' theme");
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
@@ -36,7 +38,7 @@ assert.equal(arena('unburied').music, 'blacklord', "THE DEATH KNIGHT's arena is 
 assert.ok(A.MUSIC_NAMES.includes('blacklord') && /Ronhul Maggot/.test(A.MUSIC_CREDITS.blacklord || ''), 'For the Black Lord has no Sound Test entry and CC-BY credit');
 assert.ok(A.MUSIC_NAMES.includes('cisternqueen') && A.MUSIC_CREDITS.cisternqueen, 'THE CISTERN QUEEN has no Sound Test entry of her own');
 assert.ok(A.MUSIC_NAMES.includes('banditking') && A.MUSIC_CREDITS.banditking, 'THE BANDIT KING has no Sound Test entry of his own');
-for (const n of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
+for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
 for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
 
@@ -52,7 +54,7 @@ const grab = async (name, loops) => {
 const fmt = e => e.kind + ':' + e.type + ':' + (e.f === null ? '' : Math.round(e.f * 10) / 10);
 const results = {};
 const MAXGAP = { drownedking: 3 };   /* (the Bandit King's 6/8 has a drum or a tek on every eighth but the second) */   /* the dirge is in 6/8: its beats are three eighths apart, and the drone and choir ring across the gap */
-for (const name of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'banditking', 'banditking:p2', 'cisternqueen', 'cisternqueen:p2', 'cisternqueen:p3', 'gorgecrab']) {
+for (const name of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'banditking', 'banditking:p2', 'cisternqueen', 'cisternqueen:p2', 'cisternqueen:p3', 'gorgecrab']) {
   const { S, len, ev } = await grab(name, 2);
   const tonal = ev.filter(e => e.kind === 'osc'), T0 = Math.min(...tonal.map(e => e.t)) - 1e-6, first = tonal.filter(e => e.t >= T0 && e.t < T0 + len - 1e-6), sec = tonal.filter(e => e.t >= T0 + len - 1e-6 && e.t < T0 + 2 * len - 1e-6);
   assert.ok(first.length > 150, name + ': only ' + first.length + ' notes in a loop');
@@ -66,15 +68,7 @@ for (const name of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking',
   const clicks = ev.filter(e => e.kind === 'src' && e.t >= T0 && e.t < T0 + len - 1e-6).length;
   results[name] = { clicks, step: S.step, tonal: first, pitches: new Set(first.map(e => Math.round(e.f))), seconds: +len.toFixed(1), oscPerLoop: first.length, perSecond: +density.toFixed(1), hash: first.map(fmt).join('|') };
 }
-assert.notEqual(results.archmage.hash, results['archmage:undead'].hash, 'the undead voicing is the same notes as the living one');
-// THE UNDEAD ARCHMAGE HAS A SOUND OF HIS OWN (Daniel: "needs to sound a bit different"): his theme rotted, not the living one with a filter
-{ const L = results.archmage, U = results['archmage:undead'], hz = s => BM.nf(s);
-  assert.ok(U.step > L.step * 1.4, 'the undead theme is not slower (step ' + U.step + ' s against ' + L.step + ' s)');
-  assert.ok(U.seconds > L.seconds * 1.4, 'the undead loop is not longer than the living one (' + U.seconds + ' s against ' + L.seconds + ' s)');
-  const flat = f => [...U.pitches].some(p => Math.abs(p - Math.round(f * Math.pow(2, -1 / 12))) <= 1);
-  assert.ok(flat(hz('D3')) && flat(hz('A2')), 'the undead organ is not a semitone flat of the living one (no Db3 / Ab2 in it)');
-  const types = r => new Set(r.tonal.map(e => e.type)); assert.ok(types(L).has('triangle') && !types(U).has('triangle'), "the undead theme still has the living harpsichord's triangle voice");
-  assert.ok(U.clicks >= 40 && U.clicks > L.clicks * 4, 'the undead theme has no bone percussion: ' + U.clicks + ' dry clicks a loop against the living ' + L.clicks); }
+/* (the undead voicing's own checks went with it: claude/archmage2b gave the Undead Archmage a real recording) */
 /* THE BANDIT KING (claude/welltown-fix): 6/8, a war drum, a zurna; his second phase faster with the zurna an octave up */
 { const K = results.banditking, K2 = results['banditking:p2'], S = BM.bossSynthOf('banditking');
   assert.equal(S.total / 16, 6, 'his theme is not in 6/8 (six eighths a bar over 16 bars)');
@@ -99,7 +93,7 @@ const hs = Object.values(results).map(r => r.hash); assert.equal(new Set(hs).siz
 assert.equal(errors.length, 0, 'the scheduler threw: ' + (errors[0] && errors[0].message));
 const gainNow = A.debugAudio().musicGain.gain; A.music.play('archmage'); assert.ok(A.debugAudio().wantTrack === 'archmage');
 A.music.stop();
-console.log('ok  boss-music   Drowned King (keep, drownedking), Winchmaster (oreroad, winchmaster), Gate Gargoyle (witchlight, gargoyle); Archmages (mage) + Undead Archmage (fallingtower, undead voicing) on the archmage theme, Goblin King + Queen on goblinroyal; ' +
+console.log('ok  boss-music   Drowned King (keep, drownedking), Winchmaster (oreroad, winchmaster), Gate Gargoyle (witchlight, gargoyle); Archmages (mage) on the archmage theme, the Undead Archmage (fallingtower) on his own recording, Goblin King + Queen on goblinroyal; ' +
   Object.entries(results).map(([k, v]) => k + ' ' + v.seconds + 's ' + v.perSecond + ' osc/s').join(', ') + '; loops repeat exactly');
 process.exit(0);
 } catch (e) { console.error(e && e.stack || e); process.exit(1); }

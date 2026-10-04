@@ -12,7 +12,7 @@
 //   rows 0-49      THE SKY: the desert (SAND, rows 6-12), his hall at the top of the tower (HALL, rows 22-38: the carpet's
 //                  arena), and nothing to stand on by design between the hall's floor and the crown
 //   rows 50-83   7 THE OPEN CROWN        broken ledges, the sky showing through, and HIS RING on the parapet (2026-09-29) -
-//                                        through it THE SPIRAL STAIR (cols 80-105, rows 70-123, east of the tower's wall:
+//                                        through it THE SPIRAL STAIR (cols 80-105, rows 70-139, east of the tower's wall:
 //                                        src/spiral-chase.js), the Undead Archmage chased up it, and the carpet at its top
 //   rows 86-119  6 THE BELL LOFT         (2026-09-25) the bell deck over its pit, and THE SEXTON, the tower's mini
 //   rows 122-155 5 THE BURST CISTERN     a floor of poison water, stepping stones
@@ -396,7 +396,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, SKY + 1]],
     /* THE SKY IS THE ARENA. trigger is never walked past: the carpet starts the fight when it is boarded (carpet.js) */
-    arena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: TOWER.W - 1, boss: 'undeadmage', carpet: true, music: 'archmage:undead', tint: '#30334e', tintA: 0.06 },
+    arena: { x0: 4 * TS, x1: 68 * TS, y0: HALL.y0 * TS, floor: HALL.floor * TS, hall: true,   /* three screens wide and a little over one tall: he is never off the top of it */ trigger: 1e9, wallL: 0, wallR: TOWER.W - 1, boss: 'undeadmage', carpet: true, music: 'undeadmage',   /* (claude/archmage2b: his own recording - audio/undeadmage.ogg - not the synth voicing) */ tint: '#30334e', tintA: 0.06 },
   };
 }
 

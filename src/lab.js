@@ -8,7 +8,8 @@ import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate,
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK, HEIGHT } from './marks.js';
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
-import { FLIGHTS as SPIRAL_FLIGHTS } from './spiral-chase.js';   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
+import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
+import { boneGaps as mageBoneGaps, MAGE as UMAGE } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
@@ -717,6 +718,13 @@ async function runbossLab(BK, opts) {
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
         const away=(x,y,r,w=1)=>{const ex=P.x-x,ey=py-y,d=Math.hypot(ex,ey)||1;if(d<r){vx+=ex/d*w;vy+=ey/d*w;threat=true;}};
         if(m==='stormTell'&&Math.abs(P.x-boss.markX)<44){vx+=P.x>=boss.markX?1:-1;threat=true;}
+        /* ARCHMAGE2 (claude/archmage2b): THE BONE STORM - once the skulls are loosed it flies out along the nearest gap (where the gap will be a
+           beat on); HIS ECHO's lightning - out of its pale column; THE GRAVE PULL - it leans away from the void while it drags */
+        {const B=boss.bones;if(B&&B.live){const k=B.t/UMAGE.bone.secs,R=UMAGE.bone.r0+(UMAGE.bone.r1-UMAGE.bone.r0)*k,d0=Math.hypot(P.x-B.cx,py-B.cy);
+          if(d0<R+14){const me=Math.atan2(py-B.cy,P.x-B.cx);let best=null,bd=9;for(const a of mageBoneGaps(B,Math.min(1,k+0.18))){let d=Math.abs(((a-me)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI);if(d<bd){bd=d;best=a;}}
+            if(best!==null){const tx=B.cx+Math.cos(best)*(R+40),ty=B.cy+Math.sin(best)*(R+40),ex=tx-P.x,ey=ty-py,dd=Math.hypot(ex,ey)||1;vx+=ex/dd*3;vy+=ey/dd*3;threat=true;}}}}
+        for(const q of boss.echoes||[])if(q.markX!==null&&q.markX!==undefined&&Math.abs(P.x-q.markX)<44){vx+=P.x>=q.markX?1:-1;threat=true;}
+        if(boss.void&&boss.void.live){const V=boss.void,ex=P.x-V.x,ey=py-V.y,d=Math.hypot(ex,ey)||1;if(d<200){vx+=ex/d*1.6;vy+=ey/d*0.8;}if(d<70)threat=true;}
         if(boss.deathMark)away(boss.deathMark.x,boss.deathMark.y,boss.deathMark.r+18,2);
         for(const c of boss.clouds||[])away(c.x,c.y,c.r+30,3);
         /* HIS RINGS (Falling Tower round 2): a FLARED exit by you is his step coming - with the stamina for it the bot DODGES THROUGH it
@@ -730,7 +738,7 @@ async function runbossLab(BK, opts) {
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
           if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
-          if(SHIELDED(h)&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
+          if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
         /* HIS SPELL REALMS (claude/undead3, round undead4: "teach the bot the three openings"). In a realm his ward holds, so the bot does
            not close on him: it reads the realm's hazards and goes for its ONE opening - FIRE: over or under his wall going out, and a DODGE
@@ -1990,7 +1998,16 @@ export function chaseClimb(BK, m, o = {}) {
       if (nxt) { const cur = seq[at], lip = walk > 0 ? (cur[0] + cur[1]) * 16 - P.x : P.x - cur[0] * 16, near = walk > 0 ? nxt[0] * 16 - P.x : P.x - (nxt[0] + nxt[1]) * 16;
         if (near > lip + 4 ? lip < 4 : near < 18 && nxt[2] < cur[2]) leap = true; }
       else if (at < 0 && !G[Math.floor(P.y / 16) * W + Math.floor((P.x + walk * 3) / 16)]) leap = true; }   /* off the list (a landing it fell to): the old rule, jump at an edge */
-    const guard = !!(o.guard && P.ground && !(jh > 0) && o.guard());
+    /* THE NEW FLIGHTS (claude/archmage2b): it waits out a clock weight's swing (it walks on only when no weight meets it on the way, unless
+       where it stands is no safer), and it meets his books - a held guard turns them; the rest jump them as they come */
+    const fx = BK.chase && BK.chase.stairFx && BK.chase.stairFx();
+    if (fx && P.ground && !(jh > 0)) { const fk = Math.min(F.length - 1, k + 1), sq = [fk === 0 ? [BK.L.spiral.x0, 26, BK.L.spiral.floor] : F[fk - 1].land, ...F[fk].steps, F[fk].land];   /* (the feet it will have on the way: the ledge under it, or over a gap the next one up) */
+      const yAt = x => { const tx = x / 16, on = sq.find(([x0, len]) => tx >= x0 && tx <= x0 + len); if (on) return on[2] * 16; const up = sq.filter(([x0, len]) => (x0 + len / 2 - tx) * walk > 0); return (up[0] || sq[sq.length - 1])[2] * 16; };
+      const ps = spiralPendSafe(fx.t, P.x, P.y, walk, 1.0, 85, yAt); if (!ps.go && ps.stay) { BK.keys.right = BK.keys.left = false; leap = false; } }
+    let bookGuard = false;
+    if (fx && P.ground) for (const b of fx.books) { if (b.tell > 0 || (b.x - P.x) * b.vx > 0) continue; const d = Math.abs(b.x - P.x);
+      if (d < 70 && Math.abs((P.y - 13) - b.y) < 20) { if (SHIELDED((BK.PROG && BK.PROG.hero) || 'knight') && d < 60) bookGuard = true; else if (d < 34 && !(jh > 0)) { BK.press('jump'); jh = 12; } } }
+    const guard = bookGuard || !!(o.guard && P.ground && !(jh > 0) && o.guard());
     if (guard) { BK.keys.right = BK.keys.left = false; leap = false; } BK.keys.block = guard;
     if (leap && !(jh > 0)) { BK.press('jump'); jh = 16; }
     BK.keys.jump = jh > 0; jh--;
