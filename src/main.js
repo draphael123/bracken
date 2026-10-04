@@ -46,7 +46,7 @@ import * as UNBF from './unburied-foes.js';   /* THE UNBURIED FIELD: the fallen,
 import {breathCapacity} from './deepair.js';
 import {drawHarborLandmarks} from './harbor-landmarks.js';
 import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-boss.js';
-import { attackPose } from './attack-animation.js';
+import { attackPose } from './attack-animation.js'; import * as CM from './commit.js';   /* WEIGHT (Daniel 10-02): COMMITMENT + STAMINA - the commit, the held buffer, the bar's rules (src/commit.js) */
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
 import { crumbleStep, crackMarks } from './tower-collapse.js'; import * as FTW from './redraw/fallen_tower.js';   /* THE FALLING TOWER's FAILING STONE (docs/briefs/falling-tower-rework.md) */
@@ -361,7 +361,7 @@ const MAGE = { sees: 220, near: 90, far: 150, speed: 40, reach: 180, boltV: 135,
 // hardest for the two things you do when you are losing. Defence is cheap now. Which of the two you reach
 // for is the MARK's job to tell you - a yellow ! is the shield, a red !! is your feet - and that is a read,
 // not an arithmetic problem about a bar.
-const ST = { swing: 15, plunge: 35, dodge: 20, blockHit: 14, hold: 7.5, knightHold: 18.75, regen: 75, delay: 0.2 };   /* hold: 7.5 -> 18.75 a second (the knight rework): a raised shield empties a full bar in under seven seconds, so turtling is a cost and a timed guard - free - is the answer */
+const ST = { swing: 15, plunge: 35, dodge: 20, blockHit: 14, hold: 7.5, knightHold: 18.75, regen: CM.STAM.regen, delay: CM.STAM.delay };   /* WEIGHT (Daniel 10-02): regen 75 -> 55 a second, delay 0.2 -> 0.5 s (src/commit.js STAM) */   /* hold: 7.5 -> 18.75 a second (the knight rework): a raised shield empties a full bar in under seven seconds, so turtling is a cost and a timed guard - free - is the answer */
 /* HOLDING THE SHIELD COSTS, and only holding it. The first moments of a guard - the perfect guard's own window - are free, so a
    shield raised on the beat costs nothing at all (and the parry pays wind back); after that it drains ST.hold a second, half
    that with STEADY ARM (it made holding free, which made holding the default). HEAVY BLOWS PUSH HIM: a blow on the shield
@@ -441,7 +441,7 @@ const ABILITIES = [
   { id: 'shieldThrow', name: 'SHIELD THROW', price: 80, desc: 'F: hurl the shield. 25 stamina, 2.5s', needs: 'stockade', needsName: 'the Stockade', hero: 'knight' },
   { id: 'groundSlam', name: 'GROUND SLAM', price: 90, desc: 'F: quake the floor both ways. 31 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'knight' },
   { id: 'fireWall', name: 'FIRE WALL', price: 80, desc: 'F: a line of flame ahead for 3s. 31 stamina, 4s', needs: 'stockade', needsName: 'the Stockade', hero: 'pyro' },
-  { id: 'cinderStep', name: 'CINDER STEP', price: 90, desc: 'F: a burning dash you cannot be hit in. 25 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'pyro' },
+  { id: 'cinderStep', name: 'CINDER STEP', price: 90, desc: 'F: a burning dash, untouchable as it starts. 28 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'pyro' },
   { id: 'risingCut', name: 'RISING CUT', price: 100, desc: 'F: an upward cut that carries the foe up with you and holds it there. 25 stamina, 2s', needs: 'scree', needsName: 'the Scree Path', hero: 'knight' },
   { id: 'vent', name: 'VENT', price: 100, desc: 'F: blast all your heat out at once. the hotter, the harder. lights lamps. 19 stamina', needs: 'scree', needsName: 'the Scree Path', hero: 'pyro' },
   { id: 'kindle', name: 'KINDLE', price: 90, desc: 'always on: fire mends you instead of burning you. stand in your own wall', needs: 'hanging', needsName: 'the Hanging Village', hero: 'pyro', passive: true },
@@ -564,14 +564,15 @@ const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
 const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 13 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + (PROG.items.edge4 ? 3 : 0) + grow(hero(), heroLevel()).damage) * (isPyro() ? 0.7 : 1) * (isGeo() && GEO && GEO.empowered() ? GEO_K.ward.empMul : 1));   /* (EMPOWERED: a perfect RUNE-WARD, geomancer.js) */ // +1 damage every second level
 const footTal = () => LV_GROW();   /* SURE FOOTING, FLEET, IRON LUNGS and SWASHBUCKLE were two ranks of this: the woods give it now */
-const dodgeCost = () => Math.max(6, Math.round((ST.dodge - Math.round(2 * footTal()) - 3*tal('lightStep')) * (perk('fleet') ? 0.75 : 1))), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
+const dodgeCost = (back = false) => CM.rollCost(P, hero(), { back, shave: Math.round(2 * footTal()) + 3 * tal('lightStep') }), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
 /* ==== THE WARDEN'S BACK-STEP. Not the shared roll played backwards: about HALF the ground, out of it sooner, for
    less wind, and she may take a SECOND one straight away - it is for the constant small adjustments of range her
    tip rule is about, not for one big escape. The third waits (STEP_CD). And because it is cheap and repeatable its
    GRACE IS SHORT: STEP_INV, a good deal less than the old roll's whole length, or she would simply step through
    everything in the game instead of spacing it. ==== */
 const STEP_INV = 0.09, STEP_PAIR = 0.75, STEP_CD = 0.62, STEP_GAP = 0.1;   /* s untouchable, how long a pair stays a pair, the wait after the second, the wait after the first */
-const stepCost = () => Math.max(4, dodgeCost() - 7);
+const stepCost = () => dodgeCost(true);   /* WEIGHT: her back-step 15, her step forward a roll's 24 (src/commit.js ROLL_COST, STEP_BACK_COST) */
+CM.bindStamina({ lvGrow: () => LV_GROW(), lungs: () => perk('lungs'), fleet: () => perk('fleet') });   /* THE SEAM: the level's growth reaches the bar only through CM.staminaOf (LEVELING's ENDURANCE feeds P.maxSt) */
 const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge (it was the dash's, and the same number) */
 /* THE MEDAL ROLL: every medal on every level you can see, bronze 1, silver 2, gold 3 */
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
@@ -5396,7 +5397,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   { const src = who || updFoe; if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
     if (src && src.xpRole === 'mini' && dmg > 0) dmg = Math.round(dmg * GB.GREED.miniHit); }   /* A MINI HITS HARDER (claude/combat3): he keeps his damage taken, and his blows land GREED.miniHit harder */   /* DISARMED: it fights bare */   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
-  if (!P.dead && P.dodge > 0 && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; P.st = Math.min(P.maxSt, P.st + 20); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
+  if (!P.dead && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; CM.refund(P, 20); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
   if (P.dead || invulnerable()) return false;
   /* THE UNIVERSAL DUCK (claude/duck): a HIGH blow - its creature's last told windup is a 'high' row of src/marks.js HEIGHT, and it is
      still landing - goes over a ducked hero, red or yellow, as a roll goes through it (false, as for the roll's grace). geo: a seed
@@ -5443,7 +5444,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (isPirate() && P.parryW > 0 && front && !unblockable) {
     const f = nearFoe(fromX);
     if (f) { f.stagger = Math.max(f.stagger || 0, f.maxHp ? 0.5 : 1.3); f.flash = 0.2; if (!f.maxHp) f.vx = Math.sign(f.x - P.x) * 200; }
-    noteVerb('parry'); P.parryW = 0; P.st = Math.min(P.maxSt, P.st + 14); P.riposteT = 1; P.parryT = 0.22; parries++; blocks++; trialEvent('parry');
+    noteVerb('parry'); P.parryW = 0; CM.refund(P, 14); P.riposteT = 1; P.parryT = 0.22; parries++; blocks++; trialEvent('parry');
     reloadPistol('');                                   // the jolt of it seats a ball
     if (tal('parryCut') && f && !f.harmless) counterCut(f, 'RIPOSTE');   /* RIPOSTE: and the cutlass answers */
     gainPlunder(3);
@@ -5481,7 +5482,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   const pierced = pierce && (P.block || rushUp) && (front || tal('plated')) && !unblockable && !perfectUp;
   if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.pierce(); }
   if (((P.block && (front || tal('plated'))) || rushUp) && !unblockable && !pierced) {   /* PLATED: the shield at his back too */
-    const perfect = perfectUp, bc = perfect || lcUp ? 0 : Math.round(ST.blockHit * (1 - 0.15 * tal('steady')));
+    const perfect = perfectUp, bc = perfect || lcUp ? 0 : CM.blockCost(dmg, tal('steady'));
     if (lcUp) number(P.x, P.y - 28, 'TURNED', '#ffd36b');
     gainResolve(perfect ? 20 : 8);
     if (P.st >= bc) {
@@ -5491,7 +5492,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
         const f = nearFoe(fromX);
         if (f) { P.parryFoe = f; P.parryFoeUntil = time + 1.5; }
         if (f) { f.stagger = Math.max(f.stagger || 0, f.maxHp ? 0.35 : 1.1); f.flash = 0.2; if (!f.maxHp) f.vx = Math.sign(f.x - P.x) * 160; }
-        P.st = Math.min(P.maxSt, P.st + 12 + (tal('parry') ? 10 : 0)); P.riposteT = RIPOSTE.window; P.riposteHeavy = true; perfectGuardFx();
+        CM.refund(P, 12 + (tal('parry') ? 10 : 0)); P.riposteT = RIPOSTE.window; P.riposteHeavy = true; perfectGuardFx();
         if (tal('counterstroke') && f && !f.harmless) counterCut(f, 'COUNTERSTROKE');   /* the shield turns it and the blade answers by itself */
         noteVerb('parry'); P.parryT = 0.22; parries++; trialEvent('parry');
         SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); shakeCam(2.5, -P.face * 2);
@@ -5506,7 +5507,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
       return 'blocked';
     }
     P.st = 0; P.stFlash = 0.5; P.block = false; P.rush = 0; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1);
-    dmg = Math.ceil(dmg / 2); P.hurt = 0.55;
+    dmg = Math.ceil(dmg / 2); P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P);   /* WEIGHT: a broken guard staggers 0.9 s, stays down 1.2 s, and the bar is EXHAUSTED */
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
   if (L && L.trial) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
@@ -5530,7 +5531,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   else if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); }
   // and the mercy window comes down: a second and a tenth of nothing-can-touch-you was a reward for failing
   P.hp -= dmg; P.inv = armoured ? 0.55 : 0.8; P.hurt = armoured ? 0 : Math.max(P.hurt, 0.35);
-  if (!armoured) { P.atk = -1; P.plunge = false; if (dashStriking()) endDashStrike(false); } P.block = false; impactAt(P.x, P.y - 9, 'red');
+  if (!armoured) { P.atk = -1; P.atkRec = 0; P.plunge = false; if (dashStriking()) endDashStrike(false); } P.block = false; impactAt(P.x, P.y - 9, 'red');
   // a blow that lands puts out whatever you were carrying: the fire in your hand is the first thing to go
   if (P.wick > 0) { P.wick = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }
   if (P.candle > 0) { P.candle = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }   /* and the Burial Caverns' candle flame (src/burial-expansion.js) */
@@ -6173,7 +6174,7 @@ function greedHit(e, fromX, blow) {
   if ((isB || GB.chipped(e, false)) && e.chipHit === time) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * ((e.w || 20) / 2), e.y - (e.h || 20) / 2, Math.sign(fromX - e.x) || 1, 3);
     if (!(e.chipSaid > time)) { e.chipSaid = time + 5; number(e.x, e.y - (e.h || 20) - 14, 'A SCRATCH: WAIT FOR HIS OPENING', '#9aa39a');
       PROG.chipTold = (PROG.chipTold || 0) + 1; if (PROG.chipTold <= 2) { hintT = 4.5; hintMsg = 'OUTSIDE HIS OPENINGS A BOSS TAKES A SCRATCH. READ HIM, ANSWER HIM, THEN STRIKE.'; } } }
-  if (GB.noteGreed(e, time, isB, isM)) SFX.tell(true);
+  if (!(P.atk >= 0 && CM.swingTotal(hero(), P) > GB.GREED.tell) && GB.noteGreed(e, time, isB, isM)) SFX.tell(true);
 }
 function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
@@ -6624,7 +6625,7 @@ function endPin(pulled) {
   P.ground = false; P.canCut = true; P.hitSet.clear();
   if (pulled) { P.vy = -250; P.vx = -P.face * 170; P.atk = -1; SFX.pJump(); dust(P.x, P.y, 5); squash(0.82, 1.22, 0.12);
     /* FREE HAND: the beat of recovery is the whole price of pulling free, and this pays it off */
-    if (tal('freeHand')) { P.st = Math.min(P.maxSt, P.st + 20); number(P.x, P.y - 30, 'FREE HAND', '#8fd160'); } else P.plungeRec = PIN_FREE_REC;
+    if (tal('freeHand')) { CM.refund(P, 20); number(P.x, P.y - 30, 'FREE HAND', '#8fd160'); } else P.plungeRec = PIN_FREE_REC;
     /* SKIRMISHER (her capstone): she does not just pull the point out, she throws what was on it at whatever is nearest */
     if (tal('skirmisher') && pn.e && pn.e.alive) { const e = pn.e;
       let best = null, bd = 1e9;
@@ -7254,7 +7255,7 @@ function blackFlag() { trialEvent('meter');
     any = true; e.stagger = Math.max(e.stagger || 0, e.maxHp ? 0.8 : 2.2); e.flash = 0.2;
     if (!e.maxHp) { e.vx = 0; dropCoinAt(e.x, e.y - 10); } }
   if (any) SFX.laugh();
-  reloadPistol(''); if (tal('ransom')) { P.st = Math.min(P.maxSt, P.st + P.maxSt * 0.5); number(P.x, P.y - 40, 'RANSOM', '#8fd160'); }
+  reloadPistol(''); if (tal('ransom')) { CM.refund(P, P.maxSt * 0.5); number(P.x, P.y - 40, 'RANSOM', '#8fd160'); }
 }
 function dropCoinAt(x, y) {   // shaken loose: it goes straight into his purse, never into the level's count
   gainPlunder(4);
@@ -7265,7 +7266,7 @@ function firePistol() {
   P.barrels = (P.barrels || 0) - 1;
   if (P.barrels > 0) { P.loaded = true; } else { P.loaded = false; P.reloadT = reloadTime(); }
   const steady = !!(CA && CA.steady());   /* FROM THE CROUCH (src/crouch-a.js): braced, it carries half as far again and does not throw him back */
-  P.blastT = 0.34; P.vx = steady ? 0 : -P.face * 60; P.atk = -1;           // the shot throws him back a step
+  P.blastT = CM.PISTOL_BLAST; P.atkRec = CM.PISTOL_BLAST; P.vx = steady ? 0 : -P.face * 60; P.atk = -1;           // the shot throws him back a step
   SFX.crack(); SFX.heavy(); shakeCam(5, P.face * 3); zoomKick(1.05, 0.2); hitstop(0.05); flash = Math.max(flash, 0.05);
   const x0 = P.x + P.face * 12, y0 = P.y - (steady ? 9 : 12), reach = 150 * (tal('longBarrel') ? 2 : 1) * (steady ? CROUCH_A.pirate.reach : 1);
   if (steady) number(P.x, P.y - 22, 'STEADY', '#ffd34a');
@@ -7474,8 +7475,8 @@ function attackBox() {
   return null;
 }
 function spend(cost) {
-  if (P.st < cost) { P.stFlash = 0.35; return false; }
-  P.st -= cost; P.stDelay = ST.delay; return true;
+  return CM.trySpend(P, cost);   /* WEIGHT: LAST WIND - something left and not winded, it goes and the bar is EXHAUSTED (src/commit.js) */
+  /* (the price, the delay and the exhausted state are all trySpend's) */
 }
 function updatePlayer(dt) {
   P.ducking = false; P.crouch = 0;   /* (set again below, once the hero is known to be on his feet: every early way out of here - down, dead, flying, a ride, the carpet, the Folly's ceiling - is not a duck) */
@@ -7511,7 +7512,7 @@ function updatePlayer(dt) {
       else if (lp !== P.danceLoop) { P.danceLoop = lp; if (lp > 0) SFX.dance(hero()); } } } }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
   if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(31)) { cdSet('fireWall'); kitPose(P, 'wall', 0.4); P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 3, delay: i * 0.08, own: true }); SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('cinderStep');  P.dodge = 0.3; P.vx = P.face * 320; P.inv = Math.max(P.inv, 0.4); P.cinderT = 0.3; kitPose(P, 'cinder', 0.3); streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(CM.dashCost('pyro', 25))) { cdSet('cinderStep');  P.dodge = 0.3; P.dodgeInv = CM.dashInv(0.3); P.vx = P.face * 320; P.inv = Math.max(P.inv, CM.dashInv(0.3));   /* WEIGHT (10-03): 25 -> 28, grace 0.4 -> 0.2 s */ P.cinderT = 0.3; kitPose(P, 'cinder', 0.3); streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (skillPress('risingCut') && cdReady('risingCut') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(25)) { cdSet('risingCut'); P.riseT = 0.3; P.riseUsed = true; P.vy = -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.block = false; P.atk = -1; P.hitSet.clear(); P.riseCarry = null; SFX.riseCut(); squash(0.9, 1.12, 0.1); riseSparks(10); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   /* RISING CUT, THE BOUGHT ONE. UP+X is already a free rising cut, so this one has to be more than a taller jump: THE FIRST
      FOE THE BLADE CATCHES GOES UP WITH HIM, riding the edge in front of him, and is HELD at the top of the climb (RISE_HOLD)
@@ -7537,7 +7538,7 @@ function updatePlayer(dt) {
   if (P.ground) P.riseUsed = false;
   // THE PALADIN'S SKILLS
   if (isPaladin() && skillPress('consecrate') && (P.ground || P.swim) && cdReady('consecrate') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(31)) { cdSet('consecrate'); hallows.push({ x: P.x, y: P.y, life: 4 + tal('consecrate'), r: 40, tick: 0 }); SFX.mend(); SFX.heavy(); ringAt(P.x, P.y - 4, 40, '#ffd36b', 0.5); motes(P.x, P.y - 6, 14, 30); P.castT = 0.3; kitPose(P, 'hallow', 0.4); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
-  if (isPaladin() && skillPress('holyCharge') && cdReady('holyCharge') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('holyCharge'); P.chargeT = 0.3; P.dodge = 0.3; kitPose(P, 'charge', 0.3); P.vx = P.face * 330; P.inv = Math.max(P.inv, 0.4); P.chargeHit = new Set(); SFX.throwWhoosh(); SFX.aegis(); streaks(P.x, P.y - 10, 8, ['#fff6c8', '#ffd36b'], 160); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPaladin() && skillPress('holyCharge') && cdReady('holyCharge') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(CM.dashCost('paladin', 25))) { cdSet('holyCharge'); P.chargeT = 0.3; P.dodge = 0.3; P.dodgeInv = CM.dashInv(0.3); kitPose(P, 'charge', 0.3); P.vx = P.face * 330; P.inv = Math.max(P.inv, CM.dashInv(0.3));   /* WEIGHT (10-03): 25 -> 32, grace 0.4 -> 0.2 s */ P.chargeHit = new Set(); SFX.throwWhoosh(); SFX.aegis(); streaks(P.x, P.y - 10, 8, ['#fff6c8', '#ffd36b'], 160); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (isPaladin() && skillPress('blessedHammer') && cdReady('blessedHammer') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(19)) { cdSet('blessedHammer'); hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map() }); SFX.throwWhoosh(); SFX.lightFull(); P.castT = 0.25; kitPose(P, 'hurlH', 0.35); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (P.chargeT > 0) { P.chargeT -= dt; P.vx = P.face * 330; if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * 6, y: P.y - 4 - Math.random() * 14, vx: -P.face * 60, vy: 0, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0, glow: true });
     for (const e of enemies) if (e.alive && !e.harmless && !P.chargeHit.has(e) && overlap({ l: P.x - 10, r: P.x + 10, t: P.y - 18, b: P.y }, box(e))) { P.chargeHit.add(e); hurtAs('dash', e,Math.round(12 * amul('holyCharge')), P.x, false); if (!e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1); e.vx = P.face * 240; e.vy = -150; } sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(3, P.face * 2); hitstop(0.04); } }
@@ -7547,11 +7548,11 @@ function updatePlayer(dt) {
   const canAct = () => !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge;
   const tired = () => number(P.x, P.y - 22, 'TIRED', '#ffd36b');
   // LUNGE: a dashing thrust through everything in front
-  if (skillPress('lunge') && cdReady('lunge') && canAct()) { if (spend(23)) { cdSet('lunge'); kitPose(P, 'lunge', 0.3); P.lungeT = 0.2; P.lungeHit = new Set(); P.atk = -1; P.block = false; P.inv = Math.max(P.inv, 0.25); SFX.slash(); SFX.throwWhoosh(); streaks(P.x, P.y - 9, 8, ['#fff6e0', '#c9d1dc'], 200); } else tired(); }
+  if (skillPress('lunge') && cdReady('lunge') && canAct()) { if (spend(CM.dashCost('knight', 23))) { cdSet('lunge'); kitPose(P, 'lunge', 0.3); P.lungeT = 0.2; P.lungeHit = new Set(); P.atk = -1; P.block = false; P.inv = Math.max(P.inv, CM.dashInv(0.2));   /* WEIGHT (10-03): 23 -> 28, grace 0.25 -> 0.13 s (the roll's share of it) */ SFX.slash(); SFX.throwWhoosh(); streaks(P.x, P.y - 9, 8, ['#fff6e0', '#c9d1dc'], 200); } else tired(); }
   if (P.lungeT > 0) { P.lungeT -= dt; P.vx = P.face * 470; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.14, frame: 1 });
     for (const e of enemies) if (e.alive && !e.harmless && !P.lungeHit.has(e) && overlap({ l: P.x - 12, r: P.x + 12, t: P.y - 20, b: P.y }, box(e))) { P.lungeHit.add(e); hurtAs('dash', e,Math.round((swordDmg() + 4) * 0.5 * amul('lunge')), P.x, false); sparks(e.x, e.y - e.h / 2, P.face, 8); hitstop(0.04); } }   /* LUNGE, 2026-09-24: it went through everyone in front for 1.4x a hit, ~6 damage a stamina against 0.8-3 for every other skill - it does not cost more for hitting three foes and its cooldown is the shortest in the game (3s). Cut to 0.5x here (~3.2 a stamina) rather than raising its 23-stamina cost or its cooldown, which would also blunt the quick in-and-out dash it is built to be; skill-balance-probe.mjs re-measures it every run */
   // WAR CRY: they fall back, you get your wind, and for a while everything lands lighter
-  if (skillPress('warCry') && cdReady('warCry') && !P.dead && !(P.asleep > 0)) { cdSet('warCry'); if (canAct()) kitPose(P, 'cry', 0.55); P.st = Math.min(P.maxSt, P.st + 30 + 10 * (tal('warCry') - 1)); P.cryT = 4; SFX.bellow(); SFX.roar(); shakeCam(4); ringAt(P.x, P.y - 10, 90, '#ff9a5c', 0.45);
+  if (skillPress('warCry') && cdReady('warCry') && !P.dead && !(P.asleep > 0) && !P.winded) { cdSet('warCry'); if (canAct()) kitPose(P, 'cry', 0.55); P.st = Math.min(P.maxSt, P.st + 15 + 5 * (tal('warCry') - 1));   /* WEIGHT (10-03): +30 -> +15, and LOCKED while EXHAUSTED (it was a second bar) */ P.cryT = 4; SFX.bellow(); SFX.roar(); shakeCam(4); ringAt(P.x, P.y - 10, 90, '#ff9a5c', 0.45);
     for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 90 && Math.abs(e.y - P.y) < 50) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.stagger = Math.max(e.stagger || 0, 1.2); e.vx = (Math.sign(e.x - P.x) || 1) * 160; startle(e); } } }
   if (P.cryT > 0) { P.cryT -= dt; if (Math.random() < dt * 8) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 20, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ff9a5c', size: 1, grav: 0 }); }
   // WHIRLWIND: two cuts all the way round
@@ -7647,10 +7648,10 @@ function updatePlayer(dt) {
     P.hp = Math.min(P.maxHp, P.hp + Math.round(P.maxHp*.2)); P.rum = 4; P.castT = 0.3; kitPose(P, 'rum', 0.45);
     SFX.mend(); number(P.x, P.y - 26, 'RUM', '#e0b040'); motes(P.x, P.y - 10, 10, 8);
     for (let i = 0; i < 8; i++) parts.push({ x: P.x, y: P.y - 14, vx: (Math.random() - 0.5) * 60, vy: -40 - Math.random() * 40, life: 0.6, max: 0.6, col: '#c9843a', size: 2, grav: 90 }); }
-  if (isPirate() && skillPress('boarding') && cdReady('boarding') && canAct()) { if (spend(25)) { cdSet('boarding');
+  if (isPirate() && skillPress('boarding') && cdReady('boarding') && canAct()) { if (spend(CM.dashCost('pirate', 25))) {   /* WEIGHT (10-03): 25 -> 26, grace 0.35 -> 0.2 s */ cdSet('boarding');
     const reach = 80 + 14 * tal('boarding');
     P.hookT = { x: P.x + P.face * reach, y: P.y - 14, life: 0.24 };
-    P.vx = P.face * 420; P.vy = -60; P.inv = Math.max(P.inv, 0.35); P.castT = 0.25; P.ground = false; P.coyote = 0; P.onMover = null;
+    P.vx = P.face * 420; P.vy = -60; P.inv = Math.max(P.inv, CM.dashInv(0.35)); P.castT = 0.25; P.ground = false; P.coyote = 0; P.onMover = null;
     SFX.pDodge(); streaks(P.x, P.y - 12, -P.face, ['#c9b27c', '#fff6e0'], 170);
     const cut = new Set();
     P.boardT = 0.35; P.boardHit = cut; kitPose(P, 'board', 0.35); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
@@ -7658,7 +7659,7 @@ function updatePlayer(dt) {
       lanceBeams.push({ x0: P.x + P.face * 8, y, dir: P.face, len, t: 0.3 }); for (const e of enemies) if (e.alive && !e.harmless && Math.sign(e.x - P.x) === P.face && Math.abs(e.x - P.x) < len + 8 && e.y - e.h < y + 4 && e.y > y - 4) { hurtAs('shot', e, Math.round(22 * amul('lightLance')), P.x, false); sparks(e.x, y, P.face, 6); }
       SFX.lightFull(); SFX.aegis(); P.castT = 0.3; kitPose(P, 'beam', 0.4); shakeCam(2, P.face * 2); } else tired(); }
   // DIVINE SHIELD: nothing touches you
-  if (isPaladin() && skillPress('divineShield') && cdReady('divineShield') && !P.dead && !(P.asleep > 0)) { cdSet('divineShield'); P.divineT = 2 + 0.5 * (tal('divineShield') - 1); if (!(P.atk >= 0) && !(P.hurt > 0)) kitPose(P, 'halo', 0.5); SFX.aegis(); SFX.lightFull(); ringAt(P.x, P.y - 10, 24, '#ffd36b', 0.4); }
+  if (isPaladin() && skillPress('divineShield') && cdReady('divineShield') && !P.dead && !(P.asleep > 0)) { if (P.winded || !spend(30)) { P.stFlash = 0.35; tired(); } else { cdSet('divineShield');   /* WEIGHT (10-03): it cost nothing and worked on an empty bar - 30 stamina, never while EXHAUSTED */ P.divineT = 2 + 0.5 * (tal('divineShield') - 1); if (!(P.atk >= 0) && !(P.hurt > 0)) kitPose(P, 'halo', 0.5); SFX.aegis(); SFX.lightFull(); ringAt(P.x, P.y - 10, 24, '#ffd36b', 0.4); } }
   if (P.divineT > 0) P.divineT -= dt;
   // HAMMER LEAP: up, and down with the maul
   if (isPaladin() && skillPress('hammerLeap') && cdReady('hammerLeap') && (P.ground || P.swim) && canAct()) { if (spend(31)) { cdSet('hammerLeap'); P.hleapT = 1.4; P.hleapWet = !P.ground; kitPose(P, 'leap', 1.4); P.vy = P.hleapWet ? 200 : -330; P.vx = P.face * (P.hleapWet ? 120 : 200);   /* THE WATER VERSION: there is nothing to leap off, so he drives DOWN through the water maul first, and it lands where he stops */ P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = false; P.atk = -1; SFX.pJump(); SFX.throwWhoosh(); } else tired(); }
@@ -7685,12 +7686,12 @@ function updatePlayer(dt) {
       if (gy === null && P.swim && inWater(x, P.y - 4)) gy = P.y;   /* in open water they are set at her depth */
       if (gy !== null) phalanx.push({ x, y: gy, t: 0, delay: (i - 1) * 0.05, hit, done: false, skill: 'setSpears' }); }
   } else tired(); }
-  if (isWarden() && skillPress('harrier') && cdReady('harrier') && canAct()) { if (spend(20)) { cdSet('harrier');
+  if (isWarden() && skillPress('harrier') && cdReady('harrier') && canAct()) { if (spend(CM.dashCost('warden', 20))) {   /* WEIGHT (10-03): 20 -> 28, grace 0.45 -> 0.2 s */ cdSet('harrier');
     let best = null, bd = 1e9;
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
       const d = (e.x - P.x) * P.face; if (d < 0 || d > 90 || Math.abs(e.y - P.y) > 40) continue; if (d < bd) { bd = d; best = e; } }
     P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (best ? 330 : 300); P.ground = false; P.coyote = 0; P.onMover = null;
-    P.canCut = true; P.jumpT = time; P.atk = -1; P.inv = Math.max(P.inv, 0.45);   /* she is over it, not through it */
+    P.canCut = true; P.jumpT = time; P.atk = -1; P.inv = Math.max(P.inv, CM.dashInv(0.42));   /* she is over it, not through it */
     noteVerb('vault'); SFX.pJump(); SFX.braceSet(); dust(P.x - P.face * 8, P.y, 6); squash(0.78, 1.26, 0.12);
     streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 150);
     if (best) { best.stagger = Math.max(best.stagger || 0, 0.5); number(best.x, best.y - (best.h || 16) - 18, 'OVER YOU', '#8fd160'); }
@@ -7714,6 +7715,7 @@ function updatePlayer(dt) {
   hushT = Math.max(0, hushT - dt);
   for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'dashRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
+  P.atkRec = Math.max(0, (P.atkRec || 0) - dt); CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the recovery runs down, and a press made while committed is HELD for the window */
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
       hurtAs('dash', e, Math.round((12 + 5 * tal('boarding'))*amul('boarding')), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 180; }
@@ -7721,7 +7723,7 @@ function updatePlayer(dt) {
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel');
   if (P.landT > 0 && (P.jbuf > 0 || P.dbuf > 0)) P.landT = 0; // a landing can always be left early: the controls never take the wheel
-  if (P.stDelay <= 0 && !(P.plungeN > 0) && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * (1 + 0.07 * LV_GROW()) * (perk('lungs') ? 1.2 : 1) * (P.venomSlow || 1) * dt);   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
+  CM.staminaTick(P, dt, { extra: P.venomSlow || 1, hold: P.plungeN > 0 }); if (P.windedNew) { P.windedNew = false; number(P.x, P.y - 22, 'WINDED', '#ff6b6b'); }   /* WEIGHT: no regen while committed, rolling or guarding; EXHAUSTED at 0 (src/commit.js staminaTick) */   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
   // sleep spores: stay in the violet and you drop; block holds your breath; mash to wake
   const haven = props.some(pr => pr.t === 'glow' && pr.dark <= 0 && Math.abs(pr.x - P.x) < 30 && Math.abs(pr.y - P.y) < 30);
@@ -7730,15 +7732,15 @@ function updatePlayer(dt) {
   else if (inSleep && !P.block) { P.sleepM = (P.sleepM || 0) + dt; if (P.sleepM > 1.3) { P.asleep = 2.2; P.vx = 0; SFX.gasp(); number(P.x, P.y - 22, 'ASLEEP  mash to wake', '#c9a0ff'); } }
   else P.sleepM = Math.max(0, (P.sleepM || 0) - dt * 1.5);
   const stunned = P.hurt > 0 || P.asleep > 0 || P.caged > 0 || P.flatT > 0;   /* (flatT: on his back after a slide met something big, src/slide.js) */
-  const attacking = P.atk >= 0;
+  const attacking = P.atk >= 0 || CM.inRecovery(P);   /* WEIGHT: the swing's recovery is part of it - every gate that waits for the swing waits for the window */
   const dodging = P.dodge > 0;
   P.jet = false;
   if (isPyro()) { // C tapped = an ember; C held = the jet. A FULL bar banks for a few seconds and the next press of C is THE PYRE.
     P.heat = Math.max(0, Math.min(100, (P.heat || 0))); P.overheat = 0;
     P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt); P.jetRecover = Math.max(0, (P.jetRecover || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
-    if (P.full && cDown && !stunned && !dodging && !P.plunge && !thrown) castPyre();
-    if (keys.block) P.cHeld = (P.cHeld || 0) + dt; else { if (P.cHeld > 0 && P.cHeld < 0.14) castEmber(0); P.cHeld = 0; }
+    if (P.full && cDown && !stunned && !dodging && !attacking && !P.plunge && !thrown) castPyre();
+    if (keys.block) P.cHeld = (P.cHeld || 0) + dt; else { if (P.cHeld > 0 && P.cHeld < 0.14 && !attacking) castEmber(0);   /* WEIGHT: the tap no longer cuts a swing short */ P.cHeld = 0; }
     P.jet = keys.block && P.cHeld >= 0.14 && !P.full && !stunned && !dodging && !attacking && !P.plunge && !thrown && !(P.blastT > 0) && !(P.jetRecover > 0) && (P.ground || P.swim || tal('updraft'));   /* (in the water she is held where she pours it, as on the ground) */   /* GROUNDED: the jet is lit standing, and she stands still to pour it. UPDRAFT still lights it in the air */
     if (P.infernoT > 0) { P.infernoT -= dt; P.heat = 100; if (P.infernoT <= 0) { P.infernoT = 0; P.heat = 0; number(P.x, P.y - 30, 'BURNT OUT', '#9aa39a'); SFX.puff(); } }   /* INFERNO: full, and nothing drains it, and then it is all gone */
     else coolHeat(dt);
@@ -7756,7 +7758,7 @@ function updatePlayer(dt) {
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);
     if (cDown && free && P.light >= 100) { castJudgement(); P.cHeld = -99; }
-    else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && !(P.aegisCd > 0)) { P.aegisT = (P.aegisT || 0) + dt; if (P.aegisT > 1.5 && !tal('unwavering')) { P.aegisCd = 2; P.aegisT = 0; SFX.guardBreak(); ringAt(P.x, P.y - 10, 14, '#9a8a60', 0.3); } /* the ward holds a breath and a half, then it must rest */ } if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && !(P.aegisCd > 0)) { P.aegis = true; P.st = Math.max(0, P.st - 27.5 * dt * (1 - 0.15 * tal('stalwart'))); if (tal('sanctuary')) P.hp = Math.min(P.maxHp, P.hp + 3 * dt); P.stDelay = ST.delay; if (!P.aegisWas) { P.aegisUpT = time; SFX.block(); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); } } }
+    else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.aegisCd > 0)) { P.aegisT = (P.aegisT || 0) + dt; if (P.aegisT > 1.5 && !tal('unwavering')) { P.aegisCd = 2; P.aegisT = 0; SFX.guardBreak(); ringAt(P.x, P.y - 10, 14, '#9a8a60', 0.3); } /* the ward holds a breath and a half, then it must rest */ } if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.aegisCd > 0)) { P.aegis = true; P.st = Math.max(0, P.st - 27.5 * dt * (1 - 0.15 * tal('stalwart'))); if (tal('sanctuary')) P.hp = Math.min(P.maxHp, P.hp + 3 * dt); P.stDelay = ST.delay; if (!P.aegisWas) { P.aegisUpT = time; SFX.block(); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); } } }
     else { if (P.cHeld > 0 && P.cHeld < 0.16 && free) castMend(); P.cHeld = 0; P.aegisT = 0; }
     if (tal('crusade') && P.aegisWas && !P.aegis && !P.dead) { let any = false; // CRUSADE
       for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - P.y) < 34) { any = true; hurtEnemy(e, 10, P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1.1); e.vx = (Math.sign(e.x - P.x) || 1) * 260; } }
@@ -7774,13 +7776,13 @@ function updatePlayer(dt) {
     P.harvest = Math.max(0, Math.min(100, P.harvest || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
     P.reaping = Math.max(0, (P.reaping || 0) - dt);
     P.wardFlash = Math.max(0, (P.wardFlash || 0) - dt); P.novaCd = Math.max(0, (P.novaCd || 0) - dt); P.returnT = Math.max(0, (P.returnT || 0) - dt); P.wardSince = (P.wardSince ?? 9) + dt; P.retSince = (P.retSince ?? 9) + dt; P.parryT = Math.max(0, (P.parryT || 0) - dt);
-    const free = !stunned && !dodging && !P.plunge && !(P.blastT > 0);
+    const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);   /* WEIGHT: his skills and his ward wait for the window */
     /* A full blood bar defers the equipped first-slot skill until release; a long hold spends only Blood Surge. Other slots cast normally. */
     if (throwPress && P.harvest >= 100) P.fHeld = 0.001;
     if(skillPress('summonSkeleton') && free)summonPress();
     if (P.fHeld > 0) { if (keys.throw && P.harvest >= 100) { P.fHeld += dt; if (P.fHeld >= SURGE_HOLD) { P.fHeld = 0; if (free) bloodSurge(); } } else P.fHeld = 0; }
     if (keys.block) { P.cHeld = (P.cHeld || 0) + dt;
-      if (P.cHeld >= WARD_UP && free && !attacking && (P.ground || P.swim) && P.st > 0 && !(P.novaCd > 0)) {   /* BLOOD WARD: the point in the ground, and the ward stands up in front of it */
+      if (P.cHeld >= WARD_UP && free && !attacking && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.novaCd > 0)) {   /* BLOOD WARD: the point in the ground, and the ward stands up in front of it */
         if (!(P.wardHeld > 0)) { P.wardHeld = 0.001; P.st = Math.max(0, P.st - WARD_RAISE); P.wardFull = (P.wardG || 0) >= wardCap() - 0.5; SFX.dkWard(); ringAt(P.x + P.face * 12, P.y - 18, 14, '#ff4a5a', 0.3); }
         P.warding = true; P.wardHeld += dt; P.wardKeepT = 3; if (!tal('drainWalk')) P.vx = 0;   /* WARD WALK: the blade comes with him, slowly */
         P.st = Math.max(0, P.st - WARD_HOLD * dt); P.stDelay = ST.delay;
@@ -7799,7 +7801,7 @@ function updatePlayer(dt) {
   if (isPirate()) {
     P.plunder = Math.max(0, Math.min(100, P.plunder || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
-    const free = !stunned && !dodging && !P.plunge && !(P.blastT > 0);
+    const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);   /* WEIGHT: the parry no longer opens mid-swing */
     if (cDown && free && P.plunder >= 100) { blackFlag(); P.cHeld = -99; }
     else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.2 && free && !(P.hookCd > 0) && !P.hookT) throwHook(); }
     else { if (P.cHeld > 0 && P.cHeld < 0.2 && free && !(P.parryCd > 0)) { P.parryW = 0.2; P.parryCd = 0.55; SFX.pSlash(); } P.cHeld = 0; }
@@ -7855,17 +7857,17 @@ function updatePlayer(dt) {
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0) && !(P.charge > 0);
     const quake = cDown && free && (P.ground || P.swim) && (P.tremor || 0) >= 100; if (quake) GEO.quake();
-    GEO.guard(!!keys.block && !quake, free && !quake && (P.ground || P.swim) && !thrown, dt, (keys.right ? 1 : 0) - (keys.left ? 1 : 0));
+    GEO.guard(!!keys.block && !quake, free && !quake && (P.ground || P.swim) && !thrown && CM.guardOk(P), dt, (keys.right ? 1 : 0) - (keys.left ? 1 : 0));
   }
   if (hero() === 'knight') { // C held = the shield. A full RESOLVE and a tap of C on the ground is THE LAST CHARGE.
     P.resolve = Math.max(0, Math.min(100, P.resolve || 0));
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
-    if (cDown && P.resolve >= 100 && !stunned && !dodging && !P.plunge && !rushing() && !thrown) {
+    if (cDown && P.resolve >= 100 && !stunned && !dodging && !attacking && !P.plunge && !rushing() && !thrown) {
       if ((P.ground || P.swim) && !P.climb) lastCharge();   /* in the water he braces against it and goes straight through it */
       else if (!PROG.lcFooting) { PROG.lcFooting = 1; saveProgress(); hintT = 4.5; hintMsg = 'THE LAST CHARGE NEEDS FOOTING: TAP C ON THE GROUND OR IN THE WATER. THE BAR IS KEPT.'; }   /* said once a save; the bar is not spent */
     }
   }
-  P.block = !!keys.block && (P.ground || P.swim) && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && !thrown && !rushing() && hero() === 'knight' && !knightWinding();   /* THE HEAVY CUT's price: no shield while the sword is up */
+  P.block = !!keys.block && (P.ground || P.swim) && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && CM.guardOk(P) && !thrown && !rushing() && hero() === 'knight' && !knightWinding();   /* WEIGHT: not while EXHAUSTED (a bar of 1 used to raise it) */   /* THE HEAVY CUT's price: no shield while the sword is up */
   P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); if (P.ground) P.airRolled = false;
   if (isPyro() && P.jet && !P.ground && tal('updraft')) P.vy = Math.min(P.vy, 45); // UPDRAFT: the jet holds her up
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
@@ -7919,19 +7921,19 @@ function updatePlayer(dt) {
      Geomancer's BURROW - floor only, so in the air hers is a plain dash.
      THE BLADE COMMITS: once swung, its recovery finishes before the feet may go. ==== */
   const airDodge = !P.ground && !P.swim;
-  if (P.dbuf > 0 && (!airDodge || !P.dashedAir) && !attacking && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing()) {   /* (the dash attack is committed: no dodge out of it, nor out of its end-lag) */
+  if (P.dbuf > 0 && (!airDodge || !P.dashedAir) && !attacking && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing() && !(P.winded && (P.stFlash = 0.35, P.dbuf = 0, true))) {   /* WEIGHT: no roll while EXHAUSTED (the red flash says so) */   /* (the dash attack is committed: no dodge out of it, nor out of its end-lag) */
     const held = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     const dir = P.dbufDir || (isWarden() ? -P.face : held || P.face);   /* the button: the way you hold, else the way you face - and the Warden's button is her back-step, as it always was; her double tap points it */
     P.dbuf = 0; P.dbufDir = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
-    if (spend(isWarden() ? stepCost() : dodgeCost())) {
+    if (spend(dodgeCost(isWarden() && dir === -P.face))) {
       const back = isWarden() && dir === -P.face;   /* HER STEP BACK: she does not turn, and the point stays on what she left */
       if (!isWarden()) P.face = dir;
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DODGE: aim it up or down with the stroke
       else if (airDodge) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); P.airRolled = true;   /* SLIPSTREAM: a second before you land */
         P.vy = (tal('airRoll') || (isPirate() && tal('swash'))) ? Math.min(P.vy, -80) : Math.min(P.vy, 40);   /* AIR ROLL / SWASHBUCKLE: the one in the air lifts you; without it, it holds the fall level, as the dash did */
         streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); }
-      P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : isWarden() ? 0.18 : isGeo() ? 0.3 : 0.3; P.dodgeCd = 0.5;
-      P.dodgeMax = P.dodge; P.dodgeInv = P.dodge;   /* the grace is the whole of it, unless the hero says otherwise */
+      P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5;   /* WEIGHT: heavy heroes roll heavier - the paladin 0.30 s (it was 0.26) */
+      P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.ROLL_INV);   /* WEIGHT (Daniel 10-02, Q3): the first 0.20 s is untouchable, the TAIL is not */
       const burrow = isGeo() && P.ground && !P.swim;
       if (burrow) { P.geoBurrow = { dir }; burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
       /* TWO SMALL STEPS, THEN THE WAIT: the second comes the moment the first is over, and only the third is made to wait */
@@ -7951,7 +7953,7 @@ function updatePlayer(dt) {
       if (back && tal('giveGround')) for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
         if (Math.abs(e.x - P.x) > SHAFT_AT || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > 24) continue;
         e.stagger = Math.max(e.stagger || 0, 0.6); dust(e.x, e.y, 3); }
-      if (isReaper()) { P.inv = Math.max(P.inv, P.dodge + 0.06);   /* THE WAKE: he is not there to be hit */
+      if (isReaper()) { P.inv = Math.max(P.inv, CM.ROLL_INV + 0.06);   /* WEIGHT: the roll's grace and his wake, not the whole roll */   /* THE WAKE: he is not there to be hit */
         /* AND HE LEAVES HIMSELF BEHIND. A cold shape stands where he was; they keep swinging at it, and
            when it goes it goes off. He is the slowest hero in the game - he does not escape a blow, he
            gives it somebody else to land on. */
@@ -8050,6 +8052,7 @@ function updatePlayer(dt) {
     } }
   updateMoorWind(dt); updateTowerSlides(dt);
   if (P.asleep > 0) { P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }
+  const jumpHeld = CM.committed(P) && P.jbuf > 0 ? P.jbuf : 0; if (jumpHeld) P.jbuf = 0;   /* WEIGHT (Daniel 10-02, Q5): no jump out of a commit - the press is kept for the window */
   P.kickT = Math.max(0, (P.kickT || 0) - dt);
   // (she has one jump, like anyone else: the flame kick in the air was a second one and it is gone)
   // LETTING GO COMES FIRST. Standing on the floor of the sea with a stone in your hands, the jump key is
@@ -8073,8 +8076,8 @@ function updatePlayer(dt) {
   else if (isWarden() && P.jbuf > 0 && P.swim && !P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && P.st >= 13) {   /* THE WATER VERSION of the vault: no heel to plant, so it is a kick off the shaft - up and over, a stroke's height and not a leap's */
     P.jbuf = 0; P.dash = 0; P.dashLate = 0; spend(13); P.vaultT = 0.3; P.vy = -190; P.vx = P.face * 240; P.inv = Math.max(P.inv, 0.2); noteVerb('vault'); SFX.braceSet(); squash(0.8, 1.2, 0.1); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#bfe6f5'], 120);
   }
-  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && (P.st >= 13 || tal('vaulter'))) {   /* out of her step FORWARD (the back-step carries no dash) */
-    P.jbuf = 0; P.dash = 0; P.dashLate = 0; P.dodge = 0; P.dodgeInv = 0; if (!tal('vaulter')) spend(13);   /* VAULTER: the vault costs no wind (it no longer skips the dash: an automatic passive must not take over the jump button) */
+  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && (P.st >= (tal('vaulter') ? 6 : 13))) {   /* out of her step FORWARD (the back-step carries no dash) */
+    P.jbuf = 0; P.dash = 0; P.dashLate = 0; P.dodge = 0; P.dodgeInv = 0; spend(tal('vaulter') ? 6 : 13);   /* WEIGHT (10-03): VAULTER halves the vault's wind (it made it free) */   /* VAULTER: the vault costs no wind (it no longer skips the dash: an automatic passive must not take over the jump button) */
     P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 380 : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
     P.inv = Math.max(P.inv, 0.2);   /* she is up on the shaft and over it: a foe under her is gone past, not run into */
     noteVerb('vault'); SFX.pJump(); SFX.braceSet(); dust(P.x - P.face * 8, P.y, 6); squash(0.78, 1.26, 0.12);
@@ -8093,19 +8096,20 @@ function updatePlayer(dt) {
      seven, and the coyote step only reached its sixth frame on a remainder of 1e-17. They are read, then spent; a remainder
      under a thousandth of a frame is nothing, not one more frame (tools/audit-input.mjs: coyote 6, buffer 7). */
   for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
-  if (P.jbufStash > 0) { P.jbuf = P.jbufStash; P.jbufStash = 0; }   /* (the up-key jump held for its grace: it is still asked for next frame) */
+  if (P.jbufStash > 0) { P.jbuf = P.jbufStash; P.jbufStash = 0; }
+  if (jumpHeld) P.jbuf = jumpHeld;   /* (the up-key jump held for its grace: it is still asked for next frame) */
   if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
 
   const cutOut = dodging && P.dash > 0 && P.atk < 0 && dashCutNow();   /* X EARLY IN THE DODGE is the dash attack: it is the one thing that ends it */
   if (P.abuf > 0 && !stunned && !P.plunge && (!dodging || cutOut) && !P.aegis && !P.warding && !(P.deflectRec > 0) && !rushing()) {   /* (a sweep that met nothing is a beat she cannot swing in) */
     if (cutOut) { P.dodge = 0; P.dodgeInv = 0; }
-    if (!P.ground && (keys.down || P.abufDown)) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) { P.plungeN=(P.plungeN||0)+1; noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
+    if (!P.ground && (keys.down || P.abufDown) && (P.atk >= 0 ? P.atk > 0.17 : !CM.inRecovery(P))) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) {   /* WEIGHT: the plunge follows an air swing only once its active frames are out (it cut one at any frame) */ P.plungeN=(P.plungeN||0)+1; noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
       if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
         embers.push({ x: P.x, y: P.y - 4, vx: 0, vy: 300, life: 1.1, hit: new Set(), plunge: true });
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
-    else if (P.atk < 0 && P.plungeRec <= 0 && !(P.dashRec > 0)) { const aimUp=P.abufUp??keys.up, aimLow=P.abufLow??keys.down; P.abuf = 0; P.abufUp=P.abufLow=undefined; if (spend((Math.round((isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost) * (tal('flurry') ? 0.5 : 1) * (perk('light') ? 0.8 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (aimUp && !aimLow && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut(); else if (aimUp && !aimLow && !P.ground && !P.swim && !P.climb) airUpCut();   /* (claude/combat3) THE AIR UP-SLASH */   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && aimLow) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
+    else if (P.atk < 0 && !CM.committed(P) && (P.plungeRec <= 0 || (P.plungeRec <= CM.WINDOW + 1e-6 && P.atkRec > 0)) && !(P.dashRec > 0) && !(!P.ground && (keys.down || P.abufDown))) {   /* WEIGHT: the next cut only from the window */ const aimUp=P.abufUp??keys.up, aimLow=P.abufLow??keys.down; P.abuf = 0; P.abufUp=P.abufLow=undefined; if (spend((Math.round((isPaladin() ? 28 : isPirate() ? 10 : isReaper() ? 23 : sword().cost) * (tal('flurry') && inRun() && ((P.combo || 0) + 1) % 3 === 0 ? 0 : 1) * (perk('light') ? 0.8 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (aimUp && !aimLow && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut(); else if (aimUp && !aimLow && !P.ground && !P.swim && !P.climb) airUpCut();   /* (claude/combat3) THE AIR UP-SLASH */   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && aimLow) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
   if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
@@ -8115,7 +8119,7 @@ function updatePlayer(dt) {
       P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? 0.24 : 0.34) : 1) * (P.heavy && !isReaper() ? 0.72 : 1);   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }
       if (P.heavy && hero() === 'knight' && P.cutStage === 3 && !P.cutQuaked && was < 0.2 && P.atk >= 0.2 && (P.ground || P.swim)) { P.cutQuaked = true; cutQuake(); }   /* THE KNOCKDOWN's blade into the floor */   /* the blade goes into the ground, and the ground answers */
-      if (P.atk > lim) { if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
+      if (P.atk > lim) { P.atkRec = CM.recoveryFor(hero(), { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut });   /* WEIGHT: the swing is seen through (src/commit.js COMMIT) */ if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
         P.atk = -1; P.heavy = false; P.cutStage = 0; P.swingEndT = time; } }
     /* ==== AND THE RUN-THROUGH TRAVELS. It did not: measured in the page, holding the swing and letting it go moved her
        NOUGHT pixels across the whole thing, because a ground swing's friction (1600 a second) eats the shove fireHeavy
@@ -8356,7 +8360,7 @@ function updatePlayer(dt) {
           if (e.t === 'dummy') trialEvent('pogo');
           pogoCount++; pogoBounce(POGO_API, 'plunge', e); continue;   /* (part 2: and HE COMES BACK UP OFF IT like any hero - he fell through into a ground swing, and a pit crossed on heads was a pit he fell into) */
         } else {
-        if (!isPyro()) hurtAs('plunge', e, Math.round(plungeDmg() * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true);   /* THE PYROMANCER'S BOOTS DO NOTHING: only the FIREDROP that goes down ahead of her burns (09-17: her plunge was a second hit on top of its own fire) */ if (tal('bounding')) P.st = Math.min(P.maxSt, P.st + 8); if (tal('endlessSky') && hero() === 'knight') { P.airRolled = false; P.airJump = 1; P.dashedAir = false; P.airDashN = 0; number(P.x, P.y - 34, 'ENDLESS SKY', '#bfe6f5'); } if (e.t === 'dummy') trialEvent('pogo'); if (isPirate() && !e.maxHp) dropCoinAt(e.x, e.y - 8); }
+        if (!isPyro()) hurtAs('plunge', e, Math.round(plungeDmg() * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true);   /* THE PYROMANCER'S BOOTS DO NOTHING: only the FIREDROP that goes down ahead of her burns (09-17: her plunge was a second hit on top of its own fire) */ if (tal('bounding')) CM.refund(P, 8); if (tal('endlessSky') && hero() === 'knight') { P.airRolled = false; P.airJump = 1; P.dashedAir = false; P.airDashN = 0; number(P.x, P.y - 34, 'ENDLESS SKY', '#bfe6f5'); } if (e.t === 'dummy') trialEvent('pogo'); if (isPirate() && !e.maxHp) dropCoinAt(e.x, e.y - 8); }
           plungeHitBeat(e);   /* heavier than any ground swing, whatever comes after it (DOWN_STRIKE) */
           /* THE PIN, before the bounce: the point goes through it and stays there. A boss or a mini is too big to hold,
              so pinFoe says no, it keeps the blow and the stagger, and she rides up off it exactly as she always did. */
@@ -8459,7 +8463,7 @@ function updatePlayer(dt) {
     if (a.got) continue;
     if (a.vy !== undefined) { a.vy += 400 * dt; a.y += a.vy * dt; const ty = Math.floor((a.y + 3) / TS); if (isSolid(Math.floor(a.x / TS), ty)) { a.y = ty * TS - 3; a.vy = 0; } }
     if (Math.abs(a.x - P.x) < 10 && Math.abs(a.y - (P.y - 7)) < 12) { a.got = true; got++; dcGot(1); if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
-      if (isPirate()) { gainPlunder(4); if (tal('shareOut')) P.hp = Math.min(P.maxHp, P.hp + 2); if (tal('greased')) P.st = Math.min(P.maxSt, P.st + 6); if (tal('paidInGold') && P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - 0.33); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
+      if (isPirate()) { gainPlunder(4); if (tal('shareOut')) P.hp = Math.min(P.maxHp, P.hp + 2); if (tal('greased')) CM.refund(P, 6); if (tal('paidInGold') && P.cds) for (const k in P.cds) P.cds[k] = Math.max(0, P.cds[k] - 0.33); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
   dcTouch(); for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; P.hp = P.maxHp; P.st = P.maxSt; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
@@ -11697,8 +11701,8 @@ function formGround(gs) { const l = P.x - P.w / 2 + 0.5, r = P.x + P.w / 2 - 0.5
 function magePlayer(dt) {
   if (!MG || !P.flip) return false;
   for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT', 'dodgeCd', 'stDelay', 'guardTired', 'parryT', 'riposteT', 'plungeRec']) P[k] = Math.max(0, (P[k] || 0) - dt);
-  P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); P.anim += dt; if (P.stDelay <= 0 && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * dt);
-  const gs = -1, stunned = P.hurt > 0, attacking = P.atk >= 0;
+  P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); P.anim += dt; CM.staminaTick(P, dt); P.atkRec = Math.max(0, (P.atkRec || 0) - dt); CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the ceiling keeps the same commit and the same bar */
+  const gs = -1, stunned = P.hurt > 0, attacking = P.atk >= 0 || CM.inRecovery(P);
   let dodging = P.dodge > 0;
   /* HIS FEET ARE ON THE CEILING - and P.ground cannot be asked about it. Walking a ceiling, the move only MEETS the rock
      on the frames gravity has pulled him into it, so P.ground goes true, false, true, false while he stands perfectly
@@ -11707,16 +11711,16 @@ function magePlayer(dt) {
   const footed = P.ground || formGround(gs);
   /* THE GUARD. damagePlayer0 reads P.block, P.face and P.st and nothing else, so raising it here is the whole of it:
      the turn, the parry window (P.blockT), the guard break and the stamina are all the shield's own and already work. */
-  P.block = !!keys.block && footed && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && hero() === 'knight';
+  P.block = !!keys.block && footed && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && CM.guardOk(P) && hero() === 'knight';
   P.blockT = P.block ? (P.blockT || 0) + dt : 0;
   if (P.block) { guardHoldDrain(dt); P.stDelay = ST.delay;
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); } }
   /* THE ROLL, off the ceiling he is standing on. No air roll: a hero falling UP has nothing under him to push off. */
   P.dbuf = Math.max(0, (P.dbuf || 0) - dt);
-  if (P.dbuf > 0 && footed && !attacking && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0) {
+  if (P.dbuf > 0 && footed && !attacking && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0 && !(P.winded && (P.stFlash = 0.35, P.dbuf = 0, true))) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
-    if (spend(isWarden() ? stepCost() : dodgeCost())) {
-      P.dodge = isPaladin() ? 0.26 : isPyro() ? 0.34 : isWarden() ? 0.18 : 0.3; P.dodgeCd = 0.5; P.dodgeMax = P.dodge; P.dodgeInv = P.dodge;
+    if (spend(dodgeCost(isWarden() && (P.dbufDir || -P.face) === -P.face))) {
+      P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5; P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.ROLL_INV);
       const dir = P.dbufDir || (isWarden() ? -P.face : ((keys.right ? 1 : 0) - (keys.left ? 1 : 0)) || P.face); P.dbufDir = 0; if (!isWarden()) P.face = dir;   /* the double tap points it here too */
       P.vx = dir * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? 230 : isReaper() ? 205 : isWarden() ? 175 : 215);   /* THE WARDEN STEPS BACKWARD unless tapped forward, here as everywhere */
       P.block = false; dodging = true; dodges++; trialEvent('dodge'); SFX.pDodge(); dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1);
@@ -11743,12 +11747,12 @@ function magePlayer(dt) {
   }
   /* his own sword, upside down: X swings, and the blow is the hero's own */
   if (!stunned && !dodging && !P.plunge) {
-    if (P.abuf > 0 && P.atk < 0) { P.abuf = 0; if (spend(isPaladin() ? 28 : sword().cost)) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); P.swingMul = 1; P.heavySwing = false; P.heavy = false; P.swingKind = null; } }
-    if (P.atk >= 0) { P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : 1); if (P.atk > 0.3) { P.atk = -1; P.swingMul = 1; } if (P.atk >= 0.03 && P.atk < 0.17) { const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6, px0 = P.x + P.face * 2, py0 = P.y - 9 * gs; trail.push({ x0: px0, y0: py0, x: px0 + Math.cos(ang) * 18 * P.face, y: py0 + Math.sin(ang) * 18 * gs, life: 0.11 }); } }
+    if (P.abuf > 0 && P.atk < 0 && !CM.committed(P)) { P.abuf = 0; if (spend(isPaladin() ? 28 : sword().cost)) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); P.swingMul = 1; P.heavySwing = false; P.heavy = false; P.swingKind = null; } }
+    if (P.atk >= 0) { P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : 1); if (P.atk > 0.3) { P.atk = -1; P.swingMul = 1; P.atkRec = CM.recoveryFor(hero(), { air: !footed }); } if (P.atk >= 0.03 && P.atk < 0.17) { const k = (P.atk - 0.03) / 0.14, ang = -1.9 + k * 2.6, px0 = P.x + P.face * 2, py0 = P.y - 9 * gs; trail.push({ x0: px0, y0: py0, x: px0 + Math.cos(ang) * 18 * P.face, y: py0 + Math.sin(ang) * 18 * gs, life: 0.11 }); } }
     { const hb = P.atk >= 0 ? attackBox() : null; if (hb) for (const e of enemies) { if (!e.alive || P.hitSet.has(e) || e.gone > 0 || !overlap(hb, box(e))) continue; P.hitSet.add(e); openBefore(e); hurtAs(meleeBlow(false), e, Math.round(swingDmg(e) * (P.swingMul || 1)), P.x, false); swordEffect(e); } } }
   else if (stunned) { P.abuf = 0; if (P.atk >= 0) P.atk = -1; }
   P.jbuf = Math.max(0, (P.jbuf || 0) - dt);
-  if (P.jbuf > 0 && footed && !stunned && !dodging && !P.plunge && !P.block) { P.jbuf = 0; P.vy = JUMPV * gs; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; SFX.pJump(); dust(P.x, P.y, 2); }
+  if (P.jbuf > 0 && footed && !stunned && !dodging && !P.plunge && !P.block && !CM.committed(P)) { P.jbuf = 0; P.vy = JUMPV * gs; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; SFX.pJump(); dust(P.x, P.y, 2); }
   if (!keys.jump && P.canCut && P.vy * gs < -110) P.vy = -110 * gs;   /* the short hop, downward */
   if (!P.ground) P.vy += GRAV * dt * gs; if (P.vy * gs > 300) P.vy = 300 * gs;
   /* THE MOVE, with the collision run the right way up for the gravity */
@@ -16756,8 +16760,8 @@ function chaseView(){return !!(L&&L.spiral&&P&&!P.carpet&&!P.dead&&inSpiral(L.sp
 function carpetPlayer(dt){
  for(const k of ['inv','grace','hurt','stFlash','sqT'])P[k]=Math.max(0,(P[k]||0)-dt);P.hpShown+=(P.hp-P.hpShown)*Math.min(1,dt*6);
  const ax=(keys.right?1:0)-(keys.left?1:0),ay=(keys.down?1:0)-((keys.up||keys.jump)?1:0);
- P.dodgeCd=Math.max(0,(P.dodgeCd||0)-dt);P.stDelay=Math.max(0,P.stDelay-dt);if(P.stDelay<=0&&P.st<P.maxSt)P.st=Math.min(P.maxSt,P.st+ST.regen*dt);
- if(dodgePress&&P.dodgeCd<=0&&spend(dodgeCost())){P.dodge=0.22;P.dodgeCd=0.55;P.inv=Math.max(P.inv,0.3);P.vx=(ax||P.face)*300;P.vy=ay*260;SFX.pDodge();}
+ P.dodgeCd=Math.max(0,(P.dodgeCd||0)-dt);P.stDelay=Math.max(0,P.stDelay-dt);CM.staminaTick(P,dt);
+ if(dodgePress&&P.dodgeCd<=0&&!P.winded&&spend(dodgeCost())){P.dodge=0.22;P.dodgeCd=0.55;P.inv=Math.max(P.inv,0.3);P.vx=(ax||P.face)*300;P.vy=ay*260;SFX.pDodge();}
  const sky=skyBox();
  P.carpet.grip=mageRealm()&&boss.realm.kind==='ice'?REALM.ice.grip:1;   /* THE ICE REALM: the cold takes the carpet's grip */
  if(P.dodge>0){P.dodge-=dt;ghosts.push({x:P.x,y:P.y,face:P.face,life:0.2,frame:0});P.x=Math.max(sky.x0,Math.min(sky.x1,P.x+P.vx*dt));P.y=Math.max(sky.y0,Math.min(sky.y1,P.y+P.vy*dt));}
@@ -21003,8 +21007,8 @@ function flyPlayer(dt) {
   let tvx = drift + ax * 125, tvy = flight.lift > 0 ? -200 : ay * 120;
   tvx += windAt(P.x, P.y - 8) * 70;
   for (const z of (F.down || [])) if (P.x > z[0] * TS && P.x < z[1] * TS) tvy += z[2];
-  P.dodgeCd = Math.max(0, (P.dodgeCd || 0) - dt); P.stDelay = Math.max(0, P.stDelay - dt); if (P.stDelay <= 0 && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * dt);
-  if (dodgePress && P.dodgeCd <= 0 && flight.lift <= 0) { if (spend(dodgeCost())) { P.ashT = 0.9; P.dodge = 0.22; P.dodgeCd = 0.55; P.inv = Math.max(P.inv, 0.3); P.vx = drift + (ax || 1) * 270; P.vy = ay * 220; SFX.pDodge(); } }
+  P.dodgeCd = Math.max(0, (P.dodgeCd || 0) - dt); P.stDelay = Math.max(0, P.stDelay - dt); CM.staminaTick(P, dt);
+  if (dodgePress && P.dodgeCd <= 0 && flight.lift <= 0 && !P.winded) { if (spend(dodgeCost())) { P.ashT = 0.9; P.dodge = 0.22; P.dodgeCd = 0.55; P.inv = Math.max(P.inv, 0.3); P.vx = drift + (ax || 1) * 270; P.vy = ay * 220; SFX.pDodge(); } }
   if (P.dodge > 0) { P.dodge -= dt; ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.2, frame: 0 }); }
   else { P.vx += (tvx - P.vx) * Math.min(1, dt * 6); P.vy += (tvy - P.vy) * Math.min(1, dt * 6); }
   P.face = ax || 1; P.anim += dt;
@@ -22099,7 +22103,7 @@ function wardBreak(fromX) {
 /* THE RETURN: let go as a blow lands and the ward is not there to take it - the blow goes back down the arm that threw it */
 function wardReturn(f, dmg) {
   P.wardRetDone = true; P.retSince = 0; P.inv = Math.max(P.inv, 0.3); P.hurt = 0; P.parryT = 0.22; P.returnT = 0.3; parries++; noteVerb('parry'); trialEvent('parry');
-  P.wardG = P.wardRefG || 0; P.wardDmg = 0; P.wardKeepT = 3; P.st = Math.min(P.maxSt, P.st + 10);   /* and what the ward held comes back as POWER: the nova it paid for has already gone out, and so has its healing - the blood was paid back once */
+  P.wardG = P.wardRefG || 0; P.wardDmg = 0; P.wardKeepT = 3; CM.refund(P, 10);   /* and what the ward held comes back as POWER: the nova it paid for has already gone out, and so has its healing - the blood was paid back once */
   if (f) { const big = !!(f.maxHp || f.mini || f.big);
     if (!(f.t === 'closedhelm' && !(f.open > 0))) { hurtEnemy(f, Math.max(1, Math.round(dmg * 0.6)), P.x, false); markFoe(f); }   /* (the Paladin's ward takes nothing: his sword met on the beat is what breaks it) */
     f.stagger = Math.max(f.stagger || 0, big ? 0.6 : 1.4); f.flash = 0.2; P.parryFoe = f; P.parryFoeUntil = time + 1.5;   /* the reel comes after the blow, or the blow's own flinch would cut it short */
@@ -23862,7 +23866,7 @@ function plungeWave(D) { let caught = 0;
     else { ringAt(P.x, P.y - 2, D.wave, D.trail[0], 0.3); for (const d of [-1, 1]) { dust(P.x + d * D.wave * 0.6, P.y, 3); streaks(P.x + d * 8, P.y - 2, 3, D.trail, 120); } }
     SFX.pPlungeGround(); if (caught) hitstop(0.04); if (caught && isGeo()) trialEvent('stonefall');
   }
-  P.plungeRec = caught ? D.caught : D.whiff; P.rootT = Math.max(P.rootT || 0, P.plungeRec); P.landT = Math.max(P.landT || 0, Math.min(0.16, P.plungeRec)); }
+  P.plungeRec = caught ? D.caught : D.whiff + CM.PLUNGE_WHIFF; if (!caught) P.atkRec = Math.max(P.atkRec || 0, P.plungeRec);   /* WEIGHT: a plunge that met nothing is a commit (+0.10); a caught one is untouched */ P.rootT = Math.max(P.rootT || 0, P.plungeRec); P.landT = Math.max(P.landT || 0, Math.min(0.16, P.plungeRec)); }
 /* WITH ALL SIX HEROES CARRYING A DASH_STRIKE OF THEIR OWN NOW, the plain cut-out-of-a-dash below is a fallback with
    nobody left to fall back to - kept, not deleted, so a hero added later without a table row still gets a dash
    attack instead of nothing. */
@@ -23936,7 +23940,7 @@ function tipLesson(kind) {
   hintMsg = kind === 'tip' ? 'THE POINT PAYS: THE LAST QUARTER OF THE SPEAR HITS 30% HARDER, AND RINGS WHEN IT DOES.'
     : 'THAT WAS THE HAFT. INSIDE THE SPEAR SHE BARELY SCRATCHES: IT SHOVES THEM BACK OUT TO THE POINT.';
 }
-function swingDmg(e) { P.st = Math.min(P.maxSt, P.st + 3); if (P.heavySwing) gainResolve(8); P.lastStruck = e; const lesson = !!e.fat && lessonHint('third');   /* the wood's third-cut lesson, on the first blow that lands on the old fat sprig (and the dash-attack line below waits its turn) */
+function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT (Daniel 10-02, Q2): the +3 for a landed blow is the third cut's and the heavy's only - it paid mashing */ if (P.heavySwing) gainResolve(8); P.lastStruck = e; const lesson = !!e.fat && lessonHint('third');   /* the wood's third-cut lesson, on the first blow that lands on the old fat sprig (and the dash-attack line below waits its turn) */
   if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2;   /* UNBROKEN: a blow that lands holds the run open */
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */
   if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit'); if (L.trial) { if (P.dashCut) trialEvent('dashatk'); if (P.heavySwing && !P.heavy) trialEvent('third'); }
@@ -23969,7 +23973,7 @@ const PYRE_DMG = 42, PYRE_SPLASH = 16;
 // THE PALADIN'S LIGHT: it comes from the maul landing and from whatever the Aegis turns aside, and it goes on
 // mending or on JUDGEMENT.
 function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(100, (P.light || 0) + n * varietyMul() * (1 + 0.1 * tal('radiance'))); if (!was && P.light >= 100) { SFX.lightFull(); number(P.x, P.y - 30, 'READY', '#ffd36b'); ringAt(P.x, P.y - 10, 22, '#fff6c8', 0.4); } }
-function castMend() { if ((P.light || 0) < 50) { SFX.buzz(); P.stFlash = 0.3; return; } P.light -= 50; P.rootT = tal('litany') ? 0 : 0.5; trialEvent('mend'); P.hp = Math.min(P.maxHp, P.hp + Math.round(20 * (1 + 0.1 * LV_GROW()))); if (tal('mercy')) P.st = Math.min(P.maxSt, P.st + 30); P.castT = 0.3; SFX.mend(); motes(P.x, P.y - 10, 18, 10); ringAt(P.x, P.y - 12, 22, '#fff6c8', 0.45); ringAt(P.x, P.y - 12, 12, '#ffd36b', 0.3); number(P.x, P.y - 24, '+20', '#fff6c8');
+function castMend() { if ((P.light || 0) < 50) { SFX.buzz(); P.stFlash = 0.3; return; } P.light -= 50; P.rootT = tal('litany') ? 0 : 0.5; trialEvent('mend'); P.hp = Math.min(P.maxHp, P.hp + Math.round(20 * (1 + 0.1 * LV_GROW()))); if (tal('mercy')) CM.refund(P, 30); P.castT = 0.3; SFX.mend(); motes(P.x, P.y - 10, 18, 10); ringAt(P.x, P.y - 12, 22, '#fff6c8', 0.45); ringAt(P.x, P.y - 12, 12, '#ffd36b', 0.3); number(P.x, P.y - 24, '+20', '#fff6c8');
   for (let i = 0; i < 14; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 16, y: P.y - Math.random() * 20, vx: 0, vy: -40 - Math.random() * 40, life: 0.7, max: 0.7, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: Math.random() < 0.3 ? 2 : 1, grav: -20 }); }
 function castJudgement() { trialEvent('judgement'); P.light = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.6); P.vx = 0; judgementFall(); if (tal('doubleJudge')) P.judge2T = 0.55; }   /* DOUBLE JUDGEMENT: the sky answers twice */
 function judgementFall() { SFX.judgement(); shakeCam(9); zoomKick(1.12, 0.35); killFlash = 0.035; hitstop(0.08); // a white flash: the red one is for being hurt
@@ -24040,7 +24044,7 @@ function updateEmbers(dt) {
     for (const c of clouds2) if (Math.abs(c.x - b.x) < c.r + 4 && Math.abs(c.y - b.y) < c.r + 4) c.life = Math.min(c.life, 0.2);
     for (const pr of props) if (pr.t === 'puffball' && !pr.popped && Math.abs(pr.x - b.x) < 9 && Math.abs(pr.y - 6 - b.y) < 9) { pr.popped = true; clouds2.push({ x: pr.x, y: pr.y - 6, r: 12, life: 1.5 }); burst(pr.x, pr.y - 6, 10, ['#e8e0d0', '#c8bcb0'], 60, 0.5); b.life = 0; }
     for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue; if (b.plunge && isPyro() && firedropSpares(e, P)) continue;   /* the head she is coming down on: her boots, not her fire (src/pogo-chain.js) */
-      if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 5 && b.y < e.y + 5) { b.hit.add(e); const big = !!e.maxHp, lit = (e.burn || 0) > 0; if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } else if (e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else { hurtAs(b.plunge ? 'plunge' : b.cone ? ['heavy', 'shot'] : 'shot', e, Math.round(heatDmg(b.plunge ? (big ? 3 : 4) : (big ? 2 : 3)) * (b.plunge ? 1 + 0.075 * LV_GROW() : 1)), b.x, false);   /* the firedrop is her plunge, the bellows her held blow */ if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); if (e.t === 'dummy') trialEvent(b.plunge ? 'firedrop' : b.cone ? 'heavyblow' : 'ember'); if (tal('stoke') && lit && !b.plunge && !b.cone) { P.st = Math.min(P.maxSt, P.st + 17); gainHeat(6); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2);
+      if (Math.abs(e.x - b.x) < e.w / 2 + 5 && b.y > e.y - e.h - 5 && b.y < e.y + 5) { b.hit.add(e); const big = !!e.maxHp, lit = (e.burn || 0) > 0; if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } else if (e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else { hurtAs(b.plunge ? 'plunge' : b.cone ? ['heavy', 'shot'] : 'shot', e, Math.round(heatDmg(b.plunge ? (big ? 3 : 4) : (big ? 2 : 3)) * (b.plunge ? 1 + 0.075 * LV_GROW() : 1)), b.x, false);   /* the firedrop is her plunge, the bellows her held blow */ if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); if (e.t === 'dummy') trialEvent(b.plunge ? 'firedrop' : b.cone ? 'heavyblow' : 'ember'); if (tal('stoke') && lit && !b.plunge && !b.cone) { CM.refund(P, 17); gainHeat(6); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2);
       if (tal('scatter')) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - b.x) < 30 && Math.abs(q.y - b.y) < 26) { hurtEnemy(q, 6, b.x, false); flame(q.x, q.y - q.h / 2, 3, 3, 30, 1); } ringAt(b.x, b.y, 22, '#ff9a5c', 0.25); } // SCATTER
       break; } }
     const tx = Math.floor(b.x / TS), ty = Math.floor(b.y / TS);
@@ -25007,6 +25011,8 @@ function update(dt) {
        button (a perch, a pin, a landing, the ceiling) answers the double tap the same way. */
     { const tapped = leftPress ? -1 : rightPress ? 1 : 0;
       if (tapped) { if (P.tapDir === tapped && time - (P.tapT ?? -9) < TAP_TWICE) { P.dbuf = 0.12; P.dbufDir = tapped; P.tapT = -9; } else { P.tapDir = tapped; P.tapT = time; } } }
+    if (CM.committedNext(P, STEP) && (throwPress || skill2Press || skill3Press || skill4Press)) { P.sbuf = [throwPress, skill2Press, skill3Press, skill4Press]; P.sbufFresh = true; throwPress = skill2Press = skill3Press = skill4Press = false; }   /* WEIGHT: no skill out of a commit - the press is HELD (src/commit.js holdPresses) */
+    else if (P.sbuf && !CM.committedNext(P, STEP) && !(stop > 0)) { [throwPress, skill2Press, skill3Press, skill4Press] = P.sbuf; P.sbuf = null; }   /* ... and comes out on the window's first frame */
     updateCharge(STEP); });
   levelHealTick();   /* a level-up's heal waits for the fight to end (levelUp); ahead of the hitstop, so the killing blow's own freeze does not hold it back */
   if (stop > 0) { stop -= dt; return; }
@@ -27089,6 +27095,7 @@ function drawWorld(cx, cy, showPlayer) {
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0 && CA && CA.atkPose(K.R)) { [key, frame] = CA.atkPose(K.R); }   /* THE SHIELD TRIP and THE LOW POKE, from the crouch (src/crouch-a.js) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
+      else if (P.atkRec > 0 && P.recPose && P.ground && !(P.flourishT > 0)) { [key, frame] = P.recPose; }   /* WEIGHT: the recovery holds the swing's last pose (a recover pose per hero is an optional art lane) */
       else if (kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* EVERY ABILITY HAS A BODY (hero-poses.js): the active that just fired, in a pose of its own - DISARM's hook among them, which borrowed the combo's backhand */
       else if (isWarden() && wardPose()) { const wp = wardPose(); key = wp[0]; frame = wp[1]; }   /* THE WARDEN'S BOUGHT ACTIVES (wardenKit) */
       else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
@@ -27119,7 +27126,7 @@ function drawWorld(cx, cy, showPlayer) {
       /* THE SKID: turning round at a run, the heels dig in before he goes the other way */
       if (P.lastFace !== undefined && P.face !== P.lastFace && P.ground && Math.abs(P.vx) > 60 && !(P.atk >= 0) && !(P.dodge > 0)) { P.skidT = 0.11; dust(P.x - P.face * 5, P.y, 3); }
       else if (P.lastFace !== undefined && P.face !== P.lastFace && P.ground && !(P.atk >= 0) && !(P.dodge > 0)) P.skidT = Math.max(P.skidT || 0, 0.06);   /* a turn at a walk still pivots on the heel, for a frame */
-      if (P.flourishT > 0) P.flourishT -= 1 / 60;
+      if (P.flourishT > 0) P.flourishT -= 1 / 60; if (P.atk >= 0) P.recPose = [key, frame];
       P.lastFace = P.face; if (P.skidT > 0) P.skidT -= 1 / 60;
       let dFace = P.face, dY = 0;
       if (P.dance > 0 && K.R.dance) { key = 'dance'; frame = Math.floor(P.dance * 10) % K.R.dance.length; }   /* the hero's OWN dance (chars.js F.dance) */
@@ -28634,7 +28641,7 @@ function render() {
         text(key, x + 7, 27, busy ? '#7a7a84' : col, 'center', 6); };
       const load=equipped(PROG,hero(),heroLevel());slot(load[0]||skillNow(),74,'F','#c9d1dc');slot(load[1]||skill2Now(),92,'G','#8fd160');slot(load[2],110,SET.skill3Key.toUpperCase(),'#8fb8ff');slot(load[3],128,SET.skill4Key.toUpperCase(),'#e6a8e0'); }
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
-    bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160'); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1);
+    bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : P.winded ? '#8a8a90' : '#8fd160'); g.fillStyle = P.regenOff ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1); if (P.winded) { g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(15.5, 15.5, 57, 5); }   /* WEIGHT: WINDED - grey, rimmed red, until it is back to 30%; the highlight dims while the regen waits */
     { const vi = venomIcon(P, CQG.CQ.venom); if (vi) drawVenomIcon(g, text, 16, 21, vi, time); }   /* VENOM: green drops under the stamina bar, one a stack (src/venom-hud.js) */
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab), px0 = VW - 6 - pw;
       for (const f of flyCoins) { const e = 1 - Math.pow(1 - f.t, 3); const x = f.x + (px0 + 4 - f.x) * e, y = f.y + (9 - f.y) * e - Math.sin(f.t * Math.PI) * 14; g.drawImage(PROP.coin[Math.floor(f.t * 12) % 4], Math.round(x), Math.round(y)); }
@@ -29020,7 +29027,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   /* (claude/combat3) ONE PREDICATE FOR EVERY BOSS AND MINI NOW (src/boss-greed.js OPEN_RULE): the chip, the lab's bot and the mash probe ask the same one */
   tempo: TEMPO,   /* (claude/combat3) the common foes' tempo knob, for tools/foe-tempo.mjs */
   greed: { chipped: e => GB.chipped(e, e === boss), open: e => GB.openOf(e), count: e => GB.greedCount(e, time), limit: e => (e === boss ? GB.GREED.n : GB.GREED.nMini), reach: GB.GREED.reach, G: GB.GREED, rules: GB },
-  bossOpen(e) { const g0 = GB.openOf(e); if (g0 !== null) return g0; return e && (e.t === 'lampreeve' || e.t === 'homunculus') ? e.open > 0 : e && e.t === 'puppeteer' ? PM.pupOpen(e) : e && e.t === 'greenteeth' ? GM.gtOpen(e) : e && e.t === 'cisternqueen' ? CQG.qOpen(e) : e && e.t === 'gangleader' ? GLM.glOpen(e) : e && e.t === 'gqueen' ? gqOpen(e) : e && e.t === 'reefmaw' ? ['stuck', 'reel', 'beached'].includes(e.mode) : e && e.t === 'duneworm' ? !!(e.st && DWM.wormOpen(e.st)) : e && e.t === 'gargoyle' ? gargOpen(e) : e && e.t === 'lance' ? lanceOpen(e) : e && e.t === 'pyromancer' ? e.open > 0 : e && e.t === 'abbot' ? abbotOpen(e) : e && e.t === 'wickerqueen' ? WQN.wqOpen(e) : e && e.t === 'winchmaster' ? winchOpen(e) : e && e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') : null; }, heavyCost: () => heavyCost(), stepCost: () => (isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost),
+  bossOpen(e) { const g0 = GB.openOf(e); if (g0 !== null) return g0; return e && (e.t === 'lampreeve' || e.t === 'homunculus') ? e.open > 0 : e && e.t === 'puppeteer' ? PM.pupOpen(e) : e && e.t === 'greenteeth' ? GM.gtOpen(e) : e && e.t === 'cisternqueen' ? CQG.qOpen(e) : e && e.t === 'gangleader' ? GLM.glOpen(e) : e && e.t === 'gqueen' ? gqOpen(e) : e && e.t === 'reefmaw' ? ['stuck', 'reel', 'beached'].includes(e.mode) : e && e.t === 'duneworm' ? !!(e.st && DWM.wormOpen(e.st)) : e && e.t === 'gargoyle' ? gargOpen(e) : e && e.t === 'lance' ? lanceOpen(e) : e && e.t === 'pyromancer' ? e.open > 0 : e && e.t === 'abbot' ? abbotOpen(e) : e && e.t === 'wickerqueen' ? WQN.wqOpen(e) : e && e.t === 'winchmaster' ? winchOpen(e) : e && e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') : null; }, heavyCost: () => heavyCost(), windingUp: e => windingUp(e), stepCost: () => (isPaladin() ? 28 : isPirate() ? 10 : isReaper() ? 23 : sword().cost),
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */

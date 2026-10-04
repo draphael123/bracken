@@ -7,7 +7,7 @@
 //
 //   THE KNIGHT - LOW GUARD. Crouched, his shield is down in front of his shins: a YELLOW blow from the front that did not go over him
 //     (every blow that reaches a ducker is a low one - a sweep, a bite, a charge at the legs) is TURNED, at a raised shield's price in
-//     wind (ST.blockHit), and with NO knockback - he is not slid back as a standing guard is (guardPush). Out of wind the guard breaks
+//     wind (blockCost: the blow's weight, src/commit.js), and with NO knockback - he is not slid back as a standing guard is (guardPush). Out of wind the guard breaks
 //     (half the blow finds him), a RED blow goes through, a piercing bolt goes through, a blow from behind finds him (PLATED: the
 //     shield at his back too, as it is standing). It is not a parry: the beat is the standing shield's.
 //     A crouched X is THE SHIELD TRIP: a short low bash along the floor (it is his low sweep when he is crouched and still). A
@@ -36,7 +36,7 @@
 // (the hero's draw), draw. State lives on the hero (P.ca*), so a co-op second hero carries his own. BK.crouchA() reads it for
 // tools/crouch-a.mjs.
 import { MARK, HEIGHT, tellKey } from './marks.js';
-import { DUCK_WINDOW } from './duck.js';
+import { DUCK_WINDOW } from './duck.js'; import { blockCost, exhaust, STAM } from './commit.js';   /* WEIGHT: the low guard pays and breaks as the shield does */
 
 export const CROUCH = {
   knight: { resolve: 8, tripMul: 0.8, down: 1.2, tripImm: 3.2, tripPoise: 18, reach: 26, slide: 20, live: [0.02, 0.15] },
@@ -53,7 +53,7 @@ export function makeCrouchA(api) {
   const stats = { lowGuards: 0, lowBlocks: 0, lowThrough: 0, lowBroken: 0, trips: 0, tripped: 0, held: 0, sets: 0, impaled: 0, bossHits: 0, redThrough: 0, pokes: 0, under: 0, reloads: 0, steady: 0 };
   const P = () => api.P, K = CROUCH.knight, W = CROUCH.warden, R = CROUCH.pirate;
   const said = (p, k, txt, col, gap = 0.6) => { const t = api.time; p.caSaid = p.caSaid || {}; if (t - (p.caSaid[k] ?? -9) < gap) return false; p.caSaid[k] = t; api.number(p.x, p.y - 24, txt, col); return true; };
-  const lowUp = p => api.hero() === 'knight' && (!!p.ducking || (!!p.caTrip && p.atk >= 0));
+  const lowUp = p => api.hero() === 'knight' && !p.winded && (!!p.ducking || (!!p.caTrip && p.atk >= 0));   /* (WEIGHT: no guard, low or high, while EXHAUSTED) */
 
   /* TAUGHT: once a level, twice a save, never in a yard */
   const taughtIn = {};
@@ -102,8 +102,8 @@ export function makeCrouchA(api) {
     if (!(front || api.tal('plated'))) return null;   /* from behind it finds him (PLATED: the shield at his back too, as standing) */
     if (unblockable) { stats.lowThrough++; said(p, 'thru', 'UNDER THE SHIELD', '#ff6b6b'); return null; }   /* RED: no shield, low or high */
     if (pierce) return null;   /* a piercing bolt goes through a shield already set; only one raised on the beat turns it */
-    const cost = Math.round(api.ST.blockHit * (1 - 0.15 * api.tal('steady')));
-    if (p.st < cost) { stats.lowBroken++; p.st = 0; p.stFlash = 0.5; p.hurt = Math.max(p.hurt || 0, 0.55); api.SFX.guardBreak(); api.SFX.gasp(); api.shakeCam(4, -p.face * 3); api.hitstop(0.1); api.number(p.x, p.y - 22, 'GUARD BREAK', '#ffd36b'); return 'half'; }
+    const cost = blockCost(dmg, api.tal('steady'));   /* WEIGHT (Daniel 10-02): the price is the blow's weight, as the standing shield's */
+    if (p.st < cost) { stats.lowBroken++; exhaust(p); p.stFlash = 0.5; p.hurt = Math.max(p.hurt || 0, STAM.breakStagger); p.guardTired = Math.max(p.guardTired || 0, STAM.breakTired); api.SFX.guardBreak(); api.SFX.gasp(); api.shakeCam(4, -p.face * 3); api.hitstop(0.1); api.number(p.x, p.y - 22, 'GUARD BREAK', '#ffd36b'); return 'half'; }
     p.st -= cost; p.stDelay = api.ST.delay; api.gainResolve(K.resolve); stats.lowBlocks++; p.caBlockT = 0.16;
     if (api.tal('vengeance')) p.venge = Math.min(30, (p.venge || 0) + Math.round(dmg * 0.5));   /* VENGEANCE keeps what the shield took, low or high */
     const sd = Math.sign(fromX - p.x) || p.face;
