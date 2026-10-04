@@ -1,6 +1,6 @@
 import {breathCapacity} from './deepair.js';
 import { AMBUSH_TARGET } from './ambush.js';
-import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row it is about to fight - see the note over the loop in runbossLab */
+import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate, ROLL_COST } from './commit.js';   /* bossLab seeds Math.random for the row it is about to fight - see the note over the loop in runbossLab */
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.
 // The playtest bot walks levels. These FIGHT, and measure what a player feels: how long a foe or a boss takes to
 // kill, and how much of your health it costs. Both yield between fights, so a page can be polled while they run.
@@ -450,12 +450,48 @@ function dashIn(BK, h, e, f) {
   if (P.ground && !(P.dashCd > 0) && !(P.dashRec > 0) && ad < reach + 52 && P.st >= cost + 22 && f - S.tap > 18) { go(); return 1; }
   return 0;
 }
+/* ==== THE TWO THINGS A HUMAN DOES UNDER COMMITMENT (WEIGHT, Daniel 10-02). The lab bot is a model of a player at human speed, and a
+   player who knows a swing is seen through does not start one he cannot finish: (a) no swing whose commit outlasts the nearest foe's
+   remaining windup (a tell he can see, or a boss's greed ring), and (b) one roll's wind kept back - a swing that would leave less than a
+   roll is not started. This is not a weaker bot: under the old combat a swing into a tell could be rolled out of, so the bot never had to
+   read it; now it must, as a person must. Only a STARTED cut is held back (a plunge from the air is not), and only on the ground. ==== */
+let HUMAN_H = null;
+function humanSwingOk(BK) {
+  const P = BK.P, h = HUMAN_H; if (BK.labHuman === false || !P || !h || !(P.ground || P.swim) || committed(P)) return true;
+  const total = artLim(false) / artRate(h, false) + (COMMIT[h] || COMMIT.knight).light;
+  const cost = BK.stepCost ? BK.stepCost() : 15, roll = ROLL_COST[h] || 24;
+  if (P.st - cost < roll && P.st < P.maxSt) return false;   /* (b): keep a roll */
+  for (const e of BK.enemies()) { if (!e.alive || e.harmless || Math.abs(e.x - P.x) > 110 || Math.abs(e.y - P.y) > 60) continue;
+    const greed = e.greedT > 0 ? e.greedT : 0, wu = BK.windingUp ? BK.windingUp(e) : false;
+    if (!greed && !wu) continue;
+    const left = greed || (typeof e.modeT === 'number' && e.modeT > 0 ? e.modeT : 0);
+    if (left < total) return false; }   /* (a): it would land before he is free */
+  return true;
+}
+/* (c) ONE ROLL A TELL, LATE IN IT. The bot's hands press the roll every 14-20 frames for as long as a red tell runs (a held key, in effect).
+   Under the old roll that was free - the whole roll untouchable, 20 wind with the bar refilling under it. Under WEIGHT a roll is 22-28 wind
+   with no regen through it, and only its first 0.20 s is safe, so a person rolls ONCE, as the tell ends. A roll press is let through when the
+   nearest winding foe's tell has under ROLL_LATE s left (or its time cannot be read), once per tell (0.7 s); with no tell in reach (a shot, a
+   hazard) at most one roll in ROLL_GAP s. */
+const ROLL_LATE = 0.22, ROLL_GAP = 0.6;
+function humanRollOk(BK) {
+  const P = BK.P; if (BK.labHuman === false || !P || !HUMAN_H) return true;
+  const now = BK.time !== undefined ? BK.time : performance.now() / 1000;
+  let best = null, bd = 1e9;
+  for (const e of BK.enemies()) { if (!e.alive || e.harmless) continue; const d = Math.abs(e.x - P.x); if (d > 160 || Math.abs(e.y - P.y) > 90) continue;
+    if (!(e.greedT > 0) && !(BK.windingUp && BK.windingUp(e))) continue; if (d < bd) { bd = d; best = e; } }
+  if (best) { const left = best.greedT > 0 ? best.greedT : (typeof best.modeT === 'number' && best.modeT > 0 ? best.modeT : 0);
+        if (left > ROLL_LATE) return false;   /* too early: wait for it */
+    if (now - (best.labRollT ?? -9) < 0.7) return false; best.labRollT = now; P.labRollT = now; return true; }
+  if (now - (P.labRollT ?? -9) < ROLL_GAP) return false; P.labRollT = now; return true;
+}
 export async function bossLab(BK, opts = {}) {
-  const previous = BK.manualSimulation;
+  const previous = BK.manualSimulation, press0 = BK.press;
+  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
-  finally { BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
+  finally { BK.press = press0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
 }
 async function runbossLab(BK, opts) {
   const healthMode=opts.healthMode||'refill';
@@ -466,7 +502,7 @@ async function runbossLab(BK, opts) {
   const bosses = opts.bosses || ['wood', 'kings', 'spire', 'crown', 'reef', 'flotilla', 'hurricane', 'deep', 'waymeet', 'undercrown'], maxSecs = opts.maxSecs || 120;
   const rows = [], out = { rows, healthMode, started: Date.now(), progress: 0, total: bosses.length * heroes.length };
   if (typeof window !== 'undefined') window.__bossLab = out;
-  for (const lvId of bosses) for (const h of heroes) {
+  for (const lvId of bosses) for (const h of heroes) { HUMAN_H = h;
     /* THE WHOLE ROW IS SEEDED, from the FIRST frame BK.load draws: a fresh level's own goblins and critters wander on real
        Math.random for the few frames before bossLab kills everything but the boss, and that unseeded wander (an idleT roll,
        a look, a mutter - main.js's temper()) was shifting frame counts before the boss fight even began, so a fight seeded
@@ -534,7 +570,7 @@ async function runbossLab(BK, opts) {
     const dkLag = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
-      if(P.st<12)P.labRest=true;if(P.st>=Math.min(48,P.maxSt*.6))P.labRest=false;
+      const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
       if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);

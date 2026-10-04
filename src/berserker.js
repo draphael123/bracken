@@ -161,7 +161,7 @@ export function makeBerserker(api) {
     const free = !ctx.stunned && !ctx.dodging && !p.plunge && !ctx.attacking && !(p.braceT > 0) && !(p.braceRec > 0) && !(p.blastT > 0) && !(p.charge > 0) && !p.dead;
     if (cDown && keys.up && free) { if (p.bzAxe) { if (t.ret) recall(p); } else throwAxe(p); }   /* UP+C: the throw (THE RETURN: again, it comes back) */
     else if (cDown && free && (p.ground || p.swim) && (p.rage || 0) >= 100 && !(p.frenzyT > 0)) frenzy(p, free);
-    else if (cDown && free && (p.ground || p.swim)) brace(p);
+    else if (cDown && free && (p.ground || p.swim)) { if (ctx.guardOk === false) { p.stFlash = 0.35; } else brace(p); }   /* (WINDED: no brace - claude/weight guardOk) */
     stepAxe(p, dt); rollStep(p);
     if (p.ground && !p.dead && p.bzFightT !== undefined && api.time - p.bzFightT > 6) p.bzUnbowedUsed = false;   /* UNBOWED is once a FIGHT: six quiet seconds and it is his again */
   }
