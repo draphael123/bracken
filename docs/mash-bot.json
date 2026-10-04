@@ -2480,7 +2480,7 @@
   }
  },
  "longwater": {
-  "hash": "2e8c28dc4407",
+  "hash": "ccea4656c627",
   "boss": {
    "boss": "herald",
    "wins": 0,
@@ -2581,7 +2581,7 @@
    ]
   },
   "carried": {
-   "from": "7c2c6ab2f37e",
+   "from": "2e8c28dc4407",
    "parts": [
     "boss"
    ]
@@ -2589,11 +2589,11 @@
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 32,
-    "hpLostPct": 115,
-    "hits": 14,
+    "minHpPct": 19,
+    "hpLostPct": 144,
+    "hits": 19,
     "walked": 100,
-    "lifts": 43,
+    "lifts": 42,
     "boardLifts": 2,
     "rides": 3,
     "pulls": 0,
@@ -2601,17 +2601,17 @@
      "raft": 3
     },
     "machines": true,
-    "frames": 12753,
-    "kills": 12,
+    "frames": 12569,
+    "kills": 7,
     "heroLevel": 12
    },
    "warden": {
     "deaths": 0,
-    "minHpPct": 33,
-    "hpLostPct": 122,
-    "hits": 15,
+    "minHpPct": 35,
+    "hpLostPct": 119,
+    "hits": 14,
     "walked": 100,
-    "lifts": 43,
+    "lifts": 44,
     "boardLifts": 2,
     "rides": 3,
     "pulls": 0,
@@ -2619,14 +2619,14 @@
      "raft": 3
     },
     "machines": true,
-    "frames": 13077,
-    "kills": 8,
+    "frames": 13164,
+    "kills": 11,
     "heroLevel": 12
    },
    "pyro": {
     "deaths": 0,
-    "minHpPct": 57,
-    "hpLostPct": 80,
+    "minHpPct": 64,
+    "hpLostPct": 79,
     "hits": 12,
     "walked": 100,
     "lifts": 43,
@@ -2637,8 +2637,8 @@
      "raft": 3
     },
     "machines": true,
-    "frames": 13072,
-    "kills": 10,
+    "frames": 13175,
+    "kills": 11,
     "heroLevel": 12
    }
   }
@@ -3780,42 +3780,7 @@
   }
  },
  "causeway": {
-  "hash": "a980f5adbb53",
-  "level": {
-   "knight": {
-    "deaths": 0,
-    "minHpPct": 58,
-    "hpLostPct": 42,
-    "hits": 9,
-    "walked": 100,
-    "lifts": 45,
-    "frames": 12168,
-    "kills": 2,
-    "heroLevel": 19
-   },
-   "warden": {
-    "deaths": 0,
-    "minHpPct": 84,
-    "hpLostPct": 22,
-    "hits": 5,
-    "walked": 100,
-    "lifts": 45,
-    "frames": 12263,
-    "kills": 2,
-    "heroLevel": 19
-   },
-   "pyro": {
-    "deaths": 0,
-    "minHpPct": 34,
-    "hpLostPct": 66,
-    "hits": 10,
-    "walked": 100,
-    "lifts": 45,
-    "frames": 12175,
-    "kills": 1,
-    "heroLevel": 19
-   }
-  },
+  "hash": "23edd5e3ab40",
   "boss": {
    "boss": "kraken",
    "wins": 0,
@@ -3914,6 +3879,64 @@
      "chip": []
     }
    ]
+  },
+  "carried": {
+   "from": "a980f5adbb53",
+   "parts": [
+    "boss"
+   ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 0,
+    "minHpPct": 44,
+    "hpLostPct": 60,
+    "hits": 13,
+    "walked": 100,
+    "lifts": 47,
+    "boardLifts": 2,
+    "rides": 0,
+    "pulls": 2,
+    "ridden": {},
+    "machines": true,
+    "frames": 14345,
+    "kills": 6,
+    "heroLevel": 19
+   },
+   "warden": {
+    "deaths": 0,
+    "minHpPct": 69,
+    "hpLostPct": 33,
+    "hits": 11,
+    "walked": 100,
+    "lifts": 45,
+    "boardLifts": 2,
+    "rides": 0,
+    "pulls": 2,
+    "ridden": {},
+    "machines": true,
+    "frames": 14244,
+    "kills": 6,
+    "heroLevel": 19
+   },
+   "pyro": {
+    "deaths": 0,
+    "minHpPct": 60,
+    "hpLostPct": 42,
+    "hits": 10,
+    "walked": 100,
+    "lifts": 48,
+    "boardLifts": 3,
+    "rides": 1,
+    "pulls": 2,
+    "ridden": {
+     "vmover": 1
+    },
+    "machines": true,
+    "frames": 14781,
+    "kills": 3,
+    "heroLevel": 19
+   }
   }
  },
  "harbor": {
