@@ -423,11 +423,11 @@ try {
     // 14. HER DEATH: the ride stops, the gate, the level cleared at the gate
     for (const e of BK.enemies()) if (e.fromQueen) e.alive = false;
     out.death = {};
-    q.hp = 1; q.mode = 'burn'; q.modeT = 2; q.inv = 0; BKT.hurtEnemy(q, 50, q.x - 10, false); for (let i = 0; i < 420 && !BK.L.gateOpen; i++) { BK.P.inv = 99; BK.sim(1); }   /* the slow beat of her fall, then THE ROAD GOES ON */
-    for (let i = 0; i < 240; i++) BK.sim(1); out.death.ring = ring();
+    q.hp = 1; q.mode = 'burn'; q.modeT = 2; q.inv = 0; BKT.hurtEnemy(q, 50, q.x - 10, false); for (let i = 0; i < 420 && !BK.L.gateOpen; i++) { if (BK.state === 'card') BK.cardClose(); BK.P.inv = 99; BK.sim(1); }   /* the slow beat of her fall, then THE ROAD GOES ON */
+    for (let i = 0; i < 240; i++) { if (BK.state === 'card') BK.cardClose(); BK.sim(1); } out.death.ring = ring();
     out.death.dead = !q.alive; out.death.active = BK.bossActive; out.death.gateOpen = !!BK.L.gateOpen;
     const gt = BK.L.ents.find(e => e.t === 'gate');
-    BK.tp(gt.x, gt.y); for (let i = 0; i < 60 && BK.state === 'play'; i++) BK.sim(1); out.death.state = BK.state;
+    BK.tp(gt.x, gt.y); for (let i = 0; i < 60 && (BK.state === 'play' || BK.state === 'card'); i++) { if (BK.state === 'card') BK.cardClose(); BK.sim(1); } out.death.state = BK.state;
     out.errors = window.__errs || null;
     return out;
   })()`, 900000);
