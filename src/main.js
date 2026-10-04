@@ -3,7 +3,7 @@ import { layoutPlates, plateNodes, placePanel } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
-import { emptyCarry, carryHas, drop as dcDrop, doorSpot, freshDeathCost } from './death-cost.js';   /* THE DEATH COST: the rules and the save shape, no game in them */
+import { emptyCarry, carryHas, drop as dcDrop, doorSpot, freshDeathCost, bankStake } from './death-cost.js';   /* THE DEATH COST: the rules and the save shape, no game in them */
 import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
 import { OR, makeCableway, stepCableway, bucketAt, bucketS, drumDist, lineYAt, brakeStep, liftStep, drawCables, drawBucket, drawOreStructures, drawOreBackdrop, drawOreVeins, ORES, ORE_NAMES, workSees, workLamp, hash as oreHash } from './ore-road.js';   /* THE ORE ROAD (2026-09-23): the cableway, pure, and its look */
 import { WALL_KINDS, wallHits, wallPop, wallRect, wallCentre, drawWalls } from './breakable-walls.js';   /* THE BREAKABLE-WALL ENGINE (2026-09-28): built once, THE ORE ROAD's the first level to use it */
@@ -93,7 +93,7 @@ import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, X
 import * as ART from './art.js';
 import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, PERKS, RESPEC_SILVER, cardOf, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
@@ -217,7 +217,7 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
+const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', skill5Key: '5', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
 const TIER = { welltown: 2.45, redgorge: 2.5, caravan: 2.4, unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
@@ -389,27 +389,30 @@ const SKINS = [
   { id: 'rose', name: 'ROSE KNIGHT', price: 40, pal: { b: '#d0648a', B: '#8a3a5a', r: '#fff6e0', y: '#ffd36b' } },
   { id: 'crimson', name: 'CRIMSON GUARD', price: 45, pal: { b: '#a8323a', B: '#6a1c24', r: '#ffd36b', y: '#e8dcc0' } },
   { id: 'verdant', name: 'VERDANT', price: 45, pal: { b: '#3a8a4a', B: '#245a30', r: '#ffd36b', y: '#c9b27c' } },
-  { id: 'frost', name: 'FROST PLATE', price: 55, pal: { b: '#c9d8e8', B: '#7a9ab8', r: '#3d5aa8', y: '#bfe6f5' } },
-  { id: 'shadow', name: 'SHADOW', price: 60, pal: { b: '#3a2f4a', B: '#1e1828', r: '#6a3aa0', y: '#8a8a9a' } },
-  { id: 'gilded', name: 'GILDED PLATE', price: 70, pal: { b: '#d9a83a', B: '#8f6a1c', r: '#c9463d', y: '#fff6c8' } },
+  { id: 'frost', name: 'FROST PLATE', price: 8, silver: true, pal: { b: '#c9d8e8', B: '#7a9ab8', r: '#3d5aa8', y: '#bfe6f5' } },
+  { id: 'shadow', name: 'SHADOW', price: 8, silver: true, pal: { b: '#3a2f4a', B: '#1e1828', r: '#6a3aa0', y: '#8a8a9a' } },
+  { id: 'gilded', name: 'GILDED PLATE', price: 10, silver: true, pal: { b: '#d9a83a', B: '#8f6a1c', r: '#c9463d', y: '#fff6c8' } },
   { id: 'iron', name: 'IRON KNIGHT', price: 0, pal: { b: '#7c8797', B: '#4a525e', r: '#c9d1dc', y: '#3a3040' }, feat: 'iron', featName: 'clear a level in Iron Knight' },
   { id: 'spore', name: 'SPOREBORN', price: 0, pal: { b: '#8a8a54', B: '#5a5a34', r: '#b8c060', y: '#9a5aa8' }, feat: 'spore', featName: 'clear Sporewood' },
-  { id: 'dawn', name: 'DAWN', price: 60, pal: { b: '#e8a0b0', B: '#a0606a', r: '#fff6e0', y: '#ffd36b' } },
-  { id: 'emberplate', name: 'EMBER', price: 75, pal: { b: '#3a3030', B: '#1e1818', r: '#ff9a5c', y: '#ffd36b' } },
-  { id: 'tide', name: 'TIDE', price: 90, pal: { b: '#2a8a8a', B: '#1a5a5a', r: '#e8ecff', y: '#bfe6f5' } },
+  { id: 'dawn', name: 'DAWN', price: 6, silver: true, pal: { b: '#e8a0b0', B: '#a0606a', r: '#fff6e0', y: '#ffd36b' } },
+  { id: 'emberplate', name: 'EMBER', price: 8, silver: true, pal: { b: '#3a3030', B: '#1e1818', r: '#ff9a5c', y: '#ffd36b' } },
+  { id: 'tide', name: 'TIDE', price: 10, silver: true, pal: { b: '#2a8a8a', B: '#1a5a5a', r: '#e8ecff', y: '#bfe6f5' } },
   { id: 'laurel', name: 'LAUREL', price: 40, pal: { b: '#3a6a2a', B: '#244a1a', r: '#ffd34a', y: '#ffd34a' }, feat: 'medals:15', featName: 'win 15 medals' },
-  { id: 'silverknight', name: 'THE SILVER KNIGHT', price: 4, silver: true, pal: { b: '#c9d1dc', B: '#7c8797', r: '#dfe8ff', y: '#e8ecff' } },
+  { id: 'silverknight', name: 'THE SILVER KNIGHT', price: 8, silver: true, pal: { b: '#c9d1dc', B: '#7c8797', r: '#dfe8ff', y: '#e8ecff' } },
 ];
+/* THE WEAPONS ARE LOOKS (LEVELING, Daniel 2026-10-03: "strip the stats"). Every blade cuts as the plain one does (10 a swing for 15 stamina): the
+   burn, the freeze, the leech, the coin shake and the heavy shove are gone (swordEffect reads flags none of these carry now), and a blade is
+   a prestige skin of the weapon alone (weapon-only skins, 10-02), priced 150-400 gold or silver. */
 const SWORDS = [
   { id: 'steel', name: 'STEEL', price: 0, pal: {}, dmg: 10, cost: 15, desc: 'the plain blade' },
-  { id: 'ember', name: 'EMBER BLADE', price: 25, pal: { s: '#ffb060', S: '#b8541c' }, dmg: 9, cost: 15, burn: true, desc: 'foes burn after a hit' },
-  { id: 'frost', name: 'FROST BLADE', price: 35, pal: { s: '#bfe6f5', S: '#4fa0c8' }, dmg: 10, cost: 15, freeze: true, desc: 'hits hold foes still' },
-  { id: 'gilded', name: 'GILDED BLADE', price: 45, pal: { s: '#ffe27a', S: '#c9962a' }, dmg: 10, cost: 15, gold: true, desc: 'kills shake out a coin' },
-  { id: 'shadow', name: 'SHADOW EDGE', price: 55, pal: { s: '#5a5468', S: '#2c2736' }, dmg: 8, cost: 9, desc: 'light: swings cost little' },
-  { id: 'thorn', name: 'THORN BLADE', price: 60, pal: { s: '#8fd160', S: '#3a6a2a' }, dmg: 10, cost: 15, leech: true, desc: 'each hit mends 2' },
-  { id: 'silverleaf', name: 'SILVERLEAF', price: 8, silver: true, pal: { s: '#e8ecff', S: '#9aa8c8' }, dmg: 10, cost: 15, freeze: true, gold: true, desc: 'found silver, not bought: hits hold foes still and kills shake out a coin' },
-  { id: 'laurelBlade', name: 'LAUREL BLADE', price: 70, pal: { s: '#ffe27a', S: '#8a6a1a' }, dmg: 11, cost: 14, desc: 'won, not forged: 11 a swing for 14 stamina', feat: 'medals:30', featName: 'win 30 medals' },
-  { id: 'moon', name: 'MOONSILVER', price: 80, pal: { s: '#e8ecff', S: '#8090c8' }, dmg: 15, cost: 20, heavy: true, desc: 'heavy: 15 a swing, shoves hard' },
+  { id: 'ember', name: 'EMBER BLADE', price: 150, pal: { s: '#ffb060', S: '#b8541c' }, dmg: 10, cost: 15, desc: 'a blade the colour of banked coals. looks only: it cuts as steel does' },
+  { id: 'frost', name: 'FROST BLADE', price: 175, pal: { s: '#bfe6f5', S: '#4fa0c8' }, dmg: 10, cost: 15, desc: 'a blade with rime in its grain. looks only: it cuts as steel does' },
+  { id: 'gilded', name: 'GILDED BLADE', price: 200, pal: { s: '#ffe27a', S: '#c9962a' }, dmg: 10, cost: 15, desc: 'gold leaf from guard to point. looks only: it cuts as steel does' },
+  { id: 'shadow', name: 'SHADOW EDGE', price: 225, pal: { s: '#5a5468', S: '#2c2736' }, dmg: 10, cost: 15, desc: 'a blade that drinks the light. looks only: it cuts as steel does' },
+  { id: 'thorn', name: 'THORN BLADE', price: 250, pal: { s: '#8fd160', S: '#3a6a2a' }, dmg: 10, cost: 15, desc: 'green steel grown like a briar. looks only: it cuts as steel does' },
+  { id: 'silverleaf', name: 'SILVERLEAF', price: 8, silver: true, pal: { s: '#e8ecff', S: '#9aa8c8' }, dmg: 10, cost: 15, desc: 'found silver, not bought: a pale leaf-shaped blade. looks only' },
+  { id: 'laurelBlade', name: 'LAUREL BLADE', price: 350, pal: { s: '#ffe27a', S: '#8a6a1a' }, dmg: 10, cost: 15, desc: 'won, not forged: the medal-winner\'s blade. looks only', feat: 'medals:30', featName: 'win 30 medals' },
+  { id: 'moon', name: 'MOONSILVER', price: 400, pal: { s: '#e8ecff', S: '#8090c8' }, dmg: 10, cost: 15, desc: 'the finest blade the smith will sell. looks only: it cuts as steel does' },
 ];
 const UPGRADES = [
   { id: 'heart', name: 'HEART OF OAK', price: 60, desc: '+25 max health' },
@@ -420,7 +423,10 @@ const UPGRADES = [
   { id: 'edge3', name: 'MASTERWORK EDGE', price: 260, desc: '+3 more damage: the best the smith can do', needs: 'spire', needsName: 'the Monastery' },
   { id: 'mail', name: 'RINGMAIL', price: 150, desc: 'a tenth less damage from every blow', needs: 'kings', needsName: 'Kingswood' },
   { id: 'plate', name: 'PLATE', price: 280, desc: 'another tenth less damage', needs: 'moor', needsName: 'Gale Moor' },
-  { id: 'tonic', name: 'RED TONIC', price: 40, consumable: true, max: 3, desc: 'carry up to three. when a blow leaves you under a quarter of your health you drink one at once: +45 health. it will even save you from a killing blow.' },
+  /* THE LATE SMITH (LEVELING, a gold sink past wood 8): one more edge and one more plate, gated by late woods */
+  { id: 'edge4', name: 'RUNED EDGE', price: 600, desc: '+3 more damage: runes the old smiths cut', needs: 'fields', needsName: 'the Hexed Fields' },
+  { id: 'mail2', name: 'WARDED PLATE', price: 900, desc: 'another tenth less damage from every blow', needs: 'mage', needsName: "the Mage's Folly" },
+  { id: 'tonic', name: 'RED TONIC', price: 40, consumable: true, max: 5, desc: 'carry up to five. when a blow leaves you under a quarter of your health you drink one at once: +45 health. it will even save you from a killing blow.' },
 ];
 const CHARMS = [
   { id: 'lucky', name: 'LUCKY CHARM', price: 70, desc: 'gold drifts to you' },
@@ -513,7 +519,7 @@ let trialVerbs = false, trialLend = null;   /* trialLend: the skills a hero's tr
 /* A PASSIVE IS ON FROM ITS LEVEL (hero-kits 1b, 2026-09-24). It used to be on only while it sat in one of the two slots, which made
    every passive a rival of the abilities for the same two keys; now it needs nothing but the level (or, for one a save bought before
    this, the owning - src/progression.js passiveOn). An ACTIVE is still on only while it is slotted. */
-const tal = id => { if(id==='heavy')return 1+growthAt(hero(),heroLevel()).techniqueRank;if(growthNodes[hero()]?.has(id))return growthAt(hero(),heroLevel()).techniqueRank; if (trialLend && trialLend.has(id)) return 1;
+const tal = id => { if(id==='heavy')return 1+grow(hero(),heroLevel()).techniqueRank;if(growthNodes[hero()]?.has(id))return grow(hero(),heroLevel()).techniqueRank; if (trialLend && trialLend.has(id)) return 1;
   const n = skillFor(hero(), id); if (n && !n.active) return passiveOn(PROG, hero(), id, heroLevel()) ? 1 : 0;
   return equipped(PROG, hero(), heroLevel()).includes(id) ? 1 : 0; };
 const ptsSpent = h => { const m = talentsOf(h); return TREE.filter(n => n.hero === h).reduce((s, n) => s + Math.min(n.max, m[n.id] || 0) * (n.cost || 1), 0); };
@@ -533,9 +539,10 @@ function resetTalents(h) { PROG.talents = PROG.talents || {}; PROG.talents[h] = 
 /* THE LEVEL'S OWN GROWTH: what the stat nodes used to sell - two ranks of health, damage, wind and footing - comes with the woods
    now, a rank at twelve and the second at twenty-four. (The +3 health, +5 stamina and +1 damage every second level were already
    there and are not this.) */
-const LV_GROW = h => growthAt(h || hero(), heroLevel(h)).ranks;
-const cdOf = k => k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3;
-const amul = k => skillScale(heroLevel()); // skill damage grows, cooldowns and invulnerability do not
+const LV_GROW = h => grow(h || hero(), heroLevel(h)).ranks;
+const perk = id => perkOn(PROG, hero(), id);   /* a MILESTONE PERK this hero took (src/progression.js PERKS) */
+const cdOf = k => (k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3) * (perk('focus') ? 0.85 : 1);
+const amul = k => grow(hero(), heroLevel()).skillMultiplier; // skill damage grows (and MASTERY, a perk), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
 window.BKT = { get PROG() { return PROG; }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPressName(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
@@ -554,9 +561,9 @@ const storeRowState = (tab, k) => tab.talent ? 'skills' : k.practice ? 'enter' :
 const skinById = id => SKINS.find(k => k.id === id) || SKINS[0];
 const swordById = id => SWORDS.find(k => k.id === id) || SWORDS[0];
 const sword = () => swordById(PROG.sword);
-const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 13 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + growthAt(hero(), heroLevel()).damage) * (isPyro() ? 0.7 : 1) * (isGeo() && GEO && GEO.empowered() ? GEO_K.ward.empMul : 1));   /* (EMPOWERED: a perfect RUNE-WARD, geomancer.js) */ // +1 damage every second level
+const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 13 : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + (PROG.items.edge4 ? 3 : 0) + grow(hero(), heroLevel()).damage) * (isPyro() ? 0.7 : 1) * (isGeo() && GEO && GEO.empowered() ? GEO_K.ward.empMul : 1));   /* (EMPOWERED: a perfect RUNE-WARD, geomancer.js) */ // +1 damage every second level
 const footTal = () => LV_GROW();   /* SURE FOOTING, FLEET, IRON LUNGS and SWASHBUCKLE were two ranks of this: the woods give it now */
-const dodgeCost = () => Math.max(6, ST.dodge - Math.round(2 * footTal()) - 3*tal('lightStep')), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
+const dodgeCost = () => Math.max(6, Math.round((ST.dodge - Math.round(2 * footTal()) - 3*tal('lightStep')) * (perk('fleet') ? 0.75 : 1))), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
 /* ==== THE WARDEN'S BACK-STEP. Not the shared roll played backwards: about HALF the ground, out of it sooner, for
    less wind, and she may take a SECOND one straight away - it is for the constant small adjustments of range her
    tip rule is about, not for one big escape. The third waits (STEP_CD). And because it is cheap and repeatable its
@@ -595,7 +602,7 @@ function applySkin() { setHeroVoice(hero()); if (PROG.perHero) PROG.charm = (PRO
 /* THE HERO AS HE WILL LOOK in a skin and with a weapon. The game and the store's previews bake him the same way, so the WEAPONS tab shows the hero you play, not always the knight */
 function heroSet(skinId, swordId, previewOnly = false, h = hero()) { const sk = skinById(skinId); const pal = h === 'pyro' ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal;   /* the skin dresses the hero; the weapon's palette goes to the weapon alone (chars.js withWeapon) */
   return withWeapon((swordId && swordId.pal ? swordId : swordById(swordId)).pal, () => h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : bakeKnight(pal, false, previewOnly)); }
-function applyUpgrades() { const growth = growthAt(hero(), heroLevel()); P.maxHp = growth.hp + (PROG.items.heart ? 25 : 0); P.maxSt = growth.stamina + (PROG.items.wind ? 30 : 0); }
+function applyUpgrades() { const growth = grow(hero(), heroLevel()); P.maxHp = growth.hp + (PROG.items.heart ? 25 : 0); P.maxSt = growth.stamina + (PROG.items.wind ? 30 : 0); }
 let statFlash = 0; // the HUD plate flashes when a rank lands
 // THE BEAM A ROPE IS TIED TO. 16x6: a squared timber with an iron ring under it and a lashing round the ring.
 function bakeRopeBeam() {
@@ -755,7 +762,7 @@ const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { 
 const skillsOwned = () => skillsFor(hero()).filter(n => n.active && (PROG.skillOwned[hero()]?.[n.id] || trialLend?.has(n.id)));
 const skillAt = index => { const id = equipped(PROG, hero(), heroLevel())[index]; if (skillFor(hero(), id)?.active) return id; if (trialLend) return [...trialLend].filter(k => skillFor(hero(), k)?.active)[index] || null; return null; };
 const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
-const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press].some((pressed,i) => pressed && skillAt(i) === k);
+const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press, skill5Press].some((pressed,i) => pressed && skillAt(i) === k);
 applySkin(); LS.heroReady(K); await LS.step('hero');   /* the hero first, so the loading screen has his dance to show */
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null }; await LS.step('art1');
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); SPR.boo = FF.bakeBoo(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
@@ -1180,8 +1187,8 @@ const upright = p => !p.dead && !(p.down > 0);
 /* the held keys and the one-shot presses, read and written as a set: these are the hands, and a pass swaps them */
 const keysRead = () => { const o = {}; for (const k in keys) o[k] = keys[k]; return o; };
 const keysWrite = o => { for (const k in keys) delete keys[k]; Object.assign(keys, o); };
-const pressRead = () => ({ jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
-const pressWrite = o => { jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+const pressRead = () => ({ jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, skill5: skill5Press, talk: talkPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
+const pressWrite = o => { jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; skill5Press = !!o.skill5; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
 function asPlayer(p, fn) {
   if (!coop()) return fn();                                        /* the single-player call, unchanged */
   if (p === players[0]) { const wP = P, wPass = passOn; P = p; passOn = p; try { return fn(); } finally { P = wP; passOn = wPass; } }
@@ -1416,7 +1423,7 @@ function allyLoad() {
     .then(([a, b]) => { LABMOD = a; PTMOD = b; return true; }).catch(() => { allyLoading = null; return false; });
   return allyLoading;
 }
-const apress = k => { if (k === 'atk') atkPress = true; else if (k === 'jump') jumpPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true; };
+const apress = k => { if (k === 'atk') atkPress = true; else if (k === 'jump') jumpPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true;if(k==='skill5')skill5Press=true; };
 /* NEVER STAND IN A HAZARD: spikes on the tile it would stand on, or a pool the level marked harm */
 function allySafeGoal(gx) {
   const tx = Math.floor(gx / TS), ty = Math.floor(P.y / TS);
@@ -3248,23 +3255,77 @@ function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) 
    so a level-up can never be a potion in the middle of a boss. The boss's own killing blow ends the fight in the same hurtEnemy call
    (queenDies, chiefDies, miniEnd clear bossActive/miniActive), so that one heals on the frame he falls. The hint says what arrived:
    the growth, the heal, and any passive that came with the level - never a slot: there are two, always. */
-function levelUp(n, from) { lvUpN = n; if (state !== 'play') return; if (from === undefined) from = n - 1;
+function levelUp(n, from) { lvUpN = n; PROG.cardNew = 1; if (state !== 'play') return; if (from === undefined) from = n - 1;
   lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
   SFX.rankUp(); TCH.buzz('levelup'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
   lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
 const fightLive = () => !!(bossActive || miniActive || ambushLive());
 /* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
-function levelUpLine(h, n, from) { const before = growthAt(h, from), after = growthAt(h, n), got = passivesArriving(h, from, n);
+function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), got = passivesArriving(h, from, n);
   const pas = got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '';
   const head = 'LEVEL ' + n + (n - from > 1 ? ' (+' + (n - from) + ')' : '');
-  const tries = [head + ': +' + (after.hp - before.hp) + ' HEALTH, +' + (after.stamina - before.stamina) + ' STAMINA, +' + (after.damage - before.damage) + ' DAMAGE. FULLY HEALED.' + pas,
-    head + ': +' + (after.hp - before.hp) + ' HEALTH. FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas];
+  const owe = picksOwed(PROG, h, n) + milestonesOwed(PROG, h, n).length;   /* THE CARD (LEVELING): the growth is a pick now, so the line says there is one to make */
+  const tries = [head + ': ' + (owe ? (owe > 1 ? owe + ' CARDS' : 'A CARD') + ' TO CHOOSE. ' : '+' + (after.hp - before.hp) + ' HEALTH. ') + 'FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas];
   return tries.find(s => wrap(s, VW - 40, 6).length <= 2) || tries[tries.length - 1]; }
 function levelHealTick() { const o = lvHealOwed; if (!o || state !== 'play' || fightLive()) return; const p = players ? players[0] : P; if (!p || p.dead) return;
   lvHealOwed = null; p.hp = p.maxHp; p.hpShown = p.maxHp; p.st = p.maxSt;
   ringAt(p.x, p.y - 12, 20, '#8fd160', 0.45); number(p.x, p.y - 44, 'FULLY HEALED', '#8fd160');
-  hintT = 4.5; hintMsg = levelUpLine(hero(), o.n, o.from); }
+  hintT = 4.5; hintMsg = levelUpLine(hero(), o.n, o.from);
+  if (cardOwed(hero())) openCard('play'); }   /* THE CARD comes with the heal: out of the fight, never in it */
+/* ==== THE LEVEL-UP CHOICE CARD (LEVELING, Daniel 2026-10-03: src/progression.js CARD, PERKS) ====
+   Every level owes a pick (VIGOR / ENDURANCE / MIGHT) and every fifth from 25 a MILESTONE perk. The card opens by itself when the level-up's heal
+   lands (never inside a fight: levelHealTick waits for it) and on the map once a level; LEFT/RIGHT choose, Z takes it, ESC leaves it for later
+   (it is owed until taken: PAUSE > LEVEL CARD, or the map). X twice is the RESPEC: every pick and perk of this hero back on the table for
+   RESPEC_SILVER silver (a migrated save's first is free). The stats it shows are the ones the hero will have (growthAt). */
+let cardUi = null, cardNag = '';
+function grow(h, lv) { return growthAt(h, lv, cardOf(PROG, h)); }   /* (a declaration: applyUpgrades may run before this line has) */
+const cardOwed = h => picksOwed(PROG, h, heroLevel(h)) + milestonesOwed(PROG, h, heroLevel(h)).length;
+function cardNow() { const h = hero(), lv = heroLevel(h), ms = milestonesOwed(PROG, h, lv);
+  if (ms.length) return { kind: 'perk', n: ms[0], opts: perkOffer(PROG, h, ms[0]) };
+  return picksOwed(PROG, h, lv) ? { kind: 'stat', opts: CARD } : null; }
+function openCard(back, review) { if (passOn && players && passOn !== players[0]) return false; if (!review && !cardOwed(hero())) return false;
+  cardUi = { back, i: 0, msg: '', msgT: 0, review: !!review, arm: 0 }; cardNag = hero() + ':' + heroLevel(); state = 'card'; SFX.uiSel(); return true; }
+function closeCard() { if (!cardUi) return; delete PROG.cardNew; const back = cardUi.back; cardUi = null; state = back; if (back === 'menu') menuKind = 'pause'; SFX.menuClose(); }
+function cardTake(i) { const c = cardNow(); if (!c || !cardUi) return; const h = hero(), lv = heroLevel(h), k = c.opts[i]; if (!k) return;
+  const err = c.kind === 'perk' ? pickMilestone(PROG, h, c.n, k.id, lv) : pickCard(PROG, h, k.id, lv);
+  if (err) { SFX.buzz(); cardUi.msg = err.toUpperCase(); cardUi.msgT = 2; return; }
+  const mh = P.maxHp, mst = P.maxSt; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); P.st = Math.min(P.maxSt, P.st + Math.max(0, P.maxSt - mst));
+  saveProgress(); SFX.equip(); statFlash = 1; cardUi.msg = k.name + ' TAKEN'; cardUi.msgT = 1.6; if (!cardNow() && !cardUi.review) closeCard(); }
+function cardRespec() { const h = hero(), free = !!(PROG.cardFree || {})[h], c = cardOf(PROG, h);
+  if (!c || (!picksSpent(c) && !Object.keys(c.ms || {}).length)) { SFX.buzz(); cardUi.msg = 'NOTHING TO RESPEC'; cardUi.msgT = 2; return; }
+  if (!free && silverAvail() < RESPEC_SILVER) { SFX.buzz(); cardUi.msg = 'A RESPEC IS ' + RESPEC_SILVER + ' SILVER: NEED ' + (RESPEC_SILVER - silverAvail()) + ' MORE'; cardUi.msgT = 2.5; return; }
+  respecCard(PROG, h); if (!free) PROG.silverSpent = (PROG.silverSpent || 0) + RESPEC_SILVER;
+  applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); P.st = Math.min(P.st, P.maxSt); saveProgress(); SFX.crack(); cardUi.i = 0; cardUi.review = true; cardUi.msg = free ? 'RESPEC: FREE THIS ONCE' : 'RESPEC: ' + RESPEC_SILVER + ' SILVER'; cardUi.msgT = 2.5; }
+function updateCard(dt) { const u = cardUi; if (!u) { state = 'map'; return; } u.msgT = Math.max(0, u.msgT - dt); u.arm = Math.max(0, u.arm - dt);
+  if (pausePress) { closeCard(); return; }
+  const c = cardNow();
+  if (c) { const n = c.opts.length; if (u.i >= n) u.i = 0;
+    if (leftPress || upPress) { u.i = (u.i + n - 1) % n; SFX.ui(); } if (rightPress || downPress) { u.i = (u.i + 1) % n; SFX.ui(); }
+    if (confirmPress) { cardTake(u.i); return; } }
+  else if (confirmPress) { closeCard(); return; }
+  if (morePress()) { if (u.arm > 0) { u.arm = 0; cardRespec(); } else { u.arm = 2.5; const free = !!(PROG.cardFree || {})[hero()]; u.msg = moreKey() + ' AGAIN: RESPEC ' + (free ? 'FREE ONCE' : 'FOR ' + RESPEC_SILVER + ' SILVER'); u.msgT = 2.5; SFX.ui(); } }
+}
+function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = heroLevel(h), c = cardNow(), cd = cardOf(PROG, h) || { v: 0, e: 0, m: 0, ms: {} }, gr = grow(h, lv);
+  if (u.back === 'map') g.drawImage(MAPC, 0, 0); else { g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH); } g.fillStyle = 'rgba(8,8,14,0.82)'; g.fillRect(0, 0, VW, VH);
+  const owed = picksOwed(PROG, h, lv), mso = milestonesOwed(PROG, h, lv).length;
+  text(c ? (c.kind === 'perk' ? 'LEVEL ' + c.n + ': A MILESTONE' : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6, UI.title, 'center', 12);
+  text((HERO_SHORT[h] || h).toUpperCase() + '  LEVEL ' + lv + (owed + mso ? '   ' + (owed + mso) + ' TO CHOOSE' : ''), VW / 2, 22, UI.dim, 'center', 6);
+  const opts = c ? c.opts : CARD, n = Math.max(1, opts.length), gap = 6, cw = Math.floor((VW - 16 - gap * (n - 1)) / n), top = 34, ch = 78;
+  opts.forEach((k, i) => { const x = 8 + i * (cw + gap), sel = !!c && i === u.i, stat = !c || c.kind === 'stat', full = stat && (cd[k.id] || 0) >= CARD_CAP;
+    g.fillStyle = sel ? 'rgba(60,80,50,0.92)' : 'rgba(26,24,36,0.92)'; g.fillRect(x, top, cw, ch);
+    g.strokeStyle = sel ? UI.sel : 'rgba(255,255,255,0.16)'; g.lineWidth = 1; g.strokeRect(x + 0.5, top + 0.5, cw - 1, ch - 1);
+    text(fitName(k.name, cw - 8, 8), x + cw / 2, top + 6, full ? UI.dim : sel ? UI.sel : UI.title, 'center', 8);
+    wrap(k.what, cw - 8, 6).slice(0, 3).forEach((ln, j) => text(ln, x + cw / 2, top + 22 + j * 9, full ? UI.dim : UI.text, 'center', 6));
+    if (stat) { const now = { v: gr.hp + ' HEALTH', e: gr.stamina + ' STAMINA', m: '+' + gr.damage + ' DAMAGE' }[k.id];
+      text(full ? 'FULL' : (cd[k.id] || 0) + ' / ' + CARD_CAP + ' PICKS', x + cw / 2, top + ch - 22, full ? '#ff9a5c' : UI.gold, 'center', 6);
+      text(fitName(now, cw - 8, 6), x + cw / 2, top + ch - 12, UI.dim, 'center', 6); }
+    else text('ONCE, FOR GOOD', x + cw / 2, top + ch - 12, UI.gold, 'center', 6);
+    TCH.hit(x, top, cw, ch, () => { if (!c) return; if (u.i === i) cardTake(i); else { u.i = i; SFX.ui(); } }); });
+  const perks = Object.entries(cd.ms || {}).sort((a, b) => a[0] - b[0]).map(([, id]) => (PERKS.find(k => k.id === id) || {}).name).filter(Boolean);
+  if (perks.length) text(fitName('PERKS: ' + perks.join(', '), VW - 20, 6), VW / 2, top + ch + 6, UI.sel, 'center', 6);
+  const help = u.msgT > 0 ? u.msg : c ? 'LEFT/RIGHT  Z TAKE IT  ESC LATER  ' + moreKey() + ' RESPEC' : 'Z OR ESC BACK   ' + moreKey() + ' RESPEC (' + ((PROG.cardFree || {})[h] ? 'FREE ONCE' : RESPEC_SILVER + ' SILVER') + ')';
+  text(fitName(help, VW - 16, 6), VW / 2, VH - 12, u.msgT > 0 ? UI.gold : UI.sel, 'center', 6); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
    takes everything and every quest as well. old is the level the count of woods gave. */
@@ -3655,6 +3716,7 @@ function branchStep(dir) {
   PROG.mapNode = map.node; PROG.mapNodeId = child.id; SFX.uiSel(); return true;
 }
 function updateMap(dt) {
+  if (!map.walking && !mapPanel.open && PROG.cardNew && cardOwed(hero()) && openCard('map')) return;   /* THE CARD, on the map, after a level was gained and not chosen (PROG.cardNew: levelUp sets it, closing the card clears it) */
   if (mapPress && !map.walking) mapPanelToggle();
   if (mapPanel.open) { updateMapPanel(dt); PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; return; }
   if (map.walking) {
@@ -3896,7 +3958,7 @@ function updateSkills(dt) {
  const n=ns[treeI],say=m=>{treeMsg=m;treeMsgT=3;SFX.ui();};
  if(confirmPress&&n&&!n.active){say(passiveOn(PROG,hero(),n.id,heroLevel())?n.name+' is always on':'Arrives at level '+n.level);}
  else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}
- [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
+ [throwPress,skill2Press,skill3Press,skill4Press,skill5Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say('Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
  /* (leaving is the store's: ESC; and Q is the tab before) */
 }
 const TREE_ICON = {};
@@ -4055,7 +4117,7 @@ const treePreview = (n, x, y, w, h) => { if (!n) return;
 function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F and G, the abilities and passives, and the live preview of the one under the cursor */
  const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/limit;
  text('LEVEL '+lv,VW/2,6,UI.dim,'center',6);
- for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),lab=sk&&!sk.active?'PASSIVE':['F','G'][i],lw=inkW(lab,6)+8;g.fillStyle='#302c3e';g.fillRect(x,38,width-3,11);text(lab,x+4,40,UI.gold,'left',6);text(fitName(sk?sk.name:'EMPTY',width-lw-8,6),x+4+lw,40,UI.text,'left',6);}
+ for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),lab=sk&&!sk.active?'PASSIVE':['F','G',SET.skill3Key.toUpperCase(),SET.skill4Key.toUpperCase(),SET.skill5Key.toUpperCase()][i],lw=inkW(lab,6)+8;g.fillStyle='#302c3e';g.fillRect(x,38,width-3,11);text(lab,x+4,40,UI.gold,'left',6);text(fitName(sk?sk.name:'EMPTY',width-lw-8,6),x+4+lw,40,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,51,91,11);text(tab===0?'ACTIVES':'PASSIVES',x+45,53,treeBranch===tab?UI.gold:UI.dim,'center',6);}
  const LW=192,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=64+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
   /* THE PASSIVE LADDER: what he has is lit and says ON; what is coming is dim and says the level it arrives at */
@@ -4080,7 +4142,7 @@ function updateStore(dt) {
   if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
   if (items.length && upPress) { storeI = (storeI + items.length - 1) % items.length; SFX.ui(); }
   if (items.length && downPress) { storeI = (storeI + 1) % items.length; SFX.ui(); }
-  if (confirmPress && items.length) {
+  if (confirmPress && items.length) { const coop0 = coopOpen(PROG);   /* (the first extra hero bought opens CO-OP: said below) */
     const k = items[storeI], owned = k.consumable ? false : (k.id === 'none' || owns(tab, k.id)), lock = lockOf(k, PROG, featDone);
     if (k.practice === 'trial') { startTrial(hero()); return; }   /* THE GUIDED YARD, from the store as well as the pause menu */
     if (k.practice) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); } return; }
@@ -4095,6 +4157,7 @@ function updateStore(dt) {
     else if (k.silver) { if (silverAvail() >= k.price) { PROG.silverSpent = (PROG.silverSpent || 0) + k.price; PROG[tab.owned][k.id] = true; setEquip(tab.key, k.id); applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); saveProgress(); SFX.coin(); SFX.sting(); SFX.medal(); storeMsg = 'bought ' + k.name; storeMsgT = 2; } else { SFX.buzz(); storeMsg = 'need ' + (k.price - silverAvail()) + ' more silver'; storeMsgT = 2; } }
     else if (PROG.coins >= k.price) { PROG.coins -= k.price; PROG[tab.owned][k.id] = true; if (tab.key) setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); applyUpgrades(); saveProgress(); SFX.coin(); SFX.sting(); storeMsg = 'bought ' + k.name; storeMsgT = 2; if (PROG.storeHint === k.id) PROG.storeHint = null; burst(VW / 2 + camX, 60 + camY, 16, ['#ffd36b', '#fff6c8'], 60, 0.6, -20, 1); }
     else { SFX.buzz(); storeMsg = 'need ' + (k.price - PROG.coins) + ' more gold'; storeMsgT = 2; }
+    if (tab.key === 'hero' && !coop0 && coopOpen(PROG)) { storeMsg = 'bought ' + k.name + ': CO-OP IS OPEN'; storeMsgT = 4; }
   }
 }
 const previewCache = {};
@@ -4527,7 +4590,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Store', 'Hero', 'Co-op', 'Co-op guide', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
+const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Level card', 'Store', 'Hero', 'Co-op', 'Co-op guide', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
 /* THE SETTINGS LIST IS FIVE TABS (src/settings-ui.js: AUDIO, DISPLAY, GAMEPLAY, CONTROLS, ACCESSIBILITY). 'Slot 3 key' and 'Slot 4 key' left the menu with the third and fourth slots (MAX_SLOTS = 2); their handlers stay in menuAdjust. */
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0.5, 1], SHAKE_MODES = ['off', 'hit', 'full'];   /* SCREEN SHAKE: OFF / ON HIT (the default: only the hero being hurt shakes the camera) / FULL (every shake in the game); SHAKES is the strength row (LOW / FULL) */
@@ -4535,7 +4598,7 @@ const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 :
 let menuKind = 'pause';
 // one line each, so nobody has to guess what a switch does
 const SETTING_TIPS = {
-  'Skills': 'the store, open on your abilities and their loadout (Q)', 'Store': 'buy and equip anything (V on the map)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
+  'Skills': 'the store, open on your abilities and their loadout (Q)', 'Level card': 'what each level gave: vigor, endurance, might, and the perks', 'Store': 'buy and equip anything (V on the map)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been, and what is still to find (TAB)', 'Way-on arrow': 'an arrow at the edge of the screen to the next thing on the way: STUCK = only after ten seconds without headway',
@@ -4608,6 +4671,7 @@ function menuConfirm() {
   else if(k==='Export save'){ const raw=saveBlocked?localStorage.getItem(slotKey(slot)):exportProgress(PROG);if(!raw){menuMsg='No saved data to export';menuMsgT=4;return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='bracken-slot-'+(slot+1)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);menuMsg='Save exported';menuMsgT=4; }
   else if(k==='Import save'){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{const file=input.files[0];if(!file)return;try{if(file.size>8000000)throw Error('Save file is too large');importProgress(localStorage,slotKey(slot),await file.text(),LEVELS.filter(l=>!l.hidden).map(l=>l.id));loadSlot(slot);applySkin();applyUpgrades();menuMsg='Imported; previous save backed up';}catch(error){menuMsg=error.message;}menuMsgT=8;};input.click(); }
   else if (k === 'Skills') openStore('menu', 'skills');
+  else if (k === 'Level card') openCard('menu', true);
   else if (k === 'Store') openStore('menu', 'heroes');
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
@@ -4659,13 +4723,16 @@ const PICK = ['knight', 'warden', 'geomancer', 'pyro', 'paladin', 'pirate', 'rea
    somewhere to send you when it did not - a screen that waits for a trial that cannot load is a dead end. */
 function startTrial(h) { const i = LEVELS.findIndex(l => l.id === 'trial_' + h); if (i < 0) return false; rush = null; PROG.tried = PROG.tried || {}; PROG.tried[h] = true; saveProgress(); loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); return true; }
 const hasTrial = h => LEVELS.some(l => l.id === 'trial_' + h);
+/* A NEW GAME CHOOSES ONE OF THE DEFAULT HEROES (LEVELING, Daniel 2026-10-03: src/progression.js DEFAULT_HEROES). The others are bought for silver in
+   the store, and the first one bought opens co-op. */
+const NEW_PICK = DEFAULT_HEROES;
 function updateHeroPick() {
-  if (heroPick.stage === 'pick') {
+  if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
     if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; SFX.ui(); }
     if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; } }
   else { if (confirmPress) { if (!startTrial(hero())) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
 }
-function drawHeroPick() {
+function drawHeroPick() { const PICK = NEW_PICK;
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
   if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('TAKE THE TRIAL FIRST?', VW / 2, VH / 2, UI.text, 'center'); text('a short practice yard for this hero. nothing in it can hurt you.', VW / 2, VH / 2 + 14, UI.dim, 'center', 6); text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 32, UI.sel, 'center', 6); return; }
   text('CHOOSE YOUR HERO', VW / 2, 8, UI.title, 'center', 12);
@@ -4709,7 +4776,7 @@ function drawHeroPick() {
       if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(VW / 2 - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
       else text(ln, VW / 2, yy, UI.dim, 'center', 6); }); }
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
-  text('the other four are 15 silver each, later', VW / 2, VH - 10, UI.dim, 'center', 6);
+  text('the others are 10 silver each: buy one and co-op opens', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
 /* THE CO-OP PICK. Player one keeps the save's hero, his level and his talents; player two takes any hero the save
    owns that player one is not already holding - and both starters are always there, because a friend on the sofa
@@ -4724,7 +4791,11 @@ let coopPickFrom = 'title';
 /* WHOEVER YOU ARE IS STILL ON THE LIST. This filtered out player one's own hero, so a player who had taken THE WARDEN found her missing
    from player two's choices and read it as her not being selectable at all. The owner's rule: two of the same hero is allowed - two
    knights, or two Wardens, side by side. Both starters are always here, and everything the save owns with them. */
-const coopPickList = () => PICK.filter(h => PROG.heroes[h] || h === 'knight' || h === 'warden' || h === 'geomancer' || godMode());
+const coopPickList = () => PICK.filter(h => PROG.heroes[h] || (PROG.coopLegacy && DEFAULT_HEROES.includes(h)) || godMode());   /* (LEVELING: the free starters are an OLD save's - src/progression.js migrateHeroes) */
+/* CO-OP OPENS WITH THE SECOND HERO (LEVELING, Daniel 2026-10-03): until the save owns two (or is a save from before this), every way into the
+   co-op pick - the title, the pause menu, the map's F - lands on a card that says so, and any key goes back. */
+const coopOk = () => godMode() || coopOpen(PROG);
+const COOP_LOCKED = ['CO-OP OPENS WITH YOUR SECOND HERO.', 'BUY ONE IN THE STORE: HEROES, 10 SILVER.'];
 /* THE SAME FACE WHEREVER A HERO IS ONLY A PICTURE: this pick screen and the map (both heroes, walking) both want a
    hero standing there with no game state behind him, so they share one bake, cached by key (see `preview`). */
 function heroPreviewSet(h) {
@@ -4738,6 +4809,7 @@ function heroPreviewSet(h) {
 }
 function coopPickBack() { return coopPickFrom === 'pause' ? 'menu' : 'map'; }   /* 'title' and 'map' both answer to the map */
 function updateCoopPick() {
+  if (!coopOk()) { if (confirmPress || pausePress || atkPress) { state = coopPickFrom === 'title' ? 'title' : coopPickBack(); if (coopPickFrom === 'pause') menuKind = 'pause'; SFX.ui(); } return; }
   const list = coopPickList();
   if (!list.length) { state = coopPickFrom === 'title' ? 'title' : coopPickBack(); if (coopPickFrom === 'pause') menuKind = 'pause'; SFX.buzz(); return; }
   if (coopPick.i >= list.length) coopPick.i = 0;
@@ -4768,6 +4840,7 @@ function drawCoopPick() {
   const list = coopPickList();
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
   text('LOCAL CO-OP', VW / 2, 6, UI.title, 'center', 12);
+  if (!coopOk()) { COOP_LOCKED.forEach((ln, i) => text(ln, VW / 2, VH / 2 - 10 + i * 12, i ? UI.dim : UI.text, 'center', 6)); text('Z OR ESC  BACK', VW / 2, VH - 12, UI.sel, 'center', 6); return; }
   text('PLAYER ONE   ' + (HERO_SHORT[hero()] || hero().toUpperCase()) + '   KEYBOARD', VW / 2, 22, UI.text, 'center', 6);
   text(coopPick.ally ? 'AND AN ALLY THE GAME PLAYS' : 'PLAYER TWO   A GAMEPAD', VW / 2, 31, coopPick.ally ? '#c9a0ff' : '#8fd160', 'center', 6);
   const n = Math.max(1, list.length), cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 42, ch = 54;
@@ -4803,7 +4876,7 @@ function selectStart() {
 
 // ---------- input ----------
 const keys = {};
-let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false; // padLast: the last press came from a gamepad (prompts show pad glyphs)
+let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, skill5Press = false, talkPress = false, padLast = false; // padLast: the last press came from a gamepad (prompts show pad glyphs)
 let jumpUpKey = false;   /* the jump press this frame came from a key that is UP too (ArrowUp, W): see UP_SLASH */
 let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false, anyPress = false, upPress = false, downPress = false, leftPress = false, rightPress = false, confirmPress = false, talentsPress = false, mapPress = false;
 const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
@@ -4835,7 +4908,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.dodge)) { dodgePress = true; keys.dodge = true; }
   if (isKey(e, KEYS.throw)) { throwPress = true; keys.throw = true; }   /* held, for the Death Knight's HOLD F */
   if (isKey(e, KEYS.skill2)) skill2Press = true;
-  if(e.key.toLowerCase()===SET.skill3Key)skill3Press=true;if(e.key.toLowerCase()===SET.skill4Key)skill4Press=true;
+  if(e.key.toLowerCase()===SET.skill3Key)skill3Press=true;if(e.key.toLowerCase()===SET.skill4Key)skill4Press=true;if(e.key.toLowerCase()===SET.skill5Key)skill5Press=true;   /* THE FIFTH SLOT (LEVELING: it opens at level 24) */
   if (isKey(e, KEYS.talk)) talkPress = true;
   padLast = false;
   if (isKey(e, KEYS.left)) { keys.left = true; leftPress = true; }
@@ -4894,7 +4967,7 @@ function padIntoPlayer(gp, st, p) {
   const now = padState(gp, 'pad2'), rose = k => now[k] && !st.prev[k];
   if (Object.values(now).some(Boolean)) initAudio();
   const pr = p.press;
-  for (const k of ['jump', 'atk', 'dodge', 'throw', 'skill2', 'skill3', 'skill4', 'talk', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
+  for (const k of ['jump', 'atk', 'dodge', 'throw', 'skill2', 'skill3', 'skill4', 'skill5', 'talk', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { if (now[k]) p.keys[k] = true; else if (st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
   st.prev = now;
 }
@@ -4908,7 +4981,7 @@ function pollGamepad() {
   if (used) { pad.prev = now; return; }
   const rose = k => now[k] && !pad.prev[k];
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; } }
-  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
+  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('skill5'))skill5Press=true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
   pad.prev = now;
@@ -4966,7 +5039,7 @@ function padRawTick(gps) {
 // a TOUCH settings tab, assists and haptics. This is only the glue: what a press MEANS lives here, what a thumb DOES lives there.
 const touchPressName = k => { initAudio(); anyPress = true; padLast = false;
   if (k === 'jump') { jumpPress = true; jumpUpKey = false; } else if (k === 'confirm') confirmPress = true; else if (k === 'atk') atkPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true;
-  else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true;
+  else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'skill5') skill5Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true;
   else if (k === 'left') leftPress = true; else if (k === 'right') rightPress = true; else if (k === 'up') upPress = true; else if (k === 'down') downPress = true; };
 /* WHAT INTERACT WOULD DO NOW (src/touch-interact.js reads the same reach tests the keyboard path does) */
 const touchVerbNow = () => interactVerb({ P, state, props, talkers, L, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
@@ -4983,7 +5056,7 @@ Object.assign(SETTING_TIPS, TCH.tips);
 {
   if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
 const drawTouch = () => TCH.draw();
-function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = false; jumpUpKey = false;
+function clearPresses() { jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = skill5Press = talkPress = talentsPress = mapPress = false; jumpUpKey = false;
   if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
 // ---------- collision ----------
@@ -5415,9 +5488,9 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
   if (L && L.trial) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
-  dmg = Math.max(1, Math.round(dmg * diffNow().take * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1)));   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
+  dmg = Math.max(1, Math.round(dmg * diffNow().take * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1) * (perk('iron') ? 0.9 : 1)));   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   if (PROG.charm === 'iron') dmg = Math.max(1, Math.round(dmg * 0.8));
-  dmg = Math.max(1, Math.round(dmg * (PROG.items.mail ? 0.9 : 1) * (PROG.items.plate ? 0.9 : 1) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
+  dmg = Math.max(1, Math.round(dmg * (PROG.items.mail ? 0.9 : 1) * (PROG.items.plate ? 0.9 : 1) * (PROG.items.mail2 ? 0.9 : 1) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
   { const cloak = tal('ashCloak'); if (cloak && (P.ashT || 0) > 0) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * cloak))); } // ASH CLOAK / THE SHROUD, for a moment after a roll
   if (P.cryT > 0) dmg = Math.max(1, Math.round(dmg * 0.75)); // the war cry: blows land a quarter lighter
@@ -5525,6 +5598,7 @@ function dcBankAll() { for (const q of players) q.dcCarry = emptyCarry(); dcMirr
 function deathCost(p, killer) {
   if (!dcOn() || p.dcDone) return; p.dcDone = true; p.dcLost = false;
   const c = carryOf(p), lone = p === players[0], h = hero(), old = bundleOf(p);
+  if (lone && !(L && L.trial)) c.purse += bankStake((PROG.coins || 0) - (c.purse || 0));   /* THE BANK'S STAKE (src/death-cost.js): the gold half bites when the bank is big */
   const t = dcDrop(c, { got, purse: PROG.coins || 0, xp: heroXp(h) });
   p.dcCarry = emptyCarry();
   if (old && (t.coins || t.purse || t.xp)) { dcSet(p, null); p.dcLost = true; }   /* ONLY ONE BUNDLE EVER EXISTS: dying AGAIN and dropping something new before you got it back is the end of the old one. Dying with nothing carried leaves it where it lies (Daniel, 2026-09-29) */
@@ -6280,6 +6354,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
     sparks(e.x, e.y - e.h / 2, dir, 6);
     spawnCorpse(e, dir); beastSlain(e.cnSkin || e.t);
     if (PROG.charm === 'heart' && !e.harmless && P.hp > 0 && P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 5); number(P.x, P.y - 30, '+5', '#8fd160'); }
+    if (perk('leech') && !e.harmless && P.hp > 0 && P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 4); number(P.x + 8, P.y - 30, '+4', '#c94a4a'); }   /* BLOODLETTER, a milestone perk */
     if (e.t === 'shardling') { burst(e.x, e.y - 6, 18, ['#bfe6f5', '#eefaff', '#7aa8c8'], 130, 0.7, 320, 2); ringAt(e.x, e.y - 6, 22, '#bfe6f5', 0.35); SFX.crack();
       for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < 26 && Math.abs(q.y - e.y) < 24) hurtEnemy(q, DMG.shardBurst, e.x, false);
       if (!P.dead && Math.abs(P.x - e.x) < 22 && Math.abs(P.y - e.y) < 22) damagePlayer(e.x, DMG.shardBurst); }
@@ -7624,7 +7699,7 @@ function updatePlayer(dt) {
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel');
   if (P.landT > 0 && (P.jbuf > 0 || P.dbuf > 0)) P.landT = 0; // a landing can always be left early: the controls never take the wheel
-  if (P.stDelay <= 0 && !(P.plungeN > 0) && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * (1 + 0.07 * LV_GROW()) * (P.venomSlow || 1) * dt);   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
+  if (P.stDelay <= 0 && !(P.plungeN > 0) && P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + ST.regen * (1 + 0.07 * LV_GROW()) * (perk('lungs') ? 1.2 : 1) * (P.venomSlow || 1) * dt);   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
   // sleep spores: stay in the violet and you drop; block holds your breath; mash to wake
   const haven = props.some(pr => pr.t === 'glow' && pr.dark <= 0 && Math.abs(pr.x - P.x) < 30 && Math.abs(pr.y - P.y) < 30);
@@ -8008,7 +8083,7 @@ function updatePlayer(dt) {
         embers.push({ x: P.x, y: P.y - 4, vx: 0, vy: 300, life: 1.1, hit: new Set(), plunge: true });
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
-    else if (P.atk < 0 && P.plungeRec <= 0 && !(P.dashRec > 0)) { const aimUp=P.abufUp??keys.up, aimLow=P.abufLow??keys.down; P.abuf = 0; P.abufUp=P.abufLow=undefined; if (spend((Math.round((isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost) * (tal('flurry') ? 0.5 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (aimUp && !aimLow && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut(); else if (aimUp && !aimLow && !P.ground && !P.swim && !P.climb) airUpCut();   /* (claude/combat3) THE AIR UP-SLASH */   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && aimLow) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
+    else if (P.atk < 0 && P.plungeRec <= 0 && !(P.dashRec > 0)) { const aimUp=P.abufUp??keys.up, aimLow=P.abufLow??keys.down; P.abuf = 0; P.abufUp=P.abufLow=undefined; if (spend((Math.round((isPaladin() ? 28 : isPirate() ? 9 : isReaper() ? 23 : sword().cost) * (tal('flurry') ? 0.5 : 1) * (perk('light') ? 0.8 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (aimUp && !aimLow && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut(); else if (aimUp && !aimLow && !P.ground && !P.swim && !P.climb) airUpCut();   /* (claude/combat3) THE AIR UP-SLASH */   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && aimLow) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * 75; } }
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
   if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
@@ -24787,6 +24862,7 @@ function update(dt) {
   if (state === 'rebind') { updateRebind(dt); return; }
   if (state === 'coophelp') { updateCoopHelp(); return; }
   if (state === 'heropick') { updateHeroPick(); return; }
+  if (state === 'card') { updateCard(dt); return; }
   if (state === 'coop') { updateCoopPick(); return; }
   if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'bossjump') { updateBossJump(); return; }
@@ -28498,7 +28574,7 @@ function render() {
         else { const ready = P.skReady && P.skReady[sk]; if (ready > 0) { g.globalAlpha = ready; g.strokeStyle = '#fff6e0'; g.lineWidth = 1; g.strokeRect(x - 0.5, 10.5, 15, 17); g.globalAlpha = 1; } }
         g.strokeStyle = busy ? '#4a4658' : col; g.lineWidth = 1; g.strokeRect(x + 0.5, 11.5, 13, 15);
         text(key, x + 7, 27, busy ? '#7a7a84' : col, 'center', 6); };
-      const load=equipped(PROG,hero(),heroLevel());slot(load[0]||skillNow(),74,'F','#c9d1dc');slot(load[1]||skill2Now(),92,'G','#8fd160');slot(load[2],110,SET.skill3Key.toUpperCase(),'#8fb8ff');slot(load[3],128,SET.skill4Key.toUpperCase(),'#e6a8e0'); }
+      const load=equipped(PROG,hero(),heroLevel());slot(load[0]||skillNow(),74,'F','#c9d1dc');slot(load[1]||skill2Now(),92,'G','#8fd160');slot(load[2],110,SET.skill3Key.toUpperCase(),'#8fb8ff');slot(load[3],128,SET.skill4Key.toUpperCase(),'#e6a8e0');slot(load[4],146,SET.skill5Key.toUpperCase(),'#ffd36b'); }
     const low = P.stFlash > 0 && Math.floor(time * 12) % 2 === 0;
     bar(16, 16, 56, 4, P.st / P.maxSt, low ? '#ff6b6b' : '#8fd160'); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 16, Math.round(56 * Math.max(0, P.st / P.maxSt)), 1);
     { const vi = venomIcon(P, CQG.CQ.venom); if (vi) drawVenomIcon(g, text, 16, 21, vi, time); }   /* VENOM: green drops under the stamina bar, one a stack (src/venom-hud.js) */
@@ -28642,6 +28718,7 @@ function render() {
   if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
   if (state === 'heropick') drawHeroPick();
+  if (state === 'card') drawCard();
   if (state === 'coop') drawCoopPick();
   if (state === 'victory') drawVictory();
   if (state === 'rushover' || state === 'rushwin') {
@@ -28769,7 +28846,7 @@ await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
 await LS.step('final');
 document.getElementById('boot').remove();
 window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
-  xpSim: () => xpSim(), gainXp: n => gainXp(n), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
+  xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },

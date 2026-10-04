@@ -35,6 +35,11 @@ export function normalizeDeathCost(p) {
   p.deathCost = out; return changed;
 }
 
+/* THE BANK'S STAKE (LEVELING, Daniel 2026-10-03: the gold half of the death cost was ~0.5% of the bank after wood 8 - no bite). A death also puts
+   this much of the BANKED gold into the bundle: a quarter of everything over STAKE_FLOOR, never more than STAKE_MAX. It comes back with the
+   bundle like the rest, and is lost with it. bank = the save's gold not already carried. */
+export const STAKE_FLOOR = 500, STAKE_SHARE = 0.25, STAKE_MAX = 300;
+export const bankStake = bank => Math.min(STAKE_MAX, Math.round(STAKE_SHARE * Math.max(0, num(bank) - STAKE_FLOOR)));
 /* THE DROP. What a death takes out of the totals, and what is left: the bundle holds exactly what left them. XP can never take a hero
    under what he banked (the carried part is always the part above the last shrine), and the purse can never go below zero. */
 export function drop(carry, totals) {
