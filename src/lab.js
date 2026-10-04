@@ -1454,9 +1454,9 @@ async function runbossLab(BK, opts) {
         else if (m === 'swingTell') { if (Math.abs(P.x - boss.x) < (S ? S.swingR : 54) + 16 && boss.modeT < 0.24) guard(); else { goal = boss.x + side * ((S ? S.swingR : 54) + 24); strike = false; } }
         else if (m === 'cleaveTell') { strike = false;
           if (!boss.committed) { goal = boss.x + side * 36; P.labDkC = f; }   /* in its reach: bait the commit */
-          else if (f - (P.labDkC ?? f) < 12) goal = boss.x + side * 36;   /* (the commit is seen a fifth of a second late) */
-          else if (!(P.dodge > 0) && P.st >= 10) { k.left = side < 0; k.right = side > 0; BK.press('dodge'); goal = null; }
-          else if (shield) guard(); else goal = boss.x + side * 120; }
+          else if (f - (P.labDkC ?? f) < 12 || boss.modeT > 0.14) goal = boss.x + side * 36;   /* (the commit is seen a fifth of a second late; WEIGHT's roll is short and safe only early, so it is rolled late, through the blade as it comes down) */
+          else if (!(P.dodge > 0) && P.st >= 30) { k.left = side < 0; k.right = side > 0; BK.press('dodge'); goal = null; }   /* (WEIGHT: a roll is 22-28 wind - with less, it is not tried) */
+          else if (shield || h === 'warden') guard(); else goal = boss.x + side * 120; }
         else if (m === 'swing' || m === 'cleave' || m === 'blade' || m === 'coil' || m === 'rest') { goal = pool ? pool.x + side * (S.boilR + 20) : boss.x; strike = !pool && !(P.labRest); }
         else if (m === 'bladeTell') { strike = false; const xs = (boss.boltAt || []).slice().sort((a, b) => a - b), spots = [];
           for (let i = 0; i + 1 < xs.length; i++) spots.push((xs[i] + xs[i + 1]) / 2); if (xs.length) { spots.push(xs[0] - 44, xs[xs.length - 1] + 44); }
@@ -1470,7 +1470,7 @@ async function runbossLab(BK, opts) {
           const R = S ? S.novaR + S.novaPer * (boss.wardFill || 0) : 90;
           if (back) { goal = boss.x; strike = true; }
           else if (!boss.wardLock && (boss.wardFill || 0) >= (S ? S.wardFull : 3) - 0 && boss.modeT > 0.25) { goal = boss.x; strike = true; }   /* full: break it */
-          else if (!boss.wardLock && boss.modeT > 0.6) { goal = boss.x; strike = true; }   /* fill it */
+          else if (!boss.wardLock && boss.modeT > 0.9) { goal = boss.x; strike = true; }   /* fill it (and leave time to get out of the nova if it will not break) */
           else { goal = boss.x + side * (R + 26); strike = false; } }
         else if (m === 'novaTell' || m === 'nova') { strike = false; goal = boss.x + side * ((S ? S.novaR + S.novaPer * (boss.wardFill || 0) : 90) + 30); }
         else if (m === 'surgeTell' || m === 'surge') { strike = false; goal = boss.x + side * ((S ? S.surgeR : 90) + 40); }
