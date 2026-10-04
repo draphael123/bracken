@@ -296,19 +296,19 @@ export function buildWellTown({ painter, T, TS }) {
   /* THE SLUICE: a chamber seventeen rows deep, down three ledges (two-row and three-row drops) to its floor */
   air(560, 577, 31, 47);
   boards(560, 566, 38); boards(570, 577, 41); boards(561, 567, 44);
-  mystic(573, 40, 'sluice'); venomScorp(566, 47, 'sluice');                  /* a caster on the middle ledge, the Queen's brood on the floor */
+  mystic(573, 40, 'sluiceLedge'); venomScorp(566, 47, 'sluice');                  /* a caster on the middle ledge, the Queen's brood on the floor */
   seal(569, 34, 0.55);
   cracks.push([563, 31], [575, 31], [571, 31]);
   interiors.push([560, 577, 31, 47, 'wtQueen']);
   /* THE CONDUIT: down its steps from the sluice's floor to the hall's (rows 48 -> 56), its roof at row 44 */
   { const F2 = [49, 49, 50, 50, 51, 51, 52, 53, 54, 54, 55, 56]; for (let i = 0; i < F2.length; i++) { const x = 578 + i; air(x, x, 44, F2[i] - 1); block(x, x, F2[i], H - 1); } }
-  bearer(581, 49, 'conduit'); mystic(587, 53, 'conduit'); foe('cutthroat', 584, 51, 'conduit');   /* REMIX: the bearer above, his light over a caster and a knife on the steps below */
+  bearer(581, 49, 'conduitTop'); mystic(587, 53, 'conduitLow'); foe('cutthroat', 584, 51, 'conduit');   /* REMIX: the bearer above, his light over a caster and a knife on the steps below */
   cracks.push([583, 44]);
   interiors.push([578, 589, 44, 55, 'wtQueen']);
   /* THE SEAL HALL: the last mystics chant at the brightest seals by his door; a spring; the checkpoint at the door */
   air(590, 606, 44, 55);
   well(592, 55, { sealSpring: true, works: true });
-  mystic(597, 55, 'sealhall'); bearer(601, 55, 'sealhall'); mystic(599, 51, 'sealhall'); boards(597, 601, 52);   /* EXAM: two casters (one on a step over the floor) and the bearer between them */
+  mystic(597, 55, 'sealhall'); bearer(601, 55, 'sealhall'); mystic(599, 51, 'sealhallStep'); boards(597, 601, 52);   /* EXAM: two casters (one on a step over the floor) and the bearer between them */
   seal(595, 48, 0.8); seal(603, 47, 1.0);
   cracks.push([593, 44], [600, 44], [605, 44]);
   ent('check', 605, 55);                                                      /* CHECKPOINT FIVE: the sealed door, the boss's door (a death in his hall is not the descent again) */
