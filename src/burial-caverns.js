@@ -63,7 +63,7 @@ export function burialCaverns({ painter, T, TS }) {
   candle(40); vent(46, G, 0.4); calm.push([34, 58, 6, G]);   /* and the sprinkler keeps off it */ ent('zombie', 50, G - 1, { buried: true, face: -1 });
   sign(53, 'A BURNING VENT IS A LAMP. THE DEAD WILL NOT RISE IN ITS LIGHT.');
   /* the first jump that can fail: three tiles of green water, and something waiting where you land (S1, S2) */
-  pit(60, 62, G); ent('zombie', 66, G - 1, { face: -1 });
+  pit(60, 62, G); ent('hound', 66, G - 1, { face: -1, cnSkin: 'gravehound' });   /* (claude/variety) the first grave hound waits where you land: it will not cross the candle's light behind you (src/main.js graveHoundShy) */
   arch(70, 18, 5, G); net(74, 18, G - 1); ent('bonearcher', 72, 17, { face: -1 }); coins([71, 16], [73, 16]);   /* over the landing: it shoots the jump */
   sign(78, 'KEEP A PALE FACE IN SIGHT. TURN AWAY AND IT FOLLOWS.'); ent('boo', 84, 17, { face: -1 });
   block(78, 82, 6, 13); ent('stal', 80, 14, { stone: true });   /* DUST FALLS BEFORE STONE */
@@ -77,7 +77,7 @@ export function burialCaverns({ painter, T, TS }) {
   for (const [x, y, n] of [[106, 20, 5], [111, 18, 5], [116, 16, 5], [121, 14, 5], [126, 12, 8]]) arch(x, y, n, G);
   net(134, 12, G - 1); ent('stray', 131, 11, { kind: 'lamp' }); ent('silver', 132, 11); deco('grave', 128, 11, 1);
   ent('bonearcher', 123, 13, { face: -1 });   /* on the shelves over the road: the climb and the walk under it are both in its line */
-  ent('zombie', 113, G - 1, { face: -1 }); ent('husk', 129, G - 1, { face: -1 }); ent('boo', 119, 9, { face: -1 }); ent('spider', 136, 6, { face: -1 });
+  ent('hound', 113, G - 1, { face: -1, cnSkin: 'gravehound' }); ent('husk', 129, G - 1, { face: -1 }); ent('boo', 119, 9, { face: -1 }); ent('spider', 136, 6, { face: -1 });
   for (const x of [109, 124, 138]) ent('torch', x, G - 1); deco('coffer', 137); deco('candelabra', 118);
   /* THE BLIND VAULT: dark from its door to the rotten floor. A candle at the door; three vents, the dead in the dark between them,
      and a pit of green water in the middle. Light a vent and take fire from it for the next: you light your way through. */
@@ -103,9 +103,9 @@ export function burialCaverns({ painter, T, TS }) {
     for (const [x, y, n] of [[205, 28, 5], [232, 28, 6], [274, 28, 4]]) arch(x, y, n, g1);
     for (const [x, y, n] of [[236, 38, 5], [256, 38, 6]]) arch(x, y, n, g2);
     ent('check', 230, g1 - 1); sign(186, 'THE CHARNEL GALLERIES. EACH ONE ENDS IN A DROP TO THE NEXT.', g1 - 1);
-    for (const [t, x, y] of [['bonearcher', 207, 27], ['bonegob', 220, 30], ['zombie', 247, 30], ['bonearcher', 234, 27], ['bonegob', 266, 30],
+    for (const [t, x, y] of [['bonearcher', 207, 27], ['bonegob', 220, 30], ['hound', 247, 30], ['bonearcher', 234, 27], ['bonegob', 266, 30],
       ['bonearcher', 276, 27], ['spider', 214, 25], ['spider', 252, 25], ['husk', 281, 40], ['spider', 288, 33], ['corpse', 205, 40], ['bat', 196, 35]])
-      ent(t, x, y, { face: -1, ...(t === 'corpse' ? { risen: true } : {}) });
+      ent(t, x, y, { face: -1, ...(t === 'corpse' ? { risen: true } : {}), ...(t === 'hound' ? { cnSkin: 'gravehound' } : {}) });
     pit(276, 278, g2, 3); pit(212, 214, g2, 3);                                  /* two jumps over green water in gallery two (S2) */
     for (let x = 190; x < 280; x += 12) { ent('torch', x, g1 - 1); coins([x + 4, g1 - 2]); }
     for (let x = 196; x < 288; x += 14) if (x < 210 || x > 216) ent('torch', x, g2 - 1);

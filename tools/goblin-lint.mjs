@@ -24,7 +24,7 @@ export const GOBLIN_KINDS = new Set(['sprig', 'shield', 'thorn', 'archer', 'sapp
   'burngob', 'hearthgob', 'stormshaman', 'sailer', 'horn', 'thief', 'miner', 'sheargob', 'gaffer', 'kite', 'sandgob', 'chief', 'lance', 'snuffer',
   'propman', 'tippler', 'scalder', 'sentry', 'pike', 'temperer']);
 /* the levels whose goblins are reskinned (a lane adds its level here when it fixes it) */
-export const FIXED = ['canal', 'redgorge', 'undercrown', 'lamplit'];   /* (claude/desertfoes: THE RED GORGE's dynamite bandit and shield guard under men's skins; claude/goblinsweep: the Undercrown's miners, rock goblins, sprigs, propmen and sentry; Lamplit Street's snuffers) */
+export const FIXED = ['canal', 'redgorge', 'undercrown', 'lamplit', 'theatre', 'welltown'];   /* (claude/desertfoes: THE RED GORGE's dynamite bandit and shield guard under men's skins; claude/goblinsweep: the Undercrown's miners, rock goblins, sprigs, propmen and sentry; Lamplit Street's snuffers) */
 
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const beasts = main.slice(main.indexOf('const BEASTS = ['), main.indexOf('];', main.indexOf('const BEASTS = [')));
@@ -50,7 +50,8 @@ for (const id of FIXED) assert.ok(byId.has(id) && after.includes(byId.get(id)), 
   assert.ok(draw.includes('c.set ||'), 'the corpse draw does not use c.set: the body is drawn from SPR[c.t], the goblin sheet');
 }
 const undead = e => !!e.bone;   /* a goblin raised as bones (SPR.bonearcher) is not a living goblin */
-const skinOf = e => (e.canal && e.canal.cnSkin) || e.cnSkin || (e.juggler ? 'juggler' : e.shy ? 'shy' : null);   /* (the Harvest Fair's archers are its knife jugglers already: claude/fairfix2) */
+const skinOf = e => (e.canal && e.canal.cnSkin) || e.cnSkin || (e.juggler ? 'juggler' : e.shy ? 'shy' : e.bandit ? 'bandit' : e.flyman ? 'flyman' : e.prompter ? 'prompter' : null);   /* (claude/variety: the Theatre's flyman + prompter and the Well Town's bandit bowman are flag reskins, drawn by reskinSet(): THF.foeSet / SPR.banditArcher) */
+const SPRITE_OF = { bandit: 'banditArcher', juggler: 'juggler', shy: 'shy' }, THEATRE_SET = new Set(['flyman', 'prompter']);   /* a flag reskin's sheet is not always SPR.<flag>; the theatre's are baked into THF.foeSet (tools/corpses.mjs reads them back from the page) */   /* (the Harvest Fair's archers are its knife jugglers already: claude/fairfix2) */
 const report = [], fails = [];
 let fixedSkins = 0;
 for (const lv of after) {
@@ -61,7 +62,7 @@ for (const lv of after) {
     for (const al of (L.alarms || [])) for (const gd of (al.garrison || [])) if (GOBLIN_KINDS.has(gd.t) && !gd.cnSkin) fails.push(lv.id + ': the alarm ' + al.id + "'s garrison has a living " + gd.t + ' (give it cnSkin)');   /* (claude/goblinsweep) a rung bell's garrison is spawned from the alarm, not the ent list */
     for (const e of bare) fails.push(lv.id + ': a ' + e.t + ' at (' + e.x + ', ' + e.y + ') is a goblin with no reskin (give its ent canal.cnSkin)');
     for (const e of skinned) { const s = skinOf(e); fixedSkins++;
-      if (!new RegExp('SPR\\.' + s + '\\s*=').test(main) && !SKIN_MAPS[s]) fails.push(lv.id + ': the skin ' + s + ' (a ' + e.t + ') has no sprite (SPR.' + s + ' in src/main.js)');
+      if (!THEATRE_SET.has(s) && !new RegExp('SPR\\.' + (SPRITE_OF[s] || s) + '\\s*=').test(main) && !SKIN_MAPS[s]) fails.push(lv.id + ': the skin ' + s + ' (a ' + e.t + ') has no sprite (SPR.' + s + ' in src/main.js)');
       if (!cards.has(s)) fails.push(lv.id + ': the skin ' + s + ' has no bestiary card (a BEASTS row t: \'' + s + '\')'); }
     report.push('  FIXED   ' + lv.id.padEnd(12) + gob.length + ' goblin-AI foes, all reskinned');
   } else if (bare.length) {
