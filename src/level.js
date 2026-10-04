@@ -1145,7 +1145,7 @@ function kingswood() {
   plat(286, 10, 4); plat(292, 8, 3); ent('archer', 288, 9, { face: -1, fire: true }); ent('firepit', 294, 13, { period: 3.4, on: 1.4, phase: 0.6 }); coins([287, 9], [293, 7], [294, 7]);   /* the fire archer lights the grass: a firepit in it, not just an arrow in flight */
   // the cache: a hidden loft above the court holds the Thief Cloak
   plat(303, 9, 3); plat(307, 7, 3); coins([304, 8], [308, 6], [309, 6]); ent('relic', 308, 6, { kind: 'cloak' });
-  plat(284, 12, 2); plat(298, 8, 3); ent('plate', 299, 8, { cage: 296 }); // a step up to the court's ledges (they started a head too high to jump) and one across the gap to the loft; the plate on it drops the cage on the carpet guards below
+  plat(284, 12, 2); plat(298, 8, 3); ent('plate', 299, 8, { cage: 296, gate: 301 }); gate(301, 0, 13);   /* THE COURT'S PORTCULLIS (ruleuse, the rule-use audit): the ONE trap the road makes you use. It stands shut before the throne and the plate on the ledge lifts it, dropping the cage on the carpet guards as it goes (src/main.js: a plate with a gate: lifts that column). Everywhere else the traps stay optional weapons. */  // a step up to the court's ledges (they started a head too high to jump) and one across the gap to the loft; the plate on it drops the cage on the carpet guards below
   ent('check', 312, 13);
 
   // ---- 7. The throne room: King Gorm Underleaf on his palanquin. ----
@@ -4491,7 +4491,12 @@ function longWater() {
   }
   /* the ferry run gave its sirens back to the sea: two more eels in the river where they sang (final columns) */
   G3.ent('eel', 196, 32); G3.ent('eel', 302, 31);
+  /* THE TIDE IS REQUIRED, THREE TIMES (claude/ruleuse, the rule-use audit: 'the street is swim-at-high-or-walk-at-low, both work, so the sluice and the tide were optional'). Each is a full-height portcullis column that
+     stands shut and lifts on the sea's own clock (src/main.js updateTideGates): the BORE gate at the top of the Reach lifts while the Bore runs up past it, so you stand on a stone and let it go by; the QUAY gate at the
+     west end of Saltreach's street lifts at HIGH water; the FLATS gate at its east end lifts at LOW water - or the sluice wheel holds the sea out, and that is the wheel's job now. FINAL columns (written after the grows). */
+  for (const [x, y1, mode] of [[362, 26, 'bore'], [387, 26, 'high'], [419, 28, 'low']]) { for (let y = 0; y <= y1; y++) G3.set(x, y, T.PORT); G3.ent('tidegate', x, 22, { y0: 0, y1, mode }); }
   const R4 = G3.done();
+  R4.tidegates = true;   /* (src/main.js updateTideGates reads the tidegate ents of this level only) */
   R4.bore = { ...R4.bore, x0: 180 * TS, x1: 366 * TS };   /* from the dock to the mouth: the ferry run and the reach */
   R4.fresh = [0, 365]; R4.turn = [230, 430];              /* river water to the reach, the sea by the Sluice Stair (src/sea_looks.js) */
   return R4;
@@ -6890,6 +6895,8 @@ function theDrownedCauseway() {
   sign(426, R - 1, 'THE SPANS ARE DOWN. JUMP THEM AT LOW WATER, SWIM THEM AT HIGH. THE TOWER BELL TURNS IT.');
   block(462, 466, RH, 23); bell(464, RH - 1);
   net(461, 461, RH, 23);
+  /* THE BOOM (claude/ruleuse, the rule-use audit: 'either tide passes, so the bells were never needed'): a boom of chained logs across the road, shut down on it at low water and lifted by the flood. The ONE place the road needs a chosen tide - high - and the tower bell, fifteen tiles back, is the way to ask for it (src/main.js updateTideGates). Everywhere else either tide still passes. */
+  for (let y = 0; y < R; y++) set(479, y, T.PORT); ent('tidegate', 479, 16, { y0: 0, y1: R - 1, mode: 'high' });
   ent('petrel', 466, 12); ent('petrel', 446, 12); ent('petrel', 486, 10);
   ent('feeler', 444, R - 1); ent('feeler', 482, R - 1); ent('crab', 448, R - 1, { face: -1 }); ent('tideguard', 485, R - 1, { face: -1 }); ent('scout', 468, RH - 1, { face: -1 });
   ent('eel', 454, 36); ent('eel', 436, 34); ent('urchin', 455, 38);
@@ -6970,7 +6977,7 @@ function theDrownedCauseway() {
        their rock; crabs on the flats at low water; buoys riding the tide in the open water; the hamlet's stilts */
     causeLife: { gulls: [[88, 11], [150, 13], [372, 7], [498, 12], [541, 2]], smoke: [[106, 19]], seals: [[472, 475, 30]], crabs: [[81, 94, 28], [335, 338, 30], [389, 391, 30], [414, 420, 30]],
       buoys: [127, 135, 355, 395, 436, 453], stilts: [[85, 18, 28], [90, 18, 28]] },
-    music: 'causeway', duskStart: 99999, duskLen: 1, night: false,
+    music: 'causeway', duskStart: 99999, duskLen: 1, night: false, tidegates: true,
 
     palette: { set: 'shore', sky: 'storm', far: 'causeway', mid: 'causeway', near: 'reef', noFg: true, dress: 'shore', haze: 'rgba(120,150,140,0.14)',
       grass: '#5f7a68', grassL: '#7e9a86', grassD: '#40564a', dirt: '#4e5856', dirtL: '#66706c', dirtD: '#343c3a', canopy: ['#1e2e2c', '#2c403c', '#3a524c', '#506a62'] },
@@ -7673,7 +7680,7 @@ function follyLibrary(L0, ret) {
    one", READ `needs`, NEVER THE ROW ABOVE. Two tools did it the other way and measured six of 28 levels against a
    level they do not follow (tools/curve.mjs, tools/one-new-foe.mjs; docs/AGENT-HANDOFF.md, EXPENSIVE LESSONS). */
 export const LEVELS = [
-  { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: 'THE HIVE FIRST. THE WOOD IS QUIETER WITHOUT IT.', build: brackenWood },
+  { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: "FELL THE PINE FOR A BRIDGE. THE QUEEN'S STING STICKS IN WOOD.", build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
@@ -7712,9 +7719,9 @@ export const LEVELS = [
   /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
   { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: theHexedFields, needs: 'fair' },
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
-  { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'FOLLOW THE CANDLES. THE LOWER ROAD ALWAYS LEADS BACK UP.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
+  { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'LIGHT THE GAS. THE DEAD WILL NOT RISE IN ITS LIGHT.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
   { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'witchlight' },   /* (batch 4c: the Witchlight Stair is the road up to it now) */
-  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. EVERY FLOOR YOU LEAVE FALLS. THE DEAD MAGE WAITS IN THE SKY.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage' },
+  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. CRACKED STONE GOES AFTER THREE BEATS. THE DEAD MAGE WAITS IN THE SKY.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage' },
   /* THE BURNING VILLAGE (batch 5): the Pyromancer's class level, off the Stockade on the road to Sporewood. Appended here, not
      between them, so no level's index moves (the map's nodes and the saves count by index) */
   /* CLASS-LEVEL SIDE ROAD (2026-09-25, Daniel: "they weren't accessible... side paths that are locked until you do
