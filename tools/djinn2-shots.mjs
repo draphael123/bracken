@@ -14,6 +14,10 @@ try {
     const snap = name => { const c = document.createElement('canvas'); c.width = BK.view.VW * 2; c.height = BK.view.VH * 2; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); res.push([name, c.toDataURL('image/png')]); };
     const run = n => { for (let i = 0; i < n; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); if (i % 4 === 0) BK.step(1); } BK.step(1); };
     const until = (pred, max = 1800) => { for (let i = 0; i < max && !pred(); i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); } BK.step(1); return pred(); };
+    if (want('works')) { const at = (name, x, y, n = 30, kill) => { fresh(); if (kill) for (const e of BK.enemies()) if (e !== BK.boss) e.alive = false; BK.tp(x, y); run(n); BK.tp(x, y); run(2); snap(name); };
+      at('w0-old-well-mouth', 516, 27); at('w1-wells-foot', 522, 35); at('w2-channel-lamp', 540, 35, 40); at('w3-sluice', 566, 37); at('w4-sluice-floor', 572, 47); at('w5-conduit', 582, 48, 40); at('w6-seal-hall', 596, 55, 40); at('w7-door', 604, 55, 20, true);
+      fresh(); for (const e of BK.enemies()) if (e.cnSkin !== 'lampbearer' || e.x / 16 > 560) { if (e !== BK.boss) e.alive = false; } BK.tp(542, 37); run(30); const b = BK.enemies().find(e => e.alive && e.cnSkin === 'lampbearer'); if (b) { b.hp = 0; b.alive = false; } run(20); snap('w8-lamp-dropped'); }
+    if (what === 'works') return res;
     fresh(); for (const e of BK.enemies()) if (e !== BK.boss && e.t !== 'djinn') e.alive = false; const A = BK.L.arena; BK.tp(A.start[0], A.start[1]); run(60); snap('a0-rising'); run(150);
     const q = BK.boss, S = BK.djinnHands().show(), G = S.G, P = BK.P;
     const pour = () => { P.skin.sips = 3; P.x = q.x - 50; P.y = G.floor; P.vy = 0; P.face = 1; P.djBurn = 0; BK.press('talk'); };
