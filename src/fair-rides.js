@@ -23,3 +23,9 @@ export function chairAt(c, i, t) {
 }
 /* the speed a near chair crosses the middle at (px/s): the ride must be hopped against, not out-walked */
 export const chairSpeed = c => 2 * Math.PI * c.R / c.period;
+/* (claude/fairfix5) THE HAY ELEVATOR: an inclined slat conveyor. el = { x0, y0, x1, y1 (the belt's foot and head, px), n slats, speed px/s, w }. A slat's place at time t:
+   up the belt (a platform: front) for the length of the line, then back down under it (not a platform). Returns { x (middle), y (top), front, u (0..1 up the belt) } */
+export function slatAt(el, i, t) {
+  const L = Math.hypot(el.x1 - el.x0, el.y1 - el.y0), loop = 2 * L, s = ((t * el.speed + i * loop / el.n) % loop + loop) % loop, front = s < L, u = front ? s / L : 1 - (s - L) / L;
+  return { x: el.x0 + (el.x1 - el.x0) * u, y: el.y0 + (el.y1 - el.y0) * u, front, u };
+}

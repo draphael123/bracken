@@ -7,7 +7,8 @@
 import { nightK, hallsOf } from '../fair-games.js';
 import { beamLive } from '../chase.js';
 import * as FB from './fair_backdrop.js';
-import * as NR from './fair_newrides.js';   /* (claude/fairfix3) the swingboats, the chair-o-plane, the prize floors */
+import * as NR from './fair_newrides.js';
+import * as FTL from './fair_tiles.js';   /* (claude/fairfix5) the kit's lip colours */   /* (claude/fairfix3) the swingboats, the chair-o-plane, the prize floors */
 const TS = 16;
 const K = { wood: '#7a5230', woodL: '#a67a48', woodD: '#4e321a', woodDD: '#2e1e10', brass: '#e8c23a', brassD: '#a87a18', red: '#b8382c', redD: '#7a2418', cream: '#ece0c4', creamD: '#c8b890', gold: '#f0c840',
   wick: '#8a6a34', wickL: '#b89050', wickD: '#4e3a1a', straw: '#e6c95c', strawD: '#b8962e', blue: '#3a7ab8', ink: '#120e14', glass: '#9fb8c8', glassD: '#5a7286', steel: '#8a919c' };
@@ -130,16 +131,25 @@ function drawStriker(g, cx, cy, VW, s) {
   if (s.ring > 0) { const k = 1 - s.ring, ry = y - 4 - k * (top - y + 8) * -1; g.fillStyle = K.red; g.beginPath(); g.arc(x, Math.max(top - 2, y - 6 + (top - y) * k), 4, 0, 6.3); g.fill(); g.globalAlpha = s.ring; ln(g, x - 12, top - 4, x - 18, top - 8, K.gold); ln(g, x + 12, top - 4, x + 18, top - 8, K.gold); g.globalAlpha = 1; }
   r(g, x - 15, y - 6, 30, 6, K.woodD); r(g, x - 15, y - 6, 30, 1, K.woodL); r(g, x - 13, y - 9, 26, 3, K.red); r(g, x - 13, y - 9, 26, 1, K.gold);   // the pad: a drum on a plinth
 }
-function drawGalleries(g, cx, cy, VW, L, G, time) { for (const Y of (G && G.galleries) || []) if (Y.targets.length > 1) drawGallery(g, cx, cy, VW, Y, time); }   /* (a lone BULL'S-EYE - on a ride or a post - is src/redraw/fair_keys.js's: claude/fairfix2) */
-function drawGallery(g, cx, cy, VW, Y, time) {
+function drawGalleries(g, cx, cy, VW, L, G, time) { for (const Y of (G && G.galleries) || []) if (Y.targets.length > 1) drawGallery(g, cx, cy, VW, Y, time, boothFloor(L, Y)); }
+/* THE BOOTH'S FLOOR (claude/fairfix5; Daniel twice: "the bull's-eye TENTS you go under still have no visible floors"): the back board ran to ty + 32, over the whole floor row, and
+   it is drawn after the tiles. Now it stops at the floor's top line, and a booth whose floor has GAPS (the night lane over the spike yard) gets no board at all: awning and
+   posts only, so the gaps and the yard read. Each column's floor is the first standable row one or two under the targets; the lit lip is drawn after the night (drawLips) */
+export function boothFloor(L, Y) { const xs = Y.targets.map(t => t.x), tr = Math.min(...Y.targets.map(t => t.row)), trM = Math.max(...Y.targets.map(t => t.row)), px0 = Math.min(...xs) * TS - 20, px1 = Math.max(...xs) * TS + 36, cols = [];
+  for (let c = Math.ceil((px0 + 3) / TS); (c + 1) * TS <= px1 - 3; c++) { let row = null; for (let y = tr + 1; y <= trM + 2; y++) { const t = L.grid[y * L.W + c]; if (t !== 0 && t !== 3) { row = y; break; } } cols.push({ c, row }); }
+  return { cols, top: (tr + 1) * TS, open: cols.some(q => q.row === null) }; }   /* (a lone BULL'S-EYE - on a ride or a post - is src/redraw/fair_keys.js's: claude/fairfix2) */
+function drawGallery(g, cx, cy, VW, Y, time, FL) {
   const xs = Y.targets.map(t => t.x * TS), x0 = Math.min(...xs) - 20 - cx, x1 = Math.max(...xs) + 36 - cx; if (x1 < -20 || x0 > VW + 20) return;
   const ty = Y.targets[0].row * TS - cy, top = ty - 34;
   r(g, x0, top - 4, x1 - x0, 6, K.red); for (let i = 0; i < (x1 - x0) / 8; i++) if (i % 2) r(g, x0 + i * 8, top - 4, 8, 6, K.cream);   // the awning
   for (let i = 0; i < (x1 - x0) / 8; i += 1) { g.fillStyle = i % 2 ? K.cream : K.red; g.beginPath(); g.arc(x0 + i * 8 + 4, top + 2, 4, 0, Math.PI); g.fill(); }
-  r(g, x0, top + 8, 3, ty + 26 - top, K.woodD); r(g, x1 - 3, top + 8, 3, ty + 26 - top, K.woodD); r(g, x0 + 3, top + 6, x1 - x0 - 6, ty + 26 - top, '#2a1a22');   // the posts and the back board
-  for (let i = 0; i < 5; i++) r(g, x0 + 6 + i * ((x1 - x0 - 12) / 5), top + 12, 1, 18, 'rgba(255,200,120,0.15)');
+  const fy = FL ? FL.top - cy : ty + 16, postB = FL && FL.open ? ty + 34 : fy;   /* (claude/fairfix5) the posts stand ON the floor; over the open lane they run down past it */
+  r(g, x0, top + 8, 3, postB - top - 8, K.woodD); r(g, x1 - 3, top + 8, 3, postB - top - 8, K.woodD);   // the posts
+  if (!(FL && FL.open)) { r(g, x0 + 3, top + 6, x1 - x0 - 6, fy - top - 6, '#2a1a22');   // the back board: to the floor's top line, never over it
+    for (let i = 0; i < 5; i++) r(g, x0 + 6 + i * ((x1 - x0 - 12) / 5), top + 12, 1, 18, 'rgba(255,200,120,0.15)'); }
   for (const t of Y.targets) { const x = Math.round(t.x * TS + 8 - cx), y = Math.round(t.row * TS + 8 - cy), hit = t.hit;
-    r(g, x - 1, y - 20, 2, 12, K.woodD);                                                                           // its hanger
+    if (FL && FL.open) { const q = FL.cols.find(c => c.c === t.x), fy2 = q && q.row !== null ? q.row * TS - cy : y + 24; r(g, x + 9, y - 22, 2, fy2 - y + 22, '#3a2414'); r(g, x + 9, y - 22, 1, fy2 - y + 22, '#5a3a20'); r(g, x + 1, y - 22, 10, 2, '#3a2414'); r(g, x - 1, y - 20, 2, 12, K.woodD); r(g, x + 8, y - 27, 4, 5, (Math.floor(time * 3 + t.x) % 4) ? '#ffcf70' : '#8a6a3a'); }   /* (claude/fairfix5) THE SCENIC RAILWAY: each target hangs from one of the track's lamp posts */
+    else r(g, x - 1, y - 20, 2, 12, K.woodD);                                                                           // its hanger
     g.fillStyle = hit ? '#5a5060' : K.cream; g.beginPath(); g.arc(x, y, 7, 0, 6.3); g.fill(); g.fillStyle = hit ? '#3a3040' : K.red; g.beginPath(); g.arc(x, y, 5, 0, 6.3); g.fill();
     g.fillStyle = hit ? '#5a5060' : K.cream; g.beginPath(); g.arc(x, y, 3, 0, 6.3); g.fill(); g.fillStyle = hit ? '#3a3040' : K.gold; g.fillRect(x - 1, y - 1, 2, 2);
     if (t.flash > 0) { g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,220,120,' + t.flash * 2 + ')'; g.beginPath(); g.arc(x, y, 12, 0, 6.3); g.fill(); g.globalCompositeOperation = 'source-over'; } }
@@ -195,10 +205,29 @@ function drawNightSky(g, cx, cy, VW, VH, L, time) {
 export function drawBack(g, cx, cy, VW, VH, L, F, time, o) {
   drawNightSky(g, cx, cy, VW, VH, L, time);
   FB.drawEffigies(g, cx, cy, VW, L, time, o.dusk || 0, o.burnT || 0, o.burnDone);
-  drawWheelFrame(g, cx, cy, VW, L.wheel, time);
+  drawWheelFrame(g, cx, cy, VW, L.wheel, F && F.wheelT !== undefined ? F.wheelT : time);   /* (claude/fairfix5) on the wheel's own clock: it stops with its cars */
   drawGantries(g, cx, cy, VW, L, time);
   drawHallBack(g, cx, cy, VW, L, o, time);
   NR.drawBack(g, cx, cy, VW, VH, L, F, time, o);
+  drawElevator(g, cx, cy, VW, L, time);
+  drawTrestles(g, cx, cy, VW, L);
+}
+/* (claude/fairfix5) THE HAY ELEVATOR's frame, behind the tiles: two timber rails up the line, rollers turning, a hopper at its head and a pitchfork stood against its foot */
+function drawElevator(g, cx, cy, VW, L, time) {
+  const E = L.elevator; if (!E || !vis(Math.min(E.x0, E.x1) - 30, Math.max(E.x0, E.x1) + 30, cx, VW)) return;
+  const x0 = E.x0 - cx, y0 = E.y0 - cy, x1 = E.x1 - cx, y1 = E.y1 - cy, len = Math.hypot(x1 - x0, y1 - y0), nx = (y1 - y0) / len, ny = -(x1 - x0) / len;
+  for (const off of [3, 9]) ln(g, x0 + nx * -off, y0 + ny * -off + 4, x1 + nx * -off, y1 + ny * -off + 4, off === 3 ? K.woodL : K.woodD, 2);
+  const n = Math.floor(len / 18); for (let i = 0; i <= n; i++) { const u = i / n, x = x0 + (x1 - x0) * u, y = y0 + (y1 - y0) * u + 8, a = time * 4 + i; g.fillStyle = K.woodDD; g.beginPath(); g.arc(x, y, 2.5, 0, 6.3); g.fill(); r(g, x + Math.cos(a) * 2 - 0.5, y + Math.sin(a) * 2 - 0.5, 1, 1, K.brass); }
+  for (let i = 0; i < 4; i++) { const u = (i + 0.5) / 4, x = x0 + (x1 - x0) * u, y = y0 + (y1 - y0) * u + 10; r(g, x - 1, y, 3, Math.max(0, 28 * TS - cy - y), K.woodD); }   /* its legs */
+  r(g, x1 - 10, y1 - 4, 20, 6, K.woodD); r(g, x1 - 10, y1 - 4, 20, 1, K.straw);   /* the head's hopper */
+  ln(g, x0 - 14, y0, x0 - 6, y0 - 26, K.woodD, 1); for (const d of [-2, 0, 2]) ln(g, x0 - 6 + d, y0 - 26, x0 - 6 + d, y0 - 32, K.steel, 1);   /* a pitchfork against its foot */
+}
+/* (claude/fairfix5) THE SCENIC RAILWAY's trestles: timber legs and cross braces from the track (the 'track' runs of L.fairKit) down to the spike yard's floor */
+function drawTrestles(g, cx, cy, VW, L) {
+  const K2 = L.fairKit; if (!K2) return; for (const [a, b, y0, y1, k] of K2.ledges || []) { if (k !== 'track' || !vis(a * TS, (b + 1) * TS, cx, VW)) continue;
+    for (let x = a; x <= b; x += 4) { let row = -1; for (let y = y0; y <= y1; y++) { const t = L.grid[y * L.W + x]; if (t !== 0 && t !== 3) { row = y; break; } } if (row < 0) continue;
+      const sx = x * TS + 7 - cx, top = (row + 1) * TS - cy, bot = 30 * TS - cy; r(g, sx, top, 3, bot - top, '#3a2414'); r(g, sx, top, 1, bot - top, '#5a3a20');
+      for (let y = top + 12; y < bot - 10; y += 28) { ln(g, sx - 10, y, sx + 12, y + 18, '#2e1c10', 1); ln(g, sx + 12, y, sx - 10, y + 18, '#2e1c10', 1); } } }
 }
 export function drawFront(g, cx, cy, VW, VH, L, F, time, o) {
   drawCorn(g, cx, cy, VW, VH, L);
@@ -217,13 +246,16 @@ export function drawFront(g, cx, cy, VW, VH, L, F, time, o) {
 /* ================= THE MOVERS: a gondola on the big wheel, a chair on the swing ride ================= */
 const PAINT = [[K.red, K.cream], [K.blue, K.cream], [K.gold, K.red], [K.cream, K.blue], [K.red, K.gold], [K.blue, K.gold]];
 export function drawMover(g, m, cx, cy, time) {
-  if (NR.drawMover(g, m, cx, cy, time)) return true;   /* (claude/fairfix3) a swingboat, a chair-o-plane's chair */
+  if (NR.drawMover(g, m, cx, cy, time)) return true;
+  if (m.fair === 'slat') { if (m.broken) return true; const x = Math.round(m.x - cx), y = Math.round(m.y - cy);   /* (claude/fairfix5) a slat of THE HAY ELEVATOR: a board with hay on it, tines at its lip */
+    r(g, x, y, m.w, 4, K.woodD); r(g, x, y, m.w, 1, K.woodL); for (let i = 1; i < m.w; i += 3) r(g, x + i, y - 1, 2, 1, i % 2 ? K.straw : K.strawD); r(g, x + 1, y + 4, 2, 2, K.steel); r(g, x + m.w - 3, y + 4, 2, 2, K.steel); return true; }   /* (claude/fairfix3) a swingboat, a chair-o-plane's chair */
   const x = Math.round(m.x - cx), y = Math.round(m.y - cy);
   if (m.fair === 'gondola') { const [a, b] = PAINT[m.idx % 6], mid = x + m.w / 2;
     ln(g, x + 2, y + 1, mid, y - 18, K.woodD, 1); ln(g, x + m.w - 2, y + 1, mid, y - 18, K.woodD, 1); r(g, mid - 2, y - 20, 4, 3, K.brassD);   // its hangers, up to the pivot on the rim
     r(g, x, y, m.w, 4, K.woodD); r(g, x, y, m.w, 1, K.woodL); r(g, x + 1, y + 1, m.w - 2, 2, a);
     r(g, x, y - 9, 2, 9, b); r(g, x + m.w - 2, y - 9, 2, 9, b); r(g, x, y - 9, m.w, 1, a); r(g, x, y - 5, 3, 1, a); r(g, x + m.w - 3, y - 5, 3, 1, a);
     r(g, x + 3, y - 3, m.w - 6, 3, K.woodD); r(g, x + 4, y - 4, m.w - 8, 1, b);   // the bench
+    for (let k = 0; k < 4; k++) r(g, x + 2 + k * (m.w - 6) / 3, y - 10, 2, 1, (Math.floor(time * 4) + k + m.idx) % 3 ? '#fff0b0' : '#7a5a2a');   /* (claude/fairfix5) the car's rim, bulb-lit */
     if (Math.floor(time * 3 + m.idx) % 2) r(g, mid - 1, y - 11, 2, 2, '#ffd36b'); return true; }
   if (m.fair === 'chair') { const px0 = Math.round(m.px - cx), py0 = Math.round(m.py - cy), sx = x, sy = y;
     ln(g, px0, py0, sx + 4, sy, '#8a919c', 1); ln(g, px0, py0, sx + m.w - 4, sy, '#8a919c', 1); ln(g, px0 + 1, py0, sx + 5, sy, '#5a626c', 1); ln(g, px0 + 1, py0, sx + m.w - 3, sy, '#5a626c', 1);   // the chains
@@ -244,11 +276,12 @@ export function drawNight(g, cx, cy, VW, VH, L, F, o) {
      "the HUD shows tickets LEFT PER AREA"; the review's #6: the old second line lay across the play field on every screen). For a few seconds after a pickup or a gate's ask
      (o.tkShow) it opens out: every area's count, and what thirty of them open */
   if (G && o.text && !o.skip) { const w = 104, x0 = VW - 8 - w, rows = o.areas || [], here = rows[o.areaI] || null, open = (o.tkShow || 0) > 0, h = open ? 24 + rows.length * 8 + 9 : 22;
-    g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(x0, 60, w, h); g.drawImage(ticketSpr(), x0 + 2, 62);
-    o.text('TICKETS ' + G.tickets + '/' + (G.total || 0), VW - 12, 63, '#7fe8f0', 'right', 8, 'shadow');
-    if (here) o.text('HERE: ' + here.left + ' LEFT', VW - 12, 73, here.left ? '#c8d8e0' : '#8fd160', 'right', 6, 'shadow');
-    if (open) { rows.forEach((r, i) => o.text(r.name + '  ' + r.left, VW - 12, 83 + i * 8, i === o.areaI ? '#fff6e0' : r.left ? '#c8d8e0' : '#6a8a6a', 'right', 6, 'shadow'));
-      o.text('30 OPEN THE BACK LOT', VW - 12, 84 + rows.length * 8, '#ffd36b', 'right', 6, 'shadow'); } }
+    /* (claude/fairfix5, the review's #10: at y 60-82 it covered the top right of every screen - the wheel's prize shelf sat under it) it hangs in the HUD band now, under the purse */
+    const Y0 = 29; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(x0, Y0, w, h); g.drawImage(ticketSpr(), x0 + 2, Y0 + 2);
+    o.text('TICKETS ' + G.tickets + '/' + (G.total || 0), VW - 12, Y0 + 3, '#7fe8f0', 'right', 8, 'shadow');
+    if (here) o.text('HERE: ' + here.left + ' LEFT', VW - 12, Y0 + 13, here.left ? '#c8d8e0' : '#8fd160', 'right', 6, 'shadow');
+    if (open) { rows.forEach((r, i) => o.text(r.name + '  ' + r.left, VW - 12, Y0 + 23 + i * 8, i === o.areaI ? '#fff6e0' : r.left ? '#c8d8e0' : '#6a8a6a', 'right', 6, 'shadow'));
+      o.text('30 OPEN THE BACK LOT', VW - 12, Y0 + 24 + rows.length * 8, '#ffd36b', 'right', 6, 'shadow'); } }
   if (o.skip) return;
   const yFull = N.full * TS - cy, yStart = N.start * TS - cy, halls = hallsOf(L).map(H => [H.x0 * TS - cx, (H.x1 + 1) * TS - cx, (H.roof + 2) * TS - cy, H.floor * TS - cy]).filter(([a, b]) => b > 0 && a < VW);
   const unlit = (L.unlit || []).map(([a, b]) => [a * TS - cx, (b + 1) * TS - cx]).filter(([a, b]) => b > 0 && a < VW);
@@ -291,4 +324,35 @@ export function drawFoeExtras(g, e, cx, cy, time) {
     if (e.mode === 'callTell') { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,211,107,' + (0.8 - k * 0.6).toFixed(2) + ')'; g.lineWidth = 2; for (let i = 0; i < 2; i++) { const rr = 6 + ((k + i * 0.5) % 1) * 18; g.beginPath(); g.arc(mx, my, rr, f > 0 ? -0.8 : Math.PI - 0.8, f > 0 ? 0.8 : Math.PI + 0.8); g.stroke(); } }
     if (e.callFx > 0) { const k = 1 - e.callFx / 0.6; g.strokeStyle = 'rgba(255,230,160,' + (0.9 - k * 0.9).toFixed(2) + ')'; g.lineWidth = 3; for (let i = 0; i < 3; i++) { const rr = 20 + k * 200 + i * 26; g.beginPath(); g.arc(mx, my, rr, 0, 6.3); g.stroke(); } }
   }
+}
+/* ================= THE LIT LIPS (claude/fairfix5): drawn AFTER the night, so a booth's floor and a prize nest's floor read in the dark - a bulb-lit lip along the floor's
+   top line (a brass strip and a row of chasing bulbs). The night stays the rule for what stands on it (you can only freeze what you can see); the footing is never blind ================= */
+export function lipRun(g, x, y, w, time, seed = 0) {
+  r(g, x, y, w, 2, '#f0c060'); r(g, x, y + 2, w, 1, '#8a5a20');
+  for (let i = 2; i < w - 1; i += 4) { const on = (Math.floor(time * 5) + ((i >> 2) + seed)) % 4 !== 0; r(g, x + i, y, 2, 1, on ? '#fff4c0' : '#c89a40'); }
+}
+/* EVERY STANDABLE TOP IN THE DARK (claude/fairfix5, the brief: "every standable edge carries a LIT LIP, drawn so it survives the height night"): over the night, each top
+   whose row the dark has reached gets its kit's lip (src/redraw/fair_tiles.js lipAt) - bulbs on the awnings, the iron and the railway's track, a pale edge on the rest -
+   brighter the darker it is there. The footing is never blind; what stands on it is still the night's */
+const STAND = new Set([1, 2, 8, 10]);
+export function drawTopLips(g, cx, cy, VW, VH, L, time) {
+  const N = L.fairNight; if (!N || !L.fairKit) return; const W = L.W, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= L.H) ? 1 : L.grid[y * W + x];
+  const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, PLANK: 8 }, halls = hallsOf(L), unlit = L.unlit || [];
+  const tx0 = Math.max(0, Math.floor(cx / TS)), tx1 = Math.min(W - 1, Math.floor((cx + VW) / TS)), ty0 = Math.max(1, Math.floor(cy / TS)), ty1 = Math.min(L.H - 1, Math.floor((cy + VH) / TS));
+  for (let ty = ty0; ty <= ty1; ty++) { const kRow = nightK(N, ty * TS);
+    for (let tx = tx0; tx <= tx1; tx++) { const t = at(tx, ty); if (!STAND.has(t) || at(tx, ty - 1) !== 0) continue;
+      const inHall = halls.some(H => tx >= H.x0 && tx <= H.x1 && ty > H.roof && ty <= H.floor), dark = Math.max(kRow, inHall || unlit.some(([a, b]) => tx >= a && tx <= b) ? 0.6 : 0); if (dark < 0.2) continue;
+      const col = FTL.lipAt(L, tx, ty, t, at, T); if (!col) continue; const sx = tx * TS - cx, sy = ty * TS - cy;
+      g.globalAlpha = Math.min(1, 0.35 + dark * 0.8); r(g, sx, sy, TS, 1, col);
+      if (col === '#e8c040' || col === '#c9d1dc') for (let i = 1; i < TS; i += 4) { const on = (Math.floor(time * 4) + ((tx * 4 + i) >> 2)) % 5 !== 0; if (on) r(g, sx + i, sy, 2, 1, '#fff4c0'); }   /* chase bulbs */
+      g.globalAlpha = 1; } }
+}
+export function drawLips(g, cx, cy, VW, L, F, time) {
+  const G = F && F.games; if (!G) return;
+  for (const Y of G.galleries || []) { if (Y.targets.length < 2) continue; const FL = boothFloor(L, Y);
+    if (!FL.cols.length || FL.cols[0].c * TS - cx > VW + 20 || (FL.cols[FL.cols.length - 1].c + 1) * TS - cx < -20) continue;
+    let run = null; const flush = () => { if (run) lipRun(g, run.c0 * TS - cx, run.row * TS - cy, (run.c1 - run.c0 + 1) * TS, time, run.c0); run = null; };
+    for (const q of FL.cols) { if (q.row === null) { flush(); continue; } if (run && run.row === q.row && run.c1 === q.c - 1) run.c1 = q.c; else { flush(); run = { c0: q.c, c1: q.c, row: q.row }; } } flush(); }
+  for (const spec of L.galleries || []) { const N = spec.nest; if (!N || N.row >= 20) continue; const nx = N.x0 * TS - cx, nw = (N.x1 - N.x0 + 1) * TS; if (nx > VW + 20 || nx + nw < -20) continue;
+    lipRun(g, nx, N.row * TS - cy, nw, time, N.x0); }
 }

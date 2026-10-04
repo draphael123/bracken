@@ -69,6 +69,7 @@ import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen, drawSpear as wqDrawSpear } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import * as FAF from './fair-foes.js'; import * as FK from './fair-keys.js'; import * as FKD from './redraw/fair_keys.js';   /* (claude/fairfix2) the fair's keys: ticket gates, bull's-eyes on rides, the mirror door, its sharper foes; and their drawing */   /* (fair-foes.js: THE HARVEST FAIR's string-jack and barker, claude/fairfix) */
 import * as FRS from './fair-rides.js'; import * as WQD from './redraw/wicker_fx.js';   /* (claude/fairfix3) the Wicker Queen's new fires, balls, sweep and leap marks */   /* (claude/fairfix3) THE SWINGBOATS and THE CHAIR-O-PLANE: the chairs' clock (src/redraw/fair_newrides.js draws them, from fair_rides.js) */
+import * as FTL from './redraw/fair_tiles.js';   /* (claude/fairfix5) THE HARVEST FAIR's own tile kit */
 import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js'; import * as FB from './redraw/fair_backdrop.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
 import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
 import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js';   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
@@ -311,6 +312,7 @@ const musicUnlocked = name => !!(PROG.heardMusic && PROG.heardMusic[name]);
 
 // ---------- tuning ----------
 const RUN = 92, GRAV = 1000, JUMPV = -320, POGO = -330;
+const AWNING_LAUNCH = 0.82;   /* (claude/fairfix5) THE HARVEST FAIR's springy awnings throw you 0.82 of a rick's launch: -328 / -394 held / -459 plunged (54 / 78 / 105 px) */
 /* EARTHSHAKER's 'from a height', 2026-09-24: it was prevVy > 250, and the fall is capped at 270 - so every full jump on flat ground
    (it lands at ~270) was a free, costless quake that staggered the boss, and the lab's Hurricane went 57s -> 33s on it alone.
    A flat jump peaks JUMPV^2/2G = 51 px up; this asks for 72 (four and a half tiles): off a ledge, or down from one. */
@@ -1121,6 +1123,7 @@ function resolveTiles() {
     if (L.welltown) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE WELL TOWN's tile kit: sandstone streets, mudbrick houses, the cisterns' cut stone, palm boards, rope ladders (src/redraw/welltown_tiles.js) */
     if (L.redgorge) { const ts = RGT.gorgeTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE RED GORGE's tile kit: strata, lit lips, the scoured channel, lashed bridges (src/redraw/redgorge_tiles.js) */
     if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
+    if (L.fairKit) { const ts = FTL.fairTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE HARVEST FAIR's tile kit (claude/fairfix5): sawdust and straw, iron decks, barn boards, wagon ruts; awnings, boardwalk, the scenic railway (src/redraw/fair_tiles.js) */
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
       tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
@@ -5724,6 +5727,7 @@ function reskinSet(e) {
   if (e.bone && e.t === 'archer' && SPR.bonearcher) s = SPR.bonearcher;
   if (e.t === 'bat' && L.fields && SPR.batHaunt) s = SPR.batHaunt;
   if (L.theatre) s = THF.foeSet(e) || s;   /* THE THEATRE's cast: the flyman, the prompter, the patron, the usher */
+  if (e.t === 'mummer' && FAIR && !L.theatre && SPR.harvestMummer) s = SPR.harvestMummer;   /* (claude/fairfix5) THE FAIR's mummers wear the harvest skin (corn husk and straw), the theatre's keep the painted mask */
   if (e.shy && SPR.shy) s = SPR.shy; else if (e.juggler && SPR.juggler) s = SPR.juggler; else if (e.bandit && SPR.banditArcher) s = SPR.banditArcher;   /* THE HARVEST FAIR's stallholder and knife juggler; the Well Town's bandit bowman (claude/welltown: a no-op until it merges) */
   return s && s !== SPR[e.t] ? s : null;
 }
@@ -6065,7 +6069,7 @@ let hurtKnock = false;
 /* WHOSE VOICE. A bone archer is spawned as an 'archer' with bone set (it shares the goblin archer's whole body of code), so it was hurt
    and died in the GOBLIN's voice - a squeal out of a skeleton. It has its own now (HURT.bonearcher / DIE.bonearcher in audio.js). */
 const voiceOf = e => (e.bone && e.t === 'archer' ? 'bonearcher' : e.cnSkin === 'bonechucker' ? 'bonegob' : e.t);
-const GRASSY = new Set(['wood', 'marsh', 'myc', 'crag', 'camp', 'village', 'battlefield']);   /* 'battlefield': THE UNBURIED FIELD's dead grass burns exactly as it did when the level fell through to the wood's dress */
+const GRASSY = new Set(['wood', 'marsh', 'myc', 'crag', 'camp', 'village', 'battlefield', 'fair']);   /* 'fair' (claude/fairfix5): its straw burns as the village's grass did */   /* 'battlefield': THE UNBURIED FIELD's dead grass burns exactly as it did when the level fell through to the wood's dress */
 /* THE FINISHER. A creature broken, burning, bleeding, frozen or reeling, and down to its last quarter, is not cut again: it is
    finished, in the hero's own way, and the world stops to watch. EXECUTION reaches further down the bar. */
 const FINISH_SKIP = new Set(['dummy', 'bale', 'heart', 'gill', 'bearer', 'folk', 'sheep']);
@@ -8266,9 +8270,11 @@ function updatePlayer(dt) {
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
   if (!P.ground) P.fallV = Math.max(P.fallV || 0, P.vy);
   if (P.ground && !wasGround && P.groundTile === T.BOUNCER) { // springy cap
-    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400; P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, FAIR ? ['#dcb44e', '#f4d878', '#a8802c'] : ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
+    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400;
+    { const atx = Math.floor(P.x / TS), aty = Math.floor((P.y + 2) / TS), aw = FAIR && L.awnings ? L.awnings.find(a => atx >= a.x0 && atx <= a.x1 && aty === a.row) : null;   /* (claude/fairfix5) A FAIR AWNING: springy canvas, a lower launch than a rick; a TEARING one rips */
+      if (aw) { P.vy *= AWNING_LAUNCH; P.awningAt = aw; SFX.puff(); if (aw.tear) { const c = (L.crumbles || []).find(q => q.kind === 'awning' && q.x0 === aw.x0 && q.row === aw.row); if (c && c.st === 'whole') { c.st = 'count'; c.t = c.count; c.shown = 1; } } } } P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, FAIR ? ['#dcb44e', '#f4d878', '#a8802c'] : ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
     const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (FAIR && L.haystacks) { const hz = L.haystacks.find(z => tx >= z[0] && tx <= z[1]); if (hz) { FAIR.sq[hz[0]] = 1; SFX.hayRustle(); } }
-    if (L.grid[i] === T.BOUNCER) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
+    if (L.grid[i] === T.BOUNCER && !(FAIR && L.awnings && L.awnings.some(a => tx >= a.x0 && tx <= a.x1 && ty === a.row))) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
   }
   if (P.ground && !P.onMover && L.scree && !P.dead) for (const z of L.scree) if (Math.abs(P.y - z.y * TS) < 2 && P.x >= z.x0 * TS && P.x < (z.x1 + 1) * TS) { const sp = P.block ? 24 : 70; P.x += z.dir * sp * dt; P.screeT = (P.screeT || 0) - dt; if (P.screeT <= 0) { P.screeT = 0.12; dust(P.x - z.dir * 4, P.y, 1); if (Math.random() < 0.5) SFX.step(); } }
   if (P.ground && P.groundTile === T.SHELF) { // shelf fungus snaps under a standing weight
@@ -16798,15 +16804,16 @@ function updateCrumbles(dt){
  for(const v of crumbleStep(L,bodies,dt,(x,y,how)=>cellSet(x,y,how==='fall'?T.AIR:grid0[y*LW+x]))){const c=v.c,mx=(c.x0+c.x1+1)*TS/2,my=c.row*TS;
   if(v.t==='start'){SFX.crack();shakeCam(1.5);lastTellT=time;dust(mx,my+TS*c.rows,6);}
   else if(v.t==='tick'){SFX.crack();shakeCam(v.n===1?3:2);dust(mx,my+TS*c.rows,v.n===1?12:7);if(v.n===1&&SFX.rumble)SFX.rumble();}
+  else if(v.t==='fall'&&c.kind==='awning'){re=true;SFX.puff();for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+4,4,['#b8382c','#ece0c4','#7a2418'],70,.8,300,2);}   /* (claude/fairfix5) a TEARING awning rips: canvas scraps, not stone */
   else if(v.t==='fall'){re=true;SFX.stone();shakeCam(5);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,3,['#8a8e9c','#5c6070','#b8b4a8'],60,.9,420,2);}
   else if(v.t==='back'){re=true;SFX.clank&&SFX.clank();dust(mx,my,8);}}
  if(re)resolveTiles();
- for(const c of L.crumbles){if(c.gone||c.st==='down')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
+ for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
 }
 /* ...and its drawing: cracks on every tile of a section that holds, brighter and wider as it counts, and the count itself over it */
 function drawCrumbles(cx,cy){
  if(!L.crumbles||!L.crumbles.length)return;
- for(const c of L.crumbles){if(c.gone||c.st==='down')continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;
+ for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;   /* (a tearing awning draws its own fray: src/redraw/fair_tiles.js) */
   const counting=c.st==='count',k=counting?Math.min(1,1-c.t/c.count):0,jig=counting&&c.t<1?Math.round(Math.sin(time*50)):0;
   g.strokeStyle=counting?(c.t<1?'#ff6b6b':'#ffb070'):'rgba(20,16,26,0.85)';g.lineWidth=1;g.beginPath();
   for(let x=c.x0;x<=c.x1;x++)for(let y=c.row;y<c.row+c.rows;y++)for(const [a,b,e,f] of crackMarks(x,y)){g.moveTo(x*TS-cx+a+.5+jig,y*TS-cy+b+.5);g.lineTo(x*TS-cx+e+.5+jig,y*TS-cy+f+.5);}
@@ -18685,7 +18692,8 @@ function fairReset() {
   if (L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); else crumbleInit(L); }   /* the collapsing stalls stand again */   /* THE GAMES (src/fair-games.js): tickets, the strikers, the gallery, the prize booth. Level-local: a load starts them over */
   { const B = FAIR.games.booth; if (B) { const sv = silvers.find(s => Math.abs((s.fairX ?? s.x) - (B.silver.x * TS + 8)) < 8); if (sv && !sv.got) { if (sv.fairX === undefined) sv.fairX = sv.x; B.sv = sv; B.svx = sv.fairX; sv.x = -99999; } else if (sv) B.bought = true; } }   /* (fairX remembers where it belongs: a level is reset more than once) */   /* the booth's silver is out of the world until it is bought */
   L.dark = 0; L.gateOpen = false;   /* THE WICKER QUEEN: a retry finds the green at dusk again, and its gate shut until she is down (claude/fair3) */
-  L.ring = L.green && L.green.carousel && L.arena ? WC.newRing(L.arena) : null;   /* and her carousel standing still until she wakes (claude/fairboss) */
+  L.ring = L.green && L.green.carousel && L.arena ? WC.newRing(L.arena) : null;
+  L.galRing = L.gallop ? WC.newRing(L.gallop) : null; if (L.galRing) WC.ringFor(L.galRing, true, 1);   /* (claude/fairfix5) THE GALLOPERS: the midway carousel's horses, at a walk from the start */   /* and her carousel standing still until she wakes (claude/fairboss) */
   if (window.BK) Object.assign(window.BK, { fair: () => FAIR, fairTime: () => time, slopeArt: () => { let n = 0, drawn = 0; for (let i = 0; i < L.grid.length; i++) if (isSlope(L.grid[i])) { n++; if (tileSpr && tileSpr[i]) drawn++; } return { cells: n, drawn }; }, fairRing: () => L && L.ring ? { on: L.ring.on, speed: L.ring.speed, phase: L.ring.phase, quicken: L.ring.quickT, rate: WC.organRate(L.ring) } : null });   /* (tools/harvest-fair.mjs: every slope cell has its picture; fairRing: the hook the boss track reads - the ride's speed and phase) */
 }
 /* may it walk on? ground ahead of its feet (a slope counts), no spike, no wall at its body: a haystack or a pit ends a charge */
@@ -18705,7 +18713,7 @@ function updateMummer(e, dt) {
   if (e.rideIdx !== undefined) {   /* A HORSE ON A GONDOLA (THE BIG WHEEL's wide car): it goes where the car goes, even out of sight, and its run is the car's length */
     if (!e.ride) { e.ride = movers.find(q => q.fair === (e.rideFair || 'gondola') && q.idx === e.rideIdx); if (e.ride) e.rx = e.ride.w * (e.rideFair ? 0.5 : 0.75); }
     if (e.ride) { e.x = e.ride.x + e.rx; e.y = e.ride.y; e.vy = 0; if (e.st) { e.st.x = e.x; e.st.y = e.y; } }
-    e.behind = !!(e.ride && e.rideFair === 'chairo' && e.ride.broken);   /* (claude/fairfix3) round the back of the chair-o-plane's mast: out of reach, and it neither moves nor strikes (src/redraw/fair_newrides.js draws it there) */
+    e.behind = !!(e.ride && (e.rideFair === 'chairo' || e.rideFair === 'galhorse') && e.ride.broken);   /* (claude/fairfix5: and a hobby-horse on a GALLOPER round the back of the ride - out of sight and reach until it comes round) */   /* (claude/fairfix3) round the back of the chair-o-plane's mast: out of reach, and it neither moves nor strikes (src/redraw/fair_newrides.js draws it there) */
     if (e.behind) { e.mode = e.st ? e.st.mode : e.mode; return; } }
   if (Math.abs(e.x - P.x) > 420) return;   /* the game's own rule: nothing past the screen acts */
   const s = e.st, horse = e.t === 'hobbyhorse'; if (!s) return;
@@ -18784,6 +18792,7 @@ function updateBarker(e, dt) {
 function updateFair(dt) {
   for (const pp of players) if (pp.faceLock > 0) pp.faceLock = Math.max(0, pp.faceLock - dt);
   if (FAIR) for (const lp of FAIR.lamps) if (lp.life > 0 && lp.life < 1) { const was = lp.lit; lp.b = FAW.lampBright(lp, time); lp.lit = lp.b > 0.3; if (lp.lit !== was && Math.abs(lp.x * TS - P.x) < 240 && SET.ambient && Math.random() < 0.35) SFX.lampGutter(); }
+  if (FAIR) { FAIR.wheelHold = Math.max(0, (FAIR.wheelHold || 0) - dt); { const w0 = movers.find(m => m.fair === 'gondola'); if (w0 && w0.ft !== undefined) FAIR.wheelT = w0.ft; } }   /* (claude/fairfix5) the big wheel's own clock (it stops when its bull's-eye is struck) */
   if (FAIR) { FAIR.tkShow = Math.max(0, (FAIR.tkShow || 0) - dt); for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); }   /* (claude/fairfix4: the synth music box that wound down over the fair's track is gone - the fair plays only its file, "Dark Carnival") */
   if (FAIR && L.green && state === 'play' && Math.abs(P.x - L.green.bonfire * TS) < 260 && Math.random() < dt * 30) flame(L.green.bonfire * TS + 8, L.green.floor * TS - 8, 2, 4, 40, 3);   /* the bonfire */
   if (FAIR && state === 'play') { if (L.crumbles && L.crumbles.length) updateCrumbles(dt);   /* (claude/fairfix2) the collapsing stalls (src/tower-collapse.js) */
@@ -18807,7 +18816,7 @@ function updateFairGames(dt) {
     launch: (h, vy) => asPlayer(h.p, () => { P.vy = vy; P.ground = false; P.onMover = null; P.coyote = 0; P.plunge = false; P.plungeRec = 0; P.canCut = false; P.jbuf = 0; dust(P.x, P.y, 6); }),
     say: t => callout(t), tickets: () => { FAIR.tkShow = 4; callout('TICKETS ' + G.tickets + '/' + G.total + ': THEY OPEN THE GATES'); },   /* (claude/fairfix3) the plate opens out for 4 s: every area's count */
     sound: k => (({ bell: SFX.tollBell, tink: SFX.tink, coin: SFX.coin, open: SFX.gateOpen })[k] || (() => {}))(),
-    open: (planks, bars) => { for (const [x0, x1, row] of planks) for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; grid0[i] = T.ONEWAY; } }
+    open: (planks, bars, Gy) => { if (Gy && Gy.id === 4) { FAIR.wheelHold = 4; callout('THE WHEEL STOPS: FOUR SECONDS'); SFX.clank && SFX.clank(); }   /* (claude/fairfix5) THE TWIST: the car's bull's-eye stops THE BIG WHEEL for four seconds, its cars hanging still as steps */ for (const [x0, x1, row] of planks) for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; grid0[i] = T.ONEWAY; } }
       for (const [x0, x1, y0, y1] of bars || []) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; grid0[i] = T.AIR; burst(x * TS + 8, y * TS + 8, 3, ['#c9d1dc', '#8a919c'], 50, 0.5, 300, 1); }   /* a CAGE's bars drop (claude/fairfix2) */
       resolveTiles(); shakeCam(2); },
     buy: B => { if (B.sv) B.sv.x = B.svx; burst(B.x * TS + 8, (B.row + 1) * TS - 24, 12, ['#dfe8ff', '#ffffff', '#ffd36b'], 70, 0.6); SFX.heart(); },
@@ -18821,6 +18830,7 @@ function updateFairGames(dt) {
 /* the dressing the tiles do not carry (src/redraw/fair_world.js): the haystacks over their spring caps, the carousel, the lamps, the maypole green and its bonfire, and the halo behind a glowing mask */
 function drawFair(cx, cy) {
   if (!FAIR) return;
+  FAW.drawDressing(g, cx, cy, VW, L, time, dusk());   /* (claude/fairfix5) THE FAIR IN THE PLAY LAYER: the arch, the booth, the stall fronts, the generator, the organ, the barns' prizes, the wagons (src/redraw/fair_world.js) */
   for (const z of (L.haystacks || [])) { const x0 = z[0] * TS, x1 = (z[1] + 1) * TS; if (x1 < cx - 8 || x0 > cx + VW + 8) continue; FAW.drawHay(g, cx, cy, z, FAIR.sq[z[0]] || 0); }
   for (const z of (L.carousels || [])) FAW.drawCarousel(g, cx, cy, VW, z, time, !!(P.car && P.car.warned && P.ground && P.x >= z.x0 * TS && P.x <= (z.x1 + 1) * TS), false);
   FAW.drawLamps(g, cx, cy, VW, FAIR.lamps, time, false);
@@ -18844,12 +18854,20 @@ function wqLight(q) {
   if (!FAIR) return;
   if (FAIR.fire) FAIR.fire.r = q && q.phase === 2 ? 34 : 58;
   if (!FAIR.wqLt) { FAIR.wqLt = { x: 0, y: 0, r: 0, warm: true }; lights.push(FAIR.wqLt); }
-  FAIR.wqLt.r = q && (q.phase === 3 || q.mode === 'burn') ? 74 : 0; if (q) { FAIR.wqLt.x = q.x; FAIR.wqLt.y = q.y - 36; } }
+  FAIR.wqLt.r = q && (q.phase === 3 || q.mode === 'burn' || q.alight > 0) ? 74 : 0; if (q) { FAIR.wqLt.x = q.x; FAIR.wqLt.y = q.y - 36; } }
 /* THE WICKER QUEEN'S CAROUSEL (src/wicker-carousel.js, claude/fairboss): a horse is a mover whose place is the ride's. The first horse turns the ride one
    frame; each one then stands where the ride puts it (a platform on the front run, carrying its rider by dx/dy; round the back it is not, and a rider
    still on it at the corner is set down on the boards) */
 function carHorse(m, dt) {
   const R = L.ring; if (!R) { m.dx = 0; m.dy = 0; return; }
+  if (m.i === 0) WC.ringStep(R, dt);
+  const h = WC.horseAt(R, m.i), ox = m.x, oy = m.y; m.x = h.x - m.w / 2; m.y = h.y;
+  const was = !m.broken; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;
+  if (m.broken && was) for (const pp of players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; pp.vy = Math.min(pp.vy || 0, -60); }
+}
+/* (claude/fairfix5) THE GALLOPERS on the midway carousel: carHorse's twin on L.galRing (the Queen's ring, at a walk) */
+function galHorse(m, dt) {
+  const R = L.galRing; if (!R) { m.dx = 0; m.dy = 0; return; }
   if (m.i === 0) WC.ringStep(R, dt);
   const h = WC.horseAt(R, m.i), ox = m.x, oy = m.y; m.x = h.x - m.w / 2; m.y = h.y;
   const was = !m.broken; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;
@@ -18897,7 +18915,8 @@ function updateWickerQueen(e, dt) {
     if (v.t === 'floorOut') wqLightPit(e.x, 'THE BOARDS SMOULDER');
     if (v.t === 'leapTell') SFX.wqSickleTell(); if (v.t === 'stomp') { shakeCam(3); dust(e.x, fl, 10); }
     if (v.t === 'crown') { for (const f of e.fakes) if (f.anim === 0) burst(f.x, fl - 30, 12, ['#b08a4e', '#e8c23a', '#6e5028'], 60, 0.6); if (v.swap) burst(e.x, fl - 30, 12, ['#b08a4e', '#e8c23a', '#6e5028'], 60, 0.6); callout('HER COPIES: HERS IS THE CROWN THAT BURNS'); }
-    if (v.t === 'ringTell') callout('THE BONFIRE RING: FIND THE GAP OR A HORSE'); }
+    if (v.t === 'ringTell') callout('THE BONFIRE RING: FIND THE GAP OR A HORSE');
+    if (v.t === 'alight') { burst(e.x + (e.face || 1) * 12, e.y - 44, 14, ['#ffc850', '#f08a28', '#fff0b0'], 70, 0.6); } }   /* (claude/fairfix5) her own fire catches her wicker, from the spear (the line goes to the hint box through number(): src/hint-lines.js) */
   wqBallsStep(e, fl, A, carry, dt);
   wqCopiesStep(e, fl);
   /* (claude/fairfix4) THE BONFIRE RING: the wall of fire on the boards, all but the gap; a hero on the boards outside it burns (each WQ.ringTick), a rider and a hero in the gap do not */
@@ -19049,7 +19068,7 @@ const CV_BANDITS = new Set(['cutthroat', 'slinger', 'ambusher', 'waterthief']); 
 SPR.stringjack = FG.bakeMarionette(); SPR.barker = FG.bakeBarker(); SPR.shy = bakeDrunk('shy'); SPR.juggler = FKD.bakeJuggler();   /* (claude/fairfix2) the coconut shy's stallholder (the drunk's frames) and the knife juggler (the archer's) */
  HAS_HURT.add('stringjack'); HAS_HURT.add('barker');   /* (claude/fairfix) */
 SPR.stagehand = THF.bakeStagehand(); HAS_HURT.add('stagehand'); THF.bakeTheatreCast(SPR.drunk, SPR.boo, SPR.haunt, SPR.mummer);   /* THE STAGEHAND (the Maskwright's Theatre) */
-SPR.mummer = FG.bakeMummer(); SPR.scarecrow = FG.bakeScarecrow(false); SPR.scarecrowM = FG.bakeScarecrow(true); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
+SPR.mummer = FG.bakeMummer(); SPR.harvestMummer = FG.bakeHarvestMummer(); SPR.scarecrow = FG.bakeScarecrow(false); SPR.scarecrowM = FG.bakeScarecrow(true); SPR.hobbyhorse = FG.bakeHobbyHorse(); SPR.wickerqueen = bakeWickerQueen(); HAS_HURT.add('mummer'); HAS_HURT.add('hobbyhorse');   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.greenteeth = bakeGreenteeth();   /* JENNY GREENTEETH (src/redraw/greenteeth_art.js) */
 SPR.puppeteer = bakePuppeteer(); SPR.marionette = bakeMarionette(); SPR.harlequin = bakeHarlequin(); SPR.acrobat = bakeAcrobat(); SPR.masterpiece = bakeMasterpiece();   /* THE PUPPETEER and his three (src/redraw/puppeteer_art.js) */   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.grindylow = CNF.bakeGrindylow(); SPR.willowisp = CNF.bakeWisp(); SPR.lamplighter = CFA.bakeLamplighter(); { const S = CFA.bakeCanalSkins(); SPR.bargeman = S.bargeman; SPR.riverrat = S.riverrat; SPR.deckforeman = S.foreman; SPR.watchman = S.watchman; }   { const U = UCS.bakeUndercrownSkins(SPR); for (const k of Object.keys(U)) SPR[k] = U[k]; }   { const V = VSK.bakeVarietySkins(SPR); for (const k of Object.keys(V)) SPR[k] = V[k]; }   /* (claude/variety) fire / venom imp, fair strongman: recoloured off the imp / brute sheets */   /* (claude/goblinsweep) recoloured off the miner / rock goblin / propman / sentry / lamplighter / hound sheets, same frames (after the canal's lamplighter is baked) */   /* (claude/canalfix3) THE CANAL TOUGHS: the goblins' AI under human skins (e.cnSkin) */   /* THE FOG CANAL's pair (src/canal-foes.js, greybox) */
@@ -19098,7 +19117,8 @@ function cvBackdrop() { BG.sky = DZ.bakeDesertSky(VH); BG.far = DZ.bakeFarMesas(
 function cvTile(x, y, t) {
   if (!L.caravan) {   /* A SLOPE IN THE LEVEL'S OWN GROUND (src/redraw/ground-slopes.js): its own top and fill, so a village ramp is cobble and earth, not sand */
     if (!isSlope(t)) return false;
-    const gs = ({ village: VILL, shore: SHORE, reef: REEF, city: CITY })[L.palette && L.palette.set] || null, h3 = ((x * 7 + y * 13) % 3 + 3) % 3, top = gs ? gs.top['00'] : TILE.top['00'], fill = gs ? gs.fill : TILE.dirt;
+    const fk = L.fairKit ? FTL.slopeSkins(L, x, y) : null;   /* (claude/fairfix5) the fair's slopes wear its own ground */
+    const gs = ({ village: VILL, shore: SHORE, reef: REEF, city: CITY })[L.palette && L.palette.set] || null, h3 = ((x * 7 + y * 13) % 3 + 3) % 3, top = fk ? fk.top : gs ? gs.top['00'] : TILE.top['00'], fill = fk ? fk.fill : gs ? gs.fill : TILE.dirt;
     tileSpr[y * LW + x] = slopeTile(t, top[h3 % top.length], fill[h3 % fill.length]); return true; }
   const A = cvArt(), i = y * LW + x, h = ((x * 7 + y * 13) % 3 + 3) % 3;
   /* THE RUINS (2026-09-25): what the masons laid (L.masonry) is coursed ashlar, not the rock's strata and not sand - a cracked block
@@ -24523,10 +24543,13 @@ function updateMovers(dt) {
   const pbs = movers.filter(q => q.kind === 'pushblock');   /* only a level with a block touches PB_CTX (tools that slice updateMovers alone, like rafts, never define it) */
   if (pbs.length) { PB_CTX.players = players; PB_CTX.blocks = pbs; }
   for (const m of movers) {
-    if (m.kind === 'carhorse') { carHorse(m, dt); continue; }   /* THE WICKER QUEEN'S CAROUSEL: its horses (claude/fairboss) */
+    if (m.kind === 'carhorse') { carHorse(m, dt); continue; }
+    if (m.kind === 'galhorse') { galHorse(m, dt); continue; }   /* (claude/fairfix5) THE GALLOPERS */   /* THE WICKER QUEEN'S CAROUSEL: its horses (claude/fairboss) */
     if (m.kind === 'chairo') { const ox = m.x, oy = m.y, h = FRS.chairAt(m.ring, m.idx, time), was = !m.broken; m.x = h.x - m.w / 2; m.y = h.y; m.depth = h.depth; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;   /* THE CHAIR-O-PLANE (claude/fairfix3, src/fair-rides.js): round the back of the mast a chair bears no one */
       if (m.broken && was) for (const pp of players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; pp.vy = Math.max(pp.vy || 0, 30); } continue; }
     if (m.kind === 'pushblock') { updatePushBlock(m, dt, PB_CTX); continue; }
+    if (m.kind === 'slat') { const ox = m.x, oy = m.y, h = FRS.slatAt(m.el, m.idx, time), was = !m.broken; m.x = h.x - m.w / 2; m.y = h.y; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;   /* (claude/fairfix5) THE HAY ELEVATOR's slats: up the belt, then back under it */
+      if (m.broken && was) for (const pp of players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; pp.vy = Math.max(pp.vy || 0, 30); } continue; }
     if (m.kind === 'cart' || m.kind === 'orelift') continue;
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
     if ((m.kind === 'hexvine' || m.kind === 'haycart') && updateFieldsMover(m, dt)) continue;   /* THE HEXED FIELDS */
@@ -24551,7 +24574,7 @@ function updateMovers(dt) {
       const on = P.onMover === m, mate = m.cw ? movers.find(q => q !== m && q.cw === m.cw) : null, mateOn = !!(mate && P.onMover === mate); const target = on ? m.y1 : mateOn ? m.yUp : m.y0; const dir = Math.sign(target - m.y);   /* A COUNTERWEIGHT: stood in, a basket sinks; its mate's weight lifts it; empty, both settle level at half the pace */
       if (dir) { m.y += dir * m.speed * (m.cw && !on && !mateOn ? 0.5 : 1) * dt; if ((dir > 0 && m.y > target) || (dir < 0 && m.y < target)) m.y = target; }
       m.dy = m.y - oldY; if (on && Math.random() < dt * 4) SFX.stone();
-    } else if (m.kind === 'wheel') { if (m.mill) { const w = windAt(m.px, m.py); if (w) m.lastW = w; m.ang = (m.ang || 0) + dt * 2 * Math.PI / m.period * (w ? w * 1.6 : 0.3 * (m.lastW || 1)); } const a = m.mill ? (m.ang || 0) + m.phase : time * 2 * Math.PI / m.period + m.phase; m.x = m.px + Math.cos(a) * m.r - m.w / 2; m.y = m.py + Math.sin(a) * m.r; m.dy = m.y - oldY;
+    } else if (m.kind === 'wheel') { if (m.mill) { const w = windAt(m.px, m.py); if (w) m.lastW = w; m.ang = (m.ang || 0) + dt * 2 * Math.PI / m.period * (w ? w * 1.6 : 0.3 * (m.lastW || 1)); } const a = m.mill ? (m.ang || 0) + m.phase : (m.fair === 'gondola' ? (m.ft = (m.ft ?? time) + (FAIR && FAIR.wheelHold > 0 ? 0 : dt)) : time) * 2 * Math.PI / m.period + m.phase; m.x = m.px + Math.cos(a) * m.r - m.w / 2; m.y = m.py + Math.sin(a) * m.r; m.dy = m.y - oldY;
     } else if (m.kind === 'punt') { // goes where you push it while you stand on it; the frogs come aboard while it moves
       const aboard = P.onMover === m; let dir = 0; if (aboard && !P.dead) dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
       m.moving = aboard && dir !== 0;
@@ -26196,7 +26219,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
-  if (FAIR) { FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time); if (SET.parallax !== 'off') { FB.drawNear(g, cx, cy, VW, L, dusk(), time); FB.drawMotes(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); } }   /* the crowd and the bunting, the fireflies and sparks */
+  if (FAIR) { FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time, { x: P.x, face: P.face || 1 }); if (SET.parallax !== 'off') { FB.drawNear(g, cx, cy, VW, L, dusk(), time); FB.drawMotes(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); } }   /* the crowd and the bunting, the fireflies and sparks */
   if (L.canal && SET.parallax !== 'off') CNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* the canal's reeds, mooring posts and hung lanterns */
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
@@ -26280,11 +26303,13 @@ function drawWorld(cx, cy, showPlayer) {
   if (PUPH && PUPH.on()) PUPH.drawBack(cx, cy, time);   /* THE PUPPETEER's fly rail and his painted flats, behind the bodies (claude/puppeteer2) */
   for (const m of movers) {
     if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
+    if (m.kind === 'galhorse') { if (!m.broken && L.galRing && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.galRing, m.i); continue; }   /* (claude/fairfix5) the gallopers, on their poles */
     if (m.weed || m.weedTeach) continue;   /* (the weed is drawn on the water, over the swimmers: GTH.drawOver) */
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
     if (m.fair && FR.drawMover(g, m, cx, cy, time)) continue;   /* THE HARVEST FAIR: a gondola on the wheel, a chair on the swing ride */
     if (L.burialLook && drawBurialMover(g, m, cx, cy, time)) continue;   /* THE BURIAL CAVERNS: stone slabs on chains, stone coffins, floating biers - no timber (burial-looks.js) */
+    if (m.kind === 'pushblock' && FAIR) { FAW.drawBale(g, Math.round(m.x) - cx, Math.round(m.y) - cy); continue; }   /* (claude/fairfix5) the fair's push block is a hay bale */
     if (m.kind === 'pushblock') { const bx = Math.round(m.x) - cx, by = Math.round(m.y) - cy;   /* a block of the level's own ground tile (backlog #12): it is baked fresh per palette (bakeAll), so it always matches the set it stands in, with a mortar line round it so it still reads as a loose object and not the floor */
       g.drawImage(TILE.dirt[0], bx, by); g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, m.w - 1, m.h - 1); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(bx + 1.5, by + 1.5, m.w - 3, m.h - 3); continue; }
     if (m.kind === 'pad' && m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2;
@@ -26998,6 +27023,7 @@ function drawWorld(cx, cy, showPlayer) {
     let sprSet = e.t === 'mummer' && e.scare && !e.woke && !(e.hurtT > 0) ? SPR.scarecrowM : e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : (L.redgorge && RGSET[e.t === 'scorpion' && e.elite ? 'scorpionElite' : e.t]) || SPR[e.t];
     if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin];   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
+    if (e.t === 'mummer' && FAIR && !L.theatre && SPR.harvestMummer) sprSet = SPR.harvestMummer;   /* (claude/fairfix5) the harvest skin */
     if (e.shy && SPR.shy) sprSet = SPR.shy; else if (e.juggler && SPR.juggler) sprSet = SPR.juggler; else if (e.bandit && SPR.banditArcher) sprSet = SPR.banditArcher;   /* THE HARVEST FAIR's ranged pair (claude/fairfix2) */   /* THE THEATRE's own cast: the masked patron, the usher, the house's ghosts, the flying props */
     if (e.cnSkin === 'tidecrab' && e.alive && (e.mode === 'buried' || e.mode === 'rise' || e.mode === 'sink')) { drawTideCrab(e, sprSet, cx, cy); g.globalAlpha = 1; continue; }   /* (claude/tidecrab) lying in the sand: a mound and two eyes */
     if (!sprSet) { g.fillStyle = '#ff00ff'; g.fillRect(Math.round(e.x - e.w / 2 - cx), Math.round(e.y - e.h - cy), e.w, e.h); continue; } // a creature with no sprite shows as a box instead of crashing the frame
@@ -27318,6 +27344,8 @@ function drawWorld(cx, cy, showPlayer) {
       g.globalAlpha = 1; }
   }
   if (FAIR) FR.drawNight(g, cx, cy, VW, VH, L, FAIR, { time, text, tkShow: FAIR.tkShow || 0, areas: FAIR.games ? FK.ticketsLeft(L, FAIR.games) : [], areaI: FK.areaAt(L, P.x / TS), skip: !!L.dark || (L.green && P.x > L.green.door * TS), heroes: players.filter(p => !p.dead).map(p => ({ x: p.x, y: p.y })), glows: enemies.filter(q => q.alive && q.t === 'mummer' && q.mode === 'glow') });   /* THE NIGHT that comes with height, and the ticket count (src/redraw/fair_rides.js) */
+  if (FAIR && !L.dark && !(L.green && P.x > L.green.door * TS)) FR.drawTopLips(g, cx, cy, VW, VH, L, time);   /* (claude/fairfix5) every standable top in the dark keeps its lit lip */
+  if (FAIR && !L.dark) FR.drawLips(g, cx, cy, VW, L, FAIR, time);   /* (claude/fairfix5) the booths' and the nests' lit lips, OVER the night: the tent floors read in the dark */
   if (FAIR) for (const e of enemies) if (e.alive && (e.t === 'stringjack' || e.t === 'barker') && e.x > cx - 60 && e.x < cx + VW + 60) FR.drawFoeExtras(g, e, cx, cy, time);   /* the marionette's strings up into the dark and the barker's call going out, OVER the night so they read in it (src/redraw/fair_rides.js) */
   if (GLH && miniActive) GLH.drawOver(g, cx, cy, time);   /* THE GANG LEADER: his bottles, the burning floor, his flames and his clock */
   if (CQH && CQH.on()) CQH.drawOver(g, cx, cy, time);

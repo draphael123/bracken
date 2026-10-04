@@ -66,7 +66,7 @@
 import { facedBy, nearestHero } from './mummer.js';
 
 export const WQ = {
-  hp: 1100, w: 22, h: 60,             // (claude/fairfix4: 640 before. At the fair's campaign depth (hero level 23) a knight cut 640 away in four burns, 26-56 s; tools/combat-pilots.mjs)
+  hp: 1400, w: 22, h: 60,             // (claude/fairfix5: 1100 before - her new self-alight windows and the unified x1.2 put the human bot at 6/7; swept 1150-1800 on the batch64 heroes (LEVELING): 1150/1300 4/7, 1500 2/7, 1650 1/7, 1800 0/7 - tools/combat-pilots.mjs, 7 heroes)             // (claude/fairfix4: 640 before. At the fair's campaign depth (hero level 23) a knight cut 640 away in four burns, 26-56 s; tools/combat-pilots.mjs)
   creep: 68, creepP3: 90,             // px/s while nobody looks (a hero runs 92; she is never faster). The ride's carry is on top of it (claude/fairfix3: 58 / 88 before)
   sight: 720, sightY: 170,            // the look reaches across the whole ride (phases 1 and 3)
   nearR: 96, nearY: 64,               // PHASE 2, FULL DARK: the look reaches only this far (a radius on the side you face)
@@ -91,13 +91,14 @@ export const WQ = {
   retReach: 32, retLate: 6, retSet: 0.7, retSpeed: 240, retHit: 16,   // (a mashing hero begins a blow every 0.38-0.5 s: never a held blade; the window is ~0.17 s of the ball's run)
   /* (claude/fairfix4) THE BONFIRE RING: told (the lanterns flare, not the ones over the gap), then the wall of fire round the ring for ringT s with one gap gapHalf px each side
      of its middle, travelling gapSpeed px/s; it burns what is on the boards outside the gap up to ringTop px, every ringTick s */
-  ringEvery: [16, 13, 11], ringFirst: 12, ringTell: 1.5, ringT: 2.8, gapHalf: 30, gapSpeed: 46, gapFrom: [110, 220], ringTop: 34, ringTick: 0.45,
+  ringEvery: [16, 13, 11], ringFirst: 12, ringTell: 3.0,   /* (claude/fairfix5, Daniel: the ring's wind-up TWICE as long - it was 1.5 s; the lanterns flare and the gap is marked on the boards for all of it) */ ringT: 2.8, gapHalf: 30, gapSpeed: 46, gapFrom: [110, 220], ringTop: 34, ringTick: 0.45,
   emberHalf: 40,                      // the embers: this far each side of the firebox's middle
   catchT: 0.4, burnT: 3.0, burnTP3: 3.0, riseT: 0.6, throwBack: 44, bankT: 6,   // (claude/fairfix3: the opening is at least 3 s in every phase - the boss rule; it was 2.8 / 2.4)
-  burnMul: 0.7, ward: 0.05,           // what a blow is worth burning, and against the standing wicker (claude/fairfix3: x0.05 chip outside the burn, the boss rule; it was 0.25. And a burn is worth 0.9 a blow, from 1.35: with her ring pits and a 3 s burn the human bot won in 46-56 s, under the 90-150 s band. claude/fairfix4: 0.7, with her 1100 health - the human bot at the fair's depth wins 2 of 3 in 60-131 s)
+  alightT: 3.0, alightMul: 1.2,      // (claude/fairfix5, Daniel) EVERY FIRE ATTACK SETS HERSELF ALIGHT: after the burning floor, the bonfire ring and the wicker ball she is alight alightT s, a blow worth alightMul (she takes no burn from it)
+  burnMul: 1.2, ward: 0.05,           // (claude/fairfix5, Daniel 10-02: her openings UNIFIED at x1.2 - a burn on a pit, on the firebox or from her own ball struck back pays what her self-alight window pays; was 0.7)           // what a blow is worth burning, and against the standing wicker (claude/fairfix3: x0.05 chip outside the burn, the boss rule; it was 0.25. And a burn is worth 0.9 a blow, from 1.35: with her ring pits and a 3 s burn the human bot won in 46-56 s, under the 90-150 s band. claude/fairfix4: 0.7, with her 1100 health - the human bot at the fair's depth wins 2 of 3 in 60-131 s)
   thrustClear: 24,                    // (claude/fairfix3, review #11) no thrust STARTS while she stands within this far of hot embers: a committed thrust no longer carries her across the opening
   rustle: 0.35,                       // her audio tell while she moves: the wicker creaks
-  dmg: { stab: 28, lash: 24, floor: 18, thrust: 26, ball: 22, sweep: 22, stomp: 20, ring: 18 },
+  dmg: { stab: 21, lash: 18, floor: 14, thrust: 20, ball: 17, sweep: 17, stomp: 15, ring: 13 },   /* (claude/fairfix5: x0.75 with her health up, so a fight runs the 90-150 s band; was stab 28, lash 24, floor 18, thrust 26, ball 22, sweep 22, stomp 20, ring 18) */
   /* (claude/fairfix3) HER NEW BLOWS AND HER FIRES */
   tossEvery: [8, 7, 6], tossFirst: 4, tossTell: 0.9, tossT: 0.35, ballSpeed: 150, ballTop: 14,   // THE WICKER BALL: told, bowled along the boards; it hurts what stands in its 14 px
   sweepEvery: [0, 10, 8.5], sweepFirst: 3.5, sweepTell: 1.2, sweepT: 1.8,                              // THE RIBBON SWEEP (phases 2-3): told by the ribbons going taut, then two passes
@@ -125,9 +126,9 @@ export const wqSight = ph => (ph === 2 ? [WQ.nearR, WQ.nearY] : [WQ.sight, WQ.si
 export const wqSeen = (e, heroes) => { const [s, sy] = wqSight(e.phase || 1); return facedBy(e, heroes, s, sy); };
 export const onEmbers = (x, emb) => !!emb && x >= emb.x0 && x <= emb.x1;
 export const embersOf = bonfireX => ({ x0: bonfireX - WQ.emberHalf, x1: bonfireX + WQ.emberHalf, mid: bonfireX });
-export const wqOpen = e => e.mode === 'burn';
+export const wqOpen = e => e.mode === 'burn' || e.alight > 0;   /* (claude/fairfix5) burning on a fire, or alight from her own fire attack */
 /* WHAT A BLOW IS WORTH: burning, WQ.burnMul; the rest of the time the wicker takes it and stands */
-export const wqTake = e => (wqOpen(e) ? WQ.burnMul : WQ.ward);
+export const wqTake = e => (e.mode === 'burn' ? WQ.burnMul : e.alight > 0 ? WQ.alightMul : WQ.ward);
 export const WQ_TELLS = ['stabTell', 'lashLowTell', 'lashHighTell', 'floorTell', 'thrustHighTell', 'thrustLowTell', 'crownTell', 'tossTell', 'sweepLowTell', 'sweepHighTell', 'leapTell', 'ringTell'];
 /* (claude/fairfix4) THE BONFIRE RING's gap, [x0, x1] in world x, and does the ring burn a hero standing here (on the boards, not on a horse, outside the gap)? */
 export const gapOf = e => [(e.gapX || 0) - WQ.gapHalf, (e.gapX || 0) + WQ.gapHalf];
@@ -213,7 +214,7 @@ export function newWickerQueen(e) {
     tossCd: WQ.tossFirst, sweepCd: WQ.sweepFirst, leapCd: WQ.leapFirst, ringCd: WQ.ringFirst, gapX: 0, gapDir: 1, fakes: [], burnBy: null, cycle: 0, leapN: 0, sweepN: 0, lift: 0, perch: null, horseI: -1, perchT: 0, leapTo: null, leapFrom: null,
     sweepKind: null, sweepDir: 1, burnPit: null,
     lashN: 0, thrustN: 0, rest: 0, rustleT: 0, anim: 0, vx: 0, lashR: 0, lashKind: null, thrustKind: null, thrustDir: 1, tip: 0, seen: false,
-    n: { catch: 0, burn: 0, lash: 0, stab: 0, crown: 0, floor: 0, thrust: 0, toss: 0, sweep: 0, leap: 0, ret: 0, ring: 0, copies: 0, copyBurst: 0 } });
+    alight: 0, n: { alight: 0, catch: 0, burn: 0, lash: 0, stab: 0, crown: 0, floor: 0, thrust: 0, toss: 0, sweep: 0, leap: 0, ret: 0, ring: 0, copies: 0, copyBurst: 0 } });
 }
 
 /* ONE FRAME OF HER. c = { heroes: [{x, y, face, alive}], A: {x0, x1, floor}, embers: {x0, x1, mid} | null, ringDir (the ride's way, 1 or -1; 0: no ride),
@@ -225,7 +226,11 @@ export function updateWickerQueen(e, dt, c) {
   if (!e.alive || e.mode === 'sleep') return ev;
   if (c.anim !== false) e.anim = (e.anim || 0) + dt;   /* (the game ticks it for every creature: its hands pass anim: false) */
   e.modeT -= dt; e.vx = 0;
-  e.bank = Math.max(0, (e.bank || 0) - dt); e.rest = Math.max(0, (e.rest || 0) - dt);
+  e.bank = Math.max(0, (e.bank || 0) - dt); e.rest = Math.max(0, (e.rest || 0) - dt); e.alight = Math.max(0, (e.alight || 0) - dt);
+  /* (claude/fairfix5) HER OWN FIRE CATCHES HER: the end of each fire attack (the floor, the ring, the ball) lights her own wicker from her spear. Only the REAL Queen
+     catches - in phases 2-3 that is how she tells herself from her copies. An opening (wqOpen) at alightMul for alightT s; it hurts her not at all */
+  const selfAlight = () => { if (e.mode === 'burn' || e.mode === 'catch') return; e.alight = WQ.alightT; e.n.alight = (e.n.alight || 0) + 1; ev.push({ t: 'alight' });
+    c.number(e.x, e.y - 78, 'HER OWN FIRE CAUGHT HER: CUT HER', '#ffb040'); c.sound('catch'); };
   const busy = e.mode === 'rise' || e.mode === 'leap';   /* (claude/fairfix4: SHE ALWAYS FIGHTS - her clocks run on while she burns, so she comes up off the fire swinging; only the fling and the leap stop them) */
   if (!busy) { e.lashCd -= dt; e.crownCd -= dt; e.floorCd -= dt; e.thrustCd -= dt; e.tossCd -= dt; e.sweepCd -= dt; e.leapCd -= dt; e.ringCd -= dt; e.perchT = Math.max(0, (e.perchT || 0) - dt); }
   const pits = pitsOf(c, e);
@@ -237,7 +242,7 @@ export function updateWickerQueen(e, dt, c) {
   const toward = () => { if (near) e.face = Math.sign(near.x - e.x) || e.face || -1; };
   if (e.mode === 'wake') { if (e.modeT <= 0) e.mode = 'still'; return ev; }
   stepCopies(e, dt, c, heroes, ph, ev);   /* (claude/fairfix4) her copies keep their own feet, whatever she is doing */
-  e.open = wqOpen(e) ? Math.max(0, e.modeT) : 0;
+  e.open = e.mode === 'burn' ? Math.max(0, e.modeT) : e.alight > 0 ? e.alight : 0;
   const tipWas = e.tip || 0; e.tip = thrustTip(e);
   /* ---- THE OPENING FIRST (rule E2: the thing the fight is about goes at the top of the chain): frozen ON the embers, and they are not banked ---- */
   const pit = (e.mode === 'still' || e.mode === 'creep') && seen && !(e.lift > 0) && !e.perch ? pitUnder(e.x, pits) : null;
@@ -293,7 +298,7 @@ export function updateWickerQueen(e, dt, c) {
     case 'floorTell':   /* the spear butt raised over the boards, and they glow the length of the ride: a look does not stop it */
       if (e.modeT <= 0) { e.mode = 'floor'; e.modeT = WQ.floorT; e.n.floor++; ev.push({ t: 'floor' }); c.sound('floor'); }
       return ev;
-    case 'floor': if (e.modeT <= 0) { e.mode = 'still'; e.floorCd = WQ.floorEvery[ph - 1]; e.rest = WQ.rest; ev.push({ t: 'floorOut' }); } return ev;
+    case 'floor': if (e.modeT <= 0) { e.mode = 'still'; e.floorCd = WQ.floorEvery[ph - 1]; e.rest = WQ.rest; ev.push({ t: 'floorOut' }); selfAlight(); } return ev;
     case 'crownTell':   /* (claude/fairfix4) THE COPIES stand up out of the straw round the ring, and she may trade places with one of them */
       if (e.modeT <= 0) { const want = WQ.copies[ph - 1] || 0, n = Math.max(0, want - e.fakes.length); e.n.crown++;
         const xs = []; for (const k of [-1, 1, -2, 2, 3, -3]) { const x = e.x + k * WQ.copySpread; if (x > c.A.x0 + 24 && x < c.A.x1 - 24 && ![e.x, ...xs, ...e.fakes.map(f => f.x)].some(q => Math.abs(q - x) < 60)) xs.push(x); if (xs.length >= n) break; }
@@ -308,14 +313,14 @@ export function updateWickerQueen(e, dt, c) {
     case 'ring': {
       e.gapX += e.gapDir * WQ.gapSpeed * dt; const lo = c.A.x0 + WQ.gapHalf + 8, hi = c.A.x1 - WQ.gapHalf - 8;
       if (e.gapX < lo || e.gapX > hi) { e.gapX = Math.max(lo, Math.min(hi, e.gapX)); e.gapDir = -e.gapDir; }
-      if (e.modeT <= 0) { e.mode = 'still'; e.ringCd = WQ.ringEvery[ph - 1]; e.rest = WQ.rest; ev.push({ t: 'ringOut' }); }
+      if (e.modeT <= 0) { e.mode = 'still'; e.ringCd = WQ.ringEvery[ph - 1]; e.rest = WQ.rest; ev.push({ t: 'ringOut' }); selfAlight(); }
       return ev; }
     /* ---- (claude/fairfix3) THE WICKER BALL: wound up over her head, bowled along the boards toward the nearest hero (the host rolls it: c.ball) ---- */
     case 'tossTell':
       if (e.modeT <= 0) { e.mode = 'toss'; e.modeT = WQ.tossT; e.n.toss++; const dir = near ? (Math.sign(near.x - e.x) || e.face || -1) : (e.face || -1);
         ev.push({ t: 'ball', x: e.x + dir * 14, dir, lift: e.lift || 0 }); if (c.ball) c.ball(e.x + dir * 14, dir, e.lift || 0); c.sound('lash'); }
       return ev;
-    case 'toss': if (e.modeT <= 0) { e.mode = 'still'; e.tossCd = WQ.tossEvery[ph - 1]; e.rest = WQ.rest; } return ev;
+    case 'toss': if (e.modeT <= 0) { e.mode = 'still'; e.tossCd = WQ.tossEvery[ph - 1]; e.rest = WQ.rest; selfAlight(); } return ev;
     /* ---- THE RIBBON SWEEP: taut across the ring at one height, then out from one wall to the other and back (two passes; the host judges each: c.sweep) ---- */
     case 'sweepLowTell': case 'sweepHighTell':
       if (e.modeT <= 0) { e.sweepKind = e.mode === 'sweepLowTell' ? 'low' : 'high'; e.mode = 'sweep'; e.modeT = WQ.sweepT; e.n.sweep++; e.sweepDir = near && near.x > (c.A.x0 + c.A.x1) / 2 ? 1 : -1;

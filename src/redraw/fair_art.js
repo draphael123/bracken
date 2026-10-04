@@ -27,7 +27,7 @@ const C = { sack: '#b89868', sackL: '#d8bc8a', sackD: '#8a6c44', sackDD: '#5e4a2
   wood: '#7a5230', woodL: '#a67a48', woodD: '#4e321a', cloth: '#b83a34', clothL: '#e8d8b8', clothD: '#7a2420', clothM: '#d05a48', mane: '#d8b64a', maneD: '#8a6a22', tooth: '#f6efe0', bridle: '#4a2a1a' };
 
 // ================= THE MUMMER =================
-export function bakeMummer() {
+export function bakeMummer(o) {
   const W = 30, H = 38, cx = 13;
   const F = frames(W, H, 6, (g, f) => {
     const creep = f === 1 || f === 2, glow = f === 3, strike = f === 4, hurt = f === 5, frozen = f === 0;
@@ -73,8 +73,23 @@ export function bakeMummer() {
     const bell = (bx, by) => { rect(g, bx, by, 2, 2, C.bell); px(g, bx, by, C.bellL); px(g, bx + 1, by + 1, C.bellD); };
     bell(hx + swing * 2, hy - 6 + (creep ? -swing : 0)); bell(hx - 8 - (creep ? 1 : 0), hy + 1 + (creep ? swing : 0)); bell(hx + 7 + (creep ? swing : 0), hy + 1 - (creep ? swing : 0) + (creep ? 1 : 0));
     line(g, hx - 6, hy + 1, hx - 8, hy + 2, C.capD); line(g, hx + 6, hy + 1, hx + 7, hy + 2, C.capD);
+    if (o && o.after) o.after(g, f, hx, hy, top, hem, lean, glow);
   });
   return pack(F, cx, H - 1, MUMMER.w, MUMMER.h);
+}
+/* (claude/fairfix5) THE FAIR'S OWN MUMMER, THE HARVEST SKIN (the review: its main foe was the theatre's sprite, baked once for both): a corn-husk mask with its strands, a
+   smock of straw, a cap of husk leaves (the bells kept: you can see the tell before you hear it), a sheaf on the back. The GLOW tell is the same red; same frames, same
+   hit box (MUMMER.w/h), same AI - it is drawn and dies in this skin in the fair only (src/main.js reskinSet) */
+const HARVEST = { sack: '#c8a858', sackL: '#e8cc80', sackD: '#8a7034', sackDD: '#5a4622', patch: '#a8903a', patch2: '#8a5a2a', mask: '#d8cc8a', maskL: '#f0e8b8', maskD: '#9a9050',
+  cap: '#7a8a34', capL: '#a8b85a', capD: '#4e5a1e', capS: '#e8c23a', paint: '#b8682a' };
+export function bakeHarvestMummer() {
+  const save = {}; for (const k in HARVEST) { save[k] = C[k]; C[k] = HARVEST[k]; }
+  try { return bakeMummer({ after: (g, f, hx, hy, top, hem, lean, glow) => {
+    if (!glow) for (const sx of [hx - 4, hx - 1, hx + 2]) { line(g, sx, hy, sx + (sx < hx ? -1 : 1), hy + 10, C.maskD); }   /* the husk's strands down the mask */
+    for (const [sx, sy] of [[hx - 2, hy - 5], [hx + 1, hy - 6], [hx + 3, hy - 4]]) { line(g, sx, hy - 1, sx, sy, C.straw); px(g, sx, sy, C.strawD); }   /* straw out of the cap */
+    const bx = 13 - 7 + Math.round(lean / 2), by = top - 2; for (let i = 0; i < 4; i++) line(g, bx + i, by, bx + i - 1, by + 11, i & 1 ? C.strawD : C.straw);   /* the sheaf on his back */
+    rect(g, bx - 1, by + 6, 5, 1, C.rope); for (let i = 0; i < 3; i++) px(g, bx + i, by - 1, C.straw);
+  } }); } finally { for (const k in save) C[k] = save[k]; }
 }
 
 // ================= THE HOBBY-HORSE =================

@@ -94,7 +94,7 @@ export const OPEN_RULE = {
   winchmaster: e => winchOpen(e),                                            // the jammed drum has him down
   bloodknight: e => bkOpen(e),                                               // the blade stuck in the floor, or reeling from his broken ward (claude/dk3: his openings pay x1.6; he is on FULL_DAMAGE, below - the chip never applies, greed still counts)
   duneworm: e => !!(e.st && wormOpen(e.st)),                                 // tangled in the awning
-  wickerqueen: e => wqOpen(e),                                               // burning
+  wickerqueen: e => wqOpen(e),                                               // burning, or alight from her own fire (claude/fairfix5: >= 3 s, x1.2)
   puppeteer: e => pupOpen(e),
   gorgecrab: e => e.mode === 'open',                                         // THE GREAT RED CRAB: thrown on his back by a released burst (claude/redgorge)
   grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield

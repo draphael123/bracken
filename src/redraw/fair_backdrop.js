@@ -37,7 +37,7 @@ function layout(LW) {
     // the far fires: every few hundred px, more of them later
     const fires = []; for (let x = 260; x < wFar - 100; x += 150 + Math.floor(rf() * 190)) fires.push({ x, y: FAR_GL - hillFar(x) + 7 + rf() * 10, sd: rf() });
     // the mid layer: things stand on the ground line in order, but not on the wheels' sites
-    const wheels = [{ x: colX(205, F_MID), r: 50 }, { x: colX(515, F_MID), r: 40 }];
+    const wheels = [];   /* (claude/fairfix5: the two small mid-layer wheels are gone - ONE big lit wheel stands on the skyline from screen one now: drawLandmark) */
     const items = [], poles = [], strings = [], lights = [], tops = [];
     let x = 40, lastPole = null;
     const cols = [['#b8382c', '#ece0c4'], ['#2f5f9a', '#ece0c4'], ['#c8901c', '#7a2418'], ['#3f7a4a', '#ece0c4'], ['#8a3a6a', '#e8d8b0']];
@@ -59,7 +59,7 @@ function layout(LW) {
     // the near bunting poles (parallax 0.6): from a little way in, every ~130 px
     const nearPoles = []; for (let x = colX(34, F_NEAR) + Math.floor(rm() * 40); x < Math.ceil(LW * TS * F_NEAR) + SPAN; x += 112 + Math.floor(rm() * 50)) nearPoles.push({ x, h: 104 + Math.floor(rm() * 14) });
     const flies = Array.from({ length: 22 }, () => ({ u: rm(), v: rm(), p: rm() * 6.28 })), embers = Array.from({ length: 16 }, () => ({ u: rm(), v: rm(), p: rm() * 6.28 }));
-    return { wFar, wMid, hillFar, hillBack, hillMid, fires, wheels, items, poles, strings, lights, tops, nearPoles, flies, embers, steeple: { x: colX(2, F_FAR) + 20 }, N: LW };
+    return { wFar, wMid, hillFar, hillBack, hillMid, fires, wheels, items, poles, strings, lights, tops, nearPoles, flies, embers, steeple: { x: colX(2, F_FAR) - 96 }, N: LW };   /* (claude/fairfix5) Waymeet's steeple: a small mark at the far left, where you came from - not the middle of screen one */
   });
 }
 
@@ -156,6 +156,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, d, dY, full) {
     { const sx = Ly.steeple.x - off; if (sx > -120 && sx < VW + 120) { const gy = gl - FAR_GL + (FAR_GL - Ly.hillFar(Ly.steeple.x) + 3), dk = darkAt(L, d, gy + cy);
       for (const [wx, wy] of [[9, 33], [10, 21], [-11, 8], [-1, 8]]) { const x = sx + wx + 1, y = gy - wy; lamp(g, x, y, 6, 0.25 + dk * 0.7, 1); dot(g, x, y, '#ffe9a0', 2); } } }
   }
+  drawLandmark(g, cx, cy, VW, VH, L, time, d, dY);
   // ---- the mid layer: tents, stalls, the wheel, the strings ----
   { const off = Math.round(cx * F_MID), gl = Math.round(VH - 94 + dY * F_MID), y0 = gl - MID_GL, s = scratch(VW, VH);
     s.drawImage(midStrip(L.W), off, 0, Math.min(VW, Ly.wMid - off), MID_H, 0, y0, Math.min(VW, Ly.wMid - off), MID_H);
@@ -184,6 +185,27 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, d, dY, full) {
   }
 }
 
+/* ================= THE LANDMARK (claude/fairfix5; the review: "no landmark pulling you on"): THE BIG WHEEL, lit, on the skyline from the first screen. A very low parallax
+   (LM_F) anchored on the real wheel (L.wheel, col 304): far off it stands small at the right of the sky and comes toward the middle as you come, growing; near it, it
+   gives way to the real one (a fade, so there are never two); past it, it stays behind you at the left. Its rim bulbs chase, brighter with the dusk ================= */
+const LM_F = 0.025;
+function drawLandmark(g, cx, cy, VW, VH, L, time, d, dY) {
+  const Wr = L.wheel; if (!Wr) return; const ref = Wr.px - VW / 2, far = Math.abs(cx - ref), a0 = clamp01((far - 140) / 260); if (a0 <= 0.02) return;
+  const prox = clamp01(1 - far / Math.max(1, ref)), r = 30 + 44 * Math.pow(prox, 1.4), hx = VW / 2 - (cx - ref) * LM_F, base = Math.round(VH - 94 + dY * F_MID) - 6, hy = base - r - 12;
+  if (hx < -r - 30 || hx > VW + r + 30) return; const ang = time * 0.07, lit = clamp01(0.45 + d * 0.6 + prox * 0.3);
+  g.save(); g.globalAlpha = a0;
+  ln(g, hx, hy, hx - r * 0.62, base + 20, '#2a1c1e', 3); ln(g, hx, hy, hx + r * 0.62, base + 20, '#2a1c1e', 3); ln(g, hx - r * 0.42, hy + r * 0.7, hx + r * 0.42, hy + r * 0.7, '#2a1c1e', 2);   /* its A-frame legs */
+  g.strokeStyle = '#3a2a2a'; g.lineWidth = 1; for (let i = 0; i < 16; i++) { const a = ang + i * Math.PI / 8; g.beginPath(); g.moveTo(hx, hy); g.lineTo(hx + Math.cos(a) * r, hy + Math.sin(a) * r); g.stroke(); }
+  g.lineWidth = 2; g.beginPath(); g.arc(hx, hy, r, 0, 6.3); g.stroke(); g.lineWidth = 1; g.beginPath(); g.arc(hx, hy, r * 0.42, 0, 6.3); g.stroke();
+  for (let i = 0; i < 8; i++) { const a = ang + i * Math.PI / 4, gx = hx + Math.cos(a) * r, gy = hy + Math.sin(a) * r, s = Math.max(3, r / 9); ln(g, gx, gy, gx, gy + s * 0.6, '#1e1418'); rc(g, gx - s * 0.6, gy + s * 0.6, s * 1.2, s * 0.8, ['#9a3a30', '#c8901c', '#2f5f9a'][i % 3]); }
+  rc(g, hx - 3, hy - 3, 6, 6, '#6a5030');
+  lamp(g, hx, hy, r * 1.25, lit * 0.32 * a0, 1); g.globalAlpha = a0;
+  const nb = Math.round(24 + r * 0.3); for (let i = 0; i < nb; i++) { const a = ang * 0.6 + i * 2 * Math.PI / nb, on = (i + Math.floor(time * 6)) % 4 !== 0, x = hx + Math.cos(a) * (r - 1), y = hy + Math.sin(a) * (r - 1);
+    if (on) { dot(g, x, y, i % 8 === 0 ? '#ff7060' : i % 8 === 4 ? '#9fe0ff' : '#ffe08a', r > 50 ? 2 : 1); } }
+  for (let i = 0; i < 16; i++) { const a = ang + i * Math.PI / 8; dot(g, hx + Math.cos(a) * r * 0.42, hy + Math.sin(a) * r * 0.42, '#ffd36b', 1); }
+  dot(g, hx, hy, '#ffe9a0', 3); g.restore();
+}
+
 /* ================= SPARKS and FIREFLIES: over the layers, under the world ================= */
 export function drawMotes(g, cx, cy, VW, VH, L, time, d, dY) {
   const Ly = layout(L.W), gl = VH - 94 + dY * F_MID, fl = smooth(0.12, 0.45, d) * (1 - 0.35 * smooth(0.8, 1, d)), em = smooth(0.45, 0.85, d);
@@ -192,6 +214,14 @@ export function drawMotes(g, cx, cy, VW, VH, L, time, d, dY) {
     lamp(g, x, y, 5, a * 0.6); dot(g, x, y, 'rgba(226,246,130,' + a.toFixed(2) + ')', 1); }
   if (em > 0.02) for (let i = 0; i < Ly.embers.length; i++) { const e = Ly.embers[i], W = VW + 80, p = ((e.v - time * (0.04 + (i % 4) * 0.012)) % 1 + 1) % 1, x = (((e.u * W * 4 - cx * 0.55 + Math.sin(time * 0.6 + e.p) * 12 + time * 6) % W) + W) % W - 40, y = p * (VH + 20) - 10;
     const a = em * Math.sin(p * 3.14) * (0.6 + 0.4 * Math.sin(time * 6 + e.p * 4)); if (a < 0.08) continue; dot(g, x, y, 'rgba(255,' + Math.round(130 + 80 * p) + ',60,' + a.toFixed(2) + ')', i % 3 ? 1 : 2); }
+  /* (claude/fairfix5) THE FAIR'S OWN WEATHER (it was Waymeet's pollen): CHAFF AND STRAW blowing through the turnstiles and down the midway, thinning by the rides yard;
+     ASH drifting down once the effigy has burned (L.effigies' burning one: past its column) */
+  const col = (cx + VW / 2) / TS, chaff = clamp01((260 - col) / 140);
+  if (chaff > 0.05) for (let i = 0; i < 26; i++) { const W = VW + 60, u = ((i * 0.6180339) % 1), x = (((u * W * 3 - cx * 0.9 + time * (38 + (i % 5) * 9)) % W) + W) % W - 30, y = ((i * 0.381966 % 1) * VH * 0.85 + Math.sin(time * 1.7 + i) * 9 + time * (4 + i % 3)) % VH;
+    if (i / 26 > chaff) continue; const ang = time * (2 + i % 3) + i; g.fillStyle = i % 3 ? 'rgba(232,200,110,0.75)' : 'rgba(200,160,90,0.7)'; g.fillRect(Math.round(x), Math.round(y), i % 4 ? 2 : 3, 1); if (Math.sin(ang) > 0.3) g.fillRect(Math.round(x + 1), Math.round(y - 1), 1, 1); }
+  const burn = (L.effigies || []).find(q => q.burns), ash = burn && (lastBurnT > 2 || lastDone) ? clamp01((col - burn.x + 10) / 40) : 0;
+  if (ash > 0.05) for (let i = 0; i < 22; i++) { const W = VW + 40, x = ((((i * 0.7548) % 1) * W * 2 - cx * 0.7 + Math.sin(time * 0.5 + i) * 18) % W + W) % W - 20, y = ((i * 0.5698 % 1) * VH + time * (10 + i % 4 * 3)) % VH;
+    g.fillStyle = i % 5 === 0 ? 'rgba(255,140,60,' + (0.7 * ash).toFixed(2) + ')' : 'rgba(150,140,140,' + (0.55 * ash).toFixed(2) + ')'; g.fillRect(Math.round(x), Math.round(y), i % 3 ? 1 : 2, 1); }
 }
 
 /* ================= NEAR: the bunting strings (the crowd is FAW.drawCrowd, drawn by main.js just before) ================= */
