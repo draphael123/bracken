@@ -481,17 +481,27 @@ function humanRollOk(BK) {
   for (const e of BK.enemies()) { if (!e.alive || e.harmless) continue; const d = Math.abs(e.x - P.x); if (d > 160 || Math.abs(e.y - P.y) > 90) continue;
     if (!(e.greedT > 0) && !(BK.windingUp && BK.windingUp(e))) continue; if (d < bd) { bd = d; best = e; } }
   if (best) { const left = best.greedT > 0 ? best.greedT : (typeof best.modeT === 'number' && best.modeT > 0 ? best.modeT : 0);
-        if (left > ROLL_LATE) return false;   /* too early: wait for it */
+        if (left > ROLL_LATE) { P.labRollWant = { e: best, until: now + left + 0.35 }; return false; }   /* too early: he means to roll, and waits for it (rollWhenDue) */
     if (now - (best.labRollT ?? -9) < 0.7) return false; best.labRollT = now; P.labRollT = now; return true; }
   if (now - (P.labRollT ?? -9) < ROLL_GAP) return false; P.labRollT = now; return true;
 }
+/* the roll he decided on, pressed when the tell is down to ROLL_LATE (or over): once a frame, before the world steps */
+function rollWhenDue(BK, press0) {
+  const P = BK.P, w = P && P.labRollWant; if (!w) return; const now = BK.time, e = w.e;
+  if (now > w.until || !e.alive) { P.labRollWant = null; return; }
+  const winding = e.greedT > 0 || (BK.windingUp && BK.windingUp(e)), left = e.greedT > 0 ? e.greedT : (typeof e.modeT === 'number' && e.modeT > 0 ? e.modeT : 0);
+  if (winding && left > ROLL_LATE) return;
+  P.labRollWant = null; if (now - (e.labRollT ?? -9) < 0.7) return; e.labRollT = now; P.labRollT = now; press0.call(BK, 'dodge');
+}
 export async function bossLab(BK, opts = {}) {
-  const previous = BK.manualSimulation, press0 = BK.press;
+  const previous = BK.manualSimulation, press0 = BK.press, sim0 = BK.sim, step0 = BK.step;
   BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
+  BK.sim = n => { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
+  BK.step = n => { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
-  finally { BK.press = press0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
+  finally { BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
 }
 async function runbossLab(BK, opts) {
   const healthMode=opts.healthMode||'refill';
