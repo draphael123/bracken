@@ -22,4 +22,4 @@ export function airBoxes(L) {
   return out;
 }
 
-export function breathCapacity(L,relic){return (relic==='tidecharm'?12:relic==='diverlamp'?9:6)*(L?.breathScale||1);}
+export function breathCapacity(L){return 6*(L?.breathScale||1);}

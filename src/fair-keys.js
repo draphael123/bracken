@@ -3,7 +3,7 @@
 //
 //   TICKETS ARE KEYS   a ticket is never spent. TICKET GATES (L.ticketGates) stand across the mouths of the fair's hidden paths, each with a sign that says its price: SHOW n
 //                      TICKETS. Hold n (picked up, or paid by a striker's first ring) and the gate swings open for good. ALL of them open THE BACK LOT (the last gate, `all`),
-//                      where the fair's own relic lies. ticketTotal(L) is every ticket the level holds; the HUD says "n/total" and what they open.
+//                      where the fair's third silver lies. ticketTotal(L) is every ticket the level holds; the HUD says "n/total" and what they open.
 //   BULL'S-EYES        a gallery of one target (src/fair-games.js) can OPEN things: planks (a platform runs up), bars (a cage's bars drop), and its target can hang ON A RIDE
 //                      (`on: { kind, idx }`: a wheel car or a swing chair) - liveTargets() moves it with the ride every frame.
 //   THE MIRROR DOOR    a doorway in the hall of mirrors that is not there: only a TRUE glass in front of you shows it (`mirror: true` on the doorway). mirrorDoorOpen() says when a
@@ -57,9 +57,6 @@ export function liveTargets(galleries, movers) {
 /* can this hero use the mirror door? he stands at it and a true glass ahead of him shows it */
 export const mirrorDoorOpen = (L, door, h) => !!door && !!h && Math.abs(h.x - door.x) < 14 && Math.abs(h.y - door.y) < 22 && mirrorSees(L, h);
 
-/* THE FORTUNE-TELLER'S GLASS (the back lot's relic): a hand mirror at the belt. What creeps up within GLASS_R px behind you is seen, as if a true mirror stood in front of you */
-export const GLASS_R = 64;
-export const glassSees = (p, e) => !!p && !!e && p.relic === 'handglass' && Math.abs(e.x - p.x) < GLASS_R && Math.abs(e.y - p.y) < 40;
 
 /* THE RANGED PAIR, made deadly by their hands, not their health (claude/fairfix2: "INCREDIBLY EASY at level 1"):
    THE KNIFE JUGGLER (the archer's AI) throws FLAT and FAST - a knife at chest height, 300 px/s, aimed where you will be when it arrives - every 1.7 s, after a told 0.45 s draw.

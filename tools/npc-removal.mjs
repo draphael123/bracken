@@ -3,8 +3,7 @@
 //   - the MARSH FERRYMAN (pay the toll, or break the sluice and drain the channel) and the BURNING VILLAGE
 //     CAPTIVES (rescue targets): both a mechanic, neither with dialogue.
 //   - the shop KEEPER, unchanged, in the three store rooms.
-// Every former quest's relic reward is a direct pickup placed in the level now (no NPC, no turn-in): one relic
-// per former relic-quest, standing on ground the campaign can actually reach.
+// Every former quest's relic reward became a vault silver (relics are cut, Daniel 2026-10-02; tools/relics.mjs).
 //   node tools/npc-removal.mjs           every live level, the shops, the marsh and the burning village
 //   node tools/npc-removal.mjs -v        also lists every relic/npc/captive found
 import { LEVELS } from '../src/level.js';
@@ -40,12 +39,7 @@ for (const gone of ['TAM_LINES', 'TAM_QUEST', 'TAM_MAP']) {
 // ---------- 2. LIVE LEVELS: build every entry in LEVELS and check what actually reaches a player ----------
 const NPC_OUTSIDE_SHOP_OK = new Set(['ferryman']);
 let ferrymanSeen = false, captivesSeen = false;
-// former RELIC quests whose reward must show up as a pickup somewhere in the live campaign (RULES R: a relic
-// pays for itself; it does not need to be reachable from every level that happens to share its name - some of
-// these kinds are deliberately reused by two different levels, which was already true before this change).
-const EXPECTED_RELIC_KINDS = new Set(['fleece', 'soles', 'sunshard', 'shoes', 'banner', 'gauntlet', 'windcloak',
-  'tidecharm', 'diverlamp', 'blackflag', 'stormline', 'wick', 'spurs', 'lamp', 'maypole', 'cutstring']);
-const relicKindsSeen = new Set();
+// RELICS ARE CUT (Daniel 2026-10-02): a former quest's relic reward is a silver in its vault now (src/relics.js); tools/relics.mjs owns that rule.
 
 for (const lv of LEVELS) {
   let L; try { L = lv.build(); } catch (e) { fail(lv.id + ': build failed - ' + e.message); continue; }
@@ -60,13 +54,12 @@ for (const lv of LEVELS) {
     if (n.kind === 'ferryman') { ferrymanSeen = true; if (n.lines || n.name) fail(lv.id + ": the ferryman carries dialogue (lines/name) - he should be a mechanic, not a talker"); }
   }
   if (captives.length) { captivesSeen = true; for (const c of captives) if (c.lines || c.name) fail(lv.id + ': a captive carries dialogue (lines/name) - captives are rescue targets, not talkers'); }
-  for (const r of relics) relicKindsSeen.add(r.kind);
+  for (const r of relics) fail(lv.id + ': a relic (' + r.kind + ') is placed - relics are cut');
   if (verbose && (npcs.length || relics.length || captives.length)) console.log('  ' + lv.id.padEnd(14) + 'npc=[' + npcs.map(n => n.kind).join(',') + '] relic=[' + relics.map(r => r.kind).join(',') + '] captive=' + captives.length);
 }
 
 if (!ferrymanSeen) fail("no live level places the marsh ferryman (npc kind 'ferryman') - the mechanic itself is missing");
 if (!captivesSeen) fail("no live level places any captives - the burning village rescue mechanic is missing");
-for (const kind of EXPECTED_RELIC_KINDS) if (!relicKindsSeen.has(kind)) fail("no live level's relic pickups include '" + kind + "' - a former quest's reward may have been dropped, not just its NPC");
 
-console.log(bad ? '\n' + bad + ' problem(s).' : '\nevery NPC outside the shops is gone; the ferryman and the captives are mechanics without dialogue; every former quest\'s relic is a pickup somewhere reachable.');
+console.log(bad ? '\n' + bad + ' problem(s).' : '\nevery NPC outside the shops is gone; the ferryman and the captives are mechanics without dialogue; no relic is placed anywhere.');
 process.exitCode = bad ? 1 : 0;

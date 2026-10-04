@@ -587,7 +587,7 @@ async function runbossLab(BK, opts) {
           if (boss.mode === 'whirl' && f % 18 === 0) BK.press('dodge'); }
         /* AND IT BREATHES. Under two and a half seconds of breath it goes to the nearest air he has not burst (and is not about to), and
            stays in it until the breath is back: a swimmer who fights him without breathing is a swimmer who drowns in the lab and not in play */
-        else if (air.length && ((P.breath ?? 6) < 3 || (P.labAir && (P.breath ?? 6) < (breathCapacity(BK.L,P.relic)) - 0.3))) {
+        else if (air.length && ((P.breath ?? 6) < 3 || (P.labAir && (P.breath ?? 6) < (breathCapacity(BK.L)) - 0.3))) {
           const live = air.filter(s => !(s.o.goneUntil > BK.time) && !(s.o.shiverUntil > BK.time));
           const src = live.sort((a, b) => Math.hypot(a.x - P.x, a.ty - P.y) - Math.hypot(b.x - P.x, b.ty - P.y))[0];
           if (src) { P.labAir = true; const gx = Math.max(src.l + 8, Math.min(src.r - 8, P.x)), gy = src.ty;
@@ -1222,7 +1222,7 @@ async function runbossLab(BK, opts) {
         else if(q.mode==='stabTell'&&!transit){face=sq;look=true;}   /* the stab's red glow: LOOK, and it is cancelled (or, already running for the far side, outrun it) */
         else if(q.mode==='rise'||q.mode==='catch'){face=sq;look=true;}   /* flung off the fire: hold her with the look */
         else if(q.x<mid-E+4){gx=q.x+34;face=-1;look=P.x>q.x;}   /* UPSTREAM of the fire: stand by her, looking - the ride carries them both, and brings her onto it */
-        else{gx=lureX;const deep=Math.abs(q.x-mid)<E-8&&!(q.bank>0),reach=q.phase===2?(P.relic==='maypole'?130:90):600;
+        else{gx=lureX;const deep=Math.abs(q.x-mid)<E-8&&!(q.bank>0),reach=q.phase===2?90:600;
           if(Math.abs(gx-P.x)>8)face=Math.sign(gx-P.x)||1;else{face=(deep&&Math.abs(dq)<reach)||Math.abs(dq)<60?sq:-sq;look=face===sq;}}   /* THE LURE: upstream of the embers, back turned until she is well onto them (banked, she comes on across them to be brought back), then look */
         if(!ride&&lashK==='low'&&P.ground&&q.mode==='lash'&&front>dm-70&&front<dm+10){BK.press('jump');P.labJump=16;}
         if(!ride&&thrK==='low'&&thrIn&&P.ground&&((thrTell&&q.modeT<0.12)||q.mode==='thrust')){BK.press('jump');P.labJump=16;}   /* her LOW thrust: over it as the line runs out */
@@ -1801,7 +1801,7 @@ async function runbossLab(BK, opts) {
   return out;
 }
 
-// THE COLLECTION LAB. Can every silver, key, relic and quest item actually be PICKED UP? Walking the whole level to each
+// THE COLLECTION LAB. Can every silver, key and quest item actually be PICKED UP? Walking the whole level to each
 // one measures the walker, not the item - the greedy walker cannot pogo a wasp chain, so it stalled at the first pit
 // and called everything after it missed. So the question is split in two: GETTING THERE is the reach model's
 // (node tools/reach.mjs, from the start), and the LAST STRETCH is played here. For each item the hero is put down on
@@ -1821,7 +1821,7 @@ export async function collectLab(BK, opts = {}) {
     BK.setHero(opts.hero || 'knight'); BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(10);
     const P = BK.P, k = BK.keys;
     const items = [...silversOf().map(s => ({ kind: 'silver', ref: s, x: s.x, y: s.y })),
-      ...BK.props().filter(p => (p.t === 'stray' || p.t === 'relic' || p.t === 'key') && !p.got).map(p => ({ kind: p.t === 'stray' ? 'quest:' + (p.kind || '') : p.t, ref: p, x: p.x, y: p.y }))];
+      ...BK.props().filter(p => (p.t === 'stray' || p.t === 'key') && !p.got).map(p => ({ kind: p.t === 'stray' ? 'quest:' + (p.kind || '') : p.t, ref: p, x: p.x, y: p.y }))];
     /* THE DEAD-END STASHES (opts.stash): the coins and hearts payDeadEnds put at the ends of pockets, gone for like anything
        else. A stash heart is only taken by a hero who is hurt, so he is kept hurt while he goes for it. */
     if (opts.stash) {

@@ -63,7 +63,7 @@ if (want.length) {
       const PORT=${T.PORT}, AIR=${T.AIR};
       const cell=(c,y)=>BK.L.grid[y*BK.L.W+c];
       const load=(id)=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id===id));BK.state='play';BK.god=false;BK.sim(5);};
-      const hold=()=>{BK.P.hp=BK.P.maxHp;BK.P.inv=0.5;};
+      const hold=()=>{if(BK.state==='card')BK.cardClose();BK.P.hp=BK.P.maxHp;BK.P.inv=0.5;};
       const show=(s)=>{BK.P.x=s.x+(s.face||1)*24;BK.P.y=s.y;BK.P.vx=0;BK.P.vy=0;};   /* inside his 34 px: he sees you whichever way he faces */
       const ringBy=(sec,s,frames)=>{show(s);let ran=false;for(let i=0;i<frames;i++){hold();BK.sim(1);if(s.mode==='run')ran=true;if(sec.on)return {ran,f:i};}return {ran,f:null};};
       const gateIs=(sec,t)=>sec.gates.every(([c,y0,y1])=>{for(let y=y0;y<=y1;y++)if(cell(c,y)!==t)return false;return true;});

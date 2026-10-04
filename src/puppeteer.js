@@ -441,7 +441,6 @@ export function stagePuppeteer(W, T, TS, sx, R) {
   ent('puppeteer', sx + 30, G - 1, { face: -1 });
   ent('marionette', sx + 16, R - 1, { face: -1 });
   ent('harlequin', sx + 24, R - 1, { face: -1 });
-  ent('relic', sx + 20, R - 1, { kind: 'cutstring', bossDrop: true });   /* THE THEATRE'S ONE RELIC (THE CUT STRING: a snare or a holdfast lets go twice as fast): hidden until he falls, then it lies where he hung (main.js, case 'puppeteer') */
   const arena = { x0: (sx + 1) * TS, x1: ex * TS, floor: R * TS, y0: (top + 1) * TS, trigger: (sx + 5) * TS, wallL: sx, wallR: ex, boss: 'puppeteer', music: 'puppeteer',
     tint: '#6a1a2a', tintA: 0.1, camFrame: true,
     stage: { gallery: G * TS, gx0: (sx + 3) * TS, gx1: ex * TS, pinX: (sx + 3) * TS + 8, sx, R } };
