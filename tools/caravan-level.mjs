@@ -34,8 +34,8 @@ const R = floodReach(slopeReachGrid(L, T), T, { rides: true });
 const want = t => L.ents.filter(e => e.t === t);
 const got = e => R.jumpNear(e.x, e.y);
 const cnt = t => `${want(t).filter(got).length}/${want(t).length}`;
-ok(want('silver').length === 3 && want('stray').length === 3 && want('relic').length === 0 && [...want('silver'), ...want('stray')].every(got),
-  `F7 + reach: silvers ${cnt('silver')}, strays ${cnt('stray')}, no relic (relics are cut) got by the fill`);
+ok(want('silver').length === 3 && want('stray').length === 3 && want('relic').length === 1 && [...want('silver'), ...want('stray'), ...want('relic')].every(got),
+  `F7 + reach: silvers ${cnt('silver')}, strays ${cnt('stray')}, relic ${cnt('relic')} got by the fill`);
 let arenaReached = false; for (let x = ax0; x < ax0 + 40; x++) for (let y = 0; y < H; y++) if (R.seen.has(x + ',' + y)) arenaReached = true;
 ok(arenaReached, 'B1: the start reaches THE WORM\'S HOLLOW');
 // B6

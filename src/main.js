@@ -3034,7 +3034,6 @@ function shrineLights(s, px, py, swim) {
 function respawn() { P.windRide = null; P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
-  
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, kPoseT: 0, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
   mendAll(); wallsMendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; if (GEO) GEO.clear(); if (CRB) CRB.clear(); wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; hallows = []; hammers = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
@@ -8700,7 +8699,7 @@ function bossEnd(e) {
       shakeCam(9); zoomKick(1.14, 0.6); killFlash = 0.12; if (GTH) GTH.end(e);
       for (let i = 0; i < 30; i++) parts.push({ x: x + (Math.random() - 0.5) * 40, y: y - Math.random() * 30, vx: (Math.random() - 0.5) * 70, vy: -30 - Math.random() * 70, life: 1.6, max: 1.6, col: ['#5e8a4a', '#23401e', '#e8f4f0', '#9ac850'][(Math.random() * 4) | 0], size: 1, grav: 50 });
       say('THE LOCK LIES STILL', '#9ac850'); break; }
-    case 'wickerqueen': { /* THE FAIR IS OVER: the wicker goes up all at once, her players go back into the crowd, the green's light comes back, and the green's light comes back where she burned */
+    case 'wickerqueen': { /* THE FAIR IS OVER: the wicker goes up all at once, her players go back into the crowd, and the green's light comes back */
       shakeCam(10); zoomKick(1.16, 0.6); killFlash = 0.12; L.dark = 0; if (L.ring) WC.ringFor(L.ring, false); if (FAIR) { if (FAIR.fire) FAIR.fire.r = 58; if (FAIR.wqLt) FAIR.wqLt.r = 0; }
       for (let i = 0; i < 40; i++) parts.push({ x: x + (Math.random() - 0.5) * 30, y: y - Math.random() * 70, vx: (Math.random() - 0.5) * 80, vy: -40 - Math.random() * 90, life: 1.6, max: 1.6, col: ['#ffc850', '#f08a28', '#d84a14', '#b08a4e'][(Math.random() * 4) | 0], size: 2, grav: -30 });
       for (const f of (e.fakes || [])) for (let i = 0; i < 12; i++) flame(f.x + (Math.random() - 0.5) * 20, (A ? A.floor : y) - Math.random() * 60, 1, 4, 60, 3); if (e.fakes) e.fakes.length = 0;   /* (claude/fairfix4) her copies go up with her */

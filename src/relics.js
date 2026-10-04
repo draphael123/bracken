@@ -14,7 +14,7 @@
    HAD found a relic whose spot is now a vault silver is given that silver (its bit, so the cap of three holds by construction;
    a save that already holds all three has nothing to be paid). Idempotent: it runs on every load, and the second run finds nothing. */
 export const VAULT_SILVER = {
-  wood: { x: 344, y: 4, idx: 2 }, marsh: { x: 125, y: 10, idx: 2 }, spore: { x: 92, y: 6, idx: 1 }, kings: { x: 592, y: 6, idx: 2 },
+  wood: { x: 344, y: 4, idx: 2 }, marsh: { x: 125, y: 10, idx: 2 }, spore: { x: 92, y: 6, idx: 0 }, kings: { x: 592, y: 6, idx: 2 },
   spire: { x: 38, y: 29, idx: 2 }, moor: { x: 200, y: 15, idx: 1, add: true }, storm: { x: 130, y: 7, idx: 0 },
   crown: { x: 695, y: 13, idx: 2 }, longwater: { x: 512, y: 26, idx: 2 }, reef: { x: 472, y: 20, idx: 1 }, flotilla: { x: 82, y: 29, idx: 2 },
   hurricane: { x: 448, y: 26, idx: 1 }, lamplit: { x: 386, y: 21, idx: 1 }, underleaf: { x: 368, y: 27, idx: 0 }, deep: { x: 20, y: 145, idx: 2 },
@@ -25,14 +25,14 @@ export const VAULT_SILVER = {
 /* The level builder's LAST step (src/level.js): every former relic spot is a 'vault' marker all through the build - the garrison, the
    elites, the dead-end filler and the coin sprinkler keep clear of it exactly as they kept clear of the relic - and here it becomes what
    it pays: one of the level's silvers, MOVED there (the silver that gives way leaves its gold behind, as silverTrim does with a fourth
-   silver: a coin where it lay and one two tiles either side), or nothing (the cache already holds its own silver). No marker survives. */
+   silver: a short line of coins where it lay), or nothing (the cache already holds its own silver). No marker survives. */
 export function vaultSilver(L, id) {
   const marks = L.ents.filter(e => e.t === 'vault'); if (!marks.length) return L;
   L.ents = L.ents.filter(e => e.t !== 'vault');
   const v = VAULT_SILVER[id], m = marks[0]; if (!v) return L;
   if (v.add) { L.ents.push({ t: 'silver', x: m.x, y: m.y }); return L; }
   const s = L.ents.filter(e => e.t === 'silver')[v.idx];
-  if (s) { const ox = s.x, oy = s.y; s.x = m.x; s.y = m.y; for (const dx of [-2, 0, 2]) L.ents.push({ t: 'coin', x: ox + dx, y: oy }); }
+  if (s) { const ox = s.x, oy = s.y; s.x = m.x; s.y = m.y; for (const dx of [-2, -1, 0, 1, 2]) if (L.grid[oy * L.W + ox + dx] === 0) L.ents.push({ t: 'coin', x: ox + dx, y: oy }); }   /* (a cache of five: a dead end it paid still pays, deadends.js wants four) */
   return L;
 }
 
