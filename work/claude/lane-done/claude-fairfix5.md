@@ -1,6 +1,6 @@
 # FAIRFIX5 - THE HARVEST FAIR's identity, fair-made platforming, clear tent floors, the Wicker Queen tweaks
 
-Branch `claude/fairfix5` (Opus). Base: master 1dd5b181, merged up to master 44c8e47d (batch64: LEVELING) mid-lane.
+Branch `claude/fairfix5` (Opus). Base: master 1dd5b181, merged up to master 44c8e47d (batch64: LEVELING) mid-lane, then batch65 4960c892 at the end. After the last merge I re-ran sprinkle-cap, level-quality, mash-gate, harvest-fair --floors and wicker-queen: all green. modulepreload: 1 module unlisted, inside its budget of 15.
 Brief: scratch/brief-fairfix5.md + scratch/review-fair-identity.md. Daniel's playtest gate applies to the Queen: nothing about her is final until he plays it.
 
 ## 1. CLEAR TENT FLOORS (done first, its own commit b3be290b)
