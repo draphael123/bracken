@@ -23442,7 +23442,7 @@ function berserkerKit(dt, canAct, tired) {
   if (P.dead) return;
   const act = (pressed, id, st, air, reeling) => { if (!pressed || !cdReady(id) || !(reeling ? !(P.asleep > 0) && !P.plunge : canAct()) || (!air && !(P.ground || P.swim))) return false; if (!spend(st)) { tired(); return false; } cdSet(id); P.atk = -1; P.braceT = 0; return true; };
   if (act(skillPress('bzRoar'), 'bzRoar', 15, true)) BZK.kit.roar();            /* BATTLE ROAR (1) */
-  if (act(skillPress('bzSpin'), 'bzSpin', 25)) BZK.kit.spin();                  /* THE SPIN (3) */
+  if (act(skillPress('bzSpin'), 'bzSpin', 22)) BZK.kit.spin();                  /* THE SPIN (3) */
   if (act(skillPress('bzHarden'), 'bzHarden', 20, true)) BZK.kit.harden();      /* HARDEN (5) */
   if (act(skillPress('bzCleave'), 'bzCleave', 28)) BZK.kit.cleave();            /* GREAT CLEAVE (7) */
   if (act(skillPress('bzRampage'), 'bzRampage', 30)) BZK.kit.rampage();         /* RAMPAGE (9) */

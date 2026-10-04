@@ -185,8 +185,8 @@ export function makeBerserker(api) {
   /* THE KIT'S BODIES IN MOTION (every frame, after update): the spin, the cleave, the rampage and the hatchets */
   function kitStep(dt) { const p = P();
     if (p.spinT > 0) { const prev = p.spinT; p.spinT -= dt; const half = p.spinT > 0.25 ? 0 : 1;
-      if ((prev > 0.38 && p.spinT <= 0.38) || (prev > 0.13 && p.spinT <= 0.13)) { api.ringAt(p.x, p.y - 10, 30, '#e8eef6', 0.2); api.SFX.bzChop && api.SFX.bzChop(); }
-      for (const e of near(p, 30, 26)) if (!p.spinHits[half].has(e)) { p.spinHits[half].add(e); api.hurtAs('light', e, Math.round(api.swordDmg() * 0.95 * api.amul('bzSpin')), p.x, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || 1, 5); } }
+      if ((prev > 0.38 && p.spinT <= 0.38) || (prev > 0.13 && p.spinT <= 0.13)) { api.ringAt(p.x, p.y - 10, 36, '#e8eef6', 0.2); api.SFX.bzChop && api.SFX.bzChop(); }
+      for (const e of near(p, 36, 26)) if (!p.spinHits[half].has(e)) { p.spinHits[half].add(e); api.hurtAs('light', e, Math.round(api.swordDmg() * 1.15 * api.amul('bzSpin')), p.x, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || 1, 5); } }
     if (p.cleaveT > 0) { p.cleaveT -= dt; const r = 62, hb = p.face > 0 ? { l: p.x, r: p.x + r, t: p.y - 28, b: p.y + 2 } : { l: p.x - r, r: p.x, t: p.y - 28, b: p.y + 2 };
       for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || p.cleaveHit.has(e) || !api.overlap(hb, api.box(e))) continue; p.cleaveHit.add(e);
         api.hurtAs('heavy', e, Math.round(api.swordDmg() * 1.8 * api.amul('bzCleave')), p.x, false); api.poiseLean(e, 30); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.9); api.sparks(e.x, e.y - (e.h || 16) / 2, p.face, 8); api.hitstop(0.05); } }
