@@ -281,8 +281,8 @@ try {
     // legible at the smallest size: the glyph is a whole-number scale of its pixels and at least 22 CSS px across
     ok(drawn.every(k => gl[k].scale >= 1 && gl[k].side >= 20 * DSF), 'a skill glyph is too small at 70% touch size: ' + JSON.stringify(gl));
     // the overlay really has pixels there (not just the circle)
-    const lit = await E(`(() => { const o = BK.touch.overlayCanvas(), g = o.getContext('2d'), L = BK.touch.debug().layout, b = L.btn.throw, k = o.width / BK.touch.debug().layout.W; const d = g.getImageData(Math.round((b.cx - b.r * 0.5) * k), Math.round((b.cy - b.r * 0.5) * k), Math.round(b.r * k), Math.round(b.r * k)).data; const seen = new Set(); for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 90) seen.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]); return seen.size; })()`);
-    ok(lit >= 3, 'the first skill button shows no glyph pixels (' + lit + ' colours)');
+    const lit = await E(`(() => { const o = BK.touch.overlayCanvas(), g = o.getContext('2d'), L = BK.touch.debug().layout, b = L.btn.throw, k = o.width / BK.touch.debug().layout.W; const d = g.getImageData(Math.round((b.cx - b.r * 0.5) * k), Math.round((b.cy - b.r * 0.5) * k), Math.round(b.r * k), Math.round(b.r * k)).data; const seen = new Set(); for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 50) seen.add(d[i] + ',' + d[i + 1] + ',' + d[i + 2]); return seen.size; })()`);
+    ok(lit >= 3, 'the first skill button shows no glyph pixels (' + lit + ' colours) ' + JSON.stringify(await E('(() => { const L = BK.touch.debug(); return [L.layout.btn.throw, L.layout.bar, L.layout.W, BK.touch.overlayCanvas().width, L.buttons.map(b => b.k)]; })()')));
     // the wait sweeps over it: half the wait left shows k = 0.5 and a different picture
     const id = slots.find(Boolean), idx = slots.indexOf(id), key = ['throw', 'skill2', 'skill3', 'skill4'][idx];
     await E(`(() => { BK.P.cds = BK.P.cds || {}; BK.P.cds[${JSON.stringify(id)}] = 1.5; BK.touch.draw(); })()`); gl = await E('BK.touch.glyphs()');
@@ -508,6 +508,30 @@ try {
     await down(6, 520, 150); await up(6); await E('BK.touch.draw()'); d = await dbg(); ok(!d.padHidden && !(await E('BK.padLast')), 'a touch did not bring the layer back');
     await E('window.dispatchEvent(new Event("gamepaddisconnected"))'); await tk(0.1); d = await dbg(); ok(/DISCONNECTED/.test(d.banner || ''), 'no prompt on a pad leaving: ' + d.banner);
     await tk(4); await E('BK.padLast = false');
+  });
+
+  // ===================== THE SIDE BARS (Daniel 10-03): landscape controls live in the black pillars, not over the game =====================
+  await section('bars', async () => {
+    const vp = async w => { await pg.send('Emulation.setDeviceMetricsOverride', { width: w, height: 390, deviceScaleFactor: DSF, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } }); await goto(); await toPlay('wood'); await E('BK.manualSimulation = true; BK.SET.touchMove = "dpad"; BK.SET.touchPos = {}; BK.touch.relayout(); BK.touch.tick(0.1)'); };
+    const clear = async label => {   // every button and the pad are wholly outside the game's own rectangle
+      const r = await E('(() => { const d = BK.touch.debug(), L = d.layout, a = BK.touch.gameToClient(0, 0), b = BK.touch.gameToClient(320, 180); return { bar: L.bar, gx0: a[0], gx1: b[0], all: BK.touch.allButtons(), dp: L.dpad, W: L.W }; })()');
+      ok(r.bar, label + ': bar mode is off on a wide phone');
+      const sc = 1 / DPR, bad = [...r.all.map(b => ({ k: b.k, x: b.cx * sc, r: b.r * sc })), { k: 'dpad', x: r.dp.cx * sc, r: r.dp.R * sc }].filter(o => o.x + o.r > r.gx0 + 0.5 && o.x - o.r < r.gx1 - 0.5);
+      ok(!bad.length, label + ': over the game: ' + bad.map(o => o.k).join()); return r;
+    };
+    await vp(1000);
+    for (const p of ['simple', 'full']) for (const lh of [false, true]) { await E(`BK.SET.touchPreset = ${JSON.stringify(p)}; BK.SET.touchLeft = ${lh}; BK.touch.relayout()`); const r = await clear(p + (lh ? ' left-handed' : '')); 
+      const atk = r.all.find(b => b.k === 'atk'); ok(lh ? atk.cx < r.W / 2 : atk.cx > r.W / 2, p + ': ATTACK is on the wrong side'); ok(lh ? r.dp.cx > r.W / 2 : r.dp.cx < r.W / 2, p + ': the pad is on the wrong side');
+      const A = r.all; for (let i = 0; i < A.length; i++) for (let j = i + 1; j < A.length; j++) ok(Math.hypot(A[i].cx - A[j].cx, A[i].cy - A[j].cy) >= A[i].r + A[j].r - 0.5, p + ' bars: ' + A[i].k + ' overlaps ' + A[j].k);
+      ok(A.every(a => a.r >= 17 * DPR * 0.9), p + ' bars: a button is too small'); }
+    await E('BK.SET.touchPreset = "simple"; BK.SET.touchLeft = false; BK.touch.relayout()');
+    const d = await dbg(); await down(3, ...centre(d.layout.btn.atk)); ok((await keysNow()).atk, 'ATTACK in the bar does not press'); await up(3);
+    await down(3, ...pointAt(d.layout.dpad, 0, 0.75)); ok((await keysNow()).right, 'the pad in the bar does not work'); await up(3);
+    // a phone with narrow bars (760x390: the game is 640 wide, ~60 px a side) falls back to the overlay; 844 has 102 px bars and uses them
+    await vp(844); ok(await E('BK.touch.bar()'), 'the 844 phone (102 px bars) did not use them'); await vp(760); ok(!(await E('BK.touch.bar()')), 'a narrow-barred phone used the bars ' + JSON.stringify(await E('(() => { const a = BK.touch.gameToClient(0, 0), b = BK.touch.gameToClient(320, 180); return [a, b, innerWidth, innerHeight]; })()')));
+    // portrait is over the game, as before
+    await pg.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: DSF, mobile: true, screenOrientation: { type: 'portraitPrimary', angle: 0 } }); await goto(); await toPlay('wood'); ok(!(await E('BK.touch.bar()')), 'portrait used bars');
+    await pg.send('Emulation.setDeviceMetricsOverride', { width: 844, height: 390, deviceScaleFactor: DSF, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } }); await goto();
   });
 
   // ===================== 7: PERFORMANCE =====================

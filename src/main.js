@@ -1846,7 +1846,7 @@ function drawPauseMap() {
   const wid = e => textW(e[0], 6) + 14; while (leg.length > 1 && leg.reduce((a, e) => a + wid(e), 0) > w - 16) leg.pop();
   let lx = Math.round(VW / 2 - leg.reduce((a, e) => a + wid(e), 0) / 2 + 4);
   for (const e of leg) { mapMark(lx + 3, fy + 3, e[1], e[2]); text(e[0], lx + 9, fy, UI.text, 'left', 6); lx += wid(e); }
-  text(vw < LW || vh < LH ? 'ARROWS LOOK AROUND     ESC BACK' : 'ESC BACK', VW / 2, fy + 10, UI.dim, 'center', 6);
+  text(touchOn ? (vw < LW || vh < LH ? 'STICK LOOKS AROUND     BACK TO LEAVE' : 'BACK TO LEAVE') : vw < LW || vh < LH ? 'ARROWS LOOK AROUND     ESC BACK' : 'ESC BACK', VW / 2, fy + 10, UI.dim, 'center', 6);
 }
 
 /* THE WAY-ON ARROW (Settings: Way-on arrow: STUCK by default - it shows after ten seconds without headway at a listed spot, src/stuck-spots.js; ALWAYS; OFF). A small arrow at the edge of the screen to the next thing on
@@ -3690,7 +3690,7 @@ let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
-function mapFooter(open, on) { return [{ t: open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: 'F CO-OP ' + (on ? 'ON' : 'OFF'), x: VW - 4, right: true }]; }
+function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF'), x: VW - 4, right: true }]; }
 function drawMap() {
   g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
   g.save(); g.translate(0, -Math.round(mapCamY));
@@ -4476,7 +4476,7 @@ function drawSlots() {
     let tx = x + 44; for (const [s2, col] of stat(medalPts)) { text(s2, tx, y + 17, col, 'left', 6); tx += inkW(s2, 6) + 10; }
     if (done) text('COMPLETE', x + w - 6, y + 17, '#8fd160', 'right', 6);
   }
-  text(slotMsgT > 0 && slotMsg ? slotMsg : 'ARROWS pick  Z play  X erase  ESC', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
+  text(slotMsgT > 0 && slotMsg ? slotMsg : touchOn ? 'TAP a slot   ERASE button to erase' : 'ARROWS pick  Z play  X erase  ESC', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
 }
 function drawBestiary() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.6)'); vg.addColorStop(1, 'rgba(10,20,14,0.9)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -27672,7 +27672,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
   const H = HEROES.find(k => k.id === hero()) || HEROES[0]; text(H.name, VW / 2, y + 6, UI.title, 'center');
-  text('ESC back', x + 8, y + 6, UI.dim, 'left', 6);   /* up in the header: the loop under the name took the foot's tenth row */
+  if (!touchOn) text('ESC back', x + 8, y + 6, UI.dim, 'left', 6);   /* up in the header: the loop under the name took the foot's tenth row */
   /* THE LOOP (HERO_LOOP) under the name, two lines of the small hand; the rows start under it */
   const loop = wrap(HERO_LOOP[hero()] || '', w - 10, 6); loop.forEach((ln, i) => text(ln, VW / 2, y + 15 + i * BODY_LH, UI.text, 'center', 6));
   const rowY = y + 15 + loop.length * BODY_LH + 1;
@@ -27738,7 +27738,7 @@ function drawPractice() {
     if (twoLine) text(fitText(YARD_DRILLS[hr.id] || '', w - 24, 6), x + 12, yy + 10, owned ? UI.dim : '#4a4f4a', 'left', 6);
   });
   text('A HERO YARD EQUIPS THAT HERO', VW / 2, y + h - 19, '#c9b27c', 'center', 6);
-  text(fitText('ARROWS move   Z or X enter   ESC back', w - 12, 6), VW / 2, y + h - 10, UI.dim, 'center', 6);
+  text(fitText(touchOn ? 'TAP a row   BACK to leave' : 'ARROWS move   Z or X enter   ESC back', w - 12, 6), VW / 2, y + h - 10, UI.dim, 'center', 6);
 }
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
@@ -27910,7 +27910,7 @@ function drawMenu() {
     const tip = k === 'Co-op' ? (coopShown() ? 'on: ' + (HERO_SHORT[coopShownHero()] || '').toLowerCase() + (coopShownAlly() ? ', the game plays him' : ', a gamepad') : SETTING_TIPS[k]) : SETTING_TIPS[k];
     const ty = y + h - 14;
     /* the level and its clock live in the strip when there is no tip to show: drawn above it, the strip sat on top of them */
-    const lines = menuMsgT > 0 && menuMsg ? wrap(menuMsg, w - 18, 6) : tip ? wrap(tip, w - 18, 6) : [menuFrom === 'play' && L ? LEVELS[levelIndex].name + '  ' + fmt(levelTime) + '   ESC close' : 'ESC close'];
+    const lines = menuMsgT > 0 && menuMsg ? wrap(menuMsg, w - 18, 6) : tip ? wrap(tip, w - 18, 6) : [menuFrom === 'play' && L ? LEVELS[levelIndex].name + '  ' + fmt(levelTime) + (touchOn ? '' : '   ESC close') : touchOn ? '' : 'ESC close'];
     const two = lines.slice(0, 2), col2 = menuMsgT > 0 && menuMsg ? '#ffd36b' : tip ? '#9aa39a' : UI.dim;
     g.fillStyle = 'rgba(12,10,18,0.92)'; g.fillRect(x + 4, ty - 9 - (two.length - 1) * 8, w - 8, 13 + (two.length - 1) * 8);
     two.forEach((ln, i) => text(ln, VW / 2, ty - (two.length - 1 - i) * 8, col2, 'center', 6)); }

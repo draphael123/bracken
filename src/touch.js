@@ -113,7 +113,7 @@ export function createTouch(env) {
     return { t: v[0] * DPR, r: (v[1] || 0) * DPR, b: (v[2] || 0) * DPR, l: (v[3] || 0) * DPR };
   }
   function layout() {
-    const W = disp.width, H = disp.height, ins = insets(), key = [W, H, size(), left(), layVer, preset(), baseOf(), ins.t, ins.r, ins.b, ins.l].join('|');
+    const W = disp.width, H = disp.height, ins = insets(), gm = env.geom(), key = [W, H, gm.S | 0, gm.offX | 0, size(), left(), layVer, preset(), baseOf(), ins.t, ins.r, ins.b, ins.l].join('|');
     if (lay && key === layKey) return lay; layKey = key;
     const { DPR } = env.geom(), s = Math.min(W, H) * 0.145 * size(), m = Math.max(10 * DPR, 0) , L = left(), sg = L ? -1 : 1;
     const pivX = L ? ins.l + m + s : W - ins.r - m - s, pivY = H - ins.b - m - 0.78 * s;
@@ -121,6 +121,28 @@ export function createTouch(env) {
     const set = btnSet(), SP = SPOTS[baseOf()];
     for (const k of set) { const [dx, dy, r] = SP[k]; put(k, pivX + sg * dx * s, pivY + dy * s, r * s); }
     const pr = 0.4 * s; put('pause', L ? ins.l + m + pr : W - ins.r - m - pr, ins.t + m + pr, pr);
+    /* THE SIDE BARS (Daniel 10-03): in landscape the 16:9 game leaves black pillars; the pad goes in one, the buttons in the other (mirrored left-handed), so nothing covers
+       the game. Sized to the bar within the size setting. Too narrow (under ~76 CSS px of room) and it falls back to the overlay, drawn fainter. Portrait: over the game, as before. */
+    let bar = false, dpadBar = null;
+    if (W > H) {
+      const gameW = 320 * gm.S, barL = Math.max(0, gm.offX), barR = Math.max(0, W - gm.offX - gameW), mb = 4 * DPR, need = 76 * DPR;
+      const lx0 = ins.l + mb, lx1 = gm.offX - mb, rx0 = gm.offX + gameW + mb, rx1 = W - ins.r - mb;   // the two bars' room, clear of a notch
+      const [bx0, bx1] = L ? [lx0, lx1] : [rx0, rx1], [px0, px1] = L ? [rx0, rx1] : [lx0, lx1], wi = bx1 - bx0, pwi = px1 - px0;
+      if (barL > 0 && barR > 0 && wi >= need && pwi >= need) {
+        const top = ins.t + mb, bot = H - ins.b - m, pauseR = Math.min(0.4 * s, wi * 0.35), limit = top + 2 * pauseR + 0.14 * s, avail = bot - limit, cx1 = (bx0 + bx1) / 2, pos = {};
+        let ok = false, f = Math.min(1, size());
+        if (baseOf() === 'simple') {   // one column, the thumb at the bottom: ATTACK, JUMP, DEFEND, SKILL, then the two contextual ones
+          const order = ['atk', 'jump', 'defend', 'skill', 'interact', 'ctx'], wt = { atk: 1, jump: 0.88, defend: 0.82, skill: 0.78, interact: 0.74, ctx: 0.66 };
+          const rmax = Math.min(wi / 2, 0.95 * s) * Math.max(0.7, f); let used = 0; for (const k of order) used += 2 * rmax * wt[k] + 0.12 * rmax;
+          const k2 = Math.min(1, avail / used); if (k2 >= 0.5) { ok = true; let y = bot; for (const k of order) { const r = rmax * k2 * wt[k]; pos[k] = [cx1, y - r, r]; y -= 2 * r + 0.12 * rmax * k2; } }
+        } else {   // FULL: two columns of five rows (ATTACK on the outer edge)
+          const rows = [['atk', 'jump'], ['dodge', 'block'], ['throw', 'skill2'], ['skill3', 'skill4'], ['interact', 'ctx']];
+          const r = Math.min(wi / 4, avail / 10.6) * Math.max(0.7, f); if (r >= 17 * DPR) { ok = true; const cxo = L ? bx0 + wi * 0.25 : bx0 + wi * 0.75, cxi = L ? bx0 + wi * 0.75 : bx0 + wi * 0.25; rows.forEach((pr2, i) => { const y = bot - r - i * (2 * r + 0.1 * r); pos[pr2[0]] = [cxo, y, r]; pos[pr2[1]] = [cxi, y, r]; }); }
+        }
+        if (ok) { bar = true; for (const k of set) if (pos[k]) { const [x, y, r] = pos[k]; btn[k] = { k, cx: x, cy: y, r }; } btn.pause = { k: 'pause', cx: cx1, cy: top + pauseR, r: pauseR };
+          const dR2 = Math.min(1.45 * s, pwi / 2); dpadBar = { R: dR2, cx: (px0 + px1) / 2, cy: bot - dR2 * 0.1 - dR2, catchR: dR2 * 1.7 }; }
+      }
+    }
     // a button the player dragged keeps the spot he gave it (a fraction of the screen, so a resize or a turn does not lose it)
     if (preset() === 'custom') for (const k of [...set, 'pause']) { const p = SET.touchPos && SET.touchPos[k]; if (Array.isArray(p) && btn[k]) put(k, p[0] * W, p[1] * H, btn[k].r); }   /* (a dragged spot only counts under CUSTOM) */
     // the pill buttons (no play buttons on screen): OK and its friends stacked up from the thumb's corner, BACK in the pause corner
@@ -129,7 +151,7 @@ export function createTouch(env) {
     const back = { x: L ? W - ins.r - m - pw * 0.8 : ins.l + m, y: ins.t + m, w: pw * 0.8, h: ph };
     const stickR = 1.2 * s, zoneW = W * 0.45;
     const dR = 1.45 * s, dpad = { R: dR, cx: L ? W - ins.r - m - dR * 1.05 : ins.l + m + dR * 1.05, cy: H - ins.b - m - dR * 1.05, catchR: dR * 1.7 };   /* THE D-PAD: fixed in the thumb's corner, a generous catch round it */
-    lay = { W, H, s, ins, m, btn, dpad, pills, back, stickR, zone: L ? { x0: W - zoneW, x1: W } : { x0: 0, x1: zoneW }, rest: { x: L ? W - ins.r - m - stickR * 1.25 : ins.l + m + stickR * 1.25, y: H - ins.b - m - stickR * 1.25 } };
+    lay = { W, H, s, ins, m, btn, dpad: dpadBar || dpad, bar, land: W > H, pills, back, stickR, zone: L ? { x0: W - zoneW, x1: W } : { x0: 0, x1: zoneW }, rest: { x: dpadBar ? dpadBar.cx : L ? W - ins.r - m - stickR * 1.25 : ins.l + m + stickR * 1.25, y: H - ins.b - m - stickR * 1.25 } };
     return lay;
   }
   let layVer = 0;
@@ -465,7 +487,7 @@ export function createTouch(env) {
     paint(L);
   }
   function paint(L) {
-    const a0 = dg.globalAlpha; dg.globalAlpha = opacity();
+    const a0 = dg.globalAlpha; dg.globalAlpha = opacity() * (playing() && L.land && !L.bar ? 0.7 : 1);   // (over the game in landscape = fainter)
     if (editing) {
       dg.globalAlpha = 1; dg.fillStyle = 'rgba(10,14,12,0.72)'; dg.fillRect(0, 0, L.W, L.H);
       dg.globalAlpha = Math.max(0.6, opacity()); dg.strokeStyle = 'rgba(255,246,224,0.35)'; dg.setLineDash([8, 8]); dg.strokeRect(L.zone.x0 + 4, L.ins.t + L.m, L.zone.x1 - L.zone.x0 - 8, L.H - L.ins.t - L.ins.b - 2 * L.m); dg.setLineDash([]);
@@ -547,7 +569,7 @@ export function createTouch(env) {
 
   return {
     on, tick, draw, relayout, hit: (x, y, w, h, fn) => { if (on) hitsNow.push({ x, y, w, h, fn }); }, beginFrame: () => { if (on && hitsNow.length) hitsNow = []; },
-    rowValue, adjustRow, confirmRow, applyLite, verbLabel: () => (verb ? verb.verb : null), padHidden, preset, baseOf, moveMode, tips: TOUCH_TIPS, buzz, bufScale, faceFor, releaseAll, keyUsed: () => { lastTouchAt = -1e9; },
+    rowValue, adjustRow, confirmRow, applyLite, verbLabel: () => (verb ? verb.verb : null), padHidden, bar: () => layout().bar, preset, baseOf, moveMode, tips: TOUCH_TIPS, buzz, bufScale, faceFor, releaseAll, keyUsed: () => { lastTouchAt = -1e9; },
     editing: () => editing, endEdit: () => { editing = false; editEnd(); },
     // the numbers the test reads
     debug: () => { const L = layout(); return { on, layout: L, buttons: visibleBtns().map(b => ({ ...b })), pills: pillsNow(), stick: stick ? { ...stick } : null, verb, ctx, radial: [...touches.values()].filter(t => t.radial).map(t => ({ sel: t.sel, slots: radialSlots() }))[0] || null, banner: banner ? banner.text : null, padHidden: padHidden(), preset: preset(), move: moveMode(), hits: hitsNow.length, held: { ...held }, editing, recent: recent(), bar: editing ? editBar() : null }; },
