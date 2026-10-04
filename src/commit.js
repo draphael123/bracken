@@ -75,7 +75,12 @@ export const STAM = {
   windedTo: 0.3,      /* of the max: until here, no roll and no guard */
   refundCap: 12,      /* the most any one stamina refund gives (EVASION, FREE HAND, MERCY, PERFECT GUARD, PARRY, STOKE, RANSOM ...) */
   breakStagger: 0.9, breakTired: 1.2,
-  pauseRecovery: true,   /* no regen through a swing's recovery either (false: only through the swing itself) - a tuning knob, see the lane report */   /* a guard broken: staggered, then the guard stays down */
+  pauseRecovery: true,
+  rollInv: 0.20,                       /* s of grace at the start of a roll (the TAIL is hittable) */
+  blockBase: 8, blockPerDmg: 0.6, blockCap: 35,   /* the shield's price: base + perDmg x the blow, capped */
+  jumpLock: true,      /* no jump out of a commit (Daniel 10-02, Q5) */
+  plungeWhiff: 0.10,   /* a plunge that met nothing lands this much heavier */
+  stepFree: true, stepDelay: 0.2,   /* THE WARDEN'S STEP (coordinator 10-04: she collapsed under WEIGHT): her short back-step is spacing - it keeps the regen running and only a 0.2 s delay */   /* no regen through a swing's recovery either (false: only through the swing itself) - a tuning knob, see the lane report */   /* a guard broken: staggered, then the guard stays down */
 };
 /* THE ROLL: what it costs and how long it is untouchable. Heavy heroes roll heavier (Daniel 10-02, Q4) */
 export const ROLL_COST = { knight: 24, warden: 24, pyro: 24, geomancer: 24, pirate: 22, paladin: 28, reaper: 28 };
@@ -85,7 +90,7 @@ export const ROLL_INV = 0.20;       /* the first 0.20 s; the TAIL is hittable (t
 export const ROLL_SHAVE_CAP = 4;    /* the most the shaves (level ranks, LIGHT STEP) take off a roll's base cost */
 /* AN INVULNERABLE DASH (Lunge, Cinder Step, Holy Charge, Boarding Party, Harrier) follows the roll's rules: its grace is the roll's share of
    it, never more than the roll's, and it costs at least the hero's roll + 4 */
-export const dashInv = len => Math.min(ROLL_INV, len * ROLL_INV / 0.30);
+export const dashInv = len => Math.min(STAM.rollInv, len * STAM.rollInv / 0.30);
 export const dashCost = (h, base) => Math.max(base, (ROLL_COST[h] || 24) + 4);
 
 let BIND = { lvGrow: () => 0, lungs: () => false, fleet: () => false };
@@ -112,11 +117,11 @@ export function trySpend(P, cost) {
 /* A REFUND (never while the exhausted beat runs, never more than refundCap) */
 export function refund(P, n) { if ((P.exhaustT || 0) > 0 || !(n > 0)) return 0; const g = Math.min(n, STAM.refundCap); P.st = Math.min(P.maxSt, P.st + g); return g; }
 /* the knight's shield: what a blocked blow costs (the perfect guard stays free) */
-export const blockCost = (dmg, steady = 0) => Math.round(Math.min(35, 8 + 0.6 * Math.max(0, dmg || 0)) * (1 - 0.15 * steady));
+export const blockCost = (dmg, steady = 0) => Math.round(Math.min(STAM.blockCap, STAM.blockBase + STAM.blockPerDmg * Math.max(0, dmg || 0)) * (1 - 0.15 * steady));
 /* may a guard (shield, aegis, ward, rune-ward) be RAISED? */
 export const guardOk = P => !P.winded;
 /* regen is paused while he is committed (the whole recovery, window and all), rolling or holding a guard */
-export const regenPaused = P => P.atk >= 0 || (STAM.pauseRecovery && (P.atkRec || 0) > 0) || P.dodge > 0 || !!P.block || !!P.aegis || !!P.warding || !!P.geoGuard;
+export const regenPaused = P => P.atk >= 0 || (STAM.pauseRecovery && (P.atkRec || 0) > 0) || (P.dodge > 0 && !(STAM.stepFree && (P.dodgeMax || 0) <= 0.2)) || !!P.block || !!P.aegis || !!P.warding || !!P.geoGuard;
 
 /* ONE FRAME OF THE BAR (every player-update path calls this instead of its own regen line). `extra` multiplies the regen
    (the venom's slow); `hold` is true where regen must wait anyway (a live plunge chain). */

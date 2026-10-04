@@ -450,12 +450,12 @@ function dashIn(BK, h, e, f) {
    remaining windup (a tell he can see, or a boss's greed ring), and (b) one roll's wind kept back - a swing that would leave less than a
    roll is not started. This is not a weaker bot: under the old combat a swing into a tell could be rolled out of, so the bot never had to
    read it; now it must, as a person must. Only a STARTED cut is held back (a plunge from the air is not), and only on the ground. ==== */
-let HUMAN_H = null;
+let HUMAN_H = null; export const LAB_RESERVE_DEFAULT = 0.5; let LAB_RESERVE = LAB_RESERVE_DEFAULT;
 function humanSwingOk(BK) {
   const P = BK.P, h = HUMAN_H; if (BK.labHuman === false || !P || !h || !(P.ground || P.swim) || committed(P)) return true;
   const total = artLim(false) / artRate(h, false) + (COMMIT[h] || COMMIT.knight).light;
   const cost = BK.stepCost ? BK.stepCost() : 15, roll = ROLL_COST[h] || 24;
-  if (P.st - cost < roll && P.st < P.maxSt) return false;   /* (b): keep a roll */
+  if (P.st - cost < roll * LAB_RESERVE && P.st < P.maxSt) return false;   /* (b): keep (half) a roll */
   for (const e of BK.enemies()) { if (!e.alive || e.harmless || Math.abs(e.x - P.x) > 110 || Math.abs(e.y - P.y) > 60) continue;
     const greed = e.greedT > 0 ? e.greedT : 0, wu = BK.windingUp ? BK.windingUp(e) : false;
     if (!greed && !wu) continue;
@@ -470,7 +470,7 @@ function humanSwingOk(BK) {
    hazard) at most one roll in ROLL_GAP s. */
 const ROLL_LATE = 0.22, ROLL_GAP = 0.6;
 function humanRollOk(BK) {
-  const P = BK.P; if (BK.labHuman === false || !P || !HUMAN_H) return true;
+  const P = BK.P; if (BK.labHuman === false || !P || !HUMAN_H || HUMAN_H === 'warden') return true;   /* (her BACK-STEP is spacing, not a roll: 15 wind, a 0.09 s grace, taken in pairs to stay at the point's range - a person steps it as often as the bot does) */
   const now = BK.time !== undefined ? BK.time : performance.now() / 1000;
   let best = null, bd = 1e9;
   for (const e of BK.enemies()) { if (!e.alive || e.harmless) continue; const d = Math.abs(e.x - P.x); if (d > 160 || Math.abs(e.y - P.y) > 90) continue;

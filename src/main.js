@@ -7933,13 +7933,13 @@ function updatePlayer(dt) {
         P.vy = (tal('airRoll') || (isPirate() && tal('swash'))) ? Math.min(P.vy, -80) : Math.min(P.vy, 40);   /* AIR ROLL / SWASHBUCKLE: the one in the air lifts you; without it, it holds the fall level, as the dash did */
         streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); }
       P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5;   /* WEIGHT: heavy heroes roll heavier - the paladin 0.30 s (it was 0.26) */
-      P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.ROLL_INV);   /* WEIGHT (Daniel 10-02, Q3): the first 0.20 s is untouchable, the TAIL is not */
+      P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.STAM.rollInv);   /* WEIGHT (Daniel 10-02, Q3): the first 0.20 s is untouchable, the TAIL is not */
       const burrow = isGeo() && P.ground && !P.swim;
       if (burrow) { P.geoBurrow = { dir }; burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
       /* TWO SMALL STEPS, THEN THE WAIT: the second comes the moment the first is over, and only the third is made to wait */
       if (isWarden()) { const quick = time - (P.stepAt || -9) < STEP_PAIR && (P.stepN || 0) < 2;
         P.stepN = quick ? (P.stepN || 0) + 1 : 1; P.stepAt = time;
-        P.dodgeCd = P.stepN >= 2 ? STEP_CD : STEP_GAP; P.dodgeInv = STEP_INV; }
+        P.dodgeCd = P.stepN >= 2 ? STEP_CD : STEP_GAP; P.dodgeInv = STEP_INV; if (CM.STAM.stepFree) P.stDelay = Math.min(P.stDelay, CM.STAM.stepDelay); }   /* WEIGHT: her step is SPACING, not a roll - it does not stop the bar coming back (src/commit.js STAM.stepFree) */
       /* THE DASH IN IT: for as long as it lasts, X early is the DASH ATTACK and a jump is a running jump (dashCutNow, the jump).
          Not in her step back - that one gives ground and nothing else, as it always did - and not under the floor. */
       if (!back && !burrow) { P.dash = P.dodge; P.dashDur = P.dash; }
@@ -7953,7 +7953,7 @@ function updatePlayer(dt) {
       if (back && tal('giveGround')) for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
         if (Math.abs(e.x - P.x) > SHAFT_AT || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > 24) continue;
         e.stagger = Math.max(e.stagger || 0, 0.6); dust(e.x, e.y, 3); }
-      if (isReaper()) { P.inv = Math.max(P.inv, CM.ROLL_INV + 0.06);   /* WEIGHT: the roll's grace and his wake, not the whole roll */   /* THE WAKE: he is not there to be hit */
+      if (isReaper()) { P.inv = Math.max(P.inv, CM.STAM.rollInv + 0.06);   /* WEIGHT: the roll's grace and his wake, not the whole roll */   /* THE WAKE: he is not there to be hit */
         /* AND HE LEAVES HIMSELF BEHIND. A cold shape stands where he was; they keep swinging at it, and
            when it goes it goes off. He is the slowest hero in the game - he does not escape a blow, he
            gives it somebody else to land on. */
@@ -8052,7 +8052,7 @@ function updatePlayer(dt) {
     } }
   updateMoorWind(dt); updateTowerSlides(dt);
   if (P.asleep > 0) { P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }
-  const jumpHeld = CM.committed(P) && P.jbuf > 0 ? P.jbuf : 0; if (jumpHeld) P.jbuf = 0;   /* WEIGHT (Daniel 10-02, Q5): no jump out of a commit - the press is kept for the window */
+  const jumpHeld = CM.STAM.jumpLock && CM.committed(P) && P.jbuf > 0 ? P.jbuf : 0; if (jumpHeld) P.jbuf = 0;   /* WEIGHT (Daniel 10-02, Q5): no jump out of a commit - the press is kept for the window */
   P.kickT = Math.max(0, (P.kickT || 0) - dt);
   // (she has one jump, like anyone else: the flame kick in the air was a second one and it is gone)
   // LETTING GO COMES FIRST. Standing on the floor of the sea with a stone in your hands, the jump key is
@@ -11720,7 +11720,7 @@ function magePlayer(dt) {
   if (P.dbuf > 0 && footed && !attacking && !stunned && !P.plunge && !dodging && P.dodgeCd <= 0 && !(P.winded && (P.stFlash = 0.35, P.dbuf = 0, true))) {
     P.dbuf = 0; if (P.atk >= 0) { P.atk = -1; P.swingEndT = time; }
     if (spend(dodgeCost(isWarden() && (P.dbufDir || -P.face) === -P.face))) {
-      P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5; P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.ROLL_INV);
+      P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5; P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.STAM.rollInv);
       const dir = P.dbufDir || (isWarden() ? -P.face : ((keys.right ? 1 : 0) - (keys.left ? 1 : 0)) || P.face); P.dbufDir = 0; if (!isWarden()) P.face = dir;   /* the double tap points it here too */
       P.vx = dir * (isPaladin() ? 170 : isPyro() ? 240 : isPirate() ? 230 : isReaper() ? 205 : isWarden() ? 175 : 215);   /* THE WARDEN STEPS BACKWARD unless tapped forward, here as everywhere */
       P.block = false; dodging = true; dodges++; trialEvent('dodge'); SFX.pDodge(); dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1);
@@ -23865,7 +23865,7 @@ function plungeWave(D) { let caught = 0;
     else { ringAt(P.x, P.y - 2, D.wave, D.trail[0], 0.3); for (const d of [-1, 1]) { dust(P.x + d * D.wave * 0.6, P.y, 3); streaks(P.x + d * 8, P.y - 2, 3, D.trail, 120); } }
     SFX.pPlungeGround(); if (caught) hitstop(0.04); if (caught && isGeo()) trialEvent('stonefall');
   }
-  P.plungeRec = caught ? D.caught : D.whiff + CM.PLUNGE_WHIFF; if (!caught) P.atkRec = Math.max(P.atkRec || 0, P.plungeRec);   /* WEIGHT: a plunge that met nothing is a commit (+0.10); a caught one is untouched */ P.rootT = Math.max(P.rootT || 0, P.plungeRec); P.landT = Math.max(P.landT || 0, Math.min(0.16, P.plungeRec)); }
+  P.plungeRec = caught ? D.caught : D.whiff + CM.STAM.plungeWhiff; if (!caught) P.atkRec = Math.max(P.atkRec || 0, P.plungeRec);   /* WEIGHT: a plunge that met nothing is a commit (+0.10); a caught one is untouched */ P.rootT = Math.max(P.rootT || 0, P.plungeRec); P.landT = Math.max(P.landT || 0, Math.min(0.16, P.plungeRec)); }
 /* WITH ALL SIX HEROES CARRYING A DASH_STRIKE OF THEIR OWN NOW, the plain cut-out-of-a-dash below is a fallback with
    nobody left to fall back to - kept, not deleted, so a hero added later without a table row still gets a dash
    attack instead of nothing. */
