@@ -33,7 +33,9 @@ for (const lv of LEVELS) {
   const W = L.W, H = L.H, out = [];
   for (const A of L.ambushes) { rooms++;
     const grid = L.grid.slice(), at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : grid[y * W + x];
-    for (let i = 0; i < grid.length; i++) if (WALLS.has(grid[i])) grid[i] = T.SOLID;
+    /* A TIDE GATE IS A CLOCK, NOT A WALL (claude/ruleuse: src/main.js updateTideGates lifts it on the sea's own cycle, and a hero shut in simply waits for it): its column is open to the model */
+    const tide = new Set((L.ents || []).filter(e => e.t === 'tidegate').map(e => e.x));
+    for (let i = 0; i < grid.length; i++) if (WALLS.has(grid[i])) grid[i] = tide.has(i % W) && grid[i] === T.PORT ? T.AIR : T.SOLID;
     /* the gates, exactly as ambushWall lays them over the room's own floor */
     for (const col of [A.wallL, A.wallR]) {
       let bot = A.row; while (bot > A.row - 4 && at(col, bot) !== T.AIR) bot--;
