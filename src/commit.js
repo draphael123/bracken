@@ -57,7 +57,7 @@ export const inRecovery = P => !(P.atk >= 0) && (P.atkRec || 0) > WINDOW + 1e-6;
    the gates read the buffers. */
 const BUFS = ['dbuf', 'jbuf', 'abuf'];
 export function holdPresses(P, hold) {
-  if (!committed(P)) { P.holdK = null; P.holdPrev = null; return; }
+  if (!committed(P) || !STAM.hold) { P.holdK = null; P.holdPrev = null; return; }
   const prev = P.holdPrev || {};
   for (const k of BUFS) if ((P[k] || 0) > (prev[k] || 0) + 1e-9) P.holdK = k;   /* a fresh press: its buffer jumped up */
   if (P.sbufFresh) { P.holdK = 'sbuf'; P.sbufFresh = false; }
@@ -79,6 +79,7 @@ export const STAM = {
   rollInv: 0.20,                       /* s of grace at the start of a roll (the TAIL is hittable) */
   blockBase: 8, blockPerDmg: 0.6, blockCap: 35,   /* the shield's price: base + perDmg x the blow, capped */
   busyRegen: 0,        /* the share of the regen that still runs while committed, rolling or guarding (0: none, as briefed) */
+  hold: true,          /* a press made in a commit is HELD for the window (false: it ages out as it always did) */
   jumpLock: true,      /* no jump out of a commit (Daniel 10-02, Q5) */
   plungeWhiff: 0.10,   /* a plunge that met nothing lands this much heavier */
   stepFree: true, stepDelay: 0.2,   /* THE WARDEN'S STEP (coordinator 10-04: she collapsed under WEIGHT): her short back-step is spacing - it keeps the regen running and only a 0.2 s delay */   /* no regen through a swing's recovery either (false: only through the swing itself) - a tuning knob, see the lane report */   /* a guard broken: staggered, then the guard stays down */
