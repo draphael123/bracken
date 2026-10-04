@@ -28,7 +28,7 @@ const LIGHT_TOTAL = { pirate: 0.29, knight: 0.40, warden: 0.40, pyro: 0.40, geom
 const PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3 };
 const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25 }, STEP_BACK = 15, DELAY_F = 18;   /* the regen's delay, 0.3 s */
 const SKILL = { knight: 'whirlwind', warden: 'skewer', pyro: 'flameRing', geomancer: 'boulder', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'harvestMoon' };
-const MASH_MAX = { knight: 12, warden: 12, pyro: 12, geomancer: 12, paladin: 9, pirate: 15, reaper: 7 };   /* 6 s of attack pressed every frame: the built numbers + 1 (measured 11/11/11/11/8/14/6; the knight did 13 in FOUR seconds before) */
+const MASH_MAX = { knight: 12, warden: 12, pyro: 12, geomancer: 12, paladin: 11, pirate: 15, reaper: 7 };   /* 6 s of attack pressed every frame: the built numbers + 1 (measured 11/11/11/11/10 (paladin at 22)/14/6; the knight did 13 in FOUR seconds before) */
 const ONLY = process.argv.find(a => a.startsWith('--only=')); const only = ONLY ? ONLY.slice(7).split(',') : null;
 
 const pg = await openPage({ audio: false, fonts: false });
@@ -110,8 +110,9 @@ try {
       __prep(${JSON.stringify(h)},0);P.st=60;BK.press('dodge');BK.sim(1);const r0=P.st;let rr=-1;for(let i=1;i<120;i++){BK.sim(1);if(P.st>r0+1e-6){rr=i;break;}}const rollLen=BK.P.dodgeMax;
       __prep(${JSON.stringify(h)},0);const cost=BK.stepCost();for(let i=0;i<240;i++){if(P.atk<0)BK.press('atk');BK.sim(1);}
       return {free,rose,rr,rollLen,end:P.st,max:P.maxSt,cost}})()`);
-    check(r.rose >= r.free + DELAY_F - 1 && r.rose <= r.free + DELAY_F + 2, `${h}: the bar rose ${r.rose - r.free} f after the swing ended (want its 0.3 s delay = 18 f: no regen through the swing)`);
-    check(r.rr >= Math.round(r.rollLen / F) + DELAY_F - 1 || (h === 'warden' && r.rr >= 11), `${h}: the bar rose ${r.rr} f into a ${r.rollLen} s roll (no regen while rolling, then 0.3 s; her back-step 0.2 s)`);
+    if (h !== 'paladin') check(r.rose >= r.free + DELAY_F - 1 && r.rose <= r.free + DELAY_F + 2, `${h}: the bar rose ${r.rose - r.free} f after the swing ended (want its 0.3 s delay = 18 f: no regen through the swing)`);
+    /* (the PALADIN keeps half his regen through a swing, a roll or the aegis - STAM.busyRegenBy, coordinator 10-04 - so his bar is not flat) */
+    if (h !== 'paladin') check(r.rr >= Math.round(r.rollLen / F) + DELAY_F - 1 || (h === 'warden' && r.rr >= 11), `${h}: the bar rose ${r.rr} f into a ${r.rollLen} s roll (no regen while rolling, then 0.3 s; her back-step 0.2 s)`);
     check(r.end <= r.max - r.cost + 1e-6, `${h}: a 4 s mash ended at ${r.end.toFixed(1)} of ${r.max} (more than a full bar less one swing of ${r.cost})`);
   }
 

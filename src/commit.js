@@ -26,7 +26,7 @@ export const COMMIT = {   /* WEIGHT-T (10-04): the brief's numbers x0.6, measure
   reaper:    { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
 };
 /* THE LIGHT SWING'S PRICE for the heroes whose swing is not their sword's (the rest pay sword().cost): the freebooter 9 -> 10 (brief) */
-export const SWING_COST = { paladin: 28, pirate: 10, reaper: 23 };
+export const SWING_COST = { paladin: 22, pirate: 10, reaper: 23 };   /* the paladin 28 -> 22 (10-04, with STAM.busyRegenBy: 0/8 -> 4/8 of eight boss fights on the human bot; 6/8 before WEIGHT) */
 export const PISTOL_BLAST = 0.45;   /* the freebooter's shot: blastT 0.34 -> 0.45, and it is a commit like a swing */
 export const PLUNGE_WHIFF = 0.10;   /* a plunge that met nothing lands this much heavier (a CAUGHT plunge - the pogo - is untouched) */
 
@@ -82,6 +82,7 @@ export const STAM = {
   breakStagger: 0.9, breakTired: 1.2,   /* a guard broken: staggered, then the guard stays down */
   pauseRecovery: false, /* no regen through the swing itself; true: through its recovery too (brief: true) */
   busyRegen: 0,         /* the share of the regen that still runs while swinging, rolling or guarding (0: none, as briefed) */
+  busyRegenBy: { paladin: 0.5 },   /* THE PALADIN (10-04): his 0.55 s maul swing with no regen in it took him from 10/12 to 4/12 with the human bot - half the regen runs through it */
   rollInv: 0.26,        /* s of grace at the start of a roll; the TAIL is hittable (brief 0.20) */
   blockBase: 6, blockPerDmg: 0.4, blockCap: 25,   /* the shield's price: base + perDmg x the blow, capped (brief 8 + 0.6 x, cap 35) */
   hold: true,           /* a press made in a commit is HELD for the window (false: it ages out as it always did) */
@@ -131,13 +132,13 @@ export const regenPaused = P => P.atk >= 0 || (STAM.pauseRecovery && (P.atkRec |
 
 /* ONE FRAME OF THE BAR (every player-update path calls this instead of its own regen line). `extra` multiplies the regen
    (the venom's slow); `hold` is true where regen must wait anyway (a live plunge chain). */
-export function staminaTick(P, dt, { extra = 1, hold = false } = {}) {
+export function staminaTick(P, dt, { extra = 1, hold = false, hero = null } = {}) {
   if (P.st <= 1e-6 && !P.winded) exhaust(P);
   P.regenOff = false;
   if ((P.exhaustT || 0) > 0) { P.exhaustT = Math.max(0, P.exhaustT - dt); P.regenOff = true; return; }
-  const paused = regenPaused(P);
-  if (paused && !(STAM.busyRegen > 0)) { P.stDelay = Math.max(P.stDelay || 0, STAM.delay); P.regenOff = true; return; }
+  const paused = regenPaused(P), busy = (hero && STAM.busyRegenBy[hero] !== undefined) ? STAM.busyRegenBy[hero] : STAM.busyRegen;
+  if (paused && !(busy > 0)) { P.stDelay = Math.max(P.stDelay || 0, STAM.delay); P.regenOff = true; return; }
   if (P.stDelay > 0 || hold) { P.regenOff = true; return; }
-  if (P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + STAM.regen * staminaOf(P).regenMul * (P.winded ? STAM.windedMul : 1) * (paused ? STAM.busyRegen : 1) * extra * dt);
+  if (P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + STAM.regen * staminaOf(P).regenMul * (P.winded ? STAM.windedMul : 1) * (paused ? busy : 1) * extra * dt);
   if (P.winded && P.st >= STAM.windedTo * P.maxSt) P.winded = false;
 }
