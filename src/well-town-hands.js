@@ -5,6 +5,8 @@
 // thiefStep, stole, drawWorld, drawHud, read. Every teaching line goes through ctx.number with a line listed in src/hint-lines.js (the hint box).
 import { cutthroatStep } from './desert-foes.js';
 import * as WTP from './redraw/welltown_props.js';
+import { drawSeal } from './redraw/djinn_art.js';   /* (claude/djinn2) THE BINDING WORKS' seals */
+export const WORKS = { tremorTop: 10, tremorBottom: 3.5, shakeTop: 1, shakeBottom: 3 };   /* THE BINDING WORKS: s between tremors at the top of the works and at the bottom, and how hard */
 
 export const SKINMAX = 3, WELL_R = 24, POUR_R = 48, DRINK_AT = 0.2;
 export const BUCKET = { down: 80, up: 64 };                      /* px/s: the brake off, it runs down; wound, it comes up slower */
@@ -116,6 +118,15 @@ export function makeWellTownHands(ctx) {
       if (hb && w.cd <= 0 && ctx.overlap(hb, { l: w.x - 16, r: w.x + 16, t: w.y - 28, b: w.y })) { const m = ctx.movers().find(q => q.windlass === w.bucket); if (!m || m.dir) continue;
         w.cd = 0.8; const atTop = m.y <= m.y0 + 1; m.dir = atTop ? 1 : -1; WT.n.rides++; if (atTop && !WT.followed) WT.followT = FOLLOW.after; ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.ropeHaul && ctx.sfx.ropeHaul(); ctx.sparks(w.x, w.y - 14, ctx.hero().face || 1, 4);
         ctx.number(w.x, w.y - 34, atTop ? 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN' : 'THE BUCKET GOES UP', '#ffd36b'); } }
+    /* THE BINDING WORKS (claude/djinn2): the ground shakes, more often and harder the deeper you are (told once); a crack lets a burst of sand go */
+    const Wk = WT.L.works, Ph = ctx.hero();
+    if (Wk && Ph && !Ph.dead) { const tx = Ph.x / 16, ty = Ph.y / 16;
+      if (tx >= Wk.x0 && tx <= Wk.x1 && ty >= Wk.y0 && ty <= Wk.y1 + 1) { const k = Math.max(0, Math.min(1, (ty - Wk.y0) / (Wk.y1 - Wk.y0)));
+        WT.tremor = (WT.tremor ?? 3) - dt; if (WT.tremor <= 0) { WT.tremor = WORKS.tremorTop + (WORKS.tremorBottom - WORKS.tremorTop) * k; WT.n.tremors = (WT.n.tremors || 0) + 1;
+          ctx.shake(Math.round(WORKS.shakeTop + (WORKS.shakeBottom - WORKS.shakeTop) * k)); ctx.sfx.rubble ? ctx.sfx.rubble() : ctx.sfx.thud && ctx.sfx.thud();
+          const near = (WT.L.cracks || []).filter(c => Math.abs(c.x - Ph.x) < 200).sort((a, b) => Math.abs(a.x - Ph.x) - Math.abs(b.x - Ph.x))[0]; if (near) ctx.dust(near.x, near.y + 4, 6);
+          if (!WT.said.tremor) { WT.said.tremor = 1; ctx.number(Ph.x, Ph.y - 30, 'THE GROUND SHAKES: SOMETHING STIRS BELOW', '#ff9a5c'); } } }
+      else WT.tremor = 3; }
     /* THE DEEP WELL winds up */
     for (const w of WT.wells) if (w.deep && w.wind > 0) { w.wind -= dt; if (w.wind <= 0) { w.wind = 0; w.up = true; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 6, ['#7ab8e8', '#e8f4f8'], 40, 0.4); } }
     /* THE RIDE IS CONTESTED: the bucket gone, the well head's men (L.ents follow: true) come down the shaft after you, to the bucket's foot */
@@ -186,6 +197,10 @@ export function makeWellTownHands(ctx) {
     if (!WT) return; const R = Math.round, vw = ctx.VW();
     const on = x => x > cx - 40 && x < cx + vw + 40;
     const Pd = ctx.hero(), skd = Pd && skinOf(Pd), carry = !!skd && skd.sips > 0, room = !!skd && skd.sips < (skd.max || SKINMAX);
+    /* THE BINDING SEALS (claude/djinn2): carved rings that glow from inside, brighter the deeper; and SAND TRICKLING from the vault's cracks */
+    for (const sl of (WT.L.seals || [])) if (on(sl.x)) drawSeal(g, R(sl.x - cx), R(sl.y - cy), -1, time, sl.glow);
+    for (const c of (WT.L.cracks || [])) { if (!on(c.x)) continue; const x = R(c.x - cx), y = R(c.y - cy); g.fillStyle = '#2a2018'; g.fillRect(x - 3, y, 6, 1); g.fillRect(x - 1, y + 1, 2, 1);
+      for (let i = 0; i < 6; i++) { const ph = (time * 0.9 + i / 6 + c.x * 0.003) % 1; g.globalAlpha = 0.9 - ph * 0.6; g.fillStyle = i % 2 ? '#d8b070' : '#f2dca0'; g.fillRect(x + ((i * 3) % 3) - 1, y + 2 + R(ph * 70), 1, 2); } g.globalAlpha = 1; }
     /* THE SHADE'S CASTERS (claude/welltown5): the cloths strung over the squares and the old well's roof, over the tint main.js lays under them */
     for (const k of (WT.L.casters || [])) { if (k.x1 < cx - 40 || k.x0 > cx + vw + 40) continue; WTP.drawCaster(g, R(k.x0 - cx), R(k.x1 - cx), R(k.y - cy), R(k.floor - cy), k, time); }
     /* THE WELLS: the only blue in the town. A well that can fill your skin now GLINTS (a white star on its water) */
