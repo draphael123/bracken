@@ -24,6 +24,7 @@ const ONLY = (process.env.TOUCH_ONLY || '').split(',').filter(Boolean);   // TOU
 const section = async (name, fn) => { if (ONLY.length && !ONLY.includes(name) && !(name === 'play-setup' && ONLY.some(n => !['title', 'settings-tabs', 'layout-editor', 'back-pill', 'save-slots', 'map', 'store', 'persist', 'pwa-files', 'pwa-live', 'desktop', 'api'].includes(n)))) return; const t0 = Date.now(), e0 = pg.errors.length; try { await fn(); } catch (e) { fails.push(name + ': ' + String(e.message).split('\n')[0]); }
   if (pg.errors.length > e0) fails.push(name + ': the page threw: ' + pg.errors.slice(e0, e0 + 2).map(x => String(x).split('\n').slice(0, 2).join(' @ ')).join(' | '));   // (a throw is blamed on the section that was running)
   if (process.env.TOUCH_VERBOSE) console.log('  [' + name + '] ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s'); };
+let LEGACY = true;   // the older sections below were written for the FULL buttons and the floating stick: they run on those (SET.touchPreset 'full', SET.touchMove 'stick'); the new sections turn it off and test the defaults
 const DSF = 2;   // the emulated device's scale factor
 let DPR = DSF;   // canvas pixels per CSS pixel: the same on a desktop canvas, and half-resolution phone canvas (claude/mobile2) is read from the page after each load (syncDpr)
 
@@ -41,12 +42,16 @@ const goto = async (query = '') => {
   await sleep(1500);
   for (let i = 0; i < 160; i++) { const r = await E('typeof window.BK === "object" && !!window.BK.lookPass', 3000).catch(() => false); if (r) break; await sleep(300); }
   DPR = await E('document.getElementById("c").width / innerWidth');   // syncDpr
+  if (LEGACY) await E('BK.SET.touchPreset = "full"; BK.SET.touchMove = "stick"; BK.touch.relayout()');
 };
 const keysNow = () => E('({ left: !!BK.keys.left, right: !!BK.keys.right, up: !!BK.keys.up, down: !!BK.keys.down, atk: !!BK.keys.atk, jump: !!BK.keys.jump, dodge: !!BK.keys.dodge, block: !!BK.keys.block })');
 const dbg = () => E('BK.touch.debug()');
 const css = v => v / DPR;
 const centre = b => [css(b.cx), css(b.cy)];
 const rectMid = r => [css(r.x + r.w / 2), css(r.y + r.h / 2)];
+/* a row of the open Settings tab: the cursor is moved to it (the list scrolls to keep it on screen: nine rows show) and its box is the one tapped */
+const tapRow = async name => { const rows = await E('BK.ui.menuRows()'), i = rows.indexOf(name); if (i < 0) throw new Error('no row ' + name); await E('BK.ui.menuI = ' + i); await sleep(250);
+  const off = Math.max(0, Math.min(rows.length - 1 - 9, Math.max(0, i - 1) - 9 + 2)), vis = rows.slice(1 + off, 1 + off + 9).filter(r => r[0] !== '-'); await gameTap(6 + vis.indexOf(name)); };
 const idle = async () => { for (let i = 0; i < 120; i++) { if (!(await E("import('/src/loading-screen.js').then(m => !!m.LS.busy)"))) return; await sleep(250); } };   // a level load in flight (from a tap) must land before the harness loads another
 const toPlay = async (id = 'wood') => { await idle(); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(id)})); BK.state = 'play'; BK.sim(120); })()`, 180000); };
 const gameTap = async (i) => { const hs = await E('BK.touch.hitBoxes()'); const h = hs[i]; if (!h) throw new Error('no tap box #' + i + ' (' + hs.length + ' drawn)'); const [cx, cy] = await E(`BK.touch.gameToClient(${h.x + h.w / 2}, ${h.y + h.h / 2})`); await tap(cx, cy); await sleep(250); };
@@ -76,22 +81,22 @@ try {
     await gameTap(5);   // the sixth tab strip box: TOUCH
     ok(await E('BK.ui.settingsTab') === 'touch', 'a tap on the sixth tab did not open TOUCH (' + await E('BK.ui.settingsTab') + ')');
     await sleep(300);
-    const rows = await E('BK.ui.menuRows()'); ok(['Touch size', 'Touch opacity', 'Left-handed', 'Edit layout', 'Reset layout', 'Touch assists', 'Haptics', 'Lighter effects'].every(r => rows.includes(r)), 'the TOUCH tab is missing rows: ' + rows.join('|'));
+    const rows = await E('BK.ui.menuRows()'); ok(['Touch size', 'Touch opacity', 'Left-handed', 'Edit layout', 'Reset layout', 'Move control', 'Stick dead zone', 'Layout', 'Block toggle', 'Auto-face foes', 'Aim assist', 'Auto-interact', 'Long input buffer', 'Swipe gestures', 'Haptics', 'Lighter effects'].every(r => rows.includes(r)), 'the TOUCH tab is missing rows: ' + rows.join('|'));
     // rows in draw order: boxes 6.. are the rows in the tab (headers have none)
     const rowBox = name => 6 + rows.filter(r => r[0] !== '-' && r !== '@TABS' && r !== 'Back').indexOf(name);
     const size0 = await E('BK.SET.touchSize ?? 1');
-    await gameTap(rowBox('Touch size'));
+    await tapRow('Touch size');
     ok(await E('BK.SET.touchSize') > size0, 'a tap on Touch size did not step it up (' + size0 + ' -> ' + await E('BK.SET.touchSize') + ')');
-    await gameTap(rowBox('Left-handed')); ok(await E('BK.SET.touchLeft') === true, 'a tap on Left-handed did not turn it on');
-    await gameTap(rowBox('Haptics')); ok(await E('BK.SET.touchHaptics') === false, 'a tap on Haptics did not turn them off');
-    await gameTap(rowBox('Haptics')); ok(await E('BK.SET.touchHaptics') !== false, 'a second tap on Haptics did not bring them back');
-    await gameTap(rowBox('Left-handed'));
+    await tapRow('Left-handed'); ok(await E('BK.SET.touchLeft') === true, 'a tap on Left-handed did not turn it on');
+    await tapRow('Haptics'); ok(await E('BK.SET.touchHaptics') === false, 'a tap on Haptics did not turn them off');
+    await tapRow('Haptics'); ok(await E('BK.SET.touchHaptics') !== false, 'a second tap on Haptics did not bring them back');
+    await tapRow('Left-handed');
     const saved = await E('JSON.parse(localStorage.getItem("bracken.settings")).touchSize');
     ok(saved > size0, 'the touch size was not saved to localStorage (' + saved + ')');
   });
   await section('layout-editor', async () => {
     const rows = await E('BK.ui.menuRows()'); const rowBox = name => 6 + rows.filter(r => r[0] !== '-' && r !== '@TABS' && r !== 'Back').indexOf(name);
-    await gameTap(rowBox('Edit layout'));
+    await tapRow('Edit layout');
     let d = await dbg(); ok(d.editing, 'a tap on Edit layout did not start the editor');
     const atk = d.layout.btn.atk, x0 = atk.cx;
     await down(1, ...centre(atk)); await move(1, css(atk.cx) - 120, css(atk.cy) - 60); await up(1); await sleep(100);
@@ -318,6 +323,191 @@ try {
     await E('BK.touch.buzz("levelup")'); v = await E('window.__vib'); ok(v.length >= 2, 'a level-up pattern did not buzz');
     await E('window.__vib = []; BK.SET.touchHaptics = false; BK.touch.buzz("hit")'); v = await E('window.__vib'); ok(v.length === 0, 'haptics buzzed with the setting off');
     await E('BK.SET.touchHaptics = true');
+  });
+
+  // ===================== MOBILE3: D-PAD, PRESETS, DEFEND / SKILL WHEEL, ASSISTS, SWIPES, CONTROLLER =====================
+  const pointAt = (D, deg, f) => [css(D.cx + Math.cos(deg * Math.PI / 180) * D.R * f), css(D.cy - Math.sin(deg * Math.PI / 180) * D.R * f)];
+  const snap = () => E('BKT.inputSnapshot()');
+  const tk = async (dt = 0.1) => { await E(`BK.touch.tick(${dt})`); };
+  const equip = () => E("(() => { const h = BK.P.hero, P = BKT.PROG; P.loadouts = P.loadouts || {}; P.loadouts[h] = ['groundSlam', 'shieldThrow', 'risingCut', 'warCry']; })()");
+  await section('defaults', async () => {
+    await E('localStorage.removeItem("bracken.settings")'); LEGACY = false; await goto(); await toPlay('wood'); await E('BK.manualSimulation = true');
+    const s = await E('({ preset: BK.touch.preset(), move: BK.touch.moveMode(), swipe: !!BK.SET.touchSwipe, use: !!BK.SET.touchAutoUse, tog: !!BK.SET.blockToggle })');
+    ok(s.preset === 'simple', 'the default layout is ' + s.preset + ', not simple'); ok(s.move === 'dpad', 'the default move control is ' + s.move + ', not the d-pad');
+    ok(!s.swipe && !s.use && !s.tog, 'swipes / auto-interact / block toggle are not off by default: ' + JSON.stringify(s));
+    await equip(); await E('BK.touch.relayout()'); await tk(); const d = await dbg();
+    ok(d.buttons.map(b => b.k).sort().join() === 'atk,defend,jump,pause,skill', 'SIMPLE shows ' + d.buttons.map(b => b.k).join() + ' (want atk, jump, defend, skill, pause; the contextual two only in reach)');
+    ok(d.layout.dpad.cx < d.layout.W / 2 && d.layout.btn.atk.cx > d.layout.W / 2, 'the d-pad is not bottom-left with the buttons on the right');
+    // a save from before presets: a player who dragged buttons keeps them (CUSTOM on the FULL buttons), one who did not gets SIMPLE
+    await E('delete BK.SET.touchPreset; BK.SET.touchPos = { atk: [0.5, 0.5] }; BK.touch.relayout()'); ok((await E('BK.touch.preset()')) === 'custom' && (await E('BK.touch.baseOf()')) === 'full', 'a dragged layout from before presets is not kept as CUSTOM/FULL');
+    await E('BK.SET.touchPos = {}; BK.touch.relayout()'); ok((await E('BK.touch.preset()')) === 'simple', 'an untouched save did not get SIMPLE');
+  });
+  await section('dpad', async () => {
+    await E('window.__vib = []; navigator.vibrate = p => { window.__vib.push(p); return true; }; BK.SET.touchHaptics = true');
+    const D = (await dbg()).layout.dpad, want = { 0: ['right'], 45: ['right', 'up'], 90: ['up'], 135: ['left', 'up'], 180: ['left'], 225: ['left', 'down'], 270: ['down'], 315: ['right', 'down'] };
+    for (const [deg, w] of Object.entries(want)) {
+      await down(1, ...pointAt(D, +deg, 0.75)); const k = await keysNow(), bad = ['left', 'right', 'up', 'down'].filter(n => w.includes(n) !== k[n]);
+      ok(!bad.length, 'd-pad ' + deg + ' deg: keys ' + JSON.stringify(k) + ' (wanted ' + w.join('+') + ')'); await up(1);
+      const k2 = await keysNow(); ok(!k2.left && !k2.right && !k2.up && !k2.down, 'd-pad ' + deg + ' did not release cleanly');
+    }
+    // SLIDE between directions without lifting: E -> SE (crouch-walk) -> S -> SW -> W -> NW -> N -> NE
+    await E('window.__vib = []'); await down(1, ...pointAt(D, 0, 0.75));
+    for (const deg of [315, 270, 225, 180, 135, 90, 45]) { await move(1, ...pointAt(D, deg, 0.75)); const k = await keysNow(), w = want[deg], bad = ['left', 'right', 'up', 'down'].filter(n => w.includes(n) !== k[n]); ok(!bad.length, 'sliding to ' + deg + ' deg: keys ' + JSON.stringify(k)); }
+    const vib = await E('window.__vib'); ok(vib.length >= 7 && vib.every(v => Array.isArray(v) && v[0] <= 10), 'a direction change did not give a light tick (' + JSON.stringify(vib.slice(0, 3)) + ', ' + vib.length + ')');
+    await up(1);
+    // the dead centre is nothing; a push is something; back to the middle lets go
+    await down(1, ...pointAt(D, 0, 0.05)); ok(!(await keysNow()).right, 'the d-pad centre counted as a direction'); await move(1, ...pointAt(D, 0, 0.8)); ok((await keysNow()).right, 'a push on the d-pad did not run right'); await move(1, ...pointAt(D, 0, 0.05)); ok(!(await keysNow()).right, 'back to the centre did not let go'); await up(1);
+    // a thumb that lands a little outside the pad is still caught (the catch ring), one well away is not; the floating stick is not used in play
+    await down(1, ...pointAt(D, 0, 1.45)); await move(1, ...pointAt(D, 0, 1.55)); ok((await keysNow()).right, 'a thumb just outside the pad was not caught'); await up(1);
+    await down(1, 330, 60); await move(1, 390, 60); ok(!(await keysNow()).right, 'a thumb far from the pad made a floating stick in play'); await up(1);
+    // a thumb in the gap that slides onto the pad takes it up
+    await down(1, ...pointAt(D, 0, 2.4)); await move(1, ...pointAt(D, 0, 0.8)); ok((await keysNow()).right, 'a thumb sliding in from the gap did not take the pad up'); await up(1);
+    // left-handed mirrors it
+    await E('BK.SET.touchLeft = true; BK.touch.relayout()'); let dd = await dbg(); ok(dd.layout.dpad.cx > dd.layout.W / 2 && dd.layout.btn.atk.cx < dd.layout.W / 2, 'left-handed did not put the pad on the right');
+    await down(1, ...pointAt(dd.layout.dpad, 180, 0.75)); ok((await keysNow()).left, 'the mirrored pad did not work'); await up(1); await E('BK.SET.touchLeft = false; BK.touch.relayout()');
+    // it is drawn: the overlay has pixels where the pad is
+    await E('BK.touch.draw()'); const lit = await E(`(() => { const o = BK.touch.overlayCanvas(), g = o.getContext('2d'), D = BK.touch.debug().layout.dpad, k = o.width / BK.touch.debug().layout.W; const d = g.getImageData(Math.round((D.cx - D.R) * k), Math.round((D.cy - D.R) * k), Math.round(D.R * 2 * k), Math.round(D.R * 2 * k)).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 20) n++; return n; })()`); ok(lit > 500, 'the d-pad drew nothing on the overlay (' + lit + ' px)');
+  });
+  await section('stick-option', async () => {
+    await E('BK.SET.touchMove = "stick"; BK.touch.relayout()'); const SX = 200, SY = 300;
+    // eight ways SNAPPED: a thumb 20 degrees off east is east, not north-east
+    await down(1, SX, SY); await move(1, SX + 60 * Math.cos(0.35), SY - 60 * Math.sin(0.35)); let k = await keysNow(); ok(k.right && !k.up, 'a 20 degree push on the stick did not snap to east: ' + JSON.stringify(k)); await up(1);
+    // DOWN needs a deliberate pull (a floating stick used to drift into a crouch): a short pull down is nothing, a real one is a crouch; the sides do not need it
+    await down(1, SX, SY); await move(1, SX, SY + 24); k = await keysNow(); ok(!k.down, 'a short pull drifted into a crouch'); await move(1, SX + 16, SY + 15); k = await keysNow(); ok(!k.down, 'a short pull down-right drifted into a crouch-walk'); await move(1, SX, SY + 60); k = await keysNow(); ok(k.down, 'a real pull down did not crouch'); await up(1);
+    await down(1, SX, SY); await move(1, SX + 25, SY); ok((await keysNow()).right, 'the side zones were made as stiff as DOWN'); await up(1);
+    // the DEAD-ZONE setting: LARGE swallows a 30 px push that MEDIUM takes
+    await E('BK.SET.touchDead = 0.45; BK.touch.relayout()'); await down(1, SX, SY); await move(1, SX + 25, SY); ok(!(await keysNow()).right, 'LARGE dead zone: a 25 px push counted'); await move(1, SX + 70, SY); ok((await keysNow()).right, 'LARGE dead zone: a 70 px push did not'); await up(1);
+    await E('BK.SET.touchDead = 0.2'); await down(1, SX, SY); await move(1, SX + 20, SY); ok((await keysNow()).right, 'SMALL dead zone: a 20 px push did not count'); await up(1);
+    ok((await E('BK.touch.rowValue("Stick dead zone")')) === 'SMALL', 'the Stick dead zone row does not read SMALL');
+    await E('delete BK.SET.touchDead; BK.touch.adjustRow("Move control", 1)'); ok((await E('BK.touch.rowValue("Move control")')) === 'D-PAD', 'the Move control row did not flip back to D-PAD');
+  });
+  await section('moves-fire', async () => {
+    // down = crouch, down + attack in the air = plunge, up + attack = up-slash, down + jump = drop-through: the same keys from the pad and from the stick
+    const D0 = (await dbg()).layout; const atkC = centre(D0.btn.atk), jumpC = centre(D0.btn.jump);
+    for (const mode of ['dpad', 'stick']) {
+      await E(`BK.SET.touchMove = ${JSON.stringify(mode)}; BK.touch.relayout(); BK.P.vx = 0; BK.sim(30)`);
+      const D = (await dbg()).layout.dpad, hold = async dir => { if (mode === 'dpad') { await down(1, ...pointAt(D, dir === 'down' ? 270 : 90, 0.75)); } else { await down(1, 200, 300); await move(1, 200, 300 + (dir === 'down' ? 80 : -80)); } };
+      await hold('down'); await E('BK.sim(8)'); ok(await E('BK.P.ducking'), mode + ': DOWN did not crouch'); await up(1);
+      await E('BK.sim(10)');
+      await E('BK.P.y -= 70; BK.P.vy = 0; BK.sim(1)'); await hold('down'); await down(2, ...atkC); await E('BK.sim(4)'); ok(await E('!!BK.P.plunge'), mode + ': DOWN + ATTACK in the air did not plunge'); await up(2); await up(1); await E('BK.sim(80)');
+      await hold('up'); await down(2, ...atkC); const k = await keysNow(); ok(k.up && k.atk, mode + ': UP + ATTACK did not hold both (' + JSON.stringify(k) + ')'); await up(2); await up(1);
+      await hold('down'); await down(2, ...jumpC); const k2 = await keysNow(); ok(k2.down && k2.jump, mode + ': DOWN + JUMP did not hold both (the drop-through) ' + JSON.stringify(k2)); await up(2); await up(1);
+      await E('BK.sim(40)');
+    }
+    await E('BK.SET.touchMove = "dpad"; BK.touch.relayout()');
+  });
+  await section('presets', async () => {
+    const fit = async label => {
+      const d = await E('({ all: BK.touch.allButtons(), L: BK.touch.debug().layout })'), A = d.all, L = d.L;
+      for (let i = 0; i < A.length; i++) { const a = A[i];
+        ok(a.cx - a.r >= L.ins.l - 0.5 && a.cx + a.r <= L.W - L.ins.r + 0.5 && a.cy - a.r >= L.ins.t - 0.5 && a.cy + a.r <= L.H - L.ins.b + 0.5, label + ': ' + a.k + ' is outside the safe area');
+        for (let j = i + 1; j < A.length; j++) { const b = A[j]; ok(Math.hypot(a.cx - b.cx, a.cy - b.cy) >= a.r + b.r - 0.5, label + ': ' + a.k + ' overlaps ' + b.k); } }
+      const dp = L.dpad; ok(A.every(a => Math.hypot(a.cx - dp.cx, a.cy - dp.cy) >= a.r + dp.R), label + ': a button overlaps the d-pad');
+      ok(dp.cx - dp.R >= L.ins.l - 0.5 && dp.cx + dp.R <= L.W - L.ins.r + 0.5 && dp.cy + dp.R <= L.H - L.ins.b + 0.5, label + ': the d-pad is outside the safe area');
+    };
+    await E('BK.SET.touchPos = {}'); await E('BK.SET.touchSize = 1');
+    for (const p of ['simple', 'full']) for (const sz of [0.7, 1, 1.4]) for (const lh of [false, true]) { await E(`BK.SET.touchPreset = ${JSON.stringify(p)}; BK.SET.touchSize = ${sz}; BK.SET.touchLeft = ${lh}; BK.touch.relayout()`); await fit(p + ' size ' + sz + (lh ? ' left' : '')); }
+    await E('BK.SET.touchSize = 1; BK.SET.touchLeft = false; BK.touch.relayout()');
+    await E('BK.touch.adjustRow("Layout", -1)'); let name = await E('BK.touch.rowValue("Layout")'); ok(name === 'SIMPLE', 'Layout row: stepping back from FULL gave ' + name);
+    await E('BK.SET.touchPreset = "full"; BK.touch.relayout(); BK.touch.tick(0.1)'); let d = await dbg(); ok(['dodge', 'block', 'atk', 'jump'].every(k => d.buttons.some(b => b.k === k)), 'FULL is missing buttons: ' + d.buttons.map(b => b.k).join());
+    // CUSTOM: a dragged spot counts only under CUSTOM; the first drag in the editor makes it so, on the buttons it began from
+    await E('BK.SET.touchPreset = "simple"; BK.SET.touchPos = {}; BK.touch.relayout()'); d = await dbg(); const atk0 = d.layout.btn.atk.cx;
+    await E('BK.touch.confirmRow("Edit layout")'); d = await dbg(); ok(d.editing && d.buttons.some(b => b.k === 'defend') && !d.buttons.some(b => b.k === 'dodge'), 'the editor did not show the SIMPLE buttons');
+    await down(1, ...centre(d.layout.btn.atk)); await move(1, css(d.layout.btn.atk.cx) - 90, css(d.layout.btn.atk.cy) - 40); await up(1); d = await dbg();
+    ok(d.preset === 'custom' && (await E('BK.touch.baseOf()')) === 'simple', 'dragging in the editor did not make CUSTOM on SIMPLE (' + d.preset + ')'); ok(d.layout.btn.atk.cx < atk0 - 60, 'the dragged ATTACK did not move');
+    await E('BK.touch.endEdit()'); await E('BK.SET.touchPreset = "simple"; BK.touch.relayout()'); d = await dbg(); ok(Math.abs(d.layout.btn.atk.cx - atk0) < 2, 'SIMPLE did not ignore the CUSTOM positions');
+    await E('BK.SET.touchPreset = "custom"; BK.touch.relayout()'); d = await dbg(); ok(d.layout.btn.atk.cx < atk0 - 60, 'CUSTOM did not bring the dragged spot back');
+    await E('BK.SET.touchPos = {}; BK.SET.touchPreset = "simple"; BK.touch.relayout()');
+  });
+  await section('defend-skill', async () => {
+    await toPlay('wood'); await E('BK.manualSimulation = true'); await equip(); await E('BK.SET.touchPreset = "simple"; BK.SET.touchMove = "dpad"; BK.SET.touchPos = {}; BK.touch.relayout(); BK.touch.tick(0.1)');
+    let d = await dbg(); const B = d.layout.btn;
+    // DEFEND: a tap is the dodge, a hold is the block (and a hold is not also a dodge)
+    await E('BK.touch.releaseAll()'); await down(3, ...centre(B.defend)); await up(3); let s = await snap(), k = await keysNow(); ok(s.dodge && !k.block, 'a tap on DEFEND was not a dodge: ' + JSON.stringify([s.dodge, k.block])); await tk(0.2); ok(!(await keysNow()).dodge, 'the dodge key stayed held');
+    await E('BK.sim(3)');
+    await down(3, ...centre(B.defend)); await tk(0.1); ok(!(await keysNow()).block, 'DEFEND blocked before the hold time'); await tk(0.15); ok((await keysNow()).block, 'DEFEND held did not block'); await up(3);
+    s = await snap(); k = await keysNow(); ok(!k.block && !s.dodge, 'letting go of a DEFEND hold left the block up or dodged (' + JSON.stringify([k.block, s.dodge]) + ')'); await E('BK.sim(3)');
+    // the block TOGGLE: a hold raises it and it stays up, a tap lowers it without a dodge
+    await E('BK.SET.blockToggle = true'); await down(3, ...centre(B.defend)); await tk(0.3); await up(3); ok((await keysNow()).block, 'block toggle: the shield did not stay up after letting go');
+    await down(3, ...centre(B.defend)); await up(3); s = await snap(); ok(!(await keysNow()).block && !s.dodge, 'block toggle: a tap did not lower the shield quietly'); await E('BK.SET.blockToggle = false; BK.sim(3)');
+    // SKILL: a tap is the first skill; a hold opens the wheel, slide to a slot and let go fires that one; letting go on nothing fires nothing
+    const have = await E('[0, 1, 2, 3].map(i => !!BKT.skillAt(i))'); const idx = have.map((h, i) => h ? i : -1).filter(i => i >= 0); ok(idx.length >= 2, 'the hero has too few skills slotted for the wheel test: ' + JSON.stringify(have));
+    const KEYS = ['throw', 'skill2', 'skill3', 'skill4']; await E('BK.touch.relayout(); BK.touch.tick(0.1)'); d = await dbg(); ok(d.buttons.some(b => b.k === 'skill'), 'no SKILL button with skills equipped');
+    await down(3, ...centre(d.layout.btn.skill)); await up(3); s = await snap(); ok(s[KEYS[idx[0]]], 'a tap on SKILL did not use the first skill (' + KEYS[idx[0]] + ')'); await E('BK.sim(3)');
+    await down(3, ...centre(d.layout.btn.skill)); await tk(0.3); d = await dbg(); ok(d.radial && d.radial.slots.length === 4, 'holding SKILL did not open the wheel');
+    const sl = d.radial.slots[idx[1]]; await move(3, css(sl.cx), css(sl.cy)); d = await dbg(); ok(d.radial && d.radial.sel === idx[1], 'sliding onto a slot did not pick it (sel ' + (d.radial && d.radial.sel) + ')');
+    await E('BK.touch.draw()'); const gl = await E('BK.touch.glyphs()'); ok(KEYS.filter((_, i) => have[i]).every(kk => gl[kk]), 'the wheel did not draw every slotted skill glyph: ' + Object.keys(gl).join());
+    await up(3); s = await snap(); ok(s[KEYS[idx[1]]] && !s[KEYS[idx[0]]], 'letting go on a slot did not fire exactly it: ' + JSON.stringify(s)); await E('BK.sim(3)');
+    await down(3, ...centre((await dbg()).layout.btn.skill)); await tk(0.3); await move(3, 60, 60); await up(3); s = await snap(); ok(!KEYS.some(kk => s[kk]), 'letting go on nothing fired a skill: ' + JSON.stringify(s)); await E('BK.sim(3)');
+    // a skill on cooldown shows its wait on the wheel's slot
+    const id = await E(`BKT.skillAt(${idx[0]})`); await E(`BK.P.cds = BK.P.cds || {}; BK.P.cds[${JSON.stringify(id)}] = 2`);
+    await down(3, ...centre((await dbg()).layout.btn.skill)); await tk(0.3); await E('BK.touch.draw()'); const g2 = await E('BK.touch.glyphs()'); ok(g2[KEYS[idx[0]]] && g2[KEYS[idx[0]]].k > 0, 'a slot on cooldown did not show its wait on the wheel'); await up(3); await E(`BK.P.cds[${JSON.stringify(id)}] = 0`);
+  });
+  await section('context-slot', async () => {
+    await E('BK.manualSimulation = true; BK.touch.relayout(); BK.touch.tick(0.1)'); let d = await dbg(); ok(!d.buttons.some(b => b.k === 'ctx'), 'the contextual slot shows with nothing to do');
+    await E('window.__ctx = 0; BK.touchCtx.push(() => window.__ctx === 1 ? { label: "throw", key: "throw" } : window.__ctx === 2 ? { label: "pick up", key: "talk", dim: true } : null)');
+    await E('window.__ctx = 1'); await tk(); await tk(); d = await dbg(); ok(d.ctx && d.ctx.label === 'THROW' && d.buttons.some(b => b.k === 'ctx'), 'a registered ctx hook did not show THROW: ' + JSON.stringify(d.ctx));
+    const b = d.buttons.find(x => x.k === 'ctx'); ok(!d.buttons.some(o => o !== b && Math.hypot(o.cx - b.cx, o.cy - b.cy) < o.r + b.r), 'the ctx button overlaps another');
+    await down(4, ...centre(b)); await up(4); const s = await snap(); ok(s.throw, 'a tap on the ctx button did not send its press'); await E('BK.sim(3)');
+    await E('window.__ctx = 2'); await tk(); await tk(); d = await dbg(); ok(d.ctx && d.ctx.dim === true, 'the dim flag did not come through'); await E('BK.touch.draw()');
+    await E('window.__ctx = 0'); await tk(); await tk(); d = await dbg(); ok(!d.ctx && !d.buttons.some(x => x.k === 'ctx'), 'the ctx button stayed after the thing went away'); await E('BK.touchCtx.length = 0');
+  });
+  await section('thumb-friendly', async () => {
+    await E('BK.SET.touchPreset = "simple"; BK.touch.relayout(); BK.touch.tick(0.1)'); let d = await dbg(); const B = d.layout.btn;
+    // hit zones are bigger than the drawn buttons: 1.2 radii out still presses, 1.6 does not
+    await down(3, css(B.atk.cx + B.atk.r * 1.2), css(B.atk.cy)); ok((await keysNow()).atk, 'a touch 1.2 radii from ATTACK missed it'); await up(3);
+    await down(3, css(B.atk.cx + B.atk.r * 1.6), css(B.atk.cy + B.atk.r * 0.2)); ok(!(await keysNow()).atk, 'a touch 1.6 radii out still pressed ATTACK'); await up(3);
+    // slide JUMP -> ATTACK -> DEFEND in one motion, and in from a gap
+    await down(3, ...centre(B.jump)); ok((await keysNow()).jump, 'JUMP down'); await move(3, ...centre(B.atk)); let k = await keysNow(); ok(k.atk && !k.jump, 'JUMP -> ATTACK did not hand over'); await move(3, ...centre(B.defend)); k = await keysNow(); ok(!k.atk, 'ATTACK -> DEFEND did not let go of ATTACK'); await up(3);
+    ok((await snap()).dodge, 'sliding onto DEFEND and lifting is a DEFEND tap: a dodge'); await E('BK.sim(3)');
+    await down(3, 520, 150); await move(3, ...centre(B.atk)); ok((await keysNow()).atk, 'a thumb in a gap sliding onto ATTACK did not press it'); await up(3);
+    // a press ticks
+    await E('window.__vib = []; navigator.vibrate = p => { window.__vib.push(p); return true; }; BK.SET.touchHaptics = true'); await down(3, ...centre(B.jump)); ok((await E('window.__vib')).length >= 1, 'a button press gave no haptic tick'); await up(3);
+  });
+  await section('assists-toggles', async () => {
+    await E('BK.manualSimulation = true; BK.SET.touchPreset = "simple"; BK.SET.touchMove = "dpad"; BK.SET.touchPos = {}; BK.touch.relayout(); BK.P.vx = 0; BK.P.x = 40; BK.sim(60); BK.touch.tick(0.1)'); let d = await dbg(); const B = d.layout.btn;
+    const rowv = n => E(`BK.touch.rowValue(${JSON.stringify(n)})`);
+    for (const n of ['Block toggle', 'Auto-face foes', 'Aim assist', 'Auto-interact', 'Long input buffer', 'Swipe gestures']) { const v0 = await rowv(n); await E(`BK.touch.adjustRow(${JSON.stringify(n)}, 1)`); const v1 = await rowv(n); ok(v0 !== v1 && ['ON', 'OFF'].includes(v1), 'the ' + n + ' row did not toggle (' + v0 + ' -> ' + v1 + ')'); await E(`BK.touch.adjustRow(${JSON.stringify(n)}, 1)`); ok(await rowv(n) === v0, 'the ' + n + ' row did not toggle back'); }
+    ok(await rowv('Swipe gestures') === 'OFF' && await rowv('Auto-interact') === 'OFF' && await rowv('Aim assist') === 'ON' && await rowv('Auto-face foes') === 'ON', 'the assist defaults are not swipes OFF, auto-interact OFF, aim ON, auto-face ON');
+    // the long buffer and auto-face follow their own switch
+    await E('BK.SET.touchBuf = false; BK.SET.touchAssist = true'); await down(3, ...centre(B.jump)); await up(3); ok((await E('BK.touch.bufScale()')) === 1, 'Long input buffer OFF still gave a longer buffer'); await E('BK.SET.touchBuf = true'); ok((await E('BK.touch.bufScale()')) > 1.2, 'Long input buffer ON gave no longer buffer'); await E('delete BK.SET.touchBuf');
+    // auto-face and aim assist in the game: a foe behind the hero
+    const foe = dx => E(`(() => { const P = BK.P; P.face = 1; BK.spawnEnt({ t: 'sprig', x: Math.round(P.x / 16), y: Math.round(P.y / 16) - 1 }); const e = BK.enemies().at(-1); e.x = P.x - ${dx}; e.y = P.y; e.cd = 99; e.hp = e.hp0 = 5000; })()`);
+    await foe(14); await E('BK.SET.touchFace = false'); await down(3, ...centre(B.atk)); ok((await E('BK.P.face')) === 1, 'Auto-face OFF still turned the swing'); await up(3); await E('BK.SET.touchFace = true; BK.P.face = 1'); await down(3, ...centre(B.atk)); ok((await E('BK.P.face')) === -1, 'Auto-face ON did not turn'); await up(3);
+    await E('BK.enemies().forEach(e => { e.alive = false; e.hp = 0; }); BK.sim(2)'); await foe(100); await E('BK.P.face = 1'); await E('BK.touchCtx.push(() => ({ label: "throw", key: "throw" })); BK.touch.tick(0.1); BK.touch.tick(0.1)'); d = await dbg(); const cb = d.buttons.find(x => x.k === 'ctx');
+    await E('BK.SET.touchAim = false'); await down(3, ...centre(cb)); ok((await E('BK.P.face')) === 1, 'Aim assist OFF still turned a throw'); await up(3); await E('BK.SET.touchAim = true; BK.P.face = 1'); await down(3, ...centre(cb)); ok((await E('BK.P.face')) === -1, 'Aim assist ON did not turn a throw to the foe 100 px behind'); await up(3);
+    await E('BK.touchCtx.length = 0; BK.enemies().forEach(e => { e.alive = false; e.hp = 0; }); BK.sim(2); BK.P.face = 1');
+    // auto-interact: pushing into a doorway and standing there uses it; off, it does not
+    const D = (await dbg()).layout.dpad;
+    await E("BK.P.vx = 0; BK.props().push({ t: 'doorway', id: 'tAuto', needs: null, test: 1, x: BK.P.x, y: BK.P.y })"); await tk(); await tk();
+    await down(1, ...pointAt(D, 0, 0.75)); await E('BK.P.vx = 0; BK.P.coyote = 1'); for (let i = 0; i < 6; i++) await tk(0.1); ok(!(await snap()).talk, 'Auto-interact OFF still used the door');
+    await E('BK.SET.touchAutoUse = true'); for (let i = 0; i < 6; i++) { await E('BK.P.vx = 0; BK.P.coyote = 1'); await tk(0.1); } { const dd2 = await dbg(); ok((await snap()).talk, 'Auto-interact ON did not use the door after standing against it (verb ' + JSON.stringify(dd2.verb) + ', keys ' + JSON.stringify(await keysNow()) + ', vx ' + await E('BK.P.vx') + ', ground ' + await E('BK.P.ground') + ')'); } await up(1); await E('BK.SET.touchAutoUse = false; BK.sim(3)');
+    await E('(() => { const a = BK.props(); for (let i = a.length - 1; i >= 0; i--) if (a[i].test) a.splice(i, 1); })()'); await E('BK.sim(3)');
+  });
+  await section('swipes', async () => {
+    await E('BK.manualSimulation = true; BK.SET.touchPreset = "simple"; BK.SET.touchPos = {}; BK.SET.touchLeft = false; BK.touch.relayout(); BK.touch.tick(0.1)');
+    const swipe = async (x0, y0, x1, y1) => { await down(5, x0, y0); await move(5, (x0 + x1) / 2, (y0 + y1) / 2); await move(5, x1, y1); await up(5); };
+    ok(!(await E('!!BK.SET.touchSwipe')), 'swipe gestures are on by default');
+    await swipe(520, 150, 430, 150); ok(!(await snap()).dodge, 'a swipe dodged with gestures OFF'); await E('BK.sim(3)');
+    await E('BK.SET.touchSwipe = true');
+    await swipe(520, 150, 430, 150); let s = await snap(), k = await keysNow(); ok(s.dodge && k.left, 'a swipe left was not a dodge that way (' + JSON.stringify([s.dodge, k.left]) + ')'); await tk(0.3); ok(!(await keysNow()).left, 'the swipe left the left key held'); await E('BK.sim(3)');
+    await swipe(480, 150, 570, 150); s = await snap(); k = await keysNow(); ok(s.dodge && k.right, 'a swipe right was not a dodge that way'); await tk(0.3); await E('BK.sim(3)');
+    await swipe(520, 100, 520, 190); s = await snap(); k = await keysNow(); ok(s.atk && k.down, 'a swipe down was not the plunge / low cut (atk + down)'); await tk(0.3); await E('BK.sim(3)');
+    await swipe(520, 190, 520, 100); s = await snap(); k = await keysNow(); ok(s.atk && k.up, 'a swipe up was not the up-slash (atk + up)'); await tk(0.3); ok(!(await keysNow()).up, 'the swipe left up held'); await E('BK.sim(3)');
+    // a swipe does not undo a held d-pad direction
+    const D = (await dbg()).layout.dpad; await down(1, ...pointAt(D, 180, 0.75)); await swipe(520, 150, 430, 150); await tk(0.3); ok((await keysNow()).left, 'a swipe left let go of the d-pad that was holding left'); await up(1);
+    await E('BK.SET.touchSwipe = false; BK.sim(3)');
+  });
+  await section('controller', async () => {
+    await E('BK.manualSimulation = true; BK.SET.touchPreset = "simple"; BK.touch.relayout(); BK.touch.keyUsed(); BK.padLast = false; BK.touch.tick(0.1); BK.touch.draw()'); let d = await dbg(); ok(!d.padHidden && d.buttons.length > 0, 'the touch layer is hidden with no pad');
+    await E('window.dispatchEvent(new Event("gamepadconnected"))'); await tk(0.1); d = await dbg(); ok(d.banner === 'CONTROLLER CONNECTED', 'no CONTROLLER CONNECTED prompt (' + d.banner + ')');
+    ok(!d.padHidden, 'the layer hid before the pad was used');
+    await E('BK.padLast = true; BK.touch.keyUsed(); BK.touch.draw()'); d = await dbg(); ok(d.padHidden, 'the layer stayed with the pad in use');
+    const lit = await E(`(() => { const o = BK.touch.overlayCanvas(), g = o.getContext('2d'), L = BK.touch.debug().layout, k = o.width / L.W, b = L.btn.atk, p = g.getImageData(Math.round((b.cx - b.r) * k), Math.round((b.cy - b.r) * k), Math.round(b.r * 2 * k), Math.round(b.r * 2 * k)).data; let n = 0; for (let i = 3; i < p.length; i += 4) if (p[i] > 20) n++; return n; })()`); ok(lit === 0, 'the buttons were still drawn with the pad in use (' + lit + ' px)');
+    await tk(4); d = await dbg(); ok(d.banner === null, 'the CONTROLLER prompt stayed up');
+    await down(6, 520, 150); await up(6); await E('BK.touch.draw()'); d = await dbg(); ok(!d.padHidden && !(await E('BK.padLast')), 'a touch did not bring the layer back');
+    await E('window.dispatchEvent(new Event("gamepaddisconnected"))'); await tk(0.1); d = await dbg(); ok(/DISCONNECTED/.test(d.banner || ''), 'no prompt on a pad leaving: ' + d.banner);
+    await tk(4); await E('BK.padLast = false');
   });
 
   // ===================== 7: PERFORMANCE =====================

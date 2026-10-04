@@ -14,6 +14,18 @@
 
 export const VERB_HOOKS = [];
 
+// THE SECOND CONTEXTUAL BUTTON (the 'ctx' slot of src/touch.js: above INTERACT in SIMPLE, beside it in FULL). It shows only while a hook returns something, like
+// the action button does. A lane (THROW: pick up and throw a thing) registers one and needs no edit to touch.js:
+//     BK.touchCtx.push(c => c.P && nearThrowable(c) ? { label: 'THROW', key: 'throw' } : null);
+// A hook returns { label, key, dim? } ('key' is the one-shot press name: throw, skill2, atk...; 'dim' draws it half-faded and still tappable) or null.
+// The context 'c' is the same one the verb hooks get (P, state, props, enemies, ...). The first hook that answers wins.
+export const CTX_HOOKS = [];
+export function ctxButton(c) {
+  const P = c.P; if (!P || c.state !== 'play' || P.dead || P.hurt > 0 || P.asleep > 0) return null;
+  for (const h of CTX_HOOKS) { let r = null; try { r = h(c); } catch { r = null; } if (r && r.label) return { label: String(r.label).toUpperCase(), key: r.key || 'throw', dim: !!r.dim }; }
+  return null;
+}
+
 /* the context main.js hands over: everything the keyboard path reads, as accessors so this file holds no game state */
 export function interactVerb(c) {
   const P = c.P; if (!P || c.state !== 'play' || P.dead || P.hurt > 0 || P.asleep > 0) return null;
