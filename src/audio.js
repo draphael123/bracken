@@ -53,7 +53,7 @@ export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'battlefield' ? 0.26 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -641,7 +641,34 @@ const SYNTH_BEDS = {
       if (Math.random() < 0.025 && SFX.owlHoot) SFX.owlHoot(); };
     ambTickMs = 700;
   },
+  /* THE UNBURIED FIELD (claude/unburiedart): the air of a siege that never ended. WIND over dead grass (a low gust and a dry hiss), A FAR BATTLE that never comes closer
+     (a low-passed murmur of steel and muffled shouting, behind a hill), crows, a banner and canvas snapping, rope and timber creaking near the engines. SYNTH and the one
+     creak clip already on disk (amb_creak); NO HORN - the horn is the volley's and the cavalry's tell (AMBIENT_SOURCES names every source, tools/unburied-look.mjs asserts it). */
+  battlefield() {
+    const w = loopNoise(330, 0.9, 0.9); lfoOn(w.g.gain, 0.11, 0.45); lfoOn(w.f.frequency, 0.05, 140);
+    const grass = loopNoise(2300, 1.4, 0.06); lfoOn(grass.g.gain, 0.17, 0.04); lfoOn(grass.f.frequency, 0.09, 500);
+    const far = loopNoise(560, 1.6, 0.12, 'lowpass'); lfoOn(far.g.gain, 0.07, 0.06); lfoOn(far.f.frequency, 0.04, 90);
+    ambTick = () => {
+      if (Math.random() < 0.34) { noise(0.02 + Math.random() * 0.03, 0.03 + Math.random() * 0.04, 1500 + Math.random() * 1500, 1.4); if (Math.random() < 0.4) noise(0.02, 0.025, 2600 + Math.random() * 1200, 1.6, 0.07); }   /* steel on steel, far off */
+      if (Math.random() < 0.05) { const f = 130 + Math.random() * 90; tone('sawtooth', f, f * (0.8 + Math.random() * 0.2), 0.25 + Math.random() * 0.3, 0.012); }   /* a shout, muffled by the distance */
+      if (Math.random() < 0.06) for (let i = 0, n = 2 + ((Math.random() * 2) | 0); i < n; i++) noise(0.035, 0.05, 700 + Math.random() * 500, 1, i * 0.07);   /* a banner snapping */
+      if (Math.random() < 0.025) { tone('sawtooth', 820, 430, 0.2, 0.03); if (Math.random() < 0.6) tone('sawtooth', 780, 400, 0.18, 0.026, 0.3); noise(0.12, 0.02, 2200, 0.5, 0.05); }   /* a crow, and a second */
+      if (Math.random() < 0.03) ambClip('amb_creak', 0.16, 1400);   /* rope and timber, working */
+    };
+    ambTickMs = 500;
+  },
 };
+function ambClip(name, v, lp) { const opts = (clips[name] || []).filter(Boolean); if (!opts.length || !ac) return;
+  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = 0.85 + Math.random() * 0.25; const gn = ac.createGain(); gn.gain.value = v * ambVol; let tail = s;
+  if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; s.connect(f); tail = f; } tail.connect(gn);
+  if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = Math.random() * 1.6 - 0.8; gn.connect(p); p.connect(sfxGain); } else gn.connect(sfxGain); s.start(); }
+/* THE CHAPEL'S BELL (a zone's own: L.ambient { kind: 'hall', bell: true }): a slow, low, distant bell, scattered - never on a fixed beat, so it is never read as a tell */
+let ambBellTimer = null;
+function bellScatter(on) {
+  if (!on) { if (ambBellTimer) { clearInterval(ambBellTimer); ambBellTimer = null; } return; }
+  if (ambBellTimer) return;
+  ambBellTimer = setInterval(() => { if (!ac || ambKind !== 'hall' || Math.random() > 1 / 26) return; const f = [164, 185, 196, 220][(Math.random() * 4) | 0]; bell(f, 3.4, 0.045); if (Math.random() < 0.4) bell(f * 0.89, 3.2, 0.035, 2.6 + Math.random()); }, 1000);
+}
 let ambShotTimer = null;
 function ambShots(kind) {
   if (ambShotTimer) clearInterval(ambShotTimer); ambShotTimer = null; const list = AMB_SHOTS[kind]; if (!list) return;
@@ -682,6 +709,7 @@ export const ambient = {
     start();
   },
   get kind() { return ambKind; },
+  bell: bellScatter,
 };
 
 // ---------- per-creature voices (synth; the CC0 clips stay for the goblins) ----------
@@ -1411,7 +1439,9 @@ Object.assign(SFX, {
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight','fallingtower','underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'redgorge', 'gorgecrab'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'battlefield'];
+/* WHAT THE UNBURIED FIELD'S BED IS MADE OF (tools/unburied-look.mjs 8): synth beds and the one creak clip already on disk - nothing downloaded, and never a horn (the horn is the volley's tell) */
+export const AMBIENT_SOURCES = { battlefield: ['synth:wind', 'synth:dead-grass', 'synth:far-battle', 'synth:shout', 'synth:banner', 'synth:crow', 'file:amb_creak'], hall: ['file:ambCave', 'synth:drip', 'synth:distant-bell'] };
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0 or CC-BY (Daniel's 10-01 rule change) WITH its credit line here and in CREDITS.txt - 'Dark Carnival' and 'At Work' are the CC-BY ones; see the credited lanes' own reports). Three tracks have
 // no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial
@@ -1420,7 +1450,7 @@ export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town',
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
 /* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
    (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
-export const MUSIC_CREDITS_ROW = { redgorge: '"Old Road" — K. MacLeod, CC-BY' };
+export const MUSIC_CREDITS_ROW = { redgorge: '"Old Road" — K. MacLeod, CC-BY', unburied: 'Aureolus_Omicron, CC-BY 4.0' };   /* (the Sound Test's one row fits ~32 characters: the author and the licence here, the title and the exact credit on the credits page and in audio/CREDITS.txt) */
 export const MUSIC_CREDITS = {
   harvestfair: '"Dark Carnival" — Machine, CC-BY', wickerqueen: '"Ring Master" — Bobjt',   /* (claude/fairfix3: CC-BY tracks are allowed WITH a credit, Daniel 2026-10-01; the licence's version, 3.0, is in audio/CREDITS.txt - the Sound Test row fits 32 characters) */
   theme: '"Stage 1" — Juhani Junkala', theme2: '"Stage 2" — Juhani Junkala',
@@ -1453,7 +1483,7 @@ export const MUSIC_CREDITS = {
   theatre: '"Apparitions Ball" — Bobjt', canal: '"Hollowed Forest" — T. Grove', fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
   causeway: '"Solemn Tide" — madameberry', kraken: '"Castle Boss" — madameberry',
   witchlight: '"Iremos Forest" — beardalaxy', oreroad: '"12 Music Loops" — SubspaceAudio',
-  unburied: '"Void Estate" — Zane Little', deathknight: '"Bald Mountain" — Mussorgsky',
+  unburied: '"March of the Wizards" by Aureolus_Omicron (OpenGameArt.org) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/', deathknight: '"Bald Mountain" — Mussorgsky',
   ambience_forest: '"Forest Ambience" — TinyWorlds',
   burning: '"Fire Level" — Spring Spring', pyroboss: '"Evil Boss Music" — Kosmo Cat', minicharge: '"Charge!" — Centurion_of_war',
   monastery: '"Shrine of Mysteries" — Aureolus', northumberland: '"Northumberland" — trad., Spring',

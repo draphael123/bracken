@@ -154,7 +154,8 @@ levelled to -15 LUFS like the rest, three of them from packs already credited he
   https://opengameart.org/content/12-music-loops - THE ORE ROAD, replacing the synthesised 'mineworks'. Lowpassed at 9 kHz and
   level-matched to its neighbours Stormhold and Highcrown (-10.6 LUFS), loop length untouched (55.4 s).
 
-- unburied.ogg = "Haunting Chiptune Loop [Void Estate]" by Zane Little Music, CC0 -
+- (unburied.ogg WAS "Haunting Chiptune Loop [Void Estate]" by Zane Little Music, CC0 - that file was replaced on 2026-10-04 by "March of the Wizards", see the end of this file; the old note is kept for the record:)
+  "Haunting Chiptune Loop [Void Estate]" by Zane Little Music, CC0 -
   https://opengameart.org/content/haunting-chiptune-loop-void-estate - THE UNBURIED FIELD. Lowpassed at 9 kHz, loudness-normalised
   (-12.6 LUFS, a touch under its neighbours for a haunted field), loop untouched (86.5 s). Retired from the level 2026-09-25 (the
   whole field plays deathknight.ogg now); kept in the library and the sound test.
@@ -234,3 +235,7 @@ THE RED GORGE (2026-10-02, claude/redgorge-fix, Daniel's pick; the file fetched 
   Changes: resampled to 44.1 kHz; the last 2.0 s crossfaded onto the first 2.0 s so it loops seamlessly (111.95 s); raised 4.1 dB under a peak limiter
   (-1.5 dBFS) to about -12.4 LUFS integrated like the rest of the library; encoded to OGG Vorbis q4 stereo.
 - gorgecrab (no file) = THE GREAT RED CRAB's theme, synthesised for this game (src/boss-music.js): a clacking stop-start march at 110 bpm over a Phrygian drone.
+
+THE UNBURIED FIELD (2026-10-04, claude/unburiedart, Daniel's pick 2026-10-03; the file fetched with his yes - the lane downloaded nothing):
+- unburied.ogg = "March of the Wizards" by Aureolus_Omicron, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED; also OGA-BY 3.0) - https://opengameart.org/content/march-of-the-wizards - THE UNBURIED FIELD's level track (the field only; the Death Knight's fight has its own).
+  Credit: Aureolus_Omicron (OpenGameArt.org). Looping .ogg, used as supplied.

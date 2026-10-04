@@ -70,5 +70,17 @@
   "lifts": 48,
   "walked": 100,
   "bare": true
+ },
+ "unburied": {
+  "hash": "ee27e7e8f837",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 29,
+  "deaths": 3,
+  "kills": 29,
+  "lifts": 87,
+  "walked": 100,
+  "bare": true
  }
 }

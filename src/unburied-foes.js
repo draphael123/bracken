@@ -32,6 +32,7 @@
 //                              becomes GRAVECALL (three at once) and BLOOD SURGE !! (get away from him) joins the rotation.
 // Touching none of them hurts (the touch rule): every blow is a told one.
 import { canvas, rect, line, circle, fillPoly, outline, flipX, whiten } from './px.js';
+import * as SG from './redraw/unburied_siege.js';   /* the engines, the cover and the breach as drawn pictures (claude/unburiedart) */
 
 export const UNB = {
   hp: { bannerbearer: 56, corpse: 30, barrowrider: 720, deathknight: 1000, bloodknight: 950 },
@@ -459,8 +460,8 @@ export const unbFrame = e => e.t === 'bloodknight' ? bkFrame(e) : e.t === 'death
 export function newField(L, TS = 16) {
   if (!L || !L.volleys) return null;
   const G = L.cavalry ? L.cavalry.row : 36;
-  const props = (L.ents || []).filter(e => ['cover', 'ballista', 'trebuchet', 'oilbarrel'].includes(e.t)).map(e => ({ t: e.t, kind: e.kind, x: e.x * TS + 8, y: (e.y + 1) * TS, tx: e.x, ty: e.y,
-    aim: e.aim ? { x: e.aim[0] * TS + 8, y: (e.aim[1] + 1) * TS } : null, spill: e.spill ? [e.spill[0] * TS, (e.spill[1] + 1) * TS] : null, knocks: e.knocks || null, cd: 0, state: 'ready', t2: 0 }));
+  const props = (L.ents || []).filter(e => ['cover', 'ballista', 'trebuchet', 'oilbarrel', 'mangonel', 'drawbridge'].includes(e.t)).map(e => ({ t: e.t, kind: e.kind, x: e.x * TS + 8, y: (e.y + 1) * TS, tx: e.x, ty: e.y,
+    aim: e.aim ? { x: e.aim[0] * TS + 8, y: (e.aim[1] + 1) * TS } : null, spill: e.spill ? [e.spill[0] * TS, (e.spill[1] + 1) * TS] : null, knocks: e.knocks || null, span: e.span || null, bridgeRow: e.row, cd: 0, state: 'ready', t2: 0 }));
   return {
     TS, G,
     volleys: L.volleys.map((v, i) => ({ ...v, t: (i * 2.1) % v.period, quiet: false, warn: false, fell: 0 })),
@@ -476,6 +477,8 @@ export function newField(L, TS = 16) {
 function groundLine(L, G) { const W = L.W, s = new Int16Array(W).fill(-1); if (!L.grid) return s;
   for (let x = 0; x < W; x++) for (let y = G - 8; y < Math.min(L.H, G + 8); y++) { const t = L.grid[y * W + x]; if (t !== 0) { s[x] = t === 3 ? -1 : y; break; } }   /* 3: T.SPIKE - no mist over a stake line, the hazard stays plain */
   return s; }
+/* WHAT THE STUCK GUIDE (src/stuck-guide.js, spots in src/stuck-spots.js) READS OF THE ENGINES: a prop-shaped row each, with the state a spot's `done` names (fired / used) */
+export const engineProps = F => F.engines.map(en => ({ t: en.t, x: en.x, y: en.y, fired: !!en.fired, used: en.t === 'ballista' ? !!en.fired : en.state !== 'ready' }));
 export const HORN_CAV = 3.0;
 /* WHERE AN ARROW CANNOT FIND YOU: behind a cover prop on its own floor, or down in a trench (the low route is sheltered) */
 export function sheltered(F, P) {
@@ -516,17 +519,25 @@ export function stepField(F, dt, c) {
   /* THE ENGINES YOU WORK */
   for (const en of F.engines) {
     en.cd = Math.max(0, en.cd - dt);
-    if (en.t === 'ballista' && en.cd <= 0 && c.struck(en.x - 14, en.y - 20, 28, 20, en)) { en.cd = 4; c.sound('bolt');
+    if (en.t === 'ballista' && en.cd <= 0 && c.struck(en.x - 14, en.y - 20, 28, 20, en)) { en.cd = 4; en.fired = true; c.sound('bolt');
       const dx = en.aim.x - en.x, dy = en.aim.y - 8 - (en.y - 12), d = Math.hypot(dx, dy) || 1; F.bolts.push({ x: en.x, y: en.y - 12, vx: dx / d * 520, vy: dy / d * 520, t: d / 520 + 0.05, hit: new Set() }); }
     if (en.t === 'trebuchet') { if (en.state === 'ready' && c.struck(en.x - 18, en.y - 36, 36, 36, en)) { en.state = 'wind'; en.t2 = 1.0; c.sound('crank'); c.say(en.x, en.y - 50, 'THE COUNTERWEIGHT DROPS', '#ffd36b'); }
       else if (en.state === 'wind') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; const T = 1.4; F.stones.push({ x: en.x, y: en.y - 40, vx: (en.aim.x - en.x) / T, vy: (en.aim.y - (en.y - 40) - 0.5 * 400 * T * T) / T, t: T, knocks: en.knocks }); c.sound('whoosh'); } } }
+    /* THE MANGONEL AT THE BRIDGEHEAD (2026-10-04, Daniel: the field's second engine you work): strike it and its skein lets go - the spoon throws a stone over the ravine, and the stone smashes the bowmen's palisade on the far bank (knocks: 'farbank'). It is NEVER required: the palisade is two rows, a hop, and the bridges cross without it */
+    if (en.t === 'mangonel') { if (en.state === 'ready' && c.struck(en.x - 26, en.y - 36, 52, 36, en)) { en.state = 'wind'; en.t2 = 0.9; c.sound('crank'); c.number(en.x, en.y - 52, 'THE SKEIN LETS GO', '#ffd36b');   /* (c.number: the teaching lines are literal number() texts, tools/hint-shown.mjs) */ }
+      else if (en.state === 'wind') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; const T = 1.9; F.stones.push({ x: en.x + 18, y: en.y - 30, vx: (en.aim.x - en.x - 18) / T, vy: (en.aim.y - 18 - (en.y - 30) - 0.5 * 400 * T * T) / T, t: T, knocks: en.knocks }); c.sound('whoosh'); c.shake && c.shake(3); } } }
+    /* THE TOWER THAT STANDS AT THE WALL: its drawbridge is tied off to a cleat on the deck. Strike the rope and the leaf runs down across the gap onto the curtain wall's walk - the way into the chapel (the ground gate stays shut) */
+    if (en.t === 'drawbridge') { if (en.state === 'ready' && c.struck(en.x - 14, en.y - 34, 28, 34, en)) { en.state = 'drop'; en.t2 = 1.3; c.sound('crank'); c.number(en.x, en.y - 66, 'THE ROPE PARTS: THE DRAWBRIDGE RUNS DOWN', '#ffd36b'); }
+      else if (en.state === 'drop') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'down'; F.bridgeDown = true; c.drawbridge(en); } } }
     if (en.t === 'oilbarrel') { if (en.state === 'ready' && c.struck(en.x - 9, en.y - 16, 18, 16, en)) { en.state = 'tip'; en.t2 = 0.6; c.say(en.x, en.y - 30, 'THE PITCH SPILLS', '#ff9a5c'); c.sound('crack'); }
       else if (en.state === 'tip') { en.t2 -= dt; if (en.t2 <= 0) { en.state = 'spent'; c.spill(en.spill[0], en.spill[1], en.y); c.sound('fire'); } } }
   }
   for (const b of F.bolts) { b.x += b.vx * dt; b.y += b.vy * dt; b.t -= dt;
     for (const q of c.foes()) if (q.alive && !b.hit.has(q) && Math.abs(q.x - b.x) < 12 && q.y > b.y - 6 && q.y - (q.h || 16) < b.y + 6) { b.hit.add(q); c.hurtFoe(q, q.maxHp ? 30 : 60, b.x - Math.sign(b.vx) * 10); } }
   F.bolts = F.bolts.filter(b => b.t > 0);
-  for (const s of F.stones) { s.vy += 400 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt; if (s.t <= 0 && !s.done) { s.done = true; if (s.knocks === 'tower') { F.breach = true; c.breach(); } } }
+  for (const s of F.stones) { s.vy += 400 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt; if (s.t <= 0 && !s.done) { s.done = true; if (s.knocks === 'tower') { F.breach = true; c.breach(); }
+      if (s.knocks === 'farbank') { F.farbank = true; c.farbank(s.x); c.number(s.x, s.y - 40, "THE BOWMEN'S PALISADE SPLINTERS", '#ffd36b');
+        for (const q of c.foes()) if (q.alive && !q.maxHp && Math.abs(q.x - s.x) < 72 && Math.abs(q.y - s.y) < 60) c.hurtFoe(q, 90, s.x - 30); } } }   /* the two bowmen of THE FAR BANK are thrown down (hurtFoe, as the ballista does) */
   F.stones = F.stones.filter(s => s.t > -0.1);
   for (const a of F.arrows) { a.y += a.vy * dt; a.t -= dt; } F.arrows = F.arrows.filter(a => a.t > 0);
   stepBridgeVolley(F, dt, c);
@@ -595,7 +606,8 @@ export function drawUnbWorld(g, foes, cx, cy, time) {
       g.globalAlpha = 0.14 + 0.06 * Math.sin(time * 3); g.fillStyle = '#b07cf0'; g.fillRect(fx - UNB.bannerR, fy - 2, UNB.bannerR * 2, 2); g.globalAlpha = 1;   /* the ground its standard holds */
       drawStandard(g, fx, fy, time, false, false); }
     if (e.t === 'barrowrider') drawRiderWorld(g, e, x, fy, cx, cy, time);
-    if (e.t === 'corpse' && e.mode === 'riseTell') { for (let i = 0; i < 3; i++) R(g, x - 8 + i * 7 + Math.round(Math.sin(time * 14 + i) * 2), fy - 3 - ((time * 30 + i * 5) % 8), 2, 2, '#c8b6ff'); }
+    if (e.t === 'corpse' && e.mode === 'riseTell') { for (let i = 0; i < 3; i++) R(g, x - 8 + i * 7 + Math.round(Math.sin(time * 14 + i) * 2), fy - 3 - ((time * 30 + i * 5) % 8), 2, 2, '#c8b6ff');
+      g.globalAlpha = 0.7; for (let i = 0; i < 7; i++) { const t = (time * 2.2 + i * 0.37) % 1; R(g, x - 10 + i * 3 + Math.round(Math.sin(time * 5 + i * 2) * 3), fy - 2 - Math.round(t * 16), 2 + (i % 2), 2, i % 2 ? '#ece8d8' : '#bdb8a4'); } g.globalAlpha = 1; }   /* and the lime dust of the pit they lay in lifts off them */
     if (e.t === 'deathknight') { const D = UNB.dk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 12);
       /* BLOOD BOIL: where it will come up (bubbles, red), and the pools while they boil */
       if (e.mode === 'boilTell' && Number.isFinite(e.boilX)) { const bx = Math.round(e.boilX - cx); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, fy - 2, D.boilR, 5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
@@ -647,34 +659,23 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   /* LOW GROUND MIST (the rework, 2026-09-24): a band along the ground's own line, pooling in trenches and craters. It is drawn here,
      under the creatures and their marks, and it never lies over a stake line - readability first, weather second */
   if (F.surf) { const G = F.G, x0 = Math.max(0, Math.floor(cx / TS)), x1 = Math.min(F.surf.length - 1, Math.ceil((cx + VW) / TS));
-    for (let tx = x0; tx <= x1; tx++) { const r = F.surf[tx]; if (r < 0) continue; const deep = Math.max(0, r - (G + 1)), sx = tx * TS - cx, top = r * TS - cy;
+    for (let tx = x0; tx <= x1; tx++) { const r = F.surf[tx]; if (r < 0) continue; const sx = tx * TS - cx, top = r * TS - cy;
       for (let q = 0; q < TS; q += 4) { const n = 0.5 + 0.5 * Math.sin((tx * TS + q) * 0.07 + time * 0.6) * Math.sin((tx * TS + q) * 0.023 - time * 0.35);
-        g.globalAlpha = 0.07 + 0.07 * n; R(g, sx + q, top - 6 - Math.round(n * 3), 4, 6 + Math.round(n * 3), '#b8aec4');
-        if (deep) { g.globalAlpha = 0.09 + 0.05 * n; R(g, sx + q, top - deep * TS, 4, deep * TS, '#a89cb6'); } } }
+        g.globalAlpha = 0.07 + 0.07 * n; R(g, sx + q, top - 6 - Math.round(n * 3), 4, 6 + Math.round(n * 3), '#b8aec4'); } }   /* (claude/unburiedart) the old pale columns up every trench step - the 'vertical slabs' of the identity review - are gone: mist lies, it does not stand */
     g.globalAlpha = 1; }
   /* THE GHOST ARMY on the ridge, over every stretch that is still fighting - and nothing over the ones you have ended */
-  for (const v of F.volleys) { if (v.quiet) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;
-    const ry = Math.round((F.G - 13) * TS - cy * 0.6);
-    g.globalAlpha = 0.16; for (let x = x0 - ((cx * 0.4) % 9); x < x1; x += 9) { const b = Math.round(Math.sin(time * 2 + x) * 1); R(g, x, ry + b, 3, 8, '#c8b6ff'); R(g, x, ry - 3 + b, 3, 3, '#c8b6ff'); if ((x | 0) % 27 === 0) R(g, x + 1, ry - 12, 1, 10, '#c8b6ff'); }
-    g.globalAlpha = 1;
-    if (v.warn) { const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.07 + 0.08 * k; R(g, x0, 0, x1 - x0, VH, '#ff6b6b'); g.globalAlpha = 1;
-      /* C5: the escape, lit from inside the danger - every cover prop in reach glows */
-      for (const cv of F.covers) { const sx = cv.x - cx; if (sx < x0 - 20 || sx > x1 + 20) continue; g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(Math.round(sx) - 14, Math.round(cv.y - cy) - 26, 28, 26); R(g, sx - 1, cv.y - cy - 34 - k * 3, 3, 5, '#8fd160'); g.globalAlpha = 1; } } }
+  const fdt = Math.min(0.1, Math.max(0, time - (F.lastDrawT ?? time))); F.lastDrawT = time;
+  for (const v of F.volleys) { v.fade = v.quiet ? Math.max(0, (v.fade ?? 1) - fdt / 1.8) : 1; if (v.fade <= 0) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;
+    ghostRank(g, x0, x1, Math.round((F.G - 13) * TS - cy * 0.6), cx, time, v.fade, v.warn);   /* pale helms, spears, shields and standards, lit cold, swaying - and fading when their stretch goes quiet */
+    if (v.warn && !v.quiet) { const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.07 + 0.08 * k; R(g, x0, 0, x1 - x0, VH, '#ff6b6b'); g.globalAlpha = 1;
+      /* (C5: the escape, lit from inside the danger - every cover prop in reach glows: drawn after the cover, below) */ } }
   for (const a of F.arrows) { const x = Math.round(a.x - cx), y = Math.round(a.y - cy); R(g, x, y - 7, 1, 7, '#5a4a36'); R(g, x - 1, y - 8, 3, 2, '#c8b6ff'); }
-  /* COVER: shields, wagons, mantlets */
-  for (const cv of F.covers) { const x = Math.round(cv.x - cx), y = Math.round(cv.y - cy); if (x < -40 || x > VW + 40) continue;
-    if (cv.kind === 'wagon') { R(g, x - 14, y - 18, 28, 12, '#5a3e26'); R(g, x - 14, y - 18, 28, 2, '#7a5634'); R(g, x - 10, y - 8, 7, 7, '#2e2016'); R(g, x + 4, y - 8, 7, 7, '#2e2016'); R(g, x - 8, y - 6, 3, 3, '#7a5634'); R(g, x + 6, y - 6, 3, 3, '#7a5634'); }
-    else if (cv.kind === 'mantlet') { R(g, x - 12, y - 24, 24, 22, '#6a4a2c'); for (let q = -10; q < 12; q += 5) R(g, x + q, y - 24, 1, 22, '#3e2a18'); R(g, x - 12, y - 25, 24, 2, '#8a6a44'); R(g, x - 10, y - 3, 3, 3, '#3e2a18'); R(g, x + 7, y - 3, 3, 3, '#3e2a18'); }
-    else if (cv.kind === 'brokenMantlet') {   /* THE BRIDGES: a siege mantlet with its top shot away and one leg gone, propped where it fell */
-      R(g, x - 12, y - 18, 22, 16, '#5e4228'); for (let q = -10; q < 10; q += 5) R(g, x + q, y - 18 + (q > 2 ? 3 : 0), 1, 16 - (q > 2 ? 3 : 0), '#3a2716');
-      R(g, x - 12, y - 19, 14, 2, '#80603c'); R(g, x + 2, y - 16, 8, 2, '#80603c'); R(g, x - 10, y - 3, 3, 3, '#3a2716'); R(g, x + 9, y - 6, 2, 6, '#3a2716');
-      for (let q = 0; q < 3; q++) { R(g, x - 8 + q * 7, y - 24 + (q % 2) * 2, 1, 8, '#5a4a36'); R(g, x - 9 + q * 7, y - 25 + (q % 2) * 2, 3, 2, '#c8b6ff'); } }   /* and the last volley's arrows still in it */
-    else if (cv.kind === 'cart') {   /* an overturned cart: bed on its side, one wheel in the air */
-      R(g, x - 14, y - 16, 26, 14, '#4e3622'); R(g, x - 14, y - 16, 26, 2, '#6e4e30'); for (let q = -10; q < 12; q += 6) R(g, x + q, y - 14, 1, 12, '#34241a');
-      g.fillStyle = '#2e2016'; g.beginPath(); g.arc(x + 10, y - 18, 6, 0, 7); g.fill(); g.fillStyle = '#7a5634'; g.beginPath(); g.arc(x + 10, y - 18, 2, 0, 7); g.fill();
-      R(g, x - 16, y - 4, 6, 2, '#6e4e30'); }
-    else { for (let q = 0; q < 3; q++) { const sx = x - 12 + q * 8; R(g, sx, y - 16 + (q % 2) * 2, 8, 14, q % 2 ? '#7a6a58' : '#6a5a48'); R(g, sx + 3, y - 11 + (q % 2) * 2, 2, 4, '#c8a44a'); } }   /* upturned shields */
-  }
+  /* COVER: wheeled pavises, a supply wagon, the overturned cart, the line of ghost shieldmen - baked pictures (src/redraw/unburied_siege.js), no crate shapes */
+  for (const cv of F.covers) { const x = Math.round(cv.x - cx), y = Math.round(cv.y - cy); if (x < -40 || x > VW + 40) continue; const sp = SG.coverSprite(cv.kind); g.drawImage(sp, x - (sp.width >> 1), y - sp.height + 2); }
+  /* C5: THE ESCAPE, LIT FROM INSIDE THE DANGER - every cover prop in reach of a horn that is blowing glows green, over the cover (so a bigger picture never hides it) */
+  { const k = 0.5 + 0.5 * Math.sin(time * 16); for (const v of F.volleys) { if (!v.warn || v.quiet) continue; const gx0 = v.x0 - cx, gx1 = v.x1 - cx;
+      for (const cv of F.covers) { const sx = cv.x - cx; if (sx < gx0 - 20 || sx > gx1 + 20 || sx < -40 || sx > VW + 40) continue; const sp = SG.coverSprite(cv.kind), w = sp.width, h = sp.height - 3, by = Math.round(cv.y - cy);
+        g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(Math.round(sx - w / 2) + 0.5, by - h + 0.5, w - 1, h); R(g, sx - 1, by - h - 8 - k * 3, 3, 5, '#8fd160'); g.globalAlpha = 1; } } }
   /* THE BRIDGES' VOLLEY, TOLD: every shadow darkening and closing as the arrows come down onto it, a red rim round it, the arrows
      themselves in the last half of the whistle; the cover in reach lit green (C5); and the arrows left standing in the planks */
   if (F.bv) { const bv = F.bv;
@@ -684,7 +685,7 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
       if (k > 0.5) for (let i = 0; i < 3; i++) { const ax = x - 6 + i * 6, ay = Math.round(y - 10 - (1 - k) * 220 - i * 9); R(g, ax, ay - 8, 1, 8, '#5a4a36'); R(g, ax - 1, ay, 3, 2, '#c8b6ff'); } }
     if (bv.marks.length) { const k = 0.5 + 0.5 * Math.sin(time * 16);
       for (const cv of F.covers) { if (cv.x < bv.x0 || cv.x > bv.x1) continue; const sx = Math.round(cv.x - cx); if (sx < -30 || sx > VW + 30) continue;
-        g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(sx - 14, Math.round(cv.y - cy) - 26, 28, 26); g.globalAlpha = 1; } }
+        g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; { const sp = SG.coverSprite(cv.kind), w = sp.width, h = sp.height - 3; g.strokeRect(Math.round(sx - w / 2) + 0.5, Math.round(cv.y - cy) - h + 0.5, w - 1, h); } g.globalAlpha = 1; } }
     for (const s of bv.stuck) { if (s.t < 0.4 && Math.floor(time * 14) % 2) continue; const x = Math.round(s.x - cx), y = Math.round(s.y - cy);
       for (let i = 0; i < 3; i++) { R(g, x - 6 + i * 6, y - 7 + (i % 2), 1, 7, '#6a5236'); R(g, x - 7 + i * 6, y - 8 + (i % 2), 3, 2, '#c8b6ff'); } } }
   /* PEGS: the arrows standing in the palisade, going out in the last second */
@@ -697,19 +698,38 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
         text2(g, '!!', Math.max(20, Math.min(VW - 20, cv.x1 - cx - 30)), ly - 40, '#ff6b6b'); } }
     if (cv.x !== null) { const x = Math.round(cv.x - cx); for (let i = 0; i < 5; i++) { const hx = x + i * 26, b = Math.round(Math.sin(time * 26 + i) * 2);
         g.globalAlpha = 0.55; R(g, hx - 10, ly - 16 + b, 22, 9, '#c8d6ff'); R(g, hx - 13, ly - 20 + b, 6, 6, '#c8d6ff'); R(g, hx - 8, ly - 7 + b, 2, 7, '#c8d6ff'); R(g, hx + 8, ly - 7 - b, 2, 7, '#c8d6ff'); R(g, hx + 1, ly - 28 + b, 5, 12, '#e8eeff'); R(g, hx - 8, ly - 30 + b, 20, 1, '#e8eeff'); g.globalAlpha = 1; } } }
-  /* THE ENGINES */
-  for (const en of F.engines) { const x = Math.round(en.x - cx), y = Math.round(en.y - cy); if (x < -60 || x > VW + 60) continue;
-    if (en.t === 'ballista') { R(g, x - 12, y - 8, 24, 8, '#4a3222'); R(g, x - 3, y - 16, 6, 8, '#5a3e26'); R(g, x - 14, y - 18, 28, 3, '#6a4a2c'); R(g, x - 1, y - 20, 16, 2, en.cd > 0 ? '#3a2a1a' : '#c8c8d0');
-      if (en.cd <= 0) { g.globalAlpha = 0.25; g.strokeStyle = '#ffd36b'; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(x, y - 12); g.lineTo(Math.round(en.aim.x - cx), Math.round(en.aim.y - 8 - cy)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; } }
-    if (en.t === 'trebuchet') { const arm = en.state === 'ready' ? -0.9 : en.state === 'wind' ? -0.9 + (1 - en.t2) * 2 : 1.1;
-      R(g, x - 18, y - 6, 36, 6, '#4a3222'); fillPoly(g, [[x - 14, y - 6], [x - 2, y - 34], [x + 2, y - 34], [x + 14, y - 6]], '#5a3e26');
-      g.strokeStyle = '#6a4a2c'; g.lineWidth = 3; g.beginPath(); g.moveTo(x - Math.cos(arm) * 12, y - 34 - Math.sin(arm) * 12); g.lineTo(x + Math.cos(arm) * 30, y - 34 + Math.sin(arm) * 30); g.stroke();
-      R(g, x - Math.cos(arm) * 12 - 5, y - 34 - Math.sin(arm) * 12 - 3, 10, 9, '#3a3a44');
-      if (en.state === 'ready') { g.globalAlpha = 0.25; g.strokeStyle = '#ffd36b'; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(x, y - 40); g.quadraticCurveTo((x + en.aim.x - cx) / 2, y - 140, Math.round(en.aim.x - cx), Math.round(en.aim.y - cy)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; } }
-    if (en.t === 'oilbarrel' && en.state !== 'spent') { const tilt = en.state === 'tip' ? Math.round((0.6 - en.t2) * 10) : 0; R(g, x - 7 + tilt, y - 15, 14, 15, '#3a2a1c'); R(g, x - 7 + tilt, y - 12, 14, 2, '#8a8a94'); R(g, x - 7 + tilt, y - 5, 14, 2, '#8a8a94'); R(g, x - 3 + tilt, y - 17, 6, 2, '#1a1410'); R(g, x - 2 + tilt, y - 10, 4, 3, '#ff9a5c'); }
+  /* THE ENGINES: the baked pictures (src/redraw/unburied_siege.js); the yellow aim arcs stay - they are half of the glint */
+  for (const en of F.engines) { const x = Math.round(en.x - cx), y = Math.round(en.y - cy); if (x < -70 || x > VW + 70) continue;
+    if (en.t === 'ballista') SG.drawBallista(g, x, y, en.cd <= 0, Math.round(en.aim.x - cx), Math.round(en.aim.y - 8 - cy));
+    if (en.t === 'trebuchet') SG.drawTrebuchet(g, x, y, en.state, en.t2, en.state === 'ready', Math.round(en.aim.x - cx), Math.round(en.aim.y - cy));
+    if (en.t === 'oilbarrel') SG.drawOil(g, x, y, en.state, en.state === 'tip' ? 1 - en.t2 / 0.6 : 0, time);
+    if (en.t === 'mangonel') SG.drawMangonel(g, x, y, en.state === 'ready' ? -0.5 : en.state === 'wind' ? -0.5 + (1 - Math.max(0, en.t2) / 0.9) * 1.5 : 1.0, en.state, en.state === 'ready', Math.round(en.aim.x - cx), Math.round(en.aim.y - cy), time);
+    if (en.t === 'drawbridge') { const hx = en.span[0] * TS - cx, hy = en.bridgeRow * TS - cy, e = en.state === 'drop' ? 1 - Math.max(0, en.t2) / 1.3 : en.state === 'down' ? 1 : 0;
+      SG.drawDrawbridge(g, Math.round(hx), Math.round(hy), -Math.PI / 2 * (1 - e * e), en.state, time); SG.drawCleat(g, x, y, en.state === 'ready');
+      if (en.state === 'ready') { g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 5); g.strokeStyle = '#ffd36b'; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(x, y - 14); g.lineTo(Math.round(hx + 100), Math.round(hy - 2)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; } }   /* the dotted line to where the leaf will land: half of the glint */
   }
+  if (F.farbank) SG.drawFarbankRubble(g, cx, cy, F.G, VW);   /* the bowmen's palisade, smashed */
+  if (F.breach) SG.drawBreach(g, cx, cy, F.G, VW);   /* the tower's base, opened */
   for (const b of F.bolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), f = Math.sign(b.vx) || 1; R(g, f > 0 ? x - 14 : x, y, 14, 2, '#c8c8d0'); R(g, f > 0 ? x : x - 3, y - 1, 3, 4, '#e8e8f0'); }
-  for (const s of F.stones) { R(g, s.x - cx - 5, s.y - cy - 5, 10, 10, '#6a6a74'); R(g, s.x - cx - 3, s.y - cy - 4, 4, 3, '#9a9aa4'); }
+  for (const s of F.stones) { const sx = Math.round(s.x - cx), sy = Math.round(s.y - cy); g.fillStyle = '#1b1626'; g.beginPath(); g.arc(sx, sy, 6, 0, 7); g.fill(); g.fillStyle = '#6c6866'; g.beginPath(); g.arc(sx, sy, 5, 0, 7); g.fill(); g.fillStyle = '#9c968e'; g.fillRect(sx - 3, sy - 3, 3, 2); g.fillStyle = '#4c4848'; g.fillRect(sx + 1, sy + 1, 3, 3); }   /* a stone that tumbles */
+}
+/* THE GHOST ARMY ON THE RIDGE, over a stretch that is still fighting: ranks of pale shieldmen and spearmen standing in the dusk, helms and the points of spears, tattered standards that sway,
+   lit cold; the rear rank fainter and smaller. (It was a barcode of 3x8 px bars every 9 px, 'a render fault'.) alphaK fades a stretch whose bearer is cut. */
+function ghostRank(g, x0, x1, ry, cx, time, alphaK, warn) {
+  const step = 13, off = (cx * 0.4) % step, i0 = Math.floor(cx * 0.4 / step);
+  for (let rank = 1; rank >= 0; rank--) {
+    const k = rank ? 0.15 : 0.27, sc = rank ? 0.8 : 1; g.globalAlpha = (k + (warn && !rank ? 0.08 : 0)) * alphaK;
+    for (let x = x0 - off - 12, i = i0 + (rank ? 777 : 0); x < x1 + 12; x += step, i++) { const h = ((i * 2654435761) >>> 0) % 1000 / 1000, bx = Math.round(x + (rank ? 6 : 0) + h * 4), by = ry + (rank ? -5 : 0) + Math.round(Math.sin(time * 1.3 + i) * 1), sw = Math.sin(time * 1.4 + i * 0.7) * 1.4;
+      if (bx < x0 - 6 || bx > x1 + 6) continue;
+      R(g, bx - 1, by - 1, 5, 4, '#b8c4dc'); R(g, bx, by + 1, 3, 1, '#1e1a28');   /* the helm, its dark slit */
+      R(g, bx - 2, by + 3, 7, Math.round(13 * sc), '#8a96b4'); R(g, bx - 3, by + 5, 3, Math.round(9 * sc), '#c8d4ec'); R(g, bx - 3, by + 5, 1, Math.round(9 * sc), '#e8eeff');   /* the cloak and the shield's face */
+      if (h < 0.55) { const tip = Math.round(sw); for (let q = 0; q < 12; q++) R(g, bx + 4 + Math.round(tip * q / 12), by - 2 - q, 1, 1, '#d8e0f4'); R(g, bx + 3 + tip, by - 16, 3, 2, '#e8eeff'); }   /* a spear over the shield, swaying */
+    }
+    if (!rank) for (let x = x0 - off - 40, i = i0; x < x1 + 40; x += step * 7, i += 7) { if (((i * 2654435761) >>> 0) % 5 > 1) continue; const px0 = Math.round(x + 5), top = ry - 30;   /* a standard every seven or so men */
+      R(g, px0, top, 1, 34, '#8a96b4'); R(g, px0 - 1, top - 2, 3, 2, '#d8e0f4'); for (let q = 0; q < 12; q++) { const dy = Math.round(Math.sin(time * 3 + q * 0.5 + i) * 1.5 * q / 12); R(g, px0 + 1 + q, top + 2 + dy, 1, 11 - (q > 8 ? (q % 2) * 3 : 0), q % 4 === 0 ? '#c8d0e4' : '#9aa4c0'); }
+      R(g, px0 + 3, top + 5, 6, 1, '#e8f0ff'); }
+  }
+  g.globalAlpha = 1;
 }
 function text2(g, s, x, y, col) { /* two red bars and a gap: the '!!' without the font (the font is main.js's) */ for (let i = 0; i < s.length; i++) { R(g, x + i * 4 - 3, y, 2, 6, col); R(g, x + i * 4 - 3, y + 8, 2, 2, col); } }
 
