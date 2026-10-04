@@ -218,7 +218,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
     ambushes: [{ name: 'THE SEALED CRYPT', row: G, wallL: A2.wallL, wallR: A2.wallR, check: [302, G],
       waves: [[['husk', 338, G, { elite: true }], ['wight', 328, G], ['zombie', 324, G], ['corpse', 342, G]]] }],
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'barrowrider', name: 'THE BARROW RIDER' },
-    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'bloodknight', music: 'deathknight' },   /* Night on Bald Mountain: the dead rise for one night - the level's own track, kept (L.music) */
+    arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: (G + 1) * TS, trigger: (A.x0 + 4) * TS, wallL: A.x0 - 1, wallR: A.x1, boss: 'bloodknight', music: 'blacklord' },   /* Night on Bald Mountain: the dead rise for one night - the level's own track, kept (L.music) */
   };
 
   // ---- 4b. THE BROKEN BRIDGES (c 265-324, final columns; 2026-09-25) ----

@@ -146,7 +146,7 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
    without touching it (playFile in src/audio.js), so the chapel door neither switches nor restarts the music. ---- */
 { const AUD = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
   assert.equal(L.music, 'deathknight', 'the level plays Night on Bald Mountain (deathknight), not ' + L.music);
-  assert.equal(L.arena.music, L.music, 'the arena switches the music to ' + L.arena.music + ': the fight must keep the level\'s own track');
+  assert.equal(L.arena.music, 'blacklord', 'THE DEATH KNIGHT fights to his own theme, For the Black Lord (claude/dk3, Daniel\'s pick 10-03; the level keeps its own track): ' + L.arena.music);
   assert.ok(/function playFile\(name\) \{\s*if \(!ac \|\| !trackBuf\[name\] \|\| currentTrack === name\) return;/.test(AUD), 'playFile no longer returns on the track already playing: the same name would restart it');
   ok('one track, field and fight', L.music); }
 

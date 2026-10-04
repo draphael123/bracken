@@ -32,6 +32,8 @@ assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena i
 assert.equal(arena('redgorge').music, 'gorgecrab', "THE GREAT RED CRAB's arena is not on his clacking march");
 assert.equal(arena('welltown').music, 'cisternqueen', "THE CISTERN QUEEN's hall is not on her own theme");
 assert.equal(LEVELS.find(l => l.id === 'welltown').build().mini.music, 'banditking', "THE GANG LEADER's courtyard is not on the old King's theme (his mini keeps it, claude/welltown3)");
+assert.equal(arena('unburied').music, 'blacklord', "THE DEATH KNIGHT's arena is not on his own theme, For the Black Lord (claude/dk3, Daniel's pick)");
+assert.ok(A.MUSIC_NAMES.includes('blacklord') && /Ronhul Maggot/.test(A.MUSIC_CREDITS.blacklord || ''), 'For the Black Lord has no Sound Test entry and CC-BY credit');
 assert.ok(A.MUSIC_NAMES.includes('cisternqueen') && A.MUSIC_CREDITS.cisternqueen, 'THE CISTERN QUEEN has no Sound Test entry of her own');
 assert.ok(A.MUSIC_NAMES.includes('banditking') && A.MUSIC_CREDITS.banditking, 'THE BANDIT KING has no Sound Test entry of his own');
 for (const n of ['archmage', 'archmage:undead', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
