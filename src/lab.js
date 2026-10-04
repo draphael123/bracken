@@ -1195,7 +1195,8 @@ async function runbossLab(BK, opts) {
         const GH=BK.greenteethHands(),show=GH&&GH.show();
         if(f===0||!P.labGtMem)P.labGtMem={};
         const mv=P.onMover,wi=mv&&mv.weed&&show?show.weed.findIndex(q=>q.m===mv.wi&&q.firm&&!(q.broken>0)):-1;
-        const pl=show?greenteethPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,swim:!!P.swim,snare:P.snare||0,atk:P.atk,onWeed:P.ground?wi:-1,onTile:!!P.ground&&!P.onMover},e:boss,show,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labGtMem}):{gx:null,face:P.face};
+        const pl=show?greenteethPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,swim:!!P.swim,snare:P.snare||0,atk:P.atk,onWeed:P.ground?wi:-1,onTile:!!P.ground&&!P.onMover,dodge:P.dodge||0},e:boss,show,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labGtMem}):{gx:null,face:P.face};
+        if(pl.meet!==undefined){P.face=pl.face||P.face;if(h==='warden')k.block=pl.meet<0.2&&DEFLECT_TAP(f);else if(h==='pyro'){if(emberPlan(BK,h,boss)==='raise')k.down=true;}else k.block=pl.meet<0.4;}   /* (claude/jenny2: her bite MET dazes her - the knight's shield, the warden's deflect on the beat, the pyromancer's flare) */
         if(pl.drop&&P.ground){k.down=true;if(P.labDrop===undefined||f-P.labDrop>20){BK.press('jump');P.labDrop=f;}}
         else if(pl.jump&&(P.ground||P.swim)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}

@@ -19,7 +19,7 @@ const L = lv.build(), W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W
 const solid = t => t === T.SOLID || t === T.CRATE;
 const stand = t => solid(t) || t === T.ONEWAY;
 const D = L.canal || {};
-const levelsOf = p => { if (p.lock) { const d = [0, 48, 80, 112]; return d.map(v => p.bottom - v); }   /* Jenny's chamber: dry, low, half, high (src/jenny-greenteeth.js GT.lv) */
+const levelsOf = p => { if (p.lock) { const d = [0, 40, 48, 80, 112]; return d.map(v => p.bottom - v); }   /* Jenny's chamber: dry, the fog's shoal, low, half, high (src/jenny-greenteeth.js GT.lv) */
   const r = (D.reaches || []).find(q => q.id === p.canal); return r ? [...new Set([r.lo, r.hi])].map(row => row * TS + 4) : [p.y]; };
 const deep = p => !p.shallow && !p.swim;
 const pools = (L.pools || []).filter(p => !p.dry || p.lock);
