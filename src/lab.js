@@ -455,7 +455,7 @@ function humanSwingOk(BK) {
   const P = BK.P, h = HUMAN_H; if (BK.labHuman === false || !P || !h || !(P.ground || P.swim) || committed(P)) return true;
   const total = artLim(false) / artRate(h, false) + (COMMIT[h] || COMMIT.knight).light;
   const cost = BK.stepCost ? BK.stepCost() : 15, roll = ROLL_COST[h] || 24;
-  if (P.st - cost < roll * LAB_RESERVE && P.st < P.maxSt) return false;   /* (b): keep (half) a roll */
+  if (P.st - cost < roll * (BK.labReserve ?? LAB_RESERVE) && P.st < P.maxSt) return false;   /* (b): keep (half) a roll */
   for (const e of BK.enemies()) { if (!e.alive || e.harmless || Math.abs(e.x - P.x) > 110 || Math.abs(e.y - P.y) > 60) continue;
     const greed = e.greedT > 0 ? e.greedT : 0, wu = BK.windingUp ? BK.windingUp(e) : false;
     if (!greed && !wu) continue;
