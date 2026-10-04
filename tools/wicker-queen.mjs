@@ -380,8 +380,10 @@ try {
     for (let i = 0; i < 60 * 10 && q.mode !== 'still'; i++) { hold(emb.x1 + 90, -1); BK.sim(1); } out.brought.flung = Math.round(q.x - emb.x1);
     // 10. PHASE TWO: the green goes dark, only a near look holds her, and the ride quickens - told first
     quiet(); q.bank = 0; q.hp = Math.floor(q.maxHp * 0.6); q.mode = 'still'; q.x = emb.x1 + 40; let quickT = 0, s0 = ring().speed;
-    for (let i = 0; i < 20; i++) { hold(q.x - 200, 1); BK.sim(1); quickT = Math.max(quickT, ring().quicken); }
-    x0 = q.x; for (let i = 0; i < 40; i++) { hold(x0 - 200, 1); BK.sim(1); } out.dark = { phase: q.phase, dark: +(BK.L.dark || 0).toFixed(2), farMoved: Math.round(x0 - q.x), quickT: +quickT.toFixed(2), s0 };
+    /* (claude/mashmachines probe sweep) STAND OFF ON THE ROOMY SIDE, clamped to the arena: a fixed q.x - 200 near the wall let the wall pull the hero closer than the 'looked away' premise */
+    let farGap = 1e9; const farAt = (x, qx) => { const side = (qx - A.x0 >= A.x1 - qx) ? -1 : 1; return [Math.max(A.x0 + 8, Math.min(A.x1 - 8, x + side * 200)), side < 0 ? 1 : -1]; };
+    for (let i = 0; i < 20; i++) { const [fx, ff] = farAt(q.x, q.x); hold(fx, ff); BK.sim(1); farGap = Math.min(farGap, Math.abs(q.x - BK.P.x)); quickT = Math.max(quickT, ring().quicken); }
+    x0 = q.x; for (let i = 0; i < 40; i++) { const [fx, ff] = farAt(x0, x0); hold(fx, ff); BK.sim(1); farGap = Math.min(farGap, Math.abs(q.x - BK.P.x)); } out.dark = { farGap: Math.round(farGap), phase: q.phase, dark: +(BK.L.dark || 0).toFixed(2), farMoved: Math.round(x0 - q.x), quickT: +quickT.toFixed(2), s0 };
     q.mode = 'still'; let nfeet = 0; for (let i = 0; i < 60; i++) { quiet(); hold(q.x - 70, 1); BK.sim(1); nfeet = Math.max(nfeet, Math.abs(q.vx)); } out.dark.nearFeet = nfeet;
     for (let i = 0; i < 180; i++) { quiet(); hold(q.x - 70, 1); BK.sim(1); } out.dark.speed = ring().speed;
     // 11. PHASE THREE: alight, and the ride quickens again
@@ -449,7 +451,7 @@ ok(R.stab.mark === '!!' && R.stab.hurt > 0, 'the stab from behind: ' + JSON.stri
 ok(R.burn.mode === 'burn' && R.burn.modes.includes('catch') && R.burn.open > 2, 'lured onto the embers against the ride and faced she did not burn in the page: ' + JSON.stringify(R.burn));
 ok(R.burn.bite > R.burn.cold * 4, 'a blow while she burns does not bite far harder than against the standing wicker: ' + JSON.stringify(R.burn));
 ok(R.brought.mode === 'burn' && R.brought.feet === 0 && R.brought.flung > 0, 'held in the look upstream of the fire, the ride did not bring her onto it (and fling her off downstream) in the page: ' + JSON.stringify(R.brought));
-ok(R.dark.phase === 2 && R.dark.dark >= 0.5 && R.dark.farMoved > 10 && R.dark.nearFeet === 0, 'PHASE 2 in the page (dark green, near look only): ' + JSON.stringify(R.dark));
+ok(R.dark.phase === 2 && R.dark.dark >= 0.5 && R.dark.farMoved > 10 && R.dark.nearFeet === 0 && R.dark.farGap >= 150, 'PHASE 2 in the page (dark green, near look only): ' + JSON.stringify(R.dark));
 ok(R.dark.quickT > 1 && R.dark.speed > R.dark.s0 + 5, 'PHASE 2: the ride did not quicken, or not told first: ' + JSON.stringify(R.dark));
 ok(R.alight.phase === 3 && R.alight.dark < 0.2 && R.alight.speed > R.dark.speed + 5, 'PHASE 3 in the page (alight, the ride quicker again): ' + JSON.stringify(R.alight));
 ok(R.crown.calls >= 1 && R.crown.copies === 2 && R.crown.mummers <= 0 && R.crown.struck && R.crown.hurt > 0 && R.crown.hurt < 20, 'the crowning in the page did not stand up her copies (no crowd), or a struck copy did not burst into burning straw (a small hurt): ' + JSON.stringify(R.crown));

@@ -5,6 +5,8 @@
    dies or drops under 40% health. One life, normal health, no god mode (the lab's setup, src/lab.js bossLab, minus its bot).
      node tools/mash-bot.mjs <id>[,<id>..]        a level's boss fight (and mini fight) with knight, warden, pyro x 2 seeds, at the level's expected hero level
      node tools/mash-bot.mjs --level <id>[,..]    LEVEL MODE: hold right + mash attack through the level's main route (lifted where it is stuck, counted)
+     node tools/mash-bot.mjs --report             per-hero level table from the cache + the levels whose verdict changes when every hero is judged (no browser)
+     options: --no-machines (level mode: lift instead of riding barges / lifts / carts / cranks), --quick (level mode: knight only)
      node tools/mash-bot.mjs --all                every campaign boss and mini, both modes   (long: run it by hand, never in the suite)
      options: --heroes=knight,warden,pyro  --seeds=2  --l1  (add the fresh level-1 variant, 1 seed)  --probe (also the chip / reprisal probe)  --mini-only / --arena-only
               --write (stamp docs/mash-bot.json, hash-stamped like docs/level1-pilot.json)  --out=file.json (raw rows)  --secs=150
@@ -14,8 +16,9 @@
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
-import { levelHash, MASH_FILE, mashVerdict } from './level-quality.mjs';
+import { levelHash, MASH_FILE, MASH_HP, mashVerdict } from './level-quality.mjs';
 import { pacing } from './pacing.mjs';
+import { carryRows, heroReport } from './mash-rows.mjs';
 
 const args = process.argv.slice(2), has = k => args.includes('--' + k);
 const opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
@@ -26,6 +29,11 @@ if (has('assert')) {   /* the assertion a boss check imports or shells out to: m
   let bad = 0;
   for (const id of free) { const lv = LEVELS.find(l => l.id === id); const v = mashVerdict(lv); console.log(id + ': ' + v.msg); if (!v.ok) bad++; }
   process.exit(bad ? 1 : 0);
+}
+
+if (has('report')) {   /* (claude/mashmachines) the per-hero level table and the levels whose verdict changes when every hero is judged (cache only, no browser) */
+  const { lines, changes, partial } = heroReport(JSON.parse(readFileSync(MASH_FILE, 'utf8')), MASH_HP); console.log(lines.join('\n'));
+  console.log('\n' + changes.length + ' level(s) change verdict between knight-only and all heroes: ' + (changes.join(', ') || 'none') + '\n' + partial.length + ' level row(s) do not hold all three heroes yet (re-run --level): ' + (partial.join(', ') || 'none')); process.exit(0);
 }
 
 /* WHICH LEVELS: every one with an arena or a mini, discovered in the page (a level's arena is built at load) */
@@ -65,18 +73,71 @@ const pageSrc = `(() => {
       const out = P.dead ? 'dead' : boss.alive ? 'timeout' : 'win';
       return { out, secs: +(f / 60).toFixed(1), hpLostPct: Math.min(100, Math.round(lost / P.maxHp * 100)), bossLeftPct: boss.alive ? Math.round(boss.hp / hp0 * 100) : 0, swings, landed, reprisalPct: lost > 0 ? Math.round(reprisal / lost * 100) : 0, heroLevel: o.lvl, chip, bossT: boss.t };
     } finally { done(); } };
+  /* (claude/mashmachines) LEVEL MODE RIDES THE ROUTE'S MACHINES. The bot never jumps, so a barge, lift, cart or crank-driven platform was a
+     'lift' (a teleport) and every level number after it was a guess. Now, stalled at a waypoint, it first does the MINIMUM a player must do: it asks the
+     route list (src/stuck-guide.js resolve, the same 'what next' the glint uses) what the route needs here, or else takes the nearest mover whose path
+     passes the waypoint; it walks onto the mover and stands still on it (the game starts a mover when you are aboard), and it strikes / presses E at a
+     crank, winch, capstan or lever the route names. It still fights only by mashing attack, never blocks or dodges, never jumps. Only when no machine gets
+     it there does it lift (teleport) as before. The row counts rides, pulls and lifts apart. Not handled (still a lift): a hoist that wants a load carried
+     into its well, a ferry's toll, a rope climb that needs a jump. */
   window.__mashLevel = async (o) => {
-    BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'), TS = 16, done = await prep(o);
+    BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'), { resolve } = await import('/src/stuck-guide.js'), TS = 16, done = await prep(o);
     try {
       BK.setHero(o.hero); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === o.id)); BK.state = 'play'; BK.start(); BK.god = false; BK.reset();
-      const P = BK.P, k = BK.keys, way = o.way, d0 = BK.stats().deaths; let frames = 0, lifts = 0, reached = 0, minHp = 1, lostHp = 0;
-      for (const [wx, wy] of way) { if (frames > o.steps) break; let got = false; const gx = wx * TS + 8;
+      const P = BK.P, k = BK.keys, way = o.way, d0 = BK.stats().deaths; let frames = 0, lifts = 0, boardLifts = 0, rides = 0, pulls = 0, reached = 0, minHp = 1, lostHp = 0, spent = 0; const boxes = new Map(), kinds = {}, dbg = [];
+      const MACH = /^(lever|crank|winch|capstan|pump|pwheel|awningwinch|sluice|tbell|bell|seabell|tidebell)$/;
+      const clear = () => { k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false; if (k.throw !== undefined) k.throw = false; };
+      const step = () => { const before = P.hp; BK.sim(1); frames++; lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); };
+      const mash = () => { if (P.atk < 0) BK.press('atk'); };
+      const learn = () => { for (const m of BK.movers()) { if (m.x === undefined || m.y === undefined || Number.isNaN(m.y)) continue; const b = boxes.get(m) || { x0: 1e9, x1: -1e9, y0: 1e9, y1: -1e9 };
+        const xs = [m.x, m.x + (m.w || 16)], ys = [m.y, m.y + (m.h || 8)]; if (m.x0 !== undefined) xs.push(m.x0, m.x0 + (m.range || 0) + (m.w || 16)); if (m.y0 !== undefined) ys.push(m.y0); if (m.y1 !== undefined) ys.push(m.y1);
+        b.x0 = Math.min(b.x0, ...xs); b.x1 = Math.max(b.x1, ...xs); b.y0 = Math.min(b.y0, ...ys); b.y1 = Math.max(b.y1, ...ys); boxes.set(m, b); } };
+      const nameOf = m => m.kind || (m.vert ? 'vmover' : 'mover');
+      let curWi = 0;   /* a ride can carry the hero PAST waypoints: the furthest waypoint at or after the current one that he stands at counts (and the bot is never lifted back to one behind him) */
+      const nearWp = j => Math.abs(P.x - (way[j][0] * TS + 8)) < 10 && (!o.tall || Math.abs(P.y - (way[j][1] + 1) * TS) < 3 * TS);
+      const ahead = from => { for (let j = way.length - 1; j >= from; j--) if (nearWp(j)) return j; return -1; };
+      const atWp = () => ahead(curWi) >= 0;
+      const usable = m => !m.hoist && !m.broken && !m.gone && !(m.ferry && !m.paid && !m.free) && m.x !== undefined && !Number.isNaN(m.y);
+      const aimsAt = (m, wx, wy) => { const b = boxes.get(m); if (!b) return false; const px = wx * TS + 8, py = (wy + 1) * TS; return px >= b.x0 - 5 * TS && px <= b.x1 + 5 * TS && py >= b.y0 - 6 * TS && py <= b.y1 + 6 * TS; };
+      /* stand on a mover and wait: true once the waypoint is reached from it */
+      const ride = (m, wx, wy, gx) => { if (o.debug) dbg.push('  try ' + nameOf(m) + '@' + Math.round(m.x / TS) + ',' + Math.round(m.y / TS) + ' for wp ' + wx + ',' + wy + ' hero ' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + ' f' + frames);
+        for (let t = 0; t < 180 && P.onMover !== m && !P.dead; t++) { clear(); const cx = m.x + (m.w || 16) / 2; if (Math.abs(P.x - cx) > 5) k[cx > P.x ? 'right' : 'left'] = true; mash(); step(); }
+        if (P.onMover !== m && !P.dead && m.x !== undefined) { boardLifts++; P.x = m.x + (m.w || 16) / 2; P.y = m.y - 2; P.vx = P.vy = 0; for (let t = 0; t < 14 && P.onMover !== m; t++) BK.sim(1); }   /* the bot cannot jump aboard: a BOARDING LIFT puts it on the machine (counted apart from the waypoint lifts), and the machine carries it from there */
+        if (P.onMover !== m) { if (o.debug) dbg.push('  not boarded; hero ' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + ' mover ' + Math.round(m.x / TS) + ',' + Math.round(m.y / TS)); clear(); return false; }
+        rides++; kinds[nameOf(m)] = (kinds[nameOf(m)] || 0) + 1; const x0 = m.x, y0 = m.y; let moved = 0;
+        for (let t = 0; t < 900 && !P.dead; t++) { clear(); moved = Math.max(moved, Math.abs(m.x - x0) + Math.abs(m.y - y0));
+          if (atWp(gx, wy)) return true;
+          if (Math.abs(P.y - (wy + 1) * TS) <= 28 && Math.abs(gx - P.x) < 5 * TS) k[gx > P.x ? 'right' : 'left'] = true;   /* (stand still while it carries you; step off only when the waypoint is a few tiles away) */
+          if (t % 45 === 44) BK.press('talk'); mash(); step(); if (t === 300 && moved < 8) break; }
+        clear(); if (o.debug) dbg.push('  ride ended; hero ' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + ' mover ' + Math.round(m.x / TS) + ',' + Math.round(m.y / TS) + ' moved ' + Math.round(moved) + ' onMover ' + (P.onMover === m)); return atWp(gx, wy); };
+      /* walk to a crank / winch / capstan / lever, strike it and press E a few times */
+      const work = (tx, ty) => {
+        for (let t = 0; t < 360 && !P.dead; t++) { clear(); if (Math.abs(P.x - tx) > 12) k[tx > P.x ? 'right' : 'left'] = true; else break; mash(); step(); }
+        if (Math.abs(P.x - tx) > 18) { clear(); return false; }
+        for (let t = 0; t < 240 && !P.dead; t++) { clear(); P.face = Math.sign(tx - P.x) || P.face; if (t % 15 === 0) BK.press('talk'); mash(); step(); }
+        pulls++; clear(); return true; };
+      const assist = (wx, wy, gx) => {
+        const f0 = frames, tried = new Set(); if (spent > 14000) return false;
+        try { for (let guard = 0; guard < 6 && frames - f0 < 1600 && !atWp(gx, wy) && !P.dead; guard++) {
+          const env = { TS, props: BK.props(), movers: BK.movers(), hero: P }, r = resolve(o.id, Math.floor(P.x / TS), Math.floor((P.y - 1) / TS), env); let acted = false;
+          if (r) { const t = r.targets.slice().sort((a, b) => Math.hypot(a.x - P.x, a.y - P.y) - Math.hypot(b.x - P.x, b.y - P.y))[0], key = r.key + '@' + Math.round(t.x) + ',' + Math.round(t.y);
+            if (!tried.has(key)) { tried.add(key); const m = BK.movers().find(q => usable(q) && Math.abs(q.x + (q.w || 16) / 2 - t.x) < 3 && Math.abs(q.y + 6 - t.y) < 3), pr = BK.props().find(q => MACH.test(q.t) && Math.abs(q.x - t.x) < 20 && Math.abs(q.y - t.y) < 28 && !q.done);
+              if (m) { acted = true; if (ride(m, wx, wy, gx)) break; } else if (pr) { acted = true; work(pr.x, pr.y); } } }
+          if (!acted) { const cands = BK.movers().filter(m => usable(m) && !tried.has(m) && aimsAt(m, wx, wy) && Math.abs(m.x - P.x) < 22 * TS && Math.abs(m.y - P.y) < 16 * TS).sort((a, b) => Math.hypot(a.x - P.x, a.y - P.y) - Math.hypot(b.x - P.x, b.y - P.y));
+            if (cands.length) { tried.add(cands[0]); acted = true; if (ride(cands[0], wx, wy, gx)) break; }
+            else { const pr = BK.props().filter(q => MACH.test(q.t) && !q.done && !tried.has(q) && Math.abs(q.x - P.x) < 12 * TS && Math.abs(q.y - P.y) < 6 * TS).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; if (pr) { tried.add(pr); acted = true; work(pr.x, pr.y); } } }
+          if (!acted) break; } } finally { spent += frames - f0; clear(); }
+        return atWp(gx, wy); };
+      for (let wi = 0; wi < way.length; wi++) { const [wx, wy] = way[wi]; curWi = wi; if (frames > o.steps) break; let got = false; const gx = wx * TS + 8;
+        { const j = ahead(wi + 1); if (j > wi) { reached += j - wi + 1; wi = j; continue; } }   /* (carried past it by a machine) */
         for (let i = 0; i < 240 && frames < o.steps; i++, frames++) {
-          k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false; if (k.throw !== undefined) k.throw = false;
-          if (Math.abs(P.x - gx) < 10 && (!o.tall || Math.abs(P.y - (wy + 1) * TS) < 3 * TS)) { got = true; break; }   /* (claude/redgorge) ON A TALL LEVEL A WAYPOINT IS REACHED AT ITS OWN HEIGHT: by column alone a climb's waypoints were 'reached' on the floor below them, and the bot never met the ledges' foes */ k[gx > P.x ? 'right' : 'left'] = true; if (P.atk < 0) BK.press('atk');
-          const before = P.hp; BK.sim(1); lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); }
-        if (!got) { lifts++; BK.tp(wx, wy); BK.sim(2); } reached++; if (frames % 600 === 0) await new Promise(r => setTimeout(r, 0)); }
-      return { deaths: BK.stats().deaths - d0, minHpPct: Math.round(minHp * 100), hpLostPct: Math.round(lostHp / P.maxHp * 100), hits: BK.hitsTaken, walked: Math.round(reached / way.length * 100), lifts, frames, kills: BK.stats().kills, heroLevel: o.lvl };
+          clear(); if (Math.abs(P.x - gx) < 10 && (!o.tall || Math.abs(P.y - (wy + 1) * TS) < 3 * TS)) { got = true; break; }
+          const aboard = o.machines !== false && P.onMover && usable(P.onMover) && boxes.has(P.onMover) && aimsAt(P.onMover, wx, wy) && Math.abs(gx - P.x) > 5 * TS;   /* (claude/mashmachines) aboard a machine that is going the waypoint's way: let it carry you, do not walk off its front */
+          if (aboard) { mash(); learn(); const before = P.hp; BK.sim(1); lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); continue; }   /* (claude/redgorge) ON A TALL LEVEL A WAYPOINT IS REACHED AT ITS OWN HEIGHT: by column alone a climb's waypoints were 'reached' on the floor below them, and the bot never met the ledges' foes */ k[gx > P.x ? 'right' : 'left'] = true; if (P.atk < 0) BK.press('atk');
+          if (frames % 6 === 0) learn(); const before = P.hp; BK.sim(1); lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); }
+        if (!got && o.machines !== false) { learn(); got = assist(wx, wy, gx); }
+        if (!got) { if (o.debug) { const mv = BK.movers().filter(m => m.x !== undefined).map(m => [Math.round(Math.hypot(m.x - P.x, (m.y || 0) - P.y) / TS), nameOf(m) + (m.hoist ? ':hoist' : '') + '@' + Math.round(m.x / TS) + ',' + Math.round(m.y / TS)]).sort((p, q) => p[0] - q[0])[0]; dbg.push('lift ' + wx + ',' + wy + ' hero ' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + (mv ? ' nearest ' + mv[1] + ' ' + mv[0] + 't' : '')); } lifts++; BK.tp(wx, wy); BK.sim(2); } reached++; if (frames % 600 === 0) await new Promise(r => setTimeout(r, 0)); }
+      return { deaths: BK.stats().deaths - d0, minHpPct: Math.round(minHp * 100), hpLostPct: Math.round(lostHp / P.maxHp * 100), hits: BK.hitsTaken, walked: Math.round(reached / way.length * 100), lifts, boardLifts, rides, pulls, ridden: kinds, dbg: o.debug ? dbg : undefined, machines: o.machines !== false, frames, kills: BK.stats().kills, heroLevel: o.lvl };
     } finally { done(); } };
 })()`;
 
@@ -90,7 +151,7 @@ let pg = await openPage({ audio: false, fonts: false }); await pg.evalp(pageSrc)
 try {
   for (const id of wantLevels) {
     const lv = LEVELS.find(l => l.id === id); if (!lv) { console.log(id + ': no such level'); continue; }
-    const entry = (cache[id] = cache[id] && cache[id].hash === levelHash(lv) ? cache[id] : { hash: levelHash(lv) });
+    const entry = (cache[id] = carryRows(cache[id], levelHash(lv), { boss: modeBoss, level: modeLevel }, m => console.log(id + ': ' + m)));   /* (claude/mashmachines) a changed level hash used to DROP the other mode's rows: boss/mini rows are carried through a level-only write now */
     if (modeBoss) for (const mini of [false, true].filter(m => m ? !has('arena-only') : !has('mini-only'))) {
       const variants = [{ lvl: lvOf(id), n: seeds, tag: 'expected' }].concat(has('l1') ? [{ lvl: 0, n: 1, tag: 'l1' }] : []), res = [];
       for (const v of variants) for (const hero of heroes) for (let seed = 1; seed <= v.n; seed++) {
@@ -104,11 +165,11 @@ try {
     if (modeLevel) {
       const P = pacing(lv), way = []; for (const [x, y] of P.route) { const l = way[way.length - 1]; if (!l || Math.abs(x - l[0]) >= 8 || Math.abs(y - l[1]) >= 6) way.push([x, y]); }
       const lres = {};
-      for (const hero of (has('all') || has('quick') ? ['knight'] : heroes)) {
-        let r; try { r = await pg.evalp(`__mashLevel(${JSON.stringify({ id, hero, seed: 1, mini: false, lvl: lvOf(id), way, steps: 40000, tall: !!P.tall })})`, 1800000); }
+      for (const hero of (has('quick') ? ['knight'] : heroes)) {   /* (claude/mashmachines) all three starter-era heroes, --all too; --quick is knight only */
+        let r; try { r = await pg.evalp(`__mashLevel(${JSON.stringify({ id, hero, seed: 1, mini: false, lvl: lvOf(id), way, steps: 120000, tall: !!P.tall, machines: !has('no-machines'), debug: has('debug') })})`, 1800000); }
         catch (e) { console.log(id + ' LEVEL ' + hero + ' ERR ' + e.message.slice(0, 120)); pg.close(); pg = await openPage({ audio: false, fonts: false }); await pg.evalp(pageSrc); continue; }
         lres[hero] = r; rows.push({ id, level: true, hero, ...r });
-        console.log(id + ' LEVEL L' + r.heroLevel + ' ' + hero + ': lowest hp ' + r.minHpPct + '%, hp lost ' + r.hpLostPct + '%, deaths ' + r.deaths + ', walked ' + r.walked + '% of waypoints, ' + r.lifts + ' lifts, ' + r.hits + ' blows taken'); }
+        console.log(id + ' LEVEL L' + r.heroLevel + ' ' + hero + ': lowest hp ' + r.minHpPct + '%, hp lost ' + r.hpLostPct + '%, deaths ' + r.deaths + ', walked ' + r.walked + '% of waypoints, ' + r.rides + ' rides ' + JSON.stringify(r.ridden || {}) + ', ' + r.pulls + ' pulls, ' + r.boardLifts + ' boarding lifts, ' + r.lifts + ' lifts, ' + r.hits + ' blows taken' + (r.dbg ? '\n   ' + r.dbg.join('\n   ') : '')); }
       if (Object.keys(lres).length) entry.level = lres;
     }
   }

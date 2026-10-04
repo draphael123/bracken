@@ -146,7 +146,8 @@ export function mashVerdict(lv) {
   for (const key of ['boss', 'mini']) { const b = row[key]; if (!b) continue; const wonBy = Object.entries(b.byHero).filter(([, v]) => v.some(x => x.startsWith('win'))).map(([h]) => h);
     parts.push(key + ' ' + (wonBy.length ? 'BEATEN by mashing (' + wonBy.join(',') + '; ' + b.wins + '/' + b.fights + ' fights won)' : 'holds (0/' + b.fights + ' mash wins)')); if (wonBy.length) why.push(key); }
   if (row.level) { const worst = Object.entries(row.level).sort((a, b) => b[1].minHpPct - a[1].minHpPct)[0], r = worst[1], cleared = r.deaths === 0 && r.minHpPct >= MASH_HP;
-    parts.push('level: best mash hero ' + worst[0] + ' lowest hp ' + r.minHpPct + '%, ' + r.deaths + ' deaths, walked ' + r.walked + '%, ' + r.lifts + ' lifts' + (cleared ? ' (CLEARED without dropping under ' + MASH_HP + '%)' : '')); if (cleared) why.push('level'); }
+    const have = ['knight', 'warden', 'pyro'].filter(h => row.level[h]);
+    parts.push((have.length < 3 ? '(level judged by ' + have.join('+') + ' only: re-run --level for all three starter heroes) ' : '') + 'level: best mash hero ' + worst[0] + ' lowest hp ' + r.minHpPct + '%, ' + r.deaths + ' deaths, walked ' + r.walked + '%, ' + (r.rides !== undefined ? r.rides + ' rides, ' + (r.pulls || 0) + ' pulls, ' : '') + r.lifts + ' lifts' + (cleared ? ' (CLEARED without dropping under ' + MASH_HP + '%)' : '')); if (cleared) why.push('level'); }
   else parts.push('level mode not run: ' + cmd);
   return { ok: !why.length && !!row.level, why, levelRun: !!row.level, state: why.length ? 'beaten' : 'ok', msg: parts.join('; ') + (why.length ? ' - THE MASH BOT BEATS THE ' + why.join(' AND ').toUpperCase() : '') };
 }
