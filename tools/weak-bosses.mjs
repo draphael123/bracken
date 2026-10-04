@@ -134,7 +134,7 @@ try {
     ok(o.bareBlow > 3 * o.jarBlow, 'bare it takes the blow, in its jar most glances: ' + o.bareBlow + ' vs ' + o.jarBlow);
     ok(o.pair.tellsBefore >= 2, 'phase two: a missed first trick opens nothing - a second is told before the jar breaks: ' + JSON.stringify(o.pair));
     ok(o.pair.smoke > 0 && o.pair.hideBlow === 0 && o.pair.hideThenScuttle, 'phase two: the broken jar leaves smoke, it hides there untouchable, and comes out on a told scuttle: ' + JSON.stringify(o.pair)); }
-  if (r.dk) { ok(r.dk.stuckT <= 1.5, 'the Death Knight stuck blade holds him 1.5 s at most: ' + r.dk.stuckT); ok(r.dk.p2At >= 0.6, 'his phase two comes at three-fifths: ' + r.dk.p2At); ok(r.dk.hp === 1300 && r.dk.full, 'his health (claude/dk3): 950 while 19 of 20 blows were chipped to a twentieth; 1300 since he takes FULL DAMAGE (Daniel 10-03), tuned on tools/deathknight-pilot.mjs to 50% - a question for Daniel: ' + JSON.stringify(r.dk)); }
+  if (r.dk) { ok(r.dk.stuckT <= 1.5, 'the Death Knight stuck blade holds him 1.5 s at most: ' + r.dk.stuckT); ok(r.dk.p2At >= 0.6, 'his phase two comes at three-fifths: ' + r.dk.p2At); ok(r.dk.hp === 1150 && r.dk.full, 'his health (claude/dk3): 950 while 19 of 20 blows were chipped to a twentieth; 1150 since he takes FULL DAMAGE (Daniel 10-03), tuned on tools/deathknight-pilot.mjs to 50% - a question for Daniel: ' + JSON.stringify(r.dk)); }
   ok(!pg.errors.length, 'page errors: ' + JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
 if (fails.length) { for (const f of fails) console.log('FAIL', f); process.exit(1); }

@@ -6541,8 +6541,8 @@
      "dead:100/98"
     ],
     "pyro": [
-     "dead:100/82",
-     "dead:100/86"
+     "dead:100/80",
+     "dead:100/84"
     ]
    },
    "rows": [
@@ -6605,7 +6605,7 @@
      "out": "dead",
      "secs": 31.4,
      "hpLostPct": 100,
-     "bossLeftPct": 82,
+     "bossLeftPct": 80,
      "landed": 41,
      "swings": 1235,
      "reprisalPct": 0,
@@ -6618,7 +6618,7 @@
      "out": "dead",
      "secs": 34,
      "hpLostPct": 100,
-     "bossLeftPct": 86,
+     "bossLeftPct": 84,
      "landed": 41,
      "swings": 1357,
      "reprisalPct": 5,

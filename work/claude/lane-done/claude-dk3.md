@@ -48,10 +48,11 @@ origin/master 44c8e47d (batch64: the level-up card) and origin/claude/weight bb6
 - Before (master, the chip): mash 0/6. The bot pilot was not re-run on the old boss (the chip boss is being replaced, not tuned).
 - Pre-WEIGHT tuning (hp 2050): 9/18 = 50% (knight 5/6, warden 1/6, pyro 3/6), median win ~90 s.
 - After merging master + WEIGHT the same boss went 0/18. Hero hp is 154 now (it was ~200) and the bot holds swings and rolls back.
-  Retuned: hp 1300, his blows about a seventh lighter, and the bot's Cleave roll made late.
-- FINAL, 6 salts: **9/18 = 50%**. knight 4/6, warden 1/6, pyro 4/6. Median win 76.6 s (wins 61-88 s). Losses end with him on 3-25%.
+  Retuned: hp first 1300, finally 1150, his blows about a seventh lighter, and the bot's Cleave roll made late.
+- At hp 1300 that was 9/18 = 50% (knight 4/6, warden 1/6, pyro 4/6). Then two more WEIGHT commits landed (e1ce4523, e5387e1b: the bot rolls only in a tell's last 0.22 s) and it fell to 5/18 = 28%. hp 1100 gave 12/18, 1200 gave 8/18.
+- FINAL (hp 1150, on master 44c8e47d + WEIGHT e5387e1b), 6 salts: **9/18 = 50%**. knight 3/6, warden 2/6, pyro 4/6. Median win 68.9 s (wins 53-73 s). Losses end with him on 1-36%.
   - Per fight he passes 0-6 times, sticks his blade 3-10 times, and has his ward broken 0-5 times.
-- Mash bot (re-stamped by the bot: level, then boss): boss **0/6** (he is left on 96/96 vs the knight, 98/98 vs the warden, 82/86 vs the pyro, killing each in 25-34 s). Level: knight dies, warden dies, pyro ends on 1% with no death. The Barrow Rider mini now holds 0/6 as well, so mash-gate required its MASH_REPORT_ONLY entry to be removed (the list may only shrink).
+- Mash bot (re-stamped by the bot: level, then boss): boss **0/6** (he is left on 96/96 vs the knight, 98/98 vs the warden, 80/84 vs the pyro, killing each in 25-34 s). Level: knight dies, warden dies, pyro ends on 1% with no death. The Barrow Rider mini now holds 0/6 as well, so mash-gate required its MASH_REPORT_ONLY entry to be removed (the list may only shrink).
 
 ## Checks run (named, not the suite)
 green: unburied-fights (rewritten 4b: move list / no rush, damage model, strings, cleave/stuck, blade, grip, boil, coil heal, tide,
@@ -64,16 +65,16 @@ The new assertions fail on the old module: there is no BK_KIT, the rush is prese
 - Not looked at in a real browser by eye: the new poses (slide/coil/tide/unholy at 1.5x) and the new floor marks. Nobody has heard
   the track in game. No textfit run on the credits page: it gets a 4th CC-BY entry and fits on paper (y ~146 < 150).
   The unburied-art lane may add March of the Wizards as a 5th entry, which would overflow it.
-- The median win is 77 s, a little short of the 90-120 s target.
+- The median win is 69 s, a little short of the 90-120 s target.
 - DANIEL'S PLAYTEST GATE: not passed yet. He ships live only after the bots pass; Daniel should still play him.
 
 ## QUESTIONS FOR DANIEL (recommendation first)
-1. His health: 1300 (it was 950 when 19 blows in 20 were chipped). REC: keep 1300 for your playtest. Full damage is what makes him a
-   duelist, and this is what puts the bot at 50% after WEIGHT. weak-bosses' "950" assert now holds 1300 + FULL_DAMAGE.
+1. His health: 1150 (it was 950 when 19 blows in 20 were chipped). REC: keep 1150 for your playtest. Full damage is what makes him a
+   duelist, and this is what puts the bot at 50% after WEIGHT. weak-bosses' "950" assert now holds 1150 + FULL_DAMAGE.
 2. Dodge rate and speed. REC: as built - heavy read 45%/55% (P2), string read 25%/35%, 2.4 s cooldown, walk 80 (96 in P2). If he
    feels slippery, lower the string read first.
 3. Raise in P1 or P2 only. REC: keep one SUMMON SKELETON in P1 (his wake and his rotation) and GRAVECALL in P2.
-4. Warden 1/6 is the low hero (her deflect taps against his strings, his nova). REC: accept for the playtest. The other choice is to
+4. Warden 2/6 is the low hero (her deflect taps against his strings, his nova). REC: accept for the playtest. The other choice is to
    shorten his strings for everyone.
 5. The tell words (HIS GREATSWORD: GUARD IT, etc.) are still silent, as they were. REC: keep them silent. The hint box would chatter
    every second; the openings/heal/dodge lines are shown.
