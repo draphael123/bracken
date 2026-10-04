@@ -236,10 +236,10 @@ function startArm(e, show, k, h, c, ev, o = {}) {
   if (k === 'net') { a.fy = h.y; a.follow = true; }
   if (k === 'charge') { a.dir = dir; a.ox = e.x; }
   show.arms.push(a); e.face = dir; show.last = k; show.n[k + 'Told'] = (show.n[k + 'Told'] || 0) + 1; ev.push({ t: k + 'Tell', pair: a.pair }); c.say(M.mark); c.sound(k + 'Tell');
-  if (k === NEW_MOVE[e.phase] && !show.told[k]) { show.told[k] = true; c.number(e.x, surf - 50, NEW_LINE[k], '#ffd36b'); }
+  if (k === NEW_MOVE[e.phase] && !show.told[k]) { show.told[k] = true; const y = surf - 50;   /* (each line a literal: tools/hint-shown reads them) */
+    if (k === 'slam') c.number(e.x, y, 'STEP OUT OF HER SLAM: HER CLAWS STICK', '#ffd36b'); else if (k === 'charge') c.number(e.x, y, 'SHE CHARGES UNDER THE WATER: JUMP THE WAVE', '#ffd36b'); else c.number(e.x, y, 'HER WEED NET TANGLES: STEP OUT OF IT', '#ffd36b'); }
   return a;
 }
-const NEW_LINE = { slam: 'STEP OUT OF HER SLAM: HER CLAWS STICK', charge: 'SHE CHARGES UNDER THE WATER: JUMP THE WAVE', net: 'HER WEED NET TANGLES: STEP OUT OF IT' };
 const blowBox = (a, show, e) => { const A = show.A, surf = surfY(show);
   if (a.k === 'reach') { const x0 = a.gate ? (a.gate === 'W' ? A.x0 : a.x - GT.reachSpan) : a.x - GT.reachSpan, x1 = a.gate ? (a.gate === 'E' ? A.x1 : a.x + GT.reachSpan) : a.x + GT.reachSpan; return [x0, x1, a.fy - 24, a.fy - 10]; }
   if (a.k === 'bite') { const x0 = a.dir > 0 ? e.x : e.x - GT.biteLunge - 10, x1 = a.dir > 0 ? e.x + GT.biteLunge + 10 : e.x; return [x0, x1, surf - 40, surf + 14]; }
