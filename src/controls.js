@@ -153,7 +153,7 @@ const HEROES_C = {
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
   warden:     ['the deflect', tk => 'TAP ' + tk.c + '  (FULL: PHALANX)'],
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],
-  berserker:  ['brace / frenzy', tk => 'TAP ' + tk.c + '  (FULL RAGE: FRENZY)'],
+  berserker:  ['the brace', tk => 'TAP ' + tk.c + ' (FULL: FRENZY)'],
 };
 export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1', swapZX = false, blockToggle = false } = {}) {
   const kb = a => labelFor(binds, 'kb', a), pd = a => labelFor(binds, prof, a), k1 = a => first(binds, 'kb', a);

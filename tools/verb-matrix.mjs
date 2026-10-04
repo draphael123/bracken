@@ -14,7 +14,7 @@
    Red on master 3fd06c78: the ground up-slash jumped (he left the floor) and no hero had an air up-slash. Run: node tools/verb-matrix.mjs */
 import { openPage } from './cdp.mjs';
 
-const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
+const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker'];
 const pg = await openPage({ audio: false, fonts: false });
 let R;
 try {

@@ -4411,7 +4411,7 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
   const KF = f => knightFrame(f);
   /* AT GUARD: both axes up, the lead one forward of his chest with the blade out at them, the off one crossed back over his belly - a V of
      steel heads over his fists, and his weight forward on the front foot */
-  const guard = (d = 0) => ({ arm: [X, Y, X + 3, Y + 2 + d], axe: [X + 3, Y + 2 + d, X + 5, Y - 7 + d], arm2: [OFF[0], OFF[1], X - 4, Y + 4 + d], axe2: [X - 4, Y + 4 + d, X - 10, Y + d] });
+  const guard = (d = 0) => ({ arm: [X, Y, X + 3, Y + 2 + d], axe: [X + 3, Y + 2 + d, X + 5, Y - 7 + d], arm2: [OFF[0], OFF[1], X - 5, Y + 4 + d], axe2: [X - 5, Y + 4 + d, X - 13, Y + 1 + d] });
   const lead = (hx, hy, tx, ty, s = 1) => ({ arm: [X, Y, X + hx, Y + hy], axe: [X + hx, Y + hy, X + tx, Y + ty, s] });
   const off = (hx, hy, tx, ty, s = 1) => ({ arm2: [OFF[0], OFF[1], X + hx, Y + hy], axe2: [X + hx, Y + hy, X + tx, Y + ty, s] });
   const card = {

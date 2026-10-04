@@ -21,7 +21,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24 };   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 20 };   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
    for the warden (stand 38, reach 40). The generic goal math (below, "desired") walks to boss.x +/- (LAB_STAND[h] +
@@ -48,6 +48,11 @@ export const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper'
    the rest. It is edge-triggered, so the bot must let the key UP again between sweeps: DEFLECT_TAP is that beat.
    (Her dodge goes BACKWARD by itself, so the bot never has to aim it.) */
 export const DEFLECT_TAP = f => f % 8 < 2;
+/* THE BERSERKER'S BRACE IS THE SAME SHAPE IN THE HANDS (claude/berserker): a TAP on the beat of a yellow blow (live 0.3 s, then a beat rooted if it
+   met nothing), never held - so wherever the hands sweep the Warden's shaft they set his brace. A full bar makes the same tap his FRENZY, which
+   is exactly when a player would take it. DEFLECTS is who taps; BUSY_C is the beat each is spent after one that met nothing. */
+export const DEFLECTS = h => h === 'warden' || h === 'berserker';
+const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.braceT || 0) : 0;
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
    the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */
@@ -251,7 +256,7 @@ function labBotFrame(BK, h, e, f) {
     if (HARD_TELLS.has(e.t + '|' + e.mode)) { k[d > 0 ? 'left' : 'right'] = true; if (f % 14 === 0) BK.press('dodge'); }
     else if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
-    else if (h === 'warden') { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }
+    else if (DEFLECTS(h)) { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }
     else k.block = true;
   } else if (reloadCrouchNow(BK, h, e)) { k.down = true; }   /* THE FREEBOOTER DUCKS AND RELOADS, well out of the cutlass's reach */
   else {
@@ -1020,7 +1025,7 @@ async function runbossLab(BK, opts) {
         if(gx===null&&(m==='swallowTell'||m==='swallow')&&W&&W.pit){ const away=Math.sign(P.x-W.pit.x)||(P.x<mid?1:-1),room=(away>0?A.x1-P.x:P.x-A.x0)>70?away:-away; gx=W.pit.x+room*70;
             if(m==='swallow'&&Math.abs(P.x-W.pit.x)<50&&P.ground){BK.press('jump');P.labJump=12;} }
         if(gx===null&&(m==='lungeTell'||m==='lunge')&&W){ const away=Math.sign(W.lungeTo-W.lungeFrom)||Math.sign(P.x-W.x)||1,room=(away>0?A.x1-P.x:P.x-A.x0)>70?away:-away; if(Math.abs(P.x-W.lungeTo)<52)gx=W.lungeTo+room*60; }   /* on, the way he is coming: away from the shadow AND from him */
-        if(gx===null&&(m==='spitTell'||m==='spit')&&Math.abs(dx)<160){ if(SHIELDED(h)){k.block=true;P.face=side;}else if(h==='warden'){k.block=DEFLECT_TAP(f);P.face=side;}else gx=boss.x+side*24; }   /* the fan lands 35-145 px in front of him: shield it, or be behind him */
+        if(gx===null&&(m==='spitTell'||m==='spit')&&Math.abs(dx)<160){ if(SHIELDED(h)){k.block=true;P.face=side;}else if(DEFLECTS(h)){k.block=DEFLECT_TAP(f);P.face=side;}else gx=boss.x+side*24; }   /* the fan lands 35-145 px in front of him: shield it, or be behind him */
         if(gx===null&&!k.block){
           if(m==='tangled'||(touch&&!rest)){gx=boss.x-side*Math.max(12,Math.min(LAB_STAND[h]||14,reach-6));swing=!rest;}
           else if(wn&&!out&&wn.out===0&&!(wn.cd>0.2)){gx=wn.x-(P.x<wn.x?10:-10);wind=true;}
@@ -1103,12 +1108,12 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const DH=BK.djinnHands(),S=DH&&DH.show();
         if(f===0||!P.labDjMem)P.labDjMem={};
-        const pl=S?djinnPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
+        const pl=S?djinnPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:BUSY_C(h,P)},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.down)k.down=true;if(pl.up)k.up=true;
-        if(pl.block)k.block=h==='warden'?DEFLECT_TAP(f):true;
+        if(pl.block)k.block=DEFLECTS(h)?DEFLECT_TAP(f):true;
         if(!pl.block&&!(pl.down&&P.ground&&!pl.jump)&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
@@ -1122,11 +1127,11 @@ async function runbossLab(BK, opts) {
         const GH=BK.gangLeaderHands(),F=GH&&GH.fight();
         if(f===0||!P.labGlMem)P.labGlMem={};
         const greed=BK.greed?BK.greed.count(boss):0;
-        const pl=F?glPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
+        const pl=F?glPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:BUSY_C(h,P)},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:DEFLECTS(h),sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if(pl.block)k.block=h==='warden'?DEFLECT_TAP(f):true;   /* (the warden's deflect is a sweep on the beat, tapped) */
+        if(pl.block)k.block=DEFLECTS(h)?DEFLECT_TAP(f):true;   /* (the warden's deflect is a sweep on the beat, tapped - and the berserker's brace) */
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
@@ -1262,7 +1267,7 @@ async function runbossLab(BK, opts) {
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const guard=['salvagePinTell','salvageHookTell'].includes(boss.mode);
         if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=side;}
-        else if(guard&&h==='warden'&&boss.mode==='salvagePinTell'){k.block=DEFLECT_TAP(f);gx=P.x;P.face=side;}   /* (claude/bosswave1) the warden's deflect answers his pin too */
+        else if(guard&&DEFLECTS(h)&&boss.mode==='salvagePinTell'){k.block=DEFLECT_TAP(f);gx=P.x;P.face=side;}   /* (claude/bosswave1) the warden's deflect answers his pin too */
         else if(guard&&boss.modeT<.24){k[side>0?'left':'right']=true;BK.press('dodge');gx=P.x;}
         /* (claude/bosswave1: he is on the chip now, his parried pin his opening) the hands stop short of his greed and step out of its ring */
         const Gq=BK.greed,greedy=Gq&&!(boss.open>0)&&Gq.count(boss)>=Gq.limit(boss)-2;if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+boss.w/2+18)gx=boss.x-side*((Gq.reach||60)+boss.w/2+30);
@@ -1313,6 +1318,7 @@ async function runbossLab(BK, opts) {
         else if (h === 'pirate') { if (t < 0.16 && t > 0.08) k.block = true; }
         /* THE WARDEN sweeps LATE: the shaft is live 0.18 s, so a tap at a tenth of a second left is still out when his sword arrives */
         else if (h === 'warden') { if (t < 0.12) k.block = true; }
+        else if (h === 'berserker') { if (t < 0.12) k.block = true; }   /* (THE BERSERKER's brace, tapped as late: it is live 0.3 s) */
         else if (h === 'paladin') { if (t < 0.4) k.block = true; }
         else if (h === 'reaper') { if (dkRel.mode !== m || t > dkRel.t0 + 0.05) dkRel = { mode: m, t0: t, at: 0.45 - (0.12 + Math.random() * 0.22 + (Math.random() < 0.1 ? 0.3 : 0)) }; dkRel.t0 = t;
           if (t > dkRel.at) k.block = true; dkHold = 0; }   /* the ward up through his windup and LET GO at the flash, a reaction time late: one in ten is too late, and only turns it */
@@ -1425,7 +1431,7 @@ async function runbossLab(BK, opts) {
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : h === 'geomancer' ? 0.17 : 0.14)))) {   /* (THE GEOMANCER's ward takes a tenth of a second to rise: she plants it that much sooner, so it is up on the beat) */
         P.face = Math.sign(d) || P.face;
-        if ((h === 'warden' || h === 'pirate' && boss.t === 'herald') && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = DEFLECT_TAP(f); }   /* THE DEFLECT, at any blow of his the marks do not call red */
+        if ((DEFLECTS(h) || h === 'pirate' && boss.t === 'herald') && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = DEFLECT_TAP(f); }   /* THE DEFLECT, at any blow of his the marks do not call red */
         else if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40;
           if (h === 'reaper') { dkHold = f + dkF(0.5); const lg = dkLag[boss.mode];
             if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;
@@ -1563,10 +1569,10 @@ async function runbossLab(BK, opts) {
           else if (boss.open > 0) { goal = boss.x; strike = true; }              /* downed: get on him, the window is worth three blows */
           else if (chain) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face;
             if (SHIELDED(h)) { k.block = true; if (h === 'paladin') holdC = f + 20; }
-            else if (h === 'warden') k.block = DEFLECT_TAP(f);
+            else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f);
             else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }   /* the chain is judged the frame it flies: be off the boards by then */
           else if (proc) { if (P.ground) { BK.press('jump'); P.labJump = 16; } goal = boss.x + (boss.procDir || boss.face) * 30; }
-          else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (h === 'warden') k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }
+          else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }
           else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { if (keyVerb(BK, h, add) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* HIS CONGREGATION IS SMALL (family 'small'): the low sweep, same as the Mother's sporelings (see the ledger's own comment) - this is the spire/abbot pilot's own add-branch, and the plain cut it threw before missed the knight 6 of 16 (tools/small-adds.mjs) */
           else goal = bl.x + (boss.x > bl.x ? -20 : 20);                          /* wait on the far side, so his chain hauls him under it */
           if (P.labJump > 0) { P.labJump--; k.jump = true; }

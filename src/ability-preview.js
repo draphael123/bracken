@@ -24,6 +24,8 @@ export const SHAPE = {
   skewer: 'thrust', setSpears: 'spikes', harrier: 'leap', wheel: 'spin', javelin: 'bolt', poleSpring: 'leap', fullStretch: 'aura', spearDance: 'flurry', rainOfSpears: 'rain',
   // geomancer
   stoneStep: 'pillar', boulder: 'roll', spikeRow: 'spikes', archway: 'arch', stoneWall: 'wall', entomb: 'entomb', faultLine: 'quake', golem: 'summon', avalanche: 'rain',
+  // berserker (claude/berserker): the roar, the spin, the harden, the long cleave, the charge, the shrug, the stand, the frenzy, the hatchets
+  bzRoar: 'ring', bzSpin: 'spin', bzHarden: 'aura', bzCleave: 'thrust', bzRampage: 'dash', bzShrug: 'aura', bzStand: 'aura', bzUnchained: 'burst', bzStorm: 'cone',
 };
 export const shapeOf = id => SHAPE[id] || 'cast';
 
@@ -34,7 +36,7 @@ const HIT = { thrust: [.12, .5, 5], dash: [.35, .7, 6], boomerang: [.3, .5, 3], 
   roll: [.4, .7, 7], arch: [2, 2, 0], entomb: [.2, .9, 0], rise: [.15, .6, 0], cast: [.2, .5, 3] };
 
 const HERO_INK = { knight: ['#dfe8ff', '#8a96a8'], pyro: ['#ffd36b', '#ff7a3c'], paladin: ['#fff6c8', '#e0b040'], pirate: ['#dfe8ff', '#c9a040'],
-  reaper: ['#ff8080', '#8fd160'], warden: ['#c9f0ff', '#6aa8c8'], geomancer: ['#d8c090', '#8a6a3a'] };
+  reaper: ['#ff8080', '#8fd160'], warden: ['#c9f0ff', '#6aa8c8'], geomancer: ['#d8c090', '#8a6a3a'], berserker: ['#ffb08a', '#c8402a'] };
 
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const ease = p => 1 - (1 - p) * (1 - p);

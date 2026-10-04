@@ -76,7 +76,7 @@ check('slots', () => {
 check('heroes for silver', () => {
   const fresh = PR.migrateProgress(null).progress; assert.equal(fresh.heroFlow, 1); assert(!fresh.coopLegacy); assert(!PR.coopOpen(fresh));
   fresh.heroes = { warden: true }; assert(!PR.coopOpen(fresh)); fresh.heroes.knight = true; assert(PR.coopOpen(fresh), 'a second hero does not open co-op');
-  assert.deepEqual(PR.DEFAULT_HEROES, ['knight', 'warden', 'geomancer']);
+  assert.deepEqual(PR.DEFAULT_HEROES, ['knight', 'warden', 'geomancer', 'berserker']);   /* (claude/berserker, 2026-10-04: the fourth default) */
   const oldSave = JSON.stringify({ progressionVersion: 2, hero: 'warden', heroes: { warden: true }, xp: { warden: 5000, geomancer: 400 }, done: { warden: { wood: 1 }, geomancer: {} }, wood: { cleared: true }, coins: 10 });
   const o = PR.migrateProgress(oldSave).progress; assert(o.coopLegacy && PR.coopOpen(o), 'an old save lost co-op'); assert(o.heroes.warden && o.heroes.geomancer, 'an old save lost a starter it played'); assert(!o.heroes.pyro);
   const again = PR.migrateProgress(JSON.stringify(o)).progress; assert.deepEqual(again.heroes, o.heroes); assert.equal(again.heroFlow, 1);
@@ -112,7 +112,7 @@ check('skill ranks', () => {
       const p = +r.match(/price: (\d+)/)[1], silver = /silver: true/.test(r), id = r.match(/id: '(\w+)'/)[1]; if (id === 'steel') continue;
       assert(silver ? p >= 6 && p <= 10 : p >= 150 && p <= 400, id + ' priced ' + p); } });
   check('sinks', () => { assert(/id: 'tonic'[^\n]*max: 5/.test(src), 'tonics do not reach five'); assert(/id: 'edge4'/.test(src) && /id: 'mail2'/.test(src), 'no late smith');
-    for (const n of PR.SKILLS.filter(n => n.active && ['knight', 'warden', 'geomancer'].includes(n.hero) && PR.TOP_PRICE[n.level])) assert.equal(n.price, PR.TOP_PRICE[n.level], n.id);
+    for (const n of PR.SKILLS.filter(n => n.active && ['knight', 'warden', 'geomancer', 'berserker'].includes(n.hero) && PR.TOP_PRICE[n.level])) assert.equal(n.price, PR.TOP_PRICE[n.level], n.id);
     assert.equal(DC.bankStake(400), 0); assert.equal(DC.bankStake(900), 100); assert.equal(DC.bankStake(5000), 300); assert.equal(DC.bankStake(-5), 0);
     notes.push('bank stake on death: bank 1k ' + DC.bankStake(1000) + ', 2k ' + DC.bankStake(2000) + ', 5k ' + DC.bankStake(5000)); }); }
 

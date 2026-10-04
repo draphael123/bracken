@@ -32,7 +32,7 @@ const BORROW_OK = {
 };
 /* THE HEROES HELD TO IT: the starters (lane E), each of the other four as lane P (2026-09-24) gives it its poses, and THE GEOMANCER
    (2026-09-24), built to it from her first day: never debt */
-const HELD = ['knight', 'warden', 'geomancer', 'paladin', 'pyro', 'pirate', 'reaper'];
+const HELD = ['knight', 'warden', 'geomancer', 'paladin', 'pyro', 'pirate', 'reaper', 'berserker'];   /* (THE BERSERKER, 2026-10-04: built to it from his first day) */
 /* A SHARED POSE THAT IS RIGHT, with the reason (keyed by either active of the pair): two of hers are the same movement at heart */
 const SHARED_OK = { harrier: 'HARRIER is the vault taken at a foe instead of at a gap: it is drawn as the vault Pole Spring also uses' };
 /* THE DEBT, measured on master 313e0da (2026-09-23): 13 actives with no body of their own. Paid off by lane P (2026-09-24); a
@@ -109,7 +109,7 @@ try {
      six are held to a real arc - a TAKE-OFF frame of its own, then at least four distinct poses in the air - and a landing of three
      distinct frames (impact, settle, stand) while standing still. */
   const arcs = {};
-  for (const h of ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer'])
+  for (const h of ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker'])
     arcs[h] = await pg.evalp(`(()=>{__kit('${h}',[],[]);BKT.PROG.xp['${h}']=0;/* THE PLAIN JUMP: at level 24 passives now arrive by level, and the Warden's VAULTER turns her jump into the vault */const P=BK.P;BK.step(1);BK.keys.jump=true;BK.press('jump');const air=[],land=[];let n=0;
       for(let i=0;i<120;i++){BK.step(1);if(!P.ground)air.push(P.lastKey+':'+P.lastFrame);else if(air.length){BK.keys.jump=false;land.push(P.lastKey+':'+P.lastFrame);if(++n>=24)break;}}
       return {air:[...new Set(air)],land:[...new Set(land.filter(k=>k.startsWith('land:')))]}})()`);

@@ -329,7 +329,7 @@ try {
   const pointAt = (D, deg, f) => [css(D.cx + Math.cos(deg * Math.PI / 180) * D.R * f), css(D.cy - Math.sin(deg * Math.PI / 180) * D.R * f)];
   const snap = () => E('BKT.inputSnapshot()');
   const tk = async (dt = 0.1) => { await E(`BK.touch.tick(${dt})`); };
-  const equip = () => E("(() => { const h = BK.P.hero, P = BKT.PROG; P.loadouts = P.loadouts || {}; P.loadouts[h] = ['groundSlam', 'shieldThrow', 'risingCut', 'warCry']; })()");
+  const equip = async () => { if (process.env.TOUCH_HERO) await E("(async () => { const { xpFloor } = await import('/src/xp.js'); BK.setHero(" + JSON.stringify(process.env.TOUCH_HERO) + "); BKT.PROG.xp[BK.P.hero || " + JSON.stringify(process.env.TOUCH_HERO) + "] = xpFloor(20); BK.applyUpgrades(); })()"); return E("(() => { const h = BK.P.hero, P = BKT.PROG; P.loadouts = P.loadouts || {}; P.loadouts[h] = h === 'berserker' ? ['bzRoar', 'bzSpin', 'bzHarden'] : ['groundSlam', 'shieldThrow', 'risingCut', 'warCry']; })()"); };   /* (TOUCH_HERO=berserker: his three slots on the wheel) */
   await section('defaults', async () => {
     await E('localStorage.removeItem("bracken.settings")'); LEGACY = false; await goto(); await toPlay('wood'); await E('BK.manualSimulation = true');
     const s = await E('({ preset: BK.touch.preset(), move: BK.touch.moveMode(), swipe: !!BK.SET.touchSwipe, use: !!BK.SET.touchAutoUse, tog: !!BK.SET.blockToggle })');

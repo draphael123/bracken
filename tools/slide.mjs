@@ -94,7 +94,7 @@ try {
     { BK.tp(flat[0], flat[1]); BK.sim(8); none(); BK.press('down'); BK.keys.down = true; let flare = 0; for (let f = 0; f < 12; f++) { BK.sim(1); if (BK.P.emberUp) flare++; } none(); out.pyroFlat = { flare }; }
     /* THE POSE: every hero, every skin */
     out.poses = [];
-    for (const h of ['knight', 'warden', 'pirate', 'paladin', 'geomancer', 'reaper', 'pyro']) for (const s of BKT.skinIds()) {
+    for (const h of ['knight', 'warden', 'pirate', 'paladin', 'geomancer', 'reaper', 'pyro', 'berserker']) for (const s of BKT.skinIds()) {
       const K = BKT.heroSet(s, BKT.PROG.sword, false, h), I = Array.isArray(K.R.idle) ? K.R.idle[0] : K.R.idle, fr = K.R.slide;
       if (!fr) { out.poses.push({ h, s, none: true }); continue; }
       (Array.isArray(fr) ? fr : [fr]).forEach((c, i) => { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let low = -1; for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 0) low = y;
@@ -128,7 +128,7 @@ ok(R.slowHits === 0 && R.fastHits === 1, 'a slide under the minimum speed hurt a
 ok(R.blow && R.blow[0] === R.blow[1] && R.blow[2] > R.blow[1] && R.blow[3] > R.blow[2], 'the blow does not scale with speed: ' + R.blow);
 ok(R.pyroSlope && R.pyroSlope.flare === 0 && R.pyroSlope.slide > 8, 'the Pyromancer pressing down on a slope: ' + JSON.stringify(R.pyroSlope) + ' (the slide must win)');
 ok(R.pyroFlat && R.pyroFlat.flare > 0, 'the Pyromancer pressing down on the flat no longer opens the ember flare');
-const heroes = new Set(R.poses.map(p => p.h)); ok(heroes.size === 7, 'poses measured for ' + heroes.size + ' heroes');
+const heroes = new Set(R.poses.map(p => p.h)); ok(heroes.size === 8, 'poses measured for ' + heroes.size + ' heroes');
 const skins = new Set(R.poses.map(p => p.s)).size;
 for (const p of R.poses) { if (p.none) { ok(false, p.h + '/' + p.s + ' has no slide pose'); continue; }
   ok(p.n >= 2, p.h + '/' + p.s + ' slide pose has ' + p.n + ' frame'); ok(p.feet === p.stand, p.h + '/' + p.s + '#' + p.i + ' boots row ' + p.feet + ' vs standing ' + p.stand); ok(p.low <= p.stand + 1, p.h + '/' + p.s + '#' + p.i + ' has pixels UNDER the floor (lowest row ' + p.low + ', floor ' + (p.stand + 1) + ')'); }

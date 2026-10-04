@@ -153,7 +153,7 @@ export function makeBerserker(api) {
     if (p.frenzyT > 0) { p.frenzyT = Math.max(0, p.frenzyT - dt); p.rage = 100 * p.frenzyT / (p.frenzyMax || BZ.frenzy.t); fight(p);
       if (Math.random() < dt * 24) api.parts.push({ x: p.x + (Math.random() - 0.5) * 12, y: p.y - 4 - Math.random() * 18, vx: (Math.random() - 0.5) * 10, vy: -30 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ff4a3a' : '#ffb08a', size: 1, grav: -30 });
       if (p.frenzyT <= 0) { p.rage = t.mist ? BZ.frenzy.mist : 0; api.SFX.bzFrenzyEnd && api.SFX.bzFrenzyEnd(); api.ringAt(p.x, p.y - 12, 16, '#9a6a5a', 0.3); } }
-    else if (!p.dead && api.time - (p.bzFightT ?? -99) > BZ.rage.drainAfter && !(p.workT > 0)) p.rage = Math.max(0, (p.rage || 0) - BZ.rage.drain * (t.cool ? 0.5 : 1) * dt);   /* OUT OF THE FIGHT IT GOES */
+    else if (!p.dead && api.time - (p.bzFightT ?? -99) > BZ.rage.drainAfter && !(p.workT > 0)) { p.rage = Math.max(0, (p.rage || 0) - BZ.rage.drain * (t.cool ? 0.5 : 1) * dt); if (p.rage > 30) api.teach('drain'); }   /* OUT OF THE FIGHT IT GOES */
     if (p.braceT > 0) { p.vx = 0; if (ctx.stunned || ctx.dodging || p.dead) p.braceT = 0;
       else if (p.braceT <= dt && !p.braceHit) { stats.braceMiss++; p.braceRec = BZ.brace.rec; } }   /* (a brace that met nothing: the beat he stands there with his chest out) */
     if (p.braceRec > 0 && (p.ground || p.swim)) p.vx *= Math.pow(0.02, dt);

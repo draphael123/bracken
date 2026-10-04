@@ -31,7 +31,7 @@ try {
     prep(); BK.keys.block = true; BK.sim(20); const holdHook = !!BK.P.hookT || BK.P.hookCd > 0; BK.keys.block = false; BK.sim(2); BK.god = false;
     return { total: SKILLS.length, actives: actives.length, dup, fell, missing, extra, wrong, rows, tapParry, tapHook, holdHook };
   })()`);
-  assert.equal(r.actives, 52); assert.equal(r.rows.length + r.missing.length, 144);
+  assert.equal(r.actives, 61); assert.equal(r.rows.length + r.missing.length, 165);   /* (THE BERSERKER, 2026-10-04: nine actives, twenty-one passives) */
   assert.deepEqual(r.fell, [], 'actives that fall to the default flame icon');
   assert.deepEqual(r.dup, [], 'actives that share an icon');
   assert.deepEqual(r.missing, [], 'passives with no row in src/skill-glyphs.js');

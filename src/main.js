@@ -504,10 +504,10 @@ const WARDEN_KEYS = { deflect: 'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLO
   vault: 'JUMP OUT OF A STEP FORWARD AND SHE PLANTS THE SPEAR AND VAULTS',
 };
 /* ==== THE BERSERKER'S KEYS, IN WORDS (his teaching lines and the hero card): C is a brace, never a shield; full, it is the frenzy ==== */
-const BZ_TEACH = { brace: ['bzBraceTold', 'THE BRACE TAKES ONE YELLOW BLOW AS RAGE. A RED ONE GOES THROUGH. MISTIMED, IT IS THE FULL HIT.'],
-  full: ['bzFullTold', 'RAGE FULL: TAP C FOR THE FRENZY. QUICKER, NO FLINCHING - BUT EVERY BLOW ON YOU LANDS HARDER.'],
+const BZ_TEACH = { brace: ['bzBraceTold', 'THE BRACE TAKES ONE YELLOW BLOW AS RAGE. A RED ONE GOES THROUGH; MISTIMED, THE FULL HIT.'],
+  full: ['bzFullTold', 'RAGE FULL: TAP C FOR THE FRENZY. QUICK, NO FLINCHING - BUT EVERY BLOW LANDS HARDER.'],
   throw: ['bzThrowTold', 'ONE AXE: SLOWER CHOPS, NO CROSS-CHOP, UNTIL YOU WALK OVER IT AND PICK IT UP.'],
-  drain: ['bzDrainTold', 'OUT OF A FIGHT YOUR RAGE DRAINS AWAY. STAY IN IT - OR CROUCH STILL AND WORK YOURSELF UP.'] };
+  drain: ['bzDrainTold', 'OUT OF A FIGHT YOUR RAGE DRAINS AWAY. STAY IN IT, OR CROUCH STILL TO WORK IT UP.'] };
 let bzTaughtIn = '';
 function bzTeach(k) { const t = BZ_TEACH[k]; if (!t || state !== 'play' || !L || L.trial || (PROG[t[0]] || 0) >= 2 || bzTaughtIn === levelIndex + ':' + k || state !== 'play') return; bzTaughtIn = levelIndex + ':' + k; PROG[t[0]] = (PROG[t[0]] || 0) + 1; hintT = 5; hintMsg = t[1]; }
 const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'GRAVELORD', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'WARD', 'TREMOR'], berserker: ['FURY', 'STEEL', 'HIDE'] };
@@ -27926,7 +27926,7 @@ function drawPractice() {
   text('THE PRACTICE YARDS', VW / 2, y + 5, UI.title, 'center');
   text(fitText('every verb he has, and nothing that can hurt you', w - 12, 6), VW / 2, y + 17, UI.dim, 'center', 6);
   const rows = YARDS(), top = y + 27, foot = 20;                       /* two lines of footer at the bottom */
-  const rowH = Math.max(15, Math.min(22, Math.floor((h - (top - y) - foot) / rows.length)));
+  const rowH = Math.max(12, Math.min(22, Math.floor((h - (top - y) - foot) / rows.length)));   /* (nine rows with THE BERSERKER: 13 a row, one line each, or the open yard sat on the footer) */
   const twoLine = rowH >= 19;                                          /* room for the drill under the name? */
   rows.forEach((hr, i) => {
     const owned = hr.free || !!(PROG.heroes && PROG.heroes[hr.id]), sel = i === practiceI, yy = top + i * rowH;

@@ -16,7 +16,7 @@ const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const swordBlock = src.slice(src.indexOf('const SWORDS = ['), src.indexOf('const UPGRADES = ['));
 const SWORDS = [...swordBlock.matchAll(/\{ id: '([^']+)'/g)].map(m => m[1]);
 assert.ok(SWORDS.length >= 9 && SWORDS[0] === 'steel', 'could not read the SWORDS table');
-const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer'];
+const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker'];
 const MIN_PX = 6;
 
 const pg = await openPage({ audio: false, fonts: false });

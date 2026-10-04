@@ -9,7 +9,7 @@
 //   node tools/crouch-feet.mjs [--report]
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
-const HEROES = ['knight', 'warden', 'pirate', 'paladin', 'geomancer', 'reaper', 'pyro'];
+const HEROES = ['knight', 'warden', 'pirate', 'paladin', 'geomancer', 'reaper', 'pyro', 'berserker'];
 const BELOW = 2;   /* rows under the boots a crouch frame may reach: the boot outline (standing frames reach 1-2) */
 const KEYS = ['crouch', 'lowGuard', 'set', 'reload', 'crouchShot', 'trip', 'lowPoke', 'kneel', 'sense', 'harvest', 'ward'];
 const pg = await openPage({ audio: false, fonts: false });

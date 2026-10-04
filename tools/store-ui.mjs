@@ -9,7 +9,7 @@ const diff=(a,b)=>{let n=0;for(let i=0;i<a.length;i+=4)if(a[i]!==b[i]||a[i+1]!==
 // every ability in the game has a named shape (a new one is a plain cast, on purpose visible here)
 out.unshaped=SKILLS.filter(s=>s.active&&!AP.SHAPE[s.id]).map(s=>s.id);
 
-for(const h of ['knight','pyro','paladin','pirate','reaper','warden','geomancer']){
+for(const h of ['knight','pyro','paladin','pirate','reaper','warden','geomancer','berserker']){
  BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(20);BKT.PROG.coins=5000;BK.applyUpgrades();BK.load(0);BK.state='map';
  const acts=skillsFor(h).filter(n=>n.active);BK.ui.storeOpen('map','skills');BK.ui.treeTab=0;BK.step(1);
  const before=snap();let drawn=0,animated=0;const hashes=new Set();
@@ -30,7 +30,7 @@ const n0=BKT.treeNodes()[0],c0=BKT.PROG.coins;BK.press('confirm');BK.sim(1);out.
 BK.ui.storeOpen('map','skins');BK.ui.storeI=1;const c1=BKT.PROG.coins;BK.step(2);BK.press('confirm');BK.sim(1);out.boughtSkin=BKT.PROG.coins<c1;
 return out;})()`);
 assert.deepEqual(r.unshaped,[],'an ability has no preview shape: '+r.unshaped);
-assert.equal(r.heroes.length,7);
+assert.equal(r.heroes.length,8);   /* (THE BERSERKER, 2026-10-04) */
 for(const h of r.heroes){assert.ok(h.drawn>=3,h.h+' drew '+h.drawn);assert.ok(h.animated>=h.drawn*0.5,h.h+' preview does not move: '+h.animated+'/'+h.drawn);assert.ok(h.distinct>=Math.min(h.drawn,3),h.h+' previews all look alike');assert.ok(h.moved,h.h+' down did not move the highlight');assert.ok(h.pure,h.h+' the store / previews changed the save or the game');assert.ok(h.items>=8);}
 assert.equal(r.rand,0,'the preview must not use randomness');
 assert.ok(r.boughtSkill,'buying an ability from the tree broke: '+r.treeOpen+' '+r.msg);assert.ok(r.boughtSkin,'buying from the store broke');

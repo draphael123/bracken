@@ -17,7 +17,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { writeFileSync } from 'node:fs';
-const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer'];
+const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker'];
 /* the Mother at mother-pilot's 180 s (her fight is ~110 s; cut at 120 a slow hero's last sporelings would go uncounted) */
 const BOSSES = [['spore', 180], ['spire', 120], ['underleaf', 120], ['marsh', 120]];
 const MIN_SWINGS = 4, MAX_MISS = 1 / 3;
