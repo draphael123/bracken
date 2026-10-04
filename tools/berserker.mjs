@@ -23,6 +23,7 @@ try {
       BKT.PROG.skillOwned.berserker=Object.fromEntries(ids.map(i=>[i,true]));BKT.PROG.loadouts.berserker=ids.slice(0,3);BK.applyUpgrades();BK.load(0);BK.state='play';
       BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const L=BK.L;for(let x=2;x<50;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;
       BK.tp(10,21);BK.sim(30);for(const k in BK.keys)BK.keys[k]=false;const P=BK.P;P.hp=P.maxHp;P.inv=0;P.st=P.maxSt;P.face=1;P.rage=0;P.bzFightT=-99;};
+    window.__LV=await import('/src/level.js');
     window.__foe=(dx,t='sprig',hp=5000)=>{BK.spawnEnt({t,x:(BK.P.x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=hp;e.cd=99;return e;};
     return 1})()`);
   const r = await pg.evalp(`(()=>{const out={},P=()=>BK.P,K=BK.keys,Z=()=>BK.bz();
@@ -65,6 +66,19 @@ try {
     const px=c=>{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return Array.from(d).join(',');};
     const gold=BKT.heroSet('bracken','ember',false,'berserker');const diff=(a,b)=>{const A=a.getContext('2d').getImageData(0,0,a.width,a.height).data,B=b.getContext('2d').getImageData(0,0,b.width,b.height).data;let n=0,body=0;for(let i=0;i<A.length;i+=4){if(A[i]!==B[i]||A[i+1]!==B[i+1]||A[i+2]!==B[i+2])n++;}return n;};
     out.art={missing:need.filter(k=>!set.R[k]),bare:!!set.bare,bareMissing:need.filter(k=>!(set.bare&&set.bare.R[k])),skinDiff:diff(set.R.idle[0],gold.R.idle[0])};
+    /* yard: his trial loads, and the brace-on-the-beat, the axe and the frenzy stations can be finished through his real input */
+    { const {LEVELS}=window.__LV;for(const k in BK.keys)BK.keys[k]=false;BK.setHero('berserker');BK.reset({fresh:true});BK.applyUpgrades();const i=LEVELS.findIndex(l=>l.id==='trial_berserker');out.yard={found:i>=0};
+      if(i>=0){BK.load(i);BK.state='play';BK.god=false;BK.sim(30);const T=BK.L.trial;out.yard.kinds=T.map(s=>s.kind);
+        const go=st=>{BK.tp(st.x0+3,19);P().vx=0;P().face=1;BK.sim(30);P().st=P().maxSt;};
+        const foes=st=>BK.enemies().filter(e=>e.alive&&e.x>st.x0*16&&e.x<st.gate*16).sort((a,b)=>a.x-b.x);
+        let st=T.find(s=>s.kind==='axe');go(st);for(let t=0;t<4&&!st.done;t++){P().face=1;P().st=P().maxSt;K.up=true;K.block=true;BK.sim(2);K.up=K.block=false;BK.sim(60);
+          for(let f=0;f<240&&Z().oneHanded;f++){const a=Z().axe;if(!a)break;K.right=P().x<a.x-2;K.left=P().x>a.x+2;BK.sim(1);}K.left=K.right=false;BK.tp(st.x0+3,19);BK.sim(20);}
+        out.yard.axe=!!st.done;out.yard.axeDbg={hits:Z().stats.axeHits,throws:Z().stats.throws,got:st.got||0,dummies:BK.enemies().filter(e=>e.t==='dummy'&&e.x>st.x0*16&&e.x<st.gate*16).map(e=>({x:Math.round(e.x),h:e.harmless,a:e.alive})),px:Math.round(P().x)};
+        st=T.find(s=>s.kind==='meter');go(st);BK.sim(10);const rg=P().rage;K.block=true;BK.sim(2);K.block=false;BK.sim(30);out.yard.meter=!!st.done;out.yard.meterRage=Math.round(rg);
+        st=T.find(s=>s.kind==='flash');go(st);const e=foes(st)[0];let glintAt=-1,pressed=0;
+        for(let f=0;f<60*60&&!st.done;f++){P().face=Math.sign(e.x-P().x)||1;P().st=P().maxSt;const gap=Math.abs(e.x-P().x);K.right=gap>30&&e.x>P().x;K.left=gap>30&&e.x<P().x;
+          if(e.mode==='cutTell'&&e.glint){if(glintAt<0)glintAt=f;if(!pressed&&f-glintAt>=3){K.block=true;BK.sim(1);K.block=false;pressed=1;continue;}}else{glintAt=-1;pressed=0;}BK.sim(1);}
+        K.left=K.right=false;out.yard.flash=!!st.done;}}
     return out;})()`, 600000);
   console.log(JSON.stringify(r));
   ok(r.chain.combos[1] === 2 && r.chain.combos[2] === 3, 'chain: three landed chops did not run 1-2-3: ' + r.chain.combos);
@@ -81,6 +95,7 @@ try {
   ok(r.frenzy.swing > r.frenzy.swing0 && !r.frenzy.hurt && r.frenzy.lost20 > r.frenzy.lostN && r.frenzy.killHeal > 0, 'frenzy: not quicker / flinched / not x1.25 taken / no kill-heal: ' + JSON.stringify(r.frenzy));
   ok(r.throw.one && r.throw.hitA && r.throw.swOne < 1 && !r.throw.heavyOne && r.throw.picked, 'throw: ' + JSON.stringify(r.throw));
   ok(r.workup.rage > 50 && r.workup.rage <= 75 && r.workup.woke && r.workup.growls > 3 && r.workup.broke, 'working up: ' + JSON.stringify(r.workup));
+  ok(r.yard.found && r.yard.axe && r.yard.meter && r.yard.flash, 'his yard: ' + JSON.stringify(r.yard));
   for (const [id, s] of Object.entries(r.skills)) ok(s.cd > 0 && s.spent > 0, 'skill ' + id + ' did not fire: ' + JSON.stringify(s));
   ok(!r.art.missing.length && r.art.bare && !r.art.bareMissing.length, 'art: missing keys ' + r.art.missing + ' / bare ' + r.art.bareMissing);
   ok(r.art.skinDiff > 0 && r.art.skinDiff < 40, 'art: a weapon skin changed ' + r.art.skinDiff + ' pixels of his idle (only the axe heads should change)');

@@ -28,7 +28,7 @@ export const BZ = {
   frenzy: { t: 8, takeMul: 1.25, hideMul: 1.1, killHeal: 4, priceHeal: 8, cryR: 110, haste: 5, mist: 40, long: 3 },
   brace: { live: 0.3, rec: 0.28, won: 0.1, st: 10, stagger: 0.7, back: 1.2 },
   roll: { t: 0.28, speed: 250, shove: 200, stagger: 0.55, dmg: 0.4 },
-  axe: { st: 18, vx: 300, vy: -60, g: 520, dmg: 1.3, haft: 1.33, lost: 5, pick: 14, recall: 420 },
+  axe: { st: 18, vx: 300, vy: -10, g: 600, flat: 0.5, dmg: 1.3, haft: 1.33, lost: 5, pick: 14, recall: 420 },
   poise: { heavy: 30, bossMul: 1.4, rage: 1.25, one: 0.5 },
   /* WEIGHT (claude/weight, scratch/brief-weight.md) lands later: his row of its commit table, for src/commit.js to read - recovery added after
      each verb's art (s), the roll's cost and grace, and the brace's own commitment. Light like the knight's, his heavy a beat longer. */
@@ -93,7 +93,7 @@ export function makeBerserker(api) {
     if (unblockable) { stats.braceRed++; p.braceRec = BZ.brace.rec;
       if (T().ironBrace) { api.number(p.x, p.y - 26, 'HOLDS', '#c9b27c'); api.SFX.clank(); return 'half'; }
       return null; }   /* A RED BLOW IS NEVER TURNED: it finds him whole (IRON BRACE: at half) */
-    stats.braced++; p.braceRec = BZ.brace.won; p.braceHit = true; fight(p);
+    stats.braced++; p.braceRec = BZ.brace.won; p.braceHit = true; p.parryT = 0.22; fight(p);   /* (on the beat by its nature: the clock every hero's answer sets, so a foe that reels from an answer reels from it - main.js palOpened) */
     gain(p, BZ.rage.brace, 'brace');
     if (foe) { foe.stagger = Math.max(foe.stagger || 0, foe.maxHp ? 0.35 : BZ.brace.stagger * (T().braceBack ? 1.6 : 1)); foe.flash = 0.18;
       if (!foe.maxHp && !foe.mini) { foe.vx = Math.sign(foe.x - p.x) * (T().braceBack ? 230 : 120); if (T().braceBack) { foe.vy = Math.min(foe.vy || 0, -120); foe.knock = Math.max(foe.knock || 0, BZ.brace.back); } } }
@@ -112,19 +112,20 @@ export function makeBerserker(api) {
   /* ---- THE AXE THROW ---- */
   function throwAxe(p) { if (p.bzAxe) return false; if (!api.spend(BZ.axe.st)) { api.tired(); return false; } stats.throws++;
     const far = T().haft ? BZ.axe.haft : 1;
-    p.bzAxe = { x: p.x + p.face * 8, y: p.y - 16, vx: p.face * BZ.axe.vx * Math.sqrt(far), vy: BZ.axe.vy, spin: 0, state: 'fly', t: 0, hit: new Set(), lostT: 0 };
+    p.bzAxe = { x: p.x + p.face * 8, y: p.y - 10, vx: p.face * BZ.axe.vx * Math.sqrt(far), vy: BZ.axe.vy, spin: 0, state: 'fly', t: 0, hit: new Set(), lostT: 0 };
     api.kitPose(p, 'bzThrow', 0.24); api.SFX.bzThrow && api.SFX.bzThrow(); p.atk = -1; p.braceT = 0; api.teach('throw'); return true; }
   function recall(p) { const a = p.bzAxe; if (!a || a.state === 'back') return false; a.state = 'back'; a.hit = new Set(); a.t = 0; stats.recalls++; api.SFX.bzThrow && api.SFX.bzThrow(); return true; }
   function axeHit(p, a, e, back) { const far = T().haft ? BZ.axe.haft : 1;
     api.hurtAs('shot', e, Math.round(api.swordDmg() * BZ.axe.dmg * (back ? 0.7 : 1) * far), a.x - Math.sign(a.vx || p.face) * 20, false); stats.axeHits++;
     if (T().stagger && e.alive) { if (e.maxHp || e.mini) api.poiseLean(e, 18); else e.stagger = Math.max(e.stagger || 0, 0.8); }
+    api.trialEvent('axe');   /* (his yard's axe station) */
     api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(a.vx) || 1, 6); api.hitstop(0.04); }
   function stepAxe(p, dt) { const a = p.bzAxe; if (!a) return; a.t += dt; a.spin += dt * 22;
-    if (a.state === 'fly') { a.vy += BZ.axe.g * dt; a.x += a.vx * dt; a.y += a.vy * dt;
+    if (a.state === 'fly') { if (a.t > BZ.axe.flat) a.vy += BZ.axe.g * dt;   /* (it flies FLAT for BZ.axe.flat s - nine tiles - then drops) */ a.x += a.vx * dt; a.y += a.vy * dt;
       for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || a.hit.has(e) || !api.overlap({ l: a.x - 5, r: a.x + 5, t: a.y - 5, b: a.y + 5 }, api.box(e))) continue;
         a.hit.add(e); axeHit(p, a, e, false); a.vx *= -0.25; a.vy = -60; a.state = 'drop'; break; }
       if (a.state === 'fly' && api.isSolid(Math.floor(a.x / api.TS), Math.floor(a.y / api.TS))) { a.x -= a.vx * dt; a.vx = 0; a.vy = 0; a.state = 'stuck'; api.SFX.clank(); api.sparks(a.x, a.y, -Math.sign(a.vx || p.face), 4); } }
-    if (a.state === 'drop') { a.vy += BZ.axe.g * dt; a.x += a.vx * dt; const ny = a.y + a.vy * dt;
+    if (a.state === 'drop') { a.vy += 600 * dt; a.x += a.vx * dt; const ny = a.y + a.vy * dt;
       if (api.isSolid(Math.floor(a.x / api.TS), Math.floor((ny + 2) / api.TS)) || api.isOneWay(api.tileAt(Math.floor(a.x / api.TS), Math.floor((ny + 2) / api.TS)))) { a.y = Math.floor((ny + 2) / api.TS) * api.TS - 2; a.vx = 0; a.vy = 0; a.state = 'lie'; api.dust(a.x, a.y + 2, 2); }
       else a.y = ny; }
     if (a.state === 'fly' && a.t > 0.9) a.state = 'drop';   /* it carries about nine tiles, then falls */
@@ -149,11 +150,11 @@ export function makeBerserker(api) {
   /* ---- EVERY FRAME (main.js updatePlayer, the hero's own C block): the timers, the drain, the C key, the axe ---- */
   function update(dt, keys, ctx) {
     const p = P(), t = T(); clampRage(p);
-    for (const k of ['braceT', 'braceRec', 'hardenT', 'standT', 'bzIronT', 'blastT']) p[k] = Math.max(0, (p[k] || 0) - dt);
+    for (const k of ['braceT', 'braceRec', 'hardenT', 'standT', 'bzIronT', 'blastT', 'parryT']) p[k] = Math.max(0, (p[k] || 0) - dt);
     if (p.frenzyT > 0) { p.frenzyT = Math.max(0, p.frenzyT - dt); p.rage = 100 * p.frenzyT / (p.frenzyMax || BZ.frenzy.t); fight(p);
       if (Math.random() < dt * 24) api.parts.push({ x: p.x + (Math.random() - 0.5) * 12, y: p.y - 4 - Math.random() * 18, vx: (Math.random() - 0.5) * 10, vy: -30 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ff4a3a' : '#ffb08a', size: 1, grav: -30 });
       if (p.frenzyT <= 0) { p.rage = t.mist ? BZ.frenzy.mist : 0; api.SFX.bzFrenzyEnd && api.SFX.bzFrenzyEnd(); api.ringAt(p.x, p.y - 12, 16, '#9a6a5a', 0.3); } }
-    else if (!p.dead && api.time - (p.bzFightT ?? -99) > BZ.rage.drainAfter && !(p.workT > 0)) { p.rage = Math.max(0, (p.rage || 0) - BZ.rage.drain * (t.cool ? 0.5 : 1) * dt); if (p.rage > 30) api.teach('drain'); }   /* OUT OF THE FIGHT IT GOES */
+    else if (!p.dead && api.time - (p.bzFightT ?? -99) > BZ.rage.drainAfter && !(p.workT > 0) && !(api.inTrial && api.inTrial())) { p.rage = Math.max(0, (p.rage || 0) - BZ.rage.drain * (t.cool ? 0.5 : 1) * dt); if (p.rage > 30) api.teach('drain'); }   /* OUT OF THE FIGHT IT GOES */
     if (p.braceT > 0) { p.vx = 0; if (ctx.stunned || ctx.dodging || p.dead) p.braceT = 0;
       else if (p.braceT <= dt && !p.braceHit) { stats.braceMiss++; p.braceRec = BZ.brace.rec; } }   /* (a brace that met nothing: the beat he stands there with his chest out) */
     if (p.braceRec > 0 && (p.ground || p.swim)) p.vx *= Math.pow(0.02, dt);

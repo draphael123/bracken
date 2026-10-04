@@ -8,6 +8,7 @@ export const GROUND_KITS = {
   "unburied": {"density":0.22,"kinds":["tuft","rock","stone","tuft","bones"]},   /* THE UNBURIED FIELD: a trampled battlefield - dead grass, thrown stones, no flowers, and bones in the turf */
   "trial_warden": {"density":0.38,"kinds":["tuft","fern"]},   /* THE WARDEN'S TRIAL (2026-09-24) */
   "trial_geomancer": {"density":0.38,"kinds":["rock","stone"]},   /* THE GEOMANCER'S TRIAL: her yard is stony */
+  "trial_berserker": {"density":0.38,"kinds":["tuft","stem"]},   /* THE BERSERKER'S TRIAL (claude/berserker) */
   "wood": {
     "density": 0.7,
     "kinds": [
@@ -811,6 +812,11 @@ export const ALLOWED_DECORATIONS = {
     "snow",
     "stem",
     "stone"
+  ],
+  "trial_berserker": [
+    "snow",
+    "stem",
+    "tuft"
   ],
   "shopCrag": [
     "bones",
