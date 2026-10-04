@@ -452,7 +452,7 @@ function dashIn(BK, h, e, f) {
    read it; now it must, as a person must. Only a STARTED cut is held back (a plunge from the air is not), and only on the ground. ==== */
 let HUMAN_H = null;
 function humanSwingOk(BK) {
-  const P = BK.P, h = HUMAN_H; if (!P || !h || !(P.ground || P.swim) || committed(P)) return true;
+  const P = BK.P, h = HUMAN_H; if (BK.labHuman === false || !P || !h || !(P.ground || P.swim) || committed(P)) return true;
   const total = artLim(false) / artRate(h, false) + (COMMIT[h] || COMMIT.knight).light;
   const cost = BK.stepCost ? BK.stepCost() : 15, roll = ROLL_COST[h] || 24;
   if (P.st - cost < roll && P.st < P.maxSt) return false;   /* (b): keep a roll */
@@ -463,9 +463,26 @@ function humanSwingOk(BK) {
     if (left < total) return false; }   /* (a): it would land before he is free */
   return true;
 }
+/* (c) ONE ROLL A TELL, LATE IN IT. The bot's hands press the roll every 14-20 frames for as long as a red tell runs (a held key, in effect).
+   Under the old roll that was free - the whole roll untouchable, 20 wind with the bar refilling under it. Under WEIGHT a roll is 22-28 wind
+   with no regen through it, and only its first 0.20 s is safe, so a person rolls ONCE, as the tell ends. A roll press is let through when the
+   nearest winding foe's tell has under ROLL_LATE s left (or its time cannot be read), once per tell (0.7 s); with no tell in reach (a shot, a
+   hazard) at most one roll in ROLL_GAP s. */
+const ROLL_LATE = 0.22, ROLL_GAP = 0.6;
+function humanRollOk(BK) {
+  const P = BK.P; if (BK.labHuman === false || !P || !HUMAN_H) return true;
+  const now = BK.time !== undefined ? BK.time : performance.now() / 1000;
+  let best = null, bd = 1e9;
+  for (const e of BK.enemies()) { if (!e.alive || e.harmless) continue; const d = Math.abs(e.x - P.x); if (d > 160 || Math.abs(e.y - P.y) > 90) continue;
+    if (!(e.greedT > 0) && !(BK.windingUp && BK.windingUp(e))) continue; if (d < bd) { bd = d; best = e; } }
+  if (best) { const left = best.greedT > 0 ? best.greedT : (typeof best.modeT === 'number' && best.modeT > 0 ? best.modeT : 0);
+        if (left > ROLL_LATE) return false;   /* too early: wait for it */
+    if (now - (best.labRollT ?? -9) < 0.7) return false; best.labRollT = now; P.labRollT = now; return true; }
+  if (now - (P.labRollT ?? -9) < ROLL_GAP) return false; P.labRollT = now; return true;
+}
 export async function bossLab(BK, opts = {}) {
   const previous = BK.manualSimulation, press0 = BK.press;
-  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) ? undefined : press0.call(BK, k);
+  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
@@ -548,7 +565,7 @@ async function runbossLab(BK, opts) {
     const dkLag = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
-      if(P.st<(ROLL_COST[h]||24)+2)P.labRest=true;if(P.st>=Math.min(60,P.maxSt*.65))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
+      const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
       if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);

@@ -131,9 +131,9 @@ try {
   { const r = await pg.evalp(`(()=>{__prep('knight',0);const P=BK.P,K=BK.keys;P.st=10;BK.press('atk');BK.sim(1);const lastWind=P.atk>=0,zero=P.st;
       for(let i=0;i<40;i++)BK.sim(1);const flat=P.st;for(let i=0;i<25;i++)BK.sim(1);const after=P.st;
       Object.assign(P,{st:1});P.winded=true;P.exhaustT=0;K.block=true;BK.sim(2);const shield1=!!P.block;K.block=false;BK.sim(1);
-      P.winded=true;P.st=10;P.dodgeCd=0;BK.press('dodge');BK.sim(1);const rollWinded=P.dodge>0;
+      P.winded=true;P.st=25;P.dodgeCd=0;BK.press('dodge');BK.sim(1);const rollWinded=P.dodge>0;
       __prep('knight',0);P.st=12;P.face=1;K.block=true;BK.sim(20);const up=!!P.block;P.inv=0;const res=BKT.damagePlayer(P.x+14,40,{});BK.sim(1);
-      const brk={res,hurt:+P.hurt.toFixed(2),tired:+P.guardTired.toFixed(2),winded:!!P.winded,st:P.st};BK.sim(30);const upSoon=!!P.block;K.block=false;
+      const brk={res,hurt:+P.hurt.toFixed(2),tired:+P.guardTired.toFixed(2),winded:!!P.winded,st:P.st};BK.sim(45);const upSoon=!!P.block;K.block=false;
       return {lastWind,zero,flat,after,shield1,rollWinded,up,brk,upSoon}})()`);
     check(r.lastWind && r.zero === 0, `LAST WIND: a swing at 10 of 15 went ${r.lastWind}, the bar ${r.zero}`);
     check(r.flat === 0, `EXHAUSTED: the bar came back to ${r.flat} inside its 1.0 s`);
@@ -141,7 +141,7 @@ try {
     check(!r.shield1, `the knight's shield rose at 1 stamina while winded`);
     check(!r.rollWinded, `a roll came out while winded`);
     check(r.up && r.brk.hurt >= 0.85 && r.brk.tired >= 1.15 && r.brk.winded, `GUARD BREAK: ${JSON.stringify(r.brk)} (want stagger 0.9, guard down 1.2, exhausted)`);
-    check(!r.upSoon, `the shield was back up 0.5 s after a guard break`);
+    check(!r.upSoon, `the shield was back up 0.75 s after a guard break`);
   }
 
   /* ---- 7. the shield's price ---- */
