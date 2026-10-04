@@ -114,22 +114,22 @@
    },
    {
     "id": "frost",
-    "price": 55,
-    "silver": false,
+    "price": 8,
+    "silver": true,
     "needs": null,
     "feat": null
    },
    {
     "id": "shadow",
-    "price": 60,
-    "silver": false,
+    "price": 8,
+    "silver": true,
     "needs": null,
     "feat": null
    },
    {
     "id": "gilded",
-    "price": 70,
-    "silver": false,
+    "price": 10,
+    "silver": true,
     "needs": null,
     "feat": null
    },
@@ -149,22 +149,22 @@
    },
    {
     "id": "dawn",
-    "price": 60,
-    "silver": false,
+    "price": 6,
+    "silver": true,
     "needs": null,
     "feat": null
    },
    {
     "id": "emberplate",
-    "price": 75,
-    "silver": false,
+    "price": 8,
+    "silver": true,
     "needs": null,
     "feat": null
    },
    {
     "id": "tide",
-    "price": 90,
-    "silver": false,
+    "price": 10,
+    "silver": true,
     "needs": null,
     "feat": null
    },
@@ -177,7 +177,7 @@
    },
    {
     "id": "silverknight",
-    "price": 4,
+    "price": 8,
     "silver": true,
     "needs": null,
     "feat": null
@@ -196,35 +196,35 @@
    },
    {
     "id": "ember",
-    "price": 25,
+    "price": 150,
     "silver": false,
     "needs": null,
     "feat": null
    },
    {
     "id": "frost",
-    "price": 35,
+    "price": 175,
     "silver": false,
     "needs": null,
     "feat": null
    },
    {
     "id": "gilded",
-    "price": 45,
+    "price": 200,
     "silver": false,
     "needs": null,
     "feat": null
    },
    {
     "id": "shadow",
-    "price": 55,
+    "price": 225,
     "silver": false,
     "needs": null,
     "feat": null
    },
    {
     "id": "thorn",
-    "price": 60,
+    "price": 250,
     "silver": false,
     "needs": null,
     "feat": null
@@ -238,14 +238,14 @@
    },
    {
     "id": "laurelBlade",
-    "price": 70,
+    "price": 350,
     "silver": false,
     "needs": null,
     "feat": "medals:30"
    },
    {
     "id": "moon",
-    "price": 80,
+    "price": 400,
     "silver": false,
     "needs": null,
     "feat": null
@@ -360,6 +360,20 @@
     "price": 280,
     "silver": false,
     "needs": "moor",
+    "feat": null
+   },
+   {
+    "id": "edge4",
+    "price": 600,
+    "silver": false,
+    "needs": "fields",
+    "feat": null
+   },
+   {
+    "id": "mail2",
+    "price": 900,
+    "silver": false,
+    "needs": "mage",
     "feat": null
    },
    {

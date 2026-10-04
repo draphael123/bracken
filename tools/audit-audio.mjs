@@ -235,7 +235,7 @@ async function pageLib(CFG) {
       }
       st.tag = ''; return { rows, ...flush() };
     },
-    // EVERY PICKUP: a coin, a run of coins, a heart, a silver, a relic, a key, a stray (quest item), a checkpoint
+    // EVERY PICKUP: a coin, a run of coins, a heart, a silver, a key, a stray (quest item), a checkpoint
     async pickups(spots) {
       const rows = [];
       const go = (lvl, name, fn) => { st.tag = 'pick:' + name; fresh(lvl, 'knight'); act(name); const mark = log.length; try { fn(); } catch (e) { rows.push({ name, error: e.message }); return; } rows.push({ name, lvl, sounds: log.slice(mark).map(x => x.n) }); };
@@ -243,7 +243,7 @@ async function pageLib(CFG) {
       go('wood', 'coin run', () => { const as = BK.acorns().filter(q => !q.got).slice(0, 6); for (const a of as) { P.x = a.x; P.y = a.y + 7; P.vy = 0; tick(4); } tick(15); });
       go('wood', 'heart', () => { P.hp = 10; BK.healths().push({ x: P.x, y: P.y - 3, got: false }); tick(10); });
       go('wood', 'silver', () => { const s = BK.silvers().find(q => !q.got); if (!s) throw new Error('no silver'); P.x = s.x; P.y = s.y + 7; P.vy = 0; tick(15); });
-      for (const [name, t] of [['relic', 'relic'], ['key', 'key'], ['stray (quest)', 'stray']]) { const sp = spots[t]; if (!sp) { rows.push({ name, error: 'none placed' }); continue; }
+      for (const [name, t] of [['key', 'key'], ['stray (quest)', 'stray']]) { const sp = spots[t]; if (!sp) { rows.push({ name, error: 'none placed' }); continue; }
         go(sp.lvl, name, () => { const pr = BK.props().find(p => p.t === t && !p.got); if (!pr) throw new Error('no ' + t + ' prop'); P.x = pr.x; P.y = pr.y + (t === 'key' ? 6 : 8); P.vy = 0; tick(15); }); }
       { const sp = spots.check; go(sp ? sp.lvl : 'wood', 'checkpoint', () => { BK.tp(sp.x, sp.y); tick(20); }); }
       st.tag = ''; return { rows, ...flush() };
@@ -359,7 +359,7 @@ try {
   if (want('bosses')) { const list = only.bosses || levelInfo.filter(l => l.boss).map(l => l.id); say('bosses: ' + list.join(' ')); out.passes.bosses = await ex('__aud.bosses(' + JSON.stringify(list) + ', ' + JSON.stringify({ maxSecs: FAST ? 30 : 100 }) + ')'); say('bosses done: ' + out.passes.bosses.log.length + ' sounds'); }
   if (want('minis')) { const list = only.minis || levelInfo.filter(l => l.mini).map(l => l.id); say('minis: ' + list.join(' ')); out.passes.minis = await ex('__aud.bosses(' + JSON.stringify(list) + ', ' + JSON.stringify({ maxSecs: FAST ? 30 : 80, mini: true }) + ')'); say('minis done'); }
   if (want('heroes')) { const list = only.heroes || ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper']; say('heroes'); out.passes.heroes = await ex('__aud.heroes(' + JSON.stringify(list) + ', {})'); say('heroes done: ' + out.passes.heroes.log.length + ' sounds'); }
-  if (want('pickups')) { say('pickups'); out.passes.pickups = await ex('__aud.pickups(' + JSON.stringify({ relic: propHome.relic, key: propHome.key, stray: propHome.stray, check: propHome.check }) + ')'); say('pickups done'); }
+  if (want('pickups')) { say('pickups'); out.passes.pickups = await ex('__aud.pickups(' + JSON.stringify({ key: propHome.key, stray: propHome.stray, check: propHome.check }) + ')'); say('pickups done'); }
   if (want('props')) { const kinds = ['CRATE', 'barrel', 'keg', 'puffball', 'door', 'doorway', 'gate', 'lockgate', 'lever', 'crank', 'winch', 'bell', 'seabell', 'tidebell', 'knell', 'cage', 'cargo', 'rack', 'torch', 'brazier', 'well', 'sluice', 'throne', 'window', 'bridge', 'cart', 'plank', 'cannon', 'catapult', 'capstan', 'pump', 'davit', 'minerlamp', 'timber', 'firepit', 'chainpost', 'dropcage', 'plate', 'weight', 'mirror', 'anvil', 'hammer', 'boiler', 'rockfall', 'deadfall', 'nest', 'vent', 'glowbud', 'croppole', 'thresher', 'treehouse', 'towertop'];
     const spots = {}; for (const k of kinds) if (propHome[k]) spots[k] = propHome[k]; if (only.props) for (const k of Object.keys(spots)) if (!only.props.includes(k)) delete spots[k];
     say('props: ' + Object.keys(spots).length); out.passes.props = await ex('__aud.props(' + JSON.stringify(spots) + ')'); say('props done'); }

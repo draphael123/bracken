@@ -7,7 +7,7 @@ const out = join(ROOT, process.argv[2] || 'work/claude/mapspace'), tag = process
 const pg = await openPage({ audio: false });
 try {
   const r = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; BK.reset({ fresh: true });
-    for (const l of LEVELS) BKT.PROG[l.id] = { cleared: true, medal: 3, silver: 7, quest: true, relic: true };
+    for (const l of LEVELS) BKT.PROG[l.id] = { cleared: true, medal: 3, silver: 7, quest: true };
     const res = []; const shot = (id, name) => { if (!BK.mapLook(id)) return; BK.step(40); const c = document.createElement('canvas'); c.width = BK.view.VW * 3; c.height = BK.view.VH * 3; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); res.push([name, c.toDataURL('image/png')]); };
     BK.mapLook('waymeet'); BK.step(60); shot('fields', 'inland-low'); shot('witchlight', 'inland-high'); shot('keep', 'coast-mid'); shot('longwater', 'coast-low'); shot('moor', 'crag-mid'); shot('crown', 'crag-top');
     return res; })()`, 120000);

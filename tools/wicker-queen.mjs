@@ -22,13 +22,13 @@
 //     (a look cancels), and burst when struck; HER OWN BALL struck back sets her alight (an opening of 3 s+, nothing banked); THE BONFIRE RING is told, then burns
 //     the boards but for one travelling gap (and a rider)
 // THE LEVEL: the green is her carousel (the arena, its ten horses, the firebox by the centre column, her UPSTREAM of it: the first burn is the ride's), the door checkpoint stands
-//   before it, the elite still guards the door, her relic (the fair's one relic slot) waits for her death, and the gate ends the level after it
+//   before it, the elite still guards the door, she drops nothing (relics are cut), and the gate ends the level after it
 // IN THE PAGE: the fight wakes past the door and the ride starts; faced her feet do not move (the ride carries her) and co-op one facing holds her; the
 //   boards carry a hero; a hero jumps onto a horse and it carries him up, down and along; her lash hurts a standing hero and passes over a jumping one or a
 //   rider (low), passes under a ducked one and hurts a rider (high); the burning floor hurts a hero on the boards and not a rider; her spear thrust high
 //   hurts a standing hero and a rider and not a ducked one, thrust low hurts a standing hero and not a jumping one or a rider; the stab from behind hurts; lured onto the embers she burns and a blow bites harder; held upstream the ride brings
 //   her onto them; phase two darkens the green, only a near look holds her, and the ride quickens (told); phase three quickens it again; the crowning keeps
-//   two at most; her death stops the ride, drops the relic, the gate opens and walking to it clears the level.
+//   two at most; her death stops the ride, the gate opens and walking to it clears the level.
 //   node tools/wicker-queen.mjs        (PORT from tools/ports.mjs)
 import { readFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
@@ -213,8 +213,6 @@ ok(W.WQ.burnT >= 3 && W.WQ.burnTP3 >= 3 && W.WQ.ward <= 0.05, 'her burn is not a
   ok(far.log.says.includes('FULL DARK: THE RIDE QUICKENS'), 'PHASE 2 did not say the ride quickens');
   const nearr = rig({ hp: W.WQ.hp * 0.6, ...QUIETCD, heroes: [hero(10540, 1)], embers: null, x: 10620 }); const x1 = nearr.e.x; for (let i = 0; i < 60; i++) nearr.step();
   ok(nearr.e.x === x1 && nearr.e.mode === 'still', 'PHASE 2: a hero facing her from 80 px did not hold her');
-  const ribbon = rig({ hp: W.WQ.hp * 0.6, ...QUIETCD, heroes: [hero(10620 - 130, 1, { reach: 1.5 })], embers: null, x: 10620 }); const xr = ribbon.e.x; for (let i = 0; i < 60; i++) ribbon.step();
-  ok(ribbon.e.x === xr, 'PHASE 2: with the Maypole Ribbon (144 px) a look from 130 px did not hold her');
   const p1 = rig({ ...QUIETCD, heroes: [hero(10400, 1)], embers: null, x: 10620 }); const x2 = p1.e.x; for (let i = 0; i < 30; i++) p1.step();
   ok(p1.e.x === x2, 'PHASE 1: the same far look did not hold her (the near rule leaked into phase one)');
   const p3 = rig({ hp: W.WQ.hp * 0.3, ...QUIETCD, heroes: [hero(10100, -1)], embers: null, x: 10620 }), p1b = rig({ ...QUIETCD, heroes: [hero(10100, -1)], embers: null, x: 10620 });
@@ -299,7 +297,7 @@ const lv = LEVELS.find(l => l.id === 'fair'), L = lv.build(), G = L.green, Ar = 
     const cks = L.ents.filter(e => e.t === 'check').map(e => e.x);
     ok(cks.some(x => x < G.door && x >= G.door - 40) && !cks.some(x => x * 16 > Ar.x0 && x * 16 < Ar.x1), 'no door checkpoint before the green, or one inside it: ' + cks);
     ok(L.ents.some(e => e.t === 'hobbyhorse' && e.elite && e.gate === G.door), 'the elite hobby-horse no longer guards the door');
-    const rel = L.ents.filter(e => e.t === 'relic' && e.bossDrop); ok(rel.length === 1 && rel[0].kind === 'maypole' && rel[0].x * 16 > Ar.x0 && rel[0].x * 16 < Ar.x1 && L.ents.filter(e => e.t === 'relic').every(e => e.bossDrop || e.x * 16 < Ar.x0), 'her reward is not the fair\'s one boss-drop relic, waiting in the green for her death (the back lot\'s glass is the level\'s own, before the door - claude/fairfix2): ' + JSON.stringify(rel));
+    ok(L.ents.filter(e => e.t === 'relic').length === 0, 'the fair holds a relic (Daniel 10-02: relics are cut; she drops nothing)');
     ok(L.gateAfterBoss && L.ents.some(e => e.t === 'gate' && e.x * 16 > Ar.x0 && e.x * 16 < Ar.x1), 'the level does not end at the gate after her death (gateAfterBoss)');
   } }
 
@@ -422,14 +420,14 @@ try {
     let m1 = 0; for (let i = 0; i < 300; i++) { quiet(); place(-1, 1); BK.sim(1); m1 = Math.max(m1, Math.abs(q.vx)); }   /* (long enough for the ride to settle back to phase one's pace: her health was put back) */
     let m2 = 0; const q0x = q.x; for (let i = 0; i < 60; i++) { quiet(); PA.x = q0x - 150; PA.y = fl; PA.vx = 0; PA.face = -1; PB.x = q0x - 120; PB.y = fl; PB.vx = 0; PB.face = -1; BK.sim(1); m2 = Math.max(m2, q0x - q.x); }
     out.coop = { oneFacing: m1, bothAway: Math.round(m2), mode: q.mode, x: Math.round(q.x), pa: Math.round(PA.x), rest: q.rest, ring: q.ringCd }; BK.coopEnd();
-    // 14. HER DEATH: the ride stops, the relic, the gate, the level cleared at the gate
+    // 14. HER DEATH: the ride stops, the gate, the level cleared at the gate
     for (const e of BK.enemies()) if (e.fromQueen) e.alive = false;
-    const rel = () => BK.props().find(p => p.t === 'relic' && p.kind === 'maypole');   /* (hers: the back lot holds the fair's own glass, claude/fairfix2) */ out.death = { relicHidden: !!(rel() && rel().hidden) };
-    q.hp = 1; q.mode = 'burn'; q.modeT = 2; q.inv = 0; BKT.hurtEnemy(q, 50, q.x - 10, false); for (let i = 0; i < 420 && !BK.L.gateOpen; i++) { BK.P.inv = 99; BK.sim(1); }   /* the slow beat of her fall, then THE ROAD GOES ON */
-    for (let i = 0; i < 240; i++) BK.sim(1); out.death.ring = ring();
-    out.death.dead = !q.alive; out.death.active = BK.bossActive; out.death.relicShown = !!(rel() && !rel().hidden); out.death.relicKind = rel() && rel().kind; out.death.gateOpen = !!BK.L.gateOpen;
-    const gt = BK.L.ents.find(e => e.t === 'gate'); if (rel()) { BK.P.x = rel().x; BK.P.y = fl; BK.sim(3); } out.death.gotRelic = !!(rel() && rel().got);
-    BK.tp(gt.x, gt.y); for (let i = 0; i < 60 && BK.state === 'play'; i++) BK.sim(1); out.death.state = BK.state;
+    out.death = {};
+    q.hp = 1; q.mode = 'burn'; q.modeT = 2; q.inv = 0; BKT.hurtEnemy(q, 50, q.x - 10, false); for (let i = 0; i < 420 && !BK.L.gateOpen; i++) { if (BK.state === 'card') BK.cardClose(); BK.P.inv = 99; BK.sim(1); }   /* the slow beat of her fall, then THE ROAD GOES ON */
+    for (let i = 0; i < 240; i++) { if (BK.state === 'card') BK.cardClose(); BK.sim(1); } out.death.ring = ring();
+    out.death.dead = !q.alive; out.death.active = BK.bossActive; out.death.gateOpen = !!BK.L.gateOpen;
+    const gt = BK.L.ents.find(e => e.t === 'gate');
+    BK.tp(gt.x, gt.y); for (let i = 0; i < 60 && (BK.state === 'play' || BK.state === 'card'); i++) { if (BK.state === 'card') BK.cardClose(); BK.sim(1); } out.death.state = BK.state;
     out.errors = window.__errs || null;
     return out;
   })()`, 900000);
@@ -460,7 +458,7 @@ ok(R.crown.calls >= 1 && R.crown.copies === 2 && R.crown.mummers <= 0 && R.crown
 { const G = R.ring; ok(G.stand.mark === '!!' && G.stand.told >= 80 && G.stand.burnF >= 150, 'THE BONFIRE RING is not told with its !! and then burning: ' + JSON.stringify(G.stand));
   ok(G.stand.lost > 0 && G.gap.lost === 0 && G.ride.lost === 0, 'THE BONFIRE RING must burn a hero on the boards outside the gap, and spare one in the gap or on a horse: ' + JSON.stringify(G)); }
 ok(R.coop.oneFacing === 0 && R.coop.bothAway > 10, 'co-op in the page: ' + JSON.stringify(R.coop));
-ok(R.death.relicHidden && R.death.dead && !R.death.active && R.death.relicShown && R.death.relicKind && R.death.gateOpen && R.death.gotRelic, 'her death: ' + JSON.stringify(R.death));
+ok(R.death.dead && !R.death.active && R.death.gateOpen, 'her death: ' + JSON.stringify(R.death));
 ok(R.death.ring && !R.death.ring.on && R.death.ring.speed === 0, 'her death did not stop the ride: ' + JSON.stringify(R.death.ring));
 ok(R.death.state === 'win', 'walking to the gate after her death did not clear the level: ' + R.death.state);
 ok(!pg.errors || !pg.errors.length, 'page errors: ' + JSON.stringify(pg.errors));

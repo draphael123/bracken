@@ -251,13 +251,11 @@ try {
     for(let i=0;i<12;i++)BKT.hurtEnemy(e,50,e.x-10,false);out.visit={lost:oh-e.hp,cap:Math.round(e.maxHp*PMm.PUP.visitCap),mode:e.mode};
     let thrown=false;for(let i=0;i<60*4;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);if(P.ground&&Math.abs(P.y-A.floor)<4){thrown=true;break;}}out.knock={thrown,y:P.y,floor:A.floor,n:S.n.knock};
     for(let i=0;i<60*3&&e.mode!=='work';i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}out.after={mode:e.mode,cycle:S.cycle,scene:PH.read().sceneKey,free:S.free};
-    const e3=boot();const rl0=BK.props().find(q=>q.t==='relic'&&q.bossDrop);out.relic={kind:rl0&&rl0.kind,hiddenBefore:!!(rl0&&rl0.hidden)};e3.hp=1;e3.mode='staggered';e3.openT=3;BK.puppeteerHands().show().visitLeft=99;BKT.hurtEnemy(e3,99,e3.x-10,false);for(let i=0;i<200&&BK.bossActive;i++){BK.P.inv=99;BK.sim(1);}
-    { const rl=BK.props().find(q=>q.t==='relic'&&q.bossDrop);out.relic.shownAfter=!!(rl&&!rl.hidden);BK.sim(240);if(rl){BK.P.inv=99;BK.P.relic=null;BK.P.x=rl.x;BK.P.y=rl.y;BK.sim(3);}out.relic.held=BK.P.relic;out.relic.saved=BKT.PROG.theatre&&BKT.PROG.theatre.relic;BK.sim(120);
-      const snare=rel=>{BK.P.relic=rel;BK.P.snare=1;BK.sim(40);return BK.P.snare;};out.relic.snareWith=snare('cutstring');out.relic.snareWithout=snare(null);BK.P.relic=null; }
+    const e3=boot();e3.hp=1;e3.mode='staggered';e3.openT=3;BK.puppeteerHands().show().visitLeft=99;BKT.hurtEnemy(e3,99,e3.x-10,false);for(let i=0;i<200&&BK.bossActive;i++){BK.P.inv=99;BK.sim(1);}
     const S3=BK.puppeteerHands().show();out.death={alive:e3.alive,active:BK.bossActive,curtain:S3.curtain>0};
     Math.random=real;
     /* THE HUMAN BOT: one whole fight, the knight at the level's depth with no skills, normal health (bossLab pins its own dice per row) */
-    {const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp.knight=xpFloor(${DEPTH});P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}
+    {const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp.knight=xpFloor(${DEPTH});P0.card={...(P0.card||{}),knight:(await import('/src/progression.js')).evenCard(${DEPTH})};P0.skillOwned.knight={};P0.loadouts.knight=[];if(P0.talents)P0.talents.knight={};}
     const o=await BK.bossLab({bosses:['theatre'],heroes:['knight'],healthMode:'normal',maxSecs:300,salt:1});const row=o.rows[0];
     out.bot={out:row.outcome,taken:Math.round(row.health.damageTaken),secs:row.secs};
     return out;})()`, 900000);
@@ -277,8 +275,6 @@ try {
   ok(r.knock.thrown && r.knock.n >= 1, 'the knockback did not put the hero back on the boards: ' + JSON.stringify(r.knock));
   ok(r.after.mode === 'work' && r.after.cycle === 1 && r.after.free === false && r.after.scene !== r.scene, 'after the visit the next cycle did not begin on a new scene with the lever chained: ' + JSON.stringify(r.after) + ' (was ' + r.scene + ')');
   ok(!r.death.alive && !r.death.active && r.death.curtain, 'his death did not end the fight and bring the curtain down: ' + JSON.stringify(r.death));
-  ok(r.relic.kind === 'cutstring' && r.relic.hiddenBefore && r.relic.shownAfter && r.relic.held === 'cutstring' && r.relic.saved === 'cutstring', 'THE CUT STRING is not the Puppeteer reward (hidden until he falls, then a pickup that is held and saved): ' + JSON.stringify(r.relic));
-  ok(r.relic.snareWith <= 0 && r.relic.snareWithout > 0.2, 'THE CUT STRING does not free a snare in half the time: ' + JSON.stringify(r.relic));
   ok(r.bot.out === 'win' && r.bot.taken >= 10, 'the human bot (knight, salt 1) (L' + DEPTH + ') did not win while taking real damage: ' + JSON.stringify(r.bot));
   ok(pg.errors.length === 0, 'the page threw: ' + pg.errors.slice(0, 3).join(' | '));
   console.log(JSON.stringify(r));
