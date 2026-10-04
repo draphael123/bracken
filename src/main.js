@@ -242,6 +242,7 @@ applySettings();
 if (q.get('fps') === '1') SET.fps = true;   /* ?fps=1: the frame counter on, for a test on a real phone (not saved unless a setting is changed) */
 // Progress lives in one of five save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; let saveBlocked = ''; const SLOTS = 5; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
+let eraseAsk = -1, eraseYes = false;   /* ERASE SLOT n? YES / NO: the slot being asked about (-1 = no question up), and whether YES is the one lit. It opens on NO. */
 /* LOCAL CO-OP is built further down (the players list, the pass, the shared camera, downed and revive). These four
    lines are up HERE because the hero's level and the save both have to ask about it, and both are written above it. */
 let players = null, coopWant = null, passOn = null;   /* passOn: whose pass is running, or null between them */
@@ -4460,15 +4461,16 @@ function drawSlots() {
   const levels = LEVELS.filter(l => !l.hidden).length;
   for (let i = 0; i < SLOTS; i++) {
     const p = readSlot(i), { x, y, w, h } = slotRect(i), sel = i === slotI;
-    TCH.hit(x, y, w, h, () => { if (slotI === i) confirmPress = true; else { slotI = i; slotMsg = ''; SFX.ui(); } });
+    if (eraseAsk < 0) TCH.hit(x, y, w, h, () => { if (slotI === i) confirmPress = true; else { slotI = i; slotMsg = ''; SFX.ui(); } });
     if (sel) { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.globalAlpha = 1; }
     g.fillStyle = sel ? 'rgba(30,26,44,0.95)' : 'rgba(20,16,30,0.85)'; g.fillRect(x, y, w, h); g.strokeStyle = sel ? '#ffd36b' : '#4a4a5a'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    if (eraseAsk >= 0) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
     text('SLOT ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
-    if (!p) { text('empty', x + 90, y + 4, '#6a6a7a'); text('NEW GAME', x + 44, y + 17, sel ? '#8fd160' : '#4a5a4a', 'left', 6); continue; }
+    if (!p) { text('EMPTY', x + 100, y + 4, '#6a6a7a'); text('NEW GAME', x + 44, y + 17, sel ? '#8fd160' : '#4a5a4a', 'left', 6); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0), hid = p.hero || 'knight', hn = ((HEROES.find(q => q.id === hid) || {}).name || hid.toUpperCase()).replace(/^THE /, '');
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const K2 = p.hero === 'paladin' ? preview('slot:paladin', () => bakePaladin({})) : p.hero === 'pyro' ? preview('slot:pyro:' + (p.skin || 'bracken'), () => bakePyro(PYRO_SETS[p.skin || 'bracken'] || {})) : p.hero === 'warden' ? preview('slot:warden:' + (p.skin || 'bracken'), () => bakeWarden(WARD_SETS[p.skin || 'bracken'] || {})) : p.hero === 'geomancer' ? preview('slot:geomancer:' + (p.skin || 'bracken'), () => bakeGeomancer(WARD_SETS[p.skin || 'bracken'] || {})) : skin ? preview('slot:' + skin.id + ':' + (p.sword || 'steel'), () => withWeapon((SWORDS.find(w => w.id === (p.sword || 'steel')) || SWORDS[0]).pal, () => bakeKnight(skin.pal))) : K;
     g.save(); g.beginPath(); g.rect(x + 1, y + 1, 40, h - 2); g.clip(); drawSet(K2, 'idle', Math.floor(time * 4.5), x + 22, y + h - 2, 1, false); g.restore();
-    text(hn, x + 90, y + 4, '#fff6e0'); text('LEVEL ' + slotLevel(p), x + 96 + inkW(hn, 8), y + 4, '#8fd160');
+    text(hn, x + 100, y + 4, '#fff6e0'); { const lv = slotLevel(p), roomL = w - 6 - (i === slot ? inkW('LAST PLAYED', 6) + 8 : 0) - (108 + inkW(hn, 8)); text((inkW('LEVEL ' + lv, 8) <= roomL ? 'LEVEL ' : 'LV ') + lv, x + 108 + inkW(hn, 8), y + 4, '#8fd160'); }   /* (a long hero name gives LEVEL up for LV before it would run into LAST PLAYED; textfit slots) */   /* (SLOT 1 is ~48 px wide from x + 44: the hero starts at x + 100, a clear gap after it) */
     if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6);   /* the save the game last opened (bracken.slot); the picker starts its cursor on it */
     const stat = pts => [[cleared + '/' + levels + ' WOODS', '#c9d1dc'], [(p.coins || 0) + ' GOLD', '#ffd34a'], [medals + pts, '#c9d1dc']], done = cleared >= levels;
     /* (a full save with a big purse: COMPLETE sits at the right of this row, so the last label gives way - MEDAL PTS -> PTS - before it would run into it; textfit slots) */
@@ -4477,6 +4479,17 @@ function drawSlots() {
     if (done) text('COMPLETE', x + w - 6, y + 17, '#8fd160', 'right', 6);
   }
   text(slotMsgT > 0 && slotMsg ? slotMsg : 'ARROWS pick  Z play  X erase  ESC', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
+  if (eraseAsk >= 0) {   /* ERASE SLOT n? YES / NO - a save is gone for good, so one slip of the X key (or the ERASE pill) no longer does it */
+    g.fillStyle = 'rgba(6,4,12,0.78)'; g.fillRect(0, 0, VW, VH);
+    const bw = 200, bh = 70, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
+    g.fillStyle = 'rgba(20,16,30,0.98)'; g.fillRect(bx, by, bw, bh); g.strokeStyle = '#ff9a5c'; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
+    text('ERASE SLOT ' + (eraseAsk + 1) + '?', VW / 2, by + 8, '#ff9a5c', 'center');
+    text('THE SAVE IS GONE FOR GOOD', VW / 2, by + 22, UI.dim, 'center', 6);
+    [['YES', true], ['NO', false]].forEach(([lab, yes], j) => { const w2 = 70, x2 = VW / 2 - w2 - 6 + j * (w2 + 12), y2 = by + 36, on = eraseYes === yes;
+      TCH.hit(x2, y2, w2, 20, () => { eraseYes = yes; confirmPress = true; });
+      g.fillStyle = on ? (yes ? 'rgba(120,40,30,0.95)' : 'rgba(40,70,40,0.95)') : 'rgba(30,26,44,0.95)'; g.fillRect(x2, y2, w2, 20); g.strokeStyle = on ? '#ffd36b' : '#4a4a5a'; g.strokeRect(x2 + 0.5, y2 + 0.5, w2 - 1, 19);
+      text(lab, x2 + w2 / 2, y2 + 6, on ? '#fff6e0' : UI.dim, 'center'); });
+  }
 }
 function drawBestiary() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.6)'); vg.addColorStop(1, 'rgba(10,20,14,0.9)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -4670,7 +4683,8 @@ function updateHeroPick() {
 }
 function drawHeroPick() {
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
-  if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('TAKE THE TRIAL FIRST?', VW / 2, VH / 2, UI.text, 'center'); text('a short practice yard for this hero. nothing in it can hurt you.', VW / 2, VH / 2 + 14, UI.dim, 'center', 6); text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 32, UI.sel, 'center', 6); return; }
+  if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('TAKE THE TRIAL FIRST?', VW / 2, VH / 2, UI.text, 'center'); wrap('a short practice yard for this hero. nothing in it can hurt you.', VW - 32, 6).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 14 + i * BODY_LH, UI.dim, 'center', 6));   /* (one 64-letter line ran off both sides: two lines; textfit trial) */
+    text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 38, UI.sel, 'center', 6); return; }
   text('CHOOSE YOUR HERO', VW / 2, 8, UI.title, 'center', 12);
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '100 health'],
     pyro: ['staff and fire, no shield', 'heat banks into THE PYRE', '80 health', 'HARDER'],
@@ -4698,7 +4712,8 @@ function drawHeroPick() {
     /* THE NAME STAYS ON THE SCREEN (2026-09-24, POLISH): a name is wider than its 41-pixel card (DEATH KNIGHT is ~70), so the last card's
        name ran off the right edge. Its centre is held in far enough that the whole name is drawn; the stagger keeps it off its neighbours. */
     { const nm = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER' }[h] || H.name, nw = textW(nm, 6);
-      text(nm, Math.max(2 + nw / 2, Math.min(VW - 2 - nw / 2, x + cw / 2)), top + ch + 3 + (k % 2 ? 7 : 0), sel ? UI.title : '#7a7a84', 'center', 6); }
+      const lab = nw > 60 ? nm.split(' ') : [nm], lc = sel ? UI.title : '#7a7a84';   /* (DEATH KNIGHT is ~70 wide: two stacked lines instead of a name pushed against the edge) */
+      lab.forEach((ln, li) => { const lw = textW(ln, 6); text(ln, Math.max(2 + lw / 2, Math.min(VW - 2 - lw / 2, x + cw / 2)), top + ch + 3 + (k % 2 ? 7 : 0) + li * 7, lc, 'center', 6); }); }
   });
   // and the words, for the one you are looking at, where there is room for them: the name, THE LOOP under it (HERO_LOOP,
   // the one sentence that is how this hero is played, where a player looks first), then the stats under that. A row of
@@ -4712,7 +4727,7 @@ function drawHeroPick() {
       if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(VW / 2 - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
       else text(ln, VW / 2, yy, UI.dim, 'center', 6); }); }
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
-  text('the other four are 15 silver each, later', VW / 2, VH - 10, UI.dim, 'center', 6);
+  text('the other four are 15 silver each, later', VW / 2, VH - 11, UI.dim, 'center', 6);   /* (a row up: the bottom row sat on the screen edge) */
 }
 /* THE CO-OP PICK. Player one keeps the save's hero, his level and his talents; player two takes any hero the save
    owns that player one is not already holding - and both starters are always there, because a friend on the sofa
@@ -4795,7 +4810,7 @@ function drawCoopPick() {
   COOP_RULES.forEach((ln, i) => text(ln, VW / 2, top + ch + 31 + i * BODY_LH, i === 1 ? '#e8c860' : UI.dim, 'center', 6));
   text('EVERY CREATURE AND BOSS: TWICE THE HEALTH AND HURT', VW / 2, VH - 28, '#ff9a5c', 'center', 6);   /* the old wording ran off both edges at 320 wide, and fitText would not trim it: the line itself is shorter now */
   text('LEFT/RIGHT choose   Z take   X ally   ESC back', VW / 2, VH - 19, UI.sel, 'center', 6);
-  text(coopPickFrom === 'title' ? 'then start any wood from the map' : 'PAUSE or the MAP turns it off again', VW / 2, VH - 10, UI.dim, 'center', 6);
+  text(coopPickFrom === 'title' ? 'then start any wood from the map' : 'PAUSE or the MAP turns it off again', VW / 2, VH - 11, UI.dim, 'center', 6);
 }
 function selectStart() {
   const lv = LEVELS[selI];
@@ -5172,15 +5187,16 @@ function drawTells() {
 /* THE BOSS BAR'S NAME, on its plate: the plate is as wide as the name, and a name too long for the screen drops a size before it is ever cut */
 /* lift: rows added over the health bar for a meter of the boss's own (the Pyromancer's heat): the plate grows up by that much and the
    name rises with it, so the name, the meter and the health each have a line (his heat bar used to sit across the middle of his name) */
-function bossPlate(nm, col, lift = 0) { const z = fitSize(nm, VW - 20, [8, 6]), w = Math.max(152, inkW(nm, z) + 16), x0 = Math.round(VW / 2 - w / 2);
+const hpLift = () => (SET.bossHp === 'pct' || SET.bossHp === 'num' || SET.bossHp === 'both' ? 10 : 0);   /* the rows ABOVE the bar that its numbers stand on (8 px of figures + a gap): the plate grows up by that much, as it does for the Pyromancer's heat */
+function bossPlate(nm, col, lift = 0) { lift += hpLift(); const z = fitSize(nm, VW - 20, [8, 6]), w = Math.max(152, inkW(nm, z) + 16), x0 = Math.round(VW / 2 - w / 2);
   g.fillStyle = 'rgba(10,8,20,0.62)'; g.beginPath(); g.roundRect(x0, VH - 28 - lift, w, 26 + lift, 4); g.fill(); if (window.__textRec) textRec('rect', { m: 'board', x0, y0: VH - 28 - lift, w, h: 26 + lift });
   text(nm, VW / 2, VH - 22 - lift + (z < 8 ? 1 : 0), col, 'center', z); }
 const PYRO_PLATE_LIFT = 7;
 /* BOSS HEALTH AS NUMBERS (claude/glhotfix, Daniel 10-03): SET.bossHp = bar (the default) / pct / num / both, written over the boss and mini bar */
 const BOSSHP_MODES = ['bar', 'pct', 'num', 'both'], BOSSHP_LABEL = { bar: 'BAR', pct: 'BAR+%', num: 'BAR+NUMBERS', both: 'BAR+BOTH' };
 function bossHpText(cur, max) { const m = SET.bossHp; if (!(max > 0) || !BOSSHP_MODES.includes(m) || m === 'bar') return ''; const c = Math.max(0, Math.ceil(cur)), n = c + '/' + Math.ceil(max), p = Math.max(c > 0 ? 1 : 0, Math.round(100 * c / max)) + '%'; return m === 'pct' ? p : m === 'num' ? n : n + ' ' + p; }
-const hpOn = () => BOSSHP_MODES.includes(SET.bossHp) && SET.bossHp !== 'bar', hpBy = () => (hpOn() ? VH - 12 : VH - 11), hpBh = () => (hpOn() ? 7 : 5);   /* the bar stands two rows taller under its numbers */
-function bossHpNums(cur, max) { const t = bossHpText(cur, max); if (t) text(t, VW / 2, VH - 11, '#fff6e0', 'center', 6); }
+const hpOn = () => BOSSHP_MODES.includes(SET.bossHp) && SET.bossHp !== 'bar', hpBy = () => VH - 11, hpBh = () => 5;   /* (the numbers used to be written ON a 7 px bar at 6 px: they are above it now, bossHpNums) */
+function bossHpNums(cur, max) { const t = bossHpText(cur, max); if (t) text(t, VW / 2, VH - 21, '#fff6e0', 'center', 8); }   /* 8 px, in the row above the bar: readable on a phone, and clear of the bar */
 const coinPlateW = lab => Math.max(52, textW(lab, 8) + 16);
 /* WHAT C DOES, ON THE PLATE: every hero's meter prompt, measured before the plate is laid so the plate is wide enough for it */
 function hudMeterLabel() {
@@ -19851,7 +19867,7 @@ function drawPyromancer(e, cx, cy) {
   if (e.mode === 'stalk' && (e.guardT > 0 || e.readN >= 2)) { g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 14); g.strokeStyle = '#dfe8ff'; g.beginPath(); g.arc(Math.round(x + e.face * 12), Math.round(y - 22), 12, e.face > 0 ? -1.2 : Math.PI - 1.2, e.face > 0 ? 1.2 : Math.PI + 1.2); g.stroke(); g.globalAlpha = 1; }   /* HIS GUARD: a pale arc in front of him */
 }
 function drawPyroHeat(b) {   /* HIS HEAT, over his bar: the class's own meter, and the fight's clock - on its own line of the plate, under his name */
-  const k = (b.heat || 0) / 100, over = b.mode === 'overheat', y = VH - 17;
+  const k = (b.heat || 0) / 100, over = b.mode === 'overheat', y = VH - 17 - hpLift();
   g.fillStyle = 'rgba(10,8,20,0.55)'; g.fillRect(VW / 2 - 61, y - 1, 122, 5);
   bar(VW / 2 - 60, y, 120, 3, k, over ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : k >= PYRO_VENT_AT / 100 ? '#ff6b2c' : '#ff9a5c');
   g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(VW / 2 - 60 + Math.round(120 * PYRO_VENT_AT / 100), y - 1, 1, 5);
@@ -24771,7 +24787,7 @@ function update(dt) {
       if (menuTake()) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
         if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
-        else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; }
+        else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'PRACTICE') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPickFrom = 'title'; coopPick = { i: 0, ally: false }; state = 'coop'; }
@@ -24785,12 +24801,17 @@ function update(dt) {
     return; }
   if (state === 'slots') {
     slotMsgT = Math.max(0, slotMsgT - dt);
+    if (eraseAsk >= 0) {   /* the question is up: arrows move between YES and NO, Z answers, X or ESC is NO */
+      if (leftPress || rightPress || upPress || downPress) { eraseYes = !eraseYes; SFX.ui(); }
+      if (confirmPress) { if (eraseYes) { eraseSlot(eraseAsk); slotMsg = 'slot ' + (eraseAsk + 1) + ' erased'; slotMsgT = 2; SFX.crack(); } else SFX.ui(); eraseAsk = -1; }
+      else if (atkPress || pausePress) { eraseAsk = -1; SFX.ui(); }
+      return; }
     if (leftPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (downPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }   /* the five are rows, so DOWN and RIGHT both go on, UP and LEFT both go back */
     if (upPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (rightPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); } // a new save chooses its hero
-    if (atkPress) { if (!readSlot(slotI)) { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else if (slotMsg === 'X again to erase' && slotMsgT > 0) { eraseSlot(slotI); slotMsg = 'slot ' + (slotI + 1) + ' erased'; slotMsgT = 2; SFX.crack(); } else { slotMsg = 'X again to erase'; slotMsgT = 2.5; SFX.ui(); } }
+    if (atkPress) { if (!readSlot(slotI)) { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else { eraseAsk = slotI; eraseYes = false; slotMsg = ''; SFX.ui(); } }
     if (pausePress) { state = 'title'; SFX.ui(); }
     return;
   }
@@ -27788,15 +27809,15 @@ function drawCredits() {
     text('CREDIT REQUIRED (CC-BY)', VW / 2, y + 20, '#8fd160', 'center', 6);
     let yy = y + 31;   /* each CC-BY track: its name and composer, and its licence - or, where the licensor words the credit, that wording whole (claude/redgorge-fix: Kevin MacLeod's) */
     for (const [, track, who, lic, url, full] of CC_BY) { const lines = full || ['"' + track + '" - ' + who, lic + ': ' + url];
-      lines.forEach((ln, j) => text(j ? ln : fitText(ln, w - 16, 6), VW / 2, yy + j * 9, j ? UI.dim : UI.text, 'center', 6)); yy += lines.length * 9 + 4; }   /* (a licence line is drawn whole, as it always was) */
+      let row = 0; lines.forEach((ln, j) => wrap(ln, w - 6, 6).forEach(part => { text(part, VW / 2, yy + row * 8, j ? UI.dim : UI.text, 'center', 6); row++; })); yy += row * 8 + 3; }   /* (a licence line is drawn whole, as it always was: a long one wraps onto a second row inside the panel instead of running off both sides) */
     text('ALL THE REST IS CC0 OR PUBLIC DOMAIN,', VW / 2, yy + 2, UI.dim, 'center', 6);
     text('FROM OPENGAMEART.ORG. THANK YOU:', VW / 2, yy + 11, UI.dim, 'center', 6);
   } else {
     const colW = (w - 20) / 2;
     pg.names.forEach((n, i) => { const col = Math.floor(i / 8), row = i % 8; text(fitText(n, colW - 10, 6), x + 12 + col * colW, y + 24 + row * 11, UI.text, 'left', 6); });
   }
-  text('page ' + (Math.min(creditsPage, pages.length - 1) + 1) + '/' + pages.length, x + w - 8, y + h - 20, '#9aa39a', 'right', 6);
-  text('LEFT/RIGHT page   ESC back', VW / 2, y + h - 10, UI.dim, 'center', 6);
+  text('page ' + (Math.min(creditsPage, pages.length - 1) + 1) + '/' + pages.length, x + w - 8, y + h - 24, '#9aa39a', 'right', 6);
+  text('LEFT/RIGHT page   ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);
 }
 function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
@@ -27812,19 +27833,19 @@ function drawSoundTest() {
     const pageIdx = Math.max(0, pages.findIndex(p => p.some(e => e.i === soundI)));
     for (const e of pages[pageIdx] || []) { const cx0 = x + 10 + e.col * colW, cy0 = y + 32 + e.row * 11, sel = e.i === soundI;
       if (sel) text('>', cx0 - 2, cy0, '#8fd160'); text(list[e.i], cx0 + 8, cy0, sel ? '#fff6e0' : '#c9d1dc'); }
-    if (pages.length > 1) text('page ' + (pageIdx + 1) + '/' + pages.length, x + w - 8, y + h - 20, '#9aa39a', 'right');
+    if (pages.length > 1) text('page ' + (pageIdx + 1) + '/' + pages.length, x + w - 8, y + h - 25, '#9aa39a', 'right', 6);
   } else {
     const rows = soundCat === 1 ? 8 : 11, page = Math.floor(soundI / rows), start = page * rows;
     for (let i = start; i < Math.min(list.length, start + rows); i++) { const cy0 = y + 32 + (i - start) * 11, sel = i === soundI;
       const locked = soundCat === 1 && !musicUnlocked(list[i]);
       if (sel) text('>', x + 8, cy0, '#8fd160'); text(locked ? '???' : list[i], x + 18, cy0, locked ? '#6b716b' : (sel ? '#fff6e0' : '#c9d1dc')); }
-    if (list.length > rows) text('page ' + (page + 1) + '/' + Math.ceil(list.length / rows), x + w - 8, y + h - 20, '#9aa39a', 'right');
+    if (list.length > rows) text('page ' + (page + 1) + '/' + Math.ceil(list.length / rows), x + w - 8, y + h - 25, '#9aa39a', 'right', 6);
   }
   /* THE CREDIT LINE. Only a song already unlocked names its own maker - a locked one is '???' above and stays
      unnamed below it too, or the lock is not really a lock. fitText is a safety net, not the plan: MUSIC_CREDITS is
      kept short enough that it almost never has to cut (tools/textfit.mjs 'soundtest' sweeps every one unlocked). */
   if (soundCat === 1) { const n = list[soundI], line = musicUnlocked(n) ? (MUSIC_CREDITS_ROW[n] || MUSIC_CREDITS[n] || 'made for BRACKEN') : 'not yet heard'; text(fitText(line, w - 16), x + w / 2, y + h - 34, UI.dim, 'center'); }
-  text('Z play   LEFT/RIGHT tab   ESC back', VW / 2, y + h - 10, UI.dim, 'center');
+  text('Z play   LEFT/RIGHT tab   ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);   /* (8 px it was wider than the panel and sat on its border) */
 }
 const UI = { text: '#f0e8d4', title: '#fff6e0', dim: '#c2c9c2', border: '#d9c28c', sel: '#a8e06e', gold: '#ffd34a', silver: '#eaf0ff', plate: 'rgba(16,13,24,0.96)' };
 applyLook(); // whatever look was saved, before anything is drawn
@@ -28496,7 +28517,7 @@ function render() {
     if (xpRow) { const yy = (SET.iron ? 41 : 29) + 8, n = heroLevel(), lo = xpFloor(n), k = Math.max(0, Math.min(1, (heroXp() - lo) / Math.max(1, xpFloor(n + 1) - lo)));
       if (lvUpT > 0) lvUpT = Math.max(0, lvUpT - 1 / 60); const up = lvUpT > 0, fl = up && Math.floor(time * 8) % 2 === 0;
       const cu = !up && catchingUp(), lab = (up ? 'LEVEL ' : 'LV ') + n + (cu ? ' x' + XP_CATCHUP : ''), bx = 6 + inkW(lab, 6) + 4;   /* x3: CATCHING UP, below the level this wood expects */
-      text(lab, 6, yy - 1, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6);
+      text(lab, 6, yy - 3, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6);
       bar(bx, yy, 86 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); }
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (P.relic && (PROP.relic[P.relic] || PROP.lampIcon)) { g.drawImage(PROP.relic[P.relic] || PROP.lampIcon, 152, 14); }
@@ -28727,12 +28748,12 @@ function render() {
     /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */
     if (P.killer && P.dead < 0.95) { const k = P.killer; g.globalAlpha = Math.min(1, (0.95 - P.dead) * 5); text(killerLine(k), VW / 2, VH / 2 + 22, k.rule ? (k.red ? (SET.colorSafe ? '#5aa8ff' : '#ff6b6b') : '#ffd36b') : '#fff6e0', 'center', 6, 'outline'); { let ly = VH / 2 + 30; for (const [s2, c2] of dcLine()) { text(s2, VW / 2, ly, c2, 'center', 6, 'outline'); ly += 8; } } g.globalAlpha = 1; } }
   if (!audioReady() && state === 'play') {
-    const t0 = (soundNoteT += 1 / 60), full = t0 < 10, k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
+    const SOUND_Y = 16, t0 = (soundNoteT += 1 / 60), full = t0 < 10,   /* TOP CENTRE, under the timer: never the bottom row, where the boss name and bar are */ k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
     if (full || k > 0) { const lab = touchOn ? 'TAP A BUTTON FOR SOUND' : 'PRESS A KEY FOR SOUND', w = lab.length * 6 + 24;   /* on a phone there is no key: a tap on the pad is what starts the audio */
       g.globalAlpha = 0.9 * (full ? Math.min(1, t0 * 3) : k);
-      g.fillStyle = 'rgba(10,8,20,0.82)'; g.beginPath(); g.roundRect(VW / 2 - w / 2, VH - 24, w, 14, 4); g.fill();
-      g.strokeStyle = 'rgba(201,178,124,0.55)'; g.lineWidth = 1; g.beginPath(); g.roundRect(VW / 2 - w / 2 + 0.5, VH - 23.5, w - 1, 13, 4); g.stroke();
-      spk(VW / 2 - w / 2 + 8, VH - 20, '#c9b27c'); text(lab, VW / 2 + 7, VH - 20, '#e8dfc6', 'center', 6); g.globalAlpha = 1; }
+      g.fillStyle = 'rgba(10,8,20,0.82)'; g.beginPath(); g.roundRect(VW / 2 - w / 2, SOUND_Y, w, 14, 4); g.fill();
+      g.strokeStyle = 'rgba(201,178,124,0.55)'; g.lineWidth = 1; g.beginPath(); g.roundRect(VW / 2 - w / 2 + 0.5, SOUND_Y + 0.5, w - 1, 13, 4); g.stroke();
+      spk(VW / 2 - w / 2 + 8, SOUND_Y + 4, '#c9b27c'); text(lab, VW / 2 + 7, SOUND_Y + 4, '#e8dfc6', 'center', 6); g.globalAlpha = 1; }
     else { g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 2); spk(VW - 14, VH - 14, '#9aa39a'); g.globalAlpha = 1; }
   } else soundNoteT = 0;
   if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
@@ -28871,7 +28892,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
-    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
+    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(),
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),

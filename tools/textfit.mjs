@@ -21,6 +21,8 @@
 //   pick      THE HERO PICK, with each of its cards selected in turn: every hero's name under its card, and the words for the selected one
 //   practice  THE PRACTICE YARDS list, each row selected in turn
 //   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
+//   trial     THE TRIAL PROMPT after a hero is taken ("TAKE THE TRIAL FIRST?"), for every hero
+//   erase     THE ERASE QUESTION on the saves screen, for each slot
 //   slots     THE FIVE SAVE SLOTS (title > play): five full saves with the longest words, then a mix of full and empty, each card selected in turn
 //   credits   THE CREDITS (title menu): the CC-BY music page and every page of composers
 //   bossfix   the boss fights of the five levels whose words were found on one another, and a damage number on the HUD (in the suite)
@@ -31,7 +33,7 @@ import { openPage, ROOT } from './cdp.mjs';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -169,6 +171,11 @@ async function pageTextFit(input) {
     for (let i = 0; i < n; i++) { BK.state = 'heropick'; BK.ui.heroPickI = i; BK.step(1); }
     for (let i = 0; i < n; i++) frame('pick #' + i, () => { BK.state = 'heropick'; BK.ui.heroPickI = i; }, { settle: 20 });
     await yieldNow(); }
+  /* THE TRIAL PROMPT (hero pick, stage 'trial'): its 64-letter sentence ran off both edges of the screen (UIQUICK 2026-10-04); every hero's name over it */
+  if (want('trial')) { for (const h of HEROES.concat(['geomancer'])) { BK.setHero(h); BK.state = 'heropick'; BK.ui.heroPickI = 0; BK.step(1); frame('trial prompt [' + h + ']', () => { BK.state = 'heropick'; BK.ui.heroPickStage = 'trial'; }, { settle: 20 }); BK.ui.heroPickStage = 'pick'; }
+    await yieldNow(); }
+  /* THE ERASE QUESTION (saves screen, ERASE SLOT n? YES / NO): each slot's, with a save in it */
+  if (want('erase')) { for (let i = 0; i < 5; i++) frame('erase slot #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; BK.ui.eraseAsk = i; }, { settle: 20 }); BK.ui.eraseAsk = -1; await yieldNow(); }
   if (want('slots')) { const ls = localStorage, was = {}; for (let i = 0; i < 5; i++) was[i] = ls.getItem('bracken.progress.' + i);
     /* FIVE FULL SAVES, the worst words: the longest hero names, a three-digit level, a big purse, every wood cleared (COMPLETE), a long medal count */
     const xp = await import('/src/xp.js'), done = {}; for (const l of lvm.LEVELS) if (!l.hidden) done[l.id] = { cleared: true, medal: 3 };
