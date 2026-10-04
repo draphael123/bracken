@@ -41,15 +41,6 @@ const world = hs => ({ heroes: hs, canStep: () => true });
   ok(!M.looks(e, hero(100, 1, { alive: false })), 'a dead hero looks at a foe');
   ok(!M.looks({ x: 100 + M.MUMMER.sight + 40, y: 400 }, hero(100, 1)), 'a hero looks at a foe past the screen (sight)');
   ok(!M.looks({ x: 200, y: 400 - M.MUMMER.sightY - 40 }, hero(100, 1)), 'a hero looks at a foe on a different storey');
-  // THE MAYPOLE RIBBON: reach 1.5 makes the look reach half as far again, and only for the one who carries it
-  { const far = { x: 100 + Math.round(M.MUMMER.sight * 1.25), y: 400 }, tall = { x: 200, y: 400 - Math.round(M.MUMMER.sightY * 1.25) };
-    ok(!M.looks(far, hero(100, 1)) && M.looks(far, hero(100, 1, { reach: M.RIBBON_REACH })), 'the ribbon does not stretch the look sideways by half');
-    ok(!M.looks(tall, hero(100, 1)) && M.looks(tall, hero(100, 1, { reach: M.RIBBON_REACH })), 'the ribbon does not stretch the look up by half');
-    ok(!M.looks({ x: 100 + M.MUMMER.sight * 1.6, y: 400 }, hero(100, 1, { reach: M.RIBBON_REACH })), 'the ribbon reaches past half again');
-    ok(!M.looks({ x: 100 - 40, y: 400 }, hero(100, 1, { reach: M.RIBBON_REACH })), 'the ribbon lets a hero look backwards');
-    ok(M.RIBBON_REACH === 1.5, 'the ribbon is not +50%: ' + M.RIBBON_REACH);
-    const q = { x: 100 + Math.round(WQ.WQ.nearR * 1.3), y: 400, phase: 2 };
-    ok(!WQ.wqSeen(q, [hero(100, 1)]) && WQ.wqSeen(q, [hero(100, 1, { reach: M.RIBBON_REACH })]), 'the ribbon does not reach her phase-2 cone (96 px) half as far again'); }
   // CO-OP: any hero facing it freezes it; only when every hero has his back to it does it move
   ok(M.facedBy(e, [hero(100, -1), hero(300, -1)]), 'co-op: a foe with one hero facing away and the other facing it is not faced');
   ok(!M.facedBy(e, [hero(100, -1), hero(300, 1)]), 'co-op: a foe with both heroes facing away is faced');
@@ -251,10 +242,10 @@ if (fair) {
   ok(THREAT.mummer >= 5 && THREAT.hobbyhorse >= 6, 'the mummer / hobby-horse are not weighed 5 / 6 in src/threat.js: ' + THREAT.mummer + ' / ' + THREAT.hobbyhorse);
   { const m = measureLevel(L, { T: T2, TS: TS2 }); const idx = indexOf({ threat: m.threat, kinds: m.kinds, hazTiles: m.hazTiles, gap: m.gap, span: spanOf(L.W, L.H) });
     ok(idx >= 70 && idx <= 125, 'the fair INDEX is ' + idx + ' (85 after claude/fairfix; 116 after claude/fairfix2, which Daniel asked to make a real challenge at level 1 - the ranged reskins and the edge horses; 45 before, the campaign ~117): ' + JSON.stringify(m)); }
-    // FURNITURE: what Waymeet and the Fields carry (three silvers, a relic, hearts); NO NPCs (pickups only)
+    // FURNITURE: what Waymeet and the Fields carry (three silvers, hearts); NO NPCs (pickups only)
   const cnt = t => L.ents.filter(e => e.t === t).length;
   ok(cnt('silver') === 3, 'the fair has ' + cnt('silver') + ' silvers, not the campaign three');
-  ok(cnt('relic') === 2 && L.ents.some(e => e.t === 'relic' && e.kind === 'maypole' && e.bossDrop) && L.ents.some(e => e.t === 'relic' && e.kind === 'handglass' && !e.bossDrop), 'the fair has not two relics (the Queen\'s maypole ribbon, and THE FORTUNE-TELLER\'S GLASS in the back lot - claude/fairfix2): ' + cnt('relic'));
+  ok(cnt('relic') === 0, 'the fair holds a relic (Daniel 10-02: relics are cut; the back lot pays a silver and the Queen drops nothing): ' + cnt('relic'));
   ok(cnt('mend') >= 3, 'the fair has ' + cnt('mend') + ' hearts (mend): three, one after each hard stretch');
   ok(!L.ents.some(e => ['npc', 'stray', 'captive', 'folk', 'squire'].includes(e.t)), 'an NPC or stray stands in the fair (pickups only)');
   ok(L.ents.filter(e => e.t === 'check').length === 5, 'the fair does not stand five shrines (claude/fairfix, under the 200-tile ceiling): ' + L.ents.filter(e => e.t === 'check').map(e => e.x));
@@ -325,13 +316,13 @@ if (fair) {
     ok(GS.filter(g => g.nest).length >= 3 && GS.filter(g => g.nest).every(g => { for (let x = g.nest.x0; x <= g.nest.x1; x++) if (at(x, g.nest.row) === 0) return false; return !g.planks.some(([a, b, row]) => row === g.nest.row && a <= g.nest.x1 && b >= g.nest.x0); }), 'a bull\'s-eye nest\'s floor is not built from the start (or is still one of the planks the targets raise): ' + JSON.stringify(GS.filter(g => g.nest).map(g => [g.id, g.nest, g.planks])));
     ok(new Set(GS3.map(g => Math.floor(g.targets[0].x / 100))).size === 3, 'the three galleries do not stand in three different stretches of the level');
     const loft = (L.ticketGates || [])[0]; ok(G && loft && L.ents.some(e => e.t === 'silver' && e.x > loft.x && e.x <= loft.x + 8 && e.y === G.nest.row - 1) && (L.tickets || []).filter(t => t.x >= G.nest.x0 && t.x <= G.nest.x1 && t.row === G.nest.row - 1).length >= 2, 'the crow\'s nest does not pay the tickets that open the loft, or the loft holds no silver (claude/fairfix3, review #14: keys open more keys)');
-    /* TICKETS ARE KEYS (claude/fairfix2): no booth; three gates, dearer as you go, the last ALL of them - a hatch into THE BACK LOT, where the fair's own relic and its third silver lie */
+    /* TICKETS ARE KEYS (claude/fairfix2): no booth; three gates, dearer as you go, the last ALL of them - a hatch into THE BACK LOT, where its third silver lies */
     const TG = L.ticketGates || [], tot = FK.ticketTotal(L);
     ok(!B && tk.length >= 20 && tot === tk.length + S.reduce((a, s) => a + s.tickets, 0), 'the tickets are not the level\'s keys (no booth, a total of every ticket and every striker\'s pay): ' + tot);
     ok(TG.length === 3 && TG[0].need < TG[1].need && TG[1].need < tot && TG[2].all && TG[2].hatch && FK.gateNeed(L, TG[2]) === 30 && tot >= 34, 'the ticket gates are not three, dearer as you go, the last THIRTY of the 35 (claude/fairfix3, review #5): ' + JSON.stringify(TG.map(g => [g.x, g.need, g.all])));
     ok(TG.every(g => { for (let y = g.y0; y <= g.y1; y++) for (let x = g.x; x < g.x + (g.w || 1); x++) if (at(x, y) !== 1) return false; return true; }) && TG.filter(g => !g.hatch).every(g => g.y1 - g.y0 >= 4), 'a ticket gate is not solid at the start (or a fence is low enough to jump: five high)');
     ok(TG.filter(g => !g.hatch).every(g => L.ents.some(e => e.t === 'sign' && Math.abs(e.x - g.x) <= 4 && new RegExp('SHOW ' + g.need + ' TICKETS').test(e.text))) && L.ents.some(e => e.t === 'sign' && /BACK LOT\. SHOW 30 TICKETS/.test(e.text)), 'a ticket gate has no sign that says its price');
-    const BL = L.backLot; ok(BL && L.ents.some(e => e.t === 'relic' && e.kind === 'handglass' && e.x >= BL.x0 && e.x <= BL.x1 && e.y >= BL.y0) && L.ents.some(e => e.t === 'silver' && e.x >= BL.x0 && e.x <= BL.x1 && e.y >= BL.y0) && at(TG[2].x, TG[2].y0 + 1) === 0, 'the back lot is not a room under the hatch with the relic and a silver in it');
+    const BL = L.backLot; ok(BL && L.ents.some(e => e.t === 'silver' && e.x >= BL.x0 && e.x <= BL.x1 && e.y >= BL.y0) && at(TG[2].x, TG[2].y0 + 1) === 0, 'the back lot is not a room under the hatch with a silver in it');
     const sil = L.ents.filter(e => e.t === 'silver'), lg = (L.ticketGates || [])[0]; ok(sil.length === 3 && sil.some(e => e.y >= R + 1 && e.x < 300) && lg && sil.some(e => e.x > lg.x && e.x <= lg.x + 8 && e.y < 20) && BL && sil.some(e => e.x >= BL.x0 && e.x <= BL.x1), 'the three silvers are not the takings cellar\'s, the loft\'s and the back lot\'s'); }
   // TWO SECRETS: a plug of plain rock in the road, a cellar with a stair back up, and something in it (the back lot; the closet behind the cracked glass)
   { const W = L.walls || []; ok(W.length === 2 && W.every(w => w.kind === 'secret' && w.reach === true && w.y0 === R && w.y1 === R && w.x1 - w.x0 === 1), 'the fair has not two secret plugs in the road: ' + W.length);
@@ -360,8 +351,7 @@ if (fair) {
     ok(!FGM.mirrorSees(L, at3(300, 1)) && !FGM.mirrorSees(L, at3(345, -1)), 'a hero outside the hall sees behind him');
     const foe = { x: 400, y: 27 * TS3 }, back = { x: 500, y: 27 * TS3, face: 1, alive: true };
     ok(!M.looks(foe, back) && M.looks(foe, { ...back, mirror: true }) && !M.looks(foe, { ...back, mirror: true, blind: true }), 'the mirror flag does not turn the look round, or a wall does not stop it');
-    ok(!M.looks({ x: 500 + 120, y: 27 * TS3 }, { ...back, reach: 1 }, 88, 88), '(a foe 120 px ahead is out of a dim 88 px look)');
-    ok(M.looks({ x: 500 + 120, y: 27 * TS3 }, { ...back, reach: M.RIBBON_REACH }, 88, 88), 'THE MAYPOLE RIBBON does not stretch the dim look from 88 to 132 px (the night and the hall are where it helps)'); }
+    ok(!M.looks({ x: 500 + 120, y: 27 * TS3 }, back, 88, 88), '(a foe 120 px ahead is out of a dim 88 px look)'); }
   // THE EFFIGY CATCHES FIRE (claude/fairfix2; it was the ghost train): a chase down the sunken straw lane from BEHIND, kill on contact like every chase, told speed-ups, the fair's own shrine within
   // fifteen columns of its start; TWO LANES to choose - the LOW lane's burning bunting (timed, to duck or wait), fallen stalls to hop and two mummers each a few steps before a line of bunting;
   // the HIGH lane's stall roofs, every one giving way under you. No free heart in it
@@ -631,10 +621,10 @@ try {
       const run = (hx, face, frames) => { const x0 = B0.x; B0.st.mode = 'still'; for (let i = 0; i < frames; i++) { BK.P.x = hx * 16; BK.P.y = 28 * 16; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = face; BK.sim(1); } return Math.abs(x0 - B0.x); };
       B0.x = 319 * 16; B0.st.x = B0.x; out.hallHeld = run(328, 1, 90); B0.x = 319 * 16; B0.st.x = B0.x; out.hallCracked = run(324, 1, 90);   // 328 has a true mirror within 7 tiles ahead; 324 does not
       out.hallMoved = { held: out.hallHeld, cracked: out.hallCracked }; }
-    // 5. THE NIGHT: a mummer up in the dark is held only within 88 px (132 with the ribbon), a lantern's light restores the full look
+    // 5. THE NIGHT: a mummer up in the dark is held only within 88 px, a lantern's light restores the full look
     load(undefined, true); { const e = BK.enemies().find(q => q.t === 'mummer' && q.x > 350 * 16 && q.x < 360 * 16); e.alive = true; for (const q of BK.enemies()) if (q !== e) q.alive = false; const y = e.y;
-      const ex0 = e.x, dist = (d, relic) => { e.st.mode = 'still'; e.x = ex0; e.st.x = ex0; e.y = y; BK.P.relic = relic || null; for (const l of BK.fair().lamps) { l.life = 0; l.lit = false; } const x0 = e.x; for (let i = 0; i < 60; i++) { BK.P.x = e.x - d; BK.P.y = y; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = 1; BK.sim(1); } return Math.abs(e.x - x0) > 1.5 ? 'moved' : 'held'; };
-      out.night = { d60: dist(60), d120: dist(120), d120ribbon: dist(120, 'maypole'), d200ribbon: dist(200, 'maypole') }; BK.P.relic = null; }
+      const ex0 = e.x, dist = d => { e.st.mode = 'still'; e.x = ex0; e.st.x = ex0; e.y = y; for (const l of BK.fair().lamps) { l.life = 0; l.lit = false; } const x0 = e.x; for (let i = 0; i < 60; i++) { BK.P.x = e.x - d; BK.P.y = y; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = 1; BK.sim(1); } return Math.abs(e.x - x0) > 1.5 ? 'moved' : 'held'; };
+      out.night = { d60: dist(60), d120: dist(120) }; }
     // 6. THE CORN MAZE: a mummer one tier up is not held by a hero looking straight at its column (the wall is between), and the disguised ones wake only when they move
     load(undefined, true); { const M = BK.L.maze, sc = BK.enemies().filter(q => q.t === 'mummer' && q.scare); out.scare = { n: sc.length, woke: sc.filter(q => q.woke).length }; for (const q of BK.enemies()) q.alive = false; const e = sc[1]; e.alive = true;
       const hy = 28 * 16, ex = (M.x0 + 12) * 16; e.st.mode = 'still'; e.x = ex; e.y = 23 * 16; e.st.x = e.x; e.st.y = e.y; e.woke = false; const x0 = e.x; for (let i = 0; i < 90; i++) { BK.P.x = ex - 50; BK.P.y = hy; BK.P.vx = 0; BK.P.vy = 0; BK.P.face = 1; BK.sim(1); }
@@ -658,7 +648,7 @@ ok(!R3.gateShort.open && R3.gateShort.solid === 1 && R3.gateOpen.open && R3.gate
 ok(!R3.backShut.open && R3.backLot.open && R3.backLot.fell && R3.backLot.total >= 30, 'the back lot\'s hatch did not open on thirty tickets (and only then), dropping you in: ' + JSON.stringify([R3.backShut, R3.backLot]));
 ok(R3.hallHeld < 1.5, 'the mummer behind a hero who faces true glass crept ' + R3.hallHeld + ' px: the mirror does not hold it');
 ok(R3.hallCracked > 6, 'the mummer behind a hero in the cracked stretch did not creep (' + R3.hallCracked + ' px): nothing watches his back there');
-ok(R3.night.d60 === 'held' && R3.night.d120 === 'moved' && R3.night.d120ribbon === 'held' && R3.night.d200ribbon === 'moved', 'the night look is not 88 px (132 with the ribbon): ' + JSON.stringify(R3.night));
+ok(R3.night.d60 === 'held' && R3.night.d120 === 'moved', 'the night look is not 88 px: ' + JSON.stringify(R3.night));
 ok(R3.scare.n === 3 && R3.scare.woke === 0, 'the corn maze has not three mummers in scarecrows\' coats, asleep: ' + JSON.stringify(R3.scare));
 ok(R3.blind.crept && R3.blind.woke, 'a mummer one tier up (a wall between) was held by a look through the wall: ' + JSON.stringify(R3.blind));
 ok(R3.drawn === 17, 'a set piece of the fair did not draw (' + R3.drawn + ' of 17)');

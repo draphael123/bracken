@@ -34,7 +34,7 @@ against THE MAGE'S FOLLY (Daniel's benchmark) and says which box is empty, with 
                   (melee / ranged / support / heavy / runner) and how each one interacts with the three mechanics. A ranged foe is present.
     ENCOUNTERS    the designed ones (shield over archer, healer to kill first, a lone heavy on a ledge) - not an even sprinkle
     SET PIECE     the big moment, and the AGENCY in it: what the player chooses and does so that it does not resolve itself
-    COLLECTIBLES  what each collectible / interactive UNLOCKS (a gate, a relic, a shortcut, a hero) and the HUD line that says so
+    COLLECTIBLES  what each collectible / interactive UNLOCKS (a gate, a shortcut, a hero) and the HUD line that says so
     BOSS          name, the readable tells, the OPENING and what causes it, phase two's change, the pilot target
     MUSIC         its own track (synth is fine; no borrowed or stock tracks, no downloads)
     BACKDROP      per section, what the eye sees; props that fit the place
@@ -86,7 +86,7 @@ against THE MAGE'S FOLLY (Daniel's benchmark) and says which box is empty, with 
 - [ ] **A collectible or interactive UNLOCKS something, and the HUD says what.** Candle stubs light a candle; all lit open the reliquary (a relic and a
       shortcut). A lever opens a gate. A key fits a lock gate. A pickup that opens nothing is clutter. Write it as `L.unlocks = [{ kind, opens, hud }]`
       on the level (measured: `unlocks`); the HUD or callout line goes in `src/hint-lines.js` and the reviewer reads it in play.
-- [ ] **Secrets are off the route and worth it:** at least two silvers or relics (`secrets`), reachable by a real jump.
+- [ ] **Secrets are off the route and worth it:** at least two silvers (`secrets`; relics are cut, a cache pays a silver), reachable by a real jump.
 
 ### Feel at level 1
 - [ ] **The LEVEL-1 NO-ABILITY run must take real damage.** A fresh knight (level 1, no talents, no bought skills) walked by the pilot bot with no god

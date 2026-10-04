@@ -23,7 +23,6 @@ const EHP = table('EHP'), DMG = table('DMG'), COLS = table('COLS');
 const beasts = new Set([...main.matchAll(/\{ t: '(\w+)', name: ["']/g)].map(m => m[1]));
 const sprites = new Set([...main.matchAll(/SPR\.(\w+)\s*=/g)].map(m => m[1]));
 const strayIcons = new Set([...main.matchAll(/pr\.kind === '(\w+)'[ )?]/g)].map(m => m[1]));
-const relics = new Set([...(main.match(/const RELICS = \{([\s\S]*?)\};/) || ['', ''])[1].matchAll(/(\w+):\s*\{/g)].map(m => m[1]));
 
 const used = { ent: new Map(), deco: new Map(), stray: new Map(), relic: new Map() };
 const note = (m, k, lv) => { if (!m.has(k)) m.set(k, new Set()); m.get(k).add(lv); };
@@ -34,7 +33,7 @@ for (const lv of LEVELS) {
     note(used.ent, e.t, lv.id);
     if (e.t === 'deco' && e.kind) note(used.deco, e.kind, lv.id);
     if (e.t === 'stray' && e.kind) note(used.stray, e.kind, lv.id);
-    if (e.t === 'relic' && e.kind) note(used.relic, e.kind, lv.id);
+    if (e.t === 'relic') note(used.relic, e.kind || '?', lv.id);
   }
 }
 
@@ -49,8 +48,8 @@ for (const [k, where] of used.deco) if (!decoKinds.has(k)) say(`${k}  <- ${[...w
 console.log('== stray kinds with no icon (they fall back to a bright cap) ==');
 // sheep draw as sheep; 'cap' uses the bright cap on purpose
 for (const [k, where] of used.stray) if (!strayIcons.has(k) && !['sheep', 'cap'].includes(k)) say(`${k}  <- ${[...where].join(', ')}`);
-console.log('== relics placed with no RELICS entry (the HUD would throw) ==');
-for (const [k, where] of used.relic) if (!relics.has(k)) say(`${k}  <- ${[...where].join(', ')}`);
+console.log('== relics placed (relics are cut: no RELICS table is left, so the HUD would throw) ==');
+for (const [k, where] of used.relic) say(`${k}  <- ${[...where].join(', ')}`);
 
 console.log('== creatures with a spawn case but no EHP / DMG / COLS / bestiary row ==');
 // parts of a boss and internals are not creatures you meet

@@ -233,18 +233,18 @@ shake out a coin); Shadow Edge (light, swings cost 7 stamina); Thorn (each hit m
 
 ## Relics
 
-One per level, hidden in the caches, kept until you die: the HORNET CROWN in the wood (stomps strike
-like plunges), the HUNTER'S CHARM in the marsh (gold comes to you), the IRON GAUNTLET on the ravine
-net (swings cost no stamina), the GLOW LANTERN in the lurker grove (spores cannot put you to sleep),
-the THIEF CLOAK above the court (thieves cannot take your gold).
+There are none. They were found in the caches and lost when you died, and they are gone (Daniel,
+2 October 2026: no relic rewards): every cache that held one pays one of the level's three silvers
+instead (never a fourth), and an old save that had found a relic is given that silver. The power they
+gave comes from levelling up. Nothing in a road ever needed one: a relic was lost on death.
 
 ## The Crags: world two
 
 **The Scree Path** (level 6, needs Kingswood) climbs out of the forest into the foothills at dusk:
 slate, heather, gold grass, and a rose sky with snow on the far peaks. The pasture has sheep that
 scatter, dry-stone walls, and the shepherd's bothy: she has lost three ewes up the hill, and finding
-all three (one on the terrace ledge, one in the windmill loft, one below the scree) drops the GOLDEN
-FLEECE relic where the last one stood, plus five gold. Then the terraces, where boulders come off the
+all three (one on the terrace ledge, one in the windmill loft, one below the scree) drops five gold
+where the last one stood. Then the terraces, where boulders come off the
 cliff on a rhythm (a dust warning, then the fall; they shatter on you or on goblins), the windmill,
 whose sails are rotating platforms that lift you to the loft and the high path, and the scree slope:
 loose stone that carries you downhill unless you brace with block or bounce over it. New foes: the
@@ -284,7 +284,7 @@ The store node on the map walks you into the keeper's shop: a lamplit room with 
 counter, and the keeper (a badger in an apron) behind it. Press UP at the counter to trade and UP at
 the door to leave. The trade screen has five tabs: SKINS, SWORDS, UPGRADES (Heart of Oak, Second Wind,
 KEEN EDGE +3 sword damage, RAZOR EDGE +3 more once Sporewood is cleared), SKILLS, and CHARMS. Charms are
-worn one at a time and show beside the relic on the HUD: LUCKY (gold drifts to you), IRON (a fifth
+worn one at a time and show on the HUD: LUCKY (gold drifts to you), IRON (a fifth
 less damage taken), FEATHER (a little more jump), HEART (every kill heals 5), SWIFT (a little more run).
 More scenery everywhere: beehives, birdhouses and lantern posts in the woods, fish traps on the marsh
 banks, spear racks, barrel stacks and bones in the camp, carts and fences on the crags.
@@ -315,7 +315,7 @@ Knight. Every level opens on a name banner with a short fanfare. Boss bars carry
 ten ticks. Menus share one framed panel with corner studs, and the pause menu names the level and
 your time. The map is framed like a parchment, every node is labelled, each wood dresses its own corner (reeds
 and a pond, stakes and a tent, mushrooms, autumn trees and a crown), the store's chimney smokes,
-every boss lounges by its node until beaten, the card shows the relic you found there, and a
+every boss lounges by its node until beaten, the card shows what you took there, and a
 compass sits in the corner.
 
 ## Iron Knight
