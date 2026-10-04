@@ -8,7 +8,7 @@ import { mulberry } from './px.js';   /* bossLab seeds Math.random for the row i
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK, HEIGHT } from './marks.js';
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
-import { FLIGHTS as SPIRAL_FLIGHTS } from './spiral-chase.js';   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
+import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
@@ -1923,7 +1923,16 @@ export function chaseClimb(BK, m, o = {}) {
       if (nxt) { const cur = seq[at], lip = walk > 0 ? (cur[0] + cur[1]) * 16 - P.x : P.x - cur[0] * 16, near = walk > 0 ? nxt[0] * 16 - P.x : P.x - (nxt[0] + nxt[1]) * 16;
         if (near > lip + 4 ? lip < 4 : near < 18 && nxt[2] < cur[2]) leap = true; }
       else if (at < 0 && !G[Math.floor(P.y / 16) * W + Math.floor((P.x + walk * 3) / 16)]) leap = true; }   /* off the list (a landing it fell to): the old rule, jump at an edge */
-    const guard = !!(o.guard && P.ground && !(jh > 0) && o.guard());
+    /* THE NEW FLIGHTS (claude/archmage2b): it waits out a clock weight's swing (it walks on only when no weight meets it on the way, unless
+       where it stands is no safer), and it meets his books - a held guard turns them; the rest jump them as they come */
+    const fx = BK.chase && BK.chase.stairFx && BK.chase.stairFx();
+    if (fx && P.ground && !(jh > 0)) { const fk = Math.min(F.length - 1, k + 1), sq = [fk === 0 ? [BK.L.spiral.x0, 26, BK.L.spiral.floor] : F[fk - 1].land, ...F[fk].steps, F[fk].land];   /* (the feet it will have on the way: the ledge under it, or over a gap the next one up) */
+      const yAt = x => { const tx = x / 16, on = sq.find(([x0, len]) => tx >= x0 && tx <= x0 + len); if (on) return on[2] * 16; const up = sq.filter(([x0, len]) => (x0 + len / 2 - tx) * walk > 0); return (up[0] || sq[sq.length - 1])[2] * 16; };
+      const ps = spiralPendSafe(fx.t, P.x, P.y, walk, 1.0, 85, yAt); if (!ps.go && ps.stay) { BK.keys.right = BK.keys.left = false; leap = false; } }
+    let bookGuard = false;
+    if (fx && P.ground) for (const b of fx.books) { if (b.tell > 0 || (b.x - P.x) * b.vx > 0) continue; const d = Math.abs(b.x - P.x);
+      if (d < 70 && Math.abs((P.y - 13) - b.y) < 20) { if (SHIELDED((BK.PROG && BK.PROG.hero) || 'knight') && d < 60) bookGuard = true; else if (d < 34 && !(jh > 0)) { BK.press('jump'); jh = 12; } } }
+    const guard = bookGuard || !!(o.guard && P.ground && !(jh > 0) && o.guard());
     if (guard) { BK.keys.right = BK.keys.left = false; leap = false; } BK.keys.block = guard;
     if (leap && !(jh > 0)) { BK.press('jump'); jh = 16; }
     BK.keys.jump = jh > 0; jh--;

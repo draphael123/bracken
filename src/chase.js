@@ -42,6 +42,13 @@
 //             mover ducks him while he moves) - on foot a beam is a wall to wait under, so give it period/up (dangerous for the first
 //             period - up seconds of every period, raised for `up`) or use it only where the hero rides.
 //   checkpoint  [x,y]  (documentation for level lanes; see chaseProblems): the shrine standing before the trigger
+//   band      true     (claude/archmage2b) a dark band on the screen edge it comes from for the WHOLE run, not only when it is near: you always
+//             know it is there (the spiral stair's dark, which the danger glow alone never showed - Daniel: "it doesn't do anything")
+//   caps      [{ reach, stop }, ...]  (claude/archmage2b) LANDINGS IT WAITS UNDER, in its direction's order: the front never goes past caps[i].stop
+//             until the hero has STOOD (chaseStep's ground) at or past caps[i].reach - so it cannot rise past the landing over a hero who has
+//             not reached it yet, and there is always somewhere over it to stand (no soft-lock under it)
+//   knockTo   [[x0, len, row], ...]  (claude/archmage2b, with contact 'hurt') the ledges (tiles) it THROWS the hero up onto: chaseSafeAbove picks
+//             the nearest one past the front
 // THE CHECKPOINT RULE: a shrine within CHECKPOINT_GAP px before the start line (chaseProblems fails a level that has none), and a death
 // puts every chase back to IDLE (chaseReset) - the chaser goes back to its start and the trigger waits for the hero again.
 import { DUCK_H } from './duck.js';
@@ -62,19 +69,20 @@ export function chaseSpec(c) {
   rb.min = Math.max(MIN_FAIR, rb.min); rb.max = Math.max(rb.min + 40, rb.max);
   const curve = (c.curve && c.curve.length ? c.curve : [[0, 60]]).map(r => Array.isArray(r) ? { at: r[0], speed: r[1], warn: r[2] || '' } : { at: r.at, speed: r.speed, warn: r.warn || '' }).sort((a, b) => a.at - b.at);
   const trigger = c.trigger, gap0 = Math.max(rb.min, num(c.gap0, 200));
-  return { id: c.id || 'chase', name: c.name || 'THE CHASE', axis: c.axis === 'y' ? 'y' : 'x', dir, trigger, end: c.end,
+  return { band: !!c.band, caps: Array.isArray(c.caps) ? c.caps.map(q => ({ reach: q.reach, stop: q.stop })) : null, knockTo: Array.isArray(c.knockTo) ? c.knockTo.map(q => q.slice()) : null, id: c.id || 'chase', name: c.name || 'THE CHASE', axis: c.axis === 'y' ? 'y' : 'x', dir, trigger, end: c.end,
     from: num(c.from, trigger - dir * gap0), gap0, curve, lead: num(c.lead, 1.6), accel: num(c.accel, 140), rubber: rb,
     contact: c.contact === 'hurt' ? 'hurt' : 'kill', dmg: num(c.dmg, 45), hold: num(c.hold, 0.7),
     autoscroll: !!c.autoscroll, edge: num(c.edge, 24), show: Number.isFinite(c.show) ? c.show : null, showKeep: num(c.showKeep, 0.1), glow: num(c.glow, 300), look: c.look || 'rock', music: c.music || null, say: c.say || 'RUN!', zone: Array.isArray(c.zone) && c.zone.length === 4 ? c.zone.slice() : null,
     beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null, runsOver: !!c.runsOver };
 }
-export const newChase = () => ({ phase: 'idle', pos: 0, dist: 0, speed: 0, t: 0, warned: {}, warnT: 0, warnText: '', hold: 0, crash: 0, rumT: 0 });
+export const newChase = () => ({ phase: 'idle', pos: 0, dist: 0, speed: 0, t: 0, warned: {}, warnT: 0, warnText: '', hold: 0, crash: 0, rumT: 0, capI: 0, hits: 0 });
 export const chaseReset = st => Object.assign(st, newChase());
 /* THE ZONE: is (x, y) where this chase's start line counts (no zone: everywhere) */
 export const chaseInZone = (sp, x, y) => !sp.zone || (x >= sp.zone[0] && x < sp.zone[1] && y >= sp.zone[2] && y < sp.zone[3]);
 
-/* THE STEP. hero = the hero's centre along the axis (px). Returns the events this step made: start, warn, speedup, contact, end. */
-export function chaseStep(sp, st, hero, dt) {
+/* THE STEP. hero = the hero's centre along the axis (px); ground = he is standing (caps count only a hero who stood there - a jump is not a
+   landing). Returns the events this step made: start, warn, speedup, contact, end. */
+export function chaseStep(sp, st, hero, dt, ground = true) {
   const ev = [], d = sp.dir, ahead = (a, b) => (a - b) * d;   // ahead(a,b) > 0: a is further along the chase than b
   if (st.phase === 'idle') {
     if (ahead(hero, sp.trigger) >= 0 && ahead(hero, sp.end) < 0) { Object.assign(st, newChase(), { phase: 'run', pos: sp.from, speed: sp.curve[0].speed }); st.warned[0] = true; ev.push({ k: 'start' }); }
@@ -95,12 +103,25 @@ export function chaseStep(sp, st, hero, dt) {
   if (st.hold > 0) { st.hold -= dt; k = 0; }
   const step = st.speed * k * dt; st.pos += d * step; st.dist += step;
   const far = rb.max * LEASH; if (ahead(hero, st.pos) > far) st.pos = hero - d * far;   // THE LEASH: a hero who outruns even the catch-up is never left more than this ahead
+  if (sp.caps) { while (st.capI < sp.caps.length && ground && ahead(hero, sp.caps[st.capI].reach) >= 0) st.capI++;   // THE CAPS: never past the landing over a hero who has not stood on it
+    const cp = sp.caps[st.capI]; if (cp && ahead(st.pos, cp.stop) > 0) st.pos = cp.stop; }
   // THE SAFE LINE
   if (ahead(hero, sp.end) >= 0) { st.phase = 'done'; ev.push({ k: 'end' }); return ev; }
   // THE FRONT REACHES THE HERO
   if (ahead(hero, st.pos) <= 0) { ev.push({ k: 'contact', mode: sp.contact, dmg: sp.dmg });
-    if (sp.contact === 'hurt') { st.pos = hero - d * rb.min; st.hold = sp.hold; } }
+    st.hits++; if (sp.contact === 'hurt') { st.pos = hero - d * rb.min; st.hold = sp.hold; } }
   return ev;
+}
+/* WHERE IT THROWS YOU (knockTo, claude/archmage2b): the nearest ledge whose top a hero stands on clear past the front (his middle at least
+   `clear` px past it), nearest first, then nearest across to x. ok(tx, row) says a tile of it is still there to stand on (failing stone that
+   has gone is not). Returns { x, y } in world px (y: the feet), or null. Only for a vertical chase. */
+export function chaseSafeAbove(sp, front, x, ok = () => true, clear = 14) {
+  if (!sp.knockTo || sp.axis !== 'y') return null; let best = null;
+  for (const [x0, len, row] of sp.knockTo) { const mid = row * TS - 7; if ((mid - front) * sp.dir < clear) continue;
+    const cols = []; for (let i = 0; i < len; i++) if (ok(x0 + i, row)) cols.push(x0 + i); if (!cols.length) continue;
+    const tx = cols.reduce((a, b) => Math.abs((b * TS + 8) - x) < Math.abs((a * TS + 8) - x) ? b : a), cand = { x: tx * TS + 8, y: row * TS, d: Math.abs(mid - front), dx: Math.abs(tx * TS + 8 - x) };
+    if (!best || cand.d < best.d - 0.5 || (Math.abs(cand.d - best.d) <= 0.5 && cand.dx < best.dx)) best = cand; }
+  return best && { x: best.x, y: best.y };
 }
 /* THE GAP the rubber band works on, and how close the danger feels: 0 far / idle, 1 at the front */
 export const chaseGap = (sp, st, hero) => (hero - st.pos) * sp.dir;

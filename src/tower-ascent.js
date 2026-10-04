@@ -12,7 +12,7 @@
 //   rows 0-49      THE SKY: the desert (SAND, rows 6-12), his hall at the top of the tower (HALL, rows 22-38: the carpet's
 //                  arena), and nothing to stand on by design between the hall's floor and the crown
 //   rows 50-83   7 THE OPEN CROWN        broken ledges, the sky showing through, and HIS RING on the parapet (2026-09-29) -
-//                                        through it THE SPIRAL STAIR (cols 80-105, rows 70-123, east of the tower's wall:
+//                                        through it THE SPIRAL STAIR (cols 80-105, rows 70-139, east of the tower's wall:
 //                                        src/spiral-chase.js), the Undead Archmage chased up it, and the carpet at its top
 //   rows 86-119  6 THE BELL LOFT         (2026-09-25) the bell deck over its pit, and THE SEXTON, the tower's mini
 //   rows 122-155 5 THE BURST CISTERN     a floor of poison water, stepping stones

@@ -16,13 +16,13 @@ try {
       const inS=()=>SC.inSpiral(BK.L.spiral,BK.P.x,BK.P.y);
       const through=()=>{BK.tp(33,${TOWER.SKY});BK.sim(5);for(let i=0;i<90;i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;BK.sim(20);};
       let t=0,taken=0,deaths=0,wasDead=false,hp=BK.P.hp;
-      const each=()=>{t++;const d=BK.P.dead>0||BK.P.hp<=0;if(d&&!wasDead)deaths++;wasDead=d;if(!d&&BK.P.hp<hp)taken+=hp-BK.P.hp;hp=BK.P.hp;};
+      let src={dark:0,pend:0,other:0},dh=0;const each=()=>{t++;const d=BK.P.dead>0||BK.P.hp<=0;if(d&&!wasDead)deaths++;wasDead=d;const D=BK.chase.states()[0],fx=BK.chase.stairFx();if(!d&&BK.P.hp<hp){const k=D.hits>dh?'dark':fx.cd>0.85?'pend':'other';src[k]+=hp-BK.P.hp;taken+=hp-BK.P.hp;}dh=D.hits;hp=BK.P.hp;};   /* (archmage2: the damage by what dealt it - the dark, a clock weight, or the rest: his spells and books) */
       through();
       while(t<60*${cap}&&!BK.carpet()){
         if(BK.P.dead>0){BK.sim(1);each();continue;}
         if(!inS()){hp=BK.P.hp;through();continue;}
         LB.chaseClimb(BK,BK.enemies().find(e=>e.t==='magechase'),{secs:${cap},each,stop:()=>t>=60*${cap}||!inS(),guard:${process.env.GUARD === '1'}?()=>{const m=BK.enemies().find(e=>e.t==='magechase');return !!m&&m.alive&&(m.mode==='fireTell'||m.mode==='iceTell'||(m.shots||[]).some(q=>!q.hit&&Math.hypot(q.x-BK.P.x,q.y-BK.P.y)<120));}:null});}   /* (one call: a chunked climb let go of the jump key mid-jump) */
-      return {h:${JSON.stringify(h)},top:!!BK.carpet(),secs:Math.round(t/60),taken:Math.round(taken),deaths,hpLeft:Math.round(BK.P.hp)};})()`, 900000);
+      return {h:${JSON.stringify(h)},top:!!BK.carpet(),secs:Math.round(t/60),taken:Math.round(taken),src,deaths,hpLeft:Math.round(BK.P.hp)};})()`, 900000);
     console.log(JSON.stringify(q)); }
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }

@@ -71,7 +71,7 @@ import * as FRS from './fair-rides.js'; import * as WQD from './redraw/wicker_fx
 import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js'; import * as FB from './redraw/fair_backdrop.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
 import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
 import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js';   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
-import { chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
+import { chaseSafeAbove, chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import { makeEmberWard } from './ember-ward.js';   /* THE EMBER FLARE (claude/emberflare): a press of down is a 0.25 s burst of fire that cancels a blow, scorches its attacker and gives her heat */
@@ -159,7 +159,7 @@ import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
 import { floodReach } from './reachcore.js';
-import { updateMageChase, drawRingDoor, inSpiral } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
+import { updateMageChase, drawRingDoor, inSpiral, newStairFx, updateStairFx, drawStairFx } from './spiral-chase.js';   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { villageLandmarks, woodLandmarks } from './landmarks.js';
 import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
@@ -16680,7 +16680,7 @@ function chaseMage(e,dt){
   hit:(x,y,d,hard,blow)=>damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',mark:'THE DEATH MARK'})[blow]}),
   say:(m,h)=>number(e.x,e.y-52,m,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)(),
   onScreen:(x,y,m=0)=>x>camX+m&&x<camX+VW-m&&y>camY+m&&y<camY+VH-m,
-  solid:(x,y)=>tileAt(Math.floor(x/TS),Math.floor(y/TS))===T.SOLID,
+  solid:(x,y)=>tileAt(Math.floor(x/TS),Math.floor(y/TS))===T.SOLID,freeze:stairFrost,
   inSpiral:p=>inSpiral(L.spiral,p.x,p.y)});
 }
 function chaseView(){return !!(L&&L.spiral&&P&&!P.carpet&&!P.dead&&inSpiral(L.spiral,P.x,P.y));}
@@ -20595,29 +20595,52 @@ function canalReset() { CANAL = L && L.canal ? CNH.canalReset(CNX) : null;
   if (window.BK) Object.assign(window.BK, { canal: () => CANAL, canalSwims: () => ((L.canal && L.canal.swims) || []).map(q => [Math.round((q.x0 + q.x1) / 2), q.surf + 3]) }); }   /* (claude/canalfix3) the safe swims, for tools/canalfix3-shots.mjs */
 /* ---------- THE CHASE ENGINE (claude/chase, src/chase.js): L.chases = [spec], opt-in. The state is in memory, never saved. ---------- */
 let chases = [], chaseBeamCd = 0, chaseMusicOn = false;
-function chasesLoad() { chases = (L.chases || []).map(c => ({ sp: chaseSpec(c), st: newChase() })); chaseBeamCd = 0; chaseMusicOn = false; }
+function chasesLoad() { chases = (L.chases || []).map(c => ({ sp: chaseSpec(c), st: newChase() })); chaseBeamCd = 0; chaseMusicOn = false; stairFx = newStairFx(); }
 const chaseHero = sp => sp.axis === 'x' ? P.x : P.y - 7;
+const chaseWash = sp => sp.look === 'dark' ? '60,190,110' : '255,90,60';
 function chaseMusicOff() { if (chaseMusicOn) { chaseMusicOn = false; music.play(L.music || 'theme'); } }
 function chaseEvent(c, e) {
   const sp = c.sp;
-  if (e.k === 'start') { if (sp.music) { music.play(sp.music); chaseMusicOn = true; } number(P.x, P.y - 34, sp.say, '#ff6b6b'); SFX.rumble(); shakeCam(4); }
-  else if (e.k === 'warn') { number(P.x, P.y - 40, e.text, '#ff6b6b'); SFX.thunder(); shakeCam(3); }
-  else if (e.k === 'contact') { if (e.mode === 'kill') damagePlayer(P.x, 9999, { unblockable: true, pierce: true, name: sp.name }); else damagePlayer(P.x - sp.dir * 20, e.dmg, { unblockable: true, name: sp.name }); shakeCam(6); }
+  if (e.k === 'start') { if (sp.music) { music.play(sp.music); chaseMusicOn = true; } number(P.x, P.y - 34, sp.say, '#ff6b6b'); SFX.rumble(); shakeCam(4); if (sp.band) { c.st.warnT = 2.6; c.st.warnText = sp.say; } }   /* (a banded chase says it over the screen too: claude/archmage2b) */
+  else if (e.k === 'warn') { number(P.x, P.y - 40, e.text, '#ff6b6b'); SFX.thunder(); shakeCam(3); c.st.flashT = 0.35; }   /* A SURGE IS TOLD: the banner, thunder, and a flash of its colour */
+  else if (e.k === 'contact') { if (e.mode === 'kill') damagePlayer(P.x, 9999, { unblockable: true, pierce: true, name: sp.name }); else { const front = chaseHero(sp); damagePlayer(P.x - sp.dir * 20, e.dmg, { unblockable: true, name: sp.name }); if (sp.knockTo && !P.dead) chaseKnock(c, front); } shakeCam(6); }
   else if (e.k === 'end') { number(P.x, P.y - 34, 'SAFE', '#8fd160'); SFX.rumble(); chaseMusicOff(); }
   else if (e.k === 'crash') { shakeCam(5); SFX.thud(); }
 }
+/* THROWN UP (claude/archmage2b, knockTo): the dark that reaches you throws you onto the nearest step over its front - a step that is still there
+   (failing stone that has gone is not one) with air over it - so a mistake costs health and a scramble, never a soft-lock under it */
+function chaseKnock(c, front) {
+  const to = chaseSafeAbove(c.sp, front, P.x, (tx, row) => { const t = tileAt(tx, row); return (t === T.ONEWAY || t === T.SOLID || t === T.PLANK) && tileAt(tx, row - 1) === T.AIR && tileAt(tx, row - 2) === T.AIR; });
+  if (!to) return; burst(P.x, P.y - 10, 16, ['#6fe08a', '#07120c', '#c8ffd8'], 120, 0.6);
+  P.x = to.x; P.y = to.y; P.vx = 0; P.vy = -90; P.ground = false; P.climb = false; c.st.knocks = (c.st.knocks || 0) + 1;
+  burst(P.x, P.y - 10, 16, ['#6fe08a', '#07120c', '#c8ffd8'], 120, 0.6); number(P.x, P.y - 36, 'THE DARK THROWS YOU UP', '#6fe08a'); }
 function updateChase(dt) {
   if (!chases.length || P.dead || state !== 'play') return;
   chaseBeamCd = Math.max(0, chaseBeamCd - dt);
   for (const c of chases) for (const b of c.sp.beams) if (chaseBeamCd <= 0 && beamHit(duckBox(P), duckClears(P, b.y), b, time)) { chaseBeamCd = CHASE_BEAM.cd; damagePlayer((b.x0 + b.x1) / 2, b.dmg, { unblockable: true, name: b.name }); SFX.thud(); shakeCam(3); }   /* THE DUCK answers a beam: duckClears, never the down key */
   for (const c of chases) {
     if (c.st.phase === 'idle' && (chases.some(o => o !== c && o.st.phase === 'run') || !chaseInZone(c.sp, P.x, P.y))) continue;   /* (a zone: its start line counts only there) */
-    for (const e of chaseStep(c.sp, c.st, chaseHero(c.sp), dt)) chaseEvent(c, e);
+    c.st.flashT = Math.max(0, (c.st.flashT || 0) - dt);
+    for (const e of chaseStep(c.sp, c.st, chaseHero(c.sp), dt, !!P.ground)) chaseEvent(c, e);
     if (c.sp.runsOver && c.st.phase === 'run') for (const q of enemies) if (q.alive && !q.boss && (q.x - c.st.pos) * c.sp.dir < 0 && chaseInZone(c.sp, q.x, q.y - 4)) { q.alive = false; burst(q.x, q.y - 10, 12, COLS[q.t] || ['#9ae0a8', '#ffffff'], 80, 0.5); spawnCorpse(q, 1); if (FAIR) FAIR.runOver++; }   /* THE GHOST TRAIN runs over what it overtakes in its cutting too (claude/fairfix) */
     const k = chaseDanger(c.sp, c.st, chaseHero(c.sp)); c.st.rumT -= dt; const r = rumbleFor(k);
     if (r && c.st.rumT <= 0) { shakeCam(r.n); rumble(80, 0.25 * k); c.st.rumT = r.every; } }
 }
+/* THE SPIRAL STAIR'S NEW FLIGHTS (claude/archmage2b, src/spiral-chase.js): the clock's weights, his books, and his frost on the steps.
+   stairFx is in memory only; a death clears the books and the frost (the weights keep swinging) */
+let stairFx = newStairFx();
+function updateStairs(dt) {
+  if (!L || !L.spiral || state !== 'play') return;
+  if (L.slick && L.slick.some(z => z.frost)) L.slick = L.slick.filter(z => !z.frost || z.until > time);   /* his frost thaws */
+  updateStairFx(stairFx, dt, { P, on: !P.dead && !P.carpet && inSpiral(L.spiral, P.x, P.y),
+    hit: (x, y, d, hard, blow) => damagePlayer(x, d, { unblockable: hard, blow: ({ pend: 'A CLOCK WEIGHT', book: 'HIS BOOK' })[blow] }),
+    say: (m, h) => number(P.x, P.y - 44, m, h ? '#ff6b6b' : '#bce8fa'), sound: k => (SFX[k] || SFX.charge)(),
+    solid: (x, y) => tileAt(Math.floor(x / TS), Math.floor(y / TS)) === T.SOLID });
+}
+function stairFrost(x0, x1, row, secs) { const z = [x0, x1, row]; z.frost = true; z.until = time + secs; L.slick = (L.slick || []).filter(q => !(q.frost && q[2] === row && q[0] === x0)).concat([z]);
+  for (let tx = x0; tx <= x1; tx++) burst(tx * TS + 8, row * TS, 3, ['#eefaff', '#9be2ff'], 30, 0.4); }
 function chaseRespawn() {   /* A DEATH PUTS EVERY CHASE BACK AT ITS START, unless the hero is past its safe line */
+  stairFx.books.length = 0; stairFx.told = {}; if (L && L.slick) L.slick = L.slick.filter(z => !z.frost);
   for (const c of chases) { const past = (chaseHero(c.sp) - c.sp.end) * c.sp.dir >= 0; if (!(c.st.phase === 'done' && past)) chaseReset(c.st); }
   chaseMusicOff();
 }
@@ -20625,9 +20648,11 @@ function drawChase(cx, cy) {
   if (!chases.length || state !== 'play') return;
   for (const c of chases) drawChaser(g, c.sp, c.st, cx, cy, VW, VH, time);
 }
+function drawStairs(cx, cy) { if (L && L.spiral && state === 'play') drawStairFx(g, stairFx, cx, cy, VW, VH, time); }
 function drawChaseGlow() {
   if (!chases.length || state !== 'play') return;
-  for (const c of chases) { drawGlow(g, c.sp, c.st, chaseDanger(c.sp, c.st, chaseHero(c.sp)), VW, VH, time, SET.reduceMotion);
+  for (const c of chases) { const k = chaseDanger(c.sp, c.st, chaseHero(c.sp)); drawGlow(g, c.sp, c.st, c.sp.band && c.st.phase === 'run' ? Math.max(0.32, k) : k, VW, VH, time, SET.reduceMotion);   /* (band: it is always on the edge it comes from, claude/archmage2b) */
+    if (c.st.flashT > 0 && SET.flashes !== false) { g.fillStyle = 'rgba(' + chaseWash(c.sp) + ',' + (0.35 * c.st.flashT / 0.35).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }   /* a surge's flash */
     if (c.st.warnT > 0 && !P.dead) text(c.st.warnText, Math.round(VW / 2), 30, Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 8); }
 }
 /* THE PLAYTEST CHASE DEMO (?chase=demo, docs/PLAYTEST.md): a short corridor cut into the first level's opening in MEMORY, one chaser, one timed beam. Like ?boss= it
@@ -24949,7 +24974,7 @@ function update(dt) {
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
   levelTime += dt * (SET.speed || 1);
-  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateChase(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
+  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => updatePlayer(wdt)); coopWatch(); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); updateWeather(dt); updateCamera(dt);
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
 }
@@ -27170,7 +27195,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.drawImage(FOGC, 0, 0); }
   }
   if (CANAL && state !== 'win') CNH.drawCanalFog(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's fog: holes for the lit, the theatre's glow, the wisps and lanterns on top */
-  drawBloom(cx, cy); drawWindFx(); drawSpiderSigns(cx, cy); drawSlick(cx, cy); drawSkillFx(cx, cy); if (L.hush) drawHush(cx, cy);
+  drawBloom(cx, cy); drawWindFx(); drawSpiderSigns(cx, cy); drawSlick(cx, cy); drawStairs(cx, cy); drawSkillFx(cx, cy); if (L.hush) drawHush(cx, cy);
   if (L.dark && (L.dark > 0.05 || (L.darkZones || []).some(z => P.x > z.x0 - 200 && P.x < z.x1 + 200 && P.y > z.y0 - 100 && P.y < z.y1 + 100) || darkNow > 0.05)) { // the mine: black, with holes for every lamp, fire and the light you carry
     if (!DARKC || DARKC.width !== VW || DARKC.height !== VH) { DARKC = document.createElement('canvas'); DARKC.width = VW; DARKC.height = VH; }
     const dg = DARKC.getContext('2d'); dg.globalCompositeOperation = 'source-over'; dg.clearRect(0, 0, VW, VH);
@@ -28914,7 +28939,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },
   stormBolt(t = 0.34) { boltBack = { t, x: camX * 0.15 + VW / 2, i: 0 }; return { quiet: stormQuiet(), flash: boltFlash() }; },   /* the backdrop's lightning, now, for a picture of it (t: how much of it is left) */   /* the Hurricane's sea state, for the harness */
-  chase: { on: () => chases.length > 0, demo: chaseDemo, get demoOn() { return bossJumpOn && chases.some(c => c.sp.id === 'demo'); }, states: () => chases.map(c => ({ id: c.sp.id, phase: c.st.phase, pos: c.st.pos, dist: c.st.dist, speed: c.st.speed, warnT: c.st.warnT, hold: c.st.hold, gap: (chaseHero(c.sp) - c.st.pos) * c.sp.dir, music: c.sp.music })), specs: () => chases.map(c => c.sp), reset: () => { for (const c of chases) chaseReset(c.st); chaseMusicOff(); }, problems: () => chaseProblems(L.chases || [], shrines.map(s => ({ x: s.x, y: s.y })).concat([{ x: L.START.x * TS + 8, y: (L.START.y + 1) * TS }])), get beamCd() { return chaseBeamCd; }, set beamCd(v) { chaseBeamCd = v; } },   /* THE CHASE ENGINE, for tools/chase.mjs */
+  chase: { on: () => chases.length > 0, demo: chaseDemo, get demoOn() { return bossJumpOn && chases.some(c => c.sp.id === 'demo'); }, stairFx: () => stairFx, states: () => chases.map(c => ({ hits: c.st.hits, knocks: c.st.knocks || 0, capI: c.st.capI, id: c.sp.id, phase: c.st.phase, pos: c.st.pos, dist: c.st.dist, speed: c.st.speed, warnT: c.st.warnT, hold: c.st.hold, gap: (chaseHero(c.sp) - c.st.pos) * c.sp.dir, music: c.sp.music })), specs: () => chases.map(c => c.sp), reset: () => { for (const c of chases) chaseReset(c.st); chaseMusicOff(); }, problems: () => chaseProblems(L.chases || [], shrines.map(s => ({ x: s.x, y: s.y })).concat([{ x: L.START.x * TS + 8, y: (L.START.y + 1) * TS }])), get beamCd() { return chaseBeamCd; }, set beamCd(v) { chaseBeamCd = v; } },   /* THE CHASE ENGINE, for tools/chase.mjs */
   bossJump: { table: () => bossTable().map(r => ({ ...r })), go: bossJump, open: bjOpen, get on() { return bossJumpOn; }, get cursor() { return bjI; }, set cursor(v) { bjI = v; }, get hero() { return bjHero; }, set hero(v) { bjHero = v; }, rows: BJ_ROWS },   /* the hidden boss list, for tools/boss-jump.mjs and tools/textfit.mjs */
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
   // THE CURSORS OF EVERY LIST, so the playtest bot can walk the TABS and the ROWS of a screen and not just
