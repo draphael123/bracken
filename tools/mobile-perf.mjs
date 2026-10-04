@@ -64,10 +64,10 @@ try {
   // INPUT: a touch on the stick -> keys.left (the game-side path)
   if (SCENES.some(s => !['title', 'map'].includes(s))) {
     await E("BK.state = 'play'"); await sleep(300);
-    const lat = await E(`(async () => { const res = {}, cv = document.getElementById('c');
+    const lat = await E(`(async () => { const res = {}, cv = document.getElementById('c'), disp0 = cv;
       const dispatch = (type, x, y, id) => { const t = new Touch({ identifier: id, target: cv, clientX: x, clientY: y }); cv.dispatchEvent(new TouchEvent(type, { touches: type === 'touchend' ? [] : [t], targetTouches: type === 'touchend' ? [] : [t], changedTouches: [t], bubbles: true, cancelable: true })); };
-      const cx = innerWidth * 0.15, cy = innerHeight * 0.6;
-      const one = () => { const t0 = performance.now(); dispatch('touchstart', cx, cy, 1); dispatch('touchmove', cx - 40, cy, 1); const ms = BK.keys.left ? performance.now() - t0 : -1; dispatch('touchend', cx - 40, cy, 1); return ms; };
+      const D = BK.touch.debug().layout.dpad, [cx, cy] = BK.touch.displayToClient(D.cx, D.cy);   /* the d-pad (the default move control): a thumb down in its middle, then pushed left */
+      const one = () => { const t0 = performance.now(); dispatch('touchstart', cx, cy, 1); dispatch('touchmove', cx - D.R * 0.6 * innerWidth / disp0.width, cy, 1); const ms = BK.keys.left ? performance.now() - t0 : -1; dispatch('touchend', cx, cy, 1); return ms; };
       res.firstMs = +one().toFixed(1);   // (the first touch makes the AudioContext: a one-off)
       const xs = [one(), one(), one(), one(), one()].sort((a, b) => a - b); res.stickMs = +xs[2].toFixed(1);
       return res; })()`).catch(e => ({ err: String(e) }));
@@ -78,6 +78,7 @@ try {
   if (process.env.MP_BUDGET !== '0') {
     if (bk > BUDGET.bootMs) fails.push('boot to the game took ' + bk + ' ms (budget ' + BUDGET.bootMs + ' ms under ' + CPU + 'x)');
     for (const r of rows) { if (r.fps < BUDGET.fpsMin) fails.push(r.scene + ' ran at ' + r.fps + ' fps (budget ' + BUDGET.fpsMin + ')'); if (r.worst > BUDGET.worstMs) fails.push(r.scene + ' had a ' + r.worst + ' ms frame (budget ' + BUDGET.worstMs + ')'); }
+    if (out.input && (out.input.stickMs < 0 || out.input.firstMs < 0)) fails.push('the touch probe never set keys.left (the d-pad did not answer)');
     if (out.input && out.input.stickMs > BUDGET.inputMs) fails.push('touch to keys took ' + out.input.stickMs + ' ms');
   }
 } catch (e) { fails.push('mobile-perf failed to run: ' + e.message); }
