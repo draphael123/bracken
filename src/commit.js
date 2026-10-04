@@ -14,16 +14,16 @@
 
 export const WINDOW = 0.06;   /* s: the last four frames of a recovery are the cancel window, for everything */
 
-/* RECOVERY ADDED AFTER THE SWING'S ART ENDS (s), per hero x verb. Light totals press-to-free: freebooter 0.33, knight/warden/pyro 0.46,
-   geomancer 0.48, paladin 0.72, death knight 1.05 (they were 0.23 / 0.32 / 0.32 / 0.55 / 0.88). `up` is the up-slash and the low sweep. */
-export const COMMIT = {
-  pirate:    { light: 0.10, third: 0.14, up: 0.10, heavy: 0 },      /* his held blow is the pistol: PISTOL_BLAST, not a swing */
-  knight:    { light: 0.14, third: 0.20, up: 0.14, heavy: 0.25 },   /* the heavy cut */
-  warden:    { light: 0.14, third: 0.20, up: 0.14, heavy: 0.22 },   /* the run-through */
-  pyro:      { light: 0.14, third: 0.20, up: 0.14, heavy: 0.25 },   /* the bellows */
-  geomancer: { light: 0.16, third: 0.22, up: 0.16, heavy: 0.28 },   /* the fault line */
-  paladin:   { light: 0.17, third: 0.22, up: 0.17, heavy: 0.30 },
-  reaper:    { light: 0.17, third: 0.22, up: 0.17, heavy: 0.30 },
+/* RECOVERY ADDED AFTER THE SWING'S ART ENDS (s), per hero x verb. Light totals press-to-free (WEIGHT-T): freebooter 0.29, knight/warden/pyro 0.40,
+   geomancer 0.42, paladin 0.65, death knight 0.98 (the brief's: 0.33 / 0.46 / 0.48 / 0.72 / 1.05; they were 0.23 / 0.32 / 0.32 / 0.55 / 0.88). `up` is the up-slash and the low sweep. */
+export const COMMIT = {   /* WEIGHT-T (10-04): the brief's numbers x0.6, measured against the human-speed bot (see the lane report) */
+  pirate:    { light: 0.06, third: 0.084, up: 0.06, heavy: 0 },      /* his held blow is the pistol: PISTOL_BLAST, not a swing */
+  knight:    { light: 0.084, third: 0.12, up: 0.084, heavy: 0.15 },   /* the heavy cut */
+  warden:    { light: 0.084, third: 0.12, up: 0.084, heavy: 0.132 },  /* the run-through */
+  pyro:      { light: 0.084, third: 0.12, up: 0.084, heavy: 0.15 },   /* the bellows */
+  geomancer: { light: 0.096, third: 0.132, up: 0.096, heavy: 0.168 }, /* the fault line */
+  paladin:   { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
+  reaper:    { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
 };
 export const PISTOL_BLAST = 0.45;   /* the freebooter's shot: blastT 0.34 -> 0.45, and it is a commit like a swing */
 export const PLUNGE_WHIFF = 0.10;   /* a plunge that met nothing lands this much heavier (a CAUGHT plunge - the pogo - is untouched) */
@@ -67,28 +67,30 @@ export function holdPresses(P, hold) {
 }
 
 /* ==== STAMINA ==== */
+/* THE BAR. WEIGHT-T (coordinator 10-04: under the brief's numbers the human-speed bot fell from 71% to 33% of 24 boss fights with an even
+   level-card spread; these are the numbers that bring it to 58% - every knob below is runtime-tunable and the report lists both sets).
+   The brief's value is in the comment where it differs. */
 export const STAM = {
-  regen: 55,          /* /s (was 75): a full bar in ~1.8 s */
-  delay: 0.5,         /* s of no regen after a spend (was 0.2) - and it is counted from the END of a commit, a roll or a guard */
-  exhausted: 1.0,     /* s of no regen when the bar hits 0 */
-  windedMul: 0.6,     /* the regen until the bar is back to WINDED_TO */
-  windedTo: 0.3,      /* of the max: until here, no roll and no guard */
+  regen: 75,          /* /s (brief 55; it was 75) */
+  delay: 0.3,         /* s of no regen after a spend (brief 0.5; it was 0.2) */
+  exhausted: 0.6,     /* s of no regen when the bar hits 0 (brief 1.0) */
+  windedMul: 0.6,     /* the regen until the bar is back to windedTo */
+  windedTo: 0.2,      /* of the max: until here, no roll and no guard (brief 0.3) */
   refundCap: 12,      /* the most any one stamina refund gives (EVASION, FREE HAND, MERCY, PERFECT GUARD, PARRY, STOKE, RANSOM ...) */
-  breakStagger: 0.9, breakTired: 1.2,
-  pauseRecovery: true,
-  rollInv: 0.20,                       /* s of grace at the start of a roll (the TAIL is hittable) */
-  blockBase: 8, blockPerDmg: 0.6, blockCap: 35,   /* the shield's price: base + perDmg x the blow, capped */
-  busyRegen: 0,        /* the share of the regen that still runs while committed, rolling or guarding (0: none, as briefed) */
-  hold: true,          /* a press made in a commit is HELD for the window (false: it ages out as it always did) */
-  jumpLock: true,      /* no jump out of a commit (Daniel 10-02, Q5) */
-  plungeWhiff: 0.10,   /* a plunge that met nothing lands this much heavier */
-  stepFree: true, stepDelay: 0.2,   /* THE WARDEN'S STEP (coordinator 10-04: she collapsed under WEIGHT): her short back-step is spacing - it keeps the regen running and only a 0.2 s delay */   /* no regen through a swing's recovery either (false: only through the swing itself) - a tuning knob, see the lane report */   /* a guard broken: staggered, then the guard stays down */
+  breakStagger: 0.9, breakTired: 1.2,   /* a guard broken: staggered, then the guard stays down */
+  pauseRecovery: false, /* no regen through the swing itself; true: through its recovery too (brief: true) */
+  busyRegen: 0,         /* the share of the regen that still runs while swinging, rolling or guarding (0: none, as briefed) */
+  rollInv: 0.26,        /* s of grace at the start of a roll; the TAIL is hittable (brief 0.20) */
+  blockBase: 6, blockPerDmg: 0.4, blockCap: 25,   /* the shield's price: base + perDmg x the blow, capped (brief 8 + 0.6 x, cap 35) */
+  hold: true,           /* a press made in a commit is HELD for the window (false: it ages out as it always did) */
+  jumpLock: true,       /* no jump out of a commit (Daniel 10-02, Q5) */
+  plungeWhiff: 0.10,    /* a plunge that met nothing lands this much heavier */
+  stepFree: true, stepDelay: 0.2,   /* THE WARDEN'S BACK-STEP is spacing, not a roll: it keeps the regen running, with a 0.2 s delay */
 };
-/* THE ROLL: what it costs and how long it is untouchable. Heavy heroes roll heavier (Daniel 10-02, Q4) */
-export const ROLL_COST = { knight: 24, warden: 24, pyro: 24, geomancer: 24, pirate: 22, paladin: 28, reaper: 28 };
+/* THE ROLL: what it costs and how long it is untouchable. Heavy heroes roll heavier (Daniel 10-02, Q4). WEIGHT-T: the brief's x0.9 */
+export const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25 };
 export const STEP_BACK_COST = 15;   /* the warden's back-step (it was 13) */
 export const ROLL_LEN = { knight: 0.30, warden: 0.18, pyro: 0.34, geomancer: 0.30, pirate: 0.30, paladin: 0.30, reaper: 0.32 };
-export const ROLL_INV = 0.20;       /* the first 0.20 s; the TAIL is hittable (the warden's step keeps her own STEP_INV) */
 export const ROLL_SHAVE_CAP = 4;    /* the most the shaves (level ranks, LIGHT STEP) take off a roll's base cost */
 /* AN INVULNERABLE DASH (Lunge, Cinder Step, Holy Charge, Boarding Party, Harrier) follows the roll's rules: its grace is the roll's share of
    it, never more than the roll's, and it costs at least the hero's roll + 4 */

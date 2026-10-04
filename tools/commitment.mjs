@@ -21,11 +21,12 @@ import { openPage } from './cdp.mjs';
 const F = 1 / 60, TOL = 1;   /* frames */
 const HEROES = ['knight', 'warden', 'pyro', 'geomancer', 'paladin', 'pirate', 'reaper'];
 /* recovery added after the art (s): light, third, up/sweep, heavy (the freebooter's heavy is his pistol: the whole shot is 0.45 s) */
-const REC = { pirate: [0.10, 0.14, 0.10, null], knight: [0.14, 0.20, 0.14, 0.25], warden: [0.14, 0.20, 0.14, 0.22], pyro: [0.14, 0.20, 0.14, 0.25],
-  geomancer: [0.16, 0.22, 0.16, 0.28], paladin: [0.17, 0.22, 0.17, 0.30], reaper: [0.17, 0.22, 0.17, 0.30] };
-const LIGHT_TOTAL = { pirate: 0.33, knight: 0.46, warden: 0.46, pyro: 0.46, geomancer: 0.48, paladin: 0.72, reaper: 1.05 };
+/* WEIGHT-T (coordinator 10-04): the brief's recoveries x0.6, its rolls x0.9, the bar's regen 75 after 0.3 s, a 0.26 s roll grace, the shield 6 + 0.4 x the blow (cap 25), exhausted 0.6 s to 20% - tuned against the human-speed bot (the lane report has both sets) */
+const REC = { pirate: [0.06, 0.084, 0.06, null], knight: [0.084, 0.12, 0.084, 0.15], warden: [0.084, 0.12, 0.084, 0.132], pyro: [0.084, 0.12, 0.084, 0.15],
+  geomancer: [0.096, 0.132, 0.096, 0.168], paladin: [0.102, 0.132, 0.102, 0.18], reaper: [0.102, 0.132, 0.102, 0.18] };
+const LIGHT_TOTAL = { pirate: 0.29, knight: 0.40, warden: 0.40, pyro: 0.40, geomancer: 0.42, paladin: 0.65, reaper: 0.98 };
 const PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3 };
-const ROLL_COST = { knight: 24, warden: 24, pyro: 24, geomancer: 24, pirate: 22, paladin: 28, reaper: 28 }, STEP_BACK = 15;
+const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25 }, STEP_BACK = 15, DELAY_F = 18;   /* the regen's delay, 0.3 s */
 const SKILL = { knight: 'whirlwind', warden: 'skewer', pyro: 'flameRing', geomancer: 'boulder', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'harvestMoon' };
 const MASH_MAX = { knight: 14, warden: 14, pyro: 14, geomancer: 13, paladin: 10, pirate: 20, reaper: 7 };   /* 6 s of attack pressed every frame */
 const ONLY = process.argv.find(a => a.startsWith('--only=')); const only = ONLY ? ONLY.slice(7).split(',') : null;
@@ -105,12 +106,12 @@ try {
   /* ---- 4. no regen while committed or rolling; the 4 s mash is stamina-negative ---- */
   for (const h of HEROES) { if (only && !only.includes(h)) continue;
     const r = await pg.evalp(`(()=>{__prep(${JSON.stringify(h)},0);const P=BK.P;P.st=60;BK.press('atk');BK.sim(1);const s0=P.st;let rose=-1,f,free=-1;
-      for(f=1;f<200;f++){BK.sim(1);if(free<0&&P.atk<0&&!(P.atkRec>0.0001))free=f;if(P.st>s0+1e-6){rose=f;break;}}
+      for(f=1;f<200;f++){BK.sim(1);if(free<0&&P.atk<0)free=f;if(P.st>s0+1e-6){rose=f;break;}}
       __prep(${JSON.stringify(h)},0);P.st=60;BK.press('dodge');BK.sim(1);const r0=P.st;let rr=-1;for(let i=1;i<120;i++){BK.sim(1);if(P.st>r0+1e-6){rr=i;break;}}const rollLen=BK.P.dodgeMax;
       __prep(${JSON.stringify(h)},0);const cost=BK.stepCost();for(let i=0;i<240;i++){if(P.atk<0)BK.press('atk');BK.sim(1);}
       return {free,rose,rr,rollLen,end:P.st,max:P.maxSt,cost}})()`);
-    check(r.rose >= r.free + 29 && r.rose <= r.free + 32, `${h}: the bar rose ${r.rose - r.free} f after the commit ended (want 0.5 s = 30 f)`);
-    check(r.rr >= Math.round(r.rollLen / F) + 29, `${h}: the bar rose ${r.rr} f into a ${r.rollLen} s roll (no regen while rolling, then 0.5 s)`);
+    check(r.rose >= r.free + DELAY_F - 1 && r.rose <= r.free + DELAY_F + 2, `${h}: the bar rose ${r.rose - r.free} f after the swing ended (want its 0.3 s delay = 18 f: no regen through the swing)`);
+    check(r.rr >= Math.round(r.rollLen / F) + DELAY_F - 1 || (h === 'warden' && r.rr >= 11), `${h}: the bar rose ${r.rr} f into a ${r.rollLen} s roll (no regen while rolling, then 0.3 s; her back-step 0.2 s)`);
     check(r.end <= r.max - r.cost + 1e-6, `${h}: a 4 s mash ended at ${r.end.toFixed(1)} of ${r.max} (more than a full bar less one swing of ${r.cost})`);
   }
 
@@ -118,7 +119,7 @@ try {
   for (const h of HEROES) { if (only && !only.includes(h)) continue;
     const r = await pg.evalp(`(()=>{const h=${JSON.stringify(h)};__prep(h,0);const P=BK.P;P.face=1;const s0=P.st;BK.press('dodge');BK.sim(1);const cost=Math.round(s0-P.st);
       BK.sim(5);P.inv=0;P.grace=0;const early=BKT.damagePlayer(P.x+10,5,{unblockable:true});
-      __prep(h,0);P.face=1;BK.press('dodge');BK.sim(1);for(let i=0;i<14;i++)BK.sim(1);P.inv=0;P.grace=0;const inRoll=P.dodge>0;const late=h==='warden'?null:BKT.damagePlayer(P.x+10,5,{unblockable:true});
+      __prep(h,0);P.face=1;BK.press('dodge');BK.sim(1);for(let i=0;i<16;i++)BK.sim(1);P.inv=0;P.grace=0;const inRoll=P.dodge>0;const late=h==='warden'?null:BKT.damagePlayer(P.x+10,5,{unblockable:true});
       let back=null;if(h==='warden'){__prep(h,0);P.face=1;const b0=P.st;BK.keys.left=false;BK.press('dodge');BK.sim(1);back=Math.round(b0-P.st);}
       return {cost,early,late,inRoll,back}})()`);
     check(r.early === false, `${h}: a blow 0.1 s into the roll was '${r.early}', not a miss`);
@@ -129,7 +130,7 @@ try {
 
   /* ---- 6. EXHAUSTED; the guard break ---- */
   { const r = await pg.evalp(`(()=>{__prep('knight',0);const P=BK.P,K=BK.keys;P.st=10;BK.press('atk');BK.sim(1);const lastWind=P.atk>=0,zero=P.st;
-      for(let i=0;i<40;i++)BK.sim(1);const flat=P.st;for(let i=0;i<25;i++)BK.sim(1);const after=P.st;
+      for(let i=0;i<33;i++)BK.sim(1);const flat=P.st;for(let i=0;i<25;i++)BK.sim(1);const after=P.st;
       Object.assign(P,{st:1});P.winded=true;P.exhaustT=0;K.block=true;BK.sim(2);const shield1=!!P.block;K.block=false;BK.sim(1);
       P.winded=true;P.st=25;P.dodgeCd=0;BK.press('dodge');BK.sim(1);const rollWinded=P.dodge>0;
       __prep('knight',0);P.st=12;P.face=1;K.block=true;BK.sim(20);const up=!!P.block;P.inv=0;const res=BKT.damagePlayer(P.x+14,40,{});BK.sim(1);
@@ -147,7 +148,7 @@ try {
   /* ---- 7. the shield's price ---- */
   { const r = await pg.evalp(`(()=>{const cost=(dmg,perfect)=>{__prep('knight',0);const P=BK.P,K=BK.keys;P.face=1;K.block=true;BK.sim(perfect?1:20);P.inv=0;const s0=P.st;BKT.damagePlayer(P.x+14,dmg,{});const c=s0-P.st;K.block=false;return Math.round(c);};
       return {poke:cost(6),slam:cost(30),huge:cost(90),perfect:cost(30,true)}})()`);
-    check(r.poke < r.slam && r.huge <= 35 && r.huge > r.slam, `the shield's price: poke ${r.poke}, slam ${r.slam}, huge ${r.huge} (cap 35)`);
+    check(r.poke < r.slam && r.huge <= 25 && r.huge > r.slam, `the shield's price: poke ${r.poke}, slam ${r.slam}, huge ${r.huge} (cap 25)`);
     check(r.perfect <= 0, `the perfect guard cost ${r.perfect}`);
     rows.push({ shield: r });
   }

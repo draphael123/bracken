@@ -7953,7 +7953,7 @@ function updatePlayer(dt) {
       if (back && tal('giveGround')) for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
         if (Math.abs(e.x - P.x) > SHAFT_AT || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > 24) continue;
         e.stagger = Math.max(e.stagger || 0, 0.6); dust(e.x, e.y, 3); }
-      if (isReaper()) { P.inv = Math.max(P.inv, CM.STAM.rollInv + 0.06);   /* WEIGHT: the roll's grace and his wake, not the whole roll */   /* THE WAKE: he is not there to be hit */
+      if (isReaper()) { P.inv = Math.max(P.inv, CM.STAM.rollInv);   /* WEIGHT: the roll's grace (0.26 s: the brief's 0.20 and his wake's 0.06), not the whole roll */   /* THE WAKE: he is not there to be hit */
         /* AND HE LEAVES HIMSELF BEHIND. A cold shape stands where he was; they keep swinging at it, and
            when it goes it goes off. He is the slowest hero in the game - he does not escape a blow, he
            gives it somebody else to land on. */
