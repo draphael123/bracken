@@ -467,7 +467,7 @@ try {
     BK.load(fi); BK.start(); BK.sim(5); BK.god = true; const el = BK.enemies().find(e => e.t === 'hobbyhorse' && e.elite), G = BK.L.green, dc = G.door, rowS = 27;
     const shut = () => [24, 25, 26, 27].every(y => BK.L.grid[y * BK.L.W + dc] === 12);
     const before = { elite: !!el, shut: shut(), hp: el && el.hp };
-    only([el]); el.hp = 1; BKT.hurtEnemy(el, 5, el.x - 10, false); BK.sim(60);
+    only([el]); el.hp = 1; BKT.hurtEnemy(el, 5, el.x - 10, false); for(let f=0;f<60;f++){if(BK.state==='card')BK.cardClose();BK.sim(1);}
     out.elite = { ...before, dead: !el.alive, open: !shut() };
     // 7. L2: every section draws without a throw (carousel, haystacks, lamps, the green, the crowd), the lamps are engine lights that follow their life, and a glowing mask draws its halo
     BK.load(fi); BK.start(); BK.sim(5); BK.god = true; out.drawn = 0; out.tracks = []; for (const c of [30, 130, 300, 400, 526, 580, 646]) { BK.tp(c, 27); BK.sim(20); BK.step(1); out.drawn++; out.tracks.push([c, (await import('/src/audio.js')).music.want, BK.bossActive]); }
