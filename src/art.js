@@ -1714,19 +1714,6 @@ export function bakeCombPlat(seed, end) {
   return outline(c, OUT);
 }
 
-// Relics: five small icons, 10x12.
-export function bakeRelics() {
-  const mk = f => { const [c, g] = canvas(10, 12); f(g); return outline(c, OUT); };
-  return {
-    crown: mk(g => { rect(g, 1, 5, 8, 6, '#e0b040'); for (const x of [1, 4, 7]) rect(g, x, 2, 2, 3, '#e0b040'); px(g, 2, 2, '#fff6c8'); px(g, 5, 2, '#c9463d'); px(g, 8, 2, '#fff6c8'); rect(g, 2, 8, 6, 1, '#b8842a'); }),
-    charm: mk(g => { rect(g, 4, 0, 2, 3, '#8a5a32'); ellipse(g, 5, 7, 4, 4, '#ffd34a', '#b8842a'); px(g, 4, 6, '#fff6c8'); rect(g, 4, 8, 2, 1, '#b8842a'); }),
-    gauntlet: mk(g => { rect(g, 2, 1, 6, 10, '#c9d1dc'); rect(g, 2, 1, 6, 1, '#7c8797'); rect(g, 3, 4, 1, 6, '#7c8797'); rect(g, 5, 4, 1, 6, '#7c8797'); rect(g, 0, 5, 3, 3, '#c9d1dc'); px(g, 3, 2, '#fff6e0'); }),
-    lantern: mk(g => { rect(g, 4, 0, 2, 2, '#5c3a1d'); rect(g, 2, 2, 6, 8, '#4aa0b0'); rect(g, 3, 3, 4, 6, '#bff0f0'); rect(g, 2, 10, 6, 1, '#5c3a1d'); px(g, 4, 5, '#ffffff'); }),
-    handglass: mk(g => { ellipse(g, 5, 4, 4, 4, '#dfe8ff', '#8a6a9a'); px(g, 4, 3, '#ffffff'); px(g, 6, 5, '#b8a8e8'); rect(g, 4, 8, 2, 4, '#8a5a32'); px(g, 4, 8, '#c9a0ff'); }),   /* THE FORTUNE-TELLER'S GLASS (the Harvest Fair's back lot, claude/fairfix2) */
-    cloak: mk(g => { fillPoly(g, [[5, 0], [0, 9], [10, 9]], '#6a3aa0'); fillPoly(g, [[5, 2], [2, 8], [8, 8]], '#40206a'); rect(g, 3, 9, 4, 2, '#6a3aa0'); px(g, 5, 1, '#ffd36b'); }),
-  };
-}
-
 // ---------- Kingswood props ----------
 // Alarm bell on a post. Frames: still, swinging left, swinging right; broken.
 export function bakeBell() {
@@ -1877,8 +1864,6 @@ export function bakeMill() {
 export function bakeSail() { const [c, g] = canvas(10, 46); rect(g, 4, 0, 2, 46, '#5c3a1d'); for (let y = 6; y < 44; y += 5) rect(g, 0, y, 9, 4, '#e8dcc0'); for (let y = 6; y < 44; y += 5) rect(g, 0, y, 9, 1, '#c9b27c'); rect(g, 0, 6, 1, 38, '#5c3a1d'); return c; }
 // The sheep-fold gate at the Ram Lord's arena: two stone posts with a hurdle. 24×22.
 export function bakeFoldGate() { const [c, g] = canvas(24, 22); rect(g, 0, 2, 4, 20, '#7c8797'); rect(g, 20, 2, 4, 20, '#7c8797'); rect(g, 0, 2, 4, 1, '#9aa3b0'); rect(g, 20, 2, 4, 1, '#9aa3b0'); for (let y = 6; y < 20; y += 4) rect(g, 4, y, 16, 2, '#8a5a32'); rect(g, 11, 4, 2, 16, '#5c3a1d'); return outline(c, OUT); }
-// A fleece for the relic set.
-export function bakeFleeceIcon() { const [c, g] = canvas(10, 12); ellipse(g, 5, 6, 4.5, 4, '#ffe6a0', '#c9a83a'); for (const [x, y] of [[2, 4], [5, 3], [8, 5], [4, 8], [7, 8]]) px(g, x, y, '#fff6c8'); px(g, 5, 6, '#e0b040'); return outline(c, OUT); }
 
 // ---------- scenery pass ----------
 // A fallen log with a broken end and moss, 30×10.
@@ -1982,8 +1967,6 @@ export function bakeDeadTree(seed) { const rnd = mulberry(seed); const [c, g] = 
 export function bakeCupIcon() { const [c, g] = canvas(10, 12); rect(g, 2, 1, 6, 5, '#e0b040'); rect(g, 2, 1, 6, 1, '#fff6c8'); rect(g, 3, 6, 4, 1, '#c9a83a'); rect(g, 4, 7, 2, 3, '#c9a83a'); rect(g, 2, 10, 6, 2, '#e0b040'); px(g, 3, 3, '#c9463d'); px(g, 6, 4, '#fff6c8'); return outline(c); }
 // A ground lens in a brass ring, off the glassworks benches. 12x12.
 export function bakeLensIcon() { const [c, g] = canvas(12, 12); ellipse(g, 6, 6, 5, 5, '#c9a83a'); ellipse(g, 6, 6, 3.6, 3.6, '#bfe6f5', '#7aa8c8'); px(g, 4, 4, '#ffffff'); px(g, 5, 4, '#ffffff'); px(g, 8, 8, '#eefaff'); return outline(c); }
-// Climbing spurs: two iron claws on leather straps. 10x12.
-export function bakeSpursIcon() { const [c, g] = canvas(10, 12); rect(g, 1, 1, 8, 2, '#8a5a32'); rect(g, 1, 6, 8, 2, '#8a5a32'); for (const y of [3, 8]) for (const x of [2, 5, 7]) { rect(g, x, y, 1, 2, '#c9d1dc'); px(g, x, y + 2, '#7c8797'); } px(g, 1, 1, '#c9b27c'); px(g, 8, 6, '#c9b27c'); return outline(c); }
 // The three keys of Stormhold. 9x11 each, hung on a ring.
 export function bakeKeyIcon(kind) {
   const C2 = { brass: ['#e0b040', '#c9962a', '#fff1a0'], iron: ['#c9d1dc', '#7c8797', '#eef4ff'], bone: ['#e8e0d0', '#b8a888', '#fff6e0'] }[kind] || ['#e0b040', '#c9962a', '#fff1a0'];
@@ -2107,9 +2090,6 @@ export function bakeAnvil() { const [c, g] = canvas(14, 12); rect(g, 2, 8, 10, 4
 // One of the hill folk, locked in a cellar. 10x12 - the quest icon for Stormhold.
 export function bakeFolkIcon() { const [c, g] = canvas(10, 12); rect(g, 3, 0, 4, 3, '#8a5a32'); rect(g, 2, 3, 6, 4, '#f1c9a0'); px(g, 3, 4, OUT); px(g, 6, 4, OUT);
   rect(g, 1, 7, 8, 4, '#6a5a8a'); rect(g, 2, 11, 2, 1, '#5c3a1d'); rect(g, 6, 11, 2, 1, '#5c3a1d'); return outline(c, OUT); }
-// Iron shoes: the planks do not give under you. 11x10.
-export function bakeShoesIcon() { const [c, g] = canvas(11, 10); for (const x of [0, 6]) { rect(g, x, 4, 5, 4, '#5a6270'); rect(g, x, 4, 5, 1, '#8a919c'); rect(g, x, 8, 5, 1, '#3a3e48'); rect(g, x + 1, 2, 3, 2, '#8a5a32'); }
-  return outline(c, OUT); }
 // THE CASTLE, on the mountain over Stormhold. It is drawn behind everything and it grows as you climb.
 export function bakeCastle(seed) { const rnd = mulberry(seed || 5); const [c, g] = canvas(150, 120);
   fillPoly(g, [[0, 120], [26, 52], [58, 74], [86, 30], [116, 66], [150, 120]], '#4e4e66', '#3c3c50'); // the mountain it stands on

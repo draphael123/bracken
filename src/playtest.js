@@ -36,12 +36,12 @@ const standT = t => solidT(t) || slopeT(t) || t === T.ONEWAY || t === T.PLANK ||
 // what each creature is worth as a threat - the same table tools/curve.mjs uses, so the two agree
 // props that hang on purpose: a banner is meant to be in the air
 // the furniture, the scenery and the machinery: none of it is a creature and none of it weighs anything
-const NOT_A_FOE = /^(coin|sign|deco|npc|guest|folk|torch|silver|stray|relic|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2|barricade|window|well|crystal|mirror|receiver|resonance|bulkhead|stal|chimpot|scaffold|cascade|boiler|carpet|chainpost|sheet|sail|balloon|deadfall|font|runearch|glyph|gplate|vatspit|rune|awningwinch|load)$/;
+const NOT_A_FOE = /^(coin|sign|deco|npc|guest|folk|torch|silver|stray|gate|mover|check|spawn|prop|shrine|key|door|plate|exit|bell|cage|capstan|seabell|lockgate|felltree|vent|doorway|cart|plank|cannon|crate|squire|fisher|bale|dummy|stormcloud|lamp|lever|hive|nest|rune|shard|brazier|well|seed|pad|raft|tide|wind|buoy|glow|glowbud|puffball|roller|lantern|wisp|throne|treehouse|sluice|sceptre|chandelier|barrel|spike|rock|weight|support|rod|crank|winch|flagpost|stormkite|hag|fox|squirrel|bird|acorn|tonic|shop|sign2|banner|anvil|forge|pump|bellows|gong|drum|pile|web|egg|urn|statue|pillar|grave|sack|keg|rope|hook|chain|ladder|bridge|post|sluicegate|wheel|mill|tank|pipe|valve|hearth|stove|table|chair|bed|chest|shelf|rack|crate2|barricade|window|well|crystal|mirror|receiver|resonance|bulkhead|stal|chimpot|scaffold|cascade|boiler|carpet|chainpost|sheet|sail|balloon|deadfall|font|runearch|glyph|gplate|vatspit|rune|awningwinch|load)$/;
 const HANGS = new Set(['banner', 'axle', 'timber', 'pillar', 'strut', 'sailRag', 'rigging', 'pennant', 'gunport',
   'hallWindow', 'hammock', 'washing', 'boardingNet', 'sternWindows', 'crowNest', 'mastTall', 'buoy',
   'lanternBuoy', 'airBell', 'hangCage', 'cobweb', 'bough', 'drip', 'hiveBg', 'eyrie', 'spire', 'rootDecor']);
 const GROUNDED = new Set(['sign', 'npc', 'shrine', 'check', 'brazier', 'well', 'door', 'folk', 'squire', 'stray',
-  'crate', 'plate', 'exit', 'relic', 'bell', 'cage', 'deco', 'capstan', 'seabell', 'gate']);
+  'crate', 'plate', 'exit', 'bell', 'cage', 'deco', 'capstan', 'seabell', 'gate']);
 // (a SILVER is a collectable and is meant to hang in the air, like a coin: it is not furniture)
 // things that are SET INTO a wall on purpose - a gunport is a hole in a hull, a window is a hole in a house
 const INROCK_OK = new Set(['gunport', 'sternWindows', 'hallWindow', 'grating', 'rigging', 'cobweb', 'banner',
@@ -517,7 +517,7 @@ export async function run(BK, opts = {}) {
     try {
       const { near, jumpNear, assisted, seen, footing } = floodReach(built, T);
       row.stats.reached = Math.round(seen.size / Math.max(1, footing.size) * 100) + '%';
-      const WANT = { gate: 'THE GATE', check: 'a checkpoint', silver: 'a silver', stray: 'a quest item', relic: 'the relic', key: 'a key' };
+      const WANT = { gate: 'THE GATE', check: 'a checkpoint', silver: 'a silver', stray: 'a quest item', key: 'a key' };
       for (const e of (built.ents || [])) { const w = WANT[e.t]; if (!w) continue;
         if (!near(e.x, e.y)) F(assisted ? 'ASSISTED' : 'UNREACHABLE', assisted ? SEV.note : SEV.bug, w + ' is outside the fill', e.x + ',' + e.y); }
       const lost = (built.ents || []).filter(e => e.t === 'coin' && !e.under && !jumpNear(e.x, e.y));   /* (`under`: laid under a lid the level opens - THE BURNING VILLAGE's root cellar, opened by a bucket - so no fill reaches it by design) */

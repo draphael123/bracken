@@ -37,7 +37,7 @@ const W=i=>LEVELS.findIndex(l=>l.id===i),toNext=h=>xpFloor(BKT.heroLevel(h)+1)-B
 fresh('knight',3);BK.load(W('wood'));BK.state='play';BK.god=false;BK.sim(300);BK.state='play';BK.sim(1);if(BK.state!=='play')fails.push('the wood did not stay in play: '+BK.state);BK.P.hp=10;BK.P.st=5;BK.gainXp(toNext('knight'));BK.sim(1);
 if(BKT.heroLevel('knight')!==4)fails.push('no level-up');if(BK.P.hp!==BK.P.maxHp||BK.P.st!==BK.P.maxSt)fails.push('level-up did not heal: '+BK.P.hp+'/'+BK.P.maxHp+' hp, '+BK.P.st+'/'+BK.P.maxSt+' stamina');
 if(!/FULLY HEALED/.test(BK.hint.msg))fails.push('the hint does not say so: '+BK.hint.msg);out.plainHint=BK.hint.msg;
-for(let f=0;f<170;f++)BK.step(1);if(BK.state!=='play')fails.push('left play after the level-up: '+BK.state);BK.step(0);shots.push({name:'level-up',png:BK.view.buf.toDataURL()});
+if(BK.state!=='card')fails.push('THE LEVEL CARD did not open with the heal: '+BK.state);else BK.cardClose();/* (LEVELING: the card comes with the heal) */for(let f=0;f<170;f++)BK.step(1);if(BK.state!=='play')fails.push('left play after the level-up: '+BK.state);BK.step(0);shots.push({name:'level-up',png:BK.view.buf.toDataURL()});
 /* ...and one inside a boss fight waits for the boss */
 fresh('knight',9);BK.load(W('hanging'));BK.state='play';BK.god=false;BK.sim(200);{const A=BK.L.arena;BK.tp(A.trigger/16+2,A.floor/16-1);}BK.sim(500);
 const owl=BK.boss;if(!BK.bossActive||!owl||!owl.alive)fails.push('the owl fight did not start');
@@ -51,10 +51,10 @@ const pay=(id,lv,n,xp)=>{fresh('pyro',lv);if(xp!==undefined)BKT.PROG.xp.pyro=xp;
 const low=pay('keep',1,40);if(low.paid!==120)fails.push('a level-1 pyro in the keep was paid '+low.paid+' for 40, not 120');if(!/CATCHING UP/.test(low.hint))fails.push('the keep did not say CATCHING UP: '+low.hint);out.catchHint=low.hint;
 window.__textRec=[];BK.step(0);const plate=window.__textRec.filter(t=>t.kind==='text'&&/^LV \\d+ x3$/.test(t.s));window.__textRec=null;if(!plate.length)fails.push('the plate does not say x3');
 const edge=pay('keep',17,40,xpFloor(18)-10);if(edge.paid!==50)fails.push('ten short of the curve he was paid '+edge.paid+', not 50');
-for(const [id,lv,why] of [['keep',18,'on the curve'],['keep',22,'above it'],['wood',1,'in the first wood'],['shop',1,'in the store']]){const q=pay(id,lv,40);if(q.paid!==(id==='shop'?40:40))fails.push(why+': paid '+q.paid+' for 40');if(/CATCHING UP/.test(q.hint))fails.push(why+': says CATCHING UP');}
-/* 5. WHAT A LEVEL-UP SAYS */
-fresh('knight',3);BK.load(W('wood'));BK.state='play';BK.god=true;for(let f=0;f<170;f++)BK.step(1);let said=0,longest='';
-const say=(h,from,to)=>{fresh(h,from);BK.P.inv=99;BK.gainXp(xpFloor(to)-xpFloor(from));BK.sim(1);const m=BK.hint.msg,got=PR.skillsFor(h).filter(n=>!n.active&&n.level>from&&n.level<=to);
+for(const [id,lv,why,want] of [['keep',18,'on the curve',40],['keep',21,'above it, inside the soft cap',40],['keep',22,'E+3: the soft cap halves it',20],['keep',25,'E+6: a fifth',8],['wood',1,'in the first wood',40],['shop',1,'in the store',40]]){const q=pay(id,lv,40);if(q.paid!==want)fails.push(why+': paid '+q.paid+' for 40');if(/CATCHING UP/.test(q.hint))fails.push(why+': says CATCHING UP');}
+/* 5. WHAT A LEVEL-UP SAYS (in the store room: it pays XP whole, with no soft cap or catch-up to bend the jump) */
+fresh('knight',3);BK.load(W('shop'));BK.state='play';BK.god=true;for(let f=0;f<170;f++)BK.step(1);let said=0,longest='';
+const say=(h,from,to)=>{fresh(h,from);BK.P.inv=99;BK.gainXp(xpFloor(to)-xpFloor(from));BK.sim(1);if(BK.state==='card')BK.cardClose();const m=BK.hint.msg,got=PR.skillsFor(h).filter(n=>!n.active&&n.level>from&&n.level<=to);
  if(!m.startsWith('LEVEL '+to))fails.push(h+' '+from+'->'+to+' says '+m);if(!/FULLY HEALED/.test(m))fails.push(h+' '+to+': no FULLY HEALED');if(/SLOT/i.test(m))fails.push(h+' '+to+' promises a slot: '+m);
  if(got.length&&!got.some(n=>m.includes(n.name)))fails.push(h+' '+to+' names none of '+got.map(n=>n.name).join(', ')+': '+m);if(got.length>1&&!m.includes('+'+(got.length-1)+' MORE'))fails.push(h+' '+to+' hides how many: '+m);if(!got.length&&/PASSIVE/.test(m))fails.push(h+' '+to+' claims a passive: '+m);
  window.__textRec=[];BK.step(0);const w=window.__textRec.find(r=>r.kind==='wrap'&&r.s===m);window.__textRec=null;if(!w)fails.push(h+' '+to+': the hint was not drawn');else if(w.lines.length>2)fails.push(h+' '+to+': '+w.lines.length+' lines: '+m);

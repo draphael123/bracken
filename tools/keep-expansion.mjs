@@ -4,7 +4,7 @@ import {breathCapacity,airBoxes} from '../src/deepair.js';
 import {KEEP_HALLS} from '../src/keep-expansion.js';
 const L=LEVELS.find(l=>l.id==='keep').build();
 assert.equal(L.W,760);assert.equal(L.keepSections.length,13);
-for(const r of [null,'diverlamp','tidecharm']){assert.equal(breathCapacity(L,r),3*breathCapacity({},r));assert.equal(breathCapacity(LEVELS.find(l=>l.id==='deep').build(),r),breathCapacity({},r));}
+assert.equal(breathCapacity(L),3*breathCapacity({}));assert.equal(breathCapacity(LEVELS.find(l=>l.id==='deep').build()),breathCapacity({}));   /* (no relic lengthens the breath: relics are cut) */
 assert(L.airRooms.length>=12);
 /* THE KEEPER OF THE VAULT IS GONE (Daniel, 2026-09-25: "we don't need one"): no mini, no vault flag, no module */
 assert(!L.mini,'the Keep has no mini any more');assert(!L.ents.some(e=>e.vaultKeeper||e.mini),'nothing in the Keep is a mini');
