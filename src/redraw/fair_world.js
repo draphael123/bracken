@@ -62,11 +62,14 @@ export function drawCarousel(g, cx, cy, VW, z, time, warn, riding) {
   const x0 = z.x0 * TS, x1 = (z.x1 + 1) * TS, top = z.row * TS, w = x1 - x0; if (x1 < cx - 16 || x0 > cx + VW + 16) return;
   const roofY = top - 7 * TS, mid = (x0 + x1) / 2, spin = warn ? 3.2 : 1;
   // the deck's painted skirt over the tile course: cream and red panels, gold rim, a bulb between each
-  const dx = Math.round(x0 - cx), dy = Math.round(top - cy);
+  const dx = Math.round(x0 - cx), dy = Math.round(top - cy), wl = z.well ? [Math.round(z.well[0] * TS - cx), (z.well[1] - z.well[0] + 1) * TS] : null;
+  g.save(); if (wl) { g.beginPath(); g.rect(dx - 2, dy - 2, w + 4, 40); g.rect(wl[0], dy - 2, wl[1], 40); g.clip('evenodd'); }   /* (claude/fairfix5) THE WELL: the skirt is not painted over the boards-up gap */
   g.fillStyle = '#4e321a'; g.fillRect(dx, dy, w, 3); g.fillStyle = '#a67a48'; g.fillRect(dx, dy, w, 1); g.fillStyle = S.gold; g.fillRect(dx, dy + 3, w, 1);
   for (let i = 0; i < Math.floor(w / 10); i++) { const px0 = dx + i * 10; g.fillStyle = i % 2 ? S.cream : S.red; g.fillRect(px0, dy + 4, 10, 24); g.fillStyle = i % 2 ? S.creamD : S.redD; g.fillRect(px0, dy + 4, 1, 24); g.fillRect(px0 + 3, dy + 12, 4, 8);
     g.fillStyle = S.gold; g.fillRect(px0 + 4, dy + 14, 2, 4); }
   g.fillStyle = '#4e321a'; g.fillRect(dx, dy + 28, w, 4);
+  g.restore();
+  if (wl) for (const [bx, lean] of [[wl[0] - 2, -1], [wl[0] + wl[1] - 4, 1]]) { for (let k = 0; k < 18; k++) { g.fillStyle = k % 6 < 3 ? S.red : S.cream; g.fillRect(bx + Math.round(lean * k * 0.35), dy - k, 6, 1); } g.fillStyle = S.gold; g.fillRect(bx + Math.round(lean * 6), dy - 18, 6, 1); }   /* its boards, stood up on their hinges */
   const back = [], front = [], n = Math.max(4, Math.floor(w / 26));
   for (let i = 0; i < n; i++) { const a = time * 0.9 * spin + i * Math.PI * 2 / n, hx = mid + Math.cos(a) * (w / 2 - 22), zf = Math.sin(a), bob = Math.sin(time * 2.6 * spin + i * 1.9) * 3;
     (zf > 0 ? front : back).push({ x: hx, z: zf, dir: -Math.sin(a) > 0 ? 1 : -1, bob, v: i }); }
@@ -79,7 +82,7 @@ export function drawCarousel(g, cx, cy, VW, z, time, warn, riding) {
   for (let i = 0; i < 4; i++) { g.fillStyle = i % 2 ? S.red : S.cream; g.fillRect(Math.round(mid) - 3 - cx, Math.round(roofY + 12 + i * 22 - cy), 6, 16); g.fillStyle = S.gold; g.fillRect(Math.round(mid) - 1 - cx, Math.round(roofY + 16 + i * 22 - cy), 2, 8); }
   paint(back, true);
   for (const px0 of poles) { g.fillStyle = S.brassD; g.fillRect(Math.round(px0 - cx), Math.round(roofY + 4 - cy), 3, top - roofY - 4); g.fillStyle = S.brass; g.fillRect(Math.round(px0 - cx), Math.round(roofY + 4 - cy), 1, top - roofY - 4); }
-  paint(front, false);
+  if (!z.gallop) paint(front, false);   /* (claude/fairfix5) a ride whose gallopers are platforms draws its front horses as movers (src/main.js galHorse), not here */
   // the canopy: red and cream stripes, a scalloped valance, pennants, a flag on top
   const stripes = Math.floor(w / 8);
   for (let i = 0; i < stripes; i++) { const sx = Math.round(x0 + i * 8 - cx); g.fillStyle = i % 2 ? S.cream : S.red; g.fillRect(sx, Math.round(roofY - 6 - cy), 8, 9); g.fillStyle = i % 2 ? S.creamD : S.redD; g.fillRect(sx, Math.round(roofY - 6 - cy), 1, 9);
@@ -203,3 +206,9 @@ export function drawDressing(g, cx, cy, VW, L, time, dusk) {
       case 'flags': { const h = it.h || 60; rr(g, x + 7, gy - h, 2, h, D.woodD); for (let i = 0; i < 4; i++) { const fy = gy - h + 4 + i * 9, fl = Math.sin(time * 5 + i + it.x) * 2; g.fillStyle = [D.red, D.gold, D.blue, D.green][(i + it.x) % 4]; g.beginPath(); g.moveTo(x + 9, fy); g.lineTo(x + 19 + fl, fy + 3); g.lineTo(x + 9, fy + 6); g.fill(); } break; }
     } }
 }
+/* (claude/fairfix5) A HAY BALE (the barns' push block): a squared bale, twine bands, straw sticking out of its ends */
+export function drawBale(g, x, y) {
+  g.fillStyle = S.hayD; g.fillRect(x, y, 16, 16); g.fillStyle = S.hay; g.fillRect(x + 1, y + 1, 14, 13); g.fillStyle = S.hayL; g.fillRect(x + 1, y + 1, 14, 2);
+  for (let i = 0; i < 7; i++) { g.fillStyle = i % 2 ? S.hayDD : S.hayL; g.fillRect(x + 2 + i * 2, y + 4 + (i % 3) * 3, 2, 1); }
+  g.fillStyle = S.twine; g.fillRect(x + 4, y, 1, 16); g.fillRect(x + 11, y, 1, 16); g.fillStyle = S.hayL; g.fillRect(x - 1, y + 5, 1, 2); g.fillRect(x + 16, y + 9, 1, 2);
+  g.fillStyle = 'rgba(20,16,12,0.55)'; g.fillRect(x, y + 15, 16, 1); }

@@ -289,7 +289,7 @@ if (fair) {
   // FEWER, BETTER FOES, EVERY ONE IN A DESIGNED ENCOUNTER (claude/fairfix): 18 mummers, 4 horses, 3 marionettes, 2 barkers - 27 - and every one a squad or an elite (no padding)
   /* (claude/fairfix2) the RANGED reskins join them - a coconut shy, four knife jugglers, two crows - and two horses at edges: 37, still every one a squad or an elite */
   { const fs2 = L.ents.filter(e => ['mummer', 'hobbyhorse', 'stringjack', 'barker', 'drunk', 'archer', 'crow'].includes(e.t));
-    ok(cnt('mummer') === 15 && L.ents.filter(strongman).length === 5 && cnt('hobbyhorse') === 6 && cnt('stringjack') === 3 && cnt('barker') === 2 && cnt('drunk') === 1 && cnt('archer') === 4 && cnt('crow') === 0, 'the fair foe count moved (claude/fairfix3: 20 mummers, claude/variety: 15 mummers + 5 STRONGMEN (the 6th figure below) - the boardwalk\'s cut, two riding the chair-o-plane - + 6 horses + 3 string-jacks + 2 barkers + 1 shy + 4 jugglers, and no crows): ' + [cnt('mummer'), L.ents.filter(strongman).length, cnt('hobbyhorse'), cnt('stringjack'), cnt('barker'), cnt('drunk'), cnt('archer'), cnt('crow')]);
+    ok(cnt('mummer') === 16 && L.ents.filter(strongman).length === 5 && cnt('hobbyhorse') === 6 && cnt('stringjack') === 3 && cnt('barker') === 2 && cnt('drunk') === 1 && cnt('archer') === 4 && cnt('crow') === 0, 'the fair foe count moved (claude/fairfix3: 20 mummers, claude/variety: 15 mummers + 5 STRONGMEN (the 6th figure below) - the boardwalk\'s cut, two riding the chair-o-plane - + 6 horses + 3 string-jacks + 2 barkers + 1 shy + 4 jugglers, and no crows): ' + [cnt('mummer'), L.ents.filter(strongman).length, cnt('hobbyhorse'), cnt('stringjack'), cnt('barker'), cnt('drunk'), cnt('archer'), cnt('crow')]);
     ok(fs2.every(e => e.squad || e.elite) && cnt('barker') === L.ents.filter(e => e.t === 'barker' && e.elite).length, 'a fair foe is not in a designed encounter (a squad or an elite), or a barker is not an elite'); }
   // HEIGHT BANDS: the reach fill (with the rides) stands in five bands of height - the cellars, the road, the roofs, the boardwalk, the tops - and nothing is a corridor
   { const seen = floodReach(L, TT, { rides: true }).seen, rows = new Set([...seen].map(k => +k.split(',')[1])), band = r => r >= 29 ? 0 : r >= 24 ? 1 : r >= 19 ? 2 : r >= 15 ? 3 : 4, bands = new Set([...rows].map(band));
@@ -413,14 +413,14 @@ console.log('harvest-fair pure + level: ok');
       const median = v => { const s = v.filter(q => q !== null).sort((a, b) => a - b); return s.length ? s[s.length >> 1] : 0; };
       const out = { booths: [], nests: [] };
       /* THE BOOTHS: a column's floor is the first standable row one or two under the targets' row; none there is a GAP (the lane over the yard) */
-      for (const Y of (L.galleries || []).filter(q => q.targets.length > 1)) { const xs = Y.targets.map(t => t.x), tr = Y.targets[0].row, px0 = Math.min(...xs) * TS - 20, px1 = Math.max(...xs) * TS + 36;
-        const cols = []; for (let c = Math.ceil((px0 + 3) / TS); (c + 1) * TS <= px1 - 3; c++) { let row = null; for (let y = tr + 1; y <= tr + 2; y++) if (at(c, y) !== 0 && at(c, y) !== 3) { row = y; break; } cols.push({ c, row }); }
+      for (const Y of (L.galleries || []).filter(q => q.targets.length > 1)) { const xs = Y.targets.map(t => t.x), tr = Math.min(...Y.targets.map(t => t.row)), trM = Math.max(...Y.targets.map(t => t.row)), px0 = Math.min(...xs) * TS - 20, px1 = Math.max(...xs) * TS + 36;
+        const cols = []; for (let c = Math.ceil((px0 + 3) / TS); (c + 1) * TS <= px1 - 3; c++) { let row = null; for (let y = tr + 1; y <= trM + 2; y++) if (at(c, y) !== 0 && at(c, y) !== 3) { row = y; break; } cols.push({ c, row }); }   /* (the lane: its targets hang at rows 12-14 over track at rows 13-15) */
         const res = { id: Y.id, cells: 0, drawn: 0, lit: 0, gaps: 0, gapsClear: 0, bad: [] }, done = new Set();
         for (let lx = Math.ceil(px0 / TS) + 4; lx < Math.floor(px1 / TS) + 4; lx += 8) {
-          const F = frame(lx, tr - 3, false), H = frame(lx, tr - 3, true), cx = F.c.cx, cy = F.c.cy;
+          const F = frame(lx, trM - 3, false), H = frame(lx, trM - 3, true), cx = F.c.cx, cy = F.c.cy;
           const back = median(Array.from({ length: Math.round((px1 - px0 - 8) / 2) }, (_, k) => lum(F.d, Math.round(px0 + 4 + k * 2 - cx), (tr + 1) * TS - 20 - cy)));
           for (const q of cols) { if (done.has(q.c)) continue; const sx = q.c * TS - cx; if (sx < 4 || sx + TS > VW - 4) continue; done.add(q.c);
-            if (q.row === null) { res.gaps++; const sy = (tr + 1) * TS - cy, ok = same(F.d, H.d, sx + 1, sy, TS - 2, 2 * TS); if (ok >= 0.9) res.gapsClear++; else res.bad.push('gap ' + q.c + ' ' + ok.toFixed(2)); continue; }
+            if (q.row === null) { res.gaps++; const sy = (trM + 1) * TS - cy, ok = same(F.d, H.d, sx + 1, sy, TS - 2, 2 * TS); if (ok >= 0.9) res.gapsClear++; else res.bad.push('gap ' + q.c + ' ' + ok.toFixed(2)); continue; }
             res.cells++; const sy = q.row * TS - cy, body = same(F.d, H.d, sx + 1, sy + 4, TS - 2, TS - 4);
             const lip = median(Array.from({ length: (TS - 2) * 2 }, (_, k) => lum(F.d, sx + 1 + (k % (TS - 2)), sy + (k >= TS - 2 ? 1 : 0))));
             if (body >= 0.9) res.drawn++; else res.bad.push('cover ' + q.c + ' ' + body.toFixed(2));
@@ -589,7 +589,7 @@ ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= 5, 'a frozen mummer took '
   // REAL PLATFORMING: the fallen big top's poles over a pit too wide to jump; the wheel the only way over its pit; collapsing stall roofs (and a bunting rope) over a spiked pit; spikes under chair one
   { const P0 = L.poles || []; ok(P0.length >= 2 && spikedPit(97, 97) && spikedPit(102, 102) && P0.every(([x, top]) => at(x, top) === 1 && at(x, top - 1) === 0), 'the fallen big top is not tent poles standing in a spiked pit: ' + JSON.stringify(P0));
     ok((() => { for (let x = 300; x <= 309; x++) if (at(x, R) !== 0 || at(x, R + 1) !== TT.SPIKE) return false; return true; })() && L.wheel && Math.abs(L.wheel.px / 16 - 304.5) < 1.5, 'there is no spiked pit under the big wheel (its cars the only way over)');
-    const CR = (L.crumbles || []).filter(c => c.x0 >= 236 && c.x1 <= 243); ok(spikedPit(236, 243) && CR.length >= 2 && CR.every(c => at(c.x0, c.row) === TT.ONEWAY), 'the collapsing stalls do not stand over an eight-wide spiked pit');
+    const CR = (L.crumbles || []).filter(c => c.x0 >= 236 && c.x1 <= 243); ok(spikedPit(236, 243) && CR.length >= 2 && CR.every(c => at(c.x0, c.row) === TT.ONEWAY || (c.kind === 'awning' && at(c.x0, c.row) === TT.BOUNCER)), 'the collapsing stalls (claude/fairfix5: TEARING AWNINGS now - springy, ripped on the bounce) do not stand over an eight-wide spiked pit');
     ok((L.zipLines || []).some(z => z.bunting && z.x0 < 237 * 16 && z.x1 > 244 * 16 && z.y1 > z.y0), 'no bunting rope runs down over the collapsing stalls\' pit');
     ok((() => { for (let x = 317; x <= 324; x++) if (at(x, 20) !== TT.SPIKE) return false; return true; })(), 'the hall roof under chair one is not spiked'); }
   // BULL'S-EYES OPEN THINGS: a lone target on a wheel car runs up planks; one in the corn drops a cage's bars (the bars stand at the start, a ticket behind them)
@@ -669,7 +669,7 @@ try {
     load(); { const gs = G().galleries; out.galN = [];
       for (const [i, probe] of [[2, [344, 25]], [3, [595, 11]]]) { const Gy = gs.find(g => g.id === i);   /* (by id: the bull's-eyes stand among them now, claude/fairfix2; gallery 3 hangs on the night lane and drops THE SHUTTER, claude/fairfix3) */ for (const t of Gy.targets) { BK.tp(t.x - 1, i === 3 ? t.row : 27); BK.P.face = 1; BK.sim(4); BK.press('atk'); BK.sim(10); } out.galN.push({ i, hits: Gy.targets.filter(t => t.hit).length, open: Gy.open, plank: grid(probe[0], probe[1]) }); } }
     // 2c. A HORSE ON A GONDOLA: it rides the wide car round the wheel, on the car, never on the ground
-    load(undefined, true); { const h = BK.enemies().find(q => q.t === 'hobbyhorse' && q.rideIdx !== undefined); let off = 0, low = 0; BK.tp(280, 27); for (let i = 0; i < 700; i++) { BK.P.x = 280 * 16; BK.P.y = 27 * 16 + 16; BK.P.vx = 0; BK.P.vy = 0; BK.sim(1); if (h.ride) { off = Math.max(off, Math.abs(h.x - (h.ride.x + h.rx))); if (h.y > 28 * 16 - 2) low++; } } out.rider = { has: !!h, ride: !!(h && h.ride), off, onGround: low, y0: h && h.ride && h.ride.y }; }
+    load(undefined, true); { const h = BK.enemies().find(q => q.t === 'hobbyhorse' && q.rideIdx !== undefined && !q.rideFair);   /* (the WHEEL's horse: claude/fairfix5's galloper rider has a rideFair) */ let off = 0, low = 0; BK.tp(280, 27); for (let i = 0; i < 700; i++) { BK.P.x = 280 * 16; BK.P.y = 27 * 16 + 16; BK.P.vx = 0; BK.P.vy = 0; BK.sim(1); if (h.ride) { off = Math.max(off, Math.abs(h.x - (h.ride.x + h.rx))); if (h.y > 28 * 16 - 2) low++; } } out.rider = { has: !!h, ride: !!(h && h.ride), off, onGround: low, y0: h && h.ride && h.ride.y }; }
     // 3. THE TICKETS AND THE PRIZE BOOTH: a touch takes one; eight buy the silver (it is out of the world until then); seven do not
     load(); { const g0 = G().tickets; BK.tp(84, 18); BK.sim(6); out.tk1 = { got: G().tickets - g0, taken: G().taken.size };
       /* TICKETS ARE KEYS (claude/fairfix2): the loft's gate stays shut one ticket short and swings open (its tiles go) at its price; the back lot's hatch opens on every ticket, and you fall into it */
@@ -743,9 +743,19 @@ try {
       let both = false; for (let i = 0; i < 160 && !both; i++) { A.x = b.x - 120; A.y = b.y; A.vx = 0; A.vy = 0; B.x = b.x + 120; B.y = b.y; B.vx = 0; B.vy = 0; if (i === 0) { A.face = -1; B.face = 1; } BK.sim(1); both = A.face === 1 && B.face === -1; }
       out.coopCall = both; BK.coopEnd(); }
     // 3. THE CAROUSEL CANNOT BE CROSSED UNTURNED: running across it, and hopping across it
-    for (const hop of [false, true]) { load(); const c = BK.L.carousels[0]; BK.tp(c.x0, c.row - 1); BK.P.face = 1; BK.sim(2); const t0 = BK.fair().turns;   /* from the disc's near edge, flat out */
+    /* (claude/fairfix5: the midway disc's boards are up over the gallopers' spiked well now - crossing it is a RIDE on a galloper, tested just below; the run and the hop are
+       tested on the exam's small carousel, a whole disc) */
+    for (const hop of [false, true]) { load(); const c = BK.L.carousels[1]; BK.tp(c.x0, c.row - 1); BK.P.face = 1; BK.sim(2); const t0 = BK.fair().turns;   /* from the disc's near edge, flat out */
       for (let i = 0; i < 600 && BK.P.x < (c.x1 + 3) * 16; i++) { K.right = true; K.jump = false; if (hop && BK.P.ground && BK.P.x > c.x0 * 16) { K.jump = true; BK.press('jump'); } BK.sim(1); }
       none(); out[hop ? 'hopTurns' : 'runTurns'] = BK.fair().turns - t0; }
+    /* (claude/fairfix5) THE GALLOPERS: board a horse at the well's near lip, ride it over the spikes, step off past the well - the ride turns you on the way */
+    load(); { BK.tp(278, 25); BK.sim(30); const t0 = BK.fair().turns; let boarded = false, over = false;
+      for (let i = 0; i < 60 * 40; i++) { const p = BK.P, hs = BK.movers().filter(m => m.kind === 'galhorse' && !m.broken);
+        if (!boarded) { const h = hs.find(m => Math.abs(m.x + m.w / 2 - p.x - 4) < 6); if (h && p.ground) { BK.press('jump'); K.jump = true; } }
+        else if (p.onMover && p.x > 286 * 16 + 8) { K.right = true; BK.press('jump'); }
+        if (!p.ground && p.vy < 0) K.jump = true; BK.sim(1); none(); if (BK.P.onMover && BK.P.onMover.kind === 'galhorse') boarded = true;
+        if (boarded && BK.P.ground && !BK.P.onMover && BK.P.x > 286 * 16) { over = true; break; } if (BK.P.y > 27 * 16 + 4) break; }
+      out.gallop = { boarded, over, turns: BK.fair().turns - t0 }; }
     // 4. THE SLIDE LANDS YOU WITH THE HORSE AT YOUR BACK: come down it, stand, and the stall's horse rears and charges
     load(e => e.t === 'hobbyhorse'); { const S = BK.L.slide, h = BK.enemies().find(e => e.t === 'hobbyhorse' && e.x >= S.stall.x0 * 16 && e.x <= (S.stall.x1 + 1) * 16); for (const e of BK.enemies()) if (e !== h) e.alive = false;
       BK.tp(S.x0 - 1, S.y0 - 1); BK.P.face = 1; BK.sim(5); const c0 = BK.fair().charges; let chargeBehind = null; for (let i = 0; i < 400 && !(BK.P.ground && BK.P.x > (S.x0 + S.n) * 16); i++) { K.right = true; K.down = true; BK.sim(1); if (chargeBehind === null && h.mode === 'charge') chargeBehind = h.x < BK.P.x; } none();
@@ -784,6 +794,7 @@ ok(R4.call.tellSeen && R4.call.turnedAt !== null && R4.call.lock > 0.3 && R4.cal
 ok(R4.cutShort.inTell && R4.cutShort.calls === 0, 'a blow in the barker\'s wind-up did not cut the call short: ' + JSON.stringify(R4.cutShort));
 ok(R4.coopCall, 'co-op: the barker\'s call did not turn both heroes');
 ok(R4.runTurns >= 1 && R4.hopTurns >= 1, 'the carousel can be crossed without being turned (run ' + R4.runTurns + ', hop ' + R4.hopTurns + ')');
+ok(R4.gallop.boarded && R4.gallop.over && R4.gallop.turns >= 1, 'a galloper does not carry a hero over the spiked well of the midway disc (turning him on the way): ' + JSON.stringify(R4.gallop));
 ok(R4.land.face === 1 && R4.land.horseBehind && R4.land.charged >= 1 && R4.land.chargeBehind === true, 'the slide does not land you with the stall\'s horse at your back (it should rear and charge): ' + JSON.stringify(R4.land));
 ok(R4.trainKills.dead, 'the effigy\'s fire did not kill a hero who stood still in its lane: ' + JSON.stringify(R4.trainKills));
 ok(R4.runOver.mummers >= 2 && R4.runOver.runOver >= 1, 'the effigy\'s fire did not take a mummer left behind in its lane: ' + JSON.stringify(R4.runOver));

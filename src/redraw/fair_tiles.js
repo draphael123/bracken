@@ -123,6 +123,15 @@ function beam(l, r, v) {
     rect(g, 0, 0, 16, 1, FT.hay); for (let i = 0; i < 6; i++) { const x = (rr() * 15) | 0; rect(g, x, 0, 2, 2, FT.hay); p2(g, x, 2, FT.hayD); }
     if (l) { rect(g, 0, 1, 1, 6, FT.barn0); rect(g, 1, 7, 2, 3, FT.barn1); } if (r) { rect(g, 15, 1, 1, 6, FT.barn0); rect(g, 13, 7, 2, 3, FT.barn1); } return c; });
 }
+/* (claude/fairfix5) A SPRINGY AWNING (the awning bounce): the striped canvas sagging on its frame, a bulb lip - and a TEARING one frayed, its canvas split and patched */
+function springAwning(l, r, v, k, tear) {
+  return once('sa' + l + r + v + k + tear, () => { const [c, g] = canvas(16, 16), [a, b] = AW[k % AW.length];
+    for (let x = 0; x < 16; x += 4) { const sag = (x === 4 || x === 8) ? 1 : 0; rect(g, x, 2 + sag, 4, 5, ((x >> 2) + v) & 1 ? b : a); }
+    rect(g, 0, 0, 16, 2, FT.brassD); rect(g, 0, 0, 16, 1, FT.brass); for (let x = 1; x < 16; x += 4) p2(g, x, 0, FT.bulb);
+    for (let x = 0; x < 16; x += 4) { const col = ((x >> 2) + v) & 1 ? b : a; rect(g, x, 8, 4, 2, col); rect(g, x + 1, 10, 2, 1, col); }
+    if (tear) { for (const [x, y] of [[5, 3], [6, 4], [6, 5], [11, 2], [11, 3], [12, 4]]) p2(g, x, y, '#1a0c08'); rect(g, 2, 6, 3, 1, FT.creamD); rect(g, 9, 9, 4, 1, 'rgba(0,0,0,0.4)'); }   /* split and fraying */
+    if (l) rect(g, 0, 1, 1, 9, FT.duckD); if (r) rect(g, 15, 1, 1, 9, FT.duckD); return c; });
+}
 /* ---------------- THE SPIKES: harrow tines and upturned pitchforks in straw ---------------- */
 function harrow(v) {
   return once('hr' + v, () => { const [c, g] = canvas(16, 16), rr = mulberry(v * 19 + 4);
@@ -173,6 +182,7 @@ export function fairTile(t, x, y, at, T, L) {
     return boardwalk(l, r, v);
   }
   if (t === T.SPIKE) return harrow((x * 5 + y) % 3);
+  if (t === T.BOUNCER) { const a = (L.awnings || []).find(q => x >= q.x0 && x <= q.x1 && y === q.row); if (a) return springAwning(x === a.x0, x === a.x1, (x - a.x0) & 1, (a.x0 * 3 + y) % AW.length, a.tear); }
   return null;
 }
 /* THE LIP COLOUR of a standable top here (for fair_rides.js drawLips: what the footing's edge is lit with over the height night) */
@@ -180,6 +190,8 @@ export function lipAt(L, x, y, t, at, T) { const K = L.fairKit; if (!K) return n
   if (t === T.SOLID) return z === 'iron' ? FT.brass : z === 'barn' ? FT.hay : z === 'mud' ? FT.mud3 : FT.strawL;
   const k = ledgeKind(K, x, y, t, at, T, K.R || 28); return k === 'track' ? FT.tineL : k === 'wagon' ? FT.cream : k === 'beam' ? FT.hay : FT.brass; }
 /* THE SLOPES' SKIN here (src/main.js cvTile cuts a slope out of a top and a fill): the zone's own ground, so a ramp in the midway is sawdust and earth, in the yard iron */
-export function slopeSkins(L, x) { const K = L.fairKit; if (!K) return null; const z = zoneAt(K, x); if (!z || z === 'green') return null;
+const EMPTY = () => once('empty', () => canvas(16, 16)[0]);
+export function slopeSkins(L, x, y) { const K = L.fairKit; if (!K) return null; const z = zoneAt(K, x); if (!z || z === 'green') return null;
+  if ((K.ledges || []).some(([a, b, y0, y1, k]) => k === 'track' && x >= a && x <= b && y >= y0 - 1 && y <= y1)) return { top: [0, 1, 2].map(v => track(false, false, v)), fill: [EMPTY(), EMPTY(), EMPTY()] };   /* the railway's humps: track, nothing under */
   const top = [0, 1, 2].map(v => z === 'iron' ? ironTop(v, false, false) : z === 'barn' ? barnTop(v, false, false) : z === 'field' ? stubbleTop(v, false, false) : z === 'mud' ? mudTop(v, false, false, false) : turfTop(v, false, false, false));
   const fill = [0, 1, 2].map(v => z === 'iron' ? iron(v, 0) : z === 'barn' ? barn(v, 0) : z === 'mud' ? mud(v, 0) : earth(v, 0)); return { top, fill }; }

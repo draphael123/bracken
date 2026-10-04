@@ -311,6 +311,7 @@ const musicUnlocked = name => !!(PROG.heardMusic && PROG.heardMusic[name]);
 
 // ---------- tuning ----------
 const RUN = 92, GRAV = 1000, JUMPV = -320, POGO = -330;
+const AWNING_LAUNCH = 0.82;   /* (claude/fairfix5) THE HARVEST FAIR's springy awnings throw you 0.82 of a rick's launch: -328 / -394 held / -459 plunged (54 / 78 / 105 px) */
 /* EARTHSHAKER's 'from a height', 2026-09-24: it was prevVy > 250, and the fall is capped at 270 - so every full jump on flat ground
    (it lands at ~270) was a free, costless quake that staggered the boss, and the lab's Hurricane went 57s -> 33s on it alone.
    A flat jump peaks JUMPV^2/2G = 51 px up; this asks for 72 (four and a half tiles): off a ledge, or down from one. */
@@ -8189,9 +8190,11 @@ function updatePlayer(dt) {
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
   if (!P.ground) P.fallV = Math.max(P.fallV || 0, P.vy);
   if (P.ground && !wasGround && P.groundTile === T.BOUNCER) { // springy cap
-    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400; P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, FAIR ? ['#dcb44e', '#f4d878', '#a8802c'] : ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
+    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400;
+    { const atx = Math.floor(P.x / TS), aty = Math.floor((P.y + 2) / TS), aw = FAIR && L.awnings ? L.awnings.find(a => atx >= a.x0 && atx <= a.x1 && aty === a.row) : null;   /* (claude/fairfix5) A FAIR AWNING: springy canvas, a lower launch than a rick; a TEARING one rips */
+      if (aw) { P.vy *= AWNING_LAUNCH; P.awningAt = aw; SFX.puff(); if (aw.tear) { const c = (L.crumbles || []).find(q => q.kind === 'awning' && q.x0 === aw.x0 && q.row === aw.row); if (c && c.st === 'whole') { c.st = 'count'; c.t = c.count; c.shown = 1; } } } } P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, FAIR ? ['#dcb44e', '#f4d878', '#a8802c'] : ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
     const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (FAIR && L.haystacks) { const hz = L.haystacks.find(z => tx >= z[0] && tx <= z[1]); if (hz) { FAIR.sq[hz[0]] = 1; SFX.hayRustle(); } }
-    if (L.grid[i] === T.BOUNCER) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
+    if (L.grid[i] === T.BOUNCER && !(FAIR && L.awnings && L.awnings.some(a => tx >= a.x0 && tx <= a.x1 && ty === a.row))) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
   }
   if (P.ground && !P.onMover && L.scree && !P.dead) for (const z of L.scree) if (Math.abs(P.y - z.y * TS) < 2 && P.x >= z.x0 * TS && P.x < (z.x1 + 1) * TS) { const sp = P.block ? 24 : 70; P.x += z.dir * sp * dt; P.screeT = (P.screeT || 0) - dt; if (P.screeT <= 0) { P.screeT = 0.12; dust(P.x - z.dir * 4, P.y, 1); if (Math.random() < 0.5) SFX.step(); } }
   if (P.ground && P.groundTile === T.SHELF) { // shelf fungus snaps under a standing weight
@@ -16722,15 +16725,16 @@ function updateCrumbles(dt){
  for(const v of crumbleStep(L,bodies,dt,(x,y,how)=>cellSet(x,y,how==='fall'?T.AIR:grid0[y*LW+x]))){const c=v.c,mx=(c.x0+c.x1+1)*TS/2,my=c.row*TS;
   if(v.t==='start'){SFX.crack();shakeCam(1.5);lastTellT=time;dust(mx,my+TS*c.rows,6);}
   else if(v.t==='tick'){SFX.crack();shakeCam(v.n===1?3:2);dust(mx,my+TS*c.rows,v.n===1?12:7);if(v.n===1&&SFX.rumble)SFX.rumble();}
+  else if(v.t==='fall'&&c.kind==='awning'){re=true;SFX.puff();for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+4,4,['#b8382c','#ece0c4','#7a2418'],70,.8,300,2);}   /* (claude/fairfix5) a TEARING awning rips: canvas scraps, not stone */
   else if(v.t==='fall'){re=true;SFX.stone();shakeCam(5);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,3,['#8a8e9c','#5c6070','#b8b4a8'],60,.9,420,2);}
   else if(v.t==='back'){re=true;SFX.clank&&SFX.clank();dust(mx,my,8);}}
  if(re)resolveTiles();
- for(const c of L.crumbles){if(c.gone||c.st==='down')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
+ for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;if(Math.random()<dt*(c.st==='count'?16:1.1))parts.push({x:(c.x0+Math.random()*(c.x1-c.x0+1))*TS,y:(c.row+c.rows)*TS,vx:(Math.random()-.5)*6,vy:12,life:.9,max:.9,col:Math.random()<.5?'#a8a498':'#7c7a74',size:1,grav:150});}
 }
 /* ...and its drawing: cracks on every tile of a section that holds, brighter and wider as it counts, and the count itself over it */
 function drawCrumbles(cx,cy){
  if(!L.crumbles||!L.crumbles.length)return;
- for(const c of L.crumbles){if(c.gone||c.st==='down')continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;
+ for(const c of L.crumbles){if(c.gone||c.st==='down'||c.kind==='awning')continue;const sx=c.x0*TS-cx,sy=c.row*TS-cy,w=(c.x1-c.x0+1)*TS;if(sx>VW||sx+w<0||sy>VH+16||sy<-40)continue;   /* (a tearing awning draws its own fray: src/redraw/fair_tiles.js) */
   const counting=c.st==='count',k=counting?Math.min(1,1-c.t/c.count):0,jig=counting&&c.t<1?Math.round(Math.sin(time*50)):0;
   g.strokeStyle=counting?(c.t<1?'#ff6b6b':'#ffb070'):'rgba(20,16,26,0.85)';g.lineWidth=1;g.beginPath();
   for(let x=c.x0;x<=c.x1;x++)for(let y=c.row;y<c.row+c.rows;y++)for(const [a,b,e,f] of crackMarks(x,y)){g.moveTo(x*TS-cx+a+.5+jig,y*TS-cy+b+.5);g.lineTo(x*TS-cx+e+.5+jig,y*TS-cy+f+.5);}
@@ -18608,7 +18612,8 @@ function fairReset() {
   if (L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); else crumbleInit(L); }   /* the collapsing stalls stand again */   /* THE GAMES (src/fair-games.js): tickets, the strikers, the gallery, the prize booth. Level-local: a load starts them over */
   { const B = FAIR.games.booth; if (B) { const sv = silvers.find(s => Math.abs((s.fairX ?? s.x) - (B.silver.x * TS + 8)) < 8); if (sv && !sv.got) { if (sv.fairX === undefined) sv.fairX = sv.x; B.sv = sv; B.svx = sv.fairX; sv.x = -99999; } else if (sv) B.bought = true; } }   /* (fairX remembers where it belongs: a level is reset more than once) */   /* the booth's silver is out of the world until it is bought */
   L.dark = 0; L.gateOpen = false;   /* THE WICKER QUEEN: a retry finds the green at dusk again, and its gate shut until she is down (claude/fair3) */
-  L.ring = L.green && L.green.carousel && L.arena ? WC.newRing(L.arena) : null;   /* and her carousel standing still until she wakes (claude/fairboss) */
+  L.ring = L.green && L.green.carousel && L.arena ? WC.newRing(L.arena) : null;
+  L.galRing = L.gallop ? WC.newRing(L.gallop) : null; if (L.galRing) WC.ringFor(L.galRing, true, 1);   /* (claude/fairfix5) THE GALLOPERS: the midway carousel's horses, at a walk from the start */   /* and her carousel standing still until she wakes (claude/fairboss) */
   if (window.BK) Object.assign(window.BK, { fair: () => FAIR, fairTime: () => time, slopeArt: () => { let n = 0, drawn = 0; for (let i = 0; i < L.grid.length; i++) if (isSlope(L.grid[i])) { n++; if (tileSpr && tileSpr[i]) drawn++; } return { cells: n, drawn }; }, fairRing: () => L && L.ring ? { on: L.ring.on, speed: L.ring.speed, phase: L.ring.phase, quicken: L.ring.quickT, rate: WC.organRate(L.ring) } : null });   /* (tools/harvest-fair.mjs: every slope cell has its picture; fairRing: the hook the boss track reads - the ride's speed and phase) */
 }
 /* may it walk on? ground ahead of its feet (a slope counts), no spike, no wall at its body: a haystack or a pit ends a charge */
@@ -18628,7 +18633,7 @@ function updateMummer(e, dt) {
   if (e.rideIdx !== undefined) {   /* A HORSE ON A GONDOLA (THE BIG WHEEL's wide car): it goes where the car goes, even out of sight, and its run is the car's length */
     if (!e.ride) { e.ride = movers.find(q => q.fair === (e.rideFair || 'gondola') && q.idx === e.rideIdx); if (e.ride) e.rx = e.ride.w * (e.rideFair ? 0.5 : 0.75); }
     if (e.ride) { e.x = e.ride.x + e.rx; e.y = e.ride.y; e.vy = 0; if (e.st) { e.st.x = e.x; e.st.y = e.y; } }
-    e.behind = !!(e.ride && e.rideFair === 'chairo' && e.ride.broken);   /* (claude/fairfix3) round the back of the chair-o-plane's mast: out of reach, and it neither moves nor strikes (src/redraw/fair_newrides.js draws it there) */
+    e.behind = !!(e.ride && (e.rideFair === 'chairo' || e.rideFair === 'galhorse') && e.ride.broken);   /* (claude/fairfix5: and a hobby-horse on a GALLOPER round the back of the ride - out of sight and reach until it comes round) */   /* (claude/fairfix3) round the back of the chair-o-plane's mast: out of reach, and it neither moves nor strikes (src/redraw/fair_newrides.js draws it there) */
     if (e.behind) { e.mode = e.st ? e.st.mode : e.mode; return; } }
   if (Math.abs(e.x - P.x) > 420) return;   /* the game's own rule: nothing past the screen acts */
   const s = e.st, horse = e.t === 'hobbyhorse'; if (!s) return;
@@ -18707,6 +18712,7 @@ function updateBarker(e, dt) {
 function updateFair(dt) {
   for (const pp of players) if (pp.faceLock > 0) pp.faceLock = Math.max(0, pp.faceLock - dt);
   if (FAIR) for (const lp of FAIR.lamps) if (lp.life > 0 && lp.life < 1) { const was = lp.lit; lp.b = FAW.lampBright(lp, time); lp.lit = lp.b > 0.3; if (lp.lit !== was && Math.abs(lp.x * TS - P.x) < 240 && SET.ambient && Math.random() < 0.35) SFX.lampGutter(); }
+  if (FAIR) { FAIR.wheelHold = Math.max(0, (FAIR.wheelHold || 0) - dt); { const w0 = movers.find(m => m.fair === 'gondola'); if (w0 && w0.ft !== undefined) FAIR.wheelT = w0.ft; } }   /* (claude/fairfix5) the big wheel's own clock (it stops when its bull's-eye is struck) */
   if (FAIR) { FAIR.tkShow = Math.max(0, (FAIR.tkShow || 0) - dt); for (const k in FAIR.sq) FAIR.sq[k] = Math.max(0, FAIR.sq[k] - dt * 5); }   /* (claude/fairfix4: the synth music box that wound down over the fair's track is gone - the fair plays only its file, "Dark Carnival") */
   if (FAIR && L.green && state === 'play' && Math.abs(P.x - L.green.bonfire * TS) < 260 && Math.random() < dt * 30) flame(L.green.bonfire * TS + 8, L.green.floor * TS - 8, 2, 4, 40, 3);   /* the bonfire */
   if (FAIR && state === 'play') { if (L.crumbles && L.crumbles.length) updateCrumbles(dt);   /* (claude/fairfix2) the collapsing stalls (src/tower-collapse.js) */
@@ -18730,7 +18736,7 @@ function updateFairGames(dt) {
     launch: (h, vy) => asPlayer(h.p, () => { P.vy = vy; P.ground = false; P.onMover = null; P.coyote = 0; P.plunge = false; P.plungeRec = 0; P.canCut = false; P.jbuf = 0; dust(P.x, P.y, 6); }),
     say: t => callout(t), tickets: () => { FAIR.tkShow = 4; callout('TICKETS ' + G.tickets + '/' + G.total + ': THEY OPEN THE GATES'); },   /* (claude/fairfix3) the plate opens out for 4 s: every area's count */
     sound: k => (({ bell: SFX.tollBell, tink: SFX.tink, coin: SFX.coin, open: SFX.gateOpen })[k] || (() => {}))(),
-    open: (planks, bars) => { for (const [x0, x1, row] of planks) for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; grid0[i] = T.ONEWAY; } }
+    open: (planks, bars, Gy) => { if (Gy && Gy.id === 4) { FAIR.wheelHold = 4; callout('THE WHEEL STOPS: FOUR SECONDS'); SFX.clank && SFX.clank(); }   /* (claude/fairfix5) THE TWIST: the car's bull's-eye stops THE BIG WHEEL for four seconds, its cars hanging still as steps */ for (const [x0, x1, row] of planks) for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; tileSpr[i] = null; grid0[i] = T.ONEWAY; } }
       for (const [x0, x1, y0, y1] of bars || []) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; grid0[i] = T.AIR; burst(x * TS + 8, y * TS + 8, 3, ['#c9d1dc', '#8a919c'], 50, 0.5, 300, 1); }   /* a CAGE's bars drop (claude/fairfix2) */
       resolveTiles(); shakeCam(2); },
     buy: B => { if (B.sv) B.sv.x = B.svx; burst(B.x * TS + 8, (B.row + 1) * TS - 24, 12, ['#dfe8ff', '#ffffff', '#ffd36b'], 70, 0.6); SFX.heart(); },
@@ -18774,6 +18780,14 @@ function wqLight(q) {
    still on it at the corner is set down on the boards) */
 function carHorse(m, dt) {
   const R = L.ring; if (!R) { m.dx = 0; m.dy = 0; return; }
+  if (m.i === 0) WC.ringStep(R, dt);
+  const h = WC.horseAt(R, m.i), ox = m.x, oy = m.y; m.x = h.x - m.w / 2; m.y = h.y;
+  const was = !m.broken; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;
+  if (m.broken && was) for (const pp of players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; pp.vy = Math.min(pp.vy || 0, -60); }
+}
+/* (claude/fairfix5) THE GALLOPERS on the midway carousel: carHorse's twin on L.galRing (the Queen's ring, at a walk) */
+function galHorse(m, dt) {
+  const R = L.galRing; if (!R) { m.dx = 0; m.dy = 0; return; }
   if (m.i === 0) WC.ringStep(R, dt);
   const h = WC.horseAt(R, m.i), ox = m.x, oy = m.y; m.x = h.x - m.w / 2; m.y = h.y;
   const was = !m.broken; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;
@@ -19025,7 +19039,7 @@ function cvBackdrop() { BG.sky = DZ.bakeDesertSky(VH); BG.far = DZ.bakeFarMesas(
 function cvTile(x, y, t) {
   if (!L.caravan) {   /* A SLOPE IN THE LEVEL'S OWN GROUND (src/redraw/ground-slopes.js): its own top and fill, so a village ramp is cobble and earth, not sand */
     if (!isSlope(t)) return false;
-    const fk = L.fairKit ? FTL.slopeSkins(L, x) : null;   /* (claude/fairfix5) the fair's slopes wear its own ground */
+    const fk = L.fairKit ? FTL.slopeSkins(L, x, y) : null;   /* (claude/fairfix5) the fair's slopes wear its own ground */
     const gs = ({ village: VILL, shore: SHORE, reef: REEF, city: CITY })[L.palette && L.palette.set] || null, h3 = ((x * 7 + y * 13) % 3 + 3) % 3, top = fk ? fk.top : gs ? gs.top['00'] : TILE.top['00'], fill = fk ? fk.fill : gs ? gs.fill : TILE.dirt;
     tileSpr[y * LW + x] = slopeTile(t, top[h3 % top.length], fill[h3 % fill.length]); return true; }
   const A = cvArt(), i = y * LW + x, h = ((x * 7 + y * 13) % 3 + 3) % 3;
@@ -24418,10 +24432,13 @@ function updateMovers(dt) {
   const pbs = movers.filter(q => q.kind === 'pushblock');   /* only a level with a block touches PB_CTX (tools that slice updateMovers alone, like rafts, never define it) */
   if (pbs.length) { PB_CTX.players = players; PB_CTX.blocks = pbs; }
   for (const m of movers) {
-    if (m.kind === 'carhorse') { carHorse(m, dt); continue; }   /* THE WICKER QUEEN'S CAROUSEL: its horses (claude/fairboss) */
+    if (m.kind === 'carhorse') { carHorse(m, dt); continue; }
+    if (m.kind === 'galhorse') { galHorse(m, dt); continue; }   /* (claude/fairfix5) THE GALLOPERS */   /* THE WICKER QUEEN'S CAROUSEL: its horses (claude/fairboss) */
     if (m.kind === 'chairo') { const ox = m.x, oy = m.y, h = FRS.chairAt(m.ring, m.idx, time), was = !m.broken; m.x = h.x - m.w / 2; m.y = h.y; m.depth = h.depth; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;   /* THE CHAIR-O-PLANE (claude/fairfix3, src/fair-rides.js): round the back of the mast a chair bears no one */
       if (m.broken && was) for (const pp of players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; pp.vy = Math.max(pp.vy || 0, 30); } continue; }
     if (m.kind === 'pushblock') { updatePushBlock(m, dt, PB_CTX); continue; }
+    if (m.kind === 'slat') { const ox = m.x, oy = m.y, h = FRS.slatAt(m.el, m.idx, time), was = !m.broken; m.x = h.x - m.w / 2; m.y = h.y; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;   /* (claude/fairfix5) THE HAY ELEVATOR's slats: up the belt, then back under it */
+      if (m.broken && was) for (const pp of players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; pp.vy = Math.max(pp.vy || 0, 30); } continue; }
     if (m.kind === 'cart' || m.kind === 'orelift') continue;
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
     if ((m.kind === 'hexvine' || m.kind === 'haycart') && updateFieldsMover(m, dt)) continue;   /* THE HEXED FIELDS */
@@ -24446,7 +24463,7 @@ function updateMovers(dt) {
       const on = P.onMover === m, mate = m.cw ? movers.find(q => q !== m && q.cw === m.cw) : null, mateOn = !!(mate && P.onMover === mate); const target = on ? m.y1 : mateOn ? m.yUp : m.y0; const dir = Math.sign(target - m.y);   /* A COUNTERWEIGHT: stood in, a basket sinks; its mate's weight lifts it; empty, both settle level at half the pace */
       if (dir) { m.y += dir * m.speed * (m.cw && !on && !mateOn ? 0.5 : 1) * dt; if ((dir > 0 && m.y > target) || (dir < 0 && m.y < target)) m.y = target; }
       m.dy = m.y - oldY; if (on && Math.random() < dt * 4) SFX.stone();
-    } else if (m.kind === 'wheel') { if (m.mill) { const w = windAt(m.px, m.py); if (w) m.lastW = w; m.ang = (m.ang || 0) + dt * 2 * Math.PI / m.period * (w ? w * 1.6 : 0.3 * (m.lastW || 1)); } const a = m.mill ? (m.ang || 0) + m.phase : time * 2 * Math.PI / m.period + m.phase; m.x = m.px + Math.cos(a) * m.r - m.w / 2; m.y = m.py + Math.sin(a) * m.r; m.dy = m.y - oldY;
+    } else if (m.kind === 'wheel') { if (m.mill) { const w = windAt(m.px, m.py); if (w) m.lastW = w; m.ang = (m.ang || 0) + dt * 2 * Math.PI / m.period * (w ? w * 1.6 : 0.3 * (m.lastW || 1)); } const a = m.mill ? (m.ang || 0) + m.phase : (m.fair === 'gondola' ? (m.ft = (m.ft ?? time) + (FAIR && FAIR.wheelHold > 0 ? 0 : dt)) : time) * 2 * Math.PI / m.period + m.phase; m.x = m.px + Math.cos(a) * m.r - m.w / 2; m.y = m.py + Math.sin(a) * m.r; m.dy = m.y - oldY;
     } else if (m.kind === 'punt') { // goes where you push it while you stand on it; the frogs come aboard while it moves
       const aboard = P.onMover === m; let dir = 0; if (aboard && !P.dead) dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
       m.moving = aboard && dir !== 0;
@@ -26172,11 +26189,13 @@ function drawWorld(cx, cy, showPlayer) {
   if (PUPH && PUPH.on()) PUPH.drawBack(cx, cy, time);   /* THE PUPPETEER's fly rail and his painted flats, behind the bodies (claude/puppeteer2) */
   for (const m of movers) {
     if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
+    if (m.kind === 'galhorse') { if (!m.broken && L.galRing && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.galRing, m.i); continue; }   /* (claude/fairfix5) the gallopers, on their poles */
     if (m.weed || m.weedTeach) continue;   /* (the weed is drawn on the water, over the swimmers: GTH.drawOver) */
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
     if (m.fair && FR.drawMover(g, m, cx, cy, time)) continue;   /* THE HARVEST FAIR: a gondola on the wheel, a chair on the swing ride */
     if (L.burialLook && drawBurialMover(g, m, cx, cy, time)) continue;   /* THE BURIAL CAVERNS: stone slabs on chains, stone coffins, floating biers - no timber (burial-looks.js) */
+    if (m.kind === 'pushblock' && FAIR) { FAW.drawBale(g, Math.round(m.x) - cx, Math.round(m.y) - cy); continue; }   /* (claude/fairfix5) the fair's push block is a hay bale */
     if (m.kind === 'pushblock') { const bx = Math.round(m.x) - cx, by = Math.round(m.y) - cy;   /* a block of the level's own ground tile (backlog #12): it is baked fresh per palette (bakeAll), so it always matches the set it stands in, with a mortar line round it so it still reads as a loose object and not the floor */
       g.drawImage(TILE.dirt[0], bx, by); g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, m.w - 1, m.h - 1); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(bx + 1.5, by + 1.5, m.w - 3, m.h - 3); continue; }
     if (m.kind === 'pad' && m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2;

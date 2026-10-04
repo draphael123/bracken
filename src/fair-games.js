@@ -97,6 +97,6 @@ export function step(G, L, heroes, fx, dt) {
   G.upWas = heroes.some(h => h.up && !h.dead); G.heavyWas = G.heavyWas || {}; for (const h of heroes) G.heavyWas[h.n || 0] = !!h.heavy;
   /* THE GALLERY's clock: the window opens on the first hit; all hit inside it and the planks run up; miss the window and the targets reset */
   for (const Gy of G.galleries) if (!Gy.open && Gy.t > 0) { Gy.t += dt;
-    if (Gy.targets.every(t => t.hit)) { Gy.open = true; Gy.opened = 1; fx.open(Gy.planks, Gy.bars); fx.say(Gy.say || (Gy.bars.length && !Gy.planks.length ? TEXT.bars : TEXT.planks)); fx.sound('open'); }
+    if (Gy.targets.every(t => t.hit)) { Gy.open = true; Gy.opened = 1; fx.open(Gy.planks, Gy.bars, Gy); fx.say(Gy.say || (Gy.bars.length && !Gy.planks.length ? TEXT.bars : TEXT.planks)); fx.sound('open'); }
     else if (Gy.t > Gy.window) { Gy.t = 0; for (const t of Gy.targets) t.hit = false; fx.say(TEXT.reset); } }
 }
