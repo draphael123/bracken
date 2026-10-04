@@ -1,19 +1,19 @@
 /* tools/commitment.mjs - WEIGHT (Daniel 2026-10-02): COMMITMENT + STAMINA, the one Salt & Sanctuary pillar, held in the running game.
    Played through the real input on a flat floor (no foes), every hero at level 20 with one bought skill on F:
-   1. COMMIT. Each verb (light, third cut, up-slash, low sweep, held heavy, a plunge that lands on nothing) is pressed, then ROLL, JUMP,
+   1. COMMIT (WEIGHT-T numbers, coordinator 10-04 - see REC). Each verb (light, third cut, up-slash, low sweep, held heavy, a plunge that lands on nothing) is pressed, then ROLL, JUMP,
       ATTACK, the F SKILL and C are each pressed EVERY FRAME (C: held where it is held, tapped where it is tapped). None acts before the
       CANCEL WINDOW (commit end - 0.06 s) and each acts by the window's first frame, +-1 f. The recovery after the art is asserted
-      against the brief's table +-1 f, and the light swing's whole commit against its press-to-free total.
+      against the table (REC) +-1 f, and the light swing's whole commit against its press-to-free total.
    2. A roll pressed ONCE at swing frame 2 comes out on the window's first frame (it used to be dropped: the buffer is 0.12 s).
    3. The air plunge does not cut an air swing before its active frames are out.
-   4. NO REGEN while committed or rolling: the bar is flat from the spend until the commit's end + 0.5 s; over a 4 s mash no hero ends
+   4. NO REGEN while swinging or rolling: the bar is flat through the swing and for its 0.3 s delay after; over a 4 s mash no hero ends
       above a full bar less one swing (the death knight's mash was stamina-POSITIVE).
-   5. The roll's grace is its first 0.20 s: a blow then misses, a blow in its tail lands. The per-hero roll costs.
-   6. EXHAUSTED: at 0 no regen for 1.0 s, no roll and no guard until 30% - the knight's shield will not rise at 1 stamina while winded.
+   5. The roll's grace is its first 0.26 s: a blow then misses, a blow in its tail lands. The per-hero roll costs.
+   6. EXHAUSTED: at 0 no regen for 0.6 s, no roll and no guard until 20% - the knight's shield will not rise at 1 stamina while winded.
       A blocked blow he cannot pay for is a GUARD BREAK: staggered 0.9 s, the shield down 1.2 s, the bar exhausted.
-   7. The shield's price scales with the blow (a 6 poke costs less than a 30 slam, capped at 35); the perfect guard is still free.
+   7. The shield's price scales with the blow (a 6 poke costs less than a 30 slam, capped at 25); the perfect guard is still free.
    8. MASH BUDGET: attack pressed every frame for 6 s gives at most MASH_MAX[hero] swings (knight 13 in 4 s before).
-   The numbers below are the BRIEF's (scratch/brief-weight.md section 1), written out here on purpose - not read from src/commit.js -
+   The numbers below are the DECISION's (the brief's section 1, retuned as WEIGHT-T: see REC), written out here on purpose - not read from src/commit.js -
    so the check measures the game against the decision, not against itself. */
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
@@ -28,7 +28,7 @@ const LIGHT_TOTAL = { pirate: 0.29, knight: 0.40, warden: 0.40, pyro: 0.40, geom
 const PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3 };
 const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25 }, STEP_BACK = 15, DELAY_F = 18;   /* the regen's delay, 0.3 s */
 const SKILL = { knight: 'whirlwind', warden: 'skewer', pyro: 'flameRing', geomancer: 'boulder', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'harvestMoon' };
-const MASH_MAX = { knight: 14, warden: 14, pyro: 14, geomancer: 13, paladin: 10, pirate: 20, reaper: 7 };   /* 6 s of attack pressed every frame */
+const MASH_MAX = { knight: 12, warden: 12, pyro: 12, geomancer: 12, paladin: 9, pirate: 15, reaper: 7 };   /* 6 s of attack pressed every frame: the built numbers + 1 (measured 11/11/11/11/8/14/6; the knight did 13 in FOUR seconds before) */
 const ONLY = process.argv.find(a => a.startsWith('--only=')); const only = ONLY ? ONLY.slice(7).split(',') : null;
 
 const pg = await openPage({ audio: false, fonts: false });
@@ -80,7 +80,7 @@ try {
       const ri = verb === 'light' ? 0 : verb === 'third' ? 1 : verb === 'up' || verb === 'sweep' ? 2 : 3;
       const rec = verb === 'plunge' ? WHIFF[h] + PLUNGE_ADD : verb === 'heavy' && h === 'pirate' ? PISTOL : REC[h][ri];
       const art = verb === 'heavy' && h === 'pirate' ? 0 : r.artEnd;
-      const winF = Math.ceil((art * F + rec - WINDOW) / F - 1e-6);   /* the window's first frame, counted from the verb's start */
+      const winF = Math.max(art + 1, Math.ceil((art * F + rec - WINDOW) / F - 1e-6));   /* the window's first frame, counted from the verb's start */
       rows.push({ h, verb, it, acted: r.acted, art, winF });
       check(r.acted >= 0, `${h} ${verb} -> ${it}: never acted`);
       check(r.acted >= winF - TOL, `${h} ${verb} -> ${it}: acted at f${r.acted}, before the window (f${winF})`);
@@ -92,7 +92,7 @@ try {
   /* ---- 2. ONE roll press at swing frame 2 comes out on the window's first frame ---- */
   for (const h of HEROES) { if (only && !only.includes(h)) continue;
     const r = await pg.evalp(`(()=>{__prep(${JSON.stringify(h)},0);const P=BK.P;BK.press('atk');BK.sim(2);BK.press('dodge');let art=-1,f;for(f=3;f<160;f++){BK.sim(1);if(art<0&&P.atk<0)art=f-1;if(P.dodge>0)break;}return {f,art}})()`);
-    const winF = Math.ceil((r.art * F + REC[h][0] - WINDOW) / F - 1e-6);
+    const winF = Math.max(r.art + 1, Math.ceil((r.art * F + REC[h][0] - WINDOW) / F - 1e-6));
     check(Math.abs(r.f - winF) <= TOL, `${h}: a roll pressed once at swing f2 came out at f${r.f}, not on the window's first frame f${winF}`);
   }
 
@@ -132,7 +132,7 @@ try {
   { const r = await pg.evalp(`(()=>{__prep('knight',0);const P=BK.P,K=BK.keys;P.st=10;BK.press('atk');BK.sim(1);const lastWind=P.atk>=0,zero=P.st;
       for(let i=0;i<33;i++)BK.sim(1);const flat=P.st;for(let i=0;i<25;i++)BK.sim(1);const after=P.st;
       Object.assign(P,{st:1});P.winded=true;P.exhaustT=0;K.block=true;BK.sim(2);const shield1=!!P.block;K.block=false;BK.sim(1);
-      P.winded=true;P.st=25;P.dodgeCd=0;BK.press('dodge');BK.sim(1);const rollWinded=P.dodge>0;
+      P.winded=true;P.maxSt=200;P.st=30;P.dodgeCd=0;BK.press('dodge');BK.sim(1);const rollWinded=P.dodge>0;
       __prep('knight',0);P.st=12;P.face=1;K.block=true;BK.sim(20);const up=!!P.block;P.inv=0;const res=BKT.damagePlayer(P.x+14,40,{});BK.sim(1);
       const brk={res,hurt:+P.hurt.toFixed(2),tired:+P.guardTired.toFixed(2),winded:!!P.winded,st:P.st};BK.sim(45);const upSoon=!!P.block;K.block=false;
       return {lastWind,zero,flat,after,shield1,rollWinded,up,brk,upSoon}})()`);
