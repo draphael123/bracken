@@ -349,7 +349,7 @@ if (fair) {
     ok(sc.some(e => e.y <= 17) && sc.some(e => e.y === 22), 'the disguised mummers are not one in the middle tier and one in the dark tier'); }
   // THE NIGHT THAT COMES WITH HEIGHT: the light goes out with rows; a guttering lantern by the tower stair's mummer is the way to see it
   { const N = L.fairNight; ok(N && N.full < N.start && N.start <= 26 && N.full <= 14 && N.dim >= 60 && N.dim <= 120, 'the night does not come with height: ' + JSON.stringify(N));
-    const lp = L.lamps; ok(lp.filter(l => l.y < 17).every(l => l.life <= 0.5) && lp.some(l => l.y < 17 && l.life === 0.5) && lp.some(l => l.y < 17 && l.life === 0), 'up in the rides the lamps do not gutter and go out with height');
+    const lp = L.lamps.filter(l => !l.hung); ok(lp.filter(l => l.y < 17).every(l => l.life <= 0.5) && lp.some(l => l.y < 17 && l.life === 0.5) && lp.some(l => l.y < 17 && l.life === 0), 'up in the rides the lamps do not gutter and go out with height');
     const st = L.ents.find(e => e.t === 'mummer' && e.x >= 354 && e.x <= 358 && e.y <= 20); ok(!!st && lp.some(l => l.life === 0.5 && Math.abs(l.x - st.x) <= 3 && l.y <= 19), 'the tower stair\'s mummer has no guttering lantern by it');
     ok(FGM.sightFor(L, [], { x: 100 * TS3, y: 27 * TS3 }) === null && FGM.sightFor(L, [], { x: 358 * TS3, y: 18 * TS3 }) !== null && FGM.sightFor(L, [{ x: 357, y: 18, life: 1, lit: true }], { x: 358 * TS3, y: 18 * TS3 }) === null, 'the night sight does not follow height and the lit lantern');
     ok(FGM.sightFor(L, [], { x: (L.hall.x0 + 3) * TS3, y: 27 * TS3 }) !== null, 'the hall of mirrors is not dark'); }
@@ -392,6 +392,58 @@ if (fair) {
 
 if (bad.length) { console.error('HARVEST-FAIR (pure + level): ' + bad.length + ' failure(s)\n  ' + bad.join('\n  ')); process.exit(1); }
 console.log('harvest-fair pure + level: ok');
+
+// ---- IN THE PAGE: THE TENT FLOORS ARE IN THE PICTURE (claude/fairfix5; Daniel twice: "the bull's-eye TENTS you go under still have no visible floors") ----
+/* The grid checks below (`nest === 2`, `at(x, row) !== 0`) and tools/footing-art.mjs read only the TILE layer, so a booth's back board painted OVER the
+   floor passed them all. This samples the COMPOSED frame (BK.buf, after the night): for every shooting-gallery booth with three targets and every prize nest,
+   BK.look at it and, along the floor's top line inside it,
+     - a LIT LIP is there: its luminance beats the booth's back (the median across the booth, a little above the targets) by a margin;
+     - every ONEWAY / SOLID cell of the floor is DRAWN: its body matches the same frame drawn with the galleries hidden (nothing paints over it);
+     - a GAP column (the night lane's missing planks over the spike yard) shows what is under it, not a board.
+   Proved red on master 1dd5b181 (G1, G2 and G3 failed) before the fix. `node tools/harvest-fair.mjs --floors` runs only this. */
+{ const pgF = await openPage({ audio: false, fonts: false });
+  let RF;
+  try {
+    RF = await pgF.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; const fi = LEVELS.findIndex(l => l.id === 'fair');
+      BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(fi); BK.state = 'play'; BK.god = true; BK.sim(5); for (const e of BK.enemies()) if (!e.gate) e.alive = false; BK.sim(150);   /* (straight into play - no level card over the frame - and past the opening iris; the door guard lives, or its death's banner lies over the top of the frame) */
+      const L = BK.L, G = BK.fair().games, TS = 16, VW = BK.view.VW, VH = BK.view.VH, at = (x, y) => L.grid[y * L.W + x];
+      const frame = (tx, ty, hide) => { const sv = G.galleries; if (hide) G.galleries = []; const c = BK.look(tx, ty); const d = BK.buf.getContext('2d').getImageData(0, 0, VW, VH).data; G.galleries = sv; return { c, d }; };
+      const lum = (d, x, y) => { if (x < 0 || y < 0 || x >= VW || y >= VH) return null; const i = (y * VW + x) * 4; return 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; };
+      const same = (a, b, x0, y0, w, h) => { let n = 0, m = 0; for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { if (x < 0 || y < 0 || x >= VW || y >= VH) continue; const i = (y * VW + x) * 4; n++; if (Math.abs(a[i] - b[i]) <= 8 && Math.abs(a[i + 1] - b[i + 1]) <= 8 && Math.abs(a[i + 2] - b[i + 2]) <= 8) m++; } return n ? m / n : 1; };
+      const median = v => { const s = v.filter(q => q !== null).sort((a, b) => a - b); return s.length ? s[s.length >> 1] : 0; };
+      const out = { booths: [], nests: [] };
+      /* THE BOOTHS: a column's floor is the first standable row one or two under the targets' row; none there is a GAP (the lane over the yard) */
+      for (const Y of (L.galleries || []).filter(q => q.targets.length > 1)) { const xs = Y.targets.map(t => t.x), tr = Y.targets[0].row, px0 = Math.min(...xs) * TS - 20, px1 = Math.max(...xs) * TS + 36;
+        const cols = []; for (let c = Math.ceil((px0 + 3) / TS); (c + 1) * TS <= px1 - 3; c++) { let row = null; for (let y = tr + 1; y <= tr + 2; y++) if (at(c, y) !== 0 && at(c, y) !== 3) { row = y; break; } cols.push({ c, row }); }
+        const res = { id: Y.id, cells: 0, drawn: 0, lit: 0, gaps: 0, gapsClear: 0, bad: [] }, done = new Set();
+        for (let lx = Math.ceil(px0 / TS) + 4; lx < Math.floor(px1 / TS) + 4; lx += 8) {
+          const F = frame(lx, tr - 3, false), H = frame(lx, tr - 3, true), cx = F.c.cx, cy = F.c.cy;
+          const back = median(Array.from({ length: Math.round((px1 - px0 - 8) / 2) }, (_, k) => lum(F.d, Math.round(px0 + 4 + k * 2 - cx), (tr + 1) * TS - 20 - cy)));
+          for (const q of cols) { if (done.has(q.c)) continue; const sx = q.c * TS - cx; if (sx < 4 || sx + TS > VW - 4) continue; done.add(q.c);
+            if (q.row === null) { res.gaps++; const sy = (tr + 1) * TS - cy, ok = same(F.d, H.d, sx + 1, sy, TS - 2, 2 * TS); if (ok >= 0.9) res.gapsClear++; else res.bad.push('gap ' + q.c + ' ' + ok.toFixed(2)); continue; }
+            res.cells++; const sy = q.row * TS - cy, body = same(F.d, H.d, sx + 1, sy + 4, TS - 2, TS - 4);
+            const lip = median(Array.from({ length: (TS - 2) * 2 }, (_, k) => lum(F.d, sx + 1 + (k % (TS - 2)), sy + (k >= TS - 2 ? 1 : 0))));
+            if (body >= 0.9) res.drawn++; else res.bad.push('cover ' + q.c + ' ' + body.toFixed(2));
+            if (lip >= back + 30) res.lit++; else res.bad.push('lip ' + q.c + ' ' + Math.round(lip) + '/' + Math.round(back)); } }
+        res.cols = cols.length; res.seen = done.size; out.booths.push(res); }
+      /* THE NESTS: looked at from the plank you jump to them from (their way in), the floor's lip must be lit in the night, and a lantern there must be a real lamp */
+      for (const Y of (L.galleries || []).filter(q => q.nest && q.nest.row < 20)) { const N = Y.nest, pl = Y.planks[Y.planks.length - 1] || [N.x1 + 2, N.x1 + 3, N.row + 3];
+        const F = frame(pl[0], pl[2] - 1, false), cx = F.c.cx, cy = F.c.cy, sy = N.row * TS - cy;
+        const back = median(Array.from({ length: (N.x1 - N.x0 + 1) * 8 }, (_, k) => lum(F.d, N.x0 * TS + k * 2 - cx, sy - 20)));
+        const res = { id: Y.id, cells: 0, lit: 0, bad: [] };
+        for (let c = N.x0; c <= N.x1; c++) { const sx = c * TS - cx; if (sx < 0 || sx + TS > VW) continue; res.cells++;
+          const lip = median(Array.from({ length: (TS - 2) * 2 }, (_, k) => lum(F.d, sx + 1 + (k % (TS - 2)), sy + (k >= TS - 2 ? 1 : 0))));
+          if (lip >= back + 30) res.lit++; else res.bad.push('lip ' + c + ' ' + Math.round(lip) + '/' + Math.round(back)); }
+        res.lamp = BK.fair().lamps.some(l => l.x >= N.x0 - 1 && l.x <= N.x1 + 1 && l.y < N.row && l.y >= N.row - 3 && l.life >= 1);
+        out.nests.push(res); }
+      return out; })()`, 300000);
+  } finally { pgF.close(); }
+  console.log('tent floors: ' + JSON.stringify(RF));
+  ok(RF.booths.length === 3, 'not three gallery booths: ' + RF.booths.length);
+  for (const b of RF.booths) ok(b.seen === b.cols && b.cells >= 4 && b.drawn === b.cells && b.lit === b.cells && b.gaps === b.gapsClear, 'THE GALLERY BOOTH G' + b.id + ' hides or does not light its floor (' + b.drawn + '/' + b.cells + ' drawn, ' + b.lit + ' lit, ' + b.gapsClear + '/' + b.gaps + ' gaps clear, ' + b.seen + '/' + b.cols + ' seen): ' + b.bad.slice(0, 6).join('; '));
+  ok(RF.nests.length === 2, 'not two prize nests (the crow\'s nest, the wheel shelf): ' + RF.nests.length);
+  for (const n of RF.nests) ok(n.cells >= 3 && n.lit === n.cells && n.lamp, 'THE NEST of gallery ' + n.id + ' does not read in the night (' + n.lit + '/' + n.cells + ' lit, lamp ' + n.lamp + '): ' + n.bad.slice(0, 6).join('; '));
+  if (process.argv.includes('--floors')) { if (bad.length) { console.error('HARVEST-FAIR (floors): ' + bad.length + ' failure(s)\n  ' + bad.join('\n  ')); process.exit(1); } console.log('harvest-fair floors ok'); process.exit(0); } }
 
 // ---- IN THE PAGE ----
 const pg = await openPage({ audio: false, fonts: false });

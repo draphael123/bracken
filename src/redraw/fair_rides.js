@@ -130,14 +130,22 @@ function drawStriker(g, cx, cy, VW, s) {
   if (s.ring > 0) { const k = 1 - s.ring, ry = y - 4 - k * (top - y + 8) * -1; g.fillStyle = K.red; g.beginPath(); g.arc(x, Math.max(top - 2, y - 6 + (top - y) * k), 4, 0, 6.3); g.fill(); g.globalAlpha = s.ring; ln(g, x - 12, top - 4, x - 18, top - 8, K.gold); ln(g, x + 12, top - 4, x + 18, top - 8, K.gold); g.globalAlpha = 1; }
   r(g, x - 15, y - 6, 30, 6, K.woodD); r(g, x - 15, y - 6, 30, 1, K.woodL); r(g, x - 13, y - 9, 26, 3, K.red); r(g, x - 13, y - 9, 26, 1, K.gold);   // the pad: a drum on a plinth
 }
-function drawGalleries(g, cx, cy, VW, L, G, time) { for (const Y of (G && G.galleries) || []) if (Y.targets.length > 1) drawGallery(g, cx, cy, VW, Y, time); }   /* (a lone BULL'S-EYE - on a ride or a post - is src/redraw/fair_keys.js's: claude/fairfix2) */
-function drawGallery(g, cx, cy, VW, Y, time) {
+function drawGalleries(g, cx, cy, VW, L, G, time) { for (const Y of (G && G.galleries) || []) if (Y.targets.length > 1) drawGallery(g, cx, cy, VW, Y, time, boothFloor(L, Y)); }
+/* THE BOOTH'S FLOOR (claude/fairfix5; Daniel twice: "the bull's-eye TENTS you go under still have no visible floors"): the back board ran to ty + 32, over the whole floor row, and
+   it is drawn after the tiles. Now it stops at the floor's top line, and a booth whose floor has GAPS (the night lane over the spike yard) gets no board at all: awning and
+   posts only, so the gaps and the yard read. Each column's floor is the first standable row one or two under the targets; the lit lip is drawn after the night (drawLips) */
+export function boothFloor(L, Y) { const xs = Y.targets.map(t => t.x), tr = Y.targets[0].row, px0 = Math.min(...xs) * TS - 20, px1 = Math.max(...xs) * TS + 36, cols = [];
+  for (let c = Math.ceil((px0 + 3) / TS); (c + 1) * TS <= px1 - 3; c++) { let row = null; for (let y = tr + 1; y <= tr + 2; y++) { const t = L.grid[y * L.W + c]; if (t !== 0 && t !== 3) { row = y; break; } } cols.push({ c, row }); }
+  return { cols, top: (tr + 1) * TS, open: cols.some(q => q.row === null) }; }   /* (a lone BULL'S-EYE - on a ride or a post - is src/redraw/fair_keys.js's: claude/fairfix2) */
+function drawGallery(g, cx, cy, VW, Y, time, FL) {
   const xs = Y.targets.map(t => t.x * TS), x0 = Math.min(...xs) - 20 - cx, x1 = Math.max(...xs) + 36 - cx; if (x1 < -20 || x0 > VW + 20) return;
   const ty = Y.targets[0].row * TS - cy, top = ty - 34;
   r(g, x0, top - 4, x1 - x0, 6, K.red); for (let i = 0; i < (x1 - x0) / 8; i++) if (i % 2) r(g, x0 + i * 8, top - 4, 8, 6, K.cream);   // the awning
   for (let i = 0; i < (x1 - x0) / 8; i += 1) { g.fillStyle = i % 2 ? K.cream : K.red; g.beginPath(); g.arc(x0 + i * 8 + 4, top + 2, 4, 0, Math.PI); g.fill(); }
-  r(g, x0, top + 8, 3, ty + 26 - top, K.woodD); r(g, x1 - 3, top + 8, 3, ty + 26 - top, K.woodD); r(g, x0 + 3, top + 6, x1 - x0 - 6, ty + 26 - top, '#2a1a22');   // the posts and the back board
-  for (let i = 0; i < 5; i++) r(g, x0 + 6 + i * ((x1 - x0 - 12) / 5), top + 12, 1, 18, 'rgba(255,200,120,0.15)');
+  const fy = FL ? FL.top - cy : ty + 16, postB = FL && FL.open ? ty + 34 : fy;   /* (claude/fairfix5) the posts stand ON the floor; over the open lane they run down past it */
+  r(g, x0, top + 8, 3, postB - top - 8, K.woodD); r(g, x1 - 3, top + 8, 3, postB - top - 8, K.woodD);   // the posts
+  if (!(FL && FL.open)) { r(g, x0 + 3, top + 6, x1 - x0 - 6, fy - top - 6, '#2a1a22');   // the back board: to the floor's top line, never over it
+    for (let i = 0; i < 5; i++) r(g, x0 + 6 + i * ((x1 - x0 - 12) / 5), top + 12, 1, 18, 'rgba(255,200,120,0.15)'); }
   for (const t of Y.targets) { const x = Math.round(t.x * TS + 8 - cx), y = Math.round(t.row * TS + 8 - cy), hit = t.hit;
     r(g, x - 1, y - 20, 2, 12, K.woodD);                                                                           // its hanger
     g.fillStyle = hit ? '#5a5060' : K.cream; g.beginPath(); g.arc(x, y, 7, 0, 6.3); g.fill(); g.fillStyle = hit ? '#3a3040' : K.red; g.beginPath(); g.arc(x, y, 5, 0, 6.3); g.fill();
@@ -244,11 +252,12 @@ export function drawNight(g, cx, cy, VW, VH, L, F, o) {
      "the HUD shows tickets LEFT PER AREA"; the review's #6: the old second line lay across the play field on every screen). For a few seconds after a pickup or a gate's ask
      (o.tkShow) it opens out: every area's count, and what thirty of them open */
   if (G && o.text && !o.skip) { const w = 104, x0 = VW - 8 - w, rows = o.areas || [], here = rows[o.areaI] || null, open = (o.tkShow || 0) > 0, h = open ? 24 + rows.length * 8 + 9 : 22;
-    g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(x0, 60, w, h); g.drawImage(ticketSpr(), x0 + 2, 62);
-    o.text('TICKETS ' + G.tickets + '/' + (G.total || 0), VW - 12, 63, '#7fe8f0', 'right', 8, 'shadow');
-    if (here) o.text('HERE: ' + here.left + ' LEFT', VW - 12, 73, here.left ? '#c8d8e0' : '#8fd160', 'right', 6, 'shadow');
-    if (open) { rows.forEach((r, i) => o.text(r.name + '  ' + r.left, VW - 12, 83 + i * 8, i === o.areaI ? '#fff6e0' : r.left ? '#c8d8e0' : '#6a8a6a', 'right', 6, 'shadow'));
-      o.text('30 OPEN THE BACK LOT', VW - 12, 84 + rows.length * 8, '#ffd36b', 'right', 6, 'shadow'); } }
+    /* (claude/fairfix5, the review's #10: at y 60-82 it covered the top right of every screen - the wheel's prize shelf sat under it) it hangs in the HUD band now, under the purse */
+    const Y0 = 29; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(x0, Y0, w, h); g.drawImage(ticketSpr(), x0 + 2, Y0 + 2);
+    o.text('TICKETS ' + G.tickets + '/' + (G.total || 0), VW - 12, Y0 + 3, '#7fe8f0', 'right', 8, 'shadow');
+    if (here) o.text('HERE: ' + here.left + ' LEFT', VW - 12, Y0 + 13, here.left ? '#c8d8e0' : '#8fd160', 'right', 6, 'shadow');
+    if (open) { rows.forEach((r, i) => o.text(r.name + '  ' + r.left, VW - 12, Y0 + 23 + i * 8, i === o.areaI ? '#fff6e0' : r.left ? '#c8d8e0' : '#6a8a6a', 'right', 6, 'shadow'));
+      o.text('30 OPEN THE BACK LOT', VW - 12, Y0 + 24 + rows.length * 8, '#ffd36b', 'right', 6, 'shadow'); } }
   if (o.skip) return;
   const yFull = N.full * TS - cy, yStart = N.start * TS - cy, halls = hallsOf(L).map(H => [H.x0 * TS - cx, (H.x1 + 1) * TS - cx, (H.roof + 2) * TS - cy, H.floor * TS - cy]).filter(([a, b]) => b > 0 && a < VW);
   const unlit = (L.unlit || []).map(([a, b]) => [a * TS - cx, (b + 1) * TS - cx]).filter(([a, b]) => b > 0 && a < VW);
@@ -291,4 +300,19 @@ export function drawFoeExtras(g, e, cx, cy, time) {
     if (e.mode === 'callTell') { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,211,107,' + (0.8 - k * 0.6).toFixed(2) + ')'; g.lineWidth = 2; for (let i = 0; i < 2; i++) { const rr = 6 + ((k + i * 0.5) % 1) * 18; g.beginPath(); g.arc(mx, my, rr, f > 0 ? -0.8 : Math.PI - 0.8, f > 0 ? 0.8 : Math.PI + 0.8); g.stroke(); } }
     if (e.callFx > 0) { const k = 1 - e.callFx / 0.6; g.strokeStyle = 'rgba(255,230,160,' + (0.9 - k * 0.9).toFixed(2) + ')'; g.lineWidth = 3; for (let i = 0; i < 3; i++) { const rr = 20 + k * 200 + i * 26; g.beginPath(); g.arc(mx, my, rr, 0, 6.3); g.stroke(); } }
   }
+}
+/* ================= THE LIT LIPS (claude/fairfix5): drawn AFTER the night, so a booth's floor and a prize nest's floor read in the dark - a bulb-lit lip along the floor's
+   top line (a brass strip and a row of chasing bulbs). The night stays the rule for what stands on it (you can only freeze what you can see); the footing is never blind ================= */
+export function lipRun(g, x, y, w, time, seed = 0) {
+  r(g, x, y, w, 2, '#f0c060'); r(g, x, y + 2, w, 1, '#8a5a20');
+  for (let i = 2; i < w - 1; i += 4) { const on = (Math.floor(time * 5) + ((i >> 2) + seed)) % 4 !== 0; r(g, x + i, y, 2, 1, on ? '#fff4c0' : '#c89a40'); }
+}
+export function drawLips(g, cx, cy, VW, L, F, time) {
+  const G = F && F.games; if (!G) return;
+  for (const Y of G.galleries || []) { if (Y.targets.length < 2) continue; const FL = boothFloor(L, Y);
+    if (!FL.cols.length || FL.cols[0].c * TS - cx > VW + 20 || (FL.cols[FL.cols.length - 1].c + 1) * TS - cx < -20) continue;
+    let run = null; const flush = () => { if (run) lipRun(g, run.c0 * TS - cx, run.row * TS - cy, (run.c1 - run.c0 + 1) * TS, time, run.c0); run = null; };
+    for (const q of FL.cols) { if (q.row === null) { flush(); continue; } if (run && run.row === q.row && run.c1 === q.c - 1) run.c1 = q.c; else { flush(); run = { c0: q.c, c1: q.c, row: q.row }; } } flush(); }
+  for (const spec of L.galleries || []) { const N = spec.nest; if (!N || N.row >= 20) continue; const nx = N.x0 * TS - cx, nw = (N.x1 - N.x0 + 1) * TS; if (nx > VW + 20 || nx + nw < -20) continue;
+    lipRun(g, nx, N.row * TS - cy, nw, time, N.x0); }
 }

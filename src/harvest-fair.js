@@ -44,7 +44,7 @@ export function lampsOut(lamps) {
   const end = 610; return lamps.map((l, i) => { const f = l.x / end;
     const h = (i * 0.618034) % 1, ground = l.x < 118 ? 1 : l.x > 590 ? 0.5 : h < (f - 0.25) * 1.3 ? 0 : h < (f - 0.05) * 1.3 ? 0.5 : 1;   /* a golden-ratio scatter: the further along, the more are out */
     const row = l.y, life = l.life !== undefined ? l.life : row >= 24 ? ground : row >= 17 ? Math.min(ground, 0.5) : 0;
-    return { x: l.x, y: l.y, life }; }); }
+    return l.hung ? { x: l.x, y: l.y, life, hung: l.hung } : { x: l.x, y: l.y, life }; }); }
 
 import { newRing, horseAt, RING } from './wicker-carousel.js';
 import { chairAt, CHAIRO } from './fair-rides.js';
@@ -139,7 +139,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   gallery({ id: 1, targets: [{ x: 171, row: R - 7 }, { x: 176, row: R - 7 }, { x: 181, row: R - 7 }], window: 12,
     planks: [[186, 187, R - 9], [183, 184, R - 12]],      /* the terrace top is row 22; 3 up, 3 up - the way in - and the nest's floor 3 up again */
     nest: { x0: 176, x1: 181, row: R - 15 } });
-  plat(176, R - 15, 6);                                   /* THE NEST'S FLOOR STANDS FROM THE START (claude/fairfix4, Daniel: "the floors must be VISIBLE"): the bull's-eye opens the way in, not the floor */
+  plat(176, R - 15, 6); lamps.push({ x: 178, y: R - 16, life: 1, hung: 'nest' });   /* (claude/fairfix5) the nest's lantern is a REAL lamp (steady): the night cuts a hole round it, so the floor reads */   /* THE NEST'S FLOOR STANDS FROM THE START (claude/fairfix4, Daniel: "the floors must be VISIBLE"): the bull's-eye opens the way in, not the floor */
   ent('sign', 168, R - 7, { text: 'THE SHOOTING GALLERY. HIT ALL THREE TARGETS BEFORE THE BELL. THE PRIZES ARE UP THE STALL.' });
   tk(176, R - 16); tk(180, R - 16); coins([177, R - 16], [178, R - 16], [179, R - 16]);   /* the crow's nest: two tickets - and the key to what is past it */
   /* THE LOFT (claude/fairfix2: TICKETS ARE KEYS): past the crow's nest a striped gate stands on a plank walk over the stall row - SHOW 5 TICKETS. Behind it, the stall men's loft, and in it
@@ -201,7 +201,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* A BULL'S-EYE ON A CAR (claude/fairfix2: bull's-eyes open things, some on the rides): a target hangs under car 3 and goes round with it. Strike it as it passes and planks run
      up off the landing to the prize shelf over the wheel (two tickets and a heart) */
   gallery({ id: 4, targets: [{ x: 304, row: 27, on: { kind: 'gondola', idx: 3, dy: 18 } }], window: 1, planks: [[308, 309, 14]], nest: { x0: 311, x1: 313, row: 11 }, say: 'A BULL\'S-EYE! THE PLANKS RUN UP OVER THE WHEEL' });
-  plat(311, 11, 3);                                       /* the shelf's floor stands from the start (claude/fairfix4): the bull's-eye drops the gangplank up to it */
+  plat(311, 11, 3); lamps.push({ x: 312, y: 10, life: 1, hung: 'nest' });   /* (claude/fairfix5) its lantern, a real lamp */   /* the shelf's floor stands from the start (claude/fairfix4): the bull's-eye drops the gangplank up to it */
   tk(311, 10); tk(313, 10); ent('mend', 312, 10);
   /* --- THE HIGH ROAD: the wheel lets off at the top onto the boardwalk (row 17); three swing-ride chairs carry you across the hall's roof to the tower --- */
   plat(306, 17, 8);                                       /* cols 306-313: the boardwalk's landing (eight wide: a hop off a car carries you a long way) */
