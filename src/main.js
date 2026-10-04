@@ -27917,10 +27917,10 @@ function drawCredits() {
   if (pg.kind === 'ccby') {
     text('CREDIT REQUIRED (CC-BY)', VW / 2, y + 20, '#8fd160', 'center', 6);
     let yy = y + 31;   /* each CC-BY track: its name and composer, and its licence - or, where the licensor words the credit, that wording whole (claude/redgorge-fix: Kevin MacLeod's) */
-    for (const [, track, who, lic, url, full] of CC_BY) { const lines = full || ['"' + track + '" - ' + who, lic + ': ' + url];
+    for (const [, track, who, lic, url, full] of (pg.items || CC_BY)) { const lines = full || ['"' + track + '" - ' + who, lic + ': ' + url];
       let row = 0; lines.forEach((ln, j) => wrap(ln, w - 6, 6).forEach(part => { text(part, VW / 2, yy + row * 8, j ? UI.dim : UI.text, 'center', 6); row++; })); yy += row * 8 + 3; }   /* (a licence line is drawn whole, as it always was: a long one wraps onto a second row inside the panel instead of running off both sides) */
-    text('ALL THE REST IS CC0 OR PUBLIC DOMAIN,', VW / 2, yy + 2, UI.dim, 'center', 6);
-    text('FROM OPENGAMEART.ORG. THANK YOU:', VW / 2, yy + 11, UI.dim, 'center', 6);
+    if (pg.last !== false) { text('ALL THE REST IS CC0 OR PUBLIC DOMAIN,', VW / 2, yy + 2, UI.dim, 'center', 6);
+      text('FROM OPENGAMEART.ORG. THANK YOU:', VW / 2, yy + 11, UI.dim, 'center', 6); }   /* (on the last CC-BY page only: claude/puppeteer2 split the CC-BY credits two to a page) */
   } else {
     const colW = (w - 20) / 2;
     pg.names.forEach((n, i) => { const col = Math.floor(i / 8), row = i % 8; text(fitText(n, colW - 10, 6), x + 12 + col * colW, y + 24 + row * 11, UI.text, 'left', 6); });

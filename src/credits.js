@@ -21,10 +21,12 @@ export const composers = credits => {
   }
   return [...seen.values()].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 };
-/* PAGES: 0 is the CC-BY credit in full; the rest are the composers, ROWS to a column, two columns to a page */
+/* PAGES: first the CC-BY credits in full, CCBY_PER to a page (claude/puppeteer2: a fourth would not fit on one), then the composers, ROWS to a column, two columns to a page */
+export const CCBY_PER = 2;
 export const CREDIT_ROWS = 8;
 export function creditPages(credits) {
-  const names = composers(credits), per = CREDIT_ROWS * 2, pages = [{ kind: 'ccby' }];
+  const names = composers(credits), per = CREDIT_ROWS * 2, pages = [];
+  for (let i = 0; i < CC_BY.length; i += CCBY_PER) pages.push({ kind: 'ccby', items: CC_BY.slice(i, i + CCBY_PER), last: i + CCBY_PER >= CC_BY.length });
   for (let i = 0; i < names.length; i += per) pages.push({ kind: 'names', names: names.slice(i, i + per) });
   return pages;
 }
