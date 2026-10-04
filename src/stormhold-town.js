@@ -91,6 +91,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('torch', 114, 15); ent('brazier', 124, 15); ent('brazier', 142, 15); ent('torch', 154, 15);
   ent('hearthgob', 120, 15, { face: -1 }); ent('hearthgob', 134, 15, { face: 1 }); ent('brute', 146, 15, { face: -1 });
   plat(112, 14, 3); plat(115, 12, 3); plat(118, 11, 4); plat(123, 10, 3); plat(128, 8, 5); plat(136, 10, 4); ent('archer', 129, 7, { face: -1 });   // a real way into the rafters
+  ent('vault', 130, 7);   /* the Longhouse's cache (it held the iron shoes: relics are cut, it pays a silver, src/relics.js) */
   ent('doorway', 159, 15, { id: 'long-back', to: 'long-far', lock: [106, 160], label: 'OUT THE GABLE END' });
   coins([116, 10], [120, 10], [126, 7], [130, 7], [137, 9], [139, 9], [150, 14], [154, 14], [155, 14], [156, 14], [157, 14]);
   for (const x of [121, 138, 152]) ent('weight', x, 4, { len: 4, lamp: true, hang: true });

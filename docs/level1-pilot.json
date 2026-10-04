@@ -1,6 +1,6 @@
 {
  "mage": {
-  "hash": "622b724f3f34",
+  "hash": "4a26c3e3e265",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
@@ -12,7 +12,7 @@
   "bare": true
  },
  "theatre": {
-  "hash": "065db231b17e",
+  "hash": "66d0fcb3f32c",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
@@ -24,7 +24,7 @@
   "bare": true
  },
  "fair": {
-  "hash": "dc8a143f4337",
+  "hash": "c0eb2f0fbed5",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,

@@ -1,6 +1,6 @@
 {
  "wood": {
-  "hash": "33b716606318",
+  "hash": "efec02c410e1",
   "boss": {
    "boss": "queen",
    "wins": 0,
@@ -179,7 +179,7 @@
   }
  },
  "marsh": {
-  "hash": "7388d51d8c24",
+  "hash": "891998d20c02",
   "boss": {
    "boss": "frog",
    "wins": 0,
@@ -352,7 +352,7 @@
   }
  },
  "stockade": {
-  "hash": "388f032ececc",
+  "hash": "c88404798755",
   "boss": {
    "boss": "chief",
    "wins": 0,
@@ -531,7 +531,7 @@
   }
  },
  "spore": {
-  "hash": "e571f3957b4b",
+  "hash": "f09f2d664e19",
   "boss": {
    "boss": "mother",
    "wins": 1,
@@ -692,7 +692,7 @@
   }
  },
  "kings": {
-  "hash": "57ced0d7c2e9",
+  "hash": "f701e6b214e6",
   "level": {
    "knight": {
     "deaths": 1,
@@ -928,7 +928,7 @@
   }
  },
  "scree": {
-  "hash": "db36cf56ab1f",
+  "hash": "c679d31e9ad3",
   "boss": {
    "boss": "ram",
    "wins": 0,
@@ -1095,7 +1095,7 @@
   }
  },
  "hanging": {
-  "hash": "f953c6b5f8fb",
+  "hash": "18fa441395de",
   "boss": {
    "boss": "owl",
    "wins": 0,
@@ -1419,7 +1419,7 @@
   }
  },
  "spire": {
-  "hash": "23ddb18ec388",
+  "hash": "19cac78a3eb9",
   "boss": {
    "boss": "abbot",
    "wins": 0,
@@ -1792,7 +1792,7 @@
   }
  },
  "moor": {
-  "hash": "b828210d1fd2",
+  "hash": "f645a17e40a8",
   "boss": {
    "boss": "windcaller",
    "wins": 0,
@@ -1971,7 +1971,7 @@
   }
  },
  "storm": {
-  "hash": "17320d7f2b8d",
+  "hash": "6f75d7281f93",
   "boss": {
    "boss": "lance",
    "wins": 0,
@@ -2144,7 +2144,7 @@
   }
  },
  "crown": {
-  "hash": "fef9392d485b",
+  "hash": "568260715b04",
   "boss": {
    "boss": "gqueen",
    "wins": 0,
@@ -2480,7 +2480,7 @@
   }
  },
  "longwater": {
-  "hash": "2e8c28dc4407",
+  "hash": "0f273b4b1e77",
   "boss": {
    "boss": "herald",
    "wins": 0,
@@ -2644,7 +2644,7 @@
   }
  },
  "reef": {
-  "hash": "6ae140b94124",
+  "hash": "1baed06042e8",
   "boss": {
    "boss": "reefmaw",
    "wins": 0,
@@ -2823,7 +2823,7 @@
   }
  },
  "flotilla": {
-  "hash": "0afeb180b999",
+  "hash": "13384fceb435",
   "level": {
    "knight": {
     "deaths": 1,
@@ -2960,7 +2960,7 @@
   }
  },
  "hurricane": {
-  "hash": "f80f308ae376",
+  "hash": "a3de787c3d6b",
   "boss": {
    "boss": "captain",
    "wins": 0,
@@ -3133,7 +3133,7 @@
   }
  },
  "lamplit": {
-  "hash": "3524ed9210e6",
+  "hash": "87d9d69cced3",
   "level": {
    "knight": {
     "deaths": 1,
@@ -3369,7 +3369,7 @@
   }
  },
  "underleaf": {
-  "hash": "7cd50c9a73a6",
+  "hash": "61cb8969c7f9",
   "level": {
    "knight": {
     "deaths": 1,
@@ -3506,7 +3506,7 @@
   }
  },
  "deep": {
-  "hash": "26e488196231",
+  "hash": "30f714cdc5f1",
   "level": {
    "knight": {
     "deaths": 1,
@@ -4253,7 +4253,7 @@
   }
  },
  "waymeet": {
-  "hash": "9f88df461acf",
+  "hash": "b79e4362669e",
   "boss": {
    "boss": "closedhelm",
    "wins": 0,
@@ -4595,7 +4595,7 @@
   }
  },
  "undercrown": {
-  "hash": "973c2b659ad7",
+  "hash": "2233b6936fae",
   "level": {
    "knight": {
     "deaths": 3,
@@ -4732,7 +4732,7 @@
   }
  },
  "fields": {
-  "hash": "009ce1635192",
+  "hash": "e7817424644f",
   "boss": {
    "boss": "strawking",
    "wins": 0,
@@ -5304,7 +5304,7 @@
   }
  },
  "mage": {
-  "hash": "622b724f3f34",
+  "hash": "4a26c3e3e265",
   "boss": {
    "boss": "archmage",
    "wins": 0,
@@ -6706,7 +6706,7 @@
   }
  },
  "caravan": {
-  "hash": "83f6b6a91ee9",
+  "hash": "a27cfdcc84d0",
   "boss": {
    "boss": "duneworm",
    "wins": 0,
@@ -6879,7 +6879,7 @@
   }
  },
  "fair": {
-  "hash": "dc8a143f4337",
+  "hash": "c0eb2f0fbed5",
   "boss": {
    "boss": "wickerqueen",
    "wins": 0,
@@ -7052,7 +7052,7 @@
   }
  },
  "theatre": {
-  "hash": "065db231b17e",
+  "hash": "66d0fcb3f32c",
   "boss": {
    "boss": "puppeteer",
    "wins": 0,

@@ -63,7 +63,7 @@ try {
       hold('left', 80, () => !P().onMover && P().ground); BK.tp(43, 42); BK.sim(10); take(); note('nest: took the far sack off the ledge', P().ballast);
       hold('right', 900, () => P().x > 62 * TS + 8 && P().ground && Math.floor(P().y / TS) === 52); hop('right'); hold('right', 240, () => m.hs.load >= 2);
       note('nest: two sacks in, and it rises with the hero on it', m.hs.load >= 2 && P().onMover === m, at(m));
-      until(() => m.hs.state === 'top'); BK.sim(10); hold('right', 60); note('nest: rode up and stepped onto the relic nest', Math.floor(P().y / TS) === 44 && P().x > 65 * TS, { relic: P().relic, ...at(m) });
+      until(() => m.hs.state === 'top'); BK.sim(10); hold('right', 60); note('nest: rode up and stepped onto the nest's silver', Math.floor(P().y / TS) === 44 && P().x > 65 * TS, at(m));
       /* CROWN: a stone in, and up level with the middle perch; the well at 56, west of the deck */
       fresh(); m = H('crown'); BK.tp(65, 19); BK.sim(10); for (const e of BK.enemies()) if (e.t === 'owl') { e.mode = 'sleep'; }
       take(); hold('left', 300, () => P().x < 60 * TS); hop('left'); hold('left', 60, () => m.hs.load > 0);

@@ -371,7 +371,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   for (let y = R + 1; y <= R + 6; y++) for (let x = 597; x <= 608; x++) set(x, y, T.AIR);
   plat(604, R + 4, 3); plat(602, R + 2, 2);   /* the stair back up through the hatch */
   ticketGates.push({ x: 602, w: 2, y0: R, y1: R, all: true, need: 30, hatch: true, name: 'THE BACK LOT' });
-  ent('silver', 600, R + 6); coins([599, R + 6], [601, R + 6], [607, R + 6]);
+  ent('vault', 598, R + 6); ent('silver', 600, R + 6); coins([599, R + 6], [601, R + 6], [607, R + 6]);
   const backLot = { x0: 597, x1: 608, y0: R + 1, y1: R + 6 };
   /* THE BLIND STALL (moved past the shrine by claude/fairfix3; the yard took its road): a stall's back wall, two high, across the road in the dark. You cannot see through it, so the
      mummer behind it creeps up to the wall while you come - listen for bells */

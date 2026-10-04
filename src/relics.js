@@ -4,10 +4,11 @@
      idx   which of the level's silvers (its order in L.ents, the progress bit 1 << idx) now lies in the vault. The silver is MOVED, not
            added, so every save keeps what it had: the bit that was set stays set, the level still holds three.
      add   the level held fewer than three (Gale Moor: one), so the vault's silver is a new one.
-   A former relic spot that is NOT listed already had a silver in the same cache (the Stockade's ravine net, the Scree's fleece,
-   the Rookery's nest, the fair's back lot) or was a boss's drop (the Maypole Ribbon, the Cut String): the relic is simply gone.
+   A former relic spot that is NOT listed here is a 'vault' marker with no silver to move: it already had a silver in the same cache (the
+   Stockade's ravine net, the Scree's fleece, the Rookery's nest, the fair's back lot), so the marker is simply dropped; the two boss drops
+   (the Maypole Ribbon, the Cut String) were hidden relics, and are cut without a marker.
    WHY NO ROUTE RELIC STAYS (tools/relics.mjs): a relic was lost on death and found mid-level, so no road could ever lean on one;
-   the reach fill (which holds no relic) reaches every gate, checkpoint, boss and silver of the six that looked like traversal
+   the reach fill (which holds no relic) reaches every gate and checkpoint of the six that looked like traversal
    (spurs x2, the beads, windcloak x2, the iron shoes), and no level source built a climb around any of them.
    SAVES. An old save carries PROG[levelId].relic (the "found" tick on the map card). retireRelics() drops it, and a save that
    HAD found a relic whose spot is now a vault silver is given that silver (its bit, so the cap of three holds by construction;
@@ -21,12 +22,17 @@ export const VAULT_SILVER = {
   caravan: { x: 359, y: 26, idx: 2 },
 };
 
-/* The level builder's step (src/level.js, after silverTrim): put the vault's silver where the relic lay. */
+/* The level builder's LAST step (src/level.js): every former relic spot is a 'vault' marker all through the build - the garrison, the
+   elites, the dead-end filler and the coin sprinkler keep clear of it exactly as they kept clear of the relic - and here it becomes what
+   it pays: one of the level's silvers, MOVED there (the silver that gives way leaves its gold behind, as silverTrim does with a fourth
+   silver: a coin where it lay and one two tiles either side), or nothing (the cache already holds its own silver). No marker survives. */
 export function vaultSilver(L, id) {
-  const v = VAULT_SILVER[id]; if (!v) return L;
-  if (v.add) { L.ents.push({ t: 'silver', x: v.x, y: v.y }); return L; }
-  const sv = L.ents.filter(e => e.t === 'silver'), s = sv[v.idx];
-  if (s) { s.x = v.x; s.y = v.y; }
+  const marks = L.ents.filter(e => e.t === 'vault'); if (!marks.length) return L;
+  L.ents = L.ents.filter(e => e.t !== 'vault');
+  const v = VAULT_SILVER[id], m = marks[0]; if (!v) return L;
+  if (v.add) { L.ents.push({ t: 'silver', x: m.x, y: m.y }); return L; }
+  const s = L.ents.filter(e => e.t === 'silver')[v.idx];
+  if (s) { const ox = s.x, oy = s.y; s.x = m.x; s.y = m.y; for (const dx of [-2, 0, 2]) L.ents.push({ t: 'coin', x: ox + dx, y: oy }); }
   return L;
 }
 
