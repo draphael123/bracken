@@ -22,13 +22,24 @@ console.log(pad('stage', 13) + padl('foes', 5) + padl('foe xp', 8) + padl('mini+
 let bad = 0;
 for (const r of rows) {
   const off = r.secret ? 0 : r.level - r.old;
-  if (Math.abs(off) > 1) bad++;
   console.log(pad((r.secret ? '  (secret) ' : padl(r.stage, 2) + ' ') + r.id, 13) + padl(r.foes, 5) + padl(r.foeXp, 8) + padl(r.bossXp, 10) + padl(r.clear, 7) + padl(r.quest, 6)
-    + (r.secret ? padl('', 17) : padl(r.run, 8) + padl(r.level, 4) + padl(r.old, 5)) + padl(r.full, 9) + padl(r.fullLevel, 4) + padl(r.oldFull, 5) + (Math.abs(off) > 1 ? '   <- ' + (off > 0 ? '+' : '') + off : ''));
+    + (r.secret ? padl('', 17) : padl(r.run, 8) + padl(r.level, 4) + padl(r.old, 5)) + padl(r.full, 9) + padl(r.fullLevel, 4) + padl(r.oldFull, 5) + '');
 }
+/* THE ROAD AGAINST ITS DEPTH (LEVELING, 2026-10-04). The array is an append log (burning, oreroad, harbor... sit late in it), so the stage count
+   above is NOT the level a wood expects. The judgement walks the GATE CHAIN's road (src/campaign-order.js chainOf) in order and asks that a straight
+   run finishing each road wood stands within -1..+2 of its expected level, depth + 1 (+2 is the soft cap's last full-pay level) - with no catch-up (the 400*n^1.365 refit's promise). */
+const { LEVELS } = await import('../src/level.js');
+const { chainOf, depthsOf } = await import('../src/campaign-order.js');
+const vis = LEVELS.filter(l => !l.hidden || l.secret), C = chainOf(vis), depth = depthsOf(vis), byId = Object.fromEntries(rows.map(r => [r.id, r]));
+console.log('\nTHE ROAD (gate chain), a straight run against depth + 1');
+let road = 0; const offs = [];
+for (const id of C.road) { const r = byId[id]; if (!r || r.secret) continue; road += Math.round(0.8 * r.foeXp) + r.bossXp + r.clear;
+  const lv = levelOfXp(road), want = (depth[id] || 0) + 1, off = lv - want; offs.push(off); if (off < -1 || off > 2) bad++;   /* behind by more than one, or past E+2 where THE SOFT CAP starts halving it (src/xp.js) */
+  console.log(pad(id, 13) + padl(depth[id], 4) + padl(road, 8) + padl(lv, 4) + padl(want, 5) + (off < -1 || off > 2 ? '   <- ' + (off > 0 ? '+' : '') + off : '')); }
+console.log('road offsets: ' + offs.join(' '));
 const last = rows[rows.length - 1], lastStage = [...rows].reverse().find(r => !r.secret), ahead = last.fullLevel - lastStage.old;
-console.log('\nlevels 1-30: ' + Array.from({ length: 30 }, (_, i) => (i + 1) + ':' + xpFloor(i + 1)).join(' '));
-console.log('a full clear ends ' + ahead + ' level(s) ahead of a straight run\'s old count (want 1 to 3).');
+console.log('\nlevels 1-50: ' + Array.from({ length: 50 }, (_, i) => (i + 1) + ':' + xpFloor(i + 1)).join(' '));
+console.log('a full clear (every wood, branch and secret) ends at level ' + last.fullLevel + ', ' + ahead + ' level(s) over the count of woods (want 1 to 3).');
 if (ahead < 1 || ahead > 3) bad++;
 
 if (fit) {   /* the smallest worst miss, then the most stages exactly on, then the full clear nearest two ahead */
