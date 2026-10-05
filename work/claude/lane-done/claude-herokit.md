@@ -83,3 +83,11 @@ Nothing seen on screen: the new casts' feel and keg art, the late actives' balan
 3. Meteor is still the best damage a stamina by 2x: another -20% and 38 stamina (rec) or leave.
 4. DK (unburied) and the Archmage are now 80-100% for the human bot: BOSS lanes to retune (not done here).
 5. Let INTERACT wind and drop the Djinn's windlass (rec, fairer to melee) or keep strike-only.
+
+## Commands and hero level (coordinator standard, 10-05)
+Every rate above is at the level's CAMPAIGN level: tools/harnesscard-rates.mjs --mode=new calls BKT.setHeroLevel(hero, depthsOf(LEVELS)[level]) (xp plus the even card spread), no skills, normal health, bossLab with opts.seed.
+Warden before = a worktree of 2423ff42, after = this branch, same command:
+  PORT=8611 node tools/harnesscard-rates.mjs <fallingtower|unburied|welltown|welltown:mini> --mode=new --heroes=warden --seeds=20 --secs=240
+Knight/pyro: same with --heroes=knight,pyro --seeds=12. Four unmeasured heroes: --heroes=paladin,pirate,reaper,geomancer --seeds=6 (levels: wood L1, marsh L1, stockade L2, burning L3, harbor L20, fair L23, unburied L27, fallingtower L28, welltown L30).
+Archmage3 check: archmage3 merged with this branch in a throwaway worktree, --seeds=8 --secs=300. Cross-check: node tools/combat-pilots.mjs unburied --heroes=warden --salts=1,2,3,4,5,6,7 (also campaign level).
+Ledger/diagnostic scripts (not committed) used setHeroLevel the same way.
