@@ -266,12 +266,13 @@ export function unburiedTile(t, x, y, at, T, L) {
   const D = L.unburied; if (!D) return null;
   const air = (dx, dy) => at(x + dx, y + dy) === T.AIR, same = (dx, t2) => at(x + dx, y) === t2, v = ((x * 7 + y * 13) % 3 + 3) % 3, G = D.G;
   const walk = k => k === T.AIR || k === T.ONEWAY || k === T.SPIKE || k === T.PLANK || k === T.NET;
-  const stoneZone = x >= D.stoneFrom || (x >= D.gateStone[0] && x <= D.gateStone[1] && y <= G);
+  const stoneZone = (x >= D.stoneFrom && !(D.bailey && x >= D.bailey[0] && x <= D.bailey[1])) ||(x >= D.gateStone[0] && x <= D.gateStone[1] && y <= G);
   const ravine = x >= D.ravine[0] && x <= D.ravine[1];   /* THE RAVINE WALLS AND BED (265-324): wet stone from the field's own floor down */
   if (t === T.SOLID) {
     const top = air(0, -1) || at(x, y - 1) === T.SPIKE || at(x, y - 1) === T.NET || at(x, y - 1) === T.ONEWAY, l = walk(at(x - 1, y)), r = walk(at(x + 1, y)), below = walk(at(x, y + 1));
     let depth = 0; for (let k = 1; k <= 10; k++) { const q = at(x, y - k); if (q === T.AIR || q === T.ONEWAY || q === T.SPIKE) break; depth++; }
     if (D.towerBase && x >= D.towerBase[0] && x <= D.towerBase[1] && y >= D.towerBase[2] && y <= D.towerBase[3]) return timberWall(v, at(x, y - 1) !== T.SOLID, x === D.towerBase[0], x === D.towerBase[1], y);   /* the tower's base is its timber, not the field's earth */
+    if (D.fascines && x >= D.fascines[0] && x <= D.fascines[1] && y <= G + 1) return gabion(v, x === D.fascines[0], x === D.fascines[1], at(x, y - 1) !== T.SOLID, y);   /* (claude/unburied4) THE BAILEY'S BARRICADE: rock to walk on, gabions and fascines to look at */
     if (stoneZone) {
       if (top) return flag(l, r, v, 'flag');
       if (depth >= 1 || l || r || below) return ashlar(v, depth, (x * 5 + y * 3) % 17 === 0);

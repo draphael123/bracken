@@ -231,6 +231,18 @@ export function bakeFarPalisade(smashed = false) {
 // ================================================================ COVER (no crate shapes) ================================================================
 const coverMemo = new Map();
 /* the field's cover props as sprites, anchored bottom-centre on (cv.x, cv.y): wheeled pavises, a supply wagon, the overturned cart, the ghost shieldmen */
+/* (claude/unburied4) THE WHEELED MANTLET YOU PUSH (a pushblock 20 x 24, drawn 2 px proud all round: 24 x 28): the host's tall shield of planks on a pair of small iron-shod wheels, its
+   face (east, toward the breach) bristling with the Order's spent arrows, a raven daubed on it, a pushing bar on the back. Slate and raven: the besiegers' */
+export function bakeMantletPush() {
+  const [c, g] = canvas(24, 28); shadow(g, 12, 27, 11);
+  rect(g, 4, 2, 14, 20, K.wood3); for (let x = 5; x < 18; x += 3) rect(g, x, 2, 1, 20, K.wood2); rect(g, 4, 2, 14, 1, K.wood5); rect(g, 17, 2, 1, 20, K.wood1);   /* the planks */
+  rect(g, 4, 7, 14, 2, K.iron1); rect(g, 4, 16, 14, 2, K.iron1); px(g, 6, 7, K.iron3); px(g, 15, 16, K.iron3);   /* the iron bands */
+  fillPoly(g, [[8, 10], [11, 8], [14, 10], [12, 11], [11, 14], [10, 11]], K.raven); px(g, 12, 9, K.silver);   /* the host's raven, daubed */
+  for (const [x, y] of [[18, 5], [18, 12], [19, 18], [18, 9]]) { line(g, x, y, x + 4, y - 1, K.wood4); px(g, x + 4, y - 1, K.cloth3); }   /* the Order's spent arrows in its face */
+  rect(g, 1, 10, 4, 2, K.wood2); rect(g, 1, 10, 1, 8, K.wood2);   /* the pushing bar */
+  wheel(g, 7, 23, 3.5, 5, 0.3, K.wood4, K.iron2); wheel(g, 16, 23, 3.5, 5, 0.9, K.wood4, K.iron2);
+  return outline(c, K.out);
+}
 export function coverSprite(kind) {
   if (coverMemo.has(kind)) return coverMemo.get(kind);
   let c;

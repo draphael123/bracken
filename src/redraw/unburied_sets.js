@@ -268,5 +268,5 @@ export function drawStructure(g, kind, l, r, t, b, seed) {
 export function bakeFacade(kind, tw, th, seed, o) {
   if (kind === 'ubtower') return SG.bakeTower();
   if (kind === 'ubtower2') return SG.bakeTower2();
-  return CH.bakeFacade(kind);
+  return CH.bakeFacade(kind, o);
 }

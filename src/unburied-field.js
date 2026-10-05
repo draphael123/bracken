@@ -40,11 +40,19 @@ const BRG = { at: 265, n: 60, ravine: [273, 316], bed: 46,
   trestles: [[274, 275], [280, 283], [288, 290], [296, 299], [305, 306], [311, 312]],
   /* the stream bed's stakes, under the east end of every three-tile gap - where a short jump comes down */
   stakes: [[277, 278], [293, 294], [302, 303], [315, 316]] };
-const X = x => x >= BRG.at ? x + BRG.n : x;
+/* THE BAILEY (claude/unburied4, Daniel's playtest 10-05: "a larger section between the Barrow Rider and the Death Knight - a MUD FIELD under ARROW VOLLEYS with cover you move
+   between"). Seventy-two columns cut in at final column 364 with a second grow(), at the foot of the gallery's rope ladder: the outer ward inside the Order's wall, churned to mud
+   by the host that got over it, under the bows of the Order's dead on the breach at its far end. Everything east of it (the yard, the crypt, the nave and the arena) slides 72 east.
+   X maps a greybox column to its FINAL one (both cuts); Y maps a column written in final-before-the-bailey numbers (the art lane's) to its final one. */
+const BAI = { at: 364, n: 72 };
+const X = x => x >= BAI.at - BRG.n ? x + BRG.n + BAI.n : x >= BRG.at ? x + BRG.n : x;
+const Y = x => x >= BAI.at ? x + BAI.n : x;
+const BK0 = k => BAI.at + k;   /* a bailey column, from its own 0 */
 export const UF = Object.assign({}, GEOM, {
-  W: GEOM.W + BRG.n,
-  ACTS: { barrow: [0, 129], charge: [130, X(299)], chapel: [X(300), GEOM.W + BRG.n - 1] },
-  SECTIONS: { barrowline: [0, 69], shieldcrossing: [70, 129], brokencharge: [130, 229], toppledtower: [230, 264], bridges: [265, 324], standard: [325, X(299)], chapel: [X(300), X(373)], arena: [X(374), X(419)] },
+  W: GEOM.W + BRG.n + BAI.n,
+  ACTS: { barrow: [0, 129], charge: [130, X(299)], chapel: [X(300), GEOM.W + BRG.n + BAI.n - 1] },
+  SECTIONS: { barrowline: [0, 69], shieldcrossing: [70, 129], brokencharge: [130, 229], toppledtower: [230, 264], bridges: [265, 324], standard: [325, BAI.at - 1], bailey: [BAI.at, BAI.at + BAI.n - 1], chapel: [BAI.at + BAI.n, X(373)], arena: [X(374), X(419)] },   /* (THE STANDARD keeps the gatehouse and its gallery, 360-363) */
+  BAILEY: BAI,
   PEGS: GEOM.PEGS.filter(p => p[0] < 300),   /* the chapel's peg wall is gone (it stood on nothing over the crypt stair) */
   MINI: { x0: X(GEOM.MINI.x0), x1: X(GEOM.MINI.x1), gate: X(GEOM.MINI.gate), wallL: X(GEOM.MINI.wallL) },
   AMBUSH: { wallL: X(GEOM.AMBUSH.wallL), wallR: X(GEOM.AMBUSH.wallR) },
@@ -55,14 +63,14 @@ export const UF = Object.assign({}, GEOM, {
   GLINTS: [{ id: 'ub-ballista-130', hero: [124, 36], far: [113, 36], engine: { t: 'ballista', x: 130 } }, { id: 'ub-ballista-188', hero: [183, 28], far: [170, 28], engine: { t: 'ballista', x: 188 } },
     { id: 'ub-oil-200', hero: [196, 41], engine: { t: 'oilbarrel', x: 200 } }, { id: 'ub-trebuchet-230', hero: [223, 36], far: [215, 36], engine: { t: 'trebuchet', x: 230 } },
     { id: 'ub-rope-ladder', hero: [277, 45], far: [305, 45] }, { id: 'ub-mangonel', hero: [265, 36], engine: { t: 'mangonel', x: 268 } }, { id: 'ub-drawbridge', hero: [343, 23], engine: { t: 'drawbridge', x: 346 } },
-    { id: 'ub-ballista-418', hero: [412, 36], engine: { t: 'ballista', x: 418 } }],
+    { id: 'ub-ballista-418', hero: [Y(412), 36], engine: { t: 'ballista', x: Y(418) } }],
 });
 
 const FINALUF = UF;   /* (buildUnburiedField has its own UF: the greybox's) */
 /* THE SET PIECES, in FINAL columns: [id, kind, col, standing row, sprite w px, h px, opts]. A deco stands on its row (bottom-centre on the tile); the bbox it fills in tiles is
    what UF.SETPIECES lists for tools/unburied-look.mjs (a set piece on every screen). The art is src/redraw/unburied_sets.js (+ unburied_siege.js, unburied_chapel.js). */
 const G0 = GEOM.G, SET = [];
-const S = (id, kind, x, y, w, h, o = {}) => SET.push({ id, kind, x, y, w, h, o });
+const S = (id, kind, x, y, w, h, o = {}) => SET.push({ id, kind, x: Y(x), y, w, h, o });   /* (written in the art lane's columns; Y slides the chapel's past the bailey) */
 const bbox = s => ({ id: s.id, x0: Math.floor((s.x * 16 + 8 - s.w / 2) / 16), x1: Math.floor((s.x * 16 + 8 + s.w / 2 - 1) / 16), y0: Math.floor(((s.y + 1) * 16 - s.h) / 16), y1: s.y });
 /* THE DEAD CAMP (0-20): the host's slate and raven, a cold fire, the rack, and the last brazier still lit */
 S('camp-brazier', 'ubBrazier', 1, G0, 18, 34); S('camp-rack', 'ubRack', 3, G0, 34, 36); S('camp-ring', 'ubFireRing', 6, G0, 44, 26); S('camp-tent', 'ubTent', 17, G0, 76, 60);
@@ -98,25 +106,26 @@ const FIRE_AT = SET.filter(s => s.o.burning).map(s => ({ id: s.id, x: s.x, y: GE
 
 UF.SETPIECES = SET.filter(s => s.w >= 32 && s.h >= 24).map(bbox);   /* what tools/unburied-look.mjs counts: a set piece on every screen */
 UF.SETPIECES.push(...DECK_RUNS.map(([x, row, n]) => ({ id: 'deck-' + x, x0: x, x1: x + n - 1, y0: row, y1: 42, holds: true })), { id: 'tower-decks', x0: 228, x1: 245, y0: 28, y1: 36, holds: true }, { id: 'tower-shell', x0: 246, x1: 259, y0: 27, y1: 36, holds: true });   /* holds: a structure the ledges above it stand on (tools/unburied-look.mjs 2) */
-UF.SETPIECES.push({ id: 'tower2-low', x0: 340, x1: 347, y0: 27, y1: 36, holds: true }, { id: 'tower2-up', x0: 340, x1: 347, y0: 21, y1: 26, holds: true }, { id: 'gallery', x0: 353, x1: 364, y0: 21, y1: 26, holds: true });
-UF.SETPIECES.push(...[[130, 36, 40, 34], [188, 28, 40, 34], [200, 41, 44, 30], [230, 36, 56, 56], [268, 36, 56, 36], [396, 36, 44, 30], [418, 36, 40, 34]].map(([x, y, w, h]) => bbox({ id: 'engine-' + x, x, y, w, h })));
-UF.SETPIECES.push({ id: 'wall-a', x0: 326, x1: 337, y0: 24, y1: 36 }, { id: 'wall-b', x0: 338, x1: 349, y0: 24, y1: 36 }, { id: 'gatehouse-low', x0: 351, x1: 362, y0: 27, y1: 36 }, { id: 'gatehouse-up', x0: 351, x1: 362, y0: 18, y1: 26 }, { id: 'yard-wall', x0: 362, x1: 377, y0: 28, y1: 36 },
-  { id: 'nave-a', x0: 378, x1: 393, y0: 24, y1: 36, holds: true },   /* the crypt tomb's lid on its corbels (drawn in the nave facade) */
-  { id: 'nave-b', x0: 394, x1: 409, y0: 24, y1: 36 }, { id: 'nave-c', x0: 410, x1: 425, y0: 24, y1: 36 }, { id: 'apse-west-low', x0: 434, x1: 449, y0: 27, y1: 36, holds: true }, { id: 'apse-east-low', x0: 450, x1: 469, y0: 27, y1: 36, holds: true },   /* the two tomb-shelves on their corbels */
-  { id: 'apse-west-up', x0: 434, x1: 449, y0: 8, y1: 26 }, { id: 'apse-east-up', x0: 450, x1: 469, y0: 8, y1: 26 },
+UF.SETPIECES.push({ id: 'tower2-low', x0: 340, x1: 347, y0: 27, y1: 36, holds: true }, { id: 'tower2-up', x0: 340, x1: 347, y0: 21, y1: 26, holds: true }, { id: 'gallery', x0: 353, x1: 363, y0: 21, y1: 26, holds: true });
+UF.SETPIECES.push(...[[130, 36, 40, 34], [188, 28, 40, 34], [200, 41, 44, 30], [230, 36, 56, 56], [268, 36, 56, 36], [Y(396), 36, 44, 30], [Y(418), 36, 40, 34]].map(([x, y, w, h]) => bbox({ id: 'engine-' + x, x, y, w, h })));
+UF.SETPIECES.push({ id: 'wall-a', x0: 326, x1: 337, y0: 24, y1: 36 }, { id: 'wall-b', x0: 338, x1: 349, y0: 24, y1: 36 }, { id: 'gatehouse-low', x0: 351, x1: 362, y0: 27, y1: 36 }, { id: 'gatehouse-up', x0: 351, x1: 362, y0: 18, y1: 26 }, { id: 'yard-wall', x0: Y(366), x1: Y(377), y0: 28, y1: 36 },
+  ...[['nave-a', 378, 393, 24], ['nave-b', 394, 409, 24], ['nave-c', 410, 425, 24], ['apse-west-low', 434, 449, 27], ['apse-east-low', 450, 469, 27], ['apse-west-up', 434, 449, 8, 26], ['apse-east-up', 450, 469, 8, 26]].map(([id, a, b, y0, y1]) => ({ id, x0: Y(a), x1: Y(b), y0, y1: y1 || 36 })),   /* (the tomb lids stand on R.structures piers now: no set piece claims to hold them) */
+  /* THE BAILEY's own (claude/unburied4): the inner ward wall behind it (the yard wall, run on west), the fascine barricade, the breach and the Order's hoarding on it */
+  { id: 'bailey-wall-a', x0: BK0(0), x1: BK0(15), y0: 28, y1: 36 }, { id: 'bailey-wall-b', x0: BK0(16), x1: BK0(31), y0: 28, y1: 36 }, { id: 'bailey-wall-c', x0: BK0(32), x1: BK0(47), y0: 28, y1: 36 }, { id: 'bailey-wall-d', x0: BK0(48), x1: BK0(63), y0: 28, y1: 36 },
+  { id: 'bailey-barricade', x0: BK0(19), x1: BK0(22), y0: 33, y1: 37 }, { id: 'bailey-breach', x0: BK0(63), x1: BK0(71), y0: 25, y1: 36 },
   { id: 'tower-decks-up', x0: 228, x1: 245, y0: 17, y1: 27, holds: true }, { id: 'tower-shell-up', x0: 246, x1: 259, y0: 17, y1: 26, holds: true }, { id: 'tower-crest', x0: 259, x1: 264, y0: 17, y1: 26, holds: true }, { id: 'sapper-wall-104', x0: 100, x1: 111, y0: 24, y1: 36, holds: true },
   { id: 'standard-foot', x0: 336, x1: 342, y0: 27, y1: 36 }, { id: 'great-standard', x0: 333, x1: 346, y0: 4, y1: 26 }, ...BRG.trestles.map(([a, b]) => ({ id: 'trestle-' + a, x0: a, x1: b, y0: GEOM.G + 2, y1: BRG.bed, holds: true })));
 /* THE WALLS a ledge may hang on (tools/unburied-aloft.mjs A: a gallery or a deck on one of these is held, so long as the wall stands under all of it): the curtain wall, the gatehouse, the standing tower's body */
 UF.WALLS = [[326, 350, 25, 36], [351, 362, 19, 36], [340, 347, 21, 36]];
-UF.GLASS = { x0: 458, x1: 463, y0: 11, y1: 17 };   /* the apse's rose window (cold violet glass): tools/unburied-look.mjs 9 asserts nothing red or green and bright stands behind the Death Knight's floor */
+UF.GLASS = { x0: Y(458), x1: Y(463), y0: 11, y1: 17 };   /* the apse's rose window (cold violet glass): tools/unburied-look.mjs 9 asserts nothing red or green and bright stands behind the Death Knight's floor */
 UF.FIRES = [...FIRE_AT, { id: 'camp-brazier', x: 1, y: GEOM.G, up: 18 }];
 
 /* THE TILE KIT'S MAP (final columns): the field's ground BY SECTION of the road, and its ledges BY WHAT THEY ARE (first match wins) - src/redraw/unburied_tiles.js */
-const TILEKIT = { G: GEOM.G, bed: BRG.bed, ravine: [BRG.at, BRG.at + BRG.n - 1], gap: BRG.ravine, stoneFrom: 360, gateStone: [355, 357], hide: [246, 247], towerBase: [257, 258, 20, GEOM.G], farbank: [320, 321],
-  zones: [['camp', [0, 20]], ['spoil', [21, 129]], ['mud', [130, 229]], ['works', [230, 264]], ['approach', [265, 359]]],
+const TILEKIT = { G: GEOM.G, bed: BRG.bed, ravine: [BRG.at, BRG.at + BRG.n - 1], gap: BRG.ravine, stoneFrom: 360, bailey: [BK0(0), BK0(63)], fascines: [BK0(20), BK0(21)],   /* (the bailey's churned ground is the field's mud, not the chapel's flags: claude/unburied4) */ gateStone: [355, 357], hide: [246, 247], towerBase: [257, 258, 20, GEOM.G], farbank: [320, 321],
+  zones: [['camp', [0, 20]], ['spoil', [21, 129]], ['mud', [130, 229]], ['works', [230, 264]], ['approach', [265, 359]], ['mud', [BK0(0), BK0(63)]]],
   pits: GEOM.TRENCHES, revet: [[21, 32], [57, 72], [72, 84], [95, 108], [148, 228]],
   ledges: [[148, 228, 29, 32, 'deck'], ...[157, 170, 183, 196, 209, 219].map(x => [x, x + 2, GEOM.G + 3, GEOM.G + 3, 'wagon']), [332, 334, GEOM.G - 2, GEOM.G - 2, 'wagon'], [346, 348, GEOM.G - 2, GEOM.G - 2, 'wagon'],
-    [230, 264, 18, 35, 'tower'], [342, 346, 24, 24, 'tower'], [347, 362, 24, 24, 'deck'], [380, 384, GEOM.G - 2, GEOM.G - 2, 'tomb'], [442, 445, GEOM.G - 2, GEOM.G - 2, 'tomb'], [462, 465, GEOM.G - 2, GEOM.G - 2, 'tomb'], [360, 479, 0, 47, 'stone']] };
+    [230, 264, 18, 35, 'tower'], [342, 346, 24, 24, 'tower'], [347, 362, 24, 24, 'deck'], [Y(380), Y(384), GEOM.G - 2, GEOM.G - 2, 'tomb'], [Y(442), Y(445), GEOM.G - 2, GEOM.G - 2, 'tomb'], [Y(462), Y(465), GEOM.G - 2, GEOM.G - 2, 'tomb'], [360, Y(479), 0, 47, 'stone']] };
 export function buildUnburiedField({ painter, T, TS, grow }) {
   const UF = GEOM, { W, H, G } = GEOM;   /* the greybox's columns, all of them: the bridges are grown in at the end */
   const L = painter(W, H), { set, block, floor, plat, ent, coins } = L;
@@ -333,18 +342,52 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
   bent('drawbridge', 346, 23, { span: [347, 353], row: 24 });
   bent('sign', 337, G, { text: 'THE ORDER BARRED ITS GATE. THE HOST BROUGHT A TOWER, AND IT STILL STANDS.' });
   R.bridgeVolley = { x0: c0 * TS, x1: (c1 + 1) * TS, period: 4.6, whistle: 1.2, spread: 44, r: 12 };
-  for (const s of SET) Bp.ent('deco', s.x, s.y, Object.assign({ kind: s.kind }, s.o));   /* the set pieces */
-  for (const e of L.ents.concat(Bp.ents)) if (e.t === 'cover') { const sz = ({ wagon: [44, 34], cart: [44, 34], shields: [46, 36], mantlet: [30, 34], brokenMantlet: [30, 34] })[e.kind] || [30, 30], id = 'cover-' + e.x + '-' + e.y;
-    if (sz[0] >= 32 && !FINALUF.SETPIECES.some(p => p.id === id)) FINALUF.SETPIECES.push(bbox({ id, x: e.x, y: e.y, w: sz[0], h: sz[1] })); }   /* the cover props are set pieces too (the wagons, the cart, the ghost shieldmen) */
   R.ubFires = FIRE_AT.map(f => ({ x: f.x * TS + 8, y: (GEOM.G + 3) * TS, w: 40, h: 24 })).concat([{ x: 5450, y: 252, w: 50, h: 24 }]);   /* live flame on the burning wagons' beds, and the great standard's hem */
-  R.noDress = SET.map(bbox).map(b => [b.x0 - 1, b.x1 + 1, b.y0 - 1, b.y1 + 1]);   /* the sprinkler leaves them be */
   R.structures.push(...DECK_RUNS.map(([x, row, n]) => ({ x0: x, x1: x + n - 1, top: row + 1, floor: GEOM.G + 6, kind: 'ubtrestle' })));   /* B9: every plank of the gun-deck stands on a trestle */
   /* WHAT HOLDS THE REST UP (claude/unburied4, Daniel's playtest 10-05: "floating things"; tools/unburied-aloft.mjs A). Each of these ledges stood on a claim (a set piece's holds: true) and nothing drawn:
      the tomb lids on piers, the Rider's two cart beds on their chassis and wheels, the coin shelf over the crossing on a trestle, the toppled tower's two low decks on raking shores */
   R.structures.push(...[442, 445, 462, 465].map(x => ({ x0: x, x1: x, top: GEOM.G - 1, floor: GEOM.G + 1, kind: 'ubpierCold' })), ...[380, 384].map(x => ({ x0: x, x1: x, top: GEOM.G - 1, floor: GEOM.G + 1, kind: 'ubpier' })),
     ...[332, 346].map(x => ({ x0: x, x1: x + 2, top: GEOM.G - 1, floor: GEOM.G + 1, kind: 'ubcart' })), { x0: 106, x1: 110, top: 26, floor: GEOM.G + 5, kind: 'ubtrestle' },
     { x0: 236, x1: 240, top: 34, floor: GEOM.G + 1, kind: 'ubprop' }, { x0: 241, x1: 245, top: 31, floor: GEOM.G + 1, kind: 'ubprop' });
-  R.facades = (R.facades || []).concat([[228, 264, 17, 36, 'ubtower'], [326, 376, 18, 36, 'ubwall'], [333, 346, 4, 36, 'ubstandard'], [338, 364, 18, 36, 'ubtower2'], [360, 433, 12, 36, 'ubnave'], [434, 479, 6, 36, 'ubapse']]);   /* (the standing tower and its gallery are drawn over the wall) */   /* THE TOPPLED TOWER, the Order's wall and gatehouse, the nave, the apse, the host's great standard - all drawn */
-  R.unburied = TILEKIT;   /* the field's own tile kit reads this (src/redraw/unburied_tiles.js; main.js hooks it beside the canal's and the theatre's) */
-  return Bp.done();
+  const R1 = Bp.done();
+
+  // ---- 5b. THE BAILEY (c 364-435, final columns; claude/unburied4, Daniel's playtest 10-05) ----
+  /* THE STRETCH'S SENTENCE: the host got over the wall and died in the outer ward; the mud it churned is still there, and so are the Order's bowmen on the breach at the far end -
+     A HORN, THEN THE VOLLEY, out of the east. What stops it is a thing between you and the breach: a wagon, a heap of shields, or a WHEELED MANTLET you PUSH through the mud ahead
+     of you (a pushblock; src/unburied-foes.js mantlet). Mud is slow (a shallow pool: wading), and a mantlet is slower still - you go at the pace of what covers you.
+       TEACH   0-21   firm ground and a wagon at the ladder's foot, the sign; mantlet A in the mud, a heap of shields halfway, and a BARRICADE (an earth bank, fascines on top) four rows high: push A to its foot
+                      and climb it (the barricade is the mantlet's first use as a STEP). No foe: failure here is a volley, nothing more
+       TEST  22-44   mantlet B, a long reach of mud and the dead coming through it - a zombie, a grave hound, a husk (THE MIRE): fight from behind it, and the volley falls on anything in
+                      the open, so the dead you draw out from cover are the bowmen's too. A broken cart at the far end
+       EXAM  45-71   mantlet C under the breach: a banner-bearer and his fallen in the mud, two bowmen on the breach itself, and the breach wall four rows high - push C to its foot
+                      under the volleys, with the dead getting up round you, and climb out (THE BREACH). The required use: no hero's base jump makes four rows */
+  const Cp = grow({ W: R1.W, H: R1.H, grid: R1.grid, ents: R1.ents }, R1, BAI.at, BAI.n), R2 = Cp.R, b = BK0;
+  Cp.floor(b(0), b(71), G + 1);
+  for (let x = b(4); x <= b(63); x++) Cp.set(x, G + 1, T.AIR);                                       // the mud: the ward's floor trodden a row down, from the ladder's foot to the breach
+  Cp.block(b(20), b(21), G - 2, G + 1);                                                              // THE BARRICADE: an earth bank four rows over the mud, a hop for nobody (rock, not a palisade: a bomb does not open it)
+  Cp.block(b(64), b(69), G - 2, G);                                                                  // THE BREACH: the inner wall's rubble, four rows over the mud
+  R2.pools = (R2.pools || []).concat([[4, 19], [22, 63]].map(([p, q]) => ({ x0: b(p) * TS, x1: (b(q) + 1) * TS, y: (G + 1) * TS + 4, shallow: true, depth: 12, mud: true })));
+  const C = (t, k, y, o = {}) => Cp.ent(t, b(k), y, o);
+  /* THE MANTLETS: stepAt is where it ends up when it is the way on (src/reachcore.js reads it as a step there, the way it reads a laid gun's hole); B is cover only */
+  C('pushblock', 6, G + 1, { mantlet: 'a', stepAt: [b(19), G + 1] }); C('pushblock', 24, G + 1, { mantlet: 'b' }); C('pushblock', 46, G + 1, { mantlet: 'c', stepAt: [b(63), G + 1] });
+  C('deco', 20, G - 3, { kind: 'ubFascines', v: 0 }); C('deco', 21, G - 3, { kind: 'ubFascines', v: 1 });   /* the fascines along its top */
+  C('cover', 2, G, { kind: 'wagon' }); C('cover', 13, G + 1, { kind: 'shields' }); C('cover', 43, G + 1, { kind: 'cart' });
+  C('sign', 1, G, { text: "THE ORDER'S BOWS HOLD THE BREACH. A HORN, THEN THE VOLLEY: PUSH A MANTLET AND KEEP BEHIND IT." });
+  Cp.coins([b(9), G + 1], [b(17), G + 1], [b(28), G + 1], [b(39), G + 1], [b(51), G + 1], [b(60), G + 1], [b(67), G - 3]);
+  const meet2 = (name, x0, x1, foes) => { R2.encounters.push({ name, x0: b(x0), x1: b(x1), n: foes.length }); for (const [t, k, y, o] of foes) C(t, k, y, Object.assign({ face: -1, enc: name }, o || {})); };
+  meet2('THE MIRE', 28, 44, [['zombie', 32, G + 1], ['hound', 37, G + 1, { cnSkin: 'gravehound' }], ['husk', 41, G + 1]]);
+  meet2('THE BREACH', 46, 69, [['bannerbearer', 54, G + 1], ['corpse', 50, G + 1], ['corpse', 58, G + 1], ['bonearcher', 66, G - 3], ['bonearcher', 68, G - 3]]);
+  /* THE YARD VOLLEY (stepField's stepYardVolley): the zone in px, a horn of horn s every period s; the bowmen stand on the breach (archers, tiles) and the arrows come from the east */
+  R2.yardVolley = { x0: b(3) * TS, x1: b(64) * TS, period: 5.2, horn: 1.8, dmg: 10, archers: [[b(65), G - 7], [b(67), G - 7], [b(69), G - 7]] };   /* (the two on the wall's top, 66 and 68, are THE BREACH's real bowmen) */
+  R2.ambient = [{ x0: 0, x1: b(72) * TS, kind: 'battlefield' }, { x0: b(72) * TS, x1: 99999, kind: 'hall', bell: true }];   /* the bailey is open air: the battle's bed runs to the yard */
+  /* the set pieces, the cover counted as set pieces, the sprinkler kept off them - in final columns (S() slid the chapel's past the bailey) */
+  for (const s of SET) Cp.ent('deco', s.x, s.y, Object.assign({ kind: s.kind }, s.o));
+  const RF = Cp.done();
+  for (const e of RF.ents) if (e.t === 'cover') { const sz = ({ wagon: [44, 34], cart: [44, 34], shields: [46, 36], mantlet: [30, 34], brokenMantlet: [30, 34] })[e.kind] || [30, 30], id = 'cover-' + e.x + '-' + e.y;
+    if (sz[0] >= 32 && !FINALUF.SETPIECES.some(p => p.id === id)) FINALUF.SETPIECES.push(bbox({ id, x: e.x, y: e.y, w: sz[0], h: sz[1] })); }   /* the cover props are set pieces too (the wagons, the cart, the ghost shieldmen) */
+  RF.noDress = SET.map(bbox).map(q => [q.x0 - 1, q.x1 + 1, q.y0 - 1, q.y1 + 1]).concat([[b(0), b(71), 20, G + 2]]);   /* the sprinkler leaves them be, and the bailey (it is the bowmen's ground) */
+  /* THE TOPPLED TOWER, the Order's wall and gatehouse (its yard wall run on west behind the bailey as the inner ward's wall: o.gap), the hoarding on the breach, the nave, the apse, the host's great standard - all drawn */
+  RF.facades = (RF.facades || []).concat([[228, 264, 17, 36, 'ubtower'], [326, Y(376), 18, 36, 'ubwall', { gap: [BAI.at, BAI.n] }], [333, 346, 4, 36, 'ubstandard'], [338, 364, 18, 36, 'ubtower2'], [b(62), b(71), 24, 36, 'ubbreach'], [360 + BAI.n, Y(433), 12, 36, 'ubnave'], [Y(434), Y(479), 6, 36, 'ubapse']]);   /* (the standing tower and its gallery are drawn over the wall) */
+  RF.unburied = TILEKIT;   /* the field's own tile kit reads this (src/redraw/unburied_tiles.js; main.js hooks it beside the canal's and the theatre's) */
+  return RF;
 }

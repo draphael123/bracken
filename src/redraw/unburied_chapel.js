@@ -69,8 +69,9 @@ export function drawFort(g, cx, cy, VW, VH, time) {
 // ================================================================ THE WALL AND GATEHOUSE (cols 326-376, rows 18-36) ================================================================
 /* facade [326, 376, 18, 36]: 51 x 19 tiles = 816 x 304. Origin (326, 18). The curtain wall behind the Rider's barrow ground, the gatehouse towers either side of the gate arch (355-357),
    the yard wall beyond, breached at 366-370. The tiles carry the arch's lintel and the portcullis (T.PORT at 356) */
-export function bakeWall() {
-  const W = 51 * 16, H = 19 * 16, [c, g] = canvas(W, H), r = rnd(326), X = col => (col - 326) * 16, Y = row => (row - 18) * 16;
+export function bakeWall(o = {}) {
+  /* (claude/unburied4) o.gap = [col, n]: the bailey was cut in at col, n wide - everything east of it slides n east, and what spans it (the yard wall) runs on across it as the inner ward's wall */
+  const [gc, gn] = o.gap || [9999, 0], W = (51 + gn) * 16, H = 19 * 16, [c, g] = canvas(W, H), r = rnd(326), X = col => (col - 326 + (col >= gc ? gn : 0)) * 16, Y = row => (row - 18) * 16;
   const wl = '#4a4648', wb = '#3a3638', wd = '#242022';
   /* the curtain wall: west of the gatehouse, tall, with a wall-walk and merlons, a long dark seam where a siege engine's stone struck */
   ashlar(g, X(326), Y(25), X(351) - X(326), Y(37) - Y(25), wb, wl, wd, 3); merlons(g, X(326), Y(25), X(351) - X(326), wb, wl, wd, 24, 14, 10, [[X(338), X(342)]]); rect(g, X(326), Y(25), X(351) - X(326), 2, '#64605e');
@@ -100,6 +101,26 @@ export function bakeWall() {
   for (let i = 0; i < 14; i++) { const x = X(365) + ((r() * 100) | 0), y = Y(37) - 6 - ((r() * 12) | 0), w = 8 + ((r() * 10) | 0); rect(g, x, y, w, 6, i % 3 ? wb : wl); rect(g, x, y, w, 1, '#6a6668'); }   /* the stones that came down */
   /* the Order's old standard-bearer's cairn and a fallen scaling ladder against the west curtain */
   line(g, X(340), Y(37), X(345), Y(24), K.wood3, 2); line(g, X(342), Y(37), X(347), Y(24), K.wood3, 2); for (let k = 0; k < 8; k++) line(g, X(340) + k * 0.7 + 1, Y(36) - k * 24 / 2 + 2, X(342) + k * 0.7, Y(36) - k * 24 / 2 + 3, K.wood5);
+  return outline(c, '#120c10');
+}
+
+// ================================================================ THE BREACH (claude/unburied4: the bailey's east end, its facade [b62..b71, rows 24-36]) ================================================================
+/* facade 10 x 13 tiles = 160 x 208, origin (b62, 24). The tiles carry the breach itself (b64-b69, rows G-2..G: the inner wall's rubble). Drawn behind them: the broken stump of the inner
+   gate tower rising out of the rubble, and on it, STANDING ON IT (posts down onto the wall's top), the Order's timber hoarding where its dead bowmen stand (row 29: drawn live), with the
+   Order's red banner hung under it. Origin x: X(k) = (k - 62) * 16 for bailey column k; Y(row) = (row - 24) * 16 */
+export function bakeBreach() {
+  const W = 10 * 16, H = 13 * 16, [c, g] = canvas(W, H), X = k => (k - 62) * 16, Y = row => (row - 24) * 16;
+  const wb = '#3a3638', wl = '#524e50', wd = '#221e20';
+  /* the gate tower's stump: ashlar from the breach up to a ragged top at row 25-26 */
+  ashlar(g, X(64), Y(26), X(70) - X(64), H - Y(26), wb, wl, wd, 64);
+  fillPoly(g, [[X(64), Y(26)], [X(65), Y(25)], [X(67), Y(26) - 4], [X(68), Y(25)], [X(70), Y(26)], [X(70), Y(27)], [X(64), Y(27)]], wb);
+  rect(g, X(66) + 4, Y(31), 4, 14, '#0e0a0c'); rect(g, X(68) + 6, Y(32), 3, 10, '#0e0a0c');   /* arrow slits */
+  /* THE HOARDING: a deck at row 30's top on four posts that stand on the rubble (row 34's top), braced; a rail; the banner under it */
+  for (const x of [X(64) + 2, X(66) + 8, X(68) + 4, X(70) - 4]) { rect(g, x, Y(30), 4, Y(34) - Y(30), K.wood2); rect(g, x, Y(30), 1, Y(34) - Y(30), K.wood4); }
+  rect(g, X(63) + 8, Y(30), X(70) - X(63) - 8, 5, K.wood3); rect(g, X(63) + 8, Y(30), X(70) - X(63) - 8, 1, K.wood5); rect(g, X(63) + 8, Y(30) + 4, X(70) - X(63) - 8, 1, K.wood0);
+  for (let x = X(63) + 10; x < X(70) - 2; x += 6) rect(g, x, Y(29), 2, 16, K.wood2); rect(g, X(63) + 8, Y(29), X(70) - X(63) - 8, 2, K.wood3);   /* its rail */
+  line(g, X(64) + 4, Y(32) + 10, X(66) + 8, Y(30) + 4, K.wood3, 2); line(g, X(68) + 6, Y(32) + 10, X(70) - 4, Y(30) + 4, K.wood3, 2);   /* braces */
+  { const bx = X(66) + 14, by = Y(30) + 5, hh = 40; fillPoly(g, [[bx, by], [bx + 14, by], [bx + 14, by + hh], [bx + 7, by + hh - 8], [bx, by + hh]], K.red2); rect(g, bx, by, 2, hh, K.red1); rect(g, bx + 6, by + 6, 3, 22, K.gold2); rect(g, bx + 2, by + 13, 11, 3, K.gold2); }   /* the Order's red */
   return outline(c, '#120c10');
 }
 
@@ -195,8 +216,9 @@ export function bakeStandard() {
   return outline(c, K.out);
 }
 
-export function bakeFacade(kind) {
-  if (kind === 'ubwall') return bakeWall();
+export function bakeFacade(kind, o) {
+  if (kind === 'ubwall') return bakeWall(o || {});
+  if (kind === 'ubbreach') return bakeBreach();
   if (kind === 'ubnave') return bakeNave();
   if (kind === 'ubapse') return bakeApse();
   if (kind === 'ubstandard') return bakeStandard();

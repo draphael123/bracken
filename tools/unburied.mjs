@@ -61,7 +61,7 @@ assert.ok(new Set(covers.map(c => c.kind)).size >= 3, 'upturned shields, wagons,
 assert.ok(covers.some(c => c.x >= UF.HIGH[0] && c.x <= UF.HIGH[1] && c.y < G), 'act two\'s high route carries cover of its own');
 ok('the volleys, horn-warned, and cover to cross', covers.length + ' cover props, ' + L.volleys.length + ' zones');
 /* 2 SIEGE ENGINES YOU WORK: the brief's audit bar is a prop worked every ~3 screens, and a screen is 24 columns */
-const screens = W / 24, engines = ents.filter(e => ['ballista', 'trebuchet', 'oilbarrel'].includes(e.t));
+const screens = W / 24, engines = ents.filter(e => ['ballista', 'trebuchet', 'oilbarrel'].includes(e.t) || (e.t === 'pushblock' && e.mantlet));   /* (claude/unburied4: the bailey's wheeled mantlets are siege engines you work too - pushed, for cover and as a step) */
 assert.ok(engines.length >= Math.floor(screens / 3), 'a prop worked every ~3 screens: ' + engines.length + ' over ' + screens.toFixed(1) + ' screens');
 assert.ok(of('ballista').length && of('trebuchet').length, 'a loaded ballista AND a trebuchet, both named in the brief');
 for (const e of engines) assert.ok(near(e), e.t + ' at ' + e.x + ',' + e.y + ' is reachable');
@@ -187,6 +187,28 @@ ok('hazards', 'cavalry lane, ' + of('oilbarrel').length + ' oil barrels, stake l
   assert.ok(seen.some(([x, y]) => x >= 325 && y === G), 'the far bank, the Barrow Rider and his barrow are reached with the mangonel untouched and the palisade standing');
   assert.equal(mg[0].knocks, 'farbank'); assert.ok(mg[0].x < 273 && mg[0].aim[0] >= 318 && mg[0].aim[0] <= 324, 'the mangonel stands on the near bank, aimed at the far bank');
   ok('the drawbridge, the mangonel', 'a seven-cell leaf is the way in (the gate holds, the fill passes with it down); a two-row palisade, never required'); }
+
+
+/* ---- 5c. THE BAILEY (claude/unburied4, Daniel's playtest 10-05: a mud field under arrow volleys, with cover you move between) ----
+   A told volley out of the east over seventy columns of mud; the cover is wagons, shields and THREE WHEELED MANTLETS you push; the barricade and the breach are four rows over the mud
+   (no hero's base jump, 3.17 tiles, makes them) and a mantlet pushed to the foot of each is the step. So: with the mantlets' steps the fill crosses to the arena; without them it stops
+   at the barricade - the mantlet is REQUIRED (the design standard's one required use before the boss), and it is mud all the way (wading). ---- */
+{ const B = UF.BAILEY, b0 = B.at, b1 = B.at + B.n - 1, V = L.yardVolley;
+  assert.ok(V && V.horn >= 1.5 && V.period > V.horn + 2 && V.x0 >= b0 * TS && V.x1 <= (b1 + 1) * TS, 'the bailey volley is told (a horn of ' + (V && V.horn) + ' s) and is its own');
+  const mud = L.pools.filter(p => p.mud && p.x0 >= b0 * TS && p.x1 <= (b1 + 1) * TS); assert.ok(mud.reduce((n, p) => n + (p.x1 - p.x0) / TS, 0) >= 50, 'fifty columns of mud and more');
+  const mts = of('pushblock').filter(e => e.mantlet && e.x >= b0 && e.x <= b1); assert.equal(mts.length, 3, 'three wheeled mantlets');
+  assert.ok(covers.filter(c => c.x >= b0 && c.x <= b1).length >= 3, 'and fixed cover between them: wagon, shields, cart');
+  for (const m of mts.filter(q => q.stepAt)) { const [sx, sy] = m.stepAt; let h = 0; for (let y = sy; y >= 0 && L.grid[y * W + sx + 1] !== T.AIR; y--) h++;
+    assert.ok(h >= 4, 'the wall the mantlet ' + m.mantlet + ' is for stands ' + h + ' rows over the mud: a base jump (3.17) makes three'); }
+  /* with a REAL jump (maxUp 3: 3.17 tiles makes three rows, never four), from the ladder's foot */
+  const real = keep => { const S = build(); S.START = { x: b0 + 1, y: G }; if (!keep) for (const e of S.ents) if (e.t === 'pushblock') delete e.stepAt; return [...floodReach(S, T, { rides: true, maxUp: 3 }).seen].map(k => k.split(',').map(Number)); };
+  const f0 = real(false), f1 = real(true), far = Math.max(...f0.filter(([, y]) => y >= G - 4 && y <= G + 2).map(([x]) => x));
+  assert.ok(far < b0 + 22, 'WITHOUT THE MANTLETS a real jump stops in the bailey: it got to column ' + far);
+  assert.ok(f1.some(([x, y]) => x > b1 && y === G), 'with them pushed to the walls a real jump crosses it');
+  assert.ok(seen.some(([x]) => x >= UF.ARENA.x0 + 4), 'and the field goes on to the arena');
+  const enc = L.encounters.filter(e => e.x0 >= b0 && e.x1 <= b1); assert.ok(enc.length >= 2, 'the dead come through the mud while the volleys fall: ' + enc.map(e => e.name).join(', '));
+  assert.ok(ents.some(e => e.t === 'bonearcher' && e.x >= b0 && e.x <= b1), 'and a bowman on the breach (a ranged foe)');
+  ok('the bailey', mts.length + ' mantlets (' + mts.filter(q => q.stepAt).length + ' of them steps), the fill stops at column ' + far + ' without them; ' + enc.map(e => e.name).join(' / ')); }
 
 
 /* ---- 6. RULE Q: ONE AMBUSH, ONE WAVE, ONE CAPTAIN ---- */

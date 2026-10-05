@@ -23,7 +23,11 @@ export const STUCK = {
     { id: 'ub-ballista-188', zone: [168, 18, 194, 34], at: [188, 28], done: ['ballista', 188, 28, 'fired'], line: 'A SECOND BALLISTA, HIGH ON THE DECK, STILL LOADED' },
     { id: 'ub-oil-200', zone: [190, 34, 214, 46], at: [200, 41], done: ['oilbarrel', 200, 41, 'used'], line: 'SIEGE OIL, STILL IN ITS BARRELS: THE TRENCH IS LOW' },
     { id: 'ub-trebuchet-230', zone: [214, 18, 236, 46], at: [230, 36], dy: -22, done: ['trebuchet', 230, 36, 'used'], line: 'THE TREBUCHET IS STILL LOADED, AND THE TOWER IS IN ITS SIGHTS' },
-    { id: 'ub-ballista-418', zone: [410, 24, 432, 37], at: [418, 36], done: ['ballista', 418, 36, 'fired'], line: 'THE BALLISTA BY THE ARENA DOOR IS STILL LOADED' },
+    { id: 'ub-ballista-418', zone: [482, 24, 504, 37], at: [490, 36], done: ['ballista', 490, 36, 'fired'], line: 'THE BALLISTA BY THE ARENA DOOR IS STILL LOADED' },   /* (claude/unburied4: 72 east, past the bailey) */
+    /* THE BAILEY (claude/unburied4): the mantlet in each reach of mud, after a stall - and the barricade and the breach, each a wall the mantlet is the way up */
+    { id: 'ub-mantlet-a', zone: [364, 30, 384, 40], mover: { mantlet: 'a' }, glint: 'stall', line: 'A WHEELED MANTLET IN THE MUD: THE BOWS CANNOT SEE THROUGH IT' },
+    { id: 'ub-mantlet-b', zone: [386, 30, 408, 40], mover: { mantlet: 'b' }, glint: 'stall', line: 'ANOTHER MANTLET: THE BREACH CANNOT SEE PAST IT' },
+    { id: 'ub-mantlet-c', zone: [409, 30, 427, 40], mover: { mantlet: 'c' }, glint: 'stall', line: 'THE BREACH IS HIGH, AND A MANTLET STANDS IN THE MUD' },
     { id: 'ub-tower-ladder', zone: [238, 30, 262, 40], rows: [32, 40], at: [256, 34], glint: 'stall', line: 'THE TOWER LIES OVER: ITS LADDER IS THE WAY UP' },
     { id: 'ub-rope-ladder', zone: [273, 41, 316, 47], rows: [41, 48], at: [273, 42], line: 'THE OLD ROPE LADDER IN THE WEST WALL IS THE WAY OUT' },
     { id: 'ub-mangonel', zone: [262, 24, 300, 46], at: [268, 36], dy: -4, done: ['mangonel', 268, 36, 'used'], line: 'A MANGONEL AT THE BRIDGEHEAD: THE FAR BANK IS IN ITS RANGE' },

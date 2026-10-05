@@ -57,7 +57,9 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     if (e.t === 'tbell' && e.span) { const [x0, x1, row] = e.span; for (let x = x0; x <= x1; x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.PLANK; } }
     /* ITS PRAYER WHEELS: struck from their own floor, a wheel's stair stands either way, so the full fill has both at once. The
        plain fill has the stair as it was built and nothing else: a climb that needs it turned is a climb on the --plain list */
-    if (e.t === 'pwheel' && !plain) for (const [x0, y, w] of [...(e.a || []), ...(e.b || [])]) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+    /* A BLOCK WITH A PLACE TO GO (claude/unburied4, the Unburied Field's mantlets): pushed to the foot of the wall it is there for, it is a step - one walk, so done, like the gun's hole */
+    if (e.t === 'pushblock' && e.stepAt) { const i = e.stepAt[1] * W + e.stepAt[0]; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+    if (e.t === 'pwheel' && !plain)for (const [x0, y, w] of [...(e.a || []), ...(e.b || [])]) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
   }
   /* FAILING STONE THAT IS THE WAY ON (the Falling Tower's observers' gallery, src/tower-collapse.js): stand on it and it counts
      down and goes, every time, so it is a floor you can go DOWN through and nothing else - a one-way to the model. Only `opens`:

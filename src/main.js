@@ -2238,7 +2238,7 @@ function spawnEnt(e) {
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, gate: e.gate, down: false }); break;
       case 'tidegate': props.push({ t: 'tidegate', x: px, y: py, col: e.x, y0: e.y0, y1: e.y1, mode: e.mode, open: false }); break;   /* THE LONG WATER's TIDE GATES (updateTideGates) */
       case 'dropcage': props.push({ t: 'dropcage', x: px, y: py, y0: py, dropped: false, landed: 0, hit: new Set(), boss: !!e.boss, resetT: 0 }); break;
-      case 'pushblock': movers.push(newPushBlock(px, py)); break;   /* PUSHABLE BLOCKS: a mover, so standing on it and resetting it on death/checkpoint come free (backlog #12) */
+      case 'pushblock': movers.push(newPushBlock(px, py)); if (e.mantlet) UNBF.mantlet(movers[movers.length - 1], e); break;   /* PUSHABLE BLOCKS: a mover, so standing on it and resetting it on death/checkpoint come free (backlog #12) */
       case 'miner': enemies.push({ ...base, t: 'miner', w: 10, h: 11, hp: EHP.miner, speed: 26, mode: 'walk', modeT: 0, digT: 0, glass: !!e.glass }); break;
       case 'tippler': enemies.push({ ...base, t: 'tippler', w: 12, h: 12, hp: EHP.tippler, speed: 0, mode: 'idle', modeT: 0, cd: 1 + Math.random() }); break;
       case 'sheargob': enemies.push({ ...base, t: 'sheargob', w: 10, h: 12, hp: EHP.sheargob, speed: 30, mode: 'walk', modeT: 0, cd: 0.8 }); break;
@@ -18655,10 +18655,11 @@ function unbReset() {
 }
 function updateUnburied(dt) {
   const F = UNB_FIELD; if (!F) return;
-  UNBF.stepField(F, dt, { P, sound: unbSnd, say: (x, y, m, col) => number(x, y, m, col), number: (x, y, m, col) => number(x, y, m, col), foes: () => enemies,
+  UNBF.stepField(F, dt, { P, sound: unbSnd, mantlets: () => movers.filter(q => q.mantlet), say: (x, y, m, col) => number(x, y, m, col), number: (x, y, m, col) => number(x, y, m, col), foes: () => enemies,
     bearerAlive: name => enemies.some(q => q.alive && q.t === 'bannerbearer' && q.enc === name),
     hurtP: (x, d, name) => damagePlayer(x, d, { unblockable: true, name }),
     /* THE BRIDGES' ARROWS come from straight overhead: fromX is the hero's own x, so every guard held up turns them (damagePlayer) */
+    arrowEast: (x, d, name) => damagePlayer(P.x + 30, d, { name }),   /* (claude/unburied4) THE BAILEY'S ARROWS come out of the east: a guard held toward the breach turns them */
     arrowP: (x, d, name) => { const r = damagePlayer(P.x, d, { name }); if (r === 'blocked') number(P.x, P.y - 30, 'TURNED OVERHEAD', '#8fd160'); return r; },
     surface: (x, y) => { const tx = Math.floor(x / TS); for (let ty = Math.max(0, Math.floor((y - 8) / TS)); ty < Math.min(LH, Math.floor(y / TS) + 14); ty++) { const t = tileAt(tx, ty); if (isSolid(tx, ty) || isOneWay(t)) return ty * TS; } return y; },
     hurtFoe: (q, d, fx) => hurtEnemy(q, d, fx, false), struck: unbStruck,
@@ -26338,6 +26339,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
     if (m.fair && FR.drawMover(g, m, cx, cy, time)) continue;   /* THE HARVEST FAIR: a gondola on the wheel, a chair on the swing ride */
     if (L.burialLook && drawBurialMover(g, m, cx, cy, time)) continue;   /* THE BURIAL CAVERNS: stone slabs on chains, stone coffins, floating biers - no timber (burial-looks.js) */
+    if (m.mantlet) { UNBF.drawMantlet(g, m, cx, cy, time); continue; }   /* (claude/unburied4) the Unburied Field's wheeled mantlets */
     if (m.kind === 'pushblock' && FAIR) { FAW.drawBale(g, Math.round(m.x) - cx, Math.round(m.y) - cy); continue; }   /* (claude/fairfix5) the fair's push block is a hay bale */
     if (m.kind === 'pushblock') { const bx = Math.round(m.x) - cx, by = Math.round(m.y) - cy;   /* a block of the level's own ground tile (backlog #12): it is baked fresh per palette (bakeAll), so it always matches the set it stands in, with a mortar line round it so it still reads as a loose object and not the floor */
       g.drawImage(TILE.dirt[0], bx, by); g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, m.w - 1, m.h - 1); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(bx + 1.5, by + 1.5, m.w - 3, m.h - 3); continue; }
