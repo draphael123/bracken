@@ -31,13 +31,14 @@ function rig(o = {}) {
   const e = M.newGreenteeth({ t: 'greenteeth', x: o.ex ?? A.mid, y: A.bed, hp: o.hp ?? GT.hp, maxHp: GT.hp, alive: true });
   e.mode = 'wake'; e.modeT = 1.6;
   const hero = { x: o.x ?? A.mid, y: A.bed, ground: false, swim: true, onWeed: -1, onTile: false, alive: true };
-  const log = { hits: [], bands: [], grabs: 0, holds: 0, slams: 0, nets: 0, lines: [], sounds: [], events: {} };
+  const log = { hits: [], bands: [], grabs: 0, holds: 0, slams: 0, nets: 0, vines: [], lines: [], sounds: [], events: {} };
   const inBox = box => { const hb = { l: hero.x - 5, r: hero.x + 5, t: hero.y - 20, b: hero.y }; return box[0] < hb.r && box[1] > hb.l && box[2] < hb.b && box[3] > hb.t; };
   const c = { heroes: [hero], say: () => {}, sound: k => log.sounds.push(k), number: (x, y, t) => log.lines.push(t), water: () => {},
     hit: (box, d, name, opt) => { log.hits.push({ box, d, name, opt }); return inBox(box) ? (opt && opt.meet && r0.meet ? 'met' : 'hit') : null; },
     band: (kind, b, x0, x1, d, name, key) => log.bands.push({ kind, b, x0, x1, d, name, key }),
     slam: box => { log.slams++; return !r0.dodge && inBox(box); }, net: box => { log.nets++; return !r0.dodge && inBox(box); },
     grab: (box, d) => { if (hero.onTile || !inBox(box)) return null; log.grabs++; return hero; },
+    vine: ([t, b], x0, x1, d, key, toX) => { log.vines.push({ t, b, x0, x1, d, key, toX }); return !r0.dodge && hero.ground && hero.x >= x0 && hero.x <= x1 && hero.y > t && hero.y - 20 < b ? hero : null; },   /* (claude/jenny3: her vine - caught unless jumped) */
     hold: () => { log.holds++; return !o.mash; }, drag: () => {}, release: () => {}, cycle: () => {} };
   const r0 = { meet: !!o.meet, dodge: !!o.dodge };
   /* where the hero stands: 'swim', 'walkE' / 'walkW' (a gate's walkway), 'walerE' / 'walerW' (the first waler over the water), 'weed', 'boat' */
@@ -59,7 +60,7 @@ const toPhase = (r, ph) => { if (ph >= 2) { r.e.hp = GT.hp * (ph === 2 ? 0.6 : 0
 
 // ---- THE MARKS: every blow told, with its answer and its height; the quiet ones wear none ----
 { const ROWS = { grabTell: ['!!', 'dodge', 'low'], lashTell: ['!!', 'jump', 'low'], reachTell: ['!!', 'duck', 'high'], biteTell: ['!', 'block', 'low'], tearTell: ['!!', 'dodge', 'low'], surgeTell: ['!!', 'jump', 'low'],
-    slamTell: ['!!', 'dodge', 'low'], chargeTell: ['!!', 'jump', 'low'], netTell: ['!!', 'dodge', 'low'] };
+    slamTell: ['!!', 'dodge', 'low'], chargeTell: ['!!', 'jump', 'low'], netTell: ['!!', 'dodge', 'low'], vineTell: ['!!', 'jump', 'low'] };
   for (const [m, [mk, an, hg]] of Object.entries(ROWS)) { const k = 'greenteeth|' + m; ok(MARK[k] === mk && BY_HAND[k] === mk, k + ' wears ' + JSON.stringify(MARK[k]) + ', not ' + mk); ok(ANSWER[k] === an, k + ' is answered ' + JSON.stringify(ANSWER[k]) + ', not ' + an); ok(HEIGHT[k] === hg, k + ' is ' + JSON.stringify(HEIGHT[k]) + ' high, not ' + hg);
     const mv = M.MOVES[m.replace(/Tell$/, '')]; if (mv) ok(mv.mark === mk && mv.answer === an && mv.h === hg, 'the fight\'s own row for ' + m + ' disagrees with src/marks.js'); }
   for (const m of ['floodTell', 'fogTell']) ok(MARK['greenteeth|' + m] === '', 'greenteeth|' + m + ' throws no blow but wears ' + JSON.stringify(MARK['greenteeth|' + m])); }
@@ -72,8 +73,9 @@ const toPhase = (r, ph) => { if (ph >= 2) { r.e.hp = GT.hp * (ph === 2 ? 0.6 : 0
       if (r.e.phase !== ph) { r.e.hp = GT.hp * (ph === 1 ? 0.9 : ph === 2 ? 0.6 : 0.3); }
       if (ph === 1 && i === 60 * 40) { r.place('walkE'); r.e.x = A.E.face - 90; }
       if (ph === 1 && i > 60 * 40 && i < 60 * 44 && i % 20 === 0) M.strikePaddle(r.e, r.show, 'E'); });
-    for (const k of ['grab', 'lash', 'reach', 'bite', 'tear', 'surge', 'pair', 'slam', 'charge', 'net']) { if (r.show.n[k]) fired[k] = true; byPhase[ph][k] = r.show.n[k]; } }
-  for (const k of ['grab', 'lash', 'reach', 'bite', 'tear', 'surge', 'pair', 'slam', 'charge', 'net']) ok(fired[k], 'HER ' + k.toUpperCase() + ' never fired in a fuzz of all three phases');
+    for (const k of ['grab', 'lash', 'reach', 'bite', 'tear', 'surge', 'pair', 'slam', 'charge', 'net', 'vine']) { if (r.show.n[k]) fired[k] = true; byPhase[ph][k] = r.show.n[k]; } }
+  for (const k of ['grab', 'lash', 'reach', 'bite', 'tear', 'surge', 'pair', 'slam', 'charge', 'net', 'vine']) ok(fired[k], 'HER ' + k.toUpperCase() + ' never fired in a fuzz of all three phases');
+  ok(byPhase[1].vine > 0 && byPhase[2].vine > 0 && byPhase[3].vine > 0, 'her vine (her long reach, every phase) did not come in every phase: ' + JSON.stringify(byPhase));
   ok(byPhase[1].slam > 0 && byPhase[2].charge > 0 && byPhase[3].net > 0, 'a phase\'s new blow did not come in its phase: ' + JSON.stringify(byPhase));
   ok(!byPhase[1].charge && !byPhase[1].net && !byPhase[2].net, 'a new blow came before its phase: ' + JSON.stringify(byPhase));
   ok(M.NEW_MOVE[1] === 'slam' && M.NEW_MOVE[2] === 'charge' && M.NEW_MOVE[3] === 'net', 'one new blow a phase is not slam / charge / net'); }
@@ -112,6 +114,43 @@ for (const meet of [true, false]) { const r = awake(rig({ meet })); r.place('wal
   w.run(60 * 20, () => { w.place('walerE'); if (w.e.x > A.wreck.x1) over = true; });
   ok(over, 'with the hero beyond the boat she never came over it (x ' + Math.round(w.e.x) + ')'); }
 ok(GT.stuckT >= 3 && GT.dazeT >= 3 && GT.strandT >= 3 && GT.flushT >= 3, 'an opening is under 3 s (stuck ' + GT.stuckT + ', dazed ' + GT.dazeT + ', strand ' + GT.strandT + ', flush ' + GT.flushT + ')');
+
+// ---- claude/jenny3 (Daniel 10-05): A LITTLE FASTER, every tell still at least half a second ----
+{ for (const [k, mv] of Object.entries(M.MOVES)) ok(mv.tell >= 0.5, 'HER ' + k.toUpperCase() + ' is told ' + mv.tell + ' s (at least 0.5)');
+  ok(GT.surgeTell >= 0.5 && GT.oa.snapTell >= 0.5 && GT.oa.swipeTell >= 0.5, 'a beat-opening blow is told under 0.5 s');
+  ok(GT.swim.high >= 165 && GT.gap[0] <= 0.54 && GT.chargeSpeed >= 295, 'she is not ~10-15% quicker (the brief) (swim ' + GT.swim.high + ', gap ' + GT.gap + ', charge ' + GT.chargeSpeed + ')'); }
+
+// ---- claude/jenny3: AN OPENING TAKES AT MOST ITS SHARE OF HER (a strong hero no longer ends a phase in one stranding) ----
+{ const r = awake(rig({ dodge: true })); r.place('walerE'); until(r, () => r.e.mode === 'stuck', 60 * 20, () => r.place('walerE')); let got = 0;
+  for (let i = 0; i < 20; i++) got += M.gtCap(r.e, 100);
+  ok(M.gtOpen(r.e) && got <= GT.openCap * GT.hp + 20 * 100 * GT.ward && got >= GT.openCap * GT.hp - 1, 'twenty heavy blows in one stuck opening took ' + got + ' of her (the share is ' + Math.round(GT.openCap * GT.hp) + ')');
+  const q = awake(rig()); ok(M.gtCap(q.e, 50) === 50, 'a blow on her shut is capped by an opening (the ward does that)'); }
+
+// ---- claude/jenny3: HER VINE - a hero out of her arms' reach on a ledge is not safe; jumped it misses; caught it pulls him toward her; never in a pair ----
+{ const r = awake(rig({ ex: A.W.face + 120 })); r.place('walkE'); let vines = 0, paired = 0, maxArms = 0;
+  r.run(60 * 30, () => { r.place('walkE'); const v = r.show.arms.filter(a => a.k === 'vine'); if (v.length && r.show.arms.length > 1) paired++; maxArms = Math.max(maxArms, v.length); vines = r.show.n.vine; });
+  ok(vines > 0, 'a hero on the far walkway (out of her arms) never drew her vine (' + JSON.stringify(r.show.n) + ')');
+  ok(paired === 0 && maxArms <= 1, 'her vine came with another windup (' + paired + ' frames): one windup at a time');
+  ok(r.show.n.vined > 0 && r.log.vines.some(v => v.toX !== undefined && v.d === GT.dmg.vine), 'her vine caught a hero standing in it and did not pull him toward her (' + r.show.n.vined + ')');
+  ok(r.log.lines.includes('HER VINE PULLS YOU OFF: JUMP IT'), 'her vine was not taught');
+  const q = awake(rig({ ex: A.W.face + 120, dodge: true })); q.place('walkE'); q.run(60 * 30, () => q.place('walkE'));
+  ok(q.show.n.vine > 0 && q.show.n.vined === 0, 'a hero who jumps her vine was still caught (' + q.show.n.vine + ' thrown, ' + q.show.n.vined + ' caught)');
+  const w = awake(rig()); w.place('swim'); w.hero.x = w.e.x + 20; w.run(60 * 20, () => { w.place('swim'); w.hero.x = w.e.x + 20; });
+  ok(w.show.n.vine === 0, 'her vine was thrown at a hero swimming beside her (' + w.show.n.vine + '): it is her long reach'); }
+
+// ---- claude/jenny3: THE LURE, LOUD - live only in the fog's lure cycles, said when it goes live, a hero on the lit boat draws her charge EVERY time,
+//      a hero left off it hears it again ----
+{ const r = toPhase(awake(rig({ hp: GT.hp * 0.3 })), 3); r.place('walerE'); r.run(2);
+  ok(M.lureLive(r.e, r.show) && r.show.n.lureLit >= 1 && r.log.lines.includes('STAND ON THE BOAT: DRAW HER ONTO IT'), 'the first fog cycle came and the lure was not live and said (' + JSON.stringify({ lit: r.show.n.lureLit, live: M.lureLive(r.e, r.show) }) + ')');
+  const said0 = r.log.lines.filter(l => l === 'STAND ON THE BOAT: DRAW HER ONTO IT').length; r.r0.dodge = true;
+  r.run(60 * (GT.lureNudge + 3), () => { r.place('swim'); r.hero.x = A.x0 + 90; r.show.wary = null; });
+  ok(r.show.n.lureNudge >= 1 && r.log.lines.filter(l => l === 'STAND ON THE BOAT: DRAW HER ONTO IT').length > said0, 'a hero off the lit boat ' + GT.lureNudge + ' s was not told again');
+  const b = toPhase(awake(rig({ hp: GT.hp * 0.3 })), 3); b.place('boat'); const firsts = []; let last = 0;
+  b.run(60 * 6, () => { b.place('boat'); if (b.show.armN !== last) { last = b.show.armN; const a = b.show.arms[b.show.arms.length - 1]; if (a) firsts.push(a.k); } });
+  ok(firsts.length && firsts[0] === 'charge', 'a hero on the lit boat did not draw her charge first (' + firsts.join(',') + ')');
+  const q = toPhase(awake(rig({ hp: GT.hp * 0.3 })), 3); q.show.cyc[3] = 1; M.applyCycle(q.show, 3, q.c); q.place('boat'); q.run(30, () => q.place('boat'));
+  ok(!M.lureLive(q.e, q.show), 'the lure is live in a fog cycle without it (the boat would glow and lie)');
+  ok(GT.fogTell >= 2.5, 'the fog teach beat is short (' + GT.fogTell + ' s): the boat must be seen to light'); }
 
 // ---- ONE MACHINE BEAT A PHASE; a paddle is one timed strike ----
 /* phase one: struck with her away from the gate, the drain does nothing (and costs nothing); with her at the gate one strike strands her; the lock comes

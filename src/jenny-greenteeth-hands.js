@@ -69,6 +69,15 @@ export function makeGreenteethHands(ctx) {
       band: (kind, [t, b], x0, x1, d, name, key, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.P; if (!ctx.upright(pp) || P.dead) return;
         if (P.x < x0 || P.x > x1) return; const hb = kind === 'high' ? ctx.duckBox(P) : ctx.box(P); if (!(hb.b > t && hb.t < b) || keyed(pp, key)) return;
         hurt(name, () => ctx.damagePlayer(o.from ?? e.x, d, { who: e, name, unblockable: true })); if (o.push && !P.dead) { P.vx = o.push; } }); },
+      /* HER VINE (claude/jenny3): a band at your feet like the lash - and a hero it catches is YANKED off his footing toward her, through the air
+         (P.hurt holds his legs while he flies; a throw, never a teleport). Jumped, rolled through or not there: nothing */
+      vine: ([t, b], x0, x1, d, key, toX) => { let got = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.P; if (!ctx.upright(pp) || P.dead) return;
+        if (P.x < x0 || P.x > x1) return; const hb = ctx.box(P); if (!(hb.b > t && hb.t < b) || keyed(pp, key)) return;
+        const res = hurt(MOVE_NAME.vine, () => ctx.damagePlayer(toX, d, { who: e, name: MOVE_NAME.vine, unblockable: true, noKnock: true }));
+        if (res !== 'hit' || P.dead) return; got = pp;
+        P.vx = (Math.sign(toX - P.x) || 1) * GT.vinePull; P.vy = -GT.vineLift; P.ground = false; P.onMover = null; P.hurt = Math.max(P.hurt || 0, GT.vineHurt);
+        ctx.burst(P.x, P.y - 4, 8, ['#3e6030', '#7aa83a', '#9ac850'], 60, 0.4); SOUND.weed();
+        if (!show.told.vined) { show.told.vined = true; ctx.number(P.x, P.y - 40, 'HER VINE HAS YOU', '#ff6b6b'); } }); return got; },
       /* a blow in a box. meet: says whether it was MET - blocked (a shield, a deflect, the ember flare) or rolled through - for THE BITE's daze */
       hit: (bx, d, name, o = {}) => { let out = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.P; if (!ctx.upright(pp) || P.dead) return;
         if (!ctx.overlap(boxOf(bx), o.duck ? ctx.duckBox(P) : ctx.box(P))) return; const rolling = P.dodge > 0;
@@ -142,6 +151,7 @@ export function makeGreenteethHands(ctx) {
   };
   H.warded = e => { if (!(e.wardSaid > ctx.time)) { e.wardSaid = ctx.time + 5; ctx.number(e.x, e.y - 50, 'THE WATER TAKES IT: MAKE HER OPEN FIRST', '#9aa39a'); } };
   H.take = e => GM.gtTake(e);
+  H.cap = (e, dmg) => { const d = GM.gtCap(e, dmg); if (d < dmg && !(e.capSaid > ctx.time)) { e.capSaid = ctx.time + 3; ctx.number(e.x, e.y - 50, 'THAT OPENING IS SPENT: THE WATER TAKES IT', '#9aa39a'); } return d; };   /* (claude/jenny3: an opening takes its share of her, no more) */
   const OPEN_NAME = { stranded: 'STRANDED', flushed: 'OPEN', stuck: 'STUCK', dazed: 'DAZED' };
   H.barName = b => (GM.gtOpen(b) ? 'JENNY GREENTEETH  ' + OPEN_NAME[b.mode] : b.phase >= 3 ? 'JENNY GREENTEETH  THE FOG' : b.phase === 2 ? 'JENNY GREENTEETH  THE FLOOD' : 'JENNY GREENTEETH');
   H.camY = ty => { const S = A(); if (!S) return ty; const VH = ctx.VH(), top = S.y0 - 8, bot = S.floor + 2 * ctx.TS;
@@ -235,6 +245,7 @@ export function makeGreenteethHands(ctx) {
       for (const side of ['W', 'E']) lights.push([G[side].hook.x, G[side].hook.y + 6, 46]);
       for (const pp of ctx.players) if (!pp.dead) lights.push([pp.x, pp.y - 10, 44]);
       if (e && GM.gtOpen(e)) lights.push([e.x, e.y - GT.h / 2, 40]);   /* (open, she is seen: the opening must show) */
+      if (e && (GM.lureLive(e, show) || e.mode === 'fogTell')) lights.push([(G.wreck.x0 + G.wreck.x1) / 2, G.wreck.y - 6, 70]);   /* (claude/jenny3: the lit boat burns a hole in the fog) */
       const x0 = R(G.x0 - cx) - 32, y0 = R(G.top - cy) - 40, w = R(G.x1 - G.x0) + 64, hgt = R(G.bed - G.top) + 60;
       for (const [k, sc] of [[0.55, 1.0], [0.3, 0.7], [0.15, 0.45]]) { g.fillStyle = 'rgba(16,24,24,' + (fa * k * 1.35).toFixed(3) + ')'; g.beginPath(); g.rect(x0, y0, w, hgt);
         for (const [lx, ly, r] of lights) { g.moveTo(R(lx - cx) + r * sc, R(ly - cy)); g.arc(R(lx - cx), R(ly - cy), r * sc, 0, Math.PI * 2, true); } g.fill('evenodd'); }
@@ -247,6 +258,10 @@ export function makeGreenteethHands(ctx) {
       g.globalAlpha = 0.22 * fl * (show.fog > 0.3 ? 1.6 : 1); g.fillStyle = '#e8ff7a'; g.beginPath(); g.arc(hx, hy, 5, 0, 7); g.fill(); g.globalAlpha = 1;
       if (e.base === 'culvert' || e.base === 'shift') { const Q = G[show.hide || 'W']; g.globalAlpha = 0.6 + 0.3 * pulse; g.fillStyle = '#e8ff7a'; const qx = R(Q.face + Q.dir * 13 - cx); g.fillRect(qx - 3, R(G.bed - 12 - cy), 2, 1); g.fillRect(qx + 1, R(G.bed - 12 - cy), 2, 1); g.globalAlpha = 1; }
       if (e.mode === 'dazed') for (let i = 0; i < 3; i++) { const q = time * 5 + i * 2.1; g.fillStyle = i % 2 ? '#fff6c8' : '#e8ff7a'; g.fillRect(R(e.x - cx + Math.cos(q) * 9), R(e.y - GT.h - 2 - cy + Math.sin(q) * 3), 2, 2); } }   /* the stars of her daze */
+    /* THE LIT BOAT and THE GLINTS (claude/jenny3, over the fog): the boat glows while the lure is live - rising with the fog in its teach beat - and a
+       glint (a chevron when off screen) marks the paddle that is the beat right now */
+    if (e) { const lit = GM.lureLive(e, show) ? 1 : e.mode === 'fogTell' ? Math.max(0, Math.min(1, 1.4 * (1 - e.modeT / GT.fogTell) - 0.2)) : 0; if (lit > 0) boatGlow(g, cx, cy, time, lit);
+      for (const side of ['W', 'E']) if (beatPad(e, side)) glint(g, G[side].paddle.x, G[side].paddle.y - 44, cx, cy, time, '#ffd36b'); }
     /* ---- THE TELLS (never under the fog) ---- */
     if (e) for (const a of show.arms) if (a.st === 'tell') tellDraw(g, a, e, cx, cy, time, surf, pulse);
     if (e && (e.mode === 'surgeTell')) { const Q = G[e.surgeSide || 'W'], k = 1 - Math.max(0, e.modeT) / GT.surgeTell;   /* the culvert boils, and a red crest line along the water, the length of the lock */
@@ -264,9 +279,13 @@ export function makeGreenteethHands(ctx) {
       g.globalAlpha = 0.25 + 0.35 * k; g.strokeStyle = '#7aa83a'; g.lineWidth = 1; g.beginPath(); g.ellipse(ex, ey, 22, 16, 0, time * 2, time * 2 + Math.PI * 2 * k); g.stroke(); g.globalAlpha = 1; }
     if (show.water.depth > 0 && show.pad.E.open && e) { g.globalAlpha = 0.5; g.fillStyle = '#bfe6f5'; for (let i = 0; i < 5; i++) g.fillRect(R(G.x1 - 8 - i * 6 - cx), sy + 2 + ((time * 30 + i * 4) % 8), 3, 1); g.globalAlpha = 1; }   /* the water running out east */
     /* OPEN, and its clock */
-    if (e && GM.gtOpen(e)) { const full = e.openLen || 3, k = Math.max(0, e.modeT) / full, ex = R(e.x - cx), ey = R(e.y - (e.mode === 'stranded' ? 8 : GT.h / 2) - cy);
+    if (e && GM.gtOpen(e) && e.mode === 'stranded' && e.lure) { const full = e.openLen || 3, k = Math.max(0, e.modeT) / full, ex = R(e.x - cx), ey = R(e.y - 10 - cy);   /* (claude/jenny3) AGROUND ON THE BOAT: a BIG gold ring, a wide clock under it */
+      g.globalAlpha = 0.6 + 0.4 * pulse; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(ex, ey, 36, 22, 0, 0, 7); g.stroke(); g.strokeStyle = '#fff6c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(ex, ey, 41, 26, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
+      g.fillStyle = '#1e1624'; g.fillRect(ex - 25, ey + 28, 50, 7); g.fillStyle = '#ffd36b'; g.fillRect(ex - 24, ey + 29, R(48 * k), 3); g.fillStyle = '#8fd160'; g.fillRect(ex - 24, ey + 33, R(48 * Math.max(0, e.capLeft || 0) / Math.max(1, e.capLen || 1)), 1);
+      ctx.text('STRANDED!', ex, ey - 36, pulse > 0.5 ? '#fff6c8' : '#ffd36b', 'center', 6); }
+    else if (e && GM.gtOpen(e)) { const full = e.openLen || 3, k = Math.max(0, e.modeT) / full, ex = R(e.x - cx), ey = R(e.y - (e.mode === 'stranded' ? 8 : GT.h / 2) - cy);
       g.globalAlpha = 0.5 + 0.4 * pulse; g.strokeStyle = e.big ? '#fff6c8' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(ex, ey, e.big ? 26 : 22, 16, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
-      g.fillStyle = '#1e1624'; g.fillRect(ex - 14, ey + 18, 28, 3); g.fillStyle = e.big ? '#fff6c8' : '#ffd36b'; g.fillRect(ex - 13, ey + 19, R(26 * k), 1);
+      g.fillStyle = '#1e1624'; g.fillRect(ex - 14, ey + 18, 28, 5); g.fillStyle = e.big ? '#fff6c8' : '#ffd36b'; g.fillRect(ex - 13, ey + 19, R(26 * k), 1); g.fillStyle = '#8fd160'; g.fillRect(ex - 13, ey + 21, R(26 * Math.max(0, e.capLeft || 0) / Math.max(1, e.capLen || 1)), 1);   /* (claude/jenny3: the green line under the clock is the opening's share of her left) */
       ctx.text(e.big ? 'OPEN!' : 'OPEN', ex, ey - 28, pulse > 0.5 ? '#fff6c8' : '#ffd36b', 'center', 6); }
     /* her death: the water goes still and green, and she sinks in it */
     if (show.dead) { show.dead = Math.min(1, show.dead + 1 / 120); }
@@ -284,8 +303,28 @@ export function makeGreenteethHands(ctx) {
     if (a.st === 'blow' && a.k === 'reach') { const ox = a.gate ? a.ox : a.x - a.dir * 30, sy0 = a.gate ? Math.max(a.fy, surf) : surf; limb(g, ox - cx, sy0 - cy, a.x + a.dir * 20 - cx, a.fy - 17 - cy, time); claw(g, a.x + a.dir * 20 - cx, a.fy - 17 - cy, a.dir); return; }
     if (a.st === 'blow' && a.k === 'slam') { limb(g, e.x - cx, e.y - GT.h + 12 - cy, a.x - cx, a.fy - 4 - cy, time); claw(g, a.x - cx, a.fy - 3 - cy, 1); return; }
     if (a.st === 'blow' && a.k === 'net') { const k = 1 - Math.max(0, a.t) / GT.netT, nx = e.x + (a.x - e.x) * k, ny = e.y - GT.h + (a.fy - 10 - (e.y - GT.h)) * k - Math.sin(k * Math.PI) * 30; netBlob(g, nx - cx, ny - cy, 6 + 10 * k, time); return; }
+    if (a.st === 'blow' && a.k === 'vine') { const r = a.r || 0, tx = a.ox + a.dir * r; vineRope(g, e.x - cx, e.y - GT.h + 12 - cy, tx - cx, a.fy - 4 - cy, time, 1); claw(g, tx - cx, a.fy - 5 - cy, a.dir); return; }   /* (claude/jenny3: her vine whipping out along the ledge) */
     if (a.k === 'tear' && a.st === 'blow') { const p = show.weed[a.patch]; if (p) { limb(g, (p.x0 + p.x1) / 2 - cx, surf + 20 - cy, (p.x0 + p.x1) / 2 + 8 - cx, surf - 2 - cy, time); } }
   }
+  /* HER VINE: a long rope of weed, a darker twist down its length and leaves along it (k: how much of it is drawn) */
+  function vineRope(g, x0, y0, x1, y1, time, k) { const mx = (x0 + x1) / 2, my = Math.min(y0, y1) - 18 - Math.sin(time * 6) * 3, ex = x0 + (x1 - x0) * k, ey = y0 + (y1 - y0) * k;
+    g.strokeStyle = '#2e4a22'; g.lineWidth = 3; g.beginPath(); g.moveTo(R(x0), R(y0)); g.quadraticCurveTo(R(x0 + (mx - x0) * k), R(y0 + (my - y0) * k), R(ex), R(ey)); g.stroke();
+    g.strokeStyle = '#7aa83a'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(x0), R(y0) - 1); g.quadraticCurveTo(R(x0 + (mx - x0) * k), R(y0 + (my - y0) * k) - 1, R(ex), R(ey) - 1); g.stroke();
+    g.fillStyle = '#9ac850'; for (let i = 1; i < 8; i++) { const q = i / 8 * k, lx = (1 - q) * (1 - q) * x0 + 2 * (1 - q) * q * (x0 + (mx - x0) * k) + q * q * ex, ly = (1 - q) * (1 - q) * y0 + 2 * (1 - q) * q * (y0 + (my - y0) * k) + q * q * ey; g.fillRect(R(lx), R(ly) - 2 - (i % 2) * 2, 2, 1); } }
+  /* THE GLINT (the house rule, claude/jenny3): a pulsing diamond over what the fight needs next - and, when it is off the screen, a chevron at the
+     screen's edge pointing to it */
+  function glint(g, wx, wy, cx, cy, time, col) { const x = R(wx - cx), y = R(wy - cy), VW = ctx.VW(), VH = ctx.VH(), p = 0.5 + 0.5 * Math.sin(time * 6);
+    if (x < 6 || x > VW - 6 || y < 6 || y > VH - 6) { const qx = Math.max(8, Math.min(VW - 8, x)), qy = Math.max(10, Math.min(VH - 10, y)), dx = Math.sign(x - qx), dy = Math.sign(y - qy);
+      g.globalAlpha = 0.55 + 0.4 * p; g.fillStyle = col; for (let i = 0; i < 4; i++) { if (dx) g.fillRect(qx - dx * i, qy - 3 + i, 1, 7 - 2 * i); if (dy) g.fillRect(qx - 3 + i, qy - dy * i, 7 - 2 * i, 1); } g.globalAlpha = 1; return; }
+    const by = y - R(3 * p); g.globalAlpha = 0.6 + 0.4 * p; g.fillStyle = col; for (let i = 0; i < 4; i++) { g.fillRect(x - i, by - 3 + i, 2 * i + 1, 1); g.fillRect(x - i, by + 4 - i, 2 * i + 1, 1); }
+    g.fillStyle = '#fff6c8'; g.fillRect(x, by, 1, 1); g.globalAlpha = 1; }
+  /* THE LIT BOAT (claude/jenny3): while the lure is live the narrowboat's back GLOWS gold through the fog - a lit rim along its deck, a warm wash over
+     it and the glint over it. k: how lit (the teach beat raises it with the fog) */
+  function boatGlow(g, cx, cy, time, k) { const G = show.A, x0 = R(G.wreck.x0 - cx), w = R(G.wreck.x1 - G.wreck.x0), y = R(G.wreck.y - cy), p = 0.5 + 0.5 * Math.sin(time * 5);
+    g.globalCompositeOperation = 'lighter'; const gr = g.createLinearGradient(0, y - 26, 0, y + 4); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(255,200,90,' + (0.32 * k * (0.7 + 0.3 * p)).toFixed(3) + ')');
+    g.fillStyle = gr; g.fillRect(x0 - 4, y - 26, w + 8, 30); g.globalCompositeOperation = 'source-over';
+    g.globalAlpha = k * (0.6 + 0.4 * p); g.fillStyle = '#ffd36b'; g.fillRect(x0, y - 1, w, 1); g.fillRect(x0, y, 1, 4); g.fillRect(x0 + w - 1, y, 1, 4); g.fillStyle = '#fff6c8'; for (let i = 6; i < w - 4; i += 14) g.fillRect(x0 + i + R(2 * Math.sin(time * 3 + i)), y - 2, 2, 1); g.globalAlpha = 1;
+    if (k > 0.5) glint(g, (G.wreck.x0 + G.wreck.x1) / 2, G.wreck.y - 30, cx, cy, time, '#ffd36b'); }
   function netBlob(g, x, y, r, time) { for (let i = 0; i < 14; i++) { const q = i / 14 * Math.PI * 2 + time * 2; g.fillStyle = i % 3 ? '#3e6030' : '#9ac850'; g.fillRect(R(x + Math.cos(q) * r), R(y + Math.sin(q) * r * 0.5), 2, 1); g.fillRect(R(x + Math.cos(q) * r * 0.5), R(y + Math.sin(q * 1.3) * r * 0.3), 1, 1); } }
   function tellDraw(g, a, e, cx, cy, time, surf, pulse) {
     const k = 1 - Math.max(0, a.t) / a.len;
@@ -306,7 +345,13 @@ export function makeGreenteethHands(ctx) {
     if (a.k === 'charge') { const dir = a.dir, x0 = R(e.x - cx), y = sy0(surf, cy);   /* THE CHARGE: she sinks, the water humps ahead of her and a red arrow runs along it */
       g.globalAlpha = 0.4 + 0.45 * pulse * k; g.fillStyle = '#ff6b6b'; const len = 40 + 80 * k; g.fillRect(dir > 0 ? x0 : x0 - R(len), y - 14, R(len), 1); g.fillRect(dir > 0 ? x0 : x0 - R(len), y + 7, R(len), 1);
       const ax = x0 + dir * R(len); g.fillRect(ax - dir * 6, y - 8, 1, 9); g.fillRect(ax - dir * 3, y - 6, 1, 5); g.fillRect(ax, y - 4, 1, 1); g.globalAlpha = 1;
-      g.fillStyle = '#e8f4f0'; for (let i = 0; i < 6; i++) g.fillRect(x0 + dir * (6 + i * 5), y - 2 - ((time * 40 + i * 5) % (3 + 5 * k)), 2, 1); }
+      g.fillStyle = '#e8f4f0'; for (let i = 0; i < 6; i++) g.fillRect(x0 + dir * (6 + i * 5), y - 2 - ((time * 40 + i * 5) % (3 + 5 * k)), 2, 1);
+      if (GM.lureLive(e, show)) { const G = show.A, edge = e.x < G.wreck.x0 ? G.wreck.x0 + 6 : G.wreck.x1 - 6, ex = R(edge - cx);   /* (claude/jenny3) THE LURE'S CHARGE LINE: a gold dashed line across the shallows from her to the boat's edge, where she will run aground */
+        g.globalAlpha = 0.55 + 0.4 * pulse; g.fillStyle = '#ffd36b'; for (let xx = Math.min(x0, ex); xx < Math.max(x0, ex); xx += 6) g.fillRect(xx, y - 3, 3, 1);
+        g.fillRect(ex - 1, y - 12, 3, 12); g.fillRect(ex - 4, y - 12, 9, 1); g.globalAlpha = 1; } }
+    if (a.k === 'vine') { const x0 = a.dir > 0 ? a.ox : a.ox - a.reach, x1 = a.dir > 0 ? a.ox + a.reach : a.ox; band(g, 'low', a.fy, x0, x1, k, cx, cy, time);   /* (claude/jenny3) HER VINE: the red band at your feet, the rope traced out along the ledge to you, the coil in her hand */
+      g.globalAlpha = 0.5 + 0.4 * pulse; g.fillStyle = '#7aa83a'; const len = a.reach * Math.min(1, k * 1.25); for (let i = 0; i < len; i += 5) g.fillRect(R(a.ox + a.dir * i - cx), R(a.fy - 3 - cy) + ((i / 5) & 1), 3, 1); g.globalAlpha = 1;
+      netBlob(g, e.x - (e.face || 1) * 8 - cx, e.y - GT.h - 2 - cy, 4 + 3 * k, time); }
     if (a.k === 'net') { const x = R(a.x - cx), y = R(a.fy - cy), fixed = k >= GT.netFollow;   /* THE NET: a green dotted arc from her hand to where it will land, and the patch it will cover */
       g.globalAlpha = (fixed ? 0.6 : 0.3) + 0.3 * pulse; g.fillStyle = '#ff6b6b'; for (let i = -GT.netR; i <= GT.netR; i += 3) g.fillRect(x + i, y + ((i / 3) & 1), 2, 1);
       g.fillStyle = '#9ac850'; const hx = e.x - cx, hy = e.y - GT.h - cy; for (let i = 1; i < 10; i++) { const q = i / 10; g.fillRect(R(hx + (x - hx) * q), R(hy + (y - 10 - hy) * q - Math.sin(q * Math.PI) * 30), 1, 1); } g.globalAlpha = 1;
@@ -329,6 +374,7 @@ export function makeGreenteethHands(ctx) {
     reachTell: () => S_.gtDrip(), reach: () => S_.gtLash(), biteTell: () => S_.gtHiss(), bite: () => S_.gtBite(), tearTell: () => S_.gtWeed(), tear: () => S_.gtWeed(),
     slamTell: () => { S_.gtDrip(); S_.gtHiss(); }, slam: () => S_.gtBurst(), stuck: () => { S_.gtPaddle(); S_.gtGrip(); }, wrench: () => S_.gtWeed(), dazed: () => { S_.gtBell(); S_.gtHiss(); },
     chargeTell: () => S_.gtBoil(), charge: () => S_.gtSurge(), netTell: () => S_.gtWeed(), net: () => S_.gtLash(),
+    vineTell: () => { S_.gtWeed(); S_.gtHiss(); }, vine: () => S_.gtLash(), lureLit: () => S_.gtBell(),   /* (claude/jenny3: her vine; the boat lighting) */
     surgeTell: () => S_.gtBoil(), surge: () => S_.gtSurge(), stranded: () => S_.gtStrand(), drag: () => S_.gtDrag(),
     floodTell: () => { S_.gtSurge(); S_.gtBell(); }, fogTell: () => { S_.gtBell(); S_.gtDrain(); }, drainDone: () => S_.gtDrain(),
     hiss: () => S_.gtHiss(), paddle: () => S_.gtPaddle(), drain: () => S_.gtDrain(), weed: () => S_.gtWeed(), die: () => S_.gtBell(),
