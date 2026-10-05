@@ -38,10 +38,10 @@ try {
   }
   if (!only || only.includes('sky-road')) {   /* THE SKY ROAD, from the kite: take hold at the post and fly for fifteen seconds, into the teeth (the camera is let catch up at the post first: the ride starts from wherever the view is) */
     const d = await pg.evalp(`(() => { ${boot}
-      const k = BK.L.ents.find(e => e.t === 'stormkite'); BK.tp(k.x - 4, k.y); for (let q = 0; q < 120; q++) BK.step(1); BK.tp(k.x, k.y); for (let q = 0; q < 900; q++) { BK.P.inv = 9; BK.step(1); }
+      const k = BK.L.ents.find(e => e.t === 'stormkite'); if (!k) return { none: true };   /* (claude/moor2: the kite ride is gone; the Wind Rocks and the Goblin Scaffolds are section shots) */ BK.tp(k.x - 4, k.y); for (let q = 0; q < 120; q++) BK.step(1); BK.tp(k.x, k.y); for (let q = 0; q < 900; q++) { BK.P.inv = 9; BK.step(1); }
       return { png: ${snap()}, fly: !!BK.P.fly };
     })()`);
-    save('sky-road', d.png); console.log('  (on the kite: ' + d.fly + ')');
+    if (!d.none) { save('sky-road', d.png); console.log('  (on the kite: ' + d.fly + ')'); }
   }
   if (!only || only.includes('told-gust')) {   /* A TOLD GUST at the height of its build-up, and then blowing (after the rework only) */
     const d = await pg.evalp(`(() => { ${boot}

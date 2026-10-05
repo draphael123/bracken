@@ -53,6 +53,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   for (const e of (L.ents || [])) {
     if (e.t === 'cannon' && e.hole) { const [x0, x1, y0, y1] = e.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; }
     if (e.t === 'plank' && e.span) { for (let x = e.span[0]; x <= e.span[1]; x++) { const i = e.row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } }
+    /* GALE MOOR's half-built frame (claude/moor2, src/moor-rocks-hands.js): one blow on its rope as the gust blows lays it over the gap - a plank that waits for the wind */
+    if (e.t === 'gustframe' && e.span) { for (let x = e.span[0]; x <= e.span[1]; x++) { const i = e.row * W + x; if (g[i] === T.AIR) g[i] = T.PLANK; } }
     /* THE MONASTERY'S BELLS: one blow brings a tower's bridge down, and it stays down - a bell is a plank that rings */
     if (e.t === 'tbell' && e.span) { const [x0, x1, row] = e.span; for (let x = x0; x <= x1; x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.PLANK; } }
     /* ITS PRAYER WHEELS: struck from their own floor, a wheel's stair stands either way, so the full fill has both at once. The

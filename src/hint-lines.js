@@ -103,6 +103,8 @@ export const CALL_LINES = new Set([
   'HIS SHELL TURNS A BLADE: RELEASE THE DAM ON HIM', 'THE FLOOD TAKES HIM', 'SWEPT AWAY', 'CLIMB THE ROPE: UP',
   /* claude/desertfoes: the fire scorpion's burning patch, the venom scorpion's sting, the sandworm and the flood, the dynamite bandit's fuse (src/desert-foes2-hands.js) */
   'WATER PUTS IT OUT', 'THE PATCH GOES OUT', 'VENOM: YOUR STAMINA COMES BACK SLOWER', 'THE HORN DRIVES IT UNDER', 'THE FLOOD DOUSES THE FUSE',
+  /* claude/moor2: GALE MOOR's WIND ROCKS and GOBLIN SCAFFOLDS (src/moor-rocks-hands.js) - the crevice's throw, the wind that takes a struck goblin, the frame */
+  'THE CREVICE THROWS YOU UP', 'THE WIND TAKES HIM', 'IT SWAYS BACK: IT WANTS THE GUST', 'THE WIND LAYS THE FRAME OVER THE GAP',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the

@@ -151,6 +151,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   duneworm: 6, awningwinch: 0,
   /* THE PUPPETEER, the Maskwright's Theatre's boss (claude/puppeteer): a boss is a 6; his soldier, harlequin and masterpiece are his fight, not a crowd of their own */
   puppeteer: 6, marionette: 0, harlequin: 0, acrobat: 0, masterpiece: 0,
+  /* GALE MOOR's half-built windmill frame on the goblin scaffold (claude/moor2): a thing you cut down, not a foe */
+  gustframe: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

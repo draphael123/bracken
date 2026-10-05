@@ -85,6 +85,7 @@ import { makeWellTownHands } from './well-town-hands.js'; import * as WTA from '
 import * as WTT from './redraw/welltown_tiles.js'; import * as WTB from './redraw/welltown_backdrop.js';   /* THE WELL TOWN's tile kit and backdrop (claude/welltown3-art) */
 import { makeGuide } from './stuck-guide.js'; let STK = null;   /* THE SHARED GLINT + STALL NUDGE + WAY-ARROW FEED (claude/stuckfix, src/stuck-guide.js; the route list is src/stuck-spots.js) */
 import { makeRedGorgeHands } from './red-gorge-hands.js'; import { makeGorgeCrabHands } from './gorge-crab-hands.js'; import * as GCB from './gorge-crab.js'; import * as RGA from './redraw/redgorge_art.js'; import * as RGT from './redraw/redgorge_tiles.js'; import * as RGB from './redraw/redgorge_backdrop.js'; let RGH = null, GCH = null;   /* THE RED GORGE (claude/redgorge, the greybox): its hands (the flood, the sluice gates, the jams, the baskets, the old nest, the raptor) and THE GREAT RED CRAB's (src/gorge-crab.js the fight) */   /* THE WELL TOWN (claude/welltown, the greybox): its hands (the skin, mud, fire, the windlass, the dry cistern, the water-thief) and THE BANDIT KING's (src/bandit-king.js the fight) */
+import { makeMoorRocksHands } from './moor-rocks-hands.js'; let MRH = null;   /* GALE MOOR's WIND ROCKS and GOBLIN SCAFFOLDS (claude/moor2): the crevices' throw, the wind that takes a struck goblin, the half-built frame */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
 import * as GB from './boss-greed.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
@@ -115,6 +116,7 @@ import { bakePuffer, bakeJellyfish, bakeLamprey, bakeManta } from './redraw/sea_
 import { bakeCutlass, bakeBoarder, bakeMarine, bakeBosun, bakeLookout, bakeQuarter, bakeCaptain } from './redraw/pirates.js';
 import { bakeMasthead } from './redraw/masthead.js';
 import * as KRA from './redraw/kraken.js';
+import * as MRT from './redraw/moor_tiles.js';   /* GALE MOOR's tor country: granite, turf caps, the tarn's black rock, the goblins' scavenged boards (claude/moor2art) */
 import * as UBT from './redraw/unburied_tiles.js';   /* THE UNBURIED FIELD's own tile kit: straw, spoil, mud, siege works, wet stone, flagstones; wattle, stakes, hide, gabions, decks (claude/unburiedart) */
 import * as UBS from './redraw/unburied_sets.js';   /* THE UNBURIED FIELD's set pieces: camp, pits, horses, lances, wagons, siege engines, the chapel (claude/unburiedart) */
 import * as UW from './redraw/unburied_world.js';   /* THE UNBURIED FIELD's own look: its dusk, the ghost army's ridge, the wreck of the battle, its dressing and the bones in its soil */
@@ -1128,6 +1130,7 @@ function resolveTiles() {
     if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
     if (L.fairKit) { const ts = FTL.fairTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE HARVEST FAIR's tile kit (claude/fairfix5): sawdust and straw, iron decks, barn boards, wagon ruts; awnings, boardwalk, the scenic railway (src/redraw/fair_tiles.js) */
     if (L.unburied) { const ts = UBT.unburiedTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNBURIED FIELD's tile kit (src/redraw/unburied_tiles.js) */
+    if (L.moorRocks) { const ts = MRT.moorTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* GALE MOOR's tor country kit, THE WIND ROCKS to the landing (src/redraw/moor_tiles.js) */
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
       tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
@@ -2059,7 +2062,7 @@ function spawnEntities() {
   ambushReset();
   tomeToken = newTomeToken();   /* ONE TOKEN A LEVEL: every tome on every shelf shares it, so only one is ever winding up or darting (one windup at a time) */
   L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) { enemies[i].xpKey = k + '.' + (i - n0); if (e.squad) enemies[i].squad = e.squad; } });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
-  spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); villageReset(); canalReset(); if (WTH) WTH.reset(); if (RGH) RGH.reset(); if (DF2H) DF2H.reset(); if (MYH) MYH.reset(); if (STK) STK.reset(curId()); eliteGates();
+  spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); villageReset(); canalReset(); if (WTH) WTH.reset(); if (RGH) RGH.reset(); if (MRH) MRH.reset(); if (DF2H) DF2H.reset(); if (MYH) MYH.reset(); if (STK) STK.reset(curId()); eliteGates();
   lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
 }
 function spawnEnt(e) {
@@ -2488,7 +2491,7 @@ function spawnEnt(e) {
       case 'glowbud': { const pr = { t: 'glowbud', x: px, y: py, lit: 0, mycelium:e.mycelium, motherNode:e.motherNode }; props.push(pr); lights.push({ x: px, y: py - 8, r: 18, glow: true }); pr.light = lights[lights.length - 1]; break; } // dim until you strike it
       case 'glow': props.push({ t: 'glow', x: px, y: py, dark: 0 }); lights.push({ x: px, y: py - 8, r: 52, glow: true, ref: null }); lights[lights.length - 1].ref = props[props.length - 1]; break;
       case 'mover': movers.push({ x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, vert: !!e.vert, rise: (e.rise || 0) * TS, period: e.period || 3.2, phase: e.vert ? (e.ph || 0) : (e.x % 7) * 0.9, stone: !!e.stone, slab: !!e.slab, ghost: e.ghost || null, tide: !!e.tide, sink: !!e.sink, sinkK: 0, cracked: !!e.cracked, arena: !!e.arena, brittle: !!e.brittle, regrow: e.regrow || 0 }); break;
-      case 'vent': props.push({ t: 'vent', x: px, y: py, period: e.period || 4, on: e.on || 1.6, phase: e.phase || 0, h: e.h || 112, wind: !!e.wind, heat: !!e.heat, glass: !!e.glass, incense: !!e.incense, ember: !!e.ember, rune: !!e.rune, lift: e.lift || 190, w: e.w || 13 }); break;
+      case 'vent': props.push({ crevice: !!e.crevice, shaft: !!e.shaft, t: 'vent', x: px, y: py, period: e.period || 4, on: e.on || 1.6, phase: e.phase || 0, h: e.h || 112, wind: !!e.wind, heat: !!e.heat, glass: !!e.glass, incense: !!e.incense, ember: !!e.ember, rune: !!e.rune, lift: e.lift || 190, w: e.w || 13 }); break;
       case 'roller': props.push({ t: 'roller', x: px, y: py, vx: (e.face || 1) * (e.speed || 55), alive: true, rot: 0 }); break;
     }
     { const made = enemies[enemies.length - 1];
@@ -19520,6 +19523,7 @@ function updateVillage(dt) {
   if (STK && state === 'play') STK.update(dt);   /* THE GLINT + STALL NUDGE for the route list (src/stuck-guide.js) */
   if (WTH && WTH.on()) WTH.update(dt);
   if (RGH && RGH.on()) RGH.update(dt);   /* THE RED GORGE (src/red-gorge-hands.js) */
+  if (MRH && MRH.on()) { MRH.update(dt); MRH.tick(dt); }   /* GALE MOOR: the wind that takes a struck goblin, the frame (src/moor-rocks-hands.js) */
   if (MYH && MYH.on()) MYH.update(dt);   /* (claude/djinn2) THE BANDIT MYSTICS: the lamps, their ward, a thrown lamp, the lamp fires */
   if (DF2H && DF2H.on()) DF2H.update(dt);   /* THE DESERT'S SECOND CAST: the burning patches, the venom (src/desert-foes2-hands.js) */   /* THE WELL TOWN (src/well-town-hands.js) */
   if (THEATRE) THH.theatreUpdate(THEATRE, THX, dt);   /* THE MASKWRIGHT'S THEATRE */
@@ -19732,6 +19736,7 @@ function drawVillage(cx, cy) {
   if (MYH && MYH.on()) MYH.drawWorld(g, cx, cy, time);   /* (claude/djinn2) the warding light, the lamps, the ward pips, the lamp fires */
   if (DF2H && DF2H.on()) DF2H.drawWorld(g, cx, cy, time);   /* the burning patches (src/desert-foes2-hands.js) */
   if (RGH && RGH.on()) RGH.drawWorld(g, cx, cy, time);   /* THE RED GORGE: the channel, the flood, the gates, the wheels, the baskets, the jams, the nests */   /* THE WELL TOWN: the wells, the mud, the fires, the windlass, the dry cistern */
+  if (MRH && MRH.on()) MRH.drawWorld(g, cx, cy, time);   /* GALE MOOR: the goblin scaffold, its banners and the half-built frame */
   if (STK) STK.draw(g, cx, cy, VW, VH, time);   /* THE GLINT over what the route needs next (src/stuck-guide.js) */
   if (CANAL) CNH.drawCanal(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL: the gates, the bridges, the weed, the machines */
   if (THEATRE) THH.drawTheatre(THEATRE, g, THX, cx, cy, VW, VH, time);   /* THE MASKWRIGHT'S THEATRE: beams, flats, traps, gadgets, the curtain */
@@ -22732,6 +22737,7 @@ function updateEnemies(dt) {
     if (e.pFace === undefined) e.pFace = e.face; else if (e.face !== e.pFace) { if (Math.abs(e.vx) > 18 || e.lastSpeed > 18) e.turnT = 0.18; e.pFace = e.face; }
     e.lastSpeed = Math.abs(e.vx || 0);
     if(updateBalcony(e,dt))continue;
+    if (e.gustBlown > 0 && MRH && MRH.blow(e, dt)) continue;   /* GALE MOOR: struck as a scaffold gust blows, the wind has it (src/moor-rocks-hands.js; its own AI waits) */
     if (e.t === 'heart') { e.burn=0; e.bleed=0; } // the living membrane takes deliberate cuts only
     if(e.fleeT>0){e.fleeT-=dt;e.vx=e.face*100;e.vy=Math.min(300,(e.vy||0)+900*dt);moveBody(e,e.vx*dt,e.vy*dt,false);if(e.fleeT<=0)e.alive=false;continue;}
     if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { const bd = bossChip(e, wardedDamage(e, 2), 2, true); e.hp -= bd; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; if (bd >= 1) number(e.x, e.y - e.h - 8, bd, '#ff9a5c');   /* (a burn on a boss outside his opening is chipped too: claude/combat3) */ if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
@@ -23529,7 +23535,10 @@ CQH = makeCisternQueenHands({ get L() { return L; }, get players() { return play
   spawnBrood: (x, y) => { const n0 = enemies.length; spawnEnt({ t: 'scorpion', x: Math.floor(x / TS), y: Math.floor(y / TS) - 1, face: -1, brood: true }); const b = enemies[n0]; if (b) { b.brood = true; b.woke = 1; } return b || null; } });
 /* THE RED GORGE'S HANDS (src/red-gorge-hands.js) and THE GREAT RED CRAB'S (src/gorge-crab-hands.js): main.js owns the world; the modules own the flood, the gates, the
    jams, the baskets, the old nest, the raptor's leash and the crab's fight (claude/redgorge) */
-STK = makeGuide({ TS, props: () => props, movers: () => movers, players: () => players || [P], hint: m => { hintT = 4.5; hintMsg = m; }, extra: () => (UNB_FIELD ? UNBF.engineProps(UNB_FIELD) : []), state: n => unbState(n) });   /* (claude/unburiedart: the field's engines and the Rider's gate are fed to the guide) */
+STK = makeGuide({ TS, props: () => props, movers: () => movers, players: () => players || [P], hint: m => { hintT = 4.5; hintMsg = m; }, extra: () => (UNB_FIELD ? UNBF.engineProps(UNB_FIELD) : []).concat(MRH && MRH.on() ? MRH.props() : []), state: n => unbState(n) });   /* (claude/unburiedart: the field's engines and the Rider's gate are fed to the guide) */
+MRH = makeMoorRocksHands({ get L() { return L; }, TS, T, sfx: SFX, hero: () => P, players: () => players || [P], enemies: () => enemies, time: () => time, VW: () => VW,   /* (claude/moor2) */
+  gustNow: z => gustNow(z), number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n),
+  cellSet: (x, y, t) => cellSet(x, y, t), moveFoe: (e, dx, dy, drop) => moveBody(e, dx, dy, !!drop), hazard: e => hazardFoe(e) });
 RGH = makeRedGorgeHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), asPlayer: (p, fn) => asPlayer(p, fn), VW: () => VW, VH: () => VH,
   hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false), moveHero: dx => moveBody(P, dx, 0, false), moveFoe: (e, dx) => { moveBody(e, dx, 0, false); if (e.st) e.st.x = e.x; },
@@ -24192,6 +24201,7 @@ function updateProps(dt) {
   if (talkPress && state === 'play' && !P.dead && !(P.hurt > 0) && !(P.asleep > 0)) { const t = talkers()[0]; if (t) openTalk(t); }
   const hb = attackBox();
   if (PUPH && PUPH.on()) PUPH.strike(hb);   /* THE PUPPETEER: a swing across a glowing string cuts it; a swing at the pin rail frees the counterweight */
+  if (MRH && MRH.on()) MRH.strike(hb);   /* GALE MOOR: the frame's guy-rope */
   if (GTH && GTH.on()) GTH.strike(hb);   /* JENNY GREENTEETH: a swing on the arm that holds you, her hand on the paddle, a paddle, a lamp's hook */
   if (embers.length) updateEmbers(dt);
   if (meteors.length || fireRings.length || lanceBeams.length || moons.length) updateSkillFx(dt);
@@ -24413,6 +24423,7 @@ function updateProps(dt) {
     if (pr.t === 'vent') { // an updraft of spores on a timer: ride it up
       const wasOn = pr.active;
       pr.active = ((time + pr.phase) % pr.period) < pr.on; pr.warm = ((time + pr.phase) % pr.period) > pr.period - 0.6;
+      if (pr.crevice) { if (MRH) MRH.crevice(pr, dt); continue; }   /* GALE MOOR's CREVICE: a whistle, then one throw - not a column you ride (src/moor-rocks-hands.js) */
       if (pr.heat && pr.active && !wasOn && Math.abs(pr.x - P.x) < 220 && Math.abs(pr.y - P.y) < 160) { SFX.puff(); SFX.charge(); }
       // a breath with glass over it crazes the glass and then blows it out, and the pieces go up with it
       if (pr.glass && pr.active && L.hasCryst) { pr.glassT = (pr.glassT || 0) + dt;
@@ -25708,6 +25719,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     if (p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH) continue;
     if (p.dry) continue;
     const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, y = p.y - cy, h = p.shallow ? (p.depth || 22) : p.bottom !== undefined ? Math.max(4, p.bottom - p.y) : VH - y, sea = L.palette && (L.palette.set === 'shore' || L.palette.set === 'reef');
+    if (p.tarn && MRH) { MRH.drawTarn(g, p, x0, x1, y, h, cx, cy, time, surfaceOnly); continue; }   /* GALE MOOR's TARNS: deep, dark water (src/moor-rocks-hands.js) */
     if (!surfaceOnly) {
       if (p.fire) { drawFirePool(p, x0, x1, y, h, cx, cy, false); continue; }
       if (p.capped || p.streetTide || p.clear) continue; // rock over it, a tide standing on real ground, or any water you can see the bottom of: it goes OVER what is in it, or it would be a blue rectangle
@@ -26272,6 +26284,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   drawShafts(cx, cy);
   if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);
+  if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
@@ -26682,6 +26695,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (warmK > 0.2) { g.globalAlpha = 0.25 * warmK; g.fillStyle = '#ff9a5c'; g.beginPath(); g.ellipse(x, y - 2, 14, 4, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
       if (pr.active) { for (let k = 0; k < 4; k++) { const wob = Math.sin(time * 9 + k * 1.7) * 3; g.globalAlpha = 0.09 + 0.05 * Math.sin(time * 13 + k); g.fillStyle = k % 2 ? '#fff6c8' : '#ffb040'; g.fillRect(x - 9 + k * 5 + wob, y - pr.h, 3, pr.h - 2); } g.globalAlpha = 1; } }
     else if (pr.t === 'vent' && pr.rune) drawRuneColumn(pr, cx, cy);   /* THE WITCHLIGHT STAIR */
+    else if (pr.t === 'vent' && pr.crevice) { if (MRH) MRH.drawCrevice(g, pr, cx, cy, time); }   /* GALE MOOR's crevices and gust shafts */
     else if (pr.t === 'vent' && pr.wind) { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy), hw = pr.w || 13, top = y - pr.h, ph = (time + (pr.phase || 0)) % pr.period, on = pr.active, warm = !on && ph > pr.period - 1;
       g.globalAlpha = on ? 0.17 : warm ? (Math.floor(time * 10) % 2 ? 0.16 : 0.05) : 0.05; g.fillStyle = '#eefaff'; g.fillRect(x - hw, top, hw * 2, pr.h);
       g.globalAlpha = on ? 0.75 : 0.3; for (let xx = x - hw; xx < x + hw; xx += 4) g.fillRect(xx, top - 1, 2, 1); // the top of the lift, dashed

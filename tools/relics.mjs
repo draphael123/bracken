@@ -37,7 +37,7 @@ for (const id of Object.keys(TRAVERSAL)) {
   const L = built(id), R = floodReach(L, T, { rides: true }), at = e => R.jumpNear(e.x, e.y);
   const must = L.ents.filter(e => e.t === 'gate' || e.t === 'check');
   const missed = must.filter(e => !at(e));
-  if (id === 'moor') { ok(L.roosts && L.flight, 'moor: the wind levels this check cannot walk (flight, roosts) are not there to be walked elsewhere'); continue; }
+  /* (claude/moor2) the moor's kite ride is gone: the relic-free fill walks it now, the crevices and the frame included, so it is held to the same line as the rest */
   ok(!missed.length, id + ' (once held ' + TRAVERSAL[id] + '): the relic-free fill misses ' + missed.map(e => e.t + '@' + e.x + ',' + e.y).join(' ')); }
 
 /* ---------------- C. every former spot pays silver or is gone ---------------- */
