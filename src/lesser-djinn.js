@@ -8,7 +8,7 @@
 // stepWisp - the canal's wisp, itself the ember wisp's body and AI: it drifts on a wide circle, stops close to you, gutters on a yellow ! and darts;
 // only the dart hurts) under the djinn's skins, with the level's verb as the twist. The canal comes before the Well Town on the gate chain, so the AI is
 // one the player has met (tools/one-new-foe.mjs). They die in their own skins (cnSkin + DF2_CORPSE), have their own bestiary cards, and are not goblins.
-// PURE: no DOM, no main.js. src/lesser-djinn-hands.js binds it; tools/lesser-djinn.mjs proves it.
+// PURE: no DOM, no main.js. src/lesser-djinn-hands.js binds it; no dedicated proof tool was committed with this lane (tools/djinn3-shots.mjs only photographs them); tools/one-new-foe.mjs checks the one-new-foe rule.
 
 export const SAND_SKIN = 'sanddjinn', FIRE_SKIN = 'firedjinn';
 export const LD = {
