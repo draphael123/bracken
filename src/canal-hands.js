@@ -193,6 +193,9 @@ export function holdTarget(st) {
   return null;
 }
 function clarity(st, H, dt) {
+  /* (claude/jenny3, Daniel 10-05 "thought it was sluices/water"): in JENNY GREENTEETH's lock the barge's nudges are not the fight - "THE GATE IS SHUT:
+     FIND ITS PADDLE" came up over her stranding. A hero in her lock hears only her lines (src/jenny-greenteeth.js) */
+  { const ar = H.L().arena; let inLock = false; if (ar && ar.boss === 'greenteeth') H.eachHero(P => { if (!P.dead && P.x > ar.x0 - 32 && P.x < ar.x1 + 32) inLock = true; }); if (inLock) { st.glint = null; return; } }
   const b = st.barge, tg = holdTarget(st), C = st.stall = st.stall || { key: null, t: 0, best: 1e9, said: -1 }; st.glint = tg;
   /* HER LANTERN SWINGS TO IT (src/redraw/canal_props.js drawBarge reads st.lampAng): toward what holds her, or a slow sway */
   const want = tg ? Math.max(-0.55, Math.min(0.55, -(tg.prop.x - (b.x + 12)) / 220)) : Math.sin(st.clock * 1.3) * 0.06; st.lampAng = (st.lampAng || 0) + (want - (st.lampAng || 0)) * Math.min(1, dt * 3);
