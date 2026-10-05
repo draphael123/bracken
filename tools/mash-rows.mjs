@@ -22,18 +22,24 @@ export function carryRows(old, hash, modes, say = () => {}) {
 }
 
 export const STARTERS = ['knight', 'warden', 'pyro'];
+/* HELD IS NOT CLEARED (claude/combat2, 2026-10-05). A lift that does not land - the hero is shut in an AMBUSH ROOM or a locked hall the mash bot
+   cannot finish (a guarding pike captain who never comes to him, a foe that cannot reach him), so the room's walls put him straight back - is the
+   bot STUCK, not the bot through: the Stormhold pyro sat at the ambush wall for three quarters of the run, took no more blows, and 'cleared' the
+   level at 41%. A run with MASH_HELD or more such lifts never got past that room: it did not clear the level. */
+export const MASH_HELD = 3;
+export const clearsAt = (r, hp) => !!r && r.deaths === 0 && r.minHpPct >= hp && !((r.held || 0) >= MASH_HELD);
 /* one level row's verdict over the heroes named: cleared = some hero in the set got through without a death and above `hp` percent health */
 export function levelClears(levelRow, heroes, hp) {
   const rows = heroes.filter(h => levelRow && levelRow[h]).map(h => [h, levelRow[h]]);
   if (!rows.length) return null;
   const best = rows.sort((a, b) => (a[1].deaths - b[1].deaths) || (b[1].minHpPct - a[1].minHpPct))[0];
-  return { cleared: rows.some(([, r]) => r.deaths === 0 && r.minHpPct >= hp), by: rows.filter(([, r]) => r.deaths === 0 && r.minHpPct >= hp).map(([h]) => h), best: best[0], heroes: rows.map(([h]) => h) };
+  return { cleared: rows.some(([, r]) => clearsAt(r, hp)), by: rows.filter(([, r]) => clearsAt(r, hp)).map(([h]) => h), best: best[0], heroes: rows.map(([h]) => h) };
 }
 export function heroReport(cache, hp) {
   const lines = [], changes = [], partial = [];
   for (const [id, e] of Object.entries(cache)) {
     if (!e.level) continue;
-    const per = STARTERS.filter(h => e.level[h]).map(h => { const r = e.level[h]; return h + ' ' + r.minHpPct + '%/' + r.deaths + 'd'; });
+    const per = STARTERS.filter(h => e.level[h]).map(h => { const r = e.level[h]; return h + ' ' + r.minHpPct + '%/' + r.deaths + 'd' + ((r.held || 0) >= MASH_HELD ? '/held' : ''); });
     const all = levelClears(e.level, STARTERS, hp), knight = levelClears(e.level, ['knight'], hp);
     if (all && all.heroes.length < STARTERS.length) partial.push(id);
     const flip = knight && all && knight.cleared !== all.cleared;

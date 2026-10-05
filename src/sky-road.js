@@ -164,6 +164,7 @@ export function buildSkyRoad({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [{ kind: 'lift', sky: 'reel', x: 149 * TS, y: 26 * TS, y0: 26 * TS, y1: 14 * TS, w: 32, h: 8, speed: 0 }],
     arena, gateAfterBoss: true,
     skyroad: true, cloudSea: SEA * TS, clouds, crumbles, vaultDoors, decor, reel, nest,
+    skyThermals: L.ents.filter(e => e.t === 'vent' && e.thermal).map(e => ({ x0: e.x - 2, x1: e.x + 2 })),   /* the rule's places, for tools/rule-state.mjs (not named L.thermals: main.js reads that as the pyro's fire updrafts) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* four checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),

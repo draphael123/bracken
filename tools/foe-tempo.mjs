@@ -27,7 +27,7 @@ try {
       let ok = true; for (let x = x0; x < x0 + 26 && ok; x++) ok = at(x, y + 1) === 1 && [0, 1, 2, 3, 4, 5, 6].every(k => at(x, y - k) === 0); if (ok) spot = [x0 + 9, y]; }
     if (!spot) return { err: 'no flat floor' };
     const time1 = (t, on) => { const real = Math.random; Math.random = mulberry(t.split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7));
-      try { BK.tempo.on = on; BK.tempo.probeAll = ${PROBE} && on;
+      const RXO = BK.tokens().RX; try { BK.tempo.on = on; BK.tempo.probeAll = ${PROBE} && on; if (RXO) RXO.REACT.on = false;   /* (claude/combat2) TEMPO ALONE: the varied held / quick / feinted swings of src/foe-react.js are timed by tools/combat-part2.mjs, not here */
         for (const e of BK.enemies()) e.alive = false; BK.tp(spot[0], spot[1]); BK.sim(60);
         const [f] = BK.spawnFoe({ t, x: spot[0] + 3, y: spot[1], face: -1 }); if (!f) return { err: 'did not spawn' };
         if (f.maxHp || f.mini || f.xpRole) { f.alive = false; return { skip: 'not common' }; }
@@ -38,7 +38,7 @@ try {
           if (!tel && was && mode) (by[t + '|' + mode] = by[t + '|' + mode] || []).push((k - n0) / 60);
           was = tel; }
         f.alive = false; return { by, unmarked };
-      } finally { Math.random = real; BK.tempo.on = true; BK.tempo.probeAll = false; } };
+      } finally { Math.random = real; BK.tempo.on = true; BK.tempo.probeAll = false; if (RXO) RXO.REACT.on = true; } };
     const out = {};
     for (const t of ${JSON.stringify(kinds)}) { try { out[t] = { off: time1(t, false), on: time1(t, true) }; } catch (err) { for (const e of BK.enemies()) e.alive = false; out[t] = { off: { err: 'needs its own level: ' + String(err.message).slice(0, 60) }, on: {} }; } }
     return out; })()`, 1800000);
