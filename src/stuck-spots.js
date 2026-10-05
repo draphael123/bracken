@@ -10,6 +10,12 @@
 //     steps: [ {zone?, at/ats/mover, line, done?, when?}, ... ] }   an ordered chain: the first step that is not done
 // Columns and rows are the FINAL built tiles (the same numbers the signs and entities carry).
 export const STUCK = {
+  /* THE FALLING TOWER'S ORRERY LOFT (claude/archmage3; src/spiral-chase.js): the next world round on each wheel glints (m.next, kept by updateStairFx) from
+     the gallery's landing and the board step (wheel A), and from the pier (wheel B) - never while you ride that wheel */
+  fallingtower: [
+    { id: 'ft-orrery-a', zone: [80, 87, 91, 90], mover: { orrery: 'A', next: true }, off: { orrery: 'A' }, line: 'THE ORRERY TURNS: ITS WORLDS ARE THE WAY OVER THE VOID' },
+    { id: 'ft-orrery-b', zone: [94, 84, 99, 86], mover: { orrery: 'B', next: true }, off: { orrery: 'B' }, line: "THE ORRERY'S OUTER WORLD IS THE WAY ON UP" },
+  ],
   welltown: [   /* (claude/djinn2) THE BINDING WORKS: down the old well, down the sluice to the conduit, and the sealed door to his hall (claude/djinn3: the bellows vent between, and 40 columns on) */
     { id: 'wt-old-well', zone: [498, 18, 522, 27], at: [520, 29], glint: 'stall', line: 'THE OLD WELL IS THE WAY ON: DOWN ITS ROPE' },
     { id: 'wt-sluice', zone: [556, 30, 577, 47], at: [578, 47], glint: 'stall', line: 'THE SLUICE GOES DOWN: A TUNNEL AT ITS FOOT' },
