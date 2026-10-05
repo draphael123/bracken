@@ -81,7 +81,7 @@ export const MAGE = {
   enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, openT: 3.6, openMul: 2,
   order: ['fire', 'ice', 'step', 'bone', 'poison', 'orbit', 'mark', 'bend', 'storm', 'pull', 'hand', 'script', 'decoy', 'fire', 'mark', 'trap'],   /* (archmage3: HIS ORRERY and THE GRAVE SCRIPT) */   /* (round 3: the second step is the DECOY, the second bend the TRAP; archmage2: the BONE STORM, and the GRAVE PULL - stage 3 only, skipped before it) */
   tell: { fire: 0.9, ice: 0.9, storm: 1.2, poison: 1.0, hand: 0.9, mark: 0.6, step: 1.0, bend: 1.0, decoy: 1.1, trap: 1.0, bone: 1.1, pull: 1.0, orbit: 1.2, script: 1.2 },
-  dmg: { fire: 14, ice: 12, storm: 22, orb: 8, hand: 16, mark: 28, bent: 13, trap: 13, skull: 11, void: 18, world: 20, script: 22 },
+  dmg: { fire: 14, ice: 12, storm: 28, orb: 8, hand: 16, mark: 34, bent: 13, trap: 13, skull: 15, void: 18, world: 22, script: 24 },   /* (archmage3: the red ones - nothing turns them - hit harder: harder by quality, not volume) */
   /* ARCHMAGE2. THE BONE STORM: n skulls on a ring of radius r0 round you, its gap slots left open (one wide gap, or every other cycle two
      narrow ones), closing to r1 over secs while the ring turns `turn` of a circle. THE ECHO: its delay, and the spells it repeats. THE GRAVE
      PULL: how long it drags, how hard (px/s at its full), its void's reach, and how long between two hurts by it */
