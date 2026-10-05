@@ -1,0 +1,227 @@
+# Lane report: claude/skyroad (THE SKY ROAD, Opus GREYBOX)
+
+Branch `claude/skyroad`, from claude/moor2art 44e6fb3e (master 2423ff42 + Gale Moor 2 and its art). Master moved to batch69 (COMBAT PART 2) during the lane, and it is merged (a88a13f9). The level is in act II of src/foe-react.js ACTS. Brief: `docs/concepts/sky-road.md` (the section-by-section
+structure is at the top; pushed first). This is a GREYBOX for the reviewer (against THE MAGE'S FOLLY and the design standard), then the
+Sonnet art and music pass. Nothing ships without Daniel's playtest.
+
+## What it is
+
+**Placement.** On the main road: Gale Moor > THE SKY ROAD > the Ore Road > Stormhold > Highcrown. It is appended to LEVELS as
+`{ id: 'skyroad', needs: 'moor' }`, and `oreroad.needs` is now `'skyroad'`. Map node: crag sheet (268,108), with the road
+moor > skyroad > oreroad. The crag sheet is crowded, so the only spot map-spacing passes is below the moor/Ore Road line (see question 5).
+The level is before the Goblin Queen, so living goblins are fine.
+
+**The rule** (`L.rule`): THE SUN WARMS THE ROCK AND THE AIR RISES: RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.
+
+| Verb (the player changes the rule's state) | How it works |
+|---|---|
+| **Ride** a thermal | A column of rising air over sun-hot rock. It lifts you to its top, which overshoots the reach model's top by 2.5 rows, so you crest it and drift onto the ledge. |
+| **Glide** | THE RIDER'S CLOAK, taken off its mast at the station. Hold jump as you fall. Gliding into a column lifts you harder. |
+| **Turn a SUN-STONE** | Strike it. Its thermal is dead until you do. |
+| **Strike THE SUN-DISC** | It wakes a road of four thermals over a chasm, one after another, for 16 s. |
+| **Time the CLOUDS** | Cloud banks drift east. A shadow on a column's foot kills it (fading 0.45 s). The shadow is drawn down through everything, and a column about to die flickers 1.2 s ahead. |
+
+**THE CLOUD SEA** lies under every chasm. A fall into it costs 14, is told (THE DROP), and the updraft puts you back on the last *solid* footing
+(never a crumbling span or a mover). It is never an untold death.
+
+### The five sections
+
+| Section | Cols | Arc | What happens |
+|---|---|---|---|
+| THE MESA STEPS | 0-104 | teach | Two thermals up mesa faces that no jump can climb. The second is under a cloud bank. Failure is cheap (sand under you). |
+| THE RIDERS' STATION | 104-190 | teach cloak and stone; SET PIECE A | The cloak. A glide over a sand shelf, where a miss rides a thermal back up. The first stone wakes a thermal over the chasm, and you glide INTO it. **THE GREAT KITE REEL**: the reel's stone heats the flue, the war-kite climbs, and it hauls the cage 12 rows up the cliff, only while no cloud is on the flue. The cage is the only way up. |
+| THE HARPY ROOSTS | 190-298 | test and remix | A chain of roost pillars and pinnacle thermals under a rolling cloud bank. Roost two's stone is a lock, because THE SPIRE, rock down to the cloud sea, blocks every glide but the one off R2's top. |
+| THE BROKEN SKY BRIDGE | 298-388 | SET PIECE B, then the EXAM | **THE SUN-DISC** wakes a road of thermals across a 34-column chasm. THE EXAM is three cracked spans (three beats each) between two stones, each on a span (s4 wakes R5; s6 on span B wakes R6), with clouds, harpies, a goat and a shield-and-bow head. |
+| THE EYRIE | 388-442 | boss | THE ROC. |
+
+After the Eyrie, the road goes down, and the cloak is hung back on a mast (THE CLOAK GOES BACK ON ITS MAST).
+
+**Checkpoints:** four, at 72, 181, 278 and 383 (the Eyrie door). That is one per 105 route tiles.
+
+**Silvers:** three.
+- the T4 pinnacle over the cloud sea
+- the low roost under roost two (a dead end; R2 takes you back up)
+- THE RIDERS' LOFT, the vault: four KITE CLOTHS (quest, `KITE CLOTHS n/4`) and E at the loft open its woven door
+
+Pockets: the wind cave under mesa B, a hollow under mesa A, the riders' store under the lower deck, and the upper deck's undercroft.
+
+### Foes (designed squads, nothing sprinkled)
+
+- **THE GOBLIN KITE-RIDER** (`kiterider`) is the ONE new type (role: runner). It is a CV machine in `src/sky-road-hands.js` riderStep.
+  - He circles at his thermal's top.
+  - His SWOOP is told with a yellow ! and a dashed line to your spot. It is a kick that a shield turns, and a turned swoop knocks him out of the sky.
+  - Any blow while he flies cuts his line, and he falls to fight on foot (or into the cloud sea).
+  - A cloud on his thermal sinks him to the rock.
+  - A hornblower's horn calls every rider in range into a swoop.
+- **CRAG HARPY** + SNATCH: her dive that lands TAKES you, carries you up and out over the drop, and lets go. Mash to break free. A block knocks her down, as before.
+- **Goblin KITES** (the moor's) hang high in their thermal and sink into reach when it dies.
+- **POT-SLINGER**: the reskinned shooter, the moor's rock goblin AI under `cnSkin: 'gobslinger'`.
+- **CRAG CROWS** (the moor's strings): a crow's shadow crossing a thermal kills it for a beat.
+- **HORNBLOWERS** are support. **Archers**, **shield goblins** (heavy) and a **goat** are also used.
+- Roles: melee, ranged, heavy, runner, support (5).
+
+### THE ROC: `src/roc-eyrie.js`
+
+She was unplaced since the Monastery rework. Her belfry fight in main.js is untouched; main.js hands her body to this module when `L.arena.eyrie` is set.
+
+**Kept from her kit:**
+- in the air nearly always, at the global x0.05 chip;
+- THE DIVE: a shadow and a red !!; onto the nest's woven boards she STICKS (open 3.4 s); onto stone she skids;
+- THE GALE: unmarked, a wind that walks you onto the thorny rim;
+- SHED FEATHERS;
+- THE SNATCH: talons spread and a red !!; struggle free, and she drops you.
+
+**New:**
+- **THE THERMAL PLUNGE** (her main opening): ride a rim thermal over her and plunge onto her back. She goes down, open 3.2 s, and is read at the blow (main.js hurtEnemy0).
+- **HER ANSWER**: she drags a cloud over the thermal nearest you, and over the one you plunged from.
+- **PHASE 2 (half her blood), THE STORM:** the rim thermals die, and only the nest's sun-stone thermal still rises. Lightning finds the three iron kite-masts on a told crackle (a red !! at the mast). A bolt while she perches on that mast knocks her down. The storm dive comes in twos.
+- **ANTI-SPAM WARD:** after every opening, a told 3.5 s ward (HER FEATHERS BRISTLE, a ring). In it a plunge does nothing and a dive skids.
+
+Her other details:
+- **Readability:** her greed reprisal comes from the global rule (her OPEN_RULE row is `rocEyrieOpen`).
+- **Numbers:** 850 hp; talons x1.9, the drop x1.3.
+- **Bot:** `src/roc-eyrie.js` rocEyriePlan, which the lab branch uses.
+
+## Files
+
+**New:**
+- `src/sky-road.js` (the level)
+- `src/sky-road-hands.js` (the rule and its machines)
+- `src/roc-eyrie.js` (the boss and its bot plan)
+- `src/redraw/skyroad_art.js` (greybox sprites)
+- `tools/skyroad.mjs` (Node: placement, the reach with and without the cloak, every stone, the disc, the reel and the loft proved a LOCK, checkpoints, silvers, cloths, thermal columns)
+- `tools/skyroad-probe.mjs` (in page: 15 asserts)
+- `tools/skyroad-pilot.mjs` (the human-bot boss pilot)
+- `tools/skyroad-shots.mjs` (pictures)
+
+**main.js (small local hooks):**
+- the import and construction (SKY, ROCE)
+- `thermal`/`src` on vent props
+- the kite-rider spawn and the CV tables
+- `riderHurt`, `riderStruck`
+- the harpy and kite hooks
+- the vent-loop branch
+- the player hook (glide and the cloud sea)
+- the update and crumbles
+- strike, interact (E at the loft), the cage mover
+- draws
+- the guide's extra props
+- the Roc dispatch and the plunge read at the blow
+- the map node and CRAG_PATH, TIER, MEDALS, EHP
+- the bestiary card, BEAST_SHORT, COLS
+- BK accessors
+
+**Other files:**
+- `src/level.js`: the LEVELS row; Ore Road needs skyroad
+- `src/reachcore.js`: THE CLOAK in the fill; L.skyroad only, never the plain fill or `opts.noGlide`. A glide reaches 6 + 2 columns a row dropped, sinking as it goes past rock, and a glide that meets a thermal rides it. The loft's door is counted as done.
+- `src/boss-greed.js`: the `roc` OPEN_RULE row
+- `src/lab.js`: the eyrie branch
+- `src/marks.js`: BY_HAND, ANSWER, HEIGHT rows, then `tells --write`
+- `src/threat.js`
+- `src/hint-lines.js`
+- `src/stuck-spots.js`: a glint and a nudge on every route need — both thermals of section 1, the cloak, every stone on the route, the reel's cage, the disc
+- `tools/level-quality.mjs`: GATE skyroad, ROLES runner kiterider, REPORT_ONLY music, the flat fix (question 4)
+- `tools/one-new-foe.mjs`: skyroad = kiterider
+- `tools/corpses.mjs`: skyroad
+- `tools/boss-openings.mjs`: the Roc
+- `tools/check.mjs`: skyroad, skyroad-probe
+- `tools/hint-shown-silent.txt`: one line routed, so it shrank
+- `docs/mash-bot.json`, `docs/level1-pilot.json`
+- after the merge: `src/foe-react.js` (ACTS: the Sky Road is act II), `tools/rule-state.mjs` (RULE_KEYS gains clouds and skyThermals, so fight-during-the-rule reads 18 of 18 encounters), `docs/level1-curve.json` (its curve row)
+- pictures for the reviewer: `work/claude/skyroad/` (full-level.png and seven moments, from `tools/skyroad-shots.mjs`)
+
+## Numbers
+
+**level-quality skyroad: CLEARS** (music report-only, the placeholder):
+- flat 18% / 25%
+- 11 bands; 41% of the width offers a second height
+- 8 gadget kinds, 3 developed (thermal, stone, mast)
+- 2 secrets
+- 4 checkpoints, one per 105 route tiles
+- 1.13 encounters per screen
+- 5 ranged foes, 5 roles
+- 3 pockets
+
+**Level-1 no-ability pilot** (knight, 3 runs), re-stamped after the merge: 21 blows, 0 deaths, walked 100%. The act-II curve row (`--curve`) reads 111% health lost and 0 deaths, inside act II's band (70-400%, 0-6 deaths). curve-gate is green.
+
+**Mash bot.** Level first, then boss; tools/mash-bot.mjs, level then boss.
+- Level, re-stamped after the merge: knight dies, warden lowest 18%, pyro dies.
+- Boss: **0/6**; she is left at 60-64%.
+
+**Human-speed bot** (`tools/skyroad-pilot.mjs`, L9 = the Sky Road's campaign depth, normal health). The pass is capped at about 20 fights per hero.
+
+| Config | Fights | Wins | Median win | Notes |
+|---|---|---|---|---|
+| first (1100 hp, no tuning) | 6 | 6/6 | 162 s | |
+| x2.0 talons | 9 | 33% | | |
+| x1.7 | 9 | 56% | | warden 0/3 |
+| x1.7, new grab plan | 9 | 22% | | |
+| x1.7, rim clamp | 9 | 78% | | |
+| x1.9 | 9 | 89% | | |
+| **FINAL** (x1.9, plus her cloud after a plunge) | 6 | **3/6 = 50%** | 113 s | knight 2/2, **warden 0/2**, pyro 1/2 |
+
+The salts are noisy, so I stopped at the cap (see the questions). On average she is opened 10-15 times a fight: about 60% plunges and 30% dives stuck in the nest, plus 4-9 lightning bolts in phase 2.
+
+## Checks (by name, PORT 8622 only)
+
+All green, run by name on PORT 8622 after the merge of origin/master (batch69, COMBAT PART 2), 31 checks:
+
+- **Required:** architecture, checkpoints, skins, dangling-paths, boss-fight-end, slopes-trace (every level identical; skyroad is not traced), npc-removal.
+- **This level's own:** skyroad, skyroad-probe (15 asserts in the page).
+- **The rest:**
+  - level-quality (every gated level clears), mash-gate, curve-gate, combat-part2
+  - stuck (66 spots, static + runtime), corpses, boss-openings (the Roc: alone 0 s open, plunge 3 s+), boss-greed
+  - one-new-foe, hint-shown, tells, untold-told
+  - audio-assets, map-grammar, map-spacing, checkpoint-gaps, threat-holes, moor-rocks, signs, collectables, weapon-skins
+
+Earlier in the lane, before the merge, these were also green: checkpoint-stand, death-cost, deadends.
+
+## UNVERIFIED
+
+- **Not played by hand.** All art is greybox:
+  - shimmer columns, cloud bodies and shadow bands;
+  - plain-shape stones, disc, flue, war-kite, cage frame, masts, loft door and nests;
+  - the kite-rider is a small goblin sprite with the kite drawn over him;
+  - the pot-slinger is a rock-goblin recolour.
+  The backdrop is the crag palette; the level-wide sky gradient should be checked in the art pass.
+- **Per-hero base-movement reach** was reasoned from the physics, not walked by a scripted hand:
+  - glide is about 2.4 columns per row at run speed;
+  - every route glide has margin in the reach model's terms (6 + 2/row);
+  - the closest is the mesa B to ledge one gap (12 columns, 4 rows of drop), but a miss lands on the sand shelf and its thermal takes you back up.
+  - A reviewer should walk it with real keys on knight, warden and pyro.
+- **The Roc's bot number has wide variance** (22-89% across configs of the same shape). The final 6-fight sample is in band, but has the warden at 0/2. Daniel's playtest gate applies.
+- **Co-op:** the loft's E and the cloak are wired for player 1 (as in the gorge and the well town). The thermals lift every player.
+
+## QUESTIONS FOR DANIEL (each built as recommended)
+
+1. **Road order.** Daniel's words were "right after Gale Moor ... > Stormhold", but the Ore Road sits between them. I built moor > SKY ROAD > Ore Road > Stormhold, which means `oreroad.needs` is now `'skyroad'`. A save that cleared the moor but not the Ore Road now meets the Sky Road first.
+   - *Rec:* keep.
+   - *Alternative:* moor > Ore Road > Sky Road > Stormhold.
+2. **Sun-stones and the sun-disc** are my addition. Standard A2 asks for a verb that CHANGES the rule's state; riding and gliding only use it. Striking a stone wakes a dead thermal, and the disc wakes a road of four. They make the stones locks (proved in tools/skyroad.mjs) and give set piece B.
+   - *Rec:* keep.
+3. **Reskins.**
+   - The brief's goblin slinger (on the caravan slinger) and crag hawk (on the vulture) failed one-new-foe. That tool counts by base kind, and both are the DESERT's foes, met later in the campaign.
+   - Built instead: the reskinned shooter is the POT-SLINGER (the moor's rock goblin under `cnSkin`), and the birds are the moor's CRAG CROWS (a crow's shadow kills a thermal for a beat).
+   - *Rec:* keep.
+   - *Alternative:* teach one-new-foe to count a `cnSkin` as its own kind.
+4. **A measurement fix in tools/level-quality.mjs (flat runs).** A run that crossed a gap with no footing used to count the gap's columns as flat empty ground. A glide over a 30-column chasm read as 30 flat columns. It now ends where the floor ends. Every gated level still clears, and the level-quality check is green.
+   - *Rec:* keep (it reads what the comment says it reads).
+   - The reviewer should say whether this counts as a weakened test.
+5. **Map node.** The crag sheet is crowded. Every spot between the moor and the Ore Road broke map-spacing, so the node is at (268,108): the road dips south from the moor to the Sky Road and comes back up to the Ore Road.
+   - *Rec:* keep for the greybox; the map lane can relayout the crag sheet.
+6. **Music is a placeholder, report-only in level-quality.**
+   - The level plays `skysail`, the retired sky ship's track.
+   - The Roc plays her old `roc` track, which the Monastery's abbot arena still plays.
+   - *Rec:* Daniel picks a soaring CC0/CC-BY track for the level (no download until his yes), and the Roc gets her own synth theme in the art/music pass.
+7. **The Roc's number.**
+   - The final 6 fights were 3/6 = 50%, median win 113 s: knight 2/2, warden 0/2, pyro 1/2.
+   - Across the ~20-fight cap per hero, the same shapes swung from 22% to 89%, because her fights are noisy per salt.
+   - I stopped at the cap.
+   - *Rec:* the reviewer re-runs `tools/skyroad-pilot.mjs 9,10,11` once. If the warden stays at 0, ease her snatch for him (the struggle per press, `EYRIE.mash`) rather than her health.
+   - Daniel's playtest gate applies.
+8. **No crosswind SHEAR** on the sky bridge (the draft concept had it). The moor owns sideways gusts, so I left it out to keep the two levels distinct.
+   - *Rec:* keep it out.
+9. **The difficulty index** (tools/curve.mjs, informational) reads 62, against the moor's 89 (after moor2) and the Ore Road's 127. A flight level stands fewer foes per column. The level-1 curve row is inside act II's band.
+   - *Rec:* keep. If Daniel wants it harder, add a designed squad on the far cliff, rather than sprinkling foes.
+10. **Moor's curve row is stale.** The moor's level-1 curve row (docs/level1-curve.json) is stale on this branch, because Gale Moor 2 changed the moor after COMBAT PART 2 measured it. curve-gate prints it and does not fail.
+    - *Rec:* the moor2 lane, or the batch integrator, re-runs `node tools/level1-pilot.mjs moor --curve`.
