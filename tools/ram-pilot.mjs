@@ -3,7 +3,7 @@
 // heroes, one salt, before/after the change - not a standing check, a one-off pilot for the lane report.
 // usage: node tools/ram-pilot.mjs                 (salt 1, knight/warden/pyro)
 //        node tools/ram-pilot.mjs 2 paladin,pirate,reaper
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 import { portFor } from './ports.mjs';
 const salt = Number(process.argv[2] || 1);
 const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');

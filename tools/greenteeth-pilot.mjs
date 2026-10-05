@@ -4,7 +4,7 @@
 // her health left, the phase reached, the cycles, her openings - stuck, dazed, aground on the boat, the drain's strand, the flush - and what did the
 // damage) and a summary per hero and overall against the new-boss band (50-60% wins, fight ~90-120 s). Not in the suite: it is too long.
 //   node tools/greenteeth-pilot.mjs 1,2,3,4,5,6,7      (21 fights: claude/jenny2's measure)
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const salts = (process.argv[2] || '1,2,3,4,5,6,7').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
 const level = process.argv[4] || 'canal';

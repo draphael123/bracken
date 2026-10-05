@@ -2,7 +2,7 @@
    piloted by the boss-lab hands: the Lampreeve (the Lamplit Street's mini), the Headless Ploughman (fields' mini), the Homunculus (mage's mini) and the
    Death Knight (unburied's boss), refill health, one pinned seed per hero. A row a fight: how it ended, how long, the health the hero lost
    and per minute, how many times the boss was opened, the modes it entered and which of them did the damage. Not in the suite: too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const maxSecs = +(process.argv[2] || 240);
 const BOSSES = (process.argv[3] || 'lamplit,fields,mage').split(',');
 const HEROES = (process.argv[4] || 'knight,warden,pyro').split(',');

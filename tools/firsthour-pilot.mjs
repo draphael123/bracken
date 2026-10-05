@@ -2,7 +2,7 @@
    King), piloted by the boss-lab hands with the three heroes the lanes pilot with (knight, warden, pyro): refill health, a 300 s cap,
    one pinned roll per seed. Prints one row a fight - outcome, seconds, health left, damage taken a minute, the modes it spent time in
    (so a new opening shows up as time spent in it) and what hit the hero - and a summary. Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const maxSecs = +(process.argv[2] || 300), seeds = +(process.argv[3] || 1), levels = (process.argv[4] || 'wood,marsh').split(',');
 const HEROES = ['knight', 'warden', 'pyro'];
 const pg = await openPage({ audio: false, fonts: false }), rows = [];

@@ -7,9 +7,10 @@ import { writeFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
+import { levelOverride } from './boss-level.mjs';   /* --hero-level=N (here --level= is the BOSS LEVEL id) */
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
 const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 8), secs = +opt('secs', 240), id = opt('level', 'welltown'), OUT = opt('out', '');
-const lvl = Math.max(1, depthsOf(LEVELS)[id] ?? 1), rows = [];
+const lvl = levelOverride() ?? Math.max(1, depthsOf(LEVELS)[id] ?? 1), rows = [];
 let pg = await openPage({ audio: false, fonts: false });
 try {
   for (const h of heroes) for (let s = 1; s <= seeds; s++) {

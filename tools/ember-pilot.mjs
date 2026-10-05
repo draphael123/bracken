@@ -5,7 +5,7 @@
      3. THE STOCKADE through BK.fightLab: six foes with yellow blows (shoves, cuts, an archer's arrow and a crossbow's bolt) as ELITES
         (a plain one dies to her first two swings before it tells), one fight each, her health put back each frame (keepAlive)
    Prints one row per fight. Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const label = process.argv[2] || 'run';
 const FOES = ['shield', 'swornsword', 'archer', 'crossbow', 'hedgeknight', 'cutlass'];
 const pg = await openPage({ audio: false, fonts: false });

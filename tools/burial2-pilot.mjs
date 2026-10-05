@@ -2,7 +2,8 @@
    pinned rolls each (claude/burial2's before/after, docs/briefs/burial-rework-2.md). Prints a row per fight (outcome, seconds, how
    often he was OPENED and by what, the damage taken a minute, which of his moves did it) and the summary; with a tag the rows go to
    work/burial2/pilot-<tag>.txt too (BURIAL2_OUT overrides the folder). Not in the suite: it is a pilot, and it is long. */
-import { openPage, ROOT } from './cdp.mjs';
+import { ROOT } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* campaign-level hero (tools/boss-level.mjs) */
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 const tag = process.argv[2] || '', seeds = +(process.argv[3] || 3), HEROES = (process.argv[4] || 'knight,warden,pyro,paladin,pirate,reaper,geomancer').split(',');   /* argv[4]: a hero list (claude/burial3 pilots three) */

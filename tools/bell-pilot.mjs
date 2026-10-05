@@ -3,7 +3,7 @@
    so seed two is not seed one again (docs/INTEGRATOR.md) - and a start nudged 7 px a seed, because the Deep's fight replays the same under any roll (lab.js opts.nudge). Prints a row per fight (outcome, seconds, damage taken, how often he
    VENTED and how many stones hit his crown, which modes did the damage) and a summary, and writes work/deep2/pilot-<label>.json.
    Run before and after a change to him (docs/briefs/deep-rework-2.md). Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 import { writeFileSync, mkdirSync } from 'node:fs';
 const seeds = +(process.argv[2] || 3), label = process.argv[3] || 'run';
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];

@@ -5,7 +5,7 @@
    fight and a per-boss summary table: wins, median time to kill, median damage taken. Not in the suite: far too long
    for `npm run check`, same as queen-pilot.mjs and reefmaw-pilot.mjs. Run it once on master (BEFORE) and once with the
    botfix branch's changes (AFTER) and diff the two tables - this script does not tune anything itself. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const maxSecs = +(process.argv[2] || 150);
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
 const pg = await openPage({ audio: false, fonts: false });

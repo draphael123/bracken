@@ -2,7 +2,7 @@
 // pass per salt (bossLab pins its dice per row; docs/INTEGRATOR.md section 6). One life per fight, no refills. Prints a row a fight (outcome, seconds, health
 // left, how often she BURNED - the bonfire opening the bot is taught in src/lab.js - how often she caught, lashed and crowned, and what did the damage) and
 // a summary against the house band (60-75% wins, median win 90-150 s). Not in the suite: it is too long.   usage: node tools/wicker-queen-pilot.mjs
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const salts = (process.argv[2] || '1').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
 const pg = await openPage({ audio: false, fonts: false }), rows = [];

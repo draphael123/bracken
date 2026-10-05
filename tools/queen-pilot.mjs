@@ -2,7 +2,7 @@
    6ac9c23 used (bossLab crown, refill health, a 300 s cap), plus how she was opened - how often a chandelier and how often a
    pillar pinned her, and which of her attacks did the damage. Not in the suite: it is too long. Prints one row a fight and a
    summary: wins, and the median time of a win. `seeds` > 1 repeats every hero on a different pinned roll (opts.seed). */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const maxSecs = +(process.argv[2] || 300), seeds = +(process.argv[3] || 1);
 const HEROES = process.argv[4] ? process.argv[4].split(',') : ['knight', 'warden', 'geomancer', 'pyro', 'paladin', 'pirate', 'reaper'];   /* [heroes]: a comma list (the lane pilots run knight,warden,pyro) */
 const pg = await openPage({ audio: false, fonts: false }), rows = [];

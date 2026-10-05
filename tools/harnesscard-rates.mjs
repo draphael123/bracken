@@ -1,19 +1,20 @@
 /* tools/harnesscard-rates.mjs - HUMAN-BOT RATE PER HERO, OLD HARNESS vs NEW (claude/harnesscard; a measuring tool, not a check).
    Before HARNESSCARD a bot hero was levelled by XP alone (PROG.xp = xpFloor(n), no level-up card): growthAt(h, lv, null) = no Vigor/Endurance/Might
    picks, a much weaker hero than a real player who spent his n picks. 'old' reproduces that; 'new' is BKT.setHeroLevel (xp + the even card spread).
-     PORT=6621 node tools/harnesscard-rates.mjs <levelId>[:mini] [--mode=old|new|both] [--heroes=knight,warden,pyro] [--seeds=4] [--secs=240] [--out=file.json]
+     PORT=6621 node tools/harnesscard-rates.mjs <levelId>[:mini] [--mode=old|new|both] [--heroes=knight,warden,pyro] [--seeds=4] [--from=1: first seed, to re-run one row] [--secs=240] [--out=file.json]
    The hero is the level's depth on the gate chain (campaign-order depthsOf), no skills, normal health (as combat-pilots / djinn-rates). */
 import { writeFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
+import { levelOverride } from './boss-level.mjs';
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
 const [id, flag] = args.find(a => !a.startsWith('-')).split(':'), mini = flag === 'mini';
-const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 4), secs = +opt('secs', 240), OUT = opt('out', ''), modes = opt('mode', 'both') === 'both' ? ['old', 'new'] : [opt('mode', 'both')];
-const lvl = Math.max(1, depthsOf(LEVELS)[id] ?? 1), rows = [];
+const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 4), from = +opt('from', 1), secs = +opt('secs', 240), OUT = opt('out', ''), modes = opt('mode', 'both') === 'both' ? ['old', 'new'] : [opt('mode', 'both')];
+const lvl = levelOverride() ?? Math.max(1, depthsOf(LEVELS)[id] ?? 1), rows = [];
 let pg = await openPage({ audio: false, fonts: false });
 try {
-  for (const mode of modes) for (const h of heroes) for (let s = 1; s <= seeds; s++) {
+  for (const mode of modes) for (const h of heroes) for (let s = from; s < from + seeds; s++) {
     let row;
     try { await pg.reload();
       row = await pg.evalp(`(async()=>{BK.manualSimulation=true;const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG,h=${JSON.stringify(h)};

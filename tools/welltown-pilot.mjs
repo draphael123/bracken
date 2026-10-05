@@ -7,9 +7,10 @@
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
+import { levelOverride, campaignLevel } from './boss-level.mjs';   /* --level=N overrides the campaign level (tools/boss-level.mjs) */
 const args = process.argv.slice(2).filter(a => !a.startsWith('--')), MINI = process.argv.includes('--mini');
 const salts = (args[0] || '1').split(',').map(Number), heroes = (args[1] || 'knight,warden,pyro').split(',');
-const lvl = Math.max(1, depthsOf(LEVELS).welltown ?? 1);
+const lvl = levelOverride() ?? campaignLevel('welltown');
 const pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (const salt of salts) for (const h of heroes) { await pg.reload();

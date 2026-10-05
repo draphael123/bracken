@@ -5,7 +5,7 @@
    seconds, damage taken, which modes did the damage, how many of his archers were up and how many the hands cut down) and a
    summary, and writes work/lance/pilot-<label>.json. Run before and after a change to him (docs/briefs/lance-support.md).
    Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 import { writeFileSync, mkdirSync } from 'node:fs';
 const passes = +(process.argv[2] || 2), label = process.argv[3] || 'run';
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];

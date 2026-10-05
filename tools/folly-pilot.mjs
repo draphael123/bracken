@@ -3,7 +3,7 @@
 // the outcome, the time, the damage taken, the openings he gave and what was landed in each, and which of his modes hurt - and a
 // summary line. (tools/archmage-pilot.mjs is the OTHER archmage: the Falling Tower's undead one.) Not in the suite: it is too long.
 // usage: node tools/folly-pilot.mjs                  HEALTH=refill CAP=300 node tools/folly-pilot.mjs 1,2 knight
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const salts = (process.argv[2] || '1').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
 const health = process.env.HEALTH || 'normal', cap = +(process.env.CAP || 240);
