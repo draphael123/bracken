@@ -3996,7 +3996,7 @@ function galeMoor() {
   ent('deco', o + 6, 13, { kind: 'cairn' }); ent('deco', o + 18, 13, { kind: 'stone', v: 1 }); ent('flagpost', o + 3, 13); ent('flagpost', o + 22, 13);
   ent('hare', o + 30, 13, { face: 1 }); ent('harpy', o + 20, 4);
   gust(o, o + 39, 4, 14, { period: 3.4, on: 2.5, alt: true, k: 1.4 });   /* ONE zone: two overlapped here and stacked (level review) */
-  ent('sign', o + 4, 13, { text: 'THE FLAGS POINT THE WAY: OVER THE MILLS AND THE TUMBLE TO THE KITE POST.' });
+  ent('sign', o + 4, 13, { text: 'THE FLAGS POINT THE WAY: OVER THE MILLS AND THE TUMBLE TO THE WIND ROCKS.' });
   coins([o + 8, 12], [o + 14, 9], [o + 20, 12], [o + 26, 8], [o + 34, 10]); ent('check', o + 39, 13);
   /* ambush-listed (claude/ambushaudit, 2026-09-28): troll's {elite:true} here was vestigial - AMBUSH_CAPTAINS.moor='goat' always wins
      captaincy over a tuple's own elite flag, and singleAmbush()'s "rest" filter excludes any elite-flagged foe too, so troll could NEVER
@@ -4020,55 +4020,62 @@ function galeMoor() {
   ent('flagpost', o + 8, 13); ent('flagpost', o + 32, 13); ent('deco', o + 19, 13, { kind: 'cairn' });
   coins([o + 6, 11], [o + 13, 9], [o + 19, 11], [o + 27, 9], [o + 33, 11], [o + 38, 12]);
 
-  /* ==== 7. THE KITE POST (535-550): the edge of the moor, a wall of stone, and past it nothing but air. The shepherds' great kite is tethered here. ==== */
-  o = 535; section('kite-post', 'THE KITE POST', o, o + 15, [o + 6, 13]);
-  floor(o, o + 13, 14); block(o + 14, o + 15, 5, 29);
-  // EXAM (S, the audit's plan 4): a short kite-up practice before the post itself - the updraft is the same one taught at
-  // the stone circle and the kite field, so the Sky Road below examines a verb the moor already taught, not a new one.
-  ent('vent', o + 1, 13, { period: 3.6, on: 2.4, h: 90, wind: true }); plat(o + 6, 8, 2); coins([o + 6, 7]);
-  ent('stormkite', o + 9, 13);
-  ent('sign', o + 2, 13, { text: 'TAKE HOLD OF THE GREAT KITE: ARROWS STEER, ROLL DARTS. IT WILL NOT WAIT.' });
-  ent('check', o + 5, 13); ent('flagpost', o + 12, 13);
+  /* ==== 7. THE WIND ROCKS (535-584): the kite post and the Sky Road are gone - flight is the Sky Road's now (scratch/sky-road-concept.md), and
+     the moor stays a GROUND level of sideways gusts (claude/moor2, scratch/brief-moor2.md, Daniel 2026-10-03). A climb over tors and a boulder
+     stack. A CREVICE at a tor's foot whistles, then throws you up the face in one short burst (a bounce, never a ride - src/moor-rocks-hands.js);
+     a told gust runs along the ridge and shoves you to its end and off it into the tarn; and the high tor's boulder top is crossed in the lull of
+     a headwind - its crevice blows twice a turn, and only the burst after the gust has died puts you on top to stay. ==== */
+  o = 535; section('wind-rocks', 'THE WIND ROCKS', o, o + 49, [o + 3, 13]);
+  const crevice = (x, y, o2) => ent('vent', x, y, Object.assign({ wind: true, crevice: true, on: 0.5, w: 10 }, o2));   /* h: the throw's height in px (the reach model's column); lift: its speed */
+  const tarn = (x0, x1, top) => { block(x0, x1, 27, 29); pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, bottom: 27 * TS }); };   /* deep water: a fall in hurts and hands you back to the last dry footing (L.waterHurts) */
+  floor(o, o + 5, 14);
+  crevice(o + 5, 13, { period: 3, phase: 0, lift: 500, h: 125 });   /* TAUGHT: six rows of tor face, and a miss is only a wait for the next burst */
+  block(o + 6, o + 15, 8, 29);                                         /* TOR A */
+  block(o + 16, o + 27, 8, 9);                                         /* THE RIDGE, two rows of rock over the tarn */
+  tarn(o + 16, o + 29, 22);
+  gust(o + 6, o + 28, 1, 8, { period: 5, on: 1.8, phase: 0.5, shove: 240, along: true });   /* IT SHOVES YOU ALONG THE RIDGE, and at its end, off it - brace, or go in the still (along: a gust over footing, not a crossing; tools/moor-rocks.mjs walks it) */
+  block(o + 30, o + 37, 8, 29);                                        /* TOR B, two tiles over the tarn from the ridge's end */
+  crevice(o + 37, 7, { period: 2.5, phase: 0.7, lift: 470, h: 110 });  /* two bursts a turn: one in the lull of the headwind above, one into it */
+  block(o + 38, o + 49, 5, 29); block(o + 38, o + 40, 3, 4); block(o + 42, o + 44, 3, 4); block(o + 46, o + 49, 3, 4);   /* TOR C, a boulder stack: two-row cracks between the boulders */
+  headwind(o + 38, o + 47, 0, 3, 0);                                   /* ON TOP, INTO THE WIND: three boulders, two hops, in the still or braced */
+  ent('rockgoblin', o + 13, 7);                                        /* on Tor A, throwing down at you as you wait for the crevice */
+  ent('harpy', o + 22, 3);                                             /* over the ridge, in the gust */
+  ent('archer', o + 43, 2, { face: -1 });                              /* on the boulder stack, shooting down at Tor B while you wait for the right burst */
+  ent('flagpost', o + 3, 13); ent('flagpost', o + 14, 7); ent('flagpost', o + 35, 7);
+  ent('sign', o + 1, 13, { text: 'THE WIND ROCKS. A CREVICE WHISTLES, THEN BLOWS UP: STAND IN IT AND IT THROWS YOU.' });
+  ent('sign', o + 8, 7, { text: 'THE GUST RUNS ALONG THE RIDGE AND OFF ITS END. BRACE, OR CROSS IN THE STILL.' });
+  coins([o + 5, 9], [o + 5, 6], [o + 18, 6], [o + 21, 6], [o + 24, 6], [o + 33, 6], [o + 39, 1], [o + 43, 0]);
+  ent('check', o + 48, 2);
 
-  /* ==== THE SKY ROAD (551-646): the kite carries you down the wind to the summit - through the teeth of the crags, the crow
-     strings, the organ pipes and the storm. The view does not wait. (Ninety-six columns: the old road's best stretch of each
-     of its four parts, and never a checkpoint - you never touch the ground out here.) ==== */
-  o = 551; section('sky-road', 'THE SKY ROAD', o, o + 95, null);
-  block(o, o + 95, 26, 29); spikes(o, o + 95, 25);
-  const spire = (x, top) => { block(x, x + 1, top, 25); stone.push([x, x + 1, top, 25]); };
-  const string = (x, y, n, gap, s) => { for (let i = 0; i < n; i++) ent('harpy', x + i * gap, y, Object.assign({ ph: i * 0.7 }, s || {})); };
-  const ribbon = (x0, x1, y, amp) => { for (let x = x0; x <= x1; x += 2) coins([x, Math.round(y + Math.sin((x - x0) * 0.35) * amp)]); };
-  /* everything out here stands on the gorge floor: nothing hangs in the air (Daniel: no floating rocks) */
-  const tower = (x0, x1, top) => { block(x0, x1, top, 25); stone.push([x0, x1, top, 25]); };
-  ribbon(o + 4, o + 20, 10, 3);
-  /* the teeth: spires of every height, so you go over the short ones low and the tall ones high */
-  spire(o + 24, 13); spire(o + 29, 8); spire(o + 34, 11); spire(o + 39, 7); spire(o + 44, 13);
-  /* the flock, among the stacks */
-  tower(o + 50, o + 52, 11); tower(o + 57, o + 58, 15); string(o + 54, 7, 4, 2); string(o + 60, 9, 3, 2, { amp: 18 });
-  /* the organ pipes: tall stacks shoulder to shoulder - you skim along over their tops */
-  for (const [x, top] of [[o + 66, 10], [o + 70, 8], [o + 74, 10], [o + 78, 7]]) tower(x, x + 1, top);
-  string(o + 72, 5, 3, 2, { amp: 3 }); ribbon(o + 66, o + 79, 5, 1);
-  /* the storm: the shaman's weather, bolts out of the cloud on a beat - and six clear columns before the shelf, so the
-     string is never cut over a stack */
-  for (const [x, ph] of [[o + 81, 0], [o + 85, 1.1], [o + 89, 2.2]]) ent('skybolt', x, 18, { top: 2, period: 3.2, phase: ph });
-  tower(o + 82, o + 83, 12); tower(o + 86, o + 87, 11);   /* (and never over a bolt's own column) */
-  ent('harpy', o + 86, 5); ent('kite', o + 80, 5); ent('kite', o + 90, 6); string(o + 84, 9, 3, 2); ribbon(o + 90, o + 95, 8, 2);
-  // EXAM (S, the audit's plan 4): one told headwind burst over the organ pipes, tighter and stronger than the road's own
-  // ambient wind - dive under their tops (row 9) to duck it, since flying high through it costs you ground you cannot get
-  // back. It is pushed before the ambient gust, so it is the one that answers for this stretch (windAt checks in order).
-  gust(o + 66, o + 80, 0, 9, { dir: -1, period: 3.6, on: 1.6, phase: 0, k: 1.2 });
-  gust(o, o + 96, 0, 26, { dir: -1, period: 7, on: 1.8, phase: 2, k: 0.8 });
+  /* ==== THE GOBLIN SCAFFOLDS (585-646): goblins raising a windmill on timber over a black tarn. Told gusts go over the decks, and a goblin
+     struck while one blows is carried off the scaffold into the water - the wind is your weapon. A GUST SHAFT under each deck throws you up
+     to the next (the crevice's burst in timber). On the top deck the half-built frame stands on one guy-rope over the gap to the landing: cut it
+     as the gust blows east and the wind lays it down as your bridge; in the still it only sways. ==== */
+  o = 585; section('goblin-scaffolds', 'THE GOBLIN SCAFFOLDS', o, o + 61, [o + 5, 20]);
+  floor(o, o + 13, 21);                                                /* the timber yard */
+  tarn(o + 14, o + 61, 23);
+  plank(o + 9, o + 44, 17);                                            /* THE FIRST DECK */
+  plank(o + 23, o + 54, 13);                                           /* THE TOP DECK, at the landing's height */
+  crevice(o + 11, 20, { shaft: true, period: 2.5, phase: 1.2, lift: 430, h: 90 });   /* under the first deck: four rows, one more than a jump */
+  crevice(o + 26, 16, { shaft: true, period: 2.5, phase: 0.3, lift: 430, h: 90 });   /* under the top deck: it blows in the still of the deck's gust, twice a turn */
+  gust(o + 14, o + 45, 14, 17, { period: 5, on: 1.8, phase: 0, shove: 240, scaffold: true, along: true });     /* over the first deck, east: it takes a struck goblin off, and you to the deck's end */
+  gust(o + 37, o + 50, 2, 13, { period: 5, on: 1.8, phase: 2.5, shove: 240, scaffold: true, along: true });   /* over the frame, east: the wind that lays it down (it stops twelve tiles short of the landing, so it carries no jump across the gap) */
+  ent('gustframe', o + 48, 12, { anchor: o + 44, len: 14, span: [o + 55, o + 61], row: 13 });
+  ent('shield', o + 30, 16, { face: -1 }); ent('archer', o + 41, 16, { face: -1 });   /* the first deck: a shield in front, a bow behind him */
+  ent('rockgoblin', o + 29, 12); ent('horn', o + 35, 12, { face: -1 }); ent('horn', o + 53, 12, { face: -1 });   /* the top deck: hornblowers at its top, and one by the gap */
+  ent('flagpost', o + 3, 20); ent('flagpost', o + 24, 12);
+  ent('sign', o + 2, 20, { text: 'THE GOBLINS RAISE A WINDMILL. STRIKE ONE AS A GUST BLOWS, AND THE WIND TAKES HIM.' });
+  ent('sign', o + 38, 12, { text: 'THE FRAME LEANS ON ONE ROPE. CUT IT AS THE GUST BLOWS, AND THE WIND LAYS IT DOWN.' });
+  coins([o + 11, 16], [o + 11, 13], [o + 20, 15], [o + 26, 12], [o + 26, 9], [o + 47, 10], [o + 58, 11]);
+  const moorRocks = { decks: [[o + 9, o + 44, 17, 23], [o + 23, o + 54, 13, 23]] };
 
-  /* ==== THE LANDING (647-654): an eight-tile shelf of the summit rock west of the Windcaller's wall. The storm cuts the kite's
-     string over it (L.flight.x1), and its checkpoint is the one B6 asks for OUTSIDE the arena walls. Before the rework the only
-     ground out here was the kite post a Sky Road back, so the landing checkpoint stood inside the walls (it was listed as on
-     purpose, the levelfix report's first question); the shelf answers it (docs/briefs/gale-moor-rework.md §5). A death in
-     the fight wakes you here, at the door; the kite ride is not asked again. ==== */
+  /* ==== THE LANDING (647-654): an eight-tile shelf of the summit rock west of the Windcaller's wall, where the scaffold's fallen frame
+     comes to rest. Its checkpoint is the one B6 asks for OUTSIDE the arena walls (docs/briefs/gale-moor-rework.md §5; it was the kite's
+     landing until claude/moor2 replaced the kite ride). A death in the fight wakes you here, at the door; the scaffolds are not asked again. ==== */
   o = 647; section('landing', 'THE LANDING', o, o + 7, [o + 3, 12]);
   block(o, o + 7, 13, 29);
   ent('check', o + 5, 12); ent('flagpost', o + 7, 12);
   ent('sign', o + 3, 12, { text: 'HE CALLS THE WIND AT YOU. HOLD C THROUGH HIS HOWL AND HIS OWN WIND FAILS HIM.' });
-  const flight = { x1: o + 2, speed: 78, camY: 2, down: [] };   /* the Sky Road: the kite lets go over the shelf */
 
   /* ==== THE SUMMIT (655-702): three standing stones and two ledges. The shaman blinks between them and throws the sky at
      you. You walk in off the landing, from the west (RULES I: an arena is entered from the left). ==== */
@@ -4085,7 +4092,7 @@ function galeMoor() {
   const roosts = [[o + 8, 9], [o + 22, 3], [o + 37, 7], [o + 15, 6], [o + 30, 5]];   /* where he stands: a stone's top, a ledge */
   const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 8) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' };
 
-  for (const e of L.ents) if (e.t === 'vent' && e.wind) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto */
+  for (const e of L.ents) if (e.t === 'vent' && e.wind && !e.crevice) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto (a crevice keeps its own throw) */
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
     duskStart: -1, duskLen: 1, music: 'northumberland', night: false, glowNight: false,   /* "The Fair Flower of Northumberland" by Spring Spring, CC0 - GALE MOOR's own theme, benching adventure (audio/CREDITS.txt) */
@@ -4093,7 +4100,8 @@ function galeMoor() {
 
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }, { x0: 402 * TS, x1: 455 * TS, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena, flight, airRails, downCliffs, ambushes, calm, sections, stormSummit: true,
+    arena, airRails, downCliffs, ambushes, calm, sections, stormSummit: true, moorRocks,
+    waterHurts: true, noWade: true,   /* THE TARNS under the ridge and the scaffold (claude/moor2): a fall in costs health and hands you back to the last dry footing (main.js), and their bed is nowhere anyone walks (src/reachcore.js). Every other pool on the moor is a shallow bog and keeps its wade */
     playtestSections: sections.filter(s => s.id === 'wind-rivers' || s.id === 'downdraft-cliff').map(s => ({ name: s.name, x0: s.x0, x1: s.x1 })),
   };
 }

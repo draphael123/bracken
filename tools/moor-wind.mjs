@@ -10,10 +10,13 @@ const TS=16,col=px=>Math.floor(px/TS),at=(x,y)=>L.grid[y*L.W+x];
 assert(L.W>=650&&L.W<=720,'Gale Moor is '+L.W+' columns: the rework cut it to about 700');
 {const S=L.sections;assert(S&&S.length>=7,'the builder names its sections');assert.equal(S[0].x0,0);assert.equal(S[S.length-1].x1,L.W-1,'the last section ends at the level edge');
  for(let i=1;i<S.length;i++)assert.equal(S[i].x0,S[i-1].x1+1,'section '+S[i].id+' starts where '+S[i-1].id+' ends');}
-/* the kite lets go over ground: the column under the string's cut has footing within the view */
-{const x=L.flight.x1;let y=0;while(y<L.H&&at(x,y)===T.AIR)y++;assert(y<L.H&&at(x,y)!==T.SPIKE,'the kite lets go at '+x+' over ground');}
-/* and on that ground, west of the Windcaller's wall, a checkpoint (B6: one OUTSIDE the arena walls; the rework's part three) */
-assert(L.ents.some(e=>e.t==='check'&&e.x>=L.flight.x1&&e.x<L.arena.wallL),'a checkpoint on the landing, between the cut of the kite string ('+L.flight.x1+') and the arena wall ('+L.arena.wallL+')');
+/* THE LANDING (claude/moor2: the kite ride is gone - flight is the Sky Road's - and the half-built frame on the goblin scaffold is the bridge onto it).
+   The shelf west of the Windcaller's wall is ground, the frame's span lands on it, and a checkpoint stands on it (B6: one OUTSIDE the arena walls) */
+{const S=L.sections.find(s=>s.id==='landing'),fr=L.ents.find(e=>e.t==='gustframe');assert(S&&fr,'the landing and the frame are built');
+ assert(!L.flight&&!L.ents.some(e=>e.t==='stormkite'),'no kite ride: the moor is a ground level (scratch/brief-moor2.md)');
+ assert.equal(fr.span[1]+1,S.x0,'the frame\'s span ends at the landing ('+fr.span[1]+' then '+S.x0+')');
+ for(let x=S.x0;x<=S.x1;x++)assert(at(x,fr.row)===T.SOLID&&at(x,fr.row-1)!==T.SOLID,'the landing is a shelf at the frame\'s row: '+x);
+ assert(L.ents.some(e=>e.t==='check'&&e.x>=S.x0&&e.x<=S.x1&&e.x<L.arena.wallL),'a checkpoint on the landing ('+S.x0+'-'+S.x1+'), west of the arena wall ('+L.arena.wallL+')');}
 assert(L.roosts.every(([x])=>x*16>L.arena.x0&&x*16<L.arena.x1));assert(L.ambushes.every(a=>a.waves.flat().every(e=>e[1]>a.wallL&&e[1]<a.wallR)));
 /* THE WIND RIVERS' BANK LADDER: a rope stands at the rail's far end, down to the river bed, for anyone who misses the exit */
 const R=L.airRails[0];{const x1=col(R.x1);assert([0,1,2].some(d=>at(x1+d,col(R.y)+6)===T.NET),'a bank ladder at the rail\'s exit, '+x1);}

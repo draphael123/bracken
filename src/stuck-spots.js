@@ -117,6 +117,14 @@ export const STUCK = {
   stockade: [
     { id: 'sk-crank', zone: [118, 10, 141, 26], at: [138, 19], line: 'THE PALISADE HOLDS: FIND ITS CRANK' },
   ],
+  /* GALE MOOR's WIND ROCKS and GOBLIN SCAFFOLDS (claude/moor2): the two crevices, the two gust shafts, and the half-built frame's rope until it is down */
+  moor: [
+    { id: 'mr-crevice-1', zone: [535, 9, 540, 13], at: [540, 13], line: 'THE CREVICE AT THE FOOT OF THE TOR BLOWS UPWARD' },
+    { id: 'mr-crevice-2', zone: [565, 4, 572, 7], at: [572, 7], line: 'A CREVICE AT THE FOOT OF THE HIGH TOR' },
+    { id: 'mr-shaft-1', zone: [585, 18, 598, 20], at: [596, 20], line: 'A GUST SHAFT UNDER THE SCAFFOLD' },
+    { id: 'mr-shaft-2', zone: [594, 14, 629, 16], at: [611, 16], line: 'A GUST SHAFT UNDER THE TOP DECK' },
+    { id: 'mr-frame', zone: [608, 4, 639, 12], at: [629, 12], done: ['gustframe', 633, 12, 'fallen'], line: 'THE HALF-BUILT FRAME LEANS OVER THE GAP ON ONE ROPE' },
+  ],
   canal: [
     { id: 'cn-board', zone: [0, 22, 50, 56], mover: { canal: true }, off: { canal: true }, line: 'THE BARGE WAITS BELOW: STEP ONTO HER DECK' },
   ],

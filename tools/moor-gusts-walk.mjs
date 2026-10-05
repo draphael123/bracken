@@ -22,7 +22,7 @@ try {
     const waitFor=(z,lo,hi)=>{for(let i=0;i<60*12&&!(ph(z)>=lo&&ph(z)<hi);i++)BK.sim(1);};
     const place=(x)=>{BK.tp(x,surf(x)-1);BK.P.vx=0;BK.sim(8);};
     const hp0=()=>{BK.P.hp=BK.P.maxHp;BK.P.inv=0;return BK.P.hp;};
-    const zones=L.gusts.filter(z=>z.shove&&!z.arena);
+    const zones=L.gusts.filter(z=>z.shove&&!z.arena&&!z.along);   /* (claude/moor2: a gust marked ALONG - the Wind Rocks' ridge, the scaffold decks - blows along footing, not over a crossing; tools/moor-rocks.mjs walks those) */
     for(const z of zones){const a=Math.floor(z.x0/16),b=Math.ceil(z.x1/16),goal=b*16+8;
       const run=(how)=>{boot();for(const e of BK.enemies())e.alive=false;clear();
         if(z.carry){ /* A RIDE: on the lip, then jump as it arrives (or in the still) */
