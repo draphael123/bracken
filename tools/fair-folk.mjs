@@ -52,7 +52,7 @@ try {
       if (!boss) for (const md of modes) { e.mode = md; if (e.st) e.st.mode = md; e.modeT = 0.3; e.draw = md === 'raise' ? 0.4 : 0; e.flash = 0; BK.step(1); if (e.lastSet) sets.add(e.lastSet); }
       e.mode = m0; if (st0) Object.assign(e.st, st0); e.draw = 0;
       e.hurtT = 0.3; e.flash = 0.2; draw(2);
-      if (!boss) { const n0 = corp().length; e.hp = 1; e.frozen = 0; e.shield = 0; e.armor = 0; if (e.t === 'wickerman') { e.wmBurn = 3; e.mode = 'burn'; }
+      if (!boss) { const n0 = corp().length; e.hp = 1; e.frozen = 0; e.shield = 0; e.armor = 0; if (e.t === 'wickerman' && e.st) { e.st.mode = 'burn'; e.st.t = 3; }   /* (its wicker shrugs a blow off unless it burns) */
         BK.combat2().strike(e, 'heavy', 1); if (e.alive) row.errs.push('the blow did not kill it (its body was never drawn)');
         else { BK.step(1); const cs = corp().slice(n0); const c = cs.find(q => q.t === e.t) || cs[0]; BK.step(10); if (c && c.shown) sets.add(c.shown); else row.errs.push('no body was drawn'); } }
       if (!sets.size) row.errs.push('it was never drawn');

@@ -24,8 +24,6 @@ export const CALL_LINES = new Set([
   'THE WICKER BALL: STRIKE IT BACK', 'STRUCK BACK', 'HER OWN FIRE: SHE CATCHES', 'THE BONFIRE RING: FIND THE GAP',
   /* claude/fairfix5: every fire attack sets HERSELF alight (src/wicker-queen.js selfAlight) */
   'HER OWN FIRE CAUGHT HER: CUT HER',
-  /* claude/fairfix6: THE WICKER MAN, the Queen's verb taught before her arena (src/wicker-man-hands.js) */
-  'THE WICKER MAN: STRIKE ITS FIRE BACK', 'ITS OWN FIRE: IT CATCHES', 'IT BURNS: CUT IT', 'IT STAMPS ITS FIRE OUT', 'THE WICKER SHRUGS IT OFF: STRIKE ITS FIRE BACK', 'TOO WILD: WAIT, THEN STRIKE AS IT COMES',
   'THE RIBBONS SWEEP LOW: JUMP TWICE', 'THE RIBBONS SWEEP HIGH: DUCK', 'THAT FIRE IS SPENT', 'THE BALL RELIGHTS THE FIRE',
   /* claude/unburiedart: the field's second engine and the tower's bridge */
   'THE SKEIN LETS GO', "THE BOWMEN'S PALISADE SPLINTERS", 'THE ROPE PARTS: THE DRAWBRIDGE RUNS DOWN', 'THE DRAWBRIDGE LANDS ON THE WALL-WALK',

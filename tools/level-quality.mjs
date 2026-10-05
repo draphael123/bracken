@@ -61,9 +61,9 @@ export const LIM = {
 /* FOE ROLES. The game has no role field on a foe, so the roles are named here, by what the foe DOES to you; a foe not listed is MELEE. Keep the lists to kinds whose AI
    was read (a thrown or shot attack; a bomb or net; a heal/horn/banner/snuff; plate or a big swing; a fast chase or a grab). Add a kind when a lane builds one. */
 export const ROLES = {
-  ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest'],
+  ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest', 'wickerman'],   /* (claude/fairfix6) THE WICKER MAN bowls its own fire */
   support: ['barker', 'gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
-  heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield'],
+  heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield', 'wickerman'],
   runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow', 'waterthief', 'raptor'],   /* (claude/redgorge: the cliff raptor stoops on you from over its bridge and is gone again - a hit and run) (claude/welltown: the water-thief cuts your skin and RUNS for a well) (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
 };
 const rolesOf = t => { const r = Object.keys(ROLES).filter(k => ROLES[k].includes(t)); return r.length ? r : ['melee']; };
