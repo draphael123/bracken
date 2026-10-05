@@ -101,7 +101,7 @@ export function makeDjinnHands(ctx) {
     /* THE FIRST TIME: what a blade does to him, and where the water is */
     if (!S.told.how && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.how = 1; ctx.number(e.x, e.y - 120, 'A BLADE PASSES THROUGH SAND: POUR WATER ON HIM', '#ffd36b'); }
     if (!S.told.basin && ctx.players.some(pp => pp.skin && pp.skin.sips <= 0) && S.ph < 3) { S.told.basin = 1; ctx.number(S.G.basinW, S.G.floor - 40, 'THE SPRINGS REFILL YOUR SKIN', '#7ab8e8'); }
-    if (S.ph === 3 && !S.told.crank && e.mode === 'hover') { S.told.crank = 1; ctx.number(S.G.windlass, S.G.floor - 70, 'THE WINDLASS OR THE CRANK: WIND THE BUCKET UP, THEN DROP IT ON HIM', '#7ab8e8'); }
+    if (S.ph === 3 && !S.told.crank && e.mode === 'hover') { S.told.crank = 1; ctx.number(S.G.windlass, S.G.floor - 70, 'WINDLASS OR CRANK: WIND THE BUCKET UP, THEN DROP IT', '#7ab8e8'); }
   };
   /* ---------- A BLOW ON HIM: in a water opening x openMul (one opening takes at most openCap); his slammed hand in phase three, whole (at most handCap a
      slam); anything else passes through sand, is turned by fire, or splashes through water (0) ---------- */

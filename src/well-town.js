@@ -41,9 +41,13 @@ import { stageGangLeader } from './gang-leader.js';
 import { stageDjinn } from './djinn.js';   /* (claude/welltown5, Daniel 10-03: THE DJINN OF THE GREAT WELL is the town's boss; THE CISTERN QUEEN is benched for a level of her own - src/cistern-queen.js stageCisternQueen is kept, unplaced) */
 import { SHADE_OF } from './redraw/desert.js';
 
-export const WELLTOWN = { W: 664, H: 60, street: 30 };   /* (claude/djinn2: 584 -> 664, THE BINDING WORKS under the Kasbah before his hall) */
+export const WELLTOWN = { W: 704, H: 60, street: 30 };   /* (claude/djinn2: 584 -> 664, THE BINDING WORKS under the Kasbah before his hall; claude/djinn3: 664 -> 704, THE STEAM WORKS) */
 export const SECTIONS = [['THE CARAVAN GATE', 0], ['THE LOWER MARKET', 64], ['THE WELL SQUARE', 150], ['THE CISTERNS', 166], ['THE MUD QUARTER', 259],
-  ["THE BANDITS' ROOST", 326], ['THE KASBAH', 426], ['THE BINDING WORKS', 514]];
+  ["THE BANDITS' ROOST", 326], ['THE KASBAH', 426], ['THE BINDING WORKS', 514], ['THE STEAM WORKS', 578]];
+/* THE STEAM WORKS (claude/djinn3, Daniel 10-04: the binding works "needs to use WATER more and be a little LONGER"): the old waterworks' boiler run, where
+   his fire leaks up through the floor. FLAME VENTS fire on a rhythm - a glow (told), then a jet - and a POUR on one CAPS it for VENT.cap s (the water verb
+   as your tool); under the flooded trough they blow STEAM (time it: nothing caps a vent under water); THE BELLOWS VENT never stops - cap it or go no further */
+export const VENTS = { teach: [578, 591], steam: [592, 603], bellows: [604, 617] };
 /* each mechanic's arc (tile columns) - TAUGHT, DEVELOPED, TWISTED, COMBINED/EXAMINED - read by tools/welltown.mjs and the concept page */
 export const ARCS = {
   fill: { teach: [8, 14], develop: [76, 80], twist: [282, 292], exam: [446, 456] },               /* the wells: the first in the open; held by thieves later */
@@ -71,7 +75,7 @@ export function buildWellTown({ painter, T, TS }) {
   const venomScorp = (x, y, squad) => foe('scorpion', x, y, squad, { cnSkin: 'venomscorpion' });
   const vulture = (x, y, squad) => foe('vulture', x, y, squad);                                             /* THE WATER-THIEF: the cutthroat's feint and cut (RESKINNED), and he cuts your skin */
   const well = (x, y, o) => ent('skinwell', x, y, o || {});
-  const shade = [], cast = [], mudWalls = [], vaultDoors = [], moversExtra = [], interiors = [];
+  const shade = [], cast = [], mudWalls = [], vaultDoors = [], moversExtra = [], interiors = [], wtPools = [];
   /* A MUD WALL is a bricked-up DOORWAY: the house wall runs on above it (so it cannot be jumped), and only a pour opens it */
   const mudDoor = (x0, x1, wallTop, floorRow, rows = 3, o = {}) => { block(x0, x1, wallTop, floorRow - 1); mudWalls.push({ x0, x1, y0: floorRow - rows, y1: floorRow - 1, ...o }); ent('mudwall', x0, floorRow - 1, { x1, ...o }); };
   const fire = (x, y, o) => ent('oilfire', x, y, o || {});
@@ -275,12 +279,21 @@ export function buildWellTown({ painter, T, TS }) {
      LAMP-BEARERS whose warding light halves your blows) chant at the seals to free him. No sun down here: all shade.
        THE WELL'S FOOT (514-531)   the shaft's foot, the old well's LAST WATER (fill here), the first seal, dim
        THE DRY CHANNEL (532-559)   TEACH: a lamp-bearer warding a knife in the channel's trough - pour on the lamp, or kill him and take it
-       THE SLUICE (560-577)        the sluice chamber, down ledge by ledge (each hero's plain jump and drop), casters on the ledges, the second seal
-       THE CONDUIT (578-589)       REMIX: down the conduit's steps into a bearer warding casters; throw his lamp at them
-       THE SEAL HALL (590-606)     EXAM: the last mystics chanting at the brightest seals by his door, a spring; the checkpoint at the door
+       THE SLUICE (560-577)        the sluice chamber, down ledge by ledge (each hero's plain jump and drop), casters on the ledges, the second seal; a
+                                   drip-spring at its foot (claude/djinn3)
+       THE STEAM WORKS (578-617)   (claude/djinn3) TEACH the vents in a corridor (time them, or pour on one: capped); THE FLOODED TROUGH, steam vents under
+                                   the water (time it); THE BELLOWS VENT in a low tunnel - it never stops: cap it, and a FIRE SPIRIT past it (douse it)
+       THE CONDUIT (618-629)       REMIX: down the conduit's steps into a bearer warding casters; throw his lamp at them
+       THE SEAL HALL (630-646)     EXAM: the last mystics chanting at the brightest seals by his door, a spring; the checkpoint at the door
+     THE LESSER DJINN (claude/djinn3: src/lesser-djinn.js - the ember wisp's AI under his skins): SAND SPIRITS a blade passes through until a pour makes
+     them MUD (the dry channel, the sluice), FIRE SPIRITS that turn a blade until a pour DOUSES them (the steam works, the seal hall) - his two verbs, small.
      At the bottom THE LAST SEAL, on his hall's back wall, breaks when you come in (src/djinn-hands.js: told, cutscene-lite) and he rises. */
   const mystic = (x, y, squad) => foe('gobmage', x, y, squad, { cnSkin: 'banditmystic' });
   const bearer = (x, y, squad) => foe('gobmage', x, y, squad, { cnSkin: 'lampbearer' });
+  const sandSpirit = (x, y, squad) => foe('emberwisp', x, y, squad, { cnSkin: 'sanddjinn' });   /* (claude/djinn3) THE LESSER DJINN: a blade passes through until a pour makes him mud */
+  const fireSpirit = (x, y, squad) => foe('emberwisp', x, y, squad, { cnSkin: 'firedjinn' });   /* (claude/djinn3) a blade is turned until a pour douses him */
+  const vent = (x, y, o) => ent('flamevent', x, y, o);   /* (claude/djinn3) A FLAME VENT standing on row y: { h rows of jet, period, phase, always, steam, w } */
+  const DX = 40;   /* (claude/djinn3) everything from the conduit on moved 40 columns east for THE STEAM WORKS */
   const seals = [], cracks = [];
   const seal = (x, y, glow) => seals.push({ x: x * TS + 8, y: y * TS + 8, glow });
   /* THE WELL'S FOOT and THE DRY CHANNEL: a tunnel five rows high, a trough in the channel's bed, the vault's ribs hanging */
@@ -291,37 +304,61 @@ export function buildWellTown({ painter, T, TS }) {
   sign(518, 35, 'THE BINDING WORKS. THE SEALS HOLD IT DOWN.');
   seal(526, 33, 0.3);
   bearer(548, 37, 'channel'); foe('cutthroat', 544, 37, 'channel');          /* TEACH: a knife in the lamp's light (half a blow on him) and the bearer behind him */
+  sandSpirit(534, 33, 'footSpirit');                                          /* (claude/djinn3) THE FIRST SAND SPIRIT, alone at the well's foot by its last water: a blade passes through - pour, and cut the mud */
   cracks.push([535, 31], [553, 31]);
   interiors.push([514, 559, 31, 35, 'wtQueen'], [538, 551, 36, 37, 'wtQueen']);
   /* THE SLUICE: a chamber seventeen rows deep, down three ledges (two-row and three-row drops) to its floor */
   air(560, 577, 31, 47);
   boards(560, 566, 38); boards(570, 577, 41); boards(561, 567, 44);
   mystic(573, 40, 'sluiceLedge'); venomScorp(566, 47, 'sluice');                  /* a caster on the middle ledge, the Queen's brood on the floor */
+  sandSpirit(563, 36, 'sluiceSpirit');                                        /* (claude/djinn3) a sand spirit over the sluice's top ledge, under the caster's bolts */
+  well(575, 47, { sluiceSpring: true, works: true });                         /* (claude/djinn3) THE SLUICE'S DRIP-SPRING at its foot: the skin full for the steam works */
   seal(569, 34, 0.55);
   cracks.push([563, 31], [575, 31], [571, 31]);
   interiors.push([560, 577, 31, 47, 'wtQueen']);
-  /* THE CONDUIT: down its steps from the sluice's floor to the hall's (rows 48 -> 56), its roof at row 44 */
-  { const F2 = [49, 49, 50, 50, 51, 51, 52, 53, 54, 54, 55, 56]; for (let i = 0; i < F2.length; i++) { const x = 578 + i; air(x, x, 44, F2[i] - 1); block(x, x, F2[i], H - 1); } }
-  bearer(581, 49, 'conduitTop'); mystic(587, 53, 'conduitLow'); foe('cutthroat', 584, 51, 'conduit');   /* REMIX: the bearer above, his light over a caster and a knife on the steps below */
-  cracks.push([583, 44]);
-  interiors.push([578, 589, 44, 55, 'wtQueen']);
+  /* ================= THE STEAM WORKS (578-617, claude/djinn3): the vents, the flooded trough, the bellows ================= */
+  /* TEACH: a corridor six rows high off the sluice's floor (row 48), two vents on a slow rhythm, out of turn - wait for the jet to die, or pour on one */
+  air(578, 591, 42, 47);
+  sign(580, 47, 'FLAME VENTS. POUR ON ONE TO CAP IT.');
+  vent(584, 47, { h: 5, period: 3.6, phase: 0 }); vent(588, 47, { h: 5, period: 3.6, phase: 1.8 });
+  mystic(591, 47, 'ventCaster');                                              /* (a caster at the corridor's end: the vents are fought through, not just walked) */
+  /* THE FLOODED TROUGH: the floor drops into standing water (rows 48-49 over a floor at 50); vents under it blow STEAM on their rhythm - bubbles, then a
+     scalding column. Nothing caps a vent under water: time it */
+  air(592, 603, 42, 49); block(592, 592, 49, 49); block(603, 603, 49, 49);    /* a step down into it, a step up out of it */
+  vent(595, 49, { h: 6, period: 3.0, phase: 0.4, steam: true }); vent(600, 49, { h: 6, period: 3.0, phase: 1.9, steam: true });
+  wtPools.push({ x0: 593 * TS, x1: 603 * TS, top: 48 * TS, floor: 50 * TS });
+  /* THE BELLOWS: a low tunnel three rows high (no way over: the works' stone over it), a vent on its rhythm, then THE BELLOWS VENT that never stops - two
+     tiles of fire wall to roof. A pour caps it: go while it is capped. Past it, a FIRE SPIRIT: douse it, then cut it */
+  air(604, 617, 45, 47);
+  vent(607, 47, { h: 3, period: 3.2, phase: 0.8 });
+  vent(611, 47, { h: 3, always: true, w: 2 });
+  fireSpirit(615, 46, 'bellowsSpirit');
+  seal(598, 44, 0.65);
+  cracks.push([582, 42], [589, 42], [597, 42], [602, 42]);
+  interiors.push([578, 591, 42, 47, 'wtQueen'], [592, 603, 42, 49, 'wtQueen'], [604, 617, 45, 47, 'wtQueen']);
+  /* THE CONDUIT: down its steps from the steam works' floor to the hall's (rows 48 -> 56), its roof at row 44 */
+  { const F2 = [49, 49, 50, 50, 51, 51, 52, 53, 54, 54, 55, 56]; for (let i = 0; i < F2.length; i++) { const x = 578 + DX + i; air(x, x, 44, F2[i] - 1); block(x, x, F2[i], H - 1); } }
+  bearer(581 + DX, 49, 'conduitTop'); mystic(587 + DX, 53, 'conduitLow'); foe('cutthroat', 584 + DX, 51, 'conduit');   /* REMIX: the bearer above, his light over a caster and a knife on the steps below */
+  cracks.push([583 + DX, 44]);
+  interiors.push([578 + DX, 589 + DX, 44, 55, 'wtQueen']);
   /* THE SEAL HALL: the last mystics chant at the brightest seals by his door; a spring; the checkpoint at the door */
-  air(590, 606, 44, 55);
-  well(592, 55, { sealSpring: true, works: true });
-  mystic(597, 55, 'sealhall'); bearer(601, 55, 'sealhall'); mystic(599, 51, 'sealhallStep'); boards(597, 601, 52);   /* EXAM: two casters (one on a step over the floor) and the bearer between them */
-  seal(595, 48, 0.8); seal(603, 47, 1.0);
-  cracks.push([593, 44], [600, 44], [605, 44]);
-  ent('check', 605, 55);                                                      /* CHECKPOINT FIVE: the sealed door, the boss's door (a death in his hall is not the descent again) */
-  interiors.push([590, 606, 44, 55, 'wtQueen']);
-  shade.push([514 * TS, 520 * TS, 29 * TS, 57 * TS + 1], [522 * TS, 608 * TS, 29 * TS, 57 * TS + 1]);   /* (underground: no sun - but down the old well's open shaft, the sky) */
+  air(590 + DX, 606 + DX, 44, 55);
+  well(592 + DX, 55, { sealSpring: true, works: true });
+  mystic(597 + DX, 55, 'sealhall'); bearer(601 + DX, 55, 'sealhall'); mystic(599 + DX, 51, 'sealhallStep'); boards(597 + DX, 601 + DX, 52);   /* EXAM: two casters (one on a step over the floor) and the bearer between them */
+  fireSpirit(604 + DX, 50, 'sealhallSpirit');                                 /* (claude/djinn3) and a fire spirit at the door: his fire, small, before his fire */
+  seal(595 + DX, 48, 0.8); seal(603 + DX, 47, 1.0);
+  cracks.push([593 + DX, 44], [600 + DX, 44], [605 + DX, 44]);
+  ent('check', 605 + DX, 55);                                                 /* CHECKPOINT FIVE: the sealed door, the boss's door (a death in his hall is not the descent again) */
+  interiors.push([590 + DX, 606 + DX, 44, 55, 'wtQueen']);
+  shade.push([514 * TS, 520 * TS, 29 * TS, 57 * TS + 1], [522 * TS, (608 + DX) * TS, 29 * TS, 57 * TS + 1]);   /* (underground: no sun - but down the old well's open shaft, the sky) */
   const QF = 56;                                                              /* the hall's floor row */
-  const queen = stageDjinn({ set, block, ent, air }, T, TS, 608, QF, K + 3, { westDoor: 3 });   /* THE GREAT WELL's deep cistern: THE DJINN's hall, its door off the seal hall (its shaft capped under the street) */
+  const queen = stageDjinn({ set, block, ent, air }, T, TS, 608 + DX, QF, K + 3, { westDoor: 3 });   /* THE GREAT WELL's deep cistern: THE DJINN's hall, its door off the seal hall (its shaft capped under the street) */
   for (const n of queen.ladders) nets.push(n);
-  shade.push([608 * TS, 648 * TS, (K + 1) * TS, (QF + 2) * TS + 1]);
-  interiors.push([608, 647, QF - 15, QF - 1, 'wtQueen'], [625, 630, QF, QF + 1, 'wtQueen']);   /* (and the sump under the shaft) */
+  shade.push([(608 + DX) * TS, (648 + DX) * TS, (K + 1) * TS, (QF + 2) * TS + 1]);
+  interiors.push([608 + DX, 647 + DX, QF - 15, QF - 1, 'wtQueen'], [625 + DX, 630 + DX, QF, QF + 1, 'wtQueen']);   /* (and the sump under the shaft) */
   /* THE WAY OUT: his east wall opens when he falls (the arena's own wall) onto the cistern's old outflow, and the road out of town */
-  air(649, 659, QF - 6, QF - 1);
-  ent('gate', 656, QF - 1);
+  air(649 + DX, 659 + DX, QF - 6, QF - 1);
+  ent('gate', 656 + DX, QF - 1);
   block(W - 2, W - 1, 0, H - 1);
   // ================= THE LADDERS, LAST =================
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
@@ -334,7 +371,8 @@ export function buildWellTown({ painter, T, TS }) {
     mudWalls, vaultDoors,
     shade: [...shade, ...cast], shadeArt: shade.slice(),   /* (an awning paints its own shade: only the rest is tinted) */
     casters,                                               /* the cloths and the well-house roof over the tinted shade (src/well-town-hands.js drawWorld draws them) */
-    seals, cracks: cracks.map(([x, y]) => ({ x: x * TS + 8, y: y * TS + 16 })), works: { x0: 514, x1: 607, y0: 29, y1: 56 },   /* (claude/djinn2) THE BINDING WORKS: its seals, the cracks sand trickles from, the zone the ground shakes in (src/well-town-hands.js) */
+    seals, cracks: cracks.map(([x, y]) => ({ x: x * TS + 8, y: y * TS + 16 })), works: { x0: 514, x1: 647, y0: 29, y1: 56 },   /* (claude/djinn2) THE BINDING WORKS: its seals, the cracks sand trickles from, the zone the ground shakes in (src/well-town-hands.js) */
+    wtPools,                                                                                     /* (claude/djinn3) THE STEAM WORKS' flooded trough: standing water, drawn (src/well-town-hands.js) */
     quest: { n: 4, item: 'waterskin', name: 'WATER-SKINS', done: 'FOUR SKINS: POUR THEM IN THE DRY CISTERN', thanks: 'THE CISTERN IS FULL' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
@@ -346,6 +384,7 @@ export function buildWellTown({ painter, T, TS }) {
       { kind: 'mudwall', opens: 'the lane it bricks (a pour)', hud: 'MUD: POUR YOUR SKIN ON IT' },
       { kind: 'oilfire', opens: 'the way it burns across (a pour)', hud: 'THE FIRE IS OUT - GO' },
       { kind: 'windlass', opens: 'the bucket down THE GREAT WELL into the cisterns (and back up)', hud: 'STRIKE THE WINDLASS: THE BUCKET GOES DOWN' },
+      { kind: 'flamevent', opens: 'the way past it while it is capped (a pour; THE BELLOWS never stops until it is)', hud: 'CAPPED: THE VENT HISSES, AND HOLDS' },
       { kind: 'cistern', opens: 'THE DRY CISTERN\'s vault: the third silver and its coins', hud: 'THE CISTERN FILLS: THE VAULT OPENS' },
     ],
     music: 'welltown',   /* Daniel's pick (10-02): "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0 - the calm intro once, then its loop (audio/welltown.ogg, src/audio.js TRACK_INTRO) */

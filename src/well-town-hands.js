@@ -14,6 +14,10 @@ export const THIEF = { hp: 26, run: 96, runT: 3.5, dmg: 6 };     /* THE WATER-TH
 export const FIRE = { tick: 0.7, dmg: 3, reach: 6 };             /* a barricade's heat, a tick at its face */
 export const DEEP = { wind: 2.0 };                               /* THE DEEP WELL (the exam's): a blow on its windlass winds its bucket up in this long, and a fill sends it down again */
 export const FOLLOW = { after: 1.6 };                            /* THE GREAT WELL's ride is contested: this long after the bucket goes, the well head's men are down the shaft after you */
+/* THE STEAM WORKS' VENTS (claude/djinn3): a vent on its rhythm GLOWS (told) for glow s, then JETS for jet s, then rests; a jet costs dmg (steam: steamDmg)
+   a tick and throws you back. A POUR caps a dry vent for cap s (a vent under water cannot be capped: time it). THE BELLOWS VENT (always) never stops:
+   lit, its fire is a wall - capped, the way through; it does not relight on top of anyone */
+export const VENT = { glow: 0.8, jet: 1.1, cap: 5.0, dmg: 10, steamDmg: 8, tick: 0.5, knock: 150 };
 
 export function makeWellTownHands(ctx) {
   let WT = null;
@@ -30,7 +34,8 @@ export function makeWellTownHands(ctx) {
       WT = { L, said: {}, n: { fills: 0, pours: 0, drinks: 0, walls: 0, fires: 0, stolen: 0, back: 0, rides: 0 },
         wells: ents.filter(e => e.t === 'skinwell').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, arena: !!e.arena, deep: !!e.deep, up: false, wind: 0, jar: e.jar ? (e.sips || 1) : 0, left: e.jar ? (e.sips || 1) : 0 })),
         walls: (L.mudWalls || []).map(m => ({ ...m, open: false })),
-        fires: [], cistern: null, vault: (L.vaultDoors || []).map(m => ({ ...m, open: false })), windlasses: [], carriers: new Set() };
+        fires: [], cistern: null, vault: (L.vaultDoors || []).map(m => ({ ...m, open: false })), windlasses: [], carriers: new Set(), vt: 0,
+        vents: ents.filter(e => e.t === 'flamevent').map(e => ({ x0: e.x, x1: e.x + (e.w || 1) - 1, y0: e.y - (e.h || 5) + 1, y1: e.y, period: e.period || 3.6, phase: e.phase || 0, always: !!e.always, steam: !!e.steam, capT: 0, st: 'rest', cd: 0, lit: false })) };
       /* A FIRE IS A BARRICADE: a burning column across the way, solid until it is poured out */
       for (const e of ents.filter(q => q.t === 'oilfire')) { let y0 = e.y; while (y0 > 0 && ctx.cellGet(e.x, y0 - 1) === ctx.T.AIR) y0--;
         const f = { x0: e.x, x1: e.x, y0, y1: e.y, lit: true, cd: 0, kind: e.barricade ? 'barricade' : e.gateway ? 'gateway' : 'stall' }; WT.fires.push(f);
@@ -42,6 +47,8 @@ export function makeWellTownHands(ctx) {
       /* A RESPAWN (Daniel, 10-02): the checkpoint refills the skin - a death on the roof with an empty skin is not a walk back down the tower */
       for (const pp of ctx.players) { const sk = skinOf(pp); sk.max = maxOf(pp); sk.sips = sk.max; }
     }
+    /* (claude/djinn3) every vent uncapped again; THE BELLOWS lit (its fire a wall) */
+    for (const v of WT.vents) { v.capT = 0; v.cd = 0; if (v.always) ventWall(v, true); }
     for (const pp of ctx.players) { skinOf(pp); pp.skin.max = maxOf(pp); }
     /* the foes are made again on a respawn: the deep well's bucket is down again, and the well head's men may follow you again */
     for (const w of WT.wells) { if (w.deep) { w.up = false; w.wind = 0; } if (w.jar) w.left = w.jar; }
@@ -51,6 +58,13 @@ export function makeWellTownHands(ctx) {
     /* THE PHONE'S ACTION BUTTON (the claude/mobile lane's touch module reads BK.touchVerbs): what E would do here, as one word and the press that does it */
     if (window.BK && window.BK.touchVerbs && !window.BK.touchVerbs.includes(H.welltownVerb)) window.BK.touchVerbs.push(H.welltownVerb);
   };
+  /* THE BELLOWS' WALL (claude/djinn3): lit, its cells are built solid (a fire you cannot walk through); capped, open */
+  const ventWall = (v, lit) => { v.lit = lit; for (let y = v.y0; y <= v.y1; y++) for (let x = v.x0; x <= v.x1; x++) ctx.cellBuild(x, y, lit ? ctx.T.SOLID : ctx.T.AIR); };
+  const ventBox = v => ({ l: v.x0 * 16 + 2, r: (v.x1 + 1) * 16 - 2, t: v.y0 * 16, b: (v.y1 + 1) * 16 });
+  /* where a vent is in its rhythm: 'rest' | 'glow' | 'jet' (a capped one is 'capped') */
+  const ventState = v => { if (v.capT > 0) return 'capped'; if (v.always) return 'jet'; const p = ((WT.vt + v.phase) % v.period + v.period) % v.period;
+    return p >= v.period - VENT.jet ? 'jet' : p >= v.period - VENT.jet - VENT.glow ? 'glow' : 'rest'; };
+  H.ventState = ventState; H.cell = (x, y) => ctx.cellGet(x, y);   /* (the harness reads a vent's cells) */
   H.on = () => !!WT;
   H.state = () => WT;
 
@@ -64,6 +78,7 @@ export function makeWellTownHands(ctx) {
     const at = (kind, m) => ({ kind, m, x: face > 0 ? m.x0 * 16 + 3 : (m.x1 + 1) * 16 - 3, y: Math.max(m.y0 * 16 + 6, Math.min((m.y1 + 1) * 16 - 6, P.y - 12)) });
     const wall = WT.walls.find(m => !m.open && hits(m)); if (wall) return at('wall', wall);
     const f = WT.fires.find(m => m.lit && hits(m)); if (f) return at('fire', f);
+    const v = WT.vents.find(q => !q.steam && q.capT <= 0 && hits(q)); if (v) return at('vent', v);   /* (claude/djinn3) A DRY VENT: a pour caps it */
     for (const b of (ctx.pourables ? ctx.pourables() : [])) { const p = b && b.aim && b.aim(P); if (p) return { kind: 'boss', b, x: p.x, y: p.y }; }
     return null;
   };
@@ -94,6 +109,10 @@ export function makeWellTownHands(ctx) {
     if (f) { sk.sips--; WT.n.pours++; WT.n.fires++; f.lit = false; for (const [x, y] of cellsOf(f)) ctx.cellOpen(x, y);
       ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(f.x0 * 16 + 8, f.y0 * 16 + 10, 16, ['#e8f4f8', '#9aa39a', '#7ab8e8'], 50, 0.9);
       ctx.number(P.x, P.y - 30, 'THE FIRE IS OUT - GO', '#8fd160'); return true; }
+    const vt = t && t.kind === 'vent' ? t.m : null;
+    if (vt) { sk.sips--; WT.n.pours++; WT.n.caps = (WT.n.caps || 0) + 1; vt.capT = VENT.cap; if (vt.always) ventWall(vt, false);
+      ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.splash && ctx.sfx.splash(); ctx.burst((vt.x0 + vt.x1 + 1) * 8, (vt.y1 + 1) * 16 - 6, 16, ['#e8f4f8', '#9aa39a', '#7ab8e8'], 50, 0.9);
+      if (vt.always) ctx.number(P.x, P.y - 30, 'THE BELLOWS IS CAPPED: GO, BEFORE IT BLOWS', '#8fd160'); else ctx.number(P.x, P.y - 30, 'CAPPED: THE VENT HISSES, AND HOLDS', '#8fd160'); return true; }
     const k = t && t.kind === 'boss' ? t.b.pour(P) : (ctx.king && ctx.king.pour(P));
     if (k) { sk.sips--; WT.n.pours++; ctx.burst(P.x + face * 24, P.y - 16, 10, ['#7ab8e8', '#e8f4f8'], 60, 0.5); return true; }
     /* nothing to pour on: DRINK, when the sun is on you (a sip spent on nothing is not taken) */
@@ -127,6 +146,20 @@ export function makeWellTownHands(ctx) {
           const near = (WT.L.cracks || []).filter(c => Math.abs(c.x - Ph.x) < 200).sort((a, b) => Math.abs(a.x - Ph.x) - Math.abs(b.x - Ph.x))[0]; if (near) ctx.dust(near.x, near.y + 4, 6);
           if (!WT.said.tremor) { WT.said.tremor = 1; ctx.number(Ph.x, Ph.y - 30, 'THE GROUND SHAKES: SOMETHING STIRS BELOW', '#ff9a5c'); } } }
       else WT.tremor = 3; }
+    /* THE STEAM WORKS' VENTS (claude/djinn3): the rhythm, the cap's clock, the jet on whoever stands in it; THE BELLOWS relights when its cap blows -
+       never on top of anyone (it waits until the tunnel under it is clear) */
+    WT.vt += dt;
+    for (const v of WT.vents) { v.cd = Math.max(0, v.cd - dt);
+      if (v.capT > 0) { v.capT -= dt; if (v.capT <= 0) { const bx = ventBox(v), inIt = ctx.players.some(pp => !pp.dead && ctx.overlap(bx, { l: pp.x - 6, r: pp.x + 6, t: pp.y - 20, b: pp.y }));
+          if (v.always && inIt) v.capT = 0.05; else { v.capT = 0; if (v.always) { ventWall(v, true); ctx.sfx.fireWhoosh ? ctx.sfx.fireWhoosh() : ctx.sfx.hiss && ctx.sfx.hiss(); } } } }
+      const st = ventState(v); if (st !== v.st) { if (st === 'jet' && !v.always) { if (v.steam) { ctx.sfx.hiss && ctx.sfx.hiss(); } else { ctx.sfx.fireWhoosh ? ctx.sfx.fireWhoosh() : ctx.sfx.hiss && ctx.sfx.hiss(); } } v.st = st; }
+      if (st !== 'jet') continue; const bx = ventBox(v);
+      for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || v.cd > 0) return; if (!ctx.overlap(bx, { l: P.x - 5, r: P.x + 5, t: P.y - 18, b: P.y })) return;
+        v.cd = VENT.tick; const dir = Math.sign(P.x - (v.x0 + v.x1 + 1) * 8) || -(P.face || 1); ctx.hurtHero(P.x - dir * 8, v.steam ? VENT.steamDmg : VENT.dmg, { unblockable: true, name: v.steam ? 'THE STEAM' : 'THE VENT' }); P.vx = dir * VENT.knock;
+        if (v.steam) { if (!WT.said.steam) { WT.said.steam = 1; ctx.number(P.x, P.y - 30, 'STEAM UNDER THE WATER: GO WHEN THE BUBBLES STOP', '#e8f4f8'); } }
+        else if (!WT.said.vent) { WT.said.vent = 1; ctx.number(P.x, P.y - 30, 'THE VENT BURNS: WAIT FOR IT, OR POUR ON IT', '#ff9a5c'); } }); }
+    /* the bellows, the first time you stand before it */
+    { const Pb = ctx.hero(), bel = WT.vents.find(v => v.always && v.capT <= 0); if (bel && Pb && !WT.said.bellows && Math.abs(bel.x0 * 16 - Pb.x) < 60 && Math.abs((bel.y1 + 1) * 16 - Pb.y) < 24) { WT.said.bellows = 1; ctx.number(Pb.x, Pb.y - 30, 'THE BELLOWS NEVER STOPS: POUR ON IT', '#ffd36b'); } }
     /* THE DEEP WELL winds up */
     for (const w of WT.wells) if (w.deep && w.wind > 0) { w.wind -= dt; if (w.wind <= 0) { w.wind = 0; w.up = true; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 6, ['#7ab8e8', '#e8f4f8'], 40, 0.4); } }
     /* THE RIDE IS CONTESTED: the bucket gone, the well head's men (L.ents follow: true) come down the shaft after you, to the bucket's foot */
@@ -218,6 +251,12 @@ export function makeWellTownHands(ctx) {
       const wet = !m.open && carry && near(m) ? 1 : 0; WTP.drawMudWall(g, x, y, w, h, { open: m.open, wet }, time); if (wet) marker((m.x0 + m.x1 + 1) * 8, m.y0 * 16 - 10); }
     for (const f of WT.fires) { if (!on(f.x0 * 16)) continue; const x = R(f.x0 * 16 - cx), y = R(f.y0 * 16 - cy), h = (f.y1 - f.y0 + 1) * 16;
       const wet = f.lit && carry && near(f) ? 1 : 0; WTP.drawFire(g, x, y, h, { lit: f.lit, wet }, time); if (wet) marker((f.x0 + f.x1 + 1) * 8, f.y0 * 16 - 10); }
+    /* THE STEAM WORKS (claude/djinn3): the flooded trough's standing water, and every vent - its grate, its glow (told), its jet, its cap's hiss and clock */
+    for (const pl of (WT.L.wtPools || [])) { if (pl.x1 < cx - 40 || pl.x0 > cx + vw + 40) continue; WTP.drawPool(g, R(pl.x0 - cx), R(pl.x1 - cx), R(pl.top - cy), R(pl.floor - cy), time); }
+    for (const v of WT.vents) { const vx = (v.x0 + v.x1 + 1) * 8; if (!on(vx)) continue; const st = ventState(v);
+      const k = st === 'glow' ? 1 - (((v.period - VENT.jet) - (((WT.vt + v.phase) % v.period + v.period) % v.period)) / VENT.glow) : 0;
+      WTP.drawVent(g, R(v.x0 * 16 - cx), R((v.y1 + 1) * 16 - cy), (v.x1 - v.x0 + 1) * 16, (v.y1 - v.y0 + 1) * 16, { st, k: Math.max(0, Math.min(1, k)), steam: v.steam, always: v.always, cap: v.capT > 0 ? v.capT / VENT.cap : 0 }, time);
+      if (!v.steam && st !== 'capped' && carry && near({ x0: v.x0, x1: v.x1, y1: v.y1 })) marker(vx, v.y0 * 16 - 10); }
     /* THE WINDLASSES and the great well's bucket and rope */
     const m = ctx.movers().find(q => q.windlass);
     for (const w of WT.windlasses) { if (!on(w.x)) continue; WTP.drawWindlass(g, R(w.x - cx), R(w.y - cy), { top: w.top, deep: w.deep, struck: Math.max(0, w.cd / 0.8) }, time); }
@@ -242,6 +281,7 @@ export function makeWellTownHands(ctx) {
     const v = !P.dead && H.verbNow(P);
     if (v) ctx.text(v.verb === 'EMPTY' ? 'FILL AT A WELL' : v.verb === 'WIND' ? 'STRIKE THE WINDLASS' : 'E: ' + v.verb, x + 12 + (sk.max || SKINMAX) * 8 + 3, y + 2, VERB_COL[v.verb] || '#e8f4f8', 'left', 6);
   };
-  H.read = () => WT && { n: { ...WT.n }, walls: WT.walls.map(m => m.open), fires: WT.fires.map(f => f.lit), cistern: WT.cistern && WT.cistern.full, vault: WT.vault.map(v => v.open), sips: skinOf(ctx.hero()).sips };
+  H.read = () => WT && { n: { ...WT.n }, walls: WT.walls.map(m => m.open), fires: WT.fires.map(f => f.lit), cistern: WT.cistern && WT.cistern.full, vault: WT.vault.map(v => v.open), sips: skinOf(ctx.hero()).sips,
+    vents: WT.vents.map(v => ({ x: v.x0, st: ventState(v), capT: +v.capT.toFixed(2), lit: v.lit, steam: v.steam, always: v.always })) };
   return H;
 }

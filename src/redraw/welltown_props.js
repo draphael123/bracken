@@ -183,3 +183,33 @@ export function drawCaster(g, x0, x1, y, floor, s, time) {
   }
 }
 const tintC = c => { const n = parseInt(c.slice(1), 16), f = 0.82; return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * f).toString(16).padStart(2, '0')).join(''); };
+
+/* ---- THE STEAM WORKS (claude/djinn3) ----
+   drawVent(g, x, y, w, h, s, time)   x, y = the vent's floor line at its left edge; w its width, h its jet's height; s = { st: 'rest'|'glow'|'jet'|'capped',
+                                      k (0..1 through the glow), steam (under the water), always (THE BELLOWS), cap (0..1 of the cap's time left) }
+   drawPool(g, x0, x1, top, floor, time)   the flooded trough's standing water */
+export function drawVent(g, x, y, w, h, s, time) {
+  /* the grate: iron bars in a stone lip, set in the floor */
+  fr(g, K.stonDD, x - 1, y - 2, w + 2, 2); fr(g, K.iron, x + 1, y - 3, w - 2, 2); for (let i = 3; i < w - 2; i += 3) fr(g, K.ironL, x + i, y - 3, 1, 2);
+  if (s.st === 'capped') {   /* CAPPED: a black wet plug of clay and steam that hisses off it, and a pale bar of the time it has left */
+    fr(g, '#2a2420', x + 1, y - 6, w - 2, 4); fr(g, '#4a4440', x + 2, y - 6, w - 4, 1);
+    for (let i = 0; i < 5; i++) { const a = (time * 0.9 + i * 0.2) % 1; g.globalAlpha = 0.6 * (1 - a); fr(g, '#e8f4f8', x + 2 + ((i * 5) % Math.max(1, w - 4)), y - 8 - a * 22, 3 + a * 3, 3); g.globalAlpha = 1; }
+    fr(g, '#1b1626', x, y - 12 - 4, w, 2); fr(g, '#bfe4ff', x, y - 16, R(w * Math.max(0, s.cap)), 2); return; }
+  if (s.steam) {   /* UNDER THE WATER: bubbles boil up through it as it comes; then a scalding white column */
+    if (s.st === 'glow') for (let i = 0; i < 4 + R(s.k * 8); i++) { const ph = (time * (1.5 + s.k * 2) + i / 9) % 1; g.globalAlpha = 0.9 - ph * 0.5; g.strokeStyle = '#e8f8ff'; g.lineWidth = 1; g.beginPath(); g.arc(x + 2 + ((i * 5) % Math.max(1, w - 4)), y - 3 - ph * 28, 1 + (i % 3), 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    if (s.st === 'jet') for (let i = 0; i < 9; i++) { const ph = (time * 2.4 + i / 9) % 1; g.globalAlpha = 0.75 * (1 - ph * 0.6); const r0 = 4 + ph * 7; g.fillStyle = i % 2 ? '#ffffff' : '#d8e4ec'; g.beginPath(); g.ellipse(x + w / 2 + Math.sin(time * 7 + i) * 3, y - 4 - ph * h, r0, r0 * 0.8, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+    return; }
+  if (s.st === 'glow' || s.always) {   /* TOLD: the grate glows from under, brighter as it comes, embers lifting off it */
+    const k = s.always ? 1 : s.k; g.globalAlpha = 0.3 + 0.55 * k; fr(g, '#ff9a3c', x + 1, y - 3, w - 2, 2); g.globalAlpha = 0.25 * k; g.fillStyle = '#ffb84a'; g.beginPath(); g.ellipse(x + w / 2, y - 3, w / 2 + 6 * k, 4 + 4 * k, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+    for (let i = 0; i < 3 + R(k * 4); i++) { const ph = (time * 1.3 + i / 7) % 1; g.globalAlpha = 1 - ph; pxl(g, i % 2 ? '#ffd36b' : '#ff8a3a', x + 2 + ((i * 7) % Math.max(1, w - 4)), y - 4 - ph * 18 * k); g.globalAlpha = 1; } }
+  if (s.st === 'jet') {   /* THE JET: a column of flame from the grate to its height, tongues licking up it, a glow round it */
+    { const gl = g.createRadialGradient(x + w / 2, y - h * 0.5, 2, x + w / 2, y - h * 0.5, h * 0.7 + 10); gl.addColorStop(0, 'rgba(255,150,50,0.30)'); gl.addColorStop(1, 'rgba(255,100,30,0)'); g.fillStyle = gl; g.fillRect(x - 24, y - h - 16, w + 48, h + 20); }
+    for (let i = 0; i < w; i += 2) { const hh = h * (0.82 + 0.18 * Math.abs(Math.sin(time * 13 + i * 0.9))); fr(g, i % 4 ? '#ff8a2a' : '#d84a14', x + i, y - 3 - hh, 2, hh); }
+    for (let i = 0; i < w; i += 3) { const hh = h * (0.55 + 0.25 * Math.abs(Math.sin(time * 17 + i))); fr(g, '#ffd36b', x + i + 1, y - 3 - hh, 1, hh); }
+    for (let i = 0; i < 4; i++) { const ph = (time * 2 + i / 4) % 1; g.globalAlpha = 1 - ph; pxl(g, '#fff2c0', x + ((i * 5 + R(time * 30)) % Math.max(1, w)), y - 3 - h - ph * 10); g.globalAlpha = 1; } }
+}
+export function drawPool(g, x0, x1, top, floor, time) {
+  g.globalAlpha = 0.55; fr(g, K.waterD, x0, top, x1 - x0, floor - top); g.globalAlpha = 0.35; fr(g, '#0e2a44', x0, top + 8, x1 - x0, floor - top - 8); g.globalAlpha = 0.9;
+  for (let x = x0; x < x1; x += 5) fr(g, K.waterL, x, top + R(Math.sin(time * 3 + x * 0.13)), 3, 1);
+  g.globalAlpha = 1;
+}
