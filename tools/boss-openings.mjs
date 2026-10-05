@@ -36,6 +36,7 @@
      THE CISTERN QUEEN flood her burrow (a pour on her mound): SOAKED; a pour down her wall from its ledge: ON HER BACK; her claw struck as it comes: REARING -
                        each open; E at her on the open floor pours nothing; a minute of her left alone opens nothing. THE GANG LEADER (a mini): his bottle
                        struck home sets him alight, open, a third of him a burning (claude/welltown3)
+     THE ROC (THE SKY ROAD's eyrie)  ride a thermal over her and plunge onto her back: knocked down, open; left alone on the stone, her dives skid
      THE GREAT RED CRAB  shut the dam's gate, let a flood bank, release it while he is in the spillway: thrown on his back, open; a release with him
                        out of it opens nothing, and a minute of him with the floods running (gate open) opens nothing (claude/redgorge)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
@@ -250,6 +251,12 @@ try {
    bank();let wasted=0;for(let i=0;i<60*20&&dam().state==='full';i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0],near=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[0]:A.wheels[1];P.x=near;if(!c().inChannel&&b.mode!=='open'&&dam().state==='full')BK.press('talk');BK.sim(1);wasted=Math.max(wasted,b.open||0);}
    for(let i=0;i<20;i++){P.hp=P.maxHp;BK.sim(1);wasted=Math.max(wasted,b.open||0);}const w0=c().n.wasted;bank();let op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0];P.x=far;if(dam().state==='full'&&c().inChannel&&b.mode!=='open')BK.press('talk');BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
    out.gorgecrab={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:w0,mode,open:+op.toFixed(1)};}
+  /* THE ROC on her EYRIE (claude/skyroad): a minute of her with the hero on the stone by the rim (off the nest) opens nothing - her dives skid; a plunge
+     on her back in the air knocks her down, open (src/roc-eyrie.js) */
+  {const b=boot('skyroad');const A=BK.L.arena,P=BK.P,O=e=>e.mode==='stuck'||e.mode==='downed';let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+64;P.vx=0;BK.sim(1);if(O(b))alone+=1/60;}
+   for(let i=0;i<60*20&&!(b.mode==='fly'&&!(b.ward>0));i++){P.hp=P.maxHp;BK.sim(1);}b.modeT=9;P.x=b.x;P.y=b.y-36;P.vy=0;P.ground=false;BK.keys.down=true;BK.press('atk');BK.sim(2);BK.keys.down=false;
+   let op=0;for(let i=0;i<60*10;i++){P.hp=P.maxHp;BK.sim(1);if(O(b))op+=1/60;else if(op>0)break;}out.roc={alone:+alone.toFixed(1),open:+op.toFixed(1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -341,6 +348,8 @@ try {
   assert.equal(r.gorgecrab.alone, 0, 'THE GREAT RED CRAB: a minute of him with the floods running opened him: ' + JSON.stringify(r.gorgecrab));
   assert.ok(r.gorgecrab.wasted === 0 && r.gorgecrab.wastedN >= 1, 'a release with him out of the spillway opened him (or was not counted as wasted): ' + JSON.stringify(r.gorgecrab));
   assert.ok(r.gorgecrab.mode === 'open' && r.gorgecrab.open >= 3, 'a release with him in the spillway did not throw him open for 3 s or more (the boss rule): ' + JSON.stringify(r.gorgecrab));
+  assert.equal(r.roc.alone, 0, 'THE ROC: a minute of her with the hero on the stone opened her: ' + JSON.stringify(r.roc));
+  assert.ok(r.roc.open >= 3, 'a plunge on her back did not knock her down open for 3 s or more (the boss rule): ' + JSON.stringify(r.roc));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

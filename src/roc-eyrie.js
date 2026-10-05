@@ -12,7 +12,7 @@
 // ANTI-SPAM WARD: after every opening a told 3 s ward (feathers bristle, a ring): no plunge opens her, and the dive skids. STAGGER = STILL: open, she lies.
 // The bot plan is src/lab.js (rocEyriePlan). Numbers: EYRIE.
 export const EYRIE = {
-  hp: 1100, flyY: 128, circleR: 150, stuck: 3.6, downed: 3.6, ward: 3.0, openMul: 1.5,
+  hp: 850, hitK: 1.9, dropK: 1.3, flyY: 128, circleR: 150, stuck: 3.4, downed: 3.2, ward: 3.5,
   diveTell: 1.0, diveV: 420, gustTell: 0.8, gust: 2.2, gustPush: 230, shedTell: 0.7, grabTell: 0.85, grab: 0.6, carry: 1.6, mash: 0.3,
   cloud: 5, cloudTell: 0.9, perch: 2.6, boltTell: 1.3, boltEvery: 5.5, boltReach: 22, rest: [1.4, 1.1],
 };
@@ -25,7 +25,7 @@ export function makeRocEyrie(ctx) {
   const L = () => ctx.L;
   H.on = () => !!(L() && L().arena && L().arena.eyrie);
   H.reset = () => { F = null; };
-  const fight = e => { if (F && F.e === e) return F; const A = L().arena; F = { e, A, cyc: 0, i: 0, clouds: [], bolt: null, boltT: EYRIE.boltEvery, masts: (L().ents || []).filter(q => q.t === 'mast').map(q => ({ x: q.x * TS + 8, top: (q.y + 1) * TS - 12 * TS })), n: { plunges: 0, sticks: 0, bolts: 0, opens: 0, snatches: 0 } }; return F; };
+  const fight = e => { if (F && F.e === e) return F; const A = L().arena; e.hp = e.maxHp = EYRIE.hp; F = { e, A, cyc: 0, i: 0, clouds: [], bolt: null, boltT: EYRIE.boltEvery, masts: (L().ents || []).filter(q => q.t === 'mast').map(q => ({ x: q.x * TS + 8, top: (q.y + 1) * TS - 12 * TS })), n: { plunges: 0, sticks: 0, bolts: 0, opens: 0, snatches: 0 } }; return F; };
   const tell = (e, mode, t, mark) => { e.mode = mode; e.modeT = t; if (mark) ctx.number(e.x, e.y - 40, mark, mark === '!!' ? '#ff6b6b' : '#ffd36b'); };   /* the mark is src/marks.js's: a red !! nothing turns, a yellow ! a shield turns, none for a windup that strikes nobody */
   const onNest = (x) => { const n = L().arena.nest; return n && x >= n[0] && x <= n[1]; };
   const fly = e => { e.mode = 'fly'; e.modeT = EYRIE.rest[e.phase === 2 ? 1 : 0]; };
@@ -39,7 +39,9 @@ export function makeRocEyrie(ctx) {
   /* a plunge's blow on her (main.js hurtEnemy0): the game turns it into a pogo off her back and staggers her in the same frame, so it is read here, at the blow */
   H.plungeHit = e => { if (!F || F.e !== e || rocEyrieOpen(e) || ['wake', 'sleep', 'dive', 'carry'].includes(e.mode) || e.y > F.A.floor - 20) return;
     if (e.ward > 0) { if (!e.warnWard) { e.warnWard = true; ctx.number(e.x, e.y - 40, 'HER FEATHERS ARE UP', '#ffb070'); } return; }
-    F.n.plunges++; open(e, 'downed', EYRIE.downed); ctx.number(e.x, e.y - 44, 'THE ROC  KNOCKED DOWN', '#8fd160'); };
+    F.n.plunges++; open(e, 'downed', EYRIE.downed); ctx.number(e.x, e.y - 44, 'THE ROC  KNOCKED DOWN', '#8fd160');
+    /* HER ANSWER: the thermal you came down off is the one she drags a cloud over as she goes down (its shadow is drawn): the next plunge wants another column */
+    const P = ctx.hero(), th = P ? ctx.props().filter(p => p.t === 'vent' && p.thermal && p.arena && !p.src).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null; if (th) F.clouds.push({ x: th.x, until: ctx.time() + EYRIE.cloud + EYRIE.downed }); };
 
   H.update = (e, dt) => {
     const f = fight(e), A = f.A, floor = A.floor, P = ctx.hero(), cx0 = (A.x0 + A.x1) / 2;
@@ -56,7 +58,7 @@ export function makeRocEyrie(ctx) {
       if (!f.bolt && f.boltT <= 0 && f.masts.length) { const m = e.mode === 'perch' && e.mast ? e.mast : f.masts[Math.floor(ctx.time() * 7) % f.masts.length]; f.bolt = { m, t: EYRIE.boltTell }; ctx.sfx.crack && ctx.sfx.crack(); ctx.number(m.x, m.top - 10, '!!', '#ff6b6b'); }
       if (f.bolt) { f.bolt.t -= dt; if (f.bolt.t <= 0) { const m = f.bolt.m; f.bolt = null; f.boltT = EYRIE.boltEvery; f.n.bolts++; ctx.shake(8); ctx.flash && ctx.flash(); ctx.sfx.thunder ? ctx.sfx.thunder() : ctx.sfx.crack();
           ctx.burst(m.x, floor - 10, 20, ['#ffffff', '#bfe6f5', '#ffe9a0'], 120, 0.6); f.lastBolt = { x: m.x, t: ctx.time() };
-          if (P && !P.dead && Math.abs(P.x - m.x) < EYRIE.boltReach && P.y > floor - 30) ctx.damage(m.x, 18, { unblockable: true, name: 'THE LIGHTNING' });
+          if (P && !P.dead && Math.abs(P.x - m.x) < EYRIE.boltReach && P.y > floor - 30) ctx.damage(m.x, Math.round(18 * EYRIE.hitK), { unblockable: true, name: 'THE LIGHTNING' });
           if (e.mode === 'perch' && e.mast === m && !(e.ward > 0)) { ctx.hurt(e, 20, m.x); open(e, 'downed', EYRIE.downed); ctx.number(e.x, e.y - 44, 'THE LIGHTNING HAS HER', '#8fd160'); } } } }
     const next = () => { const list = e.phase === 2 ? CYCLE2[f.cyc % CYCLE2.length] : CYCLE[f.cyc % CYCLE.length]; const m = list[f.i % list.length]; f.i++; if (f.i % list.length === 0) f.cyc++; return m; };
     const tx = () => Math.max(A.x0 + 40, Math.min(A.x1 - 40, P ? P.x : cx0));
@@ -75,7 +77,7 @@ export function makeRocEyrie(ctx) {
           else fly(e); } break; }
       case 'diveTell': e.x += (e.tx - e.x) * Math.min(1, dt * 1.2); e.y += ((floor - EYRIE.flyY - 20) - e.y) * Math.min(1, dt * 2); if (e.modeT <= 0) { e.mode = 'dive'; e.vy = EYRIE.diveV; ctx.sfx.heavy(); } break;
       case 'dive': e.x += (e.tx - e.x) * Math.min(1, dt * 8); e.y += EYRIE.diveV * dt;
-        if (P && !P.dead && e.hitT <= 0 && Math.abs(P.x - e.x) < 22 && Math.abs(P.y - e.y) < 26) { e.hitT = 1; ctx.damage(e.x, ctx.DMG.rocRake, { unblockable: true, up: true, name: 'HER TALONS' }); }
+        if (P && !P.dead && e.hitT <= 0 && Math.abs(P.x - e.x) < 22 && Math.abs(P.y - e.y) < 26) { e.hitT = 1; ctx.damage(e.x, Math.round(ctx.DMG.rocRake * EYRIE.hitK), { unblockable: true, up: true, name: 'HER TALONS' }); }
         if (e.y >= floor) { e.y = floor; ctx.dust(e.x, floor, 14); ctx.shake(5);
           if (onNest(e.x) && !(e.ward > 0)) { f.n.sticks++; open(e, 'stuck', EYRIE.stuck); ctx.number(e.x, e.y - 44, 'HER TALONS ARE STUCK IN THE NEST', '#8fd160'); }
           else { e.mode = 'skidUp'; e.modeT = 0.6; ctx.number(e.x, e.y - 40, e.ward > 0 ? 'HER FEATHERS ARE UP' : 'SHE SKIDS ON THE STONE', '#ffb070'); } } break;
@@ -84,7 +86,7 @@ export function makeRocEyrie(ctx) {
       case 'gust': if (P && !P.dead && !P.snatched) { P.vx += e.side * (P.ground ? EYRIE.gustPush : EYRIE.gustPush * 1.3) * dt; if (P.ground) ctx.moveHero(e.side * 70 * dt); }
         if (Math.random() < dt * 40) ctx.parts.push({ x: e.x, y: floor - 10 - Math.random() * 90, vx: e.side * 380, vy: 0, life: 0.6, max: 0.6, col: '#dce3ec', size: 1, grav: 0 });
         if (e.modeT <= 0) fly(e); break;
-      case 'shedTell': if (e.modeT <= 0) { for (let k = 0; k < (e.phase === 2 ? 7 : 5); k++) { const a = Math.atan2((P ? P.y : floor) - 12 - e.y, (P ? P.x : cx0) - e.x) + (k - 2) * 0.16; ctx.seed({ x: e.x, y: e.y - 15, vx: Math.cos(a) * 190, vy: Math.sin(a) * 190, dead: false, life: 3, sunshard: true, rocFeather: true, g: 70 }); } ctx.sfx.throwWhoosh(); e.mode = 'shed'; e.modeT = 0.5; } break;
+      case 'shedTell': if (e.modeT <= 0) { for (let k = 0; k < (e.phase === 2 ? 6 : 5); k++) { const a = Math.atan2((P ? P.y : floor) - 12 - e.y, (P ? P.x : cx0) - e.x) + (k - 2) * 0.2; ctx.seed({ x: e.x, y: e.y - 15, vx: Math.cos(a) * 190, vy: Math.sin(a) * 190, dead: false, life: 3, sunshard: true, rocFeather: true, g: 70 }); } ctx.sfx.throwWhoosh(); e.mode = 'shed'; e.modeT = 0.5; } break;
       case 'shed': if (e.modeT <= 0) fly(e); break;
       case 'cloudTell': if (e.modeT <= 0) { /* SHE DRAGS A CLOUD over the thermal nearest you: its shadow kills it */
           const th = ctx.props().filter(p => p.t === 'vent' && p.thermal && p.arena).sort((a, b) => Math.abs(a.x - (P ? P.x : 0)) - Math.abs(b.x - (P ? P.x : 0)))[0];
@@ -99,7 +101,7 @@ export function makeRocEyrie(ctx) {
         if (P && !P.dead && !(P.dodge > 0) && Math.abs(P.x - e.x) < 20 && Math.abs(P.y - e.y - 10) < 30) { e.mode = 'carry'; e.modeT = EYRIE.carry; f.n.snatches++; P.snatched = e; ctx.number(P.x, P.y - 30, 'SHE HAS YOU: STRUGGLE', '#ff6b6b'); ctx.sfx.queenShriek(); }
         else if (e.modeT <= 0) fly(e); break;
       case 'carry': e.y -= 52 * dt; e.x += Math.sign(cx0 - e.x) * 20 * dt; if (P) { if (ctx.pressed()) e.modeT -= EYRIE.mash; P.x = e.x; P.y = e.y + 20; P.vx = 0; P.vy = 0; P.ground = false; P.onMover = null; }
-        if (e.modeT <= 0 || !P || P.dead) { if (P && P.snatched === e) { P.snatched = null; P.vy = 60; if (!P.dead) { ctx.damage(e.x, ctx.DMG.rocDive, { unblockable: true, up: true, name: 'THE DROP' }); ctx.number(P.x, P.y - 26, 'SHE LETS YOU FALL', '#ff9a5c'); } } fly(e); } break;
+        if (e.modeT <= 0 || !P || P.dead) { if (P && P.snatched === e) { P.snatched = null; P.vy = 60; if (!P.dead) { ctx.damage(e.x, Math.round(ctx.DMG.rocDive * EYRIE.dropK), { unblockable: true, up: true, name: 'THE DROP' }); ctx.number(P.x, P.y - 26, 'SHE LETS YOU FALL', '#ff9a5c'); } } fly(e); } break;
       case 'stuck': case 'downed': e.vy = Math.min(340, (e.vy || 0) + 900 * dt); e.y = Math.min(floor, e.y + e.vy * dt); if (e.y >= floor && !e.landed) { e.landed = true; ctx.sfx.heavy(); ctx.dust(e.x, floor, 16); }
         if (e.modeT <= 0) { e.landed = false; e.ward = EYRIE.ward; e.warnWard = false; e.mode = 'rise'; e.modeT = 0.9; ctx.number(e.x, e.y - 40, 'HER FEATHERS BRISTLE', '#ffb070'); } break;
       case 'rise': e.y -= 160 * dt; if (e.modeT <= 0) fly(e); break;
@@ -130,7 +132,7 @@ export function makeRocEyrie(ctx) {
    thermal, rides a live thermal up, glides over her and PLUNGES; on the nest it waits out her dive and rolls at the last beat so her talons stick; open,
    it cuts her. In: { P, e, R (ROCE.read()), A (the arena), therms: [{x, k, top}], stone: {x, on}, reach, shield, t, rng, mem }.
    Out: { gx, hold (jump held: rise and glide), plunge, atk, dodge, block, mash, why } */
-export function rocEyriePlan(o) {
+function planRaw(o) {
   const { P, e, R, A, therms, stone, reach, shield, t, rng, mem } = o, out = { gx: null, why: '' }, nest = A.nest || [0, 0], floor = A.floor;
   if (mem.seenMode !== e.mode) { mem.seenMode = e.mode; mem.seenAt = t; mem.lag = 0.2 + rng() * 0.15; }
   const seen = t - mem.seenAt >= mem.lag;   /* (a quarter-second, give or take, before it reacts to a new mode) */
@@ -139,7 +141,7 @@ export function rocEyriePlan(o) {
   const dx = e.x - P.x, lead = e.x + evx * Math.min(0.5, Math.max(0, (e.y - P.y) / 340));
   if (rocEyrieOpen(e)) { out.gx = e.x - (Math.sign(dx) || 1) * Math.max(14, reach * 0.6); if (Math.abs(dx) < reach + 14 && Math.abs(P.y - e.y) < 30 && P.ground) out.atk = true; out.why = 'cut her'; return out; }
   if (R && R.bolt && Math.abs(P.x - R.bolt.m.x) < 40 && P.ground) { out.gx = P.x + (P.x < R.bolt.m.x ? -50 : 50); out.why = 'off the mast'; return out; }
-  if (e.mode === 'grabTell' && seen) { if (e.modeT < 0.32) out.dodge = true; out.gx = P.x; out.why = 'roll the snatch'; return out; }
+  if ((e.mode === 'grabTell' || e.mode === 'grab') && seen) { const d = Math.hypot(e.x - P.x, e.y - P.y); if (e.mode === 'grab' && d < 70) out.dodge = true; out.gx = P.x - (Math.sign(dx) || 1) * 40; out.why = 'roll the snatch'; return out; }
   if ((e.mode === 'diveTell' || e.mode === 'dive') && seen && P.ground) {
     const onNest = P.x > nest[0] + 6 && P.x < nest[1] - 6;
     if (onNest && !(e.ward > 0)) { out.gx = P.x; if (e.mode === 'dive' && e.y > floor - 70) out.dodge = true; out.why = 'let her dive on the nest'; return out; }
@@ -156,3 +158,5 @@ export function rocEyriePlan(o) {
   if (th) { out.gx = th.x; out.hold = !P.ground; if (!P.ground && P.y < th.top + 40) out.gx = e.x; out.why = 'ride the thermal'; return out; }
   out.gx = (nest[0] + nest[1]) / 2; out.why = 'wait on the nest'; return out;
 }
+/* (the plan never walks onto the thorny rim) */
+export function rocEyriePlan(o) { const out = planRaw(o), A = o.A; if (out.gx != null) out.gx = Math.max(A.x0 + 52, Math.min(A.x1 - 52, out.gx)); return out; }
