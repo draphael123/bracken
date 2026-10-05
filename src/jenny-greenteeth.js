@@ -35,7 +35,7 @@
 // tools/greenteeth.mjs. The chamber is laid by stageGreenteeth (THE FOG CANAL calls it, src/fog-canal.js section 7).
 
 export const GT = {
-  hp: 720, w: 30, h: 46, markH: 54,   /* (claude/jenny2: redrawn at her own size - the box is her head, shoulders and the body under the water's skin) */
+  hp: 755, w: 30, h: 46, markH: 54,   /* (claude/jenny2: redrawn at her own size - the box is her head, shoulders and the body under the water's skin) */
   ward: 0.05, openMul: 1.25, beatMul: 1.7,
   /* THE WATER: its heights over the bed. SHOAL leaves the narrowboat's back (two rows high) a hand under the surface */
   lv: { dry: 0, shoal: 40, low: 48, half: 80, high: 112 },

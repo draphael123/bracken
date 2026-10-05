@@ -55,7 +55,7 @@ export function smallerFamiliar(s) {
 void flipX; void whiten;
 
 export const MAGE = {
-  enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, openT: 2.5, openMul: 2,
+  enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, openT: 3.6, openMul: 2,
   order: ['fire', 'ice', 'step', 'bone', 'poison', 'mark', 'bend', 'storm', 'pull', 'hand', 'decoy', 'fire', 'mark', 'trap'],   /* (round 3: the second step is the DECOY, the second bend the TRAP; archmage2: the BONE STORM, and the GRAVE PULL - stage 3 only, skipped before it) */
   tell: { fire: 0.9, ice: 0.9, storm: 1.2, poison: 1.0, hand: 0.9, mark: 0.6, step: 1.0, bend: 1.0, decoy: 1.1, trap: 1.0, bone: 1.1, pull: 1.0 },
   dmg: { fire: 14, ice: 12, storm: 22, orb: 8, hand: 16, mark: 28, bent: 13, trap: 13, skull: 11, void: 18 },
@@ -70,7 +70,7 @@ export const MAGE = {
   markR: 36, markFuse: 2.0, cloudR: 26, cloudLife: 4, handSpeed: 72, hover: 1.0, boltV: 150,   /* the bolt is slower than the carpet: every spell can be out-flown */
   /* THE RINGS: stage 2 below 70%; a ring's size; how near you the step's exit opens; how long a used ring stays; the spare's life; the
      breach (the opening a dodge through a ring makes); how far through a ring you come out beside him */
-  stage2: 0.7, ringW: 12, ringH: 17, stepNear: 56, ringStay: 0.5, spareLife: 3.2, stayMul: 1.6, breachT: 2.0, beside: 30,
+  stage2: 0.7, ringW: 12, ringH: 17, stepNear: 56, ringStay: 0.5, spareLife: 3.2, stayMul: 1.6, breachT: 3.0, beside: 30,
 };
 const TELL = { fire: 'fireTell', ice: 'iceTell', storm: 'stormTell', poison: 'poisonTell', hand: 'handTell', mark: 'markTell', step: 'stepTell', bend: 'bendTell', decoy: 'decoyTell', trap: 'trapTell', bone: 'boneTell', pull: 'pullTell' };
 const SAY = { fireTell: 'FIRE: GUARD OR FLY', iceTell: 'FROST: FLY ACROSS IT', stormTell: 'LIGHTNING: LEAVE THE MARK', poisonTell: 'POISON: KEEP OUT OF THE CLOUD', handTell: 'DEATH: OUT-FLY THE HAND', markTell: 'THE DEATH MARK: FLY OUT OF THE RING',
