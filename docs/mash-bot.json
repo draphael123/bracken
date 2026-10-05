@@ -7503,6 +7503,62 @@
      "chip": []
     }
    ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 3,
+    "minHpPct": 0,
+    "hpLostPct": 436,
+    "hits": 35,
+    "walked": 100,
+    "lifts": 76,
+    "boardLifts": 5,
+    "rides": 3,
+    "pulls": 0,
+    "ridden": {
+     "swing": 3
+    },
+    "machines": true,
+    "frames": 21816,
+    "kills": 7,
+    "heroLevel": 28
+   },
+   "warden": {
+    "deaths": 3,
+    "minHpPct": 0,
+    "hpLostPct": 397,
+    "hits": 32,
+    "walked": 100,
+    "lifts": 75,
+    "boardLifts": 3,
+    "rides": 1,
+    "pulls": 0,
+    "ridden": {
+     "swing": 1
+    },
+    "machines": true,
+    "frames": 19647,
+    "kills": 3,
+    "heroLevel": 28
+   },
+   "pyro": {
+    "deaths": 3,
+    "minHpPct": 0,
+    "hpLostPct": 422,
+    "hits": 43,
+    "walked": 100,
+    "lifts": 75,
+    "boardLifts": 8,
+    "rides": 5,
+    "pulls": 0,
+    "ridden": {
+     "swing": 5
+    },
+    "machines": true,
+    "frames": 23859,
+    "kills": 8,
+    "heroLevel": 28
+   }
   }
  },
  "burning": {
@@ -8515,6 +8571,62 @@
      "chip": []
     }
    ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 0,
+    "minHpPct": 4,
+    "hpLostPct": 136,
+    "hits": 16,
+    "walked": 100,
+    "lifts": 36,
+    "boardLifts": 3,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "swing": 2
+    },
+    "machines": true,
+    "frames": 10568,
+    "kills": 13,
+    "heroLevel": 27
+   },
+   "warden": {
+    "deaths": 0,
+    "minHpPct": 4,
+    "hpLostPct": 148,
+    "hits": 18,
+    "walked": 100,
+    "lifts": 35,
+    "boardLifts": 3,
+    "rides": 3,
+    "pulls": 0,
+    "ridden": {
+     "swing": 3
+    },
+    "machines": true,
+    "frames": 10969,
+    "kills": 12,
+    "heroLevel": 27
+   },
+   "pyro": {
+    "deaths": 0,
+    "minHpPct": 16,
+    "hpLostPct": 129,
+    "hits": 17,
+    "walked": 100,
+    "lifts": 35,
+    "boardLifts": 3,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "swing": 2
+    },
+    "machines": true,
+    "frames": 10977,
+    "kills": 14,
+    "heroLevel": 27
+   }
   }
  },
  "caravan": {
