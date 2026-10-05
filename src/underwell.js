@@ -81,7 +81,7 @@ export function buildUnderwell({ painter, T, TS }) {
   nest('shaft', 21, 22, 39, F - 1);                                           /* the brood's nest seals the tunnel (rock over it) */
   sign(13, F - 1, 'A BROOD NEST. FIRE TAKES IT. STRIKE THE TORCH DOWN INTO THE OIL.');
   block(24, 28, F - 1, F - 1); drip(26, F - 2);                              /* a step of fallen blocks, the drip on it */
-  sign(29, F - 1, 'AN OLD OIL FIRE. ONLY WATER PUTS IT OUT: E POURS YOUR SKIN.');
+  sign(30, F - 1, 'AN OLD OIL FIRE. ONLY WATER PUTS IT OUT: E POURS YOUR SKIN.');
   oilfire(33, F - 1);
   venom(40, F - 1, 'tunnelBrood');                                           /* the first of the brood, past the fire (the hall is theirs) */
 
@@ -175,12 +175,12 @@ export function buildUnderwell({ painter, T, TS }) {
   air(352, 451, 27, 31);
   dustS(380, 31, 'gallery', { face: -1 }); thirstS(388, 31, 'gallery', { face: -1 }); oilS(396, 31, 'gallery', { face: -1 });
   boards(399, 403, 28); spitS(401, 27, 'gallerySpit', { face: -1 });         /* a spitter over the gallery's brood */
-  ent('scorpion', 410, 31, { face: -1, elite: true, squad: 'stinger' });     /* THE OLD STINGER: the brood's elite, between the gallery's brood and the fires (fix pass: the exam is the peak) */
+  ent('scorpion', 410, 31, { face: -1, elite: true, squad: 'stinger', gate: 416 });     /* THE OLD STINGER: the brood's elite, between the gallery's brood and the fires (fix pass: the exam is the peak) */
   drip(416, 31);                                                              /* a drip after the thirsty one, before the fires */
   oilfire(420, 31); oilfire(426, 31);                                         /* two old oil fires across the gallery */
   boards(429, 433, 28); spitS(431, 27, 'examSpit', { face: -1 });            /* a spitter over the pour */
   decor.push({ kind: 'husk', x: 436, y: 31 });                                     /* HER CAST SHELL, split down the back, by her door (the approach sets her up) */
-  ent('check', 442, 31); spring(445, 31);                                     /* CHECKPOINT THREE: her door, a spring */
+  ent('check', 437, 31); spring(445, 31);                                     /* CHECKPOINT THREE: her door, a spring */
   air(439, 478, 27, 31);                                                      /* the corridor over her hall */
   sign(448, 31, "THE QUEEN'S CISTERN. DOWN THE OLD SHAFT.");
 

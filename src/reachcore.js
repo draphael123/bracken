@@ -46,6 +46,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     /* THE RED GORGE (src/red-gorge.js, claude/redgorge): a JAM is one released burst (a wheel by it, and every flood banks behind its gate), and THE OLD NEST's vault opens on the four
        feathers the level lays down: both count as done (the plain fill: legs only). tools/redgorge.mjs proves each JAM is a lock with a real jump */
     if (L.redgorge) for (const m of [...(L.jams || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+    /* THE UNDERWELL (src/underwell.js, claude/underwell): a BROOD NEST seals a tunnel until a torch burns it (the oil and the torch are on the road before it: tools/underwell.mjs proves each nest burns) and THE DRY FOUNTAIN's vault opens on the three taps the level lays down: both count as done, like the gorge's jams (the plain fill: legs only) */
+    if (L.underwell) for (const m of [...(L.nests || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the

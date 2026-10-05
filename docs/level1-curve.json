@@ -481,16 +481,16 @@
   "lostPct": 120
  },
  "underwell": {
-  "hash": "1c72284ce8b6",
+  "hash": "4fb9d2fb6a79",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 33,
+  "hits": 24,
   "deaths": 3,
-  "kills": 6,
-  "lifts": 72,
+  "kills": 9,
+  "lifts": 63,
   "walked": 100,
   "bare": true,
-  "lostPct": 226
+  "lostPct": 188
  }
 }

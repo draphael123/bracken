@@ -78,8 +78,8 @@ try {
         ['the lamp stair: the exam', [350, 42], () => { walk(352, { tol: 3 }); press('talk'); walk(354, { tol: 3 }); press('talk', 1); walk(362, { tol: 3 }); press('atk', 1); walk(355, { tol: 3, noFight: true });   /* back onto the firebreak's wet stone while the floor burns */
             waitFor(() => nest('exam'), 600, { noFight: true }); waitFor(() => !fireIn(357, 368), 900); walk(404, { tol: 3 }); press('talk'); DBG.push('exam: sips ' + (P().skin ? P().skin.sips : '-') + ' rope ' + U().ropes.find(r => r.id === 'exam').burnt);
             walk(357, { tol: 3 }); if (!rope(356, 31)) return false; walk(416, { tol: 3 }); press('talk'); walk(418, { tol: 3 }); press('talk', 1); walk(424, { tol: 3 }); press('talk', 1);
-            walk(442, { tol: 3 }); wait(20); walk(445, { tol: 3 }); press('talk'); return nest('exam') && feet() === 31; }, [445, 31]],
-        ['the queen\\'s door', [442, 31], () => { walk(471, { tol: 3, noFight: true }); settle(); wait(60, { noFight: true }); return feet() >= 45; }, [471, 51]],
+            walk(437, { tol: 3 }); wait(20); walk(445, { tol: 3 }); press('talk'); return nest('exam') && feet() === 31; }, [445, 31]],
+        ['the queen\\'s door', [437, 31], () => { walk(471, { tol: 3, noFight: true }); settle(); wait(60, { noFight: true }); return feet() >= 45; }, [471, 51]],
       ];
       let lifts = [], retries = 0;
       for (const [name, foot, plan, end] of LEGS) {
