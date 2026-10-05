@@ -84,7 +84,7 @@ const pageSrc = `(() => {
     BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'), { resolve } = await import('/src/stuck-guide.js'), TS = 16, done = await prep(o);
     try {
       BK.setHero(o.hero); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === o.id)); BK.state = 'play'; BK.start(); BK.god = false; BK.reset();
-      const P = BK.P, k = BK.keys, way = o.way, d0 = BK.stats().deaths; let frames = 0, lifts = 0, boardLifts = 0, rides = 0, pulls = 0, reached = 0, minHp = 1, lostHp = 0, spent = 0; const boxes = new Map(), kinds = {}, dbg = [];
+      const P = BK.P, k = BK.keys, way = o.way, d0 = BK.stats().deaths; let frames = 0, lifts = 0, held = 0, duels = 0, boardLifts = 0, rides = 0, pulls = 0, reached = 0, minHp = 1, lostHp = 0, spent = 0; const boxes = new Map(), kinds = {}, dbg = [];
       const MACH = /^(lever|crank|winch|capstan|pump|pwheel|awningwinch|sluice|tbell|bell|seabell|tidebell)$/;
       const clear = () => { k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false; if (k.throw !== undefined) k.throw = false; };
       const step = () => { const before = P.hp; BK.sim(1); frames++; lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); };
@@ -116,6 +116,15 @@ const pageSrc = `(() => {
         if (Math.abs(P.x - tx) > 18) { clear(); return false; }
         for (let t = 0; t < 240 && !P.dead; t++) { clear(); P.face = Math.sign(tx - P.x) || P.face; if (t % 15 === 0) BK.press('talk'); mash(); step(); }
         pulls++; clear(); return true; };
+      /* (claude/combat2) AN ELITE'S GATE IS NOT LIFTED OVER. A captain's gate (src/main.js eliteGates: PORT tiles in one column, up while he lives) stands
+         across the road until he falls, and a lift used to carry the bot straight over it - the Drowned Keep's exam was 'walked' past THE DROWNED
+         CAPTAIN, who never had to be fought. Now a waypoint beyond a shut gate is reached only by fighting its elite: walk at him (swim down to him)
+         and mash, up to duelSecs; if he still stands, the bot never got through (three lifts' worth of HELD). */
+      const gateElite = gx => BK.enemies().find(e => e.elite && e.alive && e.G && e.shut && e.shut.length && (e.G.col * TS + 8 - P.x) * (gx - (e.G.col * TS + 8)) > 0 && Math.abs(e.y - P.y) < 14 * TS);
+      const duel = el => { for (let t = 0; t < (o.duelSecs || 60) * 60 && el.alive && !P.dead; t++) { clear(); const dx = el.x - P.x, dy = (el.y - (el.h || 20) / 2) - (P.y - 10);
+          if (Math.abs(dx) > 10) k[dx > 0 ? 'right' : 'left'] = true; else P.face = Math.sign(dx) || P.face; if (P.swim) { if (dy < -10) k.up = true; else if (dy > 10) k.down = true; }
+          mash(); step(); if (t % 900 === 899) { /* yield */ } }
+        clear(); return !el.alive; };
       const assist = (wx, wy, gx) => {
         const f0 = frames, tried = new Set(); if (spent > 14000) return false;
         try { for (let guard = 0; guard < 6 && frames - f0 < 1600 && !atWp(gx, wy) && !P.dead; guard++) {
@@ -136,8 +145,9 @@ const pageSrc = `(() => {
           if (aboard) { mash(); learn(); const before = P.hp; BK.sim(1); lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); continue; }   /* (claude/redgorge) ON A TALL LEVEL A WAYPOINT IS REACHED AT ITS OWN HEIGHT: by column alone a climb's waypoints were 'reached' on the floor below them, and the bot never met the ledges' foes */ k[gx > P.x ? 'right' : 'left'] = true; if (P.atk < 0) BK.press('atk');
           if (frames % 6 === 0) learn(); const before = P.hp; BK.sim(1); lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); }
         if (!got && o.machines !== false) { learn(); got = assist(wx, wy, gx); }
-        if (!got) { if (o.debug) { const mv = BK.movers().filter(m => m.x !== undefined).map(m => [Math.round(Math.hypot(m.x - P.x, (m.y || 0) - P.y) / TS), nameOf(m) + (m.hoist ? ':hoist' : '') + '@' + Math.round(m.x / TS) + ',' + Math.round(m.y / TS)]).sort((p, q) => p[0] - q[0])[0]; dbg.push('lift ' + wx + ',' + wy + ' hero ' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + (mv ? ' nearest ' + mv[1] + ' ' + mv[0] + 't' : '')); } lifts++; BK.tp(wx, wy); BK.sim(2); } reached++; if (frames % 600 === 0) await new Promise(r => setTimeout(r, 0)); }
-      return { deaths: BK.stats().deaths - d0, minHpPct: Math.round(minHp * 100), hpLostPct: Math.round(lostHp / P.maxHp * 100), hits: BK.hitsTaken, walked: Math.round(reached / way.length * 100), lifts, boardLifts, rides, pulls, ridden: kinds, dbg: o.debug ? dbg : undefined, machines: o.machines !== false, frames, kills: BK.stats().kills, heroLevel: o.lvl };
+        if (!got) { const el = gateElite(gx); if (el) { duels++; if (!duel(el)) held += 3; } }   /* (claude/combat2) THE ELITE'S GATE: a lift does not jump it - he is fought, and a captain the masher cannot put down holds him there (held: not a clear) */
+        if (!got) { if (o.debug) { const mv = BK.movers().filter(m => m.x !== undefined).map(m => [Math.round(Math.hypot(m.x - P.x, (m.y || 0) - P.y) / TS), nameOf(m) + (m.hoist ? ':hoist' : '') + '@' + Math.round(m.x / TS) + ',' + Math.round(m.y / TS)]).sort((p, q) => p[0] - q[0])[0]; dbg.push('lift ' + wx + ',' + wy + ' hero ' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + (mv ? ' nearest ' + mv[1] + ' ' + mv[0] + 't' : '')); } lifts++; BK.tp(wx, wy); BK.sim(2); if (Math.abs(P.x - gx) > 3 * TS) held++; }   /* (claude/combat2) HELD: the lift did not land - an ambush room or a locked hall put him straight back */ reached++; if (frames % 600 === 0) await new Promise(r => setTimeout(r, 0)); }
+      return { deaths: BK.stats().deaths - d0, minHpPct: Math.round(minHp * 100), hpLostPct: Math.round(lostHp / P.maxHp * 100), hits: BK.hitsTaken, walked: Math.round(reached / way.length * 100), lifts, held, duels, boardLifts, rides, pulls, ridden: kinds, dbg: o.debug ? dbg : undefined, machines: o.machines !== false, frames, kills: BK.stats().kills, heroLevel: o.lvl };
     } finally { done(); } };
 })()`;
 
@@ -169,7 +179,7 @@ try {
         let r; try { r = await pg.evalp(`__mashLevel(${JSON.stringify({ id, hero, seed: 1, mini: false, lvl: lvOf(id), way, steps: 120000, tall: !!P.tall, machines: !has('no-machines'), debug: has('debug') })})`, 1800000); }
         catch (e) { console.log(id + ' LEVEL ' + hero + ' ERR ' + e.message.slice(0, 120)); pg.close(); pg = await openPage({ audio: false, fonts: false }); await pg.evalp(pageSrc); continue; }
         lres[hero] = r; rows.push({ id, level: true, hero, ...r });
-        console.log(id + ' LEVEL L' + r.heroLevel + ' ' + hero + ': lowest hp ' + r.minHpPct + '%, hp lost ' + r.hpLostPct + '%, deaths ' + r.deaths + ', walked ' + r.walked + '% of waypoints, ' + r.rides + ' rides ' + JSON.stringify(r.ridden || {}) + ', ' + r.pulls + ' pulls, ' + r.boardLifts + ' boarding lifts, ' + r.lifts + ' lifts, ' + r.hits + ' blows taken' + (r.dbg ? '\n   ' + r.dbg.join('\n   ') : '')); }
+        console.log(id + ' LEVEL L' + r.heroLevel + ' ' + hero + ': lowest hp ' + r.minHpPct + '%, hp lost ' + r.hpLostPct + '%, deaths ' + r.deaths + ', walked ' + r.walked + '% of waypoints, ' + r.rides + ' rides ' + JSON.stringify(r.ridden || {}) + ', ' + r.pulls + ' pulls, ' + r.boardLifts + ' boarding lifts, ' + r.lifts + ' lifts' + (r.held ? ' (' + r.held + ' HELD: put back by a room it could not finish)' : '') + ', ' + r.hits + ' blows taken' + (r.dbg ? '\n   ' + r.dbg.join('\n   ') : '')); }
       if (Object.keys(lres).length) entry.level = lres;
     }
   }
