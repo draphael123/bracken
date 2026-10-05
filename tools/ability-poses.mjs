@@ -34,7 +34,12 @@ const BORROW_OK = {
    (2026-09-24), built to it from her first day: never debt */
 const HELD = ['knight', 'warden', 'geomancer', 'paladin', 'pyro', 'pirate', 'reaper'];
 /* A SHARED POSE THAT IS RIGHT, with the reason (keyed by either active of the pair): two of hers are the same movement at heart */
-const SHARED_OK = { harrier: 'HARRIER is the vault taken at a foe instead of at a gap: it is drawn as the vault Pole Spring also uses' };
+const SHARED_OK = { harrier: 'HARRIER is the vault taken at a foe instead of at a gap: it is drawn as the vault Pole Spring also uses',
+  /* THE LATE ACTIVES (claude/herokit): eight new casts drawn in the nearest existing pose until the art lane bakes frames of their own (reported as follow-up work) */
+  flashover: 'FLASHOVER is VENT\'s gesture: flung open with the fire leaving her', firestorm: 'FIRESTORM is METEOR\'s: the staff held high, calling it down',
+  dawnburst: 'DAWNBURST is DIVINE SHIELD\'s: the maul lifted, the light closing round and flaring out', holyWrath: 'HOLY WRATH is CONSECRATE\'s: the maul set in the turf, the light coming up',
+  powderKeg: 'POWDER KEG is BOARDING PARTY\'s: a throw high and forward', heavySeas: 'HEAVY SEAS is BROADSIDE\'s: braced low and thrown back by the heave',
+  boneArmor: 'BONE ARMOR is GRAVECALL\'s: the blade stood in the ground and the green coming up', soulReap: 'SOUL REAP is BLOOD BOIL\'s: hunched over the blade, flung open with the blood coming up' };
 /* THE DEBT, measured on master 313e0da (2026-09-23): 13 actives with no body of their own. Paid off by lane P (2026-09-24); a
    new entry here is a step backwards and wants a reason in the commit that adds it. */
 const KNOWN_POSELESS = {};

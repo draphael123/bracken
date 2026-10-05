@@ -442,7 +442,7 @@ export function queenPlan(s) {
   if (rock && !misread) { out.gx = clamp(P.x + (P.x < rock.x ? -40 : 40)); out.why = 'out from under the rubble'; return out; }
   const pud = S.puddles.find(p => Math.abs(p.x - P.x) < 18);
   /* 1. THE OPENING: on her */
-  if (qOpen(e)) { out.gx = clamp(e.x - side * Math.max(8, reach * 0.5 + CQ.w * 0.3)); if (onLedge && P.ground) { out.down = true; out.jump = true; }
+  if (qOpen(e)) { out.gx = clamp(e.x - side * (s.tip ? CQ.w / 2 + s.tip : Math.max(8, reach * 0.5 + CQ.w * 0.3))); if (onLedge && P.ground) { out.down = true; out.jump = true; }
     out.face = Math.sign(e.x - P.x) || 1; out.atk = ad < reach + CQ.w / 2 + 4 && Math.abs(P.y - e.y) < 50 && P.atk < 0; out.why = 'cut her: she is open'; return out; }
   /* 1b. HER STUCK STINGER (claude/welltown5): it glints - get to it and strike it (not while her shell burns) */
   const st = S.stinger && S.stinger.t > 0.12 ? S.stinger : null;

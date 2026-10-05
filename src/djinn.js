@@ -345,9 +345,16 @@ export function pourAt(e, S, hero, c) { const a = pourAim(e, S, hero); S.n.pours
   openUp(e, S, a.what === 'sand' ? 'mud' : 'doused', c); return 'open'; }
 /* THE WINDLASS / THE CRANK: the shaft's great bucket comes down (DJ.bucketFall); in phase three it bails him out of the shaft. It winds back in DJ.bucketCd */
 /* (claude/djinn3) IN THE FLOOD THE BAIL IS TWO STEPS: the bucket lies down in the water - a strike WINDS it up (windT), a strike on it hanging DROPS it */
+/* (claude/archmage4, Daniel approved 10-05) THE WINDLASS BY HAND: in the flood (the bail's phase) INTERACT at the windlass or the crank winds the bucket up
+   and drops it exactly as a strike does - fairer to a short blade, which had to stand and swing at it. Within WIND_R px of it, on its floor or ledge. Outside
+   the flood E keeps its pour and its drink: nothing else changes (the bail, its cap, the miss, the shroud) */
+export const WIND_R = 20;
+export function windByHand(e, S, hero, w, c) {
+  if (!e || !e.alive || !(S.ph === 3 && S.flood) || !w || Math.abs(hero.x - w.x) > WIND_R || hero.y < w.y - 30 || hero.y > w.y + 4) return false;
+  if (!strikeWindlass(e, S, c)) return false; S.n.byHand = (S.n.byHand || 0) + 1; return true; }
 export function strikeWindlass(e, S, c) { const b = S.bucket, wet = S.ph === 3 && S.flood;
   if (wet && b.st === 'down') { if (b.t > 0) return false; b.st = 'wind'; b.t = DJ.windT; S.n.winds++; c.sound('windlass');
-    if (!S.told.wind) { S.told.wind = 1; c.number(S.G.mid, S.G.vault + 30, 'THE BUCKET WINDS UP: STRIKE AGAIN TO DROP IT', '#7ab8e8'); } return true; }
+    if (!S.told.wind) { S.told.wind = 1; c.number(S.G.mid, S.G.vault + 30, 'THE BUCKET WINDS UP: STRIKE OR E AGAIN TO DROP IT', '#7ab8e8'); } return true; }
   if (b.st !== 'up') return false; b.st = 'fall'; b.t = DJ.bucketFall; S.n.buckets++; c.sound('windlass'); c.number(S.G.mid, S.G.vault + 30, 'THE GREAT BUCKET COMES DOWN', '#7ab8e8'); return true; }
 function stepBucket(e, S, dt, c) {
   const b = S.bucket, G = S.G, wet = S.ph === 3 && S.flood;
@@ -437,7 +444,7 @@ export function djinnPlan(s) {
   if (m === 'whirl' && !onLedge && !P.climb && Math.abs(P.x - G.mid) < 200) { out.gx = clamp(P.x + (Math.sign(P.x - G.mid) || 1) * 90); out.why = 'wade against the whirlpool'; return out; }
   /* 1. THE OPENING: on him (bailed out, he lies in the flood under the shaft: off the ledge and wade in) */
   if (djOpen(e)) { if (onLedge && e.y > G.ledgeY + 20) { offLedge(); out.gx = clamp(e.x); out.why = 'down into the flood'; return out; }
-    out.gx = clamp(e.x - toHim * Math.max(8, reach * 0.6 + 8)); out.face = toHim; out.atk = ad < reach + DJ.w / 2 + 4 && Math.abs(P.y - e.y) < 40 && P.atk < 0; out.why = 'cut him: he is open'; return out; }
+    out.gx = clamp(e.x - toHim * (s.tip ? DJ.w / 2 + s.tip : Math.max(8, reach * 0.6 + 8))); out.face = toHim; out.atk = ad < reach + DJ.w / 2 + 4 && Math.abs(P.y - e.y) < 40 && P.atk < 0; out.why = 'cut him: he is open'; return out; }
   /* 1b. HIS HAND (phase three) */
   const hd = handOut(S); if (hd && hd.stay > 0.2 && !roll('hand' + S.n.hands, DJ_PLAN.missHand)) { const L = hd.x < G.mid ? 'W' : 'E', onFloor = Math.abs(hd.y + 6 - G.floor) < 8;
     if (!onFloor && onLedge !== L) return climbTo(L);
@@ -456,7 +463,7 @@ export function djinnPlan(s) {
     const canWind = b.st === 'down' && !(b.t > 0), under = underShaft(e, S) && !(S.ward > 0) && !turning, ukey = 'under' + S.act;
     if (under) { if (!mem.seen.has(ukey)) mem.seen.set(ukey, t); } const readUnder = under && t - mem.seen.get(ukey) >= DJ_PLAN.react && !roll(ukey + 'm', DJ_PLAN.miss);
     const want = canWind || (b.st === 'up' && readUnder), wx = onLedge === 'E' ? G.crank : G.windlass;
-    if (want) { if (Math.abs(P.x - (wx + 12)) > 8) { out.gx = wx + 12; out.why = onLedge === 'E' ? 'to the crank' : 'to the windlass'; return out; } out.face = -1; out.atk = P.atk < 0; out.why = canWind ? 'wind the bucket up' : 'drop the bucket: he is under the shaft'; return out; }
+    if (want) { if (Math.abs(P.x - (wx + 12)) > 8) { out.gx = wx + 12; out.why = onLedge === 'E' ? 'to the crank' : 'to the windlass'; return out; } out.talk = true; out.why = canWind ? 'wind the bucket up (E)' : 'drop the bucket (E): he is under the shaft'; return out; }   /* (claude/archmage4: by hand, E, as a player now can) */
     out.gx = wx + 14; out.face = -1; out.why = b.st === 'up' ? 'wait for him under the shaft' : 'wait by the windlass'; return out; }
   /* 4. PHASES ONE AND TWO: water - a dry skin goes to the nearest basin; a wet one closes to pouring distance and pours (not into his ward) */
   offLedge(); if (onLedge) return out;

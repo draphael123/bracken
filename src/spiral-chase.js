@@ -20,7 +20,11 @@
 //   6 THE STONES         the steps are broken to their cores, two tiles each - guard his ICE and FIRE on a foothold
 //   7 THE BOOK GAUNTLET  (new) his books come off the wall ahead of you, shake, and fly down the stair at you: guard, or jump them
 //   8 THE GALLERY        one long failing walk to the far wall under his MARK
-//   9 THE LAST STAIR     all three spells, a gap and a failing step, and the carpet at the top
+//   9 THE ORRERY LOFT    (claude/archmage3, Daniel 10-04) THE CLOCK'S BRASS ORRERY, TURNING: no stair over the void, only its worlds. Step onto
+//                        the inner world as it comes up level with the board step and ride it over (walk off as it comes down by the pier);
+//                        then the outer one, and JUMP OFF IT AT THE TOP for the landing. Its turning is TOLD - a brass orbit with chevrons
+//                        running the way it turns, a click of its pawl as a world comes level with you, and the next world glints
+//  10 THE LAST STAIR     all three spells, a gap and a failing step, and the carpet at the top
 //
 // THE RISING DARK (claude/towerscroll; made to MATTER by claude/archmage2b - Daniel 10-02: "the chase up to the Undead Archmage has poison -
 // it doesn't do anything", and scratch/audit-stuck.md #1: it rose 11-15 px/s from the first step and never reached a moving hero). HIS
@@ -48,7 +52,7 @@ import { drawDesertOval } from './sanctum.js';
 
 /* THE STAIR TOWER, in tiles. Interior columns x0..x1, open rows top..floor-1 (floor: set from the flights below); the level's grid is W wide
    (the Falling Tower is 72). You come out of his ring at `arrive`, on the right: the first flight runs left (claude/archmage2b) */
-export const SPIRAL = { x0: 80, x1: 105, top: 70, floor: 0, W: 110, arrive: 103, check: 101 };
+export const SPIRAL = { x0: 80, x1: 105, top: 70, floor: 0, W: 110, arrive: 82, check: 84 };   /* (claude/archmage3: ten flights, so the first runs right and you come out of his ring on the LEFT) */
 /* THE NINE FLIGHTS, foot to top, as they are DRAWN UP: every flight laid out as if it ran right, a step [x0, len, rise, 'fail'?] (rise: rows
    over the landing under it), and a flight that runs left mirrored across the tower. The built FLIGHTS below carry real tiles: a step is
    [x0, len, row] (row: the ledge's own row; you stand on the row over it) with 'fail' for the tower's failing stone. Every flight ends on a
@@ -58,7 +62,9 @@ export const SPIRAL = { x0: 80, x1: 105, top: 70, floor: 0, W: 110, arrive: 103,
      pend   [x, rise]  a PENDULUM pivoted over the tile edge x (drawn-up frame), its weight at its lowest at chest height over the step `rise` -
                        the HIGHER lip of its gap: it sweeps a hero there, and over the lower lip it passes over his head
      books  true       his books come off the wall the flight runs to
-     frost  true       his ice freezes the steps it falls on */
+     frost  true       his ice freezes the steps it falls on
+     orrery [{hx, rise, r, period, n}]   THE ORRERY LOFT's wheels: a hub at tile-x hx (drawn-up frame) and `rise` rows over the landing under the flight, n
+                       worlds on arms of r px, one turn every period s - clockwise on a flight that runs right, the other way on one that runs left */
 const DRAWN = [
   { name: 'THE STAIR', steps: [[86, 4, 2], [90, 4, 4], [94, 4, 6], [98, 4, 8]], land: [102, 4, 10], spells: ['fire'] },
   { name: 'THE BROKEN STAIR', steps: [[85, 4, 2], [91, 5, 3], [96, 4, 5]], land: [101, 5, 7], spells: ['fire', 'ice'] },
@@ -68,6 +74,7 @@ const DRAWN = [
   { name: 'THE STONES', steps: [[86, 2, 2], [90, 2, 3], [94, 2, 4], [98, 2, 5]], land: [101, 5, 7], spells: ['ice', 'fire'] },
   { name: 'THE BOOK GAUNTLET', steps: [[85, 6, 2], [93, 6, 3]], land: [101, 5, 5], spells: ['fire'], books: true },
   { name: 'THE GALLERY', steps: [[85, 4, 2], [89, 11, 4, 'fail']], land: [102, 4, 6], spells: ['mark', 'fire'] },
+  { name: 'THE ORRERY LOFT', steps: [[85, 3, 2], [96, 2, 4]], land: [103, 3, 7], spells: ['fire'], orrery: [{ hx: 92.5, rise: 2, r: 48, period: 7.2, n: 3 }, { hx: 102, rise: 4, r: 40, period: 6.6, n: 3 }] },
   { name: 'THE LAST STAIR', steps: [[85, 4, 2], [91, 4, 3, 'fail']], land: [97, 9, 5], spells: ['fire', 'ice', 'mark'], top: true },
 ];
 const TOP_LAND = 79;   /* the top floor's row: fixed - the carpet and the door into his hall stand on it (TOP, L.sanctum.in) */
@@ -79,6 +86,7 @@ export const FLIGHTS = (() => { const S = SPIRAL, n = DRAWN.length, mx = (x0, le
     const o = { name: F.name, dir, steps, land, spells: F.spells.slice() };
     if (F.pend) o.pend = F.pend.map(([x, r]) => ({ x: dir > 0 ? x : S.x0 + S.x1 + 1 - x, row: base - r }));
     if (F.books) o.books = true; if (F.frost) o.frost = true; if (F.top) o.top = true;
+    if (F.orrery) o.orrery = F.orrery.map((w, j) => ({ id: 'AB'[j], px: dir > 0 ? w.hx * 16 : (S.x0 + S.x1 + 1) * 16 - w.hx * 16, py: (base - w.rise) * 16, r: w.r, period: w.period * dir, n: w.n, rise: w.rise }));
     out.push(o); base = land[2]; });
   return out; })();
 /* THE TOP: the carpet laid before the door into his hall, and the carpet's own retry spot five tiles back from it (boarding the carpet
@@ -109,6 +117,11 @@ export const RISE = (() => { const TS = 16, S = SPIRAL, lastLand = FLIGHTS[FLIGH
 export const PEND = { arm: 80, th: 0.75, period: 2.8, r: 7, dmg: 16, cd: 0.9, low: 14 };
 export const BOOK = { tell: 0.7, v: 165, every: 1.25, dmg: 12, r: 5 };
 export const FROST = { secs: 4.5 };
+/* THE ORRERY LOFT (claude/archmage3): a world's bar is w px (wider than the Folly's 22: it is ridden under fire with the dark rising); a world within
+   board px of a ledge's height as it comes past it is "level" - the pawl clicks and it is the one to take */
+export const ORRERY = { w: 32, board: 10, say: 'THE ORRERY TURNS: RIDE ITS WORLDS' };   /* (say: told in the hint box - main.js hands it to callout()) */
+/* WHERE A WORLD OF WHEEL w IS at time t (the mover's own formula, main.js updateMovers 'wheel'): its bar's left x and top y, and its angle */
+export function orreryPos(m, t) { const a = t * 2 * Math.PI / m.period + m.phase; return { a, x: m.px + Math.cos(a) * m.r - m.w / 2, y: m.py + Math.sin(a) * m.r }; }
 
 export const CHASE = {
   up: 4,          /* rows over a landing he waits at: in the frame with you as you climb to it - and he is gone from it the moment you land */
@@ -124,20 +137,24 @@ export const CHASE = {
 };
 /* BUILD IT into the tower's grid. `k` is tower-ascent.js's toolkit: rect, ledge, ent, crumbles (the failing stone list), interiors. */
 export function buildSpiral(k, T) {
-  const { rect, ledge, ent, crumbles, interiors } = k, S = SPIRAL;
+  const { rect, ledge, ent, crumbles, interiors, moversExtra } = k, S = SPIRAL;
   rect(S.x0, S.x1, S.top, S.floor - 1, T.AIR);
   interiors.push([S.x0, S.x1, S.top, S.floor - 1, 'spiral']);
   for (const F of FLIGHTS) {
     for (const [x0, len, row, f] of F.steps) { ledge(x0, len, row); if (f === 'fail') crumbles.push({ x0, x1: x0 + len - 1, row, count: 2.5, kind: 'spiral' }); }   /* three beats shown (3, 2, 1), as the level's rule line says (claude/archmage2b: the last stair's counted two) */
     const [lx, ll, lr] = F.land; ledge(lx, ll, lr);
+    /* THE ORRERY LOFT (claude/archmage3): each wheel's worlds, the 'wheel' mover the Mage's Folly orrery rides (planet: drawn as a world on its
+       brass bar; orrery: its wheel, A the inner, B the outer - src/stuck-spots.js glints the next one round, src/lab.js chaseClimb rides them) */
+    if (F.orrery && moversExtra) for (const w of F.orrery) for (let i = 0; i < w.n; i++)
+      moversExtra.push({ kind: 'wheel', planet: true, mage: true, orrery: w.id, first: i === 0, next: i === 0, px: w.px, py: w.py, r: w.r, phase: i * Math.PI * 2 / w.n + (w.id === 'B' ? 1.1 : 0), period: w.period, x: 0, y: 0, w: ORRERY.w, h: 6, world: (i + (w.id === 'B' ? 2 : 0)) % 4 });
   }
   /* THE WAY IN: his ring on the crown's parapet (tower-ascent.js puts that one) lets you out here, at the stair's foot - and the stair's
      one checkpoint stands beside it, just under the rising dark's start line (src/chase.js's rule) */
   ent('ringdoor', S.arrive, S.floor - 1, { id: 'spiral-foot' });
   ent('check', S.check, S.floor - 1);
-  ent('sign', S.x1 - 1, S.floor - 1, { text: 'HIS DARK RISES UNDER YOU FROM HERE: KEEP CLIMBING, AND DO NOT WAIT ON A LANDING.' });
+  ent('sign', S.x0 + 1, S.floor - 1, { text: 'HIS DARK RISES UNDER YOU FROM HERE: KEEP CLIMBING, AND DO NOT WAIT ON A LANDING.' });
   /* THE NEW FLIGHTS ARE SIGNED where they begin, on the landing under them, by its wall (claude/archmage2b): the verb, not the trick */
-  FLIGHTS.forEach((F, k) => { const say = F.pend ? 'THE CLOCK\'S WEIGHTS SWING OVER THE GAPS: LET ONE SWING BACK OVER YOU, AND GO AS IT TURNS.' : F.frost ? 'HIS FROST FREEZES THE STEPS IT FALLS ON: THEY ARE SLICK FOR A FEW BEATS.' : F.books ? 'HIS BOOKS FLY DOWN THIS STAIR AT YOU: GUARD THEM, OR JUMP THEM.' : null;
+  FLIGHTS.forEach((F, k) => { const say = F.orrery ? 'THE ORRERY TURNS. NO STAIR CROSSES HERE: ITS WORLDS DO.' : F.pend ? 'THE CLOCK\'S WEIGHTS SWING OVER THE GAPS: LET ONE SWING BACK OVER YOU, AND GO AS IT TURNS.' : F.frost ? 'HIS FROST FREEZES THE STEPS IT FALLS ON: THEY ARE SLICK FOR A FEW BEATS.' : F.books ? 'HIS BOOKS FLY DOWN THIS STAIR AT YOU: GUARD THEM, OR JUMP THEM.' : null;
     if (!say || !k) return; const [lx, ll, lr] = FLIGHTS[k - 1].land; ent('sign', F.dir > 0 ? lx + 1 : lx + ll - 2, lr - 1, { text: say });   /* (a tile in from the wall: a sign against it runs into the stone) */ });
   ent('magechase', FLIGHTS[0].land[0] + 2, FLIGHTS[0].land[2] - CHASE.up, { face: -1 });
   return { ...S, flights: FLIGHTS.map(F => ({ ...F })), carpet: { ...TOP } };
@@ -210,7 +227,7 @@ export function updateMageChase(e, dt, c) {
     e.spell = spell; e.mode = TELL[spell]; e.modeT = MAGE.tell[spell]; c.say(SAY[spell === 'ice' && FLIGHTS[Math.min(FLIGHTS.length - 1, next)].frost ? 'frostTell' : e.mode], spell === 'mark'); return; }
   if (e.modeT > 0) { e.face = Math.sign(P.x - e.x) || e.face; return; }
   // ---- the spell goes ----
-  const hx = e.x + e.face * 12, hy = e.y - 34, aim = Math.atan2(py - hy, P.x - hx);
+  const hx = e.x + e.face * MAGE.staff.dx, hy = e.y - MAGE.staff.dy, aim = Math.atan2(py - hy, P.x - hx);   /* (archmage3: from the head of his staff) */
   const shot = (a, sp, r, dmg, kind, col) => e.shots.push({ x: hx, y: hy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a, sp, r, dmg, kind, col, t: 4 });
   if (e.spell === 'fire') { for (const s of next >= CHASE.pairFrom ? [-CHASE.pairFan / 2, CHASE.pairFan / 2] : [0]) shot(aim + s, MAGE.boltV, 5, MAGE.dmg.fire, 'fire', '#ff9b49'); c.sound('mageBolt'); }
   else if (e.spell === 'ice') { for (let i = -2; i <= 2; i++) shot(aim + i * 0.3, 120, 4, MAGE.dmg.ice, 'ice', '#9be2ff'); c.sound('hiss');
@@ -253,7 +270,9 @@ export function updateStairFx(H, dt, c) {
   const { P } = c; H.t += dt; H.cd = Math.max(0, H.cd - dt);
   if (!c.on) { H.books.length = 0; return; }
   const k = flightAt(P), F = FLIGHTS[k];
-  if ((F.pend || F.books || F.frost) && !H.told[k]) { H.told[k] = true; c.say(F.pend ? 'THE CLOCK\'S WEIGHTS: GO AS ONE TURNS' : F.books ? 'HIS BOOKS COME OFF THE WALL' : 'HIS FROST FREEZES THE STEPS', false); }
+  if ((F.pend || F.books || F.frost || F.orrery) && !H.told[k]) { H.told[k] = true; c.say(F.orrery ? ORRERY.say : F.pend ? 'THE CLOCK\'S WEIGHTS: GO AS ONE TURNS' : F.books ? 'HIS BOOKS COME OFF THE WALL' : 'HIS FROST FREEZES THE STEPS', false); }
+  // ---- THE ORRERY (claude/archmage3): the next world round to the ledge you stand on is marked (its glint: src/stuck-spots.js), and the pawl clicks as it comes level ----
+  if (F.orrery && c.movers) orreryTick(H, F, c);
   // ---- THE WEIGHTS ----
   if (!P.dead && H.cd <= 0) for (const p of PENDS) { if (Math.abs(p.k - k) > 1) continue; const q = pendPos(p, H.t);
     if (pendReach(q, P.x, P.y)) { H.cd = PEND.cd; c.hit(q.x, q.y, PEND.dmg, true, 'pend'); c.sound('thud'); break; } }
@@ -265,6 +284,32 @@ export function updateStairFx(H, dt, c) {
     b.x += b.vx * dt; if (b.x < (SPIRAL.x0 - 1) * 16 || b.x > (SPIRAL.x1 + 2) * 16 || (c.solid && c.solid(b.x + Math.sign(b.vx) * 4, b.y))) { b.gone = true; continue; }
     if (!b.hit && !P.dead && Math.abs(P.x - b.x) < BOOK.r + 6 && Math.abs((P.y - 13) - b.y) < BOOK.r + 12) { b.hit = true; b.gone = true; c.hit(b.x, b.y, BOOK.dmg, false, 'book'); } }
   H.books = H.books.filter(b => !b.gone);
+}
+/* THE ORRERY'S NEXT WORLD: for each wheel, the world that will next come level with the ledge it is boarded from (wheel A: the board step;
+   wheel B: the pier) on its rising side - m.next on it, off the rest - and a click (c.sound('ratchet')) as it comes level while you are on this flight */
+function orreryTick(H, F, c) {
+  const ms = c.movers.filter(m => m.orrery), t = c.time ?? H.t; H.click ??= {};
+  for (const w of F.orrery) { const own = ms.filter(m => m.orrery === w.id); if (!own.length) continue;
+    const want = F.dir > 0 ? Math.PI : 0;   /* where it is boarded: the wheel's side toward the ledge under it (the left on a flight that runs right) */
+    let best = null, bt = 1e9;
+    for (const m of own) { const a = t * 2 * Math.PI / m.period + m.phase, sp = 2 * Math.PI / m.period;   /* (rad/s, signed: a flight that runs left turns the other way) */
+      let d = (want - a) / sp; const T = Math.abs(m.period); d = ((d % T) + T) % T; if (d < bt) { bt = d; best = m; } }
+    for (const m of own) m.next = m === best;
+    const lvl = bt < 0.18; if (lvl && !H.click[w.id]) c.sound('ratchet'); H.click[w.id] = lvl; }
+}
+/* THE ORRERY, DRAWN (world space, behind its worlds): for each wheel its hub on a bracket, a brass arm to every world, and its ORBIT - a faint ring
+   with chevrons running round it the way it turns (the rotation is TOLD: you see which way a world will carry you before you take it) */
+export function drawOrrery(g, movers, cx, cy, VW, VH, time, hub) {
+  const seen = new Set();
+  for (const m of movers) { if (!m.orrery || seen.has(m.px + ',' + m.py)) continue; seen.add(m.px + ',' + m.py);
+    const hx = Math.round(m.px - cx), hy = Math.round(m.py - cy); if (hx < -80 || hx > VW + 80 || hy < -80 || hy > VH + 80) continue;
+    const spin = Math.sign(m.period) || 1, R = m.r;
+    g.strokeStyle = 'rgba(176,138,58,0.32)'; g.lineWidth = 1; g.beginPath(); g.arc(hx, hy, R, 0, Math.PI * 2); g.stroke();   /* the orbit */
+    for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2 + spin * time * 1.2, x = hx + Math.cos(a) * R, y = hy + Math.sin(a) * R, tx = -Math.sin(a) * spin, ty = Math.cos(a) * spin;   /* a chevron pointing along the turn */
+      g.fillStyle = 'rgba(230,196,106,0.75)'; g.fillRect(Math.round(x + tx * 2) - 1, Math.round(y + ty * 2) - 1, 2, 2); g.fillStyle = 'rgba(230,196,106,0.45)'; g.fillRect(Math.round(x - tx + ty * 2), Math.round(y - ty - tx * 2), 1, 1); g.fillRect(Math.round(x - tx - ty * 2), Math.round(y - ty + tx * 2), 1, 1); }
+    for (const q of movers) { if (q.px !== m.px || q.py !== m.py) continue; const qx = Math.round(q.x + q.w / 2 - cx), qy = Math.round(q.y + 3 - cy);
+      g.strokeStyle = '#5a3c14'; g.lineWidth = 3; g.beginPath(); g.moveTo(hx, hy); g.lineTo(qx, qy); g.stroke(); g.strokeStyle = '#a8782a'; g.lineWidth = 1; g.beginPath(); g.moveTo(hx, hy); g.lineTo(qx, qy); g.stroke(); }
+    if (hub) g.drawImage(hub, hx - 9, hy - 9); else { g.fillStyle = '#b08a3a'; g.fillRect(hx - 4, hy - 4, 8, 8); } g.lineWidth = 1; }
 }
 /* THEIR DRAWING (world space): the weights on their chains from a bracket, the books shaking in their niches and flying */
 export function drawStairFx(g, H, cx, cy, VW, VH, time) {

@@ -24,6 +24,8 @@ export const SHAPE = {
   skewer: 'thrust', setSpears: 'spikes', harrier: 'leap', wheel: 'spin', javelin: 'bolt', poleSpring: 'leap', fullStretch: 'aura', spearDance: 'flurry', rainOfSpears: 'rain',
   // geomancer
   stoneStep: 'pillar', boulder: 'roll', spikeRow: 'spikes', archway: 'arch', stoneWall: 'wall', entomb: 'entomb', faultLine: 'quake', golem: 'summon', avalanche: 'rain',
+  // the late actives (claude/herokit)
+  flashover: 'burst', firestorm: 'ring', dawnburst: 'ring', holyWrath: 'aura', powderKeg: 'burst', heavySeas: 'waves', boneArmor: 'aura', soulReap: 'ring',
 };
 export const shapeOf = id => SHAPE[id] || 'cast';
 
