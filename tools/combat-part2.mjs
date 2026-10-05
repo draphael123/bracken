@@ -4,7 +4,7 @@
 //   FLANK      four melee foes on the side the hero faces: one walks round to take the ring behind him.
 //   MASHED     a hero who only mashes the light attack into one foe meets its GUARD (cuts turned, a clank) and then its RIPOSTE.
 //   HEAVY      a heavy blow goes through a raised guard and breaks it.
-//   WHIFF      a swing at nothing hands the foe waiting beside him its turn at once (it winds up inside a second).
+//   WHIFF      a swing at nothing hands the foe waiting beside him its turn at once (it winds up inside two seconds).
 //   SQUAD      a squad (front shield, back archer, flank cutlass) holds its roles: the archer keeps further off than the shield, and the
 //              cutlass and the shield, on both sides of him, are given their turns at once (a pincer).
 //   VARIED     over a crowd's forty seconds, swings come held, quick and as feints (a stamp, then the real blow).
