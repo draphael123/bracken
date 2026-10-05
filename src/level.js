@@ -3841,7 +3841,10 @@ function theShop() {
    grew twice, and the ambush room, the elites and four tools held its grown columns by hand (the Wood lost twenty-six columns
    that way). The ambush and the elites are built here now, and L.sections names every section for the tools that photograph
    and walk it. Cut: the Ridge Run (its climb is the fourth section's), the Howling Gap and the Whistle Stones (the review: they
-   say what the Gallery says), and ninety-eight columns of the Sky Road - eight of them given back as the landing shelf. */
+   say what the Gallery says), and ninety-eight columns of the Sky Road - eight of them given back as the landing shelf.
+   GALE MOOR 2 (claude/moor2, scratch/brief-moor2.md, Daniel 2026-10-03): the kite post and what was left of the Sky Road are gone too - flight is
+   the Sky Road level's (thermals and a glide cloak), so the moor stays a GROUND level of sideways told gusts. THE WIND ROCKS and THE GOBLIN
+   SCAFFOLDS stand in their columns (src/moor-rocks-hands.js; tools/moor-rocks.mjs proves them per hero). */
 function galeMoor() {
   const L = painter(703, 30);
   const { block, floor, plat, spikes, ent, coins, set } = L;
@@ -4041,6 +4044,7 @@ function galeMoor() {
   ent('rockgoblin', o + 13, 7);                                        /* on Tor A, throwing down at you as you wait for the crevice */
   ent('harpy', o + 22, 3);                                             /* over the ridge, in the gust */
   ent('archer', o + 43, 2, { face: -1 });                              /* on the boulder stack, shooting down at Tor B while you wait for the right burst */
+  ent('goat', o + 34, 7, { face: -1 });                                /* on Tor B where you land off the ridge: a butt puts you back in the tarn */
   ent('flagpost', o + 3, 13); ent('flagpost', o + 14, 7); ent('flagpost', o + 35, 7);
   ent('sign', o + 1, 13, { text: 'THE WIND ROCKS. A CREVICE WHISTLES, THEN BLOWS UP: STAND IN IT AND IT THROWS YOU.' });
   ent('sign', o + 8, 7, { text: 'THE GUST RUNS ALONG THE RIDGE AND OFF ITS END. BRACE, OR CROSS IN THE STILL.' });
@@ -4061,6 +4065,7 @@ function galeMoor() {
   gust(o + 14, o + 45, 14, 17, { period: 5, on: 1.8, phase: 0, shove: 240, scaffold: true, along: true });     /* over the first deck, east: it takes a struck goblin off, and you to the deck's end */
   gust(o + 37, o + 50, 2, 13, { period: 5, on: 1.8, phase: 2.5, shove: 240, scaffold: true, along: true });   /* over the frame, east: the wind that lays it down (it stops twelve tiles short of the landing, so it carries no jump across the gap) */
   ent('gustframe', o + 48, 12, { anchor: o + 44, len: 14, span: [o + 55, o + 61], row: 13 });
+  ent('brute', o + 8, 20, { face: -1 });                               /* the yard's foreman, between you and the first gust shaft */
   ent('shield', o + 30, 16, { face: -1 }); ent('archer', o + 41, 16, { face: -1 });   /* the first deck: a shield in front, a bow behind him */
   ent('rockgoblin', o + 29, 12); ent('horn', o + 35, 12, { face: -1 }); ent('horn', o + 53, 12, { face: -1 });   /* the top deck: hornblowers at its top, and one by the gap */
   ent('flagpost', o + 3, 20); ent('flagpost', o + 24, 12);
