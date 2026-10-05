@@ -1476,7 +1476,7 @@ export const AMBIENT_SOURCES = { cistern: ['synth:air', 'synth:drip', 'synth:scu
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
 /* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
    (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
-export const MUSIC_CREDITS_ROW = { underwell: '"Ossuary 6 - Air" — K. MacLeod, CC-BY', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
+export const MUSIC_CREDITS_ROW = { underwell: '"Ossuary 6" — K. MacLeod, CC-BY', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
 export const MUSIC_CREDITS = {
   undeadmage: '"Colossal Boss Battle Theme" — Matthew Pablo, CC-BY',   /* (claude/archmage2b) the Undead Archmage: CC-BY 3.0, matthewpablo.com - credited in full on the credits page and in audio/CREDITS.txt */
   puppeteer: '"Dissonant Waltz" — Yubatake, CC-BY',   /* (claude/puppeteer2: CC-BY 4.0, credited here, on the credits page and in audio/CREDITS.txt) */
@@ -1507,7 +1507,7 @@ export const MUSIC_CREDITS = {
   houndmaster: '"Boss Fight 2" — ansimuz', masthead: '"Slay The Evil" — HydroGene', hilltroll: '"Boss Battle #6" — nene',
   rimewright: '"Fields of Ice" — Jonathan So', captain: '"Stereotypical Boss" — Spring',
   tollmaster: '"Infinite Darkness" — HydroGene', grandmother: '"Ghost Land" — HydroGene',
-  welltown: '"Desert Calmness" — Dizzy Crow', banditking: '"The Gang Leader" — BRACKEN', cisternqueen: '"The Cistern Queen" — BRACKEN', djinn: '"The Djinn of the Great Well" — BRACKEN',   /* (claude/welltown-fix: Dizzy Crow's CC0 track; the synth themes, src/boss-music.js) */
+  welltown: '"Desert Calmness" — Dizzy Crow', banditking: '"The Gang Leader" — BRACKEN', cisternqueen: '"The Cistern Queen" — BRACKEN', djinn: '"The Great Well" — BRACKEN',   /* (claude/welltown-fix: Dizzy Crow's CC0 track; the synth themes, src/boss-music.js) */
   theatre: '"Apparitions Ball" — Bobjt', canal: '"Hollowed Forest" — T. Grove', fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
   causeway: '"Solemn Tide" — madameberry', kraken: '"Castle Boss" — madameberry',
   witchlight: '"Iremos Forest" — beardalaxy', oreroad: '"12 Music Loops" — SubspaceAudio',
