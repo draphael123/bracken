@@ -64,9 +64,9 @@ export const ROLES = {
   ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest'],
   support: ['barker', 'gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
   heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield'],
-  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow', 'waterthief', 'raptor'],   /* (claude/redgorge: the cliff raptor stoops on you from over its bridge and is gone again - a hit and run) (claude/welltown: the water-thief cuts your skin and RUNS for a well) (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
+  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow', 'waterthief', 'raptor', 'thirstscorpion'],   /* (claude/redgorge: the cliff raptor stoops on you from over its bridge and is gone again - a hit and run) (claude/welltown: the water-thief cuts your skin and RUNS for a well) (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
 };
-const rolesOf = t => { const r = Object.keys(ROLES).filter(k => ROLES[k].includes(t)); return r.length ? r : ['melee']; };
+const rolesOf = (t, skin) => { const of = k => Object.keys(ROLES).filter(r => ROLES[r].includes(k)); const r = skin && of(skin).length ? of(skin) : of(t); return r.length ? r : ['melee']; };   /* (claude/underwell: a reskin listed by its own skin - the thirsty scorpion runs - is judged by what it does; an unlisted skin is its AI's) */
 /* COLLECTIBLES AND INTERACTIVES THAT MUST UNLOCK SOMETHING. A pickup or a lever that opens nothing is clutter. What each kind can open is named here; a level states its own
    in L.unlocks = [{ kind, opens: 'gate'|'relic'|'shortcut'|'secret'|'lift'|.., hud: 'the line the HUD or a callout shows' }] (a collectible a level invents - a candle stub, a cog - goes
    there). The tool then asks: is every collectible kind in the level either known here or declared, and does an interactive have something in the level to work. */
@@ -159,7 +159,7 @@ export function measure(lv) {
   const isFoe = e => !GENERIC.has(e.t) && !isGadget(e.t) && !e.boss && !(A && A.boss === e.t) && (e.t in THREAT ? THREAT[e.t] > 0 : true);
   const foes = ents.filter(isFoe);
   const waves = (L.ambushes || []).flatMap(q => q.waves.flat().map(w => ({ t: w[0], x: w[1], y: w[2] })));
-  const allFoes = [...foes.map(e => ({ t: e.t, x: e.x, y: e.y })), ...waves];
+  const allFoes = [...foes.map(e => ({ t: e.t, x: e.x, y: e.y, skin: e.cnSkin })), ...waves];
   const gadgetEnts = ents.filter(e => !GENERIC.has(e.t) && isGadget(e.t) && e.t !== 'deco');
 
   // ---- 1. FLATNESS: walk the route column by column; a stretch ends at a height change, a gap, a hazard, a foe or a gadget ----
@@ -251,7 +251,7 @@ export function measure(lv) {
   // ---- 7. INVISIBLE SLOPES: every slope collision cell (ids 20-25) needs a drawn diagonal tile of its own kind ----
   let slopeCells = 0; for (let i = 0; i < L.grid.length; i++) if (L.grid[i] >= 20 && L.grid[i] <= 25) slopeCells++;
   // ---- 8. ROLES: ranged present, role mix ----
-  const roleCount = {}; for (const f of allFoes) for (const r of rolesOf(f.t)) roleCount[r] = (roleCount[r] || 0) + 1;
+  const roleCount = {}; for (const f of allFoes) for (const r of rolesOf(f.t, f.skin)) roleCount[r] = (roleCount[r] || 0) + 1;
   const roleKinds = Object.keys(roleCount).sort(), rangedN = roleCount.ranged || 0;
 
   // ---- 9. COLLECTIBLES / INTERACTIVES UNLOCK SOMETHING ----
@@ -292,7 +292,7 @@ export function measure(lv) {
     ['encounters', !m.holes.length, m.holes.length ? 'no designed encounter in columns ' + m.holes.join(', ') : 'a designed encounter in every ' + LIM.section + ' columns'],
     ['density', m.tall || (m.density >= LIM.densityLo && m.density <= LIM.densityHi && m.emptyShare <= LIM.emptyShareMax), m.tall ? 'a tall level: not measured' : m.density.toFixed(2) + ' encounters a screen (' + LIM.densityLo + '-' + LIM.densityHi + '; ' + m.encountersN + ' encounters, ' + m.bodyDensity.toFixed(1) + ' foes a screen), ' + m.emptyScreens + ' empty screens = ' + Math.round(m.emptyShare * 100) + '% (<=' + Math.round(LIM.emptyShareMax * 100) + '%)'],
     ['slopes', m.slopeArtOk && m.slopePainted, !m.slopeCells ? 'no slope tiles' : m.slopeCells + ' slope cells: ' + (m.slopeArtOk ? (m.slopePainted ? 'drawn (diagonal tiles, guard: ' + slopeGateName() + ')' : 'INVISIBLE - the tile painter draws slope art only where ' + slopeGateName() + ', so these walkable slopes have no texture') : 'the slope tiles are not diagonal: ' + m.slopeArtWhy)],
-    ['ranged', m.rangedN > 0, m.rangedN ? m.rangedN + ' ranged foes: ' + [...new Set(allFoes.filter(f => rolesOf(f.t).includes('ranged')).map(f => f.t))].join(',') : 'NO RANGED FOE: nothing in this level shoots, throws or casts (ROLES.ranged in tools/level-quality.mjs)'],
+    ['ranged', m.rangedN > 0, m.rangedN ? m.rangedN + ' ranged foes: ' + [...new Set(allFoes.filter(f => rolesOf(f.t, f.skin).includes('ranged')).map(f => f.t))].join(',') : 'NO RANGED FOE: nothing in this level shoots, throws or casts (ROLES.ranged in tools/level-quality.mjs)'],
     ['roles', m.roleKinds.length >= LIM.roles, m.roleKinds.length + ' foe roles (>=' + LIM.roles + '): ' + m.roleKinds.map(r => r + 'x' + roleCount[r]).join(' ')],
     ['unlocks', unlockOk, unlockMsg],
     ['pilot', pilotOk, pilotMsg],

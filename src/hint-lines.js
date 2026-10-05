@@ -103,6 +103,11 @@ export const CALL_LINES = new Set([
   'HIS SHELL TURNS A BLADE: RELEASE THE DAM ON HIM', 'THE FLOOD TAKES HIM', 'SWEPT AWAY', 'CLIMB THE ROPE: UP',
   /* claude/desertfoes: the fire scorpion's burning patch, the venom scorpion's sting, the sandworm and the flood, the dynamite bandit's fuse (src/desert-foes2-hands.js) */
   'WATER PUTS IT OUT', 'THE PATCH GOES OUT', 'VENOM: YOUR STAMINA COMES BACK SLOWER', 'THE HORN DRIVES IT UNDER', 'THE FLOOD DOUSES THE FUSE',
+  /* claude/underwell: THE UNDERWELL's oil, torches, great lamp, nests, drips, ropes, fountain and its four scorpions (src/underwell-hands.js); a drip (src/well-town-hands.js) */
+  'THE OIL CATCHES', 'WET OIL: IT WILL NOT CATCH', 'THE OIL FIRE GOES OUT', 'THE FOUNTAIN RUNS: ITS VAULT OPENS', 'THE DRY FOUNTAIN WANTS THREE BRASS TAPS',
+  'THE BROOD WILL NOT CROSS FIRE', 'THE HEAT DRIVES IT UNDER', 'IT LEAVES A SLICK OF OIL', 'GRIT IN YOUR EYES', 'IT DRINKS FROM YOUR SKIN', 'IT SMELLS THE WATER IN YOUR SKIN',
+  'THE CHAIN GIVES', 'THE GREAT LAMP FALLS: THE HALL BURNS', 'THE NEST BURNS AWAY', 'THE FIRE BOILS THE DRIP DRY', 'THE ROPE BURNS TO ASH', 'ITS FIRE TAKES THE OIL',
+  'THE OIL BURNS: GET OUT OF IT', 'LAMP OIL ON THE FLOOR: IT BURNS', 'A WALL TORCH OVER THE OIL', 'A DRIP: ONE SIP',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the

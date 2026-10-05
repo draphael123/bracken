@@ -47,7 +47,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
   function world(e) {
     const say = (line, col) => ctx.number(e.x, Math.min(e.y, S.G.floor) - 70, line, col);
     return {
-      say, number: (x, y, t, col) => ctx.number(x, Math.min(y, S.G.floor - 70), t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), music: ph => ctx.music && ctx.music(ph === 3 ? 'cisternqueen:p3' : 'cisternqueen:p2'),
+      say, number: (x, y, t, col) => ctx.number(x, Math.min(y, S.G.floor - 70), t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), music: ph => ctx.music && A() && A().music === 'cisternqueen' && ctx.music(ph === 3 ? 'cisternqueen:p3' : 'cisternqueen:p2'),
       mark: m => ctx.number(e.x, (S.pose === 'shaft' ? S.G.vault + 30 : e.y) - (S.pose === 'wall' ? 96 : CQ.markH), m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       fx: (k, x, y) => {
         if (k === 'erupt' || k === 'dig' || k === 'burst') { ctx.burst(x, y - 8, k === 'dig' ? 10 : 18, ['#c9a46a', '#8a6a3e', '#e8d4a0'], 90, 0.7); ctx.dust(x, y, 10); }
