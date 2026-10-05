@@ -55,10 +55,12 @@ export function buildSkyRoad({ painter, T, TS }) {
   // ================= 1. THE MESA STEPS (0-104): TEACH the rise and the cloud =================
   rock(0, 22, 46); set(0, 45, T.SOLID); for (let y = 0; y < 46; y++) set(0, y, T.SOLID);    /* the start mesa (and the world's west edge) */
   sign(7, 45, 'THE SKY ROAD. THE ROCK IS HOT: THE AIR OVER IT RISES.');
+  rock(15, 17, 44); plank(6, 12, 43);                                                             /* a kite-rider's old perch over the start (a second height) */
   rock(23, 26, 49); rock(27, 46, 52);                                           /* a step down, and the sand under the first face (a miss costs a walk) */
+  plank(28, 32, 48); plank(39, 44, 47);                                        /* broken scaffold over the sand: a step up out of it */
   thermal(34, 51, 40); plank(35, 36, 40);                                       /* THERMAL ONE: up the face of mesa A (twelve rows: no jump), a lip to step onto */
   sign(31, 51, 'STAND IN THE RISING AIR.');
-  rock(37, 52, 40);                                                             /* MESA A */
+  rock(37, 52, 40); plank(43, 49, 37); air(37, 51, 44, 47); ent('coin', 42, 47); ent('coin', 47, 47);   /* (and a hollow under it, in off thermal one's column) */                                         /* MESA A, and the bowman's stand over it */
   foe('shield', 41, 39, 'mesaTop', { face: -1 }); foe('archer', 50, 39, 'mesaTop', { face: -1 });   /* the shield covers the bow: you come up the face into them */
   cloth(51, 39);                                                                /* KITE CLOTH ONE: behind the bow */
   rock(53, 72, 50);                                                             /* the sand under mesa B */
@@ -66,20 +68,23 @@ export function buildSkyRoad({ painter, T, TS }) {
   cloudBank(58, 80, 6, 10, 16, 0);                                              /* ...that comes over it six seconds in sixteen: wait for the sun */
   sign(62, 49, 'A CLOUD ON THE ROCK KILLS THE AIR. WAIT FOR THE SUN.');
   foe('kite', 64, 40, 'mesaKite');                                              /* a goblin kite hangs in thermal two: high in the sun, sunk into reach when the cloud kills it */
-  rock(70, 104, 34);                                                            /* MESA B */
+  plank(55, 61, 46);                                                            /* a ledge over the sand under mesa B */
+  rock(70, 104, 34); air(70, 99, 39, 42);                                       /* MESA B, and THE WIND CAVE under its top: in off thermal two's column at its west face (a pocket, coins) */
+  ent('coin', 80, 42); ent('coin', 86, 42); ent('coin', 92, 42); ent('deco', 96, 42, { kind: 'bones' });
+  plank(76, 84, 31); rock(88, 91, 32);                                                            /* the station's lookout boards over the mesa top */
 
   // ================= 2. THE RIDERS' STATION (104-190): the cloak, the stone, THE GREAT KITE REEL =================
-  ent('check', 90, 33);                                                         /* CHECKPOINT ONE: the station's west gate */
+  ent('check', 72, 33);                                                         /* CHECKPOINT ONE: the station's west gate */
   ent('cloak', 97, 33); decor.push({ kind: 'mast', x: 97, y: 33 });             /* THE RIDER'S CLOAK on its mast */
   sign(100, 33, "THE RIDER'S CLOAK: HOLD JUMP AS YOU FALL, AND GLIDE.");
-  rock(105, 115, 46);                                                           /* the sand shelf under the first glide: a miss lands here */
+  rock(105, 115, 46); plank(106, 111, 42);                                                           /* the sand shelf under the first glide: a miss lands here */
   thermal(113, 45, 38);                                                         /* ...and a thermal off it back up to the ledge */
   foe('harpy', 110, 30, 'firstHarpy');                                         /* the first harpy, over the shelf: a snatch drops you on sand */
-  rock(116, 122, 38);                                                           /* LEDGE ONE: twelve columns from mesa B (the glide) */
+  rock(116, 122, 38); plank(117, 122, 34);                                                           /* LEDGE ONE: twelve columns from mesa B (the glide) */
   stone(120, 37, 's1'); sign(118, 37, 'A SUN-STONE. STRIKE IT ROUND TO THE SUN.');
   pinnacle(131, 26, 'stone:s1');                                                /* THERMAL FOUR over the chasm: dead until the stone is turned; glide INTO it */
   ent('silver', 131, 52);                                                       /* SILVER ONE: on its pinnacle, over the cloud sea (the thermal takes you back up) */
-  rock(134, 150, 26); plank(132, 133, 26);                                      /* LEDGE TWO: the station's lower deck */
+  rock(134, 150, 26); plank(132, 133, 26); plank(134, 138, 23); air(134, 147, 30, 33); ent('coin', 140, 33); ent('coin', 145, 33);   /* (a riders' store under the deck, in off thermal four's column) */                 /* LEDGE TWO: the station's lower deck, and a rigger's step */
   /* THE GREAT KITE REEL: the chimney's stone heats the chimney, its hot air carries the war-kite up, the kite hauls the cage up the cliff. A cloud on the
      chimney and the kite sinks, and the cage with it. The chimney is a flue standing at the deck's back (scenery: its hot air leaves its mouth high over you), so no hero rides it: the cage is the only way up */
   stone(139, 25, 's2'); decor.push({ kind: 'flue', x: 142, y0: 16, y1: 25 });                                /* the reel's stone and the chimney */
@@ -88,7 +93,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   const reel = { stone: 's2', x: 142.5 * TS + 8, top: 16 * TS, kiteY: 4 * TS, cage: 'reel' };
   cloudBank(135, 160, 5, 12, 12, 4);                                            /* a slow bank over the chimney */
   foe('kite', 138, 14, 'reelKites'); foe('kite', 146, 10, 'reelKites');         /* two goblin kites ride the reel's hot air: they drop stones on the cage */
-  rock(151, 190, 14);                                                           /* THE UPPER DECK, twelve rows up the cliff */
+  rock(151, 190, 14); plank(152, 161, 10); rock(166, 168, 12); rock(176, 179, 12); air(151, 189, 18, 21); ent('coin', 160, 21); ent('coin', 170, 21); ent('coin', 180, 21);                  /* THE UPPER DECK, twelve rows up the cliff: the kite loft's boards over it, a block of the old winch */
   foe('archer', 158, 13, 'deckTop', { face: -1 }); foe('shield', 155, 13, 'deckTop', { face: -1 });   /* at the cage's top */
   ent('check', 181, 13);                                                        /* CHECKPOINT TWO: the upper deck */
   cloth(188, 13);
@@ -96,10 +101,11 @@ export function buildSkyRoad({ painter, T, TS }) {
   // ================= 3. THE HARPY ROOSTS (190-298): the chain under a rolling cloud bank =================
   sign(186, 13, 'THE ROOSTS. READ THE CLOUDS.');
   rock(201, 204, 20);                                                           /* ROOST ONE (ten columns out: the glide) */
+  plank(203, 213, 46); plank(214, 224, 44);                                     /* THE NESTING SHELVES low on the roost pillars: a fall that lands here rides R1 or R2 back up */
   pinnacle(210, 13);                                                            /* R1 */
   rock(216, 219, 18); stone(218, 17, 's3');                                     /* ROOST TWO, and its stone */
   pinnacle(226, 10, 'stone:s3');                                                /* R2: dead until roost two's stone is turned */
-  plank(228, 231, 10); foe('slinger', 231, 9, 'kitePlatform', { face: -1, cnSkin: 'gobslinger' }); cloth(228, 9);   /* a hanging kite platform: a slinger, and a cloth */
+  plank(228, 231, 10); foe('rockgoblin', 231, 9, 'kitePlatform', { face: -1, cnSkin: 'gobslinger' }); cloth(228, 9);   /* a hanging kite platform: a slinger, and a cloth */
   decor.push({ kind: 'kiteplat', x: 229, y: 10 });
   rock(220, 222, 30); ent('silver', 221, 29); decor.push({ kind: 'nest', x: 221, y: 29 });   /* the low roost under roost two: a nest, SILVER TWO (a dead end; R2 takes you back up) */
   rock(234, 237, 13);                                                           /* THE SPIRE: rock to the cloud sea - no glide from roost two goes under it; only R2's air carries you over (roost two's stone is a lock) */
@@ -109,9 +115,9 @@ export function buildSkyRoad({ painter, T, TS }) {
   cloudBank(205, 262, 6, 12, 22, 0);                                            /* the bank rolls east over the chain, one thermal after another */
   foe('harpy', 212, 6, 'roostHarpyA'); foe('harpy', 254, 7, 'roostHarpyB');
   foe('kiterider', 226, 8, 'riders', { home: 226 }); foe('kiterider', 258, 8, 'riders', { home: 258 });
-  foe('vulture', 242, 22, 'hawk', { cnSkin: 'craghawk' });                      /* the crag hawk circles over R3: its shadow kills it for a beat */
-  rock(265, 298, 18);                                                           /* THE FAR CLIFF */
-  foe('slinger', 268, 17, 'cliffSling', { face: -1, cnSkin: 'gobslinger' });
+  foe('crow', 262, 14, 'crows', { ph: 0 }); foe('crow', 267, 15, 'crows', { ph: 1.3 }); foe('crow', 272, 13, 'crows', { ph: 2.1 });   /* A STRING OF CRAG CROWS (the moor's): they come west over R3 and R4, and a crow's shadow on a thermal kills it for a beat */
+  rock(265, 298, 18); plank(268, 280, 14); rock(285, 288, 16); rock(291, 292, 16);                  /* THE FAR CLIFF, the riders' racks over it, a fallen block */
+  foe('rockgoblin', 268, 17, 'cliffSling', { face: -1, cnSkin: 'gobslinger' });
   ent('check', 278, 17);                                                        /* CHECKPOINT THREE */
 
   // ================= 4. THE BROKEN SKY BRIDGE (298-388): THE SUN-DISC, then THE EXAM =================
@@ -120,7 +126,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   pinnacle(303, 15, 'disc:disc', { order: 0 }); pinnacle(310, 14, 'disc:disc', { order: 1 }); pinnacle(317, 13, 'disc:disc', { order: 2 }); pinnacle(324, 12, 'disc:disc', { order: 3 });
   cloudBank(300, 330, 5, 14, 14, 10);
   foe('kiterider', 314, 6, 'discRiders', { home: 317 }); foe('kiterider', 326, 5, 'discRiders', { home: 324 });
-  rock(333, 345, 16);                                                           /* THE EAST TOWER */
+  rock(333, 345, 16); plank(335, 343, 13);                                     /* THE EAST TOWER, its broken parapet */
   foe('horn', 336, 15, 'towerHorn', { face: -1 }); foe('shield', 340, 15, 'towerHead', { face: -1 }); foe('archer', 344, 15, 'towerHead', { face: -1 });
   /* THE EXAM: the broken spans - cracked stone that goes three beats after you land - between thermals you wake and thermals the clouds take */
   crumble(349, 353, 20); stone(352, 19, 's4');                                  /* SPAN A, and a stone ON it: turn it before the span goes */
@@ -134,7 +140,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   for (let y = 6; y <= 10; y++) set(365, y, T.SOLID); vaultDoors.push({ x0: 365, x1: 365, y0: 6, y1: 10 });
   ent('loft', 367, 10); ent('silver', 361, 10); foe('goat', 368, 10, 'loftGoat', { face: -1 });
   crumble(376, 379, 17);                                                        /* SPAN C */
-  rock(381, 389, FL); ent('check', 383, FL - 1);                                /* THE EYRIE DOOR, CHECKPOINT FOUR */
+  rock(381, 389, FL); plank(382, 386, 15); ent('check', 383, FL - 1);                                /* THE EYRIE DOOR, CHECKPOINT FOUR */
 
   // ================= 5. THE EYRIE (390-440): THE ROC =================
   const [A0, A1] = SKYROAD.arena;
@@ -143,14 +149,15 @@ export function buildSkyRoad({ painter, T, TS }) {
   for (const x of [A0 + 1, A0 + 2, A1 - 2, A1 - 1]) set(x, FL - 1, T.SPIKE);   /* THE THORNY RIM: her gale walks you onto it */
   thermal(A0 + 6, FL - 1, 4, null, { arena: true }); thermal(A1 - 6, FL - 1, 4, null, { arena: true });   /* the rim thermals */
   thermal(415, FL - 1, 5, 'stone:s5', { arena: true }); stone(411, FL - 1, 's5');   /* the nest's own: a stone you turn (phase two's storm leaves only this) */
-  ent('mast', 402, FL - 1); ent('mast', 428, FL - 1);                           /* THE IRON KITE-MASTS: lightning's in phase two */
+  ent('mast', 401, FL - 1); ent('mast', 418, FL - 1); ent('mast', 432, FL - 1);   /* THE IRON KITE-MASTS: lightning's in phase two */
+  plank(A0 + 3, A0 + 8, 9); plank(A1 - 8, A1 - 3, 9);                           /* her old roosts over the rim thermals: a perch to plunge from */
   ent('roc', 415, FL - 1);
   const nest = [404, 426];                                                      /* the woven boards: her dive sticks in them */
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'roc', music: 'roc', tint: '#9ab8e0', tintA: 0.06,
     start: [A0 + 3, FL - 1], nest: [nest[0] * TS, (nest[1] + 1) * TS], eyrie: true };
 
   // ================= the road down =================
-  rock(447, 452, FL + 3); rock(453, 459, FL + 6); ent('gate', 456, FL + 5);
+  rock(447, 452, FL + 3); rock(453, 459, FL + 6); plank(449, 456, FL); ent('gate', 456, FL + 5);
 
   const START = { x: 4, y: 45 };
   return {

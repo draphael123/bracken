@@ -29,13 +29,17 @@ export function makeRocEyrie(ctx) {
   const tell = (e, mode, t, mark) => { e.mode = mode; e.modeT = t; if (mark) ctx.number(e.x, e.y - 40, mark, mark === '!!' ? '#ff6b6b' : '#ffd36b'); };   /* the mark is src/marks.js's: a red !! nothing turns, a yellow ! a shield turns, none for a windup that strikes nobody */
   const onNest = (x) => { const n = L().arena.nest; return n && x >= n[0] && x <= n[1]; };
   const fly = e => { e.mode = 'fly'; e.modeT = EYRIE.rest[e.phase === 2 ? 1 : 0]; };
-  const open = (e, mode, t, say) => { e.mode = mode; e.modeT = t; e.vy = 0; e.ward = 0; F.n.opens++; ctx.number(e.x, e.y - 44, say, '#8fd160'); ctx.shake(6); ctx.zoomKick && ctx.zoomKick(); ctx.sfx.queenShriek(); ctx.burst(e.x, e.y - 14, 18, ['#bfe6f5', '#eefaff', '#8a8478'], 90, 0.6); };
+  const open = (e, mode, t) => { e.mode = mode; e.modeT = t; e.vy = 0; e.ward = 0; F.n.opens++; ctx.shake(6); ctx.zoomKick && ctx.zoomKick(); ctx.sfx.queenShriek(); ctx.burst(e.x, e.y - 14, 18, ['#bfe6f5', '#eefaff', '#8a8478'], 90, 0.6); };
   /* clouds she drags: { x, t } - the thermal under one dies while it lasts (src/sky-road-hands.js rocShade) */
   H.shade = pr => { if (!F || !pr.arena) return false; const t = ctx.time();
     if (F.storm && !pr.src) return true;
     return F.clouds.some(c => t < c.until && Math.abs(c.x - pr.x) < 40); };
   H.read = () => F ? { mode: F.e.mode, phase: F.e.phase, ward: F.e.ward || 0, storm: !!F.storm, clouds: F.clouds.length, bolt: F.bolt, n: { ...F.n } } : null;
   H.open = rocEyrieOpen;
+  /* a plunge's blow on her (main.js hurtEnemy0): the game turns it into a pogo off her back and staggers her in the same frame, so it is read here, at the blow */
+  H.plungeHit = e => { if (!F || F.e !== e || rocEyrieOpen(e) || ['wake', 'sleep', 'dive', 'carry'].includes(e.mode) || e.y > F.A.floor - 20) return;
+    if (e.ward > 0) { if (!e.warnWard) { e.warnWard = true; ctx.number(e.x, e.y - 40, 'HER FEATHERS ARE UP', '#ffb070'); } return; }
+    F.n.plunges++; open(e, 'downed', EYRIE.downed); ctx.number(e.x, e.y - 44, 'THE ROC  KNOCKED DOWN', '#8fd160'); };
 
   H.update = (e, dt) => {
     const f = fight(e), A = f.A, floor = A.floor, P = ctx.hero(), cx0 = (A.x0 + A.x1) / 2;
@@ -43,9 +47,9 @@ export function makeRocEyrie(ctx) {
     if (!e.phase) e.phase = 1;
     if (e.phase === 1 && e.hp <= e.maxHp / 2 && !rocEyrieOpen(e)) { e.phase = 2; f.cyc = 0; f.i = 0; tell(e, 'stormTell', 1.2, ''); ctx.number(e.x, e.y - 56, 'THE STORM ROLLS IN', '#bfe6f5'); }
     /* THE THERMAL PLUNGE: a plunge that comes down on her back in the air, out of her ward, knocks her down - the level's verb */
-    if (!rocEyrieOpen(e) && !['wake', 'sleep', 'dive', 'carry'].includes(e.mode) && P && !P.dead && P.plunge && P.vy > 0 && Math.abs(P.x - e.x) < 30 && P.y < e.y + 8 && P.y > e.y - 40) {
+    if (!rocEyrieOpen(e) && !['wake', 'sleep', 'dive', 'carry'].includes(e.mode) && P && !P.dead && !P.ground && P.plunge && P.vy > 0 && Math.abs(P.x - e.x) < 30 && P.y < e.y + 8 && P.y > e.y - 40) {
       if (e.ward > 0) { if (!e.warnWard) { e.warnWard = true; ctx.number(e.x, e.y - 40, 'HER FEATHERS ARE UP', '#ffb070'); } }
-      else { f.n.plunges++; P.vy = -200; P.plunge = false; ctx.hurt(e, 20, P.x); open(e, 'downed', EYRIE.downed, 'THE ROC  KNOCKED DOWN'); }
+      else { f.n.plunges++; P.vy = -200; P.plunge = false; ctx.hurt(e, 20, P.x); open(e, 'downed', EYRIE.downed); ctx.number(e.x, e.y - 44, 'THE ROC  KNOCKED DOWN', '#8fd160'); }
     }
     /* THE LIGHTNING (phase two): a told crackle at a mast, then the bolt down it - she is knocked down if she perches on it, and it bites you at its foot */
     if (e.phase === 2 && f.storm) { f.boltT -= dt;
@@ -53,7 +57,7 @@ export function makeRocEyrie(ctx) {
       if (f.bolt) { f.bolt.t -= dt; if (f.bolt.t <= 0) { const m = f.bolt.m; f.bolt = null; f.boltT = EYRIE.boltEvery; f.n.bolts++; ctx.shake(8); ctx.flash && ctx.flash(); ctx.sfx.thunder ? ctx.sfx.thunder() : ctx.sfx.crack();
           ctx.burst(m.x, floor - 10, 20, ['#ffffff', '#bfe6f5', '#ffe9a0'], 120, 0.6); f.lastBolt = { x: m.x, t: ctx.time() };
           if (P && !P.dead && Math.abs(P.x - m.x) < EYRIE.boltReach && P.y > floor - 30) ctx.damage(m.x, 18, { unblockable: true, name: 'THE LIGHTNING' });
-          if (e.mode === 'perch' && e.mast === m && !(e.ward > 0)) { ctx.hurt(e, 20, m.x); open(e, 'downed', EYRIE.downed, 'THE LIGHTNING HAS HER'); } } } }
+          if (e.mode === 'perch' && e.mast === m && !(e.ward > 0)) { ctx.hurt(e, 20, m.x); open(e, 'downed', EYRIE.downed); ctx.number(e.x, e.y - 44, 'THE LIGHTNING HAS HER', '#8fd160'); } } } }
     const next = () => { const list = e.phase === 2 ? CYCLE2[f.cyc % CYCLE2.length] : CYCLE[f.cyc % CYCLE.length]; const m = list[f.i % list.length]; f.i++; if (f.i % list.length === 0) f.cyc++; return m; };
     const tx = () => Math.max(A.x0 + 40, Math.min(A.x1 - 40, P ? P.x : cx0));
     switch (e.mode) {
@@ -73,7 +77,7 @@ export function makeRocEyrie(ctx) {
       case 'dive': e.x += (e.tx - e.x) * Math.min(1, dt * 8); e.y += EYRIE.diveV * dt;
         if (P && !P.dead && e.hitT <= 0 && Math.abs(P.x - e.x) < 22 && Math.abs(P.y - e.y) < 26) { e.hitT = 1; ctx.damage(e.x, ctx.DMG.rocRake, { unblockable: true, up: true, name: 'HER TALONS' }); }
         if (e.y >= floor) { e.y = floor; ctx.dust(e.x, floor, 14); ctx.shake(5);
-          if (onNest(e.x) && !(e.ward > 0)) { f.n.sticks++; open(e, 'stuck', EYRIE.stuck, 'HER TALONS ARE STUCK IN THE NEST'); }
+          if (onNest(e.x) && !(e.ward > 0)) { f.n.sticks++; open(e, 'stuck', EYRIE.stuck); ctx.number(e.x, e.y - 44, 'HER TALONS ARE STUCK IN THE NEST', '#8fd160'); }
           else { e.mode = 'skidUp'; e.modeT = 0.6; ctx.number(e.x, e.y - 40, e.ward > 0 ? 'HER FEATHERS ARE UP' : 'SHE SKIDS ON THE STONE', '#ffb070'); } } break;
       case 'skidUp': e.y -= 140 * dt; if (e.modeT <= 0) { if (e.dives > 1) { e.dives--; e.tx = tx(); tell(e, 'diveTell', EYRIE.diveTell * 0.8, '!!'); } else fly(e); } break;
       case 'gustTell': e.x += ((cx0 - e.side * 120) - e.x) * Math.min(1, dt * 2); if (e.modeT <= 0) { e.mode = 'gust'; e.modeT = EYRIE.gust; ctx.sfx.puff(); } break;

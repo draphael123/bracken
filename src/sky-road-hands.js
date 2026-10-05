@@ -41,7 +41,6 @@ export function makeSkyRoadHands(ctx) {
   };
   /* the cloak survives a death on the level (it is the level's tool, taken once); a new load of the level takes it back off you */
   H.load = () => { S = null; H.reset(); };
-  const say = (key, x, y, line, col) => { if (S.said.has(key)) return; S.said.add(key); ctx.number(x, y, line, col || '#bfe6f5'); };
 
   /* ---------- CLOUDS: each bank's clouds at time t ---------- */
   const cloudsNow = () => { const out = [], t = ctx.time();
@@ -52,7 +51,7 @@ export function makeSkyRoadHands(ctx) {
   const cloudAt = (x, dtAhead) => { const t = ctx.time() + (dtAhead || 0);
     for (const z of (L().clouds || [])) { if (x < z.x0 || x >= z.x1) continue; const P = z.w + z.gap, o = mod(z.phase + z.speed * t, P), rel = mod(x - (z.x0 - z.w + o), P); if (rel < z.w) return true; }
     return false; };
-  const hawkOver = x => ctx.enemies().some(e => e.alive && e.cnSkin === 'craghawk' && e.st && e.st.mode === 'circle' && Math.abs(e.x - x) < 26);
+  const hawkOver = x => ctx.enemies().some(e => e.alive && e.t === 'crow' && e.go && Math.abs(e.x - x) < 18);   /* a crow's shadow crossing a thermal kills it for the beat it takes */
   H.cloudAt = cloudAt;
 
   /* ---------- THE SOURCE: natural, a stone, the disc ---------- */
@@ -109,11 +108,11 @@ export function makeSkyRoadHands(ctx) {
     /* THE HORN CALLS THE RIDERS: every kite-rider in range is called into a swoop the moment a hornblower winds it */
     for (const e of ctx.enemies()) { if (e.t !== 'horn') continue; if (!e.alive || e.mode !== 'blow') { e.skyCall = false; continue; } if (e.skyCall) continue; e.skyCall = true;
       let n = 0; for (const r of ctx.enemies()) if (r.alive && r.t === 'kiterider' && r.st && r.st.fly && Math.abs(r.x - e.x) < 360) { r.st.called = true; n++; }
-      if (n) say('horn', e.x, e.y - 30, 'THE HORN CALLS THE KITE-RIDERS', '#ff9a5c'); }
+      if (n && !S.said.has('horn')) { S.said.add('horn'); ctx.number(e.x, e.y - 30, 'THE HORN CALLS THE KITE-RIDERS', '#ff9a5c'); } }
     /* THE ROC IS DOWN: the cloak goes back on a mast at the Eyrie (the level's tool does not follow you down the road) */
     { const A = L().arena, P = ctx.players()[0]; if (A && S.cloak && !S.hung && P && P.x > A.x0 && !ctx.enemies().some(e => e.t === 'roc' && e.alive)) { S.hung = true; ctx.number(P.x, P.y - 30, 'THE CLOAK GOES BACK ON ITS MAST', '#ffd36b'); } }
     /* a stone the disc lit: say so once */
-    if (S.disc && ctx.time() < S.disc.until && !S.said.has('discRoad')) say('discRoad', S.disc.x, S.disc.y - 50, 'THE DISC TURNS: THE ROAD OF AIR RISES', '#ffd36b');
+    if (S.disc && ctx.time() < S.disc.until && !S.said.has('discRoad')) { S.said.add('discRoad'); ctx.number(S.disc.x, S.disc.y - 50, 'THE DISC TURNS: THE ROAD OF AIR RISES', '#ffd36b'); }
     if (S.disc && S.disc.until > 0 && ctx.time() > S.disc.until && S.disc.until > S.disc.litAt) { S.disc.litAt = -99; S.disc.until = -99; ctx.number(S.disc.x, S.disc.y - 40, 'THE SUN HAS MOVED OFF THE DISC', '#ffb070'); }
   };
 

@@ -27,6 +27,7 @@ export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge', 'skyroa
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
   /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
+  skyroad: ['music'],   /* (claude/skyroad, the greybox) TODO: THE SKY ROAD plays the retired sky ship's track and THE ROC her old track (the Monastery's arena still plays it) as placeholders - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
@@ -173,13 +174,13 @@ export function measure(lv) {
   const scan = (breakOnFoes) => { let best = { n: 0, at: 0, long: 0 }, lo = null, minY = 0, maxY = 0, start = 0, prevX = null, prevY = null;
     const cut = x => { if (lo !== null) { const n = x - start; best.long += n >= LIM.longRun ? n : 0; if (n > best.n) best = { n, at: start, long: best.long }; } lo = null; };
     for (const x of [...cols.keys()].sort((a, b) => a - b)) { if (x >= end) break; const y = cols.get(x);
-      let brk = false;
-      if (prevX !== null) { for (let xx = prevX + 1; xx < x; xx++) if (!supported(xx, prevY) && !supported(xx, y)) brk = true;   /* a gap crossed by a jump */
+      let brk = false, gapAt = null;
+      if (prevX !== null) { for (let xx = prevX + 1; xx < x; xx++) if (!supported(xx, prevY) && !supported(xx, y)) { brk = true; if (gapAt === null) gapAt = xx; }   /* a gap crossed by a jump (or a glide): the run ends where the floor ends, not on the far side (claude/skyroad: a flight over a chasm with no footing in it read as 30-40 columns of flat empty ground) */
         if (!supported(x, y) || Math.abs(y - prevY) >= 2) brk = true; }   /* a step of 2+ */
       if (hazardAt(x, y) || near(gadgetXY, x, y, 6, 6) || inRoom(x)) brk = true;
       if (breakOnFoes && near(allFoes, x, y, 8, 6)) brk = true;
       if (lo !== null && !brk) { minY = Math.min(minY, y); maxY = Math.max(maxY, y); if (maxY - minY >= 2) brk = true; }
-      if (brk) { cut(x); }
+      if (brk) { cut(gapAt !== null ? gapAt : x); }
       if (lo === null && !brk) { lo = x; start = x; minY = maxY = y; }
       else if (lo === null && brk) { lo = x; start = x; minY = maxY = y; }
       prevX = x; prevY = y; }

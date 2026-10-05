@@ -1,10 +1,9 @@
 // src/redraw/skyroad_art.js - THE SKY ROAD's placeholder cast (claude/skyroad, the GREYBOX; the Sonnet art pass redraws it).
-//   bakeSkySets(SPR) -> { kiterider, craghawk, gobslinger }
+//   bakeSkySets(SPR) -> { kiterider, gobslinger }
 //   kiterider   THE GOBLIN KITE-RIDER (the level's one new foe): a goblin in a harness under his war-kite (the kite and its line are drawn by
 //               src/sky-road-hands.js over him while he flies). Frames follow src/sky-road-hands.js riderStep: 0 ride | 1 swoop | 2 falling / sinking |
 //               3 swoop TELL (arms up, the yellow of his eye) | 4-5 walk on foot | 6 kick tell | 7 kick
-//   craghawk    THE CRAG HAWK: the desert vulture's sheet recoloured slate and buff (the vulture's marked dive; on the Sky Road its circling shadow kills a thermal)
-//   gobslinger  THE GOBLIN SLINGER: the caravan slinger's sheet recoloured goblin green with a rag hood (the reskinned shooter)
+//   gobslinger  THE POT-SLINGER: the moor's rock goblin's sheet recoloured to the kite-riders' rags (the reskinned shooter; his AI throws a lit pot)
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten, rgb } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -40,9 +39,7 @@ export function bakeKiteRider() {
 }
 export function bakeSkySets(SPR) {
   const out = { kiterider: bakeKiteRider() };
-  /* THE CRAG HAWK: the vulture's bald pink head and brown body go slate-grey and buff, the hooked beak stays horn */
-  out.craghawk = reskin(SPR.vulture, (r, g, b, l) => (r > 170 && g < 140 && b > 100) ? ['#5a5048', '#a8907a', '#e8d8c0'] : (r >= g && l > 0.18) ? ['#2a2e3a', '#5a6272', '#9aa4b4'] : null);
-  /* THE GOBLIN SLINGER: the slinger's skin goes goblin green, the sand tunic a rag brown, the red scarf a faded kite-cloth red */
-  out.gobslinger = reskin(SPR.slinger, (r, g, b, l) => (r > 150 && g < 100 && b < 110) ? ['#5a1a14', '#a8382a', '#d86a4a'] : (r > 190 && g > 150 && b > 90 && b < 170) ? ['#3a2a1a', '#6a4a32', '#9a7450'] : (r > g + 20 && r > 120 && l > 0.3) ? ['#2a4a1a', '#5a8a3a', '#9ac85a'] : null);
+  /* THE POT-SLINGER: the moor's rock goblin (he throws a lit pot) in a kite-rider's rag hood and harness colours */
+  out.gobslinger = reskin(SPR.rockgoblin, (r, g, b, l) => (r > 150 && g < 100 && b < 110) ? ['#5a1a14', '#a8382a', '#d86a4a'] : (r > 190 && g > 150 && b > 90 && b < 170) ? ['#3a2a1a', '#6a4a32', '#9a7450'] : (r > g + 20 && r > 120 && l > 0.3) ? ['#2a4a1a', '#5a8a3a', '#9ac85a'] : null);
   return out;
 }
