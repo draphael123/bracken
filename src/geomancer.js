@@ -287,7 +287,7 @@ export function makeGeomancer(api) {
       if (!e) { api.number(P.x + P.face * 30, P.y - 24, 'NOTHING TO SEAL', '#9aa39a'); return; }
       if (api.lcBig(e)) { e.disarmOpenT = api.time + 1.5; e.stagger = Math.max(e.stagger || 0, 0.4); api.number(e.x, e.y - (e.h || 16) - 20, 'OPENED UP', STONE.rune); api.SFX.geoBounce(); return; }
       e.frozen = 3; e.stagger = Math.max(e.stagger || 0, 3); e.vx = 0; e.geoTomb = { t: 3, cracks: 0 }; api.SFX.geoRise(); api.number(e.x, e.y - (e.h || 16) - 20, 'ENTOMBED', STONE.hi); },
-    faultLine() { const P = api.P; api.kitPose(P, 'gFault', 0.45); api.SFX.geoQuake(); api.shakeCam(5); faults.push({ x0: P.x + P.face * 8, dir: P.face, len: 0, max: 170, gy: Math.floor((P.y + 1) / TS) * TS, hit: new Set(), life: 0.9 }); },
+    faultLine() { const P = api.P; api.kitPose(P, 'gFault', 0.45); api.SFX.geoQuake(); api.shakeCam(5); for (const d of [P.face, -P.face]) faults.push({ x0: P.x + d * 8, dir: d, len: 0, max: 130, gy: Math.floor((P.y + 1) / TS) * TS, hit: new Set(), life: 0.9 }); },   /* (claude/herokit) THE RIFT splits the floor BOTH ways at once (her innate FAULT LINE is the one long crack ahead) */
     golem() { const P = api.P; api.kitPose(P, 'gGolem', 0.5); api.SFX.geoRise(); golem = { x: P.x + P.face * 22, y: P.y, vy: 0, face: P.face, life: 10, atkT: 0.4, swing: 0, rise: 0 }; api.dust(golem.x, golem.y, 8); },
     avalanche() { const P = api.P; api.kitPose(P, 'gAval', 0.6); api.SFX.geoQuake(); api.shakeCam(6); P.atk = -1;
       const aimed = foes().filter(e => !e.harmless && !e.turncoat && Math.abs(e.x - P.x) < 190 && Math.abs(e.y - P.y) < 120).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x)).slice(0, 6);

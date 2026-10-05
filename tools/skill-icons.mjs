@@ -1,6 +1,6 @@
 /* tools/skill-icons.mjs - EVERY SKILL WEARS ITS OWN ICON, AND NO DESCRIPTION CONTRADICTS THE CODE (docs/ability-audit.md, items 1-4, 18-20).
  *
- * ICONS. The 52 actives each have a drawn icon of their own (nothing falls to the flame default, nothing borrows a
+ * ICONS. The 60 actives each have a drawn icon of their own (nothing falls to the flame default, nothing borrows a
  * sibling's, no two share pixels). The 144 passives each have a row in src/skill-glyphs.js (no regex guess, no sword
  * fallback); a glyph may repeat inside a hero's list (a glyph says what the skill does to you) but never on THE
  * GEOMANCER, whose ten are all different, and the id `sunder` (five heroes, five behaviours) is keyed per hero.
@@ -31,7 +31,7 @@ try {
     prep(); BK.keys.block = true; BK.sim(20); const holdHook = !!BK.P.hookT || BK.P.hookCd > 0; BK.keys.block = false; BK.sim(2); BK.god = false;
     return { total: SKILLS.length, actives: actives.length, dup, fell, missing, extra, wrong, rows, tapParry, tapHook, holdHook };
   })()`);
-  assert.equal(r.actives, 52); assert.equal(r.rows.length + r.missing.length, 144);
+  assert.equal(r.actives, 60); assert.equal(r.rows.length + r.missing.length, 144);
   assert.deepEqual(r.fell, [], 'actives that fall to the default flame icon');
   assert.deepEqual(r.dup, [], 'actives that share an icon');
   assert.deepEqual(r.missing, [], 'passives with no row in src/skill-glyphs.js');
