@@ -64,6 +64,11 @@ ok(DJ.openT >= 3.8 && DJ.bailT >= 4.8 && DJ.mudT >= 3.3 && DJ.mudT <= 3.8 && DJ.
   for (let i = 0; i < 60 * DJ.wardT + 5; i++) DJG.stepDjinn(e, S, 1 / 60, H, c);
   ok(S.ward === 0 && S.burn && DJG.pourAt(e, S, { x: e.x - 50, y: G.floor, face: 1 }, c) === 'open', 'his ward falls and he burns: a pour douses him again'); }
 /* P3: THE BUCKET BAILS HIM WHERE HE IS (claude/djinn2, Daniel 10-03: no teleport - nothing moves you, him, or a platform: you wade in) */
+ok(DJ.bailCap > DJ.openCap && DJ.bailCap <= 0.1, 'a bail (two steps to earn) takes up to ' + DJ.bailCap * 100 + '% of him, a mud or a douse ' + DJ.openCap * 100 + '%');
+/* HE IS FAST - BUT EVERY BLOW IS READABLE (claude/djinn3, Daniel 10-04: "incredibly FAST in the other sections - probably okay, but make sure he's balanced"): every
+   P1/P2 tell is >= 0.5 s (a human's quarter-second to see it and a quarter to answer), the gaps between blows >= 0.5 s */
+{ const tells = { lash: DJ.lashTell, blast: DJ.blastTell, devil: DJ.devilTell, spear: DJ.spearTell, breath: DJ.breathTell, pillar: DJ.pillarTell, firedevil: DJ.fdevilTell };
+  ok(Object.values(tells).every(t => t >= 0.5) && DJ.gap[0] >= 0.5 && DJ.gap[1] >= 0.5, 'his phase-one and phase-two tells: ' + Object.entries(tells).map(([k, t]) => k + ' ' + t).join(', ') + ' s; gaps ' + DJ.gap.slice(0, 2).join(' / ') + ' s - all readable'); }
 /* THE TWO-STEP BAIL (claude/djinn3): in the flood the bucket lies DOWN - a strike winds it up, a strike drops it; on him only under the shaft */
 { let x0 = null, hx = null, wound = 0; const r = run(60, { hp: () => 300, each: (t, e, S, c, h) => {
     if (S.pose === 'column' && S.bucket.st === 'down' && !(S.bucket.t > 0) && !S.n.bailed && e.mode !== 'rise') { if (DJG.strikeWindlass(e, S, c)) wound++; }

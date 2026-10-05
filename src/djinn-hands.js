@@ -106,7 +106,7 @@ export function makeDjinnHands(ctx) {
   /* ---------- A BLOW ON HIM: in a water opening x openMul (one opening takes at most openCap); his slammed hand in phase three, whole (at most handCap a
      slam); anything else passes through sand, is turned by fire, or splashes through water (0) ---------- */
   H.take = (e, dmg) => { if (!S) return dmg; const P = ctx.hero();
-    if (DJG.djOpen(e)) { const cap = e.maxHp * DJ.openCap, d = Math.min(dmg * DJ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
+    if (DJG.djOpen(e)) { const cap = e.maxHp * (e.mode === 'bailed' ? DJ.bailCap : DJ.openCap),   /* (claude/djinn3: a bail, two steps to earn, takes up to bailCap) */ d = Math.min(dmg * DJ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
       if (S.openTaken >= cap - 0.01 && e.open > 0.4) { e.open = 0.4; ctx.number(e.x, e.y - 90, e.mode === 'mud' ? 'THE MUD CRACKS: HE IS SAND AGAIN' : 'HE GATHERS HIMSELF', '#9aa39a'); } return d; }
     if (e.mode === 'sleep' || e.mode === 'wake') return 0;
     if (DJG.TURNING.has(e.mode)) { e.passFx = 0.25; return 0; }   /* (claude/djinn3) HE IS TURNING: nothing takes, nothing is said - a breather both ways */

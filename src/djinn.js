@@ -34,10 +34,12 @@
 
 export const DJ = {
   hp: 1000, w: 34, h: 64, markH: 92,
-  openMul: 2.5, openT: 4.0, mudT: 3.5, bailT: 5.0, openCap: 0.07,   /* a water opening: x openMul, one takes no more than openCap of him (claude/djinn3,
-                                                                    Daniel 10-04 "a little too hard": MORE DAMAGE WHEN STUNNED x1.9 -> x2.5, and STUNNED
-                                                                    LONGER - mud 2.5 -> 3.5 s, the douse 3.2 -> 4.0, the bail 4.2 -> 5.0; the cap
-                                                                    0.0525 -> 0.07 so a full opening is a real bite and never a one-shot) */
+  openMul: 2.5, openT: 4.0, mudT: 3.5, bailT: 5.5, openCap: 0.0525, bailCap: 0.075,   /* a water opening: x openMul, one takes no more than openCap of him
+                                                                    (claude/djinn3, Daniel 10-04 "a little too hard": MORE DAMAGE WHEN STUNNED x1.9 -> x2.5,
+                                                                    and STUNNED LONGER - mud 2.5 -> 3.5 s, the douse 3.2 -> 4.0, the bail 4.2 -> 5.5. The cap
+                                                                    stays 0.0525 a mud or a douse - x2.5 over a longer window fills it far sooner, and a
+                                                                    full one is never a one-shot - and a BAIL, two steps to earn (wind, then drop it on him
+                                                                    under the shaft), takes up to bailCap. Tuned on the human bot, 20 seeds a hero) */
   collapseT: 1.3, reformT: 1.7, hissT: 1.4,      /* THE TURNS (claude/djinn3, Daniel 10-04 "no phase-transition animation"): P1->P2 the sand COLLAPSES (collapseT)
                                                     and RE-FORMS as fire (reformT); P2->P3 the fire HISSES to steam (hissT) and he RISES from the water (floodT). Told:
                                                     a banner, the camera shakes, and nothing hits you while he turns (a breather) */
@@ -65,7 +67,7 @@ export const DJ = {
   tideLow: 8.0, surgeTell: 1.6, tideRise: 1.4, tideHigh: 5.0, tideEbb: 1.6, overLedge: 14, deepTick: 0.8,
   /* THE COLUMN ROAMS (claude/djinn3): in the flood he moves between his blows - to the shaft for the wave, the whirlpool and to DRAW (wellT s, under the
      shaft's light), toward you for the rest. The bucket bails him only if he is UNDER THE SHAFT (shaftR px of its middle) when it lands */
-  colWalk: 100, shaftR: 30, wellT: 1.8,
+  colWalk: 100, shaftR: 30, wellT: 2.2,
   /* HE STRIKES UP FROM BELOW (claude/djinn3): bubbles boil under you (upTell), his fist bursts up through the water - or the ledge's boards - where you
      stood, and rests there upStay s (his hand: strike it) */
   upTell: 0.9, upT: 0.25, upR: 20, upStay: 1.4,
@@ -73,10 +75,10 @@ export const DJ = {
   waveTell: 0.8, waveSpeed: 210, boreH: 34, crestH: 18,
   slamTell: 0.8, slamT: 0.25, slamStay: 1.5, handR: 16, handCap: 0.06, handMul: 1.0,
   whirlTell: 0.9, whirlT: 3.2, whirlPull: 72, whirlR: 30, whirlTick: 0.5,
-  bucketFall: 0.55, bucketCd: 2.5, windT: 1.5, pourR: 66,   /* THE BAIL IS TWO STEPS (claude/djinn3): in the flood the great bucket lies DOWN in the
+  bucketFall: 0.55, bucketCd: 1.5, windT: 1.5, pourR: 66,   /* THE BAIL IS TWO STEPS (claude/djinn3): in the flood the great bucket lies DOWN in the
                                                     water - strike the windlass (or the crank) and it WINDS UP (windT s) and hangs cocked; strike again and it DROPS
                                                     (bucketFall s) - on him only if he is under the shaft. After it lands the rope settles bucketCd s */
-  dmg: { lash: 17, blast: 8, devil: 24, spear: 19, flash: 17, breath: 22, pillar: 20, fdevil: 11, heat: 6, burn: 3, spout: 16, held: 24, wave: 26, slam: 26, whirl: 10, flood: 1, deep: 4, upsurge: 22 },
+  dmg: { lash: 17, blast: 8, devil: 24, spear: 19, flash: 17, breath: 22, pillar: 20, fdevil: 11, heat: 6, burn: 3, spout: 16, held: 24, wave: 26, slam: 26, whirl: 10, flood: 1, deep: 3, upsurge: 22 },
 };
 export const CYCLES = {
   1: [['lash', 'spears', 'devil', 'blast'], ['devil', 'lash', 'spears', 'lash', 'blast'], ['blast', 'spears', 'lash', 'devil'], ['spears', 'lash', 'devil', 'blast', 'lash']],
