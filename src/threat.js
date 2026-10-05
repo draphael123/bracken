@@ -138,6 +138,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE SANDWORM (claude/desertfoes, src/desert-foes2.js): the sand goblin's buried strike with the Dune Worm's told ripple and an open beat after it: a 2.5 */
   sandworm: 2.5,
   waterthief: 3, cisternqueen: 6, gangleader: 5, qwindlass: 0, djwindlass: 0, djinn: 6, skinwell: 0, mudwall: 0, oilfire: 0, windlass: 0, cistern: 0,
+  sconce: 0, nestplug: 0, greatlamp: 0, fountain: 0,   /* THE UNDERWELL (claude/underwell): its wall torches, brood nests, great lamp and dry fountain are things you work, not foes */
   /* THE RED GORGE (src/red-gorge.js, claude/redgorge): the CLIFF RAPTOR is the vulture's dive (a 2) over a bridge with a flood under it: a 2.5. THE GREAT RED CRAB is a
      boss: a 6. The gorge's sluice wheels, jams, water-wheels and the old nest fight nobody */
   raptor: 2.5, gorgecrab: 6, sluice: 0, jam: 0, waterwheel: 0, oldnest: 0,

@@ -123,7 +123,7 @@ export function stageDjinn(W, T, TS, sx, F, top, o = {}) {
   ent('djwindlass', sx + STAGE.windlass, F - 1, {});
   ent('djwindlass', ex - 1 - STAGE.crank, lr - 1, { crank: true });
   ent('djinn', sx + 26, F - 1, { face: -1 });
-  const arena = { x0: sx * TS, x1: ex * TS, floor: F * TS, trigger: (sx + 4) * TS, wallL: sx - 1, wallR: ex, boss: 'djinn', music: 'cisternqueen',
+  const arena = { x0: sx * TS, x1: ex * TS, floor: F * TS, trigger: (sx + 4) * TS, wallL: sx - 1, wallR: ex, boss: 'djinn', music: 'djinn',   /* (claude/underwell: his own theme, src/boss-music.js; the Queen has hers back) */
     tint: '#9ab0c0', tintA: 0.08, start: [sx + 9, F - 1], y0: (vault - 2) * TS, y1: (F + 2) * TS, djinn: { sx, F, vault, top, lr } };
   return { arena, ladders };
 }

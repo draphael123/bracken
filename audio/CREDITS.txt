@@ -240,6 +240,11 @@ THE RED GORGE (2026-10-02, claude/redgorge-fix, Daniel's pick; the file fetched 
   (-1.5 dBFS) to about -12.4 LUFS integrated like the rest of the library; encoded to OGG Vorbis q4 stereo.
 - gorgecrab (no file) = THE GREAT RED CRAB's theme, synthesised for this game (src/boss-music.js): a clacking stop-start march at 110 bpm over a Phrygian drone.
 
+THE UNDERWELL (2026-10-05, claude/underwellart, Daniel's pick; the file was fetched by the coordinator with his yes - the lane downloaded nothing):
+- underwell.ogg = "Ossuary 6 - Air" by Kevin MacLeod, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://incompetech.com - THE UNDERWELL's level track.
+  Credit, exactly as the licensor asks: "Ossuary 6 - Air" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/
+  Changes: the first 150 s only, with a 4 s fade-out; mono; encoded to OGG Vorbis q2.
+
 THE UNDEAD ARCHMAGE (2026-10-04, claude/archmage2b, Daniel's pick; the file was on disk with his yes - the lane downloaded nothing):
 - undeadmage.ogg = "Colossal Boss Battle Theme" by Matthew Pablo (http://www.matthewpablo.com), Creative Commons Attribution 3.0
   (CC BY 3.0, CREDIT REQUIRED) - https://opengameart.org/content/colossal-boss-battle-theme - "Blackmoor Colossus Loop.wav", the loop

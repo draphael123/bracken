@@ -223,7 +223,7 @@ try {
    take('bailed',()=>S.ph===3&&S.pose==='column'&&b.mode!=='rise'&&((S.bucket.st==='down'&&!(S.bucket.t>0))||(S.bucket.st==='up'&&Math.abs(b.x-G.mid)<=24&&!(S.ward>0))),()=>{P.x=G.crank-12;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=1;if(P.atk<0)BK.press('atk');});
    out.djinn={alone:+alone.toFixed(1),open:op,n:{mud:S.n.mud,doused:S.n.doused,bailed:S.n.bailed}};}
   if(LEVELS.some(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}))
-  {const b=boot('welltown');const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
+  {const b=boot(LEVELS.find(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}).id);const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let dry=0;for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}P.skin.sips=3;P.x=b.x-60;P.face=1;BK.press('talk');for(let i=0;i<30;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const drySips=P.skin.sips;
    const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}

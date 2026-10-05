@@ -106,6 +106,11 @@ export const CALL_LINES = new Set([
   'WATER PUTS IT OUT', 'THE PATCH GOES OUT', 'VENOM: YOUR STAMINA COMES BACK SLOWER', 'THE HORN DRIVES IT UNDER', 'THE FLOOD DOUSES THE FUSE',
   /* claude/moor2: GALE MOOR's WIND ROCKS and GOBLIN SCAFFOLDS (src/moor-rocks-hands.js) - the crevice's throw, the wind that takes a struck goblin, the frame */
   'THE CREVICE THROWS YOU UP', 'THE WIND TAKES HIM', 'IT SWAYS BACK: IT WANTS THE GUST', 'THE WIND LAYS THE FRAME OVER THE GAP',
+  /* claude/underwell: THE UNDERWELL's oil, torches, great lamp, nests, drips, ropes, fountain and its four scorpions (src/underwell-hands.js); a drip (src/well-town-hands.js) */
+  'THE OIL CATCHES', 'WET OIL: IT WILL NOT CATCH', 'THE OIL FIRE GOES OUT', 'THE FOUNTAIN RUNS: ITS VAULT OPENS', 'THE DRY FOUNTAIN WANTS THREE BRASS TAPS',
+  'THE BROOD WILL NOT CROSS FIRE', 'THE HEAT DRIVES IT UNDER', 'IT LEAVES A SLICK OF OIL', 'GRIT IN YOUR EYES', 'IT DRINKS FROM YOUR SKIN', 'IT SMELLS THE WATER IN YOUR SKIN',
+  'THE CHAIN GIVES', 'THE GREAT LAMP FALLS: THE HALL BURNS', 'THE NEST BURNS AWAY', 'THE FIRE BOILS THE DRIP DRY', 'THE ROPE BURNS TO ASH', 'ITS FIRE TAKES THE OIL',
+  'THE OIL BURNS: GET OUT OF IT', 'LAMP OIL ON THE FLOOR: IT BURNS', 'A WALL TORCH OVER THE OIL', 'A DRIP: ONE SIP', 'THE NEST SPILLS ITS BROOD', 'THE NEST SPITS VENOM: BURN IT', 'A SPARE ROPE UNCOILS', 'HER WARD: WATER AND BLADES RUN OFF HER',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the

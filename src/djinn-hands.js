@@ -44,7 +44,7 @@ export function makeDjinnHands(ctx) {
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, ducking: !!pp.ducking, onLedge: onLedgeOf(pp, S.G), climb: !!pp.climb, pp }));
   function world(e) {
     return {
-      number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), music: ph => ctx.music && ctx.music(ph === 3 ? 'cisternqueen:p3' : 'cisternqueen:p2'),
+      number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), music: ph => ctx.music && ctx.music(ph === 3 ? 'djinn:p3' : 'djinn:p2'),
       banner: (t, sub, col) => { if (S) S.n.banners = (S.n.banners || 0) + 1; if (ctx.banner) ctx.banner(t, sub, col); },   /* (claude/djinn3) THE TURN's banner, over the screen */
       mark: m => ctx.number(e.x, e.y - (S.pose === 'column' ? 150 : DJ.markH), m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       fx: (k, x, y) => {

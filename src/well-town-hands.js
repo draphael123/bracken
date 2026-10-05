@@ -11,7 +11,7 @@ export const WORKS = { tremorTop: 10, tremorBottom: 3.5, shakeTop: 1, shakeBotto
 export const SKINMAX = 3, WELL_R = 24, POUR_R = 48, DRINK_AT = 0.2;
 export const BUCKET = { down: 80, up: 64 };                      /* px/s: the brake off, it runs down; wound, it comes up slower */
 export const THIEF = { hp: 26, run: 96, runT: 3.5, dmg: 6 };     /* THE WATER-THIEF: lighter than the cutthroat, and quicker away */
-export const FIRE = { tick: 0.7, dmg: 3, reach: 6 };             /* a barricade's heat, a tick at its face */
+export const FIRE = { tick: 0.7, dmg: 3, reach: 6, oilDmg: 18 };   /* a barricade's heat, a tick at its face (oilDmg: THE UNDERWELL's old oil fires, deep lamp oil - claude/underwell: pour from a step away) */
 export const DEEP = { wind: 2.0 };                               /* THE DEEP WELL (the exam's): a blow on its windlass winds its bucket up in this long, and a fill sends it down again */
 export const FOLLOW = { after: 1.6 };                            /* THE GREAT WELL's ride is contested: this long after the bucket goes, the well head's men are down the shaft after you */
 /* THE STEAM WORKS' VENTS (claude/djinn3): a vent on its rhythm GLOWS (told) for glow s, then JETS for jet s, then rests; a jet costs dmg (steam: steamDmg)
@@ -28,11 +28,11 @@ export function makeWellTownHands(ctx) {
 
   /* ---------- RESET: a fresh load is a fresh town; a respawn keeps what was poured (the walls stay open, the cistern stays full) ---------- */
   H.reset = () => {
-    const L = ctx.L; if (!L || !L.welltown) { WT = null; return; }
+    const L = ctx.L; if (!L || !(L.welltown || L.skinRule)) { WT = null; return; }   /* (claude/underwell: THE UNDERWELL carries the skin too - L.skinRule) */
     if (!WT || WT.L !== L) {
       const TS = ctx.TS, ents = L.ents;
       WT = { L, said: {}, n: { fills: 0, pours: 0, drinks: 0, walls: 0, fires: 0, stolen: 0, back: 0, rides: 0 },
-        wells: ents.filter(e => e.t === 'skinwell').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, arena: !!e.arena, deep: !!e.deep, up: false, wind: 0, jar: e.jar ? (e.sips || 1) : 0, left: e.jar ? (e.sips || 1) : 0 })),
+        wells: ents.filter(e => e.t === 'skinwell').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, arena: !!e.arena, deep: !!e.deep, up: false, wind: 0, jar: e.jar ? (e.sips || 1) : 0, left: e.jar ? (e.sips || 1) : 0, drip: !!e.drip })),
         walls: (L.mudWalls || []).map(m => ({ ...m, open: false })),
         fires: [], cistern: null, vault: (L.vaultDoors || []).map(m => ({ ...m, open: false })), windlasses: [], carriers: new Set(), vt: 0,
         vents: ents.filter(e => e.t === 'flamevent').map(e => ({ x0: e.x, x1: e.x + (e.w || 1) - 1, y0: e.y - (e.h || 5) + 1, y1: e.y, period: e.period || 3.6, phase: e.phase || 0, always: !!e.always, steam: !!e.steam, capT: 0, st: 'rest', cd: 0, lit: false })) };
@@ -89,7 +89,7 @@ export function makeWellTownHands(ctx) {
     if (w && w.deep && !w.up && sk.sips < sk.max) { ctx.number(P.x, P.y - 30, 'THE BUCKET IS DOWN: STRIKE THE WINDLASS', '#ffd36b'); ctx.sfx.buzz && ctx.sfx.buzz(); return true; }
     /* a FULL skin at a well falls through to the pour (or the drink): beside a spring in her hall, E at the Queen must pour, not be swallowed */
     /* A WATER JAR: what is in it (a sip), once a life - not a well */
-    if (w && w.jar) { if (w.left > 0 && sk.sips < sk.max) { const n = Math.min(w.left, sk.max - sk.sips); w.left -= n; sk.sips += n; WT.n.jars = (WT.n.jars || 0) + 1; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 5, ['#7ab8e8', '#e8f4f8'], 40, 0.4); ctx.number(P.x, P.y - 30, 'A JAR: ONE SIP', '#7ab8e8'); return true; } }
+    if (w && w.jar) { if (w.left > 0 && sk.sips < sk.max) { const n = Math.min(w.left, sk.max - sk.sips); w.left -= n; sk.sips += n; WT.n.jars = (WT.n.jars || 0) + 1; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 5, ['#7ab8e8', '#e8f4f8'], 40, 0.4); if (w.drip) ctx.number(P.x, P.y - 30, 'A DRIP: ONE SIP', '#7ab8e8'); else ctx.number(P.x, P.y - 30, 'A JAR: ONE SIP', '#7ab8e8'); return true; } }
     else if (w && sk.sips < sk.max) { if (w.deep) w.up = false; sk.sips = sk.max; WT.n.fills++; ctx.sfx.splash && ctx.sfx.splash(); ctx.burst(w.x, w.y - 12, 8, ['#7ab8e8', '#e8f4f8'], 50, 0.5);
       if (!WT.said.full) { WT.said.full = 1; ctx.number(P.x, P.y - 30, 'YOUR SKIN IS FULL: E POURS, E DRINKS', '#7ab8e8'); } return true; }
     const c = WT.cistern;
@@ -170,7 +170,7 @@ export function makeWellTownHands(ctx) {
     /* THE FIRES' HEAT: a tick at a burning barricade's face */
     for (const f of WT.fires) { if (!f.lit) continue; f.cd = Math.max(0, f.cd - dt);
       for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || f.cd > 0) return; const l = f.x0 * 16 - FIRE.reach, r = (f.x1 + 1) * 16 + FIRE.reach;
-        if (P.x + 5 > l && P.x - 5 < r && P.y > f.y0 * 16 && P.y - 14 < (f.y1 + 1) * 16) { f.cd = FIRE.tick; ctx.hurtHero(P.x - (P.face || 1) * 8, FIRE.dmg, { unblockable: true, noKnock: true, name: 'THE FIRE' });
+        if (P.x + 5 > l && P.x - 5 < r && P.y > f.y0 * 16 && P.y - 14 < (f.y1 + 1) * 16) { f.cd = FIRE.tick; ctx.hurtHero(P.x - (P.face || 1) * 8, WT.L.underwell ? FIRE.oilDmg : FIRE.dmg, { unblockable: true, noKnock: true, name: 'THE FIRE' });
           if (!WT.said['f' + f.x0]) { WT.said['f' + f.x0] = 1; ctx.number(P.x, P.y - 30, 'IT BURNS: POUR YOUR SKIN ON IT', '#ff9a5c'); } } }); }
     /* THE MUD WALLS: say what they want, once each, the first time one is in front of you */
     const P = ctx.hero();

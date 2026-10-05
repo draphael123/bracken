@@ -160,6 +160,41 @@ export const STUCK_HANDS = {
     { id: 'rg-narrows-rope', zone: WHOLE, steps: [
       { key: 'narrowsRope', rows: [60, 65.5], colLt: 22, noClimb: true, at: [22, 61], line: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY' } ] },
   ],
+  /* THE UNDERWELL (claude/underwell): every nest, oil fire, torch and rope the route needs glints until it is done (src/underwell-hands.js handsState:
+     nest.<id> shut|open, fire.<col> lit|out, torch.<id> up|fall|down, rope.<id> hung|burnt, lamp up|fall|down, skin some|empty) */
+  underwell: [
+    { id: 'uw-shaft-nest', zone: [12, 36, 20, 44], steps: [
+      { key: 'shaftTorch', is: ['nest.shaft', 'shut'], at: [17, 41], dy: -4, line: 'THE NEST SEALS THE TUNNEL. A TORCH HANGS OVER THE OIL' } ] },
+    { id: 'uw-shaft-fire', zone: [22, 36, 32, 44], steps: [
+      { key: 'shaftDrip', is: ['skin', 'empty'], at: [26, 43], line: 'THE DRIP BY THE WALL: A SIP OF WATER' },
+      { key: 'shaftFire', is: ['fire.33', 'lit'], at: [33, 43], line: 'AN OLD OIL FIRE ACROSS THE TUNNEL' } ] },
+    { id: 'uw-hall-lamp', zone: [60, 24, 96, 43], steps: [
+      { key: 'lamp', is: ['lamp', 'up'], at: [87, 31], glint: 'stall', line: 'THE GREAT LAMP HANGS OVER THE OIL ON ITS CHAIN' } ] },
+    { id: 'uw-hall-nest', zone: [97, 24, 133, 44], steps: [
+      { key: 'hallTorch', is: ['nest.hall', 'shut'], at: [124, 41], dy: -4, line: 'A NEST AT THE BACK OF THE CHAMBER, A TORCH OVER ITS OIL' } ] },
+    { id: 'uw-works-low', zone: [141, 32, 215, 44], steps: [
+      { key: 'worksTorch', is: ['nest.works', 'shut'], rows: [38, 44], at: [176, 41], dy: -4, line: 'A NEST SEALS THE UPPER WORKS. ITS OIL RUNS DOWN HERE' },
+      { key: 'worksRope', is: ['rope.works', 'hung'], at: [160, 40], glint: 'stall', line: 'THE ROPE IS THE WAY UP' },
+      { key: 'worksBack', is: ['rope.works', 'burnt'], at: [211, 40], line: 'THE ROPE IS ASH: THE SCAFFOLDS ON THE EAST WALL' } ] },
+    { id: 'uw-works-up', zone: [157, 22, 239, 29], steps: [
+      { key: 'worksNest', is: ['nest.works', 'shut'], at: [223, 29], line: 'THE NEST SEALS THE WAY EAST. ITS OIL RUNS DOWN THE PIPE' },
+      { key: 'worksFire', is: ['fire.228', 'lit'], at: [228, 29], line: 'AN OLD OIL FIRE ACROSS THE WAY EAST' } ] },
+    { id: 'uw-gutter', zone: [244, 36, 262, 45], steps: [
+      { key: 'gutterTorch', is: ['torch.gutter', 'up'], at: [257, 43], dy: -4, line: 'THE TORCH AT THE MOUTH OF THE OLD GUTTER' } ] },
+    { id: 'uw-exam', zone: [346, 33, 370, 42], steps: [
+      { key: 'examTorch', is: ['nest.exam', 'shut'], at: [364, 40], dy: -4, line: 'A NEST SEALS THE WAY EAST, A TORCH OVER THE OIL' },
+      { key: 'examSpring', is: ['skin2', 'low'], at: [404, 42], line: 'THE SPRING IS PAST THE NEST' },
+      { key: 'examRope', is: ['rope.exam', 'hung'], at: [356, 41], line: 'THE ROPE IS THE WAY UP' },
+      { key: 'examAsh', is: ['rope.exam', 'burnt'], at: [356, 41], line: 'THE ROPE IS ASH: A SPARE WILL COME DOWN' } ] },
+    { id: 'uw-exam-room', zone: [371, 33, 405, 42], steps: [
+      { key: 'examFill', is: ['skin2', 'low'], at: [404, 42], line: 'THE SPRING IS PAST THE NEST' },
+      { key: 'examBack', at: [356, 41], line: 'THE ROPE IS THE WAY UP' } ] },
+    { id: 'uw-exam-fires', zone: [352, 26, 438, 31], steps: [
+      { key: 'examFire1', is: ['fire.420', 'lit'], at: [420, 31], line: 'AN OLD OIL FIRE ACROSS THE WAY' },
+      { key: 'examFire2', is: ['fire.426', 'lit'], at: [426, 31], line: 'A SECOND OIL FIRE BEHIND THE FIRST' } ] },
+    { id: 'uw-shaft', zone: [439, 26, 478, 31], steps: [
+      { key: 'queenShaft', at: [471, 31], glint: 'stall', line: 'THE OLD SHAFT GOES DOWN TO HER CISTERN' } ] },
+  ],
 };
 
 /* THE SIGNS AT THE POINT OF USE (the audit: "a sign AT the point of use; fix wrong verbs"). Kept here, not in the level files, so those stay merge-clean:
