@@ -4,17 +4,13 @@ Base: master 2423ff42. Opus. Four notes from Daniel's phone photos (not committe
 a larger section between the Barrow Rider and the Death Knight (a mud field under arrow volleys with cover you move between), and the
 Death Knight a bit slower and a little less damage.
 
-## 1. THE BACKGROUND THAT LOOKED ODD (photo 1)
-It was the ghost army: `ghostRank` in src/unburied-foes.js drew rows of pale, see-through cloaked men with shields and spears as a band
-across the SKY over the camp (y = (G-13)*16 - cy*0.6), drawn with the play layer, so it sat in front of the tent and the camp props. It is the
-level's rule made visible (each volley zone's army fades when its banner-bearer is cut), so it stays, but redrawn as what it is:
-- **THE HOST ON THE RIDGE** (`drawRidgeArmy`, src/unburied-foes.js; main.js calls it in the backdrop after the far layer and before the chapel-fort
-  and the mid layer). A long low dark ridge across the field at the mid layer's pace (x0.3) with an ember rim, and on it the host as small DARK
-  silhouettes against the dusk - helms with a cold glint, shields, spears with lit points, a standard every ninth man. It is far away and behind
-  every prop now. Over a stretch whose bearer is cut the men fade (as before); when a horn blows the archers among them DRAW and their points go red
-  (the volley's colour, where the volley comes from). The red warn wash and the cover glow over the play are unchanged.
-- REC (built): this. The alternative was to delete the army and show the rule only with the wash - I kept it because it is the rule's drawn state
-  (design standard A3).
+## 1. THE BACKGROUND THAT LOOKED ODD (photo 1) - REMOVED (Daniel's answer, 10-05)
+It was the ghost army: `ghostRank` in src/unburied-foes.js drew rows of pale, see-through cloaked men with shields and spears as a band across the
+SKY over the camp, with the play layer, so it sat in front of the tent and the camp props. A first pass redrew it as dark men on a backdrop ridge;
+Daniel's answer was to remove it entirely, so it is gone (no `ghostRank`, no ridge, no main.js hook).
+- WHICH STRETCHES STILL FIGHT is now read from the stretch itself, which already says it: only a stretch that still fights blows its horn, washes
+  the play red and lights its cover green; a quiet one never does, and "THAT STRETCH OF RIDGE GOES QUIET" is said when its bearer is cut. No
+  backdrop replacement was added - nothing else fitted without putting figures back in the sky.
 
 ## 2. NOTHING FLOATS
 Fixed, each traced in the art:
@@ -62,8 +58,10 @@ chapel 436-505, arena 506-551.
   hits ANY creature in the open, so the dead you draw out of cover are the bowmen's too (a remix: the rule used on the foes). A broken cart.
 - **EXAM (45-71):** mantlet C under THE BREACH (a banner-bearer and two fallen in the mud, two bone archers on the breach itself - the ranged foe),
   the breach four rows high: push C to its foot under the volleys with the dead getting up round you, climb out, drop to the yard.
-- GLINT + 10 s STALL NUDGE on each mantlet (src/stuck-spots.js ub-mantlet-a/b/c, glint 'stall'); a guard held toward the breach also turns an
-  arrow (a blow from the east). Checkpoints: none added - the yard's at 362 is just before it, the next is 484 (worst gap on the route 144).
+- GLINT + 10 s STALL NUDGE on each mantlet (src/stuck-spots.js ub-mantlet-a/b/c, glint 'stall').
+- UNBLOCKABLE (Daniel's answer, 10-05): no guard turns the bailey's volley - only cover (wagons, shield heaps, mantlets). It is told red like every
+  !! in the game: a red !! over each bowman while the horn blows, the red wash, and the first horn says "A HORN ON THE BREACH: NO GUARD TURNS IT,
+  GET BEHIND COVER". tools/unburied-bailey.mjs 2 asserts a guard held toward the breach in the open is hit. Checkpoints: none added - the yard's at 362 is just before it, the next is 484 (worst gap on the route 144).
 - Art: the inner ward's wall behind it is the Order's yard wall run on west (bakeWall takes o.gap); the breach's facade 'ubbreach' (the gate tower's
   stump, the hoarding on four posts that stand on the rubble, the Order's red banner); the bailey's ground is the field's mud kit, not the chapel's flags.
 - ENGINE FIXES it needed: src/push-blocks.js - a hero faster than the block (any run, even a wade) walked into it a little more each frame until his
@@ -73,7 +71,7 @@ chapel 436-505, arena 506-551.
 - **CHECKS:** tools/unburied.mjs 5c (the volley is told and the bailey's own; 50+ columns of mud; three mantlets; both walls four rows; with a REAL
   jump (maxUp 3) from the ladder's foot the fill stops at column 383 without the mantlets and crosses with them; two encounters and a bowman).
   **tools/unburied-bailey.mjs** (new, in the suite, page): told (1.80 s horn, then 1 hit in the open), cover (shields: turned 1, hit 0; mantlet:
-  turned 1, hit 0), push (206 px in 12 s, 0 hits on the hero pushing), a step (over with the mantlet at the foot; not over without), the dead
+  turned 1, hit 0; a guard in the open: hit 1), push (206 px in 12 s, 0 hits on the hero pushing), a step (over with the mantlet at the foot; not over without), the dead
   (a zombie in the open hit, 70 -> 57), glint (ub-mantlet-a nudges once after 10 s). It was red before the push-blocks fix (the mantlet moved 7 px).
 - slopes-trace: unchanged for every level including this one (no rebase).
 
@@ -110,14 +108,14 @@ Tests touched (none weakened): tools/unburied.mjs counts the mantlets among "sie
 - The Death Knight change was measured by the bot only (which already won every fight before it).
 - The level-1 pilot (docs/level1-pilot.json) was not re-stamped (not in the brief; no check failed on it).
 
-## QUESTIONS FOR DANIEL (recommendation first; the rec is what is built)
-1. **The human bot beats the Death Knight 21/21 on today's master, before and after your slower/softer change** - it does not see what you saw.
-   REC: keep your change (your playtest is the gate) and do not counter-tune with health; a small calibration lane should look at why the bot is
-   so good at him (it reads every tell ~250 ms late and rolls the Cleave perfectly) before anyone tunes him against it again.
-   Alternative: restore his blows and tempo and raise nothing, if your next play finds him too soft.
-2. **The mantlet is the required use (four-row walls).** REC: keep. Alternative: drop the barricade in the teach to three rows (a hop) so only
-   the breach needs a mantlet - gentler, but the teach would no longer show the step before the exam asks for it.
-3. **A guard toward the breach turns the bailey's arrows** (the bridges' do the same overhead). REC: keep - Daniel's list of cover was
-   "wagons/mantlets/shields", and a held shield is a shield; it costs stamina and you cannot walk at speed behind it.
-4. **The old ghost army is gone from the sky.** REC: the host on its ridge, as built. Alternative: remove the army entirely and let the red wash
-   alone say which stretch still fights.
+## DANIEL'S ANSWERS (10-05, via the coordinator) - done
+1. The mantlet stays required (four-row walls): kept.
+2. A guard does NOT stop the bailey's arrows: the volley is unblockable now (hurtP), told red with a !! over the bowmen and the first horn's line.
+   Re-run: unburied-bailey (guard in the open is hit), unburied, unburied-fights, unburied-look (all 11), unburied-aloft, hint-shown - green. The
+   level's data did not change (mash-gate: same hash, green) and the mash bot never guards, so its level row stands as stamped.
+3. The ridge army is removed from the background entirely; the "which stretch still fights" read is left to each stretch's own horn, red wash and
+   green cover (no backdrop replacement - see section 1).
+4. The Death Knight keeps this lane's change, no health counter-tune; the bot gap is its own lane.
+
+## QUESTIONS FOR DANIEL
+None open.

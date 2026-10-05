@@ -703,7 +703,7 @@ export function stepBridgeVolley(F, dt, c) {
 /* THE BAILEY'S VOLLEY (claude/unburied4, Daniel's playtest 10-05: "a MUD FIELD under ARROW VOLLEYS with cover you move between"). The Order's dead hold the breach at the bailey's
    east end. In the zone the clock runs: a HORN (yv.horn s: the bowmen on the breach draw, their points go red, the zone washes red, every cover and mantlet in reach is outlined green
    and the lee behind it - the strip on its WEST side - is drawn pale), then THE VOLLEY out of the east. You are covered when a cover prop or a MANTLET stands just east of you on your
-   own floor (yardCover); a guard held toward the breach turns it too (a blow from the east); anything else in the zone is hit - the dead included, so the ones you draw out of cover are
+   own floor (yardCover) - and nothing else: it is UNBLOCKABLE, told red with a !! over the bowmen (a guard does not turn it, Daniel 10-05); anything else in the zone is hit - the dead included, so the ones you draw out of cover are
    the bowmen's as well. Out of the zone the clock waits, so the first horn is never on the first step. */
 export const yardCover = (F, x, y, mantlets = []) => F.covers.some(cv => cv.x >= F.yv.x0 - 40 && cv.x <= F.yv.x1 + 40 && cv.x - x >= -4 && cv.x - x <= 28 && Math.abs(y - cv.y) < 14)
   || mantlets.some(m => { const mx = m.x + m.w / 2; return mx - x >= -2 && mx - x <= 26 && Math.abs(y - (m.y + m.h)) < 14; });
@@ -713,12 +713,12 @@ export function stepYardVolley(F, dt, c) {
   for (const a of F.yArrows) { a.x += a.vx * dt; a.y += a.vy * dt; a.t -= dt; } F.yArrows = F.yArrows.filter(a => a.t > 0); yv.fell = Math.max(0, yv.fell - dt);
   if (!inZ) { yv.t = Math.min(yv.t, yv.period - yv.horn - 1.2); yv.warn = false; return; }
   yv.t += dt; const was = yv.warn; yv.warn = yv.t >= yv.period - yv.horn && yv.t < yv.period;
-  if (yv.warn && !was) { c.sound('horn'); if (!yv.said) { yv.said = true; c.say(P.x, P.y - 40, 'A HORN ON THE BREACH: GET SOMETHING BETWEEN YOU AND IT', '#ff6b6b'); } }
+  if (yv.warn && !was) { c.sound('horn'); if (!yv.said) { yv.said = true; c.say(P.x, P.y - 40, 'A HORN ON THE BREACH: NO GUARD TURNS IT, GET BEHIND COVER', '#ff6b6b'); } }
   if (yv.t < yv.period) return;
   yv.t -= yv.period; yv.n++; yv.fell = 0.7; c.sound('volley');
   for (let i = 0; i < 22; i++) { const tx = P.x - 170 + Math.random() * 300, ty = P.y - 4 - Math.random() * 8, T2 = 0.55 + Math.random() * 0.2; F.yArrows.push({ x: tx + 260 * T2, y: ty - 210 * T2, vx: -260, vy: 210, t: T2 }); }
   if (!P.dead) { if (yardCover(F, P.x, P.y, ms)) yv.covered++; else {
-      const res = c.arrowEast ? c.arrowEast(P.x, yv.dmg, 'THE VOLLEY') : c.hurtP(P.x, yv.dmg, 'THE VOLLEY'); if (res === 'blocked') yv.covered++; else if (res !== false) yv.hits++; } }
+      const res = c.hurtP(P.x + 30, yv.dmg, 'THE VOLLEY'); if (res !== false) yv.hits++; } }   /* UNBLOCKABLE (Daniel 10-05): no guard turns it - only cover does. Told red, like every !! */
   for (const q of c.foes()) if (q.alive && !q.maxHp && q.x > yv.x0 && q.x < yv.x1 && Math.abs(q.y - P.y) < 200 && !yardCover(F, q.x, q.y, ms)) { yv.foes++; c.hurtFoe(q, 12, q.x + 20); }   /* the dead in the open take it too */
 }
 /* THE WHEELED MANTLET (a pushblock with mantlet set): the host's tall timber shield on two small wheels, 20 x 24 - a hero stands on it like any block, and it is a step to a wall */
@@ -855,8 +855,8 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   /* THE GHOST ARMY on the ridge, over every stretch that is still fighting - and nothing over the ones you have ended */
   const fdt = Math.min(0.1, Math.max(0, time - (F.lastDrawT ?? time))); F.lastDrawT = time;
   for (const v of F.volleys) { v.fade = v.quiet ? Math.max(0, (v.fade ?? 1) - fdt / 1.8) : 1; if (v.fade <= 0) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;
-    /* (claude/unburied4) the ranks themselves stand ON THE RIDGE now, in the backdrop (drawRidgeArmy, called by main.js after the mid layer): they hung in the sky over the camp as a band of pale
-       see-through figures in front of the tent - Daniel 10-05, "looks odd" */
+    /* (claude/unburied4, Daniel 10-05: the pale ghost ranks that hung in the sky over the camp "looked odd" - REMOVED, on his word. Which stretches still fight is read from the
+       stretch itself: only a stretch that still fights blows its horn, washes red and lights its cover green, and "THAT STRETCH OF RIDGE GOES QUIET" says when one stops) */
     if (v.warn && !v.quiet) { const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.07 + 0.08 * k; R(g, x0, 0, x1 - x0, VH, '#ff6b6b'); g.globalAlpha = 1;
       /* (C5: the escape, lit from inside the danger - every cover prop in reach glows: drawn after the cover, below) */ } }
   for (const a of F.arrows) { const x = Math.round(a.x - cx), y = Math.round(a.y - cy); R(g, x, y - 7, 1, 7, '#5a4a36'); R(g, x - 1, y - 8, 3, 2, '#c8b6ff'); }
@@ -912,7 +912,7 @@ function drawYard(g, F, cx, cy, time, VW, VH) {
   const k = 0.5 + 0.5 * Math.sin(time * 16);
   for (const [ax, ay] of yv.archers || []) { const x = Math.round(ax * TS + 8 - cx), fy = Math.round((ay + 1) * TS - cy); if (x < -20 || x > VW + 20) continue;
     g.globalAlpha = 0.85; R(g, x - 3, fy - 15, 6, 11, '#3a3448'); R(g, x - 2, fy - 4, 2, 4, '#2a2632'); R(g, x + 1, fy - 4, 2, 4, '#2a2632'); R(g, x - 2, fy - 19, 5, 5, '#5a5468'); R(g, x - 1, fy - 17, 3, 1, '#c8b6ff');   /* a bowman of the Order, dead: mail gone grey, the violet in his eyes */
-    if (yv.warn) { R(g, x - 6, fy - 22, 1, 12, '#6a5236'); R(g, x - 5, fy - 23, 1, 2, '#6a5236'); R(g, x - 5, fy - 11, 1, 2, '#6a5236'); R(g, x - 5, fy - 17, 4, 1, '#c8c0b0'); g.globalAlpha = 0.5 + 0.5 * k; R(g, x - 8, fy - 18, 2, 3, '#ff6b6b'); }   /* the bow drawn, the point red */
+    if (yv.warn) { text2(g, '!!', x, fy - 34, '#ff6b6b'); R(g, x - 6, fy - 22, 1, 12, '#6a5236'); R(g, x - 5, fy - 23, 1, 2, '#6a5236'); R(g, x - 5, fy - 11, 1, 2, '#6a5236'); R(g, x - 5, fy - 17, 4, 1, '#c8c0b0'); g.globalAlpha = 0.5 + 0.5 * k; R(g, x - 8, fy - 18, 2, 3, '#ff6b6b'); }   /* the bow drawn, the point red */
     else { R(g, x + 3, fy - 16, 1, 12, '#6a5236'); }   /* the bow at his side */
     g.globalAlpha = 1; }
   if (yv.warn) { const x0 = Math.max(0, yv.x0 - cx), x1 = Math.min(VW, yv.x1 - cx); if (x1 > x0) { g.globalAlpha = 0.07 + 0.08 * k; R(g, x0, 0, x1 - x0, VH, '#ff6b6b'); g.globalAlpha = 1; }
@@ -921,34 +921,6 @@ function drawYard(g, F, cx, cy, time, VW, VH) {
     for (const m of F.ms || []) { const sx = Math.round(m.x + m.w / 2 - cx); if (sx < -40 || sx > VW + 40) continue; lee(sx, Math.round(m.y + m.h - cy), m.w + 4, m.h + 2); } }
   for (const a of F.yArrows) { const x = Math.round(a.x - cx), y = Math.round(a.y - cy); for (let q = 0; q < 6; q++) R(g, x + q, y - Math.round(q * 0.8), 1, 1, '#5a4a36'); R(g, x - 1, y, 2, 2, '#c8b6ff'); }
   if (yv.fell > 0) { g.globalAlpha = yv.fell; for (let i = 0; i < 8; i++) { const x = Math.round(yv.x0 + ((i * 397 + yv.n * 131) % Math.max(1, yv.x1 - yv.x0)) - cx); if (x < 0 || x > VW) continue; R(g, x, Math.round((F.G + 2) * TS - cy) - 7, 1, 7, '#6a5236'); } g.globalAlpha = 1; }   /* arrows left standing in the mud */
-}
-/* THE HOST ON THE RIDGE (claude/unburied4, Daniel 10-05: the old ranks - pale see-through cloaks and shields hung in the sky over the camp, in front of the tent - "looked odd").
-   The army that looses the volleys now STANDS ON A RIDGE, in the backdrop: drawn by main.js after the far layer and before the chapel-fort and the mid layer, at the mid layer's pace (x0.3),
-   so it is far away and behind everything in the play; the ridge itself is drawn here too. Dark men against the ember dusk - helms, shields, spears, a standard every so often - with a cold ghost-light on their tops;
-   only over a stretch that is still fighting, fading when its bearer is cut. When the horn blows the archers among them DRAW: bows come up, and the arrow points catch red (the tell's
-   colour, where the volley comes from). dY: main.js bgDY(cy). */
-export function drawRidgeArmy(g, F, cx, cy, VW, VH, time, dY) {
-  if (!F || !F.volleys) return;
-  const step = 7, layerX = sx => sx + cx * 0.3, top = VH - 131 + Math.round(dY * 0.3), ridge = lx => top + Math.round(4 * Math.sin(lx * 0.013) + 2 * Math.sin(lx * 0.041 + 1.3));
-  /* THE RIDGE they stand on: a long low hill across the whole field at the mid layer's pace, dark against the dusk with an ember rim (the backdrop's own ridges sit under the field's
-     ground line here, so without it the host would stand on nothing) */
-  for (let x = 0; x < VW; x++) { const y = ridge(layerX(x)); if (y >= VH) continue; R(g, x, y, 1, VH - y, '#2e1f2a'); R(g, x, y, 1, 1, '#5e3238'); }
-  for (const v of F.volleys) { const fade = v.quiet ? (v.fade ?? 1) : 1; if (fade <= 0) continue; const x0 = Math.max(-8, v.x0 - cx), x1 = Math.min(VW + 8, v.x1 - cx); if (x1 <= x0) continue;
-    const off = (cx * 0.3) % step;
-    for (let x = Math.floor(x0 / step) * step - off, i = 0; x < x1; x += step, i++) { if (x < x0) continue; const lx = Math.round(layerX(x)), id = Math.floor(lx / step), h = ((id * 2654435761) >>> 0) % 1000 / 1000;
-      if (h < 0.12) continue;   /* gaps in the line */
-      const edge = Math.min(1, (x - x0) / 40, (x1 - x) / 40), a = fade * Math.max(0, edge);
-      if (a <= 0.02) continue;
-      const bx = Math.round(x + h * 3), fy = ridge(layerX(bx)) + 1, tall = 7 + Math.round(h * 2), sway = Math.round(Math.sin(time * 1.2 + id) * 0.6);
-      g.globalAlpha = a; R(g, bx - 1, fy - tall, 3, tall, '#1a1218'); R(g, bx - 1, fy - tall - 2, 3, 2, '#221a22');   /* the man and his helm, dark on the dusk */
-      R(g, bx - 3, fy - tall + 2, 2, 4, '#241a20');   /* his shield */
-      g.globalAlpha = a * 0.55; R(g, bx - 1, fy - tall - 2, 3, 1, '#b8c4dc'); g.globalAlpha = a;   /* the cold light on his helm */
-      if (v.warn && h > 0.45) { const k = 0.5 + 0.5 * Math.sin(time * 16 + id); R(g, bx + 2, fy - tall - 3, 1, 5, '#2a1e22'); R(g, bx + 1, fy - tall - 3, 1, 1, '#2a1e22'); R(g, bx + 1, fy - tall + 1, 1, 1, '#2a1e22');   /* the bow, drawn */
-        g.globalAlpha = a * (0.5 + 0.5 * k); R(g, bx + 3, fy - tall - 4 + sway, 1, 1, '#ff6b6b'); g.globalAlpha = a; }
-      else if (h > 0.55) { R(g, bx + 2, fy - tall - 7 + sway, 1, 8, '#1e161c'); g.globalAlpha = a * 0.6; R(g, bx + 2, fy - tall - 8 + sway, 1, 1, '#d8e0f4'); g.globalAlpha = a; }   /* a spear, its point lit */
-      if (id % 9 === 0) { R(g, bx + 1, fy - tall - 14, 1, 14, '#1e161c'); for (let q = 0; q < 6; q++) R(g, bx + 2 + q, fy - tall - 13 + Math.round(Math.sin(time * 3 + q * 0.6 + id) * 0.8), 1, 5 - (q > 3 ? q - 3 : 0), '#241a22'); g.globalAlpha = a * 0.5; R(g, bx + 2, fy - tall - 13, 6, 1, '#9aa4c0'); g.globalAlpha = a; }   /* a standard */
-    }
-    g.globalAlpha = 1; }
 }
 function text2(g, s, x, y, col) { /* two red bars and a gap: the '!!' without the font (the font is main.js's) */ for (let i = 0; i < s.length; i++) { R(g, x + i * 4 - 3, y, 2, 6, col); R(g, x + i * 4 - 3, y + 8, 2, 2, col); } }
 

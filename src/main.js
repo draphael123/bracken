@@ -18659,7 +18659,6 @@ function updateUnburied(dt) {
     bearerAlive: name => enemies.some(q => q.alive && q.t === 'bannerbearer' && q.enc === name),
     hurtP: (x, d, name) => damagePlayer(x, d, { unblockable: true, name }),
     /* THE BRIDGES' ARROWS come from straight overhead: fromX is the hero's own x, so every guard held up turns them (damagePlayer) */
-    arrowEast: (x, d, name) => damagePlayer(P.x + 30, d, { name }),   /* (claude/unburied4) THE BAILEY'S ARROWS come out of the east: a guard held toward the breach turns them */
     arrowP: (x, d, name) => { const r = damagePlayer(P.x, d, { name }); if (r === 'blocked') number(P.x, P.y - 30, 'TURNED OVERHEAD', '#8fd160'); return r; },
     surface: (x, y) => { const tx = Math.floor(x / TS); for (let ty = Math.max(0, Math.floor((y - 8) / TS)); ty < Math.min(LH, Math.floor(y / TS) + 14); ty++) { const t = tileAt(tx, ty); if (isSolid(tx, ty) || isOneWay(t)) return ty * TS; } return y; },
     hurtFoe: (q, d, fx) => hurtEnemy(q, d, fx, false), struck: unbStruck,
@@ -26238,7 +26237,6 @@ function drawWorld(cx, cy, showPlayer) {
   else if (L.welltown) WTB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE WELL TOWN's own dunes, oasis line, skyline, dovecote and Kasbah (src/redraw/welltown_backdrop.js), not the caravan's mesas */
   else if (FAIR) FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full');   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
-  if (L.unburied) UNBF.drawRidgeArmy(g, UNB_FIELD, cx, cy, VW, VH, time, bgDY(cy));   /* (claude/unburied4) THE HOST on its ridge, that looses the volleys: behind the chapel-fort's hill, in front of the far layer */
   if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
   else drawCastleBack(cx, cy);
