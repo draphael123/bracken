@@ -4186,7 +4186,7 @@ const previewCache = {};
 let storePage = 0, storePages = 1, storeKeyLast = '', treePage = 0, treePages = 1, treeKeyLast = '';
 const morePress = () => SET.swapZX ? dodgePress : atkPress, moreKey = () => SET.swapZX ? 'V' : 'X';
 /* A NAME TOO LONG FOR ITS ROOM loses its THE first, and is only cut if it still will not go */
-function fitName(s, maxW, size = 6) { if (inkW(s, size) <= maxW) return s; const t = String(s).replace(/^THE /, ''); if (inkW(t, size) <= maxW) return t; return fitText(t, maxW, size); }
+function fitName(s, maxW, size = 6) { if (inkW(s, size) <= maxW) return s; const t = String(s).replace(/^THE /, ''); if (inkW(t, size) <= maxW) return t; const o = t.split(' OF ')[0]; if (o !== t && inkW(o, size) <= maxW) return o; return fitText(t, maxW, size); }   /* (batch70 textfit: DJINN OF THE GREAT WELL is DJINN where the whole name does not fit) */
 /* the portal on the practice card: a stone arch with the yard's light in it */
 const PORTAL_ICON = (() => { const [c, g2] = canvas(12, 14);
   g2.fillStyle = '#3a3448'; g2.fillRect(2, 0, 8, 13); g2.fillRect(0, 3, 12, 10);
@@ -4640,7 +4640,7 @@ const SETTING_TIPS = {
   'Skills': 'the store, open on your abilities and their loadout (Q)', 'Level card': 'what each level gave: vigor, endurance, might, and the perks', 'Store': 'buy and equip anything (V on the map)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
-  'Map': 'where you have been, and what is still to find (TAB)', 'Way-on arrow': 'an arrow at the edge of the screen to the next thing on the way: STUCK = only after ten seconds without headway',
+  'Map': 'where you have been, and what is still to find (TAB)', 'Way-on arrow': 'an arrow to the next thing on the way: STUCK = after ten seconds stuck',
   'Co-op': 'a friend on a pad, or the game playing him', 'Co-op guide': 'how a second player joins, is downed and is lifted',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts, shouts and cries from heroes and foes',
@@ -5262,10 +5262,11 @@ let tellsDrawn = [];   /* what the last frame's marks were, lanes and all: for t
 function drawTells() {
   if (state !== 'play' && state !== 'talk') { tellQ.length = 0; return; }
   const drawn = [];
+  const plateTop = (bossActive && boss && boss.alive) || (miniActive && !bossActive) ? VH - 30 - hpLift() : VH;   /* (batch70 textfit) a mark never lands on the boss plate at the foot of the screen: the !! badge from a foe low in the frame was drawn across the end of the name */
   const lane = (t, x, y) => { if (!t.lane || !LANE_PIX[t.lane]) return; const st = laneStamp(t.lane); g.drawImage(st.c, x + (t.txt === '!!' ? 10 : 4), y - 1); };
   const tbox = (x, y, s) => s === '!!' ? [x - 9, y - 4, 18, 18] : [x - 4, y - 1, 8, 10];
   for (const t of tellQ) { const w = t.txt === '!!' ? 16 : 8;
-    let x = Math.round(Math.max(w / 2 + 2, Math.min(VW - w / 2 - 2, t.x))), y = Math.round(Math.max(4, Math.min(VH - 14, t.y)));
+    let x = Math.round(Math.max(w / 2 + 2, Math.min(VW - w / 2 - 2, t.x))), y = Math.round(Math.max(4, Math.min(VH - 14, plateTop - 16, t.y)));
     for (let pass = 0; pass < 3; pass++) for (const r of hudRects) if (boxHit(tbox(x, y, t.txt), r)) y = r[1] + r[3] + 3;   /* off every plate at the top: the HUD, the clock, the counts, the quest */
     { const same = drawn.find(d => d.txt === t.txt && Math.abs(d.x - x) < w && boxHit(tbox(x, y, t.txt), tbox(d.x, d.y, d.txt)));
       if (same) { if (t.lane && !same.lane) { g.globalAlpha = t.a; lane(t, same.x, same.y); same.lane = t.lane; } continue; } }   /* the ! off the wind-up and the ! the foe called are one mark (and the lane goes on it, whichever came first) */
@@ -8601,7 +8602,7 @@ function drawBossJump() {
   const n = bjTable.length, start = Math.max(0, Math.min(n - BJ_ROWS, bjI - (BJ_ROWS >> 1)));
   for (let i = start; i < Math.min(n, start + BJ_ROWS); i++) { const r = bjTable[i], cy0 = y + 20 + (i - start) * 11, sel = i === bjI;
     if (sel) text('>', x + 8, cy0, '#8fd160', 'left', 6);
-    text(fitText(r.name.replace(/^THE /, ''), 126, 6), x + 16, cy0, r.kind === 'mini' ? (sel ? '#ffd36b' : '#c9a24a') : (sel ? '#fff6e0' : '#c9d1dc'), 'left', 6);
+    text(fitName(r.name.replace(/^THE /, ''), 126, 6), x + 16, cy0, r.kind === 'mini' ? (sel ? '#ffd36b' : '#c9a24a') : (sel ? '#fff6e0' : '#c9d1dc'), 'left', 6);
     text(fitText(r.levelName.replace(/^THE /, ''), 130, 6), x + w - 8, cy0, sel ? UI.text : UI.dim, 'right', 6); }
   text((bjI + 1) + '/' + n, x + w - 8, y + 6, UI.dim, 'right', 6);
   const hd = HEROES.find(q => q.id === bjHero);
