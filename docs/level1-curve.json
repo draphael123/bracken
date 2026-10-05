@@ -479,5 +479,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 120
+ },
+ "skyroad": {
+  "hash": "41fd3263fae6",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 21,
+  "deaths": 0,
+  "kills": 9,
+  "lifts": 44,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 111
  }
 }
