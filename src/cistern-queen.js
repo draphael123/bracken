@@ -39,7 +39,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/cistern-queen-hands.js binds it). queenPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CQ = {
-  hp: 1000, w: 76, h: 38, markH: 78,
+  hp: 1400, w: 76,   /* (claude/underwell: 1000 -> 1400 in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
   openMul: 1.9, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
@@ -76,8 +76,9 @@ export const CQ = {
   stuck: { lance: 1.15, barb: 0.85, pin: 1.3, sting: 1.0, tidal: 1.0 }, stingMul: 1.25, stingCap: 0.07, stingR: 13,
   /* HER FIRE (phase two): her heat ticks heatTick s, heatR px past her body; doused she stays out douseT s, then flares for flareT and burns again */
   heatTick: 0.6, heatR: 12, douseT: 9, flareT: 1.0,
-  dmg: { pincer: 10, snap: 8, lunge: 13, lance: 14, flick: 5, strike: 16, charge: 11, spit: 7, puddle: 2, sweep: 11, slam: 11, pin: 14, pounce: 16,
-    ambush: 12, wave: 10, grab: 5, sting: 22, roll: 15, tidal: 11, brood: 0, heat: 4 },
+  /* (claude/underwell: x1.43 on every blow in her own level - the WEIGHT/HARNESSCARD heroes at the Underwell's depth took 80-200 of 250 at the old numbers) */
+  dmg: { pincer: 14, snap: 11, lunge: 19, lance: 20, flick: 7, strike: 23, charge: 16, spit: 10, puddle: 3, sweep: 16, slam: 16, pin: 20, pounce: 23,
+    ambush: 17, wave: 14, grab: 7, sting: 31, roll: 21, tidal: 16, brood: 0, heat: 6 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]; a cycle ends with the blow that holds her opening) */
 export const CYCLES = {

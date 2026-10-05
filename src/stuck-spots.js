@@ -157,7 +157,7 @@ export const STUCK_HANDS = {
     { id: 'uw-works-low', zone: [141, 32, 215, 44], steps: [
       { key: 'worksTorch', is: ['torch.works', 'up'], rows: [38, 44], at: [176, 41], glint: 'stall', dy: -4, line: 'A WALL TORCH OVER THE OIL, PAST THE ROPE' },
       { key: 'worksRope', is: ['rope.works', 'hung'], at: [160, 40], glint: 'stall', line: 'THE ROPE IS THE WAY UP' },
-      { key: 'worksBack', is: ['rope.works', 'burnt'], at: [210, 40], line: 'THE ROPE IS ASH: THE SCAFFOLDS ON THE EAST WALL' } ] },
+      { key: 'worksBack', is: ['rope.works', 'burnt'], at: [211, 40], line: 'THE ROPE IS ASH: THE SCAFFOLDS ON THE EAST WALL' } ] },
     { id: 'uw-works-up', zone: [157, 22, 239, 29], steps: [
       { key: 'worksFire', is: ['fire.228', 'lit'], at: [228, 29], line: 'AN OLD OIL FIRE ACROSS THE WAY EAST' } ] },
     { id: 'uw-gutter', zone: [244, 36, 262, 45], steps: [

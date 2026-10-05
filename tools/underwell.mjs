@@ -71,7 +71,7 @@ ok(spots.length >= 9 && lineFit, spots.length + ' route needs glint and nudge (e
 { const env = { TS: 16, props: [], movers: [], hero: { x: 0, y: 0 }, state: n => ({ 'nest.shaft': 'shut', 'skin': 'some', 'fire.33': 'lit' })[n] || '' };
   const r = resolve('underwell', 16, 43, { ...env, hero: { x: 16 * 16 + 8, y: 44 * 16 } }, STUCK_HANDS); const r2 = resolve('underwell', 30, 43, { ...env, hero: { x: 30 * 16 + 8, y: 44 * 16 } }, STUCK_HANDS);
   ok(r && r.key === 'shaftTorch' && r2 && r2.key === 'shaftFire', 'the route list resolves: at the first nest the torch glints, at the old oil fire the fire (' + (r && r.key) + ', ' + (r2 && r2.key) + ')'); }
-ok(OIL.burn >= 8 && OIL.back > OIL.burn && OIL.relight < OIL.back, 'nothing is lost for good: spent oil seeps back (' + OIL.back + ' s), a torch has a flame again (' + OIL.relight + ' s)');
+ok(OIL.burn >= 5 && OIL.burnDeep > OIL.burn && OIL.back > OIL.burnDeep && OIL.relight < OIL.back, 'nothing is lost for good: spent oil seeps back (' + OIL.back + ' s), a torch has a flame again (' + OIL.relight + ' s)');
 
 /* ---------- THE PAGE ---------- */
 if (!process.argv.includes('--static')) {
@@ -92,7 +92,7 @@ if (!process.argv.includes('--static')) {
       P.skin={sips:1,max:3}; BK.tp(31,43); P.face=1; BK.sim(3); BK.press('talk'); BK.sim(3); out.oldFire=BK.welltown().fires.find(f=>f.x0===33).lit;
       /* 4. the burnt oil seeps back */
       for(let i=0;i<OILBACK;i++)BK.sim(100); out.back=cell(18,43).st;
-      return out;})()`.replace('OILBACK', String(Math.ceil(OIL.burn + OIL.back + 2))), 300000);
+      return out;})()`.replace('OILBACK', String(Math.ceil(OIL.burnDeep + OIL.back + 2))), 300000);
     ok(w.lit === 1 && w.run >= 4, 'A STRUCK TORCH falls into the oil and the fire runs along it (' + w.run + ' cells burning)');
     ok(w.hurt > 0, 'standing in burning oil hurts (' + w.hurt + ')');
     ok(w.nest === true, 'the fire takes the brood\'s nest: the tunnel is open');

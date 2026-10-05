@@ -86,7 +86,7 @@ export function buildUnderwell({ painter, T, TS }) {
   // ================= 2. THE BROOD HALL (45-140): THE GREAT LAMP; the brood chamber; the nest =================
   air(45, 131, 24, F - 1);
   block(58, 59, 41, F - 1); block(100, 101, 41, F - 1);                       /* fallen pillar drums on the floor (three rows: a hop) */
-  boards(62, 68, 38); boards(71, 76, 35); boards(78, 85, 32);                 /* up to THE LAMP GALLERY */
+  boards(61, 67, 38); boards(69, 75, 35); boards(77, 85, 32);                 /* up to THE LAMP GALLERY (a row of old scaffold boards, a hop apart) */
   ent('greatlamp', 87, 31, { top: 24 });                                      /* SET PIECE ONE: THE GREAT LAMP on its chain over the hall's oil (strike the chain from the gallery) */
   sign(80, 31, 'THE GREAT LAMP. ITS CHAIN IS RUSTED THROUGH.');
   /* the hall's oil: the floor, over the drums (their faces and tops), to the nest at the east end */
@@ -115,7 +115,7 @@ export function buildUnderwell({ painter, T, TS }) {
   oilS(196, F - 1, 'worksBrood'); venom(200, F - 1, 'worksBrood'); venom(204, F - 1, 'worksBrood'); venom(208, F - 1, 'worksBrood');
   tap(212, F - 1);                                                            /* TAP THREE: at the back of the brood's chamber */
   /* the long way up (if the rope burns): scaffolds up the east wall under two spitters */
-  boards(207, 213, 41); boards(200, 205, 38); boards(207, 213, 35); boards(209, 213, 32); air(211, 213, 30, 31);
+  boards(208, 214, 41); boards(201, 206, 38); boards(208, 214, 35); boards(213, 215, 32); air(213, 215, 30, 31);   /* (the top board under the hole in the works' floor) */
   spitS(202, 37, 'backSpit', { face: 1 });
   /* the upper works: THE DRY FOUNTAIN and its vault, the oil, a fire scorpion on it, an old oil fire */
   block(150, 155, 22, 25); vaultDoors.push({ x0: 156, x1: 156, y0: 26, y1: 29 }); block(156, 156, 22, 25); block(156, 156, 26, 29);
@@ -123,7 +123,7 @@ export function buildUnderwell({ painter, T, TS }) {
   ent('fountain', 166, 29);
   sign(170, 29, 'THE DRY FOUNTAIN. ITS BRASS TAPS WERE TAKEN DOWN.');
   block(186, 189, 28, 29);                                                    /* a fallen cistern block on the floor */
-  seep(178, 185, 29); line(185, 27, 28); seep(186, 189, 27); line(190, 27, 28); seep(190, 204, 29); block(205, 212, 29, 29); seep(205, 212, 28); seep(214, 222, 29);
+  seep(178, 185, 29); line(185, 27, 28); seep(186, 189, 27); line(190, 27, 28); seep(190, 204, 29); block(205, 212, 29, 29); seep(205, 212, 28); seep(216, 222, 29);
   fireS(194, 29, 'worksFire'); oilS(200, 29, 'worksFire', { face: -1 });
   spitS(219, 29, 'worksSpit', { face: -1 });
   block(226, 231, 22, 25); oilfire(228, 29);                                  /* an old oil fire across the low way east */
@@ -133,7 +133,7 @@ export function buildUnderwell({ painter, T, TS }) {
   air(244, 250, 22, 45);                                                      /* the drop from the upper works */
   air(251, 261, 38, 45);                                                      /* the stone sill under it, at the sump's west end */
   block(244, 261, 46, H - 1);
-  ent('check', 247, 45); dustS(253, 45, 'sill', { face: -1 });                                                      /* CHECKPOINT TWO: at the sump's foot */
+  ent('check', 247, 45); drip(251, 45); dustS(253, 45, 'sill', { face: -1 });   /* CHECKPOINT TWO has no spring: a drip (the exam's water is scarce) */                                                      /* CHECKPOINT TWO: at the sump's foot */
   seep(255, 261, 45); sconce(257, 43, 'gutter');                             /* the sill's oil, its torch */
   line(261, 37, 44);                                                          /* the oil runs up the old pipe into the gutter */
   block(262, 335, 33, 35); block(262, 335, 37, 37); air(261, 335, 36, 36); seep(261, 335, 36);      /* SET PIECE TWO: THE BURNING GUTTER, a slot in the wall over the whole sump (too low to enter) */
@@ -155,7 +155,7 @@ export function buildUnderwell({ painter, T, TS }) {
   seep(394, 397, 42);
   block(398, 430, 28, 37); nest('exam', 398, 399, 38, 42);                    /* the nest under the stair's foot */
   venom(404, 42, 'examBrood'); thirstS(408, 42, 'examBrood'); venom(412, 42, 'examBrood'); oilS(415, 42, 'examBrood');
-  oilfire(420, 42); oilfire(426, 42);                                         /* two old oil fires */
+  drip(417, 42); oilfire(420, 42); oilfire(426, 42);                         /* a drip before two old oil fires (the thirsty one is after your water) */
   /* the stair up to her door */
   air(431, 446, 26, 42); block(431, 434, 40, 42); block(435, 438, 37, 42); block(439, 451, 34, 42);
   oilS(436, 36, 'stair', { face: -1 });

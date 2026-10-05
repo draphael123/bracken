@@ -13,10 +13,10 @@ import { STUCK_HANDS } from './stuck-spots.js';
 import { venomOn, VENOM } from './desert-foes2.js';
 import * as UWA from './redraw/underwell_art.js';
 
-/* THE OIL: burn = s a lit cell burns; spread = s before it lights the cells beside it; back = s before wet oil dries / spent oil seeps back; tick/dmg =
+/* THE OIL: burn = s a lit cell on a floor burns (burnDeep: a cell in a gutter's slot, deep oil - it burns long, so the worms under it stay down while you cross); spread = s before it lights the cells beside it; back = s before wet oil dries / spent oil seeps back; tick/dmg =
    the fire on a hero standing in it (unblockable); foeDmg on a creature in it; nestBurn = s a nest takes to burn away; relight = s before a torch's
    bracket has a flame again; pourCells = how many cells one sip wets */
-export const OIL = { burn: 10, spread: 0.04, back: 25, tick: 0.5, dmg: 5, foeDmg: 14, nestBurn: 1.0, relight: 12, pourR: 48, pourCells: 3, lampFall: 0.6, torchFall: 0.35, heatRows: 12 };
+export const OIL = { burn: 6, burnDeep: 16, spread: 0.04, back: 25, tick: 0.5, dmg: 5, foeDmg: 14, nestBurn: 1.0, relight: 12, pourR: 48, pourCells: 3, lampFall: 0.6, torchFall: 0.35, heatRows: 12 };
 /* THE CAST's numbers: the thirsty scorpion's pull (px/s, sight px), the dust's blindness (s), a slick's width in cells */
 export const CAST = { thirstV: 60, thirstSight: 260, blind: 2.2, slick: 3 };
 export const OIL_SKIN = 'oilscorpion', DUST_SKIN = 'dustscorpion', THIRST_SKIN = 'thirstscorpion', SPIT_SKIN = 'spitscorpion';
@@ -36,7 +36,7 @@ export function makeUnderwellHands(ctx) {
     if (!UW || UW.L !== L) {
       UW = { L, said: {}, clock: 0, cells: new Map(), list: [], sconces: [], lamp: null, nests: [], ropes: [], fountain: null, vault: (L.vaultDoors || []).map(m => ({ ...m, open: false })),
         n: { lit: 0, lamp: 0, spread: 0, wet: 0, doused: 0, nests: 0, boiled: 0, ropes: 0, burns: 0, foeBurns: 0, slicks: 0, patchLit: 0, blinds: 0, drunk: 0, spits: 0, flushed: 0, nudges: 0 } };
-      const add = (x, y, vertical) => { const k = key(x, y); if (UW.cells.has(k)) return; const c = { x, y, st: 'oil', t: 0, age: 0, vertical: !!vertical, seed: (x * 7 + y * 13) % 31 }; UW.cells.set(k, c); UW.list.push(c); };
+      const add = (x, y, vertical) => { const k = key(x, y); if (UW.cells.has(k)) return; const c = { x, y, st: 'oil', t: 0, age: 0, vertical: !!vertical, seed: (x * 7 + y * 13) % 31, deep: !vertical && ctx.cellGet(x, y - 1) === ctx.T.SOLID && ctx.cellGet(x, y + 1) === ctx.T.SOLID }; UW.cells.set(k, c); UW.list.push(c); };
       for (const [x0, x1, y] of L.seeps || []) for (let x = x0; x <= x1; x++) add(x, y, false);
       for (const [x, y0, y1] of L.lines || []) for (let y = y0; y <= y1; y++) add(x, y, true);
       UW.sconces = L.ents.filter(e => e.t === 'sconce').map(e => { let below = null; for (let y = e.y; y < L.H; y++) { const c = UW.cells.get(key(e.x, y)); if (c) { below = c; break; } } return { id: e.id, x: e.x, y: e.y, st: 'up', t: 0, below }; });
@@ -60,7 +60,7 @@ export function makeUnderwellHands(ctx) {
   H.state = () => UW;
 
   /* ---------- THE OIL ---------- */
-  const ignite = (c, why) => { if (!c || c.st !== 'oil') return false; c.st = 'fire'; c.t = OIL.burn; c.age = 0; UW.n.spread++; return true; };
+  const ignite = (c, why) => { if (!c || c.st !== 'oil') return false; c.st = 'fire'; c.t = c.deep ? OIL.burnDeep : OIL.burn; c.age = 0; UW.n.spread++; return true; };
   const neighbours = c => { const out = []; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; const q = cellAt(c.x + dx, c.y + dy); if (q) out.push(q); } return out; };
   H.fireAt = (tx, ty) => { const c = cellAt(tx, ty); return !!(c && c.st === 'fire'); };
   /* light the oil under a falling torch or lamp: the cell it lands in, and `spread` cells either side at once (the lamp's splash) */
@@ -189,7 +189,7 @@ export function makeUnderwellHands(ctx) {
     if (!UW) return; const R = Math.round, vw = ctx.VW(), vh = ctx.VH(), TS = ctx.TS, inX = (x, m = 40) => x > cx - m && x < cx + vw + m;
     for (const [x0, x1, y] of UW.sand) if (inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawSand(g, R(x0 * TS - cx), R(y * TS - cy), (x1 - x0 + 1) * TS, time);
     for (const [x0, x1, y] of UW.L.seeps || []) if (x1 - x0 > 20 && ctx.cellGet(x0 + 1, y - 1) !== ctx.T.AIR && ctx.cellGet(x0 + 1, y + 1) !== ctx.T.AIR && inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawGutter(g, R((x0 + 1) * TS - cx), R(y * TS - cy), (x1 - x0 - 1) * TS);   /* a gutter's grate (a slot in the rock) */
-    for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy), c.st, c.st === 'fire' ? c.t / OIL.burn : 0, time, c.vertical, c.seed); }
+    for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy), c.st, c.st === 'fire' ? Math.min(1, c.t / OIL.burn) : 0, time, c.vertical, c.seed); }
     for (const m of UW.nests) { if (m.open) continue; const x = m.x0 * TS; if (!inX(x)) continue; UWA.drawNest(g, R(x - cx), R(m.y0 * TS - cy), (m.x1 - m.x0 + 1) * TS, (m.y1 - m.y0 + 1) * TS, Math.min(1, m.burn / OIL.nestBurn), time); }
     for (const s of UW.sconces) { const x = s.x * TS + 8; if (!inX(x)) continue; const fallDy = s.st === 'fall' && s.below ? ((s.below.y - s.y) * TS) * (1 - s.t / OIL.torchFall) : 0;
       UWA.drawSconce(g, R(x - cx), R(s.y * TS - cy), s.st === 'down' ? 'down' : 'up', s.st === 'down' ? 1 - s.t / OIL.relight : 1, time, fallDy); }
