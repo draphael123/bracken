@@ -742,6 +742,8 @@ async function runbossLab(BK, opts) {
         for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
           if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
+          /* (claude/archmage3, Daniel 10-05) HIS FIREBOLT CAN BE STRUCK BACK - home, it breaks his ward: the bot swings at one in its reach (a human hand: it tries about two in three, decided once a bolt), and otherwise guards or dodges it as ever */
+          if(q.kind==='fire'&&!q.echo&&!q.reflected&&!boss.realm&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;const ahead=(q.x-P.x)*Math.sign(-q.vx||1)<0;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;void ahead;continue;}}
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
           if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */

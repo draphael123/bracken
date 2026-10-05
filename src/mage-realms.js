@@ -101,7 +101,7 @@ export function updateRealm(e, dt, c) {
   const R = e.realm, P = c.P, b = c.box, py = P.y - 8; R.t += dt; R.cueT = Math.max(0, (R.cueT || 0) - dt); R.wardT = Math.max(0, (R.wardT || 0) - dt); R.wardSayT = Math.max(0, (R.wardSayT || 0) - dt);
   if (OPEN.has(e.mode)) { e.y += Math.sin(e.anim * 2) * 4 * dt; if (R.kind === 'poison' && R.drain) R.mire = Math.min(R.mire0, R.mire + REALM.poison.drain * dt); if (e.modeT <= 0) leaveRealm(e, c); return; }   /* the opening runs out: the realm tears */
   const keep = (x, y) => [Math.max(b.x0 + 20, Math.min(b.x1 - 20, x)), Math.max(b.y0 + 44, Math.min(b.y1 - 10, y))];
-  const bolt = (spell) => { const hx = e.x + e.face * 12, hy = e.y - 34, a = Math.atan2(py - hy, P.x - hx), B = REALM.bolt;
+  const bolt = (spell) => { const hx = e.x + e.face * 20, hy = e.y - 51,   /* (archmage3: from the head of his staff - undead-mage.js MAGE.staff) */ a = Math.atan2(py - hy, P.x - hx), B = REALM.bolt;
     if (spell === 'fire') { e.shots.push({ x: hx, y: hy, vx: Math.cos(a) * B.v, vy: Math.sin(a) * B.v, a, sp: B.v, r: 5, dmg: B.fire, kind: 'fire', col: '#ff9b49', t: 4 }); c.sound('mageBolt'); }
     else { for (let k = -2; k <= 2; k++) { const q = a + k * 0.3; e.shots.push({ x: hx, y: hy, vx: Math.cos(q) * 120, vy: Math.sin(q) * 120, a: q, sp: 120, r: 4, dmg: B.ice, kind: 'ice', col: '#9be2ff', t: 4 }); } c.sound('hiss'); } };
   /* HIS TELLS in a realm are his fight's (fireTell, iceTell) and the realm's own (wallTell, sporeTell) */

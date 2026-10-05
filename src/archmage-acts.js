@@ -56,6 +56,7 @@ export function drawActs(g, e, cx, cy, time, T) {
   if (wardUp(e)) { const hit = e.wardHitT > 0 ? e.wardHitT / MAGE.ward.hitT : 0, pulse = 0.5 + 0.5 * Math.sin(time * 3);
     g.save(); g.globalAlpha = 0.18 + 0.12 * pulse + 0.6 * hit; g.strokeStyle = hit > 0 ? '#ffffff' : '#a8e8c8'; g.lineWidth = 1;
     g.beginPath(); g.ellipse(x, y, WARD.rx + hit * 3, WARD.ry + hit * 3, 0, 0, Math.PI * 2); g.stroke();
+    if (e.wardHold > 0) { g.lineWidth = 2; g.strokeStyle = '#e8fff0'; g.beginPath(); g.ellipse(x, y, WARD.rx + 3, WARD.ry + 3, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }   /* HIS WARD HOLDS (the told anti-spam ward after an opening): doubled and bright - nothing breaks it yet */
     g.globalAlpha = 0.45 + 0.2 * pulse + 0.5 * hit;   /* his runes on the shell, turning */
     for (let i = 0; i < WARD.runes; i++) { const a = i / WARD.runes * Math.PI * 2 + time * 0.9, rx = Math.round(x + Math.cos(a) * WARD.rx), ry = Math.round(y + Math.sin(a) * WARD.ry);
       g.fillStyle = hit > 0 ? '#ffffff' : i % 2 ? '#c8ffd8' : '#6fe08a'; g.fillRect(rx - 1, ry - 1, 2, 3); if (i % 3 === 0) g.fillRect(rx - 2, ry, 4, 1); }

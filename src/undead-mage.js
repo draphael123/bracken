@@ -53,6 +53,17 @@
 //   HIS WARD         he is warded BY DEFAULT and it is DRAWN: a pale shell of his runes round him, turning; a blow it turns flares it white where
 //                    it struck, rings, says WARDED and sounds his ward's note (main.js greedHit); when an opening takes it down the shell SHATTERS
 //                    and he burns gold until it is back (src/archmage-acts.js drawActs)
+//   DANIEL'S NOTES (10-05):
+//   HIS WARD IS BROKEN BY YOU. His FIREBOLT - orange, a WHITE HEART and a turning GOLD RING round it - can be STRUCK BACK with any blow (the
+//                    Wicker Queen's ball's rule): it flies home, and if it finds him warded it BREAKS HIS WARD - his opening (mode 'reflected',
+//                    MAGE.openT). Struck back while his ward HOLDS (the told anti-spam ward, MAGE.reflect.hold s after every opening: the shell
+//                    drawn doubled) it only rings off it. Nothing else of his can be struck back.
+//   COLOUR, THE GAME'S CONVENTION: a YELLOW rim = it can be GUARDED (his fire, ice, the hand, bent and trapped bolts: every hero's guard - shield,
+//                    deflect, ember ward - takes them); a RED rim = it CANNOT, DODGE (skulls, his orrery's worlds, the script's lines, the
+//                    storm column, the death mark, the poison orbs, the grave's void).
+//   LESS HECTIC LATE: one windup at a time to the end (no more spells in pairs when he burns, no echo in his last stage), and no new spell while
+//                    the last one's skulls, worlds or lines are still out or three of his bolts are in the air - harder by quality, not volume.
+//   THE STAFF: every bolt leaves the HEAD OF HIS STAFF (MAGE.staff), pointed at you in his cast pose (src/redraw/lich.js), not his fist.
 //   HIS PHASES       each realm he tears is its own told set piece, a breather with nothing cast: THE SKY CRACKS (fire), HIS RINGS GATHER AND
 //                    FREEZE (ice), HIS DARK SURGES UP THE SKY: THE POISON REALM (poison) - and the realm SHATTERS when you come out of it (src/archmage-acts.js)
 import { canvas, flipX, whiten } from './px.js';
@@ -70,7 +81,7 @@ export const MAGE = {
   enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, openT: 3.6, openMul: 2,
   order: ['fire', 'ice', 'step', 'bone', 'poison', 'orbit', 'mark', 'bend', 'storm', 'pull', 'hand', 'script', 'decoy', 'fire', 'mark', 'trap'],   /* (archmage3: HIS ORRERY and THE GRAVE SCRIPT) */   /* (round 3: the second step is the DECOY, the second bend the TRAP; archmage2: the BONE STORM, and the GRAVE PULL - stage 3 only, skipped before it) */
   tell: { fire: 0.9, ice: 0.9, storm: 1.2, poison: 1.0, hand: 0.9, mark: 0.6, step: 1.0, bend: 1.0, decoy: 1.1, trap: 1.0, bone: 1.1, pull: 1.0, orbit: 1.2, script: 1.2 },
-  dmg: { fire: 14, ice: 12, storm: 22, orb: 8, hand: 16, mark: 28, bent: 13, trap: 13, skull: 11, void: 18, world: 14, script: 16 },
+  dmg: { fire: 14, ice: 12, storm: 22, orb: 8, hand: 16, mark: 28, bent: 13, trap: 13, skull: 11, void: 18, world: 20, script: 22 },
   /* ARCHMAGE2. THE BONE STORM: n skulls on a ring of radius r0 round you, its gap slots left open (one wide gap, or every other cycle two
      narrow ones), closing to r1 over secs while the ring turns `turn` of a circle. THE ECHO: its delay, and the spells it repeats. THE GRAVE
      PULL: how long it drags, how hard (px/s at its full), its void's reach, and how long between two hurts by it */
@@ -89,6 +100,11 @@ export const MAGE = {
     poison: { secs: 2.8, say: 'HIS DARK SURGES UP THE SKY: THE POISON REALM', sounds: ['heavy', 'hiss', 'heavy'] } },
   /* HIS WARD (archmage3): a turned blow flares it this long; an opening shatters it this long */
   ward: { hitT: 0.45, dropT: 0.8, shatterT: 1.0 },
+  /* (Daniel 10-05) THE STAFF'S HEAD in his cast pose, from his anchor (px, facing right): every bolt leaves it. THE STRUCK-BACK BOLT: its speed home,
+     how hard it turns after him, how near it must come; and the told ward that HOLDS this long after every opening (nothing breaks it again yet) */
+  staff: { dx: 20, dy: 51 },
+  reflect: { v: 260, turn: 4, r: 18, hold: 3.0 },
+  late: { shots: 3 },   /* his last stage: no new spell while this many of his bolts are in the air */
   /* THE TRAP: how high over you the ring opens, and its drop - a column of bolts, three and then five, fanned so a side-step clears them */
   trapUp: 70, trapN: [3, 5, 5], trapFan: 0.16,
   markR: 36, markFuse: 2.0, cloudR: 26, cloudLife: 4, handSpeed: 72, hover: 1.0, boltV: 150,   /* the bolt is slower than the carpet: every spell can be out-flown */
@@ -102,11 +118,17 @@ const SAY = { fireTell: 'FIRE: GUARD OR FLY', iceTell: 'FROST: FLY ACROSS IT', s
   boneTell: 'BONE STORM: FLY OUT THROUGH A GAP', pullTell: 'THE GRAVE PULLS: FLY AGAINST IT', orbitTell: 'HIS ORRERY: KEEP BETWEEN ITS ORBITS', scriptTell: 'THE GRAVE SCRIPT: FLY TO THE DARK LINE' };
 /* (claude/archmage3) THE LINES SAID IN THE HINT BOX, not dropped: his two new moves and his three phase changes are told in WORDS as well as marks and sound
    (main.js's say hands these to callout(); number() would drop them) */
-export const CALLED = new Set([SAY.orbitTell, SAY.scriptTell, ...Object.values(MAGE.trans).map(T => T.say)]);
+export const CALLED = new Set(['HIS OWN FIRE BREAKS HIS WARD', SAY.orbitTell, SAY.scriptTell, ...Object.values(MAGE.trans).map(T => T.say)]);
 /* the ring moves - the ones that open a ring, and so never come straight out of one (a step comes out casting a spell, not a ring) */
 const RINGED = new Set(['step', 'bend', 'decoy', 'trap']);
 export const RING_COL = { rim: '#6fe08a', rimL: '#c8ffd8', fire: '#ff9b49', flare: '#ffffff' };
-export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached' || REALM_OPEN.has(e.mode);   /* (and a realm's opening: scorched, shattered, vented) */
+export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached' || e.mode === 'reflected' || REALM_OPEN.has(e.mode);   /* (Daniel 10-05: 'reflected' - his own bolt struck back broke his ward) */
+/* HIS WARD CAN BE BROKEN NOW: not open, not holding after an opening, not in a realm, not between two places */
+export const wardBreakable = e => !!(e && e.alive && !mageOpen(e) && !(e.wardHold > 0) && !e.realm && !['sleep', 'wake', 'blinkOut', 'blinkIn', 'realmTell'].includes(e.mode));
+/* THE BOLT THAT CAN BE STRUCK BACK: his own firebolt (not his echo's, not one already struck) */
+export const reflectable = q => q.kind === 'fire' && !q.echo && !q.reflected;
+/* WHERE HIS BOLTS LEAVE: the head of his staff */
+export const staffTip = e => [e.x + (e.face || 1) * MAGE.staff.dx, e.y - MAGE.staff.dy];   /* (and a realm's opening: scorched, shattered, vented) */
 export const mageSpeed = e => e.enraged ? MAGE.fast : 1;
 /* HIS STAGE: 1, 2 under 70%, 3 once he burns (his enrage, under 40%) */
 export const mageStage = e => e.enraged ? 3 : e.hp <= (e.hp0 || e.maxHp || e.hp) * MAGE.stage2 ? 2 : 1;
@@ -147,10 +169,10 @@ function begin(e, spell, c, half) {
     const [, b] = pair(e, e.x, e.y - 24, rx, ry, e.modeT + stayOf(e)); b.flare = true;
     ring(e, 'decoy', fx, fy, e.modeT + 0.2, { flare: true, hollow: true }); }   /* THE DECOY: it flares the same, and there is nothing through it */
   if (spell === 'trap') { const [xx, xy] = inBox(box, P.x, py - MAGE.trapUp);   /* OVER YOU, where you are now: it stays there */
-    const [a, b] = pair(e, e.x + e.face * 16, e.y - 34, xx, xy, e.modeT + stayOf(e)); a.glow = b.glow = RING_COL.fire; b.trap = true; }
+    const [a, b] = pair(e, ...staffTip(e), xx, xy, e.modeT + stayOf(e)); a.glow = b.glow = RING_COL.fire; b.trap = true; }
   if (spell === 'bend') { const toward = Math.sign(e.x - P.x) || 1, above = ((e.bendN = (e.bendN || 0) + 1) % 2) === 1;
     const [xx, xy] = inBox(box, above ? P.x + ((c.rnd || Math.random)() - 0.5) * 40 : P.x - toward * 64, above ? py - 72 : py - 6);
-    const [a, b] = pair(e, e.x + e.face * 16, e.y - 34, xx, xy, e.modeT + stayOf(e)); a.glow = b.glow = RING_COL.fire; }   /* BOTH RINGS GLOW THE BOLT'S COLOUR */
+    const [a, b] = pair(e, ...staffTip(e), xx, xy, e.modeT + stayOf(e)); a.glow = b.glow = RING_COL.fire; }   /* BOTH RINGS GLOW THE BOLT'S COLOUR */
   if (spell === 'fire' && st >= 2) { let r = e.rings.find(q => q.spare && q.kind === 'exit' && q.t < q.life);
     if (st >= 3) { const toward = Math.sign(e.x - P.x) || 1; let far = Math.max(box.x0 + 30, Math.min(box.x1 - 30, P.x - toward * 220)); if (Math.abs(far - P.x) < 100) far = P.x + toward * 220;   /* behind you if the room has it, else past him */
       r = ring(e, 'exit', ...inBox(box, far, py - 10), e.modeT + stayOf(e), { across: true }); }   /* ACROSS THE ROOM, out of a ring behind you */
@@ -193,7 +215,7 @@ function stepNew(e, dt, c, py) {
       if (k >= 1) e.bones = null;
       else if (!P.dead && B.cd <= 0) for (const [x, y] of boneSkulls(B, k)) if (Math.hypot(P.x - x, py - y) < MAGE.bone.r + 8) { B.cd = MAGE.bone.cd; c.hit(x, y, MAGE.dmg.skull, true, 'skull'); break; } } }
   if (e.echoes && e.echoes.length) { for (const q of e.echoes) { q.t -= dt; if (q.t > 0) continue; q.gone = true; if (P.dead || !e.alive) continue;
-      const hx = q.x + q.face * 12, hy = q.y - 34, aim = Math.atan2(py - hy, P.x - hx), shot = (a, sp, r, dmg, kind, col, life = 4) => e.shots.push({ x: hx, y: hy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a, sp, r, dmg, kind, col, t: life, echo: true });
+      const hx = q.x + q.face * MAGE.staff.dx, hy = q.y - MAGE.staff.dy, aim = Math.atan2(py - hy, P.x - hx), shot = (a, sp, r, dmg, kind, col, life = 4) => e.shots.push({ x: hx, y: hy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a, sp, r, dmg, kind, col, t: life, echo: true });
       if (q.spell === 'fire') for (const s of q.enraged ? [-0.24, 0, 0.24] : [0]) shot(aim + s, MAGE.boltV, 5, MAGE.dmg.fire, 'fire', '#b8ffcf');
       else if (q.spell === 'ice') for (let i = -2; i <= 2; i++) shot(aim + i * 0.3, 120, 4, MAGE.dmg.ice, 'ice', '#c8fff0');
       else if (q.spell === 'poison') for (const s of [-0.5, 0, 0.5]) shot(aim + s, 55, 5, MAGE.dmg.orb, 'orb', '#8fd160', 2.4);
@@ -224,7 +246,8 @@ export function updateUndeadMage(e, dt, c) {
   /* HIS WARD AND HIS PHASES, DRAWN (archmage3, src/archmage-acts.js): the turned blow's flare, the ward shattering as an opening begins, the realm shattering as
      you come out of it, the phase change's own clock and its sounds */
   e.wardHitT = Math.max(0, (e.wardHitT || 0) - dt); e.wardDropT = Math.max(0, (e.wardDropT || 0) - dt);
-  { const op = mageOpen(e); if (op && !e.wasOpen) e.wardDropT = MAGE.ward.dropT; e.wasOpen = op; }
+  { const op = mageOpen(e); if (op && !e.wasOpen) e.wardDropT = MAGE.ward.dropT; if (!op && e.wasOpen && !e.realm) e.wardHold = MAGE.reflect.hold; e.wasOpen = op; }   /* (the told ward that HOLDS after an opening) */
+  e.wardHold = Math.max(0, (e.wardHold || 0) - dt);
   if (e.inRealm && !e.realm) e.shatter = { kind: e.inRealm, t: 0 }; e.inRealm = e.realm ? e.realm.kind : null;
   if (e.shatter && (e.shatter.t += dt) >= MAGE.ward.shatterT) e.shatter = null;
   if (e.trans) { const T = MAGE.trans[e.trans.kind], t0 = e.trans.t; e.trans.t += dt; const n = T.sounds.length;
@@ -235,10 +258,19 @@ export function updateUndeadMage(e, dt, c) {
   e.rings = e.rings.filter(r => r.t < r.life || r.on > 0);
   if (!P.dead && c.dodging && c.dodging() && e.mode !== 'breached' && e.mode !== 'wake') {
     const r = e.rings.find(q => q.kind === 'exit' && !q.used && q.on >= 0.8 && q.t < q.life && Math.abs(P.x - q.x) < MAGE.ringW + 6 && Math.abs(py - q.y) < MAGE.ringH + 8);
-    if (r) breach(e, r, c); }
+    if (r && !(e.wardHold > 0)) breach(e, r, c); else if (r) { e.wardHitT = MAGE.ward.hitT; e.wardHitX = P.x; e.wardHitY = py; } }   /* (his ward HOLDS after an opening: told, nothing breaks it again yet) */
   // ---- what he has thrown ----
   for (const q of e.shots) {
     q.t -= dt;
+    /* STRUCK BACK (Daniel 10-05): a blow that meets his firebolt sends it home; home, it breaks his ward - or rings off it while it holds */
+    if (reflectable(q) && !e.realm && c.strike) { const b = c.strike(); if (b && q.x > b.l - q.r && q.x < b.r + q.r && q.y > b.t - q.r - 8 && q.y < b.b + q.r) {
+      q.reflected = true; q.t = 3; q.hit = false; q.col = '#e8fff0'; const a = Math.atan2(e.y - 26 - q.y, e.x - q.x); q.a = a; q.vx = Math.cos(a) * MAGE.reflect.v; q.vy = Math.sin(a) * MAGE.reflect.v; say('STRUCK BACK', false); sound('crack'); } }
+    if (q.reflected) { const want = Math.atan2(e.y - 26 - q.y, e.x - q.x); let d = want - q.a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+      q.a += Math.max(-MAGE.reflect.turn * dt, Math.min(MAGE.reflect.turn * dt, d)); q.vx = Math.cos(q.a) * MAGE.reflect.v; q.vy = Math.sin(q.a) * MAGE.reflect.v; q.x += q.vx * dt; q.y += q.vy * dt;
+      if (Math.hypot(q.x - e.x, q.y - (e.y - 26)) < MAGE.reflect.r) { q.t = 0; q.gone = true;
+        if (wardBreakable(e)) { e.mode = 'reflected'; e.modeT = MAGE.openT; e.open = MAGE.openT; e.deathMark = null; e.chained = false; e.fireRing = null; say('HIS OWN FIRE BREAKS HIS WARD', true); sound('crack'); sound('sting'); }
+        else { e.wardHitT = MAGE.ward.hitT; e.wardHitX = q.x; e.wardHitY = q.y; sound('aegis'); } }
+      continue; }
     if (q.kind === 'hand') {   /* it turns toward you at a limited rate: a hard turn on the carpet leaves it behind */
       const want = Math.atan2(py - q.y, P.x - q.x); let d = want - q.a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
       q.a += Math.max(-1.6 * dt, Math.min(1.6 * dt, d)); q.vx = Math.cos(q.a) * q.sp; q.vy = Math.sin(q.a) * q.sp; }
@@ -260,13 +292,13 @@ export function updateUndeadMage(e, dt, c) {
   if (e.deathMark) { e.deathMark.t -= dt;
     if (e.deathMark.t <= 0) { const m = e.deathMark; e.deathMark = null; e.flashT = 0.3; e.flashX = m.x; e.flashY = m.y; sound('heavy');
       if (!P.dead && Math.hypot(P.x - m.x, py - m.y) < m.r) { hit(m.x, m.y, MAGE.dmg.mark, true, 'mark'); if (e.mode !== 'breached') { e.mode = 'hover'; e.modeT = 0.8 / k; } }
-      else if (e.mode !== 'breached') { e.mode = 'gather'; e.modeT = MAGE.openT; e.open = MAGE.openT; say('THE MARK FINDS NO ONE. IT COMES BACK ON HIM', true); sound('crack'); } } }
+      else if (e.mode !== 'breached' && e.mode !== 'reflected' && !(e.wardHold > 0)) { e.mode = 'gather'; e.modeT = MAGE.openT; e.open = MAGE.openT; say('THE MARK FINDS NO ONE. IT COMES BACK ON HIM', true); sound('crack'); } } }
   // ---- the blink ----
   e.blinkT -= dt;
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = MAGE.hover; } return; }
   if (e.mode === 'blinkOut') { if (e.modeT <= 0) { e.x = e.teleX; e.y = e.teleY; e.mode = 'blinkIn'; e.modeT = 0.25 / k; sound('mageBolt'); } return; }
   if (e.mode === 'blinkIn') { if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.35 / k; } return; }
-  if (e.mode === 'gather' || e.mode === 'breached') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.4; e.blinkT = 0; } return; }   /* then he goes: the window closes on a blink */
+  if (e.mode === 'gather' || e.mode === 'breached' || e.mode === 'reflected') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.4; e.blinkT = 0; } return; }   /* then he goes: the window closes on a blink */
   if (e.mode === 'markWait') { return; }
   /* HE TEARS A PORTAL at 75, 50 and 25%: the tear is told (realmTell - his ring of the realm, flaring), then it takes you */
   if (e.mode === 'hover' && e.modeT <= 0.2 && realmDue(e) >= 0) { const kind = REALM.kinds[e.realmN || 0], T = MAGE.trans[kind]; e.mode = 'realmTell'; e.modeT = T.secs; e.spell = 'realm'; e.face = Math.sign(P.x - e.x) || 1; e.deathMark = null;
@@ -281,14 +313,15 @@ export function updateUndeadMage(e, dt, c) {
     if ((e.blinkT <= 0 || crowded) && e.modeT <= 0.2) { [e.teleX, e.teleY] = blinkTo(e, P, box, rnd); e.mode = 'blinkOut'; e.modeT = 0.55 / k; e.blinkT = e.enraged ? MAGE.blinkEnraged : MAGE.blinkEvery; say('TELEPORT', false);
       if (mageStage(e) >= 3) pair(e, e.x, e.y - 24, e.teleX, e.teleY - 24, e.modeT + 0.3)[1].flare = true;   /* RING TO RING: his blink is a pair of rings now, and its exit works both ways too */
       return; }
-    if (e.modeT <= 0) begin(e, nextSpell(e), c);
+    if (e.modeT <= 0) { if (e.enraged && (e.bones || e.orbit || e.script || e.shots.filter(q => q.kind !== 'feed' && !q.reflected).length >= MAGE.late.shots)) { e.modeT = 0.2; return; }   /* (Daniel 10-05: less hectic late - the last spell's things clear first) */
+      begin(e, nextSpell(e), c); }
     return;
   }
   if (e.mode === 'orbitWait') { e.y += Math.sin(e.anim * 2.3) * 4 * dt; if (!e.orbit || e.modeT <= 0) { e.orbit = null; e.mode = 'hover'; e.modeT = MAGE.hover / k; } return; }
   if (e.mode === 'boneWait') { e.y += Math.sin(e.anim * 2.3) * 6 * dt; if (!e.bones || e.modeT <= 0) { e.bones = null; e.mode = 'hover'; e.modeT = MAGE.hover / k; } return; }
   if (e.modeT > 0) { if (e.mode === 'stormTell') e.face = Math.sign(P.x - e.x) || 1; return; }
   // ---- the spell goes ----
-  const hx = e.x + e.face * 12, hy = e.y - 34, aim = Math.atan2(py - hy, P.x - hx);
+  const [hx, hy] = staffTip(e), aim = Math.atan2(py - hy, P.x - hx);
   const shot = (a, sp, r, dmg, kind, col, life = 4, from) => e.shots.push({ x: from ? from.x : hx, y: from ? from.y : hy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a, sp, r, dmg, kind, col, t: life });
   const spell = e.spell;
   if (spell === 'realm') { enterRealm(e, c.A, P, c); return; }   /* THROUGH: you, him and the carpet */
@@ -298,7 +331,7 @@ export function updateUndeadMage(e, dt, c) {
   if (spell === 'script') { const S = e.script; if (S) { S.flash = MAGE.script.flash; if (!P.dead && scriptHits(S, py)) hit(P.x, py, MAGE.dmg.script, true, 'script'); sound('heavy');
       if (S.left > 0) { S.left--; const mine = Math.max(0, Math.min(S.n - 1, scriptBand(S, py))); S.safe = scriptSafe(S.n, mine, rnd); e.mode = 'scriptTell'; e.modeT = MAGE.script.again / k; say(SAY.scriptTell, true); return; } }   /* (his second stage: written again, the dark line moved) */
     e.chained = false; e.mode = 'hover'; e.modeT = MAGE.hover / k; return; }
-  if (mageStage(e) >= 2 && !e.realm && MAGE.echo.spells.includes(spell)) {   /* PHYLACTERY ECHO: his ghost stays here and casts it again */
+  if (mageStage(e) === 2 && !e.realm && MAGE.echo.spells.includes(spell)) {   /* (Daniel 10-05: his echo is his second stage's - not in the last, one windup at a time) */   /* PHYLACTERY ECHO: his ghost stays here and casts it again */
     (e.echoes ??= []).push({ spell, x: e.x, y: e.y, face: e.face, t: MAGE.echo.delay, T: MAGE.echo.delay, markX: spell === 'storm' ? P.x : null, enraged: !!e.enraged });
     if (!e.echoSaid) { e.echoSaid = true; say('HIS ECHO CASTS IT AGAIN: DODGE TWICE', true); } }
   if (spell === 'fire') { const fr = e.fireRing && e.fireRing.t < e.fireRing.life ? e.fireRing : null, a0 = fr ? Math.atan2(py - fr.y, P.x - fr.x) : aim;
@@ -332,13 +365,12 @@ export function updateUndeadMage(e, dt, c) {
       for (let i = 0; i < n; i++) shot(a0 + (i - (n - 1) / 2) * 0.2, MAGE.boltV, 5, MAGE.dmg.bent, 'bent', '#ff9b49', 4, b);
       b.glow = null; if (a) { a.glow = null; a.life = a.t + 0.2; } b.life = b.t + stayOf(e); keepSpare(e, b); }
     sound('mageBolt'); }
-  // IN PAIRS when he burns: the next spell's tell straight away, then he drifts
-  if (e.enraged && !e.chained) { e.chained = true; begin(e, nextSpell(e), c); return; }
+  /* (no more spells IN PAIRS when he burns - Daniel 10-05: "the end of the fight throws too much at you at once") */
   e.chained = false; e.mode = 'hover'; e.modeT = MAGE.hover / k;
 }
 export function undeadFrame(e, F) {
   if (e.hurtT > 0) return F.hurt;
-  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.death, markWait: F.death, stepTell: F.blinkOut, bendTell: F.fire, decoyTell: F.blinkOut, trapTell: F.fire, boneTell: F.death, boneWait: F.death, orbitTell: F.storm, orbitWait: F.death, scriptTell: F.storm, pullTell: F.storm, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wallTell: F.fire, sporeTell: F.poison, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
+  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.death, markWait: F.death, stepTell: F.blinkOut, bendTell: F.fire, decoyTell: F.blinkOut, trapTell: F.fire, boneTell: F.death, boneWait: F.death, orbitTell: F.storm, orbitWait: F.death, scriptTell: F.storm, pullTell: F.storm, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.open, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wallTell: F.fire, sporeTell: F.poison, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
     ?? (e.enraged ? F.enraged[Math.floor(e.anim * 4) % 2] : F.idle[Math.floor(e.anim * 2.5) % 2]);
 }
 /* ONE RING: the desert inside it, and a rim of sparks in his green - the bolt's colour when a bolt is coming through it, and bright and
@@ -357,7 +389,9 @@ export function drawMageRing(g, r, cx, cy, time) {
 /* THE NEW THINGS, DRAWN (archmage2): the storm's ring (ghost skulls and its gaps through the tell, the skulls themselves closing in), his
    echoes (a pale ghost of him where he cast, brightening to its cast), the echo's lightning column, and the void (a black-violet tear with
    the air streaming into it) */
-function skull(g, x, y, a) { g.fillStyle = 'rgba(236,224,196,' + a + ')'; g.fillRect(x - 4, y - 4, 8, 6); g.fillRect(x - 3, y + 2, 6, 2); g.fillStyle = 'rgba(18,14,20,' + a + ')'; g.fillRect(x - 3, y - 2, 2, 2); g.fillRect(x + 1, y - 2, 2, 2); g.fillRect(x - 1, y + 2, 2, 1); }
+/* (Daniel 10-05) a rim of the colour rule round a thing at (x, y): yellow - guard it, red - dodge it */
+function rim(g, x, y, r, col) { g.strokeStyle = col; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.stroke(); }
+function skull(g, x, y, a) { if (+a >= 0.9) rim(g, x, y - 1, 7, '#ff4a4a'); g.fillStyle = 'rgba(236,224,196,' + a + ')'; g.fillRect(x - 4, y - 4, 8, 6); g.fillRect(x - 3, y + 2, 6, 2); g.fillStyle = 'rgba(18,14,20,' + a + ')'; g.fillRect(x - 3, y - 2, 2, 2); g.fillRect(x + 1, y - 2, 2, 2); g.fillRect(x - 1, y + 2, 2, 1); }
 function drawNew(g, e, cx, cy, time) {
   const B = e.bones; if (B) { const k = B.live ? B.t / MAGE.bone.secs : 0;
     if (!B.live) { const R = MAGE.bone.r0; g.strokeStyle = 'rgba(236,224,196,0.25)'; g.setLineDash([3, 5]); g.beginPath(); g.arc(Math.round(B.cx - cx), Math.round(B.cy - cy), R, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
@@ -372,14 +406,14 @@ function drawNew(g, e, cx, cy, time) {
   const O = e.orbit; if (O) { const k = O.live ? 1 : Math.min(1, (MAGE.tell.orbit - Math.max(0, e.modeT || 0)) / MAGE.tell.orbit), ox = Math.round(O.cx - cx), oy = Math.round(O.cy - cy);
     for (const w of O.worlds) { g.strokeStyle = 'rgba(230,196,106,' + (O.live ? 0.35 : 0.2 + 0.3 * Math.abs(Math.sin(time * 6))).toFixed(2) + ')'; g.setLineDash([2, 4]); g.beginPath(); g.arc(ox, oy, w.R, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); }
     for (const [x, y] of orbitWorlds(O)) { const wx = Math.round(x - cx), wy = Math.round(y - cy), r = MAGE.orbit.r;
-      g.globalAlpha = O.live ? 1 : 0.25 + 0.5 * k; g.fillStyle = '#3a2e1c'; g.beginPath(); g.arc(wx, wy, r + 1, 0, Math.PI * 2); g.fill(); g.fillStyle = '#b08a3a'; g.beginPath(); g.arc(wx, wy, r, 0, Math.PI * 2); g.fill();
+      g.globalAlpha = O.live ? 1 : 0.25 + 0.5 * k; g.fillStyle = '#3a2e1c'; g.beginPath(); g.arc(wx, wy, r + 1, 0, Math.PI * 2); g.fill(); if (O.live) rim(g, wx, wy, r + 3, '#ff4a4a'); g.fillStyle = '#b08a3a'; g.beginPath(); g.arc(wx, wy, r, 0, Math.PI * 2); g.fill();
       g.fillStyle = '#e6c46a'; g.fillRect(wx - 4, wy - 5, 4, 2); g.fillStyle = '#6a4a1c'; g.fillRect(wx - r + 2, wy, r * 2 - 4, 1); g.globalAlpha = 1; } }
   /* THE GRAVE SCRIPT (archmage3): his runes in lines across the whole sky, every band but the dark one; brightening through the tell, white when they go */
   const S = e.script; if (S) { const W = g.canvas.width, k = e.mode === 'scriptTell' ? 1 - Math.max(0, e.modeT || 0) / MAGE.tell.script : 1;
     for (let b = 0; b < S.n; b++) { const y0 = Math.round(S.y0 + b * S.h - cy), h = Math.round(S.h);
       if (b === S.safe) { g.strokeStyle = 'rgba(200,255,220,0.35)'; g.strokeRect(1, y0 + 1, W - 2, h - 2); continue; }   /* THE DARK LINE: outlined, clear */
       if (S.flash > 0 && e.mode !== 'scriptTell') { g.fillStyle = 'rgba(232,255,236,' + Math.min(0.85, 0.35 + S.flash).toFixed(2) + ')'; g.fillRect(0, y0, W, h); continue; }
-      g.fillStyle = 'rgba(111,224,138,' + (0.06 + 0.16 * k).toFixed(2) + ')'; g.fillRect(0, y0, W, h);
+      g.fillStyle = 'rgba(255,74,74,' + (0.05 + 0.13 * k).toFixed(2) + ')'; g.fillRect(0, y0, W, h); g.fillStyle = 'rgba(255,74,74,0.7)'; g.fillRect(0, y0, W, 1); g.fillRect(0, y0 + h - 1, W, 1);   /* (red: nothing turns a line) */
       g.fillStyle = 'rgba(200,255,220,' + (0.3 + 0.5 * k).toFixed(2) + ')'; const mid = y0 + (h >> 1), off = ((Math.floor(cx) % 14) + 14) % 14;
       for (let x = -off; x < W; x += 14) { const r = ((Math.floor((x + cx) / 14) * 7 + b * 3) % 4 + 4) % 4; g.fillRect(x, mid - 3, 2, 7); if (r & 1) g.fillRect(x - 2, mid - 3, 6, 1); if (r & 2) g.fillRect(x - 2, mid + 3, 6, 1); else g.fillRect(x + 2, mid, 3, 1); } } }   /* a rune every 14 px */
   const V = e.void; if (V) { const x = Math.round(V.x - cx), y = Math.round(V.y - cy), on = V.live ? 1 : Math.min(1, (MAGE.tell.pull - Math.max(0, e.modeT || 0)) / MAGE.tell.pull + 0.2), R = Math.round((MAGE.pull.r + 4) * on);
@@ -394,13 +428,17 @@ export function drawUndeadMage(g, e, cx, cy, time) {
   for (const cl of e.clouds || []) { const a = Math.min(1, cl.t) * 0.5; g.fillStyle = `rgba(110,170,60,${a.toFixed(2)})`; g.beginPath(); g.arc(Math.round(cl.x - cx), Math.round(cl.y - cy), cl.r + Math.sin(time * 3 + cl.x) * 2, 0, Math.PI * 2); g.fill();
     g.fillStyle = `rgba(166,224,74,${(a * 0.8).toFixed(2)})`; for (let i = 0; i < 6; i++) { const t = time * 0.8 + i; g.fillRect(Math.round(cl.x - cx + Math.cos(t * 1.3 + i) * cl.r * 0.7), Math.round(cl.y - cy + Math.sin(t + i * 2) * cl.r * 0.6), 2, 2); } }
   drawNew(g, e, cx, cy, time);
-  if (e.deathMark) { const m = e.deathMark, k = 1 - m.t / m.T, r = m.r; g.strokeStyle = Math.floor(time * (6 + k * 14)) % 2 ? '#1a2a1a' : '#6fe08a'; g.lineWidth = 2; g.beginPath(); g.arc(Math.round(m.x - cx), Math.round(m.y - cy), r, 0, Math.PI * 2); g.stroke();
+  if (e.deathMark) { const m = e.deathMark, k = 1 - m.t / m.T, r = m.r; rim(g, Math.round(m.x - cx), Math.round(m.y - cy), r + 2, '#ff4a4a'); g.strokeStyle = Math.floor(time * (6 + k * 14)) % 2 ? '#1a2a1a' : '#6fe08a'; g.lineWidth = 2; g.beginPath(); g.arc(Math.round(m.x - cx), Math.round(m.y - cy), r, 0, Math.PI * 2); g.stroke();
     g.fillStyle = `rgba(20,40,20,${(0.15 + k * 0.3).toFixed(2)})`; g.beginPath(); g.arc(Math.round(m.x - cx), Math.round(m.y - cy), r * k, 0, Math.PI * 2); g.fill(); g.lineWidth = 1; }
   if (e.flashT > 0 && e.flashY !== null && e.flashY !== undefined) { g.fillStyle = '#d8ffe0'; g.beginPath(); g.arc(Math.round(e.flashX - cx), Math.round(e.flashY - cy), MAGE.markR, 0, Math.PI * 2); g.fill(); }
   for (const q of e.shots || []) { const x = Math.round(q.x - cx), y = Math.round(q.y - cy);
     if (q.kind === 'hand') { g.fillStyle = '#10180f'; g.fillRect(x - 7, y - 5, 14, 10); g.fillStyle = '#3a6a3a'; for (let i = 0; i < 4; i++) g.fillRect(x + Math.round(Math.cos(q.a) * 6) - 6 + i * 4, y - 8 + Math.round(Math.sin(time * 12 + i) * 1.5), 2, 5); g.fillStyle = '#8fffb0'; g.fillRect(x - 2, y - 1, 4, 2); continue; }
     if (q.kind === 'ice') { g.fillStyle = q.col; const ex = Math.round(Math.cos(q.a) * 7), ey = Math.round(Math.sin(q.a) * 7); for (let i = 0; i < 4; i++) g.fillRect(x - Math.round(ex * i / 4) - 1, y - Math.round(ey * i / 4) - 1, 3, 3); g.fillStyle = '#ffffff'; g.fillRect(x - 1, y - 1, 2, 2); continue; }
     if (q.kind === 'feed') { g.fillStyle = q.col; g.fillRect(x - 2, y - 2, 4, 4); continue; }
-    g.fillStyle = q.col; g.fillRect(x - q.r, y - q.r, q.r * 2, q.r * 2); g.fillStyle = q.kind === 'orb' ? '#d8ffb0' : '#fff0c0'; g.fillRect(x - 1, y - 2, 2, 2); }
+    /* (Daniel 10-05) THE COLOUR RULE: a yellow rim - guard it; a red rim - dodge it. His own firebolt that can be STRUCK BACK wears a turning gold ring and a white heart; struck back it flies home pale */
+    if (q.reflected) { g.fillStyle = 'rgba(200,255,220,0.5)'; g.fillRect(x - Math.round(q.vx * 0.04) - 2, y - Math.round(q.vy * 0.04) - 2, 4, 4); g.fillStyle = '#e8fff0'; g.fillRect(x - 4, y - 4, 8, 8); g.fillStyle = '#ffffff'; g.fillRect(x - 2, y - 2, 4, 4); continue; }
+    rim(g, x, y, (q.r || 4) + 2, q.kind === 'orb' ? '#ff4a4a' : '#ffd84a');
+    if (reflectable(q)) { for (let i = 0; i < 4; i++) { const a = time * 6 + i * Math.PI / 2; g.fillStyle = '#ffe6a0'; g.fillRect(x + Math.round(Math.cos(a) * 9) - 1, y + Math.round(Math.sin(a) * 9) - 1, 2, 2); } }
+    g.fillStyle = q.col; g.fillRect(x - q.r, y - q.r, q.r * 2, q.r * 2); g.fillStyle = q.kind === 'orb' ? '#d8ffb0' : '#fff0c0'; g.fillRect(x - 1, y - 2, 2, 2); if (reflectable(q)) { g.fillStyle = '#ffffff'; g.fillRect(x - 2, y - 2, 4, 4); } }
   g.restore();
 }

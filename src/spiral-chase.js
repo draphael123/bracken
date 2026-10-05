@@ -227,7 +227,7 @@ export function updateMageChase(e, dt, c) {
     e.spell = spell; e.mode = TELL[spell]; e.modeT = MAGE.tell[spell]; c.say(SAY[spell === 'ice' && FLIGHTS[Math.min(FLIGHTS.length - 1, next)].frost ? 'frostTell' : e.mode], spell === 'mark'); return; }
   if (e.modeT > 0) { e.face = Math.sign(P.x - e.x) || e.face; return; }
   // ---- the spell goes ----
-  const hx = e.x + e.face * 12, hy = e.y - 34, aim = Math.atan2(py - hy, P.x - hx);
+  const hx = e.x + e.face * MAGE.staff.dx, hy = e.y - MAGE.staff.dy, aim = Math.atan2(py - hy, P.x - hx);   /* (archmage3: from the head of his staff) */
   const shot = (a, sp, r, dmg, kind, col) => e.shots.push({ x: hx, y: hy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a, sp, r, dmg, kind, col, t: 4 });
   if (e.spell === 'fire') { for (const s of next >= CHASE.pairFrom ? [-CHASE.pairFan / 2, CHASE.pairFan / 2] : [0]) shot(aim + s, MAGE.boltV, 5, MAGE.dmg.fire, 'fire', '#ff9b49'); c.sound('mageBolt'); }
   else if (e.spell === 'ice') { for (let i = -2; i <= 2; i++) shot(aim + i * 0.3, 120, 4, MAGE.dmg.ice, 'ice', '#9be2ff'); c.sound('hiss');

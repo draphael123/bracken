@@ -12,7 +12,7 @@
 // usage: node tools/undead-moves.mjs
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
-import { updateUndeadMage, MAGE, boneSkulls, boneGaps, pullV, orbitWorlds, scriptBand, scriptHits, mageOpen } from '../src/undead-mage.js';
+import { updateUndeadMage, MAGE, boneSkulls, boneGaps, pullV, orbitWorlds, scriptBand, scriptHits, mageOpen, staffTip, reflectable } from '../src/undead-mage.js';
 import { wardUp } from '../src/archmage-acts.js';
 import { REALM } from '../src/mage-realms.js';
 import { readFileSync } from 'node:fs';
@@ -25,7 +25,7 @@ function rig(o = {}) {
   const e = { t: 'undeadmage', alive: true, hp: o.hp ?? HP, hp0: HP, maxHp: HP, mode: 'hover', modeT: 0.3, x: (A.x0 + A.x1) / 2 + 100, y: (A.y0 + A.floor) / 2, face: -1, anim: 0, turn: 0, blinkT: 99, realmN: 3, ...o.e };
   const log = { hits: [], says: [], tells: [], t: 0 };
   let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const c = () => ({ P, A, box: carpetBox(A, 0), rnd, hit: (x, y, d, hard, blow) => log.hits.push({ t: log.t, d, hard, blow }), venom: () => {}, say: m => log.says.push(m), sound: () => {}, dodging: () => false, carry: () => {}, pull: () => {}, leave: () => {} });
+  const c = () => ({ P, A, box: carpetBox(A, 0), rnd, hit: (x, y, d, hard, blow) => log.hits.push({ t: log.t, d, hard, blow }), venom: () => {}, say: m => log.says.push(m), sound: () => {}, dodging: () => false, carry: () => {}, pull: () => {}, leave: () => {}, strike: () => log.strike || null });
   let last = '';
   const step = (dt = 1 / 60) => { updateUndeadMage(e, dt, c()); log.t += dt; if (e.mode !== last && /Tell$/.test(e.mode)) log.tells.push([log.t, e.mode]); last = e.mode; };
   const run = (s, each) => { for (let i = 0; i < Math.round(s * 60); i++) { step(); if (each && each()) return true; } return false; };
@@ -67,7 +67,7 @@ assert.ok(MAGE.tell.bone >= 0.9 && MAGE.tell.pull >= 0.9, 'a new move is told fo
     if (echoAt < 0 && r.e.shots.some(q => q.echo)) echoAt = r.log.t; return echoAt >= 0; });
   assert.ok(castAt >= 0 && echoAt >= 0 && ghost, 'stage 2: his fire is not cast again by his echo');
   assert.ok(Math.abs(echoAt - castAt - MAGE.echo.delay) < 0.05, 'the echo does not cast ' + MAGE.echo.delay + ' s after him: ' + (echoAt - castAt).toFixed(2));
-  const q = r.e.shots.find(s => s.echo); assert.ok(Math.abs(q.x - (ghost.x + ghost.face * 12)) < 6, 'the echo does not cast from where he was');
+  const q = r.e.shots.find(s => s.echo); assert.ok(Math.abs(q.x - (ghost.x + ghost.face * MAGE.staff.dx)) < 6, 'the echo does not cast from where he was');
   assert.ok(r.log.says.some(m => /ECHO/.test(m)), 'his echo is not said the first time');
   const m = rig({ hp: Math.floor(HP * 0.65) }); m.e.stage2 = true; at(m, 'mark'); m.run(1.5); assert.ok(!(m.e.echoes || []).length, 'his echo repeats the death mark'); }
 // ---- GRAVE PULL ----
@@ -122,5 +122,22 @@ assert.ok(MAGE.tell.orbit >= 1 && MAGE.tell.script >= 1, 'a new move is told for
     assert.equal(cast, 0, REALM.kinds[k] + ': something of his is still in the sky through the phase change (it is a breather)');
     const said = r.log.says.find(m => m === T.say); assert.ok(said && said.includes(REALM.name[REALM.kinds[k]].replace('THE ', '')), REALM.kinds[k] + ': the phase change does not say itself (and its realm)'); says.add(said); }
   assert.equal(says.size, 3, 'two phase changes are the same'); }
+// ---- DANIEL'S NOTES 10-05: HIS WARD BROKEN BY HIS OWN BOLT STRUCK BACK; THE HOLD AFTER; YELLOW/RED; LESS HECTIC LATE; THE STAFF ----
+{ const r = rig(); at(r, 'fire'); r.run(2, () => r.e.shots.some(q => q.kind === 'fire'));
+  const q = r.e.shots.find(s => s.kind === 'fire'), [tx, ty] = staffTip({ ...r.e }); assert.ok(q && reflectable(q), 'his firebolt is not one that can be struck back');
+  assert.ok(Math.hypot(q.x - tx, q.y - ty) < 6, 'his bolt does not leave the head of his staff: ' + [q.x, q.y, tx, ty]);
+  q.x = r.P.x + 10; q.y = r.P.y - 8; r.log.strike = { l: r.P.x - 4, r: r.P.x + 30, t: r.P.y - 30, b: r.P.y + 2 }; r.step(); r.log.strike = null;
+  assert.ok(q.reflected && r.log.says.includes('STRUCK BACK'), 'a blow that meets his firebolt does not strike it back');
+  r.run(2, () => mageOpen(r.e)); assert.ok(r.e.mode === 'reflected' && mageOpen(r.e) && r.log.says.some(m => /BREAKS HIS WARD/.test(m)), 'his own bolt struck back does not break his ward: ' + r.e.mode);
+  assert.ok(!r.log.hits.some(h => h.blow === 'fire' && r.log.t > 0), 'the struck-back bolt hurt you');
+  r.run(MAGE.openT + 0.3, () => !mageOpen(r.e)); r.step(); assert.ok(r.e.wardHold > 0, 'after the opening his ward does not HOLD (the told anti-spam ward)');
+  r.e.shots.push({ x: r.e.x - 40, y: r.e.y - 26, vx: 200, vy: 0, a: 0, sp: 200, r: 5, dmg: 14, kind: 'fire', col: '#fff', t: 3, reflected: true }); r.run(0.5);
+  assert.ok(!mageOpen(r.e) && r.e.wardHitT > 0, 'while his ward holds, a bolt struck back opens him again (or is not seen to ring off)'); }
+{ const e = rig().e; assert.ok(!reflectable({ kind: 'ice' }) && !reflectable({ kind: 'fire', echo: true }) && !reflectable({ kind: 'bent' }), 'something other than his own firebolt can be struck back'); }
+{ /* LESS HECTIC LATE: no echo in his last stage, no spells in pairs */
+  const r = rig({ hp: Math.floor(HP * 0.3) }); r.e.enraged = true; r.e.stage2 = true; at(r, 'fire'); let tells = 0, last = '';
+  r.run(3, () => { if (/Tell$/.test(r.e.mode) && r.e.mode !== last) tells++; last = r.e.mode; return r.e.shots.some(q => q.kind === 'fire'); }); r.run(0.05);
+  assert.ok(!/Tell$/.test(r.e.mode) && !(r.e.echoes || []).length, 'in his last stage he still casts in pairs, or his echo still repeats: ' + r.e.mode); }
+console.log('ok  undead-moves  (Daniel 10-05) his firebolt struck back breaks his ward (then it HOLDS, told); only that bolt can be; bolts leave his staff head; his last stage one windup at a time');
 console.log('ok  undead-moves  (archmage3) his orrery (told ' + MAGE.tell.orbit + ' s, worlds round him, safe between orbits) and the grave script (told ' + MAGE.tell.script + ' s, every line but a dark one, twice from stage 2); his ward up by default, down and shattered when open, flared and sounded when it turns a blow; three phase changes, each its own set piece and a breather');
 console.log('ok  undead-moves  bone storm (told ' + MAGE.tell.bone + ' s, ' + MAGE.bone.n + ' skulls, gaps shown, flown out of untouched, sat in hit; changes every cycle), phylactery echo (stage 2, ' + MAGE.echo.delay + ' s after, from where he cast), grave pull (stage 3 only, told ' + MAGE.tell.pull + ' s, ' + MAGE.pull.v + ' px/s for ' + MAGE.pull.secs + ' s, the void hurts and throws you out)');
