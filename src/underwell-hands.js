@@ -12,6 +12,7 @@ import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { venomOn, VENOM } from './desert-foes2.js';
 import * as UWA from './redraw/underwell_art.js';
+import * as UWD from './redraw/underwell_dress.js';
 
 /* THE OIL: rehang = s before a spare rope is lowered where one burnt (claude/underwell fix pass: no softlock, a cost); burn = s a lit cell on a floor burns (burnDeep: a cell in a gutter's slot, deep oil - it burns long, so the worms under it stay down while you cross); spread = s before it lights the cells beside it; back = s before wet oil dries / spent oil seeps back; tick/dmg =
    the fire on a hero standing in it (unblockable); foeDmg on a creature in it; nestBurn = s a nest takes to burn away; relight = s before a torch's
@@ -41,7 +42,7 @@ export function makeUnderwellHands(ctx) {
       const add = (x, y, vertical) => { const k = key(x, y); if (UW.cells.has(k)) return; const c = { x, y, st: 'oil', t: 0, age: 0, vertical: !!vertical, seed: (x * 7 + y * 13) % 31, deep: !vertical && ctx.cellGet(x, y - 1) === ctx.T.SOLID && ctx.cellGet(x, y + 1) === ctx.T.SOLID }; UW.cells.set(k, c); UW.list.push(c); };
       for (const [x0, x1, y] of L.seeps || []) for (let x = x0; x <= x1; x++) add(x, y, false);
       for (const [x, y0, y1] of L.lines || []) for (let y = y0; y <= y1; y++) add(x, y, true);
-      UW.sconces = L.ents.filter(e => e.t === 'sconce').map(e => { let below = null; for (let y = e.y; y < L.H; y++) { const c = UW.cells.get(key(e.x, y)); if (c) { below = c; break; } } return { id: e.id, x: e.x, y: e.y, st: 'up', t: 0, below }; });
+      UW.sconces = L.ents.filter(e => e.t === 'sconce').map(e => { let below = null; for (let y = e.y; y < L.H; y++) { const c = UW.cells.get(key(e.x, y)); if (c) { below = c; break; } } let ceil = e.y - 1; while (ceil > 0 && ctx.cellGet(e.x, ceil) !== ctx.T.SOLID) ceil--; return { id: e.id, x: e.x, y: e.y, st: 'up', t: 0, below, ceil }; });
       const lp = L.ents.find(e => e.t === 'greatlamp'); if (lp) { let fy = lp.y; while (fy < L.H - 1 && ctx.cellGet(lp.x, fy + 1) === ctx.T.AIR) fy++; UW.lamp = { x: lp.x, top: lp.top || lp.y - 6, y: lp.y, floor: fy, st: 'up', t: 0, swing: 0 }; }
       UW.nests = (L.nests || []).map(m => ({ ...m, open: false, burn: 0 }));
       UW.ropes = (L.ropes || []).map(r => ({ ...r, burnt: false }));
@@ -125,6 +126,8 @@ export function makeUnderwellHands(ctx) {
   /* ---------- EVERY FRAME ---------- */
   H.update = dt => {
     if (!UW) return; UW.clock += dt; const hb = ctx.attackBox(), P0 = ctx.hero(), TS = ctx.TS;
+    /* THE FIRE CRACKLES (claude/underwellart): the nearer the burning oil, the more of it you hear (the existing ember sfx, thinned by distance) */
+    if (P0 && !P0.dead && ctx.sfx.ember) { let near = 0; for (const c of UW.list) if (c.st === 'fire' && Math.abs(c.x * TS + 8 - P0.x) < 200 && Math.abs(c.y * TS - P0.y) < 80) near++; if (near && Math.random() < Math.min(0.09, 0.012 * near) * dt * 60) ctx.sfx.ember(); }
     /* THE OIL's clock */
     for (const c of UW.list) {
       if (c.st === 'fire') { c.age += dt; c.t -= dt;
@@ -201,24 +204,40 @@ export function makeUnderwellHands(ctx) {
   /* ---------- DRAWING (greybox: src/redraw/underwell_art.js) ---------- */
   H.drawWorld = (g, cx, cy, time) => {
     if (!UW) return; const R = Math.round, vw = ctx.VW(), vh = ctx.VH(), TS = ctx.TS, inX = (x, m = 40) => x > cx - m && x < cx + vw + m;
+    { const plan = UWD.planDress(UW.L, ctx.T); if (!H.noSupports) UWD.drawSupports(g, cx, cy, vw, time, plan, UW.L); UWD.drawDress(g, cx, cy, vw, time, plan); }   /* the dressing and what holds the ledges up (src/redraw/underwell_dress.js) */
     for (const [x0, x1, y] of UW.sand) if (inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawSand(g, R(x0 * TS - cx), R(y * TS - cy), (x1 - x0 + 1) * TS, time);
     for (const [x0, x1, y] of UW.L.seeps || []) if (x1 - x0 > 20 && ctx.cellGet(x0 + 1, y - 1) !== ctx.T.AIR && ctx.cellGet(x0 + 1, y + 1) !== ctx.T.AIR && inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawGutter(g, R((x0 + 1) * TS - cx), R(y * TS - cy), (x1 - x0 - 1) * TS);   /* a gutter's grate (a slot in the rock) */
-    for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy), c.st, c.st === 'fire' ? Math.min(1, c.t / OIL.burn) : 0, time, c.vertical, c.seed); }
+    for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy), c.st, c.st === 'fire' ? Math.min(1, c.t / OIL.burn) : 0, time, c.vertical, c.seed, c.deep); }
     const Ph = ctx.hero();
     for (const d of UW.L.decor || []) if (d.kind === 'husk' && inX(d.x * TS, 60)) UWA.drawHusk(g, R(d.x * TS + 8 - cx), R((d.y + 1) * TS - cy));   /* her cast shell by her door */
     for (const m of UW.nests) { if (m.open) continue; const x = m.x0 * TS; if (!inX(x)) continue;
       const near = Ph && !Ph.dead && Math.abs(Ph.x - (m.x0 + m.x1 + 1) * 8) < 56 && Ph.y > m.y0 * TS && Ph.y <= (m.y1 + 2) * TS, q = near ? R(Math.sin(time * 38) * 1.2) : 0;   /* THE NEST QUIVERS as a blade comes near it (the tell before it spills) */
       UWA.drawNest(g, R(x - cx) + q, R(m.y0 * TS - cy), (m.x1 - m.x0 + 1) * TS, (m.y1 - m.y0 + 1) * TS, Math.min(1, m.burn / OIL.nestBurn), time); }
     for (const s of UW.sconces) { const x = s.x * TS + 8; if (!inX(x)) continue; const fallDy = s.st === 'fall' && s.below ? ((s.below.y - s.y) * TS) * (1 - s.t / OIL.torchFall) : 0;
-      UWA.drawSconce(g, R(x - cx), R(s.y * TS - cy), s.st === 'down' ? 'down' : 'up', s.st === 'down' ? 1 - s.t / OIL.relight : 1, time, fallDy); }
+      UWA.drawSconce(g, R(x - cx), R(s.y * TS - cy), s.st === 'down' ? 'down' : 'up', s.st === 'down' ? 1 - s.t / OIL.relight : 1, time, fallDy, R((s.ceil + 1) * TS - cy)); }
     const lp = UW.lamp; if (lp && inX(lp.x * TS, 60)) UWA.drawLamp(g, R(lp.x * TS + 8 - cx), R(lp.top * TS - cy), R((lp.y + 1) * TS + (lp.dy || 0) - cy), lp.st, time, lp.st === 'up' ? Math.sin(time * 0.9) * 2 : 0);
     const f = UW.fountain; if (f && inX(f.x)) UWA.drawFountain(g, R(f.x - cx), R(f.y - cy), f.full, ctx.questGot(), time);
     /* the dust scorpions' grit while their claw is up (the tell: a yellow mark, and the grit) */
     for (const e of ctx.enemies()) if (e.alive && e.cnSkin === DUST_SKIN && e.st && e.st.mode === 'clawTell' && inX(e.x)) { g.fillStyle = '#c8b48a'; for (let i = 0; i < 6; i++) g.fillRect(R(e.x - cx + (e.face || 1) * (6 + ((time * 40 + i * 5) % 18))), R(e.y - 6 - (i % 3) * 3 - cy), 2, 2); }
     if (UW.glint) drawGlint(g, R(UW.glint.x - cx), R(UW.glint.y - 18 - cy), vw, vh, time);
   };
-  /* over everything: the grit in your eyes */
-  H.drawOver = (g, cx, cy) => { if (!UW) return; const P = ctx.hero(); if (P && P.uwBlind > 0) UWA.drawBlind(g, P.x - cx, P.y - 14 - cy, ctx.VW(), ctx.VH(), Math.min(1, P.uwBlind / CAST.blind)); };
+  /* THE LIGHT (claude/underwellart): every lit torch, burning cell, burning nest, the great lamp, the running fountain and each candle niche is a hole in the dark (main.js's dark pass calls
+     holes) and throws a warm pool over it (pools, in drawOver) */
+  const lit = (cx, cy) => { const out = [], vw = ctx.VW(), TS = ctx.TS; if (!UW) return out;
+    for (const s of UW.sconces) if (s.st !== 'down') out.push({ x: s.x * TS + 8, y: s.y * TS + 2, r: 54, a: 0.34 });
+    let n = 0; for (const c of UW.list) if (c.st === 'fire') { const x = c.x * TS + 8; if (x < cx - 60 || x > cx + vw + 60) continue; if (c.vertical || (c.x + c.y) % 2 === 0) out.push({ x, y: c.y * TS + 6, r: c.vertical ? 24 : 36, a: 0.3 }); }
+    for (const m of UW.nests) if (!m.open && m.burn > 0) out.push({ x: (m.x0 + m.x1 + 1) * TS / 2, y: (m.y0 + m.y1 + 1) * TS / 2, r: 60, a: 0.4 });
+    const lp = UW.lamp; if (lp && lp.st !== 'down') out.push({ x: lp.x * TS + 8, y: (lp.y + 1) * TS - 8, r: 120, a: 0.4, lamp: true });
+    const f = UW.fountain; if (f && f.full) out.push({ x: f.x, y: f.y - 20, r: 40, a: 0.16, cool: true });
+    for (const c of UWD.planDress(UW.L, ctx.T).candles) if (c.x > cx - 60 && c.x < cx + vw + 60) out.push({ x: c.x, y: c.y, r: 28, a: 0.22 });
+    return out; };
+  H.holes = (hole, cx, cy) => { if (!UW) return; for (const q of lit(cx, cy)) if (q.x > cx - q.r * 1.4 && q.x < cx + ctx.VW() + q.r * 1.4) hole(q.x - cx, q.y - cy, q.r * 1.2, 1); };
+  /* over everything: the warm pools, and the grit in your eyes */
+  H.drawOver = (g, cx, cy, time) => { if (!UW) return; const P = ctx.hero(), vw = ctx.VW(), R = Math.round;
+    g.globalCompositeOperation = 'lighter'; for (const q of lit(cx, cy)) { if (q.x < cx - q.r || q.x > cx + vw + q.r || q.y < cy - q.r || q.y > cy + ctx.VH() + q.r) continue; if (q.cool) { g.globalAlpha = 1; UWA.lightPool(g, R(q.x - cx), R(q.y - cy), q.r, 0.1, time, q.x); continue; } UWA.lightPool(g, R(q.x - cx), R(q.y - cy), q.r, q.a, time, q.x); }
+    { const lp = UW.lamp; if (lp && lp.st !== 'down' && lp.x * ctx.TS > cx - 120 && lp.x * ctx.TS < cx + vw + 120) { const x = R(lp.x * ctx.TS + 8 - cx), y = R((lp.y + 1) * ctx.TS - 8 - cy), gr = g.createLinearGradient(0, y, 0, y + 170); gr.addColorStop(0, 'rgba(255,170,80,0.22)'); gr.addColorStop(1, 'rgba(255,140,50,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(x - 14, y); g.lineTo(x + 14, y); g.lineTo(x + 90, y + 170); g.lineTo(x - 90, y + 170); g.closePath(); g.fill(); } }   /* THE GREAT LAMP'S CONE */
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+    if (P && P.uwBlind > 0) UWA.drawBlind(g, P.x - cx, P.y - 14 - cy, ctx.VW(), ctx.VH(), Math.min(1, P.uwBlind / CAST.blind)); };
   H.read = () => UW && { n: { ...UW.n }, cells: { oil: UW.list.filter(c => c.st === 'oil').length, fire: UW.list.filter(c => c.st === 'fire').length, wet: UW.list.filter(c => c.st === 'wet').length, spent: UW.list.filter(c => c.st === 'spent').length },
     nests: UW.nests.map(m => ({ id: m.id, open: m.open })), ropes: UW.ropes.map(r => ({ id: r.id, burnt: r.burnt })), sconces: UW.sconces.map(s => ({ id: s.id, st: s.st })), lamp: UW.lamp && UW.lamp.st,
     fountain: UW.fountain && UW.fountain.full, glint: UW.glint && UW.glint.key, lastNudge: UW.lastNudge || null };

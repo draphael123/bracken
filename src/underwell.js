@@ -224,11 +224,14 @@ export function buildUnderwell({ painter, T, TS }) {
       { kind: 'skinwell', opens: 'your skin: a spring fills it, a drip gives one sip', hud: 'YOUR SKIN IS FULL: E POURS, E DRINKS' },
       { kind: 'oilfire', opens: 'the way it burns across (a pour)', hud: 'THE FIRE IS OUT - GO' },
     ],
-    music: 'cave',   /* (its boss room: arena.music, set below the stage) */   /* GREYBOX PLACEHOLDER: the cave track until Daniel picks a CC0/CC-BY track for the art pass */
-    ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
+    music: 'underwell',   /* (its boss room: arena.music, set below the stage) */   /* "Ossuary 6 - Air" by Kevin MacLeod, CC-BY 4.0 (Daniel's pick; src/audio.js, audio/CREDITS.txt) */
+    ambient: [{ x0: 0, x1: 99999, kind: 'cistern' }],   /* (claude/underwellart) its own bed: drips, a far skitter, oil in a pipe (src/audio.js SYNTH_BEDS.cistern) */
     caravan: true,   /* the desert's hands in main.js (the scorpions' and the worms' machines); the sun never reaches down here (the shade above) */
-    ledgeKit: 'desert',
-    palette: { set: 'desert', near: 'none', dress: 'desert', noFg: true, noNear: true, haze: 'rgba(40,24,12,0.30)' },
+    /* (claude/underwellart) THE LOOK: a dark level, as the Ore Road's mine is - black with a hole for every torch, every burning cell, the lamp and the light you carry; a warm dark, the
+       lamps' own amber laid into their pools, warm-lit creatures, and a lit lip on every edge you can stand on. The tile kit, the backdrop and the rooms are src/redraw/underwell_*.js */
+    dark: 0.3, edgeLit: 'rgba(255,214,150,0.55)',
+    palette: { set: 'desert', near: 'none', dress: 'none', noFg: true, noNear: true, haze: 'rgba(30,18,10,0.08)', murkCol: '#2a1f18', murkLit: '#6a4a2a',
+      darkCol: '12,8,5', lampGlow: [255, 160, 70, 0.26], darkRim: ['#c8904a', 0.26, 0.12], footLip: ['#e8c080', 0.5] },
     duskStart: -1, duskLen: 1,
   };
 }

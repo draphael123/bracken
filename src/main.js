@@ -85,7 +85,7 @@ import { makeWellTownHands } from './well-town-hands.js'; import * as WTA from '
 import * as WTT from './redraw/welltown_tiles.js'; import * as WTB from './redraw/welltown_backdrop.js';   /* THE WELL TOWN's tile kit and backdrop (claude/welltown3-art) */
 import { makeGuide } from './stuck-guide.js'; let STK = null;   /* THE SHARED GLINT + STALL NUDGE + WAY-ARROW FEED (claude/stuckfix, src/stuck-guide.js; the route list is src/stuck-spots.js) */
 import { makeRedGorgeHands } from './red-gorge-hands.js'; import { makeGorgeCrabHands } from './gorge-crab-hands.js'; import * as GCB from './gorge-crab.js'; import * as RGA from './redraw/redgorge_art.js'; import * as RGT from './redraw/redgorge_tiles.js'; import * as RGB from './redraw/redgorge_backdrop.js'; let RGH = null, GCH = null;   /* THE RED GORGE (claude/redgorge, the greybox): its hands (the flood, the sluice gates, the jams, the baskets, the old nest, the raptor) and THE GREAT RED CRAB's (src/gorge-crab.js the fight) */   /* THE WELL TOWN (claude/welltown, the greybox): its hands (the skin, mud, fire, the windlass, the dry cistern, the water-thief) and THE BANDIT KING's (src/bandit-king.js the fight) */
-import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
+import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
 import * as GB from './boss-greed.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
@@ -1020,7 +1020,7 @@ function resolveTiles() {
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
     if (L.welltown && t === T.SOLID) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE WELL TOWN's solids (the street, the houses, the cisterns) are its own kit, ahead of the caravan's sand skin; slopes stay the sand's */
-    if ((L.caravan || SLOPES_ON) && !(L.redgorge && t === T.SOLID) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
+    if ((L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
     const villT = L.palette && L.palette.set === 'village' && VILL;
@@ -1126,6 +1126,7 @@ function resolveTiles() {
     if (L.canal) { const ts = CNH.canalTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE FOG CANAL's tile kit: wet brick quays, the lit coping, the towpath, the decks, the gates (src/redraw/canal_tiles.js) */
     if (L.welltown) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE WELL TOWN's tile kit: sandstone streets, mudbrick houses, the cisterns' cut stone, palm boards, rope ladders (src/redraw/welltown_tiles.js) */
     if (L.redgorge) { const ts = RGT.gorgeTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE RED GORGE's tile kit: strata, lit lips, the scoured channel, lashed bridges (src/redraw/redgorge_tiles.js) */
+    if (L.underwell) { const ts = UWT.wellTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNDERWELL's tile kit (claude/underwellart): the dry cistern's flagstone, ashlar, brick vaults, iron grating, hemp rope (src/redraw/underwell_tiles.js) */
     if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
     if (L.fairKit) { const ts = FTL.fairTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE HARVEST FAIR's tile kit (claude/fairfix5): sawdust and straw, iron decks, barn boards, wagon ruts; awnings, boardwalk, the scenic railway (src/redraw/fair_tiles.js) */
     if (L.unburied) { const ts = UBT.unburiedTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNBURIED FIELD's tile kit (src/redraw/unburied_tiles.js) */
@@ -19101,7 +19102,7 @@ let CV = null, CVART = null;
 SPR.scorpion = DFA.bakeScorpion(); SPR.vulture = DFA.bakeVulture(); SPR.sandgob = DFA.bakeSandGoblin();
 SPR.banditmystic = MYA.bakeBanditMystic(); SPR.lampbearer = MYA.bakeLampBearer(); SPR.sanddjinn = LDA.bakeLesserDjinn('sanddjinn'); SPR.firedjinn = LDA.bakeLesserDjinn('firedjinn');   /* (claude/djinn3) THE LESSER DJINN */   /* (claude/djinn2) THE BANDIT MYSTICS */
 SPR.firescorpion = DF2A.bakeFireScorpion(SPR.scorpion); SPR.venomscorpion = DF2A.bakeVenomScorpion(SPR.scorpion); SPR.sandworm = DF2A.bakeSandworm(); SPR.shieldguard = DF2A.bakeShieldGuard(); SPR.dynamiter = DF2A.bakeDynamiter(); const DF2_CHARGE = DF2A.bakeCharge(); HAS_HURT.add('sandworm');   /* (claude/desertfoes) src/redraw/desert_foes2.js */   { const V2 = VSK.bakeVarietySkins(SPR); if (V2.powderboy) SPR.powderboy = V2.powderboy; }   /* (claude/variety) the powder monkey, recoloured off the dynamite bandit (baked after it) */
-SPR.oilscorpion = UWA.bakeOilScorpion(SPR.scorpion); SPR.dustscorpion = UWA.bakeDustScorpion(SPR.scorpion); SPR.thirstscorpion = UWA.bakeThirstScorpion(SPR.scorpion); SPR.spitscorpion = UWA.bakeSpitScorpion(SPR.scorpion); const UW_GLOB = UWA.bakeGlob();   /* THE UNDERWELL's four scorpions (claude/underwell, src/redraw/underwell_art.js: the spitter on the slinger's frames) */
+SPR.fastworm = UWA.bakeFastWorm(SPR.sandworm); SPR.oilscorpion = UWA.bakeOilScorpion(SPR.scorpion); SPR.dustscorpion = UWA.bakeDustScorpion(SPR.scorpion); SPR.thirstscorpion = UWA.bakeThirstScorpion(SPR.scorpion); SPR.spitscorpion = UWA.bakeSpitScorpion(SPR.scorpion); const UW_GLOB = UWA.bakeGlob();   /* THE UNDERWELL's four scorpions (claude/underwell, src/redraw/underwell_art.js: the spitter on the slinger's frames) */
 SPR.raptor = RGA.bakeRaptor(); SPR.gorgecrab = RGA.bakeGorgeCrab(); const RGSET = RGA.gorgeSets(SPR);   /* THE RED GORGE's placeholder cast (src/redraw/redgorge_art.js) */
 HAS_HURT.add('scorpion'); HAS_HURT.add('sexton');   /* THE SEXTON's set ends in his hurt pose (src/redraw/sexton.js) */   /* its set ends in its hurt pose; the vulture's ends perched and the goblin's burrowing, so they do not */
 const cvS = k => { const f = SFX[k]; if (typeof f === 'function') f(); };
@@ -26243,6 +26244,7 @@ function drawWorld(cx, cy, showPlayer) {
     /* THE HURRICANE is dark, but it is not a room: her murk was a wall of wrecks, which is a fleet. Her own sky goes down under a
        storm-dark wash and the sea is drawn over it, so the dark is weather and not a back wall */
     if (BG.storm) { g.fillStyle = 'rgba(18,22,28,0.55)'; g.fillRect(0, 0, VW, VH); if (SET.parallax !== 'off') SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() }); g.fillStyle = 'rgba(18,22,28,0.3)'; g.fillRect(0, 0, VW, VH); }
+    else if (L.underwell) UWB.drawBackdrop(g, cx, cy, VW, VH, L, time, T);   /* THE UNDERWELL's cistern: the far arcade, the well shaft's light, the colonnade (src/redraw/underwell_backdrop.js) */
     else if (BG.wall) { drawBackWall(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }   /* the Undercrown's pit: its own foundations, not the shared murk */
     else { g.fillStyle = P0.murk || '#1a1a22'; g.fillRect(0, 0, VW, VH);
     drawMurk(cx);                                                 /* the far wall of a dark room: rooftops, rock or wrecks, anchored to the SCREEN */
@@ -26257,7 +26259,6 @@ function drawWorld(cx, cy, showPlayer) {
     if (SET.parallax === 'full') HB.drawHarbourLayer(g, 'far', BG.far, 0.15, VH - 186, cx, dY, time, VW, VH);
     HB.drawHarbourLayer(g, 'mid', BG.mid, 0.3, VH - 215, cx, dY, time, VW, VH); }
   else if (BG.storm) SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() });   /* THE HURRICANE: only her and the sea */
-  else if (L.underwell) UWA.drawBackdrop(g, cx, cy, VW, VH, time);   /* THE UNDERWELL (claude/underwell, greybox): the cistern's far wall in the dark */
   else if (L.redgorge) RGB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE RED GORGE's own sky slit, far mesas and shaded back wall (src/redraw/redgorge_backdrop.js) */
   else if (L.canal) CNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE FOG CANAL's own far fields, mill, steeple, hedges, cottages and boats (src/redraw/canal_backdrop.js), not Waymeet's town */
   else if (L.welltown) WTB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE WELL TOWN's own dunes, oasis line, skyline, dovecote and Kasbah (src/redraw/welltown_backdrop.js), not the caravan's mesas */
@@ -27076,6 +27077,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && (!reskinSet(e) || reskinSet(e).R[V2_HURT[e.t]]) && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
     /* THE HEXED FIELDS' BATS are the farm's dead ones, pale and red-eyed: baked the first time one is drawn, from the cave bat */
     let sprSet = e.t === 'mummer' && e.scare && !e.woke && !(e.hurtT > 0) ? SPR.scarecrowM : e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : (L.redgorge && RGSET[e.t === 'scorpion' && e.elite ? 'scorpionElite' : e.t]) || SPR[e.t];
+    if (e.t === 'sandworm' && L.underwell && e.st && e.st.fast && SPR.fastworm) sprSet = SPR.fastworm;   /* (claude/underwellart) THE FAST SANDWORM: slate violet, ivory bands, red-eyed */
     if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin];   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
     if (e.t === 'mummer' && FAIR && !L.theatre && SPR.harvestMummer) sprSet = SPR.harvestMummer;   /* (claude/fairfix5) the harvest skin */
@@ -27391,6 +27393,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (L.deep) deepHoles(hole, cx, cy);
     SEA.seaHoles(hole);   /* and a sea level's own lights, where its far water drew them this frame */
     for (const e of enemies) if (e.t === 'angler' && e.alive) hole(e.x - cx, e.y - 10 - cy, e.mode === 'biteTell' ? 44 : 26); // and an angler carries its own
+    if (UWH && UWH.on()) UWH.holes(hole, cx, cy);   /* THE UNDERWELL: every lit torch, burning cell, burning nest, the great lamp and the candle niches is a hole in its dark */
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
     g.drawImage(DARKC, 0, 0); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);
     { const gx0 = Math.floor(cx / TS), gy0 = Math.floor(cy / TS); const ORE = ['#ffd36b', '#e07a4a', '#dfe8f0', '#ffd36b']; // veins of ore glint in the rock
@@ -27406,7 +27409,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (CQH && CQH.on()) CQH.drawOver(g, cx, cy, time);
   if (DJH && DJH.on()) DJH.drawOver(g, cx, cy, time);   /* THE DJINN: the flood, his marks, what runs and flies, his hand, his opening's clock */   /* THE CISTERN QUEEN: the flood, her mound, her tells on the floor, what she throws, her opening's clock */
   if (RGH && RGH.on()) RGH.drawOver(g, cx, cy, time);   /* THE RED GORGE: spray, dust in the rim's light, heat at the rim (src/redraw/redgorge_props.js) */
-  if (UWH && UWH.on()) UWH.drawOver(g, cx, cy);   /* THE UNDERWELL: the dust scorpion's grit in your eyes */
+  if (UWH && UWH.on()) UWH.drawOver(g, cx, cy, time);   /* THE UNDERWELL: the dust scorpion's grit in your eyes */
   if (GCH && GCH.on()) GCH.drawOver(g, cx, cy, time);   /* THE GREAT RED CRAB: the boulders' marks, the scuttle's line, ON HIS BACK */
   if (GTH && GTH.on()) GTH.drawOver(cx, cy, time);   /* JENNY GREENTEETH: the weed on the water, her arms, the fog, her eyes and her tells - over everything */
   if (FAIR) drawWickerOver(cx, cy);   /* THE WICKER QUEEN's ribbons, glows and flames: over the dark of her green, so a told blow is never hidden by it */
@@ -27533,6 +27536,7 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.theatre && THH.paintTheatreRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY)) return;   /* THE MASKWRIGHT'S THEATRE's rooms (src/redraw/theatre_rooms.js) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.canal && CNH.paintCanalRoom(g, st, sx, sy, w, h, time)) return;   /* THE FOG CANAL (greybox rooms) */
+  if (L.underwell && UWB.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE UNDERWELL's rooms: the brood chamber, the fountain's vault, the Queen's cistern */
   if (L.welltown && WTB.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE WELL TOWN's rooms: the cisterns' cut stone, a house's plaster, the dovecote's niches */
   if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
