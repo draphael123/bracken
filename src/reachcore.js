@@ -46,6 +46,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     /* THE RED GORGE (src/red-gorge.js, claude/redgorge): a JAM is one released burst (a wheel by it, and every flood banks behind its gate), and THE OLD NEST's vault opens on the four
        feathers the level lays down: both count as done (the plain fill: legs only). tools/redgorge.mjs proves each JAM is a lock with a real jump */
     if (L.redgorge) for (const m of [...(L.jams || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+    /* THE SKY ROAD (src/sky-road.js, claude/skyroad): THE RIDERS' LOFT opens on the four kite cloths the level lays down: done, like the old nest (tools/skyroad.mjs proves it is a lock) */
+    if (L.skyroad) for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
@@ -179,7 +181,25 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   /* A LIFT IS NOT BOARDED THROUGH A WALL: a hero beside it (up to two columns off its footprint) steps on only along open ground - a solid tile between him and the footprint at his own height shuts it. (THE PUPPETEER's batten stands in the lee of the stage door's wall: with the elite's gate shut on that door the fill boarded it through the wall and walked round the gate - tools/elites.mjs.) */
   const wallBetween = (x, y, lf) => { if (x >= lf.x0 && x <= lf.x1) return false; const step = x < lf.x0 ? 1 : -1, edge = x < lf.x0 ? lf.x0 : lf.x1; for (let tx = x + step; tx !== edge + step; tx += step) if (solid(at(tx, y))) return true; return false; };
   // everywhere you can get to from one tile (push is handed in, so tools/traps.mjs can run it backwards)
+  /* THE SKY ROAD's CLOAK (src/sky-road.js, claude/skyroad; only a level with L.skyroad, and never the plain fill or opts.noGlide). Hold jump as you fall
+     and you GLIDE - about 2.3 columns a row dropped, at a hero's run; the fill allows 6 + 2 a row - and a glide that meets a THERMAL's column (a vent with
+     thermal: true, any of its rows at or under your feet) rides it: the column's ledges, and a fresh glide off its top. Sun-stones, the disc and clouds are
+     the live game's; the fill counts every thermal as lit (tools/skyroad.mjs proves each stone is a lock). */
+  const sky = L.skyroad && !plain && !opts.noGlide, therm = sky ? vents.filter(v => v.thermal) : [], tTop = v => Math.floor(v.y + 1 - (v.h || 112) / TSZ);
+  const rowFoot = new Map(); if (sky) for (const k0 of footing) { const [fx, fy] = k0.split(',').map(Number); if (!rowFoot.has(fy)) rowFoot.set(fy, []); rowFoot.get(fy).push(fx); }
+  const ridden = new Set();
+  /* a glide sinks as it goes: d columns out it is at least (d - 6) / 2 rows under its start (and no more than 3 over it) - every column on the way needs open air in that band */
+  const glideAcross = (x, dx, y, r) => { const s1 = Math.sign(dx); for (let c = x + s1, d = 1; c !== x + dx; c += s1, d++) { const lo = Math.max(0, y - 3 + Math.max(0, Math.ceil((d - 6) / 2))); let ok = false; for (let rr = lo; rr <= r && !ok; rr++) ok = !wall(at(c, rr)); if (!ok) return false; } return true; };
+  const glideFrom = (x, y, push) => {
+    for (let dy = 0; dy <= 34 && y + dy < H; dy++) { const span = 6 + 2 * dy, r = y + dy;
+      for (const fx of (rowFoot.get(r) || [])) { const dx = fx - x; if (Math.abs(dx) <= span && (!dx || glideAcross(x, dx, y, r))) push(fx, r); } }
+    for (const v of therm) { if (ridden.has(v) || v.y < y - 2) continue; const dx = v.x - x; if (Math.abs(dx) - 1 > 6 + 2 * Math.max(0, v.y - y) || (dx && !glideAcross(x, dx, y, v.y))) continue; ride(v, push); }
+  };
+  const ride = (v, push) => { if (ridden.has(v)) return; ridden.add(v); const top = tTop(v);
+    for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -3; dx <= 3; dx++) push(v.x + dx, ty);
+    glideFrom(v.x, top - 1, push); };
   const expand = (x, y, push) => {
+    if (sky) { glideFrom(x, y, push); for (const v of therm) if (Math.abs(v.x - x) <= 1 && y <= v.y && y >= tTop(v) - 1) ride(v, push); }
     const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = strikeUp.has(key(x, y)) ? strikeUp.get(key(x, y)) : springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;

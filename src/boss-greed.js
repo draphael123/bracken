@@ -40,6 +40,7 @@ import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
 import { brOpen, bkOpen } from './unburied-foes.js';
 import { wardenOpen as graveOpen } from './grave-warden.js';
+import { rocEyrieOpen } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad) */
 
 export const GREED = {
   chipBy: { queen: 1, pyromancer: 0.25, herald: 0.2 },   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
@@ -108,6 +109,7 @@ export const OPEN_RULE = {
   bosun: e => e.open > 0,   // (claude/bosswave1, the mini) his belaying pin parried
   barrowrider: e => brOpen(e), sexton: e => sextonOpen(e), hedgewarden: e => hedgeOpen(e),
   djinn: e => djOpen(e) || e.hand > 0,                                      // THE DJINN (claude/welltown5): mud, doused, bailed out by the bucket - and his slammed hand
+  roc: e => rocEyrieOpen(e),                                                 // THE ROC (claude/skyroad): stuck in the nest off a dive, or knocked down - a thermal plunge, the lightning on her mast
   gangleader: e => glOpen(e),                                                // burning: his own bottle, struck home (claude/welltown3)
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */
