@@ -89,7 +89,7 @@ try {
         if(Math.abs(dx)>9&&!stackWait){keys[dx>0?'right':'left']=true;
           if(P.ground){const ax=Math.floor((P.x+Math.sign(dx)*10)/TS),ay=Math.floor((P.y-4)/TS);if(tile(ax,ay)===${T.SOLID}&&tile(ax,ay-1)!==${T.SOLID}){BK.press('jump');hold=18;}
             /* the drop off the loft's far end is a walk, not a jump; a stair a row high is one hop */}}
-        else{P.face=Math.sign(dx)||P.face;if(f%14===0)BK.press('atk');}
+        else{P.face=Math.sign(dx)||P.face;if(P.atk<0&&!(P.atkRec>0)&&!P.winded&&f%2===0)BK.press('atk');}
         if(hold>0){keys.jump=true;hold--;}
         BK.sim(1);}
       out.walk.push({h,ok:K.open,secs:+((f-(t0===null?f:t0))/60*SP).toFixed(1),win:K.window,window_left:+(K.t||0).toFixed(1),dead:!!P.dead,at:[Math.round(P.x/TS),Math.round(P.y/TS)],step:i});}
