@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { LEVELS } from '../src/level.js';
-import { MASH_FILE, MASH_HP } from './level-quality.mjs';
+import { MASH_FILE, MASH_HP } from './level-quality.mjs'; import { clearsAt } from './mash-rows.mjs';
 const cache = JSON.parse(readFileSync(MASH_FILE, 'utf8')), out = process.argv[2] || fileURLToPath(new URL('../docs/BOSS-AUDIT.md', import.meta.url));
 const heroes = ['knight', 'warden', 'pyro'], med = a => { a = a.slice().sort((x, y) => x - y); return a.length ? a[a.length >> 1] : null; };
 const sym = r => r.out === 'win' ? 'WIN' : r.out === 'dead' ? 'died' : 'timeout';
@@ -24,7 +24,7 @@ for (const lv of LEVELS) { const c = cache[lv.id]; if (!c) continue;
     bosses.push({ lv: lv.id, label, boss: b.boss || lv.id, wins, fights: ex.length, per: Object.fromEntries(heroes.map(h => [h, per(h)])), chip: mc, chipOpen: med(chipOpen), repAvg, punish: repAvg >= 25 ? 'y' : 'n', notes, meanLeft: ex.length ? ex.reduce((a, r) => a + r.bossLeftPct, 0) / ex.length : 100, meanLost: ex.length ? ex.reduce((a, r) => a + r.hpLostPct, 0) / ex.length : 0 }); } }
 bosses.sort((a, b) => (b.wins / (b.fights || 1)) - (a.wins / (a.fights || 1)) || a.meanLeft - b.meanLeft || a.meanLost - b.meanLost);
 const levels = []; for (const lv of LEVELS) { const c = cache[lv.id]; if (!c || !c.level) continue; const best = Object.entries(c.level).sort((a, b) => b[1].minHpPct - a[1].minHpPct)[0], r = best[1];
-  levels.push({ id: lv.id, hero: best[0], r, cleared: r.deaths === 0 && r.minHpPct >= MASH_HP }); }
+  levels.push({ id: lv.id, hero: best[0], r, cleared: clearsAt(r, MASH_HP) }); }   /* (claude/combat2: a run held in a room it could not finish is not a clear) */
 levels.sort((a, b) => (b.cleared - a.cleared) || b.r.minHpPct - a.r.minHpPct);
 const beaten = bosses.filter(b => b.wins > 0), pad = s => String(s).replace(/\|/g, '/');
 let md = '# BOSS AUDIT - the mash bot against every boss, mini and level (claude/mashbot, 2026-10-01)\n\n';

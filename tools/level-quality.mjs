@@ -17,6 +17,11 @@ import { THREAT } from '../src/threat.js';
 import { floodReach } from '../src/reachcore.js';
 import { pacing } from './pacing.mjs';
 import { BOSS_SYNTH_BASE, splitTrack } from '../src/boss-music.js';
+import { clearsAt, MASH_HELD } from './mash-rows.mjs';
+import { ruleFights, curveVerdict, CURVE_REPORT_ONLY } from './rule-state.mjs';
+/* (claude/combat2) REPORT-ONLY FOR EVERY LEVEL: the combat pass part 2's level-side rows - fights during the rule, and the level-1 curve by act
+   (tools/rule-fights.mjs). Printed (WARN) and listed by node tools/rule-fights.mjs; never failing the gate until Daniel lifts them. */
+export const REPORT_ALL = ['ruleFight'];   /* (the curve row is per level: tools/rule-state.mjs CURVE_REPORT_ONLY, the list the level sweep shrinks) */
 install();
 const TS = 16;
 
@@ -119,6 +124,7 @@ function slopesPainted(L) { const g = slopeGate(); if (!g) return false; try { r
 export function levelHash(lv) { const L = built(lv); return createHash('sha1').update(JSON.stringify([L.W, L.H, Array.from(L.grid), L.ents.filter(e => !e.stuck), L.moversExtra || null, L.ambushes || null])).digest('hex').slice(0, 12); }
 export const PILOT_FILE = fileURLToPath(new URL('../docs/level1-pilot.json', import.meta.url));
 export const MASH_FILE = fileURLToPath(new URL('../docs/mash-bot.json', import.meta.url));
+export const CURVE_FILE = fileURLToPath(new URL('../docs/level1-curve.json', import.meta.url));   /* (claude/combat2) the level-1 knight pilot over EVERY campaign level: the measured difficulty curve (tools/rule-fights.mjs) */
 /* THE MASH GATE (claude/mashbot, 2026-10-01; tools/mash-bot.mjs, docs/BOSS-AUDIT.md). A player who ONLY MASHES ATTACK must lose to the level's boss (all three heroes) and
    must die or drop under MASH_HP percent health in the level. Read from the cache docs/mash-bot.json (hash-stamped like the pilot's), never run live. REPORT-ONLY (WARN) until
    MASH_ENFORCE is set: the combat pass and the boss fixes turn it on; the target rule is already in docs/NEW-LEVEL-CHECKLIST.md. */
@@ -129,7 +135,7 @@ export const MASH_ENFORCE = true, MASH_HP = 40;
    a level with no row from day one, EXCEPT the parts listed below: the ones the mash bot still beats after the combat pass (the boss waves'
    TODO list, docs/BOSS-AUDIT.md). The list may only SHRINK: a listed part that now holds fails until its entry is taken out. */
 /* (measured 2026-10-01 after the combat pass, docs/mash-bot.json: 9 bosses, 12 minis and 4 level runs the mash bot still beats) */
-export const MASH_REPORT_ONLY = { spore: ['boss'], storm: ['level'], keep: ['level'], fields: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'], longwater: ['level'] };   /* (claude/weight 10-04, WEIGHT-T on the harness: the hanging mini + run, crown/lamplit/burial minis, causeway/spire/theatre/redgorge runs hold now - taken out; docs/mash-bot.json re-stamped by --all) */   /* HARNESSCARD 2026-10-04: the bot heroes now carry an even level-up card (real-play stats), and the mash bot clears the hanging and redgorge LEVEL runs with them (hanging 81% lowest hp, redgorge 42%): ADDED here so the gate stays green until the coordinator retunes; the list should shrink again */   /* (Daniel 10-03: the per-hero sweep (claude/mashmachines) found the MONASTERY, LONG WATER and THE THEATRE run mashable by warden / pyro; COMBAT PART 2 fixes them. DEEP stays OFF the list: it holds.) */
+export const MASH_REPORT_ONLY = { spore: ['boss'], fields: ['mini'], fallingtower: ['mini'], witchlight: ['mini'], unburied: ['mini'] };   /* (claude/combat2 10-05: the storm, keep and longwater LEVEL runs hold with knight/warden/pyro - src/foe-react.js's reactive foes and act tier, and the mash bot no longer lifts over an elite's gate or out of a room it could not finish (tools/mash-rows.mjs MASH_HELD) - taken out; their rows re-stamped level then boss) */   /* (claude/weight 10-04, WEIGHT-T on the harness: the hanging mini + run, crown/lamplit/burial minis, causeway/spire/theatre/redgorge runs hold now - taken out; docs/mash-bot.json re-stamped by --all) */   /* HARNESSCARD 2026-10-04: the bot heroes now carry an even level-up card (real-play stats), and the mash bot clears the hanging and redgorge LEVEL runs with them (hanging 81% lowest hp, redgorge 42%): ADDED here so the gate stays green until the coordinator retunes; the list should shrink again */   /* (Daniel 10-03: the per-hero sweep (claude/mashmachines) found the MONASTERY, LONG WATER and THE THEATRE run mashable by warden / pyro; COMBAT PART 2 fixes them. DEEP stays OFF the list: it holds.) */
 /* THE GATE ON ONE LEVEL: { ok, hard: parts beaten and not listed, stale: listed parts that hold now, msg } */
 export function mashGate(lv) {
   const v = mashVerdict(lv), soft = MASH_REPORT_ONLY[lv.id] || [];
@@ -145,9 +151,9 @@ export function mashVerdict(lv) {
   const why = [], parts = [];
   for (const key of ['boss', 'mini']) { const b = row[key]; if (!b) continue; const wonBy = Object.entries(b.byHero).filter(([, v]) => v.some(x => x.startsWith('win'))).map(([h]) => h);
     parts.push(key + ' ' + (wonBy.length ? 'BEATEN by mashing (' + wonBy.join(',') + '; ' + b.wins + '/' + b.fights + ' fights won)' : 'holds (0/' + b.fights + ' mash wins)')); if (wonBy.length) why.push(key); }
-  if (row.level) { const worst = Object.entries(row.level).sort((a, b) => b[1].minHpPct - a[1].minHpPct)[0], r = worst[1], cleared = r.deaths === 0 && r.minHpPct >= MASH_HP;
+  if (row.level) { const worst = Object.entries(row.level).sort((a, b) => (clearsAt(b[1], MASH_HP) - clearsAt(a[1], MASH_HP)) || (b[1].minHpPct - a[1].minHpPct))[0], r = worst[1], cleared = clearsAt(r, MASH_HP);   /* (claude/combat2: a run HELD in a room it could not finish is not a clear - tools/mash-rows.mjs MASH_HELD) */
     const have = ['knight', 'warden', 'pyro'].filter(h => row.level[h]);
-    parts.push((have.length < 3 ? '(level judged by ' + have.join('+') + ' only: re-run --level for all three starter heroes) ' : '') + 'level: best mash hero ' + worst[0] + ' lowest hp ' + r.minHpPct + '%, ' + r.deaths + ' deaths, walked ' + r.walked + '%, ' + (r.rides !== undefined ? r.rides + ' rides, ' + (r.pulls || 0) + ' pulls, ' : '') + r.lifts + ' lifts' + (cleared ? ' (CLEARED without dropping under ' + MASH_HP + '%)' : '')); if (cleared) why.push('level'); }
+    parts.push((have.length < 3 ? '(level judged by ' + have.join('+') + ' only: re-run --level for all three starter heroes) ' : '') + 'level: best mash hero ' + worst[0] + ' lowest hp ' + r.minHpPct + '%, ' + r.deaths + ' deaths, walked ' + r.walked + '%, ' + (r.rides !== undefined ? r.rides + ' rides, ' + (r.pulls || 0) + ' pulls, ' : '') + r.lifts + ' lifts' + ((r.held || 0) >= MASH_HELD ? ', HELD in a room it could not finish (' + r.held + ' lifts put back)' : '') + (cleared ? ' (CLEARED without dropping under ' + MASH_HP + '%)' : '')); if (cleared) why.push('level'); }
   else parts.push('level mode not run: ' + cmd);
   return { ok: !why.length && !!row.level, why, levelRun: !!row.level, state: why.length ? 'beaten' : 'ok', msg: parts.join('; ') + (why.length ? ' - THE MASH BOT BEATS THE ' + why.join(' AND ').toUpperCase() : '') };
 }
@@ -240,6 +246,7 @@ export function measure(lv) {
   if (L.mini) enc.push({ x: (L.mini.x0 + L.mini.x1) / 2 / TS, k: 'mini' });
   loose.sort((a, b) => a - b); for (let i = 0; i < loose.length;) { let j = i; while (j + 1 < loose.length && loose[j + 1] - loose[j] <= LIM.clump) j++; enc.push({ x: (loose[i] + loose[j]) / 2, k: 'clump' }); i = j + 1; }
   const per = []; for (let x = 0; x + 24 <= end; x += 24) per.push(enc.filter(e => e.x >= x && e.x < x + 24).length);
+  const ruleFight = ruleFights(L, enc, TS), curveV = curveVerdict(lv.id, levelHash(lv));   /* (claude/combat2, tools/rule-fights.mjs) */
   const bodies = []; for (let x = 0; x + 24 <= end; x += 24) bodies.push(foes.filter(e => e.x >= x && e.x < x + 24).length + waves.filter(w => w.x >= x && w.x < x + 24).length);
   const occupied = []; for (let x = 0; x + 24 <= end; x += 24) occupied.push(bodies[occupied.length] > 0 || per[occupied.length] > 0);
   const mean = a => a.length ? a.reduce((p, q) => p + q, 0) / a.length : 0;
@@ -297,9 +304,12 @@ export function measure(lv) {
     ['unlocks', unlockOk, unlockMsg],
     ['pilot', pilotOk, pilotMsg],
     ['mash', !gated || mashV.ok, gated ? mashV.msg : 'not gated (node tools/mash-bot.mjs ' + lv.id + ' to measure)'],
+    ['ruleFight', ruleFight.ok, ruleFight.msg],
+    ['curve', !!curveV.soft || (!CURVE_REPORT_ONLY[lv.id] && curveV.ok), curveV.msg + (CURVE_REPORT_ONLY[lv.id] ? (curveV.ok && !curveV.soft ? ' - BACK IN ITS BAND: take it out of CURVE_REPORT_ONLY (tools/rule-state.mjs)' : ' [report-only: CURVE_REPORT_ONLY]') : '')],
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
-  const soft = (REPORT_ONLY[lv.id] || []).concat(MASH_ENFORCE ? [] : ['mash']);   /* (the mash row is per part now: mashGate reads MASH_REPORT_ONLY) */
+  m.ruleFight = ruleFight; m.curve = curveV;
+  const soft = (REPORT_ONLY[lv.id] || []).concat(MASH_ENFORCE ? [] : ['mash'], REPORT_ALL, CURVE_REPORT_ONLY[lv.id] && !curveV.ok ? ['curve'] : []);   /* (the mash row is per part now: mashGate reads MASH_REPORT_ONLY) */
   m.bar = bar; m.pass = bar.every(b => b[1] || soft.includes(b[0])); m.failed = bar.filter(b => !b[1] && !soft.includes(b[0])).map(b => b[0]); m.reportOnly = bar.filter(b => !b[1] && soft.includes(b[0])).map(b => b[0]);
   return m;
 }

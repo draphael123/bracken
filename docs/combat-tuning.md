@@ -63,3 +63,17 @@ kills in 0.28 s before touching his numbers; it may be intended, but it makes hi
 ## The other heroes
 Only the knight and the Freebooter were measured with the fodder change. The pyromancer, paladin, death knight and warden should be run
 through the same two lab passes before it ships.
+
+## The ramp by act (combat pass part 2, claude/combat2, 2026-10-05)
+The table lives in `src/foe-react.js` (`ACTS`). A level not listed takes the act of its depth on the gate chain.
+
+| act | levels | purse (TOKENS.cap) | common foe's blow | a mashed foe guards at cut |
+|---|---|---|---|---|
+| I THE GREENWOOD | wood, marsh, stockade, spore, burning, kings | 2 | x1.0 | 3 |
+| II THE CRAGS | scree, underleaf, hanging, spire, moor, oreroad, storm, crown, undercrown | 2 | x1.1 | 3 |
+| III THE SEA | longwater, reef, flotilla, hurricane, lamplit, deep, keep, causeway, harbor | 2 | x1.2 | 2 |
+| IV THE OLD KINGDOM | waymeet, canal, theatre, fair, fields, burial, witchlight, mage, unburied, fallingtower | 2 | x1.25 | 2 |
+| V THE DESERT | caravan, welltown, redgorge | 3 | x1.3 | 2 |
+
+Later acts hit harder; no foe gains health. Bosses, minis, elites and every foe in a boss or mini fight are outside the tier (TOKENS.exempt).
+The level-1 knight's curve against per-act bands is reported by `node tools/rule-fights.mjs` (docs/level1-curve.json, `level1-pilot.mjs --curve`).
