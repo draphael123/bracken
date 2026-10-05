@@ -13,13 +13,13 @@ import { STUCK_HANDS } from './stuck-spots.js';
 import { venomOn, VENOM } from './desert-foes2.js';
 import * as UWA from './redraw/underwell_art.js';
 
-/* THE OIL: burn = s a lit cell on a floor burns (burnDeep: a cell in a gutter's slot, deep oil - it burns long, so the worms under it stay down while you cross); spread = s before it lights the cells beside it; back = s before wet oil dries / spent oil seeps back; tick/dmg =
+/* THE OIL: rehang = s before a spare rope is lowered where one burnt (claude/underwell fix pass: no softlock, a cost); burn = s a lit cell on a floor burns (burnDeep: a cell in a gutter's slot, deep oil - it burns long, so the worms under it stay down while you cross); spread = s before it lights the cells beside it; back = s before wet oil dries / spent oil seeps back; tick/dmg =
    the fire on a hero standing in it (unblockable); foeDmg on a creature in it; nestBurn = s a nest takes to burn away; relight = s before a torch's
    bracket has a flame again; pourCells = how many cells one sip wets */
-export const OIL = { burn: 6, burnDeep: 16, spread: 0.04, back: 25, tick: 0.5, dmg: 13, foeDmg: 14, nestBurn: 1.0, relight: 12, pourR: 48, pourCells: 3, lampFall: 0.6, torchFall: 0.35, heatRows: 12 };
+export const OIL = { rehang: 30, burn: 6, burnDeep: 16, spread: 0.04, back: 25, tick: 0.5, dmg: 13, foeDmg: 14, nestBurn: 1.0, relight: 12, pourR: 48, pourCells: 3, lampFall: 0.6, torchFall: 0.35, heatRows: 12 };
 /* THE CAST's numbers: the thirsty scorpion's pull (px/s, sight px), the dust's blindness (s), a slick's width in cells */
 /* A NEST under a blade: a brood scorpion out of it every `spill` s, at most `max` of them alive from one nest */
-export const NEST = { spill: 0.6, max: 4, spray: 8 };   /* spray: what the nest's venom does to the one hacking at it (unblockable, a stack of venom) */
+export const NEST = { spill: 0.6, max: 4, spray: 10 };   /* spray: what the nest's venom does to the one hacking at it (unblockable, a stack of venom) */
 export const CAST = { thirstV: 60, thirstSight: 260, blind: 2.2, slick: 3 };
 export const OIL_SKIN = 'oilscorpion', DUST_SKIN = 'dustscorpion', THIRST_SKIN = 'thirstscorpion', SPIT_SKIN = 'spitscorpion';
 const NO_FEAR = new Set(['firescorpion']);   /* the fire scorpion walks through fire */
@@ -158,9 +158,14 @@ export function makeUnderwellHands(ctx) {
     const wt = ctx.wt && ctx.wt();
     if (wt && wt.wells) for (const w of wt.wells) { if (!w.jar || w.left <= 0) continue; const tx = Math.floor(w.x / 16), ty = Math.floor((w.y - 1) / 16);
       if (H.fireAt(tx, ty) || H.fireAt(tx - 1, ty) || H.fireAt(tx + 1, ty)) { w.left = 0; w.boiled = true; UW.n.boiled++; ctx.burst(w.x, w.y - 12, 10, ['#e8f4f8', '#c8d0d8'], 40, 0.8); const P = ctx.hero(); if (P) ctx.number(P.x, P.y - 34, 'THE FIRE BOILS THE DRIP DRY', '#ff9a5c'); } }
-    for (const r of UW.ropes) { if (r.burnt || !H.fireAt(r.x, r.y1)) continue; r.burnt = true; UW.n.ropes++;
+    for (const r of UW.ropes) { if (!r.burnt) continue; r.t -= dt; if (r.t > 0) continue; r.burnt = false; for (let y = r.y0; y <= r.y1; y++) ctx.cellSet(r.x, y, ctx.T.NET);
+      const P = ctx.hero(); if (P && Math.abs(P.x - r.x * 16) < 300) ctx.number(P.x, P.y - 34, 'A SPARE ROPE UNCOILS', '#ffd36b'); }
+    for (const r of UW.ropes) { if (r.burnt || !H.fireAt(r.x, r.y1)) continue; r.burnt = true; r.t = OIL.rehang; UW.n.ropes++;
       for (let y = r.y0; y <= r.y1; y++) { ctx.cellSet(r.x, y, ctx.T.AIR); if (y % 3 === 0) ctx.burst(r.x * 16 + 8, y * 16 + 8, 3, ['#ff8a2a', '#3a2a20'], 30, 0.6); }
       const P = ctx.hero(); if (P) ctx.number(P.x, P.y - 34, 'THE ROPE BURNS TO ASH', '#ff9a5c'); }
+    /* THE QUEEN BURNS THROUGH THE OIL (fix pass): while she clings to a wall alight, the lamp oil streaked down it burns with her (drawn) */
+    const q = ctx.queen && ctx.queen(); if (q && q.S && UW.L.queenOil && q.S.burn && q.S.pose === 'wall' && UW.L.queenOil[q.S.wall]) { const [qx, qy0, qy1] = UW.L.queenOil[q.S.wall];
+      for (let y = qy0; y <= qy1; y++) { const c = cellAt(qx, y); if (c) { if (c.st !== 'fire') c.age = 0; c.st = 'fire'; c.t = Math.max(c.t, 1.0); } } }
     /* A FIRE SCORPION's burning patch lights any oil it touches */
     for (const p of (ctx.patches ? ctx.patches() : [])) { const tx = Math.floor(p.x / 16), ty = Math.round(p.y / 16) - 1; let n = 0; for (let dx = -1; dx <= 1; dx++) n += ignite(cellAt(tx + dx, ty)) ? 1 : 0; if (n) { UW.n.patchLit++; if (once('patchLit')) ctx.number(p.x, p.y - 28, 'ITS FIRE TAKES THE OIL', '#ff9a5c'); } }
     /* THE FIRE ON HEROES (a tick, unblockable) and on creatures standing in it (the fire scorpion is at home in it) */
@@ -184,6 +189,7 @@ export function makeUnderwellHands(ctx) {
     if (kind === 'torch') { const s = UW.sconces.find(q => q.id === id); return s ? s.st : ''; }
     if (kind === 'fire') { const f = (ctx.wt && ctx.wt() || {}).fires || []; const q = f.find(z => z.x0 === +id); return q ? (q.lit ? 'lit' : 'out') : ''; }
     if (kind === 'skin') { const P = ctx.hero(); return P && P.skin && P.skin.sips > 0 ? 'some' : 'empty'; }
+    if (kind === 'skin2') { const P = ctx.hero(); return P && P.skin && P.skin.sips >= 2 ? 'two' : 'low'; }   /* (the exam's two old fires want two sips) */
     return ''; };
   H.handsState = n => (UW ? handsState(n) : '');
   const stall = (P, dt) => { if (!P || P.dead) return; const TS = ctx.TS;
@@ -198,7 +204,11 @@ export function makeUnderwellHands(ctx) {
     for (const [x0, x1, y] of UW.sand) if (inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawSand(g, R(x0 * TS - cx), R(y * TS - cy), (x1 - x0 + 1) * TS, time);
     for (const [x0, x1, y] of UW.L.seeps || []) if (x1 - x0 > 20 && ctx.cellGet(x0 + 1, y - 1) !== ctx.T.AIR && ctx.cellGet(x0 + 1, y + 1) !== ctx.T.AIR && inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawGutter(g, R((x0 + 1) * TS - cx), R(y * TS - cy), (x1 - x0 - 1) * TS);   /* a gutter's grate (a slot in the rock) */
     for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy), c.st, c.st === 'fire' ? Math.min(1, c.t / OIL.burn) : 0, time, c.vertical, c.seed); }
-    for (const m of UW.nests) { if (m.open) continue; const x = m.x0 * TS; if (!inX(x)) continue; UWA.drawNest(g, R(x - cx), R(m.y0 * TS - cy), (m.x1 - m.x0 + 1) * TS, (m.y1 - m.y0 + 1) * TS, Math.min(1, m.burn / OIL.nestBurn), time); }
+    const Ph = ctx.hero();
+    for (const d of UW.L.decor || []) if (d.kind === 'husk' && inX(d.x * TS, 60)) UWA.drawHusk(g, R(d.x * TS + 8 - cx), R((d.y + 1) * TS - cy));   /* her cast shell by her door */
+    for (const m of UW.nests) { if (m.open) continue; const x = m.x0 * TS; if (!inX(x)) continue;
+      const near = Ph && !Ph.dead && Math.abs(Ph.x - (m.x0 + m.x1 + 1) * 8) < 56 && Ph.y > m.y0 * TS && Ph.y <= (m.y1 + 2) * TS, q = near ? R(Math.sin(time * 38) * 1.2) : 0;   /* THE NEST QUIVERS as a blade comes near it (the tell before it spills) */
+      UWA.drawNest(g, R(x - cx) + q, R(m.y0 * TS - cy), (m.x1 - m.x0 + 1) * TS, (m.y1 - m.y0 + 1) * TS, Math.min(1, m.burn / OIL.nestBurn), time); }
     for (const s of UW.sconces) { const x = s.x * TS + 8; if (!inX(x)) continue; const fallDy = s.st === 'fall' && s.below ? ((s.below.y - s.y) * TS) * (1 - s.t / OIL.torchFall) : 0;
       UWA.drawSconce(g, R(x - cx), R(s.y * TS - cy), s.st === 'down' ? 'down' : 'up', s.st === 'down' ? 1 - s.t / OIL.relight : 1, time, fallDy); }
     const lp = UW.lamp; if (lp && inX(lp.x * TS, 60)) UWA.drawLamp(g, R(lp.x * TS + 8 - cx), R(lp.top * TS - cy), R((lp.y + 1) * TS + (lp.dy || 0) - cy), lp.st, time, lp.st === 'up' ? Math.sin(time * 0.9) * 2 : 0);

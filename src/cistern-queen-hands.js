@@ -109,6 +109,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
      STINGER (x stingMul, one sting's worth at most stingCap); and in phase two, while she BURNS, her hot shell turns even that ---------- */
   H.take = (e, dmg) => { if (!S) return dmg; const P = ctx.hero();
     if (CQG.shelled(e)) { const st = CQG.stingerOut(S), hb = ctx.attackBox();
+      if (S.ward > 0) { e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; return 0; }   /* (claude/underwell) HER WARD after an opening: nothing lands, the stinger neither */
       if (S.burn || S.flare > 0) { e.chipHit = ctx.time(); S.n.burnTurned++; e.guardFx = 0.2; ctx.burst(P.x + (P.face || 1) * 12, P.y - 14, 5, ['#ff9a3c', '#ffd36b'], 50, 0.4);
         if (!S.told.hot) { S.told.hot = 1; ctx.number(e.x, Math.min(e.y, S.G.floor) - 96, 'HER SHELL BURNS: PUT HER OUT WITH WATER', '#ff9a5c'); } return 0; }
       if (st && hb && ctx.overlap(hb, CQG.stingBox(st))) { const cap = e.maxHp * CQ.stingCap, d = Math.min(dmg * CQ.stingMul, Math.max(0, cap - (S.stingTaken || 0))); S.stingTaken = (S.stingTaken || 0) + d; S.n.stingHits++;
@@ -132,7 +133,8 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
   /* ---------- DRAWING ---------- */
   /* her body (from the enemy loop, before the bodies of everyone else are drawn) */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
-    CQA.drawQueen(g, e, S, R(e.x - cx), R(e.y - cy), time, cx, cy); };
+    CQA.drawQueen(g, e, S, R(e.x - cx), R(e.y - cy), time, cx, cy);
+    if (S.ward > 0) { const k = 0.5 + 0.5 * Math.sin(time * 9); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#bfe0ff'; g.lineWidth = 2; g.beginPath(); g.ellipse(R(e.x - cx), R(Math.min(e.y, S.G.floor) - 20 - cy), 46, 26, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; } };   /* (claude/underwell) HER WARD: a pale ring, the whole of it */
   /* the hall's machines, behind her: the windlass, the bucket's rope down the shaft, the tunnels, the springs' glint is the wells' own */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     if (wl) CQA.drawWindlass(g, R(wl.x * ctx.TS + 8 - cx), R((wl.y + 1) * ctx.TS - cy), S.bucket, time);

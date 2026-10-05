@@ -6,6 +6,7 @@
 // back to the leg's foot (a retry, counted); a leg that fails three times is LIFTED past (a teleport, counted and named).
 //   node tools/underwell-route.mjs [heroes=knight,warden,pyro] [god=0|1] [foes=1|0]      (god=1 foes=0: base movement only - can this hero do the route)
 import { openPage } from './cdp.mjs';
+const COLD = process.argv.includes('--cold');   /* --cold: cross the sump without lighting the gutter (the reviewer's measure: is the heat the answer?) */
 const heroes = (process.argv[2] || 'knight,warden,pyro').split(','), god = process.argv[3] === '1', foes = process.argv[4] !== '0';
 const pg = await openPage({ audio: false, fonts: false });
 let bad = 0; const summary = [];
@@ -66,18 +67,19 @@ try {
             hop(23, 42, 1); walk(26, { tol: 3 }); press('talk'); walk(31, { tol: 3 }); press('talk', 1); walk(44); return nest('shaft') && !BK.welltown().fires.find(f => f.x0 === 33).lit; }, [44, 43]],
         ['the brood hall: the great lamp', [44, 43], () => { walk(56); hop(57, 40, 1); hop(59, 37, 1); hop(67, 34, 1); hop(75, 31, 1); walk(85, { tol: 3 }); press('atk', 1);
             waitFor(() => U().lamp.st === 'down', 200); waitFor(() => !fireIn(84, 131), 2500); walk(88); settle(); walk(134); walk(137, { tol: 3 }); wait(20); walk(141, { tol: 3 }); press('talk'); return nest('hall'); }, [141, 43]],
-        ['the oil works: the firebreak, the torch, the rope', [137, 43], () => { walk(171, { tol: 3 }); press('talk', -1); walk(174, { tol: 3 }); press('atk', 1);
+        ['the oil works: the firebreak, the torch, the rope', [137, 43], () => { walk(171, { tol: 3 }); press('talk', -1); walk(174, { tol: 3 }); press('atk', 1); walk(170, { tol: 3, noFight: true });   /* back onto the wet stone while the floor burns */
             waitFor(() => !fireIn(172, 214), 2500); walk(212, { tol: 4 }); wait(30); walk(161, { tol: 3 }); const up = U().ropes[0].burnt ? false : rope(160, 29);
             if (!up) { walk(206); hop(207, 40, 1); hop(208, 37, -1); hop(206, 34, 1); hop(214, 31, 0); hop(215, 29, 1); }
             return feet() <= 29; }, [162, 29]],
         ['the upper works', [162, 29], () => { walk(184); hop(185, 27, 1); walk(189); walk(203); hop(204, 28, 1); walk(213); walk(226, { tol: 3 }); press('talk', 1);
             walk(238); hop(239, 27, 1); walk(246); settle(); walk(247, { tol: 3 }); wait(20); return feet() === 45 && !BK.welltown().fires.find(f => f.x0 === 228).lit; }, [247, 45]],
-        ['the silted sump: the burning gutter', [247, 45], () => { walk(251, { tol: 3 }); press('talk'); walk(255, { tol: 3 }); press('atk', 1); wait(60);
-            walk(282); hop(283, 43, 1); walk(304); hop(305, 43, 1); walk(334); hop(335, 42, 1); walk(350); return col() >= 348; }, [350, 42]],
-        ['the lamp stair: the exam', [350, 42], () => { walk(352, { tol: 3 }); press('talk'); walk(353, { tol: 3 }); press('talk', 1); walk(357, { tol: 3 }); press('atk', 1); walk(354, { tol: 3, noFight: true });   /* back onto the firebreak's wet stone while the floor burns */
-            waitFor(() => !fireIn(356, 372), 1200); waitFor(() => nest('exam'), 900); DBG.push('exam: sips ' + (P().skin ? P().skin.sips : '-') + ' at ' + col() + ' hp ' + Math.round(P().hp) + ' wet ' + U().list.filter(c => c.st === 'wet').length); waitFor(() => !fireIn(394, 416), 900); walk(400); walk(418, { tol: 3 }); press('talk'); press('talk', 1); walk(424, { tol: 3 }); press('talk', 1); DBG.push('exam fires: sips ' + (P().skin ? P().skin.sips : '-') + ' at ' + col() + ' lit ' + BK.welltown().fires.filter(f => f.x0 >= 420 && f.lit).length);
-            walk(429); hop(430, 39, 1); hop(434, 36, 1); hop(438, 33, 1); walk(442, { tol: 3 }); wait(20); walk(445, { tol: 3 }); press('talk'); return nest('exam') && feet() === 33; }, [445, 33]],
-        ['the queen\\'s door', [442, 33], () => { walk(471, { tol: 3, noFight: true }); settle(); wait(60, { noFight: true }); return feet() >= 45; }, [471, 51]],
+        ['the silted sump: the burning gutter', [247, 45], () => { walk(250, { tol: 3 }); press('talk'); walk(255, { tol: 3 }); ${COLD ? '' : "press('atk', 1);"} wait(40);
+            walk(334); hop(335, 42, 1); walk(350); return col() >= 348; }, [350, 42]],
+        ['the lamp stair: the exam', [350, 42], () => { walk(352, { tol: 3 }); press('talk'); walk(354, { tol: 3 }); press('talk', 1); walk(362, { tol: 3 }); press('atk', 1); walk(355, { tol: 3, noFight: true });   /* back onto the firebreak's wet stone while the floor burns */
+            waitFor(() => nest('exam'), 600, { noFight: true }); waitFor(() => !fireIn(357, 368), 900); walk(404, { tol: 3 }); press('talk'); DBG.push('exam: sips ' + (P().skin ? P().skin.sips : '-') + ' rope ' + U().ropes.find(r => r.id === 'exam').burnt);
+            walk(357, { tol: 3 }); if (!rope(356, 31)) return false; walk(416, { tol: 3 }); press('talk'); walk(418, { tol: 3 }); press('talk', 1); walk(424, { tol: 3 }); press('talk', 1);
+            walk(442, { tol: 3 }); wait(20); walk(445, { tol: 3 }); press('talk'); return nest('exam') && feet() === 31; }, [445, 31]],
+        ['the queen\\'s door', [442, 31], () => { walk(471, { tol: 3, noFight: true }); settle(); wait(60, { noFight: true }); return feet() >= 45; }, [471, 51]],
       ];
       let lifts = [], retries = 0;
       for (const [name, foot, plan, end] of LEGS) {

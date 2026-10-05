@@ -155,20 +155,27 @@ export const STUCK_HANDS = {
     { id: 'uw-hall-nest', zone: [97, 24, 133, 44], steps: [
       { key: 'hallTorch', is: ['nest.hall', 'shut'], at: [124, 41], dy: -4, line: 'A NEST AT THE BACK OF THE CHAMBER, A TORCH OVER ITS OIL' } ] },
     { id: 'uw-works-low', zone: [141, 32, 215, 44], steps: [
-      { key: 'worksTorch', is: ['torch.works', 'up'], rows: [38, 44], at: [176, 41], glint: 'stall', dy: -4, line: 'A WALL TORCH OVER THE OIL, PAST THE ROPE' },
+      { key: 'worksTorch', is: ['nest.works', 'shut'], rows: [38, 44], at: [176, 41], dy: -4, line: 'A NEST SEALS THE UPPER WORKS. ITS OIL RUNS DOWN HERE' },
       { key: 'worksRope', is: ['rope.works', 'hung'], at: [160, 40], glint: 'stall', line: 'THE ROPE IS THE WAY UP' },
       { key: 'worksBack', is: ['rope.works', 'burnt'], at: [211, 40], line: 'THE ROPE IS ASH: THE SCAFFOLDS ON THE EAST WALL' } ] },
     { id: 'uw-works-up', zone: [157, 22, 239, 29], steps: [
+      { key: 'worksNest', is: ['nest.works', 'shut'], at: [223, 29], line: 'THE NEST SEALS THE WAY EAST. ITS OIL RUNS DOWN THE PIPE' },
       { key: 'worksFire', is: ['fire.228', 'lit'], at: [228, 29], line: 'AN OLD OIL FIRE ACROSS THE WAY EAST' } ] },
     { id: 'uw-gutter', zone: [244, 36, 262, 45], steps: [
       { key: 'gutterTorch', is: ['torch.gutter', 'up'], at: [257, 43], dy: -4, line: 'THE TORCH AT THE MOUTH OF THE OLD GUTTER' } ] },
-    { id: 'uw-exam', zone: [346, 28, 399, 42], steps: [
-      { key: 'examTorch', is: ['nest.exam', 'shut'], at: [359, 40], dy: -4, line: 'A NEST UNDER THE STAIR, AND A TORCH OVER THE OIL' } ] },
-    { id: 'uw-exam-fires', zone: [400, 36, 430, 42], steps: [
-      { key: 'examFire1', is: ['fire.420', 'lit'], at: [420, 42], line: 'AN OLD OIL FIRE ACROSS THE WAY' },
-      { key: 'examFire2', is: ['fire.426', 'lit'], at: [426, 42], line: 'A SECOND OIL FIRE BEHIND THE FIRST' } ] },
-    { id: 'uw-shaft', zone: [439, 28, 478, 33], steps: [
-      { key: 'queenShaft', at: [471, 33], glint: 'stall', line: 'THE OLD SHAFT GOES DOWN TO HER CISTERN' } ] },
+    { id: 'uw-exam', zone: [346, 33, 370, 42], steps: [
+      { key: 'examTorch', is: ['nest.exam', 'shut'], at: [364, 40], dy: -4, line: 'A NEST SEALS THE WAY EAST, A TORCH OVER THE OIL' },
+      { key: 'examSpring', is: ['skin2', 'low'], at: [404, 42], line: 'THE SPRING IS PAST THE NEST' },
+      { key: 'examRope', is: ['rope.exam', 'hung'], at: [356, 41], line: 'THE ROPE IS THE WAY UP' },
+      { key: 'examAsh', is: ['rope.exam', 'burnt'], at: [356, 41], line: 'THE ROPE IS ASH: A SPARE WILL COME DOWN' } ] },
+    { id: 'uw-exam-room', zone: [371, 33, 405, 42], steps: [
+      { key: 'examFill', is: ['skin2', 'low'], at: [404, 42], line: 'THE SPRING IS PAST THE NEST' },
+      { key: 'examBack', at: [356, 41], line: 'THE ROPE IS THE WAY UP' } ] },
+    { id: 'uw-exam-fires', zone: [352, 26, 438, 31], steps: [
+      { key: 'examFire1', is: ['fire.420', 'lit'], at: [420, 31], line: 'AN OLD OIL FIRE ACROSS THE WAY' },
+      { key: 'examFire2', is: ['fire.426', 'lit'], at: [426, 31], line: 'A SECOND OIL FIRE BEHIND THE FIRST' } ] },
+    { id: 'uw-shaft', zone: [439, 26, 478, 31], steps: [
+      { key: 'queenShaft', at: [471, 31], glint: 'stall', line: 'THE OLD SHAFT GOES DOWN TO HER CISTERN' } ] },
   ],
 };
 

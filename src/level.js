@@ -7769,7 +7769,7 @@ export const LEVELS = [
   /* THE UNDERWELL (claude/underwell, the GREYBOX, 2026-10-05): the old cistern tunnels under THE WELL TOWN, dry since the Djinn's well took the water - lamp oil,
      the Cistern Queen's brood, the water skin scarce. APPENDED, so no index and no save moves; its place on the road is its needs (and the gorge's) and its map node.
      THE CISTERN QUEEN (src/cistern-queen.js, benched by claude/welltown5) is its boss */
-  { id: 'underwell', arc: 'the desert', name: 'THE UNDERWELL', sub: 'the dry cisterns under the well town', rule: 'OIL SEEPS DOWN HERE. A TORCH SETS IT BURNING, THE BROOD WILL NOT CROSS FIRE, AND ONLY WATER PUTS IT OUT.', build: () => buildUnderwell({ painter, T, TS }), needs: 'welltown' },
+  { id: 'underwell', arc: 'the desert', name: 'THE UNDERWELL', sub: 'the dry cisterns under the well town', rule: "STRIKE A TORCH AND THE OIL BURNS - THE BROOD WON'T CROSS FIRE. POUR WATER WHERE THE FIRE MUST NOT GO.", build: () => buildUnderwell({ painter, T, TS }), needs: 'welltown' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

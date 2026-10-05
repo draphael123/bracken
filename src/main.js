@@ -2191,7 +2191,7 @@ function spawnEnt(e) {
       case 'throne': props.push({ t: 'throne', x: px, y: py }); break;
       /* THE SUNKEN CARAVAN (desert-foes.js keeps each one's machine in e.st; updateDesertFoe is its hands) */
       case 'scorpion': { const st = DF.newScorpion(px, py); st.face = e.face || 1; enemies.push({ ...base, t: 'scorpion', w: DF.SCORPION.w, h: DF.SCORPION.h, hp: EHP.scorpion, mode: st.mode, st }); break; }
-      case 'sandworm': { const st = DF2.newSandworm(px, py, e.bed ? [e.bed[0] * TS + 8, e.bed[1] * TS + 8] : null); enemies.push({ ...base, t: 'sandworm', w: DF2.SANDWORM.w, h: DF2.SANDWORM.h, hp: EHP.sandworm, mode: st.mode, st }); break; }   /* THE SANDWORM (claude/desertfoes, src/desert-foes2.js): bed = the sand it keeps, in tiles */
+      case 'sandworm': { const st = DF2.newSandworm(px, py, e.bed ? [e.bed[0] * TS + 8, e.bed[1] * TS + 8] : null); if (e.fast) st.fast = true;   /* (claude/underwell) a fast worm */ enemies.push({ ...base, t: 'sandworm', w: DF2.SANDWORM.w, h: DF2.SANDWORM.h, hp: EHP.sandworm, mode: st.mode, st }); break; }   /* THE SANDWORM (claude/desertfoes, src/desert-foes2.js): bed = the sand it keeps, in tiles */
       case 'sandgob': { const st = DF.newSandGob(px, py); enemies.push({ ...base, t: 'sandgob', w: DF.SANDGOB.w, h: DF.SANDGOB.h, hp: EHP.sandgob, mode: st.mode, st }); break; }
       /* THE BANDITS (2026-09-25, in the goblins' place: docs/briefs/caravan-ruins-bandits.md) */
       case 'cutthroat': { const st = DF.newCutthroat(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'cutthroat', w: DF.CUTTHROAT.w, h: DF.CUTTHROAT.h, hp: EHP.cutthroat, mode: st.mode, st }); break; }
@@ -23544,6 +23544,7 @@ UWH = makeUnderwellHands({ get L() { return L; }, get players() { return players
   cellOpen: (x, y) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { cellSet(x, y, T.AIR); destroyed.add(y * LW + x); } },   /* a nest burnt away, a vault opened: for good */
   cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },   /* a rope burnt to ash: until a respawn hangs it again */
   spawn: o => { const n0 = enemies.length; spawnEnt(o); return enemies[n0] || null; },   /* a brood scorpion spilled out of a nest under a blade */
+  queen: () => (CQH && bossActive && boss && boss.t === 'cisternqueen' && boss.alive && CQH.show() ? { S: CQH.show(), e: boss } : null),   /* (fix pass) she burns through her hall's lamp oil */
   questGot: () => straysGot.size, questN: () => questOf().n, wt: () => (WTH && WTH.on() ? WTH.state() : null), patches: () => (DF2H && DF2H.on() && DF2H.read() ? DF2H.read().patches : []) });
 MYH = makeMysticHands({ get L() { return L; }, get players() { return players; }, TS, sfx: SFX, hero: () => P, enemies: () => enemies, VW: () => VW,   /* (claude/djinn2) THE BANDIT MYSTICS */
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d, x) => hurtEnemy(e, d, x, false),

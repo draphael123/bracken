@@ -106,3 +106,11 @@ export function drawBackdrop(g, cx, cy, VW, VH, time) {
       g.fillStyle = colL; g.fillRect(R(x), R(VH * top), R(span * 0.22), 2); g.fillStyle = col; } }
   const grd = g.createLinearGradient(0, VH * 0.55, 0, VH); grd.addColorStop(0, 'rgba(120,60,20,0)'); grd.addColorStop(1, 'rgba(120,60,20,0.18)'); g.fillStyle = grd; g.fillRect(0, 0, VW, VH);
 }
+/* HER CAST SHELL (the approach sets her up): a husk the length of a cart, split down the back, its tail curled over - greybox */
+export function drawHusk(g, x, b) {
+  g.fillStyle = '#a89878'; for (let i = 0; i < 6; i++) { const sx = x - 30 + i * 10; g.fillRect(sx, b - 14 + (i % 2), 9, 12 - (i % 2)); }
+  g.fillStyle = '#7a6a50'; for (let i = 0; i < 6; i++) g.fillRect(x - 30 + i * 10, b - 3, 9, 2);
+  g.fillStyle = '#c8b898'; g.fillRect(x - 28, b - 15, 56, 2); g.fillStyle = '#3a3020'; g.fillRect(x - 6, b - 15, 14, 3);   /* the split */
+  g.fillStyle = '#a89878'; for (let i = 0; i < 5; i++) g.fillRect(x + 30 + i * 3, b - 16 - i * 5, 6, 6); g.fillStyle = '#d8c8a0'; g.fillRect(x + 42, b - 42, 4, 8);   /* the tail and its barb */
+  g.fillStyle = '#8a7a5a'; g.fillRect(x - 44, b - 8, 14, 6); g.fillRect(x - 50, b - 12, 8, 5);   /* a claw */
+}

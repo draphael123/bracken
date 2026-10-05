@@ -39,7 +39,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/cistern-queen-hands.js binds it). queenPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CQ = {
-  hp: 1400, w: 76,   /* (claude/underwell: 1000 -> 1400 in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
+  hp: 1250, w: 76,   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
   openMul: 1.9, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
@@ -73,6 +73,7 @@ export const CQ = {
   /* her venom: each stack slows your stamina by `slow`, and lasts `t` */
   venom: { max: 3, slow: 0.25, t: 6 },
   /* THE STINGER (claude/welltown5): stuck low after each sting this long (s), a blow on it x stingMul, one sting's worth at most stingCap of her */
+  wardT: 3.0,   /* (claude/underwell, design standard B3) after every opening ends: a told ward this long - a pour finds nothing, the shell turns the stinger too */
   stuck: { lance: 1.15, barb: 0.85, pin: 1.3, sting: 1.0, tidal: 1.0 }, stingMul: 1.25, stingCap: 0.07, stingR: 13,
   /* HER FIRE (phase two): her heat ticks heatTick s, heatR px past her body; doused she stays out douseT s, then flares for flareT and burns again */
   heatTick: 0.6, heatR: 12, douseT: 9, flareT: 1.0,
@@ -183,7 +184,8 @@ export function stepQueen(e, S, dt, h, c) {
   const G = S.G, P = h.filter(q => q.alive).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];
   e.modeT -= dt; S.moveT += dt;
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
-  if (S.stinger) { S.stinger.t -= dt; if (S.stinger.t <= 0) S.stinger = null; } e.sting = S.stinger ? S.stinger.t : 0;   /* (e.sting: src/boss-greed.js OPEN_RULE - a blow on the stinger is not chipped) */
+  if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward || 0;
+  if (S.stinger) { S.stinger.t -= dt; if (S.stinger.t <= 0) S.stinger = null; } e.sting = S.stinger && !(S.ward > 0) ? S.stinger.t : 0;   /* (e.sting: src/boss-greed.js OPEN_RULE - a blow on the stinger is not chipped) */
   stepFire(e, S, dt, h, c); e.burning = !!S.burn;
   stepShots(e, S, dt, h, c); stepBands(e, S, dt, c); stepRubble(e, S, dt, c); stepPuddles(e, S, dt, c); stepBucket(e, S, dt, c); stepBrood(e, S, dt, c);
   if (S.flood && S.water < CQ.waterH) { S.water = Math.min(CQ.waterH, S.water + 14 * dt); c.water(S.water); }
@@ -198,7 +200,7 @@ export function stepQueen(e, S, dt, h, c) {
     /* ---- the openings: she lies there; when it is over she gets up (and the cycle goes on) ---- */
     case 'soaked': case 'fallen': case 'rear':
       if (e.mode === 'rear') e.x += Math.sin(S.moveT * 20) * 0.4;
-      if (e.open <= 0) { setMode(e, 'recover', 0.55); if (S.pose !== 'floor') S.pose = 'floor'; }
+      if (e.open <= 0) { setMode(e, 'recover', 0.55); if (S.pose !== 'floor') S.pose = 'floor'; S.ward = CQ.wardT; S.n.wards = (S.n.wards || 0) + 1; c.number(e.x, Math.min(e.y, G.floor) - 70, 'HER WARD: WATER AND BLADES RUN OFF HER', '#9ab0c0'); c.sound('tell'); }   /* (claude/underwell, design standard B3) THE ANTI-SPAM WARD: told (the line, a ring), CQ.wardT s */
       return;
     case 'recover': e.gone = 0; if (e.modeT <= 0) nextMove(e, S, P, c); return;
     case 'climbTell': if (e.modeT <= 0) { S.script = nextScript(S, e); S.step = 0; nextMove(e, S, P, c); } return;
@@ -358,7 +360,7 @@ export function openUp(e, S, how, c) {
 /* A POUR AT HER (the hero's E with a sip): what it lands on - her burrow's mound (P1), the wall above her from her ledge (P2) - or null when it
    would not reach her at all. hero = { x, y, face, onLedge } */
 export function pourAim(e, S, hero) {
-  if (!e || !e.alive || qOpen(e)) return null; const G = S.G;
+  if (!e || !e.alive || qOpen(e) || S.ward > 0) return null; const G = S.G;   /* (her ward: the water runs off her) */
   if (S.pose === 'burrow' && S.mound && (e.mode === 'burrow' || e.mode === 'strikeTell' || e.mode === 'chargeTell')) { const d = (S.mound.x - hero.x) * (hero.face || 1);
     if (d > -12 && d < 60 && Math.abs(hero.y - G.floor) < 20) return { x: S.mound.x, y: G.floor - 4, what: 'mound' }; }
   if (S.pose === 'wall' && S.wall && hero.onLedge === S.wall && (e.mode === 'cling' || /Tell$/.test(e.mode) || e.mode === 'climb')) return { x: S.wall === 'W' ? G.x0 + 8 : G.x1 - 8, y: G.ledgeY + 6, what: 'wall' };

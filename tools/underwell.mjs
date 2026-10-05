@@ -28,7 +28,7 @@ const standable = t => t === T.SOLID || t === T.ONEWAY;
 
 /* ---------- THE LEVEL ---------- */
 ok(lv.needs === 'welltown' && LEVELS.find(l => l.id === 'redgorge').needs === 'underwell', 'on the road: THE WELL TOWN > THE UNDERWELL > THE RED GORGE');
-ok(/TORCH/.test(lv.rule) && /BROOD WILL NOT CROSS FIRE/.test(lv.rule) && /WATER PUTS IT OUT/.test(lv.rule), 'its rule line says the verb (a torch lights the oil), the brood and the water: "' + lv.rule + '"');
+ok(/STRIKE A TORCH AND THE OIL BURNS/.test(lv.rule) && /BROOD WON'T CROSS FIRE/.test(lv.rule) && /POUR WATER WHERE THE FIRE MUST NOT GO/.test(lv.rule) && !/ONLY WATER/.test(lv.rule), 'its rule line says both verbs as the code has them (a torch lights the oil, it burns out by itself; a pour is a firebreak): "' + lv.rule + '"');
 ok(L.underwell && L.skinRule && L.W === UNDERWELL.W && SECTIONS.length === 6, 'built: ' + L.W + 'x' + L.H + ', ' + SECTIONS.length + ' sections, the skin rule on');
 ok(Object.values(ARCS).every(a => Object.keys(a).length >= 2) && Object.keys(ARCS.light).length >= 4, 'each verb has an arc (light: ' + Object.keys(ARCS.light).join(' > ') + ')');
 /* the oil lies on floors */
@@ -40,12 +40,20 @@ const has = (x, y) => cells.some(c => c[0] === x && c[1] === y) || L.lines.some(
 /* every torch over oil */
 const sconces = L.ents.filter(e => e.t === 'sconce');
 const hung = sconces.map(s => { for (let y = s.y; y < s.y + 5; y++) if (has(s.x, y)) return y - s.y; return -1; });
-ok(sconces.length === 5 && hung.every(d => d >= 1 && d <= 3), sconces.length + ' wall torches, each one to three rows over oil (' + hung.join(',') + ')');
+ok(sconces.length === 7 && hung.every(d => d >= 1 && d <= 4), sconces.length + ' wall torches, each one to four rows over oil (' + hung.join(',') + ')');
 /* every nest seals a doorway */
 const nestOk = L.nests.map(m => { const sealed = [...Array(m.x1 - m.x0 + 1)].every((_, i) => at(m.x0 + i, m.y0 - 1) === T.SOLID) && at(m.x0, m.y1 + 1) === T.SOLID;
   const oil = [...Array(m.y1 - m.y0 + 2)].some((_, i) => has(m.x0 - 1, m.y0 + i) || has(m.x1 + 1, m.y0 + i)); return sealed && oil && m.y1 - m.y0 >= 4; });
-ok(L.nests.length === 3 && nestOk.every(Boolean), 'three brood nests, each five rows in a doorway with rock over it (no way over) and oil against it (' + nestOk.join(',') + ')');
-ok(L.ropes.length === 1 && has(L.ropes[0].x, L.ropes[0].y1), 'the oil works\' rope stands in the oil (the firebreak\'s reason)');
+ok(L.nests.length === 4 && nestOk.every(Boolean), 'four brood nests (the shaft, the hall, the works, the exam), each five rows in a doorway with rock over it (no way over) and oil against it (' + nestOk.join(',') + ')');
+ok(L.ropes.length === 2 && L.ropes.every(r => has(r.x, r.y1)), 'the oil works\' rope and the exam\'s stand in the oil (the firebreak\'s reason, twice)');
+/* THE REQUIRED REMIXES (fix pass): the works' nest is fed only by the pipe from the torch's floor; the exam's nest seals floor A; the exam's spring is past it */
+{ const wn = L.nests.find(m => m.id === 'works'), en = L.nests.find(m => m.id === 'exam'), wt = sconces.find(s => s.id === 'works'), rope = L.ropes.find(r => r.id === 'exam');
+  const springs = L.ents.filter(e => e.t === 'skinwell' && e.spring).map(e => e.x), fires = L.ents.filter(e => e.t === 'oilfire' && e.x > 400 && e.x < 440).map(e => e.x), drips = L.ents.filter(e => e.t === 'skinwell' && e.drip);
+  ok(wn && wn.y1 === 29 && L.lines.some(([x, a, b]) => x === 216 && a === 30 && b >= 42) && wt.x > 160, 'THE WORKS\' NEST (upper works) is fed by the old pipe from the torch\'s floor, and the torch is past the rope: pour first');
+  ok(en && rope && rope.x < 364 && springs.some(x => x > en.x1 && x < 410) && fires.length === 2 && drips.some(d => d.x > 410 && d.x < 420), 'THE EXAM: the rope up is west of the torch (firebreak), the spring past the nest, a drip after the thirsty one before two old fires (water guaranteed)');
+  ok(L.queenOil && L.queenOil.W && L.queenOil.E && sconces.filter(s => s.x >= 452 && s.x <= 491).length === 2, 'THE QUEEN\'S HALL has lamp oil streaked down both walls and two wall torches over floor oil (LIGHT in her fight)');
+  const sump = L.ents.filter(e => e.t === 'sandworm' && e.x >= 262 && e.x <= 335).length;
+  ok(sump === 5 && !L.grid.slice(44 * L.W + 262, 44 * L.W + 336).some(t => t === T.SOLID), 'THE SUMP: five sandworms share the floor, no mound to rest on (the burning gutter is the answer)'); }
 /* the cast */
 const foes = L.ents.filter(e => ['scorpion', 'slinger', 'sandworm'].includes(e.t)), kind = e => e.cnSkin || (e.elite ? 'elite' : e.t);
 const count = {}; for (const e of foes) count[kind(e)] = (count[kind(e)] || 0) + 1;
@@ -102,15 +110,37 @@ if (!process.argv.includes('--static')) {
     /* THE FIREBREAK: with it, the rope and the drip live; without it, they burn; a respawn hangs the rope again */
     const fb = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={}; for(const e of BK.enemies())e.alive=false;
       P.skin={sips:3,max:3}; BK.tp(172,43); P.face=-1; BK.sim(3); BK.press('talk'); BK.sim(3); out.wet=R().cells.wet; BK.tp(174,43); P.face=1; BK.sim(3); BK.press('atk'); BK.sim(400);
-      out.with={rope:R().ropes[0].burnt, drip:BK.welltown().wells.find(w=>w.drip&&Math.floor(w.x/16)===152).left, chamber:cell(205,43)&&cell(205,43).st};
+      out.worksNest=R().nests.find(n=>n.id==='works').open; out.with={rope:R().ropes[0].burnt, drip:BK.welltown().wells.find(w=>w.drip&&Math.floor(w.x/16)===152).left, chamber:cell(205,43)&&cell(205,43).st};
       return out;})()`, 300000);
     const nb = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={}; for(const e of BK.enemies())e.alive=false;
       BK.tp(174,43); P.face=1; BK.sim(3); BK.press('atk'); BK.sim(400); out.rope=R().ropes[0].burnt; out.ropeTile=BK.tileAt?BK.tileAt(160,40):null; out.drip=BK.welltown().wells.find(w=>w.drip&&Math.floor(w.x/16)===152).left;
       BK.god=false; P.hp=1; BK.tp(170,43); for(let i=0;i<60*6&&!P.dead;i++){ P.hp=Math.min(P.hp,1); BK.sim(1);} for(let i=0;i<60*8;i++)BK.sim(1); out.after=R().ropes[0].burnt;
       return out;})()`, 300000);
+    ok(fb.worksNest === true, 'THE WORKS\' NEST burns: the torch\'s fire runs east and up the old pipe to it (the required remix)');
     ok(fb.wet === 3 && fb.with.rope === false && fb.with.drip === 1, 'WET OIL WILL NOT CATCH: a pour by the rope, then the torch - the rope and the drip live (' + JSON.stringify(fb.with) + ')');
     ok(nb.rope === true && nb.drip === 0, 'without the firebreak the fire burns the rope to ash and boils the drip dry');
     ok(nb.after === false, 'a respawn hangs the rope again (no softlock; the back scaffolds are there too)');
+    /* THE EXAM (fix pass): firebreak at the rope's foot, the torch: the nest and the gutter burn, the worm goes under, the nest room's brood burn; the rope lives.
+       Without the firebreak the rope is ash - and a spare comes down after OIL.rehang s */
+    const ex = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={}; for(const e of BK.enemies()) if(!(e.x>393*16&&e.x<406*16)&&e.t!=='sandworm') e.alive=false;
+      const room=BK.enemies().filter(e=>e.alive&&e.t!=='sandworm'); P.skin={sips:3,max:3}; BK.tp(354,42); P.face=1; BK.sim(3); BK.press('talk'); BK.sim(3); out.wet=[354,355,356].map(x=>cell(x,42)&&cell(x,42).st);
+      BK.tp(362,42); P.face=1; BK.sim(3); BK.press('atk'); let deep=0; for(let i=0;i<500;i++){ BK.sim(1); const w=BK.enemies().find(e=>e.t==='sandworm'&&e.x>371*16&&e.x<393*16); if(w&&w.st&&(w.st.mode==='deep'||w.st.mode==='burrow'))deep++; }
+      out.nest=R().nests.find(n=>n.id==='exam').open; out.rope=R().ropes.find(r=>r.id==='exam').burnt; out.deep=deep; out.roomDead=room.filter(e=>!e.alive).length; out.room=room.length;
+      return out;})()`, 300000);
+    const ex2 = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={}; for(const e of BK.enemies())e.alive=false;
+      BK.tp(362,42); P.face=1; BK.sim(3); BK.press('atk'); BK.sim(300); out.burnt=R().ropes.find(r=>r.id==='exam').burnt; BK.tp(352,42);
+      for(let i=0;i<3200&&R().ropes.find(r=>r.id==='exam').burnt;i++)BK.sim(1); out.back=!R().ropes.find(r=>r.id==='exam').burnt; out.line=R().lastNudge;
+      return out;})()`, 300000);
+    ok(ex.wet.every(s => s === 'wet') && ex.nest && ex.rope === false, 'THE EXAM: a pour at the rope\'s foot, then the torch - the nest burns and the rope lives (' + JSON.stringify(ex) + ')');
+    ok(ex.deep > 60 && ex.roomDead >= 2, 'the same strike sets the gutter burning (its worm under ' + (ex.deep / 100).toFixed(1) + ' s) and the nest room\'s brood burn (' + ex.roomDead + ' of ' + ex.room + ')');
+    ok(ex2.burnt === true && ex2.back === true, 'without the firebreak the exam\'s rope is ash, and a spare comes down (no softlock, a cost)');
+    /* THE QUEEN'S WARD (B3, fix pass): after an opening ends she is warded, told - a pour finds nothing, the stinger takes nothing */
+    const wd = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={}; const A=BK.L.arena; BK.tp(Math.round(A.trigger/16)+2,Math.round(A.floor/16)-1); BK.sim(200);
+      const b=BK.enemies().find(e=>e.t==='cisternqueen'); const S=BK.cisternQueenHands().show(); if(!b||!S) return {none:true};
+      b.mode='soaked'; b.open=0.05; b.modeT=0.1; for(let i=0;i<30&&!(S.ward>0);i++)BK.sim(1); out.ward=+(S.ward||0).toFixed(2);
+      const Qm=await import('/src/cistern-queen.js'); S.pose='burrow'; S.mound={x:b.x}; b.mode='burrow'; out.aim=Qm.pourAim(b,S,{x:b.x-30,y:S.G.floor,face:1,onLedge:null}); S.stinger={x:b.x,y:S.G.floor-6,t:1}; const h0=b.hp; out.take=BK.cisternQueenHands().take(b,40);
+      return out;})()`, 300000);
+    ok(wd.ward > 2.5 && wd.aim === null && wd.take === 0, 'THE QUEEN\'S WARD: after an opening, ' + wd.ward + ' s when a pour finds nothing and a blade (the stinger too) takes nothing');
     /* THE GREAT LAMP and THE BROOD */
     const lp = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={};
       const br=BK.enemies().filter(e=>e.cnSkin==='venomscorpion'&&e.x>118*16&&e.x<132*16); out.brood=br.length;

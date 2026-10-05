@@ -126,7 +126,7 @@ const sunLong = [];
   ok(LEVELS.some(l => l.id === 'shopWell' && l.hidden && l.build().shop) && /id: 'wellstore', kind: 'store', shop: 'shopWell'/.test(main), "THE WELL STORE: the desert's walk-in room (shopWell) and its map node");
   /* THE DJINN OF THE GREAT WELL (claude/welltown5): his hall is the deep cistern under the old well, its two springs, its windlass on the floor and its crank on a ledge, the shaft down from the street */
   const wells = L.ents.filter(e => e.t === 'skinwell' && e.arena && e.x >= ax0 && e.x <= ax1), wls = L.ents.filter(e => e.t === 'djwindlass' && e.x > ax0 && e.x < ax1);
-  ok(A.boss === 'djinn' && A.music === 'cisternqueen' && wells.length === 2 && wls.length === 2 && wls.some(w => w.crank) && A.x1 - A.x0 === QSTAGE.W * TS && !L.ents.some(e => e.t === 'cisternqueen'),
+  ok(A.boss === 'djinn' && A.music === 'djinn' && wells.length === 2 && wls.length === 2 && wls.some(w => w.crank) && A.x1 - A.x0 === QSTAGE.W * TS && !L.ents.some(e => e.t === 'cisternqueen'),
     "THE DJINN's hall: " + QSTAGE.W + ' tiles, two springs, the windlass and the crank on a ledge, on the boss room\'s theme (and no Queen: she is benched)');
   { const q = A.djinn, sh = [q.sx + QSTAGE.shaft[0], q.sx + QSTAGE.shaft[1]]; let open = true; for (let y = q.top; y <= q.vault; y++) for (let x = sh[0]; x <= sh[1]; x++) if (L.grid[y * W + x] !== T.AIR) open = false;
     ok(open && reaches(L, inArena), 'THE OLD WELL: its shaft runs open from the street down through the vault into her hall, and the hall is reached'); }

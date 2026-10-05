@@ -11,7 +11,7 @@ export const WORKS = { tremorTop: 10, tremorBottom: 3.5, shakeTop: 1, shakeBotto
 export const SKINMAX = 3, WELL_R = 24, POUR_R = 48, DRINK_AT = 0.2;
 export const BUCKET = { down: 80, up: 64 };                      /* px/s: the brake off, it runs down; wound, it comes up slower */
 export const THIEF = { hp: 26, run: 96, runT: 3.5, dmg: 6 };     /* THE WATER-THIEF: lighter than the cutthroat, and quicker away */
-export const FIRE = { tick: 0.7, dmg: 3, reach: 6, oilDmg: 14 };   /* a barricade's heat, a tick at its face (oilDmg: THE UNDERWELL's old oil fires, deep lamp oil - claude/underwell: pour from a step away) */
+export const FIRE = { tick: 0.7, dmg: 3, reach: 6, oilDmg: 18 };   /* a barricade's heat, a tick at its face (oilDmg: THE UNDERWELL's old oil fires, deep lamp oil - claude/underwell: pour from a step away) */
 export const DEEP = { wind: 2.0 };                               /* THE DEEP WELL (the exam's): a blow on its windlass winds its bucket up in this long, and a fill sends it down again */
 export const FOLLOW = { after: 1.6 };                            /* THE GREAT WELL's ride is contested: this long after the bucket goes, the well head's men are down the shaft after you */
 /* THE STEAM WORKS' VENTS (claude/djinn3): a vent on its rhythm GLOWS (told) for glow s, then JETS for jet s, then rests; a jet costs dmg (steam: steamDmg)
