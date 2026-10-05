@@ -104,7 +104,6 @@ Tests touched (none weakened): tools/unburied.mjs counts the mantlets among "sie
 ## UNVERIFIED
 - Not played by a human. The bailey was driven by tools/unburied-bailey.mjs and looked at in stills only: the volley's feel (5.2 s clock, 10 dmg),
   the push speed through 40-odd tiles of mud (it is slow on purpose: ~13 s for the exam's 20 tiles) and the archers' readability want a real play.
-- The ridge army was judged in stills at the camp, the crossing and the battery; not on every screen.
 - The Death Knight change was measured by the bot only (which already won every fight before it).
 - The level-1 pilot (docs/level1-pilot.json) was not re-stamped (not in the brief; no check failed on it).
 
