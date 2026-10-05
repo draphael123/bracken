@@ -4030,7 +4030,7 @@ function galeMoor() {
      a headwind - its crevice blows twice a turn, and only the burst after the gust has died puts you on top to stay. ==== */
   o = 535; section('wind-rocks', 'THE WIND ROCKS', o, o + 49, [o + 3, 13]);
   const crevice = (x, y, o2) => ent('vent', x, y, Object.assign({ wind: true, crevice: true, on: 0.5, w: 10 }, o2));   /* h: the throw's height in px (the reach model's column); lift: its speed */
-  const tarn = (x0, x1, top) => { block(x0, x1, 27, 29); pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, bottom: 27 * TS }); };   /* deep water: a fall in hurts and hands you back to the last dry footing (L.waterHurts) */
+  const tarn = (x0, x1, top) => { block(x0, x1, 27, 29); pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS + 4, bottom: 27 * TS, tarn: true }); };   /* deep water: a fall in hurts and hands you back to the last dry footing (L.waterHurts) */
   floor(o, o + 5, 14);
   crevice(o + 5, 13, { period: 3, phase: 0, lift: 500, h: 125 });   /* TAUGHT: six rows of tor face, and a miss is only a wait for the next burst */
   block(o + 6, o + 15, 8, 29);                                         /* TOR A */
@@ -4072,7 +4072,7 @@ function galeMoor() {
   ent('sign', o + 2, 20, { text: 'THE GOBLINS RAISE A WINDMILL. STRIKE ONE AS A GUST BLOWS, AND THE WIND TAKES HIM.' });
   ent('sign', o + 38, 12, { text: 'THE FRAME LEANS ON ONE ROPE. CUT IT AS THE GUST BLOWS, AND THE WIND LAYS IT DOWN.' });
   coins([o + 11, 16], [o + 11, 13], [o + 20, 15], [o + 26, 12], [o + 26, 9], [o + 47, 10], [o + 58, 11]);
-  const moorRocks = { decks: [[o + 9, o + 44, 17, 23], [o + 23, o + 54, 13, 23]] };
+  const moorRocks = { x0: 535, x1: 654, decks: [[o + 9, o + 44, 17, 23], [o + 23, o + 54, 13, 23]] };   /* (x0..x1: the columns that wear the tor-country tile kit, the landing included, src/redraw/moor_tiles.js) */
 
   /* ==== THE LANDING (647-654): an eight-tile shelf of the summit rock west of the Windcaller's wall, where the scaffold's fallen frame
      comes to rest. Its checkpoint is the one B6 asks for OUTSIDE the arena walls (docs/briefs/gale-moor-rework.md §5; it was the kite's

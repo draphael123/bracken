@@ -116,6 +116,7 @@ import { bakePuffer, bakeJellyfish, bakeLamprey, bakeManta } from './redraw/sea_
 import { bakeCutlass, bakeBoarder, bakeMarine, bakeBosun, bakeLookout, bakeQuarter, bakeCaptain } from './redraw/pirates.js';
 import { bakeMasthead } from './redraw/masthead.js';
 import * as KRA from './redraw/kraken.js';
+import * as MRT from './redraw/moor_tiles.js';   /* GALE MOOR's tor country: granite, turf caps, the tarn's black rock, the goblins' scavenged boards (claude/moor2art) */
 import * as UBT from './redraw/unburied_tiles.js';   /* THE UNBURIED FIELD's own tile kit: straw, spoil, mud, siege works, wet stone, flagstones; wattle, stakes, hide, gabions, decks (claude/unburiedart) */
 import * as UBS from './redraw/unburied_sets.js';   /* THE UNBURIED FIELD's set pieces: camp, pits, horses, lances, wagons, siege engines, the chapel (claude/unburiedart) */
 import * as UW from './redraw/unburied_world.js';   /* THE UNBURIED FIELD's own look: its dusk, the ghost army's ridge, the wreck of the battle, its dressing and the bones in its soil */
@@ -1129,6 +1130,7 @@ function resolveTiles() {
     if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
     if (L.fairKit) { const ts = FTL.fairTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE HARVEST FAIR's tile kit (claude/fairfix5): sawdust and straw, iron decks, barn boards, wagon ruts; awnings, boardwalk, the scenic railway (src/redraw/fair_tiles.js) */
     if (L.unburied) { const ts = UBT.unburiedTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNBURIED FIELD's tile kit (src/redraw/unburied_tiles.js) */
+    if (L.moorRocks) { const ts = MRT.moorTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* GALE MOOR's tor country kit, THE WIND ROCKS to the landing (src/redraw/moor_tiles.js) */
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
       tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
@@ -19514,7 +19516,7 @@ function updateVillage(dt) {
   if (STK && state === 'play') STK.update(dt);   /* THE GLINT + STALL NUDGE for the route list (src/stuck-guide.js) */
   if (WTH && WTH.on()) WTH.update(dt);
   if (RGH && RGH.on()) RGH.update(dt);   /* THE RED GORGE (src/red-gorge-hands.js) */
-  if (MRH && MRH.on()) MRH.update(dt);   /* GALE MOOR: the wind that takes a struck goblin, the frame (src/moor-rocks-hands.js) */
+  if (MRH && MRH.on()) { MRH.update(dt); MRH.tick(dt); }   /* GALE MOOR: the wind that takes a struck goblin, the frame (src/moor-rocks-hands.js) */
   if (MYH && MYH.on()) MYH.update(dt);   /* (claude/djinn2) THE BANDIT MYSTICS: the lamps, their ward, a thrown lamp, the lamp fires */
   if (DF2H && DF2H.on()) DF2H.update(dt);   /* THE DESERT'S SECOND CAST: the burning patches, the venom (src/desert-foes2-hands.js) */   /* THE WELL TOWN (src/well-town-hands.js) */
   if (THEATRE) THH.theatreUpdate(THEATRE, THX, dt);   /* THE MASKWRIGHT'S THEATRE */
@@ -25698,6 +25700,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     if (p.x1 < cx || p.x0 > cx + VW || p.y > cy + VH) continue;
     if (p.dry) continue;
     const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, y = p.y - cy, h = p.shallow ? (p.depth || 22) : p.bottom !== undefined ? Math.max(4, p.bottom - p.y) : VH - y, sea = L.palette && (L.palette.set === 'shore' || L.palette.set === 'reef');
+    if (p.tarn && MRH) { MRH.drawTarn(g, p, x0, x1, y, h, cx, cy, time, surfaceOnly); continue; }   /* GALE MOOR's TARNS: deep, dark water (src/moor-rocks-hands.js) */
     if (!surfaceOnly) {
       if (p.fire) { drawFirePool(p, x0, x1, y, h, cx, cy, false); continue; }
       if (p.capped || p.streetTide || p.clear) continue; // rock over it, a tide standing on real ground, or any water you can see the bottom of: it goes OVER what is in it, or it would be a blue rectangle
@@ -26262,6 +26265,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   drawShafts(cx, cy);
   if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);
+  if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
