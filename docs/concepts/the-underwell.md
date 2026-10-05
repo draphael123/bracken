@@ -57,3 +57,36 @@ Greybox placeholder: an existing cave track (Daniel picks a CC0/CC-BY track for 
 2. A burnt rope stays burnt until you die/respawn (the long way round exists). Rec: keep. Alt: it re-hangs after 20 s.
 3. The sandworm's first appearance moves from the Red Gorge to the Underwell (one-new-foe on the gate chain). Rec: keep.
 4. Music: which CC0/CC-BY cave track (the art lane lists 3 for your pick).
+
+## AS BUILT (claude/underwell greybox, 2026-10-05) - what changed from the brief above, and why
+- Oil timing: a lit FLOOR cell burns 6 s, a GUTTER cell (deep oil in a slot in the rock) 16 s - so the worms under the gutter stay down
+  while you cross, and the floor you struck from clears first. Spent and wet oil seep back after 25 s; a struck torch's bracket has a flame
+  again after 12 s (nothing is lost for good: no softlock). Burning oil: 13 a tick (0.5 s), unblockable, told ('THE OIL BURNS: GET OUT OF IT').
+- A BLADE ON A BROOD NEST: the chitin turns it, the nest SPITS VENOM at you (8, unblockable, a venom stack) and SPILLS ITS BROOD (a venom
+  scorpion every 0.6 s, four at most from one nest). Burn it - don't hack it. (Added so the mash bot loses the level.)
+- The Underwell's OLD OIL FIRES scorch 14 a tick at their face (the Well Town's are 3): pour from a step away.
+- Water: springs at checkpoints one and three, the dry fountain once fitted; drips (one sip a life) on the shaft, the shaft tunnel, the oil
+  works, checkpoint two, the exam's start and before the exam's two oil fires.
+- The exam's torch hangs by the drip: pour the oil between them first and the drip lives (and the wet stone is where you wait while the floor
+  burns). The exam's brood room is oiled: the nest's fire runs in on the brood; a fire scorpion in it is at home in the fire.
+- THE CISTERN QUEEN in her own level: hp 1400 (was 1000), every blow x1.43 (on the WEIGHT/HARNESSCARD heroes at the Underwell's depth, L31,
+  she lost 12/12). Her composed theme is the Djinn's arena music now, so her hall plays the pool's 'boss3' (a question for Daniel).
+- The sandworm's first appearance is the Underwell (it stands before the Red Gorge on the road): tools/one-new-foe.mjs NEW_EXACTLY.
+
+## NOTES FOR THE READ-ONLY REVIEWER (vs THE MAGE'S FOLLY + scratch design-standard.md)
+- Rule use: LIGHT is required at three nests (shaft, hall, exam); POUR is required at four old oil fires; the firebreak is the oil works'
+  answer to keeping the rope (the back scaffolds are the long way if it burns); the brood fence and the worm heat are the remixes; the exam
+  is one connected oil. Every route need glints and nudges (src/stuck-spots.js STUCK_HANDS.underwell; the hands drive it).
+- Measured: tools/underwell.mjs (Node + page: every rule claim), tools/underwell-route.mjs (real keys: all 7 heroes walk the route on base
+  movement; knight/warden/pyro at level 1 with every foe alive: 1 / 3 / 1 deaths, one leg lifted for the warden after 3 deaths in the oil
+  works), level-1 pilot 35 blows / 3 deaths, mash bot loses the level (lowest 19/25/28%) and the boss (0/6), human bot 10/18 = 56%.
+- Look hard at: the oil works for a level-1 hero (a fire scorpion beside the rope lights it; the careless hand dies there), whether the
+  great lamp reads as a set piece in greybox art, and whether the exam is hard enough when the player is careful.
+
+## NOTES FOR THE SONNET ART PASS
+- Everything drawn is placeholder in src/redraw/underwell_art.js (the oil cells, flames, nests, torches, the great lamp, the fountain, the
+  tap icon, the sand band, the gutter grate, the blindness overlay, a two-depth arched backdrop) and the four scorpion recolours. The tile
+  kit is the desert's rock skin (rockZones) - the Underwell needs its own cut-stone cistern kit, pillars, arches and torch light.
+- Keep the rule's pictures: oil = black with a rainbow sheen; burning = flames running cell to cell; wet = dark blue-grey with drips; spent =
+  burnt black. A nest must read as a thing that burns (egg-sacs, papery), not as rock.
+- Music: 'cave' is a stand-in for the level; 'boss3' for her hall. Daniel picks a CC0/CC-BY track (list three).

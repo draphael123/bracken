@@ -21,9 +21,9 @@ import { GATE } from './level-quality.mjs';
 
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); else console.log('  ok   ' + m); };
 const lv = LEVELS.find(l => l.id === 'redgorge'), wi = LEVELS.findIndex(l => l.id === 'welltown');
-ok(lv && lv.needs === 'welltown' && LEVELS.indexOf(lv) > wi, 'THE RED GORGE is in LEVELS after THE WELL TOWN, needs welltown');
+ok(lv && lv.needs === 'underwell' && LEVELS.indexOf(lv) > wi && LEVELS.find(l => l.id === 'underwell').needs === 'welltown', 'THE RED GORGE is in LEVELS after THE WELL TOWN, and needs THE UNDERWELL, which needs the town (claude/underwell: the Underwell stands between them on the road)');
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-ok(/DESERT_NODES\.push\(\{ id: 'redgorge'/.test(main) && /\[170, 136\], \[136, 120\]\]/.test(main), 'it has its node on the desert map, and the road runs to it');
+ok(/DESERT_NODES\.push\(\{ id: 'redgorge'/.test(main) && /\[170, 136\], \[140, 156\], \[136, 120\]\]/.test(main), 'it has its node on the desert map, and the road runs to it (through THE UNDERWELL\'s node)');
 ok(GATE.includes('redgorge'), 'level-quality gates it');
 const L = lv.build(), W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
 const [C0, C1] = REDGORGE.ch, inCh = x => x >= C0 && x <= C1;
