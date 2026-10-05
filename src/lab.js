@@ -1040,6 +1040,8 @@ async function runbossLab(BK, opts) {
           const to=P.labTo&&!P.labTo.broken&&P.labTo.y>P.y-60?P.labTo:null,s0=to||slabs.filter(q=>q.y>P.y+2).sort((a,b)=>Math.abs(cen(a)-P.x)-Math.abs(cen(b)-P.x))[0];if(s0&&(P.vy>-60||P.labJump>0)&&Math.abs(cen(s0)-P.x)>4)k[cen(s0)>P.x?'right':'left']=true;else if(!s0&&P.ground)k.right=true; }
         else {
           let done=false;
+          /* THE RUNE COLUMN (claude/bosswave2): ready, he flying in it, and it in reach from this slab - strike it, as a player who has read the sign does */
+          { const rc=A.rune;if(rc&&!(rc.cd>0)&&P.atk<0&&['hover','diveTell','dive','fireballTell','breathTell','recover','flareTell','rise','reset'].includes(m)&&Math.abs(boss.x-rc.x)<13+15&&Math.abs(rc.x-P.x)<LAB_REACH[h]+8&&P.y>rc.top&&P.y<rc.bot){P.face=Math.sign(rc.x-P.x)||P.face;BK.press('atk');swings++;done=m!=='dive';} }
           if(m==='diveTell'&&boss.tgt===on){const n=next(on),dir=n?Math.sign(cen(n)-P.x)||1:1,ex=dir>0?on.x+on.w-10:on.x+10;if(Math.abs(ex-P.x)>3)k[ex>P.x?'right':'left']=true;done=true;}   /* to the edge, and wait: the aim is his until he drops */
           else if(m==='dive'&&boss.tgt===on){goSlab(next(on));done=true;}   /* LATE: he has dropped - go */
           else if(m==='flareTell'&&boss.fm===on){goSlab(next(on));done=true;}
@@ -1354,6 +1356,12 @@ async function runbossLab(BK, opts) {
          answered first). Up on his lookout, it jumps from under it: the lookouts are one-way decks three rows up. */
       const bowArrow = boss.t === 'lance' ? BK.seeds().find(s => s.arrow && !s.jav && s.owner && s.owner.lanceBow && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 40 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0) : null;
       const bowT = boss.t === 'lance' && !open && !['couch', 'charge', 'vaultTell', 'vault', 'rushTell', 'rush', 'galeTell', 'gale'].includes(boss.mode) ? BK.enemies().filter(q => q.alive && q.lanceBow && Math.abs(q.x - P.x) < 200).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
+      /* THE BRIDGE GATE (claude/bosswave2, src/lance-support.js): when he levels the lance or comes on and its lookout is near, up onto the lookout
+         and strike the winch as he runs under it - a quarter-second ahead of him, as a human leads a moving thing. Nothing is dropped for the bot */
+      const lgate = boss.t === 'lance' && !open ? BK.props().find(p => p.t === 'winch' && p.bossGate && !(p.open > 0)) : null;
+      /* HIGHCROWN's hall bell (claude/bosswave2): rung when she stands under its grate and the bell is in reach - a human glancing up at it */
+      const hbell = boss.t === 'gqueen' && !open ? BK.props().find(p => p.t === 'winch' && p.bell && !(p.open > 0) && Math.abs(boss.x - (p.gate * 16 + 8)) < 12 + (boss.w || 20) / 2 && Math.abs(p.x - P.x) < 24 && Math.abs(p.y - P.y) < 30) : null;
+      const gateDuty = lgate && ['couch', 'charge', 'rushTell', 'rush'].includes(boss.mode) && Math.abs(lgate.x - P.x) < 110 ? lgate : null;
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
@@ -1498,6 +1506,10 @@ async function runbossLab(BK, opts) {
         else if (pool) { goal = pool.x + side * (S.boilR + 20); strike = false; }
         else { goal = boss.x; strike = !(P.labRest); }
         if (goal !== null) goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, goal)); }
+      else if (hbell) { goal = null; strike = false; k.left = k.right = false; if (P.atk < 0) { P.face = Math.sign(hbell.x - P.x) || P.face; BK.press('atk'); swings++; } }
+      else if (gateDuty) { const wx = gateDuty.x, gx = gateDuty.gate * 16 + 8, onTop = P.ground && P.y <= gateDuty.y + 2; strike = false; k.block = false;
+        if (!onTop) { goal = wx - 6; if (P.ground && Math.abs(wx - P.x) < 36) { BK.press('jump'); P.labJump = 20; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }
+        else { goal = null; k.left = k.right = false; const ahead = boss.x + (boss.vx || 0) * 0.12; if (Math.abs(ahead - gx) < 14 + (boss.w || 20) / 2 && Math.abs(boss.x - gx) < 40 && P.atk < 0) { P.face = Math.sign(wx - P.x) || 1; BK.press('atk'); swings++; } } }
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : h === 'geomancer' ? 0.17 : 0.14)))) {   /* (THE GEOMANCER's ward takes a tenth of a second to rise: she plants it that much sooner, so it is up on the beat) */
         P.face = Math.sign(d) || P.face;
@@ -1770,7 +1782,7 @@ async function runbossLab(BK, opts) {
          hang time before it is falling again, so "boss.y>P.y+24" was reading the bot's OWN HOP as a step it had climbed. It asks
          for the ground now, for every boss here, not only her (Daniel, "apply the same fix to the other eight", 2026-09-25). */
       if(!walker&&!P.swim&&boss.y>P.y+24&&P.ground&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
-      const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'&&!bowT||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
+      const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'&&!bowT&&!gateDuty||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
       if(descending){const gx=boss.t==='reefmaw'?boss.x:lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;P.labJump=0;k.jump=false;if(P.ground&&[T.ONEWAY,T.PLANK,T.SHELF,T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');}}
       if(!descending&&P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}

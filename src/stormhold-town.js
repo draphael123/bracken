@@ -316,6 +316,11 @@ export function stormholdTown({ painter, T, TS }) {
      third, never onto the one you stand on), and the one rock goblin. NO FIRE ARCHERS stand on his bridge - three of
      them made up to five bows at once, and Daniel took them off master on 2026-09-25. */
   const lanceBows = lanceLookouts({ plat, ent }, P0, BY);
+  /* THE BRIDGE GATE (claude/bosswave2: the level's rule in his fight - THREE GATES; src/lance-support.js LANCE_GATE). A portcullis hangs under the
+     middle lookout on its own winch, as the Keep Gate does. Up on the lookout his charge cannot reach you: strike the winch as he runs under it
+     and the bars come down on HIM. Early or late, it is only a gate across his lane. */
+  { const gp = P0 + 3 * 18; ent('winch', gp + 1, BY - 4, { gate: gp + 2, gy0: BY - 2, gy1: BY - 1, drop: true, hold: 7, bossGate: true });
+    ent('sign', gp - 4, BY - 1, { text: 'THE BRIDGE GATE. FROM THE LOOKOUT, STRIKE ITS WINCH AS HE RUNS UNDER.' }); }
   ent('rockgoblin', P0 + 92, BY - 1, { face: -1 });
   for (const x of [8, 26, 44, 62, 80, 98]) { ent('deco', P0 + x, BY - 1, { kind: 'lanternPost' }); coins([P0 + x + 4, BY - 2]); }
   ent('silver', P0 + 71, BY - 2);

@@ -220,6 +220,7 @@ export function buildWitchlight({ painter, T, TS }) {
   ent('gargoyle', A.x1 - 3, WL.PERCH, { face: -1 });                                        // bolted over the gate: the level ends on his fall
   ent('check', 360, G);
   ent('sign', 565, B.door, { text: "THE STAIR'S TOP. HE IS STONE: MAKE HIM CRASH ONTO THE SPIKES, THEN JUMP ON HIM." });
+  ent('sign', 569, WL.LIP - 1, { text: 'THE RUNE COLUMN: STRIKE IT WHILE HE FLIES IN IT AND IT TURNS HIM OVER.' });   /* (claude/bosswave2) */
   coins([567, WL.LIP - 1], [570, WL.LIP - 1]);
 
   // the dead that followed you up, in the quiet between the encounters
@@ -236,7 +237,8 @@ export function buildWitchlight({ painter, T, TS }) {
     palette: { sky: [[64, 46, 96], [236, 150, 112]], far: 'mage', mid: 'mage', near: 'none', dress: 'village', haze: 'rgba(200,120,160,0.08)',
       grass: '#5a6a4a', grassL: '#7c8c5c', grassD: '#3a4632', dirt: '#5a4c5a', dirtL: '#76647a', dirtD: '#382e3c', canopy: ['#2a2238', '#3a2e4a', '#4e3a5c', '#6a4a6e'] },
     weather: [{ x0: 0, x1: 140 * TS, kind: 'leaves' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    arena: { x0: WL.ARENA.x0 * TS, x1: WL.ARENA.x1 * TS, floor: (G + 1) * TS, y0: (WL.TOP - 14) * TS, top: WL.TOP * TS, trigger: (WL.ARENA.x0 + 2) * TS, wallL: WL.ARENA.x0 - 1, wallR: WL.ARENA.x1, boss: 'gargoyle', music: 'gargoyle', start: [WL.SLABS[0][0] + 3, WL.LOW - 1] },   /* (start: the bot's lab begins on his first slab, not on his spikes) */
+    arena: { x0: WL.ARENA.x0 * TS, x1: WL.ARENA.x1 * TS, floor: (G + 1) * TS, y0: (WL.TOP - 14) * TS, top: WL.TOP * TS, trigger: (WL.ARENA.x0 + 2) * TS, wallL: WL.ARENA.x0 - 1, wallR: WL.ARENA.x1, boss: 'gargoyle', music: 'gargoyle', start: [WL.SLABS[0][0] + 3, WL.LOW - 1],
+      rune: { x: 595 * TS, top: (WL.TOP - 14) * TS, bot: (G + 1) * TS, mid: WL.LOW * TS - 12 } },   /* (claude/bosswave2) THE RUNE COLUMN: between the middle slabs, spikes to sky (src/gate-gargoyle.js RUNE) */   /* (start: the bot's lab begins on his first slab, not on his spikes) */
     mini: { x0: M.x0 * TS, x1: (M.x1 + 1) * TS, floor: (G + 1) * TS, y0: (G - 12) * TS, y1: (G + 2) * TS, trigger: (M.x0 + 3) * TS, wallL: M.wallL, gate: M.gate, boss: 'hedgewarden', name: 'THE HEDGE WARDEN' },
     noCoin: [[0, 9, 0, FOOT - 6], [140, 219, 0, WL.ROOF[0] - 1]],
   };
