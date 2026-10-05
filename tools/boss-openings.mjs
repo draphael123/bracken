@@ -202,7 +202,8 @@ try {
      lower paddle with her at that gate drains the lock from under her - stranded, open (THE FOG CANAL holds her) */
   {const b=boot('canal');const S=BK.greenteethHands().show(),G=S.A,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
-   let op=0,mode=null;for(let i=0;i<60*6&&!(op>0);i++){P.hp=P.maxHp;P.x=G.E.paddle.x-14;P.y=G.walk;P.vy=0;P.face=1;b.x=Math.min(b.x,G.E.face-90);if(!S.pad.E.open&&!(S.pad.E.cd>0)&&P.atk<0)BK.press('atk');BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stranded')mode='stranded';}
+   for(let i=0;i<60*4&&(S.arms.length||BK.bossOpen(b));i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);}   /* (claude/jenny3: let the blow she was throwing at the west walkway land there first - a windup left in the air when the hero is moved across the lock went into the far timber and opened her; and 12 s, not 6, for her to swim the lock to the east gate: her vine at the hero on the walkway holds her up on the way) */
+   let op=0,mode=null;for(let i=0;i<60*12&&!(op>0);i++){P.hp=P.maxHp;P.x=G.E.paddle.x-14;P.y=G.walk;P.vy=0;P.face=1;b.x=Math.min(b.x,G.E.face-90);if(!S.pad.E.open&&!(S.pad.E.cd>0)&&P.atk<0)BK.press('atk');BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stranded')mode='stranded';}
    out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),drains:S.n.drain};}
   /* THE CISTERN QUEEN (claude/welltown3): a minute of her left alone opens nothing; a pour while she walks the floor runs into the sand; a pour on her
      mound floods her burrow - SOAKED, open; on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -
