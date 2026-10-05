@@ -25,7 +25,7 @@
 //
 // main.js hooks it with: installReact (beside installTactics), RX.frame (top of updateEnemies), RX.pre + RX.hold (beside tokenPre /
 // tokenHold), RX.guards (the melee hit loop, beside the brute's braceHit), RX.tier (damagePlayer0) and RX.draw (beside drawPoise).
-// FOR ELITES2 (next lane): REACT.eligible, roleOf, readyNow and ACTS are exported; an elite is left out of every rule here (e.elite).
+// FOR ELITES2 and the LEVEL SWEEP: REACT.eligible, roleOf, readyNow, ACTS (purse + damage tier per act) and ROSTER (each act's foes by squad role) are exported; an elite is left out of every rule here (e.elite).
 
 export const ACTS = [
   /* act: the purse (TOKENS.cap), the damage tier on a common foe's blow, and the cut of a flurry that raises a mashed foe's guard */
@@ -79,6 +79,23 @@ export const roleOf = e => COVER.has(e.t) ? 'front' : RANGED.has(e.t) ? 'back' :
 export const FEINT = new Set(['soldier|slashTell', 'cutlass|slashTell', 'sailor|hookTell', 'tideguard|thrustTell', 'bonecorsair|cutTell', 'farmhand|swingTell', 'miner|swingTell',
   'armour|swingTell', 'assassin|stabTell', 'burngob|swingTell', 'drownedknight|lungeTell', 'drownedcaptain|lungeTell', 'bellguard|hookTell', 'snuffer|swipeTell', 'watch|thrustTell']);
 
+/* THE ACT ROSTER (for the level difficulty sweep, Daniel 10-05): which foe families - and which regional variants of a proven AI - belong to each act,
+   by squad role (roleOf: front = a cover kind, flank = melee, back = ranged/caster), plus the act's heavy and support. Read off the levels as built
+   (every kind below stands in that act's levels today). A designed squad for a level of act N is made from act N's roster; a kind from an EARLIER
+   act may come back reskinned (cnSkin) to fit the place, never a living goblin past the Goblin Queen (theme fit; undead bonegob is fine). */
+export const ROSTER = {
+  1: { front: ['shield', 'pike', 'soldier'], flank: ['sprig', 'hound', 'thief', 'badger', 'lurker', 'swornsword'], back: ['archer', 'thorn', 'spit', 'spitcap', 'weaver', 'stormshaman'],
+       heavy: ['brute', 'heavy'], support: ['sapper', 'horn'], note: 'goblin woods and the stockade: the shield-covers-the-bow lesson' },
+  2: { front: ['shield', 'pike', 'soldier'], flank: ['sprig', 'cutter', 'miner', 'goat', 'hound', 'assassin', 'hearthgob', 'sheargob'], back: ['rockgoblin', 'archer', 'javelin', 'gobmage', 'scalder', 'skybolt'],
+       heavy: ['brute', 'troll', 'heavy', 'berserker', 'golem'], support: ['gobpriest', 'horn', 'sentry', 'snuffer', 'sapper'], note: 'the crags and the goblin court: priests and bells to kill first' },
+  3: { front: ['tideguard', 'watch', 'bellguard', 'merrowbrute'], flank: ['cutlass', 'sailor', 'boarder', 'bonecorsair', 'drownedknight', 'crab', 'wight'], back: ['scout', 'netter', 'marine', 'merrowspear', 'lookout', 'seawitch'],
+       heavy: ['merrowbrute', 'drownedknight', 'holdfast', 'tidemarauder'], support: ['bosun', 'merrowcaller', 'lanternshade', 'snuffer'], water: ['eel', 'angler', 'urchin', 'puffer', 'lamprey', 'siren', 'manta', 'jelly'],
+       note: 'the sea: fights in the tide and the swim; water foes hold the water, boarders the decks' },
+  4: { front: ['swornsword', 'hedgeknight', 'armour', 'heavy'], flank: ['zombie', 'husk', 'runner', 'hound', 'bonegob', 'farmhand', 'mummer', 'hobbyhorse', 'broom'], back: ['bonearcher', 'crossbow', 'apprentice', 'haunt', 'drunk', 'archer'],
+       heavy: ['hedgeknight', 'armour', 'barrowrider', 'brute'], support: ['bannerbearer', 'gobpriest', 'barker', 'snuffer'], note: 'the old kingdom: knights, the risen dead and the fair folk - a banner or a priest to kill first' },
+  5: { front: ['shield'], flank: ['cutthroat', 'scorpion', 'waterthief', 'ambusher', 'raptor'], back: ['slinger', 'archer', 'gobmage'], heavy: ['scorpion', 'sandworm'], support: ['sapper', 'vulture'],
+       note: 'the desert: feinting cutthroats, slingers on the ledges, every fight in the sun or the flood' },
+};
 let ACT = ACTS[0];
 export const act = () => ACT;
 

@@ -18,10 +18,10 @@ import { floodReach } from '../src/reachcore.js';
 import { pacing } from './pacing.mjs';
 import { BOSS_SYNTH_BASE, splitTrack } from '../src/boss-music.js';
 import { clearsAt, MASH_HELD } from './mash-rows.mjs';
-import { ruleFights, curveVerdict } from './rule-state.mjs';
+import { ruleFights, curveVerdict, CURVE_REPORT_ONLY } from './rule-state.mjs';
 /* (claude/combat2) REPORT-ONLY FOR EVERY LEVEL: the combat pass part 2's level-side rows - fights during the rule, and the level-1 curve by act
    (tools/rule-fights.mjs). Printed (WARN) and listed by node tools/rule-fights.mjs; never failing the gate until Daniel lifts them. */
-export const REPORT_ALL = ['ruleFight', 'curve'];
+export const REPORT_ALL = ['ruleFight'];   /* (the curve row is per level: tools/rule-state.mjs CURVE_REPORT_ONLY, the list the level sweep shrinks) */
 install();
 const TS = 16;
 
@@ -305,11 +305,11 @@ export function measure(lv) {
     ['pilot', pilotOk, pilotMsg],
     ['mash', !gated || mashV.ok, gated ? mashV.msg : 'not gated (node tools/mash-bot.mjs ' + lv.id + ' to measure)'],
     ['ruleFight', ruleFight.ok, ruleFight.msg],
-    ['curve', curveV.ok, curveV.msg],
+    ['curve', !!curveV.soft || (!CURVE_REPORT_ONLY[lv.id] && curveV.ok), curveV.msg + (CURVE_REPORT_ONLY[lv.id] ? (curveV.ok && !curveV.soft ? ' - BACK IN ITS BAND: take it out of CURVE_REPORT_ONLY (tools/rule-state.mjs)' : ' [report-only: CURVE_REPORT_ONLY]') : '')],
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
   m.ruleFight = ruleFight; m.curve = curveV;
-  const soft = (REPORT_ONLY[lv.id] || []).concat(MASH_ENFORCE ? [] : ['mash'], REPORT_ALL);   /* (the mash row is per part now: mashGate reads MASH_REPORT_ONLY) */
+  const soft = (REPORT_ONLY[lv.id] || []).concat(MASH_ENFORCE ? [] : ['mash'], REPORT_ALL, CURVE_REPORT_ONLY[lv.id] && !curveV.ok ? ['curve'] : []);   /* (the mash row is per part now: mashGate reads MASH_REPORT_ONLY) */
   m.bar = bar; m.pass = bar.every(b => b[1] || soft.includes(b[0])); m.failed = bar.filter(b => !b[1] && !soft.includes(b[0])).map(b => b[0]); m.reportOnly = bar.filter(b => !b[1] && soft.includes(b[0])).map(b => b[0]);
   return m;
 }
