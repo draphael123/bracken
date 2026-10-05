@@ -578,7 +578,7 @@ const dodgeCost = (back = false) => CM.rollCost(P, hero(), { back, shave: Math.r
    tip rule is about, not for one big escape. The third waits (STEP_CD). And because it is cheap and repeatable its
    GRACE IS SHORT: STEP_INV, a good deal less than the old roll's whole length, or she would simply step through
    everything in the game instead of spacing it. ==== */
-const STEP_INV = 0.09, STEP_PAIR = 0.75, STEP_CD = 0.62, STEP_GAP = 0.1;   /* s untouchable, how long a pair stays a pair, the wait after the second, the wait after the first */
+const STEP_INV = 0.15, STEP_PAIR = 0.75, STEP_CD = 0.62, STEP_GAP = 0.1;   /* s untouchable, how long a pair stays a pair, the wait after the second, the wait after the first */
 const stepCost = () => dodgeCost(true);   /* WEIGHT: her back-step 15, her step forward a roll's 24 (src/commit.js ROLL_COST, STEP_BACK_COST) */
 CM.bindStamina({ lvGrow: () => LV_GROW(), lungs: () => perk('lungs'), fleet: () => perk('fleet') });   /* THE SEAM: the level's growth reaches the bar only through CM.staminaOf (LEVELING's ENDURANCE feeds P.maxSt) */
 const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge (it was the dash's, and the same number) */
@@ -23983,7 +23983,7 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
    The tip gets its own spark and its own ringing note EVERY time, and the haft its own dull wooden knock: the game
    hides floating words in play unless they are on the MOVE_WORDS allowlist, so the sound and the spark carry this,
    not a word. A first-few-times hint says it once in words and then never again. ==== */
-const TIP_AT = 34, SHAFT_AT = 18;
+const TIP_AT = 28, SHAFT_AT = 14;   /* (claude/herokit) 34 / 18: the tip was a 10 px band at the end of a 44 px spear and, on the second thrust of a run (it reaches 39), a 5 px one - the bot landed 0 tips in 66 hits on the Archmage */
 const tipReach = e => { const b = box(e); return P.face > 0 ? b.l - P.x : P.x - b.r; };
 function tipPay(e) {
   const d = tipReach(e), stretch = P.stretchT > 0 && !wardJav;   /* FULL STRETCH: every blow of the spear is the tip */

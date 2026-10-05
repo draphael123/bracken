@@ -437,7 +437,7 @@ export function djinnPlan(s) {
   if (m === 'whirl' && !onLedge && !P.climb && Math.abs(P.x - G.mid) < 200) { out.gx = clamp(P.x + (Math.sign(P.x - G.mid) || 1) * 90); out.why = 'wade against the whirlpool'; return out; }
   /* 1. THE OPENING: on him (bailed out, he lies in the flood under the shaft: off the ledge and wade in) */
   if (djOpen(e)) { if (onLedge && e.y > G.ledgeY + 20) { offLedge(); out.gx = clamp(e.x); out.why = 'down into the flood'; return out; }
-    out.gx = clamp(e.x - toHim * Math.max(8, reach * 0.6 + 8)); out.face = toHim; out.atk = ad < reach + DJ.w / 2 + 4 && Math.abs(P.y - e.y) < 40 && P.atk < 0; out.why = 'cut him: he is open'; return out; }
+    out.gx = clamp(e.x - toHim * (s.tip ? DJ.w / 2 + s.tip : Math.max(8, reach * 0.6 + 8))); out.face = toHim; out.atk = ad < reach + DJ.w / 2 + 4 && Math.abs(P.y - e.y) < 40 && P.atk < 0; out.why = 'cut him: he is open'; return out; }
   /* 1b. HIS HAND (phase three) */
   const hd = handOut(S); if (hd && hd.stay > 0.2 && !roll('hand' + S.n.hands, DJ_PLAN.missHand)) { const L = hd.x < G.mid ? 'W' : 'E', onFloor = Math.abs(hd.y + 6 - G.floor) < 8;
     if (!onFloor && onLedge !== L) return climbTo(L);

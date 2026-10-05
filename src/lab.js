@@ -49,6 +49,7 @@ export const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper'
    the rest. It is edge-triggered, so the bot must let the key UP again between sweeps: DEFLECT_TAP is that beat.
    (Her dodge goes BACKWARD by itself, so the bot never has to aim it.) */
 export const DEFLECT_TAP = f => f % 8 < 2;
+export const WARDEN_TIP = 32;   /* (claude/herokit) the near-edge distance the warden's point pays at (tipPay: TIP_AT 28 .. her reach 44): the plans' 'cut him' spots stood her at 0.6 of her reach, inside the shaft, and she only shoved and glanced */
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
    the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */
@@ -760,7 +761,7 @@ async function runbossLab(BK, opts) {
             else realmGoal=[RL.vent.x-110,RL.mire-70];}
           if(realmGoal)toward(realmGoal[0],realmGoal[1],threat?0.8:1.6);}
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
-        if(!threat&&!realmGoal){const want=boss.open>0?LAB_REACH[h]*0.55:(rest?150:LAB_REACH[h]*0.7);const gx=boss.x-side*want,gy=by;
+        if(!threat&&!realmGoal){const want=boss.open>0?(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.55):(rest?150:(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.7));   /* (claude/herokit) THE WARDEN'S POINT PAYS 34+ px out (tipPay): flown in to 0.55-0.7 of her reach she only ever struck with the haft and the middle of the shaft (0 tip hits in 66 on the Archmage) - she holds the tip distance, as a person does */const gx=boss.x-side*want,gy=by;
           if(Math.abs(gx-P.x)>6)vx+=Math.sign(gx-P.x);if(Math.abs(gy-py)>6)vy+=Math.sign(gy-py);}
         if(vx>0.3)k.right=true;else if(vx<-0.3)k.left=true;if(vy>0.3)k.down=true;else if(vy<-0.3)k.up=true;
         if(block){k.block=true;}
@@ -1138,7 +1139,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const QH=BK.cisternQueenHands(),S=QH&&QH.show();
         if(f===0||!P.labCqMem)P.labCqMem={};
-        const pl=S?queenPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCqMem}):{gx:null,face:P.face};
+        const pl=S?queenPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCqMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1157,7 +1158,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const DH=BK.djinnHands(),S=DH&&DH.show();
         if(f===0||!P.labDjMem)P.labDjMem={};
-        const pl=S?djinnPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
+        const pl=S?djinnPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1176,7 +1177,7 @@ async function runbossLab(BK, opts) {
         const GH=BK.gangLeaderHands(),F=GH&&GH.fight();
         if(f===0||!P.labGlMem)P.labGlMem={};
         const greed=BK.greed?BK.greed.count(boss):0;
-        const pl=F?glPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
+        const pl=F?glPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
