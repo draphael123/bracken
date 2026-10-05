@@ -3051,7 +3051,7 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "timeout:53/97",
+     "timeout:53/94",
      "timeout:52/100"
     ],
     "warden": [
@@ -3059,8 +3059,8 @@
      "timeout:49/99"
     ],
     "pyro": [
-     "timeout:65/96",
-     "timeout:56/96"
+     "timeout:65/93",
+     "timeout:56/93"
     ]
    },
    "rows": [
@@ -3071,7 +3071,7 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 53,
-     "bossLeftPct": 97,
+     "bossLeftPct": 94,
      "landed": 25,
      "swings": 8138,
      "reprisalPct": 0,
@@ -3148,7 +3148,7 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 65,
-     "bossLeftPct": 96,
+     "bossLeftPct": 93,
      "landed": 17,
      "swings": 8180,
      "reprisalPct": 0,
@@ -3161,7 +3161,7 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 56,
-     "bossLeftPct": 96,
+     "bossLeftPct": 93,
      "landed": 17,
      "swings": 8185,
      "reprisalPct": 0,
@@ -3217,11 +3217,11 @@
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 50,
-    "hpLostPct": 91,
-    "hits": 13,
+    "minHpPct": 4,
+    "hpLostPct": 147,
+    "hits": 20,
     "walked": 100,
-    "lifts": 44,
+    "lifts": 42,
     "boardLifts": 0,
     "rides": 1,
     "pulls": 0,
@@ -3229,35 +3229,36 @@
      "raft": 1
     },
     "machines": true,
-    "frames": 11816,
-    "kills": 5,
+    "frames": 11912,
+    "kills": 4,
     "heroLevel": 12
    },
    "warden": {
     "deaths": 0,
-    "minHpPct": 37,
-    "hpLostPct": 104,
-    "hits": 14,
+    "minHpPct": 4,
+    "hpLostPct": 148,
+    "hits": 20,
     "walked": 100,
-    "lifts": 44,
-    "boardLifts": 0,
-    "rides": 1,
+    "lifts": 43,
+    "boardLifts": 1,
+    "rides": 2,
     "pulls": 0,
     "ridden": {
-     "raft": 1
+     "raft": 1,
+     "mover": 1
     },
     "machines": true,
-    "frames": 11926,
-    "kills": 5,
+    "frames": 13171,
+    "kills": 3,
     "heroLevel": 12
    },
    "pyro": {
     "deaths": 0,
-    "minHpPct": 43,
-    "hpLostPct": 106,
-    "hits": 16,
+    "minHpPct": 62,
+    "hpLostPct": 79,
+    "hits": 13,
     "walked": 100,
-    "lifts": 44,
+    "lifts": 43,
     "boardLifts": 0,
     "rides": 1,
     "pulls": 0,
@@ -3265,8 +3266,8 @@
      "raft": 1
     },
     "machines": true,
-    "frames": 11848,
-    "kills": 7,
+    "frames": 11818,
+    "kills": 6,
     "heroLevel": 12
    }
   }
