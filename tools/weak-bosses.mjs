@@ -5,7 +5,7 @@
      - the same hood, the lamp STRUCK while it is on: the lamp flares, he is BLINDED and open, and a blow lands double
      - out of the flare his coat takes half a blow
      - THE LUNGE FROM THE DARK is told (lungeTell, red !!), is only asked of a hero out of the light, hits a hero who stands, and
-       misses a hero who rolls through it
+       misses a hero who rolls through it (WEIGHT: the roll's untouchable part is the first 0.20 s, so the roll is pressed as the tell ends)
      - PHASE TWO takes your light: playerLight() shrinks, the fire in hand is gone, and a burning lamp gives it back
    (the Ploughman and the Homunculus are asked below.)
    Red on the base (5b0ec84): the Lampreeve's reach opened him with nobody touching a lamp, there was no lunge and no taken light.
@@ -38,8 +38,8 @@ try {
     const h0=b.hp;BKT.hurtEnemy(b,10,b.x-20,false);o.openBlow=Math.round(h0-b.hp);BK.sim(200);b.open=0;b.mode='stalk';const h1=b.hp;BKT.hurtEnemy(b,10,b.x-20,false);o.shutBlow=Math.round(h1-b.hp);
     /* THE LUNGE: a hero in the light is not lunged at; a hero in the dark is, and it is told red */
     for(const p of lampsIn()){p.lit=false;p.gut=0;}const far=lampsIn()[0];far.lit=true;
-    const lunge=(roll)=>{BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.wick=0;b.mode='stalk';b.modeT=0;b.snuffT=99;b.sweepT=99;b.douseT=99;b.hookT=99;b.lungeT=0;b.x=(M.x0+M.x1)/2;BK.P.x=b.x+(b.x>far.x?-120:120);if(Math.abs(BK.P.x-far.x)<130)BK.P.x=b.x-(BK.P.x-b.x);BK.P.y=M.floor;
-      let told=null,mark=null,hp0=BK.P.hp;for(let i=0;i<120;i++){hold();if(b.mode==='lungeTell'){told=b.mode;mark=BK.markShown(b);if(roll&&b.modeT<0.1&&i%3===0){BK.keys[b.x<BK.P.x?'left':'right']=true;BK.press('dodge');}}BK.sim(1);if(b.mode==='lungeEnd'||b.mode==='stalk'&&told)break;}
+    const lunge=(roll)=>{BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.st=BK.P.maxSt;BK.P.winded=false;BK.P.exhaustT=0;BK.P.wick=0;b.mode='stalk';b.modeT=0;b.snuffT=99;b.sweepT=99;b.douseT=99;b.hookT=99;b.lungeT=0;b.x=(M.x0+M.x1)/2;BK.P.x=b.x+(b.x>far.x?-120:120);if(Math.abs(BK.P.x-far.x)<130)BK.P.x=b.x-(BK.P.x-b.x);BK.P.y=M.floor;
+      let told=null,mark=null,hp0=BK.P.hp;for(let i=0;i<120;i++){hold();if(b.mode==='lungeTell'){told=b.mode;mark=BK.markShown(b);if(roll&&b.modeT<0.04){BK.keys[b.x<BK.P.x?'left':'right']=true;BK.press('dodge');}}BK.sim(1);if(b.mode==='lungeEnd'||b.mode==='stalk'&&told)break;}
       const r={told,mark,hurt:Math.round(hp0-BK.P.hp),light:BK.litNear?BK.litNear(BK.P.x,BK.P.y-10,110):null};BK.god=true;return r;};
     o.lungeStand=lunge(false);o.lungeRoll=lunge(true);
     {b.mode='stalk';b.lungeT=0;b.snuffT=99;b.sweepT=99;b.douseT=99;b.hookT=99;BK.P.x=far.x;BK.P.wick=14;b.x=far.x+120;let seen=false;for(let i=0;i<120;i++){hold();BK.P.x=far.x;BK.P.wick=14;BK.sim(1);if(b.mode==='lungeTell')seen=true;}o.lungeInLight=seen;}
@@ -134,7 +134,7 @@ try {
     ok(o.bareBlow > 3 * o.jarBlow, 'bare it takes the blow, in its jar most glances: ' + o.bareBlow + ' vs ' + o.jarBlow);
     ok(o.pair.tellsBefore >= 2, 'phase two: a missed first trick opens nothing - a second is told before the jar breaks: ' + JSON.stringify(o.pair));
     ok(o.pair.smoke > 0 && o.pair.hideBlow === 0 && o.pair.hideThenScuttle, 'phase two: the broken jar leaves smoke, it hides there untouchable, and comes out on a told scuttle: ' + JSON.stringify(o.pair)); }
-  if (r.dk) { ok(r.dk.stuckT <= 1.5, 'the Death Knight stuck blade holds him 1.5 s at most: ' + r.dk.stuckT); ok(r.dk.p2At >= 0.6, 'his phase two comes at three-fifths: ' + r.dk.p2At); ok(r.dk.hp === 1150 && r.dk.full, 'his health (claude/dk3): 950 while 19 of 20 blows were chipped to a twentieth; 1150 since he takes FULL DAMAGE (Daniel 10-03), tuned on tools/deathknight-pilot.mjs to 50% - a question for Daniel: ' + JSON.stringify(r.dk)); }
+  if (r.dk) { ok(r.dk.stuckT <= 1.5, 'the Death Knight stuck blade holds him 1.5 s at most: ' + r.dk.stuckT); ok(r.dk.p2At >= 0.6, 'his phase two comes at three-fifths: ' + r.dk.p2At); ok(r.dk.hp === 1700 && r.dk.full, 'his health (claude/dk3): 950 while 19 of 20 blows were chipped to a twentieth; 1150 since he takes FULL DAMAGE (Daniel 10-03); 1700 since INTEG67 retuned it (batch67, DK3 lane, pilot 57% human-bot) - Daniel plays the gate: ' + JSON.stringify(r.dk)); }
   ok(!pg.errors.length, 'page errors: ' + JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
 if (fails.length) { for (const f of fails) console.log('FAIL', f); process.exit(1); }

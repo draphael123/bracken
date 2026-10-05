@@ -88,7 +88,7 @@ assert(rides.some(hazardUnder) && heads.some(hazardUnder), 'and later both are a
 
 /* 6. the runtime, on main.js's own code */
 const noop = () => {}, P = { x: 0, y: 0, vx: 0, vy: 0, dead: false, ground: true };
-const c = vm.createContext({ L, P, time: 0, keys: {}, jumpPress: false, bossActive: false, callerCalm: () => false, dust: noop, boss: null, SFX: new Proxy({}, { get: () => noop }) });
+const c = vm.createContext({ L, P, time: 0, keys: {}, jumpPress: false, bossActive: false, PUPH: null, callerCalm: () => false, dust: noop, boss: null, SFX: new Proxy({}, { get: () => noop }) });
 vm.runInContext(main.slice(main.indexOf('const GUST_TELL'), main.indexOf('function drawToldGust')), c);
 const put = (z, dx) => { P.x = z.dir > 0 ? z.x0 + dx : z.x1 - dx; P.y = z.y1 - 2 * TS; };
 const run = (secs, air) => { for (let t = 0; t < secs; t += 1 / 60) { P.ground = !air; c.updateMoorWind(1 / 60); P.x += P.vx / 60; c.time += 1 / 60; } };
