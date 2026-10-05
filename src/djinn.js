@@ -34,7 +34,7 @@
 
 export const DJ = {
   hp: 1000, w: 34, h: 64, markH: 92,
-  openMul: 2.5, openT: 4.0, mudT: 3.5, bailT: 5.5, openCap: 0.0525, bailCap: 0.075,   /* a water opening: x openMul, one takes no more than openCap of him
+  openMul: 2.5, openT: 4.0, mudT: 3.5, bailT: 5.5, openCap: 0.0525, bailCap: 0.07,   /* a water opening: x openMul, one takes no more than openCap of him
                                                                     (claude/djinn3, Daniel 10-04 "a little too hard": MORE DAMAGE WHEN STUNNED x1.9 -> x2.5,
                                                                     and STUNNED LONGER - mud 2.5 -> 3.5 s, the douse 3.2 -> 4.0, the bail 4.2 -> 5.5. The cap
                                                                     stays 0.0525 a mud or a douse - x2.5 over a longer window fills it far sooner, and a
@@ -78,7 +78,7 @@ export const DJ = {
   bucketFall: 0.55, bucketCd: 1.5, windT: 1.5, pourR: 66,   /* THE BAIL IS TWO STEPS (claude/djinn3): in the flood the great bucket lies DOWN in the
                                                     water - strike the windlass (or the crank) and it WINDS UP (windT s) and hangs cocked; strike again and it DROPS
                                                     (bucketFall s) - on him only if he is under the shaft. After it lands the rope settles bucketCd s */
-  dmg: { lash: 17, blast: 8, devil: 24, spear: 19, flash: 17, breath: 22, pillar: 20, fdevil: 11, heat: 6, burn: 3, spout: 16, held: 24, wave: 26, slam: 26, whirl: 10, flood: 1, deep: 3, upsurge: 22 },
+  dmg: { lash: 17, blast: 8, devil: 24, spear: 19, flash: 17, breath: 22, pillar: 20, fdevil: 11, heat: 6, burn: 3, spout: 16, held: 24, wave: 26, slam: 26, whirl: 10, flood: 1, deep: 4, upsurge: 22 },
 };
 export const CYCLES = {
   1: [['lash', 'spears', 'devil', 'blast'], ['devil', 'lash', 'spears', 'lash', 'blast'], ['blast', 'spears', 'lash', 'devil'], ['spears', 'lash', 'devil', 'blast', 'lash']],
