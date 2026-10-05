@@ -200,7 +200,7 @@ These supersede the matching lines above. Q1 is answered: a harder fair is fine,
 - **Level and mash gates:** level-quality, mash-gate, one-new-foe, sprinkle-cap, stuck.
 - **Level structure:** checkpoint-gaps, architecture, checkpoints, npc-removal, elites.
 - **Text and skins:** goblin-lint, hint-shown.
-- **Not yet in:** wicker-queen and boss-fight-end (see the next section).
+- **Bosses:** wicker-queen; boss-fight-end (51/51 fights end when the boss dies).
 
 **Remaining question:**
 - **The mime damage is 9 and its tell 0.42 s, picked by hand.** It has no bot measure of its own; the level-1 pilot rose from 34 to 43 hits.
