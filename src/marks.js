@@ -82,6 +82,7 @@ export const BY_HAND = {
   'abbot|censerTell':'!','abbot|castTell':'!','abbot|processTell':'!!','abbot|coalsTell':'!!','abbot|knellTell':'!!','abbot|riteTell':'',   /* THE FALSE ABBOT (false-abbot.js, by hand: a module-file boss the audit cannot follow): the censer and the chain a shield turns; the procession, the coals and the knell nothing does; the rite throws no blow at all */
   'wickerqueen|tossTell':'!!','wickerqueen|sweepLowTell':'!!','wickerqueen|sweepHighTell':'!!','wickerqueen|leapTell':'!!','wickerqueen|stabTell':'!!','wickerqueen|lashLowTell':'!!','wickerqueen|lashHighTell':'!!','wickerqueen|floorTell':'!!','wickerqueen|thrustHighTell':'!!','wickerqueen|thrustLowTell':'!!','wickerqueen|crownTell':'','wickerqueen|ringTell':'!!',   /* THE WICKER QUEEN (wicker-queen.js, by hand: a module-file boss the audit cannot follow; claude/fair3, the carousel claude/fairboss, her spear claude/fairfix2-spear): no shield turns any of them - her spear stabbed from behind a turned back, her spear thrust high or low along the ride, the ribbons over the whole green, fire under your feet; the crowning calls mummers who strike on their own marks */
   'puppeteer|snareLowTell':'!!','puppeteer|snareHighTell':'!!','puppeteer|dropTell':'!!','marionette|chopTell':'!!','marionette|slamTell':'!!','marionette|grabTell':'!!','harlequin|jabTell':'!','harlequin|kickTell':'!!','masterpiece|swatTell':'!','masterpiece|stompTell':'!!','masterpiece|reachTell':'!!',   /* THE PUPPETEER (puppeteer.js, by hand: a module-file boss the audit cannot follow; claude/puppeteer, PUPPETEER3): his whip is string, and no shield turns string; the masterpiece's swat a shield turns, THE BRUTE's heavy chop, his slam (a shock along the boards) and grab and the masterpiece's stomp and reach nothing does; THE HARLEQUIN's quick jab a shield turns, his low kick nothing does */
+  'wickerman|throwTell':'!!','wickerman|swingTell':'!',   /* THE WICKER MAN (claude/fairfix6, by hand: src/wicker-man.js on its own hands): its fire is bowled along the ground and no shield turns it - jump it, or strike it back; its arms come down and the shield takes them */
   'tome|tell':'!',   /* THE TOME (tome.js, by hand: a module-file foe the audit cannot follow): the dart is a blow, and the shield does not just turn it - it SHUTS the book */
   'grindylow|rippleTell':'!!','willowisp|flareTell':'!','grindylow|deckTell':'!!','grindylow|boardTell':'!!',   /* THE FOG CANAL (canal-foes.js, by hand: module-file foes the audit cannot follow): no shield turns a hand round your ankle - jump the ring; the wisp's flare a shield turns */
   'gargoyle|diveTell':'!!','gargoyle|fireballTell':'!','gargoyle|breathTell':'!','gargoyle|flareTell':'!!',   /* THE GATE GARGOYLE (gate-gargoyle.js, by hand): the dive and the flare wear the red cross; the fireball (the wing gust's place, 2026-09-28) and the fire breath a shield turns */   /* THE WITCHLIGHT STAIR's aqueduct broom (sweepBroom, by hand): a sweep at the ankles a shield braces against */
@@ -240,11 +241,12 @@ export const MARK = {
   'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'undeadmage|wallTell': '!!', 'urchin|biteTell': '!', 'urchin|castTell': '!',
   'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!', 'wasp|stingTell': '!', 'watch|sweepTell': '!',
   'watch|thrustTell': '!', 'waterthief|feintTell': '', 'waterthief|slashTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!',
-  'wickerqueen|crownTell': '', 'wickerqueen|floorTell': '!!', 'wickerqueen|lashHighTell': '!!', 'wickerqueen|lashLowTell': '!!', 'wickerqueen|leapTell': '!!', 'wickerqueen|ringTell': '!!',
-  'wickerqueen|stabTell': '!!', 'wickerqueen|sweepHighTell': '!!', 'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!', 'wickerqueen|thrustLowTell': '!!', 'wickerqueen|tossTell': '!!',
-  'wight|graspTell': '!!', 'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!',
-  'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '',
-  'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'wickerman|swingTell': '!', 'wickerman|throwTell': '!!', 'wickerqueen|crownTell': '', 'wickerqueen|floorTell': '!!', 'wickerqueen|lashHighTell': '!!', 'wickerqueen|lashLowTell': '!!',
+  'wickerqueen|leapTell': '!!', 'wickerqueen|ringTell': '!!', 'wickerqueen|stabTell': '!!', 'wickerqueen|sweepHighTell': '!!', 'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!',
+  'wickerqueen|thrustLowTell': '!!', 'wickerqueen|tossTell': '!!', 'wight|graspTell': '!!', 'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!',
+  'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!',
+  'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!',
+  'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 
@@ -312,6 +314,7 @@ export const ANSWER = {
   'grub|spit': 'block',
   'grindylow|rippleTell': 'jump',   // THE FOG CANAL: the ring on the water is a hand coming for your ankle - be in the air when it closes (or strike the ring first)
   'grindylow|deckTell': 'jump', 'grindylow|boardTell': 'jump',   // (claude/canalfix) aboard: the same hand for your ankle, on her deck
+  'wickerman|throwTell': 'jump', 'wickerman|swingTell': 'block',   // (claude/fairfix6) THE WICKER MAN: its fire rolls along the ground - jump it (or strike it back); its arms the shield takes
   'willowisp|flareTell': 'block',   // THE FOG CANAL: the false lantern flares (a yellow !) - the shield turns the burst, as every yellow ! does
   'hare|run': 'block',
   'harpy|aim': 'block',
@@ -581,6 +584,7 @@ export const HEIGHT = {
   'cisternqueen|pincerTell': 'low', 'cisternqueen|snapTell': 'low', 'cisternqueen|snap2Tell': 'low', 'cisternqueen|lungeTell': 'low', 'cisternqueen|lanceTell': 'low', 'cisternqueen|flickTell': 'low', 'cisternqueen|strikeTell': 'low', 'cisternqueen|chargeTell': 'low', 'cisternqueen|spitTell': 'low', 'cisternqueen|sweepLowTell': 'low', 'cisternqueen|sweepHighTell': 'high', 'cisternqueen|slamTell': 'low', 'cisternqueen|pinTell': 'low', 'cisternqueen|pounceTell': 'low', 'cisternqueen|ambushTell': 'low', 'cisternqueen|waveTell': 'low', 'cisternqueen|grabTell': 'low', 'cisternqueen|rollTell': 'low', 'cisternqueen|tidalTell': 'high', 'cisternqueen|barbTell': 'low',   /* THE CISTERN QUEEN (claude/welltown3): the high sweep and the tidal tail go over a ducking hero */
   'gangleader|cutTell': 'low', 'gangleader|cut2Tell': 'low', 'gangleader|crossTell': 'low', 'gangleader|whirlTell': 'low', 'gangleader|throwTell': 'low', 'gangleader|riposteTell': 'low', 'gangleader|dashTell': 'low', 'djinn|lashTell': 'low', 'djinn|blastTell': 'low', 'djinn|devilTell': 'low', 'djinn|flashTell': 'low', 'djinn|breathTell': 'high', 'djinn|pillarTell': 'low', 'djinn|spoutTell': 'low', 'djinn|waveTell': 'low', 'djinn|slamTell': 'low', 'djinn|spearsTell': 'low', 'djinn|firedevilTell': 'low', 'djinn|whirlTell': 'low', 'djinn|spearsTell': 'low', 'djinn|firedevilTell': 'low', 'djinn|whirlTell': 'low',
   'wight|graspTell': 'low',
+  'wickerman|throwTell': 'low', 'wickerman|swingTell': 'low',
   'willowisp|flareTell': 'high',
   'winchmaster|descendTell': 'low', 'winchmaster|hookTell': 'low', 'winchmaster|leapTell': 'low', 'winchmaster|leverTell': 'low', 'winchmaster|rideTell': 'low', 'winchmaster|sendTell': 'low', 'winchmaster|whirlTell': 'low', 'winchmaster|wrenchTell': 'low',
   'zombie|grabTell': 'low',
