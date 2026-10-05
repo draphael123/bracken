@@ -3145,6 +3145,11 @@ function highcrown() {
   for (const x of [217, 222, 229]) ent('qpillar', x, 19, { top: 10 });
   for (const x of [214, 220, 226, 232, 238, 245]) ent('weight', x, 10, { len: 6, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them - and a jump and a swing cuts one down on HER
   ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. BREAK THE PILLAR SHE HOLDS COURT BESIDE: IT COMES DOWN ON HER.' });
+  /* HER HALL'S BELL AND ITS GRATE (claude/bosswave2: the level's rule in her fight - EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT; the
+     audit's "the Queen ignores it"). A grate hangs between her middle pillars on the bell's rope: strike the bell while she stands under it and the
+     grate comes down on HER - pinned, as a pillar or a chandelier pins her (main.js gqPin). Rung while she is anywhere else, it only shuts the hall. */
+  ent('winch', 227, 18, { gate: 225, gy0: 16, gy1: 19, drop: true, hold: 7, bossGate: true, bell: true });
+  ent('sign', 231, 19, { text: 'THE HALL BELL DROPS ITS GRATE. RING IT WHILE SHE STANDS UNDER.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
