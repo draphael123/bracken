@@ -4,7 +4,7 @@
    Prints a row per fight - outcome, seconds, damage taken, the stage he reached and when each began, what hurt him (his ledger:
    arm cuts, crates, the bell, the pin...) and which of his attacks did the damage - and a summary, and writes
    work/causeway2/pilot-<label>.json. Run before and after a change to him (docs/briefs/kraken-rework.md). Not in the suite: too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 import { writeFileSync, mkdirSync } from 'node:fs';
 const passes = +(process.argv[2] || 3), label = process.argv[3] || 'run', which = process.argv[4] || 'both';
 const HEROES = process.argv[5] ? process.argv[5].split(',') : ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];

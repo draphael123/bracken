@@ -2,7 +2,7 @@
    twenty-four fights, over the brief's twenty-one). One life per fight, no refills: what the bot loses it keeps. Prints a row
    per fight (outcome, seconds, health left, whether he was OPENED, which of his attacks did the damage) and the summary the
    brief asks for - the win rate and the median time of a win against the 90-150 s band. Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const passes = +(process.argv[2] || 4), pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (let p = 0; p < passes; p++) { await pg.reload();

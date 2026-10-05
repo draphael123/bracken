@@ -6,10 +6,11 @@
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
-const pos = process.argv.slice(2).filter(a => !a.startsWith('--')), DEPTH = process.argv.includes('--depth');
+import { levelOverride, campaignLevel } from './boss-level.mjs';   /* --level=N overrides the campaign level (tools/boss-level.mjs) */
+const pos = process.argv.slice(2).filter(a => !a.startsWith('--')), DEPTH = !process.argv.includes('--l1');   /* campaign level by default (--l1 = the old fresh level-1 hero; --level=N any level) */
 const salts = (pos[0] || '1').split(',').map(Number);
 const heroes = (pos[1] || 'knight,warden,pyro').split(',');
-const level = pos[2] || 'theatre', lvl = Math.max(1, depthsOf(LEVELS)[level] ?? 1);
+const level = pos[2] || 'theatre', lvl = levelOverride() ?? campaignLevel(level);
 const pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (const salt of salts) for (const h of heroes) { await pg.reload();

@@ -4,7 +4,7 @@
    And THE CAMPER: a hero put on the highest ground in his room who never moves and never swings, for sixty seconds, twice
    (once per high perch the room has). It measures what staying away costs - the thing THE SKULLS exist for (2026-09-24): before
    them, the only attack that reached the high tier was THE HANDS once a rotation. Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const passes = +(process.argv[2] || 4), pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (let p = 0; p < passes; p++) { await pg.reload();

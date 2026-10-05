@@ -8,6 +8,7 @@ import { writeFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
+import { levelOverride } from './boss-level.mjs';   /* --level=N / --hero-level=N overrides the campaign level */
 const DEPTH = depthsOf(LEVELS);   /* the hero is the level the campaign expects there (its depth on the gate chain), no skills: as tools/mash-bot.mjs */
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
 const ids = args.filter(a => !a.startsWith('-')).flatMap(a => a.split(',')), heroes = opt('heroes', 'knight,warden,pyro').split(','), secs = +opt('secs', 180), seed = +opt('seed', 1919), OUT = opt('out', ''), MINI = args.includes('--mini'), SALTS = opt('salts', '').split(',').filter(Boolean).map(Number);
@@ -23,7 +24,7 @@ try {
   for (const id of ids) for (const salt of SALTS.length ? SALTS : [0]) for (const h of heroes) {
     let row;
     try { await pg.reload();
-      const lvl = Math.max(1, DEPTH[id] ?? 1);
+      const lvl = levelOverride() ?? Math.max(1, DEPTH[id] ?? 1);
       row = await pg.evalp(`(async()=>{BK.manualSimulation=true;const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;BKT.setHeroLevel(${JSON.stringify(h)},${lvl});P0.skillOwned[${JSON.stringify(h)}]={};P0.loadouts[${JSON.stringify(h)}]=[];if(P0.talents)P0.talents[${JSON.stringify(h)}]={};let seed=${seed};Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
         const r=(await BK.bossLab({bosses:[${JSON.stringify(id)}],heroes:[${JSON.stringify(h)}],maxSecs:${secs},healthMode:'normal'${MINI ? ',mini:true' : ''}${salt ? ',salt:' + salt : ''}${nudgeOf(salt) ? ',nudge:' + nudgeOf(salt) : ''}${SEEDED ? ',seed:' + seed : ''}})).rows[0]||{};
         return {outcome:r.outcome,secs:r.secs,bossLeft:r.hpLeftPct,taken:r.health?r.health.damageTaken:null,endHp:r.health?r.health.endHp:null,opened:r.opened,swings:r.swings};})()`, 1200000);

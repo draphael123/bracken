@@ -7,7 +7,7 @@
 // usage: node tools/archmage-pilot.mjs            (salts 1,2,3 x 7 heroes = 21 fights)
 //        HEALTH=normal CAP=300 node tools/archmage-pilot.mjs 1 knight,warden
 //        (then the SPIRAL STAIR per hero, with the lab's stair bot - STAIR=0 skips it; undead4)
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const salts = (process.argv[2] || '1,2,3').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro,paladin,pirate,reaper,geomancer').split(',');
 const health = process.env.HEALTH || 'refill', cap = +(process.env.CAP || 150);

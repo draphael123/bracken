@@ -5,7 +5,7 @@
 // (THE OPENING), `hitBy` which of his modes did the damage. Not in the suite: it is too long.
 // usage: node tools/duneworm-pilot.mjs            (salts 1,2,3 x 7 heroes = 21 fights)
 //        node tools/duneworm-pilot.mjs 1 knight,warden
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 import { portFor } from './ports.mjs';
 const salts = (process.argv[2] || '1,2,3').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro,paladin,pirate,reaper,geomancer').split(',');

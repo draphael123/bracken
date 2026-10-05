@@ -3,7 +3,7 @@
    pass so pass two is not pass one again (docs/INTEGRATOR.md). Prints a row per fight (outcome, seconds, damage taken, how often his
    jaw STUCK in the coral and how often he BEACHED himself on land, which modes did the damage) and a summary, and writes
    work/reef2/pilot-<label>.json. Run before and after a change to him (docs/briefs/reef-longer.md). Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 import { writeFileSync, mkdirSync } from 'node:fs';
 const passes = +(process.argv[2] || 1), label = process.argv[3] || 'run';
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];

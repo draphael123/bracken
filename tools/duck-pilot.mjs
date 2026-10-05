@@ -2,7 +2,7 @@
    high blow a ducking hero lets go over him, through BK.bossLab (src/lab.js): the knight, the warden and the pyromancer, one pinned
    seed each, the ranking's settings (refill health, a 150 s cap). Run it BEFORE and AFTER a change to the duck or the bot's answer
    to a high tell. Prints one row per fight. Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const label = process.argv[2] || 'run', HEROES = ['knight', 'warden', 'pyro'];
 const pg = await openPage({ audio: false, fonts: false });
 try {
