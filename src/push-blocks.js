@@ -86,7 +86,7 @@ export function updatePushBlock(m, dt, c) {
     const step = PB.speed * dt;
     if (walkingIn && !wallAhead(c, m, m.x + dir * step, dir) && !blockAhead(c, m, m.x + dir * step)) {
       m.x += dir * step; bb.l = m.x; bb.r = m.x + m.w;
-      P.x += dir * step; P.vx = dir * PB.speed;
+      P.x = fromLeft ? Math.min(P.x + dir * step, bb.l) : Math.max(P.x + dir * step, bb.r); P.vx = dir * PB.speed;   /* carried with it, but never past its edge: faster than the block (any run, even a wade), the hero walked into it a little more each frame until his side passed its edge, and the else below put him out on the FAR side (claude/unburied4) */
       if (m.scrapeT <= 0) { m.scrapeT = 0.3; c.sound && c.sound('scrape'); c.dust && c.dust(fromLeft ? bb.l : bb.r, m.y + m.h - 2, 2); }
     } else {
       // a wall in front, another block, or just leaning on it the wrong way: it does not give

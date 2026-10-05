@@ -257,8 +257,16 @@ export function decoSet(e) {
 }
 /* the FACADES the level lists (L.facades [x0, x1, y0, y1, kind]): baked once by main.js's drawFacades (kinds starting 'ub') */
 export const drawTrestle = SG.drawTrestle;
+/* every 'ub' structure kind (main.js drawStructures hands each one its box): the gun-deck trestles, and (claude/unburied4) the piers, cart frames and shores that hold the rest up */
+export function drawStructure(g, kind, l, r, t, b, seed) {
+  if (kind === 'ubtrestle') return SG.drawTrestle(g, l, r, t, b, seed);
+  if (kind === 'ubpier') return SG.drawPier(g, l, r, t, b, seed, false);
+  if (kind === 'ubpierCold') return SG.drawPier(g, l, r, t, b, seed, true);
+  if (kind === 'ubcart') return SG.drawCartFrame(g, l, r, t, b, seed);
+  if (kind === 'ubprop') return SG.drawShores(g, l, r, t, b, seed);
+}
 export function bakeFacade(kind, tw, th, seed, o) {
   if (kind === 'ubtower') return SG.bakeTower();
   if (kind === 'ubtower2') return SG.bakeTower2();
-  return CH.bakeFacade(kind);
+  return CH.bakeFacade(kind, o);
 }

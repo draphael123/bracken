@@ -36,7 +36,7 @@ import * as SG from './redraw/unburied_siege.js';   /* the engines, the cover an
 
 export const UNB = {
   hp: { bannerbearer: 56, corpse: 30, barrowrider: 720, deathknight: 1000, bloodknight: 1700 },   /* (claude/dk3: 950 while 19 of 20 blows were chipped to a twentieth; on FULL DAMAGE, tuned on tools/deathknight-pilot.mjs after WEIGHT + the level-up card to 9/18 - a question for Daniel) */
-  dmg: { bkSwing: 20, bkCleave: 27, bkBolt: 13, bkGrip: 9, bkBoil: 9, bkCoil: 15, bkTide: 19, bkNova: 16, bkNovaPer: 4, bkSurge: 19, pole: 12, corpseCut: 10, brRide: 18, brTrample: 14, brFire: 10, brLance: 16, brThrust: 14, cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
+  dmg: { bkSwing: 17, bkCleave: 23, bkBolt: 11, bkGrip: 8, bkBoil: 8, bkCoil: 13, bkTide: 16, bkNova: 14, bkNovaPer: 3, bkSurge: 16, pole: 12, corpseCut: 10, brRide: 18, brTrample: 14, brFire: 10, brLance: 16, brThrust: 14, cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
   bannerR: 120,        /* a planted standard raises the fallen within this many pixels of its foot */
   riseT: 1.1, downT: 3.2, plantRange: 150, tether: 44,
   corpseSpeed: 21, bearerSpeed: 26,
@@ -64,9 +64,11 @@ export const UNB = {
      crosses to dodge.past beyond you (or back off you dodge.back) in dodge.t. Pressed by wardHeat blows outside an opening (heat falls
      heatFall a second) he raises the ward wardReact of the time, wardCd between. Raise one dead (phase one), call three (phase two),
      never more than addsMax standing. */
-  bk: { walk: 80, walkP2: 1.2, keep: 48, keepMin: 30, cd: 0.5, p2: 0.8, crowd: 0.3,
-    tell: { swing: 0.42, swingNext: 0.3, swingTurn: 0.12, punish: 0.3, cleave: 1.0, cleaveCombo: 0.8, cleaveAfter: 0.55, commit: 0.32, blade: 0.95, grip: 0.75, boil: 0.85, coil: 0.7, tide: 0.95, ward: 0.35, nova: 0.6, raise: 0.9, call: 1.1, surge: 1.2 },
-    swingR: 54, swingRec: 0.3, lunge: 10, cleaveR: 62, cleaveBack: 8, stuckT: 1.5, p2At: 0.6, openMul: 1.6,   /* (claude/weakboss, Daniel: 'a bit too easy' - the stuck blade held him 2.0 s, and his phase two came at half health) */
+  /* (claude/unburied4, Daniel's playtest 10-05: "a bit slower and slightly less damage" - he won. Every tell, his recovery and his pause x1.12, his walk 80 -> 70, every blow of his x0.85;
+     his health untouched. tools/deathknight-pilot.mjs re-measured: see work/claude/lane-done/claude-unburied4.md) */
+  bk: { walk: 70, walkP2: 1.2, keep: 48, keepMin: 30, cd: 0.56, p2: 0.8, crowd: 0.3,
+    tell: { swing: 0.47, swingNext: 0.34, swingTurn: 0.13, punish: 0.34, cleave: 1.12, cleaveCombo: 0.9, cleaveAfter: 0.62, commit: 0.36, blade: 1.06, grip: 0.84, boil: 0.95, coil: 0.78, tide: 1.06, ward: 0.39, nova: 0.67, raise: 1.01, call: 1.23, surge: 1.34 },
+    swingR: 54, swingRec: 0.34, lunge: 10, cleaveR: 62, cleaveBack: 8, stuckT: 1.5, p2At: 0.6, openMul: 1.6,   /* (claude/weakboss, Daniel: 'a bit too easy' - the stuck blade held him 2.0 s, and his phase two came at half health) */
     strings: [1, 2, 2, 3], stringsP2: [2, 3, 3],
     bolts: 3, boltsP2: 5, gap: 46, gapP2: 40, boltT: 0.85, boltG: 300,
     gripR: 170, chainV: 460, dragV: 420, boilR: 28, boilT: 2.4, boilTick: 0.5, coilV: 125, coilTurn: 2.4, coilT: 2.6, coilHeal: 40, coilMin: 72,
@@ -601,6 +603,8 @@ export function newField(L, TS = 16) {
     bolts: [], stones: [], arrows: [], breach: false, surf: groundLine(L, G),
     /* THE BROKEN BRIDGES' TOLD VOLLEY: its clock, the shadows it has laid (marks) and the arrows left standing in the planks */
     bv: L.bridgeVolley ? { ...L.bridgeVolley, t: 0, t2: 0, n: 0, marks: [], stuck: [], hits: 0, turned: 0 } : null,
+    /* THE BAILEY'S VOLLEY (claude/unburied4): its clock, the horn, what it has done (for the harness) */
+    yv: L.yardVolley ? { ...L.yardVolley, t: 0, warn: false, n: 0, hits: 0, covered: 0, foes: 0, said: false, fell: 0 } : null, yArrows: [],
   };
 }
 /* WHERE THE GROUND IS, column by column: the first solid-or-ledge row from above the field down (for the mist to lie on) */
@@ -671,6 +675,7 @@ export function stepField(F, dt, c) {
   F.stones = F.stones.filter(s => s.t > -0.1);
   for (const a of F.arrows) { a.y += a.vy * dt; a.t -= dt; } F.arrows = F.arrows.filter(a => a.t > 0);
   stepBridgeVolley(F, dt, c);
+  stepYardVolley(F, dt, c);
 }
 /* THE TOLD VOLLEY OVER THE BROKEN BRIDGES (2026-09-25). Out on the bridges the clock runs; a WHISTLE, and the shadows go down on
    the planks - one where you stand and one either side of it, never the same three twice running - and bv.whistle seconds later
@@ -695,6 +700,35 @@ export function stepBridgeVolley(F, dt, c) {
   if (bv.n <= 2) c.say(P.x, P.y - 40, 'A WHISTLE: THE SHADOWS ARE WHERE THEY LAND', '#ff6b6b');
 }
 
+/* THE BAILEY'S VOLLEY (claude/unburied4, Daniel's playtest 10-05: "a MUD FIELD under ARROW VOLLEYS with cover you move between"). The Order's dead hold the breach at the bailey's
+   east end. In the zone the clock runs: a HORN (yv.horn s: the bowmen on the breach draw, their points go red, the zone washes red, every cover and mantlet in reach is outlined green
+   and the lee behind it - the strip on its WEST side - is drawn pale), then THE VOLLEY out of the east. You are covered when a cover prop or a MANTLET stands just east of you on your
+   own floor (yardCover) - and nothing else: it is UNBLOCKABLE, told red with a !! over the bowmen (a guard does not turn it, Daniel 10-05); anything else in the zone is hit - the dead included, so the ones you draw out of cover are
+   the bowmen's as well. Out of the zone the clock waits, so the first horn is never on the first step. */
+export const yardCover = (F, x, y, mantlets = []) => F.covers.some(cv => cv.x >= F.yv.x0 - 40 && cv.x <= F.yv.x1 + 40 && cv.x - x >= -4 && cv.x - x <= 28 && Math.abs(y - cv.y) < 14)
+  || mantlets.some(m => { const mx = m.x + m.w / 2; return mx - x >= -2 && mx - x <= 26 && Math.abs(y - (m.y + m.h)) < 14; });
+export function stepYardVolley(F, dt, c) {
+  const yv = F && F.yv; if (!yv) return;
+  const { P } = c, inZ = !P.dead && P.x > yv.x0 && P.x < yv.x1, ms = c.mantlets ? c.mantlets() : []; F.ms = ms;
+  for (const a of F.yArrows) { a.x += a.vx * dt; a.y += a.vy * dt; a.t -= dt; } F.yArrows = F.yArrows.filter(a => a.t > 0); yv.fell = Math.max(0, yv.fell - dt);
+  if (!inZ) { yv.t = Math.min(yv.t, yv.period - yv.horn - 1.2); yv.warn = false; return; }
+  yv.t += dt; const was = yv.warn; yv.warn = yv.t >= yv.period - yv.horn && yv.t < yv.period;
+  if (yv.warn && !was) { c.sound('horn'); if (!yv.said) { yv.said = true; c.say(P.x, P.y - 40, 'A HORN ON THE BREACH: NO GUARD TURNS IT, GET BEHIND COVER', '#ff6b6b'); } }
+  if (yv.t < yv.period) return;
+  yv.t -= yv.period; yv.n++; yv.fell = 0.7; c.sound('volley');
+  for (let i = 0; i < 22; i++) { const tx = P.x - 170 + Math.random() * 300, ty = P.y - 4 - Math.random() * 8, T2 = 0.55 + Math.random() * 0.2; F.yArrows.push({ x: tx + 260 * T2, y: ty - 210 * T2, vx: -260, vy: 210, t: T2 }); }
+  if (!P.dead) { if (yardCover(F, P.x, P.y, ms)) yv.covered++; else {
+      const res = c.hurtP(P.x + 30, yv.dmg, 'THE VOLLEY'); if (res !== false) yv.hits++; } }   /* UNBLOCKABLE (Daniel 10-05): no guard turns it - only cover does. Told red, like every !! */
+  for (const q of c.foes()) if (q.alive && !q.maxHp && q.x > yv.x0 && q.x < yv.x1 && Math.abs(q.y - P.y) < 200 && !yardCover(F, q.x, q.y, ms)) { yv.foes++; c.hurtFoe(q, 12, q.x + 20); }   /* the dead in the open take it too */
+}
+/* THE WHEELED MANTLET (a pushblock with mantlet set): the host's tall timber shield on two small wheels, 20 x 24 - a hero stands on it like any block, and it is a step to a wall */
+export function mantlet(m, e) { const foot = m.y + m.h, mid = m.x + m.w / 2; m.mantlet = e.mantlet; m.w = 20; m.h = 24; m.x = mid - 10; m.y = foot - 24; m.x0 = m.x; m.y0 = m.y; return m; }
+let MANTLET_ART = null;
+export function drawMantlet(g, m, cx, cy, time) {
+  if (!MANTLET_ART) MANTLET_ART = SG.bakeMantletPush();
+  const x = Math.round(m.x) - cx, y = Math.round(m.y) - cy; g.drawImage(MANTLET_ART, x - 2, y - 2);
+  if (m.dx && Math.abs(m.dx) > 0.01) { g.globalAlpha = 0.5; R(g, x + (m.dx > 0 ? -2 : m.w), y + m.h - 2, 2, 2, '#4c3c32'); g.globalAlpha = 1; }   /* mud off the wheels as it goes */
+}
 /* ---------------- DRAWING (the world's parts; the creatures are sprites) ---------------- */
 /* THE BARROW RIDER'S WORLD: the lane his ride will take, the lances coming and standing, his grave-fire, the horse that threw him,
    and the bones of it on the floor - crawling back to him in phase two, outlined green, because that is the window */
@@ -821,7 +855,8 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   /* THE GHOST ARMY on the ridge, over every stretch that is still fighting - and nothing over the ones you have ended */
   const fdt = Math.min(0.1, Math.max(0, time - (F.lastDrawT ?? time))); F.lastDrawT = time;
   for (const v of F.volleys) { v.fade = v.quiet ? Math.max(0, (v.fade ?? 1) - fdt / 1.8) : 1; if (v.fade <= 0) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;
-    ghostRank(g, x0, x1, Math.round((F.G - 13) * TS - cy * 0.6), cx, time, v.fade, v.warn);   /* pale helms, spears, shields and standards, lit cold, swaying - and fading when their stretch goes quiet */
+    /* (claude/unburied4, Daniel 10-05: the pale ghost ranks that hung in the sky over the camp "looked odd" - REMOVED, on his word. Which stretches still fight is read from the
+       stretch itself: only a stretch that still fights blows its horn, washes red and lights its cover green, and "THAT STRETCH OF RIDGE GOES QUIET" says when one stops) */
     if (v.warn && !v.quiet) { const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.07 + 0.08 * k; R(g, x0, 0, x1 - x0, VH, '#ff6b6b'); g.globalAlpha = 1;
       /* (C5: the escape, lit from inside the danger - every cover prop in reach glows: drawn after the cover, below) */ } }
   for (const a of F.arrows) { const x = Math.round(a.x - cx), y = Math.round(a.y - cy); R(g, x, y - 7, 1, 7, '#5a4a36'); R(g, x - 1, y - 8, 3, 2, '#c8b6ff'); }
@@ -867,24 +902,25 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   if (F.breach) SG.drawBreach(g, cx, cy, F.G, VW);   /* the tower's base, opened */
   for (const b of F.bolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), f = Math.sign(b.vx) || 1; R(g, f > 0 ? x - 14 : x, y, 14, 2, '#c8c8d0'); R(g, f > 0 ? x : x - 3, y - 1, 3, 4, '#e8e8f0'); }
   for (const s of F.stones) { const sx = Math.round(s.x - cx), sy = Math.round(s.y - cy); g.fillStyle = '#1b1626'; g.beginPath(); g.arc(sx, sy, 6, 0, 7); g.fill(); g.fillStyle = '#6c6866'; g.beginPath(); g.arc(sx, sy, 5, 0, 7); g.fill(); g.fillStyle = '#9c968e'; g.fillRect(sx - 3, sy - 3, 3, 2); g.fillStyle = '#4c4848'; g.fillRect(sx + 1, sy + 1, 3, 3); }   /* a stone that tumbles */
+  drawYard(g, F, cx, cy, time, VW, VH);   /* (claude/unburied4) the bailey's bowmen, their horn and their arrows */
 }
-/* THE GHOST ARMY ON THE RIDGE, over a stretch that is still fighting: ranks of pale shieldmen and spearmen standing in the dusk, helms and the points of spears, tattered standards that sway,
-   lit cold; the rear rank fainter and smaller. (It was a barcode of 3x8 px bars every 9 px, 'a render fault'.) alphaK fades a stretch whose bearer is cut. */
-function ghostRank(g, x0, x1, ry, cx, time, alphaK, warn) {
-  const step = 13, off = (cx * 0.4) % step, i0 = Math.floor(cx * 0.4 / step);
-  for (let rank = 1; rank >= 0; rank--) {
-    const k = rank ? 0.15 : 0.27, sc = rank ? 0.8 : 1; g.globalAlpha = (k + (warn && !rank ? 0.08 : 0)) * alphaK;
-    for (let x = x0 - off - 12, i = i0 + (rank ? 777 : 0); x < x1 + 12; x += step, i++) { const h = ((i * 2654435761) >>> 0) % 1000 / 1000, bx = Math.round(x + (rank ? 6 : 0) + h * 4), by = ry + (rank ? -5 : 0) + Math.round(Math.sin(time * 1.3 + i) * 1), sw = Math.sin(time * 1.4 + i * 0.7) * 1.4;
-      if (bx < x0 - 6 || bx > x1 + 6) continue;
-      R(g, bx - 1, by - 1, 5, 4, '#b8c4dc'); R(g, bx, by + 1, 3, 1, '#1e1a28');   /* the helm, its dark slit */
-      R(g, bx - 2, by + 3, 7, Math.round(13 * sc), '#8a96b4'); R(g, bx - 3, by + 5, 3, Math.round(9 * sc), '#c8d4ec'); R(g, bx - 3, by + 5, 1, Math.round(9 * sc), '#e8eeff');   /* the cloak and the shield's face */
-      if (h < 0.55) { const tip = Math.round(sw); for (let q = 0; q < 12; q++) R(g, bx + 4 + Math.round(tip * q / 12), by - 2 - q, 1, 1, '#d8e0f4'); R(g, bx + 3 + tip, by - 16, 3, 2, '#e8eeff'); }   /* a spear over the shield, swaying */
-    }
-    if (!rank) for (let x = x0 - off - 40, i = i0; x < x1 + 40; x += step * 7, i += 7) { if (((i * 2654435761) >>> 0) % 5 > 1) continue; const px0 = Math.round(x + 5), top = ry - 30;   /* a standard every seven or so men */
-      R(g, px0, top, 1, 34, '#8a96b4'); R(g, px0 - 1, top - 2, 3, 2, '#d8e0f4'); for (let q = 0; q < 12; q++) { const dy = Math.round(Math.sin(time * 3 + q * 0.5 + i) * 1.5 * q / 12); R(g, px0 + 1 + q, top + 2 + dy, 1, 11 - (q > 8 ? (q % 2) * 3 : 0), q % 4 === 0 ? '#c8d0e4' : '#9aa4c0'); }
-      R(g, px0 + 3, top + 5, 6, 1, '#e8f0ff'); }
-  }
-  g.globalAlpha = 1;
+/* THE BAILEY, DRAWN (claude/unburied4): the Order's dead on the hoarding over the breach, cold and still, their bows coming up red-pointed when the horn blows; the zone washed red; every
+   cover and mantlet in reach outlined green with its LEE - the strip on its west side, out of the breach's sight - laid pale on the mud; the arrows coming down out of the east */
+function drawYard(g, F, cx, cy, time, VW, VH) {
+  const yv = F.yv; if (!yv) return; const TS = F.TS;
+  if (yv.x1 - cx < -200 || yv.x0 - cx > VW + 260) return;
+  const k = 0.5 + 0.5 * Math.sin(time * 16);
+  for (const [ax, ay] of yv.archers || []) { const x = Math.round(ax * TS + 8 - cx), fy = Math.round((ay + 1) * TS - cy); if (x < -20 || x > VW + 20) continue;
+    g.globalAlpha = 0.85; R(g, x - 3, fy - 15, 6, 11, '#3a3448'); R(g, x - 2, fy - 4, 2, 4, '#2a2632'); R(g, x + 1, fy - 4, 2, 4, '#2a2632'); R(g, x - 2, fy - 19, 5, 5, '#5a5468'); R(g, x - 1, fy - 17, 3, 1, '#c8b6ff');   /* a bowman of the Order, dead: mail gone grey, the violet in his eyes */
+    if (yv.warn) { text2(g, '!!', x, fy - 34, '#ff6b6b'); R(g, x - 6, fy - 22, 1, 12, '#6a5236'); R(g, x - 5, fy - 23, 1, 2, '#6a5236'); R(g, x - 5, fy - 11, 1, 2, '#6a5236'); R(g, x - 5, fy - 17, 4, 1, '#c8c0b0'); g.globalAlpha = 0.5 + 0.5 * k; R(g, x - 8, fy - 18, 2, 3, '#ff6b6b'); }   /* the bow drawn, the point red */
+    else { R(g, x + 3, fy - 16, 1, 12, '#6a5236'); }   /* the bow at his side */
+    g.globalAlpha = 1; }
+  if (yv.warn) { const x0 = Math.max(0, yv.x0 - cx), x1 = Math.min(VW, yv.x1 - cx); if (x1 > x0) { g.globalAlpha = 0.07 + 0.08 * k; R(g, x0, 0, x1 - x0, VH, '#ff6b6b'); g.globalAlpha = 1; }
+    const lee = (x, fy, w, h) => { g.globalAlpha = 0.35 + 0.25 * k; R(g, x - 26, fy - 2, 22, 2, '#e8eed8'); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(Math.round(x - w / 2) + 0.5, fy - h + 0.5, w - 1, h); g.globalAlpha = 1; };
+    for (const cv of F.covers) { if (cv.x < yv.x0 - 40 || cv.x > yv.x1 + 40) continue; const sx = Math.round(cv.x - cx); if (sx < -40 || sx > VW + 40) continue; const sp = SG.coverSprite(cv.kind); lee(sx, Math.round(cv.y - cy), sp.width, sp.height - 3); }
+    for (const m of F.ms || []) { const sx = Math.round(m.x + m.w / 2 - cx); if (sx < -40 || sx > VW + 40) continue; lee(sx, Math.round(m.y + m.h - cy), m.w + 4, m.h + 2); } }
+  for (const a of F.yArrows) { const x = Math.round(a.x - cx), y = Math.round(a.y - cy); for (let q = 0; q < 6; q++) R(g, x + q, y - Math.round(q * 0.8), 1, 1, '#5a4a36'); R(g, x - 1, y, 2, 2, '#c8b6ff'); }
+  if (yv.fell > 0) { g.globalAlpha = yv.fell; for (let i = 0; i < 8; i++) { const x = Math.round(yv.x0 + ((i * 397 + yv.n * 131) % Math.max(1, yv.x1 - yv.x0)) - cx); if (x < 0 || x > VW) continue; R(g, x, Math.round((F.G + 2) * TS - cy) - 7, 1, 7, '#6a5236'); } g.globalAlpha = 1; }   /* arrows left standing in the mud */
 }
 function text2(g, s, x, y, col) { /* two red bars and a gap: the '!!' without the font (the font is main.js's) */ for (let i = 0; i < s.length; i++) { R(g, x + i * 4 - 3, y, 2, 6, col); R(g, x + i * 4 - 3, y + 8, 2, 2, col); } }
 

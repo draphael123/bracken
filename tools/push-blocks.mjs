@@ -103,7 +103,9 @@ const L = wood.build();
 const blockEnts = L.ents.filter(e => e.t === 'pushblock');
 assert.equal(blockEnts.length, 1, 'the brief asks for exactly one teaching placement; brackenWood has ' + blockEnts.length);
 /* (claude/fairfix5) THE DESIGN LANES BUILD ON IT: THE HARVEST FAIR's barns place one hay bale (its brief's teach - an optional loft ledge, never the way on) */
-const PLACED = { fair: 1 };
+/* (claude/unburied4) THE UNBURIED FIELD's bailey: three wheeled mantlets (pushblocks with mantlet set) - cover from the volleys, and the step up its two walls. Required there, so tools/unburied.mjs
+   and tools/unburied-bailey.mjs prove the step with a real jump and that it resets (a mover rebuilt from L.ents on every attempt, like this one) */
+const PLACED = { fair: 1, unburied: 3 };
 const otherLevels = LEVELS.filter(l => l.id !== 'wood').map(l => [l.id, l.build()]);
 for (const [id, R] of otherLevels) assert.equal((R.ents || []).filter(e => e.t === 'pushblock').length, PLACED[id] || 0, id + ' places a pushblock it is not allowed (PLACED) - the brief is one demo, for the design lanes to build on');
 
