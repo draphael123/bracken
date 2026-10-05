@@ -133,6 +133,10 @@ assert.ok(MAGE.tell.orbit >= 1 && MAGE.tell.script >= 1, 'a new move is told for
   r.run(MAGE.openT + 0.3, () => !mageOpen(r.e)); r.step(); assert.ok(r.e.wardHold > 0, 'after the opening his ward does not HOLD (the told anti-spam ward)');
   r.e.shots.push({ x: r.e.x - 40, y: r.e.y - 26, vx: 200, vy: 0, a: 0, sp: 200, r: 5, dmg: 14, kind: 'fire', col: '#fff', t: 3, reflected: true }); r.run(0.5);
   assert.ok(!mageOpen(r.e) && r.e.wardHitT > 0, 'while his ward holds, a bolt struck back opens him again (or is not seen to ring off)'); }
+{ /* (claude/archmage4) A MARK MISSED WHILE HIS WARD HOLDS rings off it, and he fights on (it left him in markWait for good) */
+  const r = rig({ hp: Math.floor(HP * 0.3) }); r.e.enraged = true; r.e.stage2 = true; at(r, 'mark'); r.run(1, () => r.e.mode === 'markWait'); r.e.wardHold = 9;
+  r.P.x = r.e.deathMark ? r.e.deathMark.x + 120 : r.P.x; r.run(MAGE.markFuse + 0.2, () => !r.e.deathMark); r.run(1.5);
+  assert.ok(r.log.t > 0 && r.e.mode !== 'markWait' && !mageOpen(r.e) && !r.log.hits.some(h => h.blow === 'mark'), 'a mark missed while his ward holds leaves him stuck in ' + r.e.mode + ' (or opens him)'); }
 { const e = rig().e; assert.ok(!reflectable({ kind: 'ice' }) && !reflectable({ kind: 'fire', echo: true }) && !reflectable({ kind: 'bent' }), 'something other than his own firebolt can be struck back'); }
 { /* LESS HECTIC LATE: no echo in his last stage, no spells in pairs */
   const r = rig({ hp: Math.floor(HP * 0.3) }); r.e.enraged = true; r.e.stage2 = true; at(r, 'fire'); let tells = 0, last = '';

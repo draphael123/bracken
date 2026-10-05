@@ -78,10 +78,10 @@ export function smallerFamiliar(s) {
 void flipX; void whiten;
 
 export const MAGE = {
-  enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, openT: 3.6, openMul: 2,
+  enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, openT: 3.0, openMul: 2,   /* (claude/archmage4: 3.6 -> 3.0, the hall openings shorter - HERO KIT made every hero hit harder) */
   order: ['fire', 'ice', 'step', 'bone', 'poison', 'orbit', 'mark', 'bend', 'storm', 'pull', 'hand', 'script', 'decoy', 'fire', 'mark', 'trap'],   /* (archmage3: HIS ORRERY and THE GRAVE SCRIPT) */   /* (round 3: the second step is the DECOY, the second bend the TRAP; archmage2: the BONE STORM, and the GRAVE PULL - stage 3 only, skipped before it) */
   tell: { fire: 0.9, ice: 0.9, storm: 1.2, poison: 1.0, hand: 0.9, mark: 0.6, step: 1.0, bend: 1.0, decoy: 1.1, trap: 1.0, bone: 1.1, pull: 1.0, orbit: 1.2, script: 1.2 },
-  dmg: { fire: 14, ice: 12, storm: 28, orb: 8, hand: 16, mark: 34, bent: 13, trap: 13, skull: 15, void: 18, world: 22, script: 24 },   /* (archmage3: the red ones - nothing turns them - hit harder: harder by quality, not volume) */
+  dmg: { fire: 14, ice: 12, storm: 32, orb: 8, hand: 16, mark: 38, bent: 13, trap: 13, skull: 17, void: 20, world: 25, script: 28 },   /* (archmage3: the red ones - nothing turns them - hit harder: harder by quality, not volume; archmage4: the red ones +15% again, the yellow ones a guard takes are unchanged) */
   /* ARCHMAGE2. THE BONE STORM: n skulls on a ring of radius r0 round you, its gap slots left open (one wide gap, or every other cycle two
      narrow ones), closing to r1 over secs while the ring turns `turn` of a circle. THE ECHO: its delay, and the spells it repeats. THE GRAVE
      PULL: how long it drags, how hard (px/s at its full), its void's reach, and how long between two hurts by it */
@@ -103,7 +103,7 @@ export const MAGE = {
   /* (Daniel 10-05) THE STAFF'S HEAD in his cast pose, from his anchor (px, facing right): every bolt leaves it. THE STRUCK-BACK BOLT: its speed home,
      how hard it turns after him, how near it must come; and the told ward that HOLDS this long after every opening (nothing breaks it again yet) */
   staff: { dx: 20, dy: 51 },
-  reflect: { v: 260, turn: 4, r: 18, hold: 3.0 },
+  reflect: { v: 260, turn: 4, r: 18, hold: 3.5 },   /* (archmage4: the told hold 3.0 -> 3.5 s) */
   late: { shots: 3 },   /* his last stage: no new spell while this many of his bolts are in the air */
   /* THE TRAP: how high over you the ring opens, and its drop - a column of bolts, three and then five, fanned so a side-step clears them */
   trapUp: 70, trapN: [3, 5, 5], trapFan: 0.16,
@@ -292,7 +292,8 @@ export function updateUndeadMage(e, dt, c) {
   if (e.deathMark) { e.deathMark.t -= dt;
     if (e.deathMark.t <= 0) { const m = e.deathMark; e.deathMark = null; e.flashT = 0.3; e.flashX = m.x; e.flashY = m.y; sound('heavy');
       if (!P.dead && Math.hypot(P.x - m.x, py - m.y) < m.r) { hit(m.x, m.y, MAGE.dmg.mark, true, 'mark'); if (e.mode !== 'breached') { e.mode = 'hover'; e.modeT = 0.8 / k; } }
-      else if (e.mode !== 'breached' && e.mode !== 'reflected' && !(e.wardHold > 0)) { e.mode = 'gather'; e.modeT = MAGE.openT; e.open = MAGE.openT; say('THE MARK FINDS NO ONE. IT COMES BACK ON HIM', true); sound('crack'); } } }
+      else if (e.mode !== 'breached' && e.mode !== 'reflected' && !(e.wardHold > 0)) { e.mode = 'gather'; e.modeT = MAGE.openT; e.open = MAGE.openT; say('THE MARK FINDS NO ONE. IT COMES BACK ON HIM', true); sound('crack'); }
+      else if (e.mode === 'markWait') { e.mode = 'hover'; e.modeT = 0.8 / k; e.wardHitT = MAGE.ward.hitT; e.wardHitX = e.x; e.wardHitY = e.y - 26; sound('aegis'); } } }   /* (claude/archmage4) a missed mark while his ward HOLDS rings off it - and he FIGHTS ON: it left him in markWait for good (the warden's bot sat 200 s at 37%) */
   // ---- the blink ----
   e.blinkT -= dt;
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = MAGE.hover; } return; }
