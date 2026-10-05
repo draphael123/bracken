@@ -8698,7 +8698,7 @@
   }
  },
  "fair": {
-  "hash": "ee7d7bc0fed6",
+  "hash": "fd51c55d8516",
   "boss": {
    "boss": "wickerqueen",
    "wins": 0,
@@ -8799,45 +8799,24 @@
    ]
   },
   "carried": {
-   "from": "c0eb2f0fbed5",
+   "from": "34e535e35638",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 3,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 464,
-    "hits": 62,
+    "hpLostPct": 291,
+    "hits": 40,
     "walked": 100,
-    "lifts": 40,
-    "boardLifts": 21,
-    "rides": 14,
+    "lifts": 35,
+    "boardLifts": 17,
+    "rides": 16,
     "pulls": 0,
     "ridden": {
-     "swing": 8,
-     "wheel": 1,
-     "slat": 3,
-     "chairo": 2
-    },
-    "machines": true,
-    "frames": 27558,
-    "kills": 3,
-    "heroLevel": 23
-   },
-   "warden": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 220,
-    "hits": 29,
-    "walked": 100,
-    "lifts": 33,
-    "boardLifts": 15,
-    "rides": 13,
-    "pulls": 0,
-    "ridden": {
-     "swing": 3,
+     "swing": 6,
      "galhorse": 2,
      "wheel": 1,
      "slat": 3,
@@ -8845,31 +8824,54 @@
      "carhorse": 2
     },
     "machines": true,
-    "frames": 21969,
+    "frames": 24064,
     "kills": 2,
     "heroLevel": 23
    },
-   "pyro": {
+   "warden": {
     "deaths": 0,
-    "minHpPct": 30,
-    "hpLostPct": 173,
-    "hits": 23,
+    "minHpPct": 1,
+    "hpLostPct": 287,
+    "hits": 39,
     "walked": 100,
-    "lifts": 32,
-    "boardLifts": 20,
-    "rides": 17,
+    "lifts": 36,
+    "boardLifts": 17,
+    "rides": 13,
     "pulls": 0,
     "ridden": {
-     "swing": 5,
-     "galhorse": 2,
+     "swing": 2,
+     "galhorse": 3,
      "wheel": 1,
      "slat": 3,
-     "chairo": 4,
+     "chairo": 2,
      "carhorse": 2
     },
     "machines": true,
-    "frames": 25627,
-    "kills": 7,
+    "frames": 23718,
+    "kills": 6,
+    "heroLevel": 23
+   },
+   "pyro": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 230,
+    "hits": 36,
+    "walked": 100,
+    "lifts": 35,
+    "boardLifts": 16,
+    "rides": 14,
+    "pulls": 0,
+    "ridden": {
+     "swing": 4,
+     "galhorse": 3,
+     "wheel": 1,
+     "slat": 3,
+     "chairo": 2,
+     "carhorse": 1
+    },
+    "machines": true,
+    "frames": 23645,
+    "kills": 4,
     "heroLevel": 23
    }
   }

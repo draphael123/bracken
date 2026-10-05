@@ -24,14 +24,14 @@
   "bare": true
  },
  "fair": {
-  "hash": "ee7d7bc0fed6",
+  "hash": "fd51c55d8516",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 38,
+  "hits": 43,
   "deaths": 0,
-  "kills": 28,
-  "lifts": 94,
+  "kills": 21,
+  "lifts": 86,
   "walked": 100,
   "bare": true
  },
