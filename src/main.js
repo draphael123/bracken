@@ -26237,6 +26237,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (L.welltown) WTB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE WELL TOWN's own dunes, oasis line, skyline, dovecote and Kasbah (src/redraw/welltown_backdrop.js), not the caravan's mesas */
   else if (FAIR) FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full');   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
+  if (L.unburied) UNBF.drawRidgeArmy(g, UNB_FIELD, cx, cy, VW, VH, time, bgDY(cy));   /* (claude/unburied4) THE HOST on its ridge, that looses the volleys: behind the chapel-fort's hill, in front of the far layer */
   if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
   else drawCastleBack(cx, cy);

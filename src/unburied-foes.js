@@ -821,7 +821,8 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   /* THE GHOST ARMY on the ridge, over every stretch that is still fighting - and nothing over the ones you have ended */
   const fdt = Math.min(0.1, Math.max(0, time - (F.lastDrawT ?? time))); F.lastDrawT = time;
   for (const v of F.volleys) { v.fade = v.quiet ? Math.max(0, (v.fade ?? 1) - fdt / 1.8) : 1; if (v.fade <= 0) continue; const x0 = Math.max(0, v.x0 - cx), x1 = Math.min(VW, v.x1 - cx); if (x1 <= x0) continue;
-    ghostRank(g, x0, x1, Math.round((F.G - 13) * TS - cy * 0.6), cx, time, v.fade, v.warn);   /* pale helms, spears, shields and standards, lit cold, swaying - and fading when their stretch goes quiet */
+    /* (claude/unburied4) the ranks themselves stand ON THE RIDGE now, in the backdrop (drawRidgeArmy, called by main.js after the mid layer): they hung in the sky over the camp as a band of pale
+       see-through figures in front of the tent - Daniel 10-05, "looks odd" */
     if (v.warn && !v.quiet) { const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.07 + 0.08 * k; R(g, x0, 0, x1 - x0, VH, '#ff6b6b'); g.globalAlpha = 1;
       /* (C5: the escape, lit from inside the danger - every cover prop in reach glows: drawn after the cover, below) */ } }
   for (const a of F.arrows) { const x = Math.round(a.x - cx), y = Math.round(a.y - cy); R(g, x, y - 7, 1, 7, '#5a4a36'); R(g, x - 1, y - 8, 3, 2, '#c8b6ff'); }
@@ -868,23 +869,33 @@ export function drawField(g, F, cx, cy, time, VW, VH) {
   for (const b of F.bolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), f = Math.sign(b.vx) || 1; R(g, f > 0 ? x - 14 : x, y, 14, 2, '#c8c8d0'); R(g, f > 0 ? x : x - 3, y - 1, 3, 4, '#e8e8f0'); }
   for (const s of F.stones) { const sx = Math.round(s.x - cx), sy = Math.round(s.y - cy); g.fillStyle = '#1b1626'; g.beginPath(); g.arc(sx, sy, 6, 0, 7); g.fill(); g.fillStyle = '#6c6866'; g.beginPath(); g.arc(sx, sy, 5, 0, 7); g.fill(); g.fillStyle = '#9c968e'; g.fillRect(sx - 3, sy - 3, 3, 2); g.fillStyle = '#4c4848'; g.fillRect(sx + 1, sy + 1, 3, 3); }   /* a stone that tumbles */
 }
-/* THE GHOST ARMY ON THE RIDGE, over a stretch that is still fighting: ranks of pale shieldmen and spearmen standing in the dusk, helms and the points of spears, tattered standards that sway,
-   lit cold; the rear rank fainter and smaller. (It was a barcode of 3x8 px bars every 9 px, 'a render fault'.) alphaK fades a stretch whose bearer is cut. */
-function ghostRank(g, x0, x1, ry, cx, time, alphaK, warn) {
-  const step = 13, off = (cx * 0.4) % step, i0 = Math.floor(cx * 0.4 / step);
-  for (let rank = 1; rank >= 0; rank--) {
-    const k = rank ? 0.15 : 0.27, sc = rank ? 0.8 : 1; g.globalAlpha = (k + (warn && !rank ? 0.08 : 0)) * alphaK;
-    for (let x = x0 - off - 12, i = i0 + (rank ? 777 : 0); x < x1 + 12; x += step, i++) { const h = ((i * 2654435761) >>> 0) % 1000 / 1000, bx = Math.round(x + (rank ? 6 : 0) + h * 4), by = ry + (rank ? -5 : 0) + Math.round(Math.sin(time * 1.3 + i) * 1), sw = Math.sin(time * 1.4 + i * 0.7) * 1.4;
-      if (bx < x0 - 6 || bx > x1 + 6) continue;
-      R(g, bx - 1, by - 1, 5, 4, '#b8c4dc'); R(g, bx, by + 1, 3, 1, '#1e1a28');   /* the helm, its dark slit */
-      R(g, bx - 2, by + 3, 7, Math.round(13 * sc), '#8a96b4'); R(g, bx - 3, by + 5, 3, Math.round(9 * sc), '#c8d4ec'); R(g, bx - 3, by + 5, 1, Math.round(9 * sc), '#e8eeff');   /* the cloak and the shield's face */
-      if (h < 0.55) { const tip = Math.round(sw); for (let q = 0; q < 12; q++) R(g, bx + 4 + Math.round(tip * q / 12), by - 2 - q, 1, 1, '#d8e0f4'); R(g, bx + 3 + tip, by - 16, 3, 2, '#e8eeff'); }   /* a spear over the shield, swaying */
+/* THE HOST ON THE RIDGE (claude/unburied4, Daniel 10-05: the old ranks - pale see-through cloaks and shields hung in the sky over the camp, in front of the tent - "looked odd").
+   The army that looses the volleys now STANDS ON A RIDGE, in the backdrop: drawn by main.js after the far layer and before the chapel-fort and the mid layer, at the mid layer's pace (x0.3),
+   so it is far away and behind everything in the play; the ridge itself is drawn here too. Dark men against the ember dusk - helms, shields, spears, a standard every so often - with a cold ghost-light on their tops;
+   only over a stretch that is still fighting, fading when its bearer is cut. When the horn blows the archers among them DRAW: bows come up, and the arrow points catch red (the tell's
+   colour, where the volley comes from). dY: main.js bgDY(cy). */
+export function drawRidgeArmy(g, F, cx, cy, VW, VH, time, dY) {
+  if (!F || !F.volleys) return;
+  const step = 7, layerX = sx => sx + cx * 0.3, top = VH - 131 + Math.round(dY * 0.3), ridge = lx => top + Math.round(4 * Math.sin(lx * 0.013) + 2 * Math.sin(lx * 0.041 + 1.3));
+  /* THE RIDGE they stand on: a long low hill across the whole field at the mid layer's pace, dark against the dusk with an ember rim (the backdrop's own ridges sit under the field's
+     ground line here, so without it the host would stand on nothing) */
+  for (let x = 0; x < VW; x++) { const y = ridge(layerX(x)); if (y >= VH) continue; R(g, x, y, 1, VH - y, '#2e1f2a'); R(g, x, y, 1, 1, '#5e3238'); }
+  for (const v of F.volleys) { const fade = v.quiet ? (v.fade ?? 1) : 1; if (fade <= 0) continue; const x0 = Math.max(-8, v.x0 - cx), x1 = Math.min(VW + 8, v.x1 - cx); if (x1 <= x0) continue;
+    const off = (cx * 0.3) % step;
+    for (let x = Math.floor(x0 / step) * step - off, i = 0; x < x1; x += step, i++) { if (x < x0) continue; const lx = Math.round(layerX(x)), id = Math.floor(lx / step), h = ((id * 2654435761) >>> 0) % 1000 / 1000;
+      if (h < 0.12) continue;   /* gaps in the line */
+      const edge = Math.min(1, (x - x0) / 40, (x1 - x) / 40), a = fade * Math.max(0, edge);
+      if (a <= 0.02) continue;
+      const bx = Math.round(x + h * 3), fy = ridge(layerX(bx)) + 1, tall = 7 + Math.round(h * 2), sway = Math.round(Math.sin(time * 1.2 + id) * 0.6);
+      g.globalAlpha = a; R(g, bx - 1, fy - tall, 3, tall, '#1a1218'); R(g, bx - 1, fy - tall - 2, 3, 2, '#221a22');   /* the man and his helm, dark on the dusk */
+      R(g, bx - 3, fy - tall + 2, 2, 4, '#241a20');   /* his shield */
+      g.globalAlpha = a * 0.55; R(g, bx - 1, fy - tall - 2, 3, 1, '#b8c4dc'); g.globalAlpha = a;   /* the cold light on his helm */
+      if (v.warn && h > 0.45) { const k = 0.5 + 0.5 * Math.sin(time * 16 + id); R(g, bx + 2, fy - tall - 3, 1, 5, '#2a1e22'); R(g, bx + 1, fy - tall - 3, 1, 1, '#2a1e22'); R(g, bx + 1, fy - tall + 1, 1, 1, '#2a1e22');   /* the bow, drawn */
+        g.globalAlpha = a * (0.5 + 0.5 * k); R(g, bx + 3, fy - tall - 4 + sway, 1, 1, '#ff6b6b'); g.globalAlpha = a; }
+      else if (h > 0.55) { R(g, bx + 2, fy - tall - 7 + sway, 1, 8, '#1e161c'); g.globalAlpha = a * 0.6; R(g, bx + 2, fy - tall - 8 + sway, 1, 1, '#d8e0f4'); g.globalAlpha = a; }   /* a spear, its point lit */
+      if (id % 9 === 0) { R(g, bx + 1, fy - tall - 14, 1, 14, '#1e161c'); for (let q = 0; q < 6; q++) R(g, bx + 2 + q, fy - tall - 13 + Math.round(Math.sin(time * 3 + q * 0.6 + id) * 0.8), 1, 5 - (q > 3 ? q - 3 : 0), '#241a22'); g.globalAlpha = a * 0.5; R(g, bx + 2, fy - tall - 13, 6, 1, '#9aa4c0'); g.globalAlpha = a; }   /* a standard */
     }
-    if (!rank) for (let x = x0 - off - 40, i = i0; x < x1 + 40; x += step * 7, i += 7) { if (((i * 2654435761) >>> 0) % 5 > 1) continue; const px0 = Math.round(x + 5), top = ry - 30;   /* a standard every seven or so men */
-      R(g, px0, top, 1, 34, '#8a96b4'); R(g, px0 - 1, top - 2, 3, 2, '#d8e0f4'); for (let q = 0; q < 12; q++) { const dy = Math.round(Math.sin(time * 3 + q * 0.5 + i) * 1.5 * q / 12); R(g, px0 + 1 + q, top + 2 + dy, 1, 11 - (q > 8 ? (q % 2) * 3 : 0), q % 4 === 0 ? '#c8d0e4' : '#9aa4c0'); }
-      R(g, px0 + 3, top + 5, 6, 1, '#e8f0ff'); }
-  }
-  g.globalAlpha = 1;
+    g.globalAlpha = 1; }
 }
 function text2(g, s, x, y, col) { /* two red bars and a gap: the '!!' without the font (the font is main.js's) */ for (let i = 0; i < s.length; i++) { R(g, x + i * 4 - 3, y, 2, 6, col); R(g, x + i * 4 - 3, y + 8, 2, 2, col); } }
 
