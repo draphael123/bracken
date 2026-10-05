@@ -11,7 +11,7 @@
 //   - three WICKER MEN stand in the fair, each in a squad (a designed encounter), none past the green's door; every one is a 'wickerman' on the bestiary
 //   - FOR EVERY HERO (knight, warden, pyro, paladin, pirate, reaper, geomancer): a blade held and BEGUN as its fire rolls into his reach sends it back and the
 //     wicker catches and burns; for the pyro the EMBER FLARE does it too; a mashed blade never sends it back, and the fire hurts him
-//   - in its fire a blow takes at least 10x what the same blow takes off the standing wicker, and the hero can cut it down in its fires (three at most)
+//   - in its fire a blow takes at least 10x what the same blow takes off the standing wicker, and EVERY hero needs two or three of its fires to cut it down (Daniel, 10-05: none at one)
 //   - its body lies down in its own skin (the burnt heap), and its marks are the table's: !! over the throw, ! over the swing
 //   node tools/wicker-man.mjs            (PORT from tools/ports.mjs)
 import assert from 'node:assert/strict';
@@ -46,6 +46,10 @@ const hero = (x, face, o = {}) => ({ x, y: 0, face, alive: true, ...o });
   s.mode = 'burn'; ok(!W.wmIgnite(s), 'it caught again while burning');
   s.mode = 'still'; ok(W.wmTake(s) <= WQ.ward + 1e-9, 'a blow on the standing wicker is worth more than the Queen\'s ward: ' + W.wmTake(s));
   s.mode = 'burn'; ok(W.wmTake(s) >= 1, 'a blow in its fire is worth less than a whole one: ' + W.wmTake(s)); }
+// ---- one fire takes at most WM.fireCap of its health: past it, it beats the flames out
+{ const s = W.newWickerMan(400, 0, -1); W.wmIgnite(s); s.mode = 'burn'; s.t = 3; let got = 0; for (let i = 0; i < 40 && s.mode === 'burn'; i++) got += W.wmBlow(s, 25, 200);
+  ok(Math.abs(got - W.WM.fireCap * 200) < 1e-6 && s.mode === 'stamp' && W.WM.fireCap < 0.6 && W.WM.fireCap > 0.34, 'one fire took ' + got + ' of 200 (cap ' + W.WM.fireCap + ') or did not stamp out at its cap: ' + s.mode);
+  s.mode = 'still'; W.wmIgnite(s); ok(s.fireTaken === 0, 'a new fire did not start its cap afresh'); }
 // ---- the strike-back is the Queen's rule
 { ok(W.RET.reach === WQ.retReach && W.RET.late === WQ.retLate && W.RET.set === WQ.retSet, 'its strike-back numbers are not the Queen\'s: ' + JSON.stringify(W.RET));
   const b = { x: 120, dir: -1 }, at = d => ({ x: 120 - d, y: 0, face: 1, low: true });
@@ -96,6 +100,10 @@ try {
         if (firstBurn === null) firstBurn = hpB - Math.max(0, e.hp); if (!e.alive) { dead = true; break; } for (let i = 0; i < 60 * 1.2; i++) BK.sim(1); e.x = home; }
       out.fires = fires; out.dead = dead; out.hp0 = e.hp0; out.firstBurn = firstBurn;
       if (dead) { for (let i = 0; i < 20; i++) BK.step(1); const c = (typeof BK.corpses === 'function' ? BK.corpses() : BK.corpses).find(q => q.t === 'wickerman'); out.corpse = c ? (c.shown === BK.SPR.wickerman ? 'own' : c.shown ? 'other' : 'none') : 'no body'; out.cframe = c && c.frame; out.frames = BK.SPR.wickerman.R.length; }
+      /* (claude/fairfix6, Daniel 10-05) THE MIME, in the page: a fair mummer held in his look answers his swing with its own, told (mimeTell) and guardable */
+      if (h === 'knight') { for (const q of BK.enemies()) q.alive = false; H.reset(); const m = BK.enemies().find(q => q.t === 'mummer' && !q.scare && q.rideIdx === undefined && q.x < 40 * 16); m.alive = true; m.hp = 9999; m.stagger = 0; m.st.mode = 'still'; const mx = m.x; BK.tp(Math.floor((mx - 26) / 16), Math.floor(m.y / 16) - 1); BK.sim(20); none(); for (let i = 0; i < 30; i++) { BK.P.x = mx - 26; BK.P.face = 1; BK.sim(1); }
+        const n0 = BK.fair().mimes || 0; let told = false, swung = false, crept = false; BK.god = false; BK.P.hp = BK.P.maxHp; BK.press('atk'); for (let i = 0; i < 120; i++) { BK.P.face = 1; BK.P.inv = 0; BK.sim(1); if (m.mode === 'mimeTell') told = true; if (m.mode === 'mimeSwing') swung = true; if (m.mode === 'creep') crept = true; } BK.god = true;
+        out.mime = { told, swung, n: (BK.fair().mimes || 0) - n0, crept }; m.alive = false; }
       out.cards = BK.beasts ? !!BK.beasts().find?.(b => b.t === 'wickerman') : null;
       return out; })()`, 600000));
   }
@@ -104,11 +112,12 @@ try {
 for (const r of R) {
   console.log('  ' + r.h.padEnd(10) + ' L' + r.lvl + '  timed ' + JSON.stringify(r.timed) + '  mash ' + JSON.stringify(r.mash) + (r.flare ? '  flare ' + JSON.stringify(r.flare) : '') + '  blow ward/open ' + r.ward + '/' + r.open + '  hp ' + r.hp0 + ', first fire took ' + Math.round(r.firstBurn) + ', fires to kill ' + r.fires + (r.dead ? '' : ' (STANDING)') + '  body ' + r.corpse);
   ok(r.n === 3, r.h + ': ' + r.n + ' wicker men in the page');
+  if (r.h === 'knight') ok(r.mime && r.mime.told && r.mime.swung && r.mime.n >= 1 && !r.mime.crept, 'THE MIME (Daniel 10-05): a fair mummer held in the look did not answer the swing of the knight with a told swing of its own in the page: ' + JSON.stringify(r.mime));
   ok(r.timed.ret && r.timed.caught && r.timed.burned, r.h + ': a held blade begun as its fire reached him did not send it back and set it alight: ' + JSON.stringify(r.timed));
   ok(!r.mash.ret && !r.mash.caught && r.mash.hurt > 0, r.h + ': a MASHED blade sent its fire back (it must only scatter it, and the fire hurts): ' + JSON.stringify(r.mash));
   if (r.h === 'pyro') ok(r.flare && r.flare.ret && r.flare.burned, 'pyro: the ember flare did not send its fire back: ' + JSON.stringify(r.flare));
   ok(r.open > 0 && r.open >= r.ward * 10, r.h + ': a blow in its fire (' + r.open + ') is not 10x one on the standing wicker (' + r.ward + ')');
-  ok(r.dead && r.fires <= 3, r.h + ': not cut down in three of its fires (' + r.fires + ' fires, ' + (r.dead ? 'dead' : 'standing') + ')');
+  ok(r.dead && r.fires >= 2 && r.fires <= 3, r.h + ': not cut down in two or three of its fires - Daniel 10-05, every hero needs 2-3 (' + r.fires + ' fires, ' + (r.dead ? 'dead' : 'standing') + ')');
   ok(r.corpse === 'own' && r.cframe === r.frames - 1, r.h + ': its body did not lie down in its own burnt heap: ' + r.corpse + ' frame ' + r.cframe);
 }
 if (bad.length) { console.log(bad.map(b => '  FAIL ' + b).join('\n')); console.log(bad.length + ' FAILED'); process.exit(1); }

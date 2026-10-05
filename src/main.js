@@ -18725,7 +18725,7 @@ function fairStep(e, dir) {
    the glass, the walls - the mummers' own look) and he only juggles. Seeing him close fills in his bestiary card under his own name */
 function fairWatched(e) { if (!FAIR) return false; if (Math.abs(e.x - P.x) < 200) beastSeen(e.juggler ? 'juggler' : e.shy ? 'shy' : e.t); const dk = FGM.sightFor(L, FAIR.lamps, e); return MU.facedBy(e, fairLooks(e), dk ? dk.sight : FK.WATCH.sight, dk ? dk.sightY : FK.WATCH.sightY); }
 /* EVERY HERO'S LOOK at this foe: where he stands, which way he faces, the ribbon's reach, the glass behind him, the wall between (src/fair-games.js) */
-const fairLooks = e => players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), mirror: FGM.mirrorSees(L, p), blind: FGM.blocked(L, (tx, ty) => isSolid(tx, ty), e, p), p }));
+const fairLooks = e => players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), vx: p.vx || 0, swing: !!p.wmStart,   /* (claude/fairfix6) what THE MIME copies: his steps, and a blow begun this frame (the swing clock, src/wicker-man-hands.js tick) */ mirror: FGM.mirrorSees(L, p), blind: FGM.blocked(L, (tx, ty) => isSolid(tx, ty), e, p), p }));
 function updateMummer(e, dt) {
   if (e.rideIdx !== undefined) {   /* A HORSE ON A GONDOLA (THE BIG WHEEL's wide car): it goes where the car goes, even out of sight, and its run is the car's length */
     if (!e.ride) { e.ride = movers.find(q => q.fair === (e.rideFair || 'gondola') && q.idx === e.rideIdx); if (e.ride) e.rx = e.ride.w * (e.rideFair ? 0.5 : 0.75); }
@@ -18736,7 +18736,7 @@ function updateMummer(e, dt) {
   const s = e.st, horse = e.t === 'hobbyhorse'; if (!s) return;
   if (Math.abs(e.x - P.x) < 190) beastSeen(e.t);
   const grav = () => { if (e.ride) return; e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground || r.hitY) e.vy = 0; };
-  if (e.stagger > 0) {   /* struck: it reels, and its machine waits. A blow ends a charge where it is */
+  if (e.stagger > 0 && !(typeof s.mode === 'string' && s.mode.startsWith('mime'))) {   /* struck: it reels, and its machine waits. A blow ends a charge where it is. (claude/fairfix6: never THE MIME's swing back - your blow is what started it; it is committed) */
     if (horse && s.mode === 'charge') { s.mode = 'skid'; s.t = 0.05; s.armed = false; }
     if (s.mode === 'glow') { s.mode = 'still'; }
     e.mode = s.mode; grav(); return; }
@@ -18744,7 +18744,7 @@ function updateMummer(e, dt) {
   const heroes = fairLooks(e);   /* the hall's glass sees behind you; the corn's walls stop your look (src/fair-games.js) */
   if (THEATRE && (THH.litAt(THEATRE, THX, e.x, e.y) || THH.mirrorSees(THEATRE, e, players))) heroes.push({ x: e.x, y: e.y, face: 1, alive: true });   /* THE MASKWRIGHT'S THEATRE: what stands in a lamp's light is SEEN, whichever way the heroes face */
   const x0 = e.x, was = s.mode, dk = FGM.sightFor(L, FAIR && FAIR.lamps, e);   /* THE NIGHT: only a lit lantern (or a near look) shows you a mummer up in the dark */
-  const evs = (horse ? MU.horseStep : MU.mummerStep)(s, { C: FAIR && !e.fromQueen ? (horse ? FK.FAIR_HORSE : FK.FAIR_MUMMER) : null, heroes, canStep: (x, dir) => fairStep(e, dir), sight: wqNearSight(e) || (dk ? dk.sight : 0), sightY: wqNearSight(e) ? WQN.WQ.nearY : dk ? dk.sightY : 0, near: horse && dk ? dk.sight * 2 : 0 }, dt);   /* (near: in the dark a horse finds you only twice as far as you can see it: claude/fairfix, the door guard's unlit stretch) */
+  const evs = (horse ? MU.horseStep : MU.mummerStep)(s, { C: FAIR && !e.fromQueen ? (horse ? FK.FAIR_HORSE : FK.FAIR_MUMMER) : null, heroes, canStep: (x, dir) => fairStep(e, dir), sight: wqNearSight(e) || (dk ? dk.sight : 0), sightY: wqNearSight(e) ? WQN.WQ.nearY : dk ? dk.sightY : 0, near: horse && dk ? dk.sight * 2 : 0, mime: !!(FAIR && !L.theatre && !e.fromQueen && !horse) }, dt);   /* (claude/fairfix6) THE MIME: the fair's mummers only - the Theatre's keep their freeze */   /* (near: in the dark a horse finds you only twice as far as you can see it: claude/fairfix, the door guard's unlit stretch) */
   if (s.mode !== 'still') e.woke = true;   /* a scarecrow that is not straw stops being one the moment it moves */
   const dx = s.vx * dt;
   if (dx && e.ride) { const nx = Math.max(e.w / 2 + 2, Math.min(e.ride.w - e.w / 2 - 2, e.rx + dx)); if (nx !== e.rx + dx && horse && s.mode === 'charge') { s.mode = 'skid'; s.t = MU.HORSE.skid; s.armed = false; } e.rx = nx; e.x = e.ride.x + e.rx; }
@@ -18757,6 +18757,8 @@ function updateMummer(e, dt) {
     else if (v.t === 'freeze') { if (FAIR) FAIR.freezes++; if (time - (e.stillAt || -9) > 0.9) { e.stillAt = time; number(e.x, e.y - e.h - 8, 'STILL', '#c9d1dc'); SFX.mummerStill(); } }
     else if (v.t === 'rear') { number(e.x, e.y - e.h - 8, '!!', '#ff6b6b'); SFX.horseRear(); }
     else if (v.t === 'glow') number(e.x, e.y - e.h - 8, '!!', '#ff6b6b');
+    else if (v.t === 'mimeTell') { if (FAIR) FAIR.mimes = (FAIR.mimes || 0) + 1; number(e.x, e.y - e.h - 8, '!', '#ffd36b'); SFX.wqSickleTell(); }   /* (claude/fairfix6) THE MIME answers your swing: told, yellow */
+    else if (v.t === 'mimeSwing') { SFX.foeSlash(); for (const pp of players) asPlayer(pp, () => { if (!upright(pp)) return; const [l, r, t, b] = v.box; if (overlap({ l, r, t, b }, box(P))) damagePlayer(e.x, v.dmg, { who: e, name: 'A MUMMER' }); }); }
     else if (v.t === 'charge') { if (FAIR) FAIR.charges++; SFX.horseCharge(); dust(e.x, e.y, 5); }
     else if (v.t === 'strike') { if (FAIR) FAIR.strikes++; SFX.mummerStrike();
       for (const pp of players) asPlayer(pp, () => { if (!upright(pp)) return; const [l, r, t, b] = v.box; if (overlap({ l, r, t, b }, box(P))) damagePlayer(e.x, v.dmg, { who: e, name: 'A MUMMER', unblockable: true }); }); }
@@ -26791,7 +26793,7 @@ function drawWorld(cx, cy, showPlayer) {
     let frame = 0;
     if (e.t === 'lancer') frame = lancerFrame(e);
     else if (e.t === 'stagehand') frame = e.hurtT > 0 ? 5 : ({ swingTell: 3, swing: 4, recover: 4, dropTell: 6 })[e.mode] ?? (Math.abs(e.vx) > 2 ? 1 + Math.floor(e.anim * 5) % 2 : 0);   /* THE STAGEHAND */
-    else if (e.t === 'mummer') frame = e.hurtT > 0 ? 5 : ({ glow: 3, strike: 4, recover: 0 })[e.mode] ?? (e.mode === 'creep' ? 1 + Math.floor(e.anim * 6) % 2 : 0);   /* THE MUMMER: 3 is the red mask */
+    else if (e.t === 'mummer') frame = e.hurtT > 0 && e.mode !== 'mimeTell' ? 5 : ({ glow: 3, strike: 4, recover: 0, mimeTell: 1, mimeSwing: 4, mimeRecover: 0 })[e.mode] ?? (e.mode === 'creep' ? 1 + Math.floor(e.anim * 6) % 2 : 0);   /* THE MUMMER: 3 is the red mask */
     else if (e.t === 'grindylow') frame = CNF.grindylowFrame(e); else if (e.t === 'willowisp') frame = CNF.wispFrame(e);   /* THE FOG CANAL */
     else if (e.t === 'wickerman') frame = WMN.wmFrame(e.st || e, e.hurtT > 0);   /* (claude/fairfix6) THE WICKER MAN */
     else if (e.t === 'stringjack') frame = e.hurtT > 0 ? 5 : ({ jerk: 3, strike: 4, recover: 0, hang: 0 })[e.mode] ?? (e.mode === 'walk' ? 1 + Math.floor(e.anim * 8) % 2 : 0);   /* THE MARIONETTE: 0 limp, 3 the jerk */

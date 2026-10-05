@@ -266,8 +266,7 @@ export function buildHarvestFair({ painter, T, TS }) {
      and a hobby-horse in it facing out. You come down the slide past it, drop to the road, and it is at your BACK */
   for (let x = 372; x <= 377; x++) for (let y = tower.top + (x - 367) + 1; y < R; y++) set(x, y, T.AIR);
   foe('hobbyhorse', 374, { face: 1, squad: 'foot' });
-  foe('wickerman', 391, { y: R - 3, squad: 'foot2' });   /* (claude/fairfix6: a WICKER MAN on the hill ahead, where a strongman stood - REMIXED with the facing rule: face it to strike its fire back
-     and your back is to the horse under the slide; turn round to hold the horse and its fire rolls down the hill into your back) */
+  foe('brute', 392, { y: R - 3, cnSkin: 'strongman', squad: 'foot2' });       /* and a mummer on the hill ahead: turn round to hold the horse and your back is to this one (the combine) */
   ent('deco', 363, tower.top - 1, { kind: 'bunting', hang: false });
 
   // ---------------- 4. THE HARVEST (379-502): COMBINE ----------------
@@ -323,6 +322,8 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* A MUMMER AT THE FOOT OF THE MAZE'S STAIR (claude/fairfix3: its two crows are cut - they dove whether you looked or not, the review's foe that ignores the mechanics): you come down
      past it, and it is at your back while you time the chairs */
   foe('brute', mx1 + 4, { cnSkin: 'strongman', squad: 'stairfoot' });
+  foe('wickerman', mx1 + 10, { squad: 'stairfoot' });   /* (claude/fairfix6, Daniel 10-05: the REMIX) A WICKER MAN on the chair-o-plane's bank, ahead of you as you come down the maze's stair: face it to strike its
+     fire back and the strongman at the stair's foot walks into your back (he comes whether you look or not); turn on him and its fire rolls into yours */
   /* THE CHAIR-O-PLANE (claude/fairfix3; Daniel: "more rides" - the swing carousel of the Edwardian fairs, chairs on chains flung out from a turning crown): a spiked pit fifteen
      wide (449-463) and the ride's mast in its middle (455). Its twelve chairs fly round on their chains; seen from the road the near ones come TOWARD you (right to left) at the
      height of a stall roof, and the far ones go round behind the mast, up under the crown, where no one can stand. So you cross AGAINST the ride: step into a chair as it

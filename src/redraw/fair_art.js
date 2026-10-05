@@ -80,8 +80,8 @@ export function bakeMummer(o) {
 /* (claude/fairfix5) THE FAIR'S OWN MUMMER, THE HARVEST SKIN (the review: its main foe was the theatre's sprite, baked once for both): a corn-husk mask with its strands, a
    smock of straw, a cap of husk leaves (the bells kept: you can see the tell before you hear it), a sheaf on the back. The GLOW tell is the same red; same frames, same
    hit box (MUMMER.w/h), same AI - it is drawn and dies in this skin in the fair only (src/main.js reskinSet) */
-const HARVEST = { sack: '#c8a858', sackL: '#e8cc80', sackD: '#8a7034', sackDD: '#5a4622', patch: '#a8903a', patch2: '#8a5a2a', mask: '#d8cc8a', maskL: '#f0e8b8', maskD: '#9a9050',
-  cap: '#7a8a34', capL: '#a8b85a', capD: '#4e5a1e', capS: '#e8c23a', paint: '#b8682a' };
+const HARVEST = { sack: '#c8a858', sackL: '#e8cc80', sackD: '#8a7034', sackDD: '#5a4622', patch: '#a8903a', patch2: '#8a5a2a', mask: '#d8cc8a', maskL: '#f0e8b8', maskD: '#a8884a',
+  cap: '#c89a3a', capL: '#e8c860', capD: '#8a6424', /* (claude/fairfix6, Daniel 10-05: the husk cap was olive green - with the mask it could read as a goblin in the dusk; it is dry corn husk now, straw and gold) */ capS: '#e8c23a', paint: '#b8682a' };
 export function bakeHarvestMummer() {
   const save = {}; for (const k in HARVEST) { save[k] = C[k]; C[k] = HARVEST[k]; }
   try { return bakeMummer({ after: (g, f, hx, hy, top, hem, lean, glow) => {

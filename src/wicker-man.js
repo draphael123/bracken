@@ -20,7 +20,7 @@
 import { WQ } from './wicker-queen.js';
 
 export const WM = {
-  w: 14, h: 40, hp: 150,   /* (measured, tools/wicker-man.mjs: one 3 s fire, cut point-blank at the fair's depth (L23), takes 50 (warden) to 211 (pirate) - so one to three fires, the knight's two at a walk-in) */
+  w: 14, h: 40, hp: 160,   /* (claude/fairfix6, Daniel 10-05: 'every hero needs 2-3 strike-back fires'. Measured, tools/wicker-man.mjs: one 3 s fire cut point-blank at the fair's depth (L23) takes 50 (warden) to 211 (pirate) - a 4x spread health alone cannot fit into 2-3. So health 160 (144 at the fair: three of the warden's fires) AND fireCap below (no fire takes more than 55% of it: two of the pirate's) */
   creep: 26,                           /* px/s while no hero looks at it: slower than a mummer (40); the Queen's 68 */
   sight: 300, sightY: 110,             /* how far it sees a hero to fight (its look is the fair's: the host says whether a hero is looking at IT) */
   throwFirst: 1.2, throwEvery: 4.0, throwTell: 1.0, throwT: 0.35, throwMin: 60, throwMax: 280, throwDy: 56,
@@ -28,6 +28,7 @@ export const WM = {
   retSpeed: 240, retHit: 14,           /* struck back it comes home at the Queen's speed, and catches this near it */
   reach: 30, swingTell: 0.9, swingT: 0.22, swingRecover: 1.0, swingReach: 40, swingDmg: 19,
   catchT: 0.35, burnT: 3.0, stampT: 0.9,
+  fireCap: 0.55,                       /* ONE FIRE TAKES AT MOST THIS SHARE OF ITS HEALTH: past it the wicker beats the flames out (told: it stamps its fire out early) - every hero needs two fires at least */
   burnMul: 1.0, ward: 0.05,            /* a blow in its fire lands whole; on the standing wicker it is a scratch (the Queen's WQ.ward) */
 };
 /* the strike-back's numbers ARE the Queen's (one rule for the fair's fire): reach, too-late and the held blade */
@@ -43,10 +44,17 @@ export const wmTake = s => (wmOpen(s) ? WM.burnMul : WM.ward);
 
 export function newWickerMan(x, y, face = -1) { return { x, y, face, mode: 'still', t: 0, vx: 0, anim: 0, throwCd: WM.throwFirst, n: { throw: 0, swing: 0, catch: 0, burn: 0, stamp: 0 } }; }
 
+/* A BLOW IN ITS FIRE, against the fire's cap: returns what lands (all of it, or what is left of WM.fireCap x maxHp this fire); at the cap it beats the fire out (stamp). Outside its fire: the ward */
+export function wmBlow(s, dmg, maxHp) {
+  if (!wmOpen(s)) return dmg * WM.ward;
+  const room = Math.max(0, WM.fireCap * maxHp - (s.fireTaken || 0)), d = Math.min(dmg * WM.burnMul, room); s.fireTaken = (s.fireTaken || 0) + d;
+  if (d >= room - 1e-6) { s.mode = 'stamp'; s.t = WM.stampT; s.n.stamp++; s.capped = (s.capped || 0) + 1; }
+  return d;
+}
 /* IT CATCHES: its own fire, struck back into it. False while it is already alight (or stamping it out: the fire is going out of it, not into it) */
 export function wmIgnite(s) {
   if (s.mode === 'catch' || s.mode === 'burn' || s.mode === 'stamp' || s.dead) return false;
-  s.mode = 'catch'; s.t = WM.catchT; s.vx = 0; s.n.catch++; return true;
+  s.mode = 'catch'; s.t = WM.catchT; s.vx = 0; s.n.catch++; s.fireTaken = 0; return true;
 }
 
 /* WHERE A BALL IT THROWS STARTS: in front of it, on the ground */

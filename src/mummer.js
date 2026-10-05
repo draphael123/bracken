@@ -36,6 +36,15 @@ export function nearestHero(e, heroes, sight = MUMMER.sight, sightY = MUMMER.sig
   return best;
 }
 
+/* (claude/fairfix6, Daniel 10-05: "a watched mummer just freezes - a free win") THE MIME. In THE HARVEST FAIR only (w.mime; the Theatre's mummers never mime), a mummer held
+ in a look does not simply stand: its feet still never CREEP (the facing rule), but it COPIES its watcher - the nearest hero looking at it - in the mirror:
+   - HIS STEPS: as he steps it steps back at him, mirrored (his vx flipped, at most MIME.step px/s), and never closer than MIME.keep px on its own;
+   - HIS SWING: a blow he begins within MIME.r px is answered - a told beat (MIME.tell s, a YELLOW ! - the shield turns it), then it swings back (MIME.dmg).
+   So you time your cut between its mimicked swings. Unwatched it is the mummer it always was: it creeps, its bells ring, and the red glow comes before its strike.
+   w.heroes[i] may carry vx (px/s) and swing (a blow begun this frame) for the mime to copy */
+export const MIME = { step: 30, keep: 30, r: 72, tell: 0.42, swing: 0.14, dmg: 9, recover: 0.55 };
+/* its watcher: the nearest hero looking at it (co-op: the nearest of them) */
+export function watcherOf(e, heroes, sight = MUMMER.sight, sightY = MUMMER.sightY) { let best = null, bd = 1e9; for (const h of heroes || []) { if (!looks(e, h, sight, sightY) || h.mirror) continue; const d = Math.abs(h.x - e.x); if (d < bd) { bd = d; best = h; } } return best; }
 export const newMummer = (x, y, face = -1) => ({ x, y, face, mode: 'still', t: 0, vx: 0, bellT: MUMMER.bell * 0.5 });
 /* one frame of a mummer. world = { heroes:[{x,y,face,alive}], canStep(x, dir) -> can it walk on }. Returns events: freeze, wake, bell, glow, strike { box, dmg } */
 export function mummerStep(s, w, dt) {
@@ -45,8 +54,14 @@ export function mummerStep(s, w, dt) {
   const toward = () => { if (near) s.face = Math.sign(near.x - s.x) || s.face; };
   switch (s.mode) {
     case 'still':
-      if (near && !seen) { s.mode = 'creep'; toward(); evs.push({ t: 'wake' }); }
+      if (near && !seen) { s.mode = 'creep'; toward(); evs.push({ t: 'wake' }); break; }
+      if (seen && w.mime) { const h = watcherOf(s, w.heroes, w.sight || C.sight, w.sightY || C.sightY); if (!h) break; s.face = Math.sign(h.x - s.x) || s.face; const d = Math.abs(h.x - s.x);
+        if (h.swing && d <= MIME.r && Math.abs((h.y || 0) - (s.y || 0)) < 40) { s.mode = 'mimeTell'; s.t = MIME.tell; evs.push({ t: 'mimeTell' }); break; }   /* HE SWINGS: it will swing back */
+        const v = -(h.vx || 0), sp = Math.min(MIME.step, Math.abs(v)); if (sp > 6) { const dir = Math.sign(v); if (!(dir === s.face && d <= MIME.keep) && (!w.canStep || w.canStep(s.x, dir))) { s.vx = dir * sp; evs.push({ t: 'mimeStep' }); } } }   /* HE STEPS: it steps, mirrored */
       break;
+    case 'mimeTell': s.t -= dt; if (s.t <= 0) { s.mode = 'mimeSwing'; s.t = MIME.swing; const x0 = s.face > 0 ? s.x : s.x - (C.reach + 10); evs.push({ t: 'mimeSwing', dmg: MIME.dmg, box: [x0, x0 + C.reach + 10, s.y - C.h, s.y] }); } break;   /* told and committed, like any yellow blow */
+    case 'mimeSwing': s.t -= dt; if (s.t <= 0) { s.mode = 'mimeRecover'; s.t = MIME.recover; } break;
+    case 'mimeRecover': s.t -= dt; if (s.t <= 0) s.mode = 'still'; break;
     case 'creep':
       if (seen) { s.mode = 'still'; evs.push({ t: 'freeze' }); break; }
       if (!near) { s.mode = 'still'; break; }

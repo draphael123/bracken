@@ -5,7 +5,7 @@
 //   struck back, catching it (its opening: a blow lands whole in its fire, a scratch on the standing wicker), its fire drawn on it, and its balls drawn.
 // main.js calls: owns, step (per foe), tick (once a frame: the swing clock and the balls), take (a blow on it), drawBalls. Its teaching lines go through
 // ctx.callout and are listed in src/hint-lines.js.
-import { WM, wickerManStep, wmIgnite, wmTake, wmOpen, strikeJudge, newWickerMan } from './wicker-man.js';
+import { WM, wickerManStep, wmIgnite, wmTake, wmBlow, wmOpen, strikeJudge, newWickerMan } from './wicker-man.js';
 
 export function makeWickerManHands(ctx) {
   const H = { balls: [], n: { throws: 0, struck: 0, wild: 0, caught: 0, burns: 0, ballHits: 0, swings: 0, scratches: 0 } }, said = {};
@@ -63,7 +63,7 @@ export function makeWickerManHands(ctx) {
       return true; });
   };
   /* A BLOW ON IT: whole in its fire; a scratch on the standing wicker (told, once in a while) */
-  H.take = (e, dmg) => { const s = init(e), k = wmTake(s); if (k >= 1) return dmg * k;
+  H.take = (e, dmg) => { const s = init(e), k = wmTake(s); if (k >= 1) { const d = wmBlow(s, dmg, e.hp0 || e.maxHp || WM.hp); if (s.mode === 'stamp') { e.mode = 'stamp'; ctx.callout('IT STAMPS ITS FIRE OUT'); ctx.sfx('stamp'); } return d; }
     H.n.scratches++; ctx.sparks(e); if (!(e.wmSaid > ctx.time())) { e.wmSaid = ctx.time() + 4; ctx.callout('THE WICKER SHRUGS IT OFF: STRIKE ITS FIRE BACK'); }
     return dmg * k; };
   /* ITS FIRE, rolling: a ball of its own burning straw (white-ringed while it is in your reach to strike back) */
