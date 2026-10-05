@@ -15,7 +15,7 @@ try {
     const fi = LEVELS.findIndex(l => l.id === 'fair'); const out = { legs: [], fail: [] };
     const K = BK.keys, none = () => { for (const k of ['left','right','up','down','jump','block','atk']) K[k] = false; };
     const h = ${JSON.stringify(hero)};
-    BK.setHero(h); const PR = BK.PROG; PR.xp = PR.xp || {}; PR.xp[h] = 0; if (PR.skillOwned) PR.skillOwned[h] = {}; if (PR.loadouts) PR.loadouts[h] = []; if (PR.talents) PR.talents[h] = {}; PR.items = {}; PR.skill1 = PR.skill2 = null;
+    BK.setHero(h); const PR = BK.PROG; PR.xp = PR.xp || {}; BKT.setHeroLevel(h,0); if (PR.skillOwned) PR.skillOwned[h] = {}; if (PR.loadouts) PR.loadouts[h] = []; if (PR.talents) PR.talents[h] = {}; PR.items = {}; PR.skill1 = PR.skill2 = null;
     BK.reset({ fresh: true }); BK.applyUpgrades && BK.applyUpgrades(); BK.load(fi); BK.start(); BK.sim(5); BK.god = false; none();
     const P = () => BK.P, L = () => BK.getL ? BK.getL() : BK.L;
     const tile = (tx, ty) => { const l = L(); return tx < 0 || ty < 0 || tx >= l.W || ty >= l.H ? 1 : l.grid[ty * l.W + tx]; };

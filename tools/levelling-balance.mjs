@@ -11,7 +11,7 @@ const res = { levels, boss: {}, fight: {} };
 for (const lv of levels) {
   const pg = await openPage({ audio: false, fonts: false });
   try {
-    const setup = `const {xpFloor}=await import('/src/xp.js'),PR=await import('/src/progression.js');const P=BKT.PROG;for(const h of PR.HERO_IDS){P.xp[h]=xpFloor(${lv});P.skillOwned[h]={};P.loadouts[h]=[];}P.heroes={knight:true,pyro:true,paladin:true,pirate:true,reaper:true,warden:true};${off ? 'for(const n of PR.SKILLS)if(!n.active)n.level=99;' : ''}
+    const setup = `const {xpFloor}=await import('/src/xp.js'),PR=await import('/src/progression.js');const P=BKT.PROG;for(const h of PR.HERO_IDS){BKT.setHeroLevel(h,${lv});P.skillOwned[h]={};P.loadouts[h]=[];}P.heroes={knight:true,pyro:true,paladin:true,pirate:true,reaper:true,warden:true};${off ? 'for(const n of PR.SKILLS)if(!n.active)n.level=99;' : ''}
       const on={};for(const h of PR.HERO_IDS)on[h]=PR.skillsFor(h).filter(n=>!n.active&&n.level<=${lv}).length;`;
     if (what !== 'fight') res.boss[lv] = await pg.evalp(`(async()=>{${setup}const r=await BK.bossLab({});return{on,rows:r.rows};})()`, 7200000);
     if (what !== 'boss') res.fight[lv] = await pg.evalp(`(async()=>{${setup}const r=await BK.fightLab({});return{on,rows:r.rows};})()`, 7200000);

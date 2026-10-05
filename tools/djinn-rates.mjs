@@ -15,7 +15,7 @@ try {
   for (const h of heroes) for (let s = 1; s <= seeds; s++) {
     let row;
     try { await pg.reload();
-      row = await pg.evalp(`(async()=>{BK.manualSimulation=true;const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;P0.xp[${JSON.stringify(h)}]=xpFloor(${lvl});P0.skillOwned[${JSON.stringify(h)}]={};P0.loadouts[${JSON.stringify(h)}]=[];if(P0.talents)P0.talents[${JSON.stringify(h)}]={};
+      row = await pg.evalp(`(async()=>{BK.manualSimulation=true;const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG;BKT.setHeroLevel(${JSON.stringify(h)},${lvl});P0.skillOwned[${JSON.stringify(h)}]={};P0.loadouts[${JSON.stringify(h)}]=[];if(P0.talents)P0.talents[${JSON.stringify(h)}]={};
         const r=(await BK.bossLab({bosses:[${JSON.stringify(id)}],heroes:[${JSON.stringify(h)}],maxSecs:${secs},healthMode:'normal',seed:${s}})).rows[0]||{};
         const d=BK.djinnHands&&BK.djinnHands()&&BK.djinnHands().read();
         return {outcome:r.outcome,secs:r.secs,bossLeft:r.hpLeftPct,taken:r.health?r.health.damageTaken:null,endHp:r.health?r.health.endHp:null,opened:r.opened,ph:d&&d.ph,hurt:d&&d.hurt,n:d&&{mud:d.n.mud,doused:d.n.doused,bailed:d.n.bailed,warded:d.n.warded,wardPassed:d.n.wardPassed}};})()`, 1200000);

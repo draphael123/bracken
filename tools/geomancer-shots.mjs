@@ -9,7 +9,7 @@ const CW = 200, CH = 110, SC = 2;
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
-    window.__geo=(ids,foes=[[70,'sprig'],[110,'shield']])=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('geomancer');BK.reset({fresh:true});BKT.PROG.xp.geomancer=xpFloor(24);
+    window.__geo=(ids,foes=[[70,'sprig'],[110,'shield']])=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('geomancer');BK.reset({fresh:true});BKT.setHeroLevel("geomancer",24);
       BKT.PROG.skillOwned.geomancer=Object.fromEntries(ids.map(i=>[i,true]));BKT.PROG.loadouts.geomancer=ids.slice(0,2);BK.applyUpgrades();BK.load(0);BK.state='play';
       BK.enemies().length=0;BK.ambushes().forEach(a=>a.st='done');const L=BK.L;for(let x=2;x<46;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:(x===40&&y>=19?1:0);
       for(let x=24;x<27;x++)L.grid[22*L.W+x]=0;BK.tp(10,21);BK.sim(40);const P=BK.P;P.hp=P.maxHp;P.inv=0;P.st=P.maxSt;P.face=1;
