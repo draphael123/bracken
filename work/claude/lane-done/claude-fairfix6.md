@@ -132,3 +132,76 @@ It is a tall effigy of woven willow stuffed with straw, with a small crown of th
 2. **Wicker Man health 150** (1-3 fires to kill at L23; the warden's slow cuts need 3). Rec: keep. The ward makes it a puzzle-foe rather than a wall, and a fight runs 10-25 s.
 3. **The hill strongman (col 392) is now a Wicker Man.** Rec: keep. The remix pairs its fire with the horse at your back, and it keeps "fewer, better foes".
 4. **The harvest mummer's green husk cap** could also read a little goblin-ish at a glance in the dusk. It is not a goblin silhouette (fair-folk: 0%). Not changed. Rec: leave it unless you saw it as one.
+
+## 5. DANIEL'S 10-05 ANSWERS (second pass, commit b9d15bae and after)
+
+These supersede the matching lines above. Q1 is answered: a harder fair is fine, and the ceiling stays at 135. I did not raise it again.
+
+- **The fair's difficulty index is now 131.** The hill strongman is back: 5 strongmen and 3 Wicker Men.
+
+**1. The Wicker Man is tougher: every hero now needs 2 or 3 struck-back fires.**
+- Health alone could not do this. One 3 s fire, cut at point-blank range at the fair's depth (L23), takes 50 (warden) to 211 (pirate). That 4x spread cannot fit into 2-3 fires by health.
+- So there are two changes:
+  - **Health is 160** (144 at the fair). That is three of the warden's fires.
+  - **New `WM.fireCap` 0.55:** one fire can take at most 55% of its health. At that cap the wicker beats the flames out early, told with "IT STAMPS ITS FIRE OUT". So no hero kills it in one fire.
+- About 220 health, as suggested, would have needed 4 fires for the warden.
+- **Checked per hero** in `tools/wicker-man.mjs`, which now fails at 1 fire or at 4:
+
+  | Hero | Fires to kill |
+  |---|---|
+  | knight | 2 |
+  | warden | 3 |
+  | pyro | 2 |
+  | paladin | 2 |
+  | pirate | 2 |
+  | reaper | 2 |
+  | geomancer | 2 |
+
+- A Node assert covers the cap: it stamps out at the cap, and every new fire starts its cap afresh.
+
+**2. The hill strongman is kept (col 392, in his new art).**
+- The remix Wicker Man moved to the chair-o-plane's bank (col 446, squad `stairfoot`).
+- You come down the corn maze's stair toward it, and the strongman at the stair's foot (col 440) walks into your back whether you look or not.
+- Face the Wicker Man to strike its fire back, and the strongman is behind you. Turn on him, and its fire rolls into your back.
+- Picture: scratch/fairfix6/enc2/wm1.png.
+
+**3. The harvest mummer's cap.**
+- The olive-green husk cap is now dry corn husk, in straw and gold (src/redraw/fair_art.js `HARVEST`).
+- The mask's shading is no longer greenish.
+- fair-folk is green. Sheet: scratch/fairfix6/z3/sheets.png.
+
+**4. THE MIME (src/mummer.js `MIME` and `watcherOf`, pure; its hand is in main.js `updateMummer`).**
+- **Where:** fair mummers only (`w.mime`). The Theatre's mummers and the Queen's crowd still just freeze.
+- **The facing rule is unchanged:** a watched mummer never creeps.
+- **It copies its watcher** (the nearest hero looking at it, the nearest of them in co-op), in the mirror:
+  - **His steps:** his vx flipped, at most 30 px/s. It never closes inside 30 px on its own.
+  - **His swing:** a blow he begins within 72 px is answered.
+    - The tell is 0.42 s: a yellow `!` with the sickle-tell sound (marks row `mummer|mimeTell`, answer `block`).
+    - Then it swings back for 9 damage. The shield turns it; it is never unblockable.
+    - It recovers for 0.55 s.
+    - Your own blow does not cancel its answer.
+- So you time your cut between its swings.
+- **Unwatched it is unchanged:** it creeps, its bells ring, and the red glow comes before its strike.
+- **Asserts:**
+  - harvest-fair (pure): the mirrored step, the keep distance, the told 0.35-0.5 s swing that is weaker than its strike and whose box reaches the hero, the yellow mark, a guardable hit in main.js, no mime without the flag (the Theatre), and unwatched behaviour identical with or without the mime.
+  - wicker-man (page, knight): a mummer held in the look answers the knight's swing with mimeTell then mimeSwing, and never creeps.
+
+**Re-stamped, level then boss:**
+- **Mash level:**
+  - knight: 2 deaths;
+  - warden: 0 deaths, lowest 1% hp;
+  - pyro: 1 death.
+  - All are under the gate (MASH_HP 40).
+- **Mash boss:** 0/6; the Queen was left at 54-87%.
+- **Level-1 pilot:** 43 hits, 0 deaths, 100% of the route walked.
+
+**Green on this pass:**
+- **The fair and its foes:** harvest-fair, wicker-man, fair-folk, tells, theatre.
+- **Level and mash gates:** level-quality, mash-gate, one-new-foe, sprinkle-cap, stuck.
+- **Level structure:** checkpoint-gaps, architecture, checkpoints, npc-removal, elites.
+- **Text and skins:** goblin-lint, hint-shown.
+- **Not yet in:** wicker-queen and boss-fight-end (see the next section).
+
+**Remaining question:**
+- **The mime damage is 9 and its tell 0.42 s, picked by hand.** It has no bot measure of its own; the level-1 pilot rose from 34 to 43 hits.
+  - Rec: judge it in your playtest.
