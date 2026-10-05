@@ -26,7 +26,7 @@ import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed
 import * as SLD from './slide.js';   /* THE BUTT-SLIDE (claude/slide): the hit, the bounce, the dust of down held on a slope */
 import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile, slopeRise, slopeGrade } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
-import { makeLesserDjinnHands } from './lesser-djinn-hands.js'; import * as LDA from './redraw/lesser_djinn_art.js'; let LDH = null;   /* (claude/djinn3) THE LESSER DJINN: the ember wisp's AI under the Djinn's skins - sand a pour makes mud, fire a pour douses */
+import { makeLesserDjinnHands } from './lesser-djinn-hands.js'; import * as LDA from './redraw/lesser_djinn_art.js'; let LDH = null;   /* (claude/djinn3) THE LESSER DJINN: the will-o'-the-wisp's AI (the ember wisp's, cold) under the Djinn's skins - sand a pour makes mud, fire a pour douses */
 import { makeMysticHands } from './bandit-mystic-hands.js'; import * as MYA from './redraw/mystic_art.js'; let MYH = null;   /* (claude/djinn2) THE BANDIT MYSTICS: the goblin mage's AI under men's skins - casters, and lamp-bearers whose light wards (src/bandit-mystic.js) */
 import * as DF2 from './desert-foes2.js'; import { makeDesertFoes2Hands } from './desert-foes2-hands.js'; import * as DF2A from './redraw/desert_foes2.js'; let DF2H = null; const DF2_CORPSE = { firescorpion: 6, venomscorpion: 6, shieldguard: 4, dynamiter: 4, powderboy: 4, banditmystic: 6, lampbearer: 6, sanddjinn: 5, firedjinn: 5 }; const isDyn = e => e.cnSkin === 'dynamiter' || e.cnSkin === 'powderboy';   /* (claude/variety: THE POWDER MONKEY is the dynamite bandit's AI under a sailor's jersey) */   /* the frame each reskin lies in (src/redraw/desert_foes2.js) */ const DYN = { near: 44, far: 120, dy: 60, tell: 0.7, cd: 2.4, flight: 0.65, fuse: 1.0, ring: 36 };   /* THE DYNAMITE BANDIT: lights between near and far px, holds it TELL s, it flies FLIGHT s and lies FUSE s in a RING px (explode's 36) */   /* THE DESERT'S SECOND CAST (claude/desertfoes): the fire and venom scorpions, the sandworm, the gorge's dynamite bandit and shield guard */
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
@@ -6195,8 +6195,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
   if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }
-  if (LDH && e.t === 'emberwisp' && e.cnSkin && LDH.owns(e)) { dmg = LDH.take(e, dmg); if (!dmg) return; }   /* (claude/djinn3) THE LESSER DJINN: a blade passes through sand, fire turns it - until a pour opens it */
-  if (e.t === 'willowisp') { dmg = CNF.wispTake(e, dmg); if (!dmg) { SFX.zap && SFX.zap(); ringAt(e.x, e.y - 6, 14, '#a0ffd2', 0.4); return; } }   /* (claude/canalfix3) THE WISP: popped, an ember that re-forms once */   /* THE FOG CANAL: under the water nothing finds it; the ripple knocks it up; out of the water it takes double */
+  if (LDH && e.cnSkin && LDH.owns(e)) { dmg = LDH.take(e, dmg); if (!dmg) return; }   /* (claude/djinn3) THE LESSER DJINN: a blade passes through sand, fire turns it - until a pour opens it (and no wisp's pop: it is cut whole) */
+  else if (e.t === 'willowisp') { dmg = CNF.wispTake(e, dmg); if (!dmg) { SFX.zap && SFX.zap(); ringAt(e.x, e.y - 6, 14, '#a0ffd2', 0.4); return; } }   /* (claude/canalfix3) THE WISP: popped, an ember that re-forms once */   /* THE FOG CANAL: under the water nothing finds it; the ripple knocks it up; out of the water it takes double */
   if(e.behind)return;   /* (claude/fairfix3) a mummer riding a chair-o-plane's chair round the back of the mast */
   if(e.t==='undeadmage'){if(e.mode==='blinkOut'||e.mode==='blinkIn'||e.mode==='wake'||e.mode==='realmTell')return;
    if(realmWarded(e)&&!(e.open>0)){realmWardHit(e);SFX.clank();SFX.crack();shakeCam(2);ringAt(e.x,e.y-22,26,REALM.col[e.realm.kind][1],0.3);sparks(e.x,e.y-24,P.face,8);return;}}   /* WARDED (claude/archfix): a clang, a flare of his ward, the word over him (drawn by drawRealmFx: number() drops any sentence not a move word, so the old line here was never on the screen) and the banner naming the opening again */   /* IN A REALM his ward holds until its one opening (src/mage-realms.js) */   /* between two places, he is in neither */
@@ -22906,7 +22906,7 @@ function updateEnemies(dt) {
     if (e.t === 'hearthgob') { updateHearthGob(e, dt); continue; }
     if (e.t === 'temperer') { beastSeen('temperer'); updateTemperer(e, dt); continue; }
     if (e.t === 'scalder') { beastSeen('scalder'); updateScalder(e, dt); continue; }
-    if (e.t === 'burngob') { updateBurnGob(e, dt); continue; } if (e.t === 'emberwisp') { if (LDH && e.cnSkin && LDH.owns(e) && LDH.step(e, dt)) continue; updateEmberWisp(e, dt); continue; }   /* (claude/djinn3: a lesser djinn, open or re-forming, is its own) */
+    if (e.t === 'burngob') { updateBurnGob(e, dt); continue; } if (e.t === 'emberwisp') { updateEmberWisp(e, dt); continue; }
     if (e.t === 'stormshaman') { updateStormShaman(e, dt); continue; }
     if (e.t === 'seawitch') { updateSeaWitch(e, dt); continue; }
     if (e.t === 'sweep') { updateSweep(e, dt); continue; }
@@ -23079,6 +23079,7 @@ function updateEnemies(dt) {
     if (e.t === 'merrowbrute') { updateMerrowBrute(e, dt); continue; }
     if (e.t === 'drownedknight' || e.t === 'drownedcaptain') { updateDrownedKnight(e, dt); continue; }
     if (e.t === 'whelp') { beastSeen('whelp'); updateWhelp(e, dt); continue; }
+    if (LDH && e.cnSkin && LDH.owns(e)) { LDH.step(e, dt); continue; }   /* (claude/djinn3) THE LESSER DJINN: the wisp's machine with the Djinn's twist (src/lesser-djinn-hands.js) */
     if (CNF.CANAL_FOES.has(e.t)) { beastSeen(e.t); if (e.t === 'grindylow') CNF.stepGrindylow(e, dt, CNFX); else CNF.stepWisp(e, dt, CNFX); continue; }   /* THE FOG CANAL's two (src/canal-foes.js) */
     if (e.t === 'reefmaw') { updateMaw(e, dt); continue; }
     if (e.t === 'turtle' || e.t === 'eel' || e.t === 'heronfoe' || e.t === 'crab' || e.t === 'scout' || e.t === 'siren' || e.t === 'tideguard') { updateShore(e, dt); continue; }
@@ -23480,6 +23481,7 @@ MYH = makeMysticHands({ get L() { return L; }, get players() { return players; }
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d, x) => hurtEnemy(e, d, x, false),
   standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), solid: (tx, ty) => isSolid(tx, ty) });
 LDH = makeLesserDjinnHands({ TS, sfx: SFX, hero: () => P, enemies: () => enemies, number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), seen: t => beastSeen(t), spr: k => SPR[k],   /* (claude/djinn3) THE LESSER DJINN */
+  hurtHero: (x, d, o) => damagePlayer(x, d, o), ring: (x, y, r, col) => ringAt(x, y, r, col, 0.4),
   ember: (x, y) => parts.push({ x, y, vx: (Math.random() - 0.5) * 10, vy: -20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -10 }),
   standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), solid: (tx, ty) => isSolid(tx, ty) });
 DF2H = makeDesertFoes2Hands({ get L() { return L; }, get players() { return players; }, TS, sfx: SFX, hero: () => P, enemies: () => enemies, VW: () => VW,
@@ -26685,7 +26687,8 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'duneworm') { drawDuneWormFx(e, cx, cy); if (!dwShown(e)) continue; }   /* under the sand he is a ripple, a sinkhole or an arc: his own draw; up, the sprite below */
     if (e.boarder && CNH.foeHidden(e)) continue;   /* THE FOG CANAL's boarding gang, still out in the fog (claude/canalfix) */
     if (CNF.CANAL_FOES.has(e.t)) { CNH.drawCanalFoeFx(CANAL, g, CNX, e, cx, cy, time); if (!CNH.canalFoeShown(e)) continue; }   /* THE FOG CANAL: a grindylow under the water is its ripples (and its shadow in a lantern's light) */
-    if (e.t === 'emberwisp') { if (LDH && e.cnSkin && LDH.owns(e)) { if (e.alive) LDH.draw(g, e, cx, cy, time); continue; } drawEmberWisp(e, cx, cy); continue; }   /* (claude/djinn3) a lesser djinn wears its own skin */ if (e.t === 'pyromancer') { drawPyromancer(e, cx, cy); continue; }
+    if (LDH && e.cnSkin && LDH.owns(e)) { if (e.alive) LDH.draw(g, e, cx, cy, time); continue; }   /* (claude/djinn3) a lesser djinn wears its own skin */
+    if (e.t === 'emberwisp') { drawEmberWisp(e, cx, cy); continue; } if (e.t === 'pyromancer') { drawPyromancer(e, cx, cy); continue; }
     if(e.t==='roc'&&L.belfry&&!rocOpen(e)&&e.mode!=='rise')drawRocArch(e,cx,cy);   /* her gust and talons; she herself is drawn below like anyone */
     if (e.t === 'gobmage' && e.mode === 'runeTell' && e.markX !== undefined) {   /* THE RUNE on the floor where it will go off: red, because no shield turns it, and closing as it comes */
       const k = 1 - Math.max(0, e.modeT) / MAGE.runeTell, x = Math.round(e.markX - cx), y1 = Math.round(e.markY - cy), rr = 18 - Math.round(k * 3);

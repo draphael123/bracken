@@ -285,13 +285,13 @@ export function buildWellTown({ painter, T, TS }) {
                                    the water (time it); THE BELLOWS VENT in a low tunnel - it never stops: cap it, and a FIRE SPIRIT past it (douse it)
        THE CONDUIT (618-629)       REMIX: down the conduit's steps into a bearer warding casters; throw his lamp at them
        THE SEAL HALL (630-646)     EXAM: the last mystics chanting at the brightest seals by his door, a spring; the checkpoint at the door
-     THE LESSER DJINN (claude/djinn3: src/lesser-djinn.js - the ember wisp's AI under his skins): SAND SPIRITS a blade passes through until a pour makes
+     THE LESSER DJINN (claude/djinn3: src/lesser-djinn.js - the will-o'-the-wisp's AI under his skins): SAND SPIRITS a blade passes through until a pour makes
      them MUD (the dry channel, the sluice), FIRE SPIRITS that turn a blade until a pour DOUSES them (the steam works, the seal hall) - his two verbs, small.
      At the bottom THE LAST SEAL, on his hall's back wall, breaks when you come in (src/djinn-hands.js: told, cutscene-lite) and he rises. */
   const mystic = (x, y, squad) => foe('gobmage', x, y, squad, { cnSkin: 'banditmystic' });
   const bearer = (x, y, squad) => foe('gobmage', x, y, squad, { cnSkin: 'lampbearer' });
-  const sandSpirit = (x, y, squad) => foe('emberwisp', x, y, squad, { cnSkin: 'sanddjinn' });   /* (claude/djinn3) THE LESSER DJINN: a blade passes through until a pour makes him mud */
-  const fireSpirit = (x, y, squad) => foe('emberwisp', x, y, squad, { cnSkin: 'firedjinn' });   /* (claude/djinn3) a blade is turned until a pour douses him */
+  const sandSpirit = (x, y, squad) => foe('willowisp', x, y, squad, { cnSkin: 'sanddjinn' });   /* (claude/djinn3) THE LESSER DJINN: a blade passes through until a pour makes him mud */
+  const fireSpirit = (x, y, squad) => foe('willowisp', x, y, squad, { cnSkin: 'firedjinn' });   /* (claude/djinn3) a blade is turned until a pour douses him */
   const vent = (x, y, o) => ent('flamevent', x, y, o);   /* (claude/djinn3) A FLAME VENT standing on row y: { h rows of jet, period, phase, always, steam, w } */
   const DX = 40;   /* (claude/djinn3) everything from the conduit on moved 40 columns east for THE STEAM WORKS */
   const seals = [], cracks = [];

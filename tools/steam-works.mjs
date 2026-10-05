@@ -5,7 +5,7 @@
 //   THE VENTS             vents on a rhythm in the steam works (TEACH: a sign at the point of use says POUR), steam vents under the flooded trough, and
 //                         THE BELLOWS that never stops - a spring before them (the skin full); in the page a vent GLOWS (told) before it JETS, a jet
 //                         costs and throws you back, a POUR caps it (no jet while capped, and it comes back), the bellows is a wall lit and a way capped
-//   THE LESSER DJINN      sand spirits in the dry channel's tunnel and the sluice, fire spirits in the steam works and the seal hall: THE EMBER WISP's
+//   THE LESSER DJINN      sand spirits in the dry channel's tunnel and the sluice, fire spirits in the steam works and the seal hall: THE WISP's
 //                         AI under the Djinn's skins (the level's one new foe is still the bandit mystic); in the page a blade passes through sand,
 //                         a pour makes it MUD and a blade then cuts it; fire turns a blade, a pour DOUSES it and it cuts; left alone it whirls up again
 // node tools/steam-works.mjs [--static]
@@ -36,15 +36,15 @@ const vents = L.ents.filter(e => e.t === 'flamevent'), inR = (e, r) => e.x >= r[
   ok(teach.some((a, i) => teach.some((b, j) => j > i && Math.abs((a.phase || 0) - (b.phase || 0)) > 0.5)), 'the teaching vents fire out of turn (a rhythm to read, not one beat)');
   ok(VENT.glow >= 0.6 && VENT.cap >= 4, 'a vent glows ' + VENT.glow + ' s before it jets (told), and a cap holds ' + VENT.cap + ' s'); }
 /* ---- THE LESSER DJINN ---- */
-{ const sp = L.ents.filter(e => e.t === 'emberwisp' && (e.cnSkin === SAND_SKIN || e.cnSkin === FIRE_SKIN)), sand = sp.filter(e => e.cnSkin === SAND_SKIN), fire = sp.filter(e => e.cnSkin === FIRE_SKIN);
+{ const sp = L.ents.filter(e => e.t === 'willowisp' && (e.cnSkin === SAND_SKIN || e.cnSkin === FIRE_SKIN)), sand = sp.filter(e => e.cnSkin === SAND_SKIN), fire = sp.filter(e => e.cnSkin === FIRE_SKIN);
   ok(sand.length >= 2 && fire.length >= 2 && sp.every(e => e.squad && e.x >= L.works.x0 && e.x <= L.works.x1), 'THE LESSER DJINN: ' + sand.length + ' sand spirits and ' + fire.length + ' fire spirits, all in the binding works, each in a squad');
   ok(Math.max(...sand.map(e => e.x)) < Math.min(...fire.map(e => e.x)), 'sand first (the boss\'s first verb, POUR -> MUD), fire later in the descent (DOUSE) - the order he fights in');
-  ok(!L.ents.some(e => isLesser(e) && e.t !== 'emberwisp'), 'they are THE EMBER WISP\'s AI under his skins (a variant, not a new foe: the bandit mystic stays the level\'s one new foe)'); }
-{ const e = { t: 'emberwisp', cnSkin: SAND_SKIN, x: 100, y: 200, alive: true, mode: 'drift' }, f = { ...e, cnSkin: FIRE_SKIN, x: 400 };
+  ok(!L.ents.some(e => (e.cnSkin === SAND_SKIN || e.cnSkin === FIRE_SKIN) && e.t !== 'willowisp'), "they are THE WISP's AI (the canal's, met before the Well Town) under his skins: a variant, not a new foe - the bandit mystic stays the level's one new foe"); }
+{ const e = { t: 'willowisp', cnSkin: SAND_SKIN, x: 100, y: 200, alive: true, mode: 'drift' }, f = { ...e, cnSkin: FIRE_SKIN, x: 400 };
   ok(ldTake(e, 12) === 0 && ldPourAim([e, f], 60, 212, 1) === e && ldPourAim([e, f], 60, 212, -1) === null && ldPourAim([e], 0, 212, 1) === null, 'whirling, a blade takes nothing; a pour reaches the spirit only in front, near');
   ldOpenUp(e); ok(e.mode === 'mud' && ldTake(e, 12) === 12, 'a pour: the sand spirit is MUD and a blade cuts it whole'); ldOpenUp(f); ok(f.mode === 'doused', 'and the fire spirit is DOUSED');
   const w = { solidBelow: () => 240, wallAt: () => false, heroX: 200 }; let fell = false; for (let t = 0; t < LD.openT + LD.rise + 0.5; t += 1 / 60) { ldStep(e, 1 / 60, w); if (e.y === 240) fell = true; }
-  ok(fell && e.mode === 'drift' && !(e.ldOpen > 0) && e.x > 100, 'open, it drops to the floor and crawls toward you; after ' + LD.openT + ' s it whirls up again'); }
+  ok(fell && e.mode === 'bob' && !(e.ldOpen > 0) && e.x > 100, 'open, it drops to the floor and crawls toward you; after ' + LD.openT + ' s it whirls up again'); }
 const LINES = ['A SAND SPIRIT: A BLADE PASSES THROUGH. POUR ON IT', 'A FIRE SPIRIT: ITS FIRE TURNS A BLADE. DOUSE IT', 'MUD: IT FALLS. CUT IT', 'DOUSED: CLAY AND SMOKE. CUT IT', 'CAPPED: THE VENT HISSES, AND HOLDS', 'THE BELLOWS NEVER STOPS: POUR ON IT', 'THE BELLOWS IS CAPPED: GO, BEFORE IT BLOWS', 'THE VENT BURNS: WAIT FOR IT, OR POUR ON IT', 'STEAM UNDER THE WATER: GO WHEN THE BUBBLES STOP'];
 ok(LINES.every(s => CALL_LINES.has(s)), 'every line the vents and the spirits say is a teaching line (' + LINES.length + ')');
 if (process.argv.includes('--static')) { console.log('steam-works (static): ' + n + ' checks pass'); process.exit(0); }
