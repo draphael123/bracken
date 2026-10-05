@@ -1,4 +1,4 @@
-/* tools/underwell-aloft.mjs - NOTHING IN THE UNDERWELL HANGS IN THE AIR (claude/underwellart; the idea of tools/unburied-aloft.mjs and tools/moor-aloft.mjs, Daniel's playtest 10-05:
+/* tools/underwell-aloft.mjs - NOTHING IN THE UNDERWELL HANGS IN THE AIR (claude/underwellart; the same idea as the unburied and moor lanes' aloft checks, Daniel's playtest 10-05:
    "this is floating"). The Underwell's scaffold boards and grated catwalks cross open halls; the art keys every one of them to the rock or to something that reaches it.
    NODE (no page):
      A  EVERY LEDGE STANDS ON SOMETHING   each end of every ONEWAY run is keyed into rock (a solid tile under it, or the wall at its end: a stone corbel / iron bracket is drawn), or is held
@@ -7,7 +7,7 @@
      B  EVERY PROP IS HELD UP             every dressing item the plan places stands on a solid / ledge top with air over it (floor kinds), hangs from solid rock (ceilings), or is fixed to a
                                           wall face (wall kinds); nothing is placed on a rope, in a solid or in mid-air; nothing stands on a nest, a sign or a pickup.
    PAGE (PORT=<yours> node tools/underwell-aloft.mjs --page):
-     C  THE SUPPORTS ARE DRAWN            with the supports switched off (BK.underwellHands().noSupports) and then on, the column under every post/chain end differs in >= 85% of its
+     C  THE SUPPORTS ARE DRAWN            with the supports switched off (BK.underwellHands().noSupports) and then on, the column under every post/chain end differs in >= 60% (chains: 40%, links have gaps) of its
                                           rows - the picture really holds the ledge up, it is not only a plan.
    Run: node tools/underwell-aloft.mjs [--page] */
 import { install } from './node-canvas.mjs';
@@ -71,7 +71,7 @@ if (process.argv.includes('--page')) {
         for (let yy = Math.max(0, y0); yy < Math.min(vh, y1); yy++) { rows++; let d = 0; for (let dx = -5; dx <= 5; dx++) { const xx = col + dx; if (xx < 0 || xx >= vw) continue; const i = (yy * vw + xx) * 4; if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 24) d = 1; } diff += d; }
         out.push({ run: s.x0 + '-' + s.x1 + '@' + s.y, how: e.how, x: e.x, rows, diff }); } }
       return out; })()`, 600000);
-    const bad = r.filter(q => q.rows > 4 && q.diff < q.rows * 0.85);
+    const bad = r.filter(q => q.rows > 4 && q.diff < q.rows * (q.how === 'chain' ? 0.4 : 0.6));   /* a chain is links with gaps (about two rows in three); a post is solid but a prop may stand in front of it */
     ok(r.length > 0 && bad.length === 0, r.length + ' supports sampled on the page, each drawn down its full length' + (bad.length ? ': ' + bad.map(q => q.how + ' ' + q.run + ' col ' + q.x + ' ' + q.diff + '/' + q.rows).join('; ') : ''));
     if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 3).join(' | '));
   } finally { pg.close(); }

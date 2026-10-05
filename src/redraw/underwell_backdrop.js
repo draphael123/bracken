@@ -49,7 +49,7 @@ const wallTile = () => once('wall', () => { const S = 192, [c, g] = mk(S, S), r 
    brighter at its throat and fading to the far floor, where it lands as a pale patch */
 const shaftLight = () => once('beam', () => { const w = 96, h = 132, [c, g] = mk(w, h);
   const cxm = w / 2;
-  for (let y = 0; y < h; y++) { const t = y / h, half = 9 + t * 30, a = Math.pow(1 - t, 1.0) * 0.5 + 0.04;
+  for (let y = 0; y < h; y++) { const t = y / h, half = 9 + t * 30, a = Math.pow(1 - t, 0.9) * 0.78 + 0.05;
     for (let x = -half - 6; x <= half + 6; x++) { const e = Math.abs(x) / half, soft = e <= 0.82 ? 1 : Math.max(0, 1 - (e - 0.82) / 0.3); if (soft <= 0) continue;
       g.globalAlpha = a * soft * (0.8 + 0.2 * Math.sin((x + y * 0.3) * 0.5)); g.fillStyle = '#cfe4f4'; g.fillRect(Math.round(cxm + x), y, 1, 1); } }
   g.globalAlpha = 1;
