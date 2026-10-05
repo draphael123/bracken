@@ -16,8 +16,10 @@ import * as UWA from './redraw/underwell_art.js';
 /* THE OIL: burn = s a lit cell on a floor burns (burnDeep: a cell in a gutter's slot, deep oil - it burns long, so the worms under it stay down while you cross); spread = s before it lights the cells beside it; back = s before wet oil dries / spent oil seeps back; tick/dmg =
    the fire on a hero standing in it (unblockable); foeDmg on a creature in it; nestBurn = s a nest takes to burn away; relight = s before a torch's
    bracket has a flame again; pourCells = how many cells one sip wets */
-export const OIL = { burn: 6, burnDeep: 16, spread: 0.04, back: 25, tick: 0.5, dmg: 5, foeDmg: 14, nestBurn: 1.0, relight: 12, pourR: 48, pourCells: 3, lampFall: 0.6, torchFall: 0.35, heatRows: 12 };
+export const OIL = { burn: 6, burnDeep: 16, spread: 0.04, back: 25, tick: 0.5, dmg: 13, foeDmg: 14, nestBurn: 1.0, relight: 12, pourR: 48, pourCells: 3, lampFall: 0.6, torchFall: 0.35, heatRows: 12 };
 /* THE CAST's numbers: the thirsty scorpion's pull (px/s, sight px), the dust's blindness (s), a slick's width in cells */
+/* A NEST under a blade: a brood scorpion out of it every `spill` s, at most `max` of them alive from one nest */
+export const NEST = { spill: 0.6, max: 4, spray: 8 };   /* spray: what the nest's venom does to the one hacking at it (unblockable, a stack of venom) */
 export const CAST = { thirstV: 60, thirstSight: 260, blind: 2.2, slick: 3 };
 export const OIL_SKIN = 'oilscorpion', DUST_SKIN = 'dustscorpion', THIRST_SKIN = 'thirstscorpion', SPIT_SKIN = 'spitscorpion';
 const NO_FEAR = new Set(['firescorpion']);   /* the fire scorpion walks through fire */
@@ -131,7 +133,7 @@ export function makeUnderwellHands(ctx) {
       else if (c.st === 'wet' || c.st === 'spent') { c.t -= dt; if (c.t <= 0) { c.st = 'oil'; c.t = 0; } } }
     /* THE WALL TORCHES: a blow on a lit one knocks it down into the oil */
     for (const s of UW.sconces) {
-      if (s.st === 'up' && hb && ctx.overlap(hb, { l: s.x * TS - 4, r: s.x * TS + 20, t: s.y * TS - 6, b: (s.y + 3) * TS })) { s.st = 'fall'; s.t = OIL.torchFall; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(s.x * TS + 8, s.y * TS + 4, ctx.hero().face || 1, 4); }
+      if (s.st === 'up' && hb && ctx.overlap(hb, { l: s.x * TS - 12, r: s.x * TS + 28, t: s.y * TS - 6, b: (s.y + 3) * TS })) { s.st = 'fall'; s.t = OIL.torchFall; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(s.x * TS + 8, s.y * TS + 4, ctx.hero().face || 1, 4); }
       else if (s.st === 'fall') { s.t -= dt; if (s.t <= 0) { s.st = 'down'; s.t = OIL.relight; if (s.below) lightAt(s.below, 0); else ctx.dust(s.x * TS + 8, (s.y + 2) * TS, 4); } }
       else if (s.st === 'down') { s.t -= dt; if (s.t <= 0) { s.st = 'up'; s.t = 0; } } }
     /* THE GREAT LAMP: a blow on its chain (or the lamp) and it comes down into the hall's oil */
@@ -140,8 +142,14 @@ export function makeUnderwellHands(ctx) {
       else if (lp.st === 'fall') { lp.t += dt; const k = Math.min(1, lp.t / OIL.lampFall); lp.dy = (lp.floor - lp.y) * k * k;
         if (k >= 1) { lp.st = 'down'; lp.dy = lp.floor - lp.y; UW.n.lamp++; ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); lightAt(cellAt(lp.x, lp.floor) || UW.list.find(c => c.x === lp.x && !c.vertical), 3);
           ctx.number(lp.x * TS + 8, lp.floor * TS - 30, 'THE GREAT LAMP FALLS: THE HALL BURNS', '#ff9a5c'); } } }
-    /* THE NESTS: fire against one and it burns away */
-    for (const m of UW.nests) { if (m.open) continue;
+    /* THE NESTS: fire against one and it burns away; a BLADE on one turns off the chitin and the nest SPILLS ITS BROOD (a venom scorpion out of it, NEST.spill s
+       apart, NEST.max alive from one nest) - hacking at a nest is how you fill a tunnel with scorpions */
+    for (const m of UW.nests) { if (m.open) continue; m.cd = Math.max(0, (m.cd || 0) - dt); m.out = (m.out || []).filter(q => q.alive);
+      if (hb && m.cd <= 0 && ctx.overlap(hb, { l: m.x0 * TS - 4, r: (m.x1 + 1) * TS + 4, t: m.y0 * TS, b: (m.y1 + 1) * TS })) { m.cd = NEST.spill; ctx.sparks((m.x0 + m.x1 + 1) * 8, (m.y1 - 1) * TS, ctx.hero().face || 1, 3);
+        { const P = ctx.hero(), h0 = P.hp; ctx.hurtHero((m.x0 + m.x1 + 1) * 8, NEST.spray, { unblockable: true, noKnock: true, name: 'THE NEST VENOM' }); if (P.hp < h0) { venomOn(P, 1, VENOM); UW.n.sprayed = (UW.n.sprayed || 0) + 1; }
+          ctx.burst((m.x0 + m.x1 + 1) * 8, (m.y1 - 1) * TS, 8, ['#8fe04a', '#5c8a24', '#e8dcb0'], 60, 0.5); if (once('spray')) ctx.number(P.x, P.y - 34, 'THE NEST SPITS VENOM: BURN IT', '#8fe04a'); }
+        if (m.out.length < NEST.max && ctx.spawn) { const side = ctx.hero().x < m.x0 * TS ? -1 : 1, b = ctx.spawn({ t: 'scorpion', x: side < 0 ? m.x0 - 1 : m.x1 + 1, y: m.y1, face: side < 0 ? -1 : 1, cnSkin: 'venomscorpion', squad: 'spill' });
+          if (b) { m.out.push(b); UW.n.spilled = (UW.n.spilled || 0) + 1; ctx.burst(b.x, b.y - 6, 10, ['#e8dcb0', '#5a4630', '#8fe04a'], 60, 0.6); ctx.sfx.hiss && ctx.sfx.hiss(); if (once('spill')) ctx.number(b.x, b.y - 30, 'THE NEST SPILLS ITS BROOD', '#ff9a5c'); } } }
       let hot = false; for (let y = m.y0; y <= m.y1 + 1 && !hot; y++) for (let x = m.x0 - 1; x <= m.x1 + 1 && !hot; x++) if (H.fireAt(x, y)) hot = true;
       if (hot || m.burn > 0) { if (m.burn === 0) { ctx.sfx.fireWhoosh ? ctx.sfx.fireWhoosh() : ctx.sfx.hiss && ctx.sfx.hiss(); } m.burn += dt;
         if (m.burn >= OIL.nestBurn) { m.open = true; UW.n.nests++; for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) ctx.cellOpen(x, y);

@@ -11,7 +11,7 @@ export const WORKS = { tremorTop: 10, tremorBottom: 3.5, shakeTop: 1, shakeBotto
 export const SKINMAX = 3, WELL_R = 24, POUR_R = 48, DRINK_AT = 0.2;
 export const BUCKET = { down: 80, up: 64 };                      /* px/s: the brake off, it runs down; wound, it comes up slower */
 export const THIEF = { hp: 26, run: 96, runT: 3.5, dmg: 6 };     /* THE WATER-THIEF: lighter than the cutthroat, and quicker away */
-export const FIRE = { tick: 0.7, dmg: 3, reach: 6 };             /* a barricade's heat, a tick at its face */
+export const FIRE = { tick: 0.7, dmg: 3, reach: 6, oilDmg: 14 };   /* a barricade's heat, a tick at its face (oilDmg: THE UNDERWELL's old oil fires, deep lamp oil - claude/underwell: pour from a step away) */
 export const DEEP = { wind: 2.0 };                               /* THE DEEP WELL (the exam's): a blow on its windlass winds its bucket up in this long, and a fill sends it down again */
 export const FOLLOW = { after: 1.6 };                            /* THE GREAT WELL's ride is contested: this long after the bucket goes, the well head's men are down the shaft after you */
 /* THE STEAM WORKS' VENTS (claude/djinn3): a vent on its rhythm GLOWS (told) for glow s, then JETS for jet s, then rests; a jet costs dmg (steam: steamDmg)
@@ -170,7 +170,7 @@ export function makeWellTownHands(ctx) {
     /* THE FIRES' HEAT: a tick at a burning barricade's face */
     for (const f of WT.fires) { if (!f.lit) continue; f.cd = Math.max(0, f.cd - dt);
       for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || f.cd > 0) return; const l = f.x0 * 16 - FIRE.reach, r = (f.x1 + 1) * 16 + FIRE.reach;
-        if (P.x + 5 > l && P.x - 5 < r && P.y > f.y0 * 16 && P.y - 14 < (f.y1 + 1) * 16) { f.cd = FIRE.tick; ctx.hurtHero(P.x - (P.face || 1) * 8, FIRE.dmg, { unblockable: true, noKnock: true, name: 'THE FIRE' });
+        if (P.x + 5 > l && P.x - 5 < r && P.y > f.y0 * 16 && P.y - 14 < (f.y1 + 1) * 16) { f.cd = FIRE.tick; ctx.hurtHero(P.x - (P.face || 1) * 8, WT.L.underwell ? FIRE.oilDmg : FIRE.dmg, { unblockable: true, noKnock: true, name: 'THE FIRE' });
           if (!WT.said['f' + f.x0]) { WT.said['f' + f.x0] = 1; ctx.number(P.x, P.y - 30, 'IT BURNS: POUR YOUR SKIN ON IT', '#ff9a5c'); } } }); }
     /* THE MUD WALLS: say what they want, once each, the first time one is in front of you */
     const P = ctx.hero();

@@ -75,7 +75,7 @@ export function buildUnderwell({ painter, T, TS }) {
   drip(4, 26);                                                                /* the first drip, on the way down: a sip before anything asks for one */
   tap(3, 36);                                                                 /* TAP ONE: at the end of the last ledge */
   air(15, 44, 39, F - 1);                                                     /* the tunnel east (five rows) */
-  seep(16, 23, F - 1); sconce(17, F - 3, 'shaft');                           /* THE FIRST LESSON: the oil under the nest, the torch over it */
+  seep(17, 23, F - 1); sconce(17, F - 3, 'shaft');                           /* THE FIRST LESSON: the oil under the nest, the torch over it */
   nest('shaft', 21, 22, 39, F - 1);                                           /* the brood's nest seals the tunnel (rock over it) */
   sign(13, F - 1, 'A BROOD NEST. FIRE TAKES IT. STRIKE THE TORCH DOWN INTO THE OIL.');
   block(24, 28, F - 1, F - 1); drip(26, F - 2);                              /* a step of fallen blocks, the drip on it */
@@ -148,14 +148,15 @@ export function buildUnderwell({ painter, T, TS }) {
 
   // ================= 5. THE LAMP STAIR (351-446): the exam, then the stair to her door =================
   air(346, 430, 28, 42); block(351, 430, 43, H - 1);
-  seep(351, 372, 42); drip(353, 42); sconce(364, 40, 'exam');                /* the drip on the oil, the torch east of it */
+  seep(351, 372, 42); drip(352, 42); sconce(359, 40, 'exam');   /* (the torch near the drip: the oil between them is the firebreak's - and the run east to the bed is long) */                /* the drip on the oil, the torch east of it */
   block(373, 393, 43, H - 1); sand.push([373, 393, 43]); worm(383, 42, 374, 392, 'examWorm');
   block(368, 396, 33, 35); block(369, 395, 37, 37); seep(368, 396, 36); line(368, 37, 41); line(396, 37, 41);   /* the gutter over the worm bed, a pipe each end */
   spitS(382, 32, 'examSpit', { face: -1 });                                   /* on the gutter's roof */
   seep(394, 397, 42);
   block(398, 430, 28, 37); nest('exam', 398, 399, 38, 42);                    /* the nest under the stair's foot */
-  venom(404, 42, 'examBrood'); thirstS(408, 42, 'examBrood'); venom(412, 42, 'examBrood'); oilS(415, 42, 'examBrood');
-  drip(417, 42); oilfire(420, 42); oilfire(426, 42);                         /* a drip before two old oil fires (the thirsty one is after your water) */
+  venom(404, 42, 'examBrood'); thirstS(408, 42, 'examBrood'); fireS(410, 42, 'examBrood'); venom(412, 42, 'examBrood'); oilS(415, 42, 'examBrood');   /* (the fire scorpion is at home in the burning room - and its sting lights the oil again) */
+  seep(398, 416, 42);                                                         /* the brood's room is oiled too (the oil runs under the nest): the nest's fire runs in on them (and on whoever walks in while it burns) */
+  drip(418, 42); oilfire(420, 42); oilfire(426, 42);                         /* a drip (off the oil) before two old oil fires (the thirsty one is after your water) */
   /* the stair up to her door */
   air(431, 446, 26, 42); block(431, 434, 40, 42); block(435, 438, 37, 42); block(439, 451, 34, 42);
   oilS(436, 36, 'stair', { face: -1 });

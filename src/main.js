@@ -19247,7 +19247,7 @@ function updateDesertFoe(e, dt) {
     if (v.t === 'land') { cvS('stoneThud'); dust(v.x, v.y, 3); continue; }
     if (v.t !== 'hit' || P.dead) continue;
     if (v.stone && s.stone && s.stone.t > 0.3 && tileAt(Math.floor(s.stone.x / TS), Math.floor(s.stone.y / TS)) === T.SOLID) {   /* (clear of his own parapet first) */ dust(s.stone.x, s.stone.y, 3); cvS('stoneThud'); s.stone = null; continue; }   /* it breaks on the stone it meets */
-    if (v.stone && L.redgorge) v.dmg = 13;   /* THE RED GORGE (claude/redgorge): a stone slung down off a gorge's lip lands harder than one across a yard (the caravan's 8) */
+    if (v.stone && L.redgorge) v.dmg = 13; if (v.stone && L.underwell && e.cnSkin === 'spitscorpion') v.dmg = 12;   /* (claude/underwell) THE SPITTING SCORPION's glob, down off its perch: as hard as a gorge stone, and venom in it */   /* THE RED GORGE (claude/redgorge): a stone slung down off a gorge's lip lands harder than one across a yard (the caravan's 8) */
     if (v.stone) { const [l, r, t, b] = v.box; if (s.stone && overlap({ l, r, t, b }, box(P))) { s.stone = null; const h0 = P.hp; damagePlayer(v.box[0] + 4, v.dmg, { who: e, name: e.cnSkin === 'spitscorpion' ? 'THE VENOM GLOB' : 'A SLINGSTONE' }); if (UWH && e.cnSkin) UWH.onHit(e, v, P.hp < h0, P); } continue; }   /* a stone is spent on what it hits, blocked or not */
     if (e.cvHit) continue;
     if (DF2H && e.cnSkin === 'firescorpion' && !e.cvFire) { e.cvFire = true; DF2H.onHit(e, v, false, P); }   if (UWH && e.cnSkin) UWH.onBlow(e, v);   /* (claude/underwell) THE OIL SCORPION's sting leaves a slick where it strikes */   /* THE FIRE SCORPION: where the sting lands the ground catches (claude/desertfoes) */
@@ -23543,6 +23543,7 @@ UWH = makeUnderwellHands({ get L() { return L; }, get players() { return players
   asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), cellGet: (x, y) => tileAt(x, y),
   cellOpen: (x, y) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { cellSet(x, y, T.AIR); destroyed.add(y * LW + x); } },   /* a nest burnt away, a vault opened: for good */
   cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },   /* a rope burnt to ash: until a respawn hangs it again */
+  spawn: o => { const n0 = enemies.length; spawnEnt(o); return enemies[n0] || null; },   /* a brood scorpion spilled out of a nest under a blade */
   questGot: () => straysGot.size, questN: () => questOf().n, wt: () => (WTH && WTH.on() ? WTH.state() : null), patches: () => (DF2H && DF2H.on() && DF2H.read() ? DF2H.read().patches : []) });
 MYH = makeMysticHands({ get L() { return L; }, get players() { return players; }, TS, sfx: SFX, hero: () => P, enemies: () => enemies, VW: () => VW,   /* (claude/djinn2) THE BANDIT MYSTICS */
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d, x) => hurtEnemy(e, d, x, false),

@@ -34,7 +34,7 @@ ok(Object.values(ARCS).every(a => Object.keys(a).length >= 2) && Object.keys(ARC
 /* the oil lies on floors */
 const cells = []; for (const [x0, x1, y] of L.seeps) for (let x = x0; x <= x1; x++) cells.push([x, y]);
 const piped = (x, y) => L.lines.some(([lx, a, b]) => lx === x && y + 1 >= a && y + 1 <= b);   /* (a gutter's end over its pipe) */
-const floating = cells.filter(([x, y]) => !((at(x, y) === T.AIR || at(x, y) === T.NET) && standable(at(x, y + 1))) && !(at(x, y + 1) === T.SOLID && at(x, y - 1) === T.SOLID) && !piped(x, y));   /* (a gutter cell: rock over and under; a rope's foot) */
+const floating = cells.filter(([x, y]) => !((at(x, y) === T.AIR || at(x, y) === T.NET) && standable(at(x, y + 1))) && !(at(x, y + 1) === T.SOLID && at(x, y - 1) === T.SOLID) && !piped(x, y) && !L.nests.some(m => x >= m.x0 && x <= m.x1 && y >= m.y0 && y <= m.y1));   /* (a gutter cell: rock over and under; a rope's foot; under a nest, the oil it is soaked in) */
 ok(cells.length > 300 && floating.length === 0, cells.length + ' cells of oil, every one on a floor or in a gutter' + (floating.length ? ' - off: ' + JSON.stringify(floating.slice(0, 6)) : ''));
 const has = (x, y) => cells.some(c => c[0] === x && c[1] === y) || L.lines.some(([lx, a, b]) => lx === x && y >= a && y <= b);
 /* every torch over oil */

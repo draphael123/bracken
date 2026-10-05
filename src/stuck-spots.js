@@ -163,7 +163,7 @@ export const STUCK_HANDS = {
     { id: 'uw-gutter', zone: [244, 36, 262, 45], steps: [
       { key: 'gutterTorch', is: ['torch.gutter', 'up'], at: [257, 43], dy: -4, line: 'THE TORCH AT THE MOUTH OF THE OLD GUTTER' } ] },
     { id: 'uw-exam', zone: [346, 28, 399, 42], steps: [
-      { key: 'examTorch', is: ['nest.exam', 'shut'], at: [364, 40], dy: -4, line: 'A NEST UNDER THE STAIR, AND A TORCH OVER THE OIL' } ] },
+      { key: 'examTorch', is: ['nest.exam', 'shut'], at: [359, 40], dy: -4, line: 'A NEST UNDER THE STAIR, AND A TORCH OVER THE OIL' } ] },
     { id: 'uw-exam-fires', zone: [400, 36, 430, 42], steps: [
       { key: 'examFire1', is: ['fire.420', 'lit'], at: [420, 42], line: 'AN OLD OIL FIRE ACROSS THE WAY' },
       { key: 'examFire2', is: ['fire.426', 'lit'], at: [426, 42], line: 'A SECOND OIL FIRE BEHIND THE FIRST' } ] },
