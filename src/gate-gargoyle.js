@@ -34,7 +34,7 @@
 // PHASE TWO (half his health): his fire SWEEPS after you, the moving slabs drift faster, dives come in pairs, every flare comes with a
 // fireball. Touching him never hurts (the touch rule).
 export const GARG = {
-  hp: 410, stomps: 5, cd: 1.35, cdP2: 0.95,
+  hp: 410, stomps: 6,   /* (claude/bosswave2: 5 -> 6 with the rune column, a second way onto the spikes - the human bot was 86% at 5 before it) */ cd: 1.35, cdP2: 0.95,
   K: 1.5, w: 45, h: 45,                       /* HALF AS BIG AGAIN (he was 30): every read of his size below goes through K */
   tell: { dive: 0.95, fireball: 1.1, breath: 1.5, flare: 0.9 }, tellP2: 0.82, tellP2Not: ['breath'],   /* (2026-09-28: the breath's tell was 0.95, and 0.78 in phase two; it is 1.5 in both) */
   dmg: { dive: 18, fireball: 10, breath: 12, crash: 12 },

@@ -2,7 +2,7 @@
 // Daniel 10-03 (scratch/audit-rules.md): three bosses ignored their level's rule; each gets ONE rule-based opening, retrofitted. And his
 // BOSS WAVE 2 interview: poise fills from heavies only outside an opening, and a mini's opening is worth a third of him at most.
 // Played in the real page through the real input (a swing that meets the winch, the bell, the rune), the boss stood where the test says:
-//   lance     STORMHOLD (THREE GATES): from the middle lookout, the BRIDGE GATE's winch struck while the Lance stands under it brings the bars
+//   lance     STORMHOLD (THREE GATES): from the first tower lookout, the BRIDGE GATE's winch struck while the Lance stands under it brings the bars
 //             down on HIM - planted (lanceOpen), 3 s or more, open; struck while he is a stride off, it only shuts the lane (its tiles close)
 //   gqueen    HIGHCROWN (EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT): the hall bell struck while she stands under its grate pins her
 //             (gqPin, by 'grate'), 3 s or more, open; rung while she is elsewhere it only shuts the hall

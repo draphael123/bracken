@@ -54,7 +54,7 @@ export function lanceSupport(e, dt, io) {
 }
 
 /* THE BRIDGE GATE (claude/bosswave2, Daniel 10-03 from scratch/audit-rules.md: "the Lance ignores his level's rule" - STORMHOLD is
-   THREE GATES). A portcullis hangs under the middle lookout on its own winch, built as the Keep Gate's (a 'winch' with drop, and
+   THREE GATES). A portcullis hangs under the first tower lookout on its own winch, built as the Keep Gate's (a 'winch' with drop, and
    bossGate). From the lookout - where his charge cannot reach you - strike the winch as he runs under it, and the gate comes down
    on HIM: pinned under the bars, the lance useless, open (main.js lanceOpen 'planted', x1.6) for LANCE_GATE.pin s, and the iron's
    own blow lands whole (it is the room's, not the chip's). Struck early or late it is only a gate across his lane: he runs into it

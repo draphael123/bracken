@@ -1361,7 +1361,7 @@ async function runbossLab(BK, opts) {
       const lgate = boss.t === 'lance' && !open ? BK.props().find(p => p.t === 'winch' && p.bossGate && !(p.open > 0)) : null;
       /* HIGHCROWN's hall bell (claude/bosswave2): rung when she stands under its grate and the bell is in reach - a human glancing up at it */
       const hbell = boss.t === 'gqueen' && !open ? BK.props().find(p => p.t === 'winch' && p.bell && !(p.open > 0) && Math.abs(boss.x - (p.gate * 16 + 8)) < 12 + (boss.w || 20) / 2 && Math.abs(p.x - P.x) < 24 && Math.abs(p.y - P.y) < 30) : null;
-      const gateDuty = lgate && ['couch', 'charge', 'rushTell', 'rush'].includes(boss.mode) && Math.abs(lgate.x - P.x) < 110 ? lgate : null;
+      const gateDuty = lgate && ['couch', 'charge', 'rushTell', 'rush'].includes(boss.mode) && Math.abs(lgate.x - P.x) < 220 ? lgate : null;
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
