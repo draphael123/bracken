@@ -217,7 +217,7 @@ try {
    b.hp=Math.round(b.maxHp*0.6);
    take('doused',()=>S.ph===2&&b.mode==='walk'&&S.burn,pourAt);
    b.hp=Math.round(b.maxHp*0.3);
-   take('bailed',()=>S.ph===3&&b.mode==='hover'&&S.bucket.st==='up',()=>{P.x=G.crank-12;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=1;if(P.atk<0)BK.press('atk');});
+   take('bailed',()=>S.ph===3&&S.pose==='column'&&b.mode!=='rise'&&((S.bucket.st==='down'&&!(S.bucket.t>0))||(S.bucket.st==='up'&&Math.abs(b.x-G.mid)<=24&&!(S.ward>0))),()=>{P.x=G.crank-12;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=1;if(P.atk<0)BK.press('atk');});
    out.djinn={alone:+alone.toFixed(1),open:op,n:{mud:S.n.mud,doused:S.n.doused,bailed:S.n.bailed}};}
   if(LEVELS.some(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}))
   {const b=boot('welltown');const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
@@ -328,7 +328,7 @@ try {
   assert.ok(r.puppeteer.slackMode === 'slack' && r.puppeteer.slackOpen === 0, 'THE PUPPETEER: both puppets down opened him by itself (THEATRE3: his bar goes slack; only the cut opens him): ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'downed' && r.puppeteer.open >= 3 && r.puppeteer.onStage,   /* (THEATRE3: drop both puppets, climb, cut the slack bar - he falls to the boards, open >= 3 s) */ 'both puppets cut down and his slack bar cut, he did not come down open: ' + JSON.stringify(r.puppeteer));
   assert.equal(r.djinn.alone, 0, 'THE DJINN: a minute of him left alone opened him: ' + JSON.stringify(r.djinn));
-  assert.ok(r.djinn.open.mud >= 2.4 && r.djinn.open.doused >= 3 && r.djinn.open.bailed >= 3, 'his three water openings (mud >= 2.4 s - claude/djinn2, Daniel 10-03: the mud window 3.2 -> ~2.5 s; the douse and the bail 3 s or more) are not that long: ' + JSON.stringify(r.djinn));
+  assert.ok(r.djinn.open.mud >= 3.3 && r.djinn.open.doused >= 3.8 && r.djinn.open.bailed >= 3.8, 'his three water openings (claude/djinn3, Daniel 10-04: stunned longer - mud >= 3.3 s, the douse and the bail >= 3.8; the bail is two steps: wind the bucket up, drop it when he is under the shaft) (mud >= 2.4 s - claude/djinn2, Daniel 10-03: the mud window 3.2 -> ~2.5 s; the douse and the bail 3 s or more) are not that long: ' + JSON.stringify(r.djinn));
   if (r.cisternqueen) {
   assert.equal(r.cisternqueen.alone, 0, 'THE CISTERN QUEEN: a minute of her left alone opened her: ' + JSON.stringify(r.cisternqueen));
   assert.ok(r.cisternqueen.dry === 0 && r.cisternqueen.drySips === 3, 'E at her on the open floor opened her (or spent a sip on nothing: the HUD never says POUR there): ' + JSON.stringify(r.cisternqueen));

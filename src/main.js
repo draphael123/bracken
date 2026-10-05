@@ -23455,6 +23455,7 @@ GLH = GLM.makeGangLeaderHands({ get L() { return L; }, get players() { return pl
 DJH = makeDjinnHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), duckBox: b => duckBox(b), attackBox: () => attackBox(),
+  banner: (t, sub, col) => ambushSay(t, sub, col || '#ffd36b', 2.4),   /* (claude/djinn3) THE TURN of his fight: a banner over the screen */
   music: n => { if (bossActive) music.play(n); } });   /* (THE DJINN, claude/welltown5: his hall keeps the boss room's theme; fire and flood play its second and third voicings) */
 CQH = makeCisternQueenHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n),

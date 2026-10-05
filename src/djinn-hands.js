@@ -7,7 +7,6 @@
 // through ctx.number with a line listed in src/hint-lines.js.
 import * as DJG from './djinn.js';
 import * as DJA from './redraw/djinn_art.js';
-import * as CQA from './redraw/cistern_queen_art.js';
 const { DJ } = DJG;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), lash: s => (s.slash || s.heavy)(), blast: s => (s.rubble || s.thud)(), devil: s => (s.whoosh || s.throwWhoosh || s.slash)(),
@@ -15,7 +14,10 @@ const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.t
   wave: s => (s.wave || s.splash)(), slam: s => (s.heavy || s.thud)(), soak: s => { (s.splash)(); (s.hiss || s.thud)(); }, windlass: s => { (s.clank)(); s.ratchet && s.ratchet(); }, splash: s => (s.whirlpool || s.splash)(),
   flood: s => { (s.whirlpool || s.splash)(); (s.roar || s.heavy)(); },
   ward: s => { (s.chime || s.golemChime || s.clank)(); (s.whoosh || s.throwWhoosh || s.hiss || s.splash)(); },   /* (claude/djinn2) HIS WARD rises: a ring and a rush */
-  seal: s => { (s.rubble || s.thud)(); (s.boreRoar || s.roar || s.heavy)(); } };
+  seal: s => { (s.rubble || s.thud)(); (s.boreRoar || s.roar || s.heavy)(); },
+  /* (claude/djinn3) THE TURNS and THE TIDE: the sand falls in, the fire hisses out, the well surges (a deep roar and a rush) */
+  collapse: s => { (s.rubble || s.thud)(); (s.whoosh || s.throwWhoosh || s.slash)(); }, hiss: s => { (s.hiss || s.splash)(); (s.whirlpool || s.splash)(); },
+  surge: s => { (s.boreRoar || s.roar || s.heavy)(); (s.whirlpool || s.splash)(); } };
 
 export function makeDjinnHands(ctx) {
   let S = null, wls = [];
@@ -43,6 +45,7 @@ export function makeDjinnHands(ctx) {
   function world(e) {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), music: ph => ctx.music && ctx.music(ph === 3 ? 'cisternqueen:p3' : 'cisternqueen:p2'),
+      banner: (t, sub, col) => { if (S) S.n.banners = (S.n.banners || 0) + 1; if (ctx.banner) ctx.banner(t, sub, col); },   /* (claude/djinn3) THE TURN's banner, over the screen */
       mark: m => ctx.number(e.x, e.y - (S.pose === 'column' ? 150 : DJ.markH), m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       fx: (k, x, y) => {
         if (k === 'mud') ctx.burst(x, y - 30, 18, ['#6e4a2c', '#8a6a3e', '#7ab8e8'], 70, 0.7);
@@ -51,10 +54,11 @@ export function makeDjinnHands(ctx) {
         else if (k === 'splash') ctx.burst(x, y - 6, 18, ['#7ab8e8', '#e8f4f8', '#3a7ab8'], 90, 0.6);
         else if (k === 'sand') ctx.dust(x, y, 3); },
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
-        if (o.flood && (pp.climb || onLedgeOf(pp, S.G))) return;
+        if (o.flood && pp.y < S.G.floor - S.water + 4) return;   /* (claude/djinn3: THE TIDE - the flood takes whoever stands in it, a ledge too when it is under; feet above the water are dry) */
         if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
         const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock }));
         if (o.flood && !S.told.flood) { S.told.flood = 1; ctx.number(P.x, P.y - 30, 'THE FLOOD COSTS YOU: THE LEDGES ARE DRY', '#7ab8e8'); }
+        if (o.deep && !S.told.deep) { S.told.deep = 1; ctx.number(P.x, P.y - 30, 'THE DEEP WATER: GET UP ON A LEDGE', '#ff9a5c'); }
         if (o.ignite && P.hp < hp0) ignite(P); if (o.onHit) o.onHit(); }); },
       band: (kind, [t, b], x0, x1, d, name, key, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
         if (P.x < x0 || P.x > x1) return; const hb = kind === 'high' ? ctx.duckBox(P) : ctx.box(P); if (!(hb.b > t && hb.t < b) || keyed(pp, key)) return;
@@ -97,7 +101,7 @@ export function makeDjinnHands(ctx) {
     /* THE FIRST TIME: what a blade does to him, and where the water is */
     if (!S.told.how && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.how = 1; ctx.number(e.x, e.y - 120, 'A BLADE PASSES THROUGH SAND: POUR WATER ON HIM', '#ffd36b'); }
     if (!S.told.basin && ctx.players.some(pp => pp.skin && pp.skin.sips <= 0) && S.ph < 3) { S.told.basin = 1; ctx.number(S.G.basinW, S.G.floor - 40, 'THE SPRINGS REFILL YOUR SKIN', '#7ab8e8'); }
-    if (S.ph === 3 && !S.told.crank && e.mode === 'hover') { S.told.crank = 1; ctx.number(S.G.windlass, S.G.floor - 70, 'THE WINDLASS OR THE CRANK: DROP THE BUCKET ON HIM', '#7ab8e8'); }
+    if (S.ph === 3 && !S.told.crank && e.mode === 'hover') { S.told.crank = 1; ctx.number(S.G.windlass, S.G.floor - 70, 'THE WINDLASS OR THE CRANK: WIND THE BUCKET UP, THEN DROP IT ON HIM', '#7ab8e8'); }
   };
   /* ---------- A BLOW ON HIM: in a water opening x openMul (one opening takes at most openCap); his slammed hand in phase three, whole (at most handCap a
      slam); anything else passes through sand, is turned by fire, or splashes through water (0) ---------- */
@@ -105,6 +109,7 @@ export function makeDjinnHands(ctx) {
     if (DJG.djOpen(e)) { const cap = e.maxHp * DJ.openCap, d = Math.min(dmg * DJ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
       if (S.openTaken >= cap - 0.01 && e.open > 0.4) { e.open = 0.4; ctx.number(e.x, e.y - 90, e.mode === 'mud' ? 'THE MUD CRACKS: HE IS SAND AGAIN' : 'HE GATHERS HIMSELF', '#9aa39a'); } return d; }
     if (e.mode === 'sleep' || e.mode === 'wake') return 0;
+    if (DJG.TURNING.has(e.mode)) { e.passFx = 0.25; return 0; }   /* (claude/djinn3) HE IS TURNING: nothing takes, nothing is said - a breather both ways */
     const hd = DJG.handOut(S), hb = ctx.attackBox();
     if (hd && hb && ctx.overlap(hb, DJG.handBox(hd))) { const cap = e.maxHp * DJ.handCap, d = Math.min(dmg * DJ.handMul, Math.max(0, cap - (hd.taken || 0))); hd.taken = (hd.taken || 0) + d; S.n.handHits++;
       ctx.burst(hd.x, hd.y - 4, 6, ['#7ab8e8', '#e8f4f8'], 60, 0.4); if (hd.taken >= cap - 0.01 && hd.stay > 0.2) hd.stay = 0.2; return d; }
@@ -124,16 +129,19 @@ export function makeDjinnHands(ctx) {
       if (P.djBurn > 0) { P.djBurn = 0; ctx.burst(P.x, P.y - 16, 12, ['#e8f4f8', '#7ab8e8', '#9aa39a'], 50, 0.7); ctx.number(P.x, P.y - 30, 'THE WATER PUTS YOU OUT', '#7ab8e8'); return 'self'; }
       const r = DJG.pourAt(e, S, heroOf(P), world(e)); if (r === 'wasted') ctx.number(P.x, P.y - 30, 'IT RUNS INTO THE SAND', '#9aa39a'); return r; },
   };
-  H.barName = e => 'THE DJINN' + (DJG.djOpen(e) ? (e.mode === 'mud' ? '  MUD' : e.mode === 'doused' ? '  DOUSED' : '  BAILED OUT') : S && S.ward > 0 ? '  WARDED' : S && S.ph === 1 ? '  SAND' : S && S.ph === 2 ? (S.burn ? '  ALIGHT' : '  SMOKE') : S && S.ph === 3 ? '  THE WELL' : '');
+  H.barName = e => 'THE DJINN' + (DJG.djOpen(e) ? (e.mode === 'mud' ? '  MUD' : e.mode === 'doused' ? '  DOUSED' : '  BAILED OUT') : DJG.TURNING.has(e.mode) ? '  TURNING' : S && S.ward > 0 ? '  WARDED' : S && S.ph === 1 ? '  SAND' : S && S.ph === 2 ? (S.burn ? '  ALIGHT' : '  SMOKE') : S && S.ph === 3 ? (DJG.tideHigh(S) ? '  THE WELL SURGES' : '  THE WELL') : '');
   H.end = e => { if (S) { S.bands = []; S.shots = []; S.marks = []; S.hand = null; if (S.held) { const h = S.held; if (h.pp && h.pp.snare > 0) h.pp.snare = 0; S.held = null; } } for (const pp of ctx.players) { pp.djBurn = 0; if (pp.snare > 0) pp.snare = 0; } };
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), water: S.water, burn: S.burn, ward: S.ward, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) } };
+  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), water: S.water, burn: S.burn, ward: S.ward, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) },
+    tide: S.tide && S.tide.st, under: !!(ctx.boss && DJG.underShaft(ctx.boss, S)), x: ctx.boss && ctx.boss.x };
 
   /* ---------- DRAWING ---------- */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.passFx = Math.max(0, (e.passFx || 0) - 1 / 60); DJA.drawDjinn(g, e, S, R(e.x - cx), R(e.y - cy), time); };
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     DJA.drawSeal(g, R(G.seal.x - cx), R(G.seal.y - cy), ctx.boss && ctx.boss.t === 'djinn' && ctx.boss.mode === 'sleep' ? -1 : (S.sealT || 9), time);   /* THE LAST SEAL (claude/djinn2): whole and glowing until he wakes, then cracked */
-    for (const w of wls) CQA.drawWindlass(g, R(w.x - cx), R(w.y - cy), S.bucket, time);
-    CQA.drawBucket(g, R(G.mid - cx), R(G.vault - cy), S.bucket, DJ, time); };
+    /* (claude/djinn3) the windlass turns while the bucket winds up; the great bucket lies in the flood, winds up, hangs cocked, drops - and THE SHAFT'S LIGHT falls where it lands */
+    DJA.drawShaftLight(g, R(G.mid - cx), R(G.vault - cy), R(G.floor - cy), S, ctx.boss, time);
+    for (const w of wls) DJA.drawWindlass(g, R(w.x - cx), R(w.y - cy), S.bucket, time);
+    DJA.drawBucket(g, R(G.mid - cx), R(G.vault - cy), R(G.floor - cy), S, time); };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'djinn') return;
     DJA.drawOver(g, e, S, cx, cy, time);
     for (const pp of ctx.players) if (pp.djBurn > 0 && !pp.dead) { const x = R(pp.x - cx), y = R(pp.y - cy); for (let k = 0; k < 4; k++) { g.fillStyle = k % 2 ? '#ff9a3c' : '#ffd36b'; g.fillRect(x - 6 + k * 3, y - 18 - R(5 * Math.abs(Math.sin(time * 12 + k))), 2, 7); } } };
