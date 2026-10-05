@@ -66,7 +66,7 @@
 import { facedBy, nearestHero } from './mummer.js';
 
 export const WQ = {
-  hp: 2900,   /* (claude/bosswave2: 2140 -> 2900 with the burning x1.3, measured with nudged starts so a rate is not one of seven steps) */ w: 22, h: 60,             // (claude/fairfix5: 1100 before - her new self-alight windows and the unified x1.2 put the human bot at 6/7; swept 1150-1800 on the batch64 heroes (LEVELING): 1150/1300 4/7, 1500 2/7, 1650 1/7, 1800 0/7 - tools/combat-pilots.mjs, 7 heroes)             // (claude/fairfix4: 640 before. At the fair's campaign depth (hero level 23) a knight cut 640 away in four burns, 26-56 s; tools/combat-pilots.mjs)
+  hp: 2850,   /* (claude/bosswave2: 2140 -> 2850 with the burning x1.3, measured with nudged starts so a rate is not one of seven steps) */ w: 22, h: 60,             // (claude/fairfix5: 1100 before - her new self-alight windows and the unified x1.2 put the human bot at 6/7; swept 1150-1800 on the batch64 heroes (LEVELING): 1150/1300 4/7, 1500 2/7, 1650 1/7, 1800 0/7 - tools/combat-pilots.mjs, 7 heroes)             // (claude/fairfix4: 640 before. At the fair's campaign depth (hero level 23) a knight cut 640 away in four burns, 26-56 s; tools/combat-pilots.mjs)
   creep: 68, creepP3: 90,             // px/s while nobody looks (a hero runs 92; she is never faster). The ride's carry is on top of it (claude/fairfix3: 58 / 88 before)
   sight: 720, sightY: 170,            // the look reaches across the whole ride (phases 1 and 3)
   nearR: 96, nearY: 64,               // PHASE 2, FULL DARK: the look reaches only this far (a radius on the side you face)
