@@ -26138,8 +26138,8 @@ function bakeBarnWall(tw, th, seed) { const W = tw * TS, H = th * TS, rnd = mulb
   for (let k = 0; k < Math.max(2, tw / 12); k++) { const x = Math.floor(rnd() * (W - 20)), y = Math.floor(H * 0.2 + rnd() * H * 0.45); q.fillStyle = '#ff7a2c'; q.fillRect(x, y, 1, 8 + Math.floor(rnd() * 10)); q.fillStyle = '#7a2a14'; q.fillRect(x + 1, y + 2, 1, 6); }
   return c; }
 function drawFacades(cx, cy) {
-  if (HIDE.facades) return;
-  for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f;
+  if (HIDE.facades === true) return;
+  for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f; if (HIDE.facades && HIDE.facades.includes(kind)) continue;   /* (claude/unburied4: a list of kinds hides just those) */
     const sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy), w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
     if (!f.spr && kind === 'townrow') f.spr = bakeTownRow(x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7);   /* STORMHOLD: the houses behind the square (src/redraw/stone-town.js) */
@@ -26182,7 +26182,7 @@ function drawStructures(cx,cy) {
   for(const z of L.structures||[]){const l=z.x0*TS-cx,r=(z.x1+1)*TS-cx,t=z.top*TS-cy,b=z.floor*TS-cy;if(r<0||l>VW||b<0||t>VH)continue;
     if(z.kind==='seam'){drawBurialSeam(g,l,r,t,b);continue;}
     if(z.kind==='cryptPier'){drawCryptPier(g,l,r,t,b);continue;}   /* a pier of the Drowned Ossuary's arcade under its stone walkway */   /* a pillar where two of the Burial Caverns' backdrops meet (src/burial-looks.js) */
-    if(z.kind==='ubtrestle'){UBS.drawTrestle(g,l,r,t,b,z.x0);continue;}   /* the field's gun-deck trestles: real siege timber (src/redraw/unburied_siege.js) */
+    if(String(z.kind).startsWith('ub')){UBS.drawStructure(g,z.kind,l,r,t,b,z.x0);continue;}   /* the field's gun-deck trestles, and (claude/unburied4) the piers, cart frames and shores that hold its ledges up (src/redraw/unburied_siege.js) */
     if(z.kind==='chains'){for(const x of [l+4,r-5])for(let yy=t;yy<b;yy+=4){g.fillStyle=(yy/4)&1?'#5d594e':'#9a958c';g.fillRect(x,yy,(yy/4)&1?1:3,3);g.fillStyle='#3a3630';g.fillRect(x+((yy/4)&1?0:1),yy+1,1,1);}continue;}   /* a platform HUNG from the roof on two chains (B9), not stood on a pier: the Buried Dead's crown bier */
     g.fillStyle=z.kind==='timber'?'#755b43':'#827a67';
     for(const x of [l+3,r-7]){g.fillRect(x,t,z.kind==='timber'?4:10,b-t);g.fillStyle=z.kind==='timber'?'#a18a61':'#b3a58b';g.fillRect(x,t,1,b-t);if(z.kind!=='timber'){g.fillStyle='#5d594e';for(let yy=t+8;yy<b;yy+=8)g.fillRect(x,yy,10,1);}}
@@ -26270,6 +26270,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.underground) drawRoom('mine', -(((cx % TS) + TS) % TS), -(((cy % TS) + TS) % TS), VW + TS, VH + TS, Math.floor(cx / TS), Math.floor(cy / TS));
   if (L.witch && !L.colosseum) drawWitchLandmarks(g, L, cx, cy, time, VW, VH);
   if (L.oreRoad) { const dl = drumLine(); drawOreStructures(g, L, cx, cy, time, VW, VH, dl ? dl.t / 22 : 0); }   /* THE ORE ROAD: the pylon, the tower's timber, the loft, the great drum */   /* THE WITCHLIGHT STAIR: its arches, its colonnade, its statues, its orrery ring */
+  if (HIDE.back) { g.fillStyle = HIDE.back; g.fillRect(0, 0, VW, VH); }   /* (claude/unburied4) BK.hide.back = a colour: the backdrop as one flat colour, so tools/unburied-aloft.mjs can see what stands in front of the sky */
   drawFacades(cx, cy);
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) {
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;

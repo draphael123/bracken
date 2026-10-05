@@ -3,8 +3,8 @@
 //   THE WALL (facade 'ubwall', cols 326-376): the Order's curtain wall and gatehouse standing IN the play layer behind the tiles, banners red and gold (the Order's colours on the chapel,
 //     the host's slate in the west: Daniel 10-03), arrow slits, a lit window, the breach in the yard wall; the Rider's PORT (tiles) is the portcullis in the gate arch
 //   THE NAVE (facade 'ubnave', cols 360-433): the yard's broken west wall, the nave's back wall with lancet windows lit ember, buttresses, broken roof trusses against the sky, pews against the wall,
-//     the crypt door at the ambush, the crypt tomb's corbels
-//   THE APSE (facade 'ubapse', cols 434-479): the arena - the apse, the altar, a ROSE WINDOW in cold violet glass behind the Death Knight (never red, never green: his tells are), the two tomb ledges on corbels
+//     the crypt door at the ambush, the crypt tomb (on piers: R.structures)
+//   THE APSE (facade 'ubapse', cols 434-479): the arena - the apse, the altar, a ROSE WINDOW in cold violet glass behind the Death Knight (never red, never green: his tells are), the two tomb ledges on piers (R.structures)
 //     built into the wall, moonlight through the broken roof
 //   THE GREAT STANDARD (facade 'ubstandard'): the host's war banner on its barrow, 30 rows tall
 import { K, canvas, px, rect, fillPoly, line, circle, ellipse, outline, beam, post, wheel, pennant, rnd } from './unburied_art.js';
@@ -86,6 +86,10 @@ export function bakeWall() {
   for (const [bx, by, hh] of [[X(352) + 6, Y(22), 56], [X(359) + 4, Y(22), 64]]) { rect(g, bx - 4, by - 3, 18, 2, K.wood3); fillPoly(g, [[bx - 3, by - 1], [bx + 13, by - 1], [bx + 13, by + hh], [bx + 5, by + hh - 9], [bx - 3, by + hh]], K.red2); rect(g, bx - 3, by - 1, 2, hh, K.red1); rect(g, bx + 8, by + 8, 3, 26, K.gold2); rect(g, bx + 2, by + 17, 14, 3, K.gold2); }
   /* the gate arch: the pointed stone frame the portcullis hangs in, the dark of the passage in it */
   const ax0 = X(355), ax1 = X(358), ay = Y(32);
+  /* (claude/unburied4, Daniel 10-05 "this is floating": the gallery and the drawbridge's walk crossed the gap between the two towers with the sky under them - the gatehouse had
+     no middle. It has one now: the gate passage's block of ashlar between the towers, from the wall-walk down to the arch, with the portcullis slot and two murder holes in it) */
+  ashlar(g, ax0, Y(21), ax1 - ax0, Y(37) - Y(21), '#3a3638', '#504c4e', wd, 355, 0.04); rect(g, ax0, Y(21), ax1 - ax0, 2, '#5a5658');
+  rect(g, ax0 + 6, Y(27), ax1 - ax0 - 12, 3, '#0e0a0c'); for (const mx of [ax0 + 12, ax1 - 16]) rect(g, mx, Y(25), 4, 4, '#0e0a0c');
   fillPoly(g, [[ax0 - 6, Y(37)], [ax0 - 6, ay - 8], [(ax0 + ax1) / 2, ay - 40], [ax1 + 6, ay - 8], [ax1 + 6, Y(37)]], '#5a5658');
   fillPoly(g, [[ax0, Y(37)], [ax0, ay - 4], [(ax0 + ax1) / 2, ay - 32], [ax1, ay - 4], [ax1, Y(37)]], '#0e0a0c');
   for (let i = 0; i < 9; i++) { const t = i / 8, x = ax0 - 6 + (ax1 - ax0 + 12) * t; px(g, Math.round(x), ay - 8 - Math.round(Math.sin(t * Math.PI) * 30), '#8a8688'); }
@@ -127,14 +131,14 @@ export function bakeNave() {
   for (const [a, b] of [[408, 416], [422, 432]]) for (let x = X(a); x < X(b) - 10; x += 36) { const o = ((x * 7) % 3), by = H - 14, tip = (x / 36 | 0) % 4 === 1;
     if (tip) { fillPoly(g, [[x, by + 12], [x + 30, by + 6], [x + 32, by + 10], [x + 2, by + 14]], K.wood2); rect(g, x + 2, by - 4, 4, 14, K.wood3); continue; }
     rect(g, x, by + 4, 30, 4, K.wood3); rect(g, x, by + 4, 30, 1, K.wood5); rect(g, x + 2, by + 8, 3, 6, K.wood1); rect(g, x + 25, by + 8, 3, 6, K.wood1); rect(g, x, by - 6 + o, 30, 3, K.wood2); rect(g, x + 2, by - 3 + o, 3, 7, K.wood1); rect(g, x + 25, by - 3 + o, 3, 7, K.wood1); }
-  /* THE CRYPT TOMB'S CORBELS (the ledge at 380-384, row 34): stepped stones built into the wall under its lid; and effigy lids' long shapes need no more */
-  for (const cx of [X(380), X(384)]) { for (let i = 0; i < 3; i++) { rect(g, cx + 3 - i * 2, Y(35) + i * 5, 10 + i * 4, 5, i % 2 ? '#4a4648' : '#5a5658'); rect(g, cx + 3 - i * 2, Y(35) + i * 5, 10 + i * 4, 1, '#7a7678'); } }
+  /* THE CRYPT TOMB (the ledge at 380-384, row 34) */
+  /* (claude/unburied4: its corbels stood out of the wall over nothing - the lid stands on two piers now, R.structures 'ubpier', drawn in the play layer by src/redraw/unburied_siege.js drawPier) */
   return outline(c, '#120c10');
 }
 
 // ================================================================ THE APSE (cols 434-479, rows 6-36) ================================================================
 /* facade [434, 479, 6, 36]: 46 x 31 tiles = 736 x 496. Origin (434, 6). The nave's east end where the Death Knight holds the room: an apse with a rose window of COLD VIOLET glass, an altar, side
-   arcades into the dark, the two tomb-shelves on corbels, the vault broken open to the moon. Nothing red or green and bright stands here: his tells are those colours */
+   arcades into the dark, the two tomb-shelves on their piers, the vault broken open to the moon. Nothing red or green and bright stands here: his tells are those colours */
 export function bakeApse() {
   const W = 46 * 16, H = 31 * 16, [c, g] = canvas(W, H), r = rnd(434), X = col => (col - 434) * 16, Y = row => (row - 6) * 16;
   const wb = '#34303c', wl = '#4e4a58', wd = '#1e1a26';   /* the stone gone cold: a violet-grey, not the nave's warm one */
@@ -163,8 +167,9 @@ export function bakeApse() {
   /* the wings' arcades: pointed arches on short piers into the dark of the side aisles, cold lancets above them */
   for (const [a, b] of [[436, 450], [470, 478]]) for (let col = a; col <= b - 4; col += 6) { const x = X(col); fillPoly(g, [[x, H], [x, Y(28)], [x + 24, Y(23)], [x + 48, Y(28)], [x + 48, H]], '#14101c'); line(g, x, Y(28), x + 24, Y(23), '#6a667a'); line(g, x + 24, Y(23), x + 48, Y(28), '#6a667a'); rect(g, x - 5, Y(27), 6, H - Y(27), '#4e4a58'); rect(g, x - 5, Y(27), 1, H - Y(27), '#7a768a'); }
   for (const col of [438, 445, 474]) lancet(g, X(col), Y(14), 20, 66, ['#5a4ca0', '#9a8ae0'], '#5a566a', '#1e1a30');
-  /* THE TOMB-SHELVES (the ledges at 442-445 and 462-465, row 34): each lid sits on a pair of stepped corbels built into the wall under it - the effigies lie in the wall, not on the floor */
-  for (const [a, b] of [[442, 445], [462, 465]]) for (const cx of [X(a), X(b)]) for (let i = 0; i < 3; i++) { rect(g, cx + 2 - i * 2, Y(35) + i * 5, 12 + i * 4, 5, i % 2 ? '#464254' : '#56526a'); rect(g, cx + 2 - i * 2, Y(35) + i * 5, 12 + i * 4, 1, '#8a869a'); }
+  /* THE TOMB-SHELVES (the ledges at 442-445 and 462-465, row 34) */
+  /* (claude/unburied4, Daniel 10-05: "floating things" - the stepped corbels read as pedestals hung in the air in front of the dark arcades. Each lid stands on two stone piers now,
+     R.structures 'ubpierCold', drawn in the play layer by src/redraw/unburied_siege.js drawPier) */
   /* MOONLIGHT through the broken vault: three long pale shafts down onto the floor, faint, cold (drawn here, behind the actors) */
   for (const [x, w, k] of [[X(441), 36, 0.1], [X(456), 50, 0.12], [X(472), 30, 0.09]]) alpha(g, k, () => fillPoly(g, [[x, 0], [x + w, 0], [x + w + 90, H], [x + 60, H]], '#c8d2ff'));
   return outline(c, '#120c14');
