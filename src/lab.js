@@ -9,7 +9,7 @@ import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate,
 import { MARK, HEIGHT } from './marks.js';
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
-import { boneGaps as mageBoneGaps, MAGE as UMAGE } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
+import { boneGaps as mageBoneGaps, MAGE as UMAGE, orbitWorlds as mageOrbitWorlds } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
@@ -724,6 +724,11 @@ async function runbossLab(BK, opts) {
         {const B=boss.bones;if(B&&B.live){const k=B.t/UMAGE.bone.secs,R=UMAGE.bone.r0+(UMAGE.bone.r1-UMAGE.bone.r0)*k,d0=Math.hypot(P.x-B.cx,py-B.cy);
           if(d0<R+14){const me=Math.atan2(py-B.cy,P.x-B.cx);let best=null,bd=9;for(const a of mageBoneGaps(B,Math.min(1,k+0.18))){let d=Math.abs(((a-me)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI);if(d<bd){bd=d;best=a;}}
             if(best!==null){const tx=B.cx+Math.cos(best)*(R+40),ty=B.cy+Math.sin(best)*(R+40),ex=tx-P.x,ey=ty-py,dd=Math.hypot(ex,ey)||1;vx+=ex/dd*3;vy+=ey/dd*3;threat=true;}}}}
+        /* ARCHMAGE3 (claude/archmage3): HIS ORRERY - it keeps to the nearest clear ring between two orbits (or out past the last) and away from any world near it;
+           THE GRAVE SCRIPT - it flies to the dark line while the lines are written */
+        {const O=boss.orbit;if(O){const ex=P.x-O.cx,ey=py-O.cy,d=Math.hypot(ex,ey)||1,R=O.worlds.map(w=>w.R),safe=R.slice(1).map((r,i)=>(r+R[i])/2).concat([R[R.length-1]+34]);let want=safe[0];for(const r of safe)if(Math.abs(r-d)<Math.abs(want-d))want=r;
+          if(Math.abs(want-d)>6){const s=Math.sign(want-d);vx+=ex/d*s*2;vy+=ey/d*s*2;}threat=true;for(const [wx,wy] of mageOrbitWorlds(O,O.live?O.t+0.15:0))away(wx,wy,UMAGE.orbit.r+30,2.5);}}
+        {const S=boss.script;if(S&&boss.mode==='scriptTell'){const sy=S.y0+(S.safe+0.5)*S.h;if(Math.abs(sy-py)>S.h*0.25)vy+=Math.sign(sy-py)*3;threat=true;}}
         for(const q of boss.echoes||[])if(q.markX!==null&&q.markX!==undefined&&Math.abs(P.x-q.markX)<44){vx+=P.x>=q.markX?1:-1;threat=true;}
         if(boss.void&&boss.void.live){const V=boss.void,ex=P.x-V.x,ey=py-V.y,d=Math.hypot(ex,ey)||1;if(d<200){vx+=ex/d*1.6;vy+=ey/d*0.8;}if(d<70)threat=true;}
         if(boss.deathMark)away(boss.deathMark.x,boss.deathMark.y,boss.deathMark.r+18,2);
@@ -738,6 +743,8 @@ async function runbossLab(BK, opts) {
         for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
           if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
+          /* (claude/archmage3, Daniel 10-05) HIS FIREBOLT CAN BE STRUCK BACK - home, it breaks his ward: the bot swings at one in its reach (a human hand: it tries about two in three, decided once a bolt), and otherwise guards or dodges it as ever */
+          if(q.kind==='fire'&&!q.echo&&!q.reflected&&!boss.realm&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;const ahead=(q.x-P.x)*Math.sign(-q.vx||1)<0;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;void ahead;continue;}}
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
           if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
@@ -2000,6 +2007,23 @@ export function chaseClimb(BK, m, o = {}) {
       if (nxt) { const cur = seq[at], lip = walk > 0 ? (cur[0] + cur[1]) * 16 - P.x : P.x - cur[0] * 16, near = walk > 0 ? nxt[0] * 16 - P.x : P.x - (nxt[0] + nxt[1]) * 16;
         if (near > lip + 4 ? lip < 4 : near < 18 && nxt[2] < cur[2]) leap = true; }
       else if (at < 0 && !G[Math.floor(P.y / 16) * W + Math.floor((P.x + walk * 3) / 16)]) leap = true; }   /* off the list (a landing it fell to): the old rule, jump at an edge */
+    /* THE ORRERY LOFT (claude/archmage3): no stair - it waits at the lip of the ledge it boards from (the board step for the inner wheel, the pier for
+       the outer) until a world comes up level with it, and steps on; on the inner world it stands still and walks off onto the pier as the
+       world comes down past it; on the outer it JUMPS for the landing at the top of the turn */
+    { const fo = Math.min(F.length - 1, k + 1), O = F[fo];
+      if (O.orrery && P.ground) { const d = O.dir, seq = [F[fo - 1].land, ...O.steps, O.land], on = P.onMover && P.onMover.orrery ? P.onMover : null, ms = BK.movers().filter(m => m.orrery);
+        const lipOf = q => d > 0 ? (q[0] + q[1]) * 16 : q[0] * 16, nearOf = q => d > 0 ? q[0] * 16 : (q[0] + q[1]) * 16, feet = P.y;
+        if (on) { const nx = on.orrery === 'A' ? seq[2] : seq[3], top = nx[2] * 16, lead = d > 0 ? on.x + on.w : on.x, gap = (nearOf(nx) - lead) * d;
+          BK.keys.right = BK.keys.left = false; leap = false;
+          const fromBack = d > 0 ? P.x - on.x : on.x + on.w - P.x; if (fromBack < on.w - 8) { BK.keys.right = d > 0; BK.keys.left = d < 0; }   /* to the front of the world first: the step off is short */
+          if (on.orrery === 'A') { if (gap < 12 && feet - top < 3) { BK.keys.right = d > 0; BK.keys.left = d < 0; } }
+          else if (top - feet > -16 && top < feet && gap < 40 && on.dy >= -0.2 && (on.x - (on.px - on.w / 2)) * d > -6) { BK.keys.right = d > 0; BK.keys.left = d < 0; leap = true; } }
+        else { const at = seq.findIndex(([x0, len, row]) => Math.abs(row * 16 - feet) < 3 && P.x / 16 >= x0 - 0.4 && P.x / 16 <= x0 + len + 0.4);
+          if (at === 1 || at === 2) { const q = seq[at], id = at === 1 ? 'A' : 'B', lip = lipOf(q), toLip = (lip - P.x) * d;
+            BK.keys.right = BK.keys.left = false; leap = false;
+            if (toLip > 7) { BK.keys.right = d > 0; BK.keys.left = d < 0; }
+            else { const top = q[2] * 16, ready = ms.some(m => m.orrery === id && m.dy < 0 && m.y - top > 2 && m.y - top < 14 && Math.abs((d > 0 ? m.x : m.x + m.w) - lip) < 16);
+              if (ready) { BK.keys.right = d > 0; BK.keys.left = d < 0; } still = 0; } } } } }
     /* THE NEW FLIGHTS (claude/archmage2b): it waits out a clock weight's swing (it walks on only when no weight meets it on the way, unless
        where it stands is no safer), and it meets his books - a held guard turns them; the rest jump them as they come */
     const fx = BK.chase && BK.chase.stairFx && BK.chase.stairFx();
