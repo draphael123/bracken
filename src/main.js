@@ -15902,7 +15902,7 @@ function updateRoadman(e, dt) {
         if (e.modeT <= 0) { e.mode = 'leap'; e.modeT = 1.1; e.vy = -430; e.vx = Math.sign(d) * 150; SFX.pJump(); }
         break;
       case 'leap': want = e.vx;
-        if (e.vy >= 0 && e.ground) { e.mode = 'rest'; e.modeT = 0.9; e.cd = 1.4; e.leapT = L.trial ? 2 + Math.random() : 5 + Math.random() * 3; shakeCam(5); SFX.heavy(); dust(e.x, e.y, 10);
+        if (e.vy >= 0 && e.ground) { e.mode = 'rest'; e.modeT = 0.9; e.cd = 1.4; e.face = Math.sign(d) || e.face;   /* HE LANDS FACING YOU (tokensfix2): the leap carries him a body-length past a hero who stood still, and he used to land facing AWAY and stand through the rest and then a third of a second more of faceHim's turn - a statue by the attack-tokens check (waymeet, 18.6 s / 33.3 s). A landing is a re-plant: he turns on it, in the rest that is the hero's opening anyway */ e.leapT = L.trial ? 2 + Math.random() : 5 + Math.random() * 3; shakeCam(5); SFX.heavy(); dust(e.x, e.y, 10);
           if (!P.dead && ad < 26 && dy < 24 && P.ground) { const res = damagePlayer(e.x, DMG.hedgeLeap, { unblockable: true, up: true, blow: 'THE LEAP' }); if (L.trial && res === false && P.dodge > 0) trialEvent('tellR'); }   /* (blow: he has already landed in 'rest' when it hits, so the line names it by hand) */
           else if (L.trial && !P.dead && ad < 110 && (Math.abs(P.x - (e.leapPX ?? P.x)) > 18 || !P.ground || P.dodge > 0)) trialEvent('tellR'); }   /* the red one, and you moved out from under it */
         break;
