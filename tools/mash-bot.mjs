@@ -42,7 +42,9 @@ const pageSrc = `(() => {
   const rnd = (async () => (await import('/src/px.js')).mulberry)();
   const prep = async (o) => {   /* a fresh hero of o.lvl, no skills, on a seeded dice; returns the restore */
     const { xpFloor } = await import('/src/xp.js'), mulberry = await rnd, real = Math.random;
-    const P0 = BKT.PROG; BKT.setHeroLevel(o.hero, o.lvl); P0.skillOwned[o.hero] = {}; P0.loadouts[o.hero] = []; if (P0.talents) P0.talents[o.hero] = {};
+    const P0 = BKT.PROG; BKT.setHeroLevel(o.hero, o.lvl);
+    if (${has('perks') ? 'true' : 'false'}) { const PR = await import('/src/progression.js'); for (let k = 0; k < 10; k++) { const owe = PR.milestonesOwed(P0, o.hero, o.lvl); if (!owe.length) break; PR.pickMilestone(P0, o.hero, owe[0], PR.perkOffer(P0, o.hero, owe[0])[2].id, o.lvl); } }   /* --perks (LEVELING2): every early milestone taken as the hero's OWN, ranks stacked: must not make the mash bot win */
+    P0.skillOwned[o.hero] = {}; P0.loadouts[o.hero] = []; if (P0.talents) P0.talents[o.hero] = {};
     Math.random = mulberry(hash(o.id + '|' + o.hero + '|' + o.seed + '|' + (o.mini ? 'm' : 'a') + o.lvl)); return () => { Math.random = real; }; };
   window.__mashBoss = async (o) => {
     BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'), { LAB_REACH } = await import('/src/lab.js'), TS = 16;

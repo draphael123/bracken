@@ -47,7 +47,59 @@ export const CARD = [
  { id: 'm', name: 'MIGHT', what: '+1 DAMAGE', damage: 1 },
 ];
 export const CARD_CAP = 25;
-export const MILESTONES = [25, 30, 35, 40, 45, 50];
+export const MILESTONES_MINOR = [5, 10, 15, 20];   /* LEVELING2 (Daniel 10-04): the early milestones - one SMALL perk from three, each once */
+export const MILESTONES_MAJOR = [25, 30, 35, 40, 45, 50];
+export const MILESTONES = [...MILESTONES_MINOR, ...MILESTONES_MAJOR];
+export const isMinor = n => MILESTONES_MINOR.includes(n);
+/* TECHNIQUE UNLOCKS (s5, a later lane): a NEW MOVE per hero at each of these levels, taught with a short practice. The hook lives here and in main.js
+   (techniqueFor / teachTechnique): TECHNIQUES is empty until that lane fills it, {hero: {10: {id, name, what, teach}, 20: {...}, 30: {...}}}. L20/L30 are
+   also where SUBCLASSES (parked) would hang: nothing here takes those two levels away from them. */
+export const TECH_LEVELS = [10, 20, 30];
+export const TECHNIQUES = {};
+export const techniqueFor = (h, n) => (TECHNIQUES[h] || {})[n] || null;
+export const techniquesArriving = (h, from, to) => TECH_LEVELS.filter(n => n > from && n <= to).map(n => techniqueFor(h, n)).filter(Boolean);
+/* THE EARLY PERKS: smaller than the L25+ ones. Each is a hook main.js reads through perkOn() */
+export const MINOR_PERKS = [
+ { id: 'stride', name: 'STRIDE', what: 'YOUR ROLL CARRIES A BIT FURTHER', minor: true },
+ { id: 'mend', name: 'MENDING', what: 'A BLOW YOU TURN HEALS 3', minor: true },
+ { id: 'magnet', name: 'MAGNET', what: 'GOLD IS PULLED FROM FURTHER AWAY', minor: true },
+ { id: 'climber', name: 'CLIMBER', what: 'ROPES AND VINES: A QUARTER FASTER', minor: true },
+ { id: 'buffer', name: 'BUFFER', what: 'A PRESS IS KEPT A LITTLE LONGER', minor: true },
+ { id: 'rest', name: 'BREATHER', what: 'STAMINA WAITS A FIFTH LESS TO RETURN', minor: true },
+ { id: 'tonic', name: 'RICH TONIC', what: 'A RED TONIC HEALS 60, NOT 45', minor: true },
+ { id: 'grit', name: 'GRIT', what: 'AFTER A HIT YOU ARE SAFE A MOMENT LONGER', minor: true },
+];
+/* THE HERO'S OWN: at every milestone ONE of the three is the hero's (the third, marked). Two per hero, alternating by milestone, and each pick adds
+   a RANK (to HERO_PERK_MAX: ten milestones = five of each): so a hero's own never runs out, and it is never the only way to grow. */
+export const HERO_PERK_MAX = 5;
+export const HERO_PERKS = {
+ knight: [{ id: 'kbash', name: 'HARD BASH', what: 'SHIELD BASH STAGGERS 15% LONGER' }, { id: 'kguard', name: 'KEEN GUARD', what: 'THE PERFECT GUARD WINDOW GROWS' }],
+ pyro: [{ id: 'pspread', name: 'WILDFIRE', what: 'FIRE SPREADS WHEN A BURNING FOE FALLS' }, { id: 'pheat', name: 'HEAT HOLD', what: 'HEAT FADES 12% SLOWER' }],
+ paladin: [{ id: 'llight', name: 'RADIANT', what: 'THE LIGHT FILLS 8% FASTER' }, { id: 'ljudge', name: 'HARD SMITE', what: 'JUDGEMENT STRIKES 10% HARDER' }],
+ pirate: [{ id: 'pricochet', name: 'RICOCHET', what: 'THE BALL GLANCES ON TO A SECOND FOE' }, { id: 'preload', name: 'QUICK LOAD', what: 'THE PISTOL RELOADS 8% SOONER' }],
+ reaper: [{ id: 'dward', name: 'BLOOD WARD', what: 'THE BLOOD WARD FILLS 12% FASTER' }, { id: 'dnova', name: 'DEEP DRAW', what: 'THE NOVA HEALS 10% MORE BLOOD' }],
+ warden: [{ id: 'wdef', name: 'LONG TURN', what: 'THE DEFLECT WINDOW LASTS LONGER' }, { id: 'wrec', name: 'QUICK POLE', what: 'THE SHAFT RECOVERS 8% SOONER' }],
+ geomancer: [{ id: 'gstone', name: 'HARD STONE', what: 'HER STONE STANDS A FIFTH LONGER' }, { id: 'gward', name: 'WIDE RUNE', what: 'THE RUNE-WARD PERFECT WINDOW GROWS' }],
+};
+export const ALL_HERO_PERKS = Object.values(HERO_PERKS).flat();
+export const heroPerkAt = (h, n) => { const l = HERO_PERKS[h]; return l ? l[Math.max(0, MILESTONES.indexOf(n)) % 2] : null; };
+export const perkRank = (p, h, id) => { const c = cardOf(p, h); return c ? Object.values(c.ms || {}).filter(v => v === id).length : 0; };
+/* STAT THRESHOLDS (Daniel 10-04): 10 and 20 picks in a stat unlock a small bonus that changes how the build PLAYS. VIGOR: a kill heals 2 /
+   a faster, fuller co-op revive. ENDURANCE: rolls cost a fifth less below half stamina / a second wind once a fight. MIGHT: heavy blows push the
+   poise bar a quarter harder (never a tap: the heavies-only rule of a boss or mini is untouched) / a staggered foe takes a quarter more from the next blow. */
+export const THRESH_AT = [10, 20];
+export const THRESH = {
+ v: [{ name: 'BLOOD DRAWN', what: 'EVERY KILL HEALS 2' }, { name: 'STEADY HANDS', what: 'REVIVES: FASTER, MORE HP' }],
+ e: [{ name: 'LEAN ROLL', what: 'CHEAPER ROLLS UNDER HALF' }, { name: 'SECOND WIND', what: 'ONCE A FIGHT, A SURGE' }],
+ m: [{ name: 'HEAVY HAND', what: 'HEAVIES BREAK POISE FASTER' }, { name: 'FINISHER', what: 'BROKEN FOES TAKE MORE' }],
+};
+export const thrOn = (p, h, stat, i) => { const c = cardOf(p, h); return !!c && (c[stat] || 0) >= THRESH_AT[i]; };
+/* what the card says of a stat's threshold: the next one not yet reached ({i, at, have, name, what}), or null when both are */
+export const thrNext = (p, h, stat) => { const c = cardOf(p, h), have = c ? (c[stat] || 0) : 0, i = THRESH_AT.findIndex(a => have < a); return i < 0 ? null : { i, at: THRESH_AT[i], have, ...THRESH[stat][i] }; };
+/* THE COUNT FOR THE CARD: the next milestone above this level, and how many levels away it is (null past the last) */
+const lvClamp = lv => Math.max(0, Math.min(LV_MAX, Math.floor(lv || 0)));
+export const nextMilestone = lv => MILESTONES.find(n => n > lvClamp(lv)) ?? null;
+export const levelsToPerk = lv => { const n = nextMilestone(lv); return n === null ? null : n - lvClamp(lv); };
 /* THE PERKS: what a milestone card offers, each a hook main.js reads through perkOn(). Several stand where a relic stood (the fleece's stamina,
    the gauntlet's light swing, the banner's thinner blows) - kept, not carried and lost. */
 export const PERKS = [
@@ -70,8 +122,10 @@ export const picksOwed = (p, h, lv) => Math.max(0, cardLv(lv) - picksSpent(cardO
 export const milestonesOwed = (p, h, lv) => MILESTONES.filter(n => n <= cardLv(lv) && !((cardOf(p, h) || {}).ms || {})[n]);
 export const perkOn = (p, h, id) => { const c = cardOf(p, h); return !!c && Object.values(c.ms || {}).includes(id); };
 /* THE THREE A MILESTONE OFFERS: the perks this hero has not taken, turned by hero and level so two heroes see different hands, never more than three */
-export function perkOffer(p, h, n) { const c = cardOf(p, h), taken = new Set(Object.values((c && c.ms) || {})), left = PERKS.filter(k => !taken.has(k.id));
- const turn = ((HERO_IDS.indexOf(h) + 1) * 3 + Math.floor(n / 5)) % Math.max(1, left.length); return left.slice(turn).concat(left.slice(0, turn)).slice(0, 3); }
+export function perkOffer(p, h, n) { const c = cardOf(p, h), taken = new Set(Object.values((c && c.ms) || {})), left = (isMinor(n) ? MINOR_PERKS : PERKS).filter(k => !taken.has(k.id));
+ const turn = ((HERO_IDS.indexOf(h) + 1) * 3 + Math.floor(n / 5)) % Math.max(1, left.length), rot = left.slice(turn).concat(left.slice(0, turn)), own = heroPerkAt(h, n);
+ /* two of the pool, then the hero's own (LEVELING2): a hero with his own at its top rank, or none, gets three of the pool */
+ return own && perkRank(p, h, own.id) < HERO_PERK_MAX ? rot.slice(0, 2).concat([{ ...own, own: true, rank: perkRank(p, h, own.id) + 1, minor: isMinor(n) }]) : rot.slice(0, 3); }
 const ensureCard = (p, h) => { p.card = object(p.card) ? p.card : {}; if (!object(p.card[h])) p.card[h] = { v: 0, e: 0, m: 0, ms: {} }; const c = p.card[h]; if (!object(c.ms)) c.ms = {}; return c; };
 /* ONE PICK. null when it took, else why not (the card says it) */
 export function pickCard(p, h, stat, lv) {
