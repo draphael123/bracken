@@ -24,15 +24,15 @@
 // throws off a topiary cutting.
 // Touching him never hurts (the touch rule): his damage is his sword, his rush, his thorns, his lash and his roots.
 export const HEDGE = {
-  hp: 600,   /* 486 until claude/hedgewarden4 (his told opening made him a duel: measured 93% at 486, band 70-75%); /* 420 until claude/hedgewarden2 (+16%, Daniel's playtest 2026-09-28: "a bit harder"); main.js EHP reads it */
-  walk: 30, keep: 34, cd: 1.3, cdP2: 0.95,
-  tell: { cut: 0.85, rush: 0.8, thorn: 1.0, lash: 0.9, roots: 0.95 },
-  dmg: { cut: 16, rush: 14, thorn: 14, lash: 14, roots: 12 },
+  hp: 900,   /* (claude/sweep3: 600 - with his quicker blows the fight needed a little more of him: band 70-75%) */   /* 486 until claude/hedgewarden4 (his told opening made him a duel: measured 93% at 486, band 70-75%); /* 420 until claude/hedgewarden2 (+16%, Daniel's playtest 2026-09-28: "a bit harder"); main.js EHP reads it */
+  walk: 30, keep: 34, cd: 0.85, cdP2: 0.65,   /* (claude/sweep3: 1.3 / 0.95 - a breath between blows long enough that the standard bot met every one) */
+  tell: { cut: 0.62, rush: 0.6, thorn: 0.75, lash: 0.66, roots: 0.75 },   /* (claude/sweep3: 0.85 / 0.8 / 1.0 / 0.9 / 0.95 - the standard bot met every one and took nothing) */
+  dmg: { cut: 41, rush: 35, thorn: 35, lash: 35, roots: 28 },   /* (claude/sweep3: 16/14/14/14/12 until the standard bot won 12/12 at L28 taking 0-117 of ~245; band 70-75%) */
   cutReach: 50, rushV: 150, rushT: 0.6, thornR: 46, thornRP2: 58,
   lashReach: 150, lashT: 0.35, low: 10,                /* the lash and the roots run along the lawn: feet more than `low` px up are over them */
   rootV: 120, rootHalf: 9, fireStop: 12, rootWarn: 0.8, rootsT: 0.5,   /* a root's speed, its head's half-width, how near a fire burns it, a garden hedge's warning */
   growths: 3, root: 0.14, regrow: 4.6, regrowP2: 3.8, burnT: 3.2, burnMul: 2, greenMul: 0.25, brazierNear: 44, cuttings: 2,
-  stuck: 3.0, stuckMul: 1.6, reopen: 2.5, answerNear: 80,   /* claude/hedgewarden4: ANSWER HIM AND HE IS OPEN for `stuck` s (his blows pay x`stuckMul`); not again for `reopen` s after; a root burning out within `answerNear` of you is answered */   /* greenMul: what a blow on green wood takes (claude/hedgewarden3) */
+  stuck: 3.0, stuckMul: 1.35, reopen: 2.5, answerNear: 80,   /* claude/hedgewarden4: ANSWER HIM AND HE IS OPEN for `stuck` s (his blows pay x`stuckMul`); not again for `reopen` s after; a root burning out within `answerNear` of you is answered */   /* greenMul: what a blow on green wood takes (claude/hedgewarden3) */
   order: ['cut', 'lash', 'rush', 'cut', 'thorn', 'roots', 'rush', 'cut', 'lash', 'thorn', 'roots'],
 };
 const TELL = { cut: 'cutTell', rush: 'rushTell', thorn: 'thornTell', lash: 'lashTell', roots: 'rootsTell' };
