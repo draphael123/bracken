@@ -585,9 +585,14 @@ async function runbossLab(BK, opts) {
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
        time behind it, so it is RETURNED. One release in ten is early. dkHold keeps the ward up a little past the end of a tell. */
+    const dkOpen = () => { const g = BK.bossOpen ? BK.bossOpen(boss) : null; return g !== null && g !== undefined ? !!g : boss.open > 0; };   /* (OPEN() is TRUE for a boss with no opening of its own: here only a real one counts) */
+    const dkSwingOK = () => !(LABP.v2 && LABP.dkPunish !== false && h === 'reaper') || dkOpen() || DK_FREE.has(boss.mode) || !(f - dkS.tellF < dkF(6) || f - dkS.hitSwF < dkF(8)) || f - Math.max(dkS.endF, dkS.hitF) < dkF(LABP.dkWin ?? 0.25);   /* (claude/herobots) may the Death Knight begin his slow swing now? */
     const dkS = { m: '', blow: null, endF: -999, tellF: -9999, hitF: -9999, hitSwF: -9999, hp: -1, relF: -999 };
     const dkLag = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
+      { const bm = boss.mode || '';   /* (claude/herobots) what the Death Knight has SEEN of the boss's rhythm: when a tell was last up, and when the blow it told ended (his punish window) */
+        if (bm !== dkS.m) { if (/Tell$/.test(dkS.m)) dkS.blow = bm; else if (dkS.blow && dkS.m === dkS.blow) { dkS.endF = f; dkS.blow = null; } dkS.m = bm; } if (/Tell$/.test(bm)) dkS.tellF = f;
+        if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
       if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
@@ -835,6 +840,7 @@ async function runbossLab(BK, opts) {
         else if(volley&&SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=side;}
         else if(inc&&SHIELDED(h)){k.block=true;k.left=k.right=false;P.face=Math.sign(inc.x-P.x)||P.face;}
         else if(inc&&P.st>20&&!(P.dodge>0)&&Math.abs(inc.x-P.x)<24)BK.press('dodge');
+        else if(h==='reaper'&&reach&&P.atk<0&&!dkSwingOK()){k.block=true;k.left=k.right=false;P.face=side;}   /* (claude/herobots) the Death Knight keeps the ward up and does not begin a swing into his staff */
         else if(!rest&&!danger.length&&reach&&P.atk<0&&!(P.labHold>0)){P.face=side;
           if((boss.readN||0)>=2&&!(boss.open>0))P.labHold=1;   /* HIS GUARD IS UP: not a third light blow into it - a held one */
           else{BK.press('atk');swings++;}}
@@ -1385,9 +1391,6 @@ async function runbossLab(BK, opts) {
       const gunT = boss.t === 'quarter' && boss.guard ? BK.props().filter(q => q.t === 'cannon' && q.deck && !(q.cool > 0) && Math.abs(q.y - boss.y) < 30 && q.x > A.x0 - 16 && q.x < A.x1 + 16)
         .sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
       const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
-      { const bm = boss.mode || '';   /* (claude/herobots) what the Death Knight has SEEN of the boss's rhythm: when a tell was last up, and when the blow it told ended (his punish window) */
-        if (bm !== dkS.m) { if (/Tell$/.test(dkS.m)) dkS.blow = bm; else if (dkS.blow && dkS.m === dkS.blow) { dkS.endF = f; dkS.blow = null; } dkS.m = bm; } if (/Tell$/.test(bm)) dkS.tellF = f;
-        if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
       const rushing = ((boss.mode === 'rush' || (boss.t === 'masthead' && boss.mode === 'sail')) && ad < 46) || (boss.t === 'master' && boss.mode === 'charge' && ad < 64 && (boss.x - P.x) * boss.vx < 0);   /* THE HOUND MASTER's charge is no Tell by the time it reaches you either */   /* THE RAM is answered as it arrives, like the shoulder */
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
@@ -1854,7 +1857,7 @@ async function runbossLab(BK, opts) {
       /* (claude/herobots) THE DEATH KNIGHT'S SWING IS A SECOND OF COMMITMENT (0.9 s light, 1.75 heavy; armoured through it, but the ward cannot come up and he cannot roll): a player does not
          begin one into a boss that is winding up - he keeps the ward up and punishes in the half second after the boss's blow has gone, or in his rest, his open and his reel. Only while the boss
          is attacking in tells (one seen in the last six seconds); v2 profiles, and prof.dkPunish false turns it off. */
-      if (LABP.v2 && LABP.dkPunish !== false && h === 'reaper' && strike && !open && P.atk < 0 && ad < 110 && (f - dkS.tellF < dkF(6) || f - dkS.hitSwF < dkF(8)) && f - Math.max(dkS.endF, dkS.hitF) >= dkF(LABP.dkWin ?? 0.25) && !DK_FREE.has(boss.mode)) { strike = false; k.block = true; P.face = Math.sign(d) || P.face; k.left = k.right = false; }
+      if (LABP.v2 && LABP.dkPunish !== false && h === 'reaper' && strike && P.atk < 0 && ad < 110 && !dkSwingOK()) { strike = false; k.block = true; P.face = Math.sign(d) || P.face; k.left = k.right = false; }
       if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; if (d > 0) k.left = false; else if (d < 0) k.right = false;
         /* A SMALL FOE IN FRONT WANTS THE LOW SWEEP, not the plain cut this generic swing otherwise throws (tools/small-adds.mjs):
            smallAim() is the same "what is this swing really aimed at" pick the ledger below judges it against, so asking it here,
