@@ -2064,3 +2064,41 @@ export function chaseClimb(BK, m, o = {}) {
   BK.keys.right = BK.keys.left = BK.keys.jump = BK.keys.block = false;
   return { t, taken, died };
 }
+/* THE ELITE LAB (claude/elites2). One hero against one elite where the level stood him (his affix, his gate, his ground), the rest of the
+   level's creatures put away: the HUMAN bot (this file's hand, at human speed, as the boss lab plays it) or the MASH bot (tools/mash-bot.mjs's
+   player: walks at him and presses the basic attack whenever it is free - never blocks, rolls, jumps or holds a heavy). One life, normal
+   health. o: { level, kind, nth (0: the first of that kind by column), hero, mode: 'human'|'mash', secs, spawn (no placed one: stood five
+   tiles past the start, as fightLab does) }. Returns { out: 'win'|'dead'|'timeout', secs, hpLeftPct, eliteLeftPct, affix, ehp }. */
+export async function eliteLab(BK, o) {
+  const lvm = await import('./level.js'); const press0 = BK.press, sim0 = BK.sim, step0 = BK.step, previous = BK.manualSimulation;
+  if (o.mode === 'human') { HUMAN_H = o.hero;
+    BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
+    BK.sim = n => { rollWhenDue(BK, press0); return sim0.call(BK, n); }; BK.step = n => { rollWhenDue(BK, press0); return step0.call(BK, n); }; }
+  BK.manualSimulation = true;
+  try {
+    BK.setHero(o.hero); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === o.level)); BK.start(); BK.god = false; BK.sim(10);
+    let e = BK.enemies().filter(q => q.elite && q.t === o.kind && q.alive && !q.ambush).sort((a, b) => a.x - b.x)[o.nth || 0];
+    const P = BK.P, k = BK.keys;
+    if (!e && o.spawn) { const n0 = BK.enemies().length; BK.spawnEnt({ t: o.kind, x: Math.round(P.x / 16) + 5, y: Math.round(P.y / 16) - 1, elite: true, affix: o.affix }); e = BK.enemies()[n0]; }
+    if (!e) return { skipped: 'no ' + o.kind + ' elite in ' + o.level };
+    for (const q of BK.enemies()) if (q !== e && !q.maxHp && !q.harmless) q.alive = false;
+    if (!o.spawn) { const G = BK.L, T = lvm.T, at = (x, y) => (x < 0 || y < 0 || x >= G.W || y >= G.H) ? T.SOLID : G.grid[y * G.W + x], free = (x, y) => at(x, y) === T.AIR, ex = Math.floor(e.x / 16), r = Math.round(e.y / 16) - 1;
+      /* WHERE YOU MEET HIM: on his own floor, the side you come from (away from the gate he holds, else the way he faces), with nothing between */
+      const away = e.G ? -Math.sign(e.G.col - ex) || -1 : (e.face || -1) < 0 ? -1 : 1, clear = x => { for (let c = Math.min(x, ex) + 1; c < Math.max(x, ex); c++) if (!free(c, r) || !free(c, r - 1)) return false; return true; };
+      let spot = null; for (const sd of [away, -away]) { for (const k of [6, 5, 7, 4, 8, 3]) { const x = ex + sd * k; if (free(x, r) && free(x, r - 1) && !free(x, r + 1) && clear(x)) { spot = x; break; } } if (spot !== null) break; }
+      BK.tp(spot !== null ? spot : ex + away * 6, r); }
+    BK.sim(20); P.hp = P.maxHp; P.st = P.maxSt; P.inv = 0; e.elT = Math.max(e.elT || 0, 1.0);
+    const ehp = e.hp0 || e.hp, maxF = Math.round((o.secs || 60) * 60), reach = LAB_REACH[o.hero] || 22; let f = 0;
+    for (; f < maxF && e.alive && !P.dead; f++) {
+      if (o.mode === 'mash') { k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
+        const dx = e.x - P.x, edge = (e.w || 12) / 2; if (Math.abs(dx) > Math.min(reach * 0.7, 14) + edge * 0.5 || Math.abs(dx) > 6) k[dx > 0 ? 'right' : 'left'] = true;
+        if (P.swim) { const dy = (e.y - (e.h || 16) / 2) - (P.y - 10); if (dy < -10) k.up = true; else if (dy > 10) k.down = true; }
+        if (P.atk < 0) BK.press('atk'); }
+      else labBotFrame(BK, o.hero, e, f);
+      BK.sim(1);
+      if (f % 900 === 899) await yieldNow();
+    }
+    k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
+    return { out: P.dead ? 'dead' : e.alive ? 'timeout' : 'win', secs: +(f / 60).toFixed(1), hpLeftPct: Math.max(0, Math.round(P.hp / P.maxHp * 100)), eliteLeftPct: e.alive ? Math.round(e.hp / ehp * 100) : 0, affix: e.affix || null, ehp, roused: !!e.ekRoused };
+  } finally { BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; HUMAN_H = null; }
+}

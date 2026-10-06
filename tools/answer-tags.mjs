@@ -56,7 +56,7 @@ for (const t of common) {
     else if (MARK[k] === '!!' && a === 'block') bad.push(`${k}: a red !! (nothing turns it) answered 'block'`);
   }
 }
-for (const k of ['*|eliteLungeTell', '*|eliteSlamTell']) if (MARK[k] && !ANSWER[k]) bad.push(`${k}: an elite's own blow with no ANSWER row`);
+for (const k of ['*|eliteLungeTell', '*|eliteSlamTell', ...Object.keys(MARK).filter(k => k.startsWith('*|') && MARK[k])]) if (MARK[k] && !ANSWER[k]) bad.push(`${k}: an elite's own blow with no ANSWER row`);
 for (const k of Object.keys(ANSWER)) if (!(MARK[k] === '!' || MARK[k] === '!!')) bad.push(`${k}: an ANSWER row for no blow (MARK says ${JSON.stringify(MARK[k])})`);
 /* NO UNTOLD HITS (the combat pass, part 2; Daniel, 2026-09-28): UNTOLD must end empty - a harm with no windup is a hit nobody can read */
 for (const [t, a] of Object.entries(UNTOLD)) bad.push(`UNTOLD ${t}: '${a}' - an untold hit: give it a told windup (a mark and an ANSWER row), or HARMLESS if it never harms`);

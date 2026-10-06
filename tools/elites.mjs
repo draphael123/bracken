@@ -86,5 +86,57 @@ for (const lv of LEVELS) {
 }
 if (unled.length) console.log('\nnot yet led by an elite: ' + unled.join(', '));
 if (ambBad) bad += ambBad;
+// ---- ELITES2: EVERY KIND ITS OWN MOVES, EVERY PLACED ELITE AN AFFIX THAT FITS, THE OPENING, THE ESCALATION, AND THE MASH BOT LOSES ----
+// (claude/elites2) Fails when: a kind of the ELITE table has no dispatch line of its own (`if (e.t === '<kind>') return updateElite<Kind>(e, dt)`,
+// or `return false` for a kind whose moves live in its own module - the `mod` ones), or its function chooses between fewer than TWO moves;
+// a placed elite or an ambush room's captain has no affix, or one that does not fit its level's act (src/elite-kit.js AFFIX_FIT /
+// LEVEL_FIT; no SUMMONER in an ambush room); the poise opening or the escalation is not wired; or docs/elite-lab.json (tools/elite-lab.mjs)
+// records a MASH-BOT WIN against any kind that stands in a level, or has no row for it. The human bot's rate is reported, not gated.
+{ const { AFFIX_AT, affixFits, K: EKK } = await import('../src/elite-kit.js');
+  const out2 = [], kindRows = [...(mainSrc.match(/\nconst ELITE = \{([\s\S]*?)\n\};/) || ['', ''])[1].matchAll(/(?:^|[\s,{])([a-z]+): \{ name: '[^']*'|(?:^|[\s,{])([a-z]+): \{ name: "[^"]*"/g)];
+  const tableSrc = (mainSrc.match(/\nconst ELITE = \{([\s\S]*?)\n\};/) || ['', ''])[1];
+  console.log('\n== ELITES2: own moves, affixes, the opening ==');
+  for (const kind of eliteKinds) {
+    const row = (tableSrc.match(new RegExp('(?:^|[\\s,{])' + kind + ': \\{([^}]*)\\}')) || ['', ''])[1], mod = /mod: true/.test(row);
+    const disp = mainSrc.match(new RegExp("\\n  if \\(e\\.t === '" + kind + "'\\) return (updateElite[A-Z]\\w*)\\(e, dt\\);|\\n  if \\(e\\.t === '" + kind + "'\\) return false;"));
+    if (!/own: true/.test(row)) out2.push(kind + ': no own: true in the ELITE table');
+    if (!disp) { out2.push(kind + ': no dispatch line of its own in updateElite'); continue; }
+    if (!disp[1]) { if (!mod) out2.push(kind + ': dispatched to no moves (return false) but not marked mod'); continue; }
+    const at = mainSrc.indexOf('\nfunction ' + disp[1] + '(e, dt)'); if (at < 0) { out2.push(kind + ': ' + disp[1] + ' is not defined'); continue; }
+    let d = 0, i = mainSrc.indexOf('{', at), end = i; for (; end < mainSrc.length; end++) { if (mainSrc[end] === '{') d++; else if (mainSrc[end] === '}' && --d === 0) break; }
+    const body = mainSrc.slice(at, end), dec = body.slice(body.indexOf('if (!e.elBack)'), body.indexOf('e.modeT -= dt') > 0 ? body.indexOf('e.modeT -= dt') : body.indexOf('elPre(e, dt)'));
+    const moves = new Set([...dec.matchAll(/e\.mode = '([A-Za-z0-9]+)'/g)].map(m => m[1]));
+    if (moves.size < 2) out2.push(kind + ': ' + disp[1] + ' chooses between ' + moves.size + ' move(s), not two (' + [...moves].join(', ') + ')');
+    console.log(' ok  ' + kind.padEnd(14) + disp[1].padEnd(26) + [...moves].join(', '));
+  }
+  /* the affixes, one for every placed elite and every ambush captain, by the same key the game reads (src/elite-kit.js key) */
+  for (const lv of LEVELS) {
+    if ((lv.hidden && !lv.secret) || lv.id === 'custom' || (want.length && !want.includes(lv.id))) continue;
+    const L = lv.build(), ents = L.ents.filter(e => e.elite && eliteKinds.has(e.t));
+    for (const e of ents) { const kin = L.ents.filter(q => q.elite && q.t === e.t).sort((a, b) => a.x - b.x), k = lv.id + '|' + e.t + (kin.length > 1 ? '#' + (kin.indexOf(e) + 1) : ''), af = e.affix || AFFIX_AT[k];
+      if (!af) out2.push(k + ' @' + e.x + ': no affix (src/elite-kit.js AFFIX_AT)'); else if (!affixFits(lv.id, af, false)) out2.push(k + ': ' + af + ' does not fit ' + lv.id); }
+    for (const A of L.ambushes || []) for (const w of A.waves) for (const [t, , , o] of w) { if (!o || !o.elite || !eliteKinds.has(t)) continue; const k = lv.id + '|' + t + '#amb', af = o.affix || AFFIX_AT[k];
+      if (!af) out2.push(k + ': no affix'); else if (!affixFits(lv.id, af, true)) out2.push(k + ': ' + af + ' does not fit ' + lv.id + "'s ambush room"); }
+  }
+  /* THE OPENING AND THE ESCALATION are wired */
+  if (!/function breakBeat\(e\) \{ if \(e\.elite && EK\) EK\.broke\(e\);/.test(mainSrc)) out2.push('breakBeat does not open an elite (EK.broke)');
+  if (!/\(lcBig\(e\) \|\| e\.xpRole === 'mini' \|\| e\.elite\) && GB\.openOf\(e\) !== true/.test(mainSrc)) out2.push("an elite's poise is not filled by heavies only (addPoise)");
+  if (!(EKK.openT >= 2.5)) out2.push('the opening is under 2.5 s (src/elite-kit.js K.openT ' + EKK.openT + ')');
+  if (!(EKK.rouseAt > 0 && EKK.rouseAt < 1)) out2.push('no escalation (K.rouseAt)');
+  if (!/const EL = \{ hp: 2,/.test(mainSrc)) out2.push('EL.hp is not 2 (the brief: three times the health down to about two)');
+  /* THE MASH BOT LOSES TO EVERY ELITE (docs/elite-lab.json, tools/elite-lab.mjs --write) */
+  const labFile = new URL('../docs/elite-lab.json', import.meta.url), placed = new Set();
+  for (const lv of LEVELS) { if ((lv.hidden && !lv.secret) || lv.id === 'custom') continue; const L = lv.build(); for (const e of L.ents) if (e.elite && eliteKinds.has(e.t)) placed.add(e.t); for (const A of L.ambushes || []) for (const w of A.waves) for (const [t, , , o] of w) if (o && o.elite && eliteKinds.has(t)) placed.add(t); }
+  if (!want.length) {
+    let lab = null; try { lab = JSON.parse(readFileSync(labFile, 'utf8')); } catch { out2.push('docs/elite-lab.json is missing: run node tools/elite-lab.mjs --write'); }
+    if (lab) { console.log('\n  kind          mash wins  human wins (target ~75-85%)');
+      for (const t of [...placed].sort()) { const r = lab.kinds[t];
+        if (!r) { out2.push(t + ': no row in docs/elite-lab.json (not measured)'); continue; }
+        if (r.mash.wins > 0) out2.push(t + ': the MASH BOT beat it ' + r.mash.wins + '/' + r.mash.n + ' (docs/elite-lab.json)');
+        console.log('  ' + t.padEnd(14) + (r.mash.wins + '/' + r.mash.n).padEnd(11) + r.human.wins + '/' + r.human.n); } }
+  }
+  for (const o of out2) console.log('FAIL ' + o);
+  if (out2.length) bad += out2.length;
+}
 console.log('\n' + n + ' elites. ' + (bad ? bad + ' level(s) fail.' : 'every elite can be fought and every gate it holds opens onto the route.'));
 process.exitCode = bad ? 1 : 0;
