@@ -56,7 +56,7 @@ export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : kind === 'battlefield' ? 0.26 : kind === 'cistern' ? 0.3 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : kind === 'battlefield' ? 0.26 : kind === 'cistern' ? 0.3 : kind === 'highair' ? 0.26 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -666,6 +666,22 @@ const SYNTH_BEDS = {
       if (Math.random() < 0.025) ambClip('amb_creak', 0.12, 900);   /* a chain, loaded */
     };
     ambTickMs = 400;
+  },
+  /* THE SKY ROAD (claude/skyroadart): HIGH AIR. Not the forest and not the moor's low wind: a thin whistle through rock (a band-passed gust that swells and fades, a second higher one
+     drifting against it), a deep rushing underneath, kite-cloth CRACKING in a gust, a taut line HUMMING, grit ticking on stone, a lone raptor's far cry, a rope loaded. Synth plus the one creak clip
+     already on disk (amb_creak); nothing downloaded. */
+  highair() {
+    const w = loopNoise(260, 0.8, 0.8, 'lowpass'); lfoOn(w.g.gain, 0.08, 0.4); lfoOn(w.f.frequency, 0.05, 120);
+    const whistle = loopNoise(1250, 6, 0.05); lfoOn(whistle.g.gain, 0.1, 0.045); lfoOn(whistle.f.frequency, 0.06, 420);
+    const thin = loopNoise(2700, 4, 0.025); lfoOn(thin.g.gain, 0.13, 0.02); lfoOn(thin.f.frequency, 0.037, 700);
+    ambTick = () => {
+      if (Math.random() < 0.13) for (let i = 0, n = 2 + ((Math.random() * 3) | 0); i < n; i++) noise(0.035, 0.07, 800 + Math.random() * 700, 1, i * 0.06);   /* kite-cloth cracking in a gust */
+      if (Math.random() < 0.06) { const f0 = 340 + Math.random() * 120; tone('sine', f0, f0 * 1.01, 0.9, 0.012); tone('sine', f0 * 2.01, f0 * 2, 0.9, 0.006); }   /* a taut line, humming */
+      if (Math.random() < 0.2) noise(0.015, 0.02 + Math.random() * 0.02, 3200 + Math.random() * 1800, 2);   /* grit on stone */
+      if (Math.random() < 0.035) { const f0 = 1500 + Math.random() * 500; tone('sine', f0, f0 * 1.5, 0.35, 0.02); tone('sine', f0 * 1.5, f0 * 0.8, 0.5, 0.018, 0.3); }   /* a raptor, far off */
+      if (Math.random() < 0.025) ambClip('amb_creak', 0.1, 1100);   /* a rope, loaded */
+    };
+    ambTickMs = 450;
   },
   /* THE UNBURIED FIELD (claude/unburiedart): the air of a siege that never ended. WIND over dead grass (a low gust and a dry hiss), A FAR BATTLE that never comes closer
      (a low-passed murmur of steel and muffled shouting, behind a hill), crows, a banner and canvas snapping, rope and timber creaking near the engines. SYNTH and the one
@@ -1465,9 +1481,9 @@ Object.assign(SFX, {
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'gorgecrab', 'undeadmage'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair'];
 /* WHAT THE UNBURIED FIELD'S BED IS MADE OF (tools/unburied-look.mjs 8): synth beds and the one creak clip already on disk - nothing downloaded, and never a horn (the horn is the volley's tell) */
-export const AMBIENT_SOURCES = { cistern: ['synth:air', 'synth:drip', 'synth:scuttle', 'synth:oil-gurgle', 'synth:chain', 'file:amb_creak'], battlefield: ['synth:wind', 'synth:dead-grass', 'synth:far-battle', 'synth:shout', 'synth:banner', 'synth:crow', 'file:amb_creak'], hall: ['file:ambCave', 'synth:drip', 'synth:distant-bell'] };
+export const AMBIENT_SOURCES = { highair: ['synth:gust', 'synth:whistle', 'synth:cloth-crack', 'synth:line-hum', 'synth:grit', 'synth:raptor', 'file:amb_creak'], cistern: ['synth:air', 'synth:drip', 'synth:scuttle', 'synth:oil-gurgle', 'synth:chain', 'file:amb_creak'], battlefield: ['synth:wind', 'synth:dead-grass', 'synth:far-battle', 'synth:shout', 'synth:banner', 'synth:crow', 'file:amb_creak'], hall: ['file:ambCave', 'synth:drip', 'synth:distant-bell'] };
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0 or CC-BY (Daniel's 10-01 rule change) WITH its credit line here and in CREDITS.txt - 'Dark Carnival' and 'At Work' are the CC-BY ones; see the credited lanes' own reports). Three tracks have
 // no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial

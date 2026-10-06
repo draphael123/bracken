@@ -178,7 +178,7 @@ export function buildSkyRoad({ painter, T, TS }) {
       { kind: 'loft', opens: "THE RIDERS' LOFT (a silver)", hud: "THE RIDERS' LOFT OPENS" },
     ],
     music: 'skysail',   /* PLACEHOLDER (no download): the retired sky ship's track until Daniel picks the Sky Road's own (CC0/CC-BY) */
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'highair' }],   /* (claude/skyroadart) its own bed: wind whistling through rock, cloth cracking, a far raptor (src/audio.js) */
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     palette: { sky: [[132, 168, 214], [236, 226, 204]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, haze: 'rgba(230,236,244,0.16)', grass: '#8a8a4a', grassL: '#b0a860', grassD: '#5a5a32', dirt: '#8a6a4a', dirtL: '#a8845a', dirtD: '#5a4232', canopy: ['#6a7a8a', '#8a9aaa', '#aab8c8', '#d8e0e8'] },
     duskStart: -1, duskLen: 1, night: false, glowNight: false,

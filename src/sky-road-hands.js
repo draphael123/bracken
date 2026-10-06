@@ -13,6 +13,8 @@
 //     last solid footing you stood on (never a crumbling span or a mover). Never an untold death.
 // Every capital line it says goes through ctx.number with a line listed in src/hint-lines.js.
 import { DISC } from './sky-road.js';
+import * as SKW from './redraw/skyroad_world.js';   /* THE SKY ROAD's rule, drawn (claude/skyroadart) */
+import * as SKD from './redraw/skyroad_dress.js';
 
 export const THERMAL = { lift: 150, glideLift: 205, over: 40, crest: 26, fadeIn: 0.8, fadeOut: 0.45, warn: 1.2 };
 export const GLIDE = { fall: 40 };
@@ -239,70 +241,36 @@ export function makeSkyRoadHands(ctx) {
   /* THE SKY: the cloud banks high over their zones, and their shadows down over the rock and the air */
   H.drawSky = (g, cx, cy, VW, VH, time) => {
     if (!S) return;
-    for (const c of cloudsNow()) { const x0 = Math.round(c.a - cx), x1 = Math.round(c.b - cx); if (x1 < -40 || x0 > VW + 40) continue;
-      g.globalAlpha = 0.16; g.fillStyle = '#28304a'; g.fillRect(x0, 0, x1 - x0, VH); g.globalAlpha = 1;   /* the shadow: down through everything */
-      const top = 6, w = c.z.w, lx = Math.round(c.left - cx);
-      for (let k = 0; k < 5; k++) { const px = lx + w * (k + 0.5) / 5, r = 10 + (k % 2) * 5; g.fillStyle = '#d6dfec'; g.beginPath(); g.arc(px, top + 14, r, 0, 7); g.fill(); g.fillStyle = '#f4f6fa'; g.beginPath(); g.arc(px - 3, top + 10, r * 0.6, 0, 7); g.fill(); }
-      g.fillStyle = '#d6dfec'; g.fillRect(lx + 4, top + 14, w - 8, 10); }
+    for (const c of cloudsNow()) SKW.drawCloud(g, c, cx, cy, VW, VH, time);   /* (claude/skyroadart, src/redraw/skyroad_world.js) the cloud and the shadow it throws */
     /* THE ROC's shadow over the bridge, once (greybox: a dark band and her wings high over it) */
     if (S.rocPass !== undefined) { const k = (ctx.time() - S.rocPass) / 2.4; if (k >= 0 && k <= 1) { const x = Math.round(-80 + k * (VW + 160)), y = 30 + Math.round(Math.sin(k * Math.PI) * 18);
       g.globalAlpha = 0.28; g.fillStyle = '#141824'; g.fillRect(x - 46, 0, 92, VH); g.globalAlpha = 0.85; g.fillStyle = '#1e1a22';
       g.beginPath(); g.moveTo(x - 60, y - 6); g.lineTo(x - 10, y - 2); g.lineTo(x, y - 12); g.lineTo(x + 10, y - 2); g.lineTo(x + 60, y - 6); g.lineTo(x + 14, y + 6); g.lineTo(x - 14, y + 6); g.closePath(); g.fill(); g.globalAlpha = 1; } }
   };
-  /* THE THERMALS: shimmer columns, dimmed by their state; a column about to die flickers; a dead one shows its rock dark */
+  /* THE THERMALS: live = rising gold air, a glowing plate and a light pool; dead = a slate plate and a dotted ghost column; about to die = it flickers; shaded = frost-pale */
   H.drawThermal = (g, pr, cx, cy, time) => {
-    if (!S) return; const x = Math.round(pr.x - cx), foot = Math.round(pr.y - cy), top = Math.round((pr.top ?? (pr.y - pr.h - THERMAL.over)) - cy), k = pr.k || 0;
-    if (x < -40 || x > 600 || foot < -20 || top > 400) return;
-    const flick = pr.soon && Math.floor(time * 10) % 2 ? 0.45 : 1;
-    if (k > 0.03) { g.globalAlpha = 0.10 * k * flick; g.fillStyle = '#ffe9a0'; g.fillRect(x - pr.w, top, pr.w * 2, foot - top); g.globalAlpha = 1;
-      for (let i = 0; i < 9; i++) { const ph = (time * (60 + i * 7) + i * 41) % Math.max(20, foot - top), yy = foot - ph, xx = x + Math.sin(time * 3 + i * 1.7 + yy * 0.05) * (pr.w - 4);
-        g.globalAlpha = (0.25 + 0.4 * k) * flick * (1 - ph / Math.max(20, foot - top)); g.fillStyle = i % 3 ? '#fff6c8' : '#ffb84a'; g.fillRect(Math.round(xx), Math.round(yy), 1, 4); }
-      g.globalAlpha = 1; }
-    /* the rock it rises from: hot when lit, grey when a cloud or no sun is on it */
-    g.fillStyle = k > 0.25 ? '#ffb84a' : pr.src0 === false ? '#4a4a5a' : '#8a8aa0'; g.fillRect(x - 7, foot - 2, 14, 2);
-    if (pr.shade === 'hawk' && k < 0.5) { g.fillStyle = '#5a4a3a'; g.fillRect(x - 3, foot - 4, 6, 2); }
+    if (!S) return; const top = pr.top ?? (pr.y - pr.h - THERMAL.over), k = pr.k || 0;
+    SKW.drawThermal(g, pr, cx, cy, time, top, k, pr.soon && Math.floor(time * 10) % 2 ? 0.45 : 1);
   };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L();
-    /* THE SUN-STONES: a dark slab face-down; struck, it turns gold face to the sun */
-    for (const s of S.stones.values()) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); if (x < -30 || x > VW + 30) continue;
-      const turning = s.turnT > 0, lift = turning ? Math.round(6 * Math.sin((1 - s.turnT / 0.6) * Math.PI)) : 0;
-      g.fillStyle = '#2a2430'; g.fillRect(x - 8, y - 12 - lift, 16, 12); g.fillStyle = s.on ? '#ffc850' : '#55505e'; g.fillRect(x - 7, y - 11 - lift, 14, 10);
-      g.fillStyle = s.on ? '#fff6c8' : '#6e6878'; g.fillRect(x - 5, y - 9 - lift, 4, 3); if (s.on) { g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 4); g.fillStyle = '#ffe9a0'; g.fillRect(x - 10, y - 16, 20, 4); g.globalAlpha = 1; } }
-    /* THE SUN-DISC and its beam over the chasm */
-    if (S.disc) { const d = S.disc, x = Math.round(d.x - cx), y = Math.round(d.y - cy), lit = ctx.time() < d.until;
-      g.fillStyle = '#3a3040'; g.fillRect(x - 2, y - 20, 4, 20); g.fillStyle = '#2a2430'; g.beginPath(); g.arc(x, y - 30, 13, 0, 7); g.fill(); g.fillStyle = lit ? '#ffd36b' : '#a07a40'; g.beginPath(); g.arc(x, y - 30, 11, 0, 7); g.fill();
-      g.fillStyle = lit ? '#fff6c8' : '#c8a060'; g.beginPath(); g.arc(x - 3, y - 33, 4, 0, 7); g.fill();
-      const road = ctx.props().filter(pr => pr.t === 'vent' && pr.thermal && pr.src === 'disc:disc'); const far = road.length ? road[road.length - 1] : null;
-      if (far) { g.globalAlpha = lit ? 0.35 + 0.1 * Math.sin(time * 6) : 0.12; g.strokeStyle = lit ? '#fff6c8' : '#c8a060'; g.lineWidth = lit ? 3 : 1; g.setLineDash(lit ? [] : [4, 4]); g.beginPath(); g.moveTo(x, y - 30);
-        g.lineTo(Math.round(far.x - cx), Math.round(far.y - cy)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
-        for (const pr of road) { g.globalAlpha = 0.5; g.fillStyle = lit ? '#ffd36b' : '#7a6040'; g.fillRect(Math.round(pr.x - cx) - 3, Math.round(pr.y - cy) - 6, 6, 4); g.globalAlpha = 1; } }
-      if (lit) { const left = d.until - ctx.time(); if (left < 4 && Math.floor(time * 6) % 2) { g.fillStyle = '#ff9a5c'; g.fillRect(x - 12, y - 46, 24, 2); } } }
-    /* THE CLOAK on its mast (until taken), and THE MASTS of the station */
-    for (const dc of (lv.decor || [])) { const x = Math.round(dc.x * TS + 8 - cx);
-      if (dc.kind === 'mast') { const y = Math.round((dc.y + 1) * TS - cy); g.fillStyle = '#5a4232'; g.fillRect(x - 1, y - 40, 3, 40); g.fillRect(x - 10, y - 40, 20, 2);
-        if (!S.cloak) { g.fillStyle = '#c9463d'; g.fillRect(x - 9, y - 38, 18, 14); g.fillStyle = '#efe6d2'; g.fillRect(x - 9, y - 38, 18, 3); g.fillRect(x - 1, y - 35, 2, 11); }
-        if (S.hung) { g.fillStyle = '#c9463d'; g.fillRect(x - 9, y - 38, 18, 14); } }
-      else if (dc.kind === 'flue') { const y0 = Math.round(dc.y0 * TS - cy), y1 = Math.round((dc.y1 + 1) * TS - cy); g.fillStyle = '#4e4652'; g.fillRect(x - 8, y0, 24, y1 - y0); g.fillStyle = '#6e6470'; g.fillRect(x - 6, y0, 4, y1 - y0); g.fillStyle = '#2a2430'; g.fillRect(x - 10, y0 - 3, 28, 4); }
-      else if (dc.kind === 'nest') { const y = Math.round((dc.y + 1) * TS - cy); g.fillStyle = '#7a5a3a'; g.beginPath(); g.ellipse(x, y - 3, 14, 4, 0, 0, 7); g.fill(); g.fillStyle = '#c8b090'; g.fillRect(x - 6, y - 6, 3, 2); g.fillRect(x + 2, y - 7, 3, 2); }
-      else if (dc.kind === 'kiteplat') { const y = Math.round(dc.y * TS - cy); g.strokeStyle = '#d8c8a8'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 30, y); g.lineTo(x - 10, y - 90); g.moveTo(x + 30, y); g.lineTo(x + 10, y - 90); g.stroke();
-        g.fillStyle = '#c9463d'; g.beginPath(); g.moveTo(x, y - 120); g.lineTo(x + 26, y - 96); g.lineTo(x, y - 80); g.lineTo(x - 26, y - 96); g.fill(); }
-      else if (dc.kind === 'feather') { const y = Math.round((dc.y + 1) * TS - cy); g.fillStyle = '#e8e0d0'; g.fillRect(x - 6, y - 2, 12, 2); g.fillStyle = '#6a5a4a'; g.fillRect(x - 7, y - 2, 3, 1); g.fillRect(x + 1, y - 4, 9, 1); g.fillStyle = '#c8bca8'; g.fillRect(x + 2, y - 3, 7, 1); }   /* (FIX PASS, B8) HER FEATHERS along the bridge: the trail to the Eyrie */
-      else if (dc.kind === 'bridgehead') { const y = Math.round((dc.y + 1) * TS - cy); g.fillStyle = '#8a8478'; g.fillRect(x - 20, y - 70, 10, 70); g.fillRect(x - 24, y - 74, 18, 6); } }
-    /* THE GREAT KITE REEL: the flue's hot air, the war-kite on it, and its line to the cage */
+    { const plan = SKD.planDress(lv, ctx.T); if (!H.noSupports) SKD.drawSupports(g, cx, cy, VW, time, plan, lv); SKD.drawDress(g, cx, cy, VW, time, plan); }   /* the dressing, the lights and what holds the ledges up */
+    for (const s of S.stones.values()) SKW.drawStone(g, s, cx, cy, time, VW);
+    if (S.disc) { const d = S.disc, lit = ctx.time() < d.until, road = ctx.props().filter(pr => pr.t === 'vent' && pr.thermal && pr.src === 'disc:disc'); SKW.drawDisc(g, d, lit, d.until - ctx.time(), road.length ? road[road.length - 1] : null, road, cx, cy, time); }
+    for (const dc of (lv.decor || [])) { const x = Math.round(dc.x * TS + 8 - cx); if (x < -90 || x > VW + 90) continue;
+      if (dc.kind === 'mast') SKW.drawMast(g, dc, cx, cy, S, time);
+      else if (dc.kind === 'flue') { const cg = ctx.movers().find(m => m.sky === 'reel'); SKW.drawFlue(g, dc, cx, cy, !!(cg && cg.hot), time); }
+      else if (dc.kind === 'nest') SKW.drawNest(g, dc, cx, cy);
+      else if (dc.kind === 'kiteplat') SKW.drawKitePlat(g, dc, cx, cy, time);
+      else if (dc.kind === 'feather') SKW.drawFeather(g, dc, cx, cy);
+      else if (dc.kind === 'bridgehead') SKW.drawBridgehead(g, dc, cx, cy); }
     if (lv.reel) { const r = lv.reel, cage = ctx.movers().find(m => m.sky === 'reel'), hot = cage && cage.hot, kx = Math.round(r.x - cx + Math.sin(time * 0.9) * 6), ky = Math.round(r.kiteY - cy + (1 - S.reelK) * 120 + Math.sin(time * 1.3) * 3);
       if (hot) { for (let i = 0; i < 8; i++) { const ph = (time * 70 + i * 23) % 140; g.globalAlpha = 0.5 * (1 - ph / 140); g.fillStyle = '#ffe9a0'; g.fillRect(Math.round(r.x - cx + Math.sin(time * 3 + i) * 8), Math.round(r.top - cy - ph), 1, 4); } g.globalAlpha = 1; }
-      if (cage) { const mx = Math.round(cage.x + 16 - cx), my = Math.round(cage.y - cy); g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(kx, ky + 22); g.lineTo(mx, my - 18); g.stroke();
-        g.fillStyle = '#5a4232'; g.fillRect(mx - 16, my - 18, 2, 18); g.fillRect(mx + 14, my - 18, 2, 18); g.fillRect(mx - 16, my - 20, 32, 3); }
-      g.fillStyle = '#2a2430'; g.beginPath(); g.moveTo(kx, ky - 26); g.lineTo(kx + 30, ky); g.lineTo(kx, ky + 22); g.lineTo(kx - 30, ky); g.closePath(); g.fill();
-      g.fillStyle = hot ? '#c9463d' : '#8a4a40'; g.beginPath(); g.moveTo(kx, ky - 24); g.lineTo(kx + 27, ky); g.lineTo(kx, ky + 20); g.lineTo(kx - 27, ky); g.closePath(); g.fill(); g.fillStyle = '#efe6d2'; g.fillRect(kx - 1, ky - 22, 2, 42); g.fillRect(kx - 25, ky - 1, 50, 2); }
-    /* THE RIDERS' LOFT's woven door (until it opens) */
-    if (!S.loft || !S.loft.open) for (const v of (lv.vaultDoors || [])) { const x = Math.round(v.x0 * TS - cx), y = Math.round(v.y0 * TS - cy), h = (v.y1 - v.y0 + 1) * TS; g.fillStyle = '#6a4a2a'; g.fillRect(x, y, TS, h); g.fillStyle = '#a07848';
-      for (let k = 0; k < h; k += 5) g.fillRect(x + (k % 10 ? 2 : 8), y + k, 6, 2); g.fillStyle = '#c9463d'; g.fillRect(x + 4, y + 6, 8, 6); }
+      SKW.drawReel(g, lv, cage, kx, ky, hot, time, cx, cy); }
+    if (!S.loft || !S.loft.open) for (const v of (lv.vaultDoors || [])) SKW.drawLoftDoor(g, v, cx, cy, TS);
     /* THE KITE-RIDERS' lines (the kite drawn over the goblin) and the snatch's talons */
     for (const e of ctx.enemies()) { if (!e.alive) continue;
-      if (e.t === 'kiterider' && e.st && e.st.kite && e.st.fly) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy) - 14; g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 4, y - 18); g.stroke();
-        g.fillStyle = '#2a2430'; g.beginPath(); g.moveTo(x - 4, y - 34); g.lineTo(x + 12, y - 22); g.lineTo(x - 4, y - 14); g.lineTo(x - 20, y - 22); g.closePath(); g.fill(); g.fillStyle = e.st.mode === 'swoopTell' && Math.floor(time * 12) % 2 ? '#ffd36b' : '#3a8a4a'; g.beginPath(); g.moveTo(x - 4, y - 32); g.lineTo(x + 10, y - 22); g.lineTo(x - 4, y - 16); g.lineTo(x - 18, y - 22); g.closePath(); g.fill();
+      if (e.t === 'kiterider' && e.st && e.st.kite && e.st.fly) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy) - 14; SKW.riderKite(g, x, y, e.st.mode, time);
         if (e.st.mode === 'swoopTell') { g.globalAlpha = 0.6; g.strokeStyle = '#ffd36b'; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(x, y + 8); g.lineTo(Math.round(e.st.tx - cx), Math.round(e.st.ty - cy)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; } }
       if (e.t === 'harpy' && e.mode === 'snatch') { const x = Math.round(e.x - cx), y = Math.round(e.y - cy); g.fillStyle = '#c6a553'; g.fillRect(x - 5, y + 4, 2, 8); g.fillRect(x + 3, y + 4, 2, 8); } }
   };
