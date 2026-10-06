@@ -1,13 +1,15 @@
 /* tools/dune-worm.mjs — THE DUNE WORM IN THE PAGE (docs/briefs/dune-worm.md). tools/caravan.mjs proves his machine in Node; this proves the
    game that wraps it, because every rule below is a rule about the WORLD around the machine, and a machine can be right while its hands
    are wrong:
-     A3   every one of his four attacks, FORCED, winds up (a Tell the game hears: windingUp, the mark the table gives it) and then lands on a
-          hero who stands in it - the breach, the spit, the lunge and the swallow's bite - and every timer he carries is a number at spawn
+     A3   every one of his five attacks, FORCED, winds up (a Tell the game hears: windingUp, the mark the table gives it) and then lands on a
+          hero who stands in it - the breach, the spit, the lunge, the swallow's bite and (claude/duneworm2) the tail's sweep - and every timer he carries is a number at spawn
      C1   what hurts is where it is drawn: the breach lands only on the locked spot, and a hero one step off it is not touched
      A10  THE STORM IS HIS AND IS PHASE TWO'S: none before half, then gusts that move a hero in his hollow, gone again the moment a death takes you out of it; the sun
           goes in under it; and it is gone when he dies
      the level's rule still bites in his hollow in phase one: the open sand builds sunstroke, the rolled-out shade does not
      THE GATE AFTER HIS DEATH: the gate across the hollow does not end the level while he lives, and does once he is dead
+     B11  HE GUARDS BY ANGLE (claude/duneworm2): up out of the sand, a hero's blow from the front clanks off his plates (nothing, and it says
+          GO ROUND), from behind it lands WHOLE (no chip: his plates are his ward), and on his reared belly from the front too
    Page, one Chrome, this checkout's own port. */
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
@@ -25,7 +27,7 @@ try {
   /* EACH TEST STARTS COOL: the sun keeps working in the hollow (its own test is below), and since it fills in 6 s and BUILDS at full
      (2026-09-25) the sunstroke taken over the forced attacks before a test was being counted as that test's blow - the breach's C1
      read 4 damage "one step off the spot" that was the sun's. P.sun is put back to cool where each test starts, so each measures its own blow */
-  const force=(idx,what,stand)=>{BK.god=false;P.hp=P.maxHp;P.dead=0;P.inv=0;P.sun={v:0};w.out=w.k=0;W.mode='under';W.t=0;W.i=idx;W.order=['spit','lunge','swallow'];W.ripples=[];let tell=null,mark=null,heard=false,blow=null,hp0=P.hp,took=0;
+  const force=(idx,what,stand)=>{BK.god=false;P.hp=P.maxHp;P.dead=0;P.inv=0;P.sun={v:0};w.out=w.k=0;W.mode='under';W.t=0;W.i=idx;W.order=['spit','lunge','swallow','sweep'];W.ripples=[];let tell=null,mark=null,heard=false,blow=null,hp0=P.hp,took=0;
     for(let f=0;f<60*5;f++){P.inv=0;const tx=stand();if(tx!==null){P.x=tx;P.y=A.floor;P.vx=0;}const before=P.hp;BK.sim(1);took+=Math.max(0,before-P.hp);P.hp=Math.max(P.hp,40);
       if(/Tell$/.test(b.mode)&&!tell){tell=b.mode;mark=BK.markOf(b);heard=BK.telling(b);}
       if(tell&&!/Tell$/.test(b.mode)&&!blow)blow=b.mode;
@@ -35,6 +37,11 @@ try {
   out.spit=force(1,'spit',()=>W.mode==='spitTell'||W.mode==='spit'?W.x+W.face*70:null);
   out.lunge=force(3,'lunge',()=>W.mode==='lunge'||W.mode==='lungeTell'?W.lungeTo:A.x0+300);
   out.swallow=force(5,'swallow',()=>W.pit?W.pit.x:A.x0+250);
+  out.sweep=force(7,'sweep',()=>A.x0+250);
+  /* B11: the plates by angle, through the game's own blow (hurtAs: the hero's light cut, the chip and greed rule behind it) */
+  {const hit=(mode,dx)=>{W.mode=mode;W.t=9;W.face=1;W.hitMult=mode==='tangled'?2:1;b.mode=mode;b.greedLog=[];b.greedT=0;b.chipAcc=0;b.poise=0;b.broken=0;const h0=b.hp;const n0=BK.textLab?BK.textLab.nums().length:0;BKT.hurtAs('light',b,20,b.x+dx,false);const d=h0-b.hp;b.hp=h0;return d;};
+   BK.sim(1);out.plates={front:hit('surfaced',14),back:hit('surfaced',-14),rearFront:hit('spitTell',14),tailFront:hit('sweepTell',14),under:hit('under',-14),tangled:hit('tangled',14)};
+   W.mode='under';W.t=0;}
   /* C1: one step off the locked spot and the breach does not touch you */
   {BK.god=false;P.hp=P.maxHp;P.dead=0;P.sun={v:0};W.mode='under';W.t=0;W.i=0;W.ripples=[];let took=0,left=false;
    for(let f=0;f<60*3&&W.mode!=='surfaced';f++){P.inv=0;if(!left){P.x=A.x0+220;P.y=A.floor;}if(!left&&W.ripples.some(q=>q.real&&q.commit)){left=true;P.x=A.x0+220+40;}const h0=P.hp;BK.sim(1);took+=Math.max(0,h0-P.hp);}
@@ -62,13 +69,15 @@ try {
   assert.equal(r.spawn.t, 'duneworm'); assert.equal(r.spawn.mode, 'sleep', 'he sleeps under the sand until the hollow is crossed');
   for (const [k, v] of r.spawn.timers) assert.ok(typeof v === 'number' && Number.isFinite(v), 'A3: every timer a number at spawn: ' + k + '=' + v);
   assert.ok(r.active, 'crossing the trigger starts the fight');
-  const want = { ripple: ['rippleTell', '!!', 'breach'], spit: ['spitTell', '!', 'spit'], lunge: ['lungeTell', '!!', 'lunge'], swallow: ['swallowTell', '!!', 'swallow'] };
+  const want = { ripple: ['rippleTell', '!!', 'breach'], spit: ['spitTell', '!', 'spit'], lunge: ['lungeTell', '!!', 'lunge'], swallow: ['swallowTell', '!!', 'swallow'], sweep: ['sweepTell', '!!', 'sweep'] };
   for (const [k, [tell, mark, blow]] of Object.entries(want)) { const x = r[k];
     assert.equal(x.tell, tell, 'A1/A3: ' + k + ' is told by ' + tell + ': ' + JSON.stringify(x));
     assert.equal(x.mark, mark, k + ': the mark over it is ' + mark + ' (src/marks.js): ' + JSON.stringify(x));
     assert.ok(x.heard, 'A2: ' + k + ' winds up in windingUp() (its sound): ' + JSON.stringify(x));
     assert.equal(x.blow, blow, k + ': the tell hands to its blow: ' + JSON.stringify(x));
     assert.ok(x.took > 0, 'A3: ' + k + ' FIRES: it lands on a hero standing in it: ' + JSON.stringify(x)); }
+  { const p = r.plates; assert.ok(p.front === 0 && p.under === 0 && p.back >= 18 && p.rearFront >= 18 && p.tailFront >= 18 && p.tangled >= 36,
+      'B11/B13: his plates turn the front, the hide behind them and his reared belly take a 20 blow whole (no chip), tangled double, under the sand nothing: ' + JSON.stringify(p)); }
   assert.equal(r.offSpot.took, 0, 'C1: one step off the locked spot, the breach does not touch you: ' + JSON.stringify(r.offSpot));
   assert.ok(r.sun.open > 0.3 && r.sun.shade === 0 && !r.sun.storm0, 'phase one: the sun works in his hollow, and his rolled-out shade is shade: ' + JSON.stringify(r.sun));
   assert.ok(r.storm.called && r.storm.phase === 2, 'A10: at half he calls the storm: ' + JSON.stringify(r.storm));
@@ -79,5 +88,5 @@ try {
   assert.ok(!r.gate.dead && r.gate.open && !r.gate.stormAfter, 'he dies, the gate opens and his storm goes with him: ' + JSON.stringify(r.gate));
   assert.notEqual(r.gate.after, 'play', 'and the gate ends the level: ' + JSON.stringify(r.gate));
   assert.deepEqual(pg.errors, []);
-  console.log('dune-worm: four told attacks forced and landed, the breach true to its spot, the storm his and phase two\'s, the sun in his hollow, the gate after his death.');
+  console.log('dune-worm: five told attacks forced and landed, his plates by angle, the breach true to its spot, the storm his and phase two\'s, the sun in his hollow, the gate after his death.');
 } finally { pg.close(); }

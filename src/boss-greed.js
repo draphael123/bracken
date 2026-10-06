@@ -114,7 +114,7 @@ export const OPEN_RULE = {
 /* BLOWS ARE HIS MECHANIC: the Pyromancer is opened by being HIT while he runs hot (every blow heats him, src/main.js hurtEnemy0), so a run of
    blows is the answer, not greed: no reprisal (his chip stands - a blow outside his opening is still a twentieth) */
 export const NO_GREED = new Set(['pyromancer']);
-export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'greenteeth']);
+export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'greenteeth', 'duneworm']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   mother: 'her body is armoured to every blade already (ARMOURED); the heart node is her opening and it is not the boss',

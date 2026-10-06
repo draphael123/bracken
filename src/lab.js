@@ -1074,7 +1074,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=false;
         const W=boss.st,m=boss.mode,cv=BK.caravan?BK.caravan():null,wn=cv&&cv.winches?cv.winches.find(q=>q.hollow):null;
         const can=wn&&wn.canopy?[wn.canopy.x0*TS+8,(wn.canopy.x1+1)*TS-8]:null,out=!!(wn&&wn.k>=0.95),mid=can?(can[0]+can[1])/2:(A.x0+A.x1)/2;
-        const reach=LAB_REACH[h]+(boss.w||30)/2,dx=boss.x-P.x,side=Math.sign(dx)||1,touch=!!W&&['breach','tangled','surfaced','spitTell','spit','lungeTell','swallow','dive'].includes(m);
+        const reach=LAB_REACH[h]+(boss.w||30)/2,dx=boss.x-P.x,side=Math.sign(dx)||1,touch=!!W&&['breach','tangled','surfaced','spitTell','spit','lungeTell','swallow','dive','sweepTell','sweep'].includes(m);
         const rest=P.labRest;let gx=null,swing=false,brace=false,wind=false;
         const real=W&&W.ripples.find(r=>r.real&&r.commit);
         const G=cv&&cv.stormNow&&cv.stormNow.phase==='gust'?cv.stormNow.dir:0;   /* in a gust, the way the arrow points */
@@ -1085,12 +1085,17 @@ async function runbossLab(BK, opts) {
             if(m==='swallow'&&Math.abs(P.x-W.pit.x)<50&&P.ground){BK.press('jump');P.labJump=12;} }
         if(gx===null&&(m==='lungeTell'||m==='lunge')&&W){ const away=Math.sign(W.lungeTo-W.lungeFrom)||Math.sign(P.x-W.x)||1,room=(away>0?A.x1-P.x:P.x-A.x0)>70?away:-away; if(Math.abs(P.x-W.lungeTo)<52)gx=W.lungeTo+room*60; }   /* on, the way he is coming: away from the shadow AND from him */
         if(gx===null&&(m==='spitTell'||m==='spit')&&Math.abs(dx)<160){ if(SHIELDED(h)){k.block=true;P.face=side;}else if(h==='warden'){k.block=DEFLECT_TAP(f);P.face=side;}else gx=boss.x+side*24; }   /* the fan lands 35-145 px in front of him: shield it, or be behind him */
+        /* (claude/duneworm2) THE TAIL: it sweeps along the floor from past you to his head - jump it as it comes */
+        if(m==='sweep'&&W&&typeof W.tailX==='number'){const td=P.x-W.tailX,tv=Math.sign(boss.x-W.tailX)||1;if(P.ground&&!(P.labJump>0)&&Math.abs(td)<46&&(Math.sign(td)===tv||Math.abs(td)<14)){BK.press('jump');P.labJump=14;}}
         if(gx===null&&!k.block){
-          if(m==='tangled'||(touch&&!rest)){gx=boss.x-side*Math.max(12,Math.min(LAB_STAND[h]||14,reach-6));swing=!rest;}
+          if(m==='tangled'||(touch&&!rest)){const bare=m==='tangled'||m==='spitTell'||m==='sweepTell',fc=(W&&W.face)||1,st=Math.max(12,Math.min(LAB_STAND[h]||14,reach-6)),behind=Math.sign(P.x-boss.x)===-fc&&Math.abs(P.x-boss.x)>=6;
+            gx=bare?boss.x-side*st:boss.x-fc*st;swing=!rest&&(bare||behind);}   /* (claude/duneworm2) HIS CROWN PLATES FACE YOU: go round him and cut the hide behind them; tangled, or reared (the belly bared), from anywhere */
           else if(wn&&!out&&wn.out===0&&!(wn.cd>0.2)){gx=wn.x-(P.x<wn.x?10:-10);wind=true;}
           else if(m==='rippleTell'||m==='under'||m==='dive'||m==='sleep'||m==='wake')gx=out?mid:P.x;
           else gx=P.x; }
         if(wind&&Math.abs(wn.x-P.x)<16&&P.atk<0&&P.ground){P.face=Math.sign(wn.x-P.x)||P.face;BK.press('atk');swings++;}
+        { const Gq=BK.greed;if(Gq&&swing&&m!=='tangled'&&Gq.count(boss)>=Gq.limit(boss)-1)swing=false;   /* (claude/duneworm2) a blow short of his greed, as a player counts it; and out of the ring when it closes */
+          if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+(boss.w||30)/2+18){gx=boss.x-side*((Gq.reach||60)+(boss.w||30)/2+30);swing=false;} }
         const S=cv&&cv.stormNow;if(S&&S.phase==='gust'&&P.ground&&!real&&!(m==='swallow'||m==='swallowTell'||m==='lunge'||m==='lungeTell')&&!swing){brace=true;}
         if(brace&&(h==='knight'||h==='paladin'||h==='reaper'||h==='warden'||h==='pirate'))k.block=true;
         if(gx!==null&&!k.block&&Math.abs(gx-P.x)>4){gx=Math.max(A.x0+10,Math.min(A.x1-10,gx));k[gx>P.x?'right':'left']=true;}

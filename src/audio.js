@@ -835,6 +835,7 @@ Object.assign(SFX, {
   wormSpit() { noise(0.2, 0.34, 900, 0.5); noise(0.35, 0.16, 2600, 0.9, 0.04); tone('sine', 300, 90, 0.2, 0.12); },
   wormHiss() { noise(0.7, 0.2, 2400, 0.7); tone('sawtooth', 90, 60, 0.6, 0.1); },   /* THE LUNGE TELL: the coil drawing back, sand hissing off it */
   wormSink() { noise(0.9, 0.18, 260, 0.35); tone('sine', 180, 50, 0.8, 0.12); for (let i = 0; i < 4; i++) noise(0.06, 0.1, 1200, 0.8, 0.15 + i * 0.16); },   /* THE SWALLOW TELL: the sand running away downward */
+  wormTail() { noise(0.55, 0.2, 520, 0.5); noise(0.4, 0.12, 2000, 0.9, 0.12); tone('sawtooth', 60, 120, 0.45, 0.12); },   /* THE TAIL TELL (claude/duneworm2): sand pouring off something rising behind you, and a rattle */
   wormTangle() { for (let i = 0; i < 5; i++) noise(0.05, 0.22, 3400 - i * 300, 1.1, i * 0.04); tone('square', 900, 300, 0.14, 0.06); SFX.clank(); },   /* the awning tearing off its rollers */
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
   stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
