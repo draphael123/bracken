@@ -172,11 +172,11 @@ export function bakeSkiff(v) {
   return once('skiff' + v, () => { const W = 84, H = 52, [c, g] = canvas(W, H), cx = 42, gy = 51;
     const gun = x => 38 - 6 * Math.pow((x - cx) / 30, 2), keel = x => 49 - 4 * Math.pow((x - cx) / 30, 2);
     for (let x = cx - 30; x <= cx + 30; x++) { for (let y = R(gun(x)); y <= R(keel(x)); y++) { const t = (y - gun(x)) / (keel(x) - gun(x) + 0.1); const rb = (((x + R(Math.sin(t * Math.PI) * 2.4 * (x > cx ? 1 : -1)) - (cx - 30)) % 6) + 6) % 6 < 2;
-      let col = t < 0.15 ? HIDE.h4 : t < 0.5 ? HIDE.h3 : t < 0.8 ? HIDE.h2 : HIDE.h1; if (rb) col = t < 0.2 ? BONE.b4 : t < 0.75 ? BONE.b3 : BONE.b2; else if ((x * 3 + y * 5) % 17 === 0) col = HIDE.h1; if (y >= R(keel(x)) - 1) col = BONE.b2; px(g, x, y, col); } }
+      let col = t < 0.15 ? HIDE.h4 : t < 0.5 ? HIDE.h3 : t < 0.8 ? HIDE.h2 : HIDE.h1; if (rb) col = t < 0.2 ? BONE.b4 : t < 0.75 ? BONE.b3 : BONE.b2; else if ((x * 3 + y * 5) % 17 === 0) col = HIDE.h1; if (y >= R(keel(x)) - 1) col = BONE.b2; if (v && x > cx + 6 && !rb && y < R(keel(x)) - 1) continue; px(g, x, y, col); } }   /* (v 1: a WRECK - the hide is gone from the stern half, only the ribs stand) */
     rect(g, cx - 30, R(gun(cx - 30)), 61, 2, BONE.b3); rect(g, cx - 30, R(gun(cx - 30)), 61, 1, BONE.b4);   /* the gunwale bone */
     for (let x = cx - 24; x <= cx + 24; x += 8) { px(g, x, R(gun(x)) + 3, HIDE.h0); px(g, x + 2, R(gun(x)) + 4, HIDE.h0); }   /* the lacing */
-    rect(g, cx - 1, 6, 3, 38, BONE.b3); rect(g, cx - 1, 6, 1, 38, BONE.b4); rect(g, cx + 1, 6, 1, 38, BONE.b1);   /* the mast */
-    for (let side = -1; side <= 1; side += 2) { for (let k = 0; k < 33; k++) { const x = cx + side * k, y = R(7 + k * 0.78), yb = R(32 - (k > 26 ? (k - 26) * 0.6 : 0) + ((k >> 2) % 2 ? 1 : 0)); for (let yy = y; yy <= yb; yy++) { const t = (yy - y) / Math.max(1, yb - y); px(g, x, yy, yy === y ? HIDE.h4 : yy === yb ? HIDE.h1 : t < 0.35 ? HIDE.h3 : t < 0.8 ? HIDE.h2 : HIDE.h1); if (k % 8 === 4 && yy > y) px(g, x, yy, HIDE.h1); } } }   /* the awning: a tent of hide down from the mast head, seamed, scalloped at the hem */
+    rect(g, cx - 1, v ? 16 : 6, 3, v ? 28 : 38, BONE.b3); rect(g, cx - 1, v ? 16 : 6, 1, v ? 28 : 38, BONE.b4); rect(g, cx + 1, v ? 16 : 6, 1, v ? 28 : 38, BONE.b1);   /* the mast (snapped short on the wreck) */
+    for (let side = -1; side <= 1; side += 2) { for (let k = 0; k < (v ? (side < 0 ? 24 : 12) : 33); k++) { const x = cx + side * k, y = R((v ? 16 : 7) + k * 0.78), yb = R(32 - (k > 26 ? (k - 26) * 0.6 : 0) + ((k >> 2) % 2 ? 1 : 0)); for (let yy = y; yy <= yb; yy++) { const t = (yy - y) / Math.max(1, yb - y); px(g, x, yy, yy === y ? HIDE.h4 : yy === yb ? HIDE.h1 : t < 0.35 ? HIDE.h3 : t < 0.8 ? HIDE.h2 : HIDE.h1); if (k % 8 === 4 && yy > y) px(g, x, yy, HIDE.h1); } } }   /* the awning: a tent of hide down from the mast head, seamed, scalloped at the hem */
     for (let k = 6; k < 33; k += 8) for (const side of [-1, 1]) { rect(g, cx + side * k - 1, R(7 + k * 0.78) + 5, 3, 4, k % 16 === 6 ? GL.c3 : GL.c2); px(g, cx + side * k, R(7 + k * 0.78) + 5, GL.w); px(g, cx + side * k, R(7 + k * 0.78) + 8, GL.c5); }   /* glass shards set in the hide */
     px(g, cx, 3, BONE.b4); rect(g, cx - 1, 4, 3, 2, BONE.b3);
     const bx = cx + 31, by = R(gun(cx + 30)) - 2;   /* the bow: a horned skull lashed on */
@@ -225,3 +225,16 @@ export function bakeHeadFace() { return once('headface', () => { const W = 16 * 
   /* a seam of lightning down the cheek */
   for (let y = 0; y < H; y++) { const xx = R(172 + Math.sin(y / 6) * 3); px(g, xx, y, GL.vioL); px(g, xx + 1, y, GL.vio); }
   return c; }); }
+
+/* THE BONE CROSSING's wreck on the horizon: a sand-leviathan's ribcage half sunk in the glass, far off (haze-tinted by the hour, v 0..4 = day .. night): a skull at one end, a spine, six ribs. Pure pixels; the horizon draws it (src/redraw/glasssea_art.js). */
+export function bakeFarBones(v) {
+  return once('farbones' + v, () => { const [c, g] = canvas(176, 60), cols = [['#e8e4c8', '#c4c0a4', '#9a9680'], ['#d8c8b8', '#b0a0a8', '#8a7a90'], ['#b890a8', '#8a6a90', '#5e4a78'], ['#5a5a98', '#3e4478', '#2a3060'], ['#2c3a6c', '#1c2850', '#101c3c']][v];
+    const [lit, mid, dk] = cols, gy = 57;
+    rect(g, 8, gy - 3, 160, 3, mid); rect(g, 8, gy - 3, 160, 1, lit);   /* the spine, half under the glass */
+    for (let x = 14; x < 164; x += 9) { rect(g, x, gy - 7, 5, 4, mid); rect(g, x, gy - 7, 5, 1, lit); rect(g, x + 4, gy - 6, 1, 3, dk); }   /* its vertebrae */
+    for (let i = 0; i < 6; i++) { const x0 = 40 + i * 20, hgt = 50 - Math.abs(i - 2.2) * 5;
+      for (let k = 0; k < hgt; k++) { const t = k / hgt, xx = x0 + Math.round(Math.sin(t * Math.PI * 0.55) * 15), yy = gy - 4 - k, th = t < 0.25 ? 3 : t < 0.75 ? 2 : 1; rect(g, xx, yy, th, 1, t < 0.6 ? lit : mid); px(g, xx + th, yy, dk); } }   /* the ribs, arching over */
+    rect(g, 2, gy - 17, 30, 14, mid); rect(g, 2, gy - 17, 30, 2, lit); rect(g, 26, gy - 12, 12, 9, mid); rect(g, 8, gy - 13, 5, 5, dk); for (let x = 28; x < 38; x += 3) rect(g, x, gy - 4, 1, 3, lit);   /* the skull: a long jaw with its teeth, one dark eye socket */
+    line(g, 6, gy - 17, 2, gy - 28, mid); line(g, 22, gy - 17, 25, gy - 27, mid);   /* its horns */
+    return c; });
+}

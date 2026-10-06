@@ -14,6 +14,12 @@ import { bakeSandSlopes } from './slopes.js';
 export const GL = { w: '#ffffff', c1: '#e6fff6', c2: '#b4f4de', c3: '#7adcc4', c4: '#4cb8a6', c5: '#34908c', c6: '#24707a', c7: '#175260', c8: '#0f3a4c', c9: '#0a2638', c10: '#061826',
   vio: '#6a48c0', vioL: '#b89cff', cy: '#8af0ff', bub: '#d8fff4' };
 const RAMP = [GL.c1, GL.c2, GL.c3, GL.c4, GL.c5, GL.c6, GL.c7, GL.c8, GL.c9, GL.c10];
+/* THE THREE GLASSES: the edge and the field are SEA-GREEN, the Bone Crossing's reach is CLEAR (cyan-ice, sun-bleached), the flats past the sunset are VIOLET-BLUE (cold glass, cyan lightning) - blended over six columns at each seam */
+const RAMPS = [RAMP, ['#f2ffff', '#c8f6fa', '#90e4f2', '#5cc6e0', '#3a9cc4', '#2a78a8', '#1c5688', '#123c68', '#0a2848', '#061a30'], ['#f4eeff', '#d6ccfa', '#aea4f0', '#827ed8', '#605cb8', '#464494', '#303070', '#202050', '#12122f', '#080818']];
+export function toneAt(x, y) { const base = x < 196 ? 0 : x < 334 ? 1 : 2;
+  for (const [b, lo, hi] of [[196, 0, 1], [334, 1, 2]]) if (Math.abs(x - b) < 6) { const t = (x - (b - 6)) / 12; return hash(x * 7, (y >> 1) + 3) % 100 < t * 100 ? hi : lo; }
+  return base; }
+const VEIN = [[GL.vio, GL.vioL], [GL.vio, GL.vioL], ['#4ab8e8', '#bff8ff']];
 /* pixel-depth (rows under the surface) at which each stop of the ramp is fully reached */
 const RAMP_AT = [0, 3, 8, 16, 30, 52, 80, 120, 170, 230];
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
@@ -22,58 +28,58 @@ const hex2 = s => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), par
 const RGBS = RAMP.map(hex2);
 /* the ramp colour at pixel-depth d, with a 2x2 ordered dither between neighbouring stops so the body bands smoothly without a gradient */
 const BAYER = [0.125, 0.625, 0.875, 0.375];
-function ramp(d, wx, wy) {
-  let i = 0; while (i < RAMP_AT.length - 1 && d >= RAMP_AT[i + 1]) i++;
-  if (i >= RAMP_AT.length - 1) return RAMP[RAMP.length - 1];
+function ramp(d, wx, wy, tn) {
+  const RP = RAMPS[tn || 0]; let i = 0; while (i < RAMP_AT.length - 1 && d >= RAMP_AT[i + 1]) i++;
+  if (i >= RAMP_AT.length - 1) return RP[RP.length - 1];
   const t = (d - RAMP_AT[i]) / (RAMP_AT[i + 1] - RAMP_AT[i]), b = BAYER[(wx & 1) + ((wy & 1) << 1)];
-  return t > b ? RAMP[i + 1] : RAMP[i];
+  return t > b ? RP[i + 1] : RP[i];
 }
-const lighter = c => { const i = RAMP.indexOf(c); return i > 0 ? RAMP[i - 1] : c; };
-const darker = c => { const i = RAMP.indexOf(c); return i >= 0 && i < RAMP.length - 1 ? RAMP[i + 1] : c; };
+const lighter = (c, tn) => { const RP = RAMPS[tn || 0], i = RP.indexOf(c); return i > 0 ? RP[i - 1] : c; };
+const darker = (c, tn) => { const RP = RAMPS[tn || 0], i = RP.indexOf(c); return i >= 0 && i < RP.length - 1 ? RP[i + 1] : c; };
 
 /* the world-position features: a slanting streak, a bubble, a violet vein. d = the pixel depth of the cell; the three fade out with depth */
 function streak(wx, wy) { const a = (wx * 2 + wy) % 61, b = (wx - wy * 2 + 4000) % 47; return a === 0 || a === 1 && hash(wx >> 3, wy >> 3) % 3 === 0 || b === 0 && hash(wx >> 4, wy >> 4) % 2 === 0; }
 function bubble(wx, wy) { const cx = wx >> 3, cy = wy >> 3; if (hash(cx, cy) % 9 !== 0) return 0; const ox = 2 + hash(cx, cy + 7) % 4, oy = 2 + hash(cx + 5, cy) % 4, dx = (wx & 7) - ox, dy = (wy & 7) - oy;
   if (dx === 0 && dy === 0) return 2; if ((dx === -1 && dy === -1) || (dx === 0 && dy === -1) || (dx === -1 && dy === 0)) return 1; return 0; }
-function vein(wx, wy) { const cx = Math.floor(wx / 22), seg = Math.floor(wy / 40); if (hash(cx, seg) % 3 !== 0) return 0; const xv = cx * 22 + 3 + hash(cx, 9) % 14 + Math.round(2.4 * Math.sin(wy / 7 + cx * 2.1) + 1.2 * Math.sin(wy / 3.1 + cx));
+function vein(wx, wy) { const cx = Math.floor(wx / 22), seg = Math.floor(wy / 40); if (hash(cx, seg) % 4 !== 0) return 0; const xv = cx * 22 + 3 + hash(cx, 9) % 14 + Math.round(2.4 * Math.sin(wy / 7 + cx * 2.1) + 1.2 * Math.sin(wy / 3.1 + cx));
   const d = wx - xv; return d === 0 ? 2 : (d === 1 && hash(wy, cx) % 3 === 0) || (d === -1 && hash(wy, cx + 3) % 4 === 0) ? 1 : 0; }
 
 /* ================================ GLASS: flats, fills, cliffs ================================ */
 /* depth = whole tiles of glass above this one (0 = the surface tile); aL/aR/aU/aD = open air on that side; wx0/wy0 = the tile's world pixel */
-function glassTile(x, y, depth, aL, aR, aU, aD, slopeAbove) {
-  const key = 'g' + (x % 5) + '_' + (y % 5) + '_' + Math.min(depth, 15) + (aL ? 'L' : '') + (aR ? 'R' : '') + (aU ? 'U' : '') + (aD ? 'D' : '') + (slopeAbove ? 'S' : '');
-  return once(key, () => { const [c, g] = canvas(16, 16), wx0 = x * 16, wy0 = y * 16;
+function glassTile(x, y, depth, aL, aR, aU, aD, slopeAbove, tn) {
+  const key = 'g' + tn + '_' + (x % 5) + '_' + (y % 5) + '_' + Math.min(depth, 15) + (aL ? 'L' : '') + (aR ? 'R' : '') + (aU ? 'U' : '') + (aD ? 'D' : '') + (slopeAbove ? 'S' : '');
+  return once(key, () => { const [c, g] = canvas(16, 16), wx0 = x * 16, wy0 = y * 16, RP = RAMPS[tn];
     for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) {
       const wx = wx0 + xx, wy = wy0 + yy, dpx = depth * 16 + yy + (slopeAbove ? 8 : 0);
-      let col = ramp(dpx, wx, wy);
-      if (dpx > 3 && dpx < 120) { if (streak(wx, wy)) col = lighter(col); }
-      const bb = dpx > 6 && dpx < 150 ? bubble(wx, wy) : 0; if (bb) col = bb === 2 ? GL.bub : lighter(lighter(col));
-      const vv = dpx > 5 ? vein(wx, wy) : 0; if (vv) col = vv === 2 ? (dpx < 90 ? GL.vioL : GL.vio) : dpx < 90 ? GL.vio : darker(col);
+      let col = ramp(dpx, wx, wy, tn);
+      if (dpx > 3 && dpx < 120) { if (streak(wx, wy)) col = lighter(col, tn); }
+      const bb = dpx > 6 && dpx < 150 ? bubble(wx, wy) : 0; if (bb) col = bb === 2 ? GL.bub : lighter(lighter(col, tn), tn);
+      const vv = dpx > 5 ? vein(wx, wy) : 0; if (vv) col = vv === 2 ? (dpx < 90 ? VEIN[tn][1] : VEIN[tn][0]) : dpx < 90 ? VEIN[tn][0] : darker(col, tn);
       px(g, xx, yy, col); }
     if (depth === 0 && aU && !slopeAbove) {   /* the lit skin: a white-hot line with sparkle, then a pale second line */
-      for (let xx = 0; xx < 16; xx++) { const h = hash(wx0 + xx, wy0); px(g, xx, 0, h % 3 === 0 ? GL.w : GL.c1); px(g, xx, 1, h % 5 === 0 ? GL.c1 : GL.c2); if (h % 7 === 0) px(g, xx, 2, GL.c2); } }
-    if (aL) { for (let yy = aU ? 2 : 0; yy < 16; yy++) { px(g, 0, yy, GL.c2); px(g, 1, yy, yy % 3 ? GL.c3 : GL.c2); } }   /* the sun side of a cliff: a lit rim */
-    if (aR) { for (let yy = aU ? 2 : 0; yy < 16; yy++) { px(g, 15, yy, GL.c7); px(g, 14, yy, GL.c6); } }
-    if (aU && aL) { g.clearRect(0, 0, 2, 1); px(g, 2, 0, GL.w); px(g, 1, 1, GL.c1); }
-    if (aU && aR) { g.clearRect(14, 0, 2, 1); px(g, 13, 0, GL.w); px(g, 14, 1, GL.c2); }
-    if (aD) { for (let xx = 0; xx < 16; xx++) { px(g, xx, 15, GL.c8); px(g, xx, 14, GL.c7); }   /* an undercut: a dark lip and glass icicles */
-      for (let k = 0; k < 3; k++) { const ix = 1 + ((hash(wx0, wy0 + k * 5) % 13)), len = 2 + hash(ix, wx0) % 3; for (let q = 0; q < len; q++) { px(g, ix, 15 - q, q === len - 1 ? GL.w : GL.c3); } } }
+      for (let xx = 0; xx < 16; xx++) { const h = hash(wx0 + xx, wy0); px(g, xx, 0, h % 3 === 0 ? GL.w : RP[0]); px(g, xx, 1, h % 5 === 0 ? RP[0] : RP[1]); if (h % 7 === 0) px(g, xx, 2, RP[1]); } }
+    if (aL) { for (let yy = aU ? 2 : 0; yy < 16; yy++) { px(g, 0, yy, RP[1]); px(g, 1, yy, yy % 3 ? RP[2] : RP[1]); } }   /* the sun side of a cliff: a lit rim */
+    if (aR) { for (let yy = aU ? 2 : 0; yy < 16; yy++) { px(g, 15, yy, RP[6]); px(g, 14, yy, RP[5]); } }
+    if (aU && aL) { g.clearRect(0, 0, 2, 1); px(g, 2, 0, GL.w); px(g, 1, 1, RP[0]); }
+    if (aU && aR) { g.clearRect(14, 0, 2, 1); px(g, 13, 0, GL.w); px(g, 14, 1, RP[1]); }
+    if (aD) { for (let xx = 0; xx < 16; xx++) { px(g, xx, 15, RP[7]); px(g, xx, 14, RP[6]); }   /* an undercut: a dark lip and glass icicles */
+      for (let k = 0; k < 3; k++) { const ix = 1 + ((hash(wx0, wy0 + k * 5) % 13)), len = 2 + hash(ix, wx0) % 3; for (let q = 0; q < len; q++) { px(g, ix, 15 - q, q === len - 1 ? GL.w : RP[2]); } } }
     return c; });
 }
 /* ================================ SLOPES: the glass diagonals ================================ */
-const GLASS_S = { crust: GL.c1, crustL: GL.w, lit: GL.c2, base: GL.c3, mid: GL.c4, deep: GL.c5, band: GL.c6, dark: GL.c7, ripple: GL.c2, fill: GL.c5, grain: GL.c4, pebble: GL.cy, pebbleL: GL.bub, root: GL.vio };
-let SLP = null;
-function slopeSet() {
-  if (SLP) return SLP;
-  const S = bakeSandSlopes(GLASS_S, 9900);
+const glassPal = tn => { const r = RAMPS[tn]; return { crust: r[0], crustL: GL.w, lit: r[1], base: r[2], mid: r[3], deep: r[4], band: r[5], dark: r[6], ripple: r[1], fill: r[4], grain: r[3], pebble: GL.cy, pebbleL: GL.bub, root: VEIN[tn][0] }; };
+const SLP = [null, null, null];
+function slopeSet(tn) {
+  if (SLP[tn]) return SLP[tn];
+  const S = bakeSandSlopes(glassPal(tn), 9900 + tn * 37);
   /* a slope's body goes teal where the flat's would, and the surface line is the brightest thing on it: a hard specular edge, a second pale line under it, a few violet veins in the body */
-  const tune = (c, kind, under, seed) => { const g = c.getContext('2d'), img = g.getImageData(0, 0, 16, 16), d = img.data;
+  const tune = (c, kind, under, seed) => {   /* (tn = the tone of this set) */ const g = c.getContext('2d'), img = g.getImageData(0, 0, 16, 16), d = img.data;
     for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const i = (yy * 16 + xx) * 4; if (!d[i + 3]) continue;
-      const wx = xx + seed * 16, wy = yy + seed * 7; if (hash(wx, wy) % 23 === 0) { d[i] = 0x8a; d[i + 1] = 0x6a; d[i + 2] = 0xd8; }   /* a vein flecks */
-      else if ((xx * 2 + yy * (slopeRise(kind) > 0 ? 1 : -1) * 2 + seed) % 13 === 0 && !under) { d[i] = 0xe6; d[i + 1] = 0xff; d[i + 2] = 0xf6; } }   /* a streak running parallel to the surface */
+      const wx = xx + seed * 16, wy = yy + seed * 7; if (hash(wx, wy) % 23 === 0) { const vc = VEIN[tn][0]; d[i] = parseInt(vc.slice(1, 3), 16); d[i + 1] = parseInt(vc.slice(3, 5), 16); d[i + 2] = parseInt(vc.slice(5, 7), 16); }   /* a vein flecks */
+      else if ((xx * 2 + yy * (slopeRise(kind) > 0 ? 1 : -1) * 2 + seed) % 13 === 0 && !under) { const lc = RAMPS[tn][0]; d[i] = parseInt(lc.slice(1, 3), 16); d[i + 1] = parseInt(lc.slice(3, 5), 16); d[i + 2] = parseInt(lc.slice(5, 7), 16); } }   /* a streak running parallel to the surface */
     g.putImageData(img, 0, 0); return c; };
   for (const kind of Object.values(SLOPE)) { S[kind] = S[kind].map((c, i) => tune(c, kind, false, i + kind)); S.under[kind] = S.under[kind].map((c, i) => tune(c, kind, true, i + kind + 40)); }
-  return (SLP = S);
+  return (SLP[tn] = S);
 }
 /* ================================ SHELVES (ONEWAY): a polished slab ================================ */
 export function shelfTile(x, y, l, r) {
@@ -126,13 +132,14 @@ export function glassTileFor(t, x, y, at, T, L) {
   if (x < (L.glassFrom || 0) && (t === T.SOLID || isSlope(t))) return null;
   const air = (dx, dy) => at(x + dx, y + dy) === T.AIR;
   if (t === T.ONEWAY) { const l = at(x - 1, y) === T.ONEWAY, r = at(x + 1, y) === T.ONEWAY; return shelfTile(x, y, !l, !r); }
-  if (isSlope(t)) { const S = slopeSet(); return S[t][((x * 7 + y * 13) % 3 + 3) % 3]; }
+  if (isSlope(t)) { const S = slopeSet(toneAt(x, y)); return S[t][((x * 7 + y * 13) % 3 + 3) % 3]; }
   if (t !== T.SOLID) return null;
   const aU = air(0, -1) || at(x, y - 1) === T.ONEWAY, aD = air(0, 1), aL = air(-1, 0), aR = air(1, 0);
   if (x >= OBELISK.x0 && x <= OBELISK.x1 && y >= OBELISK.y0 && y <= OBELISK.y1) return obeliskTile(x, y, y === OBELISK.y0, x === OBELISK.x0, x === OBELISK.x1, (y - OBELISK.y0) % 5 === 3);
   if (x >= HEAD.x0 && x <= HEAD.x1 && y >= HEAD.y0 && y <= 33) return obsidianTile(x, y, aU, aL, aR);
   let depth = 0; for (let k = 1; k < 16; k++) { const u = at(x, y - k); if (u === T.SOLID) depth++; else if (isSlope(u)) { depth++; break; } else break; }
   const slopeAbove = isSlope(at(x, y - 1));
-  if (slopeAbove) return slopeSet().under[at(x, y - 1)][((x * 7 + y * 13) % 3 + 3) % 3];
-  return glassTile(x, y, depth, aL, aR, aU, aD, false);
+  const tn = toneAt(x, y);
+  if (slopeAbove) return slopeSet(tn).under[at(x, y - 1)][((x * 7 + y * 13) % 3 + 3) % 3];
+  return glassTile(x, y, depth, aL, aR, aU, aD, false, tn);
 }

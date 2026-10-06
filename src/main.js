@@ -6560,6 +6560,7 @@ function surface() { // what is underfoot, for the step and the landing
   if (!L) return 'grass'; if ((L.pools || []).some(p => p.shallow && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 2)) return 'water';
   const m = P.onMover; if (m && (m.kind === 'cart' || m.kind === 'orelift')) return 'iron'; if (m) return 'wood';
   const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 1) / TS), t = tileAt(tx, ty);
+  if (L.glasssea && P.x >= (L.glassFrom || 0) * TS && (t === T.ONEWAY || t === T.SOLID || (t >= 20 && t <= 25))) return 'stone';   /* (claude/glasssea art pass) glass underfoot rings as stone, never as the planks its shelves used to be */
   if (t === T.RAIL) return 'iron'; if (t === T.CRYST) return 'stone'; if (t === T.ONEWAY || t === T.PLANK || t === T.SHELF) return 'wood';
   if (L.snowLine !== undefined && ty <= L.snowLine) return 'snow';
   if (L.dark || (L.stone || []).some(z => tx >= z[0] && tx <= z[1] && ty >= z[2] && ty <= z[3]) || (L.palette && (L.palette.dress === 'crag' || L.palette.hall))) return 'stone';

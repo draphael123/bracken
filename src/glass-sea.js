@@ -1,4 +1,4 @@
-// src/glass-sea.js - THE GLASS SEA, desert arc level 4 (claude/glasssea, the OPUS GREYBOX: geometry, the mirror rule, the encounters, the wiring).
+// src/glass-sea.js - THE GLASS SEA, desert arc level 4 (claude/glasssea, the OPUS GREYBOX: geometry, the mirror rule, the encounters, the wiring; its ART PASS is src/redraw/glasssea_*.js and glass_colossus_art.js - no geometry here moved).
 // Brief: scratch brief-glasssea (written overnight 2026-10-05 without Daniel's concept interview: every RECOMMENDED option built; the open choices
 // are listed at the end of work/claude/lane-done/claude-glasssea.md). Main road: redgorge > GLASSSEA (> suntemple, the fork, 4b, built later).
 // The draft it grew from is src/draft/glass-sea.js (tools/draft-level.mjs glass-sea measures that older structure); this is the level the game runs.

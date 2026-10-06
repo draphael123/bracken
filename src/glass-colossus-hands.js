@@ -1,8 +1,8 @@
-// src/glass-colossus-hands.js - THE GLASS COLOSSUS's HANDS (claude/glasssea, the greybox). src/glass-colossus.js is the fight (pure: its three phases,
+// src/glass-colossus-hands.js - THE GLASS COLOSSUS's HANDS (claude/glasssea; drawn by src/redraw/glass_colossus_art.js since the art pass). src/glass-colossus.js is the fight (pure: its three phases,
 // its moves, its openings, the bot's reading); this binds it to the world: its told blows on the heroes (keyed once a blow; a shield turns only the
 // yellow ones), THE SHELF-MIRRORS (E turns one: FACING THE GIANT / TO THE FIRE / TO THE SKY), the swarm out of the crack under it (THE CRACK SWARM's
 // skitters, src/glass-foes.js) and the firelight that holds it, THE SHAKE that throws a climber who does not grip (hold DOWN: never a death - a blow and
-// the floor), and the drawing (GREYBOX: plain shapes - the art pass paints it once Daniel approves the concept).
+// the floor), and the drawing (src/redraw/glass_colossus_art.js: its body, holds and shelf-mirrors; this file keeps the B10 read).
 // THE SHARED READ (design standard B10): OPEN = a gold ring round the weak point and a timer bar; WARDED = a pale glass shell and the word; a blow that does
 // nothing CLANKS, flashes and says why (SHUT / GLAZED / WARDED / HIGHER / LOWER).
 // main.js calls: spawnBoss, owns, on, update, take, interact, drawBack, drawBoss, drawOver, barName, end, read, show, clear, phase, gazeOn.

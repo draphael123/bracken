@@ -11,6 +11,7 @@
 import { canvas, px, rect, rgb } from '../px.js';
 import { GL, hash } from './glasssea_tiles.js';
 import * as FARART from './glass_colossus_art.js';
+import * as GPL from './glasssea_props.js';
 export { bakeGlassScorpion, bakeShardThrower, bakeNightHunter, bakeGlassSentinel, bakeSkitter } from './glasssea_foes.js';
 
 const R = Math.round;
@@ -50,6 +51,9 @@ export function drawHorizon(g, vw, vh, cx, prog, k, time, inArena) {
   const base = R(vh * 0.62), far = mix3(['#a4d4cc', '#7a5a9a', '#14264e'], k), near = mix3(['#7cc0b4', '#5a4686', '#0e1c40'], k), lit = mix3(['#e8fff6', '#ffc890', '#4a7ab0'], k);
   const dune = (col, par, amp, y0, f1, f2) => { g.fillStyle = col; g.beginPath(); g.moveTo(0, vh); for (let x = 0; x <= vw; x += 4) g.lineTo(x, y0 + R(Math.sin((x + cx * par) * f1) * amp + Math.sin((x + cx * par) * f2) * amp * 0.45)); g.lineTo(vw, vh); g.fill(); };
   dune(far, 0.08, 6, base - 6, 0.014, 0.041);
+  /* THE BONE CROSSING's wreck: a leviathan's ribs half sunk in the far glass, seen from the road (two of them, haze-tinted by the hour; the second is smaller and farther) */
+  { const vb = Math.max(0, Math.min(4, R(k * 4))), bones = GPL.bakeFarBones(vb), mid = cx + vw / 2;
+    for (const [col, f, sc] of [[243, 0.34, 1], [207, 0.24, 0.62]]) { const sx = R(vw / 2 + (col * 16 - mid) * f), w = R(bones.width * sc), h = R(bones.height * sc); if (sx < -w || sx > vw + w) continue; g.drawImage(bones, sx - R(w / 2), base - 4 - h + 8, w, h); } }
   /* the Colossus (the landmark: a silhouette at the edge of the sea, bigger every section) */
   if (!inArena) { const s = 0.4 + 0.8 * prog, sp = FARART.farSprite(k), hx = R(vw * 0.8 - prog * vw * 0.2), w = R(sp.width * s), h = R(sp.height * s), hy = base + 3;
     g.drawImage(sp, hx - R(w / 2), hy - h, w, h);
@@ -64,12 +68,15 @@ export function drawHorizon(g, vw, vh, cx, prog, k, time, inArena) {
 /* ---------- A CRACK: a dark fissure; held = warm and calm, a sleeping swarm; boiling = violet, roiling, red eyes; dark = a night crack far from the hero ---------- */
 /* THE SHADE a skiff, a spire, the obelisk casts: the sun meter's boxes (world px) painted as a cool soft shadow (light at the top, dark at the ground, soft sides); by day only */
 export function drawShade(g, x0, x1, y0, y1, a) {
-  const gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(40,28,96,' + (0.05 * a).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(34,24,88,' + (0.36 * a).toFixed(3) + ')'); g.fillStyle = gr;
+  const gr = g.createLinearGradient(0, y0, 0, y1), q = Math.max(0, 1 - 56 / Math.max(56, y1 - y0)); gr.addColorStop(0, 'rgba(40,28,96,' + (0.0 * a).toFixed(3) + ')'); gr.addColorStop(q, 'rgba(40,28,96,' + (0.05 * a).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(34,24,88,' + (0.36 * a).toFixed(3) + ')'); g.fillStyle = gr;
   g.fillRect(x0 + 6, y0, x1 - x0 - 12, y1 - y0); g.globalAlpha = 0.7; g.fillRect(x0 + 3, y0, 3, y1 - y0); g.fillRect(x1 - 6, y0, 3, y1 - y0); g.globalAlpha = 0.35; g.fillRect(x0, y0, 3, y1 - y0); g.fillRect(x1 - 3, y0, 3, y1 - y0); g.globalAlpha = 1;
 }
 export function drawCrack(g, x, y, w, st, time, boilH, hpx) {
   const H = hpx || 160;
   const gr = g.createLinearGradient(0, y, 0, y + H + 40); gr.addColorStop(0, '#0c2832'); gr.addColorStop(0.25, '#071a24'); gr.addColorStop(1, '#010409'); g.fillStyle = gr; g.fillRect(x, y, w, H + 40);
+  /* depth cues: faint strata where the glass was laid down, a few refraction streaks, and the far wall's lit ridges */
+  for (let yy = 8; yy < H; yy += 9 + (yy >> 5)) { const a = 0.07 * (1 - yy / (H + 20)); g.fillStyle = 'rgba(90,200,190,' + a.toFixed(3) + ')'; g.fillRect(x + 2 + (yy * 7) % 9, y + yy, w - 4 - ((yy * 5) % 11), 1); }
+  g.fillStyle = 'rgba(160,240,230,0.06)'; for (let i = 0; i < w; i += 17) g.fillRect(x + i, y + 6 + ((i * 3) % 24), 1, Math.min(H - 12, 40 + (i % 5) * 18));
   /* broken glass teeth on both walls */
   for (let side = 0; side < 2; side++) for (let i = 0; i < 7; i++) { const ty = y + 10 + ((i * 37 + (side ? 11 : 0)) % Math.max(20, H - 20)), len = 2 + (i + side) % 3, tx = side ? x + w - len : x; g.fillStyle = GL.c5; g.fillRect(tx, ty, len, 2); g.fillStyle = GL.c3; g.fillRect(tx, ty, len, 1); }
   const glow = st === 'held' ? '255,176,80' : st === 'boil' ? '154,122,216' : '58,160,150';

@@ -9,7 +9,7 @@
 //   ITS HOLDS    every climb handhold is a glass crystal ledge growing out of the body (its inner end inside the limb), GLOWING; they flash gold when the SHAKE is told
 //   ITS MIRRORS  the shelf-mirrors drawn as polished bronze hoods with their notch (FACING / TO THE FIRE / TO THE SKY), the relayed firelight laid along the floor, the dawn's beam on the crown
 //   THE FAR ONE  farSprite(k): its silhouette for the horizon (src/redraw/glasssea_art.js), the same shapes at 0.47 in one flat colour per hour
-import { canvas, px, rect, fillPoly, line, outline, rgb, hex } from '../px.js';
+import { canvas, px, rect, fillPoly, line, outline, rgb, hex, whiten } from '../px.js';
 
 const R = Math.round, W0 = 216, H0 = 224, CX = 108, FY = 220;   /* the baked body's canvas and where its centre line and the floor fall in it */
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
@@ -97,8 +97,7 @@ export function drawBody(g, e, S, G, cx, cy, time, flash) {
   const pal = PAL[phIdx(S.ph)], body = bakeBody(phIdx(S.ph)), X = R(e.x - cx), Y = R(G.floor - cy);
   const sway = e.mode === 'shake' ? R(Math.sin(time * 40) * 3) : e.mode === 'shakeTell' ? R(Math.sin(time * 14)) : 0, ox = X - CX + sway, oy = Y - FY;
   g.drawImage(body, ox, oy);
-  if (flash) { g.globalAlpha = 0.65; g.globalCompositeOperation = 'source-atop'; g.drawImage(body, ox, oy); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.save(); g.globalAlpha = 0.6; g.fillStyle = '#ffffff';
-    g.restore(); g.globalAlpha = 1; }
+  if (flash) { g.globalAlpha = 0.7; g.drawImage(once('bodyw' + phIdx(S.ph), () => whiten(body)), ox, oy); g.globalAlpha = 1; }   /* the hit flash: a white silhouette over it */
   const T = (x, y) => [X + sway + x, Y + y];   /* centre-line relative */
   const glow = (x, y, r, col, a) => { const q = T(x, y); g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient(q[0], q[1], 1, q[0], q[1], r); gr.addColorStop(0, 'rgba(' + col + ',' + a + ')'); gr.addColorStop(1, 'rgba(' + col + ',0)'); g.fillStyle = gr; g.fillRect(q[0] - r, q[1] - r, r * 2, r * 2); g.globalCompositeOperation = 'source-over'; };
   const crack = (x, y, len, w, col, bright) => {   /* a jagged crack: a dark seam, with a lit core when it is open */
@@ -161,7 +160,7 @@ export function drawShelfMirror(g, m, G, cx, cy, time, bossPh) {
 /* THE FAR ONE for the horizon: the silhouette at 0.47 in one flat colour per hour (k 0 day .. 1 night), with a lit edge */
 export function farSprite(k) {
   const v = Math.max(0, Math.min(4, R(k * 4)));
-  return once('far' + v, () => { const s = 0.47, [c, g] = canvas(112, 108), ox = 56, oy = 106; const cols = ['#9ccac8', '#8a9ec0', '#7a5a9a', '#3a3a7a', '#0c1838'], lit = ['#dff8f0', '#e8e8f4', '#ffc890', '#6a7ad0', '#2a4a88'];
+  return once('far' + v, () => { const s = 0.47, [c, g] = canvas(112, 108), ox = 56, oy = 106; const cols = ['#84b8b4', '#7a90b8', '#704c92', '#34346e', '#0a1430'], lit = ['#dff8f0', '#e8e8f4', '#ffc890', '#6a7ad0', '#2a4a88'];
     const fx = x => ox + x * s, fy = y => oy + y * s;
     for (const [, pts] of SHAPES) for (const side of [-1, 1]) { const P = side < 0 ? pts : mir(pts); fillPoly(g, P.map(([x, y]) => [fx(x), fy(y)]), cols[v]); }
     for (const [, pts] of SHAPES) { for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; if (a[0] > -1 || b[0] > -1) continue; const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1; if ((dy / len) * -0.6 + (-dx / len) * -0.8 > 0.35) line(g, fx(a[0]), fy(a[1]), fx(b[0]), fy(b[1]), lit[v], 1); } }

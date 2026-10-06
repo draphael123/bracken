@@ -33,6 +33,9 @@ try {
     at('z1-relay', 585, 30, null, [90, 40, 80, 80]);
     at('z2-mirror', 42, 33, null, [55, 60, 70, 60]);
     at('z3-hunter', 470, 33, null, [0, 60, 120, 60]);
+    at('z4-notch0', 42, 33, null, [100, 66, 56, 56]);
+    at('z5-notch1', 42, 33, () => { turn('first', 1); run(10); }, [100, 66, 56, 56]);
+    at('z6-notch2', 42, 33, () => { turn('first', 2); run(10); }, [100, 66, 56, 56]);
     at('g11-arena', 612, 33);
     /* THE COLOSSUS in its states: forced modes on the arena (a picture, not a fight) */
     { const col = (name, ph, mode, f, hx, hy, hx2, hy2) => { if (filt && !filt.split(',').some(q => name.includes(q))) return; fresh(); BK.tp(hx || 612, hy || 33); run(90); const CO = BK.colossusHands(), S = CO && CO.show(), e = BK.boss; if (!S || !e) return; S.ph = ph; e.phase = ph; e.mode = mode; e.modeT = 99; if (f) f(e, S); BK.god = true; BK.sim(2); run(260); S.ph = ph; e.phase = ph; e.mode = mode; e.modeT = 99; if (f) f(e, S); BK.look(hx2 || 624, hy2 || 22); run(2); e.mode = mode; snap(name); };

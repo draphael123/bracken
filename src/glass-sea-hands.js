@@ -5,7 +5,7 @@
 // the last safe footing, never a death; by night a crack BOILS with the swarm unless firelight HOLDS it - a campfire near it or a fire beam on its ring),
 // THE NIGHT (east of L.sunsetX the sun is gone - main.js asks noSun - and THE COLD fills its meter away from firelight), THE SLICK GLASS (a glass slope's
 // slide runs faster), the cast's twists (a day beam DAZZLES a glass scorpion; a glass scorpion SHATTERS into a shard patch; a night hunter FREEZES in
-// firelight; skitters will not step into it), the glint and the 10 s nudge (STUCK_HANDS.glasssea), and the greybox drawing (sky, landmark, props).
+// firelight; skitters will not step into it), the glint and the 10 s nudge (STUCK_HANDS.glasssea), and the drawing (sky, horizon, set, rule - src/redraw/glasssea_art.js, glasssea_set.js, glasssea_tiles.js).
 // main.js calls: reset, on, update, interact, noSun, slide, hold, fear, onDeath, drawBack, drawWorld, drawOver, drawHud, read.
 // Every teaching line goes through ctx.number with a line listed in src/hint-lines.js.
 import { trace, makeOpaque } from './light.js';
@@ -189,7 +189,8 @@ export function makeGlassSeaHands(ctx) {
     const k = Math.max(0, Math.min(1, (midX - (sun - 30 * ts)) / (40 * ts)));   /* 0 day .. 1 night */
     const arenaPh = ctx.colPhase ? ctx.colPhase() : 0, target = arenaPh ? [0.55, 1, 0.15][arenaPh - 1] : k;
     /* the hour eases to where it is going (the fight's dusk, night and dawn come over a second or two; a respawn or a new load starts there) */
-    const dt = GSx.kT == null ? 1 : Math.max(0, Math.min(0.2, time - GSx.kT)); GSx.kT = time; GSx.ks = !Number.isFinite(GSx.ks) || !Number.isFinite(target) || dt > 0.19 ? (Number.isFinite(target) ? target : k) : GSx.ks + (target - GSx.ks) * Math.min(1, dt * 1.6);
+    const dt = GSx.kT == null ? 1 : Math.max(0, Math.min(0.2, time - GSx.kT)); GSx.kT = time; const easing = (arenaPh || GSx.ph) && Number.isFinite(GSx.ks) && dt <= 0.19;   /* (only the arena's phases ease: a walk, a respawn or a new load is the hour it is) */
+    GSx.ks = !Number.isFinite(target) ? k : easing ? GSx.ks + (target - GSx.ks) * Math.min(1, dt * 1.6) : target;
     const kk = GSx.ks; GSx.k = kk; GSx.ph = arenaPh;
     GSA.drawSky(g, vw, vh, kk, time, arenaPh);
     const prog = Math.max(0, Math.min(1, midX / ax));
