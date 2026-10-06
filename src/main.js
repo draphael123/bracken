@@ -8171,7 +8171,11 @@ function updatePlayer(dt) {
     const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 70 : 1100) : 200;
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
   }   else if (P.dash > 0 && !P.swim) { const s = Math.sign(P.vx) || P.face; P.vx = s * Math.max(Math.min(cap, Math.abs(P.vx)), Math.abs(P.vx) - 400 * dt); }   /* THE DODGE CARRIES as the dash did: its pace bleeds off to a run, held or not */
-else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt); }   /* HER STEP CARRIES (claude/wardenkit): the pace it was given, held to its end (STEP_PACE) */
+else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);   /* HER STEP CARRIES (claude/wardenkit): the pace it was given, held to its end (STEP_PACE) */
+    /* AND SHE KNOWS WHERE HER HEEL IS: a back-step that would carry her off an edge (open air under the heel, two tiles down) stops at it - she gives
+       ground, she does not fall off it (the Matriarch's pillars put her in the water five times a fight). A jump or a forward step still goes over */
+    if (P.ground && !P.onMover) { const tx = Math.floor((P.x + Math.sign(P.vx) * (P.w / 2 + 3)) / TS), ty = Math.floor((P.y + 1) / TS);
+      if (tileAt(tx, ty) === T.AIR && tileAt(tx, ty + 1) === T.AIR) { P.vx = 0; P.stepHeld = 0; } } }
   else { P.vx *= Math.pow(0.05, dt); }
   /* THE VAULT CARRIES HER ON: for the rise off the shaft her way is kept at VAULT_FWD whatever the stick does, unless it is
      pulled back against the vault - then it is hers to brake, as any air is. Let go and she still goes over, not straight up. */

@@ -454,6 +454,10 @@ export function queenPlan(s) {
   if (st && !S.burn && !(S.flare > 0) && t - (mem.stSeen && mem.stSeen.k === S.n.stingers ? mem.stSeen.t : (mem.stSeen = { k: S.n.stingers, t }).t) >= PLAN.react && !roll('st' + S.n.stingers, PLAN.missSting)) {
     const sd = Math.sign(P.x - st.x) || 1; if (onLedge) { out.down = true; out.jump = P.ground; } out.gx = clamp(st.x + sd * Math.max(6, reach * 0.6)); out.face = -sd;
     out.atk = Math.abs(P.x - st.x) < reach + CQ.stingR && Math.abs(P.y - st.y) < 30 && P.atk < 0; out.why = 'strike her stinger'; return out; }
+  /* (claude/wardenkit, v2 only: s.eyes) HER SAND IS YELLOW: the stones she flicks arc down onto you - the warden meets them with the shaft as they come
+     (her deflect turns a yellow blow from overhead too now), facing the Queen. The hands walked 70 px off and the arc found her anyway: 3-4 stones a fight */
+  if (s.deflect && s.eyes && !(P.busy > 0) && P.ground && (S.shots || []).some(q => q.blockable && !q.hit && q.t > 0 && Math.abs(q.x - P.x) < 36 && q.y < P.y && P.y - q.y < 60 && q.vy > -60)) {
+    out.face = Math.sign(e.x - P.x) || 1; out.gx = P.x; out.block = true; out.why = 'deflect the sand as it falls'; return out; }
   /* 2. HER TELLS */
   const m = e.mode;
   if (/Tell$/.test(m) && seen() && !misread) {
