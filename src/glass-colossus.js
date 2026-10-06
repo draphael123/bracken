@@ -27,16 +27,16 @@ export const COLOSSUS_STAGE = { W: 40, cc: 20, mirrors: [12, 28], fires: [2, 37]
 export const COL = {
   hp: 2000, w: 72, h: 200,
   lanceTell: 1.15, lanceTell3: 1.0, lanceAct: 0.45, lanceDmg: 56, lanceBand: [28, 4],
-  stompTell: 0.85, stompV: 240, stompH: 14, stompDmg: 28,
-  shardTell: 1.0, shardAct: 0.25, shardDmg: 16, shardR: 9, shardSpread: 60,
+  stompTell: 0.85, stompV: 240, stompH: 14, stompDmg: 34,
+  shardTell: 1.0, shardAct: 0.25, shardDmg: 20, shardR: 9, shardSpread: 60,
   shakeTell: 1.0, shake: 0.9, shakeDmg: 16, shakeAfter: 1.2, shakeCd: 5,
   swarmTell: 1.2, swarmAct: 1.4, swarmMax: 6, swarmEvery: 0.45,
   waveTell: 1.0, waveV: 260, waveH: 16, waveDmg: 29,
   openT: 5.2, openShoulders: 5.6, openCrown: 5.4, openMul: 2.0, plungeMul: 2.4, openCap: 0.09,
   legPurse: [0.15, 0.09, 0.07], legMul: 1.0,
   wardT: 3.0, lockT: 1.5, phase2: 0.55, phase3: 0.25, phaseT: 2.2,
-  gap: [0.9, 0.8, 0.7],
-  chain: { 1: ['lance', 'stomp', 'shards', 'lance', 'shards', 'stomp'], 2: ['swarm', 'stomp', 'shards', 'swarm', 'shards'], 3: ['lance', 'shards', 'wave', 'lance', 'stomp'] },
+  gap: [0.65, 0.55, 0.45],
+  chain: { 1: ['lance', 'stomp', 'shards', 'lance', 'shards', 'stomp'], 2: ['swarm', 'stomp', 'shards', 'stomp', 'swarm', 'shards', 'stomp'], 3: ['lance', 'shards', 'wave', 'lance', 'stomp'] },
 };
 /* THE STAGE: carve the arena into the level (the level lays the floor and the walls); returns { arena, carve } */
 export function stageColossus(Wr, T, TS, sx, F) {
@@ -208,6 +208,10 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
   /* a hazard in flight is SEEN once, a reaction after it appears (and misread one time in eight): then the answer comes at the right moment, as a player's does */
   const seen = id => { if (!(('s' + id) in mem)) { mem['s' + id] = t + COL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + id] = rng() < COL_PLAN.miss; } return t >= mem['s' + id] && !mem['m' + id]; };
   for (const r of S.rings) if (Math.sign(P.x - r.x) === r.dir && onFloor && seen('ring' + r.id)) { const d = Math.abs(r.x - P.x); if (d < 54) { out.jump = true; out.why = 'jump ring'; } }
+  /* (fix pass) THE STOMP, READ FROM ITS TELL: a player who SAW the tell knows two rings are coming and jumps each as it arrives (it starts 30 px from its feet -
+     too close to answer from the ring alone; the knight, cutting its knees, ate every one). One tell in eight is missed. */
+  if (e.mode === 'stompTell') mem['st' + (S.n.stomp + 1)] = true;
+  for (const r of S.rings) { const k = parseInt(r.id); if (Math.sign(P.x - r.x) === r.dir && onFloor && mem['st' + k] && !(mem['ms' + k] ??= rng() < COL_PLAN.miss) && Math.abs(r.x - P.x) < 17 + COL.stompV * 0.14) { out.jump = true; out.holdJump = true; out.why = 'jump the stomp'; return out; } }
   if (S.wave && onFloor && Math.sign(P.x - S.wave.x) === S.wave.dir && seen('wave' + S.wave.id) && Math.abs(S.wave.x - P.x) < 60) { out.jump = true; out.why = 'jump wave'; }
   if (e.mode === 'shardTell' && late('shard')) { const hitMe = S.marks.some(m => Math.abs(m.x - P.x) < COL.shardR + 6 && Math.abs(m.y - P.y) < 20);
     if (hitMe) { if (shield) { out.block = true; out.why = 'block shards'; return out; } const free = [P.x - 26, P.x + 26, P.x - 60, P.x + 60].find(x => x > G.x0 + 12 && x < G.x1 - 12 && !S.marks.some(m => Math.abs(m.x - x) < COL.shardR + 8)); if (free != null) { out.gx = free; out.why = 'out of shards'; return out; } } }
