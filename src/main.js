@@ -3120,7 +3120,7 @@ const elPick = (e, a, b) => a && (!b || !e.elAlt) ? 1 : b ? 2 : 0;
    skims it flat off the yard at your feet, where no shield is. JUMP it as it comes: the man still ducked from the first is sat in its way.
    Then he is out of knives for a moment (the opening). And it is how he answers a mash: his riposte's cut, and the skimmer straight after. */
 const EL_KNIFE = { reach: 220, near: 44, tell: 0.5, stamp: 0.32, strike: 0.18, step: 120, dmg: 13, throwTell: 0.6, v: 280, knife: 12, open: 0.8, every: 3.4,
-  skim: 0.55, sv: 250, skimDmg: 12 };
+  skim: 0.55, sv: 250, skimDmg: 20 };
 function updateEliteCutthroat(e, dt) {
   const A = EL_KNIFE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
