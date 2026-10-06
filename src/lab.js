@@ -1161,14 +1161,15 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const MH=BK.matriarchHands(),S=MH&&MH.show();
         if(f===0||!P.labRmMem)P.labRmMem={};
-        const pl=S?matPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden',P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRmMem}):{gx:null,face:P.face};
+        const pl=S?matPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden',v2:!!LABP.v2,hero:h,deflect:h==='warden',brood:LABP.v2?BK.enemies().filter(q=>q.alive&&q.rmBrood):null,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRmMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=24;}}   /* (a full jump: three rows up a pillar wants the key held to the top of the rise) */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if(pl.block)k.block=true;
+        if(pl.block)k.block=pl.tap?DEFLECT_TAP(f):true;   /* (pl.tap: the warden's deflect on the beat - the v2 hands only) */
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.duck){k.down=true;k.left=k.right=false;}   /* (pl.duck: crouched for the trip / the low poke - the v2 hands only) */
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
-        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(pl.atk&&P.atk<0&&(!pl.duck||P.ducking)){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if((k.left||k.right)&&P.ground&&!pl.dodge){P.labRmStill=Math.abs(P.x-(P.labRmX??-1))<0.25?(P.labRmStill||0)+1:0;if(P.labRmStill>5&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=24;k.jump=true;P.labRmStill=0;}}else P.labRmStill=0;P.labRmX=P.x;   /* (a step in the way - a crack's lip, a pillar: a player hops it) */
         if(matOpen(boss)&&!wasOpen)opened++;wasOpen=matOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:matOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;

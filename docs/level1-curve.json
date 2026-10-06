@@ -468,17 +468,17 @@
   "lostPct": 240
  },
  "redgorge": {
-  "hash": "ec1deb9433f2",
+  "hash": "100fc3ff15e7",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 30,
+  "hits": 27,
   "deaths": 6,
-  "kills": 3,
-  "lifts": 72,
+  "kills": 9,
+  "lifts": 69,
   "walked": 100,
   "bare": true,
-  "lostPct": 246
+  "lostPct": 269
  },
  "underwell": {
   "hash": "4fb9d2fb6a79",

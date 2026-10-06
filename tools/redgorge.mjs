@@ -79,7 +79,7 @@ const feathers = L.ents.filter(e => e.t === 'stray' && e.kind === 'feather');
 ok(feathers.length === 4 && feathers.every(f => open.R.seen.has(f.x + ',' + f.y)) && new Set(feathers.map(f => f.x)).size === 4, 'four feathers, each one can be got (and no two share a column: the quest counts them by column)');
 ok(L.quest && L.quest.n === 4 && L.quest.item === 'feather', 'the quest counts four feathers');
 const checks = L.ents.filter(e => e.t === 'check');
-ok(checks.length === 2 && checks.some(c => c.y <= REDGORGE.summit), 'two checkpoints (the terrace, the dam\'s door): a death in the narrows costs the climb from the falls');
+ok(checks.length === 3 && checks.some(c => c.y <= REDGORGE.summit) && checks.some(c => c.y === REDGORGE.climb.top && c.x < REDGORGE.climb.x0), 'three checkpoints (the climb\'s top at the gorge\'s mouth, the terrace, the dam\'s door): a death in the narrows costs the climb from the falls; a death in the gorge never replays the rapids and the climb');
 const keeper = L.ents.find(e => e.elite && e.gate !== undefined);
 ok(keeper && keeper.gate === 27 && keeper.y === 135, 'THE FALLS\' KEEPER (an elite scorpion) holds the gate between the terrace and the falls\' foot');
 

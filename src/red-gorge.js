@@ -9,6 +9,8 @@
 // one clock (src/red-gorge-hands.js GORGE): dry, then THE HORN from above (2 s: get out of the channel), then the TORRENT (2.4 s): anything in
 // the channel is swept down and hurt. An OVERHANG caps each section's climbing side, so every section ends on a ROPE BRIDGE across the channel.
 // Said three ways: the horn, the channel's scoured pale rock, and the trickle that comes down the channel before the torrent.
+// THE RULE LINE (claude/redgorge2 fix pass): "AT THE HORN THE FLOOD COMES DOWN THE GORGE AND THE RIVER RUNS WILD. A SHUT GATE HOLDS IT; LET IT GO TO BREAK WHAT BLOCKS YOU." - the horn also turns THE RAPIDS'
+// calm to white water (the timbers race) and runs THE SPILL CHUTE on the climb, so the first horn the player meets is at the rapids' first stone (its sign).
 //
 // THE MACHINE: A SLUICE GATE across the channel (E at its WHEEL). Shut, it HOLDS the next flood: the channel below it stays dry. Held, it is a
 // flood in your hand: E again RELEASES it - a burst down the channel below, at once, harder than a flood. Only a released burst moves a JAM of
@@ -43,8 +45,8 @@ export const ARCS = {
   rapids: { teach: [118, 126], develop: [102, 117], twist: [91, 101], exam: [80, 89] },     /* (claude/redgorge2: COLUMNS) stone to stone; the first drifting timber; two timbers in one current; the last reach under the birds and a sling */
   climb: { teach: [207, 216], develop: [191, 206], twist: [175, 191], exam: [165, 175] },   /* (rows) ledges under a told rockfall; the rope under a rock; the spill chute's basket; the gusts over the chute */
   gate: { teach: [118, 142], develop: [70, 94], twist: [6, 22], exam: [42, 70] },          /* the falls (optional); THE JAM (required); the crab's opening; the narrows' hold */
-  basket: { teach: [100, 118], develop: [175, 191], exam: [65, 70] },                     /* the raptor ledges; the climb's spill chute; the narrows */
-  climb: { teach: [145, 163], develop: [119, 136], exam: [43, 62] },                       /* ledges, the falls' rope, the narrows' rope */
+  basket: { teach: [175, 191], develop: [100, 118], exam: [65, 70] },                     /* (fix pass: in the order you meet them) the climb's spill chute (its sign: the flood winds it); the raptor ledges; the narrows */
+  ascent: { teach: [145, 163], develop: [119, 136], exam: [43, 62] },                      /* ledges, the falls' rope, the narrows' rope (was a second `climb` key, which hid the gorge climb's arc) */
 };
 
 export function buildRedGorge({ painter, T, TS }) {
@@ -95,12 +97,17 @@ export function buildRedGorge({ painter, T, TS }) {
     const edges = [R0.x0, ...stones.slice().reverse().flatMap(([a, b]) => [a, b + 1]), R0.x1 + 1];
     for (let i = 0; i < edges.length; i += 2) pools.push({ x0: edges[i] * TS, x1: edges[i + 1] * TS, y: S * TS + 4, bottom: B * TS, rapids: true });
     sign(137, S - 2, 'THE RAPIDS. STONE TO STONE. THE CURRENT THROWS YOU BACK ON YOUR LAST ROCK.');
+    sign(126, S - 2, 'AT THE HORN THE RIVER RUNS WILD AND THE TIMBERS RACE. WAIT FOR THE CALM.');   /* (fix pass) THE FIRST HORN the player meets: told on the first stone */
     /* TEACH: two stones a plain jump apart; the first timber (the reach 111-117 is seven: ride it) */
     debris('d1', 113, 117, { phase: 0.2, what: 'plank' });
     sign(121, S - 2, 'TOO WIDE TO JUMP. RIDE THE DRIFTING TIMBER.');
     ent('raptor', 108, S - 2, { squad: 'rapidsBird1', guard: S - 1 });                      /* THE BIRDS: over the reach past the first timber */
     /* REMIX: two timbers in one current (91-101, eleven), the second five behind the first: board the near one, hop to the far, step off */
+    /* (fix pass: splitting the reach between the two - a real hop - was built and reverted: src/reachcore.js cannot follow a timber-to-timber hop, so
+       tools/redgorge.mjs could no longer prove the gorge reachable. A QUESTION in the lane report) */
     debris('d2', 92, 102, { phase: 0.0, what: 'crate' }); debris('d3', 92, 102, { phase: 0.5, what: 'branch' });
+    foe('slinger', 107, S - 2, 'rapidsSling2', { face: -1 });                                 /* (fix pass) a sling at your back as you ride the two timbers */
+    foe('cutthroat', 111, S - 2, 'rapidsMid', { face: 1 });                                   /* (fix pass) a knife on the middle stone: the first screen is not bare */
     ent('raptor', 95, S - 2, { squad: 'rapidsBird2', guard: S - 1 });
     foe('slinger', 75, S - 2, 'rapidsSling', { face: 1 });                                  /* EXAM: the last reach under a sling on the far bank, and the birds */
     debris('d4', 80, 86, { phase: 0.6, what: 'plank' });
@@ -123,14 +130,16 @@ export function buildRedGorge({ painter, T, TS }) {
     ledge(48, 57, 191);                       /* the rope's top shelf, and the basket's berth in it */
     foe('slinger', 54, 190, 'climbSling', { face: -1 });                                    /* on the shelf over the rope: he throws down it */
     basket('spill', 58, 191, 175, 182, { ch: 'spill', wheel: 60 });                         /* TWIST: THE SPILL CHUTE's basket: up the sheer middle on the flood */
-    sign(52, 190, 'THE SPILL CHUTE. ITS WHEEL WINDS THE BASKET WHEN THE FLOOD COMES DOWN.');
+    sign(52, 190, 'THE SPILL CHUTE. AT THE HORN THE FLOOD COMES DOWN IT AND WINDS THE BASKET UP.');
     block(63, 78, 176, 205);                                                                /* the sheer rock east of the chute (the shelf is fifteen rows under the next ledge: only the basket goes up) */
     ledge(48, 57, 175);                                                                     /* off the basket's top */
+    sign(50, 174, 'GUSTS OVER THE CHUTE. BRACE (BLOCK) OR CROSS IN THE STILL AIR.');          /* (fix pass) the gust ledges are the climb's exam: told before them */
     ent('raptor', 66, 172, { squad: 'climbBird', guard: 175 });                             /* the birds wheel level with you here */
     ledge(56, 64, 172);                                                                     /* EXAM: across the chute (cols 60-62: the flood's road) in the gusts */
     ledge(55, 61, 169); set(55, 166, T.ONEWAY); set(56, 166, T.ONEWAY);                                                                     /* (and again, under the landing's east lip - two boards of it, jumped up through) */
     ent('rockfall', 52, 160, { every: 3.6, tell: 0.9, seen: true });
     foe('cutthroat', 52, 165, 'climbTop', { face: 1 });
+    ent('check', 46, 165);                                                                  /* (fix pass) CHECKPOINT: the climb's top, at the gorge's mouth - the rapids and the climb are not replayed for one bad minute in the gorge */
     decor.push({ kind: 'plume', x: 54, y: 165 });
   }
 

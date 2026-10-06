@@ -23668,7 +23668,7 @@ STK = makeGuide({ TS, props: () => props, movers: () => movers, players: () => p
 MRH = makeMoorRocksHands({ get L() { return L; }, TS, T, sfx: SFX, hero: () => P, players: () => players || [P], enemies: () => enemies, time: () => time, VW: () => VW,   /* (claude/moor2) */
   gustNow: z => gustNow(z), number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n),
   cellSet: (x, y, t) => cellSet(x, y, t), moveFoe: (e, dx, dy, drop) => moveBody(e, dx, dy, !!drop), hazard: e => hazardFoe(e) });
-RGH = makeRedGorgeHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time,
+RGH = makeRedGorgeHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, matLever: () => (MTH && MTH.leverDue ? MTH.leverDue() : ''), movers: () => movers, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), asPlayer: (p, fn) => asPlayer(p, fn), VW: () => VW, VH: () => VH,
   hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false), moveHero: dx => moveBody(P, dx, 0, false), moveFoe: (e, dx) => { moveBody(e, dx, 0, false); if (e.st) e.st.x = e.x; },
   cellOpen: (x, y) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { cellSet(x, y, T.AIR); destroyed.add(y * LW + x); } },   /* washed out / opened for good: a respawn leaves a destroyed cell as it is */

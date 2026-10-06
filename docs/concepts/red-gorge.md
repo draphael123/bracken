@@ -100,3 +100,10 @@ desert-arc concept of 2026-10-01, which wins where the two differ. The greybox i
                   rock (L.waterHurts); raptors stoop at your spot and a stoop over the water knocks you in.
     THE CLIMB     up the canyon wall to the gorge's mouth: ledges under told rockfalls, a wall rope with a rock down it, THE SPILL CHUTE
                   (the gorge's flood comes down it; its basket rides the flood), told gusts over the chute at the top.
+
+### RED GORGE 2 FIX PASS (claude/redgorge2, 2026-10-06)
+- THE RULE LINE: "AT THE HORN THE FLOOD COMES DOWN THE GORGE AND THE RIVER RUNS WILD. A SHUT GATE HOLDS IT; LET IT GO TO BREAK WHAT BLOCKS YOU."
+  The horn also turns the Rapids' calm to white water and runs the Spill Chute, so the first horn is told on the Rapids' first stone and on the chute's sign.
+- A third checkpoint at the Climb's top (the gorge's mouth, col 46 row 165). The gust ledges have a sign and a glint + nudge; the Matriarch's two levers glint while a sluice is full.
+- The Matriarch: pounce/dive marks 18 px; an out-of-reach rake or sweep closes in once then kicks scree (phase one); the walls' first pass is run + dive only;
+  a volley off the wall ends in a beat; the knight's shield trip and the warden's low poke go UNDER her talons. See work/claude/lane-done/claude-redgorge2.md.

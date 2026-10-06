@@ -158,7 +158,7 @@ export function makeRedGorgeHands(ctx) {
   };
 
   /* ---------- THE GLINT AND THE NUDGE: what the climb needs next, by where the hero is (the route list: src/stuck-spots.js STUCK_HANDS) ---------- */
-  const handsState = name => name === 'gate.falls' ? ((RG.gates.find(q => q.id === 'falls') || {}).state || '') : name === 'jam' ? (RG.jams[0] ? (RG.jams[0].open ? 'open' : 'closed') : '') : '';
+  const handsState = name => name === 'mat.lever' ? (ctx.matLever ? ctx.matLever() : '') : name === 'gate.falls' ? ((RG.gates.find(q => q.id === 'falls') || {}).state || '') : name === 'jam' ? (RG.jams[0] ? (RG.jams[0].open ? 'open' : 'closed') : '') : '';
   const stall = (P, dt) => { const TS = ctx.TS, r = resolve('redgorge', Math.floor(P.x / TS), Math.floor((P.y - 1) / TS), { TS, props: [], movers: ctx.movers(), hero: P, state: handsState }, STUCK_HANDS);
     const stalls = RG.stalls = RG.stalls || {};   /* one clock per key: its 'said' outlasts a change of key, the headway clock starts again with it */
     if (!r) { RG.glint = null; RG.stallKey = null; return; } const t = r.targets[0]; RG.glint = { key: r.key, x: t.x, y: t.y };

@@ -7783,7 +7783,7 @@ export const LEVELS = [
   { id: 'shopWell', name: 'THE WELL STORE', sub: 'ask the keeper', build: theShopWell, hidden: true },   /* THE WELL TOWN's walk-in store (claude/welltown): APPENDED, like every level */
   /* THE RED GORGE (claude/redgorge, the GREYBOX, 2026-10-02): desert arc level 3 - a climb up a canyon whose channel floods on a clock - after THE WELL TOWN. APPENDED, so no
      index and no save moves. THE GREAT RED CRAB is its boss, on the old dam at its head (the desert-arc concept: a new flood-tied ground boss; THE ROC stays for THE SKY ROAD) */
-  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE GORGE. A SHUT GATE HOLDS IT; LET IT GO TO BREAK WHAT BLOCKS YOU.', build: () => buildRedGorge({ painter, T, TS }), needs: 'underwell' },   /* (claude/underwell: THE UNDERWELL stands between the town and the gorge now) */
+  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE GORGE AND THE RIVER RUNS WILD. A SHUT GATE HOLDS IT; LET IT GO TO BREAK WHAT BLOCKS YOU.', build: () => buildRedGorge({ painter, T, TS }), needs: 'underwell' },   /* (claude/underwell: THE UNDERWELL stands between the town and the gorge now) */
   /* THE UNDERWELL (claude/underwell, the GREYBOX, 2026-10-05): the old cistern tunnels under THE WELL TOWN, dry since the Djinn's well took the water - lamp oil,
      the Cistern Queen's brood, the water skin scarce. APPENDED, so no index and no save moves; its place on the road is its needs (and the gorge's) and its map node.
      THE CISTERN QUEEN (src/cistern-queen.js, benched by claude/welltown5) is its boss */
