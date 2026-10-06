@@ -28,3 +28,12 @@ harness; for hand-started browsers, key the profile dir by checkout path + port.
 - The suite is CPU bound when six lanes run: 50 s to open one page at 100% CPU (observed). Everything that waits on a page now waits on the
   condition with a wall-clock bound, but a 40-minute suite on a loaded machine will still be slow.
 - profile-leaks cannot be made deterministic against an outside TerminateProcess of a tool; the sweep is the net, now more patient.
+
+## Honest state of verification
+- Green after the changes, run alone through the real harness: undercrown-variety, ore-ride, ability-poses, mother-pilot, spore-caps, cdp-recovery, and profile-cleanup's `killed` case.
+- profile-cleanup (all 8 cases in one go) was NOT seen fully green: the PC sat at 100% CPU with ~90 Chrome processes, a single `pg.close()` took 90 s, and the full runs each died on
+  a different "left a profile behind" case (normal / sigint) with the profile removable by hand a minute later and no process holding it: lock-release lag under load beating
+  the retry budget. The last change raises the delete retry budget (6 -> 12 tries, holder-kill at try 2/4/7). If it still goes red on a quiet machine, suspect Defender/Search
+  indexing holding a profile file; `node tools/profile-cleanup.mjs normal,sigint` (cases can now be chosen) on a quiet box tells.
+- One bug I introduced and fixed in-lane: the first commit (eb8fb323) lost two regex backslashes in tools/profile-sweep.mjs (shell quoting), which disabled orphan killing;
+  the second commit restores them. Use the later sha.

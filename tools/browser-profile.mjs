@@ -31,11 +31,11 @@ export function isOurProfile(p) {
   } catch { return false; }
 }
 /* delete one profile; bounded retries for the file locks a browser that has only just exited still holds on Windows */
-export function removeProfileSync(p, tries = 6) {
+export function removeProfileSync(p, tries = 12) {
   if (!isOurProfile(p)) return false;
   for (let i = 0; i < tries; i++) {
     try { rmSync(p, { recursive: true, force: true, maxRetries: 3, retryDelay: 150 }); return true; }
-    catch { if (i === 1 || i === 3) killHoldersSync(p); busyWait(250 * (i + 1)); }
+    catch { if (i === 1 || i === 3 || i === 6) killHoldersSync(p); busyWait(250 * (i + 1)); }
   }
   return false;
 }
@@ -49,11 +49,11 @@ export function killHoldersSync(p) {
   if (process.platform === 'win32') spawnSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process -Filter \"CommandLine like '%" + name + "%' and Name <> 'powershell.exe'\" | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"], { stdio: 'ignore', windowsHide: true });
   else spawnSync('pkill', ['-9', '-f', name], { stdio: 'ignore' });
 }
-export async function removeProfile(p, tries = 8) {
+export async function removeProfile(p, tries = 12) {
   if (!isOurProfile(p)) return false;
   for (let i = 0; i < tries; i++) {
     try { rmSync(p, { recursive: true, force: true, maxRetries: 3, retryDelay: 150 }); return true; }
-    catch { if (i === 1 || i === 3) killHoldersSync(p); await sleep(300 * (i + 1)); }
+    catch { if (i === 1 || i === 3 || i === 6) killHoldersSync(p); await sleep(300 * (i + 1)); }
   }
   return false;
 }
