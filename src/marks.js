@@ -255,6 +255,7 @@ export const MARK = {
   'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '',
   'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!',
   'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'bat|diveTell': '!',   /* (claude/underwell2) THE CISTERN BAT drops on you in the dark: a shield turns it (and swats it) - one row by hand, so the generated block above stays merge-clean (tools/tells.mjs compares the table sorted) */
 };
 /* MARK:END */
 
@@ -395,6 +396,7 @@ export const ANSWER = {
   'watch|sweepTell': 'block', 'watch|thrustTell': 'block',
   'whelp|crouchTell': 'block', 'whelp|fireTell': 'block',
   'zombie|grabTell': 'block',
+  'bat|diveTell': 'block',   /* (claude/underwell2) THE CISTERN BAT's drop: a yellow !, the shield turns it */
   /* THE UNTOLD, TOLD (the combat pass, part 2, 2026-09-28): every common foe whose harm had no windup has one now, and its answer */
   'apprentice|castTell': 'block', 'apprentice|grabTell': 'block',
   'bale|rollTell': 'jump',         // a bale that size bowls a shield over: over it
@@ -607,6 +609,7 @@ export const HEIGHT = {
   'willowisp|flareTell': 'high',
   'winchmaster|descendTell': 'low', 'winchmaster|hookTell': 'low', 'winchmaster|leapTell': 'low', 'winchmaster|leverTell': 'low', 'winchmaster|rideTell': 'low', 'winchmaster|sendTell': 'low', 'winchmaster|whirlTell': 'low', 'winchmaster|wrenchTell': 'low',
   'zombie|grabTell': 'low',
+  'bat|diveTell': 'high',   /* (claude/underwell2) it drops from the vault at your head */
   'puppeteer|snareLowTell': 'low', 'puppeteer|snareHighTell': 'high', 'puppeteer|dropTell': 'low', 'marionette|chopTell': 'low', 'marionette|slamTell': 'low', 'marionette|grabTell': 'low', 'harlequin|jabTell': 'low', 'harlequin|kickTell': 'low',
   'masterpiece|swatTell': 'low', 'masterpiece|stompTell': 'low', 'masterpiece|reachTell': 'high',   /* THE PUPPETEER (claude/puppeteer): the whip high and the reach go over a ducking hero */
   'closedhelm|leapTell': 'low',   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP lands on the floor: ducking under it is no answer */
