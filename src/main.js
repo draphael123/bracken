@@ -3386,9 +3386,10 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
     if (stat) { const now = { v: gr.hp + ' HEALTH', e: gr.stamina + ' STAMINA', m: '+' + gr.damage + ' DAMAGE' }[k.id], th = thrNext(PROG, h, k.id), have = cd[k.id] || 0;
       text(full ? 'FULL' : have + ' / ' + CARD_CAP + ' PICKS', x + cw / 2, top + 40, full ? '#ff9a5c' : UI.gold, 'center', 6);
       text(fitName(now, cw - 8, 6), x + cw / 2, top + 49, UI.dim, 'center', 6);
-      const bw = cw - 16; g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(x + 8, top + 61, bw, 3);
+      const bw = cw - 16 - (th ? 26 : 0); g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(x + 8, top + 61, bw, 3);
       g.fillStyle = th ? UI.gold : '#8fd160'; g.fillRect(x + 8, top + 61, th ? Math.round(bw * Math.min(1, have / th.at)) : bw, 3);
-      text(fitName(th ? have + '/' + th.at + ' ' + th.name : 'BOTH UNLOCKED', cw - 8, 6), x + cw / 2, top + 67, th ? UI.text : '#8fd160', 'center', 6);
+      if (th) text(have + '/' + th.at, x + cw - 8, top + 59, UI.gold, 'right', 6);   /* VIGOR 7/10 */
+      text(fitName(th ? th.name : 'BOTH UNLOCKED', cw - 8, 6), x + cw / 2, top + 67, th ? UI.text : '#8fd160', 'center', 6);
       if (th) wrap(th.what, cw - 8, 6).slice(0, 2).forEach((ln, j) => text(ln, x + cw / 2, top + 76 + j * 8, UI.dim, 'center', 6)); }
     else text(own ? 'YOURS  RANK ' + k.rank + '/' + HERO_PERK_MAX : k.minor ? 'SMALL, ONCE' : 'ONCE, FOR GOOD', x + cw / 2, top + ch - 12, own ? '#8fd160' : UI.gold, 'center', 6);
     TCH.hit(x, top, cw, ch, () => { if (!c) return; if (u.i === i) cardTake(i); else { u.i = i; SFX.ui(); } }); });

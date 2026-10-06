@@ -182,6 +182,11 @@ async function pageTextFit(input) {
   if (want('card')) { const xp = await import('/src/xp.js'), pr = BKT.PROG, keep = JSON.stringify({ xp: pr.xp, card: pr.card, cardFree: pr.cardFree, heroes: pr.heroes, coopLegacy: pr.coopLegacy, silverSpent: pr.silverSpent });
     const CARDS = [[4, { v: 1, e: 1, m: 1, ms: {} }], [25, { v: 9, e: 8, m: 7, ms: {} }], [45, { v: 25, e: 19, m: 0, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane' } }], [50, { v: 25, e: 15, m: 10, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane', 45: 'heart', 50: 'leech' } }]];
     for (const h of [...HEROES, 'geomancer']) { BK.setHero(h); for (const [lv, c] of CARDS) frame('card [' + h + '] L' + lv, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); }
+    /* LEVELING2: the early milestones (a small perk, the hero's own marked and ranked), a stat card with threshold bars part-way and past, and the fullest PERKS line (all ten, the hero's own in it) */
+    { const PRG = await import('/src/progression.js'); for (const h of [...HEROES, 'geomancer']) { BK.setHero(h); const o = PRG.HERO_PERKS[h] || PRG.HERO_PERKS.knight;
+      const full = { 5: 'stride', 10: o[1].id, 15: 'climber', 20: o[0].id, 25: 'iron', 30: o[1].id, 35: 'lungs', 40: o[0].id, 45: 'heart', 50: o[1].id };
+      for (const [lv, c, tag] of [[5, { v: 1, e: 1, m: 1, ms: {} }, 'L5 small perk'], [12, { v: 9, e: 2, m: 1, ms: { 5: 'stride', 10: o[1].id } }, 'L12 thresholds part-way'], [20, { v: 7, e: 10, m: 20, ms: { 5: 'tonic', 10: o[1].id, 15: 'magnet', 20: o[0].id } }, 'L20 thresholds'], [50, { v: 25, e: 20, m: 5, ms: full }, 'L50 ten perks']])
+        frame('card2 [' + h + '] ' + tag, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); } }
     frame('card respec prompt', () => { BK.cardOpen('menu', true); BK.cardUi.msg = 'X AGAIN: RESPEC FOR 3 SILVER'; BK.cardUi.msgT = 2; }, { settle: 1 });
     frame('card respec short', () => { BK.cardOpen('menu', true); BK.cardUi.msg = 'A RESPEC IS 3 SILVER: NEED 3 MORE'; BK.cardUi.msgT = 2; }, { settle: 1 });
     frame('coop locked', () => { pr.heroes = { knight: true }; delete pr.coopLegacy; BK.state = 'coop'; }, { settle: 2 });

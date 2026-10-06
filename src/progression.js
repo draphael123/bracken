@@ -60,12 +60,12 @@ export const techniqueFor = (h, n) => (TECHNIQUES[h] || {})[n] || null;
 export const techniquesArriving = (h, from, to) => TECH_LEVELS.filter(n => n > from && n <= to).map(n => techniqueFor(h, n)).filter(Boolean);
 /* THE EARLY PERKS: smaller than the L25+ ones. Each is a hook main.js reads through perkOn() */
 export const MINOR_PERKS = [
- { id: 'stride', name: 'LONG STRIDE', what: 'YOUR ROLL CARRIES A BIT FURTHER', minor: true },
- { id: 'mend', name: 'TURNED BLOW', what: 'A BLOW YOU TURN HEALS 3', minor: true },
+ { id: 'stride', name: 'STRIDE', what: 'YOUR ROLL CARRIES A BIT FURTHER', minor: true },
+ { id: 'mend', name: 'MENDING', what: 'A BLOW YOU TURN HEALS 3', minor: true },
  { id: 'magnet', name: 'MAGNET', what: 'GOLD IS PULLED FROM FURTHER AWAY', minor: true },
  { id: 'climber', name: 'CLIMBER', what: 'ROPES AND VINES: A QUARTER FASTER', minor: true },
- { id: 'buffer', name: 'LONG BUFFER', what: 'A PRESS IS KEPT A LITTLE LONGER', minor: true },
- { id: 'rest', name: 'STEADY BREATH', what: 'STAMINA WAITS A FIFTH LESS TO RETURN', minor: true },
+ { id: 'buffer', name: 'BUFFER', what: 'A PRESS IS KEPT A LITTLE LONGER', minor: true },
+ { id: 'rest', name: 'BREATHER', what: 'STAMINA WAITS A FIFTH LESS TO RETURN', minor: true },
  { id: 'tonic', name: 'RICH TONIC', what: 'A RED TONIC HEALS 60, NOT 45', minor: true },
  { id: 'grit', name: 'GRIT', what: 'AFTER A HIT YOU ARE SAFE A MOMENT LONGER', minor: true },
 ];
@@ -73,13 +73,13 @@ export const MINOR_PERKS = [
    a RANK (to HERO_PERK_MAX: ten milestones = five of each): so a hero's own never runs out, and it is never the only way to grow. */
 export const HERO_PERK_MAX = 5;
 export const HERO_PERKS = {
- knight: [{ id: 'kbash', name: 'STUNNING BASH', what: 'SHIELD BASH STAGGERS 15% LONGER' }, { id: 'kguard', name: 'KEEN GUARD', what: 'THE PERFECT GUARD WINDOW GROWS' }],
- pyro: [{ id: 'pspread', name: 'WILDFIRE', what: 'A BURNING FOE LIGHTS ITS NEIGHBOURS WHEN IT FALLS' }, { id: 'pheat', name: 'HOLD THE HEAT', what: 'HEAT FADES 12% SLOWER' }],
- paladin: [{ id: 'llight', name: 'RADIANT', what: 'THE LIGHT FILLS 8% FASTER' }, { id: 'ljudge', name: 'HEAVY JUDGEMENT', what: 'JUDGEMENT STRIKES 10% HARDER' }],
+ knight: [{ id: 'kbash', name: 'HARD BASH', what: 'SHIELD BASH STAGGERS 15% LONGER' }, { id: 'kguard', name: 'KEEN GUARD', what: 'THE PERFECT GUARD WINDOW GROWS' }],
+ pyro: [{ id: 'pspread', name: 'WILDFIRE', what: 'FIRE SPREADS WHEN A BURNING FOE FALLS' }, { id: 'pheat', name: 'HEAT HOLD', what: 'HEAT FADES 12% SLOWER' }],
+ paladin: [{ id: 'llight', name: 'RADIANT', what: 'THE LIGHT FILLS 8% FASTER' }, { id: 'ljudge', name: 'HARD SMITE', what: 'JUDGEMENT STRIKES 10% HARDER' }],
  pirate: [{ id: 'pricochet', name: 'RICOCHET', what: 'THE BALL GLANCES ON TO A SECOND FOE' }, { id: 'preload', name: 'QUICK LOAD', what: 'THE PISTOL RELOADS 8% SOONER' }],
- reaper: [{ id: 'dward', name: 'THIRSTY WARD', what: 'THE BLOOD WARD FILLS 12% FASTER' }, { id: 'dnova', name: 'DEEP DRAUGHT', what: 'THE NOVA HEALS 10% MORE BLOOD' }],
- warden: [{ id: 'wdef', name: 'LONG DEFLECT', what: 'THE DEFLECT WINDOW LASTS LONGER' }, { id: 'wrec', name: 'SPRING SHAFT', what: 'THE SHAFT RECOVERS 8% SOONER' }],
- geomancer: [{ id: 'gstone', name: 'LASTING STONE', what: 'HER STONE STANDS A FIFTH LONGER' }, { id: 'gward', name: 'WIDE RUNE', what: 'THE RUNE-WARD PERFECT WINDOW GROWS' }],
+ reaper: [{ id: 'dward', name: 'BLOOD WARD', what: 'THE BLOOD WARD FILLS 12% FASTER' }, { id: 'dnova', name: 'DEEP DRAW', what: 'THE NOVA HEALS 10% MORE BLOOD' }],
+ warden: [{ id: 'wdef', name: 'LONG TURN', what: 'THE DEFLECT WINDOW LASTS LONGER' }, { id: 'wrec', name: 'QUICK POLE', what: 'THE SHAFT RECOVERS 8% SOONER' }],
+ geomancer: [{ id: 'gstone', name: 'HARD STONE', what: 'HER STONE STANDS A FIFTH LONGER' }, { id: 'gward', name: 'WIDE RUNE', what: 'THE RUNE-WARD PERFECT WINDOW GROWS' }],
 };
 export const ALL_HERO_PERKS = Object.values(HERO_PERKS).flat();
 export const heroPerkAt = (h, n) => { const l = HERO_PERKS[h]; return l ? l[Math.max(0, MILESTONES.indexOf(n)) % 2] : null; };
@@ -89,9 +89,9 @@ export const perkRank = (p, h, id) => { const c = cardOf(p, h); return c ? Objec
    poise bar a quarter harder (never a tap: the heavies-only rule of a boss or mini is untouched) / a staggered foe takes a quarter more from the next blow. */
 export const THRESH_AT = [10, 20];
 export const THRESH = {
- v: [{ name: 'BLOOD DRAWN', what: 'EVERY KILL HEALS 2' }, { name: 'STEADY HANDS', what: 'CO-OP REVIVES: FASTER, AND UP WITH HALF HEALTH' }],
- e: [{ name: 'LEAN ROLL', what: 'ROLLS COST A FIFTH LESS BELOW HALF STAMINA' }, { name: 'SECOND WIND', what: 'WINDED ONCE A FIGHT? STAMINA SURGES BACK' }],
- m: [{ name: 'HEAVY HAND', what: 'HEAVY BLOWS BREAK POISE A QUARTER FASTER' }, { name: 'FINISHER', what: 'A STAGGERED FOE TAKES A QUARTER MORE FROM THE NEXT BLOW' }],
+ v: [{ name: 'BLOOD DRAWN', what: 'EVERY KILL HEALS 2' }, { name: 'STEADY HANDS', what: 'REVIVES: FASTER, MORE HP' }],
+ e: [{ name: 'LEAN ROLL', what: 'CHEAPER ROLLS UNDER HALF' }, { name: 'SECOND WIND', what: 'ONCE A FIGHT, A SURGE' }],
+ m: [{ name: 'HEAVY HAND', what: 'HEAVIES BREAK POISE FASTER' }, { name: 'FINISHER', what: 'BROKEN FOES TAKE MORE' }],
 };
 export const thrOn = (p, h, stat, i) => { const c = cardOf(p, h); return !!c && (c[stat] || 0) >= THRESH_AT[i]; };
 /* what the card says of a stat's threshold: the next one not yet reached ({i, at, have, name, what}), or null when both are */
