@@ -979,8 +979,13 @@ async function runbossLab(BK, opts) {
           if(m==='whirlTell'){ if(ad<R+8){const out=Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*(R+10)));if(Math.abs(out-boss.x)>R+3)go(out);else if(md<0.24&&P.ground&&!P.labJump){BK.press('jump');P.labJump=16;}} return; }   /* (no room on the deck to step out of it: over it) */
           if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if(SHIELDED(h)&&P.ground){k.block=true;P.face=side;} else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
           if(m==='rideTell'||m==='ride'){ if(m==='ride'&&ad<64&&P.ground&&!P.labJump){BK.press('jump');P.labJump=14;} return; }
-          if(ad>reach2-6)k[side>0?'right':'left']=true;
-          if(ad<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='whirl'){P.face=side;BK.press('atk');swings++;} };
+          /* (claude/sweep1, v2 only) HIS GREED, ON THE DECK: the duel cut him whenever he was in reach, so the reprisal burst took the hands
+             every few seconds (the knight's 152 health went 60% to it). As the other duels do (BK.greed): out of the burst as it is told,
+             and no fifth cut in a row outside his bitten wrench */
+          const Gq=LABP.v2?BK.greed:null,gOpen=BK.bossOpen(boss),greedy=Gq&&!gOpen&&Gq.count(boss)>=Gq.limit(boss)-2;
+          if(Gq&&boss.greedT>0&&ad<(Gq.reach||60)+boss.w/2+18){go(Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*((Gq.reach||60)+boss.w/2+30))));return;}
+          if(ad>reach2-6&&!greedy)k[side>0?'right':'left']=true;
+          if(!greedy&&ad<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='whirl'){P.face=side;BK.press('atk');swings++;} };
         if(busy){}
         else if(ph3&&onF(hf))duel();
         else if((m==='downed'||m==='thrown')&&Math.abs(P.y-(boss.toY??boss.y))<30&&!P.climb){ /* THE BONUS WINDOW: he is down on a ledge beside you - cut */
@@ -996,8 +1001,10 @@ async function runbossLab(BK, opts) {
           if(ph3&&m==='ride'&&Math.abs(boss.x-P.x)<64&&Math.abs(boss.y-P.y)<20&&!P.labJump){BK.press('jump');P.labJump=14;} }   /* (phase three: his skip coming along the line - over it) */
         else if(!ph3&&onTop(tgt)){ /* UP WITH HIM: in to reach, and cut */
           const dx=boss.x-P.x,side=Math.sign(dx)||1;
-          if(Math.abs(dx)>reach2-6)k[side>0?'right':'left']=true;
-          if(Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='letgo'&&m!=='swing'&&m!=='leap'){P.face=side;BK.press('atk');swings++;} }
+          const Gq=LABP.v2?BK.greed:null,greedy=Gq&&!BK.bossOpen(boss)&&Gq.count(boss)>=Gq.limit(boss)-2,q=HS[tgt];   /* (claude/sweep1, v2 only: his greed on his housing, as in the duel below) */
+          if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+boss.w/2+18){const out=boss.x-side*((Gq.reach||60)+boss.w/2+30);go(Math.max(q.x0*TZ+2,Math.min((q.x1+1)*TZ-2,out)));}
+          else { if(Math.abs(dx)>reach2-6&&!greedy)k[side>0?'right':'left']=true;
+          if(!greedy&&Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='letgo'&&m!=='swing'&&m!=='leap'){P.face=side;BK.press('atk');swings++;} } }
         else if(P.climb){ /* ON A LADDER: to the row this housing is reached from, and off it there */
           const lx=Math.floor(P.x/TZ);let want=null,off=0;
           if(ph3){ if(lx===LB){want=row(O.deck);off=Math.sign(deck1-LB);} else k.down=true; }   /* phase three: every ladder leads down - the Head Frame's to the deck */

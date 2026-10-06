@@ -76,7 +76,7 @@ function drawHook(g, x, y, frame, face, cx, cy) {
   g.drawImage(spr, Math.round(x - cx) - HOOK.ax, Math.round(y - cy) - HOOK.ay);
 }
 export const WINCH = {
-  hp: 600, pace: 22,
+  hp: 360, pace: 22,   /* (claude/sweep1: 600 - the standard bot won 0/12 at L10) */
   /* ROUND THREE: drawn 1.3x (main.js bigF; his box grows with it) - hand is where the hook leaves him, at that size */
   scale: 1.3, hand: 34,
   tell: { reverse: 0.45, send: 0.8, hook: 0.7, lever: 0.55, letgo: 0.7, leap: 0.9 },
@@ -126,6 +126,8 @@ export const WINCH = {
 };
 WINCH.tell.descend = 1.0; WINCH.tell.whirl = 0.75; WINCH.tell.wrench = 0.55; WINCH.tell.ride = 0.8;
 Object.assign(WINCH.dmg, { whirl: 20, wrench: 24, ride: 24 });
+/* THE ACT I RETUNE (claude/sweep1): every blow of his at WINCH_HIT of what it was - the human-speed bot died to his send / lever / stalk at 0/12 */
+export const WINCH_HIT = 0.55; for (const k of Object.keys(WINCH.dmg)) WINCH.dmg[k] = Math.round(WINCH.dmg[k] * WINCH_HIT);
 const SAY = { reverseTell: 'HE THROWS THE BRAKE', sendTell: 'HE SENDS ONE DOWN', hookTell: 'THE HOOK', leverTell: 'THE BRAKE BAR', leapTell: 'HE CROUCHES TO LEAP',
   descendTell: 'HE COMES DOWN', whirlTell: 'HE SWINGS THE HOOK', wrenchTell: 'THE WRENCH', rideTell: 'HE TAKES A SKIP' };
 const RED = new Set(['sendTell', 'hookTell', 'leapTell', 'descendTell', 'whirlTell', 'rideTell']);
