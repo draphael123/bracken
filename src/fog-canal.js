@@ -278,7 +278,7 @@ export function buildFogCanal({ painter, T, TS }) {
   ledge(280, 285); ledge(288, 297); stopPlanks('S1', 289, [295, 14]);
   post(284, 14); sign(281, 14, 'STOP-PLANKS HOLD HER. A WINDLASS ON THE LEDGE WINDS THEM UP.');
   bargee(291, 14, 'the stop-planks'); archer(297, 14, 'the stop-planks');   /* the watchman sees only the lit: the ledge lantern by the gap, or her own */
-  grindy(286, 18, 'the stop-planks'); grindy(293, 18, 'the stop-planks');
+  grindy(286, 18, 'the stop-planks water'); grindy(293, 18, 'the stop-planks water');   /* (claude/batch73) the grindylows are on the water, the bargee and the archer on the planks: two squads, one floor each (sprinkle-cap) */
   rib(277);
   /* THE NEST (REMIX): low beams over a nest; THE MOON SHAFT, open to the sky, lights her whatever her lantern says */
   rib(301); rib(305, 1); rib(311); rib(316);
@@ -368,7 +368,7 @@ export function buildFogCanal({ painter, T, TS }) {
     waterHurts: true, noWade: true,   /* THE CANAL IS JENNY'S WATER: a fall in costs health and hands you back to the last ground you stood on (main.js, as the Marsh); and it is
                                          not a floor to the reach model (src/reachcore.js L.noWade): only the barge crosses it */
     lockArena: { sx: 396, R: 41, x0: 396, x1: 435, raft: true, rows: [25, 47], westDoor: [396, 35, 40], eastDoor: [435, 35, 40] },   /* JENNY GREENTEETH's lock (claude/greenwire): the footprint stageGreenteeth(..., 376, 41) lays (see section 7) */
-    squadBands: [{ lo: 420, hi: 599, spots: 0, why: "JENNY'S LOCK: the last columns are her chamber's east end and the quay past her door - nothing stands past her, and no squad stands in a boss arena (as the theatre)" }],
+    squadBands: [{ lo: 400, hi: 599, spots: 0, why: "JENNY'S LOCK: the last columns are her chamber's east end and the quay past her door - nothing stands past her, and no squad stands in a boss arena (as the theatre)" }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* three checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     /* WHAT EACH MACHINE OPENS, and the line that says so (claude/canalfix: tools/level-quality.mjs `unlocks`; the lines are the hints src/canal-hands.js shows) */

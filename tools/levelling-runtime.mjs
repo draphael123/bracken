@@ -12,7 +12,7 @@
 import assert from 'node:assert/strict'; import { openPage } from './cdp.mjs'; import { writeFileSync } from 'node:fs';
 const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
-  r = await pg.evalp(`(async()=>{const PR=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js'),{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const fails=[],shots=[],out={};
+  r = await pg.evalp(`(async()=>{const PR=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js'),{LEVELS}=await import('/src/level.js'),{depthsOf}=await import('/src/campaign-order.js');const KD=depthsOf(LEVELS.filter(l=>!l.hidden||l.secret)).keep;/* the keep's depth is read from the campaign order, not typed: a level added before it (the Sky Road) moves it */BK.manualSimulation=true;const fails=[],shots=[],out={};
 const fresh=(h,lv)=>{for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(lv);BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();};
 /* 1. tal(): on from its level, unowned and unslotted; off a level below */
 let n1=0;for(const h of PR.HERO_IDS){const ladder=PR.skillsFor(h).filter(n=>!n.active);
@@ -50,8 +50,8 @@ if(owl.alive||BK.bossActive)fails.push('the owl fight did not end');if(BKT.heroL
 const pay=(id,lv,n,xp)=>{fresh('pyro',lv);if(xp!==undefined)BKT.PROG.xp.pyro=xp;BK.load(W(id));BK.state='play';BK.god=true;BK.xpStart();BK.sim(5);const h0=BK.hint.msg,x0=BKT.PROG.xp.pyro;BK.gainXp(n);return{paid:BKT.PROG.xp.pyro-x0,hint:h0};};
 const low=pay('keep',1,40);if(low.paid!==120)fails.push('a level-1 pyro in the keep was paid '+low.paid+' for 40, not 120');if(!/CATCHING UP/.test(low.hint))fails.push('the keep did not say CATCHING UP: '+low.hint);out.catchHint=low.hint;
 window.__textRec=[];BK.step(0);const plate=window.__textRec.filter(t=>t.kind==='text'&&/^LV \\d+ x3$/.test(t.s));window.__textRec=null;if(!plate.length)fails.push('the plate does not say x3');
-const edge=pay('keep',17,40,xpFloor(18)-10);if(edge.paid!==50)fails.push('ten short of the curve he was paid '+edge.paid+', not 50');
-for(const [id,lv,why,want] of [['keep',18,'on the curve',40],['keep',21,'above it, inside the soft cap',40],['keep',22,'E+3: the soft cap halves it',20],['keep',25,'E+6: a fifth',8],['wood',1,'in the first wood',40],['shop',1,'in the store',40]]){const q=pay(id,lv,40);if(q.paid!==want)fails.push(why+': paid '+q.paid+' for 40');if(/CATCHING UP/.test(q.hint))fails.push(why+': says CATCHING UP');}
+const edge=pay('keep',KD-1,40,xpFloor(KD)-10);if(edge.paid!==50)fails.push('ten short of the curve he was paid '+edge.paid+', not 50');
+for(const [id,lv,why,want] of [['keep',KD,'on the curve',40],['keep',KD+3,'above it, inside the soft cap',40],['keep',KD+4,'E+3: the soft cap halves it',20],['keep',KD+7,'E+6: a fifth',8],['wood',1,'in the first wood',40],['shop',1,'in the store',40]]){const q=pay(id,lv,40);if(q.paid!==want)fails.push(why+': paid '+q.paid+' for 40');if(/CATCHING UP/.test(q.hint))fails.push(why+': says CATCHING UP');}
 /* 5. WHAT A LEVEL-UP SAYS (in the store room: it pays XP whole, with no soft cap or catch-up to bend the jump) */
 fresh('knight',3);BK.load(W('shop'));BK.state='play';BK.god=true;for(let f=0;f<170;f++)BK.step(1);let said=0,longest='';
 const say=(h,from,to)=>{fresh(h,from);{const q=BK.uiHud.q;q.cur=null;q.wait.length=0;}/* the HUD's toast queue holds a new line behind the one showing: each level-up here starts on an empty queue */BK.P.inv=99;BK.gainXp(xpFloor(to)-xpFloor(from));BK.sim(1);if(BK.state==='card')BK.cardClose();const m=BK.hint.msg,got=PR.skillsFor(h).filter(n=>!n.active&&n.level>from&&n.level<=to);

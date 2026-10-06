@@ -92,7 +92,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   set(149, 26, T.AIR); set(150, 26, T.AIR);                                     /* the cage's berth in the deck */
   const reel = { stone: 's2', x: 142.5 * TS + 8, top: 16 * TS, kiteY: 4 * TS, cage: 'reel' };
   cloudBank(135, 160, 5, 12, 12, 4);                                            /* a slow bank over the chimney */
-  foe('kite', 138, 14, 'reelKites'); foe('kite', 146, 10, 'reelKites');         /* two goblin kites ride the reel's hot air: they drop stones on the cage */
+  foe('kite', 138, 14, 'reelKitesA'); foe('kite', 146, 10, 'reelKitesB');         /* two goblin kites ride the reel's hot air: they drop stones on the cage */
   rock(151, 190, 14); plank(152, 161, 10); rock(166, 168, 12); rock(176, 179, 12); air(151, 189, 18, 21); ent('coin', 160, 21); ent('coin', 170, 21); ent('coin', 180, 21);                  /* THE UPPER DECK, twelve rows up the cliff: the kite loft's boards over it, a block of the old winch */
   foe('archer', 158, 13, 'deckTop', { face: -1 }); foe('shield', 155, 13, 'deckTop', { face: -1 });   /* at the cage's top */
   ent('check', 181, 13);                                                        /* CHECKPOINT TWO: the upper deck */
@@ -115,7 +115,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   cloudBank(205, 262, 6, 12, 22, 0);                                            /* the bank rolls east over the chain, one thermal after another */
   foe('harpy', 212, 6, 'roostHarpyA'); foe('harpy', 254, 7, 'roostHarpyB');
   foe('kiterider', 226, 8, 'riders', { home: 226 }); foe('kiterider', 258, 8, 'riders', { home: 258 });
-  foe('crow', 262, 14, 'crows', { ph: 0 }); foe('crow', 267, 15, 'crows', { ph: 1.3 }); foe('crow', 272, 13, 'crows', { ph: 2.1 });   /* A STRING OF CRAG CROWS (the moor's): they come west over R3 and R4, and a crow's shadow on a thermal kills it for a beat */
+  foe('crow', 262, 14, 'crowsA', { ph: 0 }); foe('crow', 267, 15, 'crowsB', { ph: 1.3 }); foe('crow', 272, 13, 'crowsC', { ph: 2.1 });   /* A STRING OF CRAG CROWS (the moor's): they come west over R3 and R4, and a crow's shadow on a thermal kills it for a beat */
   rock(265, 298, 18); plank(268, 280, 14); rock(285, 288, 16); rock(291, 292, 16);                  /* THE FAR CLIFF, the riders' racks over it, a fallen block */
   foe('rockgoblin', 268, 17, 'cliffSling', { face: -1, cnSkin: 'gobslinger' }); foe('shield', 283, 17, 'cliffSling', { face: -1 });   /* (FIX PASS: a heavy past the roosts) */
   ent('check', 278, 17);                                                        /* CHECKPOINT THREE */
@@ -125,7 +125,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   sign(290, 17, 'THE SUN-DISC. STRIKE IT TO THE SUN, THEN CROSS WHILE THE AIR RISES.');
   pinnacle(303, 15, 'disc:disc', { order: 0 }); pinnacle(310, 14, 'disc:disc', { order: 1 }); pinnacle(317, 13, 'disc:disc', { order: 2 }); pinnacle(324, 12, 'disc:disc', { order: 3 });
   cloudBank(300, 330, 5, 14, 14, 10);
-  foe('kiterider', 314, 6, 'discRiders', { home: 317 }); foe('kiterider', 326, 5, 'discRiders', { home: 324 });
+  foe('kiterider', 314, 6, 'discRidersA', { home: 317 }); foe('kiterider', 326, 5, 'discRidersB', { home: 324 });
   rock(333, 345, 16); plank(335, 343, 13); sign(345, 15, 'THE SPANS ARE CRACKED. STRIKE EACH STONE BEFORE ITS SPAN GOES.');   /* THE EAST TOWER, its broken parapet; the sign for the spans' stones s4 and s6 (FIX PASS) */
   foe('horn', 336, 15, 'towerHorn', { face: -1 }); foe('shield', 340, 15, 'towerHead', { face: -1 }); foe('archer', 344, 15, 'towerHead', { face: -1 });
   /* THE EXAM: the broken spans - cracked stone that goes three beats after you land - between thermals you wake and thermals the clouds take */
@@ -164,6 +164,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [{ kind: 'lift', sky: 'reel', x: 149 * TS, y: 26 * TS, y0: 26 * TS, y1: 14 * TS, w: 32, h: 8, speed: 0 }],
     arena, gateAfterBoss: true,
+    squadBands: [{ lo: 400, hi: 599, spots: 0, why: "THE ROC'S EYRIE: columns 400-459 are her arena - no squad stands in a boss arena (as the canal and the theatre)" }],
     skyroad: true, cloudSea: SEA * TS, clouds, crumbles, vaultDoors, decor, reel, nest,
     skyThermals: L.ents.filter(e => e.t === 'vent' && e.thermal).map(e => ({ x0: e.x - 2, x1: e.x + 2 })),   /* the rule's places, for tools/rule-state.mjs (not named L.thermals: main.js reads that as the pyro's fire updrafts) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

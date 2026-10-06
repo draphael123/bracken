@@ -13,7 +13,7 @@ import { LEVELS, T, eliteGate } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { readFileSync } from 'fs';
 
-const PENDING = new Set([]);   /* a level being rebuilt goes in here, and comes out of it when its elites land */
+const PENDING = new Set(['skyroad']);   /* skyroad (claude/skyroad): built with no mini and no elite - a gatekeeper is a design call for Daniel, listed pending until one lands. A level being rebuilt goes in here, and comes out of it when its elites land */
 const NO_KEEPER = new Set(['underleaf', 'burial', 'undercrown']);   /* undercrown: Daniel cut its Overman mini (2026-09-21), and its route has no gate an elite should hold */   /* Daniel's call, not a gap: UNDERLEAF's Bellringer mini was cut after a playtest (2026-09-17). It is the secret stealth village - you choose when it wakes - and nothing on its street holds a gate */
 // Burial's Sexton was explicitly removed: The Buried Dead is the requested final boss, not a replacement mini.
 const want = (process.argv[2] || '').split(',').filter(Boolean);

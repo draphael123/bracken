@@ -4,7 +4,7 @@ import vm from 'node:vm';
 const src=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
 const a=src.indexOf('const HEAT ='), b=src.indexOf('/* THE RISING CUT',a);
 const P={heat:0,dead:0};let full=0,pilot=false;
-const c=vm.createContext({P,isPyro:()=>true,varietyMul:()=>0.6,tal:()=>pilot,bankHeat:()=>{P.full=true;P.fullT=5;full++;}});
+const c=vm.createContext({P,isPyro:()=>true,varietyMul:()=>0.6,tal:()=>pilot,prk:()=>0,bankHeat:()=>{P.full=true;P.fullT=5;full++;}});
 vm.runInContext(src.slice(a,b),c);
 c.gainHeat(10);assert.equal(P.heat,8.5,'repeated hits keep at least 85 percent');
 for(let i=0;i<239;i++)c.coolHeat(1/60);assert.equal(P.heat,8.5,'four-second grace');

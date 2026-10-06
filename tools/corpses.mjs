@@ -29,7 +29,7 @@ try {
         e.hurtT = 0.3; e.flash = 0.2; BK.step(1);
         const hurtF = e.lastFrame; if (e.lastSet !== alive) row.errs.push('the hurt frame drew a different set from the living one');
         if (alive && !(alive.R && alive.R[hurtF])) row.errs.push('the hurt frame ' + hurtF + ' is not in the ' + k.f + ' set (' + (alive.R ? alive.R.length : '?') + ' frames)');
-        const n0 = corp().length; e.hp = 1; e.frozen = 0; e.shield = 0; e.armor = 0; BK.combat2().strike(e, 'heavy', 1); if (e.alive) { row.errs.push('the blow did not kill it'); res.push(row); continue; } BK.step(1);
+        const n0 = corp().length; e.hp = 1; e.frozen = 0; e.shield = 0; e.armor = 0; e.mk = null; /* (theatre4) a mummer sheds his mask: a comedy cartwheels from the first blow, and this check is about the corpse, not the mask */ BK.combat2().strike(e, 'heavy', 1); if (e.alive) { row.errs.push('the blow did not kill it'); res.push(row); continue; } BK.step(1);
         const cs = corp().slice(n0).filter(c => c.t === e.t || c.t !== 'cap'); const c = cs.find(q => q.t === e.t) || cs[0];
         if (!c) { row.errs.push('no corpse was made'); res.push(row); continue; }
         BK.step(12); row.shown = c.shown === alive ? 'the reskin' : c.shown === BK.SPR[e.t] ? 'THE BASE SHEET (' + e.t + ')' : c.shown ? 'another set' : 'nothing drawn';

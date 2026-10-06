@@ -57,7 +57,7 @@ console.log('THE ORE SHAFT, THE FIVE ORES, AND THE SLOPE (lane claude/oreroad2)'
   ok(isSlope(at(9, 36)) || isSlope(at(10, 35)), 'the ramp sits where the spoil heap is, in THE ORE YARD'); }
 
 /* ---- NOTHING ELSE MOVED: the level still needs the Moor, keeps its boss and its id, and every existing place is where it was ---- */
-{ ok(lv.needs === 'moor' && L.arena.boss === 'winchmaster' && lv.id === 'oreroad', 'id, needs and boss untouched');
+{ ok(lv.needs === 'skyroad' && LEVELS.find(l => l.id === 'skyroad').needs === 'moor' && L.arena.boss === 'winchmaster' && lv.id === 'oreroad', 'id, needs and boss untouched');
   ok(MINE_PLACES.length >= 7, `${MINE_PLACES.length} named mine places still on the route`); }
 
 /* ==================================================================================================================

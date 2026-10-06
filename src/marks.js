@@ -450,6 +450,7 @@ export const ANSWER = {
 export const HEIGHT = {
   'waterthief|slashTell': 'low',   /* (claude/welltown) as the cutthroat's */
   'sandworm|lungeTell': 'low',   /* (claude/desertfoes) up out of the floor */
+  'roc|diveTell': 'low',   /* (claude/skyroad) a dive from above reaches the floor */
 '*|eliteLungeTell': 'low', '*|eliteSlamTell': 'low',
   'ambusher|cutTell': 'low',
   'angler|biteTell': 'low', 'angler|castTell': 'low', 'angler|dive': 'low', 'angler|hookTell': 'low', 'angler|swellTell': 'low',
