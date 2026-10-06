@@ -82,7 +82,7 @@ export function makeMatriarchHands(ctx) {
     RM.stepMatriarch(e, S, dt, hs, c);
     /* THE LEVER, TOLD AGAIN (fix pass; the wake's one floating line was the only lesson): she is in the channel, a sluice is full and you are by its lever */
     if (H.leverDue() && e.y > G.topY + 8 && e.mode !== 'fly' && (S.leverSaidN || 0) < 4 && !(S.leverSaidT > ctx.time())) { const P0 = ctx.hero(), l = G.levers.find(q => S.sluice[q.id] && Math.abs(q.x - P0.x) < 96 && Math.abs(G.topY - P0.y) < 24);
-      if (l) { S.leverSaidT = ctx.time() + 12; S.leverSaidN = (S.leverSaidN || 0) + 1; ctx.number(l.x, G.topY - 44, 'SHE IS IN THE CHANNEL: E AT THE LEVER LETS THE DAM GO', '#ffd36b'); } }
+      if (l) { S.leverSaidT = ctx.time() + 12; S.leverSaidN = (S.leverSaidN || 0) + 1; ctx.number(l.x, G.topY - 44, 'SHE IS IN THE CHANNEL: PULL A LEVER (E)', '#ffd36b'); } }
     e.phase = S.ph; e.w = e.mode === 'tangled' || e.mode === 'stunned' ? MAT.w + 8 : MAT.w; e.h = e.mode === 'tangled' || e.mode === 'stunned' ? 22 : MAT.h;
     /* THE WATER ON THE HEROES: a flood or a burst in the channel is a blow once and a shove; phase three's water is the rapids' rule */
     const wy = waterY();

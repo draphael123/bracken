@@ -28,6 +28,8 @@ try {
     at('n1-door', 50, 21);
     at('n2-ledge', 70, 21);
     at('n3-ledge-east', 86, 21);
+    at('n4-crown', 70, 13);
+    at('n5-nest', 84, 11);
     /* THE MATRIARCH: forced modes on the ledge (a picture, not a fight) */
     { const mats = (name, mode, f) => { if (filt && !name.includes(filt)) return; fresh(); BK.tp(53, 21); run(80); const e = BK.boss; if (!e) return; e.mode = mode; e.modeT = 99; if (f) f(e); BK.look(e.x / 16, 21); run(2); e.mode = mode; BK.look(e.x / 16, 21); snap(name); };
       mats('m1-walk', 'walk'); mats('m2-crouch', 'pounceTell'); mats('m3-screech', 'screechTell'); mats('m4-open', 'staggered', e => { e.open = 3; }); mats('m5-wall', 'wallRun', e => { e.y = 160; }); mats('m6-perch', 'perch', e => { e.y = 224; }); }

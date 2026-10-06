@@ -179,7 +179,7 @@ export function drawRapidsWater(g, p, x0, x1, y, h, cx, cy, time, surfaceOnly, s
     const gr = g.createLinearGradient(0, y, 0, y + Math.max(24, h)); gr.addColorStop(0, f > 0.4 ? '#a8908e' : '#c88a86'); gr.addColorStop(0.12, f > 0.4 ? '#6a7a92' : '#5f78a0'); gr.addColorStop(0.5, '#2c4468'); gr.addColorStop(1, '#16243c'); g.fillStyle = gr; g.fillRect(x0, y, W, h);
     /* the dusk in the water: pale streaks that slide west with the current (faster in the rapids), and a darker turbid wash as it rises */
     const sp = 12 + 50 * f; g.fillStyle = 'rgba(255,214,176,0.2)'; for (let k = 0; k < 16; k++) { const wx = p.x0 + ((k * 53 + 17 - time * sp * (0.6 + (k % 3) * 0.25)) % (p.x1 - p.x0 + 40) + (p.x1 - p.x0 + 40)) % (p.x1 - p.x0 + 40) - 20, sx = R(wx - cx); if (sx > x0 && sx < x1 - 5) g.fillRect(sx, y + 3 + (k * 7) % Math.max(8, h - 6), 6 + (k % 4) * 3, 1); }
-    if (f > 0.05) { g.fillStyle = 'rgba(120,96,84,' + (0.26 * f).toFixed(2) + ')'; g.fillRect(x0, y, W, h); }
+    if (f > 0.05) { g.fillStyle = 'rgba(128,98,84,' + (0.42 * f).toFixed(2) + ')'; g.fillRect(x0, y, W, h); }
     return; }
   /* the surface */
   g.fillStyle = f > 0.4 ? '#f0d2b8' : '#ffd8b0'; g.fillRect(x0, y, W, 1); g.fillStyle = f > 0.4 ? '#c0a8a0' : '#e8a890'; g.fillRect(x0, y + 1, W, 1);
@@ -192,7 +192,7 @@ export function drawRapidsWater(g, p, x0, x1, y, h, cx, cy, time, surfaceOnly, s
     const len = side ? 6 + R(22 * f) : 3 + R(4 * f); for (let k = 0; k < len; k++) { const wv = Math.sin(time * 5 + k * 0.9 + side * 2); rc(g, ex + dir * (side ? -k - 1 : k) - (side ? 0 : 0), y - 1 + (wv > 0.3 ? -1 : 0) + (k & 1 ? 1 : 0), 2, 1 + (k < 3 ? 1 : 0), k < len * 0.7 ? '#ffffff' : 'rgba(255,255,255,0.7)'); }
     if (f > 0.15) for (let k = 0; k < 3 + 6 * f; k++) { const t = (time * 1.4 + k * 0.37 + side * 0.2) % 1; rc(g, ex + dir * (k % 3) * 2 - (side ? 2 : 0), y - 2 - t * (6 + 12 * f), 1, 1, 'rgba(255,255,255,' + (1 - t).toFixed(2) + ')'); } }
   /* WHITE WATER over the whole reach in the horn: rolling caps and spray */
-  if (f > 0.3) for (let k = 0; k < W / 7; k++) { const wx = x0 + ((k * 7 + (time * 80)) % W), t = (time * 2.1 + k * 0.53) % 1, hh = R(2 + 5 * f * Math.abs(Math.sin(k * 1.7 + time * 3))); rc(g, wx, y - hh, 3, hh, '#f4fbff'); if (k % 3 === 0) rc(g, wx + 1, y - hh - 2 - t * 8 * f, 1, 1, 'rgba(255,255,255,' + (1 - t).toFixed(2) + ')'); }
+  if (f > 0.3) for (let k = 0; k < W / 5; k++) { const wx = x0 + ((k * 5 + (time * 80)) % W), t = (time * 2.1 + k * 0.53) % 1, hh = R(2 + 7 * f * Math.abs(Math.sin(k * 1.7 + time * 3))); rc(g, wx, y - hh, 3, hh, '#f4fbff'); if (k % 3 === 0) rc(g, wx + 1, y - hh - 2 - t * 8 * f, 1, 1, 'rgba(255,255,255,' + (1 - t).toFixed(2) + ')'); }
 }
 
 /* ================================ THE TIMBERS: wreckage, not boxes ================================ */
@@ -263,11 +263,11 @@ const rockSpur = (h) => once('spur' + h, () => { const hh = Math.max(8, Math.min
   /* a weathered sandstone fin: ragged edges, uneven strata that thicken and thin, a wet-dark foot, lit on its east edge */
   let by = 0, tone = 2; const bands = []; while (by < hh + 8) { const th = 3 + ((r() * 9) | 0); tone = clamp(tone + (r() < 0.5 ? -1 : 1) * (1 + ((r() * 2) | 0)), 0, 4); bands.push([by, by + th, tone]); by += th; }
   for (let y = 0; y < hh; y++) { const j = hash(y, h), half = 12 - Math.min(5, y >> 3) + (j % 4 === 0 ? 2 : j % 4 === 1 ? 1 : 0) - (j % 7 === 0 ? 1 : 0) + (y > hh - 14 ? (y - (hh - 14)) >> 1 : 0), x0 = 15 - half, x1 = 15 + half + (hash(y, h + 5) % 3 === 0 ? 1 : 0);
-    const bd = bands.find(q => y >= q[0] && y < q[1]) || bands[0], seam = y === bd[0]; rc(g, x0, y, x1 - x0, 1, seam ? S.s0 : [S.s1, S.s2, S.s3, S.s4, S.s5][bd[2]]);
+    const bd = bands.find(q => y >= q[0] && y < q[1]) || bands[0], seam = y === bd[0]; rc(g, x0, y, x1 - x0, 1, seam ? S.s0 : dim([S.s1, S.s2, S.s3, S.s4, S.s5][bd[2]], 0.84));
     if (!seam && (hash(y * 3, h) % 5 === 0)) rc(g, x0 + 2 + (j % 9), y, 3 + (j % 4), 1, S.s1);
     rc(g, x1 - 3, y, 3, 1, S.s0); rc(g, x0, y, 2, 1, seam ? S.s2 : S.s5); }
   for (let i = 0; i < Math.max(3, hh >> 4); i++) { let cx2 = 9 + ((r() * 12) | 0), cy2 = (r() * hh) | 0; for (let k = 0, n = 5 + ((r() * 14) | 0); k < n; k++) { rc(g, cx2, cy2 + k, 1, 1, S.dk); if (r() < 0.4) cx2 += r() < 0.5 ? -1 : 1; } }
-  g.globalAlpha = 0.22; g.fillStyle = '#12060a'; g.fillRect(0, 0, 30, hh); g.globalAlpha = 1; return c; });
+  return c; });
 const pennant = (g, x, y, fury, time) => { rc(g, x, y - 26, 2, 26, WOOD.w2); rc(g, x, y - 26, 1, 26, WOOD.w3); rc(g, x - 1, y - 28, 4, 2, WOOD.iron);
   const len = 16, amp = 1 + 3.5 * fury, sp = 4 + 14 * fury; for (let i = 0; i < len; i++) { const hh = Math.max(1, 6 - (i * 6) / len), yy = y - 24 + Math.sin(time * sp - i * 0.55) * amp * (i / len) * 1.2; rc(g, x + 2 + i, yy, 1, hh, i % 6 < 3 ? '#b8502c' : '#f0dcb8'); }
   rc(g, x - 1, y - 2, 4, 2, S.s2); };
