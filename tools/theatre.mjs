@@ -17,7 +17,8 @@ import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { HOUSE } from '../src/maskwright-theatre.js';   /* THEATRE2: the house was grown in at the front; backstage columns below are written as X(backstage column) */
 const X = x => x + HOUSE;
-import { MARK } from '../src/marks.js';
+import { MARK, ANSWER, HEIGHT } from '../src/marks.js';
+import * as TMK from '../src/theatre-masks.js';   /* (claude/theatre4) THE MASKS */
 const NOPAGE = process.argv.includes('--no-page');
 const fails = []; const ok = (c, m) => { if (!c) fails.push(m); };
 const TS = 16, DT = 1 / 60;
@@ -124,7 +125,7 @@ if (lv) {
   ok(!L.ents.some(e => e.garrison), 'sprinkled garrison stands in the theatre');
   ok(L.ents.filter(e => e.t === 'drunk').every(e => e.patron ? e.x < HOUSE : e.footlights && D.spots.some(s => Math.abs(s.x - (e.x * TS + 8)) < 400)), 'a drunk in a box is not the audience (footlights) or has no lamp to see by (only the house masked patrons throw unlit: claude/theatre3)');
   // CHECKPOINTS (Daniel: fewer), the silvers, THE PUPPETEER's room
-  const ck = L.ents.filter(e => e.t === 'check'); ok(ck.length === 4 && !ck.some(e => e.filled), 'the theatre has ' + ck.length + ' checkpoints, not the four it places (THEATRE2: the house made the route 520 tiles; the 175-tile rule needs four)');
+  const ck = L.ents.filter(e => e.t === 'check'); ok(ck.length === 5 && !ck.some(e => e.filled), 'the theatre has ' + ck.length + ' checkpoints, not the five it places (THEATRE2: the house made the route 520 tiles; claude/theatre4: THE GREEN ROOM before the main stage needs a fifth at its door - the 200-tile rule)');
   ok(L.ents.filter(e => e.t === 'silver').length === 3, 'the theatre does not carry the campaign\'s three silvers');
   const M = L.mainStage; ok(M && M.door > 0 && M.x1 - M.x0 >= 30 && ck.some(e => e.x < M.door && e.x >= M.door - 10) && L.ents.some(e => e.t === 'gate' && e.x > M.door), 'THE MAIN STAGE (the Puppeteer\'s room: a door, a checkpoint before it, a room and a gate) is not there: ' + JSON.stringify(M));
   ok(!L.ents.some(e => ['npc', 'stray', 'captive', 'folk'].includes(e.t)), 'an NPC or stray stands in the theatre');
@@ -137,6 +138,35 @@ if (lv) {
 /* NO RELIC IN THE THEATRE (Daniel 10-02: the Cut String is cut; the theatre's three silvers are all it pays) */
 if (L) { const rl = L.ents.filter(e => e.t === 'relic');
   ok(rl.length === 0, 'the theatre holds a relic: ' + JSON.stringify(rl)); }
+
+// ---------------- THE MASKS (claude/theatre4, Daniel 10-05: the theatre's mummers swap masks when lit or looked at; the fair's MIME instead) ----------------
+{ const m = TMK.newMask('tragedy');
+  ok(TMK.maskLook(m, true, DT) === 'swap' && m.mask === 'tragedy', 'a first look does not snap on the placement\'s first mask');
+  for (let i = 0; i < 10; i++) TMK.maskLook(m, true, DT); ok(m.mask === 'tragedy', 'a held look changed the mask');
+  TMK.maskLook(m, false, DT); TMK.maskLook(m, false, DT); ok(TMK.maskLook(m, true, DT) === null && m.mask === 'tragedy', 'a blink (under MASK.blink unseen) snapped on a new mask');
+  for (let i = 0; i < Math.ceil(TMK.MASK.blink / DT) + 1; i++) TMK.maskLook(m, false, DT); ok(TMK.maskLook(m, true, DT) === 'swap' && m.mask === 'comedy', 'a fresh look (unseen >= MASK.blink) did not snap on the next mask of the round');
+  for (const k of ['villain', 'tragedy']) { for (let i = 0; i < 40; i++) TMK.maskLook(m, false, DT); TMK.maskLook(m, true, DT); ok(m.mask === k, 'the round is not tragedy, comedy, villain: got ' + m.mask + ' for ' + k); }
+  /* TRAGEDY: guards its front; from behind, from above, or a held heavy, it lands (the heavy breaks the mask) */
+  ok(TMK.maskBlow(m, 100, -1, 80, false, false) === 'guard' && TMK.maskBlow(m, 100, -1, 120, false, false) === 'land' && TMK.maskBlow(m, 100, -1, 80, false, true) === 'land', 'the TRAGEDY does not guard its front only (front ' + TMK.maskBlow(m, 100, -1, 80, false, false) + ')');
+  ok(TMK.maskBlow(m, 100, -1, 80, true, false) === 'break' && m.mask === null && TMK.maskBlow(m, 100, -1, 80, false, false) === 'land', 'a held heavy does not break the TRAGEDY\'s guard');
+  m.unseenT = 0; m.mask = 'tragedy'; m.seen = false; ok(TMK.slowTurn(m), 'a TRAGEDY is not slow to turn when your back turns');
+  /* COMEDY: open, but it cartwheels away from its first blow, once a mask */
+  const c = TMK.newMask('comedy'); TMK.maskLook(c, true, DT); const s0 = { x: 100, y: 200, face: -1, mode: 'still' };
+  ok(TMK.maskBlow(c, 100, -1, 80, false, false) === 'cartwheel' && c.cart && c.cart.dir === 1, 'the COMEDY did not cartwheel away from its first blow');
+  let moved = 0; for (let i = 0; i < 40; i++) { const r = TMK.maskStep(c, s0, null, DT, () => true); s0.x += s0.vx * DT; if (r.hold) moved = s0.x - 100; }
+  ok(moved > 40 && !c.cart && TMK.maskBlow(c, s0.x, -1, s0.x - 20, false, false) === 'land', 'the COMEDY\'s cartwheel did not carry it away (' + Math.round(moved) + ' px), or it dodged twice');
+  /* VILLAIN: a told red lunge at a near hero - frozen or not - once a mask, then it stands spent */
+  const v = TMK.newMask('villain'); TMK.maskLook(v, true, DT); const s1 = { x: 100, y: 200, face: -1, mode: 'still' }, hero = { x: 20, y: 200 }; const ph = []; let box = 0, x1 = 100;
+  for (let i = 0; i < 180; i++) { TMK.maskLook(v, true, DT); const r = TMK.maskStep(v, s1, hero, DT, () => true); s1.x += s1.vx * DT; if (ph[ph.length - 1] !== s1.mode) ph.push(s1.mode); if (r.evs.some(e => e.t === 'lungeBox')) box++; x1 = Math.min(x1, s1.x); }
+  ok(ph.join() === 'lungeTell,lunge,lungeRecover,still' && box > 0 && 100 - x1 >= TMK.MASK.lunge.dist * 0.8 && v.lungeUsed, 'the VILLAIN did not tell, lunge at the hero and stand spent once: ' + JSON.stringify({ ph, box, run: 100 - x1 }));
+  ok(TMK.MASK.lunge.tell >= 0.6 && MARK['mummer|lungeTell'] === '!!' && ANSWER['mummer|lungeTell'] === 'dodge' && HEIGHT['mummer|lungeTell'] === 'low', 'the VILLAIN\'s lunge is not told >= 0.6 s, red (!!) and answered (dodge, low) in src/marks.js (node tools/tells.mjs --write)');
+}
+if (L) { const mm = L.ents.filter(e => e.t === 'mummer'), D2 = L.theatre;
+  ok(mm.every(e => TMK.MASKS.includes(e.mask)) && TMK.MASKS.every(k => mm.some(e => e.mask === k)), 'a theatre mummer has no first mask, or the level does not use all three: ' + mm.filter(e => !TMK.MASKS.includes(e.mask)).map(e => e.x).join(' '));
+  const A2 = D2.arcs.mask; ok(A2 && ['teach', 'test', 'remix', 'exam'].every(k => A2[k] && mm.some(e => e.x >= A2[k][0] && e.x <= A2[k][1])), 'the masks are not taught, tested, remixed and examined (each arc with a player in it): ' + JSON.stringify(A2));
+  const st = mm.find(e => e.x >= A2.teach[0] && e.x <= A2.teach[1]); ok(st && st.mask === 'tragedy' && L.ents.some(e => e.t === 'sign' && /NEW MASK/.test(e.text) && Math.abs(e.x - st.x) < 24), 'the masks\' TEACH is not the stage door\'s tragedy with its sign');
+  const ex = D2.sections.find(([n]) => n === 'THE GREEN ROOM'), ms = D2.sections.find(([n]) => n === 'THE MAIN STAGE'); ok(ex && ms && ms[1] - ex[1] >= 60 && L.mainStage.door === ms[1], 'THE GREEN ROOM is not a section of its own (>= 60 columns) before the main stage: ' + JSON.stringify([ex, ms]));
+  const gr = L.ents.filter(e => e.x >= ex[1] && e.x < ms[1]); ok(gr.filter(e => e.t === 'mummer').length >= 2 && gr.some(e => e.t === 'flylock') && gr.some(e => e.t === 'spotlamp') && new Set(gr.filter(e => e.squad).map(e => e.t)).size >= 4, 'THE GREEN ROOM is not an exam of the masks with the lamps, the lines and a mixed company: ' + JSON.stringify([...new Set(gr.map(e => e.t))])); }
 
 // ---------------- THE PAGE ----------------
 if (!NOPAGE && lv) {
@@ -196,6 +226,15 @@ if (!NOPAGE && lv) {
       // 14. THE CHEER: a cast member cut down in the light throws you a flower
       fresh(); BK.tp(200 + HX, 33); BK.sim(10); const cm = BK.enemies().find(e => e.t === 'mummer' && e.cast); const sp = TH().spots.find(s => Math.abs(s.x - ((216 + HX) * TS + 8)) < 4); sp.aims = [[cm.x, 34 * TS]]; sp.i = 0; sp.from = 0; sp.k = 1; sp.cue = 0; sp.off = false;
       BK.sim(5); P.hp = P.maxHp - 20; const hc = P.hp; cm.alive = false; BK.sim(3); out.cheer = P.hp - hc;
+      // 15. THE MASKS (claude/theatre4): looked at, the stage door's player snaps on its TRAGEDY - a front blow is turned, one from behind lands; a fresh look
+      //     gives the COMEDY, which cartwheels from its first blow and takes the next; the green room's VILLAIN, lit, lunges told at a hero beside it
+      fresh(); const sd = BK.enemies().find(e => e.t === 'mummer' && Math.abs(e.x - ((20 + HX) * TS + 8)) < 24); BK.tp(16 + HX, 33); for (let i = 0; i < 20; i++) { P.face = 1; BK.sim(1); }
+      out.mk1 = sd && sd.mk ? sd.mk.mask : null; sd.face = -1; const g0 = sd.hp; BKT.hurtAs('cut', sd, 10, sd.x - 20, false); const g1 = sd.hp; BKT.hurtAs('cut', sd, 10, sd.x + 20, false); out.guard = [g0 - g1, g1 - sd.hp];
+      for (let i = 0; i < 100; i++) { P.face = -1; BK.sim(1); } for (let i = 0; i < 6; i++) { P.face = 1; BK.sim(1); } out.mk2 = sd.mk.mask; out.mkDbg = { ...sd.mk, x: Math.round(sd.x), px: Math.round(P.x), mode: sd.mode, alive: sd.alive }; sd.hp = 40;
+      const cx0 = sd.x, c0 = sd.hp; BKT.hurtAs('cut', sd, 10, sd.x - 20, false); for (let i = 0; i < 40; i++) { P.face = 1; BK.sim(1); } const c1 = sd.hp; BKT.hurtAs('cut', sd, 10, sd.x - 20, false); out.cart = [c0 - c1, Math.round(sd.x - cx0), c1 - sd.hp];
+      fresh(); BK.god = false; const gv = BK.enemies().find(e => e.t === 'mummer' && Math.abs(e.x - ((311 + HX) * TS + 8)) < 24); BK.tp(305 + HX, 33); P.face = 1; P.hp = P.maxHp; const hv = P.hp; let vTold = false, lunged = false;
+      for (let i = 0; i < 200; i++) { BK.sim(1); if (gv.mode === 'lungeTell') vTold = true; if (gv.mode === 'lunge') lunged = true; } out.villain = [gv.mk ? gv.mk.mask : null, vTold, lunged, hv - P.hp, (TH().swaps || 0) > 0]; BK.god = true;
+      const fa = LEVELS.findIndex(l => l.id === 'fair'); BK.load(fa); BK.state = 'play'; BK.sim(2); const fm = BK.enemies().filter(e => e.t === 'mummer'); out.fair = [fm.length, fm.filter(e => e.mk).length];
       return out; })()`, 600000);
     ok(r.held < 1, 'a mummer in a lamp\'s light moved with the hero\'s back to it (' + r.held.toFixed(1) + ' px)');
     ok(r.freed > 16, 'a mummer out of the light did not creep when nobody looked (' + r.freed.toFixed(1) + ' px): the lamp is not what held it');
@@ -212,9 +251,13 @@ if (!NOPAGE && lv) {
     ok(r.hand[0] && r.hand[1] > 0, 'the stagehand did not tell and land his swing on a hero in front of him: ' + JSON.stringify(r.hand));
     ok(r.act2[0] === 2 && r.act2[1] && r.act2[2] && r.act3[0] === 3 && r.act3[1] && r.act3[2] && r.act3[3] && r.over, 'the acts did not change the stage (act 2 ' + r.act2 + ', act 3 ' + r.act3 + ', start over ' + r.over + ')');
     ok(r.cheer > 0, 'no cheer (a flower) for a kill made in the light: ' + r.cheer);
+    ok(r.mk1 === 'tragedy' && r.guard[0] === 0 && r.guard[1] > 0, 'THE MASKS: the stage door player looked at is not a TRAGEDY that turns a front blow and takes one from behind: ' + JSON.stringify([r.mk1, r.guard]));
+    ok(r.mk2 === 'comedy' && r.cart[0] === 0 && r.cart[1] > 30 && r.cart[2] > 0, 'THE MASKS: a fresh look did not snap on the COMEDY, or it did not cartwheel from its first blow and take the next: ' + JSON.stringify([r.mk2, r.cart, r.mkDbg]));
+    ok(r.villain[0] === 'villain' && r.villain[1] && r.villain[2] && r.villain[3] > 0 && r.villain[4], 'THE MASKS: the green room\'s lit VILLAIN did not tell and land its lunge: ' + JSON.stringify(r.villain));
+    ok(r.fair[0] > 0 && r.fair[1] === 0, 'THE FAIR\'s mummers wear the theatre\'s masks (they mime instead): ' + JSON.stringify(r.fair));
     ok(r.star < 34 * TS - 8, 'the star trap does not throw a hero up through the stage floor (top ' + r.star + ' px, the floor is ' + 34 * TS + ')');
     if (pg.errors.length) fails.push('page errors: ' + pg.errors.slice(0, 3).join(' | '));
   } finally { pg.close(); }
 }
 if (fails.length) { console.log('theatre: ' + fails.length + ' failure(s)\n  ' + fails.join('\n  ')); process.exitCode = 1; }
-else console.log('ok  theatre  the rig (lamps, lines, flats, traps, cues) holds; the level sits between Waymeet and the fair with its own track, reaches five floors, teaches, develops, twists and examines all three machines, pre-teaches the facing rule in the house, locks two rooms with light, combines the exam, runs the show in acts, keeps four checkpoints and leaves the Puppeteer his room' + (NOPAGE ? ' (page skipped)' : '; and in the page the lamp holds a mummer, a lock flies a batten, the sandbag lands, the winch slides a flat, the curtain rises, the traps drop, the audience throws only at the lit, the star trap throws you through the stage; the chandelier and the drum, the mirror, the stagehand, the acts and the cheer'));
+else console.log('ok  theatre  the rig (lamps, lines, flats, traps, cues) holds; the level sits between Waymeet and the fair with its own track, reaches five floors, teaches, develops, twists and examines all three machines, pre-teaches the facing rule in the house, locks two rooms with light, combines the exam, runs the show in acts, keeps five checkpoints, masks every player (taught, tested, remixed, examined in the green room) and leaves the Puppeteer his room' + (NOPAGE ? ' (page skipped)' : '; and in the page the lamp holds a mummer, a lock flies a batten, the sandbag lands, the winch slides a flat, the curtain rises, the traps drop, the audience throws only at the lit, the star trap throws you through the stage; the chandelier and the drum, the mirror, the stagehand, the acts and the cheer; the masks (the tragedy guards, the comedy cartwheels, the villain lunges, the fair's never mask)'));

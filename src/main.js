@@ -73,7 +73,7 @@ import * as FRS from './fair-rides.js'; import * as WQD from './redraw/wicker_fx
 import * as FTL from './redraw/fair_tiles.js';   /* (claude/fairfix5) THE HARVEST FAIR's own tile kit */
 import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js'; import * as FB from './redraw/fair_backdrop.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
 import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
-import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js';   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
+import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js'; import * as TMK from './theatre-masks.js';   /* (claude/theatre4) THE THEATRE's mummers swap masks */   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
 import { chaseSafeAbove, chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
@@ -2231,7 +2231,7 @@ function spawnEnt(e) {
       case 'cutthroat': { const st = DF.newCutthroat(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'cutthroat', w: DF.CUTTHROAT.w, h: DF.CUTTHROAT.h, hp: EHP.cutthroat, mode: st.mode, st }); break; }
       case 'slinger': { const st = DF.newSlinger(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'slinger', w: DF.SLINGER.w, h: DF.SLINGER.h, hp: EHP.slinger, mode: st.mode, st }); break; }
       case 'stagehand': { const st = THF.newStagehand(px, py, e.face || -1); enemies.push({ ...base, t: 'stagehand', w: THF.STAGEHAND.w, h: THF.STAGEHAND.h, markH: 32, hp: EHP.stagehand, mode: st.mode, st }); break; }   /* THE STAGEHAND (the Maskwright's Theatre, src/theatre-foes.js) */
-      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0, scare: !!e.scare, rideIdx: e.ride, rideFair: e.rideFair }); break; }   /* (ride/rideFair, claude/fairfix3: a mummer riding a chair of THE CHAIR-O-PLANE) */   /* scare: THE CORN MAZE's mummer in a scarecrow's coat: drawn as straw until it first moves */   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
+      case 'mummer': { const st = MU.newMummer(px, py, e.face || -1); enemies.push({ ...base, t: 'mummer', w: MU.MUMMER.w, h: MU.MUMMER.h, markH: 34, hp: EHP.mummer, mode: st.mode, st, speed: 0, scare: !!e.scare, rideIdx: e.ride, rideFair: e.rideFair, mk: L && L.theatre ? TMK.newMask(e.mask) : null }); break; }   /* (mk, claude/theatre4: THE THEATRE's mummers swap masks - src/theatre-masks.js) */   /* (ride/rideFair, claude/fairfix3: a mummer riding a chair of THE CHAIR-O-PLANE) */   /* scare: THE CORN MAZE's mummer in a scarecrow's coat: drawn as straw until it first moves */   /* THE HARVEST FAIR's players (src/mummer.js): they move only while nobody faces them */
       case 'greenteeth': { const a = GTH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* JENNY GREENTEETH (src/jenny-greenteeth.js): asleep in the silt of the empty lock; her show is made here */
       case 'gangleader': { enemies.push(GLH.spawn(base)); break; }   /* THE GANG LEADER (src/gang-leader.js): the courtyard's mini; his fight is made here */
       case 'cisternqueen': { const a = CQH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }
@@ -6264,7 +6264,11 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   if (e === boss && !bossActive && e.mode === 'sleep' && L.arena && e.alive) { bossStart(); SFX.clank(); return; } // a sleeping boss is not a free kill: the blow wakes the fight
   if (e.t === 'dummy') { if (dmg > 0) gainHeat(P.jetHit ? HEAT.jet : HEAT.hit); e.flash = 0.12; SFX.stone(); burst(e.x, e.y - 12, 6, COLS.dummy, 50, 0.4); if (dmg > 0) number(e.x, e.y - e.h - 6, Math.round(dmg), '#fff6e0'); return; } // straw takes it and stands
   if (L && L.trial && e.t === 'archer') { SFX.clank(); return; } // the trial's archer is there to shoot at you
-  if (PM.isPuppet(e)) { if (PUPH) PUPH.hurtPuppet(e, dmg, fromX); return; }   /* HIS PUPPETS TAKE A BLOW like anything else (PUPPETEER3): a flash, a number, their health; the strings are the shortcut (updateProps, PUPH.strike) */
+  if (PM.isPuppet(e)) { if (PUPH) PUPH.hurtPuppet(e, dmg, fromX); return; }
+  if (e.mk && e.t === 'mummer' && blow) { const k = TMK.maskBlow(e.mk, e.x, e.face || 1, fromX, blowHas(blow, 'heavy') || !!(P.heavy && P.atk >= 0), !!plunge || blowHas(blow, 'plunge'));   /* (claude/theatre4) THE MASK ANSWERS A HERO'S BLOW (never a sandbag or the room): a tragedy guards its front (a held heavy or a plunge breaks it), a comedy cartwheels away from its first blow */
+    if (k === 'guard') { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 6, e.y - 14, Math.sign(fromX - e.x) || 1, 6); e.mk.sayW = 'GUARDS'; e.mk.sayT = 0.9; hitstop(0.03); if (THEATRE) THEATRE.guards = (THEATRE.guards || 0) + 1; return; }
+    if (k === 'cartwheel') { if (e.mk.sayW !== 'CARTWHEEL' || e.mk.sayT <= 0) { e.mk.sayW = 'CARTWHEEL'; e.mk.sayT = 0.9; SFX.throwWhoosh(); if (THEATRE) THEATRE.carts = (THEATRE.carts || 0) + 1; } return; }
+    if (k === 'break') { SFX.crack && SFX.crack(); e.mk.sayW = 'GUARD BROKEN'; e.mk.sayT = 0.9; burst(e.x, e.y - 18, 8, ['#bfd8ff', '#ffffff'], 70, 0.4); } }   /* HIS PUPPETS TAKE A BLOW like anything else (PUPPETEER3): a flash, a number, their health; the strings are the shortcut (updateProps, PUPH.strike) */
   if (e.t === 'captain' && (e.ride || e.mode === 'ride')) { SFX.splash(); sparks(e.x, e.y - 16, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 44, 'THE SEA HAS HIM', '#9aa39a'); return; }
   /* THE SWARM IS THE HORNET QUEEN'S ARMOUR. She was the shortest real fight in the game (18-73 s against a 90-150 s
      target) because her drones were scenery: two of them hung over the hall, darted at you and changed nothing. Now
@@ -18838,6 +18842,27 @@ function fairStep(e, dir) {
 function fairWatched(e) { if (!FAIR) return false; if (Math.abs(e.x - P.x) < 200) beastSeen(e.juggler ? 'juggler' : e.shy ? 'shy' : e.t); const dk = FGM.sightFor(L, FAIR.lamps, e); return MU.facedBy(e, fairLooks(e), dk ? dk.sight : FK.WATCH.sight, dk ? dk.sightY : FK.WATCH.sightY); }
 /* EVERY HERO'S LOOK at this foe: where he stands, which way he faces, the ribbon's reach, the glass behind him, the wall between (src/fair-games.js) */
 const fairLooks = e => players.map(p => ({ x: p.x, y: p.y, face: p.face || 1, alive: upright(p), vx: p.vx || 0, swing: !!p.wmStart,   /* (claude/fairfix6) what THE MIME copies: his steps, and a blow begun this frame (the swing clock, src/wicker-man-hands.js tick) */ mirror: FGM.mirrorSees(L, p), blind: FGM.blocked(L, (tx, ty) => isSolid(tx, ty), e, p), p }));
+/* (claude/theatre4) THE THEATRE'S MASKS: is it seen (a hero's look, a lamp, the mirrors)? A fresh look snaps on its next mask (a click, a flash). Then the
+   held beats - the comedy's cartwheel, the villain's told lunge - move it instead of the facing rule; a tragedy waits MASK.turnT before it turns on you.
+   Returns true when the facing rule must wait this frame */
+function theatreMask(e, s, dt) {
+  const m = e.mk, look = fairLooks(e); if (THH.litAt(THEATRE, THX, e.x, e.y) || THH.mirrorSees(THEATRE, e, players)) look.push({ x: e.x, y: e.y, face: 1, alive: true });
+  s.x = e.x; s.y = e.y;
+  if (TMK.maskLook(m, MU.facedBy(s, look), dt) === 'swap') { SFX.maskSwap(); burst(e.x, e.y - e.h + 6, 6, ['#ffffff', TMK.MASK.col[m.mask][0]], 50, 0.3); if (THEATRE) THEATRE.swaps = (THEATRE.swaps || 0) + 1; }
+  let near = null, bd = 1e9; for (const pp of players) { if (!upright(pp)) continue; const d = Math.abs(pp.x - e.x); if (d < bd && Math.abs(pp.y - e.y) < 120) { bd = d; near = pp; } }
+  const x0 = e.x, r = TMK.maskStep(m, s, near, dt, dir => fairStep(e, dir));
+  if (!r.hold) { if (TMK.slowTurn(m) && s.mode === 'still') { e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const q = moveBody(e, 0, e.vy * dt, false); if (q.ground || q.hitY) e.vy = 0; e.mode = 'still'; return true; } return false; }
+  if (s.vx) moveBody(e, s.vx * dt, 0, false);
+  e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); { const q = moveBody(e, 0, e.vy * dt, false); if (q.ground || q.hitY) e.vy = 0; }
+  s.x = e.x; s.y = e.y; e.face = s.face || e.face; e.mode = s.mode; e.vx = (e.x - x0) / Math.max(dt, 1e-4); e.woke = true;
+  for (const v of r.evs) {
+    if (v.t === 'lungeTell') { number(e.x, e.y - e.h - 8, '!!', '#ff6b6b'); SFX.tell && SFX.tell(true); if (THEATRE) THEATRE.lunges = (THEATRE.lunges || 0) + 1; }
+    else if (v.t === 'lunge') { SFX.foeSlash(); dust(e.x, e.y, 4); }
+    else if (v.t === 'lungeBox' && !m.lunge.hit) for (const pp of players) asPlayer(pp, () => { if (!upright(pp) || m.lunge.hit) return; const [l, rr, t, b] = v.box; if (overlap({ l, r: rr, t, b }, box(P))) { m.lunge.hit = true; damagePlayer(e.x, v.dmg, { who: e, name: 'A VILLAIN', unblockable: true }); } });
+    else if (v.t === 'landed') dust(e.x, e.y, 3);
+  }
+  return true;
+}
 function updateMummer(e, dt) {
   if (e.rideIdx !== undefined) {   /* A HORSE ON A GONDOLA (THE BIG WHEEL's wide car): it goes where the car goes, even out of sight, and its run is the car's length */
     if (!e.ride) { e.ride = movers.find(q => q.fair === (e.rideFair || 'gondola') && q.idx === e.rideIdx); if (e.ride) e.rx = e.ride.w * (e.rideFair ? 0.5 : 0.75); }
@@ -18848,6 +18873,7 @@ function updateMummer(e, dt) {
   const s = e.st, horse = e.t === 'hobbyhorse'; if (!s) return;
   if (Math.abs(e.x - P.x) < 190) beastSeen(e.t);
   const grav = () => { if (e.ride) return; e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); const r = moveBody(e, 0, e.vy * dt, false); if (r.ground || r.hitY) e.vy = 0; };
+  if (e.mk && THEATRE && theatreMask(e, s, dt)) return;   /* (claude/theatre4) THE THEATRE's MASKS: a new one at each fresh look; the comedy's cartwheel and the villain's lunge run here (src/theatre-masks.js) */
   if (e.stagger > 0 && !(typeof s.mode === 'string' && s.mode.startsWith('mime'))) {   /* struck: it reels, and its machine waits. A blow ends a charge where it is. (claude/fairfix6: never THE MIME's swing back - your blow is what started it; it is committed) */
     if (horse && s.mode === 'charge') { s.mode = 'skid'; s.t = 0.05; s.armed = false; }
     if (s.mode === 'glow') { s.mode = 'still'; }
@@ -22733,6 +22759,7 @@ function poseOf(e, wind) {
   if (e.floored > time) { const k = Math.min(1, (time - (e.floorAt || 0)) / 0.1, (e.floored - time) / 0.18);   /* ON ITS BACK (floorFoe): over it goes, head away, and up again at the end */
     o.rot = (o.rot || 0) - (e.face || 1) * Math.PI / 2 * k; o.dy -= Math.round(Math.min(10, (e.w || 10) / 2) * k); o.dx -= (e.face || 1) * Math.round(3 * k); }
   if (e.jeerT > 0) o.dy -= Math.round(Math.abs(Math.sin(e.jeerT * 13)) * 3);
+  if (e.mk && e.mode === 'cartwheel' && e.mk.cart) { o.rot = (o.rot || 0) + (1 - e.mk.cart.t / TMK.MASK.cart.t) * Math.PI * 2 * (e.mk.cart.dir || 1); o.dy -= 8; }   /* (claude/theatre4) THE COMEDY's cartwheel */
   if (PUPH && PM.isPuppet(e) && PUPH.slump(e)) { o.dy += 3; o.sy *= 0.93; o.rot = (o.rot || 0) + (e.face || 1) * 0.1; }   /* (claude/theatre4) SLACK, IT SLUMPS: a hittable puppet sags on its strings */
   if (e.broken > 0 && !e.xpRole && !e.mini && e !== boss && !(e.floored > time)) staggerPose(o, e, time);   /* BROKEN, IT STANDS OPEN: reeling back off its guard for the whole break (src/poise-break.js) */
   if (GOBLINISH.has(e.t) && e.hp0 && e.hp < e.hp0 * 0.35 && !wind && Math.floor(time * 24) % 3 === 0) o.dx += Math.floor(time * 48) % 2 ? 1 : -1;
@@ -26946,7 +26973,7 @@ function drawWorld(cx, cy, showPlayer) {
     let frame = 0;
     if (e.t === 'lancer') frame = lancerFrame(e);
     else if (e.t === 'stagehand') frame = e.hurtT > 0 ? 5 : ({ swingTell: 3, swing: 4, recover: 4, dropTell: 6 })[e.mode] ?? (Math.abs(e.vx) > 2 ? 1 + Math.floor(e.anim * 5) % 2 : 0);   /* THE STAGEHAND */
-    else if (e.t === 'mummer') frame = e.hurtT > 0 && e.mode !== 'mimeTell' ? 5 : ({ glow: 3, strike: 4, recover: 0, mimeTell: 1, mimeSwing: 4, mimeRecover: 0 })[e.mode] ?? (e.mode === 'creep' ? 1 + Math.floor(e.anim * 6) % 2 : 0);   /* THE MUMMER: 3 is the red mask */
+    else if (e.t === 'mummer') frame = e.hurtT > 0 && e.mode !== 'mimeTell' ? 5 : ({ glow: 3, strike: 4, recover: 0, mimeTell: 1, mimeSwing: 4, mimeRecover: 0, lungeTell: 3, lunge: 4, lungeRecover: 0, cartwheel: 1 })[e.mode] ?? (e.mode === 'creep' ? 1 + Math.floor(e.anim * 6) % 2 : 0);   /* THE MUMMER: 3 is the red mask */
     else if (e.t === 'grindylow') frame = CNF.grindylowFrame(e); else if (e.t === 'willowisp') frame = CNF.wispFrame(e);   /* THE FOG CANAL */
     else if (e.t === 'wickerman') frame = WMN.wmFrame(e.st || e, e.hurtT > 0);   /* (claude/fairfix6) THE WICKER MAN */
     else if (e.t === 'stringjack') frame = e.hurtT > 0 ? 5 : ({ jerk: 3, strike: 4, recover: 0, hang: 0 })[e.mode] ?? (e.mode === 'walk' ? 1 + Math.floor(e.anim * 8) % 2 : 0);   /* THE MARIONETTE: 0 limp, 3 the jerk */
@@ -27490,7 +27517,8 @@ function drawWorld(cx, cy, showPlayer) {
   drawFront(cx, cy);   /* the occluders, the near motes, the fg strip (a level with nothing between you and the sky asks for none: palette.noFg) and the near layer, faded where they cover the hero */
   if (L.causeTide || (L.arena && L.arena.boss === 'kraken')) drawCauseOverlay(cx, cy);
   if (L.fields) drawFieldsOverlay(cx, cy);   /* THE HEXED FIELDS: the cloud's shadow, the moon gauge, the marks and the fire */
-  if (THEATRE) THH.drawTheatreFront(THEATRE, g, THX, cx, cy, VW, VH, time);   /* THE MASKWRIGHT'S THEATRE: the light on whoever stands in a pool, over the bodies */
+  if (THEATRE) THH.drawTheatreFront(THEATRE, g, THX, cx, cy, VW, VH, time);
+  if (THEATRE) for (const e of enemies) if (e.mk && e.alive && e.x > cx - 40 && e.x < cx + VW + 40) TMK.drawMask(g, e, cx, cy, time, (...a) => text(...a));   /* (claude/theatre4) THE MASKS, over everything: clear at 1x */   /* THE MASKWRIGHT'S THEATRE: the light on whoever stands in a pool, over the bodies */
   if (L.mage) drawMageOverlay(cx, cy);   /* THE MAGE'S FOLLY: the form's ring and the bat's bar, the room turned over, the Archmage's circles, runes and openings */   /* THE DROWNED CAUSEWAY: its storm, its ink, the tide's foam line and gauge, and the Kraken's marks */
   if (dk > 0) { g.globalCompositeOperation = 'multiply'; g.globalAlpha = dk * 0.55; const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#8a6aa0'); gr.addColorStop(1, '#ffb070'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   if (L.fog && L.fog.length && state !== 'win') { // a bank you see through only near yourself, the wisps, or (in the drowned city) a lamp

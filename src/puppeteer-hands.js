@@ -273,9 +273,9 @@ export function makePuppeteerHands(ctx) {
     const S = A(); if (!S || !show) return; const g = ctx.g(), e = ctx.boss && ctx.boss.t === 'puppeteer' && ctx.boss.alive ? ctx.boss : null, st = S.stage, TS = ctx.TS;
     const pulse = 0.5 + 0.5 * Math.sin(time * 18), key = PM.sceneKey(show), fl = R(S.floor - cy);
     if (key === 'night' && show.spots && e) { drawNight(g, S, cx, cy, time);
-      /* (claude/theatre4) NEVER INVISIBLE: every standing puppet is drawn again over the dark - in a pool with its gold outline, in the dark as a grey-steel silhouette */
+      /* (claude/theatre4) NEVER INVISIBLE: a puppet in the dark is drawn again over it as a grey-steel silhouette (the dashed ring and IN THE DARK say why it turns a blade) */
       for (const p of show.puppets) { if (!p.alive || PM.heaped(p) || p.mode === 'packed' || !p.pupQ || p.pupQT !== time) continue; const q = p.pupQ;
-        if (PM.hurtable(p)) rim(q, '#ffd36b', 1); else if (p.dark && ctx.drawTinted) { rim(q, '#3a4458', 0.8); ctx.drawTinted(q.set, null, q.frame, q.x, q.y, q.face, q.sx, q.sy, q.rot, '#8a96a8', 0.8); } } }
+        if (p.dark && ctx.drawTinted) ctx.drawTinted(q.set, null, q.frame, q.x, q.y, q.face, q.sx, q.sy, q.rot, '#8a96a8', 0.6); } }   /* (a lit one is in its pool already, its gold outline under it) */
     g.globalAlpha = 0.35 + 0.1 * Math.sin(time * 2); g.fillStyle = '#ffd36b'; g.fillRect(R(st.gx0 - cx), R(st.gallery - cy), R(st.gx1 - st.gx0), 1); g.globalAlpha = 1;
     const ch = show.change || (e && e.mode === 'scene' ? { t: e.modeT, len: PUP.sceneT } : null);
     if (ch) { const k = 1 - Math.max(0, ch.t) / ch.len; g.globalAlpha = 0.25 * Math.sin(Math.PI * k); g.fillStyle = '#05030a'; g.fillRect(0, 0, 4000, 4000); g.globalAlpha = 1; }
