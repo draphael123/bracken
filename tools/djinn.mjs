@@ -44,7 +44,7 @@ function run(secs, o = {}) {
 { const r = run(120, { hp: () => 300 }); ok(r.S.ph === 3 && r.S.flood && r.S.water >= DJ.waterH - 0.5 && r.S.pose === 'column' && ['spoutTell', 'waveTell', 'slamTell'].every(m => r.seen.has(m)) && r.maxOpen === 0, 'P3: the hall floods, he rises in the shaft, the spout, the wave and the hand slam come - and alone nothing opens him');
   ok(r.S.n.hands > 0 && said.includes('HIS HAND RESTS THERE: STRIKE IT'), 'P3: his slammed hand stays on the ledge, told (HIS HAND RESTS THERE: STRIKE IT)'); }
 /* THE OPENINGS */
-ok(DJ.openT >= 3.8 && DJ.bailT >= 4.8 && DJ.mudT >= 3.3 && DJ.mudT <= 3.8 && DJ.openMul >= 2.4 && DJ.openMul <= 2.6 && DJ.openCap > 0 && DJ.openCap <= 0.1, 'his openings (claude/djinn3, Daniel 10-04 "a little too hard": stunned longer, more damage): mud ' + DJ.mudT + ' s (was 2.5), the douse ' + DJ.openT + ' s (was 3.2), the bail ' + DJ.bailT + ' s (was 4.2); x' + DJ.openMul + ' (was x1.9), one takes no more than ' + DJ.openCap * 100 + '% of him (no one-shot)');
+ok(DJ.openT >= 3.8 && DJ.bailT >= 4.8 && DJ.mudT >= 3.3 && DJ.mudT <= 5.0 && DJ.openMul >= 2.4 && DJ.openMul <= 2.6 && DJ.openCap > 0 && DJ.openCap <= 0.1, 'his openings (claude/djinn3, Daniel 10-04 "a little too hard": stunned longer, more damage): mud ' + DJ.mudT + ' s (was 2.5), the douse ' + DJ.openT + ' s (was 3.2), the bail ' + DJ.bailT + ' s (was 4.2); x' + DJ.openMul + ' (was x1.9), one takes no more than ' + DJ.openCap * 100 + '% of him (no one-shot)');
 { const S = DJG.newShow(G), e = { t: 'djinn', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'walk', modeT: 1, open: 0, alive: true }, c = world();
   ok(DJG.pourAim(e, S, { x: G.mid - 50, y: G.floor, face: 1 }) && !DJG.pourAim(e, S, { x: G.mid - 50, y: G.floor, face: -1 }) && !DJG.pourAim(e, S, { x: G.mid - 200, y: G.floor, face: 1 }), 'a pour reaches him only facing him, near');
   ok(DJG.pourAt(e, S, { x: G.mid - 50, y: G.floor, face: 1 }, c) === 'open' && e.mode === 'mud' && e.open >= 2.4 && DJG.djOpen(e) && OPEN_RULE.djinn(e), 'P1: a pour turns him to MUD - open (OPEN_RULE agrees)');
@@ -104,8 +104,13 @@ ok(DJ.bailCap > DJ.openCap && DJ.bailCap <= 0.1, 'a bail (two steps to earn) tak
   ok(ledgeHits.length === 0 && DJ.dmg.flood === 0, 'while the well is high a hero on a ledge stands in it - wet, and SAFE: the flood itself costs nothing (claude/djinn4, Daniel 10-05 "no damage from the flood without a tell": a safe spot always exists; ' + ledgeHits.length + ' ticks)');
   ok(cyc >= 1 && minAfter <= DJ.waterH + 0.5 && said.includes('THE WATER FALLS BACK: THE LEDGES ARE DRY'), 'and it ebbs back to ' + minAfter.toFixed(0) + ' px (told): the ledges come back - ' + cyc + ' full cycle(s) in a minute');
   ok(DJ.surgeTell >= 1.2 && DJ.tideRise >= 1.0, 'the surge is told ' + DJ.surgeTell + ' s before it rises, and it takes ' + DJ.tideRise + ' s to reach the ledges: time to climb'); }
-{ const deep = []; run(70, { hp: () => 300, x: G.windlass, each: (t, e, S, c, h) => { if (!c.tapped) { c.tapped = 1; c.hit = (bx, d, name, o = {}) => { if (o.deep && h.y >= bx[2] && h.y <= bx[3]) deep.push(d); }; } } });
-  ok(deep.length > 0 && deep.every(d => d === DJ.dmg.deep) && DJ.dmg.deep > DJ.dmg.flood, 'over the ledges the FLOOR is deep: ' + DJ.dmg.deep + ' a tick (the flood is ' + DJ.dmg.flood + '), told: THE DEEP WATER: GET UP ON A LEDGE'); }
+/* (claude/djinn5, Daniel 10-06: "you should never take damage just from being in the water ... not a fair mechanic" - djinn4's 'the deep floor bites' is gone by
+   his design, not weakened): a hero who stands on the floor by the windlass through two full tides - low, the surge, HIGH over the ledges, the ebb - and
+   never answers anything: every blow that reaches him is one of his told moves; nothing comes from the water itself */
+{ const got = [], sts = new Set(); run(70, { hp: () => 300, x: G.windlass, each: (t, e, S, c, h) => { sts.add(S.tide.st); if (!c.tapped) { c.tapped = 1; c.hit = (bx, d, name, o = {}) => { if (d > 0 && S.ph === 3 && h.y >= bx[2] && h.y <= bx[3] + 24) got.push({ name, flood: !!o.flood, key: o.key || '' }); }; } } });
+  const water = got.filter(q => q.name === 'THE FLOOD' || q.name === 'THE DEEP WATER' || (q.flood && q.name !== DJG.MOVE_NAME.whirl));
+  ok(sts.has('high') && sts.has('ebb') && water.length === 0 && !('deep' in DJ.dmg) && !('deep' in DJG.P3_HARMS) && !('deep' in DJG.MOVE_NAME) && DJ.dmg.flood === 0,
+    'NO PASSIVE WATER DAMAGE: on the floor through the high water and the low, a hero who never answers takes nothing from the water itself (' + water.length + ' water blows; ' + got.length + ' told blows: ' + [...new Set(got.map(q => q.name))].join(', ') + ') - no DEEP WATER in his table, his harms or his names'); }
 /* HE STRIKES UP FROM BELOW (claude/djinn3): bubbles under you on your ledge, then his fist, then it rests (his hand) */
 { const S = DJG.newShow(G), c = world(), e = { t: 'djinn', x: G.mid, y: G.floor, hp: 300, maxHp: 1000, face: 1, mode: 'hover', modeT: 0.01, open: 0, alive: true }; S.ph = 3; S.pose = 'column'; S.flood = true; S.water = DJ.waterH; S.script = ['upsurge']; S.step = 0; S.tide = { st: 'low', t: 99 };
   const hero = { x: G.ledgeE[0] + 40, y: G.ledgeY, ground: true, alive: true, onLedge: 'E', pp: {} }; let mark = null, hit = null, hand = null; c.hit = (bx, d, name) => { if (name === DJG.MOVE_NAME.upsurge) hit = bx; };
@@ -156,14 +161,13 @@ const P3_WAS = { tell: { upTell: 0.9, spoutTell: 0.85, waveTell: 0.8, slamTell: 
   dmg: { spout: 16, held: 24, wave: 26, slam: 26, whirl: 10, deep: 4, upsurge: 22, flood: 1 } };
 ok(Object.entries(P3_WAS.tell).every(([k, v]) => DJ[k] >= v * 1.18 - 1e-9) && DJ.gap[2] >= P3_WAS.gap * 1.18 && DJ.colWalk <= P3_WAS.colWalk * 0.85,
   'P3 SLOWER (~20%): every windup x' + Math.min(...Object.entries(P3_WAS.tell).map(([k, v]) => DJ[k] / v)).toFixed(2) + '+ (' + Object.keys(P3_WAS.tell).map(k => k + ' ' + DJ[k]).join(', ') + '), the gap ' + P3_WAS.gap + ' -> ' + DJ.gap[2] + ' s, his glide ' + P3_WAS.colWalk + ' -> ' + DJ.colWalk + ' px/s');
-{ const ks = Object.keys(P3_WAS.dmg).filter(k => k !== 'flood'), mean = ks.reduce((a, k) => a + DJ.dmg[k] / P3_WAS.dmg[k], 0) / ks.length;
-ok(ks.every(k => DJ.dmg[k] <= P3_WAS.dmg[k] * 0.9) && mean <= 0.86 && DJ.dmg.flood === 0, 'P3 LESS DAMAGE (~15%: x' + mean.toFixed(3) + ' on average, none less than 10% off): ' + Object.keys(P3_WAS.dmg).map(k => k + ' ' + P3_WAS.dmg[k] + '->' + DJ.dmg[k]).join(', ') + ' (the shallow flood costs nothing)'); }
+{ const D = k => DJ.dmg[k] || 0, ks = Object.keys(P3_WAS.dmg).filter(k => k !== 'flood'),   /* (claude/djinn5: the deep water is gone - it counts as 0) */ mean = ks.reduce((a, k) => a + D(k) / P3_WAS.dmg[k], 0) / ks.length;
+ok(ks.every(k => D(k) <= P3_WAS.dmg[k] * 0.9) && mean <= 0.86 && DJ.dmg.flood === 0, 'P3 LESS DAMAGE (~15%: x' + mean.toFixed(3) + ' on average, none less than 10% off): ' + Object.keys(P3_WAS.dmg).map(k => k + ' ' + P3_WAS.dmg[k] + '->' + DJ.dmg[k]).join(', ') + ' (the shallow flood costs nothing)'); }
 /* EVERY P3 HARM IS LISTED, TOLD >= 0.6 s, AND HAS AN ANSWER */
 { const names = new Set(Object.keys(DJG.P3_HARMS).map(k => DJG.MOVE_NAME[k]));
   for (const [k, h] of Object.entries(DJG.P3_HARMS)) ok(h.t() >= 0.6 && ['dodge', 'jump', 'duck', 'block'].includes(h.answer) && h.where && h.how && (h.tell === 'surge' || (MOVES[h.tell] && MOVES[h.tell].mark === '!!')),
     'P3 harm ' + k.toUpperCase() + ' (' + DJG.MOVE_NAME[k] + '): told ' + h.t().toFixed(2) + ' s by ' + h.where + ' - answer ' + h.answer + ': ' + h.how);
-  const walk = 216 / 92 + 128 / 74 + 0.3;
-  ok(walk <= DJ.surgeTell + DJ.tideRise + DJ.deepTick, 'THE DEEP WATER: from the middle of the hall a hero walks to a ladder and climbs it (' + walk.toFixed(2) + ' s, with a third of a second to read the surge) before the deep floor first bites (' + (DJ.surgeTell + DJ.tideRise + DJ.deepTick).toFixed(1) + ' s after the surge is told)');
+  ok(Object.keys(DJG.P3_HARMS).every(k => DJ.dmg[k] > 0 && k !== 'deep' && k !== 'flood'), 'every listed P3 harm is one of his BLOWS (claude/djinn5: no harm from the water itself - the deep floor is off the list): ' + Object.keys(DJG.P3_HARMS).join(', '));
   /* nothing else hurts in the flood: two minutes of P3 against a hero who never answers - every blow that lands is on the list */
   const got = new Set(); run(120, { hp: () => 300, each: (t, e, S, c) => { if (!c.tap2) { c.tap2 = 1; c.hit = (bx, d, name) => { if (S.ph === 3 && d > 0) got.add(name); }; c.band = (k2, y, x0, x1, d, name) => { if (S.ph === 3 && d > 0) got.add(name); }; } } });
   ok(got.size >= 4 && [...got].every(n2 => names.has(n2)), 'two minutes of the flood: every blow he throws is a listed P3 harm (' + [...got].join(', ') + ')'); }
@@ -190,7 +194,7 @@ ok(ks.every(k => DJ.dmg[k] <= P3_WAS.dmg[k] * 0.9) && mean <= 0.86 && DJ.dmg.flo
       if (h.climb) { h.y -= CLIMB * dt; if (h.y <= G.ledgeY) { h.y = h.base = G.ledgeY; h.onLedge = h.climb; h.climb = null; h.x = h.onLedge === 'W' ? G.ledgeW[1] - 24 : G.ledgeE[0] + 24; } continue; }
       /* the tide: surging - to the nearest ladder and up; low again - down to the floor */
       const bore = () => Math.min(9, ...S.bands.filter(b => !b.ledge && Math.sign(h.x - b.x) === b.dir).map(b => (Math.abs(b.x - h.x) - 20) / (b.speed + RUN) + Math.max(0, b.delay || 0)));
-      const climbing = high && !h.onLedge && seen('surge' + S.n.surges);
+      const climbing = false && high && !h.onLedge && seen('surge' + S.n.surges);   /* (claude/djinn5: the high water costs nothing - the hero stays on the floor through it) */
       if (climbing) { const wv = e.mode === 'waveTell' && Math.abs(h.x - G.mid) < 260 || bore() < 0.9; if (Math.abs(h.x - lx) < 2 && !h.air && !wv) { h.climb = lad; continue; } gx = lx; }
       else if (h.onLedge && S.tide.st === 'low' && S.tide.t < DJ.tideLow - 1.5 && !S.marks.length && !S.bands.length) { h.x = h.onLedge === 'W' ? G.ledgeW[1] + 12 : G.ledgeE[0] - 12; h.onLedge = null; h.y = h.base = G.floor; }
       /* the wave: told under the shaft - stand off it, then jump the bore (or the crest) as it comes */
@@ -206,6 +210,8 @@ ok(ks.every(k => DJ.dmg[k] <= P3_WAS.dmg[k] * 0.9) && mean <= 0.86 && DJ.dmg.flo
         if (d.x == null || (high && !d.hi && !h.onLedge)) { d.hi = high; const away = h.x <= d.m.x ? -1 : 1, pref = high && !h.onLedge ? Math.sign(lx - h.x) || away : away; let tx = h.x + pref * 60; if (tx < lo || tx > hi || Math.abs(tx - d.m.x) < 40) tx = h.x - pref * 60; if (Math.abs(tx - d.m.x) < 40) tx = d.m.x + (tx > d.m.x ? 46 : -46); d.x = Math.max(lo, Math.min(hi, tx)); }
         gx = d.x; }
       if (gx == null && !h.onLedge && !high) gx = home;
+      /* (claude/djinn5) his wave or whirlpool told under the shaft: never walk back in under it - wait out there, 110 px off (as a player would) */
+      if (gx != null && !h.onLedge && (e.mode === 'waveTell' || e.mode === 'whirlTell' || e.mode === 'whirl') && Math.abs(gx - G.mid) < 110 && Math.abs(h.x - G.mid) >= 110) gx = h.x;
       if (!h.onLedge && bore() < 0.8) gx = h.x;   /* a bore coming: stand and time the jump */
       if (gx != null) { gx = Math.max(lo, Math.min(hi, gx)); h.x += Math.sign(gx - h.x) * Math.min(Math.abs(gx - h.x), RUN * dt); }
       if (h.air) { h.vy += GR * dt; h.y += h.vy * dt; if (h.y >= h.base) { h.y = h.base; h.air = false; h.vy = 0; } }
@@ -223,14 +229,33 @@ ok(ks.every(k => DJ.dmg[k] <= P3_WAS.dmg[k] * 0.9) && mean <= 0.86 && DJ.dmg.flo
     let peak = 0; for (let i = 0; i < 60 * 4; i++) { DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c); peak = Math.max(peak, e.mode === 'choked' ? e.open : 0); if (S.ward > 0) break; }
     ok(peak >= DJ.chokeT - 0.1 && OPEN_RULE.djinn({ mode: 'choked', open: 1 }) && slams === 0 && hurt === Math.round(1000 * DJ.chokeHit) && said.includes('HE CHOKES: CUT HIM') && S.ward > 0,
       '... it goes down his core: he CHOKES (' + peak.toFixed(1) + ' s still, open, OPEN_RULE agrees), the throw takes ' + (DJ.chokeHit * 100) + '% of him, his ' + rear + ' never lands, then his shroud (the ward)'); }
-  { const { S, e } = mk('hover'), p = { full: true }, c = world(); DJG.throwPail(e, S, hero, p, c); for (let i = 0; i < 60; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c);
-    ok(!DJG.djOpen(e) && S.n.splashed === 1 && said.includes('IT SPLASHES OFF HIM: THROW WHEN HE REARS UP'), 'thrown when he is not rearing, it splashes off him (told): nothing'); }
+  /* (claude/djinn5, Daniel 10-06 "another way to hit him in the water"): thrown when he is UP but not rearing, he REELS - a short told stagger, his blow cut
+     off, the throw takes reelHit, he turns to the thrower, then his shroud. Was: it splashed off (djinn4) - a design change, asserted to the new design */
+  for (const m0 of ['hover', 'glide', 'upsurgeTell', 'whirl', 'drawing']) { const { S, e } = mk(m0), p = { full: true }, c = world(); let hurt = 0, blows = 0; e.face = 1; S.marks = []; S.cur = { k: 'upsurge', id: 7, x: hero.x, y: G.floor }; S.goX = G.mid + 200; S.pend = 'wave';
+    if (m0 === 'upsurgeTell') S.marks = [{ x: hero.x, y: G.floor, t: 0.9, k: 'bubbles', key: 'up7' }];
+    c.hurtBoss = (b, d) => { hurt += d; }; c.hit = (bx, d, name) => { if (d > 0) blows++; }; const x0 = e.x;
+    ok(!DJG.rearing(e, S) && DJG.upInFlood(e, S) && DJG.throwPail(e, S, hero, p, c), 'he is UP (' + m0 + '), not rearing: the pail is thrown at him');
+    let peak = 0, xs = []; for (let i = 0; i < 60 * 3; i++) { DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c); if (e.mode === 'reel') { peak = Math.max(peak, e.open); xs.push(e.x); } if (S.ward > 0) break; }
+    ok(peak >= DJ.reelT - 0.1 && DJ.reelT >= 1.0 && DJ.reelT <= 1.5 && OPEN_RULE.djinn({ mode: 'reel', open: 1 }) && hurt === Math.round(1000 * DJ.reelHit) && blows === 0 && e.face === -1 && said.includes('THE PAIL HITS HIM: HE REELS. CUT HIM') && S.ward > 0 && xs.length && Math.max(...xs) - Math.min(...xs) < 1,
+      '... it hits his core: he REELS (' + peak.toFixed(1) + ' s, still, open, OPEN_RULE agrees), the throw takes ' + (DJ.reelHit * 100).toFixed(1) + '% of him, his ' + m0 + ' cut off (no blow lands), he turns to the thrower, then his shroud'); }
+  /* the pail flies AT HIM: one gliding to the shaft is hit where he has got to */
+  { const { S, e } = mk('glide'), p = { full: true }, c = world(); S.marks = []; S.goX = G.mid - 200; S.pend = 'wave'; S.rush = true; e.x = hero.x + 200; DJG.throwPail(e, S, hero, p, c);
+    for (let i = 0; i < 60 && e.mode !== 'reel'; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c);
+    ok(e.mode === 'reel' && Math.abs(e.x - (hero.x + 200)) > 20, 'the pail follows him: thrown at him gliding past (he had moved ' + Math.abs(e.x - (hero.x + 200)).toFixed(0) + ' px), it still hits - he reels'); }
+  { const { S, e } = mk('hover'), p = { full: true }, c = world(); DJG.openUp(e, S, 'bailed', c, hero); const o0 = e.open; DJG.throwPail(e, S, hero, p, c); for (let i = 0; i < 40; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c);
+    ok(e.mode === 'bailed' && S.n.splashed === 1 && !S.n.reels && said.includes('IT SPLASHES OFF HIM: THROW WHEN HE IS UP'), 'spilled in the flood (bailed out), he is not UP: the pail splashes off him (told) - his bail is not cut short'); }
   { const { S, e } = mk('slamTell'), p = { full: true }, c = world(); S.ward = 2; DJG.throwPail(e, S, hero, p, c); for (let i = 0; i < 40; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c);
     ok(!DJG.djOpen(e) && said.includes('HIS SHROUD TURNS THE PAIL'), 'warded, his shroud turns the pail (told): no chain-lock'); }
   { const { S, e } = mk('slamTell'), p = { full: true }, c = world(); e.x = hero.x + DJ.pailR + 40; DJG.throwPail(e, S, hero, p, c); for (let i = 0; i < 40; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c);
     ok(e.mode !== 'choked' && !p.full, 'out of a throw (' + DJ.pailR + ' px), the pail falls short into the flood'); }
+  ok(DJ.reelHit + DJ.reelCap < DJ.chokeHit + DJ.chokeCap && DJ.reelT < DJ.chokeT, 'the reel is the SMALLEST (' + ((DJ.reelHit + DJ.reelCap) * 100).toFixed(1) + '% at most, ' + DJ.reelT + ' s): the choke at a rear stays the better throw');
   ok(DJ.chokeHit + DJ.chokeCap < DJ.bailCap && DJ.chokeT < DJ.bailT, 'the pail is the SMALL opening (' + ((DJ.chokeHit + DJ.chokeCap) * 100).toFixed(1) + '% at most, ' + DJ.chokeT + ' s), the windlass bail the BIG one (' + DJ.bailCap * 100 + '%, ' + DJ.bailT + ' s)');
   ok([...DJG.REAR].every(m => m === 'slam' || (MOVES[m] && MOVES[m].mark === '!!' && MOVES[m].alt === 'throw')), 'his rears (the slam, the spout) are told !!; their answer is a dodge - or the pail (MOVES alt: throw)'); }
+/* LONGER STAGGERS (claude/djinn5, Daniel 10-06 "increase the time he's staggered"): djinn4's windows, each now ~+30-40% (the choke 2 -> 3 s); the ward after each still 3 s */
+{ const WAS = { mudT: 3.5, openT: 4.0, bailT: 5.5, chokeT: 2.0 }, k = Object.fromEntries(Object.entries(WAS).map(([q, v]) => [q, DJ[q] / v]));
+  ok(['mudT', 'openT', 'bailT'].every(q => k[q] >= 1.3 && k[q] <= 1.4) && DJ.chokeT >= 2.8 && DJ.chokeT <= 3.2 && DJ.wardT === 3.0, 'LONGER STAGGERS: ' + Object.keys(WAS).map(q => q + ' ' + WAS[q] + ' -> ' + DJ[q] + ' (x' + k[q].toFixed(2) + ')').join(', ') + '; the ward after each ' + DJ.wardT + ' s'); }
+/* NO LONG WAIT FOR HIM TO REACH THE MIDDLE (claude/djinn5): to the shaft he crosses at colRush; from the far wall he is there in under 3 s */
+ok(DJ.colRush >= 110 && (G.mid - (G.x0 + 64)) / DJ.colRush + 0.25 <= 3.0, 'to the shaft he crosses at ' + DJ.colRush + ' px/s: from the far side of the hall in ' + ((G.mid - (G.x0 + 64)) / DJ.colRush).toFixed(1) + ' s (and a pail reaches him on the way)');
 { run(60, { hp: () => 300 }); ok(said.includes('HE REARS UP: THROW THE PAIL INTO HIS CORE'), 'the first time he rears up in the flood it is told: HE REARS UP: THROW THE PAIL INTO HIS CORE'); }
 /* THE LINES, THE LEVEL, THE BENCH */
 const lines = [...new Set(said)].filter(s => !/^!+$/.test(s)); ok(lines.every(s => CALL_LINES.has(s)), 'every line he says is a teaching line in src/hint-lines.js (' + lines.length + ')');

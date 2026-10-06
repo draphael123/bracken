@@ -34,7 +34,9 @@
 
 export const DJ = {
   hp: 1000, w: 34, h: 64, markH: 92,
-  openMul: 2.5, openT: 4.0, mudT: 3.5, bailT: 5.5, openCap: 0.046, bailCap: 0.07,   /* a water opening: x openMul, one takes no more than openCap of him
+  openMul: 2.5, openT: 5.4, mudT: 4.7, bailT: 7.4, openCap: 0.046, bailCap: 0.07,   /* (claude/djinn5, Daniel 10-06 "increase the time he's staggered": every opening ~+35% -
+                                                                    mud 3.5 -> 4.7 s, the douse 4.0 -> 5.4, the bail 5.5 -> 7.4; the 3 s ward after each unchanged)
+                                                                    a water opening: x openMul, one takes no more than openCap of him
                                                                     (claude/djinn3, Daniel 10-04 "a little too hard": MORE DAMAGE WHEN STUNNED x1.9 -> x2.5,
                                                                     and STUNNED LONGER - mud 2.5 -> 3.5 s, the douse 3.2 -> 4.0, the bail 4.2 -> 5.5. The cap
                                                                     stays 0.0525 a mud or a douse - x2.5 over a longer window fills it far sooner, and a
@@ -84,13 +86,20 @@ export const DJ = {
   /* THE PAIL (claude/djinn4, Daniel picked SCOOP + THROW): in the flood every hero has a pail - E SCOOPS it full anywhere in the water (instant, told); when he
      REARS UP to strike (REAR: the slam and the spout, arms up, his core lit) E or a strike THROWS it into his core: he CHOKES - chokeT s still, the throw
      takes chokeHit of him and a blade bites x openMul up to chokeCap more - and the strike is cancelled. The windlass's bail stays the BIG opening */
-  pailR: 230, pailSpeed: 520, chokeT: 2.0, chokeHit: 0.015, chokeCap: 0.025,
+  pailR: 230, pailSpeed: 520, chokeT: 3.0, chokeHit: 0.015, chokeCap: 0.025,   /* (claude/djinn5: the choke 2.0 -> 3.0 s) */
+  /* THE PAIL ANY TIME HE IS UP (claude/djinn5, Daniel 10-06 "we need another way to hit him in the water - maybe you throw something?"): a pail into his core
+     while he is UP in the flood and NOT rearing makes him REEL - reelT s still (told, B4), his blow cut off, the throw takes reelHit of him and a blade bites
+     x openMul up to reelCap more; he turns to the thrower; then his 3 s shroud (B3). The rear's choke stays the bigger one, the bail the biggest. The pail
+     flies AT HIM (it follows his core), so one gliding across the hall is hit too */
+  reelT: 1.2, reelHit: 0.008, reelCap: 0.012,
+  colRush: 120,   /* (claude/djinn5, Daniel 10-06 "if he's moving between areas you have to wait for him to get in the middle"): crossing to the shaft he
+                     glides at colRush (was colWalk 80) - and the pail reaches him on the way */
   bucketFall: 0.55, bucketCd: 1.5, windT: 1.5, pourR: 66,   /* THE BAIL IS TWO STEPS (claude/djinn3): in the flood the great bucket lies DOWN in the
                                                     water - strike the windlass (or the crank) and it WINDS UP (windT s) and hangs cocked; strike again and it DROPS
                                                     (bucketFall s) - on him only if he is under the shaft. After it lands the rope settles bucketCd s */
   /* (claude/djinn4: phase three hits ~15% lower - spout 16, held 24, wave 26, slam 26, whirl 10, deep 4, upsurge 22 before; and THE FLOOD ITSELF costs nothing
      (flood 1 a second before, untold): only the DEEP water over the ledges hurts, told by the surge - the ledges stay safe under it) */
-  dmg: { lash: 17, blast: 8, devil: 24, spear: 19, flash: 17, breath: 22, pillar: 20, fdevil: 11, heat: 6, burn: 3, spout: 14, held: 20, wave: 22, slam: 22, whirl: 9, flood: 0, deep: 3, upsurge: 19 },
+  dmg: { lash: 17, blast: 8, devil: 24, spear: 19, flash: 17, breath: 22, pillar: 20, fdevil: 11, heat: 6, burn: 3, spout: 14, held: 20, wave: 22, slam: 22, whirl: 9, flood: 0, upsurge: 19 },   /* (claude/djinn5: 'deep' is gone - no water hurts by itself) */
 };
 /* EVERY PHASE-THREE HARM (claude/djinn4, Daniel 10-05: "every P3 hit avoidable"): its tell, how long it is told, where it is told, and the answer - a safe spot
    or a move. tools/djinn.mjs runs an answering hero through minutes of the flood and asserts nothing here lands on it, and that nothing else hurts */
@@ -101,7 +110,8 @@ export const P3_HARMS = {
   slam:    { tell: 'slamTell', t: () => DJ.slamTell, where: 'a ripple ring where his hand comes down', answer: 'dodge', how: 'step off the ring - or throw the pail into his core' },
   upsurge: { tell: 'upsurgeTell', t: () => DJ.upTell, where: 'bubbles boiling and a ring where his fist bursts up', answer: 'dodge', how: 'step off the bubbles' },
   whirl:   { tell: 'whirlTell', t: () => DJ.whirlTell, where: 'the water turning round the shaft', answer: 'dodge', how: 'wade against it: it bites only under the shaft' },
-  deep:    { tell: 'surge', t: () => DJ.surgeTell + DJ.tideRise, where: 'THE WELL SURGES: a !!, a roar, a foam line where it will reach', answer: 'jump', how: 'climb a ledge: the deep floor bites, the ledges stay safe' },
+  /* (claude/djinn5, Daniel 10-06: "you should never take damage just from being in the water ... not a fair mechanic") THE DEEP WATER is gone: the surge
+     still rises over the ledges and falls back, and costs nothing - only his told blows hurt */
 };
 export const CYCLES = {
   1: [['lash', 'spears', 'devil', 'blast'], ['devil', 'lash', 'spears', 'lash', 'blast'], ['blast', 'spears', 'lash', 'devil'], ['spears', 'lash', 'devil', 'blast', 'lash']],
@@ -123,7 +133,7 @@ export const FIRST_LINE = { spears: ['SAND SPEARS: THE GLOW UNDER YOU - MOVE', '
 export const TURN_LINE = { 2: ['THE SAND CATCHES FIRE', 'DOUSE HIM WITH WATER', '#ff9a5c'], 3: ['THE FIRE HISSES OUT', 'HE TAKES THE WELL: IT RISES AND FALLS', '#7ab8e8'] };
 export const WARD_LINE = { 1: ['THE SAND HARDENS: WATER RUNS OFF HIM', '#e8d8a0'], 2: ['HE FLARES WHITE-HOT: STAND BACK', '#fff2c0'], 3: ['A SHROUD OF WATER SPINS ROUND HIM', '#bfe4ff'] };
 export const MOVE_NAME = { lash: 'THE SAND LASH', blast: 'THE SAND', devil: 'THE DUST DEVIL', spear: 'THE SAND SPEARS', flash: 'THE FIRE LASH', breath: 'HIS FIRE', pillar: 'THE FLAME PILLAR',
-  fdevil: 'THE FIRE DEVIL', heat: 'HIS HEAT', burn: 'ALIGHT', spout: 'THE SPOUT', held: 'THE WELL', wave: 'THE WAVE', slam: 'HIS HAND', whirl: 'THE WHIRLPOOL', flood: 'THE FLOOD', deep: 'THE DEEP WATER', upsurge: 'HIS FIST FROM BELOW' };
+  fdevil: 'THE FIRE DEVIL', heat: 'HIS HEAT', burn: 'ALIGHT', spout: 'THE SPOUT', held: 'THE WELL', wave: 'THE WAVE', slam: 'HIS HAND', whirl: 'THE WHIRLPOOL', flood: 'THE FLOOD', upsurge: 'HIS FIST FROM BELOW' };
 export const IGNITES = new Set(['flash', 'breath', 'pillar', 'heat', 'fdevil']);
 
 /* ---------- THE HALL ---------- */
@@ -175,11 +185,13 @@ export const underShaft = (e, S) => !!S && S.pose === 'column' && Math.abs(e.x -
 export const highWater = G => (G.floor - G.ledgeY) + DJ.overLedge;
 export const tideHigh = S => !!S && !!S.tide && (S.tide.st === 'surge' || S.tide.st === 'rising' || S.tide.st === 'high');
 export const djPhase = e => (e.hp <= e.maxHp * DJ.p3 ? 3 : e.hp <= e.maxHp * DJ.p2 ? 2 : 1);
-export const djOpen = e => !!e && (e.open || 0) > 0 && (e.mode === 'mud' || e.mode === 'doused' || e.mode === 'bailed' || e.mode === 'choked');   /* (claude/djinn4: and CHOKED on the pail) */
+export const djOpen = e => !!e && (e.open || 0) > 0 && (e.mode === 'mud' || e.mode === 'doused' || e.mode === 'bailed' || e.mode === 'choked' || e.mode === 'reel');   /* (claude/djinn4: and CHOKED on the pail; claude/djinn5: REELING from it) */
 /* (claude/djinn4) HE REARS UP to strike - the hand slam and the spout, arms up, his core lit: the pail's moment. 'slam' is the drop itself, before it lands */
 export const REAR = new Set(['slamTell', 'spoutTell', 'slam']);
 export const rearing = (e, S) => !!e && !!S && S.ph === 3 && S.pose === 'column' && REAR.has(e.mode) && !(S.ward > 0);
 /* his CORE: the lit heart of the column, where a thrown pail goes */
+/* (claude/djinn5) HE IS UP: in the flood, a column - not spilled, not turning, not open: a pail can reach his core */
+export const upInFlood = (e, S) => !!e && !!S && S.ph === 3 && S.flood && S.pose === 'column' && !TURNING.has(e.mode) && !djOpen(e);
 export const coreOf = (e, S) => ({ x: e.x, y: e.y - 96 - Math.min(40, (S.water || 0) * 0.6) });
 export const djWard = S => !!S && S.ward > 0;
 export const handOut = S => (S && S.hand && S.hand.stay > 0 ? S.hand : null);
@@ -226,10 +238,10 @@ export function stepDjinn(e, S, dt, h, c) {
     case 'hiss': e.x += (G.mid - e.x) * Math.min(1, dt * 1.5); if (e.modeT <= 0) { S.flood = true; S.pose = 'column'; S.tide = { st: 'low', t: DJ.tideLow }; S.bucket = { st: 'down', t: 0 };
       setMode(e, 'rise', DJ.floodT); c.number(G.mid, G.floor - 120, 'HE TAKES THE WELL: THE WATER RISES', '#7ab8e8'); c.sound('flood'); c.music(3); c.shake(5); } return;
     /* IN THE FLOOD he moves between blows: to the shaft, or toward you (claude/djinn3) */
-    case 'glide': { const d = S.goX - e.x; e.x += Math.sign(d) * Math.min(Math.abs(d), DJ.colWalk * dt); e.face = Math.sign(P.x - e.x) || e.face;
+    case 'glide': { const d = S.goX - e.x; e.x += Math.sign(d) * Math.min(Math.abs(d), (S.rush ? DJ.colRush : DJ.colWalk) * dt);   /* (claude/djinn5: to the shaft, at colRush) */ e.face = Math.sign(P.x - e.x) || e.face;
       if (Math.abs(S.goX - e.x) < 1 || e.modeT <= 0) { const k = S.pend; S.pend = null; if (k) startMove(e, S, P, c, k); else setMode(e, 'hover', 0.3); } return; }
     case 'drawing': e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) after(e, S); return;
-    case 'mud': case 'doused': case 'bailed': case 'choked':
+    case 'mud': case 'doused': case 'bailed': case 'choked': case 'reel':
       if (e.open <= 0) { if (e.mode === 'mud') c.number(e.x, e.y - 100, 'HE DRIES BACK TO SAND', '#c9a46a');
         if (e.mode === 'choked') c.number(e.x, e.y - 160, 'HE GETS HIS BREATH BACK', '#9aa39a');
         if (e.mode === 'bailed') { S.pose = 'column'; e.y = G.floor; }   /* (he gathers back up where he lies - under the shaft: nothing is moved) */
@@ -250,7 +262,7 @@ function nextMove(e, S, P, c) {
   /* (claude/djinn4) THE WELL TURNS OR IT SURGES, NEVER BOTH: the whirlpool's pull would hold you off the ladders while the deep water comes - surging, he skips it */
   if (k === 'whirl' && tideHigh(S)) { S.n.whirlSkipped = (S.n.whirlSkipped || 0) + 1; if (S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; } k = S.script[S.step++]; if (k === 'whirl') k = 'spout'; }
   /* IN THE FLOOD (claude/djinn3): the wave, the whirlpool and his draw come from under the shaft - he glides there first; the rest, toward you */
-  if (S.ph === 3 && S.pose === 'column') { const gx = SHAFT_MOVES.has(k) ? S.G.mid : roamX(S, P, e); if (Math.abs(e.x - gx) > 6) { S.pend = k; S.goX = gx; setMode(e, 'glide', Math.abs(e.x - gx) / DJ.colWalk + 0.25); return; } }
+  if (S.ph === 3 && S.pose === 'column') { const gx = SHAFT_MOVES.has(k) ? S.G.mid : roamX(S, P, e); if (Math.abs(e.x - gx) > 6) { S.pend = k; S.goX = gx; S.rush = SHAFT_MOVES.has(k); setMode(e, 'glide', Math.abs(e.x - gx) / (S.rush ? DJ.colRush : DJ.colWalk) + 0.25); return; } }
   startMove(e, S, P, c, k);
 }
 const SHAFT_MOVES = new Set(['whirl', 'wave', 'well']);
@@ -354,7 +366,7 @@ function stepMove(e, S, dt, P, h, c) {
 
 /* ---------- THE OPENINGS: all water ---------- */
 export function openUp(e, S, how, c, P) {
-  const G = S.G, T = how === 'mud' ? DJ.mudT : how === 'bailed' ? DJ.bailT : how === 'choked' ? DJ.chokeT : DJ.openT;
+  const G = S.G, T = how === 'mud' ? DJ.mudT : how === 'bailed' ? DJ.bailT : how === 'choked' ? DJ.chokeT : how === 'reel' ? DJ.reelT : DJ.openT;
   e.open = T; S.openTaken = 0; S.ward = 0; S.n.opens++; S.n[how]++; setMode(e, how, T + 0.05); S.bands = S.bands.filter(b => b.k !== 'devil' && b.k !== 'firedevil'); S.marks = []; S.hand = null;
   if (S.held) { c.release(S.held); S.held = null; }
   if (how === 'mud') { c.number(e.x, e.y - 100, 'MUD: HE IS SOLID. CUT HIM', '#8fd160'); c.fx('mud', e.x, G.floor); c.sound('soak'); }
@@ -366,6 +378,10 @@ export function openUp(e, S, how, c, P) {
   /* CHOKED (claude/djinn4): the pail goes down his core - his strike is gone, he doubles over WHERE HE IS (B4: still), open; the throw itself takes chokeHit */
   if (how === 'choked') { S.n.chokes = (S.n.chokes || 0) + 1; const co = coreOf(e, S); c.number(e.x, co.y - 60, 'HE CHOKES: CUT HIM', '#8fd160'); c.fx('splash', co.x, co.y); c.sound('soak'); c.shake(4);
     if (c.hurtBoss) c.hurtBoss(e, Math.round(e.maxHp * DJ.chokeHit)); }
+  /* REELING (claude/djinn5): a pail in his core while he is up, not rearing - his blow is cut off, he reels WHERE HE IS (B4) and turns to the thrower */
+  if (how === 'reel') { S.n.reels = (S.n.reels || 0) + 1; const co = coreOf(e, S); if (P && P.x != null) e.face = Math.sign(P.x - e.x) || e.face;
+    c.number(e.x, co.y - 60, 'THE PAIL HITS HIM: HE REELS. CUT HIM', '#8fd160'); c.fx('splash', co.x, co.y); c.sound('soak'); c.shake(2);
+    if (c.hurtBoss) c.hurtBoss(e, Math.round(e.maxHp * DJ.reelHit)); }
 }
 /* ---------- THE PAIL (claude/djinn4) ---------- pail = { full } per hero (src/djinn-hands.js gives one to each when the flood comes) */
 /* SCOOP: in the flood, anywhere the water is over your feet - instant */
@@ -374,13 +390,15 @@ export function scoopPail(S, pail, hero) { if (!pail || pail.full || !(S.ph === 
 export function throwPail(e, S, hero, pail, c) { if (!pail || !pail.full || !e || !e.alive) return false; pail.full = false; S.n.throws = (S.n.throws || 0) + 1;
   const co = coreOf(e, S), x0 = hero.x, y0 = hero.y - 20, d = Math.hypot(co.x - x0, co.y - y0), at = Math.abs(co.x - x0) <= DJ.pailR;
   const tx = at ? co.x : x0 + (hero.face || 1) * 90, ty = at ? co.y : S.G.floor - Math.max(4, S.water || 0);
-  S.pails = S.pails || []; S.pails.push({ x: x0, y: y0, x0, y0, tx, ty, t: 0, T: Math.max(0.12, (at ? d : 90) / DJ.pailSpeed), at }); c.sound('splash'); return true; }
+  S.pails = S.pails || []; S.pails.push({ x: x0, y: y0, x0, y0, tx, ty, t: 0, T: Math.max(0.12, (at ? d : 90) / DJ.pailSpeed), at, by: { x: hero.x } }); c.sound('splash'); return true; }
 function stepPails(e, S, dt, c) { if (!S.pails || !S.pails.length) return;
-  for (const p of S.pails) { p.t += dt; const k = Math.min(1, p.t / p.T); p.x = p.x0 + (p.tx - p.x0) * k; p.y = p.y0 + (p.ty - p.y0) * k - Math.sin(k * Math.PI) * 18; if (k < 1) continue; p.done = true;
+  for (const p of S.pails) { p.t += dt; if (p.at && e.alive) { const co = coreOf(e, S); p.tx = co.x; p.ty = co.y; }   /* (claude/djinn5: it flies AT HIM - a gliding column is hit too) */
+    const k = Math.min(1, p.t / p.T); p.x = p.x0 + (p.tx - p.x0) * k; p.y = p.y0 + (p.ty - p.y0) * k - Math.sin(k * Math.PI) * 18; if (k < 1) continue; p.done = true;
     if (!p.at || !e.alive) { c.fx('splash', p.tx, p.ty); continue; }
     if (rearing(e, S) && !djOpen(e) && !TURNING.has(e.mode)) { openUp(e, S, 'choked', c); continue; }
+    if (upInFlood(e, S) && !(S.ward > 0)) { openUp(e, S, 'reel', c, p.by); continue; }   /* (claude/djinn5: up and not rearing, he REELS) */
     S.n.splashed = (S.n.splashed || 0) + 1; c.fx('splash', p.tx, p.ty);
-    if (S.ward > 0) c.number(e.x, p.ty - 40, 'HIS SHROUD TURNS THE PAIL', '#9aa39a'); else c.number(e.x, p.ty - 40, 'IT SPLASHES OFF HIM: THROW WHEN HE REARS UP', '#9aa39a'); }
+    if (S.ward > 0) c.number(e.x, p.ty - 40, 'HIS SHROUD TURNS THE PAIL', '#9aa39a'); else c.number(e.x, p.ty - 40, 'IT SPLASHES OFF HIM: THROW WHEN HE IS UP', '#9aa39a'); }
   S.pails = S.pails.filter(p => !p.done); }
 /* A POUR AT HIM (the hero's E with a sip): phase one turns him to mud, phase two douses him; it must reach him (in front, near, on his floor). Warded, it
    reaches him and runs off (told) */
@@ -454,13 +472,8 @@ function stepFlood(e, S, dt, h, c) {
   const target = td.st === 'rising' || td.st === 'high' ? hi : DJ.waterH;
   const rate = td.st === 'rising' ? (hi - DJ.waterH) / DJ.tideRise : td.st === 'ebb' ? (hi - DJ.waterH) / DJ.tideEbb : DJ.waterH / DJ.floodT;
   if (Math.abs(S.water - target) > 0.01) { S.water = S.water < target ? Math.min(target, S.water + rate * dt) : Math.max(target, S.water - rate * dt); c.water(S.water); }
-  const deep = S.water > G.floor - G.ledgeY + 4; if (TURNING.has(e.mode)) return;   /* (the breather: the water rises with him, and costs nothing until he has risen) */
-  /* THE DEEP WATER: over the ledges, the floor is deep - a harder tick down there */
-  if (deep && td.st === 'high') { S.deepK += dt; if (S.deepK >= DJ.deepTick) { S.deepK = 0; S.deepN = (S.deepN || 0) + 1; c.hit([G.x0, G.x1, G.ledgeY + 6, G.floor + 4], DJ.dmg.deep, MOVE_NAME.deep, { key: 'dp' + S.deepN, noKnock: true, flood: true, deep: true }); } }
-  else S.deepK = 0;
-  if (!DJ.dmg.flood) return;   /* (claude/djinn4: the shallow flood costs nothing - only the deep water, told by the surge) */
-  S.floodK += dt; if (S.floodK < DJ.floodTick) return; S.floodK = 0; S.floodN = (S.floodN || 0) + 1;
-  c.hit([G.x0, G.x1, G.floor - S.water + 8, deep ? G.ledgeY + 6 : G.floor + 4], DJ.dmg.flood, MOVE_NAME.flood, { key: 'fl' + S.floodN, noKnock: true, flood: true });
+  /* (claude/djinn4: the shallow flood cost nothing; claude/djinn5, Daniel 10-06: nor does the deep - THE WATER NEVER HURTS BY ITSELF, at any height, in any
+     phase. Only his told blows do: the spout, the wave, the slam, the fist from below, the whirlpool under the shaft) */
 }
 
 /* ---------- THE BOT'S READING (src/lab.js) ----------
@@ -501,6 +514,11 @@ export function djinnPlan(s) {
   if (m === 'breath' && ad < DJ.breathReach + 10 && Math.sign(P.x - e.x) === (e.face || 1)) { out.down = P.ground; out.why = 'under the breath'; return out; }
   /* 0b. THE WHIRLPOOL: wade against it, away from the shaft */
   if (m === 'whirl' && !onLedge && !P.climb && Math.abs(P.x - G.mid) < 200) { out.gx = clamp(P.x + (Math.sign(P.x - G.mid) || 1) * 90); out.why = 'wade against the whirlpool'; return out; }
+  /* 0c. THE PAIL ANY TIME HE IS UP (claude/djinn5): full, he is up in the flood within a throw, his shroud down - read a quarter-second late, some let go -
+     throw it (E, a step off the windlass, where E would wind it); not when the bucket hangs ready and he is under the shaft or drinking there (the bail is bigger) */
+  if (S.ph === 3 && s.pail === 'full' && upInFlood(e, S) && !(S.ward > 0)) { const uk = 'upAt' + S.n.wards + '_' + (S.n.opens || 0); if (!mem.seen.has(uk)) mem.seen.set(uk, t);
+    const nearW = onLedge === 'E' ? Math.abs(P.x - G.crank) <= WIND_R + 4 : !onLedge && Math.abs(P.x - G.windlass) <= WIND_R + 4, bail = S.bucket.st === 'up' && (underShaft(e, S) || e.mode === 'drawing');
+    if (!nearW && !bail && ad <= DJ.pailR - 10 && t - mem.seen.get(uk) >= DJ_PLAN.react && !roll(uk + 'r' + S.act, DJ_PLAN.missPail)) { out.face = toHim; out.talk = true; out.why = 'throw the pail at him: he reels'; return out; } }
   /* 1. THE OPENING: on him (bailed out, he lies in the flood under the shaft: off the ledge and wade in) */
   if (djOpen(e)) { if (onLedge && e.y > G.ledgeY + 20) { offLedge(); out.gx = clamp(e.x); out.why = 'down into the flood'; return out; }
     out.gx = clamp(e.x - toHim * (s.tip ? DJ.w / 2 + s.tip : Math.max(8, reach * 0.6 + 8))); out.face = toHim; out.atk = ad < reach + DJ.w / 2 + 4 && Math.abs(P.y - e.y) < 40 && P.atk < 0; out.why = 'cut him: he is open'; return out; }
@@ -517,7 +535,7 @@ export function djinnPlan(s) {
      STEPS - wind the bucket up when it is down, then drop it only when he is under the shaft (read a quarter-second late, and some go early) */
   if (S.ph === 3) { const high = tideHigh(S), b = S.bucket, turning = TURNING.has(m);
     if (onLedge === 'W' && !high) { offLedge(); out.why = 'off the west ledge'; return out; }
-    if (high && !onLedge) { const toE = Math.abs(P.x - G.ladderE) <= Math.abs(P.x - G.ladderW) + 120; return climbTo(toE ? 'E' : 'W'); }
+    /* (claude/djinn5: the high water costs nothing now - it no longer climbs a ledge when the well surges) */
     if (onLedge === 'W') { out.gx = G.ledgeW[1] - 30; out.why = 'wait out the surge on the west ledge'; return out; }
     const canWind = b.st === 'down' && !(b.t > 0), under = underShaft(e, S) && !(S.ward > 0) && !turning, ukey = 'under' + S.act;
     if (under) { if (!mem.seen.has(ukey)) mem.seen.set(ukey, t); } const readUnder = under && t - mem.seen.get(ukey) >= DJ_PLAN.react && !roll(ukey + 'm', DJ_PLAN.miss);
