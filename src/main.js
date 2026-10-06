@@ -20569,11 +20569,9 @@ function updateScalder(e, dt) {
          has already got past it. */
       if (e.stagger > 0) break;
       if (under) { const tx = Math.max(lo, Math.min(hi, P.x));
-        if (Math.abs(P.x - e.x) < SCALD.band && e.pourCd <= 0) { e.mode = 'pourTell'; e.modeT = SCALD.tell; e.pourCd = 0.6; e.face = e.face || 1;
-          number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
+        if (Math.abs(P.x - e.x) < SCALD.band && e.pourCd <= 0) { e.mode = 'pourTell'; e.modeT = SCALD.tell; e.pourCd = 0.6; e.face = e.face || 1; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
         else if (Math.abs(tx - e.x) > 3) want = Math.sign(tx - e.x) * e.speed; }
-      else if (!P.dead && dy < 22 && ad < 30 && e.cd <= 0) { e.face = Math.sign(d) || e.face; e.mode = 'ladleTell'; e.modeT = SCALD.ladleTell;
-        number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+      else if (!P.dead && dy < 22 && ad < 30 && e.cd <= 0) { e.face = Math.sign(d) || e.face; e.mode = 'ladleTell'; e.modeT = SCALD.ladleTell; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
       else if (!P.dead && dy < 22 && ad < 90) e.face = Math.sign(d) || e.face;
   }
   if (e.stagger > 0) want = 0;
