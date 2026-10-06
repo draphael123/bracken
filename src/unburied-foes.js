@@ -35,15 +35,15 @@ import { canvas, rect, line, circle, fillPoly, outline, flipX, whiten } from './
 import * as SG from './redraw/unburied_siege.js';   /* the engines, the cover and the breach as drawn pictures (claude/unburiedart) */
 
 export const UNB = {
-  hp: { bannerbearer: 56, corpse: 30, barrowrider: 720, deathknight: 1000, bloodknight: 1700 },   /* (claude/dk3: 950 while 19 of 20 blows were chipped to a twentieth; on FULL DAMAGE, tuned on tools/deathknight-pilot.mjs after WEIGHT + the level-up card to 9/18 - a question for Daniel) */
-  dmg: { bkSwing: 17, bkCleave: 23, bkBolt: 11, bkGrip: 8, bkBoil: 8, bkCoil: 13, bkTide: 16, bkNova: 14, bkNovaPer: 3, bkSurge: 16, pole: 12, corpseCut: 10, brRide: 18, brTrample: 14, brFire: 10, brLance: 16, brThrust: 14, cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
+  hp: { bannerbearer: 56, corpse: 30, barrowrider: 1700, deathknight: 1000, bloodknight: 1700 },   /* (claude/dk3: 950 while 19 of 20 blows were chipped to a twentieth; on FULL DAMAGE, tuned on tools/deathknight-pilot.mjs after WEIGHT + the level-up card to 9/18 - a question for Daniel) */
+  dmg: { bkSwing: 17, bkCleave: 23, bkBolt: 11, bkGrip: 8, bkBoil: 8, bkCoil: 13, bkTide: 16, bkNova: 14, bkNovaPer: 3, bkSurge: 16, pole: 12, corpseCut: 10, brRide: 40, brTrample: 30, brFire: 22, brLance: 36, brThrust: 30, /* (claude/sweep3: the Barrow Rider's 18 / 14 / 10 / 16 / 14 - the standard bot won 10/10 at L29) */ cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
   bannerR: 120,        /* a planted standard raises the fallen within this many pixels of its foot */
   riseT: 1.1, downT: 3.2, plantRange: 150, tether: 44,
   corpseSpeed: 21, bearerSpeed: 26,
   /* THE BARROW RIDER: tells in seconds; the ride at rideV px/s the arena's length; the lance line lanceN lances lanceStep apart, one
      every lanceGap; on foot footT seconds before the bones crawl back, boneHits blows on them to break it, mountMoves in the saddle */
   br: { walk: 44, keep: 70, footWalk: 30, footKeep: 38, cd: 1.1, cdP2: 0.9, tell: { ride: 1.0, trample: 0.75, fire: 0.8, lance: 0.9, thrust: 0.6, remount: 2.2 },
-    rideV: 290, rideHit: 22, trampleR: 42, bolts: 2, boltsP2: 3, boltT: 1.5, lanceN: 8, lanceStep: 22, lanceGap: 0.07, lanceR: 9, thrustR: 58, openT: 3.2, openMul: 1.6,
+    rideV: 290, rideHit: 22, trampleR: 42, bolts: 2, boltsP2: 3, boltT: 1.5, lanceN: 8, lanceStep: 22, lanceGap: 0.07, lanceR: 9, thrustR: 58, openT: 3.2, openMul: 1.25,   /* (claude/sweep3: 1.6 - three openings and he was gone in 15-27 s at L29) */
     footT: 7, mountMoves: 3, boneHits: 2, order: ['trample', 'fire', 'ride', 'lance', 'fire', 'ride'], orderFoot: ['thrust', 'lance', 'thrust'] },
   /* THE FIRST DEATH KNIGHT: tells in seconds; the chain runs chainV px/s out to gripR; a pool of blood boils boilT seconds, a cut every
      boilTick; the passing crosses passStep past where you stood in passT; the ward stands wardT and is FULL at wardFull blows */

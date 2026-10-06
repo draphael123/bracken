@@ -33,6 +33,7 @@ export const TURN = {
 export const GUARD = {
   ram: 'front',      // THE RAM LORD: his horns are his guard - from behind he is a beast like any other (claude/sweep1)
   chief: 'front',    // THE GOBLIN CHIEFTAIN: the shield on his arm - round it, or wait for his club in the ground (claude/sweep1)
+  cisternqueen: 'front',   // THE CISTERN QUEEN: her raised claws on the floor - round her (claude/sweep3, Daniel 10-06: never fully invulnerable)
 };
 export const ANGLE = { mul: 0.5 };   // a blow that beats the guard lands at half (his openings still pay more: they are not chipped either, and his own code's multipliers stand)
 
@@ -55,6 +56,11 @@ export const TURN_WORD = {
   reefmaw: e => ['lurk', 'sink', 'sleep', 'drain'].includes(e.mode) ? 'IN ITS HOLE' : TURN.WARDED,   // in its hole: make it come out (the bait, the jaw)
   lance: 'HIS PLATE',                                       // plate all round until he plants or reels: step off his line
   kraken: 'NOT THE BODY',                                   // the body is out at sea: cut the arms on the road
+  /* ACT III (claude/sweep3) */
+  archmage: e => e.mode === 'ward' ? 'THE RUNES HOLD' : e.mode === 'blink' || e.mode === 'change' || e.mode === 'wake' ? TURN.NOT_THERE : e.stage === 2 ? 'REACH HIM' : TURN.WARDED,   // the runes take it; in a room he has written, the way through the room is the opening
+  gargoyle: TURN.STONE,                                     // stone until he lies on the spikes
+  gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
+  homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
 };
 const COL = '#d8e2ee', RING = '#eef4ff';
 

@@ -19,7 +19,7 @@
                                ward reseals in 4 s there (6 s in the duel still); one apprentice through a told portal each
                                ward, never a second while the first stands, with an apprentice's health; openings x3 again.
    claude/archfix (Daniel played him, 2026-09-29):
-     6. HE BLINKS ROUND THE ROOM every ~5-6 s, told by a flash where he will stand, never onto you.
+     6. HE BLINKS ROUND THE ROOM once a ~10 s cycle (B12), told by a flash where he will stand, never onto you.
      7. HE CASTS FASTER: the gaps between his casts are ARCH.pace (0.83) of what they were; no tell is shorter.
    node tools/archmage-folly.mjs          (PORT from tools/ports.mjs) */
 import { MARK, ANSWER } from '../src/marks.js';
@@ -79,16 +79,18 @@ try {
     /* ======== 6. HE BLINKS ROUND THE ROOM (claude/archfix): every ~5-6 s, told by a flash where he will stand, never onto you ======== */
     { const { A, e } = fresh(); const fl = A.floor; e.stage = 1; quiet(e); e.T.blink = 0.5; BK.tp(Math.round((A.x0 + 70) / TS), fl / TS - 1); step(5);
       const bl = out.blink = { starts: [], told: [], lands: [], onHero: 0, tellLens: [] }; let was = e.mode, tellAt = -1, to = null, onIt = false;
-      for (let f = 0; f < 60 * 34; f++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; step(1);
+      for (let f = 0; f < 60 * 64; f++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; step(1);
         if (e.mode === 'blinkTell' && was !== 'blinkTell') { tellAt = f; to = e.blinkTo ? { x: e.blinkTo.x, y: e.blinkTo.y } : null; bl.starts.push(f); bl.told.push(!!to);
           onIt = bl.starts.length === 3; if (onIt && to) { BK.P.x = to.x; BK.P.vx = 0; } }   /* the third time, the hero stands on the flash: he must not land on him */
         if (e.mode === 'blink' && was === 'blinkTell') { bl.tellLens.push(+((f - tellAt) / 60).toFixed(2)); bl.lands.push({ x: Math.round(e.x), to: to && Math.round(to.x), hero: Math.round(BK.P.x), onIt });
           if (Math.abs(e.x - BK.P.x) < 20) bl.onHero++; }
         if (onIt && to && e.mode === 'blinkTell') BK.P.x = to.x;
         was = e.mode; }
+      /* THE SPREAD, sampled on its own (the cadence above is one blink in ~10 s: too few to show the room): ten blinks, the gap waived by the test's hand */
+      bl.spread = []; BK.tp(Math.round((A.x0 + 70) / TS), fl / TS - 1); for (let n = 0; n < 10; n++) { e.blinkAt = -99; e.T.blink = 0; for (let i = 0; i < 150 && e.mode !== 'blink'; i++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; step(1); } bl.spread.push(Math.round(e.x)); for (let i = 0; i < 40; i++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; e.T.blink = 99; step(1); } }
       /* warded, he blinks too - but only among his runes, so the last one cut never leaves him a room away */
       e.T.ward = 0; for (let i = 0; i < 200 && e.mode !== 'ward'; i++) { e.T.blink = 99; step(1); } const W = R(), xs = W.runes.map(q => q.x); bl.wardBlinks = [];
-      for (let n = 0; n < 3; n++) { e.T.blink = 0; for (let i = 0; i < 120 && e.mode !== 'blink'; i++) { e.T.bolt = 99; step(1); } bl.wardBlinks.push({ x: Math.round(e.x), lo: Math.min(...xs), hi: Math.max(...xs) }); for (let i = 0; i < 60 && e.mode !== 'ward'; i++) { e.T.bolt = 99; e.T.blink = 99; step(1); } } bl.backToWard = e.mode === 'ward'; }
+      for (let n = 0; n < 3; n++) { e.blinkAt = -99; e.T.blink = 0; for (let i = 0; i < 120 && e.mode !== 'blink'; i++) { e.T.bolt = 99; step(1); } bl.wardBlinks.push({ x: Math.round(e.x), lo: Math.min(...xs), hi: Math.max(...xs) }); for (let i = 0; i < 60 && e.mode !== 'ward'; i++) { e.T.bolt = 99; e.T.blink = 99; step(1); } } bl.backToWard = e.mode === 'ward'; }
 
     /* ======== 7. HE CASTS FASTER (claude/archfix: ~15-20% shorter gaps; every tell as long as it was) ======== */
     { const { A, e } = fresh(); const fl = A.floor; e.stage = 1; quiet(e); BK.tp(Math.round((A.x0 + 70) / TS), fl / TS - 1); e.x = A.x0 + 340; e.T.bolt = 0; step(2);
@@ -168,7 +170,7 @@ try {
     return out; })()`, 600000);
   console.log(JSON.stringify(r));
   ok(r.cfg, 'the page carries his numbers (BK.archCfg)');
-  { const ehp = (readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').match(/^const EHP = .*?[ ,]archmage: ([0-9]+),/m) || [])[1]; ok(ehp === '720', 'his health is what it was: ' + ehp + ' in EHP, ' + r.hp + ' in the fight (no bloat)'); }
+  { const ehp = (readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').match(/^const EHP = .*?[ ,]archmage: ([0-9]+),/m) || [])[1]; ok(ehp === '640', 'his health is 640 (Daniel 10-06, was 720): ' + ehp + ' in EHP, ' + r.hp + ' in the fight'); }
   // 1 (claude/archfix: no rune on a book stack any more - three plain runes around the room)
   ok(r.wardMode === 'ward' && r.runes === 3 && !r.stackRune && !r.stack, 'he wards with three plain runes, none on a stack of books, and no stack rises (mode ' + r.wardMode + ', runes ' + r.runes + ', stack rune ' + r.stackRune + ', stack ' + r.stack + ')');
   { const at = r.runeAt || [], xs = at.map(q => q.x).sort((a, b) => a - b);
@@ -182,11 +184,11 @@ try {
   ok(r.opened && r.openLen > 0 && r.openLen <= 3, 'all three cut in time and he is open - for ' + r.openLen + ' s (was 4.6)');
   // 6 (claude/archfix: he teleports around the room)
   { const b = r.blink || {}, st = b.starts || [], gaps = st.slice(1).map((f, i) => (f - st[i]) / 60), lands = b.lands || [], xs = lands.map(q => q.x);
-    ok(st.length >= 5 && gaps.every(g => g >= 4.4 && g <= 7), 'he blinks on a cadence, every ~5-6 s, with you far from him: ' + st.length + ' blinks in 34 s, gaps ' + JSON.stringify(gaps.map(g => +g.toFixed(1))));
+    ok(st.length >= 5 && gaps.every(g => g >= 9.5 && g <= 13), 'he blinks on a cadence, at most once a ~10 s cycle (B12), with you far from him: ' + st.length + ' blinks in 64 s, gaps ' + JSON.stringify(gaps.map(g => +g.toFixed(1))));
     ok((b.told || []).length > 0 && b.told.every(Boolean) && (b.tellLens || []).every(t => t >= 0.49), 'each blink is told: the flash where he will stand is up for the whole tell (' + JSON.stringify(b.tellLens) + ')');
-    ok(lands.length >= 4 && lands.every(q => q.to !== null && (q.onIt ? Math.abs(q.x - q.to) <= 40 : q.x === q.to)), 'he lands where the flash was: ' + JSON.stringify(lands));
+    ok(lands.length >= 5 && lands.every(q => q.to !== null && (q.onIt ? Math.abs(q.x - q.to) <= 40 : q.x === q.to)), 'he lands where the flash was: ' + JSON.stringify(lands));
     ok(b.onHero === 0 && lands.some(q => q.onIt), 'never onto the hero - not even one standing on the flash (' + b.onHero + ')');
-    ok(new Set(xs).size >= 3 && Math.max(...xs) - Math.min(...xs) >= 300, 'the spots are spread across the room: ' + JSON.stringify(xs));
+    { const sp = b.spread || []; ok(new Set(sp).size >= 3 && Math.max(...sp) - Math.min(...sp) >= 300, 'the spots are spread across the room: ' + JSON.stringify(sp)); }
     ok((b.wardBlinks || []).length === 3 && b.wardBlinks.every(q => q.x >= q.lo - 40 && q.x <= q.hi + 40) && b.backToWard, 'warded, he blinks among his runes and back into his ward: ' + JSON.stringify(b.wardBlinks) + ' ' + b.backToWard); }
   // 7 (claude/archfix: he attacks a bit faster, never a shorter tell)
   { const p = r.pace || {}, b = p.bolts || [], gaps = b.slice(1).map((f, i) => (f - b[i]) / 60), avg = gaps.reduce((a, g) => a + g, 0) / Math.max(1, gaps.length);

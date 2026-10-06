@@ -25,7 +25,7 @@
 //                          TIDAL TAIL (!!: a venom-water whip at head height - duck, or be above it), BROOD SHIELD (she calls up to three one-blow
 //                          brood and keeps behind them; the deep water of the sump drowns them). ENRAGED under CQ.enrage: SNAP-SNAP-STING into the
 //                          DEATH ROLL.
-// ALWAYS: her SHELL turns every blow outside an opening (claws, carapace, front and back: a spark, THE SHELL TURNS IT); greed is answered by
+// ALWAYS: her raised CLAWS turn a frontal blow on the floor (GO ROUND); her back, flank, or her on a wall takes half (claude/sweep3, Daniel 10-06); greed is answered by
 // the global reprisal (src/boss-greed.js OPEN_RULE.cisternqueen is her openings and her stuck stinger); her VENOM stacks slow your stamina (CQ.venom).
 // HOW YOU HURT HER (claude/welltown5, Daniel played her 10-03: "it's not clear how you hurt the Cistern Queen"):
 //   HER STINGER IS HER WEAK SPOT. After each of her STINGS (the tail lance, the snap-snap-sting, the stinger pin, the grab's sting, the tidal tail) the
@@ -39,7 +39,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/cistern-queen-hands.js binds it). queenPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CQ = {
-  hp: 1250, w: 76,   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
+  hp: 1050, w: 76,   /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
   openMul: 1.9, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
@@ -75,11 +75,12 @@ export const CQ = {
   /* THE STINGER (claude/welltown5): stuck low after each sting this long (s), a blow on it x stingMul, one sting's worth at most stingCap of her */
   wardT: 3.0,   /* (claude/underwell, design standard B3) after every opening ends: a told ward this long - a pour finds nothing, the shell turns the stinger too */
   stuck: { lance: 1.15, barb: 0.85, pin: 1.3, sting: 1.0, tidal: 1.0 }, stingMul: 1.25, stingCap: 0.07, stingR: 13,
+  hotMul: 0.5,   /* (claude/sweep3) burning, her shell takes this of what an unguarded blow would (her back at half: a quarter) - never nothing (Daniel 10-06) */
   /* HER FIRE (phase two): her heat ticks heatTick s, heatR px past her body; doused she stays out douseT s, then flares for flareT and burns again */
   heatTick: 0.6, heatR: 12, douseT: 9, flareT: 1.0,
   /* (claude/underwell: x1.43 on every blow in her own level - the WEIGHT/HARNESSCARD heroes at the Underwell's depth took 80-200 of 250 at the old numbers) */
-  dmg: { pincer: 14, snap: 11, lunge: 19, lance: 20, flick: 7, strike: 23, charge: 16, spit: 10, puddle: 3, sweep: 16, slam: 16, pin: 20, pounce: 23,
-    ambush: 17, wave: 14, grab: 7, sting: 31, roll: 21, tidal: 16, brood: 0, heat: 6 },
+  dmg: { pincer: 15, snap: 12, lunge: 21, lance: 22, flick: 8, strike: 25, charge: 18, spit: 11, puddle: 3, sweep: 18, slam: 18, pin: 22, pounce: 25,
+    ambush: 19, wave: 15, grab: 8, sting: 34, roll: 23, tidal: 18, brood: 0, heat: 6 },   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]; a cycle ends with the blow that holds her opening) */
 export const CYCLES = {
@@ -432,10 +433,11 @@ export function queenPlan(s) {
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, block: false, dodge: false, talk: false, down: false, up: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
-  const key = e.mode + S.act; const seen = () => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= PLAN.react; };
+  const react = s.eyes ? 0 : PLAN.react, miss = s.eyes ? 0 : PLAN.miss;   /* (claude/sweep3) s.eyes: the lab's perception layer (a v2 profile) already sees each tell a reaction late and misreads some */
+  const key = e.mode + S.act; const seen = () => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= react; };
   const roll = (k, pr) => { if (!mem.roll.has(k)) mem.roll.set(k, rng() < pr); return mem.roll.get(k); };
   const lo = G.x0 + 12, hi = G.x1 - 12, clamp = x => Math.max(lo, Math.min(hi, x)), side = Math.sign(P.x - e.x) || 1, ad = Math.abs(P.x - e.x);
-  const onLedge = P.onLedge, F = G.floor, misread = roll(key + 'm', PLAN.miss);
+  const onLedge = P.onLedge, F = G.floor, misread = roll(key + 'm', miss);
   /* held: mash */
   if (P.snare > 0) { out.atk = P.atk < 0; out.why = 'mash out of the claw'; return out; }
   /* 0. what is flying or sweeping at you (a quarter-second late) */
@@ -455,7 +457,8 @@ export function queenPlan(s) {
   /* 2. HER TELLS */
   const m = e.mode;
   if (/Tell$/.test(m) && seen() && !misread) {
-    if (m === 'pincerTell' || m === 'snapTell' || m === 'snap2Tell') { if (ad < 110) { if (s.shield) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the pincer'; return out; } out.gx = clamp(e.x + side * 120); out.why = 'back off the pincer'; return out; } }
+    if (m === 'pincerTell' || m === 'snapTell' || m === 'snap2Tell') { if (ad < 110) { if (s.deflect && s.eyes && !(P.busy > 0) && ad < 90) { out.face = Math.sign(e.x - P.x) || 1; out.block = e.modeT < 0.22; out.why = 'deflect the pincer on the beat'; return out; }   /* (claude/sweep3, v2: the warden's shaft turns a yellow blow swept on the beat - the hands never used it here) */
+        if (s.shield) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the pincer'; return out; } out.gx = clamp(e.x + side * 120); out.why = 'back off the pincer'; return out; } }
     if (m === 'lungeTell' || m === 'barbTell') { if (ad < 160) { out.gx = clamp(e.x + side * 190); if (ad < 90) out.dodge = true; out.why = 'off the lunge'; return out; } }
     if (m === 'lanceTell') { const cx = S.cur && S.cur.x; if (cx != null && Math.abs(cx - P.x) < 30) { out.gx = clamp(P.x + (P.x < cx ? -46 : 46)); out.why = 'off the lance\'s mark'; return out; } }
     if (m === 'flickTell' && ad < 220) { if (s.shield) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the sand'; return out; } out.gx = clamp(P.x + side * 70); out.why = 'out from the sand'; return out; }
@@ -469,6 +472,7 @@ export function queenPlan(s) {
         if (e.modeT < 0.12 && P.atk < 0) out.atk = true; return out; } out.gx = clamp(e.x + side * 200); if (ad < 110) out.dodge = e.modeT < 0.2; out.why = 'off the grab'; return out; }
     if (m === 'rollTell' || m === 'waveTell' || m === 'ambushTell') { /* jumped as it comes (the band / body test below) */ }
     if (m === 'tidalTell') { if (ad < CQ.tidalReach + 10 && !onLedge) { out.down = P.ground; out.why = 'duck the tidal tail'; return out; } }
+    if ((m === 'flickTell' || m === 'spitTell') && s.deflect && s.eyes && !(P.busy > 0) && ad < 90) { out.face = Math.sign(e.x - P.x) || 1; out.block = e.modeT < 0.22; out.why = 'deflect it on the beat'; return out; }
     if (m === 'spitTell' && s.shield) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the spit'; return out; }
   }
   if (m === 'grab' && S.claw && Math.abs(S.claw.x - P.x) < 40) { out.atk = P.atk < 0; out.face = Math.sign(S.claw.x - P.x) || 1; out.why = 'strike the claw'; return out; }
@@ -501,6 +505,8 @@ export function queenPlan(s) {
   /* 7. otherwise: keep at a step from her (in P3 near enough that the grab comes, a counter's reach) */
   if (onLedge && S.ph !== 2) { out.down = true; out.jump = P.ground; }
   const want = S.ph === 3 ? CQ.w / 2 + 50 : CQ.w / 2 + 60;
+  /* (claude/sweep3, v2: she is never fully shut - from behind her shell gives; a hand behind her cuts while it is there, a blow short of greed) */
+  if (s.eyes && S.pose === 'floor' && !e.gone && !onLedge && !frontal(e, P.x) && ad < reach + CQ.w / 2 && Math.abs(P.y - e.y) < 40 && (s.greed || 0) < 3 && !/Tell$/.test(m)) { out.face = Math.sign(e.x - P.x) || 1; out.atk = P.atk < 0; out.why = 'cut her from behind'; return out; }
   out.gx = clamp(e.x + side * want); out.face = Math.sign(e.x - P.x) || P.face; out.why = 'keep a step off';
   return out;
 }

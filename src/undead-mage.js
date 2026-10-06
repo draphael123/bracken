@@ -78,10 +78,10 @@ export function smallerFamiliar(s) {
 void flipX; void whiten;
 
 export const MAGE = {
-  enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, openT: 3.0, openMul: 2,   /* (claude/archmage4: 3.6 -> 3.0, the hall openings shorter - HERO KIT made every hero hit harder) */
+  enrageAt: 0.4, fast: 1.6, blinkEvery: 8, blinkEnraged: 3, afterOpen: 3, openT: 3.0, openMul: 2,   /* (claude/archmage4: 3.6 -> 3.0, the hall openings shorter - HERO KIT made every hero hit harder) */
   order: ['fire', 'ice', 'step', 'bone', 'poison', 'orbit', 'mark', 'bend', 'storm', 'pull', 'hand', 'script', 'decoy', 'fire', 'mark', 'trap'],   /* (archmage3: HIS ORRERY and THE GRAVE SCRIPT) */   /* (round 3: the second step is the DECOY, the second bend the TRAP; archmage2: the BONE STORM, and the GRAVE PULL - stage 3 only, skipped before it) */
   tell: { fire: 0.9, ice: 0.9, storm: 1.2, poison: 1.0, hand: 0.9, mark: 0.6, step: 1.0, bend: 1.0, decoy: 1.1, trap: 1.0, bone: 1.1, pull: 1.0, orbit: 1.2, script: 1.2 },
-  dmg: { fire: 14, ice: 12, storm: 32, orb: 8, hand: 16, mark: 38, bent: 13, trap: 13, skull: 17, void: 20, world: 25, script: 28 },   /* (archmage3: the red ones - nothing turns them - hit harder: harder by quality, not volume; archmage4: the red ones +15% again, the yellow ones a guard takes are unchanged) */
+  dmg: { fire: 14, ice: 12, storm: 28, orb: 8, hand: 16, mark: 34, bent: 13, trap: 13, skull: 15, void: 18, world: 22, script: 24 },   /* (claude/sweep3: archmage4's red +15% taken back - storm 32, mark 38, skull 17, void 20, world 25, script 28 - the warden was 0/4 on the standard bot; his 2800 is Daniel's and stands) */   /* (archmage3: the red ones - nothing turns them - hit harder: harder by quality, not volume; archmage4: the red ones +15% again, the yellow ones a guard takes are unchanged) */
   /* ARCHMAGE2. THE BONE STORM: n skulls on a ring of radius r0 round you, its gap slots left open (one wide gap, or every other cycle two
      narrow ones), closing to r1 over secs while the ring turns `turn` of a circle. THE ECHO: its delay, and the spells it repeats. THE GRAVE
      PULL: how long it drags, how hard (px/s at its full), its void's reach, and how long between two hurts by it */
@@ -295,11 +295,11 @@ export function updateUndeadMage(e, dt, c) {
       else if (e.mode !== 'breached' && e.mode !== 'reflected' && !(e.wardHold > 0)) { e.mode = 'gather'; e.modeT = MAGE.openT; e.open = MAGE.openT; say('THE MARK FINDS NO ONE. IT COMES BACK ON HIM', true); sound('crack'); }
       else if (e.mode === 'markWait') { e.mode = 'hover'; e.modeT = 0.8 / k; e.wardHitT = MAGE.ward.hitT; e.wardHitX = e.x; e.wardHitY = e.y - 26; sound('aegis'); } } }   /* (claude/archmage4) a missed mark while his ward HOLDS rings off it - and he FIGHTS ON: it left him in markWait for good (the warden's bot sat 200 s at 37%) */
   // ---- the blink ----
-  e.blinkT -= dt;
+  e.blinkT -= dt; e.noBlink = Math.max(0, (e.noBlink || 0) - dt);
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = MAGE.hover; } return; }
   if (e.mode === 'blinkOut') { if (e.modeT <= 0) { e.x = e.teleX; e.y = e.teleY; e.mode = 'blinkIn'; e.modeT = 0.25 / k; sound('mageBolt'); } return; }
   if (e.mode === 'blinkIn') { if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.35 / k; } return; }
-  if (e.mode === 'gather' || e.mode === 'breached' || e.mode === 'reflected') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.4; e.blinkT = 0; } return; }   /* then he goes: the window closes on a blink */
+  if (e.mode === 'gather' || e.mode === 'breached' || e.mode === 'reflected') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.4; e.blinkT = MAGE.afterOpen; e.noBlink = MAGE.afterOpen; } return; }   /* (claude/sweep3, B12: the window closed on a blink half a second later - now he hovers where you can follow him for afterOpen s first) */
   if (e.mode === 'markWait') { return; }
   /* HE TEARS A PORTAL at 75, 50 and 25%: the tear is told (realmTell - his ring of the realm, flaring), then it takes you */
   if (e.mode === 'hover' && e.modeT <= 0.2 && realmDue(e) >= 0) { const kind = REALM.kinds[e.realmN || 0], T = MAGE.trans[kind]; e.mode = 'realmTell'; e.modeT = T.secs; e.spell = 'realm'; e.face = Math.sign(P.x - e.x) || 1; e.deathMark = null;
@@ -311,7 +311,7 @@ export function updateUndeadMage(e, dt, c) {
     const dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy); if (d > 2) { e.x += dx / d * Math.min(d, sp * dt); e.y += dy / d * Math.min(d, sp * dt); }
     e.y += Math.sin(e.anim * 2.3) * 6 * dt; e.face = Math.sign(P.x - e.x) || 1;
     const crowded = Math.hypot(P.x - e.x, py - (e.y - 20)) < 34 && e.blinkT < MAGE.blinkEvery - 3;
-    if ((e.blinkT <= 0 || crowded) && e.modeT <= 0.2) { [e.teleX, e.teleY] = blinkTo(e, P, box, rnd); e.mode = 'blinkOut'; e.modeT = 0.55 / k; e.blinkT = e.enraged ? MAGE.blinkEnraged : MAGE.blinkEvery; say('TELEPORT', false);
+    if ((e.blinkT <= 0 || crowded) && e.modeT <= 0.2 && !(e.noBlink > 0)) { [e.teleX, e.teleY] = blinkTo(e, P, box, rnd); e.mode = 'blinkOut'; e.modeT = 0.55 / k; e.blinkT = e.enraged ? MAGE.blinkEnraged : MAGE.blinkEvery; say('TELEPORT', false);
       if (mageStage(e) >= 3) pair(e, e.x, e.y - 24, e.teleX, e.teleY - 24, e.modeT + 0.3)[1].flare = true;   /* RING TO RING: his blink is a pair of rings now, and its exit works both ways too */
       return; }
     if (e.modeT <= 0) { if (e.enraged && (e.bones || e.orbit || e.script || e.shots.filter(q => q.kind !== 'feed' && !q.reflected).length >= MAGE.late.shots)) { e.modeT = 0.2; return; }   /* (Daniel 10-05: less hectic late - the last spell's things clear first) */
