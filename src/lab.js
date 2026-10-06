@@ -1407,13 +1407,13 @@ async function runbossLab(BK, opts) {
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
          pyromancer. The bash is rolled through as it arrives; the judgement is walked off its mark. */
-      const KA = boss.t === 'kraken' && BK.krak ? BK.krak() : null, SA = boss.t === 'strawking' && BK.straw ? BK.straw() : null, MA = boss.t === 'archmage' && BK.mage ? BK.mage() : null;
+      const KA = boss.t === 'kraken' && BK.krak ? BK.krak() : null, SA = boss.t === 'strawking' && BK.straw ? BK.straw() : null, MA = boss.t === 'archmage' && BK.mage ? BK.mage(LABP.v2 ? 1 : undefined) : null;
       /* (claude/sweep3, v2 only) THE CHIP AND THE REPRISAL in the read-from-the-room branches (the Archmage, the Scarecrow King): they swung at him
          whenever nothing else was asked, so his greed reprisal came again and again - the generic hands below stop a blow short of it and step out
          of its ring; these now do the same. adv: the room's advice ({strike}); setGoal: where to stand */
       const labGreedStop = (adv, h, setGoal) => { if (!LABP.v2 || !BK.greed || !adv) return; const G = BK.greed, out = (G.reach || 60) + (boss.w || 20) / 2;
         if (adv.strike !== null && Math.abs(adv.strike - boss.x) < 6 && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) adv.strike = null;
-        if (boss.greedT > 0 && Math.abs(P.x - boss.x) < out + 18) { adv.strike = null; setGoal(boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30)); } };
+        if (boss.greedT > 0 && Math.abs(P.x - boss.x) < out + 18 && !adv.runeStrike) { adv.strike = null; setGoal(boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30)); } };
       /* THE SPIRE'S GOLEM (claude/bot2 triage): his LOW sweep and his stomp's floor waves are JUMPED - the sweep is 0.45 s live and 66 px wide,
          unblockable, and only hits a hero on the ground, so the roll the red mark used to send the hands into (0.2 s safe) ate it every time.
          It is the read his own callout gives ('LOW'), late in the tell, as a person jumps a sweep he can see coming. */
@@ -1462,7 +1462,7 @@ async function runbossLab(BK, opts) {
       else /* THE ARCHMAGE is read from the room (BK.mage): cross what the room has become to wherever he is, cut the runes as
          they come round, and cut the familiar's eye only when the head is down */
       if (MA) { goal = MA.goal;
-        const boltOff = LABP.v2 && MA.boltStep && !MA.climb ? MA.boltX + MA.boltStep * 32 : null;   /* (claude/sweep3, v2: his yellow circle is stepped off - the guard faced him, and the bolt comes down from the circle's side) */
+        const boltOff = LABP.v2 && MA.boltStep && !MA.climb && !(MA.goal !== null && Math.abs(MA.goal - P.x) > 48 && (MA.strike === null || MA.sub === 0 || MA.stage === 3) && P.ground) ? MA.boltX + MA.boltStep * 32 : null;   /* (claude/sweep3, v2: his yellow circle is stepped off - the guard faced him, and the bolt comes down from the circle's side) */
         if (MA.climb) { goal = MA.goal; if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 20 === 0) BK.press('jump'); }
         else { if (boltOff !== null) { goal = Math.max(L.arena.x0 + 14, Math.min(L.arena.x1 - 14, boltOff)); }
           else if (tell && SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode) && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.14)) { k.block = true; goal = null; P.face = Math.sign(d) || P.face; if (h === 'paladin') holdC = f + 40; }
@@ -1470,12 +1470,13 @@ async function runbossLab(BK, opts) {
           const wave = BK.mg && BK.mg() && BK.mg().shots.some(s => s.wave && Math.abs(s.x - P.x) < 40 && (s.x - P.x) * s.vx < 0); if (wave && P.ground) { BK.press('jump'); P.labJump = 12; }
           labGreedStop(MA, h, (g) => { goal = g; });   /* (claude/sweep3, v2) */
           if (!k.block && MA.strike !== null && Math.abs(MA.strike - P.x) <= LAB_REACH[h] + 14 && P.atk < 0) { P.face = Math.sign(MA.strike - P.x) || P.face; BK.press('atk'); swings++; }
-          if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 15 === 0 && !P.flip) { BK.press('jump'); P.labJump = 10; }
+          if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 15 === 0 && !P.flip && !(LABP.v2 && MA.sub === 1)) { BK.press('jump'); P.labJump = 10; }
           if (P.swim && f % 20 === 0) { BK.press('jump'); P.labJump = 32; } }   /* in the acid: leap out of it, and keep leaping */
+        if (LABP.v2 && MA.sub===1 && !P.swim) { if (MA.landOn !== undefined) goal = MA.landOn; else if (MA.wait) goal = Math.abs(P.vx) > 90 && P.ground ? P.x - Math.sign(P.vx) * 30 : P.x; }   /* (claude/sweep3, v2: land on the stack he jumped to; wait, braked, a stride before the acid) */
         if (MA.sub===1 && P.swim){const spots=[{x:L.arena.x0+40},...(BK.mg().stacks||[]).filter(q=>q.up).map(q=>({x:q.x*16+16})),{x:L.mage.dais[0]*16+24}];P.labMageLanding=spots.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0].x;k.up=true;goal=P.labMageLanding;}else if(MA.sub===1&&P.labMageLanding&&!P.ground)goal=P.labMageLanding;else P.labMageLanding=null;
         if (MA.jump && P.ground) { BK.press('jump'); P.labJump = 32; }   /* the flood's stacks: a held jump off the edge of this footing onto the next */
         // THE FLOOD'S BOOKS ARE TWO TILES APART: a double-tapped air dash carries the slower jump to the next stack.
-        if (MA.sub===1 && !P.ground && !P.swim && goal!==null && goal>P.x+32 && P.vy>-180 && !P.dashedAir && !(P.dashCd>0) && P.st>=10) {
+        if (MA.sub===1 && !P.ground && !P.swim && goal!==null && goal>P.x+32 && (!LABP.v2 || P.x > L.mage.flood[0] * 16 - 40) && P.vy>-180 && !P.dashedAir && !(P.dashCd>0) && P.st>=10) {
           if (f-(P.labMageTap??-99)>20) { P.labMageTap=f; BK.press('right'); }
           else if (f-P.labMageTap===2) BK.press('right');
         }
@@ -1905,7 +1906,7 @@ async function runbossLab(BK, opts) {
          P.st untouched, so it was never a stamina question - the ward was ripped down by this check, not run dry. Excluded here, not
          removed: every OTHER stuck state (the spring, a jump held with no ground contact) never sets P.warding, so this still catches
          them exactly as before. */
-      if (f % 30 === 0) { const stuck = !P.warding && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
+      if (f % 30 === 0) { const stuck = !P.warding && !(LABP.v2 && MA && MA.wait) && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
         P.labStuckF = stuck ? (P.labStuckF || 0) + 1 : 0; P.labStuckX = P.x; P.labStuckHp = boss.hp; }
       /* HOLDING JUMP DOWN FOREVER IS ITS OWN STUCK STATE (found chasing this same herald-pirate check, claude/botfix
          follow-up): this used to set k.jump = true directly, with nothing to ever let it go again while P.labStuckF

@@ -6328,16 +6328,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/98",
-     "timeout:78/96"
+     "dead:100/96",
+     "timeout:88/84"
     ],
     "warden": [
-     "timeout:68/97",
-     "timeout:74/100"
+     "dead:100/94",
+     "timeout:97/100"
     ],
     "pyro": [
-     "timeout:84/93",
-     "timeout:92/98"
+     "timeout:82/87",
+     "timeout:66/99"
     ]
    },
    "rows": [
@@ -6346,11 +6346,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 148.1,
+     "secs": 95.7,
      "hpLostPct": 100,
-     "bossLeftPct": 98,
-     "landed": 21,
-     "swings": 5433,
+     "bossLeftPct": 96,
+     "landed": 34,
+     "swings": 3366,
      "reprisalPct": 0,
      "chip": [
       {
@@ -6369,7 +6369,7 @@
        "f": 1500,
        "mul": 0,
        "open": false,
-       "mode": "boltTell"
+       "mode": "blinkTell"
       },
       {
        "f": 3000,
@@ -6385,23 +6385,23 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 78,
-     "bossLeftPct": 96,
-     "landed": 34,
-     "swings": 5541,
-     "reprisalPct": 0,
+     "hpLostPct": 88,
+     "bossLeftPct": 84,
+     "landed": 58,
+     "swings": 5406,
+     "reprisalPct": 10,
      "chip": []
     },
     {
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "timeout",
-     "secs": 150,
-     "hpLostPct": 68,
-     "bossLeftPct": 97,
-     "landed": 6,
-     "swings": 5645,
+     "out": "dead",
+     "secs": 132.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 94,
+     "landed": 7,
+     "swings": 4990,
      "reprisalPct": 0,
      "chip": []
     },
@@ -6411,10 +6411,10 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 74,
+     "hpLostPct": 97,
      "bossLeftPct": 100,
      "landed": 3,
-     "swings": 5638,
+     "swings": 5639,
      "reprisalPct": 0,
      "chip": []
     },
@@ -6424,10 +6424,10 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 84,
-     "bossLeftPct": 93,
-     "landed": 12,
-     "swings": 5648,
+     "hpLostPct": 82,
+     "bossLeftPct": 87,
+     "landed": 16,
+     "swings": 5639,
      "reprisalPct": 0,
      "chip": []
     },
@@ -6437,10 +6437,10 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 92,
-     "bossLeftPct": 98,
+     "hpLostPct": 66,
+     "bossLeftPct": 99,
      "landed": 9,
-     "swings": 5718,
+     "swings": 5619,
      "reprisalPct": 0,
      "chip": []
     }

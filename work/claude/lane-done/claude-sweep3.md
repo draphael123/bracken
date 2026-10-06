@@ -81,3 +81,25 @@ new opening route. Nothing here blocks it: H.take's burning branch is where it w
    If they feel unfair, trade damage for shorter tells. Built: the damage route.
 
 Music: nothing new (no music in this brief).
+
+## ADDENDUM 10-06 night: the Mage's Folly Archmage ('mage' row), Daniel's approved moves
+Built: (1) B12 in full: ARCH.blinkGap 10 (one blink per ~10 s cycle; still never during or within 3 s after his own opening;
+spots are the same floor spots a hero walks to). tools/archmage-folly.mjs now asserts the new cadence (>=5 blinks in 64 s, gaps
+9.5-13 s) and the B12 rule; the spread of spots is sampled on its own (ten blinks, gap waived by the test's hand) because at
+one blink in 10 s the old 34 s window was too short to show the room; the ward-blink assertion resets blinkAt per blink.
+(2) EHP archmage 720 -> 640, pin updated.
+Bot pass (v2 profiles only; legacy path unchanged - every new branch is behind LABP.v2 / the v2 arg of BK.mage):
+ - the flood: he landed on a stack then flew over it into the acid (goal had already moved to the next stack) -> lands on the
+   stack he is falling over (MA.landOn); waits a stride (braked, scaled to speed) before the acid when the next stack is not
+   up (MA.wait); the lab's generic stuck-recovery no longer jumps him while he waits; the air-dash only from the flood's edge.
+ - the runes: with all three standing he starts at the end nearest him and walks the line (not 'the one nearest the boss last');
+   the labGreedStop no longer pushes him off a rune that stands beside the boss (the sword at a rune is not a swing at him);
+   the bolt step-off is skipped while he is walking >48 px to a rune/goal (the circle is left behind anyway).
+Rates (profile human, campaign level L29, practiced): before 0/4 0/4 2/4 = 17% (720 hp, old blinks);
+ with 640 + B12 alone: 0/4 0/4 2/4 = 17% (knight/warden at 0); after the bot pass: 5/16 14/16 12/16 = 65% (HIGH +5).
+ The bot pass did most of it (his stage-2 flood and the ward count were the bot's, not the player's).
+QUESTION FOR DANIEL (rec first): knight 5/16 (31%) vs warden 88% / pyro 75%: the knight is slow to cut the three runes in the
+ 4 s stage-3 reseal (walks ~92 px/s with the shield up). Rec: leave it (overall 65% is within 5 of the band; a human bot is
+ ahead of a first-time player); if you want him harder for the warden/pyro, raise his health 640 -> 700 rather than touching blinks.
+Mash: level then boss re-stamped via tools/mash-bot.mjs (0/6 boss; the mini 0/6). Checks: archmage-folly, boss-read,
+ boss-greed, boss-openings, mash-gate green. tells: 2 reds, both updateScalder (pourTell/ladleTell unmarked, line ~20359) - not mine.
