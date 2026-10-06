@@ -3393,7 +3393,7 @@ function xpSim() { const keep = levelIndex, rows = []; let run = 0, full = 0, st
     full += foeXp + bossXp + clear + quest; if (lv.secret) secrets++; else { stage++; run += Math.round(XP_KILL_NORMAL * foeXp) + bossXp + clear; }
     rows.push({ id: lv.id, secret: !!lv.secret, stage: lv.secret ? null : stage, foes, foeXp, bossXp, clear, quest, run, level: levelOfXp(run), old: stage, full, fullLevel: levelOfXp(full), oldFull: stage + secrets }); }
   loadLevel(keep); return rows; }
-let winLevelUp = false, medalPurse = 0;
+let winLevelUp = false, medalPurse = 0, winPrevBest = null;   /* (winPrevBest: the best time before this finish, for the level-complete card's compare line) */
 const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reaches each medal: bronze 20, silver 45 in all, gold 90 in all */
 const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
 /* A HERO'S OWN DANCE (dances lane, 2026-09-29): the frames are the set's own (K.R.dance, baked in chars.js for every hero and so for every
@@ -3417,6 +3417,7 @@ function winLevel() {
   const firstWalk = !heroDone()[LEVELS[levelIndex].id] && (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret);   /* a secret wood is a wood: it pays its share like any other */
   state = 'win'; SFX.win(); setTimeout(() => { if (state === 'win') SFX.medal(); }, 900);
   const id = LEVELS[levelIndex].id, p = PROG[id] || {};
+  winPrevBest = p.best !== undefined && p.best !== null && !Number.isNaN(p.best) ? p.best : null;
   const ofAll = levelFoes || enemies.filter(e => !e.harmless).length;
   PROG[id] = { quest: p.quest, silver: p.silver, cleared: true, best: p.best ? Math.min(p.best, levelTime) : levelTime, gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths),
     slain: Math.max(p.slain || 0, kills), slainOf: Math.max(p.slainOf || 0, ofAll) };
@@ -29108,7 +29109,7 @@ function render() {
   }
   // THE WORLD GOES DOWN BEHIND THEM. Both of these were panels laid straight over a bright, busy level, so
   // the trees and the goblins read through the text and the end of a run looked like a debug overlay.
-  if (state === 'win' || state === 'gameover') { g.globalAlpha = 1; g.fillStyle = 'rgba(8,6,14,0.66)'; g.fillRect(0, 0, VW, VH); }
+  if (state === 'win' || state === 'gameover') { g.globalAlpha = 1; g.fillStyle = state === 'win' ? 'rgba(8,6,14,0.88)' : 'rgba(8,6,14,0.66)'; g.fillRect(0, 0, VW, VH); }   /* (the level-complete card sits on a darker scrim: the HUD's fragments no longer poke out around it) */
   if (state === 'gameover') {
     g.fillStyle = 'rgba(30,8,10,0.94)'; g.fillRect(40, 40, VW - 80, 100); g.strokeStyle = '#ff6b6b'; g.strokeRect(40.5, 40.5, VW - 81, 99);
     g.strokeStyle = 'rgba(255,255,255,0.10)'; g.strokeRect(42.5, 42.5, VW - 85, 95);
@@ -29133,15 +29134,17 @@ function render() {
     /* IN CO-OP THE MIDDLE OF THE CARD IS A TWO-COLUMN TALLY (coopTally): the run's figures for each of them, and
        the winner under it. The gold line goes with it, because the purse is the save's and the tally says who
        bent down for each coin, which is a different question and the only one worth two columns. */
-    line(0.30, 'time     ' + fmt(cnt(0.30, levelTime)), coop() ? 50 : 64, '#fff6e0');
+    { const pb = winPrevBest, cmp = coop() ? '' : pb === null ? '   FIRST CLEAR' : levelTime < pb - 0.05 ? '   NEW BEST -' + fmt(pb - levelTime) : '   BEST ' + fmt(pb);   /* the compare: first clear, a new best by how much, or the best it did not beat */
+      line(0.30, 'time     ' + fmt(cnt(0.30, levelTime)) + cmp, coop() ? 50 : 64, cmp.includes('NEW BEST') ? UI.gold : '#fff6e0'); }
     if (coop()) coopTally(px0, pw, at, cnt);
     else {
     line(0.55, 'gold     ' + Math.round(cnt(0.55, got)) + ' / ' + total + '   +' + Math.round(cnt(0.55, earned)) + ' purse', 77, '#ffd34a');
-    line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
-    line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
-    line(1.20, 'deaths   ' + deaths, 116, '#fff6e0'); }
+    line(0.80, 'foes ' + Math.round(cnt(0.80, kills)) + '   blocks ' + Math.round(cnt(0.80, blocks)) + '   dodges ' + Math.round(cnt(0.80, dodges)), 90, '#fff6e0');
+    { const q = PROG[LEVELS[levelIndex].id] || {}, sv = [1, 2, 4].filter(b => ((q.silver || 0) & b)).length;   /* what was found: the silver and the quest */
+      line(1.00, 'silver ' + sv + '/3   quest ' + (q.quest ? 'done' : 'open'), 103, sv >= 3 ? UI.silver : '#fff6e0'); }
+    line(1.20, 'deaths   ' + deaths, 116, deaths ? '#ff9a6b' : '#fff6e0'); }
     { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') : xpRun > 0 ? '+' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') + '   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
-      if (s && !coop()) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
+      if (s && !coop()) line(0.15, fitText(s.replace(/ +\+0 XP$/, ''), pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (a +0 XP is not a line worth printing) */   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     { const id = LEVELS[levelIndex].id, m = medalFor(id, medalTime());
@@ -29158,7 +29161,10 @@ function render() {
           if (k < 1) { g.globalAlpha = (1 - k) * 0.6; g.strokeStyle = m === 3 ? UI.gold : UI.sel; g.lineWidth = 1; g.beginPath(); g.arc(VW / 2, 132, 10 + 40 * k, 0, 7); g.stroke(); g.globalAlpha = 1; }
         }
       } else winStamped = true; }
-    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text('Z  continue', VW / 2, 140, '#8fd160', 'center');
+    if (wt > 1.75) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; });
+    { const m2 = medalFor(LEVELS[levelIndex].id, medalTime()), M2 = MEDALS[LEVELS[levelIndex].id] || [300, 450, 660];   /* what the next medal wants, once the stamp is down */
+      if (wt > 1.9 && m2 < 3 && !coop()) text('NEXT: ' + MEDAL_NAME[m2 + 1] + ' AT ' + fmt(M2[2 - m2]).replace(/\.\d$/, ''), VW / 2, 139, MEDAL_COL[m2 + 1], 'center', 6); }
+    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text(touchOn ? 'TAP  continue' : 'Z  continue', VW / 2, 146, '#8fd160', 'center');
   } else { winT = 0; winStamped = false; }
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH);
     /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */
