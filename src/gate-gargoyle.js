@@ -37,7 +37,7 @@ export const GARG = {
   hp: 410, stomps: 6,   /* (claude/bosswave2: 5 -> 6 with the rune column, a second way onto the spikes - the human bot was 86% at 5 before it) */ cd: 1.35, cdP2: 0.95,
   K: 1.5, w: 45, h: 45,                       /* HALF AS BIG AGAIN (he was 30): every read of his size below goes through K */
   tell: { dive: 0.95, fireball: 1.1, breath: 1.5, flare: 0.9 }, tellP2: 0.82, tellP2Not: ['breath'],   /* (2026-09-28: the breath's tell was 0.95, and 0.78 in phase two; it is 1.5 in both) */
-  dmg: { dive: 18, fireball: 10, breath: 12, crash: 12 },
+  dmg: { dive: 22, fireball: 13, breath: 15, crash: 15 },   /* (claude/sweep3: 18 / 10 / 12 / 12 - the standard bot won 9/12 at L28; band 50-60%) */
   diveV: 430, diveUp: 150, land: 1.1, recover: 0.9, rise: 0.55, reset: 1.4,
   smashAny: true, smashT: 0.24, crashG: 1500, stun: 3.5,
   /* HIS FLYING (Daniel, 2026-09-28: "he moves too quickly"): he eased toward where he wanted to be at a rate that grew with the distance, so a
