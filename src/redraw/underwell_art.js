@@ -251,12 +251,15 @@ export function drawHandTorch(g, x, y, st, face, time, k) {
                   rag wick), and a LANTERN at his back hand (brass, lit) - the light the cistern bats scatter from, and what lights his own spilled oil when he falls
    CISTERN BAT    the bat's frames: bleached cave-grey with pale ears and the red eyes kept - a pale thing that shows in the dark it lives in
    DROWNED DEAD   the zombie's frames: waterlogged blue-green, weed in the hair and water running off him */
-export const THIEF_PICK = (r, g, b, l) => (r > 150 && g < 90 && b < 90) ? ['#1a2a18', '#3a5a30', '#9ac080'] : (r > g + 20 && r > b + 20 && l < 0.6) ? ['#120c08', '#3a2416', '#6a4a2c'] : (l > 0.55 ? null : ['#16141a', '#3e3a44', '#7a7684']);
-export const BAT_PICK = (r, g, b, l) => (r > 200 && g < 110) ? null : ['#3a4048', '#8a96a4', '#e0e8f0'];
+export const THIEF_PICK = (r, g, b, l) => (r > 140 && g < 100 && b < 100) ? ['#140c08', '#3a2416', '#7a5634'] : (r > b + 30 && g > b + 10 && l > 0.3) ? ['#2a2830', '#6a6674', '#b4b0bc'] : (r > g + 20 && r > b + 20 && l < 0.6) ? ['#120c08', '#3a2416', '#6a4a2c'] : (l > 0.55 ? null : ['#16141a', '#3e3a44', '#7a7684']);   /* the vest: oil-black leather; the hat: a grey hood; the rest dusk grey */
+export const BAT_PICK = (r, g, b, l) => (r > 200 && g < 110) ? null : ['#5a6470', '#a8b4c2', '#f0f4f8'];   /* pale: it shows in the dark it lives in */
 export const DROWNED_PICK = (r, g, b, l) => (r > 200 && g > 160 && b < 140) ? ['#4a8a7a', '#9ae0c8', '#e0fff4'] : ['#081416', '#2e5a58', '#8ac0b4'];
 const thiefExtra = { pad: 2, draw(g, p, f, k) { const cx = 13, by = 20;
   /* the lantern at his back hand (not while he runs off) */
   if (k !== 4 && k !== 5) { const lx = cx - 4, ly = by + 6; g.fillStyle = '#5a4012'; g.fillRect(lx - 1, ly - 1, 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(lx, ly, 2, 3); g.fillStyle = '#fff4c8'; g.fillRect(lx, ly + 1, 1, 1); g.fillStyle = '#a4742a'; g.fillRect(lx - 1, ly - 2, 4, 1); dot(g, lx + 1, ly - 3, '#a4742a'); }
+  /* the flask in his throwing hand (dark glass, a rag wick; held high on the tell) and a scarf across his face */
+  { const hx = k === 6 ? cx + 2 : cx + 5, hy = k === 6 ? by - 13 : by + 6; if (k !== 4 && k !== 5) { g.fillStyle = '#1a2a18'; g.fillRect(hx, hy - 1, 3, 4); g.fillStyle = '#4a7a40'; g.fillRect(hx, hy - 1, 1, 4); g.fillStyle = '#4a3a78'; g.fillRect(hx + 1, hy + 1, 1, 1); g.fillStyle = '#c8b48a'; g.fillRect(hx + 1, hy - 3, 1, 2); } }
+  g.fillStyle = '#8a8478'; g.fillRect(cx - 1 + (k === 4 || k === 5 ? -2 : 1), by - 3, 4, 1);
   /* oil down his coat */
   for (const [dx, dy] of [[-2, 6], [1, 8], [3, 5]]) { dot(g, cx + dx, by + dy, '#0a0710'); dot(g, cx + dx, by + dy + 1, '#4a3a78'); } } };
 const batExtra = { pad: 1, draw(g, p, f, k) { /* the pale ear tips */ const bb = bbox(f); dot(g, bb[0] + 4, bb[1], '#ffffff'); dot(g, bb[2] - 4, bb[1], '#ffffff'); } };
