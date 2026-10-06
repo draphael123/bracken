@@ -19,6 +19,7 @@ import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmast
 import { puppetPlan } from './puppeteer.js';
 import { queenPlan, qOpen } from './cistern-queen.js'; import { glPlan, glOpen } from './gang-leader.js'; import { djinnPlan, djOpen } from './djinn.js';   /* (claude/welltown5) THE DJINN OF THE GREAT WELL: the bot works the skin on him, the crank and his hand */   /* THE CISTERN QUEEN and THE GANG LEADER (claude/welltown3): the bot reads their tells off their own modules, and works the skin */
 import { rocEyriePlan } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad): the bot rides the thermals and plunges, waits out her dive on the nest, turns the storm's stone */
+import { matPlan, matOpen } from './raptor-matriarch.js';   /* THE RAPTOR MATRIARCH (claude/redgorge2): the bot reads her tells, the water and the levers off her own module */
 import { gorgeCrabPlan, crabOpen } from './gorge-crab.js';   /* THE GREAT RED CRAB (claude/redgorge): the bot reads his tells, the dam's water and his channel off his own module, and works the sluice gate */
 import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
@@ -596,7 +597,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='matriarch'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1214,6 +1215,26 @@ async function runbossLab(BK, opts) {
         if(P.plunge)k.down=true;
         if(pl.atk&&P.atk<0){if(pl.face)P.face=pl.face;else P.face=Math.sign(boss.x-P.x)||P.face;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='matriarch'){
+        /* THE RAPTOR MATRIARCH (claude/redgorge2): src/raptor-matriarch.js matPlan reads what a player sees - her tells a quarter-second late (some misread), the horn
+           and the water, the levers' sluices, her bridges, the pillar tops - and works the gorge: a lever pulled while she is in the channel, a post struck while she
+           perches, a narrow top to stand on when the dam has cracked; it cuts her openings and her back. It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const MH=BK.matriarchHands(),S=MH&&MH.show();
+        if(f===0||!P.labRmMem)P.labRmMem={};
+        const pl=S?matPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden',v2:!!LABP.v2,hero:h,deflect:h==='warden',brood:LABP.v2?BK.enemies().filter(q=>q.alive&&q.rmBrood):null,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRmMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=24;}}   /* (a full jump: three rows up a pillar wants the key held to the top of the rise) */
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.block)k.block=pl.tap?DEFLECT_TAP(f):true;   /* (pl.tap: the warden's deflect on the beat - the v2 hands only) */
+        if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.duck){k.down=true;k.left=k.right=false;}   /* (pl.duck: crouched for the trip / the low poke - the v2 hands only) */
+        if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
+        if(pl.atk&&P.atk<0&&(!pl.duck||P.ducking)){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if((k.left||k.right)&&P.ground&&!pl.dodge){P.labRmStill=Math.abs(P.x-(P.labRmX??-1))<0.25?(P.labRmStill||0)+1:0;if(P.labRmStill>5&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=24;k.jump=true;P.labRmStill=0;}}else P.labRmStill=0;P.labRmX=P.x;   /* (a step in the way - a crack's lip, a pillar: a player hops it) */
+        if(matOpen(boss)&&!wasOpen)opened++;wasOpen=matOpen(boss);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:matOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='gorgecrab'){
         /* THE GREAT RED CRAB (claude/redgorge): src/gorge-crab.js gorgeCrabPlan reads what a player sees - his tells a quarter-second late (some misread), the boulders'

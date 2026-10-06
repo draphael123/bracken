@@ -145,6 +145,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE SKY ROAD (src/sky-road.js, claude/skyroad): the GOBLIN KITE-RIDER circles in a thermal and swoops (a told kick a shield turns), falls to his feet when his line is cut or the air dies: a 2.5, as the harpy.
      The sun-stones, the sun-disc, the cloak, the riders' loft and the Eyrie's kite-masts fight nobody */
   kiterider: 2.5, sunstone: 0, sundisc: 0, cloak: 0, loft: 0, mast: 0,
+  /* (claude/redgorge2) THE RAPTOR MATRIARCH is a boss: a 6; her ledge's sluice levers fight nobody */
+  matriarch: 6, mlever: 0,
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,
   /* THE FAIR'S GAMES (claude/fairlevel, src/fair-games.js): a striker's pad, a gallery's target, a ticket and the prize booth are machines you work, not foes - furniture, written down at 0 so the tools read them as gadgets */

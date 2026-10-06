@@ -39,7 +39,7 @@ export const CURVE_REPORT_ONLY = {
   keep: 'act 3: 256% lost, 0 deaths - no deaths (act III wants >= 1)',
   causeway: 'act 3: 71% lost, 0 deaths - EASY for act III',
   fair: 'act 4: 198% lost, 0 deaths - no deaths (act IV wants >= 1)',
-  redgorge: 'act 5: 120% lost, 3 deaths - under the act V health floor (150%)',
+  /* (claude/redgorge2: redgorge is back in its band - 246% lost, 6 deaths in 3 runs - and gated by the curve again) */
 };
 /* THE RULE'S STATE, by the built level's own keys. Each holds places: {x0,x1} / {x} / [x0, x1, ..] in tiles or pixels (read by size). */
 const RULE_KEYS = ['gusts', 'bore', 'causeTide', 'streetTide', 'wash', 'swell', 'darkZones', 'deckBreaks', 'crumbles', 'gasVents', 'whirlpools', 'siphons', 'blight',

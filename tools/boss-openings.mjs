@@ -251,20 +251,22 @@ try {
    let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;const bt=F.bottles.find(q=>!q.back);if(bt&&P.atk<0){P.x=bt.x-14;P.y=Math.min(M.floor,bt.y+12);P.face=1;BK.press('atk');}BK.sim(1);o=Math.max(o,b.open||0);}
    const hp0=b.hp,cap=b.maxHp*(await import('/src/gang-leader.js')).GL.capK;for(let k=0;k<12&&b.mode==='burning';k++){BKT.hurtAs('light',b,60,b.x-10,false);BK.sim(2);}const took=hp0-b.hp;
    out.gangleader={alone:+alone.toFixed(1),open:+o.toFixed(1),reflects:F.n.reflects,took:Math.round(took),cap:Math.round(cap)};}
-  /* THE GREAT RED CRAB (claude/redgorge): a minute of him with the dam's gate open and the floods running opens nothing; a release with him out of the
-     spillway opens nothing (water wasted); a release with him in it throws him on his back - open (THE RED GORGE holds him) */
-  {const b=boot('redgorge');const A=BK.L.arena,P=BK.P,G=()=>BK.redgorge(),dam=()=>G().gates.find(g=>g.id==='dam'),c=()=>BK.gorgeCrab();let alone=0;
-   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+40;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
-   const bank=()=>{for(let i=0;i<60*30&&dam().state!=='full';i++){P.hp=P.maxHp;if(dam().state==='open'&&i%20===0){P.x=A.wheels[0];BK.press('talk');}BK.sim(1);}};
-   bank();let wasted=0;for(let i=0;i<60*20&&dam().state==='full';i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0],near=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[0]:A.wheels[1];P.x=near;if(!c().inChannel&&b.mode!=='open'&&dam().state==='full')BK.press('talk');BK.sim(1);wasted=Math.max(wasted,b.open||0);}
-   for(let i=0;i<20;i++){P.hp=P.maxHp;BK.sim(1);wasted=Math.max(wasted,b.open||0);}const w0=c().n.wasted;bank();let op=0,mode=null;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const far=c().x<(A.ch[0]+A.ch[1])/2?A.wheels[1]:A.wheels[0];P.x=far;if(dam().state==='full'&&c().inChannel&&b.mode!=='open')BK.press('talk');BK.sim(1);if(b.mode==='open')mode='open';op=Math.max(op,b.open||0);}
-   out.gorgecrab={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:w0,mode,open:+op.toFixed(1)};}
   /* THE ROC on her EYRIE (claude/skyroad): a minute of her with the hero on the stone by the rim (off the nest) opens nothing - her dives skid; a plunge
      on her back in the air knocks her down, open (src/roc-eyrie.js) */
   {const b=boot('skyroad');const A=BK.L.arena,P=BK.P,O=e=>e.mode==='stuck'||e.mode==='downed';let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+64;P.vx=0;BK.sim(1);if(O(b))alone+=1/60;}
    for(let i=0;i<60*20&&!(b.mode==='fly'&&!(b.ward>0));i++){P.hp=P.maxHp;BK.sim(1);}b.modeT=9;P.x=b.x;P.y=b.y-36;P.vy=0;P.ground=false;BK.keys.down=true;BK.press('atk');BK.sim(2);BK.keys.down=false;
    let op=0;for(let i=0;i<60*10;i++){P.hp=P.maxHp;BK.sim(1);if(O(b))op+=1/60;else if(op>0)break;}out.roc={alone:+alone.toFixed(1),open:+op.toFixed(1)};}
+  /* THE RAPTOR MATRIARCH (claude/redgorge2; THE GREAT RED CRAB is benched, unplaced - his promises are kept by tools/redgorge.mjs, pure): a minute of her with
+     no lever pulled opens nothing big; a lever pulled with her up on the rock is wasted; pulled with her in the channel by a NARROW pillar, the pillar
+     throws her - STAGGERED, open 3 s or more (THE RED GORGE holds her) */
+  {const b=boot('redgorge');const A=BK.L.arena,P=BK.P,MH=BK.matriarchHands(),S=()=>MH.show(),G=S().G,BIG=['staggered','stunned','tangled','pstagger'],lever=G.levers[0].x;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=lever+20;P.vx=0;BK.sim(1);if(BIG.includes(b.mode))alone=Math.max(alone,b.open||0);b.hp=b.maxHp;}
+   const quiet=()=>{for(let i=0;i<60*8&&(S().ward>0||BIG.includes(b.mode)||S().burst>0||S().pending.length||b.mode==='fly'||b.mode==='wobble');i++){P.hp=P.maxHp;BK.sim(1);}};
+   const pull=()=>{S().sluice.W=1;P.x=lever;P.y=G.topY;P.vx=0;BK.press('talk');};
+   quiet();b.x=G.tops.find(t=>t.id==='B2').cx;b.y=G.topY;b.mode='walk';b.modeT=4;pull();let wasted=0;for(let i=0;i<150;i++){P.hp=P.maxHp;P.x=lever;BK.sim(1);if(BIG.includes(b.mode))wasted=Math.max(wasted,b.open||0);}
+   quiet();const n1=G.tops.find(t=>t.id==='N1');b.x=n1.l-30;b.y=G.floorY;b.mode='walk';b.modeT=5;pull();let op=0,mode=null;for(let i=0;i<60*5;i++){P.hp=P.maxHp;P.x=lever;BK.sim(1);if(BIG.includes(b.mode)){mode=mode||b.mode;op=Math.max(op,b.open||0);}}
+   out.matriarch={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:MH.read().n.wasted,mode,open:+op.toFixed(1)};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -357,11 +359,11 @@ try {
   assert.equal(r.gangleader.alone, 0, 'THE GANG LEADER: a minute of him left alone opened him: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.open >= 3 && r.gangleader.reflects >= 1, 'his bottle struck back did not set him alight for 3 s or more: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.took <= r.gangleader.cap + 1 && r.gangleader.took >= r.gangleader.cap * 0.6, 'one burning took more than his cap (GL.capK, inside the third Daniel allows) or nothing like it: ' + JSON.stringify(r.gangleader));
-  assert.equal(r.gorgecrab.alone, 0, 'THE GREAT RED CRAB: a minute of him with the floods running opened him: ' + JSON.stringify(r.gorgecrab));
-  assert.ok(r.gorgecrab.wasted === 0 && r.gorgecrab.wastedN >= 1, 'a release with him out of the spillway opened him (or was not counted as wasted): ' + JSON.stringify(r.gorgecrab));
-  assert.ok(r.gorgecrab.mode === 'open' && r.gorgecrab.open >= 3, 'a release with him in the spillway did not throw him open for 3 s or more (the boss rule): ' + JSON.stringify(r.gorgecrab));
   assert.equal(r.roc.alone, 0, 'THE ROC: a minute of her with the hero on the stone opened her: ' + JSON.stringify(r.roc));
   assert.ok(r.roc.open >= 3, 'a plunge on her back did not knock her down open for 3 s or more (the boss rule): ' + JSON.stringify(r.roc));
+  assert.equal(r.matriarch.alone, 0, 'THE RAPTOR MATRIARCH: a minute of her with no lever pulled opened her: ' + JSON.stringify(r.matriarch));
+  assert.ok(r.matriarch.wasted === 0 && r.matriarch.wastedN >= 1, 'a burst with her up on the rock opened her (or was not counted as wasted): ' + JSON.stringify(r.matriarch));
+  assert.ok(r.matriarch.mode === 'staggered' && r.matriarch.open >= 3, 'a burst with her in the channel by a narrow pillar did not throw her open for 3 s or more (the boss rule): ' + JSON.stringify(r.matriarch));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

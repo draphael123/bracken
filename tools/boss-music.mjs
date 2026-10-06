@@ -31,7 +31,7 @@ assert.equal(arena('crown').music, 'goblinroyal', "the Goblin Queen's arena is n
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
 assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
-assert.equal(arena('redgorge').music, 'gorgecrab', "THE GREAT RED CRAB's arena is not on his clacking march");
+assert.equal(arena('redgorge').music, 'matriarch', "THE RAPTOR MATRIARCH's ledge is not on her own theme (claude/redgorge2; the crab's march is benched with him)");
 assert.equal(arena('welltown').music, 'djinn', "THE DJINN's hall is not on his own theme (claude/underwell)");
 assert.equal(arena('underwell').music, 'cisternqueen', "THE CISTERN QUEEN's hall (the Underwell) is not on her own theme");
 assert.equal(LEVELS.find(l => l.id === 'welltown').build().mini.music, 'banditking', "THE GANG LEADER's courtyard is not on the old King's theme (his mini keeps it, claude/welltown3)");
@@ -39,7 +39,7 @@ assert.equal(arena('unburied').music, 'blacklord', "THE DEATH KNIGHT's arena is 
 assert.ok(A.MUSIC_NAMES.includes('blacklord') && /Ronhul Maggot/.test(A.MUSIC_CREDITS.blacklord || ''), 'For the Black Lord has no Sound Test entry and CC-BY credit');
 assert.ok(A.MUSIC_NAMES.includes('cisternqueen') && A.MUSIC_CREDITS.cisternqueen, 'THE CISTERN QUEEN has no Sound Test entry of her own');
 assert.ok(A.MUSIC_NAMES.includes('banditking') && A.MUSIC_CREDITS.banditking, 'THE BANDIT KING has no Sound Test entry of his own');
-for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
+for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab', 'matriarch']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
 for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
 
@@ -90,6 +90,7 @@ for (const name of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'ga
 /* THE GREAT RED CRAB's PHASE TWO (src/gorge-crab-hands.js sets it): the hats double and the flood surges - more clacks, and a slide up */
 { BM.BOSS_PHASE.gorgecrab = 2; const { ev, len } = await grab('gorgecrab', 1); BM.BOSS_PHASE.gorgecrab = 1; const T0 = ev.length ? ev[0].t : 0;
   const c2 = ev.filter(e => e.kind === 'src' && e.t >= T0 && e.t < T0 + len - 1e-6).length; assert.ok(c2 > results.gorgecrab.clicks * 1.3, 'the crab phase two does not double his clacks: ' + c2 + ' against ' + results.gorgecrab.clicks); }
+/* (THE RAPTOR MATRIARCH is a file now - 'Volatile Reaction' by Kevin MacLeod, claude/redgorge2 art pass: no synth phases to measure; tools/audio-assets.mjs and the credits checks hold her track) */
 const hs = Object.values(results).map(r => r.hash); assert.equal(new Set(hs).size, hs.length, 'two of the boss themes play the same notes');
 assert.equal(errors.length, 0, 'the scheduler threw: ' + (errors[0] && errors[0].message));
 const gainNow = A.debugAudio().musicGain.gain; A.music.play('archmage'); assert.ok(A.debugAudio().wantTrack === 'archmage');

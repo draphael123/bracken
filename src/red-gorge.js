@@ -9,6 +9,8 @@
 // one clock (src/red-gorge-hands.js GORGE): dry, then THE HORN from above (2 s: get out of the channel), then the TORRENT (2.4 s): anything in
 // the channel is swept down and hurt. An OVERHANG caps each section's climbing side, so every section ends on a ROPE BRIDGE across the channel.
 // Said three ways: the horn, the channel's scoured pale rock, and the trickle that comes down the channel before the torrent.
+// THE RULE LINE (claude/redgorge2 fix pass): "AT THE HORN THE FLOOD COMES DOWN THE GORGE AND THE RIVER RUNS WILD. A SHUT GATE HOLDS IT; LET IT GO TO BREAK WHAT BLOCKS YOU." - the horn also turns THE RAPIDS'
+// calm to white water (the timbers race) and runs THE SPILL CHUTE on the climb, so the first horn the player meets is at the rapids' first stone (its sign).
 //
 // THE MACHINE: A SLUICE GATE across the channel (E at its WHEEL). Shut, it HOLDS the next flood: the channel below it stays dry. Held, it is a
 // flood in your hand: E again RELEASES it - a burst down the channel below, at once, harder than a flood. Only a released burst moves a JAM of
@@ -31,18 +33,20 @@
 //                                                     long rope IN the channel under raptors and a slinger - ride on the flood, then hold the next
 //   22-42    THE SUMMIT           (the old nest)      the last climb (CHECKPOINT TWO at the dam's door); the old nest's vault west, off the route
 //   ...then THE OLD DAM, the plateau east of the summit: THE GREAT RED CRAB (src/gorge-crab.js), and the road on to THE GLASS SEA.
-import { stageGorgeCrab } from './gorge-crab.js';
+import { stageMatriarch, STAGE as MSTAGE } from './raptor-matriarch.js';   /* (claude/redgorge2) THE RAPTOR MATRIARCH keeps the nest by the spillway; THE GREAT RED CRAB (src/gorge-crab.js) is benched, intact and unplaced */
 
-export const REDGORGE = { W: 96, H: 170, floor: 166, ch: [22, 26], summit: 22 };
-export const SECTIONS = [['THE GORGE MOUTH', 166], ['THE DRY FALLS', 142], ['THE RAPTOR LEDGES', 118], ['THE CAVE OF HANDS', 94], ['THE NARROWS', 70], ['THE SUMMIT', 42]];
+export const REDGORGE = { W: 144, H: 230, floor: 166, ch: [22, 26], summit: 22, rapids: { x0: 80, x1: 129, surf: 220, bed: 225 }, climb: { x0: 48, x1: 78, foot: 218, top: 165 }, spill: [60, 62] };
+export const SECTIONS = [['THE RAPIDS', 224], ['THE GORGE CLIMB', 218], ['THE GORGE MOUTH', 166], ['THE DRY FALLS', 142], ['THE RAPTOR LEDGES', 118], ['THE CAVE OF HANDS', 94], ['THE NARROWS', 70], ['THE SUMMIT', 42]];
 /* the bridge rows, bottom to top (each section ends on one) */
 export const BRIDGES = [142, 118, 94, 70, 42];
 /* each mechanic's arc (tile ROWS: a climb) - TAUGHT, DEVELOPED, TWISTED, COMBINED/EXAMINED - read by tools/redgorge.mjs and the concept page */
 export const ARCS = {
   flood: { teach: [160, 166], develop: [118, 142], twist: [94, 118], exam: [42, 70] },     /* the floor crossing; the falls race; the basket that rides it; the narrows */
+  rapids: { teach: [118, 126], develop: [102, 117], twist: [91, 101], exam: [80, 89] },     /* (claude/redgorge2: COLUMNS) stone to stone; the first drifting timber; two timbers in one current; the last reach under the birds and a sling */
+  climb: { teach: [207, 216], develop: [191, 206], twist: [175, 191], exam: [165, 175] },   /* (rows) ledges under a told rockfall; the rope under a rock; the spill chute's basket; the gusts over the chute */
   gate: { teach: [118, 142], develop: [70, 94], twist: [6, 22], exam: [42, 70] },          /* the falls (optional); THE JAM (required); the crab's opening; the narrows' hold */
-  basket: { teach: [100, 118], exam: [65, 70] },                                           /* the raptor ledges; the narrows */
-  climb: { teach: [145, 163], develop: [119, 136], exam: [43, 62] },                       /* ledges, the falls' rope, the narrows' rope */
+  basket: { teach: [175, 191], develop: [100, 118], exam: [65, 70] },                     /* (fix pass: in the order you meet them) the climb's spill chute (its sign: the flood winds it); the raptor ledges; the narrows */
+  ascent: { teach: [145, 163], develop: [119, 136], exam: [43, 62] },                      /* ledges, the falls' rope, the narrows' rope (was a second `climb` key, which hid the gorge climb's arc) */
 };
 
 export function buildRedGorge({ painter, T, TS }) {
@@ -59,8 +63,8 @@ export function buildRedGorge({ painter, T, TS }) {
   const wheel = (x, y, id) => ent('sluice', x, y, { gate: id });
   /* A BASKET: a water-wheel by the channel at row `wheelRow` winds a basket (x, x+1) from surface row `low` up to surface row `high` while the
      water runs past the wheel; when it stops, the basket sinks back */
-  const basket = (id, x, low, high, wheelRow) => { baskets.push({ id, x, low, high, wheelRow });
-    moversExtra.push({ kind: 'lift', gorge: id, x: x * TS, y: low * TS, y0: low * TS, y1: high * TS, w: 32, h: 8, speed: 0, wheelRow }); ent('waterwheel', x < CX ? x + 3 : x - 1, wheelRow, { basket: id }); };   /* the wheel turns in the channel's edge */
+  const basket = (id, x, low, high, wheelRow, o = {}) => { const ch = o.ch || 'gorge'; baskets.push({ id, x, low, high, wheelRow, ch });
+    moversExtra.push({ kind: 'lift', gorge: id, gch: ch, x: x * TS, y: low * TS, y0: low * TS, y1: high * TS, w: 32, h: 8, speed: 0, wheelRow }); ent('waterwheel', o.wheel ?? (x < CX ? x + 3 : x - 1), wheelRow, { basket: id }); };   /* the wheel turns in the channel's edge */
   const feather = (x, y) => ent('stray', x, y, { kind: 'feather' });
   /* (claude/desertfoes, Daniel 10-03: the gorge was half cutthroats - a good chunk are swapped for these, src/desert-foes2.js) THE SHIELD GUARD (the shieldgob's AI
      under a man's skin: the front turns every blow - get behind him, break it heavy, or come down on him; in the channel the flood takes half of him), THE DYNAMITE
@@ -75,6 +79,69 @@ export function buildRedGorge({ painter, T, TS }) {
   air(3, 44, 0, F - 1);                                                       /* the gorge: open to the sky, walls at 0-2 and 45-47 */
   /* the walls wander a little (a canyon, not a shaft) - never into a ledge */
   for (const [y0, y1, x] of [[150, 158, 3], [126, 131, 44], [100, 108, 44], [30, 38, 3], [10, 18, 44]]) block(x, x, y0, y1);
+  const pools = [], debris = (id, x0, x1, o = {}) => moversExtra.push(Object.assign({ kind: 'debris', debris: id, x: x0 * TS, x0: x0 * TS, x1: x1 * TS, y: REDGORGE.rapids.surf * TS - 4, y0: REDGORGE.rapids.surf * TS - 4, w: 48, h: 6, speed: 14, phase: 0 }, o));   /* three tiles of timber */
+
+  // ================= A. THE RAPIDS (cols 66-141, rows 200-225): you start on the east bank; WEST, stone to stone over the white water =================
+  /* (claude/redgorge2, Daniel 10-03) the river out of the gorge's mouth, under the canyon wall. Its water is the gorge's: AT THE HORN the calm water
+     turns to RAPIDS (src/red-gorge-hands.js: the timbers drift three times as fast) - wait for the calm, or ride it fast. FALLING IN: the current sweeps
+     you downstream, a blow, and you are back on the last rock you stood on (main.js L.waterHurts: the canal's and the tarns' rule, never a death).
+     DRIFTING TIMBER (broken bridge planks, a caravan's crates, snagged branches: movers) slides down the current and bobs; a reach too wide to jump is
+     crossed on one - time it. THE BIRDS: the gorge's raptors circle the crossing and stoop at your spot (their shadow snaps onto it first); a stoop
+     that lands on you over the water knocks you in. Every stone is three tiles: a rock you stand on is a rock you come back to */
+  { const R0 = REDGORGE.rapids, S = R0.surf, B = R0.bed;
+    air(66, 141, 200, B - 1);
+    block(66, 79, S - 1, H - 1); block(130, 141, S - 1, H - 1); block(R0.x0, R0.x1, B, H - 1);   /* the climb's foot bank (west), the start bank (east), the bed */
+    const stones = [[125, 127], [120, 122], [110, 112], [105, 107], [89, 91]];   /* (a plain jump between two stones is two tiles: every hero makes it from a standstill) */
+    for (const [a, b] of stones) block(a, b, S - 1, B - 1);
+    /* the water between the stones (each reach its own pool, so a stone is dry ground: P.safe) */
+    const edges = [R0.x0, ...stones.slice().reverse().flatMap(([a, b]) => [a, b + 1]), R0.x1 + 1];
+    for (let i = 0; i < edges.length; i += 2) pools.push({ x0: edges[i] * TS, x1: edges[i + 1] * TS, y: S * TS + 4, bottom: B * TS, rapids: true });
+    sign(137, S - 2, 'THE RAPIDS. STONE TO STONE. THE CURRENT THROWS YOU BACK ON YOUR LAST ROCK.');
+    sign(126, S - 2, 'AT THE HORN THE RIVER RUNS WILD AND THE TIMBERS RACE. WAIT FOR THE CALM.');   /* (fix pass) THE FIRST HORN the player meets: told on the first stone */
+    /* TEACH: two stones a plain jump apart; the first timber (the reach 111-117 is seven: ride it) */
+    debris('d1', 113, 117, { phase: 0.2, what: 'plank' });
+    sign(121, S - 2, 'TOO WIDE TO JUMP. RIDE THE DRIFTING TIMBER.');
+    ent('raptor', 108, S - 2, { squad: 'rapidsBird1', guard: S - 1 });                      /* THE BIRDS: over the reach past the first timber */
+    /* REMIX: two timbers in one current (91-101, eleven), the second five behind the first: board the near one, hop to the far, step off */
+    /* (fix pass: splitting the reach between the two - a real hop - was built and reverted: src/reachcore.js cannot follow a timber-to-timber hop, so
+       tools/redgorge.mjs could no longer prove the gorge reachable. A QUESTION in the lane report) */
+    debris('d2', 92, 102, { phase: 0.0, what: 'crate' }); debris('d3', 92, 102, { phase: 0.5, what: 'branch' });
+    foe('slinger', 107, S - 2, 'rapidsSling2', { face: -1 });                                 /* (fix pass) a sling at your back as you ride the two timbers */
+    foe('cutthroat', 111, S - 2, 'rapidsMid', { face: 1 });                                   /* (fix pass) a knife on the middle stone: the first screen is not bare */
+    ent('raptor', 95, S - 2, { squad: 'rapidsBird2', guard: S - 1 });
+    foe('slinger', 75, S - 2, 'rapidsSling', { face: 1 });                                  /* EXAM: the last reach under a sling on the far bank, and the birds */
+    debris('d4', 80, 86, { phase: 0.6, what: 'plank' });
+    dynamiter(90, S - 2, 'rapidsStone', { face: 1 });                                       /* on the last stone: his fuse dies in the water (the flood douses it) */
+    ent('deco', 135, S - 2, { kind: 'oxSkull' }); ent('deco', 70, S - 2, { kind: 'scrub' });
+    decor.push({ kind: 'plume', x: 122, y: S - 2 }, { kind: 'plume', x: 72, y: S - 2 });     /* HER PLUMES (B8): a moulted crest feather on the rocks - the trail to the nest */
+  }
+
+  // ================= B. THE GORGE CLIMB (cols 48-78, rows 150-218): up the canyon wall from the river to the gorge's mouth =================
+  /* (claude/redgorge2) a VERTICAL ASCENT: ledges three rows apart; a told ROCKFALL (a red mark where it lands, dust first); a ROPE up the wall with a
+     rock that falls down it; THE SPILL CHUTE - the gorge's flood comes down it on the horn - and a basket on its wheel, the only way up the sheer
+     middle (the flood is the lift, as in the gorge); TOLD GUSTS funnelling up the gorge over the chute at the top (the flags and the dust tell
+     them: brace - hold block or down - or cross in the still air). The ledge across the chute is in the flood's road (the horn). */
+  { air(48, 78, 150, 217); block(45, 56, 166, 166); air(45, 47, 161, 165);                 /* the shaft; the landing at the top (the gorge floor's row); the cut west into the gorge's mouth */
+    ledge(68, 76, 216); ledge(61, 69, 213); ledge(54, 62, 210); ledge(48, 55, 207);   /* (each overlaps the next: a three-row hop is straight up or one column across) */
+    ent('rockfall', 58, 199, { every: 3.2, tell: 0.9, seen: true });                         /* TEACH: a told rockfall over the third ledge */
+    sign(73, 218, 'THE GORGE CLIMB. WATCH FOR THE DUST: A RED MARK IS WHERE THE ROCK LANDS.');
+    rope(50, 192, 206);                                                                     /* THE WALL ROPE: fifteen rows */
+    ent('rockfall', 50, 193, { every: 4.0, tell: 0.9, seen: true });                         /* DEVELOP: a rock down the rope - climb between them */
+    ledge(48, 57, 191);                       /* the rope's top shelf, and the basket's berth in it */
+    foe('slinger', 54, 190, 'climbSling', { face: -1 });                                    /* on the shelf over the rope: he throws down it */
+    basket('spill', 58, 191, 175, 182, { ch: 'spill', wheel: 60 });                         /* TWIST: THE SPILL CHUTE's basket: up the sheer middle on the flood */
+    sign(52, 190, 'THE SPILL CHUTE. AT THE HORN THE FLOOD COMES DOWN IT AND WINDS THE BASKET UP.');
+    block(63, 78, 176, 205);                                                                /* the sheer rock east of the chute (the shelf is fifteen rows under the next ledge: only the basket goes up) */
+    ledge(48, 57, 175);                                                                     /* off the basket's top */
+    sign(50, 174, 'GUSTS OVER THE CHUTE. BRACE (BLOCK) OR CROSS IN THE STILL AIR.');          /* (fix pass) the gust ledges are the climb's exam: told before them */
+    ent('raptor', 66, 172, { squad: 'climbBird', guard: 175 });                             /* the birds wheel level with you here */
+    ledge(56, 64, 172);                                                                     /* EXAM: across the chute (cols 60-62: the flood's road) in the gusts */
+    ledge(55, 61, 169); set(55, 166, T.ONEWAY); set(56, 166, T.ONEWAY);                                                                     /* (and again, under the landing's east lip - two boards of it, jumped up through) */
+    ent('rockfall', 52, 160, { every: 3.6, tell: 0.9, seen: true });
+    foe('cutthroat', 52, 165, 'climbTop', { face: 1 });
+    ent('check', 46, 165);                                                                  /* (fix pass) CHECKPOINT: the climb's top, at the gorge's mouth - the rapids and the climb are not replayed for one bad minute in the gorge */
+    decor.push({ kind: 'plume', x: 54, y: 165 });
+  }
 
   // ================= 1. THE GORGE MOUTH (142-166): climb WEST =================
   ent('deco', 33, F - 1, { kind: 'scrub' }); ent('deco', 8, F - 1, { kind: 'oxSkull' });
@@ -186,22 +253,25 @@ export function buildRedGorge({ painter, T, TS }) {
   block(38, 44, 22, 23); ent('check', 42, 21);                                /* CHECKPOINT TWO: at the dam's door */
   air(45, 48, 19, 21);                                                        /* the cut through the east wall */
 
-  // ================= THE OLD DAM: THE GREAT RED CRAB's plateau (src/gorge-crab.js) =================
-  const crab = stageGorgeCrab({ set, block, ent, air }, T, TS, 50, REDGORGE.summit);
-  gate('dam', crab.gateRow, 'dam');
-  air(91, W - 3, 16, 21); ent('gate', 93, 21);                                /* the road out, to THE GLASS SEA */
+  // ================= THE NEST LEDGE: THE RAPTOR MATRIARCH by the old dam's spillway (src/raptor-matriarch.js) =================
+  const mat = stageMatriarch({ set, block, ent, air }, T, TS, 50);
+  for (const c of [5, 33]) moversExtra.push({ kind: 'mplank', mplank: true, x: (50 + c) * TS, x0: (50 + c) * TS, x1: (50 + c) * TS, y: MSTAGE.R * TS - 6, y0: MSTAGE.R * TS - 6, w: 32, h: 6 });   /* the dam's loose timbers in the channel's two wide reaches (they float up when the dam cracks) */
+  decor.push({ kind: 'plume', x: 40, y: 21 }, { kind: 'plume', x: 44, y: 21 });             /* (B8) her plumes thicken at the dam's door */
+  sign(39, 21, 'HER PLUMES. THE OLD NEST WAS HERS: SHE NESTS BY THE SPILLWAY NOW.');
+  air(91, 95, 16, 21); ent('gate', 93, 21);                                   /* the road out, to THE GLASS SEA */
 
   // ================= THE ROPES, LAST =================
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
-  const START = { x: 41, y: F - 1 };
+  const START = { x: 138, y: REDGORGE.rapids.surf - 2 };   /* (claude/redgorge2) the rapids' east bank: THE RAPIDS and THE GORGE CLIMB come before the gorge's mouth */
   /* the whole gorge is in the canyon's shadow, and the dam's plateau under its cliff: this level is the flood's, not the sun's */
   const shade = [[0, W * TS, 0, H * TS + 1]];
   return {
-    W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra, interiors,
-    arena: crab.arena, gateAfterBoss: true,
+    W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, interiors,
+    waterHurts: true, noWade: true,   /* THE RAPIDS: a fall in costs health and hands you back to the last rock you stood on (main.js, the canal's and the tarns' rule); the bed is nowhere anyone walks (src/reachcore.js) */
+    arena: mat.arena, gateAfterBoss: true,
     redgorge: true,
-    channels: [{ id: 'gorge', x0: C0, x1: C1, y0: 0, y1: F - 1 }, { id: 'dam', x0: crab.channel[0], x1: crab.channel[1], y0: crab.gateRow + 1, y1: REDGORGE.summit - 1 }],
+    channels: [{ id: 'gorge', x0: C0, x1: C1, y0: 0, y1: F - 1 }, { id: 'spill', x0: REDGORGE.spill[0], x1: REDGORGE.spill[1], y0: 167, y1: 214 }],   /* (claude/redgorge2) THE SPILL CHUTE down the climb runs on the same horn */
     gates, jams, baskets, vaultDoors, decor, ropes,   /* ropes: [col, row0, row1] (the hands glint and tell them, and knot their feet); */ /* decor: the nests and the painted hands, drawn by src/red-gorge-hands.js (greybox) */
     shade, shadeArt: [],
     rockZones: [[0, W - 1, 0, H - 1]],   /* the canyon's red sandstone everywhere (the caravan's rock skin until the art lane paints the gorge its own) */
@@ -221,11 +291,14 @@ export function buildRedGorge({ painter, T, TS }) {
       { kind: 'jam', opens: 'the bridge it seals (a released burst washes it out)', hud: 'A JAM: ONLY A RELEASED BURST MOVES IT' },
       { kind: 'waterwheel', opens: 'its basket up the sheer face while the water runs', hud: 'THE WHEEL TURNS WHEN THE WATER RUNS' },
       { kind: 'oldnest', opens: "THE OLD NEST's vault (a silver)", hud: 'THE OLD NEST OPENS' },
+      { kind: 'mlever', opens: "the dam's banked flood down the Matriarch's channel (a burst: caught in it she leaps for the nearest pillar, and a narrow one throws her)", hud: 'THE SLUICE OPENS: THE WATER COMES / THE SLUICE IS EMPTY: THE NEXT FLOOD FILLS IT' },
     ],
     music: 'redgorge',   /* "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick (10-02); credited in src/audio.js MUSIC_CREDITS, audio/CREDITS.txt and the credits page (src/credits.js) */
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'canyon' }],   /* (claude/redgorge2 art pass) its own bed: the wind down the gorge, the river's roar, the spillway's hiss, a raptor on the wall (src/audio.js SYNTH_BEDS.canyon) */
     caravan: true,   /* the desert's hands in main.js (the sandstone skins, the bandits' AI); THE SUN never reaches the floor of the gorge (the shade above) */
     ledgeKit: 'desert',
+    /* THE GUSTS (claude/redgorge2): told (flags and dust before each), funnelling up the gorge over the chute at the climb's top - they shove you east, over the chute */
+    gusts: [{ x0: 48 * TS, x1: 78 * TS, y0: 160 * TS, y1: 172 * TS, dir: 1, period: 5, on: 1.8, phase: 0, k: 1, told: true, shove: 160 }],
     palette: { set: 'desert', near: 'none', dress: 'desert', noFg: true, noNear: true, haze: 'rgba(200,110,80,0.10)' },
     duskStart: -1, duskLen: 1,
   };

@@ -8,6 +8,8 @@
 // Every static picture is baked ONCE (memo); each frame is a handful of drawImage/fillRect calls. Pure drawing, no state beyond the baked canvases.
 //   drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full)
 import { mulberry } from '../px.js';
+import { drawBackdrops as drawCanyonView } from './redgorge2_art.js';   /* THE CLIMB's height, over the Rapids and the Climb (claude/redgorge2 art pass) */
+import { drawNestBackdrop } from './matriarch_ledge.js';   /* the old dam behind the Matriarch's ledge */
 const TS = 16;
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return [c, g]; };
@@ -75,4 +77,6 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
     /* the gorge's side walls give a dark edge (the near walls shade their own back wall) */
     const eg = g.createLinearGradient(wx0, 0, wx0 + 90, 0); eg.addColorStop(0, 'rgba(8,2,4,0.5)'); eg.addColorStop(1, 'rgba(8,2,4,0)'); g.fillStyle = eg; g.fillRect(x0, y0, Math.min(90, x1 - x0), VH - y0);
     const eg2 = g.createLinearGradient(wx1 - 90, 0, wx1, 0); eg2.addColorStop(0, 'rgba(8,2,4,0)'); eg2.addColorStop(1, 'rgba(8,2,4,0.5)'); g.fillStyle = eg2; g.fillRect(Math.max(x0, wx1 - 90), y0, Math.min(90, x1 - x0), VH - y0); }
+  drawCanyonView(g, cx, cy, VW, VH, time, full);
+  drawNestBackdrop(g, cx, cy, VW, VH, L, time);
 }

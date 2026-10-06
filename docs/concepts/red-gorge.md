@@ -86,3 +86,24 @@ desert-arc concept of 2026-10-01, which wins where the two differ. The greybox i
                   tools/redgorge-pilot.mjs. level-quality gates it.
     PROCESS       concept (this page) -> Opus greybox (claude/redgorge) -> reviewer against THE MAGE'S FOLLY -> fixes -> Sonnet art and
                   music. Nothing ships without Daniel's playtest.
+
+## RED GORGE 2 (claude/redgorge2, the Opus greybox, 2026-10-06) - brief: scratch/brief-raptormatriarch.md
+    THE BOSS      THE RAPTOR MATRIARCH, "OLD PLUME" (src/raptor-matriarch.js pure + src/raptor-matriarch-hands.js) replaces THE GREAT RED CRAB,
+                  who is BENCHED intact (src/gorge-crab.js, his art, his OPEN_RULE row and theme kept; unplaced). Her nest ledge is the old
+                  dam's spillway: banks either end, three NARROW and two BROAD pillars two rows over the channel, a sluice lever on each bank,
+                  two rope bridges. P1 pounce / rake / tail / scree / screech; the flood opening (a burst catches her in the channel, the
+                  nearest pillar, a narrow one throws her). P2 (60%) the walls: wall run, dive at her shadow's mark (stuns her), bridge perch
+                  (strike the post: tangled), feather volley. P3 (25%) the dam cracks: the pillar tops, pounce chains (a narrow landing staggers
+                  her), the debris surge. A beast duelist (B11): always hittable, guards by angle; a told 3 s ward after every opening.
+    THE RAPIDS    a new first section on the river under the canyon wall (start on the east bank): stone to stone, drifting timbers
+                  (movers) over the reaches too wide to jump, faster in the horn's rapids; a fall in hurts and hands you back to the last
+                  rock (L.waterHurts); raptors stoop at your spot and a stoop over the water knocks you in.
+    THE CLIMB     up the canyon wall to the gorge's mouth: ledges under told rockfalls, a wall rope with a rock down it, THE SPILL CHUTE
+                  (the gorge's flood comes down it; its basket rides the flood), told gusts over the chute at the top.
+
+### RED GORGE 2 FIX PASS (claude/redgorge2, 2026-10-06)
+- THE RULE LINE: "AT THE HORN THE FLOOD COMES DOWN THE GORGE AND THE RIVER RUNS WILD. A SHUT GATE HOLDS IT; LET IT GO TO BREAK WHAT BLOCKS YOU."
+  The horn also turns the Rapids' calm to white water and runs the Spill Chute, so the first horn is told on the Rapids' first stone and on the chute's sign.
+- A third checkpoint at the Climb's top (the gorge's mouth, col 46 row 165). The gust ledges have a sign and a glint + nudge; the Matriarch's two levers glint while a sluice is full.
+- The Matriarch: pounce/dive marks 18 px; an out-of-reach rake or sweep closes in once then kicks scree (phase one); the walls' first pass is run + dive only;
+  a volley off the wall ends in a beat; the knight's shield trip and the warden's low poke go UNDER her talons. See work/claude/lane-done/claude-redgorge2.md.

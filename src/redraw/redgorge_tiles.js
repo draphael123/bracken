@@ -5,6 +5,7 @@
 //   gorgeTile(t, x, y, at, T, L) -> the canvas for one cell, or null (the game's own kit draws it)
 // The rules: a wall mass is darker than the floor on it; every ledge top is warm-lit (reflected light off the far wall); the channel is the palest thing on the screen.
 import { canvas, px, rect, mulberry } from '../px.js';
+import { tile as newGroundTile } from './redgorge2_art.js';   /* THE RAPIDS' rock, the nest ledge's pillars and bed (claude/redgorge2 art pass) */
 
 export const DAM_X = 48;
 export const RK = { r0: '#240f0e', r1: '#3c1a16', r2: '#5c2c20', r3: '#76382a', r4: '#92503a', r5: '#ae6646', lip0: '#b8683e', lip1: '#e0905a', lip2: '#f6c488',
@@ -94,6 +95,7 @@ function ropeTile(y, endTop, endBot) {
 
 // ================================ THE HOOK ================================
 export function gorgeTile(t, x, y, at, T, L) {
+  { const ng = newGroundTile(t, x, y, at, T, L); if (ng) return ng; }
   const air = (dx, dy) => at(x + dx, y + dy) === T.AIR;
   if (t === T.NET) return ropeTile(y, at(x, y - 1) !== T.NET && at(x, y - 1) !== T.SOLID, at(x, y + 1) !== T.NET);
   if (t === T.ONEWAY) {
