@@ -353,12 +353,13 @@ Object.assign(DMG, {
   lanceCharge: 18, lanceThrust: 14, lanceVault: 12, lanceSweep: 14, lanceRush: 14, lanceBash: 8, lanceGuard: 16, lanceJav: 9, lanceWhirl: 10,   /* THE QUEEN'S LANCE (storm): 30, 22, 16, 18, 18, 10, 20, 11, 12 (25%: an L11 hero dead in 30-60 s) */
   reeveSweep: 31, reeveLunge: 42, reeveHook: 25, reeveDouse: 25,   /* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14 */
   bellLeap: 18, bellClaw: 22, bellPressure: 20,   /* THE DIVING BELL: 24, 26, 24 */
+  palLeap: 26,   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP: new, his bash's weight */
   krakSlam: 36, krakSweep: 33, krakRoar: 28, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22,   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
   tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
   prince: 2000,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights) */
-  closedhelm: 2000,  /* THE PALADIN (waymeet): 610 (100%: 16-47 s) */
+  closedhelm: 2150,  /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
   lampreeve: 560,    /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75) */
   quarter: 920,     /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
@@ -16178,16 +16179,18 @@ function updateClosedHelm(e, dt) {
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.8; } break;
     case 'stalk': { e.face = Math.sign(d) || e.face; want = ad > 48 ? e.face * (p2 ? 34 : 26) : ad < 28 ? -e.face * 22 : 0;
-      for (const k of ['cutT', 'thrustT', 'bashT', 'judgeT', 'oathT', 'radianceT']) e[k] -= dt;
+      if (e.leapT === undefined) e.leapT = 3; e.farT = ad > PAL_LEAP.far && !P.dead ? (e.farT || 0) + dt : 0;   /* (claude/sweep2 gap-closer) how long you have stood off */
+      for (const k of ['cutT', 'thrustT', 'bashT', 'judgeT', 'oathT', 'radianceT', 'leapT']) e[k] -= dt;
       if (e.modeT <= 0 && !P.dead) {
         /* THE SWORD FIRST (rules E2): the parry is what this fight is about, so the two sword blows are asked for before
            anything else in reach - and the bash and the judgement, which a close player would starve, fire anyway once late */
         if(p2&&e.radianceT<=0){e.radianceT=10;e.marks=[-64,0,64].map(dx=>Math.max(A.x0+24,Math.min(A.x1-24,P.x+dx)));e.mode = 'radianceTell';e.modeT=1.15;number(e.x,e.y-e.h-12,'!!','#ff6b6b');SFX.judgement();}
         else if(p2&&e.oathT<=0&&ad<120&&dyP<48){e.oathT=7;e.mode = 'oathTell';e.modeT=0.95;number(e.x,e.y-e.h-12,'!!','#ff6b6b');SFX.heavy();}
+        else if (e.leapT <= 0 && e.farT >= PAL_LEAP.linger[ph] && dyP < 60) { e.leapT = PAL_LEAP.cd[ph]; e.farT = 0; e.leapX = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x)); e.mode = 'leapTell'; e.modeT = PAL_LEAP.tell[ph]; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HE LEAPS: GET OFF THE RING', '#ff9a8a'); SFX.charge(); SFX.heavy(); }   /* (claude/sweep2 gap-closer) THE LEAP: you stood off, so he comes to you */
         else if (e.cutT <= 0 && ad < 62 && dyP < 40) { e.cutT = p2 ? 1.8 : 2.4; e.mode = 'cutTell'; e.modeT = PAL.cut[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
         else if (e.thrustT <= 0 && ad >= 50 && ad < 112 && dyP < 40) { e.thrustT = p2 ? 2.6 : 3.4; e.mode = 'thrustTell'; e.modeT = PAL.thrust[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
         else if (e.bashT <= 0 && ((ad > 44 && ad < 150) || e.bashT < -4) && dyP < 40) { e.bashT = p2 ? 4.8 : 6.5; e.face = Math.sign(d) || e.face; e.bashX1 = Math.max(A.x0 + 22, Math.min(A.x1 - 22, e.x + e.face * 170)); e.mode = 'bashTell'; e.modeT = PAL.bash[ph]; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
-        else if (e.judgeT <= 0 && (ad > 70 || e.judgeT < -3)) { e.judgeT = ad > 100 ? (p2 ? 4.5 : 6) : (p2 ? 6 : 8.5);   /* (claude/sweep2) kept off at range, the light comes oftener: the pyro stood off and took 24-102 of him */ e.marks = [P.x]; e.mode = 'judgeTell'; e.modeT = PAL.judge[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+        else if (e.judgeT <= 0 && (ad > 70 || e.judgeT < -3)) { e.judgeT = p2 ? 6 : 8.5;   /* (claude/sweep2) the stopgap (every 6 / 4.5 s at range) is gone: THE LEAP is his answer to range now */ e.marks = [P.x]; e.mode = 'judgeTell'; e.modeT = PAL.judge[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
       break; }
     case 'oathTell': want=0;
       if(e.modeT<=0){e.mode = 'oathRecover';e.modeT=1.6;e.open=1.6;ringAt(e.x,floor-3,82,'#ff6b6b',0.45);SFX.heavy();shakeCam(5);
@@ -16236,17 +16239,40 @@ function updateClosedHelm(e, dt) {
             if (res === 'blocked') { P.st = Math.max(0, P.st - 23); P.stDelay = ST.delay; number(P.x, P.y - 30, 'THE LIGHT IS HEAVY', '#fff3b0'); } } } }
       if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; }
       break;
+    /* (claude/sweep2 gap-closer) THE LEAP: the ring follows you, then stops; up he goes, and down on it */
+    case 'leapTell': want = 0; e.face = Math.sign((e.leapX ?? P.x) - e.x) || e.face;
+      if (e.modeT > PAL_LEAP.fix) e.leapX = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x));
+      if (Math.random() < dt * 18) dust(e.x - e.face * 10, floor, 2);
+      if (e.modeT <= 0) { const air = PAL_LEAP.air; e.mode = 'leap'; e.modeT = air; e.leapHit = false; e.vx = (e.leapX - e.x) / air; e.vy = -500 * air; e.palGround = false; e.face = Math.sign(e.vx) || e.face;
+        SFX.throwWhoosh(); SFX.shoulder(); streaks(e.x, e.y - 20, 6, ['#fff6c8', '#ffd36b'], 140); }
+      break;
+    case 'leap': { want = e.vx;
+      if (e.modeT < PAL_LEAP.air - 0.12 && (e.palGround || e.modeT <= -0.3)) { e.vx = 0; shakeCam(7); zoomKick(1.06, 0.2); SFX.heavy(); SFX.thud(); dust(e.x, floor, 12); ringAt(e.x, floor - 2, PAL_LEAP.r, '#ff6b6b', 0.4);
+        const hp0 = P.hp; let res = false;
+        if (!P.dead && Math.abs(P.x - e.x) < PAL_LEAP.r + 4 && P.y > floor - 26) res = damagePlayer(e.x, DMG.palLeap, { unblockable: true, up: true });
+        if (res === 'hit' || P.hp < hp0) { e.mode = 'leapLand'; e.leapOpened = false; e.modeT = PAL_LEAP.hitRec; P.vx = (Math.sign(P.x - e.x) || e.face) * 240; P.vy = -200; P.ground = false; number(P.x, P.y - 30, 'SMITTEN', '#ff6b6b'); }
+        else { e.mode = 'leapLand'; e.leapOpened = true; e.modeT = PAL_LEAP.rec; e.open = PAL_LEAP.rec; e.opens = (e.opens || 0) + 1; number(e.x, e.y - e.h - 22, 'HE OVERREACHED: STRIKE', '#8fd160'); SFX.clank(); hitstop(0.06); ringAt(e.x, e.y - 30, 36, '#8fd160', 0.4); } }
+      break; }
+    case 'leapLand': want = 0; if (e.modeT <= 0) { if (e.leapOpened) { e.mode = 'reward'; e.modeT = 0.6; SFX.aegis(); ringAt(e.x, e.y - 30, 34, '#fff3b0', 0.5); } else { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } } break;   /* down on the blade: the ward rises after it, as after a break (B3) */
     /* BROKEN: the ward is down, the green ring says so, and then it comes back up */
     case 'broken': want = 0; if (e.modeT <= 0) { e.mode = 'reward'; e.modeT = 0.6; SFX.aegis(); number(e.x, e.y - e.h - 22, 'THE WARD RISES', '#fff3b0'); ringAt(e.x, e.y - 30, 34, '#fff3b0', 0.5); } break;
     case 'reward': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
     default: e.mode = 'stalk'; e.modeT = 0.5;
   }
-  if (e.mode !== 'bash') e.vx += (want - e.vx) * Math.min(1, dt * 5);
+  if (e.mode !== 'bash' && e.mode !== 'leap') e.vx += (want - e.vx) * Math.min(1, dt * 5);
   /* HE STANDS ON THE FLOOR: the body is moved against the tiles, and only the arena's walls are clamped */
-  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; if (r.hitX && e.mode === 'bash') e.modeT = 0;
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; if (r.hitX && e.mode === 'bash') e.modeT = 0; e.palGround = !!r.ground;   /* (claude/sweep2 gap-closer) the leap lands on this */
   e.x = Math.max(A.x0 + 22, Math.min(A.x1 - 22, e.x));
   { const ph2 = Math.floor(e.anim * 2.4); if (Math.abs(e.vx) > 10 && ph2 !== e.stepPh) { SFX.thump(); shakeCam(1); } e.stepPh = ph2; }
 }
+/* (claude/sweep2 gap-closer, Daniel 10-06: "range is no longer a free win") THE LEAP, from the paladin hero's own kit (his HAMMER LEAP:
+   up, and down blade-first where you stand). Stand off out of his sword's reach (past `far` px, for `linger` s) and he does not walk
+   the yard to you any more: the sword goes up behind him, he says HE LEAPS, the !! goes up, and a RED RING on the floor follows you
+   for the tell - then it stops (`fix` s before he goes) and he comes down on it, his whole weight, unblockable. Answer: be off the ring
+   when he lands (step or roll; a hop over the shock clears it too). B2, HIS OPENING WHEN HE WHIFFS IT: land on nobody and the blade
+   is in the ground, the ward down for `rec` s right beside you (the green ring, HE OVERREACHED). Land on you and he is up again in
+   `hitRec` s, the ward still up. One windup at a time, like all of his: it is chosen only from his stalk. [phase one, phase two] */
+const PAL_LEAP = { far: 110, linger: [0.8, 0.6], cd: [6, 4.5], tell: [1.0, 0.85], fix: 0.3, air: 0.6, r: 30, rec: 1.5, hitRec: 0.7 };
 /* HIS MARKS, drawn where they will land: the ward round him, the red line of the bash, the gold of judgement on the floor,
    and the green ring while the ward is down. Two states for the ward and never both. */
 function drawPaladinMarks(e, cx, cy) {
@@ -16263,6 +16289,9 @@ function drawPaladinMarks(e, cx, cy) {
   if ((e.mode === 'bashTell' || e.mode === 'bash') && e.bashX1 !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.setLineDash([5, 4]);
     g.beginPath(); g.moveTo(ex, fy - 2); g.lineTo(Math.round(e.bashX1 - cx), fy - 2); g.stroke(); g.setLineDash([]);
     const tx = Math.round(e.bashX1 - cx), f = e.face; g.fillStyle = '#ff6b6b'; g.beginPath(); g.moveTo(tx + f * 5, fy - 2); g.lineTo(tx - f * 2, fy - 7); g.lineTo(tx - f * 2, fy + 3); g.fill(); g.globalAlpha = 1; }
+  if ((e.mode === 'leapTell' || e.mode === 'leap') && e.leapX !== undefined) { const lx = Math.round(e.leapX - cx), fixed = e.mode === 'leap' || e.modeT <= PAL_LEAP.fix, k = 0.5 + 0.5 * Math.sin(time * (fixed ? 24 : 12));   /* (claude/sweep2 gap-closer) THE LEAP'S RING: red, dashed while it follows you, solid once it stops */
+    g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; if (!fixed) g.setLineDash([4, 3]); g.beginPath(); g.ellipse(lx, fy - 1, PAL_LEAP.r, 6, 0, 0, 7); g.stroke(); g.setLineDash([]);
+    if (fixed) { g.globalAlpha = 0.18 + 0.12 * k; g.fillStyle = '#ff6b6b'; g.beginPath(); g.ellipse(lx, fy - 1, PAL_LEAP.r, 6, 0, 0, 7); g.fill(); } g.globalAlpha = 1; }
   if(e.mode==='oathTell'){g.globalAlpha=0.5+0.25*Math.sin(time*20);g.strokeStyle='#ff6b6b';g.lineWidth=2;g.beginPath();g.ellipse(ex,fy-2,82,8,0,0,7);g.stroke();g.globalAlpha=1;}
   if(e.mode==='radianceTell')for(const x of e.marks||[]){const sx=Math.round(x-cx);g.fillStyle='#ff6b6b';g.globalAlpha=0.15;g.fillRect(sx-18,fy-110,36,110);g.globalAlpha=0.85;g.fillRect(sx-18,fy-2,36,2);g.globalAlpha=1;}
   if ((e.mode === 'judgeTell' || e.mode === 'judge') && e.marks) for (const m of e.marks) { const mx = Math.round(m - cx);
@@ -27058,7 +27087,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'runner') frame = e.mode === 'shout' ? 2 : (e.mode === 'stabTell' || e.mode === 'stab') ? 3 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 9) % 2) : 0;
     else if (e.t === 'crossbow') frame = e.mode === 'span' ? 0 : e.mode === 'loose' ? 2 : 1;
     else if (e.t === 'drunk') frame = e.mode === 'lobTell' ? 4 : e.mode === 'lob' ? 5 : e.mode === 'bottleTell' ? 6 : e.mode === 'down' ? 7 : e.mode === 'getup' ? 8 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 4) % 2 : Math.floor(e.anim * 1.6) % 2;   /* he sways where he stands, and the tell is on screen for all of it */
-    else if (e.t === 'closedhelm') frame = e.open > 0 ? 11 : ({ oathTell: 3, radianceTell: 9, oathRecover: 11, cutTell: 3, cut: 4, thrustTell: 5, thrust: 6, bashTell: 7, bash: 8, judgeTell: 9, judge: 10, reward: 9 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 3) % 2 : 0);
+    else if (e.t === 'closedhelm') frame = e.open > 0 ? 11 : ({ oathTell: 3, radianceTell: 9, oathRecover: 11, cutTell: 3, cut: 4, thrustTell: 5, thrust: 6, bashTell: 7, bash: 8, judgeTell: 9, judge: 10, reward: 9, leapTell: 3, leap: 6, leapLand: 10 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 3) % 2 : 0);
     else if (e.t === 'bellcrab' && e.phase === 3) frame = bellOutFrame(e);
     else if (e.t === 'bellcrab') frame=({clawTell:2,claw:3,ballastTell:4,slam:5,pressureTell:6,pressure:7,scuttleTell:8,scuttle:9,vent:10,broodTell:10})[e.mode]??(Math.abs(e.vx)>2?1:0);
     else if (['lanternshade','bonecorsair','tidemarauder'].includes(e.t)) frame=e.mode==='rest'?4:e.mode?.endsWith('Tell')?(/cleave|rake/.test(e.mode)?3:2):Math.abs(e.vx)>2?1:0;

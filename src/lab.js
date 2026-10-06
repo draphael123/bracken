@@ -1432,6 +1432,13 @@ async function runbossLab(BK, opts) {
         if (Math.abs(boss.x - gBell.x) < 30 && !(gBell.cool > 0) && P.ground && Math.abs(P.x - goal) < 10 && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 22; goal = null; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; goal = null; }
         if (!P.ground && P.y - gBell.y < 20 && P.y - gBell.y > -20 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; BK.press('atk'); swings++; } }
+      /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP (v2 only; the legacy hands are as they were). The red ring follows you for the tell, so a
+         person waits it out where they are; once it stops (and he is in the air) they leave it - away from him unless a wall is there - and
+         roll the last of it if they are still on it as he comes down. Off the ring he lands open beside you, and the open hands take that. */
+      else if (LABP.v2 && boss.t === 'closedhelm' && (boss.mode === 'leapTell' || boss.mode === 'leap') && boss.leapX !== undefined) { const lx = boss.leapX;
+        const fixed = boss.mode === 'leap' || boss.modeT < 0.3; P.face = Math.sign(d) || P.face;
+        if (fixed && Math.abs(P.x - lx) < 30 + 26) { let side = Math.sign(P.x - lx) || Math.sign(P.x - boss.x) || 1; if (lx + side * 62 < A.x0 + 20 || lx + side * 62 > A.x1 - 20) side = -side;
+          goal = lx + side * 62; if (boss.mode === 'leap' && boss.modeT < 0.3 && P.ground && f % 3 === 0) { k[side > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } } }
       else if (boss.t === 'closedhelm' && boss.mode && (/Tell$/.test(boss.mode) || boss.mode === 'bash')) { const m = boss.mode, t = boss.modeT; P.face = Math.sign(d) || P.face;
         if (m === 'bash') { if (ad < 60 && (boss.x - P.x) * boss.vx < 0 && f % 4 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
         else if (m === 'bashTell') { if (ad > 150) goal = null; }

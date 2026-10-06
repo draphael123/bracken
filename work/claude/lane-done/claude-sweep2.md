@@ -89,3 +89,44 @@ Two tests pushed back, and both were kept as written:
 5. **Hero spread.** Several rows are 4/4 for one hero and 0-1/4 for another: harbor and waymeet for the warden, causeway for the pyro.
    Rec: a hero-balance pass rather than per-boss health. Built: tuned to the band with no hero at 0 where I could; waymeet's warden is
    3/6 at the shipped health.
+
+# Addendum: THE WAYMEET PALADIN'S GAP-CLOSER (the Paladin gap-closer lane, 2026-10-06; Daniel approved Q2's rec)
+Port 8679, jobs 2. Rates from `PORT=8679 node tools/boss-rates.mjs waymeet --ways=practiced --seeds=N --jobs=2` (profile human, campaign L22).
+
+## The move: THE LEAP (B5: from the paladin hero's own kit, his HAMMER LEAP)
+- **When:** he is stalking and you have stood past his sword's reach (more than 110 px) for 0.8 s (0.6 s in phase two). Cooldown 6 s / 4.5 s.
+  He picks it only from his stalk, so it is one windup at a time like his other moves. In his reach he never leaps; the test checks this.
+- **Told:** sound (charge + heavy, then a whoosh as he goes), word (HE LEAPS: GET OFF THE RING, a hint-box line, with the red !!), colour (a RED RING on the floor under you).
+  The ring is dashed while it follows you. It turns solid and stops 0.3 s before he jumps. He is in the air for 0.6 s and lands blade-first
+  on the ring. The landing is unblockable (26).
+- **Answer:** be off the ring when he lands: step or roll (marks.js ANSWER `dodge`, HEIGHT `low`; MARK `!!` is written by tells.mjs).
+- **B2, his punishable recovery:** if he lands on nobody, the blade is in the ground. The ward is down for 1.5 s right beside you, shown by the
+  green ring and HE OVERREACHED: STRIKE (both words are hint-box teaching lines in src/hint-lines.js). Then the ward rises, as after a break (B3). If he lands on you, he is up again in 0.7 s with the ward still up.
+- **The stopgap is gone:** judgement no longer comes oftener at range (it was every 6 / 4.5 s at range; it is back to 8.5 / 6). The leap is his answer to range now.
+- Numbers: `PAL_LEAP` (next to drawPaladinMarks) and `palLeap` in the sweep2 DMG block. tools/paladin-enrage.mjs has new assertions for the leap:
+  it waits for you to linger, it is told, the ring follows and then stops, a whiff opens him and the ward rises after, a landing on you is unblockable, and he never leaps in reach.
+- **Bot (v2 only; the legacy hands are byte-identical):** it waits out the following ring. Once the ring stops, it leaves it, away from him unless
+  a wall is there. It rolls the last of it if it is still on the ring as he comes down. A whiffed landing is then just an open boss for the open hands.
+
+## What the measure says (the finding)
+- **The human-profile bot never stands out of his reach.** Its stand point for him is 42 px, inside the 66 px cut, so the leap fired 0 times in
+  the standard measure. **The pyro's 100% is not range.** Her roll through his cut and thrust breaks the ward nearly every time: she took 0-102
+  damage in 34-90 s fights.
+- **A pyro that does stand off** (a probe that was not committed: her stand point moved to 150 px, 6 seeds) went **0/6 without the leap.** She could not
+  open him: 2 timeouts and 4 deaths to the bash, with 0-4 openings in a fight. **With the leap she went 4/6.** That was 127-230 s fights, 89-213 damage taken
+  and 12-18 openings, most of them his whiffed leaps. So standing off is no longer a stall and no longer free. It is a real plan with a real cost.
+- **Health:** 2000 gave 4/6 3/6 6/6 = 72%. 2300 gave 3/6 0/6 6/6 = 50%, with the warden at 0. **2150 shipped: 6/12 2/12 12/12 = 56% (n=36), in band, no hero at 0.**
+  The warden is thin (2/12) and the pyro is 12/12.
+- Mash: waymeet re-stamped via tools/mash-bot.mjs --write, the level first and then the boss: the boss is 0/6 and the mini is 0/6.
+
+## QUESTIONS FOR DANIEL (gap-closer lane)
+6. **The pyro is 12/12 on the Paladin by rolling through his sword, not by range.** Rec: put the roll on the beat the way the guard is (palOpened:
+   a roll opens him only if it starts in the last PAL_BEAT of the swing, as a raised guard must). Then raise his health and let the warden back up.
+   That changes a hero's answer and the "roll opens him" rule, so it is your call. Not built.
+7. **The leap's whiff opening (1.5 s) makes standing off a viable plan.** A standing-off pyro went 0/6 before and 4/6 now. Rec: keep it. It is told,
+   it costs her hits, and B2 wants his whiff punished. Built.
+
+## Checks (gap-closer lane; green)
+tells (the MARK table re-written by tells.mjs --write: closedhelm|leapTell !!), answer-tags, boss-read, boss-greed, boss-openings, boss-fight-end,
+hint-shown, weak-bosses, textfit, paladin-enrage (with the new leap assertions), waymeet-cleanup; mash-bot --assert waymeet (boss 0/6, mini 0/6).
+tells still lists the Scalder's two unmarked windups (pourTell, ladleTell). That is not from this lane: it was there before the change and it is not a failure.
