@@ -14,3 +14,6 @@ node_modules
 # textfit, lookpass and popclutter used to default into one person's home directory; they now default into
 # the repo (audits/readability/), which is right - but their pictures and json must not be committed.
 audits/*/
+
+# THE PLAYTEST RECORDER's files (src/playrec.js): a player's own fight logs, read by tools/bot-calibrate.mjs, never committed
+playtest-logs/

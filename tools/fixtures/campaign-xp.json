@@ -1,0 +1,233 @@
+{
+ "note": "tools/boss-level.mjs --write-xp: a straight run per level (0.8 of its foes, its mini and boss, the clear share), from BK.xpSim",
+ "rows": {
+  "wood": {
+   "run": 785,
+   "foeXp": 454,
+   "bossXp": 150,
+   "clear": 272
+  },
+  "marsh": {
+   "run": 722,
+   "foeXp": 392,
+   "bossXp": 173,
+   "clear": 235
+  },
+  "stockade": {
+   "run": 752,
+   "foeXp": 398,
+   "bossXp": 195,
+   "clear": 239
+  },
+  "spore": {
+   "run": 1105,
+   "foeXp": 634,
+   "bossXp": 218,
+   "clear": 380
+  },
+  "kings": {
+   "run": 1199,
+   "foeXp": 616,
+   "bossXp": 336,
+   "clear": 370
+  },
+  "underleaf": {
+   "run": 1036,
+   "foeXp": 558,
+   "bossXp": 255,
+   "clear": 335
+  },
+  "scree": {
+   "run": 1288,
+   "foeXp": 732,
+   "bossXp": 263,
+   "clear": 439
+  },
+  "hanging": {
+   "run": 1038,
+   "foeXp": 456,
+   "bossXp": 399,
+   "clear": 274
+  },
+  "spire": {
+   "run": 1428,
+   "foeXp": 720,
+   "bossXp": 420,
+   "clear": 432
+  },
+  "moor": {
+   "run": 1054,
+   "foeXp": 528,
+   "bossXp": 315,
+   "clear": 317
+  },
+  "storm": {
+   "run": 1615,
+   "foeXp": 918,
+   "bossXp": 330,
+   "clear": 551
+  },
+  "crown": {
+   "run": 2390,
+   "foeXp": 1362,
+   "bossXp": 483,
+   "clear": 817
+  },
+  "undercrown": {
+   "run": 1192,
+   "foeXp": 584,
+   "bossXp": 375,
+   "clear": 350
+  },
+  "longwater": {
+   "run": 1371,
+   "foeXp": 716,
+   "bossXp": 368,
+   "clear": 430
+  },
+  "reef": {
+   "run": 1090,
+   "foeXp": 500,
+   "bossXp": 390,
+   "clear": 300
+  },
+  "flotilla": {
+   "run": 1108,
+   "foeXp": 496,
+   "bossXp": 413,
+   "clear": 298
+  },
+  "hurricane": {
+   "run": 1902,
+   "foeXp": 1048,
+   "bossXp": 435,
+   "clear": 629
+  },
+  "lamplit": {
+   "run": 1845,
+   "foeXp": 860,
+   "bossXp": 641,
+   "clear": 516
+  },
+  "deep": {
+   "run": 2076,
+   "foeXp": 1140,
+   "bossXp": 480,
+   "clear": 684
+  },
+  "keep": {
+   "run": 1869,
+   "foeXp": 986,
+   "bossXp": 488,
+   "clear": 592
+  },
+  "causeway": {
+   "run": 1692,
+   "foeXp": 860,
+   "bossXp": 488,
+   "clear": 516
+  },
+  "harbor": {
+   "run": 2177,
+   "foeXp": 1060,
+   "bossXp": 693,
+   "clear": 636
+  },
+  "waymeet": {
+   "run": 2200,
+   "foeXp": 1136,
+   "bossXp": 609,
+   "clear": 682
+  },
+  "fields": {
+   "run": 1645,
+   "foeXp": 710,
+   "bossXp": 651,
+   "clear": 426
+  },
+  "burial": {
+   "run": 1652,
+   "foeXp": 692,
+   "bossXp": 683,
+   "clear": 415
+  },
+  "mage": {
+   "run": 1737,
+   "foeXp": 738,
+   "bossXp": 704,
+   "clear": 443
+  },
+  "fallingtower": {
+   "run": 1777,
+   "foeXp": 766,
+   "bossXp": 704,
+   "clear": 460
+  },
+  "burning": {
+   "run": 963,
+   "foeXp": 540,
+   "bossXp": 207,
+   "clear": 324
+  },
+  "witchlight": {
+   "run": 1743,
+   "foeXp": 750,
+   "bossXp": 693,
+   "clear": 450
+  },
+  "oreroad": {
+   "run": 1454,
+   "foeXp": 808,
+   "bossXp": 323,
+   "clear": 485
+  },
+  "unburied": {
+   "run": 1466,
+   "foeXp": 582,
+   "bossXp": 651,
+   "clear": 349
+  },
+  "caravan": {
+   "run": 1213,
+   "foeXp": 502,
+   "bossXp": 510,
+   "clear": 301
+  },
+  "fair": {
+   "run": 2015,
+   "foeXp": 1096,
+   "bossXp": 480,
+   "clear": 658
+  },
+  "theatre": {
+   "run": 1441,
+   "foeXp": 708,
+   "bossXp": 450,
+   "clear": 425
+  },
+  "canal": {
+   "run": 1217,
+   "foeXp": 548,
+   "bossXp": 450,
+   "clear": 329
+  },
+  "welltown": {
+   "run": 1610,
+   "foeXp": 632,
+   "bossXp": 725,
+   "clear": 379
+  },
+  "redgorge": {
+   "run": 1155,
+   "foeXp": 450,
+   "bossXp": 525,
+   "clear": 270
+  },
+  "underwell": {
+   "run": 1162,
+   "foeXp": 458,
+   "bossXp": 521,
+   "clear": 275
+  }
+ }
+}
