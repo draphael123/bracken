@@ -1181,12 +1181,12 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const QH=BK.cisternQueenHands(),S=QH&&QH.show();
         if(f===0||!P.labCqMem)P.labCqMem={};
-        const pl=S?queenPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCqMem}):{gx:null,face:P.face};
+        const pl=S?queenPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:LABP.v2&&h==='warden',t:f/60,rng:Math.random,mem:P.labCqMem,eyes:!!LABP.v2,greed:LABP.v2&&BK.greed?BK.greed.count(boss):0}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.down)k.down=true;if(pl.up)k.up=true;
-        if(pl.block)k.block=true;
+        if(pl.block)k.block=h==='warden'&&LABP.v2?f%2===0:true;   /* (claude/sweep3, v2: the warden's deflect is a tap) */
         if(!pl.block&&!(pl.down&&P.ground&&!pl.jump)&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}

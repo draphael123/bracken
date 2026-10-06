@@ -42,7 +42,7 @@ import { brOpen, bkOpen } from './unburied-foes.js';
 import { wardenOpen as graveOpen } from './grave-warden.js';
 
 export const GREED = {
-  chipBy: { queen: 1, pyromancer: 0.25, herald: 0.2 },   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
+  chipBy: { queen: 1, pyromancer: 0.25, herald: 0.2, cisternqueen: 0.5 },   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
                            // drones are up) and is not chipped: at a twentieth - and at a quarter, and at a half - the human-speed bot lost her 2-3 of 3 (it won
                            // 2 of 3 before; the mash bot never beat her). Her greed reprisal stands. THE PYROMANCER takes a quarter: blows are what open him
                            // (each heats him), and at a twentieth the bot won 1 of 3 (3 of 3 before), at a quarter 2 of 3. THE TIDE HERALD takes a fifth (he took

@@ -103,19 +103,24 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     /* HER VENOM wears off, a stack at a time; while it is in you, stamina comes back slower */
     for (const pp of ctx.players) { const v = pp.cqVenom || []; for (let i = 0; i < v.length; i++) v[i] -= dt; pp.cqVenom = v.filter(t => t > 0); pp.venomSlow = Math.max(0.1, 1 - CQ.venom.slow * pp.cqVenom.length); }
     /* THE FIRST TIME: what her claws do, and where the water is */
-    if (!S.told.guard && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.guard = 1; ctx.number(e.x, e.y - 90, 'HER SHELL TURNS BLADES: HIT HER STINGER, OR FLOOD HER', '#ffd36b'); }
+    if (!S.told.guard && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.guard = 1; ctx.number(e.x, e.y - 90, 'CLAWS TURN BLADES: GO ROUND, OR FLOOD HER', '#ffd36b'); }
   };
   /* ---------- A BLOW ON HER (claude/welltown5): in an opening x openMul; outside one HER SHELL turns it (0, front or back) - unless it lands on her STUCK
      STINGER (x stingMul, one sting's worth at most stingCap); and in phase two, while she BURNS, her hot shell turns even that ---------- */
   H.take = (e, dmg) => { if (!S) return dmg; const P = ctx.hero();
     if (CQG.shelled(e)) { const st = CQG.stingerOut(S), hb = ctx.attackBox();
       if (S.ward > 0) { e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; return 0; }   /* (claude/underwell) HER WARD after an opening: nothing lands, the stinger neither */
-      if (S.burn || S.flare > 0) { e.chipHit = ctx.time(); S.n.burnTurned++; e.guardFx = 0.2; ctx.burst(P.x + (P.face || 1) * 12, P.y - 14, 5, ['#ff9a3c', '#ffd36b'], 50, 0.4);
-        if (!S.told.hot) { S.told.hot = 1; ctx.number(e.x, Math.min(e.y, S.G.floor) - 96, 'HER SHELL BURNS: PUT HER OUT WITH WATER', '#ff9a5c'); } return 0; }
+      /* (claude/sweep3, Daniel 10-06 after playing her: SHE IS NEVER FULLY INVULNERABLE - hard to hit, never a wall (B11/B13). Her raised claws turn a blow from
+         the FRONT while she stands on the floor (GO ROUND, src/boss-read.js GUARD 'front'); her back and flanks, or her up on a wall or in the shaft, take a
+         blow at half (the angle blow, or GREED.chipBy.cisternqueen); burning, her hot shell takes half of that. Her water openings pay CQ.openMul) */
+      const claws = S.pose === 'floor' && !(e.gone) && CQG.frontal(e, P.x);
+      if (S.burn || S.flare > 0) { S.n.burnTurned++; e.guardFx = 0.2; ctx.burst(P.x + (P.face || 1) * 12, P.y - 14, 5, ['#ff9a3c', '#ffd36b'], 50, 0.4);
+        if (!S.told.hot) { S.told.hot = 1; ctx.number(e.x, Math.min(e.y, S.G.floor) - 96, 'HER SHELL BURNS: PUT HER OUT WITH WATER', '#ff9a5c'); } if (claws) { e.chipHit = ctx.time(); return 0; } return Math.round(dmg * CQ.hotMul); }
       if (st && hb && ctx.overlap(hb, CQG.stingBox(st))) { const cap = e.maxHp * CQ.stingCap, d = Math.min(dmg * CQ.stingMul, Math.max(0, cap - (S.stingTaken || 0))); S.stingTaken = (S.stingTaken || 0) + d; S.n.stingHits++;
         ctx.sparks(st.x, st.y - 4, P.face || 1, 6); ctx.burst(st.x, st.y - 4, 6, ['#ffb84a', '#fff2c0'], 60, 0.4);
         if (S.stingTaken >= cap - 0.01 && st.t > 0.2) { st.t = 0.2; ctx.number(st.x, S.G.floor - 40, 'SHE TUGS IT FREE', '#9aa39a'); } return d; }
-      e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; if (!S.told.claws) { S.told.claws = 1; ctx.number(e.x, e.y - 80, 'THE SHELL TURNS IT: STRIKE HER STINGER', '#9aa39a'); } return 0; }
+      if (!claws) { S.n.shellHits = (S.n.shellHits || 0) + 1; return dmg; }   /* her back, her flank, her on a wall: the shell gives (main.js lands it at half) */
+      e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; if (!S.told.claws) { S.told.claws = 1; ctx.number(e.x, e.y - 80, 'HER CLAWS TURN IT: GO ROUND HER, OR STRIKE HER STINGER', '#9aa39a'); } return 0; }
     if (CQG.qOpen(e)) { const cap = e.maxHp * CQ.openCap, d = Math.min(dmg * CQ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
       if (S.openTaken >= cap - 0.01 && e.open > 0.4) { e.open = 0.4; ctx.number(e.x, e.y - 70, 'SHE RIGHTS HERSELF', '#9aa39a'); S.n.capped = (S.n.capped || 0) + 1; } return d; }
     return dmg; };
@@ -144,6 +149,10 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
      shadow, the bands lit), what flies, the venom puddles, the claw, her opening's clock */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'cisternqueen') return;
     CQA.drawOver(g, e, S, cx, cy, time, CQ);
+    /* B10 (claude/sweep3, Daniel 10-06: make her water openings plain): OPEN is a gold ring round her and a clock that empties over her */
+    if (CQG.qOpen(e)) { const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy), p = 0.5 + 0.5 * Math.sin(time * 10), k = Math.max(0, Math.min(1, e.open / CQ.openT));
+      g.strokeStyle = 'rgba(255,211,107,' + (0.6 + 0.35 * p) + ')'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 20, CQ.w / 2 + 8, 28, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 60, 40, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 20, y - 60, R(40 * k), 3); }
     /* (claude/welltown5) HER STUCK STINGER GLINTS: a pulsing ring and a white star where it lies, and its clock */
     const st = CQG.stingerOut(S); if (st) { const x = R(st.x - cx), y = R(st.y - cy), p = 0.5 + 0.5 * Math.sin(time * 14), hot = S.burn || S.flare > 0;
       g.strokeStyle = hot ? 'rgba(255,154,60,' + (0.5 + 0.4 * p) + ')' : 'rgba(255,255,255,' + (0.55 + 0.45 * p) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - 2, 10 + p * 4, 0, Math.PI * 2); g.stroke();
