@@ -20,13 +20,13 @@ import { BOSS_ROWS } from './boss-rows.mjs';
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
 const rows = args.includes('--all') ? BOSS_ROWS : args.filter(a => !a.startsWith('-')).flatMap(a => a.split(','));
 const heroes = opt('heroes', 'knight,warden,pyro').split(','), secs = +opt('secs', 120), prof = opt('profile', STANDARD), OUT = opt('out', '');
-const WATCH = `(()=>{const W={f:0,openF:0,wins:[],cur:null,meet:0,hurt:0,turned:0,said:0,words:{},dmgOpen:0,dmgShut:0,blinks:0,blinkOpen:0,tells:0,unmarked:0,shutF:0,lastOpenEnd:-999,x:null,hp:null,set:null,wasW:false,pend:[]};
+const WATCH = `(()=>{const W={f:0,openF:0,wins:[],cur:null,meet:0,hurt:0,turned:0,said:0,words:{},dmgOpen:0,dmgShut:0,blinks:0,blinkOpen:0,tells:0,unmarked:0,shutF:0,lastOpenEnd:-999,x:null,hp:null,set:null,wasW:false,pend:[],recent:[]};
  window.__W=W;return (BK,b,h)=>{const P=BK.P;W.f++;const sp=(BK.SET.speed||1)/60,open=!!BK.bossOpen(b),hp=b.hp,d=W.hp===null?0:Math.max(0,W.hp-hp);W.hp=hp;
   if(open){W.openF++;if(!W.cur){W.cur={at:W.f,dmg:0,words:[]};W.wins.push(W.cur);}W.cur.dmg+=d;W.dmgOpen+=d;}else{if(W.cur){W.cur.len=(W.f-W.cur.at)*sp;W.lastOpenEnd=W.f;W.cur=null;}W.dmgShut+=d;}
-  const nums=(BK.nums?BK.nums():[]).filter(n=>typeof n.txt==='string'&&n.life>0&&!n.__seen&&Math.abs(n.x-b.x)<90);for(const n of nums){n.__seen=1;if(W.cur&&W.f-W.cur.at<30)W.cur.words.push(n.txt);for(const q of W.pend)if(!q.said){q.said=n.txt;}}
-  W.pend=W.pend.filter(q=>{if(W.f-q.f>6){if(q.said){W.said++;W.words[q.said]=(W.words[q.said]||0)+1;}return false;}return true;});
+  const nums=(BK.textLab&&BK.textLab.nums?BK.textLab.nums():[]).filter(n=>typeof n.txt==='string'&&n.life>0&&!n.__seen&&Math.abs(n.x-b.x)<90);for(const n of nums){n.__seen=1;if(W.cur&&W.f-W.cur.at<30)W.cur.words.push(n.txt);W.recent.push([W.f,n.txt]);}W.recent=W.recent.filter(q=>W.f-q[0]<12);
+  W.pend=W.pend.filter(q=>{if(W.f-q.f>9){if(q.said){W.said++;W.words[q.said]=(W.words[q.said]||0)+1;}return false;}return true;});
   const hs=P.hitSet,sw=P.atk>=0||!!P.plunge;if(sw&&!W.sw)W.met=false;W.sw=sw;if(hs&&hs.has(b)&&!W.met){W.met=true;W.meet++;W.meetF=W.f;W.meetHp=hp+d;}   /* (P.hitSet is one Set, cleared at each swing: a swing is new when P.atk goes from -1 to 0+) */
-  if(W.meetF&&W.f-W.meetF===3){if(b.hp<W.meetHp)W.hurt++;else{W.turned++;W.pend.push({f:W.f,said:null});}W.meetF=0;}
+  if(W.meetF&&W.f-W.meetF===3){if(b.hp<W.meetHp)W.hurt++;else{W.turned++;W.pend.push({f:W.meetF,said:null});}W.meetF=0;}for(const q of W.pend)if(!q.said){const w=W.recent.find(r=>r[0]>=q.f-1&&r[0]<=q.f+8);if(w)q.said=w[1];}
   if(!open&&!(d>0))W.shutF++;
   if(W.x!==null&&Math.abs(b.x-W.x)>40&&b.alive){W.blinks++;if(open||W.f-W.lastOpenEnd<60/((BK.SET.speed||1)))W.blinkOpen++;}W.x=b.x;
   const wu=!!(BK.windingUp&&BK.windingUp(b));if(wu&&!W.wasW){W.tells++;try{if(!BK.markShown(b))W.unmarked++;}catch{}}W.wasW=wu;};})()`;
