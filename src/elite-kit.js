@@ -72,7 +72,7 @@ export const AFFIX_AT = {
   'hurricane|boarder': 'SUMMONER', 'hurricane|cutlass': 'SWIFT', 'hurricane|cutlass#amb': 'WARDING',
   'lamplit|watch': 'WARDING', 'lamplit|watch#amb': 'SHIELDED',
   'deep|watch': 'UNSTOPPABLE',
-  'keep|drownedcaptain': 'UNSTOPPABLE', 'keep|tideguard': 'SHIELDED',
+  'keep|drownedcaptain': 'SHIELDED', 'keep|tideguard': 'SHIELDED',
   'causeway|tideguard': 'SUMMONER', 'causeway|tideguard#amb': 'UNSTOPPABLE',
   'waymeet|hedgeknight': 'SHIELDED', 'waymeet|heavy': 'WARDING', 'waymeet|hedgeknight#amb': 'UNSTOPPABLE',
   'fields|scarecrow': 'SUMMONER', 'fields|scarecrow#amb': 'THORNED',
@@ -88,7 +88,7 @@ export const AFFIX_AT = {
   'welltown|scorpion': 'VENOMOUS', 'redgorge|scorpion': 'BURNING', 'underwell|scorpion': 'UNSTOPPABLE',
 };
 export const K = {
-  mashWindow: 2.0, guardCd: 1.6,                                              // THE GUARD (by angle) and its answer to a mash
+  mashWindow: 2.0, guardCd: 1.6, turnT: 0.35,                                              // THE GUARD (by angle) and its answer to a mash
   openT: 3.0, ripMul: 1.35,                                                   // THE OPENING (broken x1.5 in main.js, the riposte on top)
   rouseAt: 0.5, rouseEvery: 0.7, sayT: 1.4,                                   // THE ESCALATION
   swiftTell: 0.85, swiftRoused: 0.72, tellFloor: 0.35, swiftSpeed: 1.3,       // SWIFT
@@ -123,6 +123,9 @@ export function installEliteKit(api) {
   function tick(e, dt) {
     key(e); const P = api.P();
     if (e.ekSayT > 0) e.ekSayT -= dt; if (e.ekClank > 0) e.ekClank -= dt; if (e.ekGuardCd > 0) e.ekGuardCd -= dt; if (e.ekDoused > 0) e.ekDoused -= dt;
+    if (e.stagger >= 0.85 && !(e.ekStunT > 0)) e.ekStunT = e.stagger; else if (e.ekStunT > 0) e.ekStunT -= dt;   /* a long stagger (his charge turned, his lunge blocked) opens his guard; a heavy blow's short one does not */
+    { const side = Math.sign(P.x - e.x) || e.face || 1; if (e.ekSide === undefined) e.ekSide = e.face || side;   /* HIS GUARD TURNS TO YOU after a beat (K.turnT), whichever way his feet are going: get round him quicker than that */
+      if (side !== e.ekSide && Math.abs(P.x - e.x) < 220) { e.ekSideT = (e.ekSideT || 0) + dt; if (e.ekSideT >= K.turnT) { e.ekSide = side; e.ekSideT = 0; } } else e.ekSideT = 0; }
     e.ekGuarding = guarding(e);   /* (drawn: the steel edge across his front) */
     if (!(e.broken > 0)) e.ekOpenT = 0;
     /* THE ESCALATION: once, at half health */
@@ -137,9 +140,9 @@ export function installEliteKit(api) {
         e.ekFireCd = e.ekRoused ? K.fireRoused : K.fireEvery; api.fire({ x: e.x - (e.face || 1) * (e.w / 2), y: e.y, life: K.fireLife, delay: 0.2, still: true, dmg: K.fireDmg, ekFire: true }); } }
   }
   /* IS HE GUARDING: on his feet and not committed - standing about, walking, or in the WINDUP of a move (he holds his weapon up
-     while he tells it). In the blow and its recovery he is open; flinched, thrown or broken he is open. A SHIELDED one's front is up
+     while he tells it). In the blow and its recovery he is open; thrown, broken or stunned by his own failed move he is open (a heavy blow's little stagger does not drop it). A SHIELDED one's front is up
      through his blows and recoveries too: only his back, a sweep, a plunge or his broken poise get past it. */
-  const guarding = e => !!e.alive && !(e.broken > 0) && !(e.stagger > 0) && !(e.knock > 0) && !(e.frozen > 0) &&
+  const guarding = e => !!e.alive && !(e.broken > 0) && !(e.knock > 0) && !(e.frozen > 0) && !(e.ekStunT > 0) &&
     (e.affix === 'SHIELDED' || !e.elBack || /Tell$/.test(e.mode || ''));
   /* A BLOW ON HIM (main.js hurtEnemy0, before anything else reads it): false means it is TURNED.
      GUARD BY ANGLE (design-standard B11): a hero's light cut (a cut, a rising cut, a dash cut) off his guarded front is turned - the clank,
@@ -155,7 +158,8 @@ export function installEliteKit(api) {
       if (k !== 'heavy') { if (!(now - (e.ekCutAt ?? -99) < K.mashWindow)) e.ekCuts = 0; e.ekCutAt = now; e.ekCuts = (e.ekCuts || 0) + 1;
         const at = e.affix === 'THORNED' ? (e.ekRoused ? K.thornRoused : K.thornAt) : (actOf(api.levelId()) || { mashAt: 3 }).mashAt;
         if (e.ekCuts >= at && !(e.ekGuardCd > 0)) { e.ekCuts = 0; e.ekGuardCd = K.guardCd; if (e.affix === 'THORNED') e.ekThornPend = true; else e.ekRipostePend = true; } }
-      if (Math.sign((fromX ?? e.x) - e.x) === (e.face || 1) && guarding(e)) {
+      const dx = (fromX ?? e.x) - e.x;   /* (a hero stood in his body is in front of him: there is no getting round a man by walking into him) */
+      if ((Math.abs(dx) < e.w / 2 + 2 || Math.sign(dx) === (e.ekSide || e.face || 1)) && guarding(e)) {
         e.ekClank = 0.12;
         if (k === 'heavy') dmg = Math.max(1, Math.round(dmg * 0.5));
         else { e.ekTurnedN = (e.ekTurnedN || 0) + 1; say(e, e.affix === 'SHIELDED' ? 'GO ROUND' : 'GUARDED', '#c9d1dc', 0.8); api.turned(e); return false; }

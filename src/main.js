@@ -2733,17 +2733,17 @@ function drawAmbushHud() {
    keepAlive: true }) against a fight of twenty to forty-five seconds: a heavy knight or a hedge knight is already a long fight and
    three of one ran past a minute; a goat, a thorn or a cook goes down (or off a ledge) in a few seconds at three */
 const ELITE = {
-  shield: { name: 'THE SHIELD CAPTAIN', hp: 6.3, own: true }, pike: { name: 'THE PIKE SERJEANT', hp: 10, own: true }, tideguard: { name: 'THE TIDE CAPTAIN', own: true, hp: 7.5 },   /* (ELITES2: every kind its own two moves; hp x3 -> ~x2, each override two thirds of what it was - the challenge is his defence now: src/elite-kit.js) */
-  brute: { name: 'THE GOBLIN CAPTAIN', hp: 8.5, own: true }, hearthgob: { name: 'THE HEARTH BOSS', own: true, hp: 13.5 }, cutlass: { name: 'THE FIRST MATE', hp: 4.2, own: true },
+  shield: { name: 'THE SHIELD CAPTAIN', hp: 6.3, own: true }, pike: { name: 'THE PIKE SERJEANT', hp: 20, own: true }, tideguard: { name: 'THE TIDE CAPTAIN', own: true, hp: 7.5 },   /* (ELITES2: every kind its own two moves; hp x3 -> ~x2, each override two thirds of what it was - the challenge is his defence now: src/elite-kit.js) */
+  brute: { name: 'THE GOBLIN CAPTAIN', hp: 8.5, own: true }, hearthgob: { name: 'THE HEARTH BOSS', own: true, hp: 13.5 }, cutlass: { name: 'THE FIRST MATE', hp: 3, own: true },
   thorn: { name: 'THE IRONBACK', own: true, calls: 'sprig', hp: 6.8 }, goat: { name: 'THE HERD BILLY', own: true, calls: 'goat', hp: 14.2 }, watch: { name: 'THE WATCH SERJEANT', own: true, calls: 'wight', hp: 6 }, scarecrow: { name: 'THE TALL MAN', hp: 10, own: true, calls: 'rook' },
   husk: { name: 'THE GRAVE CAPTAIN', own: true, calls: 'zombie', hp: 4.7 },   /* the caverns' captain: a husk that calls up the dead (batch 4b) */
   hopper: { name: 'THE OLD BULLFROG', own: true }, troll: { name: 'THE CRAG TROLL', hp: 6.2, own: true }, armour: { name: 'THE WARDEN ARMOUR', hp: 6.6, own: true },
   archer: { name: 'THE ARCHER CAPTAIN', hp: 8, own: true },
   barker: { name: 'THE BARKER', hp: 5, own: true, mod: true },   /* THE HARVEST FAIR's caller (claude/fairfix, src/fair-foes.js): the call and the cane are his own (updateBarker); an elite for the crown, the name, the leash and the purse, his health his own. mod: his moves live in his own module, so no elite guard holds him still */
-  hobbyhorse: { name: 'THE HOBBY-HORSE', hp: 5, own: true, mod: true },   /* THE HARVEST FAIR's door guard (src/mummer.js): its charge is its own (updateMummer), the elite adds the leash, the gate over the green's door and the purse; hp 1 because its health is already an elite's */
-  drownedcaptain: { name: 'THE DROWNED CAPTAIN', hp: 1.6, own: true, mod: true },   /* THE UNDERWATER KEEP's: a kind of his own (src/drowned-knights.js), his health already a captain's, his moves in updateDrownedKnight */
+  hobbyhorse: { name: 'THE HOBBY-HORSE', hp: 9, own: true, mod: true },   /* THE HARVEST FAIR's door guard (src/mummer.js): its charge is its own (updateMummer), the elite adds the leash, the gate over the green's door and the purse; hp 1 because its health is already an elite's */
+  drownedcaptain: { name: 'THE DROWNED CAPTAIN', hp: 4, own: true, mod: true },   /* THE UNDERWATER KEEP's: a kind of his own (src/drowned-knights.js), his health already a captain's, his moves in updateDrownedKnight */
   apprentice: { name: 'THE HEAD NOVICE', own: true, hp: 10 },   /* THE FALLING TOWER's captain (THE ORRERY PIT, 2026-09-25): the Folly's apprentices led by their eldest - the tower's own casters, and not the Folly's armour again in the next room (rule Q) */
-  scorpion: { name: 'THE OLD STINGER', own: true, hp: 8.5 },
+  scorpion: { name: 'THE OLD STINGER', own: true, hp: 11 },
   cutthroat: { name: 'THE FIRST KNIFE', own: true, hp: 7.4 },   /* THE SUNKEN CARAVAN's rim (2026-09-25, the goblin archer's place): the looters' best blade */
   gaffer: { name: 'THE DECK FOREMAN', own: true, hp: 6.5 },   /* THE ORE ROAD's captain: hp 1.3 (2 at x3) because 44 x the room's own multiplier was a minute-long fight in a room rule Q wants over in thirty seconds */
   boarder: { name: 'THE BOARDING MASTER', hp: 10, own: true }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', own: true, hp: 5.5 }, heavy: { name: "THE KING'S CHAMPION", own: true, hp: 2.3 },
@@ -3059,11 +3059,12 @@ function drawEliteVolley(e, cx, cy) {
     g.fillStyle = ART.OUT; g.fillRect(ax - 1, ay - 8, 3, 8); g.fillStyle = '#8b6a2a'; g.fillRect(ax, ay - 7, 1, 6); g.fillStyle = '#e8e2cc'; g.fillRect(ax, ay - 1 + (k >= 1 ? 1 : 0), 1, 1); g.fillStyle = '#c9463d'; g.fillRect(ax - 1, ay - 8, 1, 2); g.fillRect(ax + 1, ay - 8, 1, 2); }
   g.globalAlpha = 1;
 }
-/* MAY IT TAKE THE BODY: off cooldown, on its feet, not thrown, not already winding something up, and no other windup begun in the
+/* MAY IT TAKE THE BODY: off cooldown, on its feet, not thrown, not already winding something up (ELITES2: unless his move is due and the
+   windup of his kind's own has only just begun - his move takes its place, so a creature that never stops swinging still gets to it), and no other windup begun in the
    last half second anywhere in the fight - one windup at a time. reach: how far off you it will start a move */
-const eliteMay = (e, reach) => !(e.elT > 0 || e.stagger > 0 || e.knock > 0 || e.frozen > 0 || P.dead || Math.abs(P.x - e.x) > reach || Math.abs(P.y - e.y) > 40 || windingUp(e) || time - lastTellT < 0.5 || !isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS)));
+const eliteMay = (e, reach) => !(e.elT > 0 || e.stagger > 0 || e.knock > 0 || e.frozen > 0 || P.dead || Math.abs(P.x - e.x) > reach || Math.abs(P.y - e.y) > 40 || (windingUp(e) && !(e.elT <= 0 && !e.elBack && (e.modeT || 0) > 0.25)) || time - lastTellT < 0.5 || !elFooted(e));
 /* IT TAKES THE BODY: remembers what it was doing, turns to you, and holds the token */
-function eliteTake(e) { e.elBack = [e.mode, e.modeT]; e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; lastTellT = time; }
+function eliteTake(e) { e.elBack = windingUp(e) ? ['walk', 0] : [e.mode, e.modeT];   /* (ELITES2) a windup of his kind's he cut in on is dropped, not taken up again after: one windup, then the next */ e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; lastTellT = time; }
 /* ==== ELITES2: EVERY KIND ITS OWN TWO MOVES (claude/elites2, Daniel 10-03: "more unique and more challenging") ====
    The five shared rules are retired: every kind below fights with two moves built from what that creature already is, each told (its
    mark called as it starts, the JUMP or DUCK lane beside it from src/marks.js HEIGHT), one windup at a time (eliteMay, lastTellT), and
@@ -3072,6 +3073,8 @@ function eliteTake(e) { e.elBack = [e.mode, e.modeT]; e.vx = 0; e.face = Math.si
    ekX (the blow), ekXOpen (the recovery, no mark). A thing he throws travels inside the move (e.shot) and a patch of floor he marks is
    e.vol (drawn red, like the Archer Captain's rain), so every blow is struck inside its own case where tools/tells.mjs can see it. */
 const elTell = (e, t) => EK.tell(e, t), elEvery = (e, t) => EK.every(e, t);
+/* ON HIS FEET: rock, or a deck or a plank he stands on (a ship, a barge, a scaffold) */
+const elFooted = e => { const tx = Math.floor(e.x / TS), ty = Math.floor((e.y + 2) / TS); return isSolid(tx, ty) || isOneWay(tileAt(tx, ty)); };
 /* in front of him, within reach of his body's edge */
 const elFront = (e, reach, dyMax) => !P.dead && Math.sign(P.x - e.x) === (e.face || 1) && Math.abs(P.x - e.x) < reach + e.w / 2 && Math.abs(P.y - e.y) < dyMax;
 /* no floor ahead, or a wall: a step in stops there */
@@ -3092,6 +3095,8 @@ function elBody(e, dt) { const mv = moveBody(e, e.vx * dt, e.vy * dt, false); if
 /* A LEAP onto the mark: across in the air (drawn lifted, e.ekLift), and the body carried along the floor under it, so a wall still stops it */
 function elLeapStep(e, dur, h) { const k = Math.min(1, 1 - Math.max(0, e.modeT) / dur); e.ekLift = Math.round(Math.sin(Math.PI * k) * h); e.vx = e.vol ? Math.max(-320, Math.min(320, (e.vol.x - e.x) / Math.max(dt0(), e.modeT))) : 0; }
 const dt0 = () => 1 / 60;
+/* PULLED IN: hauled along the floor to his feet - never lifted, and stopped short of his front (a hero yanked over his head landed on it) */
+function elPull(e, v) { const gap = Math.abs(P.x - e.x) - (e.w / 2 + 12); if (gap <= 0) return; P.vx = -Math.sign(P.x - e.x) * Math.min(v, gap * 5); }
 const elDone = (e, every) => { e.shot = null; e.vol = null; e.ekLift = 0; eliteDone(e); e.elT = elEvery(e, every); };
 /* the two to choose from: each when it fits, and when both do, turn about */
 const elPick = (e, a, b) => a && (!b || !e.elAlt) ? 1 : b ? 2 : 0;
@@ -3127,7 +3132,7 @@ function updateEliteCutthroat(e, dt) {
      THE BURROW     a red !! - he digs in, and the dust runs along under the sand toward you; where it stops he comes up. Roll off the line
                     (or jump the burst). Up, he shakes the sand off: the opening.
      THE TAIL SWEEP a red !! - the tail comes round low on both sides of him at once. Jump it. */
-const EL_STING = { reach: 210, near: 56, dig: 0.55, under: 0.7, v: 150, burst: 0.25, ring: 30, burstDmg: 18, open: 1.1, tail: 0.6, tailR: 60, tailDmg: 16, tailOpen: 0.8, every: 3.8 };
+const EL_STING = { reach: 210, near: 56, dig: 0.55, under: 0.7, v: 150, burst: 0.25, ring: 30, burstDmg: 22, open: 1.1, tail: 0.6, tailR: 60, tailDmg: 20, tailOpen: 0.8, every: 3.2 };
 function updateEliteScorpion(e, dt) {
   const A = EL_STING, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
@@ -3172,7 +3177,7 @@ function updateEliteGaffer(e, dt) {
     case 'ekHookTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekHook'; e.modeT = A.strike; e.elHit = false; SFX.haft(); } break;
     case 'ekHook': e.vx = 0; e.ekReach = A.hookMax * Math.min(1, 1 - e.modeT / A.strike);
       if (!e.elHit && elFront(e, e.ekReach, 20)) { e.elHit = true; const res = damagePlayer(e.x, eliteDmg(A.dmg), { who: e, blow: 'the pole hook' });
-        if (res === 'hit') { P.vx = -e.face * A.pull; P.vy = -80; P.ground = false; } else if (res === 'blocked') { e.mode = 'ekHookOpen'; e.modeT = A.open + 0.4; e.ekReach = 0; break; } }
+        if (res === 'hit') { elPull(e, A.pull); } else if (res === 'blocked') { e.mode = 'ekHookOpen'; e.modeT = A.open + 0.4; e.ekReach = 0; break; } }
       if (e.modeT <= 0) { e.mode = 'ekHookOpen'; e.modeT = A.open; e.ekReach = 0; } break;
     case 'ekHookOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;   /* THE OPENING: hauling the pole back in */
     case 'ekSpinTell': e.vx = 0; if (Math.random() < dt * 12) dust(e.x + (Math.random() - 0.5) * 30, e.y, 1); if (e.modeT <= 0) { e.mode = 'ekSpin'; e.modeT = 0.28; e.elHit = false; SFX.haft(); } break;
@@ -3252,7 +3257,7 @@ function updateEliteBoarder(e, dt) {
   const A = EL_BOARD, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
     if (!eliteMay(e, A.reach)) return false;
-    const m = elPick(e, ad > A.grapMin && dy < 20, ad > A.leapMin && dy < 34);
+    const m = elPick(e, ad > A.grapMin && dy < 20, dy < 34);
     if (m === 1) { eliteTake(e); e.elAlt = true; e.mode = 'ekGrapTell'; e.modeT = elTell(e, A.tell); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
     else if (m === 2) { eliteTake(e); e.elAlt = false; elMarkAt(e, A.half); e.mode = 'ekBoardTell'; e.modeT = elTell(e, A.leap); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
     else return false; }
@@ -3260,7 +3265,7 @@ function updateEliteBoarder(e, dt) {
   switch (e.mode) {
     case 'ekGrapTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekGrap'; e.modeT = 1.0; elThrow(e, A.v, 12, 'hook'); SFX.throwWhoosh(); } break;
     case 'ekGrap': e.vx = 0;
-      if (elShotStep(e, dt)) { const res = damagePlayer(e.shot.x, eliteDmg(A.dmg), { who: e, blow: 'the grapnel' }); if (res === 'hit') { P.vx = -e.face * A.pull; P.vy = -90; P.ground = false; } }
+      if (elShotStep(e, dt)) { const res = damagePlayer(e.shot.x, eliteDmg(A.dmg), { who: e, blow: 'the grapnel' }); if (res === 'hit') { elPull(e, A.pull); } }
       if (e.modeT <= 0 || !e.shot || e.shot.gone) { e.shot = null; e.mode = 'ekGrapOpen'; e.modeT = A.open; } break;
     case 'ekGrapOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;   /* THE OPENING: coiling the line */
     case 'ekBoardTell': e.vx = 0; e.face = Math.sign(e.vol.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'ekBoard'; e.modeT = A.air; e.elHit = false; SFX.dodge(); } break;
@@ -3275,12 +3280,12 @@ function updateEliteBoarder(e, dt) {
 /* THE FIRST MATE (the cutlass, the hurricane). A sabre and a pistol in his belt:
      THE LUNGE    a yellow ! - a long lunge with the point. Block it and he is over-extended (the opening).
      THE PISTOL   a red !! - he draws and fires level at your chest. No shield stops a ball: DUCK and it goes over. He reloads after. */
-const EL_MATE = { reach: 230, near: 30, lungeMax: 96, tell: 0.5, v: 300, run: 0.3, dmg: 14, open: 0.6, blockOpen: 1.1, aim: 0.7, ball: 420, shotDmg: 16, reload: 0.9, every: 3.6 };
+const EL_MATE = { reach: 230, near: 0, lungeMax: 96, tell: 0.5, v: 300, run: 0.3, dmg: 14, open: 0.6, blockOpen: 1.1, aim: 0.7, ball: 420, shotDmg: 16, reload: 0.9, every: 3.6 };
 function updateEliteCutlass(e, dt) {
   const A = EL_MATE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
     if (!eliteMay(e, A.reach)) return false;
-    const m = elPick(e, ad > A.near && ad < A.lungeMax && dy < 16, ad > 70 && dy < 22);
+    const m = elPick(e, ad >= A.near && ad < A.lungeMax && dy < 16, ad > 70 && dy < 22);
     if (m === 1) { eliteTake(e); e.elAlt = true; e.mode = 'ekLungeTell'; e.modeT = elTell(e, A.tell); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
     else if (m === 2) { eliteTake(e); e.elAlt = false; e.mode = 'ekPistolTell'; e.modeT = elTell(e, A.aim); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
     else return false; }
@@ -3396,7 +3401,7 @@ function updateEliteThorn(e, dt) {
   const A = EL_IRON, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
     if (!eliteMay(e, A.reach)) return false;
-    const m = elPick(e, ad > A.rollMin && dy < 14 && !elEdge({ ...e, face: Math.sign(d) || e.face }), ad > 30 && ad < 160 && dy < 22);
+    const m = elPick(e, ad > A.rollMin && dy < 14 && !elEdge({ ...e, face: Math.sign(d) || e.face }), ad < 160 && dy < 22);
     if (m === 1) { eliteTake(e); e.elAlt = true; e.mode = 'ekRollTell'; e.modeT = elTell(e, A.roll); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
     else if (m === 2) { eliteTake(e); e.elAlt = false; e.mode = 'ekSpineTell'; e.modeT = elTell(e, A.spine); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
     else return false; }
@@ -3535,7 +3540,7 @@ function updateEliteApprentice(e, dt) {
   const A = EL_NOVICE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
     if (!eliteMay(e, A.reach)) return false;
-    const m = elPick(e, ad > 30 && dy < 50, ad > 40 && dy < 22);
+    const m = elPick(e, dy < 50, ad > 40 && dy < 22);
     if (m === 1) { eliteTake(e); e.elAlt = true; elMarkAt(e, A.half); e.mode = 'ekRuneTell'; e.modeT = elTell(e, A.rune); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.zap(); }
     else if (m === 2) { eliteTake(e); e.elAlt = false; e.mode = 'ekBoltTell'; e.modeT = elTell(e, A.bolt); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.zap(); }
     else return false; }
@@ -3575,7 +3580,7 @@ function updateEliteHopper(e, dt) {
     case 'ekBellyOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;   /* THE OPENING: winded */
     case 'ekTongueTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekTongue'; e.modeT = A.strike; e.elHit = false; } break;
     case 'ekTongue': e.vx = 0; e.ekReach = A.tongueMax * Math.min(1, 1 - e.modeT / A.strike);
-      if (!e.elHit && elFront(e, e.ekReach, 18)) { e.elHit = true; const res = damagePlayer(e.x, eliteDmg(A.dmg), { who: e, blow: 'the tongue' }); if (res === 'hit') { P.vx = -e.face * A.pull; P.vy = -60; P.ground = false; } }
+      if (!e.elHit && elFront(e, e.ekReach, 18)) { e.elHit = true; const res = damagePlayer(e.x, eliteDmg(A.dmg), { who: e, blow: 'the tongue' }); if (res === 'hit') { elPull(e, A.pull); } }
       if (e.modeT <= 0) { e.ekReach = 0; e.mode = 'ekTongueOpen'; e.modeT = A.open; } break;
     case 'ekTongueOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;
     default: e.ekLift = 0; e.ekReach = 0; eliteDrop(e, A.every); return false; }
@@ -3589,7 +3594,7 @@ function updateEliteHopper(e, dt) {
 function updateEliteAffix(e, dt) {
   if (!e.elBack) {
     if (e.ekRipostePend && (P.dead || Math.abs(P.x - e.x) > 80 || Math.abs(P.y - e.y) > 30)) e.ekRipostePend = false;   /* (gone out of reach: no riposte) */
-    if (!(e.ekThornPend || e.ekCallPend || e.ekRipostePend) || e.stagger > 0 || eliteLost(e) || P.dead || windingUp(e) || !isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS))) return false;
+    if (!(e.ekThornPend || e.ekCallPend || e.ekRipostePend) || e.stagger > 0 || eliteLost(e) || P.dead || windingUp(e) || !elFooted(e)) return false;
     if (e.ekRipostePend) { e.ekRipostePend = false; eliteTake(e); e.mode = 'ekRiposteTell'; e.modeT = EK.tell(e, EK.K.ripTell); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
     else if (e.ekThornPend) { e.ekThornPend = false; eliteTake(e); e.mode = 'ekThornsTell'; e.modeT = EK.K.thornTell; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.clatter(); }
     else { e.ekCallPend = false; eliteTake(e); e.mode = 'ekCallTell'; e.modeT = 0.8; SFX.roar(); }
@@ -3616,7 +3621,7 @@ function updateEliteAffix(e, dt) {
 function drawEliteKit(e, cx, cy) {
   const x = Math.round(e.x - cx), y = Math.round(e.y - cy), f = e.face || 1, h = e.h || 16, w = e.w || 12;
   if (e.broken > 0 && e.ekOpenT > 0) { g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.globalAlpha = 0.6 + 0.4 * Math.sin(time * 12); g.beginPath(); g.ellipse(x + 0.5, y - h / 2, w / 2 + 6, h / 2 + 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* OPEN: the gold ring (and its timer under the plate) */
-  if (e.ekGuarding && !ELITE[e.t].mod && Math.abs(P.x - e.x) < 140) { const gx = Math.round(e.x + f * (w / 2 + 2) - cx), gy = Math.round(e.y - h - cy), gh = Math.round(h * 0.7); g.fillStyle = 'rgba(12,10,20,0.8)'; g.fillRect(gx - 2, gy + 1, 4, gh + 2); g.fillStyle = e.ekClank > 0 ? '#fff6e0' : e.affix === 'SHIELDED' ? '#e8eef6' : '#9aa3b0'; g.fillRect(gx - 1, gy + 2, 2, gh); }   /* HIS GUARD (by angle, src/elite-kit.js): a bar of steel across his front while he holds it - white on the cut it turns */
+  if (e.ekGuarding && Math.abs(P.x - e.x) < 140) { const gf = e.ekSide || f, gx = Math.round(e.x + gf * (w / 2 + 2) - cx), gy = Math.round(e.y - h - cy), gh = Math.round(h * 0.7); g.fillStyle = 'rgba(12,10,20,0.8)'; g.fillRect(gx - 2, gy + 1, 4, gh + 2); g.fillStyle = e.ekClank > 0 ? '#fff6e0' : e.affix === 'SHIELDED' ? '#e8eef6' : '#9aa3b0'; g.fillRect(gx - 1, gy + 2, 2, gh); }   /* HIS GUARD (by angle, src/elite-kit.js): a bar of steel across his front while he holds it - white on the cut it turns */
   if (e.affix === 'THORNED' && (e.ekCuts > 0 || e.mode === 'ekThornsTell')) { const n = e.mode === 'ekThornsTell' ? 7 : 2 + e.ekCuts * 2; g.fillStyle = '#8fd160'; for (let i = 0; i < n; i++) { const a = -Math.PI + (i + 0.5) * Math.PI / n, r = w / 2 + (e.mode === 'ekThornsTell' ? 5 : 2); g.fillRect(Math.round(x + Math.cos(a) * r), Math.round(y - h / 2 + Math.sin(a) * (h / 2 + 2)), 2, 2); } }   /* THE SPINES, rising with every cut of a mash */
   if (e.affix === 'BURNING' && !(e.ekDoused > 0) && Math.random() < 0.5) parts.push({ x: e.x + (Math.random() - 0.5) * w, y: e.y - Math.random() * h, vx: 0, vy: -40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 });
   if (e.ekReach > 0) { const x1 = Math.round(e.x + f * (w / 2 + e.ekReach) - cx), yy = y - Math.round(h * 0.5); g.fillStyle = ART.OUT; g.fillRect(Math.min(x, x1), yy - 1, Math.abs(x1 - x), 3); g.fillStyle = e.t === 'hopper' ? '#d86a7a' : '#8b6a2a'; g.fillRect(Math.min(x, x1), yy, Math.abs(x1 - x), 1); g.fillStyle = '#c9d1dc'; g.fillRect(x1 - 1, yy - 2, 3, 3); }   /* the pole's hook or the tongue, out */
@@ -6591,8 +6596,9 @@ function addPoise(e, dmg, fromX, plunge) {
   let n = P.jetHit ? 0 : 6 + dmg * 0.25;   /* the jet leans on nothing: it burns, it does not break (09-17) */
   if (!P.jetHit) { if (P.heavySwing && P.atk >= 0) n += 20; if (plunge) n += 12; if (e.face && Math.sign(fromX - e.x) === -e.face) n += 10; if (P.combo === 3) n += 8; if (P.riposteT > 0) n += 16; if (P.dash > 0) n += 6; if (P.dashAtk > 0) n += 14; }
   if (e.keyHit === time) n += 12;   /* THE RIGHT TOOL leans on the bar too (the family table) */
-  if (m === POISE_LIGHT || ((lcBig(e) || e.xpRole === 'mini' || e.elite) && GB.openOf(e) !== true)) {   /* (ELITES2: and an ELITE, whose bar is his opening - a mash never breaks it, a heavy blow does) */   /* the small tier: weight only (see POISE_LIGHT). (claude/bosswave2, Daniel 10-04: A BOSS OR A MINI OUTSIDE HIS OPENING takes poise from HEAVIES only - a tap filled ~6 of his bar and a mash broke him open; inside an opening any blow still leans on it) */
+  if (m === POISE_LIGHT || e.elite || ((lcBig(e) || e.xpRole === 'mini') && GB.openOf(e) !== true)) {   /* (ELITES2: and an ELITE, whose bar is his opening - a mash never breaks it, a heavy blow does) */   /* the small tier: weight only (see POISE_LIGHT). (claude/bosswave2, Daniel 10-04: A BOSS OR A MINI OUTSIDE HIS OPENING takes poise from HEAVIES only - a tap filled ~6 of his bar and a mash broke him open; inside an opening any blow still leans on it) */
     n = P.jetHit ? 0 : (blowHas(e.blowNow, 'heavy') || (m !== POISE_LIGHT && P.heavySwing && P.atk >= 0) ? 30 : 0) + (plunge ? 12 : 0) + (e.keyHit === time ? 12 : 0) + (P.riposteT > 0 ? 16 : 0) + (P.dashAtk > 0 ? 14 : 0) + (P.combo === 3 && P.atk >= 0 ? 8 : 0);
+    if (e.elite) n = P.jetHit ? 0 : (blowHas(e.blowNow, 'heavy') ? 30 : 0) + (e.keyHit === time ? 12 : 0) + (P.riposteT > 0 ? 16 : 0) + (P.dashAtk > 0 ? 14 : 0);   /* (ELITES2) AN ELITE'S BAR: only a held heavy, a riposte, a dash attack or the right tool - not a combo's third cut, not a stomp (a masher lifted onto his head broke him with them) */
     if (!n) return; }
   e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5;
   if (e.poise >= m) { e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
@@ -6651,6 +6657,7 @@ function impaleWatch() {
 }
 function impale(e) {
   e.pointHit = 1.2;
+  if (e.elite) { e.vx = 0; e.stagger = Math.max(e.stagger || 0, 0.9); hurtEnemy(e, Math.round(swordDmg() * 1.3), P.x, false); if (e.elBack) eliteDrop(e, 1.5); gainVigil(30); return; }   /* (ELITES2) AN ELITE IS STOPPED ON THE POINT, NOT BROKEN: his charge dies there and he is open a moment (the guard drops on a long stagger), but only weight breaks his poise */
   const fast = tal('standFast') ? 1.5 : 1;   /* STAND FAST: it stays broken half again as long, and pays double */
   e.broken = Math.max(e.broken || 0, (e.maxHp && !e.mini ? 1.4 : 2.2) * fast); e.poise = 0; e.poiseCd = e.broken + 3;
   e.vx = 0; e.vy = Math.min(e.vy || 0, -60); e.stagger = Math.max(e.stagger || 0, e.broken);
@@ -9147,6 +9154,7 @@ function updatePlayer(dt) {
     if (!P.plunge && P.vy > 40 && pb.b <= e.y - e.h + 7 && P.dodge <= 0 && e.t !== 'emberwisp') {
       P.hitSet.clear(); P.canCut = false; P.ground = false;
       if (e.t === 'thorn') { P.inv = 0; SFX.clank(); sparks(P.x, P.y + 4, P.face, 8); number(e.x, e.y - e.h - 6, e.t === 'frog' ? 'CROWN OF THORNS' : 'SPIKED', '#ffd36b'); damagePlayer(e.x, e.t === 'frog' ? DMG.crown : DMG.spined, { up: true, unblockable: true }); P.vy = -250; continue; }
+      if (e.elite) { P.vy = -210; P.vx = (Math.sign(P.x - e.x) || P.face) * 150; P.plunge = false; SFX.clank(); dust(P.x, P.y, 4); continue; }   /* (ELITES2) AN ELITE IS NOT A STEP: he shrugs you off his shoulders - a PLUNGE (down + swing in the air) is the blow that comes over his guard */
       if (e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk') { continue; }
       if (e.t === 'master' && e.mounted && (e.stagger > 0 || e.open > 0)) { hurtEnemy(e, 20, P.x, true); e.stagger = Math.max(e.stagger, 0.7); number(e.x, e.y - 24, 'STUNNED', '#8fd160'); SFX.gobHurtLow(); SFX.thud(); P.vy = -260; P.plunge = false; P.ground = false; P.canCut = false; burst(e.x, e.y - 8, 12, COLS.master, 80, 0.6); continue; }
       if (e.t === 'crab' && e.mode !== 'flipped') { e.mode = 'flipped'; e.modeT = 3; e.vy = -140; SFX.clank(); number(e.x, e.y - 18, 'OVER IT GOES', '#8fd160'); P.vy = keys.jump ? -260 : -190; P.canCut = false; P.ground = false; continue; }
@@ -23402,7 +23410,7 @@ const TK = tokenBoard();
 /* THE WIND'S OWN (part 2): a string of storm crows and a rolling bale are the moor's weather, not a fighter taking its turn - each
    still tells its own coming (a yellow !), but a string of five does not queue for the purse one crow at a time */
 const TOKEN_HAZARDS = new Set(['crow', 'bale']);
-TOKENS.exempt = e => !!(e === boss || e.xpRole || e.mini || e.harmless || e.trainer || e.work || e.t === 'dummy' || TOKEN_HAZARDS.has(e.t) || bossActive || miniActive || rushOn());   /* bosses, minis and the adds of their fights are their own scripts */
+TOKENS.exempt = e => !!(e === boss || e.xpRole || e.mini || (e.elite && e.elBack) || e.harmless || e.trainer || e.work || e.t === 'dummy' || TOKEN_HAZARDS.has(e.t) || bossActive || miniActive || rushOn());   /* bosses, minis and the adds of their fights are their own scripts (ELITES2: and an elite in a move of his own - his one-windup-at-a-time is lastTellT) */
 const tkApi = { dt: 0, get time() { return time; }, nums: () => nums, windingUp: e => windingUp(e), heavy: e => markOf(e) === '!!', move: (e, dx) => moveBody(e, dx, 0, false),
   walker: e => !e.noGrav && !e.pool && !e.swim && !e.fly && e.speed > 0 && foeHasFooting(e),
   grounded: e => !e.noGrav && !e.pool && !e.swim && !e.fly && foeHasFooting(e), fall: (e, dy) => moveBody(e, 0, dy, false),
@@ -23420,7 +23428,7 @@ installTempo(TK, TOKENS);   /* TIGHTER, STILL TOLD (claude/combat3, src/foe-temp
 const TAC_HOOK = installTactics(TK, TOKENS, { turned: () => SFX.shieldScrape() });
 const RX = installReact(TK, TOKENS, { levelId: () => curId(), depth: id => LEVEL_DEPTH[id], claim: tokenClaim, windingUp: e => windingUp(e), walker: e => tkApi.walker(e), safeStep: (x, y) => tkApi.safeStep(x, y), move: (e, dx) => moveBody(e, dx, 0, false), fall: (e, dy) => moveBody(e, 0, dy, false),
   charging: h => (h.charge || 0) > 0 || (hero() === 'knight' && (h.atkHeld || 0) >= HEAVY_START), dust: (x, y) => dust(x, y, 4), sfx: { clank: () => SFX.clank(), feint: () => SFX.feint() } });   /* reactive foes, varied swings, squads, the act ramp (src/foe-react.js) */   /* held wind-ups on a grant, and each kind's own way of waiting (src/foe-tactics.js) */
-const EK = installEliteKit({ levelId: () => curId(), P: () => P, time: () => time, near: (e, r) => eliteNear(e, r), inWater: (x, y) => inWater(x, y), fire: f => fires.push(f), poison: t => { poisonPlayer(); P.venomT = Math.max(P.venomT || 0, t); }, ring: (x, y, r, col, t) => ringAt(x, y, r, col, t), shake: n => shakeCam(n), sfx: k => SFX[k] && SFX[k](), number: (x, y, t, col) => number(x, y, t, col), ents: () => (L && L.ents) || [], mod: e => !!(ELITE[e.t] && ELITE[e.t].mod), turned: e => { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + (e.face || 1) * 8, e.y - e.h * 0.6, P.face, 6); if (Math.abs(P.x - e.x) < 60) P.vx = (e.face || 1) * 130; number(e.x, e.y - e.h - 6, 'COVERED', '#c9d1dc'); }, onGround: e => isSolid(Math.floor(e.x / TS), Math.floor((e.y + 2) / TS)) });   /* (ELITES2: src/elite-kit.js - the affix, the guard, the opening, the escalation; the moves are updateElite<Kind> above) */
+const EK = installEliteKit({ levelId: () => curId(), P: () => P, time: () => time, near: (e, r) => eliteNear(e, r), inWater: (x, y) => inWater(x, y), fire: f => fires.push(f), poison: t => { poisonPlayer(); P.venomT = Math.max(P.venomT || 0, t); }, ring: (x, y, r, col, t) => ringAt(x, y, r, col, t), shake: n => shakeCam(n), sfx: k => SFX[k] && SFX[k](), number: (x, y, t, col) => number(x, y, t, col), ents: () => (L && L.ents) || [], mod: e => !!(ELITE[e.t] && ELITE[e.t].mod), turned: e => { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + (e.face || 1) * 8, e.y - e.h * 0.6, P.face, 6); if (Math.abs(P.x - e.x) < 60) P.vx = (e.face || 1) * 130; number(e.x, e.y - e.h - 6, 'COVERED', '#c9d1dc'); }, onGround: e => elFooted(e) });   /* (ELITES2: src/elite-kit.js - the affix, the guard, the opening, the escalation; the moves are updateElite<Kind> above) */
 /* THE GREED REPRISAL'S WORLD (claude/combat3, src/boss-greed.js): the openings that live here, and what the told counter may touch */
 GB.install({ frogOpen: e => frogOpen(e), ramOpen: e => ramOpen(e), callerOpen: e => callerOpen(e), lanceOpen: e => lanceOpen(e), gqOpen: e => gqOpen(e), forgeOpen: e => forgeOpen(e), granOpen: e => granOpen(e) });
 const GREED_API = { dt: 0, get time() { return time; }, get P() { return P; },
