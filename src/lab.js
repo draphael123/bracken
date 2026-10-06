@@ -1138,6 +1138,8 @@ async function runbossLab(BK, opts) {
            damage the lab put down to his 'rest' (they land after the tell, while he rests): POISON NOVA: GET CLEAR (112 px); BODY SLAM: MOVE (78 px
            of his mark); THE HANDS COME UP: MOVE YOUR FEET (34 px of the mark); HE THROWS THE DEAD (it lands where you stood: step off it);
            GRAVE HANDS: JUMP THEM (each arm as it comes up under you). Nothing is swung while one of these is coming. */
+        /* (claude/sweep3, v2: A VENT THAT HISSES IS STEPPED OFF - its wisps rise for 0.9 s before the poison stands; the hands walked candle to vent through the puffs, and the gas and the poison it leaves were a third of the damage booked to his 'rest') */
+        if(LABP.v2){const bad=(BK.L.gasVents||[]).find(v=>(v.state==='warn'||v.state==='puff')&&Math.abs(P.x-(v.x*16+8))<20&&P.y>v.y*16-56&&P.y<=v.y*16+4);if(bad&&!(ventHit&&P.candle>0)){const vx0=bad.x*16+8,s2=(P.x>=vx0?1:-1);gx=vx0+s2*28;if(gx<A.x0+14||gx>A.x1-14)gx=vx0-s2*28;ventHit=null;}}
         let bdFlee=false;if(LABP.v2){const away=(x,r)=>{const s2=P.x>=x?1:-1;let g=x+s2*r;if(g<A.x0+16||g>A.x1-16)g=x-s2*r;return g;};
         if(mode==='novaTell'&&Math.abs(P.x-boss.x)<128&&P.y>A.floor-80){gx=away(boss.x,134);bdFlee=true;}
         else if((mode==='bodyTell'||mode==='bodyFly')&&Number.isFinite(boss.markX)&&Math.abs(P.x-boss.markX)<92){gx=away(boss.markX,96);bdFlee=true;}

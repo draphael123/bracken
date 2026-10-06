@@ -13,9 +13,9 @@
 // every TOLL seals one open grave for good - fewer places to make the opening, so use them early.
 // Touching him never hurts (the touch rule): his damage is his spade, his dirt, his lantern and the hands.
 export const WARDEN = {
-  walk: 22, keep: 40, cd: 1.4, cdP2: 1.05,
+  walk: 22, keep: 40, cd: 1.0, cdP2: 0.8,   /* (claude/sweep3: 1.4 / 1.05) */
   tell: { cleave: 0.95, toss: 0.75, swing: 0.8, dig: 0.85, toll: 0.8 },
-  dmg: { cleave: 18, clod: 10, swing: 12, hand: 18, skull: 12 },
+  dmg: { cleave: 29, clod: 16, swing: 21, hand: 29, skull: 19 },   /* (claude/sweep3: 18 / 10 / 12 / 18 / 12 - the standard bot won 12/12 at L27; band 70-75%) */
   cleaveReach: 46, swingR: 50, graveNear: 20, kneelT: 3.2, kneelMul: 2, adds: 3, skullEvery: 5,
   order: ['cleave', 'dig', 'toss', 'swing', 'dig', 'toll', 'cleave', 'swing', 'dig'],
 };
