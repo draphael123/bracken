@@ -34,7 +34,7 @@ try {
     await E('BK.manualSimulation=true;BK.step(25)'); await shot('title-part'); await E('BK.step(40)'); await shot('title-walk'); await E('BK.step(120)'); await shot('title-menu');
   });
   await E('BK.manualSimulation=true');
-  await sec('intro', async () => { await E('localStorage.clear()'); await E('BK.ui.titleI=1'); await key(E, 'Enter'); await E('BK.ui.slotI=1'); await key(E, 'z'); await E('BK.step(40)'); const st = await E('BK.state'); console.log('state', st); await shot('intro-1'); for (let i = 2; i <= 4; i++) { await key(E, 'z'); await E('BK.step(60)'); await shot('intro-' + i); } });
+  await sec('intro', async () => { if (tag === 'before') return; await E('BK.ui.openingStart()'); await E('BK.step(100)'); await shot('intro-1'); for (let i = 2; i <= 4; i++) { await key(E, 'z'); await E('BK.step(220)'); await shot('intro-' + i); } });
   await sec('heropick', async () => { await E(`(async()=>{${freshJS('knight', 0)}BK.state='heropick';BK.ui.heroPickI=0;BK.ui.heroPickStage='pick';BK.step(60)})()`); await shot('heropick-knight'); await E('BK.ui.heroPickI=3;BK.step(50)'); await shot('heropick-3'); await E('BK.ui.heroPickI=5;BK.step(35)'); await shot('heropick-5'); });
   await sec('map', async () => {
     await E(`(async()=>{${freshJS('knight', 20)}for(const l of LEVELS.slice(0,8)) BKT.PROG[l.id]={cleared:true,medal:2,silver:3,best:151,gold:12,total:20};BKT.PROG.coins=120;BK.mapLook('wood');})()`); await E('BK.step(60)'); await shot('map-wood');

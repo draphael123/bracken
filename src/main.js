@@ -174,6 +174,7 @@ import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxF
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
+import * as OP from './opening-panels.js';   /* THE FIRST-RUN OPENING (claude/uiscreens): four illustrated panels before the first hero pick */
 import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscreens): the wood closed over the picture, the fronds part, the knight walks in */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
@@ -4768,6 +4769,12 @@ function menuConfirm() {
 }
 // THE HERO CHOICE: a new save picks any one of the three to start with; the other two are 15 silver each at the store
 let heroPick = { i: 0, stage: 'pick' };
+/* THE FIRST-RUN OPENING: once per browser, on the first new save (not in a tool run: BK.manualSimulation, and never with ?noopening) */
+let opening = { i: 0, t: 0 };
+const openingSeen = () => { try { return !!localStorage.getItem('bracken.openingSeen'); } catch { return true; } };
+const openingDue = () => !q.has('noopening') && !(window.BK && window.BK.manualSimulation) && !openingSeen();
+function openingEnd() { try { localStorage.setItem('bracken.openingSeen', '1'); } catch {} state = 'heropick'; SFX.uiSel(); }
+function openingStart() { opening = { i: 0, t: 0 }; state = 'opening'; }
 // HIS COLOURS. Each hero hangs behind a banner in his own cloth with his own device on it, so the row of five
 // reads as a muster and not as a row of boxes. Drawn, not baked: it is five rectangles and a device.
 const HERO_ARMS = { knight: ['#2a3a6e', '#465a9a', '#c9d1dc', 'cross'], pyro: ['#6e2418', '#a04028', '#ffd36b', 'flame'],
@@ -25160,7 +25167,7 @@ function update(dt) {
     if (downPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }   /* the five are rows, so DOWN and RIGHT both go on, UP and LEFT both go back */
     if (upPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (rightPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }
-    if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); } // a new save chooses its hero
+    if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); if (state === 'heropick' && openingDue()) openingStart(); } // a new save chooses its hero
     if (atkPress) { if (!readSlot(slotI)) { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else { eraseAsk = slotI; eraseYes = false; slotMsg = ''; SFX.ui(); } }
     if (pausePress) { state = 'title'; SFX.ui(); }
     return;
@@ -25169,6 +25176,7 @@ function update(dt) {
   if (state === 'controls') { if (confirmPress) openRebind('controls'); else if (pausePress) { state = controlsFrom; SFX.menuClose(); } return; }
   if (state === 'rebind') { updateRebind(dt); return; }
   if (state === 'coophelp') { updateCoopHelp(); return; }
+  if (state === 'opening') { opening.t += dt; if (atkPress || pausePress) openingEnd(); else if ((confirmPress || rightPress) && opening.t > 0.25) { SFX.ui(); if (opening.i + 1 >= OP.PANELS) openingEnd(); else { opening.i++; opening.t = 0; } } return; }
   if (state === 'heropick') { updateHeroPick(); return; }
   if (state === 'card') { updateCard(dt); return; }
   if (state === 'coop') { updateCoopPick(); return; }
@@ -28791,7 +28799,8 @@ function render() {
     lines.forEach((l, i) => text(l, bx + 8, by + 7 + i * 11, '#fff6e0'));
     if (intro.chars >= INTRO[intro.card].length && Math.floor(time * 3) % 2 === 0) text('Z', bx + bw - 12, by + bh - 11, '#8fd160', 'right');
     text('ESC skip', VW - 6, 4, '#9aa39a', 'right');
-  } else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
+  } else if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH);
+  else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
   else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
@@ -29067,6 +29076,7 @@ function render() {
   if (state === 'coophelp') drawCoopHelp(uiCtx(), coopHelpPage, coopHelpPages());
   if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
+  if (state === 'opening') { TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); OP.drawPanelText(g, text, UI, opening.i, opening.t, VW, VH, touchOn); }
   if (state === 'heropick') drawHeroPick();
   if (state === 'card') drawCard();
   if (state === 'coop') drawCoopPick();
@@ -29284,7 +29294,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
-    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
+    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(),
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
