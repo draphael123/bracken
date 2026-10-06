@@ -33,7 +33,7 @@
 //                ':p2' (the well shaft) quicker with the motif an octave up, ':p3' (the flood) adds the water: a surge and drips.
 //   'djinn'      THE DJINN OF THE GREAT WELL (claude/underwell, his own theme - the Queen has hers back in the Underwell). D Hijaz, 4/4 at 100, 16 bars = 38 s:
 //                a D drone, a doumbek's maqsum, the wind in the well, a breathy ney; ':p2' (fire) quicker, the ney up an octave, crackles; ':p3' (flood) the water.
-export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { colossus: 1, glasssea: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -400,7 +400,40 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
+// ---------------------------------------------------------------- THE GLASS SEA (claude/glasssea, the greybox's own bed until Daniel picks a track)
+// E minor pentatonic (E G A B D), 4/4 at 72 (eighth = 0.42 s), 8 bars = 27 s. WIND OVER GLASS: a long airy drone (two detuned triangles on E2 and B2
+// under a lowpass, breathing over four bars), a CHIME OF SHARDS (high sine bells on a slow ostinato, each with a fifth a shade sharp over it), and a hush
+// of wind (soft noise swells every second bar). Never builds: the crossing is long.
+const GSM_STEP = 60 / 72 / 2, GSM_LEN = 8, GSM_BARSN = 8;
+const GSM_CHIME = [['E5', '-', 'B4', '-', 'D5', '-', '-', 'G4'], ['A4', '-', 'E5', '-', '-', 'B4', '-', '-'], ['G5', '-', 'D5', '-', 'B4', '-', 'A4', '-'], ['E5', '-', '-', 'B4', '-', '-', 'D5', '-']];
+function glasssea(i, delay, variant, env) {
+  const bar = Math.floor(i / GSM_LEN), s = i % GSM_LEN, g = env.gain;
+  if (s === 0 && bar % 4 === 0) for (const n of ['E2', 'B2']) held(env, 'triangle', nf(n), GSM_STEP * GSM_LEN * 4 * 0.98, 0.06 * g, delay, { lp: 700, att: GSM_STEP * 8, hold: 0.7, det: 9 });
+  if (s === 0 && bar % 2 === 1) noise(env, GSM_STEP * 6, 0.035 * g, 900, 0.6, delay);
+  const c = GSM_CHIME[bar % 4][s]; if (c !== '-') { const f = nf(c); pluck(env, 'sine', f, GSM_STEP * 5, 0.07 * g, delay, { to: f * 0.998 }); pluck(env, 'sine', f * 1.502, GSM_STEP * 3, 0.025 * g, delay + 0.01, { to: f * 1.5 }); }
+}
+// ---------------------------------------------------------------- THE GLASS COLOSSUS (claude/glasssea, its composed theme: the brief's three phases)
+// B minor (B C# D E F# G A), 4/4 at 84 (eighth = 0.36 s), 16 bars = 46 s. DUSK: a slow GLASSY CHIME OSTINATO (sine bells, B - F# - D - F# - E - D - C# - F#)
+// over a LOW DRONE (a sub sine on B and a lowpassed saw pair), a heavy stone stamp on the one (its stomp), a ring of glass on the three.
+// 'colossus:p2' NIGHT: the chime falls away to every other bar; a COLD SUB PULSE (a low sine on every quarter, sliding down), a high glassy hiss off the beat.
+// 'colossus:p3' DAWN: quicker (eighth 0.29 s), the pulse doubled, and RISING BRIGHT BRASS (a detuned saw pair climbing B - D - F# - A over two bars, an
+// octave up in the second half) over the chime.
+const COM_STEP = 60 / 84 / 2, COM_STEP3 = 60 / 104 / 2, COM_LEN = 8, COM_BARSN = 16;
+const COM_CHIME = ['B4', 'F#4', 'D5', 'F#4', 'E5', 'D5', 'C#5', 'F#4'];
+const COM_BRASS = [['B3', 'D4'], ['F#4', 'A4'], ['B4', 'D5'], ['C#5', 'F#5']];
+function colossus(i, delay, variant, env) {
+  const night = variant === 'p2', dawn = variant === 'p3', step = dawn ? COM_STEP3 : COM_STEP, bar = Math.floor(i / COM_LEN), s = i % COM_LEN, second = bar >= 8, g = env.gain;
+  if (s === 0 && bar % 2 === 0) { pluck(env, 'sine', nf('B1'), step * COM_LEN * 2 * 0.95, 0.42 * g, delay, { to: nf('B1') * 0.99 }); held(env, 'sawtooth', nf('B2'), step * COM_LEN * 2 * 0.95, 0.045 * g, delay, { lp: night ? 260 : 380, att: step * 4, hold: 0.6, det: 12 }); }
+  if (s === 0) { pluck(env, 'sine', 64, 0.4, (night ? 0.5 : 0.8) * g, delay, { to: 34 }); noise(env, 0.08, 0.1 * g, 260, 0.7, delay); }   /* the stamp */
+  if (s === 4 && !night) { pluck(env, 'sine', nf('F#6'), 0.6, 0.03 * g, delay, { to: nf('F#6') * 0.99 }); noise(env, 0.15, 0.03 * g, 7800, 6, delay); }   /* the ring of glass */
+  if (!night || bar % 2 === 0) { const f = nf(COM_CHIME[s]) * (second && !night ? 2 : 1); pluck(env, 'sine', f, step * 2.6, (night ? 0.04 : 0.06) * g, delay, { to: f * 0.998 }); pluck(env, 'sine', f * 1.5, step * 1.4, 0.02 * g, delay + 0.012, { to: f * 1.49 }); }
+  if (night) { if (s % 2 === 0) pluck(env, 'sine', 52, step * 1.8, 0.4 * g, delay, { to: 40 }); if (s % 2 === 1) noise(env, step * 0.5, 0.03 * g, 9000, 5, delay); }
+  if (dawn) { pluck(env, 'sine', 80, 0.18, 0.4 * g, delay + step / 2, { to: 44 }); const row = COM_BRASS[(bar >> 1) % 4]; if (s === 0 || s === 4) { const n = nf(row[s === 0 ? 0 : 1]) * (second ? 2 : 1);
+      held(env, 'sawtooth', n, step * 3.6, 0.07 * g, delay, { lp: second ? 2600 : 1900, att: 0.04, hold: 0.6, det: 11, from: 0.96 }); held(env, 'square', n * 0.5, step * 3.6, 0.025 * g, delay, { lp: 1100, att: 0.04, hold: 0.5 }); } }
+}
+
 export const SYNTH_BOSS = {
+  colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, glasssea: { step: GSM_STEP, total: GSM_LEN * GSM_BARSN, play: glasssea },   /* (claude/glasssea) */
   djinn: { step: DJM_STEP, total: DJM_LEN * DJM_BARSN, play: djinn },
   cisternqueen: { step: CQM_STEP, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
   gorgecrab: { step: GCM_STEP, total: GCM_LEN * GCM_BARSN, play: gorgecrab },
@@ -413,6 +446,7 @@ export const SYNTH_BOSS = {
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
+  'colossus:p2': { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, 'colossus:p3': { step: COM_STEP3, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) its night and its dawn */
   'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking },
   'cisternqueen:p2': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen }, 'cisternqueen:p3': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
   'djinn:p2': { step: DJM_STEP2, total: DJM_LEN * DJM_BARSN, play: djinn }, 'djinn:p3': { step: DJM_STEP2, total: DJM_LEN * DJM_BARSN, play: djinn } };   /* THE BANDIT KING's second phase: faster, the zurna an octave up */

@@ -35,6 +35,7 @@ import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
 import { gtOpen } from './jenny-greenteeth.js';
 import { qOpen } from './cistern-queen.js';
+import { colOpen } from './glass-colossus.js';
 import { glOpen } from './gang-leader.js'; import { djOpen } from './djinn.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
@@ -100,6 +101,7 @@ export const OPEN_RULE = {
   grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   cisternqueen: e => qOpen(e) || e.sting > 0,                                             // soaked out of her burrow, on her back off her wall (doused), rearing from a broken grab (claude/welltown3); her STUCK STINGER (claude/welltown5)
+  colossus: e => colOpen(e),                                                 // THE GLASS COLOSSUS (claude/glasssea): its chest cracked by its own lance off a mirror, its shoulders blazing (the swarm held by firelight), its crown dazzled by the dawn - its legs are its own purse (OWN_WARD)
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
   gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.crackT > 0 || e.mode === 'stagger',
@@ -114,7 +116,7 @@ export const OPEN_RULE = {
 /* BLOWS ARE HIS MECHANIC: the Pyromancer is opened by being HIT while he runs hot (every blow heats him, src/main.js hurtEnemy0), so a run of
    blows is the answer, not greed: no reprisal (his chip stands - a blow outside his opening is still a twentieth) */
 export const NO_GREED = new Set(['pyromancer']);
-export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'greenteeth']);
+export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'greenteeth', 'colossus']);
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   mother: 'her body is armoured to every blade already (ARMOURED); the heart node is her opening and it is not the boss',

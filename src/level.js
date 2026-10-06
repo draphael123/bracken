@@ -10,6 +10,7 @@ import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (doc
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
 import { buildRedGorge } from './red-gorge.js';   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE GREAT RED CRAB (src/gorge-crab.js) */
+import { buildGlassSea } from './glass-sea.js';   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
@@ -7788,6 +7789,9 @@ export const LEVELS = [
      the Cistern Queen's brood, the water skin scarce. APPENDED, so no index and no save moves; its place on the road is its needs (and the gorge's) and its map node.
      THE CISTERN QUEEN (src/cistern-queen.js, benched by claude/welltown5) is its boss */
   { id: 'underwell', arc: 'the desert', name: 'THE UNDERWELL', sub: 'the dry cisterns under the well town', rule: "STRIKE A TORCH AND THE OIL BURNS - THE BROOD WON'T CROSS FIRE. POUR WATER WHERE THE FIRE MUST NOT GO.", build: () => buildUnderwell({ painter, T, TS }), needs: 'welltown' },
+  /* THE GLASS SEA (claude/glasssea, the OPUS GREYBOX, 2026-10-06): lightning-fused glass dunes past THE RED GORGE - the sun is a beam you aim with mirrors; shade by day,
+     fire by night. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE GLASS COLOSSUS (src/glass-colossus.js) is its boss */
+  { id: 'glasssea', arc: 'the desert', name: 'THE GLASS SEA', sub: 'the sun is a beam you aim', rule: 'TURN THE MIRRORS TO AIM THE SUN; SHADE BY DAY, FIRE BY NIGHT.', build: () => buildGlassSea({ painter, T, TS }), needs: 'redgorge' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
