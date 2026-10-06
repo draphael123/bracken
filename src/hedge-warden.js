@@ -24,20 +24,21 @@
 // throws off a topiary cutting.
 // Touching him never hurts (the touch rule): his damage is his sword, his rush, his thorns, his lash and his roots.
 export const HEDGE = {
-  hp: 486,   /* 420 until claude/hedgewarden2 (+16%, Daniel's playtest 2026-09-28: "a bit harder"); main.js EHP reads it */
+  hp: 600,   /* 486 until claude/hedgewarden4 (his told opening made him a duel: measured 93% at 486, band 70-75%); /* 420 until claude/hedgewarden2 (+16%, Daniel's playtest 2026-09-28: "a bit harder"); main.js EHP reads it */
   walk: 30, keep: 34, cd: 1.3, cdP2: 0.95,
   tell: { cut: 0.85, rush: 0.8, thorn: 1.0, lash: 0.9, roots: 0.95 },
   dmg: { cut: 16, rush: 14, thorn: 14, lash: 14, roots: 12 },
   cutReach: 50, rushV: 150, rushT: 0.6, thornR: 46, thornRP2: 58,
   lashReach: 150, lashT: 0.35, low: 10,                /* the lash and the roots run along the lawn: feet more than `low` px up are over them */
   rootV: 120, rootHalf: 9, fireStop: 12, rootWarn: 0.8, rootsT: 0.5,   /* a root's speed, its head's half-width, how near a fire burns it, a garden hedge's warning */
-  growths: 3, root: 0.14, regrow: 4.6, regrowP2: 3.8, burnT: 3.2, burnMul: 2, greenMul: 0.25, brazierNear: 44, cuttings: 2,   /* greenMul: what a blow on green wood takes (claude/hedgewarden3) */
+  growths: 3, root: 0.14, regrow: 4.6, regrowP2: 3.8, burnT: 3.2, burnMul: 2, greenMul: 0.25, brazierNear: 44, cuttings: 2,
+  stuck: 3.0, stuckMul: 1.6, reopen: 2.5, answerNear: 80,   /* claude/hedgewarden4: ANSWER HIM AND HE IS OPEN for `stuck` s (his blows pay x`stuckMul`); not again for `reopen` s after; a root burning out within `answerNear` of you is answered */   /* greenMul: what a blow on green wood takes (claude/hedgewarden3) */
   order: ['cut', 'lash', 'rush', 'cut', 'thorn', 'roots', 'rush', 'cut', 'lash', 'thorn', 'roots'],
 };
 const TELL = { cut: 'cutTell', rush: 'rushTell', thorn: 'thornTell', lash: 'lashTell', roots: 'rootsTell' };
 const SAY = { cutTell: 'THE CUT', rushTell: 'HE CHARGES', thornTell: 'THORNS: GET CLEAR', lashTell: 'THE THORN LASH', rootsTell: 'THE ROOTS: JUMP, OR GET TO THE FIRE' };
 const RED = new Set(['thorn', 'roots']);
-export const hedgeOpen = e => (e.burnT || 0) > 0;
+export const hedgeOpen = e => (e.burnT || 0) > 0 || (e.stuckT || 0) > 0;   /* burning stump, or ANSWERED (sword stuck in the lawn / parried) */
 const STUMP = new Set(['felled', 'stump']);
 export const hedgeStump = e => STUMP.has(e.mode);
 /* the thirds of his bar: the floor of the growth he is on, and where its root starts */
@@ -49,6 +50,7 @@ const rootOf = e => floorOf(e) + e.maxHp * HEDGE.root;
 export function hedgeFrame(e) {
   switch (e.mode) {
     case 'cutTell': return 3; case 'cut': return 4; case 'rush': return 4; case 'rushTell': return 1 + Math.floor((e.anim || 0) * 12) % 2;
+    case 'stuck': return 12;
     case 'thornTell': return 5; case 'thorn': return 6; case 'felled': return 7;
     case 'lashTell': return 10; case 'lash': return 4; case 'rootsTell': return 11; case 'roots': return 12;
     case 'stump': { const k = e.regrowK || 0; return k < 0.4 ? 7 : k < 0.75 ? 8 : 9; }
@@ -64,8 +66,9 @@ export function hedgeTake(e, dmg) {
   if (!(dmg > 0) || e.mode === 'sleep') return dmg;
   if (hedgeStump(e) || e.greenUp) { const fl = floorOf(e);
     if (!hedgeStump(e) && e.atFire) e.fell = true;                              /* up on a green root and cut beside the fire: down he goes, there */
-    if (hedgeOpen(e)) dmg = Math.round(dmg * HEDGE.burnMul); else { e.green = true; dmg = Math.max(1, Math.round(dmg * HEDGE.greenMul)); }
+    if ((e.burnT || 0) > 0) dmg = Math.round(dmg * HEDGE.burnMul); else { e.green = true; dmg = Math.max(1, Math.round(dmg * HEDGE.greenMul)); }
     if (e.hp - dmg <= fl) { e.rooted = true; return fl > 0 ? Math.max(0, e.hp - fl) : dmg; } return dmg; }
+  if ((e.stuckT || 0) > 0) dmg = Math.round(dmg * HEDGE.stuckMul);                 /* ANSWERED: his sword is stuck, every blow pays more */
   const r = rootOf(e); if (e.hp - dmg <= r) { e.fell = true; return Math.max(0, e.hp - r); }
   return dmg;
 }
@@ -78,13 +81,19 @@ function rootedOut(e, c) { e.rooted = false; e.greenUp = false;
   c.say('ROOTED OUT', false, true); c.sound('crack'); c.shake(5); e.mode = 'wake'; e.modeT = 1.1; e.regrowK = 1; }
 /* HIS BRAZIERS CALL while he is up (claude/hedgewarden3): 1 while he stands, 0 while he sleeps, lies a stump or is dead */
 export const brazierCall = e => (e && e.alive && e.mode !== 'sleep' && !hedgeStump(e)) ? 1 : 0;
+let lastC = null;
+/* ANSWERED: his cut guarded on the beat, his lash or rush jumped, his root jumped or burnt out at your fire - he is OPEN for HEDGE.stuck s, his sword stuck in the lawn (claude/hedgewarden4) */
+export function hedgeAnswered(e, how) {
+  const c = lastC; if (!c || !e || !e.alive || hedgeStump(e) || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'stuck' || (e.reopenCd || 0) > 0) return false;
+  e.mode = 'stuck'; e.stuckT = HEDGE.stuck; e.vx = 0; e.rushHit = true; e.how = how;
+  c.say(how === 'roots' ? 'HIS SWORD IS STUCK: OPEN' : 'ANSWERED: HE IS OPEN', false, true); c.sound('crack'); c.shake(3); return true; }
 function begin(e, what, c) { e.mode = TELL[what]; e.modeT = HEDGE.tell[what] * (e.phase === 2 ? 0.85 : 1); e.face = Math.sign(c.P.x - e.x) || e.face || 1; c.say(SAY[e.mode], RED.has(what)); }
 const rest = (e, rnd) => { e.mode = 'stalk'; e.vx = 0; e.cd = (e.phase === 2 ? HEDGE.cdP2 : HEDGE.cd) * (0.8 + 0.4 * rnd()); };
 export function updateHedgeWarden(e, dt, c) {
   const { P, A, hit } = c, floor = A.floor, rnd = c.rnd || Math.random;
   if (!e.alive || e.mode === 'sleep') return;
   e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.growth ??= 0; e.y = floor;
-  e.burnT = Math.max(0, (e.burnT || 0) - dt); e.open = e.burnT; e.greenT = Math.max(0, (e.greenT || 0) - dt);
+  lastC = c; e.reopenCd = Math.max(0, (e.reopenCd || 0) - dt); e.burnT = Math.max(0, (e.burnT || 0) - dt); e.stuckT = Math.max(0, (e.stuckT || 0) - dt); e.open = Math.max(e.burnT, e.stuckT); e.greenT = Math.max(0, (e.greenT || 0) - dt);
   e.atFire = (c.braziers() || []).some(bx => Math.abs(bx - e.x) < HEDGE.brazierNear);
   if (e.green) { e.green = false; if (c.smoke) c.smoke(e.x, floor - 8);         /* a blow on green wood: it smokes, and now and then says so */
     if (e.greenT <= 0) { e.greenT = 2.5; c.say(GREEN, false); c.sound('thud'); } }
@@ -93,7 +102,7 @@ export function updateHedgeWarden(e, dt, c) {
   /* a blow (or a bleed) that took him under his root while he stood fells him there */
   /* (no Math.max back up to his root any more: a bleed that took him under it stays taken - damage done stays done) */
   if (!hedgeStump(e) && (e.fell || (!e.greenUp && e.hp <= rootOf(e)))) { e.fell = false;
-    e.mode = 'felled'; e.modeT = 0.5; e.regrowK = 0; e.rooted = false; e.vx = 0; c.say('CUT DOWN TO THE STUMP', false, true); c.sound('crack'); c.shake(4); c.dust(e.x, floor);
+    e.mode = 'felled'; e.modeT = 0.5; e.regrowK = 0; e.rooted = false; e.vx = 0; e.stuckT = 0; c.say('CUT DOWN TO THE STUMP', false, true); c.sound('crack'); c.shake(4); c.dust(e.x, floor);
     if (e.atFire) { e.burnT = HEDGE.burnT; e.open = e.burnT; c.say('THE WITCH-FIRE TAKES THE STUMP', false, true); c.sound('fire'); }
     else if (c.teach) c.teach(GREEN);                                           /* felled on the open lawn: the hint says what to do */
     return; }
@@ -106,25 +115,30 @@ export function updateHedgeWarden(e, dt, c) {
     if (e.modeT <= 0) { e.greenUp = true; e.mode = 'stalk'; e.cd = 0.9; c.say('HE STANDS AGAIN', true); c.sound('grow');   /* up, on what is left of his root: nothing grows back */
       if (e.phase === 2 && c.adds() < HEDGE.cuttings) c.sprout(e.x + (Math.random() < 0.5 ? -40 : 40)); }
     return; }
+  // ---- ANSWERED: stood still, sword in the lawn, open ----
+  if (e.mode === 'stuck') { e.vx = 0; e.open = e.stuckT; if (e.stuckT <= 0) { e.mode = 'stalk'; e.cd = 1.1; e.reopenCd = HEDGE.reopen; } return; }
   // ---- THE ATTACKS ----
   if (e.mode === 'cutTell' || e.mode === 'rushTell' || e.mode === 'thornTell' || e.mode === 'lashTell' || e.mode === 'rootsTell') {
     if (e.mode !== 'rushTell') e.face = Math.sign(P.x - e.x) || e.face;
     if (e.modeT > 0) return;
     if (e.mode === 'cutTell') { e.mode = 'cut'; e.modeT = 0.4; c.sound('heavy'); c.shake(2);
-      const dx = (P.x - e.x) * e.face; if (!P.dead && dx > -8 && dx < HEDGE.cutReach && Math.abs(P.y - floor) < 34) hit(e.x, HEDGE.dmg.cut, false, 'THE CUT'); return; }
+      const dx = (P.x - e.x) * e.face; if (!P.dead && dx > -8 && dx < HEDGE.cutReach && Math.abs(P.y - floor) < 34) { const res = hit(e.x, HEDGE.dmg.cut, false, 'THE CUT'); if (c.answered && c.answered(res)) hedgeAnswered(e, 'cut'); } return; }
     if (e.mode === 'rushTell') { e.mode = 'rush'; e.modeT = HEDGE.rushT; e.rushHit = false; c.sound('whoosh'); return; }
     if (e.mode === 'thornTell') { e.mode = 'thorn'; e.modeT = 0.35; c.sound('thorn'); c.shake(3);
       const R = e.phase === 2 ? HEDGE.thornRP2 : HEDGE.thornR; if (!P.dead && Math.abs(P.x - e.x) < R && P.y > floor - 44) hit(e.x, HEDGE.dmg.thorn, true, 'THE THORNS'); return; }
     /* THE THORN LASH: the vine cracks along the lawn in front of him, the length of a room's third; over it is safe, and a shield */
     if (e.mode === 'lashTell') { e.mode = 'lash'; e.modeT = HEDGE.lashT; c.sound('whoosh'); c.shake(2);
-      const dx = (P.x - e.x) * e.face; if (!P.dead && dx > -8 && dx < HEDGE.lashReach && P.y > floor - HEDGE.low) hit(e.x, HEDGE.dmg.lash, false, 'THE THORN LASH'); return; }
+      const dx = (P.x - e.x) * e.face; if (!P.dead && dx > -8 && dx < HEDGE.lashReach && P.y > floor - HEDGE.low) { const res = hit(e.x, HEDGE.dmg.lash, false, 'THE THORN LASH'); if (c.answered && c.answered(res)) hedgeAnswered(e, 'lash'); }
+      else if (!P.dead && dx > -8 && dx < HEDGE.lashReach && P.y <= floor - HEDGE.low) hedgeAnswered(e, 'lash');   /* jumped over it */
+      return; }
     /* THE ROOTS: the sword goes into the lawn and a root crawls out at you (phase two: one each way) - stepRoots runs it */
     if (e.mode === 'rootsTell') { e.mode = 'roots'; e.modeT = HEDGE.rootsT; c.sound('crack'); c.shake(3); c.dust(e.x + e.face * 14, floor);
       if (c.roots) { c.roots(e.x + e.face * 14, e.face); if (e.phase === 2) c.roots(e.x - e.face * 14, -e.face); } return; }
   }
   if (e.mode === 'rush') { const nx = e.x + e.face * HEDGE.rushV * dt; e.vx = e.face * HEDGE.rushV;
     if (nx > A.x0 + 16 && nx < A.x1 - 16) e.x = nx; else e.modeT = 0;
-    if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 20 && Math.abs(P.y - floor) < 30) { e.rushHit = true; hit(e.x, HEDGE.dmg.rush, false, 'THE RUSH'); }
+    if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 20 && Math.abs(P.y - floor) < 30) { e.rushHit = true; const res = hit(e.x, HEDGE.dmg.rush, false, 'THE RUSH'); if (c.answered && c.answered(res)) { hedgeAnswered(e, 'rush'); return; } }
+    else if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 20 && P.y <= floor - 30) { e.rushHit = true; hedgeAnswered(e, 'rush'); return; }   /* jumped clean over him */
     if (e.modeT <= 0) rest(e, rnd); return; }
   if (e.mode === 'cut' || e.mode === 'thorn' || e.mode === 'lash' || e.mode === 'roots') { if (e.modeT <= 0) rest(e, rnd); return; }
   // ---- STALKING: he keeps to his reach and comes on ----
@@ -158,8 +172,9 @@ export function stepRoots(list, emitters, dt, c) {
   for (const r of list) {
     if (r.dead) { r.fade -= dt; continue; }
     r.t += dt; r.x += r.dir * r.v * dt;
-    if ((c.fires || []).some(f => Math.abs(f.y - r.y) < 8 && Math.abs(f.x - r.x) < HEDGE.fireStop)) { r.dead = true; r.burnt = true; r.fade = 0.5; c.burn(r.x, r.y); continue; }
+    if ((c.fires || []).some(f => Math.abs(f.y - r.y) < 8 && Math.abs(f.x - r.x) < HEDGE.fireStop)) { r.dead = true; r.burnt = true; r.fade = 0.5; c.burn(r.x, r.y); if (r.boss && c.answer && !P.dead && Math.abs(P.x - r.x) < HEDGE.answerNear) c.answer(r, 'roots'); continue; }
     if (r.x <= r.lo || r.x >= r.hi || (c.blocked && c.blocked(r.x + r.dir * 6, r.y))) { r.dead = true; r.fade = 0.4; continue; }
+    if (r.boss && !r.hit && !r.passed && !P.dead && Math.abs(P.x - r.x) < HEDGE.rootHalf && P.y <= r.y - HEDGE.low) { r.passed = true; if (c.answer) c.answer(r, 'roots'); }   /* jumped clean over it */
     if (!r.hit && !P.dead && Math.abs(P.x - r.x) < HEDGE.rootHalf && P.y > r.y - HEDGE.low && P.y < r.y + 8) { r.hit = true; list.hits = (list.hits || 0) + 1; c.hit(r.x, r.dmg); }
   }
   for (let i = list.length - 1; i >= 0; i--) if (list[i].dead && list[i].fade <= 0) list.splice(i, 1);
@@ -216,6 +231,10 @@ export function drawHedgeWarden(g, e, braziers, cx, cy, time, floorY) {
   if (e.mode === 'rootsTell') { const k = Math.max(0, Math.min(1, 1 - e.modeT / HEDGE.tell.roots)), sides = e.phase === 2 ? [e.face, -e.face] : [e.face];
     for (const s of sides) { g.globalAlpha = 0.45 + 0.45 * k; g.fillStyle = '#1a120a'; for (let d = 12; d < 12 + 40 * k; d += 3) g.fillRect(x + s * d, fy - 1 - ((d >> 2) % 2), 2, 1);
       g.fillStyle = '#8fd160'; if (Math.floor(time * 16) % 2) g.fillRect(x + s * (14 + Math.round(30 * k)), fy - 4, 2, 3); g.globalAlpha = 1; } }
+  /* B10, THE SHARED READ: open = a gold ring on the lawn and a timer bar over him */
+  if (hedgeOpen(e) && e.mode !== 'wake') { const tl = Math.max(e.stuckT || 0, e.burnT || 0), full = (e.stuckT || 0) >= (e.burnT || 0) ? HEDGE.stuck : HEDGE.burnT, k = 0.5 + 0.5 * Math.sin(time * 9);
+    g.globalAlpha = 0.55 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 26 + 2 * k, 7, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+    const top = fy - (hedgeStump(e) ? 36 : 56); g.fillStyle = '#1b1626'; g.fillRect(x - 14, top, 28, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 13, top + 1, Math.round(26 * Math.min(1, tl / full)), 3); }
   if (hedgeStump(e)) {
     if (hedgeOpen(e)) { for (let k = 0; k < 5; k++) { const h = 8 + Math.round(5 * Math.sin(time * 11 + k * 1.7)); g.fillStyle = k % 2 ? '#e0c8ff' : '#9a5ad0'; g.fillRect(x - 9 + k * 4, fy - 12 - h, 3, h); }
       const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 22 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }

@@ -129,7 +129,7 @@ export const FULL_DAMAGE = {
 export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */
 /* MINIS ON THE CHIP (claude/bosswave1, Daniel 10-02: "give each a real opening first, then put minis on the chip"): each has a told opening of
    3 s or more in OPEN_RULE and in its own code, and outside it a hero's blow lands at GREED.chip like a boss's. The rest keep full damage. */
-export const CHIP_MINI = new Set(['greathound', 'bosun', 'lancer', 'homunculus']);
+export const CHIP_MINI = new Set(['greathound', 'bosun', 'lancer', 'homunculus', 'hedgewarden']);   /* (claude/hedgewarden4: the Hedge Warden's told opening - his move answered, his sword stuck - 3 s) */
 export function install(helpers) { H = helpers || {}; }
 
 /* A MINI'S OPENING IS WORTH A THIRD OF HIM AT MOST (claude/bosswave2, Daniel 10-04, from BOSS WAVE 1's hound and homunculus): one opening

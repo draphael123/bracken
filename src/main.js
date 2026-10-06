@@ -18,7 +18,7 @@ import * as WHF from './gargoyle-whelp.js';   /* THE GARGOYLE WHELP: its numbers
 import * as CNB from './redraw/canal_backdrop.js'; import * as CFA from './redraw/canal_foes_art.js'; import * as CNH from './canal-hands.js'; import * as CNF from './canal-foes.js'; import * as UCS from './redraw/undercrown_skins.js'; import * as VSK from './redraw/variety_skins.js';   /* (claude/goblinsweep) THE UNDERCROWN's navvy, bone-chucker, timberman and mine warden: the goblins' AI in skins that are not goblins */   /* THE FOG CANAL (docs/briefs/fog-canal.md): its hands on the game, and its two new foes (the grindylow, the will-o'-the-wisp) */
 import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost, gargStomped, stepBall, drawBall, RUNE, runeStep, drawRune } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
 import { WIND, windZoneAt, onSpikes, windCatch, windStep, windBite, stompOn, drawWinds } from './spike-winds.js';   /* THE SPIKED MOAT AND ITS WINDS (the battlements and the Gargoyle's room) */
-import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake, HEDGE, stepRoots, drawRoots, rootOut } from './hedge-warden.js';
+import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake, hedgeAnswered, HEDGE, stepRoots, drawRoots, rootOut } from './hedge-warden.js';
 import { SEXTON, updateSexton as stepSexton, sextonFrame, sextonTake, sextonHover, bellPitThrow } from './sexton.js'; import { bakeSexton } from './redraw/sexton.js';   /* THE SEXTON, the Falling Tower's mini (docs/briefs/falling-tower-rework.md) */
 import { crumbleStart as crumbleStartAt, crumbleBreak as crumbleBreakAt } from './tower-collapse.js';   /* THE HEDGE WARDEN (batch 4c) */
 import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
@@ -16740,6 +16740,7 @@ const hedgeFires = () => { const W = L.witch, fy = ((L.mini || L.arena || {}).fl
 function updateHedgeRoots(dt) {
   if (!L.hedgeRoots) L.hedgeRoots = [];
   stepRoots(L.hedgeRoots, L.witch.roots, dt, { P, fires: hedgeFires(),
+    answer: (r, how) => { const w = enemies.find(q => q.alive && q.t === 'hedgewarden'); if (w) hedgeAnswered(w, how); },   /* a root of his jumped or burnt out at your fire: he is open (claude/hedgewarden4) */
     hit: (x, d) => damagePlayer(x, d, { unblockable: true, name: 'THE ROOTS' }),
     sound: () => SFX.crack(),
     burn: (x, y) => { burst(x, y - 4, 8, ['#9a5ad0', '#e0c8ff', '#4a3418'], 50, 0.4); if ((L.rootBurns = (L.rootBurns || 0) + 1) <= 3) number(x, y - 20, 'THE WITCH-FIRE BURNS IT', '#b07cf0'); },   /* (said the first three times: it is a lesson, not a caption) */
@@ -16748,7 +16749,7 @@ function updateHedgeRoots(dt) {
 function updateHedgeWardenBoss(e, dt) {
   const A = L.mini && L.mini.boss === 'hedgewarden' ? L.mini : L.arena;
   stepHedgeWarden(e, dt, { P, A: { x0: A.x0, x1: A.x1, floor: A.floor },
-    hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }),
+    hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }), answered: res => answered(res),   /* his cut/rush/lash met on the beat: open (claude/hedgewarden4) */
     say: (m, red, green) => number(e.x, e.y - 50, m, green ? '#8fd160' : red ? '#ff6b6b' : '#ffd36b'),
     sound: k => ({ heavy: SFX.heavy, crack: SFX.crack, whoosh: SFX.throwWhoosh, thorn: SFX.hiss, fire: SFX.puff, grow: SFX.rattle }[k] || SFX.thud)(),
     shake: n => shakeCam(n), dust: (x, y) => dust(x, y, 6), braziers: hedgeBraziers,
