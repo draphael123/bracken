@@ -3345,7 +3345,7 @@ function updateEliteCutlass(e, dt) {
    to his feet from both ends at once, and what it catches it drags in to his spear. JUMP it again, as it reaches you: the man who jumped
    the first and walked in to cut him meets the second at his back. Then he leans on the spear (the opening, as before). */
 const EL_TIDE = { reach: 210, near: 70, tell: 0.55, strike: 0.2, step: 110, dmg: 14, open: 0.7, blockOpen: 1.0, tide: 0.7, wv: 190, wave: 1.0, waveDmg: 15, tideOpen: 0.8, every: 3.8,
-  under: 0.55, uv: 230, uDmg: 12, uPull: 260 };
+  under: 0.55, uv: 230, uDmg: 12, uPull: 260, uChance: 0.65 };
 function updateEliteTideguard(e, dt) {
   const A = EL_TIDE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
@@ -3365,7 +3365,8 @@ function updateEliteTideguard(e, dt) {
       if (e.modeT <= 0) { e.mode = 'ekTide'; e.modeT = A.wave; e.elHit = false; e.ekWave = { l: e.x, r: e.x, y: e.y }; SFX.splash(); shakeCam(3); } break;
     case 'ekTide': e.vx = 0; { const W = e.ekWave; W.l -= A.wv * dt; W.r += A.wv * dt;
         if (!e.elHit && !P.dead && P.ground && Math.abs(P.y - W.y) < 20 && (Math.abs(P.x - W.l) < 9 || Math.abs(P.x - W.r) < 9)) { e.elHit = true; damagePlayer(P.x, eliteDmg(A.waveDmg), { unblockable: true, up: true, who: e, blow: 'the tide' }); } }
-      if (e.modeT <= 0) { lastTellT = time; e.mode = 'ekUnderTell'; e.modeT = Math.max(0.5, elTell(e, A.under)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'UNDERTOW', '#9ad0ff', 1.0); SFX.hiss(); } break;
+      if (e.modeT <= 0 && Math.random() >= A.uChance) { e.ekWave = null; e.mode = 'ekTideOpen'; e.modeT = A.tideOpen; }   /* (not every tide comes back: watch the water where it spent itself) */
+      else if (e.modeT <= 0) { lastTellT = time; e.mode = 'ekUnderTell'; e.modeT = Math.max(0.5, elTell(e, A.under)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'UNDERTOW', '#9ad0ff', 1.0); SFX.hiss(); } break;
     case 'ekUnderTell': e.vx = 0; { const W = e.ekWave; if (W && Math.random() < dt * 20) for (const wx of [W.l, W.r]) parts.push({ x: wx + (Math.random() - 0.5) * 10, y: W.y - 2, vx: Math.sign(e.x - wx) * 50, vy: -30, life: 0.35, max: 0.35, col: '#9ad0ff', size: 1, grav: 80 }); }   /* (the water drawing back where it spent itself) */
       if (e.modeT <= 0) { e.mode = 'ekUnder'; e.modeT = 0; e.elHit = false; SFX.splash(); shakeCam(2); if (!e.ekWave) e.ekWave = { l: e.x - A.wv * A.wave, r: e.x + A.wv * A.wave, y: e.y }; } break;
     case 'ekUnder': e.vx = 0; { const W = e.ekWave; W.l = Math.min(e.x, W.l + A.uv * dt); W.r = Math.max(e.x, W.r - A.uv * dt);
