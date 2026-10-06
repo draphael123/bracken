@@ -1,0 +1,9 @@
+welltown new pyro s1: {"maxHp":228,"maxSt":280,"outcome":"death","secs":123.9,"bossLeft":0,"taken":228,"endHp":0}
+welltown new pyro s2: {"maxHp":228,"maxSt":280,"outcome":"death","secs":79.1,"bossLeft":36,"taken":228,"endHp":0}
+welltown new pyro s3: {"maxHp":228,"maxSt":280,"outcome":"win","secs":114.3,"bossLeft":0,"taken":216,"endHp":12}
+welltown new pyro s4: {"maxHp":228,"maxSt":280,"outcome":"win","secs":112,"bossLeft":0,"taken":221,"endHp":7}
+welltown new pyro s5: {"maxHp":228,"maxSt":280,"outcome":"death","secs":87.8,"bossLeft":40,"taken":246,"endHp":0}
+welltown new pyro s6: {"maxHp":228,"maxSt":280,"outcome":"win","secs":118.2,"bossLeft":0,"taken":221,"endHp":20}
+welltown new pyro s7: {"err":"TypeError: Failed to fetch dynamically imported module: http://localhost:8641/src/lab.js"}
+welltown new pyro s8: {"maxHp":228,"maxSt":280,"outcome":"win","secs":117.3,"bossLeft":0,"taken":225,"endHp":20}
+SUMMARY welltown L30 new  pyro 4/8 hp228

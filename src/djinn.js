@@ -34,12 +34,15 @@
 
 export const DJ = {
   hp: 1000, w: 34, h: 64, markH: 92,
-  openMul: 2.5, openT: 4.0, mudT: 3.5, bailT: 5.5, openCap: 0.0525, bailCap: 0.07,   /* a water opening: x openMul, one takes no more than openCap of him
+  openMul: 2.5, openT: 4.0, mudT: 3.5, bailT: 5.5, openCap: 0.046, bailCap: 0.07,   /* a water opening: x openMul, one takes no more than openCap of him
                                                                     (claude/djinn3, Daniel 10-04 "a little too hard": MORE DAMAGE WHEN STUNNED x1.9 -> x2.5,
                                                                     and STUNNED LONGER - mud 2.5 -> 3.5 s, the douse 3.2 -> 4.0, the bail 4.2 -> 5.5. The cap
                                                                     stays 0.0525 a mud or a douse - x2.5 over a longer window fills it far sooner, and a
                                                                     full one is never a one-shot - and a BAIL, two steps to earn (wind, then drop it on him
-                                                                    under the shaft), takes up to bailCap. Tuned on the human bot, 20 seeds a hero) */
+                                                                    under the shaft), takes up to bailCap. Tuned on the human bot, 20 seeds a hero.
+                                                                    (claude/djinn4: the flood made fair - slower, softer, every hit avoidable, the pail -
+                                                                    took him out of band, 90%: back in it through P1/P2 alone, a mud or a douse 0.0525 ->
+                                                                    0.046 of him (0.045 -> 47%, 0.047 -> 67%, 0.046 -> 57%; campaign level, 8 seeds a hero)) */
   collapseT: 1.3, reformT: 1.7, hissT: 1.4,      /* THE TURNS (claude/djinn3, Daniel 10-04 "no phase-transition animation"): P1->P2 the sand COLLAPSES (collapseT)
                                                     and RE-FORMS as fire (reformT); P2->P3 the fire HISSES to steam (hissT) and he RISES from the water (floodT). Told:
                                                     a banner, the camera shakes, and nothing hits you while he turns (a breather) */

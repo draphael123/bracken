@@ -1,0 +1,6 @@
+welltown new knight s1: {"maxHp":240,"maxSt":280,"outcome":"win","secs":125,"bossLeft":0,"taken":188,"endHp":52}
+welltown new knight s2: {"maxHp":240,"maxSt":280,"outcome":"death","secs":119,"bossLeft":6,"taken":240,"endHp":0}
+welltown new knight s3: {"maxHp":240,"maxSt":280,"outcome":"death","secs":72.5,"bossLeft":34,"taken":240,"endHp":0}
+welltown new knight s4: {"maxHp":240,"maxSt":280,"outcome":"win","secs":116.6,"bossLeft":0,"taken":239,"endHp":1}
+welltown new knight s5: {"maxHp":240,"maxSt":280,"outcome":"death","secs":111.9,"bossLeft":10,"taken":240,"endHp":0}
+welltown new knight s6: {"err":"TypeError: Failed to fetch dynamically imported module: http://localhost:8641/src/lab.js"}

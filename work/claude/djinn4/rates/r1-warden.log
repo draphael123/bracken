@@ -1,0 +1,6 @@
+welltown new warden s1: {"maxHp":240,"maxSt":280,"outcome":"death","secs":85.1,"bossLeft":20,"taken":240,"endHp":0}
+welltown new warden s2: {"maxHp":240,"maxSt":280,"outcome":"win","secs":116.2,"bossLeft":0,"taken":203,"endHp":37}
+welltown new warden s3: {"maxHp":240,"maxSt":280,"outcome":"win","secs":92.1,"bossLeft":0,"taken":172,"endHp":68}
+welltown new warden s4: {"maxHp":240,"maxSt":280,"outcome":"win","secs":100.5,"bossLeft":0,"taken":155,"endHp":85}
+welltown new warden s5: {"maxHp":240,"maxSt":280,"outcome":"death","secs":62.4,"bossLeft":42,"taken":240,"endHp":0}
+welltown new warden s6: {"maxHp":240,"maxSt":280,"outcome":"win","secs":113.4,"bossLeft":0,"taken":117,"endHp":123}

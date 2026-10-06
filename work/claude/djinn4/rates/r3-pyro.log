@@ -1,0 +1,9 @@
+welltown new pyro s1: {"maxHp":228,"maxSt":280,"outcome":"win","secs":120.7,"bossLeft":0,"taken":214,"endHp":14}
+welltown new pyro s2: {"maxHp":228,"maxSt":280,"outcome":"death","secs":79.3,"bossLeft":34,"taken":228,"endHp":0}
+welltown new pyro s3: {"maxHp":228,"maxSt":280,"outcome":"win","secs":114.7,"bossLeft":0,"taken":216,"endHp":12}
+welltown new pyro s4: {"maxHp":228,"maxSt":280,"outcome":"win","secs":108.7,"bossLeft":0,"taken":221,"endHp":7}
+welltown new pyro s5: {"maxHp":228,"maxSt":280,"outcome":"death","secs":88.1,"bossLeft":39,"taken":246,"endHp":0}
+welltown new pyro s6: {"maxHp":228,"maxSt":280,"outcome":"win","secs":118.1,"bossLeft":0,"taken":221,"endHp":20}
+welltown new pyro s7: {"maxHp":228,"maxSt":280,"outcome":"win","secs":113.3,"bossLeft":0,"taken":165,"endHp":63}
+welltown new pyro s8: {"maxHp":228,"maxSt":280,"outcome":"win","secs":116.6,"bossLeft":0,"taken":225,"endHp":3}
+SUMMARY welltown L30 new  pyro 6/8 hp228

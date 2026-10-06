@@ -1,0 +1,9 @@
+welltown new warden s1: {"maxHp":240,"maxSt":280,"outcome":"win","secs":109.6,"bossLeft":0,"taken":216,"endHp":24}
+welltown new warden s2: {"maxHp":240,"maxSt":280,"outcome":"win","secs":114.2,"bossLeft":0,"taken":185,"endHp":55}
+welltown new warden s3: {"maxHp":240,"maxSt":280,"outcome":"win","secs":108.2,"bossLeft":0,"taken":210,"endHp":30}
+welltown new warden s4: {"maxHp":240,"maxSt":280,"outcome":"win","secs":96.8,"bossLeft":0,"taken":203,"endHp":37}
+welltown new warden s5: {"maxHp":240,"maxSt":280,"outcome":"death","secs":55.5,"bossLeft":59,"taken":240,"endHp":0}
+welltown new warden s6: {"maxHp":240,"maxSt":280,"outcome":"death","secs":117.2,"bossLeft":7,"taken":240,"endHp":0}
+welltown new warden s7: {"maxHp":240,"maxSt":280,"outcome":"win","secs":138.8,"bossLeft":0,"taken":224,"endHp":16}
+welltown new warden s8: {"maxHp":240,"maxSt":280,"outcome":"win","secs":106.8,"bossLeft":0,"taken":228,"endHp":12}
+SUMMARY welltown L30 new  warden 6/8 hp240
