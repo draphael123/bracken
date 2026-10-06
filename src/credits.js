@@ -11,6 +11,7 @@ export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the li
   ['puppeteer', 'Dissonant Waltz', 'Yubatake', 'CC-BY 4.0', 'creativecommons.org/licenses/by/4.0'],   /* THE PUPPETEER's fight (claude/puppeteer2, Daniel's pick 10-02) */
   /* THE RED GORGE (claude/redgorge-fix, Daniel 10-02): Kevin MacLeod asks for this credit word for word - the page shows it whole, a line at a time */
   ['underwell', 'Ossuary 6 - Air', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Ossuary 6 - Air" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],   /* THE UNDERWELL's level track (claude/underwellart, Daniel's pick 10-05) */
+  ['matriarch', 'Volatile Reaction', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Volatile Reaction" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],   /* THE RAPTOR MATRIARCH's fight (claude/redgorge2, Daniel's pick) */
   ['redgorge', 'Old Road', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Old Road" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],
 ];
 /* the one composer a few credit lines spell two ways (MUSIC_CREDITS is kept short to fit the Sound Test row) */

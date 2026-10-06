@@ -15,6 +15,7 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   redgorge: './audio/redgorge.ogg',
   underwell: './audio/underwell.ogg',   /* THE UNDERWELL (claude/underwellart, Daniel's pick): "Ossuary 6 - Air" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
   undeadmage: './audio/undeadmage.ogg',   /* THE UNDEAD ARCHMAGE (claude/archmage2b, Daniel's pick): "Colossal Boss Battle Theme" (Blackmoor Colossus, the loop with the choir) by Matthew Pablo, CC-BY 3.0 (audio/CREDITS.txt) - his stair chase and his fight */   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
+  matriarch: './audio/matriarch.ogg',   /* THE RAPTOR MATRIARCH (claude/redgorge2 art pass, Daniel's pick): "Volatile Reaction" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
   puppeteer: './audio/puppeteer.ogg' };   /* THE PUPPETEER: 'Dissonant Waltz' by Yubatake, CC-BY 4.0 - Daniel's pick, 10-02 (claude/puppeteer2; audio/CREDITS.txt) */   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
 let duckT = 1, ambKind = null, ambNodes = [], ambGain = null, musicVol = 1;
 const trackBuf = {}, trackPending = {};
@@ -1476,7 +1477,7 @@ export const AMBIENT_SOURCES = { cistern: ['synth:air', 'synth:drip', 'synth:scu
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
 /* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
    (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
-export const MUSIC_CREDITS_ROW = { underwell: '"Ossuary 6" — K. MacLeod, CC-BY', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
+export const MUSIC_CREDITS_ROW = { underwell: '"Ossuary 6" — K. MacLeod, CC-BY', matriarch: '"Volatile Reaction" — K. MacLeod, CC-BY', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
 export const MUSIC_CREDITS = {
   undeadmage: '"Colossal Boss Battle Theme" — Matthew Pablo, CC-BY',   /* (claude/archmage2b) the Undead Archmage: CC-BY 3.0, matthewpablo.com - credited in full on the credits page and in audio/CREDITS.txt */
   puppeteer: '"Dissonant Waltz" — Yubatake, CC-BY',   /* (claude/puppeteer2: CC-BY 4.0, credited here, on the credits page and in audio/CREDITS.txt) */
@@ -1524,5 +1525,5 @@ export const MUSIC_CREDITS = {
   underwell: '"Ossuary 6 - Air" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/underwellart: the credit EXACTLY as the licence asks) */
   redgorge: '"Old Road" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/redgorge-fix: the credit EXACTLY as the licence asks; the Sound Test row trims it to fit, the credits page and audio/CREDITS.txt carry it whole) */
   gorgecrab: '"The Great Red Crab" — BRACKEN',
-  matriarch: '"Old Plume" — BRACKEN',
+  matriarch: '"Volatile Reaction" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/redgorge2 art pass: the credit EXACTLY as the licence asks; the Sound Test row is MUSIC_CREDITS_ROW) */
 };
