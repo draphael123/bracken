@@ -63,7 +63,7 @@ them now) via its own --write, as its header asks.
 Results (final tree): all green except as noted. normal-health, pyro-duel and small-adds each went red once on an intermediate value and are green on
 the final one (King Gorm 700 / x1.3; the Pyromancer keeps 587 health; the Mother's heart line without hitstop). lab-clock timed out once under load
 (CDP) and passed alone. **mash-gate**: the Mother Cap's boss row holds 0/6 now, so it came OFF tools/level-quality.mjs MASH_REPORT_ONLY (a gate
-made stricter, as the gate asks). Pre-existing, not mine:  misses the bar on bands / mechanics / secrets (same on the base;
+made stricter, as the gate asks). Pre-existing, not mine: tools/level-quality.mjs spore misses the bar on bands / mechanics / secrets (same on the base;
 Sporewood is not a gated level).
 
 ## 5. Machine note (for the coordinator)
