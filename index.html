@@ -43,13 +43,15 @@
 <canvas id="c"></canvas>
 <div id="safe"></div>
 <div id="rotate"><div class="bk">BRACKEN</div><div class="ph"></div><b>TURN IT SIDEWAYS</b><div>BRACKEN plays in landscape.<br>Rotate the phone and tap to play full screen.</div><button id="anyway">play it upright anyway</button></div>
-<div id="boot">booting…</div>
+<div id="boot"></div>
 <script>
   // and a way past it: some people are going to play this on a phone held upright whatever we say
   addEventListener('DOMContentLoaded', () => { const b = document.getElementById('anyway');
     if (b) b.addEventListener('click', e => { e.stopPropagation(); document.body.classList.add('upright'); }); });
 </script>
 <script>
+  // DEV TEXT ONLY WITH ?debug: a player is shown the loading scene, never "booting..."
+  if (/[?&]debug/.test(location.search)) { const b0 = document.getElementById('boot'); if (b0) b0.textContent = 'booting…'; }
   window.addEventListener('error', e => { const b = document.getElementById('boot'); if (b) { b.textContent = 'ERROR: ' + e.message + ' @' + (e.filename||'').split('/').pop() + ':' + e.lineno; b.style.color = '#ff7a6b'; } });
   setTimeout(() => { const b = document.getElementById('boot'); if (b && !window.BK) { b.textContent = /[?&]debug\b/.test(location.search) ? 'still booting after 8s - check console' : 'STILL LOADING - SLOW CONNECTION?'; } }, 8000);
 
