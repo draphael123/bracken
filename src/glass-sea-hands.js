@@ -67,7 +67,7 @@ export function makeGlassSeaHands(ctx) {
       const fire = s.kind === 'fire'; let end = null;
       for (const k of res.lit) { GSx.lit.add(k); (fire ? GSx.fireLit : GSx.sunLit).add(k); }
       for (const i of res.hit) { const r = R[i]; end = r;
-        if (r.kind === 'bed') { if (!fire) r.ref.hit = true; else if (once('fireBed')) say('FIRELIGHT WILL NOT FUSE SAND: IT WANTS THE SUN', '#ffd36b'); }
+        if (r.kind === 'bed') { if (!fire) r.ref.hit = true; else if (once('fireBed')) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'FIRELIGHT WILL NOT FUSE SAND: IT WANTS THE SUN', '#ffd36b'); }
         if (r.kind === 'ring') { if (fire) r.ref.ringHit = true; } }
       const last = res.segs[res.segs.length - 1];
       GSx.beams.push({ id: s.id, kind: s.kind, segs: res.segs, end: end ? { x: end.x, y: end.y, recv: end.kind } : last ? { x: last.x1, y: last.y1, recv: null } : null });
@@ -88,7 +88,7 @@ export function makeGlassSeaHands(ctx) {
     m.n = next; m.state = m.notches[next]; m.flash = 0.4; GSx.n.turns++;
     ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.ratchet && ctx.sfx.ratchet();
     retrace();
-    ctx.number(m.x * ts + 8, m.y * ts - 18, 'THE MIRROR: ' + notchWord(m, m.state), '#fff6c8');
+    const told = 'THE MIRROR: ' + notchWord(m, m.state); ctx.number(m.x * ts + 8, m.y * ts - 18, told, '#fff6c8');   /* (a line of CALL_COUNTS: src/hint-lines.js) */
     return true;
   };
   H.noSun = x => !!GSx && x >= GSx.L.sunsetX * TS();
@@ -126,11 +126,11 @@ export function makeGlassSeaHands(ctx) {
       while (b.set < want) { const [x, y] = b.tiles[b.set++]; ctx.cellSet(x, y, Tt.ONEWAY); if (b.set % 3 === 1) ctx.burst(x * ts + 8, y * ts + 2, 4, ['#e8fff8', '#9ae8d0', '#ffd36b'], 40, 0.4); }
       while (b.set > want) { const [x, y] = b.tiles[--b.set]; ctx.cellSet(x, y, Tt.AIR); if (b.set % 3 === 0) ctx.burst(x * ts + 8, y * ts + 4, 4, ['#c8b48a', '#9ae8d0'], 30, 0.5); }
       if (k0 < 1 && b.k >= 1) { GSx.n.fused++; ctx.sfx.crack && ctx.sfx.crack(); if (P0 && Math.abs(P0.x - b.tx * ts) < 400) say('THE BEAM FUSES THE SAND: ' + (b.label || 'GLASS'), '#9ae8d0'); }
-      if (k0 > 0 && b.k <= 0 && !b.hit) { GSx.n.crumbled++; if (P0 && Math.abs(P0.x - b.tx * ts) < 400) say('THE GLASS CRUMBLES BACK TO SAND', '#c8b48a'); } }
+      if (k0 > 0 && b.k <= 0 && !b.hit) { GSx.n.crumbled++; if (P0 && Math.abs(P0.x - b.tx * ts) < 400) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'THE GLASS CRUMBLES BACK TO SAND', '#c8b48a'); } }
     /* THE CRACKS */
     for (const c of GSx.cracks) {
       const wasHeld = c.held; c.held = !!c.swarm && (c.fireHeld || c.ringHit);
-      if (c.swarm && c.held && !wasHeld && c.ringHit) { GSx.n.held++; if (P0 && Math.abs(P0.x - c.x0 * ts) < 300) say('THE FIRELIGHT HOLDS THE CRACK', '#ffd36b'); }
+      if (c.swarm && c.held && !wasHeld && c.ringHit) { GSx.n.held++; if (P0 && Math.abs(P0.x - c.x0 * ts) < 300) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'THE FIRELIGHT HOLDS THE CRACK', '#ffd36b'); }
       const boiling = c.swarm && !c.held && night(c.x0 * ts); c.boiling = boiling;
       if (boiling) { c.out = c.out.filter(q => q.alive); c.spewT -= dt;
         if (P0 && Math.abs(P0.x - (c.x0 + c.x1 + 1) * ts / 2) < GS.spewNear * ts && c.spewT <= 0 && c.out.length < GS.spewMax && ctx.spawn) { c.spewT = GS.spew;

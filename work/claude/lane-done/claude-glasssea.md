@@ -67,17 +67,28 @@ WARDED / HIGHER / LOWER). B13: its KNEE CRACKS take a hero's blow whole from a p
 
 ## Numbers
 - THE GLASS COLOSSUS, human bot at CAMPAIGN level (tools/harnesscard-rates.mjs glasssea --mode=new, L33, BKT.setHeroLevel, no skills), FINAL setting
-  (hp 2000 -> 2940 on the bar, lance 56, stomp 22, shards 16, shake 16, wave 29, cap 9%): knight 3/3, WARDEN 1/3, pyro 3/3 = 7/9 = 78% - ABOVE THE BAND,
+  (hp 2000 = about 2950 on the bar at its tier, lance 56, stomp 22, shards 16, shake 16, wave 29, cap 9%): knight 3/3, WARDEN 1/3, pyro 3/3 = 7/9 = 78% - ABOVE THE BAND,
   no hero at 0. Fights 80-108 s. The 20-seed cap per hero is spent (I stopped there). The settings passed through: 100% (hp 1500); 9/9 at hp 2100;
   knight 3/3 warden 0/3 pyro 3/3 at x1.25 damage. The spread is the hero: the warden takes every '!' the knight's shield turns, and her spear deals
   about half the knight's per opening (the bot stands her at her tip, WARDEN_TIP, as the house plans do).
-- Mash bot, boss: see the stamped docs/mash-bot.json row (below). Level (stamped, L33): see below.
+- Mash bot (tools/mash-bot.mjs, stamped LEVEL then BOSS, L33): boss 0/6 (dead 67-80 s, the Colossus keeps 82-90%); level lowest health knight 37%,
+  warden 34%, pyro 34% (it cannot turn a mirror: lifted over every crack; what it walks through is the crossing's guards and throwers, the night's
+  pack, the cold, the sun). The margins are thin (one run read knight 46%): the level-mash numbers moved a lot with one foe added or taken away.
+- Level-1 pilot (tools/level1-pilot.mjs --write, knight, 3 runs): 45 hits taken, 0 deaths, 95 lifts (it cannot turn mirrors either).
 - Route pilot (tools/glasssea-route.mjs, real keys, god + no foes = base movement): ALL 7 heroes walk the whole route, 0 lifts.
 - The slide gap: all 7 heroes fall in with a run jump and clear it with the slide (measured).
-- level-quality glasssea: see below.
+- level-quality glasssea: CLEARS THE BAR (flat / ground / bands / mechanics (gsmirror, gscampfire, gsheap, gscrack, colmirror) / music / secrets /
+  checks one per 158 route tiles / 1.7 encounters a screen / slopes drawn / ranged / roles 4 / unlocks / pilot / mash / route); GATE += glasssea.
 
 ## Checks run
-(filled at the end of the lane)
+glasssea (new, 69 asserts, in check.mjs), level-quality (all gated), mash-gate, boss-greed, boss-openings, boss-fight-end, boss-music, audio-assets,
+desert-foes2, corpses, goblin-lint, one-new-foe (glasssea = [skitter]), threat-holes, sprinkle-cap, answer-tags, hint-shown, stuck (static + runtime),
+checkpoints, architecture, skins, npc-removal, slopes-trace (unchanged; glasssea is not in its trace list, no rebase), map-grammar, map-spacing,
+dangling-paths, homepaths, comments, signs. Route pilot (all 7 heroes, base movement) and the slide-gap probe.
+RED, NOT MINE: tells - updateScalder ladleTell wants ! (red on the base sha 85e13368 too, checked in a throwaway worktree; tells --write reflowed
+src/marks.js MARK as the tool does - only the Colossus and skitter rows changed in value, checked key by key).
+HOUSEKEEPING: the C: drive had 300 MB free mid-lane (hundreds of abandoned bracken-look browser profiles in the temp folder): I ran the repo's own
+tools/profile-sweep.mjs (idle >= 30 min, no live process) - about 4 GB back.
 
 ## UNVERIFIED
 - No Daniel playtest (THE GLASS COLOSSUS's gate). No human eye on the greybox art beyond my own frame grabs.

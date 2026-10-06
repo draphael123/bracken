@@ -71,7 +71,7 @@ export function makeColossusHands(ctx) {
   };
   /* E AT A SHELF-MIRROR: the next notch */
   H.interact = P => { if (!S || !ctx.bossActive || !A()) return false; const m = S.mirrors.find(q => Math.abs(q.x - P.x) <= 22 && Math.abs(S.G.floor - P.y) <= 20); if (!m) return false;
-    const n = CG.turnMirror(S, m.i); ctx.sfx.clank && ctx.sfx.clank(); ctx.number(m.x, S.G.floor - 44, 'THE MIRROR: ' + CG.NOTCH_WORD[n], '#fff6c8'); return true; };
+    const n = CG.turnMirror(S, m.i); ctx.sfx.clank && ctx.sfx.clank(); const told = 'THE MIRROR: ' + CG.NOTCH_WORD[n]; ctx.number(m.x, S.G.floor - 44, told, '#fff6c8'); return true; };
   /* A BLOW ON IT (src/glass-colossus.js takeBlow): the zone by the striker's feet */
   H.take = (e, dmg, fromX, plunge) => { if (!S) return dmg; const P = ctx.hero(), o = {}; const d = CG.takeBlow(e, S, dmg, P.y, !!plunge, o);
     if (o.word) { e.guardFx = 0.3; e.guardWord = o.word; e.guardY = P.y; }
