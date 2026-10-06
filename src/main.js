@@ -2627,7 +2627,7 @@ function ambushSpawn(A) {
     spawnEnt(Object.assign({ t, x, y: row, face: px < P.x ? 1 : -1 }, o || {}));
     // THE WHOLE CROWD IS HERE: their captain closes the gates on a room already occupied.
     for (let i = n0; i < enemies.length; i++) { const e = enemies[i]; e.ambush = true; e.woke = 1; e.xpKey = 'a' + L.ambushes.indexOf(A) + '.' + A.wave + '.' + t + x + '.' + (i - n0); e.sleeper = false; e.stagger = Math.max(e.stagger || 0, 0.4);
-      if(e.elite){e.hp=Math.round(e.hp*(AMBUSH_HEALTH[curId()]||1));e.hp0=e.hp;if(e.maxHp)e.maxHp=e.hp;}
+      if(e.elite){e.hp=Math.round(e.hp*Math.min(1,EL.ambCap/((ELITE[e.t]&&ELITE[e.t].hp)||EL.hp))*(AMBUSH_HEALTH[curId()]||1));   /* (ELITES2) a room's captain keeps the old x3 at most: the per-kind health was measured for a duel on the road, and the room has its waves */e.hp0=e.hp;if(e.maxHp)e.maxHp=e.hp;}
       if (AMB_FLY.has(t) || e.noGrav) ambushPen(A, e);   /* it comes in under the room's own ceiling, whatever it went looking for */
       A.foes.push(e); }
     burst(px, py - 8, 10, ['#c9b27c', '#9a8a6a', '#fff6e0'], 80, 0.5); dust(px, py, 8); ringAt(px, py - 8, 16, '#ff6b6b', 0.3);
@@ -2750,7 +2750,7 @@ const ELITE = {
 };
 /* big: HALF AS BIG AGAIN, body and all. At 1.2 an elite was a goblin with a gold edge; at 1.5 it stands a head over the crowd it leads.
    The hit box grows with the sprite (eliteMake), so what you see is what you hit and what the room has to fit */
-const EL = { hp: 2, dmg: 1.25, poise: 110, first: 2.5, every: 6.5, reach: 140, near: 150, rally: 4, wall: 5, slam: 16, lunge: 14, gold: 15, leash: 18, big: 1.5, col: '#c9962a' };
+const EL = { hp: 2, ambCap: 3, dmg: 1.25, poise: 110, first: 2.5, every: 6.5, reach: 140, near: 150, rally: 4, wall: 5, slam: 16, lunge: 14, gold: 15, leash: 18, big: 1.5, col: '#c9962a' };
 const eliteDmg = n => Math.round(n * EL.dmg * (1 + 0.25 * tierOf(curId())));   /* (ELITES2: EL.dmg, every elite move a quarter harder - his fights are longer, and a blow you did not answer should cost) */
 /* EVERY ELITE OF THE ATTEMPT, kept apart from the creature list: a dead foe is swept out of that list before the next frame looks
    at it, and an elite that is gone must still be seen to be dead, or its gate never lifts */
