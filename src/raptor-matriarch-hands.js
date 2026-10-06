@@ -64,7 +64,7 @@ export function makeMatriarchHands(ctx) {
   }
   /* INTO THE WATER (phase three, or the surge): a blow, and back on the nearest top (the rapids' rule: never a death) */
   const intoWater = (pp, surge) => ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !S) return; if ((pp.rmDunk || 0) > ctx.time()) return; pp.rmDunk = ctx.time() + 0.8;
-    const G = S.G, t = RM.nearestTop(G, P.x); hurt('THE WATER', () => ctx.damagePlayer(P.x, surge ? 6 : 14, { unblockable: true, noKnock: true, name: 'THE WATER' }));
+    const G = S.G, t = RM.nearestTop(G, P.x); hurt('THE WATER', () => ctx.damagePlayer(P.x, surge ? 6 : 7, { unblockable: true, noKnock: true, name: 'THE WATER' }));
     if (P.dead) return; ctx.burst(P.x, P.y - 6, 14, ['#7ab8e8', '#e8f4f8'], 80, 0.6); ctx.place(pp, Math.max(t.l + 10, Math.min(t.r - 10, t.cx)), G.topY);
     S.n.dunks = (S.n.dunks || 0) + 1; if (!S.told.dunk) { S.told.dunk = 1; ctx.number(P.x, G.topY - 40, 'THE CURRENT THROWS YOU BACK ON THE ROCK', '#7ab8e8'); } });
   const waterY = () => { if (!S) return 1e9; const G = S.G; if (S.ph === 3 && S.water > 0) return G.floorY - (G.floorY - G.p3Y) * S.water; if (S.burst > 0 || S.flood) return G.floodY; return 1e9; };
@@ -83,7 +83,7 @@ export function makeMatriarchHands(ctx) {
       const onPlank = pp.onMover && pp.onMover.mplank;
       if (S.ph === 3 && S.water > 0.5 && pp.y > wy + 3 && !onPlank) { intoWater(pp, false); continue; }
       if (S.ph < 3 && pp.y > G.topY + 10 && (S.burst > 0 || S.flood)) { const id = S.burst > 0 ? 'b' + S.burstId : 'f' + S.floodId; if (pp.rmWet !== id) { pp.rmWet = id;
-        ctx.asPlayer(pp, () => { hurt('THE FLOOD', () => ctx.damagePlayer(pp.x, S.burst > 0 ? 14 : 12, { unblockable: true, noKnock: true, name: S.burst > 0 ? 'THE BURST' : 'THE FLOOD' })); ctx.burst(pp.x, pp.y - 8, 10, ['#7ab8e8', '#e8f4f8'], 70, 0.5); }); } } }
+        ctx.asPlayer(pp, () => { hurt('THE FLOOD', () => ctx.damagePlayer(pp.x, S.burst > 0 ? 10 : 8, { unblockable: true, noKnock: true, name: S.burst > 0 ? 'THE BURST' : 'THE FLOOD' })); ctx.burst(pp.x, pp.y - 8, 10, ['#7ab8e8', '#e8f4f8'], 70, 0.5); }); } } }
     /* THE POSTS: a blade on a post of the bridge she perches on parts its ropes (her weight has them taut); any other time the ropes hold */
     if (S.ph === 2) for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.atk >= 0)) return; const hb = ctx.attackBox(); if (!hb) return;
       for (const b of G.bridges) for (const px of [b.a, b.b]) { if (!ctx.overlap(hb, { l: px - 5, r: px + 5, t: G.topY - 34, b: G.topY })) continue;
@@ -131,6 +131,8 @@ export function makeMatriarchHands(ctx) {
         g.fillStyle = '#8a6a3a'; for (let x = ax + 4; x < bx - 3; x += 6) { const k = (x - ax) / (bx - ax), y = by + Math.round(Math.sin(Math.PI * k) * 5); g.fillRect(x, y, 4, 2); }
         if (S.perch === b.id && ctx.boss && ctx.boss.mode === 'perch') { const k = 0.5 + 0.5 * Math.sin(time * 8); g.globalAlpha = 0.4 + 0.5 * k; g.strokeStyle = '#ffe9a0'; for (const x of [ax, bx]) { g.beginPath(); g.arc(x, ty + 10, 8 + 2 * k, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; } }
       else { g.moveTo(bx, ty); g.lineTo(bx, by); g.lineTo(bx - 6, by + 60); g.stroke(); g.fillStyle = '#8a6a3a'; for (let i = 0; i < 6; i++) g.fillRect(bx - 4 - i, by + 6 + i * 9, 4, 2); } }
+    /* the dam's loose timbers in the channel (they float up when it cracks) */
+    for (const m of (ctx.movers ? ctx.movers() : [])) { if (!m.mplank) continue; const x = R(m.x - cx), y = R(m.y - cy); g.fillStyle = '#7a5a30'; g.fillRect(x, y, m.w, 5); g.fillStyle = '#a8804a'; g.fillRect(x + 1, y, m.w - 2, 1); g.fillStyle = '#4a3a22'; g.fillRect(x + 6, y + 1, 1, 4); g.fillRect(x + m.w - 7, y + 1, 1, 4); }
     /* the levers and their sluices: FULL (a blue gauge) or EMPTY */
     for (const l of G.levers) { const x = R(l.x - cx), y = R(G.topY - cy), full = !!S.sluice[l.id];
       g.fillStyle = '#4a3a2a'; g.fillRect(x - 3, y - 18, 6, 18); g.fillStyle = '#9aa39a'; const pending = S.pending.some(p => p.id === l.id); g.save(); g.translate(x, y - 16); g.rotate(pending || !full ? 0.8 : -0.5); g.fillRect(-1, -12, 3, 12); g.restore();
@@ -170,6 +172,7 @@ export function makeMatriarchHands(ctx) {
     /* her shadow on the ground under her when she is on the wall, on a bridge or in the air - and the dive's mark where you stood */
     if (e.mode === 'wallRun' || e.mode === 'perch' || e.mode === 'diveTell' || e.mode === 'fly' || e.mode === 'volleyTell') { const sx = R(e.x - cx), sy = R(RM.surfY(G, e.x, 4) - 1 - cy); g.fillStyle = 'rgba(20,10,10,0.45)'; g.fillRect(sx - 14, sy, 28, 2); }
     if (S.mark && e.mode === 'diveTell') { const x = R(S.mark.x - cx), y = R(S.mark.y - 2 - cy); g.fillStyle = 'rgba(30,10,10,0.6)'; g.fillRect(x - MAT.diveR, y, MAT.diveR * 2, 3); g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, y - 6); g.lineTo(x + 6, y + 2); g.moveTo(x + 6, y - 6); g.lineTo(x - 6, y + 2); g.stroke(); }
+    if (e.mode === 'pounceTell' && S.pAt) { const x = R(S.pAt.x - cx), y = R(RM.surfY(G, S.pAt.x, 4) - 2 - cy); g.fillStyle = 'rgba(30,10,10,0.55)'; g.fillRect(x - MAT.pounceR, y, MAT.pounceR * 2, 3); g.fillStyle = blink; g.fillRect(x - 1, y - 5, 2, 4); }
     if (e.mode === 'fly' && S.fly && S.fly.then === 'land') { const x = R(S.fly.tx - cx), y = R(S.fly.ty - 2 - cy); g.fillStyle = 'rgba(30,10,10,0.5)'; g.fillRect(x - MAT.pounceR, y, MAT.pounceR * 2, 2); }
     for (const s of S.shots) { const x = R(s.x - cx), y = R(s.y - cy); if (s.k === 'rock') { g.fillStyle = '#8a5a32'; g.fillRect(x - 3, y - 3, 6, 6); g.fillStyle = '#c8945a'; g.fillRect(x - 2, y - 3, 3, 2); }
       else { g.save(); g.translate(x, y); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#f0dcb8'; g.fillRect(-7, -1, 12, 2); g.fillStyle = '#7a2e1c'; g.fillRect(3, -1, 3, 2); g.restore(); } }

@@ -117,7 +117,7 @@ export function buildRedGorge({ painter, T, TS }) {
   { air(48, 78, 150, 217); block(45, 56, 166, 166); air(45, 47, 161, 165);                 /* the shaft; the landing at the top (the gorge floor's row); the cut west into the gorge's mouth */
     ledge(68, 76, 216); ledge(61, 69, 213); ledge(54, 62, 210); ledge(48, 55, 207);   /* (each overlaps the next: a three-row hop is straight up or one column across) */
     ent('rockfall', 58, 199, { every: 3.2, tell: 0.9, seen: true });                         /* TEACH: a told rockfall over the third ledge */
-    sign(73, 217, 'THE GORGE CLIMB. WATCH FOR THE DUST: A RED MARK IS WHERE THE ROCK LANDS.');
+    sign(73, 218, 'THE GORGE CLIMB. WATCH FOR THE DUST: A RED MARK IS WHERE THE ROCK LANDS.');
     rope(50, 192, 206);                                                                     /* THE WALL ROPE: fifteen rows */
     ent('rockfall', 50, 193, { every: 4.0, tell: 0.9, seen: true });                         /* DEVELOP: a rock down the rope - climb between them */
     ledge(48, 57, 191);                       /* the rope's top shelf, and the basket's berth in it */
@@ -282,6 +282,7 @@ export function buildRedGorge({ painter, T, TS }) {
       { kind: 'jam', opens: 'the bridge it seals (a released burst washes it out)', hud: 'A JAM: ONLY A RELEASED BURST MOVES IT' },
       { kind: 'waterwheel', opens: 'its basket up the sheer face while the water runs', hud: 'THE WHEEL TURNS WHEN THE WATER RUNS' },
       { kind: 'oldnest', opens: "THE OLD NEST's vault (a silver)", hud: 'THE OLD NEST OPENS' },
+      { kind: 'mlever', opens: "the dam's banked flood down the Matriarch's channel (a burst: caught in it she leaps for the nearest pillar, and a narrow one throws her)", hud: 'THE SLUICE OPENS: THE WATER COMES / THE SLUICE IS EMPTY: THE NEXT FLOOD FILLS IT' },
     ],
     music: 'redgorge',   /* "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick (10-02); credited in src/audio.js MUSIC_CREDITS, audio/CREDITS.txt and the credits page (src/credits.js) */
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],

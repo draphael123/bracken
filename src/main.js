@@ -23698,7 +23698,7 @@ DF2H = makeDesertFoes2Hands({ get L() { return L; }, get players() { return play
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o),
   standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), gorge: () => (RGH && RGH.on() ? { state: RGH.state, wetAt: RGH.wetAt } : null) });
 /* THE RAPTOR MATRIARCH'S HANDS (src/raptor-matriarch-hands.js, claude/redgorge2): main.js owns the world; the module owns her fight, the levers, the bridges' posts, the cracked dam's water */
-MTH = makeMatriarchHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
+MTH = makeMatriarchHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, movers: () => movers, time: () => time, VW: () => VW, VH: () => VH,
   gorge: () => (RGH && RGH.on() ? { phase: RGH.state().phase } : null),
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(),

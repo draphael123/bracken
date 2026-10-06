@@ -86,3 +86,17 @@ desert-arc concept of 2026-10-01, which wins where the two differ. The greybox i
                   tools/redgorge-pilot.mjs. level-quality gates it.
     PROCESS       concept (this page) -> Opus greybox (claude/redgorge) -> reviewer against THE MAGE'S FOLLY -> fixes -> Sonnet art and
                   music. Nothing ships without Daniel's playtest.
+
+## RED GORGE 2 (claude/redgorge2, the Opus greybox, 2026-10-06) - brief: scratch/brief-raptormatriarch.md
+    THE BOSS      THE RAPTOR MATRIARCH, "OLD PLUME" (src/raptor-matriarch.js pure + src/raptor-matriarch-hands.js) replaces THE GREAT RED CRAB,
+                  who is BENCHED intact (src/gorge-crab.js, his art, his OPEN_RULE row and theme kept; unplaced). Her nest ledge is the old
+                  dam's spillway: banks either end, three NARROW and two BROAD pillars two rows over the channel, a sluice lever on each bank,
+                  two rope bridges. P1 pounce / rake / tail / scree / screech; the flood opening (a burst catches her in the channel, the
+                  nearest pillar, a narrow one throws her). P2 (60%) the walls: wall run, dive at her shadow's mark (stuns her), bridge perch
+                  (strike the post: tangled), feather volley. P3 (25%) the dam cracks: the pillar tops, pounce chains (a narrow landing staggers
+                  her), the debris surge. A beast duelist (B11): always hittable, guards by angle; a told 3 s ward after every opening.
+    THE RAPIDS    a new first section on the river under the canyon wall (start on the east bank): stone to stone, drifting timbers
+                  (movers) over the reaches too wide to jump, faster in the horn's rapids; a fall in hurts and hands you back to the last
+                  rock (L.waterHurts); raptors stoop at your spot and a stoop over the water knocks you in.
+    THE CLIMB     up the canyon wall to the gorge's mouth: ledges under told rockfalls, a wall rope with a rock down it, THE SPILL CHUTE
+                  (the gorge's flood comes down it; its basket rides the flood), told gusts over the chute at the top.

@@ -37,23 +37,23 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/raptor-matriarch-hands.js binds it). matPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const MAT = {
-  hp: 1700, w: 44, h: 34, markH: 56,
-  openMul: 1.6, openCap: 0.12, wardT: 3.0,
+  hp: 1075, w: 44, h: 34, markH: 56,
+  openMul: 1.6, openCap: 0.10, wardT: 3.0,
   p2: 0.6, p3: 0.25,
   walk: 80, keep: 30, turn: 0.35, gap: [0.55, 0.5, 0.45], hopUp: 320, fall: 420,
   /* P1 */
-  pounceTell: 0.75, pounceFly: 0.5, pounceR: 28, pounceArc: 64, skidT: 1.1, skidSlide: 34,
+  pounceTell: 0.8, pounceLock: 0.45, pounceFly: 0.5, pounceR: 23, pounceArc: 64, skidT: 1.5, skidSlide: 34,
   rakeTell: 0.45, rakeT: 0.14, rakeGap: 0.22, rakeReach: 54, rakeBeatT: 0.8, rakeRange: 72,
   sweepTell: 0.7, sweepT: 0.25, sweepR: 78, sweepH: 22,
   screeTell: 0.7, screeN: 4, screeV: [170, 250], screeG: 600,
   screechTell: 0.8, raptorCap: 2,
-  hornLeap: 0.45, panicFly: 0.42, wobbleT: 0.7, staggerT: 3.6, releaseTell: 0.4, burstT: 1.6,
+  hornLeap: 0.45, panicFly: 0.42, wobbleT: 0.7, staggerT: 4.2, releaseTell: 0.4, burstT: 1.6,
   /* P2 */
-  wallUp: 0.6, runT: [1.6, 2.6], runV: 150, diveTell: 0.9, diveFly: 0.3, diveR: 28, stunT: 2.4,
+  wallUp: 0.6, runT: [1.6, 2.6], runV: 150, diveTell: 1.0, diveFly: 0.3, diveR: 23, stunT: 3.2,
   volleyTell: 0.8, quills: 5, quillSpread: 0.2, quillV: 210, perchT: 3.6, toBridge: 0.5, tangleT: 4.5,
   /* P3 */
-  crackT: 2.5, riseT: 2.0, chainN: 3, chainGap: 0.45, p3StaggerT: 2.8, surgeTell: 1.2, surgeV: 240, surgeEvery: 16,
-  dmg: { pounce: 28, rake: 13, sweep: 22, scree: 15, dive: 30, quill: 13, surge: 12 },
+  crackT: 2.5, riseT: 2.0, chainN: 3, chainGap: 0.45, p3StaggerT: 3.2, surgeTell: 1.2, surgeV: 240, surgeEvery: 16,
+  dmg: { pounce: 19, rake: 11, sweep: 13, scree: 12, dive: 20, quill: 10, surge: 10 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
@@ -139,7 +139,7 @@ function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] 
 /* a flight from where she is to (tx, ty) over t s, an arc `arc` px high; `then` is the mode she lands in */
 function fly(e, S, tx, ty, t, arc, then) { S.fly = { x0: e.x, y0: e.y, tx, ty, t, t0: t, arc, then }; e.mode = 'fly'; e.modeT = t; }
 function endOpen(e, S, c) { e.open = 0; S.ward = MAT.wardT; S.n.wards++; S.openTaken = 0; c.number(e.x, e.y - 70, 'HER WARD: SHE SHAKES IT OFF', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
-function open(e, S, c, mode, t, line) { setMode(e, mode, t); e.open = t; S.openTaken = 0; S.n.opens++; if (line) c.number(e.x, e.y - 64, line, '#8fd160'); c.fx('open', e.x, e.y); }
+function open(e, S, c, mode, t) { setMode(e, mode, t); e.open = t; S.openTaken = 0; S.n.opens++; c.fx('open', e.x, e.y); }
 
 /* ---------- THE WATER (the hands tell her what the gorge's clock does: c.horn(), c.flood()) ---------- */
 /* E AT A LEVER: the sluice lets the banked flood go. Returns 'released' | 'empty' | 'busy' */
@@ -197,7 +197,7 @@ export function stepMatriarch(e, S, dt, h, c) {
         const tx = clampX(G, side < 0 ? floorL : floorR); S.n.staggers++; fly(e, S, tx, surfY(G, tx, 4), 0.32, 10, 'staggered'); } return;
     case 'skid': { const sl = MAT.skidSlide / MAT.skidT; e.x = clampX(G, e.x + (e.face || 1) * sl * dt * Math.max(0, e.modeT / MAT.skidT)); follow(e, S, dt); if (e.modeT <= 0) setMode(e, 'recover', 0.25); return; }
     case 'rakeBeat': case 'recover': follow(e, S, dt); if (e.modeT <= 0) nextMove(e, S, P, c); return;
-    case 'crack': if (e.modeT <= 0) { S.water = Math.max(S.water, 0.01); S.planks = true; c.number((G.x0 + G.x1) / 2, G.topY - 100, 'THE CHANNEL FLOODS: THE DAM\'S TIMBERS FLOAT UP', '#7ab8e8'); S.surgeT = 1.5;
+    case 'crack': if (e.modeT <= 0) { S.water = Math.max(S.water, 0.01); S.planks = true; c.number((G.x0 + G.x1) / 2, G.topY - 100, "THE CHANNEL FLOODS: THE DAM'S TIMBERS FLOAT UP", '#7ab8e8'); S.surgeT = 1.5;
         const t = nearestTop(G, P.x, q => q.kind === 'broad'); fly(e, S, t.cx, G.topY, 0.6, 50, 'walk'); S.script = nextScript(S); S.step = 0; } return;
     case 'walk': {
       if (S.ph === 2) { setMode(e, 'wallRun', 1.0); return; }
@@ -213,7 +213,7 @@ export function stepMatriarch(e, S, dt, h, c) {
     case 'perch': { const b = S.perch; e.y = G.bridgeY; if (!b || S.bridges[b] !== 'up') { S.perch = null; setMode(e, 'falling', 0); S.n.cuts++; return; }
       if (!S.perchVolley && e.modeT < MAT.perchT * 0.55) { S.perchVolley = 1; if (c.raptors() < MAT.raptorCap) { tell(e, S, c, 'screechTell', MAT.screechTell); S.afterScreech = 'perch'; S.perchLeft = e.modeT; return; } }
       if (e.modeT <= 0) { S.perch = null; fly(e, S, clampX(G, e.x), G.wallY, 0.45, 20, 'wallRun'); S.runT = 1.0; } return; }
-    case 'falling': { e.vy = (e.vy || 0) + 900 * dt; e.y += e.vy * dt; if (e.y >= G.floorY) { e.y = G.floorY; e.vy = 0; S.n.tangles++; open(e, S, c, 'tangled', MAT.tangleT, 'THE ROPES PART: SHE IS TANGLED IN THE BRIDGE'); c.sound('fall'); c.shake(4); } return; }
+    case 'falling': { e.vy = (e.vy || 0) + 900 * dt; e.y += e.vy * dt; const fy = surfY(G, e.x, 4); if (e.y >= fy) { e.y = fy; e.vy = 0; S.n.tangles++; open(e, S, c, 'tangled', MAT.tangleT); c.number(e.x, e.y - 64, 'THE ROPES PART: SHE IS TANGLED IN THE BRIDGE', '#8fd160'); c.sound('fall'); c.shake(4); } return; }
   }
   stepMove(e, S, dt, P, h, c);
 }
@@ -243,7 +243,7 @@ function nextMove(e, S, P, c) {
       S.perch = b.id; S.perchVolley = 0; S.n.perches++; fly(e, S, b.mid, G.bridgeY, MAT.toBridge, 20, 'perch'); if (!S.told.perch) { S.told.perch = 1; c.number(b.mid, G.bridgeY - 40, 'SHE PERCHES ON THE ROPE BRIDGE', '#ffd36b'); } return; }
     case 'chain': S.chain = MAT.chainN; tell(e, S, c, 'pounceTell', MAT.pounceTell * 0.9); return;
     case 'surge': tell(e, S, c, 'surgeTell', MAT.surgeTell); if (c.raptors() < MAT.raptorCap) for (let i = c.raptors(); i < MAT.raptorCap; i++) { c.spawnRaptor(i % 2 ? G.x1 - 30 : G.x0 + 30, G.topY - 100); S.n.raptors++; }
-      c.number(e.x, e.y - 70, 'SHE SCREECHES: HER BROOD, AND THE RAPIDS\' DEBRIS', '#ff6b6b'); S.n.surges++; return;
+      c.number(e.x, e.y - 70, "SHE SCREECHES: HER BROOD, AND THE RAPIDS' DEBRIS", '#ff6b6b'); S.n.surges++; return;
   }
   setMode(e, 'walk', 0.5);
 }
@@ -252,8 +252,9 @@ function nextMove(e, S, P, c) {
 function stepMove(e, S, dt, P, h, c) {
   const G = S.G, f = e.face || 1;
   switch (e.mode) {
-    case 'pounceTell': if (e.modeT <= 0) { let tx = clampX(G, P.x), ty = surfY(G, tx, 4);
-        if (S.ph === 3) { const t = topAt(G, P.x, 4) || nearestTop(G, P.x); tx = t.kind === 'narrow' ? t.cx : clampX(G, Math.max(t.l + 20, Math.min(t.r - 20, P.x))); ty = G.topY; S.target = t; }
+    case 'pounceTell': if (e.modeT <= MAT.pounceLock && !S.pAt) { S.pAt = { x: P.x }; c.fx('pmark', P.x, surfY(G, P.x, 4)); }   /* HER EYE LOCKS ON: the spot she will land on is marked (her shadow) for the last of the crouch */
+      if (e.modeT <= 0) { const lx = S.pAt ? S.pAt.x : P.x; S.pAt = null; let tx = clampX(G, lx), ty = surfY(G, tx, 4);
+        if (S.ph === 3) { const t = topAt(G, lx, 4) || nearestTop(G, lx); tx = t.kind === 'narrow' ? t.cx : clampX(G, Math.max(t.l + 20, Math.min(t.r - 20, lx))); ty = G.topY; S.target = t; }
         else if (!topAt(G, tx, 4) && ty === G.floorY) ty = G.floorY;
         S.n.pounces++; c.sound('leap'); e.face = Math.sign(tx - e.x) || f; fly(e, S, tx, ty, MAT.pounceFly, MAT.pounceArc, 'land'); } return;
     case 'rakeTell': if (e.modeT <= 0) { setMode(e, 'rake', MAT.rakeT); S.rakeN = (S.rakeN || 0) + 1; c.sound('slash');
@@ -285,19 +286,19 @@ function stepFly(e, S, dt, P, c) {
   e.x = F.tx; e.y = F.ty; S.fly = null; const then = F.then;
   if (then === 'land') {
     c.fx('land', e.x, e.y); c.shake(2);
-    const hitAny = c.hit([e.x - MAT.pounceR, e.x + MAT.pounceR, e.y - 40, e.y + 52], MAT.dmg.pounce, MOVE_NAME.pounce, { key: 'pounce' + S.act, pin: true });
+    const hitAny = c.hit([e.x - MAT.pounceR, e.x + MAT.pounceR, e.y - 40, e.y + 20], MAT.dmg.pounce, MOVE_NAME.pounce, { key: 'pounce' + S.act, pin: true });
     if (S.ph === 3) { const t = topAt(G, e.x, 4);
-      if (t && t.kind === 'narrow' && !(S.ward > 0)) { S.n.p3Staggers++; S.chain = 0; open(e, S, c, 'pstagger', MAT.p3StaggerT, S.told.p3 ? null : 'THE NARROW TOP THROWS HER: STRIKE'); S.told.p3 = 1; return; }
+      if (t && t.kind === 'narrow' && !(S.ward > 0)) { S.n.p3Staggers++; S.chain = 0; open(e, S, c, 'pstagger', MAT.p3StaggerT); if (!S.told.p3) c.number(e.x, e.y - 64, 'THE NARROW TOP THROWS HER: STRIKE', '#8fd160'); S.told.p3 = 1; return; }
       if (S.chain > 1 && !hitAny) { S.chain--; tell(e, S, c, 'pounceTell', MAT.chainGap + 0.3); return; }
       S.chain = 0; setMode(e, 'recover', 0.45); return; }
     if (hitAny) { setMode(e, 'recover', 0.55); return; }
     S.n.whiffs++; setMode(e, 'skid', MAT.skidT); if (!S.told.skid) { S.told.skid = 1; c.number(e.x, e.y - 60, 'SHE SKIDS: HER GUARD IS DOWN', '#ffd36b'); } return; }
   if (then === 'diveLand') { c.fx('land', e.x, e.y); c.shake(4); const hit = c.hit([e.x - MAT.diveR, e.x + MAT.diveR, e.y - 40, e.y + 8], MAT.dmg.dive, MOVE_NAME.dive, { key: 'dive' + S.act });
     S.mark = null; if (hit) { fly(e, S, clampX(G, e.x), G.wallY, MAT.wallUp, 20, 'wallRun'); S.runT = 1.0; return; }
-    S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT, S.told.stun ? null : 'SHE SLAMS INTO THE ROCK: STUNNED'); S.told.stun = 1; return; }
+    S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT); if (!S.told.stun) c.number(e.x, e.y - 64, 'SHE SLAMS INTO THE ROCK: STUNNED', '#8fd160'); S.told.stun = 1; return; }
   if (then === 'wobble') { setMode(e, 'wobble', MAT.wobbleT); c.number(e.x, e.y - 64, 'THE NARROW PILLAR THROWS HER', '#8fd160'); c.sound('flap'); return; }
   if (then === 'walk' && S.footSay) { S.footSay = 0; c.number(e.x, e.y - 64, 'SHE FINDS HER FOOTING ON THE BROAD ROCK', '#9aa39a'); }
-  if (then === 'staggered') { open(e, S, c, 'staggered', MAT.staggerT, 'SHE FALLS INTO THE WATER: STAGGERED'); c.shake(3); return; }
+  if (then === 'staggered') { open(e, S, c, 'staggered', MAT.staggerT); c.number(e.x, e.y - 64, 'SHE FALLS INTO THE WATER: STAGGERED', '#8fd160'); c.shake(3); return; }
   if (then === 'wallRun') { setMode(e, 'wallRun', S.runT || 1.2); e.y = G.wallY; return; }
   if (then === 'perch') { setMode(e, 'perch', MAT.perchT); return; }
   setMode(e, 'walk', 0.45);
@@ -335,74 +336,75 @@ export function matPlan(s) {
   const lo = G.x0 + 10, hi = G.x1 - 10, clamp = x => Math.max(lo, Math.min(hi, x));
   const myTop = topAt(G, P.x, 2), onTop = !!myTop && P.y <= G.topY + 2, wet = channelWet(S) || S.horn || S.pending.length > 0;
   const kx = e.x, side = Math.sign(P.x - kx) || 1, dx = Math.abs(kx - P.x), same = Math.abs(P.y - e.y) < 24;
-  const hitR = reach + MAT.w / 2 - 2, stand = s.tip ? MAT.w / 2 + s.tip - 4 : 16,   /* (the warden stands where her point pays: tip px off her body's edge) */ swing = (fx) => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
+  const hitR = reach + MAT.w / 2 - 2, stand = s.tip ? 32 : 16,   /* (the warden stands a little off: her spear measured best at 30 px, claude/redgorge2) */ swing = (fx) => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
   /* A ROLL'S WAY: away from where she lands if there is room (a wall is not room), never off a top into water that is coming; else through under her; else none */
   const rollDir = ax => { const wetNow = channelWet(S) || S.horn || S.pending.length > 0, room = d => (d < 0 ? P.x - lo : hi - P.x), ok = d => room(d) >= 60 && !(wetNow && onTop && !topAt(G, clamp(P.x + d * 60), 2)) && !(S.ph === 3 && !topAt(G, clamp(P.x + d * 60), 2));
     const away = P.x <= ax ? -1 : 1; return ok(away) ? away : ok(-away) ? -away : room(-1) > room(1) ? -1 : 1; };
   /* the tops a hero can get to from here: up a pillar from the channel, across a gap at the same height */
   const goTop = top => { const x = clamp(Math.max(top.l + 8, Math.min(top.r - 8, P.x))); out.gx = x; if (!onTop && Math.abs(P.x - x) < 26 && P.ground) out.jump = true;
-    if (onTop && myTop !== top && P.ground && (Math.abs(P.x - myTop.l) < 10 || Math.abs(P.x - myTop.r) < 10)) out.jump = true; return out; };
+    if (onTop && myTop !== top && P.ground && (Math.abs(P.x - myTop.l) < 10 || Math.abs(P.x - myTop.r) < 10)) out.jump = true; return fin(out); };
+  const fin = o => { if (s.noRoll && o.dodge) o.dodge = false; return o; };
   /* 0. IN THE WATER'S WAY: out of the channel onto the nearest top */
   if (!onTop && wet && S.ph < 3) { const tp = nearestTop(G, P.x, q => !(matOpen(e) === false && q === topAt(G, kx, 20) && dx < 30)); out.why = 'out of the channel'; return goTop(tp); }
   /* 0b. AT A FULL LEVER WITH HER IN THE CHANNEL (her crouch to pounce at you from the floor is the moment): pull */
   if (S.ph === 1 && onTop && !S.pending.length && !(S.burst > 0) && e.y > G.topY + 8 && e.mode !== 'fly' && !matOpen(e) && !(S.ward > 0)) {
-    const lv = G.levers.find(l => S.sluice[l.id] && Math.abs(l.x - P.x) < 12); if (lv && seenFor('lv' + S.act) && !roll('lv' + S.act, PLAN.missLever)) { out.talk = true; out.gx = P.x; out.why = 'pull: she is in the channel'; return out; } }
+    const lv = G.levers.find(l => S.sluice[l.id] && Math.abs(l.x - P.x) < 12); if (lv && seenFor('lv' + S.act) && !roll('lv' + S.act, PLAN.missLever)) { out.talk = true; out.gx = P.x; out.why = 'pull: she is in the channel'; return fin(out); } }
   /* 1. HER BLOWS COMING (a quarter-second late, some misread) */
   const key = 'k' + S.act + e.mode;
   if (/Tell$/.test(e.mode) || e.mode === 'fly' || e.mode === 'rake' || e.mode === 'sweep') {
     const miss = roll(key + 'm', PLAN.miss), seen = seenFor('a' + S.act);
     if (seen && !miss) {
       if (e.mode === 'pounceTell' && S.ph === 3) { mem.p3From = myTop ? myTop.id : null; if (e.modeT < 0.22 && myTop && dx < 260) { const nb = G.tops.filter(q => q !== myTop && Math.abs(q.cx - myTop.cx) < 110 && q.kind !== 'bank').sort((a, b) => (a.kind === 'narrow') - (b.kind === 'narrow') || Math.abs(a.cx - P.x) - Math.abs(b.cx - P.x))[0];
-          if (nb) { out.gx = nb.cx; if (P.ground) out.jump = true; out.why = 'off the narrow top as she comes'; return out; } } out.gx = myTop && myTop.kind === 'narrow' ? myTop.cx : P.x; out.why = 'wait on the top for her pounce'; return out; }
-      if (e.mode === 'pounceTell') { out.gx = P.x; out.why = 'hold still: she leaps where you stand'; return out; }
-      if (e.mode === 'fly' && S.fly && S.fly.then === 'land' && S.ph < 3 && Math.abs(S.fly.tx - P.x) < 46 && P.ground) { if (S.pending.length || S.burst > 0) { out.gx = P.x; out.why = 'the burst will throw her: stay up'; return out; } const d = rollDir(S.fly.tx); if (d) { out.dodge = true; out.gx = clamp(P.x + d * 60); } else out.gx = P.x; out.why = 'late roll out from under her'; return out; }
-      if (e.mode === 'fly' && S.fly && S.fly.then === 'diveLand' && Math.abs(S.fly.tx - P.x) < 40 && P.ground) { const d = rollDir(S.fly.tx); if (d) { out.dodge = true; out.gx = clamp(P.x + d * 60); } out.why = 'roll off the dive'; return out; }
-      if ((e.mode === 'rakeTell' || e.mode === 'rake') && dx < 80 && same) { if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the rake'; return out; }
-        const room = side < 0 ? P.x - lo : hi - P.x; if (room >= 70) { out.gx = clamp(kx + side * 92); out.why = 'back off the rake'; return out; }
-        if (e.mode === 'rakeTell' && e.modeT < 0.2) { const d = rollDir(P.x + side); out.dodge = true; out.gx = clamp(P.x + (d || -side) * 60); out.why = 'cornered: roll through the rake'; return out; } out.gx = P.x; out.why = 'cornered: wait to roll'; return out; }
-      if ((e.mode === 'sweepTell' || e.mode === 'sweep') && dx < MAT.sweepR + 16 && Math.abs(P.y - e.y) < 30) { if ((e.mode === 'sweep' || e.modeT < 0.14) && P.ground) out.jump = true; else out.gx = clamp(kx + side * (MAT.sweepR + 24)); out.why = 'over the sweep'; return out; }
-      if (e.mode === 'screeTell') { out.gx = clamp(kx - (e.face || 1) * 40); out.why = 'behind her scree'; return out; }
+          if (nb) { out.gx = nb.cx; if (P.ground) out.jump = true; out.why = 'off the narrow top as she comes'; return fin(out); } } out.gx = myTop && myTop.kind === 'narrow' ? myTop.cx : P.x; out.why = 'wait on the top for her pounce'; return fin(out); }
+      if (e.mode === 'pounceTell') { if (S.pAt && Math.abs(P.x - S.pAt.x) < 40) { let d = P.x >= S.pAt.x ? 1 : -1; if ((d < 0 ? P.x - lo : hi - P.x) < 50) d = -d; out.gx = clamp(S.pAt.x + d * 52); out.why = 'off her mark'; return fin(out); } out.gx = P.x; out.why = 'hold still: she leaps where you stand'; return fin(out); }
+      if (e.mode === 'fly' && S.fly && S.fly.then === 'land' && S.ph < 3 && Math.abs(S.fly.tx - P.x) < 46 && P.ground) { if (S.pending.length || S.burst > 0) { out.gx = P.x; out.why = 'the burst will throw her: stay up'; return fin(out); } const d = rollDir(S.fly.tx); if (d) { out.dodge = true; out.gx = clamp(P.x + d * 60); } else out.gx = P.x; out.why = 'late roll out from under her'; return fin(out); }
+      if (e.mode === 'fly' && S.fly && S.fly.then === 'diveLand' && Math.abs(S.fly.tx - P.x) < 40 && P.ground) { const d = rollDir(S.fly.tx); if (d) { out.dodge = true; out.gx = clamp(P.x + d * 60); } out.why = 'roll off the dive'; return fin(out); }
+      if ((e.mode === 'rakeTell' || e.mode === 'rake') && dx < 80 && same) { if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the rake'; return fin(out); }
+        const room = side < 0 ? P.x - lo : hi - P.x; if (room >= 70) { out.gx = clamp(kx + side * 92); out.why = 'back off the rake'; return fin(out); }
+        if (e.mode === 'rakeTell' && e.modeT < 0.2) { const d = rollDir(P.x + side); out.dodge = true; out.gx = clamp(P.x + (d || -side) * 60); out.why = 'cornered: roll through the rake'; return fin(out); } out.gx = P.x; out.why = 'cornered: wait to roll'; return fin(out); }
+      if ((e.mode === 'sweepTell' || e.mode === 'sweep') && dx < MAT.sweepR + 16 && Math.abs(P.y - e.y) < 30) { if ((e.mode === 'sweep' || e.modeT < 0.14) && P.ground) out.jump = true; else out.gx = clamp(kx + side * (MAT.sweepR + 24)); out.why = 'over the sweep'; return fin(out); }
+      if (e.mode === 'screeTell') { out.gx = clamp(kx - (e.face || 1) * 40); out.why = 'behind her scree'; return fin(out); }
       if (e.mode === 'diveTell' && S.mark) { const dm = Math.abs(P.x - S.mark.x);   /* HER SHADOW MARKS YOUR SPOT: walk off it along this rock, or roll late if the rock is too short; never a jump under her */
-        if (dm >= 44) { out.gx = P.x; out.why = 'off the dive mark'; return out; }
-        if (e.modeT < 0.3 && P.ground) { const d = rollDir(S.mark.x); out.dodge = true; out.gx = clamp(P.x + (d || 1) * 60); out.why = 'late roll off the dive mark'; return out; }
-        const away = P.x >= S.mark.x ? 1 : -1; let gx = S.mark.x + away * 50; if (onTop && myTop) gx = Math.max(myTop.l + 6, Math.min(myTop.r - 6, gx)); out.gx = clamp(gx); out.why = 'off the dive mark'; return out; }
-      if (e.mode === 'volleyTell' && e.modeT < 0.3) { out.dodge = true; out.gx = clamp(P.x + (P.x < kx ? -50 : 50)); out.why = 'roll the quills'; return out; }
-      if (e.mode === 'surgeTell') { out.gx = P.x; out.why = 'wait for the surge'; return out; }
+        if (dm >= 44) { out.gx = P.x; out.why = 'off the dive mark'; return fin(out); }
+        if ((s.noRoll || e.modeT < 0.3) && P.ground) { const d = rollDir(S.mark.x); out.dodge = !s.noRoll; out.gx = clamp(P.x + (d || 1) * 60); out.why = 'late roll off the dive mark'; return fin(out); }
+        const away = P.x >= S.mark.x ? 1 : -1; let gx = S.mark.x + away * 50; if (onTop && myTop) gx = Math.max(myTop.l + 6, Math.min(myTop.r - 6, gx)); out.gx = clamp(gx); out.why = 'off the dive mark'; return fin(out); }
+      if (e.mode === 'volleyTell' && e.modeT < 0.3) { out.dodge = true; out.gx = clamp(P.x + (P.x < kx ? -50 : 50)); out.why = 'roll the quills'; return fin(out); }
+      if (e.mode === 'surgeTell') { out.gx = P.x; out.why = 'wait for the surge'; return fin(out); }
     }
   }
   /* the surge and the quills in flight */
-  for (const b of S.bands) if (Math.abs(b.x - P.x) < 46 && b.dir * (P.x - b.x) > 0 && P.ground) { out.jump = true; out.gx = P.x; out.why = 'jump the surge'; return out; }
-  for (const q of S.shots) if (q.k === 'quill' && Math.hypot(q.x - P.x, q.y - (P.y - 10)) < 40 && P.ground && !roll('q' + q.key, PLAN.miss)) { out.dodge = true; out.gx = clamp(P.x + (q.vx > 0 ? 40 : -40)); out.why = 'roll the quill'; return out; }
+  for (const b of S.bands) if (Math.abs(b.x - P.x) < 46 && b.dir * (P.x - b.x) > 0 && P.ground) { out.jump = true; out.gx = P.x; out.why = 'jump the surge'; return fin(out); }
+  for (const q of S.shots) if (q.k === 'quill' && Math.hypot(q.x - P.x, q.y - (P.y - 10)) < 40 && P.ground && !roll('q' + q.key, PLAN.miss)) { out.dodge = true; out.gx = clamp(P.x + (q.vx > 0 ? 40 : -40)); out.why = 'roll the quill'; return fin(out); }
   /* 2. HER WARD: off her, let it pass */
-  if (S.ward > 0) { out.gx = clamp(kx + side * 70); out.why = 'her ward: wait'; return out; }
+  if (S.ward > 0) { out.gx = clamp(kx + side * 70); out.why = 'her ward: wait'; return fin(out); }
   /* 3. OPEN, OR A BEAT: cut her (from the side that is dry) */
-  if (matOpen(e)) { if (e.mode !== 'pstagger' && S.burst > 0 && !onTop) { out.gx = P.x; out.why = 'wait for the burst'; return out; }
-    if (e.mode === 'pstagger') { const tp = topAt(G, kx, 2); if (myTop !== tp) { out.gx = tp.cx; if (P.ground && onTop && (Math.abs(P.x - myTop.l) < 12 || Math.abs(P.x - myTop.r) < 12)) out.jump = true; out.why = 'to her top'; } else { out.gx = s.tip ? clamp(kx + side * stand) : kx - side * 6; swing(kx); out.why = 'cut her: staggered'; } return out; }
-    if (matBig(e) && onTop && e.y > G.topY + 8 && S.ph < 3) { out.gx = clamp(kx + side * stand); out.why = 'down to her'; if (Math.abs(P.x - out.gx) < 30 && myTop) out.gx = clamp(P.x < myTop.cx ? myTop.l - 10 : myTop.r + 10); return out; }
-    out.gx = clamp(kx + side * stand); if (dx < hitR + 2 && Math.abs(P.y - e.y) < 30) swing(kx); out.why = matBig(e) ? 'cut her: open' : 'cut her: her guard is down'; return out; }
+  if (matOpen(e)) { if (e.mode !== 'pstagger' && S.burst > 0 && !onTop) { out.gx = P.x; out.why = 'wait for the burst'; return fin(out); }
+    if (e.mode === 'pstagger') { const tp = topAt(G, kx, 2); if (myTop !== tp) { out.gx = tp.cx; if (P.ground && onTop && (Math.abs(P.x - myTop.l) < 12 || Math.abs(P.x - myTop.r) < 12)) out.jump = true; out.why = 'to her top'; } else { out.gx = s.tip ? clamp(kx + side * stand) : kx - side * 6; swing(kx); out.why = 'cut her: staggered'; } return fin(out); }
+    if (matBig(e) && onTop && e.y > G.topY + 8 && S.ph < 3) { out.gx = clamp(kx + side * stand); out.why = 'down to her'; if (Math.abs(P.x - out.gx) < 30 && myTop) out.gx = clamp(P.x < myTop.cx ? myTop.l - 10 : myTop.r + 10); return fin(out); }
+    out.gx = clamp(kx + side * stand); if (dx < hitR + 2 && Math.abs(P.y - e.y) < 30) swing(kx); out.why = matBig(e) ? 'cut her: open' : 'cut her: her guard is down'; return fin(out); }
   /* 4. PHASE TWO: a post under her bridge */
   if (S.ph === 2 && e.mode === 'perch' && S.perch) { const b = G.bridges.find(q => q.id === S.perch), px = Math.abs(b.a - P.x) < Math.abs(b.b - P.x) ? b.a : b.b;
-    const tp = topAt(G, px, 2); if (myTop !== tp) { out.why = 'to the bridge post'; return goTop(tp); } out.gx = px - Math.sign(px - P.x || 1) * 14; out.strike = Math.abs(P.x - px) < reach + 12; if (out.strike) swing(px); out.why = 'strike the post'; return out; }
-  if (S.ph === 2) { /* under the walls: up on the rock, any rock (out of the floods), still */ if (!onTop) { out.why = 'to a broad top'; return goTop(nearestTop(G, P.x, q => q.kind !== 'narrow')); } out.gx = clamp(Math.max(myTop.l + 8, Math.min(myTop.r - 8, P.x))); out.why = 'wait under the walls'; return out; }
+    const tp = topAt(G, px, 2); if (myTop !== tp) { out.why = 'to the bridge post'; return goTop(tp); } out.gx = px - Math.sign(px - P.x || 1) * 14; out.strike = Math.abs(P.x - px) < reach + 12; if (out.strike) swing(px); out.why = 'strike the post'; return fin(out); }
+  if (S.ph === 2) { /* under the walls: up on the rock, any rock (out of the floods), still */ if (!onTop) { out.why = 'to a broad top'; return goTop(nearestTop(G, P.x, q => q.kind !== 'narrow')); } out.gx = clamp(Math.max(myTop.l + 8, Math.min(myTop.r - 8, P.x))); out.why = 'wait under the walls'; return fin(out); }
   /* 5. PHASE THREE: stand on a narrow top near her */
   if (S.ph === 3) { if (S.water < 1 && !onTop) { out.why = 'to the pillars'; return goTop(nearestTop(G, P.x, q => q.kind !== 'bank')); }
     const want = G.tops.filter(q => q.kind === 'narrow').sort((a, b) => Math.abs(a.cx - P.x) - Math.abs(b.cx - P.x))[0];
-    if (myTop !== want) { if (!myTop) { out.gx = want.cx; out.why = 'to a narrow top'; return out; }
+    if (myTop !== want) { if (!myTop) { out.gx = want.cx; out.why = 'to a narrow top'; return fin(out); }
       /* hop top to top towards it (a plank in a wide reach is a step) */
       const dir = Math.sign(want.cx - P.x), next = G.tops.filter(q => dir * (q.cx - myTop.cx) > 0).sort((a, b) => Math.abs(a.cx - myTop.cx) - Math.abs(b.cx - myTop.cx))[0];
-      const edge = dir > 0 ? myTop.r - 6 : myTop.l + 6; out.gx = next ? next.cx : want.cx; if (P.ground && Math.abs(P.x - edge) < 10) out.jump = true; out.why = 'to a narrow top'; return out; }
-    out.gx = want.cx; if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) swing(kx); out.why = 'on the narrow top'; return out; }
+      const edge = dir > 0 ? myTop.r - 6 : myTop.l + 6; out.gx = next ? next.cx : want.cx; if (P.ground && Math.abs(P.x - edge) < 10) out.jump = true; out.why = 'to a narrow top'; return fin(out); }
+    out.gx = want.cx; if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) swing(kx); out.why = 'on the narrow top'; return fin(out); }
   /* 5b. THE WATER IS COMING OR RUNNING: stay up on this rock (never cross the channel to a lever now) */
-  if (wet && onTop && myTop) { out.gx = clamp(Math.max(myTop.l + 8, Math.min(myTop.r - 8, P.x))); if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) swing(kx); out.why = 'on the rock: the water comes'; return out; }
+  if (wet && onTop && myTop) { out.gx = clamp(Math.max(myTop.l + 8, Math.min(myTop.r - 8, P.x))); if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) swing(kx); out.why = 'on the rock: the water comes'; return fin(out); }
   /* 6. PHASE ONE: THE LEVER. On a bank by a full sluice; pull while she is in the channel */
   const lev = G.levers.filter(l => S.sluice[l.id]).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   if (lev && !S.pending.length && !(S.burst > 0)) { const bank = topAt(G, lev.x, 2);
     if (myTop !== bank || !onTop) { out.why = 'to the lever'; return goTop(bank); }
     const inCh = e.y > G.topY + 8 && e.mode !== 'fly' && !matOpen(e);
-    if (inCh && !roll('lv' + S.act, PLAN.missLever)) { out.gx = lev.x; if (Math.abs(P.x - lev.x) < 12) { out.talk = true; out.why = 'pull: she is in the channel'; } else out.why = 'to the lever: she is in the channel'; return out; }
+    if (inCh && !roll('lv' + S.act, PLAN.missLever)) { out.gx = lev.x; if (Math.abs(P.x - lev.x) < 12) { out.talk = true; out.why = 'pull: she is in the channel'; } else out.why = 'to the lever: she is in the channel'; return fin(out); }
     /* bait: by the lever, a step off it towards her; she comes across the channel at you */
-    out.gx = clamp(lev.x + (kx > lev.x ? 20 : -20)); if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) swing(kx); out.why = 'by the lever: bait her into the channel'; return out; }
+    out.gx = clamp(lev.x + (kx > lev.x ? 20 : -20)); if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) swing(kx); out.why = 'by the lever: bait her into the channel'; return fin(out); }
   /* no water banked: fight her on the rock - behind her when she turns, never into her front */
-  if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) { swing(kx); out.gx = P.x; out.why = 'cut her back'; return out; }
+  if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) { swing(kx); out.gx = P.x; out.why = 'cut her back'; return fin(out); }
   out.gx = clamp(kx + side * 64); out.why = 'keep off her front'; return out;
 }
