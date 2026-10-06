@@ -21,7 +21,7 @@ export const OIL = { rehang: 30, burn: 6, burnDeep: 16, spread: 0.04, back: 25, 
 /* THE CAST's numbers: the thirsty scorpion's pull (px/s, sight px), the dust's blindness (s), a slick's width in cells */
 /* A NEST under a blade: a brood scorpion out of it every `spill` s, at most `max` of them alive from one nest */
 export const NEST = { spill: 0.6, max: 4, spray: 10 };   /* spray: what the nest's venom does to the one hacking at it (unblockable, a stack of venom) */
-export const CAST = { thirstV: 60, thirstSight: 260, blind: 2.2, slick: 3 };
+export const CAST = { thirstV: 60, thirstSight: 260, blind: 2.2, slick: 3, smotherR: 30, smotherEvery: 0.45, smotherAge: 0.7 };   /* smotherR: px of the dust scorpion's cloud ahead of it; smotherEvery: s between two cells of fire it chokes */
 export const OIL_SKIN = 'oilscorpion', DUST_SKIN = 'dustscorpion', THIRST_SKIN = 'thirstscorpion', SPIT_SKIN = 'spitscorpion';
 const NO_FEAR = new Set(['firescorpion']);   /* the fire scorpion walks through fire */
 
@@ -38,7 +38,7 @@ export function makeUnderwellHands(ctx) {
     const TS = ctx.TS;
     if (!UW || UW.L !== L) {
       UW = { L, said: {}, clock: 0, cells: new Map(), list: [], sconces: [], lamp: null, nests: [], ropes: [], fountain: null, vault: (L.vaultDoors || []).map(m => ({ ...m, open: false })),
-        n: { lit: 0, lamp: 0, spread: 0, wet: 0, doused: 0, nests: 0, boiled: 0, ropes: 0, burns: 0, foeBurns: 0, slicks: 0, patchLit: 0, blinds: 0, drunk: 0, spits: 0, flushed: 0, nudges: 0 } };
+        n: { lit: 0, lamp: 0, spread: 0, wet: 0, doused: 0, nests: 0, boiled: 0, ropes: 0, burns: 0, foeBurns: 0, slicks: 0, patchLit: 0, blinds: 0, smothered: 0, drunk: 0, spits: 0, flushed: 0, nudges: 0 } };
       const add = (x, y, vertical) => { const k = key(x, y); if (UW.cells.has(k)) return; const c = { x, y, st: 'oil', t: 0, age: 0, vertical: !!vertical, seed: (x * 7 + y * 13) % 31, deep: !vertical && ctx.cellGet(x, y - 1) === ctx.T.SOLID && ctx.cellGet(x, y + 1) === ctx.T.SOLID }; UW.cells.set(k, c); UW.list.push(c); };
       for (const [x0, x1, y] of L.seeps || []) for (let x = x0; x <= x1; x++) add(x, y, false);
       for (const [x, y0, y1] of L.lines || []) for (let y = y0; y <= y1; y++) add(x, y, true);
@@ -171,6 +171,14 @@ export function makeUnderwellHands(ctx) {
       for (let y = qy0; y <= qy1; y++) { const c = cellAt(qx, y); if (c) { if (c.st !== 'fire') c.age = 0; c.st = 'fire'; c.t = Math.max(c.t, 1.0); } } }
     /* A FIRE SCORPION's burning patch lights any oil it touches */
     for (const p of (ctx.patches ? ctx.patches() : [])) { const tx = Math.floor(p.x / 16), ty = Math.round(p.y / 16) - 1; let n = 0; for (let dx = -1; dx <= 1; dx++) n += ignite(cellAt(tx + dx, ty)) ? 1 : 0; if (n) { UW.n.patchLit++; if (once('patchLit')) ctx.number(p.x, p.y - 28, 'ITS FIRE TAKES THE OIL', '#ff9a5c'); } }
+    /* THE DUST SCORPION'S CLOUD SMOTHERS FIRE (claude/dustscorp): the brood will not cross fire, so a dust scorpion stops at the edge of your firebreak - and its cloud (CAST.smotherR px) chokes
+       the burning oil there, one cell every CAST.smotherEvery s, spent (it seeps back after OIL.back s, so it cannot be lit again at once). A thin or short fire is eaten from its edge and the
+       scorpion walks on; a deep gutter (burnDeep) outlasts it, a wet cell was never alight - or kill it before it reaches the flame. Fire does not smother IT back: it simply will not enter. */
+    for (const e of ctx.enemies()) { if (!e.alive || e.cnSkin !== DUST_SKIN || !e.st) continue; e.uwSmT = Math.max(0, (e.uwSmT || 0) - dt); e.uwPuff = Math.max(0, (e.uwPuff || 0) - dt); if (e.uwSmT > 0) continue;
+      const ex = e.x, ty = Math.floor((e.y - 1) / 16); let best = null, bd = 1e9;
+      for (let dy = 0; dy <= 1; dy++) for (let tx = Math.floor((ex - CAST.smotherR) / 16); tx <= Math.floor((ex + CAST.smotherR) / 16); tx++) { const c = cellAt(tx, ty + dy); if (!c || c.st !== 'fire' || c.age < CAST.smotherAge) continue; const d = Math.abs(c.x * 16 + 8 - ex); if (d <= CAST.smotherR + 8 && d < bd) { bd = d; best = c; } }
+      if (best) { best.st = 'spent'; best.t = OIL.back; e.uwSmT = CAST.smotherEvery; e.uwPuff = 0.5; UW.n.smothered++; ctx.burst(best.x * 16 + 8, best.y * 16 + 8, 8, ['#c8b48a', '#ece0b4', '#6a6458'], 40, 0.6); ctx.sfx.hiss && ctx.sfx.hiss();
+        const P = ctx.hero(); if (P && !P.dead && Math.abs(P.x - ex) < 260 && once('smother')) ctx.number(ex, e.y - 26, 'ITS DUST SMOTHERS THE FIRE', '#c8b48a'); } }
     /* THE FIRE ON HEROES (a tick, unblockable) and on creatures standing in it (the fire scorpion is at home in it) */
     for (const pp of ctx.players) { if (pp.dead) continue; pp.uwBlind = Math.max(0, (pp.uwBlind || 0) - dt); pp.uwBurnK = Math.max(0, (pp.uwBurnK || 0) - dt);
       const tx = Math.floor(pp.x / 16), ty = Math.floor((pp.y - 1) / 16); const lit = H.fireAt(tx, ty) || H.fireAt(Math.floor((pp.x - 5) / 16), ty) || H.fireAt(Math.floor((pp.x + 5) / 16), ty);
@@ -219,6 +227,8 @@ export function makeUnderwellHands(ctx) {
     const f = UW.fountain; if (f && inX(f.x)) UWA.drawFountain(g, R(f.x - cx), R(f.y - cy), f.full, ctx.questGot(), time);
     /* the dust scorpions' grit while their claw is up (the tell: a yellow mark, and the grit) */
     for (const e of ctx.enemies()) if (e.alive && e.cnSkin === DUST_SKIN && e.st && e.st.mode === 'clawTell' && inX(e.x)) { g.fillStyle = '#c8b48a'; for (let i = 0; i < 6; i++) g.fillRect(R(e.x - cx + (e.face || 1) * (6 + ((time * 40 + i * 5) % 18))), R(e.y - 6 - (i % 3) * 3 - cy), 2, 2); }
+    /* the dust scorpions' cloud: a haze of grit always about one (it is what smothers the fire), thick for half a second after it chokes a cell */
+    for (const e of ctx.enemies()) if (e.alive && e.cnSkin === DUST_SKIN && e.st && inX(e.x)) { const k = (e.uwPuff || 0) > 0 ? 18 : 6; g.fillStyle = '#c8b48a'; for (let i = 0; i < k; i++) { const a = time * 1.3 + i * 2.4, rr = 8 + ((i * 7) % 5) * 4 + (e.uwPuff > 0 ? 6 : 0); g.fillRect(R(e.x - cx + Math.cos(a) * rr * (CAST.smotherR / 30)), R(e.y - 8 - cy + Math.sin(a * 1.1) * 5), 1 + (i % 2), 1); } }
     if (UW.glint) drawGlint(g, R(UW.glint.x - cx), R(UW.glint.y - 18 - cy), vw, vh, time);
   };
   /* THE LIGHT (claude/underwellart): every lit torch, burning cell, burning nest, the great lamp, the running fountain and each candle niche is a hole in the dark (main.js's dark pass calls

@@ -127,4 +127,5 @@ npc-removal, slopes-trace, one-new-foe, hint-shown, tells, answer-tags, threat-h
 comments. Red, not mine: djinn (marks row djinn|upsurgeTell missing - red on 2423ff42).
 MUSIC PICKS for the level (to verify the licence on its page - NOT downloaded): Kevin MacLeod "Desert City" (incompetech, CC-BY 4.0); Kevin MacLeod
 "Ossuary 6 - Air" (CC-BY 4.0, a dark cave bed); OpenGameArt "Cave Theme" by Brandon Morris (CC0). Rec: "Ossuary 6 - Air" for the tunnels.
-STILL OPEN: the dust scorpion's twist is not rule-tied (grit, not oil); no per-act band for the level-1 pilot until COMBAT PART 2 lands.
+DUST TWIST (claude/dustscorp): the dust scorpion's cloud also SMOTHERS lit oil beside it (30 px, one cell per 0.45 s, only a cell that has burned 0.7 s so the front still passes), a smothered cell is spent (back after 25 s). It stops at your firebreak (the brood will not cross fire) and eats it from behind: a thin run is gone, a deep gutter outlasts it - kill it first, or burn deeper.
+STILL OPEN: no per-act band for the level-1 pilot until COMBAT PART 2 lands.

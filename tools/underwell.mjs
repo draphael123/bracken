@@ -163,6 +163,8 @@ if (!process.argv.includes('--static')) {
       const f=spawn('scorpion',196,43,{cnSkin:'firescorpion'}); BK.tp(193,43); P.face=1; BK.god=false; P.hp=P.maxHp=999; for(let i=0;i<60*10&&!R().n.patchLit;i++){P.hp=999;P.x=f.x-26;BK.sim(1);} out.patchLit=R().n.patchLit; f.alive=false; BK.sim(2);
       /* the dust scorpion's claw: grit in your eyes */
       const d=spawn('scorpion',340,42,{cnSkin:'dustscorpion'}); BK.tp(338,42); for(let i=0;i<60*10&&!R().n.blinds;i++){P.hp=999;P.x=d.x-18;P.face=1;BK.sim(1);} out.blind=R().n.blinds; out.blindT=P.uwBlind; d.alive=false;
+      /* the dust scorpion's cloud smothers the fire it stops at: a short burning run is eaten from its edge, the scorpion walks on (and a wet cell is no fire to eat) */
+      { for(const e of BK.enemies()) e.alive=false; BK.god=true; const d2=spawn('scorpion',208,43,{cnSkin:'dustscorpion',face:-1}); const tx=Math.floor(d2.x/16)-5; const run=[]; for(let x=tx-3;x<=tx;x++){const c=cell(x,43); if(c)run.push(c);} out.runLen=run.length; BK.tp(tx-4,43); const fire=()=>{for(const c of run)if(c.st!=='spent'){c.st='fire';c.t=60;c.age=0;}}; fire(); const sm0=R().n.smothered, x0=d2.x; let crossed=false, ticks=0; for(let i=0;i<60*8;i++){ if(i<2)fire(); BK.sim(1); if(run.some(c=>c.st==='spent'))ticks++; if(d2.x<(tx-3)*16){crossed=true;break;} } out.smothered=R().n.smothered-sm0; out.crossed=crossed; out.spent=run.filter(c=>c.st==='spent').length; d2.alive=false; BK.sim(2); BK.god=false; P.hp=P.maxHp=999; }
       /* the thirsty scorpion comes for your skin from far, and a sting drinks a sip */
       P.skin={sips:3,max:3}; const th=spawn('scorpion',346,42,{cnSkin:'thirstscorpion'}); BK.tp(337,42); const x0=th.x; BK.sim(60); out.came=Math.round(x0-th.x); for(let i=0;i<60*12&&!R().n.drunk;i++){P.hp=999;BK.sim(1);} out.drunk=R().n.drunk; out.sips=P.skin.sips; th.alive=false;
       /* the spitter's glob puts venom in */
@@ -172,6 +174,8 @@ if (!process.argv.includes('--static')) {
     ok(cast.slick >= 2, 'an OIL SCORPION dies in a slick of oil (' + cast.slick + ' new cells)');
     ok(cast.patchLit >= 1, 'a FIRE SCORPION\'s burning patch lights the oil it lands in');
     ok(cast.blind >= 1 && cast.blindT > 0, 'a DUST SCORPION\'s claw that lands: grit in your eyes (blind ' + (cast.blindT || 0).toFixed(1) + ' s)');
+    ok(cast.runLen >= 2 && cast.smothered >= 2 && cast.spent >= 2, 'a DUST SCORPION cloud SMOTHERS the fire it stops at (' + cast.smothered + ' cells of a ' + cast.runLen + '-cell run choked, spent ' + cast.spent + ')');
+    ok(/smother/.test(hands) && CALL_LINES.has('ITS DUST SMOTHERS THE FIRE') && /smothers burning oil/.test(main), 'the twist is told (hint line, bestiary card) and drawn (the cloud about it)');
     ok(cast.came > 20 && cast.drunk >= 1 && cast.sips < 3, 'a THIRSTY SCORPION comes for your skin from far (' + cast.came + ' px in 0.6 s) and its sting drinks a sip');
     ok(cast.spit >= 1 && cast.venom >= 1, 'a SPITTING SCORPION\'s glob puts the Queen\'s venom in you');
     /* THE DRY FOUNTAIN and THE NUDGE */
