@@ -1217,14 +1217,14 @@ async function runbossLab(BK, opts) {
         const GH=BK.gangLeaderHands(),F=GH&&GH.fight();
         if(f===0||!P.labGlMem)P.labGlMem={};
         const greed=BK.greed?BK.greed.count(boss):0;
-        const pl=F?glPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
+        const pl=F?glPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0,live:LABP.v2&&h==='warden'?(P.deflectT||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed,eyes:!!LABP.v2}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if(pl.block)k.block=h==='warden'?DEFLECT_TAP(f):true;   /* (the warden's deflect is a sweep on the beat, tapped) */
+        if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):true;   /* (the warden's deflect is a sweep on the beat, tapped) */   /* (claude/sweep3, v2: tapped when she means it - the 8-frame grid let his second cut in after her first sweep ran out) */
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
-        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;if(pl.up)k.up=true;BK.press('atk');swings++;}
         if(OPEN(boss,BK)&&!wasOpen)opened++;wasOpen=!!OPEN(boss,BK);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:glOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
