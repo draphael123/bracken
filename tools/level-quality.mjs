@@ -27,11 +27,12 @@ const TS = 16;
 
 /* WHICH LEVELS ARE HELD TO IT. New or reworked levels only: the old campaign misses the bar in places (--all shows where) and is not being reworked.
    Add a level id here in the lane that builds or reworks it. An id that is not in LEVELS yet is skipped with a note (the theatre lane lands later). */
-export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge', 'underwell'];   /* the fair re-gated by claude/fairfix2 (the rework it waited for); THE FOG CANAL gated by claude/canalfix */
+export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge', 'underwell', 'skyroad'];   /* (claude/skyroad: THE SKY ROAD gated from its greybox) */   /* the fair re-gated by claude/fairfix2 (the rework it waited for); THE FOG CANAL gated by claude/canalfix */
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
   /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
+  skyroad: ['music'],   /* (claude/skyroad, the greybox) TODO: THE SKY ROAD plays the retired sky ship's track and THE ROC her old track (the Monastery's arena still plays it) as placeholders - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
@@ -44,6 +45,7 @@ export const STOCK_MUSIC = { marketday: 'a stock CC0 market tune (RandomMind "Ma
 /* THE LIMITS. Each is set so THE MAGE'S FOLLY clears it with margin and the Harvest Fair (the old 672-column corridor) does not; the Folly's number is in the comment. */
 export const LIM = {
   longRun: 20,          /* a flat run this long counts toward the flat SHARE below */
+  chasm: 5,             /* a gap wider than this (columns: more than a jump) ends a flat run where the floor ends; a narrower one is a pit the run jumps (claude/skyroad, ratified 10-05) */
   flatShareMax: 0.30,   /* share of the route columns that lie in long runs that are flat AND empty: no jump, gap, hazard, foe or gadget (Folly 0.11) */
   terrainShareMax: 0.60, /* the same ignoring foes: level ground with nothing but enemies on it (Folly 0.33) */
   routeBands: 5,        /* distinct 4-row height bands the walked route uses (Folly 8) */
@@ -69,7 +71,7 @@ export const ROLES = {
   ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest', 'wickerman'],   /* (claude/fairfix6) THE WICKER MAN bowls its own fire */
   support: ['barker', 'gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
   heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield', 'wickerman'],
-  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow', 'waterthief', 'raptor', 'thirstscorpion'],   /* (claude/redgorge: the cliff raptor stoops on you from over its bridge and is gone again - a hit and run) (claude/welltown: the water-thief cuts your skin and RUNS for a well) (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
+  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow', 'waterthief', 'raptor', 'thirstscorpion', 'kiterider'],   /* (claude/skyroad: the goblin kite-rider swoops from his thermal and climbs away - a hit and run) */   /* (claude/redgorge: the cliff raptor stoops on you from over its bridge and is gone again - a hit and run) (claude/welltown: the water-thief cuts your skin and RUNS for a well) (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
 };
 const rolesOf = (t, skin) => { const of = k => Object.keys(ROLES).filter(r => ROLES[r].includes(k)); const r = skin && of(skin).length ? of(skin) : of(t); return r.length ? r : ['melee']; };   /* (claude/underwell: a reskin listed by its own skin - the thirsty scorpion runs - is judged by what it does; an unlisted skin is its AI's) */
 /* COLLECTIBLES AND INTERACTIVES THAT MUST UNLOCK SOMETHING. A pickup or a lever that opens nothing is clutter. What each kind can open is named here; a level states its own
@@ -179,13 +181,13 @@ export function measure(lv) {
   const scan = (breakOnFoes) => { let best = { n: 0, at: 0, long: 0 }, lo = null, minY = 0, maxY = 0, start = 0, prevX = null, prevY = null;
     const cut = x => { if (lo !== null) { const n = x - start; best.long += n >= LIM.longRun ? n : 0; if (n > best.n) best = { n, at: start, long: best.long }; } lo = null; };
     for (const x of [...cols.keys()].sort((a, b) => a - b)) { if (x >= end) break; const y = cols.get(x);
-      let brk = false;
-      if (prevX !== null) { for (let xx = prevX + 1; xx < x; xx++) if (!supported(xx, prevY) && !supported(xx, y)) brk = true;   /* a gap crossed by a jump */
+      let brk = false, gapAt = null, gapW = 0;
+      if (prevX !== null) { for (let xx = prevX + 1; xx < x; xx++) if (!supported(xx, prevY) && !supported(xx, y)) { brk = true; gapW++; if (gapAt === null) gapAt = xx; }   /* a gap crossed by a jump (or a glide): the run ends where the floor ends, not on the far side (claude/skyroad: a flight over a chasm with no footing in it read as 30-40 columns of flat empty ground) */
         if (!supported(x, y) || Math.abs(y - prevY) >= 2) brk = true; }   /* a step of 2+ */
       if (hazardAt(x, y) || near(gadgetXY, x, y, 6, 6) || inRoom(x)) brk = true;
       if (breakOnFoes && near(allFoes, x, y, 8, 6)) brk = true;
       if (lo !== null && !brk) { minY = Math.min(minY, y); maxY = Math.max(maxY, y); if (maxY - minY >= 2) brk = true; }
-      if (brk) { cut(x); }
+      if (brk) { cut(gapAt !== null && gapW > LIM.chasm ? gapAt : x); }   /* (RATIFIED by the coordinator 10-05, narrowed per the skyroad review: only a gap WIDER THAN A JUMP - more than LIM.chasm columns - ends the run where the floor ends; a jump-sized pit cuts on its far side, as it always did) */
       if (lo === null && !brk) { lo = x; start = x; minY = maxY = y; }
       else if (lo === null && brk) { lo = x; start = x; minY = maxY = y; }
       prevX = x; prevY = y; }

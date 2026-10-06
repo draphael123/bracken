@@ -46,7 +46,7 @@ export const CURVE_REPORT_ONLY = {
 const RULE_KEYS = ['gusts', 'bore', 'causeTide', 'streetTide', 'wash', 'swell', 'darkZones', 'deckBreaks', 'crumbles', 'gasVents', 'whirlpools', 'siphons', 'blight',
   'channels', 'jams', 'burn', 'stillFires', 'roofFire', 'emberPits', 'cellarFires', 'hush', 'din', 'winds', 'thermals', 'lampAir', 'fogLamps', 'airRooms', 'risenDead', 'graves',
   'quicksand', 'pits', 'seams', 'looseRock', 'slide', 'flips', 'glyphBridges', 'alarms', 'watchtowers', 'hoists', 'ropes', 'stagetraps', 'rigBands', 'mudWalls', 'casters', 'volleys',
-  'cavalry', 'caps', 'causeCurrents', 'causeBreakers', 'ballast', 'deepHolds', 'hullZones', 'masts', 'risers', 'callers', 'carousels', 'chases', 'sun'];
+  'cavalry', 'caps', 'causeCurrents', 'causeBreakers', 'ballast', 'deepHolds', 'hullZones', 'masts', 'risers', 'callers', 'carousels', 'chases', 'sun', 'clouds', 'skyThermals'];   /* (claude/skyroad: THE SKY ROAD's cloud banks and thermal columns) */
 const RULE_ENTS = /^(felltree|horn|deadfall|bell|tbell|seabell|tidebell|keg|oilbarrel|powder|cap|banner|bearer|lantern|lamp|brazier|sluice|pump|crank|winch|capstan|rope|lever)$/;
 
 export function ruleZones(L, TS = 16) {

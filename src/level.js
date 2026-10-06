@@ -9,7 +9,7 @@ import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
-import { buildRedGorge } from './red-gorge.js';   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE GREAT RED CRAB (src/gorge-crab.js) */
+import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js';   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE GREAT RED CRAB (src/gorge-crab.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
@@ -7754,7 +7754,7 @@ export const LEVELS = [
   { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: ()=>buildWitchlight({painter,T,TS}), needs: 'burial' },
   /* THE ORE ROAD (2026-09-23): the castle's supply line, a cableway over the gorge between Stormhold and Highcrown. Appended so no
      index moves; Highcrown needs it now */
-  { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: 'moor' },
+  { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: 'skyroad' },   /* (claude/skyroad: THE SKY ROAD comes between it and Gale Moor now - Daniel 10-03, "right after Gale Moor") */
   /* THE UNBURIED FIELD (Lane C, 2026-09-23/25): the optional Death Knight class level, a spur off THE WITCHLIGHT STAIR.
      Appended so no index moves; brief .claude/briefs/unburied-field.md, gate on hero 'reaper' via coinNeeds: 'unburied'
      in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
@@ -7788,6 +7788,9 @@ export const LEVELS = [
      the Cistern Queen's brood, the water skin scarce. APPENDED, so no index and no save moves; its place on the road is its needs (and the gorge's) and its map node.
      THE CISTERN QUEEN (src/cistern-queen.js, benched by claude/welltown5) is its boss */
   { id: 'underwell', arc: 'the desert', name: 'THE UNDERWELL', sub: 'the dry cisterns under the well town', rule: "STRIKE A TORCH AND THE OIL BURNS - THE BROOD WON'T CROSS FIRE. POUR WATER WHERE THE FIRE MUST NOT GO.", build: () => buildUnderwell({ painter, T, TS }), needs: 'welltown' },
+  /* THE SKY ROAD (claude/skyroad, the GREYBOX, 2026-10-05): the main road's climb off the high moor's crags to THE ROC's eyrie - after GALE MOOR, before THE ORE ROAD
+     (Daniel 10-03: "right after Gale Moor"; the moor keeps sideways gusts, this level owns the vertical air). APPENDED, so no index and no save moves */
+  { id: 'skyroad', name: 'THE SKY ROAD', sub: 'up the hot air to the eyrie', rule: 'THE SUN WARMS THE ROCK AND THE AIR RISES. STRIKE A SUN-STONE TO WAKE ITS AIR; RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.', build: () => buildSkyRoad({ painter, T, TS }), needs: 'moor' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

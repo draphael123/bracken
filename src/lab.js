@@ -18,6 +18,7 @@ import { greenteethPlan, gtOpen } from './jenny-greenteeth.js';   /* JENNY GREEN
 import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
 import { puppetPlan } from './puppeteer.js';
 import { queenPlan, qOpen } from './cistern-queen.js'; import { glPlan, glOpen } from './gang-leader.js'; import { djinnPlan, djOpen } from './djinn.js';   /* (claude/welltown5) THE DJINN OF THE GREAT WELL: the bot works the skin on him, the crank and his hand */   /* THE CISTERN QUEEN and THE GANG LEADER (claude/welltown3): the bot reads their tells off their own modules, and works the skin */
+import { rocEyriePlan } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad): the bot rides the thermals and plunges, waits out her dive on the nest, turns the storm's stone */
 import { gorgeCrabPlan, crabOpen } from './gorge-crab.js';   /* THE GREAT RED CRAB (claude/redgorge): the bot reads his tells, the dam's water and his channel off his own module, and works the sluice gate */
 import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
@@ -1165,6 +1166,22 @@ async function runbossLab(BK, opts) {
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
         if((h!=='paladin'||P.st>=44)&&!guard&&!bdFlee&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='roc'&&BK.L.arena&&BK.L.arena.eyrie){
+        /* THE ROC on her EYRIE (claude/skyroad): src/roc-eyrie.js rocEyriePlan reads what a player sees a quarter-second late and works the level's verb (the thermal plunge) */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        if(f===0||!P.labRocMem)P.labRocMem={};
+        const A=BK.L.arena,therms=BK.props().filter(p=>p.t==='vent'&&p.thermal&&p.arena).map(p=>({x:p.x,k:p.k||0,top:p.top||0})),st=BK.skyroad()&&BK.skyroad().stone('s5');
+        const pl=rocEyriePlan({P,e:boss,R:BK.rocEyrie().read(),A,therms,stone:st?{x:st.x,on:st.on}:null,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRocMem});
+        if(pl.mash&&f%6===0)BK.press('atk');
+        if(pl.block)k.block=true;
+        if(pl.hold)k.jump=true;
+        if(pl.gx!=null&&Math.abs(pl.gx-P.x)>3&&!pl.block)k[pl.gx>P.x?'right':'left']=true;
+        if(pl.dodge&&!(P.dodge>0)&&(P.labDodgeF===undefined||f-P.labDodgeF>20)){BK.press('dodge');P.labDodgeF=f;}
+        if(pl.plunge&&!P.plunge){k.down=true;BK.press('atk');swings++;}
+        if(P.plunge)k.down=true;
+        if(pl.atk&&P.atk<0){if(pl.face)P.face=pl.face;else P.face=Math.sign(boss.x-P.x)||P.face;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='gorgecrab'){
         /* THE GREAT RED CRAB (claude/redgorge): src/gorge-crab.js gorgeCrabPlan reads what a player sees - his tells a quarter-second late (some misread), the boulders'
