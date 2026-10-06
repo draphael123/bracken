@@ -178,3 +178,12 @@ export function riderKite(g, x, y, mode, time) {   /* the goblin kite-rider's ow
   g.fillStyle = mode === 'swoopTell' && Math.floor(time * 12) % 2 ? '#ffd36b' : '#3a8a4a'; g.beginPath(); g.moveTo(x - 4, y - 33); g.lineTo(x + 11, y - 22); g.lineTo(x - 4, y - 15); g.lineTo(x - 19, y - 22); g.closePath(); g.fill();
   g.fillStyle = '#d8c060'; g.fillRect(x - 5, y - 33, 2, 18); g.fillRect(x - 19, y - 23, 30, 2);
 }
+/* THE ROC'S NEST: the woven boards her dive sticks in - a basket mat laid on the arena floor, reed and cord in a weave, a rim of bleached bone and feather, ember-warm in the middle */
+export function drawNestMat(g, lv, cx, cy, VW, time) {
+  const a = lv.arena; if (!a || !lv.nest) return; const x0 = R(lv.nest[0] * 16 - cx), x1 = R((lv.nest[1] + 1) * 16 - cx), fy = R(a.floor - cy); if (x1 < -10 || x0 > VW + 10) return;
+  g.fillStyle = '#1a1008'; g.fillRect(x0, fy - 7, x1 - x0, 7); g.fillStyle = '#6a4a28'; g.fillRect(x0, fy - 6, x1 - x0, 5);
+  for (let x = x0; x < x1; x += 4) { g.fillStyle = ((x - x0) >> 2) & 1 ? '#a88450' : '#8a6a3a'; g.fillRect(x, fy - 6, 3, 2); g.fillStyle = ((x - x0) >> 2) & 1 ? '#5a4224' : '#7a5a30'; g.fillRect(x + 1, fy - 3, 3, 2); }
+  g.fillStyle = '#e4dcc8'; g.fillRect(x0, fy - 7, x1 - x0, 1); g.fillStyle = '#2a1c10'; g.fillRect(x0 - 2, fy - 6, 2, 6); g.fillRect(x1, fy - 6, 2, 6);
+  const r = mulberry(404); for (let i = 0; i < 14; i++) { const bx = x0 + 6 + r() * (x1 - x0 - 12); g.fillStyle = i % 3 ? '#f0ece0' : '#c8bca8'; g.fillRect(R(bx), fy - 8 - (i % 2), 3 + (i % 3), 1); }
+  g.save(); g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient((x0 + x1) / 2, fy - 4, 0, (x0 + x1) / 2, fy - 4, (x1 - x0) / 2); gr.addColorStop(0, 'rgba(255,120,40,' + (0.16 + 0.03 * Math.sin(time * 3)).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = gr; g.fillRect(x0, fy - 60, x1 - x0, 64); g.restore();
+}

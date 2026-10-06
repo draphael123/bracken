@@ -26,7 +26,7 @@ export const ZONE = [
   { s: ['#2c2220', '#473733', '#695049', '#8d7266', '#b09484', '#cfb8a2', '#ead8c0'], acc: '#b0584a', bone: '#f0e6d0' },     /* cream limestone, rose beds */
   { s: ['#1c1a2c', '#2c2a44', '#443f62', '#605a82', '#7e789e', '#a09ac0', '#c8c2e0'], acc: '#8a6aa0', bone: '#eee8e0' },     /* slate-violet */
   { s: ['#22242a', '#383c46', '#545a66', '#757c88', '#9aa0aa', '#bcc2c8', '#dde0e0'], acc: '#8a7a68', bone: '#e8e6dc' },     /* pale cut stone */
-  { s: ['#0e0c12', '#1e1a24', '#322a34', '#4a3e44', '#685850', '#8a7466', '#b0988a'], acc: '#c0562a', bone: '#e4dcc8' }];     /* basalt */
+  { s: ['#16121c', '#2a2330', '#43384a', '#5e4e5a', '#80685e', '#a88876', '#d0ae98'], acc: '#d0602a', bone: '#e4dcc8' }];     /* basalt */
 export const CLOUDC = '#aab4d4';   /* what the rock fades into at the cloud sea */
 
 /* THE BEDS: for one zone, a table by ABSOLUTE pixel row of [colour index shift, is a bed line] - so strata run level across every tile of a mesa */

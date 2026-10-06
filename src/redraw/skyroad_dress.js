@@ -87,6 +87,7 @@ export function planDress(L, T) {
   /* BRAZIERS and LANTERNS: a light at every checkpoint, the kite reel's deck, the tower, the loft and the Eyrie door */
   const top = (x, y0) => { for (let y = y0 - 3; y <= y0 + 3; y++) if (standable(tt(x, y)) && air(x, y - 1) && air(x, y - 2) && !crumb(x, y)) return y; return -1; };
   const place = (k, x, y, extra) => { const y2 = top(x, y); if (y2 < 0) return; if (items.some(i => Math.abs(i.x - (x * TS + 8)) < 20 && Math.abs(i.y - y2 * TS) < 40)) { const j = items.findIndex(i => Math.abs(i.x - (x * TS + 8)) < 20 && Math.abs(i.y - y2 * TS) < 40); items.splice(j, 1); } items.push(Object.assign({ k, x: x * TS + 8, y: y2 * TS, v: 0, z: zoneOf(x), ph: (x * 7) % 100 }, extra || {})); };
+  for (const [x, y] of [[110, 46], [172, 14], [272, 18], [340, 16], [393, 18], [103, 34]]) place('pole', x, y);
   for (const e of L.ents) { if (e.t === 'check') { place('brazier', e.x + 2, e.y + 1); place('lantern', e.x - 2, e.y + 1); } }
   for (const [x, y] of [[119, 38], [153, 14], [334, 16], [362, 12], [391, 18], [439, 18], [440, 18], [100, 34], [171, 14], [268, 18], [341, 16]]) place(x < 395 && x > 330 || x === 100 ? 'lantern' : x >= 391 ? 'brazier' : 'lantern', x, y);
   /* WALLS: faces of rock the sun can see */

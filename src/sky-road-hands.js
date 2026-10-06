@@ -255,6 +255,7 @@ export function makeSkyRoadHands(ctx) {
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L();
     { const plan = SKD.planDress(lv, ctx.T); if (!H.noSupports) SKD.drawSupports(g, cx, cy, VW, time, plan, lv); SKD.drawDress(g, cx, cy, VW, time, plan); }   /* the dressing, the lights and what holds the ledges up */
+    SKW.drawNestMat(g, lv, cx, cy, VW, time);
     for (const s of S.stones.values()) SKW.drawStone(g, s, cx, cy, time, VW);
     if (S.disc) { const d = S.disc, lit = ctx.time() < d.until, road = ctx.props().filter(pr => pr.t === 'vent' && pr.thermal && pr.src === 'disc:disc'); SKW.drawDisc(g, d, lit, d.until - ctx.time(), road.length ? road[road.length - 1] : null, road, cx, cy, time); }
     for (const dc of (lv.decor || [])) { const x = Math.round(dc.x * TS + 8 - cx); if (x < -90 || x > VW + 90) continue;
