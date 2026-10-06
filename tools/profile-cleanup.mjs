@@ -68,7 +68,8 @@ const CASES = {
 const rows = [];
 /* THE HARD KILL IS A RACE: most times the browser outlives its node and leaves its profile to be swept, but sometimes it goes down
    with it and takes its own profile along, and then the case has nothing to prove. That one is run again, once, before it fails */
-const order = Object.keys(CASES); let killTries = 0;
+const ONLY = process.argv[2] ? process.argv[2].split(',') : null;   /* node tools/profile-cleanup.mjs killed,normal: just those cases (the suite runs them all) */
+const order = Object.keys(CASES).filter(n => !ONLY || ONLY.includes(n)); let killTries = 0;
 for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES[name];
   TAG = newRunTag(); const before = ours(), t0 = Date.now();
   const child = spawn(process.execPath, ['--input-type=module', '-e', code], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, BRACKEN_RUN: TAG } });
@@ -95,7 +96,7 @@ for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES
     rows.push({ name, orphanedBeforeSweep: orphaned.length, orphansKilled: rep.orphansKilled, left: left.length, browsers: browsersOn(orphaned), serverGone: gone });
     assert.ok(gone, 'the dev server of the killed tool must go too');
     assert.ok(orphaned.length >= 1, 'a hard kill really does orphan the profile (else this case proves nothing)');
-    assert.equal(left.length, 0, 'the sweep removes what a killed tool left'); assert.equal(browsersOn(orphaned), 0, 'and ends its browser');
+    assert.equal(left.length, 0, 'the sweep removes what a killed tool left: ' + left.join(', ') + ' / sweep said ' + JSON.stringify(rep)); assert.equal(browsersOn(orphaned), 0, 'and ends its browser');
     continue;
   }
   /* a HANG is no exit in six minutes: a page that opens in 50 s on a machine at 100% CPU (six lanes, 2026-10-06) is slow, not hung, and 120 s called it hung */
