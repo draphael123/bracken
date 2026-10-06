@@ -33,7 +33,7 @@
 //
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`. Proved by tools/false-abbot.mjs.
 export const ABBOT = {
-  hp: 1300, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
+  hp: 1900, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.55, cast: 0.7, process: 0.9, coals: 0.75, rite: 1.5, knell: 1.0 },
   dmg: { censer: 20, cast: 16, reel: 10, process: 24, knell: 22 },
   censerR: 46,            // the chain's reach past his body
