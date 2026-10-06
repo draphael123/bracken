@@ -295,3 +295,48 @@ Port note: boss-openings and boss-fight-end failed once to bring up a server or 
    - *Alternative:* a shorter cloud gap over the chimney, if the wait feels long in play.
 3. **s4 and s6 share one sign on the east tower.** A sign on a crumbling span would float once the span falls.
    - *Rec:* keep. The nudges still name each stone.
+
+## ART PASS (claude/skyroadart work on claude/skyroad, Sonnet)
+
+Art only: no geometry, route, foe, rule or number moved (the level data edits are the look: `ambient` -> its own bed; the greybox palette stays as the sky). Pictures: docs/skyroad/before (the greybox) and docs/skyroad/after (art-01..22 plus the seven moments and full-level.png). Tools: tools/skyroad-art-shots.mjs, tools/skyroad-shots.mjs, tools/skyroad-aloft.mjs.
+
+### What changed
+- TILE KIT src/redraw/skyroad_tiles.js (hooked in main.js after the moor's kit): WIND-CUT STRATA laid by world row so a bed runs across a whole mesa, scoured flutes, a lit lip on a bleached cap, drift sand in the joints, overhang undersides; five stones, one per section (ochre sandstone, cream limestone with rose beds, slate-violet roost pillars streaked with guano, pale cut ashlar for the bridge, basalt for the Eyrie); below row 44 every rock fades into the cloud sea's violet-white, so pillars go DOWN INTO the cloud. The three cracked spans (L.crumbles) are fractured slabs with orange accent seams.
+- PLATFORM VARIETY: lashed stone slabs on iron straps (mesas, bridge), KITE-CLOTH DECKS (red/cream sail-cloth on a bone rail, scalloped hem; the roosts and the hanging kite platform), woven reed-and-bone boards (the Eyrie), cracked spans, plus the supports below.
+- BACKDROP + LANDMARKS src/redraw/skyroad_backdrop.js (replaces the stock crag far/mid): a far mesa range with a kite fleet drifting on the wind, a nearer mesa range, and a LANDMARK every 300 px on a 0.32 parallax (THE SUN-RING spire with a tethered war-kite, THE MAST SPIRE with a streaming banner, THE BROKEN ARCH) so one is in view on almost every screen; THE EYRIE (the Roc's black spire, nest crown, iron masts, her shape circling) on the horizon from the first screen, sliding left and clearing the haze as the road goes on; low sun shafts (additive).
+- DRESSING src/redraw/skyroad_dress.js, read off the grid (hash-safe): about 120 items, 18 kinds - waymark cairns, bones, kite-line spools, folded war-kites, jars, sacks, rope coils, bird nests (roosts), mooring bollards, masts with streaming pennants, rubble, dry tufts; sun-wheels, iron rings and guano streaks on the faces; kite-tail ribbons hanging under every cloth deck and slab. 
+- SUPPORTS: every ledge is keyed to rock with a corbel, stands on a stone pier or bone-and-iron pole to rock, is STAYED by a cable to an iron ring in the rock (the hanging kite platform), or - a short ledge let into a wall - carried by a girder. 34 piers, 2 stays, 6 rock keys, 5 girders over 22 runs.
+- LIGHTS: braziers (every checkpoint, the Eyrie doors) and lantern poles throw flickering additive pools; a turned sun-stone, the burning disc and its beam, every live thermal's foot, the flue's mouth, the Roc's nest all glow.
+- THE RULE'S STATES, DRAWN (src/redraw/skyroad_world.js, called from src/sky-road-hands.js): THERMAL live = rising gold bands, motes and a torn scrap of kite-cloth riding it, an orange glowing plate and a light pool; DEAD (stone not turned) = a slate plate and a dotted ghost of the column; ABOUT TO DIE = flickers; SHADED = a frost-pale plate. CLOUD = a lit crown over a grey belly with a ragged cool shadow band down the whole screen. SUN-STONE = a carved glyph slab: slate when off, rolls over when struck, gold with rays and sparks when on. SUN-DISC = bronze disc with 16 rays on an iron post; dull and a dotted line when unlit; burning with a beam and a pool when lit. The reel: the flue, the war-kite, the cage (iron-framed reed basket); the cloak's mast; the loft's woven door; the Roc's nest mat.
+- AMBIENT: its own synth bed 'highair' (src/audio.js): a thin whistle through rock that swells and fades, a deep rush, kite-cloth cracking in a gust, a taut line humming, grit on stone, a far raptor, a loaded rope (the creak clip already on disk). Nothing downloaded.
+- NOTHING FLOATS: tools/skyroad-aloft.mjs (in check.mjs, Node; `--page` proves the piers are drawn): all 22 ledge runs held, every pier/stay/girder real, every prop held up, 42 grounded things on a foothold.
+- MUSIC stays the placeholder (`skysail`). Picks below (NOT downloaded).
+
+### Identity self-score /18 (greybox review 10): KIT 2, PAL 2, PLAT 2, LMK 2, SET 2, DRESS 1, LIGHT 2, AMB 2, THEME 2 = 17/18
+(From stills only: DRESS is 1 because the long plain mesa tops between the dressed stretches are still sparse.)
+
+### MUSIC PICKS (Daniel decides; nothing downloaded)
+1. "Bring Me The Sky" - Scott Buckley - CC-BY 4.0 - https://www.scottbuckley.com.au/2021/10/new-library-track-bring-me-the-sky/ (soft piano opening into soaring brass and strings: the level track).
+2. "Born Of The Sky" - Scott Buckley - CC-BY 4.0 - https://www.scottbuckley.com.au/library/born-of-the-sky/ (uplifting, heroic, punchier).
+3. "Phoenix (2026)" - Scott Buckley - CC-BY 4.0 - https://www.scottbuckley.com.au/library/phoenix-2026/ (chamber strings, tension and release: a candidate for the Roc's own theme).
+Credit exactly as the licence asks (as for Ossuary 6 - Air).
+
+### THE ROC cross-check at campaign level (report-only, no tuning): `node tools/harnesscard-rates.mjs skyroad --mode=new --seeds=6` (L9, normal health, 18 fights)
+| hero | wins | median win | notes |
+|---|---|---|---|
+| knight | 5/6 (83%) | 103 s | |
+| warden | 3/6 (50%) | 141 s | slowest, as in the review |
+| pyro | 2/6 (33%) | 59-106 s | dies fast when he dies (33-74 s), 130 hp |
+Total 10/18 = 56%, the same as the fix pass's 10/18 from skyroad-pilot (56%). On target overall; no hero at 0/6; but the spread is wide (knight 83% vs pyro 33%). Rec: leave for Daniel's playtest gate; if pyro feels harsh the lever is the snatch drop, not anything in the art.
+
+### Checks (PORT 8652)
+Green: skyroad, skyroad-probe, skyroad-aloft (new, in check.mjs), level-quality, mash-gate, signs, hint-shown, audio-assets, boss-music, ambient-landmarks, comments, homepaths, syntax, floaters, render-layers, footing-art, ground-depth.
+Reds not mine: modulepreload FAILs on 19 modules (archmage-acts, foe-react, moor-rocks-hands ...; fix is `node tools/modulepreload.mjs --write`, the coordinator's). The machine ran out of memory/time under the other lanes: the first batch OOM'd level-quality/signs/audio-assets/hint-shown/boss-music (all re-run alone and green) and textfit's plates/bossfix/tree scopes timed out under load (the hints, bestiary and store scopes passed); textfit re-run noted in the final message.
+
+### UNVERIFIED
+Stills only, no human eye in play; the Roc's fight not replayed with the new nest mat (draw only); frame cost of the new backdrop and additive glows not timed on a phone (a handful of drawImage calls and a few radial gradients a frame; frame-cost not run under load).
+
+### QUESTIONS FOR DANIEL (each built as recommended)
+1. MUSIC: pick one of the three above for the level (and Phoenix for the Roc). Rec: "Bring Me The Sky" for the level.
+2. The Roc's pyro rate (2/6) vs the knight's (5/6): Rec: leave; Daniel's playtest decides.
+3. Piers in the thermal path: a short ledge let into a wall is now carried by a girder, not a pier, so no post stands in a climb. Rec: keep.
