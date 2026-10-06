@@ -127,7 +127,7 @@ export function updateZombie(e,dt,c){
    e.castCd=3.2+Math.random();e.face=Math.sign(P.x-e.x)||e.face;e.mode='castTell';e.modeT=.75;say&&say('EMBER',false);return;}
  }
  if(e.mode==='buried'){if(c.lit&&c.lit(e.x,e.y))return;   /* THE DEAD WILL NOT RISE INSIDE A BURNING VENT'S LIGHT (burial-expansion.js) */
-  if(Math.abs(P.x-e.x)<85&&Math.abs(P.y-e.y)<60){e.mode='riseTell';e.modeT=1.1;say('MOVING EARTH',false);}return;}
+  if(Math.abs(P.x-e.x)<85&&Math.abs(P.y-e.y)<60){e.mode='riseTell';e.modeT=1.1;say(e.cnSkin==='drowneddead'?'THE WATER STIRS':'MOVING EARTH',false);}return;}   /* (claude/underwell2: THE DROWNED DEAD come up out of the Drowned Cistern's water) */
  if(e.mode==='riseTell'){if(e.modeT<=0){e.mode='walk';e.modeT=.7;}return;}
  if(e.mode==='grabTell'){if(e.modeT<=0){if(Math.abs(P.x-e.x)<28&&Math.abs(P.y-e.y)<28){if(hit(e.x,12,false)==='hit')snare(.75);}e.mode='rest';e.modeT=1;}return;}
  if(e.mode==='rest'){if(e.modeT<=0)e.mode='walk';return;}

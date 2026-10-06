@@ -286,12 +286,13 @@ function stepMove(e, S, dt, P, h, c) {
     /* P1: under the sand */
     case 'diveTell': if (e.modeT <= 0) { e.gone = 1; S.pose = 'burrow'; S.mound = { x: e.x, t: 0, wet: 0 }; setMode(e, 'burrow', CQ.moundMax); c.fx('dig', e.x, F); } return;
     case 'burrow': { const m = S.mound; if (!m) { setMode(e, 'recover', 0.4); return; } m.t += dt;
+      if (fireUp(e, S, c)) return;   /* (claude/underwell2) her burrow runs into burning floor oil: the fire drives her up, open */
       if (cur.how === 'charge') { const tx = P.x < G.mid ? G.x1 - 70 : G.x0 + 70, d = tx - m.x; m.x += Math.sign(d) * Math.min(Math.abs(d), CQ.moundSpeed * 1.3 * dt);
         if (Math.abs(d) < 4 || e.modeT <= 0) { cur.dir = Math.sign(P.x - m.x) || 1; tell(e, 'chargeTell', CQ.chargeTell, c); } }
       else { const d = P.x - m.x; m.x += Math.sign(d) * Math.min(Math.abs(d), CQ.moundSpeed * dt); m.x = Math.max(G.x0 + 20, Math.min(G.x1 - 20, m.x));
         if ((Math.abs(d) < 8 && P.ground) || e.modeT <= 0) { cur.x = m.x; tell(e, 'strikeTell', CQ.strikeTell, c); } }
       e.x = m.x; return; }
-    case 'strikeTell': if (e.modeT <= 0) { setMode(e, 'strike', CQ.strikeT); c.sound('erupt'); c.fx('erupt', cur.x, F); surface(e, S, cur.x); } return;
+    case 'strikeTell': if (fireUp(e, S, c)) return; if (e.modeT <= 0) { setMode(e, 'strike', CQ.strikeT); c.sound('erupt'); c.fx('erupt', cur.x, F); surface(e, S, cur.x); } return;
     case 'strike': c.hit([cur.x - CQ.strikeR, cur.x + CQ.strikeR, F - 52, F], CQ.dmg.strike, MOVE_NAME.strike, { key, launch: true }); if (e.modeT <= 0) after(e, S); return;
     case 'chargeTell': if (e.modeT <= 0) { const m = S.mound; S.bands.push({ k: 'dune', x: m ? m.x : e.x, dir: cur.dir, speed: CQ.waveSpeed, y: [F - 20, F], dmg: CQ.dmg.charge, name: MOVE_NAME.charge, key, kind: 'low', rider: true });
       setMode(e, 'charge', 4); c.sound('plough'); } return;
@@ -346,13 +347,18 @@ function stepMove(e, S, dt, P, h, c) {
   }
   if (e.modeT <= -2) after(e, S);   /* (a mode nothing above knows: never stand still) */
 }
+/* THE FIRE DRIVES HER UP (claude/underwell2, Daniel 10-06: "fire + water as the clear way to hurt the boss"): she is the brood's mother and the brood will not cross fire -
+   a burrow that runs into burning floor oil (her hall's two pools, lit by a torch you threw) comes up under it, OPEN, as a flooded one does (the same opening: CQ.openT,
+   CQ.openMul, her told ward after it). The world answers c.fire(x) (src/cistern-queen-hands.js: the Underwell's oil); a level without oil never asks */
+function fireUp(e, S, c) { if (!S.mound || !c.fire || S.ward > 0 || qOpen(e) || !c.fire(S.mound.x)) return false; S.n.fireUps = (S.n.fireUps || 0) + 1; openUp(e, S, 'soaked', c, 'fire'); return true; }
 function surface(e, S, x) { e.gone = 0; S.pose = 'floor'; e.x = Math.max(S.G.x0 + 40, Math.min(S.G.x1 - 40, x)); S.mound = null; }
 
 /* ---------- THE OPENINGS ---------- */
-export function openUp(e, S, how, c) {
+export function openUp(e, S, how, c, why) {
   const G = S.G; e.open = CQ.openT; S.openTaken = 0; S.n.opens++; S.n[how]++; setMode(e, how, CQ.openT + 0.05); e.gone = 0; S.bands = S.bands.filter(b => !b.rider); S.stinger = null;
   const wasAlight = S.burn || S.flare > 0; if (wasAlight) { S.burn = false; S.flare = 0; S.n.doused++; c.fx('steam', e.x, G.floor); } if (S.ph === 2) S.douse = CQ.douseT;   /* (claude/welltown5: the water that opens her puts her fire out) */
-  if (how === 'soaked') { const onFloor = !S.mound; if (S.mound) e.x = S.mound.x; S.mound = null; S.pose = 'floor'; e.y = G.floor; c.number(e.x, e.y - 70, wasAlight && onFloor ? 'PUT OUT: HER SHELL IS COLD. CUT HER' : 'FLOODED OUT: SHE IS SOAKED. CUT HER', '#8fd160'); c.sound('soak'); c.fx('burst', e.x, G.floor); }
+  e.openWhy = why || null;
+  if (how === 'soaked') { const onFloor = !S.mound; if (S.mound) e.x = S.mound.x; S.mound = null; S.pose = 'floor'; e.y = G.floor; c.number(e.x, e.y - 70, why === 'fire' ? 'THE FIRE DRIVES HER UP: CUT HER' : wasAlight && onFloor ? 'PUT OUT: HER SHELL IS COLD. CUT HER' : 'FLOODED OUT: SHE IS SOAKED. CUT HER', '#8fd160'); c.sound('soak'); c.fx('burst', e.x, G.floor); }
   if (how === 'fallen') { e.x = S.pose === 'shaft' ? G.mid : S.wall === 'W' ? G.x0 + 52 : G.x1 - 52; e.y = G.floor; S.pose = 'floor'; c.number(e.x, e.y - 70, wasAlight ? 'PUT OUT, AND ON HER BACK: CUT HER' : 'SHE LOSES HER GRIP: ON HER BACK. CUT HER', '#8fd160'); c.sound('fall'); c.shake(5); c.fx('land', e.x, G.floor);
     S.script.splice(S.step, 0, 'wall:' + (e.x < G.mid ? 'E' : 'W')); }
   if (how === 'rear') { c.sound('rear'); }
