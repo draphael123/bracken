@@ -4768,7 +4768,7 @@ function menuConfirm() {
   else menuAdjust(1);
 }
 // THE HERO CHOICE: a new save picks any one of the three to start with; the other two are 15 silver each at the store
-let heroPick = { i: 0, stage: 'pick' };
+let heroPick = { i: 0, stage: 'pick' }, heroPickAt = 0;   /* (heroPickAt: when the pick last changed hero, so a move preview starts from its first frame) */
 /* THE FIRST-RUN OPENING: once per browser, on the first new save (not in a tool run: BK.manualSimulation, and never with ?noopening) */
 let opening = { i: 0, t: 0 };
 const openingSeen = () => { try { return !!localStorage.getItem('bracken.openingSeen'); } catch { return true; } };
@@ -4812,7 +4812,7 @@ const hasTrial = h => LEVELS.some(l => l.id === 'trial_' + h);
 const NEW_PICK = DEFAULT_HEROES;
 function updateHeroPick() {
   if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
-    if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; SFX.ui(); }
+    if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
     if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; } }
   else { if (confirmPress) { if (!startTrial(hero())) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
 }
@@ -4828,7 +4828,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
     reaper: ['a greatsword: slow, and it cuts them ALL', 'his ward banks what it stops', '95 health', 'HARDER'],
     warden: ['a spear: everything at its point', 'C PLANTS IT: a charge dies on it', '100 health'],
     geomancer: ['a tall staff and the stone under her', 'HOLD X: A FAULT LINE', '95 health'] };
-  const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 62;
+  const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 52, pickSets = {};   /* (ch 62 -> 52: the move preview and a three-line loop need the ten pixels) */
   PICK.forEach((h, k) => { const x = 6 + k * (cw + 3), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
     g.fillStyle = sel ? 'rgba(30,40,30,0.8)' : 'rgba(20,18,28,0.8)'; g.fillRect(x, top, cw, ch);
     heroBanner(h, x, top, cw, ch, sel);
@@ -4840,7 +4840,8 @@ function drawHeroPick() { const PICK = NEW_PICK;
       : h === 'warden' ? preview('pick:warden', () => bakeWarden({}))
       : h === 'geomancer' ? preview('pick:geomancer', () => bakeGeomancer({}))
       : preview('pick:knight', () => bakeKnight({}));
-    const fr = set.R.idle[Math.floor(time * 4) % set.R.idle.length], sc = sel ? 2 : 1.5;
+    pickSets[h] = set;
+    const fr = set.R.idle[Math.floor(time * 4) % set.R.idle.length], sc = sel ? 1.6 : 1.4;
     g.globalAlpha = sel ? 1 : 0.7;
     g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 8 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
     g.globalAlpha = 1;
@@ -4854,13 +4855,17 @@ function drawHeroPick() { const PICK = NEW_PICK;
   // the one sentence that is how this hero is played, where a player looks first), then the stats under that. A row of
   // the small hand every eight pixels (BODY_LH: seven of glyph and one of air), and the footer is at VH - 19.
   { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 20;   /* (seven cards: every other name drops a line, so GEOMANCER and DEATH KNIGHT stop running into their neighbours) */
-    text(H.name, VW / 2, y0, UI.title, 'center');
-    const loop = wrap(HERO_LOOP[h], VW - 24, 6); loop.forEach((ln, i) => text(ln, VW / 2, y0 + 9 + i * BODY_LH, UI.text, 'center', 6));
+    /* THE SIGNATURE MOVE, LOOPING: a window on the right of the words plays the hero's own move on a training post (src/ability-preview.js, pure draw); the words keep the left */
+    const SIG = { knight: ['risingCut', 'RISING CUT'], pyro: ['emberFlare', 'EMBER FLARE'], paladin: ['lightLance', 'LIGHT LANCE'], pirate: ['grapeshot', 'GRAPESHOT'], reaper: ['harvestMoon', 'HARVEST MOON'], warden: ['skewer', 'SKEWER'], geomancer: ['faultLine', 'FAULT LINE'] }[h], hs = pickSets[h];
+    const PVW = 86, PVX = VW - PVW - 6, PVY = y0 - 2, TX = Math.round((PVX - 4) / 2);
+    if (SIG && hs) { drawAbilityPreview(g, PVX, PVY, PVW, 50, { id: SIG[0], hero: h, t: time - heroPickAt, idle: hs.R.idle, atk: hs.R.atk || hs.R.idle, icon: null }); g.strokeStyle = 'rgba(201,178,124,0.5)'; g.lineWidth = 1; g.strokeRect(PVX + 0.5, PVY + 0.5, PVW - 1, 49); text(SIG[1], PVX + PVW / 2, PVY + 53, UI.dim, 'center', 6); }
+    text(H.name, TX, y0, UI.title, 'center');
+    const loop = wrap(HERO_LOOP[h], PVX - 16, 6); loop.forEach((ln, i) => text(ln, TX, y0 + 9 + i * BODY_LH, UI.text, 'center', 6));
     /* HARDER rides on the end of the last line, not a line of its own: with a two-line loop the Pyromancer's fourth line landed on the footer */
     const body = LINES[h].filter(ln => ln !== 'HARDER'), hard = body.length < LINES[h].length;
     body.forEach((ln, i) => { const yy = y0 + 12 + (loop.length + i) * BODY_LH;
-      if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(VW / 2 - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
-      else text(ln, VW / 2, yy, UI.dim, 'center', 6); }); }
+      if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(TX - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
+      else text(ln, TX, yy, UI.dim, 'center', 6); }); }
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('others: 10 silver each. a second opens co-op', VW / 2, VH - 11, UI.dim, 'center', 6);   /* (a row up: the bottom row sat on the screen edge) */
 }
