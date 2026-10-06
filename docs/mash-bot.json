@@ -8697,7 +8697,7 @@
   }
  },
  "canal": {
-  "hash": "ad1487bc9d87",
+  "hash": "153f7950ff29",
   "boss": {
    "boss": "greenteeth",
    "wins": 0,
@@ -8798,7 +8798,7 @@
    ]
   },
   "carried": {
-   "from": "d3ea5e97ac61",
+   "from": "ad1487bc9d87",
    "parts": [
     "boss"
    ]
@@ -9519,7 +9519,7 @@
   }
  },
  "skyroad": {
-  "hash": "423582834dab",
+  "hash": "668e4c06b3d2",
   "boss": {
    "boss": "roc",
    "wins": 0,
@@ -9620,7 +9620,7 @@
    ]
   },
   "carried": {
-   "from": "3b1e589175e5",
+   "from": "423582834dab",
    "parts": [
     "boss"
    ]
@@ -9628,9 +9628,9 @@
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 7,
-    "hpLostPct": 173,
-    "hits": 14,
+    "minHpPct": 10,
+    "hpLostPct": 156,
+    "hits": 13,
     "walked": 100,
     "lifts": 22,
     "held": 0,
@@ -9642,15 +9642,15 @@
      "lift": 2
     },
     "machines": true,
-    "frames": 6856,
-    "kills": 1,
+    "frames": 6830,
+    "kills": 0,
     "heroLevel": 9
    },
    "warden": {
     "deaths": 0,
-    "minHpPct": 6,
-    "hpLostPct": 140,
-    "hits": 12,
+    "minHpPct": 18,
+    "hpLostPct": 129,
+    "hits": 11,
     "walked": 100,
     "lifts": 22,
     "held": 0,
@@ -9662,7 +9662,7 @@
      "lift": 2
     },
     "machines": true,
-    "frames": 6980,
+    "frames": 6981,
     "kills": 1,
     "heroLevel": 9
    },

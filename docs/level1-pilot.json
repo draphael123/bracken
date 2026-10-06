@@ -36,14 +36,14 @@
   "bare": true
  },
  "canal": {
-  "hash": "ad1487bc9d87",
+  "hash": "153f7950ff29",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 90,
+  "hits": 96,
   "deaths": 12,
-  "kills": 22,
-  "lifts": 111,
+  "kills": 16,
+  "lifts": 112,
   "walked": 100,
   "bare": true
  },
@@ -96,13 +96,13 @@
   "bare": true
  },
  "skyroad": {
-  "hash": "423582834dab",
+  "hash": "668e4c06b3d2",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 24,
   "deaths": 0,
-  "kills": 7,
+  "kills": 8,
   "lifts": 51,
   "walked": 100,
   "bare": true
