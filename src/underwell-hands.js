@@ -23,7 +23,10 @@ export const OIL = { rehang: 30, burn: 6, burnDeep: 16, spread: 0.04, back: 25, 
 export const NEST = { spill: 0.6, max: 4, spray: 10 };   /* spray: what the nest's venom does to the one hacking at it (unblockable, a stack of venom) */
 export const CAST = { thirstV: 60, thirstSight: 260, blind: 2.2, slick: 3, smotherR: 30, smotherEvery: 0.45, smotherAge: 0.7 };   /* smotherR: px of the dust scorpion's cloud ahead of it; smotherEvery: s between two cells of fire it chokes */
 export const OIL_SKIN = 'oilscorpion', DUST_SKIN = 'dustscorpion', THIRST_SKIN = 'thirstscorpion', SPIT_SKIN = 'spitscorpion';
-const NO_FEAR = new Set(['firescorpion']);   /* the fire scorpion walks through fire */
+const NO_FEAR = new Set(['firescorpion']);
+/* (claude/underwell2, Daniel 10-06: "oil drawn floating on the wall sides") WHICH SIDE A VERTICAL RUN OF OIL IS DRAWN ON: a wall streak lies flush on the rock beside it
+   (-1: the rock is to its left, 1: to its right); a standpipe (L.lines' 4th field 'pipe') stands free (0). tools/underwell-aloft.mjs reads the same answer */
+export const oilSide = (get, T, x, y, pipe) => (pipe ? 0 : get(x - 1, y) === T.SOLID ? -1 : get(x + 1, y) === T.SOLID ? 1 : 0);   /* the fire scorpion walks through fire */
 
 export function makeUnderwellHands(ctx) {
   let UW = null;
@@ -39,9 +42,9 @@ export function makeUnderwellHands(ctx) {
     if (!UW || UW.L !== L) {
       UW = { L, said: {}, clock: 0, cells: new Map(), list: [], sconces: [], lamp: null, nests: [], ropes: [], fountain: null, vault: (L.vaultDoors || []).map(m => ({ ...m, open: false })),
         n: { lit: 0, lamp: 0, spread: 0, wet: 0, doused: 0, nests: 0, boiled: 0, ropes: 0, burns: 0, foeBurns: 0, slicks: 0, patchLit: 0, blinds: 0, smothered: 0, drunk: 0, spits: 0, flushed: 0, nudges: 0 } };
-      const add = (x, y, vertical) => { const k = key(x, y); if (UW.cells.has(k)) return; const c = { x, y, st: 'oil', t: 0, age: 0, vertical: !!vertical, seed: (x * 7 + y * 13) % 31, deep: !vertical && ctx.cellGet(x, y - 1) === ctx.T.SOLID && ctx.cellGet(x, y + 1) === ctx.T.SOLID }; UW.cells.set(k, c); UW.list.push(c); };
+      const add = (x, y, vertical, pipe) => { const k = key(x, y); if (UW.cells.has(k)) return; const c = { x, y, st: 'oil', t: 0, age: 0, vertical: !!vertical, pipe: !!pipe, side: vertical ? oilSide(ctx.cellGet, ctx.T, x, y, pipe) : 0, seed: (x * 7 + y * 13) % 31, deep: !vertical && ctx.cellGet(x, y - 1) === ctx.T.SOLID && ctx.cellGet(x, y + 1) === ctx.T.SOLID }; UW.cells.set(k, c); UW.list.push(c); };
       for (const [x0, x1, y] of L.seeps || []) for (let x = x0; x <= x1; x++) add(x, y, false);
-      for (const [x, y0, y1] of L.lines || []) for (let y = y0; y <= y1; y++) add(x, y, true);
+      for (const [x, y0, y1, kind] of L.lines || []) for (let y = y0; y <= y1; y++) add(x, y, true, kind === 'pipe');
       UW.sconces = L.ents.filter(e => e.t === 'sconce').map(e => { let below = null; for (let y = e.y; y < L.H; y++) { const c = UW.cells.get(key(e.x, y)); if (c) { below = c; break; } } let ceil = e.y - 1; while (ceil > 0 && ctx.cellGet(e.x, ceil) !== ctx.T.SOLID) ceil--; return { id: e.id, x: e.x, y: e.y, st: 'up', t: 0, below, ceil }; });
       const lp = L.ents.find(e => e.t === 'greatlamp'); if (lp) { let fy = lp.y; while (fy < L.H - 1 && ctx.cellGet(lp.x, fy + 1) === ctx.T.AIR) fy++; UW.lamp = { x: lp.x, top: lp.top || lp.y - 6, y: lp.y, floor: fy, st: 'up', t: 0, swing: 0 }; }
       UW.nests = (L.nests || []).map(m => ({ ...m, open: false, burn: 0 }));
@@ -215,7 +218,7 @@ export function makeUnderwellHands(ctx) {
     { const plan = UWD.planDress(UW.L, ctx.T); if (!H.noSupports) UWD.drawSupports(g, cx, cy, vw, time, plan, UW.L); UWD.drawDress(g, cx, cy, vw, time, plan); }   /* the dressing and what holds the ledges up (src/redraw/underwell_dress.js) */
     for (const [x0, x1, y] of UW.sand) if (inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawSand(g, R(x0 * TS - cx), R(y * TS - cy), (x1 - x0 + 1) * TS, time);
     for (const [x0, x1, y] of UW.L.seeps || []) if (x1 - x0 > 20 && ctx.cellGet(x0 + 1, y - 1) !== ctx.T.AIR && ctx.cellGet(x0 + 1, y + 1) !== ctx.T.AIR && inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawGutter(g, R((x0 + 1) * TS - cx), R(y * TS - cy), (x1 - x0 - 1) * TS);   /* a gutter's grate (a slot in the rock) */
-    for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy), c.st, c.st === 'fire' ? Math.min(1, c.t / OIL.burn) : 0, time, c.vertical, c.seed, c.deep); }
+    for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy), c.st, c.st === 'fire' ? Math.min(1, c.t / OIL.burn) : 0, time, c.vertical, c.seed, c.deep, c.side, c.pipe); }
     const Ph = ctx.hero();
     for (const d of UW.L.decor || []) if (d.kind === 'husk' && inX(d.x * TS, 60)) UWA.drawHusk(g, R(d.x * TS + 8 - cx), R((d.y + 1) * TS - cy));   /* her cast shell by her door */
     for (const m of UW.nests) { if (m.open) continue; const x = m.x0 * TS; if (!inX(x)) continue;

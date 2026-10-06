@@ -59,7 +59,8 @@ export function buildUnderwell({ painter, T, TS }) {
      [x, row0, row1] the oil running down a wall or a pipe (fire climbs them). nests = the brood's plugs (solid, the blade turns off them; fire takes them) */
   const seeps = [], lines = [], nests = [], decor = [], interiors = [], vaultDoors = [], sand = [];
   const seep = (x0, x1, y) => seeps.push([x0, x1, y]);
-  const line = (x, y0, y1) => lines.push([x, y0, y1]);
+  const line = (x, y0, y1) => lines.push([x, y0, y1]);   /* (claude/underwell2: a STREAK down a wall face - every cell beside rock, drawn flush on it, its foot on a floor or on oil) */
+  const pipe = (x, y0, y1) => lines.push([x, y0, y1, 'pipe']);   /* (claude/underwell2) an iron STANDPIPE where no wall is: it stands on the floor (or in the floor's oil) and carries the oil up inside it; its top may enter the rock it feeds */
   const nest = (id, x0, x1, y0, y1) => { block(x0, x1, y0, y1); nests.push({ id, x0, x1, y0, y1 }); ent('nestplug', x0, y1, { id, x1 }); };
   const sconce = (x, y, id) => ent('sconce', x, y, { id });   /* a wall torch: struck, it falls straight down into the oil under it */
   const drip = (x, y) => ent('skinwell', x, y, { jar: true, sips: 1, drip: true });   /* A DRIP: one sip a life (fire boils it dry) */
@@ -92,7 +93,7 @@ export function buildUnderwell({ painter, T, TS }) {
   ent('greatlamp', 87, 31, { top: 24 });                                      /* SET PIECE ONE: THE GREAT LAMP on its chain over the hall's oil (strike the chain from the gallery) */
   sign(80, 31, 'THE GREAT LAMP. STRIKE ITS RUSTED CHAIN.');
   /* the hall's oil: the floor, over the drums (their faces and tops), to the nest at the east end */
-  seep(46, 57, F - 1); line(57, 40, F - 2); seep(58, 59, 40); line(60, 40, F - 2); seep(60, 63, F - 1); block(64, 75, F - 1, F - 1); seep(64, 75, F - 2); seep(76, 83, F - 1); block(84, 92, F - 1, F - 1); seep(84, 92, F - 2); seep(93, 99, F - 1); line(99, 40, F - 2);   /* (the hall floor rises a step in two places: the oil runs up them) */ seep(100, 101, 40); line(102, 40, F - 2); seep(102, 131, F - 1);
+  seep(46, 57, F - 1); line(57, 41, F - 2); seep(58, 59, 40); line(60, 41, F - 2); seep(60, 63, F - 1); block(64, 75, F - 1, F - 1); seep(64, 75, F - 2); seep(76, 83, F - 1); block(84, 92, F - 1, F - 1); seep(84, 92, F - 2); seep(93, 99, F - 1); line(99, 41, F - 2);   /* (the hall floor rises a step in two places: the oil runs up them) */ seep(100, 101, 40); line(102, 41, F - 2); seep(102, 131, F - 1);
   dustS(94, F - 1, 'hallDust', { face: -1 }); venom(67, F - 2, 'hallStep', { face: -1 }); thirstS(71, F - 2, 'hallStep', { face: -1 });   /* on the hall's first step: the brood, and one that smells your water */                                 /* a dust scorpion on the hall floor */
   boards(103, 107, 38); spitS(105, 37, 'hallSpit', { face: -1 });             /* a spitter on a drum's scaffold, over the floor and the gallery */
   boards(110, 115, 35);
@@ -117,7 +118,7 @@ export function buildUnderwell({ painter, T, TS }) {
   air(150, 250, 22, 29);                                                      /* the upper works (its floor is the slab, rows 30-31) */
   air(159, 160, 30, 31); rope(160, 29, F - 1, 'works');                       /* THE ROPE UP: its foot in the oil */
   seep(142, 183, F - 1); block(184, 192, F - 1, F - 1); seep(184, 192, F - 2); seep(193, 215, F - 1); drip(152, F - 1);   /* (a step of old cistern blocks in the works floor) */
-  line(216, 30, F - 2);                                                       /* THE OLD PIPE up the east wall: the floor's oil to the upper works' */
+  line(215, 30, F - 2);                                                       /* THE OLD PIPE up the east wall: the floor's oil to the upper works' */
   sconce(176, F - 3, 'works');
   sign(147, F - 1, 'WET OIL WILL NOT CATCH. POUR WHERE THE FIRE MUST NOT GO.');
   sign(164, F - 1, 'THE ROPE STANDS IN THE OIL.');
@@ -132,7 +133,7 @@ export function buildUnderwell({ painter, T, TS }) {
   ent('fountain', 166, 29);
   sign(170, 29, 'THE DRY FOUNTAIN. ITS BRASS TAPS WERE TAKEN DOWN.');
   block(186, 189, 28, 29);                                                    /* a fallen cistern block on the floor */
-  seep(178, 185, 29); line(185, 27, 28); seep(186, 189, 27); line(190, 27, 28); seep(190, 204, 29); block(205, 212, 29, 29); seep(205, 212, 28); seep(216, 222, 29);
+  seep(178, 185, 29); line(185, 28, 28); seep(186, 189, 27); line(190, 28, 28); seep(190, 204, 29); block(205, 212, 29, 29); seep(205, 212, 28); seep(216, 222, 29);
   fireS(172, 29, 'worksFire'); oilS(200, 29, 'worksFire', { face: -1 });   /* (fix pass: the fire scorpion off the oil - the works was the level's peak; the exam is now) */
   spitS(219, 29, 'worksSpit', { face: -1 });
   block(223, 224, 22, 24); nest('works', 223, 224, 25, 29);                   /* THE WORKS' NEST: its oil is the pipe's */
@@ -148,7 +149,7 @@ export function buildUnderwell({ painter, T, TS }) {
   ent('check', 247, 45); drip(250, 45);                                       /* CHECKPOINT TWO has no spring: a drip */
   sign(253, 45, 'STRIKE THE TORCH: THE HEAT DRIVES THE WORMS UNDER.');
   seep(257, 261, 45); sconce(257, 43, 'gutter'); dustS(259, 45, 'sill', { face: -1 });   /* the sill's oil and its torch - struck from the bare stone at 255-256, off the oil */
-  line(261, 37, 44);                                                          /* the oil runs up the old pipe into the gutter */
+  pipe(261, 37, 44);                                                          /* the oil runs up the old pipe into the gutter */
   block(262, 335, 33, 35); block(262, 335, 37, 37); air(261, 335, 36, 36); seep(261, 335, 36);      /* SET PIECE TWO: THE BURNING GUTTER, a slot in the wall over the whole sump (too low to enter) */
   air(262, 345, 38, 45); block(262, 335, 46, H - 1); sand.push([262, 335, 46]);   /* the silted floor: sand */
   worm(270, 45, 263, 276, 'sumpA', true); worm(283, 45, 277, 289, 'sumpB', true); worm(296, 45, 290, 302, 'sumpC', true); worm(309, 45, 303, 315, 'sumpD', true); worm(323, 45, 316, 331, 'sumpE', true);   /* FAST WORMS: walked cold, they catch you */
@@ -167,7 +168,7 @@ export function buildUnderwell({ painter, T, TS }) {
   sign(353, 42, 'THE ROPE IS THE WAY UP. THE SPRING IS PAST THE NEST.');
   nest('exam', 369, 370, 38, 42);                                             /* under the gutter's base: rock over it */
   sand.push([371, 393, 43]); worm(382, 42, 372, 392, 'examWorm');
-  block(368, 396, 33, 35); block(369, 395, 37, 37); seep(368, 396, 36); line(368, 37, 41); line(396, 37, 41);   /* the gutter over the worm bed, a pipe each end */
+  block(368, 396, 33, 35); block(369, 395, 37, 37); seep(368, 396, 36); pipe(368, 37, 41); pipe(396, 37, 41);   /* the gutter over the worm bed, a pipe each end */
   /* THE NEST ROOM: the brood on its oil (the gutter's far pipe lights it: they burn, or hold back), and the spring */
   seep(394, 405, 42); spring(404, 42);
   venom(398, 42, 'nestRoom'); oilS(400, 42, 'nestRoom'); fireS(402, 42, 'nestRoom'); venom(401, 42, 'nestRoom');
@@ -193,9 +194,9 @@ export function buildUnderwell({ painter, T, TS }) {
   /* (fix pass: THE QUEEN GETS THE LEVEL'S RULE) Lamp oil in her hall: a streak down each wall under the ledges (she climbs through it in phase two and it
      burns with her - drawn), and a pool on the floor either side with a torch over it: struck, the floor burns, and her brood will not cross it */
   const qlr = QF - 8;
-  line(QX, qlr + 2, QF - 4); line(QX + 39, qlr + 2, QF - 4);
+  line(QX, qlr + 2, QF - 1); line(QX + 39, qlr + 2, QF - 4); block(QX + 39, QX + 39, QF - 3, QF - 3);   /* (claude/underwell2: a streak rests on what it runs down to - the west one on her floor, the east one on the lip of the outflow's arch) */
   seep(QX + 8, QX + 13, QF - 1); seep(QX + 26, QX + 31, QF - 1); sconce(QX + 10, QF - 5, 'queenW'); sconce(QX + 29, QF - 5, 'queenE');   /* (hung high: a jumping strike lights one - a floor swing in the fight does not) */
-  air(492, 505, QF - 6, QF - 1); ent('gate', 502, QF - 1);                    /* the old outflow: the road out, to THE RED GORGE */
+  air(492, 505, QF - 3, QF - 1); ent('gate', 502, QF - 1);                    /* the old outflow: the road out, to THE RED GORGE */
 
   // ================= THE ROPES, LAST =================
   for (const [x, y0, y1] of ropes) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
@@ -206,7 +207,7 @@ export function buildUnderwell({ painter, T, TS }) {
     arena: queen.arena, gateAfterBoss: true,
     underwell: true, skinRule: true,   /* skinRule: THE WELL TOWN's skin works here (src/well-town-hands.js: fill, pour, the old oil fires) */
     seeps, lines, nests, sand, vaultDoors, decor,
-    queenOil: { W: [QX, qlr + 2, QF - 4], E: [QX + 39, qlr + 2, QF - 4] },   /* the streaks of lamp oil down her hall's walls: they burn while she clings there alight (src/underwell-hands.js) */
+    queenOil: { W: [QX, qlr + 2, QF - 1], E: [QX + 39, qlr + 2, QF - 4] },   /* the streaks of lamp oil down her hall's walls: they burn while she clings there alight (src/underwell-hands.js) */
     ropes: ropes.filter(r => r[3]).map(([x, y0, y1, id]) => ({ x, y0, y1, id })),   /* the ropes that burn (the hands hang them again on a respawn) */
     /* underground: no sun reaches the floor anywhere (the whole level is shade, as the Red Gorge's canyon); LIGHT is the look, not a rule */
     shade: [[0, W * TS, 0, H * TS + 1]], shadeArt: [],

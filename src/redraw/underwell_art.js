@@ -90,14 +90,20 @@ export function flame(g, x, b, h, time, seed, a, w0) {
   g.globalAlpha = 1;
 }
 /* ONE CELL OF OIL at screen (x, y) = the cell's top-left; st: oil | fire | wet | spent; k: its burn left 0..1; vertical: a wall/pipe streak; deep: a gutter's heavy oil */
-export function drawCell(g, x, y, st, k, time, vertical, seed, deep) {
-  if (vertical) {
+/* (claude/underwell2, Daniel 10-06 "oil drawn floating on the wall sides") side: -1 the rock is to the cell's left, 1 to its right - the streak lies FLUSH on that rock
+   face (it was drawn down the middle of the air cell, 6 px off the wall); 0 with pipe: an iron STANDPIPE stands in the cell and the oil shows in its sight slots */
+export const streakX = side => (side < 0 ? 0 : side > 0 ? 12 : 6);
+export function drawCell(g, x, y, st, k, time, vertical, seed, deep, side = 0, pipe = false) {
+  if (vertical) { const sx = x + streakX(side);
+    if (pipe) { g.fillStyle = '#2a2622'; g.fillRect(x + 4, y, 8, 16); g.fillStyle = '#5a524a'; g.fillRect(x + 4, y, 1, 16); g.fillStyle = '#16120e'; g.fillRect(x + 11, y, 1, 16); g.fillStyle = '#7a6e60'; g.fillRect(x + 4, y + 7, 8, 2); g.fillStyle = '#a89a86'; g.fillRect(x + 5, y + 7, 1, 1); g.fillRect(x + 10, y + 7, 1, 1); }   /* the pipe's iron and a riveted band */
     const col = st === 'wet' ? ['#1c2e40', '#4a78a0'] : st === 'spent' ? ['#12100e', '#2a221c'] : ['#0e0a16', '#3a2c52'];
-    g.fillStyle = col[0]; g.fillRect(x + 6, y, 4, 16); g.fillStyle = col[1]; g.fillRect(x + 6, y, 1, 16);
-    if (st === 'oil') { const t = (time * 7 + seed * 3) % 16; g.fillStyle = '#9a78d8'; g.fillRect(x + 7, y + (t | 0), 1, 2); g.fillStyle = '#4aa89a'; g.fillRect(x + 8, y + (((t + 8) % 16) | 0), 1, 1); }
-    if (st === 'wet') { g.fillStyle = '#a8d4f0'; g.fillRect(x + 7, y + (((time * 9 + seed) % 16) | 0), 1, 2); }
-    if (st === 'spent') { g.fillStyle = '#4a3a2e'; g.fillRect(x + 7, y + ((seed * 5) % 12), 1, 2); }
-    if (st === 'fire') { flame(g, x + 8, y + 16, 7 + 6 * k, time, seed, 0.9, 3.4); flame(g, x + 8, y + 8, 5 + 4 * k, time + 0.3, seed + 3, 0.8, 3); }
+    if (pipe) { g.fillStyle = col[0]; g.fillRect(x + 6, y + 1, 4, 5); g.fillRect(x + 6, y + 10, 4, 5); g.fillStyle = col[1]; g.fillRect(x + 6, y + 1, 1, 5); g.fillRect(x + 6, y + 10, 1, 5); }   /* the oil in its sight slots */
+    else { g.fillStyle = col[0]; g.fillRect(sx, y, 4, 16); g.fillStyle = col[1]; g.fillRect(side > 0 ? sx + 3 : sx, y, 1, 16); }
+    const ix = pipe ? x + 7 : side > 0 ? sx + 1 : sx + 1;
+    if (st === 'oil') { const t = (time * 7 + seed * 3) % 16; g.fillStyle = '#9a78d8'; g.fillRect(ix, y + (t | 0), 1, 2); g.fillStyle = '#4aa89a'; g.fillRect(ix + 1, y + (((t + 8) % 16) | 0), 1, 1); }
+    if (st === 'wet') { g.fillStyle = '#a8d4f0'; g.fillRect(ix, y + (((time * 9 + seed) % 16) | 0), 1, 2); }
+    if (st === 'spent') { g.fillStyle = '#4a3a2e'; g.fillRect(ix, y + ((seed * 5) % 12), 1, 2); }
+    if (st === 'fire') { const fx = pipe ? x + 8 : sx + 2; flame(g, fx, y + 16, 7 + 6 * k, time, seed, 0.9, 3.4); flame(g, fx, y + 8, 5 + 4 * k, time + 0.3, seed + 3, 0.8, 3); }
     return; }
   const b = y + 16, ht = deep ? 7 : 5;
   if (st === 'oil') {
