@@ -39,7 +39,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/cistern-queen-hands.js binds it). queenPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CQ = {
-  hp: 1050, w: 76,   /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
+  hp: 1150, w: 76,   /* (claude/underwell2: 1050 -> 1150 - her torches are taken and thrown now, so a jump-strike no longer drops one into the floor oil under you, and the standard bot rose 63% -> 79% on this branch, the base 0c0b69aa measured beside it: likely her cressets - a jump-strike dropped one into the floor oil under the bot; 1150: 4/8 1/8 8/8 = 54%) */ /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
   openMul: 1.9, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
