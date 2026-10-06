@@ -344,12 +344,31 @@ const EHP = { waterthief: 26, gangleader: GLM.GL.hp, cisternqueen: CQG.CQ.hp, dj
   drownedknight: DKN.DK.knight.hp, drownedcaptain: DKN.DK.captain.hp, whelp: WHF.WH.hp, mummer: MU.MUMMER.hp, hobbyhorse: MU.HORSE.hp, wickerqueen: WQN.WQ.hp, greenteeth: GM.GT.hp, stagehand: THF.STAGEHAND.hp, puppeteer: PM.PUP.hp, marionette: 999, harlequin: 999, acrobat: 999, masterpiece: 999, stringjack: FAF.MARIONETTE.hp, barker: FAF.BARKER.hp, grindylow: CNF.GRIND.hp, willowisp: CNF.WISP.hp, wickerman: WMN.WM.hp };   /* (his puppets are wood: a blow on a body does nothing, only the strings are cut - src/puppeteer.js) */
 /* (claude/sweep2) THE ACT II BOSS RETUNE (2026-10-06), measured with tools/boss-rates.mjs (profile human, campaign level, n=12): every
    number the sweep moved is here, on its own lines, so the act lanes never fight over the two tables above. before -> after in the comment */
+const SALVAGE_HP = 440;   /* (claude/sweep2) THE SALVAGE CAPTAIN (harbor mini): was 360 */
+const LANCER_MINI_HIT = 1.7;   /* (claude/sweep2) THE SERJEANT OF THE LISTS' own blows: his charge, swipe and cut x this (the serjeants in the level keep theirs; every mini's GREED.miniHit still comes on top) */
+const SALVAGE_HIT = 1.4;       /* (claude/sweep2) THE SALVAGE CAPTAIN's own pin, cargo and shots x this */
+const LANCER_MINI_X = 3.7;   /* THE SERJEANT as the Waymeet mini: his health is the serjeant's times this (was 2: 100%, 35-60 s) */
 Object.assign(DMG, {
+  kingAnchor: 16, kingSlamD: 22,   /* THE DROWNED KING: 20, 26 */
+  lanceCharge: 18, lanceThrust: 14, lanceVault: 12, lanceSweep: 14, lanceRush: 14, lanceBash: 8, lanceGuard: 16, lanceJav: 9, lanceWhirl: 10,   /* THE QUEEN'S LANCE (storm): 30, 22, 16, 18, 18, 10, 20, 11, 12 (25%: an L11 hero dead in 30-60 s) */
+  reeveSweep: 31, reeveLunge: 42, reeveHook: 25, reeveDouse: 25,   /* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14 */
   bellLeap: 18, bellClaw: 22, bellPressure: 20,   /* THE DIVING BELL: 24, 26, 24 */
   krakSlam: 36, krakSweep: 33, krakRoar: 28, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22,   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
-  bellcrab: 610,   /* THE DIVING BELL: 750 (0/12; a third of him is the soft crab out of the bell, and the bot died there with 20-30% left) */
+  tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
+  prince: 2000,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights) */
+  closedhelm: 2000,  /* THE PALADIN (waymeet): 610 (100%: 16-47 s) */
+  lampreeve: 560,    /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75) */
+  quarter: 920,     /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
+  harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
+  captain: 860,     /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
+  forgemaster: 520,  /* THE FORGEMASTER (crown mini): 480 (83-92%) */
+  reefmaw: 830,
+  herald: 370,
+  drownedking: 500,  /* THE DROWNED KING (keep): 560 (33-42%, warden 0) */
+  lance: 305,        /* THE QUEEN'S LANCE (storm): 380 (25%) */       /* THE TIDE HERALD: 340 (67%) */      /* THE REEFMAW: 500 (75-83%: 22-54 s) */
+  bellcrab: 740,   /* THE DIVING BELL: 750 (0/12; a third of him is the soft crab out of the bell, and the bot died there with 20-30% left) */
   kraken: 640,   /* THE KRAKEN: 480 (83% once the bot could see him, 0/12 before) */
 });
 
@@ -2146,7 +2165,7 @@ function spawnEnt(e) {
       case 'cutlass': enemies.push({ ...base, t: 'cutlass', w: 10, h: 18, hp: EHP.cutlass, speed: 42, mode: 'walk', modeT: 0, cd: 0.8 }); break;
       case 'boarder': enemies.push({ ...base, t: 'boarder', w: 12, h: 20, hp: EHP.boarder, speed: 30, mode: 'walk', modeT: 0, cd: 1.6 }); break;
       case 'marine': enemies.push({ ...base, t: 'marine', w: 10, h: 18, hp: EHP.marine, speed: 20, mode: 'perch', modeT: 1 + Math.random(), cd: 1.4, hx: px, hy: py }); break;
-      case 'bosun': enemies.push({ ...base, t: 'bosun', w: 12, h: 20, hp: e.salvage ? 360 : EHP.bosun, salvage: !!e.salvage, phase: 1, salvageN: 0, cargo: [], speed: 26, mode: 'walk', modeT: 0, cd: 1.2, called: false }); break;
+      case 'bosun': enemies.push({ ...base, t: 'bosun', w: 12, h: 20, hp: e.salvage ? SALVAGE_HP : EHP.bosun, salvage: !!e.salvage, phase: 1, salvageN: 0, cargo: [], speed: 26, mode: 'walk', modeT: 0, cd: 1.2, called: false }); break;
       case 'lookout': enemies.push({ ...base, t: 'lookout', w: 8, h: 16, hp: EHP.lookout, speed: 24, mode: 'scan', modeT: 1.5, cd: 0, seen: 0 }); break;
       case 'captain': boss = { ...base, t: 'captain', w: 18, h: 28, hp: EHP.captain, maxHp: EHP.captain, mode: 'sleep', modeT: 0, face: -1, phase: 1, sabreT: 1.2, shotT: 2.6, hookT: 4.5, kegT: 7, callT: 10, ride: false, shots: 0 }; enemies.push(boss); break;
       /* THE MAGE'S FOLLY */
@@ -2338,7 +2357,7 @@ function spawnEnt(e) {
       case 'hedgeknight': enemies.push({ ...base, t: 'hedgeknight', w: 12, h: 16, hp: EHP.hedgeknight, maxHp: EHP.hedgeknight, speed: 22, mode: 'walk', modeT: 0, turnT: 0, behindT: 0, cd: 1.2, leapT: 4 + Math.random() * 2 }); break;
       case 'runner': enemies.push({ ...base, t: 'runner', w: 8, h: 12, hp: EHP.runner, maxHp: EHP.runner, speed: 62, mode: 'walk', modeT: 0, cd: 0.9, fetched: 0 }); break;
       case 'crossbow': enemies.push({ ...base, t: 'crossbow', w: 10, h: 12, hp: EHP.crossbow, maxHp: EHP.crossbow, speed: 0, mode: 'span', modeT: 1.2, cd: 0, perch: true }); break;
-      case 'lancer': enemies.push({ ...base, t: 'lancer', w: 22, h: 30, hp: EHP.lancer * (e.mini ? 2 : 1), mounted: true, mode: 'ride', modeT: 0.6, cd: 1, hitT: 0, hx0: (e.x - (e.range || 12)) * TS + 8, hx1: (e.x + (e.range || 12)) * TS + 8, mini: !!e.mini, miniBig: !!e.mini, phase: 1 }); break;   /* THE SERJEANT rides the length of his beat and no further */
+      case 'lancer': enemies.push({ ...base, t: 'lancer', w: 22, h: 30, hp: EHP.lancer * (e.mini ? LANCER_MINI_X : 1), mounted: true, mode: 'ride', modeT: 0.6, cd: 1, hitT: 0, hx0: (e.x - (e.range || 12)) * TS + 8, hx1: (e.x + (e.range || 12)) * TS + 8, mini: !!e.mini, miniBig: !!e.mini, phase: 1 }); break;   /* THE SERJEANT rides the length of his beat and no further */
       case 'drunk': enemies.push({ ...base, t: 'drunk', w: 10, h: 20, hp: EHP.drunk, maxHp: EHP.drunk, shy: !!e.shy, speed: 14, mode: 'idle', modeT: 0.5, cd: 1.2 + Math.random() * 1.6, bottleT: 3 + Math.random() * 4, stepT: 0.4, wob: 0, home: px, range: e.range === undefined ? 1 : e.range }); break;   /* THE DRUNK: on a balcony or a barrel top, throwing whatever is to hand */
       case 'closedhelm': { const ch = { ...base, t: 'closedhelm', w: 24, h: 50, hp: EHP.closedhelm, maxHp: EHP.closedhelm, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, cutT: 1.2, thrustT: 3, bashT: 5.5, judgeT: 8, oathT: 5, radianceT: 9, open: 0, ward: true }; boss = ch; enemies.push(ch); } break;
       /* THE UNBURIED FIELD (src/unburied-foes.js): the props are built off L.ents by unbReset */
@@ -10606,7 +10625,7 @@ function cutLine(e, k) {
    the mash bot took 70-77% of him in it and beat him. A clock is not an earned window. Now his one opening is THE LEDGER turned on a shield, on the
    beat: THE BOOK TURNS: CUT HIM, and he reels TOLL_OPEN s (it was 1.2) taking double. Through THE DARK he is chipped like anywhere else (and his
    poise bar still breaks him open to the heavy blows and plunges that fill it: the hero with no shield's way in). */
-const TOLL_OPEN = 3.0;
+const TOLL_OPEN = 2.0;   /* (claude/sweep2) was 3.0: one parried ledger and the knight cut a third of him; 2 s is still four cuts at double */
 function updateTollmaster(e, dt) {
   const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt; if (e.open > 0) e.open -= dt;
   const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 46;
@@ -10875,7 +10894,7 @@ function updateCaptain(e, dt) {
     case 'stride': { e.face = Math.sign(d) || e.face;
       e.sabreT -= dt; e.shotT -= dt; e.hookT -= dt; e.kegT -= dt; e.callT -= dt;
       want = level && ad > 40 ? e.face * (p3 ? 88 : 70) : level && ad < 28 ? -e.face * 40 : e.face * 40;
-      if (level && ad < 52 && e.sabreT <= 0) { e.mode = 'sabreTell'; e.modeT = p3 ? 0.32 : 0.42; e.sabreT = p3 ? 1.7 : 2.5; number(e.x, e.y - 42, '!', '#ffd36b'); SFX.charge(); }
+      if (level && ad < 52 && e.sabreT <= 0) { e.mode = 'sabreTell'; e.modeT = p3 ? 0.4 : 0.5;   /* (claude/sweep2) was 0.32/0.42: under a reaction and a roll for a hero with no shield (the pyro 0/4) */ e.sabreT = p3 ? 1.7 : 2.5; number(e.x, e.y - 42, '!', '#ffd36b'); SFX.charge(); }
       else if (e.hookT <= 0 && ad > 54 && ad < 230) { e.mode = 'hookTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; e.hookT = p3 ? 4 : 5.5; number(e.x, e.y - 42, 'THE GRAPNEL', '#ff9a5c'); SFX.grapple(); }
       else if (p2 && e.kegT <= 0 && ad > 56) { e.mode = 'kegTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.5; e.kegT = p3 ? 5 : 7.5; number(e.x, e.y - 42, 'A KEG', '#ff6b6b'); SFX.fuse(); } // (the keg is asked for FIRST of the ranged three, or the pistols would never leave it a turn)
       else if (e.shotT <= 0 && ad > 40) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p3 ? 0.4 : 0.55; e.shotT = p3 ? 2.4 : 3.4; e.shots = p2 ? 2 : 1; e.aimY = P.y - 9; number(e.x, e.y - 42, 'TAKING AIM', '#ff9a5c'); }
@@ -15647,6 +15666,9 @@ function updatePrince(e, dt) {
     e.lightWas = light; e.shroudWas = shroud; }
   /* WHAT HE DID AND WHAT WAS DONE TO HIM, counted once per entry, so a lab run can say the openings were used */
   if (e.mode !== e.nWas) { e.n = e.n || {}; e.n[e.mode] = (e.n[e.mode] || 0) + 1; e.nWas = e.mode; }
+  /* (claude/sweep2, B12) HE DOES NOT GO INTO THE FLOOR WHILE HE IS OPEN, OR JUST AFTER: reeling, buried, bareheaded or in the light, and for
+     1.5 s after, his sink waits (the audit saw two of his blinks fall in or right after his own openings) */
+  if (e.mode === 'reel' || e.mode === 'buried' || e.bare > 0 || princeLight(e)) e.noSinkT = 1.5; else e.noSinkT = Math.max(0, (e.noSinkT || 0) - dt);
   let want = 0;
   switch (e.mode) {
     /* HE GETS UP. The lid goes, and he comes up out of the box he was forgotten in */
@@ -15663,7 +15685,7 @@ function updatePrince(e, dt) {
       const court = enemies.filter(q => q.alive && q.t === 'courtier').length;
       if (p2 && e.snuffT <= 0 && princeLit() > 0.5 && ad < 160) { e.snuffT = 14; e.mode = 'snuffTell'; e.modeT = 0.85; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 12, 'HE DRAWS BREATH', '#ff6b6b'); SFX.gasp(); }
       else if (e.callT <= 0 && court < (p2 ? 2 : 1)) { e.callT = p2 ? 12 : 15; e.mode = 'callTell'; e.modeT = 0.9; number(e.x, e.y - e.h - 12, 'HE CALLS HIS COURT', '#c080ff'); SFX.callerChant(); }
-      else if (e.sinkT <= 0 && ad > 70) { e.sinkT = p2 ? 7 : 9.5; e.mode = 'sinkTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.rumble(); }
+      else if (e.sinkT <= 0 && ad > 70 && !(e.noSinkT > 0)) { e.sinkT = p2 ? 7 : 9.5; e.mode = 'sinkTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.rumble(); }
       else if (e.crownT <= 0 && ad > 56 && ad < 260 && !(e.bare > 0)) { e.crownT = p2 ? 6.5 : 8.5; e.mode = 'crownTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); }
       else if (e.cutT <= 0 && ad < 72) { e.cutT = p2 ? 2.1 : 2.6; e.cuts = p2 ? 2 : 1; e.mode = 'cutTell'; e.modeT = p2 ? 0.45 : 0.6; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
       break; }
@@ -16165,7 +16187,7 @@ function updateClosedHelm(e, dt) {
         else if (e.cutT <= 0 && ad < 62 && dyP < 40) { e.cutT = p2 ? 1.8 : 2.4; e.mode = 'cutTell'; e.modeT = PAL.cut[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
         else if (e.thrustT <= 0 && ad >= 50 && ad < 112 && dyP < 40) { e.thrustT = p2 ? 2.6 : 3.4; e.mode = 'thrustTell'; e.modeT = PAL.thrust[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
         else if (e.bashT <= 0 && ((ad > 44 && ad < 150) || e.bashT < -4) && dyP < 40) { e.bashT = p2 ? 4.8 : 6.5; e.face = Math.sign(d) || e.face; e.bashX1 = Math.max(A.x0 + 22, Math.min(A.x1 - 22, e.x + e.face * 170)); e.mode = 'bashTell'; e.modeT = PAL.bash[ph]; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
-        else if (e.judgeT <= 0 && (ad > 70 || e.judgeT < -3)) { e.judgeT = p2 ? 6 : 8.5; e.marks = [P.x]; e.mode = 'judgeTell'; e.modeT = PAL.judge[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+        else if (e.judgeT <= 0 && (ad > 70 || e.judgeT < -3)) { e.judgeT = ad > 100 ? (p2 ? 4.5 : 6) : (p2 ? 6 : 8.5);   /* (claude/sweep2) kept off at range, the light comes oftener: the pyro stood off and took 24-102 of him */ e.marks = [P.x]; e.mode = 'judgeTell'; e.modeT = PAL.judge[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
       break; }
     case 'oathTell': want=0;
       if(e.modeT<=0){e.mode = 'oathRecover';e.modeT=1.6;e.open=1.6;ringAt(e.x,floor-3,82,'#ff6b6b',0.45);SFX.heavy();shakeCam(5);
@@ -16265,7 +16287,7 @@ function lancerFrame(e) {
   if (e.hurtT > 0) return 15;
   return m === 'unhorsed' ? 13 : m === 'cutTell' ? 11 : m === 'cut' ? 12 : Math.abs(e.vx) > 6 ? 9 + Math.floor(e.anim * 6) % 2 : 9;
 }
-const LANCER_OPEN = 3.0;
+const LANCER_OPEN = 1.8;   /* (claude/sweep2) was 3.0: every window of his ran three seconds and the knight took him in 26-43 s */
 function updateLancer(e, dt) {
   const A = e.mini && L.mini ? L.mini : null, lo = A ? A.x0 + 22 : e.hx0, hi = A ? A.x1 - 22 : e.hx1;
   const d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
@@ -16293,7 +16315,7 @@ function updateLancer(e, dt) {
     case 'charge': want = e.face * (e.mini ? (e.phase === 2 ? 235 : 215) : 190);
       if (Math.random() < dt * 14) dust(e.x - e.face * 12, e.y, 2);
       if (e.hitT <= 0 && !P.dead && Math.abs(P.x - (e.x + e.face * 12)) < 20 && dy < 30) { e.hitT = 9;
-        const res = damagePlayer(e.x, DMG.lancerCharge, { up: true });
+        const res = damagePlayer(e.x, Math.round(DMG.lancerCharge * (e.mini ? LANCER_MINI_HIT : 1)), { up: true });
         if (res === 'blocked') { if (e.mini && e.hp > e.hp0 / 2) { e.mode = 'rear'; e.modeT = LO(1.5); e.open = LO(1.5); e.vx = 0; number(e.x, e.y - 50, 'THE HORSE REARS', '#8fd160'); SFX.snort(); shakeCam(4); } else unhorse(); break; }
         if (res === 'hit') { P.vx = e.face * 280; P.vy = -210; P.ground = false; } }
       if (!e.passed && Math.sign(P.x - e.x) !== e.face && ad > 34) { e.passed = true; e.modeT = Math.min(e.modeT, 0.5); }
@@ -16301,7 +16323,7 @@ function updateLancer(e, dt) {
       break;
     case 'swipeTell': want = 0;
       if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.3; SFX.slash();
-        if (!P.dead && Math.sign(d) === e.face && ad < 48 && dy < 30) { const res = damagePlayer(e.x, DMG.lancerSwipe);
+        if (!P.dead && Math.sign(d) === e.face && ad < 48 && dy < 30) { const res = damagePlayer(e.x, Math.round(DMG.lancerSwipe * (e.mini ? LANCER_MINI_HIT : 1)));
           if (answered(res)) { e.mode = 'reel'; e.modeT = LO(1.2); e.stagger = LO(1.2); if (e.mini) e.open = LO(1.2); number(e.x, e.y - 50, 'OPEN', '#8fd160'); SFX.clank(); } } }
       break;
     case 'swipe': want = 0; if (e.modeT <= 0) { e.mode = 'ride'; e.modeT = 0.3; e.cd = 1.3; } break;
@@ -16314,7 +16336,7 @@ function updateLancer(e, dt) {
     case 'unhorsed': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; } break;
     case 'cutTell': want = 0;
       if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.24; SFX.slash(); e.vx = e.face * 70;
-        if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) { const res = damagePlayer(e.x, DMG.lancerCut);
+        if (!P.dead && Math.sign(d) === e.face && ad < 32 && dy < 22) { const res = damagePlayer(e.x, Math.round(DMG.lancerCut * (e.mini ? LANCER_MINI_HIT : 1)));
           if (answered(res)) { e.mode = 'reel'; e.modeT = LO(1.2); e.stagger = LO(1.2); if (e.mini) e.open = LO(1.2); e.cd = 1.4; e.vx = -e.face * 120; number(e.x, e.y - 30, 'OPEN', '#8fd160'); SFX.clank(); } } }
       break;
     case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.5; e.cd = 1.1; } break;
@@ -22920,7 +22942,7 @@ function updateEnemies(dt) {
       if (hazardFoe(e)) continue;
       if (e.knock <= 0 && !(r && r.ground) && (e.knockAir = (e.knockAir || 0) + dt) < 1.5) e.knock = 0.001;   /* still in the air when the throw runs out: it keeps falling, into whatever is under it */
       if (e.knock > 0) continue; e.knockAir = 0; }
-    if(e.salvage){updateSalvageCaptain(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,pinDamage:DMG.bosunPin,cargoDamage:18,shotDamage:12,hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),answered:res=>res==='blocked'||answered(res),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-e.h-20,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
+    if(e.salvage){updateSalvageCaptain(e,dt,{P,A:L.mini,active:miniActive&&miniIntroT<=0,pinDamage:Math.round(DMG.bosunPin*SALVAGE_HIT),cargoDamage:Math.round(24*SALVAGE_HIT),shotDamage:Math.round(16*SALVAGE_HIT),   /* (claude/sweep2) cargo 18->24, shot 12->16, all x SALVAGE_HIT */ hit:(x,dmg,hard)=>damagePlayer(x,dmg,{unblockable:hard,who:e}),answered:res=>res==='blocked'||answered(res),seed:s=>seeds.push(s),say:(msg,hard)=>number(e.x,e.y-e.h-20,msg,hard?'#ff6b6b':'#ffd36b'),sound:k=>SFX[k]()});continue;}
     if (e.trainer) { if (e.lx1) e.x = Math.max(e.lx0, Math.min(e.lx1, e.x)); if (e.trainer === 'still' || (e.trialSt && e.trialSt.done)) { if (e.trainer !== 'still') { e.mode = 'walk'; e.modeT = 0; } e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); const r0 = moveBody(e, 0, e.vy * dt, false); if (r0 && r0.ground) e.vy = 0; e.anim = (e.anim || 0) + dt; continue; } }   /* THE TRIAL'S STILL MEN face you and take it; the drills fight on below */
     if (e.rallyT > 0) { e.rallyT -= dt; if (!windingUp(e) && e.modeT > 0) e.modeT -= dt * 0.6; if (e.cd > 0) e.cd -= dt * 0.6; }   /* RALLIED: it gets to the next blow sooner (never through the tell itself: that stays as long as it was) */
     if (e.wallT > 0) e.wallT -= dt;

@@ -49,6 +49,11 @@ export const TURN_WORD = {
   winchmaster: 'IRON',                                      // his plate: jam his drum
   greathound: TURN.WARDED,
   queen: 'THE SWARM',                                       // her drones close over her
+  /* (claude/sweep2) ACT II */
+  captain: e => e.mode === 'ride' ? 'ON THE WAVE' : TURN.WARDED,                   // he rides the wave he called: wait for it to beach him
+  reefmaw: e => ['lurk', 'sink', 'sleep', 'drain'].includes(e.mode) ? 'IN ITS HOLE' : TURN.WARDED,   // in its hole: make it come out (the bait, the jaw)
+  lance: 'HIS PLATE',                                       // plate all round until he plants or reels: step off his line
+  kraken: 'NOT THE BODY',                                   // the body is out at sea: cut the arms on the road
 };
 const COL = '#d8e2ee', RING = '#eef4ff';
 

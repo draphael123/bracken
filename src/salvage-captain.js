@@ -3,6 +3,9 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 /* HIS OPENING (claude/bosswave1: minis on the chip, src/boss-greed.js CHIP_MINI): the belaying pin PARRIED - he rests PIN_OPEN s (it was 1.8), open.
    His other rests, after the grapnel, the cargo and the guns, are a breath and not an opening: a hero's blade is the boss rule's chip there. */
 export const PIN_OPEN=3.0;
+/* (claude/sweep2, B13) THE CARGO LEFT ON ITS MARKS IS AN OPENING TOO: he has the rope in both hands as it runs, CARGO_OPEN s. Before, the pin parried was
+   his one way in, and a hero with no shield (the pyro, 0/4: four timeouts) could only chip him for four minutes */
+export const CARGO_OPEN=1.0;
 export function updateSalvageCaptain(e,dt,c){
  const {P,A,active,hit,seed,say,sound}=c;
  if(!active||!e.alive||P.dead)return;
@@ -29,8 +32,8 @@ export function updateSalvageCaptain(e,dt,c){
  if(e.mode==='salvageHookTell'&&e.modeT<=0){const x=e.x+e.face*12,y=e.y-18,d=Math.hypot(e.aimX-x,e.aimY-y)||1;seed({x,y,vx:(e.aimX-x)/d*260,vy:(e.aimY-y)/d*260,g:0,life:1.35,chain:true,boot:true,from:e});sound('grapple');rest(1.5);return;}
  if(e.mode==='salvageCargoTell'&&e.modeT<=0){e.mode='salvageCargo';e.modeT=.32;sound('ropeHaul');return;}
  if(e.mode==='salvageCargo'&&e.modeT<=0){
-  for(const x of e.cargo)if(Math.abs(P.x-x)<22&&P.y>A.floor-38&&P.y-P.h<A.floor)hit(x,c.cargoDamage,true);
-  e.impactMarks=[...e.cargo];e.impactT=.35;sound('thud');rest(1.6);return;
+  let caught=false;for(const x of e.cargo)if(Math.abs(P.x-x)<22&&P.y>A.floor-38&&P.y-P.h<A.floor){hit(x,c.cargoDamage,true);caught=true;}
+  e.impactMarks=[...e.cargo];e.impactT=.35;sound('thud');rest(1.6);if(!caught){e.open=CARGO_OPEN;say('THE ROPE RUNS: STRIKE',false);}return;
  }
  if((e.mode==='salvageBroadsideTell'||e.mode==='salvageCrossfireTell')&&e.modeT<=0){e.cross=e.mode==='salvageCrossfireTell';e.mode='salvageGuns';e.modeT=0;e.salvo=0;return;}
  if(e.mode==='salvageGuns'&&e.modeT<=0){
