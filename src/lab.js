@@ -786,12 +786,18 @@ async function runbossLab(BK, opts) {
             if(RL.exposedT>0){realmGoal=[RL.vent.x-12,RL.mire-6];if(Math.abs(P.x-(RL.vent.x-12))<8&&Math.abs(py-(RL.mire-6))<10&&P.atk<0){P.face=1;BK.press('atk');swings++;}}
             else realmGoal=[RL.vent.x-110,RL.mire-70];}
           if(realmGoal)toward(realmGoal[0],realmGoal[1],threat?0.8:1.6);}
+        /* (claude/wardenkit, v2 only, the warden only) HIS REPRISAL ON THE CARPET: her plan holds her at her point's distance the whole time she waits, so every
+           free frame was a thrust at his ward and his greed ring came every ~9 s (9-11 reprisals a fight, 190 of her 238 health; the knight and the pyromancer
+           3-5). She now holds the blow one short of his count, as the ground hands do (labGreedStop), and flies out of a closing ring. The other heroes'
+           carpet hands are untouched (a QUESTION in work/claude/lane-done/claude-wardenkit.md) */
+        const wg=LABP.v2&&h==='warden'&&BK.greed?BK.greed:null,wgOut=wg?(wg.reach||60)+(boss.w||20)/2:0,wgFlee=!!wg&&boss.greedT>0&&Math.abs(P.x-boss.x)<wgOut+18,wgHold=!!wg&&wg.open(boss)!==true&&wg.count(boss)>=wg.limit(boss)-1;
+        if(wgFlee){vx+=(P.x>=boss.x?1:-1)*3;threat=true;}
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
         if(!threat&&!realmGoal){const want=boss.open>0?(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.55):(rest?150:(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.7));   /* (claude/herokit) THE WARDEN'S POINT PAYS 34+ px out (tipPay): flown in to 0.55-0.7 of her reach she only ever struck with the haft and the middle of the shaft (0 tip hits in 66 on the Archmage) - she holds the tip distance, as a person does */const gx=boss.x-side*want,gy=by;
           if(Math.abs(gx-P.x)>6)vx+=Math.sign(gx-P.x);if(Math.abs(gy-py)>6)vy+=Math.sign(gy-py);}
         if(vx>0.3)k.right=true;else if(vx<-0.3)k.left=true;if(vy>0.3)k.down=true;else if(vy<-0.3)k.up=true;
         if(block){k.block=true;}
-        else if(!rest&&!['blinkOut','blinkIn','wake'].includes(m)&&Math.abs(dx)<LAB_REACH[h]+10&&Math.abs(dy)<20&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        else if(!rest&&!wgFlee&&!wgHold&&!['blinkOut','blinkIn','wake'].includes(m)&&Math.abs(dx)<LAB_REACH[h]+10&&Math.abs(dy)<20&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         if(threat&&m==='markWait'&&boss.deathMark&&Math.hypot(P.x-boss.deathMark.x,py-boss.deathMark.y)<boss.deathMark.r&&P.st>20&&f%20===0)BK.press('dodge');
         const was=P.hp;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m,Math.max(0,was-P.hp));if(P.dead)falls++;
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});
@@ -1165,8 +1171,8 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const MH=BK.matriarchHands(),S=MH&&MH.show();
         if(f===0||!P.labRmMem)P.labRmMem={};
-        const pl=S?matPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden',v2:!!LABP.v2,hero:h,deflect:h==='warden',brood:LABP.v2?BK.enemies().filter(q=>q.alive&&q.rmBrood):null,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRmMem}):{gx:null,face:P.face};
-        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
+        const pl=S?matPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,deflect:h==='warden',brood:LABP.v2?BK.enemies().filter(q=>q.alive&&q.rmBrood):null,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRmMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}   /* (claude/wardenkit, v2: her step carries now - ~49 px, graced to its end - so the v2 hands take it where they roll; her button steps BACK, so she faces away from where she goes) */
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=24;}}   /* (a full jump: three rows up a pillar wants the key held to the top of the rise) */
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=pl.tap?DEFLECT_TAP(f):true;   /* (pl.tap: the warden's deflect on the beat - the v2 hands only) */
