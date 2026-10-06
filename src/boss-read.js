@@ -49,6 +49,11 @@ export const TURN_WORD = {
   winchmaster: 'IRON',                                      // his plate: jam his drum
   greathound: TURN.WARDED,
   queen: 'THE SWARM',                                       // her drones close over her
+  /* ACT III (claude/sweep3) */
+  archmage: e => e.mode === 'ward' ? 'THE RUNES HOLD' : e.mode === 'blink' || e.mode === 'change' || e.mode === 'wake' ? TURN.NOT_THERE : e.stage === 2 ? 'REACH HIM' : TURN.WARDED,   // the runes take it; in a room he has written, the way through the room is the opening
+  gargoyle: TURN.STONE,                                     // stone until he lies on the spikes
+  gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
+  homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
 };
 const COL = '#d8e2ee', RING = '#eef4ff';
 
