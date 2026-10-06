@@ -8508,7 +8508,7 @@ function updatePlayer(dt) {
       }
       const front = P.swingKind !== 'sweep' && Math.sign(P.x - e.x) === e.face;   /* the sweep goes under every guard held in front */
       /* (and a guard that is BROKEN is not held up at all: the heavy blow or the sweep that emptied its bar opened it for every cut after, which is what makes going through it worth more than going round) */
-      if (e.t === 'mother' && e.tipped) continue;
+      if (e.t === 'mother' && e.tipped) { if (!(e.heart && e.heart.alive && overlap(hb, box(e.heart)))) BR.turned(e, P.x, 'THE HEART'); continue; }   /* B10 (claude/sweep1): her cap is up - a blade on her body, not on the heart, says where to cut */
       if (e.t === 'mother') { BR.turned(e, P.x); continue; }   /* B10: ARMOURED, said (src/boss-read.js) */
       if (e.t === 'drone') { SFX.clank(); sparks(e.x, e.y - e.h / 2, P.face, 4); number(e.x, e.y - e.h - 6, 'PUFF', '#9aa39a'); continue; }
       if (e.t === 'ram' && !ramOpen(e) && !BR.beats(e, P.x, !P.ground, P.swingKind === 'sweep')) { BR.turned(e, P.x); hitstop(0.02); P.vx = e.face * 120; continue; }   /* HIS HORNS (B11, claude/sweep1): they turn a blade from the front - GO ROUND; from behind he is cut like any beast */
