@@ -70,7 +70,7 @@ try {
         ['the glass edge: the slide, the first mirror, the stair', [4, 29], () => { walk(26); walk(40, { tol: 3 }); turn('first', '\\\\'); waitFor(() => fused('firstStair'), 300);
             hop(43, 31, 0); hop(44, 29, 1); hop(47, 28, 1); walk(69); walk(95); return col() >= 93 && fused('firstStair'); }, [95, 33]],
         ['the fulgurite field: the slide gap', [95, 33], () => { walk(134); walk(136, { tol: 2 }); slideLeap(136, 142); if (col() < 148) return false; walk(189); hop(189, 30, 1); walk(197); return col() >= 196; }, [199, 33]],
-        ['the bone crossing: the sun-mirror bridge', [199, 33], () => { walk(223, { tol: 3 }); turn('bridge', '\\\\'); waitFor(() => fused('bridge'), 300); walk(244); walk(295); return col() >= 293; }, [295, 33]],
+        ['the bone crossing: the sun-mirror bridge', [165, 33], () => { walk(223, { tol: 3 }); turn('bridge', '\\\\'); waitFor(() => fused('bridge'), 300); walk(244); walk(295); return col() >= 293; }, [295, 33]],
         ['the fork obelisk: the chain', [300, 33], () => { walk(316, { tol: 3 }); turn('chainA', '/'); hop(319, 30, 1); hop(320, 27, 1); hop(320, 24, 0); walk(317, { tol: 3, noFight: true }); turn('chainB', '/');
             waitFor(() => fused('headBridge'), 400); walk(322, { tol: 3 }); drop(); walk(330); hop(333, 30, 1); hop(337, 27, 1); walk(361); return fused('headBridge') && col() >= 360 && feet() === 27; }, [361, 27]],
         ['the sunken head: the climb', [361, 27], () => { hop(363, 24, 0); hop(363, 21, 0); hop(365, 18, 0); hop(368, 16, 1); walk(382); walk(400); leap(408, 412); walk(446); return col() >= 444; }, [446, 33]],

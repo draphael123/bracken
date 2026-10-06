@@ -126,7 +126,7 @@ export function buildGlassSea({ painter, T, TS }) {
   sign(130, B - 4, 'GLASS SLOPES ARE SLICK. HOLD DOWN TO SLIDE; LEAP AT THE FOOT.');
   block(150, 155, B - 5, B - 5); decor.push({ kind: 'spire', x: 152, y: B, top: B - 5 });   /* shade on the landing */
   upS(161, B + 1); ground(162, 195, B);
-  vulture(170, B - 8, 'fieldVult'); skiff(168, B - 1);
+  vulture(170, B - 8, 'fieldVult'); skiff(168, B - 1); ent('check', 165, B - 1);   /* CHECKPOINT ONE, past the slide gap (the crossing's fight is its stretch) */
   glassS(174, B - 1, 'fieldPair'); glassS(178, B - 1, 'fieldPair');
   skiff(184, B - 1);
   thrower(192, B - 4, 'fieldThrow'); block(190, 195, B - 3, B - 1);         /* a thrower on a fused ridge over the way into the crossing */
@@ -134,13 +134,13 @@ export function buildGlassSea({ painter, T, TS }) {
 
   // ================= 3. THE BONE CROSSING (196-295): SET PIECE ONE - THE SUN-MIRROR BRIDGE (REQUIRED) =================
   ground(196, 229, B);
-  ent('check', 199, B - 1);                                                 /* CHECKPOINT ONE */
+
   skiff(205, B - 1); skiff(215, B - 1);
-  glassS(212, B - 1, 'crossScorp');
+  glassS(212, B - 1, 'crossScorp'); glassS(216, B - 1, 'crossScorp'); thrower(208, B - 4, 'nearTerrace');   /* a thrower on the terrace behind you while you turn the mirror */
   /* THE MIRROR on the near lip, its sentinel in front of it; the beam runs along row 32 to the sand heap on the far lip: the bridge fuses at the
      surface from the near lip outward (the beam walking across) */
   mirror('bridge', 224, B - 2, ['sky', '\\', '/']); source('bridge', 224, B - 3, 'S', 'sun');
-  sentinel(221, B - 1, 'mirrorGuard', { face: -1 });
+  sentinel(221, B - 1, 'mirrorGuard', { face: -1 }); sentinel(227, B - 1, 'mirrorGuard', { face: -1 });   /* two sentinels: one before the mirror, one on the lip behind it */
   sign(217, B - 1, 'THE BONE CROSSING. TURN THE MIRROR: THE BEAM FUSES A ROAD.');
   crack('crossing', 230, 241, B);
   bed('bridge', 243, B - 2, span(230, 241, B), { label: 'THE BRIDGE', walk: true });
@@ -148,9 +148,9 @@ export function buildGlassSea({ painter, T, TS }) {
   decor.push({ kind: 'heap', x: 243, y: B - 1 }); skiff(246, B - 1);   /* the far lip's shade: between it and the near lip's, only the vultures' shadows */                           /* the sand heap the beam lands on (its target ring) */
   vulture(234, B - 9, 'crossVult'); vulture(250, B - 10, 'crossVult2');      /* their shadows cross the bridge: moving shade in the open */
   block(248, 252, B - 3, B - 1); decor.push({ kind: 'ridge', x0: 248, x1: 252, y: B - 3 });   /* a fused ridge on the far lip */
-  thrower(250, B - 4, 'farLip');                                            /* THE RANGED ONE on the far lip: he throws while you turn the mirror */
+  thrower(250, B - 4, 'farLip'); thrower(248, B - 4, 'farLip'); glassS(245, B - 1, 'farLipScorp'); sentinel(247, B - 1, 'farLipScorp');   /* two throwers on the far lip and a scorpion at the bridge's end: they meet you as you cross */                                            /* THE RANGED ONE on the far lip: he throws while you turn the mirror */
   skiff(258, B - 1); shardAt(258, B - 1);                                   /* SHARD TWO, in the skiff's ribs */
-  glassS(266, B - 1, 'crossPair'); glassS(270, B - 1, 'crossPair');
+  glassS(266, B - 1, 'crossPair'); glassS(270, B - 1, 'crossPair'); sentinel(273, B - 1, 'crossPair');   /* the pair's sentinel in front of them */
   block(276, 281, B - 5, B - 5); decor.push({ kind: 'spire', x: 278, y: B - 1, top: B - 5 });
   sentinel(286, B - 1, 'crossSentinel');
   vulture(290, B - 9, 'obVult');
@@ -202,7 +202,7 @@ export function buildGlassSea({ painter, T, TS }) {
   crack('headCrack', 409, 411, B, { swarm: true });                         /* a crack in the fire's light: HELD (the teach: a quiet crack beside a fire) */
   skitter(410, B - 1, 'flatsSwarm0');
   sign(406, B - 1, 'NIGHT. THE COLD BITES AWAY FROM FIRE. FIRELIGHT HOLDS THE CRACKS.');
-  hunter(424, B - 1, 'flatsHunter0');
+  hunter(424, B - 1, 'flatsHunter0'); thrower(429, B - 4, 'skullTerrace');   /* a thrower on the terrace over the skull's foot */
   block(432, 438, B - 3, B - 1); decor.push({ kind: 'ridge', x0: 432, x1: 438, y: B - 3 }); thrower(436, B - 4, 'flatsThrow0');
   fire('flatsFire0', 443, B - 1);
   ent('check', 446, B - 1);                                                 /* CHECKPOINT THREE: the night's first rest */
@@ -210,10 +210,11 @@ export function buildGlassSea({ painter, T, TS }) {
   // ================= 6. THE COLD FLATS (452-571): REMIX - FIRES, CRACKS, THE DARK CUT (REQUIRED relay) =================
   ground(452, 571, B);
   crack('flats1', 449, 451, B, { swarm: true });                           /* held by flatsFire0 */
-  hunter(462, B - 1, 'flatsHunter1');
+  hunter(462, B - 1, 'flatsHunter1'); thrower(468, B - 4, 'flatsTerrace');   /* a thrower on the terrace over the flats */
   fire('flatsFire1', 470, B - 1);
   glassS(478, B - 1, 'flatsScorp');
   boards(482, 487, B - 3); boards(486, 490, B - 6); ent('silver', 488, B - 7); shardAt(483, B - 4);   /* a glass shelf: SHARD FOUR, and a silver over it */
+  hunter(484, B - 1, 'flatsPack'); hunter(488, B - 1, 'flatsPack'); skitter(486, B - 1, 'flatsPack'); skitter(490, B - 1, 'flatsPack');   /* THE DARK BETWEEN TWO FIRES: a hunting pack and the swarm with it */
   crack('flats2', 492, 494, B, { swarm: true });                           /* held: flatsFire2 */
   fire('flatsFire2', 497, B - 1);
   /* THE DARK CUT (REQUIRED): a long cut through a glass ridge with no fire in it; across it a crack BOILS. THE RELAY MIRROR stands over flatsFire3 at the cut's
@@ -223,10 +224,10 @@ export function buildGlassSea({ painter, T, TS }) {
   mirror('relay', 502, B - 3, ['sky', '/', '\\']); source('relay', 502, B - 2, 'N', 'fire');   /* the polished hood over the fire: its light comes UP into it */
   sign(499, B - 1, 'A MIRROR OVER THE FIRE: TURN IT TO THROW THE FIRELIGHT.');
   crack('darkCut', 520, 522, B, { swarm: true, ring: [523, B - 3] });       /* the boiling crack across the cut (its target ring on the far lip) */
-  hunter(512, B - 1, 'cutHunter'); thrower(532, B - 1, 'cutThrow', { face: -1 });
+  hunter(512, B - 1, 'cutHunter'); hunter(529, B - 1, 'cutHunter2');   /* two in the dark of the cut: frozen once the relay lights it */ thrower(532, B - 1, 'cutThrow', { face: -1 });
   skitter(521, B - 1, 'cutSwarm'); shardAt(536, B - 1);   /* SHARD FIVE, past the boiling crack */
   fire('flatsFire4', 544, B - 1);
-  hunter(552, B - 1, 'flatsHunter2'); glassS(556, B - 1, 'flatsScorp2');
+  hunter(552, B - 1, 'flatsHunter2'); glassS(556, B - 1, 'flatsScorp2'); thrower(550, B - 4, 'flatsTerrace2');
   crack('flats3', 560, 562, B, { swarm: true });                           /* held by flatsFire5 */
   fire('flatsFire5', 566, B - 1);
 
@@ -236,7 +237,7 @@ export function buildGlassSea({ painter, T, TS }) {
      582) throws the firelight east along row 28 onto the crack's ring - both, or no crossing. Throwers on the far steps. The gaze mirror's third notch
      (UP) is stuck until you carry five glass shards: turned up, the gaze fuses THE VAULT STAIR to THE SILVER VAULT */
   { const t = rise(572, B, 3, false); ground(575, 589, t); }
-  fire('stepsFire', 582, B - 4);
+  fire('stepsFire', 582, B - 4); hunter(577, B - 4, 'stepsHunter');
   mirror('stepsRelay', 582, B - 6, ['sky', '/', '\\']); source('stepsRelay', 582, B - 5, 'N', 'fire');
   source('gaze', 603, B - 8, 'W', 'gaze');
   mirror('gaze', 588, B - 8, ['sky', '/', '\\'], { shardNotch: 2 });        /* '/' sends the westward gaze DOWN; '\\' sends it UP (the vault notch, five shards) */
@@ -244,7 +245,7 @@ export function buildGlassSea({ painter, T, TS }) {
   crack('steps', 590, 594, B - 3, { swarm: true, ring: [595, B - 6] });
   bed('stepsBridge', 588, B - 4, span(590, 594, B - 3), { label: 'THE STEPS\' BRIDGE', walk: true });
   ground(595, 603, B - 3);
-  thrower(598, B - 4, 'stepsThrow'); thrower(601, B - 4, 'stepsThrow2');
+  thrower(598, B - 4, 'stepsThrow'); glassS(596, B - 4, 'stepsScorp'); thrower(601, B - 4, 'stepsThrow2');
   /* THE SILVER VAULT: a glass shelf over the steps (row 19), its stair fused by the gaze turned UP (column 588 to the heap at row 20) */
   bed('vaultStair', 588, B - 14, [...span(589, 591, B - 9), ...span(591, 593, B - 12)], { label: 'THE VAULT STAIR' });
   boards(592, 597, B - 15); interiors.push([592, 597, B - 17, B - 16, 'gsVault']); ent('silver', 595, B - 16); 

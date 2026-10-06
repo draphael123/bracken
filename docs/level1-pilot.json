@@ -94,5 +94,17 @@
   "lifts": 63,
   "walked": 100,
   "bare": true
+ },
+ "glasssea": {
+  "hash": "f3433f7f11ea",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 45,
+  "deaths": 0,
+  "kills": 28,
+  "lifts": 95,
+  "walked": 100,
+  "bare": true
  }
 }

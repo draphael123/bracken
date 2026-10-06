@@ -9499,5 +9499,163 @@
     "heroLevel": 31
    }
   }
+ },
+ "glasssea": {
+  "hash": "f3433f7f11ea",
+  "level": {
+   "knight": {
+    "deaths": 0,
+    "minHpPct": 37,
+    "hpLostPct": 144,
+    "hits": 23,
+    "walked": 100,
+    "lifts": 52,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 12719,
+    "kills": 9,
+    "heroLevel": 33
+   },
+   "warden": {
+    "deaths": 0,
+    "minHpPct": 34,
+    "hpLostPct": 170,
+    "hits": 27,
+    "walked": 100,
+    "lifts": 51,
+    "held": 1,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 12726,
+    "kills": 8,
+    "heroLevel": 33
+   },
+   "pyro": {
+    "deaths": 0,
+    "minHpPct": 34,
+    "hpLostPct": 173,
+    "hits": 30,
+    "walked": 100,
+    "lifts": 50,
+    "held": 1,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 12635,
+    "kills": 8,
+    "heroLevel": 33
+   }
+  },
+  "boss": {
+   "boss": "colossus",
+   "wins": 0,
+   "fights": 6,
+   "byHero": {
+    "knight": [
+     "dead:100/89",
+     "dead:100/89"
+    ],
+    "warden": [
+     "dead:100/90",
+     "dead:100/90"
+    ],
+    "pyro": [
+     "dead:100/82",
+     "dead:100/82"
+    ]
+   },
+   "rows": [
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 66.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 89,
+     "landed": 35,
+     "swings": 2137,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "knight",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 66.6,
+     "hpLostPct": 100,
+     "bossLeftPct": 89,
+     "landed": 35,
+     "swings": 2137,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 66.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 90,
+     "landed": 25,
+     "swings": 2274,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 66.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 90,
+     "landed": 25,
+     "swings": 2274,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 79.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 82,
+     "landed": 67,
+     "swings": 2796,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 79.5,
+     "hpLostPct": 100,
+     "bossLeftPct": 82,
+     "landed": 67,
+     "swings": 2796,
+     "reprisalPct": 0,
+     "chip": []
+    }
+   ]
+  }
  }
 }
