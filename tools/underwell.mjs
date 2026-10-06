@@ -193,6 +193,76 @@ if (!process.argv.includes('--static')) {
     ok(/smother/.test(hands) && CALL_LINES.has('ITS DUST SMOTHERS THE FIRE') && /smothers burning oil/.test(main), 'the twist is told (hint line, bestiary card) and drawn (the cloud about it)');
     ok(cast.came > 20 && cast.drunk >= 1 && cast.sips < 3, 'a THIRSTY SCORPION comes for your skin from far (' + cast.came + ' px in 0.6 s) and its sting drinks a sip');
     ok(cast.spit >= 1 && cast.venom >= 1, 'a SPITTING SCORPION\'s glob puts the Queen\'s venom in you');
+    /* ---------- THE TORCH IN YOUR HAND (claude/underwell2, Daniel 10-06: TORCHES = PICK UP + THROW, a told arc; every hero, keyboard and touch) ---------- */
+    const HEROES7 = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'], per = [];
+    for (const hero of HEROES7) per.push(await pg.evalp(`(async()=>{${LOAD.replace("BK.setHero('knight')", "BK.setHero('" + hero + "')")} BK.god=true; for(const e of BK.enemies())e.alive=false; const out={hero:'${hero}'};
+      BK.tp(15,43); BK.sim(3); out.verb=(UH().touchVerb({P})||{}).verb; out.inTouch=BK.touchVerbs.includes(UH().touchVerb)&&BK.touchCtx.includes(UH().touchCtx); BK.press('talk'); BK.sim(2); out.took=!!(P.carry&&P.carry.t==='uwtorch');
+      out.ctx=(UH().touchCtx({P})||{}).label; out.verb2=(UH().touchVerb({P})||{}).verb;
+      const lands={}; for(const aim of ['short','mid','lob']){ if(!(P.carry&&P.carry.t==='uwtorch')) { BK.underwell().sconces[0].st='up'; BK.tp(15,43); BK.sim(2); BK.press('talk'); BK.sim(2); }
+        BK.tp(9,43); P.face=1; for(const c of BK.underwell().list) if(c.st!=='oil'){c.st='oil';c.t=0;} const k=BK.keys; k.up=aim==='lob'; k.down=aim==='short'; BK.sim(1); BK.step(1); const told=R().arc;
+        BK.press('atk'); BK.sim(1); k.up=k.down=false; for(let i=0;i<200&&!(R().torches.every(q=>q.st!=='fly'));i++) BK.sim(1); lands[aim]={told, land:R().lastLand}; for(const q of BK.underwell().torches) q.state='gone'; BK.sim(1); }
+      out.lands=lands; return out;})()`, 300000));
+    for (const r of per) { const L3 = r.lands, d = a => (L3[a].told && L3[a].land ? Math.abs(L3[a].told.x - L3[a].land.x) : 999);
+      ok(r.took && r.verb === 'TAKE' && r.ctx === 'THROW' && r.verb2 === 'SET DOWN' && r.inTouch, r.hero + ': E (the phone\'s action button: ' + r.verb + ') takes the torch; carried, the phone shows ' + r.ctx + ' (and ATTACK throws)');
+      ok(['short', 'mid', 'lob'].every(a => d(a) <= 16) && L3.short.land.x < L3.mid.land.x, r.hero + ': the TOLD ARC is the flight - short/mid/lob land within ' + Math.max(d('short'), d('mid'), d('lob')) + ' px of their rings (' + ['short', 'mid', 'lob'].map(a => a + ' ' + (L3[a].land ? Math.round(L3[a].land.x / 16) : '-')).join(', ') + '); DOWN tosses shorter'); }
+    const th = await pg.evalp(`(async()=>{${LOAD} BK.god=true; for(const e of BK.enemies())e.alive=false; const out={};
+      /* no climbing with a torch: it wants your hand (E sets it down) */
+      take(176,43); BK.tp(160,43); const k=BK.keys; k.up=true; for(let i=0;i<30;i++)BK.sim(1); out.climbWith=!!P.climb; out.told=!!BK.underwell().said.climbTorch; k.up=false; BK.sim(2);
+      BK.press('talk'); BK.sim(2); out.setDown=R().torches.filter(q=>q.st==='lie').length; k.up=true; for(let i=0;i<30;i++)BK.sim(1); out.climbWithout=!!P.climb; k.up=false; BK.tp(170,43); BK.sim(20);
+      /* a blow knocks it from your hand: it lies at your feet, and in oil it catches */
+      for(const t of BK.underwell().torches) t.state='gone'; BK.underwell().sconces.find(s=>s.id==='exam').st='up'; take(364,42); const f0=R().cells.fire; BK.god=false; P.hp=P.maxHp=999; BK.damagePlayer(P.x+10,5,{unblockable:true}); BK.sim(10); out.knocked=R().torches.filter(q=>q.st==='lie').length; out.carry=!!P.carry; for(let i=0;i<150;i++)BK.sim(1);   /* (a sim step is 10 ms) */ out.caught=R().cells.fire>f0;
+      return out;})()`, 300000);
+    ok(th.climbWith === false && th.told && th.setDown === 1 && th.climbWithout === true, 'A TORCH NEEDS A HAND: no climbing with one (told), E sets it down and the rope is yours again');
+    ok(th.knocked === 1 && !th.carry && th.caught, 'a blow knocks the torch from your hand: it lies at your feet and the oil there catches');
+    /* THE NEW CAST (Daniel 10-06 picked all three): the oil thief's flask, the cistern bat's dive and the light that scatters it, the drowned dead rising - fire takes the dead and the thieves */
+    const nc = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={}; const keep=e=>e.cnSkin==='oilthief'&&e.x>505*16&&e.x<512*16; for(const e of BK.enemies()) if(!keep(e)) e.alive=false;
+      const t=BK.enemies().find(keep); BK.tp(501,31); P.face=1; const o0=R().n.flaskOil||0; for(let i=0;i<60*6&&!((R().n.flaskOil||0)>o0);i++)BK.sim(1); out.flaskOil=(R().n.flaskOil||0)-o0; out.thiefMode=t.mode;
+      /* fire takes him twice as hard (his coat): set the oil under him burning and read one tick */
+      t.x=509*16+8; t.vx=0; t.fleeT=0; const tx=Math.floor(t.x/16); for(const c of BK.underwell().list) if(c.x>=tx-1&&c.x<=tx+1&&c.y===31){c.st='fire';c.t=5;c.age=1;} t.uwBurnK=0; t.hp=999; BK.sim(2); out.thiefTick=999-t.hp;
+      for(const c of BK.underwell().list) if(c.st==='fire'){c.st='oil';c.t=0;} t.hp=1; t.uwBurnK=0; for(const c of BK.underwell().list) if(c.x===tx&&c.y===31){c.st='oil';} BKT.hurtEnemy(t,999,t.x-10,false); BK.sim(3); out.lantern=R().n.lanterns||0; out.lanternFire=R().cells.fire;
+      for(const c of BK.underwell().list) if(c.st==='fire'){c.st='oil';c.t=0;}
+      /* the bat: in the dark it drops on you; with a torch in your hand it will not come down */
+      const bats=BK.enemies().filter(e=>e.cnSkin==='cisternbat'&&e.x>472*16&&e.x<484*16); for(const b of bats) b.alive=true; BK.tp(473,45); P.face=1; let dive=0; for(let i=0;i<60*4;i++){ BK.sim(1); if(bats.some(b=>b.mode==='diveTell'||b.mode==='fly')) dive++; } out.dive=dive;
+      BK.tp(471,45); BK.sim(2); BK.press('talk'); BK.sim(2); for(const b of bats){ b.mode='hang'; b.x=b.hx; b.y=b.hy; b.cd=0; } out.batTorch=!!(P.carry&&P.carry.t==='uwtorch'); BK.tp(473,45); let dive2=0; for(let i=0;i<60*4;i++){ BK.sim(1); if(bats.some(b=>b.mode==='diveTell')) dive2++; } out.dive2=dive2;
+      /* a bat that dives at a lit torch scatters */
+      const b0=bats[0]; b0.mode='fly'; b0.tgt={who:'P'}; b0.x=P.x+30; b0.y=P.y-30; let sc=0; for(let i=0;i<60;i++){ BK.sim(1); if(b0.mode==='scatter') sc++; } out.scatter=sc;
+      for(const b of bats) b.alive=false; for(const q of BK.underwell().torches) q.state='gone'; P.carry=null; BK.sim(2);
+      /* the drowned dead rise from the water as you wade in; fire takes them (x3) */
+      const dd=BK.enemies().filter(e=>e.cnSkin==='drowneddead'); for(const e of dd) e.alive=true; const d0=dd[1]; out.d0=d0.mode; BK.tp(458,45); for(let i=0;i<300&&d0.mode==='buried';i++) BK.sim(1); out.rose=d0.mode; for(let i=0;i<200;i++)BK.sim(1); out.walk=d0.mode;
+      const dtx=Math.floor(d0.x/16), dty=Math.floor((d0.y-1)/16); d0.hp=999; d0.uwBurnK=0; const cc=BK.underwell().list.find(c=>c.x===dtx&&c.y===dty); if(cc){cc.st='fire';cc.t=5;cc.age=1;} BK.sim(2); out.deadTick=999-d0.hp; out.cell=!!cc;
+      return out;})()`, 300000);
+    ok(nc.flaskOil >= 2, 'an OIL THIEF holds a flask up (its red !!) and throws it where you stand: it breaks into lamp oil (' + nc.flaskOil + ' cells)');
+    ok(nc.thiefTick >= OIL.foeDmg * 1.8, 'fire takes an oil thief twice as hard - his coat is soaked (' + nc.thiefTick + ' a tick, plain ' + OIL.foeDmg + ')');
+    ok(nc.lantern >= 1 && nc.lanternFire > 0, 'an oil thief who falls drops his lantern into the oil he stands in: it catches');
+    ok(nc.dive > 0 && nc.batTorch && nc.dive2 === 0 && nc.scatter > 0, 'a CISTERN BAT drops on you in the dark; with a torch in your hand none comes down, and one diving at the light scatters (' + JSON.stringify({ dive: nc.dive, dive2: nc.dive2, scatter: nc.scatter }) + ')');
+    ok(nc.d0 === 'buried' && nc.rose !== 'buried' && nc.walk !== 'riseTell' && nc.cell && nc.deadTick >= OIL.foeDmg * 2.5, 'THE DROWNED DEAD lie under the water and rise as you wade in (' + nc.d0 + ' > ' + nc.rose + ' > ' + nc.walk + '); fire takes them three times as hard (' + nc.deadTick + ' a tick)');
+    /* THE LOB OVER THE WATER (the throw's twist) and THE QUEEN driven up by fire */
+    const lob = await pg.evalp(`(async()=>{${LOAD} BK.god=true; for(const e of BK.enemies()) if(!e.boss&&e.t!=='cisternqueen') e.alive=false; const out={};
+      take(471,45); out.took=!!P.carry; toss(473,45,1,'lob'); for(let i=0;i<200;i++) BK.sim(1); out.land=R().lastLand; out.nest=R().nests.find(n=>n.id==='drown').open;
+      for(let i=0;i<300&&!out.nest;i++){ BK.sim(1); out.nest=R().nests.find(n=>n.id==='drown').open; }
+      /* the queen: her burrow runs into burning floor oil - the fire drives her up, open */
+      const A=BK.L.arena; BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1); BK.sim(200); const b=BK.enemies().find(e=>e.t==='cisternqueen'); const S=BK.cisternQueenHands().show(); if(!b||!S) return Object.assign(out,{none:true}); for(let i=0;i<600&&(b.mode==='sleep'||b.mode==='wake');i++) BK.sim(1); out.awake=b.mode;
+      const pool=BK.underwell().list.filter(c=>!c.vertical&&c.x>=A.queen.sx+8&&c.x<=A.queen.sx+13); for(const c of pool){c.st='fire';c.t=5;c.age=1;} S.ward=0; b.open=0; S.pose='burrow'; S.mound={x:(A.queen.sx+10)*16+8,t:0,wet:0}; S.cur={k:'burrow',how:'strike',id:99}; b.mode='burrow'; b.modeT=2; b.gone=1; P.x=(A.queen.sx+16)*16;
+      BK.sim(2); out.qMode=b.mode; out.qWhy=b.openWhy; out.qOpen=+(b.open||0).toFixed(2); out.bar=BK.cisternQueenHands().barName(b);
+      return out;})()`, 300000);
+    ok(lob.took && lob.land && lob.land.x >= 480 * 16 && lob.land.x <= 486 * 16 && lob.nest, 'THE LOB: from the island the torch thrown with UP held clears the deep pool, lands on the far shore\'s oil (' + (lob.land ? Math.round(lob.land.x / 16) + ' ' + lob.land.why : '-') + ') and the far nest burns');
+    ok(lob.qMode === 'soaked' && lob.qWhy === 'fire' && lob.qOpen > 2.5 && /DRIVEN UP/.test(lob.bar || ''), 'THE CISTERN QUEEN: her burrow runs into burning floor oil and the fire drives her up, open (' + lob.qOpen + ' s, "' + lob.bar + '")');
+    /* EVERY ROPE IS SEEN (Daniel 10-06: "a rope that isn't drawn"): each rope's column stands out from the wall beside it in every state - hung, burnt and hung again by the timer, hung
+       again by a respawn - with its torches lit and with every cresset in the level empty (the dark) */
+    const rp = await pg.evalp(`(async()=>{${LOAD} BK.god=true; for(const e of BK.enemies()) if(!e.boss) e.alive=false; const out=[]; BK.SET.hud='minimal';
+      const lum=(d,w,x,y)=>{const i=(y*w+x)*4; return (d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11);};
+      const sample=(rx,y0,y1,tag)=>{ BK.tp(rx-3,y1); BK.sim(4); const v=BK.look(rx,Math.round((y0+y1)/2)); const c=BK.view.buf, g=c.getContext('2d'), w=c.width, d=g.getImageData(0,0,w,c.height).data;
+        let diff=0,n=0; for(let y=y0;y<=y1;y++){ const sy=Math.round(y*16+8-v.cy); if(sy<0||sy>=c.height) continue; const sx=Math.round(rx*16+7-v.cx), wx=Math.round(rx*16+7+40-v.cx); if(sx<1||wx>=w) continue; let a=0,b=0; for(let k=-1;k<=1;k++){a+=lum(d,w,sx+k,sy);b+=lum(d,w,wx+k,sy);} diff+=Math.abs(a-b)/3; n++; }
+        out.push({tag, rx, n, c:n?+(diff/n).toFixed(1):0}); };
+      const runs=BK.underwell().ropeRuns; const dark=()=>{for(const s of BK.underwell().sconces){s.st='taken';s.t=999;}};
+      for(const r of runs) sample(r.x,r.y0,r.y1,'hung');
+      dark(); for(const r of runs) sample(r.x,r.y0,r.y1,'dark');
+      for(const r of BK.underwell().ropes){ const c=BK.underwell().list.find(q=>q.x===r.x&&q.y===r.y1); c.st='fire'; c.t=2; } BK.sim(5); out.burnt=R().ropes.filter(r=>r.burnt).length;
+      for(const r of BK.underwell().ropes) r.t=0.01; BK.sim(5); out.timer=R().ropes.filter(r=>!r.burnt).length; dark(); for(const r of BK.underwell().ropes) sample(r.x,r.y0,r.y1,'timer');
+      for(const r of BK.underwell().ropes){ const c=BK.underwell().list.find(q=>q.x===r.x&&q.y===r.y1); c.st='fire'; c.t=2; } BK.sim(5); BK.god=false; BK.damagePlayer(P.x,99999,{unblockable:true}); for(let j=0;j<900&&(BK.P.dead||BK.state!=='play');j++){ BK.sim(1); if(BK.state==='dead'||BK.state==='gameover') BK.state='play'; } BK.god=true; out.respawned=!BK.P.dead; dark(); for(const r of BK.underwell().ropes) sample(r.x,r.y0,r.y1,'respawn');
+      return out;})()`, 300000).catch(e => [{ tag: 'error ' + e.message, c: 0, n: 0 }]);
+    const weak = rp.filter(q => !(q.n >= 4 && q.c >= 18));
+    ok(rp.length >= 10 && weak.length === 0, 'EVERY ROPE IS SEEN: ' + rp.length + ' rope samples (hung, dark, re-hung by the timer, re-hung by a respawn), each column at least 18 brighter or darker than the wall beside it' + (weak.length ? ': WEAK ' + JSON.stringify(weak.slice(0, 6)) : ' (lowest ' + Math.min(...rp.map(q => q.c)) + ')'));
     /* THE DRY FOUNTAIN and THE NUDGE */
     const ft = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={}; for(const e of BK.enemies())e.alive=false;
       BK.tp(165,29); P.face=1; BK.sim(3); BK.press('talk'); BK.sim(3); out.before=R().fountain;

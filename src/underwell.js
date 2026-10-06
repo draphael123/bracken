@@ -205,20 +205,20 @@ export function buildUnderwell({ painter, T, TS }) {
      on a high ledge (lob it), a sandworm under the gallery's silt - then her door */
   const D = 437;
   sign(D + 3, 31, 'THE DROWNED CISTERN. ITS DEAD RISE FROM THE WATER. FIRE TAKES THEM.');
-  air(D + 6, D + 60, 20, 45);                                                 /* the hall (the old cistern, rows 20-45; the vault is dark) */
+  air(D + 6, D + 60, 30, 45);                                                 /* the hall (the old cistern, rows 30-45; the vault is dark) */
   boards(D + 6, D + 9, 35); boards(D + 11, D + 14, 39);                        /* the way down off the landing */
   /* THE SHALLOWS: standing water over the floor, oil floating on its far half, the drowned dead under it */
   sconce(D + 12, F - 2, 'drownA'); sign(D + 9, F + 1, 'OIL FLOATS ON THE WATER. TAKE THE TORCH (E), THROW IT ON THE OIL.');
   wade(D + 16, D + 31, F + 1); seep(D + 22, D + 31, F + 1);
   dead(D + 19, F + 1, 'shallows'); dead(D + 25, F + 1, 'shallows'); dead(D + 29, F + 1, 'shallows');
   /* THE ISLAND: a pillar to the vault, its torch; the deep pool; the far shore's oil, its brood and THE FAR NEST at the stair's door */
-  block(D + 33, D + 35, 20, F - 3); sconce(D + 34, F - 2, 'drownB'); sign(D + 32, F + 1, 'LOB THE TORCH OVER THE WATER (UP + ATTACK) ONTO THE OIL BY THE NEST.');
+  block(D + 33, D + 35, 30, F - 3); sconce(D + 34, F - 2, 'drownB'); sign(D + 32, F + 1, 'LOB THE TORCH OVER THE WATER (UP + ATTACK) ONTO THE OIL BY THE NEST.');
   swim(D + 37, D + 42, F + 2, F + 6);
-  bat(D + 38, 22, 'vault'); bat(D + 41, 22, 'vault'); bat(D + 45, 22, 'vault'); bat(D + 28, 22, 'vaultW');   /* CISTERN BATS in the dark vault over the water and the shallows */
+  bat(D + 38, 32, 'vault'); bat(D + 41, 32, 'vault'); bat(D + 45, 32, 'vault'); bat(D + 28, 32, 'vaultW');   /* CISTERN BATS in the dark vault over the water and the shallows */
   seep(D + 43, D + 48, F + 1); venom(D + 45, F + 1, 'farShore'); oilS(D + 47, F + 1, 'farShore');
-  block(D + 49, D + 50, 20, F - 4); nest('drown', D + 49, D + 50, F - 3, F + 1);   /* THE FAR NEST seals the stair room's door (rock over it to the vault) */
+  block(D + 49, D + 50, 30, F - 4); nest('drown', D + 49, D + 50, F - 3, F + 1);   /* THE FAR NEST seals the stair room's door (rock over it to the vault) */
   /* THE STAIR ROOM: boards up its height to THE THIEVES' GALLERY */
-  boards(D + 52, D + 55, 43); boards(D + 57, D + 60, 40); boards(D + 52, D + 55, 37); boards(D + 57, D + 60, 34); bat(D + 54, 22, 'stair');
+  boards(D + 52, D + 55, 43); boards(D + 57, D + 60, 40); boards(D + 52, D + 55, 37); boards(D + 57, D + 60, 34); bat(D + 54, 32, 'stair');
   /* THE THIEVES' GALLERY (rows 24-31 over its floor, row 32), out to her door: their spilled oil, a high ledge, a sandworm under the silt */
   air(D + 61, D + 95, 24, 31);
   sconce(D + 64, 29, 'gallery'); sign(D + 62, 31, 'OIL THIEVES. THEIR COATS ARE SOAKED: THROW THE TORCH ON THE OIL UNDER THEM.');

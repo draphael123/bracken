@@ -15339,7 +15339,7 @@ function updateBat(e, dt) {
   if (e.cnSkin === 'cisternbat') { const lit = (x, y, r) => !!(UWH && UWH.on() && UWH.lightAt(x, y, r));
     if (e.mode !== 'scatter' && e.mode !== 'back' && lit(e.x, e.y, BAT_DIVE.shy)) { e.mode = 'scatter'; e.modeT = BAT_DIVE.scatter; e.sdir = Math.sign(e.x - P.x) || 1; SFX.chitter(); if (!e.toldLit && Math.abs(P.x - e.x) < 200) { e.toldLit = 1; number(e.x, e.y - 12, 'THE LIGHT SCATTERS THEM', '#ffd36b'); } return; }
     if (e.mode === 'scatter') { e.x += e.sdir * 110 * dt; e.y = Math.max(e.hy - 30, e.y - 70 * dt); e.face = e.sdir; if (e.modeT <= 0) { e.mode = 'back'; e.cd = 1.2; } return; }
-    if (e.mode === 'hang') { e.x = e.hx; e.y = e.hy + Math.sin(e.anim * 2) * 0.5; if (e.cd <= 0 && !P.dead && Math.abs(P.x - e.x) < BAT_DIVE.reach && P.y > e.y && P.y - e.y < 190 && !lit(P.x, P.y - 12, BAT_DIVE.shy)) { e.mode = 'diveTell'; e.modeT = BAT_DIVE.tell; number(e.x, e.y + 12, '!', '#ffd36b'); SFX.chitter(); } return; }
+    if (e.mode === 'hang') { e.x = e.hx; e.y = e.hy + Math.sin(e.anim * 2) * 0.5; if (e.cd <= 0 && !P.dead && Math.abs(P.x - e.x) < BAT_DIVE.reach && P.y > e.y && P.y - e.y < BAT_DIVE.drop && !lit(P.x, P.y - 12, BAT_DIVE.shy)) { e.mode = 'diveTell'; e.modeT = BAT_DIVE.tell; number(e.x, e.y + 12, '!', '#ffd36b'); SFX.chitter(); } return; }
     if (e.mode === 'diveTell') { e.y = e.hy + Math.sin(e.anim * 30) * 1.5; if (e.modeT <= 0) { e.mode = 'fly'; e.tgt = { who: 'P' }; e.modeT = 0; } return; } }
   const lightHere = (x, y) => { let best = null, bd = 150; const try1 = (lx, ly, lr, who) => { const dd = Math.hypot(lx - x, ly - y); if (dd < bd && lr > 20) { bd = dd; best = { x: lx, y: ly, who }; } }; for (const lt of lights) if (!(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit)) try1(lt.x, lt.y, lt.r, null); for (const f of fires) if (f.delay <= 0) try1(f.x, f.y - 6, 40, null); if (!P.dead && (playerLight() > 40 || Math.hypot(P.x - x, P.y - 8 - y) < 90)) try1(P.x, P.y - 8, Math.max(playerLight(), 60), 'P'); return best; }; // a bat goes for the nearest light, or for you if you are close enough to hear
   if (e.mode === 'hang') { e.x = e.hx; e.y = e.hy + Math.sin(e.anim * 2) * 0.5; if (e.cd <= 0) { const tgt = THEATRE ? THH.batTarget(THEATRE, THX, e) : lightHere(e.x, e.y);   /* THE MASKWRIGHT'S THEATRE: a bat goes for whoever stands in the light */ if (tgt) { e.mode = 'fly'; e.tgt = tgt; SFX.chitter(); } } }
@@ -19963,8 +19963,8 @@ function updateVillage(dt) {
 // A blow or a fall spills it, and a thrown one that hits or lands - on a target or on bare ground - is back at its rack
 // THROW_KIND.bucket.respawn seconds later (a villager fetches it).
 const BUCKET = { beamWet: 12, cool: 30 };
-/* THE CISTERN BAT's dive (claude/underwell2): its yellow ! s, px across it sees you from, its dive px/s, px of light that scatters it, s it stays scattered */
-const BAT_DIVE = { tell: 0.5, reach: 120, v: 130, shy: 72, scatter: 1.6 };
+/* THE CISTERN BAT's dive (claude/underwell2): its yellow ! s, px across it sees you from, px down it drops, its dive px/s, px of light that scatters it, s it stays scattered */
+const BAT_DIVE = { tell: 0.5, reach: 120, drop: 280, v: 130, shy: 72, scatter: 1.6 };
 function bucketTargets(fx, fy) {   /* what the water would go on, from a point (fx, fy): the nearest thing first */
   const heap = (L.heaps || []).find(h => !h.out && fx >= h.x0 * TS - 6 && fx <= (h.x1 + 1) * TS + 6 && fy > h.y0 * TS - 10 && fy <= (h.y1 + 1) * TS + 4);
   if (heap) return { heap };
