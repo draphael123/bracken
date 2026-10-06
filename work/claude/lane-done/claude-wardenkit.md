@@ -37,14 +37,14 @@ height; vs the Paladin the deflect is TAPPED from 0.35 s left (it was held from 
 scree. src/cistern-queen.js queenPlan (s.eyes = v2): deflect the sand as it falls.
 
 ## 4. Before -> after (tools/boss-rates.mjs, profile human, practiced, campaign level, normal health, 240 s)
-Before: this branch at a4a28cdc (merge only), n=4 per hero. After: bb64b91c, warden n=8 (waymeet 7: one fight lost to the 17:00 restart), knight/pyro n=4.
+Before: this branch at a4a28cdc (merge only), n=4 per hero. After: bb64b91c, warden n=8 (a full re-run at 17:23-17:33 after the 17:00/17:20 process kills; its redgorge s1/s5 hit a page-start error and are taken from the identical 16:00 run: deaths at 18% / 5%), knight/pyro n=4 (17:0x, complete).
 Knight and pyro re-run after: **identical, seed for seed**, to before (their code is untouched).
 | row (boss) | L | knight | pyro | warden BEFORE | warden AFTER |
 |---|---|---|---|---|---|
 | redgorge (Raptor Matriarch) | 32 | 2/4 | 4/4 | 0/4 (12-46% left) | **0/8** (5-19% left, mean 14%; fights 144-188 s) |
 | fallingtower (Undead Archmage) | 29 | 2/4 | 4/4 | 0/4 (10-54% left) | **7/8** |
 | harbor (Breakwater Warden, hp 1400 here) | 22 | 4/4 | 4/4 | 3/4 (taken 168-208) | 8/8 (taken 84-131) |
-| waymeet (Paladin, hp 610 here) | 22 | 4/4 | 4/4 | 4/4 | 6/7 |
+| waymeet (Paladin, hp 610 here) | 22 | 4/4 | 4/4 | 4/4 | 8/8 |
 | underwell (Cistern Queen) | 32 | 3/4 | 4/4 | 1/4 | **4/8** |
 | theatre (Puppeteer) - fine row | 24 | 0/4 | 3/4 | 4/4 (5/8, 9/16 at more seeds) | 7/8 (14/16) |
 | canal (Greenteeth) - fine row | 23 | 3/4 | 3/4 | 4/4 (5/8, 11/16) | 5/8 (9/16: in noise) |
