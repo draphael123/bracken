@@ -72,7 +72,7 @@ export function drawDjinn(g, e, S, x, y, time) {
   if (m === 'blastTell' || m === 'blast' || m === 'devilTell' || m === 'pillarTell' || m === 'pillar' || m === 'catch' || m === 'rise') o.arm = 'up';
   if (m === 'spearsTell' || m === 'spears' || m === 'whirlTell' || m === 'whirl') o.arm = 'slam'; if (m === 'firedevilTell' || m === 'firedevil') o.arm = 'cast';   /* (claude/djinn2: his new moves - both fists down for the spears and the well's turn, a cast for the fire devil) */
   if (m === 'breathTell' || m === 'breath') o.breath = true; if (m === 'slamTell' || m === 'spoutTell') o.arm = 'up'; if (m === 'slam' || m === 'reach') o.arm = 'slam';
-  if (m === 'mud' || m === 'doused' || m === 'bailed' || m === 'choked') o.slump = true;   /* (claude/djinn4: and choked on the pail) */
+  if (m === 'mud' || m === 'doused' || m === 'bailed' || m === 'choked' || m === 'reel') o.slump = true;   /* (claude/djinn4: and choked on the pail; claude/djinn5: reeling from it) */
   if (m === 'upsurgeTell' || m === 'upsurge') o.arm = 'slam'; if (m === 'drawing') o.arm = 'up';   /* (claude/djinn3) both fists down for the blow from below; arms up to drink the well */
   g.save(); g.translate(x, y);
   if (S.pose === 'column') { o.k = 1.5; g.translate(0, -Math.min(40, (S.water || 0) * 0.6)); }
@@ -110,8 +110,8 @@ export function drawDjinn(g, e, S, x, y, time) {
       g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 34, 17 + 34, 40, 0, 0, Math.PI * 2); g.stroke(); }
     else { g.strokeStyle = '#bfe4ff'; g.lineWidth = 2; for (let i = 0; i < 4; i++) { const yy = cy0 - ry * 0.7 + i * ry * 0.45, ph = time * 7 + i * 1.3; g.globalAlpha = 0.5 + 0.3 * w; g.beginPath(); g.ellipse(x, yy, rx, 7, 0, ph % (Math.PI * 2), ph % (Math.PI * 2) + Math.PI * 1.3); g.stroke(); } g.globalAlpha = 1; } }
   /* (claude/djinn4) HE REARS UP: his CORE lights in the column - a white-gold heart, pulsing - the pail's target. CHOKED: water gouts out of it */
-  if (S.pose === 'column' && (DJG.REAR.has(m) || m === 'choked')) { const lift = Math.min(40, (S.water || 0) * 0.6), cy0 = y - 96 - lift, p = 0.5 + 0.5 * Math.sin(time * 16);
-    if (m === 'choked') { for (let i = 0; i < 8; i++) { const ph = (time * 2.2 + i / 8) % 1; g.globalAlpha = 1 - ph; fr(g, i % 2 ? '#e8f8ff' : '#7ab8e8', x + Math.sin(i * 2.1 + time * 5) * 10 * ph, cy0 - 4 - ph * 34, 2, 3); } g.globalAlpha = 1; }
+  if (S.pose === 'column' && (DJG.REAR.has(m) || m === 'choked' || m === 'reel')) { const lift = Math.min(40, (S.water || 0) * 0.6), cy0 = y - 96 - lift, p = 0.5 + 0.5 * Math.sin(time * 16);
+    if (m === 'choked' || m === 'reel') { for (let i = 0; i < 8; i++) { const ph = (time * 2.2 + i / 8) % 1; g.globalAlpha = 1 - ph; fr(g, i % 2 ? '#e8f8ff' : '#7ab8e8', x + Math.sin(i * 2.1 + time * 5) * 10 * ph, cy0 - 4 - ph * 34, 2, 3); } g.globalAlpha = 1; }
     else if (!(S.ward > 0)) { g.globalAlpha = 0.35 + 0.35 * p; ell(g, '#fff6c8', x, cy0, 11 + 3 * p, 11 + 3 * p); g.globalAlpha = 1; ell(g, '#ffd36b', x, cy0, 6, 6); fr(g, '#ffffff', x - 1, cy0 - 3, 2, 2);
       g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.arc(x, cy0, 16 + 3 * p, 0, Math.PI * 2); g.stroke(); } }
   /* a blade through him: grains (sand), sparks (fire) or a splash (water) where it went */
@@ -123,7 +123,7 @@ export function drawOver(g, e, S, cx, cy, time) {
   const G = S.G, F = G.floor - cy, X = x => R(x - cx), blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
   if (S.water > 0.5) { const top = R(F - S.water); g.globalAlpha = 0.5; g.fillStyle = '#2a5a7a'; g.fillRect(X(G.x0), top, X(G.x1) - X(G.x0), R(S.water) + 2); g.globalAlpha = 0.85; g.fillStyle = '#7ab8e8';
     for (let x = G.x0; x < G.x1; x += 6) g.fillRect(X(x), top + R(Math.sin(time * 4 + x * 0.1)), 4, 1); g.globalAlpha = 1;
-    /* THE DEEP WATER (claude/djinn3): over the ledges, a darker band where it is deep - the floor is the drowning part */
+    /* THE HIGH WATER (claude/djinn3): over the ledges, a darker band where it is deep (claude/djinn5: it costs nothing - only his told blows hurt) */
     if (S.water > G.floor - G.ledgeY + 4) { g.globalAlpha = 0.25; g.fillStyle = '#0e2a44'; g.fillRect(X(G.x0), R(G.ledgeY - cy) + 8, X(G.x1) - X(G.x0), R(G.floor - G.ledgeY) - 8); g.globalAlpha = 1; } }
   /* THE SURGE, TOLD (claude/djinn3): a foam line blinks where the water will reach, over the ledges, and bubbles boil up along the floor */
   if (S.tide && S.tide.st === 'surge') { const hy = R(F - ((G.floor - G.ledgeY) + DJ.overLedge)), on = Math.floor(time * 8) % 2;
@@ -183,7 +183,7 @@ export function drawOver(g, e, S, cx, cy, time) {
   /* THE PAILS in flight (claude/djinn4): a brimming pail tumbling at his core, water streaming off it */
   for (const p of S.pails || []) { const px = X(p.x), py = R(p.y - cy); drawPail(g, px, py + 4, true, time); for (let i = 0; i < 3; i++) fr(g, '#e8f8ff', px - (p.tx > p.x0 ? 1 : -1) * (4 + i * 4), py + 1 + i, 2, 1); }
   /* OPEN (design standard B10 - the one read every boss shares; claude/djinn4): a GOLD RING round him, OPEN over him, a gold clock running down under it */
-  if (e.open > 0) { const T = e.mode === 'mud' ? DJ.mudT : e.mode === 'bailed' ? DJ.bailT : e.mode === 'choked' ? DJ.chokeT : DJ.openT, k = Math.max(0, e.open / T), p = 0.5 + 0.5 * Math.sin(time * 10);
+  if (e.open > 0) { const T = e.mode === 'mud' ? DJ.mudT : e.mode === 'bailed' ? DJ.bailT : e.mode === 'choked' ? DJ.chokeT : e.mode === 'reel' ? DJ.reelT : DJ.openT, k = Math.max(0, e.open / T), p = 0.5 + 0.5 * Math.sin(time * 10);
     const o = openRing(e, S), bx = X(e.x), by = R(o.y - cy), rx = o.rx, ry = o.ry;
     g.globalAlpha = 0.55 + 0.4 * p; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, by, rx, ry, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
     const ty = by - ry - 12; g.fillStyle = '#1b1626'; g.fillRect(bx - 20, ty + 4, 40, 3); g.fillStyle = '#ffd36b'; g.fillRect(bx - 20, ty + 4, R(40 * k), 3);

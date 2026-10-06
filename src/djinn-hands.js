@@ -58,8 +58,6 @@ export function makeDjinnHands(ctx) {
         if (o.flood && pp.y < S.G.floor - S.water + 4) return;   /* (claude/djinn3: THE TIDE - the flood takes whoever stands in it, a ledge too when it is under; feet above the water are dry) */
         if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
         const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock }));
-        if (o.flood && !o.deep && name === DJG.MOVE_NAME.flood && !S.told.flood) { S.told.flood = 1; ctx.number(P.x, P.y - 30, 'THE FLOOD COSTS YOU: THE LEDGES ARE DRY', '#7ab8e8'); }
-        if (o.deep && !S.told.deep) { S.told.deep = 1; ctx.number(P.x, P.y - 30, 'THE DEEP WATER: GET UP ON A LEDGE', '#ff9a5c'); }
         if (o.ignite && P.hp < hp0) ignite(P); if (o.onHit) o.onHit(); }); },
       band: (kind, [t, b], x0, x1, d, name, key, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
         if (P.x < x0 || P.x > x1) return; const hb = kind === 'high' ? ctx.duckBox(P) : ctx.box(P); if (!(hb.b > t && hb.t < b) || keyed(pp, key)) return;
@@ -107,13 +105,13 @@ export function makeDjinnHands(ctx) {
     /* THE PAIL (claude/djinn4): the flood brings one up to every hero - E scoops it, E or a strike throws it when he rears up */
     if (S.ph === 3 && S.flood && e.mode !== 'rise' && !S.pailsGiven) { S.pailsGiven = true; for (const pp of ctx.players) pp.djPail = { full: false };
       ctx.number(S.G.windlass + 40, S.G.floor - 50, 'A PAIL FLOATS UP: E SCOOPS THE FLOOD', '#7ab8e8'); }
-    { const P = ctx.hero(); if (hb && P && P.djPail && P.djPail.full && !P.dead && DJG.rearing(e, S) && DJG.throwPail(e, S, heroOf(P), P.djPail, c)) S.n.byStrike = (S.n.byStrike || 0) + 1; }
+    { const P = ctx.hero(); if (hb && P && P.djPail && P.djPail.full && !P.dead && DJG.rearing(e, S) && DJG.throwPail(e, S, heroOf(P), P.djPail, c)) S.n.byStrike = (S.n.byStrike || 0) + 1; }   /* (a strike throws only at a rear: a cut is never eaten by the pail; E throws any time) */
     if (S.ph === 3 && !S.told.crank && e.mode === 'hover') { S.told.crank = 1; ctx.number(S.G.windlass, S.G.floor - 70, 'STRIKE OR E AT THE WINDLASS OR CRANK: WIND UP, THEN DROP', '#7ab8e8'); }
   };
   /* ---------- A BLOW ON HIM: in a water opening x openMul (one opening takes at most openCap); his slammed hand in phase three, whole (at most handCap a
      slam); anything else passes through sand, is turned by fire, or splashes through water (0) ---------- */
   H.take = (e, dmg) => { if (!S) return dmg; if (S.rawHit) return dmg; const P = ctx.hero();
-    if (DJG.djOpen(e)) { const cap = e.maxHp * (e.mode === 'bailed' ? DJ.bailCap : e.mode === 'choked' ? DJ.chokeCap : DJ.openCap),   /* (claude/djinn3: a bail, two steps to earn, takes up to bailCap) */ d = Math.min(dmg * DJ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
+    if (DJG.djOpen(e)) { const cap = e.maxHp * (e.mode === 'bailed' ? DJ.bailCap : e.mode === 'choked' ? DJ.chokeCap : e.mode === 'reel' ? DJ.reelCap : DJ.openCap),   /* (claude/djinn3: a bail, two steps to earn, takes up to bailCap) */ d = Math.min(dmg * DJ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
       if (S.openTaken >= cap - 0.01 && e.open > 0.4) { e.open = 0.4; ctx.number(e.x, e.y - 90, e.mode === 'mud' ? 'THE MUD CRACKS: HE IS SAND AGAIN' : 'HE GATHERS HIMSELF', '#9aa39a'); } return d; }
     if (e.mode === 'sleep' || e.mode === 'wake') return 0;
     if (DJG.TURNING.has(e.mode)) { e.passFx = 0.25; return 0; }   /* (claude/djinn3) HE IS TURNING: nothing takes, nothing is said - a breather both ways */
@@ -138,7 +136,7 @@ export function makeDjinnHands(ctx) {
     const pl = P.djPail; if (pl && S.ph === 3 && S.flood) { const c = world(e);
       if (pl.full) { P.face = Math.sign(e.x - P.x) || P.face; return DJG.throwPail(e, S, heroOf(P), pl, c); }
       if (DJG.scoopPail(S, pl, heroOf(P))) { ctx.burst(P.x + (P.face || 1) * 6, P.y - 6, 8, ['#7ab8e8', '#e8f4f8'], 40, 0.4); try { ctx.sfx.splash(); } catch {}
-        if (!S.told.scoop) { S.told.scoop = 1; ctx.number(P.x, P.y - 34, 'THE PAIL IS FULL: THROW IT WHEN HE REARS UP', '#8fd160'); } return true; }
+        if (!S.told.scoop) { S.told.scoop = 1; ctx.number(P.x, P.y - 34, 'THE PAIL IS FULL: E THROWS IT AT HIM', '#8fd160'); } return true; }
       if (!S.told.dry) { S.told.dry = 1; ctx.number(P.x, P.y - 34, 'SCOOP IT IN THE FLOOD', '#9aa39a'); } return true; }
     return false; };
   /* ---------- THE POUR (src/well-town-hands.js asks: what would a pour land on, and pour it). Alight yourself, it goes over you first ---------- */
@@ -148,7 +146,7 @@ export function makeDjinnHands(ctx) {
       if (P.djBurn > 0) { P.djBurn = 0; ctx.burst(P.x, P.y - 16, 12, ['#e8f4f8', '#7ab8e8', '#9aa39a'], 50, 0.7); ctx.number(P.x, P.y - 30, 'THE WATER PUTS YOU OUT', '#7ab8e8'); return 'self'; }
       const r = DJG.pourAt(e, S, heroOf(P), world(e)); if (r === 'wasted') ctx.number(P.x, P.y - 30, 'IT RUNS INTO THE SAND', '#9aa39a'); return r; },
   };
-  H.barName = e => 'THE DJINN' + (DJG.djOpen(e) ? (e.mode === 'mud' ? '  MUD' : e.mode === 'doused' ? '  DOUSED' : e.mode === 'choked' ? '  CHOKED' : '  BAILED OUT') : DJG.TURNING.has(e.mode) ? '  TURNING' : S && S.ward > 0 ? '  WARDED' : S && S.ph === 1 ? '  SAND' : S && S.ph === 2 ? (S.burn ? '  ALIGHT' : '  SMOKE') : S && S.ph === 3 ? (DJG.tideHigh(S) ? '  THE WELL SURGES' : '  THE WELL') : '');
+  H.barName = e => 'THE DJINN' + (DJG.djOpen(e) ? (e.mode === 'mud' ? '  MUD' : e.mode === 'doused' ? '  DOUSED' : e.mode === 'choked' ? '  CHOKED' : e.mode === 'reel' ? '  REELING' : '  BAILED OUT') : DJG.TURNING.has(e.mode) ? '  TURNING' : S && S.ward > 0 ? '  WARDED' : S && S.ph === 1 ? '  SAND' : S && S.ph === 2 ? (S.burn ? '  ALIGHT' : '  SMOKE') : S && S.ph === 3 ? (DJG.tideHigh(S) ? '  THE WELL SURGES' : '  THE WELL') : '');
   H.end = e => { if (S) { S.bands = []; S.shots = []; S.marks = []; S.hand = null; if (S.held) { const h = S.held; if (h.pp && h.pp.snare > 0) h.pp.snare = 0; S.held = null; } } for (const pp of ctx.players) { pp.djBurn = 0; pp.djPail = null; if (pp.snare > 0) pp.snare = 0; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), water: S.water, burn: S.burn, ward: S.ward, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) },
     pail: ctx.hero() && ctx.hero().djPail ? (ctx.hero().djPail.full ? 'full' : 'empty') : '', rear: !!(ctx.boss && DJG.rearing(ctx.boss, S)), tide: S.tide && S.tide.st, under: !!(ctx.boss && DJG.underShaft(ctx.boss, S)), x: ctx.boss && ctx.boss.x };
