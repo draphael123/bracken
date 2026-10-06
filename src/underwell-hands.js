@@ -337,7 +337,8 @@ export function makeUnderwellHands(ctx) {
     for (const [x0, x1, y] of UW.L.seeps || []) if (x1 - x0 > 20 && ctx.cellGet(x0 + 1, y - 1) !== ctx.T.AIR && ctx.cellGet(x0 + 1, y + 1) !== ctx.T.AIR && inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawGutter(g, R((x0 + 1) * TS - cx), R(y * TS - cy), (x1 - x0 - 1) * TS);   /* a gutter's grate (a slot in the rock) */
     for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy) - (c.fl || 0), c.st, c.st === 'fire' ? Math.min(1, c.t / OIL.burn) : 0, time, c.vertical, c.seed, c.deep, c.side, c.pipe); }
     const Ph = ctx.hero();
-    for (const d of UW.L.decor || []) if (d.kind === 'husk' && inX(d.x * TS, 60)) UWA.drawHusk(g, R(d.x * TS + 8 - cx), R((d.y + 1) * TS - cy));   /* her cast shell by her door */
+    for (const d of UW.L.decor || []) if (d.kind === 'husk' && inX(d.x * TS, 60)) UWA.drawHusk(g, R(d.x * TS + 8 - cx), R((d.y + 1) * TS - cy));
+    for (const d of UW.L.decor || []) if (d.kind === 'waylamp' && inX(d.x * TS, 30)) { let top = d.y - 1; while (top > 0 && ctx.cellGet(d.x, top) !== ctx.T.SOLID) top--; UWA.drawWayLamp(g, R(d.x * TS + 8 - cx), R(d.y * TS - cy), R((top + 1) * TS - cy), time); }   /* (claude/underwell2) the way lamps */   /* her cast shell by her door */
     for (const m of UW.nests) { if (m.open) continue; const x = m.x0 * TS; if (!inX(x)) continue;
       const near = Ph && !Ph.dead && Math.abs(Ph.x - (m.x0 + m.x1 + 1) * 8) < 56 && Ph.y > m.y0 * TS && Ph.y <= (m.y1 + 2) * TS, q = near ? R(Math.sin(time * 38) * 1.2) : 0;   /* THE NEST QUIVERS as a blade comes near it (the tell before it spills) */
       UWA.drawNest(g, R(x - cx) + q, R(m.y0 * TS - cy), (m.x1 - m.x0 + 1) * TS, (m.y1 - m.y0 + 1) * TS, Math.min(1, m.burn / OIL.nestBurn), time); }
@@ -362,6 +363,7 @@ export function makeUnderwellHands(ctx) {
     for (const m of UW.nests) if (!m.open && m.burn > 0) out.push({ x: (m.x0 + m.x1 + 1) * TS / 2, y: (m.y0 + m.y1 + 1) * TS / 2, r: 60, a: 0.4 });
     const lp = UW.lamp; if (lp && lp.st !== 'down') out.push({ x: lp.x * TS + 8, y: (lp.y + 1) * TS - 8, r: 120, a: 0.4, lamp: true });
     const f = UW.fountain; if (f && f.full) out.push({ x: f.x, y: f.y - 20, r: 40, a: 0.16, cool: true });
+    for (const d of UW.L.decor || []) if (d.kind === 'waylamp') { const x = d.x * TS + 8; if (x > cx - 60 && x < cx + vw + 60) out.push({ x, y: d.y * TS + 8, r: 46, a: 0.3 }); }   /* (claude/underwell2) a way lamp's pool */
     for (const c of UWD.planDress(UW.L, ctx.T).candles) if (c.x > cx - 60 && c.x < cx + vw + 60) out.push({ x: c.x, y: c.y, r: 28, a: 0.22 });
     return out; };
   H.holes = (hole, cx, cy) => { if (!UW) return; for (const q of lit(cx, cy)) if (q.x > cx - q.r * 1.4 && q.x < cx + ctx.VW() + q.r * 1.4) hole(q.x - cx, q.y - cy, q.r * 1.2, 1); };

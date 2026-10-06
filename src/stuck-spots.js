@@ -214,8 +214,12 @@ export const STUCK_HANDS = {
     { id: 'uw-works-up', zone: [157, 22, 239, 29], steps: [
       { key: 'worksNest', is: ['nest.works', 'shut'], at: [223, 29], line: 'LIGHT THE OIL BELOW: IT RUNS UP THE PIPE TO THIS NEST' },
       { key: 'worksFire', is: ['fire.228', 'lit'], at: [228, 29], line: 'POUR ON THE OLD OIL FIRE: E WITH WATER IN YOUR SKIN' } ] },
+    { id: 'uw-works-drop', zone: [234, 22, 243, 29], steps: [
+      { key: 'worksDrop', at: [247, 33], glint: 'stall', line: 'DROP DOWN THE OLD SHAFT INTO THE SUMP' } ] },
     { id: 'uw-gutter', zone: [244, 36, 262, 45], steps: [
       { key: 'gutterTorch', is: ['torch.gutter', 'up'], at: [255, 43], dy: -4, line: 'TAKE THE TORCH, TOSS IT SHORT INTO THE OIL: DOWN + ATTACK' } ] },
+    { id: 'uw-sump-out', zone: [324, 38, 336, 45], steps: [
+      { key: 'sumpOut', at: [338, 42], glint: 'stall', line: 'JUMP UP ONTO THE STONE: THE WAY OUT OF THE SUMP' } ] },
     { id: 'uw-exam', zone: [346, 33, 370, 42], steps: [
       { key: 'examTorch', is: ['nest.exam', 'shut'], at: [364, 40], dy: -4, line: 'POUR AT THE ROPE, THEN THROW THE TORCH ON THE OIL' },
       { key: 'examSpring', is: ['skin2', 'low'], at: [404, 42], line: 'FILL YOUR SKIN AT THE SPRING PAST THE NEST: E' },
@@ -232,6 +236,8 @@ export const STUCK_HANDS = {
       { key: 'drownDown', at: [446, 34], glint: 'stall', line: 'DROP DOWN INTO THE OLD CISTERN' } ] },
     { id: 'uw-drown-nest', zone: [444, 20, 486, 45], steps: [
       { key: 'drownLob', is: ['nest.drown', 'shut'], at: [471, 42], dy: -4, line: 'LOB THE ISLAND TORCH OVER THE WATER: UP + ATTACK' } ] },
+    { id: 'uw-drown-swim', zone: [444, 30, 486, 45], steps: [
+      { key: 'drownSwim', is: ['nest.drown', 'open'], at: [486, 45], glint: 'stall', line: 'SWIM THE DEEP POOL TO THE FAR SHORE' } ] },
     { id: 'uw-drown-stair', zone: [487, 20, 497, 45], steps: [
       { key: 'drownStair', at: [496, 33], glint: 'stall', line: 'CLIMB THE BOARDS UP TO THE GALLERY: JUMP' } ] },
     { id: 'uw-shaft', zone: [529, 26, 574, 31], steps: [

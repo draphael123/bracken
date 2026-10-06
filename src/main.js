@@ -15336,7 +15336,7 @@ function updateBat(e, dt) {
   /* (claude/underwell2) THE CISTERN BAT (cnSkin 'cisternbat', THE UNDERWELL): the plain bat flies TO a light; this one hangs in the dark vault and DROPS on you while you stand in
      the dark (a yellow ! for BAT_DIVE.tell s - the shield turns it and swats it), and LIGHT SCATTERS IT: a torch in your hand or lying lit, burning oil, a lit cresset, a thief's
      lantern within BAT_DIVE.shy px of it (src/underwell-hands.js lightAt) and it flies up and away for BAT_DIVE.scatter s, then back to its roost */
-  if (e.cnSkin === 'cisternbat') { const lit = (x, y, r) => !!(UWH && UWH.on() && UWH.lightAt(x, y, r));
+  if (e.cnSkin === 'cisternbat') { const lit = (x, y, r) => !!(UWH && UWH.on() && UWH.lightAt(x, y, r)); if (e.frozen > 0 || e.stagger > 0) return;   /* (held - a freeze, a stagger: it hangs where it is) */
     if (e.mode !== 'scatter' && e.mode !== 'back' && lit(e.x, e.y, BAT_DIVE.shy)) { e.mode = 'scatter'; e.modeT = BAT_DIVE.scatter; e.sdir = Math.sign(e.x - P.x) || 1; SFX.chitter(); if (!e.toldLit && Math.abs(P.x - e.x) < 200) { e.toldLit = 1; number(e.x, e.y - 12, 'THE LIGHT SCATTERS THEM', '#ffd36b'); } return; }
     if (e.mode === 'scatter') { e.x += e.sdir * 110 * dt; e.y = Math.max(e.hy - 30, e.y - 70 * dt); e.face = e.sdir; if (e.modeT <= 0) { e.mode = 'back'; e.cd = 1.2; } return; }
     if (e.mode === 'hang') { e.x = e.hx; e.y = e.hy + Math.sin(e.anim * 2) * 0.5; if (e.cd <= 0 && !P.dead && Math.abs(P.x - e.x) < BAT_DIVE.reach && P.y > e.y && P.y - e.y < BAT_DIVE.drop && !lit(P.x, P.y - 12, BAT_DIVE.shy)) { e.mode = 'diveTell'; e.modeT = BAT_DIVE.tell; number(e.x, e.y + 12, '!', '#ffd36b'); SFX.chitter(); } return; }

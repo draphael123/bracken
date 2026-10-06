@@ -269,6 +269,14 @@ const drownedExtra = { pad: 3, draw(g, p, f, k) { const bb = bbox(f); if (bb[2] 
 export const bakeOilThief = base => reskin(base, THIEF_PICK, null, thiefExtra);
 export const bakeCisternBat = base => reskin(base, BAT_PICK, null, batExtra);
 export const bakeDrownedDead = base => reskin(base, DROWNED_PICK, null, drownedExtra);
+/* A WAY LAMP (claude/underwell2): a small brass cage lamp hung on a chain from the vault - it lights where the way goes on; nothing to take (x, y: its top; chainTop: the rock it hangs from) */
+export function drawWayLamp(g, x, y, chainTop, time) {
+  g.fillStyle = '#3a3a44'; for (let cy = chainTop; cy < y; cy += 3) g.fillRect(x - 1 + ((cy - chainTop) % 6 === 0 ? 0 : 1), cy, (cy - chainTop) % 6 === 0 ? 3 : 1, 2);
+  const fl = 0.75 + 0.25 * Math.sin(time * 7 + x);
+  g.fillStyle = '#5a4012'; g.fillRect(x - 3, y, 7, 1); g.fillRect(x - 3, y + 8, 7, 1); g.fillRect(x - 3, y + 1, 1, 7); g.fillRect(x + 3, y + 1, 1, 7);
+  g.globalAlpha = fl; g.fillStyle = '#ffc24a'; g.fillRect(x - 2, y + 2, 5, 5); g.fillStyle = '#fff4c8'; g.fillRect(x - 1, y + 3, 3, 3); g.globalAlpha = 1;
+  g.fillStyle = '#a4742a'; g.fillRect(x - 1, y - 1, 3, 1); g.fillRect(x - 2, y + 9, 5, 1);
+}
 /* the oil thief's FLASK in flight (the bomb list draws it): dark glass, a pale meniscus, the rag wick */
 export function bakeFlask() { const [c, g] = canvas(7, 9); g.fillStyle = '#1a2a18'; g.fillRect(1, 3, 5, 6); g.fillStyle = '#3a5a30'; g.fillRect(1, 3, 1, 6); g.fillStyle = '#4a3a78'; g.fillRect(2, 5, 3, 1);
   g.fillStyle = '#2a2a2a'; g.fillRect(2, 1, 3, 2); g.fillStyle = '#c8b48a'; g.fillRect(3, 0, 1, 1); outline(c, OUT); return c; }

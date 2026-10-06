@@ -228,6 +228,11 @@ export function buildUnderwell({ painter, T, TS }) {
 
   // ================= HER DOOR (shifted 96 east by the drowned cistern) =================
   const QF = 52, QX = 548;
+  /* (claude/underwell2, Daniel 10-06 "confused where to go": a first-time walk of the route) WAY LAMPS - caged lamps on chains (no torch to take: never a verb, only a light)
+     hung over each place the next step is not plain from where you stand: the works' drop to the sump, the climb out of the sump, the drop into the drowned cistern,
+     the stair room's top, the shaft down to her hall. Each also has a glint and a nudge (src/stuck-spots.js) */
+  for (const [x, y] of [[247, 30], [338, 39], [447, 33], [495, 31], [567, 28]]) decor.push({ kind: 'waylamp', x, y });
+  sign(241, 27, 'THE SUMP IS BELOW: DROP DOWN THE OLD SHAFT.');
   decor.push({ kind: 'husk', x: QX - 16, y: 31 });                                 /* HER CAST SHELL, split down the back, by her door (the approach sets her up) */
   ent('check', QX - 15, 31); spring(QX - 7, 31);                              /* CHECKPOINT FOUR: her door, a spring */
   air(QX - 16, QX + 26, 27, 31);                                              /* the corridor over her hall */
