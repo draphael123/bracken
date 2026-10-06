@@ -6,7 +6,8 @@
    THE API (small and stable - the other sweep lanes merge this branch and call it; add a boss by adding a row, never by changing a call):
      import { makeBossRead, TURN, TURN_WORD, GUARD } from './boss-read.js';
      const BR = makeBossRead(api)      api = { time(), clank(), sparks(x, y, dir, n), ring(x, y, r, col, life), word(x, y, txt, col), hitstop(t) }
-     BR.turned(e, fromX, word?)        a blow met him and did nothing: the clank, the flash, the word (default: wordOf). Once a frame per boss.
+     BR.turned(e, fromX, word?, o?)    a blow met him and did nothing: the clank, the flash, the word (default: wordOf). Once a frame per boss.
+                                       o.stop === false: no hitstop (a blade that ALSO lands on something else in the same swing).
      BR.auto(e, fromX, was)            main.js hurtEnemy calls it after EVERY blow on a boss or a mini (was = { hp, mode, broken }, before the
                                        blow): struck, not hurt, not moved off his mode and not broken by it -> turned(e, fromX). A blow his own
                                        code already answered (turned() this frame) is not answered twice.
@@ -56,10 +57,10 @@ export function makeBossRead(api) {
   const said = new WeakMap();
   const wordOf = (e, fromX) => { const w = TURN_WORD[e.t]; if (typeof w === 'function') return w(e, fromX); if (w) return w;
     const g = GUARD[e.t]; return g === 'front' ? TURN.ROUND : g === 'high' ? TURN.HIGH : g === 'low' ? TURN.LOW : TURN.WARDED; };
-  function turned(e, fromX, word) {
+  function turned(e, fromX, word, o) {
     if (!e) return false; const t = api.time(); if (said.get(e) === t) return true; said.set(e, t);
     const dir = Math.sign(fromX - e.x) || 1, hx = e.x + dir * Math.min(14, (e.w || 20) / 2), hy = e.y - (e.h || 20) * 0.55;
-    api.clank(); api.ring(hx, hy, 12, RING, 0.16); api.sparks(hx, hy, dir, 4); api.hitstop(0.03);
+    api.clank(); api.ring(hx, hy, 12, RING, 0.16); api.sparks(hx, hy, dir, 4); if (!(o && o.stop === false)) api.hitstop(0.03);
     api.word(e.x, e.y - (e.h || 20) - 16, word || wordOf(e, fromX), COL);
     return true; }
   return {
