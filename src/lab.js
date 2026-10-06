@@ -403,6 +403,7 @@ export async function fightLab(BK, opts = {}) {
 /* AND THE ONES WHOSE GATE LIVES IN main.js ASK IT (BK.bossOpen): the Queen's Lance turns every blade until he is
    committed, so a bot that treated him as open swung at his plate for the whole fight. */
 const OPEN = (b, BK) => { const g = BK && BK.bossOpen ? BK.bossOpen(b) : null; return g === null || g === undefined ? OPEN0(b) : g; };
+const DK_FREE = new Set(['rest', 'stuck', 'wrench', 'reel', 'open', 'held', 'pinned', 'down', 'stagger', 'staggered', 'winded', 'skid', 'downed', 'rise', 'catch', 'idle']);   /* (claude/herobots) modes a Death Knight may begin his slow swing in */
 const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? b.open > 0 : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || (b.phase === 2 && !!b.plateOff)) : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
 /* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
 export const HARD_TELLS = new Set(["troll|slamTell","troll|ripTell","assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|bashTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|ladleTell","forgemaster|pourTell","forgemaster|slamTell","forgemaster|whirlTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","masthead|boomTell","masthead|dropTell","owl|hootTell","prince|sinkTell","prince|snuffTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","roc|shriekTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
@@ -584,6 +585,7 @@ async function runbossLab(BK, opts) {
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
        time behind it, so it is RETURNED. One release in ten is early. dkHold keeps the ward up a little past the end of a tell. */
+    const dkS = { m: '', blow: null, endF: -999, tellF: -9999, hitF: -9999, hitSwF: -9999, hp: -1, relF: -999 };
     const dkLag = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
@@ -1289,7 +1291,7 @@ async function runbossLab(BK, opts) {
         const thrK=q.mode==='thrustHighTell'?'high':q.mode==='thrustLowTell'?'low':q.mode==='thrust'?q.thrustKind:null,thrTell=q.mode==='thrustHighTell'||q.mode==='thrustLowTell',adq=Math.abs(dq);
         const thrIn=!!thrK&&adq<96+12&&Math.sign(P.x-q.x)===(q.thrustDir||q.face)&&!(q.mode==='thrust'&&(q.tip||0)>adq+8);   /* her spear told (or running out) his way, and not yet past him */
         const highD=lashK==='high'||(thrK==='high'&&thrIn)||(sweepK==='high'&&(q.mode==='sweep'?Math.abs(sFront-P.x)<70:q.modeT<0.35));
-        const side=-1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*46)),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq;
+        const side=-1,lureX=Math.max(A.x0+20,Math.min(A.x1-20,mid+side*46)),transit=Math.abs(lureX-P.x)>40&&Math.sign(lureX-P.x)!==sq&&!(LABP.v2&&h==='reaper');   /* (claude/herobots) the Death Knight cannot outrun her stab, so he looks at it like everyone else */
         if(landing&&!highD){gx=P.x+(P.x<q.leapTo.x?-1:1)*60;face=sq;}   /* (claude/fairfix3) her landing is marked: off the mark */
         else if(q.mode==='leapTell'){face=sq;look=true;gx=P.x;}   /* her crouch: look at her, and the leap is held */
         else if(toGap&&!highD){gx=gapX+(q.mode==='ring'?(q.gapDir||1)*6:0);face=sq;}   /* (claude/fairfix4) THE BONFIRE RING: into the gap, and keep in it as it travels */
@@ -1383,6 +1385,9 @@ async function runbossLab(BK, opts) {
       const gunT = boss.t === 'quarter' && boss.guard ? BK.props().filter(q => q.t === 'cannon' && q.deck && !(q.cool > 0) && Math.abs(q.y - boss.y) < 30 && q.x > A.x0 - 16 && q.x < A.x1 + 16)
         .sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
       const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
+      { const bm = boss.mode || '';   /* (claude/herobots) what the Death Knight has SEEN of the boss's rhythm: when a tell was last up, and when the blow it told ended (his punish window) */
+        if (bm !== dkS.m) { if (/Tell$/.test(dkS.m)) dkS.blow = bm; else if (dkS.blow && dkS.m === dkS.blow) { dkS.endF = f; dkS.blow = null; } dkS.m = bm; } if (/Tell$/.test(bm)) dkS.tellF = f;
+        if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
       const rushing = ((boss.mode === 'rush' || (boss.t === 'masthead' && boss.mode === 'sail')) && ad < 46) || (boss.t === 'master' && boss.mode === 'charge' && ad < 64 && (boss.x - P.x) * boss.vx < 0);   /* THE HOUND MASTER's charge is no Tell by the time it reaches you either */   /* THE RAM is answered as it arrives, like the shoulder */
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
@@ -1522,7 +1527,7 @@ async function runbossLab(BK, opts) {
          open), and back off before a nova they did not break. NOVA, SURGE: out of the ring. His dead are cut when they come close. */
       else if (boss.t === 'bloodknight') { const S = BK.unbU ? BK.unbU.UNB.bk : null, side = Math.sign(P.x - boss.x) || 1, m = boss.mode;
         if (P.labDkM !== m) { P.labDkM = m; P.labDkF = f; } const seen = f - P.labDkF >= 15, shield = SHIELDED(h);
-        const guard = () => { goal = null; strike = false; P.face = -side; if (shield) k.block = true; else if (h === 'warden') k.block = DEFLECT_TAP(f); else { goal = boss.x + side * ((S ? S.swingR : 54) + 24); } };
+        const guard = () => { goal = null; strike = false; P.face = -side; if (shield) k.block = !(LABP.v2 && h === 'reaper' && LABP.dkRelease !== false && f - dkS.relF < dkF(0.2));   /* (claude/herobots) the ward took a cut: LET GO (the nova hurts him and heals the blood back) and put it up for the next; held through a string it fills and breaks */ else if (h === 'warden') k.block = DEFLECT_TAP(f); else { goal = boss.x + side * ((S ? S.swingR : 54) + 24); } };
         const add = BK.enemies().filter(q => q.alive && q.t === 'corpse' && q.from === boss && q.mode !== 'down' && Math.abs(q.y - P.y) < 24).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
         const pool = S && (boss.pools || []).find(p => Math.abs(P.x - p.x) < S.boilR + 6);
         const coil = S && (boss.coils || []).find(q => q.t < S.coilT - 0.25 && Math.abs(q.x - P.x) < 46 && Math.abs(q.y - (P.y - 12)) < 30);   /* (seen a quarter-second after it leaves his hand) */
@@ -1846,6 +1851,10 @@ async function runbossLab(BK, opts) {
          holds before a swing starts (updatePlayer: if (!attacking) P.face = move), so a swing pressed on that frame went out behind him: on
          the Reefmaw the Death Knight's first swing in every stuck jaw was cut facing away and rooted him 0.78 s of a 2.2 s window (claude/dk2).
          On the frame it swings, the bot lets go of the key that points away. */
+      /* (claude/herobots) THE DEATH KNIGHT'S SWING IS A SECOND OF COMMITMENT (0.9 s light, 1.75 heavy; armoured through it, but the ward cannot come up and he cannot roll): a player does not
+         begin one into a boss that is winding up - he keeps the ward up and punishes in the half second after the boss's blow has gone, or in his rest, his open and his reel. Only while the boss
+         is attacking in tells (one seen in the last six seconds); v2 profiles, and prof.dkPunish false turns it off. */
+      if (LABP.v2 && LABP.dkPunish !== false && h === 'reaper' && strike && !open && P.atk < 0 && ad < 110 && (f - dkS.tellF < dkF(6) || f - dkS.hitSwF < dkF(8)) && f - Math.max(dkS.endF, dkS.hitF) >= dkF(LABP.dkWin ?? 0.25) && !DK_FREE.has(boss.mode)) { strike = false; k.block = true; P.face = Math.sign(d) || P.face; k.left = k.right = false; }
       if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; if (d > 0) k.left = false; else if (d < 0) k.right = false;
         /* A SMALL FOE IN FRONT WANTS THE LOW SWEEP, not the plain cut this generic swing otherwise throws (tools/small-adds.mjs):
            smallAim() is the same "what is this swing really aimed at" pick the ledger below judges it against, so asking it here,
@@ -1922,7 +1931,7 @@ async function runbossLab(BK, opts) {
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
         /* the ward took something: learn how late that tell's blow came, and let go now - the nova */
-        if ((P.wardG || 0) > dkG + 0.5 && !(P.parryT > 0)) { if (dkEndM && f - dkEndF <= dkF(0.8)) dkLag[dkEndM] = Math.min(dkLag[dkEndM] ?? 9, (f - dkEndF) * (BK.SET.speed || 1) / 60); dkHold = 0; }
+        if ((P.wardG || 0) > dkG + 0.5 && !(P.parryT > 0)) { if (dkEndM && f - dkEndF <= dkF(0.8)) dkLag[dkEndM] = Math.min(dkLag[dkEndM] ?? 9, (f - dkEndF) * (BK.SET.speed || 1) / 60); dkHold = 0; dkS.relF = f; }
         dkG = P.wardG || 0; }
       if (opts.onFrame) await opts.onFrame({ boss, P, f, h, lvl: lvId, open });   /* THE CAMERA HOOK (opts.draw renders each frame; opts.onFrame may take it) */   /* a fall into a pit is a death and a respawn, not a blow: it is counted as falls, not as damage */
       if (P.dead) falls++;
