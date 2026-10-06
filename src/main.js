@@ -66,6 +66,7 @@ import { lanceSupport, LANCE_SUPPORT, gateHas, gateCatch, gateStep, drawLanceGat
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import {fallBounds} from './waterfalls.js';
 import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
+import { REC } from './playrec.js';   /* THE PLAYTEST RECORDER (claude/bot2): off unless ?rec=1 / SHIFT+F9; F9 saves its log as a file, nothing is sent */
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen, drawSpear as wqDrawSpear } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import * as FAF from './fair-foes.js'; import * as FK from './fair-keys.js'; import * as FKD from './redraw/fair_keys.js'; import * as FFK from './redraw/fair_folk.js'; import * as WMN from './wicker-man.js'; import { makeWickerManHands } from './wicker-man-hands.js'; import * as WMA from './redraw/wicker_man_art.js'; let WMH = null;   /* (claude/fairfix6) THE WICKER MAN: the fair's one new foe, the Wicker Queen's lesser echo - strike its fire back */   /* (claude/fairfix2) the fair's keys: ticket gates, bull's-eyes on rides, the mirror door, its sharper foes; and their drawing */   /* (fair-foes.js: THE HARVEST FAIR's string-jack and barker, claude/fairfix) */
@@ -248,7 +249,8 @@ if (!SET.speedV2) { SET.speed = 0.6; SET.speedV2 = 1; try { localStorage.setItem
 function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setVoices(SET.voices !== false); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
 applySettings();
-if (q.get('fps') === '1') SET.fps = true;   /* ?fps=1: the frame counter on, for a test on a real phone (not saved unless a setting is changed) */
+if (q.get('fps') === '1') SET.fps = true;
+REC.init(location.search);   /* ?rec=1 on, ?rec=0 off (src/playrec.js) */   /* ?fps=1: the frame counter on, for a test on a real phone (not saved unless a setting is changed) */
 // Progress lives in one of five save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; let saveBlocked = ''; const SLOTS = 5; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
 let eraseAsk = -1, eraseYes = false;   /* ERASE SLOT n? YES / NO: the slot being asked about (-1 = no question up), and whether YES is the one lit. It opens on NO. */
@@ -801,7 +803,7 @@ const abilityHero = id => { const a = ABILITIES.find(x => x.id === id); return a
 const CD_MAX = { flashover: 10, firestorm: 20, dawnburst: 12, holyWrath: 24, powderKeg: 9, heavySeas: 14, boneArmor: 18, soulReap: 20, stoneStep: 1.2, boulder: 4, spikeRow: 5, archway: 8, stoneWall: 7, entomb: 9, faultLine: 8, golem: 16, avalanche: 20, summonSkeleton: 18, deathGrip: 6, unholyGround: 11, harvestMoon: 8, gravecall: 16, broadside: 7, blackSpot: 10, keelhaul: 5, scytheThrown: 4, graveTide: 7, grapeshot: 6, rum: 18, boarding: 5, lunge: 3, warCry: 10, whirlwind: 4, meteor: 8, flameRing: 6, lightLance: 5, divineShield: 14, hammerLeap: 6, shieldThrow: 4,   /* (claude/herokit: the wait starts at the throw now, so the pierce-and-return does not add a second to it) */ groundSlam: 3, fireWall: 4, cinderStep: 3, risingCut: 2, vent: 3, wisp: 8, consecrate: 7, holyCharge: 4, blessedHammer: 2.5, skewer: 4, setSpears: 8, harrier: 5, wheel: 5, javelin: 5, poleSpring: 7, fullStretch: 16, spearDance: 8, rainOfSpears: 18, disarm: 6, ironclad: 12, swordOfRealm: 22 };
 const skillCd = k => (P.cds && P.cds[k]) || 0; // every skill keeps its own wait now: two on two keys cannot lock each other
 const GOLD_CD = 15, goldReady = k => isPirate() && tal('paidInGold') && (PROG.coins || 0) >= GOLD_CD && skillCd(k) > 0;   /* PAID IN GOLD: a wait bought off */
-const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); trialEvent(k === skillNow() ? 'skillF' : 'skillG'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
+const cdReady = k => !((P.cds && P.cds[k]) > 0) || goldReady(k), cdSet = k => { noteVerb('skill'); if (REC.on) REC.skill(k); trialEvent(k === skillNow() ? 'skillF' : 'skillG'); P.cds = P.cds || {}; if (goldReady(k)) { PROG.coins -= GOLD_CD; number(P.x, P.y - 34, '-' + GOLD_CD + ' GOLD', '#ffd34a'); SFX.coin(); } P.cds[k] = cdOf(k); P.skReady = P.skReady || {}; P.skReady[k] = 0; };
 const skillsOwned = () => skillsFor(hero()).filter(n => n.active && (PROG.skillOwned[hero()]?.[n.id] || trialLend?.has(n.id)));
 const skillAt = index => { const id = equipped(PROG, hero(), heroLevel())[index]; if (skillFor(hero(), id)?.active) return id; if (trialLend) return [...trialLend].filter(k => skillFor(hero(), k)?.active)[index] || null; return null; };
 const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
@@ -4971,6 +4973,7 @@ const KEYS = {
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
   initAudio(); anyPress = true; TCH.keyUsed();
+  if (e.key === 'F9' && REC.key(e)) { e.preventDefault(); return; }   /* the playtest recorder's keys (src/playrec.js) */
   if (state === 'rebind' && rebindKey(e)) { e.preventDefault(); return; }   /* a key being chosen for an action: used up here (src/controls.js) */
   if (state === 'title' && e.shiftKey && e.key === 'B') { bjOpen(); e.preventDefault(); return; }   /* THE HIDDEN BOSS LIST: SHIFT+B on the title screen (docs/PLAYTEST.md) */
   if (state === 'editor') { // the editor owns the letters; only the arrows fall through, to pan
@@ -5436,7 +5439,7 @@ function rumble(ms, mag) { if (!SET.rumble) return; try { const gps = navigator.
 function sndAt(x, y, big) { const dx = x - (camX + VW / 2), dy = y - (camY + VH / 2), d = Math.hypot(dx, dy * 1.3), near = VW * 0.55;
   return { pan: Math.max(-0.7, Math.min(0.7, dx / (VW * 0.75))), v: d <= near ? 1 : Math.max(big ? 0.6 : 0.18, 1 - (d - near) / (VW * 0.9)) }; }
 // the player's own sounds are never placed: whatever hurts them, the cry is theirs
-function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const hp0 = P.hp, r = damagePlayer0(fromX, dmg, o); if (r === 'blocked') TCH.buzz(P.parryT > 0.2 ? 'parry' : 'block'); else if (P.hp < hp0) TCH.buzz('hit');
+function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const hp0 = P.hp, r = damagePlayer0(fromX, dmg, o); if (REC.on) REC.hurt(o, hp0 - P.hp, r); if (r === 'blocked') TCH.buzz(P.parryT > 0.2 ? 'parry' : 'block'); else if (P.hp < hp0) TCH.buzz('hit');
   if (r === 'blocked') creditTurn(fromX);   /* and whether that was a blow turned for the PARTNER (the co-op block) */
   /* THE AUDITS' EAR (tools/audit-*.mjs): when a tool has set BK.log to an array, every blow on the hero is written down with the line it came from. Off (null) in play; it changes nothing. */
   if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgP', fromX, dmg, res: r, t: time, who: o && o.who ? o.who.t : null, by: (o && o.who) || updFoe || null, blow: o && o.blow || null, unblockable: !!(o && o.unblockable), stack: new Error().stack });
@@ -8706,6 +8709,7 @@ const hallSealed = e => hallHolds(L.arena, bossActive, e, boss);
    costs a spike's bite and not a life spent bouncing in a box of points (src/sexton.js bellPitThrow) */
 const spikeBite = (tx, name) => { const d = L.bellDeck, t = d && !P.dead ? bellPitThrow(d, P.x, P.y, c => ![1, 2].some(k => { const q = tileAt(c, d.deck - k); return q === T.SOLID || q === T.PORT; })) : null;
   damagePlayer(tx * TS + 8, t ? SEXTON.dmg.pit : DMG.spike, { up: true, unblockable: true, name: t ? 'THE BELL PIT' : name }); if (P.dead || !t) return;   /* the pit bites like one of his blows, not like a gear pit's spikes */ if (t) { P.vy = t.vy; P.vx = t.vx; P.ground = false; P.onMover = null; P.canCut = false; P.plunge = false; P.pitCarry = { vx: t.vx, t: 0.7 }; } };
+const REC_CTX = { get state() { return state; }, get P() { return P; }, get L() { return L; }, levelId: () => curId(), get boss() { return boss; }, get bossActive() { return bossActive; }, get miniActive() { return miniActive; }, mini: () => miniOne(), get SET() { return SET; }, get PROG() { return PROG; }, hero: () => hero(), heroLevel: () => heroLevel(), equipped: () => equipped(PROG, hero(), heroLevel()), bossOpen: e => window.BK.bossOpen(e) };   /* what the playtest recorder reads (src/playrec.js) */
 const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss && (e.mini || e.t === 'greathound')) : null;
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
 function miniEnd(e) {
@@ -25134,7 +25138,7 @@ function updateCamera(dt) {
 }
 
 function update(dt) {
-  time += dt;
+  time += dt; if (REC.on || REC.msgT > 0) REC.frame(REC_CTX, dt);
   if (state !== 'play' || !isPyro()) SFX.jet(false);
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
@@ -29162,6 +29166,7 @@ function render() {
       spk(VW / 2 - w / 2 + 8, SOUND_Y + 4, '#c9b27c'); text(lab, VW / 2 + 7, SOUND_Y + 4, '#e8dfc6', 'center', 6); g.globalAlpha = 1; }
     else { g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 2); spk(VW - 14, VH - 14, '#9aa39a'); g.globalAlpha = 1; }
   } else soundNoteT = 0;
+  if (REC.on || REC.msgT > 0) REC.draw(g, text, VW);
   if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
   drawTransition();
   if(saveBlocked){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
