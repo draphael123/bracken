@@ -49,8 +49,9 @@ export function drawPressFronds(g, time, open, VW, VH) {
 export function drawPressText(g, text, UI, time, VW, VH, fade, touch) {
   if (fade <= 0) return;
   g.globalAlpha = fade;
+  g.fillStyle = 'rgba(6,8,6,0.5)'; g.fillRect(36, 28, VW - 72, 128);   /* a plate under the words: they read over the fronds, and sit on a box that holds them */
   const bob = Math.round(Math.sin(time * 1.3) * 1.5);
-  text('BRACKEN', VW / 2 + 2, 52 + bob + 2, '#3a2214', 'center', 22); text('BRACKEN', VW / 2, 52 + bob, UI.gold, 'center', 22);
+  text('BRACKEN', VW / 2, 52 + bob, UI.gold, 'center', 22);
   text('a knight, a wood, a mountain', VW / 2, 82, UI.text, 'center', 6);
   if (Math.floor(time * 1.4) % 3 !== 2) text(touch ? 'TAP TO BEGIN' : 'PRESS ANY KEY', VW / 2, 126, '#fff6e0', 'center', 8);
   text(touch ? 'tapping also starts the sound' : 'this also starts the sound', VW / 2, 142, UI.dim, 'center', 6);

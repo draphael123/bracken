@@ -3811,6 +3811,7 @@ function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); i
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
 function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF'), x: VW - 4, right: true }]; }
 function drawMap() {
+  g.__mapWorld = true;   /* (tools/textfit.mjs: the map's plates and labels are drawn in the map's own camera, and the card over them is the screen's) */
   g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
   g.save(); g.translate(0, -Math.round(mapCamY));
   g.drawImage(MAPC, 0, 0);
@@ -3924,7 +3925,7 @@ function drawMap() {
       if (p.cleared) { g.fillStyle = '#8fd160'; g.fillRect(lx + tw / 2 - 7, by, 2, 4); g.fillRect(lx + tw / 2 - 6, by + 3, 4, 2); g.fillRect(lx + tw / 2 - 4, by, 2, 4); }
     }
   }
-  g.restore();
+  g.restore(); g.__mapWorld = false;   /* (from here on it is the screen's own: the frame, header, card and footer are not allowed off the edge) */
   // parchment frame + compass
   g.strokeStyle = 'rgba(60,40,20,0.7)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, VW - 3, VH - 3); g.strokeStyle = 'rgba(255,230,180,0.25)'; g.lineWidth = 1; g.strokeRect(4.5, 4.5, VW - 9, VH - 9);
   g.drawImage(PROP.compass, VW - 30, VH - 52);
@@ -3963,7 +3964,8 @@ function drawMap() {
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
-      text(fitText(lv.sub || '', cw - 14, 6), cx0 + 8, cy0 + 15, UI.dim, 'left', 6);   /* (the whole width: the difficulty moved down beside the recommended level, so the blurb stops being cut short) */
+      { const sub = (() => { const out = []; let cur = ''; for (const w of String(lv.sub || '').split(' ')) { if (cur && textW(cur + ' ' + w, 6) > cw - 24) { out.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; } if (cur) out.push(cur); return out; })(), at = sub.length > 1 ? Math.floor(time / 2.4) % sub.length : 0;   /* A BLURB TOO LONG FOR ONE LINE IS TWO PAGES, 2.4 s EACH (a dot at the end says which): the card has no room for a second row, and a cut sentence was worse */
+        text(sub[at] || '', cx0 + 8, cy0 + 15, UI.dim, 'left', 6); if (sub.length > 1) for (let i = 0; i < sub.length; i++) { g.fillStyle = i === at ? UI.dim : 'rgba(255,255,255,0.18)'; g.fillRect(cx0 + cw - 8 - (sub.length - i) * 4, cy0 + 17, 2, 2); } }
       /* A POSTCARD of the country this node sits in, and beside it: your best, the three medal times, what is found and what is owed (the old card said "OPEN" and "0/?") */
       MCARD.drawPostcard(g, cx0 + 8, cy0 + 24, 40, 30, MCARD.regionAt(nd.y, { INLAND: INLAND_Y, COAST: COAST_Y, CRAG: CRAG_Y, WOOD: WOOD_Y }), !!(lv.night || lv.dark), time);
       const M = MEDALS[id] || [300, 450, 660], rx = cx0 + 54, r1 = cy0 + 25, r2 = cy0 + 33, r3 = cy0 + 41, r4 = cy0 + 49;
@@ -3977,7 +3979,7 @@ function drawMap() {
       const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length;
       let bx = rx; const by = r3;
       g.drawImage(PROP.silver[0], bx, by - 1); text(sv + '/3', bx + 12, by, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 32;
-      g.drawImage(PROP.coin[0], bx, by - 1); text((p.gold || 0) + '/' + (p.total || '?'), bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 42;
+      { const gt = (p.gold || 0) + '/' + (p.total || '?'); g.drawImage(PROP.coin[0], bx, by - 1); text(gt, bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 12 + inkW(gt, 6) + 6; }
       g.drawImage(PROP.questIcon, bx, by - 1); text(p.quest ? 'QUEST DONE' : 'QUEST OPEN', bx + 12, by, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 12 + inkW('QUEST OPEN', 6) + 6;
       if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
       if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
@@ -25411,7 +25413,7 @@ function text(s, x, y, col, align = 'left', size = 8, style = 'shadow') {
   s = String(s); if (!s) return;
   if (col === undefined) col = SET.ink === 'parchment' ? '#fff6e0' : inkNow();
   const st = stampOf(s, size, col, style), x0 = Math.round(align === 'center' ? x - st.w / 2 : align === 'right' ? x - st.w : x), y0 = Math.round(y);
-  if (window.__textRec) textRec('text', { s, x0, y0, w: st.w, h: st.h, size, tiny: true, align, alpha: g.globalAlpha, style });
+  if (window.__textRec) textRec('text', { s, x0, y0, w: st.w, h: st.h, size, tiny: true, align, alpha: g.globalAlpha, style, world: !!g.__mapWorld });
   g.drawImage(st.c, x0 - st.pad, y0 - st.pad);
 }
 /* THE WIDTH A STRING TAKES ON THE LINE (its advances, the trailing gap included) */
@@ -29041,13 +29043,13 @@ function render() {
     if (bossActive && boss && boss.alive && boss.t === 'gqueen' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawGqPlate(boss);   /* HER PLATE, under her bar (round two) */
     if (bossActive && boss && boss.alive && boss.t === 'pyromancer' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawPyroHeat(boss);   /* HIS HEAT, over his bar */
   }
-  if (state === 'title') {
+  if (state === 'title' && pressCard) { TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); }); TC.drawPressText(g, text, UI, time, VW, VH, 1, touchOn); }   /* THE CARD: only its own words while it is up (the sign and the menu wait off screen, and are not drawn) */
+  if (state === 'title' && !pressCard) {
     /* THE BOARD HANGS OVER THE PICTURE, NOT UNDER THE MENU. Centred on VW/2 with the menu board 138 wide on the
        right, the sign and its line ran in behind the panel and the subtitle was half-covered. It is centred on the
        picture instead, and it swings a little on its post the way a hung sign does. */
     const since = pressCard ? 0 : Math.max(0, time - titleSince), e = easeOutBack(Math.min(1, since / 0.7));
-    if (pressCard) TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); });
-    if (pressCard || (pressAt !== null && time - pressAt < 0.4)) TC.drawPressText(g, text, UI, time, VW, VH, pressCard ? 1 : Math.max(0, 1 - (time - pressAt) / 0.4), touchOn);
+    if (pressAt !== null && !pressCard && time - pressAt < 0.4) TC.drawPressText(g, text, UI, time, VW, VH, Math.max(0, 1 - (time - pressAt) / 0.4), touchOn);
     const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(10 - (1 - e) * 70 + sway);
     const lw = 196, lh = Math.round(PROP.plank.height * 1.4), tcx = Math.round((VW - 146) / 2), lx = Math.round(tcx - lw / 2);
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
@@ -29315,7 +29317,7 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
-    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
+    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(),
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
