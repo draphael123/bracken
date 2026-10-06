@@ -1807,8 +1807,15 @@ async function runbossLab(BK, opts) {
            smallAim() is the same "what is this swing really aimed at" pick the ledger below judges it against, so asking it here,
            before the press, makes the bot actually throw the blow the ledger expects rather than a cut that glances the family table
            calls wrong for it (marsh: the frog king's hoppers, generic fallback path - no boss-specific branch of its own). */
-        const nearSmall = smallAim(); if (nearSmall && keyVerb(BK, h, nearSmall) === 'sweep') k.down = true;
-        BK.press('atk'); swings++; }
+        const nearSmall = smallAim(); const smallBand = nearSmall ? [nearSmall.y - (nearSmall.h || 8) - P.y, nearSmall.y - P.y] : null;   /* the top and the foot of the foe, up (-) from the hero's feet */
+        /* THE BLOW MUST BE ABLE TO LAND (claude/herokit small-adds): the low sweep covers feet-8 .. feet+2 and every plain cut or thrust feet-16 .. feet-1, and a hopper
+           mid-hop (foot 9-18 up) or on the ledge below (16 down) is in neither. Both of the warden's two 'misses' at the Bullfrog's hoppers were a sweep at a hopper in the
+           air and a swing at one a tile below - nothing to do with her point (the knight misses the same way). Out of the sweep's band but inside the cut's: throw the cut;
+           out of both: hold the swing for the frame it can land (it is the same boss swing, it comes round again next frame). */
+        const inSweep = smallBand && smallBand[1] >= -8 && smallBand[0] <= 2, inCut = smallBand && smallBand[1] >= -16 && smallBand[0] <= -1;
+        if (!nearSmall || inSweep || inCut) {
+          if (nearSmall && inSweep && keyVerb(BK, h, nearSmall) === 'sweep') k.down = true;
+          BK.press('atk'); swings++; } }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
