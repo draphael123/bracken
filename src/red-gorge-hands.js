@@ -6,6 +6,7 @@
 // line listed in src/hint-lines.js (the hint box). THE GREAT RED CRAB (src/gorge-crab-hands.js) reads the dam's water through dam().
 import { vultureStep } from './desert-foes.js';
 import * as RGP from './redraw/redgorge_props.js';
+import * as RG2 from './redraw/redgorge2_art.js';   /* the Rapids, the Climb, the nest ledge's ground (claude/redgorge2 art pass) */
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';   /* THE GLINT + THE 10 s STALL NUDGE (claude/gorgemodule: shared with the canal and the route list) */
 import { STUCK_HANDS } from './stuck-spots.js';
 
@@ -100,7 +101,7 @@ export function makeRedGorgeHands(ctx) {
     /* THE CLOCK: dry -> horn -> flood (phase two of the crab's fight: the dry spells shorten) */
     RG.t -= dt;
     if (RG.t <= 0) {
-      if (RG.phase === 'dry') { RG.phase = 'horn'; RG.t += GORGE.horn; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.sfx.rumble && ctx.sfx.rumble();
+      if (RG.phase === 'dry') { RG.phase = 'horn'; RG.t += GORGE.horn; RG.hornT0 = RG.clock; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.sfx.rumble && ctx.sfx.rumble();
         (RG.said['horn'] ? 0 : (RG.said['horn'] = 1, ctx.number(P0.x, P0.y - 34, 'THE HORN: THE FLOOD IS COMING', '#ff9a5c'))); }
       else if (RG.phase === 'horn') { RG.phase = 'flood'; RG.t += GORGE.run; RG.n.floods++; RG.id++; ctx.sfx.waveCrash && ctx.sfx.waveCrash();
         for (const c of RG.channels) { const held = gatesIn(c.id).find(g => g.row >= c.y0 - 1 && g.state === 'shut'); const sp = floodSpan(c);
@@ -108,6 +109,8 @@ export function makeRedGorgeHands(ctx) {
           if (sp) RG.spans.push({ ch: c.id, y0: sp[0], y1: sp[1], t: GORGE.run, kind: 'flood', id: 'f' + RG.id + c.id }); } }
       else { RG.phase = 'dry'; RG.t += ctx.crabPhase && ctx.crabPhase() === 2 ? ctx.crabDry() : GORGE.dry; }
     }
+    /* THE FURY (the art's one number, 0..1): calm; a build-up in the last 1.6 s before the horn (the river wrinkles, mist, the pennants lift); the horn; the flood */
+    { const tgt = RG.phase === 'dry' ? (RG.t < 1.6 ? (1.6 - RG.t) / 1.6 * 0.4 : 0) : RG.phase === 'horn' ? 0.7 + 0.3 * (1 - Math.max(0, RG.t) / GORGE.horn) : 1; RG.fury = (RG.fury || 0) + (tgt - (RG.fury || 0)) * Math.min(1, dt * 5); }
     /* A RELEASE: the gate creaks (its tell), then the banked water comes down below it at once */
     for (const p of RG.pending) { p.t -= dt; if (p.t > 0) continue; const g = p.g, c = chOf(g.ch); g.state = 'open'; RG.n.releases++; RG.id++;
       const [y0, y1, next] = burstSpan(c, g); if (next) next.state = 'full';
@@ -204,7 +207,9 @@ export function makeRedGorgeHands(ctx) {
   /* what the art needs from the hands (src/redraw/redgorge_props.js) */
   const scene = () => ({ channels: RG.channels, spans: RG.spans, gates: RG.gates, wheels: RG.wheels, wheelsW: RG.wheelsW.map(w => { const b = ctx.movers().find(m => m.gorge === w.basket); w.run = !!(b && running('gorge', b.wheelRow)); return w; }), jams: RG.jams, nest: RG.nest, vault: RG.vault, phase: RG.phase, t: RG.t, L: RG.L, floodSpan, chOf });
   const kit = (cx, cy, time) => ({ TS: ctx.TS, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time, movers: ctx.movers, questGot: ctx.questGot, questN: ctx.questN });
-  H.drawOver = (g, cx, cy, time) => { if (RG) RGP.drawOver(g, scene(), kit(cx, cy, time)); };
+  /* what the art reads of the water's mood: fury (0..1), the spill chute running, seconds since the horn */
+  H.artState = () => RG ? { fury: RG.fury || 0, run: running('spill', 190) ? 1 : 0, horn: RG.phase === 'horn' ? RG.clock - (RG.hornT0 || 0) : -1 } : null;
+  H.drawOver = (g, cx, cy, time) => { if (!RG) return; RGP.drawOver(g, scene(), kit(cx, cy, time)); const P = ctx.hero(); if (P && P.x > 45 * ctx.TS && P.y > 148 * ctx.TS) RG2.drawFlash(g, ctx.VW(), ctx.VH(), H.artState()); };
   H.drawWorld = (g, cx, cy, time) => {
     if (!RG) return; const R = Math.round, vw = ctx.VW(), vh = ctx.VH();
     RGP.drawBack(g, scene(), kit(cx, cy, time));   /* the art lives in src/redraw/redgorge_props.js (claude/redgorge-art) */
@@ -212,17 +217,12 @@ export function makeRedGorgeHands(ctx) {
     for (const r of RG.ropes) { if (r.r1 - r.r0 < 12) continue; const x = R(r.x - cx), yb = R(r.y1 - cy); if (x < -8 || x > vw + 8 || yb < -8 || yb > vh + 40) continue;
       g.fillStyle = '#d9b36a'; for (const ky of [yb - 6, yb - 22]) { g.fillRect(x - 2, ky, 5, 3); g.fillStyle = '#7a5a30'; g.fillRect(x - 2, ky + 3, 5, 1); g.fillStyle = '#d9b36a'; }
       g.fillStyle = '#b8924a'; g.fillRect(x - 3, yb, 1, 3); g.fillRect(x - 1, yb, 1, 5); g.fillRect(x + 1, yb, 1, 4); g.fillRect(x + 3, yb, 1, 2); }
-    /* THE RAPIDS' WHITE WATER (claude/redgorge2): streaks on the river - a few in the calm, a race of them in the horn's rapids - and the timbers drawn plain */
-    { const fast = H.rapids(); for (const p of RG.L.pools || []) { if (!p.rapids) continue; const x0 = R(p.x0 - cx), x1 = R(p.x1 - cx), y = R(p.y - cy); if (x1 < -8 || x0 > vw + 8 || y < -8 || y > vh + 8) continue;
-        g.fillStyle = fast ? 'rgba(232,244,248,0.85)' : 'rgba(232,244,248,0.45)'; const step = fast ? 6 : 13, sp = fast ? 140 : 26;
-        for (let x = x0 + ((time * sp) % step); x < x1 - 3; x += step) g.fillRect(R(x), y + ((x >> 3) % 3), fast ? 4 : 3, 1); }
-      for (const m of ctx.movers()) { if (!m.debris) continue; const x = R(m.x - cx), y = R(m.y - cy); if (x < -40 || x > vw + 8 || y < -8 || y > vh + 8) continue;
-        g.fillStyle = m.what === 'crate' ? '#8a5a32' : m.what === 'branch' ? '#5a3a1e' : '#9a7044'; g.fillRect(x, y, m.w, 5); g.fillStyle = '#c8945a'; g.fillRect(x + 2, y, m.w - 4, 1);
-        if (m.what === 'crate') { g.fillStyle = '#6a4426'; g.fillRect(x + 4, y - 6, 12, 6); } if (m.what === 'branch') { g.fillStyle = '#5a3a1e'; g.fillRect(x + 20, y - 4, 2, 4); g.fillRect(x + 24, y - 6, 2, 6); }
-        g.fillStyle = 'rgba(232,244,248,0.7)'; g.fillRect(x - 2, y + 4, 3, 1); if (m.fast) g.fillRect(x - 6, y + 3, 4, 1); } }
-    /* HER PLUMES (B8): long rust crest feathers on the rocks along the way, thicker at the dam's door */
-    for (const d of RG.L.decor || []) { if (d.kind !== 'plume') continue; const x = R(d.x * ctx.TS + 8 - cx), y = R((d.y + 1) * ctx.TS - cy); if (x < -8 || x > vw + 8 || y < -20 || y > vh + 8) continue;
-      g.fillStyle = '#f0dcb8'; g.fillRect(x - 5, y - 2, 10, 1); g.fillRect(x - 3, y - 3, 8, 1); g.fillStyle = '#c8643a'; g.fillRect(x + 3, y - 3, 3, 1); g.fillStyle = '#7a2e1c'; g.fillRect(x - 6, y - 1, 2, 1); }
+    /* THE RAPIDS' TIMBERS (the water is main.js drawWater -> RG2.drawRapidsWater), the Climb's spurs and dress, the spill chute's flume, her plumes (claude/redgorge2 art pass) */
+    { const st = H.artState(); RG2.drawFlume(g, cx, cy, vw, vh, time, st);
+      if (!RG.plans) RG.plans = { fins: RG2.planFins(RG.L, ctx.T), dress: RG2.planDress(RG.L, ctx.T) };
+      RG2.drawGround(g, RG.L, RG.plans, cx, cy, vw, vh, time, st);
+      for (const m of ctx.movers()) { if (!m.debris) continue; RG2.drawTimber(g, m, cx, cy, time); }
+      for (const d of RG.L.decor || []) { if (d.kind !== 'plume') continue; const x = R(d.x * ctx.TS + 8 - cx), y = R((d.y + 1) * ctx.TS - cy); if (x < -8 || x > vw + 8 || y < -20 || y > vh + 8) continue; RG2.drawPlume(g, x, y, d.x); } }
     /* THE GLINT over what the climb needs next (the shared glint: src/stuck-guide.js) */
     if (RG.glint) drawGlint(g, R(RG.glint.x - cx), R(RG.glint.y - 18 - cy), vw, vh, time);
   };

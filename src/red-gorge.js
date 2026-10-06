@@ -294,7 +294,7 @@ export function buildRedGorge({ painter, T, TS }) {
       { kind: 'mlever', opens: "the dam's banked flood down the Matriarch's channel (a burst: caught in it she leaps for the nearest pillar, and a narrow one throws her)", hud: 'THE SLUICE OPENS: THE WATER COMES / THE SLUICE IS EMPTY: THE NEXT FLOOD FILLS IT' },
     ],
     music: 'redgorge',   /* "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick (10-02); credited in src/audio.js MUSIC_CREDITS, audio/CREDITS.txt and the credits page (src/credits.js) */
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'canyon' }],   /* (claude/redgorge2 art pass) its own bed: the wind down the gorge, the river's roar, the spillway's hiss, a raptor on the wall (src/audio.js SYNTH_BEDS.canyon) */
     caravan: true,   /* the desert's hands in main.js (the sandstone skins, the bandits' AI); THE SUN never reaches the floor of the gorge (the shade above) */
     ledgeKit: 'desert',
     /* THE GUSTS (claude/redgorge2): told (flags and dust before each), funnelling up the gorge over the chute at the climb's top - they shove you east, over the chute */

@@ -9,6 +9,10 @@
 // main.js calls: spawnBoss, owns, on, update, take, interact, plank, drawBack, drawBoss, drawOver, barName, end, read, show, clear.
 import * as RM from './raptor-matriarch.js';
 import { BOSS_PHASE } from './boss-music.js';
+import { T } from './level.js';
+import { bakeMatriarch, poseOf } from './redraw/matriarch_cast.js';   /* HER OWN SILHOUETTE (claude/redgorge2 art pass) */
+import { drawLedge, planLedgeDress } from './redraw/matriarch_ledge.js';   /* THE NEST LEDGE's set: the gates, the levers, the bridges, the water */
+import { drawTimber } from './redraw/redgorge2_art.js';
 const { MAT } = RM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), leap: s => (s.leap || s.heavy)(), slash: s => (s.foeSlash || s.slash)(), sweep: s => (s.heavy || s.slash)(),
@@ -124,57 +128,22 @@ export function makeMatriarchHands(ctx) {
   H.end = e => { if (S) { S.shots = []; S.bands = []; } for (const q of ctx.enemies()) if (q.alive && q.rmBrood) { q.alive = false; ctx.burst(q.x, q.y, 8, ['#c8643a', '#7a2e1c'], 50, 0.5); } BOSS_PHASE.matriarch = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), sluice: { ...S.sluice }, bridges: { ...S.bridges }, water: S.water, burst: S.burst, ward: S.ward, hurt: { ...(S.hurt || {}) } };
 
-  /* ---------- DRAWING (GREYBOX) ---------- */
-  /* the ledge: the canyon wall behind, the nest, the rope bridges and their posts, the levers and their sluices, the water */
-  H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, vw = ctx.VW(), vh = ctx.VH();
-    /* the canyon's back wall (where she runs in phase two): a band of darker strata, the run's ledge line */
-    g.fillStyle = 'rgba(70,30,20,0.35)'; g.fillRect(R(G.x0 - cx), R(G.wallY - 40 - cy), R(G.x1 - G.x0), 56);
-    g.fillStyle = 'rgba(120,60,40,0.5)'; g.fillRect(R(G.x0 - cx), R(G.wallY + 2 - cy), R(G.x1 - G.x0), 2);
-    /* THE NEST over the east bank: a great bowl of branches, plumes in it */
-    const nx = R(G.x1 - 40 - cx), ny = R(G.wallY - 18 - cy); g.fillStyle = '#5a3a1e'; g.fillRect(nx - 30, ny, 60, 10); g.fillStyle = '#7a5a30'; g.fillRect(nx - 26, ny - 4, 52, 5);
-    g.fillStyle = '#c8643a'; for (let i = 0; i < 5; i++) g.fillRect(nx - 20 + i * 9, ny - 9 + (i % 2) * 2, 2, 6);
-    /* the rope bridges (drawn: her perch in phase two), sagging from post to post; a cut one hangs off its far post */
-    for (const b of G.bridges) { const st = S.bridges[b.id], ax = R(b.a - cx), bx = R(b.b - cx), ty = R(G.topY - 34 - cy), by = R(G.bridgeY - cy);
-      g.fillStyle = '#6a4a2a'; g.fillRect(ax - 2, ty, 4, 34); g.fillRect(bx - 2, ty, 4, 34);   /* the posts */
-      g.strokeStyle = '#b8924a'; g.lineWidth = 1; g.beginPath();
-      if (st === 'up') { g.moveTo(ax, ty); g.lineTo(ax, by); g.quadraticCurveTo((ax + bx) / 2, by + 10, bx, by); g.lineTo(bx, ty); g.stroke();
-        g.fillStyle = '#8a6a3a'; for (let x = ax + 4; x < bx - 3; x += 6) { const k = (x - ax) / (bx - ax), y = by + Math.round(Math.sin(Math.PI * k) * 5); g.fillRect(x, y, 4, 2); }
-        if (S.perch === b.id && ctx.boss && ctx.boss.mode === 'perch') { const k = 0.5 + 0.5 * Math.sin(time * 8); g.globalAlpha = 0.4 + 0.5 * k; g.strokeStyle = '#ffe9a0'; for (const x of [ax, bx]) { g.beginPath(); g.arc(x, ty + 10, 8 + 2 * k, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; } }
-      else { g.moveTo(bx, ty); g.lineTo(bx, by); g.lineTo(bx - 6, by + 60); g.stroke(); g.fillStyle = '#8a6a3a'; for (let i = 0; i < 6; i++) g.fillRect(bx - 4 - i, by + 6 + i * 9, 4, 2); } }
-    /* the dam's loose timbers in the channel (they float up when it cracks) */
-    for (const m of (ctx.movers ? ctx.movers() : [])) { if (!m.mplank) continue; const x = R(m.x - cx), y = R(m.y - cy); g.fillStyle = '#7a5a30'; g.fillRect(x, y, m.w, 5); g.fillStyle = '#a8804a'; g.fillRect(x + 1, y, m.w - 2, 1); g.fillStyle = '#4a3a22'; g.fillRect(x + 6, y + 1, 1, 4); g.fillRect(x + m.w - 7, y + 1, 1, 4); }
-    /* the levers and their sluices: FULL (a blue gauge) or EMPTY */
-    for (const l of G.levers) { const x = R(l.x - cx), y = R(G.topY - cy), full = !!S.sluice[l.id];
-      g.fillStyle = '#4a3a2a'; g.fillRect(x - 3, y - 18, 6, 18); g.fillStyle = '#9aa39a'; const pending = S.pending.some(p => p.id === l.id); g.save(); g.translate(x, y - 16); g.rotate(pending || !full ? 0.8 : -0.5); g.fillRect(-1, -12, 3, 12); g.restore();
-      g.fillStyle = 'rgba(20,20,40,0.7)'; g.fillRect(x + 6, y - 22, 4, 18); if (full) { g.fillStyle = '#7ab8e8'; g.fillRect(x + 7, y - 21, 2, 16); }
-      ctx.text(full ? 'FULL' : 'EMPTY', x, y - 30, full ? '#7ab8e8' : '#9aa39a', 'center', 5); }
-    /* the water in the channel: the horn's trickle, a flood, a burst, the cracked dam */
-    const wy = waterY(); if (wy < 1e8 || S.horn) { const yy = R((wy < 1e8 ? wy : G.floorY - 3) - cy); g.fillStyle = S.burst > 0 ? 'rgba(140,200,240,0.6)' : S.horn && wy > 1e8 ? 'rgba(122,184,232,0.3)' : 'rgba(90,150,210,0.5)';
-      g.fillRect(R(G.x0 - cx), yy, R(G.x1 - G.x0), R(G.floorY - cy) - yy); g.fillStyle = '#e8f4f8'; for (let x = 0; x < G.x1 - G.x0; x += 9) g.fillRect(R(G.x0 + x - cx + (time * 60 % 9)), yy, 4, 1); }
-  };
-  /* HER: a big rust raptor (GREYBOX shapes): body, neck and head with the PLUME, tail, legs; her pose by her mode */
+  /* ---------- DRAWING (the art pass: src/redraw/matriarch_ledge.js = the set, src/redraw/matriarch_cast.js = HER) ---------- */
+  /* the ledge: the spillway's water, the sluice gates, the levers and their gauges, the rope bridges, the channel's water, what lies on the tops */
+  H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
+    if (!S.dress) S.dress = planLedgeDress(ctx.L, T);
+    drawLedge(g, cx, cy, time, S, G, { text: ctx.text, boss: ctx.boss, wy: waterY(), VW: ctx.VW(), VH: ctx.VH(), dress: S.dress });
+    /* the dam's loose timbers in the channel (they float up when it cracks): broken boards, as the Rapids' */
+    for (const m of (ctx.movers ? ctx.movers() : [])) { if (!m.mplank) continue; drawTimber(g, { ...m, w: m.w, what: 'plank', fast: S.ph === 3 && S.water > 0.3 }, cx, cy, time); } };
+  /* HER: the matriarch's own silhouette (a pose per mode; the stalk walks, the rest stand still but for the breath), a contact shadow, a net over her when she is tangled, stars when stunned */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
-    const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, m = e.mode, flash = (e.hurtT || 0) > 0;
-    const body = flash ? '#ffffff' : RM.matBig(e) ? '#e0804a' : '#b8502c', dark = '#6a2414', crest = '#f0dcb8';
-    g.save(); g.translate(x, y); g.scale(f, 1);
-    const low = m === 'pounceTell' || m === 'crouch' ? 6 : 0, down = m === 'stunned' || m === 'tangled' || m === 'staggered';
-    if (down) { g.rotate(-0.25); }
-    if (m === 'wobble' || m === 'pstagger') g.rotate(Math.sin(time * 18) * 0.18);
-    /* tail */ g.fillStyle = dark; g.fillRect(-30, -22 + low, 18, 5); g.fillRect(-38, -20 + low, 10, 3);
-    /* legs */ if (!down) { g.fillStyle = dark; g.fillRect(-6, -10, 3, 10); g.fillRect(4, -10, 3, 10); g.fillRect(-8, -1, 6, 1); g.fillRect(4, -1, 7, 1); }
-    /* body */ g.fillStyle = body; g.fillRect(-16, -26 + low, 28, 16); g.fillStyle = '#d87a4a'; g.fillRect(-12, -16 + low, 20, 5);
-    /* wings: spread for the volley and the wobble, folded otherwise */
-    if (m === 'volleyTell' || m === 'wobble' || m === 'pstagger' || m === 'fly') { g.fillStyle = dark; g.fillRect(-26, -40 + low, 22, 6); g.fillRect(-8, -44 + low, 22, 6); g.fillStyle = crest; for (let i = 0; i < 4; i++) g.fillRect(-24 + i * 10, -36 + low, 2, 6); }
-    else { g.fillStyle = dark; g.fillRect(-12, -27 + low, 20, 4); }
-    /* neck and head (thrown back for the screech, low for the pounce) */
-    const hx = m === 'screechTell' ? 4 : 12, hy = m === 'screechTell' ? -44 : -34 + low * 1.5; g.fillStyle = body; g.fillRect(6, hy + 6, 6, -hy - 16 + low); g.fillRect(hx, hy, 12, 8);
-    g.fillStyle = '#e8c070'; g.fillRect(hx + 12, hy + 3, 5, 3);   /* the beak */
-    g.fillStyle = m === 'pounceTell' ? '#ff4040' : '#1b1626'; g.fillRect(hx + 7, hy + 2, 2, 2);   /* her eye: it glints red as she crouches to pounce */
-    /* THE PLUME: three long crest feathers */ g.fillStyle = crest; g.fillRect(hx + 1, hy - 10, 2, 10); g.fillRect(hx + 4, hy - 13, 2, 13); g.fillRect(hx - 2, hy - 7, 2, 7); g.fillStyle = '#c8643a'; g.fillRect(hx + 4, hy - 13, 2, 3);
-    /* her talons UP: the guard (turned blows flash it) */
-    if (!RM.matOpen(e) && (e.guardFx > 0 || m === 'walk')) { g.fillStyle = e.guardFx > 0 ? '#ffffff' : '#e8c070'; g.fillRect(14, -20, 6, 2); g.fillRect(18, -24, 2, 6); }
-    if (m === 'tangled') { g.strokeStyle = '#b8924a'; g.lineWidth = 1; g.beginPath(); g.moveTo(-24, -24); g.lineTo(20, -6); g.moveTo(-20, -6); g.lineTo(18, -26); g.moveTo(-26, -14); g.lineTo(22, -16); g.stroke(); }
-    g.restore();
+    const C = bakeMatriarch(), pose = poseOf(e, S, time), dir = (e.face || 1) > 0 ? 'R' : 'L', flash = (e.hurtT || 0) > 0, spr = (flash ? C.white[dir] : C[dir])[pose], m = e.mode;
+    const x = R(e.x - cx), y = R(e.y - cy), grounded = !(m === 'fly' || m === 'wallRun' || m === 'diveTell' || m === 'volleyTell'), bob = m === 'sleep' ? Math.round(Math.sin(time * 1.6)) : (pose === 'walkA' || pose === 'walkB') ? (Math.floor(time * 5) % 2 ? 0 : -1) : 0;
+    if (grounded || m === 'perch') { g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(x - 20, y - 1, 40, 2); g.fillRect(x - 15, y - 2, 30, 1); g.globalAlpha = 1; }
+    g.drawImage(spr, x - C.AX, y - C.GY + bob);
+    if (m === 'tangled') { g.strokeStyle = '#d9b36a'; g.lineWidth = 1; g.beginPath(); for (let i = -2; i <= 2; i++) { g.moveTo(x - 26, y - 6 + i * 7); g.lineTo(x + 26, y - 20 + i * 7); g.moveTo(x - 20 + i * 10, y - 4); g.lineTo(x - 12 + i * 10, y - 30); } g.stroke(); g.fillStyle = '#7a5a30'; for (const [kx, ky] of [[-10, -16], [8, -22], [0, -8]]) g.fillRect(x + kx, y + ky, 3, 3); }
+    if (m === 'stunned' || m === 'staggered' || m === 'pstagger') { for (let i = 0; i < 3; i++) { const a = time * 4 + i * 2.1; g.fillStyle = i % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(x + R(Math.cos(a) * 14) - 1, y - 40 + R(Math.sin(a) * 4) - 1, 3, 3); } }
+    if (e.guardFx > 0) { g.fillStyle = '#ffffff'; const f = e.face || 1; g.fillRect(x + f * 26 - 2, y - 36, 4, 12); g.fillRect(x + f * 22 - 2, y - 40, 3, 6); }   /* the talons flash when a blow is turned */
   };
   /* OVER EVERYTHING: her marks, the quills and rocks, the surge, and THE READ (open ring + timer, beat ring, ward shell, the guard's word) */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'matriarch') return; const G = S.G;
