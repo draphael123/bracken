@@ -130,3 +130,13 @@ Port 8679, jobs 2. Rates from `PORT=8679 node tools/boss-rates.mjs waymeet --way
 tells (the MARK table re-written by tells.mjs --write: closedhelm|leapTell !!), answer-tags, boss-read, boss-greed, boss-openings, boss-fight-end,
 hint-shown, weak-bosses, textfit, paladin-enrage (with the new leap assertions), waymeet-cleanup; mash-bot --assert waymeet (boss 0/6, mini 0/6).
 tells still lists the Scalder's two unmarked windups (pourTell, ladleTell). That is not from this lane: it was there before the change and it is not a failure.
+
+# Addendum: THE PALADIN'S ROLL ON THE BEAT (2026-10-06, Daniel approved Q6)
+- **Built:** a roll through the Paladin's cut/thrust breaks his ward only if it STARTED within `PAL_ROLL_BEAT` (0.2 s) of the blow (the roll's age at the blow is `P.dodgeMax - P.dodge`). An earlier roll passes through him and opens nothing, and says TOO SOON (`ROLL_SOON` in src/boss-read.js). A late roll shows the gold open as before. tools/paladin-enrage.mjs asserts both.
+- **Finding:** the roll's whole length is 0.30-0.34 s and its untouchable part 0.26 s, so a roll that covers the blow was already within `PAL_BEAT` (0.45 s); a literal "last PAL_BEAT" changes nothing. I used 0.2 s, the tightest window that is still not a frame-perfect tap (the knight's old 0.1 s guard was the thing the guard beat was widened to fix). Even so the bot (v2 and human rolls at modeT < 0.1) is in the beat, so **the pyro stays 6/6** (probe, 6 seeds, damage taken 0-126). The rule bites only a roll made 0.2-0.26 s early. It teaches the beat, but it is not what holds the pyro at 100%.
+- **hp unchanged (2150).** Raising it with the pyro still 100% would only push the knight down. Standing rates: 6/12 2/12 12/12 = 56% (n=36, from the leap lane); no new 36-fight run (the machine was loaded, one fight took minutes).
+- Mash: `mash-bot --assert waymeet` holds (boss 0/6, mini 0/6); rows not changed, so no re-stamp.
+## QUESTIONS FOR DANIEL (roll-beat lane)
+8. **To really pull the pyro into band the roll beat must be ~0.1 s, or the roll's free window must shrink.** Rec: shorten the pyro's roll untouchable part against him only (a held roll that starts before the flash is hit in its tail), or give the Paladin a second swing (a follow-up cut after a roll) so a roll costs her. Not built; it changes the pyro's kit.
+## Checks (green)
+tells (only the Scalder's two unmarked windups, pre-existing), answer-tags, boss-read, boss-greed, boss-openings, boss-fight-end, hint-shown, paladin-enrage (with the roll assertions), mash-bot waymeet.

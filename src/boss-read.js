@@ -33,6 +33,7 @@ export const GUARD = {
   ram: 'front',      // THE RAM LORD: his horns are his guard - from behind he is a beast like any other (claude/sweep1)
   chief: 'front',    // THE GOBLIN CHIEFTAIN: the shield on his arm - round it, or wait for his club in the ground (claude/sweep1)
 };
+export const ROLL_SOON = 'TOO SOON';   /* (claude/sweep2) the Waymeet Paladin: a roll that started before the last beat of his swing passes through and opens nothing */
 export const ANGLE = { mul: 0.5 };   // a blow that beats the guard lands at half (his openings still pay more: they are not chipped either, and his own code's multipliers stand)
 
 /* the word his turned blow says, per type (a string, or (e, fromX) => string). Anything not here: the guard's word, else WARDED. */
