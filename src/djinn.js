@@ -34,8 +34,11 @@
 
 export const DJ = {
   hp: 1000, w: 34, h: 64, markH: 92,
-  openMul: 2.5, openT: 5.4, mudT: 4.7, bailT: 7.4, openCap: 0.048, bailCap: 0.07,   /* (claude/djinn5, Daniel 10-06 "increase the time he's staggered": every opening ~+35% -
+  openMul: 2.5, openT: 5.4, mudT: 4.7, bailT: 7.4, openCap: 0.051, bailCap: 0.07,   /* (claude/djinn5, Daniel 10-06 "increase the time he's staggered": every opening ~+35% -
                                                                     mud 3.5 -> 4.7 s, the douse 4.0 -> 5.4, the bail 5.5 -> 7.4; the 3 s ward after each unchanged)
+                                                                    (claude/djinn5: back to the TOP of the band on the STANDARD bot - tools/boss-rates.mjs, profile human,
+                                                                    campaign L31, 16 seeds a hero - through the P1/P2 cap: 0.046 -> 56% (warden 3/16), 0.048 -> 58%, 0.050 -> 58%,
+                                                                    0.052/0.053 -> 69%, 0.051 -> 60% (knight 11/16, warden 6/16, pyro 12/16) shipped)
                                                                     a water opening: x openMul, one takes no more than openCap of him
                                                                     (claude/djinn3, Daniel 10-04 "a little too hard": MORE DAMAGE WHEN STUNNED x1.9 -> x2.5,
                                                                     and STUNNED LONGER - mud 2.5 -> 3.5 s, the douse 3.2 -> 4.0, the bail 4.2 -> 5.5. The cap
