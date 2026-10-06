@@ -1418,7 +1418,9 @@ async function runbossLab(BK, opts) {
         const side = Math.sign(boss.x - gBell.x) || 1; goal = gBell.x - side * 20; strike = false; if (Math.abs(P.x - goal) < 8) P.face = side;   /* (he stops 40 short of a hero: stood 20 this side of the bell, he halts 20 past it - under it) */
         if (Math.abs(boss.x - gBell.x) < 30 && !(gBell.cool > 0) && P.ground && Math.abs(P.x - goal) < 10 && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 22; goal = null; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; goal = null; }
-        if (!P.ground && P.y - gBell.y < 20 && P.y - gBell.y > -20 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; BK.press('atk'); swings++; } }
+        /* (claude/sweep1) THE BELL OVER HIS HEAD: the knight's jump tops out ~27 px under a hung bell, so he never reached it with a level cut -
+           he strikes UP at it (the air up-slash, over his head) near the top of the jump, as a player under a bell does */
+        if (!P.ground && P.y - gBell.y < 48 && P.y - gBell.y > -20 && P.vy > -140 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; if (P.y - gBell.y > 18) k.up = true; BK.press('atk'); swings++; } }
       else if (boss.t === 'closedhelm' && boss.mode && (/Tell$/.test(boss.mode) || boss.mode === 'bash')) { const m = boss.mode, t = boss.modeT; P.face = Math.sign(d) || P.face;
         if (m === 'bash') { if (ad < 60 && (boss.x - P.x) * boss.vx < 0 && f % 4 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
         else if (m === 'bashTell') { if (ad > 150) goal = null; }
