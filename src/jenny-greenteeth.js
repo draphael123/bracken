@@ -1,566 +1,303 @@
 // src/jenny-greenteeth.js - JENNY GREENTEETH, the boss at the end of THE FOG CANAL (claude/lockkeeper; Daniel's pivot 2026-09-30: the river hag of the
 // English tales, who drags people under with long green arms, in place of a human lock-keeper).
-// claude/jenny2 (Daniel 10-02: "very repetitive and kind of annoying" - FIGHT HER, NOT THE PLUMBING): the openings come from fighting HER, and the lock
-// changes ONCE a phase. She is fought INSIDE A LOCK CHAMBER: stone and iron, a timber mitre gate at each end with walers up its face and a walkway at
-// its top, a sunken narrowboat on the bed, and the water goes up and down.
+// claude/canal4 (Daniel 10-05, after playing JENNY3: "the switches just aren't fun mechanically" - he picked THE RAFT DUEL + KELP GUARD): the lock's
+// paddles, culverts, drain, flood and lure are GONE. The last barge WIDENS into a raft (the lock's timbers lashed to her) and goes out on Jenny's water -
+// a narrow, rocking arena - and she HAULS HERSELF ABOARD AND DUELS YOU ON IT. She is a DUELIST, NOT A PUZZLE (design standard B11): ALWAYS HITTABLE,
+// she GUARDS BY ANGLE with her KELP ARMOUR:
+//   KELP ON HER BODY  only a HIGH blow finds her head: a jump attack, an up-swing (the rising cut), a plunge
+//   KELP HOOD         only a LOW blow finds her body: the low sweep (DOWN + swing), a crouched blow
+// A blow on the bare part lands whole (the bare part wears the shared OPEN read, a gold outline - B10); a blow on the kelp CLANKS and says so (KELP - HIT
+// HIGH / KELP - HIT LOW) and lands at a twentieth. A plain standing swing is neither: it always meets kelp (the mash bot's whole game). The kelp MOVES
+// between phases (a clear look and a told shift), and in phase three it shifts every few cycles.
 //
-// HER BLOWS (every one told, every one answerable - src/marks.js rows):
-//   THE GRAB   (!!, step out)  a bubbling ring on the water where you are; the arm bursts up there and drags you under. Mash, or strike the arm.
-//   THE LASH   (!!, jump)      an arm sweeps along the water's skin: jump it (or dive under it).
-//   THE REACH  (!!, duck)      an arm comes up beside the ledge you stand on and swipes at head height: duck.
-//   THE BITE   (!, block)      she comes up at the edge of the water with her green teeth: a shield turns it - and A BITE MET (blocked, flared, rolled
-//                              through) LEAVES HER DAZED at the surface: open (GT.dazeT).
-//   THE TEAR   (!!, step off)  the bright weed under you shivers dark and is pulled under.
-//   THE SLAM   (!!, step out)  PHASE ONE'S NEW BLOW. Her long arms rise over the ledge you stand on (a red ring on the timber) and she heaves herself up and
-//                              brings her claws down there. Step out of it and her claws go into the TIMBER: her arm is STUCK, she hangs off the ledge,
-//                              open (GT.stuckT). Caught, it hurts; on the weed it tears the mat.
-//   THE CHARGE (!!, jump)      PHASE TWO'S NEW BLOW. She sinks, and a bow-wave runs along the lock at you with her under it: jump it. Where the water is
-//                              shallow (the narrowboat's back in phase three) she runs aground on it - STRANDED, open: THE LURE.
-//   THE NET    (!!, step out)  PHASE THREE'S NEW BLOW. She gathers a dripping mass of weed and throws it where you stand: caught, you are tangled a moment
-//                              (a brief slow) - and her next blow comes quick.
-//   THE VINE   (!!, jump)      claude/jenny3 (Daniel 10-05): HER LONG REACH, every phase - a hero standing out of her arms' range (a far ledge, the
-//                              walkway, the far weed) is not safe. She coils a weed-rope and throws it out along the ledge you stand on, at your feet
-//                              (a green rope traced out to you, a red band): jump it. Caught, it YANKS you off your footing toward her, through the
-//                              air and into her water - a throw, never a teleport, never a death. One windup at a time (never in a pair).
-//   A PAIR     her arms two at a time, always answerable: high then low, a ring then a reach, two rings with a way out between (the fog).
+// HER FOUR BLOWS (kept from JENNY3; every one told, every one answerable - src/marks.js rows):
+//   THE SLAM   (!!, step out)  PHASE ONE'S. Her long arms rise over where you stand (a red mark on the deck that follows you, then fixes) and her claws come
+//                              down. Caught, it hurts; stepped out of, her claws go into the raft's timber: STUCK, OPEN (GT.stuckT, gold ring, timer) -
+//                              every angle lands, at x GT.openMul, and a blow along the stuck arm finds her.
+//   THE CHARGE (!!, jump)      PHASE TWO'S. She slips over the side and comes UNDER THE RAFT: a bow-wave runs along the deck through where you stand
+//                              (jump it), and she hauls herself back aboard at the far end.
+//   THE NET    (!!, step out)  PHASE THREE'S. A dripping mass of weed thrown where you stand: caught, you are tangled a moment, and her next blow comes quick.
+//   THE VINE   (!!, jump)      every phase: her long reach - a weed-rope along the deck at your feet for a hero out of her arms; caught, it YANKS you to her.
+// EACH PHASE SHE IS FIERCER (quicker on her feet, quicker between blows, quicker tells - never under half a second) AND THE RAFT CHANGES, TOLD:
+//   PHASE 1  KELP ON HER BODY: HIT HIGH. The slam and the vine.
+//   PHASE 2  SHE PULLS THE KELP OVER HER HEAD: HIT LOW. + the charge; and SHE HEAVES THE RAFT (told: it tips down toward her side and you slide to her)
+//   PHASE 3  SHE DRAGS THE RAFT LOWER: its ends go under (told on the ends first) and the deck is narrower. + the net; the kelp shifts every few cycles
+// AFTER HER OPENING SHE IS WARY (GT.wardT, told: a ring of weed about her, kelp everywhere - B3, she cannot be chain-stuck), then she fights on.
+// A fall into her water bites and hands you back onto the raft (src/jenny-greenteeth-hands.js keeps the raft as the ground you are handed back to).
 //
-// THE LOCK CHANGES ONCE A PHASE (one machine beat, never every cycle; a paddle is ONE timed strike, never worked):
-//   PHASE 1  THE GREEN LAWN (to 2/3)  low water under a lawn of weed. THE DRAIN: strike the lower paddle while she is at its gate and the water runs out
-//            from under her - STRANDED where she is. She drags herself to the culvert and lets the water back in, HIGHER (half): the lock is changed.
-//   PHASE 2  THE FLOOD (to 1/3)       she floods the lock to the walkways and hides in a gate's CULVERT (her eyes in its grate): strike THAT gate's
-//            paddle and the rush throws her out - open. Once: then she hunts you in the deep water.
-//   PHASE 3  THE FOG (to 0)           the fog comes down and the water goes out until the narrowboat's back is a SHALLOW: only her eyes show. Stand on
-//            the boat and draw her charge across it - she runs aground, STRANDED.
-// EVERY CYCLE CHANGES (a cycle ends with an opening): the weed's pattern, and what she leans on (the slam, the bite, the charge, the net; the lure on
-//   or off). AFTER EVERY OPENING SHE IS WARY (GT.wardT, told: a ring of weed about her): the blow that opened her is not thrown again until it passes.
-// Health is never the lever. A blow on her anywhere but an opening lands at GT.ward.
-//
-// PURE: no DOM, no main.js. The world is a context `c` (src/jenny-greenteeth-hands.js binds it); the frame's events are returned for
-// tools/greenteeth.mjs. The chamber is laid by stageGreenteeth (THE FOG CANAL calls it, src/fog-canal.js section 7).
+// PURE: no DOM, no main.js. The world is a context c (src/jenny-greenteeth-hands.js binds it); the frame's events are returned for tools/greenteeth.mjs.
+// Her water and the raft are laid by stageGreenteeth (THE FOG CANAL calls it, src/fog-canal.js section 7).
 
 export const GT = {
-  hp: 755, w: 30, h: 46, markH: 54,   /* (claude/jenny2: redrawn at her own size - the box is her head, shoulders and the body under the water's skin) */
-  ward: 0.05, openMul: 1.25, beatMul: 1.7,
-  /* THE WATER: its heights over the bed. SHOAL leaves the narrowboat's back (two rows high) a hand under the surface */
-  lv: { dry: 0, shoal: 40, low: 48, half: 80, high: 112 },
-  drainRate: 40, fillRate: 60, wakeRate: 32, aground: 26,
-  /* THE OPENINGS: each at least three seconds */
-  stuckT: 3.2, dazeT: 3.0, strandT: 3.2, flushT: 3.2, crawl: 30, dragT: 0.7, wrenchT: 0.45, wardT: 3.0,
-  /* AN OPENING TAKES AT MOST ITS SHARE OF HER (claude/jenny3: at the campaign's level for the canal the knight cut her down in two openings, 26 s -
-     a phase gone in one stranding): a fighting opening (stuck, dazed) GT.openCap of her health, a beat's or the lure's stranding GT.beatCap; past it
-     the water takes the rest of the blow (GT.ward) */
-  openCap: 0.08, beatCap: 0.15,
-  /* HER BODY (claude/jenny3, Daniel 10-05 "easy to avoid": about an eighth quicker - her swim, her charge, the gaps between her blows, her tells -
-     every tell still at least half a second) */
-  swim: { low: 112, half: 140, high: 168 }, keep: 26, boatCrawl: 45, armRange: 170,
+  hp: 2100, w: 30, h: 46, markH: 54,
+  ward: 0.05, openMul: 1.25,
+  /* THE RAFT: the barge widened with the lock's timbers - a narrow deck on her water */
+  raftW: 224, raftLow: 160, raftSpeed: 70, bob: 1.5, tilt: 0.08,
+  /* THE OPENING: at least three seconds; it takes at most its share of her (claude/jenny3's cap: a strong hero never ends a phase in one) */
+  stuckT: 3.2, wrenchT: 0.45, wardT: 3.0, openCap: 0.1,
+  /* HER BODY, PHASE BY PHASE: walk (px/s), the gap between her blows (s), her tells x */
+  walk: [42, 54, 66], keep: 60, gap: [1.0, 0.8, 0.62], tellK: [1, 0.92, 0.85], wakeT: 2.4, phaseT: 2.0,
   /* HER BLOWS */
-  armUp: 40, armDown: 72,
-  grabTell: 0.8, grabFollow: 0.45, grabT: 0.25, grabHold: 1.4, grabR: 12, grabTick: 0.5,
-  lashTell: 0.72, lashT: 0.35, lashReach: 200, gateLashReach: 260,
-  reachTell: 0.72, reachT: 0.3, reachSpan: 64,
-  biteTell: 0.67, biteT: 0.25, biteRange: 80, biteLunge: 40,
-  tearTell: 0.72, weedHold: 2.5, weedRegrow: 3.5,
-  slamTell: 0.9, slamFollow: 0.55, slamT: 0.22, slamR: 15, slamRange: 150, slamUp: 120,
-  chargeTell: 0.8, chargeSpeed: 300, chargeOver: 70,
-  netTell: 0.72, netFollow: 0.6, netT: 0.35, netR: 22, netRoot: 0.9, netQuick: 0.3,
-  /* THE VINE (claude/jenny3, Daniel 10-05 "pull you off"): a long weed-rope thrown out along the ledge you stand on, at your feet - jump it. Caught, it
-     YANKS you off your footing toward her (a throw through the air, into her water: never a teleport, never a death) */
-  vineTell: 0.8, vineT: 0.4, vineReach: 340, vineMin: 110, vinePull: 250, vineLift: 200, vineHurt: 0.5,
-  surgeTell: 1.0, surgeSpeed: 300, surgeT: 0.4,
-  hideMax: 9.0, gateNear: 120,
-  floodTell: 2.0, fogTell: 2.8,
-  gap: [0.53, 0.44, 0.4], pairEvery: 3, pairGap: 0.55,
-  /* THE LURE, LOUD (claude/jenny3): the boat lights while her charge can run aground on it; off it that long, the line comes again */
-  lureNudge: 10, lureRepeat: 25,
-  dmg: { grab: 35, drag: 10, lash: 50, reach: 50, bite: 45, surge: 45, slam: 60, charge: 50, net: 20, vine: 30 },   /* (claude/jenny3: x2.5 - at the canal's campaign level a hero has twice the health these were set against) */
+  slamTell: 1.1, slamFollow: 0.5, slamT: 0.22, slamR: 16, slamRange: 120,
+  chargeTell: 1.0, chargeSpeed: 260, haulT: 0.9,
+  netTell: 0.8, netFollow: 0.6, netT: 0.35, netR: 22, netRoot: 0.9, netQuick: 0.3, netRange: 170,
+  vineTell: 0.85, vineT: 0.4, vineReach: 260, vineMin: 80, vineMin3: 56, vinePull: 230, vineLift: 180, vineHurt: 0.5,
+  /* THE RAFT'S TURNS: she heaves it (phase 2 on: told, then it tips toward her a while), drags it lower (phase 3: told, then the ends are under), and the kelp shifts */
+  heaveTell: 1.0, heaveT: 2.6, slide: 46, heaveCd: 9, lowerTell: 2.2, kelpTell: 1.2, kelpEvery: 13,
+  dmg: { slam: 82, charge: 72, net: 55, vine: 85 },   /* (claude/jenny3's numbers: at the canal's campaign level a hero has about 200 health) */
   p2: 2 / 3, p3: 1 / 3,
-  /* SHE FIGHTS IN THE BEAT'S OPENINGS: stranded or flushed she still SNAPS (a yellow !: the shield turns it, or step back) and SWIPES low (a red !!:
-     jump it) at a hero beside her. Stuck by her claws or dazed she does nothing (stagger means still) */
-  oa: { first: 0.9, every: 1.15, snapTell: 0.5, snapR: 52, snapDmg: 40, swipeTell: 0.55, swipeR: 64, swipeDmg: 40, near: 90 },
 };
-/* THE MOVES: tell (s), blow (s), the mark's promise, the answer, the height (the marks table's rows are src/marks.js) */
+/* THE MOVES: tell (s, phase one's - GT.tellK scales it), blow (s), the mark's promise, the answer, the height (the marks table's rows are src/marks.js) */
 export const MOVES = {
-  grab:   { tell: GT.grabTell,   blow: GT.grabT,  mark: '!!', answer: 'dodge', h: 'low' },
-  lash:   { tell: GT.lashTell,   blow: GT.lashT,  mark: '!!', answer: 'jump',  h: 'low' },
-  reach:  { tell: GT.reachTell,  blow: GT.reachT, mark: '!!', answer: 'duck',  h: 'high' },
-  bite:   { tell: GT.biteTell,   blow: GT.biteT,  mark: '!',  answer: 'block', h: 'low' },
-  tear:   { tell: GT.tearTell,   blow: 0.2,       mark: '!!', answer: 'dodge', h: 'low' },
-  slam:   { tell: GT.slamTell,   blow: GT.slamT,  mark: '!!', answer: 'dodge', h: 'low' },
-  charge: { tell: GT.chargeTell, blow: 1.2,       mark: '!!', answer: 'jump',  h: 'low' },
-  net:    { tell: GT.netTell,    blow: GT.netT,   mark: '!!', answer: 'dodge', h: 'low' },
-  vine:   { tell: GT.vineTell,   blow: GT.vineT,  mark: '!!', answer: 'jump',  h: 'low' },
+  slam:   { tell: GT.slamTell,   blow: GT.slamT, mark: '!!', answer: 'dodge', h: 'low' },
+  charge: { tell: GT.chargeTell, blow: 1.0,      mark: '!!', answer: 'jump',  h: 'low' },
+  net:    { tell: GT.netTell,    blow: GT.netT,  mark: '!!', answer: 'dodge', h: 'low' },
+  vine:   { tell: GT.vineTell,   blow: GT.vineT, mark: '!!', answer: 'jump',  h: 'low' },
 };
-export const MOVE_NAME = { grab: 'HER ARM', lash: 'THE LASH', reach: 'THE REACH', bite: 'HER TEETH', surge: 'THE SURGE', slam: 'HER CLAWS', charge: 'HER CHARGE', net: 'THE WEED NET', vine: 'HER VINE' };
-/* THE NEW BLOW OF EACH PHASE */
+export const MOVE_NAME = { slam: 'HER CLAWS', charge: 'HER CHARGE', net: 'THE WEED NET', vine: 'HER VINE' };
+/* THE NEW BLOW OF EACH PHASE (the vine is in every phase: her long reach) */
 export const NEW_MOVE = { 1: 'slam', 2: 'charge', 3: 'net' };
-/* THE WEED: [col0, col1, bright] in chamber columns (1..38 inside the gates; the weed lies on 5..33, clear of the gates' walers) */
-export const WEED = {
-  A: [[5, 7, 1], [8, 10, 0], [11, 13, 1], [14, 16, 0], [17, 20, 1], [21, 23, 0], [24, 26, 1], [27, 29, 0], [30, 33, 1]],
-  B: [[5, 6, 0], [7, 9, 1], [10, 13, 0], [14, 15, 1], [16, 19, 0], [20, 22, 1], [23, 26, 0], [27, 28, 1], [29, 33, 0]],
-  C: [[5, 8, 1], [9, 11, 0], [12, 13, 1], [14, 18, 0], [19, 20, 1], [21, 24, 0], [25, 27, 1], [28, 30, 0], [31, 33, 1]],
-  R: [[8, 10, 1], [18, 21, 1], [28, 30, 1]],
-  D: [[6, 8, 1], [12, 14, 0], [22, 24, 1], [31, 33, 1]],
-  F: [[5, 7, 0], [8, 10, 1], [11, 14, 0], [25, 28, 0], [29, 31, 1], [32, 33, 0]],
-  G: [[5, 6, 1], [7, 9, 0], [10, 12, 1], [26, 28, 1], [29, 31, 0], [32, 33, 1]],
+/* THE KELP OF EACH PHASE: where it covers her ('body': hit high; 'hood': hit low); phase three shifts it */
+export const KELP = { 1: 'body', 2: 'hood', 3: 'body' };
+export const bareAngle = show => (show.kelp === 'hood' ? 'low' : 'high');
+export const KELP_WORD = { body: 'KELP - HIT HIGH', hood: 'KELP - HIT LOW' };
+/* HER DECKS: the order she reaches for her blows in, phase by phase ('heave' is the raft's turn); a blow she cannot throw where you stand is skipped */
+const DECK = {
+  1: ['slam', 'vine', 'slam', 'slam', 'vine', 'slam'],
+  2: ['slam', 'charge', 'vine', 'heave', 'slam', 'charge', 'slam', 'vine'],
+  3: ['net', 'slam', 'vine', 'charge', 'slam', 'heave', 'net', 'vine', 'charge', 'slam'],
 };
-export const WEED_MOVERS = 6;   /* the bright patches are movers (you stand on them); the most any pattern has */
-/* THE CYCLES, phase by phase (the last of each repeats). weed: the pattern; lean: the blow she leans on (her deck below); tear/pairs/doubles: what
-   she has learnt; lure: the narrowboat's shallow draws her charge (phase three) */
-export const CYCLES = {
-  1: [{ name: 'THE GREEN LAWN', weed: 'A', lean: 'slam' },
-      { name: 'THE TORN LAWN', weed: 'B', lean: 'bite', tear: true },
-      { name: 'THE TANGLE', weed: 'C', lean: 'slam', tear: true, pairs: true }],
-  2: [{ name: 'THE FLOOD', weed: 'R', lean: 'charge', pairs: true },
-      { name: 'THE DEEP', weed: 'D', lean: 'slam', pairs: true },
-      { name: 'THE UNDERTOW', weed: 'R', lean: 'bite', pairs: true }],
-  3: [{ name: 'THE SHALLOWS', weed: 'F', lean: 'charge', lure: true, pairs: true },
-      { name: 'THE DARK', weed: 'G', lean: 'net', pairs: true, doubles: true },
-      { name: 'THE SHALLOWS', weed: 'F', lean: 'bite', lure: true, pairs: true, doubles: true },
-      { name: 'THE DARK', weed: 'G', lean: 'slam', pairs: true, doubles: true }],
-};
-/* HER DECKS: the order she throws her blows in, by what she leans on (a blow she cannot throw where you stand is skipped) */
-const DECK = {   /* (claude/jenny3: THE VINE in every deck - it is only thrown at a hero out of her arms' reach, so it comes round where the rest cannot) */
-  slam:   ['slam', 'grab', 'vine', 'lash', 'bite', 'slam', 'reach', 'grab', 'vine', 'slam', 'lash'],
-  bite:   ['bite', 'grab', 'vine', 'reach', 'bite', 'lash', 'slam', 'vine', 'bite', 'grab'],
-  charge: ['charge', 'grab', 'vine', 'bite', 'lash', 'charge', 'slam', 'reach', 'vine', 'charge', 'grab'],
-  net:    ['net', 'grab', 'vine', 'bite', 'slam', 'net', 'lash', 'charge', 'vine', 'reach'],
-};
-export const cycleOf = (ph, k) => { const L = CYCLES[ph]; return L[Math.min(k, L.length - 1)]; };
-/* the water each phase keeps: phase one's drain changes it once (low -> half) */
-export const phaseLvl = (show, ph) => (ph === 1 ? (show.beat[1] === 'done' ? 'half' : 'low') : ph === 2 ? 'high' : 'shoal');
 /* the frames of her sprite (src/redraw/greenteeth_art.js) */
 export const GT_F = { swim: [0, 1], tell: 2, lunge: 3, reach: 4, grab: 5, stranded: [6, 7], hurt: 8, dead: 9, flushed: 10, hide: 11, drag: 12,
   slamTell: 13, stuck: 14, dazed: 15, chargeTell: 16, netTell: 17, net: 18 };
 
 export const gtPhase = e => (e.hp <= e.maxHp * GT.p3 ? 3 : e.hp <= e.maxHp * GT.p2 ? 2 : 1);
-export const OPEN_MODES = new Set(['stranded', 'flushed', 'stuck', 'dazed']);
+export const OPEN_MODES = new Set(['stuck']);
 export const gtOpen = e => !!e && OPEN_MODES.has(e.mode);
-export const gtTake = e => (gtOpen(e) ? (e.big ? GT.beatMul : GT.openMul) : GT.ward);
-export const surfY = show => show.A.bed - show.water.depth;
-const SPECIAL = new Set(['wake', 'stranded', 'drag', 'surgeTell', 'surge', 'flushed', 'dive', 'floodTell', 'fogTell', 'stuck', 'wrench', 'dazed', 'charge', 'slamBack']);
+/* WHAT A BLOW IS, BY ITS ANGLE (the hero as he swings): HIGH from the air (a jump attack, the air up-swing, a plunge) or the rising cut; LOW the low sweep
+   (DOWN + swing: the knight's shield trip and the warden's low poke are sweeps too) or a crouched blow; anything else (a plain swing, a heavy, a shot, a burn) MID */
+export function blowAngle(P) {
+  if (!P) return 'mid';
+  if (P.swingKind === 'sweep' || P.caTrip || P.caPoke || (P.ducking && P.atk >= 0)) return 'low';
+  if (P.swingKind === 'rise' || P.swingKind === 'airUp' || P.plunge || P.gtAirSwing || (!P.ground && !P.swim && !P.climb && (P.atk >= 0 || P.heavy))) return 'high';   /* (gtAirSwing: a swing begun in the air is a jump attack to its end - the reaper's cleave lands as he touches down) */
+  return 'mid';
+}
+/* WHAT A BLOW TAKES OFF HER: open, every angle at GT.openMul; wary (B3), the kelp everywhere; the bare angle whole; the kelp a twentieth */
+export function gtTakeAt(e, show, angle) {
+  if (gtOpen(e)) return GT.openMul;
+  if (!show || waryNow(show) || ['sleep', 'wake', 'under'].includes(e.mode)) return GT.ward;
+  return angle === bareAngle(show) ? 1 : GT.ward;
+}
+export const gtTake = e => (gtOpen(e) ? GT.openMul : GT.ward);   /* (no angle known: a burn, a room's blow) */
+const waryNow = show => !!(show.wary && show.wary.t > 0);
+const SPECIAL = new Set(['wake', 'phase', 'lower', 'kelp', 'heave', 'under', 'haul', 'stuck', 'wrench', 'slamBack', 'sleep', 'dead']);
 export const special = e => SPECIAL.has(e.mode);
-const armMode = m => typeof m === 'string' && (MOVES[m] || MOVES[m.replace(/Tell$/, '')]) && !SPECIAL.has(m);
+const armMode = m => typeof m === 'string' && !!(MOVES[m] || MOVES[m.replace(/Tell$/, '')]);
 
-/* ---------- THE CHAMBER'S GEOMETRY (world px) ---------- */
-export const STAGE = { W: 40, walk: 8, walers: [2, 4, 6], door: 6, top: 15, wreck: [15, 24], hook: 5 };   /* (walers two rows apart: every hero's jump makes the next one) */
+/* ---------- THE STAGE'S GEOMETRY (world px) ---------- */
+/* 40 columns: the gates at sx and sx+39 with a door each at the bed row; a stone LANDING inside each door (STAGE.land columns), and between them HER WATER,
+   STAGE.depth rows deep, its surface level with the landings (the raft's deck is the landings' height) */
+export const STAGE = { W: 40, land: 3, door: 6, top: 16, depth: 5 };
 export function geom(sx, R, TS) {
-  const ex = sx + STAGE.W - 1, bed = R * TS, walk = (R - STAGE.walk) * TS;
-  const gate = (side) => { const w = side === 'W', face = w ? (sx + 1) * TS : ex * TS, dir = w ? 1 : -1, col = w ? sx + 2 : ex - 2, hc = w ? sx + STAGE.hook : ex - STAGE.hook;
-    return { side, face, dir, walk, walers: STAGE.walers.map(r => (R - r) * TS), paddle: { x: col * TS + 8, y: walk }, hook: { x: hc * TS + 8, y: walk - TS },
-      cul: { x: face + dir * 10, y: bed }, lampX: hc * TS + 8, stand: col * TS + 8 }; };
-  return { sx, R, TS, x0: (sx + 1) * TS, x1: ex * TS, bed, top: (R - STAGE.top) * TS, walk, mid: (sx + 20) * TS,
-    W: gate('W'), E: gate('E'), wreck: { x0: (sx + STAGE.wreck[0]) * TS, x1: (sx + STAGE.wreck[1] + 1) * TS, y: (R - 2) * TS } };
+  const ex = sx + STAGE.W - 1, deck = R * TS;
+  const pool = { x0: (sx + 1 + STAGE.land) * TS, x1: (ex - STAGE.land) * TS };
+  return { sx, R, TS, x0: (sx + 1) * TS, x1: ex * TS, deck, surf: deck + 6, bed: (R + STAGE.depth) * TS, top: (R - STAGE.top) * TS, mid: (sx + 20) * TS, pool,
+    moorW: pool.x0, moorMid: (sx + 20) * TS - GT.raftW / 2, moorE: pool.x1 - GT.raftW };
 }
 export const colX = (A, col) => (A.sx + col) * A.TS;
-/* THE LEDGE a hero stands on at a gate (a waler or the walkway): its height and its outer end (where her body can hang), or null */
-export function ledgeAt(A, x, y) {
-  for (const side of ['W', 'E']) { const G = A[side];
-    for (const [ly, n] of [...G.walers.map(v => [v, 3]), [A.walk, 4]]) { const x0 = G.dir > 0 ? G.face : G.face - n * A.TS, x1 = x0 + n * A.TS;
-      if (Math.abs(y - ly) < 3 && x >= x0 - 2 && x <= x1 + 2) return { side, y: ly, x0, x1, end: G.dir > 0 ? x1 : x0, dir: G.dir }; } }
-  return null;
-}
-const onWreck = (A, x) => x > A.wreck.x0 && x < A.wreck.x1;
-/* the water over the narrowboat's back: under her aground depth she cannot cross it */
-export const wreckShallow = show => show.water.depth <= GT.lv.shoal + 2 && show.water.depth > 2 && show.water.depth - (show.A.bed - show.A.wreck.y) < GT.aground;   /* (the fog's SHOAL only: at phase one's low water she swims over it) */
-/* THE LURE IS LIVE (claude/jenny3: what the boat's glow, its glint and its line say): the fog's lure cycle, the boat's back a shallow, and she is not
-   wary of the charge - a hero on the boat now draws her charge, and it runs aground */
-export const lureLive = (e, show) => !!e && !!show && e.phase === 3 && !!(show.C || {}).lure && wreckShallow(show) && !waryOf(show, 'charge') && !gtOpen(e) && !['fogTell', 'drag', 'dive', 'sleep'].includes(e.mode);
 
 /* ---------- THE SHOW ---------- */
 export function newShow(A) {
-  return { A, water: { depth: 0, target: 0, rate: 0 }, pad: { W: { open: false, cd: 0, to: 0 }, E: { open: false, cd: 0 } }, lastPad: null,
-    weed: [], arms: [], armN: 0, surge: null, charge: null, net: null, lamps: { W: { st: 'hook' }, E: { st: 'hook' } }, fog: 0, hide: null, hideT: 0,
-    beat: { 1: 'ready', 2: 'ready', 3: 'ready' }, wary: null, cyc: { 1: 0, 2: 0, 3: 0 }, cycle: 0, gap: 1.2, turns: 0, rot: 0, told: {}, last: null, quick: 0,
-    n: { grab: 0, held: 0, freed: 0, lash: 0, reach: 0, bite: 0, tear: 0, surge: 0, pair: 0, slam: 0, charge: 0, net: 0, netted: 0, vine: 0, vined: 0, lureLit: 0, lureNudge: 0,
-      stuck: 0, dazed: 0, lure: 0, strand: 0, flush: 0, drain: 0, flood: 0, fog: 0, wrongCulvert: 0, early: 0, spent: 0, cycle: 0, openAtk: 0, slamHit: 0, weedGive: 0, refill: 0, big: 0 } };
+  return { A, raft: { x: A.moorW, to: A.moorW, w: GT.raftW, bob: 0, tilt: 0, heave: 0, dir: 0, low: false, lowK: 0 }, kelp: KELP[1], kelpNext: null, kelpT: 0,
+    arms: [], armN: 0, charge: null, gap: 1.2, turns: 0, rot: 0, told: {}, last: null, last2: null, quick: 0, wary: null, heaveCd: 4, clock: 0, cycle: 0,
+    n: { slam: 0, slamHit: 0, stuck: 0, charge: 0, chargeHit: 0, net: 0, netted: 0, vine: 0, vined: 0, heave: 0, lower: 0, kelpShift: 0, haul: 0, cycle: 0, clank: 0, bare: 0 } };
 }
-export function newGreenteeth(e) {
-  return Object.assign(e, { mode: 'sleep', modeT: 0, base: 'lurk', phase: 1, open: 0, anim: 0, vx: 0, face: -1, big: false });
-}
-export function layWeed(show, key) {
-  const A = show.A; let m = 0;
-  show.weedKey = key;
-  show.weed = WEED[key].map(([c0, c1, bright]) => ({ x0: colX(A, c0), x1: colX(A, c1 + 1), firm: !!bright, sink: 0, broken: 0, torn: 0, m: bright ? m++ : -1 }));
-}
-/* which cycle, and lay it: the weed and what she leans on. The water is the phase's (it changes once a phase, never a cycle) */
-export function applyCycle(show, ph, c) {
-  const C = cycleOf(ph, show.cyc[ph]); show.C = C; layWeed(show, C.weed);
-  show.water.target = GT.lv[phaseLvl(show, ph)]; show.water.rate = GT.fillRate; show.turns = 0; show.rot = 0; show.gap = Math.max(show.gap, 1.0);
-  if (c && c.cycle) c.cycle(C);
-  return C;
-}
-export function startFight(show) { show.cyc = { 1: 0, 2: 0, 3: 0 }; const C = applyCycle(show, 1, null); show.water.target = 0; show.water.depth = 0; return C; }   /* (the lock stands empty until she wakes and floods it) */
+export function newGreenteeth(e) { return Object.assign(e, { mode: 'sleep', modeT: 0, phase: 1, open: 0, anim: 0, vx: 0, face: -1, hidden: true }); }
+export function startFight(show) { show.kelp = KELP[1]; show.raft.x = show.raft.to = show.A.moorW; show.raft.w = GT.raftW; show.raft.low = false; return show; }
+/* the deck she stands on and you fight on: its ends, in px */
+export const raftEnds = show => [show.raft.x, show.raft.x + show.raft.w];
+export const deckY = show => show.A.deck + Math.round(show.raft.bob);
+const onDeckX = (show, x, m = 14) => { const [a, b] = raftEnds(show); return Math.max(a + m, Math.min(b - m, x)); };
 
-/* ---------- THE WATER ---------- */
-function stepWater(show, dt, ev, c) {
-  const w = show.water, P = show.pad;
-  for (const s of ['W', 'E']) if (P[s].cd > 0) P[s].cd -= dt;
-  if (P.E.open) { w.target = 0; w.rate = GT.drainRate; }
-  const d = w.target - w.depth; if (Math.abs(d) > 0.01) w.depth += Math.sign(d) * Math.min(Math.abs(d), w.rate * dt);
-  if (P.E.open && w.depth <= 0.01) { P.E.open = false; w.depth = 0; ev.push({ t: 'dry' }); c.sound('drainDone'); }
-  c.water(w.depth);
-}
-
-/* ---------- THE WEED ---------- */
-function stepWeed(show, dt, heroes, ev) {
-  const surf = surfY(show), dry = show.water.depth < 3, A = show.A;
-  for (const [i, p] of show.weed.entries()) {
-    if (p.broken > 0) { p.broken -= dt; if (p.broken <= 0) { p.broken = 0; p.sink = 0; } }
-    else if (p.firm && !dry) { const on = heroes.some(h => h.onWeed === i);
-      p.sink = Math.max(0, Math.min(1, p.sink + (on ? dt / GT.weedHold : -0.6 * dt)));
-      if (p.sink >= 1) { p.broken = GT.weedRegrow; show.n.weedGive++; ev.push({ t: 'weedGive', i }); } }
-    const mid = (p.x0 + p.x1) / 2, wr = onWreck(A, mid);
-    p.y = dry || (wr && surf > A.wreck.y) ? (wr ? A.wreck.y : A.bed) : surf + Math.round(p.sink * 3); }
-}
-export const weedAt = (show, x) => show.weed.findIndex(p => x >= p.x0 && x < p.x1);
-
-/* ---------- THE SURGE (a wave from a gate's culvert as she lets the water back in) ---------- */
-function stepSurge(show, dt, heroes, ev, c) {
-  const s = show.surge; if (!s) return; const A = show.A, surf = surfY(show);
-  s.x += s.dir * GT.surgeSpeed * dt;
-  c.band('low', [surf - 18, surf + 10], s.x - 14, s.x + 14, GT.dmg.surge, MOVE_NAME.surge, 'surge' + s.id, { push: s.dir * 220, from: s.x - s.dir * 20 });
-  if ((s.dir > 0 && s.x > A.x1) || (s.dir < 0 && s.x < A.x0)) { show.surge = null; ev.push({ t: 'surgeDone' }); }
-}
-function launchSurge(show, side, ev, c) {
-  const G = show.A[side]; show.surge = { x: G.face, dir: G.dir, side, id: ++show.armN }; show.n.surge++; ev.push({ t: 'surge', side }); c.sound('surge');
+/* ---------- THE RAFT ---------- */
+function stepRaft(e, show, dt, c) {
+  const R = show.raft, d = R.to - R.x; if (Math.abs(d) > 0.5) R.x += Math.sign(d) * Math.min(Math.abs(d), GT.raftSpeed * dt);
+  const ph = e && e.phase || 1; R.bob = Math.sin(show.clock * 1.7) * GT.bob * (0.6 + 0.4 * ph);
+  if (R.heave > 0) { R.heave -= dt; R.tilt += (R.dir * GT.tilt - R.tilt) * Math.min(1, dt * 5); if (c.slide) c.slide(R.dir * GT.slide * dt); }
+  else R.tilt += (Math.sin(show.clock * 0.9) * 0.012 * ph - R.tilt) * Math.min(1, dt * 3);   /* (it rocks a little, more each phase) */
+  if (c.raft) c.raft(R);
 }
 
 /* ---------- WHO IS WHERE ---------- */
-/* h = { x, y, ground, swim, onWeed, onTile, alive } from the hands */
-export function heroState(show, h) {
-  const A = show.A, surf = surfY(show), depth = show.water.depth, inPool = h.x > A.x0 && h.x < A.x1;
-  const wet = depth > 12 && inPool;
-  const grabbable = wet && !h.onTile && (h.swim || h.onWeed >= 0 || (h.y > surf - GT.armUp && h.y < surf + GT.armDown));
-  const atSurface = wet && (h.onWeed >= 0 || (h.swim && h.y < surf + 30) || (h.ground && Math.abs(h.y - surf) < 8));
-  const footing = h.ground && (h.onTile || h.onWeed >= 0) && h.y <= surf + 2;
-  const atGate = h.x < A.W.face + 5 * A.TS ? 'W' : h.x > A.E.face - 5 * A.TS ? 'E' : null;
-  const reachable = footing && (atGate ? h.y >= A.walk - 2 : h.y >= surf - 80);
-  const ledge = h.ground && h.onTile ? ledgeAt(A, h.x, h.y) : null;
-  const onBoat = h.ground && h.onTile && onWreck(A, h.x) && Math.abs(h.y - A.wreck.y) < 3;
-  return { surf, wet, grabbable, atSurface, footing, atGate, reachable, ledge, onBoat };
-}
+/* h = { x, y, ground, swim, onRaft, alive } from the hands */
 const nearestHero = (heroes, x) => heroes.slice().sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0] || null;
 
-/* ---------- AN ARM (and the blows of her body: the slam, the charge, the net) ---------- */
-function startArm(e, show, k, h, c, ev, o = {}) {
-  const M = MOVES[k], A = show.A, surf = surfY(show), hs = heroState(show, h), dir = Math.sign(h.x - e.x) || e.face || 1;
-  const a = { k, st: 'tell', t: M.tell + (o.extra || 0), len: M.tell + (o.extra || 0), id: ++show.armN, hero: h, pair: !!o.pair, x: h.x, dir };
-  if (k === 'grab') { a.x = h.x + (o.dx || 0); a.follow = !o.dx; }
-  if (k === 'lash') { const gate = o.gate || (hs.footing && hs.atGate) || null; a.ox = gate ? A[gate].face : e.x; a.dir = gate ? A[gate].dir : dir; a.reach = gate ? GT.gateLashReach : GT.lashReach; a.fy = hs.footing && hs.atGate ? h.y : surf; }
-  if (k === 'reach') { a.fy = hs.footing ? h.y : surf; a.x = h.x; a.gate = hs.atGate; a.ox = a.gate ? A[a.gate].face : h.x - dir * 20; }
-  if (k === 'bite') { a.dir = dir; e.face = dir; }
-  if (k === 'tear') { a.patch = h.onWeed; if (a.patch >= 0) show.weed[a.patch].torn = a.len; }
-  if (k === 'slam') { a.fy = h.y; a.ledge = hs.ledge; a.weed = h.onWeed; a.follow = true; }
-  if (k === 'net') { a.fy = h.y; a.follow = true; }
-  if (k === 'charge') { a.dir = dir; a.ox = e.x; }
-  if (k === 'vine') { a.dir = dir; a.ox = e.x; a.fy = h.y; a.reach = Math.min(GT.vineReach, Math.abs(h.x - e.x) + 70); }   /* (along the ledge you stand on, at your feet, out past you) */
-  show.arms.push(a); e.face = dir; show.last = k; show.n[k + 'Told'] = (show.n[k + 'Told'] || 0) + 1; ev.push({ t: k + 'Tell', pair: a.pair }); c.say(M.mark); c.sound(k + 'Tell');
-  if (k === NEW_MOVE[e.phase] && !show.told[k]) { show.told[k] = true; const y = surf - 50;   /* (each line a literal: tools/hint-shown reads them) */
-    if (k === 'slam') c.number(e.x, y, 'STEP OUT OF HER SLAM: HER CLAWS STICK', '#ffd36b'); else if (k === 'charge') c.number(e.x, y, 'SHE CHARGES UNDER THE WATER: JUMP THE WAVE', '#ffd36b'); else c.number(e.x, y, 'HER WEED NET TANGLES: STEP OUT OF IT', '#ffd36b'); }
-  if (k === 'vine' && !show.told.vine) { show.told.vine = true; c.number(h.x, h.y - 44, 'HER VINE PULLS YOU OFF: JUMP IT', '#ffd36b'); }
+/* ---------- A BLOW ---------- */
+function startArm(e, show, k, h, c, ev) {
+  const M = MOVES[k], len = M.tell * GT.tellK[e.phase - 1], dir = Math.sign(h.x - e.x) || e.face || 1;
+  const a = { k, st: 'tell', t: len, len, id: ++show.armN, hero: h, x: h.x, fy: deckY(show), dir };
+  if (k === 'slam' || k === 'net') a.follow = true;
+  if (k === 'vine') { a.ox = e.x; a.reach = Math.min(GT.vineReach, Math.abs(h.x - e.x) + 70); }
+  show.arms.push(a); e.face = dir; show.last2 = show.last; show.last = k; show.n[k + 'Told'] = (show.n[k + 'Told'] || 0) + 1;
+  ev.push({ t: k + 'Tell' }); c.say(M.mark); c.sound(k + 'Tell');
+  if (k === NEW_MOVE[e.phase] && !show.told[k]) { show.told[k] = true; const y = deckY(show) - 60;   /* (each line a literal: tools/hint-shown reads them) */
+    if (k === 'slam') c.number(e.x, y, 'STEP OUT OF HER SLAM: HER CLAWS STICK', '#ffd36b'); else if (k === 'charge') c.number(e.x, y, 'SHE COMES UNDER THE RAFT: JUMP THE WAVE', '#ffd36b'); else c.number(e.x, y, 'HER WEED NET TANGLES: STEP OUT OF IT', '#ffd36b'); }
+  if (k === 'vine' && !show.told.vine) { show.told.vine = true; c.number(h.x, deckY(show) - 44, 'HER VINE PULLS YOU OFF: JUMP IT', '#ffd36b'); }
   return a;
 }
-const blowBox = (a, show, e) => { const A = show.A, surf = surfY(show);
-  if (a.k === 'reach') { const x0 = a.gate ? (a.gate === 'W' ? A.x0 : a.x - GT.reachSpan) : a.x - GT.reachSpan, x1 = a.gate ? (a.gate === 'E' ? A.x1 : a.x + GT.reachSpan) : a.x + GT.reachSpan; return [x0, x1, a.fy - 24, a.fy - 10]; }
-  if (a.k === 'bite') { const x0 = a.dir > 0 ? e.x : e.x - GT.biteLunge - 10, x1 = a.dir > 0 ? e.x + GT.biteLunge + 10 : e.x; return [x0, x1, surf - 40, surf + 14]; }
-  if (a.k === 'grab') return [a.x - GT.grabR, a.x + GT.grabR, surf - GT.armUp - 22, surf + GT.armDown];
+export const blowBox = (a, show) => {
   if (a.k === 'slam') return [a.x - GT.slamR, a.x + GT.slamR, a.fy - 30, a.fy + 2];
   if (a.k === 'net') return [a.x - GT.netR, a.x + GT.netR, a.fy - 26, a.fy + 4];
   return null; };
-export { blowBox };
 function stepArms(e, show, dt, c, ev) {
-  const surf = surfY(show), A = show.A;
   for (const a of show.arms) {
-    a.t -= dt;
+    a.t -= dt; a.fy = deckY(show);
     if (a.st === 'tell') {
-      if ((a.k === 'grab' || a.k === 'slam' || a.k === 'net') && a.follow && a.hero && a.t > a.len * (1 - (a.k === 'slam' ? GT.slamFollow : a.k === 'net' ? GT.netFollow : GT.grabFollow))) {
-        const d = a.hero.x - a.x; a.x += Math.sign(d) * Math.min(Math.abs(d), 90 * dt);
-        if (a.k !== 'grab' && Math.abs(a.hero.y - a.fy) > 3 && a.hero.ground) { a.fy = a.hero.y; const hs = heroState(show, a.hero); a.ledge = hs.ledge; a.weed = a.hero.onWeed; } }
-      if (a.k === 'bite' && a.hero) { const d = a.hero.x - a.dir * 30 - e.x; e.x += Math.sign(d) * Math.min(Math.abs(d), 60 * dt); }
-      if (a.k === 'slam') { const tx = clampX(A, a.x + (a.ledge ? a.ledge.dir * 0 : 0)); e.x += (clampIn(A, tx) - e.x) * Math.min(1, dt * 1.5); }
-      if (a.k === 'tear' && a.patch >= 0 && show.weed[a.patch]) show.weed[a.patch].torn = Math.max(0, a.t);
+      if (a.follow && a.hero && a.t > a.len * (1 - (a.k === 'slam' ? GT.slamFollow : GT.netFollow))) { const d = a.hero.x - a.x; a.x = onDeckX(show, a.x + Math.sign(d) * Math.min(Math.abs(d), 90 * dt), 4); }
+      if (a.k === 'slam') { const side = Math.sign(e.x - a.x) || -1, tx = onDeckX(show, a.x + side * 26); e.x += (tx - e.x) * Math.min(1, dt * 2); }   /* she leans over the mark */
       if (a.t > 0) continue;
-      a.st = 'blow'; a.t = MOVES[a.k].blow; show.n[a.k]++; ev.push({ t: a.k, pair: a.pair }); c.sound(a.k);
-      if (a.k === 'grab') { const w = weedAt(show, a.x); if (w >= 0 && show.weed[w].firm && !(show.weed[w].broken > 0)) { show.weed[w].broken = GT.weedRegrow; show.weed[w].sink = 1; }
-        const held = show.water.depth > 12 ? c.grab(blowBox(a, show, e), GT.dmg.grab, a) : null;
-        if (held) { a.st = 'hold'; a.t = GT.grabHold; a.held = held; a.tick = GT.grabTick; show.n.held++; ev.push({ t: 'held' }); c.sound('held'); c.number(held.x, held.y - 40, 'STRIKE THE ARM THAT HOLDS YOU', '#ff6b6b'); } }
-      else if (a.k === 'reach') c.hit(blowBox(a, show, e), GT.dmg.reach, MOVE_NAME.reach, { from: a.ox, unblockable: true, duck: true });
-      else if (a.k === 'bite') { e.x += a.dir * 20; const res = c.hit(blowBox(a, show, e), GT.dmg.bite, MOVE_NAME.bite, { from: e.x, meet: true });
-        if (res === 'met' && !waryOf(show, 'bite')) { a.st = 'back'; a.t = 0; dazeHer(e, show, ev, c); return; } }
-      else if (a.k === 'tear') { const p = show.weed[a.patch]; if (p && p.firm) { p.broken = GT.weedRegrow; p.sink = 1; p.torn = 0; ev.push({ t: 'torn' }); } }
-      else if (a.k === 'slam') { if (slamLands(e, show, a, c, ev)) return; }
-      else if (a.k === 'net') { const caught = c.net(blowBox(a, show, e), GT.dmg.net, GT.netRoot); if (caught) { show.n.netted++; show.quick = GT.netQuick; ev.push({ t: 'netted' }); } }
+      a.st = 'blow'; a.t = MOVES[a.k].blow; show.n[a.k]++; ev.push({ t: a.k }); c.sound(a.k);
+      if (a.k === 'slam') { if (slamLands(e, show, a, c, ev)) return; }
+      else if (a.k === 'net') { if (c.net(blowBox(a, show), GT.dmg.net, GT.netRoot)) { show.n.netted++; show.quick = GT.netQuick; ev.push({ t: 'netted' }); } }
       else if (a.k === 'charge') { a.st = 'back'; a.t = 0; startCharge(e, show, a, c, ev); return; }
       continue; }
-    if (a.st === 'blow' && a.k === 'lash') { const r = a.reach * Math.min(1, 1 - Math.max(0, a.t) / GT.lashT); a.r = r;
-      const tip = a.ox + a.dir * r, tail = a.ox + a.dir * Math.max(0, r - 56);   /* (what strikes is the arm's end sweeping past: once it is by you, you can land) */
-      c.band('low', [a.fy - 14, a.fy + 6], Math.min(tip, tail), Math.max(tip, tail), GT.dmg.lash, MOVE_NAME.lash, 'lash' + a.id, { from: a.ox }); }
     if (a.st === 'blow' && a.k === 'vine') { const r = a.reach * Math.min(1, 1 - Math.max(0, a.t) / GT.vineT); a.r = r;
       const tip = a.ox + a.dir * r, tail = a.ox + a.dir * Math.max(0, r - 48);   /* (its end whips past at your feet: once it is by you, you can land) */
-      const got = c.vine ? c.vine([a.fy - 14, a.fy + 6], Math.min(tip, tail), Math.max(tip, tail), GT.dmg.vine, 'vine' + a.id, e.x) : (c.band('low', [a.fy - 14, a.fy + 6], Math.min(tip, tail), Math.max(tip, tail), GT.dmg.vine, MOVE_NAME.vine, 'vine' + a.id, { from: a.ox }), null);
+      const got = c.vine([a.fy - 14, a.fy + 6], Math.min(tip, tail), Math.max(tip, tail), GT.dmg.vine, 'vine' + a.id, e.x);
       if (got && !a.caught) { a.caught = true; show.n.vined++; ev.push({ t: 'vined' }); } }
-    if (a.st === 'hold') { a.tick -= dt; const still = c.hold(a, dt); if (!still) { a.st = 'back'; a.t = 0.3; show.n.freed++; ev.push({ t: 'freed' }); continue; }
-      if (a.tick <= 0) { a.tick = GT.grabTick; c.drag(a, GT.dmg.drag); }
-      if (a.t <= 0) { c.release(a); a.st = 'back'; a.t = 0.3; ev.push({ t: 'letGo' }); } continue; }
     if (a.st === 'blow' && a.t <= 0) { a.st = 'back'; a.t = 0.25; }
   }
   show.arms = show.arms.filter(a => !(a.st === 'back' && a.t <= 0));
-  /* her mode says the arm that lands first (the mark over her is that one's) */
-  const tells = show.arms.filter(a => a.st === 'tell').sort((p, q) => p.t - q.t), blows = show.arms.filter(a => a.st === 'blow' || a.st === 'hold');
-  if (tells.length) { const L = tells[0]; if (e.mode !== L.k + 'Tell' || e.leadId !== L.id) { e.mode = L.k + 'Tell'; e.leadId = L.id; e.tellLen = L.len; } e.modeT = L.t; }
+  const tells = show.arms.filter(a => a.st === 'tell'), blows = show.arms.filter(a => a.st === 'blow');
+  if (tells.length) { const L = tells[0]; if (e.mode !== L.k + 'Tell') { e.mode = L.k + 'Tell'; e.tellLen = L.len; } e.modeT = L.t; }
   else if (blows.length) { e.mode = blows[0].k; e.modeT = Math.max(0, blows[0].t); }
-  else if (armMode(e.mode)) e.mode = e.base;
+  else if (armMode(e.mode)) e.mode = 'duel';
 }
-function clearArms(show, c) { for (const a of show.arms) if (a.st === 'hold') c.release(a); show.arms = []; for (const p of show.weed) p.torn = 0; }
-const armsBusy = show => show.arms.length > 0;
-
-/* THE SLAM LANDS: on a hero, it hurts and she drops back; stepped out of on the timber, her claws go into it and she HANGS there, open; on the weed it
-   tears the mat; in the water it is only a splash */
+const clearArms = show => { show.arms = []; };
+/* THE SLAM LANDS: on a hero it hurts and she draws back; stepped out of, her claws go into the raft's timber and she is STUCK there, open */
 function slamLands(e, show, a, c, ev) {
-  const A = show.A, box = blowBox(a, show, e), hit = c.slam(box, GT.dmg.slam);
-  if (hit) { show.n.slamHit++; a.st = 'back'; a.t = 0; e.mode = 'slamBack'; e.modeT = 0.45; ev.push({ t: 'slamHit' }); clearArms(show, c); return true; }
-  if (a.ledge && !waryOf(show, 'slam')) {   /* STUCK: her claws in the timber where you stood, her body hanging off the ledge's end */
-    clearArms(show, c); const L = a.ledge, hx = Math.max(Math.min(a.x, Math.max(L.x0, L.x1) - 6), Math.min(L.x0, L.x1) + 6);
-    const bx = L.dir > 0 ? Math.max(hx + 10, L.end + 12) : Math.min(hx - 10, L.end - 12);
-    openHer(e, show, 'stuck', GT.stuckT, false, ev, c); e.x = clampX(A, bx); e.y = L.y + GT.h - 12; e.claw = { x: hx, y: L.y }; e.face = Math.sign(hx - e.x) || -L.dir;
-    show.n.stuck++; ev.push({ t: 'stuck' }); c.sound('stuck'); c.number(hx, L.y - 40, 'HER CLAWS ARE STUCK: CUT HER', '#ffd36b'); return true; }
-  if (a.weed >= 0 && show.weed[a.weed] && show.weed[a.weed].firm) { const p = show.weed[a.weed]; p.broken = GT.weedRegrow; p.sink = 1; ev.push({ t: 'torn' }); }
-  return false;
+  const hit = c.slam(blowBox(a, show), GT.dmg.slam);
+  if (hit) { show.n.slamHit++; clearArms(show); e.mode = 'slamBack'; e.modeT = 0.45; ev.push({ t: 'slamHit' }); return true; }
+  if (waryNow(show) && show.wary.k === 'slam') return false;
+  clearArms(show); openHer(e, show, 'stuck', GT.stuckT); e.claw = { x: a.x, y: a.fy }; e.x = onDeckX(show, a.x + (Math.sign(e.x - a.x) || -1) * 22); e.face = Math.sign(a.x - e.x) || e.face;
+  show.n.stuck++; ev.push({ t: 'stuck' }); c.sound('stuck'); c.number(a.x, a.fy - 40, 'HER CLAWS ARE STUCK: CUT HER', '#ffd36b'); return true;
 }
-/* THE CHARGE: she goes under and comes along the lock behind a bow-wave, through where you are and on; the narrowboat's shallow stops her dead */
+/* THE CHARGE: she slips over the side and comes under the raft behind a bow-wave, through where you stand and on to its far end, where she hauls herself aboard */
 function startCharge(e, show, a, c, ev) {
-  const A = show.A, h = a.hero, dir = Math.sign((h ? h.x : A.mid) - e.x) || a.dir || 1, lo = A.x0 + 5 * A.TS, hi = A.x1 - 5 * A.TS;
-  let to = Math.max(lo, Math.min(hi, (h ? h.x : e.x) + dir * GT.chargeOver));
-  if (wreckShallow(show) && !(show.C || {}).lure) { if (dir > 0 && e.x < A.wreck.x0) to = Math.min(to, A.wreck.x0 - 20); if (dir < 0 && e.x > A.wreck.x1) to = Math.max(to, A.wreck.x1 + 20); }   /* (no lure this cycle: she will not cross the boat's back) */
-  show.charge = { x: e.x, dir, to, id: a.id }; e.mode = 'charge'; e.modeT = 3; e.hidden = true; ev.push({ t: 'charge' }); c.sound('charge');
+  const [x0, x1] = raftEnds(show), dir = a.dir || 1, to = dir > 0 ? x1 - 6 : x0 + 6;
+  show.charge = { x: e.x, dir, to, id: a.id }; e.mode = 'under'; e.modeT = 4; e.hidden = true; ev.push({ t: 'charge' }); c.sound('charge');
 }
 function stepCharge(e, show, dt, c, ev) {
-  const ch = show.charge, A = show.A, surf = surfY(show); if (!ch) { e.mode = e.base; e.hidden = false; return; }
-  const nx = ch.x + ch.dir * GT.chargeSpeed * dt;
-  /* THE LURE: the boat's back is a shallow - she runs aground on it */
-  if (wreckShallow(show) && ((ch.dir > 0 && ch.x < A.wreck.x0 + 6 && nx >= A.wreck.x0 + 6) || (ch.dir < 0 && ch.x > A.wreck.x1 - 6 && nx <= A.wreck.x1 - 6)) && (show.C || {}).lure && !waryOf(show, 'charge')) {
-    show.charge = null; e.hidden = false; e.x = ch.dir > 0 ? A.wreck.x0 + 14 : A.wreck.x1 - 14; e.y = A.wreck.y; show.n.lure++;
-    openHer(e, show, 'stranded', GT.strandT, false, ev, c); e.lure = true; show.n.strand++; ev.push({ t: 'stranded', lure: true }); c.sound('stranded'); c.number(e.x, A.wreck.y - 50, 'AGROUND ON THE BOAT: CUT HER', '#ffd36b'); return; }
-  ch.x = nx; e.x = ch.x; e.y = Math.min(A.bed, surf + GT.h); e.vx = ch.dir * GT.chargeSpeed;
-  c.band('low', [surf - 18, surf + 10], ch.x - 10 + ch.dir * 8, ch.x + 10 + ch.dir * 8, GT.dmg.charge, MOVE_NAME.charge, 'charge' + ch.id, { push: ch.dir * 200, from: ch.x - ch.dir * 20 });
-  if ((ch.dir > 0 && ch.x >= ch.to) || (ch.dir < 0 && ch.x <= ch.to) || ch.x < A.x0 + 5 * A.TS - 2 || ch.x > A.x1 - 5 * A.TS + 2) { show.charge = null; e.hidden = false; e.mode = e.base; ev.push({ t: 'chargeDone' }); show.gap = Math.max(show.gap, 0.5); }
+  const ch = show.charge; if (!ch) { e.mode = 'duel'; e.hidden = false; return; }
+  ch.x += ch.dir * GT.chargeSpeed * dt; e.x = ch.x; e.y = show.A.surf + 30;
+  const dy = deckY(show); c.band('low', [dy - 10, dy + 4], ch.x - 12, ch.x + 12, GT.dmg.charge, MOVE_NAME.charge, 'charge' + ch.id, { push: ch.dir * 180, from: ch.x - ch.dir * 20 });
+  if ((ch.dir > 0 && ch.x >= ch.to) || (ch.dir < 0 && ch.x <= ch.to)) { show.charge = null; e.x = ch.to; e.y = dy; e.hidden = false; e.mode = 'haul'; e.modeT = GT.haulT; e.face = -ch.dir; show.n.haul++; ev.push({ t: 'haul' }); c.sound('haul');
+    if (!show.told.haul) { show.told.haul = true; c.number(e.x, dy - 50, 'SHE HAULS HERSELF ABOARD', '#ffd36b'); } }
 }
 
-/* ---------- THE OPENINGS ---------- */
-/* each opening: open for at least three seconds (the boss rule), then she is WARY of what opened her (GT.wardT, told) */
-function openHer(e, show, mode, t, big, ev, c) {
-  clearArms(show, c); show.charge = null; show.net = null; e.hidden = false;
-  e.mode = mode; e.modeT = t; e.openLen = t; e.big = !!big; e.open = t; e.lure = false; e.oa = null; e.newCycle = true; e.openKind = mode;
-  e.capLen = e.capLeft = Math.round((e.maxHp || GT.hp) * (big || mode === 'stranded' ? GT.beatCap : GT.openCap));
+/* ---------- THE OPENING ---------- */
+function openHer(e, show, mode, t) {
+  clearArms(show); show.charge = null; e.hidden = false;
+  e.mode = mode; e.modeT = t; e.openLen = t; e.open = t; e.openKind = mode;
+  e.capLen = e.capLeft = Math.round((e.maxHp || GT.hp) * GT.openCap);
 }
-/* A BLOW IN AN OPENING (main.js, after gtTake): whole until the opening's share of her is spent, then the water takes the rest (GT.ward) */
-export function gtCap(e, dmg) { if (!gtOpen(e) || !(e.capLeft >= 0)) return dmg; const d = Math.min(dmg, e.capLeft); e.capLeft -= d; return Math.round(d + (dmg - d) * GT.ward / (e.big ? GT.beatMul : GT.openMul)); }
-function dazeHer(e, show, ev, c) {
-  const surf = surfY(show); openHer(e, show, 'dazed', GT.dazeT, false, ev, c); e.y = surf + Math.round(GT.h * 0.5); show.n.dazed++;
-  ev.push({ t: 'dazed' }); c.sound('dazed'); c.number(e.x, surf - 50, 'HER BITE MET: SHE IS DAZED', '#ffd36b');
-}
-/* what opened her, so she will not be had by it again at once */
-const OPENED_BY = { stuck: 'slam', dazed: 'bite', stranded: 'charge', flushed: 'flush' };
-const waryOf = (show, k) => !!(show.wary && show.wary.t > 0 && show.wary.k === k);
-/* an opening ends: the cycle turns (a new weed, a new lean) and she is wary */
+/* A BLOW IN THE OPENING (main.js, after the take): whole until the opening's share of her is spent, then her kelp takes the rest (GT.ward) */
+export function gtCap(e, dmg) { if (!gtOpen(e) || !(e.capLeft >= 0)) return dmg; const d = Math.min(dmg, e.capLeft); e.capLeft -= d; return Math.round(d + (dmg - d) * GT.ward / GT.openMul); }
+/* the opening ends: she is WARY (told) - the kelp everywhere and no slam - and the cycle turns */
 function closeOpening(e, show, ev, c) {
-  const k = OPENED_BY[e.openKind] || null; show.wary = { k, t: GT.wardT }; e.big = false; e.open = 0;
-  if (!show.told.wary) { show.told.wary = true; c.number(e.x, surfY(show) - 50, 'SHE IS WARY: NOT THE SAME TRICK TWICE', '#9aa39a'); }
-  if (e.newCycle) { e.newCycle = false; show.cyc[e.phase]++; show.cycle++; show.n.cycle++; applyCycle(show, e.phase, c); ev.push({ t: 'cycle', cycle: show.cycle, name: show.C.name });
-    if (e.refill) show.water.target = show.water.depth; }   /* (the drained lock comes back with her surge, not before) */
-  ev.push({ t: 'wary', k });
+  show.wary = { k: 'slam', t: GT.wardT }; e.open = 0; show.cycle++; show.n.cycle++; e.claw = null;
+  if (!show.told.wary) { show.told.wary = true; c.number(e.x, deckY(show) - 60, 'SHE IS WARY: NOT THE SAME TRICK TWICE', '#9aa39a'); }
+  ev.push({ t: 'wary', k: 'slam' }, { t: 'cycle', cycle: show.cycle });
 }
 
 /* ---------- CHOOSING A BLOW ---------- */
 function chooseBlow(e, show, h, c, ev) {
-  const hs = heroState(show, h), C = show.C || {}, ph = e.phase, A = show.A, surf = surfY(show);
-  const dist = Math.abs(h.x - e.x), opts = new Set();
-  if (hs.grabbable) opts.add('grab');
-  const gateNear = hs.atGate && Math.abs(e.x - A[hs.atGate].face) < GT.armRange;
-  if ((hs.atSurface && dist < GT.lashReach) || (hs.footing && hs.atGate && gateNear)) opts.add('lash');
-  if (hs.reachable && dist < GT.armRange) opts.add('reach');
-  if (dist < GT.biteRange && h.y > surf - 44 && h.y < surf + 30 && show.water.depth > 12 && !waryOf(show, 'bite')) opts.add('bite');
-  if (C.tear && h.onWeed >= 0 && show.weed[h.onWeed] && show.weed[h.onWeed].firm) opts.add('tear');
-  if (!waryOf(show, 'slam') && h.ground && (hs.ledge || h.onWeed >= 0) && !hs.onBoat && dist < GT.slamRange && h.y >= surf - GT.slamUp && h.y <= surf + 4) opts.add('slam');
-  if (ph >= 2 && !waryOf(show, 'charge') && show.water.depth > 20 && dist > 50 && h.y > surf - 30 && !hs.ledge) opts.add('charge');
-  if (ph >= 3 && dist < 170 && (h.ground || h.swim)) opts.add('net');
-  const lure = hs.onBoat && lureLive(e, show);
-  if (h.ground && !h.swim && dist >= GT.vineMin && dist < GT.vineReach && !lure) opts.add('vine');   /* (claude/jenny3: out of her arms' reach is not out of hers) */
-  if (e.onBoat) opts.clear();   /* (dragging herself over the boat's back, her arms are busy) */
+  const ph = e.phase, dist = Math.abs(h.x - e.x), opts = new Set(), on = h.onRaft && h.ground && !h.swim;
+  if (!waryNow(show) && on && dist < GT.slamRange) opts.add('slam');
+  if (on && dist >= (ph >= 3 ? GT.vineMin3 : GT.vineMin) && dist < GT.vineReach) opts.add('vine');   /* (on the narrowed raft of phase three, nearer: there is no far end left) */
+  if (ph >= 2 && on && dist > 50) opts.add('charge');
+  if (ph >= 3 && on && dist < GT.netRange) opts.add('net');
+  if (ph >= 2 && on && show.heaveCd <= 0 && show.raft.heave <= 0) opts.add('heave');
   if (!opts.size) return false;
   show.turns++;
-  /* THE LURE (claude/jenny3: made LOUD): a hero on the lit boat draws her charge - she comes for it next, every time, so the boat keeps its word */
-  if (lure && opts.has('charge')) { show.last2 = show.last; startArm(e, show, 'charge', h, c, ev); return true; }
-  /* A PAIR: two arms told together, always answerable - high then low, or a ring then a reach, or (the fog) two rings with a way out between */
-  if (C.pairs && show.turns % GT.pairEvery === 0) {
-    const pair = C.doubles && opts.has('grab') && show.turns % (GT.pairEvery * 2) === 0 ? ['grab', 'grab2']
-      : opts.has('reach') && opts.has('lash') ? ['reach', 'lash'] : opts.has('grab') && opts.has('reach') ? ['grab', 'reach'] : opts.has('grab') && opts.has('lash') ? ['grab', 'lash'] : null;
-    if (pair) { show.n.pair++; ev.push({ t: 'pair', ks: pair });
-      if (pair[1] === 'grab2') { const side = h.x - A.x0 < 60 ? 1 : A.x1 - h.x < 60 ? -1 : (e.x < h.x ? 1 : -1);   /* the second ring on the side she comes from: step away from her */
-        startArm(e, show, 'grab', h, c, ev, { pair: true }); startArm(e, show, 'grab', h, c, ev, { pair: true, dx: -side * 34, extra: 0.1 }); }
-      else { const first = pair[0], second = pair[1], gap = MOVES[first].tell + GT.pairGap - MOVES[second].tell;
-        startArm(e, show, first, h, c, ev, { pair: true }); startArm(e, show, second, h, c, ev, { pair: true, extra: Math.max(0, gap) }); }
-      return true; } }
-  /* HER DECK: what she leans on this cycle comes round most; a blow she cannot throw where you stand is skipped, and never the same one three times running */
-  const deck = DECK[C.lean] || DECK.slam; let k = opts.has('tear') && show.turns % 3 === 1 ? 'tear' : null;
+  const deck = DECK[ph]; let k = opts.has('vine') && dist >= 100 && show.last !== 'vine' ? 'vine' : null;   /* (a hero far down the deck: her long reach first) */
   for (let i = 0; i < deck.length && !k; i++) { const q = deck[(show.rot + i) % deck.length]; if (opts.has(q) && !(q === show.last && q === show.last2)) { k = q; show.rot = (show.rot + i + 1) % deck.length; } }
   if (!k) k = [...opts][0];
-  show.last2 = show.last;
+  if (k === 'heave') { startHeave(e, show, h, c, ev); return true; }
   startArm(e, show, k, h, c, ev);
   return true;
 }
+/* SHE HEAVES THE RAFT (phase two on): told, then for GT.heaveT s it tips down toward her side and a hero on it slides to her */
+function startHeave(e, show, h, c, ev) {
+  e.mode = 'heave'; e.modeT = GT.heaveTell * GT.tellK[e.phase - 1]; show.heaveCd = GT.heaveCd; show.last2 = show.last; show.last = 'heave'; show.n.heave++;
+  show.raft.pendDir = Math.sign(e.x - (show.raft.x + show.raft.w / 2)) || (h && h.x > e.x ? -1 : 1);
+  ev.push({ t: 'heaveTell' }); c.say('!'); c.sound('heave'); if (!show.told.heave) { show.told.heave = true; c.number(e.x, deckY(show) - 60, 'SHE HEAVES THE RAFT: KEEP YOUR FEET', '#ffd36b'); }
+}
 
 /* ---------- ONE FRAME ----------
-   c = { heroes: [h], say(mark), sound(key), number(x, y, line, col), water(depth), band(kind, [t,b], x0, x1, dmg, name, key, {push, from}),
-         hit(box [l,r,t,b], dmg, name, {from, unblockable, duck, meet}) -> 'met' (a blow blocked or rolled through) | 'hit' | null,
-         slam(box, dmg) -> true if a hero was in it (rolled through is not), net(box, dmg, root) -> caught,
-         grab(box, dmg, arm) -> hero|null, hold(arm, dt) -> still held, drag(arm, dmg), release(arm), cycle(C) }
+   c = { heroes: [h], say(mark), sound(key), number(x, y, line, col), band(kind, [t,b], x0, x1, dmg, name, key, {push, from}),
+         slam(box, dmg) -> true if a hero was under it (rolled through is not), net(box, dmg, root) -> caught, vine([t,b], x0, x1, dmg, key, toX) -> hero|null,
+         slide(dx) (heroes on the raft), raft(raft) }
    Returns the frame's events. */
 export function stepShow(e, show, dt, c) {
   const ev = []; if (!e || !show) return ev;
-  const A = show.A, heroes = (c.heroes || []).filter(h => h.alive);
-  e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.vx = 0;
+  const heroes = (c.heroes || []).filter(h => h.alive);
+  show.clock += dt; e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.vx = 0;
   if (show.wary && show.wary.t > 0) show.wary.t -= dt;
   if (show.quick > 0) show.quick -= dt;
-  stepWater(show, dt, ev, c); stepWeed(show, dt, heroes, ev); stepSurge(show, dt, heroes, ev, c);
-  if (show.fogTo !== undefined) show.fog += Math.sign(show.fogTo - show.fog) * Math.min(Math.abs(show.fogTo - show.fog), dt / 1.5);
-  if (e.mode !== e.lastMode) { e.lastMode = e.mode; e.tellId = (e.tellId || 0) + 1; }
+  if (show.heaveCd > 0 && e.mode !== 'sleep') show.heaveCd -= dt;
+  stepRaft(e, show, dt, c);
   if (!e.alive || e.mode === 'sleep') return ev;
-  const surf = surfY(show), depth = show.water.depth, hero = nearestHero(heroes, e.x);
-  e.open = gtOpen(e) ? Math.max(0, e.modeT) : 0; if (!gtOpen(e) && e.oa) e.oa = null;
-  if (!special(e)) stepArms(e, show, dt, c, ev);
-  /* THE LURE, LOUD (claude/jenny3, Daniel 10-05: "didn't know how to hurt her" in the fog): when it goes live the boat lights (the hands draw it) and
-     the line comes; a hero left off the lit boat GT.lureNudge s hears it again (at most every GT.lureRepeat s) */
-  { const live = lureLive(e, show); show.clock = (show.clock || 0) + dt;
-    if (live && !show.lureOn) { show.n.lureLit++; show.lureIdle = 0; c.sound('lureLit'); c.number((A.wreck.x0 + A.wreck.x1) / 2, A.wreck.y - 50, 'STAND ON THE BOAT: DRAW HER ONTO IT', '#ffd36b'); ev.push({ t: 'lureLit' }); }
-    show.lureOn = live;
-    if (live && hero && !heroState(show, hero).onBoat) { show.lureIdle = (show.lureIdle || 0) + dt;
-      if (show.lureIdle >= GT.lureNudge && show.clock - (show.lureSaid ?? -99) >= GT.lureRepeat) { show.lureIdle = 0; show.lureSaid = show.clock; show.n.lureNudge++; c.number((A.wreck.x0 + A.wreck.x1) / 2, A.wreck.y - 50, 'STAND ON THE BOAT: DRAW HER ONTO IT', '#ffd36b'); } }
-    else show.lureIdle = 0; }
+  const hero = nearestHero(heroes, e.x), dy = deckY(show);
+  e.open = gtOpen(e) ? Math.max(0, e.modeT) : 0;
+  if (!special(e) && e.mode !== 'under') stepArms(e, show, dt, c, ev);
   switch (e.mode) {
-    case 'wake': e.x += (clampIn(A, hero ? hero.x : A.mid) - e.x) * Math.min(1, dt * 0.5); e.y = A.bed; show.water.target = GT.lv.low; show.water.rate = GT.wakeRate;
-      if (e.modeT <= 0) { e.mode = e.base = 'lurk'; show.gap = 1.0; c.number(e.x, surf - 50, 'THE BRIGHT WEED HOLDS. THE DARK WEED IS WATER', '#ffd36b'); show.tellDrainAt = 9; } return ev;
-    case 'slamBack': swimY(e, show); if (e.modeT <= 0) e.mode = e.base; return ev;
-    case 'charge': stepCharge(e, show, dt, c, ev); return ev;
-    case 'stuck': if (e.modeT <= 0) { e.mode = 'wrench'; e.modeT = GT.wrenchT; e.claw = null; closeOpening(e, show, ev, c); c.sound('wrench'); } return ev;
-    case 'wrench': { const tx = clampIn(A, e.x); e.x += (tx - e.x) * Math.min(1, dt * 6); e.y += (Math.min(A.bed, surf + Math.round(GT.h * 0.5)) - e.y) * Math.min(1, dt * 8); if (e.modeT <= 0) { e.mode = e.base; swimY(e, show); } return ev; }
-    case 'dazed': e.y = surf + Math.round(GT.h * 0.5); if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 0.4; closeOpening(e, show, ev, c); } return ev;
-    case 'stranded': { openFight(e, show, dt, c, heroes, ev, false);
-      if (e.lure) { e.y = A.wreck.y; if (e.modeT <= 0) { e.mode = 'drag'; e.modeT = GT.dragT; e.dragTo = e.x < (A.wreck.x0 + A.wreck.x1) / 2 ? A.wreck.x0 - 30 : A.wreck.x1 + 30; closeOpening(e, show, ev, c); ev.push({ t: 'drag' }); c.sound('drag'); } return ev; }
-      e.y = A.bed; const tx = A.W.cul.x, d = tx - e.x; e.x += Math.sign(d) * Math.min(Math.abs(d), GT.crawl * dt); e.face = Math.sign(d) || e.face;
-      if (e.modeT <= 0) { e.mode = 'drag'; e.modeT = GT.dragT; e.dragTo = A.W.cul.x; closeOpening(e, show, ev, c); ev.push({ t: 'drag' }); c.sound('drag'); } return ev; }
-    case 'drag': { const k = Math.min(1, dt * 6); e.x += (e.dragTo - e.x) * k;
-      if (e.lure) e.y = A.wreck.y; else e.y = A.bed;
-      if (e.modeT <= 0) { e.x = e.dragTo; if (e.refill) { e.mode = 'surgeTell'; e.modeT = GT.surgeTell; e.surgeSide = 'W'; e.hidden = true; ev.push({ t: 'surgeTell', refill: true }); c.say('!!'); c.sound('surgeTell'); }
-        else { e.mode = e.base; swimY(e, show); } e.lure = false; } return ev; }
-    case 'surgeTell': if (e.modeT <= 0) { launchSurge(show, e.surgeSide, ev, c); e.mode = 'surge'; e.modeT = GT.surgeT;
-        if (e.refill) { show.n.refill++; show.water.target = GT.lv[phaseLvl(show, e.phase)]; show.water.rate = GT.fillRate; } }
+    case 'wake': if (!show.woke) { show.woke = true; e.modeT = GT.wakeT; show.raft.to = show.A.moorMid; e.hidden = false; c.sound('wake'); c.number(show.A.mid, dy - 70, 'SHE HAULS HERSELF ONTO THE RAFT', '#ffd36b'); }
+      { const [, x1] = raftEnds(show); e.x = x1 - 16; e.y = dy + Math.max(0, e.modeT - 0.8) * 20; e.face = -1; }
+      if (e.modeT <= 0) { e.mode = 'duel'; e.y = dy; show.gap = 1.0; c.number(e.x, dy - 60, show.kelp === 'body' ? 'KELP ON HER BODY: HIT HIGH' : 'KELP OVER HER HEAD: HIT LOW', '#ffd36b'); ev.push({ t: 'duel' }); }
       return ev;
-    case 'surge': if (e.modeT <= 0) { e.refill = false; e.hidden = false; e.mode = e.base = 'lurk'; show.gap = Math.max(show.gap, 0.6); } return ev;
-    case 'flushed': { openFight(e, show, dt, c, heroes, ev, false); e.y = surf + 8; e.x += (e.flushX - e.x) * Math.min(1, dt * 5);
-      if (e.modeT <= 0) { e.mode = 'dive'; e.modeT = 0.4; closeOpening(e, show, ev, c); ev.push({ t: 'dive' }); } return ev; }
-    case 'dive': e.y = Math.min(A.bed, e.y + 60 * dt); if (e.modeT <= 0) { e.mode = e.base = 'lurk'; swimY(e, show); } return ev;
-    case 'floodTell': show.water.target = GT.lv.high; show.water.rate = GT.fillRate; if (e.modeT <= 0) { show.cyc[2] = 0; applyCycle(show, 2, c);
-        show.hide = hero && hero.x > A.mid ? 'W' : 'E'; show.hideT = GT.hideMax; e.mode = e.base = 'shift'; show.n.flood++; c.number(e.x, surf - 50, 'OPEN THE PADDLE OF HER CULVERT', '#ffd36b'); } return ev;
-    case 'fogTell': show.fogTo = 1; show.water.target = GT.lv.shoal; show.water.rate = GT.drainRate; if (e.modeT <= 0) { show.cyc[3] = 0; show.n.fog++; applyCycle(show, 3, c); e.mode = e.base = 'lurk'; }
-      return ev;   /* (claude/jenny3: the TEACH BEAT - the fog comes down and, as it settles, the boat lights up (the hands draw it rising with the fog); the lure's
-                      line comes the moment it is live, above) */
+    case 'slamBack': e.y = dy; if (e.modeT <= 0) e.mode = 'duel'; return ev;
+    case 'under': stepCharge(e, show, dt, c, ev); return ev;
+    case 'haul': e.y = dy; if (e.modeT <= 0) { e.mode = 'duel'; show.gap = Math.max(show.gap, 0.4); } return ev;
+    case 'stuck': e.y = dy; if (e.modeT <= 0) { e.mode = 'wrench'; e.modeT = GT.wrenchT; closeOpening(e, show, ev, c); c.sound('wrench'); } return ev;
+    case 'wrench': e.y = dy; if (e.modeT <= 0) e.mode = 'duel'; return ev;
+    case 'heave': e.y = dy; if (e.modeT <= 0) { show.raft.heave = GT.heaveT; show.raft.dir = show.raft.pendDir || 1; e.mode = 'duel'; ev.push({ t: 'heave' }); c.sound('heaved'); show.gap = Math.max(show.gap, 0.35); } return ev;
+    case 'phase': e.y = dy; if (e.modeT <= 0) { show.kelp = KELP[2]; show.n.kelpShift++; e.mode = 'duel'; show.gap = 0.8; ev.push({ t: 'kelp', kelp: show.kelp }); } return ev;
+    case 'lower': e.y = dy; if (e.modeT <= 0) { const R = show.raft, cut = (R.w - GT.raftLow) / 2; R.low = true; R.x += cut; R.to += cut; R.w = GT.raftLow; show.n.lower++; e.mode = 'kelp'; e.modeT = GT.kelpTell; show.kelpNext = 'body';
+        ev.push({ t: 'lowered' }); c.sound('lowered'); } return ev;
+    case 'kelp': e.y = dy; if (e.modeT <= 0) { show.kelp = show.kelpNext || (show.kelp === 'body' ? 'hood' : 'body'); show.kelpNext = null; show.kelpT = 0; show.n.kelpShift++; e.mode = 'duel'; ev.push({ t: 'kelp', kelp: show.kelp });
+        c.number(e.x, dy - 60, show.kelp === 'body' ? 'THE KELP SLIDES DOWN HER: HIT HIGH' : 'SHE PULLS THE KELP OVER HER HEAD: HIT LOW', '#ffd36b'); } return ev;
   }
-  /* ---- THE PHASE, only between her blows ---- */
+  /* ---- THE PHASE, only between her blows: fiercer, and the raft and the kelp change, told ---- */
   const ph = gtPhase(e);
-  if (ph > e.phase && !armsBusy(show) && (e.mode === e.base || e.base === 'culvert')) {
-    e.phase = ph; ev.push({ t: 'phase', ph }); clearArms(show, c); show.pad.E.open = false; show.pad.W.open = false; show.wary = null; show.charge = null;
-    if (ph === 2) { e.mode = 'floodTell'; e.modeT = GT.floodTell; e.base = 'lurk'; c.sound('floodTell'); c.number(e.x, surf - 50, 'THE LOCK FLOODS: SHE HIDES IN A CULVERT', '#ffd36b'); }
-    else { e.mode = 'fogTell'; e.modeT = GT.fogTell; e.base = 'lurk'; show.hide = null; e.hidden = false; c.sound('fogTell'); c.number(e.x, surf - 50, 'THE FOG COMES DOWN AND THE WATER GOES OUT', '#ffd36b'); }
+  if (ph > e.phase && !show.arms.length) {
+    e.phase = ph; ev.push({ t: 'phase', ph }); clearArms(show); show.wary = null; show.charge = null;
+    if (ph === 2) { e.mode = 'phase'; e.modeT = GT.phaseT; c.sound('phase'); c.number(e.x, dy - 60, 'SHE PULLS THE KELP OVER HER HEAD: HIT LOW', '#ffd36b'); }
+    else { e.mode = 'lower'; e.modeT = GT.lowerTell; c.sound('lower'); c.number(e.x, dy - 60, 'SHE DRAGS THE RAFT LOWER: THE ENDS GO UNDER', '#ffd36b'); }
     return ev; }
-  if (show.tellDrainAt !== undefined) { show.tellDrainAt -= dt; if (show.tellDrainAt <= 0) { show.tellDrainAt = undefined; if (show.beat[1] === 'ready' && e.phase === 1) { c.number(A.E.paddle.x, A.walk - 40, 'DRAIN THE LOCK WHILE SHE IS AT THE GATE', '#ffd36b'); show.tellDrainAt = GT.lureRepeat; } } }   /* (claude/jenny3: and again every 25 s while the drain is still to strike - the stall nudge) */
-  strandCheck(e, show, ev, c);
-  if (special(e)) return ev;
-  /* ---- WHERE SHE GOES ---- */
-  if (!armsBusy(show)) show.gap -= dt;
-  let tx = e.x;
-  if (e.base === 'culvert') { const G = A[show.hide]; tx = G.cul.x; e.y = A.bed; show.hideT -= dt;
-    if (show.hideT <= 0) { show.beat[2] = 'done'; e.base = 'lurk'; e.mode = 'surgeTell'; e.modeT = GT.surgeTell; e.surgeSide = show.hide; e.refill = false; e.hidden = true; ev.push({ t: 'surgeTell' }); c.say('!!'); c.sound('surgeTell'); show.hide = null; return ev; } }
-  else if (e.base === 'shift') { const G = A[show.hide]; tx = G.cul.x; if (Math.abs(e.x - tx) < 6) { e.base = 'culvert'; if (!armsBusy(show)) e.mode = 'culvert'; ev.push({ t: 'inCulvert', side: show.hide }); } }
-  else if (hero) { /* she hunts you: in the water near you, never under a gate's ledge, and (the fog's shallows) never across the boat's back unless she charges */
-    tx = clampIn(A, hero.x + (hero.x > A.mid ? -GT.keep : GT.keep));
-    if (wreckShallow(show)) { const m = 22, onIt = x => x > A.wreck.x0 - m && x < A.wreck.x1 + m; if (onIt(tx) && !onIt(e.x)) tx = e.x < A.wreck.x0 ? A.wreck.x0 - m : A.wreck.x1 + m;   /* (she waits off the boat for a hero on it: the charge is how she comes) */
-      else if (onIt(tx) && onIt(e.x)) tx = Math.abs(e.x - (A.wreck.x0 - m)) < Math.abs(e.x - (A.wreck.x1 + m)) ? A.wreck.x0 - m : A.wreck.x1 + m; } }
-  e.onBoat = wreckShallow(show) && e.x > A.wreck.x0 - 6 && e.x < A.wreck.x1 + 6;
-  const sp = e.onBoat ? GT.boatCrawl : depth < 12 ? 0 : depth < GT.lv.half - 10 ? GT.swim.low : depth < GT.lv.high - 10 ? GT.swim.half : GT.swim.high, dx = tx - e.x;
-  const held = show.arms.some(a => a.st === 'hold' || a.st === 'blow'), k = armsBusy(show) && e.base !== 'shift' ? (held ? 0 : 0.4) : 1;   /* (she drifts while she tells, and holds still while an arm is out) */
-  if (Math.abs(dx) > 3 && k > 0 && !show.arms.some(a => a.k === 'slam' || a.k === 'bite')) { e.vx = Math.sign(dx) * sp * k; e.x += Math.sign(dx) * Math.min(Math.abs(dx), sp * k * dt); }
-  if (e.base !== 'culvert') { swimY(e, show); if (e.onBoat) e.y = A.wreck.y; }
-  if (hero && !show.arms.some(a => a.k === 'bite')) e.face = Math.sign(hero.x - e.x) || e.face;
+  /* ---- PHASE THREE: the kelp shifts every few cycles (told) ---- */
+  if (e.phase === 3) show.kelpT += dt;
+  if (e.phase === 3 && !show.arms.length && e.mode === 'duel') { if (show.kelpT >= GT.kelpEvery) { e.mode = 'kelp'; e.modeT = GT.kelpTell; show.kelpNext = show.kelp === 'body' ? 'hood' : 'body'; ev.push({ t: 'kelpTell' }); c.sound('kelp'); return ev; } }
+  /* ---- WHERE SHE GOES: on the deck, keeping a duel's distance from you on her side ---- */
+  if (!show.arms.length) show.gap -= dt;
+  if (hero) { const side = Math.sign(e.x - hero.x) || 1; let tx = onDeckX(show, hero.x + side * GT.keep);
+    if (Math.abs(tx - hero.x) < 24) tx = onDeckX(show, hero.x - side * GT.keep);   /* (pinned at an end: she goes round you) */
+    const sp = GT.walk[e.phase - 1] * (show.arms.length ? 0.3 : 1), d = tx - e.x;
+    if (Math.abs(d) > 3 && !show.arms.some(a => a.k === 'slam' || a.st === 'blow')) { e.vx = Math.sign(d) * sp; e.x += Math.sign(d) * Math.min(Math.abs(d), sp * dt); }
+    if (!show.arms.length) e.face = Math.sign(hero.x - e.x) || e.face; }
+  e.x = onDeckX(show, e.x); e.y = dy; e.hidden = false;
   /* ---- A BLOW ---- */
-  if (hero && (show.gap <= 0 || (show.quick > 0 && show.gap <= GT.gap[e.phase - 1] - GT.netQuick)) && !armsBusy(show) && e.base !== 'culvert' && e.base !== 'shift') {
+  if (hero && (show.gap <= 0 || (show.quick > 0 && show.gap <= GT.gap[e.phase - 1] - GT.netQuick)) && !show.arms.length) {
     if (chooseBlow(e, show, hero, c, ev)) { show.gap = GT.gap[e.phase - 1]; show.quick = 0; } else show.gap = 0.3; }
-  if (!armsBusy(show) && armMode(e.mode)) e.mode = e.base;
-  if (!armsBusy(show) && !special(e) && e.mode !== e.base) e.mode = e.base;
-  return ev;
-}
-/* SHE FIGHTS IN THE BEAT'S OPENINGS: stranded in the mud or thrown out on the water she still snaps (!: block it, or step back) and swipes low (!!: jump
-   it) at a hero beside her, each told - the window is a fight, and it stays the window (her modeT runs on). Stuck by her claws she only snaps */
-function openFight(e, show, dt, c, heroes, ev, snapOnly) {
-  const O = GT.oa, h = nearestHero(heroes, e.x);
-  if (e.oa) { const a = e.oa; a.t -= dt; if (a.t > 0) return; e.oa = null; e.oaCd = O.every; show.n.openAtk++; ev.push({ t: a.k });
-    if (a.k === 'snap') { const x0 = a.dir > 0 ? e.x - 6 : e.x - O.snapR, x1 = a.dir > 0 ? e.x + O.snapR : e.x + 6; c.hit([x0, x1, e.y - 44, e.y + 6], O.snapDmg, MOVE_NAME.bite, { from: e.x }); c.sound('bite'); }
-    else { c.band('low', [e.y - 16, e.y + 6], e.x - O.swipeR, e.x + O.swipeR, O.swipeDmg, 'HER CLAWS', 'oa' + a.id, { from: e.x, push: a.dir * 160 }); c.sound('lash'); }
-    return; }
-  if (e.oaCd === undefined || e.oaFor !== e.tellId) { e.oaCd = O.first + (snapOnly ? 0.5 : 0); e.oaFor = e.tellId; }
-  e.oaCd -= dt; if (e.oaCd > 0 || !h || Math.abs(h.x - e.x) > O.near || Math.abs(h.y - e.y) > 60 || e.modeT < 0.6) return;
-  const k = snapOnly ? 'snap' : 'swipe';   /* (claude/jenny2, measured: her snaps in the beat's openings were half the damage a warden or a pyromancer took - she swipes low there now, a jump every hero has) */ e.oa = { k, t: k === 'snap' ? O.snapTell : O.swipeTell, len: k === 'snap' ? O.snapTell : O.swipeTell, dir: Math.sign(h.x - e.x) || 1, id: ++show.armN };
-  if (!snapOnly) e.face = e.oa.dir; c.say(k === 'snap' ? '!' : '!!'); c.sound(k === 'snap' ? 'biteTell' : 'lashTell'); ev.push({ t: k + 'Tell' });
-  if (!show.told.openAtk) { show.told.openAtk = true; c.number(e.x, e.y - 60, 'SHE STILL CLAWS: JUMP IT', '#ffd36b'); }
-}
-const clampX = (A, x) => Math.max(A.x0 + 14, Math.min(A.x1 - 14, x));
-/* HER WATER: she keeps five tiles off the gates' faces (her arms reach up them; her body is never under a walker's ledge) */
-const clampIn = (A, x) => Math.max(A.x0 + 5 * A.TS, Math.min(A.x1 - 5 * A.TS, x));
-function swimY(e, show) { const A = show.A, surf = surfY(show); e.y = Math.min(A.bed, surf + Math.round(GT.h * 0.5)); }   /* half out of the water */
-/* AGROUND: the drain runs and the water is under her depth - stranded where she lies (THE DRAIN, phase one's beat) */
-function strandCheck(e, show, ev, c) {
-  if (show.water.depth >= GT.aground || !show.pad.E.open || e.base === 'culvert' || e.hidden) return ev;
-  if (!['lurk', 'shift', 'slamBack'].includes(e.mode) && !armMode(e.mode)) return ev;
-  openHer(e, show, 'stranded', GT.strandT, true, ev, c); e.y = show.A.bed; e.refill = true; e.base = 'lurk'; show.n.strand++; show.n.big++;
-  ev.push({ t: 'stranded', big: true }); c.sound('stranded'); c.number(e.x, show.A.bed - 50, 'SHE IS STRANDED: CUT HER', '#ffd36b');
+  if (!show.arms.length && !special(e) && e.mode !== 'duel') e.mode = 'duel';
   return ev;
 }
 
-/* ---------- A HERO'S SWING: the arm that holds you, the paddles ----------
-   Returns [{ what, side?, res? }] for the hands to answer with sound and a line. `seen` is the swing's hit set (one of each a swing) */
+/* ---------- A HERO'S SWING ON HER STUCK ARM (the hands answer it as a blow on her) ---------- */
 export function strikeAt(e, show, hb, seen) {
-  const out = []; if (!e || !show || !hb) return out; const A = show.A, once = seen || new Set();
-  const inBox = (x, y, r) => x + r > hb.l && x - r < hb.r && y + r > hb.t && y - r < hb.b;
-  /* the arm that holds you */
-  for (const a of show.arms) { if (a.st !== 'hold' || once.has(a)) continue; const hx = a.held ? a.held.x : a.x, hy = a.held ? a.held.y - 6 : surfY(show);
-    if (segHitsBox(hx, hy, e.x, e.y - 10, hb) || inBox(hx, hy, 6)) { once.add(a); a.cut = true; out.push({ what: 'arm', a }); } }
-  /* HER STUCK ARM: a blow along it from the claws in the timber to her shoulder is a blow on her */
-  if (e.mode === 'stuck' && e.claw && !once.has('claw')) { if (segHitsBox(e.claw.x, e.claw.y - 2, e.x, e.y - GT.h + 10, hb) || inBox(e.claw.x, e.claw.y - 2, 6)) { once.add('claw'); out.push({ what: 'claw' }); } }
-  for (const side of ['W', 'E']) { const G = A[side], key = 'pad' + side;
-    if (!once.has(key) && hb.r > G.paddle.x - 8 && hb.l < G.paddle.x + 8 && hb.b > G.paddle.y - 30 && hb.t < G.paddle.y) { once.add(key); out.push({ what: 'paddle', side, res: strikePaddle(e, show, side) }); } }
+  const out = []; if (!e || !show || !hb) return out; const once = seen || new Set();
+  if (e.mode === 'stuck' && e.claw && !once.has('claw')) { if (segHitsBox(e.claw.x, e.claw.y - 2, e.x, e.y - GT.h + 14, hb)) { once.add('claw'); out.push({ what: 'claw' }); } }
   return out;
-}
-/* A PADDLE IS ONE STRIKE, timed: the drain while she is at its gate (phase one), her culvert's paddle while she hides in it (phase two). Otherwise it
-   does nothing - the lock is changed once a phase, and the rest of the fight is HER */
-export const atGate = (e, show, side) => Math.abs(e.x - show.A[side].face) < GT.gateNear && !special(e) && e.base === 'lurk' && show.water.depth > GT.aground;
-export function strikePaddle(e, show, side) {
-  const p = show.pad[side];
-  if (p.cd > 0) return 'busy'; p.cd = 0.5;
-  if (gtOpen(e) || ['stranded', 'drag', 'flushed', 'floodTell', 'fogTell', 'wake', 'surgeTell', 'surge', 'sleep'].includes(e.mode)) return 'busy';
-  /* PHASE TWO: the paddle of HER culvert throws her out */
-  if (e.phase === 2 && (e.base === 'culvert' || e.base === 'shift') && show.beat[2] === 'ready') {
-    if (show.hide !== side) { show.n.wrongCulvert++; return 'notHere'; }
-    show.beat[2] = 'done'; show.lastPad = side; flush(e, show, side); return 'flush'; }
-  /* PHASE ONE: the drain, with her at this gate */
-  if (e.phase === 1 && side === 'E' && show.beat[1] === 'ready') {
-    if (!atGate(e, show, 'E')) { show.n.early++; return 'wait'; }
-    show.beat[1] = 'done'; p.open = true; show.n.drain++; show.lastPad = side; return 'drain'; }
-  show.n.spent++; return 'spent';
-}
-function flush(e, show, side) {
-  const G = show.A[side]; for (const a of show.arms) if (a.st === 'hold') a.st = 'back'; show.arms = [];
-  openHer(e, show, 'flushed', GT.flushT, true, null, { sound() {} }); e.flushX = G.face + G.dir * 80; e.x = G.cul.x; e.base = 'lurk'; show.hide = null;
-  show.n.flush++; show.n.big++; show.surgeFx = { side, t: 0.6 };
 }
 export function segHitsBox(x0, y0, x1, y1, b) {
   let t0 = 0, t1 = 1; const dx = x1 - x0, dy = y1 - y0;
@@ -571,136 +308,97 @@ export function segHitsBox(x0, y0, x1, y1, b) {
 }
 
 /* ---------- THE STAGE ----------
-   Laid into a painter-like writer (set / block / plat / ent) with its WEST GATE at column sx and its BED at row R.
-   FOOTPRINT: 40 columns, sx .. sx+39 (the two gates are sx and sx+39; the water is sx+1 .. sx+38), rows R-16 .. R+1.
-     - rows R and R+1 are laid solid under the whole chamber (the bed); ROW R+2 SHOULD BE SOLID TOO under it (nothing hangs from the bed);
-     - the gates' columns are solid from row R-16 down to R-1, with a door at rows R-6 .. R-1 in each (the arena walls close it when she wakes);
-     - nothing standable over the chamber within five rows of the walkways (R-8): the rows above R-16 over it are the sky, or the level's own rock.
-     - the approach reaches the WEST door at bed level (row R-1 standing); the way on is the EAST door, opened when she dies.
-   Returns { arena, movers, pools } - movers are the bright weed (for the level's moversExtra), pools the chamber's water (for its pools). */
+   Laid into a painter-like writer (set / block / plat / ent) with its WEST GATE at column sx and its LANDINGS' floor at row R.
+   FOOTPRINT: 40 columns, sx .. sx+39 (the two gates are sx and sx+39), rows R-16 .. R+STAGE.depth+1.
+     - the gates' columns are solid from row R-16 down, with a door at rows R-6 .. R-1 in each (the arena walls close it when she wakes);
+     - a stone LANDING inside each door (STAGE.land columns, floor row R), and between them her WATER (rows R .. R+depth-1, the bed under it);
+     - THE RAFT is a mover (her bright weed's old slot: m.weed + m.gtRaft, src/jenny-greenteeth-hands.js moves it), moored at the west landing.
+   Returns { arena, movers, pools }. */
 export function stageGreenteeth(W, T, TS, sx, R) {
-  const { set, block, plat, ent } = W, ex = sx + STAGE.W - 1, top = R - 16;
-  block(sx, sx, top, R - 1); block(ex, ex, top, R - 1);
+  const { set, block, ent } = W, ex = sx + STAGE.W - 1, top = R - STAGE.top, D = STAGE.depth;
+  block(sx, sx, top, R + D); block(ex, ex, top, R + D);
   for (let y = R - STAGE.door; y <= R - 1; y++) { set(sx, y, T.AIR); set(ex, y, T.AIR); }
   for (let x = sx + 1; x < ex; x++) for (let y = top; y < R; y++) set(x, y, T.AIR);
-  block(sx + 1, ex - 1, R, R + 1);
-  /* each gate's walers (timber rails on its face, two rows apart) and its walkway, where the paddle's gear stands */
-  for (const r of STAGE.walers) { plat(sx + 1, R - r, 3); plat(ex - 3, R - r, 3); }
-  plat(sx + 1, R - STAGE.walk, 4); plat(ex - 4, R - STAGE.walk, 4);
-  /* the sunken narrowboat on the bed: in the fog its back is the shallow */
-  block(sx + STAGE.wreck[0], sx + STAGE.wreck[1], R - 2, R - 1);
+  block(sx + 1, sx + STAGE.land, R, R + D); block(ex - STAGE.land, ex - 1, R, R + D);   /* the landings, stone to the bed */
+  for (let x = sx + STAGE.land + 1; x < ex - STAGE.land; x++) for (let y = R; y < R + D; y++) set(x, y, T.AIR);   /* her water */
+  block(sx + 1, ex - 1, R + D, R + D + 1);                                                  /* the bed */
   ent('greenteeth', sx + 20, R - 1, { face: -1 });
   const A = geom(sx, R, TS);
-  const arena = { x0: A.x0, x1: A.x1, floor: A.bed, y0: A.top, trigger: (sx + 5) * TS, wallL: sx, wallR: ex, boss: 'greenteeth', music: 'greenteeth',
-    tint: '#1a3a2a', tintA: 0.12, camFrame: true, start: [sx + 6, R - 1], lock: { sx, R } };
-  const movers = []; for (let i = 0; i < WEED_MOVERS; i++) movers.push({ kind: 'lift', weed: true, wi: i, x: A.x0, y: A.bed, y0: A.bed, y1: A.bed, w: 32, h: 6, speed: 0, broken: true });
-  const pools = [{ x0: A.x0, x1: A.x1, y: A.bed, y0: A.bed, base: A.bed, bottom: A.bed, swim: true, clear: true, shallow: true, shallow0: true, depth: 0, depth0: 0, dry: true, grad: false, wash: 0.42, lock: true }];
+  const arena = { x0: A.x0, x1: A.x1, floor: A.deck, y0: A.top, trigger: (sx + STAGE.land + 2) * TS, wallL: sx, wallR: ex, boss: 'greenteeth', music: 'greenteeth',
+    tint: '#1a3a2a', tintA: 0.12, camFrame: true, start: [sx + STAGE.land + 4, R - 1], lock: { sx, R, raft: true } };
+  const movers = [{ kind: 'lift', weed: true, gtRaft: true, wi: 0, x: A.moorW, y: A.deck, y0: A.deck, y1: A.deck, w: GT.raftW, h: 8, speed: 0 }];
+  const pools = [{ x0: A.pool.x0, x1: A.pool.x1, y: A.surf, bottom: A.bed, swim: false, clear: true, shallow: false, depth: A.bed - A.surf, lock: true, gtWater: true }];
   return { arena, movers, pools };
 }
+
 /* ---------- THE BOT'S READING (src/lab.js) ----------
-   A HUMAN BOT (the Puppeteer's lesson): it sees a tell PLAN.react s after it began, misreads some (PLAN.missDodge), meets some bites late
-   (PLAN.missMeet), is late to some paddles (PLAN.late), and mashes a hold like a person (not every frame).
-   s = { P: { x, y, face, ground, swim, snare, atk, onWeed, onTile, dodge }, e, show, reach, shield, t (seconds), rng, mem } -> keys
-   out = { gx, face, atk, jump, down, up, drop, block, dodge, why } */
-export const PLAN = { react: 0.25, missDodge: 0.14, missMeet: 0.3, late: 0.25, mash: 0.35 };
+   A HUMAN BOT (the Puppeteer's lesson): it sees a tell PLAN.react s after it began, misreads some (PLAN.missDodge), swings at the wrong angle now and then
+   (PLAN.wrongAngle: a plain swing on her kelp - it clanks), and takes a breath between swings (PLAN.rest). It reads the kelp the way a player does: the bare
+   part's gold outline - and it swings HIGH (a jump attack or the rising cut) at a body in kelp, LOW (the low sweep) under a hood.
+   s = { P: { x, y, face, ground, swim, snare, atk, dodge, vy }, e, show, reach, shield, t (seconds), rng, mem } -> keys
+   out = { gx, face, atk, jump, down, up, drop, block, why } */
+export const PLAN = { react: 0.25, missDodge: 0.14, wrongAngle: 0.12, jumpAtk: 0.4, rest: 0.18 };
 export function greenteethPlan(s) {
-  const { P, e, show, reach } = s, A = show.A, out = { gx: null, face: P.face, atk: false, jump: false, down: false, up: false, drop: false, block: false, dodge: false, why: '' };
+  const { P, e, show, reach } = s, out = { gx: null, face: P.face, atk: false, jump: false, down: false, up: false, drop: false, block: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 800) { mem.seen.clear(); mem.roll.clear(); }
   const seenFor = key => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= PLAN.react; };
-  const roll = (key, pr) => { if (!mem.roll.has(key)) mem.roll.set(key, rng() < pr); return mem.roll.get(key); };
-  const surf = surfY(show), clamp = x => Math.max(A.x0 + 10, Math.min(A.x1 - 10, x));
-  const onWalk = side => { const G = A[side]; return P.ground && Math.abs(P.y - A.walk) < 3 && (G.dir > 0 ? P.x >= G.face && P.x <= G.face + 64 : P.x <= G.face && P.x >= G.face - 64); };
-  /* ---- 0. HELD: strike the arm (and mash) ---- */
-  if (P.snare > 0) { const a = show.arms.find(q => q.st === 'hold'); out.face = a ? (Math.sign(e.x - P.x) || P.face) : P.face; out.atk = rng() < PLAN.mash; out.jump = rng() < PLAN.mash; out.why = 'held'; return out; }
+  /* (each roll its own die: a hash of its key and the fight's seed - the lab's seeded Math.random repeats frame to frame, and the misses came in runs) */
+  if (mem.seed === undefined) mem.seed = Math.floor(rng() * 1e9);
+  const die = key => { let h = 2166136261 ^ mem.seed; for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15; return (h >>> 0) / 4294967296; };
+  const roll = (key, pr) => { if (!mem.roll.has(key)) mem.roll.set(key, die(key) < pr); return mem.roll.get(key); };
+  const [rx0, rx1] = raftEnds(show), clamp = x => Math.max(rx0 + 12, Math.min(rx1 - 12, x));
+  const stepOut = (x, r, why) => { const room = [rx1 - x, x - rx0], side = room[0] > room[1] ? 1 : -1; out.gx = clamp(x + side * (r + 20)); out.why = why; return out; };
+  /* ---- 0. NETTED / CAUGHT: nothing to do but wait ---- */
+  if (P.snare > 0) { out.why = 'held'; return out; }
   /* ---- 1. THE BLOWS COMING ---- */
-  const hs = heroState(show, { x: P.x, y: P.y, ground: P.ground, swim: P.swim, onWeed: P.onWeed ?? -1, onTile: !!P.onTile });
-  const stepOut = (x, r, why) => { const L = hs.ledge; let side;
-    if (L) { const lo = Math.min(L.x0, L.x1) + 6, hi = Math.max(L.x0, L.x1) - 6; side = (x - lo > hi - x) ? -1 : 1; if (x - lo < r + 8 && hi - x < r + 8) side = L.dir; out.gx = Math.max(lo, Math.min(hi + (side === L.dir ? 30 : 0), x + side * (r + 14))); }
-    else { side = x - A.x0 < 60 ? 1 : A.x1 - x < 60 ? -1 : (P.x < x ? -1 : 1); out.gx = clamp(x + side * (r + 24)); }
-    out.why = why; return out; };
   for (const a of show.arms.filter(q => q.st === 'tell' || q.st === 'blow').sort((p, q) => p.t - q.t)) {
     const key = 'a' + a.id; if (!seenFor(key) || roll(key + 'd', PLAN.missDodge)) continue;
-    if (a.k === 'grab' && Math.abs(a.x - P.x) < GT.grabR + 12 && (hs.grabbable || !P.ground)) { const other = show.arms.find(q => q !== a && q.k === 'grab' && q.st === 'tell');
-      let side = a.x - A.x0 < 60 ? 1 : A.x1 - a.x < 60 ? -1 : (P.x < a.x ? -1 : 1); if (other && Math.sign(other.x - a.x) === side) side = -side;
-      out.gx = clamp(a.x + side * (GT.grabR + 30)); out.why = 'out of the ring'; if (a.t < 0.5 && P.ground && P.onWeed >= 0) out.jump = true; return out; }
-    if ((a.k === 'slam' || a.k === 'net') && a.st === 'tell' && Math.abs(a.x - P.x) < (a.k === 'slam' ? GT.slamR : GT.netR) + 12 && Math.abs(P.y - a.fy) < 30) {
-      if (a.t < (a.k === 'slam' ? 1 - GT.slamFollow : 1 - GT.netFollow) * a.len) return stepOut(a.x, a.k === 'slam' ? GT.slamR : GT.netR, a.k === 'slam' ? 'out of her slam' : 'out of the net');
-      out.gx = P.x; out.why = 'wait for her slam to fix'; return out; }
-    if (a.k === 'lash' && a.t < 0.14 + (a.st === 'blow' ? 1 : 0)) { const inRange = a.dir > 0 ? P.x > a.ox - 10 && P.x < a.ox + a.reach + 10 : P.x < a.ox + 10 && P.x > a.ox - a.reach - 10;
-      if (inRange && Math.abs(P.y - a.fy) < 30) { if (P.swim) { out.down = true; out.why = 'dive the lash'; } else { out.jump = true; out.why = 'jump the lash'; } return out; } }
-    if (a.k === 'vine' && a.t < 0.14 + (a.st === 'blow' ? 1 : 0)) { const inRange = a.dir > 0 ? P.x > a.ox - 10 && P.x < a.ox + a.reach + 10 : P.x < a.ox + 10 && P.x > a.ox - a.reach - 10;   /* (claude/jenny3: her vine - jump it as the lash) */
-      if (inRange && Math.abs(P.y - a.fy) < 30) { if (P.swim) { out.down = true; out.why = 'dive the vine'; } else { out.jump = true; out.why = 'jump the vine'; } return out; } }
-    if (a.k === 'reach' && Math.abs(P.y - a.fy) < 4 && a.t < 0.3) { out.down = true; out.why = 'duck the reach'; return out; }
-    if (a.k === 'bite' && Math.abs(P.x - e.x) < GT.biteLunge + 34) { const late = roll(key + 'm', PLAN.missMeet);
-      if (!late && a.st === 'tell') { out.meet = a.t; out.gx = null; out.face = Math.sign(e.x - P.x) || 1; if (s.shield && a.t < 0.4) out.block = true; out.why = 'meet the bite'; return out; }
-      if (P.swim && a.t < 0.35) { out.down = true; out.why = 'dive the bite'; return out; } if (P.ground && a.t < 0.15) { out.jump = true; out.why = 'jump the bite'; return out; }
-      out.gx = clamp(e.x + (P.x < e.x ? -1 : 1) * (GT.biteLunge + 36)); out.why = 'back off the bite'; return out; }
-    if (a.k === 'tear' && P.onWeed === a.patch) { const firm = show.weed.map((p, i) => ({ p, i })).filter(o => o.i !== a.patch && o.p.firm && !(o.p.broken > 0)).sort((p, q) => Math.abs((p.p.x0 + p.p.x1) / 2 - P.x) - Math.abs((q.p.x0 + q.p.x1) / 2 - P.x))[0];
-      out.gx = firm ? (firm.p.x0 + firm.p.x1) / 2 : clamp(P.x + 40); out.jump = P.ground; out.why = 'off the torn weed'; return out; }
-    if (a.k === 'charge' && a.st === 'tell') { out.gx = P.x; out.why = 'ready for the wave'; }
+    if ((a.k === 'slam' || a.k === 'net') && a.st === 'tell' && Math.abs(a.x - P.x) < (a.k === 'slam' ? GT.slamR : GT.netR) + 14) {
+      if (a.t < (1 - (a.k === 'slam' ? GT.slamFollow : GT.netFollow)) * a.len) return stepOut(a.x, a.k === 'slam' ? GT.slamR : GT.netR, a.k === 'slam' ? 'out of her slam' : 'out of the net');
+      out.gx = P.x; out.why = 'wait for it to fix'; return out; }
+    if (a.k === 'vine' && a.t < 0.14 + (a.st === 'blow' ? 1 : 0)) { const inRange = a.dir > 0 ? P.x > a.ox - 10 && P.x < a.ox + a.reach + 10 : P.x < a.ox + 10 && P.x > a.ox - a.reach - 10;
+      if (inRange && P.ground) { out.jump = true; out.why = 'jump the vine'; return out; } }
+    if (a.k === 'charge' && a.st === 'tell') { out.gx = P.x; out.why = 'ready for the wave'; return out; }
   }
-  const crest = show.charge ? { x: show.charge.x, dir: show.charge.dir, id: 'c' + show.charge.id } : show.surge ? { x: show.surge.x, dir: show.surge.dir, id: 's' + show.surge.id } : null;
-  if (crest && seenFor(crest.id) && !roll(crest.id + 'd', PLAN.missDodge) && Math.abs(crest.x - P.x) < 70 && Math.sign(P.x - crest.x) === crest.dir && Math.abs(P.y - surf) < 30) {
-    if (P.swim) out.down = true; else if (Math.abs(crest.x - P.x) < 34) out.jump = true; out.why = 'the wave'; return out; }
-  /* ---- 1b. SHE FIGHTS IN HER OPENINGS: her snap (block it, or step back) and her swipe (jump it) ---- */
-  if (e.oa && seenFor('oa' + e.oa.id) && !roll('oa' + e.oa.id, PLAN.missDodge)) { const a = e.oa;
-    if (a.k === 'swipe' && Math.abs(P.x - e.x) < GT.oa.swipeR + 8) { if (a.t < 0.16 && P.ground) out.jump = true; out.why = 'jump her swipe'; out.face = Math.sign(e.x - P.x) || 1; return out; }
-    if (a.k === 'snap' && Math.abs(P.x - e.x) < GT.oa.snapR + 10) { if (s.shield && a.t < 0.4) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block her snap'; return out; }
-      out.gx = clamp(e.x + (P.x < e.x ? -1 : 1) * (GT.oa.snapR + 22)); out.why = 'back off her snap'; return out; } }
-  /* ---- 2. SHE IS OPEN: to her, and cut ---- */
-  if (gtOpen(e) && seenFor('open' + e.tellId)) { const tx = e.mode === 'stuck' && e.claw ? (Math.abs(e.claw.x - P.x) < Math.abs(e.x - P.x) ? e.claw.x : e.x) : e.x, ty = e.mode === 'stuck' ? (e.claw ? e.claw.y : e.y) : e.y;
-    const d = tx - P.x; out.face = Math.sign(d) || 1;
-    if (e.mode !== 'stuck' && (onWalk('E') || onWalk('W')) && e.y > A.walk + 40) { out.gx = e.x; out.why = 'down to her'; if (Math.abs(d) < 60) out.drop = true; return out; }
-    out.gx = Math.abs(d) > reach - 6 ? tx - out.face * (reach - 10) : null; out.atk = Math.abs(d) < reach + 8 && Math.abs(P.y - ty) < 44; if (P.swim && P.y < e.y - 8) out.down = true; out.why = 'open'; return out; }
-  /* ---- 3. THE BEAT: a paddle, once ---- */
-  const strikePad = side => { const G = A[side]; out.gx = G.paddle.x + (side === 'W' ? 14 : -14); out.face = side === 'W' ? -1 : 1;
-    if (Math.abs(P.x - out.gx) < 4 && P.atk < 0 && !(show.pad[side].cd > 0)) out.atk = true; out.why = 'the ' + side + ' paddle'; };
-  const climbTo = (side, ly) => { const G = A[side], L0 = P.ground ? ledgeAt(A, P.x, P.y) : null;
-    if (L0 && L0.side === side && Math.abs(P.y - ly) < 4) { mem.onLedge = t; return true; }
-    if (!P.ground && !P.swim && mem.onLedge !== undefined && t - mem.onLedge < 0.6 && Math.abs(P.y - ly) < 30) { out.gx = null; out.why = 'on the ledge'; return true; }   /* (a hop on the ledge - a jumped lash - is still the ledge) */
-    if (L0 && P.y < ly - 3) { out.gx = G.stand; out.drop = true; out.why = 'down to the ledge'; return false; }
-    out.gx = G.stand; if (Math.abs(P.x - G.stand) < 14) { out.why = 'up the gate'; if (P.swim) { out.up = true; if (P.y - surf < 26) out.jump = true; } else if (P.ground && P.y > ly + 3) out.jump = true; }
-    else { out.why = 'to the ' + side + ' gate'; if (P.swim) out.up = P.y - surf > 18; if (P.ground && !L0 && rng() < 0.02) out.jump = true; }
-    return false; };
-  if (e.phase === 2 && (e.base === 'culvert' || e.base === 'shift') && show.beat[2] === 'ready' && show.hide) { if (climbTo(show.hide, A.walk)) strikePad(show.hide); return out; }
-  /* ---- 4. WHERE TO FIGHT HER: a gate's ledge just over the water (her slam goes into its timber, her bite comes to its edge); in the fog's shallows,
-     the narrowboat's back (her charge runs aground on it) ---- */
-  const C = show.C || {};
-  if (e.phase === 3 && C.lure && wreckShallow(show) && !roll('nolure' + show.cycle, PLAN.late)) {
-    const onB = P.ground && P.x > A.wreck.x0 + 8 && P.x < A.wreck.x1 - 8 && Math.abs(P.y - A.wreck.y) < 6; const mid = (A.wreck.x0 + A.wreck.x1) / 2;
-    if (onB) { out.gx = e.x < mid ? A.wreck.x1 - 30 : A.wreck.x0 + 30; out.face = Math.sign(e.x - P.x) || 1; out.why = 'on the boat'; return out; }
-    out.gx = mid; out.why = 'to the boat'; if (P.swim) { out.up = true; if (Math.abs(P.x - mid) < 60) out.jump = true; } else if (P.ground && Math.abs(P.x - mid) < 120 && P.y > A.wreck.y + 2) out.jump = true; return out; }
-  const lv = show.water.depth, drainUp = e.phase === 1 && show.beat[1] === 'ready';
-  const ledgeY = drainUp ? A.walk : [...A.W.walers, A.walk].filter(y => A.bed - y > lv + 10).sort((p, q) => q - p)[0] ?? A.walk;   /* (phase one's drain still to work: up on the east walkway by its paddle) */
-  let side = drainUp ? 'E' : (mem.side || (P.x > A.mid ? 'E' : 'W'));
-  mem.side = side;
-  if (climbTo(side, ledgeY)) { const G = A[side];
-    if (drainUp && atGate(e, show, 'E') && !roll('late' + Math.floor(t * 2), PLAN.late)) { strikePad('E'); return out; }
-    const L = ledgeAt(A, P.x, P.y), outer = L ? L.end - L.dir * 12 : G.stand; out.gx = outer; out.face = G.dir; out.why = 'hold the ledge'; }
-  return out;
+  /* a slam or a net told and seen, the hero clear of its mark: he waits it out where he is (no jump, no swing that carries him into it) */
+  const live = show.arms.find(q => (q.k === 'slam' || q.k === 'net') && q.st === 'tell' && seenFor('a' + q.id) && !roll('a' + q.id + 'd', PLAN.missDodge));
+  if (live && P.ground) { out.gx = P.x; out.face = Math.sign(e.x - P.x) || 1; out.why = 'clear of the mark: wait'; return out; }
+  const ch = show.charge;
+  if (ch && seenFor('c' + ch.id) && !roll('c' + ch.id + 'd', PLAN.missDodge) && Math.sign(P.x - ch.x) === ch.dir && Math.abs(ch.x - P.x) < 70) { if (Math.abs(ch.x - P.x) < 56 && P.ground) out.jump = true; out.gx = P.x; out.why = 'the wave'; return out; }
+  if (e.mode === 'heave' && seenFor('hv' + show.n.heave)) { out.gx = clamp(P.x - (Math.sign(e.x - P.x) || 1) * 40); out.why = 'brace against the heave'; }
+  if (show.raft.heave > 0) { out.gx = clamp(P.x - show.raft.dir * 30); out.why = 'against the tilt'; }
+  if (e.mode === 'lower') { out.gx = clamp((rx0 + rx1) / 2 + (P.x < e.x ? -40 : 40)); out.why = 'off the ends'; return out; }
+  if (['wake', 'under', 'phase', 'kelp', 'sleep'].includes(e.mode)) { if (out.gx === null) out.gx = clamp(P.x); return out; }
+  /* ---- 2. SHE IS STUCK: to her, and cut (any angle lands) ---- */
+  if (gtOpen(e) && seenFor('open' + show.n.stuck)) { const tx = e.claw && Math.abs(e.claw.x - P.x) < Math.abs(e.x - P.x) ? e.claw.x : e.x, d = tx - P.x; out.face = Math.sign(d) || 1;
+    out.gx = Math.abs(d) > reach - 6 ? clamp(tx - out.face * (reach - 10)) : null; out.atk = Math.abs(d) < reach + 8 && (mem.lastAtk === undefined || t - mem.lastAtk > 0.12); if (out.atk) mem.lastAtk = t; out.why = 'stuck: cut her'; return out; }
+  /* ---- 3. THE DUEL: close to her and strike the bare angle ---- */
+  const d = e.x - P.x, dir = Math.sign(d) || 1; out.face = dir;
+  const want = e.x - dir * Math.max(14, reach - 8); if (out.gx === null) out.gx = clamp(want);
+  if (show.wary && show.wary.t > 0) { out.gx = clamp(e.x - dir * (reach + 30)); out.why = 'she is wary'; return out; }
+  const near = Math.abs(d) < reach + 6, breath = mem.lastAtk !== undefined && t - mem.lastAtk < PLAN.rest;
+  if (!near || breath || P.atk >= 0) { out.why = 'close in'; return out; }
+  const swing = 's' + Math.floor(t / 0.4), wrong = roll(swing + 'w', PLAN.wrongAngle);
+  if (wrong) { out.atk = true; out.why = 'a plain swing (wrong)'; mem.lastAtk = t; return out; }
+  if (bareAngle(show) === 'low') { out.down = true; out.gx = null; if (P.ground) { out.atk = true; mem.lastAtk = t; } out.why = 'low sweep under the hood'; return out; }
+  if (roll(swing + 'j', PLAN.jumpAtk)) { if (P.ground) { out.jump = true; mem.jumpFor = t; out.why = 'jump to her head'; return out; } }
+  if (!P.ground) { out.atk = true; mem.lastAtk = t; out.why = 'a jump attack at her head'; return out; }
+  out.up = true; out.atk = true; mem.lastAtk = t; out.why = 'the rising cut at her head'; return out;
 }
 
 /* ---------- THE FRAME her body shows (src/redraw/greenteeth_art.js) ---------- */
 export function gtFrame(e) {
   const a = e.anim || 0, m = e.mode || '';
-  if (m === 'stranded') return GT_F.stranded[Math.floor(a * 3) % 2];
-  if (m === 'drag' || (e.onBoat && (m === 'lurk' || m === 'shift'))) return GT_F.drag;
-  if (m === 'flushed') return GT_F.flushed;
-  if (m === 'stuck') return GT_F.stuck;
-  if (m === 'dazed') return GT_F.dazed;
+  if (m === 'wake' || m === 'haul') return GT_F.drag;
+  if (m === 'stuck') return GT_F.grab;
   if (m === 'slamTell') return GT_F.slamTell;
   if (m === 'slam' || m === 'wrench') return GT_F.reach;
-  if (m === 'slamBack') return GT_F.grab;
-  if (m === 'chargeTell' || m === 'charge') return GT_F.chargeTell;
-  if (m === 'netTell') return GT_F.netTell;
-  if (m === 'net') return GT_F.net;
-  if (m === 'vineTell') return GT_F.netTell; if (m === 'vine') return GT_F.net;   /* (claude/jenny3: her vine - the weed coiled back, then thrown) */
-  if (m === 'grabTell' || m === 'lashTell' || m === 'surgeTell' || m === 'tearTell') return GT_F.tell;
-  if (m === 'biteTell' || m === 'bite') return GT_F.lunge;
-  if (m === 'reachTell' || m === 'reach' || m === 'lash') return GT_F.reach;
-  if (m === 'grab') return GT_F.grab;
-  if (m === 'culvert') return GT_F.hide;
+  if (m === 'slamBack' || m === 'lower') return GT_F.grab;
+  if (m === 'chargeTell' || m === 'under') return GT_F.chargeTell;
+  if (m === 'netTell' || m === 'vineTell') return GT_F.netTell;
+  if (m === 'net' || m === 'vine') return GT_F.net;
+  if (m === 'heave' || m === 'phase' || m === 'kelp') return GT_F.tell;
   if (e.flash > 0.05) return GT_F.hurt;
   return GT_F.swim[Math.floor(a * 3) % 2];
 }

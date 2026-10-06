@@ -198,13 +198,12 @@ try {
    if(b.mode==='slack'){P.x=A.stage.gx0+30;P.y=A.stage.gallery;P.vx=0;P.vy=0;for(let i=0;i<30&&b.mode!=='staggered';i++){P.hp=P.maxHp;BK.sim(1);}}   /* up on the gallery */
    if(b.mode==='staggered')mode='staggered';const onGal=b.mode==='staggered'&&Math.abs(b.y-A.stage.gallery)<1;for(let i=0;i<60*6;i++){P.hp=P.maxHp;BK.sim(1);op=Math.max(op,b.open||0);}
    out.puppeteer={alone:+alone.toFixed(1),swings:cutF,slackMode,free,slackOpen:+slackOpen.toFixed(1),mode,open:+op.toFixed(1),onGal};}
-  /* JENNY GREENTEETH (claude/lockkeeper): a minute of her left alone in her lock, the hero on a gate's walkway, opens nothing; a real swing at the
-     lower paddle with her at that gate drains the lock from under her - stranded, open (THE FOG CANAL holds her) */
-  {const b=boot('canal');const S=BK.greenteethHands().show(),G=S.A,P=BK.P;let alone=0;
-   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
-   for(let i=0;i<60*4&&(S.arms.length||BK.bossOpen(b));i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);}   /* (claude/jenny3: let the blow she was throwing at the west walkway land there first - a windup left in the air when the hero is moved across the lock went into the far timber and opened her; and 12 s, not 6, for her to swim the lock to the east gate: her vine at the hero on the walkway holds her up on the way) */
-   let op=0,mode=null;for(let i=0;i<60*12&&!(op>0);i++){P.hp=P.maxHp;P.x=G.E.paddle.x-14;P.y=G.walk;P.vy=0;P.face=1;b.x=Math.min(b.x,G.E.face-90);if(!S.pad.E.open&&!(S.pad.E.cd>0)&&P.atk<0)BK.press('atk');BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stranded')mode='stranded';}
-   out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),drains:S.n.drain};}
+  /* JENNY GREENTEETH (claude/lockkeeper; claude/canal4, Daniel 10-05: THE RAFT DUEL - the lock's paddles are gone): a minute of her left alone, the hero
+     standing on the raft taking every blow, opens nothing; stepping out of her slam once its mark has fixed sticks her claws in the raft - open */
+  {const b=boot('canal');const S=BK.greenteethHands().show(),P=BK.P;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;BK.sim(1);alone=Math.max(alone,b.open||0);}
+   let op=0,mode=null;for(let i=0;i<60*20&&!(op>0);i++){P.hp=P.maxHp;const a=S.arms.find(q=>q.k==='slam'&&q.st==='tell');if(a&&a.t<a.len*0.4&&Math.abs(P.x-a.x)<40){P.x=a.x+(a.x-S.raft.x>S.raft.w/2?-50:50);P.vx=0;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stuck')mode='stuck';}
+   out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),stuck:S.n.stuck};}
   /* THE CISTERN QUEEN (claude/welltown3): a minute of her left alone opens nothing; a pour while she walks the floor runs into the sand; a pour on her
      mound floods her burrow - SOAKED, open; on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -
      the grab broken, REARING, open (THE WELL TOWN holds her) */
@@ -326,7 +325,7 @@ try {
   assert.ok(r.wicker.unseen.open === 0 && r.wicker.unseen.mode !== 'burn', 'crossing the embers with nobody looking opened her: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open >= 3, 'frozen ON the embers she did not burn open for 3 s or more (the boss rule; claude/fairfix3 tightened this from > 2): ' + JSON.stringify(r.wicker));
   assert.equal(r.greenteeth.alone, 0, 'JENNY GREENTEETH: a minute of her left alone opened her: ' + JSON.stringify(r.greenteeth));
-  assert.ok(r.greenteeth.mode === 'stranded' && r.greenteeth.open >= 3, 'the lock drained with her at the gate and she was not stranded open for 3 s or more (the boss rule; claude/greenwire raised this from 1.4: her stranded window was 1.8 s): ' + JSON.stringify(r.greenteeth));
+  assert.ok(r.greenteeth.mode === 'stuck' && r.greenteeth.open >= 3, 'stepping out of her slam on the raft did not stick her claws open for 3 s or more (the boss rule; claude/canal4: her opening is the slam stepped out of): ' + JSON.stringify(r.greenteeth));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.slackMode === 'slack' && r.puppeteer.free && r.puppeteer.slackOpen === 0, 'THE PUPPETEER: both puppets down opened him by itself, or the lever did not come free (PUPPETEER2: only the visit opens him): ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'staggered' && r.puppeteer.open >= 3 && r.puppeteer.onGal,   /* (PUPPETEER2: drop both puppets, ride up - he staggers on the gallery, open >= 3 s; no fall) */ 'both puppets cut down and the hero up on the gallery, he did not stagger open there for 3 s or more: ' + JSON.stringify(r.puppeteer));

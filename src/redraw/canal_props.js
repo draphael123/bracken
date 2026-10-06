@@ -54,10 +54,12 @@ export function drawBarge(g, x, y, w, st, time) {
   const fl = 0.82 + 0.18 * Math.sin(time * 9) + 0.06 * Math.sin(time * 23);
   g.fillStyle = '#2a2420'; g.fillRect(x + 5, y - 34, 2, 34); g.fillStyle = '#4a4036'; g.fillRect(x + 5, y - 34, 1, 34); g.fillStyle = '#6a6058'; g.fillRect(x + 4, y - 12, 4, 2);
   g.fillStyle = '#2a2420'; g.fillRect(x + 5, y - 38, 8, 1); g.fillRect(x + 12, y - 38, 1, 3);
-  const ang = (st && st.lampAng) || 0; g.save(); g.translate(x + 12, y - 37); g.rotate(ang); g.translate(-(x + 12), -(y - 37));   /* (claude/canalfix3) her lantern swings toward what holds her */
-  const gr = g.createRadialGradient(x + 12, y - 33, 2, x + 12, y - 33, 30); gr.addColorStop(0, 'rgba(255,207,106,' + (0.34 * fl).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,207,106,0)'); g.fillStyle = gr; g.fillRect(x - 18, y - 63, 60, 60);
+  const ang = (st && st.lampAng) || 0, dim = !!(st && st.lampDim); g.save(); g.translate(x + 12, y - 37); g.rotate(ang); g.translate(-(x + 12), -(y - 37));   /* (claude/canalfix3) her lantern swings toward what holds her */
+  if (!dim) { const gr = g.createRadialGradient(x + 12, y - 33, 2, x + 12, y - 33, 30); gr.addColorStop(0, 'rgba(255,207,106,' + (0.34 * fl).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,207,106,0)'); g.fillStyle = gr; g.fillRect(x - 18, y - 63, 60, 60); }
   g.fillStyle = '#3a2c1c'; g.fillRect(x + 9, y - 36, 7, 1); g.fillRect(x + 9, y - 28, 7, 1); g.fillRect(x + 9, y - 35, 1, 7); g.fillRect(x + 15, y - 35, 1, 7); g.fillRect(x + 12, y - 35, 1, 7);
-  g.globalAlpha = fl; g.fillStyle = P.amber; g.fillRect(x + 10, y - 35, 2, 7); g.fillRect(x + 13, y - 35, 2, 7); g.fillStyle = '#fff2b0'; g.fillRect(x + 11, y - 33, 3, 3); g.globalAlpha = 1; g.restore();
+  if (dim) { g.fillStyle = '#2a1a10'; g.fillRect(x + 10, y - 35, 5, 7); g.fillStyle = '#a04a20'; g.fillRect(x + 12, y - 30, 1, 1); }   /* (claude/canal4) DIMMED in the tunnel: the wick turned down to an ember */
+  else { g.globalAlpha = fl; g.fillStyle = P.amber; g.fillRect(x + 10, y - 35, 2, 7); g.fillRect(x + 13, y - 35, 2, 7); g.fillStyle = '#fff2b0'; g.fillRect(x + 11, y - 33, 3, 3); g.globalAlpha = 1; }
+  g.restore();
   /* THE TILLER: the rudder post at the stern, the bar from its head to the grip amidships; the bar sweeps with the helm (up: the mill cut; down: the weir) */
   const hx = x + (w >> 1), px0 = x + 14, up = b && b.helm === 'cut', flash = st && st.tiller && st.tiller.flash > 0, gy = up ? y - 13 : y - 3;
   g.fillStyle = '#2a1c10'; g.fillRect(px0 - 1, y - 11, 3, 11); g.fillStyle = P.brass; g.fillRect(px0 - 2, y - 12, 5, 2); g.fillStyle = P.brass2; g.fillRect(px0 - 2, y - 12, 5, 1);       /* the rudder post, a brass head */
@@ -200,7 +202,7 @@ export function barrel(g, x, floorY, w, h) { const y = floorY - h; rect(g, x + 1
 /* ============================== THE ROOMS (what stands behind the tiles): the warehouse, the mill, Jenny's door ============================== */
 const BRICKS = (w, h, a, b, mort) => once('rbr' + w + h + a + b, () => { const [c, g] = canvas(w, h); rect(g, 0, 0, w, h, mort); for (let y = 0, row = 0; y < h; y += 5, row++) for (let x = -(row & 1) * 6; x < w; x += 12) { const t = ((x * 7 + y * 13) % 11) / 11; rect(g, x + 1, y + 1, 10, 3, t < 0.2 ? b : a); } return c; });
 export function paintRoom(g, rs, sx, sy, w, h, time) {
-  const room = { cnWarehouse: 1, cnMill: 2, cnDoor: 3, cnCellar: 4, cnCistern: 4 }[rs]; if (!room) return false;   /* 4: (claude/canalfix3) the safe swims' vaults - bare wet brick */
+  const room = { cnWarehouse: 1, cnMill: 2, cnDoor: 3, cnCellar: 4, cnCistern: 4, cnTunnel: 4 }[rs]; if (!room) return false;   /* 4: (claude/canalfix3) the safe swims' vaults - bare wet brick */
   g.save(); g.beginPath(); g.rect(sx, sy, w, h); g.clip();
   if (room === 4) { for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, '#1a2228', '#222c34', '#0e1418'), x, y); g.restore(); return true; }
   if (room === 1 || room === 3) { g.drawImage(BRICKS(96, 96, room === 1 ? '#2a2224' : '#1c2426', room === 1 ? '#34292b' : '#242e30', room === 1 ? '#161213' : '#10181a'), 0, 0, 96, 96, sx, sy, 96, 96); for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, room === 1 ? '#2a2224' : '#1c2426', room === 1 ? '#34292b' : '#242e30', room === 1 ? '#161213' : '#10181a'), x, y); }
@@ -235,6 +237,7 @@ export function drawLair(g, lk, cx, cy, VW, VH, time) {
   /* slime sliding down the wall faces */
   g.globalAlpha = 0.5; g.fillStyle = '#6aa860'; for (let i = 0; i < 10; i++) { const wx = (i < 5 ? sx + TS - 1 - 0 : ex) - cx + (i < 5 ? 0 : 0), ph = (time * 5 + i * 13) % 40; if (wx < -4 || wx > VW + 4) continue; g.fillRect(wx + ((i * 3) % 12) * (i < 5 ? 1 : -1) - (i < 5 ? 0 : 3), bed - 12 * TS - cy + ((i * 17) % 90) + Math.round(ph * 0.4), 1, 3); } g.globalAlpha = 1;
   /* THE LAIR: the sunken narrowboat on the bed - a rotted cabin frame over its deck (ribs, a torn tarpaulin, a snapped tiller), weed streaming off it, two cold-green eyes in the dark of its hatch */
+  if (lk.raft) return;   /* (claude/canal4: the raft duel - no sunken narrowboat on her bed; the raft is drawn by src/jenny-greenteeth-hands.js) */
   const wx0 = (lk.sx + 15) * TS - cx, wx1 = (lk.sx + 25) * TS - cx, deck = (lk.R - 2) * TS - cy; if (wx1 < -10 || wx0 > VW + 10) return;
   g.fillStyle = '#18120c'; g.fillRect(wx0 + 8, deck - 24, 3, 24); g.fillRect(wx0 + 22, deck - 22, 3, 22); g.fillRect(wx0 + 38, deck - 26, 3, 26); g.fillRect(wx0 + 54, deck - 20, 3, 20); g.fillRect(wx0 + 8, deck - 24, 50, 3);
   g.fillStyle = '#26301c'; g.fillRect(wx0 + 8, deck - 24, 50, 1); for (let k = 0; k < 50; k += 3) g.fillRect(wx0 + 8 + k, deck - 23, 2, 2 + ((k * 7) % 5));

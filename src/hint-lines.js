@@ -44,14 +44,14 @@ export const CALL_LINES = new Set([
   'GET ABOVE THE ROOTS', 'STAY LOW OR CLIMB', 'LEAVE THE MARKS - SEEDS FALLING', 'LEAVE THE MARKS', 'LOOK UP', 'HURRY!', 'HELP! CUT THE BOARDS!', 'HELP! THE DOOR IS HOT!',
   /* a way that is open */
   'THE FIRE IS OUT - GO', 'IT BURNS DOWN - THE STREET IS OPEN', 'THE HEART OPENS. TAKE THE SPRING.', 'HER CAP JAMS. THE HEART OPENS.', 'THE TOWER BREAKS OPEN AT THE FOOT',
-  /* claude/lockkeeper, claude/jenny2: JENNY GREENTEETH's rules and openings (src/jenny-greenteeth.js, src/jenny-greenteeth-hands.js) */
-  'THE BRIGHT WEED HOLDS. THE DARK WEED IS WATER', 'DRAIN THE LOCK WHILE SHE IS AT THE GATE', 'SHE IS STRANDED: CUT HER', 'STRIKE THE ARM THAT HOLDS YOU',
-  'THE LOCK FLOODS: SHE HIDES IN A CULVERT', 'OPEN THE PADDLE OF HER CULVERT', 'THE CULVERT SPITS HER OUT: CUT HER', 'SHE IS NOT IN THAT CULVERT',
-  'THE FOG COMES DOWN AND THE WATER GOES OUT', 'STAND ON THE BOAT: DRAW HER ONTO IT', 'THE WATER TAKES IT: MAKE HER OPEN FIRST', 'SHE STILL CLAWS: JUMP IT',
-  'STEP OUT OF HER SLAM: HER CLAWS STICK', 'SHE CHARGES UNDER THE WATER: JUMP THE WAVE', 'HER WEED NET TANGLES: STEP OUT OF IT', 'HER CLAWS ARE STUCK: CUT HER',
-  'AGROUND ON THE BOAT: CUT HER', 'HER BITE MET: SHE IS DAZED', 'SHE IS WARY: NOT THE SAME TRICK TWICE', 'TANGLED IN THE WEED', 'THE WATER RUNS OUT FROM UNDER HER',
-  'NOT YET: SHE IS NOT AT THE GATE', 'THE PADDLE IS DONE: FIGHT HER',
-  'HER VINE PULLS YOU OFF: JUMP IT', 'HER VINE HAS YOU', 'THAT OPENING IS SPENT: THE WATER TAKES IT',   /* claude/jenny3: her vine */
+  /* claude/lockkeeper, claude/jenny2, claude/jenny3: JENNY GREENTEETH's blows and her opening (src/jenny-greenteeth.js, src/jenny-greenteeth-hands.js; claude/canal4 took out
+     the lock's lines - its paddles, culverts, flood, fog and lure, her grab and bite - with the lock's machinery) */
+  'STEP OUT OF HER SLAM: HER CLAWS STICK', 'HER WEED NET TANGLES: STEP OUT OF IT', 'HER CLAWS ARE STUCK: CUT HER',
+  'SHE IS WARY: NOT THE SAME TRICK TWICE', 'TANGLED IN THE WEED', 'HER VINE PULLS YOU OFF: JUMP IT', 'HER VINE HAS YOU',
+  /* claude/canal4: JENNY GREENTEETH's RAFT DUEL and her KELP ARMOUR (src/jenny-greenteeth.js, src/jenny-greenteeth-hands.js) */
+  'SHE HAULS HERSELF ONTO THE RAFT', 'SHE HAULS HERSELF ABOARD', 'SHE COMES UNDER THE RAFT: JUMP THE WAVE', 'SHE HEAVES THE RAFT: KEEP YOUR FEET',
+  'SHE DRAGS THE RAFT LOWER: THE ENDS GO UNDER', 'KELP ON HER BODY: HIT HIGH', 'KELP OVER HER HEAD: HIT LOW', 'THE KELP SLIDES DOWN HER: HIT HIGH',
+  'SHE PULLS THE KELP OVER HER HEAD: HIT LOW', 'KELP - HIT HIGH', 'KELP - HIT LOW', 'THAT OPENING IS SPENT: THE KELP TAKES IT',
   'THE VAULT OPENS', 'THE CAMP GATE OPENS', 'THE FURNACE OPENS', 'THE HATCH OPENS', 'THE DOOR OPENS', 'THE WAY OPENS', 'A PORTAL OPENS', 'THE GRATE IS UP', 'THE HOIST IS FREE',
   /* claude/puppeteer (PUPPETEER3): THE PUPPETEER's openings and reads (src/puppeteer.js, src/puppeteer-hands.js) */
   'ONE DOWN: HIS BAR DROPS', 'CUT: THE HARLEQUIN DROPS', 'THE ARM GOES LIMP: NO MORE CHOP OR GRAB',
@@ -116,7 +116,9 @@ export const CALL_LINES = new Set([
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
    hero has made no headway, one of these names the machine that holds her - never how to work it (the glint over the machine shows where). src/canal-hands.js */
 export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 'THE BRIDGE HOLDS HER: FIND ITS CAPSTAN', fog: 'THE FOG HOLDS HER: FIND THE FOGHORN',
-  door: 'THE DOOR IS TOO HIGH: THE LOCK UNDER HER IS LOW' };
+  door: 'THE DOOR IS TOO HIGH: THE LOCK UNDER HER IS LOW',
+  /* (claude/canal4) THE LEGGING TUNNEL: the stop-planks' windlass, a rider standing on her where there is no current, a hero who has left her in the dark */
+  stop: 'STOP-PLANKS HOLD HER: FIND THE WINDLASS', leg: 'THE TUNNEL HAS NO CURRENT: SHE GOES ONLY IF YOU LEG HER', back: 'SHE WAITS IN THE DARK: GET BACK ON HER DECK' };
 /* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
