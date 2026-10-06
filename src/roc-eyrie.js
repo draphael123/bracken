@@ -12,7 +12,8 @@
 // ANTI-SPAM WARD: after every opening a told 3 s ward (feathers bristle, a ring): no plunge opens her, and the dive skids. STAGGER = STILL: open, she lies.
 // The bot plan is src/lab.js (rocEyriePlan). Numbers: EYRIE.
 export const EYRIE = {
-  hp: 850, hitK: 1.9, dropK: 1.3, flyY: 128, circleR: 150, stuck: 3.4, downed: 3.2, ward: 3.5,
+  hp: 850, hitK: 1.9, dropK: 2.0,   /* (FIX PASS: dropK 1.3 -> 2.0, the ONE change - her snatch drop is unblockable, so it reaches the shield; 56% at campaign level) */
+  flyY: 128, circleR: 150, stuck: 3.4, downed: 3.2, ward: 3.5,
   diveTell: 1.0, diveV: 420, gustTell: 0.8, gust: 2.2, gustPush: 230, shedTell: 0.7, grabTell: 0.85, grab: 0.6, carry: 1.6, mash: 0.3,
   cloud: 5, cloudTell: 0.9, perch: 2.6, boltTell: 1.3, boltEvery: 5.5, boltReach: 22, rest: [1.4, 1.1],
 };

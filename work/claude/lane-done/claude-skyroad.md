@@ -225,3 +225,73 @@ Earlier in the lane, before the merge, these were also green: checkpoint-stand, 
    - *Rec:* keep. If Daniel wants it harder, add a designed squad on the far cliff, rather than sprinkling foes.
 10. **Moor's curve row is stale.** The moor's level-1 curve row (docs/level1-curve.json) is stale on this branch, because Gale Moor 2 changed the moor after COMBAT PART 2 measured it. curve-gate prints it and does not fail.
     - *Rec:* the moor2 lane, or the batch integrator, re-runs `node tools/level1-pilot.mjs moor --curve`.
+
+---
+
+# FIX PASS (claude/skyroad, Opus, overnight 10-05/06), against scratch/review-skyroad.md
+
+Merged origin/master 85e13368 (batch71) first. The conflicts were unions: both new levels' imports and LEVELS rows (the gorge needs the
+Underwell; the Sky Road needs the moor), SKY next to UWH in main.js's shared lines, both reachcore vault fills, both hint-line blocks,
+check.mjs, the level-quality GATE and ROLES, one-new-foe, and the docs json rows. marks.js was regenerated with `tools/tells.mjs --write`.
+One criss-cross hunk in spawnEntities needed a hand fix: the reset line now has both UWH and SKY, and the old xpKey line is gone.
+
+## What changed
+
+| # | Review item | Done |
+|---|---|---|
+| 1 MUST | THE GREAT KITE REEL cage must be boardable | **The reel is now a state machine** (`src/sky-road-hands.js` H.mover, `REEL = { up 3.4, down 2.6, delay 3, rest 3 }`): cold, then wait, then up, then down, then wait again. The first haul waits 3 s after the strike, and a told line says THE KITE TAKES THE LINE: STEP ON THE CAGE. A cloud on the chimney now takes the cage **all the way down to the deck** (committed: it does not stop when the cloud passes), and the cage rests 3 s there. New sign at the berth: A CLOUD BRINGS THE CAGE DOWN TO THE DECK. STEP ON IT THERE. The nudge says THE CAGE COMES DOWN TO THE DECK: STEP ON IT THERE. **Scripted real-key hand** (scratchpad cage.mjs; god, foes dead): knight, warden and pyro, each arriving 0/4/9/15/22/30 s after the strike, wait at the deck edge, walk on and ride up. **18/18 boarded on the first try**; the longest wait was 19.8 s (one cloud cycle). |
+| 2 MUST | Glide nudges and signs | Four glide nudges as stuck-spot steps: mesa B's edge to ledge one (once the cloak is taken); ledge one into thermal four (once s1 is turned); the deck's edge to roost one; the lit disc road. New and changed signs: s3, the lock (A SUN-STONE. STRIKE IT TO WAKE THE AIR OVER THE SPIRE.); s4 and s6 share one sign on the east tower, THE SPANS ARE CRACKED. STRIKE EACH STONE BEFORE ITS SPAN GOES. A sign standing on a crumbling span would hang in the air once the span falls. The disc sign now says ...THEN CROSS WHILE THE AIR RISES, and the roosts sign says ...A CLOUD KILLS THE AIR: WAIT FOR IT TO PASS, THEN GLIDE. |
+| 3 MUST | The rule line names the verb | `L.rule` is now THE SUN WARMS THE ROCK AND THE AIR RISES. STRIKE A SUN-STONE TO WAKE ITS AIR; RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT. The same line is in the file headers and the brief. It is what the code does: natural thermals rise, a stone wakes a dead one, and a cloud's shadow kills one. |
+| 4 MUST | The flat measure | **The narrowed rule the coordinator ratified, exactly.** A run ends where the floor ends only at a gap **wider than LIM.chasm = 5 columns**; a jump-sized pit cuts on its far side, as it did before the greybox. I compared the old (master) code with the new over every level. 8 levels' flat numbers change: marsh, spore, moor, reef, fields, mage, oreroad and skyroad. **No other gated level's numbers change.** Only two verdicts move: the Sky Road (gated; 44% to 18%, now clears) and the Ore Road's flat row (not gated; its overall verdict is unchanged). |
+| 5 MUST | THE ROC into 50-60% | **One change: the snatch drop, `EYRIE.dropK` 1.3 to 2.0.** The drop is unblockable, so it is the one hit that reaches the knight behind his shield; he was 7/7 before. The Roc's health, ward and openings are untouched. Measured at campaign level (L9, `tools/skyroad-pilot.mjs`, human bot); see the table below. |
+| 6 MUST | Foreshadow her (B8) | A sign at the Eyrie door: THE ROOSTS ARE HERS. THE ROC NESTS PAST THIS DOOR. A feather trail along the bridge (5 greybox `feather` decor). Her shadow crosses the bridge **once**, the first time a hero is out on the last spans (cols 368-389): a shriek, a dark band with wings over it, and the told line A GREAT SHADOW CROSSES THE BRIDGE. |
+| 8 SHOULD | The spire hop | The plank now runs to 232, so the gap is 1 column and needs no running jump. |
+| 9 SHOULD | A heavy past the roosts | A shield goblin at (283,17) on the far cliff, in the slinger's squad. |
+| 12 SHOULD | Mash, re-stamp | Level first, then boss (below). |
+
+Not done: 7 (s3 got its sign; s4/s6 share the tower sign, see #2); 10 (the first harpy is still over the shelf: moving a flyer off a glide line needs a hand check I did not spend; it is cheap for the art lane or a later pass); 11 (no change asked).
+
+## THE ROC, campaign level L9 (`node tools/skyroad-pilot.mjs`, PORT 8643)
+
+| Config | Fights | Knight | Warden | Pyro | Total | Median win |
+|---|---|---|---|---|---|---|
+| talons hitK 2.1 (stopped early) | 12 | 4/4 | 3/4 | 3/4 | 83% | |
+| talons hitK 2.4 | 21 | 7/7 | 4/7 | 3/7 | 67% | 117 s |
+| **FINAL: dropK 2.0 (hitK back at 1.9)** | 18 | **5/6** | **3/6** | **2/6** | **56%** | 117 s |
+
+- hitK only scales her rake and the lightning, so it barely moves the knight.
+- 17 seeds per hero in all, inside the ~20 cap. I stopped once the number was in band.
+- Warden wins take 136-144 s, inside the 90-150 s window; the review had him at 163-167 s.
+- **Mash boss: 0/6** (she is left at 62-67%).
+
+## Re-stamped (tools/mash-bot.mjs, level THEN boss; tools/level1-pilot.mjs)
+
+- **Mash level (L9):** none of the three clears.
+  - knight: lowest health 7%
+  - warden: lowest health 6% (the review had 18%)
+  - pyro: dies
+- **Mash boss:** 0/6.
+- **Level-1 pilot:** 24 hits, 0 deaths, walked 100%.
+- **The act-II curve row:** re-stamped.
+
+## Checks (PORT 8643)
+
+Green: skyroad, skyroad-probe, level-quality (every gated level clears), mash-gate, curve-gate, tells, boss-greed, boss-openings, boss-fight-end, architecture, checkpoints, skins, dangling-paths, npc-removal, map-spacing, map-grammar, signs, hint-shown, one-new-foe, corpses, threat-holes, rule-state, underwell, comments, checkpoint-gaps, and stuck --static (90 steps in 72 spots).
+
+**Not run:**
+- the stuck **runtime** check (it walks every level's spots);
+- the 40-minute suite (the coordinator runs suites).
+
+Port note: boss-openings and boss-fight-end failed once to bring up a server or browser on 8643 (the PC was under load), then passed on a re-run. One batch of checks right after the merge (hint-shown, boss-openings, boss-greed) ran on the checkout's default port block before I set PORT=8643. Each one starts and kills its own server, and nothing was left running.
+
+## QUESTIONS FOR DANIEL (each built as recommended)
+
+1. **The Roc's one change is the snatch drop** (x1.3 to x2.0, 30 to 46 damage, unblockable).
+   - *Rec:* keep. It is her most told move (talons spread, a red !!, struggle free), and the only one the knight's shield cannot turn.
+   - *Alternative:* health up, but that makes the warden's fights longer.
+   - Your playtest gate stands.
+2. **The reel cage now always comes down to the deck and rests there.** This was the review's question 3.
+   - *Rec:* keep. A player who just missed it waits at most one cloud cycle (about 20 s).
+   - *Alternative:* a shorter cloud gap over the chimney, if the wait feels long in play.
+3. **s4 and s6 share one sign on the east tower.** A sign on a crumbling span would float once the span falls.
+   - *Rec:* keep. The nudges still name each stone.

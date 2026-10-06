@@ -9512,12 +9512,12 @@
      "dead:100/62"
     ],
     "warden": [
-     "dead:100/64",
-     "dead:100/64"
+     "dead:100/63",
+     "dead:100/63"
     ],
     "pyro": [
-     "dead:100/60",
-     "dead:100/60"
+     "dead:100/67",
+     "dead:100/67"
     ]
    },
    "rows": [
@@ -9526,11 +9526,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 76,
+     "secs": 55.7,
      "hpLostPct": 100,
      "bossLeftPct": 62,
      "landed": 4,
-     "swings": 2899,
+     "swings": 2075,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9539,11 +9539,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 76,
+     "secs": 55.7,
      "hpLostPct": 100,
      "bossLeftPct": 62,
      "landed": 4,
-     "swings": 2899,
+     "swings": 2075,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9552,11 +9552,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 75.9,
+     "secs": 55.6,
      "hpLostPct": 100,
-     "bossLeftPct": 64,
+     "bossLeftPct": 63,
      "landed": 5,
-     "swings": 2899,
+     "swings": 2075,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9565,11 +9565,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 75.9,
+     "secs": 55.6,
      "hpLostPct": 100,
-     "bossLeftPct": 64,
+     "bossLeftPct": 63,
      "landed": 5,
-     "swings": 2899,
+     "swings": 2075,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9578,11 +9578,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 67.7,
+     "secs": 39.7,
      "hpLostPct": 100,
-     "bossLeftPct": 60,
-     "landed": 14,
-     "swings": 2569,
+     "bossLeftPct": 67,
+     "landed": 3,
+     "swings": 1424,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9591,11 +9591,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 67.7,
+     "secs": 39.7,
      "hpLostPct": 100,
-     "bossLeftPct": 60,
-     "landed": 14,
-     "swings": 2569,
+     "bossLeftPct": 67,
+     "landed": 3,
+     "swings": 1424,
      "reprisalPct": 0,
      "chip": []
     }
