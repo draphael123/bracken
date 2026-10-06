@@ -46,6 +46,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     /* THE RED GORGE (src/red-gorge.js, claude/redgorge): a JAM is one released burst (a wheel by it, and every flood banks behind its gate), and THE OLD NEST's vault opens on the four
        feathers the level lays down: both count as done (the plain fill: legs only). tools/redgorge.mjs proves each JAM is a lock with a real jump */
     if (L.redgorge) for (const m of [...(L.jams || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+    /* THE UNDERWELL (src/underwell.js, claude/underwell): a BROOD NEST seals a tunnel until a torch burns it (the oil and the torch are on the road before it: tools/underwell.mjs proves each nest burns) and THE DRY FOUNTAIN's vault opens on the three taps the level lays down: both count as done, like the gorge's jams (the plain fill: legs only) */
+    if (L.underwell) for (const m of [...(L.nests || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     /* THE SKY ROAD (src/sky-road.js, claude/skyroad): THE RIDERS' LOFT opens on the four kite cloths the level lays down: done, like the old nest (tools/skyroad.mjs proves it is a lock) */
     if (L.skyroad) for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
@@ -61,7 +63,9 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     if (e.t === 'tbell' && e.span) { const [x0, x1, row] = e.span; for (let x = x0; x <= x1; x++) { const i = row * W + x; if (g[i] === T.AIR) g[i] = T.PLANK; } }
     /* ITS PRAYER WHEELS: struck from their own floor, a wheel's stair stands either way, so the full fill has both at once. The
        plain fill has the stair as it was built and nothing else: a climb that needs it turned is a climb on the --plain list */
-    if (e.t === 'pwheel' && !plain) for (const [x0, y, w] of [...(e.a || []), ...(e.b || [])]) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+    /* A BLOCK WITH A PLACE TO GO (claude/unburied4, the Unburied Field's mantlets): pushed to the foot of the wall it is there for, it is a step - one walk, so done, like the gun's hole */
+    if (e.t === 'pushblock' && e.stepAt) { const i = e.stepAt[1] * W + e.stepAt[0]; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+    if (e.t === 'pwheel' && !plain)for (const [x0, y, w] of [...(e.a || []), ...(e.b || [])]) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
   }
   /* FAILING STONE THAT IS THE WAY ON (the Falling Tower's observers' gallery, src/tower-collapse.js): stand on it and it counts
      down and goes, every time, so it is a floor you can go DOWN through and nothing else - a one-way to the model. Only `opens`:

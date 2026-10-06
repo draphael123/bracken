@@ -82,9 +82,9 @@ export function glPlan(s) {
   const b = F.bottles.find(q => !q.back && Math.abs(q.x - P.x) < 60 && Math.abs(q.y - (P.y - 10)) < 40);
   if (b && !roll('b' + b.id, PLAN.missBottle)) { out.face = Math.sign(b.x - P.x) || P.face; if (Math.abs(b.x - P.x) < reach + 6 && Math.abs(b.y - (P.y - 10)) < 22) out.atk = P.atk < 0; out.why = 'strike the bottle back'; return out; }
   const fire = F.fires.find(f => Math.abs(f.x - P.x) < GL.fireR + 6);
-  if (glOpen(e)) { out.gx = clamp(e.x - side * Math.max(8, reach * 0.6)); out.face = toHim; out.atk = ad < reach + 12 && P.atk < 0 && e.open > 0.35; out.why = 'cut him: he burns'; return out; }   /* (not the last blow as the flames go out) */
+  if (glOpen(e)) { out.gx = clamp(e.x - side * (s.tip ? GL.w / 2 + s.tip : Math.max(8, reach * 0.6))); out.face = toHim; out.atk = ad < reach + 12 && P.atk < 0 && e.open > 0.35; out.why = 'cut him: he burns'; return out; }   /* (not the last blow as the flames go out) */
   const m = e.mode;
-  if (m === 'slipped') { out.gx = clamp(e.x - toHim * Math.max(8, reach * 0.6)); out.face = toHim; out.atk = ad < reach + 10 && P.atk < 0 && (s.greed || 0) < 3 && e.modeT > 0.2; out.why = 'cut him: he is down'; return out; }
+  if (m === 'slipped') { out.gx = clamp(e.x - toHim * (s.tip ? GL.w / 2 + s.tip : Math.max(8, reach * 0.6))); out.face = toHim; out.atk = ad < reach + 10 && P.atk < 0 && (s.greed || 0) < 3 && e.modeT > 0.2; out.why = 'cut him: he is down'; return out; }
   if (/Tell$/.test(m) && seen() && !roll(key, PLAN.miss)) {
     if (m === 'riposteTell' && ad < 90) { out.gx = clamp(e.x + side * 100); if (ad < 60) out.dodge = true; out.why = 'off the riposte'; return out; }
     if ((m === 'cutTell' || m === 'cut2Tell' || m === 'crossTell') && ad < 70) { mem.backT = t + 0.9;

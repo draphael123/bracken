@@ -9,7 +9,7 @@ import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate,
 import { MARK, HEIGHT } from './marks.js';
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
-import { boneGaps as mageBoneGaps, MAGE as UMAGE } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
+import { boneGaps as mageBoneGaps, MAGE as UMAGE, orbitWorlds as mageOrbitWorlds } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
@@ -50,6 +50,7 @@ export const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper'
    the rest. It is edge-triggered, so the bot must let the key UP again between sweeps: DEFLECT_TAP is that beat.
    (Her dodge goes BACKWARD by itself, so the bot never has to aim it.) */
 export const DEFLECT_TAP = f => f % 8 < 2;
+export const WARDEN_TIP = 32;   /* (claude/herokit) the near-edge distance the warden's point pays at (tipPay: TIP_AT 28 .. her reach 44): the plans' 'cut him' spots stood her at 0.6 of her reach, inside the shaft, and she only shoved and glanced */
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
    the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */
@@ -724,6 +725,11 @@ async function runbossLab(BK, opts) {
         {const B=boss.bones;if(B&&B.live){const k=B.t/UMAGE.bone.secs,R=UMAGE.bone.r0+(UMAGE.bone.r1-UMAGE.bone.r0)*k,d0=Math.hypot(P.x-B.cx,py-B.cy);
           if(d0<R+14){const me=Math.atan2(py-B.cy,P.x-B.cx);let best=null,bd=9;for(const a of mageBoneGaps(B,Math.min(1,k+0.18))){let d=Math.abs(((a-me)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI);if(d<bd){bd=d;best=a;}}
             if(best!==null){const tx=B.cx+Math.cos(best)*(R+40),ty=B.cy+Math.sin(best)*(R+40),ex=tx-P.x,ey=ty-py,dd=Math.hypot(ex,ey)||1;vx+=ex/dd*3;vy+=ey/dd*3;threat=true;}}}}
+        /* ARCHMAGE3 (claude/archmage3): HIS ORRERY - it keeps to the nearest clear ring between two orbits (or out past the last) and away from any world near it;
+           THE GRAVE SCRIPT - it flies to the dark line while the lines are written */
+        {const O=boss.orbit;if(O){const ex=P.x-O.cx,ey=py-O.cy,d=Math.hypot(ex,ey)||1,R=O.worlds.map(w=>w.R),safe=R.slice(1).map((r,i)=>(r+R[i])/2).concat([R[R.length-1]+34]);let want=safe[0];for(const r of safe)if(Math.abs(r-d)<Math.abs(want-d))want=r;
+          if(Math.abs(want-d)>6){const s=Math.sign(want-d);vx+=ex/d*s*2;vy+=ey/d*s*2;}threat=true;for(const [wx,wy] of mageOrbitWorlds(O,O.live?O.t+0.15:0))away(wx,wy,UMAGE.orbit.r+30,2.5);}}
+        {const S=boss.script;if(S&&boss.mode==='scriptTell'){const sy=S.y0+(S.safe+0.5)*S.h;if(Math.abs(sy-py)>S.h*0.25)vy+=Math.sign(sy-py)*3;threat=true;}}
         for(const q of boss.echoes||[])if(q.markX!==null&&q.markX!==undefined&&Math.abs(P.x-q.markX)<44){vx+=P.x>=q.markX?1:-1;threat=true;}
         if(boss.void&&boss.void.live){const V=boss.void,ex=P.x-V.x,ey=py-V.y,d=Math.hypot(ex,ey)||1;if(d<200){vx+=ex/d*1.6;vy+=ey/d*0.8;}if(d<70)threat=true;}
         if(boss.deathMark)away(boss.deathMark.x,boss.deathMark.y,boss.deathMark.r+18,2);
@@ -738,6 +744,8 @@ async function runbossLab(BK, opts) {
         for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
           if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
+          /* (claude/archmage3, Daniel 10-05) HIS FIREBOLT CAN BE STRUCK BACK - home, it breaks his ward: the bot swings at one in its reach (a human hand: it tries about two in three, decided once a bolt), and otherwise guards or dodges it as ever */
+          if(q.kind==='fire'&&!q.echo&&!q.reflected&&!boss.realm&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;const ahead=(q.x-P.x)*Math.sign(-q.vx||1)<0;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;void ahead;continue;}}
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
           if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */
@@ -761,7 +769,7 @@ async function runbossLab(BK, opts) {
             else realmGoal=[RL.vent.x-110,RL.mire-70];}
           if(realmGoal)toward(realmGoal[0],realmGoal[1],threat?0.8:1.6);}
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
-        if(!threat&&!realmGoal){const want=boss.open>0?LAB_REACH[h]*0.55:(rest?150:LAB_REACH[h]*0.7);const gx=boss.x-side*want,gy=by;
+        if(!threat&&!realmGoal){const want=boss.open>0?(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.55):(rest?150:(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.7));   /* (claude/herokit) THE WARDEN'S POINT PAYS 34+ px out (tipPay): flown in to 0.55-0.7 of her reach she only ever struck with the haft and the middle of the shaft (0 tip hits in 66 on the Archmage) - she holds the tip distance, as a person does */const gx=boss.x-side*want,gy=by;
           if(Math.abs(gx-P.x)>6)vx+=Math.sign(gx-P.x);if(Math.abs(gy-py)>6)vy+=Math.sign(gy-py);}
         if(vx>0.3)k.right=true;else if(vx<-0.3)k.left=true;if(vy>0.3)k.down=true;else if(vy<-0.3)k.up=true;
         if(block){k.block=true;}
@@ -1041,6 +1049,8 @@ async function runbossLab(BK, opts) {
           const to=P.labTo&&!P.labTo.broken&&P.labTo.y>P.y-60?P.labTo:null,s0=to||slabs.filter(q=>q.y>P.y+2).sort((a,b)=>Math.abs(cen(a)-P.x)-Math.abs(cen(b)-P.x))[0];if(s0&&(P.vy>-60||P.labJump>0)&&Math.abs(cen(s0)-P.x)>4)k[cen(s0)>P.x?'right':'left']=true;else if(!s0&&P.ground)k.right=true; }
         else {
           let done=false;
+          /* THE RUNE COLUMN (claude/bosswave2): ready, he flying in it, and it in reach from this slab - strike it, as a player who has read the sign does */
+          { const rc=A.rune;if(rc&&!(rc.cd>0)&&P.atk<0&&['hover','diveTell','dive','fireballTell','breathTell','recover','flareTell','rise','reset'].includes(m)&&Math.abs(boss.x-rc.x)<13+15&&Math.abs(rc.x-P.x)<LAB_REACH[h]+8&&P.y>rc.top&&P.y<rc.bot){P.face=Math.sign(rc.x-P.x)||P.face;BK.press('atk');swings++;done=m!=='dive';} }
           if(m==='diveTell'&&boss.tgt===on){const n=next(on),dir=n?Math.sign(cen(n)-P.x)||1:1,ex=dir>0?on.x+on.w-10:on.x+10;if(Math.abs(ex-P.x)>3)k[ex>P.x?'right':'left']=true;done=true;}   /* to the edge, and wait: the aim is his until he drops */
           else if(m==='dive'&&boss.tgt===on){goSlab(next(on));done=true;}   /* LATE: he has dropped - go */
           else if(m==='flareTell'&&boss.fm===on){goSlab(next(on));done=true;}
@@ -1155,7 +1165,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const QH=BK.cisternQueenHands(),S=QH&&QH.show();
         if(f===0||!P.labCqMem)P.labCqMem={};
-        const pl=S?queenPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCqMem}):{gx:null,face:P.face};
+        const pl=S?queenPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCqMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1174,7 +1184,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const DH=BK.djinnHands(),S=DH&&DH.show();
         if(f===0||!P.labDjMem)P.labDjMem={};
-        const pl=S?djinnPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
+        const pl=S?djinnPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1193,7 +1203,7 @@ async function runbossLab(BK, opts) {
         const GH=BK.gangLeaderHands(),F=GH&&GH.fight();
         if(f===0||!P.labGlMem)P.labGlMem={};
         const greed=BK.greed?BK.greed.count(boss):0;
-        const pl=F?glPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
+        const pl=F?glPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1371,6 +1381,12 @@ async function runbossLab(BK, opts) {
          answered first). Up on his lookout, it jumps from under it: the lookouts are one-way decks three rows up. */
       const bowArrow = boss.t === 'lance' ? BK.seeds().find(s => s.arrow && !s.jav && s.owner && s.owner.lanceBow && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 40 && Math.abs(s.y - (P.y - 8)) < 30 && (s.x - P.x) * (s.vx || 0) < 0) : null;
       const bowT = boss.t === 'lance' && !open && !['couch', 'charge', 'vaultTell', 'vault', 'rushTell', 'rush', 'galeTell', 'gale'].includes(boss.mode) ? BK.enemies().filter(q => q.alive && q.lanceBow && Math.abs(q.x - P.x) < 200).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
+      /* THE BRIDGE GATE (claude/bosswave2, src/lance-support.js): when he levels the lance or comes on and its lookout is near, up onto the lookout
+         and strike the winch as he runs under it - a quarter-second ahead of him, as a human leads a moving thing. Nothing is dropped for the bot */
+      const lgate = boss.t === 'lance' && !open ? BK.props().find(p => p.t === 'winch' && p.bossGate && !(p.open > 0)) : null;
+      /* HIGHCROWN's hall bell (claude/bosswave2): rung when she stands under its grate and the bell is in reach - a human glancing up at it */
+      const hbell = boss.t === 'gqueen' && !open ? BK.props().find(p => p.t === 'winch' && p.bell && !(p.open > 0) && Math.abs(boss.x - (p.gate * 16 + 8)) < 12 + (boss.w || 20) / 2 && Math.abs(p.x - P.x) < 24 && Math.abs(p.y - P.y) < 30) : null;
+      const gateDuty = lgate && ['couch', 'charge', 'rushTell', 'rush'].includes(boss.mode) && Math.abs(lgate.x - P.x) < 220 ? lgate : null;
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
@@ -1515,6 +1531,10 @@ async function runbossLab(BK, opts) {
         else if (pool) { goal = pool.x + side * (S.boilR + 20); strike = false; }
         else { goal = boss.x; strike = !(P.labRest); }
         if (goal !== null) goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, goal)); }
+      else if (hbell) { goal = null; strike = false; k.left = k.right = false; if (P.atk < 0) { P.face = Math.sign(hbell.x - P.x) || P.face; BK.press('atk'); swings++; } }
+      else if (gateDuty) { const wx = gateDuty.x, gx = gateDuty.gate * 16 + 8, onTop = P.ground && P.y <= gateDuty.y + 2; strike = false; k.block = false;
+        if (!onTop) { goal = wx - 6; if (P.ground && Math.abs(wx - P.x) < 36) { BK.press('jump'); P.labJump = 20; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }
+        else { goal = null; k.left = k.right = false; const ahead = boss.x + (boss.vx || 0) * 0.12; if (Math.abs(ahead - gx) < 14 + (boss.w || 20) / 2 && Math.abs(boss.x - gx) < 40 && P.atk < 0) { P.face = Math.sign(wx - P.x) || 1; BK.press('atk'); swings++; } } }
       else if (boss.mode === 'stanceTell') goal = boss.x - Math.sign(d || 1) * 72;   /* EN GARDE: cut into it and she answers; stand off and wait for the point to drop */
       else if (rushing || (tell && (h === 'paladin' || h === 'reaper' || boss.modeT < (boss.t === 'closedhelm' ? 0.1 : h === 'geomancer' ? 0.17 : 0.14)))) {   /* (THE GEOMANCER's ward takes a tenth of a second to rise: she plants it that much sooner, so it is up on the beat) */
         P.face = Math.sign(d) || P.face;
@@ -1787,7 +1807,7 @@ async function runbossLab(BK, opts) {
          hang time before it is falling again, so "boss.y>P.y+24" was reading the bot's OWN HOP as a step it had climbed. It asks
          for the ground now, for every boss here, not only her (Daniel, "apply the same fix to the other eight", 2026-09-25). */
       if(!walker&&!P.swim&&boss.y>P.y+24&&P.ground&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
-      const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'&&!bowT||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
+      const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'&&!bowT&&!gateDuty||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
       if(descending){const gx=boss.t==='reefmaw'?boss.x:lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;P.labJump=0;k.jump=false;if(P.ground&&[T.ONEWAY,T.PLANK,T.SHELF,T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');}}
       if(!descending&&P.ground&&Math.abs(P.vx)<4&&(k.left||k.right)&&f%15===0){BK.press('jump');P.labJump=18;}
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
@@ -1804,8 +1824,15 @@ async function runbossLab(BK, opts) {
            smallAim() is the same "what is this swing really aimed at" pick the ledger below judges it against, so asking it here,
            before the press, makes the bot actually throw the blow the ledger expects rather than a cut that glances the family table
            calls wrong for it (marsh: the frog king's hoppers, generic fallback path - no boss-specific branch of its own). */
-        const nearSmall = smallAim(); if (nearSmall && keyVerb(BK, h, nearSmall) === 'sweep') k.down = true;
-        BK.press('atk'); swings++; }
+        const nearSmall = smallAim(); const smallBand = nearSmall ? [nearSmall.y - (nearSmall.h || 8) - P.y, nearSmall.y - P.y] : null;   /* the top and the foot of the foe, up (-) from the hero's feet */
+        /* THE BLOW MUST BE ABLE TO LAND (claude/herokit small-adds): the low sweep covers feet-8 .. feet+2 and every plain cut or thrust feet-16 .. feet-1, and a hopper
+           mid-hop (foot 9-18 up) or on the ledge below (16 down) is in neither. Both of the warden's two 'misses' at the Bullfrog's hoppers were a sweep at a hopper in the
+           air and a swing at one a tile below - nothing to do with her point (the knight misses the same way). Out of the sweep's band but inside the cut's: throw the cut;
+           out of both: hold the swing for the frame it can land (it is the same boss swing, it comes round again next frame). */
+        const inSweep = smallBand && smallBand[1] >= -8 && smallBand[0] <= 2, inCut = smallBand && smallBand[1] >= -16 && smallBand[0] <= -1;
+        if (!nearSmall || inSweep || inCut) {
+          if (nearSmall && inSweep && keyVerb(BK, h, nearSmall) === 'sweep') k.down = true;
+          BK.press('atk'); swings++; } }
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
@@ -2016,6 +2043,23 @@ export function chaseClimb(BK, m, o = {}) {
       if (nxt) { const cur = seq[at], lip = walk > 0 ? (cur[0] + cur[1]) * 16 - P.x : P.x - cur[0] * 16, near = walk > 0 ? nxt[0] * 16 - P.x : P.x - (nxt[0] + nxt[1]) * 16;
         if (near > lip + 4 ? lip < 4 : near < 18 && nxt[2] < cur[2]) leap = true; }
       else if (at < 0 && !G[Math.floor(P.y / 16) * W + Math.floor((P.x + walk * 3) / 16)]) leap = true; }   /* off the list (a landing it fell to): the old rule, jump at an edge */
+    /* THE ORRERY LOFT (claude/archmage3): no stair - it waits at the lip of the ledge it boards from (the board step for the inner wheel, the pier for
+       the outer) until a world comes up level with it, and steps on; on the inner world it stands still and walks off onto the pier as the
+       world comes down past it; on the outer it JUMPS for the landing at the top of the turn */
+    { const fo = Math.min(F.length - 1, k + 1), O = F[fo];
+      if (O.orrery && P.ground) { const d = O.dir, seq = [F[fo - 1].land, ...O.steps, O.land], on = P.onMover && P.onMover.orrery ? P.onMover : null, ms = BK.movers().filter(m => m.orrery);
+        const lipOf = q => d > 0 ? (q[0] + q[1]) * 16 : q[0] * 16, nearOf = q => d > 0 ? q[0] * 16 : (q[0] + q[1]) * 16, feet = P.y;
+        if (on) { const nx = on.orrery === 'A' ? seq[2] : seq[3], top = nx[2] * 16, lead = d > 0 ? on.x + on.w : on.x, gap = (nearOf(nx) - lead) * d;
+          BK.keys.right = BK.keys.left = false; leap = false;
+          const fromBack = d > 0 ? P.x - on.x : on.x + on.w - P.x; if (fromBack < on.w - 8) { BK.keys.right = d > 0; BK.keys.left = d < 0; }   /* to the front of the world first: the step off is short */
+          if (on.orrery === 'A') { if (gap < 12 && feet - top < 3) { BK.keys.right = d > 0; BK.keys.left = d < 0; } }
+          else if (top - feet > -16 && top < feet && gap < 40 && on.dy >= -0.2 && (on.x - (on.px - on.w / 2)) * d > -6) { BK.keys.right = d > 0; BK.keys.left = d < 0; leap = true; } }
+        else { const at = seq.findIndex(([x0, len, row]) => Math.abs(row * 16 - feet) < 3 && P.x / 16 >= x0 - 0.4 && P.x / 16 <= x0 + len + 0.4);
+          if (at === 1 || at === 2) { const q = seq[at], id = at === 1 ? 'A' : 'B', lip = lipOf(q), toLip = (lip - P.x) * d;
+            BK.keys.right = BK.keys.left = false; leap = false;
+            if (toLip > 7) { BK.keys.right = d > 0; BK.keys.left = d < 0; }
+            else { const top = q[2] * 16, ready = ms.some(m => m.orrery === id && m.dy < 0 && m.y - top > 2 && m.y - top < 14 && Math.abs((d > 0 ? m.x : m.x + m.w) - lip) < 16);
+              if (ready) { BK.keys.right = d > 0; BK.keys.left = d < 0; } still = 0; } } } } }
     /* THE NEW FLIGHTS (claude/archmage2b): it waits out a clock weight's swing (it walks on only when no weight meets it on the way, unless
        where it stands is no safer), and it meets his books - a held guard turns them; the rest jump them as they come */
     const fx = BK.chase && BK.chase.stairFx && BK.chase.stairFx();

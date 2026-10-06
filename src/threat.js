@@ -125,7 +125,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE HARVEST FAIR (src/mummer.js; docs/briefs/harvest-fair.md): a mummer is 40 health and a 14 blow that comes only from behind you, told by a
      glowing mask and its bells - a read (where to LOOK) rather than a fight. WEIGHED UP after Daniel approved the greybox (2026-09-29): the fair read INDEX 34 against ~117 and no bodies are to be added, so a mummer is a 5 (constant attention: you may never turn your back) and the hobby-horse a 6 (the elite that charges 22 the moment
      a back is turned, committed and long) */
-  mummer: 5, hobbyhorse: 6, stringjack: 5, barker: 7,   /* (claude/fairfix) the string-jack weighs a mummer; the barker an elite caller who does little harm himself but turns every hero */
+  mummer: 5, hobbyhorse: 6, stringjack: 5, barker: 7, wickerman: 7,   /* (claude/fairfix) the string-jack weighs a mummer; the barker an elite caller who does little harm himself but turns every hero */
   stagehand: 5,   /* THE STAGEHAND (the Maskwright's Theatre): 56 health, an unblockable 18 in front and a 16 dropped on you from above; slow */
   spotlamp: 0, flylock: 0, flatwinch: 0, stagetrap: 0, startrap: 0,   /* THE MASKWRIGHT'S THEATRE's machinery (src/theatre-rig.js): a lamp, a rope-lock, a winch, a stage trap and the star trap fight nobody */
   /* THE FOG CANAL (src/canal-foes.js; docs/briefs/fog-canal.md): the GRINDYLOW is 20 health and a told ankle grab (!!, jump it) that pulls you into the
@@ -138,6 +138,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE SANDWORM (claude/desertfoes, src/desert-foes2.js): the sand goblin's buried strike with the Dune Worm's told ripple and an open beat after it: a 2.5 */
   sandworm: 2.5,
   waterthief: 3, cisternqueen: 6, gangleader: 5, qwindlass: 0, djwindlass: 0, djinn: 6, skinwell: 0, mudwall: 0, oilfire: 0, windlass: 0, cistern: 0,
+  sconce: 0, nestplug: 0, greatlamp: 0, fountain: 0,   /* THE UNDERWELL (claude/underwell): its wall torches, brood nests, great lamp and dry fountain are things you work, not foes */
   /* THE RED GORGE (src/red-gorge.js, claude/redgorge): the CLIFF RAPTOR is the vulture's dive (a 2) over a bridge with a flood under it: a 2.5. THE GREAT RED CRAB is a
      boss: a 6. The gorge's sluice wheels, jams, water-wheels and the old nest fight nobody */
   raptor: 2.5, gorgecrab: 6, sluice: 0, jam: 0, waterwheel: 0, oldnest: 0,

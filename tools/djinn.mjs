@@ -75,7 +75,7 @@ ok(DJ.bailCap > DJ.openCap && DJ.bailCap <= 0.1, 'a bail (two steps to earn) tak
     if (S.pose === 'column' && S.bucket.st === 'up' && DJG.underShaft(e, S) && !(S.ward > 0) && !S.n.bailed && !S.struck) { S.struck = 1; hx = h.x; S.bucket.who = { x: G.ledgeE[0] + 30, onLedge: 'E' }; DJG.strikeWindlass(e, S, c); }
     if (S.bucket.st === 'fall') x0 = e.x;
     if (e.mode === 'bailed') { S.bx = e.x; S.by = e.y; } if (S.n.bailed && e.mode !== 'bailed' && S.ward > 0 && S.wardSeen == null) S.wardSeen = S.ward; } });
-  ok(wound >= 1 && said.includes('THE BUCKET WINDS UP: STRIKE AGAIN TO DROP IT') && said.includes('THE BUCKET HANGS READY: DROP IT WHEN HE IS UNDER THE SHAFT'), 'P3: the bucket lies in the flood - a strike WINDS it up (told), and it hangs ready (told): the bail is two steps');
+  ok(wound >= 1 && said.includes('THE BUCKET WINDS UP: STRIKE OR E AGAIN TO DROP IT') && said.includes('THE BUCKET HANGS READY: DROP IT WHEN HE IS UNDER THE SHAFT'), 'P3: the bucket lies in the flood - a strike WINDS it up (told), and it hangs ready (told): the bail is two steps');
   ok(r.S.n.bailed >= 1 && said.includes('THE BUCKET BAILS HIM OUT: WADE IN AND CUT HIM'), 'P3: dropped while he is under the shaft, the great bucket BAILS him out (told: WADE IN AND CUT HIM)');
   ok(r.S.bx === x0 && Math.abs(r.S.bx - G.mid) <= DJ.shaftR && r.S.by === G.floor && r.hero.x === hx, 'he is bailed out WHERE HE IS - under the shaft, in the flood (x ' + r.S.bx.toFixed(0) + ', the shaft ' + G.mid + '); the hero is not moved');
   ok(r.maxOpen >= 3, 'he lies spilled in the flood, open ' + r.maxOpen.toFixed(1) + ' s');
@@ -86,6 +86,15 @@ ok(DJ.bailCap > DJ.openCap && DJ.bailCap <= 0.1, 'a bail (two steps to earn) tak
 { const S = DJG.newShow(G), c = world(), e = { t: 'djinn', x: G.mid + 120, y: G.floor, hp: 300, maxHp: 1000, face: -1, mode: 'hover', modeT: 5, open: 0, alive: true }; S.ph = 3; S.pose = 'column'; S.flood = true; S.water = DJ.waterH; S.bucket = { st: 'up', t: 0 };
   DJG.strikeWindlass(e, S, c); for (let i = 0; i < 60; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: G.windlass, y: G.floor, ground: true, alive: true, pp: {} }], c);
   ok(!DJG.djOpen(e) && S.n.misses === 1 && said.includes('IT MISSES: HE WAS NOT UNDER THE SHAFT') && S.bucket.st === 'down', 'dropped while he is away from the shaft, the bucket MISSES (told) and lies in the flood again: wind it again'); }
+/* (claude/archmage4, Daniel approved 10-05) THE WINDLASS BY HAND: in the flood E at the windlass winds it and drops it as a strike does; away from it, or
+   before the flood, E does nothing to it (it keeps its pour) */
+{ const S = DJG.newShow(G), c = world(), e = { t: 'djinn', x: G.mid, y: G.floor, hp: 300, maxHp: 1000, face: -1, mode: 'hover', modeT: 5, open: 0, alive: true }, w = { x: G.windlass, y: G.floor };
+  S.ph = 2; const before = DJG.windByHand(e, S, { x: G.windlass, y: G.floor }, w, c) || S.bucket.st !== 'up';
+  S.ph = 3; S.pose = 'column'; S.flood = true; S.water = DJ.waterH; S.bucket = { st: 'down', t: 0 };
+  const far = DJG.windByHand(e, S, { x: G.windlass + DJG.WIND_R + 12, y: G.floor }, w, c), wound = DJG.windByHand(e, S, { x: G.windlass + 10, y: G.floor }, w, c) && S.bucket.st === 'wind';
+  for (let i = 0; i < 60 * DJ.windT + 5; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: G.windlass, y: G.floor, ground: true, alive: true, pp: {} }], c);
+  const up = S.bucket.st === 'up', dropped = up && DJG.windByHand(e, S, { x: G.windlass - 10, y: G.floor }, w, c) && S.bucket.st === 'fall';
+  ok(!before && !far && wound && up && dropped && S.n.byHand === 2, 'P3: E at the windlass WINDS the bucket up and DROPS it, as a strike does (2 by hand); out of reach (' + (DJG.WIND_R + 12) + ' px) or before the flood, E leaves it alone'); }
 /* THE TIDE (claude/djinn3, Daniel 10-04: "make the flood work against you"): low -> the surge told -> over the ledges -> it ebbs, again and again */
 { const hits = []; let maxW = 0, minAfter = 1e9, sawSurge = false, cyc = 0, last = null; const r = run(70, { hp: () => 300, x: G.ledgeE[0] + 30, ledge: 'E', each: (t, e, S, c, h) => { h.y = G.ledgeY;
     if (!c.tapped) { c.tapped = 1; c.hit = (bx, d, name, o = {}) => { if (o.flood && h.y > bx[2] - 2 && h.y < bx[3] + 24) hits.push({ t, name, w: S.water }); }; }

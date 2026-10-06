@@ -4,7 +4,7 @@
      2. THE STOCKADE's ambush room, THE KENNEL YARD (an archer captain, a sprig, a hound's pounce, a shield) through BK.ambushLab, the
         dice pinned (seed 2024): the room played straight, health put back, what it took counted
    Prints one row per fight, and the crouch's own counters (BK.crouchA, when there is one). Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const label = process.argv[2] || 'run', HEROES = process.argv[3] ? process.argv[3].split(',') : ['knight', 'warden', 'pirate'], ONLY = process.argv[4] || '';
 const pg = await openPage({ audio: false, fonts: false });
 try {

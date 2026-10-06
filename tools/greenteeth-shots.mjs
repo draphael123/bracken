@@ -29,6 +29,12 @@ try {
       if(boss.phase===3&&s.fog>0.8&&m!=='fogTell'&&!got.has('11-the-fog'))snap('11-the-fog','PHASE THREE\\'S BEAT: the fog comes down and the water goes out - the narrowboat\\'s back is a shallow');
       if(m==='stranded'&&boss.phase===3&&boss.modeT<2.6)snap('12-aground','THE LURE: a hero on the boat drew her charge across the shallow - AGROUND, open');
       if(m==='netTell'&&tell&&tell.t<0.3)snap('13-her-net','HER WEED NET (phase three\\'s new blow, !!): the arc to where it will land - step out of it');
+      if(m==='fogTell'&&boss.modeT<0.9)snap('16-fog-teach','(claude/jenny3) THE FOG\\'S TEACH BEAT: the fog comes down and the sunken boat lights up through it');
+      if(MM.lureLive(boss,s)&&P.ground&&Math.abs(P.y-s.A.wreck.y)<4&&!tell)snap('17-lure-lit','(claude/jenny3) THE LURE, LIVE: the boat glows gold with its glint - stand on it');
+      if(m==='chargeTell'&&MM.lureLive(boss,s)&&tell&&tell.t<0.35)snap('18-lure-charge','(claude/jenny3) HER CHARGE AT THE LIT BOAT: the gold line across the shallows to where she runs aground');
+      if(m==='stranded'&&boss.lure&&boss.modeT<2.4)snap('19-stranded-big','(claude/jenny3) AGROUND: the big gold ring, STRANDED!, the clock and the green line of her share left');
+      if(m==='vineTell'&&tell&&tell.t<0.35)snap('20-her-vine','(claude/jenny3) HER VINE (!!): the rope traced out along your ledge, the red band at your feet - jump it');
+      if(m==='vine'&&tell===undefined&&s.arms.some(a=>a.k==='vine'&&(a.r||0)>40))snap('21-vine-out','(claude/jenny3) HER VINE whipping out along the ledge');
       if(s.wary&&s.wary.t>2.2&&!MM.gtOpen(boss)&&m!=='charge')snap('14-wary','SHE IS WARY after an opening: the ring of weed about her - the trick that opened her will not work again until it fades');
     }});
     for(let i=0;i<90;i++){BK.P.inv=99;BK.sim(1);if(i%3===0)BK.step(1);}BK.step(1);snap('15-the-lock-lies-still','HER DEATH: the lock lies still, and the lower gate opens on the canal');

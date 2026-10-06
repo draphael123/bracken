@@ -12,7 +12,7 @@ export const THIN = { off: false };
 export const CHECK_PIN = {
   hanging: [[10, 37], [96, 37]],   /* tools/hanging-exam.mjs: the lantern stair keeps both checkpoints that bracket its bridge (S3: the exam has one before it and one outside) */
   witchlight: [[519, 26]],   /* tools/whelps.mjs: a checkpoint at WL.EXAM[0], the door of the exam (S3) */
-  fallingtower: [[30, 299], [40, 239], [54, 217], [50, 179], [57, 116], [53, 56], [101, 139]],   /* tools/tower-ascent.mjs: a checkpoint on EACH of the tower's floors (a floor is a section: 7 of them, the mini's door covers the burst cistern), and the last before the sky on the crown's last climb; tools/tower-chase.mjs: ONE on the spiral stair, at its FOOT (101,139 since claude/archmage2b: the stair is nine flights deep and you come out of his ring on its right; claude/towerscroll: the rising dark's start line wants a shrine just under it, src/chase.js; boarding the carpet sets the door one) */
+  fallingtower: [[30, 299], [40, 239], [54, 217], [50, 179], [57, 116], [53, 56], [84, 146]],   /* tools/tower-ascent.mjs: a checkpoint on EACH of the tower's floors (a floor is a section: 7 of them, the mini's door covers the burst cistern), and the last before the sky on the crown's last climb; tools/tower-chase.mjs: ONE on the spiral stair, at its FOOT (84,146 since claude/archmage3: ten flights deep with THE ORRERY LOFT, and you come out of his ring on its LEFT; claude/towerscroll: the rising dark's start line wants a shrine just under it, src/chase.js; boarding the carpet sets the door one) */
   keep: [[634, 58]],   /* tools/keep-rework.mjs: a checkpoint at THE KING'S DOOR's first column (the exam's door, S3; the one outside the arena is found by the picker) */
   burial: [[369, 21]],   /* tools/burial2.mjs: a checkpoint at the exam's door (S3, within 3 columns of column 367) */
   marsh: [[391, 17]],   /* tools/raft-call.mjs: the dock checkpoint - a death on the Grove raft wakes you on the dock, and the raft comes back to you */
@@ -48,6 +48,6 @@ export const CHECK_DROP = {
   burning: [[404,25]],
   witchlight: [[45,78],[80,76],[143,76],[171,76],[242,50],[256,40],[290,40],[360,40],[476,25]],
   oreroad: [[5,36],[41,36],[64,36],[100,36],[124,36],[148,28],[200,21],[229,27],[266,34],[300,30],[350,20],[382,16],[415,12],[454,12]],
-  unburied: [[6,36],[80,38],[196,41],[261,20],[263,36],[412,36]],
+  unburied: [[6,36],[80,38],[196,41],[261,20],[263,36],[484,36]],
   caravan: [[5,23],[128,29],[266,27],[378,30],[463,30]],
 };

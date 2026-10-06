@@ -3,7 +3,8 @@
    fought, so the same command measured THE FIRST DEATH KNIGHT before the lane and THE DEATH KNIGHT after it. Prints a row per fight
    (outcome, seconds, how often he was OPENED, the damage taken a minute, which of his moves did it) and the summary; with a tag the
    rows and the summary go to work/unburied3/pilot-<tag>.txt as well. Not in the suite: it is a pilot, and it is long. */
-import { openPage, ROOT } from './cdp.mjs';
+import { ROOT } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* campaign-level hero (tools/boss-level.mjs) */
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 const tag = process.argv[2] || '', seeds = +(process.argv[3] || 3), HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];

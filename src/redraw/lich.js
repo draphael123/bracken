@@ -41,9 +41,10 @@ function mage(o) {
   rect(g, ax, sy + 4, 1, 11, BONE[1]);
   for (let r = 0; r < 4; r++) { line(g, ax - 4, sy + 5 + r * 3, ax + 4, sy + 4 + r * 3, BONE[2]); rect(g, ax - 4, sy + 6 + r * 3, 1, 1, BONE[0]); }
   // ---- THE STAFF, behind the far arm: cracked, green fire in the crack and in its head ----
-  const stx = ax + 11 + (o.staffX || 0), sty = sy - 18 + (o.staffY || 0), stb = ay - 6 + sink;
-  line(g, stx, sty, stx - Math.round(lean * 4), stb, WOOD[1], 2); line(g, stx + 1, sty, stx + 1 - Math.round(lean * 4), stb, WOOD[2]);
-  for (let y = sty + 6; y < stb - 4; y += 5) { const cx = stx - Math.round(lean * 4 * (y - sty) / (stb - sty)); rect(g, cx, y, 1, 3, o.dim ? WOOD[0] : GREEN[1]); rect(g, cx + 1, y + 2, 1, 2, WOOD[0]); }
+  const P0 = o.pose || 'idle', point = P0 === 'cast' || P0 === 'both';   /* (claude/archmage3, Daniel 10-05: "he looks like he punches") CASTING, THE STAFF IS POINTED: its head forward and up at (ax + 20, sy - 8), where every bolt leaves (undead-mage.js MAGE.staff) */
+  const stx = point ? ax + 20 : ax + 11 + (o.staffX || 0), sty = point ? sy - 8 : sy - 18 + (o.staffY || 0), stb = ay - 6 + sink, sbx = point ? ax + 1 : stx - Math.round(lean * 4), sby = point ? sy + 22 : stb;
+  line(g, stx, sty, sbx, sby, WOOD[1], 2); line(g, stx + 1, sty, sbx + 1, sby, WOOD[2]);
+  for (let k = 0.2; k < 0.85; k += 0.16) { const cx = Math.round(stx + (sbx - stx) * k), y = Math.round(sty + (sby - sty) * k); rect(g, cx, y, 1, 3, o.dim ? WOOD[0] : GREEN[1]); rect(g, cx + 1, y + 2, 1, 2, WOOD[0]); }
   rect(g, stx - 3, sty - 2, 7, 4, BONE[1]); rect(g, stx - 2, sty - 1, 5, 2, BONE[0]);   /* a claw of bone holds the fire */
   if (!o.dim) flame(g, stx, sty - 1, o.spell ? 7 : 5, ph, o.spell && o.spell !== 'storm' ? SPELL[o.spell] : GREEN); else rect(g, stx - 1, sty - 3, 2, 2, GREEN[0]);
   // ---- THE ARMS: bone out of rotted sleeves ----
@@ -52,9 +53,9 @@ function mage(o) {
     if (orb) { circle(g, x1 + 3, y1 - 1, 3, orb[0]); circle(g, x1 + 3, y1 - 1, 2, orb[1]); rect(g, x1 + 3, y1 - 2, 1, 1, orb[2]); } };
   const P = o.pose || 'idle', orb = o.spell ? SPELL[o.spell] : null;
   if (P === 'idle') { arm(ax + 6, sy + 2, stx - 1, sy + 12); arm(ax - 6, sy + 2, ax - 8, sy + 16); }
-  else if (P === 'cast') { arm(ax + 6, sy + 2, stx - 1, sy + 10); arm(ax - 2, sy + 2, ax + 15, sy + 5, orb); }
+  else if (P === 'cast') { arm(ax + 6, sy + 2, ax + 13, sy + 6); arm(ax - 4, sy + 3, ax + 7, sy + 13); }   /* both hands on the pointed staff (the spell burns in its head, not a fist) */
   else if (P === 'raise') { arm(ax + 6, sy + 1, stx - 1, sy - 6); arm(ax - 6, sy + 1, ax - 10, sy - 14, orb); }
-  else if (P === 'both') { arm(ax + 6, sy + 2, ax + 16, sy + 3, orb); arm(ax - 2, sy + 3, ax + 13, sy + 8, orb); }
+  else if (P === 'both') { arm(ax + 6, sy + 2, ax + 13, sy + 6); arm(ax - 4, sy + 3, ax + 7, sy + 13, orb); }   /* the staff pointed, the far hand dark with it */
   else if (P === 'slump') { arm(ax + 6, sy + 3, stx - 2, sy + 16); arm(ax - 6, sy + 3, ax - 6, sy + 19); }
   // ---- THE HOOD AND THE SKULL ----
   const hx = ax + (o.headX || 0), hy = sy - 3 + (o.headY || 0);

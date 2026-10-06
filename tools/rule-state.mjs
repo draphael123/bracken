@@ -40,7 +40,6 @@ export const CURVE_REPORT_ONLY = {
   causeway: 'act 3: 71% lost, 0 deaths - EASY for act III',
   theatre: 'act 4: 61% lost, 0 deaths - EASY for act IV (floor 120%, 1 death)',
   fair: 'act 4: 198% lost, 0 deaths - no deaths (act IV wants >= 1)',
-  fallingtower: 'act 4: 566% lost, 13 deaths - over the act IV death ceiling (12)',
   redgorge: 'act 5: 120% lost, 3 deaths - under the act V health floor (150%)',
 };
 /* THE RULE'S STATE, by the built level's own keys. Each holds places: {x0,x1} / {x} / [x0, x1, ..] in tiles or pixels (read by size). */

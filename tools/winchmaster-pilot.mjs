@@ -5,7 +5,7 @@
 // housing he swings to next) - `opened` is how many times a drum was jammed, `housings` how many he was knocked off in a row.
 // Its port is this checkout's own (tools/ports.mjs), so another worktree's pilot is never the page measured.
 // usage: node tools/winchmaster-pilot.mjs 4
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 import { portFor } from './ports.mjs';
 const passes = +(process.argv[2] || 4);
 const pg = await openPage({ port: portFor(6), audio: false, fonts: false });

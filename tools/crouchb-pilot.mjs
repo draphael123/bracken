@@ -5,7 +5,7 @@
         each frame, what it took counted), Math.random pinned per hero
    Prints one row per fight and what the crouch did in it (BK.crouchB().stats; null on a base that has no crouch twists). Not in the
    suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const label = process.argv[2] || 'run', HEROES = ['paladin', 'geomancer', 'reaper'];
 const pg = await openPage({ audio: false, fonts: false });
 const stats = () => pg.evalp('window.BK.crouchB ? BK.crouchB().stats : null');

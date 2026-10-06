@@ -203,7 +203,8 @@ try {
      lower paddle with her at that gate drains the lock from under her - stranded, open (THE FOG CANAL holds her) */
   {const b=boot('canal');const S=BK.greenteethHands().show(),G=S.A,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
-   let op=0,mode=null;for(let i=0;i<60*6&&!(op>0);i++){P.hp=P.maxHp;P.x=G.E.paddle.x-14;P.y=G.walk;P.vy=0;P.face=1;b.x=Math.min(b.x,G.E.face-90);if(!S.pad.E.open&&!(S.pad.E.cd>0)&&P.atk<0)BK.press('atk');BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stranded')mode='stranded';}
+   for(let i=0;i<60*4&&(S.arms.length||BK.bossOpen(b));i++){P.hp=P.maxHp;P.x=G.W.stand;P.y=G.walk;P.vy=0;BK.sim(1);}   /* (claude/jenny3: let the blow she was throwing at the west walkway land there first - a windup left in the air when the hero is moved across the lock went into the far timber and opened her; and 12 s, not 6, for her to swim the lock to the east gate: her vine at the hero on the walkway holds her up on the way) */
+   let op=0,mode=null;for(let i=0;i<60*12&&!(op>0);i++){P.hp=P.maxHp;P.x=G.E.paddle.x-14;P.y=G.walk;P.vy=0;P.face=1;b.x=Math.min(b.x,G.E.face-90);if(!S.pad.E.open&&!(S.pad.E.cd>0)&&P.atk<0)BK.press('atk');BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stranded')mode='stranded';}
    out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),drains:S.n.drain};}
   /* THE CISTERN QUEEN (claude/welltown3): a minute of her left alone opens nothing; a pour while she walks the floor runs into the sand; a pour on her
      mound floods her burrow - SOAKED, open; on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -
@@ -223,7 +224,7 @@ try {
    take('bailed',()=>S.ph===3&&S.pose==='column'&&b.mode!=='rise'&&((S.bucket.st==='down'&&!(S.bucket.t>0))||(S.bucket.st==='up'&&Math.abs(b.x-G.mid)<=24&&!(S.ward>0))),()=>{P.x=G.crank-12;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=1;if(P.atk<0)BK.press('atk');});
    out.djinn={alone:+alone.toFixed(1),open:op,n:{mud:S.n.mud,doused:S.n.doused,bailed:S.n.bailed}};}
   if(LEVELS.some(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}))
-  {const b=boot('welltown');const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
+  {const b=boot(LEVELS.find(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}).id);const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let dry=0;for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}P.skin.sips=3;P.x=b.x-60;P.face=1;BK.press('talk');for(let i=0;i<30;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const drySips=P.skin.sips;
    const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}

@@ -7,9 +7,10 @@
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
+import { levelOverride, campaignLevel } from './boss-level.mjs';   /* --level=N overrides the campaign level (tools/boss-level.mjs) */
 const salts = (process.argv[2] || '1').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
-const lvl = Math.max(1, depthsOf(LEVELS).redgorge ?? 1);
+const lvl = levelOverride() ?? campaignLevel('redgorge');
 let pg = await openPage({ audio: false, fonts: false }); const rows = [];
 /* a fresh page for every fight; a page that will not come back ("the fresh lab page did not initialize", under load) is replaced by a new browser */
 const fresh = async () => { for (let k = 0; ; k++) { try { await pg.reload(); return; } catch (e) { if (k >= 2) throw e; try { pg.close(); } catch {} pg = await openPage({ audio: false, fonts: false }); } } };

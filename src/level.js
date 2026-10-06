@@ -10,6 +10,7 @@ import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (doc
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
 import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js';   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE GREAT RED CRAB (src/gorge-crab.js) */
+import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
@@ -3145,6 +3146,11 @@ function highcrown() {
   for (const x of [217, 222, 229]) ent('qpillar', x, 19, { top: 10 });
   for (const x of [214, 220, 226, 232, 238, 245]) ent('weight', x, 10, { len: 6, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them - and a jump and a swing cuts one down on HER
   ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. BREAK THE PILLAR SHE HOLDS COURT BESIDE: IT COMES DOWN ON HER.' });
+  /* HER HALL'S BELL AND ITS GRATE (claude/bosswave2: the level's rule in her fight - EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT; the
+     audit's "the Queen ignores it"). A grate hangs between her middle pillars on the bell's rope: strike the bell while she stands under it and the
+     grate comes down on HER - pinned, as a pillar or a chandelier pins her (main.js gqPin). Rung while she is anywhere else, it only shuts the hall. */
+  ent('winch', 227, 18, { gate: 225, gy0: 16, gy1: 19, drop: true, hold: 7, bossGate: true, bell: true });
+  ent('sign', 231, 19, { text: 'THE HALL BELL DROPS ITS GRATE. RING IT WHILE SHE STANDS UNDER.' });
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
@@ -7734,7 +7740,7 @@ export const LEVELS = [
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
   { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'LIGHT THE GAS. THE DEAD WILL NOT RISE IN ITS LIGHT.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
   { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'witchlight' },   /* (batch 4c: the Witchlight Stair is the road up to it now) */
-  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. CRACKED STONE GOES AFTER THREE BEATS, AND HIS DARK RISES UP HIS STAIR UNDER YOU.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage' },
+  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. CRACKED STONE GOES AFTER THREE BEATS, AND HIS DARK RISES UP HIS STAIR UNDER YOU.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage', leadsTo: 'caravan' },   /* (claude/archmage3, Daniel 10-04) beating him, his portal TAKES YOU TO THE DESERT: the map walks you on into THE SUNKEN CARAVAN (main.js, the win card) */
   /* THE BURNING VILLAGE (batch 5): the Pyromancer's class level, off the Stockade on the road to Sporewood. Appended here, not
      between them, so no level's index moves (the map's nodes and the saves count by index) */
   /* CLASS-LEVEL SIDE ROAD (2026-09-25, Daniel: "they weren't accessible... side paths that are locked until you do
@@ -7777,7 +7783,11 @@ export const LEVELS = [
   { id: 'shopWell', name: 'THE WELL STORE', sub: 'ask the keeper', build: theShopWell, hidden: true },   /* THE WELL TOWN's walk-in store (claude/welltown): APPENDED, like every level */
   /* THE RED GORGE (claude/redgorge, the GREYBOX, 2026-10-02): desert arc level 3 - a climb up a canyon whose channel floods on a clock - after THE WELL TOWN. APPENDED, so no
      index and no save moves. THE GREAT RED CRAB is its boss, on the old dam at its head (the desert-arc concept: a new flood-tied ground boss; THE ROC stays for THE SKY ROAD) */
-  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE CHANNEL. A SHUT GATE HOLDS ONE.', build: () => buildRedGorge({ painter, T, TS }), needs: 'welltown' },
+  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE CHANNEL. A SHUT GATE HOLDS ONE.', build: () => buildRedGorge({ painter, T, TS }), needs: 'underwell' },   /* (claude/underwell: THE UNDERWELL stands between the town and the gorge now) */
+  /* THE UNDERWELL (claude/underwell, the GREYBOX, 2026-10-05): the old cistern tunnels under THE WELL TOWN, dry since the Djinn's well took the water - lamp oil,
+     the Cistern Queen's brood, the water skin scarce. APPENDED, so no index and no save moves; its place on the road is its needs (and the gorge's) and its map node.
+     THE CISTERN QUEEN (src/cistern-queen.js, benched by claude/welltown5) is its boss */
+  { id: 'underwell', arc: 'the desert', name: 'THE UNDERWELL', sub: 'the dry cisterns under the well town', rule: "STRIKE A TORCH AND THE OIL BURNS - THE BROOD WON'T CROSS FIRE. POUR WATER WHERE THE FIRE MUST NOT GO.", build: () => buildUnderwell({ painter, T, TS }), needs: 'welltown' },
   /* THE SKY ROAD (claude/skyroad, the GREYBOX, 2026-10-05): the main road's climb off the high moor's crags to THE ROC's eyrie - after GALE MOOR, before THE ORE ROAD
      (Daniel 10-03: "right after Gale Moor"; the moor keeps sideways gusts, this level owns the vertical air). APPENDED, so no index and no save moves */
   { id: 'skyroad', name: 'THE SKY ROAD', sub: 'up the hot air to the eyrie', rule: 'THE SUN WARMS THE ROCK AND THE AIR RISES: RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.', build: () => buildSkyRoad({ painter, T, TS }), needs: 'moor' },

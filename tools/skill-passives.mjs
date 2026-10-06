@@ -13,7 +13,7 @@ for(const [h,id]of[['knight','flurry'],['pyro','heatShield'],['paladin','sanctua
  if(h==='pirate'){const hp=BK.P.hp;BKT.acorns().push({x:BK.P.x,y:BK.P.y-6,got:false,ph:0});BK.sim(3);value=BK.P.hp-hp;}
  if(h==='reaper'){BKT.PROG.skillOwned[h].summonSkeleton=true;BKT.PROG.loadouts[h]=[null,'summonSkeleton'];BK.press('skill2');BK.sim(1);value=BK.P.cds.summonSkeleton;}
  if(h==='geomancer'){BK.P.tremor=0;BK.geo().gainTremor(10);value=BK.P.tremor;}   /* RUMBLE: the same ten of TREMOR is fifteen */
- if(h==='warden'){const e={x:BK.P.x+35,y:BK.P.y,w:8,h:14,alive:true,t:'sprig'};value=BKT.tipPay(e);}
+ if(h==='warden'){const e={x:BK.P.x+30,y:BK.P.y,w:8,h:14,alive:true,t:'sprig'};value=BKT.tipPay(e);}
  values.push(+value.toFixed(3));}node.level=lv0;
  rows.push({hero:h,id,baseline:values[0],equipped:values[1]});}
 prep('reaper',['deathGrip']);const st=BK.P.st;BK.press('throw');BK.sim(1);if(BK.P.st!==st||BK.P.cds?.deathGrip)throw Error('empty grip spent resource');

@@ -134,9 +134,32 @@ export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the 
 export const CHIP_MINI = new Set(['greathound', 'bosun', 'lancer', 'homunculus']);
 export function install(helpers) { H = helpers || {}; }
 
+/* A MINI'S OPENING IS WORTH A THIRD OF HIM AT MOST (claude/bosswave2, Daniel 10-04, from BOSS WAVE 1's hound and homunculus): one opening
+   is never the whole duel. A hero's blows inside one of his openings come off a purse of MINI_CAP of his health; the blow that empties it
+   lands what was left, he GATHERS HIMSELF (told over him), and until that opening ends he is shut (openOf false): the rest is his
+   outside value - the chip for a mini on CHIP_MINI, his plain blow (no opening's bonus) for the rest. The purse is refilled when the
+   opening ends (capStep, every frame). MINI_OWN_CAP already cap their own windows the same way, in their own code. */
+export const MINI_CAP = 1 / 3;
+export const MINI_OWN_CAP = new Set(['greathound', 'homunculus', 'gangleader']);
+const ruleOpen = e => { if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true; const r = OPEN_RULE[e.t]; if (!r) return null; try { return !!r(e); } catch { return null; } };
+const capped = e => !!e && e.xpRole === 'mini' && !MINI_OWN_CAP.has(e.t);
+/* dmg: what his own code made of a hero's blow; raw: the blow before it. Returns what comes off the bar. say(e) tells the shut. */
+export function miniCap(e, dmg, raw, say) {
+  if (!capped(e) || !(dmg > 0)) return dmg;
+  if (e.capShut) return CHIP_MINI.has(e.t) ? dmg : Math.min(dmg, Math.max(1, Math.round(raw)));   /* shut: chipOf already scratched a chip mini; the rest lose the opening's bonus */
+  if (ruleOpen(e) !== true) return dmg;
+  if (e.capLeft === undefined) e.capLeft = Math.max(1, Math.round((e.maxHp || e.hp0 || e.hp) * MINI_CAP));
+  if (dmg < e.capLeft) { e.capLeft -= dmg; return dmg; }
+  const out = e.capLeft; e.capLeft = 0; e.capShut = true; e.capN = (e.capN || 0) + 1; if (say) say(e);
+  return out;
+}
+/* every frame for a mini with a purse open: the opening over, the purse is full again and he can be opened again */
+export function capStep(e) { if (!capped(e) || (e.capLeft === undefined && !e.capShut)) return; if (ruleOpen(e) !== true) { e.capLeft = undefined; e.capShut = false; } }
+
 /* IS HE OPEN? true / false for a boss or mini with a rule, null for anything else (the boss lab's own fallback then answers) */
 export function openOf(e) {
   if (!e) return null;
+  if (e.capShut && capped(e)) return false;   /* (claude/bosswave2) a mini who has given a third of himself to this opening has gathered himself: shut until it ends */
   if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true;   /* (claude/bosswave1) a mini on the chip is open only in his own told opening: broken he is stood still, not opened - the
      mash bot broke them with taps and a spear held out, and took the Serjeant and the Great Hound in those breaks */
   const r = OPEN_RULE[e.t]; if (!r) return null;

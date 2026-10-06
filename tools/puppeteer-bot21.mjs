@@ -6,8 +6,9 @@ import { writeFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
+import { levelOverride, campaignLevel } from './boss-level.mjs';   /* --level=N overrides the campaign level (tools/boss-level.mjs) */
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
-const heroes = opt('heroes', 'knight,warden,pyro').split(','), salts = +opt('salts', 7), secs = +opt('secs', 300), OUT = opt('out', ''), lvl = Math.max(1, depthsOf(LEVELS).theatre ?? 1);
+const heroes = opt('heroes', 'knight,warden,pyro').split(','), salts = +opt('salts', 7), secs = +opt('secs', 300), OUT = opt('out', ''), lvl = levelOverride() ?? campaignLevel('theatre');
 const rows = []; let pg = await openPage({ audio: false, fonts: false });
 try {
   for (let s = +opt('from', 1); s <= salts; s++) for (const h of heroes) { let row;

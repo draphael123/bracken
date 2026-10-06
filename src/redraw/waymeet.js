@@ -350,13 +350,15 @@ export function bakeDrunk(look) {   /* look 'patron': THE MASKED PATRON of the M
     circle(g, CX - 9, G - 5, 4, C.skin); rect(g, CX - 11, G - 3, 5, 2, C.stub); rect(g, CX - 10, G - 10, 3, 2, C.nose); rect(g, CX - 13, G - 7, 2, 4, C.hair);
     limb(g, CX - 4, G - 5, CX - 9, G - 10, 3, 3, C.skin);
     rect(g, CX - 2, G - 12, 2, 1, '#fff6c8'); rect(g, CX + 1, G - 14, 1, 2, '#fff6c8');   /* stars, a little */
+    if (look === 'shy') { rect(g, CX - 15, G - 9, 3, 7, '#e8c878'); rect(g, CX - 16, G - 10, 1, 9, '#e8c878'); rect(g, CX - 14, G - 9, 1, 7, '#b8382c'); }   /* (claude/fairfix6) the stallholder keeps his boater on, knocked to the back of his head: bare, the drunk's tufts read as ears */
     return c; };
   const kneel = () => { const [c, g] = canvas(W, H), hipX = CX - 1, hipY = G - 8, shX = hipX + 3, shY = hipY - 10;
     limb(g, hipX, hipY, hipX + 6, hipY + 1, 5, 4, C.hose); limb(g, hipX + 6, hipY + 1, hipX + 6, G - 2, 4, 3, C.hose); rect(g, hipX + 5, G - 2, 5, 2, C.boot);
     limb(g, hipX - 1, hipY, hipX - 5, G - 2, 5, 4, C.hoseD); rect(g, hipX - 8, G - 2, 5, 2, C.boot);
     P(g, [[shX - 6, shY], [shX + 5, shY], [hipX + 7, hipY - 2], [hipX - 6, hipY + 1]], 'jer'); ellipse(g, hipX + 3, hipY - 3, 4, 3, C.belly);
     const hx = shX + 2, hy = shY - 4; circle(g, hx, hy, 4.2, C.skin); rect(g, hx - 3, hy + 1, 7, 3, C.stub); rect(g, hx + 3, hy - 1, 3, 3, C.nose);
-    P(g, [[hx - 4, hy - 2], [hx - 3, hy - 6], [hx, hy - 4], [hx + 2, hy - 7], [hx + 4, hy - 3]], 'hair');
+    if (look === 'shy') { rect(g, hx - 6, hy - 4, 13, 1, '#e8c878'); rect(g, hx - 4, hy - 7, 9, 3, '#e8c878'); rect(g, hx - 4, hy - 5, 9, 1, '#b8382c'); }   /* (claude/fairfix6) the boater stays on his head as he gets up */
+    else P(g, [[hx - 4, hy - 2], [hx - 3, hy - 6], [hx, hy - 4], [hx + 2, hy - 7], [hx + 4, hy - 3]], 'hair');
     limb(g, shX + 3, shY + 2, hipX + 8, hipY - 1, 4, 3, C.skin);                                               /* a hand on his knee */
     return c; };
   const F = [

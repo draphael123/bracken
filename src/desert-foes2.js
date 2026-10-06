@@ -24,6 +24,9 @@ export const PATCH = { life: 8, w: 22, tick: 0.6, dmg: 4, max: 2, deathLife: 6 }
 export const VENOM = { max: 3, slow: 0.25, t: 6 };                                    /* THE CISTERN QUEEN's (src/cistern-queen.js CQ.venom), restated so the pure check needs no boss module */
 export const SANDWORM = { hp: 30, wake: 120, wakeY: 40, rippleV: 64, rippleMin: 0.7, rippleMax: 3.0, strikeR: 14, lungeTell: 0.6, lunge: 0.28, exposed: 1.3, burrow: 0.45,
   under: 0.55, ahead: 64, dmg: 14, lungeR: 13, lungeH: 30, bed: 96, flushAfter: 1.0, w: 12, h: 14 };
+/* (claude/underwell) A FAST WORM - the Underwell's silted sump: its ripple outruns a walking hero and it lunges sooner (still told, !! 0.5 s). Only a worm
+   placed with fast: true; the gorge's worm is the plain one */
+export const FAST_WORM = { ...SANDWORM, rippleV: 150, rippleMin: 0.35, lungeTell: 0.5, wake: 150 };
 export const DOUSE = { fizzle: 0.25 };   /* a lit charge in running water is out in this long (its steam is the tell) */
 
 /* ---------------- THE BURNING PATCH ---------------- */
@@ -61,8 +64,9 @@ export const sandwormShown = s => s.mode !== 'lurk' && s.mode !== 'under' && s.m
 const clampBed = (s, x) => Math.max(s.bed[0], Math.min(s.bed[1], x));
 /* one step. w = { px, py, pface, time, flood (the gorge's horn or torrent is on: true) } -> events [{ t: 'tell'|'hit'|'flushed'|'rise'|'burrow', ... }] */
 export function sandwormStep(s, w, dt) {
-  const out = [], K = SANDWORM, d = w.px - s.x, ad = Math.abs(d), inBed = w.px > s.bed[0] - 24 && w.px < s.bed[1] + 24, nearY = Math.abs(w.py - s.y) < K.wakeY;
+  const out = [], K = s.fast ? FAST_WORM : SANDWORM, d = w.px - s.x, ad = Math.abs(d), inBed = w.px > s.bed[0] - 24 && w.px < s.bed[1] + 24, nearY = Math.abs(w.py - s.y) < K.wakeY;
   s.t -= dt;
+  if (s.fast && dt > 0) { const v = s.lpx === undefined ? 0 : (w.px - s.lpx) / dt; s.vpx = (s.vpx || 0) * 0.85 + v * 0.15; s.lpx = w.px; }   /* (claude/underwell) a fast worm reads where you are going */
   /* THE FLOOD FLUSHES IT: at the horn it goes down at once (from whatever it was doing) and stays down until the water has gone by */
   if (w.flood && s.mode !== 'deep') {
     if (s.mode === 'lunge' || s.mode === 'exposed' || s.mode === 'lungeTell') { s.mode = 'burrow'; s.t = K.burrow; s.frame = 5; s.flushNext = true; out.push({ t: 'burrow', flush: true }); }
@@ -74,7 +78,7 @@ export function sandwormStep(s, w, dt) {
     case 'ripple': { s.rt += dt; s.frame = 0;
       if (!inBed || !nearY) { if (s.rt > K.rippleMin) { s.mode = 'under'; s.t = K.under; s.goHome = true; } break; }   /* you left its sand: it sinks and waits */
       const v = Math.sign(d) * Math.min(ad / dt, K.rippleV); s.x = clampBed(s, s.x + v * dt); s.face = Math.sign(d) || s.face;
-      if (s.rt >= K.rippleMin && (Math.abs(w.px - s.x) <= K.strikeR || s.rt >= K.rippleMax)) { s.mode = 'lungeTell'; s.t = K.lungeTell; s.frame = 1; out.push({ t: 'tell', what: 'lunge', mark: '!!', x: s.x }); }   /* IT STOPS AND THE SAND DOMES: the spot is locked - be off it */
+      if (s.rt >= K.rippleMin && (Math.abs(w.px - s.x) <= K.strikeR || s.rt >= K.rippleMax)) { s.mode = 'lungeTell'; s.t = K.lungeTell; s.frame = 1; if (s.fast) s.x = clampBed(s, w.px + (s.vpx || 0) * K.lungeTell * 0.9);   /* (a fast worm domes up where a walker will be: stop, or jump it) */ out.push({ t: 'tell', what: 'lunge', mark: '!!', x: s.x }); }   /* IT STOPS AND THE SAND DOMES: the spot is locked - be off it */
       break; }
     case 'lungeTell': s.frame = 1; if (s.t <= 0) { s.mode = 'lunge'; s.t = K.lunge; s.frame = 2; s.lunges++; s.hit = false; out.push({ t: 'rise', x: s.x }); } break;
     case 'lunge': s.frame = 2; if (!s.hit) { s.hit = true; out.push({ t: 'hit', what: 'lunge', mark: '!!', box: [s.x - K.lungeR, s.x + K.lungeR, s.y - K.lungeH, s.y], dmg: K.dmg }); }

@@ -31,14 +31,14 @@ export const REALM = {
   col: { fire: ['#ff9b49', '#ffe9b0', '#c9463d'], ice: ['#9be2ff', '#ffffff', '#3a6a9a'], poison: ['#8fd160', '#d8ffb0', '#3a5a2a'] },
   w: 420,                   /* the realm is this wide, centred on his hall: the whole of it on a zoomed screen */
   tear: 1.2,                /* the tear's tell: his ring opens and flares this long before it takes you */
-  openT: 3.0, openMul: 2,   /* the opening: this long, at double */
+  openT: 3.0, openMul: 1.5,   /* the opening: this long, at x1.5 (claude/archmage4: was x2 through his hall's MAGE.openMul - the three realms' openings were about 40% of what the human bot dealt him) */
   rest: 6,                  /* seconds in his hall after a realm before the next can be torn */
   bolt: { v: 150, fire: 14, ice: 12, tellFire: 0.9, tellIce: 0.9 },
   fire: { n: 7, tell: 1.0, burn: 0.8, every: 3.4, dmg: 16, wallTell: 1.0, wallV: 120, wallH: 64, track: 45, trackBack: 140, wallDmg: 18, cast: 2.4,
     patterns: [[0, 2, 4, 6], [1, 3, 5], [0, 1, 2], [4, 5, 6], [0, 3, 6], [1, 2, 4, 5], [2, 3, 4]] },
   ice: { n: 7, crack: 0.9, fallV: 380, every: 1.7, regrow: 3.0, dmg: 14, drift: 42, grip: 0.3, cast: 2.4, len: 20,
     home: 40, homeV: 240, hitW: 22 },   /* claude/archfix (Daniel: "easier to hit him with"): an icicle struck within home px of him falls ONTO him (it homes at homeV), and it breaks his shell anywhere within hitW of his middle */
-  poison: { rise: 5, cap: 0.55, bite: 10, warm: 0.12, tick: 0.6, lift: 170, sporeTell: 1.1, sporeLife: 2.6, sporeR: 26, exposed: 2.4, every: 4.2, drain: 60, cast: 2.2 },
+  poison: { rise: 5, cap: 0.55, bite: 10, warm: 0.12, tick: 0.6, lift: 170, sporeTell: 1.1, sporeLife: 2.6, sporeR: 26, exposed: 3.0,   /* (claude/archmage4: exposed 2.4 -> 3.0 s: the knight never reached the vent in 2.4) */ every: 4.2, drain: 60, cast: 2.2 },
   /* claude/archfix (Daniel played both archmages, 2026-09-29: "these need to be more obvious" - in the fire realm he could not tell how to
      hurt him). EACH REALM SAYS ITS OPENING IN PLAIN WORDS: a banner every time you are pulled in (cueLen s; never the 2-per-save hint cap),
      and again for cueAgain s whenever a blow is turned by his ward */
@@ -101,7 +101,7 @@ export function updateRealm(e, dt, c) {
   const R = e.realm, P = c.P, b = c.box, py = P.y - 8; R.t += dt; R.cueT = Math.max(0, (R.cueT || 0) - dt); R.wardT = Math.max(0, (R.wardT || 0) - dt); R.wardSayT = Math.max(0, (R.wardSayT || 0) - dt);
   if (OPEN.has(e.mode)) { e.y += Math.sin(e.anim * 2) * 4 * dt; if (R.kind === 'poison' && R.drain) R.mire = Math.min(R.mire0, R.mire + REALM.poison.drain * dt); if (e.modeT <= 0) leaveRealm(e, c); return; }   /* the opening runs out: the realm tears */
   const keep = (x, y) => [Math.max(b.x0 + 20, Math.min(b.x1 - 20, x)), Math.max(b.y0 + 44, Math.min(b.y1 - 10, y))];
-  const bolt = (spell) => { const hx = e.x + e.face * 12, hy = e.y - 34, a = Math.atan2(py - hy, P.x - hx), B = REALM.bolt;
+  const bolt = (spell) => { const hx = e.x + e.face * 20, hy = e.y - 51,   /* (archmage3: from the head of his staff - undead-mage.js MAGE.staff) */ a = Math.atan2(py - hy, P.x - hx), B = REALM.bolt;
     if (spell === 'fire') { e.shots.push({ x: hx, y: hy, vx: Math.cos(a) * B.v, vy: Math.sin(a) * B.v, a, sp: B.v, r: 5, dmg: B.fire, kind: 'fire', col: '#ff9b49', t: 4 }); c.sound('mageBolt'); }
     else { for (let k = -2; k <= 2; k++) { const q = a + k * 0.3; e.shots.push({ x: hx, y: hy, vx: Math.cos(q) * 120, vy: Math.sin(q) * 120, a: q, sp: 120, r: 4, dmg: B.ice, kind: 'ice', col: '#9be2ff', t: 4 }); } c.sound('hiss'); } };
   /* HIS TELLS in a realm are his fight's (fireTell, iceTell) and the realm's own (wallTell, sporeTell) */

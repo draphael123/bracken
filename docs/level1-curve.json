@@ -104,17 +104,17 @@
   "lostPct": 102
  },
  "moor": {
-  "hash": "1c540458e774",
+  "hash": "49537d2fb3cd",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 37,
-  "deaths": 4,
-  "kills": 24,
-  "lifts": 131,
+  "hits": 46,
+  "deaths": 3,
+  "kills": 22,
+  "lifts": 108,
   "walked": 100,
   "bare": true,
-  "lostPct": 271
+  "lostPct": 332
  },
  "storm": {
   "hash": "0562836747f2",
@@ -338,17 +338,17 @@
   "lostPct": 161
  },
  "fallingtower": {
-  "hash": "913863c61ed9",
+  "hash": "37c754a97e81",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 50,
-  "deaths": 13,
-  "kills": 21,
-  "lifts": 164,
+  "hits": 46,
+  "deaths": 12,
+  "kills": 26,
+  "lifts": 155,
   "walked": 100,
   "bare": true,
-  "lostPct": 566
+  "lostPct": 547
  },
  "burning": {
   "hash": "c4d0fd689ed1",
@@ -479,6 +479,19 @@
   "walked": 100,
   "bare": true,
   "lostPct": 120
+ },
+ "underwell": {
+  "hash": "4fb9d2fb6a79",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 24,
+  "deaths": 3,
+  "kills": 9,
+  "lifts": 63,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 188
  },
  "skyroad": {
   "hash": "41fd3263fae6",

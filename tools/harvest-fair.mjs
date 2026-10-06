@@ -33,6 +33,25 @@ const DT = 1 / 60;
 const hero = (x, face, o = {}) => ({ x, y: 400, face, alive: true, ...o });
 const world = hs => ({ heroes: hs, canStep: () => true });
 
+// ---- (claude/fairfix6, Daniel 10-05) THE MIME: a WATCHED fair mummer copies its watcher in the mirror - his steps, and his swing answered after a told YELLOW beat;
+// unwatched it is unchanged; the Theatre's mummers (no w.mime) still only freeze ----
+{ const C = FK.FAIR_MUMMER, run = (s, w, n) => { const ev = []; for (let i = 0; i < n; i++) { ev.push(...M.mummerStep(s, w, DT).map(v => ({ ...v, i }))); s.x += s.vx * DT; } return ev; };
+  const st = M.newMummer(300, 400, -1); const evS = run(st, { C, mime: true, canStep: () => true, heroes: [hero(200, 1, { vx: -80 })] }, 30);   /* he steps back (left, away): its mirror image steps back too (right, away) - small, its creep held */
+  ok(st.x > 300 && st.x < 300 + M.MIME.step * 0.6 && evS.some(v => v.t === 'mimeStep') && st.mode === 'still', 'THE MIME: a watched fair mummer did not step back, mirrored, with a hero stepping back (small, its feet held): x ' + st.x.toFixed(1) + ' mode ' + st.mode);
+  const cl = M.newMummer(300, 400, -1); run(cl, { C, mime: true, canStep: () => true, heroes: [hero(300 - M.MIME.keep + 4, 1, { vx: 80 })] }, 30);
+  ok(cl.x >= 300 - 0.01, 'THE MIME closed past its keep on its own: ' + cl.x.toFixed(1));
+  const sw = M.newMummer(300, 400, -1); const evW = run(sw, { C, mime: true, canStep: () => true, heroes: [hero(282, 1, { swing: true })] }, 1);
+  const evW2 = run(sw, { C, mime: true, canStep: () => true, heroes: [hero(282, 1)] }, 60); const tell = evW.find(v => v.t === 'mimeTell'), blow = evW2.find(v => v.t === 'mimeSwing');
+  ok(tell && blow && (blow.i + 1) * DT >= M.MIME.tell - 1e-6 && M.MIME.tell >= 0.35 && M.MIME.tell <= 0.5 && blow.dmg < C.dmg && blow.box[0] < 282 && blow.box[1] > 282, 'THE MIME did not answer a swing with a told (0.35-0.5 s) swing back, weaker than its strike: ' + JSON.stringify({ tell: !!tell, blow: blow && blow.i, dmg: blow && blow.dmg }));
+  const MK = (await import('../src/marks.js')).MARK; ok(MK['mummer|mimeTell'] === '!', 'the swing back of THE MIME is not a yellow ! (guardable) in src/marks.js: ' + MK['mummer|mimeTell']);
+  const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), at = src.indexOf("v.t === 'mimeSwing'"), line = src.slice(at, src.indexOf(String.fromCharCode(10), at));
+  ok(at > 0 && !/unblockable/.test(line), 'the swing back of THE MIME is dealt unblockable in src/main.js (it must be guardable)');
+  const th = M.newMummer(300, 400, -1); const evT = run(th, { mime: false, canStep: () => true, heroes: [hero(250, 1, { swing: true, vx: -80 })] }, 40);
+  ok(th.x === 300 && th.mode === 'still' && !evT.some(v => v.t.startsWith('mime')), 'a mummer with no mime (the Theatre) moved or mimed when watched');
+  const un = M.newMummer(300, 400, -1), un0 = M.newMummer(300, 400, -1), wU = m => ({ C, mime: m, canStep: () => true, heroes: [hero(200, -1, { swing: true, vx: 60 })] });
+  const eu = run(un, wU(true), 90), eu0 = run(un0, wU(false), 90);
+  ok(un.x === un0.x && un.mode === un0.mode && eu.length === eu0.length && eu.some(v => v.t === 'glow'), 'UNWATCHED, a fair mummer did not creep, ring and glow exactly as before: ' + JSON.stringify([un.x, un0.x, un.mode, un0.mode])); }
+
 // ---- WHO IS LOOKING ----
 { const e = { x: 200, y: 400 };
   ok(M.looks(e, hero(100, 1)), 'a hero facing right at a foe on his right does not look at it');
@@ -241,7 +260,7 @@ if (fair) {
   // Daniel approved the greybox with the index at 34 against ~117 and no extra bodies: the mummer is a 5, the hobby-horse a 6
   ok(THREAT.mummer >= 5 && THREAT.hobbyhorse >= 6, 'the mummer / hobby-horse are not weighed 5 / 6 in src/threat.js: ' + THREAT.mummer + ' / ' + THREAT.hobbyhorse);
   { const m = measureLevel(L, { T: T2, TS: TS2 }); const idx = indexOf({ threat: m.threat, kinds: m.kinds, hazTiles: m.hazTiles, gap: m.gap, span: spanOf(L.W, L.H) });
-    ok(idx >= 70 && idx <= 125, 'the fair INDEX is ' + idx + ' (85 after claude/fairfix; 116 after claude/fairfix2, which Daniel asked to make a real challenge at level 1 - the ranged reskins and the edge horses; 45 before, the campaign ~117): ' + JSON.stringify(m)); }
+    ok(idx >= 70 && idx <= 135, 'the fair INDEX is ' + idx + ' (85 after claude/fairfix; 116 after claude/fairfix2, which Daniel asked to make a real challenge at level 1 - the ranged reskins and the edge horses; 130 after claude/fairfix6, the WICKER MAN Daniel asked for (10-05: a new kind and three designed encounters, one in the place of a strongman) - the ceiling moved 125 -> 135 for it, a question in work/claude/lane-done/claude-fairfix6.md; 45 before, the campaign ~117): ' + JSON.stringify(m)); }
     // FURNITURE: what Waymeet and the Fields carry (three silvers, hearts); NO NPCs (pickups only)
   const cnt = t => L.ents.filter(e => e.t === t).length;
   ok(cnt('silver') === 3, 'the fair has ' + cnt('silver') + ' silvers, not the campaign three');
@@ -279,8 +298,8 @@ if (fair) {
   // FEWER, BETTER FOES: 12 mummers, 3 horses (the door guard among them); the last count was 13 and a grid of them
   // FEWER, BETTER FOES, EVERY ONE IN A DESIGNED ENCOUNTER (claude/fairfix): 18 mummers, 4 horses, 3 marionettes, 2 barkers - 27 - and every one a squad or an elite (no padding)
   /* (claude/fairfix2) the RANGED reskins join them - a coconut shy, four knife jugglers, two crows - and two horses at edges: 37, still every one a squad or an elite */
-  { const fs2 = L.ents.filter(e => ['mummer', 'hobbyhorse', 'stringjack', 'barker', 'drunk', 'archer', 'crow'].includes(e.t));
-    ok(cnt('mummer') === 16 && L.ents.filter(strongman).length === 5 && cnt('hobbyhorse') === 6 && cnt('stringjack') === 3 && cnt('barker') === 2 && cnt('drunk') === 1 && cnt('archer') === 4 && cnt('crow') === 0, 'the fair foe count moved (claude/fairfix3: 20 mummers, claude/variety: 15 mummers + 5 STRONGMEN (the 6th figure below) - the boardwalk\'s cut, two riding the chair-o-plane - + 6 horses + 3 string-jacks + 2 barkers + 1 shy + 4 jugglers, and no crows): ' + [cnt('mummer'), L.ents.filter(strongman).length, cnt('hobbyhorse'), cnt('stringjack'), cnt('barker'), cnt('drunk'), cnt('archer'), cnt('crow')]);
+  { const fs2 = L.ents.filter(e => ['mummer', 'hobbyhorse', 'stringjack', 'barker', 'drunk', 'archer', 'crow', 'wickerman'].includes(e.t));
+    ok(cnt('mummer') === 16 && L.ents.filter(strongman).length === 5 && cnt('wickerman') === 3 && cnt('hobbyhorse') === 6 && cnt('stringjack') === 3 && cnt('barker') === 2 && cnt('drunk') === 1 && cnt('archer') === 4 && cnt('crow') === 0, 'the fair foe count moved (claude/fairfix3: 20 mummers, claude/variety: 15 mummers + 5 STRONGMEN (the 6th figure below) - the boardwalk\'s cut, two riding the chair-o-plane - + 6 horses + 3 string-jacks + 2 barkers + 1 shy + 4 jugglers, and no crows; claude/fairfix6: THE WICKER MAN, the one new foe of the fair, in three designed encounters - Daniel 10-05: the hill strongman stays, so 5 strongmen): ' + [cnt('mummer'), L.ents.filter(strongman).length, cnt('wickerman'), cnt('hobbyhorse'), cnt('stringjack'), cnt('barker'), cnt('drunk'), cnt('archer'), cnt('crow')]);
     ok(fs2.every(e => e.squad || e.elite) && cnt('barker') === L.ents.filter(e => e.t === 'barker' && e.elite).length, 'a fair foe is not in a designed encounter (a squad or an elite), or a barker is not an elite'); }
   // HEIGHT BANDS: the reach fill (with the rides) stands in five bands of height - the cellars, the road, the roofs, the boardwalk, the tops - and nothing is a corridor
   { const seen = floodReach(L, TT, { rides: true }).seen, rows = new Set([...seen].map(k => +k.split(',')[1])), band = r => r >= 29 ? 0 : r >= 24 ? 1 : r >= 19 ? 2 : r >= 15 ? 3 : 4, bands = new Set([...rows].map(band));

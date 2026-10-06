@@ -3,7 +3,7 @@
 // no refills. Prints a row a fight (outcome, seconds, health left, how often he went into THE BELL PIT - the opening - and which of his
 // attacks did the damage) and the summary against the house band (60-75% wins, median win 90-150 s for a boss; a mini runs shorter).
 // Not in the suite: it is too long.   usage: node tools/sexton-pilot.mjs            (3 salts x 7 heroes = 21 fights)
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const salts = (process.argv[2] || '1,2,3').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro,paladin,pirate,reaper,geomancer').split(',');
 const pg = await openPage({ audio: false, fonts: false }), rows = [];

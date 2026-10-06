@@ -31,7 +31,9 @@
 //                second phase: faster (eighth 0.21 s), the zurna an octave up, the drum doubled.
 //   'cisternqueen' THE CISTERN QUEEN (claude/welltown3). C# Phrygian, 4/4 at 91, 16 bars = 42 s: a low pulsing drone, scraping percussion, a hissing rising motif;
 //                ':p2' (the well shaft) quicker with the motif an octave up, ':p3' (the flood) adds the water: a surge and drips.
-export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1 };
+//   'djinn'      THE DJINN OF THE GREAT WELL (claude/underwell, his own theme - the Queen has hers back in the Underwell). D Hijaz, 4/4 at 100, 16 bars = 38 s:
+//                a D drone, a doumbek's maqsum, the wind in the well, a breathy ney; ':p2' (fire) quicker, the ney up an octave, crackles; ':p3' (flood) the water.
+export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -364,7 +366,42 @@ function gorgecrab(i, delay, variant, env) {
       if (second) held(env, 'square', nf(ln[0]) * 0.75, GCM_STEP * ln[1], 0.03 * g, delay, { lp: 1200, att: 0.02, hold: 0.5 }); } }
 }
 
+// ---------------------------------------------------------------- THE DJINN OF THE GREAT WELL (claude/underwell, Daniel 10-05: "the Djinn gets his own theme,
+// the Queen gets hers back") - D Hijaz (D Eb F# G A Bb C), 4/4 at 100 (eighth = 0.3 s), 16 bars = 38 s. Bound at the bottom of the well:
+//   THE BINDING: a low D drone (a sub sine on the one and the three, a lowpassed saw pair breathing over two bars, the A joining in the second half).
+//   THE HAND DRUM: dum (a low sine knock) on the one and the and-of-two, tek (a dry high noise) on every other eighth - a doumbek's maqsum.
+//   THE OUD: a plucked low ostinato on seven of every eight eighths. THE WIND IN THE WELL: a slow rising swirl of noise every fourth bar.
+//   THE NEY: a breathy triangle lead scooped into every note, climbing the augmented second (Eb - F#) and falling back to D, every other bar.
+// 'djinn:p2' THE FIRE: quicker (eighth 0.25 s), the ney an octave up, crackles (short bright noise) on the off-beats. 'djinn:p3' THE FLOOD: the fire's
+//   clock, and the water comes in - a surge every two bars and drips on the off-beats.
+const DJM_STEP = 60 / 100 / 2, DJM_STEP2 = 60 / 120 / 2, DJM_LEN = 8, DJM_BARSN = 16;
+const DJM_OUD = ['D3', '-', 'A2', 'D3', 'Eb3', 'D3', 'C3', 'A2'];
+const DJM_NEY = [['D4', 'Eb4', 'F#4', 'G4'], ['F#4', 'Eb4', 'D4', 'C4'], ['A4', 'Bb4', 'A4', 'F#4'], ['G4', 'F#4', 'Eb4', 'D4']];
+function djinn(i, delay, variant, env) {
+  const fire = variant === 'p2' || variant === 'p3', flood = variant === 'p3', step = fire ? DJM_STEP2 : DJM_STEP, bar = Math.floor(i / DJM_LEN), s = i % DJM_LEN, second = bar >= 8, g = env.gain;
+  // THE BINDING: the drone
+  if (s === 0 || s === 4) pluck(env, 'sine', nf('D1'), step * 3.8, (s === 0 ? 0.5 : 0.34) * g, delay, { to: nf('D1') * 0.98 });
+  if (s === 0 && bar % 2 === 0) for (const n of (second || fire ? ['D2', 'A2'] : ['D2'])) held(env, 'sawtooth', nf(n), step * DJM_LEN * 2 * 0.98, 0.05 * g, delay, { lp: 420, att: step * 5, hold: 0.6, det: 11 });
+  // THE HAND DRUM: dum on 0 and 3, tek on the others
+  if (s === 0 || s === 3) pluck(env, 'sine', s === 0 ? 92 : 104, 0.24, (s === 0 ? 0.75 : 0.55) * g, delay, { to: 46 });
+  else noise(env, 0.04, (s % 2 ? 0.09 : 0.06) * g, 5200, 2.2, delay);
+  // THE OUD: a plucked low ostinato under it all (D - A - D - Eb - D - C - A)
+  { const o = DJM_OUD[s]; if (o !== '-') pluck(env, 'sawtooth', nf(o), step * 0.6, 0.08 * g, delay, { lp: 900 }); }
+  // THE WIND IN THE WELL: a rising swirl every fourth bar
+  if (s === 0 && bar % 4 === 2) for (let k = 0; k < 5; k++) noise(env, step * 1.4, (0.03 + k * 0.01) * g, 700 + k * 500, 0.9, delay + k * step * 1.2);
+  // THE NEY: every other bar (every bar in the fire and the flood), four notes scooped in
+  if ((fire || bar % 2 === 1) && s % 2 === 0) { const n = nf(DJM_NEY[(bar >> (fire ? 0 : 1)) % 4][s / 2]) * (variant === 'p2' ? 2 : 1), last = s === 6;
+    held(env, 'triangle', n, step * (last ? 2.6 : 1.8), 0.07 * g, delay, { lp: 2600, att: 0.06, hold: 0.55, from: 0.92 });
+    noise(env, step * 0.6, 0.02 * g, 3000, 1.2, delay); }
+  // THE FIRE: crackles on the off-beats
+  if (fire && s % 2 === 1) { noise(env, 0.02, 0.07 * g, 7600, 3, delay); noise(env, 0.015, 0.05 * g, 6800, 3, delay + step / 2); }
+  // THE FLOOD: the surge every two bars, drips on the off-beats
+  if (flood) { if (s === 0 && bar % 2 === 0) { pluck(env, 'sine', nf('A2'), step * 6, 0.32 * g, delay, { to: nf('D2') }); noise(env, step * 5, 0.06 * g, 480, 0.5, delay); }
+    if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
+}
+
 export const SYNTH_BOSS = {
+  djinn: { step: DJM_STEP, total: DJM_LEN * DJM_BARSN, play: djinn },
   cisternqueen: { step: CQM_STEP, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
   gorgecrab: { step: GCM_STEP, total: GCM_LEN * GCM_BARSN, play: gorgecrab },
   banditking: { step: BKM_STEP, total: BKM_LEN * BKM_BARSN, play: banditking },
@@ -377,7 +414,8 @@ export const SYNTH_BOSS = {
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
   'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking },
-  'cisternqueen:p2': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen }, 'cisternqueen:p3': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen } };   /* THE BANDIT KING's second phase: faster, the zurna an octave up */
+  'cisternqueen:p2': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen }, 'cisternqueen:p3': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
+  'djinn:p2': { step: DJM_STEP2, total: DJM_LEN * DJM_BARSN, play: djinn }, 'djinn:p3': { step: DJM_STEP2, total: DJM_LEN * DJM_BARSN, play: djinn } };   /* THE BANDIT KING's second phase: faster, the zurna an octave up */
 /* the whole track's loudness, next to a file track's 0.5 x the file's own level (audio.js trackVol) */
 export const BOSS_SYNTH_GAIN = 0.62;
 

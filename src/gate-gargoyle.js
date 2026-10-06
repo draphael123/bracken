@@ -34,7 +34,7 @@
 // PHASE TWO (half his health): his fire SWEEPS after you, the moving slabs drift faster, dives come in pairs, every flare comes with a
 // fireball. Touching him never hurts (the touch rule).
 export const GARG = {
-  hp: 410, stomps: 5, cd: 1.35, cdP2: 0.95,
+  hp: 410, stomps: 6,   /* (claude/bosswave2: 5 -> 6 with the rune column, a second way onto the spikes - the human bot was 86% at 5 before it) */ cd: 1.35, cdP2: 0.95,
   K: 1.5, w: 45, h: 45,                       /* HALF AS BIG AGAIN (he was 30): every read of his size below goes through K */
   tell: { dive: 0.95, fireball: 1.1, breath: 1.5, flare: 0.9 }, tellP2: 0.82, tellP2Not: ['breath'],   /* (2026-09-28: the breath's tell was 0.95, and 0.78 in phase two; it is 1.5 in both) */
   dmg: { dive: 18, fireball: 10, breath: 12, crash: 12 },
@@ -320,3 +320,34 @@ export function drawBall(g, b, cx, cy, time, r) {
   for (let q = 1; q <= 4; q++) { g.globalAlpha = 0.45 - q * 0.09; g.fillStyle = q < 3 ? '#ffb040' : '#e0502a'; const tr = r - q; g.fillRect(Math.round(x - b.vx / sp * q * 5 - tr / 2), Math.round(y - b.vy / sp * q * 5 - tr / 2), Math.max(1, tr), Math.max(1, tr)); }
   g.globalAlpha = 0.3; g.fillStyle = '#ff7828'; g.beginPath(); g.arc(x, y, r + 4, 0, 7); g.fill(); g.globalAlpha = 1;
   g.fillStyle = fl ? '#ff9a5c' : '#ff6b2c'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x - 1, y - 1, r * 0.55, 0, 7); g.fill(); g.fillStyle = '#fff6c8'; g.fillRect(x - 2, y - 3, 2, 2); }
+
+/* THE RUNE COLUMN (claude/bosswave2, Daniel 10-03 from scratch/audit-rules.md: "the Gargoyle ignores the Stair's rule" - SLABS DRIFT,
+   RUNES LIFT, GLYPHS TURN YOU OVER). A column of runed light stands in his arena, from the spikes to the sky, between the middle slabs.
+   STRIKE IT (a blow anywhere on it, from either tier) and it FLARES for RUNE.flare s: if he is flying in it then - hovering, setting up a
+   breath or a fireball over you, or coming down on the slab under it - the rune TURNS HIM OVER, and he falls onto the spikes as if a slab
+   had given under him (crash -> stunned: the same opening, the same stomp). Then it is dark for RUNE.cd s, filling back up (drawn).
+   Lure him over it (his dive follows you to your slab) and strike it while he is in it: a second way to put him on the spikes. */
+export const RUNE = { flare: 1.0, cd: 9, w: 26 };
+const RUNE_AIR = new Set(['hover', 'diveTell', 'dive', 'fireballTell', 'fireball', 'breathTell', 'breath', 'recover', 'flareTell', 'rise', 'reset', 'perchFly']);
+/* is he in it? (his body over the column's width, between its foot and its head) */
+export const inRune = (e, col) => !!e && e.alive && RUNE_AIR.has(e.mode) && Math.abs(e.x - col.x) < RUNE.w / 2 + 10 * K && e.y > col.top && e.y - 30 * K < col.bot;
+/* every frame of his fight. col: { x, top, bot, flare, cd } (L.arena.rune); struck: a hero's blow met the column this frame. c: the fight's own hands */
+export function runeStep(e, col, dt, struck, c) {
+  col.flare = Math.max(0, (col.flare || 0) - dt); col.cd = Math.max(0, (col.cd || 0) - dt);
+  if (struck && col.cd <= 0) { col.flare = RUNE.flare; col.cd = RUNE.cd; col.lit = (col.lit || 0) + 1; c.sound('zap'); }
+  if (col.flare > 0 && inRune(e, col)) { col.flare = 0; col.caught = (col.caught || 0) + 1;
+    e.mode = 'crash'; e.vy = 40; e.modeT = 3; e.sm = null; e.queue = []; e.paired = false; e.jet = null;
+    c.say('THE RUNE TURNS HIM OVER', false, true); c.sound('crack'); c.shake(6); return true; }
+  return false;
+}
+/* THE COLUMN, DRAWN: faint runes rising up it while it is ready (and a glint at slab height: strike here), a white-violet blaze while it
+   flares, dark with a bar filling at its foot while it recharges */
+export function drawRune(g, col, cx, cy, time) {
+  const x = Math.round(col.x - cx), t = Math.round(col.top - cy), b = Math.round(col.bot - cy), ready = !(col.cd > 0), fl = col.flare > 0;
+  g.globalAlpha = fl ? 0.55 : ready ? 0.16 + 0.06 * Math.sin(time * 3) : 0.06; g.fillStyle = fl ? '#f0e0ff' : '#c8a0ff'; g.fillRect(x - RUNE.w / 2, t, RUNE.w, b - t);
+  g.globalAlpha = fl ? 0.9 : ready ? 0.55 : 0.18; g.fillStyle = '#e0c8ff';
+  for (let q = 0; q < 9; q++) { const y = b - ((time * (fl ? 160 : 24) + q * 37) % Math.max(1, b - t)); g.fillRect(x - 3 + (q % 3) * 2, Math.round(y), 2, 3); g.fillRect(x - 4 + (q % 2) * 6, Math.round(y) + 4, 1, 2); }
+  g.globalAlpha = 1;
+  if (!ready) { const k = 1 - col.cd / RUNE.cd; g.fillStyle = '#1b1626'; g.fillRect(x - 10, b - 8, 20, 3); g.fillStyle = '#c8a0ff'; g.fillRect(x - 9, b - 7, Math.round(18 * k), 1); }
+  else if (col.mid !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 6), y = Math.round(col.mid - cy); g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, RUNE.w / 2 + 2 + k, 8 + k, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+}

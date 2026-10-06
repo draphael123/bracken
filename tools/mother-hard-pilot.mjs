@@ -2,7 +2,7 @@
    each (four is twenty-four fights, over the brief's twenty-one). One life per fight, no refills. Prints a row per fight and the
    summary the brief asks for: the win rate (target about 60-75%, where the old Mother was 6 of 6 untouched), the median win, and
    how much damage she lands. Not in the suite: it is too long (tools/mother-pilot.mjs is the suite's short one). */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const passes = +(process.argv[2] || 4), pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (let p = 0; p < passes; p++) { await pg.reload();

@@ -5,7 +5,7 @@
    opts.seed): without it every pass replays pass one, because bossLab seeds each row from its own key (docs/INTEGRATOR.md, lesson 1).
    Prints a row per fight (outcome, seconds, health lost, how often he was OPEN, which of his attacks did the damage) and a summary:
    wins, median win, median taken, damage per minute, openings per fight. Not in the suite: it is too long. */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 import { writeFileSync } from 'fs';
 const argv = process.argv.slice(2), flag = k => argv.includes(k), val = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : d; };
 const passes = +(argv.find(a => /^\d+$/.test(a)) || 4), refill = flag('--refill'), secs = +val('--secs', refill ? 150 : 300);

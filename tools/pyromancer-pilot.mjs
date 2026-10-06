@@ -4,7 +4,7 @@
    brief asks for - the win rate and the median time of a win against the 90-150 s band. Not in the suite: it is too long.
    EVERY PASS IS SALTED (opts.salt = pass + 1): bossLab pins its own dice per row, so the Math.random seeded above is replaced
    inside it, and without a salt pass two was pass one again, fight for fight (docs/INTEGRATOR.md section 6). */
-import { openPage } from './cdp.mjs';
+import { openLevelPage as openPage } from './boss-level.mjs';   /* the hero fights at the level's campaign level (tools/boss-level.mjs; --level=N overrides) */
 const passes = +(process.argv[2] || 4), heroes = process.argv[3] ? process.argv[3].split(',') : null, pg = await openPage({ audio: false, fonts: false }), rows = [];
 try {
   for (let p = 0; p < passes; p++) { await pg.reload();

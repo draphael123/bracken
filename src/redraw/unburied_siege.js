@@ -44,7 +44,10 @@ export function bakeTower() {
   line(g, X(242), Y(25), X(242) + 4, Y(30), K.wood3); line(g, X(242) + 24, Y(25) + 3, X(242) + 28, Y(30) + 2, K.wood3);
   /* THE WHEELS: one half sunk at the foot with its spokes broken, one thrown up on the debris with its axle */
   wheel(g, X(243) + 4, H - 14, 28, 10, 0.2, K.wood3, K.iron2, 4);
-  wheel(g, X(263) + 4, Y(26) + 6, 22, 8, 0.6, K.wood3, K.iron2, 3); timber(g, X(263) + 4, Y(26) + 6, X(263) + 4, Y(26) + 30, 4);
+  /* (claude/unburied4: the second wheel hung in the sky at row 26 beside the crest, "thrown up on the debris" with no debris under it - Daniel 10-05. It lies on the ground now,
+     against the fallen base, its broken axle in the spoil; and the crest ledge it hid is held by a knee brace into the base) */
+  wheel(g, X(262) + 2, H - 21, 20, 8, 0.6, K.wood3, K.iron2, 3); timber(g, X(262) + 2, H - 21, X(264) + 6, H - 4, 4); alpha(g, 0.6, () => ellipse(g, X(262) + 2, H - 2, 18, 3, K.peat3));
+  timber(g, X(262) + 10, Y(22) + 2, X(259), Y(25) + 8, 4); timber(g, X(260) + 4, Y(22) + 2, X(259), Y(23) + 10, 3); rect(g, X(259), Y(22), X(263) - X(259), 4, K.wood2);
   /* the foot: splintered timbers and a heap of hides, the host's fallen scaling ladders against the base */
   for (let i = 0; i < 9; i++) { const bx = X(245) + i * 27, by = H - 6 - ((i * 7) % 12); timber(g, bx, by, bx + 26 - ((i * 5) % 14), by - 10 + ((i * 9) % 18), 3, i % 2 === 0); }
   for (let i = 0; i < 5; i++) hidePanel(g, X(249) + i * 22, H - 18 - (i % 2) * 6, 20, 12, 20 + i);
@@ -62,6 +65,32 @@ export function drawTrestle(g, l, r, t, b, seed = 0) {
     g.fillStyle = K.wet; g.fillRect(x - 1, b - 10, 8, 10); g.fillStyle = K.peat4; for (let i = 0; i < 3; i++) g.fillRect(x + ((rr() * 6) | 0), b - 12 + ((rr() * 6) | 0), 1, 1); }
   for (let i = 0; i + 1 < xs.length; i++) { const a = xs[i] + 3, c = xs[i + 1] + 3, ya = t + 14, yb = b - 6; line(g, a, ya, c, yb, K.wood3, 2); line(g, c, ya, a, yb, K.wood3, 2); rect(g, a, t + 12, c - a, 3, K.wood3); rect(g, a, t + 12, c - a, 1, K.wood5); }
   rect(g, l, t, w, 6, K.wood3); rect(g, l, t, w, 1, K.wood6); rect(g, l, t + 5, w, 1, K.wood0);   /* the cap beam the deck rests on */
+}
+/* (claude/unburied4, Daniel 10-05 "floating things") WHAT HOLDS THE REST UP - R.structures kinds drawn into main.js's drawStructures box (l..r px, t..b px):
+   'ubpier'  a stone pier under a tomb-shelf's end: a plinth on the floor, a squared shaft, a moulded cap under the lid (the slabs stood on corbels over nothing)
+   'ubcart'  a wrecked cart's chassis under its bed: two wheels on the ground, the axle-trees, a shaft dug into the mud (the bed hung a row over its wreck)
+   'ubprop'  two raking shores under a fallen deck of the toppled tower, their feet in the spoil */
+export function drawPier(g, l, r, t, b, seed = 0, cold = false) {
+  const w = r - l, cx = Math.round((l + r) / 2), sw = Math.min(12, w - 4), x = cx - (sw >> 1), S = cold ? ['#2a2632', '#3c3848', '#56526a', '#8a869a'] : ['#2e2a2c', '#4a4648', '#5a5658', '#7a7678'];
+  rect(g, x, t, sw, b - t, S[2]); rect(g, x, t, 2, b - t, S[3]); rect(g, x + sw - 2, t, 2, b - t, S[0]);
+  for (let y = t + 7; y < b - 6; y += 8) { rect(g, x + 1, y, sw - 2, 1, S[1]); px(g, x + ((y >> 3) % 2 ? 4 : sw - 5), y + 1, S[1]); }   /* the courses */
+  rect(g, x - 2, t, sw + 4, 4, S[3]); rect(g, x - 2, t + 3, sw + 4, 1, S[0]);   /* the cap under the lid */
+  rect(g, x - 3, b - 5, sw + 6, 5, S[1]); rect(g, x - 3, b - 5, sw + 6, 1, S[3]);   /* the plinth on the floor */
+  void seed;
+}
+export function drawCartFrame(g, l, r, t, b, seed = 0) {
+  const rr = rnd(seed + 7), w = r - l;
+  rect(g, l + 2, t, w - 4, 5, K.wood2); rect(g, l + 2, t, w - 4, 1, K.wood4); rect(g, l + 2, t + 4, w - 4, 1, K.wood0);   /* the chassis under the bed */
+  for (const x of [l + 7, r - 9]) { rect(g, x, t + 4, 3, b - t - 14, K.wood1); }   /* the axle-trees down to the hubs */
+  wheel(g, l + 9, b - 10, 9, 8, 0.3 + rr(), K.wood4, K.iron2, 1); wheel(g, r - 8, b - 10, 9, 8, 0.8 + rr(), K.wood3, K.iron2, 2);   /* one wheel whole, one with spokes gone: both on the ground */
+  line(g, l + 12, t + 6, l - 4, b - 1, K.wood3, 2);   /* the shaft, down into the mud */
+  alpha(g, 0.6, () => { ellipse(g, l + 9, b - 1, 9, 2, K.peat3); ellipse(g, r - 8, b - 1, 9, 2, K.peat3); });
+}
+export function drawShores(g, l, r, t, b, seed = 0) {
+  const w = r - l;
+  for (const [x0, x1] of [[l + 4, l - 6], [r - 6, r + 4]]) { timber(g, x0, t, x1, b - 2, 4, (seed & 1) === 0); rect(g, Math.min(x0, x1) - 2, b - 4, 12, 4, K.wood1); }   /* raking shores, splayed out, their feet in the spoil */
+  timber(g, l + 6, t + Math.round((b - t) * 0.45), r - 8, t + Math.round((b - t) * 0.45), 3);   /* a cross tie */
+  rect(g, l, t, w, 4, K.wood3); rect(g, l, t, w, 1, K.wood5);   /* the sill under the deck */
 }
 /* a bolt rack: a stand with a ballista's iron-headed bolts leaning in it. 24 x 30 */
 export function ubBoltRack() {
@@ -202,6 +231,18 @@ export function bakeFarPalisade(smashed = false) {
 // ================================================================ COVER (no crate shapes) ================================================================
 const coverMemo = new Map();
 /* the field's cover props as sprites, anchored bottom-centre on (cv.x, cv.y): wheeled pavises, a supply wagon, the overturned cart, the ghost shieldmen */
+/* (claude/unburied4) THE WHEELED MANTLET YOU PUSH (a pushblock 20 x 24, drawn 2 px proud all round: 24 x 28): the host's tall shield of planks on a pair of small iron-shod wheels, its
+   face (east, toward the breach) bristling with the Order's spent arrows, a raven daubed on it, a pushing bar on the back. Slate and raven: the besiegers' */
+export function bakeMantletPush() {
+  const [c, g] = canvas(24, 28); shadow(g, 12, 27, 11);
+  rect(g, 4, 2, 14, 20, K.wood3); for (let x = 5; x < 18; x += 3) rect(g, x, 2, 1, 20, K.wood2); rect(g, 4, 2, 14, 1, K.wood5); rect(g, 17, 2, 1, 20, K.wood1);   /* the planks */
+  rect(g, 4, 7, 14, 2, K.iron1); rect(g, 4, 16, 14, 2, K.iron1); px(g, 6, 7, K.iron3); px(g, 15, 16, K.iron3);   /* the iron bands */
+  fillPoly(g, [[8, 10], [11, 8], [14, 10], [12, 11], [11, 14], [10, 11]], K.raven); px(g, 12, 9, K.silver);   /* the host's raven, daubed */
+  for (const [x, y] of [[18, 5], [18, 12], [19, 18], [18, 9]]) { line(g, x, y, x + 4, y - 1, K.wood4); px(g, x + 4, y - 1, K.cloth3); }   /* the Order's spent arrows in its face */
+  rect(g, 1, 10, 4, 2, K.wood2); rect(g, 1, 10, 1, 8, K.wood2);   /* the pushing bar */
+  wheel(g, 7, 23, 3.5, 5, 0.3, K.wood4, K.iron2); wheel(g, 16, 23, 3.5, 5, 0.9, K.wood4, K.iron2);
+  return outline(c, K.out);
+}
 export function coverSprite(kind) {
   if (coverMemo.has(kind)) return coverMemo.get(kind);
   let c;
@@ -265,6 +306,8 @@ export function bakeTower2() {
   for (let x = gx0 + 6; x < gx1; x += 22) { rect(g, x, Y(24) + 15, 4, 20, K.wood2); timber(g, x + 2, Y(24) + 33, x + 20, Y(24) + 15, 3, true); }
   for (const x of [gx0 + 4, gx0 + 52, gx0 + 100]) { rect(g, x, Y(22), 3, 24, K.wood2); rect(g, x, Y(22), 1, 24, K.wood4); }
   rect(g, gx0, Y(22), gx1 - gx0, 3, K.wood3); rect(g, gx0, Y(22), gx1 - gx0, 1, K.wood5); for (let x = gx0 + 2; x < gx1; x += 5) rect(g, x, Y(21) + 6, 3, 10, K.wood2);
+  /* (claude/unburied4) its east end, out past the gatehouse tower over the yard: a post down to the yard wall's top, so the corner where the rope ladder hangs stands on something */
+  post(g, X(362) + 10, Y(24) + 14, Y(29) + 2, 4, K.wood2, K.wood4); timber(g, X(362) + 12, Y(27), X(361) + 4, Y(25) + 2, 3);
   return outline(c, K.out);
 }
 /* THE DRAWBRIDGE LEAF, drawn live: hinged at (hx, hy) (the top surface level on the tower's east face), seven tiles long, raised (ang -PI/2: standing up against the tower) to flat (0: lying across the gap). Two chains

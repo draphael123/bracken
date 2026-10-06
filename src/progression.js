@@ -18,7 +18,7 @@ export const slotsAt = lv => SLOT_LEVELS.filter(n => (lv || 0) >= n).length;
 /* THE TOP OF THE LADDER IS DEARER (LEVELING, audit-econ sec.7E: 520 for an L20 capstone was 1.8 woods of gold): the knight's, the Warden's and
    the Geomancer's L12/L14/L17/L20 actives cost 600/700/800/900 (they were 360/400/460/520). The catalog keeps its history; the price is set here. */
 export const TOP_PRICE = { 12: 600, 14: 700, 17: 800, 20: 900 };
-for (const n of SKILLS) if (n.active && TOP_PRICE[n.level] && ['knight', 'warden', 'geomancer'].includes(n.hero)) n.price = TOP_PRICE[n.level];
+for (const n of SKILLS) if (n.active && TOP_PRICE[n.level]) n.price = TOP_PRICE[n.level];   /* (batch71: every hero's top actives - HERO KIT's eight L14/L20 skills were priced 400/520 on the old ladder and nothing on tools/talents.mjs's ladder matched) */
 const BY_HERO=Object.fromEntries(HERO_IDS.map(h=>[h,SKILLS.filter(n=>n.hero===h)]));
 const BY_ID=Object.fromEntries(HERO_IDS.map(h=>[h,Object.fromEntries(BY_HERO[h].map(n=>[n.id,n]))]));
 export const growthNodes=Object.fromEntries(HERO_IDS.map(h=>[h,new Set(LEGACY_NODES.filter(n=>n.hero===h&&n.destination==='growth').map(n=>n.id))]));

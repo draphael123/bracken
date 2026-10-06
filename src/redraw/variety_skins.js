@@ -5,7 +5,8 @@
 //   VENOM IMP     (the Folly's imp)   bottle-green body, a green flame: its orb poisons (the Archmage's poison realm)
 //   POWDER MONKEY (the dynamite bandit)  a flotilla powder-boy in a navy jersey with a bandolier of sticks: the bandit's AI, lit and thrown on a told mark (src/main.js isDyn)
 //   TIDE CRAB     (the shore crab)    a sea-green mud crab with sand-pale claw tips: it lies buried at low water and comes up with the flood (src/main.js tideCrab)
-//   STRONGMAN     (the goblin brute)  the fair's strongman: a man in a red-and-cream singlet with a mallet, not a goblin (no living goblins past the Queen)
+//   STRONGMAN     the fair's strongman: (claude/fairfix6) NO LONGER A RECOLOUR - the goblin brute's sheet in a tan skin kept the goblin's hunched silhouette and ears (Daniel's
+//                 10-05 playtest: 'orangish goblin-looking foes'). He is drawn as a man now (src/redraw/fair_folk.js bakeStrongman, baked by src/main.js), in the brute's five frames
 import { canvas, flipX, whiten } from '../px.js';
 const pack = (R, ax, ay, w, h) => ({ R, L: R.map(c => flipX(c)), white: { R: R.map(c => whiten(c)), L: R.map(c => flipX(whiten(c))) }, ax, ay, w, h });
 const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -24,10 +25,8 @@ export const VARIETY_MAPS = {
   /* the crab's CR ramp: shell r/R/h/d (red-brown) -> a mud-green shell, claw tips t stay sand-pale */
   tidecrab: { '#b8483a': '#5f8a6c', '#8a3028': '#3e5f48', '#e07060': '#9cc8a0', '#5a2018': '#2a4030', '#f0d8c0': '#e8e0b0' },
   powderboy: { '#9a3a22': '#2a4a7a', '#6a2214': '#1c3252', '#a8583a': '#4a6a9a', '#c8902a': '#e8e0d0' },
-  /* the brute (EP/KG goblin colours + P2: skin g/G, tunic b, belt r, club c/C) -> skin, a striped singlet, a belt of brass, the club a mallet */
-  strongman: { '#6faa4a': '#d09a74', '#3f6e2c': '#9a6a48', '#7ab558': '#e0b088', '#5d4a8a': '#d8cdb0', '#c9463d': '#b8302a', '#8f2f28': '#7a2018' },
 };
-const FOR = { fireimp: 'imp', venomimp: 'imp', strongman: 'brute', powderboy: 'dynamiter', shockeel: 'eel', tidecrab: 'crab' };
+const FOR = { fireimp: 'imp', venomimp: 'imp', powderboy: 'dynamiter', shockeel: 'eel', tidecrab: 'crab' };
 export function bakeVarietySkins(SPR) {
   const out = {};
   for (const [skin, base] of Object.entries(FOR)) { const s = SPR[base]; if (!s || !s.R) continue;

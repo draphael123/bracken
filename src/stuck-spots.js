@@ -10,6 +10,12 @@
 //     steps: [ {zone?, at/ats/mover, line, done?, when?}, ... ] }   an ordered chain: the first step that is not done
 // Columns and rows are the FINAL built tiles (the same numbers the signs and entities carry).
 export const STUCK = {
+  /* THE FALLING TOWER'S ORRERY LOFT (claude/archmage3; src/spiral-chase.js): the next world round on each wheel glints (m.next, kept by updateStairFx) from
+     the gallery's landing and the board step (wheel A), and from the pier (wheel B) - never while you ride that wheel */
+  fallingtower: [
+    { id: 'ft-orrery-a', zone: [80, 87, 91, 90], mover: { orrery: 'A', next: true }, off: { orrery: 'A' }, line: 'THE ORRERY TURNS: ITS WORLDS ARE THE WAY OVER THE VOID' },
+    { id: 'ft-orrery-b', zone: [94, 84, 99, 86], at: [98, 86], off: { orrery: 'B' }, line: "THE ORRERY'S OUTER WORLD IS THE WAY ON UP" },
+  ],
   welltown: [   /* (claude/djinn2) THE BINDING WORKS: down the old well, down the sluice to the conduit, and the sealed door to his hall (claude/djinn3: the bellows vent between, and 40 columns on) */
     { id: 'wt-old-well', zone: [498, 18, 522, 27], at: [520, 29], glint: 'stall', line: 'THE OLD WELL IS THE WAY ON: DOWN ITS ROPE' },
     { id: 'wt-sluice', zone: [556, 30, 577, 47], at: [578, 47], glint: 'stall', line: 'THE SLUICE GOES DOWN: A TUNNEL AT ITS FOOT' },
@@ -23,7 +29,11 @@ export const STUCK = {
     { id: 'ub-ballista-188', zone: [168, 18, 194, 34], at: [188, 28], done: ['ballista', 188, 28, 'fired'], line: 'A SECOND BALLISTA, HIGH ON THE DECK, STILL LOADED' },
     { id: 'ub-oil-200', zone: [190, 34, 214, 46], at: [200, 41], done: ['oilbarrel', 200, 41, 'used'], line: 'SIEGE OIL, STILL IN ITS BARRELS: THE TRENCH IS LOW' },
     { id: 'ub-trebuchet-230', zone: [214, 18, 236, 46], at: [230, 36], dy: -22, done: ['trebuchet', 230, 36, 'used'], line: 'THE TREBUCHET IS STILL LOADED, AND THE TOWER IS IN ITS SIGHTS' },
-    { id: 'ub-ballista-418', zone: [410, 24, 432, 37], at: [418, 36], done: ['ballista', 418, 36, 'fired'], line: 'THE BALLISTA BY THE ARENA DOOR IS STILL LOADED' },
+    { id: 'ub-ballista-418', zone: [482, 24, 504, 37], at: [490, 36], done: ['ballista', 490, 36, 'fired'], line: 'THE BALLISTA BY THE ARENA DOOR IS STILL LOADED' },   /* (claude/unburied4: 72 east, past the bailey) */
+    /* THE BAILEY (claude/unburied4): the mantlet in each reach of mud, after a stall - and the barricade and the breach, each a wall the mantlet is the way up */
+    { id: 'ub-mantlet-a', zone: [364, 30, 384, 40], mover: { mantlet: 'a' }, glint: 'stall', line: 'A WHEELED MANTLET IN THE MUD: THE BOWS CANNOT SEE THROUGH IT' },
+    { id: 'ub-mantlet-b', zone: [386, 30, 408, 40], mover: { mantlet: 'b' }, glint: 'stall', line: 'ANOTHER MANTLET: THE BREACH CANNOT SEE PAST IT' },
+    { id: 'ub-mantlet-c', zone: [409, 30, 427, 40], mover: { mantlet: 'c' }, glint: 'stall', line: 'THE BREACH IS HIGH, AND A MANTLET STANDS IN THE MUD' },
     { id: 'ub-tower-ladder', zone: [238, 30, 262, 40], rows: [32, 40], at: [256, 34], glint: 'stall', line: 'THE TOWER LIES OVER: ITS LADDER IS THE WAY UP' },
     { id: 'ub-rope-ladder', zone: [273, 41, 316, 47], rows: [41, 48], at: [273, 42], line: 'THE OLD ROPE LADDER IN THE WEST WALL IS THE WAY OUT' },
     { id: 'ub-mangonel', zone: [262, 24, 300, 46], at: [268, 36], dy: -4, done: ['mangonel', 268, 36, 'used'], line: 'A MANGONEL AT THE BRIDGEHEAD: THE FAR BANK IS IN ITS RANGE' },
@@ -163,6 +173,41 @@ export const STUCK_HANDS = {
       { key: 'basket', rows: [66, 70.5], is: ['jam', 'open'], mover: { gorge: 'narrows' }, off: { gorge: 'narrows' }, dy: -4, line: 'THE BASKET: STAND ON IT. THE FLOOD WINDS IT UP' } ] },
     { id: 'rg-narrows-rope', zone: WHOLE, steps: [
       { key: 'narrowsRope', rows: [60, 65.5], colLt: 22, noClimb: true, at: [22, 61], line: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY' } ] },
+  ],
+  /* THE UNDERWELL (claude/underwell): every nest, oil fire, torch and rope the route needs glints until it is done (src/underwell-hands.js handsState:
+     nest.<id> shut|open, fire.<col> lit|out, torch.<id> up|fall|down, rope.<id> hung|burnt, lamp up|fall|down, skin some|empty) */
+  underwell: [
+    { id: 'uw-shaft-nest', zone: [12, 36, 20, 44], steps: [
+      { key: 'shaftTorch', is: ['nest.shaft', 'shut'], at: [17, 41], dy: -4, line: 'THE NEST SEALS THE TUNNEL. A TORCH HANGS OVER THE OIL' } ] },
+    { id: 'uw-shaft-fire', zone: [22, 36, 32, 44], steps: [
+      { key: 'shaftDrip', is: ['skin', 'empty'], at: [26, 43], line: 'THE DRIP BY THE WALL: A SIP OF WATER' },
+      { key: 'shaftFire', is: ['fire.33', 'lit'], at: [33, 43], line: 'AN OLD OIL FIRE ACROSS THE TUNNEL' } ] },
+    { id: 'uw-hall-lamp', zone: [60, 24, 96, 43], steps: [
+      { key: 'lamp', is: ['lamp', 'up'], at: [87, 31], glint: 'stall', line: 'THE GREAT LAMP HANGS OVER THE OIL ON ITS CHAIN' } ] },
+    { id: 'uw-hall-nest', zone: [97, 24, 133, 44], steps: [
+      { key: 'hallTorch', is: ['nest.hall', 'shut'], at: [124, 41], dy: -4, line: 'A NEST AT THE BACK OF THE CHAMBER, A TORCH OVER ITS OIL' } ] },
+    { id: 'uw-works-low', zone: [141, 32, 215, 44], steps: [
+      { key: 'worksTorch', is: ['nest.works', 'shut'], rows: [38, 44], at: [176, 41], dy: -4, line: 'A NEST SEALS THE UPPER WORKS. ITS OIL RUNS DOWN HERE' },
+      { key: 'worksRope', is: ['rope.works', 'hung'], at: [160, 40], glint: 'stall', line: 'THE ROPE IS THE WAY UP' },
+      { key: 'worksBack', is: ['rope.works', 'burnt'], at: [211, 40], line: 'THE ROPE IS ASH: THE SCAFFOLDS ON THE EAST WALL' } ] },
+    { id: 'uw-works-up', zone: [157, 22, 239, 29], steps: [
+      { key: 'worksNest', is: ['nest.works', 'shut'], at: [223, 29], line: 'THE NEST SEALS THE WAY EAST. ITS OIL RUNS DOWN THE PIPE' },
+      { key: 'worksFire', is: ['fire.228', 'lit'], at: [228, 29], line: 'AN OLD OIL FIRE ACROSS THE WAY EAST' } ] },
+    { id: 'uw-gutter', zone: [244, 36, 262, 45], steps: [
+      { key: 'gutterTorch', is: ['torch.gutter', 'up'], at: [257, 43], dy: -4, line: 'THE TORCH AT THE MOUTH OF THE OLD GUTTER' } ] },
+    { id: 'uw-exam', zone: [346, 33, 370, 42], steps: [
+      { key: 'examTorch', is: ['nest.exam', 'shut'], at: [364, 40], dy: -4, line: 'A NEST SEALS THE WAY EAST, A TORCH OVER THE OIL' },
+      { key: 'examSpring', is: ['skin2', 'low'], at: [404, 42], line: 'THE SPRING IS PAST THE NEST' },
+      { key: 'examRope', is: ['rope.exam', 'hung'], at: [356, 41], line: 'THE ROPE IS THE WAY UP' },
+      { key: 'examAsh', is: ['rope.exam', 'burnt'], at: [356, 41], line: 'THE ROPE IS ASH: A SPARE WILL COME DOWN' } ] },
+    { id: 'uw-exam-room', zone: [371, 33, 405, 42], steps: [
+      { key: 'examFill', is: ['skin2', 'low'], at: [404, 42], line: 'THE SPRING IS PAST THE NEST' },
+      { key: 'examBack', at: [356, 41], line: 'THE ROPE IS THE WAY UP' } ] },
+    { id: 'uw-exam-fires', zone: [352, 26, 438, 31], steps: [
+      { key: 'examFire1', is: ['fire.420', 'lit'], at: [420, 31], line: 'AN OLD OIL FIRE ACROSS THE WAY' },
+      { key: 'examFire2', is: ['fire.426', 'lit'], at: [426, 31], line: 'A SECOND OIL FIRE BEHIND THE FIRST' } ] },
+    { id: 'uw-shaft', zone: [439, 26, 478, 31], steps: [
+      { key: 'queenShaft', at: [471, 31], glint: 'stall', line: 'THE OLD SHAFT GOES DOWN TO HER CISTERN' } ] },
   ],
 };
 

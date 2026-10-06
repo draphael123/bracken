@@ -44,7 +44,7 @@ export function makeDjinnHands(ctx) {
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, ducking: !!pp.ducking, onLedge: onLedgeOf(pp, S.G), climb: !!pp.climb, pp }));
   function world(e) {
     return {
-      number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), music: ph => ctx.music && ctx.music(ph === 3 ? 'cisternqueen:p3' : 'cisternqueen:p2'),
+      number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), music: ph => ctx.music && ctx.music(ph === 3 ? 'djinn:p3' : 'djinn:p2'),
       banner: (t, sub, col) => { if (S) S.n.banners = (S.n.banners || 0) + 1; if (ctx.banner) ctx.banner(t, sub, col); },   /* (claude/djinn3) THE TURN's banner, over the screen */
       mark: m => ctx.number(e.x, e.y - (S.pose === 'column' ? 150 : DJ.markH), m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       fx: (k, x, y) => {
@@ -101,7 +101,7 @@ export function makeDjinnHands(ctx) {
     /* THE FIRST TIME: what a blade does to him, and where the water is */
     if (!S.told.how && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.how = 1; ctx.number(e.x, e.y - 120, 'A BLADE PASSES THROUGH SAND: POUR WATER ON HIM', '#ffd36b'); }
     if (!S.told.basin && ctx.players.some(pp => pp.skin && pp.skin.sips <= 0) && S.ph < 3) { S.told.basin = 1; ctx.number(S.G.basinW, S.G.floor - 40, 'THE SPRINGS REFILL YOUR SKIN', '#7ab8e8'); }
-    if (S.ph === 3 && !S.told.crank && e.mode === 'hover') { S.told.crank = 1; ctx.number(S.G.windlass, S.G.floor - 70, 'WINDLASS OR CRANK: WIND THE BUCKET UP, THEN DROP IT', '#7ab8e8'); }
+    if (S.ph === 3 && !S.told.crank && e.mode === 'hover') { S.told.crank = 1; ctx.number(S.G.windlass, S.G.floor - 70, 'STRIKE OR E AT THE WINDLASS OR CRANK: WIND UP, THEN DROP', '#7ab8e8'); }
   };
   /* ---------- A BLOW ON HIM: in a water opening x openMul (one opening takes at most openCap); his slammed hand in phase three, whole (at most handCap a
      slam); anything else passes through sand, is turned by fire, or splashes through water (0) ---------- */
@@ -121,6 +121,13 @@ export function makeDjinnHands(ctx) {
     else if (S.ph === 2) { ctx.burst(P.x + (P.face || 1) * 14, P.y - 16, 4, ['#ff9a3c', '#ffd36b'], 50, 0.4); if (!S.told.fire) { S.told.fire = 1; ctx.number(e.x, e.y - 100, 'HIS FIRE TURNS THE BLADE: DOUSE HIM', '#ff9a5c'); } }
     else { ctx.burst(P.x + (P.face || 1) * 14, P.y - 16, 4, ['#7ab8e8', '#e8f4f8'], 50, 0.4); if (!S.told.water) { S.told.water = 1; ctx.number(P.x, P.y - 40, 'WATER CANNOT BE CUT: THE BUCKET, OR HIS HAND', '#7ab8e8'); } }
     return 0; };
+  /* (claude/archmage4) E AT THE WINDLASS OR THE CRANK, in the flood: winds the bucket up / drops it, as a blow does (src/djinn.js windByHand). Alight with water, E
+     douses you first (the pour). main.js asks this before the well town's E */
+  H.interact = P => { const e = ctx.boss; if (!S || !ctx.bossActive || !e || e.t !== 'djinn' || !e.alive || P.dead) return false;
+    if (P.djBurn > 0 && P.skin && P.skin.sips > 0) return false;
+    for (const w of wls) { const who = { x: P.x, onLedge: onLedgeOf(P, S.G) }, b0 = S.bucket.who; S.bucket.who = who;
+      if (DJG.windByHand(e, S, P, w, world(e))) { ctx.sparks(w.x, w.y - 14, P.face || 1, 5); return true; } S.bucket.who = b0; }
+    return false; };
   /* ---------- THE POUR (src/well-town-hands.js asks: what would a pour land on, and pour it). Alight yourself, it goes over you first ---------- */
   const heroOf = P => ({ x: P.x, y: P.y, face: P.face || 1, onLedge: onLedgeOf(P, S && S.G) });
   H.pourable = {

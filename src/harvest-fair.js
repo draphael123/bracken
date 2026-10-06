@@ -158,6 +158,10 @@ export function buildHarvestFair({ painter, T, TS }) {
      a silver, tickets, a heart. Never a softlock: the stair is there */
   sign(202, 'THE STALL MEN KEPT THEIR TAKINGS UNDER THE FLOOR.');
   ent('check', 199, S);                                   /* the second shrine: past the terrace, on the road over the takings cellar */
+  /* THE WICKER MAN, TAUGHT (claude/fairfix6, Daniel 10-05: the fair's one new foe, the Wicker Queen's lesser echo - src/wicker-man.js): alone on the flat road past the shrine, in front of
+     the boarding stair. It bowls its burning straw at you down the road: jump it, or hold your blade and strike it back as it comes - it rolls home, the wicker catches, cut it down
+     in its fire. Failure is cheap here: the shrine is three steps back. The verb the Queen asks on her carousel, learnt before her arena */
+  sign(198, 'IT THROWS ITS OWN FIRE. HOLD YOUR BLADE, THEN STRIKE THE FIRE BACK INTO IT.'); foe('wickerman', 207, { squad: 'wicker1' });
   cellar(198, 214, 206);
   ent('silver', 199, R + 6); tk(201, R + 6); tk(203, R + 6);   /* (claude/fairfix5: its third ticket is on the hoopla's prize shelf now, 123 - the count stays 35) */ ent('mend', 213, R + 6); coins([200, R + 6], [202, R + 6], [204, R + 6]);
   /* THE SWINGBOATS (claude/fairfix3; Daniel: "more rides" - a Victorian fairground's boats on an A-frame): a spiked pit thirteen wide (216-228) and past it THE HIGH STALL, a stall
@@ -318,6 +322,8 @@ export function buildHarvestFair({ painter, T, TS }) {
   /* A MUMMER AT THE FOOT OF THE MAZE'S STAIR (claude/fairfix3: its two crows are cut - they dove whether you looked or not, the review's foe that ignores the mechanics): you come down
      past it, and it is at your back while you time the chairs */
   foe('brute', mx1 + 4, { cnSkin: 'strongman', squad: 'stairfoot' });
+  foe('wickerman', mx1 + 10, { squad: 'stairfoot' });   /* (claude/fairfix6, Daniel 10-05: the REMIX) A WICKER MAN on the chair-o-plane's bank, ahead of you as you come down the maze's stair: face it to strike its
+     fire back and the strongman at the stair's foot walks into your back (he comes whether you look or not); turn on him and its fire rolls into yours */
   /* THE CHAIR-O-PLANE (claude/fairfix3; Daniel: "more rides" - the swing carousel of the Edwardian fairs, chairs on chains flung out from a turning crown): a spiked pit fifteen
      wide (449-463) and the ride's mast in its middle (455). Its twelve chairs fly round on their chains; seen from the road the near ones come TOWARD you (right to left) at the
      height of a stall roof, and the far ones go round behind the mast, up under the crown, where no one can stand. So you cross AGAINST the ride: step into a chair as it
@@ -370,6 +376,8 @@ export function buildHarvestFair({ painter, T, TS }) {
      plank run over the yard in full night; its mummer is held ONLY while the lantern by it burns (the lantern gutters: it creeps in the dark beats) or from an arm's length or two.
      A fall into the yard: spikes at both ends, a bare floor in the middle (576-587) and a stair of crates from it back up to the lane - it costs, it is never a softlock */
   strikers.push({ id: 3, x: 566, row: R, launch: -740, tickets: 2, big: true });
+  foe('wickerman', 568, { squad: 'wickerPad', face: -1 });   /* (claude/fairfix6) THE EXAM's WICKER MAN, at the spike yard's lip over the tall striker's pad: you come off the rick into its fire, its arms reach the
+     pad, and facing it to strike the fire back puts your back to the knife juggler on the roof behind (and the ride you came off turns you). Burn it, or ring the bell under its arms */
   for (let x = 569; x <= 594; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); } spikes(569, 575, R + 1); spikes(588, 594, R + 1);
   block(595, 595, 14, R + 1);                             /* the far stall's back wall: the lane's end stands on it */
   plat(577, 27, 2); plat(580, 24, 2); plat(583, 21, 2); plat(586, 18, 2);   /* the crates back up out of the yard's bare middle (3 rows a step) to the lane */

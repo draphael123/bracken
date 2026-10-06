@@ -8,14 +8,15 @@
 import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
+import { levelOverride, campaignLevel } from './boss-level.mjs';   /* --level=N overrides the campaign level (tools/boss-level.mjs) */
 const salts = (process.argv[2] || '1').split(',').map(Number);
 const heroes = (process.argv[3] || 'knight,warden,pyro').split(',');
-const lvl = Math.max(1, depthsOf(LEVELS).unburied ?? 1);
+const lvl = levelOverride() ?? campaignLevel('unburied');   /* (was xpFloor alone: no level-up card, a weaker hero than setHeroLevel) */
 let pg = await openPage({ audio: false, fonts: false }); const rows = [];
 const fresh = async () => { for (let k = 0; ; k++) { try { await pg.reload(); return; } catch (e) { if (k >= 2) throw e; try { pg.close(); } catch {} pg = await openPage({ audio: false, fonts: false }); } } };
 try {
   for (const salt of salts) for (const h of heroes) { await fresh();
-    const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG,h=${JSON.stringify(h)};P0.xp[h]=xpFloor(${lvl});P0.skillOwned[h]={};P0.loadouts[h]=[];if(P0.talents)P0.talents[h]={};
+    const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const {xpFloor}=await import('/src/xp.js');const P0=BKT.PROG,h=${JSON.stringify(h)};BKT.setHeroLevel(h,${lvl});P0.skillOwned[h]={};P0.loadouts[h]=[];if(P0.talents)P0.talents[h]={};
       const st={};
       const o=await BK.bossLab({bosses:['unburied'],heroes:[h],healthMode:'normal',maxSecs:300,modes:true,salt:${salt},onFrame:({boss,h})=>{const q=st[h]=st[h]||{phase:1};q.phase=Math.max(q.phase,boss.phase||1);q.passes=boss.passes||0;q.stucks=boss.stucks||0;q.breaks=boss.breaks||0;q.healed=boss.healed||0;q.grips=boss.grips||0;q.strings=boss.strings||0;q.greed=boss.greedN||0;}});
       return o.rows.map(r=>({h:r.h,salt:${salt},out:r.outcome||r.skipped,secs:r.secs,taken:r.health&&Math.round(r.health.damageTaken),bossLeft:r.hpLeftPct,swings:r.swings,modeN:r.modes,...(st[r.h]||{}),hitBy:r.hitBy}));})()`, 3600000);

@@ -34,13 +34,18 @@
 //            at the foot. NINE FLIGHTS: THE PENDULUM (two clock weights over its gaps, swinging against each other: at the bottom of the swing
 //            they reach a hero on the gap's lips, at its ends they clear him), THE ICE STAIR (his frost freezes the step under you and the next
 //            one up, slick), THE BOOK GAUNTLET (his books, told in a niche on the far wall, fly down the flight at you; a shield turns them)
+//   ARCHMAGE3 (claude/archmage3, Daniel 10-04: "the climb is a bit short"): TEN FLIGHTS - THE ORRERY LOFT under the last stair, where no stair crosses
+//            the void: two brass wheels of worlds (src/spiral-chase.js orrery). THE RULE BITES: without its worlds the fill reaches neither its pier, its
+//            landing nor the carpet; its voids are wider than any jump (the only gaps over 2 tiles on the stair, and only there); a world comes round to
+//            each boarding ledge every few seconds; the turning is TOLD (its sign, its line, the next world marked and the pawl's click as it comes
+//            level); the dark is capped under its landing like every other. You come out of his ring on the LEFT now (ten flights: the first runs right)
 // usage: node tools/tower-chase.mjs
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { TOWER } from '../src/tower-ascent.js';
-import { SPIRAL, FLIGHTS, TOP, CHASE, perchOf, updateMageChase, PENDS, pendPos, pendReach, pendSafe, PEND, BOOK, FROST, newStairFx, updateStairFx, frostSteps } from '../src/spiral-chase.js';
+import { SPIRAL, FLIGHTS, TOP, CHASE, perchOf, updateMageChase, PENDS, pendPos, pendReach, pendSafe, PEND, BOOK, FROST, newStairFx, updateStairFx, frostSteps, ORRERY, orreryPos } from '../src/spiral-chase.js';
 import * as SC from '../src/spiral-chase.js';
 import { chaseSpec, chaseStep, chaseProblems, newChase, CHECKPOINT_GAP, chaseSafeAbove } from '../src/chase.js';
 import { MAGE } from '../src/undead-mage.js';
@@ -67,10 +72,10 @@ assert.ok(R.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'the fill does not c
   assert.ok(!shut.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'the carpet is reached without his ring'); }
 // ---- SPIRAL ----
 assert.ok(L.interiors.some(i => i[4] === 'spiral' && i[0] === S.x0 && i[1] === S.x1), 'the stair tower is a room of its own (the newel is painted: fallen_tower.js \'spiral\')');
-assert.equal(FLIGHTS.length, 9, 'nine flights (archmage2: three new ones)'); FLIGHTS.forEach((F, k) => { if (k) assert.equal(F.dir, -FLIGHTS[k - 1].dir, F.name + ' runs the same way as the flight under it: it does not wind');
+assert.equal(FLIGHTS.length, 10, 'ten flights (archmage2: three new ones; archmage3: THE ORRERY LOFT)'); FLIGHTS.forEach((F, k) => { if (k) assert.equal(F.dir, -FLIGHTS[k - 1].dir, F.name + ' runs the same way as the flight under it: it does not wind');
   const [lx, ll] = F.land; assert.ok(lx === S.x0 || lx + ll - 1 === S.x1, F.name + '\'s landing is not against a wall');
   if (k) assert.ok(F.land[2] < FLIGHTS[k - 1].land[2], F.name + ' does not climb'); });
-assert.equal(new Set(FLIGHTS.map(F => JSON.stringify(F.steps.map(s => [s[1], s[3] || ''])))).size, 9, 'two flights are the same shape (no repeated shapes in a level)');
+assert.equal(new Set(FLIGHTS.map(F => JSON.stringify(F.steps.map(s => [s[1], s[3] || ''])))).size, 10, 'two flights are the same shape (no repeated shapes in a level)');
 const up = floodReach({ ...L, START: { x: foot.x, y: foot.y } }, T, { rides: true, across: 5 });
 for (const F of FLIGHTS) { for (const [x0, len, row] of [...F.steps, F.land]) assert.ok([...Array(len)].some((_, i) => up.seen.has((x0 + i) + ',' + (row - 1))), F.name + ': the step at ' + x0 + ',' + row + ' is never stood on with a real jump'); }
 assert.ok(up.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'from the foot, a real jump does not reach the carpet');
@@ -80,7 +85,28 @@ assert.ok(up.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'from the foot, a r
 const gaps = [];
 FLIGHTS.forEach((F, k) => { const seq = [k ? FLIGHTS[k - 1].land : null, ...F.steps, F.land].filter(Boolean);
   for (let i = 1; i < seq.length; i++) { const [a0, al] = seq[i - 1], [b0, bl] = seq[i], g = F.dir > 0 ? b0 - (a0 + al) : a0 - (b0 + bl); gaps.push([F.name, g]); } });
-assert.ok(gaps.every(([, g]) => g <= 2), 'a gap on the stair is wider than 2 tiles: ' + JSON.stringify(gaps.filter(([, g]) => g > 2)));
+/* (archmage3) THE ORRERY LOFT's voids are the one place a gap is wider than a jump: they are ridden, on its worlds, and nowhere else is one over 2 tiles */
+const KO = FLIGHTS.findIndex(F => F.orrery);
+assert.ok(gaps.every(([n, g]) => g <= 2 || n === 'THE ORRERY LOFT'), 'a gap on the stair is wider than 2 tiles: ' + JSON.stringify(gaps.filter(([n, g]) => g > 2 && n !== 'THE ORRERY LOFT')));
+assert.ok(gaps.filter(([n, g]) => n === 'THE ORRERY LOFT' && g >= 5).length === 2, 'the two voids of the orrery loft are not wider than any jump: ' + JSON.stringify(gaps.filter(([n]) => n === 'THE ORRERY LOFT')));
+// ---- THE ORRERY LOFT (archmage3) ----
+{ assert.ok(KO === FLIGHTS.length - 2 && FLIGHTS[KO].name === 'THE ORRERY LOFT', 'the orrery loft is not the flight under the last stair (near the top): ' + KO);
+  const O = FLIGHTS[KO], worlds = (L.moversExtra || []).filter(m => m.orrery);
+  assert.ok(O.orrery.length === 2 && ['A', 'B'].every(id => worlds.filter(m => m.orrery === id).length >= 3 && worlds.every(m => m.kind === 'wheel' && m.planet && m.w >= 32)), 'the orrery has not two wheels of three worlds (32 px bars): ' + worlds.length);
+  const noW = floodReach({ ...L, moversExtra: L.moversExtra.filter(m => !m.orrery), START: { x: foot.x, y: foot.y } }, T, { rides: true, across: 5 }), stood = (R2, q) => [...Array(q[1])].some((_, i) => R2.seen.has((q[0] + i) + ',' + (q[2] - 1)));
+  assert.ok(!stood(noW, O.steps[1]) && !stood(noW, O.land) && !noW.jumpNear(L.carpetAt.x / TS, L.carpetAt.y / TS), 'THE RULE BITES: without the worlds of the orrery the fill still crosses the loft');
+  /* each wheel brings a world level with the ledge it is boarded from (A: the board step, B: the pier), on its RISING side, every period/n s */
+  for (const [j, ledge] of [[0, O.steps[0]], [1, O.steps[1]]]) { const ms = worlds.filter(m => m.orrery === 'AB'[j]), y = ledge[2] * TS, near = O.dir > 0 ? (ledge[0] + ledge[1]) * TS : ledge[0] * TS; const times = [];
+    for (let t = 0; t < 2 * Math.abs(ms[0].period); t += 1 / 60) for (const m of ms) { const p = orreryPos(m, t), q = orreryPos(m, t + 1 / 60), edge = O.dir > 0 ? p.x : p.x + m.w;
+      if (Math.abs(p.y - y) < 2 && q.y < p.y && Math.abs(edge - near) <= 12) times.push(t); }
+    const ts = times.filter((t, i) => !i || t - times[i - 1] > 0.3), gap = Math.max(...ts.slice(1).map((t, i) => t - ts[i]));
+    assert.ok(ts.length >= 4 && gap <= 3, 'wheel ' + 'AB'[j] + ' does not bring a world level with its boarding ledge, rising, every few seconds: ' + JSON.stringify({ n: ts.length, gap })); }
+  /* the next world round is marked (its glint) and the pawl clicks as one comes level; the flight is told on its first step */
+  { const H = newStairFx(), said = [], snd = []; const st = O.steps[0], P = { x: (st[0] + 1) * TS, y: st[2] * TS, ground: true, dead: 0 }; const ms = worlds.map(m => ({ ...m }));
+    for (let i = 0; i < 60 * 8; i++) updateStairFx(H, 1 / 60, { P, on: true, movers: ms, time: i / 60, hit: () => {}, say: m => said.push(m), sound: k => snd.push(k) });
+    assert.ok(said.some(m => /ORRERY/.test(m)) && snd.filter(k => k === 'ratchet').length >= 3, 'the turning of the orrery is not told (its line, and the click of its pawl as a world comes level): ' + JSON.stringify({ said, clicks: snd.filter(k => k === 'ratchet').length }));
+    assert.ok(['A', 'B'].every(id => ms.filter(m => m.orrery === id && m.next).length === 1), 'not exactly one world marked next on each wheel'); }
+  assert.ok(L.ents.some(e => e.t === 'sign' && inS(e) && /ORRERY/.test(e.text)), 'the orrery loft is not signed where it begins'); }
 assert.ok(gaps.some(([, g]) => g === 2), 'no gap on the stair is a jump at all');
 const checks = L.ents.filter(e => e.t === 'check' && inS(e));
 assert.equal(checks.length, 1, 'ONE checkpoint on the stair: ' + checks.map(e => e.x + ',' + e.y));
@@ -250,8 +276,8 @@ try {
    /* 2. EVERY HERO GETS UP IT UNDER THE SCROLL: no god mode, health held up (his spells counted, not fatal) - the dark must never catch it */
    for(const h of ${JSON.stringify(HEROES)}){boot(h,false);through();const q=LB.chaseClimb(BK,chase(),{secs:150,refill:true});out.heroes[h]={carpet:!!BK.carpet(),secs:Math.round(q.t/60),taken:Math.round(q.taken),died:q.died,dark:D().hits};}
    /* 3. STAND ON THE STAIR AND THE DARK HURTS YOU AND THROWS YOU UP - again and again, until it has killed you: you wake at the foot, the dark back under the floor, him over the first landing (archmage2) */
-   boot('knight',false);through();for(let i=0;i<90&&BK.P.x>${checks[0].x * TS};i++){BK.keys.left=true;BK.sim(1);}BK.keys.left=false;out.lit=BK.P.x<=${checks[0].x * TS + 8};   /* (out of the ring and past the foot's shrine, as the way to the first step goes) */
-   BK.tp(${FLIGHTS[0].steps[1][0] + 1},${FLIGHTS[0].steps[1][2] - 1});let died=-1,h0=D().hits;out.thrown=[];for(let i=0;i<60*90&&died<0;i++){const y0=BK.P.y;BK.sim(1);if(D().hits>h0){h0=D().hits;out.thrown.push([Math.round(y0),Math.round(BK.P.y),i]);}if(BK.P.dead>0)died=i;}
+   boot('knight',false);through();for(let i=0;i<90&&BK.P.x<${checks[0].x * TS + 16};i++){BK.keys.right=true;BK.sim(1);}BK.keys.right=false;out.lit=BK.P.x>=${checks[0].x * TS + 8};   /* (out of the ring and past the foot's shrine, as the way to the first step goes: to the RIGHT since archmage3) */
+   BK.tp(${FLIGHTS[0].steps[1][0] + 1},${FLIGHTS[0].steps[1][2] - 1});BK.P.maxHp=BK.P.hp=200;/* (batch71) a stander with a bigger bar: archmage3/4 made his death mark 38, and three marks plus one dark contact were a whole 100-hp bar, so a mark landing before the second contact killed him on it and the test passed or failed on the cast clock. Twice the health, and it is the dark that has to go on hurting and throwing until it kills */ let died=-1,h0=D().hits;out.thrown=[];for(let i=0;i<60*90&&died<0;i++){const y0=BK.P.y;BK.sim(1);if(D().hits>h0){h0=D().hits;if(!(BK.P.dead>0))out.thrown.push([Math.round(y0),Math.round(BK.P.y),i]);}if(BK.P.dead>0)died=i;}
    out.standDied=died>=0?Math.round(died/60):null;out.standPhase=D().phase;for(let i=0;i<900&&BK.P.dead>0;i++)BK.sim(1);out.posAfter=Math.round(D().pos);BK.sim(90);
    const m2=chase();out.respawn=[Math.floor(BK.P.x/16),Math.round(BK.P.y/16)-1];out.after=D().phase;out.m2=m2&&[m2.mode,Math.round(m2.x/16),Math.round(m2.y/16)];out.tuneRespawn=AU.music.want;
    return out;})()`, 1500000);
@@ -280,9 +306,10 @@ const slowest = Math.max(...HEROES.map(h => r.heroes[h].secs)), FAIR = (sp.trigg
 /* (archmage2) the old "its fastest is under the slowest hero's average climb" is gone: the dark is MEANT to be faster than a hero who stops
    (30 px/s and surging, Daniel's "it doesn't do anything"). Its fairness is measured where it bites: a climbing hero is caught a few times at
    most (below), close under you it creeps (the engine's lint: speed x slow well under a hero's run), and the caps leave no soft-lock. */
-assert.ok(slowest <= 95 && Math.min(...HEROES.map(h => r.heroes[h].secs)) >= 45, 'the climb is not 60-90 s-ish for the stair bot (brief: ~60-90 s for a decent player): ' + HEROES.map(h => r.heroes[h].secs));
+const medSecs = HEROES.map(h => r.heroes[h].secs).sort((p, q) => p - q)[HEROES.length >> 1];   /* (archmage3) the median climb is the brief's number; the slowest hero (the geomancer, knocked about by his bolts) gets slack */
+assert.ok(slowest <= 130 && medSecs >= 60 && medSecs <= 100 && Math.min(...HEROES.map(h => r.heroes[h].secs)) >= 55, 'the climb is not 60-110 s-ish for the stair bot (archmage3 brief: ~80-100 s for a player, with THE ORRERY LOFT; the bot waits for no world it can take): ' + HEROES.map(h => r.heroes[h].secs));
 assert.ok(HEROES.every(h => r.heroes[h].dark <= 4), 'the dark catches a hero who keeps climbing more than a few times: ' + HEROES.map(h => h + ' ' + r.heroes[h].dark));
 assert.ok(r.thrown.length >= 2 && r.thrown.every(([a, b]) => b < a - 8) && r.standDied !== null && r.standDied >= 6, 'a hero who stands on the stair is not hurt and thrown UP by the dark, again, until it kills him (and not at once): ' + JSON.stringify([r.thrown, r.standDied]));
 assert.ok(r.respawn[1] === S.floor - 1 && Math.abs(r.respawn[0] - checks[0].x) <= 2, 'a death on the stair does not wake you at its foot: ' + JSON.stringify(r.respawn));
 assert.ok(r.posAfter > S.floor * TS && r.m2 && r.m2[0] !== 'sleep' && Math.abs(r.m2[1] * TS - perchOf(0).x) < 24 && Math.abs(r.m2[2] * TS - perchOf(0).y) < 24, 'waking at the foot, the dark is not back under the floor or he is not over the first landing: ' + JSON.stringify([r.posAfter, r.m2]));
-console.log(`ok  tower-chase   his ring on the parapet to a ${S.x1 - S.x0 + 1}x${S.floor - S.top}-tile spiral stair (nine flights - the pendulum, the ice stair and the book gauntlet new - no gap over 2 tiles, one checkpoint at its foot), his music from the first step, no brazier or ward left; HIS DARK MAGIC rises up it from ENTRY (${sp.curve.map(q => q.speed).join('/')} px/s, surges told, rubber ${sp.rubber.min}-${sp.rubber.max}, hurt ${sp.dmg} + thrown up, capped under every landing) and the camera with it (${Math.round(r.cam.rose)} px); the bot climbs in ${r.secs} s with ${r.casts.length} told casts (${[...new Set(r.casts)].join(' ')}), none off the screen; every hero up it under the scroll (${HEROES.map(h => h + ' ' + r.heroes[h].secs + 's/' + r.heroes[h].taken + 'hp/' + r.heroes[h].dark + ' dark').join(', ')}; fair climb ${FAIR.toFixed(1)} px/s, the dark close under you ${fastest.toFixed(1)}); a hero who stands is hurt and thrown up ${r.thrown.length} times, dies of it in ${r.standDied} s and wakes at the foot; the carpet at the top starts his fight`);
+console.log(`ok  tower-chase   his ring on the parapet to a ${S.x1 - S.x0 + 1}x${S.floor - S.top}-tile spiral stair (ten flights - the pendulum, the ice stair, the book gauntlet and THE ORRERY LOFT new - no gap over 2 tiles but the orrery voids, ridden, one checkpoint at its foot), his music from the first step, no brazier or ward left; HIS DARK MAGIC rises up it from ENTRY (${sp.curve.map(q => q.speed).join('/')} px/s, surges told, rubber ${sp.rubber.min}-${sp.rubber.max}, hurt ${sp.dmg} + thrown up, capped under every landing) and the camera with it (${Math.round(r.cam.rose)} px); the bot climbs in ${r.secs} s with ${r.casts.length} told casts (${[...new Set(r.casts)].join(' ')}), none off the screen; every hero up it under the scroll (${HEROES.map(h => h + ' ' + r.heroes[h].secs + 's/' + r.heroes[h].taken + 'hp/' + r.heroes[h].dark + ' dark').join(', ')}; fair climb ${FAIR.toFixed(1)} px/s, the dark close under you ${fastest.toFixed(1)}); a hero who stands is hurt and thrown up ${r.thrown.length} times, dies of it in ${r.standDied} s and wakes at the foot; the carpet at the top starts his fight`);
