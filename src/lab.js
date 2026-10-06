@@ -1408,6 +1408,12 @@ async function runbossLab(BK, opts) {
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
          pyromancer. The bash is rolled through as it arrives; the judgement is walked off its mark. */
       const KA = boss.t === 'kraken' && BK.krak ? BK.krak() : null, SA = boss.t === 'strawking' && BK.straw ? BK.straw() : null, MA = boss.t === 'archmage' && BK.mage ? BK.mage() : null;
+      /* (claude/sweep3, v2 only) THE CHIP AND THE REPRISAL in the read-from-the-room branches (the Archmage, the Scarecrow King): they swung at him
+         whenever nothing else was asked, so his greed reprisal came again and again - the generic hands below stop a blow short of it and step out
+         of its ring; these now do the same. adv: the room's advice ({strike}); setGoal: where to stand */
+      const labGreedStop = (adv, h, setGoal) => { if (!LABP.v2 || !BK.greed || !adv) return; const G = BK.greed, out = (G.reach || 60) + (boss.w || 20) / 2;
+        if (adv.strike !== null && Math.abs(adv.strike - boss.x) < 6 && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) adv.strike = null;
+        if (boss.greedT > 0 && Math.abs(P.x - boss.x) < out + 18) { adv.strike = null; setGoal(boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30)); } };
       /* THE SPIRE'S GOLEM (claude/bot2 triage): his LOW sweep and his stomp's floor waves are JUMPED - the sweep is 0.45 s live and 66 px wide,
          unblockable, and only hits a hero on the ground, so the roll the red mark used to send the hands into (0.2 s safe) ate it every time.
          It is the read his own callout gives ('LOW'), late in the tell, as a person jumps a sweep he can see coming. */
@@ -1462,6 +1468,7 @@ async function runbossLab(BK, opts) {
           else if (tell && SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode) && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.14)) { k.block = true; goal = null; P.face = Math.sign(d) || P.face; if (h === 'paladin') holdC = f + 40; }
           else if (tell && HARD_TELLS.has(boss.t + '|' + boss.mode) && boss.modeT < 0.3 && f % 6 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); goal = null; }
           const wave = BK.mg && BK.mg() && BK.mg().shots.some(s => s.wave && Math.abs(s.x - P.x) < 40 && (s.x - P.x) * s.vx < 0); if (wave && P.ground) { BK.press('jump'); P.labJump = 12; }
+          labGreedStop(MA, h, (g) => { goal = g; });   /* (claude/sweep3, v2) */
           if (!k.block && MA.strike !== null && Math.abs(MA.strike - P.x) <= LAB_REACH[h] + 14 && P.atk < 0) { P.face = Math.sign(MA.strike - P.x) || P.face; BK.press('atk'); swings++; }
           if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 15 === 0 && !P.flip) { BK.press('jump'); P.labJump = 10; }
           if (P.swim && f % 20 === 0) { BK.press('jump'); P.labJump = 32; } }   /* in the acid: leap out of it, and keep leaping */
@@ -1481,9 +1488,11 @@ async function runbossLab(BK, opts) {
       else /* THE SCARECROW KING is read from the field (BK.straw): cut the pole he hangs on, strike the trough by the vine he stands at,
          knock his lantern with the third blow of a run (a heavy one), and jump his low scythe and his bales */
       if (SA) { goal = SA.goal;
+        if (LABP.v2 && boss.pole && !boss.pole.broken && !(boss.open > 0) && SA.strike !== null) { goal = boss.pole.x + (P.x < boss.pole.x ? -12 : 12); SA.strike = boss.pole.x; }   /* (claude/sweep3, v2: he calls his crows and throws his fork FROM the pole too - the hands stood on its foot, where no blade reaches it) */
         if (tell && SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode) && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.14)) { k.block = true; goal = null; P.face = Math.sign(d) || P.face; if (h === 'paladin') holdC = f + 40; }
         else if (tell && HARD_TELLS.has(boss.t + '|' + boss.mode) && boss.modeT < 0.22 && P.ground) { BK.press('jump'); P.labJump = 14; }
         if (SA.jump && P.ground && f % 4 === 0) { BK.press('jump'); P.labJump = 14; }
+        labGreedStop(SA, h, (g) => { goal = g; });   /* (claude/sweep3, v2) */
         if (!k.block && SA.strike !== null && Math.abs(SA.strike - P.x) <= LAB_REACH[h] + 14 && P.atk < 0) { P.face = Math.sign(SA.strike - P.x) || P.face; BK.press('atk'); swings++; }
         if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 15 === 0) { BK.press('jump'); P.labJump = 14; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; } }   /* a held jump: a tap does not clear a bale */
