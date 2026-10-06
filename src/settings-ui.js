@@ -23,16 +23,17 @@ export const TABS = [
 
 export const TAB_ITEMS = {
   audio: ['Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices'],
-  display: ['- PICTURE -', 'Full screen', 'Pixel scale', 'Camera', 'Brightness', 'Screen filter', 'Scanlines', 'Film grain', 'Vignette',
-    '- LOOK -', 'UI colour', 'Font', 'Text colour', 'HUD', 'Foe health', 'Boss health', 'Hit numbers', 'Timer', 'Tenths', 'FPS counter',
+  display: ['- PICTURE -', 'Graphics', 'Full screen', 'Pixel scale', 'Camera', 'Brightness', 'Screen filter', 'Scanlines', 'Film grain', 'Vignette',
+    '- LOOK -', 'UI colour', 'Font', 'Text colour', 'HUD', 'Foe health', 'Boss health', 'Hit numbers', 'Tenths', 'FPS counter',
     '- WORLD -', 'Ground light', 'The air', 'Parallax', 'Arena tint', 'Weather', 'Ambient life', 'Look down',
-    '- EFFECTS -', 'Screen shake', 'Shake strength', 'Particles', 'Impact FX', 'Boss intro'],
+    '- EFFECTS -', 'Particles', 'Impact FX', 'Boss intro'],
   gameplay: ['- RULES -', 'Difficulty', 'Game speed', 'Hit stop', 'Iron Knight',
     '- HELPERS -', 'Jump assist', 'Way-on arrow', 'Text speed',
     '- SAVE -', 'Export save', 'Import save', 'Erase this save',
     '- TESTING -', 'God mode', 'Invincible', 'Hitboxes'],
   controls: ['Controls', 'Rebind keys', 'Block', 'Swap Z / X', 'Rumble', 'Co-op guide', 'Reset controls'],
-  access: ['Big text', 'Colour tells', 'Reduce motion', 'Flashes', 'Foe outline'],
+  access: ['- READING -', 'Big text', 'Timer', 'Colour tells', 'Foe outline',
+    '- MOTION AND FLASHES -', 'Reduce motion', 'Flashes', 'Screen shake', 'Shake strength'],
 };
 
 /* THE OLD SETTINGS LIST, kept as a snapshot for the check: every one of these must still be a row somewhere, under the same name

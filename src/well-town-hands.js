@@ -5,6 +5,7 @@
 // thiefStep, stole, drawWorld, drawHud, read. Every teaching line goes through ctx.number with a line listed in src/hint-lines.js (the hint box).
 import { cutthroatStep } from './desert-foes.js';
 import * as WTP from './redraw/welltown_props.js';
+import { drawIcon } from './ui-hud.js';   /* (claude/uihud) the status icons: a drop for the skin, not the word SKIN */
 import { drawSeal } from './redraw/djinn_art.js';   /* (claude/djinn2) THE BINDING WORKS' seals */
 export const WORKS = { tremorTop: 10, tremorBottom: 3.5, shakeTop: 1, shakeBottom: 3 };   /* THE BINDING WORKS: s between tremors at the top of the works and at the bottom, and how hard */
 
@@ -276,10 +277,12 @@ export function makeWellTownHands(ctx) {
   const VERB_COL = { FILL: '#e8f4f8', 'POUR IN': '#8fd160', POUR: '#8fd160', DRINK: '#7ab8e8', WIND: '#ffd36b', EMPTY: '#ff9a5c' };
   H.drawHud = (g, P) => {
     if (!WT || !P) return; const sk = skinOf(P), x = 22, y = 64;
-    ctx.text('SKIN', x - 12, y + 2, '#7ab8e8', 'left', 6);
+    drawIcon(g, 'drop', x - 12, y - 1, '#7ab8e8');
     for (let i = 0; i < (sk.max || SKINMAX); i++) { const dx = x + 12 + i * 8; g.fillStyle = 'rgba(20,20,40,0.6)'; g.fillRect(dx - 1, y - 1, 7, 8); g.fillStyle = i < sk.sips ? '#3a7ab8' : '#1a2430'; g.fillRect(dx, y, 5, 6); if (i < sk.sips) { g.fillStyle = '#7ab8e8'; g.fillRect(dx + 1, y + 1, 2, 2); } }
     const v = !P.dead && H.verbNow(P);
-    if (v) ctx.text(v.verb === 'EMPTY' ? 'FILL AT A WELL' : v.verb === 'WIND' ? 'STRIKE THE WINDLASS' : 'E: ' + v.verb, x + 12 + (sk.max || SKINMAX) * 8 + 3, y + 2, VERB_COL[v.verb] || '#e8f4f8', 'left', 6);
+    let right = x + 12 + (sk.max || SKINMAX) * 8;   /* (the right edge of the row: main.js keeps the toast zone clear of it) */
+    if (v) { const word = v.verb === 'EMPTY' ? 'FILL AT A WELL' : v.verb === 'WIND' ? 'STRIKE THE WINDLASS' : 'E: ' + v.verb; ctx.text(word, x + 12 + (sk.max || SKINMAX) * 8 + 3, y + 2, VERB_COL[v.verb] || '#e8f4f8', 'left', 6); right += 3 + word.length * 6; }
+    return right;
   };
   H.read = () => WT && { n: { ...WT.n }, walls: WT.walls.map(m => m.open), fires: WT.fires.map(f => f.lit), cistern: WT.cistern && WT.cistern.full, vault: WT.vault.map(v => v.open), sips: skinOf(ctx.hero()).sips,
     vents: WT.vents.map(v => ({ x: v.x0, st: ventState(v), capT: +v.capT.toFixed(2), lit: v.lit, steam: v.steam, always: v.always })) };

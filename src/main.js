@@ -77,6 +77,7 @@ import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.
 import { chaseSafeAbove, chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
+import * as UIH from './ui-hud.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
 import { makeEmberWard } from './ember-ward.js';   /* THE EMBER FLARE (claude/emberflare): a press of down is a 0.25 s burst of fire that cancels a blow, scorches its attacker and gives her heat */
 import { makeCrouchB } from './crouch-b.js'; let CRB = null;
 import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './puppeteer-hands.js'; import { bakePuppeteer, bakeMarionette, bakeHarlequin, bakeAcrobat, bakeMasterpiece } from './redraw/puppeteer_art.js'; let PUPH = null;   /* THE PUPPETEER (claude/puppeteer): the Maskwright's Theatre's boss - src/puppeteer.js the fight, src/puppeteer-hands.js its hands, src/redraw/puppeteer_art.js the art */   /* PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin kneels in prayer, the geomancer senses the earth, the death knight harvests a body */
@@ -4666,7 +4667,7 @@ function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.le
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
-const PAUSE_ITEMS = ['Resume', 'Map', 'Skills', 'Level card', 'Store', 'Hero', 'Co-op', 'Co-op guide', 'Hero trial', 'Back to shrine', 'Restart level', 'Return to map', 'Music volume', 'Effects vol', 'Settings', 'Quit to title'];
+const PAUSE_ITEMS = UIH.PAUSE_ROWS.slice();   /* the first screen is what a player pauses for: resume, map, skills, settings, back to the map (src/ui-hud.js) */
 /* THE SETTINGS LIST IS FIVE TABS (src/settings-ui.js: AUDIO, DISPLAY, GAMEPLAY, CONTROLS, ACCESSIBILITY). 'Slot 3 key' and 'Slot 4 key' left the menu with the third and fourth slots (MAX_SLOTS = 2); their handlers stay in menuAdjust. */
 const FILTERS = ['none', 'warm', 'cool', 'sepia', 'night', 'grey', 'vivid'];
 const BRIGHTS = [0.8, 0.9, 1, 1.1, 1.25], PARALLAX = ['full', 'near', 'off'], TINTS = ['off', 'half', 'full'], PARTQ = ['few', 'normal', 'many'], SHAKES = [0.5, 1], SHAKE_MODES = ['off', 'hit', 'full'];   /* SCREEN SHAKE: OFF / ON HIT (the default: only the hero being hurt shakes the camera) / FULL (every shake in the game); SHAKES is the strength row (LOW / FULL) */
@@ -4692,6 +4693,7 @@ const SETTING_TIPS = {
   'Ambient life': 'birds, fish, critters and idle folk', 'Scanlines': 'CRT lines over the picture', 'Pixel scale': 'how the picture fits your screen',
   'Erase this save': 'erases this save', 'Sound test': 'listen to every track and cry',
   'Controls': 'what every button does for your hero', 'Rebind keys': 'change any key or pad button, for each player', 'Co-op guide': 'how a second player joins, is downed and is lifted', 'Reset controls': 'every key and button back to its default (press twice)',
+  'Graphics': 'LOW, MEDIUM or HIGH: particles, backdrop layers, air, weather and the dark edge set together. CUSTOM when you change one yourself',
   '@TABS': 'LEFT / RIGHT, TAB, Q E or LB RB change tab',
 };
 let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the session) */
@@ -4708,7 +4710,8 @@ function menuAdjust(dir) {
   if (k === '@TABS') { settingsTab = stepTab(settingsTab, dir); menuI = 0; menuBarY = null; SFX.ui(); return; }
   if (isHeader(k)) return;
   if (TCH.adjustRow(k, dir)) { applySettings(); saveSettings(); SFX.ui(); return; }
-  if (k === 'Brightness') SET.bright = BRIGHTS[(BRIGHTS.indexOf(SET.bright) + dir + BRIGHTS.length) % BRIGHTS.length];
+  if (k === 'Graphics') UIH.gfxStep(SET, dir);   /* LOW / MEDIUM / HIGH: particles, backdrop layers, air, weather, the dark edge together (src/ui-hud.js) */
+  else if (k === 'Brightness') SET.bright = BRIGHTS[(BRIGHTS.indexOf(SET.bright) + dir + BRIGHTS.length) % BRIGHTS.length];
   else if (k === 'Parallax') SET.parallax = PARALLAX[(PARALLAX.indexOf(SET.parallax) + dir + PARALLAX.length) % PARALLAX.length];
   else if (k === 'Arena tint') SET.tint = TINTS[(TINTS.indexOf(SET.tint) + dir + TINTS.length) % TINTS.length];
   else if (k === 'Particles') SET.parts = PARTQ[(PARTQ.indexOf(SET.parts) + dir + PARTQ.length) % PARTQ.length];
@@ -4743,13 +4746,14 @@ function menuConfirm() {
     else { coopPickFrom = 'pause'; coopPick = { i: 0, ally: false }; state = 'coop'; SFX.uiSel(); }
   }
   else if (k === 'Settings') { menuKind = 'settings'; menuI = 1; SFX.uiSel(); }
-  else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
+  else if (k === 'Back') { if (menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.menuClose(); } else { state = menuFrom; SFX.menuClose(); } }
   else if(k==='Export save'){ const raw=saveBlocked?localStorage.getItem(slotKey(slot)):exportProgress(PROG);if(!raw){menuMsg='No saved data to export';menuMsgT=4;return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='bracken-slot-'+(slot+1)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);menuMsg='Save exported';menuMsgT=4; }
   else if(k==='Import save'){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{const file=input.files[0];if(!file)return;try{if(file.size>8000000)throw Error('Save file is too large');importProgress(localStorage,slotKey(slot),await file.text(),LEVELS.filter(l=>!l.hidden).map(l=>l.id));loadSlot(slot);applySkin();applyUpgrades();menuMsg='Imported; previous save backed up';}catch(error){menuMsg=error.message;}menuMsgT=8;};input.click(); }
   else if (k === 'Skills') openStore('menu', 'skills');
   else if (k === 'Level card') openCard('menu', true);
   else if (k === 'Store') openStore('menu', 'heroes');
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
+  else if ((k === 'Return to map' || k === 'Quit to title') && menuFrom === 'play' && !(menuMsg === 'press again to leave this level' && menuMsgT > 0)) { menuMsg = 'press again to leave this level'; menuMsgT = 2.5; SFX.ui(); }   /* leaving a level you are in asks once */
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Return to map') { setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'menu'; SFX.uiSel(); }
@@ -19400,7 +19404,9 @@ function drawCaravan(cx, cy) {
     if (s.mode === 'watch') { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; g.lineWidth = 1; g.beginPath(); g.moveTo(gx - 4, gy - 5); g.lineTo(gx + 4, gy + 1); g.moveTo(gx + 4, gy - 5); g.lineTo(gx - 4, gy + 1); g.stroke(); } }
 }
 /* THE SWIM AND THE METER: the view swims before anything hurts, and the meter says how long you have */
+let sunPrev = null, hudEnvR = 0;   /* the sun's last status (a CHANGE is the only time it is said in words), and the right edge of the water/flood row (the toast zone starts past it) */
 function drawCaravanHud() {
+  hudEnvR = 0;
   if (!CV) return;
   const A = cvArt(), v = (P.sun && P.sun.v) || 0, sw = CV.swim;
   const stg = CV.stage || 0;   /* at full, the stage of the build (sunStep): the glare deepens with it */
@@ -19409,13 +19415,13 @@ function drawCaravanHud() {
   const x = 22, y = 50, k = v >= 1 ? 3 : v >= SUN.swimAt ? 2 : v > 0.2 ? 1 : 0;
   g.drawImage(A.ui.sun[k], x - 14, y - 3); g.drawImage(A.ui.meter, x, y);
   g.fillStyle = v >= 1 ? '#ff5a3c' : v >= SUN.swimAt ? '#ff9a4c' : '#ffd36b'; g.fillRect(x + 1, y + 2, Math.round(42 * v), 3);
-  if (WTH && WTH.on()) WTH.drawHud(g, P);
-  if (RGH && RGH.on()) RGH.drawHud(g, P);   /* THE RED GORGE: the flood's clock, under the sun */   /* THE WELL TOWN: the skin's sips, under the sun */
-  if (CV.shaded) text(inHollowStorm(P.x) ? 'STORM' : 'SHADE', x + 22, y + 9, '#c9b0e0', 'center', 6);
-  else if (stg) {   /* THE BUILD, TOLD: a pip a stage beside the meter and the word under it, faster and redder as it climbs */
-    const on = Math.floor(time * (3 + 3 * stg)) % 2 === 0, col = ['#ff9a4c', '#ff5a3c', '#ff2a2a'][stg - 1];
-    for (let i = 0; i < 3; i++) { g.fillStyle = i < stg ? (on || i < stg - 1 ? col : '#fff1c8') : 'rgba(40,20,10,0.5)'; g.fillRect(x + 47 + i * 5, y + 1, 3, 5); }
-    text(['BURNING', 'HOTTER', 'SCORCHING'][stg - 1], x + 22, y + 9, on ? col : '#fff1c8', 'center', 6); }
+  if (WTH && WTH.on()) hudEnvR = Math.max(hudEnvR, WTH.drawHud(g, P) || 0);
+  if (RGH && RGH.on()) hudEnvR = Math.max(hudEnvR, RGH.drawHud(g, P) || 0);   /* THE RED GORGE: the flood's clock, under the sun */   /* THE WELL TOWN: the skin's sips, under the sun */
+  { /* THE STATUS, AS AN ICON by the meter (a parasol in the shade, a bolt in the storm, a flame as the sun builds, a pip a stage, faster and redder as it climbs); the words only come as a toast when it CHANGES */
+    const st = UIH.sunStatus({ shaded: CV.shaded, storm: CV.shaded && inHollowStorm(P.x), stg }), note = UIH.statusChange(sunPrev, st); sunPrev = st; if (note) UIH.toastPush(toastQ, note, 2.2);
+    if (st) { const on = Math.floor(time * (3 + 3 * stg)) % 2 === 0;
+      UIH.drawIcon(g, st.icon, x + 48, y - 1, st.stage && !on ? '#fff1c8' : st.col);
+      if (st.stage) for (let i = 0; i < 3; i++) { g.fillStyle = i < stg ? (on || i < stg - 1 ? st.col : '#fff1c8') : 'rgba(40,20,10,0.5)'; g.fillRect(x + 60 + i * 5, y + 1, 3, 5); } } }
   drawDuneStorm();
 }
 
@@ -25214,7 +25220,7 @@ function update(dt) {
     if (downPress) { do { menuI = (menuI + 1) % M.length; } while (isHeader(M[menuI])); SFX.ui(); } }
     if (leftPress) menuAdjust(-1); if (rightPress) menuAdjust(1);
     if (confirmPress) menuConfirm();
-    if (pausePress) { if (menuKind === 'settings' && menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.ui(); } else { state = menuFrom; SFX.menuClose(); } }
+    if (pausePress) { if (menuKind === 'settings' && menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.menuClose(); } else { state = menuFrom; SFX.menuClose(); } }
     return;
   }
   if (state === 'intro') {
@@ -28288,6 +28294,7 @@ function drawMenu() {
   if (tabbed) drawTabStrip(x, y + 17, w);
   // in the gutter, clear of the rows' values and of the level line along the foot of the board
   if (off > 0) text('^', x + 6, top0 - 6, UI.dim, 'center', 6); if (off + rowsN < M.length - base) text('v', x + 6, y + h - 30, UI.dim, 'center', 6);
+  if (M.length - base > rowsN && !isHeader(M[menuI]) && M[menuI] !== '@TABS') { const sel = M.filter(r => !isHeader(r) && r !== '@TABS'); text(sel.indexOf(M[menuI]) + 1 + '/' + sel.length, x + w - 8, y + 6, UI.dim, 'right', 6); }   /* WHERE YOU ARE in a long list (12/36) */
   { const want = top0 + (menuI - base - off) * 12; menuBarY = menuBarY === null || Math.abs(menuBarY - want) > 60 ? want : menuBarY + (want - menuBarY) * 0.35;
     if (!isHeader(M[menuI]) && M[menuI] !== '@TABS') { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 11); g.fillStyle = 'rgba(255,255,255,0.06)'; g.fillRect(x + 5, Math.round(menuBarY) - 2, w - 10, 1); swordCursor(x + 5, Math.round(menuBarY) + 1); } }
   M.forEach((k, i) => {
@@ -28295,7 +28302,7 @@ function drawMenu() {
     const yy = top0 + (i - base - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); g.fillStyle = '#ffd36b'; for (const dx of [x + w / 2 - hw - 2, x + w / 2 + hw + 1]) { g.fillRect(Math.round(dx), yy + 2, 1, 3); g.fillRect(Math.round(dx) - 1, yy + 3, 3, 1); } text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
-    const tv = TCH.rowValue(k), v = tv != null ? tv : k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? (SET.wayOn ? 'ALWAYS' : SET.wayStall !== false ? 'STUCK' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Boss health' ? (BOSSHP_LABEL[SET.bossHp] || 'BAR') : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeMode === 'off' ? 'OFF' : SET.shakeMode === 'full' ? 'FULL' : 'ON HIT') : k === 'Shake strength' ? (SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
+    const tv = TCH.rowValue(k), v = tv != null ? tv : k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? (SET.wayOn ? 'ALWAYS' : SET.wayStall !== false ? 'STUCK' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Graphics' ? UIH.gfxOf(SET).toUpperCase() : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Boss health' ? (BOSSHP_LABEL[SET.bossHp] || 'BAR') : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeMode === 'off' ? 'OFF' : SET.shakeMode === 'full' ? 'FULL' : 'ON HIT') : k === 'Shake strength' ? (SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
     const vs = v ? (sel ? '< ' + v + ' >' : String(v)) : '';
     const vw = vs ? textW(vs, 8) + 8 : 0;
     if (!isHeader(k) && k !== '@TABS') TCH.hit(x + 5, yy - 2, w - 10, 11, gx => { menuI = i; menuBarY = null; if (!vs) confirmPress = true; else if (gx >= x + w - 10 - vw && gx < x + w - 10 - vw / 2) leftPress = true; else rightPress = true; });   /* a tap on a row: a plain row goes in, a row with a value turns it (the left half of the value turns it back) */
@@ -28820,10 +28827,12 @@ function render() {
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !venomIcon(P, CQG.CQ.venom) && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, VW - 16, [TYPE.title, 8]); g.fillStyle = 'rgba(10,8,16,0.66)'; g.fillRect(0, VH / 2 - 12, VW, (z >= 12 ? 10 : 8) + 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', z, 'outline'); } }   /* on a band of its own, and a name too wide for the card drops a size */
-    const hudMeter = hudMeterLabel(), hudPW = Math.max(116, hudMeter ? (isReaper() ? 112 : 92) + inkW(hudMeter.s, 6) + 5 : 116), xpRow = xpWood() ? 8 : 0, hudPH = (SET.iron ? 38 : 26) + 10 + xpRow;   /* (xpRow: the XP bar's line) */   /* the plate is as wide as what C does */
+    const hudMeter = hudMeterLabel(), hudPW = Math.max(touchOn ? 110 : 116, hudMeter ? (isReaper() ? 112 : 92) + inkW(hudMeter.s, 6) + 5 : touchOn ? 110 : 116), xpRow = xpWood() ? 8 : 0, hudPH = (SET.iron ? 38 : 26) + 10 + xpRow;   /* (xpRow: the XP bar's line) */   /* the plate is as wide as what C does */
+    { const cn = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total) + '|' + silvers.filter(s => s.got).length, xn = heroXp() + ':' + heroLevel(); if (cn !== uiFade.coin) { uiFade.coin = cn; uiFade.coinAt = time; } if (xn !== uiFade.xp) { uiFade.xp = xn; uiFade.xpAt = time; } }   /* IDLE COUNTERS FADE: the coins, the clock and the XP line settle back a few seconds after they last changed */
+    const coinA = state === 'play' ? UIH.idleAlpha(time - uiFade.coinAt) : 1, xpA = state === 'play' && !(lvUpT > 0) ? UIH.idleAlpha(time - uiFade.xpAt, 5, 1.5, 0.45) : 1;
     board(1, 1, hudPW, hudPH, UI.border, 'rgba(10,8,20,0.5)', true);
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab);
-      board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); hudRects = [[0, 0, hudPW + 2, hudPH + 2], [VW - 8 - pw, 0, pw + 4, 32]]; }
+      g.globalAlpha = coinA; board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); g.globalAlpha = 1; hudRects = [[0, 0, hudPW + 2, hudPH + 2], [VW - 8 - pw, 0, pw + 4, 32]]; }
     g.drawImage(PROP.heart, 5, 5);
     if (SET.iron) { for (let i = 0; i < 3; i++) { g.globalAlpha = i < lives ? 1 : 0.25; g.drawImage(K.R.idle[0], 0, 0, 12, 12, 6 + i * 11, 23, 12, 12); } g.globalAlpha = 1; text('IRON', 42, 26, '#c9d1dc'); }
     if (P.torch > 0 && state !== 'win') { const tx = 112, ty = 6; g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(tx - 4, ty - 2, 30, 16, 4); g.fill(); g.fillStyle = '#5c3a1d'; g.fillRect(tx, ty + 5, 2, 7); const f = Math.floor(time * 12) % 3; g.fillStyle = '#ff9a5c'; g.fillRect(tx - 1, ty - (f === 1 ? 1 : 0), 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(tx, ty + 1, 2, 3); bar(tx + 6, ty + 4, 16, 3, Math.min(1, P.torch / 30), P.torch < 6 && Math.floor(time * 6) % 2 ? '#ff6b6b' : '#ffd36b'); }
@@ -28898,8 +28907,8 @@ function render() {
     if (xpRow) { const yy = (SET.iron ? 41 : 29) + 8, n = heroLevel(), lo = xpFloor(n), k = n >= LV_MAX ? 1 : Math.max(0, Math.min(1, (heroXp() - lo) / Math.max(1, xpFloor(n + 1) - lo)));
       if (lvUpT > 0) lvUpT = Math.max(0, lvUpT - 1 / 60); const up = lvUpT > 0, fl = up && Math.floor(time * 8) % 2 === 0;
       const cu = !up && catchingUp(), sc = !up && !cu ? softCut() : 1, lab = (up ? 'LEVEL ' : 'LV ') + n + (cu ? ' x' + XP_CATCHUP : sc < 1 ? (sc < 0.5 ? ' 1/5' : ' 1/2') : ''), bx = 6 + inkW(lab, 6) + 4;   /* x3: CATCHING UP, below the level this wood expects */
-      text(lab, 6, yy - 3, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6);
-      bar(bx, yy, 86 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); }
+      g.globalAlpha = xpA; text(lab, 6, yy - 3, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6);
+      bar(bx, yy, 86 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); g.globalAlpha = 1; }
     if (SET.hud === 'minimal') { g.globalAlpha = 1; } 
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], 152, 14); g.globalAlpha = 1; }
     // THE SKILL SLOTS: the icon, the key it is on, and the wait drawn down over it, so a skill on cooldown is obvious
@@ -28919,8 +28928,8 @@ function render() {
     { const vi = venomIcon(P, CQG.CQ.venom); if (vi) drawVenomIcon(g, text, 16, 21, vi, time); }   /* VENOM: green drops under the stamina bar, one a stack (src/venom-hud.js) */
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab), px0 = VW - 6 - pw;
       for (const f of flyCoins) { const e = 1 - Math.pow(1 - f.t, 3); const x = f.x + (px0 + 4 - f.x) * e, y = f.y + (9 - f.y) * e - Math.sin(f.t * Math.PI) * 14; g.drawImage(PROP.coin[Math.floor(f.t * 12) % 4], Math.round(x), Math.round(y)); }
-      g.drawImage(PROP.coin[0], px0 + 4, 5); text(lab, VW - 10, 7, '#ffd34a', 'right');
-      for (let i = 0; i < silvers.length; i++) { g.fillStyle = silvers[i].got ? '#dfe8ff' : 'rgba(223,232,255,0.28)'; g.beginPath(); g.arc(px0 + 6 + i * 7, 22, 2.5, 0, 7); g.fill(); } }
+      g.globalAlpha = coinA; g.drawImage(PROP.coin[0], px0 + 4, 5); text(lab, VW - 10, 7, '#ffd34a', 'right');
+      for (let i = 0; i < silvers.length; i++) { g.fillStyle = silvers[i].got ? '#dfe8ff' : 'rgba(223,232,255,0.28)'; g.beginPath(); g.arc(px0 + 6 + i * 7, 22, 2.5, 0, 7); g.fill(); } g.globalAlpha = 1; }
     { const Q = questOf(); if (Q.item !== 'none') { const n = straysGot.size, done = n >= Q.n, lab = Q.name + ' ' + n + '/' + Q.n, lw = lab.length * 6;
       const ic = Q.item === 'fisher' ? SPR.fisherIcon : Q.item === 'seal' && PROP.reef ? PROP.reef.sealIcon : Q.item === 'manifest' && PROP.reef ? PROP.reef.manifestIcon : null;
       g.fillStyle = 'rgba(10,8,20,0.38)'; g.beginPath(); g.roundRect(VW - 10 - lw - (ic ? 13 : 4), 32, lw + (ic ? 17 : 8), 11, 3); g.fill(); hudRects.push([VW - 10 - lw - (ic ? 13 : 4), 32, lw + (ic ? 17 : 8), 11]);
@@ -28928,17 +28937,16 @@ function render() {
       if (ic) g.drawImage(ic, VW - 12 - lw - 10, 31); } }
     if (P.hp > 0 && P.hp <= 30 && state === 'play') { const k = 0.5 + 0.5 * Math.sin(time * (P.hp <= 15 ? 11 : 7)); const vg = g.createRadialGradient(VW / 2, VH / 2, 70, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(180,20,20,0)'); vg.addColorStop(1, 'rgba(180,20,20,' + (0.18 + 0.22 * k) + ')'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (state === 'play' && SET.timer && !(L && L.shop)) { const ts = fmt(levelTime), tw = inkW(ts, 8) + 12, tx = Math.round(topMid(tw));
-      g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); hudRects.push([tx - tw / 2, 2, tw, 13]);
-      text(ts, tx, 5, 'rgba(224,216,196,0.82)', 'center'); }
+      g.globalAlpha = UIH.idleAlpha(levelTime, 6, 2, 0.5); g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); hudRects.push([tx - tw / 2, 2, tw, 13]);
+      text(ts, tx, 5, 'rgba(224,216,196,0.82)', 'center'); g.globalAlpha = 1; }
     if (state === 'play' && L && L.trial && L.trial.length) drawTrialStep();   /* (under the hint: a count or a gate going up says so over it) */ if (hintT > 0 && state === 'play' && hintWaits()) { /* THE CARD, THE BANNER AND THE TELLS FIRST: a hint waits for them to go (hintWaits) */ }
-    else if (hintT > 0 && state === 'play') { hintT -= 1 / 60; const k = Math.min(1, hintT * 2);
+    else if (state === 'play') { if (hintT > 0) hintT -= 1 / 60; if (toastQ.L !== L) { UIH.toastClear(toastQ); toastQ.L = L; } UIH.toastFeed(toastQ, hintMsg, hintT); const tc = UIH.toastTick(toastQ, 1 / 60), k = UIH.toastAlpha(tc); if (tc) {   /* ONE QUEUE, ONE SAFE ZONE (src/ui-hud.js): a toast waits its turn and never sits on the plates, the status row or the boss bar */
       /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
-      const lines = wrap(hintMsg, VW - 40, 6), bw = Math.min(VW - 16, Math.max(...lines.map(l => inkW(l, 6))) + 16), bh = lines.length * BODY_LH + 6;
-      const heroY = P.y - cy, top = 48 + xpRow, foot = VH - bh - (bossActive || miniActive ? 32 : 6), hby = heroY > top - 8 && heroY - 28 < top + bh + 4 ? foot : top, hbx = Math.round(VW / 2 - bw / 2);
-      g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.9)'; g.beginPath(); g.roundRect(hbx, hby, bw, bh, 4); g.fill();
+      const zone = UIH.toastZone(VW, VH, { left: Math.max(hudPW + 2, hudEnvR), top: 48 + xpRow, boss: bossActive || miniActive }), lines = wrap(tc.msg, zone.w - 16, 6), heroY = P.y - cy, box = UIH.toastBox(zone, lines, BODY_LH, l => inkW(l, 6), [heroY - 28, heroY]), bw = box.w, bh = box.h, hby = box.y, hbx = box.x;
+      toastQ.box = [hbx, hby, bw, bh]; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.9)'; g.beginPath(); g.roundRect(hbx, hby, bw, bh, 4); g.fill();
       g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
-      lines.forEach((ln, i) => text(ln, VW / 2, hby + 4 + i * BODY_LH, '#ffd36b', 'center', 6)); g.globalAlpha = 1; }
-    else if (state !== 'play') hintT = 0;
+      lines.forEach((ln, i) => text(ln, hbx + bw / 2, hby + 4 + i * BODY_LH, '#ffd36b', 'center', 6)); g.globalAlpha = 1; } }
+    else { hintT = 0; UIH.toastClear(toastQ); }
     if (state === 'play') drawRealmBanner(xpRow, cy);   /* THE UNDEAD ARCHMAGE'S REALMS: the opening in plain words (claude/archfix) */
     if (state === 'play' && L.alarmT > 0) { const k = Math.min(1, L.alarmT / 14), lab = 'THE WATCH IS UP', w = lab.length * 6 + 10;
       g.fillStyle = 'rgba(60,16,16,0.85)'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 0.2 + 0.2 * Math.sin(time * 8); g.fillStyle = '#c9463d'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 1;
@@ -29184,7 +29192,7 @@ setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now
 await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
 await LS.step('final');
 document.getElementById('boot').remove();
-window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
+window.BK = { uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: () => mageAdvice(), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: () => krakenAdvice(), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
