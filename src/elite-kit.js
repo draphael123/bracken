@@ -92,8 +92,8 @@ export const AFFIX_AT = {
 export const TUNE = {
   gaffer: { hp: 1.4, dmg: 1.6, tell: 0.85, every: 0.6 },
   tideguard: { hp: 1.3, dmg: 2.6, tell: 0.85, every: 0.5 },
-  hearthgob: { hp: 1.2, dmg: 2.0, tell: 0.85, every: 0.5 },
-  watch: { hp: 1.2, dmg: 3.7, tell: 0.85, every: 0.5 },
+  hearthgob: { hp: 1.2, dmg: 2.2, tell: 0.85, every: 0.5 },
+  watch: { hp: 1.2, dmg: 3.5, tell: 0.85, every: 0.5 },
   boarder: { hp: 1.3, dmg: 1.8, tell: 0.85, every: 0.55 },
   apprentice: { hp: 0.9, dmg: 1.0, tell: 0.85, every: 0.8 },
   brute: { dmg: 1.5, tell: 0.85, every: 0.7 },
