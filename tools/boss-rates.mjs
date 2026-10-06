@@ -13,10 +13,7 @@
 import { writeFileSync } from 'node:fs';
 import { runFights, line, won } from './boss-run.mjs';
 import { STANDARD } from '../src/bot-profile.js';
-export const BOSS_ROWS = ['spire:mini', 'burial', 'causeway', 'deep', 'oreroad', 'storm', 'wood', 'mage', 'fields', 'underleaf', 'scree', 'canal', 'fair', 'flotilla', 'harbor',
-  'kings', 'lamplit', 'longwater', 'unburied', 'undercrown', 'waymeet', 'kings:mini', 'reef', 'spore', 'hanging', 'crown', 'keep', 'burial:mini', 'fields:mini',
-  'lamplit:mini', 'mage:mini', 'unburied:mini', 'waymeet:mini', 'hurricane', 'marsh', 'moor', 'witchlight:mini', 'hanging:mini', 'harbor:mini', 'redgorge',
-  'spire', 'caravan', 'stockade', 'welltown:mini', 'fallingtower', 'witchlight', 'crown:mini', 'fallingtower:mini', 'burning', 'theatre', 'welltown', 'underwell'];
+import { BOSS_ROWS } from './boss-rows.mjs';
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
 const rowsArg = args.includes('--all') ? BOSS_ROWS : args.filter(a => !a.startsWith('-')).flatMap(a => a.split(','));
 const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 6), secs = +opt('secs', 240), jobs = Math.max(1, +opt('jobs', 2));

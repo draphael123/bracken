@@ -454,7 +454,7 @@ function dashIn(BK, h, e, f) {
    roll is not started. This is not a weaker bot: under the old combat a swing into a tell could be rolled out of, so the bot never had to
    read it; now it must, as a person must. Only a STARTED cut is held back (a plunge from the air is not), and only on the ground. ==== */
 let HUMAN_H = null; export const LAB_RESERVE_DEFAULT = 0.5; let LAB_RESERVE = LAB_RESERVE_DEFAULT;
-let LABP = profileOf(null), PERC = null, SKH = null;   /* the row's bot profile (src/bot-profile.js), its perception (src/lab-perceive.js) and its skill hands, or null */
+let LABP = profileOf(null), PERC = null, SKH = null, ROWBOSS = null;   /* the row's bot profile (src/bot-profile.js), its perception (src/lab-perceive.js) and its skill hands, or null */
 function humanSwingOk(BK) {
   const P = BK.P, h = HUMAN_H; if (BK.labHuman === false || !P || !h || !(P.ground || P.swim) || committed(P)) return true;
   const total = artLim(false) / artRate(h, false) + (COMMIT[h] || COMMIT.knight).light;
@@ -498,13 +498,14 @@ export async function bossLab(BK, opts = {}) {
   BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
   LABP = profileOf(opts.profile ?? BK.labProfile);   /* (BK.labProfile: a page-wide default a measuring tool sets - tools/boss-level.mjs openLevelPage sets the standard) */   /* opts.profile: 'legacy' (or none) = the old bot exactly; 'human' = the boss standard; '+first' = a first attempt */
   /* WITH EYES (a perceiving profile) the world steps one frame at a time: the hands decide on what was SEEN, the seen state comes off, the world steps, and what is seen now goes back on */
-  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); PERC.restore(); r = fn.call(BK, 1); PERC.update(); PERC.apply(); } return r; };
-  BK.sim = n => { if (PERC) return stepEyes(sim0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
-  BK.step = n => { if (PERC) return stepEyes(step0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
+  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } if (OBS && ROWBOSS) OBS(BK, ROWBOSS, HUMAN_H); } return r; };   /* (OBS: opts.observe, a watcher called after every world frame on the real state - tools/boss-read-audit.mjs) */
+  const OBS = opts.observe || null;
+  BK.sim = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(sim0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
+  BK.step = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(step0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
-  finally { if (PERC) PERC.restore(); PERC = null; SKH = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
+  finally { if (PERC) PERC.restore(); PERC = null; SKH = null; ROWBOSS = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
 }
 async function runbossLab(BK, opts) {
   const healthMode=opts.healthMode||'refill';
@@ -578,7 +579,7 @@ async function runbossLab(BK, opts) {
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
     if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); }
-    SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24) : null;
+    ROWBOSS = boss; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
@@ -1928,7 +1929,7 @@ async function runbossLab(BK, opts) {
       if (f % 600 === 599) await yieldNow();
     }
     k.left = false; k.right = false; k.block = false; smallEnd();
-    let eyes = null; if (PERC) { PERC.restore(); eyes = PERC.stats(); PERC = null; } const skillCasts = SKH ? SKH.casts() : null; SKH = null;   /* the real state back on before the row is read */
+    let eyes = null; if (PERC) { PERC.restore(); eyes = PERC.stats(); PERC = null; } const skillCasts = SKH ? SKH.casts() : null; SKH = null; ROWBOSS = null;   /* the real state back on before the row is read */
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
