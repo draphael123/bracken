@@ -623,6 +623,18 @@ async function runbossLab(BK, opts) {
            used to stay put under him waiting to drop it, and the ring took 124 of the knight's 182. Out of it first, stone or not, then back to the plan */
         const pm = LABP.v2 && boss.t === 'bellcrab' && boss.mode === 'pressureTell' && boss.bellMark, pIn = pm && Math.abs(P.x - pm.x) < 44 && Math.abs(P.y - 10 - pm.y) < 44;
         if (pIn) { k[P.x < pm.x ? 'left' : 'right'] = true; if (Math.abs(P.x - pm.x) < 20) k[(P.y - 10) < pm.y ? 'up' : 'down'] = true; }
+        /* (claude/sweep2) HIS CLAW (0.62 s, 92 px in front of him, 54 high; a shield turns it) and, out of the bell, HIS SNIP (0.42 s, 44 px):
+           the shield takes it face on; the others (or a hand full of stone) go up and back out of its reach, the stone let go first. v2 only */
+        else if (LABP.v2 && boss.t === 'bellcrab' && (boss.mode === 'clawTell' || boss.mode === 'snipTell') && Math.sign(P.x - boss.x) === boss.face && adx < (boss.mode === 'snipTell' ? 58 : 106) && Math.abs(P.y - boss.y) < 62) {
+          if (SHIELDED(h) && !P.ballast) { k.block = true; P.face = Math.sign(dx) || P.face; } else { if (P.ballast) BK.press('jump'); k.up = true; k[dx > 0 ? 'left' : 'right'] = true; } }
+        /* (claude/sweep2) OUT OF THE BELL HIS LEAP comes down on the ring he draws where you stood (0.62 s, then the drop, 24 px): off the
+           ring along the floor, NOT up - up is where he goes, and a bot that rose from every leap and rush hung 100-290 px over him and timed
+           out. Low and beside the ring he lands open for his rest. v2 only */
+        else if (LABP.v2 && boss.t === 'bellcrab' && boss.phase === 3 && (boss.mode === 'leapTell' || boss.mode === 'leap') && boss.leapX !== undefined && Math.abs(P.x - boss.leapX) < 48) {
+          if (P.ballast) BK.press('jump'); const s2 = P.x >= boss.leapX ? 1 : -1, sd = (P.x + s2 * 30 > A.x1 - 20 || P.x + s2 * 30 < A.x0 + 20) ? -s2 : s2; k[sd > 0 ? 'right' : 'left'] = true; if (P.y < A.floor - 30) k.down = true; }
+        else if (LABP.v2 && boss.t === 'bellcrab' && boss.phase === 3 && (boss.mode === 'leapTell' || boss.mode === 'leap')) {
+          if (P.y < A.floor - 30) k.down = true; if (adx > 30) k[dx > 0 ? 'right' : 'left'] = true; }
+        else if (LABP.v2 && boss.t === 'bellcrab' && boss.phase === 3 && (boss.mode === 'scuttleTell' || boss.mode === 'scuttle') && P.y < boss.y - 56) { }   /* over his rush already: stay */
         /* HIS RUSH AND HIS LEAP (the scuttle 42 px x 48 high, unblockable; out of the bell, the leap): up out of their line, and a stone that
            holds you on the floor is let go first - he will come again, the stone is on its rack */
         else if (LABP.v2 && boss.t === 'bellcrab' && ['scuttleTell', 'scuttle', 'leapTell', 'leap'].includes(boss.mode) && adx < 130 && P.y > boss.y - 70 && (boss.mode !== 'scuttle' || (boss.x - P.x) * (boss.vx || 0) < 0 || adx < 50)) {

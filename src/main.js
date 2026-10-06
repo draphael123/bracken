@@ -345,9 +345,11 @@ const EHP = { waterthief: 26, gangleader: GLM.GL.hp, cisternqueen: CQG.CQ.hp, dj
 /* (claude/sweep2) THE ACT II BOSS RETUNE (2026-10-06), measured with tools/boss-rates.mjs (profile human, campaign level, n=12): every
    number the sweep moved is here, on its own lines, so the act lanes never fight over the two tables above. before -> after in the comment */
 Object.assign(DMG, {
+  bellLeap: 18, bellClaw: 22, bellPressure: 20,   /* THE DIVING BELL: 24, 26, 24 */
   krakSlam: 36, krakSweep: 33, krakRoar: 28, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22,   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
+  bellcrab: 610,   /* THE DIVING BELL: 750 (0/12; a third of him is the soft crab out of the bell, and the bot died there with 20-30% left) */
   kraken: 640,   /* THE KRAKEN: 480 (83% once the bot could see him, 0/12 before) */
 });
 
@@ -17080,7 +17082,7 @@ function updateBellcrab(e, dt) {
       if(e.modeT<=0){const lx=Math.max(A.x0+28,Math.min(A.x1-28,e.leapX??P.x));e.vx=(lx-e.x)/O.leapT;e.vy=-O.leapV;e.mode = 'leap';e.modeT=O.leapT+.4;e.hit=false;SFX.shoulder();}break;
     case 'leap':
       want=e.vx;
-      if(!e.hit&&!P.dead&&ad<24&&dy<30){e.hit=true;damagePlayer(e.x,DMG.bellLeap,{up:true});}
+      if(!e.hit&&!P.dead&&e.vy>0&&ad<24&&dy<30){e.hit=true;damagePlayer(e.x,DMG.bellLeap,{up:true});}   /* (claude/sweep2) on the way DOWN: the leap lands where you stood (its ring is drawn there); a body you pass under going up is not the blow */
       if(e.modeT<=0){e.vx=0;rest();}break;
     case 'claw': case 'slam': case 'pressure': case 'snip': if(e.modeT<=0)rest();break;
     case 'vent': if(e.modeT<=0){if(p2)pour(Math.max(0,B.brood.keep-brood()));rest(.55);}break;
@@ -17101,7 +17103,7 @@ function drawBellcrabMarks(e,cx,cy){
  if(e.mode==='scuttleTell'){g.globalAlpha=.6;g.fillStyle='#ff6b6b';g.fillRect(e.face>0?x:x-160,fl-3,160,2);g.globalAlpha=1;}
  if(e.mode==='leapTell'&&e.leapX!==undefined){g.globalAlpha=.55;g.strokeStyle='#ffd36b';g.lineWidth=1;g.beginPath();g.ellipse(Math.round(e.leapX-cx),fl-2,20,4,0,0,7);g.stroke();g.globalAlpha=1;}
  /* THE VALVE, shown to a hero holding a stone: a cold ring on his crown, where it has to land */
- if(e.phase!==3&&P.ballast&&e.mode!=='vent'){const k=.5+.5*Math.sin(time*6);g.globalAlpha=.35+.35*k;g.strokeStyle='#bfe6f5';g.lineWidth=1;g.beginPath();g.arc(x,y-e.h-3,7,0,7);g.stroke();g.globalAlpha=1;}
+ if(e.phase!==3&&P.ballast&&e.mode!=='vent'){const k=.5+.5*Math.sin(time*6);g.globalAlpha=.35+.35*k;g.strokeStyle='#bfe6f5';g.lineWidth=1;g.beginPath();g.arc(x,y-e.h-3,Math.round(BELL.valveW*0.6),0,7);g.stroke();g.globalAlpha=1;}   /* (claude/sweep2) the ring is as wide as the valve takes a stone (valveW) */
  if(e.open>0){g.strokeStyle='#8fd160';g.lineWidth=2;g.beginPath();g.ellipse(x,y-2,34,6,0,0,7);g.stroke();}
 }
 function updateLanternshade(e, dt){
