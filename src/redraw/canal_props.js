@@ -8,6 +8,7 @@
 //   the WATER: a sheen, and every lantern's reflection (amber for the real ones, a cold green shimmer under a wisp: the false lantern is told apart from a real one on the water too)
 //   the FOG is feathered here: banks draw in soft-edged columns (a baked gradient) and drift; the extents they cover (the gameplay) are untouched.
 import { canvas, rect, px, outline } from '../px.js';
+import { paintTunnelRoom } from './canal_tunnel.js';   /* (claude/canal4art) the legging tunnel's vault */
 const TS = 16;
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const R = Math.round;
@@ -202,6 +203,7 @@ export function barrel(g, x, floorY, w, h) { const y = floorY - h; rect(g, x + 1
 /* ============================== THE ROOMS (what stands behind the tiles): the warehouse, the mill, Jenny's door ============================== */
 const BRICKS = (w, h, a, b, mort) => once('rbr' + w + h + a + b, () => { const [c, g] = canvas(w, h); rect(g, 0, 0, w, h, mort); for (let y = 0, row = 0; y < h; y += 5, row++) for (let x = -(row & 1) * 6; x < w; x += 12) { const t = ((x * 7 + y * 13) % 11) / 11; rect(g, x + 1, y + 1, 10, 3, t < 0.2 ? b : a); } return c; });
 export function paintRoom(g, rs, sx, sy, w, h, time) {
+  if (rs === 'cnTunnel') return paintTunnelRoom(g, sx, sy, w, h, time);   /* (claude/canal4art) the legging tunnel: a brick barrel vault with iron lining rings (src/redraw/canal_tunnel.js) */
   const room = { cnWarehouse: 1, cnMill: 2, cnDoor: 3, cnCellar: 4, cnCistern: 4, cnTunnel: 4 }[rs]; if (!room) return false;   /* 4: (claude/canalfix3) the safe swims' vaults - bare wet brick */
   g.save(); g.beginPath(); g.rect(sx, sy, w, h); g.clip();
   if (room === 4) { for (let y = sy; y < sy + h; y += 96) for (let x = sx; x < sx + w; x += 96) g.drawImage(BRICKS(96, 96, '#1a2228', '#222c34', '#0e1418'), x, y); g.restore(); return true; }

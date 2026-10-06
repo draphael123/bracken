@@ -10,6 +10,7 @@ import { duckBox, duckClears } from './duck.js';
 import { beamHit } from './chase.js';
 import * as CTL from './redraw/canal_tiles.js';
 import * as CP from './redraw/canal_props.js';
+import * as CT4 from './redraw/canal_tunnel.js';   /* (claude/canal4art) the legging tunnel's art */
 import { CANAL_NUDGE } from './hint-lines.js';
 import { NUDGE as SG_NUDGE, stallTick, drawGlint as glintAt } from './stuck-guide.js';   /* (claude/stuckfix: the glint and the 10 s stall clock are the shared module's now) */
 const TS = 16;
@@ -302,30 +303,30 @@ export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
     CP.drawBridge(g, br, sy, sx, len, px0, k, time); }
   // ---- the low beams of the Waymeet pound: timbers hanging from the footbridge ----
   for (const bm of D.beams || []) { const sx = bm.x0 - cx, w = bm.x1 - bm.x0; if (sx > VW || sx + w < 0) continue; const top = Math.floor(bm.y / TS) * TS - 24 - cy;
+    if (bm.tunnel) { CT4.drawTunnelBeam(g, sx, w, 14 * TS - cy, 16 * TS - cy, bm.y - cy - 6, time); continue; }   /* (claude/canal4art) the tunnel's iron tie-bars, hazard-striped */
     g.fillStyle = '#2c3238'; g.fillRect(sx, top, w, bm.y - cy - top); g.fillStyle = '#5a646c'; g.fillRect(sx, top, w, 1); for (let q = 2; q < w; q += 6) { g.fillStyle = '#8a929a'; g.fillRect(sx + q, bm.y - cy - 5, 1, 1); } g.fillStyle = '#ff9a5c';   /* (claude/canalfix3) the low bridge's girders are iron, riveted */ g.globalAlpha = 0.6; g.fillRect(sx, bm.y - cy - 2, w, 2); g.globalAlpha = 1; }
   // ---- (claude/canalfix3) the street's ironwork: railings and bollards (behind the heroes) ----
   for (const [x0, x1, row] of (D.street && D.street.railings) || []) { if (!on(x0, x1 + 1)) continue; CP.drawRailing(g, x0 * TS - cx, row * TS - cy, (x1 - x0 + 1) * TS - 1); }
   for (const [bx, row] of (D.street && D.street.bollards) || []) { if (!on(bx - 1, bx + 1)) continue; CP.drawBollard(g, bx * TS + 8 - cx, row * TS - cy); }
   // ---- the machines ----
   for (const pr of st.props) { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -30 || x > VW + 30 || y < -60 || y > VH + 40) continue; const fl = pr.flash > 0;
-    if (pr.t === 'locksluice') { const r = R.reachById(st, pr.reach), up = r && Math.abs(r.to - R.surfaceY(r.hi)) < 1; CP.drawSluice(g, x, y, up, fl, r); }
+    if (pr.t === 'locksluice') { const r = R.reachById(st, pr.reach), up = r && Math.abs(r.to - R.surfaceY(r.hi)) < 1; if (pr.reach === 'L6') CT4.drawPaddleGear(g, x, y, up, fl, r ? r.y : 0); else CP.drawSluice(g, x, y, up, fl, r); }
     else if (pr.t === 'swingcap') { const br = st.bridges[pr.bridge]; CP.drawCapstan(g, x, y, br && R.bridgeHolds(br), fl); }
     else if (pr.t === 'foghorn') { CP.drawHorn(g, x, y, fl, pr.cd > 0 ? 1 - pr.cd / R.RIG.hornWind : 1); }
     else if (pr.t === 'lanternpost') { CP.drawPost(g, pr, x, y, time); }
   }
   // ---- (claude/canalfix) THE ARCH'S LIP: a stone sill with a warning band, one row over her gunwale - "too low" before anyone reaches it ----
   if (D.arch) { const ax = D.arch[0] * TS - cx, ay = (D.arch[2] + 1) * TS - cy; if (ax > -30 && ax < VW + 30) CP.drawSill(g, ax, ay); }
+  // ---- (claude/canal4art) THE LEGGING TUNNEL, dressed (src/redraw/canal_tunnel.js): the portals, the moon shaft, the stop-planks on their chain over a sheave to the windlass ----
+  { const mouth = D.tunnels && D.tunnels[0]; if (mouth) { const ry = 14 * TS - cy;
+      if (on(mouth[0] - 2, mouth[0] + 6)) CT4.drawPortal(g, mouth[0] * TS - cx, ry, 'LEGGING TUNNEL', time);
+      if (on(mouth[1] - 22, mouth[1] - 10)) CT4.drawHungPlate(g, (mouth[1] - 21) * TS - cx, 16 * TS - cy, 'DEEP LOCK');   /* hung from the gallery's underside, over its own wall */ } }
+  for (const [x0, x1] of D.moon || []) { if (!on(x0 - 1, x1 + 2)) continue; const s0 = surfaceAt(st, H, (x0 + x1 + 1) / 2 * TS); CT4.drawMoonShaft(g, x0 * TS - cx + 8, (x0 + 2) * TS - cx + 8, 0 - cy, 14 * TS - cy, (s0 ? s0.y : 19 * TS) - cy, time); }
   // ---- (claude/canal4) THE STOP-PLANKS: tarred planks in iron grooves across the tunnel, wound up into the roof slot; the windlass on the ledge ----
-  for (const q of st.stops) { if (!on(q.x - 1, q.x + 1)) continue; const sx = q.x * TS - cx, top = q.top * TS - cy, h = (q.bot - q.top + 1) * TS, lift = Math.round(q.k * h);
-    g.fillStyle = '#20262c'; g.fillRect(sx - 2, top - 8, 2, h + 8); g.fillRect(sx + 16, top - 8, 2, h + 8);   /* the iron grooves */
-    g.save(); g.beginPath(); g.rect(sx - 2, top - 2 * TS, 20, h + 2 * TS); g.clip();
-    for (let y = 0; y < h; y += 6) { const yy = top - lift + y; g.fillStyle = '#2e2418'; g.fillRect(sx, yy, 16, 5); g.fillStyle = '#4a3a26'; g.fillRect(sx, yy, 16, 1); g.fillStyle = '#16100a'; g.fillRect(sx, yy + 5, 16, 1); }
-    g.fillStyle = '#5a646c'; g.fillRect(sx, top - lift + 2, 16, 1); g.fillRect(sx, top - lift + h - 4, 16, 1); g.restore();
-    if (q.k < 1) { g.fillStyle = '#6a747c'; g.fillRect(sx + 7, top - 2 * TS, 1, 2 * TS - lift + 2); } }   /* the chain up to the windlass's shaft */
-  for (const pr of st.props) if (pr.t === 'stopwinch') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -30 || x > VW + 30) continue; const q = st.stops[pr.stop], up = q && q.up, a = (q ? q.k : 0) * 12 + (pr.flash > 0 ? 0.5 : 0);
-    g.fillStyle = '#2a2e34'; g.fillRect(x - 7, y - 4, 14, 4); g.fillRect(x - 6, y - 12, 2, 8); g.fillRect(x + 4, y - 12, 2, 8);   /* the frame */
-    g.fillStyle = up ? '#4a5058' : '#5a646c'; g.beginPath(); g.arc(x, y - 11, 4, 0, 7); g.fill(); g.fillStyle = '#9aa2aa'; g.fillRect(x - 1, y - 12, 2, 2);   /* the drum */
-    g.strokeStyle = pr.flash > 0 ? '#ffffff' : '#c8a040'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y - 11); g.lineTo(x + Math.cos(a) * 9, y - 11 + Math.sin(a) * 9); g.stroke(); g.lineWidth = 1; }   /* the crank handle */
+  for (const q of st.stops) { if (!on(q.x - 1, q.x + 1)) continue; const sx = q.x * TS - cx, top = q.top * TS - cy, h = (q.bot - q.top + 1) * TS, wp = st.props.find(p => p.t === 'stopwinch' && st.stops[p.stop] === q);
+    CT4.drawStopPlanks(g, sx, top, h, q.k, time); CT4.drawSheave(g, sx, 15 * TS - cy, wp ? [wp.x - cx, wp.y - 13 - cy] : null, q.k, time); }
+  for (const pr of st.props) if (pr.t === 'stopwinch') { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -30 || x > VW + 30) continue; const q = st.stops[pr.stop];
+    CT4.drawWindlass(g, x, y, q ? q.k : 0, pr.flash > 0, time); }   /* (claude/canal4art) a cast-iron windlass: drum, ratchet, pawl, crank */
   // ---- (claude/canalfix) THE BOARDERS' SKIFF ----
   if (st.gang && st.gang.skiff) { const sk = st.gang.skiff, sx = sk.x - cx; if (sx > -40 && sx < VW + 40) CP.drawSkiff(g, sx, st.barge.y - cy + 2, time); }
   // ---- JENNY'S LOCK, dressed: weed in curtains, slime, the sunken narrowboat that is her lair (src/redraw/canal_props.js) ----
@@ -355,7 +356,7 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
   fg.globalCompositeOperation = 'source-over';
   /* THE THEATRE, lit, ahead through the fog the whole way: a warm glow low in the fog at the screen's far side, stronger the nearer you come */
   const k = Math.min(1, Math.max(0, cx / (360 * TS))), gx = VW * 0.86, gy = VH * 0.42, gr = fg.createRadialGradient(gx, gy, 4, gx, gy, 90 + 60 * k);
-  gr.addColorStop(0, 'rgba(255,196,110,' + (0.28 + 0.3 * k).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,196,110,0)'); fg.fillStyle = gr; fg.fillRect(gx - 160, gy - 160, 320, 320);
+  gr.addColorStop(0, 'rgba(255,196,110,' + ((0.28 + 0.3 * k) * (R.inTunnel(st) ? 0.45 : 1)).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,196,110,0)'); fg.fillStyle = gr; fg.fillRect(gx - 160, gy - 160, 320, 320);
   g.drawImage(FOGC, 0, 0);
   /* the lanterns and the wisps burn on top of the fog - the one warm, the other cold: that is the read */
   for (const p of st.posts) if (p.lit) { const x = p.x - cx, y = p.y - 29 - cy; if (x < -30 || x > VW + 30) continue; const fl = 0.8 + 0.2 * Math.sin(time * 7 + p.x), gl = g.createRadialGradient(x, y, 1, x, y, 26); gl.addColorStop(0, 'rgba(255,207,106,' + (0.5 * fl).toFixed(3) + ')'); gl.addColorStop(1, 'rgba(255,207,106,0)'); g.fillStyle = gl; g.fillRect(x - 26, y - 26, 52, 52);
@@ -376,6 +377,7 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
     if (Math.abs(e.x - H.hero().x) < 90) { g.fillStyle = '#0a3a2a'; g.fillRect(rx - 1, ry + 1, 1, 1); g.fillRect(rx + 1, ry + 1, 1, 1); g.fillRect(rx, ry + 3, 1, 1); }   /* a faint face, close up */
     g.fillStyle = '#a0ffd2'; g.globalAlpha = 0.6; for (let k = 0; k < 3; k++) g.fillRect(rx - 4 - k * 3 + sw, ry + 4 + k * 2, 1, 1); g.globalAlpha = 1;
     if (tell) { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#dcffe8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y + 1, 9, 0, 6.3); g.stroke(); } }
+  if (R.inTunnel(st)) { const b = st.barge; CT4.drawHerLight(g, b.x + 12 - cx, b.y - 33 - cy, R.lampLit(st), R.RIG.bargeR, time); }   /* (claude/canal4art) her light drawn: a reach where it is lit, an ember and a short ring where it is dimmed */
   drawGlint(st, g, cx, cy, VW, VH, time);   /* (claude/canalfix3) what holds her */
   /* EYES IN THE FOG (Jenny's, glimpsed): a pair that opens now and then where the fog is thickest, and is gone */
   for (const [ex, ey, ph] of st.eyes) { const x = ex * TS - cx, y = ey * TS - cy; if (x < -10 || x > VW + 10 || y < -10 || y > VH + 10) continue; const u = (time * 0.23 + (ph || 0)) % 1; if (u > 0.12) continue;

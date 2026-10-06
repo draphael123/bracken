@@ -8,6 +8,7 @@
 // Every teaching line goes through ctx.number with a line listed in src/hint-lines.js (the hint box).
 import * as GM from './jenny-greenteeth.js';
 import { bakeLockSkins } from './redraw/greenteeth_art.js';
+import * as K from './redraw/greenteeth_kelp.js';   /* (claude/canal4art) the kelp's, the raft's and the stuck claws' art */
 const { GT } = GM;
 
 export function makeGreenteethHands(ctx) {
@@ -138,8 +139,7 @@ export function makeGreenteethHands(ctx) {
     g.save(); g.translate(mid, y); g.rotate(r.tilt); g.translate(-mid, -y);
     const lw = r.low ? 0 : 0, tw = GT.raftW;
     if (r.low) { const cut = (tw - w) / 2; g.globalAlpha = 0.45; g.fillStyle = '#3a2c1c'; g.fillRect(x - cut, y + 2, cut, 4); g.fillRect(x + w, y + 2, cut, 4); g.globalAlpha = 1; }   /* the drowned ends, under the water */
-    for (let i = 0; i < w; i += 16) { const k = (i / 16) | 0; g.fillStyle = k % 2 ? '#4a3a26' : '#54422c'; g.fillRect(x + i, y, Math.min(16, w - i), 6); g.fillStyle = '#7a6440'; g.fillRect(x + i, y, Math.min(16, w - i), 1); g.fillStyle = '#1c150e'; g.fillRect(x + i, y + 6, Math.min(16, w - i), 2); }   /* the lashed timbers */
-    for (let i = 8; i < w; i += 32) { g.fillStyle = '#3a3e44'; g.fillRect(x + i, y + 1, 2, 5); g.fillStyle = '#8a929c'; g.fillRect(x + i, y + 1, 2, 1); }   /* iron dogs and rope */
+    K.drawRaft(g, x, y, w, time);   /* (claude/canal4art) the lashed timbers on iron straps, barrel floats, ring-bolts, hemp lashings, rope fenders (src/redraw/greenteeth_kelp.js) */
     const bx = x + w / 2 - 48; g.fillStyle = '#2a1a10'; g.fillRect(bx, y + 2, 96, 6); g.fillStyle = '#7a2e1e'; g.fillRect(bx, y + 3, 96, 1);   /* her hull, amidships */
     g.fillStyle = '#2a2420'; g.fillRect(bx + 5, y - 30, 2, 30); g.fillRect(bx + 5, y - 32, 8, 1);   /* the lantern pole */
     const fl = 0.82 + 0.18 * Math.sin(time * 9); g.globalAlpha = fl; g.fillStyle = '#ffcf6a'; g.fillRect(bx + 10, y - 30, 4, 6); g.globalAlpha = 1; void lw;
@@ -159,14 +159,14 @@ export function makeGreenteethHands(ctx) {
     const show2 = !(e.mode === 'sleep' || e.hidden), ex = R(e.x - cx), ey = R(e.y - cy), headY = ey - GT.h + 2, waist = ey - GT.h + 18;
     /* HER KELP: a body wrapped in it (the head bare), or a hood of it (the body bare); wary, it is everywhere */
     if (show2) { const wary = show.wary && show.wary.t > 0, body = show.kelp === 'body' || wary, hood = show.kelp === 'hood' || wary, shifting = e.mode === 'kelp' || e.mode === 'phase';
-      const kelp = (y0, y1) => { for (let yy = y0; yy < y1; yy += 3) { g.fillStyle = (yy >> 1) % 2 ? '#2e5a22' : '#3e7a2a'; g.fillRect(ex - 11 + ((yy * 7) % 3), yy, 22 - ((yy * 5) % 4), 2); g.fillStyle = '#7aa83a'; g.fillRect(ex - 9 + ((yy * 11) % 16), yy, 2, 1); } };
-      const shift = shifting ? R(Math.sin(time * 10) * 3) : 0;
-      if (body) kelp(waist + shift, ey);
-      if (hood) kelp(headY - 4 + shift, waist - 2);
+      const shift = shifting ? R(Math.sin(time * 10) * 3) : 0, stream = shifting ? Math.sin(time * 8) * 0.8 : 0;   /* (claude/canal4art) the BODY kelp is a teal mantle, the HOOD a rust-brown cowl: two shapes, two colours */
+      if (body) K.drawKelpBody(g, ex, waist + shift, ey, time, stream);
+      if (hood) K.drawKelpHood(g, ex, headY + shift, waist, time, e.face || 1, stream);
+      if (shifting && !wary) K.drawKelpSwap(g, ex, headY, waist, time);
       if (!wary) { const y0 = show.kelp === 'body' ? headY - 6 : waist, y1 = show.kelp === 'body' ? waist - 2 : ey; g.globalAlpha = 0.45 + 0.4 * pulse; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(ex - 13.5, y0 + 0.5, 27, y1 - y0); g.globalAlpha = 1;
         const up = show.kelp === 'body'; g.fillStyle = '#ffd36b'; const ax = ex + 18, ay = up ? headY : ey - 8; g.fillRect(ax, ay - 2, 1, 5); g.fillRect(ax - 1, up ? ay - 1 : ay + 1, 3, 1); g.fillRect(ax - 2, up ? ay : ay, 5, 1); } }   /* the bare part: the shared OPEN read, and an arrow (high / low) */
     /* HER STUCK ARM: from her shoulder to her claws in the raft's timber */
-    if (e.mode === 'stuck' && e.claw) { limb(g, ex, headY + 14, e.claw.x - cx, e.claw.y - 3 - cy, time * 0.2); claw(g, e.claw.x - cx, e.claw.y - 2 - cy); g.fillStyle = '#d8c890'; g.fillRect(R(e.claw.x - cx) - 3, R(e.claw.y - cy), 7, 1); }
+    if (e.mode === 'stuck' && e.claw) { limb(g, ex, headY + 14, e.claw.x - cx, e.claw.y - 7 - cy, time * 0.2); K.drawStuckClaws(g, e.claw.x - cx, e.claw.y - cy, time); }
     /* HER ARMS AND TELLS */
     for (const a of show.arms) { const k = 1 - Math.max(0, a.t) / a.len;
       if (a.st === 'tell' && (a.k === 'slam' || a.k === 'net')) { const x = R(a.x - cx), y = dy, r = a.k === 'slam' ? GT.slamR : GT.netR, fixed = k >= (a.k === 'slam' ? GT.slamFollow : GT.netFollow);
