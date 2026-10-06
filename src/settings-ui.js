@@ -6,10 +6,10 @@
 // writes a saved value, so no save can break). tools/settings-tabs.mjs proves every row of the old list is on exactly one tab.
 //
 //   AUDIO          music, effects, voices, ambience, volumes, the sound test
-//   DISPLAY        picture size, theme, font, text colour, camera, shake, numbers, the clock, the look of the wood
+//   DISPLAY        GRAPHICS (LOW / MEDIUM / HIGH presets), picture size, theme, font, text colour, camera, numbers, the look of the wood
 //   GAMEPLAY       difficulty, hit stop, helpers, and (headed off below) saves + testing
 //   CONTROLS       what each button does for your hero, REBINDING (keyboard + each pad), block hold/toggle, rumble, the co-op guide
-//   ACCESSIBILITY  readable text, less flashing and shake (Reduce motion), colour-safe marks, a rim on foes
+//   ACCESSIBILITY  READING (big text, the clock, colour tells, a rim on foes) and MOTION AND FLASHES (reduce motion, flashes, screen shake + strength)
 //
 // The list a tab hands the menu starts with '@TABS' (the strip, a selectable row: left/right change tab) and ends with 'Back'.
 

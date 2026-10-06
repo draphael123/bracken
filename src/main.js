@@ -4693,7 +4693,7 @@ const SETTING_TIPS = {
   'Ambient life': 'birds, fish, critters and idle folk', 'Scanlines': 'CRT lines over the picture', 'Pixel scale': 'how the picture fits your screen',
   'Erase this save': 'erases this save', 'Sound test': 'listen to every track and cry',
   'Controls': 'what every button does for your hero', 'Rebind keys': 'change any key or pad button, for each player', 'Co-op guide': 'how a second player joins, is downed and is lifted', 'Reset controls': 'every key and button back to its default (press twice)',
-  'Graphics': 'LOW, MEDIUM or HIGH: particles, backdrop layers, air, weather and the dark edge set together. CUSTOM when you change one yourself',
+  'Graphics': 'LOW, MEDIUM or HIGH: particles, backdrop, weather, dark edge',
   '@TABS': 'LEFT / RIGHT, TAB, Q E or LB RB change tab',
 };
 let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the session) */
