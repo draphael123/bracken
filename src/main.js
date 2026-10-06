@@ -29516,8 +29516,23 @@ window.BK = { uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toa
       Object.assign(P, freshBody(), identity); applyUpgrades(); applySkin(); clearPresses();
       time = 0; levelTime = 0; stop = 0; parts = []; leaves = []; nums = []; ghosts = []; trail = []; fireflies = []; birds = []; drops = []; pollen = []; lightT = 8; lightFlash = 0; thunderT = 0; shake = 0; kick = 0; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
       for (const k of Object.keys(keys)) keys[k] = false;
+      lastTellT = -9;   /* (claude/harness) the one-windup clock with the fight's own clock, for every fresh reset (BK.clearTellClock below is the same) */
+      /* (claude/harness) AND EVERYTHING ELSE A FIGHT LEFT BEHIND THAT THE NEXT ONE READS: the fish clock and the move-word cooldowns (both kept in
+         absolute time, and both draw on Math.random, the stream a lab seeds per row), the last verbs, the attack-token board, and the once-a-level
+         lessons. Measured by tools/lab-order.mjs: before this a seeded lab row came out differently as the second fight in a page. */
+      fishT = 3; for (const k of Object.keys(moveWordAt)) delete moveWordAt[k]; verbs.length = 0; Object.assign(TK, tokenBoard()); emberTaughtIn = null; duckTaughtIn = null; dashAtkShown = 0; bossFx = []; bossBodies = []; rings = []; ripples = []; impacts = []; deathFx = []; lvUpN = 0; if (SFX.resetSteps) SFX.resetSteps(); hushT = 0; slowT = 0; heartT = 0; cricketT = 0; dripT = 0; coinCombo = 0; coinComboT = 0; flyCoins = []; airMotes.length = 0; fish = [];
     }
     Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
+  /* (claude/elitemoves) THE ONE-WINDUP CLOCK BACK TO NOUGHT: reset({ fresh }) puts time back to 0 but left lastTellT where the last fight
+     ended, so in every lab fight after a page's first, time - lastTellT stayed negative - no elite could start a move until the clock passed
+     the old fight's last tell, and every windup in reach was stretched 0.35 s. The elite lab calls this after its reset (the other labs: see
+     the elitemoves lane report, a question for Daniel). */
+  clearTellClock() { lastTellT = -9; },
+  /* (claude/elitemoves) THE ONE-WINDUP CLOCK BACK TO NOUGHT: reset({ fresh }) puts time back to 0 but left lastTellT where the last fight
+     ended, so in every lab fight after a page's first, time - lastTellT stayed negative - no elite could start a move until the clock passed
+     the old fight's last tell, and every windup in reach was stretched 0.35 s. The elite lab calls this after its reset (the other labs: see
+     the elitemoves lane report, a question for Daniel). */
+  clearTellClock() { lastTellT = -9; },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel, loadG: loadLevelG, loadThen,   /* the loading screen, for tools/loading-screen.mjs */
   /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
      hunting for the up/down flags press() does not carry. */

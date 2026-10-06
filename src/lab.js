@@ -287,7 +287,7 @@ async function runambushLab(BK, opts) {
   const rows = [], out = { rows, started: Date.now() };
   if (typeof window !== 'undefined') window.__ambushLab = out;
   for (const lvId of levels) for (const h of heroes) for (let rep = 0; rep < reps; rep++) {
-    BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(300);
+    BK.setHero(h); BK.reset({ fresh: true }); if (BK.clearTellClock) BK.clearTellClock(); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(300);
     const A = BK.ambushes()[opts.room || 0]; if (!A) { rows.push({ lvl: lvId, h, skipped: 'no ambush room' }); continue; }
     const P = BK.P, k = BK.keys, x0 = A.trigger !== undefined ? A.trigger : A.wallL + 3, mid = (A.wallL + A.wallR) / 2 * 16 + 8;
     for (const e of BK.enemies()) if (Math.abs(e.x - mid) < (A.wallR - A.wallL + 30) * 8 && !e.maxHp) e.alive = false;   /* the level's own creatures by the door are not the room's */
@@ -345,7 +345,7 @@ export async function fightLab(BK, opts = {}) {
   for (const lvId of levels) for (const h of heroes) for (const t of foes) {
     const fights = [];
     for (let rep = 0; rep < reps; rep++) {
-      BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false;
+      BK.setHero(h); BK.reset({ fresh: true }); if (BK.clearTellClock) BK.clearTellClock(); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false;
       /* opts.home: a foe that needs its own ground (the marsh's gar needs its hole) is fought where the level put the first one,
          with the hero set down six tiles short of it, instead of five tiles past the start */
       const home = opts.home && BK.enemies().find(q => q.t === t && q.alive);
@@ -527,9 +527,10 @@ async function runbossLab(BK, opts) {
        in the finally below (every continue in this row is covered) pins the row end to end - the level it loads, the setup
        sim before the arena wakes, and the fight itself. */
     const realRandom = Math.random; Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));   /* opts.seed: a DIFFERENT pinned roll, for reps; opts.salt: a pilot's pass number (Ore Road) - both left out, every row replays exactly as before */
+    const progRow = JSON.stringify(BK.PROG);   /* (claude/harness) A ROW LEAVES THE SAVE AS IT FOUND IT: the lessons told, the beasts seen, the XP of a kill and the fog are put back in the finally below, so the next row in this page starts where this one did (tools/lab-order.mjs) */
     try {
     if(opts.mini && BK.PROG[lvId]) BK.PROG[lvId].mini=false;
-    BK.setHero(h); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
+    BK.setHero(h); BK.reset({ fresh: true }); if (BK.clearTellClock) BK.clearTellClock(); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(10);
     /* A FRESH HERO EACH ROW. The last swing of the row before used to arrive with him - a heavy swing still going roots the
        paladin for a second on whatever he is dropped on, and at the Roc's door that is the glass over the shaft */
     BK.reset();
@@ -2044,7 +2045,7 @@ async function runbossLab(BK, opts) {
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
       takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes } : {}), ...(skillCasts ? { skillCasts } : {}) });
     await yieldNow();
-    } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; }
+    } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; { const p0 = JSON.parse(progRow); for (const k of Object.keys(BK.PROG)) if (!(k in p0)) delete BK.PROG[k]; Object.assign(BK.PROG, p0); } }
   }
   out.done = true; out.ms = Date.now() - out.started;
   return out;
