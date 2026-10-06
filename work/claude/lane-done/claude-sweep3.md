@@ -39,7 +39,7 @@ verdict did not change (0/6, boss left 75-91%).
 ## Checks run (green)
 tells, answer-tags, boss-greed, boss-openings, rule-openings, boss-fight-end, hint-shown, boss-read, normal-health (legacy
 bot unchanged), welltown, witchlight, burial3, archmage-folly, archmage-room, archmage-rings, undead-moves, undead-realms,
-tower-hall, weak-bosses, harvest-fair, cistern-queen, underwell, unburied, unburied-fights.
+tower-hall, weak-bosses, harvest-fair, cistern-queen, underwell, unburied, unburied-fights, mash-gate (the Ploughman and Barrow Rider minis now hold, so they were taken out of MASH_REPORT_ONLY and are enforced).
 Reds: none of mine. archmage-folly went red twice while I worked: once on B12 "once a cycle", once on his health pin. Both
 changes were reverted, so it is green, and both are now questions.
 
