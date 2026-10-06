@@ -7,6 +7,7 @@ import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate,
 //   await BK.fightLab({ levels: ['wood', 'spire', 'waymeet'], heroes: [...], foes: [...], reps: 2 })   -> window.__lab
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK, HEIGHT } from './marks.js';
+import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
 import { boneGaps as mageBoneGaps, MAGE as UMAGE, orbitWorlds as mageOrbitWorlds } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
@@ -453,11 +454,13 @@ function dashIn(BK, h, e, f) {
    roll is not started. This is not a weaker bot: under the old combat a swing into a tell could be rolled out of, so the bot never had to
    read it; now it must, as a person must. Only a STARTED cut is held back (a plunge from the air is not), and only on the ground. ==== */
 let HUMAN_H = null; export const LAB_RESERVE_DEFAULT = 0.5; let LAB_RESERVE = LAB_RESERVE_DEFAULT;
+let LABP = profileOf(null), PERC = null, SKH = null;   /* the row's bot profile (src/bot-profile.js), its perception (src/lab-perceive.js) and its skill hands, or null */
 function humanSwingOk(BK) {
   const P = BK.P, h = HUMAN_H; if (BK.labHuman === false || !P || !h || !(P.ground || P.swim) || committed(P)) return true;
   const total = artLim(false) / artRate(h, false) + (COMMIT[h] || COMMIT.knight).light;
   const cost = BK.stepCost ? BK.stepCost() : 15, roll = ROLL_COST[h] || 24;
-  if (P.st - cost < roll * (BK.labReserve ?? LAB_RESERVE) && P.st < P.maxSt) return false;   /* (b): keep (half) a roll */
+  if (P.st - cost < roll * (BK.labReserve ?? LAB_RESERVE) && P.st < P.maxSt && !BK.labSlip) return false;   /* (b): keep (half) a roll (BK.labSlip: a profile's hands forgetting to, src/lab-perceive.js) */
+  if (BK.labGreedy) return true;   /* (a) is off while a profile's hands are GREEDY after a hit: they stay in, blind to what he starts */
   for (const e of BK.enemies()) { if (!e.alive || e.harmless || Math.abs(e.x - P.x) > 110 || Math.abs(e.y - P.y) > 60) continue;
     const greed = e.greedT > 0 ? e.greedT : 0, wu = BK.windingUp ? BK.windingUp(e) : false;
     if (!greed && !wu) continue;
@@ -493,12 +496,15 @@ function rollWhenDue(BK, press0) {
 export async function bossLab(BK, opts = {}) {
   const previous = BK.manualSimulation, press0 = BK.press, sim0 = BK.sim, step0 = BK.step;
   BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
-  BK.sim = n => { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
-  BK.step = n => { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
+  LABP = profileOf(opts.profile ?? BK.labProfile);   /* (BK.labProfile: a page-wide default a measuring tool sets - tools/boss-level.mjs openLevelPage sets the standard) */   /* opts.profile: 'legacy' (or none) = the old bot exactly; 'human' = the boss standard; '+first' = a first attempt */
+  /* WITH EYES (a perceiving profile) the world steps one frame at a time: the hands decide on what was SEEN, the seen state comes off, the world steps, and what is seen now goes back on */
+  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); PERC.restore(); r = fn.call(BK, 1); PERC.update(); PERC.apply(); } return r; };
+  BK.sim = n => { if (PERC) return stepEyes(sim0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
+  BK.step = n => { if (PERC) return stepEyes(step0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
-  finally { BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
+  finally { if (PERC) PERC.restore(); PERC = null; SKH = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
 }
 async function runbossLab(BK, opts) {
   const healthMode=opts.healthMode||'refill';
@@ -570,6 +576,9 @@ async function runbossLab(BK, opts) {
        again here, on the identical seedOf(...) string, makes the fight loop depend only on the row's own key - never
        on how many creatures anything else in the level spawned before it. */
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
+    /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
+    if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); }
+    SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
@@ -609,7 +618,15 @@ async function runbossLab(BK, opts) {
         /* THE BELL. With a stone in hand his tells are answered by the stone (below); low and empty-handed his floor ring and his charge
            are risen over; under the floor ring with a stone, up is not a stroke - it is letting go */
         const bellGo = boss.t === 'bellcrab' && boss.phase !== 3 && !(boss.open > 0) && !['crack', 'wake', 'sleep'].includes(boss.mode), low = P.y > A.floor - 40;
-        if (bellGo && P.ballast && boss.mode === 'ballastTell' && low) BK.press('jump');
+        /* PRESSURE: MOVE (claude/bot2 triage). The ring is laid where you are as he tells it (34 px, 0.8 s): with a stone in hand the hands
+           used to stay put under him waiting to drop it, and the ring took 124 of the knight's 182. Out of it first, stone or not, then back to the plan */
+        const pm = LABP.v2 && boss.t === 'bellcrab' && boss.mode === 'pressureTell' && boss.bellMark, pIn = pm && Math.abs(P.x - pm.x) < 44 && Math.abs(P.y - 10 - pm.y) < 44;
+        if (pIn) { k[P.x < pm.x ? 'left' : 'right'] = true; if (Math.abs(P.x - pm.x) < 20) k[(P.y - 10) < pm.y ? 'up' : 'down'] = true; }
+        /* HIS RUSH AND HIS LEAP (the scuttle 42 px x 48 high, unblockable; out of the bell, the leap): up out of their line, and a stone that
+           holds you on the floor is let go first - he will come again, the stone is on its rack */
+        else if (LABP.v2 && boss.t === 'bellcrab' && ['scuttleTell', 'scuttle', 'leapTell', 'leap'].includes(boss.mode) && adx < 130 && P.y > boss.y - 70 && (boss.mode !== 'scuttle' || (boss.x - P.x) * (boss.vx || 0) < 0 || adx < 50)) {
+          if (P.ballast) BK.press('jump'); k.up = true; k[dx > 0 ? 'left' : 'right'] = true; }
+        else if (bellGo && P.ballast && boss.mode === 'ballastTell' && low) BK.press('jump');
         else if (boss.t === 'bellcrab' && !P.ballast && (low || !bellGo) && ['ballastTell', 'scuttleTell', 'scuttle'].includes(boss.mode)) k.up = true;
         else if (boss.t === 'bellcrab' && !P.ballast && boss.mode === 'pressureTell' && Math.abs(P.x - boss.bellMark.x) < 45) k[P.x < boss.bellMark.x ? 'left' : 'right'] = true;
         /* THE BELL IS SHUT UNTIL A STONE LANDS ON HIS CROWN (docs/briefs/deep-rework-2.md §4), and this is how the bot does it: swim up to a
@@ -1108,12 +1125,23 @@ async function runbossLab(BK, opts) {
         if(eruption){const near=Math.abs(P.x-boss.x)<65;gx=near?boss.x+(P.x>boss.x?1:-1)*80:P.x;if(gx<A.x0+20)gx=boss.x+80;if(gx>A.x1-20)gx=boss.x-80;}
         /* THE GAS (claude/burial2): his rest opens nothing now, so the bot makes his opening the way a player does - fire from a wall
            candle, the vent he is nearest struck with it, then stand past the flame so he walks into it. Open, it fights him. */
-        let ventHit=null;
+        let ventHit=null;const HANDS_HIGH=34;
         if(!eruption&&!(boss.open>0)&&!(target.graveAdd&&Math.abs(target.x-P.x)<40)&&!['slamTell','novaTell','bodyTell','bodyFly','clawTell'].includes(mode)){
           const vents=(BK.L.gasVents||[]).filter(v=>v.x*16>A.x0&&v.x*16<A.x1),vx=v=>v.x*16+8,burning=vents.find(v=>v.litT>1&&!v.burnt);
           if(burning){const side=Math.sign(vx(burning)-boss.x)||1;gx=vx(burning)+side*44;if(gx<A.x0+14||gx>A.x1-14)gx=vx(burning)-side*44;}
           else if(P.candle>0){const v=vents.slice().sort((a,b)=>Math.abs(vx(a)-boss.x)-Math.abs(vx(b)-boss.x))[0];if(v){const from=Math.sign(P.x-vx(v))||1;gx=vx(v)+from*12;if(Math.abs(P.x-gx)<8&&P.ground)ventHit=v;}}
           else{const c=(BK.L.candles||[]).filter(c=>c.x*16>A.x0-24&&c.x*16<A.x1+24).sort((a,b)=>Math.abs(a.x*16+8-P.x)-Math.abs(b.x*16+8-P.x))[0];if(c)gx=c.x*16+8;}}
+        /* (claude/bot2 triage) THE ATTACKS BURIAL3 ADDED, answered as his own callouts say - the hands had none of them, and they did most of the
+           damage the lab put down to his 'rest' (they land after the tell, while he rests): POISON NOVA: GET CLEAR (112 px); BODY SLAM: MOVE (78 px
+           of his mark); THE HANDS COME UP: MOVE YOUR FEET (34 px of the mark); HE THROWS THE DEAD (it lands where you stood: step off it);
+           GRAVE HANDS: JUMP THEM (each arm as it comes up under you). Nothing is swung while one of these is coming. */
+        let bdFlee=false;if(LABP.v2){const away=(x,r)=>{const s2=P.x>=x?1:-1;let g=x+s2*r;if(g<A.x0+16||g>A.x1-16)g=x-s2*r;return g;};
+        if(mode==='novaTell'&&Math.abs(P.x-boss.x)<128&&P.y>A.floor-80){gx=away(boss.x,134);bdFlee=true;}
+        else if((mode==='bodyTell'||mode==='bodyFly')&&Number.isFinite(boss.markX)&&Math.abs(P.x-boss.markX)<92){gx=away(boss.markX,96);bdFlee=true;}
+        else if(mode==='clawTell'&&Number.isFinite(boss.markX)&&Math.abs(P.x-boss.markX)<44){gx=away(boss.markX,52);bdFlee=true;}
+        else if(mode==='throwTell'&&boss.modeT<.3&&!P.labBdStep){P.labBdStep=P.x+((Math.sign(P.x-boss.x)||1)*40);}
+        if(P.labBdStep!==undefined&&P.labBdStep!==null){if(boss.flying||mode==='throwTell'){gx=P.labBdStep;bdFlee=true;}else P.labBdStep=null;}
+        const hl=boss.handLine;if(hl&&P.y>A.floor-HANDS_HIGH){const arm=hl.arms.find(q=>Math.abs(q.x-P.x)<16&&hl.t>q.at-0.14&&hl.t<q.at+0.2);if(arm){bdFlee=true;gx=P.x;if(P.ground&&!(P.labJump>0)){BK.press('jump');P.labJump=18;}}}}   /* (the triage answers ride the v2 profiles; 'legacy' is the old hands exactly) */
         if(ventHit&&P.atk<0){P.face=Math.sign(ventHit.x*16+8-P.x)||1;BK.press('atk');}
         if(mode==='slamTell'&&boss.modeT<.3&&P.ground){BK.press('jump');P.labJump=18;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1121,7 +1149,7 @@ async function runbossLab(BK, opts) {
         const guard=!eruption&&(mode==='cleaveTell'&&Math.abs(boss.x-P.x)<95||(boss.skulls||[]).some(q=>q.t>=0&&Math.abs(q.x-P.x)<70)||target.graveAdd&&target.mode==='grabTell'&&target.modeT<.22);
         if(guard&&SHIELDED(h)){k.block=true;gx=P.x;P.face=mode==='cleaveTell'?(Math.sign(boss.x-P.x)||1):side;}else if(guard){const gs=mode==='cleaveTell'?(Math.sign(boss.x-P.x)||1):side;gx=P.x-gs*65;if((mode==='cleaveTell'?boss:target).modeT<.2)BK.press('dodge');}
         if(Math.abs(gx-P.x)>5)k[gx>P.x?'right':'left']=true;
-        if((h!=='paladin'||P.st>=44)&&!guard&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
+        if((h!=='paladin'||P.st>=44)&&!guard&&!bdFlee&&!eruption&&mode!=='sinkTell'&&!(mode==='slamTell'&&boss.modeT<.65)&&Math.abs(dx)<LAB_REACH[h]+target.w/2&&Math.abs(P.y-target.y)<32&&P.atk<0){P.face=side;BK.press('atk');swings++;}
         const was=P.hp,m0=mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,target,f,h});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='gorgecrab'){
@@ -1375,7 +1403,22 @@ async function runbossLab(BK, opts) {
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
          pyromancer. The bash is rolled through as it arrives; the judgement is walked off its mark. */
       const KA = boss.t === 'kraken' && BK.krak ? BK.krak() : null, SA = boss.t === 'strawking' && BK.straw ? BK.straw() : null, MA = boss.t === 'archmage' && BK.mage ? BK.mage() : null;
-      if (boss.t === 'closedhelm' && boss.mode && (/Tell$/.test(boss.mode) || boss.mode === 'bash')) { const m = boss.mode, t = boss.modeT; P.face = Math.sign(d) || P.face;
+      /* THE SPIRE'S GOLEM (claude/bot2 triage): his LOW sweep and his stomp's floor waves are JUMPED - the sweep is 0.45 s live and 66 px wide,
+         unblockable, and only hits a hero on the ground, so the roll the red mark used to send the hands into (0.2 s safe) ate it every time.
+         It is the read his own callout gives ('LOW'), late in the tell, as a person jumps a sweep he can see coming. */
+      let gBell = null; const golemWave = boss.t === 'golem' && BK.waves().some(w => !w.royal && w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 6);
+      if (boss.t === 'golem' && LABP.v2 && (golemWave || (boss.mode === 'sweepTell' && boss.modeT < 0.07 && ad < 74) || (boss.mode === 'sweep' && ad < 74) || (boss.mode === 'stompTell' && boss.modeT < 0.12 && ad < 60))) { goal = null;
+        if (P.ground && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 16; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }
+      /* AND STONE DOES NOT BLEED (its sign, at the chapel door): the note of a hanging bell struck while he stands under it cracks him for 3.6 s.
+         The hands stand just this side of the nearest bell, let him walk in under it, and strike it from a jump; cracked, they cut him as ever.
+         The lab had never done it, so it swung 170 times at stone and measured him 0/18 (claude/bot2 triage: a bot gap, not the mini) */
+      else if (boss.t === 'golem' && LABP.v2 && boss.mode === 'sweepTell') { goal = boss.x - (Math.sign(d) || 1) * 96; strike = false; }   /* the sweep's line is drawn on the floor, 66 each side: walk off it, and jump it if still on it */
+      else if (boss.t === 'golem' && LABP.v2 && !(boss.crackT > 0) && boss.mode !== 'stagger' && (gBell = BK.props().filter(p => p.t === 'tbell' && p.guard).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0])) {
+        const side = Math.sign(boss.x - gBell.x) || 1; goal = gBell.x - side * 20; strike = false; if (Math.abs(P.x - goal) < 8) P.face = side;   /* (he stops 40 short of a hero: stood 20 this side of the bell, he halts 20 past it - under it) */
+        if (Math.abs(boss.x - gBell.x) < 30 && !(gBell.cool > 0) && P.ground && Math.abs(P.x - goal) < 10 && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 22; goal = null; }
+        if (P.labJump > 0) { P.labJump--; k.jump = true; goal = null; }
+        if (!P.ground && P.y - gBell.y < 20 && P.y - gBell.y > -20 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; BK.press('atk'); swings++; } }
+      else if (boss.t === 'closedhelm' && boss.mode && (/Tell$/.test(boss.mode) || boss.mode === 'bash')) { const m = boss.mode, t = boss.modeT; P.face = Math.sign(d) || P.face;
         if (m === 'bash') { if (ad < 60 && (boss.x - P.x) * boss.vx < 0 && f % 4 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
         else if (m === 'bashTell') { if (ad > 150) goal = null; }
         else if (m === 'judgeTell') { const mk = (boss.marks || [])[0]; if (mk !== undefined && Math.abs(P.x - mk) < 44) goal = mk + (P.x < mk ? -64 : 64); }
@@ -1885,12 +1928,13 @@ async function runbossLab(BK, opts) {
       if (f % 600 === 599) await yieldNow();
     }
     k.left = false; k.right = false; k.block = false; smallEnd();
+    let eyes = null; if (PERC) { PERC.restore(); eyes = PERC.stats(); PERC = null; } const skillCasts = SKH ? SKH.casts() : null; SKH = null;   /* the real state back on before the row is read */
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes } : {}), ...(skillCasts ? { skillCasts } : {}) });
     await yieldNow();
-    } finally { Math.random = realRandom; }
+    } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; }
   }
   out.done = true; out.ms = Date.now() - out.started;
   return out;
