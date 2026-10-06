@@ -45,6 +45,7 @@ export const STOCK_MUSIC = { marketday: 'a stock CC0 market tune (RandomMind "Ma
 /* THE LIMITS. Each is set so THE MAGE'S FOLLY clears it with margin and the Harvest Fair (the old 672-column corridor) does not; the Folly's number is in the comment. */
 export const LIM = {
   longRun: 20,          /* a flat run this long counts toward the flat SHARE below */
+  chasm: 5,             /* a gap wider than this (columns: more than a jump) ends a flat run where the floor ends; a narrower one is a pit the run jumps (claude/skyroad, ratified 10-05) */
   flatShareMax: 0.30,   /* share of the route columns that lie in long runs that are flat AND empty: no jump, gap, hazard, foe or gadget (Folly 0.11) */
   terrainShareMax: 0.60, /* the same ignoring foes: level ground with nothing but enemies on it (Folly 0.33) */
   routeBands: 5,        /* distinct 4-row height bands the walked route uses (Folly 8) */
@@ -180,13 +181,13 @@ export function measure(lv) {
   const scan = (breakOnFoes) => { let best = { n: 0, at: 0, long: 0 }, lo = null, minY = 0, maxY = 0, start = 0, prevX = null, prevY = null;
     const cut = x => { if (lo !== null) { const n = x - start; best.long += n >= LIM.longRun ? n : 0; if (n > best.n) best = { n, at: start, long: best.long }; } lo = null; };
     for (const x of [...cols.keys()].sort((a, b) => a - b)) { if (x >= end) break; const y = cols.get(x);
-      let brk = false, gapAt = null;
-      if (prevX !== null) { for (let xx = prevX + 1; xx < x; xx++) if (!supported(xx, prevY) && !supported(xx, y)) { brk = true; if (gapAt === null) gapAt = xx; }   /* a gap crossed by a jump (or a glide): the run ends where the floor ends, not on the far side (claude/skyroad: a flight over a chasm with no footing in it read as 30-40 columns of flat empty ground) */
+      let brk = false, gapAt = null, gapW = 0;
+      if (prevX !== null) { for (let xx = prevX + 1; xx < x; xx++) if (!supported(xx, prevY) && !supported(xx, y)) { brk = true; gapW++; if (gapAt === null) gapAt = xx; }   /* a gap crossed by a jump (or a glide): the run ends where the floor ends, not on the far side (claude/skyroad: a flight over a chasm with no footing in it read as 30-40 columns of flat empty ground) */
         if (!supported(x, y) || Math.abs(y - prevY) >= 2) brk = true; }   /* a step of 2+ */
       if (hazardAt(x, y) || near(gadgetXY, x, y, 6, 6) || inRoom(x)) brk = true;
       if (breakOnFoes && near(allFoes, x, y, 8, 6)) brk = true;
       if (lo !== null && !brk) { minY = Math.min(minY, y); maxY = Math.max(maxY, y); if (maxY - minY >= 2) brk = true; }
-      if (brk) { cut(gapAt !== null ? gapAt : x); }
+      if (brk) { cut(gapAt !== null && gapW > LIM.chasm ? gapAt : x); }   /* (RATIFIED by the coordinator 10-05, narrowed per the skyroad review: only a gap WIDER THAN A JUMP - more than LIM.chasm columns - ends the run where the floor ends; a jump-sized pit cuts on its far side, as it always did) */
       if (lo === null && !brk) { lo = x; start = x; minY = maxY = y; }
       else if (lo === null && brk) { lo = x; start = x; minY = maxY = y; }
       prevX = x; prevY = y; }
