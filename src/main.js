@@ -90,7 +90,7 @@ import { makeMoorRocksHands } from './moor-rocks-hands.js'; let MRH = null;   /*
 import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
-import * as GB from './boss-greed.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
+import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
 import { installTactics, braceHit } from './foe-tactics.js'; import { installReact } from './foe-react.js';   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
@@ -6228,8 +6228,12 @@ function wardedDamage(e, dmg) {
   if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE IS STONE: nothing but a stomp while he lies stunned on the spikes (gate-gargoyle.js) */
   return dmg;
 }
+/* THE TURNED BLOW (claude/sweep1, src/boss-read.js, design-standard B10): a blow that meets a boss or a mini and takes nothing clanks, flashes and says a word */
+function turnWord(x, y, txt, col) { if (!SET.numbers || (L && L.trial)) return; for (let i = nums.length - 1; i >= 0; i--) if (nums[i].txt === txt && Math.abs(nums[i].x - x) < 60) nums.splice(i, 1); nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }   /* (renewed in place, never stacked: one word over him, as fresh as the last blow) */
+const BR = makeBossRead({ time: () => time, clank: () => SFX.clank(), sparks: (x, y, d, n) => sparks(x, y, d, n), ring: (x, y, r, c, l) => ringAt(x, y, r, c, l), word: turnWord, hitstop: t => hitstop(t) });
 function hurtEnemy(e, dmg, fromX, plunge) { const blow = BLOW; BLOW = null;   /* taken at once, so nothing this blow sets off inherits it */
-  const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, alive0 = e.alive, r = hurtEnemy0(e, dmg, fromX, plunge, blow);
+  const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, alive0 = e.alive, mode0 = e.mode, br0 = e.broken || 0, r = hurtEnemy0(e, dmg, fromX, plunge, blow);
+  if (alive0 && blow && dmg > 0 && (e === boss || e.xpRole === 'mini')) BR.auto(e, fromX, { hp: hp0, mode: mode0, broken: br0 });   /* B10: never a silent no-damage hit (src/boss-read.js) */
   /* WHOSE BLOW IT WAS. During a hero's pass P is that hero, so the damage and the kill go on HIS tally; outside a
      pass there is only ever one hero to mean. A burn or a bleed is booked to whoever lit it, which is right, and a
      creature killed by the room while a hero stands near it pays him the compliment, which is a friendly tally. */
@@ -6246,7 +6250,7 @@ function greedHit(e, fromX, blow) {
   if ((isB || GB.chipped(e, false)) && e.chipHit === time) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * ((e.w || 20) / 2), e.y - (e.h || 20) / 2, Math.sign(fromX - e.x) || 1, 3);
     if (!(e.chipSaid > time)) { e.chipSaid = time + 5; number(e.x, e.y - (e.h || 20) - 14, 'A SCRATCH: WAIT FOR HIS OPENING', '#9aa39a');
       PROG.chipTold = (PROG.chipTold || 0) + 1; if (PROG.chipTold <= 2) { hintT = 4.5; hintMsg = 'OUTSIDE HIS OPENINGS A BOSS TAKES A SCRATCH. READ HIM, ANSWER HIM, THEN STRIKE.'; } } }
-  if (!(P.atk >= 0 && CM.swingTotal(hero(), P) > GB.GREED.tell) && GB.noteGreed(e, time, isB, isM)) SFX.tell(true);
+  if (e.angleHit !== time && !(P.atk >= 0 && CM.swingTotal(hero(), P) > GB.GREED.tell) && GB.noteGreed(e, time, isB, isM)) SFX.tell(true);   /* (a blow round his guard is the right blow: no greed, claude/sweep1) */
 }
 function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
@@ -6426,7 +6430,9 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   /* HIS HEALTH IS GATED BY THE STAGE, so while he holds the floor down no blow can take any of it - which left the one
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
-  dmg = bossChip(e, wardedDamage(e, dmg), raw0, !!blow);   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
+  const angB = !!blow && (e === boss || e.xpRole === 'mini') && BR.beats(e, fromX, !!plunge || !P.ground, blowHas(blow, 'low')) && !GB.openOf(e);   /* B11 (claude/sweep1): a duelist guards ONE way - from the other way the blow is not chipped */
+  if (angB) e.angleHit = time;
+  dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg), raw0, !!blow);   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   greedHit(e, fromX, blow);
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
@@ -8461,11 +8467,11 @@ function updatePlayer(dt) {
       if (!P.plunge && FINISH_OK(e, e === boss || bossActive || miniActive || rushOn())) { finishFoe(e, P, FIN_API); continue; }   /* EXECUTION: a broken common foe is finished, not cut (src/finishers.js) */
       if (P.plunge) {
         if (e.t === 'master' && e.mounted) { if (e.stagger > 0 || e.open > 0) { hurtEnemy(e, 30, P.x, true); e.stagger = Math.max(e.stagger, 0.9); e.mode = 'stagger'; e.modeT = Math.max(e.modeT, 0.9); number(e.x, e.y - 24, 'STUNNED', '#8fd160'); SFX.gobHurtLow(); SFX.thud(); burst(e.x, e.y - 8, 12, COLS.master, 80, 0.6); } else { SFX.clank(); number(e.x, e.y - e.h - 6, 'THE HOUND GUARDS HIM', '#9aa39a'); } if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); continue; }
-        if (e.t === 'ram') { if (e.mode === 'crash') { hurtEnemy(e, plungeDmg() * 2, P.x, true); number(e.x, e.y - 30, 'BETWEEN THE HORNS', '#ffd36b'); } else { SFX.clank(); number(e.x, e.y - 24, 'HE SHRUGS IT OFF', '#9aa39a'); } if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); continue; }
-        if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x, e.y - 40, P.face, 5); if (isWarden()) { wardenPerch(e, e.x, e.y - 40); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; continue; }
+        if (e.t === 'ram') { if (e.mode === 'crash') { hurtEnemy(e, plungeDmg() * 2, P.x, true); number(e.x, e.y - 30, 'BETWEEN THE HORNS', '#ffd36b'); } else { BR.turned(e, P.x); } if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); continue; }
+        if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { BR.turned(e, P.x); if (isWarden()) { wardenPerch(e, e.x, e.y - 40); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; continue; }
         if (e.t === 'chief') { e.plungeN = (e.plungeN || 0) + 1; e.plungeT = 2.5; if (e.plungeN >= 2) { e.plungeN = 0; e.plungeT = 0; P.vx = (Math.sign(P.x - e.x) || -e.face) * 280; P.vy = -230; P.inv = Math.max(P.inv, 0.5); P.plunge = false; P.canCut = false; P.ground = false; P.hitSet.clear(); number(e.x, e.y - e.h - 12, 'SHAKEN OFF', '#ff6b6b'); SFX.roar(); SFX.clank(); shakeCam(4); e.stagger = 0; continue; } }
         if (e.t === 'mother' && e.tipped) continue;
-        if (e.t === 'mother') { P.plunge = false; P.vy = -200; P.ground = false; P.canCut = false; SFX.clank(); number(e.x, P.y - 10, 'ARMOURED', '#9aa39a'); continue; }
+        if (e.t === 'mother') { P.plunge = false; P.vy = -200; P.ground = false; P.canCut = false; BR.turned(e, P.x); continue; }
         if (e.t === 'heart') { hurtEnemy(e, 1, P.x, true); if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; squash(0.8, 1.25, 0.1); continue; }
         if (e.t === 'thorn') {
       if (e.mode === 'charge' && Math.random() < dt * 9) SFX.clatter();
@@ -8499,13 +8505,14 @@ function updatePlayer(dt) {
       const front = P.swingKind !== 'sweep' && Math.sign(P.x - e.x) === e.face;   /* the sweep goes under every guard held in front */
       /* (and a guard that is BROKEN is not held up at all: the heavy blow or the sweep that emptied its bar opened it for every cut after, which is what makes going through it worth more than going round) */
       if (e.t === 'mother' && e.tipped) continue;
-      if (e.t === 'drone' || e.t === 'mother') { SFX.clank(); sparks(e.x, e.y - e.h / 2, P.face, 4); number(e.x, e.y - e.h - 6, e.t === 'mother' ? 'ARMOURED' : 'PUFF', '#9aa39a'); continue; }
-      if (e.t === 'ram' && !ramOpen(e)) { SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 14, e.y - 8, P.face, 5); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'HORNS', '#c9a83a'); continue; }
+      if (e.t === 'mother') { BR.turned(e, P.x); continue; }   /* B10: ARMOURED, said (src/boss-read.js) */
+      if (e.t === 'drone') { SFX.clank(); sparks(e.x, e.y - e.h / 2, P.face, 4); number(e.x, e.y - e.h - 6, 'PUFF', '#9aa39a'); continue; }
+      if (e.t === 'ram' && !ramOpen(e) && !BR.beats(e, P.x, !P.ground, P.swingKind === 'sweep')) { BR.turned(e, P.x); hitstop(0.02); P.vx = e.face * 120; continue; }   /* HIS HORNS (B11, claude/sweep1): they turn a blade from the front - GO ROUND; from behind he is cut like any beast */
       if (e.t === 'pike' && front && !throughGuard(e) && !(e.broken > 0) && e.stagger <= 0 && !(e.elite && (e.mode === 'elSweepTell' || e.mode === 'elSweep' || e.mode === 'elSweepEnd'))) { glanceSay(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 12, e.y - 8, P.face, 4); P.vx = e.face * 100; number(e.x, e.y - e.h - 6, 'PIKE', '#c9d1dc'); continue; }   /* (THE PIKE SERJEANT'S SWEEP: both hands down on the butt, and there is no line left to hold) */
-      if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { SFX.clank(); sparks(e.x + P.face * -20, e.y - 30, P.face, 5); continue; }
+      if (e.t === 'king' && e.mode !== 'held' && !(e.open > 0)) { BR.turned(e, P.x); continue; }   /* B10: THE CROWN turns it, said */
       if (e.turncoat) continue;
       /* (the Hound Master's guard lives in hurtEnemy0 now: a blade, an ember and a ball all meet the same hound) */
-      if (chiefShielded(e) && front && !throughGuard(e)) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - 10, P.face, 6); P.vx = e.face * 120; number(e.x, e.y - e.h - 6, 'SHIELD', '#c9d1dc'); continue; }
+      if (chiefShielded(e) && front && !throughGuard(e)) { guardTurned(e); BR.turned(e, P.x); hitstop(0.02); P.vx = e.face * 120; continue; }   /* B10/B11: his shield, said - GO ROUND */
       if (e.t === 'brute' && front && braceHit(e, time, !!(P.heavy || P.heavySwing))) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 9, e.y - 12, P.face, 6); P.vx = e.face * 130; number(e.x, e.y - e.h - 6, 'COVERED', '#c9d1dc'); continue; }   /* THE BRUTE COVERS UP: the third light cut of a flurry off his front is turned (src/foe-tactics.js braceHit) - a heavy blow goes through */
       if (front !== undefined && RX.guards(e, time, !!P.heavy, front)) { guardTurned(e); SFX.clank(); hitstop(0.05); sparks(e.x + e.face * 8, e.y - e.h * 0.6, P.face, 6); P.vx = e.face * 130; number(e.x, e.y - e.h - 6, 'COVERED', '#c9d1dc'); continue; }   /* MASHED, IT GUARDS (src/foe-react.js): a light cut off its front meets its raised guard */
       if (e.t === 'brute' && e.mode === 'raise') { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); swordEffect(e); continue; }
