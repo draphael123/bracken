@@ -97,7 +97,7 @@ export function buildGlassSea({ painter, T, TS }) {
   ground(20, 47, B);
   skiff(23, B - 1);                                                        /* the first shade, at the slope's foot */
   sign(27, B - 1, 'THE SUN BURNS IN THE OPEN. STAND IN SHADE TO COOL.');
-  skiff(35, B - 1);                        /* (a second skiff before the mirror: no walk in the sun over SUN.maxWalk) */
+  glassS(31, B - 1, 'edgeScorp'); skiff(37, B - 1);   /* (a second skiff before the mirror: no walk in the sun over SUN.maxWalk; (fix pass) moved to 37: its shade (35-39) covers the hero at the mirror, so the first TURN is out of the sun) */
   /* THE FIRST MIRROR (TEACH, REQUIRED, no risk): the dune cliff at 48 is five rows; the mirror's beam fuses the stair against it */
   mirror('first', 40, B - 2, ['sky', '\\', '/']); source('first', 40, B - 3, 'S', 'sun');
   sign(37, B - 1, 'A SUN-MIRROR. E TURNS IT: ITS BEAM FUSES SAND TO GLASS.');
@@ -107,7 +107,7 @@ export function buildGlassSea({ painter, T, TS }) {
   vulture(62, B - 9, 'edgeVult');
   glassS(66, B - 6, 'edgeScorp2', { face: -1 });
   { const t = fall(70, B - 5, 5, false); ground(75, 95, t); }               /* a steep slick slope back down to the sand */
-  skiff(80, B - 1); glassS(77, B - 1, 'edgeScorp');                      /* (fix pass) the first screen's scorpion waits PAST the stair: the first TURN is at rest (A4 teach safe) */
+  skiff(80, B - 1);
   sentinel(88, B - 1, 'edgeSentinel');                                     /* the first sentinel: front guard, go round */
 
   // ================= 2. THE FULGURITE FIELD (96-195): spires, the optional stair, THE SLIDE GAP =================
@@ -202,7 +202,7 @@ export function buildGlassSea({ painter, T, TS }) {
   crack('headCrack', 409, 411, B, { swarm: true });                         /* a crack in the fire's light: HELD (the teach: a quiet crack beside a fire) */
   skitter(410, B - 1, 'flatsSwarm0');
   sign(406, B - 1, 'NIGHT. THE COLD BITES AWAY FROM FIRE. FIRELIGHT HOLDS THE CRACKS.');
-  hunter(424, B - 1, 'flatsHunter0'); thrower(429, B - 4, 'skullTerrace');   /* a thrower on the terrace over the skull's foot */
+  hunter(424, B - 1, 'flatsHunter0'); hunter(434, B - 1, 'flatsHunter0');   /* (fix pass) a second hunter at the skull's foot: the mash margin (the mash lows come from here and the crossing) */ thrower(429, B - 4, 'skullTerrace');   /* a thrower on the terrace over the skull's foot */
   block(432, 438, B - 3, B - 1); decor.push({ kind: 'ridge', x0: 432, x1: 438, y: B - 3 }); thrower(436, B - 4, 'flatsThrow0');
   fire('flatsFire0', 443, B - 1);
   ent('check', 446, B - 1);                                                 /* CHECKPOINT THREE: the night's first rest */
@@ -214,7 +214,7 @@ export function buildGlassSea({ painter, T, TS }) {
   fire('flatsFire1', 470, B - 1);
   glassS(478, B - 1, 'flatsScorp');
   boards(482, 487, B - 3); boards(486, 490, B - 6); ent('silver', 488, B - 7); shardAt(483, B - 4);   /* a glass shelf: SHARD FOUR, and a silver over it */
-  hunter(484, B - 1, 'flatsPack'); hunter(488, B - 1, 'flatsPack'); skitter(486, B - 1, 'flatsPack'); skitter(490, B - 1, 'flatsPack'); hunter(492, B - 1, 'flatsPack');   /* (fix pass) a third hunter: the mash margin (the level's mash lows were 34-37% vs 40) */   /* THE DARK BETWEEN TWO FIRES: a hunting pack and the swarm with it */
+  hunter(484, B - 1, 'flatsPack'); hunter(488, B - 1, 'flatsPack'); skitter(486, B - 1, 'flatsPack'); skitter(490, B - 1, 'flatsPack');   /* THE DARK BETWEEN TWO FIRES: a hunting pack and the swarm with it */
   crack('flats2', 492, 494, B, { swarm: true });                           /* held: flatsFire2 */
   fire('flatsFire2', 497, B - 1);
   /* THE DARK CUT (REQUIRED): a long cut through a glass ridge with no fire in it; across it a crack BOILS. THE RELAY MIRROR stands over flatsFire3 at the cut's
