@@ -12,7 +12,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 const HEROES = (process.argv[2] || 'knight,warden').split(',');
-const pg = await openPage({ audio: false, fonts: false });
+const pg = await openPage({ audio: false, fonts: false, seed: 20261006 });
 try {
   const r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const idx=LEVELS.findIndex(l=>l.id==='spore');BK.manualSimulation=true;
     const out={};const K=BK.keys,rel=()=>{for(const k in K)K[k]=false;};

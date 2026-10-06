@@ -26,9 +26,9 @@ const RUN = opt('run', null);
 /* (a raw control character in some process's command line comes out of PowerShell 5.1's JSON unescaped and breaks the parse: they are blanked first) */
 function processes() {
   if (process.platform !== 'win32') { const r = spawnSync('ps', ['-eo', 'pid=,ppid=,args='], { encoding: 'utf8' }); return (r.stdout || '').split('\n').filter(Boolean).map(l => { const m = l.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/); return m && { pid: +m[1], ppid: +m[2], cmd: m[3] }; }).filter(Boolean); }
-  const r = spawnSync('powershell', ['-NoProfile', '-Command', 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress'], { encoding: 'utf8', maxBuffer: 64 << 20, windowsHide: true });
+  const r = spawnSync('powershell', ['-NoProfile', '-Command', 'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine,CreationDate | ConvertTo-Json -Compress'], { encoding: 'utf8', maxBuffer: 64 << 20, windowsHide: true });
   if (r.status !== 0 || !r.stdout) throw new Error('could not list processes: refusing to decide what is in use');
-  return JSON.parse(r.stdout.replace(/[\x00-\x1f]/g, ' ')).map(p => ({ pid: p.ProcessId, ppid: p.ParentProcessId, cmd: p.CommandLine || '' }));
+  return JSON.parse(r.stdout.replace(/[\x00-\x1f]/g, ' ')).map(p => ({ pid: p.ProcessId, ppid: p.ParentProcessId, cmd: p.CommandLine || '', born: p.CreationDate ? +String(p.CreationDate.value ?? p.CreationDate).replace(/\D/g, '').slice(0, 13) : 0 }));
 }
 /* the newest modification anywhere in it; null when anything in it cannot be read (then we do not know it is idle) */
 function newest(dir) {
@@ -43,9 +43,20 @@ const report = { temp: TEMP, dryRun: DRY, idleMin: IDLE / 60000, found: 0, delet
 const freeBefore = free();
 let procs = processes();
 if (ORPHANS) {
-  const alive = new Set(procs.map(p => p.pid));
-  for (const p of procs) if (/--user-data-dir=\S*bracken-(look|headless|prof|video|prod)-/i.test(p.cmd) && !/--type=/.test(p.cmd) && /--headless/.test(p.cmd) && !alive.has(p.ppid)) { if (!DRY) killTreeSync(p.pid); report.orphansKilled++; }
-  if (report.orphansKilled && !DRY) procs = processes();
+  /* A PARENT IS GONE when no process has its pid - or when the one that has it was born AFTER the child: Windows reuses pids, and on a busy machine the killed tool's pid
+     was already someone else's, so its orphaned browser read as having a living parent and was never ended (FLAKESWEEP 2026-10-06: profile-cleanup "killed") */
+  const byPid = new Map(procs.map(p => [p.pid, p]));
+  const alive = { has: pid => { const q = byPid.get(pid); return !!q; } };
+  const parentLives = c => { const q = byPid.get(c.ppid); return !!q && !(q.born && c.born && q.born > c.born); };
+  const killed = [];
+  for (const p of procs) if (/--user-data-dir=\S*bracken-(look|headless|prof|video|prod)-/i.test(p.cmd) && !/--type=/.test(p.cmd) && /--headless/.test(p.cmd) && !parentLives(p)) { if (!DRY) { killTreeSync(p.pid); killed.push(p.pid); } report.orphansKilled++; }
+  if (report.orphansKilled && !DRY) {
+    /* WAIT FOR THEM TO BE GONE (2026-10-06, FLAKESWEEP). taskkill /T returns before a loaded machine has finished tearing the tree down, so a
+       snapshot taken at once still listed the renderers on the profile: it read as IN USE, was kept, and 'the sweep removes what a killed tool
+       left' (profile-cleanup) and the suite's leak check failed on a good sweep. Poll for the real condition: no process of the killed trees is left. */
+    const tree = ps => { const s = new Set(killed); let grew = true; while (grew) { grew = false; for (const p of ps) if (!s.has(p.pid) && s.has(p.ppid)) { s.add(p.pid); grew = true; } } return s; };
+    for (let i = 0; i < 80; i++) { procs = processes(); const t = tree(procs); if (!procs.some(p => t.has(p.pid))) break; for (const p of procs) if (t.has(p.pid) && !killed.includes(p.pid) && p.ppid && killed.includes(p.ppid)) killTreeSync(p.pid); spawnSync(process.execPath, ['-e', 'setTimeout(()=>{},250)']); }
+  }
 }
 const cmds = procs.map(p => p.cmd.toLowerCase());
 const now = Date.now(), queue = [];

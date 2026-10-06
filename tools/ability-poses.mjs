@@ -43,7 +43,7 @@ const KNOWN_POSELESS = {};
 const LANE_TODO = [];
 const REPORT = process.argv.includes('--report');
 
-const pg = await openPage({ audio: false, fonts: false });
+const pg = await openPage({ audio: false, fonts: false, seed: 20261006 });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
     window.__kit=(hero,ids,foes)=>{BK.manualSimulation=true;BK.SET.speed=1;BK.setHero(hero);BK.reset({fresh:true});BKT.setHeroLevel(hero,24);

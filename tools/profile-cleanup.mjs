@@ -15,9 +15,14 @@ import { spawn, spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { TEMP, PROFILE_RE } from './browser-profile.mjs';
+import { portFor, newRunTag } from './ports.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const ours = () => new Set(readdirSync(TEMP).filter(n => PROFILE_RE.test(n)));
+/* ONLY THE PROFILES THIS CASE'S OWN PROCESSES MADE (FLAKESWEEP 2026-10-06). It used to take every new bracken-* profile in Temp, and with several lanes (or the suite) launching
+   browsers at once, another session's profile - made, not yet on any process's command line - was counted as this case's leftover: "normal left a profile behind". Each case now
+   runs under its own BRACKEN_RUN tag, which browser-profile.mjs writes into every profile name, and only that tag is counted. */
+let TAG = '';
+const ours = () => new Set(readdirSync(TEMP).filter(n => PROFILE_RE.test(n) && TAG && n.includes('-' + TAG + '-')));
 /* also not Windows-only. Unguarded this did not throw on Linux - powershell is simply absent, r.stdout is empty and
    it answers ZERO, which is worse than throwing: "and ends its browser" would have passed by knowing nothing. */
 const browsersOn = names => { if (!names.length) return 0;
@@ -44,7 +49,9 @@ const procs = () => {
 const descendants = (ps, root) => { const s = new Set([root]); let grew = true; while (grew) { grew = false; for (const p of ps) if (!s.has(p.pid) && s.has(p.ppid)) { s.add(p.pid); grew = true; } } return s; };
 /* the profiles in use by a running process that is not one of `mine` (pids) */
 const foreignInUse = (names, mine = new Set()) => { const ps = procs().filter(p => !mine.has(p.pid)); return new Set(names.filter(n => ps.some(p => p.cmd.includes(n.toLowerCase())))); };
-const PORT = 5991;
+/* THIS CHECKOUT'S OWN SLOT (FLAKESWEEP 2026-10-06), not 5991 for everyone: two suites at once (two lanes, a lane and the coordinator) shared one fixed port, so the second
+   died on 'serving another checkout' or watched the first one's server for 'gone'. PORT wins, as in cdp.mjs, which the cases run through. */
+const PORT = +process.env.PORT || portFor(2);
 /* and the dev server the tool started on PORT goes with it (serve.mjs watches BRACKEN_PARENT) */
 const serverGone = async () => { for (let i = 0; i < 40; i++) { try { await fetch('http://localhost:' + PORT + '/', { signal: AbortSignal.timeout(800) }); } catch { return true; } await new Promise(r => setTimeout(r, 250)); } return false; };
 const page = `import{openPage}from'./tools/cdp.mjs';const pg=await openPage({port:${PORT},audio:false,fonts:false});await pg.evalp('1+1');console.log('READY');`;
@@ -61,10 +68,11 @@ const CASES = {
 const rows = [];
 /* THE HARD KILL IS A RACE: most times the browser outlives its node and leaves its profile to be swept, but sometimes it goes down
    with it and takes its own profile along, and then the case has nothing to prove. That one is run again, once, before it fails */
-const order = Object.keys(CASES); let killTries = 0;
+const ONLY = process.argv[2] ? process.argv[2].split(',') : null;   /* node tools/profile-cleanup.mjs killed,normal: just those cases (the suite runs them all) */
+const order = Object.keys(CASES).filter(n => !ONLY || ONLY.includes(n)); let killTries = 0;
 for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES[name];
-  const before = ours(), t0 = Date.now();
-  const child = spawn(process.execPath, ['--input-type=module', '-e', code], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+  TAG = newRunTag(); const before = ours(), t0 = Date.now();
+  const child = spawn(process.execPath, ['--input-type=module', '-e', code], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, BRACKEN_RUN: TAG } });
   let out = ''; child.stdout.on('data', d => { out += d; }); child.stderr.on('data', () => {});
   const done = new Promise(r => child.once('exit', c => r(c)));
   if (name === 'killed') {
@@ -81,17 +89,18 @@ for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES
     const orphaned = fresh();
     if (!orphaned.length) console.error('killed: new', [...ours()].filter(x => !before.has(x)), 'mine', [...mine].length);
     if (!orphaned.length && ++killTries < 2) { await serverGone(); order.push('killed'); continue; }
-    const sweep = spawnSync(process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(t0 - 1000)], { cwd: ROOT, encoding: 'utf8' });
+    const sweep = spawnSync(process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(t0 - 1000), '--run', TAG], { cwd: ROOT, encoding: 'utf8' });
     const rep = JSON.parse(sweep.stdout.trim().split('\n').pop());
     const left = fresh();
     const gone = await serverGone();
     rows.push({ name, orphanedBeforeSweep: orphaned.length, orphansKilled: rep.orphansKilled, left: left.length, browsers: browsersOn(orphaned), serverGone: gone });
     assert.ok(gone, 'the dev server of the killed tool must go too');
     assert.ok(orphaned.length >= 1, 'a hard kill really does orphan the profile (else this case proves nothing)');
-    assert.equal(left.length, 0, 'the sweep removes what a killed tool left'); assert.equal(browsersOn(orphaned), 0, 'and ends its browser');
+    assert.equal(left.length, 0, 'the sweep removes what a killed tool left: ' + left.join(', ') + ' / sweep said ' + JSON.stringify(rep)); assert.equal(browsersOn(orphaned), 0, 'and ends its browser');
     continue;
   }
-  const exit = await Promise.race([done, new Promise(r => setTimeout(() => r('timeout'), 120000))]);
+  /* a HANG is no exit in six minutes: a page that opens in 50 s on a machine at 100% CPU (six lanes, 2026-10-06) is slow, not hung, and 120 s called it hung */
+  const exit = await Promise.race([done, new Promise(r => setTimeout(() => r('timeout'), 360000))]);
   if (exit === 'timeout') child.kill();
   await new Promise(r => setTimeout(r, 300));
   const fresh = [...ours()].filter(n => !before.has(n)), foreign = foreignInUse(fresh);   /* this case's own processes are gone by now */

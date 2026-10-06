@@ -9,7 +9,7 @@
 // Removal only ever touches a directory that resolves to itself, sits DIRECTLY in the temp folder, is named
 // bracken-<kind>-XXXXXX, and is not a link or junction.
 import { spawn, spawnSync } from 'child_process';
-import { lstatSync, mkdtempSync, realpathSync, rmSync } from 'fs';
+import { lstatSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { basename, dirname, join } from 'path';
 import { runTag } from './ports.mjs';   /* this suite run's own tag, so a leak check can tell its browsers from another session's */
@@ -31,19 +31,29 @@ export function isOurProfile(p) {
   } catch { return false; }
 }
 /* delete one profile; bounded retries for the file locks a browser that has only just exited still holds on Windows */
-export function removeProfileSync(p, tries = 6) {
+export function removeProfileSync(p, tries = 12) {
   if (!isOurProfile(p)) return false;
   for (let i = 0; i < tries; i++) {
     try { rmSync(p, { recursive: true, force: true, maxRetries: 3, retryDelay: 150 }); return true; }
-    catch { busyWait(250 * (i + 1)); }
+    catch { if (i === 1 || i === 3 || i === 6) killHoldersSync(p); busyWait(250 * (i + 1)); }
   }
   return false;
 }
-export async function removeProfile(p, tries = 8) {
+/* WHO STILL HOLDS IT. taskkill /T finds a browser's children by their PARENT, so when the main process has already gone (or goes first) its renderer, GPU and
+   crashpad processes are orphans it cannot reach, and each keeps files in the profile open: the delete then fails for as long as they live, and the tool that
+   cleaned up properly reads as having leaked (FLAKESWEEP 2026-10-06: profile-cleanup "failure left a profile behind", the suite's profile-leaks). Found by what is on
+   their command line - the profile's own unique name - and only ever for a profile that isOurProfile(). */
+export function killHoldersSync(p) {
+  if (!isOurProfile(p)) return;
+  const name = basename(p);
+  if (process.platform === 'win32') spawnSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process -Filter \"CommandLine like '%" + name + "%' and Name <> 'powershell.exe'\" | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"], { stdio: 'ignore', windowsHide: true });
+  else spawnSync('pkill', ['-9', '-f', name], { stdio: 'ignore' });
+}
+export async function removeProfile(p, tries = 12) {
   if (!isOurProfile(p)) return false;
   for (let i = 0; i < tries; i++) {
     try { rmSync(p, { recursive: true, force: true, maxRetries: 3, retryDelay: 150 }); return true; }
-    catch { await sleep(300 * (i + 1)); }
+    catch { if (i === 1 || i === 3 || i === 6) killHoldersSync(p); await sleep(300 * (i + 1)); }
   }
   return false;
 }
@@ -65,12 +75,17 @@ function hook() {
   }
 }
 
+/* THE DEBUGGING PORT IS THE BROWSER'S TO CHOOSE (2026-10-06, FLAKESWEEP). The tools used to pick 9300 + a random 400 and hope: with six lanes
+   each running browsers, two collide, and a tool then talks to - and navigates away - ANOTHER session's page ("the page never put up
+   window.BK", "is on port X", a hung evaluation). Pass '--remote-debugging-port=auto' and ask run.devtoolsPort(): Chrome binds port 0 and
+   writes the one it got to <profile>/DevToolsActivePort. */
 export function launchBrowser(exe, args, kind = 'look') {
   if (!KINDS.includes(kind)) throw new Error('unknown profile kind ' + kind);
   hook();
   const tag = runTag();
   const prof = mkdtempSync(join(TEMP, 'bracken-' + kind + '-' + (tag ? tag + '-' : '')));
   let child;
+  args = args.map(a => a === '--remote-debugging-port=auto' ? '--remote-debugging-port=0' : a);
   try { child = spawn(exe, [...args, '--user-data-dir=' + prof], { stdio: 'ignore', detached: process.platform !== 'win32' }); }
   catch (e) { removeProfileSync(prof); throw e; }
   let exited = false; const gone = new Promise(r => { child.once('exit', () => { exited = true; r(); }); child.once('error', () => { exited = true; r(); }); });
@@ -80,6 +95,7 @@ export function launchBrowser(exe, args, kind = 'look') {
   const finish = () => { finished = true; live.delete(run); };
   const run = {
     child, prof,
+    async devtoolsPort(tries = 120) { for (let i = 0; i < tries && !exited; i++) { try { const p = +readFileSync(join(prof, 'DevToolsActivePort'), 'utf8').split(/\r?\n/)[0]; if (p > 0) return p; } catch { /* not written yet */ } await sleep(250); } throw new Error('the browser never told us its debugging port'); },
     get exited() { return exited; },
     close() {
       if (finished) return Promise.resolve(); if (closing) return closing;
