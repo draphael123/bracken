@@ -30,7 +30,7 @@
 // rises at the commit (only the real one bulges: readable, late).
 
 export const WORM = {
-  hp: 1100,
+  hp: 2600,       /* (claude/duneworm2: 1100 when every blow outside the tangle was a twentieth; behind the plates a blow lands whole now) */
   /* A LITTLE FASTER (claude/duneworm2: ~12% off every beat of his, every tell still >= 0.5 s; the commit, his signature's read, is kept) */
   rippleSpeed: 170, rippleTrack: 0.88, rippleCommit: 0.45, commitSpeed: 215,
   breachR: 14, breachH: 60, breachT: 0.3,
@@ -41,26 +41,30 @@ export const WORM = {
   swallowTell: 0.8, swallow: 1.6, swallowR: 44, swallowPull: 60, biteR: 12,
   /* THE TAIL SWEEP (claude/duneworm2): the tail comes up sweepFar px past you, on the far side from his head, for sweepTell s, then crosses
      to his head along the floor in `sweep` s; its blow is a box sweepR either side of the tail and sweepH high: a jump clears it */
-  sweepTell: 0.65, sweep: 0.45, sweepFar: 90, sweepR: 12, sweepH: 16,
+  sweepTell: 0.65, sweep: 0.45, sweepBack: 0.38, sweepFar: 90, sweepR: 12, sweepH: 16,   /* and BACK: it whips from his head out to where it rose, FASTER (sweepBack s: a whip) - jump it, and again */
+  /* THE CRASH (claude/duneworm2): where his lunge comes down, two waves of sand run out along the floor, waveV px/s for waveT s, waveH high: jump them */
+  waveV: 120, waveT: 0.9, waveR: 8, waveH: 12,
   under: 0.35, underJitter: 0.26, dive: 0.44,   /* how long he stays down between moves: 0.22-0.48 s on the world's dice (world.rng), 0.35 without them */
+  turn: 0.5,      /* s a hero may stand behind him while he is up before he TURNS his plates to you (a beast guards: it does not hold still to be cut) */
   plateDead: 6,   /* px: a blow from closer to his middle than this is on the plates (from the front) */
   phase2: 0.5,
-  dmg: { breach: 30, spit: 9, lunge: 30, bite: 32, sweep: 24 },
+  dmg: { breach: 64, spit: 14, lunge: 64, bite: 64, sweep: 72, wave: 58 },
   /* THE STORM IN THE HOLLOW: a gust's push along the sand, px/s. The pyramid's storm is 150 (src/desert-rules.js); this is a
      hollow forty tiles wide with a wall at each end, and a push of 150 over a 1.6 s gust carried a hero the width of the awning
      and into the far wall. At 100 an unbraced hero goes about ten tiles, and walking INTO it gets you nowhere - so a ripple that commits in a
      gust is left DOWNWIND, the way the arrow points (the storm's read). Braced (holding block), under one tile */
   gust: 100,
-  CHAIN: ['ripple', 'spit', 'ripple', 'lunge', 'ripple', 'swallow', 'ripple', 'sweep'],   // the signature leads, and comes round every other turn. WITH DICE (world.rng) the four between
-                                                                                         // the ripples come in a fresh order every round: all four every round (A3), never the same rhythm twice
+  CHAIN: ['ripple', 'spit', 'ripple', 'lunge', 'ripple', 'swallow', 'ripple', 'sweep', 'ripple', 'sweep'],   // the signature leads, and comes round every other turn. WITH DICE (world.rng) the five between
+                                                                                         // the ripples come in a fresh order every round: all four moves every round, the tail twice (A3), never the same rhythm twice
 };
-export const WORM_MOVES = ['spit', 'lunge', 'swallow', 'sweep'];
+export const WORM_MOVES = ['spit', 'lunge', 'swallow', 'sweep', 'sweep'];   /* THE TAIL comes twice a round: it is the one a hand has to time, not just read */
 /* the worm's own state; `arena` = { x0, x1, floorY } in px. EVERY TIMER IS A NUMBER HERE (A3: an undefined one is never <= 0) */
 export function newWorm(arena, x) {
   return { x, y: arena.floorY, hp: WORM.hp, maxHp: WORM.hp, mode: 'under', t: WORM.under, i: 0, ripples: [], face: 1, phase2: false, hitMult: 1,
-    lungeFrom: x, lungeTo: x, tailX: x, tailFrom: x, pit: null, next: 'spit', caught: false, tangles: 0, arena };
+    lungeFrom: x, lungeTo: x, behindT: 0, waves: [], tailX: x, tailFrom: x, pit: null, next: 'spit', caught: false, tangles: 0, arena };
 }
-const TOUCH = new Set(['breach', 'tangled', 'surfaced', 'spitTell', 'spit', 'lungeTell', 'lunge', 'swallow', 'dive', 'sweepTell', 'sweep']);
+const TOUCH = new Set(['breach', 'tangled', 'surfaced', 'spitTell', 'spit', 'lungeTell', 'lunge', 'swallow', 'dive', 'sweepTell', 'sweep', 'sweepBack']);
+const TURNS = new Set(['surfaced', 'spit', 'dive', 'breach', 'swallow']);
 /* REARED: his pale belly is turned to you, and a blow from the front lands too */
 export const WORM_BARE = new Set(['spitTell', 'sweepTell']);
 /* touchable: is he up out of the sand this frame (anything a blade can reach) */
@@ -86,6 +90,12 @@ export function wormStep(W, world, dt) {
   const faceYou = () => { W.face = Math.sign(world.px - W.x) || W.face || 1; };
   if (W.mode !== 'lunge') W.y = A.floorY;   /* only the lunge leaves the sand: whatever else he is doing, he is at the floor */
   W.t -= dt;
+  /* HE TURNS: up and not in a windup, a hero behind his plates for WORM.turn s has him round to face her (told: the 'turn' event - sand off him, a hiss) */
+  if (TURNS.has(W.mode)) { const d = world.px - W.x; if (Math.abs(d) >= WORM.plateDead && Math.sign(d) === -(W.face || 1)) { W.behindT += dt; if (W.behindT >= WORM.turn) { W.face = -(W.face || 1); W.behindT = 0; ev.push({ t: 'turn', x: W.x }); } } else W.behindT = 0; } else W.behindT = 0;
+  /* THE CRASH's waves run on whatever he does next */
+  if (!W.waves) W.waves = [];
+  for (const w of W.waves) { w.x += w.v * dt; w.t -= dt; if (w.t > 0 && w.x > A.x0 && w.x < A.x1) ev.push({ t: 'hit', what: 'wave', mark: '!!', box: [w.x - WORM.waveR, w.x + WORM.waveR, A.floorY - WORM.waveH, A.floorY] }); }
+  W.waves = W.waves.filter(w => w.t > 0 && w.x > A.x0 && w.x < A.x1);
   switch (W.mode) {
     case 'under': if (W.t <= 0) { const slot = W.i++ % WORM.CHAIN.length;
         if (slot === 0) { const o = WORM_MOVES.slice(); if (rnd) for (let k = o.length - 1; k > 0; k--) { const j = Math.floor(rnd() * (k + 1)); [o[k], o[j]] = [o[j], o[k]]; } W.order = o; }
@@ -129,16 +139,17 @@ export function wormStep(W, world, dt) {
     case 'lungeTell': if (W.t <= 0) go('lunge', WORM.lunge); break;
     case 'lunge': { const k = 1 - Math.max(0, W.t) / WORM.lunge; W.x = W.lungeFrom + (W.lungeTo - W.lungeFrom) * k; W.y = A.floorY - Math.sin(k * Math.PI) * WORM.lungeH;
       if (k >= 0.5) ev.push({ t: 'hit', what: 'lunge', mark: '!!', box: [W.x - WORM.lungeR, W.x + WORM.lungeR, W.y - 24, W.y] });   /* THE HEAD COMING DOWN is the blow, onto the shadow: going up it is leaving you (a hero cutting at his coil was struck by the take-off, which nothing on the screen had told) */
-      if (W.t <= 0) { W.y = A.floorY; go('dive', WORM.dive); } break; }
+      if (W.t <= 0) { W.y = A.floorY; go('dive', WORM.dive); W.waves.push({ x: W.x, v: WORM.waveV, t: WORM.waveT }, { x: W.x, v: -WORM.waveV, t: WORM.waveT }); } break; }   /* THE CRASH: two waves out of where he came down */
     case 'swallowTell': if (W.t <= 0) go('swallow', WORM.swallow); break;
     case 'swallow': { const d = world.px - W.pit.x;
       if (Math.abs(d) < WORM.swallowR && world.pGround) ev.push({ t: 'pull', toX: W.pit.x, v: WORM.swallowPull, quicksand: true });   /* the quicksand verb: jump, and keep jumping */
       if (W.t <= 0) { if (Math.abs(d) < WORM.biteR && world.pGround) ev.push({ t: 'hit', what: 'bite', mark: '!!', box: [W.pit.x - WORM.biteR, W.pit.x + WORM.biteR, A.floorY - 20, A.floorY] });
         W.x = W.pit.x; W.pit = null; go('surfaced', WORM.surfaced, { next: 'spit' }); faceYou(); } break; }
     case 'sweepTell': if (W.t <= 0) go('sweep', WORM.sweep); break;
-    case 'sweep': { const k = 1 - Math.max(0, W.t) / WORM.sweep; W.tailX = W.tailFrom + (W.x - W.tailFrom) * k;   /* the tail scythes along the floor to his head */
+    case 'sweep': case 'sweepBack': { const back = W.mode === 'sweepBack', k = 1 - Math.max(0, W.t) / (back ? WORM.sweepBack : WORM.sweep);   /* the tail scythes along the floor to his head, and whips back out */
+      W.tailX = back ? W.x + (W.tailFrom - W.x) * k : W.tailFrom + (W.x - W.tailFrom) * k;
       ev.push({ t: 'hit', what: 'sweep', mark: '!!', box: [W.tailX - WORM.sweepR, W.tailX + WORM.sweepR, A.floorY - WORM.sweepH, A.floorY] });
-      if (W.t <= 0) { W.tailX = W.x; go('dive', WORM.dive); } break; }
+      if (W.t <= 0) { if (back) { W.tailX = W.x; go('dive', WORM.dive); } else go('sweepBack', WORM.sweepBack); } break; }
     case 'dive': if (W.t <= 0) go('under', WORM.under + (rnd ? (rnd() - 0.5) * WORM.underJitter : 0)); break;
   }
   return ev;

@@ -114,8 +114,9 @@ function fight(policy) {
       if (e.t === 'free') st.frees++;
       if (e.t === 'stormOn') st.stormAt = t;
       if (e.t === 'pull') { px += Math.sign(e.toX - px) * e.v * DT; pulled = 0.25; }   /* (it mashes out: pulled for a moment, then free) */
-      if (e.t === 'hit' && e.what === 'sweep' && Math.abs(e.box[0] + WORM.sweepR - px) < 40 && air <= 0) air = 0.5;   /* the tail coming: a jump (0.5 s off the floor) */
-      if (e.t === 'hit' && e.what === 'sweep' && air > 0) continue;
+      const low = e.t === 'hit' && (e.what === 'sweep' || e.what === 'wave');   /* the tail (there and back) and THE CRASH's waves: low, along the floor */
+      if (low && Math.abs((e.box[0] + e.box[1]) / 2 - px) < 40 && air <= 0) air = 0.5;   /* coming: a jump (0.5 s off the floor) */
+      if (low && air > 0) continue;
       if (e.t === 'hit' && e.box && px >= e.box[0] && px <= e.box[1] && ARENA.floorY - 1 >= e.box[2] && ARENA.floorY - 14 <= e.box[3]) { st.hitsTaken++; (st.hitBy ||= []).push(e.what + '@' + t.toFixed(1) + ' px ' + px.toFixed(0) + ' box ' + e.box.map(v => v.toFixed(0)).join('/') + ' mode ' + W.mode); }
     }
     if (W.mode === 'rippleTell') for (const r of W.ripples) if (r.commit) { if (r.real && r.bulge) st.realBulged++; if (!r.real && r.bulge) st.decoyBulged++; }
@@ -145,7 +146,7 @@ if (bait.hitBy || open.hitBy) console.log('    ', JSON.stringify({ bait: bait.hi
   const W = newWorm(ARENA, 320), orders = []; let last = null, run = 0, worst = 0;
   for (let t = 0; t < 200; t += DT) { wormStep(W, { px: 100, py: ARENA.floorY, pGround: false, canopy: null, rng }, DT); if (W.order && W.order !== last) { orders.push(W.order.join(' ')); last = W.order; }
     if (!wormTouchable(W)) run += DT; else { worst = Math.max(worst, run); run = 0; } }
-  ok(orders.length > 5 && orders.every(o => o.split(' ').sort().join() === 'lunge,spit,swallow,sweep') && new Set(orders).size >= 3 && worst <= 2.05, 'with the world dice, every round is all four of spit, lunge, swallow and the tail between the ripples, in ' + new Set(orders).size + ' different orders over ' + orders.length + ' rounds; longest untouchable ' + worst.toFixed(2) + ' s'); }
+  ok(orders.length > 5 && orders.every(o => o.split(' ').sort().join() === 'lunge,spit,swallow,sweep,sweep') && new Set(orders).size >= 3 && worst <= 2.05, 'with the world dice, every round is all four of spit, lunge, swallow and the tail (twice) between the ripples, in ' + new Set(orders).size + ' different orders over ' + orders.length + ' rounds; longest untouchable ' + worst.toFixed(2) + ' s'); }
 /* HE GUARDS BY ANGLE (claude/duneworm2, design standard B11/B13): up out of the sand he can always be hurt from the right side - his plates turn
    the front, the hide behind them and the reared belly take it whole - and the only time nothing lands is under the sand, where he is attacking */
 { const W = newWorm(ARENA, 320); W.mode = 'surfaced'; W.x = 300; W.face = 1;
@@ -163,6 +164,12 @@ if (bait.hitBy || open.hitBy) console.log('    ', JSON.stringify({ bait: bait.hi
 { const W = newWorm(ARENA, 320); W.mode = 'under'; W.t = 0; W.i = 7; W.order = WORM_MOVES.slice(); let tell = null, hit = 0, jumped = 0;
   const px = 250; for (let t = 0; t < 4 && !(tell && W.mode === 'dive'); t += DT) for (const e of wormStep(W, { px, py: ARENA.floorY, pGround: true, canopy: null }, DT)) { if (e.t === 'tell') tell = e; if (e.t === 'hit' && e.what === 'sweep' && px >= e.box[0] && px <= e.box[1]) hit++; if (e.t === 'hit' && e.what === 'sweep' && ARENA.floorY - 40 < e.box[2]) jumped++; }
   ok(tell && tell.what === 'sweep' && tell.mark === '!!' && Math.abs(tell.x - px) >= 60 && hit > 0 && jumped > 0, `THE TAIL: told !! ${tell ? Math.abs(tell.x - px).toFixed(0) : '?'} px past you, it crosses you along the floor (${hit} frames on you) and is low enough to jump (its box tops out ${WORM.sweepH} px up)`); }
+{ const W = newWorm(ARENA, 320); W.mode = 'under'; W.t = 0; W.i = 7; W.order = WORM_MOVES.slice(); const px = 250; let pass = 0, on = false, modes = new Set();   /* THE TAIL GOES THERE AND BACK: two crossings */
+  for (let t = 0; t < 5 && !(modes.has('sweepBack') && W.mode === 'dive'); t += DT) { let now = false; for (const e of wormStep(W, { px, py: ARENA.floorY, pGround: true, canopy: null }, DT)) if (e.t === 'hit' && e.what === 'sweep' && px >= e.box[0] && px <= e.box[1]) now = true; if (now && !on) pass++; on = now; modes.add(W.mode); }
+  ok(pass === 2 && modes.has('sweepBack'), 'THE TAIL crosses you twice, out to his head and back (' + pass + ' crossings): jump it, and again'); }
+{ const W = newWorm(ARENA, 320); W.mode = 'lunge'; W.t = WORM.lunge; W.lungeFrom = 100; W.lungeTo = 300; const near = 300 + 60; let waves = 0, hitNear = 0;   /* THE CRASH: where the lunge comes down */
+  for (let t = 0; t < 2.5; t += DT) for (const e of wormStep(W, { px: 600, py: ARENA.floorY, pGround: true, canopy: null }, DT)) if (e.t === 'hit' && e.what === 'wave') { waves = Math.max(waves, W.waves.length); if (near >= e.box[0] && near <= e.box[1] && e.box[2] >= ARENA.floorY - 20) hitNear++; }
+  ok(waves === 2 && hitNear > 0, 'THE CRASH: his lunge comes down and two low waves run out along the sand (' + waves + '), reaching a hero who only stepped off the shadow: jump them'); }
 { const W = newWorm(ARENA, 320); ok(wormTake(W) === 0 && wormHurt(W, 50) === 0, 'under the sand a blow does nothing (wormTake 0)'); W.mode = 'tangled'; W.hitMult = WORM.tangledMult; ok(wormTake(W) === 2 && wormOpen(W), 'tangled in the canvas, a blow is worth double'); }
 
 // ================= THE DESERT FOES (src/desert-foes.js) =================
