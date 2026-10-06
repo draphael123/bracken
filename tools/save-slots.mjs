@@ -64,7 +64,7 @@ for(const lv of [3,4,5,7])if(!T.includes('LEVEL '+lv))F('no LEVEL '+lv+' on a ca
 if(T.filter(s=>s==='EMPTY').length!==1)F('the empty slot is not drawn once');
 for(const q of rec.filter(q=>q.kind==='text'))if(q.x0<0||q.x0+q.w>BK.view.VW||q.y0<0||q.y0+q.h>BK.view.VH)F('off screen: '+q.s);
 /* THE LAST-PLAYED SAVE is tagged, and the picker opens with the cursor on it (bracken.slot is the active index) */
-ls.setItem('bracken.slot','2');BK.loadSlot(2);BK.state='title';BK.ui.slotI=0;
+ls.setItem('bracken.slot','2');BK.loadSlot(2);BK.ui.pressCard=false;BK.state='title';BK.ui.slotI=0;
 {const it=BK.ui.titleItems();const k=it.findIndex(s=>s==='CHOOSE A SAVE'||s==='NEW GAME');if(k<0)F('no CHOOSE A SAVE on the title: '+it);else{BK.ui.titleI=k;press('confirm');
 if(BK.state!=='slots')F('the title did not open the picker: '+BK.state);if(BK.ui.slotI!==2)F('the picker opened on slot '+(BK.ui.slotI+1)+', not the last-played slot 3');}}
 window.__textRec=[];BK.step(1);const rec2=window.__textRec;window.__textRec=null;

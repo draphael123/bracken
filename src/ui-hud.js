@@ -34,7 +34,7 @@ export const toastAlpha = t => t ? Math.max(0, Math.min(1, t.ttl * 2.5, t.age * 
    boss plate owns the foot. The toast lives between them: right of the left cluster, under the coin panel and its quest line, above the foot.
    Returns { x, y, w, foot } - foot is the y the box may not pass. */
 export function toastZone(VW, VH, o = {}) {
-  const left = Math.max(o.left || 0, 124), x = left + 4, y = o.top || 48, w = VW - 8 - x, foot = VH - (o.boss ? 36 : 8);
+  const left = o.wide ? 0 : Math.max(o.left || 0, 124), x = left + 4, y = o.top || 48, w = VW - 8 - x, foot = VH - (o.boss ? 36 : 8);
   return { x, y, w, foot };
 }
 /* the box a toast of n lines of `lh` px would take in the zone: centred in it, at the top, or (when the hero stands there) at the foot above the boss bar */

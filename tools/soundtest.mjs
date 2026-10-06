@@ -72,7 +72,7 @@ try {
   // ESC from it must land back on the title, not on the Settings list it never went through.
   const m = await pg.evalp(`(()=>{
     const out = {};
-    BK.state = 'title'; BK.step(0);
+    BK.ui.pressCard = true; BK.ui.pressCard = false; /* the card and its walk-in are over (an earlier key in this run took the card down; the walk-in would swallow the next press) */ BK.state = 'title'; BK.step(0);
     const items = BK.ui.titleItems();
     out.hasEntry = items.includes('SOUND TEST');
     out.keepsSettings = items.includes('SETTINGS');

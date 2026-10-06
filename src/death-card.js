@@ -38,7 +38,7 @@ export function drawDeathCard(g, text, fit, UI, o) {   // o: { k, cost: [[str, c
 export function drawRecap(g, text, fit, UI, o) {   // o: { k, cost, t (seconds since the respawn), VW, colorSafe }
   const { k, VW } = o, { who, blow } = split(k), tell = tellOf(k, o.colorSafe), left = RECAP_S - o.t, a = Math.max(0, Math.min(1, left, o.t * 4));
   if (a <= 0) return;
-  const l1 = who + (blow ? '  ' + blow : ''), l2 = tell ? tell.short : '', w = Math.min(VW - 20, 230), x = Math.round((VW - w) / 2), y = 17, h = l2 ? 23 : 14;
+  const l1 = who + (blow ? '  ' + blow : ''), l2 = tell ? tell.short : '', x0 = o.x0 || 10, w = Math.min(VW - 4 - x0, 230), x = Math.round(x0 + (VW - 4 - x0 - w) / 2), y = o.y || 17, h = l2 ? 23 : 14;   // x0 / y: the band under the HUD's plates (main.js), so the line never sits on a plate or a meter
   g.globalAlpha = 0.92 * a; g.fillStyle = 'rgba(24,8,12,0.88)'; g.fillRect(x, y, w, h); g.strokeStyle = 'rgba(255,107,107,0.7)'; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-  g.globalAlpha = a; text(fit('FELLED BY ' + l1, w - 10, 6), VW / 2, y + 4, '#fff6e0', 'center', 6); if (l2) text(fit(l2, w - 10, 6), VW / 2, y + 13, tell.col, 'center', 6); g.globalAlpha = 1;
+  g.globalAlpha = a; text(fit('FELLED BY ' + l1, w - 10, 6), x + w / 2, y + 4, '#fff6e0', 'center', 6); if (l2) text(fit(l2, w - 10, 6), x + w / 2, y + 13, tell.col, 'center', 6); g.globalAlpha = 1;
 }
