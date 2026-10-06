@@ -34,7 +34,7 @@ import { openPage, ROOT } from './cdp.mjs';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'card', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'mapcard', 'death', 'results', 'card', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -80,7 +80,7 @@ async function pageTextFit(input) {
   function analyse(screen, rec, opts = {}) {
     stats.frames++; const VW = BK.view.VW, VH = BK.view.VH;
     rec.forEach((r, i) => { r.i = i; });
-    const texts = rec.filter(r => r.kind === 'text' && r.s.trim() && r.alpha > 0.05 && (opts.band === undefined || r.y0 >= opts.band));   /* opts.band: only the words from that row down (the boss plate) */
+    const texts = rec.filter(r => r.kind === 'text' && !r.world && r.s.trim() && r.alpha > 0.05 && (opts.band === undefined || r.y0 >= opts.band));   /* opts.band: only the words from that row down (the boss plate) */
     stats.texts += texts.length;
     for (const t of texts) {
       if (t.x0 < -1 || t.x0 + t.w > VW + 1 || t.y0 < -1 || t.y0 + t.h > VH + 1) report('OFFSCREEN', screen, t, { box: [t.x0, t.y0, t.w, t.h], VW, VH });
@@ -177,6 +177,17 @@ async function pageTextFit(input) {
     await yieldNow(); }
   /* THE ERASE QUESTION (saves screen, ERASE SLOT n? YES / NO): each slot's, with a save in it */
   if (want('erase')) { for (let i = 0; i < 5; i++) frame('erase slot #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; BK.ui.eraseAsk = i; }, { settle: 20 }); BK.ui.eraseAsk = -1; await yieldNow(); }
+  /* UI POLISH B (claude/uiscreens, 2026-10-06): the first-run opening's four panels, the PRESS ANY KEY card, the map's info card on every node (with the fullest save, the widest numbers),
+     the death card for every kind of killer (the longest names), and the level-complete card. */
+  if (want('opening')) { BK.ui.openingStart(); for (let i = 0; i < 4; i++) frame('opening #' + i, () => { BK.state = 'opening'; BK.ui.opening.i = i; BK.ui.opening.t = 1; }, { settle: 2 }); BK.state = 'title'; await yieldNow(); }
+  if (want('press')) { frame('press card', () => { BK.state = 'title'; BK.ui.pressCard = true; }, { settle: 3 }); BK.ui.pressCard = false; BK.state = 'title'; await yieldNow(); }
+  if (want('mapcard')) { const pr = BKT.PROG, keep = JSON.stringify(pr);
+    for (const [l] of campaign) { pr[l.id] = { cleared: true, medal: 3, silver: 7, best: 3599, gold: 999, total: 999, quest: true, noHit: true, iron: true, allGold: true }; }
+    for (const [l] of campaign) { try { BK.mapLook(l.id); } catch (e) { issues.push({ type: 'ERROR', screen: 'mapcard ' + l.id, s: String(e && e.message), n: 1 }); continue; } frame('mapcard ' + l.id, () => { BK.state = 'map'; const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 140; i++) BK.step(1); window.__textRec = rec; }, { settle: 1 });   /* (140 drawn frames: past the region's own banner, which fades for 2.2 s on arriving in a region) */ }
+    for (const k of Object.keys(pr)) delete pr[k]; Object.assign(pr, JSON.parse(keep)); await yieldNow(); }
+  if (want('death')) { toPlay(0, 'knight'); const K = [{ name: 'BANDIT BOWMAN   THE SHIELD CHARGE', red: true, rule: 'DODGE IT' }, { name: 'THE GATE GARGOYLE   THE OVERHEAD SMASH', red: false, rule: 'THE SHIELD TURNS IT' }, { name: 'THE MASKWRIGHT PUPPETEER   THE LONG OVERHAND CHOP', red: true, rule: 'DODGE IT' }, { name: 'ARROW   THE BOLT', red: false, rule: 'PARRY IT' }, { name: 'THE FALL', red: false, rule: '' }, { name: 'THE WATER', red: false, rule: '' }, { name: 'A TRAP', red: false, rule: '' }];
+    K.forEach((k, i) => frame('death card #' + i, () => { BK.state = 'play'; BK.P.dead = 0.6; BK.P.killer = k; }, { settle: 1 })); BK.reset(); await yieldNow(); }
+  if (want('results')) { toPlay(0, 'knight'); frame('level complete', () => { BK.xpWin(); const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 230; i++) BK.step(1); window.__textRec = rec; }, { settle: 1 });   /* (a step(n) draws once: the card counts its own drawn frames, so it is stepped one at a time) */ BK.reset(); await yieldNow(); }
   /* THE LEVEL-UP CARD (LEVELING, 2026-10-03): the three stat cards with counts and the stats they give, a milestone's three perks, a full card's perk
      line (the longest), the respec prompt and message, and the co-op lock card. The save is put back after. */
   if (want('card')) { const xp = await import('/src/xp.js'), pr = BKT.PROG, keep = JSON.stringify({ xp: pr.xp, card: pr.card, cardFree: pr.cardFree, heroes: pr.heroes, coopLegacy: pr.coopLegacy, silverSpent: pr.silverSpent });

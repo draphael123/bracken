@@ -43,13 +43,15 @@
 <canvas id="c"></canvas>
 <div id="safe"></div>
 <div id="rotate"><div class="bk">BRACKEN</div><div class="ph"></div><b>TURN IT SIDEWAYS</b><div>BRACKEN plays in landscape.<br>Rotate the phone and tap to play full screen.</div><button id="anyway">play it upright anyway</button></div>
-<div id="boot">booting…</div>
+<div id="boot"></div>
 <script>
   // and a way past it: some people are going to play this on a phone held upright whatever we say
   addEventListener('DOMContentLoaded', () => { const b = document.getElementById('anyway');
     if (b) b.addEventListener('click', e => { e.stopPropagation(); document.body.classList.add('upright'); }); });
 </script>
 <script>
+  // DEV TEXT ONLY WITH ?debug: a player is shown the loading scene, never "booting..."
+  if (/[?&]debug/.test(location.search)) { const b0 = document.getElementById('boot'); if (b0) b0.textContent = 'booting…'; }
   window.addEventListener('error', e => { const b = document.getElementById('boot'); if (b) { b.textContent = 'ERROR: ' + e.message + ' @' + (e.filename||'').split('/').pop() + ':' + e.lineno; b.style.color = '#ff7a6b'; } });
   setTimeout(() => { const b = document.getElementById('boot'); if (b && !window.BK) { b.textContent = /[?&]debug\b/.test(location.search) ? 'still booting after 8s - check console' : 'STILL LOADING - SLOW CONNECTION?'; } }, 8000);
 
@@ -84,6 +86,7 @@
 <link rel="modulepreload" href="./src/ability-preview.js">
 <link rel="modulepreload" href="./src/additional-areas.js">
 <link rel="modulepreload" href="./src/ambush.js">
+<link rel="modulepreload" href="./src/archmage-acts.js">
 <link rel="modulepreload" href="./src/art.js">
 <link rel="modulepreload" href="./src/attack-animation.js">
 <link rel="modulepreload" href="./src/attack-tokens.js">
@@ -127,6 +130,7 @@
 <link rel="modulepreload" href="./src/crown_tiles.js">
 <link rel="modulepreload" href="./src/deadends.js">
 <link rel="modulepreload" href="./src/deadly-water.js">
+<link rel="modulepreload" href="./src/death-card.js">
 <link rel="modulepreload" href="./src/death-cost.js">
 <link rel="modulepreload" href="./src/death-fx.js">
 <link rel="modulepreload" href="./src/deep-holds.js">
@@ -158,6 +162,7 @@
 <link rel="modulepreload" href="./src/fixtures.js">
 <link rel="modulepreload" href="./src/flot_props.js">
 <link rel="modulepreload" href="./src/flot_tiles.js">
+<link rel="modulepreload" href="./src/foe-react.js">
 <link rel="modulepreload" href="./src/foe-tactics.js">
 <link rel="modulepreload" href="./src/foe-tempo.js">
 <link rel="modulepreload" href="./src/fog-canal.js">
@@ -193,10 +198,13 @@
 <link rel="modulepreload" href="./src/lw_props.js">
 <link rel="modulepreload" href="./src/lw_tiles.js">
 <link rel="modulepreload" href="./src/mage-realms.js">
+<link rel="modulepreload" href="./src/map-card.js">
 <link rel="modulepreload" href="./src/map-plates.js">
 <link rel="modulepreload" href="./src/marks.js">
 <link rel="modulepreload" href="./src/maskwright-theatre.js">
+<link rel="modulepreload" href="./src/moor-rocks-hands.js">
 <link rel="modulepreload" href="./src/mummer.js">
+<link rel="modulepreload" href="./src/opening-panels.js">
 <link rel="modulepreload" href="./src/ore-road.js">
 <link rel="modulepreload" href="./src/pogo-chain.js">
 <link rel="modulepreload" href="./src/poise-break.js">
@@ -230,6 +238,7 @@
 <link rel="modulepreload" href="./src/redraw/djinn_art.js">
 <link rel="modulepreload" href="./src/redraw/fair_art.js">
 <link rel="modulepreload" href="./src/redraw/fair_backdrop.js">
+<link rel="modulepreload" href="./src/redraw/fair_folk.js">
 <link rel="modulepreload" href="./src/redraw/fair_keys.js">
 <link rel="modulepreload" href="./src/redraw/fair_newrides.js">
 <link rel="modulepreload" href="./src/redraw/fair_rides.js">
@@ -257,6 +266,7 @@
 <link rel="modulepreload" href="./src/redraw/mage_world.js">
 <link rel="modulepreload" href="./src/redraw/masthead.js">
 <link rel="modulepreload" href="./src/redraw/monastery.js">
+<link rel="modulepreload" href="./src/redraw/moor_tiles.js">
 <link rel="modulepreload" href="./src/redraw/mystic_art.js">
 <link rel="modulepreload" href="./src/redraw/pirates.js">
 <link rel="modulepreload" href="./src/redraw/prince.js">
@@ -267,9 +277,6 @@
 <link rel="modulepreload" href="./src/redraw/redgorge_backdrop.js">
 <link rel="modulepreload" href="./src/redraw/redgorge_props.js">
 <link rel="modulepreload" href="./src/redraw/redgorge_tiles.js">
-<link rel="modulepreload" href="./src/redraw/underwell_tiles.js">
-<link rel="modulepreload" href="./src/redraw/underwell_backdrop.js">
-<link rel="modulepreload" href="./src/redraw/underwell_dress.js">
 <link rel="modulepreload" href="./src/redraw/redress2.js">
 <link rel="modulepreload" href="./src/redraw/reef.js">
 <link rel="modulepreload" href="./src/redraw/scalder.js">
@@ -294,6 +301,10 @@
 <link rel="modulepreload" href="./src/redraw/unburied_tiles.js">
 <link rel="modulepreload" href="./src/redraw/unburied_world.js">
 <link rel="modulepreload" href="./src/redraw/undercrown_skins.js">
+<link rel="modulepreload" href="./src/redraw/underwell_art.js">
+<link rel="modulepreload" href="./src/redraw/underwell_backdrop.js">
+<link rel="modulepreload" href="./src/redraw/underwell_dress.js">
+<link rel="modulepreload" href="./src/redraw/underwell_tiles.js">
 <link rel="modulepreload" href="./src/redraw/variety_skins.js">
 <link rel="modulepreload" href="./src/redraw/waymeet.js">
 <link rel="modulepreload" href="./src/redraw/welltown_art.js">
@@ -301,6 +312,7 @@
 <link rel="modulepreload" href="./src/redraw/welltown_props.js">
 <link rel="modulepreload" href="./src/redraw/welltown_tiles.js">
 <link rel="modulepreload" href="./src/redraw/wicker_fx.js">
+<link rel="modulepreload" href="./src/redraw/wicker_man_art.js">
 <link rel="modulepreload" href="./src/redraw/wicker_queen.js">
 <link rel="modulepreload" href="./src/redraw/wildwood.js">
 <link rel="modulepreload" href="./src/redraw/winchmaster.js">
@@ -332,6 +344,7 @@
 <link rel="modulepreload" href="./src/theatre-rig.js">
 <link rel="modulepreload" href="./src/threat.js">
 <link rel="modulepreload" href="./src/throwables.js">
+<link rel="modulepreload" href="./src/title-card.js">
 <link rel="modulepreload" href="./src/tome.js">
 <link rel="modulepreload" href="./src/touch-interact.js">
 <link rel="modulepreload" href="./src/touch.js">
@@ -344,6 +357,8 @@
 <link rel="modulepreload" href="./src/unburied-field.js">
 <link rel="modulepreload" href="./src/unburied-foes.js">
 <link rel="modulepreload" href="./src/undead-mage.js">
+<link rel="modulepreload" href="./src/underwell-hands.js">
+<link rel="modulepreload" href="./src/underwell.js">
 <link rel="modulepreload" href="./src/variety-pass.js">
 <link rel="modulepreload" href="./src/venom-hud.js">
 <link rel="modulepreload" href="./src/village_tiles.js">
@@ -352,6 +367,8 @@
 <link rel="modulepreload" href="./src/well-town.js">
 <link rel="modulepreload" href="./src/whirlpools.js">
 <link rel="modulepreload" href="./src/wicker-carousel.js">
+<link rel="modulepreload" href="./src/wicker-man-hands.js">
+<link rel="modulepreload" href="./src/wicker-man.js">
 <link rel="modulepreload" href="./src/wicker-queen.js">
 <link rel="modulepreload" href="./src/winchmaster.js">
 <link rel="modulepreload" href="./src/witchlight.js">

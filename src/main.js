@@ -176,6 +176,10 @@ import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxF
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
+import * as DCARD from './death-card.js';   /* THE DEATH CARD AND ITS RECAP (claude/uiscreens) */
+import * as MCARD from './map-card.js';   /* THE MAP CARD'S POSTCARD (claude/uiscreens) */
+import * as OP from './opening-panels.js';   /* THE FIRST-RUN OPENING (claude/uiscreens): four illustrated panels before the first hero pick */
+import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscreens): the wood closed over the picture, the fronds part, the knight walks in */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
@@ -3397,7 +3401,7 @@ function xpSim() { const keep = levelIndex, rows = []; let run = 0, full = 0, st
     full += foeXp + bossXp + clear + quest; if (lv.secret) secrets++; else { stage++; run += Math.round(XP_KILL_NORMAL * foeXp) + bossXp + clear; }
     rows.push({ id: lv.id, secret: !!lv.secret, stage: lv.secret ? null : stage, foes, foeXp, bossXp, clear, quest, run, level: levelOfXp(run), old: stage, full, fullLevel: levelOfXp(full), oldFull: stage + secrets }); }
   loadLevel(keep); return rows; }
-let winLevelUp = false, medalPurse = 0;
+let winLevelUp = false, medalPurse = 0, winPrevBest = null;   /* (winPrevBest: the best time before this finish, for the level-complete card's compare line) */
 const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reaches each medal: bronze 20, silver 45 in all, gold 90 in all */
 const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
 /* A HERO'S OWN DANCE (dances lane, 2026-09-29): the frames are the set's own (K.R.dance, baked in chars.js for every hero and so for every
@@ -3421,6 +3425,7 @@ function winLevel() {
   const firstWalk = !heroDone()[LEVELS[levelIndex].id] && (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret);   /* a secret wood is a wood: it pays its share like any other */
   state = 'win'; SFX.win(); setTimeout(() => { if (state === 'win') SFX.medal(); }, 900);
   const id = LEVELS[levelIndex].id, p = PROG[id] || {};
+  winPrevBest = p.best !== undefined && p.best !== null && !Number.isNaN(p.best) ? p.best : null;
   const ofAll = levelFoes || enemies.filter(e => !e.harmless).length;
   PROG[id] = { quest: p.quest, silver: p.silver, cleared: true, best: p.best ? Math.min(p.best, levelTime) : levelTime, gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths),
     slain: Math.max(p.slain || 0, kills), slainOf: Math.max(p.slainOf || 0, ofAll) };
@@ -3814,6 +3819,7 @@ function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); i
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
 function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF'), x: VW - 4, right: true }]; }
 function drawMap() {
+  g.__mapWorld = true;   /* (tools/textfit.mjs: the map's plates and labels are drawn in the map's own camera, and the card over them is the screen's) */
   g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
   g.save(); g.translate(0, -Math.round(mapCamY));
   g.drawImage(MAPC, 0, 0);
@@ -3927,22 +3933,23 @@ function drawMap() {
       if (p.cleared) { g.fillStyle = '#8fd160'; g.fillRect(lx + tw / 2 - 7, by, 2, 4); g.fillRect(lx + tw / 2 - 6, by + 3, 4, 2); g.fillRect(lx + tw / 2 - 4, by, 2, 4); }
     }
   }
-  g.restore();
+  g.restore(); g.__mapWorld = false;   /* (from here on it is the screen's own: the frame, header, card and footer are not allowed off the edge) */
   // parchment frame + compass
   g.strokeStyle = 'rgba(60,40,20,0.7)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, VW - 3, VH - 3); g.strokeStyle = 'rgba(255,230,180,0.25)'; g.lineWidth = 1; g.strokeRect(4.5, 4.5, VW - 9, VH - 9);
   g.drawImage(PROP.compass, VW - 30, VH - 52);
   // header + node card
   { const region = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
-  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); text(mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
+  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); { const hn = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', bg = inkW(hn, 8) <= 90; text(hn, 6, bg ? 5 : 7, UI.title, 'left', bg ? 8 : 6); }   /* (THE ROAD INLAND drops to the small hand, so the counters beside it do not collide) */
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
      spoiler to say they exist. */
   { const real = LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])); const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
     const md = real.reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0), mdMax = real.length * 3;
-    g.drawImage(FLAG, 92, 4); text(cl + '/' + real.length, 104, 7, UI.dim, 'left', 6);
-    g.fillStyle = md >= mdMax ? MEDAL_COL[3] : '#8a8378'; g.beginPath(); g.arc(140, 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(139, 8, 2, 2);
-    text(md + '/' + mdMax, 148, 7, UI.dim, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
+    const hn2 = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', hdrW = inkW(hn2, inkW(hn2, 8) <= 90 ? 8 : 6), hx = Math.max(92, Math.round(6 + hdrW + 10));   /* (the counters start after the region's name: THE ROAD INLAND ran under the flag) */
+    g.drawImage(FLAG, hx, 4); text(cl + '/' + real.length, hx + 12, 7, UI.dim, 'left', 6);
+    g.fillStyle = md >= mdMax ? MEDAL_COL[3] : '#8a8378'; g.beginPath(); g.arc(hx + 48, 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(hx + 47, 8, 2, 2);
+    text(md + '/' + mdMax, hx + 56, 7, UI.dim, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
   const nd = NODES[map.node];
   if (!map.walking) {
     const store = nd.kind === 'store';
@@ -3950,7 +3957,7 @@ function drawMap() {
     const cx0 = pp.x, cy0 = pp.y;   /* the corner (and the camera height, in updateMap) that hides nothing around this node: placePanel */
     panel(cx0, cy0, cw, ch, UI.sel);
     { const secret = nd.kind === 'level' && LEVELS[nd.level].secret && nodeLocked(nd);
-      text(fitText(secret ? '? ? ?' : nd.name, cw - 52, 8), cx0 + 8, cy0 + 5, UI.title); }
+      { const nm0 = secret ? '? ? ?' : nd.name, big = inkW(nm0, 8) <= cw - 52; text(big ? nm0 : fitText(nm0, cw - 52, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
@@ -3965,22 +3972,28 @@ function drawMap() {
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
-      text(fitText(lv.sub || '', cw - 80, 6), cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
-      { const D = DIFF[diffOf(id)], rx = cx0 + cw - 8; text(D.label, rx, cy0 + 16, D.col, 'right', 6); const ax = rx - D.label.length * 6 - 8; g.fillStyle = D.col; g.fillRect(ax + 1, cy0 + 16, 1, 1); g.fillRect(ax, cy0 + 17, 3, 1); g.fillRect(ax, cy0 + 20, 3, 1); g.fillRect(ax + 1, cy0 + 21, 1, 1); } // this wood's difficulty, and the up/down that changes it
-      // line one: your best, and what it was worth
-      const M = MEDALS[id] || [300, 450, 660];
-      text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', cx0 + 8, cy0 + 26, hasRun ? UI.text : UI.dim, 'left', 6);
-      if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(cx0 + 94, cy0 + 28, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(cx0 + 93, cy0 + 27, 2, 2); text(MEDAL_NAME[p.medal], cx0 + 102, cy0 + 26, MEDAL_COL[p.medal], 'left', 6); }
-      else text('GOLD AT ' + fmt(M[0]), cx0 + 92, cy0 + 26, UI.dim, 'left', 6);
-      text(p.cleared ? 'CLEARED' : '', cx0 + cw - 8, cy0 + 26, UI.sel, 'right', 6);
-      // line two: what is still in there
+      { const sub = (() => { const out = []; let cur = ''; for (const w of String(lv.sub || '').split(' ')) { if (cur && textW(cur + ' ' + w, 6) > cw - 24) { out.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; } if (cur) out.push(cur); return out; })(), at = sub.length > 1 ? Math.floor(time / 2.4) % sub.length : 0;   /* A BLURB TOO LONG FOR ONE LINE IS TWO PAGES, 2.4 s EACH (a dot at the end says which): the card has no room for a second row, and a cut sentence was worse */
+        text(sub[at] || '', cx0 + 8, cy0 + 15, UI.dim, 'left', 6); if (sub.length > 1) for (let i = 0; i < sub.length; i++) { g.fillStyle = i === at ? UI.dim : 'rgba(255,255,255,0.18)'; g.fillRect(cx0 + cw - 8 - (sub.length - i) * 4, cy0 + 17, 2, 2); } }
+      /* A POSTCARD of the country this node sits in, and beside it: your best, the three medal times, what is found and what is owed (the old card said "OPEN" and "0/?") */
+      MCARD.drawPostcard(g, cx0 + 8, cy0 + 24, 40, 30, MCARD.regionAt(nd.y, { INLAND: INLAND_Y, COAST: COAST_Y, CRAG: CRAG_Y, WOOD: WOOD_Y }), !!(lv.night || lv.dark), time);
+      const M = MEDALS[id] || [300, 450, 660], rx = cx0 + 54, r1 = cy0 + 25, r2 = cy0 + 33, r3 = cy0 + 41, r4 = cy0 + 49;
+      text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', rx, r1, hasRun ? UI.text : UI.dim, 'left', 6);
+      if (p.medal) { const mx = rx + 62; g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(mx + 2, r1 + 3, 3, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(mx + 1, r1 + 2, 2, 2); text(MEDAL_NAME[p.medal], mx + 8, r1, MEDAL_COL[p.medal], 'left', 6); }
+      text(p.cleared ? 'CLEARED' : '', cx0 + cw - 8, r1, UI.sel, 'right', 6);
+      /* THE MEDAL LEGEND: gold, silver, bronze and the time each wants; a filled disc is a medal you hold */
+      { let lx = rx; [3, 2, 1].forEach((rank, i) => { const held = (p.medal || 0) >= rank; g.fillStyle = held ? MEDAL_COL[rank] : 'rgba(255,255,255,0.14)'; g.beginPath(); g.arc(lx + 2, r2 + 3, 2.5, 0, 7); g.fill(); if (!held) { g.strokeStyle = MEDAL_COL[rank]; g.lineWidth = 1; g.beginPath(); g.arc(lx + 2, r2 + 3, 2.5, 0, 7); g.stroke(); }
+        const tt = fmt(M[i]).replace(/\.\d$/, ''); text(tt, lx + 7, r2, held ? MEDAL_COL[rank] : UI.dim, 'left', 6); lx += 12 + inkW(tt, 6); }); }
+      // what is still in there: silver, gold, the quest
       const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length;
-      let bx = cx0 + 8; const by = cy0 + 36;
-      g.drawImage(PROP.silver[0], bx, by - 1); text(sv + '/3', bx + 12, by, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 30;
-      g.drawImage(PROP.coin[0], bx, by - 1); text((p.gold || 0) + '/' + (p.total || '?'), bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 40;
-      g.drawImage(PROP.questIcon, bx, by - 1); text(p.quest ? 'DONE' : 'OPEN', bx + 12, by, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 40;
+      let bx = rx; const by = r3;
+      g.drawImage(PROP.silver[0], bx, by - 1); text(sv + '/3', bx + 12, by, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 32;
+      { const gt = (p.gold || 0) + '/' + (p.total || '?'); g.drawImage(PROP.coin[0], bx, by - 1); text(gt, bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 12 + inkW(gt, 6) + 6; }
+      g.drawImage(PROP.questIcon, bx, by - 1); text(p.quest ? 'QUEST DONE' : 'QUEST OPEN', bx + 12, by, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 12 + inkW('QUEST OPEN', 6) + 6;
       if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
       if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
+      // the recommended level (what the wood expects: it pays x3 XP below it), and the difficulty with its up/down
+      { const want = LEVEL_DEPTH[id] || 0, mine = heroLevel(); if (want) text('RECOMMENDED LV ' + want, rx, r4, mine >= want ? '#8fd160' : '#ff9a5c', 'left', 6); else text('NO LEVEL NEEDED', rx, r4, UI.dim, 'left', 6);
+        const D = DIFF[diffOf(id)], dx = cx0 + cw - 8; text(D.label, dx, r4, D.col, 'right', 6); const ax = dx - inkW(D.label, 6) - 8; g.fillStyle = D.col; g.fillRect(ax + 1, r4, 1, 1); g.fillRect(ax, r4 + 1, 3, 1); g.fillRect(ax, r4 + 4, 3, 1); g.fillRect(ax + 1, r4 + 5, 1, 1); }
       }
     }
   }
@@ -4778,7 +4791,13 @@ function menuConfirm() {
   else menuAdjust(1);
 }
 // THE HERO CHOICE: a new save picks any one of the three to start with; the other two are 15 silver each at the store
-let heroPick = { i: 0, stage: 'pick' };
+let heroPick = { i: 0, stage: 'pick' }, heroPickAt = 0;   /* (heroPickAt: when the pick last changed hero, so a move preview starts from its first frame) */
+/* THE FIRST-RUN OPENING: once per browser, on the first new save (not in a tool run: BK.manualSimulation, and never with ?noopening) */
+let opening = { i: 0, t: 0 };
+const openingSeen = () => { try { return !!localStorage.getItem('bracken.openingSeen'); } catch { return true; } };
+const openingDue = () => !q.has('noopening') && !(window.BK && window.BK.manualSimulation) && !openingSeen();
+function openingEnd() { try { localStorage.setItem('bracken.openingSeen', '1'); } catch {} state = 'heropick'; SFX.uiSel(); }
+function openingStart() { opening = { i: 0, t: 0 }; state = 'opening'; }
 // HIS COLOURS. Each hero hangs behind a banner in his own cloth with his own device on it, so the row of five
 // reads as a muster and not as a row of boxes. Drawn, not baked: it is five rectangles and a device.
 const HERO_ARMS = { knight: ['#2a3a6e', '#465a9a', '#c9d1dc', 'cross'], pyro: ['#6e2418', '#a04028', '#ffd36b', 'flame'],
@@ -4816,7 +4835,7 @@ const hasTrial = h => LEVELS.some(l => l.id === 'trial_' + h);
 const NEW_PICK = DEFAULT_HEROES;
 function updateHeroPick() {
   if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
-    if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; SFX.ui(); }
+    if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
     if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; } }
   else { if (confirmPress) { if (!startTrial(hero())) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
 }
@@ -4832,7 +4851,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
     reaper: ['a greatsword: slow, and it cuts them ALL', 'his ward banks what it stops', '95 health', 'HARDER'],
     warden: ['a spear: everything at its point', 'C PLANTS IT: a charge dies on it', '100 health'],
     geomancer: ['a tall staff and the stone under her', 'HOLD X: A FAULT LINE', '95 health'] };
-  const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 62;
+  const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 52, pickSets = {};   /* (ch 62 -> 52: the move preview and a three-line loop need the ten pixels) */
   PICK.forEach((h, k) => { const x = 6 + k * (cw + 3), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
     g.fillStyle = sel ? 'rgba(30,40,30,0.8)' : 'rgba(20,18,28,0.8)'; g.fillRect(x, top, cw, ch);
     heroBanner(h, x, top, cw, ch, sel);
@@ -4844,7 +4863,8 @@ function drawHeroPick() { const PICK = NEW_PICK;
       : h === 'warden' ? preview('pick:warden', () => bakeWarden({}))
       : h === 'geomancer' ? preview('pick:geomancer', () => bakeGeomancer({}))
       : preview('pick:knight', () => bakeKnight({}));
-    const fr = set.R.idle[Math.floor(time * 4) % set.R.idle.length], sc = sel ? 2 : 1.5;
+    pickSets[h] = set;
+    const fr = set.R.idle[Math.floor(time * 4) % set.R.idle.length], sc = sel ? 1.6 : 1.4;
     g.globalAlpha = sel ? 1 : 0.7;
     g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 8 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
     g.globalAlpha = 1;
@@ -4858,13 +4878,17 @@ function drawHeroPick() { const PICK = NEW_PICK;
   // the one sentence that is how this hero is played, where a player looks first), then the stats under that. A row of
   // the small hand every eight pixels (BODY_LH: seven of glyph and one of air), and the footer is at VH - 19.
   { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 20;   /* (seven cards: every other name drops a line, so GEOMANCER and DEATH KNIGHT stop running into their neighbours) */
-    text(H.name, VW / 2, y0, UI.title, 'center');
-    const loop = wrap(HERO_LOOP[h], VW - 24, 6); loop.forEach((ln, i) => text(ln, VW / 2, y0 + 9 + i * BODY_LH, UI.text, 'center', 6));
+    /* THE SIGNATURE MOVE, LOOPING: a window on the right of the words plays the hero's own move on a training post (src/ability-preview.js, pure draw); the words keep the left */
+    const SIG = { knight: ['risingCut', 'RISING CUT'], pyro: ['emberFlare', 'EMBER FLARE'], paladin: ['lightLance', 'LIGHT LANCE'], pirate: ['grapeshot', 'GRAPESHOT'], reaper: ['harvestMoon', 'HARVEST MOON'], warden: ['skewer', 'SKEWER'], geomancer: ['faultLine', 'FAULT LINE'] }[h], hs = pickSets[h];
+    const PVW = 86, PVX = VW - PVW - 6, PVY = y0 - 2, TX = Math.round((PVX - 4) / 2);
+    if (SIG && hs) { drawAbilityPreview(g, PVX, PVY, PVW, 50, { id: SIG[0], hero: h, t: time - heroPickAt, idle: hs.R.idle, atk: hs.R.atk || hs.R.idle, icon: null }); g.strokeStyle = 'rgba(201,178,124,0.5)'; g.lineWidth = 1; g.strokeRect(PVX + 0.5, PVY + 0.5, PVW - 1, 49); text(SIG[1], PVX + PVW / 2, PVY + 53, UI.dim, 'center', 6); }
+    text(H.name, TX, y0, UI.title, 'center');
+    const loop = wrap(HERO_LOOP[h], PVX - 16, 6); loop.forEach((ln, i) => text(ln, TX, y0 + 9 + i * BODY_LH, UI.text, 'center', 6));
     /* HARDER rides on the end of the last line, not a line of its own: with a two-line loop the Pyromancer's fourth line landed on the footer */
     const body = LINES[h].filter(ln => ln !== 'HARDER'), hard = body.length < LINES[h].length;
     body.forEach((ln, i) => { const yy = y0 + 12 + (loop.length + i) * BODY_LH;
-      if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(VW / 2 - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
-      else text(ln, VW / 2, yy, UI.dim, 'center', 6); }); }
+      if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(TX - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
+      else text(ln, TX, yy, UI.dim, 'center', 6); }); }
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('others: 10 silver each. a second opens co-op', VW / 2, VH - 11, UI.dim, 'center', 6);   /* (a row up: the bottom row sat on the screen edge) */
 }
@@ -4980,6 +5004,7 @@ const KEYS = {
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
   initAudio(); anyPress = true; TCH.keyUsed();
+  if (pressCard && state === 'title' && !['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) { dismissPress(); e.preventDefault(); return; }   /* the card takes the first key: it starts the sound and does nothing else */
   if (state === 'rebind' && rebindKey(e)) { e.preventDefault(); return; }   /* a key being chosen for an action: used up here (src/controls.js) */
   if (state === 'title' && e.shiftKey && e.key === 'B') { bjOpen(); e.preventDefault(); return; }   /* THE HIDDEN BOSS LIST: SHIFT+B on the title screen (docs/PLAYTEST.md) */
   if (state === 'editor') { // the editor owns the letters; only the arrows fall through, to pan
@@ -5036,6 +5061,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
 // ---- the editor's mouse. Screen pixels come in; edMouse turns them into tiles. ----
 {
   const toGame = ev => { const r = disp.getBoundingClientRect(); return [((ev.clientX - r.left) * DPR - offX) / S, ((ev.clientY - r.top) * DPR - offY) / S]; };
+  disp.addEventListener('pointerdown', () => { if (pressCard && state === 'title') { initAudio(); dismissPress(); } });   /* a click anywhere on the card is a press */
   disp.addEventListener('contextmenu', ev => { if (state === 'editor') ev.preventDefault(); });
   disp.addEventListener('mousedown', ev => { if (state !== 'editor') return; initAudio(); const [x, y] = toGame(ev); edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
   disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); edMouse(x, y, ev.button, false, true); });
@@ -25141,7 +25167,7 @@ function update(dt) {
     edCam.x = Math.max(0, Math.min(LW * TS - VW, edCam.x)); edCam.y = Math.max(0, Math.min(LH * TS - VH, edCam.y));
     edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
   }
-  if (state === 'title') { ambient.set('forest'); if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title');
+  if (state === 'title') { ambient.set('forest'); if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < TC.PART_S + TC.WALK_S) { if (anyPress && time - pressAt > 0.15) { pressAt = time - 9; titleSince = time - 1; } /* the fronds are parting and he is walking in: a press now skips ahead, and is not also a menu choice */ } else if (pausePress) openMenu('title');
     else {
       const items = titleItems();
       if (upPress) { titleI = (titleI + items.length - 1) % items.length; SFX.ui(); }
@@ -25172,7 +25198,7 @@ function update(dt) {
     if (downPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }   /* the five are rows, so DOWN and RIGHT both go on, UP and LEFT both go back */
     if (upPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (rightPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }
-    if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); } // a new save chooses its hero
+    if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); if (state === 'heropick' && openingDue()) openingStart(); } // a new save chooses its hero
     if (atkPress) { if (!readSlot(slotI)) { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else { eraseAsk = slotI; eraseYes = false; slotMsg = ''; SFX.ui(); } }
     if (pausePress) { state = 'title'; SFX.ui(); }
     return;
@@ -25181,6 +25207,7 @@ function update(dt) {
   if (state === 'controls') { if (confirmPress) openRebind('controls'); else if (pausePress) { state = controlsFrom; SFX.menuClose(); } return; }
   if (state === 'rebind') { updateRebind(dt); return; }
   if (state === 'coophelp') { updateCoopHelp(); return; }
+  if (state === 'opening') { opening.t += dt; if (atkPress || pausePress) openingEnd(); else if ((confirmPress || rightPress) && opening.t > 0.25) { SFX.ui(); if (opening.i + 1 >= OP.PANELS) openingEnd(); else { opening.i++; opening.t = 0; } } return; }
   if (state === 'heropick') { updateHeroPick(); return; }
   if (state === 'card') { updateCard(dt); return; }
   if (state === 'coop') { updateCoopPick(); return; }
@@ -25307,6 +25334,7 @@ const inkNow = () => (INKS.find(i => i.id === SET.ink) || INKS[0]).c;
 const themeNow = () => UI_THEMES.find(t => t.id === SET.uiTheme) || UI_THEMES[0];
 function applyLook() { const t = themeNow(); for (const k of ['text', 'title', 'dim', 'border', 'sel', 'gold', 'silver']) UI[k] = t[k]; UI.plate = t.plate;
   if (SET.ink && SET.ink !== 'parchment') { UI.text = inkNow(); UI.title = inkNow(); } }
+let deathRecap = null;   /* { k: the killer record, t: seconds since the respawn }: the line under the timer after a death */
 let soundNoteT = 0, winT = 0, winStamped = false, hintT = 0, hintMsg = '';
 // WHAT IT SAYS WHEN THE THING IS DEAD. One line for every creature that holds an arena, in its own words.
 const BOSS_FELL = { djinn: 'THE WELL RUNS FREE', cisternqueen: 'THE WELLS RUN FREE', gorgecrab: 'THE DAM IS QUIET', duneworm: 'THE SAND LIES STILL', wickerqueen: 'THE FAIR IS OVER', greenteeth: 'THE LOCK LIES STILL', puppeteer: 'THE CURTAIN FALLS', deathknight: 'THE BATTLE IS OVER', bloodknight: 'THE BATTLE IS OVER', winchmaster: 'THE ROAD STOPS RUNNING', gargoyle: 'THE TOWER GATE STANDS OPEN', pyromancer: 'THE VILLAGE STOPS BURNING', bellcrab: 'THE BELL FALLS SILENT', archmage: 'THE TOWER IS QUIET', strawking: 'THE FIELD GOES OUT', prince: 'HE IS LET LIE', closedhelm: 'HE KNEELS, AND THE WARD GOES OUT', kraken: 'THE SEA LETS GO', troll: 'THE HILL LETS YOU THROUGH', masthead: 'THE SAILS COME DOWN', grandmother: 'SHE SLEEPS NOW', queen: 'THE QUEEN FALLS', frog: 'THE KING CROAKS', chief: 'OUT OF THE FIRE',
@@ -25400,7 +25428,7 @@ function text(s, x, y, col, align = 'left', size = 8, style = 'shadow') {
   s = String(s); if (!s) return;
   if (col === undefined) col = SET.ink === 'parchment' ? '#fff6e0' : inkNow();
   const st = stampOf(s, size, col, style), x0 = Math.round(align === 'center' ? x - st.w / 2 : align === 'right' ? x - st.w : x), y0 = Math.round(y);
-  if (window.__textRec) textRec('text', { s, x0, y0, w: st.w, h: st.h, size, tiny: true, align, alpha: g.globalAlpha, style });
+  if (window.__textRec) textRec('text', { s, x0, y0, w: st.w, h: st.h, size, tiny: true, align, alpha: g.globalAlpha, style, world: !!g.__mapWorld });
   g.drawImage(st.c, x0 - st.pad, y0 - st.pad);
 }
 /* THE WIDTH A STRING TAKES ON THE LINE (its advances, the trailing gap included) */
@@ -28353,6 +28381,10 @@ function drawSelect() {
 // catching the last light and the Queen's castle on the peak beyond it - a knight at a campfire before
 // the great gate, and the menu on its own board to the right so it never sits on the picture.
 let titleLeaves = [], HORIZON = null, HORIZON_REGION = null, titleSince = 0;
+/* THE PRESS ANY KEY CARD: up on the first title of a run (not with ?nocard, and a key pressed before the page was drawn counts: the browser has had its gesture). A key, a tap or a pad button
+   starts the audio and parts the fronds; pressAt is when. It replaces the in-level PRESS A KEY FOR SOUND banner, which stays only as the fallback for a run that never passes the title. */
+let pressCard = !q.has('nocard'), pressAt = null;
+function dismissPress() { if (!pressCard) return; pressCard = false; pressAt = time; titleSince = time + TC.SETTLE_S; SFX.uiSel(); }
 /* THE FAR COUNTRY ON THE TITLE SCREEN IS YOUR OWN. A new save and a save twenty woods deep looked at the same
    ridge: now the horizon carries what you have been through - the crags, then the sea, then the haunted country
    inland - and the picture ages with the campaign. */
@@ -28486,7 +28518,8 @@ function drawTitle(cx, cy) {
       g.globalAlpha = (1 - ph) * 0.22; g.fillStyle = '#6a5a58';
       g.fillRect(Math.round(fx + Math.sin(i * 2.1 + time * 0.8 + ph * 3) * (4 + ph * 14)), Math.round(fy - 16 - ph * 62), 2 + Math.round(ph * 3), 2 + Math.round(ph * 2)); }
     g.globalAlpha = 1;
-    drawSet(K, 'idle', Math.floor(time * 4.5), fx + 20, fy, -1, false);
+    { const w = TC.walkIn(pressCard && state === 'title' ? -1 : pressAt === null ? null : time - pressAt, fx + 20, -1);   /* he is simply there unless the card ran: then he walks in from the left after the fronds part */
+      if (w.x > -30) drawSet(K, w.walking ? 'run' : 'idle', Math.floor(time * (w.walking ? 10 : 4.5)), Math.round(w.x), fy, w.face, false); }
     /* AND THE ONES YOU HAVE WON STAND WITH HIM. The camp was one knight however far the save had got; every class
        you own is at the fire now, so the title screen shows the roster - and the empty ground shows who is missing. */
     { const seats = [[-40, 1], [-62, 1], [34, -1], [-84, 1], [-106, 1]];   /* all of them on the open ground: the menu board takes the right of the picture, and two of the old seats sat behind it */
@@ -28494,6 +28527,7 @@ function drawTitle(cx, cy) {
         const [dx, face] = seats[i], set = preview('titlecamp:' + h + ':' + gearNow(h), () => heroSet(null, null, false, h));
         drawSet(set, 'idle', Math.floor(time * 4.5 + i * 3), fx + dx, fy, face, false); }); } }
   drawTitleBracken();
+  if ((pressCard && state === 'title') || (pressAt !== null && time - pressAt < TC.PART_S)) TC.drawPressFronds(g, time, pressCard ? 0 : (time - pressAt) / TC.PART_S, VW, VH);
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
   const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -28798,7 +28832,8 @@ function render() {
     lines.forEach((l, i) => text(l, bx + 8, by + 7 + i * 11, '#fff6e0'));
     if (intro.chars >= INTRO[intro.card].length && Math.floor(time * 3) % 2 === 0) text('Z', bx + bw - 12, by + bh - 11, '#8fd160', 'right');
     text('ESC skip', VW - 6, 4, '#9aa39a', 'right');
-  } else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
+  } else if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH);
+  else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
   else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
@@ -29025,11 +29060,13 @@ function render() {
     if (bossActive && boss && boss.alive && boss.t === 'gqueen' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawGqPlate(boss);   /* HER PLATE, under her bar (round two) */
     if (bossActive && boss && boss.alive && boss.t === 'pyromancer' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawPyroHeat(boss);   /* HIS HEAT, over his bar */
   }
-  if (state === 'title') {
+  if (state === 'title' && pressCard) { TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); }); TC.drawPressText(g, text, UI, time, VW, VH, 1, touchOn); }   /* THE CARD: only its own words while it is up (the sign and the menu wait off screen, and are not drawn) */
+  if (state === 'title' && !pressCard) {
     /* THE BOARD HANGS OVER THE PICTURE, NOT UNDER THE MENU. Centred on VW/2 with the menu board 138 wide on the
        right, the sign and its line ran in behind the panel and the subtitle was half-covered. It is centred on the
        picture instead, and it swings a little on its post the way a hung sign does. */
-    const since = time - titleSince, e = easeOutBack(Math.min(1, since / 0.7));
+    const since = pressCard ? 0 : Math.max(0, time - titleSince), e = easeOutBack(Math.min(1, since / 0.7));
+    if (pressAt !== null && !pressCard && time - pressAt < 0.4) TC.drawPressText(g, text, UI, time, VW, VH, Math.max(0, 1 - (time - pressAt) / 0.4), touchOn);
     const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(10 - (1 - e) * 70 + sway);
     const lw = 196, lh = Math.round(PROP.plank.height * 1.4), tcx = Math.round((VW - 146) / 2), lx = Math.round(tcx - lw / 2);
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
@@ -29039,7 +29076,7 @@ function render() {
     { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; text('a knight, a wood, a mountain', tcx, ly + 40, UI.text, 'center', 6); g.globalAlpha = 1; }
     // the menu, on its own board to the right of the picture
     { const items = titleItems(), mw = 138, mx = VW - mw - 8, mh = items.length * 13 + 24, my = Math.min(74, VH - 16 - mh);
-      const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 140);
+      const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 160);   /* (160: at 140 a sliver of the board showed at the right edge while the press card was up) */
       panel(mx + ox, my, mw, mh);
       const want = my + 6 + titleI * 13; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
       g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, mw - 8, 12); g.fillStyle = UI.sel; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, 2, 12);
@@ -29051,7 +29088,7 @@ function render() {
       g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(mx + ox + 6, my + mh - 14, mw - 12, 1);
       text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
         mx + ox + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
-    text(touchOn ? 'tap an item' : 'ARROWS choose   Z or X enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
+    if (since > 1.2) text(touchOn ? 'tap an item' : 'ARROWS choose   Z or X enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
   }
 
   if (state === 'slots') drawSlots();
@@ -29073,6 +29110,7 @@ function render() {
   if (state === 'coophelp') drawCoopHelp(uiCtx(), coopHelpPage, coopHelpPages());
   if (state === 'practice') drawPractice();
   if (state === 'herocard') drawHeroCard();
+  if (state === 'opening') { TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); OP.drawPanelText(g, text, UI, opening.i, opening.t, VW, VH, touchOn); }
   if (state === 'heropick') drawHeroPick();
   if (state === 'card') drawCard();
   if (state === 'coop') drawCoopPick();
@@ -29090,7 +29128,7 @@ function render() {
   }
   // THE WORLD GOES DOWN BEHIND THEM. Both of these were panels laid straight over a bright, busy level, so
   // the trees and the goblins read through the text and the end of a run looked like a debug overlay.
-  if (state === 'win' || state === 'gameover') { g.globalAlpha = 1; g.fillStyle = 'rgba(8,6,14,0.66)'; g.fillRect(0, 0, VW, VH); }
+  if (state === 'win' || state === 'gameover') { g.globalAlpha = 1; g.fillStyle = state === 'win' ? 'rgba(8,6,14,0.88)' : 'rgba(8,6,14,0.66)'; g.fillRect(0, 0, VW, VH); }   /* (the level-complete card sits on a darker scrim: the HUD's fragments no longer poke out around it) */
   if (state === 'gameover') {
     g.fillStyle = 'rgba(30,8,10,0.94)'; g.fillRect(40, 40, VW - 80, 100); g.strokeStyle = '#ff6b6b'; g.strokeRect(40.5, 40.5, VW - 81, 99);
     g.strokeStyle = 'rgba(255,255,255,0.10)'; g.strokeRect(42.5, 42.5, VW - 85, 95);
@@ -29115,15 +29153,17 @@ function render() {
     /* IN CO-OP THE MIDDLE OF THE CARD IS A TWO-COLUMN TALLY (coopTally): the run's figures for each of them, and
        the winner under it. The gold line goes with it, because the purse is the save's and the tally says who
        bent down for each coin, which is a different question and the only one worth two columns. */
-    line(0.30, 'time     ' + fmt(cnt(0.30, levelTime)), coop() ? 50 : 64, '#fff6e0');
+    { const pb = winPrevBest, cmp = coop() ? '' : pb === null ? '   FIRST CLEAR' : levelTime < pb - 0.05 ? '   NEW BEST -' + fmt(pb - levelTime) : '   BEST ' + fmt(pb);   /* the compare: first clear, a new best by how much, or the best it did not beat */
+      line(0.30, 'time     ' + fmt(cnt(0.30, levelTime)) + cmp, coop() ? 50 : 64, cmp.includes('NEW BEST') ? UI.gold : '#fff6e0'); }
     if (coop()) coopTally(px0, pw, at, cnt);
     else {
     line(0.55, 'gold     ' + Math.round(cnt(0.55, got)) + ' / ' + total + '   +' + Math.round(cnt(0.55, earned)) + ' purse', 77, '#ffd34a');
-    line(0.80, 'foes     ' + Math.round(cnt(0.80, kills)), 90, '#fff6e0');
-    line(1.00, 'blocks   ' + Math.round(cnt(1.00, blocks)) + '   dodges ' + Math.round(cnt(1.00, dodges)), 103, '#fff6e0');
-    line(1.20, 'deaths   ' + deaths, 116, '#fff6e0'); }
+    line(0.80, 'foes ' + Math.round(cnt(0.80, kills)) + '   blocks ' + Math.round(cnt(0.80, blocks)) + '   dodges ' + Math.round(cnt(0.80, dodges)), 90, '#fff6e0');
+    { const q = PROG[LEVELS[levelIndex].id] || {}, sv = [1, 2, 4].filter(b => ((q.silver || 0) & b)).length;   /* what was found: the silver and the quest */
+      line(1.00, 'silver ' + sv + '/3   quest ' + (q.quest ? 'done' : 'open'), 103, sv >= 3 ? UI.silver : '#fff6e0'); }
+    line(1.20, 'deaths   ' + deaths, 116, deaths ? '#ff9a6b' : '#fff6e0'); }
     { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') : xpRun > 0 ? '+' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') + '   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
-      if (s && !coop()) line(0.15, fitText(s, pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
+      if (s && !coop()) line(0.15, fitText(s.replace(/ +\+0 XP$/, ''), pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (a +0 XP is not a line worth printing) */   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'NEW AT THE STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     if (PROG.storeHint === 'groundSlam' && LEVELS[levelIndex].id === 'kings') line(1.9, 'NEW AT THE STORE: GROUND SLAM', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
     { const id = LEVELS[levelIndex].id, m = medalFor(id, medalTime());
@@ -29140,11 +29180,15 @@ function render() {
           if (k < 1) { g.globalAlpha = (1 - k) * 0.6; g.strokeStyle = m === 3 ? UI.gold : UI.sel; g.lineWidth = 1; g.beginPath(); g.arc(VW / 2, 132, 10 + 40 * k, 0, 7); g.stroke(); g.globalAlpha = 1; }
         }
       } else winStamped = true; }
-    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text('Z  continue', VW / 2, 140, '#8fd160', 'center');
+    if (wt > 1.75) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; });
+    { const m2 = medalFor(LEVELS[levelIndex].id, medalTime()), M2 = MEDALS[LEVELS[levelIndex].id] || [300, 450, 660];   /* what the next medal wants, once the stamp is down */
+      if (wt > 1.9 && m2 < 3 && !coop()) text('NEXT: ' + MEDAL_NAME[m2 + 1] + ' AT ' + fmt(M2[2 - m2]).replace(/\.\d$/, ''), VW / 2, 139, MEDAL_COL[m2 + 1], 'center', 6); }
+    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text(touchOn ? 'TAP  continue' : 'Z  continue', VW / 2, 146, '#8fd160', 'center');
   } else { winT = 0; winStamped = false; }
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH);
     /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */
-    if (P.killer && P.dead < 0.95) { const k = P.killer; g.globalAlpha = Math.min(1, (0.95 - P.dead) * 5); text(killerLine(k), VW / 2, VH / 2 + 22, k.rule ? (k.red ? (SET.colorSafe ? '#5aa8ff' : '#ff6b6b') : '#ffd36b') : '#fff6e0', 'center', 6, 'outline'); { let ly = VH / 2 + 30; for (const [s2, c2] of dcLine()) { text(s2, VW / 2, ly, c2, 'center', 6, 'outline'); ly += 8; } } g.globalAlpha = 1; } }
+    if (P.killer && P.dead < 1.1) { deathRecap = { k: P.killer, t: 0 }; DCARD.drawDeathCard(g, text, fitText, UI, { k: P.killer, cost: dcLine(), a: Math.min(1, (1.1 - P.dead) * 6), VW, VH, colorSafe: SET.colorSafe }); } }   /* THE DEATH CARD (src/death-card.js): who, the blow, the tell you missed, what it cost */
+  else if (deathRecap && state === 'play') { deathRecap.t += 1 / 60; DCARD.drawRecap(g, text, fitText, UI, { k: deathRecap.k, t: deathRecap.t, VW, colorSafe: SET.colorSafe }); if (deathRecap.t > DCARD.RECAP_S) deathRecap = null; }   /* and a line under the timer for a few seconds after the respawn */
   if (!audioReady() && state === 'play') {
     const SOUND_Y = 16, t0 = (soundNoteT += 1 / 60), full = t0 < 10,   /* TOP CENTRE, under the timer: never the bottom row, where the boss name and bar are */ k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
     if (full || k > 0) { const lab = touchOn ? 'TAP A BUTTON FOR SOUND' : 'PRESS A KEY FOR SOUND', w = lab.length * 6 + 24;   /* on a phone there is no key: a tap on the pad is what starts the audio */
@@ -29290,7 +29334,7 @@ window.BK = { uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toa
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
-    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
+    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(),
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),

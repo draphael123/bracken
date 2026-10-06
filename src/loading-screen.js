@@ -31,7 +31,8 @@ const LABEL = {
   l_bake: 'BAKING THE WOOD', l_rest: 'PLACING FOES', final: 'NEARLY THERE',
 };
 
-const S = { busy: false, shown: false, job: null, total: 0, doneW: 0, true: 0, disp: 0, label: '', t0: 0, lastYield: 0, force: false, seq: [], hist: [], trace: [], heroes: [], lastTrue: 0, raf: 0, moduleFrac: 0 };
+const TIP_MS = 5200, GY = 126;   // how long a line stays up; where the ground is in the 320 x 180 picture
+const S = { tipSeed: 0, firstVisit: false, busy: false, shown: false, job: null, total: 0, doneW: 0, true: 0, disp: 0, label: '', t0: 0, lastYield: 0, force: false, seq: [], hist: [], trace: [], heroes: [], lastTrue: 0, raf: 0, moduleFrac: 0 };
 const hasDom = typeof document !== 'undefined';
 let cv = null, cg = null, art = null, ag = null;
 
@@ -97,11 +98,64 @@ const GLYPH = {
   'Z': '###/..#/.#./#../###',
   '%': '#.#/..#/.#./#../#.#',
   '.': '.../.../.../.../.#.',
-  '-': '.../.../###/.../...' };
+  '-': '.../.../###/.../...',
+  ',': '.../.../.../.#./#..',
+  "'": '.#./.#./.../.../...',
+  '!': '.#./.#./.#./.../.#.',
+  '?': '##./..#/.#./.../.#.',
+  ':': '.../.#./.../.#./...',
+  '+': '.../.#./###/.#./...' };
 function text(s, x, y, c, sc = 1, align = 'left') {
   s = String(s).toUpperCase(); const w = s.length * 4 * sc - sc; if (align === 'center') x -= Math.floor(w / 2); else if (align === 'right') x -= w;
   for (const pass of [0, 1]) for (let k = 0; k < s.length; k++) { const g = GLYPH[s[k]]; if (!g) continue; const rows = g.split('/');
     for (let i = 0; i < 15; i++) if (rows[Math.floor(i / 3)][i % 3] === '#') { const gx = x + k * 4 * sc + (i % 3) * sc, gy = y + Math.floor(i / 3) * sc; if (pass === 0) px(gx + Math.max(1, sc >> 1), gy + Math.max(1, sc >> 1), sc, sc, INK); else px(gx, gy, sc, sc, c); } }
+}
+/* WHAT IS SAID WHILE YOU WAIT: the game's own rules in a line each (TIP), and the wood's. Every TIP is true of this build; edit them with the rules. */
+export const TIPS = [
+  'TIP: A YELLOW MARK MEANS THE SHIELD TURNS THE BLOW. A RED MARK MEANS ONLY A DODGE DOES.',
+  'TIP: A PERFECT TURN OF THE SHIELD OPENS A FOE UP FOR A MOMENT. HIT HIM THEN.',
+  'TIP: DIE CARRYING GOLD AND IT DROPS WHERE YOU FELL. GET IT BACK BEFORE YOU DIE AGAIN.',
+  'TIP: A SHRINE BANKS EVERYTHING YOU CARRY. LIGHT ONE BEFORE YOU PUSH ON.',
+  'TIP: EVERY WOOD HIDES THREE SILVER. THE STORE SELLS THE REST OF THE HEROES FOR IT.',
+  'TIP: HOLD THE ATTACK KEY FOR THE HEAVY CUT. IT COSTS STAMINA AND IT MEANS IT.',
+  'TIP: THE DESERT SUN HURTS. STAND IN SHADE AND DRINK FROM YOUR SKIN.',
+  'TIP: A BOSS BARELY FEELS A BLOW OUTSIDE HIS OPENINGS. WAIT FOR THE OPENING.',
+  'TIP: THE MAP SHOWS EACH WOOD\'S MEDAL TIMES. BEAT THEM FOR GOLD FROM THE PURSE.',
+  'A KNIGHT, A WOOD, A MOUNTAIN.',
+  'THE BRACKEN HAS GROWN OVER THE OLD ROAD.',
+  'SOMEONE LEFT THE FIRE LIT. NOBODY WILL SAY WHO.',
+];
+/* a line cut into rows of at most n letters, on spaces (the 3 x 5 pixel font is 4 dots a letter: 74 letters is 296 of the picture's 320) */
+function wrapGlyph(s, n) { s = String(s); if (s.length > n) n = Math.min(n, Math.ceil(s.length / Math.ceil(s.length / n)) + 5);   /* (two even rows, not one full row and a stub) */ const out = []; let cur = ''; for (const w of String(s).split(' ')) { if (cur && (cur + ' ' + w).length > n) { out.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; } if (cur) out.push(cur); return out; }
+/* THE SCENE: the knight by a campfire, under the bracken, with the mountain behind. Everything is a few rectangles; it moves on the clock. */
+function frond(x, base, h, ph, t, col, tip, flip) {
+  const sway = Math.sin(t / 900 + ph) * (1 + h * 0.035), steps = Math.max(6, h >> 2), dir = flip ? -1 : 1;
+  for (let k = 0; k <= steps; k++) { const u = k / steps, yy = base - h * u, xx = x + dir * (sway * u * u + u * u * h * 0.34), c = u > 0.55 ? tip : col;
+    px(xx, yy, 2, 3, c);
+    if (k >= 2) { const len = Math.max(1, Math.round((1 - u) * 7 * Math.sin(Math.PI * Math.min(1, u * 1.15)) + 1));
+      px(xx - len, yy + 1, len, 1, c); px(xx + 2, yy + 1, len, 1, c); px(xx - len - 1, yy + 2, 1, 1, c); px(xx + len + 2, yy + 2, 1, 1, c); } }
+}
+function scene(t) {
+  for (let i = 0; i < 46; i++) px(((i * 97 + 13) % 320), ((i * 53 + 7) % 80), 1, 1, (i % 5 === 0 ? (Math.floor(t / 400 + i) % 6 === 0 ? '#6a7a74' : '#3a4a44') : '#1f2c26'));   // stars, a few of them twinkling
+  px(268, 18, 6, 6, '#c9c4a8'); px(269, 17, 4, 8, '#c9c4a8'); px(267, 19, 8, 4, '#c9c4a8'); px(271, 19, 4, 4, BG);   // a thin moon
+  // THE MOUNTAIN behind the wood, with the light on top of it
+  for (let y = 40; y < GY; y++) { const hw = Math.round((y - 40) * 0.95 + ((y * 7) % 5 === 0 ? 2 : 0)); px(238 - hw, y, hw * 2, 1, y < 56 ? '#1c2a30' : '#142026'); }
+  if (Math.floor(t / 600) % 5 !== 0) px(237, 37, 3, 3, '#ffd36b'); px(236, 38, 5, 1, 'rgba(255,211,107,0.5)'); px(238, 36, 1, 5, 'rgba(255,211,107,0.5)');
+  px(0, GY, 320, 54, '#16241c'); px(0, GY, 320, 2, '#2e5a2a'); px(0, GY + 2, 320, 1, '#0e1a12');   // the ground
+  // the back row of bracken, dark, then the fire
+  for (let i = 0; i < 22; i++) frond(((i * 53 + 11) % 330) - 6, GY + 1, 22 + (i * 17) % 22, i * 1.3, t, '#0e1f14', '#183024', i % 2 === 1);
+  // THE FIRE: its glow on the ground, logs, three flames, sparks, a thread of smoke
+  const fx = 156, fl = Math.floor(t / 110) % 3;
+  for (const [r, a] of [[46, 0.05], [32, 0.07], [20, 0.09]]) { ag.globalAlpha = a + (fl === 1 ? 0.015 : 0); ag.fillStyle = '#ff9a5c'; ag.beginPath(); ag.ellipse(fx, GY - 8, r, r * 0.62, 0, 0, 7); ag.fill(); } ag.globalAlpha = 1;
+  px(fx - 9, GY - 3, 18, 3, '#3a2214'); px(fx - 8, GY - 3, 16, 1, '#6a4626'); px(fx - 6, GY - 5, 12, 2, '#4a2c18');
+  px(fx - 5, GY - 13 - (fl === 1 ? 1 : 0), 10, 9, '#d9642a'); px(fx - 3, GY - 17 - fl, 6, 7, '#ff9a5c'); px(fx - 1, GY - 20 - (fl === 2 ? 2 : fl), 3, 6, '#ffd36b'); px(fx - 2, GY - 9, 4, 5, '#fff6c8');
+  for (let i = 0; i < 6; i++) { const ph = ((t / 1100) + i / 6) % 1, sx = fx + Math.sin(i * 3.1 + t / 600) * 5 * ph + (i % 3 - 1) * 2, sy = GY - 20 - ph * 34; ag.globalAlpha = 1 - ph; px(sx, sy, 1, 1, ph < 0.4 ? '#ffd36b' : '#ff9a5c'); } ag.globalAlpha = 1;
+  for (let i = 0; i < 7; i++) { const ph = ((t / 3800) + i / 7) % 1; ag.globalAlpha = (1 - ph) * 0.18; px(fx + Math.sin(i * 2.1 + t / 900 + ph * 3) * (3 + ph * 11), GY - 24 - ph * 52, 2 + ph * 3, 2 + ph * 2, '#8a8a84'); } ag.globalAlpha = 1;
+}
+function foreground(t) {
+  // the near fronds at the edges, dark, in front of him: a little of the wood closing over the picture
+  for (let i = 0; i < 7; i++) frond(2 + i * 9, GY + 8, 54 + (i * 13) % 26, i * 1.9 + 1, t, '#0a140d', '#122216', false);
+  for (let i = 0; i < 7; i++) frond(318 - i * 9, GY + 8, 50 + (i * 11) % 28, i * 1.7, t, '#0a140d', '#122216', true);
 }
 function stand(t, x, gy) {
   const k = Math.floor(t / 130) % 4, up = k === 1 || k === 3 ? 0 : 1, arm = k === 1 ? -3 : k === 3 ? 3 : 0, y = gy - 16 - (k === 2 ? 3 : 0);
@@ -126,22 +180,28 @@ function paint(now) {
   const gap = S.true - S.disp; S.disp = gap <= 0 ? S.true : Math.min(S.true, S.disp + Math.max(gap * (1 - Math.exp(-dt / 70)), 0.004));
   if (S.hist.length < 4000 && (!S.hist.length || S.hist[S.hist.length - 1] !== S.disp)) S.hist.push(S.disp);
   ag.clearRect(0, 0, 320, 180); px(0, 0, 320, 180, BG);
-  for (let i = 0; i < 40; i++) px(((i * 97 + 13) % 320), ((i * 53 + 7) % 90), 1, 1, i % 5 === 0 ? '#3a4a44' : '#1f2c26');   // a few stars
-  text('BRACKEN', 160, 26, GOLD, 5, 'center');
-  const gy = 124, bx = 96, bw = 176, bh = 10, by = gy - bh - 2;
-  px(0, gy, 320, 56, '#16241c'); px(0, gy, 320, 2, '#2e5a2a'); px(0, gy + 2, 320, 1, '#0e1a12');   // the ground the hero dances on
+  scene(t);
+  text('BRACKEN', 160, 12, GOLD, 5, 'center');
   // the bar: a dark frame, a track, a fill in blocks with a light top edge, a notch every eighth
+  const bx = 64, bw = 192, bh = 8, by = 144;
   px(bx - 3, by - 3, bw + 6, bh + 6, INK); px(bx - 2, by - 2, bw + 4, bh + 4, '#4a4058'); px(bx - 1, by - 1, bw + 2, bh + 2, '#221c30');
   const fw = Math.round(bw * Math.min(1, S.disp));
   if (fw > 0) { px(bx, by, fw, bh, '#4a8a3a'); px(bx, by, fw, 3, '#8fd160'); px(bx, by + bh - 2, fw, 2, '#2f6a2c'); if (fw > 2) px(bx + fw - 2, by, 2, bh, '#c8f090'); }
   for (let x = 8; x < bw; x += 8) px(bx + x, by, 1, bh, 'rgba(11,20,16,0.55)');
+  // WHAT IS HAPPENING, in letters you can read (two dots a pixel), and the number beside it
   const pct = Math.min(100, Math.floor(S.disp * 100 + 1e-6));
-  text(pct + '%', bx + bw, by + bh + 7, CREAM, 2, 'right');
-  text(S.label || 'LOADING', bx, by + bh + 9, DIM, 1, 'left');
-  // THE DANCERS: player one to the left of the bar, and in co-op player two to the right of it (his own dance)
+  text(S.label || 'LOADING', bx, by - 14, '#c9b892', 2, 'left');
+  text(pct + '%', bx + bw, by - 14, CREAM, 2, 'right');
+  // A TIP OR A LINE OF THE WOOD'S OWN, changing every few seconds (picked off the clock, so a still is repeatable)
+  { const line = TIPS[(Math.floor(t / TIP_MS) + S.tipSeed) % TIPS.length], ph = (t % TIP_MS) / TIP_MS, al = ph < 0.08 ? ph / 0.08 : ph > 0.92 ? (1 - ph) / 0.08 : 1;
+    ag.globalAlpha = Math.max(0, Math.min(1, al));
+    wrapGlyph(line, 74).forEach((r, i) => text(r, 160, 159 + i * 7, line.startsWith('TIP') ? GOLD : CREAM, 1, 'center')); ag.globalAlpha = 1; }
+  if (S.job === 'boot' && S.firstVisit) text('FIRST VISIT: EVERYTHING IS FETCHED FRESH. NEXT TIME IS QUICKER.', 160, 174, DIM, 1, 'center');
+  // THE DANCERS: player one by the fire, and in co-op player two across it (his own dance)
   const list = S.heroes;
-  if (list.length) { drawHero(list[0], t, 58, gy + 2, false); if (list[1]) drawHero(list[1], t + 130, 300, gy + 2, true); }
-  else stand(t, 50, gy + 2);
+  if (list.length) { drawHero(list[0], t, 112, GY + 2, false); if (list[1]) drawHero(list[1], t + 130, 200, GY + 2, true); }
+  else stand(t, 104, GY + 2);
+  foreground(t);
   cg.imageSmoothingEnabled = false;
   const sc = Math.max(1, Math.floor(Math.min(cv.width / 320, cv.height / 180))), ox = Math.floor((cv.width - 320 * sc) / 2), oy = Math.floor((cv.height - 180 * sc) / 2);
   cg.fillStyle = BG; cg.fillRect(0, 0, cv.width, cv.height); cg.drawImage(art, 0, 0, 320, 180, ox, oy, 320 * sc, 180 * sc);
@@ -197,6 +257,8 @@ function bootProgress() {
 }
 export function bootStart() {
   if (bootOn || !hasDom) return; bootOn = true; begin('boot', true); hold(HELD_BOOT);
+  try { S.firstVisit = !localStorage.getItem('bracken.bootmods'); } catch { /* no storage: say nothing about a first visit */ }
+  S.tipSeed = Math.floor(Math.random() * TIPS.length);
   const go = () => { show(); };
   if (document.body) go(); else addEventListener('DOMContentLoaded', go, { once: true });
   const poll = () => { if (!bootOn) return; bootProgress(); setTimeout(poll, 60); }; poll();
