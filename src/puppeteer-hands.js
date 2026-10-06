@@ -1,6 +1,6 @@
 // src/puppeteer-hands.js - THE PUPPETEER'S HANDS (claude/puppeteer, PUPPETEER3; THEATRE3; PUPPETEER2). src/puppeteer.js is the fight, pure and proved in
 // tools/puppeteer.mjs; this binds it to the world and makes every hit READ:
-//   - A BLOW ON A PUPPET in its green window lands like any blow; any other time it CLANKS (a grey spark, a line once). In the NIGHT a puppet out of the
+//   - A BLOW ON A PUPPET in its slack window (strings slack, a gold outline, a timer pip: claude/theatre4) lands like any blow; any other time it CLANKS (a grey spark, STRINGS TAUT every time). In the NIGHT a puppet out of the
 //     spotlights is dark: the blow clanks and the line says fight in the light.
 //   - A CUT is a SNAP: a hit-stop, a shake, the cut length whipping away, the limb limp, said once. A dropped puppet lies in a heap with a ring counting out.
 //   - THE LEVER (the pin rail at the stage door) is CHAINED - a padlocked chain across it; a strike clunks, said once. Both puppets down: the chain falls
@@ -47,7 +47,7 @@ export function makePuppeteerHands(ctx) {
     const e = PM.newPuppeteer({ ...base, t: 'puppeteer', w: PUP.w, h: PUP.h, hp: ctx.EHP.puppeteer, maxHp: ctx.EHP.puppeteer, noGrav: true, markH: PUP.markH, face: -1 });
     e.y = st.gallery; return e; };
   H.spawnPuppet = (t, base) => { if (!show) return null; const d = PM.PUPPETS[t];
-    const p = { ...base, t, w: d.w, h: d.h, noGrav: true, face: base.face || -1, markH: t === 'masterpiece' ? 100 : t === 'marionette' ? 58 : 36 };
+    const p = { ...base, t, w: d.w, h: d.h, bodyK: d.bodyK, noGrav: true, face: base.face || -1, markH: t === 'masterpiece' ? 100 : t === 'marionette' ? 58 : 36 };
     PM.newPuppet(p, show); if (t !== 'masterpiece') p.y = show.A.floor; return p; };
   H.owns = e => e.t === 'puppeteer' || PM.isPuppet(e);
   H.frame = e => PM.pupFrame(e);
@@ -68,11 +68,11 @@ export function makePuppeteerHands(ctx) {
       number: (x, y, line, col) => ctx.number(x, y, line, col),
       sound: k => { const fn = SOUND[k]; if (fn) fn(); },
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.P; if (!ctx.upright(pp) || P.dead) return;
-        if (ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, o.duck ? ctx.duckBox(P) : ctx.box(P))) { const h0 = P.hp; hurt(name, () => ctx.damagePlayer(o.from ?? e.x, d, { who: e, name, unblockable: !!o.unblockable, up: !!o.up }));
+        if (ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, o.duck ? ctx.duckBox(P) : ctx.box(P))) { const h0 = P.hp; hurt(name, () => ctx.damagePlayer(o.from ?? e.x, Math.round(d * PUP.dmgK), { who: e, name, unblockable: !!o.unblockable, up: !!o.up }));
           if (o.grab && P.hp < h0 && !P.dead) P.snare = Math.max(P.snare || 0, 0.6); } }); },
       band: (kind, fy, x0, x1, d, name, key, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.P; if (!ctx.upright(pp) || P.dead || pp.pupBand === key) return;
         if (P.x < x0 || P.x > x1 || Math.abs(P.y - fy) > 30) return; const hb = ctx.duckBox(P);
-        if (PM.bandCatches(kind, fy, { t: hb.t, b: hb.b })) { pp.pupBand = key; const h0 = P.hp; hurt(name, () => ctx.damagePlayer(P.x - (e.face || 1) * 10, d, { who: e, name, unblockable: true }));
+        if (PM.bandCatches(kind, fy, { t: hb.t, b: hb.b })) { pp.pupBand = key; const h0 = P.hp; hurt(name, () => ctx.damagePlayer(P.x - (e.face || 1) * 10, Math.round(d * PUP.dmgK), { who: e, name, unblockable: true }));
           if (o.snare && P.hp < h0 && !P.dead) P.snare = Math.max(P.snare || 0, o.snare); } }); },   /* (THE SNARE LINE: caught, the line holds you a moment) */
       tile: (x, y, kind) => tile(x, y, kind),
       /* THE SLAM BREAKS THE BOARDS (phase 2): rows R and R+1 of its columns fall in (the pit's floor is R+2) - and mend */
@@ -131,10 +131,20 @@ export function makePuppeteerHands(ctx) {
       else ctx.SFX.clank(); }
   };
   /* THE CLANK (THEATRE3): wood that is not spent turns the blade - heard, seen, and said once (readability: never "nothing works"). In the NIGHT's dark, the dark is why */
-  function clank(x, y, p) { ctx.SFX.clank(); ctx.sparks(x, y, (ctx.P && ctx.P.face) || 1, 4); ctx.burst(x, y, 4, ['#9aa39a', '#c9d1dc'], 40, 0.25); ctx.hitstop(0.02);
-    if (p && p.dark && (p.mode === 'recover' || p.mode === 'stagger')) { once('dark', () => ctx.number(x, y - 24, 'IN THE DARK: STRIKE IT IN THE LIGHT', '#9ad0ff')); return; }
-    once('clank', () => ctx.number(x, y - 24, 'CLANK: STRIKE A PUPPET WHEN IT GLOWS GREEN', '#9aa39a')); }
-  /* A BLOW ON A PUPPET: in its told recovery (glowing green, and lit) it lands like any blow and takes its health; any other time it clanks. A heap takes nothing */
+  function clank(x, y, p) { ctx.SFX.clank(); ctx.sparks(x, y, (ctx.P && ctx.P.face) || 1, 7); ctx.burst(x, y, 6, ['#9aa39a', '#c9d1dc', '#fff6e0'], 60, 0.25); ctx.hitstop(0.03);
+    /* (claude/theatre4, design standard B10) A TURNED BLOW SAYS SO EVERY TIME, over the puppet: STRINGS TAUT - or IN THE DARK at night (drawn in drawTells, never through number()'s word filter) */
+    const dk = p && p.dark && PM.spent(p); if (p) { p.sayW = dk ? 'IN THE DARK' : 'STRINGS TAUT'; p.sayT = 0.9; p.clankT = 0.25; }
+    if (dk) { once('dark', () => ctx.number(x, y - 24, 'IN THE DARK: STRIKE IT IN THE LIGHT', '#9ad0ff')); return; }
+    once('clank', () => ctx.number(x, y - 24, 'STRINGS TAUT: STRIKE A PUPPET WHEN ITS STRINGS GO SLACK', '#9aa39a')); }
+  /* (claude/theatre4) THE BODY'S READ, from main.js's foe pass (q = the sprite as drawn: set, frame, x, y, face, sx, sy, rot). under(): before the sprite -
+     a GOLD OUTLINE round a hittable puppet. over(): after it - a GREY-STEEL tint on one that is not. Both remembered, so the NIGHT's dark (drawn later, in
+     drawTells) can draw them again over itself: no puppet is ever drawn invisible while it matters */
+  const OUTLINE = [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, 1], [-1, 1], [1, -1]];
+  function rim(q, col, a) { if (!ctx.drawTinted || !q) return; for (const [ox, oy] of OUTLINE) ctx.drawTinted(q.set, null, q.frame, q.x + ox, q.y + oy, q.face, q.sx, q.sy, q.rot, col, a); }
+  H.under = (p, q) => { p.pupQ = q; p.pupQT = ctx.time; if (PM.hurtable(p)) rim(q, '#ffd36b', 1); };
+  H.over = (p, q) => { if (!PM.hurtable(p) && !PM.heaped(p) && ctx.drawTinted) ctx.drawTinted(q.set, null, q.frame, q.x, q.y, q.face, q.sx, q.sy, q.rot, '#8a96a8', (p.clankT > 0 ? 0.55 : 0.32)); };
+  H.slump = p => PM.hurtable(p);
+  /* A BLOW ON A PUPPET: in its told recovery (strings slack, gold, and lit) it lands like any blow and takes its health; any other time it clanks. A heap takes nothing */
   H.hurtPuppet = (p, dmg, fromX) => {
     if (!show || PM.heaped(p)) { ctx.SFX.stone(); return; }
     if (!PM.hurtable(p)) { show.n.clank = (show.n.clank || 0) + 1; clank(p.x, p.y - (p.h || 20) / 2, p); return; }
@@ -232,9 +242,12 @@ export function makePuppeteerHands(ctx) {
     /* THE STRINGS, always drawn: straight and bright (white, gold in a windup: the bonus cut) - never a thin line you can miss */
     for (const s of PM.stringsOf(e, show)) {
       const x0 = s.x0 - cx, y0 = s.y0 - cy, x1 = s.x1 - cx, y1 = s.y1 - cy;
-      if (s.taut) { const k = 0.5 + 0.5 * Math.sin(time * 14 + s.i); g.globalAlpha = 0.3 + 0.25 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.globalAlpha = 1; }
-      g.strokeStyle = s.taut ? '#fff6c8' : '#e8e0c8'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(x0) + 0.5, R(y0) + 0.5); g.lineTo(R(x1) + 0.5, R(y1) + 0.5); g.stroke();
-      g.fillStyle = s.taut ? '#ffd36b' : '#e8e0c8'; g.fillRect(R(x1) - 1, R(y1) - 1, 3, 3); }   /* the knot at the limb: where the string holds */
+      if (s.slack) {   /* (claude/theatre4) SLACK: it droops - the puppet can be hit and the string cut */
+        g.strokeStyle = '#e8dcb0'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(x0) + 0.5, R(y0) + 0.5); g.quadraticCurveTo(s.mx - cx, (s.my - cy) * 2 - (y0 + y1) / 2, R(x1) + 0.5, R(y1) + 0.5); g.stroke();
+        g.fillStyle = '#ffd36b'; g.fillRect(R(x1) - 1, R(y1) - 1, 3, 3); continue; }
+      { const k = 0.5 + 0.5 * Math.sin(time * 14 + s.i); g.globalAlpha = (s.taut ? 0.3 : 0.2) + 0.25 * k; g.strokeStyle = s.taut ? '#ffd36b' : '#9ad0ff'; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.globalAlpha = 1; }   /* TAUT: a glow down its length - steel blue, or gold in a windup (the bonus cut) */
+      g.strokeStyle = s.taut ? '#fff6c8' : '#dfe8f4'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(x0) + 0.5, R(y0) + 0.5); g.lineTo(R(x1) + 0.5, R(y1) + 0.5); g.stroke();
+      g.fillStyle = s.taut ? '#ffd36b' : '#9aa3b0'; g.fillRect(R(x1) - 1, R(y1) - 1, 3, 3); }   /* the knot at the limb: where the string holds */
     /* the cut ends, and the lengths whipping away */
     for (const p of show.puppets) { if (!p.alive || p.mode === 'packed') continue; const S2 = PM.STRINGS[p.t], bb = PM.barOf(e, p.t === 'masterpiece'), n = S2.length;
       p.str.forEach((st2, i) => { if (!st2.cut) return; const x0 = bb.x0 + (bb.x1 - bb.x0) * (n === 1 ? 0.5 : i / (n - 1)); g.fillStyle = '#c9c0b0'; g.fillRect(R(x0 - cx), R(bb.y - cy), 1, 8 + ((i * 3) % 5)); }); }
@@ -259,7 +272,10 @@ export function makePuppeteerHands(ctx) {
   H.drawTells = (cx, cy, time) => {
     const S = A(); if (!S || !show) return; const g = ctx.g(), e = ctx.boss && ctx.boss.t === 'puppeteer' && ctx.boss.alive ? ctx.boss : null, st = S.stage, TS = ctx.TS;
     const pulse = 0.5 + 0.5 * Math.sin(time * 18), key = PM.sceneKey(show), fl = R(S.floor - cy);
-    if (key === 'night' && show.spots && e) drawNight(g, S, cx, cy, time);
+    if (key === 'night' && show.spots && e) { drawNight(g, S, cx, cy, time);
+      /* (claude/theatre4) NEVER INVISIBLE: a puppet in the dark is drawn again over it as a grey-steel silhouette (the dashed ring and IN THE DARK say why it turns a blade) */
+      for (const p of show.puppets) { if (!p.alive || PM.heaped(p) || p.mode === 'packed' || !p.pupQ || p.pupQT !== time) continue; const q = p.pupQ;
+        if (p.dark && ctx.drawTinted) ctx.drawTinted(q.set, null, q.frame, q.x, q.y, q.face, q.sx, q.sy, q.rot, '#8a96a8', 0.6); } }   /* (a lit one is in its pool already, its gold outline under it) */
     g.globalAlpha = 0.35 + 0.1 * Math.sin(time * 2); g.fillStyle = '#ffd36b'; g.fillRect(R(st.gx0 - cx), R(st.gallery - cy), R(st.gx1 - st.gx0), 1); g.globalAlpha = 1;
     const ch = show.change || (e && e.mode === 'scene' ? { t: e.modeT, len: PUP.sceneT } : null);
     if (ch) { const k = 1 - Math.max(0, ch.t) / ch.len; g.globalAlpha = 0.25 * Math.sin(Math.PI * k); g.fillStyle = '#05030a'; g.fillRect(0, 0, 4000, 4000); g.globalAlpha = 1; }
@@ -291,11 +307,12 @@ export function makePuppeteerHands(ctx) {
       if (p.mode === 'grabTell') { g.globalAlpha = 0.3 + 0.5 * k * pulse; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(f > 0 ? px : px - PUP.brute.grabReach, fy - 40, PUP.brute.grabReach, 40); g.globalAlpha = 1; }
       if (p.mode === 'kickTell') { g.globalAlpha = 0.3 + 0.5 * k * pulse; g.fillStyle = '#ff6b6b'; g.fillRect(f > 0 ? px : px - PUP.harl.kickReach, fy - PUP.lowTop, PUP.harl.kickReach, 1); g.globalAlpha = 1; }
       const hh = p.t === 'masterpiece' ? 96 : p.t === 'marionette' ? 66 : 30, ww = p.t === 'masterpiece' ? 40 : p.t === 'marionette' ? 30 : 16;
-      if (PM.hurtable(p)) {   /* THE WINDOW (THEATRE3): spent, it GLOWS GREEN - now a blow lands and a string cuts */
-        g.globalAlpha = 0.35 + 0.35 * pulse; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(px + 0.5, fy - hh / 2, ww / 2 + 4, hh / 2 + 4, 0, 0, 7); g.stroke();
-        g.globalAlpha = 0.12 + 0.1 * pulse; g.fillStyle = '#8fd160'; g.beginPath(); g.ellipse(px + 0.5, fy - hh / 2, ww / 2 + 3, hh / 2 + 3, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+      if (PM.hurtable(p)) {   /* THE WINDOW (claude/theatre4: the shared read, B10): slack strings and a GOLD outline (main.js -> H.under), and a TIMER PIP over its head - the window running out */
+        const wk = PM.winK(p), tw = Math.max(14, ww), ty = fy - hh - 10; g.fillStyle = '#1e1624'; g.fillRect(px - (tw >> 1) - 1, R(ty) - 1, tw + 2, 4); g.fillStyle = pulse > 0.5 ? '#fff6c8' : '#ffd36b'; g.fillRect(px - (tw >> 1), R(ty), R(tw * wk), 2);
+        g.globalAlpha = 0.18 + 0.12 * pulse; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(px + 0.5, fy - 1, ww / 2 + 6, 3, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
       else if (p.dark && (p.mode === 'recover' || p.mode === 'stagger')) {   /* SPENT, BUT IN THE DARK: a dashed grey ring - bring it into the light */
         g.globalAlpha = 0.55; g.strokeStyle = '#9aa3b0'; g.lineWidth = 1; g.setLineDash && g.setLineDash([3, 3]); g.beginPath(); g.ellipse(px + 0.5, fy - hh / 2, ww / 2 + 4, hh / 2 + 4, 0, 0, 7); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1; }
+      if (p.sayT > 0) { p.sayT -= 1 / 60; p.clankT = Math.max(0, (p.clankT || 0) - 1 / 60); g.globalAlpha = Math.min(1, p.sayT / 0.3); ctx.text(p.sayW || 'STRINGS TAUT', px, R(fy - hh - 18 - (0.9 - p.sayT) * 14), p.sayW === 'IN THE DARK' ? '#9ad0ff' : '#c9d1dc', 'center', 6); g.globalAlpha = 1; }   /* (claude/theatre4) the turned blow's word, rising */
       if (p.mode === 'stompTell') { g.globalAlpha = 0.35 + 0.45 * pulse; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(R(p.stompX - cx), R(S.floor - 2 - cy), PUP.master.stompHalf, 5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
       if (p.mode === 'reachTell' || p.mode === 'reach') bandDraw(g, 'high', p.reachY || st.gallery, p.x - PUP.master.reachSpan, p.x + PUP.master.reachSpan, p.mode === 'reachTell' ? k : -1, cx, cy, time);
       if (p.mode === 'reach') { const r = p.reachR || 0, sx2 = R(p.x - cx), sy = R(p.y - 62 - cy), ry = p.reachY || st.gallery;

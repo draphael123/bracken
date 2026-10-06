@@ -220,6 +220,23 @@ for (const [k, [m, a, hgt]] of Object.entries(ROWS)) { ok(MARK[k] === m, k + ' w
     ok((L.moversExtra || []).some(m => m.batten), 'the stage has no batten');
     let under = 0; for (let x = A2.wallL + 1; x < A2.wallR; x++) if (L.grid[(A2.stage.R + 2) * L.W + x] === 1) under++; ok(under >= 36, 'row R+2 under the stage is not solid: ' + under); } }
 
+// ---- THEATRE4 (Daniel 10-05: puppets "sometimes invisible, invincible and you can't hit them") - THE SHARED READ (design standard B10) ----
+{ const r = rig({ noHarl: true, x: 200, quiet: true }); r.step();
+  r.bru.mode = 'hang'; r.bru.lateT = 0; const sh = M.stringsOf(r.e, r.show).filter(q => q.p === r.bru);
+  ok(sh.length === 2 && sh.every(q => !q.slack), 'a puppet that cannot be hit has a SLACK string (they must read taut): ' + JSON.stringify(sh.map(q => q.slack)));
+  r.bru.mode = 'recover'; r.bru.modeT = 1.2; r.step(); const ss = M.stringsOf(r.e, r.show).filter(q => q.p === r.bru);
+  ok(M.hurtable(r.bru) && ss.length === 2 && ss.every(q => q.slack && q.my > (q.y0 + q.y1) / 2 + 2), 'a hittable puppet strings do not go SLACK (drooping): ' + JSON.stringify(ss.map(q => ({ slack: q.slack, sag: Math.round(q.my - (q.y0 + q.y1) / 2) }))));
+  const k0 = M.winK(r.bru); for (let i = 0; i < 30; i++) { r.bru.mode = 'recover'; r.step(); } const k1 = M.winK(r.bru);
+  ok(k0 > 0.9 && k1 < k0 - 0.3 && k1 > 0, 'the window timer pip does not run down with the window: ' + JSON.stringify({ k0, k1 }));
+  /* THE GRACE: a blow begun in the window lands just after it closes - for PUP.grace, never longer */
+  r.bru.mode = 'hang'; r.bru.modeT = 1; r.step(); const late = M.hurtable(r.bru); for (let i = 0; i < Math.ceil(P.grace * 60) + 2; i++) { r.bru.mode = 'hang'; r.step(); }
+  ok(P.grace > 0 && P.grace <= 0.3 && late && !M.hurtable(r.bru), 'the window grace is wrong (a blow just after the window must land; a quarter second on it must not): ' + JSON.stringify({ grace: P.grace, late, after: M.hurtable(r.bru) }));
+  /* a slack string is still cut where it is DRAWN (its droop) */
+  r.bru.mode = 'recover'; r.bru.modeT = 2; r.step(); const q = M.stringsOf(r.e, r.show).find(z => z.p === r.bru && z.k === 'arm'); const c = M.strikeStrings(r.e, r.show, { l: q.mx - 3, r: q.mx + 3, t: q.my - 3, b: q.my + 3 }, new Set());
+  ok(c.length === 1, 'a swing through a slack string droop did not cut it'); }
+ok(P.night.half >= 42 * 1.6 - 0.5, 'the NIGHT spotlights are not ~1.6x the old 42 px (' + P.night.half + ')');
+ok(M.PUPPETS.marionette.h >= 60 && M.PUPPETS.marionette.w >= 24 && M.PUPPETS.marionette.bodyK === P.brute.scale, 'the Brute is not struck where he is drawn (x' + P.brute.scale + '): his box is ' + JSON.stringify(M.PUPPETS.marionette));
+
 // ---- IN THE PAGE ----
 if (process.argv.includes("--no-page")) { for (const b of bad) console.log("  - " + b); console.log(bad.length ? 'PURE: ' + bad.length + ' problem(s)' : 'ok  puppeteer (pure part)'); process.exit(bad.length ? 1 : 0); }
 const pg = await openPage({ audio: false, fonts: false });
@@ -237,6 +254,9 @@ try {
     bru.mode='hang';const hp0=bru.hp;BKT.hurtEnemy(bru,20,bru.x-10,false);out.clank={lost:hp0-bru.hp,clanks:S.n.clank};
     bru.mode='recover';bru.modeT=9;bru.dark=false;const hp1=bru.hp;BKT.hurtEnemy(bru,20,bru.x-10,false);out.body={lost:hp1-bru.hp,alive:bru.alive,flash:bru.flash>0};
     const bh=e.hp;BKT.hurtEnemy(e,50,e.x-10,false);out.ward=bh-e.hp;
+    /* THEATRE4: a turned blow says STRINGS TAUT every time (not once); in the night's dark it says IN THE DARK */
+    {bru.mode='hang';bru.lateT=0;bru.dark=false;const said=[];for(let i=0;i<3;i++){bru.sayT=0;BKT.hurtEnemy(bru,20,bru.x-10,false);said.push(bru.sayT>0?bru.sayW:'');BK.sim(1);bru.mode='hang';bru.lateT=0;}
+      bru.mode='recover';bru.modeT=9;bru.dark=true;bru.sayT=0;const hd=bru.hp;BKT.hurtEnemy(bru,20,bru.x-10,false);said.push(bru.sayT>0?bru.sayW:'');out.say={said,darkLost:hd-bru.hp};bru.dark=false;bru.mode='hang';}
     /* a real swing across the Brute's arm string, in his green recovery */
     har.x=A.x1-30;S.gap=9;let q=null;for(let i=0;i<30;i++){bru.mode='recover';bru.modeT=9;BK.sim(1);bru.dark=false;q=PMm.stringsOf(e,S).find(s=>s.p===bru&&s.k==='arm');}
     P.x=q.x1-14;P.y=A.floor;P.face=1;P.vx=0;BK.sim(2);const l0=bru.str.filter(s=>!s.cut).length;bru.dark=false;BK.press('atk');BK.sim(14);out.swing={l0,l1:bru.str.filter(s=>!s.cut).length};
@@ -251,6 +271,14 @@ try {
     for(let i=0;i<12;i++)BKT.hurtEnemy(e,50,e.x-10,false);out.visit={lost:oh-e.hp,cap:Math.round(e.maxHp*PMm.PUP.visitCap),mode:e.mode};
     let thrown=false;for(let i=0;i<60*4;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);if(P.ground&&Math.abs(P.y-A.floor)<4){thrown=true;break;}}out.knock={thrown,y:P.y,floor:A.floor,n:S.n.knock};
     for(let i=0;i<60*3&&e.mode!=='work';i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}out.after={mode:e.mode,cycle:S.cycle,scene:PH.read().sceneKey,free:S.free};
+    /* THEATRE4: PER HERO, a real blow on a HITTABLE puppet always lands - the Brute (front, at his chest) and the Harlequin, each in his window */
+    out.hit={};for(const h of ['knight','warden','pyro']){BK.setHero(h);const eh=boot(),S2=BK.puppeteerHands().show(),A2=BK.L.arena,P2=BK.P;S2.overCd=1e9;S2.gap=99;const row={};
+      for(const t of ['marionette','harlequin']){const p=S2.puppets.find(q=>q.t===t),o=S2.puppets.find(q=>q!==p&&q.t!=='acrobat');if(o){o.x=A2.x1-20;}
+        let n=0,land=0;for(let k=0;k<3;k++){p.x=A2.x0+200;p.y=A2.floor;p.mode='recover';p.modeT=9;p.dark=false;p.hp=p.maxHp;P2.x=p.x-(p.w/2)-10;P2.y=A2.floor;P2.vx=0;P2.vy=0;P2.face=1;P2.st=P2.maxSt;BK.sim(20);
+          const h0=p.hp;p.mode='recover';p.modeT=9;BK.press('atk');for(let i=0;i<24;i++){p.mode='recover';p.modeT=9;p.dark=false;P2.hp=P2.maxHp;BK.sim(1);}n++;if(p.hp<h0)land++;}
+        row[t]=land+'/'+n;}
+      out.hit[h]=row;}
+    BK.setHero('knight');
     const e3=boot();e3.hp=1;e3.mode='staggered';e3.openT=3;BK.puppeteerHands().show().visitLeft=99;BKT.hurtEnemy(e3,99,e3.x-10,false);for(let i=0;i<200&&BK.bossActive;i++){BK.P.inv=99;BK.sim(1);}
     const S3=BK.puppeteerHands().show();out.death={alive:e3.alive,active:BK.bossActive,curtain:S3.curtain>0};
     Math.random=real;
@@ -274,6 +302,8 @@ try {
   ok(r.visit.lost <= r.visit.cap && r.visit.lost >= r.visit.cap - 2, 'one visit took more (or much less) than its share of him: ' + JSON.stringify(r.visit));
   ok(r.knock.thrown && r.knock.n >= 1, 'the knockback did not put the hero back on the boards: ' + JSON.stringify(r.knock));
   ok(r.after.mode === 'work' && r.after.cycle === 1 && r.after.free === false && r.after.scene !== r.scene, 'after the visit the next cycle did not begin on a new scene with the lever chained: ' + JSON.stringify(r.after) + ' (was ' + r.scene + ')');
+  ok(r.say.said.length === 4 && r.say.said.slice(0, 3).every(w => w === 'STRINGS TAUT') && r.say.said[3] === 'IN THE DARK' && r.say.darkLost === 0, 'a turned blow on a puppet does not say STRINGS TAUT every time (or IN THE DARK at night): ' + JSON.stringify(r.say));
+  for (const h of ['knight', 'warden', 'pyro']) for (const t of ['marionette', 'harlequin']) ok(r.hit[h] && r.hit[h][t] === '3/3', 'a ' + h + ' real blow on a HITTABLE ' + t + ' did not always land: ' + JSON.stringify(r.hit[h]));
   ok(!r.death.alive && !r.death.active && r.death.curtain, 'his death did not end the fight and bring the curtain down: ' + JSON.stringify(r.death));
   ok(r.bot.out === 'win' && r.bot.taken >= 10, 'the human bot (knight, salt 1, refill health) (L' + DEPTH + ') did not win while taking real damage: ' + JSON.stringify(r.bot));
   ok(pg.errors.length === 0, 'the page threw: ' + pg.errors.slice(0, 3).join(' | '));

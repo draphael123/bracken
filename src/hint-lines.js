@@ -58,7 +58,7 @@ export const CALL_LINES = new Set([
   'THE BACK GOES LIMP: NO MORE SLAM', 'A STRING PARTS', 'OUT OF REACH: DROP HIS PUPPETS FIRST', 'SCENE CHANGE: WATCH THE BOARDS',
   'TOGETHER NOW: HIS SLAM BREAKS THE BOARDS',
   /* claude/theatre3: the loop rebuilt - a puppet is hurt only while it glows green; both down, his bar goes slack: climb and cut it */
-  'TOO SLOW: HE STRINGS THEM AGAIN', 'CLANK: STRIKE A PUPPET WHEN IT GLOWS GREEN',
+  'TOO SLOW: HE STRINGS THEM AGAIN', 'STRINGS TAUT: STRIKE A PUPPET WHEN ITS STRINGS GO SLACK',   /* (claude/theatre4: the shared read - slack strings and a gold outline, was 'glows green') */
   /* claude/puppeteer2: the lever chained until both are down, the visit (he reels on the gallery, then throws you down), his two slow attacks, the four scenes */
   'DROP BOTH PUPPETS: THE LEVER FREES', 'THE MASTERPIECE: DROP IT AND THE HARLEQUIN', 'THE LEVER IS FREE: RIDE UP TO HIM', 'THE LEVER IS CHAINED: DROP BOTH PUPPETS',
   'HE REELS: STRIKE HIM', 'HE THROWS YOU OFF THE GALLERY', 'THE SCENE SHIFTS', 'THE SNARE LINE, LOW: JUMP IT', 'THE SNARE LINE, HIGH: DUCK IT',

@@ -883,6 +883,7 @@ Object.assign(SFX, {
   horseRear() { if (!gate('hrear', 0.5)) return; for (let i = 0; i < 4; i++) bell(1568 * (1 + (i % 2) * 0.12), 0.22, 0.04, i * 0.05); noise(0.16, 0.06, 900, 0.7, 0.02); tone('sawtooth', 200, 320, 0.2, 0.05); },   /* the bridle bells shaken as the head is flung up */
   hayRustle() { noise(0.22, 0.12, 2600, 0.7); noise(0.16, 0.08, 4200, 1.2, 0.04); noise(0.3, 0.06, 1400, 0.6, 0.09); },   /* a haystack takes you and throws you back */
   lampGutter() { if (!gate('lampg', 0.25)) return; noise(0.05, 0.04, 1800, 1.4); tone('triangle', 240, 120, 0.06, 0.03); },   /* a lantern going down to its wick */
+  maskSwap() { if (!gate('mswap', 0.12)) return; noise(0.02, 0.1, 2600, 3); tone('square', 1300, 900, 0.03, 0.05); tone('triangle', 2200, 2600, 0.04, 0.04, 0.03); },   /* (claude/theatre4) a theatre mummer snaps on a new mask: a wooden click and a bright tick */
   mummerStill() { if (!gate('mstill', 0.3)) return; tone('sine', 660, 440, 0.12, 0.05); },
   mummerStrike() { tone('square', 220, 90, 0.16, 0.12); noise(0.1, 0.12, 900, 0.6); },
   horseCharge() { noise(0.4, 0.16, 500, 0.5); tone('sawtooth', 140, 90, 0.35, 0.1); bell(1568, 0.2, 0.05, 0.05); },

@@ -34,7 +34,8 @@ export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
   ward: 0.05, openMul: 0.8,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
   staggerT: 3.0,                       // ON THE GALLERY: he is staggered this long (boss-openings asserts >= 3 s)
-  visitCap: 1 / 3,                     // A VISIT takes at most this share of his health (then the knockback comes at once)
+  visitCap: 1 / 4,                     // A VISIT takes at most this share of his health (then the knockback comes at once). (claude/theatre4: 1/3 -> 1/4 - at the CAMPAIGN level, L22 with the HARNESSCARD card spread, the human bot won 20/21 in 57-130 s; four visits make the fight its 90-150 s)
+  dmgK: 1.35,                          // (claude/theatre4) every blow of his, his puppets' and his scenes' lands x this (the same tells, the same answers): the L22 campaign hero has 196-208 health
   slackT: 12.0,                        // BOTH PUPPETS DOWN: the lever is free and his bar slack this long (x cycleK) - the time to ride up
   slumpX: 72, slumpSpeed: 150,          // SLACK: he stumbles along the gallery to this far past its batten end (so a visit is a fight, not a walk)
   knockTell: 1.0, knockT: 0.3, knockVx: 150, knockDmg: 12,   // THE KNOCKBACK: told (his bar whirls, the gallery glows red), then every hero on the gallery is thrown down
@@ -51,7 +52,8 @@ export const PUP = {
   snare: { tell: 1.3, speed: 115, dmg: 26, hold: 0.6, bar: 12 },           // THE SNARE LINE: told at the wing it starts from, then swept across (115 px/s)
   /* THE SCENES */
   storm: { first: 3.0, every: 5.0, tell: 1.4, on: 2.6, shove: 150, pup: 40 },
-  night: { half: 42, speed: 24, dark: 0.6 },
+  night: { half: 67, speed: 24, dark: 0.6 },   // (claude/theatre4: the pools ~1.6x wider - 42 was a puppet's width; Daniel 10-05)
+  grace: 0.25,                         // (claude/theatre4) a blow begun in a puppet's slack window still lands this long after it closes
   inferno: { first: 2.5, tell: 1.3, burn: 1.4, rest: 0.9, dmg: 28, top: 30, hitEvery: 0.6 },
   sea: { first: 3.5, every: 4.8, tell: 1.3, speed: 150, half: 9, dmg: 28 },
   harl: { hp: 70, speed: 130, jabTell: 0.36, jabNext: 0.24, jabT: 0.1, jabs: 2, jabReach: 26, jab: 10, kickTell: 0.5, kickT: 0.2, kickReach: 34, kick: 12,
@@ -66,7 +68,8 @@ export const PUP = {
   pace: 26, keep: 72, mW: 34, mH: 92,
   p2: 2 / 3, p3: 1 / 3,
 };
-export const PUPPETS = { marionette: { w: 18, h: 44 }, harlequin: { w: 12, h: 28 }, acrobat: { w: 12, h: 28 }, masterpiece: { w: PUP.mW, h: PUP.mH } };
+export const PUPPETS = { marionette: { w: 26, h: 64, bodyK: 1.5 },   /* (claude/theatre4: the Brute is DRAWN at x1.5 - his box was the 18 x 44 of the unscaled frame, so a blow at his chest or head met nothing at all; now struck where drawn, as the elites: bodyK keeps his plate where it was) */
+  harlequin: { w: 12, h: 28 }, acrobat: { w: 12, h: 28 }, masterpiece: { w: PUP.mW, h: PUP.mH } };
 /* THE STRINGS: where each attaches, and the LIMB it holds up (cut it and that limb's attacks are gone) */
 export const STRINGS = {
   marionette: [{ k: 'arm', limb: 'arm', dx: 10, up: 9 }, { k: 'back', limb: 'back', dx: -7, up: 10 }],   /* (x the Brute's 1.5: 13-15 px up - where every hero's blade from the boards reaches: the knight's to 17, the pyromancer's staff to 15) */
@@ -106,7 +109,15 @@ export const pupOpen = e => !!e && OPEN_MODES.includes(e.mode);
 export const pupTake = e => (pupOpen(e) ? PUP.openMul : PUP.ward);
 /* A PUPPET CAN BE HURT (a blow takes its health, a swing across a string cuts it) only in its told recovery, glowing green - or staggered by a gold cut -
    and never in the NIGHT's dark (p.dark, set each frame by the show) */
-export const hurtable = p => !!p && p.alive !== false && !heaped(p) && !p.dark && (p.mode === 'recover' || p.mode === 'stagger');
+export const spent = p => !!p && p.alive !== false && !heaped(p) && (p.mode === 'recover' || p.mode === 'stagger');
+/* (claude/theatre4, Daniel 10-05: "sometimes invisible, invincible and you can't hit them") THE SHARED READ (design standard B10): HITTABLE = its strings go
+   SLACK, it slumps, a GOLD outline and a timer pip; a blow begun in the window that lands just after it still lands (PUP.grace - the window is the
+   promise, not the frame). NOT HITTABLE = taut, glowing strings and a grey-steel tint, and a blow CLANKS and says STRINGS TAUT every time */
+export const hurtable = p => !!p && p.alive !== false && !heaped(p) && !p.dark && (spent(p) || (p.lateT || 0) > 0);
+/* the window's clock: p.winLen is how long this window was when it opened, p.lateT the grace after it closes */
+export function winTrack(p, dt) { if (spent(p) && !p.dark) { if (!p.winLen || p.modeT > p.winLen) p.winLen = Math.max(0.05, p.modeT); p.lateT = PUP.grace; }
+  else { p.winLen = 0; p.lateT = Math.max(0, (p.lateT || 0) - dt); if (heaped(p) || p.dark) p.lateT = 0; } }
+export const winK = p => (p && p.winLen ? Math.max(0, Math.min(1, p.modeT / p.winLen)) : 0);
 /* EACH CYCLE HE RE-STRINGS FASTER */
 export const cycleK = cycle => Math.max(PUP.restringMin, 1 - PUP.restring * Math.max(0, cycle || 0));
 /* BOTH DOWN: the lever is free and his bar slack while show.slack runs */
@@ -133,7 +144,8 @@ export function stringsOf(e, show) {
     const S = STRINGS[p.t], big = p.t === 'masterpiece', bar = barOf(e, big), taut = pupTaut(p), f = p.face || 1, sc = p.t === 'marionette' ? PUP.brute.scale : 1;
     S.forEach((s, i) => { const st = p.str[i]; if (!st || st.cut) return;
       const n = S.length, x0 = bar.x0 + (bar.x1 - bar.x0) * (n === 1 ? 0.5 : i / (n - 1));
-      out.push({ p, i, k: s.k, limb: s.limb, x0, y0: bar.y, x1: p.x + s.dx * f * sc, y1: p.y - s.up * sc, taut }); }); }
+      const x1 = p.x + s.dx * f * sc, y1 = p.y - s.up * sc, slack = !taut && hurtable(p), sag = slack ? Math.min(18, 0.22 * Math.hypot(x1 - x0, y1 - bar.y)) : 0;   /* (claude/theatre4) SLACK: hittable, the string droops - its middle hangs `sag` px low (the cut test follows the droop) */
+      out.push({ p, i, k: s.k, limb: s.limb, x0, y0: bar.y, x1, y1, taut, slack, mx: (x0 + x1) / 2, my: (bar.y + y1) / 2 + sag }); }); }
   return out;
 }
 export function segHitsBox(x0, y0, x1, y1, b) {
@@ -150,7 +162,7 @@ export function strikeStrings(e, show, hb, seen) {
   const cuts = []; if (!e || !show || !hb) return cuts;
   const once = seen || new Set();
   for (const s of stringsOf(e, show)) { const pt = s.p.strTag || (s.p.strTag = {});
-    if (once.has(pt) || !segHitsBox(s.x0, s.y0, s.x1, s.y1, hb)) continue;
+    if (once.has(pt) || !(s.slack ? segHitsBox(s.x0, s.y0, s.mx, s.my, hb) || segHitsBox(s.mx, s.my, s.x1, s.y1, hb) : segHitsBox(s.x0, s.y0, s.x1, s.y1, hb))) continue;
     once.add(pt); const st = s.p.str[s.i], at = { x: Math.max(hb.l, Math.min(hb.r, s.x1)), y: Math.max(hb.t, Math.min(hb.b, s.y1)) };
     if (!(s.taut && !s.p.dark) && !hurtable(s.p)) { (show.clanks = show.clanks || []).push({ p: s.p, at }); show.n.clank = (show.n.clank || 0) + 1; continue; }
     st.cut = true; st.cutAt = at; st.gold = s.taut; show.n.cut++; if (s.taut) show.n.goldCut++;
@@ -338,7 +350,7 @@ export function stepShow(e, show, dt, c) {
   for (const p of show.puppets) { if (p.mode === 'packed' || !p.alive && p.mode !== 'heap') continue;
     if (busy && !heaped(p) && /Tell$/.test(p.mode)) p.mode = 'hang';
     const may = !busy && (e.phase >= 2 || !show.turn || show.turn === p || (p.t === 'harlequin' && show.turn && show.turn.t !== 'harlequin' && !/Tell$/.test(show.turn.mode) ? true : p.t === 'harlequin' && show.turn && show.turn.mode.endsWith('Tell') && show.turn.modeT < show.turn.tellLen - 0.4));   /* (phase 1: they do not START together; the Harlequin may come in while the Brute is well into a windup or a swing) */
-    puppetStep(p, e, show, dt, c, ev, stageHero, may); }
+    puppetStep(p, e, show, dt, c, ev, stageHero, may); winTrack(p, dt); }
   /* HIS TWO SLOW ATTACKS and THE SCENE's rule (only while the duo fights: the visit and the scene change are clean) */
   hazardsStep(e, show, dt, c, ev, stageHero, heroes, fighting && !show.change, (fighting || e.mode === 'slack') && !show.change);   /* (his drops keep coming while you make for the lever and ride: up under fire) */
   /* ---- HIS OWN BEATS ---- */

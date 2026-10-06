@@ -58,6 +58,7 @@ export const STUCK = {
     { id: 'th-stage-trap', zone: [224, 22, 240, 33], at: [233, 33], line: 'THE WAY ON IS DOWN: THE TRAP AT STAGE LEFT' },
     { id: 'th-ride-weight', zone: [268, 8, 286, 16], at: [287, 15], line: 'THE FLOOR ENDS AT THE PIN RAIL: THE ROPE-LOCK IS THE WAY' },
     { id: 'th-wing-winch', zone: [305, 24, 321, 33], at: [317, 33], line: 'A FLAT BARS THE WING: FIND ITS WINCH' },
+    { id: 'th-paint-batten', zone: [390, 24, 418, 33], at: [397, 33], line: 'THE PAINT FRAME BARS THE FLOOR: A ROPE-LOCK BY THE BATTEN' },   /* (claude/theatre4) THE GREEN ROOM: the paint batten is the way over the frame */
   ],
   reef: [
     { id: 'rf-hoist', zone: [188, 10, 214, 28], steps: [
