@@ -6,100 +6,109 @@ Method: a fresh hero (no skills, no talents) at the level's expected hero level 
 
 ## Summary
 
-- Fights audited: 48 (bosses and minis). The mash bot BEATS 21 of them with at least one hero (3 with every fight).
-- Levels mashed: 35; it clears 4 without dying or dropping under 40% health.
+- Fights audited: 53 (bosses and minis). The mash bot BEATS 5 of them with at least one hero (0 with every fight).
+- Levels mashed: 39; it clears 0 without dying or dropping under 40% health.
 
 ## Bosses and minis, worst first (a mash WIN is the worst)
 
 | # | boss | level | mash wins | knight | warden | pyro | chip x (not open) | greed punish | notes |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | bosun (mini) | harbor | 6/6 | WIN/WIN (hp lost 35/50%, boss left 0/0%) | WIN/WIN (hp lost 20/20%, boss left 0/0%) | WIN/WIN (hp lost 31/45%, boss left 0/0%) | x1 | y (48%) | level-1 hero: 0/3 mash wins |
-| 2 | lancer (mini) | waymeet | 6/6 | WIN/WIN (hp lost 39/39%, boss left 0/0%) | WIN/WIN (hp lost 22/22%, boss left 0/0%) | WIN/WIN (hp lost 78/60%, boss left 0/0%) | x0.6 | n (0%) | level-1 hero: 1/3 mash wins |
-| 3 | greathound (mini) | kings | 6/6 | WIN/WIN (hp lost 7/28%, boss left 0/0%) | WIN/WIN (hp lost 57/48%, boss left 0/0%) | WIN/WIN (hp lost 63/63%, boss left 0/0%) | x1 | n (0%) | level-1 hero: 3/3 mash wins |
-| 4 | puppeteer | theatre | 5/6 | WIN/WIN (hp lost 21/32%, boss left 0/0%) | WIN/timeout (hp lost 14/19%, boss left 0/6%) | WIN/WIN (hp lost 67/44%, boss left 0/0%) | x0.05 | n (3%) | level-1 hero: 0/3 mash wins; 1 timeouts (the mash bot neither won nor died in the time allowed) |
-| 5 | homunculus (mini) | mage | 5/6 | died/WIN (hp lost 100/90%, boss left 37/0%) | WIN/WIN (hp lost 73/73%, boss left 0/0%) | WIN/WIN (hp lost 64/64%, boss left 0/0%) | x0.35 | y (33%) | level-1 hero: 0/3 mash wins |
-| 6 | lampreeve (mini) | lamplit | 4/6 | WIN/WIN (hp lost 58/86%, boss left 0/0%) | WIN/WIN (hp lost 95/95%, boss left 0/0%) | died/died (hp lost 100/100%, boss left 9/9%) | x0.25 | n (13%) | level-1 hero: 0/3 mash wins |
-| 7 | ploughman (mini) | fields | 4/6 | died/died (hp lost 100/100%, boss left 52/31%) | WIN/WIN (hp lost 61/61%, boss left 0/0%) | WIN/WIN (hp lost 95/95%, boss left 0/0%) | x0.4 | n (11%) | level-1 hero: 0/3 mash wins |
-| 8 | windcaller | moor | 4/6 | WIN/died (hp lost 81/100%, boss left 0/86%) | WIN/timeout (hp lost 65/86%, boss left 0/10%) | WIN/WIN (hp lost 55/72%, boss left 0/0%) | n/a | n (0%) | mash landed 2 or fewer blows in 1/6 fights; level-1 hero: 0/3 mash wins; 1 timeouts (the mash bot neither won nor died in the time allowed) |
-| 9 | spider (mini) | hanging | 3/6 | WIN/died (hp lost 34/100%, boss left 0/14%) | died/died (hp lost 100/100%, boss left 34/34%) | WIN/WIN (hp lost 62/62%, boss left 0/0%) | x1 | y (40%) | level-1 hero: 0/3 mash wins |
-| 10 | sexton (mini) | fallingtower | 3/6 | died/WIN (hp lost 100/90%, boss left 36/0%) | died/died (hp lost 100/100%, boss left 57/64%) | WIN/WIN (hp lost 89/91%, boss left 0/0%) | x1 | n (20%) | level-1 hero: 0/3 mash wins |
-| 11 | barrowrider (mini) | unburied | 2/6 | died/died (hp lost 100/100%, boss left 26/27%) | died/died (hp lost 100/100%, boss left 8/8%) | WIN/WIN (hp lost 77/77%, boss left 0/0%) | x1 | n (21%) | level-1 hero: 0/3 mash wins |
-| 12 | owl | hanging | 2/6 | WIN/died (hp lost 20/100%, boss left 0/26%) | timeout/WIN (hp lost 40/70%, boss left 24/0%) | died/died (hp lost 100/100%, boss left 10/28%) | x0.05 | y (47%) | level-1 hero: 1/3 mash wins; 1 timeouts (the mash bot neither won nor died in the time allowed) |
-| 13 | tollmaster | lamplit | 2/6 | WIN/WIN (hp lost 23/29%, boss left 0/0%) | died/died (hp lost 100/100%, boss left 7/13%) | died/died (hp lost 100/100%, boss left 37/37%) | x0.05 | n (18%) | level-1 hero: 0/3 mash wins |
-| 14 | hedgewarden (mini) | witchlight | 2/6 | died/died (hp lost 100/100%, boss left 49/14%) | died/WIN (hp lost 100/60%, boss left 20/0%) | died/WIN (hp lost 100/36%, boss left 14/0%) | x0.25 | y (40%) | level-1 hero: 0/3 mash wins |
-| 15 | grandmother | underleaf | 2/6 | died/died (hp lost 100/100%, boss left 33/24%) | WIN/WIN (hp lost 16/99%, boss left 0/0%) | died/died (hp lost 100/100%, boss left 48/46%) | x1 | n (0%) | level-1 hero: 0/3 mash wins |
-| 16 | gravewarden (mini) | burial | 2/6 | died/died (hp lost 100/100%, boss left 48/51%) | died/died (hp lost 100/100%, boss left 49/49%) | WIN/WIN (hp lost 94/94%, boss left 0/0%) | x1 | n (4%) | level-1 hero: 0/3 mash wins |
-| 17 | ram | scree | 2/6 | WIN/WIN (hp lost 60/97%, boss left 0/0%) | died/died (hp lost 100/100%, boss left 47/31%) | died/died (hp lost 100/100%, boss left 83/83%) | x0.05 | n (0%) | level-1 hero: 0/3 mash wins |
-| 18 | drownedking | keep | 2/6 | died/died (hp lost 100/100%, boss left 98/100%) | WIN/WIN (hp lost 88/99%, boss left 0/0%) | died/died (hp lost 100/100%, boss left 98/99%) | x0.05 | n (4%) | mash landed 2 or fewer blows in 1/6 fights; level-1 hero: 0/3 mash wins |
-| 19 | forgemaster (mini) | crown | 1/6 | WIN/died (hp lost 46/100%, boss left 0/71%) | died/died (hp lost 100/100%, boss left 30/30%) | died/died (hp lost 100/100%, boss left 12/12%) | x0.5 | y (30%) | level-1 hero: 0/3 mash wins |
-| 20 | wickerqueen | fair | 1/6 | WIN/died (hp lost 99/100%, boss left 0/25%) | died/died (hp lost 100/100%, boss left 65/65%) | died/died (hp lost 100/100%, boss left 16/16%) | x0.05 | n (20%) | level-1 hero: 0/3 mash wins |
-| 21 | mother | spore | 1/6 | WIN/died (hp lost 0/100%, boss left 0/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | x1 | n (0%) | mash landed 2 or fewer blows in 5/6 fights; level-1 hero: 0/3 mash wins |
-| 22 | harbormaster | harbor | 0/6 | died/died (hp lost 100/100%, boss left 67/68%) | died/died (hp lost 100/100%, boss left 68/68%) | died/died (hp lost 100/100%, boss left 31/31%) | x0.05 | n (3%) | level-1 hero: 0/3 mash wins |
-| 23 | gqueen | crown | 0/6 | died/died (hp lost 100/100%, boss left 60/60%) | died/died (hp lost 100/100%, boss left 62/66%) | died/died (hp lost 100/100%, boss left 51/55%) | x0 | n (3%) | level-1 hero: 0/3 mash wins |
-| 24 | pyromancer | burning | 0/6 | died/died (hp lost 100/100%, boss left 45/82%) | died/died (hp lost 100/100%, boss left 47/47%) | died/died (hp lost 100/100%, boss left 73/73%) | x0.25 | n (11%) | level-1 hero: 0/3 mash wins |
-| 25 | quarter | flotilla | 0/6 | died/timeout (hp lost 100/42%, boss left 75/58%) | timeout/timeout (hp lost 42/42%, boss left 63/63%) | timeout/timeout (hp lost 17/17%, boss left 63/63%) | x0.05 | n (5%) | level-1 hero: 0/3 mash wins; 5 timeouts (the mash bot neither won nor died in the time allowed) |
-| 26 | greenteeth | canal | 0/6 | died/died (hp lost 100/100%, boss left 68/67%) | died/died (hp lost 100/100%, boss left 81/81%) | timeout/timeout (hp lost 95/95%, boss left 48/48%) | x0.05 | y (29%) | level-1 hero: 0/3 mash wins; 2 timeouts (the mash bot neither won nor died in the time allowed) |
-| 27 | prince | undercrown | 0/6 | died/died (hp lost 100/100%, boss left 63/48%) | died/died (hp lost 100/100%, boss left 95/95%) | died/died (hp lost 100/100%, boss left 65/65%) | x0.05 | y (25%) | level-1 hero: 0/3 mash wins |
-| 28 | reefmaw | reef | 0/6 | died/died (hp lost 100/100%, boss left 89/94%) | died/died (hp lost 100/100%, boss left 42/73%) | died/died (hp lost 100/100%, boss left 67/71%) | x0 | n (4%) | level-1 hero: 0/3 mash wins |
-| 29 | queen | wood | 0/6 | died/died (hp lost 100/100%, boss left 47/78%) | timeout/died (hp lost 94/100%, boss left 83/82%) | died/died (hp lost 100/100%, boss left 98/80%) | x1 | n (0%) | mash landed 2 or fewer blows in 1/6 fights; level-1 hero: 0/3 mash wins; 1 timeouts (the mash bot neither won nor died in the time allowed) |
-| 30 | kraken | causeway | 0/6 | timeout/timeout (hp lost 59/59%, boss left 86/86%) | died/died (hp lost 100/100%, boss left 87/87%) | died/died (hp lost 100/100%, boss left 86/86%) | x0 | n (0%) | level-1 hero: 0/3 mash wins; 2 timeouts (the mash bot neither won nor died in the time allowed) |
-| 31 | undeadmage | fallingtower | 0/6 | died/died (hp lost 100/100%, boss left 93/96%) | died/died (hp lost 100/100%, boss left 99/99%) | died/died (hp lost 100/100%, boss left 38/95%) | x0.05 | n (7%) | level-1 hero: 0/3 mash wins |
-| 32 | bloodknight | unburied | 0/6 | died/died (hp lost 100/100%, boss left 91/91%) | died/died (hp lost 100/100%, boss left 95/95%) | died/died (hp lost 100/100%, boss left 84/84%) | x0.05 | n (10%) | level-1 hero: 0/3 mash wins |
-| 33 | duneworm | caravan | 0/6 | died/died (hp lost 100/100%, boss left 95/72%) | died/died (hp lost 100/100%, boss left 98/98%) | died/died (hp lost 100/100%, boss left 89/89%) | x0 | n (2%) | level-1 hero: 0/3 mash wins |
-| 34 | lance | storm | 0/6 | died/died (hp lost 100/100%, boss left 86/76%) | died/died (hp lost 100/100%, boss left 98/98%) | died/died (hp lost 100/100%, boss left 93/93%) | x0 | n (0%) | mash landed 2 or fewer blows in 2/6 fights; level-1 hero: 0/3 mash wins |
-| 35 | bellcrab | deep | 0/6 | died/died (hp lost 100/100%, boss left 77/86%) | died/died (hp lost 100/100%, boss left 97/97%) | died/died (hp lost 100/100%, boss left 95/95%) | x0.05 | n (16%) | level-1 hero: 0/3 mash wins |
-| 36 | herald | longwater | 0/6 | timeout/timeout (hp lost 56/59%, boss left 96/100%) | timeout/timeout (hp lost 48/48%, boss left 92/92%) | timeout/timeout (hp lost 77/77%, boss left 95/95%) | x0.2 | n (0%) | mash landed 2 or fewer blows in 1/6 fights; level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
-| 37 | captain | hurricane | 0/6 | died/died (hp lost 100/100%, boss left 91/93%) | died/died (hp lost 100/100%, boss left 97/97%) | died/died (hp lost 100/100%, boss left 96/96%) | x0.05 | n (23%) | level-1 hero: 0/3 mash wins |
-| 38 | burieddead | burial | 0/6 | died/died (hp lost 100/100%, boss left 96/98%) | died/died (hp lost 100/100%, boss left 98/98%) | died/died (hp lost 100/100%, boss left 91/91%) | x0.05 | n (7%) | level-1 hero: 0/3 mash wins |
-| 39 | frog | marsh | 0/6 | died/timeout (hp lost 100/97%, boss left 100/94%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/84%) | x0.05 | n (0%) | mash landed 2 or fewer blows in 4/6 fights; level-1 hero: 0/3 mash wins; 1 timeouts (the mash bot neither won nor died in the time allowed) |
-| 40 | golem (mini) | spire | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 89/89%) | x0 | n (0%) | mash landed 2 or fewer blows in 4/6 fights; level-1 hero: 0/3 mash wins |
-| 41 | abbot | spire | 0/6 | died/died (hp lost 100/100%, boss left 100/98%) | died/died (hp lost 100/100%, boss left 98/100%) | died/died (hp lost 100/100%, boss left 86/98%) | x0.05 | y (27%) | level-1 hero: 0/3 mash wins |
-| 42 | gargoyle | witchlight | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/86%) | x0 | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless; level-1 hero: 0/3 mash wins |
-| 43 | strawking | fields | 0/6 | timeout/timeout (hp lost 0/0%, boss left 97/100%) | timeout/timeout (hp lost 0/0%, boss left 98/99%) | timeout/timeout (hp lost 0/0%, boss left 100/100%) | x0.05 | n (0%) | mash landed 2 or fewer blows in 3/6 fights; level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
-| 44 | archmage | mage | 0/6 | died/died (hp lost 100/100%, boss left 99/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | x0 | n (0%) | mash landed 2 or fewer blows in 5/6 fights; level-1 hero: 0/3 mash wins |
-| 45 | chief | stockade | 0/6 | timeout/timeout (hp lost 0/0%, boss left 100/100%) | timeout/timeout (hp lost 0/0%, boss left 100/100%) | timeout/timeout (hp lost 0/0%, boss left 100/100%) | x0.05 | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless; level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
-| 46 | winchmaster | oreroad | 0/6 | timeout/timeout (hp lost 99/99%, boss left 100/100%) | timeout/timeout (hp lost 99/99%, boss left 100/100%) | timeout/timeout (hp lost 99/99%, boss left 100/100%) | x0.05 | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless; level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
-| 47 | king | kings | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | x0 | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless; level-1 hero: 0/3 mash wins |
-| 48 | closedhelm | waymeet | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | x0 | n (0%) | mash landed 2 or fewer blows in 4/6 fights; level-1 hero: 0/3 mash wins |
+| 1 | hedgewarden (mini) | witchlight | 5/6 | WIN/WIN (hp lost 57/34%, boss left 0/0%) | WIN/died (hp lost 87/100%, boss left 0/18%) | WIN/WIN (hp lost 28/49%, boss left 0/0%) | n/a | n (0%) |  |
+| 2 | sexton (mini) | fallingtower | 3/6 | died/WIN (hp lost 100/100%, boss left 27/0%) | died/died (hp lost 100/100%, boss left 78/59%) | WIN/WIN (hp lost 92/99%, boss left 0/0%) | n/a | n (22%) |  |
+| 3 | ploughman (mini) | fields | 2/6 | died/died (hp lost 100/100%, boss left 30/31%) | died/died (hp lost 100/100%, boss left 54/53%) | WIN/WIN (hp lost 14/14%, boss left 0/0%) | x0.4 | n (15%) | level-1 hero: 0/3 mash wins |
+| 4 | barrowrider (mini) | unburied | 2/6 | died/died (hp lost 100/100%, boss left 37/37%) | died/died (hp lost 100/100%, boss left 54/54%) | WIN/WIN (hp lost 78/78%, boss left 0/0%) | n/a | n (0%) |  |
+| 5 | mother | spore | 1/6 | WIN/died (hp lost 0/100%, boss left 0/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | x1 | n (0%) | mash landed 2 or fewer blows in 5/6 fights; level-1 hero: 0/3 mash wins |
+| 6 | lampreeve (mini) | lamplit | 0/6 | died/died (hp lost 100/100%, boss left 29/35%) | died/died (hp lost 100/100%, boss left 66/66%) | died/died (hp lost 100/100%, boss left 18/18%) | x0.25 | n (18%) | level-1 hero: 0/3 mash wins |
+| 7 | forgemaster (mini) | crown | 0/6 | died/died (hp lost 100/100%, boss left 66/66%) | died/died (hp lost 100/100%, boss left 72/72%) | died/died (hp lost 100/100%, boss left 15/15%) | n/a | n (13%) |  |
+| 8 | roc | skyroad | 0/6 | died/died (hp lost 100/100%, boss left 62/62%) | died/died (hp lost 100/100%, boss left 63/63%) | died/died (hp lost 100/100%, boss left 67/67%) | n/a | n (0%) |  |
+| 9 | spider (mini) | hanging | 0/6 | died/died (hp lost 100/100%, boss left 40/67%) | died/died (hp lost 100/100%, boss left 86/86%) | died/died (hp lost 100/100%, boss left 56/56%) | x1 | n (11%) | level-1 hero: 0/3 mash wins |
+| 10 | ram | scree | 0/6 | died/died (hp lost 100/100%, boss left 35/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 36/38%) | x0.05 | n (0%) | mash landed 2 or fewer blows in 3/6 fights; level-1 hero: 0/3 mash wins |
+| 11 | greathound (mini) | kings | 0/6 | died/died (hp lost 100/100%, boss left 69/69%) | died/died (hp lost 100/100%, boss left 61/86%) | died/died (hp lost 100/100%, boss left 65/63%) | x0.05 | n (1%) | level-1 hero: 0/3 mash wins |
+| 12 | wickerqueen | fair | 0/6 | died/died (hp lost 100/100%, boss left 66/66%) | died/died (hp lost 100/100%, boss left 88/88%) | died/died (hp lost 100/100%, boss left 56/56%) | n/a | n (24%) |  |
+| 13 | harbormaster | harbor | 0/6 | died/died (hp lost 100/100%, boss left 74/75%) | died/died (hp lost 100/100%, boss left 82/82%) | died/died (hp lost 100/100%, boss left 68/68%) | x0.05 | n (1%) | level-1 hero: 0/3 mash wins |
+| 14 | bloodknight | unburied | 0/6 | died/died (hp lost 100/100%, boss left 86/86%) | died/died (hp lost 100/100%, boss left 83/88%) | died/died (hp lost 100/100%, boss left 53/56%) | n/a | n (2%) |  |
+| 15 | lancer (mini) | waymeet | 0/6 | timeout/timeout (hp lost 19/19%, boss left 52/54%) | timeout/timeout (hp lost 33/33%, boss left 89/89%) | timeout/timeout (hp lost 32/32%, boss left 85/85%) | x0.05 | n (0%) | level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
+| 16 | reefmaw | reef | 0/6 | died/died (hp lost 100/100%, boss left 78/78%) | died/died (hp lost 100/100%, boss left 78/78%) | died/died (hp lost 100/100%, boss left 75/75%) | x0.05 | n (4%) | level-1 hero: 0/3 mash wins |
+| 17 | homunculus (mini) | mage | 0/6 | died/died (hp lost 100/100%, boss left 73/89%) | died/died (hp lost 100/100%, boss left 86/86%) | died/died (hp lost 100/100%, boss left 69/69%) | x0.05 | n (6%) | level-1 hero: 0/3 mash wins |
+| 18 | gangleader (mini) | welltown | 0/6 | died/died (hp lost 100/100%, boss left 66/66%) | died/died (hp lost 100/100%, boss left 89/89%) | died/died (hp lost 100/100%, boss left 84/86%) | n/a | n (4%) |  |
+| 19 | queen | wood | 0/6 | died/died (hp lost 100/100%, boss left 63/74%) | died/died (hp lost 100/100%, boss left 96/89%) | died/died (hp lost 100/100%, boss left 77/91%) | n/a | n (0%) |  |
+| 20 | quarter | flotilla | 0/6 | died/died (hp lost 100/100%, boss left 78/89%) | died/died (hp lost 100/100%, boss left 77/77%) | died/died (hp lost 100/100%, boss left 85/85%) | x0.05 | n (4%) | level-1 hero: 0/3 mash wins |
+| 21 | owl | hanging | 0/6 | died/died (hp lost 100/100%, boss left 76/76%) | died/died (hp lost 100/100%, boss left 96/91%) | died/died (hp lost 100/100%, boss left 79/86%) | x0.05 | n (3%) | level-1 hero: 0/3 mash wins |
+| 22 | burieddead | burial | 0/6 | died/died (hp lost 100/100%, boss left 91/92%) | died/died (hp lost 100/100%, boss left 99/99%) | died/died (hp lost 100/100%, boss left 69/69%) | x0.05 | n (13%) | level-1 hero: 0/3 mash wins |
+| 23 | bellcrab | deep | 0/6 | died/died (hp lost 100/100%, boss left 80/83%) | died/died (hp lost 100/100%, boss left 95/95%) | died/died (hp lost 100/100%, boss left 89/89%) | x0.05 | n (4%) | level-1 hero: 0/3 mash wins |
+| 24 | greenteeth | canal | 0/6 | died/died (hp lost 100/100%, boss left 84/84%) | died/died (hp lost 100/100%, boss left 97/97%) | died/died (hp lost 100/100%, boss left 86/86%) | n/a | n (0%) |  |
+| 25 | tollmaster | lamplit | 0/6 | died/died (hp lost 100/100%, boss left 83/84%) | died/died (hp lost 100/100%, boss left 97/97%) | died/died (hp lost 100/100%, boss left 88/88%) | x0.05 | n (5%) | level-1 hero: 0/3 mash wins |
+| 26 | gqueen | crown | 0/6 | died/died (hp lost 100/100%, boss left 85/100%) | died/died (hp lost 100/100%, boss left 91/91%) | died/died (hp lost 100/100%, boss left 87/87%) | n/a | n (0%) | mash landed 2 or fewer blows in 1/6 fights |
+| 27 | pyromancer | burning | 0/6 | died/died (hp lost 100/100%, boss left 93/91%) | died/died (hp lost 100/100%, boss left 88/92%) | died/died (hp lost 100/100%, boss left 96/84%) | x0.25 | n (2%) | level-1 hero: 0/3 mash wins |
+| 28 | cisternqueen | underwell | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 99/99%) | died/died (hp lost 100/100%, boss left 78/78%) | n/a | n (0%) | mash landed 2 or fewer blows in 4/6 fights |
+| 29 | kraken | causeway | 0/6 | died/died (hp lost 100/100%, boss left 82/82%) | died/died (hp lost 100/100%, boss left 98/98%) | died/died (hp lost 100/100%, boss left 98/98%) | x0 | n (0%) | mash landed 2 or fewer blows in 4/6 fights; level-1 hero: 0/3 mash wins |
+| 30 | windcaller | moor | 0/6 | died/died (hp lost 100/100%, boss left 99/93%) | died/died (hp lost 100/100%, boss left 99/77%) | died/died (hp lost 100/100%, boss left 95/95%) | n/a | n (2%) | mash landed 2 or fewer blows in 2/6 fights |
+| 31 | drownedking | keep | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 84/78%) | died/died (hp lost 100/100%, boss left 98/98%) | n/a | n (5%) | mash landed 2 or fewer blows in 2/6 fights |
+| 32 | prince | undercrown | 0/6 | died/died (hp lost 100/100%, boss left 85/90%) | died/died (hp lost 100/100%, boss left 97/97%) | died/died (hp lost 100/100%, boss left 95/95%) | x0.05 | n (11%) | level-1 hero: 0/3 mash wins |
+| 33 | bosun (mini) | harbor | 0/6 | died/died (hp lost 100/100%, boss left 87/91%) | died/died (hp lost 100/100%, boss left 97/97%) | died/died (hp lost 100/100%, boss left 95/95%) | x0.05 | n (15%) | level-1 hero: 0/3 mash wins |
+| 34 | gargoyle | witchlight | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 76/88%) | n/a | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless |
+| 35 | archmage | mage | 0/6 | timeout/timeout (hp lost 43/68%, boss left 96/97%) | died/timeout (hp lost 100/61%, boss left 95/95%) | timeout/timeout (hp lost 99/64%, boss left 90/94%) | x0 | n (0%) | level-1 hero: 0/3 mash wins; 5 timeouts (the mash bot neither won nor died in the time allowed) |
+| 36 | frog | marsh | 0/6 | died/died (hp lost 100/100%, boss left 99/77%) | died/died (hp lost 100/100%, boss left 95/99%) | died/died (hp lost 100/100%, boss left 100/99%) | n/a | n (0%) | mash landed 2 or fewer blows in 4/6 fights |
+| 37 | golem (mini) | spire | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 86/86%) | x0 | n (0%) | mash landed 2 or fewer blows in 4/6 fights; level-1 hero: 0/3 mash wins |
+| 38 | lance | storm | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 88/88%) | n/a | n (0%) | mash landed 2 or fewer blows in 4/6 fights |
+| 39 | captain | hurricane | 0/6 | died/died (hp lost 100/100%, boss left 92/93%) | died/died (hp lost 100/100%, boss left 99/99%) | died/died (hp lost 100/100%, boss left 97/97%) | x0.05 | n (6%) | level-1 hero: 0/3 mash wins |
+| 40 | gravewarden (mini) | burial | 0/6 | died/died (hp lost 100/100%, boss left 96/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 91/91%) | x1 | n (2%) | mash landed 2 or fewer blows in 3/6 fights; level-1 hero: 0/3 mash wins |
+| 41 | duneworm | caravan | 0/6 | died/died (hp lost 100/100%, boss left 97/94%) | died/died (hp lost 100/100%, boss left 98/99%) | died/died (hp lost 100/100%, boss left 97/93%) | n/a | n (0%) | mash landed 2 or fewer blows in 1/6 fights |
+| 42 | herald | longwater | 0/6 | timeout/timeout (hp lost 65/65%, boss left 100/100%) | timeout/timeout (hp lost 52/62%, boss left 99/99%) | timeout/timeout (hp lost 81/70%, boss left 93/93%) | n/a | n (0%) | mash landed 2 or fewer blows in 4/6 fights; 6 timeouts (the mash bot neither won nor died in the time allowed) |
+| 43 | gorgecrab | redgorge | 0/6 | died/died (hp lost 100/100%, boss left 98/98%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 95/95%) | x0.05 | n (17%) | level-1 hero: 0/3 mash wins |
+| 44 | grandmother | underleaf | 0/6 | died/died (hp lost 100/100%, boss left 93/99%) | died/died (hp lost 100/100%, boss left 99/99%) | died/died (hp lost 100/100%, boss left 99/99%) | x0.05 | n (0%) | level-1 hero: 0/3 mash wins |
+| 45 | undeadmage | fallingtower | 0/6 | died/died (hp lost 100/100%, boss left 99/96%) | died/died (hp lost 100/100%, boss left 100/99%) | died/died (hp lost 100/100%, boss left 96/99%) | n/a | n (7%) |  |
+| 46 | abbot | spire | 0/6 | died/died (hp lost 100/100%, boss left 99/99%) | died/died (hp lost 100/100%, boss left 99/99%) | died/died (hp lost 100/100%, boss left 97/99%) | x0.05 | n (7%) | level-1 hero: 0/3 mash wins |
+| 47 | strawking | fields | 0/6 | timeout/timeout (hp lost 0/0%, boss left 97/100%) | timeout/timeout (hp lost 0/0%, boss left 99/99%) | timeout/timeout (hp lost 0/0%, boss left 100/100%) | x0.05 | n (0%) | mash landed 2 or fewer blows in 3/6 fights; level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
+| 48 | puppeteer | theatre | 0/6 | died/died (hp lost 100/100%, boss left 97/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | x0.05 | n (3%) | mash landed 2 or fewer blows in 5/6 fights; level-1 hero: 0/3 mash wins |
+| 49 | chief | stockade | 0/6 | timeout/timeout (hp lost 0/0%, boss left 100/100%) | timeout/timeout (hp lost 0/0%, boss left 100/100%) | timeout/timeout (hp lost 0/0%, boss left 100/100%) | x0.05 | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless; level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
+| 50 | king | kings | 0/6 | timeout/timeout (hp lost 29/29%, boss left 100/100%) | timeout/timeout (hp lost 42/42%, boss left 100/100%) | timeout/timeout (hp lost 13/13%, boss left 100/100%) | x0 | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless; level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
+| 51 | winchmaster | oreroad | 0/6 | timeout/timeout (hp lost 99/99%, boss left 100/100%) | timeout/timeout (hp lost 99/99%, boss left 100/100%) | timeout/timeout (hp lost 99/99%, boss left 100/100%) | x0.05 | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless; level-1 hero: 0/3 mash wins; 6 timeouts (the mash bot neither won nor died in the time allowed) |
+| 52 | closedhelm | waymeet | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | x0 | n (0%) | mash landed 2 or fewer blows in 4/6 fights; level-1 hero: 0/3 mash wins |
+| 53 | djinn | welltown | 0/6 | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | died/died (hp lost 100/100%, boss left 100/100%) | n/a | n (0%) | UNREACHABLE: the mash bot landed 2 or fewer blows in every fight (he flies, swims, sits out of reach, is shielded, or needs a jump or a mechanic first); the hero dies or times out regardless |
 
 ## Levels (knight-first; the best mash hero shown), worst first (cleared = it neither died nor dropped under 40%)
 
 | level | hero level | best mash hero | lowest hp | hp lost (sum) | deaths | waypoints walked | lifts | cleared the level? |
 |---|---|---|---|---|---|---|---|---|
-| storm | 10 | knight | 70% | 30% | 0 | 100% | 58 | YES (a walk) |
-| keep | 18 | knight | 60% | 101% | 0 | 100% | 25 | YES (a walk) |
-| causeway | 19 | knight | 59% | 41% | 0 | 100% | 45 | YES (a walk) |
-| deep | 17 | knight | 45% | 135% | 0 | 100% | 31 | YES (a walk) |
-| theatre | 21 | knight | 39% | 80% | 0 | 100% | 48 | no |
-| longwater | 12 | knight | 28% | 115% | 0 | 100% | 44 | no |
-| spore | 3 | knight | 24% | 131% | 0 | 100% | 45 | no |
-| spire | 7 | knight | 20% | 120% | 0 | 100% | 43 | no |
-| marsh | 1 | knight | 18% | 179% | 0 | 100% | 37 | no |
-| wood | 1 | knight | 0% | 161% | 1 | 100% | 47 | no |
-| stockade | 2 | knight | 0% | 243% | 2 | 100% | 43 | no |
-| kings | 4 | knight | 0% | 134% | 1 | 100% | 56 | no |
-| scree | 5 | knight | 0% | 296% | 2 | 100% | 47 | no |
-| hanging | 6 | knight | 0% | 145% | 1 | 100% | 42 | no |
-| moor | 8 | knight | 0% | 340% | 2 | 100% | 60 | no |
-| crown | 11 | knight | 0% | 653% | 6 | 100% | 104 | no |
-| reef | 13 | knight | 0% | 133% | 1 | 100% | 34 | no |
-| flotilla | 14 | knight | 0% | 192% | 1 | 100% | 28 | no |
-| hurricane | 15 | knight | 0% | 270% | 2 | 100% | 54 | no |
-| lamplit | 16 | knight | 0% | 162% | 1 | 100% | 58 | no |
-| underleaf | 5 | knight | 0% | 197% | 1 | 100% | 41 | no |
-| harbor | 20 | knight | 0% | 325% | 3 | 100% | 85 | no |
-| waymeet | 20 | knight | 0% | 161% | 1 | 100% | 63 | no |
-| undercrown | 12 | knight | 0% | 345% | 3 | 100% | 40 | no |
-| fields | 23 | knight | 0% | 246% | 2 | 100% | 65 | no |
-| burial | 24 | knight | 0% | 153% | 1 | 100% | 63 | no |
-| mage | 26 | knight | 0% | 334% | 2 | 100% | 59 | no |
-| fallingtower | 27 | knight | 0% | 212% | 2 | 100% | 57 | no |
-| burning | 3 | knight | 0% | 188% | 1 | 100% | 41 | no |
-| witchlight | 25 | knight | 0% | 143% | 1 | 100% | 52 | no |
-| oreroad | 9 | knight | 0% | 102% | 1 | 100% | 27 | no |
-| unburied | 26 | knight | 0% | 158% | 1 | 100% | 41 | no |
-| caravan | 28 | knight | 0% | 203% | 1 | 100% | 50 | no |
-| fair | 22 | knight | 0% | 154% | 1 | 100% | 61 | no |
-| canal | 21 | knight | 0% | 247% | 2 | 100% | 40 | no |
+| storm | 10 | warden | 63% | 59% | 0 | 100% | 58 | no |
+| longwater | 12 | pyro | 42% | 151% | 0 | 100% | 42 | no |
+| underwell | 31 | warden | 35% | 124% | 0 | 100% | 41 | no |
+| causeway | 19 | pyro | 33% | 88% | 0 | 100% | 46 | no |
+| keep | 18 | warden | 30% | 167% | 0 | 100% | 60 | no |
+| redgorge | 31 | warden | 29% | 71% | 0 | 100% | 27 | no |
+| underleaf | 5 | pyro | 28% | 237% | 0 | 100% | 38 | no |
+| spore | 3 | warden | 25% | 145% | 0 | 100% | 27 | no |
+| witchlight | 26 | warden | 20% | 158% | 0 | 100% | 56 | no |
+| burning | 3 | pyro | 13% | 234% | 0 | 100% | 34 | no |
+| skyroad | 9 | knight | 7% | 173% | 0 | 100% | 22 | no |
+| deep | 17 | warden | 3% | 143% | 0 | 100% | 53 | no |
+| unburied | 27 | pyro | 3% | 170% | 0 | 100% | 42 | no |
+| fair | 23 | pyro | 3% | 220% | 0 | 100% | 37 | no |
+| theatre | 22 | pyro | 2% | 114% | 0 | 100% | 32 | no |
+| wood | 1 | knight | 0% | 374% | 2 | 100% | 46 | no |
+| marsh | 1 | knight | 0% | 3205% | 32 | 100% | 35 | no |
+| stockade | 2 | knight | 0% | 239% | 2 | 100% | 36 | no |
+| kings | 4 | knight | 0% | 260% | 2 | 100% | 45 | no |
+| scree | 5 | knight | 0% | 215% | 1 | 100% | 44 | no |
+| hanging | 6 | knight | 0% | 219% | 2 | 100% | 43 | no |
+| spire | 7 | knight | 0% | 241% | 1 | 100% | 49 | no |
+| moor | 8 | knight | 0% | 2524% | 24 | 100% | 61 | no |
+| crown | 11 | knight | 0% | 846% | 7 | 100% | 103 | no |
+| reef | 13 | knight | 0% | 240% | 2 | 100% | 30 | no |
+| flotilla | 14 | knight | 0% | 296% | 2 | 100% | 25 | no |
+| hurricane | 15 | knight | 0% | 280% | 1 | 100% | 39 | no |
+| lamplit | 16 | knight | 0% | 188% | 1 | 100% | 54 | no |
+| harbor | 20 | knight | 0% | 272% | 1 | 100% | 78 | no |
+| waymeet | 20 | knight | 0% | 169% | 1 | 100% | 63 | no |
+| undercrown | 12 | knight | 0% | 422% | 4 | 100% | 40 | no |
+| fields | 24 | knight | 0% | 140% | 1 | 100% | 63 | no |
+| burial | 25 | knight | 0% | 300% | 1 | 100% | 62 | no |
+| mage | 27 | knight | 0% | 344% | 2 | 100% | 53 | no |
+| fallingtower | 28 | knight | 0% | 477% | 4 | 100% | 74 | no |
+| oreroad | 9 | knight | 0% | 275% | 2 | 100% | 24 | no |
+| caravan | 29 | knight | 0% | 178% | 1 | 100% | 49 | no |
+| canal | 21 | knight | 0% | 482% | 5 | 100% | 33 | no |
+| welltown | 30 | knight | 0% | 214% | 1 | 100% | 58 | no |
 
 Caveats: LEVEL mode lifts the hero past every stretch it cannot cross (gaps, walls, machines), so its hp numbers are a floor on the danger a real mash player meets, not a ceiling. "hp lost (sum)" counts every point lost, so healing in the level lets it pass 100%. The mash bot cannot jump, so a boss that flies or sits on a ledge may simply be out of its reach (the notes say so); that is a real answer to "does mashing win" but not a measure of how hard the boss is to a thinking player. The chip number is the boss's own damage gate at the moment of the probe, and some bosses change it by phase. The cache is stamped with the level's data, so a boss-module change needs a re-run.

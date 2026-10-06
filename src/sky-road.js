@@ -155,7 +155,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   ent('roc', 415, FL - 1);
   const nest = [404, 426];                                                      /* the woven boards: her dive sticks in them */
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'roc', music: 'rocphoenix', tint: '#9ab8e0', tintA: 0.06,
-    start: [A0 + 3, FL - 1], nest: [nest[0] * TS, (nest[1] + 1) * TS], eyrie: true };
+    start: [A0 + 5, FL - 1], nest: [nest[0] * TS, (nest[1] + 1) * TS], eyrie: true };
 
   // ================= the road down =================
   rock(447, 452, FL + 3); rock(453, 459, FL + 6); plank(449, 456, FL); ent('gate', 456, FL + 5);
