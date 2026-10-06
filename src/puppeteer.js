@@ -34,7 +34,8 @@ export const PUP = {
   hp: 720, w: 16, h: 40, markH: 50,
   ward: 0.05, openMul: 0.8,           // (PUPPETEER2: "full damage" on the gallery - the visit cap is what holds a visit to a third)
   staggerT: 3.0,                       // ON THE GALLERY: he is staggered this long (boss-openings asserts >= 3 s)
-  visitCap: 1 / 3,                     // A VISIT takes at most this share of his health (then the knockback comes at once)
+  visitCap: 1 / 4,                     // A VISIT takes at most this share of his health (then the knockback comes at once). (claude/theatre4: 1/3 -> 1/4 - at the CAMPAIGN level, L22 with the HARNESSCARD card spread, the human bot won 20/21 in 57-130 s; four visits make the fight its 90-150 s)
+  dmgK: 1.35,                          // (claude/theatre4) every blow of his, his puppets' and his scenes' lands x this (the same tells, the same answers): the L22 campaign hero has 196-208 health
   slackT: 12.0,                        // BOTH PUPPETS DOWN: the lever is free and his bar slack this long (x cycleK) - the time to ride up
   slumpX: 72, slumpSpeed: 150,          // SLACK: he stumbles along the gallery to this far past its batten end (so a visit is a fight, not a walk)
   knockTell: 1.0, knockT: 0.3, knockVx: 150, knockDmg: 12,   // THE KNOCKBACK: told (his bar whirls, the gallery glows red), then every hero on the gallery is thrown down

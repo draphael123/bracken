@@ -38,7 +38,6 @@ export const CURVE_REPORT_ONLY = {
   reef: 'act 3: 97% lost, 0 deaths - under the act III floor (100%, 1 death)',
   keep: 'act 3: 256% lost, 0 deaths - no deaths (act III wants >= 1)',
   causeway: 'act 3: 71% lost, 0 deaths - EASY for act III',
-  theatre: 'act 4: 61% lost, 0 deaths - EASY for act IV (floor 120%, 1 death)',
   fair: 'act 4: 198% lost, 0 deaths - no deaths (act IV wants >= 1)',
   redgorge: 'act 5: 120% lost, 3 deaths - under the act V health floor (150%)',
 };

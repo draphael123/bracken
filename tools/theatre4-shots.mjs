@@ -13,13 +13,13 @@ try {
     const snap = name => { const c = document.createElement('canvas'); c.width = BK.view.VW * 2; c.height = BK.view.VH * 2; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); res.push([name, c.toDataURL('image/png')]); };
     const run = n => { for (let i = 0; i < n; i++) { BK.sim(1); if (i % 4 === 0) BK.step(1); } BK.step(1); };
     // THE GREEN ROOM: the villain in its lamp, then the paint frame and gallery, then the beginners
-    fresh(); BK.tp(X(304), 33); P.face = 1; run(40); snap('1-green-room-villain');
+    fresh(); BK.tp(X(298), 33); P.face = 1; run(90); BK.tp(X(304), 33); run(30); snap('1-green-room-villain');
     run(30); snap('2-green-room-lunge');
-    fresh(); BK.tp(X(323), 32); P.face = 1; run(20); snap('3-paint-frame-floor');
+    fresh(); BK.tp(X(323), 32); P.face = 1; run(120); snap('3-paint-frame-floor');
     fresh(); BK.tp(X(331), 21); P.face = 1; run(60); snap('4-paint-gallery');
-    fresh(); BK.tp(X(352), 33); P.face = 1; run(40); snap('5-beginners');
+    fresh(); BK.tp(X(352), 33); P.face = 1; run(120); snap('5-beginners');
     // THE MASKS up close: the stage door tragedy looked at
-    fresh(); BK.tp(X(16), 33); P.face = 1; run(12); snap('6-mask-tragedy');
+    fresh(); BK.tp(X(10), 33); P.face = -1; run(120); P.face = 1; run(8); snap('6-mask-tragedy');
     // THE PUPPETS: hittable (gold, slack) and not (steel, taut); the night
     fresh(); const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); run(160);
     const S = BK.puppeteerHands().show(); S.overCd = 1e9; const bru = S.puppets.find(p => p.t === 'marionette'), har = S.puppets.find(p => p.t === 'harlequin');

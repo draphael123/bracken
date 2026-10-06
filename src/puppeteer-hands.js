@@ -68,11 +68,11 @@ export function makePuppeteerHands(ctx) {
       number: (x, y, line, col) => ctx.number(x, y, line, col),
       sound: k => { const fn = SOUND[k]; if (fn) fn(); },
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.P; if (!ctx.upright(pp) || P.dead) return;
-        if (ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, o.duck ? ctx.duckBox(P) : ctx.box(P))) { const h0 = P.hp; hurt(name, () => ctx.damagePlayer(o.from ?? e.x, d, { who: e, name, unblockable: !!o.unblockable, up: !!o.up }));
+        if (ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, o.duck ? ctx.duckBox(P) : ctx.box(P))) { const h0 = P.hp; hurt(name, () => ctx.damagePlayer(o.from ?? e.x, Math.round(d * PUP.dmgK), { who: e, name, unblockable: !!o.unblockable, up: !!o.up }));
           if (o.grab && P.hp < h0 && !P.dead) P.snare = Math.max(P.snare || 0, 0.6); } }); },
       band: (kind, fy, x0, x1, d, name, key, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.P; if (!ctx.upright(pp) || P.dead || pp.pupBand === key) return;
         if (P.x < x0 || P.x > x1 || Math.abs(P.y - fy) > 30) return; const hb = ctx.duckBox(P);
-        if (PM.bandCatches(kind, fy, { t: hb.t, b: hb.b })) { pp.pupBand = key; const h0 = P.hp; hurt(name, () => ctx.damagePlayer(P.x - (e.face || 1) * 10, d, { who: e, name, unblockable: true }));
+        if (PM.bandCatches(kind, fy, { t: hb.t, b: hb.b })) { pp.pupBand = key; const h0 = P.hp; hurt(name, () => ctx.damagePlayer(P.x - (e.face || 1) * 10, Math.round(d * PUP.dmgK), { who: e, name, unblockable: true }));
           if (o.snare && P.hp < h0 && !P.dead) P.snare = Math.max(P.snare || 0, o.snare); } }); },   /* (THE SNARE LINE: caught, the line holds you a moment) */
       tile: (x, y, kind) => tile(x, y, kind),
       /* THE SLAM BREAKS THE BOARDS (phase 2): rows R and R+1 of its columns fall in (the pit's floor is R+2) - and mend */

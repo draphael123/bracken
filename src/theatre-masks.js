@@ -17,10 +17,14 @@ export const MASK = {
   nameT: 1.1,          // its name over it
   turnT: 0.5,          // a TRAGEDY is this slow to turn and come on when your back turns (so you can go round it)
   cart: { dist: 56, t: 0.38 },                                        // COMEDY's cartwheel: away from the blow, this far, this fast (out of reach while it flips)
-  lunge: { range: 112, tell: 0.7, speed: 280, dist: 84, dmg: 16, recover: 1.0, h: 22 },   // VILLAIN's told lunge
+  lunge: { range: 112, tell: 0.7, speed: 280, dist: 84, dmg: 20, recover: 1.0, h: 22 },   // VILLAIN's told lunge
   col: { tragedy: ['#bfd8ff', '#3a4a6a'], comedy: ['#ffd36b', '#6a4a10'], villain: ['#e0302c', '#1a0608'] },
   name: { tragedy: 'TRAGEDY', comedy: 'COMEDY', villain: 'VILLAIN' },
 };
+/* THE THEATRE'S OWN PLAYER (claude/theatre4, Daniel 10-05: the level was too easy): src/mummer.js's MUMMER with a harder strike and a quicker creep - deadly through
+   what it does, never more health (as the fair's FAIR_MUMMER, src/fair-keys.js) */
+import { MUMMER } from './mummer.js';
+export const TH_MUMMER = { ...MUMMER, dmg: 18, creep: 46 };
 export const newMask = (first) => ({ i: Math.max(0, MASKS.indexOf(first || 'tragedy')) - 1, mask: null, seen: false, unseenT: 99, swapT: 0, nameT: 0, n: 0,
   cartUsed: false, lungeUsed: false, cart: null, lunge: null, sayW: '', sayT: 0 });
 /* THE LOOK: called every frame with whether any hero (or a lamp) sees it now. Returns 'swap' when it snaps on a new mask */

@@ -199,7 +199,8 @@ function buildBackstage({ painter, T, TS }) {
   lamp(161, BX - 1, [[167, ST], [177, ST], [188, ST], [198, ST]], { hang: true, cue: 1.9, r: 36 });   /* the show's lamps, on their cues */
   lamp(216, BX - 1, [[206, ST], [196, ST], [186, ST], [176, ST]], { hang: true, cue: 1.6, r: 36 });
   lamp(184, FL, [[172, ST], [184, ST], [196, ST]], { hang: true, cue: 2.3, r: 40, i: 1 });
-  foe('mummer', 206, 33, { squad: 'the cast', cast: true, mask: 'comedy' }); foe('mummer', 191, 33, { squad: 'the cast', cast: true, mask: 'villain' }); foe('mummer', 173, 33, { squad: 'the cast', cast: true, mask: 'tragedy' });   /* THE CAST */
+  foe('mummer', 206, 33, { squad: 'the cast', cast: true, mask: 'comedy' }); foe('mummer', 191, 33, { squad: 'the cast', cast: true, mask: 'villain' }); foe('mummer', 173, 33, { squad: 'the cast', cast: true, mask: 'tragedy' });
+  foe('swornsword', 183, 33, { squad: 'the cast' });   /* (claude/theatre4) THE STAGE FIGHT: a hired sword in the scene - the light does not hold him, so you fight him on the lit boards with the cast frozen round you, the audience throwing and the flymen at your back (COMBAT PART 2's squad roles: he presses, the cast flank, the boxes throw) */   /* THE CAST */
   sign(218, 33, 'BEGINNERS, PLEASE.');
   /* THE SCENE CHANGE: a tall flat at stage left that runs on its cue and nothing else (no winch: the show changes its scenes whether you are ready or not).
      It stands across the way to the trap for three and a half seconds in seven, and its track glows and the prompt bell rings before it moves */
