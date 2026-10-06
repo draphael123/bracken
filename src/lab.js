@@ -890,14 +890,14 @@ async function runbossLab(BK, opts) {
       if(boss.t==='hedgewarden'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
-        const m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,stump=m==='felled'||m==='stump';
+        const m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,stump=m==='felled'||m==='stump'||m==='stuck',opn=boss.open>0;   /* (claude/hedgewarden4: he is on the chip - the bot swings only into his opening, and meets his cut/rush/lash on the beat) */
         const add=BK.enemies().filter(q=>q.alive&&q.fromHedge&&Math.abs(q.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
         const bz=((L.witch&&L.witch.braziers)||[]).map(([x])=>x*16+8).sort((a,b)=>Math.abs(a-boss.x)-Math.abs(b-boss.x))[0];
         const rest=P.st<14||(P.labRest&&P.st<44);P.labRest=rest;
         let gx=stump?boss.x-side*Math.max(12,LAB_REACH[h]*.55):rest?boss.x-side*110:bz!==undefined?bz+(bz>boss.x?1:-1)*Math.max(20,LAB_REACH[h]*.6):boss.x-side*Math.max(20,LAB_REACH[h]*.7);
         if(!stump&&!rest&&Math.abs(dx)<LAB_REACH[h]+boss.w/2)gx=P.x;   /* in reach: stand and cut */
         if(m==='thornTell'||m==='thorn')gx=boss.x-side*80;
-        if(m==='cutTell'&&!SHIELDED(h))gx=boss.x-side*80;
+        if(m==='cutTell'&&!SHIELDED(h)&&h!=='warden')gx=boss.x-side*80;   /* (the warden deflects his cut on the beat instead) */
         if(add&&Math.abs(add.x-P.x)<70&&!stump)gx=add.x-(Math.sign(add.x-P.x)||1)*LAB_REACH[h]*.6;
         gx=Math.max(A.x0+18,Math.min(A.x1-18,gx));
         if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
@@ -905,9 +905,11 @@ async function runbossLab(BK, opts) {
         if(m==='lashTell'&&!SHIELDED(h)&&boss.modeT<0.12&&Math.abs(dx)<170&&P.ground){BK.press('jump');P.labJump=18;}   /* THE THORN LASH: over it */
         {const rt=(L.hedgeRoots||[]).find(r=>!r.dead&&Math.abs(r.y-P.y)<10&&(P.x-r.x)*r.dir>0&&(P.x-r.x)*r.dir<30);if(rt&&P.ground){BK.press('jump');P.labJump=18;}}   /* A ROOT coming: over it */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if((m==='cutTell'||m==='cut'||m==='rushTell'||m==='rush'||m==='lashTell'||m==='lash')&&SHIELDED(h)&&Math.abs(dx)<170&&!(L.hedgeRoots||[]).some(r=>!r.dead&&Math.abs(r.x-P.x)<40)){k.block=true;k.left=k.right=false;P.face=side;}
+        const beat=(m==='cutTell'||m==='lashTell'||m==='rushTell')?boss.modeT<(m==='rushTell'?0.05:0.13):m==='cut'||m==='lash'||(m==='rush'&&Math.abs(dx)<46);
+        const wdef=h==='warden'&&(m==='cutTell'||m==='cut')&&Math.abs(dx)<60;
+        if((beat&&SHIELDED(h)||wdef)&&Math.abs(dx)<170&&!(L.hedgeRoots||[]).some(r=>!r.dead&&Math.abs(r.x-P.x)<40)){k.block=h==='warden'?DEFLECT_TAP(f):true;k.left=k.right=false;P.face=side;}
         else if(add&&Math.abs(add.x-P.x)<LAB_REACH[h]+add.w/2+2&&Math.abs(add.y-P.y)<24&&P.atk<0&&!stump){P.face=Math.sign(add.x-P.x)||1;BK.press('atk');swings++;}
-        else if(!rest&&m!=='thornTell'&&m!=='thorn'&&!(m==='cutTell'&&!SHIELDED(h))&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<40&&P.atk<0){P.face=side;BK.press('atk');swings++;}   /* (no shield: it steps out of the cut, it does not trade with it) */
+        else if(!rest&&opn&&m!=='thornTell'&&m!=='thorn'&&!(m==='cutTell'&&!SHIELDED(h))&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<40&&P.atk<0){P.face=side;BK.press('atk');swings++;}   /* (no shield: it steps out of the cut, it does not trade with it) */
         const was=P.hp,m0=boss.mode,rh=(L.hedgeRoots&&L.hedgeRoots.hits)||0;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(((L.hedgeRoots&&L.hedgeRoots.hits)||0)>rh?'roots':m0,Math.max(0,was-P.hp));if(P.dead)falls++;   /* (a root's bite is booked to THE ROOTS, whatever he is doing when it lands) */
         if(f%600===599)await yieldNow();continue;
       }
