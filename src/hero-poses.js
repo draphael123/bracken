@@ -18,6 +18,15 @@ export const POSE_BEATS = {
   plant: [0.1, 0.2],           /* SET THE SPEARS: down on one knee, the spear raised in both hands, driven into the turf */
   hurl: [0.1, 0.22],           /* RAIN OF SPEARS: both arms back and down, heaving up, and the spear gone at the sky */
   stretch: [0.12, 0.26],       /* FULL STRETCH: the hands slide back down the shaft to the butt, and she settles long on it */
+  /* THE LATE ACTIVES' OWN POSES (claude/heroposes): the eight casts that were drawn in the nearest older pose */
+  flash: [0.1, 0.18],          /* FLASHOVER: the palm cupped round a spark, both sleeves snapped out ahead with the big flare, and the recoil */
+  storm: [0.12, 0.3],          /* FIRESTORM: the staff swung up flat overhead, held crosswise with a flare on each end, and brought down to the turf */
+  dawn: [0.1, 0.24],           /* DAWNBURST: the maul brought in to his chest, thrown up high and forward with the rays going off level, and the glow dying */
+  wrath: [0.1, 0.24],          /* HOLY WRATH: the maul cocked back over the shoulder, brought round level, and held out with the light up off both shoulders */
+  keg: [0.1, 0.22],            /* POWDER KEG: the lit cask held low on his heels, the underhand lob, and the follow-through */
+  seas: [0.1, 0.24],           /* HEAVY SEAS: the cutlass taken back to brace, swept low with the sea standing up off the point, the wave rolling on */
+  bone: [0.12, 0.3],           /* BONE ARMOR: both arms crossed on the flat of the blade, plates of bone closing over him, the last plate seated */
+  reap: [0.1, 0.22],           /* SOUL REAP: the blade drawn back, the great scything cut with a green crescent, the off hand drawing the soul in */
   /* THE PALADIN (lane P, 2026-09-24) */
   charge: [0.08, 0.22],        /* HOLY CHARGE: the maul levelled like a ram, the full stretch behind the lit head, the pull-up */
   halo: [0.1, 0.22],           /* DIVINE SHIELD: the maul lifted to his chest, raised overhead across both hands, and the light closing round him */
