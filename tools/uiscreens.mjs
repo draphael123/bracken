@@ -71,14 +71,14 @@ try {
   /* ---- 4. THE MAP CARD ---- */
   const mc = await pg.evalp(`(async()=>{ const {LEVELS}=await import('/src/level.js'); BK.manualSimulation=true; BK.setHero('knight'); BK.reset({fresh:true});
     const P=BKT.PROG; for(const l of LEVELS.slice(0,8)) P[l.id]={cleared:true,medal:2,silver:3,best:151,gold:12,total:20};
-    BK.mapLook('welltown'); BK.state='map'; BK.step(150);
-    const s=new Set(); for(let k=0;k<12;k++){ window.__textRec=[]; BK.step(30); for(const t of (window.__textRec||[])) if(t.kind==='text') s.add(t.s); window.__textRec=null; }
+    BK.mapLook('fair'); BK.state='map'; for(let i=0;i<150;i++)BK.step(1);
+    const s=new Set(); for(let k=0;k<12;k++){ for(let j=0;j<29;j++)BK.step(1); window.__textRec=[]; BK.step(1); for(const t of (window.__textRec||[])) if(t.kind==='text') s.add(t.s); window.__textRec=null; }
     return [...s]; })()`);
   assert.ok(mc.some(s => /^RECOMMENDED LV \d+$/.test(s)), 'the recommended level: ' + mc.join(' / '));
   assert.ok(mc.some(s => /^NOT WALKED$|^BEST /.test(s)), 'best (or not walked)');
   assert.ok(mc.filter(s => /^\d+:\d\d$/.test(s)).length >= 3, 'the three medal times: ' + mc.join(' / '));
   assert.ok(mc.some(s => /^QUEST (OPEN|DONE)$/.test(s)), 'the quest, said in words, not "OPEN"');
-  assert.ok(mc.some(s => /the wells are the only/.test(s)) && mc.some(s => /blue in it/.test(s)), 'a long blurb is paged, both halves reach the screen over time: ' + mc.join(' / '));
+  assert.ok(mc.some(s => /abandoned/.test(s)) && mc.some(s => /goes down$/.test(s)), 'a long blurb is paged, both halves reach the screen over time: ' + mc.join(' / '));
   console.log('ok  map card       recommended level, best, three medal times, quest in words, a paged blurb');
   assert.deepEqual(pg.errors, [], 'no page errors'); console.log('ok  console        no page errors');
 } finally { await pg.close(); }
