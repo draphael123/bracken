@@ -16,6 +16,71 @@ export function withWeapon(pal, fn) { const was = WP; WP = pal && pal.s && pal.S
 const hexMix = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
 const WT = (def, t) => WP ? hexMix(WP.S, WP.s, t) : def;   /* a weapon tone: t 0 = the skin's dark, 1 = its light (STEEL: the weapon's own colour) */
 const WL = def => WT(def, 1);
+/* VISUAL GEAR TIERS (claude/geartiers, Daniel 2026-10-04; the table and the level gate are src/gear-tiers.js). What a hero wears as he levels, drawn through
+   the bake pipeline on EVERY pose of EVERY hero: tier 1 a CAPE, tier 2 a CRESTED HELM and gold trim, tier 3 a faint AURA, tier 4 the FULL SET (pauldrons,
+   gorget, emblem, buckle, a longer gold-edged cape, a fuller aura). The tier is ambient, like a weapon skin's palette: heroSet() wraps the bake in
+   withGear(tier, ...). It is drawn on the BODY ONLY, in the hero's own colours plus one shared gold, and a weapon skin never reaches it (the weapon-drawing
+   code below is the only thing that reads WP) - tools/gear-tiers.mjs holds both halves. Tier 0 draws nothing at all, so a bake outside withGear is the old hero. */
+let GEAR = 0;
+export function withGear(tier, fn) { const was = GEAR; GEAR = tier | 0; try { return fn(); } finally { GEAR = was; } }
+const GOLD = { d: '#9a6a1c', m: '#e0b040', l: '#ffe58a' };
+/* the top of a head grid: its first row at least three pixels across, and the middle of that run (where a crest stands) */
+function headTop(rows) {
+  for (let y = 0; y < rows.length; y++) { let best = 0, at = 0, run = 0;
+    for (let x = 0; x <= rows[y].length; x++) { if (x < rows[y].length && rows[y][x] !== '.') run++; else { if (run > best) { best = run; at = x - run; } run = 0; } }
+    if (best >= 3) return { y, cx: Math.floor(at + (best - 1) / 2) }; }
+  return { y: 0, cx: 4 };
+}
+const edgeCols = row => { const l = row.search(/[^.]/), r = row.length - 1 - [...row].reverse().findIndex(ch => ch !== '.'); return [l, r]; };
+/* HOW A CAPE HANGS in a pose: its length and how far it streams back, from the legs the pose stands on */
+function capeHang(legs, plume) {
+  const run = /^(run|push|wide|skid)/.test(legs), air = /^(jump|fall)/.test(legs), low = /^(crouch|kneel|slide|tuck)/.test(legs);
+  return { len: low ? 5 : air ? 8 : 9, stream: run ? 2 : air || legs === 'land' ? 1 : 0, flick: plume | 0 };
+}
+/* THE CAPE: drawn BEFORE the body, so only the strip behind his back shows. rows 6.. of the body, widening and lagging as he moves; a gold hem (and, in the
+   full set, a gold edge down its back). o = the body's origin (x, y), the legs' key and the breath's plume. */
+function gearCape(g, ox, oy, legs, plume, rich) {
+  const { len, stream, flick } = capeHang(legs, plume), main = hexMix(KP.B, KP.b, 0.45), dark = hexMix(KP.B, '#000000', 0.25), fold = hexMix(KP.b, '#ffffff', 0.12);
+  for (let r = 0; r < len; r++) {
+    const lx = ox - 1 - Math.floor(r * 0.22) - stream * Math.floor((r + 1) / 3) - (r >= len - 2 ? flick & 1 : 0);
+    for (let x = lx; x <= ox + 2; x++) px(g, x, oy + 6 + r, r === len - 1 ? ((x + r) & 1 ? GOLD.d : GOLD.m) : x === lx ? (rich && r % 2 === 0 ? GOLD.m : dark) : x === lx + 2 && r > 1 ? fold : main);
+  }
+}
+/* THE BRIGHT PIECES, drawn over the body before the arms and the weapon: the clasp that holds the cape (1), the crest and the shoulder rims (2), the full
+   set (4). head = headTop of this pose's grid; hy lifts the helm (and the crest with it), sho lifts the shoulders. */
+function gearFront(g, ox, oy, head, hy, sho, body) {
+  const t = GEAR, [l6, r6] = edgeCols(body[6]), [l10, r10] = edgeCols(body[10]), mid = Math.floor((l10 + r10) / 2);
+  if (t >= 1) px(g, ox + l6 + 1, oy + 6 - sho, GOLD.m);                                      /* the clasp the cape hangs from */
+  if (t >= 2) {
+    const cx = ox + head.cx, cy = oy + hy + head.y;                                         /* THE CREST: a gold fin standing up off the crown */
+    px(g, cx, cy - 1, GOLD.m); px(g, cx + 1, cy - 1, GOLD.d); px(g, cx, cy - 2, GOLD.l);
+    if (t >= 4) { px(g, cx - 1, cy - 1, GOLD.d); px(g, cx + 1, cy - 2, GOLD.m); px(g, cx, cy - 3, GOLD.l); px(g, cx - 1, cy - 2, GOLD.d); }
+    px(g, ox + l6, oy + 6 - sho, GOLD.m); px(g, ox + r6, oy + 6 - sho, GOLD.m);             /* the shoulder rims */
+    px(g, ox + mid, oy + 10, GOLD.l); px(g, ox + mid + 1, oy + 10, GOLD.m);                  /* the buckle */
+  }
+  if (t >= 4) {
+    for (const [a, b] of [[l6, 1], [r6, -1]]) { px(g, ox + a, oy + 6 - sho, GOLD.l); px(g, ox + a + b, oy + 6 - sho, GOLD.m); px(g, ox + a, oy + 7 - sho, GOLD.m); px(g, ox + a + b, oy + 7 - sho, GOLD.d); }   /* the pauldrons */
+    px(g, ox + mid, oy + 8, GOLD.m); px(g, ox + mid + 1, oy + 8, GOLD.l); px(g, ox + mid, oy + 9, GOLD.d); px(g, ox + mid + 1, oy + 9, GOLD.m);   /* the breast emblem */
+    const [a5, b5] = edgeCols(body[5]); px(g, ox + a5 + 1, oy + 5 + hy, GOLD.d); px(g, ox + b5 - 1, oy + 5 + hy, GOLD.d);   /* the gorget's two studs */
+  }
+}
+/* THE AURA (tier 3, fuller at 4): a faint warm glow two and three pixels off the BODY'S silhouette (never the weapon: the mask is taken before the weapon
+   is drawn) in alpha pixels, and a few motes that lift with the breath. Drawn after the outline, onto empty pixels only. */
+function gearAura(c, mask, seed) {
+  if (GEAR < 3 || !mask) return;
+  const w = c.width, h = c.height, g = c.getContext('2d'), now = g.getImageData(0, 0, w, h).data, rich = GEAR >= 4, body = [];
+  for (let i = 0; i < w * h; i++) if (mask.data[i * 4 + 3] > 0) body.push(i);
+  const near = new Uint8Array(w * h).fill(9);
+  for (const i of body) { const x = i % w, y = (i / w) | 0;
+    for (let v = -3; v <= 3; v++) for (let u = -3 + Math.abs(v); u <= 3 - Math.abs(v); u++) { const X = x + u, Y = y + v; if (X < 0 || Y < 0 || X >= w || Y >= h) continue; const d = Math.abs(u) + Math.abs(v), j = Y * w + X; if (d < near[j]) near[j] = d; } }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  for (let j = 0; j < w * h; j++) { if (now[j * 4 + 3] !== 0 || near[j] < 2 || near[j] > 3) continue;
+    g.fillStyle = near[j] === 2 ? 'rgba(255,233,160,' + (rich ? 0.42 : 0.28) + ')' : 'rgba(255,233,160,' + (rich ? 0.2 : 0.12) + ')'; g.fillRect(j % w, (j / w) | 0, 1, 1); }
+  let x0 = w, x1 = 0, y0 = h; for (const i of body) { const x = i % w, y = (i / w) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; }
+  const motes = rich ? 4 : 2;
+  for (let k = 0; k < motes; k++) { const mx = x0 - 2 + ((k * 7 + seed * 3) % Math.max(4, x1 - x0 + 5)), my = y0 + 2 + ((k * 11 + seed * 5) % 17);
+    if (mx >= 0 && my >= 0 && mx < w && my < h && now[(my * w + mx) * 4 + 3] === 0) { g.fillStyle = k & 1 ? 'rgba(255,246,208,0.85)' : 'rgba(255,229,138,0.6)'; g.fillRect(mx, my, 1, 1); } }
+}
 const BODY = [ // 10 wide, rows 0..10 (helmet + torso + belt)
   '..rSSSS...',
   '.rSssssS..',
@@ -80,6 +145,7 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
 let SPEARLESS = false;   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
 function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null }) {
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
+  if (GEAR >= 1) gearCape(g, BX + dx, BY + dy, legs, plume, GEAR >= 4);   /* (tier 1+: behind everything, the body covers all but the strip at his back) */
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
   if (kite && kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* slung on his back (the ladder): drawn first, so the body covers all but its rim */
@@ -91,9 +157,11 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     if (hy < 0) draw([body[5]], BX + dx, BY + dy + 5);   /* a lifted helm stretches the neck rather than leaving a gap under it */
     draw(body.slice(0, 6), BX + dx, BY + dy + hy); }
   draw(LEGS[legs], BX + dx, BY + 11 + legsDy);
+  if (GEAR) gearFront(g, BX + dx, BY + dy, headTop(body.slice(0, 6)), hy, sho, body);
   if (kite && !kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* on the off arm across his front: under the sword arm, over the tabard */
   if (arm2) line(g, arm2[0] + dx, arm2[1] + dy, arm2[2] + dx, arm2[3] + dy, KP.S, 2);   /* THE OFF ARM, drawn only where an ability puts it to work (a throw, a cry): over the kite, under the sword arm */
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
+  const gearMask = GEAR >= 3 ? g.getImageData(0, 0, c.width, c.height) : null;   /* the hero so far - no weapon yet: the aura follows HIM */
   if (sword) {
     const [x0, y0, x1, y1] = sword.map((v, i) => v + (i & 1 ? dy : dx));
     line(g, x0, y0, x1, y1, WL(KP.s), 2); if (WP) line(g, x0, y0 + 1, x1, y1 + 1, WP.S, 1);   /* the blade (and, in a weapon skin, its dark edge) */
@@ -240,6 +308,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   }
   if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : k === 'n' ? WL(KP.s) : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
   outline(c, OUT);
+  gearAura(c, gearMask, (plume | 0) * 2 + (dy | 0) + (dx | 0) + 8);
   { const lr = LEGS[legs] || LEGS.stand; c.feet = top + BY + 11 + legsDy + lr.reduce((n, r, i) => /[^.]/.test(r) ? i : n, 0); }   /* THE ROW HIS BOOTS STAND ON, kept for tools/crouch-feet.mjs: a crouch drawn on the standing legs cut short floats */
   return c;
 }
@@ -1452,7 +1521,8 @@ function pyroFrame(o = {}) {
   const [c, g] = canvas(W + wide, H + headroom); g.translate(0, headroom);
   const put = (x, y, k) => { if (KP[k]) px(g, Math.round(x), Math.round(y), KP[k]); };
   // the staff goes behind her when she carries it, in front when she works it
-  const putW = (x, y, k) => { if (WP && (k === 'r' || k === 'y')) px(g, Math.round(x), Math.round(y), k === 'y' ? WP.s : WP.S); else put(x, y, k); };   /* the staff's cage and flame: the weapon skin's, never the robe's */
+  const wpx = new Set();   /* where the staff's cage and flame went: a gear tier never paints over them */
+  const putW = (x, y, k) => { wpx.add(Math.round(x) + ',' + Math.round(y)); if (WP && (k === 'r' || k === 'y')) px(g, Math.round(x), Math.round(y), k === 'y' ? WP.s : WP.S); else put(x, y, k); };   /* the staff's cage and flame: the weapon skin's, never the robe's */
   const drawStaff = () => { if (!staff) return;
     const [x0, y0, x1, y1] = staff; line(g, x0, y0 + dy, x1, y1 + dy, KP.w, 2);   /* (the shaft keeps its wood: a recoloured shaft across her sleeve read as a blue band on the robe, not a staff) */
     const ux = Math.sign(x1 - x0), uy = Math.sign(y1 - y0);
@@ -1468,6 +1538,11 @@ function pyroFrame(o = {}) {
     putW(hx - uy, hy + ux, 'y'); putW(hx + uy, hy - ux, 'y'); putW(hx + ux, hy + uy, 'y');
     putW(hx, hy, flick ? 'y' : 'r'); putW(hx + ux * 2, hy + uy * 2, flick ? 'r' : 'y');
     putW(hx + ux * 2 - uy, hy + uy * 2 + ux, 'r'); };
+  if (GEAR >= 1) { /* THE CAPE: behind the robe, hanging from the shoulders and streaming back with her trail */
+    const t0 = 8 + sit, h0 = 17 - Math.round(bell / 2), main = hexMix(KP.B, KP.b, 0.45), dark = hexMix(KP.B, '#000000', 0.25), fold = hexMix(KP.b, '#ffffff', 0.12), st = trail > 1 ? 2 : trail > 0 ? 1 : 0;
+    for (let y = t0 + 1; y < h0; y++) { const t = (y - t0) / Math.max(1, h0 - t0), w0 = Math.round(7 + (hemW + bell - 7) * Math.pow(t, 1.3)), cx0 = 13 + lean * (1 - t) - trail * t * t, l0 = Math.round(cx0 - w0 / 2), r = y - t0 - 1;
+      const lx = l0 - 1 - Math.floor(r * 0.15) - st * Math.floor((r + 1) / 3);
+      for (let x = lx; x <= l0 + 1; x++) px(g, x, y + dy, y === h0 - 1 ? ((x + y) & 1 ? GOLD.d : GOLD.m) : x === lx ? (GEAR >= 4 && r % 2 === 0 ? GOLD.m : dark) : x === lx + 2 && r > 1 ? fold : main); } }
   if (staff && staff[4] === 'back') drawStaff();
   // boots, under the hem
   for (const [fx, fy] of feet) { put(fx, fy + dy, 'W'); put(fx + 1, fy + dy, 'W'); }
@@ -1488,6 +1563,14 @@ function pyroFrame(o = {}) {
   // the cowl
   const cw = COWL[cowl], hx = 8 + lean, hy = top - 8 + dy;
   cw.forEach((row, yy) => { for (let xx = 0; xx < row.length; xx++) { const k = row[xx]; if (k !== '.') put(hx + xx, hy + yy, k === 'r' && flick ? 'y' : k); } });
+  if (GEAR >= 1) { /* her gear tiers: the clasp (1); the circlet-crest on the cowl's peak and the capelet's gold rim (2); the full set (4) - see gearFront for the knight's */
+    const G = (x, y, c) => { if (!wpx.has(Math.round(x) + ',' + Math.round(y + dy))) px(g, Math.round(x), Math.round(y + dy), c); }, ht = headTop(cw), cx = hx + ht.cx, cy = hy - dy + ht.y;
+    G(9 + lean, top + 1, GOLD.m);
+    if (GEAR >= 2) { G(cx, cy - 1, GOLD.m); G(cx + 1, cy - 1, GOLD.d); G(cx, cy - 2, GOLD.l); G(10 + lean, top, GOLD.m); G(16 + lean, top, GOLD.m); G(13 + lean, top + 4, GOLD.l);
+      if (GEAR >= 4) { G(cx - 1, cy - 1, GOLD.d); G(cx + 1, cy - 2, GOLD.m); G(cx, cy - 3, GOLD.l); G(cx - 1, cy - 2, GOLD.d); } }
+    if (GEAR >= 4) { for (const [a, b] of [[10 + lean, 1], [16 + lean, -1]]) { G(a, top, GOLD.l); G(a + b, top, GOLD.m); G(a, top + 1, GOLD.m); G(a + b, top + 1, GOLD.d); }
+      G(12 + lean, top + 2, GOLD.m); G(13 + lean, top + 2, GOLD.l); G(12 + lean, top + 3, GOLD.d); G(13 + lean, top + 3, GOLD.m); G(hx + 4, hy - dy + 7, GOLD.d); G(hx + 6, hy - dy + 7, GOLD.d); } }
+  const gearMask = GEAR >= 3 ? g.getImageData(0, 0, c.width, c.height) : null;   /* her, before the sleeves, the staff and the flames: the aura follows HER */
   // sleeves: wide at the cuff, a hand at the end of each
   const sleeve = a => { if (!a) return; const [x0, y0, x1, y1] = a; line(g, x0, y0 + dy, x1, y1 + dy, KP.s, 2); put(x1, y1 + dy, 'S'); put(x1 + Math.sign(x1 - x0 || 1), y1 + dy, 'k'); };
   sleeve(arm2);
@@ -1498,6 +1581,7 @@ function pyroFrame(o = {}) {
     for (const [ddx, ddy, k] of pts) put(x + ddx, y + ddy + dy, k); }
   if (sparks) for (const [x, y, k] of sparks) put(x, y + dy, k);   /* loose sparks, over everything */
   outline(c, OUT);
+  gearAura(c, gearMask, (cowl | 0) * 2 + (dy | 0) + (lean | 0) + 8);
   c.feet = headroom + Math.max(...feet.map(f => f[1])) + dy;   /* the row her boots stand on (tools/crouch-feet.mjs) */
   return c;
 }
