@@ -261,7 +261,7 @@ function labBotFrame(BK, h, e, f) {
   else {
     const s = strike(BK, h, e, f); swing = s.swing;
     /* THE WARDEN KEEPS HER POINT OUT: inside the haft she only shoves, so she steps back out of it (her step goes backward by itself) */
-    if (h === 'warden' && ad < 20 && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0) && P.st >= 20 && f % 10 === 0) BK.press('dodge');
+    if (h === 'warden' && ad < 20 && (!LABP.v2 || Math.abs(e.y - P.y) < 30) && P.atk < 0 && !(P.charge > 0) && !(P.dodge > 0) && P.st >= 20 && f % 10 === 0) BK.press('dodge');   /* (claude/wardenkit, v2: only from what is AT her height - an owl overhead is not inside her haft; her step carries ~45 px now, and stepping away from the lamp under a flier 40 times a fight cost her the lamp) */
     if (!k.left && !k.right && !(P.charge > 0) && !(swing && s.verb === 'sweep' && (h === 'knight' || h === 'warden'))) { if (h === 'pirate' && s.verb === 'heavy' && ad < s.want - 8) k[d > 0 ? 'left' : 'right'] = true; else if (ad > s.want + 2) k[d > 0 ? 'right' : 'left'] = true; else if (s.verb === 'plunge' && !P.ground && ad > 3) k[d > 0 ? 'right' : 'left'] = true; }
   }
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
@@ -1959,7 +1959,7 @@ async function runbossLab(BK, opts) {
       if ((P.labStuckF || 0) >= 3) { k.block = false;
         if (h === 'reaper' && boss.t === 'herald') { const goLeft = f % 40 < 20; k.left = goLeft; k.right = !goLeft; }
         else k[f % 40 < 20 ? 'left' : 'right'] = true;
-        if (P.ground) { BK.press('jump'); P.labJump = 18; BK.press('dodge'); } }
+        if (P.ground) { BK.press('jump'); P.labJump = 18; if (!(LABP.v2 && h === 'warden')) BK.press('dodge'); } }   /* (claude/wardenkit, v2: not the warden's step - it is her BACK-step, it carries ~45 px now, and a warden waiting at the Owl's lamp read as 'stuck' 48 times a fight and was stepped off it each time; the jump unsticks her) */
       { const cb = crouchBPlan(BK, h); if (cb) { crouchBKeys(BK, cb); P.labJump = 0; } }   /* THE CROUCH TWISTS, when the room is calm (crouchBPlan) */
       if (duckNow(BK, h, boss) || emberNow(BK, h, boss)) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);

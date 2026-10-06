@@ -438,6 +438,10 @@ function v2Hands(s, out, q) {
   const safeDir = (x, r) => { const a = away(x), ok = d => (d < 0 ? P.x - lo : hi - P.x) >= 50 && standable(clamp(P.x + d * r)); return ok(a) ? a : ok(-a) ? -a : 0; };
   /* HER LANDING (a pounce's, a dive's): SEEN as she leaves the ground (0.18-0.34 s late, drawn per leap: the crouch and the mark were seen already), then a roll off it - or, for the
      warden (no roll), a JUMP over the landing (her blow is one frame at her feet, 40 px high; the jump tops 51) or HER SHORT STEP timed to it */
+  /* (claude/wardenkit) HER SCREE IS YELLOW: the rocks she kicks are turned by a guard - the knight's shield, and the warden's deflect met on the beat,
+     facing her (the blow is booked from her body, and the shaft goes over the head too now). The hands walked behind her and took it on the crown */
+  if (s.deflect && !s.shield && P.ground && S.shots.some(k => k.k === 'rock' && Math.abs(k.x - P.x) < 34 && k.y < P.y && P.y - k.y < 70 && (k.vy || 0) > -40)) {
+    out.face = Math.sign(e.x - P.x) || out.face; out.gx = P.x; out.block = true; out.tap = true; out.why = 'v2: deflect the scree'; return out; }
   const F = S.fly;
   if (F && (F.then === 'land' || F.then === 'diveLand') && S.ph < 3 && P.ground) {
     const R = (F.then === 'land' ? MAT.pounceR : MAT.diveR) + 9, el = F.t0 - F.t, mem = s.mem || {};
