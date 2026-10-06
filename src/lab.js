@@ -624,6 +624,18 @@ async function runbossLab(BK, opts) {
            used to stay put under him waiting to drop it, and the ring took 124 of the knight's 182. Out of it first, stone or not, then back to the plan */
         const pm = LABP.v2 && boss.t === 'bellcrab' && boss.mode === 'pressureTell' && boss.bellMark, pIn = pm && Math.abs(P.x - pm.x) < 44 && Math.abs(P.y - 10 - pm.y) < 44;
         if (pIn) { k[P.x < pm.x ? 'left' : 'right'] = true; if (Math.abs(P.x - pm.x) < 20) k[(P.y - 10) < pm.y ? 'up' : 'down'] = true; }
+        /* (claude/sweep2) HIS CLAW (0.62 s, 92 px in front of him, 54 high; a shield turns it) and, out of the bell, HIS SNIP (0.42 s, 44 px):
+           the shield takes it face on; the others (or a hand full of stone) go up and back out of its reach, the stone let go first. v2 only */
+        else if (LABP.v2 && boss.t === 'bellcrab' && (boss.mode === 'clawTell' || boss.mode === 'snipTell') && Math.sign(P.x - boss.x) === boss.face && adx < (boss.mode === 'snipTell' ? 58 : 106) && Math.abs(P.y - boss.y) < 62) {
+          if (SHIELDED(h) && !P.ballast) { k.block = true; P.face = Math.sign(dx) || P.face; } else { if (P.ballast) BK.press('jump'); k.up = true; k[dx > 0 ? 'left' : 'right'] = true; } }
+        /* (claude/sweep2) OUT OF THE BELL HIS LEAP comes down on the ring he draws where you stood (0.62 s, then the drop, 24 px): off the
+           ring along the floor, NOT up - up is where he goes, and a bot that rose from every leap and rush hung 100-290 px over him and timed
+           out. Low and beside the ring he lands open for his rest. v2 only */
+        else if (LABP.v2 && boss.t === 'bellcrab' && boss.phase === 3 && (boss.mode === 'leapTell' || boss.mode === 'leap') && boss.leapX !== undefined && Math.abs(P.x - boss.leapX) < 48) {
+          if (P.ballast) BK.press('jump'); const s2 = P.x >= boss.leapX ? 1 : -1, sd = (P.x + s2 * 30 > A.x1 - 20 || P.x + s2 * 30 < A.x0 + 20) ? -s2 : s2; k[sd > 0 ? 'right' : 'left'] = true; if (P.y < A.floor - 30) k.down = true; }
+        else if (LABP.v2 && boss.t === 'bellcrab' && boss.phase === 3 && (boss.mode === 'leapTell' || boss.mode === 'leap')) {
+          if (P.y < A.floor - 30) k.down = true; if (adx > 30) k[dx > 0 ? 'right' : 'left'] = true; }
+        else if (LABP.v2 && boss.t === 'bellcrab' && boss.phase === 3 && (boss.mode === 'scuttleTell' || boss.mode === 'scuttle') && P.y < boss.y - 56) { }   /* over his rush already: stay */
         /* HIS RUSH AND HIS LEAP (the scuttle 42 px x 48 high, unblockable; out of the bell, the leap): up out of their line, and a stone that
            holds you on the floor is let go first - he will come again, the stone is on its rack */
         else if (LABP.v2 && boss.t === 'bellcrab' && ['scuttleTell', 'scuttle', 'leapTell', 'leap'].includes(boss.mode) && adx < 130 && P.y > boss.y - 70 && (boss.mode !== 'scuttle' || (boss.x - P.x) * (boss.vx || 0) < 0 || adx < 50)) {
@@ -663,7 +675,8 @@ async function runbossLab(BK, opts) {
         /* HE IS OPEN AND YOU ARE ON THE RACK OVER HIM: off it by its nearer end, and down to him */
         else if (boss.t === 'bellcrab' && boss.open > 0 && P.y < A.floor - 24 && BK.L.grid[Math.floor(P.y / 16) * BK.L.W + Math.floor(P.x / 16)] === lvm.T.PLANK) { const tx = Math.floor(P.x / 16), ty = Math.floor(P.y / 16), G = BK.L.grid, W = BK.L.W;
           let l = 0, r = 0; while (l < 8 && G[ty * W + tx - l - 1] === lvm.T.PLANK) l++; while (r < 8 && G[ty * W + tx + r + 1] === lvm.T.PLANK) r++; k[l < r ? 'left' : 'right'] = true; }
-        else { P.labAir = false; if (adx > Math.max(10, LAB_REACH[h] * 0.6)) k[dx > 0 ? 'right' : 'left'] = true; if (dy < -10) k.up = true; else if (dy > 10) k.down = true;
+        else { P.labAir = false; const wTip = LABP.v2 && h === 'warden' ? WARDEN_TIP + (boss.w || 20) / 2 - 6 : 0;   /* (claude/sweep2) THE WARDEN SWIMS AT HER POINT'S DISTANCE (v2): at 0.6 of her reach she hung inside the shaft and only glanced (keep: 40 of the king in 20 s) */
+          if (wTip ? adx > wTip + 5 : adx > Math.max(10, LAB_REACH[h] * 0.6)) k[dx > 0 ? 'right' : 'left'] = true; else if (wTip && adx < wTip - 5) k[dx > 0 ? 'left' : 'right'] = true; if (dy < -10) k.up = true; else if (dy > 10) k.down = true;
           if (SHIELDED(h) && /Tell$/.test(boss.mode || '') && !HARD_TELLS.has(boss.t + '|' + boss.mode) && Math.hypot(dx, dy) < 120 && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.2)) { k.block = true; k.left = k.right = k.up = k.down = false; P.face = Math.sign(dx) || P.face; }
           else if (adx <= reach2 && Math.abs(dy) < 22 && P.atk < 0) { P.face = Math.sign(dx) || P.face; k.down = k.up = false; BK.press('atk'); swings++; } }   /* a cut, not a plunge: down held under the swing is a down attack, and the lab was plunging him to death */
         if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(dx), Math.round(dy), boss.open > 0 ? 'OPEN' : '', P.swim ? 'swim' : 'dry', P.ballast ? 'STONE' : '-', P.ground ? 'gnd' : 'air', Math.round(A.floor - P.y)].join(' ')); }
@@ -1459,6 +1472,13 @@ async function runbossLab(BK, opts) {
         /* (claude/sweep1) THE BELL OVER HIS HEAD: the knight's jump tops out ~27 px under a hung bell, so he never reached it with a level cut -
            he strikes UP at it (the air up-slash, over his head) near the top of the jump, as a player under a bell does */
         if (!P.ground && P.y - gBell.y < 48 && P.y - gBell.y > -20 && P.vy > -140 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; if (P.y - gBell.y > 18) k.up = true; BK.press('atk'); swings++; } }
+      /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP (v2 only; the legacy hands are as they were). The red ring follows you for the tell, so a
+         person waits it out where they are; once it stops (and he is in the air) they leave it - away from him unless a wall is there - and
+         roll the last of it if they are still on it as he comes down. Off the ring he lands open beside you, and the open hands take that. */
+      else if (LABP.v2 && boss.t === 'closedhelm' && (boss.mode === 'leapTell' || boss.mode === 'leap') && boss.leapX !== undefined) { const lx = boss.leapX;
+        const fixed = boss.mode === 'leap' || boss.modeT < 0.3; P.face = Math.sign(d) || P.face;
+        if (fixed && Math.abs(P.x - lx) < 30 + 26) { let side = Math.sign(P.x - lx) || Math.sign(P.x - boss.x) || 1; if (lx + side * 62 < A.x0 + 20 || lx + side * 62 > A.x1 - 20) side = -side;
+          goal = lx + side * 62; if (boss.mode === 'leap' && boss.modeT < 0.3 && P.ground && f % 3 === 0) { k[side > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } } }
       else if (boss.t === 'closedhelm' && boss.mode && (/Tell$/.test(boss.mode) || boss.mode === 'bash')) { const m = boss.mode, t = boss.modeT; P.face = Math.sign(d) || P.face;
         if (m === 'bash') { if (ad < 60 && (boss.x - P.x) * boss.vx < 0 && f % 4 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
         else if (m === 'bashTell') { if (ad > 150) goal = null; }

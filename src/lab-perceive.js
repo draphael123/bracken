@@ -28,7 +28,11 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
   let f = 0, applied = false, enemies0 = null, greedUntil = -1, greedSwings = 0, atkWas = -1, bossHp = boss.hp, slip = false, slipAt = 0, openSeen = 0;
   const P = () => BK.P;
   const view = () => { const v = BK.view || {}, z = v.z || 1, VW = v.VW || 320, VH = v.VH || 180, cx = (v.x || 0) + VW / 2, cy = (v.y || 0) + VH / 2; return { l: cx - VW / 2 / z - 6, r: cx + VW / 2 / z + 6, t: cy - VH / 2 / z - 10, b: cy + VH / 2 / z + 10 }; };
-  const onScreen = (e, V) => e.x + (e.w || 16) / 2 > V.l && e.x - (e.w || 16) / 2 < V.r && e.y > V.t && e.y - (e.h || 20) < V.b;
+  const onScreen0 = (e, V) => e.x + (e.w || 16) / 2 > V.l && e.x - (e.w || 16) / 2 < V.r && e.y > V.t && e.y - (e.h || 20) < V.b;
+  /* (claude/sweep2) THE KRAKEN IS SEEN BY HIS ARMS AND HIS BEAK: his body (e.x) lies out in the sea past the screen, but every move he makes
+     is made on the road. Read by e.x alone he was never on screen, so after his first slam the bot saw no pose of his again (a slam read
+     for 90 s, the pinned spear never seen) - the causeway's 0/12 was that, not him */
+  const onScreen = (e, V) => onScreen0(e, V) || (e.t === 'kraken' && ((e.headX > V.l && e.headX - 46 < V.r) || (e.arms || []).some(a => a.st !== 'hid' && a.st !== 'gone' && a.tx > V.l && a.tx < V.r)));
   const winding = e => !!(BK.windingUp && BK.windingUp(e));
   const marked = e => { try { return !!(BK.markShown && BK.markShown(e)); } catch { return true; } };
   const tracked = () => BK.enemies().filter(e => e && e.alive && (e === boss || (Math.abs(e.x - P().x) < 360 && Math.abs(e.y - P().y) < 240)));
