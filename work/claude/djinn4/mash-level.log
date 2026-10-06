@@ -1,0 +1,5 @@
+welltown LEVEL L30 knight: lowest hp 0%, hp lost 214%, deaths 1, walked 100% of waypoints, 1 rides {"lift":1}, 0 pulls, 1 boarding lifts, 58 lifts (11 HELD: put back by a room it could not finish), 43 blows taken
+welltown LEVEL L30 warden: lowest hp 0%, hp lost 211%, deaths 1, walked 100% of waypoints, 1 rides {"lift":1}, 0 pulls, 1 boarding lifts, 58 lifts (10 HELD: put back by a room it could not finish), 45 blows taken
+welltown LEVEL L30 pyro: lowest hp 0%, hp lost 191%, deaths 1, walked 100% of waypoints, 1 rides {"lift":1}, 0 pulls, 1 boarding lifts, 60 lifts (47 HELD: put back by a room it could not finish), 44 blows taken
+wrote docs/mash-bot.json
+errors []
