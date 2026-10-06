@@ -2974,7 +2974,12 @@ function updateEliteBrute(e, dt) {
    frames that already draw HIS slam draw this one - a crag troll's slam looks like a troll's slam because it is one. */
 /* (ELITES2) AND THE ROCKFALL: a red !! from further off than the slam reaches - he hammers the rock face and your patch of floor is marked; the
    stones he shakes loose come down on it. Be off the mark. (His ordinary throw is still his, between the two.) */
-const EL_TROLL = { reach: 200, near: 92, dy: 26, tell: 0.75, strike: 0.32, end: 0.65, dmg: 22, ring: 92, every: 5.5, rock: 0.85, half: 26, rockDmg: 18, rockOpen: 0.8 };
+/* (claude/elitemoves, Daniel 10-06: one meaner move) AND THE AFTERSHOCK: the slam is no longer the end of it. His fists come up out of the
+   rock again - a red !!, the word AFTERSHOCK, a rumble, more than half a second - and go back down, and this time the shock RUNS: a ridge of
+   broken rock along the floor both ways from his fists, out past where a man who backed off the slam is standing. JUMP it as it reaches you
+   (a roll thrown at the end of his windup is spent before it gets there). Then his fists are in the rock: the slam's opening, as before. */
+const EL_TROLL = { reach: 200, near: 92, dy: 26, tell: 0.75, strike: 0.32, end: 0.65, dmg: 22, ring: 92, every: 5.5, rock: 0.85, half: 26, rockDmg: 18, rockOpen: 0.8,
+  after: 0.6, av: 210, arun: 0.8, aDmg: 16 };
 function updateEliteTroll(e, dt) {
   const A = EL_TROLL, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) {
@@ -2992,7 +2997,12 @@ function updateEliteTroll(e, dt) {
     case 'slam': e.vx = 0;
       if (!e.elHit) { e.elHit = true; ringAt(e.x, e.y - 4, A.ring, '#ff6b6b', 0.35);
         if (!P.dead && P.ground && Math.abs(P.x - e.x) < A.ring && Math.abs(P.y - e.y) < 24) damagePlayer(e.x, eliteDmg(A.dmg), { unblockable: true, up: true, who: e, blow: 'the slam' }); }
-      if (e.modeT <= 0) { e.mode = 'slamEnd'; e.modeT = A.end; } break;
+      if (e.modeT <= 0) { lastTellT = time; e.mode = 'ekAfterTell'; e.modeT = Math.max(0.5, elTell(e, A.after)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'AFTERSHOCK', '#ff6b6b', 1.0); SFX.rumble(); } break;
+    case 'ekAfterTell': e.vx = 0; if (Math.random() < dt * 16) dust(e.x + (Math.random() - 0.5) * 40, e.y, 1);   /* (the fists coming up out of the rock, grit off them) */
+      if (e.modeT <= 0) { e.mode = 'ekAfter'; e.modeT = A.arun; e.elHit = false; e.ekWave = { l: e.x, r: e.x, y: e.y, col: '#8e86a4', top: '#c9c0d8' }; SFX.heavy(); SFX.stone(); shakeCam(5); } break;
+    case 'ekAfter': e.vx = 0; { const W = e.ekWave; W.l -= A.av * dt; W.r += A.av * dt; if (Math.random() < dt * 30) { dust(W.l, W.y, 1); dust(W.r, W.y, 1); }
+        if (!e.elHit && !P.dead && P.ground && Math.abs(P.y - W.y) < 20 && (Math.abs(P.x - W.l) < 9 || Math.abs(P.x - W.r) < 9)) { e.elHit = true; damagePlayer(P.x, eliteDmg(A.aDmg), { unblockable: true, up: true, who: e, blow: 'the aftershock' }); } }
+      if (e.modeT <= 0) { e.ekWave = null; e.mode = 'slamEnd'; e.modeT = A.end; } break;
     case 'slamEnd': e.vx = 0; if (Math.random() < dt * 6) dust(e.x, e.y, 1); if (e.modeT <= 0) { eliteDone(e); e.elT = elEvery(e, A.every); } break;   /* THE OPENING: both fists still down in the rock */
     case 'ekRockTell': e.vx = 0; if (e.vol && Math.random() < dt * 14) parts.push({ x: e.vol.x + (Math.random() - 0.5) * 2 * A.half, y: e.vol.y - 110, vx: 0, vy: 60, life: 0.5, max: 0.5, col: '#8e86a4', size: 1, grav: 300 }); if (e.modeT <= 0) { e.mode = 'ekRock'; e.modeT = 0.3; e.elHit = false; } break;   /* grit coming down onto the mark first */
     case 'ekRock': e.vx = 0;
@@ -3104,16 +3114,24 @@ const elPick = (e, a, b) => a && (!b || !e.elAlt) ? 1 : b ? 2 : 0;
 /* THE FIRST KNIFE (the cutthroat, the caravan's yard). Already a feinter: his captain makes the feint the move.
      THE FEINT-CUT  a yellow ! - the blade comes half down and STOPS (a stamp of the foot, the mark stays up), then the real cut, a step in.
                     Block on the second, not the first. Turned, he is over-reached: the opening.
-     THE KNIFE      a yellow ! - from across the yard a knife thrown level at your chest: block it, or duck and it goes over. */
-const EL_KNIFE = { reach: 220, near: 44, tell: 0.5, stamp: 0.32, strike: 0.18, step: 120, dmg: 13, throwTell: 0.6, v: 280, knife: 12, open: 0.8, every: 3.4 };
+     THE KNIFE      a yellow ! - from across the yard a knife thrown level at your chest: block it, or duck and it goes over.
+   (claude/elitemoves, Daniel 10-06: one meaner move) AND THE SKIMMER: he never carries one knife. The first goes at your chest, and while you
+   are behind your shield or down under it he has the second out - a red !!, the word LOW, the scrape of it, more than half a second - and
+   skims it flat off the yard at your feet, where no shield is. JUMP it as it comes: the man still ducked from the first is sat in its way.
+   Then he is out of knives for a moment (the opening). And it is how he answers a mash: his riposte's cut, and the skimmer straight after. */
+const EL_KNIFE = { reach: 220, near: 44, tell: 0.5, stamp: 0.32, strike: 0.18, step: 120, dmg: 13, throwTell: 0.6, v: 280, knife: 12, open: 0.8, every: 3.4,
+  skim: 0.55, sv: 250, skimDmg: 12 };
 function updateEliteCutthroat(e, dt) {
   const A = EL_KNIFE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
+    if (e.ekSkimAt !== undefined && time - e.ekSkimAt < 1.0 && !(e.stagger > 0) && !eliteLost(e) && !P.dead && ad < A.reach && dy < 30 && !windingUp(e) && elFooted(e) && time - lastTellT >= 0.5) {   /* (after his riposte: the skimmer) */
+      e.ekSkimAt = undefined; eliteTake(e); e.mode = 'ekSkimTell'; e.modeT = Math.max(0.5, elTell(e, A.skim)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'LOW', '#ff6b6b', 1.0); SFX.feint(); }
+    else { if (e.ekSkimAt !== undefined && time - e.ekSkimAt >= 1.0) e.ekSkimAt = undefined;
     if (!eliteMay(e, A.reach)) return false;
     const m = elPick(e, ad < A.near + e.w / 2 && dy < 18, ad > 70 && dy < 30);
     if (m === 1) { eliteTake(e); e.elAlt = true; e.mode = 'ekFeintTell'; e.modeT = elTell(e, A.tell); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
     else if (m === 2) { eliteTake(e); e.elAlt = false; e.mode = 'ekKnifeTell'; e.modeT = elTell(e, A.throwTell); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
-    else return false; }
+    else return false; } }
   if (elPre(e, dt)) { eliteDrop(e, elEvery(e, A.every)); return false; }
   switch (e.mode) {
     case 'ekFeintTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekStampTell'; e.modeT = A.stamp; dust(e.x + e.face * 8, e.y, 4); SFX.feint(); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); } break;   /* THE STAMP: not the blow - the real one is next */
@@ -3124,7 +3142,13 @@ function updateEliteCutthroat(e, dt) {
     case 'ekCutOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;   /* THE OPENING: over-reached */
     case 'ekKnifeTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekKnife'; e.modeT = 1.0; elThrow(e, A.v, 10, 'knife'); SFX.throwWhoosh(); } break;
     case 'ekKnife': e.vx = 0; if (elShotStep(e, dt)) damagePlayer(e.shot.x, eliteDmg(A.knife), { who: e, blow: 'the thrown knife' });
-      if (e.modeT <= 0 || !e.shot || e.shot.gone) elDone(e, A.every); break;
+      if (e.modeT <= 0 || !e.shot || e.shot.gone) { e.shot = null; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'ekSkimTell'; e.modeT = Math.max(0.5, elTell(e, A.skim)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'LOW', '#ff6b6b', 1.0); SFX.feint(); } break;
+    case 'ekSkimTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekSkim'; e.modeT = 1.0; elThrow(e, A.sv, 2, 'knife'); e.shot.low = true; SFX.throwWhoosh(); } break;
+    case 'ekSkim': e.vx = 0; { const s = e.shot; if (s && !s.gone) { s.x += s.vx * dt; s.t += dt; if (Math.random() < dt * 20) dust(s.x, e.y, 1);   /* flat along the yard, an inch off it: it goes under a shield and catches a man on his feet or ducked alike */
+        if (isSolid(Math.floor(s.x / TS), Math.floor((e.y - 4) / TS)) || s.t > 1.6) s.gone = true;
+        else if (!P.dead && P.ground && Math.abs(P.x - s.x) < 7 && Math.abs(P.y - e.y) < 12) { s.gone = true; damagePlayer(s.x, eliteDmg(A.skimDmg), { unblockable: true, up: true, who: e, blow: 'the skimmer' }); } } }
+      if (e.modeT <= 0 || !e.shot || e.shot.gone) { e.shot = null; e.mode = 'ekKnifeOpen'; e.modeT = A.open; } break;
+    case 'ekKnifeOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;   /* THE OPENING: out of knives */
     default: eliteDrop(e, A.every); return false; }
   elBody(e, dt); return true;
 }
@@ -3221,8 +3245,13 @@ function updateEliteHeavy(e, dt) {
 /* A HEDGE KNIGHT CHAMPION (Waymeet's road). A knight of the hedges, lance and sword:
      THE JOUST       a yellow ! - he lowers the lance and runs the length of the road at you. Take it on the shield and the lance is
                      knocked wide (the opening); step out of it and he runs on - into a wall, and he stands there shaken.
-     THE BRIAR CUT   a red !! - a flat cut at chest height, too heavy for any shield. DUCK under it. */
-const EL_JOUST = { reach: 210, near: 56, runMin: 60, tell: 0.6, v: 240, run: 0.9, dmg: 16, open: 1.3, wall: 1.4, end: 0.6, briar: 0.6, briarDmg: 18, briarOpen: 0.7, every: 4.0 };
+     THE BRIAR CUT   a red !! - a flat cut at chest height, too heavy for any shield. DUCK under it.
+   (claude/elitemoves, Daniel 10-06: one meaner move) AND THE BRIAR CUT COMES BACK LOW: a knight of the hedges cuts brambles both ways. The
+   flat cut goes over the man who ducked it, and the blade turns at the end of its swing - a red !!, the word LOW, the ring of it turning,
+   more than half a second - and comes back at the ankles with a step in behind it. Stand up out of the duck and JUMP it: the man still
+   crouched where the first went over is sitting in the second. Then his sword is down by his boot (the opening). */
+const EL_JOUST = { reach: 210, near: 56, runMin: 60, tell: 0.6, v: 240, run: 0.9, dmg: 16, open: 1.3, wall: 1.4, end: 0.6, briar: 0.6, briarDmg: 18, briarOpen: 0.7, every: 4.0,
+  back: 0.55, backT: 0.28, backStep: 170, backReach: 40, backDmg: 15 };
 function updateEliteHedgeknight(e, dt) {
   const A = EL_JOUST, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
@@ -3243,7 +3272,11 @@ function updateEliteHedgeknight(e, dt) {
     case 'ekBriarTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekBriar'; e.modeT = 0.22; e.elHit = false; SFX.slash(); } break;
     case 'ekBriar': e.vx = 0;
       if (!e.elHit && elFront(e, 44, 26)) { e.elHit = true; damagePlayer(e.x, eliteDmg(A.briarDmg), { unblockable: true, who: e, blow: 'the briar cut' }); }
-      if (e.modeT <= 0) { e.mode = 'ekBriarOpen'; e.modeT = A.briarOpen; } break;
+      if (e.modeT <= 0) { lastTellT = time; e.mode = 'ekBackTell'; e.modeT = Math.max(0.5, elTell(e, A.back)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'LOW', '#ff6b6b', 1.0); SFX.clank(); } break;
+    case 'ekBackTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekBack'; e.modeT = A.backT; e.elHit = false; SFX.slash(); } break;
+    case 'ekBack': e.vx = elEdge(e) ? 0 : e.face * A.backStep; if (Math.random() < dt * 30) dust(e.x + e.face * 14, e.y, 1);   /* low along the ground, a step in behind it: it gets to you when he does */
+      if (!e.elHit && !P.dead && P.ground && elFront(e, A.backReach, 22)) { e.elHit = true; damagePlayer(e.x, eliteDmg(A.backDmg), { unblockable: true, up: true, who: e, blow: 'the low briar' }); }
+      if (e.modeT <= 0) { e.vx = 0; e.mode = 'ekBriarOpen'; e.modeT = A.briarOpen; } break;
     case 'ekBriarOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;
     default: eliteDrop(e, A.every); return false; }
   const mv = elBody(e, dt); if (mv && mv.hitX && e.mode === 'ekJoust') { e.mode = 'ekJoustOpen'; e.modeT = A.wall; e.vx = 0; SFX.thud(); shakeCam(4); dust(e.x + e.face * 8, e.y - 6, 8); }
@@ -3306,13 +3339,18 @@ function updateEliteCutlass(e, dt) {
 }
 /* THE TIDE CAPTAIN (the tide guard, the sea). A spear and a shield, and the tide behind him:
      THE SPEAR    a yellow ! - a step in behind a long thrust. Block it and the point sticks in your shield (the opening).
-     THE TIDE     a red !! - he drives the butt into the floor and a wave runs out along it both ways. Jump the wave. */
-const EL_TIDE = { reach: 210, near: 70, tell: 0.55, strike: 0.2, step: 110, dmg: 14, open: 0.7, blockOpen: 1.0, tide: 0.7, wv: 190, wave: 1.0, waveDmg: 15, tideOpen: 0.8, every: 3.8 };
+     THE TIDE     a red !! - he drives the butt into the floor and a wave runs out along it both ways. Jump the wave.
+   (claude/elitemoves, Daniel 10-06: one meaner move) AND THE UNDERTOW: the tide goes out and it COMES BACK. Where the wave spent itself the
+   water draws back - a red !!, the word UNDERTOW, the hiss of it running off, more than half a second - and then it runs home along the floor
+   to his feet from both ends at once, and what it catches it drags in to his spear. JUMP it again, as it reaches you: the man who jumped
+   the first and walked in to cut him meets the second at his back. Then he leans on the spear (the opening, as before). */
+const EL_TIDE = { reach: 210, near: 70, tell: 0.55, strike: 0.2, step: 110, dmg: 14, open: 0.7, blockOpen: 1.0, tide: 0.7, wv: 190, wave: 1.0, waveDmg: 15, tideOpen: 0.8, every: 3.8,
+  under: 0.55, uv: 230, uDmg: 12, uPull: 260 };
 function updateEliteTideguard(e, dt) {
   const A = EL_TIDE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
     if (!eliteMay(e, A.reach)) return false;
-    const m = elPick(e, ad < A.near + e.w / 2 && dy < 20, ad > 40 && dy < 24);
+    const m = elPick(e, ad < A.near + e.w / 2 && dy < 20, dy < 24);   /* (claude/elitemoves) the tide from under your nose too: the undertow is what comes back for you */
     if (m === 1) { eliteTake(e); e.elAlt = true; e.mode = 'ekSpearTell'; e.modeT = elTell(e, A.tell); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
     else if (m === 2) { eliteTake(e); e.elAlt = false; e.mode = 'ekTideTell'; e.modeT = elTell(e, A.tide); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
     else return false; }
@@ -3327,7 +3365,12 @@ function updateEliteTideguard(e, dt) {
       if (e.modeT <= 0) { e.mode = 'ekTide'; e.modeT = A.wave; e.elHit = false; e.ekWave = { l: e.x, r: e.x, y: e.y }; SFX.splash(); shakeCam(3); } break;
     case 'ekTide': e.vx = 0; { const W = e.ekWave; W.l -= A.wv * dt; W.r += A.wv * dt;
         if (!e.elHit && !P.dead && P.ground && Math.abs(P.y - W.y) < 20 && (Math.abs(P.x - W.l) < 9 || Math.abs(P.x - W.r) < 9)) { e.elHit = true; damagePlayer(P.x, eliteDmg(A.waveDmg), { unblockable: true, up: true, who: e, blow: 'the tide' }); } }
-      if (e.modeT <= 0) { e.ekWave = null; e.mode = 'ekTideOpen'; e.modeT = A.tideOpen; } break;
+      if (e.modeT <= 0) { lastTellT = time; e.mode = 'ekUnderTell'; e.modeT = Math.max(0.5, elTell(e, A.under)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'UNDERTOW', '#9ad0ff', 1.0); SFX.hiss(); } break;
+    case 'ekUnderTell': e.vx = 0; { const W = e.ekWave; if (W && Math.random() < dt * 20) for (const wx of [W.l, W.r]) parts.push({ x: wx + (Math.random() - 0.5) * 10, y: W.y - 2, vx: Math.sign(e.x - wx) * 50, vy: -30, life: 0.35, max: 0.35, col: '#9ad0ff', size: 1, grav: 80 }); }   /* (the water drawing back where it spent itself) */
+      if (e.modeT <= 0) { e.mode = 'ekUnder'; e.modeT = 0; e.elHit = false; SFX.splash(); shakeCam(2); if (!e.ekWave) e.ekWave = { l: e.x - A.wv * A.wave, r: e.x + A.wv * A.wave, y: e.y }; } break;
+    case 'ekUnder': e.vx = 0; { const W = e.ekWave; W.l = Math.min(e.x, W.l + A.uv * dt); W.r = Math.max(e.x, W.r - A.uv * dt);
+        if (!e.elHit && !P.dead && P.ground && Math.abs(P.y - W.y) < 20 && (Math.abs(P.x - W.l) < 9 || Math.abs(P.x - W.r) < 9)) { e.elHit = true; const res = damagePlayer(P.x, eliteDmg(A.uDmg), { unblockable: true, who: e, blow: 'the undertow' }); if (res === 'hit') elPull(e, A.uPull); }
+        if (W.r - W.l < 12) { e.ekWave = null; e.mode = 'ekTideOpen'; e.modeT = A.tideOpen; } } break;   /* home at his feet */
     case 'ekTideOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;   /* THE OPENING: leaning on the spear */
     default: e.ekWave = null; eliteDrop(e, A.every); return false; }
   elBody(e, dt); return true;
@@ -3335,8 +3378,14 @@ function updateEliteTideguard(e, dt) {
 /* THE WATCH SERJEANT (the watch, the lamplit town and the deep). A halberd, point and blade:
      THE CHOP     a red !! - the halberd up over his head and down in front of him; it goes through a shield. Step back out of it, or
                   roll through; the blade is in the floor after (the opening).
-     THE THRUSTS  two yellow ! - a thrust, and a second, quicker. Block both. */
-const EL_WATCH = { reach: 180, near: 64, chop: 0.7, chopReach: 50, chopDmg: 20, chopOpen: 1.1, tell: 0.5, tell2: 0.32, strike: 0.18, step: 90, dmg: 12, open: 0.7, every: 3.8 };
+     THE THRUSTS  two yellow ! - a thrust, and a second, quicker. Block both.
+   (claude/elitemoves, Daniel 10-06: one meaner move) THE THRUST AND THE HOOK, in place of the second thrust: a halberd has a hook on the back
+   of its blade, and a serjeant of the watch knows what it is for. The thrust (a yellow !, block it) and then the hook - a red !!, the word
+   HOOK, the haft scraping round, more than half a second - goes out low along the floor behind your heels, further than the thrust reached,
+   and what it catches it hauls in to his feet. JUMP it as it comes. The man who blocked the thrust and stepped back out of reach is still
+   inside the hook's. Then he draws the haft back in (the opening). */
+const EL_WATCH = { reach: 180, near: 64, chop: 0.7, chopReach: 50, chopDmg: 20, chopOpen: 1.1, tell: 0.5, strike: 0.18, step: 90, dmg: 12, open: 0.7, every: 3.8,
+  hook: 0.55, hookOut: 0.3, hookReach: 96, hookDmg: 12, hookPull: 320 };
 function updateEliteWatch(e, dt) {
   const A = EL_WATCH, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
@@ -3355,19 +3404,26 @@ function updateEliteWatch(e, dt) {
     case 'ekThrustTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekThrust'; e.modeT = A.strike; e.elHit = false; SFX.haft(); } break;
     case 'ekThrust': e.vx = elEdge(e) ? 0 : e.face * A.step;
       if (!e.elHit && elFront(e, 46, 22)) { e.elHit = true; damagePlayer(e.x, eliteDmg(A.dmg), { who: e, blow: 'the first thrust' }); }
-      if (e.modeT <= 0) { e.vx = 0; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'ekThrust2Tell'; e.modeT = elTell(e, A.tell2); number(e.x, e.y - e.h - 12, '!', '#ffd36b'); } break;
-    case 'ekThrust2Tell': e.vx = 0; if (e.modeT <= 0) { e.mode = 'ekThrust2'; e.modeT = A.strike; e.elHit = false; SFX.haft(); } break;
-    case 'ekThrust2': e.vx = elEdge(e) ? 0 : e.face * A.step;
-      if (!e.elHit && elFront(e, 46, 22)) { e.elHit = true; damagePlayer(e.x, eliteDmg(A.dmg), { who: e, blow: 'the second thrust' }); }
-      if (e.modeT <= 0) { e.mode = 'ekThrustOpen'; e.modeT = A.open; } break;
-    case 'ekThrustOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;
+      if (e.modeT <= 0) { e.vx = 0; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'ekHookTell'; e.modeT = Math.max(0.5, elTell(e, A.hook)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'HOOK', '#ff6b6b', 1.0); SFX.haft(); } break;
+    case 'ekHookTell': e.vx = 0; e.face = Math.sign(d) || e.face; e.ekReach = 6; if (e.modeT <= 0) { e.mode = 'ekHook'; e.modeT = A.hookOut; e.elHit = false; SFX.throwWhoosh(); } break;   /* (the haft turned over, the hook low) */
+    case 'ekHook': e.vx = 0; { const k = Math.min(1, 1 - Math.max(0, e.modeT) / A.hookOut); e.ekReach = Math.round(6 + (A.hookReach - 6) * k); e.ekReachLow = true;   /* out along the floor, a reach that GROWS: it gets to you when it gets to you */
+        if (!e.elHit && !P.dead && P.ground && Math.sign(P.x - e.x) === (e.face || 1) && Math.abs(P.x - e.x) < e.w / 2 + e.ekReach + 4 && Math.abs(P.y - e.y) < 20) { e.elHit = true;
+          const res = damagePlayer(e.x, eliteDmg(A.hookDmg), { unblockable: true, up: true, who: e, blow: 'the hook' }); if (res === 'hit') { elPull(e, A.hookPull); number(P.x, P.y - 30, 'HOOKED', '#ff6b6b'); } } }
+      if (e.modeT <= 0) { e.ekReach = 0; e.ekReachLow = false; e.mode = 'ekThrustOpen'; e.modeT = A.open; } break;
+    case 'ekThrustOpen': e.vx = 0; e.ekReach = 0; e.ekReachLow = false; if (e.modeT <= 0) elDone(e, A.every); break;
     default: eliteDrop(e, A.every); return false; }
   elBody(e, dt); return true;
 }
 /* THE HEARTH BOSS (the hearth goblin, Highcrown's kitchen). A cook with a pot on the boil and a cleaver:
      THE POT      a red !! - your patch of floor is marked and a boiling pot lobbed onto it; it scalds where it lands for a while after.
-     THE CLEAVER  a yellow ! - a chop with the cleaver. Block it. */
-const EL_COOK = { reach: 210, near: 44, pot: 0.75, fly: 0.45, half: 22, potDmg: 16, potOpen: 0.7, tell: 0.5, strike: 0.18, dmg: 16, open: 0.8, every: 3.8 };
+     THE CLEAVER  a yellow ! - a chop with the cleaver. Block it.
+   (claude/elitemoves, Daniel 10-06: one meaner move) AND THE SECOND POT: a cook has two hands and a stove full of pots. As the first bursts he
+   has the second up - a red !!, the words AND ANOTHER, the slosh of it, more than half a second - and he does not throw it where you are:
+   he throws it where you are GOING (where your feet will be by the time it lands, if you keep on the way you are). The second mark goes down
+   on that floor. Change your step - stop short, turn back, or jump past it. The man who ran straight off the first mark runs under the
+   second. Then he wipes his hands (the opening, as before). */
+const EL_COOK = { reach: 210, near: 44, pot: 0.75, fly: 0.45, half: 22, potDmg: 16, potOpen: 0.7, tell: 0.5, strike: 0.18, dmg: 16, open: 0.8, every: 3.8,
+  pot2: 0.55, lead: 80 };
 function updateEliteHearthgob(e, dt) {
   const A = EL_COOK, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
@@ -3383,6 +3439,13 @@ function updateEliteHearthgob(e, dt) {
       if (e.modeT <= 0 && !e.elHit) { e.elHit = true; SFX.splash(); SFX.hiss(); burst(e.vol.x, e.vol.y - 6, 12, ['#fff6e0', '#c9d1dc', '#ff9a5c'], 80, 0.5);
         if (elOnMark(e)) damagePlayer(e.vol.x, eliteDmg(A.potDmg), { unblockable: true, up: true, who: e, blow: 'the pot' });
         fires.push({ x: e.vol.x, y: e.vol.y, life: 2.0, delay: 0.1, still: true, dmg: 8, ekFire: true });   /* the scald: it burns where it lands a while (still fire: it burns you, not his own) */
+        lastTellT = time; elMarkAt(e, A.half); const t2 = Math.max(0.5, elTell(e, A.pot2)); e.vol.x = P.x + Math.max(-A.lead, Math.min(A.lead, (P.vx || 0) * (t2 + A.fly)));   /* WHERE YOU ARE GOING: your step carried on to the moment it lands */
+        e.mode = 'ekPot2Tell'; e.modeT = t2; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'AND ANOTHER', '#ff9a5c', 1.0); SFX.splash(); } break;
+    case 'ekPot2Tell': e.vx = 0; e.face = Math.sign(e.vol.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'ekPot2'; e.modeT = A.fly; e.elHit = false; SFX.throwWhoosh(); } break;
+    case 'ekPot2': e.vx = 0;
+      if (e.modeT <= 0 && !e.elHit) { e.elHit = true; SFX.splash(); SFX.hiss(); burst(e.vol.x, e.vol.y - 6, 12, ['#fff6e0', '#c9d1dc', '#ff9a5c'], 80, 0.5);
+        if (elOnMark(e)) damagePlayer(e.vol.x, eliteDmg(A.potDmg), { unblockable: true, up: true, who: e, blow: 'the second pot' });
+        fires.push({ x: e.vol.x, y: e.vol.y, life: 2.0, delay: 0.1, still: true, dmg: 8, ekFire: true });
         e.mode = 'ekPotOpen'; e.modeT = A.potOpen; } break;
     case 'ekPotOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;
     case 'ekCleaverTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekCleaver'; e.modeT = A.strike; e.elHit = false; SFX.slash(); } break;
@@ -3611,7 +3674,7 @@ function updateEliteAffix(e, dt) {
     case 'ekRiposteTell': e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'ekRiposte'; e.modeT = 0.2; e.elHit = false; SFX.slash(); } break;
     case 'ekRiposte': e.vx = elEdge(e) ? 0 : e.face * EK.K.ripStep;
       if (!e.elHit && elFront(e, EK.K.ripReach, 22)) { e.elHit = true; damagePlayer(e.x, eliteDmg(EK.K.ripDmg), { who: e, blow: 'the riposte' }); }
-      if (e.modeT <= 0) { e.mode = 'ekRiposteOpen'; e.modeT = EK.K.ripOpen; } break;
+      if (e.modeT <= 0) { e.mode = 'ekRiposteOpen'; e.modeT = EK.K.ripOpen; if (e.t === 'cutthroat') e.ekSkimAt = time; } break;   /* (claude/elitemoves: THE FIRST KNIFE's skimmer follows his riposte - updateEliteCutthroat) */
     case 'ekRiposteOpen': e.vx = 0; if (e.modeT <= 0) { eliteDone(e); e.elT = Math.max(e.elT, 0.8); } break;
     case 'ekCallTell': e.vx = 0; if (e.modeT <= 0) { eliteCall(e); ringAt(e.x, e.y - e.h / 2, 40, '#c8a0ff', 0.4); shakeCam(3); eliteDone(e); e.elT = Math.max(e.elT, 1.2); } break;
     default: eliteDrop(e, 1.2); return false; }
@@ -3624,8 +3687,8 @@ function drawEliteKit(e, cx, cy) {
   if (e.ekGuarding && Math.abs(P.x - e.x) < 140) { const gf = e.ekSide || f, gx = Math.round(e.x + gf * (w / 2 + 2) - cx), gy = Math.round(e.y - h - cy), gh = Math.round(h * 0.7); g.fillStyle = 'rgba(12,10,20,0.8)'; g.fillRect(gx - 2, gy + 1, 4, gh + 2); g.fillStyle = e.ekClank > 0 ? '#fff6e0' : e.affix === 'SHIELDED' ? '#e8eef6' : '#9aa3b0'; g.fillRect(gx - 1, gy + 2, 2, gh); }   /* HIS GUARD (by angle, src/elite-kit.js): a bar of steel across his front while he holds it - white on the cut it turns */
   if (e.affix === 'THORNED' && (e.ekCuts > 0 || e.mode === 'ekThornsTell')) { const n = e.mode === 'ekThornsTell' ? 7 : 2 + e.ekCuts * 2; g.fillStyle = '#8fd160'; for (let i = 0; i < n; i++) { const a = -Math.PI + (i + 0.5) * Math.PI / n, r = w / 2 + (e.mode === 'ekThornsTell' ? 5 : 2); g.fillRect(Math.round(x + Math.cos(a) * r), Math.round(y - h / 2 + Math.sin(a) * (h / 2 + 2)), 2, 2); } }   /* THE SPINES, rising with every cut of a mash */
   if (e.affix === 'BURNING' && !(e.ekDoused > 0) && Math.random() < 0.5) parts.push({ x: e.x + (Math.random() - 0.5) * w, y: e.y - Math.random() * h, vx: 0, vy: -40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 });
-  if (e.ekReach > 0) { const x1 = Math.round(e.x + f * (w / 2 + e.ekReach) - cx), yy = y - Math.round(h * 0.5); g.fillStyle = ART.OUT; g.fillRect(Math.min(x, x1), yy - 1, Math.abs(x1 - x), 3); g.fillStyle = e.t === 'hopper' ? '#d86a7a' : '#8b6a2a'; g.fillRect(Math.min(x, x1), yy, Math.abs(x1 - x), 1); g.fillStyle = '#c9d1dc'; g.fillRect(x1 - 1, yy - 2, 3, 3); }   /* the pole's hook or the tongue, out */
-  if (e.ekWave) { const W = e.ekWave; g.fillStyle = '#9ad0ff'; for (const wx of [W.l, W.r]) { const px0 = Math.round(wx - cx); g.fillRect(px0 - 4, Math.round(W.y - cy) - 6, 8, 6); g.fillStyle = '#e8f6ff'; g.fillRect(px0 - 3, Math.round(W.y - cy) - 7, 6, 1); g.fillStyle = '#9ad0ff'; } }
+  if (e.ekReach > 0) { const x1 = Math.round(e.x + f * (w / 2 + e.ekReach) - cx), yy = e.ekReachLow ? y - 3 : y - Math.round(h * 0.5);   /* (the watch's hook goes out along the floor) */ g.fillStyle = ART.OUT; g.fillRect(Math.min(x, x1), yy - 1, Math.abs(x1 - x), 3); g.fillStyle = e.t === 'hopper' ? '#d86a7a' : '#8b6a2a'; g.fillRect(Math.min(x, x1), yy, Math.abs(x1 - x), 1); g.fillStyle = '#c9d1dc'; g.fillRect(x1 - 1, yy - 2, 3, 3); }   /* the pole's hook or the tongue, out */
+  if (e.ekWave) { const W = e.ekWave, c0 = W.col || '#9ad0ff', c1 = W.top || '#e8f6ff'; g.fillStyle = c0; for (const wx of [W.l, W.r]) { const px0 = Math.round(wx - cx); g.fillRect(px0 - 4, Math.round(W.y - cy) - 6, 8, 6); g.fillStyle = c1; g.fillRect(px0 - 3, Math.round(W.y - cy) - 7, 6, 1); g.fillStyle = c0; } }   /* (the tide's water; a troll's ridge of rock, a cook's boil-over: W.col) */
   const s = e.shot; if (s && !s.gone) { const sx = Math.round(s.x - cx), sy = Math.round(s.y - cy), d = Math.sign(s.vx) || 1;
     g.fillStyle = ART.OUT; g.fillRect(sx - 3, sy - 2, 7, 4);
     if (s.kind === 'knife') { g.fillStyle = '#e8e2cc'; g.fillRect(sx - 2, sy - 1, 4, 1); g.fillStyle = '#8b6a2a'; g.fillRect(sx - 2 * d - (d < 0 ? 0 : 1), sy - 1, 2, 2); }
@@ -29826,6 +29889,16 @@ window.BK = { village: () => ({ G: () => VG, saved: () => straysGot.size, total:
       for (const k of Object.keys(keys)) keys[k] = false;
     }
     Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
+  /* (claude/elitemoves) THE ONE-WINDUP CLOCK BACK TO NOUGHT: reset({ fresh }) puts time back to 0 but left lastTellT where the last fight
+     ended, so in every lab fight after a page's first, time - lastTellT stayed negative - no elite could start a move until the clock passed
+     the old fight's last tell, and every windup in reach was stretched 0.35 s. The elite lab calls this after its reset (the other labs: see
+     the elitemoves lane report, a question for Daniel). */
+  clearTellClock() { lastTellT = -9; },
+  /* (claude/elitemoves) THE ONE-WINDUP CLOCK BACK TO NOUGHT: reset({ fresh }) puts time back to 0 but left lastTellT where the last fight
+     ended, so in every lab fight after a page's first, time - lastTellT stayed negative - no elite could start a move until the clock passed
+     the old fight's last tell, and every windup in reach was stretched 0.35 s. The elite lab calls this after its reset (the other labs: see
+     the elitemoves lane report, a question for Daniel). */
+  clearTellClock() { lastTellT = -9; },
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel, loadG: loadLevelG, loadThen,   /* the loading screen, for tools/loading-screen.mjs */
   /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
      hunting for the up/down flags press() does not carry. */

@@ -2076,7 +2076,7 @@ export async function eliteLab(BK, o) {
     BK.sim = n => { rollWhenDue(BK, press0); return sim0.call(BK, n); }; BK.step = n => { rollWhenDue(BK, press0); return step0.call(BK, n); }; }
   BK.manualSimulation = true;
   try {
-    BK.setHero(o.hero); BK.reset({ fresh: true }); BK.load(lvm.LEVELS.findIndex(l => l.id === o.level)); BK.start(); BK.god = false; BK.sim(10);
+    BK.setHero(o.hero); BK.reset({ fresh: true }); if (BK.clearTellClock) BK.clearTellClock(); BK.load(lvm.LEVELS.findIndex(l => l.id === o.level)); BK.start(); BK.god = false; BK.sim(10);   /* (claude/elitemoves: the tell clock with the fight's own clock - see BK.clearTellClock) */
     let e = BK.enemies().filter(q => q.elite && q.t === o.kind && q.alive && !q.ambush).sort((a, b) => a.x - b.x)[o.nth || 0];
     const P = BK.P, k = BK.keys;
     if (!e && o.spawn) { const n0 = BK.enemies().length; BK.spawnEnt({ t: o.kind, x: Math.round(P.x / 16) + 5, y: Math.round(P.y / 16) - 1, elite: true, affix: o.affix }); e = BK.enemies()[n0]; }
