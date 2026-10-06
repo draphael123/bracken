@@ -25,14 +25,14 @@
 export const COLOSSUS_STAGE = { W: 40, cc: 20, mirrors: [12, 28], fires: [2, 37], knee: 3, hip: 6, shoulder: 9, crown: 12,
   kneeW: [-5, -3], kneeE: [2, 4], hipW: [-4, -2], hipE: [1, 3], shoulderW: [-5, -2], shoulderE: [1, 4], crack: [-3, 2] };
 export const COL = {
-  hp: 1500, w: 72, h: 200,
-  lanceTell: 1.15, lanceTell3: 1.0, lanceAct: 0.45, lanceDmg: 20, lanceBand: [28, 4],
-  stompTell: 0.85, stompV: 240, stompH: 14, stompDmg: 12,
-  shardTell: 0.85, shardAct: 0.25, shardDmg: 10, shardR: 9, shardSpread: 44,
-  shakeTell: 1.0, shake: 0.9, shakeDmg: 6, shakeAfter: 1.2, shakeCd: 5,
+  hp: 2400, w: 72, h: 200,
+  lanceTell: 1.15, lanceTell3: 1.0, lanceAct: 0.45, lanceDmg: 36, lanceBand: [28, 4],
+  stompTell: 0.85, stompV: 240, stompH: 14, stompDmg: 22,
+  shardTell: 0.85, shardAct: 0.25, shardDmg: 18, shardR: 9, shardSpread: 44,
+  shakeTell: 1.0, shake: 0.9, shakeDmg: 14, shakeAfter: 1.2, shakeCd: 5,
   swarmTell: 1.2, swarmAct: 1.4, swarmMax: 6, swarmEvery: 0.45,
-  waveTell: 1.0, waveV: 260, waveH: 16, waveDmg: 14,
-  openT: 4.6, openShoulders: 5.2, openCrown: 5.0, openMul: 2.0, plungeMul: 2.4, openCap: 0.15,
+  waveTell: 1.0, waveV: 260, waveH: 16, waveDmg: 26,
+  openT: 5.2, openShoulders: 5.6, openCrown: 5.4, openMul: 2.0, plungeMul: 2.4, openCap: 0.09,
   legPurse: [0.15, 0.09, 0.07], legMul: 1.0,
   wardT: 3.0, lockT: 1.5, phase2: 0.55, phase3: 0.25, phaseT: 2.2,
   gap: [0.9, 0.8, 0.7],
@@ -171,13 +171,18 @@ export function takeBlow(e, S, dmg, footY, plunge, out = {}) {
   S.n.shut++; out.word = S.n.shut > 4 ? 'SHUT' : S.ph === 2 ? 'SHUT: FIRELIGHT ON ITS CRACK OPENS IT' : S.ph === 3 && S.n.shut % 2 ? 'SHUT: A MIRROR TO THE SKY' : 'SHUT: BAIT ITS LANCE INTO A MIRROR'; return 0;
 }
 
-/* ---------- THE BOT (src/lab.js): what a player sees, read a quarter-second late ----------
-   P: { x, y, ground, face, atk, vy }; returns { gx (walk to), jump, dodge, block, atk, talk (E), grip (hold down), face, why } */
-export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t, roll = true }) {
+/* ---------- THE BOT (src/lab.js): what a player sees, read a quarter-second late (the house's human bot: react 0.25 s, a tell misread one time in eight) ----------
+   missBait: it does not make it behind the mirror for a lance; missTurn: it fumbles a mirror's turn this time (tries again a second later); missGrip: it lets go in a shake */
+export const COL_PLAN = { react: 0.25, miss: 0.13, missBait: 0.25, missTurn: 0.2, missGrip: 0.2 };
+/* P: { x, y, ground, face, atk, vy }; returns { gx (walk to), jump, dodge, block, atk, talk (E), grip (hold down), face, why } */
+export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t, roll = true, tip = 0 }) {
   const G = S.G, out = { gx: null, face: P.face, why: '' }, cx = G.cx, side = P.x < cx ? -1 : 1;
-  const late = (k, d) => { const key = k + ':' + (e.mode) + ':' + S.n.lance + ':' + S.n.stomp + ':' + S.n.shards + ':' + S.n.shake + ':' + S.n.wave; if (!(key in mem)) mem[key] = t + 0.22 + rng() * 0.12; return t >= mem[key] && !(mem['miss' + key] ??= rng() < (d || 0.06)); };
+  const late = (k, d) => { const key = k + ':' + (e.mode) + ':' + S.n.lance + ':' + S.n.stomp + ':' + S.n.shards + ':' + S.n.shake + ':' + S.n.wave; if (!(key in mem)) mem[key] = t + COL_PLAN.react - 0.04 + rng() * 0.1; return t >= mem[key] && !(mem['miss' + key] ??= rng() < (d ?? COL_PLAN.miss)); };
   const onFloor = P.ground && P.y > G.floor - 8, onHip = P.ground && Math.abs(P.y - G.hipY) < 4, onSh = P.ground && Math.abs(P.y - G.shoulderY) < 4, onKnee = P.ground && Math.abs(P.y - G.kneeY) < 4;
   const strike = (dirX) => { out.face = dirX; if (P.atk < 0) out.atk = true; };
+  /* where to stand to strike its body from side s on a ledge (a spear's TIP pays at a distance from the body's edge: the warden stands back) */
+  const spot = (s, l) => { const x = tip ? cx + s * (COL.w / 2 + tip) : s < 0 ? l.r - 4 : l.l + 4; return Math.max(l.l + 4, Math.min(l.r - 4, x)); };
+  const legX = s => cx + s * (tip ? COL.w / 2 + tip : 36 + reach * 0.4);
   /* the climb: to the side's holds, row by row (jump straight up through the one-way above) */
   const climbTo = (want, s) => { const k = G.knee[s < 0 ? 0 : 1], h = G.hip[s < 0 ? 0 : 1], sh = G.shoulder[s < 0 ? 0 : 1];
     const mid = l => (l.l + l.r) / 2;
@@ -186,42 +191,44 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
     if (onHip && want === 'top') { out.gx = Math.max(sh.l + 6, Math.min(sh.r - 6, P.x)); if (P.x >= sh.l + 4 && P.x <= sh.r - 4) out.jump = true; return; }
     if (!P.ground) { out.gx = P.x; out.holdJump = true; } };
   /* 1. THE SHAKE: grip */
-  if ((e.mode === 'shakeTell' || e.mode === 'shake') && (onHip || onSh) && late('grip', 0.08)) { out.grip = true; out.why = 'grip'; return out; }
+  if ((e.mode === 'shakeTell' || e.mode === 'shake') && (onHip || onSh) && late('grip', COL_PLAN.missGrip)) { out.grip = true; out.why = 'grip'; return out; }
   if ((e.mode === 'shakeTell' || e.mode === 'shake') && (onHip || onSh)) { out.why = 'late grip'; return out; }
   /* 2. THE OPENINGS: climb to it and strike inward */
   if (colOpen(e)) { const want = e.mode === 'cracked' ? 'chest' : 'top', s = side;
-    if (want === 'chest' && onHip) { out.gx = s < 0 ? G.hip[0].r - 4 : G.hip[1].l + 4; strike(-s); out.why = 'chest'; return out; }
-    if (want === 'top' && onSh) { out.gx = s < 0 ? G.shoulder[0].r - 4 : G.shoulder[1].l + 4; strike(-s); out.why = 'top'; return out; }
+    if (want === 'chest' && onHip) { out.gx = spot(s, G.hip[s < 0 ? 0 : 1]); if (Math.abs(P.x - out.gx) < 8) strike(-s); out.why = 'chest'; return out; }
+    if (want === 'top' && onSh) { out.gx = spot(s, G.shoulder[s < 0 ? 0 : 1]); if (Math.abs(P.x - out.gx) < 8) strike(-s); out.why = 'top'; return out; }
     climbTo(want, s); out.why = 'climb ' + want; return out; }
   /* get off its body when nothing is open (a shake comes for a climber) */
   if ((onHip || onSh) && !colOpen(e)) { out.gx = side < 0 ? G.x0 + 60 : G.x1 - 60; out.why = 'down'; }
   /* 3. THE THREATS IN FLIGHT */
-  for (const r of S.rings) if (Math.sign(r.x - cx) === Math.sign(P.x - cx) && Math.abs(r.x - P.x) < 46 && Math.sign(P.x - r.x) === r.dir && onFloor) { if (shield && !late('ringJump', 0.3)) { out.block = true; out.why = 'block ring'; return out; } if (late('ringJ', 0.05)) { out.jump = true; out.why = 'jump ring'; } }
-  if (S.wave && onFloor && Math.abs(S.wave.x - P.x) < 50 && Math.sign(P.x - S.wave.x) === S.wave.dir && late('waveJ', 0.05)) { out.jump = true; out.why = 'jump wave'; }
-  if (e.mode === 'shardTell' && late('shard', 0.08)) { const hitMe = S.marks.some(m => Math.abs(m.x - P.x) < COL.shardR + 6 && Math.abs(m.y - P.y) < 20);
+  /* a hazard in flight is SEEN once, a reaction after it appears (and misread one time in eight): then the answer comes at the right moment, as a player's does */
+  const seen = id => { if (!(('s' + id) in mem)) { mem['s' + id] = t + COL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + id] = rng() < COL_PLAN.miss; } return t >= mem['s' + id] && !mem['m' + id]; };
+  for (const r of S.rings) if (Math.sign(P.x - r.x) === r.dir && onFloor && seen('ring' + r.id)) { const d = Math.abs(r.x - P.x); if (shield && d < 46) { out.block = true; out.why = 'block ring'; return out; } if (d < 30) { out.jump = true; out.why = 'jump ring'; } }
+  if (S.wave && onFloor && Math.sign(P.x - S.wave.x) === S.wave.dir && seen('wave' + S.wave.id) && Math.abs(S.wave.x - P.x) < 34) { out.jump = true; out.why = 'jump wave'; }
+  if (e.mode === 'shardTell' && late('shard')) { const hitMe = S.marks.some(m => Math.abs(m.x - P.x) < COL.shardR + 6 && Math.abs(m.y - P.y) < 20);
     if (hitMe) { if (shield) { out.block = true; out.why = 'block shards'; return out; } const free = [P.x - 26, P.x + 26, P.x - 60, P.x + 60].find(x => x > G.x0 + 12 && x < G.x1 - 12 && !S.marks.some(m => Math.abs(m.x - x) < COL.shardR + 8)); if (free != null) { out.gx = free; out.why = 'out of shards'; return out; } } }
   if (e.mode === 'shards' && shield && S.marks.some(m => Math.abs(m.x - P.x) < COL.shardR + 6)) { out.block = true; return out; }
   /* 4. THE LANCE: get behind a FACING mirror on its side (the bait), or off the floor, or jump it */
-  if ((e.mode === 'lanceTell' || e.mode === 'lance') && S.lance && late('lance', 0.05)) { const L0 = S.lance, end = L0.end, inLine = onFloor && Math.sign(P.x - cx) === L0.dir && (end.mirror < 0 || Math.abs(P.x - cx) < Math.abs(end.x - cx) + 2);
+  if ((e.mode === 'lanceTell' || e.mode === 'lance') && S.lance && late('lance')) { const L0 = S.lance, end = L0.end, inLine = onFloor && Math.sign(P.x - cx) === L0.dir && (end.mirror < 0 || Math.abs(P.x - cx) < Math.abs(end.x - cx) + 2);
     if (inLine) { const m = S.mirrors.find(q => q.notch === 'face' && Math.sign(q.x - cx) === L0.dir);
-      if (m && e.mode === 'lanceTell' && e.modeT > Math.abs(P.x - (m.x + L0.dir * 18)) / 110 + 0.1) { out.gx = m.x + L0.dir * 20; out.why = 'behind the mirror'; return out; }
+      if (m && e.mode === 'lanceTell' && e.modeT > Math.abs(P.x - (m.x + L0.dir * 18)) / 110 + 0.1 && !(mem['bait' + S.n.lance] ??= rng() < COL_PLAN.missBait)) { out.gx = m.x + L0.dir * 20; out.why = 'behind the mirror'; return out; }
       if (e.mode === 'lanceTell' && e.modeT < 0.32 || e.mode === 'lance') { out.jump = true; out.holdJump = true; out.why = 'jump lance'; return out; }
       out.gx = P.x; out.why = 'wait to jump'; return out; } }
   /* 5. THE PLAN BY PHASE */
   const myMirror = S.mirrors.reduce((a, b) => Math.abs(b.x - P.x) < Math.abs(a.x - P.x) ? b : a), outside = m => m.x + Math.sign(m.x - cx) * 22;
   if (S.ph === 2) { const fireM = S.mirrors.find(q => q.notch === 'fire');
-    if (!fireM && S.ward <= 0) { out.gx = myMirror.x; if (Math.abs(P.x - myMirror.x) < 14 && onFloor && late('turn' + myMirror.notch, 0.02)) { out.talk = true; out.face = Math.sign(myMirror.x - P.x) || P.face; } out.why = 'turn to the fire'; return out; }
+    if (!fireM && S.ward <= 0) { out.gx = myMirror.x; if (Math.abs(P.x - myMirror.x) < 14 && onFloor && late('turn' + myMirror.notch + Math.floor(t), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(myMirror.x - P.x) || P.face; } out.why = 'turn to the fire'; return out; }
     /* wait at its knee (under the hold), ready to climb when the shoulders blaze; cut the legs while the purse lasts */
     const s = fireM ? Math.sign(fireM.x - cx) : side; const kx = (G.knee[s < 0 ? 0 : 1].l + G.knee[s < 0 ? 0 : 1].r) / 2;
     if (e.mode === 'swarmTell' || e.mode === 'swarm') { out.gx = kx; climbTo('top', s); out.why = 'up for the blaze'; return out; }
-    out.gx = kx + s * 6; if (S.legPurse > 0 && onFloor && Math.abs(P.x - cx) < 46 + reach) { out.gx = cx + s * (36 + reach * 0.4); if (Math.abs(P.x - out.gx) < 10 && (mem.legT ?? -9) < t - 0.9) { mem.legT = t; strike(-s); } } out.why = 'p2 wait'; return out; }
+    out.gx = kx + s * 6; if (S.legPurse > 0 && onFloor && Math.abs(P.x - cx) < 46 + reach) { out.gx = legX(s); if (Math.abs(P.x - out.gx) < 10 && (mem.legT ?? -9) < t - 0.9) { mem.legT = t; strike(-s); } } out.why = 'p2 wait'; return out; }
   if (S.ph === 3) { const skyM = S.mirrors.find(q => q.notch === 'sky');
-    if (!skyM && S.ward <= 0 && e.mode !== 'lanceTell' && e.mode !== 'lance') { const m = S.mirrors[side < 0 ? 0 : 1]; out.gx = m.x; if (Math.abs(P.x - m.x) < 14 && onFloor && late('turnS' + m.notch, 0.02)) { out.talk = true; out.face = Math.sign(m.x - P.x) || P.face; } out.why = 'turn to the sky'; return out; } }
+    if (!skyM && S.ward <= 0 && e.mode !== 'lanceTell' && e.mode !== 'lance') { const m = S.mirrors[side < 0 ? 0 : 1]; out.gx = m.x; if (Math.abs(P.x - m.x) < 14 && onFloor && late('turnS' + m.notch + Math.floor(t), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(m.x - P.x) || P.face; } out.why = 'turn to the sky'; return out; } }
   /* P1 (and P3's lances): wait just outside a FACING mirror on your side; while its lance is far off, cut its legs */
   const m = S.mirrors.find(q => q.notch === 'face' && Math.sign(q.x - cx) === side) || S.mirrors.find(q => q.notch === 'face');
   if (m) { const safeX = outside(m);
     const recent = (e.mode === 'idle' && S.lock > 0) || mem.after > t;   /* right after an opening (the ward and the lockout): no lance comes - the legs */
-    if (S.legPurse > 0 && recent && onFloor) { const s = Math.sign(m.x - cx); out.gx = cx + s * (36 + reach * 0.4); if (Math.abs(P.x - out.gx) < 10 && (mem.legT ?? -9) < t - 0.9) { mem.legT = t; strike(-s); } out.why = 'legs'; return out; }
+    if (S.legPurse > 0 && recent && onFloor) { const s = Math.sign(m.x - cx); out.gx = legX(s); if (Math.abs(P.x - out.gx) < 10 && (mem.legT ?? -9) < t - 0.9) { mem.legT = t; strike(-s); } out.why = 'legs'; return out; }
     out.gx = safeX; out.face = -Math.sign(m.x - cx); out.why = 'bait'; }
   if (S.ward > 0) mem.after = t + 1.4;
   return out;

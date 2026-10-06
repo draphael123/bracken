@@ -64,7 +64,7 @@ export function buildGlassSea({ painter, T, TS }) {
   const skitter = (x, y, squad) => foe('skitter', x, y, squad);
   /* THE RULE'S PIECES (src/glass-sea-hands.js): mirrors (E turns them), the beams' sources, the sand beds a day beam fuses, the cracks (a pit; by night
      a swarm boils out of one unless firelight holds it), the campfires, the shade (static boxes, px), the slick zones */
-  const mirrors = [], sources = [], beds = [], cracks = [], fires = [], shade = [], decor = [], interiors = [], vaultDoors = [];
+  const mirrors = [], sources = [], beds = [], cracks = [], fires = [], shade = [], decor = [], interiors = [], vaultDoors = [], dunes = [];
   /* a MIRROR on a post: the glass at (x, y); notches: the states E steps through, in order (light.js '/', '\\', and 'sky' = tilted to the sky: the beam ends
      there). shards: it will not turn until you carry that many glass shards (the vault mirror) */
   const mirror = (id, x, y, notches, o) => { mirrors.push(Object.assign({ id, x, y, notches, n: 0 }, o || {})); ent('gsmirror', x, y, { id }); };
@@ -97,7 +97,7 @@ export function buildGlassSea({ painter, T, TS }) {
   ground(20, 47, B);
   skiff(23, B - 1);                                                        /* the first shade, at the slope's foot */
   sign(27, B - 1, 'THE SUN BURNS IN THE OPEN. STAND IN SHADE TO COOL.');
-  glassS(33, B - 1, 'edgeScorp');
+  glassS(31, B - 1, 'edgeScorp'); skiff(35, B - 1);                      /* (a second skiff before the mirror: no walk in the sun over SUN.maxWalk) */
   /* THE FIRST MIRROR (TEACH, REQUIRED, no risk): the dune cliff at 48 is five rows; the mirror's beam fuses the stair against it */
   mirror('first', 40, B - 2, ['sky', '\\', '/']); source('first', 40, B - 3, 'S', 'sun');
   sign(37, B - 1, 'A SUN-MIRROR. E TURNS IT: ITS BEAM FUSES SAND TO GLASS.');
@@ -114,19 +114,19 @@ export function buildGlassSea({ painter, T, TS }) {
   ground(96, 127, B);
   block(100, 105, B - 5, B - 5); decor.push({ kind: 'spire', x: 102, y: B - 1, top: B - 5 });   /* spire A's overhang (shade) */
   /* THE SPIRE LEDGE (optional): a tall spire, its top ledge a silver and the first glass shard; a mirror fuses the stair up its flank */
-  boards(115, 119, B - 12); decor.push({ kind: 'spire', x: 117, y: B - 1, top: B - 12, tall: true });   /* (the spire is behind the road: only its top ledge stands) */
+  boards(115, 119, B - 12); decor.push({ kind: 'spire', x: 117, y: B - 1, top: B - 12, tall: true }); shadeBox(114, 120, B - 12, B - 1);   /* (the spire is behind the road: only its top ledge stands) */
   ent('silver', 117, B - 13); shardAt(119, B - 13);
   mirror('spire', 108, B - 2, ['sky', '\\', '/']); source('spire', 108, B - 3, 'S', 'sun');
   bed('spireStair', 115, B - 2, [...span(110, 112, B - 3), ...span(112, 113, B - 6), ...span(113, 114, B - 9)], { label: 'THE SPIRE STAIR' });
-  glassS(122, B - 1, 'fieldScorp');                                         /* in the spire mirror's beam row: a beam on it dazzles it (taught once) */
+  glassS(122, B - 1, 'fieldScorp'); skiff(126, B - 1);                                         /* in the spire mirror's beam row: a beam on it dazzles it (taught once) */
   sign(105, B - 1, 'A BEAM ON GLASS DAZZLES IT.');
   /* THE SLIDE GAP (TEST, REQUIRED): up a gentle glass rise, then a steep slick run down and over the crack - slide (hold down) and leap at the foot */
   { let t = rise(128, B, 3, true); ground(134, 136, t); t = fall(137, t, 5, false);   /* 137-141 down to row 36 */
     ground(142, 142, t); crack('slideGap', 143, 147, t); ground(148, 160, t - 1); }
   sign(130, B - 4, 'GLASS SLOPES ARE SLICK. HOLD DOWN TO SLIDE; LEAP AT THE FOOT.');
-  block(150, 155, B - 6, B - 6); decor.push({ kind: 'spire', x: 152, y: B - 2, top: B - 6 });   /* shade on the landing */
+  block(150, 155, B - 5, B - 5); decor.push({ kind: 'spire', x: 152, y: B, top: B - 5 });   /* shade on the landing */
   upS(161, B + 1); ground(162, 195, B);
-  vulture(170, B - 8, 'fieldVult');
+  vulture(170, B - 8, 'fieldVult'); skiff(168, B - 1);
   glassS(174, B - 1, 'fieldPair'); glassS(178, B - 1, 'fieldPair');
   skiff(184, B - 1);
   thrower(192, B - 4, 'fieldThrow'); block(190, 195, B - 3, B - 1);         /* a thrower on a fused ridge over the way into the crossing */
@@ -135,7 +135,7 @@ export function buildGlassSea({ painter, T, TS }) {
   // ================= 3. THE BONE CROSSING (196-295): SET PIECE ONE - THE SUN-MIRROR BRIDGE (REQUIRED) =================
   ground(196, 229, B);
   ent('check', 199, B - 1);                                                 /* CHECKPOINT ONE */
-  skiff(205, B - 1);
+  skiff(205, B - 1); skiff(215, B - 1);
   glassS(212, B - 1, 'crossScorp');
   /* THE MIRROR on the near lip, its sentinel in front of it; the beam runs along row 32 to the sand heap on the far lip: the bridge fuses at the
      surface from the near lip outward (the beam walking across) */
@@ -145,7 +145,7 @@ export function buildGlassSea({ painter, T, TS }) {
   crack('crossing', 230, 241, B);
   bed('bridge', 243, B - 2, span(230, 241, B), { label: 'THE BRIDGE', walk: true });
   ground(242, 295, B);
-  decor.push({ kind: 'heap', x: 243, y: B - 1 });                           /* the sand heap the beam lands on (its target ring) */
+  decor.push({ kind: 'heap', x: 243, y: B - 1 }); skiff(246, B - 1);   /* the far lip's shade: between it and the near lip's, only the vultures' shadows */                           /* the sand heap the beam lands on (its target ring) */
   vulture(234, B - 9, 'crossVult'); vulture(250, B - 10, 'crossVult2');      /* their shadows cross the bridge: moving shade in the open */
   block(248, 252, B - 3, B - 1); decor.push({ kind: 'ridge', x0: 248, x1: 252, y: B - 3 });   /* a fused ridge on the far lip */
   thrower(250, B - 4, 'farLip');                                            /* THE RANGED ONE on the far lip: he throws while you turn the mirror */
@@ -157,7 +157,7 @@ export function buildGlassSea({ painter, T, TS }) {
 
   // ================= 4. THE FORK OBELISK (296-359): REMIX - THE TWO-MIRROR CHAIN (REQUIRED); the sun sets =================
   ground(296, 345, B);
-  ent('check', 300, B - 1);                                                 /* CHECKPOINT TWO, at the fork */
+  ent('check', 300, B - 1); skiff(296, B - 1);                             /* CHECKPOINT TWO, at the fork */
   sign(303, B - 1, 'THE FORK OBELISK. THE SUN GOES DOWN HERE.');
   /* the way to THE SUN TEMPLE (4b, built later): a sealed door in the dune (decor + a sign) */
   decor.push({ kind: 'templeDoor', x: 307, y: B - 1 }); sign(309, B - 1, 'THE SUN TEMPLE. THE WAY IS SHUT.');
@@ -250,6 +250,24 @@ export function buildGlassSea({ painter, T, TS }) {
   boards(592, 597, B - 15); interiors.push([592, 597, B - 17, B - 16, 'gsVault']); ent('silver', 595, B - 16); 
   ent('check', 600, B - 4);                                                 /* CHECKPOINT FOUR: before the Colossus */
 
+  // ================= THE GLASS TERRACES AND THE DUNES (a high road over the low one; no long level stretch) =================
+  /* THE TERRACES: lightning-fused glass shelves (one-way) three rows over the sand - a high road beside the low one, never over a crack the rule bridges, a cliff the
+     first mirror's stair climbs, the obelisk's chain or the steps' exam */
+  for (const [x0, x1, y] of [[50, 66, B - 8], [77, 97], [158, 186], [194, 214], [255, 292], [413, 441], [453, 479], [544, 557], [564, 570]]) boards(x0, x1, y ?? B - 3);
+  /* THE DUNES: a long level stretch of sand gets a low glass dune (a row up over two columns, two across, a row down) where nothing stands - every glass slope is slick */
+  { const busy = new Set(); for (const e of L.ents) for (let d = -2; d <= 2; d++) busy.add(e.x + d);
+    for (const m of mirrors) for (let d = -3; d <= 3; d++) busy.add(m.x + d);
+    for (const c of cracks) for (let x = c.x0 - 3; x <= c.x1 + 3; x++) busy.add(x);
+    for (const b of beds) { busy.add(b.tx); for (const [x] of b.tiles) busy.add(x); }
+    for (const d of decor) for (let x = (d.x ?? d.x0) - 3; x <= (d.x1 ?? d.x) + 3; x++) busy.add(x);
+    const flatAt = x => L.grid[B * W + x] === T.SOLID && L.grid[(B - 1) * W + x] === T.AIR && L.grid[(B - 2) * W + x] === T.AIR;
+    let run = 0; for (let x = 0; x < 600; x++) { if (!flatAt(x)) { run = 0; continue; } run++;
+      if (run >= 14 && x + 6 < 600) { let free = true; for (let d = -1; d <= 7; d++) if (busy.has(x + d) || !flatAt(x + d)) free = false;
+        if (free) { set(x, B - 1, T.SLOPE_R2A); set(x + 1, B - 1, T.SLOPE_R2B); block(x + 2, x + 3, B - 1, B - 1); set(x + 4, B - 1, T.SLOPE_L2B); set(x + 5, B - 1, T.SLOPE_L2A); dunes.push(x); run = 0; x += 6; } } } }
+  /* the rule's gadgets, as ents the level tools read: the sand heaps a beam lands on, the cracks */
+  for (const b of beds) ent('gsheap', b.tx, b.ty, { id: b.id });
+  for (const c of cracks) ent('gscrack', c.x0, c.y - 1, { id: c.id });
+
   // ================= THE GLASS COLOSSUS (src/glass-colossus.js) =================
   const AX = 604, AF = B;
   const stage = stageColossus({ set, block, ent, air }, T, TS, AX, AF);
@@ -268,7 +286,9 @@ export function buildGlassSea({ painter, T, TS }) {
     arena: stage.arena, gateAfterBoss: true,
     glasssea: true, caravan: true,   /* caravan: the desert's hands in main.js (the sun, the creatures' machines, the sand skins) */
     sunsetX: SUNSET_X, glassFrom: 12,
-    mirrors, sources, beds, cracks, fires, decor, vaultDoors,
+    mirrors, sources, beds, cracks, fires, decor, vaultDoors, dunes,
+    /* THE RULE'S STATE for tools/rule-state.mjs: the sun by day (to the obelisk), its absence - the cold - by night (to the Colossus) */
+    sun: [{ x0: 0, x1: SUNSET_X }, { x0: SUNSET_X, x1: 604 }],
     shade, shadeArt: shade.slice(),
     quest: { n: 5, item: 'glassshard', name: 'SHARDS', done: 'FIVE SHARDS: THE VAULT MIRROR TURNS', thanks: 'THE VAULT MIRROR TURNS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),

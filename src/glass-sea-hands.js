@@ -41,7 +41,7 @@ export function makeGlassSeaHands(ctx) {
         mirrors: (L.mirrors || []).map(m => ({ ...m, n: 0, state: m.notches[0], flash: 0 })),
         beds: (L.beds || []).map(b => ({ ...b, k: 0, set: 0, hit: false })),
         cracks: (L.cracks || []).map(c => ({ ...c, held: false, spewT: 1, out: [], boilT: 0 })),
-        fires: (L.fires || []).slice(), patches: [],
+        fires: [...(L.fires || []), ...L.ents.filter(e => e.t === 'gscampfire' && e.arena).map(e => ({ id: e.id, x: e.x, y: e.y, arena: true }))], patches: [],
         n: { turns: 0, fused: 0, crumbled: 0, held: 0, boils: 0, falls: 0, spewed: 0, dazzled: 0, frozen: 0, shattered: 0, cold: 0, nudges: 0, slides: 0 } };
       for (const c of GSx.cracks) if (c.swarm) { const near = GSx.fires.filter(f => !f.arena && (f.x >= c.x0 - GS.holdR && f.x <= c.x1 + GS.holdR)); c.fireHeld = near.length > 0; }
     }
@@ -108,7 +108,7 @@ export function makeGlassSeaHands(ctx) {
     if (e.cnSkin === 'glassscorpion') { if (sunLitBox(e)) { if (!(e.gsDaz > 0)) { GSx.n.dazzled++; if (once('dazzle')) ctx.number(e.x, e.y - 22, 'DAZZLED: THE BEAM STUNS GLASS', '#fff6c8'); } e.gsDaz = GS.daz; } if (e.gsDaz > 0) { e.gsDaz -= dt; return true; } return false; }
     if (e.cnSkin === 'nighthunter') { if (warmAt(e.x, e.y)) { if (!e.gsFrozen) { e.gsFrozen = 1; GSx.n.frozen++; if (once('freeze') && Math.abs(ctx.hero().x - e.x) < 220) ctx.number(e.x, e.y - 26, 'FROZEN IN THE FIRELIGHT', '#ffd36b'); } return true; } e.gsFrozen = 0; return false; }
     return false; };
-  H.fear = (e, x, y) => !!GSx && e.t === 'skitter' && warmAt(x, y);
+  H.fear = (e, x, y) => !!GSx && e.t === 'skitter' && (warmAt(x, y) || !!(ctx.colRelayAt && ctx.colRelayAt(x, y)));   /* (and the Colossus's relayed firelight along its floor) */
   H.onDeath = e => { if (!GSx || e.cnSkin !== 'glassscorpion') return; const ts = TS(); GSx.patches.push({ x: e.x, y: e.y, t: GS.patchT }); GSx.n.shattered++;
     ctx.burst(e.x, e.y - 4, 12, ['#e8fff8', '#9ae8d0', '#5ab8a8'], 60, 0.6); if (once('shatter')) ctx.number(e.x, e.y - 24, 'IT SHATTERS: SHARDS IN THE SAND', '#9ae8d0'); };
   /* THE SLICK GLASS: a slide down a glass slope runs on faster than sand's (main.js, after its slide step) */

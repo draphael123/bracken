@@ -24,6 +24,8 @@ export function makeColossusHands(ctx) {
   H.owns = e => e.t === 'colossus';
   H.clear = () => { S = null; BOSS_PHASE.colossus = 1; };
   H.phase = () => (S && ctx.bossActive && ctx.boss && ctx.boss.t === 'colossus' && ctx.boss.alive ? S.ph : 0);
+  /* the firelight a shelf-mirror TO THE FIRE lays along the floor in phase two (skitters will not step into it: src/glass-sea-hands.js fear) */
+  H.relayAt = (x, y) => { if (!S || S.ph !== 2 || !A()) return false; const G = S.G; if (Math.abs(y - G.floor) > 24) return false; return S.mirrors.some(m => m.notch === 'fire' && (m.x < G.cx ? x >= G.fires[0] - 10 && x <= G.crack[0] + 8 : x <= G.fires[1] + 10 && x >= G.crack[1] - 8)); };
   H.gazeOn = () => !!(ctx.L && ctx.L.arena && ctx.L.arena.boss === 'colossus' && !ctx.L.gsColossusDown);   /* its eyes shine down the steps until it falls */
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.coKeys = pp.coKeys || new Map(); if (pp.coKeys.size > 120) pp.coKeys.clear(); if (pp.coKeys.has(key)) return true; pp.coKeys.set(key, 1); return false; };
