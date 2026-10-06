@@ -139,13 +139,20 @@ export const STUCK = {
   skyroad: [
     { id: 'sk-thermal-1', zone: [27, 41, 36, 52], at: [34, 51], line: 'THE HOT AIR OVER THE ROCK IS THE WAY UP' },
     { id: 'sk-thermal-2', zone: [53, 35, 69, 50], at: [67, 49], line: 'THE RISING AIR AT THE FOOT OF THE MESA' },
-    { id: 'sk-cloak', zone: [70, 20, 104, 34], at: [97, 33], done: ['cloak', 97, 33, 'on'], line: "THE RIDER'S CLOAK HANGS ON ITS MAST" },
-    { id: 'sk-stone-1', zone: [105, 30, 123, 46], at: [120, 37], done: ['sunstone', 120, 37, 'on'], line: 'A SUN-STONE LIES FACE DOWN BY THE CHASM' },
+    { id: 'sk-cloak', zone: [70, 20, 104, 34], steps: [
+      { at: [97, 33], done: ['cloak', 97, 33, 'on'], line: "THE RIDER'S CLOAK HANGS ON ITS MAST" },
+      { zone: [99, 28, 104, 34], when: ['cloak', 97, 33, 'on'], at: [118, 37], line: "LEDGE ONE IS IN A GLIDE'S REACH OVER THE GAP" } ] },   /* (FIX PASS: glide one) */
+    { id: 'sk-stone-1', zone: [105, 30, 123, 46], steps: [
+      { at: [120, 37], done: ['sunstone', 120, 37, 'on'], line: 'A SUN-STONE LIES FACE DOWN BY THE CHASM' },
+      { zone: [116, 30, 123, 37], when: ['sunstone', 120, 37, 'on'], at: [131, 30], line: 'THE AIR OVER THE PINNACLE RISES NOW: GLIDE INTO IT' } ] },   /* (FIX PASS: into thermal four) */
     { id: 'sk-reel', zone: [134, 18, 150, 26], steps: [
       { at: [139, 25], done: ['sunstone', 139, 25, 'on'], line: "THE REEL'S STONE IS FACE DOWN: THE FLUE IS COLD" },
-      { mover: { sky: 'reel' }, line: 'THE KITE HAULS THE CAGE UP THE CLIFF' } ] },
+      { mover: { sky: 'reel' }, line: 'THE CAGE COMES DOWN TO THE DECK: STEP ON IT THERE' } ] },
+    { id: 'sk-glide-roost', zone: [183, 8, 190, 13], at: [202, 19], line: "ROOST ONE IS IN A GLIDE'S REACH OFF THE DECK" },   /* (FIX PASS: deck to roost one) */
     { id: 'sk-stone-3', zone: [216, 10, 219, 18], at: [218, 17], done: ['sunstone', 218, 17, 'on'], line: 'A SUN-STONE ON THE ROOST' },
-    { id: 'sk-disc', zone: [265, 8, 298, 18], at: [295, 17], glint: 'stall', line: 'THE SUN-DISC AT THE BRIDGEHEAD' },
+    { id: 'sk-disc', zone: [265, 8, 298, 18], steps: [
+      { at: [295, 17], glint: 'stall', done: ['sundisc', 295, 17, 'on'], line: 'THE SUN-DISC AT THE BRIDGEHEAD' },
+      { zone: [288, 8, 298, 18], when: ['sundisc', 295, 17, 'on'], at: [303, 20], line: 'THE ROAD OF AIR IS LIT: THE EAST TOWER IS IN REACH' } ] },   /* (FIX PASS: the disc road) */
     { id: 'sk-stone-4', zone: [346, 12, 353, 20], at: [352, 19], done: ['sunstone', 352, 19, 'on'], line: 'A SUN-STONE ON THE CRACKED SPAN' },
     { id: 'sk-stone-6', zone: [360, 10, 367, 17], at: [364, 16], done: ['sunstone', 364, 16, 'on'], line: 'A SUN-STONE ON THE SECOND SPAN' },
   ],

@@ -7790,7 +7790,7 @@ export const LEVELS = [
   { id: 'underwell', arc: 'the desert', name: 'THE UNDERWELL', sub: 'the dry cisterns under the well town', rule: "STRIKE A TORCH AND THE OIL BURNS - THE BROOD WON'T CROSS FIRE. POUR WATER WHERE THE FIRE MUST NOT GO.", build: () => buildUnderwell({ painter, T, TS }), needs: 'welltown' },
   /* THE SKY ROAD (claude/skyroad, the GREYBOX, 2026-10-05): the main road's climb off the high moor's crags to THE ROC's eyrie - after GALE MOOR, before THE ORE ROAD
      (Daniel 10-03: "right after Gale Moor"; the moor keeps sideways gusts, this level owns the vertical air). APPENDED, so no index and no save moves */
-  { id: 'skyroad', name: 'THE SKY ROAD', sub: 'up the hot air to the eyrie', rule: 'THE SUN WARMS THE ROCK AND THE AIR RISES: RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.', build: () => buildSkyRoad({ painter, T, TS }), needs: 'moor' },
+  { id: 'skyroad', name: 'THE SKY ROAD', sub: 'up the hot air to the eyrie', rule: 'THE SUN WARMS THE ROCK AND THE AIR RISES. STRIKE A SUN-STONE TO WAKE ITS AIR; RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.', build: () => buildSkyRoad({ painter, T, TS }), needs: 'moor' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

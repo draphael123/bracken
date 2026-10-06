@@ -3,7 +3,7 @@
 //   reset, on, thermal (from the vent update: a prop with thermal: true), player (glide + the cloud sea, after gravity), update, strike, interact,
 //   mover (the reel's cage), harpy (her SNATCH), kiteHover (the goblin kites ride their thermal), riderStep (THE GOBLIN KITE-RIDER, a CV-style machine),
 //   riderHurt / riderStruck, props (the guide's extra props), drawWorld, drawSky, drawHud, read (tools).
-// THE RULE: THE SUN WARMS THE ROCK AND THE AIR OVER IT RISES: RIDE IT, GLIDE INTO IT - AND A CLOUD ON IT KILLS IT.
+// THE RULE (L.rule, FIX PASS: it names the stone strike): THE SUN WARMS THE ROCK AND THE AIR RISES. STRIKE A SUN-STONE TO WAKE ITS AIR; RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.
 //   - A THERMAL lifts a hero standing or falling in its column up to its top (it overshoots the reach model's top by THERMAL.over px, so you crest
 //     and drift onto the ledge). It is LIVE when its source is on (natural; a sun-stone struck round; the disc lit) and no CLOUD's shadow (nor a crag
 //     hawk circling over it, nor the Roc's storm) is on its foot. Its strength fades in and out (THERMAL.fadeIn/fadeOut): a shadow's edge is seen
@@ -19,7 +19,9 @@ export const GLIDE = { fall: 40 };
 export const CATCH = { dmg: 14, below: 2 };                          /* rows under the cloud sea's top at which the updraft has you */
 export const SNATCH = { t: 1.5, climb: 46, drift: 64, mash: 0.25, cd: 3 };   /* s she holds you, px/s up and out, s each press takes off, s before she dives again */
 export const RIDER = { hp: 16, ride: 22, sight: 190, tell: 0.7, speed: 250, over: 34, dmg: 12, cd: 2.4, sink: 46, rise: 90, walk: 52, reach: 24, kickTell: 0.45, kickDmg: 9, kickCd: 1.1, w: 14, h: 14 };
-export const REEL = { up: 3.4, down: 5 };                             /* s for the kite to haul the cage the whole way up; s for it to sink back */
+export const REEL = { up: 3.4, down: 2.6, delay: 3, rest: 3 };      /* s for the kite to haul the cage the whole way up; s for it to sink back; s at the deck before the FIRST haul
+   after the stone is struck (you walk to the berth); s it rests at the deck after every sink. (FIX PASS, the review: a cloud on the chimney now always
+   takes the cage the whole way down to the deck - it does not stop part-way when the cloud passes - and it waits there, so every hero boards it each cycle) */
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const mod = (a, n) => ((a % n) + n) % n;
@@ -36,7 +38,7 @@ export function makeSkyRoadHands(ctx) {
     const keep = S && S.L === lv;   /* a respawn keeps the cloak (taken once); a fresh load of the level takes it back */
     S = { L: lv, stones, disc: d ? { x: d.x * TS + 8, y: (d.y + 1) * TS, litAt: -99, until: -99, turnT: 0 } : null,
       cloak: keep ? S.cloak : false, cloakAt: c ? { x: c.x * TS + 8, y: (c.y + 1) * TS } : null, loft: lo ? { x: lo.x * TS + 8, y: (lo.y + 1) * TS, open: keep ? S.loft && S.loft.open : false } : null,
-      reelK: 0, safe: null, said: new Set(), n: { catches: 0, glides: 0, snatches: 0, stones: 0, disc: 0, rides: 0 }, hung: keep ? S.hung : false };
+      reelK: 0, reelPh: 'cold', reelT: 0, safe: null, said: new Set(), n: { catches: 0, glides: 0, snatches: 0, stones: 0, disc: 0, rides: 0 }, hung: keep ? S.hung : false };
     if (ctx.crumbleInit) ctx.crumbleInit();
   };
   /* the cloak survives a death on the level (it is the level's tool, taken once); a new load of the level takes it back off you */
@@ -111,6 +113,8 @@ export function makeSkyRoadHands(ctx) {
       if (n && !S.said.has('horn')) { S.said.add('horn'); ctx.number(e.x, e.y - 30, 'THE HORN CALLS THE KITE-RIDERS', '#ff9a5c'); } }
     /* THE ROC IS DOWN: the cloak goes back on a mast at the Eyrie (the level's tool does not follow you down the road) */
     { const A = L().arena, P = ctx.players()[0]; if (A && S.cloak && !S.hung && P && P.x > A.x0 && !ctx.enemies().some(e => e.t === 'roc' && e.alive)) { S.hung = true; ctx.number(P.x, P.y - 30, 'THE CLOAK GOES BACK ON ITS MAST', '#ffd36b'); } }
+    /* (FIX PASS, design-standard B8) THE ROC FORESHADOWED: the first time a hero is out on the last spans, her shadow crosses the bridge once (drawSky) */
+    { const P = ctx.players()[0]; if (P && !S.said.has('rocPass') && P.x > 368 * TS && P.x < 389 * TS) { S.said.add('rocPass'); S.rocPass = ctx.time(); ctx.sfx.queenShriek && ctx.sfx.queenShriek(); ctx.number(P.x, P.y - 34, 'A GREAT SHADOW CROSSES THE BRIDGE', '#ff9a5c'); } }
     /* a stone the disc lit: say so once */
     if (S.disc && ctx.time() < S.disc.until && !S.said.has('discRoad')) { S.said.add('discRoad'); ctx.number(S.disc.x, S.disc.y - 50, 'THE DISC TURNS: THE ROAD OF AIR RISES', '#ffd36b'); }
     if (S.disc && S.disc.until > 0 && ctx.time() > S.disc.until && S.disc.until > S.disc.litAt) { S.disc.litAt = -99; S.disc.until = -99; ctx.number(S.disc.x, S.disc.y - 40, 'THE SUN HAS MOVED OFF THE DISC', '#ffb070'); }
@@ -138,9 +142,16 @@ export function makeSkyRoadHands(ctx) {
   const reelHot = () => { const r = L().reel; if (!r) return false; const s = S.stones.get(r.stone); return !!(s && s.on) && !cloudAt(r.x); };
   H.mover = (m, dt) => {
     if (!S || m.sky !== 'reel') return false;
-    const oy = m.y, hot = reelHot(); S.reelK = hot ? Math.min(1, S.reelK + dt / REEL.up) : Math.max(0, S.reelK - dt / REEL.down);
-    m.y = m.y0 + (m.y1 - m.y0) * S.reelK; m.dx = 0; m.dy = m.y - oy; m.hot = hot;
-    if (hot && S.reelK > 0.05 && S.reelK < 0.95 && Math.random() < dt * 2) ctx.sfx.clank && ctx.sfx.clank();
+    const r = L().reel, st = r && S.stones.get(r.stone), lit = !!(st && st.on), oy = m.y, hot = reelHot();
+    /* cold (stone face down) -> wait (at the deck, REEL.delay after the strike, REEL.rest after a sink) -> up (while the chimney is hot; it holds at the top)
+       -> down (a cloud on the chimney: the whole way to the deck, committed) -> wait ... */
+    if (!lit) { S.reelPh = 'cold'; S.reelK = Math.max(0, S.reelK - dt / REEL.down); }
+    else if (S.reelPh === 'cold') { S.reelPh = 'wait'; S.reelT = REEL.delay; const P = ctx.players()[0]; if (P) ctx.number(m.x + m.w / 2, m.y - 30, 'THE KITE TAKES THE LINE: STEP ON THE CAGE', '#ffd36b'); }
+    else if (S.reelPh === 'wait') { S.reelK = 0; S.reelT -= dt; if (S.reelT <= 0 && hot) S.reelPh = 'up'; }
+    else if (S.reelPh === 'up') { if (!hot) S.reelPh = 'down'; else S.reelK = Math.min(1, S.reelK + dt / REEL.up); }
+    else if (S.reelPh === 'down') { S.reelK = Math.max(0, S.reelK - dt / REEL.down); if (S.reelK <= 0) { S.reelPh = 'wait'; S.reelT = REEL.rest; } }
+    m.y = m.y0 + (m.y1 - m.y0) * S.reelK; m.dx = 0; m.dy = m.y - oy; m.hot = hot && S.reelPh === 'up'; m.atDeck = S.reelK <= 0.001 && lit;
+    if (S.reelK > 0.05 && S.reelK < 0.95 && Math.random() < dt * 2) ctx.sfx.clank && ctx.sfx.clank();
     return true;
   };
 
@@ -219,7 +230,7 @@ export function makeSkyRoadHands(ctx) {
     if (S.disc) out.push({ t: 'sundisc', x: S.disc.x, y: S.disc.y, on: ctx.time() < S.disc.until });
     if (S.cloakAt) out.push({ t: 'cloak', x: S.cloakAt.x, y: S.cloakAt.y, on: S.cloak });
     if (S.loft) out.push({ t: 'loft', x: S.loft.x, y: S.loft.y, on: S.loft.open }); return out; };
-  H.read = () => S ? { cloak: S.cloak, hung: S.hung, reelK: S.reelK, stones: [...S.stones.values()].map(s => ({ id: s.id, on: s.on })), disc: S.disc ? { until: S.disc.until, litAt: S.disc.litAt } : null, loft: S.loft && S.loft.open, safe: S.safe, n: { ...S.n } } : null;
+  H.read = () => S ? { cloak: S.cloak, hung: S.hung, reelK: S.reelK, reelPh: S.reelPh, stones: [...S.stones.values()].map(s => ({ id: s.id, on: s.on })), disc: S.disc ? { until: S.disc.until, litAt: S.disc.litAt } : null, loft: S.loft && S.loft.open, safe: S.safe, n: { ...S.n } } : null;
   H.setStone = (id, on) => { const s = S && S.stones.get(id); if (s) s.on = on; };
   H.stone = id => S && S.stones.get(id);
   H.resetArena = () => { if (!S) return; for (const s of S.stones.values()) if (s.arena) s.on = false; };
@@ -233,6 +244,10 @@ export function makeSkyRoadHands(ctx) {
       const top = 6, w = c.z.w, lx = Math.round(c.left - cx);
       for (let k = 0; k < 5; k++) { const px = lx + w * (k + 0.5) / 5, r = 10 + (k % 2) * 5; g.fillStyle = '#d6dfec'; g.beginPath(); g.arc(px, top + 14, r, 0, 7); g.fill(); g.fillStyle = '#f4f6fa'; g.beginPath(); g.arc(px - 3, top + 10, r * 0.6, 0, 7); g.fill(); }
       g.fillStyle = '#d6dfec'; g.fillRect(lx + 4, top + 14, w - 8, 10); }
+    /* THE ROC's shadow over the bridge, once (greybox: a dark band and her wings high over it) */
+    if (S.rocPass !== undefined) { const k = (ctx.time() - S.rocPass) / 2.4; if (k >= 0 && k <= 1) { const x = Math.round(-80 + k * (VW + 160)), y = 30 + Math.round(Math.sin(k * Math.PI) * 18);
+      g.globalAlpha = 0.28; g.fillStyle = '#141824'; g.fillRect(x - 46, 0, 92, VH); g.globalAlpha = 0.85; g.fillStyle = '#1e1a22';
+      g.beginPath(); g.moveTo(x - 60, y - 6); g.lineTo(x - 10, y - 2); g.lineTo(x, y - 12); g.lineTo(x + 10, y - 2); g.lineTo(x + 60, y - 6); g.lineTo(x + 14, y + 6); g.lineTo(x - 14, y + 6); g.closePath(); g.fill(); g.globalAlpha = 1; } }
   };
   /* THE THERMALS: shimmer columns, dimmed by their state; a column about to die flickers; a dead one shows its rock dark */
   H.drawThermal = (g, pr, cx, cy, time) => {
@@ -272,6 +287,7 @@ export function makeSkyRoadHands(ctx) {
       else if (dc.kind === 'nest') { const y = Math.round((dc.y + 1) * TS - cy); g.fillStyle = '#7a5a3a'; g.beginPath(); g.ellipse(x, y - 3, 14, 4, 0, 0, 7); g.fill(); g.fillStyle = '#c8b090'; g.fillRect(x - 6, y - 6, 3, 2); g.fillRect(x + 2, y - 7, 3, 2); }
       else if (dc.kind === 'kiteplat') { const y = Math.round(dc.y * TS - cy); g.strokeStyle = '#d8c8a8'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - 30, y); g.lineTo(x - 10, y - 90); g.moveTo(x + 30, y); g.lineTo(x + 10, y - 90); g.stroke();
         g.fillStyle = '#c9463d'; g.beginPath(); g.moveTo(x, y - 120); g.lineTo(x + 26, y - 96); g.lineTo(x, y - 80); g.lineTo(x - 26, y - 96); g.fill(); }
+      else if (dc.kind === 'feather') { const y = Math.round((dc.y + 1) * TS - cy); g.fillStyle = '#e8e0d0'; g.fillRect(x - 6, y - 2, 12, 2); g.fillStyle = '#6a5a4a'; g.fillRect(x - 7, y - 2, 3, 1); g.fillRect(x + 1, y - 4, 9, 1); g.fillStyle = '#c8bca8'; g.fillRect(x + 2, y - 3, 7, 1); }   /* (FIX PASS, B8) HER FEATHERS along the bridge: the trail to the Eyrie */
       else if (dc.kind === 'bridgehead') { const y = Math.round((dc.y + 1) * TS - cy); g.fillStyle = '#8a8478'; g.fillRect(x - 20, y - 70, 10, 70); g.fillRect(x - 24, y - 74, 18, 6); } }
     /* THE GREAT KITE REEL: the flue's hot air, the war-kite on it, and its line to the cage */
     if (lv.reel) { const r = lv.reel, cage = ctx.movers().find(m => m.sky === 'reel'), hot = cage && cage.hot, kx = Math.round(r.x - cx + Math.sin(time * 0.9) * 6), ky = Math.round(r.kiteY - cy + (1 - S.reelK) * 120 + Math.sin(time * 1.3) * 3);

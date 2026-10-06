@@ -8,7 +8,7 @@ PRE-QUEEN, so living goblins are fine. Gale Moor = SIDEWAYS gusts on the ground;
 A climb west -> east and UP off the moor's sun-warmed crags: ~460 columns x 96 rows. Under every chasm: THE CLOUD SEA (a fall costs health
 and the updraft under the cloud throws you back to your last footing - told, never an untold death).
 
-**THE RULE (one sentence, a verb):** THE SUN WARMS THE ROCK AND THE AIR OVER IT RISES: RIDE IT UP, GLIDE INTO IT - AND A CLOUD ON IT KILLS IT.
+**THE RULE (one sentence, a verb):** THE SUN WARMS THE ROCK AND THE AIR RISES. STRIKE A SUN-STONE TO WAKE ITS AIR; RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT. (the fix pass named the stone strike; this is `L.rule`)
 The verbs the player changes it with: TURN A SUN-STONE to the sun (a dead thermal wakes), GLIDE INTO a thermal
 (the cloak), and TIME THE CLOUDS (their shadows are drawn creeping across the rock before they reach a column).
 
