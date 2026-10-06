@@ -45,8 +45,15 @@ for (const d of grid) {
   console.log('\nd=' + d + ' ' + JSON.stringify(prof) + '  loss ' + loss.toFixed(2));
   for (const r of rows) console.log('  ' + r.padEnd(12) + ' bot ' + String(per[r].rate).padStart(3) + '%  want ' + String(T[r].want).padStart(3) + '% (' + T[r].said + ')  ' + JSON.stringify(per[r].byHero) + (per[r].tpm ? '  tpm ' + per[r].tpm + (T[r].tpm ? ' vs ' + T[r].tpm : '') : ''));
 }
-const best = results.slice().sort((a, b) => a.loss - b.loss)[0];
-console.log('\nFIT: d=' + best.d + '  ' + JSON.stringify(best.prof) + '  (loss ' + best.loss + '; ' + seeds + ' seeds x ' + heroesArg.length + ' heroes a boss: +-15 points of noise)');
+/* A BOSS NO DIAL EXPLAINS (its residual over 20 points at every grid point) is a bot or perception gap, not a reading of the player: it is
+   left out of the fit (and named), so one outlier cannot drag every other boss off (claude/bot2: the Death Knight, whose hands read his hidden
+   commit flag and bolt marks, sat at 63-100% for every dial while Daniel calls him hard) */
+const lossOf = (R, keep) => keep.reduce((s, r) => s + Math.pow(((R.per[r].rate ?? 50) - T[r].want) / 15, 2) + (T[r].tpm && R.per[r].tpm ? Math.pow(Math.log(R.per[r].tpm / T[r].tpm) / Math.log(1.35), 2) : 0), 0);
+const outliers = rows.filter(r => results.every(R => Math.abs((R.per[r].rate ?? 50) - T[r].want) > 20)), keep = rows.filter(r => !outliers.includes(r));
+for (const R of results) R.fitLoss = +lossOf(R, keep.length ? keep : rows).toFixed(2);
+if (outliers.length) console.log('\nleft out of the fit (no dial explains them): ' + outliers.join(', '));
+const best = results.slice().sort((a, b) => a.fitLoss - b.fitLoss)[0];
+console.log('\nFIT: d=' + best.d + '  ' + JSON.stringify(best.prof) + '  (loss ' + best.fitLoss + ' on ' + (keep.length ? keep : rows).join(',') + '; ' + seeds + ' seeds x ' + heroesArg.length + ' heroes a boss: +-15 points of noise)');
 for (const r of rows) { const res = (best.per[r].rate ?? 0) - T[r].want; console.log('  residual ' + r.padEnd(12) + (res > 0 ? '+' : '') + res + ' points' + (Math.abs(res) > 20 ? '   <- no dial explains it: the bot plays this boss ' + (res > 0 ? 'better' : 'worse') + ' than Daniel feels it (a bot or a perception gap; see the retune list)' : '')); }
 if (args.includes('--write')) console.log('\n  ' + JSON.stringify({ ...PROFILES.human, ...best.prof, base: undefined }).replace(/"(\w+)":/g, '$1: ') + ',');
 if (opt('out', '')) writeFileSync(opt('out', ''), JSON.stringify({ targets: T, results, best }, null, 1));

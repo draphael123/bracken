@@ -19,12 +19,15 @@ export const PROFILES = {
   legacy: { name: 'legacy', perceive: false, v2: false },
   human: {
     name: 'human', perceive: true, v2: true,
-    rtMin: 200, rtMax: 450, rtMode: 280,   // reaction to a change it can SEE, ms: triangular(min, mode, max), drawn per read
+    /* CALIBRATED 2026-10-05 night (tools/bot-calibrate.mjs --feel, d=0.3 of the one dial; grid 0.3/0.6/0.9 x 4 bosses x 3 heroes x 3 seeds): the
+       Puppeteer 56% (good: 55), Jenny 78% (easy: 80), the Djinn 56% (a little too hard: 42); the Death Knight sits at 63-100% under every dial
+       (his hands read hidden state) and is left out of the fit - see work/claude/lane-done/claude-bot2.md. Refit when the recorder's logs arrive. */
+    rtMin: 218, rtMax: 446, rtMode: 302,   // reaction to a change it can SEE, ms: triangular(min, mode, max), drawn per read
     rtUnmarked: 120,                       // + ms when the windup wears no mark and says nothing (a pose alone)
     rtHeard: 180,                          // + ms for a windup off the screen, known only by its tell sound
     timingSd: 0.06,                        // s of game time: the error in reading how long a tell has left (per read)
-    misread: 0.07,                         // chance a tell is answered as another tell of his it has seen (or not answered at all)
-    greed: 0.22, greedSwings: [1, 2],      // chance after a landed hit to stay in for 1-2 more swings, blind to his next tell
+    misread: 0.062,                         // chance a tell is answered as another tell of his it has seen (or not answered at all)
+    greed: 0.19, greedSwings: [1, 2],      // chance after a landed hit to stay in for 1-2 more swings, blind to his next tell
     staminaSlip: 0.2,                      // share of the fight it is not minding the roll it should keep back (re-rolled every 3 s)
     openRt: 1.0,                           // his OPEN is noticed with the same reaction (x this)
     first: false, firstMisread: 0.5, learnAfter: 2, firstTiming: 2, openDiscover: 0.9,

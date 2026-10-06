@@ -13,13 +13,15 @@ export function fightJs({ r, way, h, s, profile }, secs = 240) {
     const r=(await BK.bossLab({bosses:[${JSON.stringify(id)}],heroes:[h],maxSecs:${secs},healthMode:'normal',seed:${s},profile:${JSON.stringify(prof)}${built ? ',skills:true' : ''}${fl ? ',mini:true' : ''}})).rows[0]||{};
     return {maxHp,kit,outcome:r.outcome||r.skipped,boss:r.boss,secs:r.secs,bossLeft:r.hpLeftPct,taken:r.health?Math.round(r.health.damageTaken):null,opened:r.opened,swings:r.swings,eyes:r.eyes,casts:r.skillCasts};})()` };
 }
+/* a page, tried three times: under a loaded machine a first navigate can miss its 15 s */
+export async function openRetry() { let e0; for (let i = 0; i < 3; i++) { try { return await openPage({ audio: false, fonts: false }); } catch (e) { e0 = e; await new Promise(r => setTimeout(r, 3000)); } } throw e0; }
 export const won = x => x.outcome === 'win' || x.outcome === 'trade';
 export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {}) {
-  const queue = list.slice(), out = [], pages = [await openPage({ audio: false, fonts: false })];
-  for (let i = 1; i < Math.min(jobs, list.length); i++) pages.push(await openPage({ audio: false, fonts: false }));
+  const queue = list.slice(), out = [], pages = [await openRetry()];
+  for (let i = 1; i < Math.min(jobs, list.length); i++) pages.push(await openRetry());
   const worker = async i => { for (;;) { const F = queue.shift(); if (!F) return; let row; const { lvl, js } = fightJs(F, secs);
     try { await pages[i].reload(); row = await pages[i].evalp(js, 1200000); }
-    catch (e) { row = { err: String(e.message).slice(0, 120) }; try { pages[i].close(); } catch {} pages[i] = await openPage({ audio: false, fonts: false }); }
+    catch (e) { row = { err: String(e.message).slice(0, 120) }; try { pages[i].close(); } catch {} pages[i] = await openRetry(); }
     const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...row }; out.push(rec); if (onRow) onRow(rec, out); } };
   try { await Promise.all(pages.map((_, i) => worker(i))); } finally { for (const p of pages) try { p.close(); } catch {} }
   return out;
