@@ -131,7 +131,7 @@ export function makeUnderwellHands(ctx) {
     const h = held(P); if (h) { P.carry = null; h.state = 'lie'; h.holder = null; h.x = P.x + (P.face || 1) * 8; const gy = groundY(h.x, P.y); h.y = gy === null ? P.y : gy; h.lieT = TORCH.lie; h.catchT = TORCH.catchT; UW.n.setDown = (UW.n.setDown || 0) + 1;
       ctx.sfx.clank && ctx.sfx.clank(); const c = cellUnder(h); if (c && c.st === 'oil') ctx.number(P.x, P.y - 34, 'THE TORCH IS IN THE OIL: TAKE IT UP OR GET OUT', '#ff9a5c'); return true; }
     if (P.carry || P.dead) return false; const tk = takeable(P); if (!tk) return false;
-    if (tk.sconce && P.skin && P.skin.sips > 0 && ctx.pourAim && ctx.pourAim(P)) return false;   /* a POUR in front of you is what E does first (her burrow beside a cresset, a fire under one) */
+    if (tk.sconce && P.skin && P.skin.sips > 0 && ((ctx.pourAim && ctx.pourAim(P)) || (pourCells(P) || []).some(c => c.st === 'fire'))) return false;   /* a POUR on her (her burrow beside a cresset) or on burning oil in front of you is what E does first; on plain oil E takes the torch */
     let q = tk.lying; if (q) { q.state = 'held'; q.holder = P; q.hurtWas = P.hurt > 0; }
     else { q = newTorch(P, tk.sconce.id); q.hurtWas = P.hurt > 0; UW.torches.push(q); tk.sconce.st = 'taken'; tk.sconce.t = OIL.relight; }
     P.carry = q; UW.n.taken = (UW.n.taken || 0) + 1; ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(P.x, P.y - 22, 6, ['#ffd36b', '#ff9a5c'], 30, 0.4);
