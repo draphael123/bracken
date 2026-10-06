@@ -68,6 +68,18 @@ function stoneLedge(l, r, v) {
     if (!l && !r && v === 1) { rect(g, 7, 7, 2, 1, CT.iron); rect(g, 7, 8, 1, 3, CT.iron); }                                                                              /* an iron bracket under the long runs */
     return c; });
 }
+/* (claude/canal4art) THE LEGGERS' LEDGE in the tunnel: a granite slab worn pale down the middle by boots, a lit lip and an iron nosing riveted along it, iron strut brackets under it */
+function leggersLedge(l, r, v) {
+  return once('ll' + l + r + v, () => { const [c, g] = canvas(16, 16);
+    rect(g, 0, 0, 16, 7, '#4a4640'); rect(g, 0, 0, 16, 1, '#e0d0a8'); rect(g, 0, 1, 16, 1, '#a89c80'); rect(g, 0, 2, 16, 2, '#6a645a'); rect(g, 0, 4, 16, 1, '#3a3630'); rect(g, 0, 5, 16, 1, '#26231f'); rect(g, 0, 6, 16, 1, '#12100e');
+    rect(g, 3 + v * 4, 1, 1, 5, '#2a2622'); for (let k = 0; k < 3; k++) px2(g, (v * 5 + k * 5 + 2) % 16, 2 + (k & 1), '#8a8274');                                   /* a joint, the boots' polish and scuffs */
+    for (let x = 2; x < 16; x += 5) px2(g, x, 1, '#c8d0d8');                                                                                                  /* the nosing's rivets */
+    rect(g, 0, 7, 16, 1, '#0c0a08');
+    const strut = (x0, dir) => { for (let k = 0; k < 6; k++) { px2(g, x0 + dir * k, 8 + k, '#3a4048'); px2(g, x0 + dir * k + 1, 8 + k, '#6a747c'); } rect(g, x0 - 1, 8, 3, 1, '#2a3036'); };
+    if (l) { rect(g, 0, 0, 1, 7, '#26231f'); strut(2, 1); } if (r) { rect(g, 15, 0, 1, 7, '#26231f'); strut(13, -1); }
+    if (!l && !r && v === 1) { rect(g, 6, 7, 4, 1, '#3a4048'); rect(g, 7, 8, 2, 4, '#3a4048'); rect(g, 7, 8, 1, 4, '#6a747c'); }                                  /* an iron bracket under the long runs */
+    return c; });
+}
 /* A FIREPROOF FLOOR (the warehouse's and the mill's floors): an iron beam with its rivets, and a shallow brick jack-arch sprung under it */
 function jackArch(l, r, v) {
   return once('ja' + l + r + v, () => { const [c, g] = canvas(16, 16);
@@ -135,6 +147,7 @@ export function canalTile(t, x, y, at, ctx) {
     if (inChamber) { const sx = lk.sx, ex = sx + 39, R = lk.R, K = skins(); if (y === R - 8 && (x <= sx + 4 || x >= ex - 4)) return K.walk; if (x <= sx + 3 || x >= ex - 3) return K.waler; }
     const sameRow = k => at(x + k, y) === t, L0 = !sameRow(-1), R0 = !sameRow(1);
     /* (claude/canalfix3, Daniel 10-02: TOO MUCH WOOD) timber only on the odd jetty; the towpaths and banks are stone ledges, the warehouse's and the mill's floors iron and brick */
+    if (x >= 248 && x <= 344 && y >= 14 && y <= 16) return leggersLedge(L0, R0, v);   /* (claude/canal4art) the tunnel's ledges */
     if (ctx.hatches && ctx.hatches.has(x + ',' + y)) return hatch();   /* (claude/canalfix3) the hatch into a safe swim */
     if ((ctx.jetties || []).some(([x0, x1, row]) => y === row && x >= x0 && x <= x1)) return towboards(L0, R0, v);
     if ((ctx.rooms || []).some(([x0, x1, y0, y1]) => x >= x0 && x <= x1 && y > y0 && y <= y1)) return jackArch(L0, R0, v);

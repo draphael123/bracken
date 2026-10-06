@@ -38,13 +38,17 @@ export function edgeOf(P, X) {
 }
 export function newGrindylow(e) { Object.assign(e, { hx: e.x, mode: 'lurk', modeT: 0, cd: 0.8 + (e.x % 5) * 0.2, noGrav: true, lastSurf: null, wet: null, presses: 0, grabbed: null, bubT: 0, aboard: false, bx: 0, offT: 0 }); return e; }
 /* (claude/canalfix, review fix 2) IT COMES ABOARD. A rider amidships was out of every grindylow's reach for the whole level. Now, while she is HELD (at a
-   gate, a bridge, the fog) - or, for the one at the weir's junction (e.junction), while she runs loose past it - a grindylow at her hull with a hero on
+   gate, a bridge, the fog) - or, in the legging tunnel, while her light shows her (claude/canal4) - a grindylow at her hull with a hero on
    her deck rings the water at her near end (!!) and hauls itself aboard. On the deck it is out of the water: it creeps at the rider, rings its !! (jump
    it), and grabs his ankle and drags him for the nearest end and the water. It is weak there (double), and slips back in when nobody is aboard. */
 const held = b => !!b && b.mode === 'float' && (!!b.holdWhy || Math.abs(b.v || 0) < 1);
+/* (claude/canal4) IN THE LEGGING TUNNEL HER LIGHT DECIDES: lit (her lantern, or the moon down its shaft) she draws the brood aboard - held or legged;
+   dimmed, nothing comes. X.lampDraws(e): true / false in a tunnel, null anywhere else */
 function boardable(e, X, P) {
   const b = X.barge(); if (!b || !P || P.dead || !(P.onMover && P.onMover.canal) || e.boards === false) return null;
-  if (!(held(b) || (b.mode === 'loose' && e.junction))) return null;
+  const lit = X.lampDraws ? X.lampDraws(e) : null;
+  if (lit === false) return null;
+  if (!(held(b) || lit === true)) return null;
   if (e.hx < b.x - 28 || e.hx > b.x + b.w + 28) return null;
   return e.hx < b.x + b.w / 2 ? 6 : b.w - 6;   /* the near end */
 }
@@ -104,7 +108,7 @@ export function stepGrindylow(e, dt, X) {
       const tx = inReach ? Math.max(e.hx - G.leash, Math.min(e.hx + G.leash, edge.x)) : e.hx;
       e.x += Math.sign(tx - e.x) * Math.min(Math.abs(tx - e.x), G.swim * dt);
       if (e.bubT <= 0) { e.bubT = 0.9 + Math.random(); X.ring(e.x, s.y, 4, '#6aa890'); }
-      if (inReach && Math.abs(e.x - edge.x) < 10 && e.cd <= 0 && !P.dead) { e.mode = 'rippleTell'; e.modeT = G.tell; e.edge = edge; X.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.bubble ? S.bubble() : S.splash && S.splash(); }
+      if (inReach && Math.abs(e.x - edge.x) < 10 && e.cd <= 0 && !P.dead && !(X.lampDraws && X.lampDraws(e) === false)) {   /* (claude/canal4: in the dark it does not find you) */ e.mode = 'rippleTell'; e.modeT = G.tell; e.edge = edge; X.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.bubble ? S.bubble() : S.splash && S.splash(); }
     }
   }
   e.vx = 0; e.vy = 0;
@@ -164,7 +168,7 @@ export function newWisp(e, TS) { const [lx, ly] = e.lure || [Math.floor(e.x / TS
 export function stepWisp(e, dt, X) {
   const W = WISP, P = X.hero(), S = X.sfx; e.modeT -= dt; e.cd -= dt; e.anim = e.anim || 0;
   e.recoil = Math.max(0, (e.recoil || 0) - dt); e.dartCd = Math.max(0, (e.dartCd || 0) - dt);
-  const dx = P.x - e.x, dy = (P.y - 10) - e.y, d = Math.hypot(dx, dy), seen = !P.dead && Math.abs(dx) < W.notice && Math.abs(dy) < 110;
+  const dx = P.x - e.x, dy = (P.y - 10) - e.y, d = Math.hypot(dx, dy), seen = !P.dead && Math.abs(dx) < W.notice && Math.abs(dy) < 110 && !(X.blind && X.blind(e, P));   /* (claude/canal4: in the tunnel's dark it sees only her light) */
   const solid = (x, y) => !!(X.solid && X.solid(x, y));
   const go = (tx, ty, sp) => { const ex = tx - e.x, ey = ty - e.y, dd = Math.hypot(ex, ey) || 1, k = Math.min(dd, sp * dt); e.x += ex / dd * k; e.y += ey / dd * k; };
   if (e.mode === 'spark') { e.vx = 0; e.vy = 0; if (e.modeT <= 0) { e.mode = 'bob'; e.reformed = true; e.recoil = W.recoil; e.dartCd = W.cd; X.mark && X.mark(e, '!', '#ffd36b'); X.ring && X.ring(e.x, e.y, 12, '#a0ffd2'); S.zap && S.zap(); } e.bob = Math.sin(e.anim * 9) * 1; return; }   /* the ember, re-forming */

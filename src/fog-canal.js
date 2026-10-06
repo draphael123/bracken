@@ -18,21 +18,23 @@
 //                                DEVELOP bridge, fog as LOCK    barge goes on without you: the rooftops), the bridge garrison, THE FOG WALL
 //   186-247  THE FLIGHT          DEVELOP lock                   three locks up the hill, a crank on each where the last one was not;
 //                                TWIST bridge                   the summit bridge: cross it yourself, then swing it for her
-//   248-325  THE WEIR            SET PIECE (the chase)          the summit gate bursts: loose down the race with the flood behind, duck
-//                                                               the low beams; the TILLER steers the cut or the broken weir
-//   326-369  THE THEATRE BASIN   EXAM                           fog, horn, bridge, barge, archers, weed, wisps, the foreman: all at once
-//   370-431  JENNY'S LOCK        (claude/lockkeeper)            the door, the chamber kept free for her, and the gate
+//   248-345  THE LEGGING TUNNEL  SET PIECE (claude/canal4)      pitch dark, no current: LEG her (lie on her deck), her LANTERN lit to see
+//                                TEACH -> TEST -> REMIX -> EXAM the way and dimmed to slip past the brood; the stop-planks and their
+//                                                               windlass, the nest under the moon shaft, the deep lock down to the basin
+//   346-389  THE THEATRE BASIN   EXAM                           fog, horn, bridge, barge, archers, weed, wisps, the foreman: all at once
+//   390-451  JENNY'S LOCK        (claude/lockkeeper)            the door, the chamber kept free for her, and the gate
 import { stageGreenteeth } from './jenny-greenteeth.js';   /* JENNY GREENTEETH's lock chamber and fight (claude/lockkeeper's module, wired by claude/greenwire) */
-export const CANAL = { W: 432, H: 56 };
+export const CANAL = { W: 452, H: 56 };   /* (claude/canal4: the legging tunnel is twenty columns longer than the weir was) */
 /* every machine's arc (tile columns), read by tools/canal.mjs and written up in the brief */
 export const ARCS = {
-  barge: { teach: [30, 67], develop: [68, 121], twist: [122, 160], exam: [326, 369], set: [248, 325] },
-  lock: { teach: [68, 81], develop: [186, 232], twist: [244, 250], exam: [326, 369] },
-  fog: { teach: [116, 131], develop: [130, 160], twist: [160, 185], exam: [326, 369] },
-  bridge: { teach: [104, 121], develop: [148, 160], twist: [226, 247], exam: [326, 369] },
+  barge: { teach: [30, 67], develop: [68, 121], twist: [122, 160], exam: [346, 389], set: [248, 345] },
+  lock: { teach: [68, 81], develop: [186, 232], twist: [319, 345], exam: [346, 389] },   /* (claude/canal4) the twist: the deep lock in the dark - its paddle back on the ledge, she goes down without you */
+  fog: { teach: [116, 131], develop: [130, 160], twist: [160, 185], exam: [346, 389] },
+  bridge: { teach: [104, 121], develop: [148, 160], twist: [226, 247], exam: [346, 389] },
+  tunnel: { teach: [248, 272], develop: [273, 298], twist: [299, 318], exam: [319, 345] },   /* (claude/canal4) THE LEGGING TUNNEL: legging and her lantern - teach, test, remix, exam */
 };
-export const SECTIONS = [['THE WAYMEET QUAY', 0], ['THE FIRST LOCK AND THE MILL', 68], ['THE FOG BANK', 122], ['THE FLIGHT', 186], ['THE WEIR', 248],
-  ['THE THEATRE BASIN', 326], ["JENNY'S LOCK", 370]];
+export const SECTIONS = [['THE WAYMEET QUAY', 0], ['THE FIRST LOCK AND THE MILL', 68], ['THE FOG BANK', 122], ['THE FLIGHT', 186], ['THE LEGGING TUNNEL', 248],
+  ['THE THEATRE BASIN', 346], ["JENNY'S LOCK", 390]];
 
 export function buildFogCanal({ painter, T, TS }) {
   const { W, H } = CANAL;
@@ -50,7 +52,7 @@ export function buildFogCanal({ painter, T, TS }) {
   const px = c => c * TS;
 
   /* THE MACHINERY, as data for src/canal-rig.js */
-  const reaches = [], gates = [], bridges = [], fogs = [], weedWater = [], weeds = [], beams = [], rigBands = [], pools = [], chases = [], moorings = [], sides = [];
+  const reaches = [], gates = [], bridges = [], fogs = [], weedWater = [], weeds = [], beams = [], rigBands = [], pools = [], moorings = [], sides = [];
   /* (claude/canalfix3, Daniel 10-02: "GREEN = HERS") A SAFE SWIM: clear dark blue water behind an iron GRATE she cannot pass - no weed, no bite, the hero swims
      there freely (the game's own swim and its breath). Optional, never on the way: a HATCH (an iron grate in a floor - drop through it) and an iron LADDER
      out. The first time a hero swims one, a grindylow bumps the grate from the green side and cannot get through (src/canal-hands.js swimStep): no sign */
@@ -121,7 +123,7 @@ export function buildFogCanal({ painter, T, TS }) {
   post(46, 36);
   /* (claude/canalfix, UPGRADE B) THE TILLER, TAUGHT: the Waymeet pound is wide enough for her to keep to a side. Her helm (the arrow on the tiller amidships)
      puts her on the TOWPATH SIDE (down: the towpath's bargees hook the rider) or the OFFSIDE (up: out of their reach - but under the low bridge's timbers,
-     which hang on that half). A harmless fork: a hook or a duck. At the weir the same strike picks the mill cut or the weir */
+     which hang on that half). A harmless fork: a hook or a duck */
   sides.push([36, 67]);
   sign(44, 36, 'THE TILLER AMIDSHIPS STEERS HER: STRIKE IT TO TURN HER HELM.');
   /* THE LOW BRIDGE: a footbridge over the pound whose timbers hang to a hand over the deck on its far half. Duck under on the offside, or keep to the towpath side */
@@ -199,7 +201,7 @@ export function buildFogCanal({ painter, T, TS }) {
      ARE BOTH NEEDED: the bank horn's clear (4 s) carries her about two-thirds in, where the fog closes on her again beside THE PIER; hop onto it and blow
      the second (6 s), with the footbridge archer over you in the clear air, and drop back aboard. Held at its edge, THE BOARDING GANG comes out of it */
   fog('F2', 165, 190, 0, 40, { thick: true, a: 0.9 });
-  fog('F3', 226, 262, 0, 30, { a: 0.6 });                                     /* the fog lies thin over the summit and the weir's head */
+  fog('F3', 226, 247, 0, 30, { a: 0.6 });                                     /* the fog lies thin over the summit and the tunnel's mouth */
   horn(163, 29, ['F2'], 4);
   wisp(166, 28, [168, 32], 'the fog wall lure');
   boarder(168, 31); boarder(170, 31); boarder(172, 31);                      /* UPGRADE C: THE BOARDING GANG, waiting in the fog wall (a skiff brings them to her bow) */
@@ -220,7 +222,7 @@ export function buildFogCanal({ painter, T, TS }) {
   gate('G4', 209, 22, 32, L2, L3); block(209, 209, 33, H - 1);
   const L4 = reach('L4', 221, 230, 28, 23, 18); block(221, 230, 29, H - 1);
   gate('G5', 220, 17, 27, L3, L4); block(220, 220, 28, H - 1);
-  const P4 = reach('P4', 232, 247, 23, 18, 18); block(232, 247, 24, H - 1);
+  const P4 = reach('P4', 232, 333, 23, 18, 18); block(232, 247, 24, H - 1);   /* (claude/canal4) the summit pound runs on into the legging tunnel (section 5) */
   gate('G6', 231, 17, 22, L4, P4); block(231, 231, 23, H - 1);
   block(186, 197, 39, 39);                                                   /* (under the mill pound's end) */
   sluice(197, 32, 'L2'); sluice(208, 32, 'L2'); grindy(201, 28, 'the set lock');   /* the drain paddle on the lower gate's face, the fill paddle on the upper's; the grindylow up in the full chamber */
@@ -233,108 +235,118 @@ export function buildFogCanal({ painter, T, TS }) {
   /* THE SUMMIT BRIDGE (TWIST: across, it is YOUR way over the weed to the last paddle; then it holds the barge, and it must be swung behind you) */
   const B3 = bridge(232, 236, 16, 'across', [237, 15]);   /* (a step up off the gate's top, level with the summit bank) */
   boards(237, 16, 10); sluice(239, 15, 'L4');
-  wisp(234, 13, [233, 17], 'the summit weed');                                   /* THE WEIR APPROACH: a light over the summit weed */
+  wisp(234, 13, [233, 17], 'the summit weed');                                   /* THE TUNNEL APPROACH: a light over the summit weed */
   block(244, 247, 11, 12);                                                   /* the keeper's hut roof over the summit bank (its posts are the bank) */
   ladder(243, 9, 15); block(236, 242, 9, 9); block(235, 6, 9); coins([237, 8], [238, 8], [239, 8], [240, 8], [241, 8]);   /* (claude/canalfix, UPGRADE D) THE KEEPER'S LOFT: up the hut's ladder, a dead-end loft with his stores (a pocket) */
   /* (claude/canalfix, review fix 9: the keeper-hut archer, who touched nothing, stands on the head race's footbridge now - the tiller's window is under his bow) */
-  ent('check', 242, 15);                                                     /* CHECKPOINT TWO: the summit, right before the burst */
+  ent('check', 242, 15);                                                     /* CHECKPOINT TWO: the summit, right before the tunnel */
   sign(240, 15, "THE SUMMIT POUND. THE KEEPER'S LAST PADDLE IS PAST THE BRIDGE.");   /* (claude/canalfix, review fix 10: it no longer announces the race before the gate bursts) */
   coins([222, 20], [226, 20], [238, 14], [245, 14]);
   moorings.push({ cp: [242, 15], x: 225, fill: ['L2', 'L3', 'L4'], bridges: { [B3]: 'open' } });   /* a death past the summit: the flight full, she waits in the last chamber */
   moorings.push({ cp: [149, 29], x: 148, bridges: { [B1]: 'open' } });   /* a death past the arch's checkpoint: she waits under it at the garrison's bridge */
 
-  // ---------------- 5. THE WEIR (248-325): the SET PIECE ----------------
-  /* THE SUMMIT GATE BURSTS when she reaches it, and she runs LOOSE down the race with the flood behind (src/chase.js). THE HEAD RACE drops in two
-     steps under a low footbridge (duck); at THE JUNCTION her TILLER decides: THE MILL CUT stays up on the hillside (three more low beams, two
-     archers and a bargee on the cut's bridges, and four small drops into the basin), THE WEIR goes straight over the broken sill into the lower
-     river (one plunge that jars whoever is standing when she lands, then the rapids and their grindylows). Either way she comes out in the basin */
-  gate('G7', 248, 17, 22, P4, P4, { weir: true }); block(248, 248, 23, H - 1);
-  const hr = (x0, x1, surf, bed) => { air(x0, x1, surf - 8, bed - 1); block(x0, x1, bed, H - 1); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: bed * TS, canal: 'race', handBack: true }); };   /* (claude/canalfix3: handBack - out of the run, a hero left wading in it is handed back like the deep canal; tools/canal-water.mjs) */   /* THE RACE runs shallow and fast: a hero thrown off her wades on down it, the flood at his back */
-  hr(249, 254, 18, 21); hr(255, 263, 22, 25); hr(264, 272, 26, 29);           /* THE HEAD RACE, three steps down */
-  block(261, 264, 16, 16); beams.push({ weir: true, x0: px(261), x1: px(265), y: 22 * TS - 2 - 9, name: 'THE FOOTBRIDGE' });   /* the footbridge over the second step (claude/canalfix: moved on 2 columns, so a rider standing at her bow - forward of the flood - meets it with her deck already down the step and can duck it) */
-  archer(262, 15, 'the head race footbridge');                               /* (claude/canalfix, review fix 3) over the tiller's window: in the thin fog he looses at her lantern-lit deck */
-  grindy(270, 26, 'the junction', { canal: { junction: true } });           /* (claude/canalfix, review fix 2) at THE JUNCTION: the one that boards her while she runs loose */
-  const booms = [];   /* (claude/canalfix, review fix 3) BOOMS: a log chained across the race at her deck's height - JUMP it, where a beam asks for a DUCK */
-  const boom = (c, path, surf) => booms.push({ x: px(c) + 8, y: surf * TS - 2, path, dmg: 14 });
-  boom(252, 'head', 18);   /* on the first step's flat, in the tiller's window: a jump before the footbridge's duck */
-  /* THE LOWER RIVER (the weir's side) under the cut's shelf: surface 44, straight into the basin */
-  air(273, 325, 30, 43); block(273, 325, 49, H - 1);
-  pools.push({ x0: px(273), x1: px(326), y: 44 * TS + 4, shallow: true, swim: false, clear: true, bottom: 49 * TS, canal: 'lower river', handBack: true });
-  /* THE MILL CUT: a stone leat on the hillside over the lower river, four levels, each on a shelf of its own */
-  const cut = (x0, x1, surf) => { block(x0, x1, surf + 2, surf + 4); pools.push({ x0: px(x0), x1: px(x1 + 1), y: surf * TS + 4, shallow: true, swim: false, clear: true, bottom: (surf + 2) * TS, canal: 'cut', handBack: true }); };
-  cut(276, 290, 26); cut(291, 300, 30); cut(301, 308, 34); cut(309, 315, 38);
-  for (const [x0, x1, y] of [[279, 281, 26], [295, 297, 30]]) { block(x0, x1, y - 4, y - 4); beams.push({ weir: true, x0: px(x0), x1: px(x1 + 1), y: y * TS - 2 - 9, name: 'A LOW BEAM' }); }
-  /* (claude/canalfix) THE WEIR's own duck: the cut's lowest shelf (309-315) hangs one row over a rider standing on the rapids - told as a beam now, not
-     only a stone face that scrapes him off */
-  beams.push({ weir: true, x0: px(309), x1: px(316), y: 43 * TS, name: 'THE CUT SHELF' });
-  boom(286, 'cut', 26); boom(307, 'cut', 34); boom(292, 'fall', 44);
-  boards(283, 20, 5); archer(285, 19, 'the high cut bridge');                       /* a footbridge over the cut */
-  boards(303, 28, 5); archer(305, 27, 'the low cut bridge');
-  boards(288, 23, 4); bargee(289, 22, 'the mill cut');                       /* on a plank over the cut: he hooks at her as she passes (claude/canalfix: raised and moved off the step, where it caught a rider as her deck dropped away under him) */
-  grindy(288, 44, 'the lower river'); grindy(306, 44, 'the lower river');   /* on the rapids, at her edges */
-  block(299, 301, 42, 42); coins([299, 41], [300, 41], [301, 41]);        /* a ledge on the gorge wall, only from the lower river (a pocket; claude/canalfix3: its silver went down the flooded cellar - the canal keeps the campaign's three) */
-  const deckAt = s => s * TS - 2;
-  const weirSpec = {
-    head: [[px(248), deckAt(18)], [px(254), deckAt(18)], [px(258), deckAt(22)], [px(263), deckAt(22)], [px(267), deckAt(26)], [px(273), deckAt(26)]],   /* (each step a ramp as long as it is deep: she carries you down it) */
-    cut: [[px(290), deckAt(26)], [px(294), deckAt(30)], [px(300), deckAt(30)], [px(304), deckAt(34)], [px(308), deckAt(34)], [px(312), deckAt(38)], [px(316), deckAt(38)], [px(322), deckAt(44)], [px(330), deckAt(44)]],
-    fall: [[px(274), deckAt(26)], [px(277), deckAt(44)], [px(330), deckAt(44)]],
-    junction: px(273), crash: px(277) + 8, end: px(326) + 48, bank: [px(327) + 8, 41 * TS],   /* bank: where a hero who falls off on the run is handed back (the basin's west bank) */
-    slowTo: px(272), helmBy: px(268), booms,   /* (claude/canalfix) she runs slow on the steps till 272 (the flood laps her stern); the tiller answers till 268; the booms */
-  };
-  chases.push({ id: 'weir', x: 248, name: 'THE FLOOD', axis: 'x', dir: 1, trigger: px(248) + 8, end: px(326), gap0: 180, curve: [[0, 70], [520, 96, 'THE FLOOD GAINS ON YOU']], rubber: { min: 64 },   /* (claude/canalfix: MIN_FAIR) */
-    contact: 'hurt', dmg: 30, look: 'water', say: 'THE GATE BURSTS! HOLD ON!', glow: 280, zone: [px(240), px(330), 0, H * TS],
-    beams: beams.filter(b => b.weir).map(b => ({ x0: b.x0, x1: b.x1, y: b.y, name: b.name, dmg: 14 })), checkpoint: [242, 15] });
-  /* the reach model's view of the ride: footing along each stretch of her path */
-  ride(249, 254, 18, 18); ride(255, 263, 22, 22); ride(264, 290, 26, 26); ride(291, 300, 30, 30); ride(301, 308, 34, 34); ride(309, 315, 38, 38); ride(273, 325, 44, 44);
+  // ---------------- 5. THE LEGGING TUNNEL (248-345): the SET PIECE (claude/canal4, Daniel 10-05: the weir run was "really glitchy" - gone) ----------------
+  /* A LONG, PITCH-DARK CANAL TUNNEL through the hill under the summit. No towpath and no current: she goes only while a rider LEGS her - lies on her
+     deck (DOWN held) and walks her along the walls - quicker with her LANTERN lit (he sees the walls) than dimmed (he legs her blind). Her lantern is
+     struck to dim it and struck again to light it: lit, it shows the low beams, the leggers' ledges and the way - and draws the brood to her (the
+     grindylows come aboard, the wisps come for her, the watchmen's bows see her); dimmed, nothing sees her, nor can you. THE BARGE GOES WHERE THE
+     WATER LETS IT - A LANTERN SHOWS YOU, TO THEM TOO: both halves, in the dark.
+       248-272  THE MOUTH       TEACH   the sign at the portal (leg her, her lantern), two low beams, one grindylow that comes only to her light
+       273-298  THE STOP-PLANKS TEST    planks across the tunnel hold her; up on the leggers' ledge, over a gap the ledge lantern shows (and a watchman's
+                                        bow sees), past a bargee, to the WINDLASS that winds them up; back along the ledge to her
+       299-318  THE NEST        REMIX   a run of low beams over a nest of grindylows: dim her and slip past, slow and blind - but THE MOON SHAFT lights
+                                        her whether or no, and what is under it comes aboard; the nest's wisp burns ahead
+       319-345  THE DEEP LOCK   EXAM    the last reach (a lamplighter keeps its ledge lantern lit for a watchman), then a lock twenty-six rows deep at
+                                        the tunnel's end: its paddle is back on the ledge, she goes down without you, and a ladder goes down after her;
+                                        the brood on its steps is stranded as it drains. Out of its lower gate she is in the basin
+     Every hero does it with base movement: the deck to a ledge is the towpath hop (46 px), the ledge gap two tiles, the ladders are ladders */
+  block(248, 345, 24, H - 1);                                                 /* under the tunnel and the deep lock: the hill (THE SUMMIT POUND, P4, runs on into it: section 4) */
+  block(248, 345, 0, 13); block(345, 345, 14, 16);                           /* THE HILL over the tunnel and the deep lock (no way over the top) */
+  air(248, 344, 14, 14);
+  const tunnels = [[248, 344]], moon = [[306, 309]], stops = [];
+  fog('FT', 248, 345, 13, 49, { a: 0 });   /* THE DARK, as the machinery sees it: nothing in the tunnel is lit but by a lantern (the watchmen see only the lit). Drawn as the tunnel's own dark, not fog */
+  const rib = (c, w = 2) => { block(c, c + w - 1, 14, 15); beams.push({ x0: px(c), x1: px(c + w), y: 18 * TS - 2 - 9, dmg: 12, name: 'A LOW BEAM', tunnel: true }); };   /* the roof comes down in a rib, and its tie-bar hangs to a hand over her deck */
+  const ledge = (x0, x1) => boards(x0, 15, x1 - x0 + 1);   /* A LEGGERS' LEDGE: stone, three rows over the water (the towpath hop up off her deck) */
+  const stopPlanks = (id, x, cap) => { block(x, x, 17, 22); stops.push({ id, x, top: 17, bot: 22 }); ent('stopwinch', cap[0], cap[1], { stop: stops.length - 1 }); };
+  /* THE MOUTH (TEACH): the portal; the barge noses in under the hill and stops - there is no current in here */
+  sign(244, 15, 'THE LEGGING TUNNEL. NO CURRENT: LIE ON HER DECK (HOLD DOWN) AND LEG HER THROUGH.');
+  sign(246, 15, 'HER LANTERN SHOWS YOU - AND YOU TO THEM. STRIKE IT TO DIM IT OR LIGHT IT.');
+  rib(258); rib(266);
+  grindy(263, 18, 'the tunnel mouth');                                        /* one: it comes only to her light */
+  coins([255, 17], [262, 17], [270, 17]);
+  /* THE STOP-PLANKS (TEST): planks across the water hold her; the ledge over them, a gap in it the ledge lantern shows, the windlass past the bargee */
+  ledge(280, 285); ledge(288, 297); stopPlanks('S1', 289, [295, 14]);
+  post(284, 14); sign(281, 14, 'STOP-PLANKS HOLD HER. A WINDLASS ON THE LEDGE WINDS THEM UP.');
+  bargee(291, 14, 'the stop-planks'); archer(297, 14, 'the stop-planks');   /* the watchman sees only the lit: the ledge lantern by the gap, or her own */
+  grindy(286, 18, 'the stop-planks'); grindy(293, 18, 'the stop-planks');
+  rib(277);
+  /* THE NEST (REMIX): low beams over a nest; THE MOON SHAFT, open to the sky, lights her whatever her lantern says */
+  rib(301); rib(305, 1); rib(311); rib(316);
+  grindy(300, 18, 'the nest'); grindy(304, 18, 'the nest'); grindy(309, 18, 'the nest'); grindy(313, 18, 'the nest');
+  air(307, 308, 0, 13); air(304, 306, 2, 4); boards(307, 5, 1); ladder(308, 3, 17); coins([304, 4], [305, 4], [306, 4]);   /* the shaft, and a niche off its top: the leggers' stores (a pocket) */
+  wisp(314, 16, [318, 17], 'the nest light');                                 /* a cold light ahead in the dark, where no lantern is */
+  /* THE DEEP LOCK (EXAM): the last reach's ledge (a lamplighter, its lantern, a watchman, the paddle), the gallery over the chamber, its ladder */
+  lamplighter(324, 14, 'the last reach'); post(326, 14); archer(330, 14, 'the last reach');
+  sign(323, 14, 'THE DEEP LOCK. STRIKE ITS PADDLE AND SHE GOES DOWN TO THE BASIN.');
+  const L6 = reach('L6', 335, 344, 49, 44, 18, 'hi', { rate: 52 }); block(335, 344, 50, H - 1); air(335, 344, 14, 14);
+  ledge(322, 343);                                                            /* the last reach's ledge, on over the upper gate as the gallery over the chamber (laid after the chamber is carved) */
+  gate('G7', 334, 17, 48, P4, L6);
+  sluice(332, 14, 'L6');                                                      /* its paddle, back on the ledge: she goes down without you */
+  ladder(344, 16, 43);                                                        /* down the lower gate's face to her, when she is down */
+  grindy(338, 18, 'the deep lock'); grindy(342, 18, 'the deep lock');        /* on its steps: stranded as it drains */
+  coins([328, 14], [340, 14]);
+  /* the reach model's view: her deck along the tunnel (the summit pound's band runs on into it); the deep lock's band is its own (reach) */
 
-  // ---------------- 6. THE THEATRE BASIN (326-369): the EXAM - all of it at once ----------------
-  /* She comes out of the race into a basin in THICK fog and stops. The way on is east, over the weed, to the lock under the theatre. The bridge stands
-     across (walk it; it holds her); the horn is on the west bank behind you and the bridge's capstan on the island past it, under the foreman; the archers on the theatre
-     bridge loose at whatever is lit (her lantern, the posts - and everything, while the horn has the fog cleared); a wisp over the weed shines like the
-     lock's own lamp. Clear the fog, swing the bridge, and be on her when she passes under the island - before the fog comes back */
-  const P5 = reach('P5', 326, 354, 49, 44, 44); block(326, 354, 50, H - 1);
+  // ---------------- 6. THE THEATRE BASIN (346-389): the EXAM - all of it at once ----------------
+  /* She comes out of the deep lock's lower gate into a basin in THICK fog and stops. The way on is east, over the weed, to the lock under the theatre. The
+     bridge stands across (walk it; it holds her); the horn is on the west bank behind you and the bridge's capstan on the island past it, under the foreman;
+     the archers on the theatre bridge loose at whatever is lit (her lantern, the posts - and everything, while the horn has the fog cleared); a wisp over the
+     weed shines like the lock's own lamp. Clear the fog, swing the bridge, and be on her when she passes under the island - before the fog comes back */
+  const P5 = reach('P5', 346, 374, 49, 44, 44); block(346, 374, 50, H - 1);
+  gate('G8', 345, 17, 48, L6, P5); block(345, 345, 49, H - 1);                /* THE DEEP LOCK's lower gate: open when it stands at the basin's level */
   /* THE BASIN LOCK, last of all (the LOCK in the exam): the theatre's door is four rows over the basin, and only a full chamber puts her deck in reach of
      it. Its paddle is on the upper gate's face, at her bow - and a grindylow is on the steps there */
-  const L5 = reach('L5', 356, 369, 49, 44, 40); block(356, 369, 50, H - 1);
-  gate('G9', 355, 39, 48, P5, L5); block(355, 355, 49, H - 1); sluice(369, 43, 'L5');
-  fog('F4', 326, 375, 20, 49, { a: 0.7 });   /* (claude/canalfix3: to the lock floor - not down into the cistern under it) */ fog('F5', 332, 343, 20, 52, { thick: true, a: 0.9 });
+  const L5 = reach('L5', 376, 389, 49, 44, 40); block(376, 389, 50, H - 1);
+  gate('G9', 375, 39, 48, P5, L5); block(375, 375, 49, H - 1); sluice(389, 43, 'L5');
+  fog('F4', 346, 395, 20, 49, { a: 0.7 });   /* (claude/canalfix3: to the lock floor - not down into the cistern under it) */ fog('F5', 352, 363, 20, 52, { thick: true, a: 0.9 });
   /* (claude/canalfix, review fix 4) TWO STOPS, NOT ONE: THE HORN IS ON THE WEST BANK (its own 6.5 s), THE CAPSTAN ON THE ISLAND. Blow it, cross the bridge
      in the clear air under both theatre-bridge bows, swing it, and be on her as she passes under the island before the bank rolls back - the foreman and
      the island's lamplighter are best dealt with first, in the dark */
-  boards(326, 41, 10); horn(329, 40, ['F5'], 6.5); post(333, 40);            /* the west bank */
-  const B4 = bridge(336, 341, 41, 'across', [342, 40]);
-  boards(342, 41, 8); post(348, 40);                                         /* THE ISLAND */
-  foe('gaffer', 347, 40, { squad: 'the island', elite: true, gate: 372, canal: { bargee: true, cnSkin: 'deckforeman' } });   /* THE DECK FOREMAN: the basin's elite, and the lock door is shut until he is down */
-  lamplighter(349, 40, 'the island');                                        /* kill him first: he keeps the island's east post lit, and his lantern shows you to the theatre bridge (the bridge itself is dark: cross it unseen) */
-  weedWater.push([349, 354, 'P5']); weed(349, 350, 44); weed(351, 352, 44, 'bright'); weed(353, 354, 44);
-  wisp(353, 40, [354, 44], 'the weed');                                       /* over the weed: the lock's lamp, it seems */
-  wisp(334, 40, [336, 45], 'the fog');                                        /* in the thick: over the water beside the bridge */
-  grindy(331, 44, 'the basin'); grindy(368, 44, 'the basin lock steps');
-  boards(340, 34, 20); archer(345, 33, 'the theatre bridge'); archer(355, 33, 'the theatre bridge');   /* THE THEATRE BRIDGE, high over the basin */
-  post(350, 33); ladder(349, 34, 40);                                         /* a ladder up to it off the island: its archers can be reached */
-  moorings.push({ cp: [375, 40], x: 364, fill: ['L5'], bridges: { [B4]: 'open' } });        /* a death at the lock door: she is moored at its foot */
-  coins([330, 40], [338, 40], [344, 40], [352, 33], [362, 40]);
-  ent('mend', 327, 40);
+  boards(346, 41, 10); horn(349, 40, ['F5'], 6.5); post(353, 40);            /* the west bank */
+  const B4 = bridge(356, 361, 41, 'across', [362, 40]);
+  boards(362, 41, 8); post(368, 40);                                         /* THE ISLAND */
+  foe('gaffer', 367, 40, { squad: 'the island', elite: true, gate: 392, canal: { bargee: true, cnSkin: 'deckforeman' } });   /* THE DECK FOREMAN: the basin's elite, and the lock door is shut until he is down */
+  lamplighter(369, 40, 'the island');                                        /* kill him first: he keeps the island's east post lit, and his lantern shows you to the theatre bridge (the bridge itself is dark: cross it unseen) */
+  weedWater.push([369, 374, 'P5']); weed(369, 370, 44); weed(371, 372, 44, 'bright'); weed(373, 374, 44);
+  wisp(373, 40, [374, 44], 'the weed');                                       /* over the weed: the lock's lamp, it seems */
+  wisp(354, 40, [356, 45], 'the fog');                                        /* in the thick: over the water beside the bridge */
+  grindy(351, 44, 'the basin'); grindy(388, 44, 'the basin lock steps');
+  boards(360, 34, 20); archer(365, 33, 'the theatre bridge'); archer(375, 33, 'the theatre bridge');   /* THE THEATRE BRIDGE, high over the basin */
+  post(370, 33); ladder(369, 34, 40);                                         /* a ladder up to it off the island: its archers can be reached */
+  moorings.push({ cp: [395, 40], x: 384, fill: ['L5'], bridges: { [B4]: 'open' } });        /* a death at the lock door: she is moored at its foot */
+  coins([350, 40], [358, 40], [364, 40], [372, 33], [382, 40]);
+  ent('mend', 347, 40);
 
-  // ---------------- 7. JENNY'S LOCK (370-431): JENNY GREENTEETH's lock chamber and her fight (claude/lockkeeper's module, wired by claude/greenwire) ----------------
+  // ---------------- 7. JENNY'S LOCK (390-451): JENNY GREENTEETH's lock chamber and her fight (claude/lockkeeper's module, wired by claude/greenwire) ----------------
   /* THE LOCK'S LOWER GATE is the corridor's floor: the barge moors at its foot (a grindylow on its steps), you hop up onto it, walk the corridor
-     through the foreman's gate to the checkpoint, and her WEST DOOR is at the corridor's end, at bed level. Her chamber is stageGreenteeth(sx 376, R 41):
-     columns 376-415 (gates at 376 and 415, water 377-414), rows 25-42 (she lays rows 41 and 42 herself; row 43 is solid here), her doors at rows 35-40 in
-     each gate - the west door opens off this corridor, the east door (the way on once she is down: the arena walls close both while she wakes) onto the
-     quay at 416. Her track is her own (arena.music 'greenteeth'); the level's stays 'canal'. */
-  block(370, 373, 37, H - 1);                                                 /* THE LOCK'S LOWER GATE and the corridor's first floor: a step up from her deck when the basin lock is full */
-  block(370, 375, 30, 33); air(371, 375, 34, 36); air(374, 375, 37, 40); block(374, 375, 41, H - 1);   /* the corridor, stepping down to her west door at her bed level */
-  ent('check', 375, 40);                                                      /* CHECKPOINT THREE: just outside her west door */
+     through the foreman's gate to the checkpoint, and her WEST DOOR is at the corridor's end, at bed level. Her chamber is stageGreenteeth(sx 396, R 41):
+     columns 396-435 (gates at 396 and 435), rows 25-47 (claude/canal4: a stone landing inside each door, her water five rows deep between, the raft on it), her doors at rows 35-40 in each gate - the west door opens off this corridor, the east door (the
+     way on once she is down: the arena walls close both while she wakes) onto the quay at 436. Her track is her own (arena.music 'greenteeth'); the
+     level's stays 'canal'. (claude/canal4: every column here is the old one + 20 - the tunnel is twenty longer than the weir was) */
+  block(390, 393, 37, H - 1);                                                 /* THE LOCK'S LOWER GATE and the corridor's first floor: a step up from her deck when the basin lock is full */
+  block(390, 395, 30, 33); air(391, 395, 34, 36); air(394, 395, 37, 40); block(394, 395, 41, H - 1);   /* the corridor, stepping down to her west door at her bed level */
+  ent('check', 395, 40);                                                      /* CHECKPOINT THREE: just outside her west door */
   /* (claude/canalfix3) THE CISTERN (a SAFE SWIM): under the basin lock's floor and the corridor, clear water; the lock's bed over it is an iron grate (the basin lock's
      green on the other side). Down the hatch in the corridor floor and its ladder; a mend and the lock-keeper's coins at the bottom, before her door */
-  swim('the cistern', 360, 375, 50, 54, 51, { grate: [361, 49, 49, -1], bumpFrom: 368 });
-  set(372, 37, T.ONEWAY); hatches.push([372, 37]); air(372, 372, 38, 49); ladder(372, 38, 51);
-  grates.push([361, 366, 49, 49]); ent('mend', 364, 54); coins([362, 53], [366, 53], [369, 53]);
-  sign(375, 40, "JENNY'S LOCK. THE GRINDYLOWS' MOTHER KEEPS IT.");
-  air(376, 415, 25, 40); block(376, 415, 41, H - 1);                         /* her footprint, cleared before she lays herself into it */
-  const jenny = stageGreenteeth({ set, block, plat: boards, ent }, T, TS, 376, 41);
-  ent('gate', 420, 40);                                                        /* the level's end, out on the quay past her east door: it opens when she dies (gateAfterBoss) */
-  block(416, 431, 41, H - 1);                                                  /* the theatre quarter's quay, past her east door */
+  swim('the cistern', 380, 395, 50, 54, 51, { grate: [381, 49, 49, -1], bumpFrom: 388 });
+  set(392, 37, T.ONEWAY); hatches.push([392, 37]); air(392, 392, 38, 49); ladder(392, 38, 51);
+  grates.push([381, 386, 49, 49]); ent('mend', 384, 54); coins([382, 53], [386, 53], [389, 53]);
+  sign(395, 40, "JENNY'S LOCK. THE GRINDYLOWS' MOTHER KEEPS IT.");
+  air(396, 435, 25, 40); block(396, 435, 41, H - 1);                         /* her footprint, cleared before she lays herself into it */
+  const jenny = stageGreenteeth({ set, block, plat: boards, ent }, T, TS, 396, 41);
+  ride(400, 431, 41, 41);                                                      /* (claude/canal4) THE RAFT across her water, for the reach model (it goes out to the middle with you on it, and to the east landing when she is dead) */
+  ent('gate', 440, 40);                                                        /* the level's end, out on the quay past her east door: it opens when she dies (gateAfterBoss) */
+  block(436, 451, 41, H - 1);                                                  /* the theatre quarter's quay, past her east door */
   /* (claude/canalfix, review fix 8: the bargee who waited on this quay could never be reached past the end gate - removed; claude/greenwire kept it so: nothing stands past her) */
 
   // ================= THE LADDERS, LAST =================
@@ -345,17 +357,18 @@ export function buildFogCanal({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START, pools: [...pools, ...jenny.pools], falls: [], moversExtra: [
       { kind: 'barge', canal: true, x: px(36), y: 40 * TS - 2, w: 96, h: 10 }, ...jenny.movers ],
     arena: jenny.arena, gateAfterBoss: true,
-    interiors: [[14, 29, 19, 38, 'cnWarehouse'], [86, 106, 13, 29, 'cnMill'], [371, 375, 37, 40, 'cnDoor'], [16, 34, 42, 49, 'cnCellar'], [360, 375, 50, 54, 'cnCistern']],   /* (claude/canalfix3) the safe swims' vaults */
-    canal: { reaches, gates, bridges, fogs, weedWater, weeds, beams: beams.filter(b => !b.weir), moorings, weir: weirSpec, barge: { x: 36 }, arcs: ARCS, sections: SECTIONS,
+    interiors: [[14, 29, 19, 38, 'cnWarehouse'], [86, 106, 13, 29, 'cnMill'], [391, 395, 37, 40, 'cnDoor'], [16, 34, 42, 49, 'cnCellar'], [380, 395, 50, 54, 'cnCistern'], [248, 344, 14, 22, 'cnTunnel'], [335, 344, 23, 48, 'cnTunnel']],   /* (claude/canalfix3) the safe swims' vaults; (claude/canal4) the tunnel's brick */
+    canal: { reaches, gates, bridges, fogs, weedWater, weeds, beams, moorings, barge: { x: 36 }, arcs: ARCS, sections: SECTIONS,
       swims, grates, hatches,   /* (claude/canalfix3) the safe swims, their iron grates, the hatches into them */
-      sides, arch: [130, 147, 32], gangAt: 165, jetties: [[175, 185, 30]], street: { railings: [[1, 12, 26], [45, 52, 37], [60, 66, 37], [176, 181, 25], [241, 246, 16], [341, 358, 34]], bollards: [[35, 39], [344, 41]] },   /* (claude/canalfix3) the one timber jetty (the fog wall's pier): every other ledge is stone, src/redraw/canal_tiles.js */   /* (claude/canalfix) her sides of the Waymeet pound; THE LONG ARCH [x0, x1, the tunnel roof's lowest row]; the fog wall's front, where the gang boards */
+      tunnels, stops, moon, dark: [[248, 344, 14, 22], [334, 344, 23, 48]], tunnelEnd: 345,   /* (claude/canal4) THE LEGGING TUNNEL: where there is no current, the stop-planks, the moon shaft, the dark (tiles) */
+      sides, arch: [130, 147, 32], gangAt: 165, jetties: [[175, 185, 30]], street: { railings: [[1, 12, 26], [45, 52, 37], [60, 66, 37], [176, 181, 25], [241, 246, 16], [361, 378, 34]], bollards: [[35, 39], [364, 41]] },   /* (claude/canalfix3) the one timber jetty (the fog wall's pier): every other ledge is stone, src/redraw/canal_tiles.js */   /* (claude/canalfix) her sides of the Waymeet pound; THE LONG ARCH [x0, x1, the tunnel roof's lowest row]; the fog wall's front, where the gang boards */
       /* JENNY GREENTEETH, FORESHADOWED (cheap and told): eyes that open in the fog now and then [x, y, phase], a child's shoe on a step, bubbles by the bank where nothing lives */
-      eyes: [[146, 27, 0.1], [176, 29, 0.55], [235, 16, 0.75], [339, 38, 0.3]], shoes: [[35, 38], [372, 36]], bubbles: [[40, 40], [61, 40], [100, 33], [175, 33], [240, 18], [335, 44]] },
-    chases, rigBands,
+      eyes: [[146, 27, 0.1], [176, 29, 0.55], [235, 16, 0.75], [312, 16, 0.4], [359, 38, 0.3]], shoes: [[35, 38], [392, 36]], bubbles: [[40, 40], [61, 40], [100, 33], [175, 33], [240, 18], [297, 18], [355, 44]] },
+    rigBands,   /* (claude/canal4: no chase - the weir's flood is gone) */
     waterHurts: true, noWade: true,   /* THE CANAL IS JENNY'S WATER: a fall in costs health and hands you back to the last ground you stood on (main.js, as the Marsh); and it is
                                          not a floor to the reach model (src/reachcore.js L.noWade): only the barge crosses it */
-    lockArena: { sx: 376, R: 41, x0: 376, x1: 415, rows: [25, 42], westDoor: [376, 35, 40], eastDoor: [415, 35, 40] },   /* JENNY GREENTEETH's lock (claude/greenwire): the footprint stageGreenteeth(..., 376, 41) lays (see section 7) */
-    squadBands: [{ lo: 400, hi: 599, spots: 0, why: "JENNY'S LOCK: the last columns are her chamber's east end and the quay past her door - nothing stands past her, and no squad stands in a boss arena (as the theatre)" }],
+    lockArena: { sx: 396, R: 41, x0: 396, x1: 435, raft: true, rows: [25, 47], westDoor: [396, 35, 40], eastDoor: [435, 35, 40] },   /* JENNY GREENTEETH's lock (claude/greenwire): the footprint stageGreenteeth(..., 376, 41) lays (see section 7) */
+    squadBands: [{ lo: 420, hi: 599, spots: 0, why: "JENNY'S LOCK: the last columns are her chamber's east end and the quay past her door - nothing stands past her, and no squad stands in a boss arena (as the theatre)" }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* three checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
     /* WHAT EACH MACHINE OPENS, and the line that says so (claude/canalfix: tools/level-quality.mjs `unlocks`; the lines are the hints src/canal-hands.js shows) */
@@ -363,7 +376,8 @@ export function buildFogCanal({ painter, T, TS }) {
       { kind: 'locksluice', opens: 'the lock gate ahead (the water levels)', hud: 'THE PADDLE IS UP: THE CHAMBER FILLS. THE GATE AHEAD OPENS WHEN THE WATER IS LEVEL.' },
       { kind: 'swingcap', opens: 'the way on for the barge (the bridge swung clear)', hud: 'THE BRIDGE STANDS ACROSS THE WATER: HER LANTERN POLE WILL NOT PASS UNDER IT.' },
       { kind: 'foghorn', opens: 'the fog wall and the basin fog, for a while', hud: 'THE FOGHORN: THE FOG LIFTS - FOR A WHILE. EVERY ARCHER SEES YOU NOW.' },
-      { kind: 'lanternpost', opens: 'the dark (doused: the archers in the fog cannot see you)', hud: 'THE LANTERN IS OUT: IN THE DARK THE ARCHERS CANNOT SEE YOU. NOR CAN YOU.' } ],
+      { kind: 'lanternpost', opens: 'the dark (doused: the archers in the fog cannot see you)', hud: 'THE LANTERN IS OUT: IN THE DARK THE ARCHERS CANNOT SEE YOU. NOR CAN YOU.' },
+      { kind: 'stopwinch', opens: 'the legging tunnel past the stop-planks (wound up out of her way)', hud: 'THE WINDLASS WINDS THE STOP-PLANKS UP: HER WAY IS OPEN.' } ],
     bgSpan: 200,   /* the backdrop (src/redraw/canal_backdrop.js) rides within 200 px whatever storey the camera is on: the summit is not off the bottom of it */
     music: 'canal', dark: 0, night: true, nightA: 0.3, duskStart: 99999, duskLen: 1,
     palette: { sky: 'storm', far: 'town', mid: 'town', near: 'town', dress: 'canal', noNear: true,   /* (claude/canalfix3, Daniel 10-02: a NIGHT CITY STREET - not the village's dovecote, lychgate, yews and stocks, and no forest bough over the lens or grass at its foot: the canal's own near layer, src/redraw/canal_backdrop.js) */
