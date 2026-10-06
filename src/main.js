@@ -174,6 +174,7 @@ import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxF
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
+import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscreens): the wood closed over the picture, the fronds part, the knight walks in */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
@@ -4968,6 +4969,7 @@ const KEYS = {
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
   initAudio(); anyPress = true; TCH.keyUsed();
+  if (pressCard && state === 'title' && !['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) { dismissPress(); e.preventDefault(); return; }   /* the card takes the first key: it starts the sound and does nothing else */
   if (state === 'rebind' && rebindKey(e)) { e.preventDefault(); return; }   /* a key being chosen for an action: used up here (src/controls.js) */
   if (state === 'title' && e.shiftKey && e.key === 'B') { bjOpen(); e.preventDefault(); return; }   /* THE HIDDEN BOSS LIST: SHIFT+B on the title screen (docs/PLAYTEST.md) */
   if (state === 'editor') { // the editor owns the letters; only the arrows fall through, to pan
@@ -5024,6 +5026,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
 // ---- the editor's mouse. Screen pixels come in; edMouse turns them into tiles. ----
 {
   const toGame = ev => { const r = disp.getBoundingClientRect(); return [((ev.clientX - r.left) * DPR - offX) / S, ((ev.clientY - r.top) * DPR - offY) / S]; };
+  disp.addEventListener('pointerdown', () => { if (pressCard && state === 'title') { initAudio(); dismissPress(); } });   /* a click anywhere on the card is a press */
   disp.addEventListener('contextmenu', ev => { if (state === 'editor') ev.preventDefault(); });
   disp.addEventListener('mousedown', ev => { if (state !== 'editor') return; initAudio(); const [x, y] = toGame(ev); edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
   disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); edMouse(x, y, ev.button, false, true); });
@@ -25126,7 +25129,7 @@ function update(dt) {
     edCam.x = Math.max(0, Math.min(LW * TS - VW, edCam.x)); edCam.y = Math.max(0, Math.min(LH * TS - VH, edCam.y));
     edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
   }
-  if (state === 'title') { ambient.set('forest'); if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pausePress) openMenu('title');
+  if (state === 'title') { ambient.set('forest'); if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < TC.PART_S + TC.WALK_S) { if (anyPress && time - pressAt > 0.15) { pressAt = time - 9; titleSince = time - 1; } /* the fronds are parting and he is walking in: a press now skips ahead, and is not also a menu choice */ } else if (pausePress) openMenu('title');
     else {
       const items = titleItems();
       if (upPress) { titleI = (titleI + items.length - 1) % items.length; SFX.ui(); }
@@ -28337,6 +28340,10 @@ function drawSelect() {
 // catching the last light and the Queen's castle on the peak beyond it - a knight at a campfire before
 // the great gate, and the menu on its own board to the right so it never sits on the picture.
 let titleLeaves = [], HORIZON = null, HORIZON_REGION = null, titleSince = 0;
+/* THE PRESS ANY KEY CARD: up on the first title of a run (not with ?nocard, and a key pressed before the page was drawn counts: the browser has had its gesture). A key, a tap or a pad button
+   starts the audio and parts the fronds; pressAt is when. It replaces the in-level PRESS A KEY FOR SOUND banner, which stays only as the fallback for a run that never passes the title. */
+let pressCard = !q.has('nocard'), pressAt = null;
+function dismissPress() { if (!pressCard) return; pressCard = false; pressAt = time; titleSince = time + TC.SETTLE_S; SFX.uiSel(); }
 /* THE FAR COUNTRY ON THE TITLE SCREEN IS YOUR OWN. A new save and a save twenty woods deep looked at the same
    ridge: now the horizon carries what you have been through - the crags, then the sea, then the haunted country
    inland - and the picture ages with the campaign. */
@@ -28470,7 +28477,8 @@ function drawTitle(cx, cy) {
       g.globalAlpha = (1 - ph) * 0.22; g.fillStyle = '#6a5a58';
       g.fillRect(Math.round(fx + Math.sin(i * 2.1 + time * 0.8 + ph * 3) * (4 + ph * 14)), Math.round(fy - 16 - ph * 62), 2 + Math.round(ph * 3), 2 + Math.round(ph * 2)); }
     g.globalAlpha = 1;
-    drawSet(K, 'idle', Math.floor(time * 4.5), fx + 20, fy, -1, false);
+    { const w = TC.walkIn(pressCard && state === 'title' ? -1 : pressAt === null ? null : time - pressAt, fx + 20, -1);   /* he is simply there unless the card ran: then he walks in from the left after the fronds part */
+      if (w.x > -30) drawSet(K, w.walking ? 'run' : 'idle', Math.floor(time * (w.walking ? 10 : 4.5)), Math.round(w.x), fy, w.face, false); }
     /* AND THE ONES YOU HAVE WON STAND WITH HIM. The camp was one knight however far the save had got; every class
        you own is at the fire now, so the title screen shows the roster - and the empty ground shows who is missing. */
     { const seats = [[-40, 1], [-62, 1], [34, -1], [-84, 1], [-106, 1]];   /* all of them on the open ground: the menu board takes the right of the picture, and two of the old seats sat behind it */
@@ -28478,6 +28486,7 @@ function drawTitle(cx, cy) {
         const [dx, face] = seats[i], set = preview('titlecamp:' + h, () => heroSet(null, null, false, h));
         drawSet(set, 'idle', Math.floor(time * 4.5 + i * 3), fx + dx, fy, face, false); }); } }
   drawTitleBracken();
+  if ((pressCard && state === 'title') || (pressAt !== null && time - pressAt < TC.PART_S)) TC.drawPressFronds(g, time, pressCard ? 0 : (time - pressAt) / TC.PART_S, VW, VH);
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
   const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -29012,7 +29021,9 @@ function render() {
     /* THE BOARD HANGS OVER THE PICTURE, NOT UNDER THE MENU. Centred on VW/2 with the menu board 138 wide on the
        right, the sign and its line ran in behind the panel and the subtitle was half-covered. It is centred on the
        picture instead, and it swings a little on its post the way a hung sign does. */
-    const since = time - titleSince, e = easeOutBack(Math.min(1, since / 0.7));
+    const since = pressCard ? 0 : Math.max(0, time - titleSince), e = easeOutBack(Math.min(1, since / 0.7));
+    if (pressCard) TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); });
+    if (pressCard || (pressAt !== null && time - pressAt < 0.4)) TC.drawPressText(g, text, UI, time, VW, VH, pressCard ? 1 : Math.max(0, 1 - (time - pressAt) / 0.4), touchOn);
     const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(10 - (1 - e) * 70 + sway);
     const lw = 196, lh = Math.round(PROP.plank.height * 1.4), tcx = Math.round((VW - 146) / 2), lx = Math.round(tcx - lw / 2);
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
@@ -29022,7 +29033,7 @@ function render() {
     { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; text('a knight, a wood, a mountain', tcx, ly + 40, UI.text, 'center', 6); g.globalAlpha = 1; }
     // the menu, on its own board to the right of the picture
     { const items = titleItems(), mw = 138, mx = VW - mw - 8, mh = items.length * 13 + 24, my = Math.min(74, VH - 16 - mh);
-      const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 140);
+      const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 160);   /* (160: at 140 a sliver of the board showed at the right edge while the press card was up) */
       panel(mx + ox, my, mw, mh);
       const want = my + 6 + titleI * 13; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
       g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, mw - 8, 12); g.fillStyle = UI.sel; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, 2, 12);
@@ -29034,7 +29045,7 @@ function render() {
       g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(mx + ox + 6, my + mh - 14, mw - 12, 1);
       text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
         mx + ox + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
-    text(touchOn ? 'tap an item' : 'ARROWS choose   Z or X enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
+    if (since > 1.2) text(touchOn ? 'tap an item' : 'ARROWS choose   Z or X enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
   }
 
   if (state === 'slots') drawSlots();
