@@ -7,7 +7,11 @@
 //     be reached, and washed out it can; without either BASKET the dam cannot be reached; THE OLD NEST's vault holds its silver until it is opened
 //   - every gate has a wheel the hero reaches before he needs it, and it sits ABOVE what it holds dry (the falls' rope, the jam, the narrows' rope)
 //   - every feather can be got; the old nest can be reached; two checkpoints, the last at the dam's door; the falls' keeper holds his gate
-//   - THE GREAT RED CRAB (src/gorge-crab.js, pure): two minutes of him with nothing released never opens him; a burst on him in the channel opens him for
+//   - (claude/redgorge2) THE RAPIDS: you start on the east bank; every reach between the stones is a plain jump or has a drifting timber over it,
+//     and without the timbers the gorge cannot be reached; the water hurts and hands you back (L.waterHurts, L.noWade); the birds over the crossing.
+//     THE GORGE CLIMB: without its spill-chute basket the gorge cannot be reached; three told rockfalls; a told gust over the chute; its wall rope.
+//     THE NEST LEDGE is THE RAPTOR MATRIARCH's (src/raptor-matriarch.js; her own check: tools/raptor-matriarch.mjs); the crab is benched (unplaced)
+//   - THE GREAT RED CRAB (src/gorge-crab.js, pure, BENCHED - kept for a coast level): two minutes of him with nothing released never opens him; a burst on him in the channel opens him for
 //     3 s or more, and a burst with him out of it does not; every pass of his chain is a new order; in phase two he will not walk into the channel
 //     while the gate holds water, and his scuttle still carries him in
 import assert from 'node:assert/strict';
@@ -42,11 +46,11 @@ ok(BRIDGES.every(y => { for (let x = 3; x <= 44; x++) if (at(x, y) !== T.ONEWAY 
 
 /* EVERY MECHANIC IS REQUIRED: a real jump, the rides on */
 const real = { rides: true, maxUp: 3, across: 4 };
-const reachDam = (Lx, extra = {}) => { const R = floodReach(Lx, T, { ...real, ...extra }); let n = 0; for (const k of R.seen) { const [x, y] = k.split(',').map(Number); if (x >= L.arena.x0 / 16 && x < L.arena.x1 / 16 && y === L.arena.floor / 16 - 1) n++; } return { n, R }; };
+const reachDam = (Lx, extra = {}) => { const R = floodReach(Lx, T, { ...real, ...extra }); let n = 0; for (const k of R.seen) { const [x, y] = k.split(',').map(Number); if (x >= L.arena.x0 / 16 && x < L.arena.x1 / 16 && y >= L.arena.floor / 16 - 1 && y <= L.arena.floor / 16 + 3) n++; } return { n, R }; };   /* (claude/redgorge2: the nest ledge's tops and its channel floor) */
 const open = reachDam(lv.build());
 ok(open.n > 30, 'with THE JAM washed out and the baskets running, a real jump climbs the whole gorge to the old dam (' + open.n + ' tiles of its floor)');
 { const Ls = lv.build(); Ls.redgorge = false; ok(reachDam(Ls).n === 0, 'with THE JAM in place, the old dam cannot be reached: the jam is a lock'); }
-for (const id of ['ledges', 'narrows']) { const Lb = lv.build(); Lb.moversExtra = Lb.moversExtra.filter(m => m.gorge !== id); ok(reachDam(Lb).n === 0, 'without the ' + id + ' basket the old dam cannot be reached: the flood is the only lift up that face'); }
+for (const id of ['ledges', 'narrows', 'spill']) { const Lb = lv.build(); Lb.moversExtra = Lb.moversExtra.filter(m => m.gorge !== id); ok(reachDam(Lb).n === 0, 'without the ' + id + ' basket the old dam cannot be reached: the flood is the only lift up that face'); }
 /* every gate's wheel is reached before it is needed (from the start, with THE JAM still in place) */
 { const Ls = lv.build(); Ls.redgorge = false; const R = floodReach(Ls, T, real);
   for (const g of L.gates.filter(q => q.ch === 'gorge')) { const ws = L.ents.filter(e => e.t === 'sluice' && e.gate === g.id); ok(ws.length && ws.some(w => R.seen.has(w.x + ',' + w.y)) || g.id === 'narrows', 'the ' + g.id + ' gate has a wheel the climb reaches' + (g.id === 'narrows' ? ' (past the jam)' : ' with the jam still in place')); }
@@ -79,7 +83,33 @@ ok(checks.length === 2 && checks.some(c => c.y <= REDGORGE.summit), 'two checkpo
 const keeper = L.ents.find(e => e.elite && e.gate !== undefined);
 ok(keeper && keeper.gate === 27 && keeper.y === 135, 'THE FALLS\' KEEPER (an elite scorpion) holds the gate between the terrace and the falls\' foot');
 
-/* THE GREAT RED CRAB, pure */
+/* (claude/redgorge2) THE RAPIDS */
+{ const R0 = REDGORGE.rapids, st = (x, y) => at(x, y) === T.SOLID && at(x, y - 1) === T.AIR, row = R0.surf - 1;
+  ok(L.START.x > R0.x1 && L.START.y === row - 1, 'you start on the rapids\' east bank (' + L.START.x + ',' + L.START.y + ')');
+  ok(L.waterHurts && L.noWade && L.pools.filter(p => p.rapids).length >= 5, 'the river hurts and hands you back to the last rock (L.waterHurts), and its bed is nowhere to walk (L.noWade): ' + L.pools.filter(p => p.rapids).length + ' reaches');
+  /* the footing across the river: stones (solid tops on the stand row) and the timbers' runs */
+  const deb = L.moversExtra.filter(m => m.debris), reaches = []; let x = R0.x1 + 1, run = null;
+  for (let c = R0.x0 - 1; c <= R0.x1 + 1; c++) { const foot = st(c, row); if (!foot && run === null) run = c; if (foot && run !== null) { reaches.push([run, c - 1]); run = null; } }
+  const covered = r => deb.some(m => Math.floor(m.x0 / 16) <= r[0] + 1 && Math.floor((m.x1 + m.w - 1) / 16) >= r[1] - 1);
+  const wide = reaches.filter(r => r[1] - r[0] + 1 > 3);
+  ok(reaches.length >= 5 && wide.length >= 3 && wide.every(covered) && reaches.every(r => r[1] - r[0] + 1 <= 3 || covered(r)), 'every reach of the river is a plain jump (3 or less) or has a drifting timber over it: ' + JSON.stringify(reaches));
+  ok(new Set(deb.map(m => m.debris)).size >= 4 && deb.some(m => deb.some(q => q !== m && q.x0 === m.x0 && q.x1 === m.x1)), 'four drifting timbers, two of them in one current (the remix: ride one, hop to the next)');
+  { const Ld = lv.build(); Ld.moversExtra = Ld.moversExtra.filter(m => !m.debris); ok(reachDam(Ld).n === 0, 'without the drifting timbers the gorge cannot be reached: the rapids need them'); }
+  ok(L.ents.filter(e => e.t === 'raptor' && e.x >= R0.x0 && e.x <= R0.x1).length >= 2, 'the birds circle the crossing (two raptors over the river)');
+  ok(L.ents.filter(e => e.t === 'sign' && e.x >= R0.x0 - 2 && e.y > REDGORGE.floor).length >= 2, 'signed at the point of use: the bank and the first timber'); }
+/* (claude/redgorge2) THE GORGE CLIMB */
+{ const C = REDGORGE.climb, inC = e => e.x >= C.x0 && e.x <= C.x1 && e.y > 150 && e.y <= C.foot;
+  const rf = L.ents.filter(e => e.t === 'rockfall' && inC(e));
+  ok(rf.length >= 3 && rf.every(e => e.seen && (e.tell || 0) >= 0.8), 'three TOLD rockfalls on the climb (a red mark where it lands, on the screen, ' + rf.map(e => e.tell).join('/') + ' s)');
+  const gz = (L.gusts || []).filter(z => z.told && z.shove > 0 && z.x0 <= C.x1 * 16 && z.x1 >= C.x0 * 16);
+  ok(gz.length >= 1, 'a told gust over the climb\'s chute (flags and dust before it shoves)');
+  ok(L.channels.some(c => c.id === 'spill') && L.baskets.some(b => b.ch === 'spill'), 'THE SPILL CHUTE runs on the horn, and its basket rides the flood');
+  ok(L.ropes.some(([x, y0, y1]) => x >= C.x0 && x <= C.x1 && y1 - y0 >= 12), 'the climb\'s wall rope (twelve rows or more)'); }
+/* (claude/redgorge2) THE NEST LEDGE: the Matriarch's, and the crab benched */
+ok(L.arena && L.arena.boss === 'matriarch' && L.ents.some(e => e.t === 'matriarch') && !L.ents.some(e => e.t === 'gorgecrab'), 'the old dam\'s spillway is THE RAPTOR MATRIARCH\'s nest ledge; THE GREAT RED CRAB is benched (no crab in the gorge)');
+ok(L.decor.filter(d => d.kind === 'plume').length >= 4, 'her plumes along the way (B8: the approach sets her up): ' + L.decor.filter(d => d.kind === 'plume').length);
+
+/* THE GREAT RED CRAB, pure (BENCHED: unplaced, kept for a coast level - his module still holds its promises) */
 { const A = { x0: 0, floor: 320 }, dt = 1 / 60, chain = [];
   let F = GC.newFight(A, GC.CRAB.hp), opened = 0;
   for (let i = 0; i < 120 * 60; i++) { const ev = GC.stepFight(F, { x: 100 + 400 * ((i / 600 | 0) % 2) }, F.B.hp, { horn: (i % 600) > 450 && (i % 600) < 540, running: (i % 600) >= 540, held: false, swept: false }, dt);
@@ -110,4 +140,4 @@ ok(keeper && keeper.gate === 27 && keeper.y === 135, 'THE FALLS\' KEEPER (an eli
       'the burst\'s spray damps the pyromancer\'s blows on his back (x' + inSpray + ', a sword x' + knight + ', hers after the burst x' + after + '; told: ' + said.join(' / ') + ')'); } }
 
 if (fails.length) { for (const f of fails) console.log('  FAIL ' + f); console.log('REDGORGE: ' + fails.length + ' failed'); process.exit(1); }
-console.log('REDGORGE: the gorge climbs, its flood never traps a crossing, its jam, baskets and nest are locks, and its crab opens only to released water.');
+console.log('REDGORGE: the rapids and the climb lead in, the gorge climbs, its flood never traps a crossing, its jam, baskets and nest are locks; the Matriarch keeps the ledge (the benched crab still opens only to released water).');

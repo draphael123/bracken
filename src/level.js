@@ -9,7 +9,7 @@ import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
-import { buildRedGorge } from './red-gorge.js';   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE GREAT RED CRAB (src/gorge-crab.js) */
+import { buildRedGorge } from './red-gorge.js';   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
@@ -7783,7 +7783,7 @@ export const LEVELS = [
   { id: 'shopWell', name: 'THE WELL STORE', sub: 'ask the keeper', build: theShopWell, hidden: true },   /* THE WELL TOWN's walk-in store (claude/welltown): APPENDED, like every level */
   /* THE RED GORGE (claude/redgorge, the GREYBOX, 2026-10-02): desert arc level 3 - a climb up a canyon whose channel floods on a clock - after THE WELL TOWN. APPENDED, so no
      index and no save moves. THE GREAT RED CRAB is its boss, on the old dam at its head (the desert-arc concept: a new flood-tied ground boss; THE ROC stays for THE SKY ROAD) */
-  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE CHANNEL. A SHUT GATE HOLDS ONE.', build: () => buildRedGorge({ painter, T, TS }), needs: 'underwell' },   /* (claude/underwell: THE UNDERWELL stands between the town and the gorge now) */
+  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE GORGE. A SHUT GATE HOLDS IT; LET IT GO TO BREAK WHAT BLOCKS YOU.', build: () => buildRedGorge({ painter, T, TS }), needs: 'underwell' },   /* (claude/underwell: THE UNDERWELL stands between the town and the gorge now) */
   /* THE UNDERWELL (claude/underwell, the GREYBOX, 2026-10-05): the old cistern tunnels under THE WELL TOWN, dry since the Djinn's well took the water - lamp oil,
      the Cistern Queen's brood, the water skin scarce. APPENDED, so no index and no save moves; its place on the road is its needs (and the gorge's) and its map node.
      THE CISTERN QUEEN (src/cistern-queen.js, benched by claude/welltown5) is its boss */

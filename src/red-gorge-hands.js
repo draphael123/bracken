@@ -14,7 +14,9 @@ import { STUCK_HANDS } from './stuck-spots.js';
 /* (dmg: a flood down the gorge is a fall and a beating; damDmg: the old dam's shallow spillway, where the crab fight is - tuned with the boss pilot at 10) */
 export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 25, damDmg: 10, down: 200, push: 90, foeDmg: 30, foeFlood: 0.5, foeNear: [360, 220], release: { tell: 0.35, run: 1.6 }, wellR: 22 };
 export const BASKET = { rise: 2.0, sink: 36, hold: 2.0, fall: 2.0 };          /* a basket climbs its shaft in RISE s of running water, holds HOLD s at the top, then drops its whole shaft in FALL s (Daniel 10-03: at 36 px/s an 18-row basket never reached the bridge between two floods, ~10 s apart - it hung out of reach, a soft-lock; the foot must be back well before the next flood) */
-export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
+export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };
+/* THE RAPIDS (claude/redgorge2): the drifting timbers' pace in calm water and in the horn's rapids (px/s), and a raptor's stoop over the water knocks you in */
+export const RAPIDS = { calm: 20, rapids: 60, bob: 1.5, knock: [150, -150] };            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
 
 /* WHAT YOU MUST USE NEXT (Daniel's playtest, 10-02: on bridge two he could not see that the basket was the way on). A pulsing GLINT on the thing the climb needs
    next, and after NUDGE.after s with no headway up the gorge, a short NUDGE naming it (once, then again only after NUDGE.again s). No sign spoils it: the glint says
@@ -42,7 +44,7 @@ export function makeRedGorgeHands(ctx) {
         jams: (L.jams || []).map(j => ({ ...j, open: false })),
         nest: (() => { const e = ents.find(q => q.t === 'oldnest'); return e ? { x: e.x * ts + 8, y: (e.y + 1) * ts, open: false } : null; })(),
         vault: (L.vaultDoors || []).map(v => ({ ...v, open: false })),
-        wheelsW: ents.filter(e => e.t === 'waterwheel').map(e => ({ x: e.x * ts + 8, y: e.y * ts + 8, basket: e.basket, a: 0 })) };
+        wheelsW: ents.filter(e => e.t === 'waterwheel').map(e => ({ x: e.x * ts + 8, y: e.y * ts + 8, basket: e.basket, a: 0 })), clock: 0 };
     }
     /* each foe's squad, by name (main.js does not carry an ent's squad onto the foe it spawns): matched by kind and spawn point, every spawn */
     for (const q of L.ents) { if (!q.squad) continue; const px = q.x * ctx.TS + 8, py = (q.y + 1) * ctx.TS;
@@ -119,7 +121,10 @@ export function makeRedGorgeHands(ctx) {
     RG.spans = RG.spans.filter(s => s.t > 0);
     for (const g of RG.gates) g.fx = Math.max(0, g.fx - dt);
     for (const w of RG.wheels) w.cd = Math.max(0, w.cd - dt);
-    for (const w of RG.wheelsW) { const b = ctx.movers().find(m => m.gorge === w.basket); if (b && running('gorge', b.wheelRow)) w.a += dt * 9; }
+    for (const w of RG.wheelsW) { const b = ctx.movers().find(m => m.gorge === w.basket); if (b && running(b.gch || 'gorge', b.wheelRow)) w.a += dt * 9; }
+    /* A RAPTOR'S STOOP OVER THE RAPIDS knocks you in (claude/redgorge2): a hero hit while he stands on a stone or a timber over the water goes in downstream */
+    for (const pp of ctx.players) if (pp.rgKnock > 0) { pp.rgKnock -= dt; if (pp.rgKnockGo) { pp.rgKnockGo = false; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return; P.onMover = null; P.ground = false; P.vx = RAPIDS.knock[0]; P.vy = RAPIDS.knock[1]; });
+      if (!RG.said.knock) { RG.said.knock = 1; ctx.number(pp.x, pp.y - 34, 'THE STOOP KNOCKS YOU INTO THE RIVER', '#ff9a5c'); } } }
     /* THE TORRENT ON THE HEROES: once a flood, a blow and down through the bridge; while in it, pushed down and out to the nearer bank */
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return;
       const s = wetAt(P.x, P.y - 8); if (!s) return; const c = chOf(s.ch), k = 1;
@@ -162,17 +167,30 @@ export function makeRedGorgeHands(ctx) {
   /* ---------- A BASKET: called from updateMovers before the generic lift (it moves only on running water) ---------- */
   H.basket = (m, dt) => {
     const oy = m.y; m.dx = 0;
-    if (RG && running('gorge', m.wheelRow)) { m.hold = BASKET.hold; m.y = Math.max(m.y1, m.y - (m.y0 - m.y1) / BASKET.rise * dt); if (oy > m.y1 + 4 && m.y <= m.y1 + 4 && RG) RG.n.rides++; }
+    if (RG && running(m.gch || 'gorge', m.wheelRow)) { m.hold = BASKET.hold; m.y = Math.max(m.y1, m.y - (m.y0 - m.y1) / BASKET.rise * dt); if (oy > m.y1 + 4 && m.y <= m.y1 + 4 && RG) RG.n.rides++; }
     else if (m.hold > 0) m.hold -= dt;
     else if (m.y < m.y0) m.y = Math.min(m.y0, m.y + Math.max(BASKET.sink, (m.y0 - m.y1) / BASKET.fall) * dt);
     m.dy = m.y - oy; return true;
   };
 
+  /* ---------- A DRIFTING TIMBER (THE RAPIDS, claude/redgorge2): it slides down the current (east) and bobs; at the end of its reach it goes under the
+     next stone and comes up again upstream (whoever stood on it is in the water). THE HORN TURNS THE CALM TO RAPIDS: three times the pace ---------- */
+  H.rapids = () => !!RG && (RG.phase === 'horn' || RG.phase === 'flood');
+  H.debris = (m, dt) => {
+    const ox = m.x, oy = m.y; if (m.dt === undefined) { m.dt = 0; m.x = m.x0 + (m.x1 - m.x0) * (m.phase || 0); }
+    const v = RG && H.rapids() ? RAPIDS.rapids : RAPIDS.calm; m.x += v * dt; m.dt += dt; m.fast = v > RAPIDS.calm;
+    if (m.x > m.x1) { m.x = m.x0; for (const pp of ctx.players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; } m.under = 0.4; }
+    if (m.under > 0) m.under -= dt;
+    m.y = m.y0 + Math.sin(m.dt * 3 + (m.phase || 0) * 6) * RAPIDS.bob; m.dx = m.x - ox; m.dy = m.y - oy; if (m.dx < 0) m.dx = 0; return true; };
+
   /* ---------- THE RAPTOR: the vulture's machine, keeping its own bridge ---------- */
   H.raptorStep = (s, w, dt) => {
     if (s.g0 === undefined) s.g0 = s.groundY;   /* the bridge it keeps */
     if (s.mode === 'circle') { s.groundY = s.g0; if (Math.abs(w.py - s.g0) > RAPTOR.sightY) s.cd = Math.max(s.cd, 0.4); }
-    const out = vultureStep(s, w, dt); for (const v of out) if (v.t === 'hit') v.dmg = RAPTOR.dmg;
+    const was = s.mode, out = vultureStep(s, w, dt); for (const v of out) if (v.t === 'hit') v.dmg = RAPTOR.dmg;
+    /* over the rapids, a stoop that comes down on you knocks you into the river (the hands' update throws you in) */
+    if (was === 'dive' && s.mode !== 'dive' && RG && RG.L.pools && RG.L.pools.some(p => p.rapids && s.x > p.x0 - 48 && s.x < p.x1 + 48 && Math.abs(s.y - p.y) < 60))
+      for (const pp of ctx.players) if (!pp.dead && Math.abs(pp.x - s.x) < 18 && Math.abs(pp.y - s.y) < 28) { pp.rgKnock = 0.5; pp.rgKnockGo = true; }
     if (s.mode === 'dive') s.groundY = s.ty;   /* it lands where it struck (a rope, the basket, a ledge), not back on its bridge */
     return out; };
 
@@ -194,6 +212,17 @@ export function makeRedGorgeHands(ctx) {
     for (const r of RG.ropes) { if (r.r1 - r.r0 < 12) continue; const x = R(r.x - cx), yb = R(r.y1 - cy); if (x < -8 || x > vw + 8 || yb < -8 || yb > vh + 40) continue;
       g.fillStyle = '#d9b36a'; for (const ky of [yb - 6, yb - 22]) { g.fillRect(x - 2, ky, 5, 3); g.fillStyle = '#7a5a30'; g.fillRect(x - 2, ky + 3, 5, 1); g.fillStyle = '#d9b36a'; }
       g.fillStyle = '#b8924a'; g.fillRect(x - 3, yb, 1, 3); g.fillRect(x - 1, yb, 1, 5); g.fillRect(x + 1, yb, 1, 4); g.fillRect(x + 3, yb, 1, 2); }
+    /* THE RAPIDS' WHITE WATER (claude/redgorge2): streaks on the river - a few in the calm, a race of them in the horn's rapids - and the timbers drawn plain */
+    { const fast = H.rapids(); for (const p of RG.L.pools || []) { if (!p.rapids) continue; const x0 = R(p.x0 - cx), x1 = R(p.x1 - cx), y = R(p.y - cy); if (x1 < -8 || x0 > vw + 8 || y < -8 || y > vh + 8) continue;
+        g.fillStyle = fast ? 'rgba(232,244,248,0.85)' : 'rgba(232,244,248,0.45)'; const step = fast ? 6 : 13, sp = fast ? 140 : 26;
+        for (let x = x0 + ((time * sp) % step); x < x1 - 3; x += step) g.fillRect(R(x), y + ((x >> 3) % 3), fast ? 4 : 3, 1); }
+      for (const m of ctx.movers()) { if (!m.debris) continue; const x = R(m.x - cx), y = R(m.y - cy); if (x < -40 || x > vw + 8 || y < -8 || y > vh + 8) continue;
+        g.fillStyle = m.what === 'crate' ? '#8a5a32' : m.what === 'branch' ? '#5a3a1e' : '#9a7044'; g.fillRect(x, y, 32, 5); g.fillStyle = '#c8945a'; g.fillRect(x + 2, y, 28, 1);
+        if (m.what === 'crate') { g.fillStyle = '#6a4426'; g.fillRect(x + 4, y - 6, 12, 6); } if (m.what === 'branch') { g.fillStyle = '#5a3a1e'; g.fillRect(x + 20, y - 4, 2, 4); g.fillRect(x + 24, y - 6, 2, 6); }
+        g.fillStyle = 'rgba(232,244,248,0.7)'; g.fillRect(x - 2, y + 4, 3, 1); if (m.fast) g.fillRect(x - 6, y + 3, 4, 1); } }
+    /* HER PLUMES (B8): long rust crest feathers on the rocks along the way, thicker at the dam's door */
+    for (const d of RG.L.decor || []) { if (d.kind !== 'plume') continue; const x = R(d.x * ctx.TS + 8 - cx), y = R((d.y + 1) * ctx.TS - cy); if (x < -8 || x > vw + 8 || y < -20 || y > vh + 8) continue;
+      g.fillStyle = '#f0dcb8'; g.fillRect(x - 5, y - 2, 10, 1); g.fillRect(x - 3, y - 3, 8, 1); g.fillStyle = '#c8643a'; g.fillRect(x + 3, y - 3, 3, 1); g.fillStyle = '#7a2e1c'; g.fillRect(x - 6, y - 1, 2, 1); }
     /* THE GLINT over what the climb needs next (the shared glint: src/stuck-guide.js) */
     if (RG.glint) drawGlint(g, R(RG.glint.x - cx), R(RG.glint.y - 18 - cy), vw, vh, time);
   };

@@ -8,18 +8,23 @@
 // three times is LIFTED past (a teleport, counted and named). Two plans:
 //   gate  shut the falls' gate and the narrows' gate before their ropes (the safe answer)
 //   race  race the next flood up both ropes instead (the falls' rope and the exam's)
-//   node tools/redgorge-route.mjs [plans=gate,race] [hero=knight] [god=0|1]
+//   node tools/redgorge-route.mjs [plans=gate,race] [hero=knight] [god=0|1] [--nofoes]
+// (claude/redgorge2) it starts on the rapids' east bank: THE RAPIDS (stone to stone, riding the drifting timbers - it boards one only when it is in a
+// jump's reach, and steps off when the next rock or timber is) and THE GORGE CLIMB (the ledges, the wall rope, the spill chute's basket, the gust
+// ledges over the chute), then the gorge as before, and ends at the nest ledge's door with THE RAPTOR MATRIARCH awake. --nofoes: every foe gone (a
+// base-movement reach run per hero: the route on legs alone)
 import { openPage } from './cdp.mjs';
-const plans = (process.argv[2] || 'gate,race').split(','), hero = process.argv[3] || 'knight', god = process.argv[4] === '1', DBG = process.argv.includes('--dbg');
+const plans = (process.argv[2] || 'gate,race').split(','), hero = process.argv[3] || 'knight', god = process.argv[4] === '1', DBG = process.argv.includes('--dbg'), NOFOES = process.argv.includes('--nofoes');
 const pg = await openPage({ audio: false, fonts: false });
 let bad = 0; const summary = [];
 try {
   for (const plan of plans) {
     await pg.reload();
     const r = await pg.evalp(`(async()=>{
-      const { LEVELS } = await import('/src/level.js'); const TS = 16, PLAN = ${JSON.stringify(plan)};
+      const { LEVELS, T: TT } = await import('/src/level.js'); const TS = 16, PLAN = ${JSON.stringify(plan)};
       BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
       BK.load(LEVELS.findIndex(l => l.id === 'redgorge')); BK.start ? BK.start() : (BK.state = 'play'); BK.god = ${god};
+      if (${NOFOES}) { BK.sim(2); for (const e of BK.enemies()) if (!e.maxHp) e.alive = false; }
       const P = () => BK.P, k = BK.keys, G = () => BK.redgorge(), legs = [], dbg = [], D = ${DBG} ? (...a) => dbg.push(a.join(' ')) : () => {}; let frames = 0, legDmg = {}, dips = 0, low = false, lowest = 1;
       const maxHp = P().maxHp, lvl = BK.PROG && BK.PROG.xp ? Object.keys(BK.PROG.skillOwned || {}).length : 0;
       const clear = () => { k.left = k.right = k.jump = k.down = k.up = k.atk = k.block = false; };
@@ -74,7 +79,7 @@ try {
       /* A BASKET: stand on it, wait for the water to wind it to its top, then step off toward DIR */
       /* A BASKET: clear the knives at its berth first (a hand that fights beside the berth steps into it when the basket is up: it is a hole in the
          bridge), wait at its edge for the basket to be home, step on, and stand still on it while the water winds it up; then step off toward toCol */
-      const basket = (id, dir, toCol) => { const m = BK.movers().find(q => q.gorge === id), edge = Math.floor((m.x + m.w) / TS) + 1;
+      const basket = (id, dir, toCol, edgeCol) => { const m = BK.movers().find(q => q.gorge === id), edge = edgeCol ?? Math.floor((m.x + m.w) / TS) + 1;
         const on = () => P().ground && Math.abs(P().y - m.y) < 3 && P().x > m.x + 2 && P().x < m.x + m.w - 2;
         D(id, 'start', Math.round(P().x), Math.round(P().y)); walk(edge, { tol: 3 }); for (let i = 0; i < 40 && fight(); i++) {} D(id, 'at edge', Math.round(P().x), Math.round(P().y), P().hp | 0);
         for (let a = 0; a < 4 && !on(); a++) { walk(edge, { tol: 3, noFight: true }); waitFor(() => m.y >= m.y0 - 0.5 && G().phase === 'dry' && G().t > 1, 60 * 20, { noFight: true });   /* (home, and the water not about to come: stepping on takes a second) */ walk(Math.floor((m.x + 16) / TS), { tol: 4, noJump: true, noFight: true }); clear(); tick(6);
@@ -87,6 +92,23 @@ try {
         legs.push({ name, ok, lifted, retries: tries - 1, at: [col(), feet()], hp: Math.round(P().hp), pct: Math.round(100 * P().hp / maxHp), dmg: Object.fromEntries(Object.entries(legDmg).map(([a, b]) => [a, Math.round(b)])), s: +((frames - t0) / 60).toFixed(1), deaths: BK.stats().deaths });
         return ok; };
       const lift = to => { BK.tp(to[0], to[1]); clear(); tick(4); };
+      /* ===== A. THE RAPIDS (claude/redgorge2): west, stone to stone; a reach too wide is crossed on a drifting timber ===== */
+      const tile = (x, y) => BK.L.grid[y * BK.L.W + x], rock = c => tile(c, 219) === TT.SOLID && tile(c, 218) === TT.AIR;
+      const hopW = () => { clear(); k.left = true; k.jump = true; BK.press('jump'); for (let j = 0; j < 70; j++) { tick(1); if (j > 22) k.jump = false; if (j > 4 && P().ground) break; } clear(); tick(2); };
+      const timberIn = (lo, hi) => BK.movers().filter(m => m.debris && !(m.under > 0) && m.x + m.w >= lo && m.x + m.w <= hi)[0];
+      leg('THE RAPIDS: stone to stone, riding the drifting timbers', [138, 218], () => { for (let n = 0; n < 60 * 120 && col() > 79; n++) {
+          if (fight()) continue; if (!P().ground) { clear(); tick(1); continue; }
+          const px = P().x, c = col(), onT = P().onMover && P().onMover.debris;
+          if (!onT && rock(c - 1) && rock(c)) { clear(); k.left = true; tick(1); continue; }   /* to the west edge of this rock */
+          let go = false; for (let d = 1; d <= 3 && !go; d++) if (rock(c - d) && (!onT || d <= 3)) go = true;   /* a rock within a jump west */
+          if (!go) go = !!timberIn(px - 58, px - (onT ? 34 : 10));   /* a timber whose east end is within a jump west of you */
+          if (go) { hopW(); continue; } clear(); tick(1); }
+        return col() <= 79; }) || lift([75, 218]);
+      /* ===== B. THE GORGE CLIMB ===== */
+      leg('THE GORGE CLIMB: the ledges under the told rockfall', [74, 218], () => walk(72) && hops([[72, 216], [68, 213], [61, 210], [54, 207]])) || lift([50, 206]);
+      leg('the wall rope (a rock comes down it)', [50, 206], () => rope(50, 192)) || lift([52, 190]);
+      leg('THE SPILL CHUTE: the basket on the flood', [52, 190], () => basket('spill', -1, 52, 56)) || lift([52, 174]);
+      leg('the gust ledges over the chute, to the gorge\'s mouth', [52, 174], () => hops([[57, 172, 1], [59, 169], [57, 166, -1]]) && walk(44)) || lift([44, 165]);
       /* ===== 1. THE GORGE MOUTH ===== */
       leg('the floor crossing (wait out a flood on the east bank, cross in the dry)', [41, 165], () => { walk(30); waitFor(() => G().phase === 'flood', 60 * 14); waitFor(() => G().phase === 'dry', 60 * 4); return walk(18); }) || lift([18, 165]);
       leg('up the west ledges to bridge one, under the mouth slingers', [18, 165], () => hops([[17, 163], [14, 160], [14, 157], [13, 154], [12, 151], [11, 148], [11, 145], [11, 142]])) || lift([11, 141]);
@@ -106,7 +128,7 @@ try {
       else leg('THE NARROWS: race the next flood up the twenty-row rope', [13, 64], () => { walk(16, { tol: 2 }); leapShaft(); waitFor(() => G().phase === 'flood', 60 * 14); waitFor(() => G().phase === 'dry', 60 * 4); ontoRope(22); clear(); k.jump = true; BK.press('jump'); tick(20); clear(); tick(10); return feet() <= 42; }) || lift([28, 41]);
       /* ===== 6. THE SUMMIT ===== */
       leg('bridge five\\'s knives, up the summit ledges to the dam\\'s door (checkpoint two)', [28, 41], () => walk(37) && hops([[37, 39], [36, 36, -1], [35, 33], [35, 30], [36, 27], [37, 25], [37, 22, 1]]) && walk(44)) || lift([44, 21]);
-      leg('THE OLD DAM: through the door, the crab wakes', [44, 21], () => { walk(56, { noFight: true }); wait(90, { noFight: true }); return BK.bossActive && BK.boss && BK.boss.t === 'gorgecrab'; });
+      leg('THE NEST LEDGE: through the door, the Matriarch wakes', [44, 21], () => { walk(53, { noFight: true }); wait(90, { noFight: true }); return BK.bossActive && BK.boss && BK.boss.t === 'matriarch'; });
       return { dbg, plan: PLAN, hero: ${JSON.stringify(hero)}, maxHp, legs, dips, lowest: Math.round(lowest * 100), deaths: BK.stats().deaths, s: +(frames / 60).toFixed(1) };
     })()`, 2400000);
     if (DBG) console.log(r.dbg.join(String.fromCharCode(10))); const lifts = r.legs.filter(l => l.lifted).length, retries = r.legs.reduce((a, l) => a + l.retries, 0);

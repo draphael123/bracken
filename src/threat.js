@@ -142,6 +142,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE RED GORGE (src/red-gorge.js, claude/redgorge): the CLIFF RAPTOR is the vulture's dive (a 2) over a bridge with a flood under it: a 2.5. THE GREAT RED CRAB is a
      boss: a 6. The gorge's sluice wheels, jams, water-wheels and the old nest fight nobody */
   raptor: 2.5, gorgecrab: 6, sluice: 0, jam: 0, waterwheel: 0, oldnest: 0,
+  /* (claude/redgorge2) THE RAPTOR MATRIARCH is a boss: a 6; her ledge's sluice levers fight nobody */
+  matriarch: 6, mlever: 0,
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,
   /* THE FAIR'S GAMES (claude/fairlevel, src/fair-games.js): a striker's pad, a gallery's target, a ticket and the prize booth are machines you work, not foes - furniture, written down at 0 so the tools read them as gadgets */

@@ -35,6 +35,7 @@ import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
 import { gtOpen } from './jenny-greenteeth.js';
 import { qOpen } from './cistern-queen.js';
+import { matOpen } from './raptor-matriarch.js';
 import { glOpen } from './gang-leader.js'; import { djOpen } from './djinn.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
@@ -96,6 +97,7 @@ export const OPEN_RULE = {
   duneworm: e => !!(e.st && wormOpen(e.st)),                                 // tangled in the awning
   wickerqueen: e => wqOpen(e),                                               // burning, or alight from her own fire (claude/fairfix5: >= 3 s, x1.2)
   puppeteer: e => pupOpen(e),
+  matriarch: e => matOpen(e),                                                // THE RAPTOR MATRIARCH (claude/redgorge2): thrown by a narrow pillar, stunned off her dive, tangled in a cut bridge - and her beats (the skid, the rake's breath)
   gorgecrab: e => e.mode === 'open',                                         // THE GREAT RED CRAB: thrown on his back by a released burst (claude/redgorge)
   grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield
   greenteeth: e => gtOpen(e),                                                // stranded or flushed (her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
@@ -125,6 +127,7 @@ export const NO_OPENING = {
    His OPEN_RULE still names his openings (they pay more in his own code), and greed is still counted outside them (the mash reprisal stays). */
 export const FULL_DAMAGE = {
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",
+  matriarch: 'a beast duelist (design standard B11): always hittable, her talons GUARD BY ANGLE (a blow from the front at her height is turned; from behind or above it lands); her openings pay x1.6 in her own code (claude/redgorge2)',
 };
 export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */
 /* MINIS ON THE CHIP (claude/bosswave1, Daniel 10-02: "give each a real opening first, then put minis on the chip"): each has a told opening of

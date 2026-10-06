@@ -33,7 +33,10 @@
 //                ':p2' (the well shaft) quicker with the motif an octave up, ':p3' (the flood) adds the water: a surge and drips.
 //   'djinn'      THE DJINN OF THE GREAT WELL (claude/underwell, his own theme - the Queen has hers back in the Underwell). D Hijaz, 4/4 at 100, 16 bars = 38 s:
 //                a D drone, a doumbek's maqsum, the wind in the well, a breathy ney; ':p2' (fire) quicker, the ney up an octave, crackles; ':p3' (flood) the water.
-export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+//   'matriarch'  THE RAPTOR MATRIARCH, OLD PLUME (claude/redgorge2; the crab's march is benched with him). E Phrygian, 6/8 at 132, 16 bars = 22 s: a hunter's
+//                GALLOP (tom long-short-short), a low E drone, a CHASING BASS, and her SCREECH - a high square whistle that slides down; ':p2' (the walls)
+//                adds the canyon wind and the screech an octave up; ':p3' (the dam cracks) adds the water: a surge every two bars and the drum doubled.
+export const BOSS_SYNTH_BASE = { archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1, matriarch: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -340,7 +343,7 @@ function cisternqueen(i, delay, variant, env) {
 // next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
 // PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
 // sweeps up under the stop (rising noise and a saw sliding up an octave).
-export const BOSS_PHASE = { gorgecrab: 1 };
+export const BOSS_PHASE = { gorgecrab: 1, matriarch: 1 };
 const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
 const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
 const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
@@ -400,7 +403,34 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
+// ---------------------------------------------------------------- THE RAPTOR MATRIARCH, OLD PLUME (claude/redgorge2): see the header. E Phrygian (E F G A B C D),
+// 6/8 at 132 (eighth = 0.227 s), six eighths a bar, 16 bars. The gallop runs under everything; the screech answers every other bar; the bass chases up
+// the scale and falls back. BOSS_PHASE.matriarch (her hands set it): 2 = the walls (the wind, the screech up an octave), 3 = the cracked dam (the water).
+const RMM_STEP = 60 / 132 / 2, RMM_LEN = 6, RMM_BARSN = 16;
+const RMM_BASS = [['E2', 'G2', 'A2', 'B2', 'A2', 'F2'], ['E2', 'F2', 'G2', 'A2', 'G2', 'F2'], ['C2', 'D2', 'E2', 'F2', 'E2', 'D2'], ['B1', 'C2', 'D2', 'E2', 'F2', 'E2']];
+function matriarch(i, delay, variant, env) {
+  const bar = Math.floor(i / RMM_LEN), s = i % RMM_LEN, g = env.gain, ph = BOSS_PHASE.matriarch || 1, second = bar >= 8;
+  // THE GALLOP: tom on 0, 2, 3 (long-short-short) and 5 in the second half
+  if (s === 0 || s === 2 || s === 3 || (second && s === 5)) pluck(env, 'sine', s === 0 ? 92 : 118, 0.22, (s === 0 ? 0.85 : 0.55) * g, delay, { to: 46 });
+  if (ph === 3 && (s === 1 || s === 4)) pluck(env, 'sine', 104, 0.18, 0.45 * g, delay, { to: 50 });   // the drum doubled when the dam cracks
+  if (s === 1 || s === 4) noise(env, 0.03, 0.09 * g, 5600, 2, delay);   // the talon tick
+  // THE DRONE: E, with the flat second rubbing in every fourth bar
+  if (s === 0 && bar % 2 === 0) { const r = bar % 4 === 2 ? 'F1' : 'E1'; pluck(env, 'sine', nf(r), RMM_STEP * RMM_LEN * 2 * 0.95, 0.3 * g, delay); held(env, 'sawtooth', nf(r) * 2, RMM_STEP * RMM_LEN * 2 * 0.95, 0.045 * g, delay, { lp: 360, att: 0.3, hold: 0.8, det: 10 }); }
+  // THE CHASE: the bass runs up the scale and falls back
+  { const n = RMM_BASS[bar % 4][s]; pluck(env, 'sawtooth', nf(n), RMM_STEP * 0.5, 0.17 * g, delay, { lp: 620 }); }
+  // HER SCREECH: every other bar, a high whistle sliding down (an octave up on the walls)
+  if (bar % 2 === 1 && s === 0) { const up = ph >= 2 ? 2 : 1; held(env, 'square', nf('B5') * up, RMM_STEP * 2.2, 0.04 * g, delay, { lp: 3800, att: 0.01, hold: 0.4, from: 1.06, to: 0.7, slide: true });
+    held(env, 'triangle', nf('E5') * up, RMM_STEP * 1.6, 0.05 * g, delay + RMM_STEP * 3, { lp: 3000, att: 0.02, hold: 0.5, from: 1.04, to: 0.8, slide: true }); }
+  // THE LEAD (the second half): a reedy Phrygian call over the gallop
+  if (second && bar % 2 === 0 && s % 2 === 0) { const n = ['E4', 'F4', 'G4'][s / 2] ; held(env, 'sawtooth', nf(n), RMM_STEP * 1.7, 0.05 * g, delay, { lp: 2000, att: 0.03, hold: 0.55, det: 8, from: 0.97 }); }
+  // THE WALLS: the canyon wind
+  if (ph >= 2 && s === 0 && bar % 2 === 0) for (let k = 0; k < 4; k++) noise(env, RMM_STEP * 1.6, (0.025 + k * 0.01) * g, 600 + k * 420, 0.8, delay + k * RMM_STEP * 1.4);
+  // THE CRACKED DAM: a surge every two bars
+  if (ph === 3 && s === 0 && bar % 2 === 0) { pluck(env, 'sine', nf('B2'), RMM_STEP * 5, 0.3 * g, delay, { to: nf('E2') }); noise(env, RMM_STEP * 4, 0.06 * g, 480, 0.5, delay); }
+}
+
 export const SYNTH_BOSS = {
+  matriarch: { step: RMM_STEP, total: RMM_LEN * RMM_BARSN, play: matriarch },
   djinn: { step: DJM_STEP, total: DJM_LEN * DJM_BARSN, play: djinn },
   cisternqueen: { step: CQM_STEP, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
   gorgecrab: { step: GCM_STEP, total: GCM_LEN * GCM_BARSN, play: gorgecrab },
