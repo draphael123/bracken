@@ -91,7 +91,7 @@ import { makeMoorRocksHands } from './moor-rocks-hands.js'; let MRH = null; impo
 import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
-import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
+import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
 import { installTactics, braceHit } from './foe-tactics.js'; import { installReact } from './foe-react.js';   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
@@ -16260,6 +16260,10 @@ const PAL_BASH = { speed: 145, speed2: 170, run: 1.45 };
    flashes (the last PAL_BEAT seconds of the swing) meets it; a guard held up from the start of the tell still only
    turns it. The flash is drawn and sounded, so the beat can be learnt. */
 const PAL_BEAT = 0.45;
+const PAL_ROLL_BEAT = 0.2;   /* (claude/sweep2, Daniel 10-06) a ROLL opens him only if it STARTED in the last beat of the swing, as a raised guard must: the roll's untouchable 0.26 s is longer than that, so an early roll passes through him and opens nothing (TOO SOON) */
+const palRollAge = () => (P.dodgeMax || 0.3) - (P.dodge || 0);
+const palRolled = res => res === false && P.dodge > 0 && (isPyro() || isReaper() || isWarden());
+const palSoon = res => palRolled(res) && palRollAge() > PAL_ROLL_BEAT;
 const palOpened = res => {
   /* IT ASKS WHAT YOU DID, NOT WHO YOU ARE. This was a branch a hero: the knight's guard, the freebooter's parry, the paladin's aegis,
      the Death Knight's returned ward - and anyone unlisted fell through to false. THE WARDEN was added to the game and was simply
@@ -16276,7 +16280,7 @@ const palOpened = res => {
      sixty-six pixels his sword reaches and it never tests her at all.
      Without this she was the only hero in the game with no way to open him by any means - not a hard fight, an
      impossible one: the boss lab stood her in front of him for two and a half minutes, twice, for nought swings. */
-  return res === false && P.dodge > 0 && (isPyro() || isReaper() || isWarden());
+  return palRolled(res) && palRollAge() <= PAL_ROLL_BEAT;
 };
 function updateClosedHelm(e, dt) {
   const A = L.arena, floor = A.floor, p2 = e.phase === 2, ph = p2 ? 1 : 0;
@@ -16323,14 +16327,14 @@ function updateClosedHelm(e, dt) {
     case 'cutTell': want = 0; glint(); if (e.modeT > 0.35) e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.4; SFX.slash(); SFX.heavy(); shakeCam(4); e.vx = e.face * 90;
         if (!P.dead && Math.sign(d) === e.face && ad < 66 && dyP < 40) { const res = damagePlayer(e.x, DMG.palCut);
-          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'TOO EARLY: AT THE FLASH', '#9aa39a'); } }
+          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'TOO EARLY: AT THE FLASH', '#9aa39a'); else if (palSoon(res)) number(e.x, e.y - e.h - 12, ROLL_SOON, '#9aa39a'); } }
       break;
     case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
     /* THE THRUST: from further off, the point first, and he comes with it */
     case 'thrustTell': want = 0; glint(); if (e.modeT > 0.3) e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.45; SFX.slash(); e.vx = e.face * 300;
         if (!P.dead && Math.sign(d) === e.face && ad < 90 && dyP < 40) { const res = damagePlayer(e.x, DMG.palThrust);
-          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'TOO EARLY: AT THE FLASH', '#9aa39a'); } }
+          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'TOO EARLY: AT THE FLASH', '#9aa39a'); else if (palSoon(res)) number(e.x, e.y - e.h - 12, ROLL_SOON, '#9aa39a'); } }
       break;
     case 'thrust': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
     /* THE BASH: down behind the shield, the shield lit, a red line along the floor as far as he will go - and then he goes */

@@ -52,4 +52,12 @@ console.log('  the charge: ' + PB.speed + 'px/s behind a ' + TELL[0] + 's tell (
   const close=enemy();close.phase=1;close.leapT=0;c.P.x=close.x+40;n=0;while(close.mode==='stalk'&&n<150){c.updateClosedHelm(close,.02);n++;}
   assert.notEqual(close.mode,'leapTell','in his sword reach he does not leap');
   console.log('  the leap: after '+LP.linger[0]+' s past '+LP.far+' px, a '+LP.tell[0]+' s tell (the ring stops '+LP.fix+' s before), '+LP.rec+' s open on a whiff'); }
+/* A ROLL OPENS HIM ONLY IF IT STARTED IN THE LAST BEAT OF HIS SWING (claude/sweep2, Daniel 10-06): early = through him, TOO SOON; late = the ward breaks. */
+{ const said=[];c.number=(x,y,t)=>said.push(t);c.ROLL_SOON='TOO SOON';c.isPyro=()=>true;c.isReaper=()=>false;c.isWarden=()=>false;
+  vm.runInContext(src.slice(src.indexOf('const PAL_ROLL_BEAT'),src.indexOf('const palOpened'))+'this.palSoon=palSoon;this.PAL_ROLL_BEAT=PAL_ROLL_BEAT;'+src.slice(src.indexOf('const palOpened'),src.indexOf('function updateClosedHelm('))+'this.palOpened=palOpened;',c);
+  c.damagePlayer=()=>false;   /* the roll's untouchable part: nothing lands */
+  const swing=age=>{const e=enemy();e.mode='cutTell';e.modeT=0.0;e.glint=1;c.P.x=e.x+30;c.P.y=320;c.P.dodgeMax=0.34;c.P.dodge=0.34-age;said.length=0;c.updateClosedHelm(e,.02);return e;};
+  const late=swing(c.PAL_ROLL_BEAT-0.05);assert.equal(late.mode,'broken','a roll that started in the last beat breaks his ward');assert(late.open>0);
+  const early=swing(c.PAL_ROLL_BEAT+0.05);assert.notEqual(early.mode,'broken','an early roll passes through him: no open');assert(!(early.open>0));assert(said.includes('TOO SOON'),'and says so: '+said.join(','));
+  console.log('  roll: opens him started within '+c.PAL_ROLL_BEAT+' s of the blow, TOO SOON before'); }
 console.log('Enraged oath sweep and three-column radiance: told unblockable attacks, jump/position counters and 1.6-second openings.');
