@@ -87,6 +87,33 @@ export const AFFIX_AT = {
   'caravan|cutthroat': 'SWIFT', 'caravan|scorpion#amb': 'BURNING',
   'welltown|scorpion': 'VENOMOUS', 'redgorge|scorpion': 'BURNING', 'underwell|scorpion': 'UNSTOPPABLE',
 };
+/* ELITETUNE (claude/elitetune): per-kind health and elite-damage multipliers, measured with tools/elite-lab.mjs toward the human bot's 75-85%
+   (docs/elite-lab.json). hp scales the ELITE table's own hp in main.js; dmg scales every blow of his that lands (damagePlayer0). tell = windup length, every = the gap between his moves: both below 1 = sooner; a tell shortened by it never goes under 0.5 s, nor longer than as built. 1 = as built. */
+export const TUNE = {
+  gaffer: { hp: 1.4, dmg: 1.6, tell: 0.85, every: 0.6 },
+  tideguard: { hp: 1.2, dmg: 1.5, tell: 0.85, every: 0.5 },
+  hearthgob: { hp: 1.2, dmg: 1.5, tell: 0.85, every: 0.5 },
+  watch: { hp: 1.2, dmg: 1.5, tell: 0.85, every: 0.5 },
+  boarder: { hp: 1.3, dmg: 1.8, tell: 0.85, every: 0.55 },
+  apprentice: { hp: 0.9, dmg: 1.0, tell: 0.85, every: 0.8 },
+  brute: { dmg: 1.5, tell: 0.85, every: 0.7 },
+  troll: { hp: 1.2, dmg: 2.8, tell: 0.85, every: 0.6 },
+  hedgeknight: { dmg: 2.6, tell: 0.85, every: 0.55 },
+  cutthroat: { dmg: 2.6, tell: 0.85, every: 0.55 },
+  heavy: { dmg: 2.2, tell: 0.85, every: 0.5 },
+  shield: { dmg: 1.25, tell: 0.85, every: 0.85 },
+  thorn: { dmg: 0.7, hp: 0.85 },
+  goat: { dmg: 0.4, hp: 1.0, every: 1.6 },
+  cutlass: { hp: 0.8, dmg: 0.7, every: 1.5 },
+  archer: { dmg: 0.6, hp: 0.5 },
+  scarecrow: { dmg: 0.85, every: 1.1 },
+  scorpion: { hp: 1.1, dmg: 0.85 },
+  pike: { dmg: 0.85 },
+  husk: { dmg: 1.2 },
+  hobbyhorse: { dmg: 1.15 },
+};
+const ONE = { hp: 1, dmg: 1, tell: 1, every: 1 };
+export const tuneOf = t => { const r = TUNE[t]; return r ? { hp: r.hp ?? 1, dmg: r.dmg ?? 1, tell: r.tell ?? 1, every: r.every ?? 1 } : ONE; };
 export const K = {
   mashWindow: 2.0, guardCd: 1.6, turnT: 0.35,                                              // THE GUARD (by angle) and its answer to a mash
   openT: 3.0, ripMul: 1.35,                                                   // THE OPENING (broken x1.5 in main.js, the riposte on top)
@@ -117,8 +144,9 @@ export function installEliteKit(api) {
     }
     if (e.affix === 'SWIFT' && e.speed) e.speed *= K.swiftSpeed;
   }
-  const tell = (e, t) => e.affix === 'SWIFT' ? Math.max(K.tellFloor, t * (e.ekRoused ? K.swiftRoused : K.swiftTell)) : t;
-  const every = (e, t) => e.ekRoused ? t * K.rouseEvery : t;
+  const tell = (e, t0) => { const m = tuneOf(e.t).tell, t = m < 1 ? Math.min(t0, Math.max(0.5, t0 * m)) : t0 * m;   /* (ELITETUNE) the kind's own measured windup */
+    return e.affix === 'SWIFT' ? Math.max(K.tellFloor, t * (e.ekRoused ? K.swiftRoused : K.swiftTell)) : t; };
+  const every = (e, t) => (e.ekRoused ? t * K.rouseEvery : t) * tuneOf(e.t).every;
   /* ONCE A FRAME, for every elite standing: its timers, the guard coming down into the riposte, the escalation, the affix at work */
   function tick(e, dt) {
     key(e); const P = api.P();
