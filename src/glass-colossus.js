@@ -12,7 +12,7 @@
 // tiles: the knee row F-3, the hip row F-6, the shoulder row F-9). Two SHELF-MIRRORS at 12 and 28 (E turns one: FACING THE GIANT / TO THE FIRE / TO THE
 // SKY), a campfire at each wall (2, 37). The floor is plain (the slick glass floor is an open choice: it fought the read).
 // THE PHASES (one new move each; each changes the arena):
-//   P1 DUSK (100-55%): SUN LANCE (red X: a line along the ground to where it ends), STOMP (!: a shard ring runs out both ways - jump it, or a shield),
+//   P1 DUSK (100-55%): SUN LANCE (red X: a line along the ground to where it ends), STOMP (!!: a shard ring runs out both ways along the ground - jump it),
 //      SHARD RAIN (!: marks where the glass falls). OPENING: bait the lance into a FACING mirror - it reflects into its chest and CRACKS it open
 //      (COL.openT). NEW MOVE: THE SHAKE (told: HOLD! - a climber who does not grip (hold DOWN) is thrown off: a blow and the floor, never a death).
 //   P2 NIGHT (55-25%): no lance (no reflection); the sky goes dark; THE SWARM CALL (new): its fist into the ground - the crack under it pours skitters
@@ -25,13 +25,13 @@
 export const COLOSSUS_STAGE = { W: 40, cc: 20, mirrors: [12, 28], fires: [2, 37], knee: 3, hip: 6, shoulder: 9, crown: 12,
   kneeW: [-5, -3], kneeE: [2, 4], hipW: [-4, -2], hipE: [1, 3], shoulderW: [-5, -2], shoulderE: [1, 4], crack: [-3, 2] };
 export const COL = {
-  hp: 2400, w: 72, h: 200,
-  lanceTell: 1.15, lanceTell3: 1.0, lanceAct: 0.45, lanceDmg: 36, lanceBand: [28, 4],
+  hp: 2000, w: 72, h: 200,
+  lanceTell: 1.15, lanceTell3: 1.0, lanceAct: 0.45, lanceDmg: 56, lanceBand: [28, 4],
   stompTell: 0.85, stompV: 240, stompH: 14, stompDmg: 22,
-  shardTell: 0.85, shardAct: 0.25, shardDmg: 18, shardR: 9, shardSpread: 44,
-  shakeTell: 1.0, shake: 0.9, shakeDmg: 14, shakeAfter: 1.2, shakeCd: 5,
+  shardTell: 1.0, shardAct: 0.25, shardDmg: 16, shardR: 9, shardSpread: 44,
+  shakeTell: 1.0, shake: 0.9, shakeDmg: 16, shakeAfter: 1.2, shakeCd: 5,
   swarmTell: 1.2, swarmAct: 1.4, swarmMax: 6, swarmEvery: 0.45,
-  waveTell: 1.0, waveV: 260, waveH: 16, waveDmg: 26,
+  waveTell: 1.0, waveV: 260, waveH: 16, waveDmg: 29,
   openT: 5.2, openShoulders: 5.6, openCrown: 5.4, openMul: 2.0, plungeMul: 2.4, openCap: 0.09,
   legPurse: [0.15, 0.09, 0.07], legMul: 1.0,
   wardT: 3.0, lockT: 1.5, phase2: 0.55, phase3: 0.25, phaseT: 2.2,
@@ -97,7 +97,7 @@ export function stepColossus(e, S, dt, heroes, c) {
   S.shakeCd -= dt; S.lock = Math.max(0, S.lock - dt);
   for (const m of S.mirrors) m.turnedT = (m.turnedT || 0) + dt;
   /* the travelling hazards: stomp rings, the shard wave */
-  for (const r of S.rings) { r.x += r.dir * COL.stompV * dt; if (r.x < G.x0 || r.x > G.x1) r.dead = true; else c.hit([r.x - 10, r.x + 10, G.floor - COL.stompH, G.floor], COL.stompDmg, 'THE STOMP', { blockable: true, key: 'ring' + r.id }); }
+  for (const r of S.rings) { r.x += r.dir * COL.stompV * dt; if (r.x < G.x0 || r.x > G.x1) r.dead = true; else c.hit([r.x - 10, r.x + 10, G.floor - COL.stompH, G.floor], COL.stompDmg, 'THE STOMP', { key: 'ring' + r.id });   /* (!!: a ring of shards along the ground - JUMP it; no shield turns it) */ }
   S.rings = S.rings.filter(r => !r.dead);
   if (S.wave) { const w = S.wave; w.x += w.dir * COL.waveV * dt; if (w.x < G.x0 - 20 || w.x > G.x1 + 20) S.wave = null; else c.hit([w.x - 14, w.x + 14, G.floor - COL.waveH, G.floor], COL.waveDmg, 'THE SHARD WAVE', { key: 'wave' + w.id }); }
   /* THE WARD after an opening (B3), then the lockout (B12) */
@@ -203,8 +203,8 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
   /* 3. THE THREATS IN FLIGHT */
   /* a hazard in flight is SEEN once, a reaction after it appears (and misread one time in eight): then the answer comes at the right moment, as a player's does */
   const seen = id => { if (!(('s' + id) in mem)) { mem['s' + id] = t + COL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + id] = rng() < COL_PLAN.miss; } return t >= mem['s' + id] && !mem['m' + id]; };
-  for (const r of S.rings) if (Math.sign(P.x - r.x) === r.dir && onFloor && seen('ring' + r.id)) { const d = Math.abs(r.x - P.x); if (shield && d < 46) { out.block = true; out.why = 'block ring'; return out; } if (d < 30) { out.jump = true; out.why = 'jump ring'; } }
-  if (S.wave && onFloor && Math.sign(P.x - S.wave.x) === S.wave.dir && seen('wave' + S.wave.id) && Math.abs(S.wave.x - P.x) < 34) { out.jump = true; out.why = 'jump wave'; }
+  for (const r of S.rings) if (Math.sign(P.x - r.x) === r.dir && onFloor && seen('ring' + r.id)) { const d = Math.abs(r.x - P.x); if (d < 54) { out.jump = true; out.why = 'jump ring'; } }
+  if (S.wave && onFloor && Math.sign(P.x - S.wave.x) === S.wave.dir && seen('wave' + S.wave.id) && Math.abs(S.wave.x - P.x) < 60) { out.jump = true; out.why = 'jump wave'; }
   if (e.mode === 'shardTell' && late('shard')) { const hitMe = S.marks.some(m => Math.abs(m.x - P.x) < COL.shardR + 6 && Math.abs(m.y - P.y) < 20);
     if (hitMe) { if (shield) { out.block = true; out.why = 'block shards'; return out; } const free = [P.x - 26, P.x + 26, P.x - 60, P.x + 60].find(x => x > G.x0 + 12 && x < G.x1 - 12 && !S.marks.some(m => Math.abs(m.x - x) < COL.shardR + 8)); if (free != null) { out.gx = free; out.why = 'out of shards'; return out; } } }
   if (e.mode === 'shards' && shield && S.marks.some(m => Math.abs(m.x - P.x) < COL.shardR + 6)) { out.block = true; return out; }
