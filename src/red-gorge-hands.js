@@ -5,6 +5,7 @@
 // main.js calls: reset, on, update, interact, basket, raptorStep, dam, drawWorld, drawHud, read. Every teaching line goes through ctx.number with a
 // line listed in src/hint-lines.js (the hint box). THE GREAT RED CRAB (src/gorge-crab-hands.js) reads the dam's water through dam().
 import { vultureStep } from './desert-foes.js';
+import { drawIcon } from './ui-hud.js';   /* (claude/uihud) the status icons: a horn, a wave, a parched sun - not the words */
 import * as RGP from './redraw/redgorge_props.js';
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';   /* THE GLINT + THE 10 s STALL NUDGE (claude/gorgemodule: shared with the canal and the route list) */
 import { STUCK_HANDS } from './stuck-spots.js';
@@ -201,9 +202,10 @@ export function makeRedGorgeHands(ctx) {
   H.drawHud = (g, P) => {
     if (!RG || !P) return; const x = 22, y = 64;
     const col = RG.phase === 'horn' ? (Math.floor(ctx.time() * 8) % 2 ? '#ff6b6b' : '#fff6e0') : RG.phase === 'flood' ? '#7ab8e8' : '#c9b27c';
-    ctx.text(RG.phase === 'horn' ? 'HORN' : RG.phase === 'flood' ? 'FLOOD' : 'DRY', x - 12, y + 2, col, 'left', 6);
+    drawIcon(g, RG.phase === 'horn' ? 'horn' : RG.phase === 'flood' ? 'flood' : 'dry', x - 12, y - 1, col);
     const k = RG.phase === 'dry' ? 1 - Math.max(0, RG.t) / GORGE.dry : RG.phase === 'horn' ? 1 : Math.max(0, RG.t) / GORGE.run;
     g.fillStyle = 'rgba(20,20,40,0.6)'; g.fillRect(x + 14, y, 32, 5); g.fillStyle = col; g.fillRect(x + 15, y + 1, Math.round(30 * Math.min(1, k)), 3);
+    return x + 46;
   };
   H.read = () => RG && { glint: RG.glint && RG.glint.key, lastNudge: RG.lastNudge || null, phase: RG.phase, t: RG.t, n: { ...RG.n }, gates: Object.fromEntries(RG.gates.map(q => [q.id, q.state])), jams: RG.jams.map(j => j.open), spans: RG.spans.map(s => ({ ...s })), nest: RG.nest && RG.nest.open, vault: RG.vault.map(v => v.open) };
   return H;
