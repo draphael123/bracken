@@ -161,9 +161,9 @@ export const STUCK_HANDS = {
       { key: 'narrowsRope', rows: [60, 65.5], colLt: 22, noClimb: true, at: [22, 61], line: 'THE ROPE: CLIMB IT WHILE THE CHANNEL IS DRY' } ] },
     /* (claude/redgorge2) THE RAPIDS: on the stone before a reach too wide to jump, the drifting timber glints; THE GORGE CLIMB: the wall rope, the spill chute's basket */
     { id: 'rg-rapids', zone: WHOLE, steps: [
-      { key: 'timber1', rows: [218.5, 219.5], colGt: 117, colLt: 121.5, mover: { debris: 'd1' }, dy: -4, line: 'A DRIFTING TIMBER: JUMP ON AS IT COMES PAST' },
-      { key: 'timber2', rows: [218.5, 219.5], colGt: 101, colLt: 105.5, mover: { debris: 'd2' }, dy: -4, line: 'THE TIMBERS DRIFT DOWN TOGETHER: RIDE ONE, HOP TO THE NEXT' },
-      { key: 'timber4', rows: [218.5, 219.5], colGt: 86, colLt: 90.5, mover: { debris: 'd4' }, dy: -4, line: 'A DRIFTING TIMBER: JUMP ON AS IT COMES PAST' } ] },
+      { key: 'timber1', rows: [218.5, 219.5], colGt: 119, colLt: 123.5, mover: { debris: 'd1' }, dy: -4, line: 'A DRIFTING TIMBER: JUMP ON AS IT COMES PAST' },
+      { key: 'timber2', rows: [218.5, 219.5], colGt: 104, colLt: 108.5, mover: { debris: 'd2' }, dy: -4, line: 'THE TIMBERS DRIFT DOWN TOGETHER: RIDE ONE, HOP TO THE NEXT' },
+      { key: 'timber4', rows: [218.5, 219.5], colGt: 88, colLt: 92.5, mover: { debris: 'd4' }, dy: -4, line: 'A DRIFTING TIMBER: JUMP ON AS IT COMES PAST' } ] },
     { id: 'rg-climb', zone: WHOLE, steps: [
       { key: 'wallRope', rows: [206.5, 207.5], colLt: 55.5, noClimb: true, at: [50, 206], line: 'THE ROPE UP THE WALL: CLIMB IT' },
       { key: 'spillBasket', rows: [190.5, 191.5], colLt: 60, mover: { gorge: 'spill' }, off: { gorge: 'spill' }, dy: -4, line: 'THE BASKET: STAND ON IT. THE FLOOD DOWN THE CHUTE WINDS IT UP' } ] },

@@ -45,7 +45,7 @@ try {
         for (let j = 0; j < 30 && Math.abs(e.x - P().x) > 14 && e.alive; j++) { clear(); k[e.x > P().x ? 'right' : 'left'] = true; tick(1); }
         clear(); P().face = Math.sign(e.x - P().x) || P().face; BK.press('atk'); tick(8); clear(); tick(4);
         e.routeSwings = (e.routeSwings || 0) + 1; return e.routeSwings < 60; };
-      const walk = (tx, o = {}) => { const goal = tx * TS + 8; let still = 0, lx = P().x, n = 0;
+      const walk = (tx, o = {}) => { const goal = tx * TS + 8; D('walk', tx, 'from', col(), feet()); let still = 0, lx = P().x, n = 0;
         while (Math.abs(P().x - goal) > (o.tol || 4) && n++ < (o.max || 1500)) {
           if (!o.noFight && fight()) continue;
           clear(); k[goal > P().x ? 'right' : 'left'] = true;
@@ -60,7 +60,7 @@ try {
       const hop = (from, row, dir = 0) => { for (let a = 0; a < 3; a++) { if (feet() === row && P().ground) return true; walk(from, { tol: 3 }); settle();
           clear(); if (dir) k[dir > 0 ? 'right' : 'left'] = true; k.jump = true; BK.press('jump');
           for (let j = 0; j < 70; j++) { tick(1); if (j > 26) k.jump = false; if (j > 4 && P().ground) break; }
-          clear(); tick(3); if (feet() === row && P().ground) return true; }
+          clear(); tick(3); D('hop', from, row, dir, 'at', col(), feet(), P().ground); if (feet() === row && P().ground) return true; }
         return feet() === row; };
       const hops = list => { for (const [x, row, dir] of list) if (!hop(x, row, dir)) return false; return true; };
       /* E at a wheel (THE GATE), facing it */
@@ -100,15 +100,16 @@ try {
           if (fight()) continue; if (!P().ground) { clear(); tick(1); continue; }
           const px = P().x, c = col(), onT = P().onMover && P().onMover.debris;
           if (!onT && rock(c - 1) && rock(c)) { clear(); k.left = true; tick(1); continue; }   /* to the west edge of this rock */
-          let go = false; for (let d = 1; d <= 3 && !go; d++) if (rock(c - d) && (!onT || d <= 3)) go = true;   /* a rock within a jump west */
+          let go = false; for (let d = 1; d <= (onT ? 3 : 4) && !go; d++) if (rock(c - d)) go = true;   /* a rock within a jump west (three empty tiles, the stone on the fourth) */
           if (!go) go = !!timberIn(px - 58, px - (onT ? 34 : 10));   /* a timber whose east end is within a jump west of you */
-          if (go) { hopW(); continue; } clear(); tick(1); }
+          if (go) { hopW(); continue; } if (onT && px - 5 > P().onMover.x + 4) { clear(); k.left = true; tick(1); continue; } clear(); tick(1); }
         return col() <= 79; }) || lift([75, 218]);
       /* ===== B. THE GORGE CLIMB ===== */
       leg('THE GORGE CLIMB: the ledges under the told rockfall', [74, 218], () => walk(72) && hops([[72, 216], [68, 213], [61, 210], [54, 207]])) || lift([50, 206]);
       leg('the wall rope (a rock comes down it)', [50, 206], () => rope(50, 192)) || lift([52, 190]);
       leg('THE SPILL CHUTE: the basket on the flood', [52, 190], () => basket('spill', -1, 52, 56)) || lift([52, 174]);
-      leg('the gust ledges over the chute, to the gorge\'s mouth', [52, 174], () => hops([[57, 172, 1], [59, 169], [57, 166, -1]]) && walk(44)) || lift([44, 165]);
+      leg('the gust ledges over the chute, to the mouth of the gorge', [52, 174], () => { const still = () => { const z = BK.L.gusts[0], ph = (BK.time + (z.phase || 0)) % z.period; return ph > z.on + 0.1 && ph < z.period - 1.4; };   /* a careful hand jumps in the still air between the told gusts */
+        return waitFor(still, 600, { noFight: true, hold: () => { k.down = true; } }) && hop(55, 172) && waitFor(still, 600, { noFight: true, hold: () => { k.down = true; } }) && hop(59, 169) && waitFor(still, 600, { noFight: true, hold: () => { k.down = true; } }) && hop(56, 166) && walk(44); }) || lift([44, 165]);
       /* ===== 1. THE GORGE MOUTH ===== */
       leg('the floor crossing (wait out a flood on the east bank, cross in the dry)', [41, 165], () => { walk(30); waitFor(() => G().phase === 'flood', 60 * 14); waitFor(() => G().phase === 'dry', 60 * 4); return walk(18); }) || lift([18, 165]);
       leg('up the west ledges to bridge one, under the mouth slingers', [18, 165], () => hops([[17, 163], [14, 160], [14, 157], [13, 154], [12, 151], [11, 148], [11, 145], [11, 142]])) || lift([11, 141]);

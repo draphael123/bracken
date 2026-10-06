@@ -77,7 +77,7 @@ export function buildRedGorge({ painter, T, TS }) {
   air(3, 44, 0, F - 1);                                                       /* the gorge: open to the sky, walls at 0-2 and 45-47 */
   /* the walls wander a little (a canyon, not a shaft) - never into a ledge */
   for (const [y0, y1, x] of [[150, 158, 3], [126, 131, 44], [100, 108, 44], [30, 38, 3], [10, 18, 44]]) block(x, x, y0, y1);
-  const pools = [], debris = (id, x0, x1, o = {}) => moversExtra.push(Object.assign({ kind: 'debris', debris: id, x: x0 * TS, x0: x0 * TS, x1: x1 * TS, y: REDGORGE.rapids.surf * TS - 4, y0: REDGORGE.rapids.surf * TS - 4, w: 32, h: 6, speed: 20, phase: 0 }, o));
+  const pools = [], debris = (id, x0, x1, o = {}) => moversExtra.push(Object.assign({ kind: 'debris', debris: id, x: x0 * TS, x0: x0 * TS, x1: x1 * TS, y: REDGORGE.rapids.surf * TS - 4, y0: REDGORGE.rapids.surf * TS - 4, w: 48, h: 6, speed: 14, phase: 0 }, o));   /* three tiles of timber */
 
   // ================= A. THE RAPIDS (cols 66-141, rows 200-225): you start on the east bank; WEST, stone to stone over the white water =================
   /* (claude/redgorge2, Daniel 10-03) the river out of the gorge's mouth, under the canyon wall. Its water is the gorge's: AT THE HORN the calm water
@@ -89,22 +89,22 @@ export function buildRedGorge({ painter, T, TS }) {
   { const R0 = REDGORGE.rapids, S = R0.surf, B = R0.bed;
     air(66, 141, 200, B - 1);
     block(66, 79, S - 1, H - 1); block(130, 141, S - 1, H - 1); block(R0.x0, R0.x1, B, H - 1);   /* the climb's foot bank (west), the start bank (east), the bed */
-    const stones = [[124, 126], [118, 120], [108, 110], [102, 104], [87, 89]];
+    const stones = [[125, 127], [120, 122], [110, 112], [105, 107], [89, 91]];   /* (a plain jump between two stones is two tiles: every hero makes it from a standstill) */
     for (const [a, b] of stones) block(a, b, S - 1, B - 1);
     /* the water between the stones (each reach its own pool, so a stone is dry ground: P.safe) */
     const edges = [R0.x0, ...stones.slice().reverse().flatMap(([a, b]) => [a, b + 1]), R0.x1 + 1];
     for (let i = 0; i < edges.length; i += 2) pools.push({ x0: edges[i] * TS, x1: edges[i + 1] * TS, y: S * TS + 4, bottom: B * TS, rapids: true });
     sign(137, S - 2, 'THE RAPIDS. STONE TO STONE. THE CURRENT THROWS YOU BACK ON YOUR LAST ROCK.');
     /* TEACH: two stones a plain jump apart; the first timber (the reach 111-117 is seven: ride it) */
-    debris('d1', 111, 116, { phase: 0.2, what: 'plank' });
-    sign(119, S - 2, 'TOO WIDE TO JUMP. RIDE THE DRIFTING TIMBER.');
-    ent('raptor', 106, S - 2, { squad: 'rapidsBird1', guard: S - 1 });                      /* THE BIRDS: over the reach past the first timber */
+    debris('d1', 113, 117, { phase: 0.2, what: 'plank' });
+    sign(121, S - 2, 'TOO WIDE TO JUMP. RIDE THE DRIFTING TIMBER.');
+    ent('raptor', 108, S - 2, { squad: 'rapidsBird1', guard: S - 1 });                      /* THE BIRDS: over the reach past the first timber */
     /* REMIX: two timbers in one current (91-101, eleven), the second five behind the first: board the near one, hop to the far, step off */
-    debris('d2', 91, 100, { phase: 0.0, what: 'crate' }); debris('d3', 91, 100, { phase: 0.5, what: 'branch' });
+    debris('d2', 92, 102, { phase: 0.0, what: 'crate' }); debris('d3', 92, 102, { phase: 0.5, what: 'branch' });
     ent('raptor', 95, S - 2, { squad: 'rapidsBird2', guard: S - 1 });
     foe('slinger', 75, S - 2, 'rapidsSling', { face: 1 });                                  /* EXAM: the last reach under a sling on the far bank, and the birds */
-    debris('d4', 80, 85, { phase: 0.6, what: 'plank' });
-    dynamiter(88, S - 2, 'rapidsStone', { face: 1 });                                       /* on the last stone: his fuse dies in the water (the flood douses it) */
+    debris('d4', 80, 86, { phase: 0.6, what: 'plank' });
+    dynamiter(90, S - 2, 'rapidsStone', { face: 1 });                                       /* on the last stone: his fuse dies in the water (the flood douses it) */
     ent('deco', 135, S - 2, { kind: 'oxSkull' }); ent('deco', 70, S - 2, { kind: 'scrub' });
     decor.push({ kind: 'plume', x: 122, y: S - 2 }, { kind: 'plume', x: 72, y: S - 2 });     /* HER PLUMES (B8): a moulted crest feather on the rocks - the trail to the nest */
   }
@@ -127,8 +127,8 @@ export function buildRedGorge({ painter, T, TS }) {
     block(63, 78, 176, 205);                                                                /* the sheer rock east of the chute (the shelf is fifteen rows under the next ledge: only the basket goes up) */
     ledge(48, 57, 175);                                                                     /* off the basket's top */
     ent('raptor', 66, 172, { squad: 'climbBird', guard: 175 });                             /* the birds wheel level with you here */
-    ledge(58, 64, 172);                                                                     /* EXAM: across the chute (cols 60-62: the flood's road) in the gusts */
-    ledge(57, 61, 169);                                                                     /* (and again, under the landing's east lip: up and west onto it) */
+    ledge(56, 64, 172);                                                                     /* EXAM: across the chute (cols 60-62: the flood's road) in the gusts */
+    ledge(55, 61, 169); set(55, 166, T.ONEWAY); set(56, 166, T.ONEWAY);                                                                     /* (and again, under the landing's east lip - two boards of it, jumped up through) */
     ent('rockfall', 52, 160, { every: 3.6, tell: 0.9, seen: true });
     foe('cutthroat', 52, 165, 'climbTop', { face: 1 });
     decor.push({ kind: 'plume', x: 54, y: 165 });
@@ -289,7 +289,7 @@ export function buildRedGorge({ painter, T, TS }) {
     caravan: true,   /* the desert's hands in main.js (the sandstone skins, the bandits' AI); THE SUN never reaches the floor of the gorge (the shade above) */
     ledgeKit: 'desert',
     /* THE GUSTS (claude/redgorge2): told (flags and dust before each), funnelling up the gorge over the chute at the climb's top - they shove you east, over the chute */
-    gusts: [{ x0: 48 * TS, x1: 78 * TS, y0: 160 * TS, y1: 176 * TS, dir: 1, period: 5, on: 1.8, phase: 0, k: 1, told: true, shove: 200 }],
+    gusts: [{ x0: 48 * TS, x1: 78 * TS, y0: 160 * TS, y1: 172 * TS, dir: 1, period: 5, on: 1.8, phase: 0, k: 1, told: true, shove: 160 }],
     palette: { set: 'desert', near: 'none', dress: 'desert', noFg: true, noNear: true, haze: 'rgba(200,110,80,0.10)' },
     duskStart: -1, duskLen: 1,
   };

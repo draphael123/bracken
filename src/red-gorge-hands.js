@@ -16,7 +16,7 @@ export const GORGE = { dry: 6.0, horn: 2.0, run: 2.4, first: 3.0, dmg: 25, damDm
 export const BASKET = { rise: 2.0, sink: 36, hold: 2.0, fall: 2.0 };          /* a basket climbs its shaft in RISE s of running water, holds HOLD s at the top, then drops its whole shaft in FALL s (Daniel 10-03: at 36 px/s an 18-row basket never reached the bridge between two floods, ~10 s apart - it hung out of reach, a soft-lock; the foot must be back well before the next flood) */
 export const RAPTOR = { sightY: 150, hp: 24, dmg: 20 };
 /* THE RAPIDS (claude/redgorge2): the drifting timbers' pace in calm water and in the horn's rapids (px/s), and a raptor's stoop over the water knocks you in */
-export const RAPIDS = { calm: 20, rapids: 60, bob: 1.5, knock: [150, -150] };            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
+export const RAPIDS = { calm: 14, rapids: 50, bob: 1.5, knock: [-150, -150] };   /* (the current runs west, to the gorge's mouth: a knock goes downstream) */            /* THE RAPTOR: it hunts only a hero within SIGHTY px (up or down) of the bridge it keeps; its stoop hits harder than a vulture's (20, the vulture 10) */
 
 /* WHAT YOU MUST USE NEXT (Daniel's playtest, 10-02: on bridge two he could not see that the basket was the way on). A pulsing GLINT on the thing the climb needs
    next, and after NUDGE.after s with no headway up the gorge, a short NUDGE naming it (once, then again only after NUDGE.again s). No sign spoils it: the glint says
@@ -173,15 +173,15 @@ export function makeRedGorgeHands(ctx) {
     m.dy = m.y - oy; return true;
   };
 
-  /* ---------- A DRIFTING TIMBER (THE RAPIDS, claude/redgorge2): it slides down the current (east) and bobs; at the end of its reach it goes under the
-     next stone and comes up again upstream (whoever stood on it is in the water). THE HORN TURNS THE CALM TO RAPIDS: three times the pace ---------- */
+  /* ---------- A DRIFTING TIMBER (THE RAPIDS, claude/redgorge2): it slides down the current (WEST, towards the gorge's mouth) and bobs; at the end of its reach it goes under the
+     next stone and comes up again upstream (east) (whoever stood on it is in the water). THE HORN TURNS THE CALM TO RAPIDS: three times the pace ---------- */
   H.rapids = () => !!RG && (RG.phase === 'horn' || RG.phase === 'flood');
   H.debris = (m, dt) => {
-    const ox = m.x, oy = m.y; if (m.dt === undefined) { m.dt = 0; m.x = m.x0 + (m.x1 - m.x0) * (m.phase || 0); }
-    const v = RG && H.rapids() ? RAPIDS.rapids : RAPIDS.calm; m.x += v * dt; m.dt += dt; m.fast = v > RAPIDS.calm;
-    if (m.x > m.x1) { m.x = m.x0; for (const pp of ctx.players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; } m.under = 0.4; }
+    const ox = m.x, oy = m.y; if (m.dt === undefined) { m.dt = 0; m.x = m.x1 - (m.x1 - m.x0) * (m.phase || 0); }
+    const v = RG && H.rapids() ? RAPIDS.rapids : RAPIDS.calm; m.x -= v * dt; m.dt += dt; m.fast = v > RAPIDS.calm;
+    if (m.x < m.x0) { m.x = m.x1; for (const pp of ctx.players) if (pp.onMover === m) { pp.onMover = null; pp.ground = false; } m.under = 0.4; }
     if (m.under > 0) m.under -= dt;
-    m.y = m.y0 + Math.sin(m.dt * 3 + (m.phase || 0) * 6) * RAPIDS.bob; m.dx = m.x - ox; m.dy = m.y - oy; if (m.dx < 0) m.dx = 0; return true; };
+    m.y = m.y0 + Math.sin(m.dt * 3 + (m.phase || 0) * 6) * RAPIDS.bob; m.dx = m.x - ox; m.dy = m.y - oy; if (m.dx > 0) m.dx = 0; return true; };
 
   /* ---------- THE RAPTOR: the vulture's machine, keeping its own bridge ---------- */
   H.raptorStep = (s, w, dt) => {
@@ -217,7 +217,7 @@ export function makeRedGorgeHands(ctx) {
         g.fillStyle = fast ? 'rgba(232,244,248,0.85)' : 'rgba(232,244,248,0.45)'; const step = fast ? 6 : 13, sp = fast ? 140 : 26;
         for (let x = x0 + ((time * sp) % step); x < x1 - 3; x += step) g.fillRect(R(x), y + ((x >> 3) % 3), fast ? 4 : 3, 1); }
       for (const m of ctx.movers()) { if (!m.debris) continue; const x = R(m.x - cx), y = R(m.y - cy); if (x < -40 || x > vw + 8 || y < -8 || y > vh + 8) continue;
-        g.fillStyle = m.what === 'crate' ? '#8a5a32' : m.what === 'branch' ? '#5a3a1e' : '#9a7044'; g.fillRect(x, y, 32, 5); g.fillStyle = '#c8945a'; g.fillRect(x + 2, y, 28, 1);
+        g.fillStyle = m.what === 'crate' ? '#8a5a32' : m.what === 'branch' ? '#5a3a1e' : '#9a7044'; g.fillRect(x, y, m.w, 5); g.fillStyle = '#c8945a'; g.fillRect(x + 2, y, m.w - 4, 1);
         if (m.what === 'crate') { g.fillStyle = '#6a4426'; g.fillRect(x + 4, y - 6, 12, 6); } if (m.what === 'branch') { g.fillStyle = '#5a3a1e'; g.fillRect(x + 20, y - 4, 2, 4); g.fillRect(x + 24, y - 6, 2, 6); }
         g.fillStyle = 'rgba(232,244,248,0.7)'; g.fillRect(x - 2, y + 4, 3, 1); if (m.fast) g.fillRect(x - 6, y + 3, 4, 1); } }
     /* HER PLUMES (B8): long rust crest feathers on the rocks along the way, thicker at the dam's door */
