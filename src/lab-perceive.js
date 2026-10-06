@@ -90,14 +90,18 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
 /* THE SKILLS A PLAYER CASTS (claude/bot2 #3, opts.skills): whatever is in his slots (BK.skillAt), cast at the boss when it is ready, in its
    range, the hero free and not about to be hit by a windup he can see (or the boss OPEN), with a roll's wind kept back, at most one cast a
    second. A generic hand, the same for every boss: a player's skill use is not boss-specific either. */
-export function makeSkillHands(BK, boss, h, RANGE, rollCost) {
+export function makeSkillHands(BK, boss, h, RANGE, rollCost, v2 = false) {
   const KEYS = ['throw', 'skill2', 'skill3'], P = () => BK.P; let last = -9, casts = {};
   return { casts: () => casts, step() {
-    const p = P(); if (!p || p.dead || h === 'reaper' || p.atk >= 0 || (p.dodge > 0) || !boss.alive) return;
+    const p = P(); if (!p || p.dead || (h === 'reaper' && !v2) || p.atk >= 0 || (p.dodge > 0) || !boss.alive) return;
     const now = BK.time; if (now - last < 1 * (BK.SET.speed || 1)) return;
     const open = boss.open > 0, wind = !!(BK.windingUp && BK.windingUp(boss)) && !open, dx = boss.x - p.x, edge = Math.abs(dx) - (boss.w || 20) / 2;
+    if (h === 'reaper' && (p.harvest >= 100 || p.fHeld > 0 || p.warding || p.hurt > 0 || p.castT > 0)) return;   /* (claude/dkhero) his F key is also the surge: never press it while the blood is full; never over a ward */
+    if (wind && h === 'reaper' && Math.abs(boss.y - p.y) <= 48 && edge <= (RANGE.boneArmor || 160) && !(p.boneArmor > 0)) {   /* BONE ARMOR: a tell seen in reach, a shell for the next three blows */
+      for (let i = 0; i < 3; i++) { const T = globalThis.BKT, id = T && T.skillAt ? T.skillAt(i) : null; if (id !== 'boneArmor' || (p.cds && p.cds[id] > 0) || p.st < 26 + rollCost) continue;
+        BK.press(KEYS[i]); last = now; casts[id] = (casts[id] || 0) + 1; return; } }
     if (wind || Math.abs(boss.y - p.y) > 48) return;
-    for (let i = 0; i < 3; i++) { const T = globalThis.BKT, id = T && T.skillAt ? T.skillAt(i) : null;   /* (the slots are BKT's: main.js's skillAt) */ if (!id || !(id in RANGE)) continue;
+    for (let i = 0; i < 3; i++) { const T = globalThis.BKT, id = T && T.skillAt ? T.skillAt(i) : null;   /* (the slots are BKT's: main.js's skillAt) */ if (!id || !(id in RANGE) || (id === 'boneArmor')) continue;
       if (p.cds && p.cds[id] > 0) continue; if (edge > RANGE[id] || p.st < 30 + rollCost) continue;
       p.face = Math.sign(dx) || p.face; BK.press(KEYS[i]); last = now; casts[id] = (casts[id] || 0) + 1; return; } } };
 }

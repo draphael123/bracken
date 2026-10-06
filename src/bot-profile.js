@@ -49,7 +49,7 @@ export const TYPICAL_SKILLS = {   /* each hero's damaging actives, best first (t
   knight: ['swordOfRealm', 'groundSlam', 'lunge', 'whirlwind', 'disarm', 'shieldThrow'],
   warden: ['rainOfSpears', 'spearDance', 'javelin', 'setSpears', 'poleSpring', 'skewer', 'wheel', 'harrier'],
   pyro: ['meteor', 'fireWall', 'wisp', 'vent', 'flameRing', 'cinderStep'],
-  paladin: ['lightLance', 'holyCharge', 'consecrate'], pirate: [], reaper: [], geomancer: [],
+  paladin: ['lightLance', 'holyCharge', 'consecrate'], pirate: [], reaper: ['boneArmor', 'soulReap'] /* (claude/dkhero) BONE ARMOR (L14) and SOUL REAP (L20): the lab's skill hands cast them for a v2 profile */, geomancer: [],
 };
 export const TYPICAL_PERKS = ['iron', 'heart', 'arcane', 'light', 'lungs', 'focus'];
 export function typicalCard(lv) { const n = Math.max(0, Math.min(50, Math.floor(lv || 0))), v = Math.round(n * 0.45), m = Math.round(n * 0.35), e = Math.max(0, n - v - m), ms = {};
@@ -57,4 +57,4 @@ export function typicalCard(lv) { const n = Math.max(0, Math.min(50, Math.floor(
   return { v: Math.min(25, v), e: Math.min(25, e), m: Math.min(25, m), ms }; }
 /* RANGE of a skill for the hands, px from the hero to the boss's near edge: a cast at range, or a blow in his face */
 export const SKILL_RANGE = { shieldThrow: 150, javelin: 170, harrier: 150, rainOfSpears: 140, meteor: 150, wisp: 140, fireWall: 90, vent: 60, lightLance: 150,
-  swordOfRealm: 70, groundSlam: 50, lunge: 80, whirlwind: 40, disarm: 40, spearDance: 50, setSpears: 60, poleSpring: 60, skewer: 50, wheel: 45, flameRing: 50, cinderStep: 50, holyCharge: 90, consecrate: 40 };
+  swordOfRealm: 70, groundSlam: 50, lunge: 80, whirlwind: 40, disarm: 40, spearDance: 50, setSpears: 60, poleSpring: 60, skewer: 50, wheel: 45, flameRing: 50, cinderStep: 50, holyCharge: 90, consecrate: 40, boneArmor: 160, soulReap: 110 };

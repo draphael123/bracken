@@ -580,7 +580,7 @@ async function runbossLab(BK, opts) {
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
     if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); }
-    ROWBOSS = boss; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24) : null;
+    ROWBOSS = boss; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction

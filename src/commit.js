@@ -52,6 +52,10 @@ export const canBreak = P => !committed(P);
 /* the same question asked one frame ahead (the press pass runs before the frame that ages the recovery) */
 export const committedNext = (P, dt) => P.atk >= 0 || (P.atkRec || 0) - dt > WINDOW + 1e-6;
 export const inRecovery = P => !(P.atk >= 0) && (P.atkRec || 0) > WINDOW + 1e-6;
+/* THE DEATH KNIGHT'S WARD CUTS THE END OF A SWING (claude/dkhero, Daniel 10-06): the ward may be raised out of the last DK_WARD_CUT seconds of his swing
+   (the art's tail and the recovery behind it: his recovery alone is only 0.1 s), so a Bloodknight blow is not always a hit. swingLeft = time to free. */
+export const DK_WARD_CUT = 0.25;
+export const swingLeft = (h, P) => P.atk >= 0 ? Math.max(0, artLim(!!P.heavy) - P.atk) / artRate(h, !!P.heavy) + (recoveryFor(h, { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut })) : (P.atkRec || 0);
 
 /* THE HELD BUFFER. While committed, a press of roll / jump / attack / a skill is KEPT (its buffer is held up, not aged) and only the
    LATEST press survives to the window - so a roll pressed at swing frame 2 comes out on the window's first frame, and an attack pressed
