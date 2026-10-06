@@ -73,3 +73,18 @@ guard first, so clearing the level, dying or going back to the map persists noth
 `BK.levelJump(id, hero)` is the same function for harnesses. `node tools/level-jump.mjs` proves it (lands in play at the entrance with the hero asked
 for, at full health, no god mode; the save is byte-identical after the level is run to its gate; a bad id starts nothing). It was run red first with
 the save guard taken out (THE SAVE CHANGED), then green.
+
+## The playtest recorder (for calibrating the boss bot)
+
+The boss bot (`BK.bossLab`) is tuned to match how Daniel plays. To give it real numbers, turn on the recorder and play some bosses.
+It is **off by default**. Nothing is sent over the network: the log stays in this browser and leaves only as a file you save yourself.
+
+- **Turn on:** open the game with `?rec=1` (it stays on in this browser until `?rec=0`), or press **Shift+F9** while playing. A small
+  red **REC n** in the top-right corner shows it is on (n = fights in the log).
+- **Save the log:** press **F9**. The browser downloads `bracken-playtest-<date>.json` (the last 300 boss and mini fights).
+- **Clear the log:** **Ctrl+F9**.
+- **What a fight row holds:** boss, level, hero, hero level, card picks and loadout; game seconds and real seconds; outcome (win /
+  death / left); each blow that hurt you (foe|move, count, damage, how many you guarded); hits you landed and damage dealt; each
+  opening and whether you used it; skills cast. It holds no name, save data or account.
+- **Use it:** put the files in `playtest-logs/` (gitignored) and run `node tools/bot-calibrate.mjs playtest-logs/*.json`. The tool
+  compares your deaths and damage per boss with the bot's and fits the profile in `src/bot-profile.js` (reaction, misread, greed).
