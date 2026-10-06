@@ -24,7 +24,7 @@ export const GL = {
   */
   walk: 70, dash: 225, dashAt: 84, keep: 26, gap: [0.26, 0.2],   /* phase two (half health): quicker between blows */
   dashTell: 0.36, dashMax: 0.55, dashCd: 2.2, dashReach: 30,      /* THE DASH (!!): stood off beyond dashAt he gathers and DASHES in with a cut - roll through it, jump it, or pour in his path */
-  cutTell: 0.42, cutT: 0.14, cut2Tell: 0.24, crossTell: 0.2, cutReach: 34, cutStep: 72,   /* (each cut steps in at cutStep px/s: a quick man's cut follows you) */
+  cutTell: 0.55, cutT: 0.14, cut2Tell: 0.24, crossTell: 0.2, cutReach: 34, cutStep: 72,   /* (each cut steps in at cutStep px/s: a quick man's cut follows you) */
   whirlTell: 0.62, whirlT: 0.5, whirlR: 40,
   throwTell: 0.5, fly: 0.85, fireT: 3.2, fireR: 18, fireTick: 0.5,
   dodge: 0.18, dodgeT: 0.28, dodgeDist: 64, dodgeCd: 5.0, riposteTell: 0.42, recoverT: 0.35,   /* (claude/welltown5: the dodge is RARE now - it was 75%, and it beat the Warden's shield game) */
@@ -32,7 +32,7 @@ export const GL = {
   mudSlow: 0.4,                           /* MUD (Daniel 10-03): a poured puddle is mud - he moves x mudSlow in it and will not step into it from dry ground (he stops at its edge) */
   puddleT: 9, puddleR: 22, pourAt: 30, slipT: 1.6,  /* THE WATER: a pour's puddle lasts puddleT s, pourAt px in front of you; a slip downs him slipT s */
   burnT: 2.6, burnTick: 0.5,                        /* his fire CATCHES you: you burn this long unless you douse yourself */
-  dmg: { cut: 34, whirl: 44, bottle: 16, fire: 7, riposte: 28, burn: 4, dash: 28 },
+  dmg: { cut: 23, whirl: 33, bottle: 16, fire: 7, riposte: 22, burn: 4, dash: 22 },   /* (claude/sweep3: cut 34, whirl 44, riposte 28, dash 28 until the standard bot - it reads his tells a reaction late - won 2/12 at L31; band 70-75%) */
 };
 /* EVERY CYCLE CHANGES (k % n); phase two from half health. (claude/welltown5: a bottle in most cycles, not every other blow - a bottle struck home
    is a fifth of him, so the bottles pace the fight; his blades and his dash are the danger between them) */
@@ -72,34 +72,38 @@ export const PLAN = { react: 0.25, miss: 0.14, missBottle: 0.3, missPour: 0.35, 
 export function glPlan(s) {
   const { P, e, F, reach } = s, out = { gx: null, face: P.face, atk: false, jump: false, block: false, dodge: false, talk: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0, sips = s.sips || 0; mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 500) { mem.seen.clear(); mem.roll.clear(); }
-  const key = e.mode + F.act, seen = () => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= PLAN.react; };
+  const react = s.eyes ? 0 : PLAN.react, miss = s.eyes ? 0 : PLAN.miss;   /* (claude/sweep3) s.eyes: the lab's perception layer (a v2 profile) already sees each tell a reaction late and misreads some - no second delay on top */
+  const key = e.mode + F.act, seen = () => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= react; };
   const roll = (k, p) => { if (!mem.roll.has(k)) mem.roll.set(k, rng() < p); return mem.roll.get(k); };
   const A = F.A, lo = A.x0 + 12, hi = A.x1 - 12, clamp = x => Math.max(lo, Math.min(hi, x)), side = Math.sign(P.x - e.x) || 1, ad = Math.abs(P.x - e.x), toHim = Math.sign(e.x - P.x) || 1;
   /* alight: douse yourself (a quarter-second late) */
   if (P.burn > 0 && sips > 0 && t - (mem.burnSeen ?? (mem.burnSeen = t)) >= PLAN.react) { out.talk = true; out.why = 'douse yourself'; return out; }
   if (!(P.burn > 0)) mem.burnSeen = undefined;
   /* the bottle: strike it back as it comes */
-  const b = F.bottles.find(q => !q.back && Math.abs(q.x - P.x) < 60 && Math.abs(q.y - (P.y - 10)) < 40);
-  if (b && !roll('b' + b.id, PLAN.missBottle)) { out.face = Math.sign(b.x - P.x) || P.face; if (Math.abs(b.x - P.x) < reach + 6 && Math.abs(b.y - (P.y - 10)) < 22) out.atk = P.atk < 0; out.why = 'strike the bottle back'; return out; }
+  const b = F.bottles.find(q => !q.back && Math.abs(q.x - P.x) < 60 && Math.abs(q.y - (P.y - 10)) < (s.eyes ? 80 : 40));   /* (v2: a bottle in the air over you is watched from the throw - no blow started at him that would still be out when it comes down) */
+  if (b && !roll('b' + b.id, PLAN.missBottle)) { out.face = Math.sign(b.x - P.x) || P.face; const lead = s.eyes ? 0.08 : 0, bx = b.x + (b.vx || 0) * lead, by = b.y + (b.vy || 0) * lead + 260 * lead * lead;   /* (claude/sweep3, v2: a hand swings a beat before the glass arrives, as the blade's edge comes out late in the swing) */
+    if (s.eyes && b.vy > 0 && Math.abs(b.x - P.x) < 30 && b.y - (P.y - 10) < -6 && b.y - (P.y - 10) > -40) { out.atk = P.atk < 0; out.up = true; out.why = 'cut the bottle up and back'; return out; }   /* (v2: one falling on you is met with the rising cut, the blow that reaches over your head) */
+    if (Math.abs(bx - P.x) < reach + 6 && Math.abs(by - (P.y - 10)) < 22) out.atk = P.atk < 0; out.why = 'strike the bottle back'; return out; }
   const fire = F.fires.find(f => Math.abs(f.x - P.x) < GL.fireR + 6);
   if (glOpen(e)) { out.gx = clamp(e.x - side * (s.tip ? GL.w / 2 + s.tip : Math.max(8, reach * 0.6))); out.face = toHim; out.atk = ad < reach + 12 && P.atk < 0 && e.open > 0.35; out.why = 'cut him: he burns'; return out; }   /* (not the last blow as the flames go out) */
   const m = e.mode;
   if (m === 'slipped') { out.gx = clamp(e.x - toHim * (s.tip ? GL.w / 2 + s.tip : Math.max(8, reach * 0.6))); out.face = toHim; out.atk = ad < reach + 10 && P.atk < 0 && (s.greed || 0) < 3 && e.modeT > 0.2; out.why = 'cut him: he is down'; return out; }
-  if (/Tell$/.test(m) && seen() && !roll(key, PLAN.miss)) {
+  if (/Tell$/.test(m) && seen() && !roll(key, miss)) {
     if (m === 'riposteTell' && ad < 90) { out.gx = clamp(e.x + side * 100); if (ad < 60) out.dodge = true; out.why = 'off the riposte'; return out; }
     if ((m === 'cutTell' || m === 'cut2Tell' || m === 'crossTell') && ad < 70) { mem.backT = t + 0.9;
+      if (s.deflect && s.eyes && P.live > 0.04) { out.face = toHim; out.why = 'hold the deflect'; return out; }   /* (claude/sweep3, v2 only: her sweep is live - keep it turned on him; backing off turned her shaft away from the cut it was swept for) */
       if (s.deflect && !(P.busy > 0)) { out.face = toHim; out.block = e.modeT < 0.22; out.why = 'deflect the cut on the beat'; return out; }   /* THE WARDEN: her shaft turns a yellow blow swept on the beat */
       if (s.shield) { out.block = true; out.face = toHim; out.why = 'block the cut'; return out; } out.gx = clamp(e.x + side * 80); out.why = 'back off the cut'; return out; }
-    if (m === 'whirlTell' && ad < GL.whirlR + 30) { out.gx = clamp(e.x + side * (GL.whirlR + 40)); if (ad < GL.whirlR && e.modeT < 0.2) out.dodge = true; out.why = 'out of the whirl'; return out; }
+    if (m === 'whirlTell' && ad < GL.whirlR + 30) { out.gx = clamp(e.x + side * (GL.whirlR + 40)); if (s.eyes && ad < GL.whirlR + 8 && e.modeT < 0.3 && P.ground) { out.jump = true; out.why = 'jump the whirl'; return out; } if (ad < GL.whirlR && e.modeT < 0.2) out.dodge = true; out.why = 'out of the whirl'; return out; }   /* (claude/sweep3, v2: still inside it as it comes - over it, as his tell says) */
     if (m === 'throwTell') { /* the bottle comes: wait for it (above) */ }
     if (m === 'dashTell') { const dry = !(F.puddles || []).some(q => Math.sign(q.x - P.x) === toHim && Math.abs(q.x - P.x) < ad);
       if (sips > 0 && dry && P.ground && ad > 40 && !roll('dpour' + F.act, PLAN.missPour)) { out.face = toHim; out.talk = true; out.why = 'pour in the path of his dash'; return out; }
       if (dry) { mem.dashF = F.act; out.why = 'ready for the dash'; } }
   }
   /* the rest of a combo once its first cut was read: keep out of it (or keep the shield up) */
-  if ((m === 'cut' || m === 'cut2Tell' || m === 'cut2' || m === 'cross') && ad < 70 && mem.backT > t) { if (s.deflect && !(P.busy > 0)) { out.face = toHim; out.block = m !== 'cut2Tell' || e.modeT < 0.22; out.why = 'deflect the combo'; return out; } if (s.shield) { out.block = true; out.face = toHim; out.why = 'block the combo'; return out; } out.gx = clamp(e.x + side * 90); out.why = 'out of the combo'; return out; }
-  if (m === 'dash' && Math.sign(P.x - e.x) === (e.face || 1) && ad < 70 && mem.dashF === F.act && !roll('dmiss' + F.act, PLAN.miss)) { out.dodge = ad < 46; out.jump = !out.dodge && P.ground; out.gx = clamp(e.x - side * 60); out.why = 'through the dash'; return out; }
-  if (m === 'whirl' && ad < GL.whirlR + 12) { out.gx = clamp(e.x + side * (GL.whirlR + 40)); out.dodge = ad < GL.whirlR; out.why = 'out of the whirl'; return out; }
+  if ((m === 'cut' || m === 'cut2Tell' || m === 'cut2' || m === 'cross') && ad < 70 && mem.backT > t) { if (s.deflect && s.eyes && P.live > 0.04) { out.face = toHim; out.why = 'hold the deflect'; return out; } if (s.deflect && s.eyes && !(P.busy > 0)) { out.face = toHim; out.block = true; out.why = 'sweep again for his next cut'; return out; } if (s.deflect && !(P.busy > 0)) { out.face = toHim; out.block = m !== 'cut2Tell' || e.modeT < 0.22; out.why = 'deflect the combo'; return out; } if (s.shield) { out.block = true; out.face = toHim; out.why = 'block the combo'; return out; } out.gx = clamp(e.x + side * 90); out.why = 'out of the combo'; return out; }
+  if (m === 'dash' && Math.sign(P.x - e.x) === (e.face || 1) && ad < 70 && mem.dashF === F.act && !roll('dmiss' + F.act, miss)) { out.dodge = ad < 46; out.jump = !out.dodge && P.ground; out.gx = clamp(e.x - side * 60); out.why = 'through the dash'; return out; }
+  if (m === 'whirl' && ad < GL.whirlR + 12) { out.gx = clamp(e.x + side * (GL.whirlR + 40)); if (s.eyes && P.ground && ad < GL.whirlR + 4) { out.jump = true; out.why = 'jump the whirl'; return out; } out.dodge = ad < GL.whirlR; out.why = 'out of the whirl'; return out; }
   if (fire) { out.gx = clamp(P.x + (P.x < fire.x ? -40 : 40)); out.why = 'out of the fire'; return out; }
   /* THE WATER: he comes at you - pour in his path (once per approach, and not every time) */
   const wet = (F.puddles || []).some(q => Math.sign(q.x - P.x) === toHim && Math.abs(q.x - P.x) < ad + 10);

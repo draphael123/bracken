@@ -43,7 +43,7 @@ import { brOpen, bkOpen } from './unburied-foes.js';
 import { wardenOpen as graveOpen } from './grave-warden.js';
 
 export const GREED = {
-  chipBy: { queen: 1, pyromancer: 0.25, herald: 0.2 },   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
+  chipBy: { queen: 1, pyromancer: 0.25, herald: 0.2, cisternqueen: 0.5 },   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
                            // drones are up) and is not chipped: at a twentieth - and at a quarter, and at a half - the human-speed bot lost her 2-3 of 3 (it won
                            // 2 of 3 before; the mash bot never beat her). Her greed reprisal stands. THE PYROMANCER takes a quarter: blows are what open him
                            // (each heats him), and at a twentieth the bot won 1 of 3 (3 of 3 before), at a quarter 2 of 3. THE TIDE HERALD takes a fifth (he took
@@ -132,7 +132,7 @@ export const FULL_DAMAGE = {
 export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */
 /* MINIS ON THE CHIP (claude/bosswave1, Daniel 10-02: "give each a real opening first, then put minis on the chip"): each has a told opening of
    3 s or more in OPEN_RULE and in its own code, and outside it a hero's blow lands at GREED.chip like a boss's. The rest keep full damage. */
-export const CHIP_MINI = new Set(['greathound', 'bosun', 'lancer', 'homunculus']);
+export const CHIP_MINI = new Set(['greathound', 'bosun', 'lancer', 'homunculus', 'hedgewarden']);   /* (claude/hedgewarden4: the Hedge Warden's told opening - his move answered, his sword stuck - 3 s) */
 export function install(helpers) { H = helpers || {}; }
 
 /* A MINI'S OPENING IS WORTH A THIRD OF HIM AT MOST (claude/bosswave2, Daniel 10-04, from BOSS WAVE 1's hound and homunculus): one opening

@@ -111,7 +111,15 @@ try {
    w.x=143*16;w.cd=99;BK.P.x=w.x-150;grew.upBite=bite();grew.upMode=w.mode;
    w.mode='stalk';w.cd=99;w.x=BK.L.witch.braziers[0][0]*16+20;BK.P.x=w.x-150;BK.sim(2);const h1=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(20);grew.atFire={mode:w.mode,open:+(w.open||0).toFixed(1),hp:Math.round(w.hp),was:Math.round(h1)};
    const fire=fell(BK.L.witch.braziers[0][0]*16+20);BK.P.x=w.x-150;BK.sim(120);const burning={mode:w.mode,open:+(w.open||0).toFixed(1)};burning.bite=bite();
-   out.hedgeWarden={lawn,grew,fire,burning};}
+   out.hedgeWarden={lawn,grew,fire,burning};
+   /* claude/hedgewarden4: HIS TOLD OPENING IS ANSWERED, NOT WAITED OUT (B13). Left alone he is never open; a move answered (hedgeAnswered) sticks his sword, open 3 s,
+      a hero's blow pays whole x1.6 inside it and a twentieth outside; it ends, and he cannot be answered again at once */
+   {const hurt=d=>{const h0=w.hp;BKT.hurtAs('light',w,d,w.x-12,false);const t=h0-w.hp;w.hp=h0;return t;};
+    w.mode='stalk';w.cd=99;w.burnT=0;w.stuckT=0;w.reopenCd=0;w.greenUp=false;w.growth=0;w.hp=w.maxHp;w.x=143*16;BK.P.x=w.x-150;BK.sim(2);
+    const ans={};BK.sim(600);ans.alone=+(w.open||0).toFixed(1);ans.outside=hurt(40);
+    ans.did=HW.hedgeAnswered(w,'cut');BK.sim(3);ans.mode=w.mode;ans.open=+(w.open||0).toFixed(1);ans.inside=hurt(40);ans.again=HW.hedgeAnswered(w,'cut');
+    BK.sim(260);ans.after=w.mode;ans.afterOpen=+(w.open||0).toFixed(1);ans.reopen=w.reopenCd>0;ans.tooSoon=HW.hedgeAnswered(w,'cut');
+    out.hedgeAnswer=ans;}}
   /* THE GATE GARGOYLE: the same dive three times - on a low slab left late, on a high slab left late, on a slab left early */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='witchlight'));BK.state='play';BK.god=true;
    const g=BK.enemies().find(e=>e.t==='gargoyle');for(const e of BK.enemies())if(e!==g)e.alive=false;const sl=BK.movers().filter(m=>m.arena);
@@ -280,6 +288,10 @@ try {
   assert.notEqual(r.graveWarden.solid.mode, 'kneel', 'a dig that misses on solid floor opens nothing: ' + JSON.stringify(r.graveWarden));
   assert.equal(r.graveWarden.grave.mode, 'kneel', 'a dig into an open grave puts him on his knees: ' + JSON.stringify(r.graveWarden));
   assert.ok(r.graveWarden.grave.open > 2, 'the kneel is the window: ' + JSON.stringify(r.graveWarden));
+  { const a = r.hedgeAnswer; assert.ok(a.alone === 0 && a.outside <= 2, 'THE HEDGE WARDEN (claude/hedgewarden4): left alone he is never open, and a blow outside an opening is a scratch: ' + JSON.stringify(a));
+    assert.ok(a.did && a.mode === 'stuck' && a.open > 2.5 && !a.again, 'a move answered sticks his sword in the lawn, open for 3 s, and only once: ' + JSON.stringify(a));
+    assert.ok(a.inside >= 40, 'inside the opening a hero blow lands whole or better: ' + JSON.stringify(a));
+    assert.ok(a.after !== 'stuck' && a.afterOpen === 0 && a.reopen && !a.tooSoon, 'the opening ends, and he cannot be answered open again at once: ' + JSON.stringify(a)); }
   assert.equal(r.hedgeWarden.lawn.mode, 'felled', 'a blow through his root fells him: ' + JSON.stringify(r.hedgeWarden));
   assert.equal(r.hedgeWarden.lawn.open, 0, 'felled on the open lawn, the stump is not open: ' + JSON.stringify(r.hedgeWarden));
   /* (claude/hedgewarden3, Daniel's playtest 2026-09-28: "the stump took no damage and REGREW, so it looked like the boss heals for no

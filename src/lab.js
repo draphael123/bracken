@@ -909,14 +909,14 @@ async function runbossLab(BK, opts) {
       if(boss.t==='hedgewarden'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         if(boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
-        const m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,stump=m==='felled'||m==='stump';
+        const m=boss.mode,dx=boss.x-P.x,side=Math.sign(dx)||1,stump=m==='felled'||m==='stump'||m==='stuck',opn=boss.open>0;   /* (claude/hedgewarden4: he is on the chip - the bot swings only into his opening, and meets his cut/rush/lash on the beat) */
         const add=BK.enemies().filter(q=>q.alive&&q.fromHedge&&Math.abs(q.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
         const bz=((L.witch&&L.witch.braziers)||[]).map(([x])=>x*16+8).sort((a,b)=>Math.abs(a-boss.x)-Math.abs(b-boss.x))[0];
         const rest=P.st<14||(P.labRest&&P.st<44);P.labRest=rest;
         let gx=stump?boss.x-side*Math.max(12,LAB_REACH[h]*.55):rest?boss.x-side*110:bz!==undefined?bz+(bz>boss.x?1:-1)*Math.max(20,LAB_REACH[h]*.6):boss.x-side*Math.max(20,LAB_REACH[h]*.7);
         if(!stump&&!rest&&Math.abs(dx)<LAB_REACH[h]+boss.w/2)gx=P.x;   /* in reach: stand and cut */
         if(m==='thornTell'||m==='thorn')gx=boss.x-side*80;
-        if(m==='cutTell'&&!SHIELDED(h))gx=boss.x-side*80;
+        if(m==='cutTell'&&!SHIELDED(h)&&h!=='warden')gx=boss.x-side*80;   /* (the warden deflects his cut on the beat instead) */
         if(add&&Math.abs(add.x-P.x)<70&&!stump)gx=add.x-(Math.sign(add.x-P.x)||1)*LAB_REACH[h]*.6;
         gx=Math.max(A.x0+18,Math.min(A.x1-18,gx));
         if(Math.abs(gx-P.x)>4)k[gx>P.x?'right':'left']=true;
@@ -924,9 +924,11 @@ async function runbossLab(BK, opts) {
         if(m==='lashTell'&&!SHIELDED(h)&&boss.modeT<0.12&&Math.abs(dx)<170&&P.ground){BK.press('jump');P.labJump=18;}   /* THE THORN LASH: over it */
         {const rt=(L.hedgeRoots||[]).find(r=>!r.dead&&Math.abs(r.y-P.y)<10&&(P.x-r.x)*r.dir>0&&(P.x-r.x)*r.dir<30);if(rt&&P.ground){BK.press('jump');P.labJump=18;}}   /* A ROOT coming: over it */
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if((m==='cutTell'||m==='cut'||m==='rushTell'||m==='rush'||m==='lashTell'||m==='lash')&&SHIELDED(h)&&Math.abs(dx)<170&&!(L.hedgeRoots||[]).some(r=>!r.dead&&Math.abs(r.x-P.x)<40)){k.block=true;k.left=k.right=false;P.face=side;}
+        const beat=(m==='cutTell'||m==='lashTell'||m==='rushTell')?boss.modeT<(m==='rushTell'?0.05:0.13):m==='cut'||m==='lash'||(m==='rush'&&Math.abs(dx)<46);
+        const wdef=h==='warden'&&(m==='cutTell'||m==='cut')&&Math.abs(dx)<60;
+        if((beat&&SHIELDED(h)||wdef)&&Math.abs(dx)<170&&!(L.hedgeRoots||[]).some(r=>!r.dead&&Math.abs(r.x-P.x)<40)){k.block=h==='warden'?DEFLECT_TAP(f):true;k.left=k.right=false;P.face=side;}
         else if(add&&Math.abs(add.x-P.x)<LAB_REACH[h]+add.w/2+2&&Math.abs(add.y-P.y)<24&&P.atk<0&&!stump){P.face=Math.sign(add.x-P.x)||1;BK.press('atk');swings++;}
-        else if(!rest&&m!=='thornTell'&&m!=='thorn'&&!(m==='cutTell'&&!SHIELDED(h))&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<40&&P.atk<0){P.face=side;BK.press('atk');swings++;}   /* (no shield: it steps out of the cut, it does not trade with it) */
+        else if(!rest&&opn&&m!=='thornTell'&&m!=='thorn'&&!(m==='cutTell'&&!SHIELDED(h))&&Math.abs(dx)<LAB_REACH[h]+boss.w/2&&Math.abs(P.y-boss.y)<40&&P.atk<0){P.face=side;BK.press('atk');swings++;}   /* (no shield: it steps out of the cut, it does not trade with it) */
         const was=P.hp,m0=boss.mode,rh=(L.hedgeRoots&&L.hedgeRoots.hits)||0;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(((L.hedgeRoots&&L.hedgeRoots.hits)||0)>rh?'roots':m0,Math.max(0,was-P.hp));if(P.dead)falls++;   /* (a root's bite is booked to THE ROOTS, whatever he is doing when it lands) */
         if(f%600===599)await yieldNow();continue;
       }
@@ -1137,6 +1139,8 @@ async function runbossLab(BK, opts) {
            damage the lab put down to his 'rest' (they land after the tell, while he rests): POISON NOVA: GET CLEAR (112 px); BODY SLAM: MOVE (78 px
            of his mark); THE HANDS COME UP: MOVE YOUR FEET (34 px of the mark); HE THROWS THE DEAD (it lands where you stood: step off it);
            GRAVE HANDS: JUMP THEM (each arm as it comes up under you). Nothing is swung while one of these is coming. */
+        /* (claude/sweep3, v2: A VENT THAT HISSES IS STEPPED OFF - its wisps rise for 0.9 s before the poison stands; the hands walked candle to vent through the puffs, and the gas and the poison it leaves were a third of the damage booked to his 'rest') */
+        if(LABP.v2){const bad=(BK.L.gasVents||[]).find(v=>(v.state==='warn'||v.state==='puff')&&Math.abs(P.x-(v.x*16+8))<20&&P.y>v.y*16-56&&P.y<=v.y*16+4);if(bad&&!(ventHit&&P.candle>0)){const vx0=bad.x*16+8,s2=(P.x>=vx0?1:-1);gx=vx0+s2*28;if(gx<A.x0+14||gx>A.x1-14)gx=vx0-s2*28;ventHit=null;}}
         let bdFlee=false;if(LABP.v2){const away=(x,r)=>{const s2=P.x>=x?1:-1;let g=x+s2*r;if(g<A.x0+16||g>A.x1-16)g=x-s2*r;return g;};
         if(mode==='novaTell'&&Math.abs(P.x-boss.x)<128&&P.y>A.floor-80){gx=away(boss.x,134);bdFlee=true;}
         else if((mode==='bodyTell'||mode==='bodyFly')&&Number.isFinite(boss.markX)&&Math.abs(P.x-boss.markX)<92){gx=away(boss.markX,96);bdFlee=true;}
@@ -1198,12 +1202,12 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const QH=BK.cisternQueenHands(),S=QH&&QH.show();
         if(f===0||!P.labCqMem)P.labCqMem={};
-        const pl=S?queenPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCqMem}):{gx:null,face:P.face};
+        const pl=S?queenPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:QH.onLedge(P),snare:P.snare||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:LABP.v2&&h==='warden',t:f/60,rng:Math.random,mem:P.labCqMem,eyes:!!LABP.v2,greed:LABP.v2&&BK.greed?BK.greed.count(boss):0}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.down)k.down=true;if(pl.up)k.up=true;
-        if(pl.block)k.block=true;
+        if(pl.block)k.block=h==='warden'&&LABP.v2?f%2===0:true;   /* (claude/sweep3, v2: the warden's deflect is a tap) */
         if(!pl.block&&!(pl.down&&P.ground&&!pl.jump)&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
@@ -1236,14 +1240,14 @@ async function runbossLab(BK, opts) {
         const GH=BK.gangLeaderHands(),F=GH&&GH.fight();
         if(f===0||!P.labGlMem)P.labGlMem={};
         const greed=BK.greed?BK.greed.count(boss):0;
-        const pl=F?glPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
+        const pl=F?glPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,burn:P.glBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0,live:LABP.v2&&h==='warden'?(P.deflectT||0):0},e:boss,F,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',sips:(P.skin&&P.skin.sips)||0,t:f/60,rng:Math.random,mem:P.labGlMem,greed,eyes:!!LABP.v2}):{gx:null,face:P.face};   /* (claude/welltown5: and the skin - a puddle in his path, a douse when his fire catches you, a fill at the well head) */
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
-        if(pl.block)k.block=h==='warden'?DEFLECT_TAP(f):true;   /* (the warden's deflect is a sweep on the beat, tapped) */
+        if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):true;   /* (the warden's deflect is a sweep on the beat, tapped) */   /* (claude/sweep3, v2: tapped when she means it - the 8-frame grid let his second cut in after her first sweep ran out) */
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
-        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;if(pl.up)k.up=true;BK.press('atk');swings++;}
         if(OPEN(boss,BK)&&!wasOpen)opened++;wasOpen=!!OPEN(boss,BK);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:glOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
@@ -1425,6 +1429,12 @@ async function runbossLab(BK, opts) {
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
          pyromancer. The bash is rolled through as it arrives; the judgement is walked off its mark. */
       const KA = boss.t === 'kraken' && BK.krak ? BK.krak() : null, SA = boss.t === 'strawking' && BK.straw ? BK.straw() : null, MA = boss.t === 'archmage' && BK.mage ? BK.mage() : null;
+      /* (claude/sweep3, v2 only) THE CHIP AND THE REPRISAL in the read-from-the-room branches (the Archmage, the Scarecrow King): they swung at him
+         whenever nothing else was asked, so his greed reprisal came again and again - the generic hands below stop a blow short of it and step out
+         of its ring; these now do the same. adv: the room's advice ({strike}); setGoal: where to stand */
+      const labGreedStop = (adv, h, setGoal) => { if (!LABP.v2 || !BK.greed || !adv) return; const G = BK.greed, out = (G.reach || 60) + (boss.w || 20) / 2;
+        if (adv.strike !== null && Math.abs(adv.strike - boss.x) < 6 && G.open(boss) !== true && G.count(boss) >= G.limit(boss) - 1) adv.strike = null;
+        if (boss.greedT > 0 && Math.abs(P.x - boss.x) < out + 18) { adv.strike = null; setGoal(boss.x - (Math.sign(boss.x - P.x) || 1) * (out + 30)); } };
       /* THE SPIRE'S GOLEM (claude/bot2 triage): his LOW sweep and his stomp's floor waves are JUMPED - the sweep is 0.45 s live and 66 px wide,
          unblockable, and only hits a hero on the ground, so the roll the red mark used to send the hands into (0.2 s safe) ate it every time.
          It is the read his own callout gives ('LOW'), late in the tell, as a person jumps a sweep he can see coming. */
@@ -1439,7 +1449,9 @@ async function runbossLab(BK, opts) {
         const side = Math.sign(boss.x - gBell.x) || 1; goal = gBell.x - side * 20; strike = false; if (Math.abs(P.x - goal) < 8) P.face = side;   /* (he stops 40 short of a hero: stood 20 this side of the bell, he halts 20 past it - under it) */
         if (Math.abs(boss.x - gBell.x) < 30 && !(gBell.cool > 0) && P.ground && Math.abs(P.x - goal) < 10 && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 22; goal = null; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; goal = null; }
-        if (!P.ground && P.y - gBell.y < 20 && P.y - gBell.y > -20 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; BK.press('atk'); swings++; } }
+        /* (claude/sweep1) THE BELL OVER HIS HEAD: the knight's jump tops out ~27 px under a hung bell, so he never reached it with a level cut -
+           he strikes UP at it (the air up-slash, over his head) near the top of the jump, as a player under a bell does */
+        if (!P.ground && P.y - gBell.y < 48 && P.y - gBell.y > -20 && P.vy > -140 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; if (P.y - gBell.y > 18) k.up = true; BK.press('atk'); swings++; } }
       else if (boss.t === 'closedhelm' && boss.mode && (/Tell$/.test(boss.mode) || boss.mode === 'bash')) { const m = boss.mode, t = boss.modeT; P.face = Math.sign(d) || P.face;
         if (m === 'bash') { if (ad < 60 && (boss.x - P.x) * boss.vx < 0 && f % 4 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
         else if (m === 'bashTell') { if (ad > 150) goal = null; }
@@ -1471,10 +1483,13 @@ async function runbossLab(BK, opts) {
       else /* THE ARCHMAGE is read from the room (BK.mage): cross what the room has become to wherever he is, cut the runes as
          they come round, and cut the familiar's eye only when the head is down */
       if (MA) { goal = MA.goal;
+        const boltOff = LABP.v2 && MA.boltStep && !MA.climb ? MA.boltX + MA.boltStep * 32 : null;   /* (claude/sweep3, v2: his yellow circle is stepped off - the guard faced him, and the bolt comes down from the circle's side) */
         if (MA.climb) { goal = MA.goal; if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 20 === 0) BK.press('jump'); }
-        else { if (tell && SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode) && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.14)) { k.block = true; goal = null; P.face = Math.sign(d) || P.face; if (h === 'paladin') holdC = f + 40; }
+        else { if (boltOff !== null) { goal = Math.max(L.arena.x0 + 14, Math.min(L.arena.x1 - 14, boltOff)); }
+          else if (tell && SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode) && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.14)) { k.block = true; goal = null; P.face = Math.sign(d) || P.face; if (h === 'paladin') holdC = f + 40; }
           else if (tell && HARD_TELLS.has(boss.t + '|' + boss.mode) && boss.modeT < 0.3 && f % 6 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); goal = null; }
           const wave = BK.mg && BK.mg() && BK.mg().shots.some(s => s.wave && Math.abs(s.x - P.x) < 40 && (s.x - P.x) * s.vx < 0); if (wave && P.ground) { BK.press('jump'); P.labJump = 12; }
+          labGreedStop(MA, h, (g) => { goal = g; });   /* (claude/sweep3, v2) */
           if (!k.block && MA.strike !== null && Math.abs(MA.strike - P.x) <= LAB_REACH[h] + 14 && P.atk < 0) { P.face = Math.sign(MA.strike - P.x) || P.face; BK.press('atk'); swings++; }
           if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 15 === 0 && !P.flip) { BK.press('jump'); P.labJump = 10; }
           if (P.swim && f % 20 === 0) { BK.press('jump'); P.labJump = 32; } }   /* in the acid: leap out of it, and keep leaping */
@@ -1494,9 +1509,11 @@ async function runbossLab(BK, opts) {
       else /* THE SCARECROW KING is read from the field (BK.straw): cut the pole he hangs on, strike the trough by the vine he stands at,
          knock his lantern with the third blow of a run (a heavy one), and jump his low scythe and his bales */
       if (SA) { goal = SA.goal;
+        if (LABP.v2 && boss.pole && !boss.pole.broken && !(boss.open > 0) && SA.strike !== null) { goal = boss.pole.x + (P.x < boss.pole.x ? -12 : 12); SA.strike = boss.pole.x; }   /* (claude/sweep3, v2: he calls his crows and throws his fork FROM the pole too - the hands stood on its foot, where no blade reaches it) */
         if (tell && SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode) && (h === 'paladin' || h === 'reaper' || boss.modeT < 0.14)) { k.block = true; goal = null; P.face = Math.sign(d) || P.face; if (h === 'paladin') holdC = f + 40; }
         else if (tell && HARD_TELLS.has(boss.t + '|' + boss.mode) && boss.modeT < 0.22 && P.ground) { BK.press('jump'); P.labJump = 14; }
         if (SA.jump && P.ground && f % 4 === 0) { BK.press('jump'); P.labJump = 14; }
+        labGreedStop(SA, h, (g) => { goal = g; });   /* (claude/sweep3, v2) */
         if (!k.block && SA.strike !== null && Math.abs(SA.strike - P.x) <= LAB_REACH[h] + 14 && P.atk < 0) { P.face = Math.sign(SA.strike - P.x) || P.face; BK.press('atk'); swings++; }
         if (P.ground && Math.abs(P.vx) < 4 && goal !== null && Math.abs(goal - P.x) > 10 && f % 15 === 0) { BK.press('jump'); P.labJump = 14; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; } }   /* a held jump: a tap does not clear a bale */
