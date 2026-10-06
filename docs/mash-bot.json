@@ -729,8 +729,8 @@
      "timeout:29/100"
     ],
     "warden": [
-     "timeout:51/100",
-     "timeout:51/100"
+     "timeout:57/100",
+     "timeout:57/100"
     ],
     "pyro": [
      "timeout:13/100",
@@ -770,7 +770,7 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 51,
+     "hpLostPct": 57,
      "bossLeftPct": 100,
      "landed": 0,
      "swings": 5957,
@@ -783,7 +783,7 @@
      "tag": "expected",
      "out": "timeout",
      "secs": 150,
-     "hpLostPct": 51,
+     "hpLostPct": 57,
      "bossLeftPct": 100,
      "landed": 0,
      "swings": 5957,

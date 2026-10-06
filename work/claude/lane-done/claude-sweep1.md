@@ -85,3 +85,10 @@ does not remove them on this machine (each of my runs left a few more too). I re
    At the standard's band (1000 hp, x1.5 = 58%) that reaper dies at 20% boss left. Rec: move normal-health's winnable row to a boss that
    stays easy for a level-1 hero by design (the assertions unchanged: health reconciles on a win), then set King Gorm to 1000 / 1.5.
    Built: NOT the test change (never weaken a test); King at 700 / x1.3, the most the row allows - still 100% for the standard bot.
+
+## FOLLOW-UP: Q7 resolved (Daniel approved)
+- tools/normal-health.mjs's winnable row moved from King Gorm to the BULLFROG (marsh): the first-act puzzle-wall boss whose openings are made, untouched by
+  the sweep, and a level-1 legacy reaper beats him at normal health on seed 1919 (31.9 s, 26 hp left; the knight too). Every assertion unchanged
+  (win, never died, endHp>0, health reconciles); the damageTaken>0 line now covers the row too (the King's exemption removed).
+- King Gorm: EHP 700 -> 1000, BOSS_HIT 1.3 -> 1.5. boss-rates (human, L4, 4 seeds/hero): **58% (knight 1/4, warden 4/4, pyro 2/4)**, in band, no hero at 0.
+- Mash re-stamped via tools/mash-bot.mjs, level then boss: level 0/3 (all die), boss row 0/6. Checks green: normal-health, kings2-beats, king-refill, boss-read, boss-greed, mash-gate.
