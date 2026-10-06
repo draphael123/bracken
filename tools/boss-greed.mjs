@@ -34,7 +34,9 @@ for (const t of CHIP_MINI) { ok(OPEN_RULE[t], 'the mini ' + t + ' is on the chip
 ok(!chipped({ t: 'spider', xpRole: 'mini' }, false), 'a mini with no opening (the spider) keeps full damage');
 /* (claude/dk3) A DUELIST ON FULL DAMAGE (THE DEATH KNIGHT, Daniel 10-03): never chipped, but his openings are still named, so greed still counts outside them */
 for (const t of Object.keys(FULL_DAMAGE || {})) { ok(!chipped({ t }, true), t + ' is on FULL_DAMAGE and must never be chipped'); ok(OPEN_RULE[t], t + ' is on FULL_DAMAGE but has no opening rule: greed would never count'); }
-ok(FULL_DAMAGE && FULL_DAMAGE.bloodknight && Object.keys(FULL_DAMAGE).length === 1, 'FULL_DAMAGE is the Death Knight alone (nobody else is taken off the chip): ' + Object.keys(FULL_DAMAGE || {}));
+/* (claude/redgorge2) the duelists off the chip, named one by one (design standard B11: a beast duelist guards by angle instead) - a new name here is a design call (QUESTION in the lane report) */
+const DUELISTS = ['bloodknight', 'matriarch'];
+ok(FULL_DAMAGE && DUELISTS.every(k => FULL_DAMAGE[k]) && Object.keys(FULL_DAMAGE).length === DUELISTS.length, 'FULL_DAMAGE is the named duelists alone (the Death Knight, the Raptor Matriarch; nobody else is taken off the chip): ' + Object.keys(FULL_DAMAGE || {}));
 for (const t of Object.keys(NO_OPENING)) ok(!chipped({ t }, true), t + ' is on NO_OPENING and must never be chipped (left at full damage, never made unbeatable)');
 
 const pg = await openPage({ audio: false, fonts: false });
