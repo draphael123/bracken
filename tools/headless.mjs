@@ -27,8 +27,8 @@ async function main() {
   if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, BRACKEN_PARENT: String(process.pid) } }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
   if (!(await up())) throw new Error('dev server did not come up on ' + URL0);
   const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
-  const dbg = 9300 + Math.floor(Math.random() * 400);
-  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--mute-audio', '--no-first-run', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'headless'), chrome = run.child;   /* a failed start or a thrown error ends in process.exit: browser-profile's exit hook takes the profile */
+  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'headless'), chrome = run.child;   /* a failed start or a thrown error ends in process.exit: browser-profile's exit hook takes the profile */
+  const dbg = await run.devtoolsPort();
   let wsUrl = null;
   for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list')).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
   if (!wsUrl) throw new Error('could not reach the browser');

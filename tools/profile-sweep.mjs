@@ -44,8 +44,15 @@ const freeBefore = free();
 let procs = processes();
 if (ORPHANS) {
   const alive = new Set(procs.map(p => p.pid));
-  for (const p of procs) if (/--user-data-dir=\S*bracken-(look|headless|prof|video|prod)-/i.test(p.cmd) && !/--type=/.test(p.cmd) && /--headless/.test(p.cmd) && !alive.has(p.ppid)) { if (!DRY) killTreeSync(p.pid); report.orphansKilled++; }
-  if (report.orphansKilled && !DRY) procs = processes();
+  const killed = [];
+  for (const p of procs) if (/--user-data-dir=S*bracken-(look|headless|prof|video|prod)-/i.test(p.cmd) && !/--type=/.test(p.cmd) && /--headless/.test(p.cmd) && !alive.has(p.ppid)) { if (!DRY) { killTreeSync(p.pid); killed.push(p.pid); } report.orphansKilled++; }
+  if (report.orphansKilled && !DRY) {
+    /* WAIT FOR THEM TO BE GONE (2026-10-06, FLAKESWEEP). taskkill /T returns before a loaded machine has finished tearing the tree down, so a
+       snapshot taken at once still listed the renderers on the profile: it read as IN USE, was kept, and 'the sweep removes what a killed tool
+       left' (profile-cleanup) and the suite's leak check failed on a good sweep. Poll for the real condition: no process of the killed trees is left. */
+    const tree = ps => { const s = new Set(killed); let grew = true; while (grew) { grew = false; for (const p of ps) if (!s.has(p.pid) && s.has(p.ppid)) { s.add(p.pid); grew = true; } } return s; };
+    for (let i = 0; i < 80; i++) { procs = processes(); const t = tree(procs); if (!procs.some(p => t.has(p.pid))) break; for (const p of procs) if (t.has(p.pid) && !killed.includes(p.pid) && p.ppid && killed.includes(p.ppid)) killTreeSync(p.pid); spawnSync(process.execPath, ['-e', 'setTimeout(()=>{},250)']); }
+  }
 }
 const cmds = procs.map(p => p.cmd.toLowerCase());
 const now = Date.now(), queue = [];

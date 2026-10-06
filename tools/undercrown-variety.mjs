@@ -36,13 +36,14 @@ assert(!R2.seen.has('142,121') && !R2.seen.has('50,140'), 'the Glitter Vein is o
 const foes = L.ents.filter(e => ['bonegob', 'bonearcher', 'shardling'].includes(e.t) && e.x >= 96);
 assert(foes.filter(e => e.t === 'bonegob').length >= 4 && foes.some(e => e.t === 'shardling'), 'the new places have their own dead and their own glass');
 
-const pg = await openPage({ audio: false, fonts: false });
+/* SEEDED (FLAKESWEEP 2026-10-06): a broken crystal grows back after 4-6 s of Math.random()*2 - at 100 steps a second that is 400-600 frames, and this waited exactly 600: the one unseeded roll decided the check. Seeded, and the wait is 800 (the delay's own ceiling plus the 0.5 s a blocked regrowth retries), the assertion itself unchanged. */
+const pg = await openPage({ audio: false, fonts: false, seed: 20261006 });
 try {
   const r = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='undercrown'));BK.start();BK.sim(10);
    for(const e of BK.enemies())e.alive=false;
    const Lv=BK.L,T=${JSON.stringify(T)},i=120*Lv.W+108;const before=Lv.grid[i];
    BK.tp(108,119);let broke=false;for(let f=0;f<240&&!broke;f++){BK.sim(1);if(Lv.grid[i]!==T.CRYST)broke=true;}
-   BK.tp(100,121);let back=false;for(let f=0;f<600&&!back;f++){BK.sim(1);if(Lv.grid[i]===T.CRYST)back=true;}
+   BK.tp(100,121);let back=false;for(let f=0;f<800&&!back;f++){BK.sim(1);if(Lv.grid[i]===T.CRYST)back=true;}
    const c=BK.SPR.prince.R[0],g=c.getContext('2d'),d=g.getImageData(0,0,c.width,c.height).data;
    const skin=['#9cb46c','#6c8a4c','#4a6238','#2c3e24'].map(h=>[1,3,5].map(k=>parseInt(h.slice(k,k+2),16)).join()),bone='228,220,194';
    let ear=0,jaw=0,green=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const o=(y*c.width+x)*4;if(!d[o+3])continue;const k=d[o]+','+d[o+1]+','+d[o+2];

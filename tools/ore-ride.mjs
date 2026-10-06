@@ -17,7 +17,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { cableLines, OR } from '../src/ore-road.js';   /* cableLines only to prove COVERAGE: that the page rode every line the source declares; OR for the Head Frame's own column, in the exploit test below */
-const pg = await openPage({ audio: false, fonts: false });
+const pg = await openPage({ audio: false, fonts: false, seed: 20261006 });
 try {
   const R0 = await pg.evalp(`(async()=>{
     const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'oreroad'), out = [];

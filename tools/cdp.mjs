@@ -26,9 +26,9 @@ export async function openPage(opts = {}) {
   const served = await (await fetch(URL0 + 'src/lookpass.js', {signal:AbortSignal.timeout(5000)})).text().catch(() => '');
   if (served !== mine) { if (server) server.kill(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
   const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
-  const dbg = 9300 + Math.floor(Math.random() * 400);
   /* THE PROFILE IS THROWN AWAY: browser-profile.mjs makes it, kills the browser tree and removes it on close, on a failed start and on exit */
-  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'look'), chrome = run.child;
+  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'look'), chrome = run.child;
+  const dbg = await run.devtoolsPort();
   try {
   let wsUrl = null;
   for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list', {signal:AbortSignal.timeout(2000)})).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
@@ -52,6 +52,10 @@ export async function openPage(opts = {}) {
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
   if(opts.fonts===false){await send('Network.enable');await send('Network.setBlockedURLs',{urls:['https://fonts.googleapis.com/*','https://fonts.gstatic.com/*']});}
+  /* opts.seed: THE PAGE'S Math.random IS A SEEDED STREAM, from the first script of every document (so it survives pg.reload()). The sim is
+     fixed-step and deterministic except for the ~850 Math.random calls in src/main.js (drops, crystal regrowth delays, foe rolls, particles),
+     so a physics/ride/pose check that waits "N frames" for one of them passed or failed by the dice. Seeded, the same frames run every time. */
+  if (opts.seed !== undefined) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{let s=' + (opts.seed >>> 0) + ';Math.random=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};})()' });
   await send('Page.navigate', { url: URL0 });
   let ready = false;
   for (let i = 0; i < 120 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
@@ -65,7 +69,8 @@ export async function openPage(opts = {}) {
     const url = URL0 + '?labReload=' + Date.now() + '-' + id;
     await send('Page.navigate', { url });
     let ready = false;
-    for (let i = 0; i < 120 && !ready; i++) {
+    /* waits on the CONDITION with a wall-clock deadline: 120 x 100 ms was ~12 s of polls when the page answered at once, and a loaded machine's boot (six lanes, 2026-10) took longer than that */
+    for (const until = Date.now() + 90000; Date.now() < until && !ready;) {
       ready = await evalp('performance.timeOrigin !== ' + JSON.stringify(previousOrigin) + ' && location.href === ' + JSON.stringify(url) + ' && !window.__labReloading && typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false);
       if (!ready) await sleep(100);
     }

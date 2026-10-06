@@ -114,8 +114,8 @@ function pageSummary() { const V = window.__V; return { frames: V.f, end: V.end,
 /* ---------------- the browser ---------------- */
 async function browser() {
   const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
-  const dbg = 9300 + Math.floor(Math.random() * 600);
-  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=' + dbg, '--mute-audio', '--no-first-run', '--window-size=1280,720', 'about:blank'], 'video'), chrome = run.child;
+  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', 'about:blank'], 'video'), chrome = run.child;
+  const dbg = await run.devtoolsPort();
   let wsUrl = null;
   for (let i = 0; i < 80 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list')).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
   if (!wsUrl) { await run.close(); throw new Error('could not reach the browser'); }
