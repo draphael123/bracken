@@ -7645,32 +7645,32 @@ function updatePlayer(dt) {
   if (P.wrathT > 0) P.wrathT -= dt; if (P.boneArmorT > 0) { P.boneArmorT -= dt; if (P.boneArmorT <= 0) P.boneArmor = 0; }
   const lateFoes = (r, ry = 60) => enemies.filter(e => e.alive && !e.harmless && !(e.gone > 0) && !e.turncoat && Math.abs(e.x - P.x) <= r && Math.abs(e.y - P.y) <= ry);
   // FLASHOVER (pyromancer, L14): every flame within reach goes up at once - a burning foe is DETONATED for a heavy hit, the rest are set alight
-  if (isPyro() && skillPress('flashover') && cdReady('flashover') && canAct()) { if (spend(28)) { cdSet('flashover'); P.castT = 0.3; kitPose(P, 'vent', 0.4); let n = 0;
+  if (isPyro() && skillPress('flashover') && cdReady('flashover') && canAct()) { if (spend(28)) { cdSet('flashover'); P.castT = 0.3; kitPose(P, 'flash', 0.4); let n = 0;
     for (const e of lateFoes(120)) { if (e.burn > 0) { e.burn = 0; hurtEnemy(e, Math.round(34 * amul('flashover')), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.9); e.vx = (Math.sign(e.x - P.x) || 1) * 200; } 0; n++; }
       else { hurtEnemy(e, Math.round(8 * amul('flashover')), P.x, false); if (e.alive) e.burn = Math.max(e.burn || 0, 2.4); } flame(e.x, e.y - (e.h || 16) / 2, 5, 6, 60, 3); }
     gainHeat(10 + 8 * n); ringAt(P.x, P.y - 8, 70, '#ff9a5c', 0.4); shakeCam(3 + n); SFX.heavy(); } else tired(); }
   // FIRESTORM (pyromancer, L20): everything in reach is set alight at once, and her heat is stoked
-  if (isPyro() && skillPress('firestorm') && cdReady('firestorm') && canAct()) { if (spend(36)) { cdSet('firestorm'); P.castT = 0.4; kitPose(P, 'meteor', 0.45);
+  if (isPyro() && skillPress('firestorm') && cdReady('firestorm') && canAct()) { if (spend(36)) { cdSet('firestorm'); P.castT = 0.4; kitPose(P, 'storm', 0.45);
     for (const e of lateFoes(220, 90)) { hurtEnemy(e, Math.round(6 * amul('firestorm')), P.x, false); if (e.alive) { e.burn = Math.max(e.burn || 0, e.maxHp ? 3 : 5); flame(e.x, e.y - (e.h || 16) / 2, 4, 5, 60, 3); } }
     gainHeat(60); ringAt(P.x, P.y - 8, 110, '#ff6b2c', 0.5); ringAt(P.x, P.y - 8, 60, '#ffd36b', 0.4); shakeCam(5); SFX.heavy(); SFX.puff(); } else tired(); }
   // DAWNBURST (paladin, L14): a flare of light - everything near is rocked and staggered, and the light bar fills for what it caught
-  if (isPaladin() && skillPress('dawnburst') && cdReady('dawnburst') && canAct()) { if (spend(27)) { cdSet('dawnburst'); P.castT = 0.3; kitPose(P, 'halo', 0.32); let n = 0;
+  if (isPaladin() && skillPress('dawnburst') && cdReady('dawnburst') && canAct()) { if (spend(27)) { cdSet('dawnburst'); P.castT = 0.3; kitPose(P, 'dawn', 0.32); let n = 0;
     for (const e of lateFoes(100)) { hurtEnemy(e, Math.round(12 * amul('dawnburst')), P.x, false); if (e.alive) { e.stagger = Math.max(e.stagger || 0, e.maxHp ? 0.3 : 1.4); if (!e.maxHp) e.vx = (Math.sign(e.x - P.x) || 1) * 110; } n++; }
     if (n) gainLight(10 + 8 * Math.min(n, 3)); ringAt(P.x, P.y - 8, 100, '#fff6c8', 0.4); ringAt(P.x, P.y - 8, 50, '#ffd36b', 0.3); motes(P.x, P.y - 8, 16, 40); SFX.mend(); SFX.heavy(); shakeCam(3); } else tired(); }
   // HOLY WRATH (paladin, L20): six seconds in which every blow lands harder and mends him
-  if (isPaladin() && skillPress('holyWrath') && cdReady('holyWrath') && canAct()) { if (spend(34)) { cdSet('holyWrath'); P.wrathT = 6; P.castT = 0.3; kitPose(P, 'hallow', 0.4);
+  if (isPaladin() && skillPress('holyWrath') && cdReady('holyWrath') && canAct()) { if (spend(34)) { cdSet('holyWrath'); P.wrathT = 6; P.castT = 0.3; kitPose(P, 'wrath', 0.4);
     ringAt(P.x, P.y - 8, 40, '#ffd36b', 0.5); motes(P.x, P.y - 8, 14, 20); 0; SFX.lightFull(); shakeCam(3); } else tired(); }
   // POWDER KEG (freebooter, L14): rolled out ahead with the fuse lit - a heavy blast a second on
-  if (isPirate() && skillPress('powderKeg') && cdReady('powderKeg') && canAct()) { if (spend(26)) { cdSet('powderKeg'); P.castT = 0.3; kitPose(P, 'board', 0.35); kegs.push({ x: P.x + P.face * 44, y: P.y, t: 0, fuse: 1, boom: false, life: 0 }); SFX.throwWhoosh(); 0; } else tired(); }
+  if (isPirate() && skillPress('powderKeg') && cdReady('powderKeg') && canAct()) { if (spend(26)) { cdSet('powderKeg'); P.castT = 0.3; kitPose(P, 'keg', 0.35); kegs.push({ x: P.x + P.face * 44, y: P.y, t: 0, fuse: 1, boom: false, life: 0 }); SFX.throwWhoosh(); 0; } else tired(); }
   // HEAVY SEAS (freebooter, L20): the deck heaves and a wave sweeps everything ahead off its feet
-  if (isPirate() && skillPress('heavySeas') && cdReady('heavySeas') && canAct()) { if (spend(30)) { cdSet('heavySeas'); P.castT = 0.35; kitPose(P, 'broad', 0.4);
+  if (isPirate() && skillPress('heavySeas') && cdReady('heavySeas') && canAct()) { if (spend(30)) { cdSet('heavySeas'); P.castT = 0.35; kitPose(P, 'seas', 0.4);
     for (const e of lateFoes(160, 50)) { if (Math.sign(e.x - P.x) !== P.face) continue; hurtEnemy(e, Math.round(12 * amul('heavySeas')), P.x, false); if (e.alive) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.vx = P.face * 340; e.vy = -100; e.stagger = Math.max(e.stagger || 0, 1.3); } } }
     for (let i = 0; i < 26; i++) parts.push({ x: P.x + P.face * (8 + Math.random() * 140), y: P.y - Math.random() * 12, vx: P.face * (120 + Math.random() * 160), vy: -40 - Math.random() * 90, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#bfe6f5' : '#e8f4f0', size: 2, grav: 140 });
     shakeCam(6, P.face * 3); SFX.heavy(); SFX.splash ? SFX.splash() : SFX.puff(); 0; } else tired(); }
   // BONE ARMOR (death knight, L14): three blows are cut to two fifths, for twelve seconds
-  if (isReaper() && skillPress('boneArmor') && cdReady('boneArmor') && canAct()) { if (spend(26)) { cdSet('boneArmor'); P.boneArmor = 3; P.boneArmorT = 12; P.castT = 0.3; kitPose(P, 'call', 0.4); ringAt(P.x, P.y - 10, 30, '#dfffa0', 0.45); burst(P.x, P.y - 10, 12, ['#e8dcc0', '#dfffa0'], 70, 0.5); 0; SFX.clank(); } else tired(); }
+  if (isReaper() && skillPress('boneArmor') && cdReady('boneArmor') && canAct()) { if (spend(26)) { cdSet('boneArmor'); P.boneArmor = 3; P.boneArmorT = 12; P.castT = 0.3; kitPose(P, 'bone', 0.4); ringAt(P.x, P.y - 10, 30, '#dfffa0', 0.45); burst(P.x, P.y - 10, 12, ['#e8dcc0', '#dfffa0'], 70, 0.5); 0; SFX.clank(); } else tired(); }
   // SOUL REAP (death knight, L20): everything near is cut, marked and bled, and he drinks from each
-  if (isReaper() && skillPress('soulReap') && cdReady('soulReap') && canAct()) { if (spend(34)) { cdSet('soulReap'); P.castT = 0.35; kitPose(P, 'boil', 0.45); let n = 0;
+  if (isReaper() && skillPress('soulReap') && cdReady('soulReap') && canAct()) { if (spend(34)) { cdSet('soulReap'); P.castT = 0.35; kitPose(P, 'reap', 0.45); let n = 0;
     for (const e of lateFoes(130)) { hurtEnemy(e, Math.round(14 * amul('soulReap')), P.x, false); markFoe(e); if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2.5); e.bleedN = Math.max(e.bleedN || 0, 1); } if (n < 3) { P.hp = Math.min(P.maxHp, P.hp + Math.round(P.maxHp * 0.02)); n++; } }
     gainHarvest(8 * n); ringAt(P.x, P.y - 10, 130, '#c0283a', 0.45); ringAt(P.x, P.y - 10, 70, '#8fd160', 0.4); shakeCam(4); SFX.squelch(); SFX.heavy(); 0; } else tired(); }
   // METEOR: fire out of the sky onto the nearest foe ahead

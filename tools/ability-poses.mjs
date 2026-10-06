@@ -21,7 +21,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { SKILLS } from '../src/progression-catalog.js';
-import { POSE_DASH } from '../src/hero-poses.js';
+import { POSE_DASH, POSE_BEATS } from '../src/hero-poses.js';
 
 const ACTIVES = [...new Map(SKILLS.filter(s => s.active).map(s => [s.id, s])).values()];
 const GENERIC = new Set(['idle', 'run', 'jump', 'fall', 'land', 'apex', 'skid', 'crouch', 'fidget', 'roll', 'hurt', 'block', 'climb', 'swim', 'tread', 'recover', 'slump', 'dance']);
@@ -34,12 +34,7 @@ const BORROW_OK = {
    (2026-09-24), built to it from her first day: never debt */
 const HELD = ['knight', 'warden', 'geomancer', 'paladin', 'pyro', 'pirate', 'reaper'];
 /* A SHARED POSE THAT IS RIGHT, with the reason (keyed by either active of the pair): two of hers are the same movement at heart */
-const SHARED_OK = { harrier: 'HARRIER is the vault taken at a foe instead of at a gap: it is drawn as the vault Pole Spring also uses',
-  /* THE LATE ACTIVES (claude/herokit): eight new casts drawn in the nearest existing pose until the art lane bakes frames of their own (reported as follow-up work) */
-  flashover: 'FLASHOVER is VENT\'s gesture: flung open with the fire leaving her', firestorm: 'FIRESTORM is METEOR\'s: the staff held high, calling it down',
-  dawnburst: 'DAWNBURST is DIVINE SHIELD\'s: the maul lifted, the light closing round and flaring out', holyWrath: 'HOLY WRATH is CONSECRATE\'s: the maul set in the turf, the light coming up',
-  powderKeg: 'POWDER KEG is BOARDING PARTY\'s: a throw high and forward', heavySeas: 'HEAVY SEAS is BROADSIDE\'s: braced low and thrown back by the heave',
-  boneArmor: 'BONE ARMOR is GRAVECALL\'s: the blade stood in the ground and the green coming up', soulReap: 'SOUL REAP is BLOOD BOIL\'s: hunched over the blade, flung open with the blood coming up' };
+const SHARED_OK = { harrier: 'HARRIER is the vault taken at a foe instead of at a gap: it is drawn as the vault Pole Spring also uses'};
 /* THE DEBT, measured on master 313e0da (2026-09-23): 13 actives with no body of their own. Paid off by lane P (2026-09-24); a
    new entry here is a step backwards and wants a reason in the commit that adds it. */
 const KNOWN_POSELESS = {};
@@ -64,6 +59,21 @@ try {
     const own = [...new Set(r.seq.map(([k]) => k))].filter(k => !GENERIC.has(k) && k !== r.before && (!COMBO.has(k) || BORROW_OK[s.id]));
     const runs = []; for (const [k, f] of r.seq) { const t = k + ':' + f; if (!runs.length || runs.at(-1)[0] !== t) runs.push([t, 1]); else runs.at(-1)[1]++; }
     rows.push({ hero: s.hero, id: s.id, fired: r.fired, own, runs: runs.map(([t, n]) => t + 'x' + n).join(' ') });
+  }
+  /* THE EIGHT LATE ACTIVES (claude/herokit, drawn by claude/heroposes) EACH HAVE A POSE KEY OF THEIR OWN, and baked frames for it: one more frame than
+     the beats that step through it, none of them borrowed (the SHARED_OK reasons for these eight are gone) */
+  const LATE = { flashover: 'flash', firestorm: 'storm', dawnburst: 'dawn', holyWrath: 'wrath', powderKeg: 'keg', heavySeas: 'seas', boneArmor: 'bone', soulReap: 'reap' };
+  const lateRows = [];
+  for (const [id, key] of Object.entries(LATE)) { const r = rows.find(x => x.id === id);
+    const info = await pg.evalp(`(()=>{BK.setHero(${JSON.stringify(r.hero)});const f=BK.heroSet.R[${JSON.stringify(key)}];return f?(Array.isArray(f)?f.length:1):0})()`);
+    lateRows.push([id, key, r, info]); }
+  console.log('LATE ACTIVES: ' + lateRows.map(([id, key, r, n]) => id + '=' + key + ' (' + n + ' frames, drew [' + r.own.join(',') + '])').join('; '));
+  if (!REPORT) for (const [id, key, r, n] of lateRows) {
+    assert(r && r.fired, id + ' did not fire');
+    assert.deepEqual(r.own, [key], id.toUpperCase() + ' should be drawn in its own pose ' + key + ' and only it, drew ['+ r.own.join(',') + ']');
+    assert.equal(n, (POSE_BEATS[key] || []).length + 1, id.toUpperCase() + ': pose ' + key + ' has ' + n + ' baked frames for ' + (POSE_BEATS[key] || []).length + ' beats (want beats + 1)');
+    assert(n >= 2, id.toUpperCase() + ' wants at least two frames of its own');
+    assert(!SHARED_OK[id], id + ' must not be on the SHARED_OK list: it has a pose of its own');
   }
   const bad = rows.filter(r => !r.fired || !r.own.length);
   for (const h of [...new Set(Object.keys(KNOWN_POSELESS).concat(HELD))]) {

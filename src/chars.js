@@ -1534,6 +1534,19 @@ function pyroKitPoses(F, up) {
   F.ring = [P({ dy: -1, staff: [15, 10, 17, -5], arm: [16, 10, 16, 3], arm2: [11, 10, 15, 4], cowl: 0 }),
     P({ sit: 2, hemW: 13, staff: [17, 21, 18, 3], arm: [16, 12, 17, 9], arm2: [11, 12, 16, 10], cowl: 1, flick: 1,
       sparks: [[11, 20, 'r'], [23, 20, 'r'], [8, 19, 'y'], [26, 19, 'y'], [5, 20, 'r'], [29, 20, 'r']] })];
+  /* THE LATE ACTIVES' OWN POSES (claude/heroposes). FLASHOVER: the free palm cupped round a spark, close in to her; then both sleeves snapped
+     straight out ahead and the big flare going off at the ends of them (what burns, goes); and the recoil, the cowl back, embers hanging */
+  F.flash = [P({ lean: -1, sit: 1, staff: up(0, 2), arm: [16, 12, 15, 13], arm2: [11, 11, 14, 13], palm: [14, 13], cowl: 0 }),
+    P({ lean: 3, trail: 2, sit: 1, feet: [[8, 18], [18, 18]], staff: [5, 15, 10, 4, 'back'], arm: [17, 10, 24, 9], arm2: [12, 10, 21, 10], cowl: 1, flare: [25, 8, true], flick: 1,
+      sparks: [[28, 5, 'y'], [29, 11, 'r'], [27, 13, 'y'], [26, 4, 'r'], [30, 8, 'y']] }),
+    P({ lean: -1, bell: 2, hemW: 13, staff: up(), arm: [16, 10, 19, 9], arm2: [11, 10, 13, 12], cowl: 2, sparks: [[23, 6, 'y'], [26, 10, 'r'], [24, 14, 'y'], [20, 4, 'r']] })];
+  /* FIRESTORM: the staff swung up flat over her head in both hands; then held there crosswise with a flare on each end and the robe
+     belled, the sky coming down on every side; and the staff brought down to the ground, embers still falling */
+  F.storm = [P({ dy: -1, staff: [7, 1, 24, 1], arm: [16, 9, 20, 2], arm2: [11, 9, 10, 2], cowl: 2 }),
+    P({ dy: -2, bell: 3, hemW: 14, staff: [6, -2, 26, -2], arm: [16, 8, 21, -1], arm2: [11, 8, 9, -1], cowl: 2, flare: [27, -3, true], flick: 1,
+      sparks: [[2, -3, 'r'], [3, -1, 'y'], [1, 4, 'r'], [30, 4, 'y'], [31, -1, 'r'], [4, 9, 'y'], [29, 10, 'r'], [2, 14, 'y'], [31, 15, 'r'], [13, -6, 'y'], [17, -5, 'r']] }),
+    P({ sit: 2, hemW: 13, staff: [17, 20, 18, 4], arm: [16, 12, 17, 10], arm2: [11, 12, 16, 11], cowl: 1,
+      sparks: [[4, 2, 'r'], [28, 5, 'y'], [8, 9, 'y'], [26, 12, 'r'], [3, 15, 'r'], [30, 16, 'y']] })];
 }
 /* EVERY ABILITY HAS A BODY: THE PALADIN'S BOUGHT ACTIVES (lane P, 2026-09-24). Divine Shield played beside an idle paladin, Holy
    Charge drew the dodge roll, Hammer Leap the plain jump, and Consecrate, Spear of Light and Blessed Hammer all shared MEND's hand-up
@@ -1577,6 +1590,19 @@ function paladinKitPoses(F, sh) {
   F.hurlH = [K({ dx: -1, legs: 'wide', arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] + 3], maul: rest(), glow: [OFF[0] - 6, OFF[1] + 4], plume: 1 }),
     K({ wide: 4, dx: 2, legs: 'runC', arm2: [OFF[0] + 1, OFF[1], X + 7, Y - 4], maul: rest(), glow: [X + 10, Y - 5], plume: 2, bits: [a(X + 12, Y - 5, C)] })];
   function rest() { return [X + 2, Y + 1, X + 5, Y + 9]; }
+  /* THE LATE ACTIVES' OWN POSES (claude/heroposes). DAWNBURST: the maul brought in against his chest, head bowed, the light gathering;
+     then the head thrown back and the maul swung up high and forward, the flare going off as rays level with his chest; and the glow dying on the plate */
+  const rays = [a(X + 10, Y - 2, W), a(X + 13, Y - 2, G), a(X + 16, Y - 2, C), a(X + 19, Y - 2, G), a(X + 9, Y - 6, G), a(X + 12, Y - 9, C), a(X + 9, Y + 3, G), a(X + 12, Y + 6, C),
+    a(X - 7, Y - 2, G), a(X - 10, Y - 2, C), a(X - 13, Y - 2, G), a(X - 6, Y - 7, C), a(X - 8, Y + 3, C), a(X + 2, Y - 18, G), a(X - 1, Y - 15, C)];
+  F.dawn = [K({ hy: 1, legs: 'wide', arm: [X, Y, X + 1, Y + 1], arm2: [OFF[0], OFF[1], X - 1, Y], maul: [X, Y, X + 1, Y - 12], plume: 0 }),
+    K({ hy: -1, sho: 1, dy: -1, legs: 'wide', arm: [X, Y, X + 5, Y - 6], arm2: [OFF[0], OFF[1], X + 1, Y - 5], maul: [X + 5, Y - 6, X + 10, Y - 17], glow: [X + 11, Y - 20], plume: 2, bits: rays }),
+    K({ legs: 'wide', arm: [X, Y, X + 3, Y - 4], arm2: [OFF[0], OFF[1], X, Y - 3], maul: [X + 3, Y - 4, X + 6, Y - 14], plume: 1, bits: [a(X + 9, Y - 3, G), a(X - 5, Y - 3, C), a(X + 6, Y - 17, D)] })];
+  /* HOLY WRATH: the maul cocked far back over the shoulder, level, in a stance wide as a wall; then it comes round and is held out
+     level before him with the light standing up off both shoulders like fire */
+  const fire = [a(BX + 1, BY + 2, G), a(BX, BY - 1, C), a(BX + 2, BY - 3, G), a(BX + 17, BY + 2, G), a(BX + 18, BY - 1, C), a(BX + 16, BY - 3, G), a(BX + 7, BY - 5, W), a(BX + 11, BY - 4, G), a(BX + 4, BY - 2, G), a(BX + 14, BY - 2, G)];
+  F.wrath = [K({ dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y - 3], arm2: [OFF[0], OFF[1], X - 5, Y - 3], maul: [X - 3, Y - 3, X - 13, Y - 9], plume: 1 }),
+    K({ wide: 6, dx: 2, dy: 1, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 6, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y], maul: [X + 6, Y - 1, X + 17, Y - 3], glow: [X + 19, Y - 3], plume: 2, bits: fire }),
+    K({ dy: 1, legs: 'wide', hy: -1, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 2, Y - 1], maul: [X + 3, Y - 2, X + 6, Y - 9], plume: 2, bits: fire.slice(0, 6) })];
 }
 /* EVERY ABILITY HAS A BODY: THE FREEBOOTER'S BOUGHT ACTIVES (lane P, 2026-09-24). THE BLACK SPOT and KEELHAUL played beside an idle
    freebooter; GRAPESHOT and BROADSIDE shared the one pistol shot, and RUM and BOARDING PARTY the grapnel cast. Each now has frames
@@ -1618,6 +1644,21 @@ function pirateKitPoses(F, sh, holster, carry) {
      front for whoever is standing where he comes down */
   F.board = [K({ wide: 8, legs: 'jump', dy: -1, arm2: [OFF[0], OFF[1], X + 2, Y - 7], hook: [X + 2, Y - 7, X + 14, Y - 22], cutlass: carry(), pistol: holster(), plume: 2 }),
     K({ wide: 8, dx: 1, legs: 'tuck', arm2: [OFF[0], OFF[1], X - 1, Y - 8], hook: [X - 1, Y - 8, X + 2, Y - 24], arm: [X, Y, X + 5, Y - 1], cutlass: [X + 5, Y - 1, X + 15, Y - 2], pistol: holster(), plume: 2 })];
+  /* THE LATE ACTIVES' OWN POSES (claude/heroposes). POWDER KEG: down on his heels with the little cask held low in both hands and the fuse
+     lit; then the underhand lob with the cask up and away trailing a spark; and the follow-through, empty-handed, one hand up to shade his eyes */
+  const BR = '#7a4a24', BD = '#4a2c14', BB = '#c9b27c', FY = '#ffd36b', FR = '#ff6b3c';
+  const keg = (x, y) => [a(x, y, BR), a(x + 1, y, BR), a(x + 2, y, BR), a(x + 3, y, BR), a(x, y + 1, BB), a(x + 1, y + 1, BB), a(x + 2, y + 1, BB), a(x + 3, y + 1, BB), a(x, y + 2, BR), a(x + 1, y + 2, BD), a(x + 2, y + 2, BD), a(x + 3, y + 2, BR),
+    a(x, y + 3, BB), a(x + 1, y + 3, BB), a(x + 2, y + 3, BB), a(x + 3, y + 3, BB), a(x, y + 4, BR), a(x + 1, y + 4, BR), a(x + 2, y + 4, BR), a(x + 3, y + 4, BR), a(x + 2, y - 1, BD), a(x + 3, y - 2, FY), a(x + 4, y - 3, FR)];
+  F.keg = [K({ dy: 3, legs: 'crouch', legsDy: 2, arm: [X, Y, X + 4, Y + 4], arm2: [OFF[0], OFF[1], X + 3, Y + 5], cutlass: carry(), pistol: holster(), plume: 1, bits: keg(X + 4, Y + 3) }),
+    K({ wide: 10, dx: 2, legs: 'runC', arm: [X, Y, X + 6, Y - 6], arm2: [OFF[0], OFF[1], X + 4, Y - 4], cutlass: carry(), pistol: holster(), plume: 2, bits: [...keg(X + 11, Y - 12), a(X + 8, Y - 8, FY), a(X + 6, Y - 6, FR)] }),
+    K({ dx: 1, legs: 'wide', arm: [X, Y, X + 3, Y - 4], arm2: [OFF[0], OFF[1], OFF[0] + 1, OFF[1] + 2], cutlass: carry(), pistol: holster(), plume: 0, bits: [a(X + 5, Y - 6, FY), a(X + 4, Y - 7, FR)] })];
+  /* HEAVY SEAS: the cutlass taken back over his shoulder, bracing; then swept low and out in front of him and the sea standing up in a wall
+     off the point of it, spray flying; and the wave rolling on, him leaning after it */
+  const SEA = '#3f8fc0', FOAM = '#e8f6ff', SPR = '#9fd8f0';
+  const sea = (x0, h) => { const o = []; for (let i = 0; i < 4; i++) { const cx = x0 + i * 4, ch = Math.max(2, h - (i === 3 ? 4 : i === 2 ? 1 : 0)); for (let j = 0; j < ch; j++) o.push(a(cx, Y + 9 - j, j >= ch - 1 ? FOAM : SEA), a(cx + 1, Y + 9 - j, j >= ch - 2 ? SPR : SEA)); } return o; };
+  F.seas = [K({ wide: 2, dx: -2, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y - 4], cutlass: [X - 3, Y - 4, X - 11, Y - 12], pistol: holster(), plume: 2 }),
+    K({ wide: 22, dx: 2, dy: 2, legs: 'wide', sho: 1, arm: [X, Y, X + 6, Y + 3], cutlass: [X + 6, Y + 3, X + 17, Y + 7], pistol: holster(), plume: 1, bits: [...sea(X + 9, 4), a(X + 12, Y - 1, SPR), a(X + 18, Y - 2, FOAM), a(X + 15, Y - 4, SPR)] }),
+    K({ wide: 24, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 5, Y + 1], cutlass: [X + 5, Y + 1, X + 13, Y + 4], pistol: holster(), plume: 2, bits: [...sea(X + 12, 6), a(X + 16, Y - 3, FOAM), a(X + 22, Y - 1, SPR), a(X + 20, Y - 5, FOAM)] })];
 }
 /* EVERY ABILITY HAS A BODY: THE DEATH KNIGHT'S BOUGHT ACTIVES (lane P, 2026-09-24). BLOOD BOIL and GRAVECALL played beside an idle
    death knight, and GRAVE TIDE, UNHOLY GROUND, DEATH COIL and DEATH GRIP all shared the one RAISE cast with SUMMON SKELETON - which
@@ -1663,6 +1704,20 @@ function reaperKitPoses(F, sh) {
       bits: [a(X + 9, Y - 3, BONE), a(X + 10, Y - 2, BONE), a(X + 9, Y - 1, BONE), a(X + 11, Y - 2, GRN), a(X + 12, Y - 3, LIT)] }),
     K({ dx: -1, sho: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X - 1, Y - 1], plume: 1,
       bits: [...lit, a(X - 1, Y - 1, BONE), a(X + 3, Y - 1, GRN), a(X + 6, Y - 1, DGRN), a(X + 9, Y - 1, GRN)] })];
+  /* THE LATE ACTIVES' OWN POSES (claude/heroposes). BONE ARMOR: both arms crossed hard over his chest on the flat of the blade; then the
+     head back and the lights up while plates of bone close over the shoulders, ribs and arms; and the last plate seated, the blade low */
+  const PLATE = '#f6f1da';
+  const plateA = [a(X - 1, Y - 5, PLATE), a(X, Y - 6, PLATE), a(X + 1, Y - 6, PLATE), a(X - 2, Y - 4, PLATE), a(X - 9, Y - 5, PLATE), a(X - 8, Y - 6, PLATE), a(X - 7, Y - 6, PLATE), a(X - 10, Y - 4, PLATE)];
+  const plateB = [a(X - 6, Y - 1, PLATE), a(X - 3, Y - 1, PLATE), a(X - 5, Y + 1, PLATE), a(X - 4, Y + 3, PLATE), a(X - 6, Y + 5, PLATE), a(X - 3, Y + 5, PLATE), a(X - 2, Y + 8, PLATE), a(X - 7, Y + 8, PLATE)];
+  F.bone = [K({ dy: 1, legs: 'wide', arm: [X, Y, X - 6, Y - 1], arm2: [OFF[0], OFF[1], X - 2, Y], greatsword: [X - 12, Y - 3, X + 8, Y + 1], plume: 0, bits: [a(X - 14, Y + 6, PLATE), a(X + 11, Y + 5, PLATE), a(X - 10, Y + 12, GRN)] }),
+    K({ hy: -1, sho: 1, dy: -1, legs: 'wide', arm: [X, Y, X + 4, Y - 3], arm2: [OFF[0], OFF[1], OFF[0] - 4, OFF[1] - 4], greatsword: [X + 4, Y - 3, X + 5, Y + 11], plume: 2, bits: [...lit, ...plateA, ...plateB, a(X - 13, Y - 10, GRN), a(X + 12, Y - 8, PLATE), a(X + 11, Y + 6, GRN)] }),
+    K({ legs: 'stand', arm: [X, Y, X - 1, Y + 3], greatsword: low, plume: 1, bits: [...plateA.slice(0, 4), ...plateB.slice(0, 4), a(X - 6, Y - 6, LIT)] })];
+  /* SOUL REAP: the blade drawn back behind him to the hilt and the off hand open; the great scything cut swung clean across ahead of
+     him, a pale-green crescent standing where it passed; and the off hand drawing the soul back in to his chest, the lights flaring */
+  const ARC = [a(X + 7, Y - 12, LIT), a(X + 11, Y - 8, GRN), a(X + 13, Y - 3, LIT), a(X + 13, Y + 2, GRN), a(X + 11, Y + 7, DGRN), a(X + 8, Y + 11, GRN), a(X + 15, Y - 5, GRN), a(X + 16, Y + 1, DGRN)];
+  F.reap = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 4, Y - 5], arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 1], greatsword: [X - 4, Y - 5, X - 16, Y - 15], plume: 1 }),
+    K({ wide: 12, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 6, Y - 2], arm2: [OFF[0], OFF[1], X + 4, Y - 1], greatsword: [X + 6, Y - 2, X + 20, Y + 9], plume: 2, bits: ARC }),
+    K({ dx: -1, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 2, Y - 2], plume: 2, bits: [...lit, a(X + 4, Y - 4, LIT), a(X + 6, Y - 6, GRN), a(X + 8, Y - 9, DGRN), a(X + 3, Y - 3, GRN)] })];
 }
 export function bakePyro(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, PYRO_PAL, skin);
