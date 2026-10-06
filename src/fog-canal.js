@@ -276,7 +276,7 @@ export function buildFogCanal({ painter, T, TS }) {
   coins([255, 17], [262, 17], [270, 17]);
   /* THE STOP-PLANKS (TEST): planks across the water hold her; the ledge over them, a gap in it the ledge lantern shows, the windlass past the bargee */
   ledge(280, 285); ledge(288, 297); stopPlanks('S1', 289, [295, 14]);
-  post(284, 14); sign(281, 14, 'STOP-PLANKS HOLD HER. A WINDLASS ON THE LEDGE WINDS THEM UP.');
+  post(284, 14); air(281, 281, 12, 13); sign(281, 14, 'STOP-PLANKS HOLD HER. A WINDLASS ON THE LEDGE WINDS THEM UP.');
   bargee(291, 14, 'the stop-planks'); archer(297, 14, 'the stop-planks');   /* the watchman sees only the lit: the ledge lantern by the gap, or her own */
   grindy(286, 18, 'the stop-planks water'); grindy(293, 18, 'the stop-planks water');   /* (claude/batch73) the grindylows are on the water, the bargee and the archer on the planks: two squads, one floor each (sprinkle-cap) */
   rib(277);
@@ -287,7 +287,7 @@ export function buildFogCanal({ painter, T, TS }) {
   wisp(314, 16, [318, 17], 'the nest light');                                 /* a cold light ahead in the dark, where no lantern is */
   /* THE DEEP LOCK (EXAM): the last reach's ledge (a lamplighter, its lantern, a watchman, the paddle), the gallery over the chamber, its ladder */
   lamplighter(324, 14, 'the last reach'); post(326, 14); archer(330, 14, 'the last reach');
-  sign(323, 14, 'THE DEEP LOCK. STRIKE ITS PADDLE AND SHE GOES DOWN TO THE BASIN.');
+  air(323, 323, 12, 13); sign(323, 14, 'THE DEEP LOCK. STRIKE ITS PADDLE AND SHE GOES DOWN TO THE BASIN.');
   const L6 = reach('L6', 335, 344, 49, 44, 18, 'hi', { rate: 52 }); block(335, 344, 50, H - 1); air(335, 344, 14, 14);
   ledge(322, 343);                                                            /* the last reach's ledge, on over the upper gate as the gallery over the chamber (laid after the chamber is carved) */
   gate('G7', 334, 17, 48, P4, L6);

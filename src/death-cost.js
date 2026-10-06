@@ -57,6 +57,7 @@ export function standing(tx, ty, solid, spike) { return solid(tx, ty) && !spike(
    either side in turn (out to ten back toward the shrine: THE GARGOYLE's room has spikes for a floor, so its door is the shrine's ledge). Returns {x,y} (feet, pixels) or null (a flight arena has no floor: the caller falls back to the shrine). */
 export function doorSpot(A, cp, solid, spike, H) {
   if (!A || A.carpet) return null;
+  if (A.door && Number.isFinite(A.door[0]) && Number.isFinite(A.door[1])) return { x: A.door[0] * TSZ + 8, y: A.door[1] * TSZ };   /* A DOOR THE LEVEL NAMES (claude/batch73: Jenny's trigger column is over her water, where the scan would find the bed): [col, row of the standing tile] */
   const bx = A.trigger !== undefined ? A.trigger : A.x0; if (!Number.isFinite(bx)) return null;
   const row0 = Math.floor(((cp && Number.isFinite(cp.y) ? Math.min(cp.y, Number.isFinite(A.floor) ? A.floor : cp.y) : A.floor) - 1) / TSZ) - 3;
   const c0 = Math.floor(bx / TSZ);

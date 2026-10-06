@@ -122,7 +122,7 @@ export function buildSkyRoad({ painter, T, TS }) {
 
   // ================= 4. THE BROKEN SKY BRIDGE (298-388): THE SUN-DISC, then THE EXAM =================
   ent('sundisc', 295, 17, { id: 'disc' }); decor.push({ kind: 'bridgehead', x: 293, y: 17 });
-  sign(290, 17, 'THE SUN-DISC. STRIKE IT TO THE SUN, THEN CROSS WHILE THE AIR RISES.');
+  sign(281, 17, 'THE SUN-DISC. STRIKE IT TO THE SUN, THEN CROSS WHILE THE AIR RISES.');
   pinnacle(303, 15, 'disc:disc', { order: 0 }); pinnacle(310, 14, 'disc:disc', { order: 1 }); pinnacle(317, 13, 'disc:disc', { order: 2 }); pinnacle(324, 12, 'disc:disc', { order: 3 });
   cloudBank(300, 330, 5, 14, 14, 10);
   foe('kiterider', 314, 6, 'discRidersA', { home: 317 }); foe('kiterider', 326, 5, 'discRidersB', { home: 324 });

@@ -325,7 +325,7 @@ export function stageGreenteeth(W, T, TS, sx, R) {
   ent('greenteeth', sx + 20, R - 1, { face: -1 });
   const A = geom(sx, R, TS);
   const arena = { x0: A.x0, x1: A.x1, floor: A.deck, y0: A.top, trigger: (sx + STAGE.land + 2) * TS, wallL: sx, wallR: ex, boss: 'greenteeth', music: 'greenteeth',
-    tint: '#1a3a2a', tintA: 0.12, camFrame: true, start: [sx + STAGE.land + 4, R - 1], lock: { sx, R, raft: true } };
+    tint: '#1a3a2a', tintA: 0.12, camFrame: true, start: [sx + STAGE.land + 4, R - 1], door: [sx + STAGE.land, R], lock: { sx, R, raft: true } };
   const movers = [{ kind: 'lift', weed: true, gtRaft: true, wi: 0, x: A.moorW, y: A.deck, y0: A.deck, y1: A.deck, w: GT.raftW, h: 8, speed: 0 }];
   const pools = [{ x0: A.pool.x0, x1: A.pool.x1, y: A.surf, bottom: A.bed, swim: false, clear: true, shallow: false, depth: A.bed - A.surf, lock: true, gtWater: true }];
   return { arena, movers, pools };
