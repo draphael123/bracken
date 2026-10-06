@@ -121,3 +121,92 @@ was "jump the ring"); the cold fills in 6 s, the sun meter's own number.
    https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100706.
 6. THE SENTINEL'S DAZZLE is not built (the shield guard's AI has no hold hook). Rec: leave it (go round / plunge) unless the reviewer wants the beam on
    its back.
+
+## FIX PASS (2026-10-06, after scratch/review-glasssea.md; Daniel approved the concept with every recommended option)
+First I merged origin/claude/bot2 (the calibrated standard bot). There was one conflict, in tools/check.mjs's list; I kept both sides (glasssea + playrec). The boss
+standard is now `PORT=8669 node tools/boss-rates.mjs glasssea --ways=practiced --profile=human` (campaign level L33, normal health, no skills).
+
+### MUST-FIX
+1. THE WARDEN vs THE SHARD RAIN, then the band. I followed the reviewer's order, then went one step further because I found a bot gap:
+   - shardSpread 44 -> 60. This leaves a 42 px lane between the marks (asserted in tools/glasssea.mjs). Re-measured over 3 seeds: knight 3/3, warden 2/3, pyro 3/3.
+   - stomp 22 -> 28: knight 6/6, warden 3/6, pyro 6/6 = 83%. A damage-by-source probe (it reads S.hurt; the probe lives in my scratchpad) showed that THE STOMP caused
+     all of the knight's losses. The bot ignored the stomp's TELL. It answered only the running ring, and the ring starts 30 px from the giant's feet,
+     exactly where a melee hero stands to cut its knees. A player reads the 0.85 s '!!' tell, so I made the bot read it too (src/glass-colossus.js colPlan: once it
+     has seen a stomp tell, it jumps each ring as the ring arrives; it misses one tell in eight). With that fix the fight measured 93% (9/10, 9/10, 10/10).
+     The bot had been losing to its own gap, not to the boss.
+   - Then I tuned TEMPO rather than scaling damage:
+     - idle gaps 0.9/0.8/0.7 -> 0.65/0.55/0.45
+     - the night chain is two stomps longer (swarm, stomp, shards, stomp, swarm, shards, stomp)
+     - stomp 34 (unblockable, so it hits everyone)
+     - rain 16 -> 20 over the widened lane (the knight blocks it; the warden and the pyro step out of it)
+     The opening cap stays at 9% and hp at 2000.
+   - FINAL (boss-rates, practiced, human, L33, 10 seeds a hero): knight 5/10, warden 4/10, pyro 9/10 = 60%. That is IN BAND, with no hero at 0. Fights ran 81-194 s
+     (most 85-140 s, inside the B6 window). Mash boss 0/6 (dead in 44-75 s; the Colossus keeps 83-91%).
+   - Settings tried, each a full 3-hero sweep:
+     - 89% (spread 60)
+     - 83% (stomp 28)
+     - 78% and 61% (stomp 34; noisy)
+     - 33% (gaps 0.6 + shake 22 + ring speed 280): too far, reverted
+     - 78% (gaps 0.75)
+     - 63% (gaps 0.7, then 0.65)
+     - 63% (rain 18)
+     - 60% (rain 20)
+2. THE NIGHT AMBIENT is now the Glass Sea's own. I added two synth beds in src/audio.js SYNTH_BEDS:
+   - glassday: dry wind over glass dunes, a thin whistle over the fulgurite, a shard chiming, sand hissing.
+   - glassnight: a hushed low wind, glass ticking as it cools, a far glass chime, a low moan through the ridges. No drips, no chains.
+   AMBIENT_NAMES and AMBIENT_SOURCES list both. L.ambient plays glassday west of the obelisk and glassnight east of it. Asserted (no 'cistern').
+   The art pass may replace them with a composed bed; the music track is still Daniel's pick.
+3. THE SLIDE GAP: the stall nudge now reads "THE SLICK SLOPE: HOLD DOWN TO SLIDE, THEN JUMP AT THE FOOT" (asserted: it contains HOLD DOWN and SLIDE).
+   The sign moved from column 130 to the crest (135), where the slick run starts.
+
+### SHOULD-FIX (the cheap ones)
+4. First screen: I moved the skiff before the mirror from 35 to 37. Its shade (35-39) now covers the hero at the first mirror, so the first TURN happens out of
+   the sun. The scorpion stays at 31. I tried two other places, past the stair at 77 and in the first shade at 25. Both cost the level's mash margin
+   (warden 40% and 46%, a fail). The scorpion takes about 10 s to walk up, and the turn takes 2 s.
+5. (not done) The Crossing's "don't turn it back while you cross" line is left as built (the crumble line exists).
+6. ARENA STALL NUDGE: if no mirror sits on a notch that can open the giant this phase for 10 s, a line shows and repeats every 10 s:
+   - "TURN A MIRROR BACK TO FACE THE GIANT"
+   - "TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM"
+   - "TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE"
+   The lines are routed in src/hint-lines.js, and a check asserts that the nudge repeats.
+7. THE STEPS' PERCH: a one-way glass step at 583-584 (row 29) turns the one 3-row hop into two 2-row hops. The route pilot (real keys, god, no foes):
+   knight, warden and pyro all walk the whole route again, 0 deaths, 0 lifts.
+8. THE CURVE ROW: I added glasssea to the desert act in src/foe-react.js ACTS. In game its depth already placed it in act 5, but level-quality read it as act 1.
+   node tools/level1-pilot.mjs glasssea --curve: act 5, 254% health lost a run, 3 deaths in 3 runs (band 150-700%, 2-12 deaths): IN BAND.
+9. MASH MARGIN: NOT WIDENED.
+   - The level lows are 37 / 34 / 34% again (re-stamped LEVEL, then BOSS).
+   - I traced the warden's and the pyro's health along the route with a throwaway copy of the mash bot, since deleted. The lows come from the places where the
+     masher is HELD (the Crossing's lip, the skull's foot): sun and cold while he is held, then a lift. They do not come from foes.
+   - I tried five extra foes, one at a time: a third far-lip thrower, a spire thrower, a second near-terrace thrower, a third Crossing scorpion, and a hunter at
+     the skull's foot. None of them changed the trace at all.
+   - The same build read pyro 45% on one run and 34% on the next, so the row is noisy by about 10 points.
+   - Kept: one extra hunter at the skull's foot (434). It adds night pressure for a person and does not change the row.
+   - A masher cannot turn the first mirror, so he cannot finish the level at all.
+10. FIGHT LENGTH: now 81-194 s (it was 78-108 s).
+
+### LEGS (the brief said always full damage; what is built is a purse per phase)
+I kept the purse. B13 asks that no immunity be a waiting room. A glazed knee is never something you wait out here:
+- The opening is always a thing you DO, and it is never more than one move away.
+- P1 and P3 open on the lance (chain slots 0 and 3). P2 opens on the swarm call (slots 0 and 4). P3 can also open on a mirror turned TO THE SKY at any moment.
+- The bot spends only 220-560 of the 620 hp in the purse, so in practice the knees take whole blows for most of the fight.
+This is asked below.
+
+### CHECKS (this pass)
+- glasssea: 75 asserts, 6 new (own beds, slide nudge + sign, rain lane, the stall nudge).
+- level-quality: every gated level clears; glasssea clears, curve included.
+- stuck --static (785 checks), mash-gate, curve-gate, hint-shown (page), signs, ambient-landmarks, audio-assets.
+- boss-openings, boss-greed, boss-fight-end, boss-music, boss-jump.
+- one-new-foe, goblin-lint, sprinkle-cap, desert-foes2, threat-holes, answer-tags, combat-part2, rule-openings, checkpoints, map-grammar.
+- The route pilot (3 heroes, base movement).
+- Not run: the 40-minute suite, stuck runtime.
+
+### QUESTIONS FOR DANIEL (rec first; the rec is what is built)
+1. THE COLOSSUS is 60% overall, but the PYRO wins 9/10 (knight 5, warden 4). She dodges the rain and the stomps from range, and her level card takes about 20% less
+   from each blow. Rec: keep (overall in band, no hero at 0) and let your playtest decide. Alt: a pyro-only answer (a move that reaches range).
+2. Fixing the bot's stomp-tell gap moved the fight 15-30 points easier before the retune. Rec: keep (a player reads the '!!' tell). Other boss plans may have the
+   same kind of gap (the bot answers a hazard only once it runs, not from its tell); worth a bot2 look.
+3. LEGS: keep the glazing purse (rec), or make the knees always take full damage? If the knees always take full damage, the opening cap must drop so the legs
+   are not the whole fight.
+4. MASH LEVEL ROW: 34-37% against the 40% limit. It is noisy by about 10 points and is driven by the sun and cold at the held/lift points, not by foes.
+   Rec: accept it as is (a masher cannot turn the first mirror). Alt: make the cold one point heavier (risk: the careless hand already takes 31-63 cold ticks).
+5. The tempo retune (gaps 0.65/0.55/0.45, two more night stomps) made the fight busier rather than deadlier per blow. Rec: keep, and tell me if it feels frantic.
