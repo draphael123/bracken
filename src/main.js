@@ -87,7 +87,7 @@ import * as WTT from './redraw/welltown_tiles.js'; import * as WTB from './redra
 import { makeGuide } from './stuck-guide.js'; let STK = null;   /* THE SHARED GLINT + STALL NUDGE + WAY-ARROW FEED (claude/stuckfix, src/stuck-guide.js; the route list is src/stuck-spots.js) */
 import { makeRedGorgeHands } from './red-gorge-hands.js'; import { makeGorgeCrabHands } from './gorge-crab-hands.js'; import * as GCB from './gorge-crab.js'; import * as RGA from './redraw/redgorge_art.js'; import * as RGT from './redraw/redgorge_tiles.js'; import * as RGB from './redraw/redgorge_backdrop.js'; let RGH = null, GCH = null;   /* THE RED GORGE (claude/redgorge, the greybox): its hands (the flood, the sluice gates, the jams, the baskets, the old nest, the raptor) and THE GREAT RED CRAB's (src/gorge-crab.js the fight) */   /* THE WELL TOWN (claude/welltown, the greybox): its hands (the skin, mud, fire, the windlass, the dry cistern, the water-thief) and THE BANDIT KING's (src/bandit-king.js the fight) */
 import { makeMoorRocksHands } from './moor-rocks-hands.js'; let MRH = null;   /* GALE MOOR's WIND ROCKS and GOBLIN SCAFFOLDS (claude/moor2): the crevices' throw, the wind that takes a struck goblin, the half-built frame */
-import { makeGlassSeaHands } from './glass-sea-hands.js'; import { makeColossusHands } from './glass-colossus-hands.js'; import * as COG from './glass-colossus.js'; import * as GSF from './glass-foes.js'; import * as GSAR from './redraw/glasssea_art.js'; let GSH = null, COH = null;   /* THE GLASS SEA (claude/glasssea, the greybox): the mirrors, the beams, the cracks, the night; THE GLASS COLOSSUS */
+import { makeGlassSeaHands } from './glass-sea-hands.js'; import { makeColossusHands } from './glass-colossus-hands.js'; import * as COG from './glass-colossus.js'; import * as GSF from './glass-foes.js'; import * as GSAR from './redraw/glasssea_art.js'; import * as GST from './redraw/glasssea_tiles.js'; let GSH = null, COH = null;   /* THE GLASS SEA (claude/glasssea, the greybox): the mirrors, the beams, the cracks, the night; THE GLASS COLOSSUS */
 import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
@@ -1055,6 +1055,7 @@ function resolveTiles() {
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
     if (L.welltown && t === T.SOLID) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE WELL TOWN's solids (the street, the houses, the cisterns) are its own kit, ahead of the caravan's sand skin; slopes stay the sand's */
+    if (L.glasssea && (t === T.SOLID || isSlope(t))) { const ts = GST.glassTileFor(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE GLASS SEA's own ground (claude/glasssea art pass, src/redraw/glasssea_tiles.js): fused glass, slick diagonals; the first columns stay sand */
     if ((L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
@@ -1161,6 +1162,7 @@ function resolveTiles() {
     if (L.canal) { const ts = CNH.canalTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE FOG CANAL's tile kit: wet brick quays, the lit coping, the towpath, the decks, the gates (src/redraw/canal_tiles.js) */
     if (L.welltown) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE WELL TOWN's tile kit: sandstone streets, mudbrick houses, the cisterns' cut stone, palm boards, rope ladders (src/redraw/welltown_tiles.js) */
     if (L.redgorge) { const ts = RGT.gorgeTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE RED GORGE's tile kit: strata, lit lips, the scoured channel, lashed bridges (src/redraw/redgorge_tiles.js) */
+    if (L.glasssea) { const ts = GST.glassTileFor(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE GLASS SEA's glass shelves (the one-way ledges) */
     if (L.underwell) { const ts = UWT.wellTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNDERWELL's tile kit (claude/underwellart): the dry cistern's flagstone, ashlar, brick vaults, iron grating, hemp rope (src/redraw/underwell_tiles.js) */
     if (L.theatre) { const ts = THH.theatreTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE MASKWRIGHT'S THEATRE's tile kit (src/redraw/theatre_tiles.js) */
     if (L.fairKit) { const ts = FTL.fairTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE HARVEST FAIR's tile kit (claude/fairfix5): sawdust and straw, iron decks, barn boards, wagon ruts; awnings, boardwalk, the scenic railway (src/redraw/fair_tiles.js) */
@@ -24865,7 +24867,7 @@ function updatePolish(dt) {
   if (P.hp > 0 && P.hp <= 30 && !P.dead) { heartT -= dt; if (heartT <= 0) { heartT = P.hp <= 15 ? 0.55 : 0.85; SFX.heart(); } } else heartT = 0;
   if (L.dark && SET.ambient && state === 'play') { dripT -= dt; if (dripT <= 0) { dripT = 0.35 + Math.random() * 0.5; const tx = Math.floor((camX + Math.random() * VW) / TS); let ty = Math.floor(camY / TS); while (ty < LH - 1 && tileAt(tx, ty) !== T.AIR) ty++; if (ty < LH - 1 && tileAt(tx, ty) === T.AIR && tileAt(tx, ty - 1) === T.SOLID) { parts.push({ x: tx * TS + 4 + Math.random() * 8, y: ty * TS + 1, vx: 0, vy: 10, life: 1.4, max: 1.4, col: '#8ab0c8', size: 1, grav: 420, drip: true }); if (Math.random() < 0.35) SFX.drip(); } } }
   if (L.witch && state === 'play' && !L.colosseum) { witchMotes(parts, stairProgress(L, (camX + VW / 2) / TS), dt, camX, camY, VW, VH); libraryBooks(parts, L.witch, dt); }   /* THE WITCHLIGHT STAIR's loose magic in the air */
-  if (dusk() > 0.5 && SET.ambient) { cricketT -= dt; if (cricketT <= 0) { cricketT = 0.5 + Math.random() * 1.2; SFX.cricket(); } }
+  if (dusk() > 0.5 && SET.ambient && !(L && L.glasssea)) { cricketT -= dt; if (cricketT <= 0) { cricketT = 0.5 + Math.random() * 1.2; SFX.cricket(); } }
   for (const c of clouds) { c.x += c.sp * dt; if (c.x > camX * 0.1 + VW + 80) c.x -= VW + 160; }
   fishT -= dt;
   if (fishT <= 0) { fishT = 3 + Math.random() * 5; const pools = (L.pools || []).filter(p => !p.shallow && p.x1 > camX && p.x0 < camX + VW); if (pools.length) { const p = pools[(Math.random() * pools.length) | 0]; const x = Math.max(p.x0 + 12, Math.min(p.x1 - 12, camX + Math.random() * VW)); fish.push({ x, y: p.y + 2, vx: (Math.random() < 0.5 ? -1 : 1) * 30, vy: -110, sy: p.y + 2, life: 1.5 }); SFX.fish(); burst(x, p.y, 4, ['#eefaff', '#bfe6f5'], 40, 0.3, 300, 1); } }
@@ -25078,13 +25080,13 @@ function updateParticles(dt) {
   for (const gh of ghosts) gh.life -= dt; ghosts = ghosts.filter(gh => gh.life > 0);
   for (const t of trail) t.life -= dt; trail = trail.filter(t => t.life > 0);
   killFlash = Math.max(0, killFlash - dt);
-  const want = SET.ambient ? 6 + Math.round(dusk() * 14) : 0;
+  const want = SET.ambient && !(L && L.glasssea) ? 6 + Math.round(dusk() * 14) : 0;   /* (the glass sea has no fireflies: its air is shards and chimes) */
   if (fireflies.length < want && Math.random() < dt * 3) fireflies.push({ x: camX + Math.random() * VW, y: camY + 20 + Math.random() * (VH - 60), t: Math.random() * 6, life: 6 + Math.random() * 6 });
   for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; }
   fireflies = fireflies.filter(f => f.life > 0 && f.x > camX - 20 && f.x < camX + VW + 20);
   const autumn = L.palette && L.palette.near === 'autumn';
   /* nothing on THE UNBURIED FIELD has leaves to drop (look pass 2026-09-24): what comes down over it is ash off the old fires, and an ember now and then */
-  const leafCols = L.palette && L.palette.dress === 'battlefield' ? ['#8a8278', '#6a625c', '#a8a098', '#b0603a'] : autumn ? ['#d9782a', '#c9463d', '#e0b040', '#f0a040', '#8a3a1a'] : ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'];
+  const leafCols = L.glasssea ? ['#e6fff6', '#9ae8d0', '#ffffff', '#b8f4e0', '#8af0ff'] : L.palette && L.palette.dress === 'battlefield' ? ['#8a8278', '#6a625c', '#a8a098', '#b0603a'] : autumn ? ['#d9782a', '#c9463d', '#e0b040', '#f0a040', '#8a3a1a'] : ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'];
   if (SET.ambient && SET.weather && Math.random() < dt * (autumn ? 9 : 2.5)) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: leafCols[(Math.random() * leafCols.length) | 0] });
   for (const l of leaves) { l.t += dt; l.life -= dt; l.y += 22 * dt; l.x += Math.sin(l.t * 2.2) * 18 * dt + 6 * dt; }
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
@@ -26417,11 +26419,11 @@ function drawWorld(cx, cy, showPlayer) {
   else if (dk > 0) { g.globalAlpha = dk; g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; }
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
-  if (L.dark) { const P0 = L.palette || {};
+  if (L.glasssea && GSH && GSH.on()) GSH.drawBack(g, cx, cy, time);   /* THE GLASS SEA (claude/glasssea art pass): its own sky by the hour, the far glass dunes, the Colossus on the horizon (src/redraw/glasssea_art.js) - the greybox's hook sat inside the L.dark branch and never ran */
+  else if (L.dark) { const P0 = L.palette || {};
     /* THE HURRICANE is dark, but it is not a room: her murk was a wall of wrecks, which is a fleet. Her own sky goes down under a
        storm-dark wash and the sea is drawn over it, so the dark is weather and not a back wall */
     if (BG.storm) { g.fillStyle = 'rgba(18,22,28,0.55)'; g.fillRect(0, 0, VW, VH); if (SET.parallax !== 'off') SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() }); g.fillStyle = 'rgba(18,22,28,0.3)'; g.fillRect(0, 0, VW, VH); }
-    else if (L.glasssea && GSH && GSH.on()) GSH.drawBack(g, cx, cy, time);   /* THE GLASS SEA: the sky by the hour, the dunes, the Colossus on the horizon (greybox) */
     else if (L.underwell) UWB.drawBackdrop(g, cx, cy, VW, VH, L, time, T);   /* THE UNDERWELL's cistern: the far arcade, the well shaft's light, the colonnade (src/redraw/underwell_backdrop.js) */
     else if (BG.wall) { drawBackWall(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); }   /* the Undercrown's pit: its own foundations, not the shared murk */
     else { g.fillStyle = P0.murk || '#1a1a22'; g.fillRect(0, 0, VW, VH);

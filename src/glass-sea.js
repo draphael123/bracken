@@ -290,7 +290,7 @@ export function buildGlassSea({ painter, T, TS }) {
     mirrors, sources, beds, cracks, fires, decor, vaultDoors, dunes,
     /* THE RULE'S STATE for tools/rule-state.mjs: the sun by day (to the obelisk), its absence - the cold - by night (to the Colossus) */
     sun: [{ x0: 0, x1: SUNSET_X }, { x0: SUNSET_X, x1: 604 }],
-    shade, shadeArt: shade.slice(),
+    shade, shadeArt: [],   /* (art pass: main.js's flat violet tint is off - src/redraw/glasssea_art.js drawShade paints the same boxes soft-edged, by day only) */
     quest: { n: 5, item: 'glassshard', name: 'SHARDS', done: 'FIVE SHARDS: THE VAULT MIRROR TURNS', thanks: 'THE VAULT MIRROR TURNS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

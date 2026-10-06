@@ -33,7 +33,7 @@
 //                ':p2' (the well shaft) quicker with the motif an octave up, ':p3' (the flood) adds the water: a surge and drips.
 //   'djinn'      THE DJINN OF THE GREAT WELL (claude/underwell, his own theme - the Queen has hers back in the Underwell). D Hijaz, 4/4 at 100, 16 bars = 38 s:
 //                a D drone, a doumbek's maqsum, the wind in the well, a breathy ney; ':p2' (fire) quicker, the ney up an octave, crackles; ':p3' (flood) the water.
-export const BOSS_SYNTH_BASE = { colossus: 1, glasssea: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -400,18 +400,7 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
-// ---------------------------------------------------------------- THE GLASS SEA (claude/glasssea, the greybox's own bed until Daniel picks a track)
-// E minor pentatonic (E G A B D), 4/4 at 72 (eighth = 0.42 s), 8 bars = 27 s. WIND OVER GLASS: a long airy drone (two detuned triangles on E2 and B2
-// under a lowpass, breathing over four bars), a CHIME OF SHARDS (high sine bells on a slow ostinato, each with a fifth a shade sharp over it), and a hush
-// of wind (soft noise swells every second bar). Never builds: the crossing is long.
-const GSM_STEP = 60 / 72 / 2, GSM_LEN = 8, GSM_BARSN = 8;
-const GSM_CHIME = [['E5', '-', 'B4', '-', 'D5', '-', '-', 'G4'], ['A4', '-', 'E5', '-', '-', 'B4', '-', '-'], ['G5', '-', 'D5', '-', 'B4', '-', 'A4', '-'], ['E5', '-', '-', 'B4', '-', '-', 'D5', '-']];
-function glasssea(i, delay, variant, env) {
-  const bar = Math.floor(i / GSM_LEN), s = i % GSM_LEN, g = env.gain;
-  if (s === 0 && bar % 4 === 0) for (const n of ['E2', 'B2']) held(env, 'triangle', nf(n), GSM_STEP * GSM_LEN * 4 * 0.98, 0.06 * g, delay, { lp: 700, att: GSM_STEP * 8, hold: 0.7, det: 9 });
-  if (s === 0 && bar % 2 === 1) noise(env, GSM_STEP * 6, 0.035 * g, 900, 0.6, delay);
-  const c = GSM_CHIME[bar % 4][s]; if (c !== '-') { const f = nf(c); pluck(env, 'sine', f, GSM_STEP * 5, 0.07 * g, delay, { to: f * 0.998 }); pluck(env, 'sine', f * 1.502, GSM_STEP * 3, 0.025 * g, delay + 0.01, { to: f * 1.5 }); }
-}
+// (THE GLASS SEA has no synth bed: "Eastern Arctic Dubstep" by VishwaJai is its file, claude/glasssea art pass; THE GLASS COLOSSUS below keeps his composed theme)
 // ---------------------------------------------------------------- THE GLASS COLOSSUS (claude/glasssea, its composed theme: the brief's three phases)
 // B minor (B C# D E F# G A), 4/4 at 84 (eighth = 0.36 s), 16 bars = 46 s. DUSK: a slow GLASSY CHIME OSTINATO (sine bells, B - F# - D - F# - E - D - C# - F#)
 // over a LOW DRONE (a sub sine on B and a lowpassed saw pair), a heavy stone stamp on the one (its stomp), a ring of glass on the three.
@@ -433,7 +422,7 @@ function colossus(i, delay, variant, env) {
 }
 
 export const SYNTH_BOSS = {
-  colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, glasssea: { step: GSM_STEP, total: GSM_LEN * GSM_BARSN, play: glasssea },   /* (claude/glasssea) */
+  colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
   djinn: { step: DJM_STEP, total: DJM_LEN * DJM_BARSN, play: djinn },
   cisternqueen: { step: CQM_STEP, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
   gorgecrab: { step: GCM_STEP, total: GCM_LEN * GCM_BARSN, play: gorgecrab },

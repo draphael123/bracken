@@ -8,6 +8,7 @@
 // main.js calls: spawnBoss, owns, on, update, take, interact, drawBack, drawBoss, drawOver, barName, end, read, show, clear, phase, gazeOn.
 import * as CG from './glass-colossus.js';
 import { BOSS_PHASE } from './boss-music.js';
+import * as COA from './redraw/glass_colossus_art.js';
 const { COL } = CG;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), lanceTell: s => (s.charge || s.hiss || s.tell)(), lance: s => (s.zap || s.fireWhoosh || s.heavy)(),
@@ -81,41 +82,25 @@ export function makeColossusHands(ctx) {
   H.end = e => { if (S) { S.rings = []; S.marks = []; S.wave = null; S.lance = null; } for (const q of swarm()) { q.alive = false; ctx.burst(q.x, q.y, 6, ['#5a4a8a', '#e8dcb0'], 40, 0.5); } BOSS_PHASE.colossus = 1; if (ctx.L) ctx.L.gsColossusDown = true; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, n: JSON.parse(JSON.stringify(S.n)), mirrors: S.mirrors.map(m => m.notch), ward: S.ward, legPurse: Math.round(S.legPurse), hurt: { ...(S.hurt || {}) } };
 
-  /* ---------- DRAWING (GREYBOX) ---------- */
-  /* its holds (glass ledges), the shelf-mirrors with their notch, the relayed firelight and the dawn's beam */
+  /* ---------- DRAWING (src/redraw/glass_colossus_art.js: its own body; the holds and the shelf-mirrors; the relayed light) ---------- */
+  /* its holds (glass crystal ledges growing out of it, glowing), the shelf-mirrors with their notch, the relayed firelight and the dawn's beam */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, e = ctx.boss;
-    for (const l of [...G.knee, ...G.hip, ...G.shoulder]) { g.fillStyle = 'rgba(160,230,210,0.85)'; g.fillRect(R(l.l - cx), R(l.y - cy), R(l.r - l.l), 3); g.fillStyle = '#f0fff8'; g.fillRect(R(l.l - cx), R(l.y - cy), R(l.r - l.l), 1); }
-    for (const m of S.mirrors) { const x = R(m.x - cx), y = R(G.floor - cy); g.fillStyle = '#6a5a4a'; g.fillRect(x - 1, y - 30, 3, 30);
-      g.save(); g.translate(x, y - 30); g.rotate(m.notch === 'face' ? Math.PI / 2 : m.notch === 'fire' ? (m.x < G.cx ? -0.5 : 0.5) : 0); g.fillStyle = '#c8f0ff'; g.fillRect(-12, -2, 24, 4); g.restore();
-      ctx.text(CG.NOTCH_WORD[m.notch], x, y - 50, m.notch === 'face' ? '#e8f4f8' : m.notch === 'fire' ? '#ffb050' : '#ffd36b', 'center', 5); }
+    /* the gaze: its eyes' light shining west to the wall, where the steps' mirror takes it (until it falls) */
+    if (e && H.gazeOn() && e.mode !== 'sleep') { const ex = R(G.cx - cx) - 14, ey = R(G.floor - 178 - cy), wx = R(G.x0 - cx), wy = R(G.floor - 128 - cy); g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(150,230,255,0.28)'; g.lineWidth = 4; g.beginPath(); g.moveTo(ex, ey); g.lineTo(wx, wy); g.stroke(); g.strokeStyle = 'rgba(230,252,255,0.8)'; g.lineWidth = 1; g.beginPath(); g.moveTo(ex, ey); g.lineTo(wx, wy); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
+    for (const m of S.mirrors) COA.drawShelfMirror(g, m, G, cx, cy, time, S.ph);
+    for (const m of S.mirrors) { const x = R(m.x - cx), y = R(G.floor - cy); ctx.text(CG.NOTCH_WORD[m.notch], x, y - 62, m.notch === 'face' ? '#e8f4f8' : m.notch === 'fire' ? '#ffb050' : '#ffd36b', 'center', 5); }
     if (S.ph === 2) for (const m of S.mirrors) if (m.notch === 'fire') { const fx = m.x < G.cx ? G.fires[0] : G.fires[1], cr = m.x < G.cx ? G.crack[0] : G.crack[1];
-      g.strokeStyle = 'rgba(255,170,80,0.5)'; g.lineWidth = 4; g.beginPath(); g.moveTo(R(fx - cx), R(G.floor - 10 - cy)); g.lineTo(R(m.x - cx), R(G.floor - 30 - cy)); g.lineTo(R(cr - cx), R(G.floor - 8 - cy)); g.stroke(); g.lineWidth = 1; }
-    if (S.ph === 3) for (const m of S.mirrors) if (m.notch === 'sky') { g.strokeStyle = 'rgba(255,240,180,0.6)'; g.lineWidth = 3; g.beginPath(); g.moveTo(R(m.x - cx), R(G.floor - 30 - cy)); g.lineTo(R(G.cx - cx), R(G.crownY - cy)); g.stroke(); g.lineWidth = 1; }
-    /* the crack under its feet (the swarm's) */
-    g.fillStyle = S.ph === 2 ? (CG.relaying(S) ? '#ffb050' : '#9a7ad8') : '#3a6a62'; g.fillRect(R(G.crack[0] - cx), R(G.floor - cy), R(G.crack[1] - G.crack[0]), 2);
-    if (e && e.mode === 'swarm') { g.fillStyle = '#5a4a8a'; for (let i = 0; i < 10; i++) g.fillRect(R(G.crack[0] + ((i * 29 + time * 50) % (G.crack[1] - G.crack[0])) - cx), R(G.floor - 4 - ((i * 7 + time * 40) % 20) - cy), 3, 2); }
+      g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(255,150,60,0.32)'; g.lineWidth = 6; g.beginPath(); g.moveTo(R(fx - cx), R(G.floor - 10 - cy)); g.lineTo(R(m.x - cx), R(G.floor - 36 - cy)); g.lineTo(R(cr - cx), R(G.floor - 6 - cy)); g.stroke();
+      g.strokeStyle = 'rgba(255,230,170,0.9)'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(fx - cx), R(G.floor - 10 - cy)); g.lineTo(R(m.x - cx), R(G.floor - 36 - cy)); g.lineTo(R(cr - cx), R(G.floor - 6 - cy)); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
+    if (S.ph === 3) for (const m of S.mirrors) if (m.notch === 'sky') { g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(255,230,150,0.3)'; g.lineWidth = 6; g.beginPath(); g.moveTo(R(m.x - cx), R(G.floor - 36 - cy)); g.lineTo(R(G.cx - cx), R(G.crownY - cy)); g.stroke(); g.strokeStyle = 'rgba(255,252,220,0.95)'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(m.x - cx), R(G.floor - 36 - cy)); g.lineTo(R(G.cx - cx), R(G.crownY - cy)); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over'; }
+    /* the crack under its feet (the swarm's): a dark seam, violet at night, gold when the relay holds it */
+    const cw = R(G.crack[1] - G.crack[0]); g.fillStyle = '#04080e'; g.fillRect(R(G.crack[0] - cx), R(G.floor - cy), cw, 3); g.fillStyle = S.ph === 2 ? (CG.relaying(S) ? '#ffb050' : '#9a7ad8') : '#3a9a92'; g.fillRect(R(G.crack[0] - cx), R(G.floor - cy), cw, 1);
+    if (e && e.mode === 'swarm') { for (let i = 0; i < 12; i++) { const sx = R(G.crack[0] + ((i * 29 + time * 50) % (G.crack[1] - G.crack[0])) - cx), sy = R(G.floor - 4 - ((i * 7 + time * 40) % 22) - cy); g.fillStyle = '#2a1e50'; g.fillRect(sx, sy, 4, 3); g.fillStyle = '#ff5a5a'; g.fillRect(sx + 3, sy + 1, 1, 1); } }
   };
-  /* IT: legs, trunk, shoulders, head of lightning-glass (GREYBOX shapes); its cracks by state */
+  /* IT: the body, drawn by src/redraw/glass_colossus_art.js; its cracks by state */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
-    const G = S.G, x = R(e.x - cx), fy = R(G.floor - cy), flash = (e.hurtT || 0) > 0, ts = ctx.TS;
-    const glass = flash ? '#ffffff' : S.ph === 2 ? '#4a6a9a' : S.ph === 3 ? '#b8e8f0' : '#8ac8c8', dark = S.ph === 2 ? '#22304a' : '#3a6a6a';
-    const sway = e.mode === 'shake' ? R(Math.sin(time * 40) * 3) : e.mode === 'shakeTell' ? R(Math.sin(time * 14) * 1) : 0;
-    g.fillStyle = dark; g.fillRect(x - 3 * ts, fy - 6 * ts, 2 * ts, 6 * ts); g.fillRect(x + 1 * ts, fy - 6 * ts, 2 * ts, 6 * ts);   /* the legs */
-    g.fillStyle = glass; g.fillRect(x - 3 * ts + 2, fy - 6 * ts, 2 * ts - 4, 6 * ts); g.fillRect(x + 1 * ts + 2, fy - 6 * ts, 2 * ts - 4, 6 * ts);
-    g.fillStyle = glass; g.fillRect(x - 2 * ts + sway, fy - 9 * ts, 4 * ts, 3 * ts + 4);                                         /* the trunk */
-    g.fillRect(x - 4 * ts + sway, fy - 10 * ts, 8 * ts, ts + 4);                                                                  /* the shoulders */
-    g.fillRect(x - ts + sway, fy - 12 * ts, 2 * ts, 2 * ts);                                                                       /* the head */
-    g.fillStyle = S.ph === 2 ? '#9ae8ff' : '#fff2c0'; g.fillRect(x - 10 + sway, fy - 11 * ts - 6, 5, 2); g.fillRect(x + 5 + sway, fy - 11 * ts - 6, 5, 2);   /* the eyes */
-    /* THE KNEE CRACKS: gold while their purse lasts, glazed pale after */
-    const kc = S.legPurse > 0 ? '#ffd36b' : '#c8d8e8'; g.fillStyle = kc; g.fillRect(x - 2 * ts - 2, fy - 2 * ts, 4, 10); g.fillRect(x + 2 * ts - 2, fy - 2 * ts, 4, 10);
-    /* THE CHEST: dark glass, cracked gold when the lance came back */
-    g.fillStyle = e.mode === 'cracked' ? '#ffd36b' : '#2a4a5a'; g.fillRect(x - 10 + sway, fy - 8 * ts, 20, 14);
-    if (e.mode === 'lanceTell') { g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 18); g.fillStyle = '#fff6c8'; g.fillRect(x - 8 + sway, fy - 8 * ts + 2, 16, 10); g.globalAlpha = 1; }
-    /* THE SHOULDER CRACKS (P2) and THE CROWN (P3) */
-    if (S.ph === 2) { g.fillStyle = e.mode === 'blazing' ? '#ffb050' : '#5a4a8a'; g.fillRect(x - 3 * ts + sway, fy - 10 * ts + 2, 10, 4); g.fillRect(x + 3 * ts - 10 + sway, fy - 10 * ts + 2, 10, 4); }
-    if (S.ph === 3) { g.fillStyle = e.mode === 'dazzled' ? '#ffffff' : '#ffd36b'; g.fillRect(x - 6 + sway, fy - 12 * ts - 4, 12, 4); }
-    if (e.mode === 'stompTell') { g.fillStyle = '#ffd36b'; g.fillRect(x - 3 * ts, fy - 2, 6 * ts, 2); }
-    if (e.mode === 'swarmTell') { g.fillStyle = '#ff6b6b'; g.fillRect(x - 4 + sway, fy - 9 * ts - 10, 8, 8); }
+    COA.drawBody(g, e, S, S.G, cx, cy, time, (e.hurtT || 0) > 0);
+    COA.drawHolds(g, e, S, S.G, cx, cy, time);   /* the holds grow out of it, so they are drawn on it (the heroes are drawn after) */
   };
   /* OVER EVERYTHING: the lance's line and its end, the rings, the shard marks, the wave, and THE READ (open ring + timer, ward shell, the word) */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'colossus') return; const G = S.G, ts = ctx.TS;

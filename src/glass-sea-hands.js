@@ -13,6 +13,9 @@ import { isSlope, slopeGrade, SLIDE } from './slopes.js';
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import * as GSA from './redraw/glasssea_art.js';
+import * as GSET from './redraw/glasssea_set.js';
+import * as GPL from './redraw/glasssea_props.js';
+import { shelfTile } from './redraw/glasssea_tiles.js';
 
 /* THE NUMBERS: fuseT / crumbleT = s for a bed to fuse / crumble end to end; fireR = tiles a campfire's light reaches (warmth, fear, freeze); holdR = tiles from a
    fire to a crack's lip that hold it; boil = the swarm's push off an unheld crack (px/s, the blow, its cd); boilRows = how high the boiling swarm stands over its lip;
@@ -179,37 +182,54 @@ export function makeGlassSeaHands(ctx) {
     const C = GSx.stalls[r.key] = GSx.stalls[r.key] || newStall(); if (r.key !== GSx.stallKey) { GSx.stallKey = r.key; C.t = 0; C.best = 1e9; }
     if (stallTick(C, Math.hypot(P.x - t.x, P.y - t.y), dt, GSx.clock, false)) { GSx.n.nudges++; GSx.lastNudge = r.line; ctx.number(P.x, P.y - 34, r.line, '#ffe9a0'); } };
 
-  /* ---------- DRAWING (greybox: src/redraw/glasssea_art.js) ---------- */
-  /* the sky and the landmark, behind the world: gold by day, violet at the obelisk, night blue past it; the Colossus on the horizon, growing as you come */
+  /* ---------- DRAWING (src/redraw/glasssea_art.js, glasssea_set.js, glasssea_tiles.js, glasssea_props.js) ---------- */
+  /* the sky and the landmark, behind the world: a bleached day, a violet dusk at the obelisk, night with an aurora past it; the Colossus on the horizon, growing as you come */
   H.drawBack = (g, cx, cy, time) => { if (!GSx) return; const L = GSx.L, vw = ctx.VW(), vh = ctx.VH(), ts = TS();
     const midX = cx + vw / 2, sun = L.sunsetX * ts, ax = L.arena ? L.arena.x0 : L.W * ts;
     const k = Math.max(0, Math.min(1, (midX - (sun - 30 * ts)) / (40 * ts)));   /* 0 day .. 1 night */
-    const arenaPh = ctx.colPhase ? ctx.colPhase() : 0;
-    GSA.drawSky(g, vw, vh, arenaPh ? [0.55, 1, 0.15][arenaPh - 1] : k, time, arenaPh);
+    const arenaPh = ctx.colPhase ? ctx.colPhase() : 0, target = arenaPh ? [0.55, 1, 0.15][arenaPh - 1] : k;
+    /* the hour eases to where it is going (the fight's dusk, night and dawn come over a second or two; a respawn or a new load starts there) */
+    const dt = GSx.kT == null ? 1 : Math.max(0, Math.min(0.2, time - GSx.kT)); GSx.kT = time; GSx.ks = !Number.isFinite(GSx.ks) || !Number.isFinite(target) || dt > 0.19 ? (Number.isFinite(target) ? target : k) : GSx.ks + (target - GSx.ks) * Math.min(1, dt * 1.6);
+    const kk = GSx.ks; GSx.k = kk; GSx.ph = arenaPh;
+    GSA.drawSky(g, vw, vh, kk, time, arenaPh);
     const prog = Math.max(0, Math.min(1, midX / ax));
-    GSA.drawHorizon(g, vw, vh, cx, prog, k, time);
+    GSA.drawHorizon(g, vw, vh, cx, prog, kk, time, midX >= ax - 6 * ts);
   };
+  /* is there something to stand a mirror's post on (rows under it), and a fire under a hood */
+  const footOf = m => { const ts = TS(); for (let yy = m.y + 1; yy < m.y + 9; yy++) { const t = ctx.cellGet(m.x, yy); if (t === ctx.T.SOLID || t === ctx.T.ONEWAY || isSlope(t)) return yy * ts - (m.y * ts + 8); } return 24; };
   H.drawWorld = (g, cx, cy, time) => {
     if (!GSx) return; const R = Math.round, vw = ctx.VW(), vh = ctx.VH(), ts = TS(), inX = (x, m = 60) => x > cx - m && x < cx + vw + m, L = GSx.L;
-    for (const d of L.decor || []) { const x = (d.x ?? d.x0) * ts; if (!inX(x, 400)) continue; GSA.drawDecor(g, d, cx, cy, ts, time); }
-    for (const c of GSx.cracks) { if (!inX(c.x0 * ts, 80)) continue; GSA.drawCrack(g, R(c.x0 * ts - cx), R(c.y * ts - cy), (c.x1 - c.x0 + 1) * ts, c.swarm ? (c.held ? 'held' : night(c.x0 * ts) ? 'boil' : 'dark') : 'pit', time, GS.boilRows * ts); }
-    for (const b of GSx.beds) { if (!inX(b.tx * ts, 200)) continue; GSA.drawHeap(g, R(b.tx * ts + 8 - cx), R((b.ty + 1) * ts - cy), b.hit, time);
-      for (let i = 0; i < b.set; i++) { const [x, y] = b.tiles[i]; GSA.drawFused(g, R(x * ts - cx), R(y * ts - cy), b.hit ? 1 : b.k, time, x); } }
+    GSET.drawProps(g, L, T(), cx, cy, vw, vh, time);   /* the supports, the decor kinds, the dressing */
+    { const sunX = L.sunsetX * ts; for (const z of L.shade || []) { if (z[1] < cx || z[0] > cx + vw || z[0] > sunX) continue; GSA.drawShade(g, R(z[0] - cx), R(z[1] - cx), R(z[2] - cy), R(z[3] - cy), Math.max(0, Math.min(1, (sunX - z[0]) / (12 * ts)))); } }   /* the day's shade, soft-edged (it fades into the dusk) */
+    for (const c of GSx.cracks) { if (!inX(c.x0 * ts, 80) && !inX(c.x1 * ts, 80)) continue; GSA.drawCrack(g, R(c.x0 * ts - cx), R(c.y * ts - cy), (c.x1 - c.x0 + 1) * ts, c.swarm ? (c.held ? 'held' : night(c.x0 * ts) ? 'boil' : 'dark') : 'pit', time, GS.boilRows * ts, (L.glasssea && L.pitRow ? L.pitRow : 44) * ts - c.y * ts); }
+    const plan = GPL.plan(L, T());
+    for (const b of GSx.beds) { if (!inX(b.tx * ts, 400)) continue;
+      /* a bed that is still sand: the ghost of the glass it will be (dotted, faint; brighter while a beam is on its heap) */
+      for (let i = b.set; i < b.tiles.length; i++) { const [x, y] = b.tiles[i]; const a = b.hit ? 0.5 : 0.2 + 0.06 * Math.sin(time * 3 + x); g.fillStyle = 'rgba(255,236,170,' + a.toFixed(3) + ')'; for (let xx = 0; xx < 16; xx += 4) g.fillRect(R(x * ts - cx) + xx, R(y * ts - cy) + 2, 2, 1); g.fillRect(R(x * ts - cx), R(y * ts - cy) + 2, 1, 3); g.fillRect(R(x * ts - cx) + 15, R(y * ts - cy) + 2, 1, 3); }
+      /* the fused tiles' supports, then the slabs (the arch of a long span under it) */
+      for (const p of plan.posts) if (p.bed === b.id) { const idx = b.tiles.findIndex(([x, y]) => x === p.x && y === p.y0); if (idx >= 0 && idx < b.set && inX(p.x * ts)) GSET.drawPost(g, p, cx, cy, Math.min(1, 0.4 + b.k)); }
+      for (const ar of plan.arches) if (ar.bed === b.id && b.set > 0) GSET.drawArch(g, ar, cx, cy, Math.min(1, b.set / b.tiles.length));
+      for (let i = 0; i < b.set; i++) { const [x, y] = b.tiles[i], prev = b.tiles[i - 1], next = b.tiles[i + 1];
+        const l = !(prev && prev[1] === y && prev[0] === x - 1), r = !(next && next[1] === y && next[0] === x + 1);
+        GSA.drawFused(g, shelfTile(x, y, l, r), R(x * ts - cx), R(y * ts - cy), b.hit ? 1 : b.k, time, b.hit, l, r); }
+      GSA.drawHeap(g, R(b.tx * ts + 8 - cx), R((b.ty + 1) * ts - cy), b.hit, time); }
     for (const c of GSx.cracks) if (c.ring && inX(c.ring[0] * ts)) GSA.drawRing(g, R(c.ring[0] * ts + 8 - cx), R(c.ring[1] * ts + 8 - cy), c.ringHit, time, true);
     for (const f of GSx.fires) if (inX(f.x * ts)) GSA.drawFire(g, R(f.x * ts + 8 - cx), R((f.y + 1) * ts - cy), time, f.x);
     for (const m of GSx.mirrors) { if (!inX(m.x * ts)) continue; const locked = m.shardNotch !== undefined && ctx.questGot() < ctx.questN();
-      GSA.drawMirror(g, R(m.x * ts + 8 - cx), R(m.y * ts + 8 - cy), m.state, m.n, m.notches.length, m.flash, time, locked); }
-    /* THE BEAMS: a bright line tile to tile, and a TARGET RING where each lands */
-    for (const b of GSx.beams) { const col = b.kind === 'fire' ? 'fire' : b.kind === 'gaze' ? 'gaze' : 'sun';
+      const hood = GSx.fires.some(f => f.x === m.x && f.y > m.y && f.y - m.y <= 3);
+      GSA.drawMirror(g, R(m.x * ts + 8 - cx), R(m.y * ts + 8 - cy), m.state, m.n, m.notches.length, m.flash, time, locked, footOf(m), hood); }
+    /* THE BEAMS: a white-hot line tile to tile, and a TARGET RING where each lands */
+    for (const b of GSx.beams) { const col = b.kind === 'fire' ? 'fire' : b.kind === 'gaze' ? 'gaze' : b.kind === 'sunset' ? 'sunset' : 'sun';
       for (const sg of b.segs) { const x0 = sg.x0 * ts + 8 - cx, y0 = sg.y0 * ts + 8 - cy, x1 = sg.x1 * ts + 8 - cx, y1 = sg.y1 * ts + 8 - cy; if (Math.max(x0, x1) < -20 || Math.min(x0, x1) > vw + 20) continue; GSA.drawBeam(g, x0, y0, x1, y1, col, time); }
       if (b.end && inX(b.end.x * ts)) GSA.drawRing(g, R(b.end.x * ts + 8 - cx), R(b.end.y * ts + 8 - cy), !!b.end.recv, time, false, col); }
     for (const p of GSx.patches) if (inX(p.x)) GSA.drawPatch(g, R(p.x - cx), R(p.y - cy), p.t / GS.patchT, time);
     for (const e of ctx.enemies()) if (e.alive && e.cnSkin === 'glassscorpion' && e.gsDaz > 0 && inX(e.x)) GSA.drawDazzle(g, R(e.x - cx), R(e.y - 6 - cy), time);
     if (GSx.glint) drawGlint(g, R(GSx.glint.x - cx), R(GSx.glint.y - 18 - cy), vw, vh, time);
   };
-  /* THE NIGHT over everything: a blue dark that thins in every fire's light and along every fire beam */
+  /* THE NIGHT over everything: the dusk's grade, then a blue dark that thins in every fire's light and along every fire beam */
   H.drawOver = (g, cx, cy, time) => { if (!GSx) return; const L = GSx.L, ts = TS(), vw = ctx.VW(), vh = ctx.VH(), sun = L.sunsetX * ts, ax = L.arena ? L.arena.x0 : 1e9;
     const ph = ctx.colPhase ? ctx.colPhase() : 0;
+    GSA.drawGrade(g, vw, vh, GSx.k || 0);
     const darkAt = x => { if (x >= ax) return ph === 2 ? 0.42 : ph === 1 ? 0.16 : ph === 3 ? 0.05 : 0.2; return x < sun - 20 * ts ? 0 : Math.min(0.48, (x - (sun - 20 * ts)) / (30 * ts) * 0.48); };
     const lights = []; for (const f of GSx.fires) lights.push({ x: f.x * ts + 8, y: f.y * ts, r: GS.fireR * ts + 10 });
     for (const b of GSx.beams) if (b.kind !== 'sun' && b.kind !== 'sunset') for (const sg of b.segs) { const n = Math.max(Math.abs(sg.x1 - sg.x0), Math.abs(sg.y1 - sg.y0)); for (let i = 0; i <= n; i += 2) lights.push({ x: (sg.x0 + (sg.x1 - sg.x0) * i / Math.max(1, n)) * ts + 8, y: (sg.y0 + (sg.y1 - sg.y0) * i / Math.max(1, n)) * ts + 8, r: 26 }); }
