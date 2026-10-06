@@ -2,7 +2,8 @@
    For each boss: the standard bot (src/bot-profile.js) fights it with knight, warden and pyro at its campaign level, health refilled, and a
    watcher (bossLab opts.observe) reads the real state every frame:
      VULNERABILITY  blows that MET him (he was in the swing's hit set): how many hurt, how many were turned; damage dealt while OPEN vs not.
-                    -> 'always open' (turned < 10%), 'wall + weak point' (under 10% of the damage outside his openings), else 'guarded / partial'
+                    -> 'wall + weak point' (half the blows turned, under 10% of the damage outside openings), 'always open' (under 10% turned, most damage
+                    outside openings), 'always hittable, openings pay more' (under 10% turned, most damage in openings), else 'guarded / partial'
      TURNED BLOWS   of the turned ones, how many said a word (a number / callout near him within 0.1 s) - B10: never a silent no-damage hit
      OPEN LOOK      openings, how long, and what was said as each began (B10: gold ring + timer + a word; the words are what this can see)
      BLINKS         jumps of 40+ px in one frame (a blink / teleport / burrow) a minute, and how many fell inside an opening or the second
@@ -24,7 +25,7 @@ const WATCH = `(()=>{const W={f:0,openF:0,wins:[],cur:null,meet:0,hurt:0,turned:
   if(open){W.openF++;if(!W.cur){W.cur={at:W.f,dmg:0,words:[]};W.wins.push(W.cur);}W.cur.dmg+=d;W.dmgOpen+=d;}else{if(W.cur){W.cur.len=(W.f-W.cur.at)*sp;W.lastOpenEnd=W.f;W.cur=null;}W.dmgShut+=d;}
   const nums=(BK.nums?BK.nums():[]).filter(n=>typeof n.txt==='string'&&n.life>0&&!n.__seen&&Math.abs(n.x-b.x)<90);for(const n of nums){n.__seen=1;if(W.cur&&W.f-W.cur.at<30)W.cur.words.push(n.txt);for(const q of W.pend)if(!q.said){q.said=n.txt;}}
   W.pend=W.pend.filter(q=>{if(W.f-q.f>6){if(q.said){W.said++;W.words[q.said]=(W.words[q.said]||0)+1;}return false;}return true;});
-  const hs=P.hitSet;if(hs&&hs.has(b)&&!(W.set===hs&&W.met)){W.set=hs;W.met=true;W.meet++;W.meetF=W.f;W.meetHp=hp+d;}if(hs!==W.set){W.met=false;}
+  const hs=P.hitSet,sw=P.atk>=0||!!P.plunge;if(sw&&!W.sw)W.met=false;W.sw=sw;if(hs&&hs.has(b)&&!W.met){W.met=true;W.meet++;W.meetF=W.f;W.meetHp=hp+d;}   /* (P.hitSet is one Set, cleared at each swing: a swing is new when P.atk goes from -1 to 0+) */
   if(W.meetF&&W.f-W.meetF===3){if(b.hp<W.meetHp)W.hurt++;else{W.turned++;W.pend.push({f:W.f,said:null});}W.meetF=0;}
   if(!open&&!(d>0))W.shutF++;
   if(W.x!==null&&Math.abs(b.x-W.x)>40&&b.alive){W.blinks++;if(open||W.f-W.lastOpenEnd<60/((BK.SET.speed||1)))W.blinkOpen++;}W.x=b.x;
@@ -41,7 +42,8 @@ try { for (const r of rows) { const [id, fl] = r.split(':'), lvl = campaignLevel
     per[h] = o; console.log(r + ' ' + h + ' L' + lvl + ': ' + JSON.stringify(o).slice(0, 400)); }
   const A = Object.values(per).filter(o => !o.err && o.f), sum = k => A.reduce((s, o) => s + (o[k] || 0), 0), mins = A.reduce((s, o) => s + (o.secs || 0), 0) / 60;
   const meet = sum('meet'), turned = sum('turned'), dmgO = sum('dmgOpen'), dmgS = sum('dmgShut'), wins = A.reduce((s, o) => s + o.wins.length, 0);
-  const model = meet && turned / meet < 0.1 ? 'always open' : (dmgO + dmgS) && dmgS / (dmgO + dmgS) < 0.1 ? 'wall + weak point' : 'guarded / partial';
+  const tP = meet ? turned / meet : null, oP = dmgO + dmgS ? dmgS / (dmgO + dmgS) : null;
+const model = tP === null ? 'not met' : tP >= 0.5 && oP !== null && oP < 0.1 ? 'wall + weak point' : tP < 0.1 ? (oP === null || oP >= 0.5 ? 'always open' : 'always hittable, openings pay more') : 'guarded / partial';
   const words = {}; for (const o of A) for (const [k, v] of Object.entries(o.words || {})) words[k] = (words[k] || 0) + v; const openWords = {}; for (const o of A) for (const w of o.wins) for (const t of w.words) openWords[t] = (openWords[t] || 0) + 1;
   const reach = Object.fromEntries(heroes.map(h => { const o = per[h] || {}; return [h, o.wins ? o.wins.filter(w => w.dmg > 0).length + '/' + o.wins.length : 'err']; }));
   const row = { row: r, lvl, boss: (A[0] || {}).boss, model, meet, turnedPct: meet ? Math.round(100 * turned / meet) : null, turnedSaidPct: turned ? Math.round(100 * sum('said') / turned) : null, turnedWords: words,
