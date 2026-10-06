@@ -24,7 +24,7 @@ export const TABS = [
 export const TAB_ITEMS = {
   audio: ['Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices'],
   display: ['- PICTURE -', 'Full screen', 'Pixel scale', 'Camera', 'Brightness', 'Screen filter', 'Scanlines', 'Film grain', 'Vignette',
-    '- LOOK -', 'UI colour', 'Font', 'Text colour', 'HUD', 'Foe health', 'Boss health', 'Hit numbers', 'Timer', 'Tenths', 'FPS counter',
+    '- LOOK -', 'UI colour', 'Font', 'Text colour', 'HUD', 'Gear tiers', 'Foe health', 'Boss health', 'Hit numbers', 'Timer', 'Tenths', 'FPS counter',
     '- WORLD -', 'Ground light', 'The air', 'Parallax', 'Arena tint', 'Weather', 'Ambient life', 'Look down',
     '- EFFECTS -', 'Screen shake', 'Shake strength', 'Particles', 'Impact FX', 'Boss intro'],
   gameplay: ['- RULES -', 'Difficulty', 'Game speed', 'Hit stop', 'Iron Knight',
