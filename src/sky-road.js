@@ -154,7 +154,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   plank(A0 + 3, A0 + 8, 9); plank(A1 - 8, A1 - 3, 9);                           /* her old roosts over the rim thermals: a perch to plunge from */
   ent('roc', 415, FL - 1);
   const nest = [404, 426];                                                      /* the woven boards: her dive sticks in them */
-  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'roc', music: 'roc', tint: '#9ab8e0', tintA: 0.06,
+  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'roc', music: 'rocphoenix', tint: '#9ab8e0', tintA: 0.06,
     start: [A0 + 3, FL - 1], nest: [nest[0] * TS, (nest[1] + 1) * TS], eyrie: true };
 
   // ================= the road down =================
@@ -177,7 +177,7 @@ export function buildSkyRoad({ painter, T, TS }) {
       { kind: 'cloak', opens: 'the glide (hold jump as you fall) - the way over every chasm', hud: "THE RIDER'S CLOAK: HOLD JUMP TO GLIDE" },
       { kind: 'loft', opens: "THE RIDERS' LOFT (a silver)", hud: "THE RIDERS' LOFT OPENS" },
     ],
-    music: 'skysail',   /* PLACEHOLDER (no download): the retired sky ship's track until Daniel picks the Sky Road's own (CC0/CC-BY) */
+    music: 'skyroad',   /* "Bring Me The Sky" by Scott Buckley, CC-BY 4.0 (audio/CREDITS.txt) */
     ambient: [{ x0: 0, x1: 99999, kind: 'highair' }],   /* (claude/skyroadart) its own bed: wind whistling through rock, cloth cracking, a far raptor (src/audio.js) */
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     palette: { sky: [[132, 168, 214], [236, 226, 204]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, haze: 'rgba(230,236,244,0.16)', grass: '#8a8a4a', grassL: '#b0a860', grassD: '#5a5a32', dirt: '#8a6a4a', dirtL: '#a8845a', dirtD: '#5a4232', canopy: ['#6a7a8a', '#8a9aaa', '#aab8c8', '#d8e0e8'] },

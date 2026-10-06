@@ -261,3 +261,10 @@ THE UNDEAD ARCHMAGE (2026-10-04, claude/archmage2b, Daniel's pick; the file was 
 THE UNBURIED FIELD (2026-10-04, claude/unburiedart, Daniel's pick 2026-10-03; the file fetched with his yes - the lane downloaded nothing):
 - unburied.ogg = "March of the Wizards" by Aureolus_Omicron, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED; also OGA-BY 3.0) - https://opengameart.org/content/march-of-the-wizards - THE UNBURIED FIELD's level track (the field only; the Death Knight's fight has its own).
   Credit: Aureolus_Omicron (OpenGameArt.org). Looping .ogg, used as supplied.
+
+THE SKY ROAD (2026-10-06, claude/skyroad, Daniel's picks; the files were fetched by the coordinator with his yes - the lane downloaded nothing):
+- skyroad.ogg = "Bring Me The Sky" by Scott Buckley, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://www.scottbuckley.com.au/library/bring-me-the-sky/ - THE SKY ROAD's level track.
+  Credit: "Bring Me The Sky" by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+- rocphoenix.ogg = "Phoenix" (2026) by Scott Buckley, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://www.scottbuckley.com.au/library/phoenix-2026/ - THE ROC's boss theme.
+  Credit: "Phoenix" by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+  Changes: mono; encoded to OGG Vorbis.
