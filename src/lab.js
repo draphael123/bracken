@@ -980,8 +980,13 @@ async function runbossLab(BK, opts) {
           if(m==='whirlTell'){ if(ad<R+8){const out=Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*(R+10)));if(Math.abs(out-boss.x)>R+3)go(out);else if(md<0.24&&P.ground&&!P.labJump){BK.press('jump');P.labJump=16;}} return; }   /* (no room on the deck to step out of it: over it) */
           if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if(SHIELDED(h)&&P.ground){k.block=true;P.face=side;} else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
           if(m==='rideTell'||m==='ride'){ if(m==='ride'&&ad<64&&P.ground&&!P.labJump){BK.press('jump');P.labJump=14;} return; }
-          if(ad>reach2-6)k[side>0?'right':'left']=true;
-          if(ad<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='whirl'){P.face=side;BK.press('atk');swings++;} };
+          /* (claude/sweep1, v2 only) HIS GREED, ON THE DECK: the duel cut him whenever he was in reach, so the reprisal burst took the hands
+             every few seconds (the knight's 152 health went 60% to it). As the other duels do (BK.greed): out of the burst as it is told,
+             and no fifth cut in a row outside his bitten wrench */
+          const Gq=LABP.v2?BK.greed:null,gOpen=BK.bossOpen(boss),greedy=Gq&&!gOpen&&Gq.count(boss)>=Gq.limit(boss)-2;
+          if(Gq&&boss.greedT>0&&ad<(Gq.reach||60)+boss.w/2+18){go(Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*((Gq.reach||60)+boss.w/2+30))));return;}
+          if(ad>reach2-6&&!greedy)k[side>0?'right':'left']=true;
+          if(!greedy&&ad<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='whirl'){P.face=side;BK.press('atk');swings++;} };
         if(busy){}
         else if(ph3&&onF(hf))duel();
         else if((m==='downed'||m==='thrown')&&Math.abs(P.y-(boss.toY??boss.y))<30&&!P.climb){ /* THE BONUS WINDOW: he is down on a ledge beside you - cut */
@@ -997,8 +1002,10 @@ async function runbossLab(BK, opts) {
           if(ph3&&m==='ride'&&Math.abs(boss.x-P.x)<64&&Math.abs(boss.y-P.y)<20&&!P.labJump){BK.press('jump');P.labJump=14;} }   /* (phase three: his skip coming along the line - over it) */
         else if(!ph3&&onTop(tgt)){ /* UP WITH HIM: in to reach, and cut */
           const dx=boss.x-P.x,side=Math.sign(dx)||1;
-          if(Math.abs(dx)>reach2-6)k[side>0?'right':'left']=true;
-          if(Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='letgo'&&m!=='swing'&&m!=='leap'){P.face=side;BK.press('atk');swings++;} }
+          const Gq=LABP.v2?BK.greed:null,greedy=Gq&&!BK.bossOpen(boss)&&Gq.count(boss)>=Gq.limit(boss)-2,q=HS[tgt];   /* (claude/sweep1, v2 only: his greed on his housing, as in the duel below) */
+          if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+boss.w/2+18){const out=boss.x-side*((Gq.reach||60)+boss.w/2+30);go(Math.max(q.x0*TZ+2,Math.min((q.x1+1)*TZ-2,out)));}
+          else { if(Math.abs(dx)>reach2-6&&!greedy)k[side>0?'right':'left']=true;
+          if(!greedy&&Math.abs(dx)<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='letgo'&&m!=='swing'&&m!=='leap'){P.face=side;BK.press('atk');swings++;} } }
         else if(P.climb){ /* ON A LADDER: to the row this housing is reached from, and off it there */
           const lx=Math.floor(P.x/TZ);let want=null,off=0;
           if(ph3){ if(lx===LB){want=row(O.deck);off=Math.sign(deck1-LB);} else k.down=true; }   /* phase three: every ladder leads down - the Head Frame's to the deck */
@@ -1449,7 +1456,9 @@ async function runbossLab(BK, opts) {
         const side = Math.sign(boss.x - gBell.x) || 1; goal = gBell.x - side * 20; strike = false; if (Math.abs(P.x - goal) < 8) P.face = side;   /* (he stops 40 short of a hero: stood 20 this side of the bell, he halts 20 past it - under it) */
         if (Math.abs(boss.x - gBell.x) < 30 && !(gBell.cool > 0) && P.ground && Math.abs(P.x - goal) < 10 && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 22; goal = null; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; goal = null; }
-        if (!P.ground && P.y - gBell.y < 20 && P.y - gBell.y > -20 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; BK.press('atk'); swings++; } }
+        /* (claude/sweep1) THE BELL OVER HIS HEAD: the knight's jump tops out ~27 px under a hung bell, so he never reached it with a level cut -
+           he strikes UP at it (the air up-slash, over his head) near the top of the jump, as a player under a bell does */
+        if (!P.ground && P.y - gBell.y < 48 && P.y - gBell.y > -20 && P.vy > -140 && P.atk < 0 && !(gBell.cool > 0)) { P.face = Math.sign(gBell.x - P.x) || side; if (P.y - gBell.y > 18) k.up = true; BK.press('atk'); swings++; } }
       else if (boss.t === 'closedhelm' && boss.mode && (/Tell$/.test(boss.mode) || boss.mode === 'bash')) { const m = boss.mode, t = boss.modeT; P.face = Math.sign(d) || P.face;
         if (m === 'bash') { if (ad < 60 && (boss.x - P.x) * boss.vx < 0 && f % 4 === 0) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); } }
         else if (m === 'bashTell') { if (ad > 150) goal = null; }
