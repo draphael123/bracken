@@ -34,7 +34,7 @@
 
 export const DJ = {
   hp: 1000, w: 34, h: 64, markH: 92,
-  openMul: 2.5, openT: 5.4, mudT: 4.7, bailT: 7.4, openCap: 0.046, bailCap: 0.07,   /* (claude/djinn5, Daniel 10-06 "increase the time he's staggered": every opening ~+35% -
+  openMul: 2.5, openT: 5.4, mudT: 4.7, bailT: 7.4, openCap: 0.048, bailCap: 0.07,   /* (claude/djinn5, Daniel 10-06 "increase the time he's staggered": every opening ~+35% -
                                                                     mud 3.5 -> 4.7 s, the douse 4.0 -> 5.4, the bail 5.5 -> 7.4; the 3 s ward after each unchanged)
                                                                     a water opening: x openMul, one takes no more than openCap of him
                                                                     (claude/djinn3, Daniel 10-04 "a little too hard": MORE DAMAGE WHEN STUNNED x1.9 -> x2.5,
