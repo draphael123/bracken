@@ -3124,7 +3124,7 @@ const EL_KNIFE = { reach: 220, near: 44, tell: 0.5, stamp: 0.32, strike: 0.18, s
 function updateEliteCutthroat(e, dt) {
   const A = EL_KNIFE, d = P.x - e.x, ad = Math.abs(d), dy = Math.abs(P.y - e.y);
   if (!e.elBack) { e.elT -= dt;
-    if (e.ekSkimAt !== undefined && time - e.ekSkimAt < 1.0 && !(e.stagger > 0) && !eliteLost(e) && !P.dead && ad < A.reach && dy < 30 && !windingUp(e) && elFooted(e) && time - lastTellT >= 0.5) {   /* (after his riposte: the skimmer) */
+    if (e.ekSkimAt !== undefined && e.ekSkimGo && time - e.ekSkimAt < 1.0 && !(e.stagger > 0) && !eliteLost(e) && !P.dead && ad < A.reach && dy < 30 && !windingUp(e) && elFooted(e) && time - lastTellT >= 0.5) {   /* (after his riposte: the skimmer) */
       e.ekSkimAt = undefined; eliteTake(e); e.mode = 'ekSkimTell'; e.modeT = Math.max(0.5, elTell(e, A.skim)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'LOW', '#ff6b6b', 1.0); SFX.feint(); }
     else { if (e.ekSkimAt !== undefined && time - e.ekSkimAt >= 1.0) e.ekSkimAt = undefined;
     if (!eliteMay(e, A.reach)) return false;
@@ -3142,7 +3142,8 @@ function updateEliteCutthroat(e, dt) {
     case 'ekCutOpen': e.vx = 0; if (e.modeT <= 0) elDone(e, A.every); break;   /* THE OPENING: over-reached */
     case 'ekKnifeTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekKnife'; e.modeT = 1.0; elThrow(e, A.v, 10, 'knife'); SFX.throwWhoosh(); } break;
     case 'ekKnife': e.vx = 0; if (elShotStep(e, dt)) damagePlayer(e.shot.x, eliteDmg(A.knife), { who: e, blow: 'the thrown knife' });
-      if (e.modeT <= 0 || !e.shot || e.shot.gone) { e.shot = null; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'ekSkimTell'; e.modeT = Math.max(0.5, elTell(e, A.skim)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'LOW', '#ff6b6b', 1.0); SFX.feint(); } break;
+      if ((e.modeT <= 0 || !e.shot || e.shot.gone) && Math.random() >= 0.6) elDone(e, A.every);   /* (not every time: watch his other hand) */
+      else if (e.modeT <= 0 || !e.shot || e.shot.gone) { e.shot = null; lastTellT = time; e.face = Math.sign(d) || e.face; e.mode = 'ekSkimTell'; e.modeT = Math.max(0.5, elTell(e, A.skim)); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); EK.say(e, 'LOW', '#ff6b6b', 1.0); SFX.feint(); } break;
     case 'ekSkimTell': e.vx = 0; e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'ekSkim'; e.modeT = 1.0; elThrow(e, A.sv, 2, 'knife'); e.shot.low = true; SFX.throwWhoosh(); } break;
     case 'ekSkim': e.vx = 0; { const s = e.shot; if (s && !s.gone) { s.x += s.vx * dt; s.t += dt; if (Math.random() < dt * 20) dust(s.x, e.y, 1);   /* flat along the yard, an inch off it: it goes under a shield and catches a man on his feet or ducked alike */
         if (isSolid(Math.floor(s.x / TS), Math.floor((e.y - 4) / TS)) || s.t > 1.6) s.gone = true;
@@ -3675,7 +3676,7 @@ function updateEliteAffix(e, dt) {
     case 'ekRiposteTell': e.vx = 0; e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'ekRiposte'; e.modeT = 0.2; e.elHit = false; SFX.slash(); } break;
     case 'ekRiposte': e.vx = elEdge(e) ? 0 : e.face * EK.K.ripStep;
       if (!e.elHit && elFront(e, EK.K.ripReach, 22)) { e.elHit = true; damagePlayer(e.x, eliteDmg(EK.K.ripDmg), { who: e, blow: 'the riposte' }); }
-      if (e.modeT <= 0) { e.mode = 'ekRiposteOpen'; e.modeT = EK.K.ripOpen; if (e.t === 'cutthroat') e.ekSkimAt = time; } break;   /* (claude/elitemoves: THE FIRST KNIFE's skimmer follows his riposte - updateEliteCutthroat) */
+      if (e.modeT <= 0) { e.mode = 'ekRiposteOpen'; e.modeT = EK.K.ripOpen; if (e.t === 'cutthroat') { e.ekSkimAt = time; e.ekSkimGo = Math.random() < 0.6; } } break;   /* (claude/elitemoves: THE FIRST KNIFE's skimmer follows his riposte - updateEliteCutthroat) */
     case 'ekRiposteOpen': e.vx = 0; if (e.modeT <= 0) { eliteDone(e); e.elT = Math.max(e.elT, 0.8); } break;
     case 'ekCallTell': e.vx = 0; if (e.modeT <= 0) { eliteCall(e); ringAt(e.x, e.y - e.h / 2, 40, '#c8a0ff', 0.4); shakeCam(3); eliteDone(e); e.elT = Math.max(e.elT, 1.2); } break;
     default: eliteDrop(e, 1.2); return false; }
