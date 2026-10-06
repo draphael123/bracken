@@ -101,7 +101,7 @@ ok(DJ.bailCap > DJ.openCap && DJ.bailCap <= 0.1, 'a bail (two steps to earn) tak
     maxW = Math.max(maxW, S.water); if (S.tide.st === 'surge') sawSurge = true; if (last === 'ebb' && S.tide.st === 'low') cyc++; last = S.tide.st; if (cyc >= 1) minAfter = Math.min(minAfter, S.water); } });
   const ledgeHits = hits.filter(q => q.name === DJG.MOVE_NAME.flood && q.w > G.floor - G.ledgeY);
   ok(sawSurge && said.includes('THE WELL SURGES: THE LEDGES GO UNDER') && maxW >= DJG.highWater(G) - 0.5 && DJG.highWater(G) > G.floor - G.ledgeY, 'THE TIDE: the surge is told and the water rises OVER THE LEDGES (' + maxW.toFixed(0) + ' px, the ledges at ' + (G.floor - G.ledgeY) + ')');
-  ok(ledgeHits.length > 0, 'while the well is high a hero on a ledge stands in it and pays the flood (' + ledgeHits.length + ' ticks)');
+  ok(ledgeHits.length === 0 && DJ.dmg.flood === 0, 'while the well is high a hero on a ledge stands in it - wet, and SAFE: the flood itself costs nothing (claude/djinn4, Daniel 10-05 "no damage from the flood without a tell": a safe spot always exists; ' + ledgeHits.length + ' ticks)');
   ok(cyc >= 1 && minAfter <= DJ.waterH + 0.5 && said.includes('THE WATER FALLS BACK: THE LEDGES ARE DRY'), 'and it ebbs back to ' + minAfter.toFixed(0) + ' px (told): the ledges come back - ' + cyc + ' full cycle(s) in a minute');
   ok(DJ.surgeTell >= 1.2 && DJ.tideRise >= 1.0, 'the surge is told ' + DJ.surgeTell + ' s before it rises, and it takes ' + DJ.tideRise + ' s to reach the ledges: time to climb'); }
 { const deep = []; run(70, { hp: () => 300, x: G.windlass, each: (t, e, S, c, h) => { if (!c.tapped) { c.tapped = 1; c.hit = (bx, d, name, o = {}) => { if (o.deep && h.y >= bx[2] && h.y <= bx[3]) deep.push(d); }; } } });
@@ -150,6 +150,88 @@ ok(DJ.wardT >= 2.5 && DJ.wardT <= 3.5 && [1, 2, 3].every(p => DJG.WARD_LINE[p] &
   ok(!bad.length && seenL.W > 0 && seenL.E > 0 && offLedge.length === 0, 'THE HIGH RIPPLES: each ledge crest runs on its ledge only (W ' + seenL.W + ' / E ' + seenL.E + ' frames), none hits over the open hall (' + offLedge.length + '), none past a wall ' + JSON.stringify(bad.slice(0, 3)));
   ok(DJ.boreH <= 36 && DJ.crestH <= 20, 'the floor bore is ' + DJ.boreH + ' px high and the ledge crest ' + DJ.crestH + ': both jumpable'); }
 { const S = DJG.newShow(G); S.hand = { x: G.ledgeE[0] + 30, y: G.ledgeY - 6, stay: 1, landed: true }; ok(DJG.handOut(S) && OPEN_RULE.djinn({ mode: 'reach', open: 0, hand: 1 }) && !OPEN_RULE.djinn({ mode: 'reach', open: 0, hand: 0 }), 'his slammed hand is out (and OPEN_RULE lets a blow on it land)'); }
+/* ======== claude/djinn4 (Daniel 10-05, "the Djinn is in much better shape" - the flood): EVERY P3 HIT AVOIDABLE, A SLOWER P3, LESS P3 DAMAGE, THE PAIL ======== */
+/* the flood as djinn3 shipped it, for the ratios */
+const P3_WAS = { tell: { upTell: 0.9, spoutTell: 0.85, waveTell: 0.8, slamTell: 0.8, whirlTell: 0.9, surgeTell: 1.6 }, gap: 0.65, colWalk: 100,
+  dmg: { spout: 16, held: 24, wave: 26, slam: 26, whirl: 10, deep: 4, upsurge: 22, flood: 1 } };
+ok(Object.entries(P3_WAS.tell).every(([k, v]) => DJ[k] >= v * 1.18 - 1e-9) && DJ.gap[2] >= P3_WAS.gap * 1.18 && DJ.colWalk <= P3_WAS.colWalk * 0.85,
+  'P3 SLOWER (~20%): every windup x' + Math.min(...Object.entries(P3_WAS.tell).map(([k, v]) => DJ[k] / v)).toFixed(2) + '+ (' + Object.keys(P3_WAS.tell).map(k => k + ' ' + DJ[k]).join(', ') + '), the gap ' + P3_WAS.gap + ' -> ' + DJ.gap[2] + ' s, his glide ' + P3_WAS.colWalk + ' -> ' + DJ.colWalk + ' px/s');
+{ const ks = Object.keys(P3_WAS.dmg).filter(k => k !== 'flood'), mean = ks.reduce((a, k) => a + DJ.dmg[k] / P3_WAS.dmg[k], 0) / ks.length;
+ok(ks.every(k => DJ.dmg[k] <= P3_WAS.dmg[k] * 0.9) && mean <= 0.86 && DJ.dmg.flood === 0, 'P3 LESS DAMAGE (~15%: x' + mean.toFixed(3) + ' on average, none less than 10% off): ' + Object.keys(P3_WAS.dmg).map(k => k + ' ' + P3_WAS.dmg[k] + '->' + DJ.dmg[k]).join(', ') + ' (the shallow flood costs nothing)'); }
+/* EVERY P3 HARM IS LISTED, TOLD >= 0.6 s, AND HAS AN ANSWER */
+{ const names = new Set(Object.keys(DJG.P3_HARMS).map(k => DJG.MOVE_NAME[k]));
+  for (const [k, h] of Object.entries(DJG.P3_HARMS)) ok(h.t() >= 0.6 && ['dodge', 'jump', 'duck', 'block'].includes(h.answer) && h.where && h.how && (h.tell === 'surge' || (MOVES[h.tell] && MOVES[h.tell].mark === '!!')),
+    'P3 harm ' + k.toUpperCase() + ' (' + DJG.MOVE_NAME[k] + '): told ' + h.t().toFixed(2) + ' s by ' + h.where + ' - answer ' + h.answer + ': ' + h.how);
+  const walk = 216 / 92 + 128 / 74 + 0.3;
+  ok(walk <= DJ.surgeTell + DJ.tideRise + DJ.deepTick, 'THE DEEP WATER: from the middle of the hall a hero walks to a ladder and climbs it (' + walk.toFixed(2) + ' s, with a third of a second to read the surge) before the deep floor first bites (' + (DJ.surgeTell + DJ.tideRise + DJ.deepTick).toFixed(1) + ' s after the surge is told)');
+  /* nothing else hurts in the flood: two minutes of P3 against a hero who never answers - every blow that lands is on the list */
+  const got = new Set(); run(120, { hp: () => 300, each: (t, e, S, c) => { if (!c.tap2) { c.tap2 = 1; c.hit = (bx, d, name) => { if (S.ph === 3 && d > 0) got.add(name); }; c.band = (k2, y, x0, x1, d, name) => { if (S.ph === 3 && d > 0) got.add(name); }; } } });
+  ok(got.size >= 4 && [...got].every(n2 => names.has(n2)), 'two minutes of the flood: every blow he throws is a listed P3 harm (' + [...got].join(', ') + ')'); }
+/* THE ANSWERING HERO: a player who reads every tell a third of a second late and answers it as P3_HARMS says - steps off the rings, jumps the bore
+   and the crests, wades out of the whirlpool, climbs a ledge when the well surges - at the game's own RUN (92 px/s), climb (74) and jump (JUMPV -320,
+   GRAV 1000). Six homes across the hall, two minutes each: he is never hit. (No pail: the answers alone are enough) */
+{ const RUN = 92, CLIMB = 74, JV = -320, GR = 1000, REACT = 0.3, dt = 1 / 60, total = {}; let maxHits = 0;
+  for (const home of [G.x0 + 60, G.x0 + 200, G.mid - 40, G.mid + 70, G.x1 - 180, G.x1 - 50]) {
+    const S = DJG.newShow(G), e = { t: 'djinn', x: G.mid + 80, y: G.floor, hp: 300, maxHp: 1000, face: -1, mode: 'wake', modeT: 2, open: 0, alive: true };
+    const h = { x: home, y: G.floor, base: G.floor, vy: 0, air: false, onLedge: null, climb: null, snare: 0 }, seenAt = new Map(), hits = [], dodge = new Map(); let tNow = 0;
+    const box = () => [h.x - 6, h.x + 6, h.y - 26, h.y];
+    const lap = (a, b) => a[0] < b[1] && a[1] > b[0] && a[2] < b[3] && a[3] > b[2];
+    const keys = new Set(), hurt = (name, key) => { if (keys.has(key)) return; keys.add(key); hits.push(name); };
+    const c = { ...world(), hit: (bx, d, name, o = {}) => { if (!(d > 0)) return; if (o.flood && h.y < G.floor - S.water + 4) return; if (lap(bx, box())) hurt(name, o.key || name); },
+      band: (kind, [t0, b0], x0, x1, d, name, key) => { if (h.x < x0 || h.x > x1) return; const bb = box(); if (bb[3] > t0 && bb[2] < b0) hurt(name, key); },
+      grab: (bx, key) => { if (lap(bx, box())) { hurt(DJG.MOVE_NAME.spout, key + 'g'); h.snare = 1; return { pp: {} }; } return null; },
+      pull: (x, v, dt2) => { if (!h.onLedge && !h.climb && DJG.inFlood(S, h)) h.x += Math.sign(x - h.x) * Math.min(Math.abs(x - h.x), v * dt2); } };
+    const seen = k => { if (!seenAt.has(k)) seenAt.set(k, tNow); return tNow - seenAt.get(k) >= REACT; };
+    const span = () => h.onLedge === 'W' ? [G.ledgeW[0] + 8, G.ledgeW[1] - 4] : h.onLedge === 'E' ? [G.ledgeE[0] + 4, G.ledgeE[1] - 8] : [G.x0 + 8, G.x1 - 8];
+    for (; tNow < 125; tNow += dt) {
+      DJG.stepDjinn(e, S, dt, [{ x: h.x, y: h.y, ground: !h.air && !h.climb, alive: true, onLedge: h.onLedge, climb: !!h.climb, pp: { snare: h.snare } }], c);
+      if (S.ph !== 3 || !S.flood) continue;
+      let gx = null; const [lo, hi] = span(), high = DJG.tideHigh(S), lad = Math.abs(h.x - G.ladderW) <= Math.abs(h.x - G.ladderE) ? 'W' : 'E', lx = lad === 'W' ? G.ladderW : G.ladderE;
+      if (h.climb) { h.y -= CLIMB * dt; if (h.y <= G.ledgeY) { h.y = h.base = G.ledgeY; h.onLedge = h.climb; h.climb = null; h.x = h.onLedge === 'W' ? G.ledgeW[1] - 24 : G.ledgeE[0] + 24; } continue; }
+      /* the tide: surging - to the nearest ladder and up; low again - down to the floor */
+      const bore = () => Math.min(9, ...S.bands.filter(b => !b.ledge && Math.sign(h.x - b.x) === b.dir).map(b => (Math.abs(b.x - h.x) - 20) / (b.speed + RUN) + Math.max(0, b.delay || 0)));
+      const climbing = high && !h.onLedge && seen('surge' + S.n.surges);
+      if (climbing) { const wv = e.mode === 'waveTell' && Math.abs(h.x - G.mid) < 260 || bore() < 0.9; if (Math.abs(h.x - lx) < 2 && !h.air && !wv) { h.climb = lad; continue; } gx = lx; }
+      else if (h.onLedge && S.tide.st === 'low' && S.tide.t < DJ.tideLow - 1.5 && !S.marks.length && !S.bands.length) { h.x = h.onLedge === 'W' ? G.ledgeW[1] + 12 : G.ledgeE[0] - 12; h.onLedge = null; h.y = h.base = G.floor; }
+      /* the wave: told under the shaft - stand off it, then jump the bore (or the crest) as it comes */
+      if (e.mode === 'waveTell' && !h.onLedge && !climbing && Math.abs(h.x - G.mid) < 100 && seen('wt' + S.act)) gx = G.mid + (Math.sign(h.x - G.mid) || 1) * 110;
+      for (const b of S.bands) { if (Math.sign(h.x - b.x) !== b.dir && !(b.delay > 0)) continue; if (!(h.base > b.y[0] - 4 && h.base - 20 < b.y[1])) continue;
+        const tc = (Math.abs(b.x - h.x) - 20) / b.speed + Math.max(0, b.delay || 0); if (!h.air && tc > 0.16 && tc < 0.26) { h.air = true; h.vy = JV; } }
+      /* the whirlpool: out from under the shaft, and hold there against the pull */
+      if ((e.mode === 'whirlTell' || e.mode === 'whirl') && !h.onLedge && !climbing && Math.abs(h.x - G.mid) < 100 && seen('wh' + S.act)) gx = G.mid + (Math.sign(h.x - G.mid) || 1) * 110;
+      /* his rings: off the ring (toward the ladder when the well surges; the other way at a wall), and stay off it until his blow is done */
+      for (const m of S.marks) if (!dodge.has(m.key) && Math.abs(m.x - h.x) < 40 && Math.abs(m.y - h.base) < 30) dodge.set(m.key, { seenT: tNow, x: null, m });
+      for (const [k2, d] of dodge) { const live = S.marks.some(m => m.key === k2); if (!live && d.gone == null) d.gone = tNow; if (d.gone != null && tNow - d.gone > (d.m.k === 'spout' ? 0.6 : 0.1)) { dodge.delete(k2); continue; }
+        if (tNow - d.seenT < REACT) continue;
+        if (d.x == null || (high && !d.hi && !h.onLedge)) { d.hi = high; const away = h.x <= d.m.x ? -1 : 1, pref = high && !h.onLedge ? Math.sign(lx - h.x) || away : away; let tx = h.x + pref * 60; if (tx < lo || tx > hi || Math.abs(tx - d.m.x) < 40) tx = h.x - pref * 60; if (Math.abs(tx - d.m.x) < 40) tx = d.m.x + (tx > d.m.x ? 46 : -46); d.x = Math.max(lo, Math.min(hi, tx)); }
+        gx = d.x; }
+      if (gx == null && !h.onLedge && !high) gx = home;
+      if (!h.onLedge && bore() < 0.8) gx = h.x;   /* a bore coming: stand and time the jump */
+      if (gx != null) { gx = Math.max(lo, Math.min(hi, gx)); h.x += Math.sign(gx - h.x) * Math.min(Math.abs(gx - h.x), RUN * dt); }
+      if (h.air) { h.vy += GR * dt; h.y += h.vy * dt; if (h.y >= h.base) { h.y = h.base; h.air = false; h.vy = 0; } }
+      h.snare = 0; }
+    for (const n2 of hits) total[n2] = (total[n2] || 0) + 1; maxHits = Math.max(maxHits, hits.length); }
+  ok(maxHits === 0, 'EVERY P3 HIT AVOIDABLE: a hero who answers every tell (a third of a second late, at RUN/climb/jump speed, from six homes, two minutes each) is never hit ' + JSON.stringify(total)); }
+/* THE PAIL (claude/djinn4, Daniel picked SCOOP + THROW) */
+{ const mk = (mode) => { const S = DJG.newShow(G), e = { t: 'djinn', x: G.mid + 60, y: G.floor, hp: 300, maxHp: 1000, face: -1, mode, modeT: 0.9, open: 0, alive: true }; S.ph = 3; S.pose = 'column'; S.flood = true; S.water = DJ.waterH; S.tide = { st: 'low', t: 99 }; S.act = 7; S.cur = { k: 'slam', id: 7, x: G.mid - 20, y: G.floor }; S.marks = [{ x: G.mid - 20, y: G.floor, t: 0.9, k: 'slam', key: 'sl7' }]; return { S, e }; };
+  const hero = { x: G.mid - 20, y: G.floor, face: 1 }, dryHero = { x: G.ledgeE[0] + 30, y: G.ledgeY, face: -1 };
+  { const { S } = mk('hover'), p = { full: false }, p2 = { full: false }; S.ph = 2; const before = DJG.scoopPail(S, p2, hero); S.ph = 3;
+    ok(!before && !DJG.scoopPail(S, p, dryHero) && DJG.scoopPail(S, p, hero) && p.full && !DJG.scoopPail(S, p, hero), 'THE PAIL: scooped full in the flood, at once (not on a dry ledge, not before the flood, not twice)'); }
+  for (const rear of ['slamTell', 'spoutTell', 'slam']) { const { S, e } = mk(rear), p = { full: true }, c = world(); let hurt = 0, slams = 0; c.hurtBoss = (b, d) => { hurt += d; }; c.hit = (bx, d, name) => { if (name === DJG.MOVE_NAME.slam || name === DJG.MOVE_NAME.spout) slams++; }; c.grab = () => { slams++; return null; };
+    if (rear === 'spoutTell') { S.cur = { k: 'spout', id: 7, x: hero.x, y: G.floor }; S.marks = [{ x: hero.x, y: G.floor, t: 0.9, k: 'spout', key: 'sp7' }]; }
+    ok(DJG.rearing(e, S) && DJG.throwPail(e, S, hero, p, c) && !p.full, 'he REARS UP (' + rear + '): the pail is thrown at his core');
+    let peak = 0; for (let i = 0; i < 60 * 4; i++) { DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c); peak = Math.max(peak, e.mode === 'choked' ? e.open : 0); if (S.ward > 0) break; }
+    ok(peak >= DJ.chokeT - 0.1 && OPEN_RULE.djinn({ mode: 'choked', open: 1 }) && slams === 0 && hurt === Math.round(1000 * DJ.chokeHit) && said.includes('HE CHOKES: CUT HIM') && S.ward > 0,
+      '... it goes down his core: he CHOKES (' + peak.toFixed(1) + ' s still, open, OPEN_RULE agrees), the throw takes ' + (DJ.chokeHit * 100) + '% of him, his ' + rear + ' never lands, then his shroud (the ward)'); }
+  { const { S, e } = mk('hover'), p = { full: true }, c = world(); DJG.throwPail(e, S, hero, p, c); for (let i = 0; i < 60; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c);
+    ok(!DJG.djOpen(e) && S.n.splashed === 1 && said.includes('IT SPLASHES OFF HIM: THROW WHEN HE REARS UP'), 'thrown when he is not rearing, it splashes off him (told): nothing'); }
+  { const { S, e } = mk('slamTell'), p = { full: true }, c = world(); S.ward = 2; DJG.throwPail(e, S, hero, p, c); for (let i = 0; i < 40; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c);
+    ok(!DJG.djOpen(e) && said.includes('HIS SHROUD TURNS THE PAIL'), 'warded, his shroud turns the pail (told): no chain-lock'); }
+  { const { S, e } = mk('slamTell'), p = { full: true }, c = world(); e.x = hero.x + DJ.pailR + 40; DJG.throwPail(e, S, hero, p, c); for (let i = 0; i < 40; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: hero.x, y: G.floor, ground: true, alive: true, pp: {} }], c);
+    ok(e.mode !== 'choked' && !p.full, 'out of a throw (' + DJ.pailR + ' px), the pail falls short into the flood'); }
+  ok(DJ.chokeHit + DJ.chokeCap < DJ.bailCap && DJ.chokeT < DJ.bailT, 'the pail is the SMALL opening (' + ((DJ.chokeHit + DJ.chokeCap) * 100).toFixed(1) + '% at most, ' + DJ.chokeT + ' s), the windlass bail the BIG one (' + DJ.bailCap * 100 + '%, ' + DJ.bailT + ' s)');
+  ok([...DJG.REAR].every(m => m === 'slam' || (MOVES[m] && MOVES[m].mark === '!!' && MOVES[m].alt === 'throw')), 'his rears (the slam, the spout) are told !!; their answer is a dodge - or the pail (MOVES alt: throw)'); }
+{ run(60, { hp: () => 300 }); ok(said.includes('HE REARS UP: THROW THE PAIL INTO HIS CORE'), 'the first time he rears up in the flood it is told: HE REARS UP: THROW THE PAIL INTO HIS CORE'); }
 /* THE LINES, THE LEVEL, THE BENCH */
 const lines = [...new Set(said)].filter(s => !/^!+$/.test(s)); ok(lines.every(s => CALL_LINES.has(s)), 'every line he says is a teaching line in src/hint-lines.js (' + lines.length + ')');
 { const lv = LEVELS.find(l => l.id === 'welltown'), L = lv.build(); ok(L.arena.boss === 'djinn' && L.ents.some(e => e.t === 'djinn') && !L.ents.some(e => e.t === 'cisternqueen'), "THE WELL TOWN's boss is THE DJINN in the old well's hall; the Cistern Queen is not placed");

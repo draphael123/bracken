@@ -6,7 +6,7 @@
 //   drawDjinn(g, e, S, x, y, time)   x, y = his base on screen.   drawOver(g, e, S, cx, cy, time) his tells and what he throws.   bakeDjinn() -> a sprite set
 import { canvas, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
-import { DJ } from '../djinn.js';
+import { DJ } from '../djinn.js'; import * as DJG from '../djinn.js';
 const DJ_SPEAR_TELL = DJ.spearTell;
 
 const R = Math.round;
@@ -72,7 +72,7 @@ export function drawDjinn(g, e, S, x, y, time) {
   if (m === 'blastTell' || m === 'blast' || m === 'devilTell' || m === 'pillarTell' || m === 'pillar' || m === 'catch' || m === 'rise') o.arm = 'up';
   if (m === 'spearsTell' || m === 'spears' || m === 'whirlTell' || m === 'whirl') o.arm = 'slam'; if (m === 'firedevilTell' || m === 'firedevil') o.arm = 'cast';   /* (claude/djinn2: his new moves - both fists down for the spears and the well's turn, a cast for the fire devil) */
   if (m === 'breathTell' || m === 'breath') o.breath = true; if (m === 'slamTell' || m === 'spoutTell') o.arm = 'up'; if (m === 'slam' || m === 'reach') o.arm = 'slam';
-  if (m === 'mud' || m === 'doused' || m === 'bailed') o.slump = true;
+  if (m === 'mud' || m === 'doused' || m === 'bailed' || m === 'choked') o.slump = true;   /* (claude/djinn4: and choked on the pail) */
   if (m === 'upsurgeTell' || m === 'upsurge') o.arm = 'slam'; if (m === 'drawing') o.arm = 'up';   /* (claude/djinn3) both fists down for the blow from below; arms up to drink the well */
   g.save(); g.translate(x, y);
   if (S.pose === 'column') { o.k = 1.5; g.translate(0, -Math.min(40, (S.water || 0) * 0.6)); }
@@ -109,6 +109,11 @@ export function drawDjinn(g, e, S, x, y, time) {
     else if (S.ph === 2) { g.globalAlpha = 0.18 + 0.12 * Math.abs(Math.sin(time * 10)); ell(g, '#fff2c0', x, y - 34, 17 + 34, 40); g.globalAlpha = 0.5; ell(g, '#ffffff', x, y - 40, 16, 30); g.globalAlpha = 1;
       g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 34, 17 + 34, 40, 0, 0, Math.PI * 2); g.stroke(); }
     else { g.strokeStyle = '#bfe4ff'; g.lineWidth = 2; for (let i = 0; i < 4; i++) { const yy = cy0 - ry * 0.7 + i * ry * 0.45, ph = time * 7 + i * 1.3; g.globalAlpha = 0.5 + 0.3 * w; g.beginPath(); g.ellipse(x, yy, rx, 7, 0, ph % (Math.PI * 2), ph % (Math.PI * 2) + Math.PI * 1.3); g.stroke(); } g.globalAlpha = 1; } }
+  /* (claude/djinn4) HE REARS UP: his CORE lights in the column - a white-gold heart, pulsing - the pail's target. CHOKED: water gouts out of it */
+  if (S.pose === 'column' && (DJG.REAR.has(m) || m === 'choked')) { const lift = Math.min(40, (S.water || 0) * 0.6), cy0 = y - 96 - lift, p = 0.5 + 0.5 * Math.sin(time * 16);
+    if (m === 'choked') { for (let i = 0; i < 8; i++) { const ph = (time * 2.2 + i / 8) % 1; g.globalAlpha = 1 - ph; fr(g, i % 2 ? '#e8f8ff' : '#7ab8e8', x + Math.sin(i * 2.1 + time * 5) * 10 * ph, cy0 - 4 - ph * 34, 2, 3); } g.globalAlpha = 1; }
+    else if (!(S.ward > 0)) { g.globalAlpha = 0.35 + 0.35 * p; ell(g, '#fff6c8', x, cy0, 11 + 3 * p, 11 + 3 * p); g.globalAlpha = 1; ell(g, '#ffd36b', x, cy0, 6, 6); fr(g, '#ffffff', x - 1, cy0 - 3, 2, 2);
+      g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.arc(x, cy0, 16 + 3 * p, 0, Math.PI * 2); g.stroke(); } }
   /* a blade through him: grains (sand), sparks (fire) or a splash (water) where it went */
   if (e.passFx > 0) { const c = look === 'fire' ? '#ffd36b' : look === 'water' ? '#e8f8ff' : '#f2dca0'; for (let i = 0; i < 5; i++) fr(g, c, x + (i - 2) * 6, y - 40 - i * 4, 2, 2); }
 }
@@ -175,7 +180,14 @@ export function drawOver(g, e, S, cx, cy, time) {
     g.strokeStyle = 'rgba(255,255,255,' + (0.55 + 0.45 * p) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - 6, 16 + p * 3, 0, Math.PI * 2); g.stroke();
     const k2 = 2 + R(p * 2); fr(g, '#ffffff', x, y - 28 - k2, 1, 2 * k2 + 1); fr(g, '#ffffff', x - k2, y - 28, 2 * k2 + 1, 1);
     g.fillStyle = '#1b1626'; g.fillRect(x - 12, y + 4, 24, 2); g.fillStyle = '#8fd160'; g.fillRect(x - 12, y + 4, R(24 * Math.max(0, S.hand.stay / 1.5)), 2); }
-  if (e.open > 0) { const x = X(e.x), y = R(e.y - 100 - cy), k = Math.max(0, e.open / (e.mode === 'mud' ? DJ.mudT : e.mode === 'bailed' ? DJ.bailT : DJ.openT)); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y, 40, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 20, y, R(40 * k), 3); }
+  /* THE PAILS in flight (claude/djinn4): a brimming pail tumbling at his core, water streaming off it */
+  for (const p of S.pails || []) { const px = X(p.x), py = R(p.y - cy); drawPail(g, px, py + 4, true, time); for (let i = 0; i < 3; i++) fr(g, '#e8f8ff', px - (p.tx > p.x0 ? 1 : -1) * (4 + i * 4), py + 1 + i, 2, 1); }
+  /* OPEN (design standard B10 - the one read every boss shares; claude/djinn4): a GOLD RING round him, OPEN over him, a gold clock running down under it */
+  if (e.open > 0) { const T = e.mode === 'mud' ? DJ.mudT : e.mode === 'bailed' ? DJ.bailT : e.mode === 'choked' ? DJ.chokeT : DJ.openT, k = Math.max(0, e.open / T), p = 0.5 + 0.5 * Math.sin(time * 10);
+    const o = openRing(e, S), bx = X(e.x), by = R(o.y - cy), rx = o.rx, ry = o.ry;
+    g.globalAlpha = 0.55 + 0.4 * p; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, by, rx, ry, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    const ty = by - ry - 12; g.fillStyle = '#1b1626'; g.fillRect(bx - 20, ty + 4, 40, 3); g.fillStyle = '#ffd36b'; g.fillRect(bx - 20, ty + 4, R(40 * k), 3);
+  }
   /* HIS WARD's clock (claude/djinn2): a pale bar over him that runs down - when it is gone, the water takes again */
   if (S.ward > 0 && !(e.open > 0)) { const x = X(e.x), y = R(e.y - (S.pose === 'column' ? 190 : 100) - cy), k = Math.max(0, S.ward / DJ.wardT); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y, 40, 3); g.fillStyle = S.ph === 2 ? '#fff2c0' : S.ph === 3 ? '#bfe4ff' : '#e8d8a0'; g.fillRect(x - 20, y, R(40 * k), 3); }
 }
@@ -196,6 +208,13 @@ export function drawWindlass(g, x, y, b, time) {
   if (b.st === 'up') { const p = 0.5 + 0.5 * Math.sin(time * 8); fr(g, '#7ab8e8', x - 1, y - 26, 3, 3); g.globalAlpha = p; fr(g, '#ffffff', x, y - 30, 1, 3); fr(g, '#ffffff', x - 1, y - 29, 3, 1); g.globalAlpha = 1; }
   else if (b.st === 'down' && !(b.t > 0)) { fr(g, '#ffd36b', x - 1, y - 26, 3, 3); }   /* (in the flood: down and ready to wind - a gold pip) */
 }
+/* THE OPEN RING's place round him, by pose (the word OPEN goes over it: src/djinn-hands.js drawOver) */
+export function openRing(e, S) { const col = S.pose === 'column', sp = S.pose === 'spilled'; const ry = col ? 84 : sp ? 22 : 40;
+  return { y: e.y - (col ? 80 + Math.min(40, (S.water || 0) * 0.6) : sp ? 16 : 34), rx: col ? 34 : sp ? 34 : 24, ry, top: e.y - (col ? 80 + Math.min(40, (S.water || 0) * 0.6) : sp ? 16 : 34) - ry - 12 }; }
+/* (claude/djinn4) THE PAIL: a little wooden pail - staves, two hoops, a rope bail - brimming blue with a glint when it is full */
+export function drawPail(g, x, y, full, time) { fr(g, '#4a3222', x - 4, y - 8, 8, 8); fr(g, '#6a4a2a', x - 3, y - 8, 2, 8); fr(g, '#6a4a2a', x + 1, y - 8, 2, 8); fr(g, IRON, x - 4, y - 7, 8, 1); fr(g, IRON, x - 4, y - 2, 8, 1);
+  fr(g, '#c9b27c', x - 4, y - 11, 1, 3); fr(g, '#c9b27c', x + 3, y - 11, 1, 3); fr(g, '#c9b27c', x - 3, y - 12, 6, 1);
+  if (full) { fr(g, '#3a7ab8', x - 3, y - 9, 6, 2); fr(g, '#bfe6f5', x - 2, y - 9, 2, 1); if (Math.sin(time * 6) > 0.6) fr(g, '#ffffff', x + 1, y - 10, 1, 1); } }
 /* THE GREAT BUCKET down the shaft: hanging high (up), dropping (fall), winding up out of the flood (wind), lying in it (down) */
 export function drawBucket(g, mx, vy, fy, S, time) {
   const b = S.bucket, topY = vy - 60, lowY = S.ph === 3 && S.flood ? fy - 16 : vy + 30;

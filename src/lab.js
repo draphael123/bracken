@@ -1163,11 +1163,12 @@ async function runbossLab(BK, opts) {
       if(boss.t==='djinn'){
         /* THE DJINN OF THE GREAT WELL (claude/welltown5): src/djinn.js djinnPlan reads what a player sees - his tells a quarter-second late (some misread), the
            marks on the floor, the devil and the waves, his hand on a ledge - and works the level's verb: it fills the skin at a spring, pours on him (mud, then
-           the douse), douses itself, climbs to the east ledge in the flood and strikes the crank, and cuts in his openings. It rests inside its own branch */
+           the douse), douses itself, climbs to the east ledge in the flood and strikes the crank, and cuts in his openings. It rests inside its own branch.
+           (claude/djinn4) THE PAIL: in the flood it scoops its pail a step off the windlass and throws it (E; a strike by the windlass) when he rears up in reach */
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const DH=BK.djinnHands(),S=DH&&DH.show();
         if(f===0||!P.labDjMem)P.labDjMem={};
-        const pl=S?djinnPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
+        const pl=S?djinnPlan({tip:h==='warden'?WARDEN_TIP:0,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,climb:!!P.climb,onLedge:DH.onLedge(P),snare:P.snare||0,burn:P.djBurn||0,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,S,sips:(P.skin&&P.skin.sips)||0,pail:P.djPail?(P.djPail.full?'full':'empty'):'',reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',t:f/60,rng:Math.random,mem:P.labDjMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&(P.ground||P.climb)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
