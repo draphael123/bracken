@@ -174,6 +174,8 @@ import { initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxF
 import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
+import * as DCARD from './death-card.js';   /* THE DEATH CARD AND ITS RECAP (claude/uiscreens) */
+import * as MCARD from './map-card.js';   /* THE MAP CARD'S POSTCARD (claude/uiscreens) */
 import * as OP from './opening-panels.js';   /* THE FIRST-RUN OPENING (claude/uiscreens): four illustrated panels before the first hero pick */
 import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscreens): the wood closed over the picture, the fronds part, the knight walks in */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
@@ -3927,16 +3929,17 @@ function drawMap() {
   g.drawImage(PROP.compass, VW - 30, VH - 52);
   // header + node card
   { const region = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); if (map.regionT > 0) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
-  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); text(mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', 6, 5, UI.title);
+  g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); { const hn = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', bg = inkW(hn, 8) <= 90; text(hn, 6, bg ? 5 : 7, UI.title, 'left', bg ? 8 : 6); }   /* (THE ROAD INLAND drops to the small hand, so the counters beside it do not collide) */
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
      spoiler to say they exist. */
   { const real = LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])); const cl = real.filter(lv => PROG[lv.id] && PROG[lv.id].cleared).length;
     const md = real.reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0), mdMax = real.length * 3;
-    g.drawImage(FLAG, 92, 4); text(cl + '/' + real.length, 104, 7, UI.dim, 'left', 6);
-    g.fillStyle = md >= mdMax ? MEDAL_COL[3] : '#8a8378'; g.beginPath(); g.arc(140, 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(139, 8, 2, 2);
-    text(md + '/' + mdMax, 148, 7, UI.dim, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
+    const hn2 = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', hdrW = inkW(hn2, inkW(hn2, 8) <= 90 ? 8 : 6), hx = Math.max(92, Math.round(6 + hdrW + 10));   /* (the counters start after the region's name: THE ROAD INLAND ran under the flag) */
+    g.drawImage(FLAG, hx, 4); text(cl + '/' + real.length, hx + 12, 7, UI.dim, 'left', 6);
+    g.fillStyle = md >= mdMax ? MEDAL_COL[3] : '#8a8378'; g.beginPath(); g.arc(hx + 48, 9, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(hx + 47, 8, 2, 2);
+    text(md + '/' + mdMax, hx + 56, 7, UI.dim, 'left', 6); } g.drawImage(PROP.coin[Math.floor(time * 8) % 4], VW - 62, 5); text(String(PROG.coins), VW - 6, 6, '#ffd34a', 'right'); { g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], VW - 112, 5); text(String(silverAvail()), VW - 78, 6, '#dfe8ff', 'right'); }
   const nd = NODES[map.node];
   if (!map.walking) {
     const store = nd.kind === 'store';
@@ -3944,7 +3947,7 @@ function drawMap() {
     const cx0 = pp.x, cy0 = pp.y;   /* the corner (and the camera height, in updateMap) that hides nothing around this node: placePanel */
     panel(cx0, cy0, cw, ch, UI.sel);
     { const secret = nd.kind === 'level' && LEVELS[nd.level].secret && nodeLocked(nd);
-      text(fitText(secret ? '? ? ?' : nd.name, cw - 52, 8), cx0 + 8, cy0 + 5, UI.title); }
+      { const nm0 = secret ? '? ? ?' : nd.name, big = inkW(nm0, 8) <= cw - 52; text(big ? nm0 : fitText(nm0, cw - 52, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
@@ -3959,22 +3962,27 @@ function drawMap() {
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
-      text(fitText(lv.sub || '', cw - 80, 6), cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
-      { const D = DIFF[diffOf(id)], rx = cx0 + cw - 8; text(D.label, rx, cy0 + 16, D.col, 'right', 6); const ax = rx - D.label.length * 6 - 8; g.fillStyle = D.col; g.fillRect(ax + 1, cy0 + 16, 1, 1); g.fillRect(ax, cy0 + 17, 3, 1); g.fillRect(ax, cy0 + 20, 3, 1); g.fillRect(ax + 1, cy0 + 21, 1, 1); } // this wood's difficulty, and the up/down that changes it
-      // line one: your best, and what it was worth
-      const M = MEDALS[id] || [300, 450, 660];
-      text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', cx0 + 8, cy0 + 26, hasRun ? UI.text : UI.dim, 'left', 6);
-      if (p.medal) { g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(cx0 + 94, cy0 + 28, 4, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(cx0 + 93, cy0 + 27, 2, 2); text(MEDAL_NAME[p.medal], cx0 + 102, cy0 + 26, MEDAL_COL[p.medal], 'left', 6); }
-      else text('GOLD AT ' + fmt(M[0]), cx0 + 92, cy0 + 26, UI.dim, 'left', 6);
-      text(p.cleared ? 'CLEARED' : '', cx0 + cw - 8, cy0 + 26, UI.sel, 'right', 6);
-      // line two: what is still in there
+      text(fitText(lv.sub || '', cw - 14, 6), cx0 + 8, cy0 + 15, UI.dim, 'left', 6);   /* (the whole width: the difficulty moved down beside the recommended level, so the blurb stops being cut short) */
+      /* A POSTCARD of the country this node sits in, and beside it: your best, the three medal times, what is found and what is owed (the old card said "OPEN" and "0/?") */
+      MCARD.drawPostcard(g, cx0 + 8, cy0 + 24, 40, 30, MCARD.regionAt(nd.y, { INLAND: INLAND_Y, COAST: COAST_Y, CRAG: CRAG_Y, WOOD: WOOD_Y }), !!(lv.night || lv.dark), time);
+      const M = MEDALS[id] || [300, 450, 660], rx = cx0 + 54, r1 = cy0 + 25, r2 = cy0 + 33, r3 = cy0 + 41, r4 = cy0 + 49;
+      text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', rx, r1, hasRun ? UI.text : UI.dim, 'left', 6);
+      if (p.medal) { const mx = rx + 62; g.fillStyle = MEDAL_COL[p.medal]; g.beginPath(); g.arc(mx + 2, r1 + 3, 3, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(mx + 1, r1 + 2, 2, 2); text(MEDAL_NAME[p.medal], mx + 8, r1, MEDAL_COL[p.medal], 'left', 6); }
+      text(p.cleared ? 'CLEARED' : '', cx0 + cw - 8, r1, UI.sel, 'right', 6);
+      /* THE MEDAL LEGEND: gold, silver, bronze and the time each wants; a filled disc is a medal you hold */
+      { let lx = rx; [3, 2, 1].forEach((rank, i) => { const held = (p.medal || 0) >= rank; g.fillStyle = held ? MEDAL_COL[rank] : 'rgba(255,255,255,0.14)'; g.beginPath(); g.arc(lx + 2, r2 + 3, 2.5, 0, 7); g.fill(); if (!held) { g.strokeStyle = MEDAL_COL[rank]; g.lineWidth = 1; g.beginPath(); g.arc(lx + 2, r2 + 3, 2.5, 0, 7); g.stroke(); }
+        const tt = fmt(M[i]).replace(/\.\d$/, ''); text(tt, lx + 7, r2, held ? MEDAL_COL[rank] : UI.dim, 'left', 6); lx += 12 + inkW(tt, 6); }); }
+      // what is still in there: silver, gold, the quest
       const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length;
-      let bx = cx0 + 8; const by = cy0 + 36;
-      g.drawImage(PROP.silver[0], bx, by - 1); text(sv + '/3', bx + 12, by, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 30;
-      g.drawImage(PROP.coin[0], bx, by - 1); text((p.gold || 0) + '/' + (p.total || '?'), bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 40;
-      g.drawImage(PROP.questIcon, bx, by - 1); text(p.quest ? 'DONE' : 'OPEN', bx + 12, by, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 40;
+      let bx = rx; const by = r3;
+      g.drawImage(PROP.silver[0], bx, by - 1); text(sv + '/3', bx + 12, by, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 32;
+      g.drawImage(PROP.coin[0], bx, by - 1); text((p.gold || 0) + '/' + (p.total || '?'), bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 42;
+      g.drawImage(PROP.questIcon, bx, by - 1); text(p.quest ? 'QUEST DONE' : 'QUEST OPEN', bx + 12, by, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 12 + inkW('QUEST OPEN', 6) + 6;
       if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
       if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
+      // the recommended level (what the wood expects: it pays x3 XP below it), and the difficulty with its up/down
+      { const want = LEVEL_DEPTH[id] || 0, mine = heroLevel(); if (want) text('RECOMMENDED LV ' + want, rx, r4, mine >= want ? '#8fd160' : '#ff9a5c', 'left', 6); else text('NO LEVEL NEEDED', rx, r4, UI.dim, 'left', 6);
+        const D = DIFF[diffOf(id)], dx = cx0 + cw - 8; text(D.label, dx, r4, D.col, 'right', 6); const ax = dx - inkW(D.label, 6) - 8; g.fillStyle = D.col; g.fillRect(ax + 1, r4, 1, 1); g.fillRect(ax, r4 + 1, 3, 1); g.fillRect(ax, r4 + 4, 3, 1); g.fillRect(ax + 1, r4 + 5, 1, 1); }
       }
     }
   }
@@ -25308,6 +25316,7 @@ const inkNow = () => (INKS.find(i => i.id === SET.ink) || INKS[0]).c;
 const themeNow = () => UI_THEMES.find(t => t.id === SET.uiTheme) || UI_THEMES[0];
 function applyLook() { const t = themeNow(); for (const k of ['text', 'title', 'dim', 'border', 'sel', 'gold', 'silver']) UI[k] = t[k]; UI.plate = t.plate;
   if (SET.ink && SET.ink !== 'parchment') { UI.text = inkNow(); UI.title = inkNow(); } }
+let deathRecap = null;   /* { k: the killer record, t: seconds since the respawn }: the line under the timer after a death */
 let soundNoteT = 0, winT = 0, winStamped = false, hintT = 0, hintMsg = '';
 // WHAT IT SAYS WHEN THE THING IS DEAD. One line for every creature that holds an arena, in its own words.
 const BOSS_FELL = { djinn: 'THE WELL RUNS FREE', cisternqueen: 'THE WELLS RUN FREE', gorgecrab: 'THE DAM IS QUIET', duneworm: 'THE SAND LIES STILL', wickerqueen: 'THE FAIR IS OVER', greenteeth: 'THE LOCK LIES STILL', puppeteer: 'THE CURTAIN FALLS', deathknight: 'THE BATTLE IS OVER', bloodknight: 'THE BATTLE IS OVER', winchmaster: 'THE ROAD STOPS RUNNING', gargoyle: 'THE TOWER GATE STANDS OPEN', pyromancer: 'THE VILLAGE STOPS BURNING', bellcrab: 'THE BELL FALLS SILENT', archmage: 'THE TOWER IS QUIET', strawking: 'THE FIELD GOES OUT', prince: 'HE IS LET LIE', closedhelm: 'HE KNEELS, AND THE WARD GOES OUT', kraken: 'THE SEA LETS GO', troll: 'THE HILL LETS YOU THROUGH', masthead: 'THE SAILS COME DOWN', grandmother: 'SHE SLEEPS NOW', queen: 'THE QUEEN FALLS', frog: 'THE KING CROAKS', chief: 'OUT OF THE FIRE',
@@ -29153,7 +29162,8 @@ function render() {
   } else { winT = 0; winStamped = false; }
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH);
     /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */
-    if (P.killer && P.dead < 0.95) { const k = P.killer; g.globalAlpha = Math.min(1, (0.95 - P.dead) * 5); text(killerLine(k), VW / 2, VH / 2 + 22, k.rule ? (k.red ? (SET.colorSafe ? '#5aa8ff' : '#ff6b6b') : '#ffd36b') : '#fff6e0', 'center', 6, 'outline'); { let ly = VH / 2 + 30; for (const [s2, c2] of dcLine()) { text(s2, VW / 2, ly, c2, 'center', 6, 'outline'); ly += 8; } } g.globalAlpha = 1; } }
+    if (P.killer && P.dead < 1.1) { deathRecap = { k: P.killer, t: 0 }; DCARD.drawDeathCard(g, text, fitText, UI, { k: P.killer, cost: dcLine(), a: Math.min(1, (1.1 - P.dead) * 6), VW, VH, colorSafe: SET.colorSafe }); } }   /* THE DEATH CARD (src/death-card.js): who, the blow, the tell you missed, what it cost */
+  else if (deathRecap && state === 'play') { deathRecap.t += 1 / 60; DCARD.drawRecap(g, text, fitText, UI, { k: deathRecap.k, t: deathRecap.t, VW, colorSafe: SET.colorSafe }); if (deathRecap.t > DCARD.RECAP_S) deathRecap = null; }   /* and a line under the timer for a few seconds after the respawn */
   if (!audioReady() && state === 'play') {
     const SOUND_Y = 16, t0 = (soundNoteT += 1 / 60), full = t0 < 10,   /* TOP CENTRE, under the timer: never the bottom row, where the boss name and bar are */ k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
     if (full || k > 0) { const lab = touchOn ? 'TAP A BUTTON FOR SOUND' : 'PRESS A KEY FOR SOUND', w = lab.length * 6 + 24;   /* on a phone there is no key: a tap on the pad is what starts the audio */
