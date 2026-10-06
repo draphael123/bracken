@@ -96,14 +96,14 @@
   "bare": true
  },
  "skyroad": {
-  "hash": "41fd3263fae6",
+  "hash": "3b1e589175e5",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 21,
+  "hits": 24,
   "deaths": 0,
-  "kills": 10,
-  "lifts": 43,
+  "kills": 7,
+  "lifts": 50,
   "walked": 100,
   "bare": true
  }
