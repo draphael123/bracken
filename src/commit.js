@@ -100,25 +100,30 @@ export const ROLL_SHAVE_CAP = 4;    /* the most the shaves (level ranks, LIGHT S
 export const dashInv = len => Math.min(STAM.rollInv, len * STAM.rollInv / 0.30);
 export const dashCost = (h, base) => Math.max(base, (ROLL_COST[h] || 24) + 4);
 
-let BIND = { lvGrow: () => 0, lungs: () => false, fleet: () => false };
+let BIND = { lvGrow: () => 0, lungs: () => false, fleet: () => false, rest: () => false, lean: () => false, wind: () => false };   /* (LEVELING2: rest = STEADY BREATH, lean = ENDURANCE 10, wind = ENDURANCE 20) */
 export const bindStamina = o => { BIND = { ...BIND, ...o }; };
 /* THE SEAM: everything the level / card / perks grow about stamina, read in one place */
 export function staminaOf(P) {
   return { max: P.maxSt, regenMul: (1 + 0.07 * BIND.lvGrow()) * (BIND.lungs() ? 1.2 : 1), rollCostMul: BIND.fleet() ? 0.75 : 1 };
 }
+/* LEVELING2: the wait before stamina returns (STEADY BREATH shortens it a fifth) and ENDURANCE 10's lean roll (a fifth cheaper below half a bar) */
+export const delayOf = () => STAM.delay * (BIND.rest() ? 0.8 : 1);
+export const leanMul = P => (BIND.lean() && P.st < P.maxSt / 2) ? 0.8 : 1;
+export const SECOND_WIND = { to: 0.4, wait: 45 };   /* ENDURANCE 20: the first time the bar would empty, it comes back to 40%, and again no sooner than 45 s later */
 export function rollCost(P, h, { back = false, shave = 0 } = {}) {
   const base = back ? STEP_BACK_COST : (ROLL_COST[h] || 24);
-  return Math.max(6, Math.round((base - Math.min(ROLL_SHAVE_CAP, shave)) * staminaOf(P).rollCostMul));
+  return Math.max(6, Math.round((base - Math.min(ROLL_SHAVE_CAP, shave)) * staminaOf(P).rollCostMul * leanMul(P)));
 }
 
 export const winded = P => !!P.winded;
 /* a fresh start (a reset, a respawn, a new level): no recovery, no held press, not winded */
-export function clearCommit(P) { P.atkRec = 0; P.winded = false; P.exhaustT = 0; P.windedNew = false; P.sbuf = null; P.sbufFresh = false; P.holdK = null; P.holdPrev = null; }
-export function exhaust(P) { P.st = 0; P.winded = true; P.exhaustT = STAM.exhausted; P.windedNew = true; }
+export function clearCommit(P) { P.windUsedT = 0; P.atkRec = 0; P.winded = false; P.exhaustT = 0; P.windedNew = false; P.sbuf = null; P.sbufFresh = false; P.holdK = null; P.holdPrev = null; }
+export function exhaust(P) { if (BIND.wind() && !(P.windUsedT > 0)) { P.windUsedT = SECOND_WIND.wait; P.st = SECOND_WIND.to * P.maxSt; P.winded = false; P.exhaustT = 0; P.windSurge = true; return; }   /* SECOND WIND (ENDURANCE 20) */
+  P.st = 0; P.winded = true; P.exhaustT = STAM.exhausted; P.windedNew = true; }
 /* SPEND, WITH LAST WIND: enough - pay it; not enough but something left and not winded - pay it all and be exhausted; else refused */
 export function trySpend(P, cost) {
-  if (P.st >= cost) { P.st -= cost; P.stDelay = Math.max(P.stDelay || 0, STAM.delay); if (P.st <= 1e-6 && cost > 0) exhaust(P); return true; }
-  if (P.st > 0 && !P.winded) { exhaust(P); P.stDelay = Math.max(P.stDelay || 0, STAM.delay); return true; }
+  if (P.st >= cost) { P.st -= cost; P.stDelay = Math.max(P.stDelay || 0, delayOf()); if (P.st <= 1e-6 && cost > 0) exhaust(P); return true; }
+  if (P.st > 0 && !P.winded) { exhaust(P); P.stDelay = Math.max(P.stDelay || 0, delayOf()); return true; }
   P.stFlash = 0.35; return false;
 }
 /* A REFUND (never while the exhausted beat runs, never more than refundCap) */
@@ -137,7 +142,8 @@ export function staminaTick(P, dt, { extra = 1, hold = false, hero = null } = {}
   P.regenOff = false;
   if ((P.exhaustT || 0) > 0) { P.exhaustT = Math.max(0, P.exhaustT - dt); P.regenOff = true; return; }
   const paused = regenPaused(P), busy = (hero && STAM.busyRegenBy[hero] !== undefined) ? STAM.busyRegenBy[hero] : STAM.busyRegen;
-  if (paused && !(busy > 0)) { P.stDelay = Math.max(P.stDelay || 0, STAM.delay); P.regenOff = true; return; }
+  if (P.windUsedT > 0) P.windUsedT = Math.max(0, P.windUsedT - dt);
+  if (paused && !(busy > 0)) { P.stDelay = Math.max(P.stDelay || 0, delayOf()); P.regenOff = true; return; }
   if (P.stDelay > 0 || hold) { P.regenOff = true; return; }
   if (P.st < P.maxSt) P.st = Math.min(P.maxSt, P.st + STAM.regen * staminaOf(P).regenMul * (P.winded ? STAM.windedMul : 1) * (paused ? busy : 1) * extra * dt);
   if (P.winded && P.st >= STAM.windedTo * P.maxSt) P.winded = false;

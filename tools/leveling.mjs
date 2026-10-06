@@ -14,6 +14,7 @@ import assert from 'node:assert/strict';
 import * as XP from '../src/xp.js';
 import * as PR from '../src/progression.js';
 import * as DC from '../src/death-cost.js';
+import * as CM from '../src/commit.js';
 import { readFileSync } from 'node:fs';
 
 const fails = [], notes = [];
@@ -45,16 +46,68 @@ check('card', () => {
   const q = { card: { warden: { v: 25, e: 0, m: 0, ms: {} } } }; assert.match(PR.pickCard(q, 'warden', 'v', 30), /full/); assert.equal(PR.pickCard(q, 'warden', 'e', 30), null);
   assert.equal(PR.growthAt('warden', 50, { v: 40, e: 0, m: 0 }).hp, PR.growthAt('warden', 50, { v: 25, e: 0, m: 0 }).hp, 'a stat past the cap still grows');
   const r = { card: { pyro: { v: 9, e: 8, m: 8, ms: {} } } };
-  assert.deepEqual(PR.milestonesOwed(r, 'pyro', 24), []); assert.deepEqual(PR.milestonesOwed(r, 'pyro', 50), [25, 30, 35, 40, 45, 50]);
+  assert.deepEqual(PR.milestonesOwed(r, 'pyro', 4), []); assert.deepEqual(PR.milestonesOwed(r, 'pyro', 24), [5, 10, 15, 20]); assert.deepEqual(PR.milestonesOwed(r, 'pyro', 50), [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]);   /* LEVELING2: four early milestones under the six */
   const taken = new Set(); for (const n of PR.MILESTONES) { const offer = PR.perkOffer(r, 'pyro', n); assert(offer.length >= 1 && offer.length <= 3); assert(offer.every(o => !taken.has(o.id)), 'offered a perk twice');
     assert.equal(PR.pickMilestone(r, 'pyro', n, offer[0].id, 50), null); taken.add(offer[0].id); }
-  assert.equal(taken.size, 6); assert.equal(PR.pickMilestone(r, 'pyro', 25, 'iron', 50), 'No milestone owed'); assert(PR.perkOn(r, 'pyro', [...taken][0]));
+  assert.equal(taken.size, 10); assert.equal(PR.pickMilestone(r, 'pyro', 25, 'iron', 50), 'No milestone owed'); assert(PR.perkOn(r, 'pyro', [...taken][0]));
   assert.equal(PR.pickMilestone({ card: {} }, 'knight', 25, 'iron', 24), 'No milestone owed');
   assert.notEqual(JSON.stringify(PR.perkOffer({}, 'knight', 25)), JSON.stringify(PR.perkOffer({}, 'warden', 25)), 'every hero sees the same hand');
-  PR.respecCard(r, 'pyro'); assert.equal(PR.picksOwed(r, 'pyro', 50), 50); assert.equal(PR.milestonesOwed(r, 'pyro', 50).length, 6);
+  PR.respecCard(r, 'pyro'); assert.equal(PR.picksOwed(r, 'pyro', 50), 50); assert.equal(PR.milestonesOwed(r, 'pyro', 50).length, 10);
   assert(PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: { 25: 'heart' } }).hp > PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: {} }).hp, 'GREAT HEART does nothing');
   assert(PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: { 25: 'arcane' } }).skillMultiplier > PR.growthAt('knight', 30, { v: 10, e: 10, m: 10 }).skillMultiplier, 'MASTERY does nothing');
   assert.equal(PR.RESPEC_SILVER, 3); assert.equal(PR.PERKS.length >= 8, true); assert.equal(PR.CARD_CAP, 25);
+});
+
+/* LEVELING2 (Daniel 10-04): early minor milestones, the hero's own at every one, stat thresholds, the card's words */
+check('early milestones', () => {
+  assert.deepEqual(PR.MILESTONES_MINOR, [5, 10, 15, 20]); assert.deepEqual(PR.MILESTONES, [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]);
+  for (const h of PR.HERO_IDS) { const c = { card: { [h]: { v: 0, e: 0, m: 0, ms: {} } } };
+    for (const n of PR.MILESTONES) { const o = PR.perkOffer(c, h, n); assert.equal(o.length, 3, h + ' L' + n + ' offers ' + o.length); assert.equal(new Set(o.map(k => k.id)).size, 3, h + ' L' + n + ' repeats');
+      assert.equal(o.filter(k => k.own).length, 1, h + ' L' + n + ' has no hero option'); assert(PR.HERO_PERKS[h].some(k => k.id === o[2].id), h + ' L' + n + ' own is not his');
+      if (PR.isMinor(n)) assert(o.every(k => k.minor) && o.slice(0, 2).every(k => PR.MINOR_PERKS.some(m => m.id === k.id)), h + ' L' + n + ' minor hand has a major perk'); else assert(o.slice(0, 2).every(k => PR.PERKS.some(m => m.id === k.id)), h + ' L' + n + ' major hand has a minor perk'); }
+    /* take the first two of every hand: each generic once, the hero's own stacks to HERO_PERK_MAX over the ten milestones, two per hero */
+    const own = {}; for (const n of PR.MILESTONES) { const o = PR.perkOffer(c, h, n); assert.equal(PR.pickMilestone(c, h, n, o[2].id, 50), null); own[o[2].id] = (own[o[2].id] || 0) + 1; }
+    assert.deepEqual(Object.values(own), [5, 5], h + ' own ranks ' + JSON.stringify(own)); assert.equal(PR.perkRank(c, h, PR.HERO_PERKS[h][0].id), 5); assert.equal(PR.milestonesOwed(c, h, 50).length, 0);
+    assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); }
+  assert.equal(PR.PERKS.length + PR.MINOR_PERKS.length >= 16, true); assert.equal(PR.MINOR_PERKS.length >= 8, true);
+  /* the hero's own is a different hand per hero, and every id of every hero is unique */
+  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 14);
+  assert.equal(PR.levelsToPerk(0), 5); assert.equal(PR.levelsToPerk(7), 3); assert.equal(PR.levelsToPerk(20), 5); assert.equal(PR.levelsToPerk(49), 1); assert.equal(PR.levelsToPerk(50), null);
+  assert.deepEqual(PR.techniquesArriving('knight', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [10, 20, 30]);   /* the technique hook: empty, ready, and L20/L30 untouched */
+});
+check('stat thresholds', () => {
+  const card = (v, e, m) => ({ card: { knight: { v, e, m, ms: {} } } });
+  for (const st of ['v', 'e', 'm']) { for (const [at, i] of [[10, 0], [20, 1]]) { const lo = card(0, 0, 0), hi = card(0, 0, 0); lo.card.knight[st] = at - 1; hi.card.knight[st] = at;
+      assert(!PR.thrOn(lo, 'knight', st, i), st + ' ' + (at - 1) + ' fired'); assert(PR.thrOn(hi, 'knight', st, i), st + ' ' + at + ' did not fire'); } }
+  assert.deepEqual(PR.THRESH_AT, [10, 20]); assert.equal(PR.thrNext(card(7, 0, 0), 'knight', 'v').at, 10); assert.equal(PR.thrNext(card(7, 0, 0), 'knight', 'v').have, 7); assert.equal(PR.thrNext(card(12, 0, 0), 'knight', 'v').at, 20); assert.equal(PR.thrNext(card(21, 0, 0), 'knight', 'v'), null);
+  assert(!PR.thrOn({}, 'knight', 'v', 0), 'a hero with no card has a threshold');
+  /* what the thresholds are tied to: the src (no page): commit.js seam, the poise rule, the kill heal, the revive */
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), cm = readFileSync(new URL('../src/commit.js', import.meta.url), 'utf8');
+  assert(/lean: \(\) => thr\('e', 0\)/.test(main) && /wind: \(\) => thr\('e', 1\)/.test(main), 'ENDURANCE thresholds are not bound to the stamina seam');
+  assert(/thr\('v', 0\)[^\n]*P\.hp \+ 2/.test(main), 'VIGOR 10 does not heal on a kill'); assert(/thrOn\(PROG, helper\.hero \|\| PROG\.hero, 'v', 1\)/.test(main), 'VIGOR 20 does not touch the revive');
+  assert(/thr\('m', 0\)[^\n]*n \*= 1\.25/.test(main), 'MIGHT 10 does not lean on the poise'); assert(/thr\('m', 1\) && !e\.mighted/.test(main), 'MIGHT 20 does not hit a staggered foe harder');
+  assert(/leanMul\(P\)/.test(cm) && /SECOND_WIND/.test(cm));
+});
+check('stamina thresholds (commit.js)', () => {
+  let lean = false, wind = false; CM.bindStamina({ lean: () => lean, wind: () => wind, rest: () => false });
+  const P = { st: 100, maxSt: 100, winded: false, stDelay: 0 }, h = 'knight', base = CM.rollCost(P, h);
+  assert.equal(CM.rollCost(P, h), base); lean = true; assert.equal(CM.rollCost(P, h), base, 'LEAN ROLL cheapened a roll above half'); P.st = 40;
+  assert(CM.rollCost(P, h) < base && CM.rollCost(P, h) >= Math.round(base * 0.8) - 1, 'LEAN ROLL under half: ' + CM.rollCost(P, h) + ' vs ' + base); lean = false; P.st = 40;
+  assert.equal(CM.rollCost(P, h), base);
+  /* SECOND WIND: the bar empties once -> 40%, not winded; again inside the wait -> exhausted as before */
+  wind = true; P.st = 10; assert(CM.trySpend(P, 30)); assert(!P.winded && Math.abs(P.st - 40) < 1e-6 && P.windSurge, 'no second wind: ' + JSON.stringify(P)); P.windSurge = false;
+  P.st = 10; assert(CM.trySpend(P, 30)); assert(P.winded && P.st === 0, 'a second wind inside the wait'); CM.clearCommit(P); assert.equal(P.windUsedT, 0);
+  P.st = 10; CM.trySpend(P, 30); assert(!P.winded); P.windUsedT = 0.01; CM.staminaTick(P, 0.1, {}); assert.equal(P.windUsedT, 0, 'the wait never runs down');
+  wind = false; P.st = 10; CM.clearCommit(P); assert(CM.trySpend(P, 30)); assert(P.winded, 'no threshold, no second wind'); CM.bindStamina({ lean: () => false, wind: () => false });
+});
+check('the card says it', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  assert(/' TO YOUR NEXT PERK \(LEVEL '/.test(main), 'no N LEVELS TO YOUR NEXT PERK line'); assert(/thrNext\(PROG, h, k\.id\)/.test(main) && /'BOTH UNLOCKED'/.test(main), 'no threshold progress on the stat cards');
+  assert(/fresh: !review && back !== 'menu'/.test(main) && /SFX\.sting\(\)/.test(main) && /u\.t \/ 0\.35/.test(main) && /rgba\(255,246,200/.test(main), 'the level-up moment (flash, sting, slide-in) is not there');
+  assert(/if \(cardOwed\(hero\(\)\)\) openCard\('play'\)/.test(main) && /function levelHealTick\(\) \{ const o = lvHealOwed; if \(!o \|\| state !== 'play' \|\| fightLive\(\)\) return;/.test(main), 'the card must wait for the fight to end');
+  for (const k of [...PR.MINOR_PERKS, ...PR.ALL_HERO_PERKS, ...Object.values(PR.THRESH).flat()]) { assert(k.what && k.what === k.what.toUpperCase(), k.name + ' text'); assert(/^[A-Z0-9 ,'.:%+?!\/-]+$/.test(k.name + k.what), k.name + ' has a character the font lacks'); }
+  const hooks = ['stride', 'mend', 'magnet', 'climber', 'buffer', 'rest', 'tonic', 'grit', ...PR.ALL_HERO_PERKS.map(k => k.id)];
+  for (const id of hooks) assert(new RegExp("(perk|prk)\\('" + id + "'\\)|BIND\\.rest").test(main) || (id === 'rest' && /rest: \(\) => perk\('rest'\)/.test(main)), 'perk ' + id + ' has no hook in main.js');
 });
 
 check('soft cap', () => {
@@ -86,7 +139,7 @@ check('card migration', () => {
   const raw = JSON.stringify({ progressionVersion: 2, hero: 'knight', heroes: { knight: true }, xp: { knight: XP.xpFloor(26) + 5, pyro: XP.xpFloor(7) }, done: { knight: { wood: 1 } }, coins: 0 });
   const p = PR.migrateProgress(raw).progress; assert.equal(p.cardV, 1);
   assert.deepEqual([p.card.knight.v, p.card.knight.e, p.card.knight.m], [9, 9, 8]); assert.deepEqual([p.card.pyro.v, p.card.pyro.e, p.card.pyro.m], [3, 2, 2]);
-  assert.equal(p.cardFree.knight, 1); assert.equal(PR.picksOwed(p, 'knight', 26), 0); assert.deepEqual(PR.milestonesOwed(p, 'knight', 26), [25]);
+  assert.equal(p.cardFree.knight, 1); assert.equal(PR.picksOwed(p, 'knight', 26), 0); assert.deepEqual(PR.milestonesOwed(p, 'knight', 26), [5, 10, 15, 20, 25]);
   assert(!p.card.warden, 'a hero with no XP got a card');
   const g1 = PR.growthAt('knight', 26, p.card.knight), g0 = PR.growthAt('knight', 26); assert.deepEqual([g1.hp, g1.stamina, g1.damage], [g0.hp, g0.stamina, g0.damage], 'the migrated card is not the even spread');
   p.card.knight.v = 12; p.card.knight.e = 7; p.card.knight.m = 7; const twice = PR.migrateProgress(JSON.stringify(p)).progress; assert.equal(twice.card.knight.v, 12, 'a second migration redid the card');
@@ -118,4 +171,4 @@ check('skill ranks', () => {
 
 for (const n of notes) console.log('  ' + n);
 if (fails.length) { console.log('LEVELING: ' + fails.length + ' problem(s)\n' + fails.map(f => '  - ' + f).join('\n')); process.exitCode = 1; }
-else console.log('Leveling: the curve to fifty never rises, the card beats the old growth evenly spread and caps at 25, milestones offer six untaken perks, the soft cap halves at E+3 and fifths at E+6, a third slot at 16 (three at most; an old fourth is unslotted, not lost), a new game owns one hero and co-op opens with the second, old saves keep heroes, co-op and a free respec.');
+else console.log('Leveling: the curve to fifty never rises, the card beats the old growth evenly spread and caps at 25, ten milestones (L5-L20 small, L25-L50 big) each offer two untaken perks and the hero's own (ranks to 5), thresholds fire at 10 and 20 picks, the card counts the levels to the next perk, the soft cap halves at E+3 and fifths at E+6, a third slot at 16 (three at most; an old fourth is unslotted, not lost), a new game owns one hero and co-op opens with the second, old saves keep heroes, co-op and a free respec.');
