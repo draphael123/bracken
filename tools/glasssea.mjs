@@ -67,6 +67,13 @@ ok(!L.ents.some(e => /gob/.test(e.t) && e.t !== 'bonegob'), 'no living goblins')
 ok(L.ents.filter(e => e.t === 'stray' && e.kind === 'glassshard').length === 5 && L.quest.n === 5, 'five glass shards, and the quest counts five');
 ok(L.ents.filter(e => e.t === 'silver').length === 3, 'three silvers (the spire, the flats\' shelf, the vault)');
 ok(L.ents.filter(e => e.t === 'check').length >= 4, 'the checkpoints: ' + L.ents.filter(e => e.t === 'check').map(e => e.x).join(', '));
+/* (fix pass) ITS OWN AIR: the day and the night are the Glass Sea's own beds (never another level's: the night was the Underwell's cistern) */
+{ const kinds = (L.ambient || []).map(z => z.kind), au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
+  ok(kinds.includes('glassday') && kinds.includes('glassnight') && !kinds.includes('cistern'), 'the Glass Sea plays its own beds: ' + kinds.join(' / '));
+  ok(['glassday', 'glassnight'].every(k => au.includes('  ' + k + '() {')), 'src/audio.js SYNTH_BEDS has glassday() and glassnight()'); }
+/* (fix pass) THE SLIDE GAP's nudge and sign say the technique (a plain run-jump falls in for every hero) */
+{ const SP = readFileSync(new URL('../src/stuck-spots.js', import.meta.url), 'utf8'), m = /id: 'gs-slide'.*?line: '([^']*)'/.exec(SP); ok(m && /HOLD DOWN/.test(m[1]) && /SLIDE/.test(m[1]), 'the slide gap nudge says HOLD DOWN / SLIDE: ' + (m && m[1]));
+  const sg = L.ents.find(e => e.t === 'sign' && /HOLD DOWN TO SLIDE/.test(e.text)); ok(sg && sg.x >= 133 && sg.x <= 137, 'the slide sign stands on the crest (col ' + (sg && sg.x) + ')'); }
 /* ---------------- THE GLASS COLOSSUS ---------------- */
 const A = L.arena; ok(A.boss === 'colossus' && A.x1 - A.x0 === 40 * TS, 'the arena is forty tiles, its boss THE GLASS COLOSSUS');
 const G = CG.geom(A, TS);
@@ -83,6 +90,7 @@ const step = (e, S, secs, hs, w) => { for (let i = 0; i < secs * 60; i++) CG.ste
   step(e, S, 5, [hero], world()); ok(!CG.colOpen(e) && S.ward > 0, 'the opening ends in its told ward (B3)');
   ok(CG.takeBlow(e, S, 30, G.hipY, false) === 0 && CG.takeBlow(e, S, 30, G.floor, false) === 0, 'in the ward nothing lands (the legs neither)');
   step(e, S, S.ward + 0.1, [hero], world()); ok(S.ward === 0 && S.lock > 0, 'after the ward, a lockout: no lance and no swarm for a moment (B12)'); }
+ok(CG.COL.shardSpread - 2 * CG.COL.shardR >= 40, 'THE SHARD RAIN leaves a real lane between its marks (' + (CG.COL.shardSpread - 2 * CG.COL.shardR) + ' px; a hero is 14): a dodge, not a shield check');
 { /* the lance with the mirror turned away: nothing opens */
   const { S, e } = mk(); S.mirrors[0].notch = 'sky'; S.mirrors[1].notch = 'sky'; const hero = { x: S.mirrors[0].x - 24, y: G.floor, ground: true, alive: true, pp: {} };
   hits.length = 0; S.i = 0; step(e, S, 2.0, [hero], world()); ok(!CG.colOpen(e) && hits.some(h => h.name === 'THE SUN LANCE'), 'a lance that meets no FACING mirror opens nothing (and it hits you)'); }
@@ -101,6 +109,9 @@ const step = (e, S, secs, hs, w) => { for (let i = 0; i < secs * 60; i++) CG.ste
 { /* the shake: a climber who does not grip is thrown; one who grips is not */
   const { S, e } = mk(); const climb = { x: (G.hip[0].l + G.hip[0].r) / 2, y: G.hipY, ground: true, alive: true, pp: {} }, grip = { ...climb, x: (G.hip[1].l + G.hip[1].r) / 2, grip: true, pp: {} };
   S.shakeCd = 0; for (const m of S.mirrors) m.notch = 'sky'; step(e, S, 5.0, [climb, grip], world()); ok(climb.thrown && !grip.thrown, 'THE SHAKE throws a climber who does not grip and keeps one who holds DOWN'); }
+{ /* (fix pass) the arena stall: both mirrors turned away in phase one -> the nudge, and again after another 10 s */
+  const { S, e } = mk(); for (const m of S.mirrors) m.notch = 'sky'; const said = []; step(e, S, 21, [{ x: G.x0 + 40, y: G.floor, ground: true, alive: true, pp: {} }], world({ number: (x, y, t) => said.push(t) }));
+  ok(said.filter(t => t === CG.STALL_LINE[1]).length >= 2, 'a phase-one stall with no mirror FACING repeats its nudge (' + said.filter(t => t === CG.STALL_LINE[1]).length + ' in 21 s)'); }
 { /* phases change the arena: the lance goes dark at night */
   const { S, e } = mk(); e.hp = e.maxHp * 0.54; step(e, S, 0.1, [{ x: G.x0 + 40, y: G.floor, ground: true, alive: true, pp: {} }], world()); ok(S.ph === 2 && e.mode === 'phase', 'below 55% the night falls (phase two, told)');
   ok(!CG.COL.chain[2].includes('lance') && CG.COL.chain[3].includes('lance') && CG.COL.chain[3].includes('wave'), 'no lance at night; at dawn the lance returns and the shard wave comes'); }

@@ -27,8 +27,8 @@ export const COLOSSUS_STAGE = { W: 40, cc: 20, mirrors: [12, 28], fires: [2, 37]
 export const COL = {
   hp: 2000, w: 72, h: 200,
   lanceTell: 1.15, lanceTell3: 1.0, lanceAct: 0.45, lanceDmg: 56, lanceBand: [28, 4],
-  stompTell: 0.85, stompV: 240, stompH: 14, stompDmg: 22,
-  shardTell: 1.0, shardAct: 0.25, shardDmg: 16, shardR: 9, shardSpread: 44,
+  stompTell: 0.85, stompV: 240, stompH: 14, stompDmg: 28,
+  shardTell: 1.0, shardAct: 0.25, shardDmg: 16, shardR: 9, shardSpread: 60,
   shakeTell: 1.0, shake: 0.9, shakeDmg: 16, shakeAfter: 1.2, shakeCd: 5,
   swarmTell: 1.2, swarmAct: 1.4, swarmMax: 6, swarmEvery: 0.45,
   waveTell: 1.0, waveV: 260, waveH: 16, waveDmg: 29,
@@ -74,6 +74,7 @@ export function newFight(G) {
     told: {}, said: {} };
 }
 const NOTCH = ['face', 'fire', 'sky'];
+export const STALL_LINE = { 1: 'TURN A MIRROR BACK TO FACE THE GIANT', 2: 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM', 3: 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' };
 export const NOTCH_WORD = { face: 'FACING THE GIANT', fire: 'TO THE FIRE', sky: 'TO THE SKY' };
 /* E at a mirror: the next notch. Returns the new notch */
 export function turnMirror(S, i) { const m = S.mirrors[i]; m.notch = NOTCH[(NOTCH.indexOf(m.notch) + 1) % 3]; m.turnedT = 0; return m.notch; }
@@ -96,6 +97,9 @@ export function stepColossus(e, S, dt, heroes, c) {
   for (const h of live) { const on = onBody(G, h.x, h.y, h.ground); S.bodyT.set(h.pp, on ? (S.bodyT.get(h.pp) || 0) + dt : 0); }
   S.shakeCd -= dt; S.lock = Math.max(0, S.lock - dt);
   for (const m of S.mirrors) m.turnedT = (m.turnedT || 0) + dt;
+  /* (fix pass) THE ARENA STALL NUDGE: no mirror on a notch that can open it this phase for 10 s -> the line, again every 10 s (never a once-only line) */
+  { const can = S.ph === 2 ? ['fire'] : S.ph === 3 ? ['sky', 'face'] : ['face'];
+    if (!colOpen(e) && S.ward <= 0 && !S.mirrors.some(m => can.includes(m.notch))) { S.stallT = (S.stallT || 0) + dt; if (S.stallT >= 10) { S.stallT = 0; S.n.nudge = (S.n.nudge || 0) + 1; c.number(e.x, G.crownY - 20, S.ph === 2 ? 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM' : S.ph === 3 ? 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' : 'TURN A MIRROR BACK TO FACE THE GIANT', '#ffd36b');   /* (= STALL_LINE[S.ph]; literals for tools/hint-shown) */ } } else S.stallT = 0; }
   /* the travelling hazards: stomp rings, the shard wave */
   for (const r of S.rings) { r.x += r.dir * COL.stompV * dt; if (r.x < G.x0 || r.x > G.x1) r.dead = true; else c.hit([r.x - 10, r.x + 10, G.floor - COL.stompH, G.floor], COL.stompDmg, 'THE STOMP', { key: 'ring' + r.id });   /* (!!: a ring of shards along the ground - JUMP it; no shield turns it) */ }
   S.rings = S.rings.filter(r => !r.dead);
