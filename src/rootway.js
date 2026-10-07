@@ -97,7 +97,7 @@ export function buildRootway({ painter, T, TS }) {
   ground(129, 158, 38);
   hoist('scoutCage', { x: 139, top: 23, hang: 30, cleat: [127, 34], load: 'cage', land: [138, 36] });
   sign(124, 34, 'A CAGE HANGS OVER THEM. CUT IT DOWN ON THEIR HEADS.');
-  foe('archer', 136, 37, 'scouts', { face: -1 }); foe('archer', 141, 37, 'scouts', { face: -1 });
+  foe('archer', 138, 37, 'scouts', { face: -1 }); foe('archer', 139, 37, 'scouts', { face: -1 });   /* (both under the cage's two columns) */
   deco(131, 37, 'trophyRack'); coins([133, 36], [144, 36]);
   /* THE TROPHY-HUNTER (the one new foe): he rides a hoist down onto you as you pass under - cut its cleat first and he falls dazed */
   plank(143, 151, 35);
@@ -184,7 +184,7 @@ export function buildRootway({ painter, T, TS }) {
   hoist('hmR', { x: A1 - 6, top: 0, hang: FL - 9, cleat: [A1 - 1, FL - 1], load: 'cage', boss: true });
   ent('huntmaster', A1 - 14, FL - 1, { face: -1 });
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'huntmaster', music: 'boss3', tint: '#c89040', tintA: 0.06,
-    start: [A0 + 3, FL - 1], huntmaster: true, perches: [[A0 + 4, A0 + 10, FL - 4], [A1 - 10, A1 - 4, FL - 4]] };
+    start: [A0 + 6, FL - 1], huntmaster: true, perches: [[A0 + 4, A0 + 10, FL - 4], [A1 - 10, A1 - 4, FL - 4]] };
   ent('gate', 456, FL - 1);
 
   const START = { x: 3, y: 41 };
