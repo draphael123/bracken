@@ -13,6 +13,7 @@ const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.t
   breath: s => (s.fireWhoosh || s.hiss || s.crack)(), pillar: s => { (s.fireWhoosh || s.crack)(); (s.rubble || s.thud)(); }, flare: s => (s.fireWhoosh || s.hiss || s.crack)(), spout: s => (s.whirlpool || s.splash)(),
   wave: s => (s.wave || s.splash)(), slam: s => (s.heavy || s.thud)(), soak: s => { (s.splash)(); (s.hiss || s.thud)(); }, windlass: s => { (s.clank)(); s.ratchet && s.ratchet(); }, splash: s => (s.whirlpool || s.splash)(),
   flood: s => { (s.whirlpool || s.splash)(); (s.roar || s.heavy)(); },
+  open: s => { (s.sting || s.coin || s.clank)(); },   /* (claude/djinn6) AN OPENING STARTS: a bright rising sting - now strike */
   ward: s => { (s.chime || s.golemChime || s.clank)(); (s.whoosh || s.throwWhoosh || s.hiss || s.splash)(); },   /* (claude/djinn2) HIS WARD rises: a ring and a rush */
   seal: s => { (s.rubble || s.thud)(); (s.boreRoar || s.roar || s.heavy)(); },
   /* (claude/djinn3) THE TURNS and THE TIDE: the sand falls in, the fire hisses out, the well surges (a deep roar and a rush) */
@@ -103,8 +104,11 @@ export function makeDjinnHands(ctx) {
     if (!S.told.how && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.how = 1; ctx.number(e.x, e.y - 120, 'A BLADE PASSES THROUGH SAND: POUR WATER ON HIM', '#ffd36b'); }
     if (!S.told.basin && ctx.players.some(pp => pp.skin && pp.skin.sips <= 0) && S.ph < 3) { S.told.basin = 1; ctx.number(S.G.basinW, S.G.floor - 40, 'THE SPRINGS REFILL YOUR SKIN', '#7ab8e8'); }
     /* THE PAIL (claude/djinn4): the flood brings one up to every hero - E scoops it, E or a strike throws it when he rears up */
-    if (S.ph === 3 && S.flood && e.mode !== 'rise' && !S.pailsGiven) { S.pailsGiven = true; for (const pp of ctx.players) pp.djPail = { full: false };
-      ctx.number(S.G.windlass + 40, S.G.floor - 50, 'A PAIL FLOATS UP: E SCOOPS THE FLOOD', '#7ab8e8'); }
+    /* (claude/djinn6, Daniel 10-06 "easier"): it comes up FULL, and refills itself DJ.pailRefill s after every throw - no scoop needed (E still scoops it in the water) */
+    if (S.ph === 3 && S.flood && e.mode !== 'rise' && !S.pailsGiven) { S.pailsGiven = true; for (const pp of ctx.players) pp.djPail = { full: true, refill: 0 };
+      ctx.number(S.G.windlass + 40, S.G.floor - 50, 'A PAIL FLOATS UP, FULL: E THROWS IT AT HIM', '#7ab8e8'); }
+    for (const pp of ctx.players) if (pp.djPail && !pp.dead && DJG.refillPail(pp.djPail, dt)) { ctx.burst(pp.x + (pp.face || 1) * 8, pp.y - 8, 6, ['#7ab8e8', '#e8f4f8'], 30, 0.35);
+      if (!S.told.refill) { S.told.refill = 1; ctx.number(pp.x, pp.y - 34, 'THE PAIL FILLS ITSELF AGAIN', '#7ab8e8'); } }
     { const P = ctx.hero(); if (hb && P && P.djPail && P.djPail.full && !P.dead && DJG.rearing(e, S) && DJG.throwPail(e, S, heroOf(P), P.djPail, c)) S.n.byStrike = (S.n.byStrike || 0) + 1; }   /* (a strike throws only at a rear: a cut is never eaten by the pail; E throws any time) */
     if (S.ph === 3 && !S.told.crank && e.mode === 'hover') { S.told.crank = 1; ctx.number(S.G.windlass, S.G.floor - 70, 'STRIKE OR E AT THE WINDLASS OR CRANK: WIND UP, THEN DROP', '#7ab8e8'); }
   };
@@ -120,6 +124,7 @@ export function makeDjinnHands(ctx) {
       ctx.burst(hd.x, hd.y - 4, 6, ['#7ab8e8', '#e8f4f8'], 60, 0.4); if (hd.taken >= cap - 0.01 && hd.stay > 0.2) hd.stay = 0.2; return d; }
     /* HIS WARD (claude/djinn2): the shell, the white heat, the shroud - a blade rings off it (told once) */
     if (S.ward > 0) { e.chipHit = ctx.time(); S.n.wardPassed++; e.passFx = 0.25; ctx.burst(P.x + (P.face || 1) * 14, P.y - 16, 5, S.ph === 1 ? ['#fff2c0', '#e8d8a0'] : S.ph === 2 ? ['#ffffff', '#fff2c0'] : ['#bfe4ff', '#ffffff'], 50, 0.35);
+      try { (ctx.sfx.clank || ctx.sfx.thud)(); } catch {}   /* (claude/djinn6: a blade on his ward always CLANKS - B10) */
       if (!S.told.wardBlade) { S.told.wardBlade = 1; ctx.number(e.x, e.y - (S.pose === 'column' ? 150 : 110), 'HIS WARD TURNS THE BLADE: WAIT IT OUT', '#9aa39a'); } return 0; }
     e.chipHit = ctx.time(); S.n.passed++; e.passFx = 0.25;
     if (S.ph === 1) { ctx.burst(P.x + (P.face || 1) * 14, P.y - 16, 4, ['#d8b47a', '#c9a46a'], 40, 0.4); if (!S.told.sand) { S.told.sand = 1; ctx.number(e.x, e.y - 100, 'THE SAND TAKES THE BLADE', '#c9a46a'); } }
@@ -161,7 +166,9 @@ export function makeDjinnHands(ctx) {
     DJA.drawBucket(g, R(G.mid - cx), R(G.vault - cy), R(G.floor - cy), S, time); };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'djinn') return;
     DJA.drawOver(g, e, S, cx, cy, time);
-    if (e.open > 0 && ctx.text) { const o = DJA.openRing(e, S); ctx.text('OPEN', R(e.x - cx), R(o.top - 4 - cy), Math.sin(time * 10) > 0 ? '#fff6c8' : '#ffd36b', 'center', 8); }   /* (claude/djinn4, B10: the shared read - a gold ring, OPEN, a gold clock) */
+    if (e.open > 0 && ctx.text) { const o = DJA.openRing(e, S); ctx.text('OPEN', R(e.x - cx), R(o.top - 8 - cy), Math.sin(time * 10) > 0 ? '#ffffff' : '#ffd36b', 'center', 16);   /* (claude/djinn4, B10: the shared read - a gold ring, OPEN, a gold clock) */
+      ctx.text('NOW: STRIKE', R(e.x - cx), R(o.top + 10 - cy), '#ffd36b', 'center', 8); }   /* (claude/djinn6, Daniel 10-06 "hard to tell when to hit him": OPEN twice the size, white-gold, and the word NOW: STRIKE under it) */
+    else if (S.ward > 0 && ctx.text && e.mode !== 'sleep' && e.mode !== 'wake') ctx.text('WARDED', R(e.x - cx), R(e.y - (S.pose === 'column' ? 198 : 108) - cy), S.ph === 2 ? '#fff2c0' : S.ph === 3 ? '#bfe4ff' : '#e8d8a0', 'center', 8);   /* (claude/djinn6: his shell reads WARDED while it stands - wait it out) */
     /* THE PAIL in a hero's hand (claude/djinn4): empty wood, or brimming - blue, a glint */
     for (const pp of ctx.players) if (pp.djPail && !pp.dead) DJA.drawPail(g, R(pp.x - cx + (pp.face || 1) * 8), R(pp.y - cy - 4), pp.djPail.full, time);
     for (const pp of ctx.players) if (pp.djBurn > 0 && !pp.dead) { const x = R(pp.x - cx), y = R(pp.y - cy); for (let k = 0; k < 4; k++) { g.fillStyle = k % 2 ? '#ff9a3c' : '#ffd36b'; g.fillRect(x - 6 + k * 3, y - 18 - R(5 * Math.abs(Math.sin(time * 12 + k))), 2, 7); } } };
