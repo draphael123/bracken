@@ -37,7 +37,7 @@ for (const p of req) { ok(p.dflt === 'open' && p.retry, p.id + ': open by defaul
   ok(w.y1 > p.prow, p.id + ': the fall-in is UNDER the line the points keep you on (row ' + p.prow + ')'); }
 ok(P('forkA') && P('forkA').dflt === 'open', 'fork A is a risk / reward fork (open: the safe low line)');
 ok(P('hidden') && P('hidden').hang && P('hidden').dflt === 'set', 'the hidden lever hangs in the roof and opens points in the line (down to the old spur)');
-ok(P('smelter') && P('smelter').ore === 8 && L.quest.n === 8 && L.quest.item === 'orenugget', 'the smelter\'s lever wants 8 ore, and the quest counts 8');
+ok(P('smelter') && P('smelter').ore === 8 && L.quest.n === 10 && L.quest.item === 'orenugget', 'the smelter\'s lever wants 8 ore, and the quest counts all ten');
 ok(L.mcPoints.every(p => L.ents.some(e => e.t === 'mcpoints' && e.id === p.id)), 'every lever is an ent the tools can see');
 /* SPEED */
 const air = 2 * 320 / 1000, cruiseReach = MC.cruise * air + 12, boostReach = MC.boost * air;

@@ -135,7 +135,7 @@ export const CALL_LINES = new Set([
   'THE STONE TURNS TO THE SUN: THE AIR RISES', 'THE LOFT WANTS FOUR CLOTHS', "THE RIDERS' LOFT OPENS", 'SHE HAS YOU: STRUGGLE', 'SHE LETS GO', 'THE LINE IS CUT', 'KNOCKED OUT OF THE SKY',
   'THE STORM ROLLS IN', 'HER FEATHERS ARE UP', 'THE ROC  KNOCKED DOWN', 'THE LIGHTNING HAS HER', 'HER TALONS ARE STUCK IN THE NEST', 'SHE SKIDS ON THE STONE', 'SHE DRAGS A CLOUD OVER IT', 'SHE LETS YOU FALL', 'HER FEATHERS BRISTLE', 'THE CLOAK GOES BACK ON ITS MAST', 'THE KITE TAKES THE LINE: STEP ON THE CAGE', 'A GREAT SHADOW CROSSES THE BRIDGE',
   /* claude/minecart: THE DEEP RAILS' points, crashes, hazards and goblin carts (src/minecart-hands.js) and THE GREAT DRILL (src/great-drill.js, src/great-drill-hands.js) */
-  'CRASHED: BACK BEFORE THE POINTS', 'CRASH!', 'POINTS SET: STAY HIGH', 'POINTS OPEN: DOWN TO THE LOW LINE', 'A GOBLIN CASTER ON A CART', 'A GOBLIN ARCHER ON A CART',
+  "EIGHT ORE: THE SMELTER'S POINTS WILL OPEN", 'LOCKED: THE SMELTER WANTS 8 ORE', 'CRASHED: BACK BEFORE THE POINTS', 'CRASH!', 'POINTS SET: STAY HIGH', 'POINTS OPEN: DOWN TO THE LOW LINE', 'A GOBLIN CASTER ON A CART', 'A GOBLIN ARCHER ON A CART',
   'THROWN OUT: THE CART IS YOURS', 'INTO THE CART', 'CRASH: JUMP INTO IT, OR BRAKE', 'A FALL COSTS YOU: BOOST BEFORE A LONG GAP', 'CRUSHED: BRAKE, AND GO WHEN IT LIFTS',
   'THE GATE IS SHUT: WATCH ITS GAUGE', 'CRASH: JUMP THEM OR STRIKE THEM', 'KNOCKED OFF', 'THE END OF THE LINE: HOLD LEFT TO ROLL BACK',
   'A LOADED ORE CART: SET THE POINTS AND IT DROPS TO ITS GEARS', 'THE ORE CART JAMS ITS GEARS: STRIKE THE CAB', 'IT SHRUGS THE CART OFF', 'THE BIT EATS IT: THE GEARS ARE ON THE LOW LINE',
@@ -156,7 +156,7 @@ export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 
   /* (claude/canal4) THE LEGGING TUNNEL: the stop-planks' windlass, a rider standing on her where there is no current, a hero who has left her in the dark */
   stop: 'STOP-PLANKS HOLD HER: FIND THE WINDLASS', leg: 'THE TUNNEL HAS NO CURRENT: SHE GOES ONLY IF YOU LEG HER', back: 'SHE WAITS IN THE DARK: GET BACK ON HER DECK' };
 /* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
-export const CALL_COUNTS = [/^LOCKED: THE SMELTER WANTS d+ ORE (d+)$/, /^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
+export const CALL_COUNTS = [/^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */

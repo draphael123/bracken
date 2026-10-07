@@ -11,7 +11,7 @@
 //   SWITCH TRACKS  told forks (risk / reward), a hidden lever in the roof, forks whose default line is FALLEN IN (a crash puts you back before the lever)
 //   SPEED          crushers on a told cycle, timed gates with a gauge, falling rock (dust and a shadow first), long gaps only a boosted jump clears
 //   CART COMBAT    goblin archers and casters (EXISTING types) riding carts on a parallel line: knock them off, or jump into their cart and it is yours
-// THE COLLECTIBLE: ten ORE NUGGETS on the risky lines (L.quest: 8 open THE SMELTER's points - a silver, no relic). 3 silvers in all.
+// THE COLLECTIBLE: ten ORE NUGGETS on the risky lines (L.quest counts ten; eight open THE SMELTER's points - a silver, no relic). 3 silvers in all.
 //
 // SECTIONS (columns; the line starts at row 30 and climbs and drops on slopes and trestles):
 //   0-169    THE LOADING YARD   TEACH    a gap (jump), a beam (duck), THE BOOST GAP, THE FIRST CRUSHER (brake), THE FIRST POINTS (required: the low line is fallen in)
@@ -254,6 +254,13 @@ export function buildMinecart({ painter, T, TS }) {
   ground(AX + DRILL_STAGE.W, W - 1, AF);
   ent('gate', AX + DRILL_STAGE.W + 2, AF - 1);
 
+  /* THE ROOF OF THE MINE: rock from the top of the map down to CEIL rows over the highest line near each column (the lowest of them across
+     +-6 columns, so the roof is a vault and not a saw) - this is a mine, not a road under the sky. The arena keeps its own bore */
+  { const CEIL = 9, top = new Array(W).fill(H);
+    for (const [a, b, row] of track) for (let x = Math.max(0, a); x <= Math.min(W - 1, b); x++) top[x] = Math.min(top[x], row);
+    for (const e of L.ents) if (e.x >= 0 && e.x < W && e.t !== 'check' && e.t !== 'sign') top[e.x] = Math.min(top[e.x], e.y + 1);
+    for (let x = 0; x < ARENA_X - 1; x++) { let t = H; for (let k = Math.max(0, x - 6); k <= Math.min(W - 1, x + 6); k++) t = Math.min(t, top[k]); const roof = t - CEIL;
+      for (let y = 0; y < roof; y++) if (L.grid[y * W + x] === T.AIR) set(x, y, T.SOLID); } }
   const START = { x: 4, y: B - 1 };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
@@ -265,13 +272,13 @@ export function buildMinecart({ painter, T, TS }) {
     mcTrack: track, mcPoints: points, mcCrushers: crushers, mcGates: gates, mcRocks: rocks, mcBeams: beams, mcWalls: walls, mcExam: exams, mcBoost: boosts, mcTrestles: trestles, decor,
     chases: [{ id: 'cavein', name: 'THE CAVE-IN', trigger: 480 * TS, end: 604 * TS, gap0: 170, curve: [[0, 128], [700, 150, 'THE ROOF GOES FASTER']], rubber: { min: 90, max: 250, slow: 0.4, catch: 1.4 },
       contact: 'kill', look: 'rock', say: 'THE ROOF IS COMING DOWN: RIDE!', autoscroll: true, glow: 260, zone: [470 * TS, 610 * TS, 12 * TS, 40 * TS] }],
-    quest: { n: 8, item: 'orenugget', name: 'ORE', done: 'EIGHT ORE: THE SMELTER\'S POINTS WILL SET', thanks: 'THE SMELTER\'S POINTS WILL SET' },
+    quest: { n: 10, item: 'orenugget', name: 'ORE', done: 'ALL TEN ORE: THE SMELTER IS YOURS', thanks: 'THE SMELTER IS YOURS' },   /* (the HUD counts all ten; the smelter's lever wants eight of them) */
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,   /* the stations are placed by hand, one a section (the filler adds none under 200) */
     unlocks: [
       { kind: 'mcpoints', opens: 'the line ahead: OPEN drops you to the low line, SET keeps you high (a fallen-in low line, the risky high line with ore, the hidden spur, the smelter)', hud: 'THE LEVER\'S ARROW: UP = HIGH LINE, DOWN = LOW LINE' },
-      { kind: 'stray', opens: 'THE SMELTER\'s points once 8 ore are carried: its line to a silver', hud: 'ORE n/8 - THE SMELTER (the quest counter)' },
+      { kind: 'stray', opens: 'THE SMELTER\'s points once 8 ore are carried: its line to a silver', hud: 'ORE n/10 - THE SMELTER WANTS 8 (the quest counter, and the lever says it)' },
     ],
     music: 'mineworks',
     ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],

@@ -52,7 +52,7 @@ export function makeDrillHands(ctx) {
     e.phase = S.ph;
     /* THE POINTS MAST: a blow that lands on it */
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(), hb = ctx.attackBox(); if (!hb || P.hitSet.has(S)) return; if (ctx.overlap(hb, mastBox())) { P.hitSet.add(S); throwIt(P); } });
-    if (!S.told.cab && e.mode === 'idle' && S.t > 2) { S.told.cab = 1; ctx.number(S.D, S.G.laneY[2] - 44, 'ITS CAB TAKES A BLOW: BRAKE BACK TO IT, OFF THE BIT\'S LINE', '#ffd36b'); }
+    if (!S.told.cab && e.mode === 'idle' && S.t > 2) { S.told.cab = 1; ctx.number(S.D, S.G.laneY[2] - 44, "ITS CAB TAKES A BLOW: BRAKE BACK TO IT, OFF THE BIT'S LINE", '#ffd36b'); }
   };
   const mastBox = () => { const G = S.G; return { l: G.pointsX - 9, r: G.pointsX + 9, t: G.laneY[2] - 30, b: G.laneY[0] }; };
   const throwIt = P => { const on = GD.throwPoints(S); ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(S.G.pointsX, P.y - 14, 1, 5); ctx.number(S.G.pointsX, S.G.laneY[2] - 36, on ? 'POINTS SET: THE ORE DROPS TO THE GEARS' : 'POINTS CLEAR', on ? '#ffd36b' : '#9aa39a'); return true; };

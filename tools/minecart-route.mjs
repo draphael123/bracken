@@ -4,11 +4,12 @@
 //   PORT=8707 node tools/minecart-route.mjs [heroes=knight,warden,pyro] [god=0|1] [foes=1|0] [--dbg]   (god=1 foes=0: base inputs only - can this hero ride it)
 // Each hero rides from each STATION in turn (a death or a lift puts the hand at the next station), and it prints per leg where it ended, the health left,
 // the damage by source, the falls, crashes and crushes; a hero who does not reach the door on a leg fails the tool.
+//   --lvl=N  the hero at level N (the campaign level: tools/boss-level.mjs says 11 here) - the brief-levelsweep v2 measure: first-run deaths, health at each station
 //   --probe  the boost-gap measure: at each of the level's boost gaps, a CRUISING jump at the lip must fall in, and a BOOSTED one must clear it.
 import { openPage } from './cdp.mjs';
 import { CART_PILOT, ROUTE_PLAN } from './cart-pilot.mjs';
 const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
-const heroes = (args[0] || 'knight,warden,pyro').split(','), god = args[1] === '1', foes = args[2] !== '0', dbg = process.argv.includes('--dbg'), probe = process.argv.includes('--probe');
+const heroes = (args[0] || 'knight,warden,pyro').split(','), god = args[1] === '1', foes = args[2] !== '0', dbg = process.argv.includes('--dbg'), probe = process.argv.includes('--probe'), lvl = +((process.argv.find(a => a.startsWith('--lvl=')) || '--lvl=0').slice(6));
 const pg = await openPage({ audio: false, fonts: false });
 let bad = 0; const summary = [];
 try {
@@ -35,7 +36,7 @@ try {
     const r = await pg.evalp(`(async()=>{
       const { LEVELS } = await import('/src/level.js'); const TS = 16;
       ${CART_PILOT}
-      BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
+      BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true }); if (${lvl} > 0 && BK.setHeroLevel) BK.setHeroLevel(${JSON.stringify(hero)}, ${lvl});
       BK.load(LEVELS.findIndex(l => l.id === 'minecart')); BK.state = 'play'; BK.god = ${god}; BK.sim(5);
       if (!${foes}) for (const e of BK.enemies()) if (!e.boss) { e.alive = false; e.mcWait = false; }
       const P = () => BK.P, k = BK.keys, pilot = makeCartPilot(BK, ${JSON.stringify({ ...ROUTE_PLAN, fight: true })});

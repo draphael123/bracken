@@ -64,7 +64,7 @@ export function makeMinecartHands(ctx) {
     if (tm) { if (P.x > tm.x1 - 18 && vx > 0) { vx = 0; c.v = Math.min(c.v, tm.cruise); } if (P.x < tm.x0 + 10 && vx < 0) vx = 0; }
     /* A WALL AHEAD (a fall-in, the rock at the end of a line) at the height of the tub: a CRASH */
     if (!tm && vx > 0 && (P.ground || P.coyote > 0)) { const ax = P.x + 5 + Math.max(vx, 30) * dt + 1; if (solidAt(ax, P.y - 4) && solidAt(ax, P.y - 10)) {
-        if (vx >= MC.softCrash && c.crashCd <= 0) crash(P, c, ax); else if (c.v > 0) { c.v = 0; say('bump', P, 'THE END OF THE LINE: HOLD LEFT TO ROLL BACK', '#9aa39a'); }
+        if (vx >= MC.softCrash && c.crashCd <= 0) crash(P, c, ax); else if (c.v > 0) { c.v = 0; (sayOk('bump') && ctx.number(P.x, P.y - 34, 'THE END OF THE LINE: HOLD LEFT TO ROLL BACK', '#9aa39a')); }
         vx = Math.min(vx, 0); } }   /* (slower than softCrash it is a bump: the cart stops against the rock and stays stopped) */
     if (c.crashT > 0) vx = Math.min(vx, 0);
     P.vx = vx;
@@ -76,17 +76,17 @@ export function makeMinecartHands(ctx) {
     ctx.hurtHero(ax, MC.wallDmg, { unblockable: true, name: 'THE FALL-IN', noKnock: true }); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.shake(5); ctx.burst(ax, P.y - 8, 12, ['#5a6270', '#8a919c', '#8a5a32'], 90, 0.6);
     c.v = 0; P.vx = 0;
     const w = (Lv.mcWalls || []).find(q => Math.abs(q.x * ts - ax) < 40);
-    if (w && w.retry && !ctx.chaseRunning() && !P.dead && P.hp > 0) { place(P, w.retry[0] * ts + 8, (w.retry[1] + 1) * ts); M.n.retries++; say('crashRetry', P, 'CRASHED: BACK BEFORE THE POINTS', '#ff9a5c', true); }
-    else say('crash', P, 'CRASH!', '#ff6b6b', true);
+    if (w && w.retry && !ctx.chaseRunning() && !P.dead && P.hp > 0) { place(P, w.retry[0] * ts + 8, (w.retry[1] + 1) * ts); M.n.retries++; (sayOk('crashRetry', true) && ctx.number(P.x, P.y - 34, 'CRASHED: BACK BEFORE THE POINTS', '#ff9a5c')); }
+    else (sayOk('crash', true) && ctx.number(P.x, P.y - 34, 'CRASH!', '#ff6b6b'));
   }
   const place = (P, x, y) => { P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.ground = false; P.onMover = null; P.inv = Math.max(P.inv || 0, 0.8); const c = cartOf(P); c.v = 0; c.hist = []; c.lastGround = null; };
-  const say = (key, P, text, col, again) => { if (!again && M.said[key]) return; M.said[key] = 1; ctx.number(P.x, P.y - 34, text, col); };
+  const sayOk = (key, again) => { if (!again && M.said[key]) return false; M.said[key] = 1; return true; };   /* a teaching line once (or every time: again) - the line itself stays a literal number() call (tools/hint-shown.mjs reads them) */
 
   /* ---------- THE POINTS ---------- */
   const leverBox = p => { const ts = TS(), x = p.x * ts + 8; return p.hang ? { l: x - 10, r: x + 10, t: p.row * ts - 4, b: p.row * ts + 14 } : { l: x - 10, r: x + 10, t: p.row * ts - 28, b: p.row * ts }; };
   function throwLever(p, P, how) {
     if (p.flash > 0.25) return false;
-    if (p.ore && ctx.questGot() < p.ore) { p.flash = 0.5; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(p.x * TS() + 8, p.row * TS() - 34, 'LOCKED: THE SMELTER WANTS ' + p.ore + ' ORE (' + ctx.questGot() + ')', '#9aa39a'); return true; }
+    if (p.ore && ctx.questGot() < p.ore) { p.flash = 0.5; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(p.x * TS() + 8, p.row * TS() - 34, 'LOCKED: THE SMELTER WANTS 8 ORE', '#9aa39a');   /* (its disc says ORE n/8) */ return true; }
     p.state = p.state === 'set' ? 'open' : 'set'; p.flash = 0.5; layPoints(p); M.n.throws++;
     ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.stone && ctx.sfx.stone(); ctx.sparks(p.x * TS() + 8, p.row * TS() - 16, 1, 5);
     ctx.number(p.x * TS() + 8, p.row * TS() - 38, p.state === 'set' ? 'POINTS SET: STAY HIGH' : 'POINTS OPEN: DOWN TO THE LOW LINE', p.state === 'set' ? '#ffd36b' : '#bce8fa');
@@ -144,7 +144,7 @@ export function makeMinecartHands(ctx) {
         if (e.alive && e.mcCart === cart) { ctx.killFoe(e); ctx.number(cart.x, cart.y - 30, 'THROWN OUT: THE CART IS YOURS', '#8fd160'); } else ctx.number(cart.x, cart.y - 30, 'INTO THE CART', '#8fd160');
         pc.v = Math.max(pc.v, cart.v, MC.cruise); ctx.sfx.clank && ctx.sfx.clank(); ctx.dust(P.x, P.y, 5); continue; }
       if (P.ground && pc.crashCd <= 0 && (P.x < cart.x) && pc.v > cart.v + 10) { pc.crashCd = MC.crashCd; pc.v = cart.v * 0.5; M.n.crashes++; ctx.hurtHero(cart.x, MC.crashDmg, { unblockable: true, name: 'A GOBLIN CART', noKnock: true }); ctx.shake(3); ctx.sfx.heavy && ctx.sfx.heavy();
-        say('cartCrash', P, 'CRASH: JUMP INTO IT, OR BRAKE', '#ff9a5c', true); }
+        (sayOk('cartCrash', true) && ctx.number(P.x, P.y - 34, 'CRASH: JUMP INTO IT, OR BRAKE', '#ff9a5c')); }
     }
   }
 
@@ -168,6 +168,8 @@ export function makeMinecartHands(ctx) {
         for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return; if (Math.abs(P.x - r.x) < MC.runeR + 4 && P.y > r.y - 26 && P.y <= r.y + 4) ctx.hurtHero(r.x, MC.runeDmg, { unblockable: true, name: 'A GOBLIN RUNE' }); }); } }
     M.runes = M.runes.filter(r => r.t > -0.3);
     if (P0) stall(P0, dt);
+    /* THE SMELTER'S COUNT: told once, the moment the eighth ore is in the tub */
+    if (P0 && !M.said.ore8) { const sm = M.points.find(p => p.ore); if (sm && ctx.questGot() >= sm.ore) { M.said.ore8 = 1; ctx.number(P0.x, P0.y - 40, "EIGHT ORE: THE SMELTER'S POINTS WILL OPEN", '#ffd36b'); } }
   };
   function stepHero(P, dt, now) {
     const c = cartOf(P), ts = TS(), Lv = M.L;
@@ -180,15 +182,15 @@ export function makeMinecartHands(ctx) {
     if (!P.dead && P.y > ((Lv.mcFall || [])[Math.max(0, Math.min(Lv.W - 1, Math.floor(P.x / ts)))] || 36) * ts && P.vy > 0) { const col = P.x / ts, exam = (Lv.mcExam || []).some(([a, b]) => col >= a && col <= b + 1) || ctx.chaseRunning();
       if (!exam && c.lastGround) { const lip = c.lastGround.x, back = c.hist.slice().reverse().find(h => h.x <= lip - MC.retryBack) || c.hist[0] || c.lastGround;
         M.n.falls++; ctx.hurtHero(P.x, Math.round(P.maxHp * MC.fallCost), { unblockable: true, name: 'THE DROP', noKnock: true });
-        if (!P.dead && P.hp > 0) { place(P, back.x, back.y); say('fall', P, 'A FALL COSTS YOU: BOOST BEFORE A LONG GAP', '#ff9a5c'); } } }
+        if (!P.dead && P.hp > 0) { place(P, back.x, back.y); (sayOk('fall') && ctx.number(P.x, P.y - 34, 'A FALL COSTS YOU: BOOST BEFORE A LONG GAP', '#ff9a5c')); } } }
     /* THE CRUSHERS */
     for (const k of M.crushers) { const ph = crushPhase(k, now); if (ph.state !== 'down') continue; const x0 = k.x * ts, x1 = (k.x + k.w) * ts, y1 = k.row * ts;
       if (P.x + 4 > x0 && P.x - 4 < x1 && P.y > y1 - 40 && P.y <= y1 + 2 && !(P.inv > 0)) { M.n.crushed++; ctx.hurtHero(P.x, MC.crushDmg, { unblockable: true, name: 'A CRUSHER', noKnock: true });
-        if (!P.dead && P.hp > 0) { place(P, x0 - 14, y1); say('crushed', P, 'CRUSHED: BRAKE, AND GO WHEN IT LIFTS', '#ff9a5c', true); } } }
+        if (!P.dead && P.hp > 0) { place(P, x0 - 14, y1); (sayOk('crushed', true) && ctx.number(P.x, P.y - 34, 'CRUSHED: BRAKE, AND GO WHEN IT LIFTS', '#ff9a5c')); } } }
     /* THE GATES */
     for (const gt of M.gates) { if (gateOpen(gt, now)) continue; const gx = gt.x * ts + 6, y1 = gt.row * ts;
       if (P.x + 5 > gx && P.x - 5 < gx + 6 && P.y > y1 - 46 && P.y <= y1 + 2) { M.n.gates++; c.v = 0; P.x = gx - 7; P.vx = Math.min(P.vx, 0);
-        if (c.crashCd <= 0) { c.crashCd = MC.crashCd; ctx.hurtHero(gx, MC.gateDmg, { unblockable: true, name: 'A SHUT GATE', noKnock: true }); ctx.sfx.clank && ctx.sfx.clank(); ctx.shake(3); say('gate', P, 'THE GATE IS SHUT: WATCH ITS GAUGE', '#ff9a5c'); } } }
+        if (c.crashCd <= 0) { c.crashCd = MC.crashCd; ctx.hurtHero(gx, MC.gateDmg, { unblockable: true, name: 'A SHUT GATE', noKnock: true }); ctx.sfx.clank && ctx.sfx.clank(); ctx.shake(3); (sayOk('gate') && ctx.number(P.x, P.y - 34, 'THE GATE IS SHUT: WATCH ITS GAUGE', '#ff9a5c')); } } }
     /* THE ROCKFALLS: armed as you pass the trigger; dust and a shadow, then the rock */
     for (const r of M.rocks) { if (r.armed && P.x >= r.trig * ts) { r.armed = false; r.fallT = r.delay; ctx.sfx.rubble ? ctx.sfx.rubble() : ctx.sfx.thud && ctx.sfx.thud(); }
       if (r.fallT > 0) { r.fallT -= dt; if (r.fallT <= 0 && !r.done) { r.done = true; const x0 = r.x * ts - 4, x1 = (r.x + r.w) * ts + 4, y1 = r.row * ts; ctx.shake(3); ctx.burst((x0 + x1) / 2, y1 - 6, 12, ['#6b5a48', '#8a7660', '#2a2119'], 80, 0.5);
@@ -198,7 +200,7 @@ export function makeMinecartHands(ctx) {
       if (box.r > b.x0 * ts && box.l < (b.x1 + 1) * ts && box.t < y && box.b > y - 6 && !ctx.duckClears(P, y)) { b.cd = 1; M.n.beams++; ctx.hurtHero(P.x + 8, MC.beamDmg, { unblockable: true, name: 'A LOW BEAM', noKnock: true }); c.v *= 0.5; ctx.sfx.thud && ctx.sfx.thud(); } }
     /* A FOE STANDING ON THE LINE: ride into him and the cart stops dead (jump him, strike him, or stamp on him) */
     if (P.ground && c.crashCd <= 0) for (const e of ctx.enemies()) { if (!e.alive || e.mcCart || e.boss || e.maxHp || e.t === 'bat' || e.t === 'crow' || e.t === 'tippler' || e.noGrav) continue;
-      if (Math.abs(e.y - P.y) < 6 && Math.abs(e.x - P.x) < (e.w || 10) / 2 + 5 && Math.sign(e.x - P.x) === Math.sign(P.vx || 1)) { c.crashCd = MC.crashCd; c.v = Math.min(c.v, 25); M.n.crashes++; ctx.shake(2); say('foeCrash', P, 'CRASH: JUMP THEM OR STRIKE THEM', '#ff9a5c'); break; } }
+      if (Math.abs(e.y - P.y) < 6 && Math.abs(e.x - P.x) < (e.w || 10) / 2 + 5 && Math.sign(e.x - P.x) === Math.sign(P.vx || 1)) { c.crashCd = MC.crashCd; c.v = Math.min(c.v, 25); M.n.crashes++; ctx.shake(2); (sayOk('foeCrash') && ctx.number(P.x, P.y - 34, 'CRASH: JUMP THEM OR STRIKE THEM', '#ff9a5c')); break; } }
     meetCarts(P, dt);
     c.wasGround = !!P.ground;
   }
