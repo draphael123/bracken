@@ -47,7 +47,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/cistern-queen-hands.js binds it). queenPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CQ = {
-  hp: 1650, w: 76,   /* (claude/underwell3: 1150 -> 1650 with her blows x dmgK 0.55 - her stinger is whole any time and fire/water open her: the fight ran 60-70 s; 1650 x0.7: 3/8 3/8 2/8 = 33%; 1650 x0.55: 3/8 5/8 5/8 = 54%, fights 61-137 s, human bot n=24) */ /* (claude/underwell2: 1050 -> 1150 - her torches are taken and thrown now, so a jump-strike no longer drops one into the floor oil under you, and the standard bot rose 63% -> 79% on this branch, the base 0c0b69aa measured beside it: likely her cressets - a jump-strike dropped one into the floor oil under the bot; 1150: 4/8 1/8 8/8 = 54%) */ /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
+  hp: 1950, w: 76,   /* (claude/queen4: 1650 -> 1950 with dmgK 0.55 -> 0.62 (1900: 7/8 3/8 5/8 = 63%) - her trips to the walls are seen now (her back open on the floor) and the brood are gone: 1650 x0.55 measured 6/8 5/8 8/8 = 79%, n=24) */ /* (claude/underwell3: 1150 -> 1650 with her blows x dmgK 0.55 - her stinger is whole any time and fire/water open her: the fight ran 60-70 s; 1650 x0.7: 3/8 3/8 2/8 = 33%; 1650 x0.55: 3/8 5/8 5/8 = 54%, fights 61-137 s, human bot n=24) */ /* (claude/underwell2: 1050 -> 1150 - her torches are taken and thrown now, so a jump-strike no longer drops one into the floor oil under you, and the standard bot rose 63% -> 79% on this branch, the base 0c0b69aa measured beside it: likely her cressets - a jump-strike dropped one into the floor oil under the bot; 1150: 4/8 1/8 8/8 = 54%) */ /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
   openMul: 1.9, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
@@ -105,7 +105,7 @@ export const CQ = {
   /* (claude/underwell: x1.43 on every blow in her own level - the WEIGHT/HARNESSCARD heroes at the Underwell's depth took 80-200 of 250 at the old numbers) */
   dmg: { pincer: 15, snap: 12, lunge: 21, lance: 22, flick: 8, strike: 25, charge: 18, spit: 11, puddle: 3, sweep: 18, slam: 18, pin: 22, pounce: 25,
     ambush: 19, wave: 15, grab: 8, sting: 34, tidal: 18, heat: 6, sslam: 30, bloom: 26 },   /* (claude/queen4: the bloom 26 - the death roll's 23 and a little for its two stacks' worth of venom told so long) */
-  dmgK: 0.55,   /* (claude/underwell3) every blow above x this (applied once below): a longer fight that hits softer */   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
+  dmgK: 0.62,   /* (claude/underwell3) every blow above x this (applied once below): a longer fight that hits softer */   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
 };
 for (const k in CQ.dmg) CQ.dmg[k] = Math.round(CQ.dmg[k] * CQ.dmgK * 10) / 10;
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]; a cycle ends with the blow that holds her opening) */
@@ -712,6 +712,9 @@ export function queenPlan(s) {
       if (cx != null && Math.abs(cx - P.x) < 50) { out.gx = clamp(P.x + (P.x < cx ? -70 : 70)); out.dodge = Math.abs(cx - P.x) < 30; out.why = 'off the mound'; return out; } }
     if (m === 'chargeTell') { if (s.sips > 0 && S.mound && Math.abs(S.mound.x - P.x) < 54 && !roll(key + 'p', PLAN.missPour)) { out.face = Math.sign(S.mound.x - P.x) || P.face; out.talk = true; out.why = 'flood the mound'; return out; } }
     if (m === 'slamTell') { /* the rubble comes where you stand: move as it falls (handled above) */ }
+    /* (claude/queen4) THE STINGER SLAM's red ring under you: off it before the stinger comes down (the bot never answered it - every slam landed; a player reads the ring and the word) */
+    if (m === 'sslamTell') { const cx = S.cur && S.cur.x; if (cx != null && Math.abs(cx - P.x) < CQ.slamR + 14 && !onLedge) { let dir = P.x < cx ? -1 : 1; if (cx + dir * (CQ.slamR + 24) < G.x0 + 14 || cx + dir * (CQ.slamR + 24) > G.x1 - 14) dir = -dir;
+      out.gx = clamp(cx + dir * (CQ.slamR + 24)); out.dodge = P.ground && e.modeT < 0.25; out.why = 'off the slam red ring'; return out; } }
     if (m === 'pinTell') { const cx = S.cur && S.cur.x; if (cx != null && Math.abs(cx - P.x) < 40 && e.modeT < 0.3) { out.gx = clamp(P.x + (P.x < G.mid ? 60 : -60)); out.dodge = true; out.why = 'dodge the pin'; return out; } }
     if (m === 'pounceTell') { const cx = S.cur && S.cur.x; if (cx != null && Math.abs(cx - P.x) < CQ.pounceR + 12) { out.gx = clamp(P.x + (P.x < cx ? -60 : 60)); out.why = 'out of the shadow'; return out; } }
     if (m === 'grabTell' && ad < 140) { if (ad < CQ.w / 2 + CQ.grabReach + 20 && roll(key + 'c', PLAN.counter)) { out.face = Math.sign(e.x - P.x) || 1; out.gx = clamp(e.x + side * (CQ.w / 2 + reach - 4)); out.why = 'meet the claw';
