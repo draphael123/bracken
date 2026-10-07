@@ -39,7 +39,7 @@ try {
       const deaths = () => BK.stats().deaths;
       class Died extends Error {}
       let ARMED = null, SPARE = false;   /* (claude/canal6) SPARE: a basin plan that skips the deck foreman never swings at him until he is aboard her in the lock */
-      /* (claude/canal6, Daniel 10-07: "little enemies get stuck on the bottom that you can't see") THE BROOD IN SIGHT: every live foe in the tunnel's span
+      /* (claude/canal6, Daniel 10-07: "little enemies get stuck on the bottom that you can't see") THE BROOD IN SIGHT: every live foe in the tunnel's own columns
          (248-345), every frame, must be where the tunnel is DRAWN and where a blade can reach it - never on the tunnel's bed under the water (a man knocked off
          a ledge), never in the rock under it, never under the water deeper than a lurking grindylow's ripples (its own place: it is drawn as ripples and
          rises to strike). Counted per foe: a foe out of that space for more than half a second fails the run */
@@ -53,7 +53,8 @@ try {
         if (e.t === 'willowisp') return null;
         return s !== null && e.y > s + 6 ? 'under the water, ' + Math.round(e.y - s) + ' px below the surface (' + e.mode + ')' : null; };
       const FOE_OUT = new Map(); let foeOutMax = 0, foeOutWhat = null;
-      const foeAudit = () => { for (const e of BK.enemies()) { if (!e.alive || e.x < 248 * TS || e.x >= 346 * TS) { FOE_OUT.delete(e); continue; } const why = foeOut(e);
+      const TUN = [248 * TS, ((BK.L.canal && BK.L.canal.tunnelEnd) || 345) * TS];   /* the tunnel's own columns (L.canal.tunnels, to its lower gate's slot): a basin wisp drifting by the gate is the basin's */
+      const foeAudit = () => { for (const e of BK.enemies()) { if (!e.alive || e.x < TUN[0] || e.x >= TUN[1]) { FOE_OUT.delete(e); continue; } const why = foeOut(e);
           if (!why) { FOE_OUT.delete(e); continue; } const n = (FOE_OUT.get(e) || 0) + 1; FOE_OUT.set(e, n);
           if (n > foeOutMax) { foeOutMax = n; foeOutWhat = e.t + (e.cnSkin ? '/' + e.cnSkin : '') + ' @' + (e.x / TS).toFixed(1) + ',' + (e.y / TS).toFixed(1) + ': ' + why; } } };
       /* ONE FRAME. The tally that matters here: how long the hand is PARTED from her in the tunnel with no footing her deck can reach - off her, not on
@@ -196,16 +197,18 @@ try {
           stage('SKIPPED HIM: up the lock under his shut door, the deck foreman LEAPS ABOARD her - on her deck, in reach', on); SPARE = false; if (!on) return false; }
         walk(388, { tol: 3, noFight: true }); strike(1); for (let i = 0; i < 60 * 8 && !full('L5'); i++) { clear(); if (NF) tick(1); else if (!fight({ r: 40 })) tick(1); } stage('basin: its lock filled', full('L5'));
         if (NF) { const f = FMAN(), hp0 = f ? f.hp : 0;
-          /* his guard is by angle (src/elite-kit.js): a light cut off his front CLANKS, a HEAVY goes through at half and fills his poise into THE OPENING - so the
-             hand fights him the way his read says: up to him on her deck, a wound heavy (attack held, let go), a plain cut or two into an opening, again */
+          /* his guard is by angle (src/elite-kit.js): a light cut off his front CLANKS, a low SWEEP goes under it, a HEAVY goes through at half and fills his poise
+             into THE OPENING - so the hand fights him the way his read says: up to him on her deck, a sweep, a wound heavy (attack held, let go), cuts into an opening */
           let heavies = 0;
           for (let i = 0; i < 70 && FMAN(); i++) { const e = FMAN(); clear();
             for (let j = 0; j < 40 && Math.abs(e.x - P().x) > 16 && e.alive; j++) { clear(); k[e.x > P().x ? 'right' : 'left'] = true; tick(1); } clear(); P().face = Math.sign(e.x - P().x) || P().face;
-            if (P().dead || !e.alive) continue; k.atk = true; tick(40); k.atk = false; tick(16); heavies++;
+            if (P().dead || !e.alive) continue; heavies++;
+            if (i % 2 === 0) { k.down = true; tick(2); BK.press('atk'); tick(12); k.down = false; tick(6); }   /* THE LOW SWEEP: under his guard (every hero has one; the geomancer's heavy is a FAULT LINE in the ground, and her deck is no ground) */
+            else { k.atk = true; tick(40); k.atk = false; tick(16); }   /* a wound HEAVY: through his guard at half, into his poise */
             if (e.alive && e.broken > 0) for (let c = 0; c < 3 && e.alive; c++) { BK.press('atk'); tick(10); } else tick(20); }
           const took = !!FMAN(); if (took) { FMAN().alive = false; basinAssists++; }
           const hit = !!f && f.hp < hp0; for (let i = 0; i < 20; i++) tick(1);   /* (his gate lifts on the next frame's watch) */
-          stage('the hand\\'s own blows land on him on her deck (' + Math.round(hp0) + ' -> ' + Math.round(Math.max(0, f ? f.hp : 0)) + (took ? ', then taken out by the tool after ' + heavies + ' heavies' : ', cut down with ' + heavies + ' heavies') + '); his door opens', hit && !FMAN() && !doorShut()); }
+          stage('the hand\\'s own blows land on him on her deck (' + Math.round(hp0) + ' -> ' + Math.round(Math.max(0, f ? f.hp : 0)) + (took ? ', then taken out by the tool after ' + heavies + ' sweeps and heavies' : ', cut down with ' + heavies + ' sweeps and heavies') + '); his door opens', hit && !FMAN() && !doorShut()); }
         walk(389, { tol: 3, noFight: true }); hop(1, { hold: 30 }); walk(391); walk(395); walk(398, { noFight: true }); tick(60);
         return true; };
       if (basin(BPLAN) === 'again') { if (!runTunnel()) return fail(); basin('skip'); }
