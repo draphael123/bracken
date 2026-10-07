@@ -181,7 +181,7 @@ export function buildMinecart({ painter, T, TS }) {
   tell(294, 324, 'ROCKFALL: BRAKE OR BOOST');
   sign(314, B - 1, 'DUST FALLS BEFORE THE ROCK. BRAKE OR BOOST OFF ITS SHADOW.');
   rock('first', 316, 324, B);                                               /* THE FIRST ROCKFALL (taught alone) */
-  rail(320, 446, B - 3);                                                    /* the parallel line: three rows up, one-way (jump up to it, down + jump to come down) */
+  rail(320, 438, B - 3);                                                    /* the parallel line: three rows up, one-way (jump up to it, down + jump to come down). It ends at 438 (fix pass: at 446 it dropped you ON the deep gap's lip with no room to jump) */
   tell(312, 340, 'GOBLIN CARTS: KNOCK THEM OFF');
   sign(318, B - 1, 'GOBLIN CARTS: STRIKE THE RIDER OFF, OR JUMP INTO HIS CART.');
   rider('archer', 322, B - 3, 30, { squad: 'gl1' });                        /* TEACH: one archer, a little ahead on the line above */
