@@ -334,7 +334,7 @@ export function buildMinecart({ painter, T, TS }) {
       { kind: 'stray', opens: 'THE SMELTER\'s points once 8 ore are carried: its line to a silver', hud: 'ORE n/10 - THE SMELTER WANTS 8 (the quest counter, and the lever says it)' },
     ],
     music: 'mineworks',
-    ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'mineworks' }],   /* (the art pass: its own synth bed in src/audio.js) */
     rockZones: [], masonry: [],
     /* GREYBOX LOOK: a deep mine (the art pass gives it its own kit): the Ore Road's warm dark, deeper, with dust in the air */
     palette: { sky: [[10, 8, 12], [26, 20, 22]], far: 'crag', mid: 'crag', near: 'none', dress: 'none', noFg: true, noNear: true, ledges: 'staging', haze: 'rgba(30,24,22,0.2)', murkCol: '#2a1c18', murkLit: '#8a5a30',

@@ -14,6 +14,8 @@ try {
     const run = n => { for (let i = 0; i < n; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); if (i % 4 === 0) BK.step(1); } BK.step(1); };
     const rowAt = x => { let best = null; for (const [a, b, row] of BK.L.mcTrack) if (x >= a && x <= b && (best === null || row > best)) best = row; return best; };
     const at = (name, x, row) => { const rw = row || rowAt(x); BK.tp(x, rw - 1); BK.minecart().cart(BK.P).v = 0; run(10); BK.look(x, rw - 1); snap(name); };
+    const snapZ = (name, sx, sy, sw, sh, k) => { if (only.length && !only.includes(name)) return; const c = document.createElement('canvas'); c.width = sw * k; c.height = sh * k; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, sx, sy, sw, sh, 0, 0, c.width, c.height); res.push([name, c.toDataURL('image/png')]); };
+    for (const [n, x, dx] of [['18z-crusher', 616, 0], ['19z-gate', 234, 0], ['20z-lever', 123, 0], ['21z-fall-in', 148, 0]]) { const rw = rowAt(x); BK.tp(x, rw - 1); BK.minecart().cart(BK.P).v = 0; run(10); BK.look(x + 4, rw - 1); snapZ(n, 60, 40, 200, 112, 5); }
     for (const [n, x] of [['01-yard', 24], ['02-boostgap', 100], ['03-points', 150], ['04-switchback', 215], ['05-goblinline', 350], ['06-caveinfork', 500], ['07-crumble', 540], ['08-works', 650], ['09-high', 720], ['10-exam', 790], ['11-deepgap', 662], ['12-smelter', 925], ['13-bore', 950]]) at(n, x);
     /* THE GREAT DRILL: the fight, then its jammed open state */
     const A = BK.L.arena; BK.tp(A.start[0], A.start[1]); BK.minecart().cart(BK.P).v = 0; run(10);
