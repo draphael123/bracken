@@ -157,7 +157,7 @@ export function makeRootwayHands(ctx) {
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L(), plan = RWW.planRoot(lv, ctx.T); plan.solid = (x, y) => x < 0 || y < 0 || x >= lv.W || y >= lv.H || lv.grid[y * lv.W + x] === ctx.T.SOLID;
     RWW.drawChasms(g, cx, cy, VW, VH, time, plan);                  /* the exam's floorless gaps: a mist into a dark with no bottom */
-    RWW.drawSupports(g, cx, cy, VW, time, plan);                    /* what holds every ledge up */
+    if (!H.noSupports) RWW.drawSupports(g, cx, cy, VW, time, plan);   /* what holds every ledge up (H.noSupports: tools/rootway-aloft.mjs switches it off to see them go) */
     RWW.drawDress(g, cx, cy, VW, time, plan);                       /* the floor's litter, racks, lanterns, hanging root hair */
     RWW.drawDrops(g, cx, cy, VW, time, plan, ctx.props ? ctx.props() : null);   /* the spore drops' root clumps */
     /* the level's own furniture: the larder's drying beam, the lookout's hut, his gold arrows in the roots */

@@ -222,7 +222,7 @@ export function buildRootway({ painter, T, TS }) {
       { kind: 'hoists', opens: 'its load: a span lands across its gap (a bridge), a cage lands as a step, a hunter falls', hud: 'THE HOIST DROPS WHAT IT HOLDS' },
     ],
     music: 'rootway',   /* "Lanterns in the Hollowed Forest" by Tsorthan Grove, CC0 (audio/CREDITS.txt); the Huntmaster keeps his composed boss3 */
-    ambient: [{ x0: 0, x1: 200 * TS, kind: 'drip' }, { x0: 200 * TS, x1: 99999, kind: 'wind' }],   /* the fungus drips at the foot; the canopy's wind at the top (the art pass: its own bed) */
+    ambient: [{ x0: 0, x1: 99999, kind: 'rootway' }],   /* its own bed (src/audio.js rootway): the air inside a great tree - leaves, timber, lanterns, spore pops, a far hide-drum */
     weather: [{ x0: 0, x1: 180 * TS, kind: 'spore' }],
     palette: { sky: [[64, 96, 112], [196, 168, 120]], noNear: true, noFg: true, near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(150,130,120,0.18)', grass: '#5a8a3a', grassL: '#8ac050', grassD: '#34562a', dirt: '#4a3a30', dirtL: '#5e4a3a', dirtD: '#33261e', canopy: ['#2a1f38', '#4e3a50', '#8a5a3a', '#c88a3a'] },
     /* THE SEAM IT CARRIES: the fungus violet at its foot, warming through the climb into Kingswood's autumn amber in the canopy (L.tints crossfade over 24 columns) */
