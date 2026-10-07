@@ -106,7 +106,7 @@ export function drawLedge(g, cx, cy, time, S_, G, o) {
     const ang = pend || !full ? 0.95 : -0.55, lx = x, ly = y - 18; g.save(); g.translate(lx, ly); g.rotate(ang); g.fillStyle = WOOD.ironL; g.fillRect(-1, -16, 3, 16); g.fillStyle = WOOD.w3; g.fillRect(-2, -20, 5, 6); g.fillStyle = WOOD.w4; g.fillRect(-2, -20, 5, 1); g.restore();
     const gxx = x + (l.id === 'W' ? 9 : -13); rc(g, gxx, y - 24, 5, 22, WOOD.iron); rc(g, gxx + 1, y - 23, 3, 20, '#10181c'); if (full) { rc(g, gxx + 1, y - 22, 3, 19, '#4a8ac8'); rc(g, gxx + 1, y - 22, 3, 1, '#c8e8ff'); rc(g, gxx + 2, y - 20 + R((time * 8) % 5), 1, 1, '#ffffff'); } else rc(g, gxx + 1, y - 6, 3, 3, '#2a3a4a');
     const pulse = full && !pend && S_.ph === 1 ? 0.5 + 0.5 * Math.sin(time * 4) : 0; if (pulse > 0) { g.globalAlpha = 0.2 + 0.25 * pulse; g.strokeStyle = '#ffe9a0'; g.beginPath(); g.arc(x, y - 22, 9 + pulse * 2, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the lever glints while it can still throw her */
-    text(full ? 'FULL' : 'EMPTY', x, y - 34, full ? '#7ab8e8' : '#9aa39a', 'center', 5); }
+    if (x > 14 && x < VW - 14 && y - 34 > 2 && y - 34 < VH - 8) text(full ? 'FULL' : 'EMPTY', x, y - 34, full ? '#7ab8e8' : '#9aa39a', 'center', 5); }
   /* THE ROPE BRIDGES: a lashed mast at each end (the lashing at its foot is what you strike), a sagging deck of boards, hand-ropes each side; a cut deck hangs off the far mast */
   for (const b of G.bridges) { const st = S_.bridges[b.id], ax = R(b.a - cx), bx = R(b.b - cx), top0 = R(G.bridgeY - 24 - cy), deck = R(G.bridgeY - cy), foot = R(topY - cy), perched = S_.perch === b.id && o.boss && o.boss.mode === 'perch';
     if (bx < -20 || ax > VW + 20) continue;

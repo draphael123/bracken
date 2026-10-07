@@ -99,8 +99,8 @@ function breathTimes(phase) {
 
 // 6. THE BREATH DRAWN AS FIRE, ITS TIMING AND HITBOX UNTOUCHED: every fill the world-drawing makes for a jet 180 px long (flat, from
 //    his mouth to the right) is recorded - its colour and where - at two moments of the flicker
-{ ok(GARG.tell.breath === 1.5 && GARG.breath.lock === 0.5 && GARG.breath.T === 1.4 && GARG.breath.travel === 260 && GARG.breath.w === 10 && GARG.breath.reach === 210 && GARG.breath.sweep === 0.4 && GARG.dmg.breath === 12 && GARG.tellP2Not.includes('breath'),
-    'THE BREATH\'S TIMING, HITBOX AND TELL are as round four set them (tell 1.5 s, set 0.5 s, jet 1.4 s at 260 px/s, 210 px long, 10 px either side, 12 damage)');
+{ ok(GARG.tell.breath === 1.5 && GARG.breath.lock === 0.5 && GARG.breath.T === 1.4 && GARG.breath.travel === 260 && GARG.breath.w === 10 && GARG.breath.reach === 210 && GARG.breath.sweep === 0.4 && GARG.dmg.breath === 15 && GARG.tellP2Not.includes('breath'),
+    'THE BREATH\'S TIMING, HITBOX AND TELL are as round four set them (tell 1.5 s, set 0.5 s, jet 1.4 s at 260 px/s, 210 px long, 10 px either side, 15 damage - claude/sweep3 raised it from 12 with the boss sweep)');
   const record = () => { const fills = []; let pts = []; const g = { fillStyle: '#000', strokeStyle: '#000', globalAlpha: 1, lineWidth: 1,
       beginPath() { pts = []; }, moveTo(x, y) { pts.push([x, y]); }, lineTo(x, y) { pts.push([x, y]); }, arc(x, y, r) { pts.push([x, y - r], [x, y + r]); }, ellipse(x, y, rx, ry) { pts.push([x, y - ry], [x, y + ry]); },
       fill() { if (this.globalAlpha > 0.05) fills.push({ col: String(this.fillStyle).toLowerCase(), pts }); }, fillRect(x, y, w, h) { if (this.globalAlpha > 0.05) fills.push({ col: String(this.fillStyle).toLowerCase(), pts: [[x, y], [x + w, y + h]] }); },

@@ -138,7 +138,7 @@ export function updateHedgeWarden(e, dt, c) {
   if (e.mode === 'rush') { const nx = e.x + e.face * HEDGE.rushV * dt; e.vx = e.face * HEDGE.rushV;
     if (nx > A.x0 + 16 && nx < A.x1 - 16) e.x = nx; else e.modeT = 0;
     if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 20 && Math.abs(P.y - floor) < 30) { e.rushHit = true; const res = hit(e.x, HEDGE.dmg.rush, false, 'THE RUSH'); if (c.answered && c.answered(res)) { hedgeAnswered(e, 'rush'); return; } }
-    else if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 20 && P.y <= floor - 30) { e.rushHit = true; hedgeAnswered(e, 'rush'); return; }   /* jumped clean over him */
+    else if (!e.rushHit && !P.dead && Math.abs(P.x - e.x) < 20 && !(P.y > floor - 30)) { e.rushHit = true; hedgeAnswered(e, 'rush'); return; }   /* jumped clean over him */
     if (e.modeT <= 0) rest(e, rnd); return; }
   if (e.mode === 'cut' || e.mode === 'thorn' || e.mode === 'lash' || e.mode === 'roots') { if (e.modeT <= 0) rest(e, rnd); return; }
   // ---- STALKING: he keeps to his reach and comes on ----

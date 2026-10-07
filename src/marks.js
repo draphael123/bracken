@@ -523,7 +523,7 @@ export const HEIGHT = {
   'holdfast|gripTell': 'low',
   'hopper|hopTell': 'low',
   'horn|tell': 'high',
-  'hound|pounceTell': 'low',
+  'hound|pounceTell': 'low', 'greathound|lungeTell': 'low', 'greathound|pounceTell': 'low', 'greathound|snapTell': 'low',   /* (claude/batch74: the Great Hound's answered blows (claude/sweep1's ANSWER rows) all run along the ground) */
   'husk|grabTell': 'low',
   'imp|throwTell': 'low',
   'javelin|grabTell': 'low', 'javelin|raise': 'low', 'javelin|slashTell': 'low', 'javelin|windUp': 'low',
@@ -599,7 +599,7 @@ export const HEIGHT = {
   'whelp|crouchTell': 'low', 'whelp|fireTell': 'low',
   'wickerqueen|tossTell': 'low', 'wickerqueen|sweepLowTell': 'low', 'wickerqueen|sweepHighTell': 'high', 'wickerqueen|leapTell': 'low', 'wickerqueen|lashHighTell': 'high', 'wickerqueen|lashLowTell': 'low', 'wickerqueen|stabTell': 'low', 'wickerqueen|floorTell': 'low', 'wickerqueen|thrustHighTell': 'high', 'wickerqueen|thrustLowTell': 'low', 'wickerqueen|ringTell': 'low',
   'greenteeth|slamTell': 'low', 'greenteeth|chargeTell': 'low', 'greenteeth|netTell': 'low', 'greenteeth|vineTell': 'low',
-  'matriarch|pounceTell': 'low', 'matriarch|rakeTell': 'low', 'matriarch|sweepTell': 'low', 'matriarch|screeTell': 'low', 'matriarch|diveTell': 'low', 'matriarch|surgeTell': 'low',   /* (claude/redgorge2) */
+  'matriarch|pounceTell': 'low', 'matriarch|rakeTell': 'low', 'matriarch|sweepTell': 'low', 'matriarch|screeTell': 'low', 'matriarch|diveTell': 'low', 'matriarch|surgeTell': 'low', 'matriarch|volleyTell': 'low',   /* (claude/redgorge2; volley: claude/batch74 - an aimed quill volley is dodged, not ducked) */
   'cisternqueen|pincerTell': 'low', 'cisternqueen|snapTell': 'low', 'cisternqueen|snap2Tell': 'low', 'cisternqueen|lungeTell': 'low', 'cisternqueen|lanceTell': 'low', 'cisternqueen|flickTell': 'low', 'cisternqueen|strikeTell': 'low', 'cisternqueen|chargeTell': 'low', 'cisternqueen|spitTell': 'low', 'cisternqueen|sweepLowTell': 'low', 'cisternqueen|sweepHighTell': 'high', 'cisternqueen|slamTell': 'low', 'cisternqueen|pinTell': 'low', 'cisternqueen|pounceTell': 'low', 'cisternqueen|ambushTell': 'low', 'cisternqueen|waveTell': 'low', 'cisternqueen|grabTell': 'low', 'cisternqueen|rollTell': 'low', 'cisternqueen|tidalTell': 'high', 'cisternqueen|barbTell': 'low',   /* THE CISTERN QUEEN (claude/welltown3): the high sweep and the tidal tail go over a ducking hero */
   'gangleader|cutTell': 'low', 'gangleader|cut2Tell': 'low', 'gangleader|crossTell': 'low', 'gangleader|whirlTell': 'low', 'gangleader|throwTell': 'low', 'gangleader|riposteTell': 'low', 'gangleader|dashTell': 'low', 'djinn|lashTell': 'low', 'djinn|blastTell': 'low', 'djinn|devilTell': 'low', 'djinn|flashTell': 'low', 'djinn|breathTell': 'high', 'djinn|pillarTell': 'low', 'djinn|spoutTell': 'low', 'djinn|waveTell': 'low', 'djinn|slamTell': 'low', 'djinn|spearsTell': 'low', 'djinn|firedevilTell': 'low', 'djinn|whirlTell': 'low', 'djinn|spearsTell': 'low', 'djinn|firedevilTell': 'low', 'djinn|whirlTell': 'low',
   'wight|graspTell': 'low',

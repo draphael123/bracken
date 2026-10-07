@@ -139,7 +139,7 @@ export function buildRedGorge({ painter, T, TS }) {
     ledge(55, 61, 169); set(55, 166, T.ONEWAY); set(56, 166, T.ONEWAY);                                                                     /* (and again, under the landing's east lip - two boards of it, jumped up through) */
     ent('rockfall', 52, 160, { every: 3.6, tell: 0.9, seen: true });
     foe('cutthroat', 52, 165, 'climbTop', { face: 1 });
-    ent('check', 46, 165);                                                                  /* (fix pass) CHECKPOINT: the climb's top, at the gorge's mouth - the rapids and the climb are not replayed for one bad minute in the gorge */
+    ent('check', 49, 190);                                                                  /* (claude/batch74: was the climb's top (46, 165), 71 route tiles before the terrace's - TOO DENSE; the rope's top shelf is 97 back from it and 113 from the start) CHECKPOINT: the rope's top shelf, mid-climb - the rapids and the climb are not replayed for one bad minute in the gorge */
     decor.push({ kind: 'plume', x: 54, y: 165 });
   }
 

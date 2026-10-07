@@ -22,7 +22,7 @@ const setup = lvl => `
   BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(lvl)})); BK.start(); BK.god = true;
   const L = BK.L, W = L.W, at = (x, y) => L.grid[y * W + x];
   let spot = null;
-  for (let x0 = Math.floor(BK.P.x / 16); x0 < W - 24 && !spot; x0++) for (let y = 4; y < L.H - 2 && !spot; y++) {
+  for (const from of [Math.floor(BK.P.x / 16), 0]) for (let x0 = from; x0 < W - 24 && !spot; x0++) for (let y = 4; y < L.H - 2 && !spot; y++) {   /* (claude/batch74: then from the level's left edge - the Red Gorge's start is a climb with no flat floor after it) */
     let ok = true; for (let x = x0; x < x0 + 20 && ok; x++) ok = at(x, y + 1) === 1 && at(x, y) === 0 && at(x, y - 1) === 0 && at(x, y - 2) === 0;
     if (ok) spot = [x0 + 10, y]; }
   if (!spot) return { err: 'no flat floor' };
