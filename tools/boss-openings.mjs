@@ -37,6 +37,7 @@
                        each open; E at her on the open floor pours nothing; a minute of her left alone opens nothing. THE GANG LEADER (a mini): his bottle
                        struck home sets him alight, open, a third of him a burning (claude/welltown3)
      THE ROC (THE SKY ROAD's eyrie)  ride a thermal over her and plunge onto her back: knocked down, open; left alone on the stone, her dives skid
+     THE GOBLIN HUNTMASTER (THE ROOTWAY's stand)  strike his gold arrow back: it flies home, breaks his quiver strap, open; his arrows taken on a guard open nothing
      THE GREAT RED CRAB  shut the dam's gate, let a flood bank, release it while he is in the spillway: thrown on his back, open; a release with him
                        out of it opens nothing, and a minute of him with the floods running (gate open) opens nothing (claude/redgorge)
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
@@ -257,6 +258,12 @@ try {
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+64;P.vx=0;BK.sim(1);if(O(b))alone+=1/60;}
    for(let i=0;i<60*20&&!(b.mode==='fly'&&!(b.ward>0));i++){P.hp=P.maxHp;BK.sim(1);}b.modeT=9;P.x=b.x;P.y=b.y-36;P.vy=0;P.ground=false;BK.keys.down=true;BK.press('atk');BK.sim(2);BK.keys.down=false;
    let op=0;for(let i=0;i<60*10;i++){P.hp=P.maxHp;BK.sim(1);if(O(b))op+=1/60;else if(op>0)break;}out.roc={alone:+alone.toFixed(1),open:+op.toFixed(1)};}
+  /* THE GOBLIN HUNTMASTER (claude/rootway, THE ROOTWAY's stand): a minute of him with the hero holding a guard - his arrows taken on it, never struck - opens
+     nothing; his own gold arrow struck back flies home, breaks his quiver strap and opens him, 3 s or more (src/huntmaster.js) */
+  {const b=boot('rootway');const A=BK.L.arena,P=BK.P,H=BK.huntmaster(),O=e=>(e.mode==='open'||e.mode==='caught')&&e.open>0;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+120;P.vx=0;BK.keys.block=true;BK.sim(1);if(O(b))alone+=1/60;}BK.keys.block=false;BK.sim(2);
+   let op=0,tries=0;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const F=H.fight(),a=F&&F.arrows.find(q=>q.kind==='gold'&&!q.back&&Math.abs(q.x-P.x)<70&&Math.abs(q.y-(P.y-10))<24);if(a&&P.atk<0&&Math.abs(a.x-P.x)<46){P.face=Math.sign(a.x-P.x)||1;BK.press('atk');tries++;}BK.sim(1);if(O(b))op+=1/60;}
+   for(let i=0;i<60*10&&O(b);i++){P.hp=P.maxHp;BK.sim(1);op+=1/60;}out.huntmaster={alone:+alone.toFixed(1),open:+op.toFixed(1),tries,weak:H.fight()&&H.fight().weak[1]};}
   /* THE RAPTOR MATRIARCH (claude/redgorge2; THE GREAT RED CRAB is benched, unplaced - his promises are kept by tools/redgorge.mjs, pure): a minute of her with
      no lever pulled opens nothing big; a lever pulled with her up on the rock is wasted; pulled with her in the channel by a NARROW pillar, the pillar
      throws her - STAGGERED, open 3 s or more (THE RED GORGE holds her) */
@@ -361,6 +368,8 @@ try {
   assert.ok(r.gangleader.took <= r.gangleader.cap + 1 && r.gangleader.took >= r.gangleader.cap * 0.6, 'one burning took more than his cap (GL.capK, inside the third Daniel allows) or nothing like it: ' + JSON.stringify(r.gangleader));
   assert.equal(r.roc.alone, 0, 'THE ROC: a minute of her with the hero on the stone opened her: ' + JSON.stringify(r.roc));
   assert.ok(r.roc.open >= 3, 'a plunge on her back did not knock her down open for 3 s or more (the boss rule): ' + JSON.stringify(r.roc));
+  assert.equal(r.huntmaster.alone, 0, 'THE GOBLIN HUNTMASTER: a minute of him with his arrows taken on a guard opened him: ' + JSON.stringify(r.huntmaster));
+  assert.ok(r.huntmaster.open >= 3 && r.huntmaster.weak, 'his gold arrow struck back did not break his quiver strap and open him for 3 s or more (the boss rule): ' + JSON.stringify(r.huntmaster));
   assert.equal(r.matriarch.alone, 0, 'THE RAPTOR MATRIARCH: a minute of her with no lever pulled opened her: ' + JSON.stringify(r.matriarch));
   assert.ok(r.matriarch.wasted === 0 && r.matriarch.wastedN >= 1, 'a burst with her up on the rock opened her (or was not counted as wasted): ' + JSON.stringify(r.matriarch));
   assert.ok(r.matriarch.mode === 'staggered' && r.matriarch.open >= 3, 'a burst with her in the channel by a narrow pillar did not throw her open for 3 s or more (the boss rule): ' + JSON.stringify(r.matriarch));

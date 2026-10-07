@@ -17,15 +17,15 @@
 //   over YOU (its shadow on the floor first) - the rule turned on you.
 // main.js calls makeHuntmaster(ctx): spawnBoss, owns, on, update, take, caught (a boss cage landed), drawBoss, drawOver, barName, end, read, fight.
 export const HM = {
-  hp: 1100, w: 14, h: 26, markH: 44,
+  hp: 1000, w: 14, h: 26, markH: 44,
   p2: 0.67, p3: 0.34,
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
   gap: [0.8, 0.65, 0.55],
-  arrowV: 290, redV: 250, arrowDmg: 8, redDmg: 8, poisonTick: 3, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
+  arrowV: 290, redV: 250, arrowDmg: 7, redDmg: 8, poisonTick: 3, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
   slashAt: 36, slashTell: 0.45, slash: 0.18, slashReach: 34, slashDmg: 12,
   leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 4, leapCd: 1,
-  backV: 340, backDmg: 14, reflectR: 9,
+  backV: 340, backDmg: 14, reflectR: 12,
   cageDmg: 20, openT: 3.5, openMul: 1.5, maskT: 5, maskMul: 2, stagT: 1.2, stagMul: 1.25, caughtT: 3, ward: 3, stagWard: 1.5,
 };
 /* each cycle is a list; the phase's new move joins at its turn (k % n) */
@@ -61,7 +61,7 @@ export function makeHuntmaster(ctx) {
   const groundY = e => e.perch >= 0 ? F.perches[e.perch].y : floorY();
   const clampX = (e, x) => e.perch >= 0 ? Math.max(F.perches[e.perch].x0, Math.min(F.perches[e.perch].x1, x)) : Math.max(F.A.x0 + 14, Math.min(F.A.x1 - 14, x));
   const hurtHero = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); F.hurt[name] = (F.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); };
-  const say = (k, x, y, line, col) => { if (k && F.said[k]) return; if (k) F.said[k] = 1; ctx.number(x, y, line, col || '#ffd36b'); };
+  const once = k => { if (F.said[k]) return false; F.said[k] = 1; return true; };   /* a line said once a fight (every line is a literal in a number() call: src/hint-lines.js routes them) */
 
   /* THE NEXT MOVE: off the cycle; up close the knife; a leap at most once a cycle */
   function next(e) {
@@ -90,13 +90,13 @@ export function makeHuntmaster(ctx) {
     else if (what === 'volley') { const n = F.weak[1] ? 2 : 3; for (let k = 0; k < n; k++) loose(e, 'gold', (k - (n - 1) / 2) * HM.fan, at); }
     else if (what === 'split') { loose(e, 'gold', 0, at); loose(e, 'red', -HM.fan * 1.3, at); loose(e, 'red', HM.fan * 1.3, at); } }
   /* OPEN: still where he stands (B4); the ward follows (B3) */
-  function open(e, mode, t, mul, why) { if (!e.alive) return; set(e, mode, t + 0.05); e.open = t; e.openMul = mul; e.ward = 0; e.vy = 0; F.n.opens++; ctx.shake(4); ctx.sfx.crack && ctx.sfx.crack();
-    ctx.burst(e.x, e.y - 18, 16, ['#ffd36b', '#e8dcc0', '#8a6a48'], 80, 0.6); if (why) ctx.number(e.x, e.y - 56, why, '#8fd160'); }
+  function open(e, mode, t, mul) { if (!e.alive) return; set(e, mode, t + 0.05); e.open = t; e.openMul = mul; e.ward = 0; e.vy = 0; F.n.opens++; ctx.shake(4); ctx.sfx.crack && ctx.sfx.crack();
+    ctx.burst(e.x, e.y - 18, 16, ['#ffd36b', '#e8dcc0', '#8a6a48'], 80, 0.6); }
   /* A BOSS CAGE LANDED (src/rootway-hands.js): on him, he is CAUGHT */
   H.caught = (id, x, ly) => { const e = live(); if (!e || !F) return false; if (Math.abs(e.x - x) > 22 || Math.abs(e.y - ly) > 20) return false;
-    if (e.ward > 0) { say(null, e.x, e.y - 50, 'HE GUARDS: THE CAGE GLANCES OFF', '#9aa39a'); return false; }
+    if (e.ward > 0) { ctx.number(e.x, e.y - 50, 'HE GUARDS: THE CAGE GLANCES OFF', '#9aa39a'); return false; }
     if (hmOpen(e)) return false;
-    F.n.caught++; selfHurt(e, HM.cageDmg, x); if (e.alive) open(e, 'caught', HM.caughtT, HM.openMul, 'CAUGHT IN HIS OWN CAGE: CUT HIM'); return true; };
+    F.n.caught++; selfHurt(e, HM.cageDmg, x); if (e.alive) { open(e, 'caught', HM.caughtT, HM.openMul); ctx.number(e.x, e.y - 56, 'CAUGHT IN HIS OWN CAGE: CUT HIM', '#8fd160'); } return true; };
 
   H.update = (e, dt) => {
     if (!F || !e.alive) return; const Ar = F.A, P = nearest(e);
@@ -104,13 +104,13 @@ export function makeHuntmaster(ctx) {
     stepArrows(e, dt); stepPools(dt);
     /* the phases: by his blood, never in an opening */
     if (!hmOpen(e)) { const k = e.hp / e.maxHp;
-      if (F.ph === 1 && k <= HM.p2) { F.ph = 2; e.phase = 2; F.cyc = 0; F.i = 0; F.list = CYCLE[2][0].slice(); say(null, e.x, e.y - 60, 'RED ARROWS: POISON. DODGE THEM, DO NOT STRIKE THEM', '#ff6b6b'); ctx.enrage && ctx.enrage(e); }
-      else if (F.ph === 2 && k <= HM.p3) { F.ph = 3; e.phase = 3; F.cyc = 0; F.i = 0; F.list = CYCLE[3][0].slice(); say(null, e.x, e.y - 60, 'HE SHOOTS THE HOISTS: WATCH THE CAGE OVER YOU', '#ff6b6b'); ctx.enrage && ctx.enrage(e); } }
+      if (F.ph === 1 && k <= HM.p2) { F.ph = 2; e.phase = 2; F.cyc = 0; F.i = 0; F.list = CYCLE[2][0].slice(); ctx.number(e.x, e.y - 60, 'RED ARROWS ARE POISON: DODGE THEM, NEVER STRIKE', '#ff6b6b'); ctx.enrage && ctx.enrage(e); }
+      else if (F.ph === 2 && k <= HM.p3) { F.ph = 3; e.phase = 3; F.cyc = 0; F.i = 0; F.list = CYCLE[3][0].slice(); ctx.number(e.x, e.y - 60, 'HE SHOOTS THE HOISTS: WATCH THE CAGE OVER YOU', '#ff6b6b'); ctx.enrage && ctx.enrage(e); } }
     if (e.perch >= 0) F.perchT += dt;   /* his time on a perch runs whatever he does there */
     /* he turns to you a beat late while he guards (go round him, and you have that beat) */
     if (GUARDS.has(e.mode)) { const want = Math.sign(P.x - e.x) || e.face; if (want !== e.face) { F.faceT += dt; if (F.faceT >= HM.turnLag) { e.face = want; F.faceT = 0; } } else F.faceT = 0; }
     switch (e.mode) {
-      case 'sleep': set(e, 'wake', 1.2); say('wake', e.x, e.y - 60, 'HIS GOLD ARROWS: STRIKE THEM BACK', '#ffd36b'); break;
+      case 'sleep': set(e, 'wake', 1.2); if (once('wake')) ctx.number(e.x, e.y - 60, 'HIS GOLD ARROWS: STRIKE THEM BACK', '#ffd36b'); break;
       case 'wake': if (e.modeT <= 0) { F.list = CYCLE[1][0].slice(); F.i = 0; set(e, 'walk', 0.6); } break;
       case 'walk': case 'stand': { const d = P.x - e.x, ad = Math.abs(d);
         if (e.perch < 0) { /* he keeps his range: back off when you come in, come on when you stand off */
@@ -131,7 +131,7 @@ export function makeHuntmaster(ctx) {
       case 'leap': { const f = e.lf, k = Math.min(1, 1 - e.modeT / HM.leapT); e.x = f.x0 + (f.x1 - f.x0) * k; e.y = f.y0 + (f.y1 - f.y0) * k - Math.sin(k * Math.PI) * 52; e.face = Math.sign(P.x - e.x) || e.face;
         if (e.modeT <= 0) { e.x = f.x1; e.y = f.y1; e.perch = f.perch; F.perchT = 0; set(e, 'land', HM.landT); ctx.dust(e.x, e.y, 8); ctx.sfx.thud && ctx.sfx.thud(); } break; }
       case 'land': if (e.modeT <= 0) set(e, 'walk', 0.4); break;
-      case 'open': case 'caught': e.vy = 0; if (e.open <= 0) { e.ward = e.openMul === HM.stagMul ? HM.stagWard : HM.ward; set(e, 'recover', 0.3); say(null, e.x, e.y - 50, 'HE GUARDS', '#9aa39a'); } break;
+      case 'open': case 'caught': e.vy = 0; if (e.open <= 0) { e.ward = e.openMul === HM.stagMul ? HM.stagWard : HM.ward; set(e, 'recover', 0.3); ctx.number(e.x, e.y - 50, 'HE GUARDS', '#9aa39a'); } break;
       default: if (e.modeT <= -1) after(e);
     }
     /* standing where he stands (a perch, or the floor); off a perch a cage knocked him from, he falls */
@@ -152,14 +152,14 @@ export function makeHuntmaster(ctx) {
       const box = { l: a.x - HM.reflectR, r: a.x + HM.reflectR, t: a.y - HM.reflectR, b: a.y + HM.reflectR };
       const sweep = P0 && !P0.dead && (P0.deflectT || 0) > 0 && Math.abs(a.x - P0.x) < 22 && Math.abs(a.y - (P0.y - 10)) < 20;
       if ((hb && ctx.overlap(hb, box)) || sweep) {
-        if (a.kind === 'gold') { a.back = true; a.life = 1.6; F.n.back++; ctx.sfx.parry && ctx.sfx.parry(); ctx.sparks(a.x, a.y, P0.face || 1, 6); say('back', a.x, a.y - 20, 'STRUCK BACK: IT FLIES HOME', '#8fd160'); continue; }
-        if (!a.said) { a.said = true; F.n.redStruck++; say(null, a.x, a.y - 20, 'POISON: DODGE IT', '#ff6b6b'); } }
+        if (a.kind === 'gold') { a.back = true; a.life = 1.6; F.n.back++; ctx.sfx.parry && ctx.sfx.parry(); ctx.sparks(a.x, a.y, P0.face || 1, 6); if (once('back')) ctx.number(a.x, a.y - 20, 'STRUCK BACK: IT FLIES HOME', '#8fd160'); continue; }
+        if (!a.said) { a.said = true; F.n.redStruck++; ctx.number(a.x, a.y - 20, 'POISON: DODGE IT', '#ff6b6b'); } }
       a.x += a.vx * dt; a.y += a.vy * dt; a.life -= dt;
       if (ctx.solidAt(Math.floor(a.x / TS), Math.floor(a.y / TS)) || a.y > F.A.floor + 4) { a.dead = true; if (a.kind === 'red') poolAt(a.x); continue; }
       if (a.life <= 0) { a.dead = true; continue; }
       for (const pp of ctx.players) { if (pp.dead || a.dead) continue; if (!ctx.overlap({ l: a.x - 3, r: a.x + 3, t: a.y - 3, b: a.y + 3 }, ctx.box(pp))) continue;
         a.dead = true; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (a.kind === 'gold') hurtHero('HIS ARROW', () => ctx.damagePlayer(a.x - a.vx * 0.05, HM.arrowDmg, { who: e, name: 'HIS ARROW' }));
-          else { const h0 = P.hp; hurtHero('THE RED ARROW', () => ctx.damagePlayer(a.x - a.vx * 0.05, HM.redDmg, { who: e, name: 'THE RED ARROW', unblockable: true })); if (P.hp < h0) { pp.hmPoison = HM.poisonFor; pp.hmPoisonT = HM.poisonEvery; say('poisoned', P.x, P.y - 30, 'POISONED', '#9ad85a'); } } }); }
+          else { const h0 = P.hp; hurtHero('THE RED ARROW', () => ctx.damagePlayer(a.x - a.vx * 0.05, HM.redDmg, { who: e, name: 'THE RED ARROW', unblockable: true })); if (P.hp < h0) { pp.hmPoison = HM.poisonFor; pp.hmPoisonT = HM.poisonEvery; if (once('poisoned')) ctx.number(P.x, P.y - 30, 'THE POISON IS IN YOU', '#9ad85a'); } } }); }
     }
     F.arrows = F.arrows.filter(a => !a.dead);
     /* poison on a hero: a tick at a time */
@@ -169,13 +169,13 @@ export function makeHuntmaster(ctx) {
   /* A GOLD ARROW COMES HOME: the phase's weak point breaks (THE BIG OPENING at the mask), or he staggers; in his ward it glances off */
   function home(e, a) {
     if (!e.alive) return;
-    if (e.ward > 0) { F.n.glanced++; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x, e.y - 18, 1, 4); say(null, e.x, e.y - 50, 'HE GUARDS: IT GLANCES OFF', '#9aa39a'); return; }
+    if (e.ward > 0) { F.n.glanced++; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x, e.y - 18, 1, 4); ctx.number(e.x, e.y - 50, 'HE GUARDS: IT GLANCES OFF', '#9aa39a'); return; }
     if (hmOpen(e)) { selfHurt(e, HM.backDmg, a.x); return; }
     const ph = F.ph; selfHurt(e, HM.backDmg, a.x); if (!e.alive) return;
     if (!F.weak[ph]) { F.weak[ph] = true; F.n.breaks++;
-      if (ph === 3) open(e, 'open', HM.maskT, HM.maskMul, 'THE MASK BREAKS: HE IS OPEN');
-      else open(e, 'open', HM.openT, HM.openMul, ph === 1 ? 'THE QUIVER STRAP SNAPS: HE IS OPEN' : 'THE BRACER BREAKS: HE IS OPEN'); }
-    else { F.n.staggers++; open(e, 'open', HM.stagT, HM.stagMul, 'HIS OWN ARROW: HE STAGGERS'); }
+      open(e, 'open', ph === 3 ? HM.maskT : HM.openT, ph === 3 ? HM.maskMul : HM.openMul);
+      if (ph === 1) ctx.number(e.x, e.y - 56, 'THE QUIVER STRAP SNAPS: HE IS OPEN', '#8fd160'); else if (ph === 2) ctx.number(e.x, e.y - 56, 'THE BRACER BREAKS: HE IS OPEN', '#8fd160'); else ctx.number(e.x, e.y - 56, 'THE MASK BREAKS: HE IS OPEN', '#8fd160'); }
+    else { F.n.staggers++; open(e, 'open', HM.stagT, HM.stagMul); ctx.number(e.x, e.y - 56, 'HIS OWN ARROW: HE STAGGERS', '#8fd160'); }
   }
   /* what his own gear does to him (his arrow come home, his cage) lands whole: his guard is for blades */
   function selfHurt(e, d, x) { F.self = true; try { ctx.hurt(e, d, x); } finally { F.self = false; } }
@@ -190,7 +190,7 @@ export function makeHuntmaster(ctx) {
     if (hmOpen(e)) return dmg * (e.openMul || HM.openMul);
     if (e.ward > 0) { F.n.turned++; ctx.turned && ctx.turned(e, fromX, 'HE GUARDS'); return 0; }
     const frontal = (e.face || 1) * (fromX - e.x) > -2, air = !!plunge || (P && !P.ground) || (P && P.y < e.y - 14);
-    if (GUARDS.has(e.mode) && frontal && !air) { F.n.turned++; ctx.turned && ctx.turned(e, fromX, 'GO ROUND'); say('round', e.x, e.y - 60, 'HE GUARDS HIS FRONT: GO ROUND, OR FROM ABOVE', '#ffd36b'); return 0; }
+    if (GUARDS.has(e.mode) && frontal && !air) { F.n.turned++; ctx.turned && ctx.turned(e, fromX, 'GO ROUND'); if (once('round')) ctx.number(e.x, e.y - 60, 'HE GUARDS HIS FRONT: GO ROUND, OR FROM ABOVE', '#ffd36b'); return 0; }
     return dmg; };
   H.barName = e => 'THE GOBLIN HUNTMASTER' + (e.mode === 'caught' ? '  CAUGHT' : hmOpen(e) ? '  OPEN' : e.ward > 0 ? '  GUARDING' : '');
   H.end = () => { if (F) { F.arrows = []; F.pools = []; } for (const pp of ctx.players) pp.hmPoison = 0; };
@@ -269,7 +269,7 @@ export function hmPlan(o) {
     if (!come || Math.abs(rx) > 90 || Math.abs(ry) > 40) continue;
     const key = 'a' + Math.round(a.x * 0 + a.vx) + ':' + Math.round(a.vy) + ':' + (mem.arrowSet = mem.arrowSet || 0);
     if (a.kind === 'gold' && o.eyes && !roll('b' + Math.round(a.vx * 7 + a.vy), PLAN.missBack)) { out.face = Math.sign(rx) || P.face; out.gx = P.x;
-      if (Math.abs(rx) < reach + 6 + Math.abs(a.vx) * 0.07 && Math.abs(ry) < 22 && P.atk < 0) out.atk = true; out.why = 'strike his arrow back'; return out; }   /* (the swing comes out a beat after the press: met a beat early) */
+      if (Math.hypot(rx, ry) < reach + 6 + Math.hypot(a.vx, a.vy) * 0.07 && Math.abs(ry) < 26 && P.atk < 0) out.atk = true; out.why = 'strike his arrow back'; return out; }   /* (the swing comes out a beat after the press: met a beat early) */
     if (a.kind === 'gold' && o.shield && !roll('s' + Math.round(a.vx * 7 + a.vy), PLAN.miss)) { out.block = true; out.face = Math.sign(rx) || P.face; out.why = 'block the arrow'; return out; }
     if (o.deflect && a.kind === 'gold' && !(P.busy > 0)) { out.block = Math.abs(rx) < 40; out.face = Math.sign(rx) || P.face; out.why = 'sweep the arrow'; return out; }
     if (Math.abs(rx) < 46) { if (a.kind === 'red' && P.ground && ry > -6 && !roll('j' + Math.round(a.vx * 7 + a.vy), 0.5)) { out.jump = true; out.why = 'jump the red arrow'; return out; } out.dodge = true; out.why = a.kind === 'red' ? 'roll the red arrow' : 'roll the arrow'; return out; }

@@ -34,7 +34,7 @@ export function makeRootwayHands(ctx) {
     if (S.loft && S.loft.open) for (const v of (lv.vaultDoors || [])) for (let y = v.y0; y <= v.y1; y++) for (let x = v.x0; x <= v.x1; x++) ctx.cellSet(x, y, ctx.T.AIR);
   };
   H.load = () => { S = null; H.reset(); };
-  const say = (k, x, y, line, col) => { if (k && S.said.has(k)) return; if (k) S.said.add(k); ctx.number(x, y, line, col || '#ffd36b'); };
+  const once = k => { if (S.said.has(k)) return false; S.said.add(k); return true; };   /* a line said once a level (every line is a literal in a number() call: src/hint-lines.js routes them, tools/hint-shown.mjs reads them) */
   const cleatBox = d => ({ l: d.cleat[0] * TS + 2, r: d.cleat[0] * TS + 14, t: (d.cleat[1] - 1) * TS, b: (d.cleat[1] + 1) * TS });
   const loadW = d => d.load === 'span' ? (d.span[1] - d.span[0] + 1) * TS : d.load === 'cage' ? 2 * TS : 12;
   const loadX = d => d.load === 'span' ? (d.span[0] * TS + (d.span[1] + 1) * TS) / 2 : d.x * TS;   /* the centre of what hangs */
@@ -46,11 +46,11 @@ export function makeRootwayHands(ctx) {
     ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(d.cleat[0] * TS + 8, d.cleat[1] * TS, 8, ['#c9b27c', '#8a6a48', '#ffe9a0'], 60, 0.5);
     if (d.load === 'hunter') { h.state = 'down'; const e = h.hunter; h.hunter = null;
       if (e && e.alive && e.st) { e.st.hang = null; e.st.mode = 'fall'; e.st.daze = HOIST.daze; e.noGrav = false; S.n.hunterCut++; ctx.hurt(e, HOIST.hunterFall, e.x);
-        say(null, e.x, e.y - 30, 'HE FALLS: CUT HIM WHILE HE IS DOWN', '#8fd160'); }
+        ctx.number(e.x, e.y - 30, 'HE FALLS: CUT HIM WHILE HE IS DOWN', '#8fd160'); }
       return true; }
     h.state = 'fall'; h.vy = 0;
-    if (how === 'arrow') say(null, d.cleat[0] * TS + 8, d.cleat[1] * TS - 20, 'THE ARROW CUTS THE ROPE', '#8fd160');
-    else if (!d.boss) say('cut:' + d.load, d.cleat[0] * TS + 8, d.cleat[1] * TS - 20, 'THE HOIST DROPS WHAT IT HOLDS', '#ffd36b');
+    if (how === 'arrow') ctx.number(d.cleat[0] * TS + 8, d.cleat[1] * TS - 20, 'THE ARROW CUTS THE ROPE', '#8fd160');
+    else if (!d.boss && once('cut:' + d.load)) ctx.number(d.cleat[0] * TS + 8, d.cleat[1] * TS - 20, 'THE HOIST DROPS WHAT IT HOLDS', '#ffd36b');
     return true;
   }
   H.cutHoist = id => { const h = S && S.hs.get(id); return h ? cut(h, 'boss') : false; };
@@ -63,14 +63,14 @@ export function makeRootwayHands(ctx) {
   function land(h) {
     const d = h.d, x = loadX(d); h.state = 'down'; h.t = 0; ctx.shake(d.load === 'span' ? 3 : 4); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.dust(x, h.ly, 10);
     if (d.load === 'span') { for (let cx = d.span[0]; cx <= d.span[1]; cx++) ctx.cellSet(cx, d.span[2], ctx.T.ONEWAY);
-      say('land:span', x, h.ly - 24, 'THE SPAN LANDS: A BRIDGE', '#8fd160'); return; }
+      if (once('land:span')) ctx.number(x, h.ly - 24, 'THE SPAN LANDS: A BRIDGE', '#8fd160'); return; }
     /* a cage: what is under it is crushed (a foe takes HOIST.crush; the hero the cage's blow and a moment caged) */
     const bx = cageBox(x, h.ly);
-    for (const e of ctx.enemies()) if (e.alive && !e.maxHp && ctx.overlap(bx, ctx.box(e))) { ctx.hurt(e, d.land ? 999 : HOIST.crush, x); S.n.crushed++; ctx.number(e.x, e.y - 20, 'CRUSHED', '#8fd160'); }
-    for (const p of ctx.players()) if (p && !p.dead && ctx.overlap(bx, ctx.boxOf(p))) ctx.asPlayer(p, () => { ctx.damage(x, HOIST.cageDmg, { up: true, unblockable: true, name: 'THE CAGE' }); p.caged = HOIST.caged; ctx.number(p.x, p.y - 24, 'CAUGHT', '#ff6b6b');
+    for (const e of ctx.enemies()) if (e.alive && !e.maxHp && ctx.overlap(bx, ctx.box(e))) { ctx.hurt(e, d.land ? 999 : HOIST.crush, x); S.n.crushed++; ctx.number(e.x, e.y - 20, 'CRUSHED UNDER THE CAGE', '#8fd160'); }
+    for (const p of ctx.players()) if (p && !p.dead && ctx.overlap(bx, ctx.boxOf(p))) ctx.asPlayer(p, () => { ctx.damage(x, HOIST.cageDmg, { up: true, unblockable: true, name: 'THE CAGE' }); p.caged = HOIST.caged; ctx.number(p.x, p.y - 24, 'THE CAGE HAS YOU', '#ff6b6b');
       if (d.land) { p.y = d.land[1] * TS; p.vy = 0; } });   /* (a hero under a cage that stays is set on its top: never inside the rock it becomes) */
     if (d.land) { for (let y = d.land[1]; y <= d.land[1] + 1; y++) for (let cx = d.land[0]; cx <= d.land[0] + 1; cx++) ctx.cellSet(cx, y, ctx.T.SOLID);
-      say('land:cage', x, h.ly - 40, 'THE CAGE LANDS: A STEP', '#8fd160'); }
+      if (once('land:cage')) ctx.number(x, h.ly - 40, 'THE CAGE LANDS: A STEP', '#8fd160'); }
     if (d.boss && ctx.bossCage) ctx.bossCage(h.id, x, h.ly);   /* THE HUNTMASTER under it is CAUGHT (src/huntmaster.js) */
   }
 
@@ -93,7 +93,7 @@ export function makeRootwayHands(ctx) {
         if (!e || !e.alive) { h.state = 'down'; h.hunter = null; continue; }
         const s = e.st; s.x = e.x = d.x * TS; s.y = e.y = h.ly; e.vy = 0;
         if (s.mode === 'hang' && P && !P.dead && Math.abs(P.x - d.x * TS) < HOIST.under && P.y > h.ly + 8 && P.y - h.ly < 15 * TS) { s.mode = 'dropTell'; s.t = HOIST.dropTell; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(e.x, e.y - 26, '!', '#ffd36b'); }
-        if (s.mode === 'dropTell') { h.tellT = s.t; if (s.t <= 0) { s.hang = null; s.mode = 'fall'; e.noGrav = false; h.state = 'down'; h.hunter = null; S.n.hunterDrops++; say('hunterDrop', e.x, e.y - 30, 'THE HUNTER DROPS ON YOU', '#ff9a5c'); } } } }
+        if (s.mode === 'dropTell') { h.tellT = s.t; if (s.t <= 0) { s.hang = null; s.mode = 'fall'; e.noGrav = false; h.state = 'down'; h.hunter = null; S.n.hunterDrops++; if (once('hunterDrop')) ctx.number(e.x, e.y - 30, 'THE HUNTER DROPS ON YOU', '#ff9a5c'); } } } }
     /* THE LOOKOUT IS MANNED: if its scout falls before its span is down, another takes the post (never a soft-lock) */
     for (const h of S.hs.values()) { const d = h.d; if (!d.post || h.state !== 'hang') continue;
       if (ctx.enemies().some(e => e.alive && e.rwLookout === h.id)) { S.lookT = 0; continue; }
