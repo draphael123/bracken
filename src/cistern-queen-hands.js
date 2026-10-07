@@ -16,12 +16,13 @@ const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.t
   call: s => (s.hiss || s.roar)(), sting: s => (s.sting || s.crack)(), soak: s => { (s.splash)(); (s.hiss || s.thud)(); }, fall: s => (s.heavy || s.thud)(), rear: s => (s.roar || s.heavy)(),
   windlass: s => { (s.clank)(); s.ratchet && s.ratchet(); }, splash: s => (s.whirlpool || s.splash)(), rock: s => (s.stone || s.thud)(), flood: s => { (s.whirlpool || s.splash)(); (s.roar || s.heavy)(); },
   flare: s => (s.fireWhoosh || s.hiss || s.crack)() };
+/* (claude/underwell3) lines said once per fight, by key */
 
 export function makeCisternQueenHands(ctx) {
   let S = null, wl = null;
   const H = {};
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'cisternqueen' ? ctx.L.arena : null);
-  const R = Math.round;
+  const R = Math.round, fr = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   H.show = () => S;
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'cisternqueen';
@@ -40,7 +41,10 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
     S = CQG.newShow(CQG.geom(Ar, ctx.TS)); wl = (ctx.L.ents || []).find(q => q.t === 'qwindlass');
     const e = { ...base, t: 'cisternqueen', w: CQ.w, h: CQ.h, hp: ctx.EHP.cisternqueen, maxHp: ctx.EHP.cisternqueen, noGrav: true, markH: CQ.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1 };
-    e.x = base.x; e.y = S.G.floor; for (const pp of ctx.players) { pp.cqKeys = null; pp.cqVenom = []; pp.venomSlow = 1; } return e; };
+    e.x = base.x; e.y = S.G.floor; for (const pp of ctx.players) { pp.cqKeys = null; pp.cqVenom = []; pp.venomSlow = 1; }
+    /* (claude/underwell3) IS THIS BLOW ON HER STINGER? asked by src/boss-greed.js OPEN_RULE as the blow lands (a blow on the stinger is the right blow: never chipped, never greed) */
+    e.cqBare = () => { if (!S) return false; const hb = ctx.attackBox(); if (!hb || S.ward > 0) return false; const st = CQG.stingerOut(S); if (st && ctx.overlap(hb, CQG.stingBox(st))) return true; const tp = CQG.tipOf(e, S); return !!(tp && ctx.overlap(hb, CQG.tipBox(tp))); };
+    return e; };
 
   /* ---------- THE WORLD AS SHE SEES IT, AND WHAT HER BLOWS DO ---------- */
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, ducking: !!pp.ducking, onLedge: onLedgeOf(pp, S.G), pp }));
@@ -59,7 +63,8 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
         else if (k === 'runoff') ctx.burst(x, y + 10, 14, ['#7ab8e8', '#e8f4f8'], 50, 0.8);
         else if (k === 'flare') { ctx.burst(x, y - 30, 22, ['#ff9a3c', '#ffd36b', '#d84a14'], 90, 0.8); }
         else if (k === 'steam') { ctx.burst(x, y - 30, 20, ['#e8f4f8', '#c8d0d8', '#9aa39a'], 50, 1.0); try { (ctx.sfx.hiss || ctx.sfx.splash)(); } catch {} }
-        else if (k === 'stoneLand') ctx.dust(x, y, 3); },
+        else if (k === 'stoneLand') ctx.dust(x, y, 3);
+        else if (k === 'slamGround') { ctx.burst(x, y - 6, 22, ['#c9a46a', '#8a6a3e', '#ffd36b', '#e8d4a0'], 120, 0.7); ctx.dust(x, y, 16); } },   /* (claude/underwell3) the stinger slam's crater */
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
         if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, o.duck ? ctx.duckBox(P) : ctx.box(P)) || keyed(pp, o.key || name)) return;
         const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock }));
@@ -100,28 +105,35 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
         CQG.openUp(e, S, 'rear', c); c.number(e.x, e.y - 70, 'THE GRAB IS BROKEN: SHE REARS. CUT HER', '#8fd160'); } }
     /* THE WINDLASS: a blow on it sends the shaft's bucket down */
     if (hb && wl) { const wx = wl.x * ctx.TS + 8, wy = (wl.y + 1) * ctx.TS; if (ctx.overlap(hb, { l: wx - 14, r: wx + 14, t: wy - 26, b: wy })) { if (CQG.strikeWindlass(e, S, c)) ctx.sparks(wx, wy - 14, ctx.hero().face || 1, 5); } }
+    /* (claude/underwell3, Daniel 10-07) HER STINGER, WHEREVER IT IS: a blade that meets it (and not her body: that one main.js finds itself) lands on it - the same blow, once a swing */
+    if (hb && !CQG.qOpen(e) && ctx.strike) { const tp = CQG.tipOf(e, S); if (tp && ctx.overlap(hb, CQG.tipBox(tp)) && !ctx.overlap(hb, ctx.box(e))) ctx.strike(e); }
     /* HER VENOM wears off, a stack at a time; while it is in you, stamina comes back slower */
     for (const pp of ctx.players) { const v = pp.cqVenom || []; for (let i = 0; i < v.length; i++) v[i] -= dt; pp.cqVenom = v.filter(t => t > 0); pp.venomSlow = Math.max(0.1, 1 - CQ.venom.slow * pp.cqVenom.length); }
     /* THE FIRST TIME: what her claws do, and where the water is */
-    if (!S.told.guard && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.guard = 1; ctx.number(e.x, e.y - 90, 'CLAWS TURN BLADES: GO ROUND, OR FLOOD HER', '#ffd36b'); }
+    if (!S.told.guard && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.guard = 1; ctx.number(e.x, e.y - 90, 'HER STINGER IS HER WEAK SPOT: JUMP AND CUT IT', '#ffd36b'); }   /* (claude/underwell3: was CLAWS TURN BLADES: GO ROUND, OR FLOOD HER - the claws still say GO ROUND when they turn a blow) */
   };
   /* ---------- A BLOW ON HER (claude/welltown5): in an opening x openMul; outside one HER SHELL turns it (0, front or back) - unless it lands on her STUCK
      STINGER (x stingMul, one sting's worth at most stingCap); and in phase two, while she BURNS, her hot shell turns even that ---------- */
   H.take = (e, dmg) => { if (!S) return dmg; const P = ctx.hero();
     if (CQG.shelled(e)) { const st = CQG.stingerOut(S), hb = ctx.attackBox();
       if (S.ward > 0) { e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; return 0; }   /* (claude/underwell) HER WARD after an opening: nothing lands, the stinger neither */
+      /* (claude/underwell3, Daniel 10-07: "I wanted her STINGER to be the VULNERABLE part") HER STINGER FIRST - stuck in the floor (a sting, the slam: x stingMul, capped a sting), or
+         wherever her tail carries it (whole) - and it is never turned, burning or not; then, SCORCHED by the fire on her oil, her whole body (from any side) */
+      if (st && hb && ctx.overlap(hb, CQG.stingBox(st))) { const cap = e.maxHp * (st.big ? CQ.plantCap : CQ.stingCap), d = Math.min(dmg * CQ.stingMul, Math.max(0, cap - (S.stingTaken || 0))); S.stingTaken = (S.stingTaken || 0) + d; S.n.stingHits++; if (st.big) S.n.plantHits++;
+        ctx.sparks(st.x, st.y - 4, P.face || 1, 6); ctx.burst(st.x, st.y - 4, 6, ['#ffb84a', '#fff2c0'], 60, 0.4);
+        if (S.stingTaken >= cap - 0.01 && st.t > 0.2) { st.t = 0.2; ctx.number(st.x, S.G.floor - 40, 'SHE TUGS IT FREE', '#9aa39a'); } return d; }
+      { const tp = CQG.tipOf(e, S); if (tp && hb && ctx.overlap(hb, CQG.tipBox(tp))) { S.n.tipHits++; ctx.sparks(tp.x, tp.y, P.face || 1, 7); ctx.burst(tp.x, tp.y, 8, ['#ffb84a', '#fff2c0', '#ffd36b'], 70, 0.45);
+        if (!S.told.tip) { S.told.tip = 1; ctx.number(tp.x, tp.y - 20, 'HER STINGER: THAT IS WHERE SHE BLEEDS', '#8fd160'); } return Math.round(dmg * CQ.tipMul); } }
+      if (S.scorch > 0) { S.n.scorchHits = (S.n.scorchHits || 0) + 1; ctx.burst(P.x + (P.face || 1) * 12, P.y - 14, 6, ['#ffd36b', '#ff9a3c'], 50, 0.4); return Math.round(dmg * CQ.scorchMul); }
       /* (claude/sweep3, Daniel 10-06 after playing her: SHE IS NEVER FULLY INVULNERABLE - hard to hit, never a wall (B11/B13). Her raised claws turn a blow from
          the FRONT while she stands on the floor (GO ROUND, src/boss-read.js GUARD 'front'); her back and flanks, or her up on a wall or in the shaft, take a
          blow at half (the angle blow, or GREED.chipBy.cisternqueen); burning, her hot shell takes half of that. Her water openings pay CQ.openMul) */
       const claws = S.pose === 'floor' && !(e.gone) && CQG.frontal(e, P.x);
       if (S.burn || S.flare > 0) { S.n.burnTurned++; e.guardFx = 0.2; ctx.burst(P.x + (P.face || 1) * 12, P.y - 14, 5, ['#ff9a3c', '#ffd36b'], 50, 0.4);
         if (!S.told.hot) { S.told.hot = 1; ctx.number(e.x, Math.min(e.y, S.G.floor) - 96, 'HER SHELL BURNS: PUT HER OUT WITH WATER', '#ff9a5c'); } if (claws) { e.chipHit = ctx.time(); return 0; } return Math.round(dmg * CQ.hotMul); }
-      if (st && hb && ctx.overlap(hb, CQG.stingBox(st))) { const cap = e.maxHp * CQ.stingCap, d = Math.min(dmg * CQ.stingMul, Math.max(0, cap - (S.stingTaken || 0))); S.stingTaken = (S.stingTaken || 0) + d; S.n.stingHits++;
-        ctx.sparks(st.x, st.y - 4, P.face || 1, 6); ctx.burst(st.x, st.y - 4, 6, ['#ffb84a', '#fff2c0'], 60, 0.4);
-        if (S.stingTaken >= cap - 0.01 && st.t > 0.2) { st.t = 0.2; ctx.number(st.x, S.G.floor - 40, 'SHE TUGS IT FREE', '#9aa39a'); } return d; }
       if (!claws) { S.n.shellHits = (S.n.shellHits || 0) + 1; return dmg; }   /* her back, her flank, her on a wall: the shell gives (main.js lands it at half) */
       e.chipHit = ctx.time(); S.n.guarded++; e.guardFx = 0.2; if (!S.told.claws) { S.told.claws = 1; ctx.number(e.x, e.y - 80, 'HER CLAWS TURN IT: GO ROUND HER, OR STRIKE HER STINGER', '#9aa39a'); } return 0; }
-    if (CQG.qOpen(e)) { const cap = e.maxHp * CQ.openCap, d = Math.min(dmg * CQ.openMul, Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d;
+    if (CQG.qOpen(e)) { const st = CQG.stingerOut(S), hb = ctx.attackBox(), onSt = !!(st && hb && ctx.overlap(hb, CQG.stingBox(st))), cap = e.maxHp * CQ.openCap, d = Math.min(dmg * CQ.openMul * (onSt ? CQ.stingMul : 1), Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d; if (onSt) { S.n.stingHits++; ctx.sparks(st.x, st.y - 4, P.face || 1, 6); }   /* (claude/underwell3) SLIPPED, her stinger flat on the floor: x stingMul on top */
       if (S.openTaken >= cap - 0.01 && e.open > 0.4) { e.open = 0.4; ctx.number(e.x, e.y - 70, 'SHE RIGHTS HERSELF', '#9aa39a'); S.n.capped = (S.n.capped || 0) + 1; } return d; }
     return dmg; };
   /* ---------- THE POUR (src/well-town-hands.js asks: what would a pour land on, and pour it) ---------- */
@@ -130,7 +142,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     aim: P => { const e = ctx.boss; if (!S || !ctx.bossActive || !e || e.t !== 'cisternqueen' || !e.alive) return null; return CQG.pourAim(e, S, heroOf(P)); },
     pour: P => { const e = ctx.boss; if (!S || !e || e.t !== 'cisternqueen') return null; const r = CQG.pourAt(e, S, heroOf(P), world(e)); if (r === 'wasted') ctx.number(P.x, P.y - 30, 'IT RUNS INTO THE SAND', '#9aa39a'); return r; },
   };
-  H.barName = e => 'THE CISTERN QUEEN' + (CQG.qOpen(e) ? (e.mode === 'soaked' ? (e.openWhy === 'fire' ? '  DRIVEN UP' : '  SOAKED') : e.mode === 'fallen' ? '  ON HER BACK' : '  REARING') : e.burrowed ? '  BURROWED' : '');
+  H.barName = e => 'THE CISTERN QUEEN' + (CQG.qOpen(e) ? (e.mode === 'soaked' ? '  SOAKED' : e.mode === 'slip' ? '  SLIPPED' : e.mode === 'fallen' ? '  ON HER BACK' : '  REARING') : CQG.qScorched(e) ? '  SCORCHED' : e.mode === 'sslamTell' || e.mode === 'sslam' ? '  STINGER SLAM!' : e.mode === 'planted' ? '  STINGER PLANTED' : e.burrowed ? '  BURROWED' : '');   /* (claude/underwell3: SLIPPED - up through wet sand; SCORCHED - the fire on her oil; DRIVEN UP is a scorch now) */
   H.end = e => { if (S) { S.bands = []; S.shots = []; S.rubble = []; S.puddles = []; S.claw = null; for (const b of S.brood) if (b.alive) { b.alive = false; ctx.burst(b.x, b.y - 4, 8, ['#7ab8e8', '#c9a46a'], 50, 0.5); } }
     for (const pp of ctx.players) { pp.cqVenom = []; pp.venomSlow = 1; if (pp.snare > 0) pp.snare = 0; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), water: S.water, brood: S.brood.length, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) } };
@@ -153,11 +165,19 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     if (CQG.qOpen(e)) { const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy), p = 0.5 + 0.5 * Math.sin(time * 10), k = Math.max(0, Math.min(1, e.open / CQ.openT));
       g.strokeStyle = 'rgba(255,211,107,' + (0.6 + 0.35 * p) + ')'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 20, CQ.w / 2 + 8, 28, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
       g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 60, 40, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 20, y - 60, R(40 * k), 3); }
-    /* (claude/welltown5) HER STUCK STINGER GLINTS: a pulsing ring and a white star where it lies, and its clock */
-    const st = CQG.stingerOut(S); if (st) { const x = R(st.x - cx), y = R(st.y - cy), p = 0.5 + 0.5 * Math.sin(time * 14), hot = S.burn || S.flare > 0;
-      g.strokeStyle = hot ? 'rgba(255,154,60,' + (0.5 + 0.4 * p) + ')' : 'rgba(255,255,255,' + (0.55 + 0.45 * p) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - 2, 10 + p * 4, 0, Math.PI * 2); g.stroke();
-      if (!hot) { g.fillStyle = '#ffffff'; const k = 2 + Math.round(p * 2); g.fillRect(x, y - 10 - k, 1, 2 * k + 1); g.fillRect(x - k, y - 10, 2 * k + 1, 1); }
-      const tk = Math.max(0, st.t / (CQ.stuck[st.k] || 1)); g.fillStyle = '#1b1626'; g.fillRect(x - 10, y + 6, 20, 2); g.fillStyle = hot ? '#ff9a5c' : '#8fd160'; g.fillRect(x - 10, y + 6, R(20 * tk), 2); }
+    /* B10 (claude/underwell3, Daniel 10-07: her STINGER is the vulnerable part) - OPEN is gold. HER STINGER, wherever her tail carries it, wears a gold ring while a blade
+       will land on it (not in her ward); stuck in the floor (a sting, THE SLAM, the slip) a bigger ring, a white star and its clock. SCORCHED by the fire, a gold ring round her body
+       and the scorch's clock over her (she fights on) */
+    const st = CQG.stingerOut(S), p = 0.5 + 0.5 * Math.sin(time * 12), warded = S.ward > 0;
+    if (st && !warded) { const x = R(st.x - cx), y = R(st.y - cy), big = !!st.big;
+      g.strokeStyle = 'rgba(255,211,107,' + (0.6 + 0.4 * p) + ')'; g.lineWidth = big ? 2 : 1; g.beginPath(); g.arc(x, y - 2, (big ? 15 : 10) + p * 4, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#ffffff'; const k = 2 + Math.round(p * 2); g.fillRect(x, y - 12 - k, 1, 2 * k + 1); g.fillRect(x - k, y - 12, 2 * k + 1, 1);
+      const tk = Math.max(0, st.t / ({ slam: CQ.planted, slip: CQ.slipT }[st.k] || CQ.stuck[st.k] || 1)); g.fillStyle = '#1b1626'; g.fillRect(x - 12, y + 6, 24, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 12, y + 6, R(24 * Math.min(1, tk)), 3); }
+    else if (!warded && !CQG.qOpen(e)) { const tp = CQG.tipOf(e, S); if (tp) { const x = R(tp.x - cx), y = R(tp.y - cy);
+      g.strokeStyle = 'rgba(255,211,107,' + (0.45 + 0.4 * p) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, CQ.tipR - 2 + p * 3, 0, Math.PI * 2); g.stroke(); fr(g, '#fff6c8', x - 1, y - CQ.tipR - 3, 2, 2); } }
+    if (CQG.qScorched(e) && !(e.gone > 0)) { const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy), k = Math.max(0, Math.min(1, e.scorch / CQ.scorchT));
+      g.strokeStyle = 'rgba(255,211,107,' + (0.55 + 0.35 * p) + ')'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 20, CQ.w / 2 + 8, 28, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 60, 40, 3); g.fillStyle = '#ff9a3c'; g.fillRect(x - 20, y - 60, R(40 * k), 3); }
     /* HER FIRE: flames over her shell while she burns; sparks gathering while she flares */
     if ((S.burn || S.flare > 0) && !(e.gone && e.mode !== 'pounce')) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : S.G.floor - 40, bh = wall ? 84 : 26, n = S.burn ? 10 : 4;
       for (let i = 0; i < n; i++) { const fx = bx + ((i * 37 + R(time * 3)) % bw), fy = top + ((i * 19) % bh), h = 6 + 5 * Math.abs(Math.sin(time * 9 + i)); g.globalAlpha = S.burn ? 0.9 : 0.5 + 0.5 * Math.sin(time * 20 + i);

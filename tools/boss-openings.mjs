@@ -33,7 +33,7 @@
                        the mud, open; a minute of her left alone opens nothing (claude/lockkeeper)
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
-     THE CISTERN QUEEN flood her burrow (a pour on her mound): SOAKED; a pour down her wall from its ledge: ON HER BACK; her claw struck as it comes: REARING -
+     THE CISTERN QUEEN wet her mound (a pour where she will come up): SLIPPED (claude/underwell3, Daniel 10-07 - was SOAKED); a pour down her wall from its ledge: ON HER BACK; her claw struck as it comes: REARING -
                        each open; E at her on the open floor pours nothing; a minute of her left alone opens nothing. THE GANG LEADER (a mini): his bottle
                        struck home sets him alight, open, a third of him a burning (claude/welltown3)
      THE ROC (THE SKY ROAD's eyrie)  ride a thermal over her and plunge onto her back: knocked down, open; left alone on the stone, her dives skid
@@ -214,7 +214,7 @@ try {
    let op=0,mode=null;for(let i=0;i<60*20&&!(op>0);i++){P.hp=P.maxHp;const a=S.arms.find(q=>q.k==='slam'&&q.st==='tell');if(a&&a.t<a.len*0.4&&Math.abs(P.x-a.x)<40){P.x=a.x+(a.x-S.raft.x>S.raft.w/2?-50:50);P.vx=0;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stuck')mode='stuck';}
    out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),stuck:S.n.stuck};}
   /* THE CISTERN QUEEN (claude/welltown3): a minute of her left alone opens nothing; a pour while she walks the floor runs into the sand; a pour on her
-     mound floods her burrow - SOAKED, open; on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -
+     mound wets the sand - she SLIPS, open (Daniel 10-07; was SOAKED); on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -
      the grab broken, REARING, open (THE WELL TOWN holds her) */
   /* THE DJINN OF THE GREAT WELL (claude/welltown5; THE WELL TOWN's boss now - the Cistern Queen is benched, her block stays below for her new level and is
      skipped while no level places her): a minute of him alone opens nothing; a pour on him turns him to MUD; in phase two a pour DOUSES him; in the flood the
@@ -236,12 +236,12 @@ try {
    let dry=0;for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}P.skin.sips=3;P.x=b.x-60;P.face=1;BK.press('talk');for(let i=0;i<30;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const drySips=P.skin.sips;
    const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}
      let peak=o;for(let i=0;i<60*4&&b.mode===how;i++){P.hp=P.maxHp;BK.sim(1);}op[how]=+peak.toFixed(1);};
-   take('soaked',()=>S.pose==='burrow'&&S.mound&&b.mode==='burrow',()=>{P.skin.sips=3;P.x=S.mound.x-30;P.y=G.floor;P.vy=0;P.face=1;BK.press('talk');});
+   take('slip',()=>S.pose==='burrow'&&S.mound&&b.mode==='burrow',()=>{P.skin.sips=3;P.x=S.mound.x-30;P.y=G.floor;P.vy=0;P.face=1;BK.press('talk');});
    b.hp=Math.round(b.maxHp*0.6);
    take('fallen',()=>S.pose==='wall'&&b.mode==='cling',()=>{P.skin.sips=3;P.x=S.wall==='W'?G.ledgeW[0]+30:G.ledgeE[1]-30;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=S.wall==='W'?-1:1;BK.press('talk');});
    b.hp=Math.round(b.maxHp*0.3);
    take('rear',()=>b.mode==='grab'&&S.claw,()=>{P.x=S.claw.x-(b.face>0?16:-16);P.y=G.floor;P.face=b.face>0?1:-1;if(P.atk<0)BK.press('atk');});
-   out.cisternqueen={alone:+alone.toFixed(1),dry:+dry.toFixed(1),drySips,open:op,n:{soaked:S.n.soaked,fallen:S.n.fallen,rear:S.n.rear,countered:S.n.countered}};}
+   out.cisternqueen={alone:+alone.toFixed(1),dry:+dry.toFixed(1),drySips,open:op,n:{slip:S.n.slip,soaked:S.n.soaked,fallen:S.n.fallen,rear:S.n.rear,countered:S.n.countered}};}
   /* THE GANG LEADER (claude/welltown3, a mini): a minute of him left alone (his bottles land and burn) opens nothing; his bottle struck back sets him
      alight - open; and one burning takes no more than a third of him (Daniel's mini rule) */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=true;const M=BK.L.mini,P=BK.P;
@@ -355,7 +355,7 @@ try {
   if (r.cisternqueen) {
   assert.equal(r.cisternqueen.alone, 0, 'THE CISTERN QUEEN: a minute of her left alone opened her: ' + JSON.stringify(r.cisternqueen));
   assert.ok(r.cisternqueen.dry === 0 && r.cisternqueen.drySips === 3, 'E at her on the open floor opened her (or spent a sip on nothing: the HUD never says POUR there): ' + JSON.stringify(r.cisternqueen));
-  } if (r.cisternqueen) assert.ok(r.cisternqueen.open.soaked >= 3 && r.cisternqueen.open.fallen >= 3 && r.cisternqueen.open.rear >= 3, 'her three openings (her burrow flooded, a pour down her wall, a grab broken) are not each 3 s or more (the boss rule): ' + JSON.stringify(r.cisternqueen));
+  } if (r.cisternqueen) assert.ok(r.cisternqueen.open.slip >= 3 && r.cisternqueen.open.fallen >= 3 && r.cisternqueen.open.rear >= 3, 'her three openings (her mound wet - she SLIPS, Daniel 10-07; a pour down her wall; a grab broken) are not each 3 s or more (the boss rule): ' + JSON.stringify(r.cisternqueen));
   assert.equal(r.gangleader.alone, 0, 'THE GANG LEADER: a minute of him left alone opened him: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.open >= 3 && r.gangleader.reflects >= 1, 'his bottle struck back did not set him alight for 3 s or more: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.took <= r.gangleader.cap + 1 && r.gangleader.took >= r.gangleader.cap * 0.6, 'one burning took more than his cap (GL.capK, inside the third Daniel allows) or nothing like it: ' + JSON.stringify(r.gangleader));

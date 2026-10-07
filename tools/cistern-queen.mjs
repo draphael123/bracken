@@ -16,9 +16,10 @@ const { CQ, CYCLES, MOVES } = CQG;
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; console.log('  ok  ' + m); };
 
 /* THE SPEC'S MOVESET, by phase (the brief's names -> the fight's move keys) */
-const SPEC = { 1: { 'Sand Strike': 'burrow:strike', 'Burrow Charge': 'burrow:charge', 'Pincer Snap': 'pincer', 'Snap-Snap-Lunge': 'snapsnap', 'Tail Lance': 'lance', 'Sand Flick': 'flick' },
-  2: { 'Venom Spit': 'spit', 'Tail Sweep high': 'sweep:high', 'Tail Sweep low': 'sweep:low', 'Drop Pounce': 'pounce', 'Skitter Ambush': 'ambush', 'Wall Slam': 'slam', 'Stinger Pin': 'pin' },
-  3: { 'Wave Thrash': 'wave', 'Grab and Sting': 'grab', 'Death Roll': 'roll', 'Tidal Tail': 'tidal', 'Brood Shield': 'brood' } };
+const SPEC = { 1: { 'Stinger Slam': 'sslam', 'Sand Strike': 'burrow:strike', 'Burrow Charge': 'burrow:charge', 'Pincer Snap': 'pincer', 'Snap-Snap-Lunge': 'snapsnap', 'Tail Lance': 'lance', 'Sand Flick': 'flick' },
+  /* (claude/underwell3, Daniel 10-07) THE STINGER SLAM in every phase */
+  2: { 'Stinger Slam': 'sslam', 'Venom Spit': 'spit', 'Tail Sweep high': 'sweep:high', 'Tail Sweep low': 'sweep:low', 'Drop Pounce': 'pounce', 'Skitter Ambush': 'ambush', 'Wall Slam': 'slam', 'Stinger Pin': 'pin' },
+  3: { 'Stinger Slam': 'sslam', 'Wave Thrash': 'wave', 'Grab and Sting': 'grab', 'Death Roll': 'roll', 'Tidal Tail': 'tidal', 'Brood Shield': 'brood' } };
 for (const ph of [1, 2, 3]) { const used = new Set(CYCLES[ph].flat());
   for (const [name, k] of Object.entries(SPEC[ph])) ok(used.has(k), 'P' + ph + ' ' + name + ' (' + k + ') is in her phase-' + ph + ' cycles'); }
 ok(CYCLES.enraged.includes('combo'), 'ENRAGED under ' + CQ.enrage * 100 + '%: SNAP-SNAP-STING into the DEATH ROLL (the combo) is in her enraged cycle');
@@ -53,10 +54,27 @@ ok(CQ.openT >= 3 && CQ.openCap > 0 && CQ.openCap <= 0.2, 'her openings last ' + 
 { const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'burrow', modeT: 2, open: 0, alive: true }; S.pose = 'burrow'; S.mound = { x: G.mid }; S.cur = {};
   const c = { number() {}, sound() {}, fx() {}, shake() {} };
   ok(CQG.pourAim(e, S, { x: G.mid - 30, y: G.floor, face: 1 }) && !CQG.pourAim(e, S, { x: G.mid - 30, y: G.floor, face: -1 }), 'a pour lands on her mound only when you face it, near it');
-  ok(CQG.pourAt(e, S, { x: G.mid - 30, y: G.floor, face: 1 }, c) === 'open' && e.mode === 'soaked' && e.open >= 3, 'a pour on her mound floods her burrow: SOAKED, open');
+  ok(CQG.pourAt(e, S, { x: G.mid - 30, y: G.floor, face: 1 }, c) === 'open' && e.mode === 'slip' && e.open >= 3 && S.stinger && S.stinger.big && S.stinger.t >= 3, 'a pour on her mound wets the sand she comes up through: she SLIPS - open, her stinger flung out on the floor (claude/underwell3: Daniel 10-07 design change, was SOAKED; the bucket still soaks her)');
   const S2 = CQG.newShow(G), e2 = { ...e, mode: 'cling', modeT: 1, open: 0 }; S2.pose = 'wall'; S2.wall = 'W'; S2.script = []; S2.step = 0;
   ok(!CQG.pourAim(e2, S2, { x: G.ledgeW[0] + 30, y: G.ledgeY, face: -1, onLedge: 'E' }) && CQG.pourAt(e2, S2, { x: G.ledgeW[0] + 30, y: G.ledgeY, face: -1, onLedge: 'W' }, c) === 'open' && e2.mode === 'fallen',
     'on her wall: a pour from THAT wall\'s ledge brings her down on her back (the other ledge does nothing)'); }
+/* (claude/underwell3, Daniel 10-07: "I wanted her STINGER to be the VULNERABLE part") HER STINGER, THE SLAM, THE FIRE, THE SLIP */
+{ const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: 1, mode: 'walk', modeT: 1, open: 0, alive: true };
+  const tp = CQG.tipOf(e, S); ok(tp && tp.y < G.floor - 50 && tp.y > G.floor - 100 && Math.abs(tp.x - e.x) < 30, 'her stinger is always somewhere a blow can find (curled over her back: ' + (tp ? Math.round(tp.x - e.x) + ',' + Math.round(tp.y - G.floor) : '-') + ' from her feet - a jump and a cut)');
+  S.pose = 'wall'; S.wall = 'W'; e.mode = 'cling'; e.x = G.x0 + 20; e.y = G.floor - 4; const tw = CQG.tipOf(e, S); ok(tw && tw.x > G.x0 + 40 && tw.y > G.floor - 110, 'up on her wall the stinger hangs out over the hall, in a jump\'s reach (' + (tw ? Math.round(tw.x - G.x0) + ',' + Math.round(tw.y - G.floor) : '-') + ')');
+  S.pose = 'burrow'; e.mode = 'burrow'; ok(!CQG.tipOf(e, S), 'under the sand there is no stinger to cut'); }
+{ const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'walk', modeT: 0, open: 0, alive: true }; S.script = ['sslam']; S.step = 0; S.ph = 1;
+  const said = [], marks = []; let hit = 0; const c = { hit: (b, d, n) => { if (n === CQG.MOVE_NAME.sslam) hit++; }, band() {}, number: (x, y, t) => said.push(t), sound() {}, fx() {}, shake() {}, music() {}, mark: m => marks.push(m), water() {}, grab: () => null, free: () => true, holdAt() {}, release() {}, spawnBrood: () => null, drown() {} };
+  const hero = [{ x: G.mid - 90, y: G.floor, ground: true, alive: true, onLedge: null, pp: { snare: 0 } }]; let planted = 0, maxSt = 0;
+  for (let t = 0; t < 6; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero, c); if (e.mode === 'planted') planted += 1 / 60; if (S.stinger && S.stinger.big) maxSt = Math.max(maxSt, S.stinger.t); if (e.mode === 'walk' && planted > 0) break; }
+  ok(said.includes('STINGER SLAM: OFF THE RED RING, THEN CUT IT') && marks.includes('!!') && hit > 0 && CQ.sslamTell >= 0.75, 'THE STINGER SLAM is told: the word, a red !! (no shield takes it), ' + CQ.sslamTell + ' s, the spot on the floor - and it strikes there');
+  ok(planted >= 2 && planted <= 3.2 && maxSt >= 2 && CQ.plantR > CQ.stingR, 'then the stinger STAYS PLANTED ' + planted.toFixed(1) + ' s - a big target (' + CQ.plantR + ' px)'); ok(!(e.open > 0), 'the slam opens nothing else: it is her stinger you cut'); }
+{ const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'walk', modeT: 1, open: 0, alive: true }; S.script = ['pincer', 'flick']; S.step = 0; S.ph = 1;
+  let lit = false; const said = []; const c = { hit() {}, band() {}, number: (x, y, t) => said.push(t), sound() {}, fx() {}, shake() {}, music() {}, mark() {}, water() {}, grab: () => null, free: () => true, holdAt() {}, release() {}, spawnBrood: () => null, drown() {}, fire: x => lit && Math.abs(x - G.mid) < 30 };
+  const hero = [{ x: G.mid - 200, y: G.floor, ground: true, alive: true, onLedge: null, pp: { snare: 0 } }]; for (let i = 0; i < 30; i++) CQG.stepQueen(e, S, 1 / 60, hero, c); ok(!CQG.qScorched(e), 'no fire, no scorch');
+  lit = true; let modes = new Set(), sc = 0; for (let t = 0; t < 9; t += 1 / 60) { e.x = G.mid; CQG.stepQueen(e, S, 1 / 60, hero, c); if (CQG.qScorched(e)) { sc += 1 / 60; modes.add(e.mode); lit = false; } }
+  ok(sc >= CQ.scorchT - 0.1 && said.includes('THE FIRE CRACKS HER SHELL: CUT HER ANYWHERE') && !(e.open > 0), 'fire on her oil touches her: SCORCHED ' + sc.toFixed(1) + ' s, told - and it is not a stun: she is never down for it');
+  ok([...modes].some(m => /Tell$/.test(m) || m === 'pincer'), 'scorched, she FIGHTS ON (' + [...modes].join(',') + ')'); ok(S.ward > 0 || S.n.wards > 0, 'and after it, her told ward (B3)'); }
 /* THE GANG LEADER */
 { const chains = Object.values(GLM.CHAINS).flat(), all = new Set(chains.flat());
   ok(!all.has('charge') && all.has('cut') && all.has('cross') && all.has('whirl') && all.has('throw'), 'THE GANG LEADER: two swords (the cut, the cross cut), the whirl, the molotov - and no charge');
