@@ -5,19 +5,25 @@
      src/bot-profile.js typicalWalkCard (typicalCard + the L5-20 small perks + his own perk), his best damaging skills in the slots his level
      has (TYPICAL_SKILLS, as the boss rates' 'built' way), the smith's gear of every wood beaten before this one (BK.UPGRADES `needs` on the gate
      chain; the unlocked basics from depth 2), the tonics a player carries (1 / 3 / 5 by depth) and a charm (HEART CHARM from depth 4).
-   - THE HUMAN PROFILE'S EYES ON EVERY FOE (src/lab-perceive.js makePerception with no boss: drawn tells read a reaction late, misreads, greed,
-     nothing off the screen), the play bot's hands (src/playtest.js makeBot) and the lab's skill hands aimed at the foe in the way.
+   - THE HUMAN PROFILE'S EYES ON EVERY FOE, AS A FIRST RUN (src/lab-perceive.js makePerception with no boss; profile human+first: drawn tells
+     read a reaction late, misreads - a tell seen fewer than twice at the first-attempt rate - greed, nothing off the screen), the play bot's hands
+     (src/playtest.js makeBot) with a player's additions here (aim along the route's floor, the jump up to the next route node from its take-off,
+     ropes, steering a fall onto a lily pad, swimming to the route's depth, a locked room is a fight, the level's machines and the ferryman),
+     and the lab's skill hands aimed at the foe in the way.
    - HEALING AS A PLAYER: ONE HOOK (drinkJs) - under 35% health with a flask or tonic held it drinks: BK.drinkFlask() when the game has it (the
      SURVIVAL lane's manual flask), else a press of BK.flaskKey; today the RED TONIC drinks itself (under 25%, main.js damagePlayer) and the hook
      leaves it to the game. Drinks are counted by the held count going down, whichever path drank.
-   - NO LIFTS: a waypoint it cannot reach in --stuck frames ends the run as STUCK at that spot. A death is the game's own (die(): the checkpoint,
-     full health, the death-cost bundle) and the walk picks up from the waypoint nearest the shrine it woke at. It stops at the boss arena (the
-     boss is measured by tools/boss-rates.mjs) or the gate.
+   - NO LIFTS INSIDE A SECTION (start or shrine -> next shrine): a route node it cannot get past in --stuck frames makes that section STUCK - the
+     spot is reported and the section is NOT MEASURED (no arrival, no hp, not in the coverage). He then starts again at the next shrine on the route
+     as a respawn there would (full health), so the sections after it are still read; --strict ends the run at the first STUCK instead. A death is
+     the game's own (die(): the checkpoint, full health, the death-cost bundle) and the walk picks up at the route node nearest the shrine he woke
+     at. It stops at a mini's door and the boss arena (both measured by tools/boss-rates.mjs) or the gate.
    PER RUN: deaths, hp% on arrival at each checkpoint (the frame BEFORE the shrine's touch), per section (start or shrine -> next shrine) hp lost
-   (% of max, gross), healing used (drinks + small heals: hearts, kill heals), deaths, hits, kills; time; stuck spot. TARGETS (brief-levelsweep v2):
+   (% of max, gross), healing used (drinks + small heals: hearts, kill heals), deaths, hits, kills; time; stuck spots; the share of the route measured. TARGETS (brief-levelsweep v2):
    a first run = 1-2 deaths; arrive at each checkpoint under ~50% health.
      PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--deaths=8]
-        [--jobs=1] [--profile=human|none] [--level=N] [--tonics=N] [--charm=heart|iron|none] [--json=out.json]
+        [--jobs=1] [--profile=human+first|human|none] [--level=N] [--tonics=N] [--charm=heart|iron|none] [--json=out.json] [--strict]
+        [--trace=x0-x1] (a frame log while the hero is between those columns)
    A measuring tool, not a gate (tools/level-walk-selftest.mjs is the check: it runs and reports). */
 import { writeFileSync } from 'node:fs';
 import { LEVELS } from '../src/level.js';
@@ -37,7 +43,7 @@ export function walkCfg(id, hero, seed, o = {}) {
   const lv = BYID[id]; if (!lv) throw Error('no such level ' + id);
   const d = DEPTH[id] ?? 1, lvl = o.level ?? campaignLevel(id), route = routeOf(lv);
   return { id, hero, seed, lvl, depth: d, beaten: beatenBefore(id), tonics: o.tonics ?? tonicsAt(d), charm: o.charm === undefined ? charmAt(d) : o.charm,
-    profile: o.profile ?? 'human', strict: !!o.strict, trace: o.trace || null, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, route };
+    profile: o.profile ?? 'human+first', strict: !!o.strict, trace: o.trace || null, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, route };
 }
 /* THE DRINK HOOK (page side): one place, so the walker keeps working when the manual flask lands */
 export const drinkJs = `const heldNow=()=>{try{if(typeof BK.flasks==='function')return +BK.flasks()||0;const PG=BKT.PROG;return +(PG.flasks??PG.tonics??0)||0;}catch{return 0;}};
@@ -98,7 +104,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   const swimTo=k=>{const p=BK.P;if(!p.swim||p.dead>0)return;const br=p.breath===undefined?6:p.breath;if(br<2.5)return;const dy=feet(k)-p.y,dx=cxR(k)-p.x;BK.keys.down=dy>10;BK.keys.up=dy<-10;BK.keys.left=dx<-4;BK.keys.right=dx>4;};
   const litN=()=>BK.shrines().filter(s=>s.lit).length;
   const sec=()=>({lost:0,small:0,drinks:0,drinkHp:0,deaths:0,hits:0,kills:0,frames:0,lvup:0});
-  const S=[sec()],arrivals=[];const deathLog=[],trace=[];const stucks=[];let miniHp=null,resumeAt=false,resumes=0,secStart=0;let ri=0,riBest=0,riSince=0,lastProg=0,frames=0,end='frames',stuck=null,deaths=0,levelups=0;
+  const S=[sec()],arrivals=[];const deathLog=[],trace=[];const stucks=[];let miniHp=null,resumeTo=null,resumeAt=false,resumes=0,secStart=0;let ri=0,riBest=0,riSince=0,lastProg=0,frames=0,end='frames',stuck=null,deaths=0,levelups=0;
   const st0=BK.stats(),d00=st0.deaths,k00=st0.kills,hit00=BK.hitsTaken;let kPrev=k00,hPrev=hit00,dPrev=d00,wasDead=false;
   let bot=makeBot(BK),jumpX=null;
   /* A PLAYER STEERS HIS FALL ONTO A PAD (the hands only ever hold the way on, so a hop off one lily pad sailed past the next into the marsh): falling, with a floating pad or raft ahead of where the jump began and under him, he leans onto its middle */
@@ -114,7 +120,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
       const stall=!riding&&frames-lastProg>90,hunt=stall?huntOf():null,work=!riding&&!hunt&&(stall||bridgeAhead())?workOf():null;if(hunt){wx=(hunt.x-8)/TS;if(bot.skip)bot.skip.clear();}else if(work)wx=(work.x-8)/TS;else{const ux=upPlan();if(ux!==null)wx=(ux-8)/TS;}cur=pickTarget(wx*TS+8);bot(wx*TS+8);if(work)workHands(work);else climbAssist();swimTo(gi);steer(Math.sign(wx*TS+8-p.x));if(SKH&&cur)SKH.step();drinkHook();}finally{if(perc)perc.restore();}
     const h0=p.hp,mh0=p.maxHp||100,lit0=litN(),held0=heldNow(),hl0=BKT.heroLevel?BKT.heroLevel(h):0,dead0=p.dead>0||h0<=0,px0=p.x;
     BK.sim(1);frames++;if(perc)perc.update();
-    const q=BK.P,cs=S[S.length-1],h1=q.hp;if(c.trace&&trace.length<(c.traceN||400)&&q.x/TS>=c.trace[0]&&q.x/TS<=c.trace[1]&&frames%3===0)trace.push(frames+':'+(q.x/TS).toFixed(1)+','+(q.y/TS).toFixed(1)+(q.onMover?'M'+(q.onMover.moving?'m':'')+(q.onMover.paid?'p':''):'')+(q.ground?'g':'')+(q.swim?'S':'')+(BK.keys.jump?'J':'')+(BK.keys.right?'>':'')+(BK.keys.left?'<':'')+(BK.keys.block?'B':'')+(q.atk>=0?'A':'')+(q.vx?'v'+Math.round(q.vx):'')+' r'+ri+'g'+wx+(climb!==null?'C':'')+' hp'+Math.round(h1));const mh=q.maxHp||mh0;cs.frames++;
+    const q=BK.P,cs=S[S.length-1],h1=q.hp;if(resumeTo){const rt=resumeTo;resumeTo=null;if(Math.abs(q.x-rt.x)>2*TS){stucks[stucks.length-1].locked=true;end='locked';break;}}   /* the restart did not take: walls hold him (an ambush or an arena still shut) */if(c.trace&&trace.length<(c.traceN||400)&&q.x/TS>=c.trace[0]&&q.x/TS<=c.trace[1]&&frames%3===0)trace.push(frames+':'+(q.x/TS).toFixed(1)+','+(q.y/TS).toFixed(1)+(q.onMover?'M'+(q.onMover.moving?'m':'')+(q.onMover.paid?'p':''):'')+(q.ground?'g':'')+(q.swim?'S':'')+(BK.keys.jump?'J':'')+(BK.keys.right?'>':'')+(BK.keys.left?'<':'')+(BK.keys.block?'B':'')+(q.atk>=0?'A':'')+(q.vx?'v'+Math.round(q.vx):'')+' r'+ri+'g'+wx+(climb!==null?'C':'')+' hp'+Math.round(h1));const mh=q.maxHp||mh0;cs.frames++;
     if(h1<h0)cs.lost+=(h0-Math.max(0,h1))/mh0;
     const st=BK.stats();if(st.kills>kPrev){cs.kills+=st.kills-kPrev;kPrev=st.kills;}if(BK.hitsTaken>hPrev){cs.hits+=BK.hitsTaken-hPrev;hPrev=BK.hitsTaken;}
     if(st.deaths>dPrev){const K=q.killer;deathLog.push({at:[Math.floor(q.x/TS),Math.floor(q.y/TS)],ri,by:K?(typeof K==='string'?K:K.name||K.t||K.who||'?'):'?',sec:S.length-1});cs.deaths+=st.deaths-dPrev;deaths+=st.deaths-dPrev;dPrev=st.deaths;}
@@ -134,7 +140,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
       /* NO LIFT THROUGH A SECTION: this one is STUCK and not measured. Unless --strict, he starts again at the NEXT SHRINE on the route, as a respawn there would (full health), so the sections after it are still read */
       let nx=null,ni=1e9;if(!c.strict)for(const sh of BK.shrines()){if(sh.lit)continue;let bi=-1,bd=1e9;for(let k=0;k<R.length;k++){const d=Math.abs(cxR(k)-sh.x)+Math.abs(feet(k)-sh.y);if(d<bd){bd=d;bi=k;}}if(bd<8*TS&&bi>riSince&&bi<ni){ni=bi;nx=sh;}}
       if(!nx){end='stuck';break;}
-      q.onMover=null;q.x=nx.x;q.y=nx.y;q.vx=q.vy=0;q.hp=q.maxHp;resumeAt=true;ri=ni;riSince=ni;if(ni>riBest)riBest=ni;lastProg=frames;bot=makeBot(BK);climb=null;rope=null;resumes++;continue;}
+      q.onMover=null;q.x=nx.x;q.y=nx.y;q.vx=q.vy=0;q.hp=q.maxHp;resumeAt=true;resumeTo=nx;ri=ni;riSince=ni;if(ni>riBest)riBest=ni;lastProg=frames;bot=makeBot(BK);climb=null;rope=null;resumes++;continue;}
     if(frames%600===0)await new Promise(r=>setTimeout(r,0));
   }
   const r2=x=>Math.round(x*100);
@@ -183,7 +189,7 @@ if (process.argv[1] && /level-walk\.mjs$/.test(process.argv[1])) {
   const ids = args.filter(a => !a.startsWith('-')).flatMap(a => a.split(',')).filter(Boolean);
   if (!ids.length) { console.log('usage: PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--jobs=1] [--json=out.json]'); process.exit(2); }
   const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 2), jobs = Math.max(1, +opt('jobs', 1)), OUT = opt('json', '');
-  const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null };
+  const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null };
   if (opt('tonics', null) !== null) o.tonics = +opt('tonics'); if (opt('charm', null) !== null) o.charm = opt('charm') === 'none' ? null : opt('charm');
   const cfgs = []; for (const id of ids) for (const h of heroes) for (let s = 1; s <= seeds; s++) cfgs.push(walkCfg(id, h, s, o));
   const t0 = Date.now(), rows = await runWalks(cfgs, { jobs, onRow: (r, all) => { console.log(line(r)); if (r.trace) console.log('    trace: ' + r.trace.join(' ')); if (OUT) writeFileSync(OUT, JSON.stringify(all, null, 1)); } });
