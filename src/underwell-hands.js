@@ -382,7 +382,7 @@ export function makeUnderwellHands(ctx) {
   H.drawRopes = (g, cx, cy, time) => { if (!UW || !UW.ropeRuns) return; const vw = ctx.VW(), vh = ctx.VH(), P = ctx.hero(), R = Math.round;
     for (const r of UW.ropeRuns) { const x = r.x * 16; if (x < cx - 16 || x > cx + vw + 16 || (r.y1 + 1) * 16 < cy || r.y0 * 16 > cy + vh) continue;
       const near = P && !P.dead && Math.abs(P.x - (x + 8)) < ROPE_NEAR && P.y > r.y0 * 16 - 60 && P.y < (r.y1 + 1) * 16 + 80;
-      for (let y = r.y0; y <= r.y1; y++) { if (ctx.cellGet(r.x, y) !== ctx.T.NET) continue; const sx = R(x - cx), sy = R(y * 16 - cy);
+      for (let y = r.y0; y <= r.y1; y++) { if (ctx.cellGet(r.x, y) !== ctx.T.NET) continue; if (P && P.climb && Math.abs(P.x - (x + 8)) < 10 && y * 16 > P.y - 30 && y * 16 < P.y + 2) continue;   /* (not over the hero climbing it) */ const sx = R(x - cx), sy = R(y * 16 - cy);
         g.globalAlpha = near ? 0.75 + 0.2 * Math.sin(time * 4 + y) : 0.4; g.fillStyle = '#ffd890'; g.fillRect(sx + 5, sy, 1, 16); g.fillRect(sx + 10, sy, 1, 16);
         g.globalAlpha = near ? 0.55 : 0.3; g.fillStyle = '#e8b870'; g.fillRect(sx + 7, sy, 2, 16); }
       g.globalAlpha = 1; } };
