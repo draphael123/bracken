@@ -1,5 +1,6 @@
 // tools/underwell-route.mjs - THE UNDERWELL walked end to end with REAL KEYS (claude/underwell; the shape of tools/redgorge-route.mjs). Not in the suite: a
-// route pilot. A scripted hand holds a direction, hops onto the next ledge, climbs the rope, strikes the torches and the great lamp's chain, fills at the
+// route pilot. A scripted hand holds a direction, hops onto the next ledge, climbs the rope, TAKES the torches and THROWS them (claude/underwell2: E, then ATTACK -
+// with UP held for the lob over the water, DOWN for the short toss into the gutter), strikes the great lamp's chain, swims the drowned cistern's deep pool, fills at the
 // drips and springs, pours on the old oil fires and lays the firebreaks (E), waits for the fire to burn out, and cuts down what stands in its way with
 // plain swings (it never blocks or dodges: a careless player). A fresh save's hero (level 1, no skills), every foe alive.
 // Every leg prints where it ended, the health left, and THE DAMAGE BY SOURCE in that leg. A death stands you up at the last checkpoint: the hand is taken
@@ -31,7 +32,7 @@ try {
         lowest = Math.min(lowest, P().hp / maxHp);
         if (died || P().dead) { for (let j = 0; j < 600 && (P().dead || BK.state !== 'play'); j++) { BK.sim(1); frames++; if (BK.state === 'dead' || BK.state === 'gameover') BK.state = 'play'; } throw new Died('died'); } } };
       const feet = () => Math.round(P().y / TS) - 1, col = () => Math.floor(P().x / TS);
-      const fight = () => { const e = BK.enemies().filter(q => q.alive && !q.boss && !q.harmless && Math.abs(q.x - P().x) < 56 && Math.abs(q.y - P().y) < 16 && q.t !== 'sandworm').sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
+      const fight = () => { if (P().carry) return false; const e = BK.enemies().filter(q => q.alive && !q.boss && !q.harmless && Math.abs(q.x - P().x) < 56 && Math.abs(q.y - P().y) < 16 && q.t !== 'sandworm' && !(q.t === 'zombie' && (q.mode === 'buried' || q.mode === 'riseTell'))).sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
         if (!e) return false; clear();
         for (let j = 0; j < 30 && Math.abs(e.x - P().x) > 14 && e.alive; j++) { clear(); k[e.x > P().x ? 'right' : 'left'] = true; tick(1); }
         clear(); P().face = Math.sign(e.x - P().x) || P().face; BK.press('atk'); tick(8); clear(); tick(4);
@@ -54,6 +55,9 @@ try {
         DBG.push('hop ' + from + '>' + row + ' failed at ' + col() + ',' + feet()); return feet() === row; };
       const face = d => { clear(); k[d > 0 ? 'right' : 'left'] = true; tick(1); clear(); tick(1); P().face = d; };
       const press = (key, d) => { settle(); if (d) face(d); BK.press(key); tick(6); clear(); tick(4); };
+      /* (claude/underwell2) a torch: E takes it; ATTACK throws it the way you face - aim 'lob' holds UP, 'short' holds DOWN */
+      const takeT = () => { settle(); BK.press('talk'); tick(4); clear(); tick(2); return !!(P().carry && P().carry.t === 'uwtorch'); };
+      const throwT = (d, aim) => { settle(); face(d); clear(); k.up = aim === 'lob'; k.down = aim === 'short'; tick(1); BK.press('atk'); tick(2); clear(); tick(4); };
       const fireIn = (x0, x1) => U().list.some(c => c.st === 'fire' && c.x >= x0 && c.x <= x1);
       const nest = id => U().nests.find(n => n.id === id).open;
       const rope = (x, top) => { walk(x, { tol: 2, noFight: true }); for (let j = 0; j < 40 && !P().climb; j++) { clear(); k.up = true; if (j === 6 && !P().climb) { k.jump = true; BK.press('jump'); } tick(1); }
@@ -63,23 +67,31 @@ try {
       const LEGS = [
         ['the dry well', [5, 6], () => { walk(11); settle(); walk(7); settle(); walk(10); settle(); walk(5); settle(); walk(4, { tol: 3 }); press('talk');
             walk(10); settle(); walk(5); settle(); walk(3, { tol: 3 }); wait(20); walk(10); settle(); walk(15, { tol: 3 });
-            press('atk', 1); waitFor(() => nest('shaft'), 400); waitFor(() => !fireIn(15, 24), 1500);
-            hop(23, 42, 1); walk(26, { tol: 3 }); press('talk'); walk(31, { tol: 3 }); press('talk', 1); walk(44); return nest('shaft') && !BK.welltown().fires.find(f => f.x0 === 33).lit; }, [44, 43]],
+            takeT(); throwT(1, 'mid'); waitFor(() => nest('shaft'), 600); waitFor(() => !fireIn(15, 26), 1500);
+            hop(26, 42, 1); walk(29, { tol: 3 }); press('talk'); walk(34, { tol: 3 }); press('talk', 1); walk(44); return nest('shaft') && !BK.welltown().fires.find(f => f.x0 === 36).lit; }, [44, 43]],
         ['the brood hall: the great lamp', [44, 43], () => { walk(56); hop(57, 40, 1); hop(59, 37, 1); hop(67, 34, 1); hop(75, 31, 1); walk(85, { tol: 3 }); press('atk', 1);
-            waitFor(() => U().lamp.st === 'down', 200); waitFor(() => !fireIn(84, 131), 2500); walk(88); settle(); walk(134); walk(137, { tol: 3 }); wait(20); walk(141, { tol: 3 }); press('talk'); return nest('hall'); }, [141, 43]],
-        ['the oil works: the firebreak, the torch, the rope', [137, 43], () => { walk(171, { tol: 3 }); press('talk', -1); walk(174, { tol: 3 }); press('atk', 1); walk(170, { tol: 3, noFight: true });   /* back onto the wet stone while the floor burns */
+            waitFor(() => U().lamp.st === 'down', 200); waitFor(() => !fireIn(84, 116), 2500); walk(88); settle(); walk(118, { tol: 3 }); takeT(); throwT(1, 'mid'); waitFor(() => nest('hall'), 600); waitFor(() => !fireIn(119, 131), 2500);
+            walk(134); walk(137, { tol: 3 }); wait(20); walk(141, { tol: 3 }); press('talk'); return nest('hall'); }, [141, 43]],
+        ['the oil works: the firebreak, the torch, the rope', [137, 43], () => { walk(171, { tol: 3 }); press('talk', -1); walk(176, { tol: 3 }); takeT(); walk(173, { tol: 3, noFight: true }); throwT(1, 'mid'); walk(170, { tol: 3, noFight: true });   /* back onto the wet stone while the floor burns */
             waitFor(() => !fireIn(172, 214), 2500); walk(212, { tol: 4 }); wait(30); walk(161, { tol: 3 }); const up = U().ropes[0].burnt ? false : rope(160, 29);
             if (!up) { walk(206); hop(207, 40, 1); hop(208, 37, -1); hop(206, 34, 1); hop(214, 31, 0); hop(215, 29, 1); }
             return feet() <= 29; }, [162, 29]],
         ['the upper works', [162, 29], () => { walk(184); hop(185, 27, 1); walk(189); walk(203); hop(204, 28, 1); walk(213); walk(226, { tol: 3 }); press('talk', 1);
             walk(238); hop(239, 27, 1); walk(246); settle(); walk(247, { tol: 3 }); wait(20); return feet() === 45 && !BK.welltown().fires.find(f => f.x0 === 228).lit; }, [247, 45]],
-        ['the silted sump: the burning gutter', [247, 45], () => { walk(250, { tol: 3 }); press('talk'); walk(255, { tol: 3 }); ${COLD ? '' : "press('atk', 1);"} wait(40);
+        ['the silted sump: the burning gutter', [247, 45], () => { walk(250, { tol: 3 }); press('talk'); walk(255, { tol: 3 }); ${COLD ? '' : "takeT(); throwT(1, 'short');"} wait(40);
             walk(334); hop(335, 42, 1); walk(350); return col() >= 348; }, [350, 42]],
-        ['the lamp stair: the exam', [350, 42], () => { walk(352, { tol: 3 }); press('talk'); walk(354, { tol: 3 }); press('talk', 1); walk(362, { tol: 3 }); press('atk', 1); walk(355, { tol: 3, noFight: true });   /* back onto the firebreak's wet stone while the floor burns */
+        ['the lamp stair: the exam', [350, 42], () => { walk(352, { tol: 3 }); press('talk'); walk(354, { tol: 3 }); press('talk', 1); walk(364, { tol: 3 }); takeT(); walk(361, { tol: 3, noFight: true }); throwT(1, 'mid'); walk(355, { tol: 3, noFight: true });   /* back onto the firebreak's wet stone while the floor burns */
             waitFor(() => nest('exam'), 600, { noFight: true }); waitFor(() => !fireIn(357, 368), 900); walk(404, { tol: 3 }); press('talk'); DBG.push('exam: sips ' + (P().skin ? P().skin.sips : '-') + ' rope ' + U().ropes.find(r => r.id === 'exam').burnt);
             walk(357, { tol: 3 }); if (!rope(356, 31)) return false; walk(416, { tol: 3 }); press('talk'); walk(418, { tol: 3 }); press('talk', 1); walk(424, { tol: 3 }); press('talk', 1);
-            walk(437, { tol: 3 }); wait(20); walk(445, { tol: 3 }); press('talk'); return nest('exam') && feet() === 31; }, [445, 31]],
-        ['the queen\\'s door', [437, 31], () => { walk(471, { tol: 3, noFight: true }); settle(); wait(60, { noFight: true }); return feet() >= 45; }, [471, 51]],
+            walk(438, { tol: 3 }); wait(20); walk(442, { tol: 3 }); press('talk'); return nest('exam') && feet() === 31; }, [442, 31]],
+        /* (claude/underwell2) THE DROWNED CISTERN: off the landing, the shore's torch on the floating oil (the dead burn), the island's torch LOBBED over the deep pool onto the far nest's oil, the swim, the stair, the thieves' gallery */
+        ['the drowned cistern: the shallows, the lob, the swim', [438, 31], () => { walk(447); settle(); walk(449, { tol: 3 }); takeT(); walk(452, { tol: 3, noFight: true }); throwT(1, 'lob'); wait(120);
+            walk(471, { tol: 3 }); takeT(); walk(473, { tol: 3, noFight: true }); throwT(1, 'lob'); waitFor(() => nest('drown'), 900); waitFor(() => !fireIn(480, 486), 1500);
+            for (let j = 0; j < 900 && col() < 481; j++) { clear(); k.right = true; if (P().swim || (P().ground && j % 40 === 0)) { k.jump = true; BK.press('jump'); } tick(1); }
+            walk(487); return nest('drown') && col() >= 485; }, [487, 45]],
+        ['the drowned cistern: the stair, the thieves\\' gallery', [438, 31], () => { walk(488); hop(489, 42, 1); hop(492, 39, 1); hop(494, 36, -1); hop(492, 33, 1); hop(497, 31, 1);
+            walk(501, { tol: 3 }); takeT(); throwT(1, 'mid'); wait(60); walk(533, { tol: 3 }); wait(20); walk(541, { tol: 3 }); press('talk'); return feet() === 31 && col() >= 539; }, [541, 31]],
+        ['the queen\\'s door', [533, 31], () => { walk(567, { tol: 3, noFight: true }); settle(); wait(60, { noFight: true }); return feet() >= 45; }, [567, 51]],
       ];
       let lifts = [], retries = 0;
       for (const [name, foot, plan, end] of LEGS) {

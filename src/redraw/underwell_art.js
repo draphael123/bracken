@@ -90,14 +90,20 @@ export function flame(g, x, b, h, time, seed, a, w0) {
   g.globalAlpha = 1;
 }
 /* ONE CELL OF OIL at screen (x, y) = the cell's top-left; st: oil | fire | wet | spent; k: its burn left 0..1; vertical: a wall/pipe streak; deep: a gutter's heavy oil */
-export function drawCell(g, x, y, st, k, time, vertical, seed, deep) {
-  if (vertical) {
+/* (claude/underwell2, Daniel 10-06 "oil drawn floating on the wall sides") side: -1 the rock is to the cell's left, 1 to its right - the streak lies FLUSH on that rock
+   face (it was drawn down the middle of the air cell, 6 px off the wall); 0 with pipe: an iron STANDPIPE stands in the cell and the oil shows in its sight slots */
+export const streakX = side => (side < 0 ? 0 : side > 0 ? 12 : 6);
+export function drawCell(g, x, y, st, k, time, vertical, seed, deep, side = 0, pipe = false) {
+  if (vertical) { const sx = x + streakX(side);
+    if (pipe) { g.fillStyle = '#2a2622'; g.fillRect(x + 4, y, 8, 16); g.fillStyle = '#5a524a'; g.fillRect(x + 4, y, 1, 16); g.fillStyle = '#16120e'; g.fillRect(x + 11, y, 1, 16); g.fillStyle = '#7a6e60'; g.fillRect(x + 4, y + 7, 8, 2); g.fillStyle = '#a89a86'; g.fillRect(x + 5, y + 7, 1, 1); g.fillRect(x + 10, y + 7, 1, 1); }   /* the pipe's iron and a riveted band */
     const col = st === 'wet' ? ['#1c2e40', '#4a78a0'] : st === 'spent' ? ['#12100e', '#2a221c'] : ['#0e0a16', '#3a2c52'];
-    g.fillStyle = col[0]; g.fillRect(x + 6, y, 4, 16); g.fillStyle = col[1]; g.fillRect(x + 6, y, 1, 16);
-    if (st === 'oil') { const t = (time * 7 + seed * 3) % 16; g.fillStyle = '#9a78d8'; g.fillRect(x + 7, y + (t | 0), 1, 2); g.fillStyle = '#4aa89a'; g.fillRect(x + 8, y + (((t + 8) % 16) | 0), 1, 1); }
-    if (st === 'wet') { g.fillStyle = '#a8d4f0'; g.fillRect(x + 7, y + (((time * 9 + seed) % 16) | 0), 1, 2); }
-    if (st === 'spent') { g.fillStyle = '#4a3a2e'; g.fillRect(x + 7, y + ((seed * 5) % 12), 1, 2); }
-    if (st === 'fire') { flame(g, x + 8, y + 16, 7 + 6 * k, time, seed, 0.9, 3.4); flame(g, x + 8, y + 8, 5 + 4 * k, time + 0.3, seed + 3, 0.8, 3); }
+    if (pipe) { g.fillStyle = col[0]; g.fillRect(x + 6, y + 1, 4, 5); g.fillRect(x + 6, y + 10, 4, 5); g.fillStyle = col[1]; g.fillRect(x + 6, y + 1, 1, 5); g.fillRect(x + 6, y + 10, 1, 5); }   /* the oil in its sight slots */
+    else { g.fillStyle = col[0]; g.fillRect(sx, y, 4, 16); g.fillStyle = col[1]; g.fillRect(side > 0 ? sx + 3 : sx, y, 1, 16); }
+    const ix = pipe ? x + 7 : side > 0 ? sx + 1 : sx + 1;
+    if (st === 'oil') { const t = (time * 7 + seed * 3) % 16; g.fillStyle = '#9a78d8'; g.fillRect(ix, y + (t | 0), 1, 2); g.fillStyle = '#4aa89a'; g.fillRect(ix + 1, y + (((t + 8) % 16) | 0), 1, 1); }
+    if (st === 'wet') { g.fillStyle = '#a8d4f0'; g.fillRect(ix, y + (((time * 9 + seed) % 16) | 0), 1, 2); }
+    if (st === 'spent') { g.fillStyle = '#4a3a2e'; g.fillRect(ix, y + ((seed * 5) % 12), 1, 2); }
+    if (st === 'fire') { const fx = pipe ? x + 8 : sx + 2; flame(g, fx, y + 16, 7 + 6 * k, time, seed, 0.9, 3.4); flame(g, fx, y + 8, 5 + 4 * k, time + 0.3, seed + 3, 0.8, 3); }
     return; }
   const b = y + 16, ht = deep ? 7 : 5;
   if (st === 'oil') {
@@ -228,3 +234,49 @@ export function drawHusk(g, x, b) {
   g.fillStyle = '#fffae0'; g.fillRect(x + 46, b - 52, 3, 9); g.fillStyle = '#d8c8a0'; g.fillRect(x + 44, b - 46, 3, 5);   /* the barb */
   g.fillStyle = SH[1]; g.fillRect(x - 48, b - 9, 14, 7); g.fillStyle = SH[0]; g.fillRect(x - 48, b - 9, 14, 1); g.fillStyle = SH[3]; g.fillRect(x - 56, b - 14, 10, 6); g.fillStyle = SH[1]; g.fillRect(x - 55, b - 13, 8, 4); g.fillStyle = SH[0]; g.fillRect(x - 55, b - 13, 8, 1); g.fillStyle = '#0a0806'; g.fillRect(x - 58, b - 12, 4, 2);   /* a claw */
 }
+/* THE TORCH IN YOUR HAND (claude/underwell2): the cresset's brand lifted out - a pitch-black rag head on an ash haft, burning. (x, y) is the head; held: raised beside you,
+   leaning the way you face; fly: turning over in the air; lie: on the floor, the flame lower as it burns down (k 1..0) */
+export function drawHandTorch(g, x, y, st, face, time, k) {
+  const f = face < 0 ? -1 : 1;
+  if (st === 'lie') { g.fillStyle = '#4a2e14'; g.fillRect(x - 6, y - 2, 11, 2); g.fillStyle = '#6a4a22'; g.fillRect(x - 6, y - 2, 11, 1); g.fillStyle = '#1a1006'; g.fillRect(x + (f > 0 ? 4 : -8), y - 3, 4, 3);
+    flame(g, x + (f > 0 ? 6 : -6), y - 2, 3 + 6 * Math.max(0, k), time, x, 0.95, 2.6); return; }
+  if (st === 'fly') { const a = time * 14, dx = R(Math.cos(a) * 4), dy = R(Math.sin(a) * 4); g.fillStyle = '#4a2e14'; for (let i = -3; i <= 3; i++) g.fillRect(x + R(dx * i / 3), y + R(dy * i / 3), 2, 2);
+    g.fillStyle = '#1a1006'; g.fillRect(x + dx - 1, y + dy - 1, 3, 3); flame(g, x + dx + 1, y + dy, 7, time, x, 1, 3); return; }
+  g.fillStyle = '#4a2e14'; for (let i = 0; i < 9; i++) g.fillRect(x - f * R(i * 0.35), y + i, 2, 1); g.fillStyle = '#6a4a22'; for (let i = 0; i < 9; i += 2) g.fillRect(x - f * R(i * 0.35), y + i, 1, 1);   /* the haft */
+  g.fillStyle = '#1a1006'; g.fillRect(x - 1, y - 2, 4, 3); g.fillStyle = '#3a2412'; g.fillRect(x - 1, y - 2, 4, 1);   /* the pitch-soaked rag */
+  flame(g, x + 1, y - 2, 10, time, x, 1, 3.6);
+}
+/* ---------- THE THREE NEW RESKINS (claude/underwell2; Daniel 10-06 picked all three) - recoloured off proven machines' sheets, each with its own read ----------
+   OIL THIEF      the dynamite bandit's frames (the sapper's machine): an oil-black leather coat and a grey hood, a FLASK of lamp oil where the stick was (dark glass, a
+                  rag wick), and a LANTERN at his back hand (brass, lit) - the light the cistern bats scatter from, and what lights his own spilled oil when he falls
+   CISTERN BAT    the bat's frames: bleached cave-grey with pale ears and the red eyes kept - a pale thing that shows in the dark it lives in
+   DROWNED DEAD   the zombie's frames: waterlogged blue-green, weed in the hair and water running off him */
+export const THIEF_PICK = (r, g, b, l) => (r > 140 && g < 100 && b < 100) ? ['#140c08', '#3a2416', '#7a5634'] : (r > b + 30 && g > b + 10 && l > 0.3) ? ['#2a2830', '#6a6674', '#b4b0bc'] : (r > g + 20 && r > b + 20 && l < 0.6) ? ['#120c08', '#3a2416', '#6a4a2c'] : (l > 0.55 ? null : ['#16141a', '#3e3a44', '#7a7684']);   /* the vest: oil-black leather; the hat: a grey hood; the rest dusk grey */
+export const BAT_PICK = (r, g, b, l) => (r > 200 && g < 110) ? null : ['#5a6470', '#a8b4c2', '#f0f4f8'];   /* pale: it shows in the dark it lives in */
+export const DROWNED_PICK = (r, g, b, l) => (r > 200 && g > 160 && b < 140) ? ['#4a8a7a', '#9ae0c8', '#e0fff4'] : ['#081416', '#2e5a58', '#8ac0b4'];
+const thiefExtra = { pad: 2, draw(g, p, f, k) { const cx = 13, by = 20;
+  /* the lantern at his back hand (not while he runs off) */
+  if (k !== 4 && k !== 5) { const lx = cx - 4, ly = by + 6; g.fillStyle = '#5a4012'; g.fillRect(lx - 1, ly - 1, 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(lx, ly, 2, 3); g.fillStyle = '#fff4c8'; g.fillRect(lx, ly + 1, 1, 1); g.fillStyle = '#a4742a'; g.fillRect(lx - 1, ly - 2, 4, 1); dot(g, lx + 1, ly - 3, '#a4742a'); }
+  /* the flask in his throwing hand (dark glass, a rag wick; held high on the tell) and a scarf across his face */
+  { const hx = k === 6 ? cx + 2 : cx + 5, hy = k === 6 ? by - 13 : by + 6; if (k !== 4 && k !== 5) { g.fillStyle = '#1a2a18'; g.fillRect(hx, hy - 1, 3, 4); g.fillStyle = '#4a7a40'; g.fillRect(hx, hy - 1, 1, 4); g.fillStyle = '#4a3a78'; g.fillRect(hx + 1, hy + 1, 1, 1); g.fillStyle = '#c8b48a'; g.fillRect(hx + 1, hy - 3, 1, 2); } }
+  g.fillStyle = '#8a8478'; g.fillRect(cx - 1 + (k === 4 || k === 5 ? -2 : 1), by - 3, 4, 1);
+  /* oil down his coat */
+  for (const [dx, dy] of [[-2, 6], [1, 8], [3, 5]]) { dot(g, cx + dx, by + dy, '#0a0710'); dot(g, cx + dx, by + dy + 1, '#4a3a78'); } } };
+const batExtra = { pad: 1, draw(g, p, f, k) { /* the pale ear tips */ const bb = bbox(f); dot(g, bb[0] + 4, bb[1], '#ffffff'); dot(g, bb[2] - 4, bb[1], '#ffffff'); } };
+const drownedExtra = { pad: 3, draw(g, p, f, k) { const bb = bbox(f); if (bb[2] < 0) return;
+  for (let i = 0; i < 4; i++) { const x = bb[0] + 2 + ((i * 5 + k * 3) % Math.max(1, bb[2] - bb[0] - 3)); dot(g, x, bb[3] - 1 - (i % 2), '#9ae0ff'); dot(g, x, bb[3] - (i % 2), '#3a7ab8'); }   /* water running off him */
+  g.fillStyle = '#2a5a2a'; g.fillRect(bb[0] + 3, bb[1] + 1, 2, 3); g.fillRect(bb[2] - 6, bb[1] + 2, 1, 4); dot(g, bb[0] + 4, bb[1] + 4, '#4a8a3a'); } };   /* weed in his hair */
+export const bakeOilThief = base => reskin(base, THIEF_PICK, null, thiefExtra);
+export const bakeCisternBat = base => reskin(base, BAT_PICK, null, batExtra);
+export const bakeDrownedDead = base => reskin(base, DROWNED_PICK, null, drownedExtra);
+/* A WAY LAMP (claude/underwell2): a small brass cage lamp hung on a chain from the vault - it lights where the way goes on; nothing to take (x, y: its top; chainTop: the rock it hangs from) */
+export function drawWayLamp(g, x, y, chainTop, time) {
+  g.fillStyle = '#3a3a44'; for (let cy = chainTop; cy < y; cy += 3) g.fillRect(x - 1 + ((cy - chainTop) % 6 === 0 ? 0 : 1), cy, (cy - chainTop) % 6 === 0 ? 3 : 1, 2);
+  const fl = 0.75 + 0.25 * Math.sin(time * 7 + x);
+  g.fillStyle = '#5a4012'; g.fillRect(x - 3, y, 7, 1); g.fillRect(x - 3, y + 8, 7, 1); g.fillRect(x - 3, y + 1, 1, 7); g.fillRect(x + 3, y + 1, 1, 7);
+  g.globalAlpha = fl; g.fillStyle = '#ffc24a'; g.fillRect(x - 2, y + 2, 5, 5); g.fillStyle = '#fff4c8'; g.fillRect(x - 1, y + 3, 3, 3); g.globalAlpha = 1;
+  g.fillStyle = '#a4742a'; g.fillRect(x - 1, y - 1, 3, 1); g.fillRect(x - 2, y + 9, 5, 1);
+}
+/* the oil thief's FLASK in flight (the bomb list draws it): dark glass, a pale meniscus, the rag wick */
+export function bakeFlask() { const [c, g] = canvas(7, 9); g.fillStyle = '#1a2a18'; g.fillRect(1, 3, 5, 6); g.fillStyle = '#3a5a30'; g.fillRect(1, 3, 1, 6); g.fillStyle = '#4a3a78'; g.fillRect(2, 5, 3, 1);
+  g.fillStyle = '#2a2a2a'; g.fillRect(2, 1, 3, 2); g.fillStyle = '#c8b48a'; g.fillRect(3, 0, 1, 1); outline(c, OUT); return c; }

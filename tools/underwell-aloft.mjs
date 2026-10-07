@@ -6,6 +6,10 @@
                                           planSupports(); a run longer than 12 tiles is held in the middle too. 'none' is a ledge on nothing.
      B  EVERY PROP IS HELD UP             every dressing item the plan places stands on a solid / ledge top with air over it (floor kinds), hangs from solid rock (ceilings), or is fixed to a
                                           wall face (wall kinds); nothing is placed on a rope, in a solid or in mid-air; nothing stands on a nest, a sign or a pickup.
+     D  NO OIL IN THE AIR (claude/underwell2,  a floor cell of oil is open air with a floor (solid / ledge) under it, a gutter's slot (rock over and under), soaked into a
+        Daniel 10-06: "oil drawn floating        nest, or the mouth of a pipe or streak under it; a WALL STREAK (L.lines) is open air with rock on the side it is drawn on (src/underwell-hands.js
+        on the wall sides")                    oilSide, drawn flush on that face - src/redraw/underwell_art.js streakX) and its foot on a floor or on floor oil; a STANDPIPE ('pipe') is
+                                          open air (its top may enter the rock it feeds) and stands on a floor or in floor oil; and on a canvas a streak's pixels lie against its wall.
    PAGE (PORT=<yours> node tools/underwell-aloft.mjs --page):
      C  THE SUPPORTS ARE DRAWN            with the supports switched off (BK.underwellHands().noSupports) and then on, the column under every post/chain end differs in >= 60% (chains: 40%, links have gaps) of its
                                           rows - the picture really holds the ledge up, it is not only a plan.
@@ -57,6 +61,30 @@ const sup = D.planSupports(L, T);
   }
   ok(bad.length === 0, plan.items.length + ' dressing items, every one held up (' + [...new Set(plan.items.map(i => i.k))].length + ' kinds)' + (bad.length ? ': ' + bad.slice(0, 8).join('; ') : ''));
 }
+/* D */
+{ const { oilSide } = await import('../src/underwell-hands.js'); const ART = await import('../src/redraw/underwell_art.js');
+  const open = t => t === T.AIR || t === T.NET || t === T.ONEWAY, std = t => t === T.SOLID || t === T.ONEWAY, bad = [];
+  const floorOil = new Set(), vert = new Map(); for (const [x0, x1, y] of L.seeps) for (let x = x0; x <= x1; x++) floorOil.add(x + ',' + y);
+  for (const [x, y0, y1, kind] of L.lines) for (let y = y0; y <= y1; y++) vert.set(x + ',' + y, kind === 'pipe');
+  const inNest = (x, y) => L.nests.some(m => x >= m.x0 && x <= m.x1 && y >= m.y0 && y <= m.y1);
+  for (const k of floorOil) { const [x, y] = k.split(',').map(Number); const gut = at(x, y - 1) === T.SOLID && at(x, y + 1) === T.SOLID;
+    if (inNest(x, y)) continue; if (!(at(x, y) === T.AIR || at(x, y) === T.NET)) { bad.push('floor oil ' + k + ' in a solid'); continue; }
+    if (!(std(at(x, y + 1)) || gut || vert.has(x + ',' + (y + 1)))) bad.push('floor oil ' + k + ' over air'); }
+  for (const [x, y0, y1, kind] of L.lines) { const pipe = kind === 'pipe', foot = y1 + 1;
+    const rests = std(at(x, foot)) || floorOil.has(x + ',' + foot) || floorOil.has((x - 1) + ',' + y1) || floorOil.has((x + 1) + ',' + y1);
+    if (!rests) bad.push((pipe ? 'pipe ' : 'streak ') + x + ',' + y0 + '-' + y1 + ' rests on nothing');
+    for (let y = y0; y <= y1; y++) { const t = at(x, y);
+      if (pipe) { if (!open(t) && y !== y0) bad.push('pipe ' + x + ',' + y + ' runs through rock'); continue; }
+      if (!open(t)) { bad.push('streak ' + x + ',' + y + ' inside the rock'); continue; }
+      const sd = oilSide(at, T, x, y, false); if (!sd) bad.push('streak ' + x + ',' + y + ' has no wall beside it'); } }
+  ok(L.lines.length > 0 && bad.length === 0, floorOil.size + ' floor cells of oil and ' + vert.size + ' wall streak / standpipe cells, none in the air' + (bad.length ? ': ' + bad.slice(0, 10).join('; ') : ''));
+  /* drawn flush: a streak against a wall on its left lights only the cell's left third, on its right only the right third */
+  const { createCanvas } = await import('./node-canvas.mjs').then(m => m).catch(() => ({}));
+  const cv = (typeof OffscreenCanvas !== 'undefined') ? new OffscreenCanvas(16, 16) : null;
+  const span = side => { const c = cv || document.createElement('canvas'); c.width = 16; c.height = 16; const g = c.getContext('2d'); g.clearRect(0, 0, 16, 16); ART.drawCell(g, 0, 0, 'oil', 0, 0.3, true, 5, false, side, false);
+    const d = g.getImageData(0, 0, 16, 16).data; let lo = 16, hi = -1; for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) if (d[(y * 16 + x) * 4 + 3] > 0) { lo = Math.min(lo, x); hi = Math.max(hi, x); } return [lo, hi]; };
+  const L1 = span(-1), R1 = span(1);
+  ok(L1[0] === 0 && L1[1] <= 4 && R1[1] === 15 && R1[0] >= 11, 'a wall streak is drawn flush on its rock face (left wall: x ' + L1.join('-') + ', right wall: x ' + R1.join('-') + ' of the cell)'); }
 /* C */
 if (process.argv.includes('--page')) {
   const { openPage } = await import('./cdp.mjs'); const pg = await openPage({ audio: false });

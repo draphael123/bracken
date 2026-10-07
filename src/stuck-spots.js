@@ -197,37 +197,51 @@ export const STUCK_HANDS = {
   /* THE UNDERWELL (claude/underwell): every nest, oil fire, torch and rope the route needs glints until it is done (src/underwell-hands.js handsState:
      nest.<id> shut|open, fire.<col> lit|out, torch.<id> up|fall|down, rope.<id> hung|burnt, lamp up|fall|down, skin some|empty) */
   underwell: [
+    /* (claude/underwell2, Daniel 10-06 "every glint/nudge/sign says its verb"; the torches are TAKEN and THROWN now; THE DROWNED CISTERN; her door 96 east) */
     { id: 'uw-shaft-nest', zone: [12, 36, 20, 44], steps: [
-      { key: 'shaftTorch', is: ['nest.shaft', 'shut'], at: [17, 41], dy: -4, line: 'THE NEST SEALS THE TUNNEL. A TORCH HANGS OVER THE OIL' } ] },
-    { id: 'uw-shaft-fire', zone: [22, 36, 32, 44], steps: [
-      { key: 'shaftDrip', is: ['skin', 'empty'], at: [26, 43], line: 'THE DRIP BY THE WALL: A SIP OF WATER' },
-      { key: 'shaftFire', is: ['fire.33', 'lit'], at: [33, 43], line: 'AN OLD OIL FIRE ACROSS THE TUNNEL' } ] },
+      { key: 'shaftTorch', is: ['nest.shaft', 'shut'], at: [15, 41], dy: -4, line: 'TAKE THE TORCH (E), THROW IT ON THE OIL (ATTACK)' } ] },
+    { id: 'uw-shaft-fire', zone: [25, 39, 32, 44], steps: [
+      { key: 'shaftDrip', is: ['skin', 'empty'], at: [29, 43], line: 'E AT THE DRIP BY THE WALL: A SIP OF WATER' },
+      { key: 'shaftFire', is: ['fire.36', 'lit'], at: [36, 43], line: 'POUR ON THE OLD OIL FIRE: E WITH WATER IN YOUR SKIN' } ] },
     { id: 'uw-hall-lamp', zone: [60, 24, 96, 43], steps: [
-      { key: 'lamp', is: ['lamp', 'up'], at: [87, 31], glint: 'stall', line: 'THE GREAT LAMP HANGS OVER THE OIL ON ITS CHAIN' } ] },
+      { key: 'lamp', is: ['lamp', 'up'], at: [87, 31], glint: 'stall', line: 'STRIKE THE CHAIN: THE LAMP FALLS INTO THE OIL' } ] },
     { id: 'uw-hall-nest', zone: [97, 24, 133, 44], steps: [
-      { key: 'hallTorch', is: ['nest.hall', 'shut'], at: [124, 41], dy: -4, line: 'A NEST AT THE BACK OF THE CHAMBER, A TORCH OVER ITS OIL' } ] },
+      { key: 'hallTorch', is: ['nest.hall', 'shut'], at: [118, 41], dy: -4, line: "TAKE THE CHAMBER'S TORCH, THROW IT ON THE NEST'S OIL" } ] },
     { id: 'uw-works-low', zone: [141, 32, 215, 44], steps: [
-      { key: 'worksTorch', is: ['nest.works', 'shut'], rows: [38, 44], at: [176, 41], dy: -4, line: 'A NEST SEALS THE UPPER WORKS. ITS OIL RUNS DOWN HERE' },
-      { key: 'worksRope', is: ['rope.works', 'hung'], at: [160, 40], glint: 'stall', line: 'THE ROPE IS THE WAY UP' },
-      { key: 'worksBack', is: ['rope.works', 'burnt'], at: [211, 40], line: 'THE ROPE IS ASH: THE SCAFFOLDS ON THE EAST WALL' } ] },
+      { key: 'worksTorch', is: ['nest.works', 'shut'], rows: [38, 44], at: [176, 41], dy: -4, line: 'POUR AT THE ROPE FIRST, THEN THROW THE TORCH ON THE OIL' },
+      { key: 'worksRope', is: ['rope.works', 'hung'], at: [160, 40], glint: 'stall', line: 'CLIMB THE ROPE: HOLD UP' },
+      { key: 'worksBack', is: ['rope.works', 'burnt'], at: [211, 40], line: 'THE ROPE IS ASH: CLIMB THE SCAFFOLDS ON THE EAST WALL' } ] },
     { id: 'uw-works-up', zone: [157, 22, 239, 29], steps: [
-      { key: 'worksNest', is: ['nest.works', 'shut'], at: [223, 29], line: 'THE NEST SEALS THE WAY EAST. ITS OIL RUNS DOWN THE PIPE' },
-      { key: 'worksFire', is: ['fire.228', 'lit'], at: [228, 29], line: 'AN OLD OIL FIRE ACROSS THE WAY EAST' } ] },
+      { key: 'worksNest', is: ['nest.works', 'shut'], at: [223, 29], line: 'LIGHT THE OIL BELOW: IT RUNS UP THE PIPE TO THIS NEST' },
+      { key: 'worksFire', is: ['fire.228', 'lit'], at: [228, 29], line: 'POUR ON THE OLD OIL FIRE: E WITH WATER IN YOUR SKIN' } ] },
+    { id: 'uw-works-drop', zone: [234, 22, 243, 29], steps: [
+      { key: 'worksDrop', at: [247, 33], glint: 'stall', line: 'DROP DOWN THE OLD SHAFT INTO THE SUMP' } ] },
     { id: 'uw-gutter', zone: [244, 36, 262, 45], steps: [
-      { key: 'gutterTorch', is: ['torch.gutter', 'up'], at: [257, 43], dy: -4, line: 'THE TORCH AT THE MOUTH OF THE OLD GUTTER' } ] },
+      { key: 'gutterTorch', is: ['torch.gutter', 'up'], at: [255, 43], dy: -4, line: 'TAKE THE TORCH, TOSS IT SHORT INTO THE OIL: DOWN + ATTACK' } ] },
+    { id: 'uw-sump-out', zone: [324, 38, 336, 45], steps: [
+      { key: 'sumpOut', at: [338, 42], glint: 'stall', line: 'JUMP UP ONTO THE STONE: THE WAY OUT OF THE SUMP' } ] },
     { id: 'uw-exam', zone: [346, 33, 370, 42], steps: [
-      { key: 'examTorch', is: ['nest.exam', 'shut'], at: [364, 40], dy: -4, line: 'A NEST SEALS THE WAY EAST, A TORCH OVER THE OIL' },
-      { key: 'examSpring', is: ['skin2', 'low'], at: [404, 42], line: 'THE SPRING IS PAST THE NEST' },
-      { key: 'examRope', is: ['rope.exam', 'hung'], at: [356, 41], line: 'THE ROPE IS THE WAY UP' },
-      { key: 'examAsh', is: ['rope.exam', 'burnt'], at: [356, 41], line: 'THE ROPE IS ASH: A SPARE WILL COME DOWN' } ] },
+      { key: 'examTorch', is: ['nest.exam', 'shut'], at: [364, 40], dy: -4, line: 'POUR AT THE ROPE, THEN THROW THE TORCH ON THE OIL' },
+      { key: 'examSpring', is: ['skin2', 'low'], at: [404, 42], line: 'FILL YOUR SKIN AT THE SPRING PAST THE NEST: E' },
+      { key: 'examRope', is: ['rope.exam', 'hung'], at: [356, 41], line: 'CLIMB THE ROPE: HOLD UP' },
+      { key: 'examAsh', is: ['rope.exam', 'burnt'], at: [356, 41], line: 'THE ROPE IS ASH: WAIT FOR THE SPARE, THEN CLIMB' } ] },
     { id: 'uw-exam-room', zone: [371, 33, 405, 42], steps: [
-      { key: 'examFill', is: ['skin2', 'low'], at: [404, 42], line: 'THE SPRING IS PAST THE NEST' },
-      { key: 'examBack', at: [356, 41], line: 'THE ROPE IS THE WAY UP' } ] },
-    { id: 'uw-exam-fires', zone: [352, 26, 438, 31], steps: [
-      { key: 'examFire1', is: ['fire.420', 'lit'], at: [420, 31], line: 'AN OLD OIL FIRE ACROSS THE WAY' },
-      { key: 'examFire2', is: ['fire.426', 'lit'], at: [426, 31], line: 'A SECOND OIL FIRE BEHIND THE FIRST' } ] },
-    { id: 'uw-shaft', zone: [439, 26, 478, 31], steps: [
-      { key: 'queenShaft', at: [471, 31], glint: 'stall', line: 'THE OLD SHAFT GOES DOWN TO HER CISTERN' } ] },
+      { key: 'examFill', is: ['skin2', 'low'], at: [404, 42], line: 'FILL YOUR SKIN AT THE SPRING PAST THE NEST: E' },
+      { key: 'examBack', at: [356, 41], line: 'BACK TO THE ROPE AND CLIMB IT: HOLD UP' } ] },
+    { id: 'uw-exam-fires', zone: [352, 26, 436, 31], steps: [
+      { key: 'examFire1', is: ['fire.420', 'lit'], at: [420, 31], line: 'POUR ON THE OLD OIL FIRE: E WITH WATER IN YOUR SKIN' },
+      { key: 'examFire2', is: ['fire.426', 'lit'], at: [426, 31], line: 'POUR ON THE SECOND OIL FIRE: E WITH WATER' } ] },
+    /* THE DROWNED CISTERN: down off the landing; the far nest wants the island's torch LOBBED over the deep pool; then the stair; then the gallery to her door */
+    { id: 'uw-drown-down', zone: [437, 26, 443, 33], steps: [
+      { key: 'drownDown', at: [446, 34], glint: 'stall', line: 'DROP DOWN INTO THE OLD CISTERN' } ] },
+    { id: 'uw-drown-nest', zone: [444, 20, 486, 45], steps: [
+      { key: 'drownLob', is: ['nest.drown', 'shut'], at: [471, 42], dy: -4, line: 'LOB THE ISLAND TORCH OVER THE WATER: UP + ATTACK' } ] },
+    { id: 'uw-drown-swim', zone: [444, 30, 486, 45], steps: [
+      { key: 'drownSwim', is: ['nest.drown', 'open'], at: [486, 45], glint: 'stall', line: 'SWIM THE DEEP POOL TO THE FAR SHORE' } ] },
+    { id: 'uw-drown-stair', zone: [487, 20, 497, 45], steps: [
+      { key: 'drownStair', at: [496, 33], glint: 'stall', line: 'CLIMB THE BOARDS UP TO THE GALLERY: JUMP' } ] },
+    { id: 'uw-shaft', zone: [529, 26, 574, 31], steps: [
+      { key: 'queenShaft', at: [567, 31], glint: 'stall', line: 'DROP DOWN THE OLD SHAFT TO HER CISTERN' } ] },
   ],
 };
 
