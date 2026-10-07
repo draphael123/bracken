@@ -49,7 +49,7 @@ ok(DJ.openT >= 3.8 && DJ.bailT >= 4.8 && DJ.mudT >= 3.3 && DJ.mudT <= 5.0 && DJ.
   ok(DJG.pourAim(e, S, { x: G.mid - 50, y: G.floor, face: 1 }) && !DJG.pourAim(e, S, { x: G.mid - 50, y: G.floor, face: -1 }) && !DJG.pourAim(e, S, { x: G.mid - 200, y: G.floor, face: 1 }), 'a pour reaches him only facing him, near');
   ok(DJG.pourAt(e, S, { x: G.mid - 50, y: G.floor, face: 1 }, c) === 'open' && e.mode === 'mud' && e.open >= 2.4 && DJG.djOpen(e) && OPEN_RULE.djinn(e), 'P1: a pour turns him to MUD - open (OPEN_RULE agrees)');
   for (let i = 0; i < 60 * (DJ.mudT + 0.2); i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: G.mid - 50, y: G.floor, ground: true, alive: true, pp: {} }], c);
-  ok(!DJG.djOpen(e) && S.ward > DJ.wardT12 - 0.5 && said.includes('HE DRIES BACK TO SAND') && said.includes(DJG.WARD_LINE[1][0]), 'he dries back to sand and WARDS (told: ' + DJG.WARD_LINE[1][0] + ')');
+  ok(!DJG.djOpen(e) && S.ward > DJ.wardT - 0.5 && said.includes('HE DRIES BACK TO SAND') && said.includes(DJG.WARD_LINE[1][0]), 'he dries back to sand and WARDS (told: ' + DJG.WARD_LINE[1][0] + ')');
   ok(DJG.pourAt(e, S, { x: e.x - 50, y: G.floor, face: 1 }, c) === 'off' && !DJG.djOpen(e) && said.includes('THE SAND HARDENS: THE WATER RUNS OFF'), 'warded, a pour runs off him (told): no re-mud');
   for (let i = 0; i < 60 * DJ.wardT + 5; i++) DJG.stepDjinn(e, S, 1 / 60, [{ x: e.x - 50, y: G.floor, ground: true, alive: true, pp: {} }], c);
   ok(S.ward === 0 && said.includes('HIS WARD FALLS') && DJG.pourAt(e, S, { x: e.x - 50, y: G.floor, face: 1 }, c) === 'open', 'his ward falls (told) after ' + DJ.wardT + ' s, and a pour takes again'); }
@@ -59,7 +59,7 @@ ok(DJ.openT >= 3.8 && DJ.bailT >= 4.8 && DJ.mudT >= 3.3 && DJ.mudT <= 5.0 && DJ.
   ok(DJG.pourAt(e, S, { x: e.x - 50, y: G.floor, face: 1 }, c) === 'open' && e.mode === 'doused' && !S.burn && said.includes('DOUSED: SMOKE AND CLAY. CUT HIM'), 'P2: a pour DOUSES him - open, the fire out (told)');
   ok(DJG.pourAt(e, S, { x: e.x - 50, y: G.floor, face: 1 }, c) === 'wasted' || !DJG.pourAim(e, S, { x: e.x - 50, y: G.floor, face: 1 }), 'open, a second pour is not taken');
   let t = 0; for (; t < 20 && !(S.ward > 0); t += 1 / 60) DJG.stepDjinn(e, S, 1 / 60, H, c);
-  ok(S.burn && S.ward > DJ.wardT12 - 0.1 && said.includes(DJG.WARD_LINE[2][0]) && t >= DJ.openT - 0.05, 'he FLARES WHITE-HOT (his ward, told) ' + t.toFixed(1) + ' s after the douse, alight again');
+  ok(S.burn && S.ward > DJ.wardT - 0.1 && said.includes(DJG.WARD_LINE[2][0]) && t >= DJ.openT - 0.05, 'he FLARES WHITE-HOT (his ward, told) ' + t.toFixed(1) + ' s after the douse, alight again');
   ok(DJG.pourAt(e, S, { x: e.x - 50, y: G.floor, face: 1 }, c) === 'off' && !DJG.djOpen(e) && said.includes('WHITE-HOT: THE WATER HISSES AWAY'), 'white-hot, a pour hisses away (told): no re-douse');
   for (let i = 0; i < 60 * DJ.wardT + 5; i++) DJG.stepDjinn(e, S, 1 / 60, H, c);
   ok(S.ward === 0 && S.burn && DJG.pourAt(e, S, { x: e.x - 50, y: G.floor, face: 1 }, c) === 'open', 'his ward falls and he burns: a pour douses him again'); }
@@ -130,7 +130,7 @@ ok(DJ.bailCap > DJ.openCap && DJ.bailCap <= 0.1, 'a bail (two steps to earn) tak
   ok(banners.includes(DJG.TURN_LINE[2][0]) && banners.includes(DJG.TURN_LINE[3][0]) && r.S.n.turns === 2, 'each turn has its banner: ' + banners.join(' / '));
   ok(hitIn === 0, 'nothing hits you while he turns (a breather): ' + hitIn + ' blows'); }
 /* THE WARD: after EVERY opening, >= 2.5 s, told; nothing re-opens him in it (each phase checked above) */
-ok(DJ.wardT >= 2.5 && DJ.wardT <= 3.5 && DJ.wardT12 >= 2.5 && DJ.wardT12 <= DJ.wardT && [1, 2, 3].every(p => DJG.WARD_LINE[p] && CALL_LINES.has(DJG.WARD_LINE[p][0])), 'his ward is ' + DJ.wardT12 + ' s (sand, fire; claude/djinn6) / ' + DJ.wardT + ' s (the flood) after every opening, a told line for each phase');
+ok(DJ.wardT >= 2.5 && DJ.wardT <= 3.5 && [1, 2, 3].every(p => DJG.WARD_LINE[p] && CALL_LINES.has(DJG.WARD_LINE[p][0])), 'his ward is ' + DJ.wardT + ' s after every opening, a told line for each phase');
 /* THE NEW MOVES, one a phase (claude/djinn2) */
 { const S = DJG.newShow(G), c = world(), e = { t: 'djinn', x: G.mid + 80, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'walk', modeT: 0.01, open: 0, alive: true }, hero = { x: G.mid - 40, y: G.floor, ground: true, alive: true, pp: {} };
   S.script = ['spears']; S.step = 0; S.cycle = 0; const marks = [], hits = []; c.hit = (bx, d, name) => { if (name === DJG.MOVE_NAME.spear) hits.push(bx); };
@@ -255,11 +255,11 @@ ok(ks.every(k => D(k) <= P3_WAS.dmg[k] * 0.9) && mean <= 0.86 && DJ.dmg.flood ==
 { const WAS = { mudT: 3.5, openT: 4.0, bailT: 5.5, chokeT: 2.0 }, k = Object.fromEntries(Object.entries(WAS).map(([q, v]) => [q, DJ[q] / v]));
   ok(['mudT', 'openT', 'bailT'].every(q => k[q] >= 1.3 && k[q] <= 1.4) && DJ.chokeT >= 2.8 && DJ.chokeT <= 3.2 && DJ.wardT === 3.0, 'LONGER STAGGERS: ' + Object.keys(WAS).map(q => q + ' ' + WAS[q] + ' -> ' + DJ[q] + ' (x' + k[q].toFixed(2) + ')').join(', ') + '; the ward after each ' + DJ.wardT + ' s'); }
 /* (claude/djinn6, Daniel 10-06 "the Djinn is TOO HARD still" - he picked LESS DAMAGE + MORE / EASIER OPENINGS; not an hp cut, not a closer checkpoint) */
-{ const D5 = { lash: 17, blast: 8, devil: 24, spear: 19, flash: 17, breath: 22, pillar: 20, fdevil: 11, heat: 6 }, P3D5 = { spout: 14, held: 20, wave: 22, slam: 22, whirl: 9, upsurge: 19 };
-  const r12 = Object.keys(D5).map(k => DJ.dmg[k] / D5[k]), r3 = Object.keys(P3D5).map(k => DJ.dmg[k] / P3D5[k]), m12 = r12.reduce((a, b) => a + b) / r12.length;
-  ok(r12.every(x => x <= 0.85) && m12 <= 0.82 && DJ.dmg.devil <= 19 && r3.every(x => x < 1 && x >= 0.8), 'LESS DAMAGE, mostly P1-P2: x' + m12.toFixed(2) + ' on average (each at least 15% off: ' + Object.keys(D5).map(k => k + ' ' + D5[k] + '->' + DJ.dmg[k]).join(', ') + '); P3 a little lighter (' + Object.keys(P3D5).map(k => k + ' ' + P3D5[k] + '->' + DJ.dmg[k]).join(', ') + ')');
+{ const D5 = { lash: 17, blast: 8, devil: 24, flash: 17 }, ALL5 = { spear: 19, breath: 22, pillar: 20, fdevil: 11, heat: 6, spout: 14, held: 20, wave: 22, slam: 22, whirl: 9, upsurge: 19 };
+  const r12 = Object.keys(D5).map(k => DJ.dmg[k] / D5[k]), m12 = r12.reduce((a, b) => a + b) / r12.length;
+  ok(r12.every(x => x <= 0.85) && m12 <= 0.82 && DJ.dmg.devil <= 19 && Object.keys(ALL5).every(k => DJ.dmg[k] <= ALL5[k]), 'LESS DAMAGE from what he dies to in P1-P2 (the dust devil, the lash and fire lash, the sand): x' + m12.toFixed(2) + ' (' + Object.keys(D5).map(k => k + ' ' + D5[k] + '->' + DJ.dmg[k]).join(', ') + '); nothing else hits harder');
   ok(DJ.lashTell >= 0.5 && DJ.blastTell >= 0.5 && DJ.devilTell >= 0.7, 'his P1 tells unchanged or longer: lash ' + DJ.lashTell + ', sand ' + DJ.blastTell + ', devil ' + DJ.devilTell + ' s');
-  ok(DJ.openCap >= 0.051 * 1.2 && DJ.bailCap > 0.07 && DJ.wardT12 < DJ.wardT && DJ.pourR >= 66 && DJ.hp === 1000, 'MORE / EASIER OPENINGS: a mud or a douse takes ' + (DJ.openCap * 100).toFixed(1) + '% of him (was 5.1), a bail ' + (DJ.bailCap * 100).toFixed(1) + '% (was 7); the sand and fire ward ' + DJ.wardT12 + ' s (was 3); a pour reaches ' + DJ.pourR + ' px (was 66); his health unchanged');
+  ok(DJ.openCap >= 0.051 && DJ.bailCap >= 0.07 && DJ.pourR >= 66 && DJ.reelT >= 1.2 * 1.25 && DJ.hp === 1000, 'his openings are no smaller (a mud or a douse ' + (DJ.openCap * 100).toFixed(1) + '%, a bail ' + (DJ.bailCap * 100).toFixed(1) + '%), his surfacing reel longer (' + DJ.reelT + ' s, was 1.2); his health unchanged');
   const p = { full: true }, e = { t: 'djinn', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, alive: true, face: -1 }, S = DJG.newShow(G); S.ph = 3; S.flood = true; S.pose = 'column';
   DJG.throwPail(e, S, { x: G.mid - 80, y: G.floor, face: 1 }, p, world()); let t = 0, got = false; for (; t < 3 && !got; t += 1 / 60) got = DJG.refillPail(p, 1 / 60);
   ok(got && p.full && Math.abs(t - DJ.pailRefill) < 0.05 && DJ.pailRefill <= 1.0 && DJ.pailR >= 280, 'THE PAIL REFILLS ITSELF ' + t.toFixed(2) + ' s after a throw (no scoop needed); a throw reaches ' + DJ.pailR + ' px (was 230)'); }

@@ -34,9 +34,10 @@
 
 export const DJ = {
   hp: 1000, w: 34, h: 64, markH: 92,
-  openMul: 2.5, openT: 5.4, mudT: 4.7, bailT: 7.4, openCap: 0.066, bailCap: 0.085,   /* (claude/djinn6, Daniel 10-06 "the Djinn is TOO HARD still" - he picked LESS DAMAGE + MORE / EASIER OPENINGS, not an hp cut:
-                                                                    each opening takes more of him - a mud or a douse 0.051 -> 0.066, a bail 0.07 -> 0.085 - so the fight is shorter in practice;
-                                                                    health is unchanged)
+  openMul: 2.5, openT: 5.4, mudT: 4.7, bailT: 7.4, openCap: 0.051, bailCap: 0.07,   /* (claude/djinn6, Daniel 10-06 "the Djinn is TOO HARD still": the caps, the ward and the pour's reach are DJINN5's. On the
+                                                                    honest bot (tools/boss-rates.mjs, human, L31) every P1/P2 opening lever sent him to 96-100%: a 2.5 s sand/fire ward, a
+                                                                    pour reaching 80 px, a mud/douse cap of 0.054-0.066 (work/claude/djinn6/r1-r13.log). The relief is in the damage, the tells,
+                                                                    the pail and the read instead; see the lane report's questions)
                                                                     (claude/djinn5, Daniel 10-06 "increase the time he's staggered": every opening ~+35% -
                                                                     mud 3.5 -> 4.7 s, the douse 4.0 -> 5.4, the bail 5.5 -> 7.4; the 3 s ward after each unchanged)
                                                                     (claude/djinn5: back to the TOP of the band on the STANDARD bot - tools/boss-rates.mjs, profile human,
@@ -54,9 +55,7 @@ export const DJ = {
   collapseT: 1.3, reformT: 1.7, hissT: 1.4,      /* THE TURNS (claude/djinn3, Daniel 10-04 "no phase-transition animation"): P1->P2 the sand COLLAPSES (collapseT)
                                                     and RE-FORMS as fire (reformT); P2->P3 the fire HISSES to steam (hissT) and he RISES from the water (floodT). Told:
                                                     a banner, the camera shakes, and nothing hits you while he turns (a breather) */
-  wardT: 3.0, wardT12: 2.5, wardHeatR: 34,       /* THE WARD after every opening (claude/djinn2): this long; white-hot, his heat reaches this far.
-                                                    (claude/djinn6, Daniel 10-06 "more openings in phases one and two": the sand's and the fire's ward 3.0 -> wardT12 s - still told, still B3;
-                                                    the flood's shroud stays wardT) */
+  wardT: 3.0, wardHeatR: 34,                     /* THE WARD after every opening (claude/djinn2): this long; white-hot, his heat reaches this far */
   wakeT: 3.4,                                    /* the last seal breaks, the sand pours down the shaft, he forms (claude/djinn2: told, cutscene-lite) */
   p2: 2 / 3, p3: 1 / 3,
   walk: 60, keep: 74, gap: [0.5, 0.6, 0.8],   /* (claude/djinn4: the flood's gap 0.65 -> 0.8 s) */
@@ -95,25 +94,25 @@ export const DJ = {
   /* THE PAIL (claude/djinn4, Daniel picked SCOOP + THROW): in the flood every hero has a pail - E SCOOPS it full anywhere in the water (instant, told); when he
      REARS UP to strike (REAR: the slam and the spout, arms up, his core lit) E or a strike THROWS it into his core: he CHOKES - chokeT s still, the throw
      takes chokeHit of him and a blade bites x openMul up to chokeCap more - and the strike is cancelled. The windlass's bail stays the BIG opening */
-  pailR: 300, pailSpeed: 520, chokeT: 3.0, chokeHit: 0.018, chokeCap: 0.03,   /* (claude/djinn5: the choke 2.0 -> 3.0 s) */
-  /* (claude/djinn6, Daniel 10-06 "easier openings": THE PAIL REFILLS ITSELF pailRefill s after a throw - anywhere, no scoop needed (it comes up full); a throw
-     reaches 230 -> 300 px; the choke takes 1.5% + 2.5% -> 1.8% + 3%, the reel 0.8% + 1.2% -> 1.0% + 1.6% and lasts 1.2 -> 1.6 s) */
+  pailR: 300, pailSpeed: 520, chokeT: 3.0, chokeHit: 0.015, chokeCap: 0.025,   /* (claude/djinn5: the choke 2.0 -> 3.0 s) */
+  /* (claude/djinn6, Daniel 10-06 "easier openings": THE PAIL COMES UP FULL AND REFILLS ITSELF pailRefill s after a throw - anywhere, no scoop needed; a throw
+     reaches 230 -> 300 px; his surfacing reel lasts 1.2 -> 1.6 s. What each takes is DJINN5's) */
   pailRefill: 0.6,
   /* THE PAIL ANY TIME HE IS UP (claude/djinn5, Daniel 10-06 "we need another way to hit him in the water - maybe you throw something?"): a pail into his core
      while he is UP in the flood and NOT rearing makes him REEL - reelT s still (told, B4), his blow cut off, the throw takes reelHit of him and a blade bites
      x openMul up to reelCap more; he turns to the thrower; then his 3 s shroud (B3). The rear's choke stays the bigger one, the bail the biggest. The pail
      flies AT HIM (it follows his core), so one gliding across the hall is hit too */
-  reelT: 1.6, reelHit: 0.01, reelCap: 0.016,
+  reelT: 1.6, reelHit: 0.008, reelCap: 0.012,
   colRush: 120,   /* (claude/djinn5, Daniel 10-06 "if he's moving between areas you have to wait for him to get in the middle"): crossing to the shaft he
                      glides at colRush (was colWalk 80) - and the pail reaches him on the way */
-  bucketFall: 0.55, bucketCd: 1.5, windT: 1.5, pourR: 80,   /* (claude/djinn6: a pour reaches him 66 -> 80 px off - easier to land) */   /* THE BAIL IS TWO STEPS (claude/djinn3): in the flood the great bucket lies DOWN in the
+  bucketFall: 0.55, bucketCd: 1.5, windT: 1.5, pourR: 66,   /* THE BAIL IS TWO STEPS (claude/djinn3): in the flood the great bucket lies DOWN in the
                                                     water - strike the windlass (or the crank) and it WINDS UP (windT s) and hangs cocked; strike again and it DROPS
                                                     (bucketFall s) - on him only if he is under the shaft. After it lands the rope settles bucketCd s */
   /* (claude/djinn4: phase three hits ~15% lower - spout 16, held 24, wave 26, slam 26, whirl 10, deep 4, upsurge 22 before; and THE FLOOD ITSELF costs nothing
      (flood 1 a second before, untold): only the DEEP water over the ledges hurts, told by the surge - the ledges stay safe under it) */
-  /* (claude/djinn6, Daniel 10-06 "too hard still" - LESS DAMAGE, mostly P1-P2 (~-20%): lash 17, blast 8, devil 24, spear 19, flash 17, breath 22, pillar 20, fdevil 11,
-     heat 6 before; P3 a little lighter (~-14%): spout 14, held 20, wave 22, slam 22, whirl 9, upsurge 19 before) */
-  dmg: { lash: 14, blast: 6, devil: 18, spear: 15, flash: 14, breath: 18, pillar: 16, fdevil: 9, heat: 5, burn: 3, spout: 12, held: 17, wave: 19, slam: 19, whirl: 8, flood: 0, upsurge: 16 },   /* (claude/djinn5: 'deep' is gone - no water hurts by itself) */
+  /* (claude/djinn6, Daniel 10-06 "too hard still" - he dies most to the dust devils, the fire lash and the sand blasts: LESS DAMAGE from those, ~-20%:
+     devil 24 -> 18, lash and fire lash 17 -> 14, blast 8 -> 6. The rest and P3 are DJINN5's - cutting them too sent the honest bot to 100%) */
+  dmg: { lash: 14, blast: 6, devil: 18, spear: 19, flash: 14, breath: 22, pillar: 20, fdevil: 11, heat: 6, burn: 3, spout: 14, held: 20, wave: 22, slam: 22, whirl: 9, flood: 0, upsurge: 19 },   /* (claude/djinn5: 'deep' is gone - no water hurts by itself) */
 };
 /* EVERY PHASE-THREE HARM (claude/djinn4, Daniel 10-05: "every P3 hit avoidable"): its tell, how long it is told, where it is told, and the answer - a safe spot
    or a move. tools/djinn.mjs runs an answering hero through minutes of the flood and asserts nothing here lands on it, and that nothing else hurts */
@@ -216,10 +215,9 @@ const IDLE = new Set(['walk', 'recover', 'hover']);
 /* the flood's top, and whether a hero stands in it (not up a ladder, not on a ledge) */
 export const inFlood = (S, q) => S.water > 4 && q.y > S.G.floor - S.water + 4;   /* (claude/djinn3: the tide - a ledge goes under too; a hero whose feet are above the water is dry) */
 
-/* THE WARD: after every opening ends (claude/djinn2) - told, and he goes on fighting through it. (claude/djinn6) shorter in the sand and the fire */
-export const wardLen = S => (S && S.ph < 3 ? DJ.wardT12 : DJ.wardT);
+/* THE WARD: after every opening ends (claude/djinn2) - told, and he goes on fighting through it */
 function startWard(e, S, c) {
-  S.ward = wardLen(S); S.n.wards++; const y = e.y - (S.pose === 'column' ? 160 : 100);
+  S.ward = DJ.wardT; S.n.wards++; const y = e.y - (S.pose === 'column' ? 160 : 100);
   if (S.ph === 1) c.number(e.x, y, 'THE SAND HARDENS: WATER RUNS OFF HIM', '#e8d8a0'); else if (S.ph === 2) c.number(e.x, y, 'HE FLARES WHITE-HOT: STAND BACK', '#fff2c0'); else c.number(e.x, y, 'A SHROUD OF WATER SPINS ROUND HIM', '#bfe4ff');   /* (WARD_LINE, as literals) */
   c.sound('ward');
   if (S.ph === 2) { S.burn = true; S.flare = 0; c.fx('flare', e.x, S.G.floor); }
