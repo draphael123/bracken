@@ -65,7 +65,7 @@ export function makeEliteRead({ mashAt = 3 } = {}) {
 export function duelPick(BK, prev, o = {}) {
   const P = BK.P; if (!P || P.dead > 0) return null;
   const ok = e => e && e.alive && e.elite && !e.harmless && !(e.dying > 0) && !((o.no && o.no.get(e)) > (o.frame || 0));
-  if (ok(prev) && Math.abs(prev.x - P.x) < 14 * TS && Math.abs(prev.y - P.y) < 2 * TS && (!o.floor || o.floor(prev))) return prev;   /* (up on a ledge over him: the walk climbs to him, the duel takes up again on his floor) */
+  if (ok(prev) && Math.abs(prev.x - P.x) < 14 * TS && Math.abs(prev.y - P.y) < 2.5 * TS && (!o.floor || !P.ground || o.floor(prev))) return prev;   /* (in the air - a jump, a wave under him - the duel stands: it is judged again when he lands) */   /* (up on a ledge over him: the walk climbs to him, the duel takes up again on his floor) */
   if (!(P.ground || P.swim)) return null;
   let best = null, bd = 1e9;
   for (const e of BK.enemies()) { if (!ok(e)) continue; const dx = e.x - P.x, dy = Math.abs(e.y - P.y);
