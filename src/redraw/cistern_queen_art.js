@@ -2,10 +2,14 @@
 // sheet: she is too big and too many-jointed for one) - a dark chitin body as long as a cart, eight legs, two great claws held up in GUARD, and her tail
 // curled up over her back to a LIT STINGER (amber, white-hot while it is told). Her size is the read: on the floor she stands three heroes tall to the
 // tip of the tail and ten long. Every pose is the same body turned: clinging to a wall (turned on end, claws to the hall), hanging in the shaft (upside
-// down), SOAKED (wet and slumped, the guard down), ON HER BACK (legs kicking), REARING (up on her tail, underbelly bare), the DEATH ROLL (spinning).
+// down), SOAKED (wet and slumped, the guard down), ON HER BACK (legs kicking), REARING (up on her tail, underbelly bare), THE VENOM BLOOM (planted, her
+// stinger driven into the water, green). (claude/queen4, Daniel 10-07 "her animations jumping around look really awkward") Nothing pops any more: she is
+// drawn through src/cistern-queen.js S.view - one eased transform (backing up a wall, the leap into the shaft and the drop out, a turn through a squash,
+// the dig down into the sand and the burst up, the gather before a blow and the follow-through after) that her stinger's hitbox is found by too; her legs
+// walk a SIX-FRAME gait wave keyed to the ground she covers (no moonwalking on the spot), and standing she breathes (a four-beat heave).
 // Also: the hall's windlass, the shaft's bucket and rope, the two side tunnels, and over everything her tells on the floor and what she throws.
 //   drawQueen(g, e, S, x, y, time)   x, y = her feet on screen.   bakeCisternQueen() -> a sprite set for the bestiary and her body (CQ_F names its frames)
-import { TAIL, tailPose } from '../cistern-queen.js';   /* (claude/underwell3) her tail's one table, and the pose that picks a path */
+import { TAIL, tailPose, view } from '../cistern-queen.js';   /* (claude/underwell3) her tail's one table, and the pose that picks a path */
 import { canvas, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -19,12 +23,15 @@ const ln = (g, c, w, pts) => { g.strokeStyle = c; g.lineWidth = w; g.lineCap = '
 /* THE BODY in her own frame: origin at her feet (the floor under her middle), +x forward (her head), -y up. o = { t, walk, claw: 'guard'|'down'|'forward'|'snap'|'up',
    tail: 'curl'|'lance'|'sweep'|'flick'|'high'|'pin'|'down', clawReach, lanceTo: [dx, dy], hot (the stinger told), wet, flash, legs: 'walk'|'splay'|'kick'|'still' } */
 export function drawBody(g, o) {
-  const t = o.t || 0, k = o.walk ? Math.sin(t * 12) : 0, wet = o.wet || 0;
+  const t = o.t || 0, wet = o.wet || 0;
+  /* (claude/queen4) THE GAIT: a six-frame wave down each side (the legs of a side a quarter-cycle apart, the two sides half a cycle), the phase from the ground
+     covered (o.gait) or, scrabbling up or down a wall, from the clock - stepped to six frames so it reads as drawn frames, not a wobble */
+  const STEP = Math.PI / 3, gait = o.walk ? Math.floor((o.gait != null ? o.gait : t * 12) / STEP) * STEP : null;
   const C = o.flash ? { chit0: '#fff', chit1: '#fff', chit2: '#fff', chit3: '#fff', rim: '#fff', belly: '#fff', bellyL: '#fff', claw: '#fff', clawL: '#fff', legD: '#fff', leg: '#fff', legL: '#fff' } : QC;
   /* THE LEGS (polish): thick, lighter than the floor and the body, a dark edge under a lit one, a knee and a pale foot-claw - they read on the dark hall */
   const legs = o.legs || 'walk';
-  for (let i = 0; i < 4; i++) { const bx = -26 + i * 15, ph = (i % 2 ? 1 : -1) * k;
-    for (const side of [0, 1]) { const sh = side ? 0 : 1, col = side ? C.leg : C.legD, hi = side ? C.legL : C.leg;
+  for (let i = 0; i < 4; i++) { const bx = -26 + i * 15;
+    for (const side of [0, 1]) { const sh = side ? 0 : 1, col = side ? C.leg : C.legD, hi = side ? C.legL : C.leg, ph = gait == null ? 0 : Math.sin(gait + i * Math.PI / 2 + side * Math.PI);
       let pts;
       if (legs === 'kick') { const a = Math.sin(t * 16 + i * 1.7 + side) * 6; pts = [[bx, -14], [bx - 6 + a, -34], [bx + 4 + a, -46]]; }
       else { const fx = bx + (legs === 'splay' ? (i - 1.5) * 9 : ph * 5 - 4), lift = legs === 'walk' ? Math.max(0, ph) * 4 : 0; pts = [[bx, -14 - sh], [fx - 7, -30 + sh * 2], [fx - 11, -lift]]; }
@@ -81,9 +88,12 @@ export function drawBody(g, o) {
 
 /* HER ON THE SCREEN, by pose */
 export function drawQueen(g, e, S, x, y, time, cx, cy) {
-  if (S.pose === 'burrow' || S.pose === 'tunnel' || e.gone > 0 && e.mode !== 'pounce') { if (!(S.pose === 'shaft')) return; }
-  const m = e.mode, tellHot = /Tell$/.test(m) && m !== 'diveTell' && m !== 'climbTell' && m !== 'floodTell' && m !== 'broodTell', flash = (e.flash > 0) || (tellHot && Math.floor(time * 14) % 2 === 0 && e.modeT < 0.3);
-  const o = { t: time, walk: m === 'walk' || m === 'ambush', claw: 'guard', tail: 'curl', hot: tellHot && /lance|pin|sting|tidal|sweep/.test(m), flash, legs: 'walk', wet: S.flood ? 0.4 : 0 };
+  if (S.pose === 'burrow' || S.pose === 'tunnel') return;
+  if (e.gone > 0 && S.pose !== 'shaft' && e.mode !== 'pounce') return;
+  const V = S.view && S.view.live ? S.view : view(e, S);   /* (claude/queen4) the one transform: the fight eases it, her stinger's hitbox is found by it */
+  const m = e.mode, tellHot = /Tell$/.test(m) && m !== 'diveTell' && m !== 'climbTell' && m !== 'floodTell', flash = (e.flash > 0) || (tellHot && Math.floor(time * 14) % 2 === 0 && e.modeT < 0.3);
+  const moving = (V.spd || 0) > 14, scrabble = m === 'climb' || m === 'descend' || (m === 'ambushTell' && S.tunnelK != null);
+  const o = { t: time, walk: moving || scrabble, gait: scrabble ? time * 16 : V.stride * 0.16, claw: 'guard', tail: 'curl', hot: tellHot && /lance|pin|sting|tidal|sweep|bloom/.test(m), flash, legs: moving || scrabble ? 'walk' : 'still', wet: S.flood ? 0.4 : 0 };
   if (m === 'pincerTell') { o.claw = 'snap'; } if (m === 'pincer' || m === 'snap' || m === 'snap2') { o.claw = 'forward'; o.clawReach = 8; }
   if (m === 'snapTell' || m === 'snap2Tell') o.claw = 'snap';
   if (m === 'lungeTell' || m === 'lunge') { o.claw = 'forward'; o.clawReach = m === 'lunge' ? 12 : 0; o.tail = 'high'; }
@@ -98,24 +108,28 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   if (m === 'rear') { o.claw = 'up'; o.legs = 'kick'; }
   if (m === 'recover' || m === 'surface') o.legs = 'still';
   if (m === 'slamTell') { o.claw = 'up'; o.hot = false; } if (m === 'spitTell') { o.claw = 'down'; o.tail = 'spit'; o.hot = true; o.venomHot = true; }
-  if (m === 'tidalTell') { o.venomHot = true; } if (m === 'waveTell') { o.claw = 'up'; } if (m === 'pounceTell') { o.claw = 'up'; o.tail = 'high'; o.crouch = true; } if (m === 'lungeTell') o.crouch = true; if (m === 'rollTell') { o.claw = 'down'; o.legs = 'still'; o.lean = true; }
+  if (m === 'tidalTell') { o.venomHot = true; } if (m === 'waveTell') { o.claw = 'up'; } if (m === 'pounceTell') { o.claw = 'up'; o.tail = 'high'; }
+  /* (claude/queen4) THE VENOM BLOOM: planted (legs splayed, claws down in the water), the tail arched and the stinger green-hot; then driven in */
+  if (m === 'bloomTell') { o.claw = 'down'; o.legs = 'splay'; o.walk = false; o.hot = true; o.venomHot = true; }
+  if (m === 'bloom' || m === 'bloomBurst' || m === 'bloomPull') { o.claw = 'down'; o.legs = 'splay'; o.walk = false; o.venomHot = true; }
+  if (m === 'leap') { o.legs = 'splay'; o.walk = false; o.claw = 'up'; } if (m === 'drop' || m === 'pounce') { o.legs = 'splay'; o.walk = false; o.claw = 'up'; }
+  if (m === 'diveTell') { o.claw = 'down'; o.walk = true; o.gait = time * 20; o.legs = 'walk'; }   /* digging: the legs churn as she sinks */
   if (e.guardFx > 0) o.flash = true;
   const face = e.face || 1;
   /* (claude/underwell3) HER TAIL by src/cistern-queen.js tailPose - the same choice the hit on her stinger makes; the stinger stuck in the floor (a sting, the slam, the slip) runs the tail down to it, hot-white */
   { const tp = tailPose(e, S); o.tail = tp.tail; o.lanceTo = tp.lanceTo; if (tp.tail === 'lance') o.hot = true; }
-  if (m === 'sslamTell') { o.claw = 'up'; o.hot = true; o.crouch = true; } if (m === 'planted') { o.claw = 'down'; o.legs = 'still'; }
+  if (m === 'sslamTell') { o.claw = 'up'; o.hot = true; } if (m === 'planted') { o.claw = 'down'; o.legs = 'still'; }
   if (m === 'slip') { o.claw = 'down'; o.legs = 'splay'; o.wet = 1; o.walk = false; }
   if (e.scorch > 0) o.scorch = Math.min(1, e.scorch);
-  g.save(); g.translate(x, y);
-  const onWall = S.pose === 'wall' && m !== 'pin' && m !== 'pinned';
-  /* ON A WALL: her legs on the stone, her back to the hall, head down to the floor and her tail up toward the ledge over her */
-  if (onWall) { const west = S.wall === 'W'; g.translate(west ? -16 : 16, -84); if (west) g.rotate(Math.PI / 2); else { g.rotate(-Math.PI / 2); g.scale(-1, 1); } g.scale(0.82, 0.82); }
-  else if (S.pose === 'shaft') { g.rotate(Math.PI); }
-  else if (m === 'fallen') { g.translate(0, -30); g.scale(1, -1); o.legs = 'kick'; o.claw = 'up'; o.tail = 'down'; }
-  else if (m === 'rear') { g.translate(-10, 0); g.rotate(-0.55 * face); }
-  else if (m === 'roll') { g.translate(0, -24); g.rotate(time * 14 * face); g.translate(0, 24); o.legs = 'still'; o.claw = 'down'; o.tail = 'down'; }
-  if (!onWall) g.scale(face, 1);
-  if (o.crouch && !onWall) { g.translate(-4, 6); g.rotate(-0.1); } if (o.lean && !onWall) g.rotate(0.14);   /* a CROUCH gathers her low before a lunge or a pounce; the roll's tell leans her back */
+  if (m === 'fallen') { o.legs = 'kick'; o.claw = 'up'; o.tail = 'down'; }
+  /* STANDING, SHE BREATHES: a four-beat heave of the carapace (walking, clinging, hanging, getting up) */
+  const idle = !moving && (m === 'walk' || m === 'cling' || m === 'hang' || m === 'recover' || m === 'planted' || m === 'stuck'), breath = idle ? 1 + 0.03 * [0, 1, 0, -1][Math.floor(time * 2.6 / (2 * Math.PI) * 4) % 4] : 1;
+  g.save();
+  /* her hall clips her: she comes out of a tunnel's mouth through the wall, and down into the sand under the floor line */
+  const G = S.G; if (G) { g.beginPath(); g.rect(R(G.x0 - cx), R(G.vault - cy) - 400, R(G.x1 - G.x0), R(G.floor - G.vault) + 400 + (V.sink > 0.5 ? 0 : 40)); g.clip(); }
+  /* (claude/queen4) S.view: floor / backed up her wall / hung in the shaft / on her back / rearing, eased between; her facing turned through a squash; sunk; gathered or thrust */
+  g.translate(x + R(V.ox || 0), y + R(V.oy || 0)); g.translate(V.tx, V.ty + V.sink); g.rotate(V.rot); g.scale(V.sx * V.sc, V.sy * V.sc * breath);
+  g.translate(4 * V.lean - 4 * V.crouch, 6 * V.crouch); g.rotate(0.04 * V.lean - 0.1 * V.crouch);
   drawBody(g, o);
   g.restore();
   /* the guard's spark: a blow turned on the claws */
@@ -165,7 +179,21 @@ export function drawOver(g, e, S, cx, cy, time, CQ) {
   if ((m === 'sweepLowTell' || m === 'sweepHighTell') ) { const hi = m === 'sweepHighTell', y = R(F - (hi ? 22 : 6)); g.globalAlpha = 0.35 + 0.3 * Math.abs(Math.sin(time * 14)); g.fillStyle = hi ? '#ffb84a' : '#ff6b6b'; g.fillRect(X(G.x0), y - 1, X(G.x1) - X(G.x0), 3); g.globalAlpha = 1; }
   if (m === 'tidalTell') { const fx = e.face || 1, x0 = fx > 0 ? e.x : e.x - CQ.tidalReach, x1 = fx > 0 ? e.x + CQ.tidalReach : e.x; g.globalAlpha = 0.3 + 0.3 * Math.abs(Math.sin(time * 14)); g.fillStyle = '#a6e04a'; g.fillRect(X(x0), R(F - 22), X(x1) - X(x0), 3); g.globalAlpha = 1; }
   if (m === 'grabTell') { const fx = e.face || 1, x = X(e.x + fx * (CQ.w / 2 + CQ.grabReach)); g.strokeStyle = blink; g.lineWidth = 1; g.beginPath(); g.ellipse(x, R(F - 1), 14, 3, 0, 0, Math.PI * 2); g.stroke(); }
-  /* THE BANDS: a dune wave, the tail's sweep, the thrash's waves, the death roll's wake */
+  /* (claude/queen4, Daniel 10-07) THE VENOM BLOOM: told - the ring it will fill, blinking on the water, its two edges posted; spreading - the green slick growing from the
+     stinger with its bright edge running out toward the ring; blooming - venom thrown up across the whole ring; then it thins away */
+  if (S.bloom) { const b = S.bloom, bx = X(b.x), fy = R(F - Math.min(S.water || 0, 14)), RR = b.R, gb = Math.floor(time * 12) % 2 ? '#a6e04a' : '#ff6b6b';
+    const fade = b.st === 'fade' ? Math.max(0, (b.t || 0) / 0.5) : 1;
+    if (b.st !== 'fade') { g.strokeStyle = gb; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.ellipse(bx, fy, RR, 5, 0, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+      for (const sx of [-1, 1]) { fr(g, gb, bx + sx * RR - 1, fy - 12, 2, 12); fr(g, '#fff6e0', bx + sx * RR - 1, fy - 13, 2, 2); } }
+    if (b.st !== 'told') { const r = b.st === 'spread' ? Math.max(3, RR * b.k) : RR;
+      g.globalAlpha = 0.5 * fade; g.fillStyle = QC.venomD; g.beginPath(); g.ellipse(bx, fy, r, 3 + 2 * Math.min(1, r / RR), 0, 0, Math.PI * 2); g.fill();
+      g.globalAlpha = 0.65 * fade; g.fillStyle = QC.venom; g.beginPath(); g.ellipse(bx, fy - 1, r * 0.8, 2 + Math.min(1, r / RR), 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = fade;
+      if (b.st === 'spread') { g.strokeStyle = '#eaffb0'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, fy, r, 3 + 2 * Math.min(1, r / RR), 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+        for (const sx of [-1, 1]) fr(g, '#eaffb0', bx + sx * r - 1, fy - 5, 2, 5); }
+      for (let i = 0; i < 6; i++) { const px = bx + Math.sin(i * 2.1 + time * 3) * r * 0.8, py = fy - 2 - ((time * 20 + i * 5) % 6); fr(g, '#d6f8a0', R(px), R(py), 2, 2); }
+      if (b.st === 'burst') for (let x0 = -RR; x0 <= RR; x0 += 7) { const h = R(10 + 18 * Math.abs(Math.sin(time * 30 + x0 * 0.3))); fr(g, QC.venomD, bx + x0 - 1, fy - h, 4, h); fr(g, QC.venom, bx + x0, fy - h, 2, h - 2); fr(g, '#eaffb0', bx + x0, fy - h, 2, 2); }
+      g.globalAlpha = 1; } }
+  /* THE BANDS: a dune wave, the tail's sweep, the thrash's waves */
   for (const b of S.bands) { const x = X(b.x), y0 = R(b.y[0] - cy), y1 = R(b.y[1] - cy);
     const col = b.k === 'dune' ? '#d8b47a' : b.k === 'wave' ? '#7ab8e8' : b.k === 'tailHigh' ? '#ffb84a' : '#c9a46a';
     g.fillStyle = col; g.beginPath(); g.moveTo(x - b.dir * 22, y1); g.quadraticCurveTo(x - b.dir * 4, y0 - 2, x + b.dir * 6, y1); g.fill();
