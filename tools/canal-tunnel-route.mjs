@@ -101,10 +101,11 @@ try {
           stage('STRAY: walked off the ledge into the water - handed back ON HER DECK', onBarge()); walk(284, { tol: 3, noFight: true }); ledgeUp(15); }
         const far = () => P().x > 287 * TS && Math.round(P().y / TS) === 15 && P().ground;
         for (let a = 0; a < 5 && !far(); a++) { if (onBarge() || Math.round(P().y / TS) !== 15) { walk(284, { tol: 3, noFight: true }); ledgeUp(15); } walk(285, { tol: 2, noFight: true }); hop(1, { hold: 30 }); settle(); }   /* a knock into the water is a hand-back onto her deck: up again and over */
-        stage('over the gap to the far ledge', P().x > 287 * TS && Math.round(P().y / TS) === 15);
+        const gapAt = log.length; stage('over the gap to the far ledge', far());
         for (let i = 0; i < 40 && BK.enemies().some(e => e.alive && Math.abs(e.y - P().y) < 20 && e.x > 287 * TS && e.x < 299 * TS); i++) { const e = BK.enemies().filter(e => e.alive && Math.abs(e.y - P().y) < 20 && e.x > 287 * TS && e.x < 299 * TS)[0]; walk(Math.round(e.x / TS), { tol: 10 }); if (!fight()) tick(10); }
         for (let a = 0; a < 4 && !(Math.abs(P().x - (294 * TS + 8)) < 6 && far()); a++) { if (!far()) { walk(284, { tol: 3, noFight: true }); ledgeUp(15); walk(285, { tol: 2, noFight: true }); hop(1, { hold: 30 }); settle(); } walk(294, { tol: 3 }); } strike(1); for (let i = 0; i < 120 && C().stops[0].k < 0.9; i++) tick(1);
         if (!stage('the windlass struck: the planks wound up', C().stops[0].k > 0.9)) return false;
+        if (!log[gapAt].ok) { log[gapAt].ok = true; log[gapAt].name += ' (on a later try: knocked back onto her deck first)'; }
         if (STRAY) { for (let i = 0; i < 60 * 10 && !(B().x + 10 < P().x && P().x < B().x + B().w - 10); i++) { clear(); if (!fight({ r: 30 })) tick(1); }
           stage('STRAY: waited on the far ledge - she glides along under you (THE CALL)', B().x + 10 < P().x && P().x < B().x + B().w - 10); }
         else walk(288, { tol: 3 });   /* back along the far ledge to its west end, and wait for her there */
@@ -148,10 +149,11 @@ try {
       stage('basin: the island\\'s lamplighter and foreman down', !BK.enemies().some(e => e.alive && e.elite && e.x > 360 * TS && e.x < 372 * TS));
       let aboard = false; const horn = () => C().horns.find(h => h.x > 340 * TS && h.x < 352 * TS), br = () => C().bridges[3];
       for (let a = 0; a < 5 && !aboard; a++) {   /* the exam's window: blow the horn, over the bridge in the clear air, swing it, and be on her under the island before the fog rolls back - again if it did */
+        if (onBarge()) { walk(Math.floor(B().x / TS) + 1, { tol: 3, noFight: true }); ledgeUp(41); }   /* handed back onto her where the fog holds her: up onto the west bank again */
         if (!br().across && P().x > 359 * TS) { walk(363, { tol: 3, noFight: true }); strike(-1); for (let i = 0; i < 90 && !br().across; i++) tick(1); tick(60); }   /* (swung open behind you: bring it back across to reach the horn) */
         walk(350, { tol: 3 }); for (let i = 0; i < 900 && horn().cd > 0; i++) tick(1); strike(-1);
         walk(363, { tol: 3, noFight: true }); if (br().across) strike(-1);
-        walk(366, { noFight: true }); aboard = dropOn(60 * 12); }
+        walk(366, { noFight: true }); dropOn(60 * 12); for (let i = 0; i < 60 * 6 && onBarge() && B().x + B().w <= 364 * TS; i++) tick(1); aboard = onBarge() && B().x + B().w > 364 * TS; }
       stage('basin: the horn blown, the bridge swung, onto her as she passes under the island', aboard);
       for (let i = 0; i < 60 * 15 && !(B().holdWhy === 'end' || B().x > 383 * TS); i++) { clear(); if (!fight({ r: 40 })) tick(1); }
       walk(388, { tol: 3, noFight: true }); strike(1); for (let i = 0; i < 60 * 8 && !full('L5'); i++) tick(1); stage('basin: its lock filled', full('L5'));
