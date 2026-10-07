@@ -13,17 +13,17 @@
   "lostPct": 69
  },
  "marsh": {
-  "hash": "7f2d68c03b1a",
+  "hash": "a0cb1f611ceb",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
+  "hits": 33,
   "deaths": 1,
-  "kills": 29,
-  "lifts": 78,
+  "kills": 30,
+  "lifts": 90,
   "walked": 100,
   "bare": true,
-  "lostPct": 129
+  "lostPct": 195
  },
  "stockade": {
   "hash": "c88404798755",
@@ -247,17 +247,17 @@
   "lostPct": 256
  },
  "causeway": {
-  "hash": "23edd5e3ab40",
+  "hash": "ae47c47a9ea8",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 28,
-  "deaths": 0,
-  "kills": 10,
-  "lifts": 113,
+  "hits": 49,
+  "deaths": 6,
+  "kills": 9,
+  "lifts": 109,
   "walked": 100,
   "bare": true,
-  "lostPct": 71
+  "lostPct": 276
  },
  "harbor": {
   "hash": "ce45ca81cf76",

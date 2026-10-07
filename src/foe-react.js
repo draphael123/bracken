@@ -38,9 +38,11 @@ export const ACTS = [
 /* THE DIFFICULTY PILOT'S WEIGHT (claude/levelpilot, scratch/brief-levelsweep.md v2: SALT & SANCTUARY - fewer, weightier foes, every one a 1v1 threat at the
    campaign level; 'act damage scaling, no hp sponges'). A level reworked to the v2 recipe may stand its common foes' blows a step over its act's tier
    (x this on ACTS[act].dmg; health never moves). The walker (tools/level-walk.mjs) read a campaign-level hero (L20, three skills) at THE DROWNED CAUSEWAY
-   taking 5-28 blows a whole run and reaching every shrine at 70-90%: a blow cost him a sixth of his bar. The per-act lanes fold this into ACTS[].dmg
+   taking 5-28 blows a whole run and reaching every shrine at 70-90%: a blow cost him a sixth of his bar. x1.5 puts a common blow near a fifth
+   (1.4 / 1.5 / 1.7 were walked: the bot is hit too rarely for it to move his numbers much - most of what lands is from range - so this is set for a
+   person, who is hit more often than the walker). The per-act lanes fold this into ACTS[].dmg
    once Daniel has played the pilot; until then it is one level's knob, so the rest of the act is untouched. */
-export const LEVEL_DMG = { causeway: 1.4 };
+export const LEVEL_DMG = { causeway: 1.5 };
 /* a level not in the table (a new one, a trial, the shop) takes the act of its depth on the gate chain, else act 1 */
 const DEPTH_ACT = [[29, 5], [21, 4], [12, 3], [5, 2], [0, 1]];
 export function actOf(id, depth) {

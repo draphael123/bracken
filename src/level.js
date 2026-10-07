@@ -563,15 +563,15 @@ function marshWood() {
   /* THE DIFFICULTY PILOT (claude/levelpilot, Daniel 2026-10-07: 'levels are still incredibly easy' - a middle ground between SHOVEL KNIGHT and
      SALT & SANCTUARY, scratch/brief-levelsweep.md v2). The marsh's threat stood in ONE room - the thorn elite locked in on the archers' stilts
      (x56-72) - and the crossings, where the marsh's own question is asked, had none. It is spread to the platforming now (FINAL columns):
-     - the reed climb under the stilt archer gets a wasp hung in the arc of its hops (a flyer through a jump: block it, cut it, or pogo it);
      - the long river's first half is section two's EXAM, with the checkpoint on the reed bed after it: a stinging wasp in the arc of the
        bud pad's throw, and an archer at the far end of the first stage - the high road's coins are a fight on a board over the water now,
        and its arrows reach the low road's pads (a hit on a sinking pad is a swim back to the bank);
      - a spitter on the second reed bed lobs onto the pads either side of it, so the rest is not a rest until it is cut down.
      THE ELITE THORN moved off the stilts to the far bank of the archer island (ELITES.marsh), where section one ends: an exam on the bank with
-     the water at your back, the checkpoint after it. The stilts keep their two archers. */
+     the water at your back, the checkpoint after it. The stilts keep their two archers.
+     (A wasp hung in the reed climb's hops under the stilt archer was tried and taken out: with it a fresh level-1 knight lost 280% a run, over
+     act I's ceiling of 250% in tools/rule-state.mjs CURVE_BANDS - the climb is the second thing the marsh teaches, and the archer covers it.) */
   const pilot = (t, x, y, o) => M.ents.push(Object.assign({ t, x, y, face: -1 }, o || {}));
-  pilot('wasp', 53, 13, { sting: true });
   pilot('wasp', 238, 12, { sting: true, pogo: true }); pilot('archer', 247, 13);
   pilot('spit', 275, 15);
   return M;
@@ -7001,11 +7001,15 @@ function theDrownedCauseway() {
      - THE STONES: a petrel over the hops and a scout on the far road covering them (a blow mid-hop is a fall into the channel's current);
      - THE BROKEN SPANS: a petrel over each of the first two breaks, a tide guard holding the landing of the first (a shield on the lip, the
        sea at your back), and a scout at the end of the second span covering the next break;
+     - a scout past the ARCADE's broken span, a netter on the WAYSTATION's holm over the climb from the boom;
      - THE LAST MILE is the road's EXAM: its tide guard is an ELITE (ELITES.causeway) who holds the light's foot while the breakers come over,
        a scout on a parapet stone behind him - a stone's lee keeps your feet, his does not move him. The checkpoint at 561 is after it. */
   ent('petrel', 131, 23); ent('scout', 148, R - 1, { face: -1 });
   ent('petrel', 436, 20); ent('petrel', 454, 20); ent('tideguard', 440, R - 1, { face: -1 }); ent('scout', 449, R - 1, { face: -1 });
   ent('scout', 533, R - 2, { face: -1 });
+  /* AND THE BOW COVERS THE JUMPS (the walker: on this road the blows that land come from range - a melee foe on the flat is cut down before
+     it swings): a scout past the arcade's broken span, a netter on the waystation's holm over the climb up from the boom */
+  ent('scout', 229, RH - 1, { face: -1 }); ent('netter', 494, 18, { face: -1 });
   const tideSea = { x0: 4 * TS, x1: 565 * TS, y: LWR * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.42, grad: false, causeTide: true, loY: LWR * TS, hiY: HW * TS };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: RH - 1 }, falls: [], interiors, airRooms, deep: D,

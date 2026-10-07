@@ -48,7 +48,7 @@ export function walkCfg(id, hero, seed, o = {}) {
 /* THE DRINK HOOK (page side): one place, so the walker keeps working when the manual flask lands */
 export const drinkJs = `const heldNow=()=>{try{if(typeof BK.flasks==='function')return +BK.flasks()||0;const PG=BKT.PROG;return +(PG.flasks??PG.tonics??0)||0;}catch{return 0;}};
   let drinkCd=0;const drinkHook=()=>{const p=BK.P;drinkCd=Math.max(0,drinkCd-1);if(!p||p.dead>0||p.hp<=0||p.hp>=p.maxHp*0.35||heldNow()<=0||drinkCd>0)return;
-    if(typeof BK.drinkFlask==='function'){BK.drinkFlask();drinkCd=45;}else if(BK.flaskKey){BK.press(BK.flaskKey);drinkCd=45;}};`;
+    if(typeof BK.drinkFlask==='function'){if(BK.drinkFlask())drinkCd=45;}else if(BK.flaskKey){BK.press(BK.flaskKey);drinkCd=45;}};`;
 export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.hero,lvl=c.lvl,TS=16;BK.manualSimulation=true;
   const B=await import('/src/bot-profile.js'),PR=await import('/src/progression.js'),{makeBot}=await import('/src/playtest.js'),PC=await import('/src/lab-perceive.js'),{mulberry}=await import('/src/px.js'),{LEVELS}=await import('/src/level.js');
   const P0=BKT.PROG;BKT.setHeroLevel(h,lvl);P0.skillOwned=P0.skillOwned||{};P0.loadouts=P0.loadouts||{};P0.skillOwned[h]={};P0.loadouts[h]=[];if(P0.talents)P0.talents[h]={};
@@ -116,7 +116,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   /* AND HE WAITS OUT A TOLD LEAP (the sign: 'wait on the pad and go after it drops'): footed, a river eel's ! or leap in the next gap ahead holds him where he stands */
   const eelWait=sd=>{const p=BK.P;if(!(p.ground||p.onMover)||p.swim||!sd)return;for(const e of BK.enemies()){if(!e||!e.alive||e.t!=='eel'||!e.leap)continue;const dx=(e.x-p.x)*sd;if(dx<-6||dx>4.5*TS)continue;if(e.mode==='leapTell'||e.mode==='leap'){if(padGo!==null&&padT>2)return false;padGo=null;BK.keys.left=BK.keys.right=false;BK.keys.jump=false;lastProg=frames;return true;}}return false;};
   /* PAD TO PAD IS A FULL HOP (the hands' short hop off a two-tile leaf came down in the gap between it and the next): footed on a lily pad, the next one ahead on the same row that is still afloat gets a held jump, steered onto its middle */
-  let padGo=null,padHold=0,padT=0;const padHop=sd=>{const p=BK.P;if(padGo!==null){padT++;if(padHold>0){BK.keys.jump=true;padHold--;}const dx=padGo-p.x;BK.keys.left=dx<-3;BK.keys.right=dx>3;if(((p.ground||p.onMover)&&padT>6)||p.swim||p.dead>0||padT>90)padGo=null;return;}
+  let padGo=null,padHold=0,padT=0,pendDrink=0;const hitBy={};const padHop=sd=>{const p=BK.P;if(padGo!==null){padT++;if(padHold>0){BK.keys.jump=true;padHold--;}const dx=padGo-p.x;BK.keys.left=dx<-3;BK.keys.right=dx>3;if(((p.ground||p.onMover)&&padT>6)||p.swim||p.dead>0||padT>90)padGo=null;return;}
     const m=p.onMover;if(!m||m.kind!=='pad'||!sd)return;let best=null;for(const q of BK.movers()){if(q===m||q.kind!=='pad'||q.gone||(q.sink||0)>0.3)continue;const cx=q.x+(q.w||16)/2,dx=(cx-p.x)*sd;if(dx<20||dx>6*TS||Math.abs((q.y0??q.y)-(m.y0??m.y))>8)continue;if(!best||dx<best.dx)best={cx,dx};}
     if(!best)return;padGo=best.cx;padT=0;padHold=best.dx>3.5*TS?24:16;BK.press('jump');BK.keys.jump=true;BK.keys.left=sd<0;BK.keys.right=sd>0;};
   while(frames<c.frames){
@@ -124,24 +124,24 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     if(BK.miniActive){end='mini';miniHp=Math.round(100*Math.max(0,BK.P.hp)/(BK.P.maxHp||100));break;}   /* THE MINI'S ROOM: the mini is measured by tools/boss-rates.mjs (row 'level:mini'); its walls hold him in, so the walk stops at its door (hp on arrival kept) */
     if(BK.state==='talk'){BK.press('confirm');BK.sim(1);frames++;continue;}   /* a word from somebody: read on */
     if(BK.state!=='play'){end=BK.state==='win'?'gate':'state:'+BK.state;break;}
-    const p=BK.P;let gi=Math.min(R.length-1,ri+1);for(let k=gi+1;k<=Math.min(R.length-1,ri+3);k++){if(Math.abs(feet(k)-feet(gi))<2*TS&&Math.sign(R[k][0]-R[gi][0])===Math.sign(R[gi][0]*TS+8-p.x))gi=k;else break;}let wx=R[gi][0];   /* AIM ONE TO THREE NODES ON, along the same floor and the same way: the hands stop at their goal (a goal on a lily pad or a ledge lip is a stop in the water), and a goal further on, on a tall level, is on another floor */
+    const heldTop=heldNow();const p=BK.P;let gi=Math.min(R.length-1,ri+1);for(let k=gi+1;k<=Math.min(R.length-1,ri+3);k++){if(Math.abs(feet(k)-feet(gi))<2*TS&&Math.sign(R[k][0]-R[gi][0])===Math.sign(R[gi][0]*TS+8-p.x))gi=k;else break;}let wx=R[gi][0];   /* AIM ONE TO THREE NODES ON, along the same floor and the same way: the hands stop at their goal (a goal on a lily pad or a ledge lip is a stop in the water), and a goal further on, on a tall level, is on another floor */
     if(perc)perc.apply();
     try{const riding=p.onMover&&(p.onMover.moving||p.onMover.returning);if(riding)lastProg=frames;   /* ON A RIDE (a ferry, a raft, a lift): stand and let it carry him */
-      const stall=!riding&&frames-lastProg>90,hunt=stall?huntOf():null,work=!riding&&!hunt&&(stall||bridgeAhead())?workOf():null;if(hunt){wx=(hunt.x-8)/TS;if(bot.skip)bot.skip.clear();}else if(work)wx=(work.x-8)/TS;else{const ux=upPlan();if(ux!==null)wx=(ux-8)/TS;}cur=pickTarget(wx*TS+8);padSkip();bot(wx*TS+8);if(work)workHands(work);else climbAssist();swimTo(gi);{const sd=Math.sign(wx*TS+8-p.x);if(padGo===null)steer(sd);if(!eelWait(sd))padHop(sd);}if(SKH&&cur)SKH.step();drinkHook();}finally{if(perc)perc.restore();}
+      const stall=!riding&&frames-lastProg>90,hunt=stall?huntOf():null,work=!riding&&!hunt&&(stall||bridgeAhead())?workOf():null;if(hunt){wx=(hunt.x-8)/TS;if(bot.skip)bot.skip.clear();}else if(work)wx=(work.x-8)/TS;else{const ux=upPlan();if(ux!==null)wx=(ux-8)/TS;}cur=pickTarget(wx*TS+8);padSkip();drinkHook();bot(wx*TS+8);if(work)workHands(work);else climbAssist();swimTo(gi);{const sd=Math.sign(wx*TS+8-p.x);if(padGo===null)steer(sd);if(!eelWait(sd))padHop(sd);}if(SKH&&cur)SKH.step();drinkHook();}finally{if(perc)perc.restore();}
     const h0=p.hp,mh0=p.maxHp||100,lit0=litN(),held0=heldNow(),hl0=BKT.heroLevel?BKT.heroLevel(h):0,dead0=p.dead>0||h0<=0,px0=p.x;
     BK.sim(1);frames++;if(perc)perc.update();
     const q=BK.P,cs=S[S.length-1],h1=q.hp;if(resumeTo){const rt=resumeTo;resumeTo=null;if(Math.abs(q.x-rt.x)>2*TS){stucks[stucks.length-1].locked=true;end='locked';break;}}   /* the restart did not take: walls hold him (an ambush or an arena still shut) */if(c.trace&&trace.length<(c.traceN||400)&&q.x/TS>=c.trace[0]&&q.x/TS<=c.trace[1]&&frames%3===0)trace.push(frames+':'+(q.x/TS).toFixed(1)+','+(q.y/TS).toFixed(1)+(q.onMover?'M'+(q.onMover.moving?'m':'')+(q.onMover.paid?'p':''):'')+(q.ground?'g':'')+(q.swim?'S':'')+(BK.keys.jump?'J':'')+(BK.keys.right?'>':'')+(BK.keys.left?'<':'')+(BK.keys.block?'B':'')+(q.atk>=0?'A':'')+(q.vx?'v'+Math.round(q.vx):'')+' r'+ri+'g'+wx+(climb!==null?'C':'')+' hp'+Math.round(h1));const mh=q.maxHp||mh0;cs.frames++;
     /* a tonic drunk on the frame of the blow nets out against it: the drink goes back on both sides (lost and healed) */
-    const drank=Math.max(0,held0-heldNow()),dAmt=drank?drank*(typeof BK.drinkFlask==='function'?0.35*mh0:(PR.perkOn(P0,h,'tonic')?60:45)):0;
+    const flaskGame=typeof BK.drinkFlask==='function',drank=Math.max(0,heldTop-heldNow()),dAmt=drank&&!flaskGame?drank*((PR.perkOn(P0,h,'tonic')?60:45)):0;
     if(h1-dAmt<h0)cs.lost+=(h0-Math.max(0,h1-dAmt))/mh0;
-    const st=BK.stats();if(st.kills>kPrev){cs.kills+=st.kills-kPrev;kPrev=st.kills;}if(BK.hitsTaken>hPrev){cs.hits+=BK.hitsTaken-hPrev;hPrev=BK.hitsTaken;}
+    const st=BK.stats();if(st.kills>kPrev){cs.kills+=st.kills-kPrev;kPrev=st.kills;}if(BK.hitsTaken>hPrev){cs.hits+=BK.hitsTaken-hPrev;hPrev=BK.hitsTaken;let nb=null,nd=80;for(const e of BK.enemies()){if(!e||!e.alive)continue;const d=Math.abs(e.x-q.x)+Math.abs(e.y-q.y)*0.5;if(d<nd){nd=d;nb=e;}}const hk=nb?nb.t+(nb.elite?'*':''):'other',hb=hitBy[hk]=hitBy[hk]||[0,0];hb[0]++;hb[1]+=Math.max(0,h0-h1)/mh0;}   /* WHAT HIT HIM (the nearest foe at the blow: an estimate, * an elite) */
     if(st.deaths>dPrev){const K=q.killer;deathLog.push({at:[Math.floor(q.x/TS),Math.floor(q.y/TS)],ri,by:K?(typeof K==='string'?K:K.name||K.t||K.who||'?'):'?',el:!!(K&&typeof K==='object'&&K.foe&&K.foe.elite),sec:S.length-1});cs.deaths+=st.deaths-dPrev;deaths+=st.deaths-dPrev;dPrev=st.deaths;}
     const lit1=litN(),held1=heldNow(),hl1=BKT.heroLevel?BKT.heroLevel(h):0;
     if(lit1>lit0&&resumeAt){resumeAt=false;cs.end=ri;S.push({...sec(),resumed:true,start:ri});}
     else if(lit1>lit0){cs.end=ri;arrivals.push({i:arrivals.length+1,hp:Math.round(100*Math.max(0,h0)/mh0),x:Math.round(q.x/TS),frame:frames,deathsBefore:deaths,start:frames<120});S.push({...sec(),start:ri});}
-    else if(held1<held0&&!dead0){cs.drinks+=held0-held1;cs.drinkHp+=Math.max(0,Math.min(dAmt,h1-Math.max(0,h1-dAmt<h0?h1-dAmt:h0)))/mh;}
+    else if(held1<heldTop&&!dead0){cs.drinks+=heldTop-held1;if(flaskGame)pendDrink=frames+90;else cs.drinkHp+=Math.max(0,Math.min(dAmt,h1-Math.max(0,h1-dAmt<h0?h1-dAmt:h0)))/mh;}
     else if(h1>h0&&!dead0&&!(q.dead>0)){const g=(h1-Math.max(0,h0))/mh;
-      if(hl1>hl0){cs.lvup++;levelups++;} else cs.small+=g;}
+      if(hl1>hl0){cs.lvup++;levelups++;} else if(pendDrink>=frames&&g>0.15){cs.drinkHp+=g;pendDrink=0;} else cs.small+=g;}   /* (the flask's swallow lands ~0.3 s after the lift: the heal that follows a drink is the drink's) */
     /* woke at a shrine (or put back on the bank by deep water): the walk picks up from the route node nearest him, never past where it had got; fresh hands */
     if(dead0&&!(q.dead>0)&&q.hp>0){ri=nearest(0,riBest+1)[0];riSince=ri;lastProg=frames;bot=makeBot(BK);climb=null;}
     else if(!resumeAt&&!(q.dead>0)&&Math.abs(q.x-px0)>3*TS){ri=nearest(0,riBest+1)[0];riSince=ri;bot=makeBot(BK);climb=null;}
@@ -156,8 +156,8 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     if(frames%600===0)await new Promise(r=>setTimeout(r,0));
   }
   const r2=x=>Math.round(x*100);
-  return {id:c.id,hero:h,seed:c.seed,lvl,depth:c.depth,maxHp:maxHp0,kit,gear,tonics:c.tonics,charm:c.charm,end,miniHp,deaths,levelups,frames,secs:Math.round(frames/60),
-    kills:BK.stats().kills-k00,hits:BK.hitsTaken-hit00,walked:Math.round(100*riBest/R.length),stuck:stucks[0]||null,stucks,resumes,deathLog,trace:c.trace?trace:undefined,arrivals,shrines:BK.shrines().length,
+  return {id:c.id,hero:h,seed:c.seed,lvl,depth:c.depth,maxHp:maxHp0,kit,gear,tonics:c.tonics,flasks:typeof BK.flaskMax==='function'?BK.flaskMax():null,charm:c.charm,end,miniHp,deaths,levelups,frames,secs:Math.round(frames/60),
+    kills:BK.stats().kills-k00,hits:BK.hitsTaken-hit00,walked:Math.round(100*riBest/R.length),stuck:stucks[0]||null,stucks,resumes,deathLog,hitBy:Object.fromEntries(Object.entries(hitBy).map(([k,v])=>[k,[v[0],Math.round(v[1]*100)]])),trace:c.trace?trace:undefined,arrivals,shrines:BK.shrines().length,
     coverage:Math.round(100*S.reduce((a,s,i)=>a+(!s.stuck&&(s.end!==undefined||(i===S.length-1&&/route|boss|gate/.test(end)))?((s.end??ri)-(s.start||0)):0),0)/R.length),
     sections:S.map(s=>({stuck:!!s.stuck,resumed:!!s.resumed,lost:r2(s.lost),small:r2(s.small),drinks:s.drinks,drinkHp:r2(s.drinkHp),deaths:s.deaths,hits:s.hits,kills:s.kills,secs:Math.round(s.frames/60),lvup:s.lvup})),
     eyes:perc?perc.stats():null,casts:SKH?SKH.casts():null};
@@ -176,11 +176,11 @@ export async function runWalks(cfgs, { jobs = 1, onRow = null } = {}) {
 export const HAZARD = /^(A TRAP|THE FALL|DROWNED|THE FIRE|THE SPIKES|SPIKES|THE WATER|THE CRACK|BURNED)/;
 const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null;
 export const line = r => r.err ? r.id + ' ' + r.hero + ' s' + r.seed + ': ERR ' + r.err
-  : r.id + ' ' + r.hero + ' s' + r.seed + ' L' + r.lvl + ' (' + r.maxHp + 'hp, ' + (r.kit.join('+') || 'no skills') + ', ' + r.tonics + ' tonics' + (r.charm ? ', ' + r.charm + ' charm' : '') + '): ' + r.end.toUpperCase()
+  : r.id + ' ' + r.hero + ' s' + r.seed + ' L' + r.lvl + ' (' + r.maxHp + 'hp, ' + (r.kit.join('+') || 'no skills') + ', ' + (r.flasks != null ? r.flasks + ' flasks' : r.tonics + ' tonics') + (r.charm ? ', ' + r.charm + ' charm' : '') + '): ' + r.end.toUpperCase()
     + ' ' + r.deaths + ' deaths, ' + r.secs + 's, ' + r.kills + ' kills, ' + r.hits + ' hits, walked ' + r.walked + '%, arrivals ' + (r.arrivals.map(a => a.hp + '%').join(' ') || '-')
     + ', measured ' + r.coverage + '% of the route' + (r.miniHp !== null && r.miniHp !== undefined ? ', AT THE MINI DOOR with ' + r.miniHp + '%' : '') + (r.stucks || []).map(st => '\n    STUCK (section #' + st.sec + ') at route node ' + st.ri + '/' + st.of + ' next tile ' + st.way.join(',') + ' (hero ' + st.at.join(',') + (st.near && st.near.length ? '; near ' + st.near.join(' ') : '') + (st.props && st.props.length ? '; props ' + st.props.join(' ') : '') + ')').join('')
     + '\n    sections: ' + r.sections.map((s, i) => '#' + i + (s.stuck ? ' STUCK' : '') + (s.resumed ? ' (resumed)' : '') + ' lost ' + s.lost + '% heal ' + (s.small + s.drinkHp) + '% (' + s.drinks + ' drinks) ' + s.deaths + 'd ' + s.hits + 'h ' + s.kills + 'k ' + s.secs + 's').join(' | ')
-    + (r.deathLog && r.deathLog.length ? '\n    deaths: ' + r.deathLog.map(d => d.by + (d.el ? '(elite)' : '') + '@' + d.at.join(',')).join(' ') : '') + (r.pageErrors ? '\n    PAGE ERRORS ' + JSON.stringify(r.pageErrors) : '');
+    + (r.hitBy && Object.keys(r.hitBy).length ? '\n    hit by (nearest foe, hits/%hp): ' + Object.entries(r.hitBy).sort((a, b) => b[1][1] - a[1][1]).map(([k, v]) => k + ' ' + v[0] + '/' + v[1] + '%').join(' ') : '') + (r.deathLog && r.deathLog.length ? '\n    deaths: ' + r.deathLog.map(d => d.by + (d.el ? '(elite)' : '') + '@' + d.at.join(',')).join(' ') : '') + (r.pageErrors ? '\n    PAGE ERRORS ' + JSON.stringify(r.pageErrors) : '');
 /* one row a level x hero: means over its seeds, read against the targets */
 export function summarize(rows) {
   const by = {}; for (const r of rows) { if (r.err) continue; (by[r.id + '|' + r.hero] = by[r.id + '|' + r.hero] || []).push(r); }
