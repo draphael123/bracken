@@ -55,12 +55,17 @@ export function makeMinecartHands(ctx) {
     c.crashCd = Math.max(0, c.crashCd - dt); c.crashT = Math.max(0, c.crashT - dt);
     const stunned = (P.hurt > 0 && c.crashT > 0);
     /* in the air the cart keeps its pace (no rail to slow it): only a held boost or brake moves it, at half the rate */
-    if (P.ground || P.coyote > 0) c.v = cartSpeed(c.v, { boost: !!keys.right && !keys.left && !stunned, brake: !!keys.left && !keys.right }, dt);
+    if (tm) { const want = keys.left && !keys.right ? tm.cruise - MC.treadBack : keys.right && !keys.left ? MC.boost : tm.cruise; c.v += Math.max(-MC.treadAcc * dt, Math.min(MC.treadAcc * dt, want - c.v)); }   /* THE TREADMILL: the bore runs past at cruise - brake lets it come at you (a drift back), boost pulls you ahead, let go and you hold */
+    /* REVERSE: LEFT still held at a stop, and the cart rolls back (slowly): out of a dead end, back for a missed lever */
+    else if ((P.ground || P.coyote > 0) && keys.left && !keys.right && c.v <= 0.01) { c.backT = (c.backT || 0) + dt; if (c.backT > MC.reverseAfter) c.v = Math.max(-MC.reverse, c.v - MC.brake * 0.5 * dt); }
+    else if (P.ground || P.coyote > 0) { c.backT = 0; c.v = cartSpeed(c.v, { boost: !!keys.right && !keys.left && !stunned, brake: !!keys.left && !keys.right }, dt); }
     else if (keys.right && !keys.left) c.v = Math.min(MC.boost, c.v + MC.accUp * 0.5 * dt); else if (keys.left && !keys.right) c.v = Math.max(0, c.v - MC.brake * 0.5 * dt);
     let vx = c.v - (tm ? tm.cruise : 0);
     if (tm) { if (P.x > tm.x1 - 18 && vx > 0) { vx = 0; c.v = Math.min(c.v, tm.cruise); } if (P.x < tm.x0 + 10 && vx < 0) vx = 0; }
     /* A WALL AHEAD (a fall-in, the rock at the end of a line) at the height of the tub: a CRASH */
-    if (!tm && vx > 40 && c.crashCd <= 0 && (P.ground || P.coyote > 0)) { const ax = P.x + 5 + vx * dt; if (solidAt(ax, P.y - 4) && solidAt(ax, P.y - 10)) crash(P, c, ax); vx = Math.min(vx, c.v); }
+    if (!tm && vx > 0 && (P.ground || P.coyote > 0)) { const ax = P.x + 5 + Math.max(vx, 30) * dt + 1; if (solidAt(ax, P.y - 4) && solidAt(ax, P.y - 10)) {
+        if (vx >= MC.softCrash && c.crashCd <= 0) crash(P, c, ax); else if (c.v > 0) { c.v = 0; say('bump', P, 'THE END OF THE LINE: HOLD LEFT TO ROLL BACK', '#9aa39a'); }
+        vx = Math.min(vx, 0); } }   /* (slower than softCrash it is a bump: the cart stops against the rock and stays stopped) */
     if (c.crashT > 0) vx = Math.min(vx, 0);
     P.vx = vx;
     if (keys.right && !keys.left) P.face = 1; else if (keys.left && !keys.right) P.face = -1;
@@ -150,7 +155,7 @@ export function makeMinecartHands(ctx) {
     const P0 = ctx.players[0];
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!H.riding(P)) return; stepHero(P, dt, now); });
     /* the goblin carts: triggered by the lead hero */
-    if (P0 && !P0.dead) for (const e of ctx.enemies()) if (e.mcWait && e.mcRide && P0.x >= e.mcRide.trig * ts) spawnCart(e, P0);
+    if (P0 && !P0.dead) for (const e of ctx.enemies()) if (e.mcWait && e.mcRide && P0.x >= e.mcRide.trig * ts) { if (P0.x > (e.mcRide.trig + 30) * ts) e.mcWait = false; else spawnCart(e, P0); }   /* (a hero put down far past its trigger - a station, a tool - leaves it behind) */
     for (const cart of M.carts) stepCart(cart, P0, dt);
     M.carts = M.carts.filter(c => c.state !== 'gone' || false);
     /* arrows and runes */
@@ -172,7 +177,7 @@ export function makeMinecartHands(ctx) {
     /* where the cart last stood, for a fall (and the take-off lip) */
     if (P.ground && !P.dead) { c.lastGround = { x: P.x, y: P.y }; c.histT = (c.histT || 0) - dt; if (c.histT <= 0) { c.histT = 0.1; c.hist.push({ x: P.x, y: P.y }); if (c.hist.length > 60) c.hist.shift(); } }
     /* A FALL: in an EXAM it is the end (the game's own fall); elsewhere a share of health and back on the rail, MC.retryBack behind the lip */
-    if (!P.dead && P.y > 36 * ts && P.vy > 0) { const col = P.x / ts, exam = (Lv.mcExam || []).some(([a, b]) => col >= a && col <= b + 1) || ctx.chaseRunning();
+    if (!P.dead && P.y > ((Lv.mcFall || [])[Math.max(0, Math.min(Lv.W - 1, Math.floor(P.x / ts)))] || 36) * ts && P.vy > 0) { const col = P.x / ts, exam = (Lv.mcExam || []).some(([a, b]) => col >= a && col <= b + 1) || ctx.chaseRunning();
       if (!exam && c.lastGround) { const lip = c.lastGround.x, back = c.hist.slice().reverse().find(h => h.x <= lip - MC.retryBack) || c.hist[0] || c.lastGround;
         M.n.falls++; ctx.hurtHero(P.x, Math.round(P.maxHp * MC.fallCost), { unblockable: true, name: 'THE DROP', noKnock: true });
         if (!P.dead && P.hp > 0) { place(P, back.x, back.y); say('fall', P, 'A FALL COSTS YOU: BOOST BEFORE A LONG GAP', '#ff9a5c'); } } }
@@ -223,7 +228,7 @@ export function makeMinecartHands(ctx) {
     for (const [a, b, row] of M.L.mcTrestles) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x += 3) { if (ctx.cellGet(x, row) !== ctx.T.RAIL) continue; let yb = row + 1; while (yb < row + 12 && ctx.cellGet(x, yb) === ctx.T.AIR) yb++;
       if (yb > row + 1) { g.fillStyle = WOOD; g.fillRect(R(x * ts + 6 - cx), R((row + 1) * ts - cy), 3, (yb - row - 1) * ts); g.fillStyle = WOOD2; g.fillRect(R(x * ts + 6 - cx), R((row + 1) * ts - cy), 1, (yb - row - 1) * ts); } }
     /* the rail along every line, on whatever stands there (sleepers, two iron bars) */
-    for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x++) { const t = ctx.cellGet(x, row); if (!(t === ctx.T.SOLID || t === ctx.T.RAIL || (t >= 20 && t <= 25))) continue;
+    for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x++) { const t = ctx.cellGet(x, row); if (!(t === ctx.T.SOLID || t === ctx.T.RAIL || t === ctx.T.ONEWAY || (t >= 20 && t <= 25))) continue;
       const sx = R(x * ts - cx), sy = R(row * ts - cy); const slope = t >= 20 && t <= 25; if (slope) continue;
       g.fillStyle = WOOD; g.fillRect(sx + 2, sy - 2, 4, 3); g.fillRect(sx + 10, sy - 2, 4, 3); g.fillStyle = IRON; g.fillRect(sx, sy - 3, ts, 1); g.fillStyle = '#c9d1dc'; g.fillRect(sx, sy - 3, ts, 0.5 > 0 ? 1 : 0); }
     /* the decor: fall-ins, the roof over the hidden lever, the bore, the smelter's glow */

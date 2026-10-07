@@ -70,4 +70,4 @@ function makeCartPilot(BK, plan) {
   return pilot;
 }`;
 /* THE PLAN THE ROUTE PILOT RIDES (every required lever SET; the risky lines optional by plan) */
-export const ROUTE_PLAN = { points: { yard: 'set', cavein: 'set', exam: 'set' }, lines: [[490, 552, 27], [566, 600, 27]] };
+export const ROUTE_PLAN = { points: { yard: 'set', cavein: 'set', exam: 'set' }, lines: [[492, 552, 27]] };

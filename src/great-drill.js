@@ -21,12 +21,12 @@
 //   P3 (30-0%): NEW: FULL BORE - '!! FULL BORE' (1.2 s), then a long charge: hold BOOST, or it runs you down. Its bores come quicker.
 export const DRILL_STAGE = { W: 22, lanes: [0, 3, 6], ceil: 10, points: 12, chute: 19 };
 export const DRILL = {
-  hp: 1600, w: 28, h: 52, cruise: 150,
+  hp: 600, w: 28, h: 52, cruise: 150,
   creep: 9, frontMin: 34, frontMax: 150, push: 46,
-  contactDmg: 45, contactCd: 1.1,
-  boreTell: 1.0, boreTell3: 0.8, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 132, bitIdle: 18, boreDmg: 32,
+  contactDmg: 28, contactCd: 1.1,
+  boreTell: 1.0, boreTell3: 0.8, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 132, bitIdle: 18, boreDmg: 24,
   grindTell: 0.8, grindT: 0.7, grindDist: 78,
-  roofTell: 1.0, roofDmg: 24, roofW: 30,
+  roofTell: 1.0, roofDmg: 18, roofW: 30,
   fullTell: 1.2, fullT: 1.4, fullDist: 150,
   oreFirst: 3.0, oreEvery: [8.5, 8.0, 7.5], oreV: 64, oreDmg: 16, chuteTell: 1.0,
   jamT: 4.6, jamMul: 2.0, jamCap: 0.11, wardT: 3.0, lockT: 1.2,
@@ -39,7 +39,7 @@ export const LANE_NAME = ['LOW', 'MID', 'HIGH'];
 export function stageDrill(Wr, T, TS, sx, F) {
   const S = DRILL_STAGE;
   const carve = () => {
-    Wr.block(sx, sx + S.W - 1, F, 43);
+    Wr.block(sx, sx + S.W - 1, F, F + 21);
     Wr.block(sx - 1, sx + S.W + 5, 0, F - S.ceil - 1);
     Wr.air(sx, sx + S.W - 1, F - S.ceil, F - 1);
     for (const ln of S.lanes) if (ln) for (let x = sx; x < sx + S.W; x++) Wr.set(x, F - ln, T.RAIL);
@@ -47,7 +47,7 @@ export function stageDrill(Wr, T, TS, sx, F) {
     Wr.ent('drillpoints', sx + S.points, F - 1, {});
     Wr.ent('oretip', sx + S.chute, F - 8, {});
   };
-  const arena = { x0: sx * TS, x1: (sx + S.W) * TS, floor: F * TS, trigger: (sx + 4) * TS, wallL: sx - 1, wallR: sx + S.W, boss: 'greatdrill', music: 'greatdrill',
+  const arena = { x0: sx * TS, x1: (sx + S.W) * TS, floor: F * TS, trigger: (sx + 9) * TS, wallL: sx - 1, wallR: sx + S.W, boss: 'greatdrill', music: 'greatdrill',
     tint: '#d89a5a', tintA: 0.05, start: [sx + 12, F - 1], drill: { sx, F } };
   return { arena, carve };
 }
@@ -89,7 +89,7 @@ export function stepDrill(e, S, dt, heroes, c) {
     if (!S.told.ore) { S.told.ore = 1; c.number(G.chuteX, G.laneY[2] - 40, 'A LOADED ORE CART: SET THE POINTS AND IT DROPS TO ITS GEARS', '#ffd36b'); } }
   if (S.chute) { S.chute.t -= dt; if (S.chute.t <= 0) { S.ores.push({ x: G.chuteX, lane: S.chute.lane, id: S.oreN, vy: 0, y: G.laneY[S.chute.lane], drop: false }); S.chute = null; S.n.ores++; S.oreT = DRILL.oreEvery[S.ph - 1]; c.sound && c.sound('oreLand'); } }
   for (const o of S.ores) {
-    if (o.drop) { o.vy += 900 * dt; o.y += o.vy * dt; if (o.y >= G.laneY[0]) { o.y = G.laneY[0]; o.lane = 0; o.drop = false; o.vy = 0; } }
+    if (o.drop) { o.vy = (o.vy || 0) + 900 * dt; o.y += o.vy * dt; if (o.y >= G.laneY[0]) { o.y = G.laneY[0]; o.lane = 0; o.drop = false; o.vy = 0; } }
     else o.x -= DRILL.oreV * dt;
     if (!o.drop && o.lane > 0 && S.points && Math.abs(o.x - G.pointsX) < 6 && !o.passed) { o.passed = true; o.drop = true; c.sound && c.sound('points'); }
     if (!o.drop && Math.abs(o.x - G.pointsX) < 6) o.passed = true;
@@ -180,8 +180,8 @@ export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip 
     out.gx = G.pointsX + 6; if (Math.abs(P.x - G.pointsX) < 24) { if (!(mem['mp' + S.oreN] ??= rng() < DRILL_PLAN.missPoints) || (mem['pt' + S.oreN] || 0) > 1.2) { out.talk = true; } else mem['pt' + S.oreN] = (mem['pt' + S.oreN] || 0) + 1 / 60; } out.why = 'points'; }
   /* 4. OTHERWISE: work the cab from a line the bit is not on, between its blows */
   else { const boring = e.mode === 'boreTell' || e.mode === 'boreOut' || e.mode === 'boreHold' || e.mode === 'boreBack';
-    if (S.ward > 0 || boring) { out.gx = Math.min(G.x1 - 30, S.D + 90); out.why = 'wait'; }
-    else { out.gx = standX; out.face = -1; if (Math.abs(P.x - standX) < 10 && lane >= 1 && lane !== S.bitLane && P.atk < 0 && (mem.atkT ?? -9) < t - 0.35) { mem.atkT = t; out.atk = true; } out.why = 'cab'; }
+    if (S.ward > 0) { out.gx = Math.min(G.x1 - 30, S.D + 90); out.why = 'wait'; }
+    else { out.gx = standX; out.face = -1; if (Math.abs(P.x - standX) < 10 && lane >= 1 && !(boring && lane === S.bitLane) && P.atk < 0 && (mem.atkT ?? -9) < t - 0.35) { mem.atkT = t; out.atk = true; } out.why = 'cab'; if (boring && lane === S.bitLane && !danger.has(lane)) danger.add(lane); }
     if (lane === S.bitLane || lane === 0) { const l2 = [1, 2].find(l => l !== S.bitLane && !danger.has(l)); if (l2 !== undefined && !out.jump && !out.drop) go(l2); } }
   if (danger.has(lane) && safe !== undefined && safe !== lane) { out.jump = false; out.drop = false; go(safe); out.why += ' +dodge'; }
   /* never sit in its front */
