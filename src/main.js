@@ -9537,11 +9537,15 @@ function bossFind(spec) {
   const s = String(spec || '').toLowerCase(), rows = bossTable(), m = s.match(/^([a-z0-9_-]+):mini$/);
   return rows.find(r => r.t === s && r.kind === 'boss') || rows.find(r => r.t === s) || (m ? rows.find(r => r.level === m[1] && r.kind === 'mini') : rows.find(r => r.level === s && r.kind === 'boss')) || null;
 }
-function bossJump(spec, heroId) {
+function bossJump(spec, heroId, campaign) {
   const row = bossFind(spec); if (!row) return false;
   bossJumpOn = true;   /* FIRST: nothing below, and nothing in the fight that follows, can reach a save */
   const h = heroId && HEROES.some(x => x.id === heroId) ? heroId : hero();
+  if (campaign) { campaignKit(row.level, h).then(() => bossJumpGo(row, h)); return true; }   /* &campaign=1: the hero as a player arriving at that level (campaignKit) */
   window.BK.setHero(h); window.BK.reset({ fresh: true });   /* PROG.hero / PROG.heroes in memory only: a fresh body for the hero, at full health */
+  bossJumpGo(row, h); return true;
+}
+function bossJumpGo(row, h) {
   if (row.kind === 'mini' && PROG[row.level]) PROG[row.level].mini = false;   /* a mini already put down in this slot is fought again (in memory, never saved) */
   loadLevel(row.li); startGame();
   const A = row.kind === 'mini' ? L.mini : L.arena;
@@ -9549,14 +9553,23 @@ function bossJump(spec, heroId) {
   else { const tx = A.start ? A.start[0] : Math.round(A.trigger / TS) + (A.reverse ? -1 : 1), ty = A.start ? A.start[1] : Math.round(A.floor / TS) - 1;
     checkpoint = { x: tx * TS + 8, y: (ty + 1) * TS }; respawn(); }
   camX = P.x - VW / 2; camY = P.y - 100;
-  return true;
+}
+/* &campaign=1 (claude/levelpilot): the hero as a player ARRIVING at the level - its campaign level, the typical build, the smith's gear of the levels before it, tonics and a charm
+   (src/campaign-kit.js, the SAME kit tools/level-walk.mjs gives its walker). In memory only, behind the same bossJumpOn guard; the page is a few frames in coming up (it reads
+   tools/fixtures/campaign-xp.json; missing, the level falls back to its depth) - BK.campaignTag is '' until the hero stands there. */
+let campaignTag = '';
+async function campaignKit(levelId, h) {
+  const CK = await import('./campaign-kit.js'); let rows = null; try { rows = (await (await fetch('tools/fixtures/campaign-xp.json')).json()).rows; } catch {}
+  const c = CK.kitCfg(LEVELS, levelId, h, null, rows); CK.kitPre(window.BKT, window.BK, c); window.BK.setHero(h); window.BK.reset({ fresh: true }); CK.kitPost(window.BKT, window.BK, c);
+  campaignTag = 'CAMPAIGN L' + c.lvl + ' - ' + String((HEROES.find(x => x.id === h) || {}).name || h).toUpperCase(); return c;
 }
 /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md): ?level=<id>[&hero=<id>] starts any level from its own entrance, the way ?boss= starts a fight - and, like it, never writes a save (bossJumpOn first) */
-function levelJump(id, heroId) {
+function levelJump(id, heroId, campaign) {
   const li = LEVELS.findIndex(l => l.id === id); if (li < 0 || id === 'custom') return false;
   bossJumpOn = true;   /* FIRST: nothing below can reach a save */
   const h = heroId && HEROES.some(x => x.id === heroId) ? heroId : hero();
-  window.BK.setHero(h); window.BK.reset({ fresh: true }); loadLevel(li); startGame(); camX = P.x - VW / 2; camY = P.y - 100;
+  const go = () => { loadLevel(li); startGame(); camX = P.x - VW / 2; camY = P.y - 100; };
+  if (campaign) campaignKit(id, h).then(go); else { window.BK.setHero(h); window.BK.reset({ fresh: true }); go(); }
   return true;
 }
 function bjOpen() { state = 'bossjump'; bjI = 0; bjWait = 0; bjHero = hero(); SFX.uiSel(); }
@@ -29948,6 +29961,7 @@ function render() {
     g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 6, Math.round(70 * Math.max(0, P.hp / P.maxHp)), 1); for (let i = 1; i < 4; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(16 + Math.round(70 * i / 4), 6, 1, 6); }
     text(String(Math.max(0, Math.ceil(P.hp))), 90, 6, '#fff6e0');
     if (L && !L.shop && !L.trial) { const fm = SV.flaskMax(PROG); for (let i = 0; i < fm; i++) { g.globalAlpha = i < (P.flasks | 0) ? 1 : 0.25; g.drawImage(TONIC_ICON, 90 + i * 7, 14); } g.globalAlpha = 1; } // THE FLASKS: full ones bright, drunk ones faint (claude/survival)
+    if (campaignTag) text(campaignTag, 4, VH - 9, '#e8d9a0', 'left', 6);   /* ?level=/?boss= with &campaign=1 (claude/levelpilot) */
     if (coop()) drawCoopHud();   // and player two's small plate beside his
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
@@ -30458,9 +30472,9 @@ if (q.get('playtest') === '1') setTimeout(async () => {
 }, 1200);
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
-window.BK.levelJump = (id, h) => levelJump(id, h);
+window.BK.levelJump = (id, h, campaign) => levelJump(id, h, campaign); Object.defineProperty(window.BK, 'campaignTag', { get: () => campaignTag });
 window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
-if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'))) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
-if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
+if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
+if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();
 rafQueued = true; requestAnimationFrame(frame);

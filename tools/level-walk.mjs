@@ -31,12 +31,12 @@ import { depthsOf, gateOf } from '../src/campaign-order.js';
 import { pacing } from './pacing.mjs';
 import { campaignLevel, levelOverride } from './boss-level.mjs';
 import { openRetry } from './boss-run.mjs';
+import { beatenBeforeIn, tonicsAt, charmAt } from '../src/campaign-kit.js';
 const DEPTH = depthsOf(LEVELS), BYID = Object.fromEntries(LEVELS.map(l => [l.id, l]));
 export const TARGET = { deathsLo: 1, deathsHi: 2, arriveHp: 50 };
 /* the woods beaten before id (its ancestors on the gate chain) */
-export function beatenBefore(id) { const out = []; let p = gateOf(BYID[id]); while (p && !out.includes(p)) { out.push(p); p = gateOf(BYID[p]); } return out; }
-export const tonicsAt = d => d <= 1 ? 1 : d < 8 ? 3 : 5;
-export const charmAt = d => d >= 4 ? 'heart' : null;
+export const beatenBefore = id => beatenBeforeIn(LEVELS, id);   /* (src/campaign-kit.js: the same kit the playtest jump ?level=<id>&campaign=1 gives) */
+export { tonicsAt, charmAt };
 /* THE ROUTE: tools/pacing.mjs's main route (the reach fill's movement graph, start to gate), every node: [x, y] = the column and the BODY row (feet at (y+1)*16) */
 export const routeOf = lv => pacing(lv).route.map(([x, y]) => [x, y]);
 export function walkCfg(id, hero, seed, o = {}) {
@@ -50,13 +50,9 @@ export const drinkJs = `const heldNow=()=>{try{if(typeof BK.flasks==='function')
   let drinkCd=0;const drinkHook=()=>{const p=BK.P;drinkCd=Math.max(0,drinkCd-1);if(!p||p.dead>0||p.hp<=0||p.hp>=p.maxHp*0.35||heldNow()<=0||drinkCd>0)return;
     if(typeof BK.drinkFlask==='function'){if(BK.drinkFlask())drinkCd=45;}else if(BK.flaskKey){BK.press(BK.flaskKey);drinkCd=45;}};`;
 export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.hero,lvl=c.lvl,TS=16;BK.manualSimulation=true;
-  const B=await import('/src/bot-profile.js'),PR=await import('/src/progression.js'),{makeBot}=await import('/src/playtest.js'),PC=await import('/src/lab-perceive.js'),{mulberry}=await import('/src/px.js'),{LEVELS}=await import('/src/level.js');
-  const P0=BKT.PROG;BKT.setHeroLevel(h,lvl);P0.skillOwned=P0.skillOwned||{};P0.loadouts=P0.loadouts||{};P0.skillOwned[h]={};P0.loadouts[h]=[];if(P0.talents)P0.talents[h]={};
-  P0.card[h]=B.typicalWalkCard(h,lvl,n=>(PR.heroPerkAt(h,n)||{}).id);
-  const kit=(B.TYPICAL_SKILLS[h]||[]).filter(id=>{const n=PR.skillFor(h,id);return n&&n.active&&n.level<=lvl;}).slice(0,PR.slotsAt(lvl));for(const id of kit)P0.skillOwned[h][id]=true;P0.loadouts[h]=kit.slice();
-  P0.items=P0.items||{};for(const u of BK.UPGRADES){if(u.consumable)continue;P0.items[u.id]=u.needs?c.beaten.includes(u.needs):c.depth>=2;}
-  P0.charmOf=P0.charmOf||{};P0.charm=c.charm||null;P0.charmOf[h]=c.charm||null;
-  BK.setHero(h);BK.reset({fresh:true});P0.tonics=c.tonics;P0.coins=c.coins;BK.applyUpgrades();
+  const B=await import('/src/bot-profile.js'),PR=await import('/src/progression.js'),CK=await import('/src/campaign-kit.js'),{makeBot}=await import('/src/playtest.js'),PC=await import('/src/lab-perceive.js'),{mulberry}=await import('/src/px.js'),{LEVELS}=await import('/src/level.js');
+  const P0=BKT.PROG,kit=CK.kitPre(BKT,BK,c);
+  BK.setHero(h);BK.reset({fresh:true});CK.kitPost(BKT,BK,c);
   const seedOf=s=>{let x=2166136261;for(let i=0;i<s.length;i++)x=Math.imul(x^s.charCodeAt(i),16777619);return x>>>0;};
   const rnd0=Math.random;Math.random=mulberry(seedOf('walk|'+c.id+'|'+h+'|'+c.seed));
   try{

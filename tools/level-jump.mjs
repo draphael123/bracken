@@ -2,6 +2,10 @@
 // entrance, and never writes a save. In the page, with a real save in storage: the URL lands in play on that level at its START with the hero asked for
 // (and at full health, no god mode); a bad id leaves the title alone; and after the level is run to its gate the save is byte-identical.
 import { openPage } from './cdp.mjs';
+import { LEVELS } from '../src/level.js';
+import { campaignLevel } from './boss-level.mjs';
+import { beatenBefore, tonicsAt, charmAt } from './level-walk.mjs';
+import { depthsOf } from '../src/campaign-order.js';
 const pg = await openPage({ audio: false, fonts: false }); const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const SAVE = { hero: 'knight', heroes: { knight: true }, wood: { cleared: true, medal: 2 } };
@@ -28,6 +32,25 @@ try {
   ok(Math.abs(r.at[0] - r.start[0]) <= 1 && Math.abs(r.at[1] - r.start[1]) <= 1, 'not at the level\'s entrance: at ' + r.at + ', START ' + r.start);
   ok(r.after !== 'play', 'the level did not end at its gate (the check proves nothing about the save): ' + r.after);
   ok((await store()) === s0, 'THE SAVE CHANGED after a ?level= run to the gate');
+  /* &campaign=1 (claude/levelpilot): the hero as a player arriving - the walker's kit (src/campaign-kit.js), still no save */
+  const DEPTH = depthsOf(LEVELS);
+  for (const id of ['marsh', 'causeway']) {
+    await nav('/?level=' + id + '&campaign=1&hero=knight'); const c0 = await store();
+    for (let i = 0; i < 200 && (await pg.evalp('BK.state', 3000)) !== 'play'; i++) await sleep(100);
+    const d = DEPTH[id] ?? 1; const k = await pg.evalp(`(async()=>{ const BEATEN = ${JSON.stringify(beatenBefore(id))}; const P = BK.P, PG = BKT.PROG; BK.manualSimulation = true; for (let i = 0; i < 120; i++) BK.sim(1);
+      return { state: BK.state, lvl: BKT.heroLevel(), hp: P.hp, maxHp: P.maxHp, god: BK.god, tag: BK.campaignTag, loadout: (PG.loadouts && PG.loadouts.knight) || [], items: Object.keys(PG.items || {}).filter(k => PG.items[k]), tonics: PG.tonics, charm: PG.charm, flasks: BK.flasks(), flaskMax: BK.flaskMax(), hero: PG.hero, wantItems: BK.UPGRADES.filter(u => !u.consumable && (u.needs ? BEATEN.includes(u.needs) : ${d >= 2})).map(u => u.id) }; })()`, 30000);
+    const want = campaignLevel(id);
+    ok(k.state === 'play', '?level=' + id + '&campaign=1 did not land in play: ' + JSON.stringify(k));
+    ok(k.lvl === want, id + ': campaign hero is L' + k.lvl + ', the walkers campaignLevel is L' + want);
+    ok(k.hp === k.maxHp && k.god === false, id + ': not at full health, or god mode on');
+    ok(/^CAMPAIGN L/.test(k.tag) && k.tag.indexOf('L' + want + ' ') > 0, id + ': no CAMPAIGN line: ' + k.tag);
+    ok(k.loadout.length > 0, id + ': no skills in the slots');
+    ok(JSON.stringify(k.items.slice().sort()) === JSON.stringify(k.wantItems.slice().sort()), id + ': smith gear ' + k.items + ' want ' + k.wantItems);
+    ok(k.tonics === tonicsAt(d) && k.charm === charmAt(d), id + ': tonics/charm ' + k.tonics + '/' + k.charm + ' want ' + tonicsAt(d) + '/' + charmAt(d));
+    ok(k.flasks === k.flaskMax && k.flaskMax > 0, id + ': flasks ' + k.flasks + '/' + k.flaskMax);
+    ok((await store()) === c0, 'THE SAVE CHANGED after ?level=' + id + '&campaign=1');
+    console.log('  ' + id + ' campaign: L' + k.lvl + ' ' + k.hp + 'hp ' + k.loadout.join('+') + ' gear[' + k.items.join(',') + '] tonics ' + k.tonics + ' charm ' + k.charm + ' flasks ' + k.flasks + ' tag "' + k.tag + '"');
+  }
   await nav('/?level=nosuchlevel'); const bad = await pg.evalp('BK.state', 5000); ok(bad !== 'play', 'a bad ?level= id started a level: ' + bad);
 } finally { pg.close(); }
 if (fails.length) { console.log('level-jump: ' + fails.length + ' failure(s)\n  ' + fails.join('\n  ')); process.exitCode = 1; }
