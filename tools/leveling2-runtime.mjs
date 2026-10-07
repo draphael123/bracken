@@ -38,7 +38,7 @@ BK.cardClose();
 /* 2. THRESHOLDS */
 const foe=()=>BK.enemies().find(e=>e.alive&&!e.maxHp&&!e.harmless&&!e.mini);
 fresh('knight',30,{v:10,e:0,m:0,ms:{}});BK.load(W('wood'));BK.state='play';BK.god=false;BK.sim(60);BK.state='play';
-{const e=foe();if(!e)fails.push('no foe in the wood');else{BK.P.hp=10;BK.P.inv=99;BKT.hurtEnemy(e,1e5,e.x-10,false);if(e.alive)fails.push('the foe lived');if(BK.P.hp<12)fails.push('VIGOR 10: a kill did not heal 2 (hp '+BK.P.hp+')');out.killHeal=BK.P.hp;}}
+{const e=foe();if(!e)fails.push('no foe in the wood');else{BK.P.hp=10;BK.P.inv=99;BKT.hurtEnemy(e,1e5,e.x-10,false);if(e.alive)fails.push('the foe lived');if(BK.P.hp!==11)fails.push('VIGOR 10: a kill did not heal 1 - BLOOD DRAWN, halved by claude/survival, Daniel 10-07 (hp '+BK.P.hp+')');out.killHeal=BK.P.hp;}}
 fresh('knight',30,{v:9,e:0,m:0,ms:{}});BK.load(W('wood'));BK.state='play';BK.sim(60);BK.state='play';
 {const e=foe();if(e){BK.P.hp=10;BK.P.inv=99;BKT.hurtEnemy(e,1e5,e.x-10,false);if(BK.P.hp!==10)fails.push('VIGOR 9 healed on a kill ('+BK.P.hp+')');}}
 const finisher=(m)=>{fresh('knight',30,{v:0,e:0,m,ms:{}});BK.load(W('wood'));BK.state='play';BK.sim(60);BK.state='play';const e=BK.enemies().find(q=>q.alive&&!q.maxHp&&!q.harmless&&!q.mini&&q.hp>60)||BK.enemies().find(q=>q.alive&&!q.maxHp&&!q.harmless&&!q.mini);if(!e)return null;
