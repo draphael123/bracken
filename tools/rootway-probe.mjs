@@ -31,6 +31,8 @@ try {
   const hB=hz('hunterB'),hb2=hB.hunter;tp(261,22);swing(1);let dz=false;for(let i=0;i<120&&!dz;i++){BK.sim(1);dz=hb2.st.mode==='daze';}out.hunterCut={cut:hB.state,daze:dz};
   /* THE LOOKOUT: an arrow struck back through the rope */
   const lo=hz('lookout');BK.seeds().push({x:312*16+8,y:15*16+4,vx:200,vy:-20,dead:false,life:2,arrow:true,reflected:true,g:0});BK.sim(3);for(let i=0;i<90;i++)BK.sim(1);out.lookout={state:lo.state,cells:[304,308,311].map(x=>cell(x,19))};
+  /* (the fix pass) A DEATH KEEPS THE ROAD YOU OPENED: the grid is rebuilt on a respawn, and the span that stays down is laid again (a bridge over the exam's fall) */
+  BK.god=false;P.hp=0;let back=false;for(let i=0;i<600&&!back;i++){BK.sim(1);back=i>30&&!(P.dead>0)&&P.hp>0;}BK.sim(10);out.respawn={back,state:BK.rootway().hoist('lookout').state,cells:[304,308,311].map(x=>cell(x,19)),cellar:[53,60].map(x=>cell(x,38))};BK.god=true;
   return out;})()`, 300000);
   ok(r.bud.state === 'up' && r.bud.k > 0.9 && r.bud.feet < 38.2, 'a bud grows under a hero who stops on it, and stands him level with the root wall ' + JSON.stringify(r.bud));
   ok(r.span.state === 'down' && r.span.cells.every(c => c === 2), 'a blow on the cleat drops the span across the pit: a bridge of one-way cells ' + JSON.stringify(r.span));
@@ -38,6 +40,7 @@ try {
   ok(r.hangs && r.hunterDrop.dropped && r.hunterDrop.ground, 'a trophy-hunter hangs on his hoist and rides it down onto a hero who passes under ' + JSON.stringify([r.hangs, r.hunterDrop]));
   ok(r.hunterCut.cut === 'down' && r.hunterCut.daze, 'his hoist cut, the hunter falls dazed ' + JSON.stringify(r.hunterCut));
   ok(r.lookout.state === 'down' && r.lookout.cells.every(c => c === 2), "an arrow struck back through THE LOOKOUT's rope drops its span " + JSON.stringify(r.lookout));
+  ok(r.respawn.back && r.respawn.state === 'down' && r.respawn.cells.every(c => c === 2) && r.respawn.cellar.every(c => c === 2), 'a death keeps the spans: after a respawn the lookout\'s and the cellar\'s spans are still bridges ' + JSON.stringify(r.respawn));
   const t = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;const out={};
   BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='rootway'));BK.state='play';BK.god=true;BK.sim(10);const P=BK.P;
   for(const e of BK.enemies())if(e.t!=='huntmaster')e.alive=false;

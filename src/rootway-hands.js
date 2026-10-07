@@ -24,7 +24,10 @@ export function makeRootwayHands(ctx) {
     const hs = new Map();
     for (const d of (lv.hoists || [])) { const was = keep && keep.hs.get(d.id);
       const stay = was && !d.boss && d.load !== 'hunter' && was.state !== 'hang';   /* a span or a cage already down stays down (its cells are in the grid) */
-      hs.set(d.id, stay ? was : { d, id: d.id, state: 'hang', ly: (d.hang + 1) * TS, vy: 0, t: 0, hunter: null, tellT: 0 }); }
+      hs.set(d.id, stay ? was : { d, id: d.id, state: 'hang', ly: (d.hang + 1) * TS, vy: 0, t: 0, hunter: null, tellT: 0 });
+      /* (FIX PASS: a death rebuilds the grid, so a load that STAYS down lays its cells again - else the lookout's span was 'down' with no bridge under it: a soft-lock over a fall) */
+      if (stay && was.state === 'down') { if (d.load === 'span') for (let cx = d.span[0]; cx <= d.span[1]; cx++) ctx.cellSet(cx, d.span[2], ctx.T.ONEWAY);
+        else if (d.land) for (let y = d.land[1]; y <= d.land[1] + 1; y++) for (let cx = d.land[0]; cx <= d.land[0] + 1; cx++) ctx.cellSet(cx, y, ctx.T.SOLID); } }
     const lo = (lv.ents || []).find(e => e.t === 'loft');
     S = { L: lv, hs, loft: lo ? { x: lo.x * TS + 8, y: (lo.y + 1) * TS, open: keep ? keep.loft && keep.loft.open : false } : null, lookT: 0, said: keep ? keep.said : new Set(), n: keep ? keep.n : { cuts: 0, arrowCuts: 0, crushed: 0, hunterDrops: 0, hunterCut: 0, lookouts: 0 } };
     /* the hunters on their hoists, and the lookout's scout */

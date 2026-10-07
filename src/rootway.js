@@ -63,7 +63,7 @@ export function buildRootway({ painter, T, TS }) {
   ground(1, 30, 42);
   sign(5, 41, "THE ROOTWAY. UP OUT OF THE FUNGUS, INTO THE GOBLINS' WOOD.");
   glow(8, 41); deco(11, 41, 'sporePod'); glow(18, 41); deco(24, 41, 'tinyCap', 1);
-  foe('sporeling', 14, 41, 'cellarA', { face: -1 }); foe('spitcap', 21, 41, 'cellarA', { face: -1 });
+  foe('sporeling', 14, 41, 'cellarA', { face: -1 }); foe('spitcap', 21, 41, 'cellarA', { face: -1 }); foe('weaver', 18, 41, 'cellarA', { face: -1 });   /* (FIX PASS: a weaver in the first squad - Sporewood's own, heavier than fodder) */
   coins([12, 39], [16, 39]);
   plank(5, 13, 39); plank(16, 23, 39); coins([8, 38], [20, 38]);                  /* root shelves over the cellar floor (a second height) */
   ent('vent', 14, 41, { period: 5, on: 1.6, h: 140, phase: 0 }); plank(13, 15, 35); coins([14, 34]);   /* a spore vent up to a root knot */
@@ -71,11 +71,11 @@ export function buildRootway({ painter, T, TS }) {
   ground(31, 52, 38);
   bud(29, 42); sign(25, 41, 'THE CAPS GROW INTO STEPS. JUMP ONTO A BUD AND STAND STILL: IT RISES UNDER YOU.');
   glow(33, 37); coins([34, 36], [36, 36]); deco(44, 37, 'rootDecor', 1);
-  foe('sporeling', 42, 37, 'wallTop', { face: -1 }); foe('lurker', 35, 37, 'wallTop');   /* (FIX PASS: a lurker in the wall top where the cap sets you down - a foe at the platforming moment) */
+  foe('sporeling', 42, 37, 'wallTop', { face: -1 }); foe('lurker', 35, 37, 'wallTop'); foe('spider', 39, 26, 'wallTop', { drop: 180 });   /* (FIX PASS: a spider in the root roof drops on the wall top) */   /* (FIX PASS: a lurker in the wall top where the cap sets you down - a foe at the platforming moment) */
   /* THE FIRST HOIST: a lashed root span hangs over a pit eight wide (no jump crosses it). The pit has a floor and a bud by its near wall that takes
      you back up to the near lip only (the far wall is four rows, and seven columns off the grown cap): a miss costs the climb. Strike the cleat
      and the span drops into place */
-  air(53, 60, 26, 41); ground(53, 60, 42); bud(53, 42);
+  air(53, 60, 26, 41); ground(53, 60, 42); bud(53, 42); foe('spider', 59, 26, 'spanSpider', { drop: 180 });   /* (FIX PASS: a spider over the span's far end: it drops as you cross) */
   hoist('cellarSpan', { x: 57, top: 27, hang: 32, cleat: [51, 37], load: 'span', span: [53, 60, 38] });
   sign(47, 37, 'A GOBLIN HOIST. STRIKE THE CLEAT AND IT DROPS WHAT IT HOLDS.');
   ground(61, 75, 38);
@@ -87,7 +87,7 @@ export function buildRootway({ painter, T, TS }) {
   ground(76, 104, 35);                                                            /* a three-row step: a jump (the cellar's last) */
   plank(80, 90, 32); coins([83, 31], [87, 31]);
   deco(80, 34, 'mushroom', 1); glow(86, 34);
-  foe('spitcap', 88, 34, 'stepTop', { face: -1 });
+  foe('spitcap', 88, 34, 'stepTop', { face: -1 }); foe('lurker', 78, 34, 'stepTop'); foe('weaver', 84, 34, 'stepTop', { face: -1 });   /* (FIX PASS: the cellar's end - a lurker where the three-row jump lands you, a sporeling and the spitcap behind it) */
   ent('check', 92, 34);                                                           /* CHECKPOINT ONE */
   deco(96, 34, 'gobPennant', 0);                                                  /* the first goblin mark */
 
@@ -109,7 +109,7 @@ export function buildRootway({ painter, T, TS }) {
   sign(146, 37, 'A HUNTER RIDES THE HOIST. CUT ITS ROPE AND HE FALLS.');
   tag(157, 37);                                                                   /* TROPHY TAG ONE, where he hung */
   ground(159, 172, 35); plank(161, 170, 32);
-  foe('spitcap', 168, 34, 'rootSpit', { face: -1 }); glow(162, 34);
+  foe('spitcap', 168, 34, 'rootSpit', { face: -1 }); foe('shield', 164, 34, 'rootSpit', { face: -1 }); glow(162, 34); /* (FIX PASS: heavier, v2) */
   /* A SPAN OVER A REAL GAP: nine wide, a well under it */
   well(173, 181, 35, 45);
   hoist('gapSpan', { x: 177, top: 23, hang: 29, cleat: [171, 34], load: 'span', span: [173, 181, 35] });
@@ -137,7 +137,7 @@ export function buildRootway({ painter, T, TS }) {
   deco(208, 44, 'skullPile', 0); glow(207, 44);
   foe('sporeling', 209, 44, 'larderPit', { face: -1 });
   ground(225, 238, 27);
-  foe('archer', 231, 26, 'larderBow', { face: -1 });
+  foe('archer', 231, 26, 'larderBow', { face: -1 }); foe('trophyhunter', 234, 26, 'larderBow', { face: -1 });   /* (FIX PASS: a hunter on the far lip lunges at you as you top the stair) */
   /* A CLEAT ON THE ROOT'S FACE, high over the floor: grow the bud under it and strike it from the cap - the span over the next gap drops */
   bud(237, 27); ground(239, 246, 23);   /* (FIX PASS: the cap stands flush against the root - no one-column corner between them to fall into) */
   hoist('highCleat', { x: 251, top: 12, hang: 17, cleat: [238, 19], load: 'span', span: [247, 255, 23], face: true });
@@ -161,6 +161,9 @@ export function buildRootway({ painter, T, TS }) {
   /* SET PIECE B, THE LOOKOUT: a scout on a lookout across a chasm eight wide; the bridge span hangs on a hoist whose tie-off runs down past his
      post to a cleat no blade reaches. Strike his arrow back: it flies home through the rope and the span drops. (If he falls, another takes the post) */
   sign(297, 18, 'HE CANNOT MISS FROM THERE. STRIKE HIS ARROW BACK: IT FLIES HOME THROUGH THE ROPE.');
+  /* (FIX PASS, THE EXAM: a TROPHY-HUNTER hangs over the lookout's near lip - he rides down BEHIND you as you wait for the arrow, and his lunge drives you at the
+     chasm. Told as every hunter is (the creak, the '!'); taught at hunter A and the hunter's bud; cut his cleat first and he falls dazed) */
+  hoist('hunterC', { x: 301, top: 5, hang: 11, cleat: [298, 18], load: 'hunter' }); foe('trophyhunter', 301, 11, 'lookoutHunter', { face: 1, hang: 'hunterC' });
   sign(292, 18, 'NO ROOTS UNDER THE CANOPY: FROM HERE A FALL IS THE END.');
   chasm(304, 311, 19);                                                            /* THE EXAM's first gap: no floor (A10 amended) */
   ground(312, 340, 19);
@@ -168,13 +171,13 @@ export function buildRootway({ painter, T, TS }) {
   hoist('lookout', { x: 308, top: 8, hang: 13, cleat: [312, 15], load: 'span', span: [304, 311, 19], arrow: true, post: [316, 15] });
   foe('archer', 316, 15, 'lookout', { face: -1, lookout: true });
   coins([314, 17], [318, 17]); tag(338, 18); plank(322, 336, 16);                                      /* TROPHY TAG THREE: past the lookout, on the root road */
-  foe('shield', 328, 18, 'roadGuard', { face: -1 }); foe('trophyhunter', 334, 18, 'roadGuard', { face: -1 });
+  foe('shield', 328, 18, 'roadGuard', { face: -1 }); foe('trophyhunter', 334, 18, 'roadGuard', { face: -1 }); foe('archer', 322, 15, 'roadGuard', { face: -1 });   /* (FIX PASS: a bow on the root over the road) */
   /* the leaning cap over a gap, under a scout's fire from a perch past it */
   chasm(341, 350, 19);                                                            /* THE EXAM's last gap: no floor (A10 amended) */
   bud(339, 19, { rise: 16, lean: 160, growT: 1.6 });
   ground(351, 387, 19);
-  plank(355, 359, 15); foe('archer', 357, 14, 'perchBow', { face: -1 });
-  foe('spitcap', 362, 18, 'lastCap', { face: -1 });                               /* the last of the fungus */
+  plank(355, 359, 15); foe('archer', 357, 14, 'perchBow', { face: -1 }); foe('archer', 366, 18, 'perchBow', { face: -1 });   /* (FIX PASS: two bows on the cap's ride: a hit knocks you off it) */
+  foe('spitcap', 362, 18, 'lastCap', { face: -1 }); foe('trophyhunter', 354, 18, 'lastCap', { face: -1 });   /* (FIX PASS: a hunter where the last leaning cap sets you down, by the chasm) */                               /* the last of the fungus */
   /* THE TROPHY LOFT (the vault): the hunters' store in a hollow root over the road - four tags open its door (E at it): a silver */
   block(364, 372, 8, 13); air(365, 371, 9, 12); plank(373, 376, 13); plank(377, 379, 16);
   for (let y = 9; y <= 12; y++) set(372, y, T.SOLID); vaultDoors.push({ x0: 372, x1: 372, y0: 9, y1: 12 });
@@ -190,9 +193,9 @@ export function buildRootway({ painter, T, TS }) {
   ground(A0, A1, FL); ground(447, 459, FL);
   plank(A0 + 4, A0 + 10, FL - 4); plank(A1 - 10, A1 - 4, FL - 4);               /* THE ROOT PERCHES (he leaps to them; a bud under each, so do you) */
   bud(A0 + 6, FL); bud(A1 - 8, FL);
-  hoist('hmL', { x: A0 + 7, top: 0, hang: FL - 9, cleat: [A0 + 2, FL - 1], load: 'cage', boss: true });
+  hoist('hmL', { x: A0 + 7, top: 0, hang: FL - 9, cleat: [A0 + 12, FL - 1], load: 'cage', boss: true });   /* (FIX PASS: the perch cages tie off on the arena side of their perch - a few strides from the floor's middle, so the cage is an opening a hero reaches in his perch time) */
   hoist('hmM', { x: Math.floor((A0 + A1) / 2), top: 0, hang: FL - 7, cleat: [Math.floor((A0 + A1) / 2) - 3, FL - 1], load: 'cage', boss: true });
-  hoist('hmR', { x: A1 - 6, top: 0, hang: FL - 9, cleat: [A1 - 1, FL - 1], load: 'cage', boss: true });
+  hoist('hmR', { x: A1 - 6, top: 0, hang: FL - 9, cleat: [A1 - 12, FL - 1], load: 'cage', boss: true });
   ent('huntmaster', A1 - 14, FL - 1, { face: -1 });
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'huntmaster', music: 'boss3', tint: '#c89040', tintA: 0.06,
     start: [A0 + 6, FL - 1], huntmaster: true, perches: [[A0 + 4, A0 + 10, FL - 4], [A1 - 10, A1 - 4, FL - 4]] };

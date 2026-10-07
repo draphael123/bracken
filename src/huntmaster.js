@@ -22,16 +22,16 @@ export const HM = {
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
   gap: [0.8, 0.65, 0.55],
-  arrowV: 290, redV: 250, arrowDmg: 7, redDmg: 8, poisonTick: 3, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
-  slashAt: 36, slashTell: 0.45, slash: 0.18, slashReach: 34, slashDmg: 12,
-  leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 4, leapCd: 1,
+  arrowV: 290, redV: 250, arrowDmg: 6, redDmg: 8, poisonTick: 3, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
+  drawCut: 0.45, drawCutIn: 28, slashAt: 50, slashTell: 0.45, slash: 0.18, slashReach: 50, slashDmg: 12,   /* (FIX PASS: 36 -> 50, reach 34 -> 50 - a spear's poke range is inside his knife, so the warden cannot cut him from outside it) */
+  leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 6, leapCd: 1,
   backV: 340, backDmg: 14, reflectR: 12,
   cageDmg: 20, openT: 3.5, openMul: 1.5, maskT: 5, maskMul: 2, stagT: 1.2, stagMul: 1.25, caughtT: 3, ward: 3, stagWard: 1.5,
 };
 /* each cycle is a list; the phase's new move joins at its turn (k % n) */
 const CYCLE = {
-  1: [['aim', 'volley', 'aim', 'leap'], ['volley', 'aim', 'aim', 'volley'], ['aim', 'aim', 'volley', 'aim']],
-  2: [['split', 'aim', 'volley', 'leap'], ['aim', 'split', 'split', 'aim'], ['volley', 'split', 'aim', 'volley']],
+  1: [['aim', 'volley', 'aim', 'leap'], ['volley', 'aim', 'leap', 'volley'], ['aim', 'leap', 'volley', 'aim']],   /* (FIX PASS, B1: a leap to a perch under a cage every P1 cycle - the cage is half his openings) */
+  2: [['split', 'aim', 'volley', 'leap'], ['aim', 'split', 'leap', 'aim'], ['volley', 'split', 'aim', 'volley']],
   3: [['hoist', 'split', 'aim', 'leap'], ['split', 'hoist', 'volley', 'aim'], ['aim', 'hoist', 'split', 'volley']],   /* (a leap one cycle in three: the perch is a place he goes, not where he lives) */
 };
 export const HM_MODES = { aimTell: '!', volleyTell: '!', splitTell: '!!', hoistTell: '!!', slashTell: '!' };   /* the marks (src/marks.js): a yellow ! a blade or a shield answers, a red !! you get out of */
@@ -119,7 +119,10 @@ export function makeHuntmaster(ctx) {
         else if (F.perchT > HM.perchT) { F.perchT = 0; tell(e, 'leapTell', HM.leapTell); e.leapDown = true; break; }   /* (you followed him up: he stays and fights you there - his knife - until his time is up) */
         if (e.modeT <= 0) next(e); break; }
       case 'recover': if (e.modeT <= 0) set(e, 'walk', 0.2); break;
-      case 'aimTell': case 'volleyTell': case 'splitTell': e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { shoot(e, e.mode.replace('Tell', '')); set(e, 'loose', HM.loose); } break;
+      case 'aimTell': case 'volleyTell': case 'splitTell': e.face = Math.sign(P.x - e.x) || e.face;
+        /* (FIX PASS, B11 vs reach: a blade at the end of his knife's range early in the draw - a spear's poke, 28-50 px; inside his bow arm he cannot drop it - and he drops the draw for the knife, told as ever) */
+        if (!e.drawCut && e.modeT > HM.draw * HM.drawCut && Math.abs(P.x - e.x) < HM.slashAt && Math.abs(P.x - e.x) > HM.drawCutIn && Math.abs(P.y - e.y) < 26) { e.drawCut = true; F.n.drawCuts = (F.n.drawCuts || 0) + 1; F.n.slashes++; tell(e, 'slashTell', HM.slashTell); break; }
+        if (e.modeT <= 0) { e.drawCut = false; shoot(e, e.mode.replace('Tell', '')); set(e, 'loose', HM.loose); } break;
       case 'loose': if (e.modeT <= 0) after(e); break;
       case 'hoistTell': e.face = Math.sign(F.hoistX - e.x) || e.face; if (e.modeT <= 0) { if (ctx.rw) ctx.rw.cutHoist(F.hoist); ctx.sfx.bow ? ctx.sfx.bow() : ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); F.hoist = null; set(e, 'loose', HM.loose); } break;
       case 'slashTell': if (e.modeT <= 0) set(e, 'slash', HM.slash); break;
@@ -129,7 +132,8 @@ export function makeHuntmaster(ctx) {
           else { const pp = F.perches.map((p, i) => ({ i, x: (p.x0 + p.x1) / 2, y: p.y })).sort((a, b) => Math.abs(b.x - P.x) - Math.abs(a.x - P.x))[0]; to = { x: pp.x, y: pp.y, perch: pp.i }; }
           e.leapDown = false; e.lf = { x0: e.x, y0: e.y, x1: to.x, y1: to.y, perch: to.perch, t: 0 }; set(e, 'leap', HM.leapT); F.n.leaps++; ctx.sfx.dodge && ctx.sfx.dodge(); ctx.dust(e.x, e.y, 6); } break;
       case 'leap': { const f = e.lf, k = Math.min(1, 1 - e.modeT / HM.leapT); e.x = f.x0 + (f.x1 - f.x0) * k; e.y = f.y0 + (f.y1 - f.y0) * k - Math.sin(k * Math.PI) * 52; e.face = Math.sign(P.x - e.x) || e.face;
-        if (e.modeT <= 0) { e.x = f.x1; e.y = f.y1; e.perch = f.perch; F.perchT = 0; set(e, 'land', HM.landT); ctx.dust(e.x, e.y, 8); ctx.sfx.thud && ctx.sfx.thud(); } break; }
+        if (e.modeT <= 0) { e.x = f.x1; e.y = f.y1; e.perch = f.perch; F.perchT = 0; set(e, 'land', HM.landT); ctx.dust(e.x, e.y, 8); ctx.sfx.thud && ctx.sfx.thud();
+          if (e.perch >= 0) { F.n.perched = (F.n.perched || 0) + 1; ctx.number(e.x, e.y - 60, 'HIS CAGE HANGS OVER HIM: CUT ITS ROPE', '#8fd160'); } } break; }   /* (FIX PASS, B1: the cage's tell, every time he takes a perch) */
       case 'land': if (e.modeT <= 0) set(e, 'walk', 0.4); break;
       case 'open': case 'caught': e.vy = 0; if (e.open <= 0) { e.ward = e.openMul === HM.stagMul ? HM.stagWard : HM.ward; set(e, 'recover', 0.3); ctx.number(e.x, e.y - 50, 'HE GUARDS', '#9aa39a'); } break;
       default: if (e.modeT <= -1) after(e);
@@ -236,7 +240,10 @@ export function makeHuntmaster(ctx) {
       if (Math.floor(time * 12) % 2) { g.fillStyle = '#ff6b6b'; g.fillRect(x - TS, fl - 4, 2 * TS, 1); } }
     for (const a of F.arrows) { const x = R(a.x - cx), y = R(a.y - cy), d = Math.hypot(a.vx, a.vy) || 1, ux = a.vx / d, uy = a.vy / d;
       g.strokeStyle = a.kind === 'red' ? '#a83a2a' : '#c9a060'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - ux * 9, y - uy * 9); g.lineTo(x, y); g.stroke();
-      g.fillStyle = a.kind === 'red' ? '#ff4a3a' : (Math.floor(time * 16 + a.id) % 2 ? '#fff6c8' : '#ffd36b'); g.fillRect(x - 1, y - 1, 3, 3);   /* the head: a gold glint, or red */
+      if (a.kind === 'red') { /* (FIX PASS, B10: the RED arrow is BARBED - a 5 px arrowhead with two barbs swept back, and a dark fletch - so gold and red read by shape, not only hue) */
+        const px = -uy, py = ux; g.fillStyle = '#ff4a3a'; g.beginPath(); g.moveTo(x + ux * 3, y + uy * 3); g.lineTo(x - ux * 3 + px * 3, y - uy * 3 + py * 3); g.lineTo(x - ux * 1, y - uy * 1); g.lineTo(x - ux * 3 - px * 3, y - uy * 3 - py * 3); g.closePath(); g.fill();
+        g.fillStyle = '#3a1418'; g.fillRect(R(x - ux * 9 + px * 1.5) - 1, R(y - uy * 9 + py * 1.5) - 1, 2, 2); g.fillRect(R(x - ux * 9 - px * 1.5) - 1, R(y - uy * 9 - py * 1.5) - 1, 2, 2); }
+      else { g.fillStyle = Math.floor(time * 16 + a.id) % 2 ? '#fff6c8' : '#ffd36b'; g.fillRect(x - 1, y - 1, 3, 3); }   /* the head: a gold glint (square), or the red barbs */
       if (a.kind === 'red') { g.globalAlpha = 0.5; g.fillStyle = '#ff6b6b'; g.fillRect(R(x - ux * 14), R(y - uy * 14), 2, 2); g.fillStyle = '#9ad85a'; g.fillRect(R(x - ux * 5), R(y - uy * 5) + 2, 1, 1); g.globalAlpha = 1; }
       if (a.back) { g.fillStyle = '#e8f4f8'; g.fillRect(R(x - ux * 12), R(y - uy * 12), 2, 1); } }
     for (const pp of ctx.players) if (pp.hmPoison > 0 && !pp.dead) { const x = R(pp.x - cx), y = R(pp.y - cy); g.fillStyle = '#9ad85a'; for (let k = 0; k < 3; k++) g.fillRect(x - 4 + k * 4, y - 22 - R(3 * Math.abs(Math.sin(time * 8 + k))), 2, 2); }
@@ -282,7 +289,7 @@ export function hmPlan(o) {
     if (o.shield) { out.block = true; out.why = 'block the knife'; return out; } out.gx = clamp(e.x - toHim * 70); if (ad < 52 && (e.mode === 'slash' || e.modeT < 0.2) && P.ground) out.dodge = true; out.why = 'out of the knife'; return out; }
   /* HE IS ON A PERCH: cut the rope of the cage over him (the level's verb), else up the bud */
   if (e.y < A.floor - 20) { const c = (o.cleats || []).filter(q => q.up && Math.abs(q.x - e.x) < 24)[0];
-    if (c && !(e.ward > 0) && Math.abs(P.x - c.cx) < 200) { out.gx = c.cx - 6; out.face = 1; if (Math.abs(P.x - (c.cx - 6)) < 8 && P.ground && P.atk < 0) { out.face = Math.sign(c.cx - P.x) || 1; out.atk = true; } out.why = 'cut the rope over him'; return out; }
+    if (c && !(e.ward > 0) && Math.abs(P.x - c.cx) < 420) {   /* (FIX PASS: a player reads 'HIS CAGE HANGS OVER HIM' and goes for the rope from across the stand) */ out.gx = c.cx - 6; out.face = 1; if (Math.abs(P.x - (c.cx - 6)) < 8 && P.ground && P.atk < 0) { out.face = Math.sign(c.cx - P.x) || 1; out.atk = true; } out.why = 'cut the rope over him'; return out; }
     const b = (o.buds || []).sort((a, q) => Math.abs(a.x - e.x) - Math.abs(q.x - e.x))[0];
     if (b) { if (P.y < A.floor - 20) { out.gx = clamp(e.x - toHim * 14); out.face = toHim; out.atk = ad < reach + 8 && P.atk < 0 && sameFloor; out.why = 'on his perch: cut him'; return out; }
       out.gx = b.x; if (Math.abs(P.x - b.x) < 6) out.gx = P.x; if (b.grown && Math.abs(P.x - b.x) < 10 && P.ground) out.jump = true; out.why = 'up the bud to his perch'; return out; } }

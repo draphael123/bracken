@@ -249,8 +249,9 @@ export function makeBot(BK) {
         const gd = Math.sign(goalX - P.x) || P.face || 1; let job = null, jd = 1e9;
         for (const d of (L.hoists || [])) { if (d.boss) continue; const h = RWB.hoist(d.id); if (!h || h.state !== 'hang' || (tick.rwNo.get(d.id) || 0) > tick.frame2) continue;
           const sx = d.arrow ? (d.span[0] - 1) * TS + 8 : d.cleat[0] * TS + 8 - gd * 14, dx = sx - P.x, top = (d.cleat[1] - 1) * TS;
-          if (Math.abs(dx) > 6 * TS || dx * gd < -4 * TS) continue;
+          if (Math.abs(dx) > 6 * TS) continue;   /* (ahead or behind: the larder ties off three cleats in a row behind the pit) */
           if (d.arrow ? Math.abs((d.span[2]) * TS - P.y) > 2 * TS : (P.y - top > 9 * TS || top - P.y > TS)) continue;
+          if (!d.arrow && P.y - top > 4 * TS && !BK.movers().some(m => m.kind === 'growcap' && Math.abs(m.x + m.w / 2 - (d.cleat[0] * TS + 8)) < 40)) continue;   /* (high over him with no bud under it: not his to cut from here) */
           if (Math.abs(dx) < jd) { jd = Math.abs(dx); job = { d, sx }; } }
         if (job) { const d = job.d, dx = job.sx - P.x;
           if (tick.rwJob !== d.id) { tick.rwJob = d.id; tick.rwT = 0; } else if (++tick.rwT > 600 && !d.arrow) { tick.rwNo.set(d.id, tick.frame2 + 1200); tick.rwJob = null; }
@@ -356,7 +357,7 @@ export function makeBot(BK) {
     if (tap > 0) { tapT++; if (tapT === 1) { keys.left = keys.right = false; } if (tapT === 3) { keys.left = dir < 0; keys.right = dir > 0; tap = 0; } }
 
     // drop through a ledge if the goal is a long way below
-    if (P.ground && still > 70 && at(fx, fy) === T.ONEWAY) keys.down = true;
+    if (P.ground && still > 70 && at(fx, fy) === T.ONEWAY && [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].some(k => foot(fx, fy + k))) keys.down = true;   /* (never through a bridge over a fall with no floor: claude/rootway fix pass) */
 
     // A CREATURE UNDER YOU WHILE YOU ARE FALLING IS A STEP. Plunge on it and you bounce, and four wasps
     // over a pit is a bridge - which is the whole middle of Bracken Wood and every pogo chain after it.
