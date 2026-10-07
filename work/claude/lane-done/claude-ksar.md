@@ -1,3 +1,46 @@
+# claude/ksar ART + MUSIC PASS (2026-10-07)
+
+## STEP 0: merged origin/claude/survival (a182aa12), then re-walked the level (measurement only: no foe was retuned)
+Conflicts (boss-read.js, the boss-greed tool, main.js x4) kept both sides: `roc` and `hawkmistress` are both FULL_DAMAGE duelists; damagePlayer0 takes `low` (the knight's low guard) and `pct`; the Roc's raptorYoung bake and the Ksar's sets both stay.
+
+Walker (tools/level-walk.mjs ksar, campaign level 35, typical build, 2 seeds a hero; flasks are manual now, kill heals halved and capped, hearts 12%, shrines do not heal):
+
+| Hero | Deaths before | Deaths after | Arrive before (mean/min) | Arrive after (mean/min) | Gross loss %/section before | after | Measured before | after |
+|---|---|---|---|---|---|---|---|---|
+| knight | 0 to 1.5 | 0.5 | 94-100 / 82 | 77 / 64 | 17-46 | 74 | 87-97% | 87% |
+| warden | 0 to 1 | 0.0 | 84-92 / 43-56 | 75 / 43 | 34-48 | 81 | 81-97% | 62% |
+| pyro | 0.5 to 1.5 | 0.5 | 97-100 / 82 | 90 / 49 | 26-58 | 55 | 97% | 87% |
+
+- **Reading:** arrival is no longer pinned at about 100%: it is 75 to 90% mean, with single arrivals at 43 to 64%. The target (under ~50% on arrival) is still missed on the mean. Section 0 (the wall) costs 110 to 218% of the bar gross and heals give back 60 to 83% of it; the later sections lose 10 to 50% each.
+- **Drinks are 0.0 on every run:** the walker drinks under 35% and no arrival or section end sits that low (43% was the lowest).
+- **STUCK points the walker reports (written up, not fixed):** 358,24 / 364,24 (the souq stair up to the terrace; the hero at 343-347,32-34, the stair squad's shield at 340 in the way) on 5 of 6 runs, and 144,27 (a shield sentry at 137 on gong two's stretch) once. Measured 47 to 97% of the route. The fix pass's route pilot (tools/ksar-route.mjs) still walks all seven heroes with 0 lifts, so this is the walker's hands against a planted shield, not a hole in the route.
+- Deaths per run 0 to 1 (the spikes at 125,30 and the fall at 481,48): still under the 1-2 first-run target. Foes were NOT touched.
+
+## ART PASS (what was drawn)
+Own tile kit, set, cast and landmarks; geometry and collision are untouched (no tile moved, so the route pilot, level-quality and the mash rows need no re-stamp).
+- **Tile kit** (src/redraw/ksar_tiles.js): MUD-BRICK (8 px courses, per-brick shade, straw flecks, flaked ochre plaster, palm-log vigas under flat roofs, windows and arrow slits, a pale baked coping); ASHLAR for the gatehouse, the great gong's tower, the Hawk Tower, the shaft and the courtyard (big cut blocks, a cooler grey-cream stone); BEDROCK (the wadi's red strata from row 37); the ROAD's packed earth; FLAGSTONES (courtyard, yard, souq floor); the BREACHES as broken brick (stepped, crumbled lips, course ends showing) over a pit of broken brick and sharpened palm STAKES; the ROOF GAPS' lips crumbled the same way; ledges as a corbelled stone slab (keyed to a wall) or a lashed palm-log beam (free-standing scaffolds, stalls, stairs).
+- **The set** (src/redraw/ksar_set.js, src/redraw/ksar_props.js): tall crenellated PARAPETS on the walls (arrow slits, soot, scuppers) and low scuppered ones on the roofs, so the battlements read as an outside (merlons, scuppers, soot) and an inside (the walk, torches, vigas). Guard HUTS with bedrolls, a weapon rack, jars, a lamp and curtains; AWNINGS (striped canvas, scallops, poles that stand to the floor below); STALLS with goods and hung rugs; the SOUQ HALL (carved posts, hung cloths, lanterns); the MINARET (banded shaft, teal lantern cap, a gallery over the balcony with a balustrade and lanterns); BANNERS (madder red, a black hawk); a wrecked caravan cart and bone TOTEMS on the road; barrels, crates, amphoras, sacks, dates, carpets, troughs, flask racks and powder crates (45 placed by the plan).
+- **THE HAWK TOWER, the landmark:** an ashlar tower with a crenellated, machicolated crown, three arched MEWS windows with iron grilles and a hooded hawk on a perch bar in each, a turret with a teal cone and a GILDED HAWK, the Hawk-Mistress's standard, a lit BEACON bowl, a hawk wheeling over it. From the souq on, the HORIZON carries the fort's skyline (the minaret, the gong tower and the Hawk Tower in dusk haze with a beacon and three circling hawks).
+- **The rule's pieces:** gongs of teak and brass with a bronze disc on a rope (cut: the rope's end and the disc lying cracked); THE GREAT GONG on a stone-footed frame, hung by a chain; bricked arches (fresh brick in a stone frame, cracked); the PORTCULLIS (iron-bound timber, rivets, spiked feet), the guard room lit behind its GRILLE (brazier, table, racks), a voussoir arch, murder holes, lamps; the WINCH a capstan with four bars and a gauge plate; the STRONGROOM door with five seal sockets that fill as seals are carried; kegs (a red powder mark, a fuse that burns) and flasks in their cradles; THE ROOF BRIDGE: a pulley post and arm on roof two, the leaf RAISED and held by the rope from the gong's frame over the pulley, LOWERED with the rope slack after the cut.
+- **LIGHTS (53):** wall torches every 24 columns on the outer wall, braziers in the yard, souq, store and tower room, hung lamps in the gate passage and huts, lanterns in the souq hall, stalls and cellar, the beacon. Each blooms in game (main.js lights) and the flames animate.
+- **HER COURTYARD:** a shaded ashlar back wall (pilasters, a wall walk under its parapet), a 72 px sun-disc relief of her spread-winged hawk, banners, her two arched guard doors, perches, braziers along the floor; the phase-three fire is taller and sooty.
+- **The cast** (src/redraw/ksar_art.js; every skin keeps its machine's frames, tells and hit box, cnSkin so a corpse dies in its own skin): KSAR BLADE (madder coat, cream turban banded in gold), GONG LOOKOUT (sand and saffron, a teal sash, a scarf tail), WHIP APPRENTICE (falconer's brown leather, a red feather, the scimitar's curve becomes a leather lash), SHIELD SENTRY (bronze helm and red plume, a red-and-gold shield, an indigo cloak), SMOKE THROWER (ash-grey wraps, a soot cloth), WALL SLINGER (indigo wrap, keffiyeh tail); the HAWK SCOUT redrawn (barred tail fan, fingered wing tips, a pale brow); THE HAWK-MISTRESS drawn whole with 13 pose frames (idle, walk A/B, guard, lash tell, lash, feint, cut tell, cut, whistle, recover, sleep, hurt) swapped by her mode; HER HAWK in 7 poses (soar up/down, bank, stoop, blind, on the glove, spot).
+- **Ambient bed:** the Ksar's own synth bed (wind, far gong, souq murmur, hawk, flag) gains torch crackle, an anvil, a camel's groan and the winch chain's link.
+- **Music:** audio/ksar.ogg is "Desert Loop" by iamoneabe, CC0 (page re-read: CC0, author iamoneabe, desert_loop.mp3 2.6 MB), converted to mono ogg (64 s loop, 633 KB) and wired as the level track; credited in audio/CREDITS.txt, MUSIC_CREDITS, MUSIC_CREDITS_ROW and the credits page. Her boss theme stays composed in code (three phases); the greybox synth level bed is deleted from src/boss-music.js, and tools/ksar.mjs now asserts the real track and its credits (a deliberate design change, not a weakened test).
+
+## Identity estimate (scratch/audit-identity.md's 9 x 0-2 scale)
+KIT 2 (own tile kit on every cell: tools/ksar-aloft.mjs A), PAL 2 (madder brick, cool ashlar, red bedrock; the sunset sky stays the desert act's), PLAT 2 (slab ledges, lashed beams, awning stalls, roofs, towers, the raising bridge), LMK 2 (the Hawk Tower, the gong tower, the minaret, the horizon skyline), SET 2 (gate winch, great gong, the powder chain, the roof bridge, the Hawk Tower), DRESS 2, LIGHT 2 (53 lights, none under 2 a 100 columns), AMB 2, THEME 2 (human bandits only; palm-log scaffolds are desert, no forest wood, no goblins) = 18 by the count; **17 is the honest figure, 16 the floor** (the shared sunset sky, and the pose cycles are mine to be judged by your eye).
+
+## Checks
+tools/ksar-aloft.mjs (new, wired into check.mjs): the kit on all 11477 solid cells, every prop and light on a top, every rule piece on solid, the bridge's pulley post on the roof, the Hawk Tower an ashlar block, no 100-column stretch under 2 lights, the set paints every screen with gongs hung and cut. Helpers (not in the suite): tools/ksar-art-sheet.mjs (tiles, props, foes), tools/ksar-art-shots.mjs, tools/ksar-fight-shots.mjs.
+
+## QUESTIONS FOR DANIEL (the recs are what is built)
+1. **The walker's STUCK at the souq stair (358/364,24) and gong two's shield (144,27).** Rec: leave (the route pilot walks it; it is the walker's hands against a planted shield). Alt: give the walker a hint to hit the shield from above.
+2. **The wall's first section still costs 110 to 218% of the bar gross** (heals recover 60 to 83% under the new healing); arrival is 75 to 90% mean. Rec: judge on deaths and per-section loss, as before; if you want arrival under 50%, make the wall's first two squads heavier (a level-hook change, not an art one).
+3. **The sunset sky is the desert act's.** Rec: keep; a Ksar sky (the sun lower, smoke from the souq) is later polish.
+
+---
+
 # claude/ksar FIX PASS (2026-10-07): the reviewer's MUST-FIX list (scratch/review-ksar.md)
 
 This pass merged origin/claude/walker (tools/level-walk.mjs). Healing code is untouched: the SURVIVAL lane owns it, so the level is tuned against today's healing.
