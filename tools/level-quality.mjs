@@ -27,12 +27,13 @@ const TS = 16;
 
 /* WHICH LEVELS ARE HELD TO IT. New or reworked levels only: the old campaign misses the bar in places (--all shows where) and is not being reworked.
    Add a level id here in the lane that builds or reworks it. An id that is not in LEVELS yet is skipped with a note (the theatre lane lands later). */
-export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge', 'underwell', 'skyroad', 'glasssea'];   /* (claude/skyroad: THE SKY ROAD gated from its greybox) */   /* the fair re-gated by claude/fairfix2 (the rework it waited for); THE FOG CANAL gated by claude/canalfix */
+export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge', 'underwell', 'skyroad', 'glasssea', 'rootway'];   /* (claude/rootway: THE ROOTWAY gated from its greybox) */   /* (claude/skyroad: THE SKY ROAD gated from its greybox) */   /* the fair re-gated by claude/fairfix2 (the rework it waited for); THE FOG CANAL gated by claude/canalfix */
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
   /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
-  skyroad: ['music'],   /* (claude/skyroad, the greybox) TODO: THE SKY ROAD plays the retired sky ship's track and THE ROC her old track (the Monastery's arena still plays it) as placeholders - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */
+  skyroad: ['music'],
+  rootway: ['music'],   /* (claude/rootway, the greybox) TODO: THE ROOTWAY plays the benched 'cave' track as a placeholder (Sporewood's old theme) - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */   /* (claude/skyroad, the greybox) TODO: THE SKY ROAD plays the retired sky ship's track and THE ROC her old track (the Monastery's arena still plays it) as placeholders - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];
@@ -71,7 +72,7 @@ export const ROLES = {
   ranged: ['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest', 'wickerman'],   /* (claude/fairfix6) THE WICKER MAN bowls its own fire */
   support: ['barker', 'gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
   heavy: ['heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield', 'wickerman'],
-  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow', 'waterthief', 'raptor', 'thirstscorpion', 'kiterider', 'skitter'],   /* (claude/skyroad: the goblin kite-rider swoops from his thermal and climbs away - a hit and run) */   /* (claude/redgorge: the cliff raptor stoops on you from over its bridge and is gone again - a hit and run) (claude/welltown: the water-thief cuts your skin and RUNS for a well) (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
+  runner: ['hobbyhorse', 'runner', 'thief', 'hound', 'greathound', 'assassin', 'sapper', 'acolyte', 'dog', 'grindylow', 'waterthief', 'raptor', 'thirstscorpion', 'kiterider', 'skitter', 'trophyhunter'],   /* (claude/rootway: the goblin trophy-hunter rides a hoist down on you and lunges from afar - a hit and run) */   /* (claude/skyroad: the goblin kite-rider swoops from his thermal and climbs away - a hit and run) */   /* (claude/redgorge: the cliff raptor stoops on you from over its bridge and is gone again - a hit and run) (claude/welltown: the water-thief cuts your skin and RUNS for a well) (claude/canalfix: the grindylow is a grab - it comes for your ankle, and aboard) */
 };
 const rolesOf = (t, skin) => { const of = k => Object.keys(ROLES).filter(r => ROLES[r].includes(k)); const r = skin && of(skin).length ? of(skin) : of(t); return r.length ? r : ['melee']; };   /* (claude/underwell: a reskin listed by its own skin - the thirsty scorpion runs - is judged by what it does; an unlisted skin is its AI's) */
 /* COLLECTIBLES AND INTERACTIVES THAT MUST UNLOCK SOMETHING. A pickup or a lever that opens nothing is clutter. What each kind can open is named here; a level states its own

@@ -62,6 +62,8 @@ export const TURN_WORD = {
   gargoyle: TURN.STONE,                                     // stone until he lies on the spikes
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
+  /* (claude/rootway) THE GOBLIN HUNTMASTER: the bow across him guards his front between moves (GO ROUND, or from a jump); in his ward after an opening, HE GUARDS */
+  huntmaster: (e, fromX) => e.ward > 0 ? 'HE GUARDS' : behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
 };
 const COL = '#d8e2ee', RING = '#eef4ff';
 
