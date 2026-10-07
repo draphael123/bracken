@@ -56,7 +56,7 @@ export function makeKsarHands(ctx) {
     if (K.gate && !K.gate.pinned) K.gate.notch = 0;
     for (const pp of ctx.players) { if (pp.carry && (pp.carry.t === 'kskeg' || pp.carry.t === 'ksflask')) pp.carry = null; pp.ksPullK = 0; }
     bindFoes();
-    if (window.BK) Object.assign(window.BK, { ksar: () => K, ksarHands: () => H });
+    if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { ksar: () => K, ksarHands: () => H });
   };
   /* every placed fort bandit learns his role from his ent (spawnEnt does not copy it: its xpKey names the ent) */
   function bindFoes() {

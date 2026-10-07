@@ -36,7 +36,7 @@ export const HM = {
   flashTell: 0.85, flashR: 62,
   hawkAlt: 74, hawkR: 30,
   fireW: 3, fireTick: 0.5, roofEvery: 4.0,
-  dmg: { lash: 27, cut: 30, markLash: 32, dive: 32, flash: 22, fire: 8 },
+  dmg: { lash: 31, cut: 34, markLash: 36, dive: 36, flash: 26, fire: 9 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
