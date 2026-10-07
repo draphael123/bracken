@@ -74,7 +74,7 @@ export const WQ = {
   lashEvery: [6.5, 5.5, 4.8], lashFirst: 3.2, lashTell: 1.0, lashT: 0.5, lashReach: 460,
   lowTop: 10,                         // the LOW ribbon runs from the boards to 10 px up: a hero in a jump or on a horse (16+) is over it
   highTop: 64, highBot: 10,           // the HIGH ribbon runs 10-64 px up: a standing hero (14) and every rider (saddle 16-40) are in it, a ducked one (8) is under it
-  floorEvery: [11, 9.5, 7], floorFirst: 7.5, floorTell: 1.5, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick (claude/fairfix4: every 11 s in phase one, from 12 - the bonfire ring shares its turns)
+  floorEvery: [11, 9.5, 7], floorFirst: 7.5, floorTell: 1.66, floorT: 1.8, floorTick: 0.6,   // THE FLOOR BURNS: its told time, how long it burns, a burn's tick (claude/fairfix4: every 11 s in phase one, from 12 - the bonfire ring shares its turns)
   /* HER SPEAR, THRUST: at a hero looking at her within its reach (from her middle); told for thrustTell s (the red line runs out to its length), the lunge takes
      thrustT s to carry the blade from her hand (thrustFrom) to the end of its reach, it is held out thrustHold s and drawn back over thrustBack s */
   thrustEvery: [7, 6, 5], thrustFirst: 4.5, thrustTell: 1.1, thrustT: 0.25, thrustHold: 0.3, thrustBack: 0.45, thrustFrom: 14, thrustReach: 96, thrustY: 70,

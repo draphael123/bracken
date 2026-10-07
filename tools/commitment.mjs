@@ -25,7 +25,7 @@ const HEROES = ['knight', 'warden', 'pyro', 'geomancer', 'paladin', 'pirate', 'r
 const REC = { pirate: [0.06, 0.084, 0.06, null], knight: [0.084, 0.12, 0.084, 0.15], warden: [0.084, 0.12, 0.084, 0.132], pyro: [0.084, 0.12, 0.084, 0.15],
   geomancer: [0.096, 0.132, 0.096, 0.168], paladin: [0.102, 0.132, 0.102, 0.18], reaper: [0.102, 0.132, 0.102, 0.18] };
 const LIGHT_TOTAL = { pirate: 0.29, knight: 0.40, warden: 0.40, pyro: 0.40, geomancer: 0.42, paladin: 0.65, reaper: 0.98 };
-const PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3 };
+const DK_WARD_CUT = 0.25, PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3 };
 const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25 }, STEP_BACK = 15, DELAY_F = 18;   /* the regen's delay, 0.3 s */
 const SKILL = { knight: 'whirlwind', warden: 'skewer', pyro: 'flameRing', geomancer: 'boulder', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'harvestMoon' };
 const MASH_MAX = { knight: 12, warden: 12, pyro: 12, geomancer: 12, paladin: 11, pirate: 15, reaper: 7 };   /* 6 s of attack pressed every frame: the built numbers + 1 (measured 11/11/11/11/10 (paladin at 22)/14/6; the knight did 13 in FOUR seconds before) */
@@ -79,8 +79,10 @@ try {
       if (r.err) { check(false, `${h} ${verb}: ${r.err}`); continue; }
       const ri = verb === 'light' ? 0 : verb === 'third' ? 1 : verb === 'up' || verb === 'sweep' ? 2 : 3;
       const rec = verb === 'plunge' ? WHIFF[h] + PLUNGE_ADD : verb === 'heavy' && h === 'pirate' ? PISTOL : REC[h][ri];
-      const art = verb === 'heavy' && h === 'pirate' ? 0 : r.artEnd;
-      const winF = Math.max(art + 1, Math.ceil((art * F + rec - WINDOW) / F - 1e-6));   /* the window's first frame, counted from the verb's start */
+      const rollRow = rows.find(x => x.h === h && x.verb === verb && x.it === 'roll');
+      const art = verb === 'heavy' && h === 'pirate' ? 0 : (h === 'reaper' && it === 'c' && verb !== 'plunge' && r.artEnd === null && rollRow ? rollRow.art : r.artEnd);   /* (the Death Knight's ward cuts the swing before its art ends: the roll's row has the art) */
+      let winF = Math.max(art + 1, Math.ceil((art * F + rec - WINDOW) / F - 1e-6));   /* the window's first frame, counted from the verb's start */
+      if (h === 'reaper' && it === 'c' && verb !== 'plunge') winF = Math.max(1, Math.ceil((art * F + rec - DK_WARD_CUT) / F - 1e-6));   /* (claude/dkhero, Daniel 10-06) THE DEATH KNIGHT'S WARD cuts the last 0.25 s of his swing */
       rows.push({ h, verb, it, acted: r.acted, art, winF });
       check(r.acted >= 0, `${h} ${verb} -> ${it}: never acted`);
       check(r.acted >= winF - TOL, `${h} ${verb} -> ${it}: acted at f${r.acted}, before the window (f${winF})`);

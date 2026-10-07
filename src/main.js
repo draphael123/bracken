@@ -5710,8 +5710,10 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
      halfway round is a two-hander nobody would ever swing, because it is slower than what it is hitting. */
   const iron = hero() === 'knight' && P.ironT > 0;   /* IRONCLAD: nothing staggers him or stops his swing - and it all still hurts */
   const armoured = iron || (P.atk >= 0 && !P.plunge && (P.heavy || P.heavySwing || isReaper()));
+  const plated = isReaper() && !armoured && !P.plunge && CM.inRecovery(P);   /* (claude/dkhero) THE DEATH KNIGHT'S PLATE: the swing's recovery takes x0.75 too (he still flinches and has his mercy window) */
+  if (plated) { dmg = Math.max(1, Math.round(dmg * 0.75)); P.plateFlash = 0.22; number(P.x, P.y - 30, 'PLATE', '#9aa4b8'); SFX.clank(); }
   if (iron) { SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 5); }
-  else if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); }
+  else if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); if (isReaper()) P.plateFlash = 0.22; }
   // and the mercy window comes down: a second and a tenth of nothing-can-touch-you was a reward for failing
   if (isReaper() && P.boneArmor > 0 && dmg > 0) { P.boneArmor--; dmg = Math.max(1, Math.round(dmg * 0.4)); 0; SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 6); if (P.boneArmor <= 0) P.boneArmorT = 0; }   /* BONE ARMOR (claude/herokit): three blows at two fifths */
   P.hp -= dmg; P.inv = (armoured ? 0.55 : 0.8) + (perk('grit') ? 0.15 : 0); P.hurt = armoured ? 0 : Math.max(P.hurt, 0.35);
@@ -7974,7 +7976,7 @@ function updatePlayer(dt) {
   hushT = Math.max(0, hushT - dt);
   for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'dashRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
-  P.atkRec = Math.max(0, (P.atkRec || 0) - dt); CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the recovery runs down, and a press made while committed is HELD for the window */
+  P.atkRec = Math.max(0, (P.atkRec || 0) - dt); if (!(P.atkRec > 0)) P.recSwing = false; CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the recovery runs down, and a press made while committed is HELD for the window */
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
       hurtAs('dash', e, Math.round((12 + 5 * tal('boarding'))*amul('boarding')), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 180; }
@@ -8036,14 +8038,16 @@ function updatePlayer(dt) {
   if (isReaper()) {
     P.harvest = Math.max(0, Math.min(100, P.harvest || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
     P.reaping = Math.max(0, (P.reaping || 0) - dt);
-    P.wardFlash = Math.max(0, (P.wardFlash || 0) - dt); P.novaCd = Math.max(0, (P.novaCd || 0) - dt); P.returnT = Math.max(0, (P.returnT || 0) - dt); P.wardSince = (P.wardSince ?? 9) + dt; P.retSince = (P.retSince ?? 9) + dt; P.parryT = Math.max(0, (P.parryT || 0) - dt);
+    P.wardFlash = Math.max(0, (P.wardFlash || 0) - dt); P.plateFlash = Math.max(0, (P.plateFlash || 0) - dt); P.novaCd = Math.max(0, (P.novaCd || 0) - dt); P.returnT = Math.max(0, (P.returnT || 0) - dt); P.wardSince = (P.wardSince ?? 9) + dt; P.retSince = (P.retSince ?? 9) + dt; P.parryT = Math.max(0, (P.parryT || 0) - dt);
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);   /* WEIGHT: his skills and his ward wait for the window */
     /* A full blood bar defers the equipped first-slot skill until release; a long hold spends only Blood Surge. Other slots cast normally. */
     if (throwPress && P.harvest >= 100) P.fHeld = 0.001;
     if(skillPress('summonSkeleton') && free)summonPress();
     if (P.fHeld > 0) { if (keys.throw && P.harvest >= 100) { P.fHeld += dt; if (P.fHeld >= SURGE_HOLD) { P.fHeld = 0; if (free) bloodSurge(); } } else P.fHeld = 0; }
     if (keys.block) { P.cHeld = (P.cHeld || 0) + dt;
-      if (P.cHeld >= WARD_UP && free && !attacking && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.novaCd > 0)) {   /* BLOOD WARD: the point in the ground, and the ward stands up in front of it */
+      const wardCut = (P.atk >= 0 || P.recSwing) && attacking && !stunned && !dodging && !P.plunge && !P.dashCut && !(P.blastT > 0) && !(P.wardHeld > 0) && CM.swingLeft('reaper', P) <= CM.DK_WARD_CUT;   /* (claude/dkhero) THE WARD CUTS THE LAST 0.25 s OF HIS SWING */
+      if (P.cHeld >= WARD_UP && (free || wardCut) && (!attacking || wardCut) && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.novaCd > 0)) {   /* BLOOD WARD: the point in the ground, and the ward stands up in front of it */
+        if (wardCut) { P.atk = -1; P.atkRec = 0; P.heavy = false; P.cutStage = 0; P.swingEndT = time; P.bashing = false; number(P.x, P.y - 30, 'WARD', '#ff6b6b'); }
         if (!(P.wardHeld > 0)) { P.wardHeld = 0.001; P.st = Math.max(0, P.st - WARD_RAISE); P.wardFull = (P.wardG || 0) >= wardCap() - 0.5; SFX.dkWard(); ringAt(P.x + P.face * 12, P.y - 18, 14, '#ff4a5a', 0.3); }
         P.warding = true; P.wardHeld += dt; P.wardKeepT = 3; if (!tal('drainWalk')) P.vx = 0;   /* WARD WALK: the blade comes with him, slowly */
         P.st = Math.max(0, P.st - WARD_HOLD * dt); P.stDelay = ST.delay;
@@ -8391,6 +8395,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }
       if (P.heavy && hero() === 'knight' && P.cutStage === 3 && !P.cutQuaked && was < 0.2 && P.atk >= 0.2 && (P.ground || P.swim)) { P.cutQuaked = true; cutQuake(); }   /* THE KNOCKDOWN's blade into the floor */   /* the blade goes into the ground, and the ground answers */
       if (P.atk > lim) { P.atkRec = CM.recoveryFor(hero(), { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut });   /* WEIGHT: the swing is seen through (src/commit.js COMMIT) */ if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
+        P.recSwing = P.atkRec > 0;   /* (claude/dkhero) this recovery is a SWING's: the Death Knight's ward may cut its end */
         P.atk = -1; P.heavy = false; P.cutStage = 0; P.swingEndT = time; } }
     /* ==== AND THE RUN-THROUGH TRAVELS. It did not: measured in the page, holding the swing and letting it go moved her
        NOUGHT pixels across the whole thing, because a ground swing's friction (1600 a second) eats the shove fireHeavy
@@ -27749,6 +27754,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (hero() === 'knight' && P.realmT > 0) { const gx = Math.round(P.x - cx) + P.face * 9, gy = Math.round(P.y - cy) - 12; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 12); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(gx, gy, 5, 0, 7); g.fill(); g.restore(); }   /* SWORD OF THE REALM: the light on the blade */
       if (P.swim && !shadowed) swimQ.push({ set: KD, key, frame, x: P.x - cx, y: P.y - cy + dY, face: dFace, sx: sx * (2 - br) * hs, sy: sy * br * hs, rot: swimRot, white: false, a: 1, hero: true });   /* and he comes up through the water like everyone else in it, tilted the same way (drawSwimmers) */
       if (shadowed) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#140a1c', 0.75);
+      if (isReaper() && P.plateFlash > 0) drawTinted(K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, '#2a2634', Math.min(0.85, P.plateFlash * 4));   /* (claude/dkhero) THE PLATE TAKES THE BLOW: a dark steel flash */
       if (hero() === 'knight' && lcOn()) {   /* THE LAST CHARGE: a gold light on the face of the shield, pulsing, brace and rush */
         const lx = Math.round(P.x - cx) + P.face * 7, ly = Math.round(P.y - cy) - 12, pu = 0.6 + 0.4 * Math.sin(time * 38);
         g.globalAlpha = 0.35 * pu; g.fillStyle = '#ffd36b'; g.fillRect(lx - 4, ly - 7, 8, 14); g.globalAlpha = 0.85 * pu; g.fillStyle = '#fff6c8'; g.fillRect(lx - 1, ly - 4, 2, 8); g.globalAlpha = 1; }
