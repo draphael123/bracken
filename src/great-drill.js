@@ -18,20 +18,22 @@
 //   P1 (100-60%): THE BORE (!!: the bit swings to a line - the line flashes 'BORE' - and lunges down it: change line), THE GRIND (!!: it surges
 //      after you - 'GRIND' and the glow: boost away).
 //   P2 (60-30%): NEW: THE ROOF - it bores the roof: rock shadows on two lines (! ~1.0 s), the third is clear (or brake / boost off the shadow).
-//   P3 (30-0%): NEW: FULL BORE - '!! FULL BORE' (1.2 s), then a long charge: hold BOOST, or it runs you down. Its bores come quicker.
+//   P3 (30-0%): THE ARENA CHANGES (B5; fix pass, review): its roof bore brings the roof down on the HIGH line - the rail is gone, TWO LINES LEFT (LOW
+//      and MID: the bore, the roof and the ore cart all come at the two). NEW: FULL BORE - '!! FULL BORE' (1.2 s), then a long charge: hold BOOST, or it
+//      runs you down. Its bores come quicker.
 export const DRILL_STAGE = { W: 22, lanes: [0, 3, 6], ceil: 10, points: 12, chute: 19 };
 export const DRILL = {
   hp: 1900, w: 28, h: 52, cruise: 150,
   creep: 9, frontMin: 34, frontMax: 150, push: 46,
-  contactDmg: 40, contactCd: 1.1,
-  boreTell: 1.0, boreTell3: 0.8, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 150, bitIdle: 18, boreDmg: 35,
+  contactDmg: 34, contactCd: 1.1,   /* (fix pass, review MF3: 40 -> 34; with the bore 35 -> 31 the stacked P1 opening was 75 of the pyro's 88) */
+  boreTell: 1.0, boreTell3: 0.8, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 150, bitIdle: 18, boreDmg: 31,
   grindTell: 0.8, grindT: 0.7, grindDist: 78,
   roofTell: 1.0, roofDmg: 27, roofW: 30,
   fullTell: 1.2, fullT: 1.4, fullDist: 150,
   oreFirst: 3.0, oreEvery: [8.5, 8.0, 7.5], oreV: 64, oreDmg: 18, chuteTell: 1.0,
-  jamT: 4.6, jamMul: 2.0, jamCap: 0.11, wardT: 3.0, lockT: 1.2,
+  jamT: 4.6, jamMul: 2.5, jamCap: 0.15,   /* (fix pass: 2.0 / 0.11 -> 2.5 / 0.15 - the key pays more, for every hero) */ wardT: 3.0, lockT: 1.2,
   phase2: 0.6, phase3: 0.3, phaseT: 2.0,
-  gap: [0.8, 0.7, 0.6],
+  gap: [1.0, 0.7, 0.6],   /* (fix pass: P1 0.8 -> 1.0) */
   chain: { 1: ['bore', 'bore', 'grind', 'bore'], 2: ['bore', 'roof', 'bore', 'grind', 'roof'], 3: ['bore', 'full', 'roof', 'bore', 'grind', 'roof'] },
 };
 export const LANE_NAME = ['LOW', 'MID', 'HIGH'];
@@ -56,6 +58,8 @@ export function geom(A, TS = 16) {
   const q = A.drill, S = DRILL_STAGE, sx = q.sx, F = q.F;
   return { x0: sx * TS, x1: (sx + S.W) * TS, F, TS, floor: F * TS, laneY: S.lanes.map(l => (F - l) * TS), pointsX: (sx + S.points) * TS + 8, chuteX: (sx + S.chute) * TS + 8, ceilY: (F - S.ceil) * TS };
 }
+/* the lines there are: three, or two once P3 has brought the roof down on the HIGH line */
+export const lanesOf = S => (S && S.highDown ? [0, 1] : [0, 1, 2]);
 /* which line a foot is on (0 LOW, 1 MID, 2 HIGH), or -1 in the air between */
 export function laneOf(G, y, tol = 6) { for (let i = 0; i < 3; i++) if (Math.abs(y - G.laneY[i]) <= tol) return i; return -1; }
 /* the nearest line at or under a foot (for a hero in the air: where he will land) */
@@ -87,7 +91,7 @@ export function stepDrill(e, S, dt, heroes, c) {
   S.contactCd = Math.max(0, S.contactCd - dt); S.lock = Math.max(0, S.lock - dt);
   /* THE ORE CARTS: the chute's tell, then the cart rolls back down its line; set points drop it to the LOW line; the gears, the bit, a hero */
   if (!drillOpen(e) && e.mode !== 'phase') S.oreT -= dt;
-  if (S.oreT <= 0 && !S.chute && S.ores.length === 0) { S.chute = { lane: S.oreN % 2 ? 2 : 1, t: DRILL.chuteTell }; S.oreN++; c.sound && c.sound('chute');
+  if (S.oreT <= 0 && !S.chute && S.ores.length === 0) { S.chute = { lane: S.oreN % 2 && !S.highDown ? 2 : 1, t: DRILL.chuteTell }; S.oreN++; c.sound && c.sound('chute');
     if (!S.told.ore) { S.told.ore = 1; c.number(G.chuteX, G.laneY[2] - 40, 'A LOADED ORE CART: SET THE POINTS AND IT DROPS TO ITS GEARS', '#ffd36b'); } }
   if (S.chute) { S.chute.t -= dt; if (S.chute.t <= 0) { S.ores.push({ x: G.chuteX, lane: S.chute.lane, id: S.oreN, vy: 0, y: G.laneY[S.chute.lane], drop: false }); S.chute = null; S.n.ores++; S.oreT = DRILL.oreEvery[S.ph - 1]; c.sound && c.sound('oreLand'); } }
   for (const o of S.ores) {
@@ -119,7 +123,9 @@ export function stepDrill(e, S, dt, heroes, c) {
   const k = e.hp / e.maxHp;
   if (e.mode !== 'phase' && ((S.ph === 1 && k <= DRILL.phase2) || (S.ph === 2 && k <= DRILL.phase3))) {
     S.ph++; e.phase = S.ph; e.mode = 'phase'; e.modeT = DRILL.phaseT; S.i = 0; S.bitLen = DRILL.bitIdle; S.surge = 0; c.music && c.music(S.ph); c.shake && c.shake(5); c.sound && c.sound('phase');
-    c.number(S.D, G.laneY[2] - 40, S.ph === 2 ? 'IT BORES THE ROOF: WATCH FOR THE SHADOWS' : 'FULL BORE: IT WILL RUN YOU DOWN - BOOST', S.ph === 2 ? '#ffb070' : '#ff6b6b'); return; }
+    if (S.ph === 3) { S.highDown = true; c.arena && c.arena('highDown'); c.sound && c.sound('rock');   /* THE ARENA CHANGES: the HIGH line comes down (an ore cart on it drops to the mid) */
+      for (const o of S.ores) if (o.lane === 2 && !o.drop) { o.lane = 1; o.y = G.laneY[1]; } }
+    c.number(S.D, G.laneY[2] - 40, S.ph === 2 ? 'IT BORES THE ROOF: WATCH FOR THE SHADOWS' : 'THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT', S.ph === 2 ? '#ffb070' : '#ff6b6b'); return; }
   if (e.mode === 'phase') { e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 0.8; } return; }
   /* THE CREEP: it is always coming (and a surge moves it more) */
   const near = live.slice().sort((a, b) => a.x - b.x)[0];
@@ -129,12 +135,12 @@ export function stepDrill(e, S, dt, heroes, c) {
   switch (e.mode) {
     case 'idle': { S.cd -= dt; if (S.cd > 0) break;
       const ch = DRILL.chain[S.ph]; let name = ch[S.i % ch.length]; S.i++;
-      if (name === 'bore' || !near) { const lane = near ? (near.lane >= 0 ? near.lane : laneUnder(G, near.y)) : 1; S.boreLane = lane; S.bitLane = lane; e.mode = 'boreTell'; e.modeT = S.ph === 3 ? DRILL.boreTell3 : DRILL.boreTell; S.n.bore++; c.sound && c.sound('tellHard'); }
+      if (name === 'bore' || !near) { const lane = Math.min(lanesOf(S).length - 1, near ? (near.lane >= 0 ? near.lane : laneUnder(G, near.y)) : 1); S.boreLane = lane; S.bitLane = lane; e.mode = 'boreTell'; e.modeT = S.ph === 3 ? DRILL.boreTell3 : DRILL.boreTell; S.n.bore++; c.sound && c.sound('tellHard'); }
       else if (name === 'grind') { e.mode = 'grindTell'; e.modeT = DRILL.grindTell; c.sound && c.sound('tellHard'); c.number(S.D, G.laneY[2] - 30, 'GRIND', '#ff6b6b'); }
-      else if (name === 'roof') { const hl = near ? (near.lane >= 0 ? near.lane : laneUnder(G, near.y)) : 1; const clear = [0, 1, 2].filter(l => l !== hl)[S.n.roof % 2]; S.n.roof++;
-        const x = near ? near.x + (near.vx || 0) * 0.3 : G.pointsX; S.roof = [0, 1, 2].filter(l => l !== clear).map((lane, j) => ({ lane, x: Math.max(S.D + 40, Math.min(G.x1 - 20, x)), t: DRILL.roofTell, id: S.n.roof * 3 + j }));
+      else if (name === 'roof') { const ls = lanesOf(S), hl = Math.min(ls[ls.length - 1], near ? (near.lane >= 0 ? near.lane : laneUnder(G, near.y)) : 1); const clear = ls.length === 2 ? ls.find(l => l !== hl) : ls.filter(l => l !== hl)[S.n.roof % 2]; S.n.roof++;
+        const x = near ? near.x + (near.vx || 0) * 0.3 : G.pointsX; S.roof = ls.filter(l => l !== clear).map((lane, j) => ({ lane, x: Math.max(S.D + 40, Math.min(G.x1 - 20, x)), t: DRILL.roofTell, id: S.n.roof * 3 + j }));
         e.mode = 'roofTell'; e.modeT = DRILL.roofTell; c.sound && c.sound('tell'); }
-      else if (name === 'full') { e.mode = 'fullTell'; e.modeT = DRILL.fullTell; S.n.full++; c.sound && c.sound('tellHard'); c.number(S.D, G.laneY[2] - 30, '!! FULL BORE', '#ff6b6b'); }
+      else if (name === 'full') { e.mode = 'fullTell'; e.modeT = DRILL.fullTell; S.n.full++; c.sound && c.sound('tellHard'); if (!S.told.full) { S.told.full = 1; c.number(S.D, G.laneY[2] - 30, 'FULL BORE: IT WILL RUN YOU DOWN - BOOST', '#ff6b6b'); } else c.number(S.D, G.laneY[2] - 30, '!! FULL BORE', '#ff6b6b'); }
       break; }
     case 'boreTell': if (e.modeT <= 0) { e.mode = 'boreOut'; e.modeT = DRILL.boreOut; c.sound && c.sound('bore'); } break;
     case 'boreOut': S.bitLen = DRILL.bitIdle + (DRILL.boreLen - DRILL.bitIdle) * Math.min(1, 1 - e.modeT / DRILL.boreOut); if (e.modeT <= 0) { e.mode = 'boreHold'; e.modeT = DRILL.boreHold; S.bitLen = DRILL.boreLen; c.shake && c.shake(2); } break;
@@ -164,7 +170,7 @@ export function throwPoints(S) { S.points = !S.points; return S.points; }
    P: { x, y, ground, face, atk, vy, lane }; returns { gx (where to hold, arena px), jump, drop (down + jump), duck, atk, talk (E), face, why } */
 export const DRILL_PLAN = { react: 0.25, miss: 0.13, missPoints: 0.2 };
 export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip = 0 }) {
-  const G = S.G, out = { gx: null, face: P.face, why: '' }, lane = P.lane >= 0 ? P.lane : laneUnder(G, P.y);
+  const G = S.G, out = { gx: null, face: P.face, why: '' }, lane = P.lane >= 0 ? P.lane : Math.min(lanesOf(S).length - 1, laneUnder(G, P.y)), LS = lanesOf(S);
   const late = k => { if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
   const cab = cabBox(G, S), standX = cab.r + (tip ? tip + 4 : Math.max(10, Math.min(reach, 22) - 6));   /* (a spear's tip pays at a distance from the near edge: the warden stands back) */
   const go = l => { if (l > lane && P.ground) out.jump = true; else if (l < lane && P.ground) out.drop = true; };
@@ -172,7 +178,7 @@ export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip 
   if ((e.mode === 'boreTell' || e.mode === 'boreOut' || e.mode === 'boreHold') && late('bore' + S.n.bore)) danger.add(S.bitLane);
   for (const r of S.roof) if (r.t > 0 && Math.abs(r.x - P.x) < DRILL.roofW && late('roof' + r.id)) danger.add(r.lane);
   for (const o of S.ores) if (!o.drop && o.x > P.x - 4 && o.x - P.x < 90) danger.add(o.lane); else if (o.drop) danger.add(0);
-  const safe = [lane, 1, 2, 0].find(l => !danger.has(l));
+  const safe = [lane, 1, 2, 0].filter(l => LS.includes(l)).find(l => !danger.has(l));
   /* 1. THE SURGES: get ahead of it */
   if ((e.mode === 'grindTell' || e.mode === 'grind' || e.mode === 'fullTell' || e.mode === 'full') && late('surge' + S.n.grind + ':' + S.n.full)) { out.gx = Math.min(G.x1 - 24, S.D + (e.mode.startsWith('full') ? 230 : 150)); out.why = 'outrun'; }
   /* 2. THE OPENING: to the cab, off the bit's line (there is no bit out when jammed), and strike */
@@ -184,7 +190,7 @@ export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip 
   else { const boring = e.mode === 'boreTell' || e.mode === 'boreOut' || e.mode === 'boreHold' || e.mode === 'boreBack';
     if (S.ward > 0) { out.gx = Math.min(G.x1 - 30, S.D + 90); out.why = 'wait'; }
     else { out.gx = standX; out.face = -1; if (Math.abs(P.x - standX) < 10 && lane >= 1 && !(boring && lane === S.bitLane) && P.atk < 0 && (mem.atkT ?? -9) < t - 0.35) { mem.atkT = t; out.atk = true; } out.why = 'cab'; if (boring && lane === S.bitLane && !danger.has(lane)) danger.add(lane); }
-    if (lane === S.bitLane || lane === 0) { const l2 = [1, 2].find(l => l !== S.bitLane && !danger.has(l)); if (l2 !== undefined && !out.jump && !out.drop) go(l2); } }
+    if (lane === S.bitLane || lane === 0) { const l2 = [1, 2].filter(l => LS.includes(l)).find(l => l !== S.bitLane && !danger.has(l)); if (l2 !== undefined && !out.jump && !out.drop) go(l2); } }
   if (danger.has(lane) && safe !== undefined && safe !== lane) { out.jump = false; out.drop = false; go(safe); out.why += ' +dodge'; }
   /* never sit in its front */
   if (out.gx !== null) out.gx = Math.max(S.D + 12, out.gx);

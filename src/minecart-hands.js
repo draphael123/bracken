@@ -11,7 +11,7 @@
 //   reset()                             a load or a death: the points back to their default, the rockfalls armed, the goblins waiting, a fresh cart
 //   drawWorld, drawCart(g, P), drawHud, drawOver, read, bakeOreIcon, handsState
 // GREYBOX art: rails, sleepers, trestles, levers, crushers, gates and carts are plain shapes until the art pass.
-import { MC, cartSpeed } from './minecart.js';
+import { MC, cartSpeed, runeAt } from './minecart.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { resolve, newStall, stallTick, drawGlint } from './stuck-guide.js';
 
@@ -30,19 +30,19 @@ export function makeMinecartHands(ctx) {
     const Lv = L();
     M = { L: Lv, points: Lv.mcPoints.map(p => ({ ...p, state: p.dflt, flash: 0, said: false })), crushers: Lv.mcCrushers.map(c => ({ ...c })), gates: Lv.mcGates.map(g => ({ ...g })),
       rocks: Lv.mcRocks.map(r => ({ ...r, armed: true, fallT: -1, done: false })), beams: Lv.mcBeams.map(b => ({ ...b, cd: 0 })), carts: [], shots: [], runes: [],
-      stalls: {}, glint: null, clock: 0, said: {}, n: { throws: 0, crashes: 0, falls: 0, crushed: 0, rocks: 0, beams: 0, gates: 0, taken: 0, knocked: 0, arrows: 0, runes: 0, retries: 0 } };
+      stalls: {}, glint: null, clock: 0, said: {}, told: {}, tellT: -9, rumbleT: 0, n: { throws: 0, crashes: 0, falls: 0, crushed: 0, rocks: 0, beams: 0, gates: 0, taken: 0, knocked: 0, arrows: 0, runes: 0, retries: 0 } };
   }
   H.reset = () => {
     if (!H.on()) { M = null; return; }
     if (!M || M.L !== L()) build();
     for (const p of M.points) { p.state = p.dflt; layPoints(p); }
     for (const r of M.rocks) { r.armed = true; r.fallT = -1; r.done = false; }
-    M.carts = []; M.shots = []; M.runes = [];
+    M.carts = []; M.shots = []; M.runes = []; M.told = {}; M.tellT = -9;   /* (a life: every tell ahead of you is told again) */
     /* THE GOBLINS WAIT: a placed foe whose ent says ride: {...} is put away (not alive) until you pass its trigger */
     const ents = M.L.ents;
     for (const e of ctx.enemies()) { const k = e.xpKey ? +String(e.xpKey).split('.')[0] : -1, src = k >= 0 ? ents[k] : null;
       if (src && src.ride && e.alive) { e.mcRide = src.ride; e.mcWait = true; e.alive = false; e.mcSrcX = src.x; } }
-    for (const pp of ctx.players) { const c = cartOf(pp); c.v = 0; c.hist = []; c.lastGround = null; c.crashCd = 0; }
+    for (const pp of ctx.players) { const c = cartOf(pp); c.v = 0; c.hist = []; c.lastGround = null; c.crashCd = 0; c.holdT = MC.hold; }   /* (the cart waits a beat at the start and at a station) */
   };
   const layPoints = p => { const t = ctx.T; for (const [x, y] of p.tiles) ctx.cellSet(x, y, p.state === 'set' ? t.RAIL : t.AIR); };
 
@@ -58,7 +58,8 @@ export function makeMinecartHands(ctx) {
     if (tm) { const want = keys.left && !keys.right ? tm.cruise - MC.treadBack : keys.right && !keys.left ? MC.boost : tm.cruise; c.v += Math.max(-MC.treadAcc * dt, Math.min(MC.treadAcc * dt, want - c.v)); }   /* THE TREADMILL: the bore runs past at cruise - brake lets it come at you (a drift back), boost pulls you ahead, let go and you hold */
     /* REVERSE: LEFT still held at a stop, and the cart rolls back (slowly): out of a dead end, back for a missed lever */
     else if ((P.ground || P.coyote > 0) && keys.left && !keys.right && c.v <= 0.01) { c.backT = (c.backT || 0) + dt; if (c.backT > MC.reverseAfter) c.v = Math.max(-MC.reverse, c.v - MC.brake * 0.5 * dt); }
-    else if (P.ground || P.coyote > 0) { c.backT = 0; c.v = cartSpeed(c.v, { boost: !!keys.right && !keys.left && !stunned, brake: !!keys.left && !keys.right }, dt); }
+    else if ((P.ground || P.coyote > 0) && c.holdT > 0 && !keys.right) { c.holdT -= dt; c.v = 0; }   /* WAITING at the start / a station: it rolls off on its own after MC.hold (RIGHT goes at once) */
+    else if (P.ground || P.coyote > 0) { c.backT = 0; c.holdT = 0; c.v = cartSpeed(c.v, { boost: !!keys.right && !keys.left && !stunned, brake: !!keys.left && !keys.right }, dt); }
     else if (keys.right && !keys.left) c.v = Math.min(MC.boost, c.v + MC.accUp * 0.5 * dt); else if (keys.left && !keys.right) c.v = Math.max(0, c.v - MC.brake * 0.5 * dt);
     let vx = c.v - (tm ? tm.cruise : 0);
     if (tm) { if (P.x > tm.x1 - 18 && vx > 0) { vx = 0; c.v = Math.min(c.v, tm.cruise); } if (P.x < tm.x0 + 10 && vx < 0) vx = 0; }
@@ -128,7 +129,7 @@ export function makeMinecartHands(ctx) {
     const dx = P.x - cart.x, inRange = Math.abs(dx) < 250 && !P.dead;
     if (cart.tell > 0) { cart.tell -= dt; e.mcTelling = true;
       if (cart.tell <= 0) { e.mcTelling = false; cart.cd = e.t === 'gobmage' ? MC.casterCd : MC.archerCd;
-        if (e.t === 'gobmage') { const pc0 = cartOf(P), gy = pc0.lastGround ? pc0.lastGround.y : P.y; const rx = P.x + Math.max(30, heroV) * 0.9 + 12;
+        if (e.t === 'gobmage') { const pc0 = cartOf(P), gy = pc0.lastGround ? pc0.lastGround.y : P.y; const rx = runeAt(P.x, heroV);   /* (review MF2: where your cart WILL be when it bursts - hold your pace and it is under you) */
           M.runes.push({ x: rx, y: gy, t: MC.runeT, t0: MC.runeT, id: M.n.runes++ }); ctx.sfx.charge && ctx.sfx.charge(); }
         else { const fy = e.y - 7, ty = P.y - 8, lead = 0.45, tx = P.x + heroV * lead; const vx = (tx - cart.x) / lead, vy = (ty - fy) / lead - 0.5 * 300 * lead;
           M.shots.push({ x: cart.x, y: fy, vx, vy, g: 300, life: 2, dmg: MC.arrowDmg, name: 'A CART ARCHER', id: M.n.arrows++ }); ctx.sfx.bowShot ? ctx.sfx.bowShot() : ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } } }
@@ -167,10 +168,20 @@ export function makeMinecartHands(ctx) {
     for (const r of M.runes) { r.t -= dt; if (r.t <= 0 && !r.done) { r.done = true; ctx.burst(r.x, r.y - 6, 12, ['#b48aff', '#ffd36b', '#ffffff'], 70, 0.5); ctx.sfx.zap ? ctx.sfx.zap() : ctx.sfx.puff && ctx.sfx.puff();
         for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return; if (Math.abs(P.x - r.x) < MC.runeR + 4 && P.y > r.y - 26 && P.y <= r.y + 4) ctx.hurtHero(r.x, MC.runeDmg, { unblockable: true, name: 'A GOBLIN RUNE' }); }); } }
     M.runes = M.runes.filter(r => r.t > -0.3);
-    if (P0) stall(P0, dt);
+    if (P0) { stall(P0, dt); tells(P0); approach(P0, dt); }
     /* THE SMELTER'S COUNT: told once, the moment the eighth ore is in the tub */
     if (P0 && !M.said.ore8) { const sm = M.points.find(p => p.ore); if (sm && ctx.questGot() >= sm.ore) { M.said.ore8 = 1; ctx.number(P0.x, P0.y - 40, "EIGHT ORE: THE SMELTER'S POINTS WILL OPEN", '#ffd36b'); } }
   };
+  /* THE TELLS (review MF1): crossing a tell's column (and short of the place it can hurt) puts its line in the hint box - once a life, never over another
+     (MC.tellGap). The line is data (L.mcTells, routed in src/hint-lines.js MC_TELL_LINES) */
+  function tells(P) { if (P.dead) return; const col = P.x / TS();
+    for (const t of M.L.mcTells || []) { if (M.told[t.id]) continue; if (col >= t.at) { M.told[t.id] = 1; continue; } if (col < t.x) break;
+      if (M.clock - M.tellT < MC.tellGap) break; M.told[t.id] = 1; M.tellT = M.clock; M.n.tells = (M.n.tells || 0) + 1; ctx.number(P.x, P.y - 40, t.text, '#ffe9a0'); break; } }
+  /* THE DRILL COMES (B8): from the rumble's column the roof shakes and dusts on a beat that quickens as you near the bore, a rumble under it */
+  function approach(P, dt) { const r = (M.L.decor || []).find(d => d.kind === 'rumble'); if (!r || P.dead) return; const col = P.x / TS(); if (col < r.x0 || col > r.x1) return;
+    const k = (col - r.x0) / (r.x1 - r.x0); M.rumbleT -= dt; if (M.rumbleT > 0) return; M.rumbleT = 1.8 - 1.2 * k;
+    ctx.shake(1 + Math.round(2 * k)); ctx.sfx.rumble ? ctx.sfx.rumble() : ctx.sfx.thud && ctx.sfx.thud(); const ts = TS();
+    for (let i = 0; i < 2 + Math.round(3 * k); i++) ctx.burst(P.x + 40 + Math.random() * 200, (r.row - 9) * ts, 3, ['#6b5a48', '#8a7660'], 30, 0.7); }
   function stepHero(P, dt, now) {
     const c = cartOf(P), ts = TS(), Lv = M.L;
     /* THE LEVERS: a blow that lands on one throws it */
@@ -236,6 +247,19 @@ export function makeMinecartHands(ctx) {
     /* the decor: fall-ins, the roof over the hidden lever, the bore, the smelter's glow */
     for (const d of M.L.decor) { if (d.kind === 'fallin') { const x = R(d.x * ts - cx), y = R((d.row - 2) * ts - cy); g.fillStyle = '#4a3a2c'; g.fillRect(x, y, 32, 32); g.fillStyle = '#8a7660'; for (let i = 0; i < 5; i++) g.fillRect(x + (i * 7) % 28, y + (i * 11) % 26, 5, 4); ctx.text('FALLEN IN', x + 16, y - 6, '#ff9a5c', 'center', 5); }
       else if (d.kind === 'bore') { const x = R(d.x0 * ts - cx), w = (d.x1 - d.x0 + 1) * ts, y = R(d.row * ts - cy); g.fillStyle = 'rgba(20,14,10,0.55)'; g.fillRect(x, y - 120, w, 120); g.strokeStyle = '#6b5a48'; for (let i = 0; i < w; i += 22) { g.beginPath(); g.arc(x + i + 11, y - 60, 58, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); } }
+      else if (d.kind === 'crumble') { /* THE LOW LINE GOING (review MF5): its rail cracked, rubble dropping on it, dust - drawn from 530, well before the fall-in */
+        const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx), y = R(d.row * ts - cy); if (x1 < -20 || x0 > vw + 20) continue;
+        g.fillStyle = '#1a1410'; for (let x = x0 + 5; x < x1; x += 13) g.fillRect(x, y - 3, 3, 3);
+        g.fillStyle = '#8a7660'; for (let i = 0; i < 7; i++) { const px = x0 + ((i * 53 + R(time * 17) * 7) % Math.max(1, x1 - x0)), py = y - 90 + ((i * 37 + R(time * 120)) % 88); g.fillRect(px, py, 3, 3); }
+        g.fillStyle = '#4a3a2c'; for (let x = x0 + 8; x < x1; x += 22) g.fillRect(x, y - 5, 6, 3);
+        if (Math.floor(time * 3) % 2) ctx.text('GOING', R((x0 + x1) / 2), y + 12, '#ff9a5c', 'center', 5); }
+      else if (d.kind === 'scar') { /* the drill's bore scars in the rock: round, fresh-cut, bigger toward its tunnel */
+        const x = R(d.x * ts - cx), y = R(d.row * ts - cy); if (x < -60 || x > vw + 60) continue; g.strokeStyle = '#6b5a48'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - d.r, d.r, 0, Math.PI * 2); g.stroke();
+        g.strokeStyle = '#3a2e24'; g.lineWidth = 1; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + d.x; g.beginPath(); g.moveTo(x + Math.cos(a) * d.r * 0.4, y - d.r + Math.sin(a) * d.r * 0.4); g.lineTo(x + Math.cos(a) * d.r * 0.9, y - d.r + Math.sin(a) * d.r * 0.9); g.stroke(); } }
+      else if (d.kind === 'spoil') { const x0 = R(d.x0 * ts - cx), y = R(d.row * ts - cy); g.fillStyle = '#5a4634'; for (let x = 0; x < (d.x1 - d.x0) * ts; x += 9) g.fillRect(x0 + x, y - 3 - ((x * 7) % 3), 5, 3 + ((x * 7) % 3)); }
+      else if (d.kind === 'headlight') { /* its headlight, flickering through the rock at the end of the bore */
+        const x = R(d.x * ts - cx), y = R(d.row * ts - cy), k = 0.5 + 0.5 * Math.sin(time * 9) * Math.sin(time * 2.3); g.fillStyle = 'rgba(255,220,140,' + (0.08 + 0.14 * k).toFixed(2) + ')'; g.beginPath(); g.arc(x, y, 26 + 6 * k, 0, Math.PI * 2); g.fill();
+        g.fillStyle = 'rgba(255,240,200,' + (0.2 + 0.3 * k).toFixed(2) + ')'; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill(); }
       else if (d.kind === 'smelter') { const x = R(d.x * ts - cx), y = R(d.row * ts - cy); const k = 0.5 + 0.5 * Math.sin(time * 3); g.fillStyle = 'rgba(255,140,40,' + (0.18 + 0.12 * k).toFixed(2) + ')'; g.fillRect(x - 40, y - 34, 80, 34); ctx.text('THE SMELTER', x, y - 38, '#ffb050', 'center', 5); } }
     /* THE POINTS: the lever (its disc's arrow) and the fork itself (set = rail; open = a chute down) */
     for (const p of M.points) { const lx = p.x * ts + 8; if (lx < cx - 40 || lx > cx + vw + 40) continue; const x = R(lx - cx), y = R(p.row * ts - cy), set = p.state === 'set', locked = p.ore && ctx.questGot() < p.ore;
@@ -243,9 +267,17 @@ export function makeMinecartHands(ctx) {
       const dy = p.hang ? y + 10 : y - 28, fl = p.flash > 0 && Math.floor(time * 20) % 2; g.fillStyle = fl ? '#ffffff' : locked ? '#5a5a5a' : set ? '#ffd36b' : '#7fc4e0'; g.beginPath(); g.arc(x, dy, 6, 0, Math.PI * 2); g.fill();
       g.fillStyle = DARK; if (set) { g.fillRect(x - 1, dy - 3, 2, 6); g.fillRect(x - 3, dy - 2, 6, 1); g.fillRect(x - 2, dy - 3, 4, 1); } else { g.fillRect(x - 1, dy - 3, 2, 6); g.fillRect(x - 3, dy + 1, 6, 1); g.fillRect(x - 2, dy + 2, 4, 1); }
       if (locked) ctx.text('ORE ' + ctx.questGot() + '/' + p.ore, x, dy - 12, '#9aa39a', 'center', 5);
+      const Ph = ctx.hero(); if (p.req && !set && Ph && lx - Ph.x > -8 && lx - Ph.x < 300) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.strokeStyle = 'rgba(255,211,107,' + (0.5 + 0.5 * k).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, dy, 9 + 3 * k, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }   /* a REQUIRED lever pulses while it is wrong (review MF5) */
       const fx0 = R(p.x0 * ts - cx), fw = (p.x1 - p.x0 + 1) * ts, fy = R(p.prow * ts - cy);
       if (!set) { g.fillStyle = 'rgba(127,196,224,0.35)'; for (let i = 0; i < fw; i += 8) g.fillRect(fx0 + i, fy - 1, 4, 2); g.fillStyle = '#7fc4e0'; g.fillRect(fx0, fy - 6, 2, 8); g.fillRect(fx0 + fw - 2, fy - 6, 2, 8); }
       else { g.fillStyle = '#ffd36b'; g.fillRect(fx0, fy - 4, fw, 1); } }
+    /* THE BOOST GAPS' LIPS (review MF4): a lantern pair and chevrons on the last sleepers - amber, RED where a fall is a death (an exam, the chase) - lit as you near */
+    { const Ph = ctx.hero(); for (const bg of M.L.mcBoost || []) { const lx = bg.x0 * ts; if (lx < cx - 40 || lx > cx + vw + 40) continue; const x = R(lx - cx), y = R(bg.row * ts - cy);
+        const deadly = (M.L.mcExam || []).some(([a, b]) => bg.x0 >= a && bg.x1 <= b) || (M.L.chases || []).some(ch => lx >= ch.trigger && lx <= ch.end), col = deadly ? '#ff6b6b' : '#ffb050';
+        const near = Ph && lx - Ph.x > -4 && lx - Ph.x < 260, on = !near || Math.floor(time * 8) % 2;
+        for (const px of [x - 2, R((bg.x1 + 1) * ts - cx) + 1]) { g.fillStyle = DARK; g.fillRect(px - 1, y - 22, 2, 20); g.fillStyle = on ? col : '#5a4a3a'; g.fillRect(px - 2, y - 26, 4, 4); }
+        g.fillStyle = on ? col : '#5a4a3a'; for (let i = 1; i <= 3; i++) { const cxv = x - i * 9; g.fillRect(cxv, y - 5, 2, 1); g.fillRect(cxv + 1, y - 4, 2, 1); g.fillRect(cxv, y - 3, 2, 1); }
+        if (near && deadly) ctx.text('DEEP', x + R((bg.x1 - bg.x0 + 1) * ts / 2), y - 30, col, 'center', 5); } }
     /* THE CRUSHERS: the block, high and still / shaking (!) / down */
     for (const k of M.crushers) { const x = R(k.x * ts - cx), w = k.w * ts; if (x < -40 || x > vw + 40) continue; const ph = crushPhase(k, now), yb = k.row * ts, top = yb - 6 * ts;
       const drop = ph.state === 'down' ? 1 : ph.state === 'warn' ? 0.05 : 0, bot = R(yb - (1 - drop) * 4.2 * ts - cy) - (ph.state === 'down' ? 0 : 0), shakeX = ph.state === 'warn' ? (Math.floor(time * 30) % 2 ? 1 : -1) : 0;

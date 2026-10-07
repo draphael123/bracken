@@ -52,7 +52,7 @@ function makeCartPilot(BK, plan) {
     /* BEAMS: duck under */
     for (const b of M.beams) { if (b.row !== row) continue; const x0 = b.x0 * TS - 26, x1 = (b.x1 + 1) * TS + 6; if (p.x > x0 && p.x < x1) { duck = true; why = 'duck'; } }
     /* RUNES on this line ahead: jump them as they would go off under me */
-    for (const r of M.runes) { if (Math.abs(r.y - p.y) > 10 || r.t < 0) continue; const at = p.x + v * r.t; if (Math.abs(at - r.x) < 26 && r.x - p.x < 60 && r.x > p.x - 10) { if (r.t < 0.5) jump = true; else brake = true; why = 'rune'; } }
+    for (const r of M.runes) { if (Math.abs(r.y - p.y) > 10 || r.t < 0) continue; const at = p.x + v * r.t; if (Math.abs(at - r.x) < 26 && r.x > p.x - 10) { const fast = p.x + Math.min(230, v + 130 * r.t) * r.t; if (fast > r.x + 30) { boost = true; why = 'boost past rune'; } else if (r.x - p.x < 60) { if (r.t < 0.5) jump = true; else brake = true; why = 'rune'; } } }   /* (fix pass: the rune is laid where the cart will be - a change of pace dodges it, and a boost is the one that also clears a gap on its lip) */
     /* FOES: strike what is near; jump what stands on the line */
     if (plan.fight) { const e = BK.enemies().filter(q => q.alive && !q.boss && Math.abs(q.y - p.y) < 20 && q.x - p.x > -6 && q.x - p.x < 40).sort((a, b) => a.x - b.x)[0];
       if (e && atkCd <= 0) { p.face = 1; BK.press('atk'); atkCd = 18; why = 'strike ' + (e.t); }

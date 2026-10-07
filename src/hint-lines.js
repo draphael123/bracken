@@ -5,6 +5,7 @@
    (main.js), which draws them in the hint box (one line, 1.8 s, never over a longer hint being read). Everything else number() drops is the
    old silent flavour, counted in tools/hint-shown-silent.txt so that no NEW dead line can be added (tools/hint-shown.mjs). */
 import { STUCK_HANDS } from './stuck-spots.js';
+import { TELL_LINES } from './minecart.js';
 import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
   /* claude/slide: the first slope a hero stands on */
@@ -140,6 +141,7 @@ export const CALL_LINES = new Set([
   'THE GATE IS SHUT: WATCH ITS GAUGE', 'CRASH: JUMP THEM OR STRIKE THEM', 'KNOCKED OFF', 'THE END OF THE LINE: HOLD LEFT TO ROLL BACK',
   'A LOADED ORE CART: SET THE POINTS AND IT DROPS TO ITS GEARS', 'THE ORE CART JAMS ITS GEARS: STRIKE THE CAB', 'IT SHRUGS THE CART OFF', 'THE BIT EATS IT: THE GEARS ARE ON THE LOW LINE',
   'IT KNOCKS THE POINTS BACK', 'IT CLEARS ITS GEARS: ITS PLATES ARE UP', 'IT BORES THE ROOF: WATCH FOR THE SHADOWS', 'FULL BORE: IT WILL RUN YOU DOWN - BOOST', 'GRIND', '!! FULL BORE',
+  'THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT',
   'THE ORE CART HITS YOU: KEEP OFF ITS LINE', 'THE GREAT DRILL BORES OUT OF THE WALL', "ITS CAB TAKES A BLOW: BRAKE BACK TO IT, OFF THE BIT'S LINE", 'POINTS SET: THE ORE DROPS TO THE GEARS', 'POINTS CLEAR',
   /* claude/glasssea: THE GLASS SEA's mirrors, beams, beds, cracks, night and cast (src/glass-sea-hands.js) and THE GLASS COLOSSUS (src/glass-colossus.js, src/glass-colossus-hands.js) */
   'FIRELIGHT WILL NOT FUSE SAND: IT WANTS THE SUN', 'THIS NOTCH IS STUCK: FIVE GLASS SHARDS FREE IT', 'DAZZLED: THE BEAM STUNS GLASS', 'FROZEN IN THE FIRELIGHT', 'IT SHATTERS: SHARDS IN THE SAND',
@@ -161,6 +163,9 @@ export const CALL_COUNTS = [/^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING T
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */
 export const SAY_LINES = new Set(BK_LINES);
-export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || SPOT_LINES.has(txt) || SAY_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
+/* (claude/minecart fix pass, review MF1) THE DEEP RAILS' TELLS - the cart's teaching, put in the hint box ~2.5 s ahead of what it tells - are data
+   (src/minecart.js TELL_LINES, laid by tell() into L.mcTells and said through number() as a variable), so they are routed here, not as CALL_LINES */
+export const MC_TELL_LINES = new Set(TELL_LINES);
+export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || SPOT_LINES.has(txt) || SAY_LINES.has(txt) || MC_TELL_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
 /* what is drawn: the line, with the boss-name double space read as a colon ("THE GOBLIN QUEEN: OPEN") */
 export const calloutText = txt => txt.replace(/ {2,}/g, ': ');

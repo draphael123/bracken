@@ -21,7 +21,9 @@ export function makeDrillHands(ctx) {
   H.show = () => S;
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'greatdrill';
-  H.clear = () => { S = null; BOSS_PHASE.greatdrill = 1; };
+  /* THE HIGH LINE (P3 brings the roof down on it): its rail laid or taken up - laid again whenever the fight is made or ends */
+  const highLine = on => { const Ar = A(); if (!Ar || !ctx.cellSet || !ctx.T) return; const q = Ar.drill; for (let x = q.sx; x < q.sx + GD.DRILL_STAGE.W; x++) ctx.cellSet(x, q.F - GD.DRILL_STAGE.lanes[2], on ? ctx.T.RAIL : ctx.T.AIR); };
+  H.clear = () => { if (S && S.highDown) highLine(true); S = null; BOSS_PHASE.greatdrill = 1; };
   H.phase = () => (S && ctx.bossActive && ctx.boss && ctx.boss.t === 'greatdrill' && ctx.boss.alive ? S.ph : 0);
   /* THE TREADMILL: while it fights, the bore runs past at the cart's cruise (the arena stands still) */
   H.tread = () => { const e = ctx.boss; if (!S || !A() || !ctx.bossActive || !e || e.t !== 'greatdrill' || !e.alive || e.mode === 'sleep') return null; return { cruise: DRILL.cruise, x0: S.G.x0, x1: S.G.x1 }; };
@@ -29,13 +31,14 @@ export function makeDrillHands(ctx) {
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
 
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
-    S = GD.newFight(GD.geom(Ar, ctx.TS)); S.D = S.G.x0 - 60; BOSS_PHASE.greatdrill = 1;
+    highLine(true); S = GD.newFight(GD.geom(Ar, ctx.TS)); S.D = S.G.x0 - 60; BOSS_PHASE.greatdrill = 1;
     const e = { ...base, t: 'greatdrill', w: DRILL.w, h: DRILL.h, hp: ctx.EHP.greatdrill, maxHp: ctx.EHP.greatdrill, noGrav: true, face: 1, mode: 'sleep', modeT: 0, open: 0, phase: 1, boss: true };
     e.x = S.G.x0; e.y = S.G.laneY[1]; for (const pp of ctx.players) pp.gdKeys = null; return e; };
 
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, vx: pp.vx, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, lane: pp.ground ? GD.laneOf(S.G, pp.y) : -1, pp }));
   function world(e) {
     return {
+      arena: k => { if (k === 'highDown') { highLine(false); ctx.shake(7); const G = S.G; for (let x = G.x0 + 20; x < G.x1; x += 24) ctx.burst(x, G.laneY[2], 6, ['#6b5a48', '#8a7660', '#2a2119'], 90, 0.7); } },
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
       music: ph => { BOSS_PHASE.greatdrill = ph; if (ctx.music) ctx.music(ph > 1 ? 'greatdrill:p' + ph : 'greatdrill'); },
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
@@ -63,7 +66,7 @@ export function makeDrillHands(ctx) {
     if (d <= 0) { e.chipHit = ctx.time(); ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(GD.cabBox(S.G, S).r, S.G.laneY[1] - 20, 1, 4); }
     return d; };
   H.barName = e => 'THE GREAT DRILL' + (e.mode === 'jammed' ? '  JAMMED' : S && S.ward > 0 ? '  WARDED' : '');
-  H.end = e => { if (S) { S.ores = []; S.roof = []; S.chute = null; S.bitLen = DRILL.bitIdle; } BOSS_PHASE.greatdrill = 1; if (ctx.L) ctx.L.mcDrillDown = true; };
+  H.end = e => { if (S) { S.ores = []; S.roof = []; S.chute = null; S.bitLen = DRILL.bitIdle; if (S.highDown) { S.highDown = false; highLine(true); } } BOSS_PHASE.greatdrill = 1; if (ctx.L) ctx.L.mcDrillDown = true; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, D: R(S.D), bitLane: S.bitLane, bitLen: R(S.bitLen), points: S.points, ores: S.ores.map(o => ({ x: R(o.x), lane: o.lane, drop: o.drop })), ward: S.ward, n: { ...S.n }, hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING (greybox) ---------- */
@@ -72,7 +75,8 @@ export function makeDrillHands(ctx) {
     g.save(); g.beginPath(); g.rect(x0, R(G.ceilY - cy), w, G.floor - G.ceilY); g.clip();
     g.fillStyle = '#1c1612'; g.fillRect(x0, R(G.ceilY - cy), w, G.floor - G.ceilY);
     for (let x = -32; x < w + 32; x += 32) { const rx = x0 + x - off; g.strokeStyle = '#3a2e24'; g.lineWidth = 3; g.beginPath(); g.moveTo(rx, R(G.ceilY - cy)); g.lineTo(rx + 6, R(G.floor - cy)); g.stroke(); g.lineWidth = 1; }
-    for (let i = 0; i < 3; i++) { const y = R(G.laneY[i] - cy); for (let x = -16; x < w + 16; x += 16) { g.fillStyle = '#4a3220'; g.fillRect(x0 + x - (off % 16) + 2, y - 2, 4, 3); } }
+    for (let i = 0; i < 3; i++) { const y = R(G.laneY[i] - cy); if (i === 2 && S.highDown) { g.fillStyle = '#4a3a2c'; for (let x = 0; x < w; x += 11) g.fillRect(x0 + x, R(G.floor - cy) - 4 - ((x * 7) % 5), 8, 4 + ((x * 7) % 5)); continue; }   /* (the high line is down: its rubble on the floor) */
+      for (let x = -16; x < w + 16; x += 16) { g.fillStyle = '#4a3220'; g.fillRect(x0 + x - (off % 16) + 2, y - 2, 4, 3); } }
     g.restore(); };
   /* IN THE WORLD: the chute, the points mast, the ore carts */
   H.drawWorld = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
