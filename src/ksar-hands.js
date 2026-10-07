@@ -23,7 +23,7 @@ import { STUCK_HANDS } from './stuck-spots.js';
    haulCd: s between hauls; refill: s a stack takes to put one back */
 export const KS = { hum: 4, muster: 3.2, callV: 82, sight: 150, sightY: 40, runV: 96, strikeT: 1.0, patrolV: 30, kegFuse: 0.9, kickFuse: 1.1, chainFuse: 0.45,
   kegR: 64, breakR: 62, chainR: 150, kegDmg: 60, kegHero: 28, flashR: 84, stunR: 52, stunT: 1.6, smokeR: 44, smokeT: 6, potDmg: 10, lashReach: 62, pull: 170,
-  brakeR: 3, dropT: 1.1, haulCd: 0.32, refill: 8, gongR: 20, takeR: 18, stoneDmg: 16, holeEvery: 0.9, holeTell: 0.45, holeDmg: 14 };   /* THE MURDER HOLES: while the gatehouse is manned, a stone every holeEvery s on a hero at the gate or in its passage (told: dust and a mark, holeTell s) */
+  brakeR: 3, dropT: 1.1, haulCd: 0.32, refill: 8, gongR: 20, takeR: 18, stoneDmg: 22, drillV: 40, drillCd: 0.5, holeEvery: 0.9, holeTell: 0.45, holeDmg: 14 };   /* THE MURDER HOLES: while the gatehouse is manned, a stone every holeEvery s on a hero at the gate or in its passage (told: dust and a mark, holeTell s) */
 CT.addKind('keg', { aims: { low: { vx: 70, vy: -120 }, mid: { vx: 125, vy: -190 }, high: { vx: 95, vy: -300 } }, g: 700, r: 4, ring: 12, dots: 14 });
 CT.addKind('flask', { aims: { low: { vx: 110, vy: -130 }, mid: { vx: 170, vy: -210 }, high: { vx: 120, vy: -330 } }, g: 640, r: 3, ring: 10, dots: 14 });
 const FORT = new Set(['ksarblade', 'gonglookout', 'whipapprentice', 'shieldsentry', 'smokethrower', 'wallslinger']);
@@ -166,6 +166,9 @@ export function makeKsarHands(ctx) {
   H.world = (e, s, w) => { if (!K) return; const P = ctx.hero();
     if (e.t === 'hawkscout') { w.hidden = hiddenFrom(e.x, e.y, P, true); if (w.hidden) K.n.hidden++; w.blind = e.ksBlindNew || 0; e.ksBlindNew = 0; w.ground = P.y; return; }
     if (e.cnSkin === 'whipapprentice') { const d = w.px - e.x; w.px = e.x + d * (CUTTHROAT.reach / KS.lashReach); }   /* his machine reads you a lash's length nearer: he lashes from there */
+    /* THE FORT'S DRILL (fix pass, review MUST 2: weight, not hazards): its blades and whips close at a run and come again sooner than the gang's - the told windups are the same */
+    if ((e.cnSkin === 'ksarblade' || e.cnSkin === 'whipapprentice') && s.mode === 'walk') { if (s.cd > KS.drillCd) s.cd = KS.drillCd; const d = w.px - s.x;
+      if (Math.abs(w.py - s.y) < 28 && Math.abs(d) < CUTTHROAT.sight && Math.abs(d) > CUTTHROAT.reach * 0.7) s.x += Math.sign(d) * KS.drillV * (w.dt || 1 / 60); }
   };
   /* THE MACHINES' EVENTS (after it steps): a hawk's 'spot' is the alarm; the apprentice's slash is a LASH with reach */
   H.evs = (e, s, evs) => { if (!K) return;
@@ -328,7 +331,7 @@ export function makeKsarHands(ctx) {
       return here(G.winch[0], G.winch[1], 'talk', 1); }
     const arch = K.barricades.find(b => b.id === 'storeArch');
     if (arch && !arch.broken && c > 386 && c < 446) { const k0 = K.setKegs.find(k => k.chain && k.st === 'set'), lit = K.setKegs.some(k => k.chain && k.st === 'lit');
-      return lit || !k0 ? here(390, 24, null, 1) : here(k0.x - 1, k0.y, 'atk', 1); }
+      return lit || !k0 ? Object.assign(here(390, 24, null, 1), { r: 14 }) : here(k0.x - 1, k0.y, 'atk', 1); }
     const bg = K.gongs.find(g => g.bridge && !g.cut);
     if (bg && c > 490 && c < 524 && Math.abs(P.y - gy(bg)) < 3 * ts) return here(bg.x - 1, bg.y, 'atk', 1);
     const ta = K.barricades.find(b => b.id === 'towerArch');

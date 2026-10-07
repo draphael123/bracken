@@ -134,6 +134,7 @@ export function buildKsar({ painter, T, TS }) {
   block(232, 238, 25, H - 1); gong('great', 236, 24, { ear: 34, earY: 14, great: true });
   sign(233, 24, 'THE GREAT GONG: E RINGS IT. ITS EARSHOT REACHES THE GATEHOUSE.');
   boards(239, 251, 26); ground(239, 256, B);
+  boards(252, 254, 31); boards(248, 250, 29);                                    /* (fix pass) THE YARD STAIR back up to the high walk: drop in before the gong is rung and you can climb back to it (no soft lock) */
   hawk(224, 272, 14, 'yardHawk');                                                /* a hawk scout over the yard and the gate */
   blade(241, B - 1, 'yard', { face: -1 }); whip(245, B - 1, 'yard', { face: -1 }); blade(249, B - 1, 'yard', { face: -1 });   /* the yard's guards (they answer the great gong too) */
   /* THE GATEHOUSE: the gate passage (rows 30-33) behind THE PORTCULLIS (column 257); over it THE GUARD ROOM (rows 24-28) behind its GRILLE (column 257,
@@ -163,7 +164,7 @@ export function buildKsar({ painter, T, TS }) {
   /* THE STAIR'S SQUAD (a whip apprentice and two blades) at the foot of the only stair up */
   sentry(340, B - 1, 'stairSquad', null, { ks: 'post', face: -1 }); whip(344, B - 1, 'stairSquad', { face: -1 }); blade(348, B - 1, 'stairSquad', { face: -1 });   /* front: a shield; the whip behind him; a blade on the stair's foot */
   hawk(284, 380, 13, 'souqHawk');                                                 /* a hawk scout over the souq and the terrace */
-  boards(345, 350, 32); boards(348, 353, 30); boards(351, 355, 28); boards(354, 355, 26);   /* the stair up to the terrace (row 25): two-row steps, overlapping (up through each), every hero's legs */
+  boards(342, 349, 32); boards(347, 352, 30); boards(350, 355, 28); boards(353, 355, 26);   /* the stair up to the terrace (row 25): two-row steps, overlapping (up through each), every hero's legs */
 
   // ================= 5. THE POWDER STORE (358-445): SET PIECE TWO - THE CHAIN (REQUIRED THROW) =================
   block(356, 445, 25, H - 1);                                                    /* the terrace and the store's long roof (row 25) */
@@ -263,9 +264,10 @@ export function buildKsar({ painter, T, TS }) {
     arena: stage.arena, gateAfterBoss: true,
     ksar: true, caravan: true,   /* caravan: the desert's hands in main.js (the bandits' machines, the sand and stone skins, THE SUN: the act's backdrop - the courtyard is shade, src/ksar-hands.js noSun) */
     gongs, stacks, setKegs, racks, barricades, weak, gate, decor, vaultDoors, breaches, drops,
-    /* THE FORT HITS HARD (fix pass, review MUST 2: weight, not hazards): a fort man's blow x this, on top of the act's tier (src/foe-react.js) - a blade's cut is ~9% of a
-       campaign-level hero, a shield's bash ~10%: every one a 1v1 threat (main.js damagePlayer0 reads L.foeHit by cnSkin). A slinger's stone is KS.stoneDmg */
-    foeHit: { ksarblade: 2.2, gonglookout: 1.8, whipapprentice: 2.2, shieldsentry: 2.0, smokethrower: 1.6 },
+    /* THE FORT HITS HARD (fix pass, review MUST 2: weight, not hazards): a fort man's blow x this, on top of the act's tier (src/foe-react.js) - a blade's cut is ~12% of a
+       campaign-level hero, a shield's bash ~12%: every one a 1v1 threat (main.js damagePlayer0 reads L.foeHit by cnSkin). A slinger's stone is KS.stoneDmg */
+    foeHit: { ksarblade: 3.6, gonglookout: 2.6, whipapprentice: 3.6, shieldsentry: 3.0, smokethrower: 2.2 },
+    foeHp: { ksarblade: 2.6, gonglookout: 1.6, whipapprentice: 2.6, shieldsentry: 2.4, wallslinger: 1.6, smokethrower: 1.8 },   /* ...and stands a blow or two longer (main.js spawn reads L.foeHp by cnSkin) */
     alarms: gongs.map(g => ({ x0: g.x - g.ear, x1: g.x + g.ear })),   /* THE RULE'S STATE for tools/rule-state.mjs: each gong's earshot is where the fort answers it */
     sun: [{ x0: 0, x1: 584 }], shade, shadeArt: shade,   /* THE DESERT'S SUN, the backdrop (not the rule): the shade boxes, tinted violet by main.js (the art pass may paint them) */   /* THE RULE'S STATE for tools/rule-state.mjs: each gong's earshot is where the fort answers it */
     quest: { n: 5, item: 'caravanseal', name: 'SEALS', done: 'FIVE SEALS: THE STRONGROOM OPENS', thanks: 'THE STRONGROOM OPENS' },
