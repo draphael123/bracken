@@ -1,3 +1,116 @@
+# Lane report: claude/rootway - FIX PASS (2026-10-07, after scratch/review-rootway.md)
+
+Merged origin/claude/walker (tools/level-walk.mjs) first (one conflict: the tools/check.mjs list; both sides kept). PORT 8705 for every page run
+except two slips noted below. Measures are DRY: claude/survival is NOT on this branch, so profile `human` never drinks (Daniel's dry band). There is
+no `human+dry` profile here.
+
+## MUST-FIX status
+1. **Exam pits are real falls - DONE.** The lookout chasm (304-311) and the last leaning cap's gap (341-350) have no floor (THE FALL, back to
+   checkpoint three). Told: a sign at checkpoint three ("NO ROOTS UNDER THE CANOPY: FROM HERE A FALL IS THE END."), a warning post on each near lip.
+   Taught: the span (cellar pit) and the leaning cap (root gap) are both first met over cheap floored wells; every well before col 296 stays cheap.
+   tools/rootway.mjs: the cheap-well list drops those two (Daniel's A10 amendment) and gains "exam gaps have no floor / a warning post / the sign
+   tells it / no floorless column before the exam" (same strictness, more asserts).
+   **Found and fixed a real soft-lock:** a death rebuilt the grid, but a span or cage that "stays down" kept state 'down' with no cells - the lookout
+   span vanished and could never be cut again. src/rootway-hands.js reset now lays those cells again; tools/rootway-probe.mjs asserts it (fails without the fix).
+2. **High cleat / buds / larder - DONE.** Measured: a standing swing from the cap reaches the cleat only at row 21 (knight) or 22 (all three, but then a
+   ground jump-swing reaches it too, breaking the "grow a cap to reach it" lock). A JUMP and a swing from the cap at row 19 cuts it for every hero from
+   almost anywhere on the cap (knight 16/20, warden 20/20, pyro 20/20 positions x timings). So the cleat stays at row 19 and the sign and nudge say
+   JUMP ("GROW THE CAP UNDER IT, THEN JUMP AND STRIKE"; the nudge glints the cleat itself). The bud sign/nudges say "JUMP ONTO IT AND STAND STILL".
+   Larder cages land flush against the next stump (no 1-column slots). Also found: the high-cleat bud and the hunter's bud stood one column off their
+   root walls, leaving a 1-column corner a hero fell into and could not leave; both buds now stand flush (the tests follow the coordinate).
+3. **Huntmaster spread - PARTIAL.** Overall in band (57%), knight 40%, pyro 40%, the WARDEN 90%. See the rates table.
+   Tried and measured, then reverted: the reviewer's knife 36 -> 50 did nothing to the bot warden (0 knives: her stand-off is 62 px and his knife is
+   only chosen between moves); a knife that cancels his draw hit knight/pyro more than her; "his bow turns an arm's-length blow while he draws" turned
+   pyro's blows 20 times and hers 8. Kept: (a) a PARRY (the warden's sweep) turns a gold arrow home but only STAGGERS him; a BLADE strike breaks his
+   gear (told once: "A PARRY ONLY STAGGERS HIM: STRIKE IT"); (b) an arrow is struck back close in only (30 px from the hero; strike box 12 -> 16) -
+   every hero's window the same width; (c) an opening closes after 4.5% of his blood (the fastest blade feels it most); (d) phases at 75% / 40% (red
+   arrows sooner), red 10, poison tick 4, gold 6; (e) hp 1150 (1100 before). Her fights went from 46-70 s to 97-127 s and she takes 50-100 of 124 hp,
+   but she still wins.
+   **The bot gap the reviewer asked about:** striking back works at 22-70 px for every hero whenever the bot is READY (measured 6/6 at every distance);
+   the misses were the bot mid-swing when an arrow arrived - it neither struck nor guarded, it ate it. The v2 bot now blocks (knight), sweeps (warden)
+   or rolls (pyro) a gold arrow it cannot meet. Pyro went 20% -> 40-50% from that alone.
+   **The cage (B1) now happens:** a perch every P1 cycle (and 2 of 3 P2 cycles), 6 s on it, a told line each time ("HIS CAGE HANGS OVER HIM: JUMP AND
+   CUT ITS ROPE"), and the perch cleats moved to the arena side of each perch AT PERCH HEIGHT (a jump and a cut): floor-level cleats were being cut
+   by stray blows, dropping the cage on nothing so it was winched away when he perched. Catches a fight: 0-1 -> 1-4 for pyro; knight/warden still 0-1.
+   **Red arrow barbed - DONE:** a 5 px barbed head with swept barbs and a dark fletch; gold keeps the square glinting head.
+4. **Level-1 pilot extension - DONE in makeBot; the pilot's lift count did NOT drop.** src/playtest.js makeBot now cuts any uncut hoist cleat within
+   6 tiles (walks to the tile before it, faces it, swings; a held jump-swing when it is over his head; drops through a ledge to a cleat below), stands
+   on the lookout lip and strikes an arrow back, rides a LEANING bud whose root shelves fooled its gap test, and never drops through a bridge over a
+   floorless fall. The campaign walker (no lifts) now walks 91-94% of the route for every hero (3% before). The level-1 pilot still counts 86-93
+   lifts in 3 runs: its budget is 4 s a waypoint (every 8 columns) and the fights/buds/cuts eat it - the hero is 1-5 tiles short at most of the 28
+   lifts a run I logged. Real blind spots left: the lookout wait (for the arrow) and a hero shoved into a well (the bot does not climb back west).
+5. **Section-end exams for sections 2 and 3 - DONE**, checkpoint after each. THE GREAT ROOTS: the gap-span landing held by a shield, a trophy-hunter
+   and a scout on the root step over them (sign "THE GOBLINS HOLD THE FAR SIDE..."; cp 193 after). THE HOIST YARD: up the hunter's bud into a
+   shield, a scout on the bough, the sapper and a trophy-hunter (sign; cp 290 after). No elite or mini (as the reviewer recommended).
+6. **Heavier front half - BUILT; the walker target is NOT met.** Foes at platforming moments: a lurker and a roof spider on the cellar wall top, a
+   spitcap and a roof spider over the cellar span, weavers in the first squads, a lurker where the 3-row jump lands, spitcaps/archers on shelves over
+   the road, a spitcap over the leaning cap's landing, a shield before the gap span, a hunter on the larder's far lip, a shield on the high root by its
+   well, a trophy-hunter hanging over the lookout lip (he rides down BEHIND you while you wait for the arrow), a hunter where the last cap lands, two
+   bows on the last cap's ride, and Sporewood's told spore drops on a beat where you stop to work (cleats, lips). About 24 -> 45 foes; level-quality CLEARS.
+
+## WALKER (tools/level-walk.mjs, campaign L4, human+first, 2 seeds a hero)
+| | deaths | arrive % mean/min | gross hp lost a section | route measured |
+|---|---|---|---|---|
+| BEFORE (greybox), all three | 0 | - (no section measured) | 0 | **3%** (every section STUCK: no cleat or lean hands) |
+| AFTER knight | 0.5 (THE FALL, last chasm) | 93 / 79 | 43% | 93% |
+| AFTER warden | 0 | 90 / 52 | 13% (one run 179% in the exam, a tonic drunk) | 69% |
+| AFTER pyro | 0 | 97 / 80 | 10% | 83% |
+The act-I target (~1 foe death, arrive < ~60%) is NOT met. The gross loss a section is real (12-179%), but heals give back about half on this
+branch (kill heals, hearts, a level-up mid-level is a full heal), and arrival is read net. The SURVIVAL lane's caps (kill heals capped, shrines that
+do not heal, manual flasks) move this number; re-measure once it lands. Level-1 real-keys route (walker --level=1 --profile=none, no lifts): all
+three heroes reach the arena door (94% walked), knight 1 death (THE FALL, the last chasm), arrivals 25-100%.
+
+## BOSS RATES (tools/boss-rates.mjs rootway --ways=practiced --profile=human = DRY; campaign L4, normal health)
+| config | knight | warden | pyro | total | fights (s) |
+|---|---|---|---|---|---|
+| greybox (lane) hp 1100 | 2/5 | 5/5 | 2/5 | 60% | K 90-121, W 46-70, P 107-124 |
+| **FINAL hp 1150, 10 seeds** | **4/10** | **9/10** | **4/10** | **57% in band** | K 142-194, W 97-127, P 127-171 |
+Intermediate configs (git history, scratch logs): 67%, 92%, 58%, 53%, 67%, 68%, 63%. About 50 seeds a hero went in across configs (over the ~20
+cap: the spread needed it). Drinking rate: not available (no drinking profile on this branch). Mash boss 0/6 (89-92% left).
+Fights for knight and pyro run long (to ~190 s): the 4.5% opening cap lengthens them; a later pass could trade some of it for hp.
+
+## Re-stamped (own rows only)
+Level-1 pilot (9 hits / 0 deaths / 92 lifts), curve (in band, 0 deaths), mash LEVEL then BOSS (level: knight 4% / warden dies / pyro dies; boss
+0/6). level-quality rootway CLEARS; mash-gate and curve-gate green. `node tools/boss-level.mjs --write-xp` rewrites nearly every row on this base
+(master drift), not only rootway/kings: NOT committed - for integration.
+
+## Checks run (green)
+rootway, rootway-probe (+ the respawn assert), boss-openings, boss-rows, level-quality, mash-gate, curve-gate, stuck --static, signs, spawns,
+floaters, dressing, collectables, deadends, killzones, checkpoints, checkpoint-gaps, one-new-foe, threat-holes, answer-tags, tells, elites,
+hint-shown, textfit (0 issues). traps: 20 (pre-existing, none in the Rootway). NOT run: the suite.
+Port slips: hint-shown and one textfit ran on this checkout's default port block (nothing foreign was served) before I set PORT=8705.
+
+## Shared code touched (merge care)
+src/playtest.js makeBot: the Rootway hoist hands are gated on L.rootway, but the LEANING-bud rule and the never-drop-into-a-void rule are generic -
+they can move other levels' pilot/mash numbers slightly (Sporewood's leaning buds). tools/level-walk.mjs: yields to a hoist job; takes a level-up
+card instead of ending the walk. src/hint-lines.js: three Huntmaster lines.
+
+## QUESTIONS FOR DANIEL (each built as recommended)
+1. **The warden still beats the Huntmaster 9/10.** Every hero-neutral counter I tried bit knight/pyro as much or more (logged above). Her kit - a
+   40 px spear that meets arrows early and a sweep that turns arrows AND his knife - is a hard counter to a ranged duelist. *Rec (built):* overall
+   57% with knight/pyro at 40%. Options: (a) accept a warden-favoured boss (she is the arrow hero); (b) a told move a sweep cannot turn (an
+   unblockable '!!' shove after a parry); (c) a boss-standard pass on the warden's sweep against projectiles across all bosses.
+2. **Act-I campaign difficulty is gated by healing, not by foes.** Gross loss a section is 12-179%; net arrivals 79-100% because kills, hearts and a
+   mid-level level-up heal it back. *Rec:* re-measure after claude/survival lands, before adding more foes (the level has about 45 now).
+3. **The level-1 pilot's 4 s a waypoint** counts fights and bud/cleat work as lifts on a hoist level (86-93 in 3 runs). *Rec:* read the walker for
+   the Rootway (no lifts, 91-94% walked); consider a waypoint budget that grows with the fights in it.
+4. **Spore drops on the beat** (Sporewood's told rockfall, spore variant) at the places you stop to work or wait are what makes the mash bot lose the
+   level (pyro was clearing it at 70%+). *Rec:* keep; the art pass gives them a root-canopy source.
+5. Kingswood's campaign XP: `--write-xp` at integration (it rewrites every row on this base).
+
+## ART PASS LIST (Sonnet)
+- Music: the level plays "Lanterns in the Hollowed Forest" (Tsorthan Grove, CC0, approved by Daniel) instead of the 'cave' placeholder; the
+  Huntmaster keeps a composed synth theme ('boss3' placeholder now).
+- KIT: root bark walls, cap flesh for buds and caps, lashed timber spans, rope + pulley + cleat sprites (keep the cleat glint and the lookout's gold ring).
+- The CHASMS: a dark canopy drop with mist and no floor, so a floorless gap reads differently from the cheap floored wells; a better warning post.
+- The barbed RED arrow (shape done in greybox: keep it barbed with a dark fletch); the gold arrow's glint; the poisoned floor.
+- Spore drops: a root-canopy clump over each (they fall from the top row or the cellar roof now).
+- The trophy-hunter sprite (a CV machine), the scouts' cnSkin 'gobscout'; weaver, spider and lurker in the root palette.
+- The Huntmaster: mask, quiver strap and bracer states; the perch cages and their high cleats (a jump-height peg on a post beside each perch); CAUGHT bars.
+- LMK: a constant great-root silhouette and the hoists' gallows on the skyline; LIGHT: a lantern-lit larder, shafts in the canopy; the sky warms with the tints.
+
+---
+
 # Lane report: claude/rootway (THE ROOTWAY + THE GOBLIN HUNTMASTER, Opus GREYBOX)
 
 Branch `claude/rootway` from origin/master b4300130 (+ the .claude/briefs commit). Brief: `.claude/briefs/brief-rootway.md`
