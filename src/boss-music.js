@@ -34,7 +34,7 @@
 //   'djinn'      THE DJINN OF THE GREAT WELL (claude/underwell, his own theme - the Queen has hers back in the Underwell). D Hijaz, 4/4 at 100, 16 bars = 38 s:
 //                a D drone, a doumbek's maqsum, the wind in the well, a breathy ney; ':p2' (fire) quicker, the ney up an octave, crackles; ':p3' (flood) the water.
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { greatdrill: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -401,6 +401,22 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
+// ---------------------------------------------------------------- THE GREAT DRILL (claude/minecart, its composed theme)
+// E Phrygian (E F G A B C D), 4/4 at 132 (eighth 0.227 s), 16 bars = 29 s. A MACHINE: an iron ostinato (square, lowpassed) on E - F - E - G, a piston kick on every
+// quarter, a steam hiss off the beat, a grinding sub drone that bends a semitone up and back every two bars (the bit biting).
+// 'greatdrill:p2' THE ROOF: rubble noise on the one, the ostinato an octave up. 'greatdrill:p3' FULL BORE: quicker (eighth 0.19 s), the kick doubled, a siren of saws.
+const GDM_STEP = 60 / 132 / 2, GDM_STEP3 = 60 / 156 / 2, GDM_LEN = 8, GDM_BARSN = 16;
+const GDM_RIFF = ['E3', 'E3', 'F3', 'E3', 'G3', 'E3', 'F3', 'D3'];
+function greatdrill(i, delay, variant, env) {
+  const roof = variant === 'p2', full = variant === 'p3', step = full ? GDM_STEP3 : GDM_STEP, bar = Math.floor(i / GDM_LEN), s = i % GDM_LEN, g = env.gain;
+  if (s === 0 && bar % 2 === 0) { pluck(env, 'sawtooth', nf('E1'), step * GDM_LEN * 2 * 0.95, 0.06 * g, delay, { to: nf('F1') }); held(env, 'square', nf('E2'), step * GDM_LEN * 2 * 0.9, 0.03 * g, delay, { lp: 300, att: 0.05, hold: 0.7, det: 9 }); }
+  if (s % 2 === 0 || full) pluck(env, 'sine', 70, 0.16, 0.55 * g, delay, { to: 38 });   /* the piston */
+  if (s % 2 === 1) noise(env, step * 0.4, 0.035 * g, 6400, 2.5, delay);   /* the steam */
+  { const f = nf(GDM_RIFF[s]) * (roof || full ? 2 : 1); held(env, 'square', f, step * 0.8, 0.045 * g, delay, { lp: 1400, att: 0.005, hold: 0.4 }); }
+  if (roof && s === 0) noise(env, 0.4, 0.09 * g, 380, 0.6, delay);   /* the rubble */
+  if (full && (s === 0 || s === 4)) { held(env, 'sawtooth', nf('B4'), step * 3.6, 0.04 * g, delay, { lp: 2400, att: 0.02, hold: 0.6, det: 14, from: 0.94 }); held(env, 'sawtooth', nf('C5'), step * 3.6, 0.03 * g, delay + step * 2, { lp: 2400, att: 0.02, hold: 0.6, det: 14 }); }
+}
+
 // (THE GLASS SEA has no synth bed: "Eastern Arctic Dubstep" by VishwaJai is its file, claude/glasssea art pass; THE GLASS COLOSSUS below keeps his composed theme)
 // ---------------------------------------------------------------- THE GLASS COLOSSUS (claude/glasssea, its composed theme: the brief's three phases)
 // B minor (B C# D E F# G A), 4/4 at 84 (eighth = 0.36 s), 16 bars = 46 s. DUSK: a slow GLASSY CHIME OSTINATO (sine bells, B - F# - D - F# - E - D - C# - F#)
@@ -423,6 +439,7 @@ function colossus(i, delay, variant, env) {
 }
 
 export const SYNTH_BOSS = {
+  greatdrill: { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
   djinn: { step: DJM_STEP, total: DJM_LEN * DJM_BARSN, play: djinn },
   cisternqueen: { step: CQM_STEP, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
@@ -436,6 +453,7 @@ export const SYNTH_BOSS = {
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
+  'greatdrill:p2': { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill }, 'greatdrill:p3': { step: GDM_STEP3, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) the roof and full bore */
   'colossus:p2': { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, 'colossus:p3': { step: COM_STEP3, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) its night and its dawn */
   'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking },
   'cisternqueen:p2': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen }, 'cisternqueen:p3': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
