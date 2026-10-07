@@ -17,7 +17,7 @@
 //   over YOU (its shadow on the floor first) - the rule turned on you.
 // main.js calls makeHuntmaster(ctx): spawnBoss, owns, on, update, take, caught (a boss cage landed), drawBoss, drawOver, barName, end, read, fight.
 export const HM = {
-  hp: 1000, w: 14, h: 26, markH: 44,
+  hp: 1080, w: 14, h: 26, markH: 44,
   p2: 0.67, p3: 0.34,
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
@@ -270,7 +270,7 @@ export function hmPlan(o) {
     if (a.kind === 'gold' && o.eyes && !roll('b' + a.id, PLAN.missBack)) {   /* (each arrow its own roll: some let go) */ out.face = Math.sign(rx) || P.face; out.gx = P.x;
       if (Math.hypot(rx, ry) < reach + 6 + Math.hypot(a.vx, a.vy) * 0.07 && Math.abs(ry) < 26 && P.atk < 0) out.atk = true; out.why = 'strike his arrow back'; return out; }   /* (the swing comes out a beat after the press: met a beat early) */
     if (a.kind === 'gold' && o.shield && !roll('s' + a.id, PLAN.miss)) { out.block = true; out.face = Math.sign(rx) || P.face; out.why = 'block the arrow'; return out; }
-    if (o.deflect && a.kind === 'gold' && !(P.busy > 0)) { out.block = Math.abs(rx) < 40; out.face = Math.sign(rx) || P.face; out.why = 'sweep the arrow'; return out; }
+    if (o.deflect && a.kind === 'gold' && !(P.busy > 0) && !roll('w' + a.id, PLAN.missBack)) { out.block = Math.abs(rx) < 40; out.face = Math.sign(rx) || P.face; out.why = 'sweep the arrow'; return out; }
     if (Math.abs(rx) < 46) { if (a.kind === 'red' && P.ground && ry > -6 && !roll('j' + a.id, 0.5)) { out.jump = true; out.why = 'jump the red arrow'; return out; } out.dodge = true; out.why = a.kind === 'red' ? 'roll the red arrow' : 'roll the arrow'; return out; } }
   /* THE POISONED FLOOR */
   for (const q of R0.pools || []) if (Math.abs(q.x - P.x) < 22 && P.ground) { out.gx = clamp(P.x + (P.x < q.x ? -40 : 40)); out.why = 'off the poison'; return out; }

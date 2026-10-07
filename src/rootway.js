@@ -48,7 +48,7 @@ export function buildRootway({ painter, T, TS }) {
   const bud = (x, row, o = {}) => { const rise = o.rise ?? 56, y0 = row * TS - 8; caps.push({ kind: 'growcap', x: x * TS, y: y0, y0, y1: y0 - rise, w: 32, h: 8, rise, state: 'bud', k: 0, ...(o.lean ? { bx: x * TS } : {}), ...o }); };
   /* A HOIST: id, the rope's column `x` (a load is centred on it), its pulley row `top`, the load's bottom row while it hangs `hang`, the CLEAT [x, y]
      (y: the cell a foe would stand in; the cleat's box is that cell and the one over it), and what it holds. */
-  const hoist = (id, o) => { hoists.push(Object.assign({ id, cut: false }, o)); return o; };
+  const hoist = (id, o) => { hoists.push(Object.assign({ id, cut: false }, o)); if (!o.boss) ent('hoist', o.cleat[0], o.cleat[1], { id }); return o; };   /* (an ent at its cleat: the guide's stuck spots and the tools name it there; src/rootway-hands.js runs the hoist itself from L.hoists) */
   /* A WELL: a gap from column x0 to x1 down to `bottom` (its floor's top row), with a stair of root shelves up its NEAR (west) wall every three rows,
      so a fall costs the climb back and nothing else (A10). The top shelf is three rows under the lip and never within a jump of the far lip. */
   const well = (x0, x1, lip, bottom) => { air(x0, x1, 0, bottom - 1); ground(x0, x1, bottom); let k = 0; for (let r = bottom - 3; r > lip; r -= 3, k++) plank(x0 + (k % 2 ? 3 : 0), x0 + (k % 2 ? 4 : 1), r); };
