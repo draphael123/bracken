@@ -69,7 +69,7 @@ Results:
     - Now 3 swings, 0 missed.
   - small-adds now passes at 11 of 101 missed (11%), worst judged row 27% (limit 33%). On base it showed 7/103 and 20%, which was the leaked, flattering version.
 - The two bot fixes are in the legacy and v2 paths alike, because both use these branches. So the human-profile spore row sees the Mother fix: base batch74 spore is 33%, this branch 42%.
-- **Not run here** (the coordinator runs suites): the rest of the ~130 suite checks that touch a lab or a fresh reset. The list is in this lane's log.
+- **Not run here** (the coordinator runs suites): the rest of the ~130 suite checks that touch a lab or a fresh reset.
 
 ## 4. Re-measure
 Full table: scratch/remeasure-harness.md (raw rows: scratch/remeasure-harness-rows.json).
