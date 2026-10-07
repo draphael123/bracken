@@ -1,7 +1,7 @@
 // THE MUSIC CREDITS (Daniel, 2026-10-01: CC-BY tracks are allowed WITH their credit, in the game and in audio/CREDITS.txt).
 // A page of the title menu's CREDITS (and the victory card's X): every outside composer whose music the game plays, read back
 // from MUSIC_CREDITS so a new track's credit line is one edit, and the licence of each CC-BY track named in full (Kevin MacLeod's in his own wording).
-// Everything else is CC0 or public domain from OpenGameArt.org (the exact files and links are in audio/CREDITS.txt).
+// (THE GLASS SEA's CC0 track is credited here too, Daniel's wish.) Everything else is CC0 or public domain from OpenGameArt.org (the exact files and links are in audio/CREDITS.txt).
 // Pure data and layout: no drawing here (src/main.js drawCredits), so tools/textfit.mjs can drive it in the page.
 export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the licence's url, the credit's own lines (when the licensor names its wording)] */
   ['harvestfair', 'Dark Carnival', 'Machine', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],
@@ -14,6 +14,7 @@ export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the li
   ['rocphoenix', 'Phoenix', 'Scott Buckley', 'CC-BY 4.0', 'https://www.scottbuckley.com.au/library/phoenix-2026/', ['"Phoenix" by Scott Buckley', 'released under CC-BY 4.0.', 'www.scottbuckley.com.au']],
   ['underwell', 'Ossuary 6 - Air', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Ossuary 6 - Air" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],   /* THE UNDERWELL's level track (claude/underwellart, Daniel's pick 10-05) */
   ['matriarch', 'Volatile Reaction', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Volatile Reaction" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],   /* THE RAPTOR MATRIARCH's fight (claude/redgorge2, Daniel's pick) */
+  ['glasssea', 'Eastern Arctic Dubstep', 'Vishwa Jay', 'CC0', 'https://opengameart.org/node/97673', ['"Eastern Arctic Dubstep" Vishwa Jay', '(VishwaJai on OpenGameArt.org)', 'CC0: public domain, credited all the same', 'opengameart.org/node/97673']],
   ['redgorge', 'Old Road', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Old Road" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],
 ];
 /* the one composer a few credit lines spell two ways (MUSIC_CREDITS is kept short to fit the Sound Test row) */

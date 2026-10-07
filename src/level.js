@@ -9,7 +9,7 @@ import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
-import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js';   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */
+import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js';   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
@@ -7791,6 +7791,9 @@ export const LEVELS = [
   /* THE SKY ROAD (claude/skyroad, the GREYBOX, 2026-10-05): the main road's climb off the high moor's crags to THE ROC's eyrie - after GALE MOOR, before THE ORE ROAD
      (Daniel 10-03: "right after Gale Moor"; the moor keeps sideways gusts, this level owns the vertical air). APPENDED, so no index and no save moves */
   { id: 'skyroad', name: 'THE SKY ROAD', sub: 'up the hot air to the eyrie', rule: 'THE SUN WARMS THE ROCK AND THE AIR RISES. STRIKE A SUN-STONE TO WAKE ITS AIR; RIDE IT, GLIDE INTO IT. A CLOUD ON IT KILLS IT.', build: () => buildSkyRoad({ painter, T, TS }), needs: 'moor' },
+  /* THE GLASS SEA (claude/glasssea, the OPUS GREYBOX, 2026-10-06): lightning-fused glass dunes past THE RED GORGE - the sun is a beam you aim with mirrors; shade by day,
+     fire by night. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE GLASS COLOSSUS (src/glass-colossus.js) is its boss */
+  { id: 'glasssea', arc: 'the desert', name: 'THE GLASS SEA', sub: 'the sun is a beam you aim', rule: 'TURN THE MIRRORS TO AIM THE SUN; SHADE BY DAY, FIRE BY NIGHT.', build: () => buildGlassSea({ painter, T, TS }), needs: 'redgorge' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

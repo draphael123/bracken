@@ -14,6 +14,7 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   burning: './audio/burning.mp3', pyroboss: './audio/pyroboss.ogg', minicharge: './audio/minicharge.ogg', monastery: './audio/monastery.ogg', northumberland: './audio/northumberland.mp3', windcaller: './audio/windcaller.ogg', hangingvillage: './audio/hangingvillage.ogg', sporewood: './audio/sporewood.mp3', duneworm: './audio/duneworm.ogg', lance: './audio/lance.ogg', caravan: './audio/caravan.ogg', monasterygolem: './audio/monasterygolem.ogg',
   redgorge: './audio/redgorge.ogg',
   skyroad: './audio/skyroad.ogg', rocphoenix: './audio/rocphoenix.ogg', underwell: './audio/underwell.ogg',   /* THE UNDERWELL (claude/underwellart, Daniel's pick): "Ossuary 6 - Air" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
+  glasssea: './audio/glasssea.ogg',   /* THE GLASS SEA (claude/glasssea art pass, Daniel's pick): "Eastern Arctic Dubstep" by VishwaJai (credited Vishwa Jay), CC0 (audio/CREDITS.txt) - the level track; THE GLASS COLOSSUS keeps his own theme composed in code (src/boss-music.js) */
   undeadmage: './audio/undeadmage.ogg',   /* THE UNDEAD ARCHMAGE (claude/archmage2b, Daniel's pick): "Colossal Boss Battle Theme" (Blackmoor Colossus, the loop with the choir) by Matthew Pablo, CC-BY 3.0 (audio/CREDITS.txt) - his stair chase and his fight */   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
   matriarch: './audio/matriarch.ogg',   /* THE RAPTOR MATRIARCH (claude/redgorge2 art pass, Daniel's pick): "Volatile Reaction" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
   puppeteer: './audio/puppeteer.ogg' };   /* THE PUPPETEER: 'Dissonant Waltz' by Yubatake, CC-BY 4.0 - Daniel's pick, 10-02 (claude/puppeteer2; audio/CREDITS.txt) */   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
@@ -57,7 +58,7 @@ export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : kind === 'battlefield' ? 0.26 : kind === 'cistern' ? 0.3 : kind === 'canyon' ? 0.28 : kind === 'highair' ? 0.26 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : kind === 'battlefield' ? 0.26 : kind === 'cistern' ? 0.3 : kind === 'canyon' ? 0.28 : kind === 'highair' ? 0.26 : kind === 'glassday' ? 0.2 : kind === 'glassnight' ? 0.22 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -695,6 +696,26 @@ const SYNTH_BEDS = {
       if (Math.random() < 0.2) noise(0.015, 0.02 + Math.random() * 0.02, 3200 + Math.random() * 1800, 2);   /* grit on stone */
       if (Math.random() < 0.035) { const f0 = 1500 + Math.random() * 500; tone('sine', f0, f0 * 1.5, 0.35, 0.02); tone('sine', f0 * 1.5, f0 * 0.8, 0.5, 0.018, 0.3); }   /* a raptor, far off */
       if (Math.random() < 0.025) ambClip('amb_creak', 0.1, 1100);   /* a rope, loaded */
+    };
+    ambTickMs = 450;
+  },
+  /* THE GLASS SEA (claude/glasssea fix pass): its own air, all synth, nothing downloaded. GLASSDAY: a dry wind over glass dunes (a bandpassed gust that rises
+     and falls, a thin high whistle over the fulgurite) and now and then a shard chiming as the wind turns it. GLASSNIGHT: THE COLD - a hushed low wind, no
+     drips, no chains; glass ticking as it cools (dry high clicks), a far chime when a shard falls, and a long low moan through the ridges. */
+  glassday() {
+    const w = loopNoise(380, 0.8, 0.85); lfoOn(w.g.gain, 0.1, 0.4); lfoOn(w.f.frequency, 0.05, 120);
+    const wh = loopNoise(2600, 6, 0.05); lfoOn(wh.g.gain, 0.13, 0.04); lfoOn(wh.f.frequency, 0.07, 400);
+    ambTick = () => { if (Math.random() < 0.05) { const f = 1800 + Math.random() * 1400; tone('sine', f, f, 0.7, 0.01); tone('sine', f * 1.5, f * 1.5, 0.45, 0.004, 0.02); }   /* a shard turned by the wind, chiming */
+      if (Math.random() < 0.08) noise(0.25 + Math.random() * 0.2, 0.04, 700 + Math.random() * 400, 0.6); };   /* sand hissing over glass */
+    ambTickMs = 400;
+  },
+  glassnight() {
+    const hush = loopNoise(180, 0.8, 0.6, 'lowpass'); lfoOn(hush.g.gain, 0.06, 0.28); lfoOn(hush.f.frequency, 0.035, 50);
+    const frost = loopNoise(5200, 1.2, 0.025); lfoOn(frost.g.gain, 0.09, 0.015);
+    ambTick = () => {
+      if (Math.random() < 0.18) for (let i = 0, n = 1 + ((Math.random() * 3) | 0); i < n; i++) noise(0.006, 0.02 + Math.random() * 0.015, 4200 + Math.random() * 2400, 3, i * (0.05 + Math.random() * 0.12));   /* glass ticking as it cools */
+      if (Math.random() < 0.035) { const f = [1319, 1568, 1760, 2093][(Math.random() * 4) | 0]; tone('sine', f, f, 1.6, 0.008); tone('sine', f * 2.01, f * 2.01, 0.9, 0.003, 0.01); }   /* a far glass chime */
+      if (Math.random() < 0.02) tone('sine', 98 + Math.random() * 20, 82, 2.2, 0.018);   /* the wind moaning low through the ridges */
     };
     ambTickMs = 450;
   },
@@ -1497,10 +1518,10 @@ Object.assign(SFX, {
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'skyroad', 'rocphoenix', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'gorgecrab', 'matriarch', 'undeadmage'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon'];
+export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'skyroad', 'rocphoenix', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'glasssea', 'gorgecrab', 'matriarch', 'undeadmage'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon', 'glassday', 'glassnight'];
 /* WHAT THE UNBURIED FIELD'S BED IS MADE OF (tools/unburied-look.mjs 8): synth beds and the one creak clip already on disk - nothing downloaded, and never a horn (the horn is the volley's tell) */
-export const AMBIENT_SOURCES = { canyon: ['synth:wind', 'synth:river-roar', 'synth:spillway', 'synth:raptor-cry', 'synth:gust', 'file:amb_creak'], highair: ['synth:gust', 'synth:whistle', 'synth:cloth-crack', 'synth:line-hum', 'synth:grit', 'synth:raptor', 'file:amb_creak'], cistern: ['synth:air', 'synth:drip', 'synth:scuttle', 'synth:oil-gurgle', 'synth:chain', 'file:amb_creak'], battlefield: ['synth:wind', 'synth:dead-grass', 'synth:far-battle', 'synth:shout', 'synth:banner', 'synth:crow', 'file:amb_creak'], hall: ['file:ambCave', 'synth:drip', 'synth:distant-bell'] };
+export const AMBIENT_SOURCES = { canyon: ['synth:wind', 'synth:river-roar', 'synth:spillway', 'synth:raptor-cry', 'synth:gust', 'file:amb_creak'], highair: ['synth:gust', 'synth:whistle', 'synth:cloth-crack', 'synth:line-hum', 'synth:grit', 'synth:raptor', 'file:amb_creak'], cistern: ['synth:air', 'synth:drip', 'synth:scuttle', 'synth:oil-gurgle', 'synth:chain', 'file:amb_creak'], battlefield: ['synth:wind', 'synth:dead-grass', 'synth:far-battle', 'synth:shout', 'synth:banner', 'synth:crow', 'file:amb_creak'], hall: ['file:ambCave', 'synth:drip', 'synth:distant-bell'], glassday: ['synth:wind', 'synth:whistle', 'synth:shard-chime', 'synth:sand-hiss'], glassnight: ['synth:hush', 'synth:frost', 'synth:glass-tick', 'synth:far-chime', 'synth:low-moan'] };
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0 or CC-BY (Daniel's 10-01 rule change) WITH its credit line here and in CREDITS.txt - 'Dark Carnival' and 'At Work' are the CC-BY ones; see the credited lanes' own reports). Three tracks have
 // no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial
@@ -1509,7 +1530,7 @@ export const AMBIENT_SOURCES = { canyon: ['synth:wind', 'synth:river-roar', 'syn
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
 /* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
    (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
-export const MUSIC_CREDITS_ROW = { underwell: '"Ossuary 6" — K. MacLeod, CC-BY', matriarch: 'Volatile Reaction MacLeod CC-BY', skyroad: '"Bring Me The Sky" Buckley CC-BY', rocphoenix: '"Phoenix" — S. Buckley, CC-BY', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
+export const MUSIC_CREDITS_ROW = { glasssea: '"Arctic Dubstep" — Vishwa Jay', underwell: '"Ossuary 6" — K. MacLeod, CC-BY', matriarch: 'Volatile Reaction MacLeod CC-BY', skyroad: '"Bring Me The Sky" Buckley CC-BY', rocphoenix: '"Phoenix" — S. Buckley, CC-BY', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
 export const MUSIC_CREDITS = {
   undeadmage: '"Colossal Boss Battle Theme" — Matthew Pablo, CC-BY',   /* (claude/archmage2b) the Undead Archmage: CC-BY 3.0, matthewpablo.com - credited in full on the credits page and in audio/CREDITS.txt */
   puppeteer: '"Dissonant Waltz" — Yubatake, CC-BY',   /* (claude/puppeteer2: CC-BY 4.0, credited here, on the credits page and in audio/CREDITS.txt) */
@@ -1558,6 +1579,7 @@ export const MUSIC_CREDITS = {
   rocphoenix: '"Phoenix" by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au',
   underwell: '"Ossuary 6 - Air" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/underwellart: the credit EXACTLY as the licence asks) */
   redgorge: '"Old Road" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/redgorge-fix: the credit EXACTLY as the licence asks; the Sound Test row trims it to fit, the credits page and audio/CREDITS.txt carry it whole) */
+  glasssea: '"Eastern Arctic Dubstep" — Vishwa Jay',   /* (claude/glasssea art pass: CC0 - Daniel asked for the credit anyway: the composer is VishwaJai on OpenGameArt, credited as Vishwa Jay) */
   gorgecrab: '"The Great Red Crab" — BRACKEN',
   matriarch: '"Volatile Reaction" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/redgorge2 art pass: the credit EXACTLY as the licence asks; the Sound Test row is MUSIC_CREDITS_ROW) */
 };

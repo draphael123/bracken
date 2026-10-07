@@ -168,6 +168,28 @@ export const STUCK = {
    The order is the order of the old nextThing list: the first spot with a step that fits wins. Append a level's spots; do not reorder. */
 const WHOLE = [0, 0, 999, 999];
 export const STUCK_HANDS = {
+  /* THE GLASS SEA (claude/glasssea): every mirror the route needs glints until its beam does its work (src/glass-sea-hands.js handsState: bed.<id> sand/fused,
+     crack.<id> held/boils, mirror.<id> its notch); the slide gap and the Sunken Head's holds glint as places (the glow marks the holds) */
+  glasssea: [
+    { id: 'gs-first', zone: [28, 20, 47, 34], steps: [ { key: 'firstMirror', is: ['bed.firstStair', 'sand'], at: [40, 31], line: 'A SUN-MIRROR BY THE DUNE CLIFF' } ] },
+    { id: 'gs-slide', zone: [128, 20, 147, 37], steps: [ { key: 'slideGap', at: [142, 35], glint: 'stall', line: 'THE SLICK SLOPE: HOLD DOWN TO SLIDE, THEN JUMP AT THE FOOT' } ] },
+    { id: 'gs-cross', zone: [212, 20, 241, 34], steps: [ { key: 'crossMirror', is: ['bed.bridge', 'sand'], at: [224, 31], line: 'THE MIRROR ON THE LIP OF THE CROSSING' } ] },
+    { id: 'gs-chain', zone: [304, 18, 345, 34], steps: [
+      { key: 'chainA', is: ['mirror.chainA', 'sky'], at: [316, 31], line: 'A MIRROR IN THE LOW SUN' },
+      { key: 'chainA2', is: ['mirror.chainA', '\\'], at: [316, 31], line: 'A MIRROR IN THE LOW SUN' },
+      { key: 'chainB', is: ['mirror.chainB', 'sky'], at: [316, 22], line: 'A SECOND MIRROR ON THE OBELISK SHELF' },
+      { key: 'chainB2', is: ['mirror.chainB', '\\'], at: [316, 22], line: 'A SECOND MIRROR ON THE OBELISK SHELF' } ] },
+    { id: 'gs-head', zone: [358, 14, 372, 28], steps: [
+      { key: 'hold1', rows: [25, 28], at: [363, 24], line: 'THE GLOW MARKS THE HOLDS UP THE FACE' },
+      { key: 'hold2', rows: [22, 25], at: [363, 21], line: 'THE GLOW MARKS THE HOLDS UP THE FACE' },
+      { key: 'hold3', rows: [19, 22], at: [366, 18], line: 'THE GLOW MARKS THE HOLDS UP THE FACE' },
+      { key: 'hold4', rows: [16, 19], at: [370, 16], line: 'THE CROWN IS OVER THE BROW' } ] },
+    { id: 'gs-cut', zone: [494, 24, 523, 34], steps: [ { key: 'relay', is: ['crack.darkCut', 'boils'], at: [502, 30], line: 'A MIRROR OVER THE FIRE BY THE CUT' } ] },
+    { id: 'gs-steps', zone: [574, 20, 595, 34], steps: [
+      { key: 'gaze', is: ['bed.stepsBridge', 'sand'], at: [588, 25], line: "A MIRROR IN THE COLOSSUS'S GAZE" },
+      { key: 'stepsRelay', is: ['crack.steps', 'boils'], at: [582, 27], line: 'A MIRROR OVER THE FIRE ON THE STEPS' } ] },
+  ],
+
   redgorge: [
     /* THE FALLS (Daniel 10-03: the gap up the falls cannot be jumped, and the wheel on the terrace was not seen): the glint is on the WHEEL until its gate holds the flood */
     { id: 'rg-falls', zone: WHOLE, steps: [

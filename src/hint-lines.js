@@ -134,6 +134,12 @@ export const CALL_LINES = new Set([
   'THE HOT AIR CARRIES YOU UP', "THE RIDER'S CLOAK: HOLD JUMP TO GLIDE", 'THE UPDRAFT THROWS YOU BACK', 'THE HORN CALLS THE KITE-RIDERS', 'THE DISC TURNS: THE ROAD OF AIR RISES', 'THE SUN HAS MOVED OFF THE DISC',
   'THE STONE TURNS TO THE SUN: THE AIR RISES', 'THE LOFT WANTS FOUR CLOTHS', "THE RIDERS' LOFT OPENS", 'SHE HAS YOU: STRUGGLE', 'SHE LETS GO', 'THE LINE IS CUT', 'KNOCKED OUT OF THE SKY',
   'THE STORM ROLLS IN', 'HER FEATHERS ARE UP', 'THE ROC  KNOCKED DOWN', 'THE LIGHTNING HAS HER', 'HER TALONS ARE STUCK IN THE NEST', 'SHE SKIDS ON THE STONE', 'SHE DRAGS A CLOUD OVER IT', 'SHE LETS YOU FALL', 'HER FEATHERS BRISTLE', 'THE CLOAK GOES BACK ON ITS MAST', 'THE KITE TAKES THE LINE: STEP ON THE CAGE', 'A GREAT SHADOW CROSSES THE BRIDGE',
+  /* claude/glasssea: THE GLASS SEA's mirrors, beams, beds, cracks, night and cast (src/glass-sea-hands.js) and THE GLASS COLOSSUS (src/glass-colossus.js, src/glass-colossus-hands.js) */
+  'FIRELIGHT WILL NOT FUSE SAND: IT WANTS THE SUN', 'THIS NOTCH IS STUCK: FIVE GLASS SHARDS FREE IT', 'DAZZLED: THE BEAM STUNS GLASS', 'FROZEN IN THE FIRELIGHT', 'IT SHATTERS: SHARDS IN THE SAND',
+  'THE GLASS CRUMBLES BACK TO SAND', 'THE FIRELIGHT HOLDS THE CRACK', 'THE CRACK BOILS WITH THE SWARM: FIRELIGHT HOLDS IT', 'THE CRACK THROWS YOU BACK', 'THE COLD BITES: GET TO A FIRE',
+  'THE SUN GOES DOWN: THE COLD COMES', 'A CRACK BOILS: THE SWARM', 'THE GLASS COLOSSUS WAKES', 'ITS LANCE IS THE SUN: A MIRROR FACING IT THROWS IT BACK', 'THROWN OFF: HOLD DOWN TO GRIP WHEN IT SAYS HOLD',
+  'IT KNOCKS THE MIRROR ROUND', 'IT GLAZES ITS CRACKS OVER: WAIT FOR THE GLASS TO CLEAR', 'NIGHT FALLS IN ITS GLASS: THE LANCE IS DARK', 'DAWN: THE SUN RETURNS TO IT', 'IT CALLS THE SWARM: FIRELIGHT HOLDS THEM',
+  'A MIRROR TO THE SKY THROWS THE DAWN ON ITS CROWN', 'THE DAWN BURNS ITS CROWN: DAZZLED', 'HOLD!', 'THE MIRROR THROWS IT BACK: ITS CHEST CRACKS', 'THE LANCE MISSED THE MIRRORS: NOTHING OPENS', 'TURN A MIRROR BACK TO FACE THE GIANT', 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM', 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE', 'THE FIRE HOLDS THE SWARM: ITS SHOULDERS BLAZE',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
@@ -143,7 +149,7 @@ export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 
   /* (claude/canal4) THE LEGGING TUNNEL: the stop-planks' windlass, a rider standing on her where there is no current, a hero who has left her in the dark */
   stop: 'STOP-PLANKS HOLD HER: FIND THE WINDLASS', leg: 'THE TUNNEL HAS NO CURRENT: SHE GOES ONLY IF YOU LEG HER', back: 'SHE WAITS IN THE DARK: GET BACK ON HER DECK' };
 /* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
-export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
+export const CALL_COUNTS = [/^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */

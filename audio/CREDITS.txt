@@ -244,6 +244,10 @@ THE RAPTOR MATRIARCH (2026-10-06, claude/redgorge2 art pass, Daniel's pick; the 
 - matriarch.ogg = "Volatile Reaction" by Kevin MacLeod, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://incompetech.com - OLD PLUME's boss theme.
   Credit, exactly as the licensor asks: "Volatile Reaction" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/
   Changes: encoded to OGG Vorbis by the coordinator (see the file; no edit by this lane). It replaces the synthesised E Phrygian gallop ('matriarch' in src/boss-music.js, removed).
+THE GLASS SEA (2026-10-06, claude/glasssea art pass, Daniel's pick; the file was fetched by the coordinator with his yes, licence read on the page - the lane downloaded nothing):
+- glasssea.ogg = "Eastern Arctic Dubstep" by VishwaJai (credited as "Vishwa Jay", at Daniel's wish), CC0 (public domain dedication; no credit is required, it is given anyway) - https://opengameart.org/node/97673 - THE GLASS SEA's level track.
+  Credit: "Eastern Arctic Dubstep" by Vishwa Jay (OpenGameArt.org), CC0. Changes: encoded to OGG Vorbis by the coordinator (see the file; no edit by this lane). THE GLASS COLOSSUS keeps his own theme composed in code (src/boss-music.js: "colossus", synthesised for this game).
+  Its ambient beds (glassday, glassnight in src/audio.js) are synthesised for this game and play under the track.
 
 THE UNDERWELL (2026-10-05, claude/underwellart, Daniel's pick; the file was fetched by the coordinator with his yes - the lane downloaded nothing):
 - underwell.ogg = "Ossuary 6 - Air" by Kevin MacLeod, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://incompetech.com - THE UNDERWELL's level track.
