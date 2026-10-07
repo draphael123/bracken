@@ -23,17 +23,20 @@
 //      runs you down. Its bores come quicker.
 export const DRILL_STAGE = { W: 22, lanes: [0, 3, 6], ceil: 10, points: 12, chute: 19 };
 export const DRILL = {
-  hp: 1900, w: 28, h: 52, cruise: 150,
+  /* THE FIX PASS NUMBERS (review MF3, measured tools/boss-rates.mjs --profile=human, campaign L11, 10 seeds a hero: knight 7, warden 7, pyro 3 = 57%).
+     The pyro lost on the BORE: her flame's recovery ate the old 1.0 s tell, so she was struck on the line she could not leave (102 of her 142 in 18 s).
+     So the bore is told longer (1.0 -> 1.25, P3 0.8 -> 1.0) and every hit and the cadence are heavier to keep the band; the key pays more; hp up */
+  hp: 2700, w: 28, h: 52, cruise: 150,
   creep: 9, frontMin: 34, frontMax: 150, push: 46,
-  contactDmg: 34, contactCd: 1.1,   /* (fix pass, review MF3: 40 -> 34; with the bore 35 -> 31 the stacked P1 opening was 75 of the pyro's 88) */
-  boreTell: 1.0, boreTell3: 0.8, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 150, bitIdle: 18, boreDmg: 31,
-  grindTell: 0.8, grindT: 0.7, grindDist: 78,
-  roofTell: 1.0, roofDmg: 27, roofW: 30,
+  contactDmg: 42, contactCd: 1.1,
+  boreTell: 1.25, boreTell3: 1.0, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 150, bitIdle: 18, boreDmg: 42,
+  grindTell: 0.8, grindT: 0.7, grindDist: 100,
+  roofTell: 1.0, roofDmg: 34, roofW: 30,
   fullTell: 1.2, fullT: 1.4, fullDist: 150,
   oreFirst: 3.0, oreEvery: [8.5, 8.0, 7.5], oreV: 64, oreDmg: 18, chuteTell: 1.0,
-  jamT: 4.6, jamMul: 2.5, jamCap: 0.15,   /* (fix pass: 2.0 / 0.11 -> 2.5 / 0.15 - the key pays more, for every hero) */ wardT: 3.0, lockT: 1.2,
+  jamT: 4.6, jamMul: 2.5, jamCap: 0.2,   /* (fix pass: 2.0 / 0.11 -> 2.5 / 0.2 - the key pays more, for every hero) */ wardT: 3.0, lockT: 1.2,
   phase2: 0.6, phase3: 0.3, phaseT: 2.0,
-  gap: [1.0, 0.7, 0.6],   /* (fix pass: P1 0.8 -> 1.0) */
+  gap: [0.6, 0.5, 0.4],   /* (fix pass: 0.8 / 0.7 / 0.6 -> 0.6 / 0.5 / 0.4 with the longer bore tell) */
   chain: { 1: ['bore', 'bore', 'grind', 'bore'], 2: ['bore', 'roof', 'bore', 'grind', 'roof'], 3: ['bore', 'full', 'roof', 'bore', 'grind', 'roof'] },
 };
 export const LANE_NAME = ['LOW', 'MID', 'HIGH'];
@@ -172,7 +175,7 @@ export const DRILL_PLAN = { react: 0.25, miss: 0.13, missPoints: 0.2 };
 export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip = 0 }) {
   const G = S.G, out = { gx: null, face: P.face, why: '' }, lane = P.lane >= 0 ? P.lane : Math.min(lanesOf(S).length - 1, laneUnder(G, P.y)), LS = lanesOf(S);
   const late = k => { if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
-  const cab = cabBox(G, S), standX = cab.r + (tip ? tip + 4 : Math.max(10, Math.min(reach, 22) - 6));   /* (a spear's tip pays at a distance from the near edge: the warden stands back) */
+  const cab = cabBox(G, S), standX = cab.r + (tip ? tip + 4 : Math.max(10, reach - 8));   /* (a spear's tip pays at a distance from the near edge: the warden stands back; fix pass, review MF3: every hero stands where HER reach pays - the pyro's flame reaches 30, so she stands back too, as a player would) */
   const go = l => { if (l > lane && P.ground) out.jump = true; else if (l < lane && P.ground) out.drop = true; };
   const danger = new Set();   /* lines not to be on */
   if ((e.mode === 'boreTell' || e.mode === 'boreOut' || e.mode === 'boreHold') && late('bore' + S.n.bore)) danger.add(S.bitLane);

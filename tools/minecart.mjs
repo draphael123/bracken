@@ -119,5 +119,5 @@ const fight = () => { const S = GD.newFight(G), e = { hp: 600, maxHp: 600, mode:
   e.hp = e.maxHp * 0.29; GD.stepDrill(e, S, 1 / 60, [], w); ok(S.ph === 3 && S.highDown && arena.includes('highDown') && GD.lanesOf(S).join() === '0,1', 'P3 brings the roof down on the HIGH line: two lines left');
   ok(log.some(t => /HIGH LINE/.test(t)) && isCallout('THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT'), 'and says so');
   for (let i = 0; i < 6; i++) { S.chute = null; S.ores = []; S.oreT = 0; GD.stepDrill(e, S, 1 / 60, [], w); ok(!S.chute || S.chute.lane === 1, 'P3: the chute drops on the MID line'); } }
-ok(GD.DRILL.jamCap >= 0.15 && GD.DRILL.jamMul >= 2.5 && GD.DRILL.contactDmg <= 34 && GD.DRILL.boreDmg <= 31 && GD.DRILL.gap[0] >= 1.0 && GD.DRILL.hp >= 1900, 'the drill at the fix pass numbers (the key pays more, the stacked P1 opening softer, hp kept)');
+ok(GD.DRILL.jamCap >= 0.15 && GD.DRILL.jamMul >= 2.5 && GD.DRILL.boreTell >= 1.2 && GD.DRILL.boreTell3 >= 1.0 && GD.DRILL.hp >= 1900, 'the drill at the fix pass numbers (the key pays more; the bore told long enough for a hero with a slow recovery - the pyro - to change line; hp never lowered)');
 console.log('minecart: ' + n + ' checks ok');
