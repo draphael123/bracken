@@ -13,7 +13,7 @@
 //   bar), a blow x HM.openMul, one opening HM.openCap of her at most. B4: open, she stands where she is, glove up, whistling - no step, no retreat.
 //   B3: when the opening ends the hawk is home on her glove - a TOLD HM.wardT s WARD (every blow clanks WARDED; a gong or a flash finds the hawk home).
 //   Her OWN guards' gongs do not spook it (it knows her bandits' beat) - only a stranger's hand on a gong.
-// PHASE ONE - THE COURTYARD DUEL (to HM.p2): WHIP LASH (! a long low lash: jump it, or a shield takes it), KNIFE FEINT (a feint step, nothing - then the
+// PHASE ONE - THE COURTYARD DUEL (to HM.p2): WHIP LASH (!! a long low lash that wraps a shield: jump it), KNIFE FEINT (a feint step, nothing - then the
 //   real cut, !: a shield turns it), THE HAWK SPOTS (! it drops over you and shrieks: your spot is MARKED - her next lash cracks there, !!: step off it).
 // PHASE TWO - HER GUARD ANSWERS THE GONGS (HM.p2 to HM.p3). NEW MOVE: THE CALL (! two notes): a guard runs the wall walk for the nearest gong; rung, a door
 //   opens and her guard comes down (HM.guardCap alive). CUT THE ROPES to fight her alone - a cut gong cannot call her guard, but it cannot send the hawk
@@ -25,11 +25,11 @@
 
 export const HM = {
   hp: 1400, w: 16, h: 30, markH: 48,
-  openMul: 1.6, openCap: 0.07, openT: 3.6, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80,
+  openMul: 1.6, openCap: 0.06, openT: 3.6, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80,
   p2: 0.6, p3: 0.25, desp: 0.12,
   walk: 70, keep: 50, turn: 0.35, gap: [0.5, 0.42, 0.36],
   lashTell: 0.55, lashT: 0.16, lashReach: 86, lashH: 16, lashRange: 110,
-  feintTell: 0.42, feintHold: 0.24, cutTell: 0.34, cutT: 0.14, cutReach: 34, cutStep: 110,
+  feintTell: 0.42, feintHold: 0.24, cutTell: 0.34, cutT: 0.18, cutReach: 34, cutStep: 210,   /* (the knife LUNGES: ~38 px in on the cut) */
   spotTell: 0.9, markLashTell: 0.65, markR: 22,
   callTell: 0.8, runT: 2.4, guardCap: 2,
   diveTell: 0.95, diveFly: 0.32, diveR: 20, diveLow: 0.7,
@@ -46,7 +46,7 @@ export const CYCLES = {
 };
 /* THE MOVES: the mode while it is told, its mark, the answer (src/marks.js keeps the same rows) */
 export const MOVES = {
-  lashTell: { mark: '!', answer: 'jump' }, feintTell: { mark: '', answer: '' }, cutTell: { mark: '!', answer: 'block' }, spotTell: { mark: '!', answer: '' },
+  lashTell: { mark: '!!', answer: 'jump' }, feintTell: { mark: '', answer: '' }, cutTell: { mark: '!', answer: 'block' }, spotTell: { mark: '!', answer: '' },
   markLashTell: { mark: '!!', answer: 'dodge' }, callTell: { mark: '!', answer: '' }, diveTell: { mark: '!!', answer: 'dodge' }, flashTell: { mark: '!!', answer: 'dodge' },
 };
 export const MOVE_NAME = { lash: 'HER WHIP', cut: 'HER KNIFE', markLash: 'HER WHIP', dive: 'HER HAWK', flash: 'HER FLASH POWDER', fire: 'THE FIRE' };
@@ -141,7 +141,9 @@ export function stepHawkMistress(e, S, dt, h, c) {
   const want = hPhase(e);
   if (want > S.ph && !hmOpen(e) && S.pend <= 0 && (e.mode === 'walk' || e.mode === 'recover')) {
     S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want; c.music(want);
-    if (want === 2) { c.number(e.x, e.y - 70, 'HER GUARD ANSWERS THE GONGS: CUT THE ROPES', '#ff9a5c'); c.sound('whistle'); setMode(e, 'recover', 0.6); return; }
+    if (want === 2) { c.number(e.x, e.y - 70, 'HER GUARD ANSWERS THE GONGS: CUT THE ROPES', '#ff9a5c'); c.sound('whistle'); setMode(e, 'recover', 0.6);
+      for (const g of c.gongs().filter(q => !q.cut).slice(0, HM.guardCap)) if (c.guards() < HM.guardCap && c.guardRing(g.id)) S.n.guards++;   /* her whistle: every gong still hanging rings for her, and her guard comes down */
+      return; }
     if (want === 3) { c.number((G.x0 + G.x1) / 2, G.floorY - 120, 'THE POWDER STORE BURNS: THE ROOFS GO', '#ff6b6b'); c.sound('blast'); c.shake(6); setMode(e, 'recover', 0.8); return; } }
   switch (e.mode) {
     case 'whistle': if (e.open <= 0) { endOpen(e, S, c); setMode(e, 'recover', 0.5); } return;   /* B4: she stands, glove up */
@@ -181,7 +183,7 @@ function stepMove(e, S, dt, P, h, c) {
   const G = S.G, f = e.face || 1, after = (t) => setMode(e, 'recover', t ?? HM.gap[S.ph - 1]);
   switch (e.mode) {
     case 'lashTell': if (e.modeT <= 0) { setMode(e, 'lash', HM.lashT); S.n.lashes++; c.sound('lash');
-        c.hit([f > 0 ? e.x : e.x - HM.lashReach, f > 0 ? e.x + HM.lashReach : e.x, e.y - HM.lashH, e.y + 2], HM.dmg.lash, MOVE_NAME.lash, { blockable: true, key: 'lash' + S.act }); } return;
+        c.hit([f > 0 ? e.x : e.x - HM.lashReach, f > 0 ? e.x + HM.lashReach : e.x, e.y - HM.lashH, e.y + 2], HM.dmg.lash, MOVE_NAME.lash, { key: 'lash' + S.act });   /* (the whip wraps a shield: jump it) */ } return;
     case 'lash': if (e.modeT <= 0) after(); return;
     case 'feintTell': if (e.modeT <= 0) { setMode(e, 'feintHold', HM.feintHold); c.fx('feint', e.x + f * 8, e.y); } return;   /* a stamp: it was nothing - and now it is something */
     case 'feintHold': if (e.modeT <= 0) { e.face = Math.sign(P.x - e.x) || f; tell(e, S, c, 'cutTell', HM.cutTell); } return;
@@ -269,7 +271,6 @@ export function hmPlan(s) {
       if ((e.mode === 'markLashTell' || e.mode === 'spotTell') && S.mark && Math.abs(P.x - S.mark.x) < HM.markR + 14) { const d = roomDir(S.mark.x); out.gx = safeX(S.mark.x + d * (HM.markR + 26)); if (e.mode === 'markLashTell' && e.modeT < 0.25 && P.ground && !s.noRoll) out.dodge = true; out.why = 'off the hawk\'s mark'; return out; }
       if ((e.mode === 'diveTell' || S.hawk.mode === 'dive') && S.mark && Math.abs(P.x - S.mark.x) < HM.diveR + 14) { const d = roomDir(S.mark.x); out.gx = safeX(S.mark.x + d * (HM.diveR + 30)); if (S.hawk.mode === 'dive' && P.ground && !s.noRoll) out.dodge = true; out.why = 'off the dive\'s shadow'; return out; }
       if ((e.mode === 'lashTell' || e.mode === 'lash') && dx < HM.lashReach + 14 && same && (e.face || 1) * (P.x - kx) > -6) {
-        if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the lash'; return out; }
         if ((e.mode === 'lash' || e.modeT < 0.16) && P.ground) { out.jump = true; out.gx = P.x; out.why = 'jump the lash'; return out; }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'ready to jump the lash'; return out; }
       if ((e.mode === 'cutTell' || e.mode === 'cut') && dx < 74 && same) { if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the knife'; return out; }
