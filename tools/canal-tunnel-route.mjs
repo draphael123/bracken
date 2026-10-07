@@ -22,13 +22,13 @@ const pg = await openPage({ audio: false, fonts: false });
 let bad = 0; const rows = [];
 try {
   for (const hero of heroes) for (let seed = 1; seed <= seeds; seed++) {
-    const plan = planArg === 'both' ? (seed % 2 ? 'stray' : 'ride') : planArg, die = plan === 'stray' && seed % 3 === 1, dim = seed % 2 === 0;
+    const bplan = opt('basin', ['fight', 'die', 'skip', 'lure'][seed % 4]), plan = planArg === 'both' ? (seed % 2 ? 'stray' : 'ride') : planArg, die = plan === 'stray' && seed % 3 === 1, dim = seed % 2 === 0;
     await pg.reload();
     const r = await pg.evalp(`(async()=>{
-      const { LEVELS } = await import('/src/level.js'); const { mulberry } = await import('/src/px.js'); const TS = 16;
+      const { LEVELS, T } = await import('/src/level.js'); const { mulberry } = await import('/src/px.js'); const TS = 16;
       const hash = s => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
       Math.random = mulberry(hash('canal5|${hero}|${seed}'));
-      const TRACE = ${JSON.stringify(process.env.TRACE ? process.env.TRACE.split(',').map(Number) : null)}; const PLAN = ${JSON.stringify(plan)}, DIE = ${die}, DIM = ${dim}, STRAY = PLAN === 'stray';
+      const TRACE = ${JSON.stringify(process.env.TRACE ? process.env.TRACE.split(',').map(Number) : null)}; const BPLAN = ${JSON.stringify(bplan)}, PLAN = ${JSON.stringify(plan)}, DIE = ${die}, DIM = ${dim}, STRAY = PLAN === 'stray';
       BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
       BK.load(LEVELS.findIndex(l => l.id === 'canal')); BK.start ? BK.start() : (BK.state = 'play'); BK.god = false;
       const P = () => BK.P, k = BK.keys, C = () => BK.canal(), B = () => C().barge, log = [], dbg = [], D = ${DBG} ? (...a) => dbg.push(a.join(' ')) : () => {};
@@ -38,20 +38,37 @@ try {
       const inTun = () => P().x >= 248 * TS && P().x < 345 * TS;
       const deaths = () => BK.stats().deaths;
       class Died extends Error {}
-      let ARMED = null;
+      let ARMED = null, SPARE = false;   /* (claude/canal6) SPARE: a basin plan that skips the deck foreman never swings at him until he is aboard her in the lock */
+      /* (claude/canal6, Daniel 10-07: "little enemies get stuck on the bottom that you can't see") THE BROOD IN SIGHT: every live foe in the tunnel's span
+         (248-345), every frame, must be where the tunnel is DRAWN and where a blade can reach it - never on the tunnel's bed under the water (a man knocked off
+         a ledge), never in the rock under it, never under the water deeper than a lurking grindylow's ripples (its own place: it is drawn as ripples and
+         rises to strike). Counted per foe: a foe out of that space for more than half a second fails the run */
+      const surfAt = x => { for (const p of BK.L.pools || []) if (!p.dry && p.canal && p.canal !== 'dock' && x > p.x0 && x < p.x1) return p.y; return null; };
+      const solidAt = (tx, ty) => { const t = BK.L.grid[ty * BK.L.W + tx]; return t !== undefined && t !== T.AIR && t !== T.ONEWAY && t !== T.NET; };
+      const DARK = (BK.L.canal && BK.L.canal.dark) || [];
+      const foeOut = e => { const tx = Math.floor(e.x / TS), ty = Math.floor((e.y - 2) / TS), s = surfAt(e.x);
+        if (!DARK.some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && ty >= y0 && ty <= y1) && !(ty < 14 && tx >= 304 && tx <= 309)) return 'outside the drawn tunnel (row ' + ty + ')';
+        if (solidAt(tx, ty)) return 'in the rock';
+        if (e.t === 'grindylow') { if (e.aboard) return null; if (s === null) return e.mode === 'stranded' ? null : 'a grindylow with no water under it (' + e.mode + ')'; return e.y > s + 16 ? 'a grindylow ' + Math.round(e.y - s) + ' px under the surface (' + e.mode + ')' : null; }
+        if (e.t === 'willowisp') return null;
+        return s !== null && e.y > s + 6 ? 'under the water, ' + Math.round(e.y - s) + ' px below the surface (' + e.mode + ')' : null; };
+      const FOE_OUT = new Map(); let foeOutMax = 0, foeOutWhat = null;
+      const foeAudit = () => { for (const e of BK.enemies()) { if (!e.alive || e.x < 248 * TS || e.x >= 346 * TS) { FOE_OUT.delete(e); continue; } const why = foeOut(e);
+          if (!why) { FOE_OUT.delete(e); continue; } const n = (FOE_OUT.get(e) || 0) + 1; FOE_OUT.set(e, n);
+          if (n > foeOutMax) { foeOutMax = n; foeOutWhat = e.t + (e.cnSkin ? '/' + e.cnSkin : '') + ' @' + (e.x / TS).toFixed(1) + ',' + (e.y / TS).toFixed(1) + ': ' + why; } } };
       /* ONE FRAME. The tally that matters here: how long the hand is PARTED from her in the tunnel with no footing her deck can reach - off her, not on
          a ledge / ladder / the gallery she is gliding to, not in the air for a jump: the "the raft didn't follow me" clock */
       const tick = n => { for (let i = 0; i < (n || 1); i++) {
         const gr = BK.enemies().find(e => e.alive && e.t === 'grindylow' && e.mode === 'grab'); if (gr && frames % 4 === 0) { BK.press('jump'); grabs++; }   /* a grab mashed off */
         const tl = BK.enemies().find(e => e.alive && typeof e.mode === 'string' && /Tell$/.test(e.mode) && Math.abs(e.x - P().x) < 72 && Math.abs(e.y - P().y) < 40); const kb = k.block; if (tl && P().ground && !P().climb) { k.block = true; guards++; }   /* a told blow: GUARD it (a hand that reads the !!, as a player does) */
         if (BK.state === 'card') { BK.cardClose(); cards++; }   /* a level-up card: taken (the hand plays on) */
-        BK.log = []; BK.sim(1); frames++; k.block = kb; for (const q of BK.log) if (q.k === 'dmgP' && q.dmg > 0) { const w = (q.who || (q.by && q.by.t) || (q.blow) || 'hazard') + ''; DMG[w] = (DMG[w] || 0) + q.dmg; LAST.push(w + ' ' + Math.round(q.dmg) + ' @' + Math.floor(P().x / TS) + ',' + Math.floor(P().y / TS)); if (LAST.length > 6) LAST.shift(); } BK.log = null;
+        BK.log = []; BK.sim(1); frames++; foeAudit(); k.block = kb; for (const q of BK.log) if (q.k === 'dmgP' && q.dmg > 0) { const w = (q.who || (q.by && q.by.t) || (q.blow) || 'hazard') + ''; DMG[w] = (DMG[w] || 0) + q.dmg; LAST.push(w + ' ' + Math.round(q.dmg) + ' @' + Math.floor(P().x / TS) + ',' + Math.floor(P().y / TS)); if (LAST.length > 6) LAST.shift(); } BK.log = null;
         if (P().y < 2 * TS && P().x > 300 * TS && P().x < 312 * TS) escapes++;   /* out of the moon shaft's top */
         if (inTun() && !P().dead && !onBarge()) { const b = B(); const near = Math.abs(P().x - (b.x + b.w / 2)) < 6 * TS; off = near || P().climb || !P().ground ? 0 : off + 1; if (off > offMax) { offMax = off; offWhere = [Math.floor(P().x / TS), Math.floor(P().y / TS), Math.round(b.x / TS)]; } } else off = 0;
         if (TRACE && P().x > TRACE[0] * TS && P().x < TRACE[1] * TS && frames % 6 === 0) D('t', frames, (P().x / TS).toFixed(1), (P().y / TS).toFixed(1), Math.round(P().hp), onBarge() ? 'ON' : 'off', P().ground ? 'g' : 'air', P().climb ? 'climb' : '', 'leg' + P().legging, 'end' + P().deckEnd, 'hurt' + (+(P().hurt || 0)).toFixed(2), 'atk' + P().atk, Object.keys(k).filter(q => k[q]).join('+'), (B().x / TS).toFixed(1), B().holdWhy, 'lv' + (+(B().lv || 0)).toFixed(1), 'want' + C().leg, C().legBy, C().pend || '');
         if (!P().dead && P().hp > 0 && P().hp < P().maxHp * 0.35 && !SUICIDE) { P().hp = P().maxHp; heals++; }   /* THE CARELESS HAND'S FLASK: the subject is the barge, not the fight - a heal under 35% (counted), so a plain-swinging bot is not killed by the brood over and over */
         if (ARMED !== null && deaths() > ARMED) throw new Died(); } };
-      const fight = (o = {}) => { const e = BK.enemies().filter(q => q.alive && !q.harmless && !q.waiting && !(q.t === 'grindylow' && !q.aboard && q.mode !== 'stranded') && Math.abs(q.x - P().x) < (o.r || 48) && Math.abs(q.y - P().y) < (q.t === 'willowisp' ? 34 : 16)).sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
+      const fight = (o = {}) => { const e = BK.enemies().filter(q => q.alive && !q.harmless && !(SPARE && q.elite) && !q.waiting && !(q.t === 'grindylow' && !q.aboard && q.mode !== 'stranded') && Math.abs(q.x - P().x) < (o.r || 48) && Math.abs(q.y - P().y) < (q.t === 'willowisp' ? 34 : 16)).sort((a, b) => Math.abs(a.x - P().x) - Math.abs(b.x - P().x))[0];
         if (!e) return false; clear();
         for (let j = 0; j < 24 && Math.abs(e.x - P().x) > 14 && e.alive; j++) { clear(); if (onBarge() && (P().x < B().x + 12 || P().x > B().x + B().w - 12)) break; k[e.x > P().x ? 'right' : 'left'] = true; tick(1); }
         clear(); P().face = Math.sign(e.x - P().x) || P().face; BK.press('atk'); tick(8); clear(); tick(4);
@@ -137,33 +154,61 @@ try {
       };
       const R_inTun = () => B().x + B().w / 2 >= 248 * TS - 2;
       const R_inTunAt = () => B().x + B().w / 2 >= 345 * TS;
-      let tunnelOk = false;
-      for (let t = 0; t < 4 && !tunnelOk; t++) { ARMED = deaths(); try { tunnelOk = tunnel(); ARMED = null; if (!tunnelOk) break; } catch (e) { if (!(e instanceof Died)) throw e; ARMED = null; died++;
-          SUICIDE = false; stage('died in the tunnel (' + LAST.join(' | ') + '): woken at the summit, her at its mooring - from the top again', true); clear(); wake(); } }
-      if (!tunnelOk) return { basinAssists, heals, guards, DMG, log, dbg, lifts, escapes, offMax, offWhere, died, frames, arena: false, hero: ${JSON.stringify(hero)} };
-      /* 6. THE BASIN (god on: the exam is not this tool's subject) and the corridor to her door */
-      BK.god = true;
-      for (let i = 0; i < 60 * 20 && B().holdWhy !== 'fog'; i++) { clear(); tick(1); }
-      walk(Math.floor(B().x / TS) + 1, { tol: 3, noFight: true }); ledgeUp(41); walk(355, { noFight: true }); walk(364);
-      for (let i = 0; i < 60 && BK.enemies().some(e => e.alive && (e.elite || e.lamplighter) && e.x > 345 * TS && e.x < 380 * TS && e.y > 36 * TS && e.y < 43 * TS); i++) { const el = BK.enemies().filter(e => e.alive && (e.elite || e.lamplighter) && e.x > 345 * TS && e.x < 380 * TS && e.y > 36 * TS && e.y < 43 * TS)[0]; walk(Math.round(el.x / TS) - 1, { noFight: true }); if (!fight()) tick(10); }
-      { const left = BK.enemies().filter(e => e.alive && e.elite && e.x > 340 * TS && e.x < 392 * TS); for (const e of left) { e.hp = 0; e.alive = false; basinAssists++; } for (let i = 0; i < 30; i++) tick(1); }   /* (the basin is not this tool's subject: a foreman the plain-swinging hand cannot cut down - his hook throws it into the canal - is taken out, counted, so the run goes on to her door) */
-      stage('basin: the island\\'s lamplighter and foreman down' + (basinAssists ? ' (the foreman taken out by the tool: ' + basinAssists + ')' : ''), true);
-      let aboard = false; const horn = () => C().horns.find(h => h.x > 340 * TS && h.x < 352 * TS), br = () => C().bridges[3];
-      for (let a = 0; a < 5 && !aboard; a++) {   /* the exam's window: blow the horn, over the bridge in the clear air, swing it, and be on her under the island before the fog rolls back - again if it did */
-        if (onBarge()) { walk(Math.floor(B().x / TS) + 1, { tol: 3, noFight: true }); ledgeUp(41); }   /* handed back onto her where the fog holds her: up onto the west bank again */
-        if (!br().across && P().x > 359 * TS) { walk(363, { tol: 3, noFight: true }); strike(-1); for (let i = 0; i < 90 && !br().across; i++) tick(1); tick(60); }   /* (swung open behind you: bring it back across to reach the horn) */
-        walk(350, { tol: 3 }); for (let i = 0; i < 900 && horn().cd > 0; i++) tick(1); strike(-1);
-        walk(363, { tol: 3, noFight: true }); if (br().across) strike(-1);
-        walk(366, { noFight: true }); dropOn(60 * 12); for (let i = 0; i < 60 * 6 && onBarge() && B().x + B().w <= 364 * TS; i++) tick(1); aboard = onBarge() && B().x + B().w > 364 * TS; }
-      stage('basin: the horn blown, the bridge swung, onto her as she passes under the island', aboard);
-      for (let i = 0; i < 60 * 15 && !(B().holdWhy === 'end' || B().x > 383 * TS); i++) { clear(); if (!fight({ r: 40 })) tick(1); }
-      walk(388, { tol: 3, noFight: true }); strike(1); for (let i = 0; i < 60 * 8 && !full('L5'); i++) tick(1); stage('basin: its lock filled', full('L5'));
-      walk(389, { tol: 3, noFight: true }); hop(1, { hold: 30 }); walk(391); walk(395); walk(398, { noFight: true }); tick(60);
+      const runTunnel = () => { let ok = false;
+        for (let t = 0; t < 4 && !ok; t++) { ARMED = deaths(); try { ok = tunnel(); ARMED = null; if (!ok) break; } catch (e) { if (!(e instanceof Died)) throw e; ARMED = null; died++;
+            SUICIDE = false; stage('died in the tunnel (' + LAST.join(' | ') + '): woken at the summit, her at its mooring - from the top again', true); clear(); wake(); } }
+        return ok; };
+      const fail = () => ({ foeOutMax, foeOutWhat, basinAssists, heals, guards, DMG, log, dbg, lifts, escapes, offMax, offWhere, died, frames, arena: false, hero: ${JSON.stringify(hero)} });
+      if (!runTunnel()) return fail();
+      /* 6. THE BASIN (god on: the exam's fights are not this tool's subject) and the corridor to her door - and (claude/canal6, Daniel 10-07: "you can get
+         softlocked if you don't defeat the elite") HIS DOOR: the deck foreman's elite gate shuts the corridor until he is down. BPLAN:
+           fight  the old way: the lamplighter and the foreman cut down on the island first (a foreman the plain swings cannot finish is taken out, counted)
+           skip   ride past him: the exam without a blow at him. With her in the lock under his shut door he must LEAP ABOARD - on her deck, in reach - and
+                  the hand's own blows must land on him there; his door opens when he is down
+           lure   draw him off his island over the bridge to the west bank first (wherever he wandered), then skip him
+           die    die beside him on the island: woken at the summit, he must be back at his post with his door shut - the tunnel again, then skip him */
+      const FMAN = () => BK.enemies().find(e => e.alive && e.elite && e.bargee), FG = (FMAN() && FMAN().G) || { col: 392, top: 34 };
+      const doorShut = () => BK.L.grid[FG.top * BK.L.W + FG.col] !== T.AIR;
+      const basin = bp => {
+        BK.god = true; const NF = bp !== 'fight'; SPARE = NF;
+        for (let i = 0; i < 60 * 20 && B().holdWhy !== 'fog'; i++) { clear(); tick(1); }
+        walk(Math.floor(B().x / TS) + 1, { tol: 3, noFight: true }); ledgeUp(41); walk(355, { noFight: true });
+        if (bp === 'fight') { walk(364);
+          for (let i = 0; i < 60 && BK.enemies().some(e => e.alive && (e.elite || e.lamplighter) && e.x > 345 * TS && e.x < 380 * TS && e.y > 36 * TS && e.y < 43 * TS); i++) { const el = BK.enemies().filter(e => e.alive && (e.elite || e.lamplighter) && e.x > 345 * TS && e.x < 380 * TS && e.y > 36 * TS && e.y < 43 * TS)[0]; walk(Math.round(el.x / TS) - 1, { noFight: true }); if (!fight()) tick(10); }
+          { const left = BK.enemies().filter(e => e.alive && e.elite && e.x > 340 * TS && e.x < 392 * TS); for (const e of left) { e.hp = 0; e.alive = false; basinAssists++; } for (let i = 0; i < 30; i++) tick(1); }   /* (the basin is not this tool's subject: a foreman the plain-swinging hand cannot cut down - his hook throws it into the canal - is taken out, counted, so the run goes on to her door) */
+          stage('basin: the island\\'s lamplighter and foreman down' + (basinAssists ? ' (the foreman taken out by the tool: ' + basinAssists + ')' : ''), true); }
+        if (bp === 'die') { walk(364, { noFight: true }); SPARE = false; const d0 = deaths(); BK.god = false; P().inv = 0; BK.damagePlayer(P().x, 99999, { unblockable: true, name: 'THE ROUTE' }); for (let i = 0; i < 400 && !P().dead; i++) { BK.sim(1); frames++; } wake();
+          const f = FMAN(); stage('DIED beside the deck foreman: woken at the summit - he is back at his post, his door shut', deaths() > d0 && Math.abs(P().x - (242 * TS + 8)) < 40 && !!f && Math.abs(f.x - f.home.x) < 2 * TS && doorShut());
+          return 'again'; }
+        if (bp === 'lure') { let left = false; walk(364, { noFight: true }); for (let i = 0; i < 60 * 2; i++) tick(1);
+          for (let a = 0; a < 3 && !left; a++) { walk(349, { noFight: true, max: 900 }); for (let i = 0; i < 60 * 6 && !left; i++) { clear(); tick(1); left = !!FMAN() && FMAN().x < 361 * TS; } if (!left) { walk(363, { noFight: true }); tick(60); } }
+          stage('LURE: the deck foreman ' + (left ? 'followed off his island over the bridge' : 'would not leave his island (lured as far as he came)'), true); }
+        let aboard = false; const horn = () => C().horns.find(h => h.x > 340 * TS && h.x < 352 * TS), br = () => C().bridges[3];
+        for (let a = 0; a < 5 && !aboard; a++) {   /* the exam's window: blow the horn, over the bridge in the clear air, swing it, and be on her under the island before the fog rolls back - again if it did */
+          if (onBarge()) { walk(Math.floor(B().x / TS) + 1, { tol: 3, noFight: true }); ledgeUp(41); }   /* handed back onto her where the fog holds her: up onto the west bank again */
+          if (!br().across && P().x > 359 * TS) { walk(363, { tol: 3, noFight: true }); strike(-1); for (let i = 0; i < 90 && !br().across; i++) tick(1); tick(60); }   /* (swung open behind you: bring it back across to reach the horn) */
+          walk(350, { tol: 3, noFight: NF }); for (let i = 0; i < 900 && horn().cd > 0; i++) tick(1); strike(-1);
+          walk(363, { tol: 3, noFight: true }); if (br().across) strike(-1);
+          walk(366, { noFight: true }); dropOn(60 * 12); for (let i = 0; i < 60 * 6 && onBarge() && B().x + B().w <= 364 * TS; i++) tick(1); aboard = onBarge() && B().x + B().w > 364 * TS; }
+        stage('basin: the horn blown, the bridge swung, onto her as she passes under the island', aboard);
+        for (let i = 0; i < 60 * 15 && !(B().holdWhy === 'end' || B().x > 383 * TS); i++) { clear(); if (NF || !fight({ r: 40 })) tick(1); }
+        if (NF) { let on = false; for (let i = 0; i < 60 * 6 && !on; i++) { clear(); tick(1); const f = FMAN(); on = !!f && !!f.cnDeck && f.x >= B().x && f.x <= B().x + B().w && doorShut(); }
+          stage('SKIPPED HIM: up the lock under his shut door, the deck foreman LEAPS ABOARD her - on her deck, in reach', on); SPARE = false; if (!on) return false; }
+        walk(388, { tol: 3, noFight: true }); strike(1); for (let i = 0; i < 60 * 8 && !full('L5'); i++) { clear(); if (NF) tick(1); else if (!fight({ r: 40 })) tick(1); } stage('basin: its lock filled', full('L5'));
+        if (NF) { const f = FMAN(), hp0 = f ? f.hp : 0;
+          for (let i = 0; i < 200 && FMAN(); i++) { if (!fight({ r: 120 })) tick(6); }
+          const took = !!f && f.routeSwings > 50, hit = !!f && (f.hp < hp0 || !took);
+          if (took) basinAssists++;
+          stage('the hand\\'s own blows land on him on her deck (' + Math.round(hp0) + ' -> ' + Math.round(Math.max(0, f ? f.hp : 0)) + (took ? ', then taken out by the tool' : ', cut down') + '); his door opens', hit && !FMAN() && !doorShut()); }
+        walk(389, { tol: 3, noFight: true }); hop(1, { hold: 30 }); walk(391); walk(395); walk(398, { noFight: true }); tick(60);
+        return true; };
+      if (basin(BPLAN) === 'again') { if (!runTunnel()) return fail(); basin('skip'); }
       const arena = P().x > 397 * TS && P().y < 42 * TS;
       stage('IN JENNY\\'S ARENA' + (arena ? '' : ' (alive elites: ' + BK.enemies().filter(e => e.alive && e.elite).map(e => e.t + '@' + Math.floor(e.x / TS) + ',' + Math.floor(e.y / TS) + ' hp' + Math.round(e.hp) + ' ' + e.mode).join(' ') + ')'), arena);
-      return { basinAssists, heals, guards, DMG, log, dbg, lifts, escapes, offMax, offWhere, died, frames, arena, hero: ${JSON.stringify(hero)} };
+      return { foeOutMax, foeOutWhat, basinAssists, heals, guards, DMG, log, dbg, lifts, escapes, offMax, offWhere, died, frames, arena, hero: ${JSON.stringify(hero)} };
     })()`, 2400000);
-    const okRun = r.arena && !r.lifts && !r.escapes && r.offMax < 60 * 12 && r.log.every(l => l.ok);
+    const okRun = r.arena && !r.lifts && !r.escapes && r.offMax < 60 * 12 && r.log.every(l => l.ok) && r.foeOutMax <= 30;   /* (claude/canal6) and no tunnel foe out of sight and reach for over half a second */
+    if (r.foeOutMax > 30 || DBG) console.log('    ' + (r.foeOutMax > 30 ? 'MISS' : 'ok  ') + ' a tunnel foe out of the drawn / hittable space for ' + (r.foeOutMax / 60).toFixed(1) + ' s' + (r.foeOutWhat ? ' - ' + r.foeOutWhat : ''));
     if (!okRun) bad++;
     rows.push({ hero, seed, plan, dim, die, ok: okRun, died: r.died, s: +(r.frames / 60).toFixed(0), offMax: +(r.offMax / 60).toFixed(1) });
     console.log((okRun ? 'ok  ' : 'FAIL') + ' ' + hero.padEnd(10) + ' seed ' + seed + ' ' + plan.padEnd(5) + (dim ? ' dim' : ' lit') + (die ? ' +death' : '') + ': ' + (r.arena ? 'reached her arena' : 'DID NOT reach her arena') + ', ' + r.died + ' death(s) in the tunnel, ' + (r.frames / 60).toFixed(0) + ' s, longest parted from her with nowhere to go ' + (r.offMax / 60).toFixed(1) + ' s, ' + r.heals + ' flask(s), ' + (r.basinAssists ? r.basinAssists + ' basin foreman taken out by the tool, ' : '') + r.guards + ' guard frames' + (r.offWhere ? ' at ' + r.offWhere.join(',') : '') + (r.escapes ? ', OUT OF THE MOON SHAFT ' + r.escapes + ' frames' : '') + '; damage: ' + Object.entries(r.DMG).map(([a, b]) => a + ' ' + Math.round(b)).join(', '));

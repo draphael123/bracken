@@ -324,7 +324,20 @@ if (!NOPAGE && lv) {
       { const cb = tun(); const L6 = cb.reaches.find(r => r.id === 'L6'); L6.y = L6.to = L6.lo * TS + 4; sim(30); BK.god = false; cb.barge.x = 346 * TS; sim(4); BK.tp(348, 40); sim(40); BK.tp(345, 47); P.vy = 0; const h0 = P.hp; for (let i = 0; i < 240; i++) BK.sim(1); out.slot = [cb.gates.find(g => g.id === 'G8').open, h0 - P.hp, Math.floor(P.x / TS), Math.floor((P.y - 1) / TS)]; }
 
       fresh(); kill(e => true); { const cb = C(); for (const q of cb.bridges.slice(0, 2)) { q.across = false; q.k = 1; } cb.barge.x = 158 * TS; BK.tp(162, 31); sim(120); const tg = cb.glint; out.clarityFog = [cb.barge.holdWhy, tg && tg.why, tg && Math.floor(tg.prop.x / TS)]; }
+      //   h. (claude/canal6) JENNY'S WATER TAKES WHAT FALLS IN: the stop-planks' bargee walked off his ledge used to stand on the tunnel's bed, five rows under the
+      //      surface, out of sight and reach, for the rest of the attempt. A man in the canal is DROWNED at once; an elite is put back at his post
+      fresh(); { const gb = BK.enemies().find(e => e.alive && e.bargee && !e.elite && e.x > 288 * TS && e.x < 298 * TS); kill(e => e !== gb && !e.elite); gb.x = 286 * TS + 8; gb.y = 21 * TS; gb.vy = 0; sim(30);
+        const fm = BK.enemies().find(e => e.alive && e.elite && e.bargee), hx = fm.home.x; fm.x = 372 * TS; fm.y = 46 * TS; fm.vy = 0; sim(10);
+        out.water6 = [gb.alive, Math.round(gb.y / TS), fm.alive, Math.round((fm.x - hx) / TS), Math.round(fm.y / TS)]; }
+      //   i. (claude/canal6) THE DECK FOREMAN IS NEVER LEFT BEHIND HIS DOOR: ridden past (her in the basin lock under his shut door, a hero aboard), he leaps
+      //      aboard - on her deck, in reach - and the door opens when he is down
+      const AIR = (await import('/src/level.js')).T.AIR; fresh(); kill(e => !e.elite); { const cb = C(), fm = BK.enemies().find(e => e.alive && e.elite && e.bargee), G = fm.G, shut = () => BK.L.grid[G.top * BK.L.W + G.col] !== AIR;
+        cb.barge.x = 383 * TS; sim(4); BK.tp(386, 42); sim(40); const on0 = !!(P.onMover && P.onMover.canal); let t = 0; for (; t < 60 * 4 && !fm.cnDeck; t++) BK.sim(1); sim(30);
+        const deck = fm.x >= cb.barge.x + 8 && fm.x <= cb.barge.x + cb.barge.w - 8 && Math.abs(fm.y - cb.barge.y) < 2, shut0 = shut(); fm.alive = false; sim(10);
+        out.foreman6 = [on0, !!fm.cnDeck, deck, +(t / 60).toFixed(2), shut0, shut()]; }
       return out; })()`, 900000);
+    ok(r.water6[0] === false && r.water6[2] && Math.abs(r.water6[3]) < 1 && r.water6[4] <= 41, 'a man in the canal (the stop-planks bargee, off his ledge) was not drowned, or the elite in it was not put back at his post: ' + JSON.stringify(r.water6));
+    ok(r.foreman6[0] && r.foreman6[1] && r.foreman6[2] && r.foreman6[3] < 2 && r.foreman6[4] && !r.foreman6[5], 'ridden past, the deck foreman did not leap aboard her in the lock under his shut door (or his door did not open when he was down): ' + JSON.stringify(r.foreman6));
     ok(r.board && r.carried > 16, 'the barge did not carry a hero standing on her (' + JSON.stringify([r.board, r.carried]) + ')');
     ok(r.ducked === 0 && r.stood > 0, 'the low bridge did not find a rider standing, or found one ducked (ducked ' + r.ducked + ', stood ' + r.stood + ')');
     ok(r.towpathSide === 0, 'on the towpath side her rider was still hit by the offside timbers (' + r.towpathSide + ')');

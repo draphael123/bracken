@@ -21819,7 +21819,9 @@ const CNX = { T, L: () => L, keys: () => keys, movers: () => movers, enemies: ()
   dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r, hint: msg => { hintT = 4.5; hintMsg = msg; }, time: () => time,
   chases: () => chases,   /* (claude/canalfix: the flood laps her stern on the head race) */
   checkpoint: () => (typeof checkpoint !== 'undefined' && checkpoint && L && L.START && !(checkpoint.x === L.START.x * TS + 8 && checkpoint.y === (L.START.y + 1) * TS)) ? checkpoint : null, hurtHero: (x, d, o) => damagePlayer(x, d, o),
-  solidUnder: (x, y) => { const t = tileAt(Math.floor(x / TS), Math.floor((y + 2) / TS)); return isSolid(Math.floor(x / TS), Math.floor((y + 2) / TS)) || isOneWay(t); }, makeCanvas: (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; } };
+  solidUnder: (x, y) => { const t = tileAt(Math.floor(x / TS), Math.floor((y + 2) / TS)); return isSolid(Math.floor(x / TS), Math.floor((y + 2) / TS)) || isOneWay(t); },
+  drown: e => hazardFoe(e), smoke: (x, y) => smoke(x, y, 3, 8), mark: (e, txt, col) => number(e.x, e.y - (e.h || 10) - 10, txt, col),   /* (claude/canal6) JENNY'S WATER: a man who falls in is DROWNED (hazardFoe), an elite is put back at his post */
+  makeCanvas: (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; } };
 /* the grindylow's and the wisp's context (src/canal-foes.js) */
 const CNFX = { hero: () => P, barge: () => CANAL && CANAL.barge, solid: (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)), surfaceAt: x => CNH.surfaceAt(CANAL, CNX, x), solidAt: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return isSolid(tx, ty) || isOneWay(tileAt(tx, ty)); },
   press: () => ({ jump: jumpPress, atk: atkPress, left: leftPress, right: rightPress }), hurtHero: (x, d, o) => damagePlayer(x, d, o), mark: (e, txt, col) => number(e.x, e.y - (e.h || 10) - 10, txt, col), sfx: SFX,
