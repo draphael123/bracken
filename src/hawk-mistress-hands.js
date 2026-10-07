@@ -50,7 +50,7 @@ export function makeHawkMistressHands(ctx) {
         else if (k === 'mark') ctx.ring(x, y - 4, HM.diveR, '#ff6b6b'); },
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
-          const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock })); if (P.hp < hp0) any = true; }); return any; },
+          const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock, low: !!o.low })); if (P.hp < hp0) any = true; }); return any; },
       gongs, guards: () => ctx.enemies().filter(q => q.alive && q.hmGuard).length,
       guardRing: id => { const r = ctx.ringGong ? ctx.ringGong(id, 'guard') : 'cut'; if (r !== 'rung') return false;
         const G = S.G, g = gongs().find(q => q.id === id), door = G.doors.slice().sort((a, b) => Math.abs(a - (g ? g.x : 0)) - Math.abs(b - (g ? g.x : 0)))[0];

@@ -25,7 +25,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/hawk-mistress-hands.js binds it). hmPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const HM = {
-  hp: 1400, w: 16, h: 30, markH: 48,
+  hp: 1700, w: 16, h: 30, markH: 48,
   openMul: 2.0, openCap: 0.12, openT: 3.6, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80,
   p2: 0.6, p3: 0.25,
   walk: 70, keep: 50, turn: 0.35, gap: [0.5, 0.42, 0.36],
@@ -36,7 +36,7 @@ export const HM = {
   diveTell: 0.95, diveFly: 0.32, diveR: 20, diveLow: 0.7,
   hawkAlt: 74, hawkR: 30,
   fireW: 3, fireTick: 0.5, roofEvery: 4.0,
-  dmg: { lash: 31, cut: 34, markLash: 36, dive: 36, fire: 9 },
+  dmg: { lash: 31, cut: 34, markLash: 37, dive: 37, fire: 9 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
@@ -181,7 +181,7 @@ function stepMove(e, S, dt, P, h, c) {
   const G = S.G, f = e.face || 1, after = (t) => setMode(e, 'recover', t ?? HM.gap[S.ph - 1]);
   switch (e.mode) {
     case 'lashTell': if (e.modeT <= 0) { setMode(e, 'lash', HM.lashT); S.n.lashes++; c.sound('lash');
-        c.hit([f > 0 ? e.x : e.x - HM.lashReach, f > 0 ? e.x + HM.lashReach : e.x, e.y - HM.lashH, e.y + 2], HM.dmg.lash, MOVE_NAME.lash, { key: 'lash' + S.act });   /* (the whip wraps a shield: jump it) */ } return;
+        c.hit([f > 0 ? e.x : e.x - HM.lashReach, f > 0 ? e.x + HM.lashReach : e.x, e.y - HM.lashH, e.y + 2], HM.dmg.lash, MOVE_NAME.lash, { key: 'lash' + S.act, low: true });   /* (the whip wraps a standing shield: jump it - or set a shield LOW, the knight's low guard, and it turns) */ } return;
     case 'lash': if (e.modeT <= 0) after(); return;
     case 'feintTell': if (e.modeT <= 0) { setMode(e, 'feintHold', HM.feintHold); c.fx('feint', e.x + f * 8, e.y); } return;   /* a stamp: it was nothing - and now it is something */
     case 'feintHold': if (e.modeT <= 0) { e.face = Math.sign(P.x - e.x) || f; tell(e, S, c, 'cutTell', HM.cutTell); } return;
@@ -265,6 +265,7 @@ export function hmPlan(s) {
       if ((e.mode === 'markLashTell' || e.mode === 'spotTell') && S.mark && Math.abs(P.x - S.mark.x) < HM.markR + 14) { const d = roomDir(S.mark.x); out.gx = safeX(S.mark.x + d * (HM.markR + 26)); if (e.mode === 'markLashTell' && e.modeT < 0.25 && P.ground && !s.noRoll) out.dodge = true; out.why = 'off the hawk\'s mark'; return out; }
       if ((e.mode === 'diveTell' || S.hawk.mode === 'dive') && S.mark && Math.abs(P.x - S.mark.x) < HM.diveR + 14) { const d = roomDir(S.mark.x); out.gx = safeX(S.mark.x + d * (HM.diveR + 30)); if (S.hawk.mode === 'dive' && P.ground && !s.noRoll) out.dodge = true; out.why = 'off the dive\'s shadow'; return out; }
       if ((e.mode === 'lashTell' || e.mode === 'lash') && dx < HM.lashReach + 14 && same && (e.face || 1) * (P.x - kx) > -6) {
+        if (s.hero === 'knight' && s.shield && P.ground && (e.mode === 'lash' || e.modeT < 0.3)) { out.down = true; out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'the low guard: the shield under the lash'; return out; }
         if ((e.mode === 'lash' || e.modeT < 0.16) && P.ground) { out.jump = true; out.gx = P.x; out.why = 'jump the lash'; return out; }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'ready to jump the lash'; return out; }
       if ((e.mode === 'cutTell' || e.mode === 'cut') && dx < 74 && same) { if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the knife'; return out; }

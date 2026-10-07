@@ -1338,7 +1338,7 @@ async function runbossLab(BK, opts) {
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
-        if(pl.atk&&(P.atk<0||P.carry)){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(pl.down&&P.ground)k.down=true;   /* (the knight's low guard under her lash) */if(pl.atk&&(P.atk<0||P.carry)){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(hmOpen(boss)&&!wasOpen)opened++;wasOpen=hmOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:hmOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }

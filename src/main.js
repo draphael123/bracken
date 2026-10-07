@@ -6269,7 +6269,7 @@ const DRONE_HIT = 0.55;
 /* THE ACT I RETUNE (claude/sweep1, the standard: tools/boss-rates.mjs, human profile, campaign level): ONE NUMBER PER BOSS for how hard his own
    blows land (x, on what damagePlayer0 is handed - his strikes, and what he throws where the throw names him). The bosses' own tables are left alone */
 const BOSS_HIT = { golem: 2.2, grandmother: 0.55, king: 1.5, queen: 1.5, abbot: 1.8, pyromancer: 0.75 };
-function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false } = {}) {
+function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false } = {}) {
   { const src = who || updFoe; if (src && src.elite && dmg > 0) dmg = Math.max(1, Math.round(dmg * tuneOf(src.t).dmg));   /* (ELITETUNE) per-kind elite damage, elite-kit.js TUNE */
     if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
     if (src && src.xpRole === 'mini' && dmg > 0) dmg = Math.round(dmg * GB.GREED.miniHit);
@@ -6286,7 +6286,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (!geo && P.ducking && blowHigh(who || updFoe, time)) { duckedUnder(fromX); return false; }
   if (isPyro() && EMBER && P.ducking) { if (EMBER.guardTakes(fromX, dmg, unblockable, who || updFoe, pierce) === 'half') dmg = Math.max(1, Math.ceil(dmg / 2)); }   /* HER WEAK PLAIN GUARD (down held after the flare): a yellow blow from the front costs half, no heat, no scorch */
   /* THE KNIGHT'S LOW GUARD (src/crouch-a.js): crouched, the shield low in front of him turns what did not go over him - no step back */
-  if (CA && hero() === 'knight') { const w = CA.takes(fromX, dmg, unblockable, who || updFoe, pierce); if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } if (w === 'half') dmg = Math.ceil(dmg / 2); }
+  if (CA && hero() === 'knight') { const w = CA.takes(fromX, dmg, unblockable && !low, who || updFoe, pierce);   /* (claude/ksar) a LOW red blow - the Hawk-Mistress's whip along the floor - wraps a standing shield, but one set low turns it */ if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } if (w === 'half') dmg = Math.ceil(dmg / 2); }
   { const sd = Math.sign(fromX - P.x) || P.face;
     let g2 = null, gd = 1e9;
     for (const r of risen) { if (r.life <= 0 || r.kind === 'wisp' || !(r.hp > 0)) continue;
