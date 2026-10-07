@@ -7703,7 +7703,7 @@ export const LEVELS = [
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
-  { id: 'kings', name: 'KINGSWOOD', sub: 'the court under the leaves', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
+  { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
@@ -7855,9 +7855,12 @@ const REVIEW = {
   marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
   // and its own light in every part of it, so the long fungus wood stops being one colour from end to end
   spore: L => { rv(L).ent('check', 330, 13); L.ents = L.ents.filter(e => !(e.t === 'spitcap' && L.arena && e.x > L.arena.wallR));   /* a spitcap left past the Mother's east wall when the Deep Gills grew the wood: nothing out there to guard (level review, 2026-09-24) */
-    L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, L.W, [200, 60, 150], 0.16]]; },   /* to the level's end, whatever it grows to: it stopped at 504, the width before the Deep Gills grew */
+    L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, L.W - 30, [200, 60, 150], 0.16], [L.W - 44, L.W + 24, [230, 160, 70], 0.15]];   /* THE SEAM (claude/sporeseam): the last screens warm from the Mother's pink toward Kingswood's amber, and the first goblin marks stand by the way out */
+    const R2 = rv(L); for (const [x, k, v] of [[539, 'warnPost', 0], [543, 'gobPennant', 0], [547, 'warnPost', 1], [550, 'gobPennant', 1]]) R2.ent('deco', x, 19, { kind: k, v }); },   /* to the level's end, whatever it grows to: it stopped at 504, the width before the Deep Gills grew */
   // the court's long runs went a hundred and twenty tiles without a checkpoint
-  kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 405, 20); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
+  kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 405, 20);
+    L.tints = [[-24, 14, [150, 90, 200], 0.12], [-24, 40, [230, 150, 70], 0.15]];   /* THE SEAM (claude/sporeseam): the fungus violet still on the first screens, warming into the autumn amber, so the cut from Sporewood is a fade */
+    for (const [x, k, v] of [[1, 'sporePod', 0], [3, 'mushroom', 0], [5, 'tinyCap', 1], [8, 'moss', 0], [14, 'tinyCap', 2], [16, 'mushroom', 1], [24, 'moss', 1], [31, 'tinyCap', 0]]) R.ent('deco', x, 19, { kind: k, v }); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
   scree: L => { rv(L).ent('check', 330, 18); },
   // the sappers' tunnel was the busiest 38 tiles in the busiest level: the brute and one sapper go, and it is a
   // held breath between the walls instead of another fight
