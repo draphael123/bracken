@@ -60,18 +60,19 @@ export function makeEliteRead({ mashAt = 3 } = {}) {
     return true;
   };
 }
-/* WHICH ELITE TO DUEL: the one already on (until he is dead, written off, or well away), else an elite in the way - on his floor (2.5 rows),
+/* WHICH ELITE TO DUEL: the one already on (until he is dead, written off, or well away), else an elite in the way - on his floor (a row and a bit; kept while within 2),
    within 9 tiles ahead or 4 behind, with no deadly water or pit between. o: { dir, no: Map(e -> frame written off until), frame, pools } */
 export function duelPick(BK, prev, o = {}) {
   const P = BK.P; if (!P || P.dead > 0) return null;
   const ok = e => e && e.alive && e.elite && !e.harmless && !(e.dying > 0) && !((o.no && o.no.get(e)) > (o.frame || 0));
-  if (ok(prev) && Math.abs(prev.x - P.x) < 14 * TS && Math.abs(prev.y - P.y) < 4 * TS) return prev;
+  if (ok(prev) && Math.abs(prev.x - P.x) < 14 * TS && Math.abs(prev.y - P.y) < 2 * TS && (!o.floor || o.floor(prev))) return prev;   /* (up on a ledge over him: the walk climbs to him, the duel takes up again on his floor) */
   if (!(P.ground || P.swim)) return null;
   let best = null, bd = 1e9;
   for (const e of BK.enemies()) { if (!ok(e)) continue; const dx = e.x - P.x, dy = Math.abs(e.y - P.y);
-    if (dy > 2.5 * TS) continue; if (dx * (o.dir || 1) < -4 * TS || Math.abs(dx) > 9 * TS) continue;
+    if (dy > 1.2 * TS) continue; if (dx * (o.dir || 1) < -4 * TS || Math.abs(dx) > 9 * TS) continue;
     const lo = Math.min(e.x, P.x), hi = Math.max(e.x, P.x);
     if ((o.pools || []).some(q => !q.shallow && !q.swim && !q.dry && (q.fire || !o.waterHurts) && q.x1 > lo && q.x0 < hi && Math.abs(q.y - P.y) < 3 * TS)) continue;
+    if (o.floor && !o.floor(e)) continue;   /* a gap between (water, a pit): the walk takes him over it first - the duel is fought on one floor */
     if (Math.abs(dx) < bd) { bd = Math.abs(dx); best = e; } }
   return best;
 }
