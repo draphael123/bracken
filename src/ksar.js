@@ -134,7 +134,7 @@ export function buildKsar({ painter, T, TS }) {
   block(232, 238, 25, H - 1); gong('great', 236, 24, { ear: 34, earY: 14, great: true });
   sign(233, 24, 'THE GREAT GONG: E RINGS IT. ITS EARSHOT REACHES THE GATEHOUSE.');
   boards(239, 251, 26); ground(239, 256, B);
-  boards(252, 254, 31); boards(248, 250, 29);                                    /* (fix pass) THE YARD STAIR back up to the high walk: drop in before the gong is rung and you can climb back to it (no soft lock) */
+  boards(246, 248, 32); boards(243, 245, 30); boards(240, 242, 28);                                    /* (fix pass) THE YARD STAIR back up to the high walk: drop in before the gong is rung and you can climb back to it (no soft lock) */
   hawk(224, 272, 14, 'yardHawk');                                                /* a hawk scout over the yard and the gate */
   blade(241, B - 1, 'yard', { face: -1 }); whip(245, B - 1, 'yard', { face: -1 }); blade(249, B - 1, 'yard', { face: -1 });   /* the yard's guards (they answer the great gong too) */
   /* THE GATEHOUSE: the gate passage (rows 30-33) behind THE PORTCULLIS (column 257); over it THE GUARD ROOM (rows 24-28) behind its GRILLE (column 257,

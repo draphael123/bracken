@@ -622,7 +622,7 @@ export const HEIGHT = {
   'scalder|ladleTell': 'low', 'scalder|pourTell': 'low',
   'scarecrow|swipeTell': 'low',
   'scorpion|clawTell': 'low', 'scorpion|tailTell': 'low',
-  'hawkmistress|lashTell': 'low', 'hawkmistress|feintTell': 'low', 'hawkmistress|cutTell': 'low', 'hawkmistress|spotTell': 'low', 'hawkmistress|markLashTell': 'low', 'hawkmistress|callTell': 'low', 'hawkmistress|diveTell': 'low', 'hawkmistress|flashTell': 'low', 'hawkscout|diveTell': 'low',   /* (claude/ksar) */
+  'hawkmistress|lashTell': 'low', 'hawkmistress|cutTell': 'low', 'hawkmistress|spotTell': 'low', 'hawkmistress|markLashTell': 'low', 'hawkmistress|callTell': 'low', 'hawkmistress|diveTell': 'low', 'hawkmistress|flashTell': 'low', 'hawkscout|diveTell': 'low',   /* (claude/ksar) */
   'skitter|biteTell': 'low', 'colossus|lanceTell': 'low', 'colossus|stompTell': 'low', 'colossus|shardTell': 'high', 'colossus|shakeTell': 'low', 'colossus|waveTell': 'low',   /* (claude/glasssea) */
   'scout|lungeTell': 'low', 'scout|pinchTell': 'low', 'scout|snapTell': 'low', 'scout|strikeTell': 'low', 'scout|thrustTell': 'low', 'scout|shockTell': 'low',
   'seawitch|callTell': 'low',

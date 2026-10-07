@@ -520,16 +520,16 @@
   "lostPct": 254
  },
  "ksar": {
-  "hash": "569488a8a227",
+  "hash": "84dc032df59e",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 40,
+  "hits": 37,
   "deaths": 9,
-  "kills": 3,
-  "lifts": 88,
+  "kills": 8,
+  "lifts": 87,
   "walked": 100,
   "bare": true,
-  "lostPct": 466
+  "lostPct": 433
  }
 }
