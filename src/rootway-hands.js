@@ -8,6 +8,7 @@
 //   what is under it and stays as a 2x2 step (solid cells) - a boss cage is winched back up after HOIST.winch s - and a HUNTER falls dazed.
 //   What a hoist drops STAYS for the attempt: a death keeps the spans and the cages (the road you opened stays open); its hunters come back with the rest.
 // Every capital line it says goes through ctx.number with a line listed in src/hint-lines.js.
+import * as RWW from './redraw/rootway_world.js';   /* THE ROOTWAY's world art (the art pass): the machines, the furniture, the chasms' mist, the spore drops, what holds every ledge up */
 export const HOIST = { g: 900, vmax: 520, crush: 30, cageDmg: 16, caged: 1.0, winch: 8, winchV: 60, hunterFall: 8, daze: 1.8, dropTell: 0.45, under: 28 };
 export const HUNTER = { hp: 26, w: 10, h: 16, walk: 46, keep: 24, jabAt: 34, jabTell: 0.42, jab: 0.16, jabReach: 30, jabDmg: 10, lungeAt: 96, lungeFar: 200, lungeTell: 0.55, lunge: 0.42, lungeV: 230, lungeDmg: 12, recover: 0.5, cd: 1.3, lungeCd: 2.4 };
 export const LOOKOUT = { respawn: 4 };
@@ -100,7 +101,7 @@ export function makeRootwayHands(ctx) {
     /* THE LOOKOUT IS MANNED: if its scout falls before its span is down, another takes the post (never a soft-lock) */
     for (const h of S.hs.values()) { const d = h.d; if (!d.post || h.state !== 'hang') continue;
       if (ctx.enemies().some(e => e.alive && e.rwLookout === h.id)) { S.lookT = 0; continue; }
-      S.lookT += dt; if (S.lookT >= LOOKOUT.respawn) { S.lookT = 0; const got = ctx.spawn({ t: 'archer', x: d.post[0], y: d.post[1], face: -1 }); for (const e of got) e.rwLookout = h.id; S.n.lookouts++;
+      S.lookT += dt; if (S.lookT >= LOOKOUT.respawn) { S.lookT = 0; const got = ctx.spawn({ t: 'archer', x: d.post[0], y: d.post[1], face: -1, cnSkin: 'gobscout' }); for (const e of got) e.rwLookout = h.id; S.n.lookouts++;
         ctx.number(d.post[0] * TS + 8, d.post[1] * TS - 10, 'ANOTHER SCOUT TAKES THE POST', '#ff9a5c'); } }
   };
 
@@ -150,46 +151,41 @@ export function makeRootwayHands(ctx) {
   H.read = () => S ? { hoists: [...S.hs.values()].map(h => ({ id: h.id, state: h.state, ly: h.ly })), loft: !!(S.loft && S.loft.open), n: { ...S.n } } : null;
   H.hoist = id => S && S.hs.get(id);
 
-  /* ---------- DRAWING (greybox: plain shapes; the Sonnet art pass replaces them) ---------- */
+  /* ---------- DRAWING (the Rootway's art pass: src/redraw/rootway_world.js draws every machine; this keeps the state and the geometry) ---------- */
   const R = Math.round;
-  const ROPE = '#c9b27c', ROPED = '#8a7448', WOOD = '#6a4a32', WOODL = '#8a6a48', IRON = '#4a4a52', BONE = '#e8dcc0';
   const dots = (g, x, y0, y1, col) => { g.fillStyle = col; for (let y = y0; y < y1; y += 5) g.fillRect(x, y, 1, 2); };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
-    if (!S) return; const lv = L();
-    /* the level's own furniture: the larder's gallows, the lookout's hut, his gold arrows in the roots */
+    if (!S) return; const lv = L(), plan = RWW.planRoot(lv, ctx.T); plan.solid = (x, y) => x < 0 || y < 0 || x >= lv.W || y >= lv.H || lv.grid[y * lv.W + x] === ctx.T.SOLID;
+    RWW.drawChasms(g, cx, cy, VW, VH, time, plan);                  /* the exam's floorless gaps: a mist into a dark with no bottom */
+    RWW.drawSupports(g, cx, cy, VW, time, plan);                    /* what holds every ledge up */
+    RWW.drawDress(g, cx, cy, VW, time, plan);                       /* the floor's litter, racks, lanterns, hanging root hair */
+    RWW.drawDrops(g, cx, cy, VW, time, plan, ctx.props ? ctx.props() : null);   /* the spore drops' root clumps */
+    /* the level's own furniture: the larder's drying beam, the lookout's hut, his gold arrows in the roots */
     for (const dc of (lv.decor || [])) {
-      if (dc.kind === 'larder') { const x0 = R(dc.x0 * TS - cx), x1 = R((dc.x1 + 1) * TS - cx), y = R(dc.y * TS - cy); if (x1 < -20 || x0 > VW + 20) continue; g.fillStyle = WOOD; g.fillRect(x0, y, x1 - x0, 4); g.fillStyle = WOODL; g.fillRect(x0, y, x1 - x0, 1); }
-      else if (dc.kind === 'lookout') { const x0 = R(dc.x0 * TS - cx), x1 = R((dc.x1 + 1) * TS - cx), y = R(dc.y * TS - cy); if (x1 < -20 || x0 > VW + 20) continue;
-        g.fillStyle = WOOD; g.fillRect(x0, y - 40, 2, 40); g.fillRect(x1 - 2, y - 40, 2, 40 + 3 * TS); g.fillStyle = '#5a3a22'; g.beginPath(); g.moveTo(x0 - 6, y - 38); g.lineTo((x0 + x1) / 2, y - 54); g.lineTo(x1 + 6, y - 38); g.closePath(); g.fill(); }
-      else if (dc.kind === 'goldArrow') { const x = R(dc.x * TS + 8 - cx), y = R((dc.y + 1) * TS - cy); if (x < -10 || x > VW + 10) continue; g.fillStyle = WOODL; g.fillRect(x, y - 10, 1, 10); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 12, 2, 3); g.fillRect(x + 1, y - 12, 2, 3); } }
+      if (dc.kind === 'larder') { const x0 = R(dc.x0 * TS - cx), x1 = R((dc.x1 + 1) * TS - cx), y = R(dc.y * TS - cy); if (x1 < -20 || x0 > VW + 20) continue; RWW.drawLarder(g, x0, x1, y, time, 2); }
+      else if (dc.kind === 'lookout') { const x0 = R(dc.x0 * TS - cx), x1 = R((dc.x1 + 1) * TS - cx), y = R(dc.y * TS - cy); if (x1 < -20 || x0 > VW + 20) continue; RWW.drawLookout(g, x0, x1, y, time, 3); }
+      else if (dc.kind === 'goldArrow') { const x = R(dc.x * TS + 8 - cx), y = R((dc.y + 1) * TS - cy); if (x < -10 || x > VW + 10) continue; RWW.drawGoldArrow(g, x, y, time); } }
     for (const h of S.hs.values()) { const d = h.d, lx = loadX(d), px = R(d.x * TS - cx), py = R(d.top * TS - cy), lxs = R(lx - cx), ly = R(h.ly - cy);
-      const ccx = R(d.cleat[0] * TS + 8 - cx), ccy = R((d.cleat[1] + 1) * TS - cy);
+      const ccx = R(d.cleat[0] * TS + 8 - cx), ccy = R((d.cleat[1] + 1) * TS - cy), pc = plan.cleats.find(c => c.id === d.id) || {};
       if (Math.max(px, ccx, lxs) < -60 || Math.min(px, ccx, lxs) > VW + 60) continue;
-      /* the pulley and its beam */
-      g.fillStyle = WOOD; g.fillRect(px - 8, py - 3, 16, 3); g.fillStyle = IRON; g.beginPath(); g.arc(px, py + 2, 3, 0, 7); g.fill();
-      /* the cleat: a peg in the root, a rope wound on it; it glints while the load hangs (a cleat an arrow must cut glints gold round its rope) */
-      g.fillStyle = WOOD; g.fillRect(ccx - 2, ccy - 12, 4, 6); g.fillStyle = ROPE; g.fillRect(ccx - 3, ccy - 10, 6, 2);
       const up = h.state === 'hang' || h.state === 'winch';
-      if (h.state === 'hang' && !d.boss) { const k = 0.5 + 0.5 * Math.sin(time * 5 + d.cleat[0]); g.globalAlpha = 0.35 + 0.4 * k; g.strokeStyle = d.arrow ? '#ffd36b' : '#fff6c8'; g.lineWidth = 1; g.beginPath(); g.arc(ccx, ccy - 9, d.arrow ? 9 : 6, 0, 7); g.stroke(); g.globalAlpha = 1; }
+      RWW.drawPulley(g, px, py, time, RWW.zoneOfX(d.x));
+      RWW.drawCleat(g, ccx, ccy, { time, up, glint: h.state === 'hang' && !d.boss, arrow: !!d.arrow, post: pc.post || 0, wall: pc.wall || 0, floorY: pc.post ? R(pc.post * TS - cy) : undefined });
       if (up) { /* the tie-off: pulley down to the cleat, and the rope down to the load */
-        g.strokeStyle = ROPE; g.lineWidth = 1; g.beginPath(); g.moveTo(px, py + 2); g.lineTo(ccx, ccy - 10); g.stroke();
-        g.beginPath(); g.moveTo(px, py + 2); g.lineTo(lxs, ly - (d.load === 'cage' ? 2 * TS : d.load === 'span' ? TS : 18)); g.stroke(); }
-      else { g.strokeStyle = ROPED; g.beginPath(); g.moveTo(px, py + 2); g.lineTo(px + 2, py + 18); g.stroke(); g.beginPath(); g.moveTo(ccx, ccy - 10); g.lineTo(ccx + 3, ccy - 2); g.stroke(); }
+        RWW.rope(g, px, py + 4, ccx, ccy - 10);
+        RWW.rope(g, px, py + 4, lxs, ly - (d.load === 'cage' ? 2 * TS : d.load === 'span' ? TS : 18)); }
+      else { RWW.rope(g, px, py + 4, px + 2, py + 20, RWW.ROPE_D, RWW.ROPE_D); RWW.rope(g, ccx, ccy - 10, ccx + 3, ccy - 3, RWW.ROPE_D, RWW.ROPE_D); }
       /* A3: where it will land - a dotted plumb line from what hangs */
       if (h.state === 'hang' && d.load !== 'hunter') { const to = d.load === 'span' ? d.span[2] * TS : d.land ? d.land[1] * TS : lv.arena ? (d.boss ? lv.arena.floor : ly) : ly; dots(g, lxs, ly + 2, R(to - cy), 'rgba(255,233,160,0.45)'); }
       if (h.state === 'hang' && d.load === 'hunter') dots(g, lxs, ly + 2, ly + 6 * TS, 'rgba(255,154,92,0.35)');
       /* the load */
-      if (d.load === 'span' && h.state !== 'down') { const w = loadW(d), x0 = R(lx - w / 2 - cx), y = ly - TS; g.fillStyle = WOOD; g.fillRect(x0, y + 4, w, 8); g.fillStyle = WOODL; g.fillRect(x0, y + 4, w, 2); g.fillStyle = ROPE; for (let x = x0 + 6; x < x0 + w - 2; x += 18) g.fillRect(x, y + 3, 2, 10); }
-      else if (d.load === 'span') { const w = loadW(d), x0 = R(d.span[0] * TS - cx), y = R(d.span[2] * TS - cy); g.fillStyle = ROPE; for (let x = x0 + 6; x < x0 + w - 2; x += 18) g.fillRect(x, y, 2, 6); }
-      if (d.load === 'cage' && (h.state !== 'down' || !d.land)) drawCage(g, lxs, ly, time, h.state === 'down');
-      else if (d.load === 'cage') drawCage(g, R(d.land[0] * TS + TS - cx), R((d.land[1] + 2) * TS - cy), time, true);
+      if (d.load === 'span' && h.state !== 'down') { const w = loadW(d), x0 = R(lx - w / 2 - cx), y = ly - TS; RWW.drawSpanLoad(g, x0, y, w, false, time); }
+      else if (d.load === 'span') { const w = loadW(d), x0 = R(d.span[0] * TS - cx), y = R(d.span[2] * TS - cy); RWW.drawSpanLoad(g, x0, y, w, true, time); }
+      if (d.load === 'cage' && (h.state !== 'down' || !d.land)) RWW.drawCage(g, lxs, ly, time, h.state === 'down');
+      else if (d.load === 'cage') RWW.drawCage(g, R(d.land[0] * TS + TS - cx), R((d.land[1] + 2) * TS - cy), time, true);
       if (d.load === 'hunter' && h.state === 'hang' && h.tellT > 0) { g.fillStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(lxs - 1, py + 4, 2, Math.max(0, ly - 24 - py - 4)); }
     }
-    if (S.loft && !S.loft.open) for (const v of (lv.vaultDoors || [])) { const x = R(v.x0 * TS - cx), y0 = R(v.y0 * TS - cy), y1 = R((v.y1 + 1) * TS - cy); g.fillStyle = '#4a3a2a'; g.fillRect(x, y0, TS, y1 - y0); g.fillStyle = BONE; for (let y = y0 + 4; y < y1; y += 8) g.fillRect(x + 4, y, 8, 3); }
+    if (S.loft && !S.loft.open) for (const v of (lv.vaultDoors || [])) { const x = R(v.x0 * TS - cx), y0 = R(v.y0 * TS - cy), y1 = R((v.y1 + 1) * TS - cy); RWW.drawLoftDoor(g, x, y0, y1, ctx.questGot ? ctx.questGot() : 0); }
   };
-  function drawCage(g, x, b, time, down) { const w = 2 * TS, t = b - 2 * TS; g.fillStyle = 'rgba(30,24,20,0.35)'; g.fillRect(x - w / 2 + 1, t + 1, w - 2, w - 2);
-    g.fillStyle = IRON; g.fillRect(x - w / 2, t, w, 2); g.fillRect(x - w / 2, b - 2, w, 2); for (let k = 0; k <= 4; k++) g.fillRect(x - w / 2 + k * 7 + (k === 4 ? -1 : 0), t, 2, w);
-    g.fillStyle = BONE; g.fillRect(x - 3, t + 8, 6, 5); g.fillStyle = '#2a2018'; g.fillRect(x - 2, t + 10, 1, 1); g.fillRect(x + 1, t + 10, 1, 1);   /* a trophy skull inside */
-    if (!down) { g.fillStyle = IRON; g.fillRect(x - 1, t - 4, 2, 4); } }
   return H;
 }

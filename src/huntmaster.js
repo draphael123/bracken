@@ -1,3 +1,4 @@
+import * as RWA from './redraw/rootway_art.js';   /* THE HUNTMASTER's pose painter (the art pass) */
 // src/huntmaster.js - THE GOBLIN HUNTMASTER, THE ROOTWAY's boss (claude/rootway, the OPUS GREYBOX, 2026-10-07; brief .claude/briefs/brief-rootway.md;
 // booked 10-07 as Daniel's pick for the Rootway bridge, .claude/briefs/bridge-levels-2026-10-01.md #4).
 // The goblins' master of the hunt: a lean goblin in a bone trophy MASK, a great bow, a quiver on a strap, a bracer, a skinning knife.
@@ -203,35 +204,18 @@ export function makeHuntmaster(ctx) {
   H.end = () => { if (F) { F.arrows = []; F.pools = []; } for (const pp of ctx.players) pp.hmPoison = 0; };
   H.read = () => F && { ph: F.ph, weak: { ...F.weak }, n: { ...F.n }, hurt: { ...F.hurt }, arrows: F.arrows.map(a => ({ id: a.id, kind: a.kind, x: a.x, y: a.y, vx: a.vx, vy: a.vy, back: a.back })), pools: F.pools.map(q => ({ x: q.x, t: q.t })), hoist: F.hoist || null, hoistX: F.hoistX, perches: F.perches };
 
-  /* ---------- DRAWING (GREYBOX: plain shapes until the art pass) ---------- */
+  /* ---------- DRAWING (the art pass: src/redraw/rootway_art.js paintHuntmaster draws him - a pose for every move and the three BREAK states; the rings and bars here are the shared read) ---------- */
   H.drawBoss = (g, e, cx, cy, time) => {
-    if (!F) return; const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, m = e.mode, open = hmOpen(e), crouch = m === 'leapTell' || m === 'land' || m === 'caught';
-    const by = y - (crouch ? 20 : 24), skin = '#4a6a2a', skinD = '#2e4a1a', leather = '#5a3a22', bone = '#e8dcc0';
-    if (e.flash > 0) g.globalAlpha = 0.6;
-    /* legs and body */
-    g.fillStyle = skinD; g.fillRect(x - 4, y - 8, 3, 8); g.fillRect(x + 1, y - 8, 3, 8);
-    g.fillStyle = leather; g.fillRect(x - 6, by + 4, 12, 13); g.fillStyle = '#7a5232'; g.fillRect(x - 6, by + 4, 12, 2);
-    /* the quiver on its strap (P1's weak point) - gone once broken */
-    if (!F.weak[1]) { g.fillStyle = '#6a3a1a'; g.fillRect(x - f * 9 - 2, by, 5, 14); g.fillStyle = '#ffd36b'; g.fillRect(x - f * 9 - 2, by - 3, 1, 3); g.fillRect(x - f * 9, by - 3, 1, 3); g.fillRect(x - f * 9 + 2, by - 3, 1, 3);
-      g.fillStyle = '#c9a060'; g.fillRect(x - 6, by + 5, 12, 1); }
-    /* the head and the TROPHY MASK (P3's weak point): a bone skull face, eye sockets lit */
-    g.fillStyle = skin; g.fillRect(x - 5, by - 8, 10, 10); g.fillRect(x - 9, by - 6, 4, 2); g.fillRect(x + 5, by - 6, 4, 2);
-    if (!F.weak[3]) { g.fillStyle = bone; g.fillRect(x - 4 + f, by - 7, 8, 7); g.fillStyle = '#2a1a12'; g.fillRect(x - 2 + f, by - 5, 2, 2); g.fillRect(x + 1 + f, by - 5, 2, 2); g.fillStyle = open ? '#8fd160' : '#ff9a3c'; g.fillRect(x - 2 + f, by - 5, 1, 1); g.fillRect(x + 1 + f, by - 5, 1, 1); }
-    else { g.fillStyle = '#ffe27a'; g.fillRect(x - 2 + f, by - 5, 1, 1); g.fillRect(x + 1 + f, by - 5, 1, 1); g.fillStyle = bone; g.fillRect(x - 6 + f * 6, by - 9, 3, 3); }
-    /* the arms, the bracer (P2's weak point) and the great bow: across him while he guards, drawn while he aims, the knife up on the slash */
-    const drawn = /Tell$/.test(m) && m !== 'slashTell' && m !== 'leapTell' || m === 'loose';
-    g.fillStyle = skin; g.fillRect(x + f * 4 - 1, by + 6, 3, 6);
-    if (!F.weak[2]) { g.fillStyle = '#8a6a48'; g.fillRect(x + f * 4 - 1, by + 9, 3, 3); g.fillStyle = '#c9a060'; g.fillRect(x + f * 4 - 1, by + 9, 3, 1); }
-    g.strokeStyle = '#6a4a22'; g.lineWidth = 2; g.beginPath();
-    if (drawn) { g.arc(x + f * 8, by + 8, 13, f > 0 ? -1.2 : Math.PI - 1.2, f > 0 ? 1.2 : Math.PI + 1.2); g.stroke(); g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + f * 12, by - 3); g.lineTo(x - f * (m === 'loose' ? -2 : 4), by + 8); g.lineTo(x + f * 12, by + 19); g.stroke();
-      const k = Math.min(1, 1 - Math.max(0, e.modeT) / (m === 'aimTell' ? HM.draw : HM.volleyDraw)); g.fillStyle = m === 'splitTell' || m === 'hoistTell' ? '#ff6b6b' : '#ffd36b'; g.globalAlpha = 0.5 + 0.5 * k; g.fillRect(x + f * 14 - 1, by + 7, 3, 3); g.globalAlpha = 1; }
-    else if (m === 'slashTell' || m === 'slash') { g.stroke(); g.fillStyle = '#c9d1dc'; g.fillRect(x + f * (m === 'slash' ? 10 : 2), by + (m === 'slash' ? 8 : -4), f * 9, 2); }
-    else { g.moveTo(x - 9, by - 4); g.quadraticCurveTo(x + f * 4, by + 8, x - 9, by + 22); g.stroke(); }   /* across him: his guard */
-    g.globalAlpha = 1;
+    if (!F) return; const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, m = e.mode, open = hmOpen(e);
+    const by = y - 24, dk = m === 'aimTell' ? HM.draw : m === 'volleyTell' ? HM.volleyDraw : m === 'splitTell' ? HM.splitDraw : HM.hoistTell;
+    RWA.paintHuntmaster(g, { x, y, f, mode: m === 'sleep' ? 'land' : m, t: time, weak: F.weak, open, perch: e.perch, hurt: e.flash > 0, draw: Math.min(1, 1 - Math.max(0, e.modeT) / dk) });
     /* OPEN: the gold ring and its timer (B10); CAUGHT: the cage's bars over him; THE WARD: a pale ring */
     if (open) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.45 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, by + 6, 20, 0, 7); g.stroke(); g.globalAlpha = 1;
       const t0 = m === 'caught' ? HM.caughtT : F.weak[3] && e.openMul === HM.maskMul ? HM.maskT : e.openMul === HM.stagMul ? HM.stagT : HM.openT, kk = Math.max(0, e.open / t0); g.fillStyle = '#1b1626'; g.fillRect(x - 16, by - 20, 32, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 16, by - 20, R(32 * kk), 3); }
-    if (m === 'caught') { g.fillStyle = '#4a4a52'; for (let k = -2; k <= 2; k++) g.fillRect(x + k * 7, y - 32, 2, 32); g.fillRect(x - 16, y - 32, 32, 2); }
+    if (m === 'caught') { /* THE CAGE'S BARS: bound timber with iron straps, tied at the top, over him */
+      for (let k = -2; k <= 2; k++) { g.fillStyle = '#5a3c26'; g.fillRect(x + k * 7 - 1, y - 34, 4, 34); g.fillStyle = '#a07448'; g.fillRect(x + k * 7 - 1, y - 34, 1, 34); g.fillStyle = '#3a2618'; g.fillRect(x + k * 7 + 2, y - 34, 1, 34); }
+      g.fillStyle = '#3a3438'; g.fillRect(x - 17, y - 36, 34, 3); g.fillRect(x - 17, y - 3, 34, 3); g.fillRect(x - 17, y - 20, 34, 2); g.fillStyle = '#8a8490'; g.fillRect(x - 17, y - 36, 34, 1); g.fillRect(x - 17, y - 3, 34, 1);
+      g.fillStyle = '#cdb88a'; for (const k of [-2, 0, 2]) g.fillRect(x + k * 7 - 2, y - 21, 6, 2); }
     if (e.ward > 0) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.25 + 0.3 * k; g.strokeStyle = '#d8e2ee'; g.lineWidth = 1; g.beginPath(); g.arc(x, by + 6, 22, 0, 7); g.stroke(); g.globalAlpha = 1; }
     if (m === 'leapTell') { g.fillStyle = '#ffd36b'; g.fillRect(x - 6, y + 1, 12, 1); }
   };
@@ -246,7 +230,10 @@ export function makeHuntmaster(ctx) {
       if (a.kind === 'red') { /* (FIX PASS, B10: the RED arrow is BARBED - a 5 px arrowhead with two barbs swept back, and a dark fletch - so gold and red read by shape, not only hue) */
         const px = -uy, py = ux; g.fillStyle = '#ff4a3a'; g.beginPath(); g.moveTo(x + ux * 3, y + uy * 3); g.lineTo(x - ux * 3 + px * 3, y - uy * 3 + py * 3); g.lineTo(x - ux * 1, y - uy * 1); g.lineTo(x - ux * 3 - px * 3, y - uy * 3 - py * 3); g.closePath(); g.fill();
         g.fillStyle = '#3a1418'; g.fillRect(R(x - ux * 9 + px * 1.5) - 1, R(y - uy * 9 + py * 1.5) - 1, 2, 2); g.fillRect(R(x - ux * 9 - px * 1.5) - 1, R(y - uy * 9 - py * 1.5) - 1, 2, 2); }
-      else { g.fillStyle = Math.floor(time * 16 + a.id) % 2 ? '#fff6c8' : '#ffd36b'; g.fillRect(x - 1, y - 1, 3, 3); }   /* the head: a gold glint (square), or the red barbs */
+      else { /* GOLD: a pale-vaned shaft, a SQUARE glinting head (square on purpose: the red one is barbed) and a star that winks */
+        const px = -uy, py = ux; g.fillStyle = '#fff6c8'; g.fillRect(R(x - ux * 9 + px * 1.5) - 1, R(y - uy * 9 + py * 1.5) - 1, 2, 2); g.fillRect(R(x - ux * 9 - px * 1.5) - 1, R(y - uy * 9 - py * 1.5) - 1, 2, 2); g.fillRect(R(x - ux * 7 + px * 1.5) - 1, R(y - uy * 7 + py * 1.5) - 1, 2, 1); g.fillRect(R(x - ux * 7 - px * 1.5) - 1, R(y - uy * 7 - py * 1.5) - 1, 2, 1);
+        g.fillStyle = Math.floor(time * 16 + a.id) % 2 ? '#fff6c8' : '#ffd36b'; g.fillRect(x - 1, y - 1, 3, 3); g.fillStyle = '#8a5a14'; g.fillRect(x + 2, y, 1, 1);
+        if (Math.floor(time * 10 + a.id) % 3 === 0) { g.fillStyle = '#ffffff'; g.fillRect(x, y - 3, 1, 7); g.fillRect(x - 3, y, 7, 1); } }   /* the head: a gold glint (square), or the red barbs */
       if (a.kind === 'red') { g.globalAlpha = 0.5; g.fillStyle = '#ff6b6b'; g.fillRect(R(x - ux * 14), R(y - uy * 14), 2, 2); g.fillStyle = '#9ad85a'; g.fillRect(R(x - ux * 5), R(y - uy * 5) + 2, 1, 1); g.globalAlpha = 1; }
       if (a.back) { g.fillStyle = '#e8f4f8'; g.fillRect(R(x - ux * 12), R(y - uy * 12), 2, 1); } }
     for (const pp of ctx.players) if (pp.hmPoison > 0 && !pp.dead) { const x = R(pp.x - cx), y = R(pp.y - cy); g.fillStyle = '#9ad85a'; for (let k = 0; k < 3; k++) g.fillRect(x - 4 + k * 4, y - 22 - R(3 * Math.abs(Math.sin(time * 8 + k))), 2, 2); }

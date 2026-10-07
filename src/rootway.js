@@ -38,7 +38,8 @@ export function buildRootway({ painter, T, TS }) {
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const plank = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
   const sign = (x, y, text) => ent('sign', x, y, { text });
-  const foe = (t, x, y, squad, o) => ent(t, x, y, Object.assign({ squad }, o || {}));
+  const SKINS = { archer: 'gobscout', weaver: 'rootweaver', spider: 'rootspider', lurker: 'rootlurker' };   /* THE ART PASS: the cast wears the roots' colours (cnSkin: a corpse dies in its own skin) - src/redraw/rootway_art.js bakeRootSkins */
+  const foe = (t, x, y, squad, o) => ent(t, x, y, Object.assign({ squad }, SKINS[t] ? { cnSkin: SKINS[t] } : {}, o || {}));
   const glow = (x, y) => ent('glow', x, y);
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
   const deco = (x, y, kind, v) => ent('deco', x, y, { kind, v: v || 0 });
@@ -223,7 +224,7 @@ export function buildRootway({ painter, T, TS }) {
     music: 'rootway',   /* "Lanterns in the Hollowed Forest" by Tsorthan Grove, CC0 (audio/CREDITS.txt); the Huntmaster keeps his composed boss3 */
     ambient: [{ x0: 0, x1: 200 * TS, kind: 'drip' }, { x0: 200 * TS, x1: 99999, kind: 'wind' }],   /* the fungus drips at the foot; the canopy's wind at the top (the art pass: its own bed) */
     weather: [{ x0: 0, x1: 180 * TS, kind: 'spore' }],
-    palette: { sky: [[64, 96, 112], [196, 168, 120]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(150,130,120,0.18)', grass: '#5a8a3a', grassL: '#8ac050', grassD: '#34562a', dirt: '#4a3a30', dirtL: '#5e4a3a', dirtD: '#33261e', canopy: ['#2a1f38', '#4e3a50', '#8a5a3a', '#c88a3a'] },
+    palette: { sky: [[64, 96, 112], [196, 168, 120]], noNear: true, noFg: true, near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(150,130,120,0.18)', grass: '#5a8a3a', grassL: '#8ac050', grassD: '#34562a', dirt: '#4a3a30', dirtL: '#5e4a3a', dirtD: '#33261e', canopy: ['#2a1f38', '#4e3a50', '#8a5a3a', '#c88a3a'] },
     /* THE SEAM IT CARRIES: the fungus violet at its foot, warming through the climb into Kingswood's autumn amber in the canopy (L.tints crossfade over 24 columns) */
     tints: [[0, 120, [150, 90, 200], 0.14], [120, 220, [190, 120, 150], 0.10], [220, 320, [220, 140, 90], 0.12], [320, W + 24, [230, 150, 70], 0.15]],
     duskStart: -1, duskLen: 1, night: false, glowNight: true,
