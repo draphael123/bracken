@@ -39,7 +39,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/cistern-queen-hands.js binds it). queenPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CQ = {
-  hp: 1150, w: 76,   /* (claude/underwell2: 1050 -> 1150 - her torches are taken and thrown now, so a jump-strike no longer drops one into the floor oil under you, and the standard bot rose 63% -> 79% on this branch, the base 0c0b69aa measured beside it: likely her cressets - a jump-strike dropped one into the floor oil under the bot; 1150: 4/8 1/8 8/8 = 54%) */ /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
+  hp: 1650, w: 76,   /* (claude/underwell3: 1150 -> 1650 with her blows x dmgK 0.55 - her stinger is whole any time and fire/water open her: the fight ran 60-70 s; 1650 x0.7: 3/8 3/8 2/8 = 33%; 1650 x0.55: 3/8 5/8 5/8 = 54%, fights 61-137 s, human bot n=24) */ /* (claude/underwell2: 1050 -> 1150 - her torches are taken and thrown now, so a jump-strike no longer drops one into the floor oil under you, and the standard bot rose 63% -> 79% on this branch, the base 0c0b69aa measured beside it: likely her cressets - a jump-strike dropped one into the floor oil under the bot; 1150: 4/8 1/8 8/8 = 54%) */ /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
   openMul: 1.9, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
@@ -92,8 +92,10 @@ export const CQ = {
   heatTick: 0.6, heatR: 12, douseT: 9, flareT: 1.0,
   /* (claude/underwell: x1.43 on every blow in her own level - the WEIGHT/HARNESSCARD heroes at the Underwell's depth took 80-200 of 250 at the old numbers) */
   dmg: { pincer: 15, snap: 12, lunge: 21, lance: 22, flick: 8, strike: 25, charge: 18, spit: 11, puddle: 3, sweep: 18, slam: 18, pin: 22, pounce: 25,
-    ambush: 19, wave: 15, grab: 8, sting: 34, roll: 23, tidal: 18, brood: 0, heat: 6, sslam: 30 },   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
+    ambush: 19, wave: 15, grab: 8, sting: 34, roll: 23, tidal: 18, brood: 0, heat: 6, sslam: 30 },
+  dmgK: 0.55,   /* (claude/underwell3) every blow above x this (applied once below): a longer fight that hits softer */   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
 };
+for (const k in CQ.dmg) CQ.dmg[k] = Math.round(CQ.dmg[k] * CQ.dmgK * 10) / 10;
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]; a cycle ends with the blow that holds her opening) */
 export const CYCLES = {
   1: [['pincer', 'sslam', 'flick', 'burrow:strike'], ['snapsnap', 'lance', 'burrow:charge'], ['flick', 'pincer', 'sslam', 'snapsnap', 'burrow:strike'], ['lance', 'snapsnap', 'flick', 'sslam', 'burrow:charge']],   /* (claude/underwell3: THE STINGER SLAM, 'sslam') */

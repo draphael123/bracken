@@ -16,6 +16,9 @@ try {
     await pg.reload();
     const r = await pg.evalp(`(async()=>{
       const { LEVELS } = await import('/src/level.js'); const TS = 16;
+      /* (claude/underwell3) the legs are written in the level's columns BEFORE the two water sections were let in (uwX puts them where they stand); the
+         spillway's and the old reservoir's legs are in true columns (a leg's 5th field: raw) */
+      const { uwX: UX, UW_SPILL: SA, UW_RES: RB } = await import('/src/underwell.js'); let MAP = true; const X = x => MAP ? UX(x) : x;
       BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
       BK.load(LEVELS.findIndex(l => l.id === 'underwell')); BK.state = 'play'; BK.god = ${god}; BK.sim(5);
       if (!${foes}) for (const e of BK.enemies()) if (!e.boss) e.alive = false;
@@ -37,7 +40,7 @@ try {
         for (let j = 0; j < 30 && Math.abs(e.x - P().x) > 14 && e.alive; j++) { clear(); k[e.x > P().x ? 'right' : 'left'] = true; tick(1); }
         clear(); P().face = Math.sign(e.x - P().x) || P().face; BK.press('atk'); tick(8); clear(); tick(4);
         e.routeSwings = (e.routeSwings || 0) + 1; if (e.routeSwings === 60) DBG.push('unbeaten ' + (e.cnSkin || e.t) + ' at ' + Math.round(e.x / TS) + ',' + Math.round(e.y / TS) + ' hp ' + e.hp + ' mode ' + (e.st ? e.st.mode : e.mode)); return e.routeSwings < 60; };
-      const walk = (tx, o = {}) => { const goal = tx * TS + 8; let still = 0, lx = P().x, n = 0;
+      const walk = (tx, o = {}) => { const goal = X(tx) * TS + 8; let still = 0, lx = P().x, n = 0;
         while (Math.abs(P().x - goal) > (o.tol || 4) && n++ < (o.max || 2500)) {
           if (!o.noFight && fight()) continue;
           clear(); k[goal > P().x ? 'right' : 'left'] = true;
@@ -58,7 +61,7 @@ try {
       /* (claude/underwell2) a torch: E takes it; ATTACK throws it the way you face - aim 'lob' holds UP, 'short' holds DOWN */
       const takeT = () => { settle(); BK.press('talk'); tick(4); clear(); tick(2); return !!(P().carry && P().carry.t === 'uwtorch'); };
       const throwT = (d, aim) => { settle(); face(d); clear(); k.up = aim === 'lob'; k.down = aim === 'short'; tick(1); BK.press('atk'); tick(2); clear(); tick(4); };
-      const fireIn = (x0, x1) => U().list.some(c => c.st === 'fire' && c.x >= x0 && c.x <= x1);
+      const fireIn = (x0, x1) => U().list.some(c => c.st === 'fire' && c.x >= X(x0) && c.x <= X(x1));
       const nest = id => U().nests.find(n => n.id === id).open;
       const rope = (x, top) => { walk(x, { tol: 2, noFight: true }); for (let j = 0; j < 40 && !P().climb; j++) { clear(); k.up = true; if (j === 6 && !P().climb) { k.jump = true; BK.press('jump'); } tick(1); }
         for (let j = 0; j < 1200 && P().climb; j++) { clear(); k.up = true; tick(1); if (feet() <= top) break; }
@@ -77,9 +80,17 @@ try {
             if (!up) { walk(206); hop(207, 40, 1); hop(208, 37, -1); hop(206, 34, 1); hop(214, 31, 0); hop(215, 29, 1); }
             return feet() <= 29; }, [162, 29]],
         ['the upper works', [162, 29], () => { walk(184); hop(185, 27, 1); walk(189); walk(203); hop(204, 28, 1); walk(213); walk(226, { tol: 3 }); press('talk', 1);
-            walk(238); hop(239, 27, 1); walk(246); settle(); walk(247, { tol: 3 }); wait(20); return feet() === 45 && !BK.welltown().fires.find(f => f.x0 === 228).lit; }, [247, 45]],
+            walk(238); hop(239, 27, 1); walk(243, { tol: 3 }); return feet() === 27 && !BK.welltown().fires.find(f => f.x0 === 228).lit; }, [243, 27]],
+        /* (claude/underwell3) THE SPILLWAY: down off the landing, the shore's torch thrown on the oil floating by the nest (the dead burn), across the shallows, up the stair room, down the old shaft */
+        ['the spillway: the shore torch, the nest, the stair', [SA, 27], () => { walk(SA + 12); settle(); walk(SA + 15); settle(); walk(SA + 13, { tol: 3 }); takeT(); walk(SA + 15, { tol: 3, noFight: true }); throwT(1, 'mid');
+            waitFor(() => nest('spill'), 700, { noFight: true }); DBG.push('spill: at ' + col() + ',' + feet() + ' carry ' + !!P().carry + ' land ' + JSON.stringify(U().lastLand || null) + ' nest ' + nest('spill')); if (!nest('spill')) return false; waitFor(() => !fireIn(SA + 16, SA + 35), 1500); walk(SA + 37, { tol: 3 });
+            hop(SA + 37, 42, 0); hop(SA + 39, 39, 1); hop(SA + 41, 36, -1); hop(SA + 39, 33, 1); hop(SA + 41, 30, -1); hop(SA + 39, 27, 1); DBG.push('spill stair top ' + col() + ',' + feet()); walk(SA + 46); walk(UX(247), { tol: 3 }); settle(); wait(20); return feet() === 45; }, [UX(247), 45], true],
         ['the silted sump: the burning gutter', [247, 45], () => { walk(250, { tol: 3 }); press('talk'); walk(255, { tol: 3 }); ${COLD ? '' : "takeT(); throwT(1, 'short');"} wait(40);
-            walk(334); hop(335, 42, 1); walk(350); return col() >= 348; }, [350, 42]],
+            walk(334); hop(335, 42, 1); walk(344); return col() >= X(342); }, [344, 42]],
+        /* (claude/underwell3) THE OLD RESERVOIR: up three boards into the bats' dark, its torch, thrown from up there on the oil floating by the nest; across the flood */
+        ['the old reservoir: the torch in the dark, the nest', [UX(344), 42], () => { walk(RB + 4, { tol: 3 }); hop(RB + 4, 39, 0); hop(RB + 6, 36, 1); hop(RB + 11, 33, 1); walk(RB + 16, { tol: 2, noFight: true }); takeT();
+            walk(RB + 18, { tol: 2, noFight: true }); throwT(1, 'mid'); waitFor(() => nest('reservoir'), 700, { noFight: true }); if (!nest('reservoir')) return false; waitFor(() => !fireIn(RB + 20, RB + 37), 1500);
+            walk(RB + 42); return col() >= RB + 40; }, [RB + 42, 42], true],
         ['the lamp stair: the exam', [350, 42], () => { walk(352, { tol: 3 }); press('talk'); walk(354, { tol: 3 }); press('talk', 1); walk(364, { tol: 3 }); takeT(); walk(361, { tol: 3, noFight: true }); throwT(1, 'mid'); walk(355, { tol: 3, noFight: true });   /* back onto the firebreak's wet stone while the floor burns */
             waitFor(() => nest('exam'), 600, { noFight: true }); waitFor(() => !fireIn(357, 368), 900); walk(404, { tol: 3 }); press('talk'); DBG.push('exam: sips ' + (P().skin ? P().skin.sips : '-') + ' rope ' + U().ropes.find(r => r.id === 'exam').burnt);
             walk(357, { tol: 3 }); if (!rope(356, 31)) return false; walk(416, { tol: 3 }); press('talk'); walk(418, { tol: 3 }); press('talk', 1); walk(424, { tol: 3 }); press('talk', 1);
@@ -87,14 +98,15 @@ try {
         /* (claude/underwell2) THE DROWNED CISTERN: off the landing, the shore's torch on the floating oil (the dead burn), the island's torch LOBBED over the deep pool onto the far nest's oil, the swim, the stair, the thieves' gallery */
         ['the drowned cistern: the shallows, the lob, the swim', [438, 31], () => { walk(447); settle(); walk(449, { tol: 3 }); takeT(); walk(452, { tol: 3, noFight: true }); throwT(1, 'lob'); wait(120);
             walk(471, { tol: 3 }); takeT(); walk(473, { tol: 3, noFight: true }); throwT(1, 'lob'); waitFor(() => nest('drown'), 900); waitFor(() => !fireIn(480, 486), 1500);
-            for (let j = 0; j < 900 && col() < 481; j++) { clear(); k.right = true; if (P().swim || (P().ground && j % 40 === 0)) { k.jump = true; BK.press('jump'); } tick(1); }
-            walk(487); return nest('drown') && col() >= 485; }, [487, 45]],
+            for (let j = 0; j < 900 && col() < X(481); j++) { clear(); k.right = true; if (P().swim || (P().ground && j % 40 === 0)) { k.jump = true; BK.press('jump'); } tick(1); }
+            walk(487); return nest('drown') && col() >= X(485); }, [487, 45]],
         ['the drowned cistern: the stair, the thieves\\' gallery', [438, 31], () => { walk(488); hop(489, 42, 1); hop(492, 39, 1); hop(494, 36, -1); hop(492, 33, 1); hop(497, 31, 1);
-            walk(501, { tol: 3 }); takeT(); throwT(1, 'mid'); wait(60); walk(533, { tol: 3 }); wait(20); walk(541, { tol: 3 }); press('talk'); return feet() === 31 && col() >= 539; }, [541, 31]],
+            walk(501, { tol: 3 }); takeT(); throwT(1, 'mid'); wait(60); walk(533, { tol: 3 }); wait(20); walk(541, { tol: 3 }); press('talk'); return feet() === 31 && col() >= X(539); }, [541, 31]],
         ['the queen\\'s door', [533, 31], () => { walk(567, { tol: 3, noFight: true }); settle(); wait(60, { noFight: true }); return feet() >= 45; }, [567, 51]],
       ];
       let lifts = [], retries = 0;
-      for (const [name, foot, plan, end] of LEGS) {
+      for (const [name, foot0, plan, end0, raw] of LEGS) {
+        MAP = !raw; const foot = [X(foot0[0]), foot0[1]], end = [X(end0[0]), end0[1]];
         legDmg = {}; let okLeg = false, tries = 0; const f0 = frames;
         while (!okLeg && tries < 3) { tries++; try { okLeg = !!plan(); if (!okLeg) throw new Died('failed'); } catch (e) { if (!(e instanceof Died)) throw e; retries++; BK.tp(foot[0], foot[1]); P().vx = P().vy = 0; clear(); BK.sim(5); } }
         if (!okLeg) { lifts.push(name); BK.tp(end[0], end[1]); BK.sim(5); }

@@ -9,6 +9,7 @@
 // Made from px.js primitives, 16x16, baked once and memoised.   wellTile(t, x, y, at, T, L) -> the canvas for one cell, or null (the game's own kit draws it)
 // The rules (the canalart / redgorge rules): a wall mass is darker than the floor on it; every standable top has a lit lip; the oil is the darkest, glossiest thing in the level.
 import { canvas, px, rect, mulberry } from '../px.js';
+import { uwX, UW_SPILL, UW_RES } from '../underwell.js';
 
 /* the palette: STONE (cool grey-tan limestone), BRICK (the vaults), SILT (blown dust), OIL (black with a violet and a teal sheen), IRON, BRASS */
 export const UC = {
@@ -25,7 +26,8 @@ const px2 = (g, x, y, c) => { if (x >= 0 && x < 16 && y >= 0 && y < 16) px(g, x,
 const mix = (a, b, t) => { const A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16); const q = (s) => Math.round(((A >> s) & 255) * (1 - t) + ((B >> s) & 255) * t); return '#' + [16, 8, 0].map(s => q(s).toString(16).padStart(2, '0')).join(''); };
 
 /* WHICH PART OF THE CISTERN: 0 the dry well, 1 the brood hall, 2 the oil works, 3 the silted sump, 4 the lamp stair, 5 the Queen's cistern */
-export const zoneOf = x => x < 45 ? 0 : x < 141 ? 1 : x < 244 ? 2 : x < 351 ? 3 : x < 452 ? 4 : 5;
+/* (claude/underwell3) the zones in true columns: THE SPILLWAY and THE OLD RESERVOIR wear the drowned cistern's (5) */
+export const zoneOf = x => x < 45 ? 0 : x < 141 ? 1 : x < 244 ? 2 : x < UW_SPILL + 48 ? 5 : x < UW_RES ? 3 : x < UW_RES + 44 ? 5 : x < uwX(351) ? 3 : x < uwX(452) ? 4 : 5;
 const STONE_BY_ZONE = [
   { a: UC.s4, b: UC.s3, c: UC.s5, d: UC.s2, e: UC.s6 },                 /* the well: warm cut limestone */
   { a: UC.s3, b: UC.s2, c: UC.s4, d: UC.s1, e: UC.s5 },                 /* the hall: grey */
@@ -176,7 +178,7 @@ export function wellTile(t, x, y, at, T, L) {
   if (t === T.NET) return ropeTile(y, at(x, y - 1) !== T.NET && at(x, y - 1) !== T.SOLID, at(x, y + 1) !== T.NET);
   if (t === T.ONEWAY) {
     const same = k => at(x + k, y) === t, l = !same(-1), r = !same(1);
-    const iron = zone === 2 || zone === 4 && x < 440;
+    const iron = zone === 2 || zone === 4 && x < uwX(440);
     return iron ? grate(l, r, x) : slab(l, r, ((x * 5 + y) % 3 + 3) % 3);
   }
   if (t !== T.SOLID) return null;

@@ -9,6 +9,10 @@
 //     off: { prop: value }                not while the hero stands on a mover with those properties
 //     steps: [ {zone?, at/ats/mover, line, done?, when?}, ... ] }   an ordered chain: the first step that is not done
 // Columns and rows are the FINAL built tiles (the same numbers the signs and entities carry).
+import { uwX, UW_SPILL, UW_RES } from './underwell.js';   /* (claude/underwell3) THE UNDERWELL's spots are written in its columns before the two water sections were let in */
+/* an Underwell spot in the old columns, put where it stands now: its zone, its thing, and a fire.<col> key */
+const uwSpot = s => ({ ...s, ...(s.zone ? { zone: [uwX(s.zone[0]), s.zone[1], uwX(s.zone[2]), s.zone[3]] } : {}), ...(s.steps ? { steps: s.steps.map(uwSpot) } : {}),
+  ...(s.at ? { at: [uwX(s.at[0]), s.at[1]] } : {}), ...(s.is && /^fire\.\d+$/.test(s.is[0]) ? { is: ['fire.' + uwX(+s.is[0].slice(5)), s.is[1]] } : {}) });
 export const STUCK = {
   /* THE FALLING TOWER'S ORRERY LOFT (claude/archmage3; src/spiral-chase.js): the next world round on each wheel glints (m.next, kept by updateStairFx) from
      the gallery's landing and the board step (wheel A), and from the pier (wheel B) - never while you ride that wheel */
@@ -219,6 +223,7 @@ export const STUCK_HANDS = {
   /* THE UNDERWELL (claude/underwell): every nest, oil fire, torch and rope the route needs glints until it is done (src/underwell-hands.js handsState:
      nest.<id> shut|open, fire.<col> lit|out, torch.<id> up|fall|down, rope.<id> hung|burnt, lamp up|fall|down, skin some|empty) */
   underwell: [
+    /* (claude/underwell3) the old columns, through uwSpot - THE SPILLWAY's and THE OLD RESERVOIR's spots (true columns) are added after the list */
     /* (claude/underwell2, Daniel 10-06 "every glint/nudge/sign says its verb"; the torches are TAKEN and THROWN now; THE DROWNED CISTERN; her door 96 east) */
     { id: 'uw-shaft-nest', zone: [12, 36, 20, 44], steps: [
       { key: 'shaftTorch', is: ['nest.shaft', 'shut'], at: [15, 41], dy: -4, line: 'TAKE THE TORCH (E), THROW IT ON THE OIL (ATTACK)' } ] },
@@ -236,8 +241,6 @@ export const STUCK_HANDS = {
     { id: 'uw-works-up', zone: [157, 22, 239, 29], steps: [
       { key: 'worksNest', is: ['nest.works', 'shut'], at: [223, 29], line: 'LIGHT THE OIL BELOW: IT RUNS UP THE PIPE TO THIS NEST' },
       { key: 'worksFire', is: ['fire.228', 'lit'], at: [228, 29], line: 'POUR ON THE OLD OIL FIRE: E WITH WATER IN YOUR SKIN' } ] },
-    { id: 'uw-works-drop', zone: [234, 22, 243, 29], steps: [
-      { key: 'worksDrop', at: [247, 33], glint: 'stall', line: 'DROP DOWN THE OLD SHAFT INTO THE SUMP' } ] },
     { id: 'uw-gutter', zone: [244, 36, 262, 45], steps: [
       { key: 'gutterTorch', is: ['torch.gutter', 'up'], at: [255, 43], dy: -4, line: 'TAKE THE TORCH, TOSS IT SHORT INTO THE OIL: DOWN + ATTACK' } ] },
     { id: 'uw-sump-out', zone: [324, 38, 336, 45], steps: [
@@ -264,7 +267,18 @@ export const STUCK_HANDS = {
       { key: 'drownStair', at: [496, 33], glint: 'stall', line: 'CLIMB THE BOARDS UP TO THE GALLERY: JUMP' } ] },
     { id: 'uw-shaft', zone: [529, 26, 574, 31], steps: [
       { key: 'queenShaft', at: [567, 31], glint: 'stall', line: 'DROP DOWN THE OLD SHAFT TO HER CISTERN' } ] },
-  ],
+  ].map(uwSpot).concat([
+    /* (claude/underwell3) THE SPILLWAY (244-291): the shore's torch on the floating oil by the nest; the stair room's boards; the old shaft's lip (the works' drop, moved here) */
+    { id: 'uw-spill', zone: [UW_SPILL + 5, 22, UW_SPILL + 33, 45], steps: [
+      { key: 'spillTorch', is: ['nest.spill', 'shut'], at: [UW_SPILL + 13, 42], dy: -4, line: 'TAKE THE TORCH (E), THROW IT ON THE OIL BY THE NEST (ATTACK)' } ] },
+    { id: 'uw-spill-stair', zone: [UW_SPILL + 36, 29, UW_SPILL + 44, 45], steps: [
+      { key: 'spillStair', is: ['nest.spill', 'open'], at: [UW_SPILL + 43, 27], glint: 'stall', line: 'CLIMB THE BOARDS UP TO THE OLD SHAFT: JUMP' } ] },
+    { id: 'uw-works-drop', zone: [UW_SPILL + 41, 22, UW_SPILL + 47, 28], steps: [
+      { key: 'worksDrop', at: [uwX(247), 33], glint: 'stall', line: 'DROP DOWN THE OLD SHAFT INTO THE SUMP' } ] },
+    /* THE OLD RESERVOIR (394-437): its torch up in the bats' dark, thrown on the oil by the nest */
+    { id: 'uw-res', zone: [UW_RES, 26, UW_RES + 36, 42], steps: [
+      { key: 'resTorch', is: ['nest.reservoir', 'shut'], at: [UW_RES + 16, 31], dy: -4, line: 'CLIMB TO THE TORCH IN THE DARK, THROW IT ON THE NEST OIL' } ] },
+  ]),
 };
 
 /* THE SIGNS AT THE POINT OF USE (the audit: "a sign AT the point of use; fix wrong verbs"). Kept here, not in the level files, so those stay merge-clean:
