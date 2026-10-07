@@ -8483,7 +8483,7 @@
   }
  },
  "minecart": {
-  "hash": "8c88f69d3a71",
+  "hash": "b8d78a140878",
   "boss": {
    "boss": "greatdrill",
    "wins": 0,
@@ -8584,7 +8584,7 @@
    ]
   },
   "carried": {
-   "from": "ad2cdcb3468c",
+   "from": "8c88f69d3a71",
    "parts": [
     "boss"
    ]

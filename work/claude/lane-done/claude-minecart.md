@@ -153,3 +153,39 @@ level-quality (MINECART clears), hint-shown, checkpoint-gaps, collectables, dead
 - Tile kit: rails / sleepers / trestles / ore veins / timber props (no generic off-theme wood), the fall-in rubble, the crumbling low line, crushers, gates.
 - THE GREAT DRILL: machine, bit, red GEARS (not the Winchmaster's drum language), the cab + goblin driver, P3's fallen high line.
 - Music: 'mineworks' stays; 3 CC0/CC-BY picks for the drill theme still to list for Daniel.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+# ART PASS (2026-10-07, claude/minecartart lane on branch claude/minecart; Sonnet) - stills in work/claude/minecart-art/ (before/ and a1..a5/; tools/minecart-art-shots.mjs)
+
+ART ONLY: no hit box, timing, tell, cell or track geometry changed (tools/minecart.mjs 185 checks green after every step). Palette gained noFg / noNear; riders gained cnSkin.
+ROOT CAUSE OF "THE DUSK SKY": in drawWorld the great drill's `if (GDH.on()) GDH.drawBack` sat ahead of an `else if` chain, and GDH.on() is true for the whole level (the boss
+is spawned asleep) - so EVERY backdrop in the level was skipped; the crag set was never drawn at all. Now the bore back is drawn after the chain.
+
+## Drawn
+1. BACKDROP (src/redraw/minecart_backdrop.js): raw-rock wall with glittering copper/gold veins (twinkle), pit-prop timber frames, lantern strings with breathing glow, goblin works
+   (scaffold, winch wheel + bucket, skull banners, bone tally), far rail trestles over chasms, a dark roof, zone casts (yard amber, goblin green, cave-in red, works hot, exam, smelter).
+2. TILE KIT (src/redraw/minecart_tiles.js): rail bed with lit lip, shored rock faces, ragged roofs with cap-timbers, ore-veined mass (cracked at the cave-in, iron-plated in the
+   works, slag at the smelter), diagonal slopes, trestle deck. No grass anywhere (noFg / noNear).
+3. LIGHTS + HAZARDS (src/redraw/minecart_art.js): rail + sleepers (up the ramps too), trestle bents with X-braces, 87 lamp posts with wire and bulbs, lip lamps (amber vs RED + DEEP kept),
+   signal-lamp levers (blue chute / gold set / grey locked), crushers with a warning beacon (red flashing when about to fall, green when safe) and roof chains, portcullis gates,
+   hazard beams on roof props, boulders, fall-in heap, iron/rag/rune/ore carts, hero's prow lamp, bore scars, spoil, headlight, smelter house, bore arch.
+4. THE GREAT DRILL: riveted iron hull + smokestack + tread skirt + hazard flank, fluted spinning bit, three BARE RED COGS in an open panel (jam = grey-brown, gold glow, smoke), the armoured
+   CAB (always hittable) with its goblin driver in an amber window, roof lamp, hatch plate that blows gold when jammed; the bore's timber lining with bracketed lamps; P3's fallen
+   high line (torn roof, hanging timbers, the heap, dust); chute with hazard stripes, signal mast.
+5. LANDMARKS: the smelter chimney (lit stack, sparks, a deepening orange wash off the right edge) from the cave-in on; the bore's tunnel mouth from the exam on (slow parallax).
+6. SKINS: cnSkin 'gobrider' (archer: iron cap + candle-lamp, leather vest) and 'gobcaster' (goblin mage: soot robe, violet runes, hat lamp), bestiary cards, corpses die in their own skin
+   (tools/corpses.mjs now covers the Deep Rails: a rider is brought on screen first). Real goblin carts: rust iron, bone bumper, rag banner; the caster's cart a dark hull with a violet lamp.
+7. AMBIENT: its own synth bed 'mineworks' (rock breath, draught, drips, creaks, far hammer, winch chain, far crusher).
+Not done: the HUD speedometer is still the greybox dial; the crumble decor (cave-in's cracking low line) keeps its greybox rubble; the Drill's theme is still composed in code.
+
+## Identity estimate: ~85% (a mine of its own: dark slate rock, ore glitter, warm lamps, timber; no crag, no dusk, no grass). Remaining 15%: the HUD dial, more landmark variety in the middle sections.
+
+## Checks (port 8724)
+minecart 185 ok; tools/minecart-aloft.mjs (new, in check.mjs; --page: no sky, dark+warm, smelter glow, no grass) ok; corpses ok; skins ok; signs ok; floaters ok; audio-assets ok;
+one-new-foe ok; comments/homepaths/dangling-paths ok; textfit hints+bestiary+soundtest: bestiary has ONE PRE-EXISTING error (tab1 #16 'reading R of null', same on the base without my change), rest 0;
+content-audit 111 (was 109: the two new reskin cards are listed as "bestiary rows no level places", the same way oilthief / cisternbat are). Level pilot + mash rows re-stamped (level then boss) after the cnSkin/palette edits changed the level hash.
+
+## Music picks for THE GREAT DRILL (never downloaded; pages checked)
+1. "Machines" - Tsorthan Grove - CC-BY 4.0 - https://opengameart.org/content/machines (looping synth combat, machine theme)
+2. "Basilisk Boss Battle Loop" - beardalaxy - CC0 - https://opengameart.org/content/basilisk-boss-battle-loop
+3. "Boss Battle (loop)" - Alex McCulloch (Pro Sensory) - CC0 - https://opengameart.org/content/boss-battle-loop
