@@ -118,5 +118,17 @@
   "lifts": 92,
   "walked": 100,
   "bare": true
+ },
+ "ksar": {
+  "hash": "41c73ae045f4",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 37,
+  "deaths": 4,
+  "kills": 30,
+  "lifts": 68,
+  "walked": 100,
+  "bare": true
  }
 }
