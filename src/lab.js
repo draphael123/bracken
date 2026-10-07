@@ -815,8 +815,8 @@ async function runbossLab(BK, opts) {
         /* (claude/wardenkit, v2 only, the warden only) HIS REPRISAL ON THE CARPET: her plan holds her at her point's distance the whole time she waits, so every
            free frame was a thrust at his ward and his greed ring came every ~9 s (9-11 reprisals a fight, 190 of her 238 health; the knight and the pyromancer
            3-5). She now holds the blow one short of his count, as the ground hands do (labGreedStop), and flies out of a closing ring. The other heroes'
-           carpet hands are untouched (a QUESTION in work/claude/lane-done/claude-wardenkit.md) */
-        const wg=LABP.v2&&h==='warden'&&BK.greed?BK.greed:null,wgOut=wg?(wg.reach||60)+(boss.w||20)/2:0,wgFlee=!!wg&&boss.greedT>0&&Math.abs(P.x-boss.x)<wgOut+18,wgHold=!!wg&&wg.open(boss)!==true&&wg.count(boss)>=wg.limit(boss)-1;
+           carpet hands were untouched (WARDEN KIT Q4); claude/retune2: every hero's v2 carpet hands hold one short and fly out now, as a person learns to */
+        const wg=LABP.v2&&BK.greed?BK.greed:null,wgOut=wg?(wg.reach||60)+(boss.w||20)/2:0,wgFlee=!!wg&&boss.greedT>0&&Math.abs(P.x-boss.x)<wgOut+18,wgHold=!!wg&&wg.open(boss)!==true&&wg.count(boss)>=wg.limit(boss)-1;
         if(wgFlee){vx+=(P.x>=boss.x?1:-1)*3;threat=true;}
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
         if(!threat&&!realmGoal){const want=boss.open>0?(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.55):(rest?150:(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.7));   /* (claude/herokit) THE WARDEN'S POINT PAYS 34+ px out (tipPay): flown in to 0.55-0.7 of her reach she only ever struck with the haft and the middle of the shaft (0 tip hits in 66 on the Archmage) - she holds the tip distance, as a person does */const gx=boss.x-side*want,gy=by;

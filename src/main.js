@@ -5569,6 +5569,7 @@ const DRONE_HIT = 0.55;
 /* THE ACT I RETUNE (claude/sweep1, the standard: tools/boss-rates.mjs, human profile, campaign level): ONE NUMBER PER BOSS for how hard his own
    blows land (x, on what damagePlayer0 is handed - his strikes, and what he throws where the throw names him). The bosses' own tables are left alone */
 const BOSS_HIT = { golem: 2.2, grandmother: 0.55, king: 1.5, queen: 1.5, abbot: 1.8, pyromancer: 0.75 };
+Object.assign(BOSS_HIT, { undeadmage: 1.8 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false } = {}) {
   { const src = who || updFoe; if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
     if (src && src.xpRole === 'mini' && dmg > 0) dmg = Math.round(dmg * GB.GREED.miniHit);
