@@ -163,7 +163,7 @@ export async function runWalks(cfgs, { jobs = 1, onRow = null } = {}) {
   return out;
 }
 /* a death to the level itself (deep water, a fall, spikes, fire) and not to a foe: the hands' platforming is part of that count */
-export const HAZARD = /^(A TRAP|THE FALL|DROWNED|THE FIRE|THE SPIKES|SPIKES|THE WATER)/;
+export const HAZARD = /^(A TRAP|THE FALL|DROWNED|THE FIRE|THE SPIKES|SPIKES|THE WATER|THE CRACK|BURNED)/;
 const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null;
 export const line = r => r.err ? r.id + ' ' + r.hero + ' s' + r.seed + ': ERR ' + r.err
   : r.id + ' ' + r.hero + ' s' + r.seed + ' L' + r.lvl + ' (' + r.maxHp + 'hp, ' + (r.kit.join('+') || 'no skills') + ', ' + r.tonics + ' tonics' + (r.charm ? ', ' + r.charm + ' charm' : '') + '): ' + r.end.toUpperCase()
