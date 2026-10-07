@@ -347,6 +347,10 @@ export function greenteethPlan(s) {
   if (mem.seed === undefined) mem.seed = Math.floor(rng() * 1e9);
   const die = key => { let h = 2166136261 ^ mem.seed; for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15; return (h >>> 0) / 4294967296; };
   const roll = (key, pr) => { if (!mem.roll.has(key)) mem.roll.set(key, die(key) < pr); return mem.roll.get(key); };
+  /* (claude/botreads, s.eyes) WHAT A PLAYER SEES: an arm's clock is read off its drawn mark/rope with an error (about 0.06 s, its own die per arm), not exact;
+     her bow-wave was TOLD by the charge's red lines - once that tell was read the wave is met as it comes, not a reaction after it starts; her poses (heave,
+     stuck) are already seen a reaction late by the lab's eyes, so no second delay on top */
+  const tA = a => s.eyes ? a.t + (die('te' + a.id) + die('tf' + a.id) + die('tg' + a.id) - 1.5) * 0.12 : a.t;
   const [rx0, rx1] = raftEnds(show), clamp = x => Math.max(rx0 + 12, Math.min(rx1 - 12, x));
   const stepOut = (x, r, why) => { const room = [rx1 - x, x - rx0], side = room[0] > room[1] ? 1 : -1; out.gx = clamp(x + side * (r + 20)); out.why = why; return out; };
   /* ---- 0. NETTED / CAUGHT: nothing to do but wait ---- */
@@ -355,23 +359,23 @@ export function greenteethPlan(s) {
   for (const a of show.arms.filter(q => q.st === 'tell' || q.st === 'blow').sort((p, q) => p.t - q.t)) {
     const key = 'a' + a.id; if (!seenFor(key) || roll(key + 'd', PLAN.missDodge)) continue;
     if ((a.k === 'slam' || a.k === 'net') && a.st === 'tell' && Math.abs(a.x - P.x) < (a.k === 'slam' ? GT.slamR : GT.netR) + 14) {
-      if (a.t < (1 - (a.k === 'slam' ? GT.slamFollow : GT.netFollow)) * a.len) return stepOut(a.x, a.k === 'slam' ? GT.slamR : GT.netR, a.k === 'slam' ? 'out of her slam' : 'out of the net');
+      if (tA(a) < (1 - (a.k === 'slam' ? GT.slamFollow : GT.netFollow)) * a.len) return stepOut(a.x, a.k === 'slam' ? GT.slamR : GT.netR, a.k === 'slam' ? 'out of her slam' : 'out of the net');
       out.gx = P.x; out.why = 'wait for it to fix'; return out; }
-    if (a.k === 'vine' && a.t < 0.14 + (a.st === 'blow' ? 1 : 0)) { const inRange = a.dir > 0 ? P.x > a.ox - 10 && P.x < a.ox + a.reach + 10 : P.x < a.ox + 10 && P.x > a.ox - a.reach - 10;
+    if (a.k === 'vine' && tA(a) < 0.14 + (a.st === 'blow' ? 1 : 0)) { const inRange = a.dir > 0 ? P.x > a.ox - 10 && P.x < a.ox + a.reach + 10 : P.x < a.ox + 10 && P.x > a.ox - a.reach - 10;
       if (inRange && P.ground) { out.jump = true; out.why = 'jump the vine'; return out; } }
-    if (a.k === 'charge' && a.st === 'tell') { out.gx = P.x; out.why = 'ready for the wave'; return out; }
+    if (a.k === 'charge' && a.st === 'tell') { if (s.eyes) mem.chTold = t; out.gx = P.x; out.why = 'ready for the wave'; return out; }
   }
   /* a slam or a net told and seen, the hero clear of its mark: he waits it out where he is (no jump, no swing that carries him into it) */
   const live = show.arms.find(q => (q.k === 'slam' || q.k === 'net') && q.st === 'tell' && seenFor('a' + q.id) && !roll('a' + q.id + 'd', PLAN.missDodge));
   if (live && P.ground) { out.gx = P.x; out.face = Math.sign(e.x - P.x) || 1; out.why = 'clear of the mark: wait'; return out; }
   const ch = show.charge;
-  if (ch && seenFor('c' + ch.id) && !roll('c' + ch.id + 'd', PLAN.missDodge) && Math.sign(P.x - ch.x) === ch.dir && Math.abs(ch.x - P.x) < 70) { if (Math.abs(ch.x - P.x) < 56 && P.ground) out.jump = true; out.gx = P.x; out.why = 'the wave'; return out; }
-  if (e.mode === 'heave' && seenFor('hv' + show.n.heave)) { out.gx = clamp(P.x - (Math.sign(e.x - P.x) || 1) * 40); out.why = 'brace against the heave'; }
+  if (ch && ((s.eyes && t - (mem.chTold ?? -9) < 2.5) || seenFor('c' + ch.id)) && !roll('c' + ch.id + 'd', PLAN.missDodge) && Math.sign(P.x - ch.x) === ch.dir && Math.abs(ch.x - P.x) < 70) { if (Math.abs(ch.x - P.x) < 56 && P.ground) out.jump = true; out.gx = P.x; out.why = 'the wave'; return out; }
+  if (e.mode === 'heave' && (s.eyes || seenFor('hv' + show.n.heave))) { out.gx = clamp(P.x - (Math.sign(e.x - P.x) || 1) * 40); out.why = 'brace against the heave'; }
   if (show.raft.heave > 0) { out.gx = clamp(P.x - show.raft.dir * 30); out.why = 'against the tilt'; }
   if (e.mode === 'lower') { out.gx = clamp((rx0 + rx1) / 2 + (P.x < e.x ? -40 : 40)); out.why = 'off the ends'; return out; }
   if (['wake', 'under', 'phase', 'kelp', 'sleep'].includes(e.mode)) { if (out.gx === null) out.gx = clamp(P.x); return out; }
   /* ---- 2. SHE IS STUCK: to her, and cut (any angle lands) ---- */
-  if (gtOpen(e) && seenFor('open' + show.n.stuck)) { const tx = e.claw && Math.abs(e.claw.x - P.x) < Math.abs(e.x - P.x) ? e.claw.x : e.x, d = tx - P.x; out.face = Math.sign(d) || 1;
+  if (gtOpen(e) && (s.eyes || seenFor('open' + show.n.stuck))) { const tx = e.claw && Math.abs(e.claw.x - P.x) < Math.abs(e.x - P.x) ? e.claw.x : e.x, d = tx - P.x; out.face = Math.sign(d) || 1;
     out.gx = Math.abs(d) > reach - 6 ? clamp(tx - out.face * (reach - 10)) : null; out.atk = Math.abs(d) < reach + 8 && (mem.lastAtk === undefined || t - mem.lastAtk > 0.12); if (out.atk) mem.lastAtk = t; out.why = 'stuck: cut her'; return out; }
   /* ---- 3. THE DUEL: close to her and strike the bare angle ---- */
   const d = e.x - P.x, dir = Math.sign(d) || 1; out.face = dir;

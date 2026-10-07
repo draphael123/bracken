@@ -441,10 +441,17 @@ export function queenPlan(s) {
   /* held: mash */
   if (P.snare > 0) { out.atk = P.atk < 0; out.why = 'mash out of the claw'; return out; }
   /* 0. what is flying or sweeping at you (a quarter-second late) */
+  /* (claude/botreads, s.eyes) WHAT A PLAYER SEES: a band, a falling stone - TOLD by her tail drawn back / the lit line across the floor (sweep), her claws up
+     (wave, slam), the mound's ring (charge) - is met as it comes once its tell was read; one whose tell was missed is seen a reaction after it appears */
+  const tellAt = mem.tellAt = mem.tellAt || {}; if (s.eyes && /Tell$/.test(e.mode)) tellAt[e.mode] = t;
+  const told = (ms, w) => ms.some(k => t - (tellAt[k] ?? -9) < w);
+  const objSeen = o => { mem.objAt = mem.objAt || new WeakMap(); if (!mem.objAt.has(o)) mem.objAt.set(o, t); return t - mem.objAt.get(o) >= PLAN.react; };
+  const BAND_TELL = { tailHigh: ['sweepHighTell'], tailLow: ['sweepLowTell'], wave: ['waveTell'], dune: ['chargeTell'] };
+  const bandSeen = b => !s.eyes ? seen() && !misread : (BAND_TELL[b.k] && told(BAND_TELL[b.k], 2.5)) || objSeen(b);
   const band = S.bands.find(b => Math.abs(b.x - P.x) < 120 && Math.sign(P.x - b.x) === b.dir);
-  if (band && !onLedge && seen() && !misread) { if (band.kind === 'high') { out.down = P.ground; out.why = 'duck the ' + band.k; return out; } if (Math.abs(band.x - P.x) < 70) { out.jump = P.ground; out.why = 'jump the ' + band.k; return out; } }
+  if (band && !onLedge && bandSeen(band)) { if (band.kind === 'high') { out.down = P.ground; out.why = 'duck the ' + band.k; return out; } if (Math.abs(band.x - P.x) < 70) { out.jump = P.ground; out.why = 'jump the ' + band.k; return out; } }
   const rock = S.rubble.find(r => !r.landed && Math.abs(r.x - P.x) < CQ.rubbleR + 8);
-  if (rock && !misread) { out.gx = clamp(P.x + (P.x < rock.x ? -40 : 40)); out.why = 'out from under the rubble'; return out; }
+  if (rock && !misread && (!s.eyes || told(['slamTell'], 2) || objSeen(rock))) { out.gx = clamp(P.x + (P.x < rock.x ? -40 : 40)); out.why = 'out from under the rubble'; return out; }
   const pud = S.puddles.find(p => Math.abs(p.x - P.x) < 18);
   /* 1. THE OPENING: on her */
   if (qOpen(e)) { out.gx = clamp(e.x - side * (s.tip ? CQ.w / 2 + s.tip : Math.max(8, reach * 0.5 + CQ.w * 0.3))); if (onLedge && P.ground) { out.down = true; out.jump = true; }
@@ -470,13 +477,18 @@ export function queenPlan(s) {
     if (m === 'pounceTell') { const cx = S.cur && S.cur.x; if (cx != null && Math.abs(cx - P.x) < CQ.pounceR + 12) { out.gx = clamp(P.x + (P.x < cx ? -60 : 60)); out.why = 'out of the shadow'; return out; } }
     if (m === 'grabTell' && ad < 140) { if (ad < CQ.w / 2 + CQ.grabReach + 20 && roll(key + 'c', PLAN.counter)) { out.face = Math.sign(e.x - P.x) || 1; out.gx = clamp(e.x + side * (CQ.w / 2 + reach - 4)); out.why = 'meet the claw';
         if (e.modeT < 0.12 && P.atk < 0) out.atk = true; return out; } out.gx = clamp(e.x + side * 200); if (ad < 110) out.dodge = e.modeT < 0.2; out.why = 'off the grab'; return out; }
-    if (m === 'rollTell' || m === 'waveTell' || m === 'ambushTell') { /* jumped as it comes (the band / body test below) */ }
+    if (m === 'rollTell' || m === 'waveTell' || m === 'ambushTell') { /* jumped as it comes (the band / body test below) */
+      /* (claude/botreads, s.eyes) ON THE TELL: she leans to roll the way she faces / dust trickles over the tunnel she will burst from - the jump is timed off the
+         tell's time left (as read) and her run at its speed, so it does not wait to see her already rolling */
+      if (s.eyes && m !== 'waveTell' && P.ground) { const from = m === 'rollTell' ? e.x : (S.cur && S.cur.side === 'W' ? G.x0 + 10 : G.x1 - 10), dir = m === 'rollTell' ? (e.face || 1) : (from < G.mid ? 1 : -1);
+        const ahead = (P.x - from) * dir, arrive = Math.max(0, e.modeT) + Math.max(0, ahead - 30) / (m === 'rollTell' ? CQ.rollSpeed : CQ.ambushSpeed);
+        if (ahead > 0 && arrive < 0.2) { out.jump = true; out.why = 'over her as she comes (told)'; return out; } } }
     if (m === 'tidalTell') { if (ad < CQ.tidalReach + 10 && !onLedge) { out.down = P.ground; out.why = 'duck the tidal tail'; return out; } }
     if ((m === 'flickTell' || m === 'spitTell') && s.deflect && s.eyes && !(P.busy > 0) && ad < 90) { out.face = Math.sign(e.x - P.x) || 1; out.block = e.modeT < 0.22; out.why = 'deflect it on the beat'; return out; }
     if (m === 'spitTell' && s.shield) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the spit'; return out; }
   }
   if (m === 'grab' && S.claw && Math.abs(S.claw.x - P.x) < 40) { out.atk = P.atk < 0; out.face = Math.sign(S.claw.x - P.x) || 1; out.why = 'strike the claw'; return out; }
-  if ((m === 'roll' || m === 'ambush' || m === 'lunge') && Math.sign(P.x - e.x) === (m === 'roll' ? Math.sign(S.cur.dir || 1) : e.face) && ad < 90) { out.jump = P.ground; if (ad < 50 && P.ground) out.dodge = true; out.why = 'over her body'; return out; }
+  if ((m === 'roll' || m === 'ambush' || m === 'lunge') && Math.sign(P.x - e.x) === (m === 'roll' ? (s.eyes ? (e.face || 1) : Math.sign(S.cur.dir || 1)) : e.face) && ad < 90) { out.jump = P.ground; if (ad < 50 && P.ground) out.dodge = true; out.why = 'over her body'; return out; }
   if (m === 'charge' || m === 'wave') { /* bands above */ }
   /* 3. NO WATER: the nearest basin (P1, P2: the flood fills the skin in P3 at a basin too) */
   if (s.sips <= 0 && S.ph < 3) { const bx = Math.abs(P.x - G.basinW) < Math.abs(P.x - G.basinE) ? G.basinW : G.basinE;

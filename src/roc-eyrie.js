@@ -136,7 +136,7 @@ export function makeRocEyrie(ctx) {
 function planRaw(o) {
   const { P, e, R, A, therms, stone, reach, shield, t, rng, mem } = o, out = { gx: null, why: '' }, nest = A.nest || [0, 0], floor = A.floor;
   if (mem.seenMode !== e.mode) { mem.seenMode = e.mode; mem.seenAt = t; mem.lag = 0.2 + rng() * 0.15; }
-  const seen = t - mem.seenAt >= mem.lag;   /* (a quarter-second, give or take, before it reacts to a new mode) */
+  const seen = o.eyes || t - mem.seenAt >= mem.lag;   /* (a quarter-second, give or take, before it reacts to a new mode) */   /* (claude/botreads, o.eyes: the lab's eyes already see her a reaction late - no second lag on top, and none again as a read tell turns into its blow) */
   if (P.snatched) { out.mash = true; out.why = 'struggle'; return out; }
   const evx = mem.ex !== undefined ? (e.x - mem.ex) / Math.max(1e-3, t - mem.et) : 0; mem.ex = e.x; mem.et = t;
   const dx = e.x - P.x, lead = e.x + evx * Math.min(0.5, Math.max(0, (e.y - P.y) / 340));
@@ -148,7 +148,7 @@ function planRaw(o) {
     if (onNest && !(e.ward > 0)) { out.gx = P.x; if (e.mode === 'dive' && e.y > floor - 70) out.dodge = true; out.why = 'let her dive on the nest'; return out; }
     out.gx = Math.abs(P.x - (e.tx || e.x)) < 40 ? P.x + (P.x < (e.tx || e.x) ? -60 : 60) : P.x; out.why = 'off the shadow'; return out; }
   if (e.mode === 'shedTell' && seen && P.ground) { if (shield) out.block = true; else if (e.modeT < 0.2) out.dodge = true; out.gx = P.x; out.why = 'the feathers'; return out; }
-  if ((e.mode === 'gust' || e.mode === 'gustTell') && seen && P.ground) { out.gx = P.x - (e.side || 1) * 40; out.why = 'lean into the gale'; return out; }
+  if ((e.mode === 'gust' || e.mode === 'gustTell') && seen && P.ground) { out.gx = P.x - (o.eyes && e.mode === 'gustTell' ? (Math.sign(P.x - e.x) || 1) : (e.side || 1)) * 40; out.why = 'lean into the gale';   /* (claude/botreads, o.eyes: her gale's side is not drawn while she gathers it - she flies to the far side and it blows away from her) */ return out; }
   /* THE STORM: only the nest's stone thermal rises - turn it */
   const live = therms.filter(q => q.k > 0.5);
   if (!live.length && stone && !stone.on) { out.gx = stone.x - 12; if (Math.abs(P.x - (stone.x - 12)) < 6 && P.ground) { out.atk = true; out.face = 1; } out.why = 'turn the stone'; return out; }

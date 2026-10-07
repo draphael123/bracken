@@ -81,12 +81,14 @@ export function glPlan(s) {
   if (!(P.burn > 0)) mem.burnSeen = undefined;
   /* the bottle: strike it back as it comes */
   const b = F.bottles.find(q => !q.back && Math.abs(q.x - P.x) < 60 && Math.abs(q.y - (P.y - 10)) < (s.eyes ? 80 : 40));   /* (v2: a bottle in the air over you is watched from the throw - no blow started at him that would still be out when it comes down) */
-  if (b && !roll('b' + b.id, PLAN.missBottle)) { out.face = Math.sign(b.x - P.x) || P.face; const lead = s.eyes ? 0.08 : 0, bx = b.x + (b.vx || 0) * lead, by = b.y + (b.vy || 0) * lead + 260 * lead * lead;   /* (claude/sweep3, v2: a hand swings a beat before the glass arrives, as the blade's edge comes out late in the swing) */
+  if (s.eyes && e.mode === 'throwTell') mem.throwAt = t;   /* (claude/botreads, s.eyes) a bottle is watched from his throw if the throw's tell was read; one he threw unseen is seen a reaction after it appears */
+  const bSeen = q => { if (!s.eyes || t - (mem.throwAt ?? -9) < 2.5) return true; mem.objAt = mem.objAt || new WeakMap(); if (!mem.objAt.has(q)) mem.objAt.set(q, t); return t - mem.objAt.get(q) >= PLAN.react; };
+  if (b && bSeen(b) && !roll('b' + b.id, PLAN.missBottle)) { out.face = Math.sign(b.x - P.x) || P.face; const lead = s.eyes ? 0.08 : 0, bx = b.x + (b.vx || 0) * lead, by = b.y + (b.vy || 0) * lead + 260 * lead * lead;   /* (claude/sweep3, v2: a hand swings a beat before the glass arrives, as the blade's edge comes out late in the swing) */
     if (s.eyes && b.vy > 0 && Math.abs(b.x - P.x) < 30 && b.y - (P.y - 10) < -6 && b.y - (P.y - 10) > -40) { out.atk = P.atk < 0; out.up = true; out.why = 'cut the bottle up and back'; return out; }   /* (v2: one falling on you is met with the rising cut, the blow that reaches over your head) */
     if (Math.abs(bx - P.x) < reach + 6 && Math.abs(by - (P.y - 10)) < 22) out.atk = P.atk < 0; out.why = 'strike the bottle back'; return out; }
   const fire = F.fires.find(f => Math.abs(f.x - P.x) < GL.fireR + 6);
   if (glOpen(e)) { out.gx = clamp(e.x - side * (s.tip ? GL.w / 2 + s.tip : Math.max(8, reach * 0.6))); out.face = toHim; out.atk = ad < reach + 12 && P.atk < 0 && e.open > 0.35; out.why = 'cut him: he burns'; return out; }   /* (not the last blow as the flames go out) */
-  const m = e.mode;
+  const m = e.mode; if (s.eyes && m !== mem.pm) { if (m === 'walk') mem.walkAt = t; mem.pm = m; }
   if (m === 'slipped') { out.gx = clamp(e.x - toHim * (s.tip ? GL.w / 2 + s.tip : Math.max(8, reach * 0.6))); out.face = toHim; out.atk = ad < reach + 10 && P.atk < 0 && (s.greed || 0) < 3 && e.modeT > 0.2; out.why = 'cut him: he is down'; return out; }
   if (/Tell$/.test(m) && seen() && !roll(key, miss)) {
     if (m === 'riposteTell' && ad < 90) { out.gx = clamp(e.x + side * 100); if (ad < 60) out.dodge = true; out.why = 'off the riposte'; return out; }
@@ -98,7 +100,10 @@ export function glPlan(s) {
     if (m === 'throwTell') { /* the bottle comes: wait for it (above) */ }
     if (m === 'dashTell') { const dry = !(F.puddles || []).some(q => Math.sign(q.x - P.x) === toHim && Math.abs(q.x - P.x) < ad);
       if (sips > 0 && dry && P.ground && ad > 40 && !roll('dpour' + F.act, PLAN.missPour)) { out.face = toHim; out.talk = true; out.why = 'pour in the path of his dash'; return out; }
-      if (dry) { mem.dashF = F.act; out.why = 'ready for the dash'; } }
+      if (dry) { mem.dashF = F.act; out.why = 'ready for the dash'; }
+      /* (claude/botreads, s.eyes) ON THE TELL: he gathers (!!) and comes at his dash speed - roll or jump timed off the tell's time left as read, not on seeing him already running */
+      if (dry && s.eyes && Math.sign(P.x - e.x) === (e.face || 1)) { const arrive = Math.max(0, e.modeT) + Math.max(0, ad - GL.w / 2 - GL.dashReach) / GL.dash;
+        if (arrive < 0.12) { out.dodge = P.ground && ad < 46 + GL.dash * Math.max(0, e.modeT); out.jump = !out.dodge && P.ground; out.gx = clamp(e.x - side * 60); out.why = 'through the dash (told)'; return out; } } }
   }
   /* the rest of a combo once its first cut was read: keep out of it (or keep the shield up) */
   if ((m === 'cut' || m === 'cut2Tell' || m === 'cut2' || m === 'cross') && ad < 70 && mem.backT > t) { if (s.deflect && s.eyes && P.live > 0.04) { out.face = toHim; out.why = 'hold the deflect'; return out; } if (s.deflect && s.eyes && !(P.busy > 0)) { out.face = toHim; out.block = true; out.why = 'sweep again for his next cut'; return out; } if (s.deflect && !(P.busy > 0)) { out.face = toHim; out.block = m !== 'cut2Tell' || e.modeT < 0.22; out.why = 'deflect the combo'; return out; } if (s.shield) { out.block = true; out.face = toHim; out.why = 'block the combo'; return out; } out.gx = clamp(e.x + side * 90); out.why = 'out of the combo'; return out; }
@@ -113,7 +118,7 @@ export function glPlan(s) {
   /* a dry skin: the well head (it glints), when he is not on you */
   if (sips <= 0 && A.well != null && (ad > 60 || m === 'recover') && !(F.puddles || []).length) { if (Math.abs(P.x - A.well) < 10 && P.ground) { out.talk = true; out.why = 'fill the skin at the well head'; return out; } out.gx = A.well; out.why = 'to the well head'; return out; }
   /* between his blows, and as he walks in: cut him (a blow short of greed), from where his reach is not */
-  if ((m === 'recover' || m === 'walk') && ad < reach + 10 && (s.greed || 0) < 3 && P.atk < 0 && !(s.deflect && m === 'walk' && e.modeT < 0.3)) {   /* (the warden keeps her shaft free for the deflect as his gap runs out) */ out.face = toHim; out.atk = true; out.why = m === 'walk' ? 'cut him as he comes' : 'cut him between his blows'; return out; }
+  if ((m === 'recover' || m === 'walk') && ad < reach + 10 && (s.greed || 0) < 3 && P.atk < 0 && !(s.deflect && m === 'walk' && (s.eyes ? t - (mem.walkAt ?? t) > GL.gap[(F.ph || 1) - 1] - 0.3 : e.modeT < 0.3))) {   /* (claude/botreads, s.eyes: his gap is not drawn - it is counted from when he was seen to walk, against the rhythm a player learns) */   /* (the warden keeps her shaft free for the deflect as his gap runs out) */ out.face = toHim; out.atk = true; out.why = m === 'walk' ? 'cut him as he comes' : 'cut him between his blows'; return out; }
   out.gx = clamp(e.x + side * Math.max(PLAN.stand, reach - 4)); out.face = toHim; out.why = 'close in';   /* (a long reach stands off at its tip: the warden's spear outreaches his swords) */
   return out;
 }

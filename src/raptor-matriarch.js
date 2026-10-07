@@ -356,7 +356,12 @@ function matPlan0(s) {
      PERSON does against a pouncer on a pillar top (review-redgorge2 section 8): steps off the pillar, jumps her landing, times the warden's short
      step to the landing frame, deflects the rake, never rolls off the rock into water that is coming, and goes UNDER or OVER her talons ===== */
   const V2 = !!s.v2;
-  if (V2) { const v = v2Hands(s, out, { G, myTop, onTop, wet, kx, side, dx, same, hitR, lo, hi, clamp, swing }); if (v) return v; }
+  /* (claude/botreads, v2) WHAT A PLAYER SEES, for what lives on the show (not on her - the lab's eyes do not see it): a debris band, a quill is met at once
+     if its TELL was read (surgeTell's DEBRIS! bar, volleyTell's fan), else a reaction after it appears; her dive comes down where its shadow WAS (the mark is
+     drawn only in diveTell: the hands remember it, they do not read her flight's own target) */
+  const tellAt = mem.tellAt = mem.tellAt || {}; if (V2 && /Tell$/.test(e.mode)) tellAt[e.mode] = t; if (V2 && e.mode === 'diveTell' && S.mark) mem.diveX = S.mark.x;
+  const objSeen = (o, tk) => { if (!V2) return true; if (tk && t - (tellAt[tk] ?? -9) < 2.5) return true; mem.objAt = mem.objAt || new WeakMap(); if (!mem.objAt.has(o)) mem.objAt.set(o, t); return t - mem.objAt.get(o) >= PLAN.react; };
+  if (V2) { const v = v2Hands(s, out, { G, myTop, onTop, wet, kx, side, dx, same, hitR, lo, hi, clamp, swing, objSeen }); if (v) return v; }
   /* 0. IN THE WATER'S WAY: out of the channel onto the nearest top */
   if (!onTop && wet && S.ph < 3) { const tp = nearestTop(G, P.x, q => !(matOpen(e) === false && q === topAt(G, kx, 20) && dx < 30)); out.why = 'out of the channel'; return goTop(tp); }
   /* 0b. AT A FULL LEVER WITH HER IN THE CHANNEL (her crouch to pounce at you from the floor is the moment): pull */
@@ -387,8 +392,8 @@ function matPlan0(s) {
     }
   }
   /* the surge and the quills in flight */
-  for (const b of S.bands) if (Math.abs(b.x - P.x) < 46 && b.dir * (P.x - b.x) > 0 && P.ground) { out.jump = true; out.gx = P.x; out.why = 'jump the surge'; return fin(out); }
-  for (const q of S.shots) if (q.k === 'quill' && Math.hypot(q.x - P.x, q.y - (P.y - 10)) < 40 && P.ground && !roll('q' + q.key, PLAN.miss)) { out.dodge = true; out.gx = clamp(P.x + (q.vx > 0 ? 40 : -40)); out.why = 'roll the quill'; return fin(out); }
+  for (const b of S.bands) if (Math.abs(b.x - P.x) < 46 && b.dir * (P.x - b.x) > 0 && P.ground && objSeen(b, 'surgeTell')) { out.jump = true; out.gx = P.x; out.why = 'jump the surge'; return fin(out); }
+  for (const q of S.shots) if (q.k === 'quill' && Math.hypot(q.x - P.x, q.y - (P.y - 10)) < 40 && P.ground && objSeen(q, 'volleyTell') && !roll('q' + q.key, PLAN.miss)) { out.dodge = true; out.gx = clamp(P.x + (q.vx > 0 ? 40 : -40)); out.why = 'roll the quill'; return fin(out); }
   /* 2. HER WARD: off her, let it pass */
   if (S.ward > 0) { out.gx = clamp(kx + side * 70); out.why = 'her ward: wait'; return fin(out); }
   /* 3. OPEN, OR A BEAT: cut her (from the side that is dry) */
@@ -442,8 +447,9 @@ function v2Hands(s, out, q) {
   if (F && (F.then === 'land' || F.then === 'diveLand') && S.ph < 3 && P.ground) {
     const R = (F.then === 'land' ? MAT.pounceR : MAT.diveR) + 9, el = F.t0 - F.t, mem = s.mem || {};
     if (mem.leapOf !== F) { mem.leapOf = F; mem.leapRt = 0.18 + (s.rng || Math.random)() * 0.16; }   /* (how late the hands see her leave the ground: 0.18-0.34 s, drawn per leap) */
-    if (el >= mem.leapRt && Math.abs(F.tx - P.x) < R && Math.abs(F.ty - P.y) < 30) {
-      const d = safeDir(F.tx, 60);
+    const ftx = F.then === 'diveLand' && Number.isFinite(mem.diveX) ? mem.diveX : F.tx;   /* (claude/botreads: the dive lands where its shadow was drawn - remembered, not read off her flight) */
+    if (el >= mem.leapRt && Math.abs(ftx - P.x) < R && Math.abs(F.ty - P.y) < 30) {
+      const d = safeDir(ftx, 60);
       if (!s.noRoll && d) { out.dodge = true; out.gx = clamp(P.x + d * 60); out.why = 'v2: roll off her landing'; return out; }
       if (F.t >= 0.2 && F.t <= 0.45) { out.jump = true; out.gx = P.x; out.why = 'v2: jump her landing'; return out; }
       if (s.noRoll && F.t <= 0.15 && d) { out.dodge = true; out.gx = clamp(P.x + d * 30); out.why = 'v2: the short step, timed to her landing'; return out; }
@@ -455,12 +461,15 @@ function v2Hands(s, out, q) {
     const gx = spotOff(S.mark.x, MAT.diveR + 20); if (gx != null) { go(gx); out.why = 'v2: off the dive mark'; return out; } out.gx = P.x; out.why = 'v2: wait to step her dive'; return out; }
   /* HER QUILLS: through the gaps, but never off the rock into the water */
   if (e.mode === 'volleyTell' && e.modeT < 0.3) { const d = safeDir(e.x, 50); if (d) { out.dodge = !s.noRoll; out.gx = clamp(P.x + d * 50); } else out.gx = P.x; out.why = 'v2: the quills, on the rock'; return out; }
-  for (const k of S.shots) if (k.k === 'quill' && Math.hypot(k.x - P.x, k.y - (P.y - 10)) < 40 && P.ground) { const d = k.vx > 0 ? 1 : -1;
+  for (const k of S.shots) if (k.k === 'quill' && Math.hypot(k.x - P.x, k.y - (P.y - 10)) < 40 && P.ground && q.objSeen(k, 'volleyTell')) { const d = k.vx > 0 ? 1 : -1;
     if (standable(clamp(P.x + d * 40))) { out.dodge = !s.noRoll; out.gx = clamp(P.x + d * 40); } else out.gx = P.x; out.why = 'v2: the quill, on the rock'; return out; }
   /* HER BROOD (the screech's raptors: the gorge's marked stoop - the shadow snaps onto your spot as its eye goes red): off the shadow; one on the
      ground after its stoop is open - cut it while she is not (s.brood: the raptors the hands can see) */
   const brood = (s.brood || []).map(q => ({ q, v: q.st || q }));   /* (a raptor's stoop lives on its machine, e.st: src/red-gorge-hands.js raptorStep) */
-  for (const { v: b } of brood) if ((b.mode === 'watch' || b.mode === 'dive') && Number.isFinite(b.tx) && Math.abs(b.tx - P.x) < 22 && Math.abs((b.ty ?? P.y) - P.y) < 40) {
+  /* (claude/botreads) a raptor's stoop is on its own machine (the eyes do not see it): its red eye and snapped shadow are seen a reaction after its watch begins */
+  const brM = (s.mem || {}).brM = (s.mem || {}).brM || new WeakMap(), tNow = s.t || 0;
+  for (const { v: b } of brood) { const r = brM.get(b); if (!r || r.m !== b.mode) brM.set(b, { m: b.mode, at: r && b.mode === 'dive' && r.m === 'watch' ? r.at : tNow }); }
+  for (const { v: b } of brood) if ((b.mode === 'watch' || b.mode === 'dive') && tNow - brM.get(b).at >= PLAN.react && Number.isFinite(b.tx) && Math.abs(b.tx - P.x) < 22 && Math.abs((b.ty ?? P.y) - P.y) < 40) {
     const gx = spotOff(b.tx, 30); if (gx != null) { go(gx); out.why = 'v2: off the raptor shadow'; return out; } }
   if (!matOpen(e)) { const b = brood.filter(({ q, v }) => (v.mode === 'perched' || v.mode === 'climb') && Math.abs(q.x - P.x) < s.reach + 10 && Math.abs(q.y - P.y) < 30).map(o => o.q)[0];
     if (b && !/Tell$/.test(e.mode) && e.mode !== 'fly') { out.gx = P.x; out.face = Math.sign(b.x - P.x) || out.face; out.atk = P.atk < 0; out.why = 'v2: cut the raptor on the ground'; return out; } }
