@@ -64,18 +64,25 @@ export function buildKsar({ painter, T, TS }) {
   /* a BARRICADE: a bricked-up arch (solid cells, drawn as rough mud-brick, cracked): a keg's blast in reach breaks it for good */
   const barricade = (id, x0, x1, y0, y1) => { block(x0, x1, y0, y1); barricades.push({ id, x0, x1, y0, y1 }); ent('ksbarricade', x0, y1, { id }); };
   const seal = (x, y) => ent('stray', x, y, { kind: 'caravanseal' });
+  /* THE DESERT'S SUN (the act's backdrop, as THE GLASS SEA's day: src/sunstroke.js - open sun fills the meter, shade resets it): the fort's SHADE is under its roofs,
+     its guard huts, its arches and its AWNINGS (canvas on poles: shade, and cover from the hawks - src/ksar-hands.js). Placed so no walk on the route is over
+     SUN.maxWalk in the sun (tools/ksar.mjs) */
+  const shade = [], shadeBox = (x0, x1, y0, y1) => shade.push([x0 * TS, (x1 + 1) * TS, y0 * TS, (y1 + 1) * TS + 1]);
+  const awning = (x0, x1, row, floor) => { decor.push({ kind: 'awning', x0, x1, y: row }); shadeBox(x0, x1, row + 1, floor - 1); };
   const hut = (x0, x1, roof, floor) => { block(x0, x1, roof, roof); block(x0, x0, roof + 1, roof + 2); block(x1, x1, roof + 1, roof + 2); interiors.push([x0 + 1, x1 - 1, roof + 1, floor - 1, 'ksHut']); decor.push({ kind: 'hut', x0, x1, y: roof, floor }); };
 
   // ================= 1. THE CARAVAN ROAD (0-71): TEACH - the cut, the ring, the throw, all where failure is cheap =================
   ground(0, 7, 38); ground(8, 11, 36); ground(12, 71, B);                        /* THE FIRST SCREEN ASKS: two hops up the wadi bank onto the road */
   sign(3, 37, 'THE BANDIT KSAR. ' + RULE);
   decor.push({ kind: 'palmstump', x: 18, y: B - 1 }, { kind: 'milestone', x: 24, y: B - 1 });
+  boards(14, 25, 31); slinger(21, 30, 'shelfSling', { face: -1 });             /* the wadi's rock shelf over the road (a second height), a slinger on it over the bank */
   /* THE FIRST GONG (TEACH, safe): its lookout is asleep beside it; the guard hut's two sleepers are in its earshot. Cut the rope (ATTACK) and it is silent;
      ring it (E) - or wake the lookout - and the sleepers come out */
   sign(28, B - 1, 'A GONG CALLS EVERY BANDIT IN EARSHOT. A BLADE CUTS ITS ROPE; E RINGS IT.');
   lookout(33, B - 1, 'roadGong', 'g1', { asleep: true, face: 1 });
   gong('g1', 37, B - 1, { ear: 18 });
   hut(41, 51, 28, B);                                                            /* the guard hut on the road: roofed, open at both ends */
+  slinger(47, 27, 'hutSling', { face: -1 });                                    /* a wall slinger on the hut's roof (THE RANGED ONE, from the first screen on) */
   blade(45, B - 1, 'roadHut', { ks: 'reserve', face: 1 }); blade(48, B - 1, 'roadHut', { ks: 'reserve', face: -1 });
   /* THE FIRST KEG (TEACH, THROW, safe): a stack on the road, and THE BRICKED ARCH in the wall's foot (the old caravan gate, a seal behind it) */
   stack('roadKegs', 56, B - 1, 'keg', 3);
@@ -87,16 +94,17 @@ export function buildKsar({ painter, T, TS }) {
   air(73, 79, 30, B - 1); barricade('arch', 72, 72, 30, B - 1); interiors.push([73, 79, 30, B - 1, 'ksVault']); seal(77, B - 1);   /* SEAL ONE behind the bricked arch */
   decor.push({ kind: 'parapet', x0: 72, x1: 231, y: WW });
   /* TOWER TWO (a seal and a silver on its top: a climb off the walk) */
-  boards(92, 94, 26); boards(95, 96, 24); block(97, 102, 22, WW - 1); seal(99, 21); ent('silver', 101, 21);   /* (it stands on the walk: the way on is over it) */
+  boards(92, 94, 26); boards(95, 96, 24); block(97, 102, 22, WW - 1); seal(99, 21); ent('silver', 101, 21); slinger(100, 21, 'towerTwoSling', { face: -1 });   /* (it stands on the walk: the way on is over it) */
   /* THE WALL HUT (its sleepers answer gong two) */
-  hut(108, 122, 22, WW);
+  hut(108, 122, 22, WW); slinger(119, 21, 'wallHutSling', { face: -1 });
   blade(112, WW - 1, 'wallHut', { ks: 'reserve', face: 1 }); blade(117, WW - 1, 'wallHut', { ks: 'reserve', face: -1 });
   /* THE LOOKOUT (TEST): he walks the stretch before gong two; seeing you he runs for it (told) - cut it first, kill him on his way, or slip by in smoke */
   lookout(130, WW - 1, 'wallLookout', 'g2', { patrol: [126, 136], face: -1 });
+  blade(144, WW - 1, 'wallPair', { face: -1 }); blade(147, WW - 1, 'wallPair', { face: -1 });   /* the walk's guard past gong two (they answer it) */
   gong('g2', 140, WW - 1, { ear: 22 });
   sign(124, WW - 1, 'A LOOKOUT RUNS FOR HIS GONG WHEN HE SEES YOU. SMOKE HIDES YOU.');
   smoke(151, WW - 1, 'wallSmoke');
-  hawk(118, 186, 13, 'wallHawk');                                                /* THE FIRST HAWK SCOUT: it patrols the walls; a shriek sends the lookouts running */
+  hawk(104, 200, 13, 'wallHawk');                                                /* THE FIRST HAWK SCOUT: it patrols the walls; a shriek sends the lookouts running */
   sign(146, WW - 1, 'HER HAWKS WATCH THE WALLS: A FLASK BLINDS ONE.');
   stack('wallFlasks', 148, WW - 1, 'flask', 2);
   /* TOWER THREE: a wall slinger on its top (THE RANGED ONE); its top drops onto the sentry's ledge */
@@ -111,9 +119,10 @@ export function buildKsar({ painter, T, TS }) {
   // ================= 3. THE GATE WINCH (232-272): SET PIECE ONE - RING THE GREAT GONG TO EMPTY THE GATEHOUSE (REQUIRED) =================
   /* THE GREAT GONG on its tower (a three-row hop off the walk); the HIGH WALK runs east from it over the yard to the gatehouse; the yard below */
   block(232, 238, 25, H - 1); gong('great', 236, 24, { ear: 34, earY: 14, great: true });
-  sign(233, 24, 'THE GREAT GONG. ITS EARSHOT REACHES THE GATEHOUSE.');
+  sign(233, 24, 'THE GREAT GONG: E RINGS IT. ITS EARSHOT REACHES THE GATEHOUSE.');
   boards(239, 251, 26); ground(239, 256, B);
-  blade(244, B - 1, 'yard', { face: -1 }); blade(249, B - 1, 'yard', { face: -1 });   /* the yard's guards (they answer the great gong too) */
+  hawk(224, 272, 14, 'yardHawk');                                                /* a hawk scout over the yard and the gate */
+  blade(241, B - 1, 'yard', { face: -1 }); whip(245, B - 1, 'yard', { face: -1 }); blade(249, B - 1, 'yard', { face: -1 });   /* the yard's guards (they answer the great gong too) */
   /* THE GATEHOUSE: the gate passage (rows 30-33) behind THE PORTCULLIS (column 257); over it THE GUARD ROOM (rows 24-28) behind its GRILLE (column 257,
      rows 24-28: bars - you cannot get in, a called man gets out). THE WINCH stands in the yard at 253: its brake is held while any of the squad is in the
      guard room or within KS.brakeR of the winch */
@@ -131,14 +140,16 @@ export function buildKsar({ painter, T, TS }) {
   // ================= 4. THE SOUQ YARD (273-357): REMIX - RING A GONG TO DRAW A SQUAD ONTO A KEG =================
   ground(273, 357, B);
   ent('check', 276, B - 1);                                                      /* CHECKPOINT TWO, past the gate */
+  boards(282, 300, 27); boards(330, 346, 27); slinger(296, 26, 'souqSling', { face: -1 }); ent('silver', 284, 26);   /* the souq's roof walks (a second height): a slinger on one, a silver on the other end */
   for (const [x0, x1] of [[281, 284], [290, 293], [334, 337]]) { boards(x0, x1, 30); decor.push({ kind: 'stall', x0, x1, y: 30 }); }   /* the souq's stalls: their awnings are ledges */
   /* THE SOUQ GONG under its roof; the roof (a two-row hop off the ledge) carries a keg stack over it */
   boards(304, 306, 31); block(308, 326, 29, 29); block(308, 308, 30, 30); block(326, 326, 30, 30); decor.push({ kind: 'souqroof', x0: 308, x1: 326, y: 29 });
   gong('souq', 318, B - 1, { ear: 30 });
-  stack('souqKegs', 323, 28, 'keg', 3);
+  stack('souqKegs', 323, 28, 'keg', 3); blade(358, 24, 'terraceGuard', { face: -1 });
   sign(300, B - 1, 'RING THE GONG AND THEY COME TO IT. A KEG FROM THE ROOF MEETS THEM.');
   /* THE STAIR'S SQUAD (a whip apprentice and two blades) at the foot of the only stair up */
   blade(340, B - 1, 'stairSquad', { face: -1 }); whip(344, B - 1, 'stairSquad', { face: -1 }); blade(348, B - 1, 'stairSquad', { face: -1 });
+  hawk(284, 380, 13, 'souqHawk');                                                 /* a hawk scout over the souq and the terrace */
   boards(350, 352, 31); boards(353, 355, 28);                                    /* the stair up to the terrace (row 25) */
 
   // ================= 5. THE POWDER STORE (358-445): SET PIECE TWO - THE CHAIN (REQUIRED THROW) =================
@@ -146,6 +157,8 @@ export function buildKsar({ painter, T, TS }) {
   decor.push({ kind: 'minaret', x: 366, y: 24, top: 8 });
   /* THE TERRACE: its runner and the second souq gong (CUT under pressure) */
   lookout(372, 24, 'terraceLookout', 'terrace', { patrol: [362, 376], face: -1 });
+  boards(358, 363, 16); slinger(360, 15, 'minaretSling', { face: -1 });          /* the minaret's balcony and its slinger */
+  hut(382, 388, 19, 25); blade(384, 24, 'terraceHut', { ks: 'reserve', face: -1 }); blade(386, 24, 'terraceHut', { ks: 'reserve', face: 1 });   /* the terrace's guard hut: its sleepers answer the terrace gong */
   gong('terrace', 380, 24, { ear: 24, earY: 9 });
   ent('check', 392, 24);                                                         /* CHECKPOINT THREE, at the store's door */
   stack('storeKegs', 389, 24, 'keg', 2);
@@ -157,7 +170,7 @@ export function buildKsar({ painter, T, TS }) {
   /* THE ROOF SQUAD (the short chain's victims) and the store's cellar under its weak roof (a seal) */
   blade(411, 24, 'roofSquad', { face: -1 }); smoke(414, 24, 'roofSquad'); blade(419, 24, 'roofSquad', { face: -1 });
   air(417, 430, 26, 31); interiors.push([417, 430, 26, 31, 'ksCellar']); for (let x = 423; x <= 425; x++) weak.push([x, 25]);   /* (three tiles: a hole a hero leaps, or drops into) */
-  seal(427, 31); boards(419, 421, 29); boards(423, 425, 27);   /* the ledges back up out of the cellar, through the hole */
+  seal(427, 31); ent('silver', 418, 31); boards(419, 421, 29); boards(423, 425, 27);   /* the ledges back up out of the cellar, through the hole */
   hawk(396, 458, 11, 'storeHawk');
 
   // ================= 6. THE HAWK TOWER ROOFS (446-583): THE EXAM - THE WHOLE FORT WAKES =================
@@ -168,19 +181,36 @@ export function buildKsar({ painter, T, TS }) {
   ent('check', 486, 18);                                                         /* CHECKPOINT FOUR */
   block(500, 539, 21, H - 1);                                                    /* ROOF TWO (row 21) */
   boards(497, 526, 17); seal(525, 16);                                           /* the high ledge over the sentry: SEAL FIVE at its end */
-  sentry(517, 20, 'roofSentry', 'roofB', { face: -1 }); gong('roofB', 520, 20, { ear: 24, earY: 10 });
+  sentry(517, 20, 'roofSentry', 'roofB', { face: -1 }); gong('roofB', 520, 20, { ear: 24, earY: 10 }); blade(508, 20, 'roofTwo', { face: -1 });
   whip(532, 20, 'roofWhip', { face: -1 });
   hawk(470, 540, 8, 'roofHawkA'); hawk(528, 580, 9, 'roofHawkB');
   block(540, 575, 19, H - 1);                                                    /* ROOF THREE (row 19) */
   stack('roofKegs', 545, 18, 'keg', 3);
   lookout(556, 18, 'roofLookoutC', 'roofC', { patrol: [550, 560], face: -1 }); gong('roofC', 564, 18, { ear: 22, earY: 10 });
-  blade(569, 18, 'roofSquadC', { face: -1 }); whip(572, 18, 'roofSquadC', { face: -1 }); blade(574, 18, 'roofSquadC', { face: -1 });
+  boards(572, 575, 15); slinger(574, 14, 'roofThreeSling', { face: -1 }); blade(567, 18, 'roofSquadC', { face: -1 }); whip(569, 18, 'roofSquadC', { face: -1 }); blade(571, 18, 'roofSquadC', { face: -1 });
   /* THE WAY DOWN to the courtyard door: a shaft east of roof three; THE STRONGROOM's door in its west wall (five seals open it) */
   ground(576, 583, B);
   air(569, 574, 30, B - 1); interiors.push([569, 574, 30, B - 1, 'ksStrongroom']); block(575, 575, 30, B - 1); vaultDoors.push({ id: 'strongroom', x: 575, y0: 30, y1: B - 1, seals: 5 });
   ent('silver', 571, B - 1); ent('ksvault', 575, B - 1, { id: 'strongroom' });
   sign(578, B - 1, 'THE STRONGROOM. FIVE CARAVAN SEALS OPEN ITS DOOR.');
   ent('check', 581, B - 1);                                                      /* CHECKPOINT FIVE, at the courtyard door */
+
+  // ================= THE FORT'S POWDER (single kegs set by its posts: a blow lights one - a squad's ruin, or a careless swing's) =================
+  /* every post keeps its powder by it (the raiders blow the road's caravans open): told as every keg is (a fuse that fizzes, a ring), kicked where it stands. A hero who
+     swings at everything blasts himself; one who looks kicks it into the squad and steps back */
+  for (const [x, y] of [[34, B - 1], [78, WW - 1], [89, WW - 1], [120, 21], [159, 20], [138, WW - 1], [150, WW - 1], [194, WW - 1], [218, WW - 1], [250, 25], [290, B - 1], [314, B - 1], [338, B - 1], [364, 24], [376, 24],
+    [471, 18], [483, 18], [507, 20], [519, 20], [531, 20], [562, 18]]) kegAt('post' + x, x, y);
+
+  // ================= THE SHADE (the awnings and what the roofs throw) =================
+  shadeBox(0, 9, 32, 37); shadeBox(18, 22, 32, 33);                            /* the wadi's bank, and a hollow under the rock shelf */
+  awning(77, 80, 22, WW); awning(99, 102, 16, 22); awning(116, 119, 16, 22); awning(141, 144, 22, WW);   /* the walk: an awning, tower two's top, the wall hut's roof, gong two's awning */
+  awning(160, 163, 15, 21); awning(178, 181, 18, 24); awning(205, 209, 22, WW);   /* tower three's top, the sentry's ledge, an awning on the way to the great gong */
+  awning(233, 237, 19, 25); shadeBox(244, 256, 27, B - 1);                      /* the great gong's tower, the yard under the gatehouse's wall */
+  for (const [x0, x1] of [[281, 284], [290, 293], [334, 337]]) shadeBox(x0, x1, 31, B - 1);   /* the souq's stalls (their awnings) */
+  awning(286, 289, 22, 27); awning(340, 343, 22, 27); shadeBox(359, 362, 17, 24);   /* awnings on the roof walks; the minaret's balcony */
+  awning(412, 416, 19, 25); shadeBox(441, 447, 19, 24);                         /* the store's roof squad under canvas; the overhang over the arch */
+  awning(468, 471, 13, 19); shadeBox(491, 496, 16, 18); awning(512, 516, 13, 21); awning(533, 536, 15, 21); awning(550, 553, 13, 19); shadeBox(572, 575, 16, 18);   /* the roofs: awnings, the parapet, the perch */
+  shadeBox(576, 583, 26, B - 1);                                                 /* the shaft to the courtyard door */
 
   // ================= THE HAWK-MISTRESS's COURTYARD (src/hawk-mistress.js) =================
   const AX = 584;
@@ -195,8 +225,10 @@ export function buildKsar({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
-    ksar: true, caravan: true,   /* caravan: the desert's hands in main.js (the bandits' machines, the sand and stone skins); THE SUN is not this level's rule: the fort is shade (src/ksar-hands.js noSun) */
+    ksar: true, caravan: true,   /* caravan: the desert's hands in main.js (the bandits' machines, the sand and stone skins, THE SUN: the act's backdrop - the courtyard is shade, src/ksar-hands.js noSun) */
     gongs, stacks, setKegs, racks, barricades, weak, gate, decor, vaultDoors,
+    alarms: gongs.map(g => ({ x0: g.x - g.ear, x1: g.x + g.ear })),   /* THE RULE'S STATE for tools/rule-state.mjs: each gong's earshot is where the fort answers it */
+    sun: [{ x0: 0, x1: 584 }], shade, shadeArt: shade,   /* THE DESERT'S SUN, the backdrop (not the rule): the shade boxes, tinted violet by main.js (the art pass may paint them) */   /* THE RULE'S STATE for tools/rule-state.mjs: each gong's earshot is where the fort answers it */
     quest: { n: 5, item: 'caravanseal', name: 'SEALS', done: 'FIVE SEALS: THE STRONGROOM OPENS', thanks: 'THE STRONGROOM OPENS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */

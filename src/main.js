@@ -20256,7 +20256,7 @@ function cvShaded(x, y, h) {
   if (inShade(CV.zones, x, y - 1)) return true;
   if (inHollowStorm(x)) return true;
   if (GSH && GSH.noSun(x)) return true;
-  if (KSH && KSH.noSun()) return true;   /* (claude/ksar) THE BANDIT KSAR: the sun is not its rule - the fort is shade */   /* (claude/glasssea) THE GLASS SEA: past the obelisk the sun is down (the cold is src/glass-sea-hands.js's) */
+  if (KSH && KSH.noSun(x)) return true;   /* (claude/ksar) THE BANDIT KSAR: the Hawk-Mistress's courtyard is shade (the sun is the desert's backdrop on the way) */   /* (claude/glasssea) THE GLASS SEA: past the obelisk the sun is down (the cold is src/glass-sea-hands.js's) */
   if (inShade(cvCanopies(), x, y - 1)) return true;
   if (roofShade(tileAt, x, y - h, t => t === T.SOLID)) return true;
   for (const e of enemies) if (e.alive && e.t === 'vulture' && e.st && inShade([vultureShade(e, e.st.groundY)], x, y - 1)) return true;   /* the thing hunting you is the thing that cools you */
@@ -20387,7 +20387,7 @@ function drawCaravanHud() {
   if (!CV) return;
   const A = cvArt(), v = (P.sun && P.sun.v) || 0, sw = CV.swim;
   if (GSH && GSH.on() && GSH.drawHud(g, P)) return;
-  if (KSH && KSH.on() && KSH.drawHud(g, P)) return;   /* (claude/ksar) no sun meter in the fort */   /* (claude/glasssea) by night THE FROST METER stands where the sun meter does */
+  if (KSH && KSH.on() && KSH.drawHud(g, P)) return;   /* (claude/ksar) (the Ksar keeps the desert's sun meter: drawHud says no) */   /* (claude/glasssea) by night THE FROST METER stands where the sun meter does */
   const stg = CV.stage || 0;   /* at full, the stage of the build (sunStep): the glare deepens with it */
   if (sw > 0 && !SET.reduceMotion) { g.globalAlpha = 0.1 + 0.18 * sw + 0.06 * stg; g.fillStyle = stg >= 3 ? '#ff7a40' : '#ffb060'; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.12 * sw; g.fillStyle = '#fff1c8'; for (let y = 0; y < VH; y += 6) { const o = Math.sin(time * 7 + y * 0.3) * 3 * sw; g.fillRect(Math.round(o), y, VW, 2); } g.globalAlpha = 1; }
@@ -24718,6 +24718,7 @@ KSH = makeKsarHands({ get L() { return L; }, get players() { return players; }, 
   cellOpen: (x, y) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { cellSet(x, y, T.AIR); destroyed.add(y * LW + x); } }, standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)),
   moveFoe: (e, dx) => { moveBody(e, dx, 0, false); if (e.st) e.st.x = e.x; }, moveFoeY: (e, dy) => { const r = moveBody(e, 0, dy, false); if (r && (r.ground || r.hitY)) e.vy = 0; if (e.st) e.st.y = e.y; },
   keys: () => keys, questGot: () => straysGot.size, questN: () => questOf().n,
+  flames: () => embers.concat(fires),   /* (a flame lights powder: the pyromancer's embers and every fire on the floor) */
   bossRing: g => { if (HMH) HMH.onRing(g); }, bossFlash: (x, y) => { if (HMH) HMH.onFlash(x, y); }, bossHawk: () => (HMH && bossActive ? HMH.hawk() : null) });
 HMH = makeHawkMistressHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),

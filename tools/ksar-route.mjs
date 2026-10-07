@@ -6,7 +6,7 @@
 // the leg's foot (a retry, counted); a leg that fails three times is LIFTED past (a teleport, counted and named).
 //   PORT=8704 node tools/ksar-route.mjs [heroes=knight,warden,pyro] [god=0|1] [foes=1|0]   (god=1 foes=0: base movement only - can this hero do the route)
 import { openPage } from './cdp.mjs';
-const heroes = (process.argv[2] || 'knight,warden,pyro').split(','), god = process.argv[3] === '1', foes = process.argv[4] !== '0';
+const heroes = (process.argv[2] || 'knight,warden,pyro').split(','), god = process.argv[3] === '1', foes = process.argv[4] !== '0', LVL = +((process.argv.find(a => a.startsWith('--lvl=')) || '--lvl=0').slice(6));   /* --lvl=N: a hero of level N (BKT.setHeroLevel, no skills) instead of a fresh one */
 const pg = await openPage({ audio: false, fonts: false });
 let bad = 0; const summary = [];
 try {
@@ -14,7 +14,7 @@ try {
     await pg.reload();
     const r = await pg.evalp(`(async()=>{
       const { LEVELS } = await import('/src/level.js'); const TS = 16;
-      BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
+      BK.manualSimulation = true; if (${LVL}) { const P0 = BKT.PROG; BKT.setHeroLevel(${JSON.stringify(hero)}, ${LVL}); P0.skillOwned = P0.skillOwned || {}; P0.loadouts = P0.loadouts || {}; P0.skillOwned[${JSON.stringify(hero)}] = {}; P0.loadouts[${JSON.stringify(hero)}] = []; } BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: !${LVL} }); if (${LVL}) BK.applyUpgrades && BK.applyUpgrades();
       BK.load(LEVELS.findIndex(l => l.id === 'ksar')); BK.state = 'play'; BK.god = ${god}; BK.sim(5);
       if (!${foes}) for (const e of BK.enemies()) if (!e.boss && e.t !== 'hawkmistress') e.alive = false;
       const P = () => BK.P, k = BK.keys, K = () => BK.ksar(), legs = [], DBG = []; let frames = 0, legDmg = {}, lowest = 1, cards = 0;

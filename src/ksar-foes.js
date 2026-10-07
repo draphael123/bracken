@@ -7,8 +7,8 @@
 // snaps onto your spot - step off it), lands a beat, and climbs home. A FLASH (a thrown flask, src/ksar-hands.js) BLINDS it: it flaps blind in place
 // (w.blind), spots nothing, then climbs home. It is a bird: two blows kill it (it is not her hawk - hers is part of her kit and unkillable).
 // Frames (src/redraw/ksar_art.js bakeHawk): 0,1 glide/flap | 2 SHRIEK (wings up, beak open) | 3 STOOP TELL (folded, eye red) | 4 STOOP | 5 on the ground | 6 blind (flailing)
-export const HAWK = { hp: 14, w: 12, h: 10, patrolV: 64, sight: 150, below: 230, shriek: 0.8, circle: 1.1, circleV: 120, diveTell: 0.8, diveV: 300, ground: 0.6, climb: 0.9,
-  cd: 6, blind: 3.2, dmg: 12, earshot: 30, low: 84 };
+export const HAWK = { hp: 14, w: 12, h: 10, patrolV: 64, sight: 150, below: 230, shriek: 0.8, circle: 0.8, circleV: 120, diveTell: 0.8, diveV: 300, ground: 0.6, climb: 0.9,
+  cd: 3, blind: 3.2, dmg: 18, earshot: 30, low: 84 };
 const ev = (a, t, extra) => a.push({ t, ...extra });
 export function newHawk(x0, x1, y) { return { kind: 'hawkscout', x: (x0 + x1) / 2, y, x0, x1, alt: y, home: (x0 + x1) / 2, hp: HAWK.hp, mode: 'patrol', t: 0, dir: 1, face: 1, cd: 1.5, frame: 0, tx: 0, ty: 0, spotted: 0 }; }
 /* w = { px, py, time, hidden (the hero cannot be seen: a roof over him, smoke between), blind (s left blind: set by a flash), ground (the floor's px under the hero) } */
