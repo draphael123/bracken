@@ -3477,7 +3477,7 @@ function updateEliteWatch(e, dt) {
     case 'ekHookTell': e.vx = 0; e.face = Math.sign(d) || e.face; e.ekReach = 6; if (e.modeT <= 0) { e.mode = 'ekHook'; e.modeT = A.hookOut; e.elHit = false; SFX.throwWhoosh(); } break;   /* (the haft turned over, the hook low) */
     case 'ekHook': e.vx = 0; { const k = Math.min(1, 1 - Math.max(0, e.modeT) / A.hookOut); e.ekReach = Math.round(6 + (A.hookReach - 6) * k); e.ekReachLow = true;   /* out along the floor, a reach that GROWS: it gets to you when it gets to you */
         if (!e.elHit && !P.dead && P.ground && Math.sign(P.x - e.x) === (e.face || 1) && Math.abs(P.x - e.x) < e.w / 2 + e.ekReach + 4 && Math.abs(P.y - e.y) < 20) { e.elHit = true;
-          const res = damagePlayer(e.x, eliteDmg(A.hookDmg), { unblockable: true, up: true, who: e, blow: 'the hook' }); if (res === 'hit') { elPull(e, A.hookPull); number(P.x, P.y - 30, 'HOOKED', '#ff6b6b'); } } }
+          const res = damagePlayer(e.x, eliteDmg(A.hookDmg), { unblockable: true, up: true, who: e, blow: 'the hook' }); if (res === 'hit') { elPull(e, A.hookPull); } } }
       if (e.modeT <= 0) { e.ekReach = 0; e.ekReachLow = false; e.mode = 'ekThrustOpen'; e.modeT = A.open; } break;
     case 'ekThrustOpen': e.vx = 0; e.ekReach = 0; e.ekReachLow = false; if (e.modeT <= 0) elDone(e, A.every); break;
     default: eliteDrop(e, A.every); return false; }
@@ -6396,7 +6396,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   const iron = hero() === 'knight' && P.ironT > 0;   /* IRONCLAD: nothing staggers him or stops his swing - and it all still hurts */
   const armoured = iron || (P.atk >= 0 && !P.plunge && (P.heavy || P.heavySwing || isReaper()));
   const plated = isReaper() && !armoured && !P.plunge && CM.inRecovery(P);   /* (claude/dkhero) THE DEATH KNIGHT'S PLATE: the swing's recovery takes x0.75 too (he still flinches and has his mercy window) */
-  if (plated) { dmg = Math.max(1, Math.round(dmg * 0.75)); P.plateFlash = 0.22; number(P.x, P.y - 30, 'PLATE', '#9aa4b8'); SFX.clank(); }
+  if (plated) { dmg = Math.max(1, Math.round(dmg * 0.75)); P.plateFlash = 0.22; SFX.clank(); }
   if (iron) { SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 5); }
   else if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); if (isReaper()) P.plateFlash = 0.22; }
   // and the mercy window comes down: a second and a tenth of nothing-can-touch-you was a reward for failing
@@ -8738,7 +8738,7 @@ function updatePlayer(dt) {
     if (keys.block) { P.cHeld = (P.cHeld || 0) + dt;
       const wardCut = (P.atk >= 0 || P.recSwing) && attacking && !stunned && !dodging && !P.plunge && !P.dashCut && !(P.blastT > 0) && !(P.wardHeld > 0) && CM.swingLeft('reaper', P) <= CM.DK_WARD_CUT;   /* (claude/dkhero) THE WARD CUTS THE LAST 0.25 s OF HIS SWING */
       if (P.cHeld >= WARD_UP && (free || wardCut) && (!attacking || wardCut) && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.novaCd > 0)) {   /* BLOOD WARD: the point in the ground, and the ward stands up in front of it */
-        if (wardCut) { P.atk = -1; P.atkRec = 0; P.heavy = false; P.cutStage = 0; P.swingEndT = time; P.bashing = false; number(P.x, P.y - 30, 'WARD', '#ff6b6b'); }
+        if (wardCut) { P.atk = -1; P.atkRec = 0; P.heavy = false; P.cutStage = 0; P.swingEndT = time; P.bashing = false; }
         if (!(P.wardHeld > 0)) { P.wardHeld = 0.001; P.st = Math.max(0, P.st - WARD_RAISE); P.wardFull = (P.wardG || 0) >= wardCap() - 0.5; SFX.dkWard(); ringAt(P.x + P.face * 12, P.y - 18, 14, '#ff4a5a', 0.3); }
         P.warding = true; P.wardHeld += dt; P.wardKeepT = 3; if (!tal('drainWalk')) P.vx = 0;   /* WARD WALK: the blade comes with him, slowly */
         P.st = Math.max(0, P.st - WARD_HOLD * dt); P.stDelay = ST.delay;
@@ -30297,7 +30297,7 @@ window.BK = { uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toa
       /* (claude/harness) AND EVERYTHING ELSE A FIGHT LEFT BEHIND THAT THE NEXT ONE READS: the fish clock and the move-word cooldowns (both kept in
          absolute time, and both draw on Math.random, the stream a lab seeds per row), the last verbs, the attack-token board, and the once-a-level
          lessons. Measured by tools/lab-order.mjs: before this a seeded lab row came out differently as the second fight in a page. */
-      fishT = 3; for (const k of Object.keys(moveWordAt)) delete moveWordAt[k]; verbs.length = 0; Object.assign(TK, tokenBoard()); emberTaughtIn = null; duckTaughtIn = null; dashAtkShown = 0; bossFx = []; bossBodies = []; rings = []; ripples = []; impacts = []; deathFx = []; lvUpN = 0; if (SFX.resetSteps) SFX.resetSteps(); hushT = 0; slowT = 0; heartT = 0; cricketT = 0; dripT = 0; coinCombo = 0; coinComboT = 0; flyCoins = []; airMotes.length = 0; fish = [];
+      fishT = 3; for (const k of Object.keys(moveWordAt)) delete moveWordAt[k]; verbs.length = 0; Object.assign(TK, tokenBoard(), { on: TK.on });   /* (the board keeps its hooks: foe-react/foe-tactics set board.on.grant once at install, a fresh reset must not wipe them) */ emberTaughtIn = null; duckTaughtIn = null; dashAtkShown = 0; bossFx = []; bossBodies = []; rings = []; ripples = []; impacts = []; deathFx = []; lvUpN = 0; if (SFX.resetSteps) SFX.resetSteps(); hushT = 0; slowT = 0; heartT = 0; cricketT = 0; dripT = 0; coinCombo = 0; coinComboT = 0; flyCoins = []; airMotes.length = 0; fish = [];
     }
     Object.assign(P, { asleep: 0, sleepM: 0, dead: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 0, hurt: 0, vx: 0, vy: 0, plunge: false, atk: -1, onMover: null, dodge: 0, dodgeCd: 0, block: false }); },
   /* (claude/elitemoves) THE ONE-WINDUP CLOCK BACK TO NOUGHT: reset({ fresh }) puts time back to 0 but left lastTellT where the last fight
