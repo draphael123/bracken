@@ -5,6 +5,7 @@
 // main.js calls: reset, on, update, interact, basket, raptorStep, dam, drawWorld, drawHud, read. Every teaching line goes through ctx.number with a
 // line listed in src/hint-lines.js (the hint box). THE GREAT RED CRAB (src/gorge-crab-hands.js) reads the dam's water through dam().
 import { vultureStep } from './desert-foes.js';
+import { youngStep } from './raptor-matriarch.js';   /* (claude/matriarch2) THE MATRIARCH's YOUNG: the cliff raptor's machine, smaller and quicker */
 import { drawIcon } from './ui-hud.js';   /* (claude/uihud) the status icons: a horn, a wave, a parched sun - not the words */
 import * as RGP from './redraw/redgorge_props.js';
 import * as RG2 from './redraw/redgorge2_art.js';   /* the Rapids, the Climb, the nest ledge's ground (claude/redgorge2 art pass) */
@@ -189,6 +190,7 @@ export function makeRedGorgeHands(ctx) {
 
   /* ---------- THE RAPTOR: the vulture's machine, keeping its own bridge ---------- */
   H.raptorStep = (s, w, dt) => {
+    if (s.young) return youngStep(s, w, dt);   /* (claude/matriarch2: her young, called off the nest ledges - src/raptor-matriarch.js) */
     if (s.g0 === undefined) s.g0 = s.groundY;   /* the bridge it keeps */
     if (s.mode === 'circle') { s.groundY = s.g0; if (Math.abs(w.py - s.g0) > RAPTOR.sightY) s.cd = Math.max(s.cd, 0.4); }
     const was = s.mode, out = vultureStep(s, w, dt); for (const v of out) if (v.t === 'hit') v.dmg = RAPTOR.dmg;

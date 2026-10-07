@@ -36,37 +36,49 @@
 //
 // PURE: no DOM, no main.js. The world is a context `c` (src/raptor-matriarch-hands.js binds it). matPlan is the boss lab's HUMAN bot (src/lab.js).
 
+/* (claude/matriarch2, Daniel 10-06 live: "she should be BIGGER", "MORE DIFFICULT", "two or three MORE ATTACKS") SHE IS x MAT.scale: her body, her reach,
+   her marks and her landing boxes are all scaled from the greybox's numbers (the old value is in each comment); the ledge's own geometry (pillars,
+   levers, bridges) is the same - every top still holds her, and every hero still reaches her openings with base movement (B12). Faster: a shorter
+   crouch, rake, scree and dive tell, a quicker stalk and wall run. THREE NEW TOLD MOVES, one a phase (B5): P1 THE FOLLOW-UP (a rake you ROLL away
+   from chains into a pounce at where you rolled - block it and she breathes instead), P2 THE BROOD CALL (two of her YOUNG dart off the nest
+   ledges; she circles the walls till they are down - kill them and she drops to them, guard down), P3 THE FLOOD RIDER (she dives into the cracked
+   dam's water and rides the surge under it - a FOAM LINE runs to your pillar's edge - and bursts out there: be off the edge, or meet her in the
+   air as she comes up; a narrow top she lands on throws her, the level's rule) */
 export const MAT = {
-  hp: 1075, w: 44, h: 34, markH: 56,
+  hp: 1075, scale: 1.35, w: 60, h: 46, markH: 76,   /* (w 44, h 34, markH 56 before claude/matriarch2) */
   openMul: 1.6, openCap: 0.06, beatCap: 0.05, wardT: 3.0,   /* (fix pass: one opening is openCap of her at most, one BEAT - a skid, the breath after her rake - beatCap: the heavy blades were emptying a beat) */
   p2: 0.6, p3: 0.25,
-  walk: 80, keep: 30, turn: 0.35, gap: [0.55, 0.5, 0.45], hopUp: 320, fall: 420,
+  walk: 96, keep: 40, turn: 0.3, hopUp: 320, fall: 420, rest: 0.4,   /* (claude/matriarch2: walk 80, keep 30, turn 0.35; rest = the pause between her moves, 0.5 before) */
   /* P1 */
-  pounceTell: 0.8, pounceLock: 0.45, pounceFly: 0.5, pounceR: 18, pounceArc: 64, skidT: 1.5, skidSlide: 34, closeR: 170, closeT: 0.7,   /* (fix pass: pounceR/diveR 23 -> 18, so a walk-off on a 64 px top clears the mark; a rake or a sweep out of reach CLOSES IN once (closeT s), then kicks scree) */
-  rakeTell: 0.45, rakeT: 0.14, rakeGap: 0.22, rakeReach: 54, rakeBeatT: 0.8, rakeRange: 72,
-  sweepTell: 0.7, sweepT: 0.25, sweepR: 78, sweepH: 22,
-  screeTell: 0.7, screeN: 4, screeV: [170, 250], screeG: 600,
+  pounceTell: 0.72, pounceLock: 0.45, pounceFly: 0.5, pounceR: 22, pounceArc: 72, skidT: 1.4, skidSlide: 34, closeR: 200, closeT: 0.6,   /* (fix pass: pounceR/diveR 23 -> 18, so a walk-off on a 64 px top clears the mark; a rake or a sweep out of reach CLOSES IN once (closeT s), then kicks scree. claude/matriarch2: tell 0.8, R 18, arc 64, skid 1.5, closeR 170, closeT 0.7) */
+  rakeTell: 0.4, rakeT: 0.14, rakeGap: 0.2, rakeReach: 70, rakeBeatT: 0.8, rakeRange: 92,   /* (claude/matriarch2: tell 0.45, gap 0.22, reach 54, range 72) */
+  followTell: 0.5, followLock: 0.3, followFly: 0.42, followAway: 8,   /* P1's NEW MOVE (claude/matriarch2): THE FOLLOW-UP - after her second slash, a hero who ROLLED in the rake (or is followAway px past its reach) is pounced at, the mark where they went */
+  sweepTell: 0.62, sweepT: 0.25, sweepR: 100, sweepH: 24,   /* (claude/matriarch2: tell 0.7, R 78, H 22 - the tail stays low: a jump still clears it) */
+  screeTell: 0.62, screeN: 4, screeV: [170, 250], screeG: 600,   /* (claude/matriarch2: tell 0.7) */
   screechTell: 0.8, raptorCap: 2,
   hornLeap: 0.45, panicFly: 0.42, wobbleT: 0.7, staggerT: 4.2, releaseTell: 0.4, burstT: 1.6,
   /* P2 */
-  wallUp: 0.6, runT: [1.6, 2.6], runV: 150, diveTell: 1.0, diveFly: 0.3, diveR: 18, stunT: 3.2,
+  wallUp: 0.6, runT: [1.3, 2.2], runV: 170, diveTell: 0.9, diveFly: 0.3, diveR: 22, stunT: 3.2,   /* (claude/matriarch2: runT [1.6, 2.6], runV 150, diveTell 1.0, diveR 18) */
   volleyTell: 0.8, quills: 5, quillSpread: 0.2, quillV: 210, perchT: 3.6, toBridge: 0.5, tangleT: 4.5,
+  broodTell: 0.8, broodN: 2, broodT: 9, broodHp: 0.35, broodOff: 240, griefT: 2.0,   /* P2's NEW MOVE (claude/matriarch2): THE BROOD CALL - broodN young off the nest ledges (each broodHp of a cliff raptor's health, off the walls broodOff px either side of you); she circles the walls up to broodT s; both down = she drops to them, GUARD DOWN griefT s */
   /* P3 */
   crackT: 2.5, riseT: 2.0, chainN: 3, chainGap: 0.45, p3StaggerT: 3.2, surgeTell: 1.2, surgeV: 240, surgeEvery: 16,
-  dmg: { pounce: 25, rake: 15, sweep: 17, scree: 16, dive: 26, quill: 14, surge: 14 },
+  riderTell: 0.6, riderV: 190, riderMax: 2.4, riderWait: 0.5, riderOut: 12, riderR: 14, riderH: 44, riderRise: 0.45, riderArc: 40,   /* P3's NEW MOVE (claude/matriarch2): THE FLOOD RIDER - under the water a FOAM LINE runs at riderV to the edge of your top (riderOut px out from it, in the water), boils there riderWait s, and she bursts up: a column riderR px either side, riderH px over the tops */
+  dmg: { pounce: 26, rake: 16, sweep: 18, scree: 16, dive: 27, quill: 14, surge: 14, follow: 24, rider: 26 },   /* (claude/matriarch2: pounce 25, rake 15, sweep 17, dive 26) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
   1: [['pounce', 'rake', 'sweep', 'pounce', 'scree'], ['rake', 'pounce', 'screech', 'sweep', 'pounce'], ['scree', 'pounce', 'rake', 'pounce', 'sweep'], ['pounce', 'sweep', 'rake', 'screech', 'pounce']],
-  2: [['run', 'dive', 'run', 'perch', 'run', 'volley'], ['run', 'dive', 'run', 'dive'], ['run', 'perch', 'run', 'dive', 'run', 'volley'], ['run', 'volley', 'run', 'dive', 'run', 'perch']],   /* (B5, fix pass: a phase's first pass is cycle 1 - the walls' first pass is the run and the dive alone; the perch and the volley come in the second) */
-  3: [['chain', 'rake', 'chain'], ['surge', 'chain', 'rake', 'chain'], ['chain', 'chain', 'rake']],
+  2: [['run', 'dive', 'run', 'perch', 'run', 'brood'], ['run', 'dive', 'run', 'dive'], ['run', 'brood', 'run', 'perch', 'run', 'dive', 'run', 'volley'], ['run', 'volley', 'run', 'dive', 'run', 'perch', 'run', 'brood']],   /* (B5, fix pass: a phase's first pass is cycle 1 - the walls' first pass is the run and the dive alone; the perch and the volley come in the second. claude/matriarch2: THE BROOD CALL opens the second pass) */
+  3: [['chain', 'rider', 'rake', 'chain'], ['surge', 'chain', 'rider', 'chain'], ['rider', 'chain', 'chain', 'rake']],   /* (claude/matriarch2: THE FLOOD RIDER in every pass) */
 };
 /* THE MOVES: the mode while it is told, its mark, the answer (src/marks.js keeps the same rows: tools/raptor-matriarch.mjs holds them equal) */
 export const MOVES = {
   pounceTell: { mark: '!!', answer: 'dodge' }, rakeTell: { mark: '!', answer: 'block' }, sweepTell: { mark: '!!', answer: 'jump' }, screeTell: { mark: '!!', answer: 'above' },
   screechTell: { mark: '!', answer: '' }, diveTell: { mark: '!!', answer: 'dodge' }, volleyTell: { mark: '!!', answer: 'dodge' }, surgeTell: { mark: '!!', answer: 'jump' },
+  followTell: { mark: '!!', answer: 'dodge' }, broodTell: { mark: '!', answer: '' }, riderTell: { mark: '!!', answer: 'dodge' },   /* (claude/matriarch2: the three new moves) */
 };
-export const MOVE_NAME = { pounce: 'HER POUNCE', rake: 'HER TALONS', sweep: 'HER TAIL', scree: 'THE SCREE', dive: 'HER DIVE', quill: 'HER QUILLS', surge: 'THE DEBRIS' };
+export const MOVE_NAME = { pounce: 'HER POUNCE', rake: 'HER TALONS', sweep: 'HER TAIL', scree: 'THE SCREE', dive: 'HER DIVE', quill: 'HER QUILLS', surge: 'THE DEBRIS', follow: 'HER FOLLOW-UP', rider: 'THE FLOOD RIDER' };
 
 /* ---------- THE NEST LEDGE ---------- */
 /* local columns (0..39). The bed is row R (solid; the channel floor you stand on is row R-1); every top (bank or pillar) is solid rows top..R-1
@@ -123,10 +135,13 @@ export function newFight(G) {
 }
 export const mPhase = e => (e.hp <= e.maxHp * MAT.p3 ? 3 : e.hp <= e.maxHp * MAT.p2 ? 2 : 1);
 const BIG = new Set(['staggered', 'stunned', 'tangled', 'pstagger']);
-const BEAT = new Set(['skid', 'rakeBeat']);
-/* OPEN (the big openings the gorge makes; x MAT.openMul) and the BEATS (her guard is down: a blow lands whole from any side) */
+const BEAT = new Set(['skid', 'rakeBeat', 'grieve']);   /* (claude/matriarch2: 'grieve' - down off the wall to her fallen young) */
+/* OPEN (the big openings the gorge makes; x MAT.openMul) and the BEATS (her guard is down: a blow lands whole from any side; claude/matriarch2: and
+   the flood rider's rise out of the water, e.riderAir - meet her in the air) */
 export const matBig = e => !!e && BIG.has(e.mode) && (e.open || 0) > 0;
-export const matBeat = e => !!e && BEAT.has(e.mode);
+export const matBeat = e => !!e && (BEAT.has(e.mode) || (e.mode === 'fly' && !!e.riderAir));
+/* UNDER THE WATER (the flood rider's run): nothing reaches her - a blow says so (B10) */
+export const matUnder = e => !!e && (e.mode === 'submerged' || e.mode === 'riderWait');
 export const matOpen = e => matBig(e) || matBeat(e);
 /* HER GUARD: a blow from in front of her by a hero standing at her height (not above her, not in the air over her) is turned by her talons */
 export const guarded = (e, hx, hy, airborne) => !!e && !matOpen(e) && !(e.broken > 0) && e.mode !== 'sleep' && e.mode !== 'wake' && (e.face || 1) * (hx - e.x) > -6 && !(airborne && hy < e.y - 10) && Math.abs(hy - e.y) < 26;
@@ -135,7 +150,7 @@ const nextScript = S => { const set = CYCLES[S.ph]; return set[S.cycle % set.len
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 const clampX = (G, x) => Math.max(G.x0 + 14, Math.min(G.x1 - 14, x));
 const onFloor = (G, e) => e.y > G.topY + 8;
-function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : 'tell'); }
+function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : 'tell'); }   /* (claude/matriarch2: a new move says its word the first three times) */
 /* a flight from where she is to (tx, ty) over t s, an arc `arc` px high; `then` is the mode she lands in */
 function fly(e, S, tx, ty, t, arc, then) { S.fly = { x0: e.x, y0: e.y, tx, ty, t, t0: t, arc, then }; e.mode = 'fly'; e.modeT = t; }
 function endOpen(e, S, c) { e.open = 0; S.ward = MAT.wardT; S.n.wards++; S.openTaken = 0; c.number(e.x, e.y - 70, 'HER WARD: SHE SHAKES IT OFF', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
@@ -165,6 +180,7 @@ export function stepMatriarch(e, S, dt, h, c) {
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
   stepWater(e, S, dt, c); stepShots(e, S, dt, h, c); stepBands(e, S, dt, h, c);
+  if ((e.mode === 'rakeTell' || e.mode === 'rake') && P && P.dodge && Math.abs(P.x - e.x) < MAT.rakeRange + 30) S.rakeRoll = Math.sign(P.x - e.x) || 1;   /* (claude/matriarch2) she sees the roll she will follow */
   if (S.ph === 3 && S.water >= 1) { S.surgeT -= dt; }
   if (e.mode === 'sleep') return;
   if (e.mode === 'wake') { if (e.modeT <= 0) { S.script = nextScript(S); S.step = 0; setMode(e, 'walk', 0.6); } return; }
@@ -173,7 +189,8 @@ export function stepMatriarch(e, S, dt, h, c) {
   S.wasBroken = 0;
   /* THE PHASES: a new one waits for the blow in hand and never cuts an opening short */
   const want = mPhase(e);
-  if (want > S.ph && !matOpen(e) && (e.mode === 'walk' || e.mode === 'recover' || e.mode === 'wallRun' || e.mode === 'perch')) {
+  if (want > S.ph && !matOpen(e) && (e.mode === 'walk' || e.mode === 'recover' || e.mode === 'wallRun' || e.mode === 'perch' || e.mode === 'circle')) {
+    if (e.mode === 'circle' && c.dismissYoung) c.dismissYoung(); S.broodUp = 0;   /* (claude/matriarch2: a new phase sends her young home) */
     S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want; S.bands = []; S.perch = null;
     if (want === 2) { c.number(e.x, e.y - 70, 'SHE TAKES TO THE CANYON WALLS', '#ff9a5c'); c.sound('screech'); c.music(2); fly(e, S, clampX(G, e.x), G.wallY, MAT.wallUp, 30, 'wallRun'); e.modeT = MAT.wallUp; S.runT = 0.8; return; }
     if (want === 3) { setMode(e, 'crack', MAT.crackT); c.number((G.x0 + G.x1) / 2, G.topY - 100, 'THE DAM CRACKS: GET TO THE PILLARS', '#ff6b6b'); c.sound('crack'); c.shake(6); c.music(3); return; } }
@@ -213,6 +230,15 @@ export function stepMatriarch(e, S, dt, h, c) {
     case 'perch': { const b = S.perch; e.y = G.bridgeY; if (!b || S.bridges[b] !== 'up') { S.perch = null; setMode(e, 'falling', 0); S.n.cuts++; return; }
       if (!S.perchVolley && e.modeT < MAT.perchT * 0.55) { S.perchVolley = 1; if (c.raptors() < MAT.raptorCap) { tell(e, S, c, 'screechTell', MAT.screechTell); S.afterScreech = 'perch'; S.perchLeft = e.modeT; return; } }
       if (e.modeT <= 0) { S.perch = null; fly(e, S, clampX(G, e.x), G.wallY, 0.45, 20, 'wallRun'); S.runT = 1.0; } return; }
+    /* THE BROOD CALL (claude/matriarch2): she circles the walls over her young; both down, she drops to them (a beat: her guard is down); out of time, they go home */
+    case 'circle': { e.y = G.wallY; const want = clampX(G, P.x + (S.runDir || 1) * 110); e.x += Math.sign(want - e.x) * Math.min(Math.abs(want - e.x), MAT.runV * dt); if (Math.abs(want - e.x) < 4) S.runDir = -(S.runDir || 1);
+      e.face = Math.sign(P.x - e.x) || e.face;
+      if (S.broodUp && c.young() === 0) { S.broodUp = 0; S.n.griefs = (S.n.griefs || 0) + 1; const mid = (G.x0 + G.x1) / 2, tx = clampX(G, P.x + (P.x < mid ? 1 : -1) * 72);
+        c.number(e.x, e.y - 50, 'HER YOUNG ARE DOWN: SHE DROPS TO THEM', '#8fd160'); c.sound('screech'); fly(e, S, tx, surfY(G, tx, 4), 0.45, -4, 'grieve'); return; }
+      if (e.modeT <= 0) { S.broodUp = 0; if (c.dismissYoung) c.dismissYoung(); c.number(e.x, e.y - 50, 'HER YOUNG FLY HOME', '#9aa39a'); setMode(e, 'wallRun', 0.6); } return; }
+    case 'grieve': follow(e, S, dt); if (e.modeT <= 0) { fly(e, S, clampX(G, e.x), G.wallY, MAT.wallUp, 30, 'wallRun'); S.runT = 1.0; } return;   /* (B4: a beat stands still) */
+    /* THE FLOOD RIDER (claude/matriarch2): under the water; the FOAM LINE runs to the edge of your top, boils, and she comes up there */
+    case 'submerged': case 'riderWait': stepRider(e, S, dt, P, c); return;
     case 'falling': { e.vy = (e.vy || 0) + 900 * dt; e.y += e.vy * dt; const fy = surfY(G, e.x, 4); if (e.y >= fy) { e.y = fy; e.vy = 0; S.n.tangles++; open(e, S, c, 'tangled', MAT.tangleT); c.number(e.x, e.y - 64, 'THE ROPES PART: SHE IS TANGLED IN THE BRIDGE', '#8fd160'); c.sound('fall'); c.shake(4); } return; }
   }
   stepMove(e, S, dt, P, h, c);
@@ -233,9 +259,13 @@ function nextMove(e, S, P, c) {
   if (m === 'screech' && c.raptors() >= MAT.raptorCap) m = 'scree';
   if (m === 'perch' && S.bridges.A !== 'up' && S.bridges.B !== 'up') m = 'volley';
   if (m === 'surge' && S.ph === 3) { S.surgeT = 0; }
+  if (m === 'brood' && (S.ph !== 2 || c.young() > 0)) m = 'dive';   /* (her young are their own: the screech's cliff raptors do not count against them) */   /* (claude/matriarch2) */
+  if (m === 'rider' && !(S.ph === 3 && S.water >= 1 && topAt(G, e.x, 4))) m = 'chain';
   switch (m) {
     case 'pounce': tell(e, S, c, 'pounceTell', MAT.pounceTell); return;
-    case 'rake': tell(e, S, c, 'rakeTell', MAT.rakeTell); S.rakeN = 0; return;
+    case 'rake': tell(e, S, c, 'rakeTell', MAT.rakeTell); S.rakeN = 0; S.rakeRoll = 0; S.rakeTouch = 0; return;
+    case 'brood': tell(e, S, c, 'broodTell', MAT.broodTell); c.sound('screech'); if (S.n.moves.broodTell <= 3) c.number(e.x, e.y - 50, 'SHE CALLS HER YOUNG OFF THE NEST', '#ffd36b'); return;
+    case 'rider': tell(e, S, c, 'riderTell', MAT.riderTell); if (S.n.moves.riderTell <= 3) c.number(e.x, e.y - MAT.markH - 14, 'SHE RIDES THE SURGE: WATCH THE FOAM', '#7ab8e8'); return;
     case 'sweep': tell(e, S, c, 'sweepTell', MAT.sweepTell); return;
     case 'scree': tell(e, S, c, 'screeTell', MAT.screeTell); return;
     case 'screech': tell(e, S, c, 'screechTell', MAT.screechTell); return;
@@ -249,21 +279,29 @@ function nextMove(e, S, P, c) {
     case 'surge': tell(e, S, c, 'surgeTell', MAT.surgeTell); if (c.raptors() < MAT.raptorCap) for (let i = c.raptors(); i < MAT.raptorCap; i++) { c.spawnRaptor(i % 2 ? G.x1 - 30 : G.x0 + 30, G.topY - 100); S.n.raptors++; }
       c.number(e.x, e.y - 70, "SHE SCREECHES: HER BROOD, AND THE RAPIDS' DEBRIS", '#ff6b6b'); S.n.surges++; return;
   }
-  setMode(e, 'walk', 0.5);
+  setMode(e, 'walk', MAT.rest);
 }
 
 /* THE TOLD BLOWS */
 function stepMove(e, S, dt, P, h, c) {
   const G = S.G, f = e.face || 1;
   switch (e.mode) {
-    case 'pounceTell': if (e.modeT <= MAT.pounceLock && !S.pAt) { S.pAt = { x: P.x }; c.fx('pmark', P.x, surfY(G, P.x, 4)); }   /* HER EYE LOCKS ON: the spot she will land on is marked (her shadow) for the last of the crouch */
-      if (e.modeT <= 0) { const lx = S.pAt ? S.pAt.x : P.x; S.pAt = null; let tx = clampX(G, lx), ty = surfY(G, tx, 4);
+    case 'pounceTell': case 'followTell': { const fol = e.mode === 'followTell';   /* (claude/matriarch2: THE FOLLOW-UP is a quicker pounce, its mark where you rolled) */
+      if (e.modeT <= (fol ? MAT.followLock : MAT.pounceLock) && !S.pAt) { S.pAt = { x: P.x }; c.fx('pmark', P.x, surfY(G, P.x, 4)); }   /* HER EYE LOCKS ON: the spot she will land on is marked (her shadow) for the last of the crouch */
+      if (e.modeT <= 0) { const lx = S.pAt ? S.pAt.x : P.x; S.pAt = null; let tx = clampX(G, lx), ty = surfY(G, tx, 4); S.leapKind = fol ? 'follow' : 'pounce';
         if (S.ph === 3) { const t = topAt(G, lx, 4) || nearestTop(G, lx); tx = t.kind === 'narrow' ? t.cx : clampX(G, Math.max(t.l + 20, Math.min(t.r - 20, lx))); ty = G.topY; S.target = t; }
         else if (!topAt(G, tx, 4) && ty === G.floorY) ty = G.floorY;
-        S.n.pounces++; c.sound('leap'); e.face = Math.sign(tx - e.x) || f; fly(e, S, tx, ty, MAT.pounceFly, MAT.pounceArc, 'land'); } return;
+        S.n.pounces++; if (fol) S.n.follows = (S.n.follows || 0) + 1; c.sound('leap'); e.face = Math.sign(tx - e.x) || f; fly(e, S, tx, ty, fol ? MAT.followFly : MAT.pounceFly, fol ? MAT.pounceArc * 0.7 : MAT.pounceArc, 'land'); } return; }
     case 'rakeTell': if (e.modeT <= 0) { setMode(e, 'rake', MAT.rakeT); S.rakeN = (S.rakeN || 0) + 1; c.sound('slash');
-        c.hit([f > 0 ? e.x : e.x - MAT.rakeReach, f > 0 ? e.x + MAT.rakeReach : e.x, e.y - 34, e.y], MAT.dmg.rake, MOVE_NAME.rake, { blockable: true, key: 'rake' + S.act + '.' + S.rakeN }); } return;
-    case 'rake': if (e.modeT <= 0) { if (S.rakeN < 2) setMode(e, 'rakeTell', MAT.rakeGap); else setMode(e, 'rakeBeat', MAT.rakeBeatT); } return;
+        const got = c.hit([f > 0 ? e.x : e.x - MAT.rakeReach, f > 0 ? e.x + MAT.rakeReach : e.x, e.y - MAT.h, e.y], MAT.dmg.rake, MOVE_NAME.rake, { blockable: true, key: 'rake' + S.act + '.' + S.rakeN });
+        if (got || (f * (P.x - e.x) > -8 && Math.abs(P.x - e.x) < MAT.rakeReach + 6 && Math.abs(P.y - e.y) < 30)) S.rakeTouch = 1; } return;   /* (claude/matriarch2: a slash that found you - or your guard - touched; two that found nothing are a whiff she follows) */
+    case 'rake': if (e.modeT <= 0) { if (S.rakeN < 2) setMode(e, 'rakeTell', MAT.rakeGap);
+        /* THE FOLLOW-UP (claude/matriarch2, phase one): you ROLLED out of her rake, or both slashes found nothing (you stepped out of it) - she pounces where you went. Stand and turn it (or take it), and she breathes */
+        else if (S.ph === 1 && (S.rakeRoll || !S.rakeTouch || Math.abs(P.x - e.x) > MAT.rakeReach + MAT.followAway) && Math.abs(P.y - e.y) < 40 && !S.pending.length && !(S.burst > 0)) { e.face = Math.sign(P.x - e.x) || f; S.rakeRoll = 0; tell(e, S, c, 'followTell', MAT.followTell); c.sound('screech'); if (S.n.moves.followTell <= 3) c.number(e.x, e.y - MAT.markH - 14, 'SHE FOLLOWS YOUR ROLL', '#ff6b6b'); }   /* (B5: sound + word + colour, the !! over her) */
+        else setMode(e, 'rakeBeat', MAT.rakeBeatT); } return;
+    case 'broodTell': e.y = G.wallY; if (e.modeT <= 0) { const n = Math.max(0, MAT.broodN - c.young()); for (let i = 0; i < n; i++) { c.spawnYoung(clampX(G, P.x + (i % 2 ? 1 : -1) * MAT.broodOff), G.wallY + 24); S.n.young = (S.n.young || 0) + 1; }
+        S.n.broods = (S.n.broods || 0) + 1; S.broodUp = n > 0; setMode(e, n > 0 ? 'circle' : 'wallRun', n > 0 ? MAT.broodT : 0.8); } return;   /* (claude/matriarch2) her young come off the nest ledges at either wall */
+    case 'riderTell': if (e.modeT <= 0) { S.n.riders = (S.n.riders || 0) + 1; c.sound('surge'); c.fx('burst', e.x, G.topY + 6); S.rider = { fx: e.x, bx: null, t: MAT.riderMax, k: S.act }; setMode(e, 'submerged', MAT.riderMax); e.y = G.topY + 30; } return;
     case 'sweepTell': if (e.modeT <= 0) { setMode(e, 'sweep', MAT.sweepT); c.sound('sweep'); } return;
     case 'sweep': c.band([e.x - MAT.sweepR, e.x + MAT.sweepR, e.y - MAT.sweepH, e.y + 2], MAT.dmg.sweep, MOVE_NAME.sweep, 'sweep' + S.act, { low: true });
       if (e.modeT <= 0) setMode(e, 'recover', 0.4); return;
@@ -291,7 +329,8 @@ function stepFly(e, S, dt, P, c) {
   e.x = F.tx; e.y = F.ty; S.fly = null; const then = F.then;
   if (then === 'land') {
     c.fx('land', e.x, e.y); c.shake(2);
-    const hitAny = c.hit([e.x - MAT.pounceR, e.x + MAT.pounceR, e.y - 40, e.y + 20], MAT.dmg.pounce, MOVE_NAME.pounce, { key: 'pounce' + S.act, pin: true });
+    const fol = S.leapKind === 'follow'; S.leapKind = null;
+    const hitAny = c.hit([e.x - MAT.pounceR, e.x + MAT.pounceR, e.y - 40, e.y + 20], fol ? MAT.dmg.follow : MAT.dmg.pounce, fol ? MOVE_NAME.follow : MOVE_NAME.pounce, { key: 'pounce' + S.act, pin: true });   /* (the box is her FEET coming down: 40 px high, as the greybox's - a jump over it still clears) */
     if (S.ph === 3) { const t = topAt(G, e.x, 4);
       if (t && t.kind === 'narrow' && !(S.ward > 0)) { S.n.p3Staggers++; S.chain = 0; open(e, S, c, 'pstagger', MAT.p3StaggerT); if (!S.told.p3) c.number(e.x, e.y - 64, 'THE NARROW TOP THROWS HER: STRIKE', '#8fd160'); S.told.p3 = 1; return; }
       if (S.chain > 1 && !hitAny) { S.chain--; tell(e, S, c, 'pounceTell', MAT.chainGap + 0.3); return; }
@@ -303,11 +342,31 @@ function stepFly(e, S, dt, P, c) {
     S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT); if (!S.told.stun) c.number(e.x, e.y - 64, 'SHE SLAMS INTO THE ROCK: STUNNED', '#8fd160'); S.told.stun = 1; return; }
   if (then === 'wobble') { setMode(e, 'wobble', MAT.wobbleT); c.number(e.x, e.y - 64, 'THE NARROW PILLAR THROWS HER', '#8fd160'); c.sound('flap'); return; }
   if (then === 'volleyLand') { c.fx('land', e.x, e.y); setMode(e, 'skid', MAT.skidT); if (!S.told.vbeat) { S.told.vbeat = 1; c.number(e.x, e.y - 60, 'SHE COMES DOWN OFF THE WALL: HER GUARD IS DOWN', '#ffd36b'); } return; }
+  if (then === 'grieve') { c.fx('land', e.x, e.y); setMode(e, 'grieve', MAT.griefT); return; }   /* (claude/matriarch2) down to her fallen young: her guard is down */
+  if (then === 'riderLand') { e.riderAir = 0; c.fx('land', e.x, e.y); c.shake(2); const t = topAt(G, e.x, 4);   /* (claude/matriarch2) up out of the water onto your top: a NARROW one throws her (the level's rule) */
+    if (t && t.kind === 'narrow' && !(S.ward > 0)) { S.n.p3Staggers++; S.n.riderThrows = (S.n.riderThrows || 0) + 1; open(e, S, c, 'pstagger', MAT.p3StaggerT); c.number(e.x, e.y - 64, 'THE NARROW TOP THROWS HER: STRIKE', '#8fd160'); return; }
+    setMode(e, 'recover', 0.5); return; }
   if (then === 'walk' && S.footSay) { S.footSay = 0; c.number(e.x, e.y - 64, 'SHE FINDS HER FOOTING ON THE BROAD ROCK', '#9aa39a'); }
   if (then === 'staggered') { open(e, S, c, 'staggered', MAT.staggerT); c.number(e.x, e.y - 64, 'SHE FALLS INTO THE WATER: STAGGERED', '#8fd160'); c.shake(3); return; }
   if (then === 'wallRun') { setMode(e, 'wallRun', S.runT || 1.2); e.y = G.wallY; return; }
   if (then === 'perch') { setMode(e, 'perch', MAT.perchT); return; }
   setMode(e, 'walk', 0.45);
+}
+/* THE FLOOD RIDER (claude/matriarch2): the FOAM LINE (S.rider.fx, drawn on the water) runs to the edge of the top you stand on - the edge nearer you,
+   riderOut px out in the water - and boils there riderWait s (locked); then she BURSTS up: a column at it, riderH px over the tops (a jump's top clears
+   it), and she rises onto your top (e.riderAir: a beat - a blow from the air lands whole). A narrow top she lands on throws her */
+export function riderSpot(G, x, fx) { const t = topAt(G, x, 2) || nearestTop(G, x); const dl = Math.abs(x - t.l), dr = Math.abs(x - t.r);
+  const left = Math.abs(dl - dr) < 4 ? fx < t.cx : dl < dr; return { t, bx: left ? t.l - MAT.riderOut : t.r + MAT.riderOut, edge: left ? t.l : t.r }; }
+function stepRider(e, S, dt, P, c) {
+  const G = S.G, R = S.rider; if (!R) { setMode(e, 'recover', 0.3); return; }
+  if (e.mode === 'submerged') { R.t -= dt; const sp = riderSpot(G, P.x, R.fx); R.bx = sp.bx; R.top = sp.t;
+    const d = R.bx - R.fx; R.fx += Math.sign(d) * Math.min(Math.abs(d), MAT.riderV * dt); e.x = R.fx;
+    if (Math.abs(R.bx - R.fx) < 2 || R.t <= 0) { R.bx = R.fx; setMode(e, 'riderWait', MAT.riderWait); c.sound('tellHard'); c.fx('boil', R.bx, G.topY); } return; }
+  e.x = R.bx; if (e.modeT > 0) return;
+  c.sound('burst'); c.shake(4); c.fx('burst', R.bx, G.topY);
+  c.hit([R.bx - MAT.riderR, R.bx + MAT.riderR, G.topY - MAT.riderH, G.topY + 30], MAT.dmg.rider, MOVE_NAME.rider, { key: 'rider' + R.k });
+  const t = R.top || nearestTop(G, R.bx), lx = t.kind === 'narrow' ? t.cx : Math.max(t.l + 22, Math.min(t.r - 22, R.bx < t.cx ? t.l + 22 : t.r - 22));
+  S.rider = null; e.x = R.bx; e.y = G.topY + 12; e.riderAir = 1; e.face = Math.sign(lx - R.bx) || e.face; fly(e, S, lx, G.topY, MAT.riderRise, MAT.riderArc, 'riderLand');
 }
 /* the rocks and the quills: they fly, rocks fall and stop on rock, and each hits once */
 function stepShots(e, S, dt, h, c) {
@@ -343,7 +402,7 @@ function matPlan0(s) {
   const lo = G.x0 + 10, hi = G.x1 - 10, clamp = x => Math.max(lo, Math.min(hi, x));
   const myTop = topAt(G, P.x, s.v2 ? 7 : 2), onTop = !!myTop && P.y <= G.topY + 2, wet = channelWet(S) || S.horn || S.pending.length > 0;
   const kx = e.x, side = Math.sign(P.x - kx) || 1, dx = Math.abs(kx - P.x), same = Math.abs(P.y - e.y) < 24;
-  const hitR = reach + MAT.w / 2 - 2, stand = s.tip ? 32 : 16,   /* (the warden stands a little off: her spear measured best at 30 px, claude/redgorge2) */ swing = (fx) => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
+  const hitR = reach + MAT.w / 2 - 2, stand = s.tip ? (s.v2 ? MAT.w / 2 + s.tip : 32) : 16,   /* (the warden stands a little off: her spear measured best at 30 px, claude/redgorge2. claude/matriarch2, v2: s.tip is a NEAR-EDGE distance (src/lab.js WARDEN_TIP) - from her centre it stood the point inside her body, a shaft blow; off her edge it is the tip) */ swing = (fx) => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
   /* A ROLL'S WAY: away from where she lands if there is room (a wall is not room), never off a top into water that is coming; else through under her; else none */
   const rollDir = ax => { const wetNow = channelWet(S) || S.horn || S.pending.length > 0, room = d => (d < 0 ? P.x - lo : hi - P.x), ok = d => room(d) >= 60 && !(wetNow && onTop && !topAt(G, clamp(P.x + d * 60), 2)) && !(S.ph === 3 && !topAt(G, clamp(P.x + d * 60), 2));
     const away = P.x <= ax ? -1 : 1; return ok(away) ? away : ok(-away) ? -away : room(-1) > room(1) ? -1 : 1; };
@@ -374,7 +433,7 @@ function matPlan0(s) {
     if (seen && !miss) {
       if (e.mode === 'pounceTell' && S.ph === 3) { mem.p3From = myTop ? myTop.id : null; if (e.modeT < 0.22 && myTop && dx < 260) { const nb = G.tops.filter(q => q !== myTop && Math.abs(q.cx - myTop.cx) < 110 && q.kind !== 'bank').sort((a, b) => (a.kind === 'narrow') - (b.kind === 'narrow') || Math.abs(a.cx - P.x) - Math.abs(b.cx - P.x))[0];
           if (nb) { out.gx = nb.cx; if (P.ground) out.jump = true; out.why = 'off the narrow top as she comes'; return fin(out); } } out.gx = myTop && myTop.kind === 'narrow' ? myTop.cx : P.x; out.why = 'wait on the top for her pounce'; return fin(out); }
-      if (e.mode === 'pounceTell') { if (S.pAt && Math.abs(P.x - S.pAt.x) < 40) { let d = P.x >= S.pAt.x ? 1 : -1; if ((d < 0 ? P.x - lo : hi - P.x) < 50) d = -d; out.gx = clamp(S.pAt.x + d * 52); out.why = 'off her mark'; return fin(out); } out.gx = P.x; out.why = 'hold still: she leaps where you stand'; return fin(out); }
+      if (e.mode === 'pounceTell' || e.mode === 'followTell') { if (S.pAt && Math.abs(P.x - S.pAt.x) < 40) { let d = P.x >= S.pAt.x ? 1 : -1; if ((d < 0 ? P.x - lo : hi - P.x) < 50) d = -d; out.gx = clamp(S.pAt.x + d * 52); out.why = 'off her mark'; return fin(out); } out.gx = P.x; out.why = 'hold still: she leaps where you stand'; return fin(out); }
       if (e.mode === 'fly' && S.fly && S.fly.then === 'land' && S.ph < 3 && Math.abs(S.fly.tx - P.x) < 46 && P.ground) { if (S.pending.length || S.burst > 0) { out.gx = P.x; out.why = 'the burst will throw her: stay up'; return fin(out); } const d = rollDir(S.fly.tx); if (d) { out.dodge = true; out.gx = clamp(P.x + d * 60); } else out.gx = P.x; out.why = 'late roll out from under her'; return fin(out); }
       if (e.mode === 'fly' && S.fly && S.fly.then === 'diveLand' && Math.abs(S.fly.tx - P.x) < 40 && P.ground) { const d = rollDir(S.fly.tx); if (d) { out.dodge = true; out.gx = clamp(P.x + d * 60); } out.why = 'roll off the dive'; return fin(out); }
       if ((e.mode === 'rakeTell' || e.mode === 'rake') && dx < 80 && same) { if (s.v2 && s.deflect && !s.shield) { out.face = Math.sign(kx - P.x) || 1; out.gx = P.x; if (e.mode === 'rakeTell' && e.modeT < 0.3) { out.block = true; out.tap = true; } out.why = 'v2: deflect the rake on the beat'; return out; }   /* (her deflect is live 0.5 s: tapped as each slash comes) */
@@ -448,7 +507,7 @@ function v2Hands(s, out, q) {
   if (s.deflect && !s.shield && P.ground && S.shots.some(k => k.k === 'rock' && Math.abs(k.x - P.x) < 34 && k.y < P.y && P.y - k.y < 70 && (k.vy || 0) > -40)) {
     out.face = Math.sign(e.x - P.x) || out.face; out.gx = P.x; out.block = true; out.tap = true; out.why = 'v2: deflect the scree'; return out; }
   const F = S.fly;
-  if (F && (F.then === 'land' || F.then === 'diveLand') && S.ph < 3 && P.ground) {
+  if (F && (F.then === 'land' || F.then === 'diveLand') && P.ground) {   /* (claude/matriarch2: phase three too - on a pillar top the roll has no room (safeDir), so it is the jump over her landing: she lands under you, and a narrow top throws her) */
     const R = (F.then === 'land' ? MAT.pounceR : MAT.diveR) + 9, el = F.t0 - F.t, mem = s.mem || {};
     if (mem.leapOf !== F) { mem.leapOf = F; mem.leapRt = 0.18 + (s.rng || Math.random)() * 0.16; }   /* (how late the hands see her leave the ground: 0.18-0.34 s, drawn per leap) */
     const ftx = F.then === 'diveLand' && Number.isFinite(mem.diveX) ? mem.diveX : F.tx;   /* (claude/botreads: the dive lands where its shadow was drawn - remembered, not read off her flight) */
@@ -459,7 +518,7 @@ function v2Hands(s, out, q) {
       if (s.noRoll && F.t <= 0.15 && d) { out.dodge = true; out.gx = clamp(P.x + d * 30); out.why = 'v2: the short step, timed to her landing'; return out; }
       out.gx = d ? clamp(P.x + d * 40) : P.x; out.why = 'v2: off her landing'; return out; } }
   /* HER MARK (the pounce's lock, the dive's shadow): off it to ground a hero can stand on - off the pillar into the dry channel, or to the next top */
-  if (S.ph < 3 && e.mode === 'pounceTell' && S.pAt && Math.abs(P.x - S.pAt.x) < MAT.pounceR + 12) { const gx = spotOff(S.pAt.x, MAT.pounceR + 18);
+  if (S.ph < 3 && (e.mode === 'pounceTell' || e.mode === 'followTell') && S.pAt && Math.abs(P.x - S.pAt.x) < MAT.pounceR + 12) { const gx = spotOff(S.pAt.x, MAT.pounceR + 18);
     if (gx != null) { go(gx); out.why = 'v2: off her mark'; return out; } out.gx = P.x; out.why = 'v2: no room off her mark: jump it'; return out; }
   if (e.mode === 'diveTell' && S.mark) { if (Math.abs(P.x - S.mark.x) >= MAT.diveR + 14) { out.gx = P.x; out.why = 'v2: off the dive mark'; return out; }
     const gx = spotOff(S.mark.x, MAT.diveR + 20); if (gx != null) { go(gx); out.why = 'v2: off the dive mark'; return out; } out.gx = P.x; out.why = 'v2: wait to step her dive'; return out; }
@@ -477,6 +536,15 @@ function v2Hands(s, out, q) {
     const gx = spotOff(b.tx, 30); if (gx != null) { go(gx); out.why = 'v2: off the raptor shadow'; return out; } }
   if (!matOpen(e)) { const b = brood.filter(({ q, v }) => (v.mode === 'perched' || v.mode === 'climb') && Math.abs(q.x - P.x) < s.reach + 10 && Math.abs(q.y - P.y) < 30).map(o => o.q)[0];
     if (b && !/Tell$/.test(e.mode) && e.mode !== 'fly') { out.gx = P.x; out.face = Math.sign(b.x - P.x) || out.face; out.atk = P.atk < 0; out.why = 'v2: cut the raptor on the ground'; return out; } }
+  /* (claude/matriarch2) THE BROOD CALL: while she circles, her young first - to one on the ground (open after its dart) and cut it */
+  if (e.mode === 'circle') { const b = brood.filter(({ v }) => v.mode === 'perched' || v.mode === 'climb').map(o => o.q).sort((a, c) => Math.abs(a.x - P.x) - Math.abs(c.x - P.x))[0];
+    if (b) { if (Math.abs(b.x - P.x) < s.reach + 6 && Math.abs(b.y - P.y) < 30) { out.gx = P.x; out.face = Math.sign(b.x - P.x) || out.face; out.atk = P.atk < 0; out.why = 'v2: cut her young'; return out; }
+      const gx = clamp(b.x + (P.x < b.x ? -1 : 1) * Math.max(8, s.reach - 8)); if (standable(gx)) { go(gx); out.why = 'v2: to her young'; return out; } } }
+  /* (claude/matriarch2) THE FLOOD RIDER: the foam line is seen as it closes on your top (or boils there): off that edge, onto the far side of the top */
+  if (S.rider && (e.mode === 'submerged' || e.mode === 'riderWait') && myTop && onTop) { const R = S.rider, seen = e.mode === 'riderWait' || (R.bx != null && Math.abs(R.fx - R.bx) < 80);
+    if (seen && R.bx != null && Math.abs(P.x - R.bx) < MAT.riderR + 22) { const gx = R.bx < myTop.cx ? Math.min(myTop.r - 8, R.bx + MAT.riderR + 18) : Math.max(myTop.l + 8, R.bx - MAT.riderR - 18);
+      out.gx = gx; out.why = 'v2: off the edge: the foam'; return out; }
+    if (seen) { out.gx = P.x; out.why = 'v2: hold: the foam is not at my edge'; return out; } }
   /* OPEN IN THE CHANNEL WITH THE WATER STILL IN IT (a burst running, the horn, a flood): wait on the rock's edge nearest her, then go down */
   if (matOpen(e) && onTop && myTop && e.y > G.topY + 8 && S.ph < 3 && (S.burst > 0 || S.horn || S.flood || S.pending.length)) { out.gx = clamp(Math.max(myTop.l + 6, Math.min(myTop.r - 6, e.x))); out.why = 'v2: the water first, then down to her'; return out; }
   return null;
@@ -511,3 +579,30 @@ function v2Safe(s, o) {
 /* THE V2 HANDS' LEVER: only with her in the channel NEAR (an opening across the ledge is over before a hero gets there) and not at the horn
    (she has warning then: the natural flood follows, and the opening would be under it) */
 const leverNow = (s, dx) => dx < 280 && !s.S.horn && !s.S.flood;
+
+/* ---------- HER YOUNG (claude/matriarch2, THE BROOD CALL): a reskin of the gorge's cliff raptor (src/desert-foes.js vultureStep's events and modes, so
+   main.js runs, marks and draws it as a raptor: 'raptor|watch' !! - its shadow snaps onto your spot as its eye goes red) - smaller, lower and quicker.
+   It COMES off the nest ledge at a wall, hovers low over you, marks your spot and DARTS there; on the ground after its dart it is open (perched),
+   then climbs back. 'home': it flies back to the nest (the call is over) ---------- */
+export const YOUNG = { alt: 46, circleR: 28, circleT: 2.6, come: 170, watch: 0.65, dartV: 300, perch: 2.0, climb: 0.9, cd: 1.3, sight: 260, w: 16, h: 9, dmg: 9 };
+export function newYoung(x, y, groundY, home) { return { kind: 'vulture', young: true, x, y, home, groundY, mode: 'come', t: 0, a: 0, cd: 0.6, frame: 1, tx: x, ty: groundY }; }
+export function youngStep(e, w, dt) {
+  const out = [], ev = (t, o) => out.push({ t, ...o }); e.t -= dt; e.cd -= dt; if (e.g0 === undefined) e.g0 = e.groundY;
+  switch (e.mode) {
+    case 'come': { e.home = w.px; const tx = e.home, ty = e.groundY - YOUNG.alt, d = Math.hypot(tx - e.x, ty - e.y), v = YOUNG.come * dt; e.frame = 1 + (Math.floor(w.time * 10) % 2);
+      if (d <= v + 1) { e.x = tx; e.y = ty; e.mode = 'circle'; e.a = 0; } else { e.x += (tx - e.x) / d * v; e.y += (ty - e.y) / d * v; } break; }
+    case 'circle': e.home += Math.sign(w.px - e.home) * Math.min(Math.abs(w.px - e.home), 60 * dt); e.a += dt * Math.PI * 2 / YOUNG.circleT; e.x = e.home + Math.cos(e.a) * YOUNG.circleR; e.y = e.groundY - YOUNG.alt + Math.sin(e.a * 2) * 4; e.frame = Math.floor(w.time * 4) % 3;
+      if (e.cd <= 0 && Math.abs(w.px - e.x) < YOUNG.sight) { e.mode = 'watch'; e.t = YOUNG.watch; e.frame = 3; e.tx = w.px; e.ty = w.py; ev('tell', { what: 'dive', mark: 'X', x: e.tx }); }
+      break;
+    case 'watch': if (e.t <= 0) { e.mode = 'dive'; e.frame = 4; e.fx = e.x; e.fy = e.y; e.t = Math.max(0.08, Math.hypot(e.tx - e.x, e.ty - e.y) / YOUNG.dartV); e.t0 = e.t; } break;
+    case 'dive': { const k = 1 - Math.max(0, e.t) / e.t0; e.x = e.fx + (e.tx - e.fx) * k; e.y = e.fy + (e.ty - e.fy) * k;
+      ev('hit', { what: 'dive', mark: 'X', box: [e.x - 7, e.x + 7, e.y - 9, e.y + 2], dmg: YOUNG.dmg });
+      if (e.t <= 0) { e.mode = 'perched'; e.t = YOUNG.perch; e.y = e.ty; e.frame = 5; } break; }
+    case 'perched': if (e.t <= 0) { e.mode = 'climb'; e.t = YOUNG.climb; e.frame = 1; e.cy = e.y; } break;   /* on the ground: open */
+    case 'climb': { const k = Math.min(1, 1 - e.t / YOUNG.climb); e.y = e.cy + (e.groundY - YOUNG.alt - e.cy) * k; e.frame = 1 + (Math.floor(w.time * 8) % 2);
+      if (e.t <= 0) { e.mode = 'circle'; e.cd = YOUNG.cd; e.home = e.x; e.a = 0; } break; }
+    case 'home': { const tx = e.nestX ?? e.x, ty = e.nestY ?? e.y - 200, d = Math.hypot(tx - e.x, ty - e.y), v = YOUNG.come * dt; e.frame = 1 + (Math.floor(w.time * 10) % 2);
+      if (d <= v + 1) { e.gone = true; } else { e.x += (tx - e.x) / d * v; e.y += (ty - e.y) / d * v; } break; }
+  }
+  return out;
+}

@@ -111,6 +111,13 @@ const POSES = {
   perch: { legs: 'stand', tail: 'down', wing: 'half', arm: 'tuck', head: [54, 19], crest: 1, flare: 1, beak: 0.1 },
   volley: { legs: 'stand', tail: 'fan', wing: 'spread', arm: 'guard', head: [55, 19], pitch: -3, crest: 1, beak: 0.9, flare: 1, crestUp: true },
   crack: { legs: 'stand', dy: -1, tail: 'up', wing: 'half', arm: 'guard', head: [50, 13], pitch: -8, beak: 1, crest: 1, flare: 2, crestUp: true },
+  /* (claude/matriarch2) THE NEW MOVES' POSE KEYS - stand-ins built from the poses above until the MATRIARCH2 ART lane draws them (keep the keys) */
+  follow: { dy: 6, pitch: 4, head: [62, 36], legs: 'crouch', tail: 'up', wing: 'spread', arm: 'rake', crest: 0.6, eye: P.red, beak: 0.6 },   /* THE FOLLOW-UP's crouch: twisted after your roll, wings out */
+  broodcall: { legs: 'cling', by: 42, tail: 'fan', wing: 'spread', arm: 'guard', head: [50, 16], pitch: -6, beak: 1, crest: 1, flare: 2, crestUp: true },   /* THE BROOD CALL: on the wall, head back */
+  circle: { dy: 0, by: 42, legs: 'cling', tail: 'flat', wing: 'half', arm: 'rake', head: [58, 26], crest: 0.8, beak: 0.4 },   /* circling the walls over her young */
+  grieve: { dy: 6, pitch: 7, head: [62, 46], legs: 'brace', tail: 'flat', wing: 'drop', arm: 'tuck', crest: 0.3, beak: 0.2, flare: 0 },   /* down to her fallen young: head low, guard down */
+  riderTell: { dy: 10, pitch: 8, head: [62, 44], legs: 'crouch', tail: 'up', wing: 'back', arm: 'tuck', crest: 0.2, eye: P.red },   /* THE FLOOD RIDER: coiled to dive into the water */
+  riderBurst: { dy: -4, by: 38, pitch: -6, head: [56, 20], legs: 'air', tail: 'fan', wing: 'spread', arm: 'rake', crest: 1, beak: 1, flare: 2, crestUp: true },   /* bursting up out of the water */
 };
 /* pose frames, flipped copies and white hit-flash copies, baked once */
 let CAST = null;
@@ -122,10 +129,11 @@ export function bakeMatriarch() {
 export function poseOf(e, S, t) {
   const m = e.mode;
   if (m === 'sleep') return 'sleep'; if (m === 'wake') return 'wake';
-  if (m === 'pounceTell') return 'crouch'; if (m === 'skid') return 'skid'; if (m === 'rakeTell') return 'rakeTell'; if (m === 'rake') return 'rake'; if (m === 'rakeBeat') return 'rakeTell';
+  if (m === 'pounceTell') return 'crouch'; if (m === 'followTell') return 'follow'; if (m === 'broodTell') return 'broodcall'; if (m === 'circle') return 'circle'; if (m === 'grieve') return 'grieve'; if (m === 'riderTell') return 'riderTell'; if (m === 'skid') return 'skid'; if (m === 'rakeTell') return 'rakeTell'; if (m === 'rake') return 'rake'; if (m === 'rakeBeat') return 'rakeTell';
   if (m === 'sweepTell') return 'sweepTell'; if (m === 'sweep') return 'sweep'; if (m === 'screeTell') return 'screeTell'; if (m === 'screechTell' || m === 'surgeTell') return 'screech';
   if (m === 'wobble' || m === 'pstagger') return 'wobble'; if (m === 'staggered' || m === 'stunned' || m === 'tangled' || m === 'falling') return 'down';
   if (m === 'wallRun') return 'wall'; if (m === 'diveTell') return 'divetell'; if (m === 'volleyTell') return 'volley'; if (m === 'perch' || m === 'perched') return 'perch'; if (m === 'crack') return 'crack';
+  if (m === 'fly' && e.riderAir) return 'riderBurst';
   if (m === 'fly') { const f = S && S.fly; return f && f.then === 'diveLand' ? 'dive' : 'leap'; }
   return Math.floor(t * 5) % 2 ? 'walkA' : 'walkB';
 }
