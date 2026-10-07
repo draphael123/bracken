@@ -20,6 +20,7 @@ const ACROSS = 5, VW = 320, VH = 180, TS = 16, SPRITE = 32;
 /* GAPS IN THE MODEL, each with its reason. Not levels that are wrong: rides the fill cannot follow with a shorter jump. */
 const MODEL_GAPS = {
   wood: [[510, 8, 'the wasp pogo over the last pit: the fill has no landing lower than a jump starts, so it never comes down off a wasp (its twin at 453,14 was thinned out with the rest, claude/checkpoints 2026-09-29)']],
+  glasssea: [[165, 33, "the reach fill has no SLIDE: THE GLASS SEA's whole first section is the 6-tile slide gap (run down the glass dune at the sprint, jump at the lip - every hero falls in with a plain run jump and clears it with the slide, measured by tools/glasssea.mjs), and the fill stops at column 47 for a 5- or 6-column jump alike; every checkpoint past it is a model gap, not a level fault"], [300, 33, 'the same slide gap'], [446, 33, 'the same slide gap'], [600, 30, 'the same slide gap']],
   oreroad: [[470, 12, "a real breakable wall (src/breakable-walls.js) stands solid at column 468, between THE DRUM YARD's fight and this checkpoint, until struck - the fill has no pick, so it can never get past it. A player does: tools/ore-exam.mjs pins the wall is there and opens for real, and it resets on death (wallsMendAll), so the checkpoint stays genuinely gated by it every attempt"]],
 };
 /* THE RULE BITES: a made-up flight arena with a lantern under its floor, one far below it, one inside it */
