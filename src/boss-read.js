@@ -62,6 +62,7 @@ export const TURN_WORD = {
   gargoyle: TURN.STONE,                                     // stone until he lies on the spikes
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
+  hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'HER GAUNTLET'),   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
 };
 const COL = '#d8e2ee', RING = '#eef4ff';
 

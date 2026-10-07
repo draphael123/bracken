@@ -24,10 +24,10 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/hawk-mistress-hands.js binds it). hmPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const HM = {
-  hp: 1150, w: 16, h: 30, markH: 48,
+  hp: 1400, w: 16, h: 30, markH: 48,
   openMul: 1.6, openCap: 0.07, openT: 3.6, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80,
   p2: 0.6, p3: 0.25, desp: 0.12,
-  walk: 64, keep: 50, turn: 0.4, gap: [0.6, 0.5, 0.42],
+  walk: 70, keep: 50, turn: 0.35, gap: [0.5, 0.42, 0.36],
   lashTell: 0.55, lashT: 0.16, lashReach: 86, lashH: 16, lashRange: 110,
   feintTell: 0.42, feintHold: 0.24, cutTell: 0.34, cutT: 0.14, cutReach: 34, cutStep: 110,
   spotTell: 0.9, markLashTell: 0.65, markR: 22,
@@ -36,7 +36,7 @@ export const HM = {
   flashTell: 0.85, flashR: 62,
   hawkAlt: 74, hawkR: 30,
   fireW: 3, fireTick: 0.5, roofEvery: 4.0,
-  dmg: { lash: 18, cut: 20, markLash: 22, dive: 22, flash: 16, fire: 6 },
+  dmg: { lash: 27, cut: 30, markLash: 32, dive: 32, flash: 22, fire: 8 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
@@ -298,6 +298,8 @@ export function hmPlan(s) {
       if (g && Math.abs(g.x - kx) < 260) { out.gx = clamp(g.x + (kx > g.x ? 10 : -10)); if (Math.abs(P.x - g.x) < 18 && dx < PLAN.ringR + 60 && !roll('ring' + Math.floor(t / 3), PLAN.missRing)) { out.talk = true; out.face = Math.sign(g.x - P.x) || 1; out.why = 'ring the gong: the hawk is up'; } else out.why = 'to a gong'; return out; } }
     const r = racks.filter(q => q.n > 0).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
     if (r && (S.ph >= 2 || !free.length)) { out.gx = r.x; if (Math.abs(P.x - r.x) < 10 && P.ground) { out.talk = true; out.why = 'take a flask'; } else out.why = 'to a flask rack'; return out; } }
+  /* 5b. WINDED (the lab's stamina rest): off her, out of her whip's reach, until the bar is back */
+  if (s.rest) { out.gx = safeX(kx + side * (HM.lashReach + 40)); out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off her'; return out; }
   /* 6. FIGHT HER: her back when she turns from you; from a jump over her gauntlet (B11) */
   if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) { swing(kx); out.gx = P.x; out.why = 'cut her back'; return out; }
   if (/Tell$/.test(e.mode) && e.mode !== 'lashTell' && e.mode !== 'cutTell' && dx < hitR + 2 && same) { swing(kx); out.gx = P.x; out.why = 'cut her in her tell'; return out; }

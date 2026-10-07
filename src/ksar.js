@@ -80,14 +80,14 @@ export function buildKsar({ painter, T, TS }) {
   /* THE FIRST KEG (TEACH, THROW, safe): a stack on the road, and THE BRICKED ARCH in the wall's foot (the old caravan gate, a seal behind it) */
   stack('roadKegs', 56, B - 1, 'keg', 3);
   sign(58, B - 1, 'POWDER KEGS: E TAKES ONE, ATTACK THROWS IT. IT BREAKS BRICK.');
-  boards(63, 65, 32); boards(66, 68, 30);                                        /* the stair up the outer wall (two-row steps) */
+  boards(60, 66, 32); boards(64, 70, 30); boards(68, 71, 28);                    /* the stair up the outer wall (two-row steps, overlapping: up through each) */
 
   // ================= 2. THE OUTER WALLS (72-231): TEST - cut under a lookout's eye; the hawk; the planted sentry =================
   block(72, 231, WW, H - 1);                                                     /* the outer wall: its walk is row 28 */
   air(73, 79, 30, B - 1); barricade('arch', 72, 72, 30, B - 1); interiors.push([73, 79, 30, B - 1, 'ksVault']); seal(77, B - 1);   /* SEAL ONE behind the bricked arch */
   decor.push({ kind: 'parapet', x0: 72, x1: 231, y: WW });
   /* TOWER TWO (a seal and a silver on its top: a climb off the walk) */
-  boards(93, 95, 25); block(97, 102, 22, WW - 1); seal(99, 21); ent('silver', 101, 21);
+  boards(92, 94, 26); boards(95, 96, 24); block(97, 102, 22, WW - 1); seal(99, 21); ent('silver', 101, 21);   /* (it stands on the walk: the way on is over it) */
   /* THE WALL HUT (its sleepers answer gong two) */
   hut(108, 122, 22, WW);
   blade(112, WW - 1, 'wallHut', { ks: 'reserve', face: 1 }); blade(117, WW - 1, 'wallHut', { ks: 'reserve', face: -1 });
@@ -100,9 +100,9 @@ export function buildKsar({ painter, T, TS }) {
   sign(146, WW - 1, 'HER HAWKS WATCH THE WALLS: A FLASK BLINDS ONE.');
   stack('wallFlasks', 148, WW - 1, 'flask', 2);
   /* TOWER THREE: a wall slinger on its top (THE RANGED ONE); its top drops onto the sentry's ledge */
-  block(158, 164, 21, WW - 1); slinger(161, 20, 'towerSling', { face: -1 }); boards(155, 157, 24);
+  block(158, 164, 21, WW - 1); slinger(161, 20, 'towerSling', { face: -1 }); boards(152, 154, 26); boards(155, 157, 24);   /* (over it, as tower two) */
   ent('check', 168, WW - 1);                                                     /* CHECKPOINT ONE, at tower three's foot */
-  boards(166, 186, 24);                                                          /* the ledge over the sentry: drop in behind him */
+  boards(165, 186, 24);                                                          /* the ledge over the sentry: drop in behind him */
   /* THE SHIELD SENTRY, PLANTED before gong three (he rings it himself on the alarm): go round him - over the ledge, or a jump - to its rope */
   sentry(180, WW - 1, 'g3Sentry', 'g3', { face: -1 }); gong('g3', 183, WW - 1, { ear: 20 });
   whip(196, WW - 1, 'wallWhip', { face: -1 });                                   /* the first whip apprentice: his lash pulls you */
@@ -156,15 +156,15 @@ export function buildKsar({ painter, T, TS }) {
   block(441, 456, 17, 18); barricade('storeArch', 443, 444, 19, 24);            /* THE BRICKED ARCH under the store's overhang */
   /* THE ROOF SQUAD (the short chain's victims) and the store's cellar under its weak roof (a seal) */
   blade(411, 24, 'roofSquad', { face: -1 }); smoke(414, 24, 'roofSquad'); blade(419, 24, 'roofSquad', { face: -1 });
-  air(417, 430, 26, 31); interiors.push([417, 430, 26, 31, 'ksCellar']); for (let x = 422; x <= 426; x++) weak.push([x, 25]);
-  seal(427, 31); boards(421, 423, 28); boards(418, 420, 29);
+  air(417, 430, 26, 31); interiors.push([417, 430, 26, 31, 'ksCellar']); for (let x = 423; x <= 425; x++) weak.push([x, 25]);   /* (three tiles: a hole a hero leaps, or drops into) */
+  seal(427, 31); boards(419, 421, 29); boards(423, 425, 27);   /* the ledges back up out of the cellar, through the hole */
   hawk(396, 458, 11, 'storeHawk');
 
   // ================= 6. THE HAWK TOWER ROOFS (446-583): THE EXAM - THE WHOLE FORT WAKES =================
   block(445, 458, 25, H - 1); boards(456, 458, 22);                              /* past the arch: the roof, and a step up */
   block(459, 499, 19, H - 1);                                                    /* ROOF ONE (row 19) */
   lookout(470, 18, 'roofLookoutA', 'roofA', { patrol: [464, 476], face: 1 }); gong('roofA', 480, 18, { ear: 26, earY: 10 });
-  block(492, 496, 15, 18); slinger(494, 14, 'parapetSling', { face: 1 });        /* the parapet and its slinger */
+  boards(487, 489, 17); boards(491, 496, 15); slinger(494, 14, 'parapetSling', { face: 1 });   /* the parapet (a walk on posts over the roof) and its slinger */
   ent('check', 486, 18);                                                         /* CHECKPOINT FOUR */
   block(500, 539, 21, H - 1);                                                    /* ROOF TWO (row 21) */
   boards(497, 526, 17); seal(525, 16);                                           /* the high ledge over the sentry: SEAL FIVE at its end */
@@ -181,7 +181,6 @@ export function buildKsar({ painter, T, TS }) {
   ent('silver', 571, B - 1); ent('ksvault', 575, B - 1, { id: 'strongroom' });
   sign(578, B - 1, 'THE STRONGROOM. FIVE CARAVAN SEALS OPEN ITS DOOR.');
   ent('check', 581, B - 1);                                                      /* CHECKPOINT FIVE, at the courtyard door */
-  boards(576, 578, 24); boards(579, 581, 28);                                    /* (ledges down the shaft: a hero may come down them or drop) */
 
   // ================= THE HAWK-MISTRESS's COURTYARD (src/hawk-mistress.js) =================
   const AX = 584;

@@ -21,7 +21,7 @@ import { STUCK_HANDS } from './stuck-spots.js';
    blow on a foe / on you; flashR: px a flash blinds in (a hawk) / stunR: stuns a bandit in; stunT; smokeR / smokeT: a cloud; potDmg: a smoke pot's knock;
    lashReach: the whip apprentice's lash; pull: px/s it pulls you; brakeR: tiles from the winch a gatehouse man holds the brake; dropT: s a braked gate drops a notch;
    haulCd: s between hauls; refill: s a stack takes to put one back */
-export const KS = { hum: 4, muster: 3.2, callV: 82, sight: 150, sightY: 40, runV: 96, strikeT: 1.0, patrolV: 30, kegFuse: 0.9, kickFuse: 1.4, chainFuse: 0.55,
+export const KS = { hum: 4, muster: 3.2, callV: 82, sight: 150, sightY: 40, runV: 96, strikeT: 1.0, patrolV: 30, kegFuse: 0.9, kickFuse: 1.4, chainFuse: 0.45,
   kegR: 46, breakR: 62, chainR: 150, kegDmg: 60, kegHero: 22, flashR: 84, stunR: 52, stunT: 1.6, smokeR: 44, smokeT: 6, potDmg: 6, lashReach: 62, pull: 170,
   brakeR: 3, dropT: 1.1, haulCd: 0.32, refill: 8, gongR: 20, takeR: 18 };
 CT.addKind('keg', { aims: { low: { vx: 70, vy: -120 }, mid: { vx: 125, vy: -190 }, high: { vx: 95, vy: -300 } }, g: 700, r: 4, ring: 12, dots: 14 });
@@ -213,7 +213,7 @@ export function makeKsarHands(ctx) {
       if (near) { b.broken = true; K.n.broken++; for (let cy = b.y0; cy <= b.y1; cy++) for (let cx = b.x0; cx <= b.x1; cx++) { ctx.cellOpen(cx, cy); ctx.burst(cx * ts + 8, cy * ts + 8, 4, ['#b08a5a', '#7a5a3a', '#e0c090'], 70, 0.7); }
         say(x, y - 40, 'THE BRICK GIVES: THE ARCH IS OPEN', '#8fd160'); } }
     for (const w of K.weak) if (!w.broken && Math.hypot(w.x * ts + 8 - x, w.y * ts + 8 - y) < KS.breakR) { w.broken = true; ctx.cellOpen(w.x, w.y); ctx.burst(w.x * ts + 8, w.y * ts + 4, 5, ['#b08a5a', '#7a5a3a'], 60, 0.6); if (once('roofHole')) say(x, y - 40, 'THE ROOF IS HOLED: A CELLAR UNDER IT', '#ffd36b'); }
-    for (const k of K.setKegs) if (k.st === 'set' && Math.hypot(k.x * ts + 8 - x, (k.y + 1) * ts - 6 - y) < KS.chainR) { k.st = 'lit'; k.t = KS.chainFuse * (1 + Math.hypot(k.x * ts + 8 - x, 0) / KS.chainR * 0.6); k.by = 'chain'; }
+    for (const k of K.setKegs) if (k.st === 'set' && Math.hypot(k.x * ts + 8 - x, (k.y + 1) * ts - 6 - y) < KS.chainR) { k.st = 'lit'; k.t = KS.chainFuse; k.by = 'chain'; }
     for (const q of K.items) if (q.thrKind === 'keg' && (q.state === 'lie') && Math.hypot(q.x - x, q.y - y) < KS.chainR * 0.5) { q.state = 'fuse'; q.fuse = KS.chainFuse; }
   }
   /* THE FLASH: a hawk in reach is blinded (a scout, or hers), bandits close by are stunned, and a puff of smoke is left */
@@ -246,7 +246,7 @@ export function makeKsarHands(ctx) {
     if (st) { if (st.left <= 0) { say(st.x * ts + 8, st.y * ts - 20, st.kind === 'keg' ? 'THE STACK IS EMPTY: WAIT' : 'THE RACK IS EMPTY: WAIT', '#9aa39a'); return true; }
       st.left--; st.t = KS.refill; const q = newItem(P, st.kind); K.items.push(q); P.carry = q; ctx.sfx.clank && ctx.sfx.clank();
       if (once('take' + st.kind)) say(P.x, P.y - 34, st.kind === 'keg' ? 'A POWDER KEG: ATTACK THROWS IT - UP LOBS, DOWN TOSSES SHORT' : 'A FLASH FLASK: ATTACK THROWS IT', '#ffd36b'); return true; }
-    const G = K.gate; if (G && Math.abs(G.winch[0] * ts + 8 - P.x) <= 22 && Math.abs((G.winch[1] + 1) * ts - P.y) <= 18) { haul(P); return true; }
+    const G = K.gate; if (G && Math.abs(G.winch[0] * ts + 8 - P.x) <= 28 && Math.abs((G.winch[1] + 1) * ts - P.y) <= 18) { haul(P); return true; }
     const v = K.vault.find(q => !q.open && Math.abs(q.x * ts + 8 - P.x) <= 30 && P.y > q.y0 * ts && P.y <= (q.y1 + 2) * ts);
     if (v) { if (ctx.questGot() >= v.seals) openVault(v); else say(P.x, P.y - 34, 'THE STRONGROOM WANTS FIVE CARAVAN SEALS', '#9aa39a'); return true; }
     return false;
@@ -255,7 +255,7 @@ export function makeKsarHands(ctx) {
   /* THE GATE WINCH */
   const squad = () => ctx.enemies().filter(e => e.alive && e.ks && e.ks.role === 'gatehouse');
   function braked() { const G = K.gate, ts = TS(); if (!G) return false; const [r0, r1, y0, y1] = [G.room[0], G.room[1], G.room[2], G.room[3]];
-    return squad().some(e => (e.x >= r0 * ts && e.x <= (r1 + 1) * ts && e.y >= y0 * ts && e.y <= (y1 + 2) * ts) || (Math.abs(e.x - (G.winch[0] * ts + 8)) <= KS.brakeR * ts && Math.abs(e.y - (G.winch[1] + 1) * ts) < 24)); }
+    return squad().some(e => (e.ks.st !== 'exit' && e.x >= r0 * ts && e.x <= (r1 + 1) * ts && e.y >= y0 * ts && e.y <= (y1 + 2) * ts) || (e.ks.st !== 'called' && e.ks.st !== 'exit' && Math.abs(e.x - (G.winch[0] * ts + 8)) <= KS.brakeR * ts && Math.abs(e.y - (G.winch[1] + 1) * ts) < 24)); }   /* (a man called off it lets go: one running past the winch does not hold it) */
   H.braked = () => !!K && braked();
   function haul(P) { const G = K.gate, ts = TS();
     if (G.pinned) { say(P.x, P.y - 34, 'THE GATE IS PINNED UP', '#9aa39a'); return; }
@@ -280,7 +280,7 @@ export function makeKsarHands(ctx) {
     /* A BLADE ON A GONG CUTS ITS ROPE; A BLOW ON A SET KEG LIGHTS IT */
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.atk >= 0)) return; const hb = ctx.attackBox(); if (!hb) return;
       for (const g of K.gongs) if (!g.cut && ctx.overlap(hb, { l: gx(g) - 10, r: gx(g) + 10, t: gy(g) - 46, b: gy(g) - 6 })) cut(g);
-      for (const k of K.setKegs) if (k.st === 'set' && ctx.overlap(hb, { l: k.x * ts + 2, r: k.x * ts + 14, t: (k.y + 1) * ts - 14, b: (k.y + 1) * ts })) { k.st = 'lit'; k.t = KS.kickFuse; k.by = 'kick'; K.n.kicks++; ctx.sfx.hiss && ctx.sfx.hiss();
+      for (const k of K.setKegs) if (k.st === 'set' && ctx.overlap(hb, { l: k.x * ts - 2, r: k.x * ts + 18, t: (k.y + 1) * ts - 16, b: (k.y + 1) * ts })) { k.st = 'lit'; k.t = KS.kickFuse; k.by = 'kick'; K.n.kicks++; ctx.sfx.hiss && ctx.sfx.hiss();
         say(k.x * ts + 8, k.y * ts - 18, 'THE FUSE IS LIT: GET CLEAR', '#ff6b6b'); } });
     for (const k of K.setKegs) if (k.st === 'lit') { k.t -= dt; if (k.t <= 0) { k.st = 'spent'; blast(k.x * ts + 8, (k.y + 1) * ts - 6, k.by === 'chain' ? 'chain' : 'kick'); } }
     /* THE GATE: braked, a raised gate drops a notch at a time until it is pinned */

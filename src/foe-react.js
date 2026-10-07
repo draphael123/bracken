@@ -33,7 +33,7 @@ export const ACTS = [
   { act: 2, name: 'THE CRAGS', cap: 2, dmg: 1.1, mashAt: 3, levels: ['scree', 'underleaf', 'hanging', 'spire', 'moor', 'skyroad', 'oreroad', 'storm', 'crown', 'undercrown'] },
   { act: 3, name: 'THE SEA', cap: 2, dmg: 1.2, mashAt: 2, levels: ['longwater', 'reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor'] },
   { act: 4, name: 'THE OLD KINGDOM', cap: 2, dmg: 1.25, mashAt: 2, levels: ['waymeet', 'canal', 'theatre', 'fair', 'fields', 'burial', 'witchlight', 'mage', 'unburied', 'fallingtower'] },
-  { act: 5, name: 'THE DESERT', cap: 3, dmg: 1.3, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea'] },
+  { act: 5, name: 'THE DESERT', cap: 3, dmg: 1.3, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea', 'ksar'] },
 ];
 /* a level not in the table (a new one, a trial, the shop) takes the act of its depth on the gate chain, else act 1 */
 const DEPTH_ACT = [[29, 5], [21, 4], [12, 3], [5, 2], [0, 1]];

@@ -20,7 +20,7 @@ import { puppetPlan } from './puppeteer.js';
 import { queenPlan, qOpen } from './cistern-queen.js'; import { glPlan, glOpen } from './gang-leader.js'; import { djinnPlan, djOpen } from './djinn.js';   /* (claude/welltown5) THE DJINN OF THE GREAT WELL: the bot works the skin on him, the crank and his hand */   /* THE CISTERN QUEEN and THE GANG LEADER (claude/welltown3): the bot reads their tells off their own modules, and works the skin */
 import { rocEyriePlan } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad): the bot rides the thermals and plunges, waits out her dive on the nest, turns the storm's stone */
 import { matPlan, matOpen } from './raptor-matriarch.js';   /* THE RAPTOR MATRIARCH (claude/redgorge2): the bot reads her tells, the water and the levers off her own module */
-import { colPlan, colOpen } from './glass-colossus.js';   /* THE GLASS COLOSSUS (claude/glasssea): the bot reads its tells, the lance's end and the mirrors off its own module, turns the mirrors and climbs */
+import { colPlan, colOpen } from './glass-colossus.js'; import { hmPlan, hmOpen } from './hawk-mistress.js';   /* THE HAWK-MISTRESS (claude/ksar): the bot reads her tells, the hawk, the runners and the courtyard's gongs and racks off her own module */   /* THE GLASS COLOSSUS (claude/glasssea): the bot reads its tells, the lance's end and the mirrors off its own module, turns the mirrors and climbs */
 import { gorgeCrabPlan, crabOpen } from './gorge-crab.js';   /* THE GREAT RED CRAB (claude/redgorge): the bot reads his tells, the dam's water and his channel off his own module, and works the sluice gate */
 import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
@@ -603,7 +603,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='greenteeth'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1322,6 +1322,25 @@ async function runbossLab(BK, opts) {
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(OPEN(boss,BK)&&!wasOpen)opened++;wasOpen=!!OPEN(boss,BK);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:djOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='hawkmistress'){
+        /* THE HAWK-MISTRESS (claude/ksar): src/hawk-mistress.js hmPlan reads what a player sees - her tells, the hawk's mark and its shadow, the runner on the wall walk, the
+           courtyard's gongs and flask racks - and works THE RULE: it rings a gong while the hawk is up, cuts the rope her guard runs for, takes a flask and throws it at
+           the hawk; it cuts her open, her back, and from a jump over her gauntlet. It rests inside its own branch (off her, still working the gongs) */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const HH=BK.hawkMistressHands(),S=HH&&HH.show(),KSX=BK.ksar?BK.ksar():null;
+        if(f===0||!P.labHmMem)P.labHmMem={};
+        const gongs=KSX?KSX.gongs.filter(g=>g.arena).map(g=>({id:g.id,x:g.x*16+8,cut:g.cut,hum:g.hum})):[],racks=KSX?KSX.stacks.filter(q=>q.arena).map(q=>({id:q.id,x:q.x*16+8,n:q.left})):[];
+        const pl=S?hmPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,carry:!!(P.carry&&P.carry.t==='ksflask')},e:boss,S,gongs,racks,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHmMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):true;
+        if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
+        if(pl.atk&&(P.atk<0||P.carry)){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(hmOpen(boss)&&!wasOpen)opened++;wasOpen=hmOpen(boss);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:hmOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='gangleader'){
         /* THE GANG LEADER (claude/welltown3): src/gang-leader.js glPlan - his tells a quarter-second late (some misread), a bottle struck back when it comes in

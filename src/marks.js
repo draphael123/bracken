@@ -73,6 +73,7 @@ export const BY_HAND = {
   'gorgecrab|pinchTell':'!','gorgecrab|crushTell':'!!','gorgecrab|boulderTell':'!!','gorgecrab|scuttleTell':'!!',
   'matriarch|pounceTell':'!!','matriarch|rakeTell':'!','matriarch|sweepTell':'!!','matriarch|screeTell':'!!','matriarch|screechTell':'!','matriarch|diveTell':'!!','matriarch|volleyTell':'!!','matriarch|surgeTell':'!!',   /* THE RAPTOR MATRIARCH (claude/redgorge2, by hand: src/raptor-matriarch.js MOVES) - ! the shield turns the rake (and the screech throws nothing a shield must turn); !! the pounce, the sweep, the scree, the dive, the quills, the surge */   /* THE GREAT RED CRAB (claude/redgorge, by hand: src/gorge-crab.js on the desert engine) - ! the shield turns the pinch; X move: the crush, the boulder, the scuttle */
   'scorpion|clawTell':'!','scorpion|tailTell':'!!','sandgob|knifeTell':'!','vulture|watch':'!!',   /* THE SUNKEN CARAVAN (desert-foes.js, by hand): the claw and the knife a shield turns; the sting over its back and the vulture's dive nothing does */
+  'hawkmistress|lashTell':'!', 'hawkmistress|feintTell':'', 'hawkmistress|cutTell':'!', 'hawkmistress|spotTell':'!', 'hawkmistress|markLashTell':'!!', 'hawkmistress|callTell':'!', 'hawkmistress|diveTell':'!!', 'hawkmistress|flashTell':'!!', 'hawkscout|diveTell':'!!',   /* THE BANDIT KSAR (claude/ksar, by hand: src/hawk-mistress.js MOVES; the hawk scout is a CV machine in src/ksar-foes.js - its stoop on the spot it marked) */
   'skitter|biteTell':'!', 'colossus|lanceTell':'!!', 'colossus|stompTell':'!!', 'colossus|shardTell':'!', 'colossus|shakeTell':'!!', 'colossus|waveTell':'!!', 'colossus|swarmTell':'',   /* THE GLASS SEA (claude/glasssea, by hand): the skitter's nip a shield turns; THE GLASS COLOSSUS's lance (jump it, or a mirror), stomp ring and shard rain (a shield, or jump / step off), its shake (grip) and shard wave (jump); the swarm call throws no blow of its own */
   'corpse|cutTell':'!','corpse|riseTell':'','bannerbearer|plantTell':'','bannerbearer|poleTell':'!',   /* THE UNBURIED FIELD (unburied-foes.js, by hand): a dead man's cut and the standard's pole a shield turns; rising and planting strike nobody */
   'barrowrider|rideTell':'!!','barrowrider|trampleTell':'!','barrowrider|fireTell':'!','barrowrider|lanceTell':'!!','barrowrider|thrustTell':'!','barrowrider|remountTell':'',   /* THE BARROW RIDER (2026-09-24, in the Standard-Bearer's place): the ride-through and the lance line no shield turns; the trample, the grave-fire and the thrust it does; the bones crawling back strike nobody */
@@ -160,6 +161,7 @@ export const MARK = {
   'cisternqueen|lanceTell': '!!', 'cisternqueen|lungeTell': '!!', 'cisternqueen|pinTell': '!!', 'cisternqueen|pincerTell': '!', 'cisternqueen|pounceTell': '!!', 'cisternqueen|rollTell': '!!',
   'cisternqueen|slamTell': '!!', 'cisternqueen|snap2Tell': '!', 'cisternqueen|snapTell': '!', 'cisternqueen|spitTell': '!', 'cisternqueen|strikeTell': '!!', 'cisternqueen|sweepHighTell': '!!',
   'cisternqueen|sweepLowTell': '!!', 'cisternqueen|tidalTell': '!!', 'cisternqueen|waveTell': '!!', 'clinger|dropTell': '!!', 'closedhelm|bashTell': '!!', 'closedhelm|cutTell': '!',
+  'hawkmistress|lashTell': '!', 'hawkmistress|feintTell': '', 'hawkmistress|cutTell': '!', 'hawkmistress|spotTell': '!', 'hawkmistress|markLashTell': '!!', 'hawkmistress|callTell': '!', 'hawkmistress|diveTell': '!!', 'hawkmistress|flashTell': '!!', 'hawkscout|diveTell': '!!',
   'closedhelm|judgeTell': '!', 'closedhelm|leapTell': '!!', 'closedhelm|oathTell': '!!', 'closedhelm|radianceTell': '!!', 'closedhelm|thrustTell': '!', 'colossus|lanceTell': '!!',
   'colossus|shakeTell': '!!', 'colossus|shardTell': '!', 'colossus|stompTell': '!!', 'colossus|swarmTell': '', 'colossus|waveTell': '!!', 'corpse|cutTell': '!',
   'corpse|riseTell': '', 'courtier|clawTell': '!', 'crab|lungeTell': '!', 'crab|pinchTell': '!', 'crab|shockTell': '!!', 'crab|snapTell': '!',
@@ -374,6 +376,7 @@ export const ANSWER = {
   'scalder|ladleTell': 'block', 'scalder|pourTell': 'dodge',
   'scarecrow|swipeTell': 'block',
   'scorpion|clawTell': 'block', 'scorpion|tailTell': 'dodge',
+  'hawkmistress|lashTell': 'jump', 'hawkmistress|cutTell': 'block', 'hawkmistress|markLashTell': 'dodge', 'hawkmistress|diveTell': 'dodge', 'hawkmistress|flashTell': 'dodge', 'hawkscout|diveTell': 'dodge',   /* (claude/ksar) */
   'skitter|biteTell': 'block', 'colossus|lanceTell': 'jump', 'colossus|stompTell': 'jump', 'colossus|shardTell': 'block', 'colossus|shakeTell': 'block', 'colossus|waveTell': 'jump',   /* (claude/glasssea) */
   'scout|lungeTell': 'block', 'scout|pinchTell': 'block', 'scout|snapTell': 'block', 'scout|strikeTell': 'block', 'scout|thrustTell': 'block', 'scout|shockTell': 'dodge',
   'seawitch|callTell': 'dodge',
@@ -619,6 +622,7 @@ export const HEIGHT = {
   'scalder|ladleTell': 'low', 'scalder|pourTell': 'low',
   'scarecrow|swipeTell': 'low',
   'scorpion|clawTell': 'low', 'scorpion|tailTell': 'low',
+  'hawkmistress|lashTell': 'low', 'hawkmistress|feintTell': 'low', 'hawkmistress|cutTell': 'low', 'hawkmistress|spotTell': 'low', 'hawkmistress|markLashTell': 'low', 'hawkmistress|callTell': 'low', 'hawkmistress|diveTell': 'low', 'hawkmistress|flashTell': 'low', 'hawkscout|diveTell': 'low',   /* (claude/ksar) */
   'skitter|biteTell': 'low', 'colossus|lanceTell': 'low', 'colossus|stompTell': 'low', 'colossus|shardTell': 'high', 'colossus|shakeTell': 'low', 'colossus|waveTell': 'low',   /* (claude/glasssea) */
   'scout|lungeTell': 'low', 'scout|pinchTell': 'low', 'scout|snapTell': 'low', 'scout|strikeTell': 'low', 'scout|thrustTell': 'low', 'scout|shockTell': 'low',
   'seawitch|callTell': 'low',
