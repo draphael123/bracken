@@ -1002,7 +1002,7 @@ async function runbossLab(BK, opts) {
         /* THE BAR lands at his drum's mouth (his ledge) and on his housing top: shield it on the ground, or jump it as it comes */
         const mq=HS[boss.at||0],mouthY=(mq.ledgeTop+1)*TZ,mouthX=mq.at==='end'?mq.ledge[0]*TZ:(mq.ledge[1]+1)*TZ;
         const barHere=(Math.abs(P.y-mouthY)<14&&Math.abs(P.x-mouthX)<72)||(onTop(boss.at||0)&&Math.abs(P.x-boss.x)<62);
-        if(m==='leverTell'&&barHere&&!P.climb){busy=true;if(SHIELDED(h)&&P.ground){k.block=true;P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){BK.press('jump');P.labJump=14;}}
+        if(m==='leverTell'&&barHere&&!P.climb){busy=true;if((SHIELDED(h)||(LABP.v2&&h==='warden'))&&P.ground){k.block=SHIELDED(h)?true:DEFLECT_TAP(f);P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){BK.press('jump');P.labJump=14;}}
         if(!busy&&ring&&P.ground){busy=true;const side=P.x>ring.x?1:-1;go(ring.x+side*42);}
         /* ROUND SIX (claude/winch4): PHASE THREE - HE HAS COME DOWN. The hands go to the floor he stands on (the deck, or the Great Drum's
            ledge after his ride: the low line always runs to him) and duel him there: out of THE HOOK SWUNG's reach as it winds up, or,
@@ -1013,7 +1013,7 @@ async function runbossLab(BK, opts) {
         const duel=()=>{ const F=FLs[hf],dx=boss.x-P.x,ad=Math.abs(dx),side=Math.sign(dx)||1,md=boss.modeT,R=WM_K.whirlR;
           if(m==='descendTell'||m==='descend'){const rx=boss.toX,s=P.x>=rx?1:-1,out=rx+s*(WM_K.leapHit+26);if(Math.abs(P.x-rx)<WM_K.leapHit+14)go(out>F.x0+6&&out<F.x1-6?out:rx-s*(WM_K.leapHit+26));return;}
           if(m==='whirlTell'){ if(ad<R+8){const out=Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*(R+10)));if(Math.abs(out-boss.x)>R+3)go(out);else if(md<0.24&&P.ground&&!P.labJump){BK.press('jump');P.labJump=16;}} return; }   /* (no room on the deck to step out of it: over it) */
-          if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if(SHIELDED(h)&&P.ground){k.block=true;P.face=side;} else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
+          if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if((SHIELDED(h)||(LABP.v2&&h==='warden'))&&P.ground){k.block=SHIELDED(h)?true:DEFLECT_TAP(f);P.face=side;}   /* (claude/retune2, v2: the warden DEFLECTS his brake bar and wrench - both yellow; she took 8 of 8 brake bars, 0 deflects) */ else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
           if(m==='rideTell'||m==='ride'){ if((m==='ride'||toldRun(['rideTell']))&&ad<64&&P.ground&&!P.labJump){BK.press('jump');P.labJump=14;} return; }
           /* (claude/sweep1, v2 only) HIS GREED, ON THE DECK: the duel cut him whenever he was in reach, so the reprisal burst took the hands
              every few seconds (the knight's 152 health went 60% to it). As the other duels do (BK.greed): out of the burst as it is told,
