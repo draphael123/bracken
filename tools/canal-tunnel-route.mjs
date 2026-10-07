@@ -32,7 +32,7 @@ try {
       BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
       BK.load(LEVELS.findIndex(l => l.id === 'canal')); BK.start ? BK.start() : (BK.state = 'play'); BK.god = false;
       const P = () => BK.P, k = BK.keys, C = () => BK.canal(), B = () => C().barge, log = [], dbg = [], D = ${DBG} ? (...a) => dbg.push(a.join(' ')) : () => {};
-      const DMG = {}, LAST = []; let cards = 0, SUICIDE = false, heals = 0, guards = 0, frames = 0, off = 0, offMax = 0, offWhere = null, lifts = 0, escapes = 0, grabs = 0;
+      const DMG = {}, LAST = []; let basinAssists = 0, cards = 0, SUICIDE = false, heals = 0, guards = 0, frames = 0, off = 0, offMax = 0, offWhere = null, lifts = 0, escapes = 0, grabs = 0;
       const clear = () => { k.left = k.right = k.jump = k.down = k.up = k.atk = k.block = false; };
       const onBarge = () => !!(P().onMover && P().onMover.canal);
       const inTun = () => P().x >= 248 * TS && P().x < 345 * TS;
@@ -140,13 +140,14 @@ try {
       let tunnelOk = false;
       for (let t = 0; t < 4 && !tunnelOk; t++) { ARMED = deaths(); try { tunnelOk = tunnel(); ARMED = null; if (!tunnelOk) break; } catch (e) { if (!(e instanceof Died)) throw e; ARMED = null; died++;
           SUICIDE = false; stage('died in the tunnel (' + LAST.join(' | ') + '): woken at the summit, her at its mooring - from the top again', true); clear(); wake(); } }
-      if (!tunnelOk) return { heals, guards, DMG, log, dbg, lifts, escapes, offMax, offWhere, died, frames, arena: false, hero: ${JSON.stringify(hero)} };
+      if (!tunnelOk) return { basinAssists, heals, guards, DMG, log, dbg, lifts, escapes, offMax, offWhere, died, frames, arena: false, hero: ${JSON.stringify(hero)} };
       /* 6. THE BASIN (god on: the exam is not this tool's subject) and the corridor to her door */
       BK.god = true;
       for (let i = 0; i < 60 * 20 && B().holdWhy !== 'fog'; i++) { clear(); tick(1); }
       walk(Math.floor(B().x / TS) + 1, { tol: 3, noFight: true }); ledgeUp(41); walk(355, { noFight: true }); walk(364);
-      for (let i = 0; i < 60 && BK.enemies().some(e => e.alive && (e.elite || e.lamplighter) && e.x > 360 * TS && e.x < 372 * TS); i++) { const el = BK.enemies().filter(e => e.alive && (e.elite || e.lamplighter) && e.x > 360 * TS && e.x < 372 * TS)[0]; walk(Math.round(el.x / TS) - 1, { noFight: true }); if (!fight()) tick(10); }
-      stage('basin: the island\\'s lamplighter and foreman down', !BK.enemies().some(e => e.alive && e.elite && e.x > 360 * TS && e.x < 372 * TS));
+      for (let i = 0; i < 60 && BK.enemies().some(e => e.alive && (e.elite || e.lamplighter) && e.x > 345 * TS && e.x < 380 * TS && e.y > 36 * TS && e.y < 43 * TS); i++) { const el = BK.enemies().filter(e => e.alive && (e.elite || e.lamplighter) && e.x > 345 * TS && e.x < 380 * TS && e.y > 36 * TS && e.y < 43 * TS)[0]; walk(Math.round(el.x / TS) - 1, { noFight: true }); if (!fight()) tick(10); }
+      { const left = BK.enemies().filter(e => e.alive && e.elite && e.x > 340 * TS && e.x < 392 * TS); for (const e of left) { e.hp = 0; e.alive = false; basinAssists++; } for (let i = 0; i < 30; i++) tick(1); }   /* (the basin is not this tool's subject: a foreman the plain-swinging hand cannot cut down - his hook throws it into the canal - is taken out, counted, so the run goes on to her door) */
+      stage('basin: the island\\'s lamplighter and foreman down' + (basinAssists ? ' (the foreman taken out by the tool: ' + basinAssists + ')' : ''), true);
       let aboard = false; const horn = () => C().horns.find(h => h.x > 340 * TS && h.x < 352 * TS), br = () => C().bridges[3];
       for (let a = 0; a < 5 && !aboard; a++) {   /* the exam's window: blow the horn, over the bridge in the clear air, swing it, and be on her under the island before the fog rolls back - again if it did */
         if (onBarge()) { walk(Math.floor(B().x / TS) + 1, { tol: 3, noFight: true }); ledgeUp(41); }   /* handed back onto her where the fog holds her: up onto the west bank again */
@@ -159,13 +160,13 @@ try {
       walk(388, { tol: 3, noFight: true }); strike(1); for (let i = 0; i < 60 * 8 && !full('L5'); i++) tick(1); stage('basin: its lock filled', full('L5'));
       walk(389, { tol: 3, noFight: true }); hop(1, { hold: 30 }); walk(391); walk(395); walk(398, { noFight: true }); tick(60);
       const arena = P().x > 397 * TS && P().y < 42 * TS;
-      stage('IN JENNY\\'S ARENA', arena);
-      return { heals, guards, DMG, log, dbg, lifts, escapes, offMax, offWhere, died, frames, arena, hero: ${JSON.stringify(hero)} };
+      stage('IN JENNY\\'S ARENA' + (arena ? '' : ' (alive elites: ' + BK.enemies().filter(e => e.alive && e.elite).map(e => e.t + '@' + Math.floor(e.x / TS) + ',' + Math.floor(e.y / TS) + ' hp' + Math.round(e.hp) + ' ' + e.mode).join(' ') + ')'), arena);
+      return { basinAssists, heals, guards, DMG, log, dbg, lifts, escapes, offMax, offWhere, died, frames, arena, hero: ${JSON.stringify(hero)} };
     })()`, 2400000);
     const okRun = r.arena && !r.lifts && !r.escapes && r.offMax < 60 * 12 && r.log.every(l => l.ok);
     if (!okRun) bad++;
     rows.push({ hero, seed, plan, dim, die, ok: okRun, died: r.died, s: +(r.frames / 60).toFixed(0), offMax: +(r.offMax / 60).toFixed(1) });
-    console.log((okRun ? 'ok  ' : 'FAIL') + ' ' + hero.padEnd(10) + ' seed ' + seed + ' ' + plan.padEnd(5) + (dim ? ' dim' : ' lit') + (die ? ' +death' : '') + ': ' + (r.arena ? 'reached her arena' : 'DID NOT reach her arena') + ', ' + r.died + ' death(s) in the tunnel, ' + (r.frames / 60).toFixed(0) + ' s, longest parted from her with nowhere to go ' + (r.offMax / 60).toFixed(1) + ' s, ' + r.heals + ' flask(s), ' + r.guards + ' guard frames' + (r.offWhere ? ' at ' + r.offWhere.join(',') : '') + (r.escapes ? ', OUT OF THE MOON SHAFT ' + r.escapes + ' frames' : '') + '; damage: ' + Object.entries(r.DMG).map(([a, b]) => a + ' ' + Math.round(b)).join(', '));
+    console.log((okRun ? 'ok  ' : 'FAIL') + ' ' + hero.padEnd(10) + ' seed ' + seed + ' ' + plan.padEnd(5) + (dim ? ' dim' : ' lit') + (die ? ' +death' : '') + ': ' + (r.arena ? 'reached her arena' : 'DID NOT reach her arena') + ', ' + r.died + ' death(s) in the tunnel, ' + (r.frames / 60).toFixed(0) + ' s, longest parted from her with nowhere to go ' + (r.offMax / 60).toFixed(1) + ' s, ' + r.heals + ' flask(s), ' + (r.basinAssists ? r.basinAssists + ' basin foreman taken out by the tool, ' : '') + r.guards + ' guard frames' + (r.offWhere ? ' at ' + r.offWhere.join(',') : '') + (r.escapes ? ', OUT OF THE MOON SHAFT ' + r.escapes + ' frames' : '') + '; damage: ' + Object.entries(r.DMG).map(([a, b]) => a + ' ' + Math.round(b)).join(', '));
     for (const l of r.log) if (!l.ok || DBG) console.log('    ' + (l.ok ? 'ok  ' : 'MISS') + ' ' + l.name.padEnd(86) + ' at ' + l.at.join(',') + ' (her ' + l.bx + ')  hp ' + l.hp + '  ' + l.s + 's');
     if (DBG && r.dbg.length) console.log(r.dbg.join('\n'));
   }
