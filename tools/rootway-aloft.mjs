@@ -10,6 +10,9 @@
      D  EVERY GROUNDED THING HAS A FOOTHOLD   signs, checkpoints, the loft, the gate, the standing deco and every foe that walks stand on a tile under their row that holds a foot.
      E  THE EXAM'S GAPS ARE DRAWN AS A DROP  the planner finds exactly the floorless gaps (columns with no floor to the foot of the level): both exam chasms, each with a warning post on its near lip; the floored teach
                                           wells are never drawn as a drop (they have a floor).
+   I  IDENTITY (design standard A8, target >= 15/18; this is the part a machine can read): its OWN TILE KIT claims every solid and ledge cell (none falls through to Sporewood's dirt); its own PALETTE warms
+                                          cold -> warm with the climb; a LANDMARK (the great root, the gallows) is in view on every screen (slot spacing under the screen width); its OWN AMBIENT bed and its own music;
+                                          THEME FIT (no off-theme wood: only the fungus's and the goblins' own dressing); the reskins (gobscout, rootweaver, rootspider, rootlurker) are baked (page) and each foe wears one.
    PAGE (PORT=<yours> node tools/rootway-aloft.mjs --page):
      F  THE SUPPORTS ARE DRAWN            with the supports switched off (BK.rootway().noSupports) and then on, the pixels under every post differ - the picture really holds the ledge up.
      G  THE CHASM IS DARK                 the pixels in the mouth of each exam chasm, 6+ rows under its lip, are far darker than the same rows over a cheap well's floor.
@@ -70,6 +73,19 @@ const topOf = (x, y) => at(x, y) === T.SOLID && at(x, y - 1) !== T.SOLID;
   const posts = L.ents.filter(e => e.t === 'deco' && e.kind === 'warnPost');
   ok(plan.chasms.every(c => posts.some(p => Math.abs(p.x - (c.x0 - 1)) <= 1)), 'every exam chasm has a warning post on its near lip: ' + posts.map(p => p.x).join(', '));
   ok(plan.chasms.every(c => { for (let x = c.x0; x <= c.x1; x++) for (let y = c.lip; y < L.H; y++) if (at(x, y) !== T.AIR) return false; return true; }), 'a chasm is air from its lip to the foot of the level in every column (no floor under the mist)'); }
+/* I */
+{ const RT = await import('../src/redraw/rootway_tiles.js'), BD = await import('../src/redraw/rootway_backdrop.js'), DR = await import('../src/dressing.js'), AU = await import('../src/audio.js');
+  let cells = 0, skinned = 0; for (let y = 0; y < L.H; y++) for (let x = 0; x < L.W; x++) { const v = at(x, y); if (v !== T.SOLID && v !== T.ONEWAY) continue; cells++; if (RT.rootTile(v, x, y, at, T, L)) skinned++; }
+  ok(cells > 1000 && skinned === cells, 'its own tile kit claims every solid and ledge cell (' + skinned + ' of ' + cells + ')');
+  const z0 = RT.ZONE[0].s[4], z3 = RT.ZONE[3].s[4], lum = h => { const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); return c[0] * 0.3 + c[1] * 0.55 + c[2] * 0.15; };
+  ok(RT.ZONE.length === 5 && lum(z3) > lum(z0) * 1.3 && BD.toneAt(0, 480) < 0.05 && BD.toneAt(330 * 16, 480) > 0.95, 'its own palette warms with the climb: bark ' + z0 + ' -> ' + z3 + ', the sky tone ' + BD.toneAt(0, 480).toFixed(2) + ' -> ' + BD.toneAt(330 * 16, 480).toFixed(2));
+  ok(BD.LANDMARK_SLOT + BD.LM_W <= 480 + 120 && BD.LANDMARK_SLOT <= 300, 'a landmark every ' + BD.LANDMARK_SLOT + ' px of the layer, each ' + BD.LM_W + ' wide: at least one is in every 480 px screen');
+  const amb = (L.ambient || []).map(a => a.kind); ok(amb.length > 0 && amb.every(k => k === 'rootway') && AU.AMBIENT_NAMES.includes('rootway') && AU.AMBIENT_SOURCES.rootway, 'its own ambient bed (' + amb.join(',') + '), sources named: ' + (AU.AMBIENT_SOURCES.rootway || []).length);
+  ok(L.music === 'rootway' && AU.MUSIC_NAMES.includes('rootway') && !!AU.MUSIC_CREDITS.rootway, 'its own level track (' + L.music + ') credited in MUSIC_CREDITS: ' + AU.MUSIC_CREDITS.rootway);
+  const ALLOWED = new Set(DR.ALLOWED_DECORATIONS.rootway), OFF = L.ents.filter(e => e.t === 'deco' && !ALLOWED.has(e.kind)).map(e => e.kind);
+  ok(OFF.length === 0 && !L.ents.some(e => e.t === 'deco' && /log|stump|campfire|tent|barrel/i.test(e.kind || '')), 'theme fit: every deco is fungus kit or goblin kit (no generic wood, logs or camp kit)' + (OFF.length ? ': ' + OFF.join(',') : ''));
+  const FOE_SKIN = L.ents.filter(e => ['archer', 'weaver', 'spider', 'lurker'].includes(e.t)); const SK = { archer: 'gobscout', weaver: 'rootweaver', spider: 'rootspider', lurker: 'rootlurker' };
+  ok(FOE_SKIN.length >= 15 && FOE_SKIN.every(e => e.cnSkin === SK[e.t]), FOE_SKIN.length + ' scouts, weavers, spiders and lurkers each wear their root skin (cnSkin: a corpse dies in its own skin)'); }
 /* F, G */
 if (process.argv.includes('--page')) {
   const { openPage } = await import('./cdp.mjs'); const pg = await openPage({ audio: false });
@@ -91,6 +107,8 @@ if (process.argv.includes('--page')) {
       const lum = (cx, row) => { const v = BK.look(cx, row + 2); const vw = BK.view.VW, vh = BK.view.VH, c = BK.view.buf.getContext('2d'); const x = Math.round(cx * TS + 8 - v.cx), y = Math.round((row + 7) * TS - v.cy); if (y < 0 || y >= vh - 4) return null; const d = c.getImageData(Math.max(0, x - 8), y, 16, 4).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += d[i] * 0.3 + d[i + 1] * 0.55 + d[i + 2] * 0.15; return s / (d.length / 4); };
       const chs = ${JSON.stringify(plan.chasms)}; out.chasm = chs.map(c => { BK.tp(c.x0 - 3, c.lip - 1); BK.sim(6); return lum(Math.floor((c.x0 + c.x1) / 2), c.lip); }); return out; })()`, 600000);
     ok(g.chasm.every(v => v !== null && v < 60), 'the exam chasms are dark under the lip (mean luma ' + g.chasm.map(v => v === null ? 'off-screen' : v.toFixed(0)).join(', ') + ' of 255)');
+    const sk = await pg.evalp(`(()=>{const o={};for(const k of ['gobscout','rootweaver','rootspider','rootlurker','trophyhunter','huntmaster']){const s=BK.SPR[k];o[k]=s?s.R.length:0}return o})()`);
+    ok(sk.gobscout === 8 && sk.rootweaver === 4 && sk.rootspider === 6 && sk.rootlurker === 3 && sk.trophyhunter === 8 && sk.huntmaster === 1, 'the sprite sets are baked with their base frame counts: ' + JSON.stringify(sk));
     if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 3).join(' | '));
   } finally { pg.close(); }
 }

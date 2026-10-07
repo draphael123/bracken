@@ -11,7 +11,7 @@
 //   DRESSING     leaf litter, root knees, bones, hide racks, lantern posts, hanging root hair - read off the grid, nothing sprinkled on a tile that is not a floor
 // planRoot(L, T) -> { chasms, supports, items, lights, drops, cleats, pulleys }  (cached on the level)
 import { canvas, rect, px, outline, mulberry } from '../px.js';
-import { ZONE, zoneOf, hash } from './rootway_tiles.js';
+import { ZONE, zoneOf, hash, timberTile } from './rootway_tiles.js';
 
 const TS = 16, OUTC = '#1c1214';
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
@@ -102,6 +102,7 @@ export function decoOf(e) {
   return null;
 }
 export const RW_SPRITES = SPR;
+export const spriteOf = (k, a, b) => spr(k, a, b);
 
 /* ----------------------------------------------------------------- THE PLAN ----------------------------------------------------------------- */
 const AVOID = new Set(['sign', 'check', 'loft', 'silver', 'stray', 'gate', 'vent', 'coin', 'hoist', 'glow', 'deco', 'rockfall']);
@@ -202,6 +203,8 @@ export function drawCleat(g, ccx, ccy, o) {
   else { g.fillStyle = C.cordD; g.fillRect(ccx - 1, ccy - 10, 2, 5); g.fillRect(ccx, ccy - 6, 2, 4); }   /* a cut rope end hangs from it */
   if (glint) { const k = 0.5 + 0.5 * Math.sin(time * 5 + ccx); g.globalAlpha = 0.35 + 0.4 * k; g.strokeStyle = arrow ? C.gold : C.goldL; g.lineWidth = 1; g.beginPath(); g.arc(ccx, ccy - 9, arrow ? 9 : 6, 0, 7); g.stroke(); g.globalAlpha = 1; }
 }
+/* A LANDED SPAN: a hoist's span stays as one-way cells, but cellSet clears their picture, so the logs are drawn here, cell by cell, the same timber as the level's ledges */
+export function drawLandedSpan(g, span, cx, cy, time) { const [x0, x1, row] = span, zone = zoneOf(x0); for (let x = x0; x <= x1; x++) g.drawImage(timberTile(zone, x === x0, x === x1, ((x * 5 + row) % 3 + 3) % 3), R(x * TS - cx), R(row * TS - cy)); }
 /* A LASHED SPAN hanging (w px wide): a row of logs bound with cord, the ends' rope slings */
 export function drawSpanLoad(g, x0, y, w, down, time) {
   if (down) { /* landed: the lashings and the slack of its slings lie on it (the logs are the ledge tiles) */ for (let x = x0 + 4; x < x0 + w - 3; x += 14) { g.fillStyle = C.cord; g.fillRect(x, y, 3, 8); g.fillStyle = '#f0e0b0'; g.fillRect(x, y, 3, 1); g.fillStyle = C.cordD; g.fillRect(x + 1, y + 3, 1, 1); g.fillRect(x + 1, y + 6, 1, 1); }

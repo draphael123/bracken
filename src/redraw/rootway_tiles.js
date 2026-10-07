@@ -97,8 +97,8 @@ function ceilTile(zone, x, y, eL, eR) {
 function massTile(zone, x, y, d) {
   return once('ma' + zone + '_' + (x & 7) + '_' + y + '_' + Math.min(d, 6), () => {
     const [c, g] = canvas(16, 16), r = mulberry(hash(x & 7, y) + 41 + zone), Z = ZONE[zone];
-    barkFill(g, zone, x, y, d <= 2 ? 2 : 1, false);
-    g.globalAlpha = [0, 0.05, 0.1, 0.17, 0.23, 0.3, 0.36][Math.min(d, 6)]; rect(g, 0, 0, 16, 16, '#080410'); g.globalAlpha = 1;
+    barkFill(g, zone, x, y, d <= 1 ? 2 : 1, false);
+    g.globalAlpha = [0, 0.05, 0.1, 0.14, 0.18, 0.21, 0.24][Math.min(d, 6)]; rect(g, 0, 0, 16, 16, '#080410'); g.globalAlpha = 1;
     /* a root runs through: a curved vein, thick in the middle */
     if ((hash(x >> 1, y) % 3) === 0) { const y0 = 3 + ((r() * 9) | 0), sl = r() < 0.5 ? -1 : 1; for (let k = 0; k < 16; k++) { const yy = y0 + Math.round(sl * Math.sin(k / 16 * Math.PI) * 3); px2(g, k, yy, Z.s[3]); px2(g, k, yy + 1, Z.s[1]); px2(g, k, yy - 1, Z.s[2]); } }
     for (let i = 0; i < 5; i++) px2(g, (r() * 16) | 0, (r() * 16) | 0, r() < 0.5 ? Z.s[1] : Z.s[3]);
@@ -126,6 +126,7 @@ function timber(zone, l, rr, v) {
 }
 const x0of = v => v * 3;
 
+export const timberTile = (zone, l, r, v) => timber(zone, l, r, v);   /* a landed span's cells are not in the tile sheet (cellSet clears them), so the world draws them (src/redraw/rootway_world.js drawLandedSpan) */
 // ================================ THE HOOK ================================
 export function rootTile(t, x, y, at, T, L) {
   const open = (dx, dy) => { const v = at(x + dx, y + dy); return v === T.AIR || v === T.NET; };

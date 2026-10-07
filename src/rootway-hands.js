@@ -180,7 +180,7 @@ export function makeRootwayHands(ctx) {
       if (h.state === 'hang' && d.load === 'hunter') dots(g, lxs, ly + 2, ly + 6 * TS, 'rgba(255,154,92,0.35)');
       /* the load */
       if (d.load === 'span' && h.state !== 'down') { const w = loadW(d), x0 = R(lx - w / 2 - cx), y = ly - TS; RWW.drawSpanLoad(g, x0, y, w, false, time); }
-      else if (d.load === 'span') { const w = loadW(d), x0 = R(d.span[0] * TS - cx), y = R(d.span[2] * TS - cy); RWW.drawSpanLoad(g, x0, y, w, true, time); }
+      else if (d.load === 'span') { const w = loadW(d), x0 = R(d.span[0] * TS - cx), y = R(d.span[2] * TS - cy); RWW.drawLandedSpan(g, d.span, cx, cy, time); RWW.drawSpanLoad(g, x0, y, w, true, time); }
       if (d.load === 'cage' && (h.state !== 'down' || !d.land)) RWW.drawCage(g, lxs, ly, time, h.state === 'down');
       else if (d.load === 'cage') RWW.drawCage(g, R(d.land[0] * TS + TS - cx), R((d.land[1] + 2) * TS - cy), time, true);
       if (d.load === 'hunter' && h.state === 'hang' && h.tellT > 0) { g.fillStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(lxs - 1, py + 4, 2, Math.max(0, ly - 24 - py - 4)); }

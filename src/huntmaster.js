@@ -222,7 +222,10 @@ export function makeHuntmaster(ctx) {
   /* his arrows, the poisoned floor, the hoist-drop shot's shadow, the struck-back arrow's trail */
   H.drawOver = (g, cx, cy, time) => {
     if (!F) return; const e = live(), fl = R(F.A.floor - cy);
-    for (const q of F.pools) { const x = R(q.x - cx), k = Math.min(1, q.t); g.globalAlpha = 0.6 * k; g.fillStyle = '#4a8a2a'; g.fillRect(x - HM.poisonR, fl - 2, HM.poisonR * 2, 2); g.fillStyle = '#9ad85a'; for (let i = -HM.poisonR + 3; i < HM.poisonR; i += 7) g.fillRect(x + i, fl - 3 - R(Math.abs(Math.sin(time * 4 + i)) * 2), 2, 1); g.globalAlpha = 1; }
+    for (const q of F.pools) { const x = R(q.x - cx), k = Math.min(1, q.t), r = HM.poisonR;   /* THE POISONED FLOOR: a bubbling pool of the red arrow's sap - dark green, a lit skin, bubbles that rise and pop, a pale rim, spore motes over it (never the gold's colour) */
+      g.globalAlpha = 0.8 * k; g.fillStyle = '#1e4a1a'; g.fillRect(x - r - 1, fl - 3, r * 2 + 2, 3); g.fillStyle = '#3f8a2a'; g.fillRect(x - r, fl - 3, r * 2, 2); g.fillStyle = '#7ac84a'; g.fillRect(x - r + 2, fl - 3, r * 2 - 4, 1); g.fillStyle = '#c8f08a'; for (let i = -r + 4; i < r - 2; i += 9) g.fillRect(x + i + R(Math.sin(time * 3 + i) * 1.5), fl - 3, 3, 1);
+      for (let i = -r + 4; i < r - 3; i += 6) { const ph = (time * 1.6 + i * 0.37) % 1, by = fl - 3 - R(ph * 7); g.globalAlpha = 0.85 * k * (1 - ph * ph); g.fillStyle = '#d8ffa8'; g.fillRect(x + i, by, 2, 2); g.fillStyle = '#4a9a2a'; g.fillRect(x + i + 1, by + 1, 1, 1); }
+      g.globalAlpha = 0.5 * k; g.fillStyle = '#e8ffd0'; g.fillRect(x - r - 2, fl - 2, 2, 2); g.fillRect(x + r, fl - 2, 2, 2); g.globalAlpha = 1; }
     if (e && e.mode === 'hoistTell' && F.hoistX != null) { const x = R(F.hoistX - cx), k = Math.max(0, 1 - e.modeT / HM.hoistTell); g.globalAlpha = 0.2 + 0.4 * k; g.fillStyle = '#1a1210'; g.fillRect(x - TS, fl - 3, 2 * TS, 3); g.globalAlpha = 1;
       if (Math.floor(time * 12) % 2) { g.fillStyle = '#ff6b6b'; g.fillRect(x - TS, fl - 4, 2 * TS, 1); } }
     for (const a of F.arrows) { const x = R(a.x - cx), y = R(a.y - cy), d = Math.hypot(a.vx, a.vy) || 1, ux = a.vx / d, uy = a.vy / d;

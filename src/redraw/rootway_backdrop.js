@@ -39,14 +39,14 @@ function crown(g, cx, cy, rad, col, lit, seed) {
     g.fillStyle = col; g.beginPath(); g.ellipse(bx, by, br * 1.15, br * 0.8, 0, 0, 7); g.fill();
     g.fillStyle = lit; g.beginPath(); g.ellipse(bx - br * 0.2, by - br * 0.3, br * 0.7, br * 0.4, 0, 0, 7); g.fill(); } }
 
-const farLayer = tone => once('far' + tone, () => { const W = 640, H = 200, [c, g] = mk(W, H), T = TONE[tone], r = mulberry(8101 + tone);
+const farLayer = tone => once('far' + tone, () => { const W = 640, H = 330, [c, g] = mk(W, H), T = TONE[tone], r = mulberry(8101 + tone);
   for (let i = 0; i < 9; i++) { const cxm = Math.round(i * 72 + 18 + r() * 30), w = 8 + ((r() * 14) | 0), top = 10 + ((r() * 50) | 0);
     for (const off of [0, cxm + w * 2 > W ? -W : 0, cxm - w * 2 < 0 ? W : 0]) { trunk(g, cxm + off, top + 30, H, w, T.farT, mix(T.farT, '#ffffff', 0.12), 900 + i, false); }
     crown(g, cxm, top + 26, 26 + w, T.farC, mix(T.farC, '#ffffff', 0.14), 700 + i); if (cxm + 50 > W) crown(g, cxm - W, top + 26, 26 + w, T.farC, mix(T.farC, '#ffffff', 0.14), 700 + i); if (cxm - 50 < 0) crown(g, cxm + W, top + 26, 26 + w, T.farC, mix(T.farC, '#ffffff', 0.14), 700 + i); }
   g.globalCompositeOperation = 'source-atop'; const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, 'rgba(' + T.haze + ',0)'); gr.addColorStop(1, 'rgba(' + T.haze + ',0.55)'); g.fillStyle = gr; g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'source-over';
   return c; });
 /* the lantern spots on the mid layer, in the layer's own pixels: [x, y, phase] */
-export const MID_W = 576, MID_H = 230;
+export const MID_W = 576, MID_H = 340;
 const LANTERNS = (() => { const r = mulberry(4401), out = []; for (let i = 0; i < 9; i++) out.push([Math.round(30 + i * 62 + r() * 24), Math.round(96 + r() * 90), r() * 6]); return out; })();
 const midLayer = tone => once('mid' + tone, () => { const W = MID_W, H = MID_H, [c, g] = mk(W, H), T = TONE[tone], r = mulberry(8202 + tone);
   for (let i = 0; i < 6; i++) { const cxm = Math.round(i * 96 + 24 + r() * 40), w = 14 + ((r() * 14) | 0), top = 4 + ((r() * 30) | 0);
@@ -62,7 +62,7 @@ const midLayer = tone => once('mid' + tone, () => { const W = MID_W, H = MID_H, 
   return c; });
 
 /* THE LANDMARKS, 150 wide x 220 high, baseline at the foot */
-export const LM_W = 150, LM_H = 220;
+export const LM_W = 150, LM_H = 330;
 const landmark = (v, tone) => once('lm' + v + '_' + tone, () => { const [c, g] = mk(LM_W, LM_H), T = TONE[tone], r = mulberry(31 + v * 7 + tone);
   const body = T.lmB, lit = T.lmL, dk = mix(body, '#000000', 0.4);
   if (v === 0 || v === 2) {   /* THE GREAT ROOT: a root as thick as a hill, up out of the dark and over; ridged; moss hangs from the arch. v 2 is its mirror with a lantern string */
@@ -96,22 +96,22 @@ const glowAt = (g, x, y, r, a, col) => { const gr = g.createRadialGradient(x, y,
 export const toneAt = (cx, VW) => smooth(60, 330, (cx + VW / 2) / 16);
 
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, dusk) {
-  const k = toneAt(cx, VW), base = VH - 40;
+  const k = toneAt(cx, VW), base = VH - 40, climb = smooth(0, 380, dY);   /* how high in the tree the camera is: the trunks and the landmarks rise with it, so the canopy is always around you */
   /* SKY: three stops that warm with the road */
   { const [a, b, f] = tones(k), S0 = SKY[a], S1 = SKY[b], col = i => mix(S0[i], S1[i], f); const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, col(0)); gr.addColorStop(0.5, col(1)); gr.addColorStop(0.85, col(2)); gr.addColorStop(1, col(2)); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     /* a low sun on the left that comes up with the climb, its halo */
-    const sx = Math.round(VW * 0.2 - cx * 0.02), sy = Math.round(base - 20 - 70 * k + Math.min(dY * 0.1, 30)); g.save(); g.globalCompositeOperation = 'lighter'; glowAt(g, sx, sy, 130, 0.16 + 0.22 * k, k < 0.5 ? '255,150,130' : '255,200,120'); g.restore();
+    const sx = Math.round(VW * 0.2 - cx * 0.02), sy = Math.round(base - 20 - 70 * k - climb * 40); g.save(); g.globalCompositeOperation = 'lighter'; glowAt(g, sx, sy, 130, 0.16 + 0.22 * k, k < 0.5 ? '255,150,130' : '255,200,120'); g.restore();
     if (k > 0.15) { g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = k < 0.5 ? '#f0a888' : '#ffe7a8'; g.beginPath(); g.arc(sx, sy, 9 + 4 * k, 0, 7); g.fill(); g.globalAlpha = 1; } }
   /* FAR TRUNKS */
-  { const w = 640, y = Math.round(base - 200 + 54 + Math.min(dY * 0.1, 30)); let x = ((-cx * 0.1) % w + w) % w; if (x > 0) x -= w; drawTone(g, farLayer, k, c => { for (let xx = x; xx < VW; xx += w) g.drawImage(c, Math.round(xx), y); }); }
+  { const w = 640, y = Math.round(base - 200 + 54 - climb * 110); let x = ((-cx * 0.1) % w + w) % w; if (x > 0) x -= w; drawTone(g, farLayer, k, c => { for (let xx = x; xx < VW; xx += w) g.drawImage(c, Math.round(xx), y); }); }
   /* MID TRUNKS, vines and the goblins' lanterns */
-  { const w = MID_W, y = Math.round(base - MID_H + 78 + Math.min(dY * 0.22, 56)); let x = ((-cx * 0.22) % w + w) % w; if (x > 0) x -= w;
+  { const w = MID_W, y = Math.round(base - 230 + 78 - climb * 130); let x = ((-cx * 0.22) % w + w) % w; if (x > 0) x -= w;
     drawTone(g, midLayer, k, c => { for (let xx = x; xx < VW; xx += w) g.drawImage(c, Math.round(xx), y); });
     g.save(); g.globalCompositeOperation = 'lighter';
     for (let xx = x; xx < VW; xx += w) for (const [lx, ly, ph] of LANTERNS) { const sx = Math.round(xx + lx), sy = y + ly + 3; if (sx < -30 || sx > VW + 30) continue; const f = 0.8 + 0.2 * Math.sin(time * 3 + ph) + 0.08 * Math.sin(time * 9.1 + ph * 2); glowAt(g, sx, sy, Math.round(26 * f), 0.22 + 0.1 * (1 - k), '255,190,100'); }
     g.restore(); }
   /* THE LANDMARKS: the great roots and the goblin gallows, every SLOT px of the world on the 0.34 layer */
-  { const f = 0.34, off = cx * f, i0 = Math.floor((off - 80) / SLOT) - 1, y = Math.round(base + 36 - LM_H + Math.min(dY * f, 70));
+  { const f = 0.34, off = cx * f, i0 = Math.floor((off - 80) / SLOT) - 1, y = Math.round(base + 36 - 220 - climb * 90);
     for (let i = i0; i <= i0 + Math.ceil((VW + 240) / SLOT) + 1; i++) { const v = [0, 1, 2, 1][((i % 4) + 4) % 4], wx = i * SLOT + 100 + ((hashI(i) % 60) - 30), sx = Math.round(wx - off - LM_W / 2); if (sx > VW + 10 || sx < -LM_W - 10) continue;
       drawTone(g, t => landmark(v, t), k, c => g.drawImage(c, sx, y));
       if (v === 1) {   /* the gallows' cage and rope, swaying */

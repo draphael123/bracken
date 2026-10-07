@@ -23698,13 +23698,14 @@ function placeLandmarks() {
   if (dress === 'wood') for (const e of woodLandmarks(lmId)) lmPut(e);
   if (dress === 'marsh') { put(PROP.fishTrap[0], 12, 0); put(PROP.fishTrap[1], 44, 0); put(PROP.lanternPost, 24, 0); put(PROP.birdhouse, 60, 0); }
   if (dress === 'camp') { put(PROP.spearRack, 12, 0); put(PROP.spearRack, 52, 0); put(PROP.barrelStack, 30, 0); put(PROP.barrelStack, 70, 0); put(PROP.bones[0], 20, 0); put(PROP.bones[1], 60, 0); }
-  if (dress === 'myc') { put(PROP.bones[0], 16, 0); put(PROP.bones[1], 56, 0); }
+  if (dress === 'myc' && L.rootway) { put(RWW.spriteOf('skullPile', 0), 16, 0); put(RWW.spriteOf('gobPennant', 1), 52, 0); }   /* THE ROOTWAY: the goblins' marks, not Sporewood's bones and giant cap */
+  else if (dress === 'myc') { put(PROP.bones[0], 16, 0); put(PROP.bones[1], 56, 0); }
   if (dress === 'crag') { put(PROP.cart, 20, 0); put(PROP.fence[0], 40, 0); put(PROP.lanternPost, 60, 0); put(PROP.bones[1], 30, 0); }
   if (dress === 'marsh') { put(PROP.oldOak[1], 8, 0); put(PROP.oldOak[0], 8, 0); }
   if (dress === 'camp') { put(PROP.totem[0], 20, 0); put(PROP.totem[1], 20, 0); }
   if (dress === 'battlefield') { put(ub().wreck, 10, 0); put(ub().standard, 6, 0); put(ub().wreck, 30, 0); put(ub().standard, 12, 0); }   /* THE UNBURIED FIELD: the engines they lost and the old standards (no lychgate: that is the Hexed Fields' and Waymeet's, claude/unburiedart) */
   for (const e of villageLandmarks(lmId, dress)) lmPut(e);
-  if (dress === 'myc') { put(PROP.giantCap, 0, 0); }
+  if (dress === 'myc' && !L.rootway) { put(PROP.giantCap, 0, 0); }
 }
 function spawnCritters() {
   placeLandmarks();

@@ -138,4 +138,5 @@ export function bakeHuntmasterCard() {
   const [c, g] = canvas(44, 46); paintHuntmaster(g, { x: 20, y: 44, f: 1, mode: 'walk', t: 0, weak: {}, open: 0 }); outline(c, OUT);
   return { R: [c], L: [flipX(c)], white: { R: [whiten(c)], L: [flipX(whiten(c))] }, ax: 20, ay: 45, w: 14, h: 26 };
 }
-export function bakeTagIcon() { const [c, g] = canvas(8, 10); line(g, 4, 0, 4, 3, '#8a6a48'); rect(g, 1, 3, 6, 6, '#e8dcc0'); rect(g, 2, 4, 4, 1, '#c9b27c'); px(g, 3, 6, '#5a4230'); px(g, 4, 7, '#5a4230'); outline(c, OUT); return c; }
+export function bakeTagIcon() { const [c, g] = canvas(8, 10); line(g, 4, 0, 4, 2, '#cdb88a'); px(g, 3, 1, '#cdb88a'); rect(g, 1, 3, 6, 6, '#e8dcc0'); rect(g, 2, 3, 4, 1, '#fff6e0'); rect(g, 1, 8, 6, 1, '#b8a888'); px(g, 4, 4, '#2a1a12');   /* a bone tag with the cord's hole */
+  rect(g, 2, 5, 4, 1, '#c9b27c'); px(g, 3, 6, '#5a4230'); px(g, 4, 7, '#5a4230'); px(g, 5, 6, '#5a4230'); px(g, 1, 3, '#b8a888'); px(g, 6, 3, '#b8a888'); outline(c, OUT); return c; }
