@@ -442,17 +442,17 @@
   "lostPct": 147
  },
  "canal": {
-  "hash": "d3ea5e97ac61",
+  "hash": "7ddafa893c53",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 92,
+  "hits": 96,
   "deaths": 12,
-  "kills": 33,
-  "lifts": 114,
+  "kills": 17,
+  "lifts": 111,
   "walked": 100,
   "bare": true,
-  "lostPct": 429
+  "lostPct": 436
  },
  "welltown": {
   "hash": "139ac9df7c80",

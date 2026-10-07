@@ -176,6 +176,10 @@ if (!SUBSET || WANT.includes('textfit-full')) { const t0 = Date.now(), r = spawn
    sound effects are always open): tools/soundtest.mjs */
 if (take('map-footer')) results.push(run('map-footer', process.execPath, ['tools/map-footer.mjs'], { PORT: String(portFor(9)) }));
 if (take('soundtest')) results.push(run('soundtest', process.execPath, ['tools/soundtest.mjs'], { PORT: String(portFor(8)) }));
+/* THE LEGGING TUNNEL WITH REAL KEYS (claude/canal5, Daniel 10-06: "the raft didn't follow me... I couldn't get to the boss"): the boss heroes, a stray run
+   (leaves her at every ledge and ladder, falls in, dies mid-tunnel) and a ride run each, from the summit to Jenny's arena. All seven heroes x 3 seeds by hand:
+   node tools/canal-tunnel-route.mjs --seeds=3 */
+if (take('canal-tunnel-route')) results.push(run('canal-tunnel-route', process.execPath, ['tools/canal-tunnel-route.mjs', '--heroes=knight,warden,pyro', '--seeds=2'], { PORT: String(portFor(6)) }));
 if (!SUBSET) results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */   /* the full run only: a subset did not make the mess and must not be failed by it */
 if (!SUBSET) results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--run', process.env.BRACKEN_RUN, '--check']));
 
