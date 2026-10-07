@@ -21,5 +21,5 @@ assert.ok(!BR.beats({ t: 'golem', x: 0, face: 1, alive: true }, -50), 'a boss no
 assert.strictEqual(BR.wordOf({ t: 'golem' }, 0), TURN.STONE); assert.strictEqual(BR.wordOf({ t: 'nobody' }, 0), TURN.WARDED);
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 assert.ok(/BR\.auto\(e, fromX, \{ hp: hp0, mode: mode0, broken: br0 \}\)/.test(main), 'main.js hurtEnemy calls BR.auto');
-assert.ok(/angB \? Math\.max\(1, Math\.round\(wardedDamage\(e, dmg\) \* BR_ANGLE\.mul\)\) : bossChip\(/.test(main), 'the angle blow skips the chip');
+assert.ok(/angB \? Math\.max\(1, Math\.round\(wardedDamage\(e, dmg(?:, blow)?\) \* BR_ANGLE\.mul\)\) : bossChip\(/.test(main), 'the angle blow skips the chip');
 console.log('boss-read: ok (turned / auto / beats / wired)');

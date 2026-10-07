@@ -33,7 +33,7 @@ import { wormOpen } from './dune-worm.js';
 import { mageOpen } from './undead-mage.js';
 import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
-import { gtOpen } from './jenny-greenteeth.js';
+import { leOpen } from './lantern-eater.js';   /* THE LANTERN-EATER (claude/lanterneater) */
 import { qOpen } from './cistern-queen.js';
 import { matOpen } from './raptor-matriarch.js';
 import { colOpen } from './glass-colossus.js';
@@ -103,7 +103,7 @@ export const OPEN_RULE = {
   matriarch: e => matOpen(e),                                                // THE RAPTOR MATRIARCH (claude/redgorge2): thrown by a narrow pillar, stunned off her dive, tangled in a cut bridge - and her beats (the skid, the rake's breath)
   gorgecrab: e => e.mode === 'open',                                         // THE GREAT RED CRAB: thrown on his back by a released burst (claude/redgorge)
   grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield
-  greenteeth: e => gtOpen(e) || !!e.bareHit,                                 // (claude/canal4) stuck in the raft - or a blow at her BARE angle (the kelp guard: always hittable, the right blow is not greed; her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
+  lanterneater: e => leOpen(e) || !!e.keyHit,                               // (claude/lanterneater) snagged / its teeth in the timber - or a blow at its KEY on what is in reach (B14: the keyed angle lands whole and is not greed; the wrong one is; its own ward of a twentieth: OWN_WARD)  //                                 // (claude/canal4) stuck in the raft - or a blow at her BARE angle (the kelp guard: always hittable, the right blow is not greed; her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   cisternqueen: e => qOpen(e) || e.sting > 0 || e.scorch > 0 || !!(e.cqBare && e.cqBare()),   /* (claude/underwell3, Daniel 10-07: her STINGER is her weak spot - a blow on it, wherever it is (e.cqBare: the hands ask the blow's box), and her body while the fire SCORCHES her) */                                             // soaked out of her burrow, on her back off her wall (doused), rearing from a broken grab (claude/welltown3); her STUCK STINGER (claude/welltown5)
   hawkmistress: e => hmOpen(e),                                              // THE HAWK-MISTRESS (claude/ksar): the hawk wheeled off by a gong or blinded by a flash - she whistles it back, open
   colossus: e => colOpen(e),                                                 // THE GLASS COLOSSUS (claude/glasssea): its chest cracked by its own lance off a mirror, its shoulders blazing (the swarm held by firelight), its crown dazzled by the dawn - its legs are its own purse (OWN_WARD)
@@ -122,7 +122,7 @@ export const OPEN_RULE = {
 /* BLOWS ARE HIS MECHANIC: the Pyromancer is opened by being HIT while he runs hot (every blow heats him, src/main.js hurtEnemy0), so a run of
    blows is the answer, not greed: no reprisal (his chip stands - a blow outside his opening is still a twentieth) */
 export const NO_GREED = new Set(['pyromancer']);
-export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'greenteeth', 'duneworm', 'colossus']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
+export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   mother: 'her body is armoured to every blade already (ARMOURED); the heart node is her opening and it is not the boss',

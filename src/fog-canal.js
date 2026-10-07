@@ -1,9 +1,9 @@
 // src/fog-canal.js - THE FOG CANAL (claude/canal, the GREYBOX: geometry, machinery, encounters, wiring). Brief: docs/briefs/fog-canal.md.
 // You leave WAYMEET by night on a BARGE along a fog-choked canal into the old town's theatre quarter; the lit theatre glows ahead through the
 // fog the whole way. Between WAYMEET and THE MASKWRIGHT'S THEATRE on the road inland. Its machinery is src/canal-rig.js (pure), its hands
-// src/canal-hands.js, its two new foes (the GRINDYLOW, Jenny Greenteeth's weed-imp brood, and the WILL-O'-THE-WISP, a false lantern)
-// src/canal-foes.js. JENNY GREENTEETH (the boss: a parallel lane, claude/lockkeeper, in a module of its own) is fought in the LOCK CHAMBER past
-// the basin: this file lays her chamber (stageGreenteeth, section 7), her doors and the level's gate on the quay past her east door.
+// src/canal-hands.js, its two new foes (the GRINDYLOW, a weed-imp of the canal, and the WILL-O'-THE-WISP, a false lantern)
+// src/canal-foes.js. THE LANTERN-EATER (the boss, claude/lanterneater, in a module of its own - JENNY GREENTEETH before it, benched) is fought on THE RAFT past
+// the basin: this file lays its chamber (stageLanternEater, section 7: claude/canal4's raft chamber), its doors and the level's gate on the quay past its east door.
 //
 // THE RULE: THE BARGE GOES WHERE THE WATER LETS IT. A LANTERN SHOWS YOU - TO THEM TOO.
 //
@@ -22,8 +22,8 @@
 //                                TEACH -> TEST -> REMIX -> EXAM the way and dimmed to slip past the brood; the stop-planks and their
 //                                                               windlass, the nest under the moon shaft, the deep lock down to the basin
 //   346-389  THE THEATRE BASIN   EXAM                           fog, horn, bridge, barge, archers, weed, wisps, the foreman: all at once
-//   390-451  JENNY'S LOCK        (claude/lockkeeper)            the door, the chamber kept free for her, and the gate
-import { stageGreenteeth } from './jenny-greenteeth.js';   /* JENNY GREENTEETH's lock chamber and fight (claude/lockkeeper's module, wired by claude/greenwire) */
+//   390-451  THE LANTERN POOL    (claude/lanterneater)          the door, the raft's chamber kept free for it, and the gate
+import { stageLanternEater } from './lantern-eater.js';   /* THE LANTERN-EATER's raft chamber and fight (claude/lanterneater; the chamber is claude/canal4's) */
 export const CANAL = { W: 452, H: 56 };   /* (claude/canal4: the legging tunnel is twenty columns longer than the weir was) */
 /* every machine's arc (tile columns), read by tools/canal.mjs and written up in the brief */
 export const ARCS = {
@@ -34,7 +34,7 @@ export const ARCS = {
   tunnel: { teach: [248, 272], develop: [273, 298], twist: [299, 318], exam: [319, 345] },   /* (claude/canal4) THE LEGGING TUNNEL: legging and her lantern - teach, test, remix, exam */
 };
 export const SECTIONS = [['THE WAYMEET QUAY', 0], ['THE FIRST LOCK AND THE MILL', 68], ['THE FOG BANK', 122], ['THE FLIGHT', 186], ['THE LEGGING TUNNEL', 248],
-  ['THE THEATRE BASIN', 346], ["JENNY'S LOCK", 390]];
+  ['THE THEATRE BASIN', 346], ['THE LANTERN POOL', 390]];
 
 export function buildFogCanal({ painter, T, TS }) {
   const { W, H } = CANAL;
@@ -328,7 +328,7 @@ export function buildFogCanal({ painter, T, TS }) {
   coins([350, 40], [358, 40], [364, 40], [372, 33], [382, 40]);
   ent('mend', 347, 40);
 
-  // ---------------- 7. JENNY'S LOCK (390-451): JENNY GREENTEETH's lock chamber and her fight (claude/lockkeeper's module, wired by claude/greenwire) ----------------
+  // ---------------- 7. THE LANTERN POOL (390-451): THE LANTERN-EATER's raft chamber and its fight (claude/lanterneater; the chamber is claude/canal4's, built for Jenny Greenteeth) ----------------
   /* THE LOCK'S LOWER GATE is the corridor's floor: the barge moors at its foot (a grindylow on its steps), you hop up onto it, walk the corridor
      through the foreman's gate to the checkpoint, and her WEST DOOR is at the corridor's end, at bed level. Her chamber is stageGreenteeth(sx 396, R 41):
      columns 396-435 (gates at 396 and 435), rows 25-47 (claude/canal4: a stone landing inside each door, her water five rows deep between, the raft on it), her doors at rows 35-40 in each gate - the west door opens off this corridor, the east door (the
@@ -342,9 +342,9 @@ export function buildFogCanal({ painter, T, TS }) {
   swim('the cistern', 380, 395, 50, 54, 51, { grate: [381, 49, 49, -1], bumpFrom: 388 });
   set(392, 37, T.ONEWAY); hatches.push([392, 37]); air(392, 392, 38, 49); ladder(392, 38, 51);
   grates.push([381, 386, 49, 49]); ent('mend', 384, 54); coins([382, 53], [386, 53], [389, 53]);
-  sign(395, 40, "JENNY'S LOCK. THE GRINDYLOWS' MOTHER KEEPS IT.");
+  sign(395, 40, "THE BARGEMEN SAY: STEER BY A LAMP THAT FLICKERS. A LIGHT THAT SWAYS IS NOT A LAMP.");   /* (claude/lanterneater) the bargeman's line, at its door (B8) */
   air(396, 435, 25, 40); block(396, 435, 41, H - 1);                         /* her footprint, cleared before she lays herself into it */
-  const jenny = stageGreenteeth({ set, block, plat: boards, ent }, T, TS, 396, 41);
+  const jenny = stageLanternEater({ set, block, plat: boards, ent }, T, TS, 396, 41);   /* (the const keeps claude/canal4's name: the chamber is the same) */
   ride(400, 431, 41, 41);                                                      /* (claude/canal4) THE RAFT across her water, for the reach model (it goes out to the middle with you on it, and to the east landing when she is dead) */
   ent('gate', 440, 40);                                                        /* the level's end, out on the quay past her east door: it opens when she dies (gateAfterBoss) */
   block(436, 451, 41, H - 1);                                                  /* the theatre quarter's quay, past her east door */
@@ -363,8 +363,8 @@ export function buildFogCanal({ painter, T, TS }) {
       swims, grates, hatches,   /* (claude/canalfix3) the safe swims, their iron grates, the hatches into them */
       tunnels, stops, moon, dark: [[248, 344, 14, 22], [279, 298, 11, 13], [334, 344, 23, 48]], tunnelEnd: 345,   /* (claude/canal4) THE LEGGING TUNNEL: where there is no current, the stop-planks, the moon shaft, the dark (tiles) */
       sides, arch: [130, 147, 32], gangAt: 165, jetties: [[175, 185, 30]], street: { railings: [[1, 12, 26], [45, 52, 37], [60, 66, 37], [176, 181, 25], [241, 246, 16], [361, 378, 34]], bollards: [[35, 39], [364, 41]] },   /* (claude/canalfix3) the one timber jetty (the fog wall's pier): every other ledge is stone, src/redraw/canal_tiles.js */   /* (claude/canalfix) her sides of the Waymeet pound; THE LONG ARCH [x0, x1, the tunnel roof's lowest row]; the fog wall's front, where the gang boards */
-      /* JENNY GREENTEETH, FORESHADOWED (cheap and told): eyes that open in the fog now and then [x, y, phase], a child's shoe on a step, bubbles by the bank where nothing lives */
-      eyes: [[146, 27, 0.1], [176, 29, 0.55], [235, 16, 0.75], [312, 16, 0.4], [359, 38, 0.3]], shoes: [[35, 38], [392, 36]], bubbles: [[40, 40], [61, 40], [100, 33], [175, 33], [240, 18], [297, 18], [355, 44]] },
+      /* THE LANTERN-EATER, FORESHADOWED (B8, claude/lanterneater): THE LAMPS THAT ARE NOT LAMPS - a warm light glimpsed swaying in the fog where no post stands, that goes under [x, y, phase]; a child's shoe on a step, bubbles by the bank where nothing lives; the bargemen's line at its door */
+      lures: [[140, 30, 0.1], [182, 30, 0.55], [238, 16, 0.75], [358, 41, 0.3], [380, 41, 0.85]], shoes: [[35, 38], [392, 36]], bubbles: [[40, 40], [61, 40], [100, 33], [175, 33], [240, 18], [297, 18], [355, 44]] },
     rigBands,   /* (claude/canal4: no chase - the weir's flood is gone) */
     waterHurts: true, noWade: true,   /* THE CANAL IS JENNY'S WATER: a fall in costs health and hands you back to the last ground you stood on (main.js, as the Marsh); and it is
                                          not a floor to the reach model (src/reachcore.js L.noWade): only the barge crosses it */

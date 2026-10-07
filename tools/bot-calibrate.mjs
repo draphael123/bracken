@@ -19,7 +19,7 @@ const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x
 const seeds = +opt('seeds', 3), jobs = +opt('jobs', 3), grid = opt('grid', '0.15,0.4,0.65').split(',').map(Number), heroesArg = opt('heroes', 'knight,warden,pyro').split(',');
 /* DANIEL'S FEEL, 10-05 (brief-bot2.md): the Death Knight hard, Jenny easy, the Puppeteer (PUPPETEER2) good, the Djinn a little too hard.
    As win rates for a practiced player over knight / warden / pyro: hard ~30, a little too hard ~42, good ~55 (the band's middle), easy ~80. */
-export const FEEL = { unburied: { said: 'hard', want: 30 }, welltown: { said: 'a little too hard', want: 42 }, theatre: { said: 'good', want: 55 }, canal: { said: 'easy', want: 80 } };
+export const FEEL = { unburied: { said: 'hard', want: 30 }, welltown: { said: 'a little too hard', want: 42 }, theatre: { said: 'good', want: 55 } };   /* (claude/lanterneater: canal: { said: 'easy', want: 80 } was Daniel's feel of JENNY GREENTEETH - she is benched and the canal's boss is new, so the row is out until he plays it) */
 /* ONE DIAL: d=0 reacts at 200-260-380 ms, misreads 2%, greedy 8%; d=1 at 260-400-600 ms, misreads 16%, greedy 45% */
 export const dialProfile = d => ({ base: 'human', name: 'human@' + d, rtMin: Math.round(200 + 60 * d), rtMode: Math.round(260 + 140 * d), rtMax: Math.round(380 + 220 * d), misread: +(0.02 + 0.14 * d).toFixed(3), greed: +(0.08 + 0.37 * d).toFixed(3) });
 /* THE LOGS: the recorder's files, one row per fight; grouped by level[:mini] */

@@ -7806,7 +7806,7 @@ export const LEVELS = [
      needs it now). APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE PUPPETEER (claude/puppeteer) is its boss */
   { id: 'theatre', name: "THE MASKWRIGHT'S THEATRE", sub: 'the playhouse where the masks are made', rule: 'THE HOUSE IS WATCHING. WHAT STANDS IN THE LIGHT CANNOT MOVE.', build: () => buildMaskwrightTheatre({ painter, T, TS }), needs: 'canal' },   /* (claude/canalfix: the road runs Waymeet -> THE FOG CANAL -> the theatre -> the fair) */
   /* THE FOG CANAL (claude/canal, the greybox): out of WAYMEET by night barge into the old town's theatre quarter. APPENDED, so no index and no save
-     moves; its place on the road is its needs and its map node. JENNY GREENTEETH (claude/lockkeeper, wired by claude/greenwire) is its boss, in the lock chamber at its end */
+     moves; its place on the road is its needs and its map node. THE LANTERN-EATER (claude/lanterneater; Jenny Greenteeth before it, benched) is its boss, on the raft at its end */
   { id: 'canal', name: 'THE FOG CANAL', sub: 'out of Waymeet by night barge', rule: 'THE BARGE GOES WHERE THE WATER LETS IT. A LANTERN SHOWS YOU - TO THEM TOO.', build: () => buildFogCanal({ painter, T, TS }), needs: 'waymeet' },
   /* THE WELL TOWN (claude/welltown, the GREYBOX, 2026-10-01): desert arc level 2 - the arc's town and its shop - after THE SUNKEN CARAVAN (the desert-arc concept
      of 2026-10-01: needs 'caravan', not the brief's 'sunkencaravan'). APPENDED, so no index and no save moves. its mini is THE GANG LEADER (the market courtyard, the Well Square) and its boss THE CISTERN QUEEN (claude/welltown3, claude/welltown-polish) */

@@ -1,0 +1,1 @@
+mash-carry: level-only writes keep the boss/mini rows, boss writes drop the stale level row, 40 cached rows still read

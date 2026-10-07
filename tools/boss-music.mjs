@@ -32,6 +32,8 @@ assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is no
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
 assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
 assert.equal(arena('redgorge').music, 'matriarch', "THE RAPTOR MATRIARCH's ledge is not on her own theme (claude/redgorge2; the crab's march is benched with him)");
+assert.equal(arena('canal').music, 'lanterneater', "THE LANTERN-EATER's raft is not on its own theme (claude/lanterneater; Jenny Greenteeth's lament is benched with her)");
+assert.ok(!A.MUSIC_NAMES.includes('greenteeth') && A.MUSIC_CREDITS.lanterneater, 'the Sound Test still lists the benched Jenny Greenteeth, or THE LANTERN-EATER has no credit row');
 assert.equal(arena('welltown').music, 'djinn', "THE DJINN's hall is not on his own theme (claude/underwell)");
 assert.equal(arena('underwell').music, 'cisternqueen', "THE CISTERN QUEEN's hall (the Underwell) is not on her own theme");
 assert.equal(LEVELS.find(l => l.id === 'welltown').build().mini.music, 'banditking', "THE GANG LEADER's courtyard is not on the old King's theme (his mini keeps it, claude/welltown3)");
@@ -39,7 +41,7 @@ assert.equal(arena('unburied').music, 'blacklord', "THE DEATH KNIGHT's arena is 
 assert.ok(A.MUSIC_NAMES.includes('blacklord') && /Ronhul Maggot/.test(A.MUSIC_CREDITS.blacklord || ''), 'For the Black Lord has no Sound Test entry and CC-BY credit');
 assert.ok(A.MUSIC_NAMES.includes('cisternqueen') && A.MUSIC_CREDITS.cisternqueen, 'THE CISTERN QUEEN has no Sound Test entry of her own');
 assert.ok(A.MUSIC_NAMES.includes('banditking') && A.MUSIC_CREDITS.banditking, 'THE BANDIT KING has no Sound Test entry of his own');
-for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab', 'matriarch']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
+for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab', 'matriarch', 'lanterneater']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
 for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
 
@@ -55,7 +57,7 @@ const grab = async (name, loops) => {
 const fmt = e => e.kind + ':' + e.type + ':' + (e.f === null ? '' : Math.round(e.f * 10) / 10);
 const results = {};
 const MAXGAP = { drownedking: 3 };   /* (the Bandit King's 6/8 has a drum or a tek on every eighth but the second) */   /* the dirge is in 6/8: its beats are three eighths apart, and the drone and choir ring across the gap */
-for (const name of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'banditking', 'banditking:p2', 'cisternqueen', 'cisternqueen:p2', 'cisternqueen:p3', 'gorgecrab', 'djinn', 'djinn:p2', 'djinn:p3']) {
+for (const name of ['lanterneater', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'banditking', 'banditking:p2', 'cisternqueen', 'cisternqueen:p2', 'cisternqueen:p3', 'gorgecrab', 'djinn', 'djinn:p2', 'djinn:p3']) {
   const { S, len, ev } = await grab(name, 2);
   const tonal = ev.filter(e => e.kind === 'osc'), T0 = Math.min(...tonal.map(e => e.t)) - 1e-6, first = tonal.filter(e => e.t >= T0 && e.t < T0 + len - 1e-6), sec = tonal.filter(e => e.t >= T0 + len - 1e-6 && e.t < T0 + 2 * len - 1e-6);
   assert.ok(first.length > 150, name + ': only ' + first.length + ' notes in a loop');
