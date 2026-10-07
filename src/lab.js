@@ -1114,13 +1114,13 @@ async function runbossLab(BK, opts) {
           if(m==='diveTell'&&boss.tgt===on){const n=next(on),dir=n?Math.sign(cen(n)-P.x)||1:1,ex=dir>0?on.x+on.w-10:on.x+10;if(Math.abs(ex-P.x)>3)k[ex>P.x?'right':'left']=true;done=true;}   /* to the edge, and wait: the aim is his until he drops */
           else if(m==='dive'&&boss.tgt===on){goSlab(next(on));done=true;}   /* LATE: he has dropped - go */
           else if(m==='flareTell'&&boss.fm===on){goSlab(next(on));done=true;}
-          else if((m==='breathTell'&&boss.modeT<0.45)||m==='breath'){ if(SHIELDED(h)){k.block=true;P.face=side;} else if(m==='breathTell'){goSlab(next(on,null,true)||next(on));} done=true; }   /* THE FIRE: a shield, or off its line */
+          else if((m==='breathTell'&&boss.modeT<0.45)||m==='breath'){ if(SHIELDED(h)){k.block=true;P.face=side;} else if(LABP.v2&&h==='warden'){k.block=DEFLECT_TAP(f);P.face=side;} else if(m==='breathTell'){goSlab(next(on,null,true)||next(on));} done=true; }   /* THE FIRE: a shield, or off its line (claude/retune2, v2: the warden DEFLECTS it - it is yellow, and her slab hops off its line put her on the spikes 2-3 times a fight; the same for his fireballs below) */
           else if((m==='smash'||m==='crash')&&boss.y>on.y+8){done=true;}
           if(!done){const tx=cen(on);if(Math.abs(tx-P.x)>6)k[tx>P.x?'right':'left']=true;}
           /* THE FIREBALLS (2026-09-28, in the wing gust's place; two, one after the other, since claude/gargoyle5 - the nearest one coming in is the one it answers): slow and aimed where it was thrown - a shield faces it; the others jump it
              as it comes in (a roll could carry them off the slab) */
           const b=(boss.balls||[]).filter(q=>Math.sign(q.vx)===-(Math.sign(q.x-P.x)||side)||Math.abs(q.x-P.x)<10).sort((p,q)=>Math.abs(p.x-P.x)-Math.abs(q.x-P.x))[0];if(b){const bs=Math.sign(b.x-P.x)||side,near=Math.abs(b.x-P.x),closing=Math.sign(b.vx)===-bs||near<10;
-            if(closing&&near<70&&Math.abs(b.y-(P.y-9))<40){if(SHIELDED(h)){if(!done){k.block=true;k.left=k.right=false;P.face=bs;}}else if(near<34&&P.ground&&!P.labJump){BK.press('jump');P.labJump=10;}}}
+            if(closing&&near<70&&Math.abs(b.y-(P.y-9))<40){if(SHIELDED(h)){if(!done){k.block=true;k.left=k.right=false;P.face=bs;}}else if(LABP.v2&&h==='warden'&&near<40&&P.ground){k.block=DEFLECT_TAP(f);k.left=k.right=false;P.face=bs;}else if(near<34&&P.ground&&!P.labJump){BK.press('jump');P.labJump=10;}}}
         }
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const was=P.hp,m0=boss.mode,ball0=(boss.balls||[]).length;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:ball0>(boss.balls||[]).length&&P.hp<was?'FIREBALL':m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
