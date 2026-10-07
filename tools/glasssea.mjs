@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { trace, makeOpaque } from '../src/light.js';
-import { isSlope } from '../src/slopes.js';
+import { isSlope, slideStep, SLIDE } from '../src/slopes.js';
 import { SUN } from '../src/sunstroke.js';
 import { SECTIONS, ARCS, SUNSET_X } from '../src/glass-sea.js';
 import * as CG from '../src/glass-colossus.js';
@@ -91,7 +91,18 @@ ok(L.ents.filter(e => e.t === 'check').length >= 4, 'the checkpoints: ' + L.ents
   ok(['glassday', 'glassnight'].every(k => au.includes('  ' + k + '() {')), 'src/audio.js SYNTH_BEDS has glassday() and glassnight()'); }
 /* (fix pass) THE SLIDE GAP's nudge and sign say the technique (a plain run-jump falls in for every hero) */
 { const SP = readFileSync(new URL('../src/stuck-spots.js', import.meta.url), 'utf8'), m = /id: 'gs-slide'.*?line: '([^']*)'/.exec(SP); ok(m && /HOLD DOWN/.test(m[1]) && /SLIDE/.test(m[1]), 'the slide gap nudge says HOLD DOWN / SLIDE: ' + (m && m[1]));
-  const sg = L.ents.find(e => e.t === 'sign' && /HOLD DOWN TO SLIDE/.test(e.text)); ok(sg && sg.x >= 133 && sg.x <= 137, 'the slide sign stands on the crest (col ' + (sg && sg.x) + ')'); }
+  const sg = L.ents.find(e => e.t === 'sign' && /HOLD DOWN TO SLIDE/.test(e.text)); ok(sg && sg.x >= 133 && sg.x <= 137, 'the slide sign stands on the crest (col ' + (sg && sg.x) + ')');
+  /* (claude/slickslope, Daniel 10-07 "this jump can't be beat by the geomancer") THE LONG SLIDE: a steep glass run of at least seven tiles from the crest the sign stands on
+     down to the foot, the sign on the crest's top (not in the slope), the crack soft (it is the slide's teach), and the glass KEEPS what the slide builds (slopes.js slideStep
+     bled anything over the hill's top speed; glass-sea-hands slideKeep). The per-hero jump itself is measured on the page: tools/glasssea-slide.mjs */
+  const gp = crack('slideGap'); let run = 0; for (let x = gp.x0 - 2; x > gp.x0 - 20; x--) { if (at(x, gp.y - 1 - run) !== T.AIR && isSlope(at(x, gp.y - 1 - run))) run++; else break; }
+  ok(run >= 7 && at(gp.x0 - 1, gp.y) === T.SOLID && at(gp.x0 - 1, gp.y - 1) === T.AIR, 'the slide gap\'s run: ' + run + ' steep glass tiles down to a one-tile foot (>= 7; it was five)');
+  ok(sg && at(sg.x, sg.y + 1) === T.SOLID && !isSlope(at(sg.x, sg.y)) && sg.x === gp.x0 - 2 - run, 'the slide sign stands on the crest\'s top, where the run starts (col ' + (sg && sg.x) + ', row ' + (sg && sg.y) + ')');
+  ok(gp.soft, 'the slide gap is a SOFT crack: it is the slide\'s teach (back to the lip, no blow)');
+  const s = { vx: 0, sliding: false, carry: false }; let vKeep = 0, vSand = 0, s2 = { vx: 0, sliding: false, carry: false };
+  for (let i = 0; i < 60; i++) { slideStep(s, 1 / 60, { kind: T.SLOPE_L1, ground: true, down: true, keep: GS.slideCap }); s.vx += Math.sign(s.vx) * GS.slideAcc / 60; if (Math.abs(s.vx) > SLIDE.maxSteep * GS.slideCap) s.vx = Math.sign(s.vx) * SLIDE.maxSteep * GS.slideCap; vKeep = Math.abs(s.vx);
+    slideStep(s2, 1 / 60, { kind: T.SLOPE_L1, ground: true, down: true }); s2.vx += Math.sign(s2.vx) * GS.slideAcc / 60; vSand = Math.abs(s2.vx); }
+  ok(vKeep >= SLIDE.maxSteep * 1.2 && vSand < SLIDE.maxSteep * 1.06, 'a second down the slick glass KEEPS its build (' + vKeep.toFixed(0) + ' px/s) where the old clamp held it at the hill\'s ' + vSand.toFixed(0)); }
 /* ---------------- THE GLASS COLOSSUS ---------------- */
 const A = L.arena; ok(A.boss === 'colossus' && A.x1 - A.x0 === 40 * TS, 'the arena is forty tiles, its boss THE GLASS COLOSSUS');
 const G = CG.geom(A, TS);
