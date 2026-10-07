@@ -79,9 +79,9 @@ THE WELL TOWN BOSS CHANGE (Daniel, 2026-10-02, after playing the greybox; copied
   P2 WELL SHAFT: Venom Spit (! arc, poison puddle); Tail Sweep high/low (!! lit band - duck/jump); Drop Pounce (!! growing shadow); Skitter Ambush (!!
   from a side tunnel, dust trickle tells which); Wall Slam (!! rubble, ledge shadows); Stinger Pin (!! lunge - dodged, the stinger sticks briefly).
   OPEN: pour on the wall above her -> loses grip, on her back 3 s.
-  P3 FLOOD: Wave Thrash (!! jump); Grab and Sting (!! strike the claw/mash or a heavy poison sting); Death Roll (!! through the water - jump/roll);
-  Tidal Tail (!! venom-water whip - duck/get above); Brood Shield (hides behind up to 3 one-hit brood that drown in deep water).
-  OPEN: a broken grab -> she rears flailing 3 s. ENRAGE < 15%: Snap-Snap-Sting into Death Roll.
+  P3 FLOOD: Wave Thrash (!! jump); Grab and Sting (!! strike the claw/mash or a heavy poison sting); Venom Bloom (!! claude/queen4, Daniel 10-07, for the old Death Roll: the stinger driven into the water, a green ring spreads and blooms - out of it or up on a ledge; the stinger exposed in the water meanwhile);
+  Tidal Tail (!! venom-water whip - duck/get above). (The Brood Shield was cut 10-07: no add summons in her fight.)
+  OPEN: a broken grab -> she rears flailing 3 s. ENRAGE < 15%: Snap-Snap-Sting into the Venom Bloom.
   ALWAYS: raised claws turn frontal hits outside openings (visible guard); venom stacks slow stamina regen; x0.05 chip + greed reprisal; mash bot 0/6;
   human bot 50-60%; screen-filling silhouette, lit stinger.
 

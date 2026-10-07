@@ -1,7 +1,6 @@
 // src/cistern-queen-hands.js - THE CISTERN QUEEN's HANDS (claude/welltown3). src/cistern-queen.js is the fight (pure: her three phases, her cycles,
 // her openings, the bot's reading); this binds it to the world: her told blows on the heroes (keyed once a blow, a shield turns only the yellow ones,
-// a duck goes under the high bands), her claw's grab (the game's own P.snare: mash out, or strike the claw), her brood (desert scorpions with one blow
-// in them), the pour (src/well-town-hands.js asks pourables()), the windlass and the shaft's bucket, her VENOM on the heroes' stamina (P.venomSlow,
+// a duck goes under the high bands), her claw's grab (the game's own P.snare: mash out, or strike the claw), the pour (src/well-town-hands.js asks pourables()), the windlass and the shaft's bucket, her VENOM on the heroes' stamina (P.venomSlow,
 // read by main.js's stamina regen), and the drawing (src/redraw/cistern_queen_art.js draws her; this draws the hall's machines and her tells).
 // main.js calls: spawnBoss, owns, update, take, pourable, draw, drawOver, barName, end, read, show, clear. Every teaching line goes through ctx.number
 // with a line listed in src/hint-lines.js.
@@ -12,7 +11,8 @@ const { CQ } = CQG;
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), dig: s => (s.rubble || s.thud)(), climb: s => (s.chitin || s.step || s.thud)(), lunge: s => (s.leap || s.heavy)(),
   stab: s => (s.pierce || s.sting || s.crack)(), flick: s => (s.rubble || s.thud)(), erupt: s => { (s.rubble || s.thud)(); (s.roar || s.heavy)(); }, plough: s => (s.rubble || s.thud)(),
   spit: s => (s.spit || s.hiss)(), sweep: s => (s.slash || s.heavy)(), slam: s => { (s.heavy || s.thud)(); (s.rubble || s.thud)(); }, drop: s => (s.leap || s.thud)(),
-  skitter: s => (s.chitin || s.step || s.thud)(), thrash: s => (s.wave || s.splash)(), snap: s => (s.crack || s.clank)(), roll: s => (s.waveBreak || s.splash)(), whip: s => (s.slash || s.splash)(),
+  skitter: s => (s.chitin || s.step || s.thud)(), thrash: s => (s.wave || s.splash)(), snap: s => (s.crack || s.clank)(), whip: s => (s.slash || s.splash)(),
+  bloom: s => (s.hiss || s.spit || s.splash)(), bloomBurst: s => { (s.whirlpool || s.splash)(); (s.hiss || s.spit || s.thud)(); },   /* (claude/queen4) THE VENOM BLOOM: the hiss of the tell, the slick's burst */
   call: s => (s.hiss || s.roar)(), sting: s => (s.sting || s.crack)(), soak: s => { (s.splash)(); (s.hiss || s.thud)(); }, fall: s => (s.heavy || s.thud)(), rear: s => (s.roar || s.heavy)(),
   windlass: s => { (s.clank)(); s.ratchet && s.ratchet(); }, splash: s => (s.whirlpool || s.splash)(), rock: s => (s.stone || s.thud)(), flood: s => { (s.whirlpool || s.splash)(); (s.roar || s.heavy)(); },
   flare: s => (s.fireWhoosh || s.hiss || s.crack)() };
@@ -64,6 +64,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
         else if (k === 'flare') { ctx.burst(x, y - 30, 22, ['#ff9a3c', '#ffd36b', '#d84a14'], 90, 0.8); }
         else if (k === 'steam') { ctx.burst(x, y - 30, 20, ['#e8f4f8', '#c8d0d8', '#9aa39a'], 50, 1.0); try { (ctx.sfx.hiss || ctx.sfx.splash)(); } catch {} }
         else if (k === 'stoneLand') ctx.dust(x, y, 3);
+        else if (k === 'bloom') { ctx.burst(x, y - 8, 28, ['#a6e04a', '#d6f8a0', '#4e7a24', '#7ab8e8'], 130, 0.8); ctx.burst(x - CQ.bloomR * 0.6, y - 4, 10, ['#a6e04a', '#4e7a24'], 80, 0.6); ctx.burst(x + CQ.bloomR * 0.6, y - 4, 10, ['#a6e04a', '#4e7a24'], 80, 0.6); }   /* (claude/queen4) THE VENOM BLOOM bursts */
         else if (k === 'slamGround') { ctx.burst(x, y - 6, 22, ['#c9a46a', '#8a6a3e', '#ffd36b', '#e8d4a0'], 120, 0.7); ctx.dust(x, y, 16); } },   /* (claude/underwell3) the stinger slam's crater */
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
         if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, o.duck ? ctx.duckBox(P) : ctx.box(P)) || keyed(pp, o.key || name)) return;
@@ -80,8 +81,6 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
       free: h => !(h.pp.snare > 0) || h.pp.dead,
       holdAt: (h, x) => ctx.asPlayer(h.pp, () => { const P = ctx.hero(); P.vx = Math.max(-60, Math.min(60, (x - P.x) * 5)); }),
       release: h => { if (h && h.pp && h.pp.snare > 0) h.pp.snare = 0; },
-      spawnBrood: (x, y) => { const b = ctx.spawnBrood(x, y); if (b) { b.hp = CQ.broodHp; b.hp0 = CQ.broodHp; b.brood = true; ctx.burst(b.x, b.y - 6, 6, ['#7ab8e8', '#c9a46a'], 50, 0.5); } return b; },
-      drown: b => { ctx.burst(b.x, b.y - 4, 10, ['#7ab8e8', '#e8f4f8'], 60, 0.6); if (!S.told.drown) { S.told.drown = 1; ctx.number(b.x, b.y - 30, 'THE DEEP WATER DROWNS HER BROOD', '#8fd160'); } },
       water: d => { S.waterShown = d; },
     };
   }
@@ -142,10 +141,10 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     aim: P => { const e = ctx.boss; if (!S || !ctx.bossActive || !e || e.t !== 'cisternqueen' || !e.alive) return null; return CQG.pourAim(e, S, heroOf(P)); },
     pour: P => { const e = ctx.boss; if (!S || !e || e.t !== 'cisternqueen') return null; const r = CQG.pourAt(e, S, heroOf(P), world(e)); if (r === 'wasted') ctx.number(P.x, P.y - 30, 'IT RUNS INTO THE SAND', '#9aa39a'); return r; },
   };
-  H.barName = e => 'THE CISTERN QUEEN' + (CQG.qOpen(e) ? (e.mode === 'soaked' ? '  SOAKED' : e.mode === 'slip' ? '  SLIPPED' : e.mode === 'fallen' ? '  ON HER BACK' : '  REARING') : CQG.qScorched(e) ? '  SCORCHED' : e.mode === 'sslamTell' || e.mode === 'sslam' ? '  STINGER SLAM!' : e.mode === 'planted' ? '  STINGER PLANTED' : e.burrowed ? '  BURROWED' : '');   /* (claude/underwell3: SLIPPED - up through wet sand; SCORCHED - the fire on her oil; DRIVEN UP is a scorch now) */
-  H.end = e => { if (S) { S.bands = []; S.shots = []; S.rubble = []; S.puddles = []; S.claw = null; for (const b of S.brood) if (b.alive) { b.alive = false; ctx.burst(b.x, b.y - 4, 8, ['#7ab8e8', '#c9a46a'], 50, 0.5); } }
+  H.barName = e => 'THE CISTERN QUEEN' + (CQG.qOpen(e) ? (e.mode === 'soaked' ? '  SOAKED' : e.mode === 'slip' ? '  SLIPPED' : e.mode === 'fallen' ? '  ON HER BACK' : '  REARING') : CQG.qScorched(e) ? '  SCORCHED' : e.mode === 'sslamTell' || e.mode === 'sslam' ? '  STINGER SLAM!' : e.mode === 'bloomTell' || e.mode === 'bloom' || e.mode === 'bloomBurst' ? '  VENOM BLOOM!' : e.mode === 'planted' ? '  STINGER PLANTED' : e.burrowed ? '  BURROWED' : '');   /* (claude/underwell3: SLIPPED - up through wet sand; SCORCHED - the fire on her oil; DRIVEN UP is a scorch now) */
+  H.end = e => { if (S) { S.bands = []; S.shots = []; S.rubble = []; S.puddles = []; S.claw = null; S.bloom = null; }
     for (const pp of ctx.players) { pp.cqVenom = []; pp.venomSlow = 1; if (pp.snare > 0) pp.snare = 0; } };
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), water: S.water, brood: S.brood.length, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) } };
+  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), water: S.water, bloom: S.bloom ? S.bloom.st : null, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING ---------- */
   /* her body (from the enemy loop, before the bodies of everyone else are drawn) */
