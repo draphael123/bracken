@@ -541,7 +541,12 @@ function planOf(s) {
   const seenFor = key => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= PLAN.react; };
   const roll = (key, pr) => { if (!mem.roll.has(key)) mem.roll.set(key, rng() < pr); return mem.roll.get(key); };
   const keyOf = p => (p.t || 'him') + '|' + p.mode + '|' + (p.tellId || 0);
-  const sees = p => seenFor(keyOf(p)), dodges = p => sees(p) && !roll(keyOf(p) + '|d', PLAN.missDodge);
+  /* (claude/botreads, s.eyes) a puppet's pose is already seen a reaction late by the lab's eyes (no second delay on top); the snare line and the sea's wave are
+     read off their TELLS (the red line at the told height across the stage, the flat rising in the wing) - their reaction runs from the tell, not from the sweep;
+     a sandbag's fall and a gust's tell are timed off their drawn shadow / billow with an error, not their exact clocks */
+  if (s.eyes) { if (show.snare && show.snare.ph === 'tell') seenFor('snare|' + show.snare.id); if (show.wave && show.wave.ph === 'tell') seenFor('wave|' + show.wave.id); }
+  const errOf = k => { mem.err = mem.err || new Map(); if (!mem.err.has(k)) mem.err.set(k, (rng() + rng() + rng() - 1.5) * 0.12); return mem.err.get(k); };
+  const sees = p => (s.eyes && p !== e) || seenFor(keyOf(p)), dodges = p => sees(p) && !roll(keyOf(p) + '|d', PLAN.missDodge);
   const onGal = Math.abs(P.y - A.gallery) < 6 && P.ground, onStage = P.y > A.gallery + 20, onFloor = P.ground && Math.abs(P.y - A.floor) < 6, clampX = x => Math.max(A.x0 + 12, Math.min(A.x1 - 12, x));
   const pups = show.puppets.filter(p => p.alive && !heaped(p) && p.mode !== 'packed' && p.mode !== 'lower');
   const near = (p, r) => Math.abs(p.x - P.x) < r && Math.abs((p.floorY ?? p.y) - P.y) < 14;
@@ -550,7 +555,7 @@ function planOf(s) {
   if (open && onGal) { const d = e.x - P.x; out.face = Math.sign(d) || 1; out.gx = Math.abs(d) > reach - 6 ? clampX(e.x - out.face * (reach - 10)) : null; out.atk = Math.abs(d) < reach + 4; out.why = 'strike him'; return out; }
   /* ---- 0. A PROP COMING DOWN ON YOU (its shadow under you): step off it, a human beat late ---- */
   for (const d of show.drops || []) { if (Math.abs(d.fy - P.y) > 10 || Math.abs(d.x - P.x) > d.half + 10) continue;
-    const k = 'drop|' + d.id; if (!seenFor(k) || roll(k + '|d', PLAN.missDodge) || d.t > 0.6) continue;
+    const k = 'drop|' + d.id; if (!seenFor(k) || roll(k + '|d', PLAN.missDodge) || d.t + (s.eyes ? errOf('d' + d.id) : 0) > 0.6) continue;
     out.gx = clampX(d.x + (P.x < d.x ? -1 : 1) * (d.half + 20)); out.why = 'off the shadow'; return out; }
   /* ---- 0b. THE SNARE LINE: low, jump it; high, duck it (on the boards) ---- */
   const sn = show.snare;
@@ -567,7 +572,7 @@ function planOf(s) {
   if (onFloor && inTrap(P.x) >= 0 && seenFor('trap|' + show.n.flame + '|' + T.ph) && !roll('trap|' + show.n.flame + '|d', PLAN.missDodge)) { const [x0, x1] = trapPx(A, inTrap(P.x));
     out.gx = clampX(P.x - x0 < x1 - P.x ? x0 - 12 : x1 + 12); out.why = 'off the trap'; return out; }
   /* ---- 0e. THE STORM: brace through a gust (hold down), unless striking a green puppet ---- */
-  const G = show.gust, bracing = G && (G.ph === 'on' || (G.ph === 'tell' && G.t < 0.3)) && P.ground && !roll('gust|' + show.gustN + '|d', PLAN.missBrace);
+  const G = show.gust, bracing = G && (G.ph === 'on' || (G.ph === 'tell' && G.t + (s.eyes ? errOf('g' + show.gustN) : 0) < 0.3)) && P.ground && !roll('gust|' + show.gustN + '|d', PLAN.missBrace);
   /* ---- 2. A BLOW COMING at you: answer it (a misread is a miss) ---- */
   const threats = pups.filter(p => { const k = tellOf(p.mode) || p.mode; return BLOWS.includes(k) && (/Tell$/.test(p.mode) || BLOWS.includes(p.mode)) && sees(p); })
     .sort((a, b) => (/Tell$/.test(a.mode) ? a.modeT : 0) - (/Tell$/.test(b.mode) ? b.modeT : 0));

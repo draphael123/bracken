@@ -491,10 +491,17 @@ export function djinnPlan(s) {
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, block: false, dodge: false, talk: false, down: false, up: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0, sips = s.sips || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
-  const key = e.mode + S.act, seen = () => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= DJ_PLAN.react; };
+  const key = e.mode + S.act, seen = () => { if (s.eyes) return true; if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= DJ_PLAN.react; };   /* (claude/botreads) s.eyes: the lab's perception layer (a v2 profile) already sees his pose a reaction late and misreads some - no second delay on top */
+  /* (claude/botreads, s.eyes) WHAT A PLAYER SEES: a band that runs at you was TOLD (the devil's arm up, the fire devil's cast, the wave's mark over the column) - read
+     its tell and it is met as it comes; one whose tell was missed is seen a reaction after it appears. The sand blast comes down where you stood when you SAW him
+     wind it (not his own aim point); the stones in the air are drawn */
+  const tellAt = mem.tellAt = mem.tellAt || {}; if (s.eyes) { if (/Tell$/.test(e.mode)) tellAt[e.mode] = t; if (e.mode !== mem.pm) { if (e.mode === 'blastTell') mem.blastX = P.x; mem.pm = e.mode; } }
+  const BAND_TELL = { devil: 'devilTell', firedevil: 'firedevilTell', wave: 'waveTell' };
+  const bandSeen = b => { if (!s.eyes) return seen() && !misread; if (BAND_TELL[b.k] && t - (tellAt[BAND_TELL[b.k]] ?? -9) < 2.5) return true;
+    mem.objAt = mem.objAt || new WeakMap(); if (!mem.objAt.has(b)) mem.objAt.set(b, t); return t - mem.objAt.get(b) >= DJ_PLAN.react; };
   const roll = (k, p) => { if (!mem.roll.has(k)) mem.roll.set(k, rng() < p); return mem.roll.get(k); };
   const lo = G.x0 + 12, hi = G.x1 - 12, clamp = x => Math.max(lo, Math.min(hi, x)), side = Math.sign(P.x - e.x) || 1, ad = Math.abs(P.x - e.x), toHim = Math.sign(e.x - P.x) || 1;
-  const onLedge = P.onLedge, misread = roll(key + 'm', DJ_PLAN.miss), m = e.mode;
+  const onLedge = P.onLedge, misread = !s.eyes && roll(key + 'm', DJ_PLAN.miss), m = e.mode;
   const offLedge = () => { if (onLedge) { out.down = true; out.jump = P.ground; } };
   if (P.snare > 0) { out.atk = P.atk < 0; out.why = 'strike out of the spout'; return out; }
   if (P.burn > 0 && sips > 0 && t - (mem.burnSeen ?? (mem.burnSeen = t)) >= DJ_PLAN.react) { out.talk = true; out.why = 'douse yourself'; return out; }
@@ -508,7 +515,7 @@ export function djinnPlan(s) {
     const mk0 = S.marks.find(q => Math.abs(q.x - P.x) < DJ.pillarR + 14 && Math.abs(q.y - P.y) < 30); if (mk0) out.gx = clamp(P.x + (P.x <= mk0.x ? -54 : 54)); return out; }
   /* 0. what runs, erupts and comes down at you */
   const band = S.bands.find(b => !(b.delay > 0) && Math.abs(b.x - P.x) < 110 && Math.sign(P.x - b.x) === b.dir && P.y > b.y[0] - 4 && P.y - 20 < b.y[1]);
-  if (band && (band.bounce ? !roll('fd' + band.pass + band.key, DJ_PLAN.miss) : seen() && !misread) && Math.abs(band.x - P.x) < 70) { out.jump = P.ground || !!P.climb; out.why = 'jump the ' + band.k; return out; }
+  if (band && (band.bounce ? !roll('fd' + band.pass + band.key, DJ_PLAN.miss) && (!s.eyes || bandSeen(band)) : bandSeen(band)) && Math.abs(band.x - P.x) < 70) { out.jump = P.ground || !!P.climb; out.why = 'jump the ' + band.k; return out; }
   const mk = S.marks.find(q => Math.abs(q.x - P.x) < DJ.pillarR + 14 && Math.abs(q.y - P.y) < 30);
   if (mk && !roll('mk' + mk.key, DJ_PLAN.miss) && t - (mem.seen.get('mk' + mk.key) ?? (mem.seen.set('mk' + mk.key, t), t)) >= DJ_PLAN.react) {
     const step = mk.k === 'pillar' ? 36 : mk.k === 'spear' ? 44 : 54; out.gx = clamp(P.x + (P.x <= mk.x ? -step : step)); if (mk.k === 'pillar' && (out.gx <= lo + 1 || out.gx >= hi - 1)) out.gx = clamp(P.x + (P.x <= mk.x ? step : -step)); if (onLedge) { const r = onLedge === 'W' ? G.ledgeW : G.ledgeE; out.gx = Math.max(r[0] + 8, Math.min(r[1] - 8, P.x + (P.x <= mk.x ? -40 : 40))); }
@@ -516,7 +523,7 @@ export function djinnPlan(s) {
   if (m === 'breathTell' && seen() && !misread && ad < DJ.breathReach + 10 && Math.sign(P.x - e.x) === (e.face || 1)) { out.down = P.ground; out.why = 'duck the breath'; return out; }
   if (m === 'breath' && ad < DJ.breathReach + 10 && Math.sign(P.x - e.x) === (e.face || 1)) { out.down = P.ground; out.why = 'under the breath'; return out; }
   /* 0b. THE WHIRLPOOL: wade against it, away from the shaft */
-  if (m === 'whirl' && !onLedge && !P.climb && Math.abs(P.x - G.mid) < 200) { out.gx = clamp(P.x + (Math.sign(P.x - G.mid) || 1) * 90); out.why = 'wade against the whirlpool'; return out; }
+  if ((m === 'whirl' || (s.eyes && m === 'whirlTell')) && !onLedge && !P.climb && Math.abs(P.x - G.mid) < 200) { out.gx = clamp(P.x + (Math.sign(P.x - G.mid) || 1) * 90); out.why = 'wade against the whirlpool'; return out; }
   /* 0c. THE PAIL ANY TIME HE IS UP (claude/djinn5): full, he is up in the flood within a throw, his shroud down - read a quarter-second late, some let go -
      throw it (E, a step off the windlass, where E would wind it); not when the bucket hangs ready and he is under the shaft or drinking there (the bail is bigger) */
   if (S.ph === 3 && s.pail === 'full' && upInFlood(e, S) && !(S.ward > 0)) { const uk = 'upAt' + S.n.wards + '_' + (S.n.opens || 0); if (!mem.seen.has(uk)) mem.seen.set(uk, t);
@@ -533,7 +540,8 @@ export function djinnPlan(s) {
   if ((m === 'lashTell' || m === 'flashTell') && seen() && !misread && ad < DJ.lashReach + DJ.w / 2 + 20) { if (s.deflect && !(P.busy > 0)) { out.face = toHim; out.block = e.modeT < 0.22; out.why = 'deflect the lash on the beat'; return out; } if (s.shield) { out.block = true; out.face = toHim; out.why = 'block the lash'; return out; } out.gx = clamp(e.x + side * (DJ.lashReach + DJ.w / 2 + 34)); out.dodge = P.ground && ad < DJ.lashReach + DJ.w / 2 + 6 && e.modeT < 0.3; out.why = out.dodge ? 'roll out of the lash' : 'off the lash'; return out; }
   if ((m === 'lash' || m === 'flash') && ad < DJ.lashReach + DJ.w / 2 + 10) { if ((s.deflect && !(P.busy > 0)) || s.shield) { out.block = true; out.face = toHim; return out; } out.gx = clamp(e.x + side * (DJ.lashReach + DJ.w / 2 + 34)); out.why = 'off the lash'; return out; }
   if (m === 'blastTell' && seen() && !misread && s.shield) { out.block = true; out.face = toHim; out.why = 'block the sand'; return out; }
-  if ((m === 'blastTell' || (S.shots.length && S.cur && S.cur.k === 'blast')) && !roll('bl' + S.act, DJ_PLAN.miss) && (m !== 'blastTell' || seen()) && !s.shield && S.cur && S.cur.x != null && Math.abs(P.x - S.cur.x) < 60) { out.gx = clamp(S.cur.x + (P.x >= e.x ? 1 : -1) * 72); out.why = 'out from under the sand'; return out; }
+  if (s.eyes) { if ((m === 'blastTell' || (S.shots.length && t - (tellAt.blastTell ?? -9) < 1.5)) && !s.shield && mem.blastX != null && Math.abs(P.x - mem.blastX) < 60) { out.gx = clamp(mem.blastX + (P.x >= e.x ? 1 : -1) * 72); out.why = 'out from under the sand (where I stood)'; return out; } }
+  else if ((m === 'blastTell' || (S.shots.length && S.cur && S.cur.k === 'blast')) && !roll('bl' + S.act, DJ_PLAN.miss) && (m !== 'blastTell' || seen()) && !s.shield && S.cur && S.cur.x != null && Math.abs(P.x - S.cur.x) < 60) { out.gx = clamp(S.cur.x + (P.x >= e.x ? 1 : -1) * 72); out.why = 'out from under the sand'; return out; }
   /* 3. PHASE THREE (claude/djinn3): THE TIDE - when the well surges, up onto the east ledge (the crank is there); low, the floor's windlass. THE BAIL IS TWO
      STEPS - wind the bucket up when it is down, then drop it only when he is under the shaft (read a quarter-second late, and some go early) */
   if (S.ph === 3) { const high = tideHigh(S), b = S.bucket, turning = TURNING.has(m);

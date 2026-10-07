@@ -18,6 +18,11 @@
 // Its dice are its OWN stream (seeded from the row's key), so the boss's own rolls are not shifted by the eyes.
 import { mulberry } from './px.js';
 const FIELDS = ['mode', 'modeT', 'open', 'greedT'];
+/* (claude/botreads) WHAT ELSE IS DRAWN, per boss: flags and counters a plan reads that ARE on the screen (a pose, a colour, pips), but that
+   a player sees only a reaction late. Each change of one is seen after its own triangular reaction (no misread), on its own dice stream
+   ('drawn|' + key), so the eyes' stream above is not shifted and a boss with no row here plays exactly as before.
+     bloodknight  committed (the overhead pose and the cleave's line turning red), wardFill (the ward's pips), wardLock (the ward's grey edge) */
+export const DRAWN = { bloodknight: ['committed', 'wardFill', 'wardLock'] };
 const seedOf = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 const tri = (r, a, c, b) => { const u = r(), f = (c - a) / (b - a); return u < f ? a + Math.sqrt(u * (b - a) * (c - a)) : b - Math.sqrt((1 - u) * (b - a) * (b - c)); };
 const gauss = r => { let u = 0, v = 0; while (u === 0) u = r(); v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
@@ -26,7 +31,7 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
   const msF = ms => Math.max(1, Math.round(ms / 1000 * FPS));
   const S = new Map(), seenTells = new Map(), stats = { reads: 0, rtSum: 0, misreads: 0, greeds: 0, unseen: 0, heard: 0 };
   let f = 0, applied = false, enemies0 = null, greedUntil = -1, greedSwings = 0, atkWas = -1, bossHp = boss.hp, slip = false, slipAt = 0, openSeen = 0;
-  const P = () => BK.P;
+  const P = () => BK.P, rngD = mulberry(seedOf('drawn|' + key)), drawnOf = e => (opts.drawn && opts.drawn[e.t]) || DRAWN[e.t] || null;
   const view = () => { const v = BK.view || {}, z = v.z || 1, VW = v.VW || 320, VH = v.VH || 180, cx = (v.x || 0) + VW / 2, cy = (v.y || 0) + VH / 2; return { l: cx - VW / 2 / z - 6, r: cx + VW / 2 / z + 6, t: cy - VH / 2 / z - 10, b: cy + VH / 2 / z + 10 }; };
   const onScreen0 = (e, V) => e.x + (e.w || 16) / 2 > V.l && e.x - (e.w || 16) / 2 < V.r && e.y > V.t && e.y - (e.h || 20) < V.b;
   /* (claude/sweep2) THE KRAKEN IS SEEN BY HIS ARMS AND HIS BEAK: his body (e.x) lies out in the sea past the screen, but every move he makes
@@ -76,16 +81,22 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
       const g = e.greedT > 0; if (!g) { st.pGreed = e.greedT; st.greedAt = -1; } else if (st.greedAt < 0) { st.greedAt = f + msF(tri(rng, prof.rtMin, prof.rtMode, prof.rtMax)); st.pGreed = 0; }
       if (g && st.greedAt >= 0 && f >= st.greedAt && vis) st.pGreed = e.greedT;
       st.vis = vis;
+      /* (claude/botreads) THE OTHER DRAWN THINGS (DRAWN): each change queued, seen a reaction late and in order, only while he is on the screen */
+      const D = drawnOf(e); if (D) { st.d = st.d || {};
+        for (const k of D) { const v = e[k]; let q = st.d[k]; if (!q) q = st.d[k] = { seen: v, last: v, Q: [] };
+          if (v !== q.last) { q.last = v; q.Q.push({ v, at: f + msF(tri(rngD, prof.rtMin, prof.rtMode, prof.rtMax)) }); }
+          while (q.Q.length && f >= q.Q[0].at && vis) q.seen = q.Q.shift().v; } }
     }
     for (const e of S.keys()) if (!e.alive) S.delete(e);
   }
   /* PUT ON what was seen (the hands decide on it) / TAKE IT OFF (before the world steps) */
   function apply() { if (applied) return; applied = true;
-    for (const [e, st] of S) { st.real = [e.mode, e.modeT, e.open, e.greedT]; e.mode = st.pm; e.modeT = st.pT; e.open = st.pOpen; e.greedT = st.pGreed; }
+    for (const [e, st] of S) { st.real = [e.mode, e.modeT, e.open, e.greedT]; e.mode = st.pm; e.modeT = st.pT; e.open = st.pOpen; e.greedT = st.pGreed;
+      if (st.d) { st.realD = {}; for (const k in st.d) { st.realD[k] = e[k]; e[k] = st.d[k].seen; } } }
     enemies0 = BK.enemies; const all = enemies0.call(BK); BK.enemies = () => all.filter(e => e === boss || !S.has(e) || S.get(e).vis !== false);
     BK.labGreedy = greedSwings > 0 && f < greedUntil; BK.labSlip = slip; }
   function restore() { if (!applied) return; applied = false;
-    for (const [e, st] of S) if (st.real) { [e.mode, e.modeT, e.open, e.greedT] = st.real; st.real = null; }
+    for (const [e, st] of S) { if (st.real) { [e.mode, e.modeT, e.open, e.greedT] = st.real; st.real = null; } if (st.realD) { for (const k in st.realD) e[k] = st.realD[k]; st.realD = null; } }
     if (enemies0) { BK.enemies = enemies0; enemies0 = null; } BK.labGreedy = false; BK.labSlip = false; }
   update();   /* (frame nought: what is on the screen as the fight begins is seen at once) */
   for (const st of S.values()) { st.pm = st.mode; st.pend = null; }
