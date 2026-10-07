@@ -2301,3 +2301,13 @@ export async function eliteLab(BK, o) {
     return { out: P.dead ? 'dead' : e.alive ? 'timeout' : 'win', secs: +(f / 60).toFixed(1), hpLeftPct: Math.max(0, Math.round(P.hp / P.maxHp * 100)), eliteLeftPct: e.alive ? Math.round(e.hp / ehp * 100) : 0, affix: e.affix || null, ehp, roused: !!e.ekRoused };
   } finally { BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; HUMAN_H = null; }
 }
+/* (claude/walkerhands) THE LAB'S DUEL HANDS FOR THE LEVEL WALKER (tools/level-walk.mjs + src/walk-duel.js). One frame of labBotFrame - the hands the
+   elite lab measures every elite with (docs/elite-lab.json: the human wins ~80%) - with the HUMAN gates the elite lab puts on them (no swing into a
+   tell it would not finish, a roll late in a tell, half a roll's wind kept back) and the given profile's v2 flag, for one foe. pre(BK, h, e, f), when
+   given, runs first and may take the frame (returns true: its keys stand). Nothing else calls it: the legacy bot and every lab row are as they were. */
+export function labDuelFrame(BK, h, e, f, prof, pre) {
+  const press0 = BK.press, h0 = HUMAN_H, p0 = LABP; HUMAN_H = h; LABP = profileOf(prof || 'human');
+  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
+  try { rollWhenDue(BK, press0); if (pre && pre(BK, h, e, f)) return { defend: 0, swing: 0, pre: true }; return labBotFrame(BK, h, e, f); }
+  finally { BK.press = press0; HUMAN_H = h0; LABP = p0; }
+}
