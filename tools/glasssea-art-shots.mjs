@@ -57,7 +57,16 @@ try {
       col('a2-chest', 1, 'cracked', (e, S) => { e.open = 4; e.openT0 = 5.2; S.mirrors[0].notch = 'face'; S.mirrors[1].notch = 'face'; }, 612, 33, 621, 27);
       col('a3-night', 2, 'blazing', (e, S) => { e.open = 4; e.openT0 = 5.6; S.mirrors[0].notch = 'fire'; }, 612, 33, 620, 24);
       col('a4-dawn', 3, 'dazzled', (e, S) => { e.open = 4; e.openT0 = 5.4; S.mirrors[1].notch = 'sky'; }, 612, 33, 622, 26);
-      col('a5-lance', 1, 'lanceTell', (e, S) => { S.lance = { end: { x: 620 * 16, mirror: 0 } }; }); }
+      col('a5-lance', 1, 'lanceTell', (e, S) => { S.lance = { end: { x: 620 * 16, mirror: 0 } }; });
+      /* (claude/glasssea2) the mirror read, the reflected lance, the two new moves, the pose clock */
+      col('a6-turn', 1, 'idle', (e, S) => { S.mirrors[0].notch = 'sky'; S.mirrors[1].notch = 'sky'; S.cd = 99; }, 612, 33, 606, 28);
+      col('a7-reflect', 1, 'cracked', (e, S) => { e.open = 5.0; e.openT0 = 5.2; S.lastReflect = 0; S.mirrors[0].notch = 'face'; S.mirrors[1].notch = 'sky'; }, 612, 33, 621, 27);
+      col('a8-sweepTell', 1, 'sweepTell', (e, S) => { S.sweep = { dir: -1, x: S.G.x0 + 6, id: 1, live: false }; e.face = -1; }, 612, 33, 606, 28);
+      col('a9-sweep', 1, 'sweep', (e, S) => { S.sweep = { dir: -1, x: S.G.x0 + 90, id: 1, live: true }; e.face = -1; S.sweep.x = S.G.x0 + 90; }, 612, 33, 606, 28);
+      col('a10-quakeTell', 2, 'quakeTell', (e, S) => { S.plates = [-76, 0, 76].map(d => ({ x: 603 * 16 + d, dir: -1 })); }, 612, 33, 606, 28);
+      col('a11-slick', 2, 'idle', (e, S) => { S.cd = 99; S.slick = [-76, 0, 76].map(d => ({ x: 603 * 16 + d, dir: -1, t: 2 })); }, 612, 33, 606, 28);
+      col('a12-stomp', 1, 'stompTell', (e, S) => { e.face = -1; }, 612, 33, 610, 27);
+      col('a13-sweepwind', 1, 'sweepTell', (e, S) => { S.sweep = { dir: 1, x: S.G.x1 - 6, id: 1, live: false }; e.face = 1; }, 630, 33, 624, 22); }
     return res; })()`, 900000);
   for (const [name, d] of r) { writeFileSync(join(out, name + '.png'), Buffer.from(d.split(',')[1], 'base64')); console.log('work/claude/glasssea-art/' + tag + '/' + name + '.png'); }
   if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 3).join(' | '));

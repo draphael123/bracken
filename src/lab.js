@@ -1256,7 +1256,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const CO=BK.colossusHands(),S=CO&&CO.show();
         if(f===0||!P.labCoMem)P.labCoMem={};
-        const pl=S?colPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCoMem}):{gx:null,face:P.face};
+        const pl=S?colPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labCoMem,eyes:!!LABP.v2}):{gx:null,face:P.face};   /* (claude/glasssea2, v2: the eyes already read his tells late - the plan does not react twice) */
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=24;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=true;
