@@ -121,15 +121,17 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     const h0=p.hp,mh0=p.maxHp||100,lit0=litN(),held0=heldNow(),hl0=BKT.heroLevel?BKT.heroLevel(h):0,dead0=p.dead>0||h0<=0,px0=p.x;
     BK.sim(1);frames++;if(perc)perc.update();
     const q=BK.P,cs=S[S.length-1],h1=q.hp;if(resumeTo){const rt=resumeTo;resumeTo=null;if(Math.abs(q.x-rt.x)>2*TS){stucks[stucks.length-1].locked=true;end='locked';break;}}   /* the restart did not take: walls hold him (an ambush or an arena still shut) */if(c.trace&&trace.length<(c.traceN||400)&&q.x/TS>=c.trace[0]&&q.x/TS<=c.trace[1]&&frames%3===0)trace.push(frames+':'+(q.x/TS).toFixed(1)+','+(q.y/TS).toFixed(1)+(q.onMover?'M'+(q.onMover.moving?'m':'')+(q.onMover.paid?'p':''):'')+(q.ground?'g':'')+(q.swim?'S':'')+(BK.keys.jump?'J':'')+(BK.keys.right?'>':'')+(BK.keys.left?'<':'')+(BK.keys.block?'B':'')+(q.atk>=0?'A':'')+(q.vx?'v'+Math.round(q.vx):'')+' r'+ri+'g'+wx+(climb!==null?'C':'')+' hp'+Math.round(h1));const mh=q.maxHp||mh0;cs.frames++;
-    if(h1<h0)cs.lost+=(h0-Math.max(0,h1))/mh0;
+    /* a tonic drunk on the frame of the blow nets out against it: the drink goes back on both sides (lost and healed) */
+    const drank=Math.max(0,held0-heldNow()),dAmt=drank?drank*(typeof BK.drinkFlask==='function'?0.35*mh0:(PR.perkOn(P0,h,'tonic')?60:45)):0;
+    if(h1-dAmt<h0)cs.lost+=(h0-Math.max(0,h1-dAmt))/mh0;
     const st=BK.stats();if(st.kills>kPrev){cs.kills+=st.kills-kPrev;kPrev=st.kills;}if(BK.hitsTaken>hPrev){cs.hits+=BK.hitsTaken-hPrev;hPrev=BK.hitsTaken;}
     if(st.deaths>dPrev){const K=q.killer;deathLog.push({at:[Math.floor(q.x/TS),Math.floor(q.y/TS)],ri,by:K?(typeof K==='string'?K:K.name||K.t||K.who||'?'):'?',sec:S.length-1});cs.deaths+=st.deaths-dPrev;deaths+=st.deaths-dPrev;dPrev=st.deaths;}
     const lit1=litN(),held1=heldNow(),hl1=BKT.heroLevel?BKT.heroLevel(h):0;
     if(lit1>lit0&&resumeAt){resumeAt=false;cs.end=ri;S.push({...sec(),resumed:true,start:ri});}
     else if(lit1>lit0){cs.end=ri;arrivals.push({i:arrivals.length+1,hp:Math.round(100*Math.max(0,h0)/mh0),x:Math.round(q.x/TS),frame:frames,deathsBefore:deaths,start:frames<120});S.push({...sec(),start:ri});}
+    else if(held1<held0&&!dead0){cs.drinks+=held0-held1;cs.drinkHp+=Math.max(0,Math.min(dAmt,h1-Math.max(0,h1-dAmt<h0?h1-dAmt:h0)))/mh;}
     else if(h1>h0&&!dead0&&!(q.dead>0)){const g=(h1-Math.max(0,h0))/mh;
-      if(hl1>hl0){cs.lvup++;levelups++;} else if(held1<held0){cs.drinks+=held0-held1;cs.drinkHp+=g;} else cs.small+=g;}
-    else if(held1<held0){cs.drinks+=held0-held1;}
+      if(hl1>hl0){cs.lvup++;levelups++;} else cs.small+=g;}
     /* woke at a shrine (or put back on the bank by deep water): the walk picks up from the route node nearest him, never past where it had got; fresh hands */
     if(dead0&&!(q.dead>0)&&q.hp>0){ri=nearest(0,riBest+1)[0];riSince=ri;lastProg=frames;bot=makeBot(BK);climb=null;}
     else if(!resumeAt&&!(q.dead>0)&&Math.abs(q.x-px0)>3*TS){ri=nearest(0,riBest+1)[0];riSince=ri;bot=makeBot(BK);climb=null;}
