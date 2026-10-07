@@ -76,3 +76,80 @@ The full suite; textfit; stuck (runtime); the page-level per-boss sweeps beyond 
 5. THE DRILL's greed: its cab is always hittable, so only a blow on its ward counts as greed (no reprisal for cutting the cab). Rec: keep.
 6. THE MAP NODE (above): rec - a small crag-sheet re-layout in the map lane.
 7. MUSIC: 'mineworks' ("At Work (Loop)", HorrorPen, CC-BY 3.0) as you chose; the drill's theme is composed in code until you pick a track.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+# FIX PASS (2026-10-07, after scratch/review-minecart.md) - commits 3e9e88d6, 05ba5162, 92eaf802, 6bb786a7 + this report
+
+## MUST-FIX status
+1. MF1 TEACHING SIGNS AT SPEED - DONE. 23 TELLS (src/minecart.js tell(); L.mcTells; TELL_LINES routed to the hint box via src/hint-lines.js MC_TELL_LINES):
+   crossing a tell's column puts its line (<= 5 words) in the hint box once a life, 2.2-5 s at cruise before what it tells, never over another (MC.tellGap 1.6 s;
+   a station respawn inside a tell's window tells it again). The cart now WAITS 1.2 s at the start and at a station (RIGHT goes at once), so the first tell is
+   read standing. Every first crusher / beam / gap / boost gap / rock / rider / caster / slow cart / points / deep gap / gate / smelter and the drill is told
+   before it can hurt (tools/minecart.mjs asserts lead, spacing, word count, coverage). The posts stay as lore. The yard's beam moved 27 -> 38 so its tell
+   follows the gap's.
+2. MF2 THE RUNE LEADS THE CART - DONE. runeAt(x, v) = x + v * runeT; tools/minecart.mjs rides it (runeHits): cruise held = hit, full boost held = hit; boost
+   from cruise, brake from cruise or boost, a jump as it bursts = dodge; laid for a slow cart that lets go = rides past. The cart pilot learned to BOOST past a
+   rune (which also clears the gap the exam lays it on).
+3. MF4 BOOST GAPS 8 WIDE + MARKED LIPS - DONE. BOOST_GAP 9 -> 8 (every landing moved one in; the cave-in's low-line landing three further so a cruising jump off
+   the high line still falls in). Lips: a lantern pair + chevrons on the last sleepers, AMBER (a 27% fall) or RED + 'DEEP' (exam / chase: a real death), flashing
+   as you near. The probe (minecart-route --probe) now also presses a boosted jump 8 px EARLY: on all six gaps cruise falls in, boosted clears (lands one tile
+   past the far lip), 8 px early clears.
+4. MF5 THE CAVE-IN FORK TOLD EARLIER - DONE. Tells at 498 ('LOW LINE FALLING: GO HIGH', ~4.6 s before the fall-in) and 518 ('SET THE POINTS, THEN BOOST'); a
+   REQUIRED lever pulses while it is wrong (from ~300 px); the low line visibly CRUMBLES from 530 (cracked rail, rubble dropping, 'GOING').
+5. LEVEL TEETH - DONE (v2). Fork A now defaults SET (the high line: a gap, then a BOOST gap at 232-239 - miss it and you drop onto the low line at its gate -
+   bats IN both jump arcs, ore, an archer at the landing); its low line costs too (two crushers + the gate). DUCK x3: yard 38, goblin line 424 (under the pair's
+   arrows; ducked, an arrow goes over too), exam 798 (low line, short of its gate, under the pair). Gap 668 is a REAL-DEATH exam (zone 663-677, told, a bat in
+   the jump). Beam and gate 14 -> 18, crash 14 -> 16. The goblin line's upper rail ends at 438 (at 446 it dropped a rider ON the deep gap's lip: every hero
+   died there).
+6. THE GREAT DRILL - DONE, IN BAND (numbers below). P3 CHANGES THE ARENA (B5): the roof comes down on the HIGH line (its rail taken up, rubble on the floor,
+   'THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT'); the chute, the roof and the bore work on the two lines left; the rail is laid back when the fight is made
+   or ends. B8 approach: bore SCARS in the rock from 862 (getting bigger), spoil on the line, from 925 the roof SHAKES and dusts on a quickening beat with a
+   rumble, its HEADLIGHT flickers through the rock at the end of the bore, and the tell 'SOMETHING BORES TOWARD YOU'. Reverse gear: reverseAfter 0.35 -> 0.5 s.
+   Map node: LEFT RED (map-grammar / map-spacing untouched) - for the map lane.
+
+## Numbers (before -> after)
+- THE GREAT DRILL (tools/boss-rates.mjs minecart --ways=practiced --profile=human = DRY, campaign L11, maxHp 154 / pyro 142):
+  before: knight 4/6, warden 4/6, pyro 1/6 = 50%. The reviewer's recipe as given (jamCap .15, jamMul 2.5, contact 34, bore 31, gap 1.0) measured
+  6/6 5/6 6/6 = 94%. WHY THE PYRO LOST (damage by source, measured): THE BORE - 102 of her 142 in 18 s; her flame's recovery ate the 1.0 s tell, so she was
+  struck on a line she could not leave. Fix: the bore is told 1.25 s (P3 1.0), everything else heavier to hold the band.
+  AFTER (10 seeds a hero): knight 7/10, warden 7/10, pyro 3/10 = 57% IN BAND, no hero at 0. Fights: knight 79-112 s, warden 59-89 s, pyro wins 125-138 s.
+  Final: hp 2700 (never lowered), contact 42, bore 42 (tell 1.25 / P3 1.0), roof 34, grind 100 px, gaps 0.6/0.5/0.4, jam x2.5 capped 20% a jam.
+  The lab's drill bot now stands where each hero's reach pays (cab.r + reach - 8; the warden keeps her tip rule).
+- MASH (tools/mash-bot.mjs, LEVEL then BOSS, own rows): level - every hero dies (4 deaths each, lowest 0%); THE GREAT DRILL 0/6 (dead in 8 s).
+- LEVEL-1 PILOT (re-stamped last): 29 hits, 5 deaths over 3 runs, walked 100% (was 33 / 7).
+- CART PILOT, base inputs (god, no foes): all SEVEN heroes ride every leg.
+- CART PILOT at TRUE campaign L11 (knight 154 / warden 154 / pyro 142 hp); damage per leg yard / switchbacks / goblin line / cave-in / works / exam / smelter:
+  knight 0/0/70/28/14/0/0, 0 deaths; warden 0/0/59/28/28/14/0, 0 deaths; pyro 0/0/45/28/28/DIED (exam gap 813)/0.
+  NB tools/minecart-route.mjs --lvl called BK.setHeroLevel, which does not exist: EVERY earlier "L11" ride (the greybox's and the reviewer's) was a LEVEL-1
+  hero (100 hp). Fixed (BKT.setHeroLevel + applyUpgrades; it throws if missing). The pilot is a perfect-information floor (it reads crusher/gate phases
+  exactly): the yard and switchbacks cost IT nothing; a human pays at the crushers, the gate, the high-line boost gap and the archer.
+
+## Checks run (targeted; no full suite - shared PC)
+minecart (185 checks, was 80), the probe, the base-input ride x7 heroes, the L11 ride x3, boss-rates (12 tuning runs), mash-bot level + boss, level1-pilot,
+level-quality (MINECART clears), hint-shown, checkpoint-gaps, collectables, deadends, spawns, killzones, comments, ore-exam, one-new-foe, boss-greed, traps
+(20, all pre-existing: skyroad 19, keep 1), content-audit (109, same as base).
+
+## RED
+- map-grammar / map-spacing: the Deep Rails' node (unchanged; for the map lane - those tools not weakened).
+- NOT STAMPED: docs/level1-curve.json. A minecart curve row turns level-quality's curve gate RED: the curve places the Deep Rails in ACT 1 (THE GREENWOOD
+  band, 40-250% / <= 3 deaths) and the WALKING level-1 knight (it cannot ride) lost 285% with 4 deaths. I left the row out (no gate weakened) - question 3.
+
+## QUESTIONS FOR DANIEL (recommendation first; the recommendation is what is built)
+1. THE DRILL's per-hero spread: pyro 3/10 vs knight / warden 7/10 (57% overall, no hero at 0; 3/10 is a hair under the brief's "pyro >= 2/6").
+   Rec: to your playtest at these numbers (B9). No pyro-only lever built (hero-agnostic numbers only).
+2. The reviewer's recipe (softer hits) measured 94%; I kept its intent (the pyro's early deaths) with a LONGER BORE TELL and made the rest heavier. Rec: keep.
+3. The curve row: rec - the curve-gate owner gives side roads their campaign act (the Deep Rails by its L11 depth, not act 1) or a riding pilot; until then no
+   minecart curve row.
+4. Fork A now defaults to the HIGH (risky, ore) line; you throw the points to take the low line (two crushers, a gate). Rec: keep (the default is never free).
+5. The cart waits 1.2 s at the start and at every station (RIGHT goes at once). Rec: keep.
+6. (Greybox questions still open: no new foe, 6 stations, reverse gear, the ORE n/10 count, the drill's greed, the map node, music - recs unchanged.)
+
+## ART PASS NEEDS (Sonnet lane)
+- OWN MINE BACKDROP: far + mid layers of rock, timbering and old workings (replace far/mid 'crag' - the dusk sky still shows above the roof), a dark ceiling.
+- THE SMELTER as a LANDMARK: a chimney glow visible from the cave-in on (a lit stack in the mid layer), sparks / heat haze, molten light on its line.
+- THE BORE as a LANDMARK: the drill's tunnel mouth in the mid layer from the exam on; the greybox scars / spoil / headlight / rumble dust made into art.
+- cnSkin GOBLIN-RIDER reskin for the archer / caster on carts (A9 identity foe; corpses in their own skin, tools/corpses.mjs), and real goblin carts.
+- LIGHTS: lantern strings along the lines, the boost-gap lip lanterns (amber / red) as real lamps, lever lamps, the crusher warning lamp, lampGlow tuning.
+- Tile kit: rails / sleepers / trestles / ore veins / timber props (no generic off-theme wood), the fall-in rubble, the crumbling low line, crushers, gates.
+- THE GREAT DRILL: machine, bit, red GEARS (not the Winchmaster's drum language), the cab + goblin driver, P3's fallen high line.
+- Music: 'mineworks' stays; 3 CC0/CC-BY picks for the drill theme still to list for Daniel.
