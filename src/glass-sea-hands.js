@@ -73,7 +73,9 @@ export function makeGlassSeaHands(ctx) {
         if (r.kind === 'bed') { if (!fire) r.ref.hit = true; else if (once('fireBed')) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'FIRELIGHT WILL NOT FUSE SAND: IT WANTS THE SUN', '#ffd36b'); }
         if (r.kind === 'ring') { if (fire) r.ref.ringHit = true; } }
       const last = res.segs[res.segs.length - 1];
-      GSx.beams.push({ id: s.id, kind: s.kind, segs: res.segs, end: end ? { x: end.x, y: end.y, recv: end.kind } : last ? { x: last.x1, y: last.y1, recv: null } : null });
+      /* (glasssea2) a beam that stops on a mirror turned TO THE SKY lands on its disc (drawn soaking into the face, no ring) */
+      let disc = null; if (!end && last) { const d = { E: [1, 0], W: [-1, 0], N: [0, -1], S: [0, 1] }[last.dir], q = GSx.mirrors.find(m => m.x === last.x1 + d[0] && m.y === last.y1 + d[1] && m.state === 'sky'); if (q) disc = { x: q.x, y: q.y, id: q.id }; }
+      GSx.beams.push({ id: s.id, kind: s.kind, segs: res.segs, disc, end: end ? { x: end.x, y: end.y, recv: end.kind } : last ? { x: last.x1, y: last.y1, recv: null } : null });
     }
   }
   /* the next tile a mirror's beam would go, for each notch: told by the dial, and the glint's ring */
@@ -111,7 +113,9 @@ export function makeGlassSeaHands(ctx) {
     if (e.cnSkin === 'glassscorpion') { if (sunLitBox(e)) { if (!(e.gsDaz > 0)) { GSx.n.dazzled++; if (once('dazzle')) ctx.number(e.x, e.y - 22, 'DAZZLED: THE BEAM STUNS GLASS', '#fff6c8'); } e.gsDaz = GS.daz; } if (e.gsDaz > 0) { e.gsDaz -= dt; return true; } return false; }
     if (e.cnSkin === 'nighthunter') { if (warmAt(e.x, e.y)) { if (!e.gsFrozen) { e.gsFrozen = 1; GSx.n.frozen++; if (once('freeze') && Math.abs(ctx.hero().x - e.x) < 220) ctx.number(e.x, e.y - 26, 'FROZEN IN THE FIRELIGHT', '#ffd36b'); } return true; } e.gsFrozen = 0; return false; }
     return false; };
-  H.fear = (e, x, y) => !!GSx && e.t === 'skitter' && (warmAt(x, y) || !!(ctx.colRelayAt && ctx.colRelayAt(x, y)));   /* (and the Colossus's relayed firelight along its floor) */
+  H.fear = (e, x, y) => { const r = !!GSx && e.t === 'skitter' && (warmAt(x, y) || !!(ctx.colRelayAt && ctx.colRelayAt(x, y)));
+    if (r) { GSx.n.feared = (GSx.n.feared || 0) + 1; const P = ctx.hero(); if (P && Math.abs(P.x - e.x) < 200 && once('fearTeach')) ctx.number(e.x, e.y - 22, 'THE SWARM WILL NOT CROSS FIRELIGHT', '#ffd36b'); }   /* (glasssea2: the teach beat, told where it happens) */
+    return r; };   /* (and the Colossus's relayed firelight along its floor) */
   H.onDeath = e => { if (!GSx || e.cnSkin !== 'glassscorpion') return; const ts = TS(); GSx.patches.push({ x: e.x, y: e.y, t: GS.patchT }); GSx.n.shattered++;
     ctx.burst(e.x, e.y - 4, 12, ['#e8fff8', '#9ae8d0', '#5ab8a8'], 60, 0.6); if (once('shatter')) ctx.number(e.x, e.y - 24, 'IT SHATTERS: SHARDS IN THE SAND', '#9ae8d0'); };
   /* THE SLICK GLASS: a slide down a glass slope runs on faster than sand's (main.js, after its slide step) */
@@ -123,8 +127,18 @@ export function makeGlassSeaHands(ctx) {
     if (!GSx) return; GSx.clock += dt; const ts = TS(), P0 = ctx.hero(), Tt = T();
     GSx.retrace -= dt; if (GSx.retrace <= 0) { GSx.retrace = GS.retrace; retrace(); }
     for (const m of GSx.mirrors) m.flash = Math.max(0, m.flash - dt);
+    /* (glasssea2) THE ROCKING MIRRORS: aimed (turned off the sky), a pulse mirror throws on a rhythm of the level's clock - HOLDS (on: a gold timer), FLICKERS (warn: the
+       beam and its glass flicker), DROPS (off: rocked flat to the sky, the glass crumbles), COMES BACK. Turned back to the sky it stays there */
+    { let rt = false;
+      for (const m of GSx.mirrors) { if (!m.pulse) continue; const Q = m.pulse, per = Q.on + Q.warn + Q.off, aimed = m.n !== 0; let ph = null, st = 'sky', k = 0;
+        if (aimed) { const t = ((GSx.clock + (Q.ph || 0)) % per + per) % per; if (t < Q.on) { ph = 'on'; k = 1 - t / Q.on; } else if (t < Q.on + Q.warn) { ph = 'warn'; k = 1 - (t - Q.on) / Q.warn; } else { ph = 'off'; k = (t - Q.on - Q.warn) / Q.off; } st = ph === 'off' ? 'sky' : m.notches[m.n]; }
+        if (ph === 'off' && m.pph === 'warn') { GSx.n.drops = (GSx.n.drops || 0) + 1; if (P0 && Math.abs(P0.x - m.x * ts) < 300 && once('pulseDrop')) ctx.number(P0.x, P0.y - 34, 'THE MIRROR ROCKS OFF THE SUN: THE GLASS GOES', '#ffd36b'); }
+        m.pph = ph; m.pk = k; if (st !== m.state) { m.state = st; rt = true; } }
+      if (rt) retrace();
+      for (const b of GSx.beams) { const wm = GSx.mirrors.find(m => m.pulse && m.pph === 'warn' && b.segs.some(sg => (sg.x1 === m.x && sg.y1 === m.y) || (sg.x0 === m.x && sg.y0 === m.y))); b.warnM = !!wm; b.alpha = wm ? (Math.floor(GSx.clock * 12) % 2 ? 0.25 : 1) : 1; }
+      for (const bd of GSx.beds) bd.warn = GSx.beams.some(b => b.warnM && b.end && b.end.recv === 'bed' && b.end.x === bd.tx && b.end.y === bd.ty) ? 1 : 0; }
     /* THE BEDS: fuse while a day beam is on the heap, from the near end; crumble from the far end when it is not */
-    for (const b of GSx.beds) { const k0 = b.k; b.k = b.hit ? Math.min(1, b.k + dt / GS.fuseT) : Math.max(0, b.k - dt / GS.crumbleT);
+    for (const b of GSx.beds) { const k0 = b.k; b.k = b.hit ? Math.min(1, b.k + dt / (b.fuseT || GS.fuseT)) : Math.max(0, b.k - dt / (b.crumbleT || GS.crumbleT));   /* (glasssea2: a rocking mirror's glass steps fuse and go in a moment) */
       const want = Math.round(b.k * b.tiles.length);
       while (b.set < want) { const [x, y] = b.tiles[b.set++]; ctx.cellSet(x, y, Tt.ONEWAY); if (b.set % 3 === 1) ctx.burst(x * ts + 8, y * ts + 2, 4, ['#e8fff8', '#9ae8d0', '#ffd36b'], 40, 0.4); }
       while (b.set > want) { const [x, y] = b.tiles[--b.set]; ctx.cellSet(x, y, Tt.AIR); if (b.set % 3 === 0) ctx.burst(x * ts + 8, y * ts + 4, 4, ['#c8b48a', '#9ae8d0'], 30, 0.5); }
@@ -132,6 +146,12 @@ export function makeGlassSeaHands(ctx) {
       if (k0 > 0 && b.k <= 0 && !b.hit) { GSx.n.crumbled++; if (P0 && Math.abs(P0.x - b.tx * ts) < 400) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'THE GLASS CRUMBLES BACK TO SAND', '#c8b48a'); } }
     /* THE CRACKS */
     for (const c of GSx.cracks) {
+      /* (glasssea2) A SEAM AT DUSK: THE CRACK STIRS - the first time you come near, it glows and hisses, and its swarm climbs out one by one (the teach: they will not cross firelight) */
+      if (c.seam) { if (!c.spent && !(c.stirT > 0) && P0 && !P0.dead && P0.x > (c.x0 - (c.wake || 8)) * ts && P0.x < (c.x1 + 3) * ts && Math.abs(P0.y - c.y * ts) < 64) { c.stirT = 0.001; c.n = 0; GSx.n.stirs = (GSx.n.stirs || 0) + 1; ctx.sfx.hiss && ctx.sfx.hiss(); ctx.shake && ctx.shake(2);
+          ctx.number((c.x0 + c.x1 + 1) * ts / 2, c.y * ts - 30, 'THE CRACK STIRS', '#c8a8ff'); ctx.burst((c.x0 + c.x1 + 1) * ts / 2, c.y * ts - 2, 14, ['#2a2436', '#9a7ad8', '#e8dcb0'], 50, 0.6); }
+        if (c.stirT > 0 && !c.spent) { c.stirT += dt; if (c.n < (c.stir || 3) && c.stirT > 1.0 + c.n * 0.5 && ctx.spawn && P0) { const sx = c.x0 + (c.n % (c.x1 - c.x0 + 1)), b = ctx.spawn({ t: 'skitter', x: sx, y: c.y - 1, face: P0.x < sx * ts ? -1 : 1, squad: 'stir' }); c.n++; if (b) { GSx.n.spewed++; ctx.sfx.hiss && ctx.sfx.hiss(); ctx.burst(b.x, b.y - 4, 8, ['#2a2436', '#9a7ad8', '#e8dcb0'], 40, 0.5); } }
+          if (c.n >= (c.stir || 3) && c.stirT > 3.5) c.spent = true; }
+        continue; }
       const wasHeld = c.held; c.held = !!c.swarm && (c.fireHeld || c.ringHit);
       if (c.swarm && c.held && !wasHeld && c.ringHit) { GSx.n.held++; if (P0 && Math.abs(P0.x - c.x0 * ts) < 300) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'THE FIRELIGHT HOLDS THE CRACK', '#ffd36b'); }
       const boiling = c.swarm && !c.held && night(c.x0 * ts); c.boiling = boiling;
@@ -140,17 +160,18 @@ export function makeGlassSeaHands(ctx) {
           const side = P0.x < c.x0 * ts ? -1 : 1, b = ctx.spawn({ t: 'skitter', x: side < 0 ? c.x0 - 1 : c.x1 + 1, y: c.y - 1, face: side, squad: 'spew' }); if (b) { c.out.push(b); GSx.n.spewed++; ctx.burst(b.x, b.y - 4, 6, ['#2a2436', '#9a7ad8', '#e8dcb0'], 40, 0.5); } } } }
     /* ON THE HEROES: the crack's boil and its fall, the shard patches, the cold, the safe footing */
     for (const pp of ctx.players) { if (pp.dead) continue; pp.gsBoilK = Math.max(0, (pp.gsBoilK || 0) - dt); pp.gsPatchK = Math.max(0, (pp.gsPatchK || 0) - dt);
-      for (const c of GSx.cracks) { const l = c.x0 * ts, r = (c.x1 + 1) * ts;
+      for (const c of GSx.cracks) { if (c.seam) continue; const l = c.x0 * ts, r = (c.x1 + 1) * ts;
         if (c.boiling && pp.x > l - 6 && pp.x < r + 6 && pp.y > (c.y - GS.boilRows) * ts && pp.y < (c.y + 2) * ts && pp.gsBoilK <= 0) { pp.gsBoilK = GS.boilCd; GSx.n.boils++;
           const side = pp.x < (l + r) / 2 ? -1 : 1; ctx.asPlayer(pp, () => { const P = ctx.hero(); ctx.hurtHero(P.x, GS.boilDmg, { unblockable: true, noKnock: true, name: 'THE SWARM' }); P.vx = side * GS.boilV; P.vy = -140; P.ground = false; });
           if (once('boil') || GSx.clock - (GSx.boilSaid || -9) > 6) { GSx.boilSaid = GSx.clock; ctx.number(pp.x, pp.y - 34, 'THE CRACK BOILS WITH THE SWARM: FIRELIGHT HOLDS IT', '#ff9a5c'); } }
         if (pp.x > l + 2 && pp.x < r - 2 && pp.y > (c.y + 1.5) * ts) { GSx.n.falls++; const s = pp.gsSafe; GSx.lastFall = { id: c.id, x: Math.round(pp.x / ts), y: Math.round(pp.y / ts), safe: s && [Math.round(s.x / ts), Math.round(s.y / ts)] };
-          ctx.asPlayer(pp, () => { const P = ctx.hero(); ctx.hurtHero(P.x, GS.fallDmg, { unblockable: true, noKnock: true, name: 'THE CRACK' }); if (!P.dead && s) ctx.place(pp, s.x, s.y); });
-          if (once('fall')) ctx.number(pp.x, pp.y - 34, 'THE CRACK THROWS YOU BACK', '#9aa39a'); } }
+          ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!c.soft) ctx.hurtHero(P.x, c.dmg || GS.fallDmg, { unblockable: true, noKnock: true, name: 'THE CRACK' }); if (!P.dead && s) ctx.place(pp, s.x, s.y); });
+          if (c.soft) { if (once('softFall')) ctx.number(pp.x, pp.y - 34, 'THE GLASS GAVE WAY: BACK TO THE LIP', '#9aa39a'); }   /* (glasssea2: the teaching pit costs nothing) */
+          else if (once('fall')) ctx.number(pp.x, pp.y - 34, 'THE CRACK THROWS YOU BACK', '#9aa39a'); } }
       for (const p of GSx.patches) if (Math.abs(pp.x - p.x) < GS.patchW * 8 && Math.abs(pp.y - p.y) < 8 && pp.gsPatchK <= 0) { pp.gsPatchK = GS.patchCd; ctx.asPlayer(pp, () => ctx.hurtHero(ctx.hero().x, GS.patchDmg, { unblockable: true, noKnock: true, name: 'THE GLASS SHARDS' })); }
       /* the last safe footing: on the ground, off any crack's lip and off any fused bed */
       if (pp.ground && !pp.onMover) { const tx = Math.floor(pp.x / ts), fy = Math.floor((pp.y + 2) / ts);
-        const nearCrack = GSx.cracks.some(c => tx >= c.x0 - 1 && tx <= c.x1 + 1), onBed = GSx.beds.some(b => b.tiles.some(([x, y]) => x === tx && y === fy));
+        const nearCrack = GSx.cracks.some(c => !c.seam && tx >= c.x0 - 1 && tx <= c.x1 + 1), onBed = GSx.beds.some(b => b.tiles.some(([x, y]) => x === tx && y === fy));
         if (!nearCrack && !onBed) pp.gsSafe = { x: pp.x, y: pp.y }; }
       /* THE COLD (night, off the arena) */
       const cs = pp.gsCold || (pp.gsCold = { v: 0 });
@@ -172,7 +193,7 @@ export function makeGlassSeaHands(ctx) {
   const handsState = name => { const [kind, id] = name.split('.');
     if (kind === 'bed') { const b = GSx.beds.find(q => q.id === id); return b ? (b.k >= 1 ? 'fused' : 'sand') : ''; }
     if (kind === 'crack') { const c = GSx.cracks.find(q => q.id === id); return c ? (c.held ? 'held' : 'boils') : ''; }
-    if (kind === 'mirror') { const m = GSx.mirrors.find(q => q.id === id); return m ? m.state : ''; }
+    if (kind === 'mirror') { const m = GSx.mirrors.find(q => q.id === id); return m ? m.notches[m.n] : ''; }   /* (glasssea2: the notch it is SET to - a rocking mirror rocked off the sun is still set) */
     if (kind === 'lit') { const b = GSx.beams.find(q => q.id === id); return b && b.end && b.end.recv ? 'on' : 'off'; }
     return ''; };
   H.handsState = n => (GSx ? handsState(n) : '');
@@ -197,32 +218,67 @@ export function makeGlassSeaHands(ctx) {
     GSA.drawHorizon(g, vw, vh, cx, prog, kk, time, midX >= ax - 6 * ts);
   };
   /* is there something to stand a mirror's post on (rows under it), and a fire under a hood */
-  const footOf = m => { const ts = TS(); for (let yy = m.y + 1; yy < m.y + 9; yy++) { const t = ctx.cellGet(m.x, yy); if (t === ctx.T.SOLID || t === ctx.T.ONEWAY || isSlope(t)) return yy * ts - (m.y * ts + 8); } return 24; };
+  const footOf = (m, side = 0) => { const ts = TS(), col = Math.floor((m.x * ts + 8 + side) / ts); for (let yy = m.y + 1; yy < m.y + 9; yy++) { const t = ctx.cellGet(col, yy); if (t === ctx.T.SOLID || t === ctx.T.ONEWAY || isSlope(t)) return yy * ts - (m.y * ts + 8); } return 24; };
+  /* THE BEAM'S PATH IN PX (glasssea2, Daniel 10-07 "the light CLIPS THROUGH the mirrors"): the trace is whole tiles, centre to centre; the drawing starts where the light comes
+     from (the sun's shaft out of the open sky, the low sunset ray from the west, the fire's flame top, the giant's eyes at the wall) and stops where it lands: a receiver's
+     ring (the tile's centre), a disc turned TO THE SKY (its face - the light soaks into the glass, no ring), or a wall (the wall's face). Bounces are the disc's centre (a
+     slanted face passes through it). -> { pts: [[x, y]..], bounces: [[x, y]..], stop: 'recv' | 'disc' | 'wall', end: [x, y] } */
+  const opaqueAt = (x, y) => { const t = ctx.cellGet(x, y); return t == null || opaqueT(t); };
+  function beamPath(b) { const ts = TS(), L = GSx.L, s = (L.sources || []).find(q => q.id === b.id), C = v => v * ts + 8, pts = [], bounces = [];
+    if (!s || !b.segs.length) return null;
+    const sg0 = b.segs[0]; let x0 = C(sg0.x0), y0 = C(sg0.y0);
+    if (s.kind === 'sun') { let y = s.y - 1, n = 0; while (y >= 0 && n++ < 40 && !opaqueAt(s.x, y)) y--; y0 = (y + 1) * ts; }   /* the sun's shaft, out of the open sky */
+    else if (s.kind === 'sunset') { let x = s.x - 1, n = 0; while (x >= 0 && n++ < 60 && !opaqueAt(x, s.y)) x--; x0 = (x + 1) * ts; }   /* the low ray, from the west */
+    else if (s.kind === 'fire') y0 = (s.y + 2) * ts - 14;   /* out of the flame's top */
+    else if (s.kind === 'gaze') x0 = (s.x + 1) * ts;   /* out of the wall the eyes shine through */
+    pts.push([x0, y0]);
+    for (let i = 0; i < b.segs.length; i++) { const sg = b.segs[i]; pts.push([C(sg.x1), C(sg.y1)]); if (i < b.segs.length - 1) bounces.push([C(sg.x1), C(sg.y1)]); }
+    const last = b.segs[b.segs.length - 1], [dx, dy] = { E: [1, 0], W: [-1, 0], N: [0, -1], S: [0, 1] }[last.dir], e = pts[pts.length - 1];
+    let stop = 'wall';
+    if (b.end && b.end.recv) stop = 'recv';
+    else if (b.disc) { stop = 'disc'; e[0] = C(b.disc.x) - dx * 7; e[1] = C(b.disc.y) - dy * 3; }   /* the face of a disc flat to the sky: 7 px from its pivot along, 3 px across */
+    else { e[0] += dx * 8; e[1] += dy * 8; }   /* the wall's face */
+    if (pts.length === 2 && pts[0][0] === pts[1][0] && pts[0][1] === pts[1][1]) return { pts: [], bounces, stop, end: e };
+    return { pts, bounces, stop, end: e };
+  }
+  /* a post that would stand in a beam's way: the light comes up into it from below, or goes down from it (src/glass-sea.js marks these mirrors side: their post stands aside on a bracket) */
+  const SIDE = 9;
+  H.beamPath = b => (GSx ? beamPath(b) : null);
   H.drawWorld = (g, cx, cy, time) => {
     if (!GSx) return; const R = Math.round, vw = ctx.VW(), vh = ctx.VH(), ts = TS(), inX = (x, m = 60) => x > cx - m && x < cx + vw + m, L = GSx.L;
     GSET.drawProps(g, L, T(), cx, cy, vw, vh, time);   /* the supports, the decor kinds, the dressing */
     { const sunX = L.sunsetX * ts; for (const z of L.shade || []) { if (z[1] < cx || z[0] > cx + vw || z[0] > sunX) continue; GSA.drawShade(g, R(z[0] - cx), R(z[1] - cx), R(z[2] - cy), R(z[3] - cy), Math.max(0, Math.min(1, (sunX - z[0]) / (12 * ts)))); } }   /* the day's shade, soft-edged (it fades into the dusk) */
-    for (const c of GSx.cracks) { if (!inX(c.x0 * ts, 80) && !inX(c.x1 * ts, 80)) continue; GSA.drawCrack(g, R(c.x0 * ts - cx), R(c.y * ts - cy), (c.x1 - c.x0 + 1) * ts, c.swarm ? (c.held ? 'held' : night(c.x0 * ts) ? 'boil' : 'dark') : 'pit', time, GS.boilRows * ts, (L.glasssea && L.pitRow ? L.pitRow : 44) * ts - c.y * ts); }
+    for (const c of GSx.cracks) { if (!inX(c.x0 * ts, 80) && !inX(c.x1 * ts, 80)) continue; if (c.seam) { GSA.drawSeam && GSA.drawSeam(g, R(c.x0 * ts - cx), R(c.y * ts - cy), (c.x1 - c.x0 + 1) * ts, c.stirT || 0, c.spent, time); continue; }
+      GSA.drawCrack(g, R(c.x0 * ts - cx), R(c.y * ts - cy), (c.x1 - c.x0 + 1) * ts, c.swarm ? (c.held ? 'held' : night(c.x0 * ts) ? 'boil' : 'dark') : 'pit', time, GS.boilRows * ts, (L.glasssea && L.pitRow ? L.pitRow : 44) * ts - c.y * ts); }
     const plan = GPL.plan(L, T());
+    const mView = GSx.mirrors.filter(m => inX(m.x * ts)).map(m => ({ m, x: R(m.x * ts + 8 - cx), y: R(m.y * ts + 8 - cy), hood: GSx.fires.some(f => f.x === m.x && f.y > m.y && f.y - m.y <= 3), side: m.side ? SIDE : 0, locked: m.shardNotch !== undefined && ctx.questGot() < ctx.questN() }));
+    /* 1. THE MIRRORS' POSTS AND TRIPODS, under the light */
+    for (const v of mView) GSA.drawMirrorBase(g, v.x, v.y, footOf(v.m, v.side), v.hood, v.side);
+    /* 2. THE BEAMS: from where the light comes from to where it lands (beamPath) */
+    const paths = []; for (const b of GSx.beams) { const col = b.kind === 'fire' ? 'fire' : b.kind === 'gaze' ? 'gaze' : b.kind === 'sunset' ? 'sunset' : 'sun', P = beamPath(b); if (!P) continue; paths.push([b, P, col]);
+      for (let i = 0; i + 1 < P.pts.length; i++) { const [x0, y0] = P.pts[i], [x1, y1] = P.pts[i + 1]; if (Math.max(x0, x1) - cx < -20 || Math.min(x0, x1) - cx > vw + 20) continue; GSA.drawBeam(g, x0 - cx, y0 - cy, x1 - cx, y1 - cy, col, time, b.alpha ?? 1); } }
+    /* 3. THE BEDS (the glass over the light that fused it) */
     for (const b of GSx.beds) { if (!inX(b.tx * ts, 400)) continue;
       /* a bed that is still sand: the ghost of the glass it will be (dotted, faint; brighter while a beam is on its heap) */
       for (let i = b.set; i < b.tiles.length; i++) { const [x, y] = b.tiles[i]; const a = b.hit ? 0.5 : 0.2 + 0.06 * Math.sin(time * 3 + x); g.fillStyle = 'rgba(255,236,170,' + a.toFixed(3) + ')'; for (let xx = 0; xx < 16; xx += 4) g.fillRect(R(x * ts - cx) + xx, R(y * ts - cy) + 2, 2, 1); g.fillRect(R(x * ts - cx), R(y * ts - cy) + 2, 1, 3); g.fillRect(R(x * ts - cx) + 15, R(y * ts - cy) + 2, 1, 3); }
       /* the fused tiles' supports, then the slabs (the arch of a long span under it) */
       for (const p of plan.posts) if (p.bed === b.id) { const idx = b.tiles.findIndex(([x, y]) => x === p.x && y === p.y0); if (idx >= 0 && idx < b.set && inX(p.x * ts)) GSET.drawPost(g, p, cx, cy, Math.min(1, 0.4 + b.k)); }
       for (const ar of plan.arches) if (ar.bed === b.id && b.set > 0) GSET.drawArch(g, ar, cx, cy, Math.min(1, b.set / b.tiles.length));
+      const warn = b.warn > 0 && Math.floor(time * 14) % 2;   /* (a pulse bed whose mirror is about to rock off: the glass flickers) */
       for (let i = 0; i < b.set; i++) { const [x, y] = b.tiles[i], prev = b.tiles[i - 1], next = b.tiles[i + 1];
         const l = !(prev && prev[1] === y && prev[0] === x - 1), r = !(next && next[1] === y && next[0] === x + 1);
-        GSA.drawFused(g, shelfTile(x, y, l, r), R(x * ts - cx), R(y * ts - cy), b.hit ? 1 : b.k, time, b.hit, l, r); }
+        if (warn) g.globalAlpha = 0.55;
+        GSA.drawFused(g, shelfTile(x, y, l, r), R(x * ts - cx), R(y * ts - cy), b.hit ? 1 : b.k, time, b.hit, l, r); g.globalAlpha = 1; }
       GSA.drawHeap(g, R(b.tx * ts + 8 - cx), R((b.ty + 1) * ts - cy), b.hit, time); }
     for (const c of GSx.cracks) if (c.ring && inX(c.ring[0] * ts)) GSA.drawRing(g, R(c.ring[0] * ts + 8 - cx), R(c.ring[1] * ts + 8 - cy), c.ringHit, time, true);
+    /* 4. WHERE EACH BEAM LANDS: a target ring on a receiver or a wall (never on a disc: a disc turned to the sky soaks the light into its face) */
+    for (const [b, P, col] of paths) if (P.stop !== 'disc' && inX(P.end[0])) GSA.drawRing(g, R(P.end[0] - cx), R(P.end[1] - cy), P.stop === 'recv', time, false, col);
     for (const f of GSx.fires) if (inX(f.x * ts)) GSA.drawFire(g, R(f.x * ts + 8 - cx), R((f.y + 1) * ts - cy), time, f.x);
-    for (const m of GSx.mirrors) { if (!inX(m.x * ts)) continue; const locked = m.shardNotch !== undefined && ctx.questGot() < ctx.questN();
-      const hood = GSx.fires.some(f => f.x === m.x && f.y > m.y && f.y - m.y <= 3);
-      GSA.drawMirror(g, R(m.x * ts + 8 - cx), R(m.y * ts + 8 - cy), m.state, m.n, m.notches.length, m.flash, time, locked, footOf(m), hood); }
-    /* THE BEAMS: a white-hot line tile to tile, and a TARGET RING where each lands */
-    for (const b of GSx.beams) { const col = b.kind === 'fire' ? 'fire' : b.kind === 'gaze' ? 'gaze' : b.kind === 'sunset' ? 'sunset' : 'sun';
-      for (const sg of b.segs) { const x0 = sg.x0 * ts + 8 - cx, y0 = sg.y0 * ts + 8 - cy, x1 = sg.x1 * ts + 8 - cx, y1 = sg.y1 * ts + 8 - cy; if (Math.max(x0, x1) < -20 || Math.min(x0, x1) > vw + 20) continue; GSA.drawBeam(g, x0, y0, x1, y1, col, time); }
-      if (b.end && inX(b.end.x * ts)) GSA.drawRing(g, R(b.end.x * ts + 8 - cx), R(b.end.y * ts + 8 - cy), !!b.end.recv, time, false, col); }
+    /* 5. THE MIRRORS' FACES OVER THE LIGHT (the polished disc, the pivot, the dial), then the glint where a beam bounces and the glow where one soaks into a disc */
+    for (const v of mView) GSA.drawMirrorFace(g, v.x, v.y, v.m.state, v.m.n, v.m.notches.length, v.m.flash, time, v.locked, v.hood, v.side);
+    for (const [b, P, col] of paths) { for (const [x, y] of P.bounces) if (inX(x)) GSA.drawBounce(g, R(x - cx), R(y - cy), col, time); if (P.stop === 'disc' && inX(P.end[0])) GSA.drawDiscHit(g, R(b.disc.x * ts + 8 - cx), R(b.disc.y * ts + 8 - cy), col, time); }
+    for (const v of mView) if (v.m.pulse && GSA.drawPulseTimer) GSA.drawPulseTimer(g, v.x, v.y, v.m, time);
+    for (const e of ctx.enemies()) if (e.alive && e.t === 'skitter' && inX(e.x)) GSA.drawSkitterGlow && GSA.drawSkitterGlow(g, R(e.x - cx), R(e.y - cy), time, e.x);   /* (glasssea2) a violet glow under each skitter */
     for (const p of GSx.patches) if (inX(p.x)) GSA.drawPatch(g, R(p.x - cx), R(p.y - cy), p.t / GS.patchT, time);
     for (const e of ctx.enemies()) if (e.alive && e.cnSkin === 'glassscorpion' && e.gsDaz > 0 && inX(e.x)) GSA.drawDazzle(g, R(e.x - cx), R(e.y - 6 - cy), time);
     if (GSx.glint) drawGlint(g, R(GSx.glint.x - cx), R(GSx.glint.y - 18 - cy), vw, vh, time);
@@ -235,6 +291,8 @@ export function makeGlassSeaHands(ctx) {
     const lights = []; for (const f of GSx.fires) lights.push({ x: f.x * ts + 8, y: f.y * ts, r: GS.fireR * ts + 10 });
     for (const b of GSx.beams) if (b.kind !== 'sun' && b.kind !== 'sunset') for (const sg of b.segs) { const n = Math.max(Math.abs(sg.x1 - sg.x0), Math.abs(sg.y1 - sg.y0)); for (let i = 0; i <= n; i += 2) lights.push({ x: (sg.x0 + (sg.x1 - sg.x0) * i / Math.max(1, n)) * ts + 8, y: (sg.y0 + (sg.y1 - sg.y0) * i / Math.max(1, n)) * ts + 8, r: 26 }); }
     GSA.drawNight(g, vw, vh, cx, cy, darkAt, lights, time);
+    /* (glasssea2) THE SWARM GLOWS: red-hot eyes over the dark, so the night's one new foe is never lost in it */
+    for (const e of ctx.enemies()) if (e.alive && e.t === 'skitter' && e.x > cx - 20 && e.x < cx + vw + 20) GSA.drawSkitterEyes && GSA.drawSkitterEyes(g, Math.round(e.x - cx), Math.round(e.y - cy), e.face || 1, time, e.x);
   };
   /* THE HUD: by night THE FROST METER stands where the sun meter does (main.js drawCaravanHud asks first); true = drawn (the sun meter is not) */
   H.drawHud = (g, P) => { if (!GSx || !night(P.x)) return false; const cs = P.gsCold || { v: 0 }; GSA.drawFrostMeter(g, 22, 50, cs.v, cs.warm, ctx.time(), (cs.v >= 1 ? Math.min(3, (cs.n || 0) + 1) : 0)); if (cs.warm) ctx.text('FIRELIGHT', 44, 59, '#ffd36b', 'center', 6); return true; };

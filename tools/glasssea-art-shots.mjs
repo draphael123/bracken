@@ -37,13 +37,36 @@ try {
     at('z5-notch1', 42, 33, () => { turn('first', 1); run(10); }, [100, 66, 56, 56]);
     at('z6-notch2', 42, 33, () => { turn('first', 2); run(10); }, [100, 66, 56, 56]);
     at('g11-arena', 612, 33);
+    /* (glasssea2) the mirrors and their light: every kind of source, bounce and stop */
+    at('m1-chain', 318, 27, () => { turn('chainA', 1); turn('chainB', 1); run(120); });
+    at('m1z-chain', 318, 27, () => { turn('chainA', 1); turn('chainB', 1); run(60); }, [70, 20, 90, 120]);
+    at('m2-gaze', 586, 27, () => { turn('gaze', 1); turn('stepsRelay', 1); run(120); });
+    at('m2z-relay', 586, 27, () => { turn('stepsRelay', 1); run(30); }, [40, 40, 120, 100]);
+    at('m3z-first', 42, 33, () => { turn('first', 1); run(60); }, [70, 0, 140, 130]);
+    at('m4z-sky', 42, 33, null, [70, 0, 140, 130]);
+    at('p1-pulseA', 174, 33, () => { turn('pulseA', 1); run(40); });
+    at('p1b-pulseA-off', 174, 33, () => { turn('pulseA', 1); run(300); });
+    at('p2-hawk', 268, 33, () => { turn('hawkX', 1); turn('hawkY', 1); run(40); });
+    at('p2b-hawk', 274, 33, () => { turn('hawkX', 1); turn('hawkY', 1); run(220); });
+    at('k1-stir', 321, 33, () => { run(70); });
+    at('k2-swarm', 321, 33, () => { run(240); });
+    at('k3z-skitter', 321, 33, () => { run(240); }, [150, 70, 120, 50]);
     /* THE COLOSSUS in its states: forced modes on the arena (a picture, not a fight) */
     { const col = (name, ph, mode, f, hx, hy, hx2, hy2) => { if (filt && !filt.split(',').some(q => name.includes(q))) return; fresh(); BK.tp(hx || 612, hy || 33); run(90); const CO = BK.colossusHands(), S = CO && CO.show(), e = BK.boss; if (!S || !e) return; S.ph = ph; e.phase = ph; e.mode = mode; e.modeT = 99; if (f) f(e, S); BK.god = true; BK.sim(2); run(260); S.ph = ph; e.phase = ph; e.mode = mode; e.modeT = 99; if (f) f(e, S); BK.look(hx2 || 624, hy2 || 22); run(2); e.mode = mode; snap(name); };
       col('a1-dusk', 1, 'idle');
       col('a2-chest', 1, 'cracked', (e, S) => { e.open = 4; e.openT0 = 5.2; S.mirrors[0].notch = 'face'; S.mirrors[1].notch = 'face'; }, 612, 33, 621, 27);
       col('a3-night', 2, 'blazing', (e, S) => { e.open = 4; e.openT0 = 5.6; S.mirrors[0].notch = 'fire'; }, 612, 33, 620, 24);
       col('a4-dawn', 3, 'dazzled', (e, S) => { e.open = 4; e.openT0 = 5.4; S.mirrors[1].notch = 'sky'; }, 612, 33, 622, 26);
-      col('a5-lance', 1, 'lanceTell', (e, S) => { S.lance = { end: { x: 620 * 16, mirror: 0 } }; }); }
+      col('a5-lance', 1, 'lanceTell', (e, S) => { S.lance = { end: { x: 620 * 16, mirror: 0 } }; });
+      /* (claude/glasssea2) the mirror read, the reflected lance, the two new moves, the pose clock */
+      col('a6-turn', 1, 'idle', (e, S) => { S.mirrors[0].notch = 'sky'; S.mirrors[1].notch = 'sky'; S.cd = 99; }, 612, 33, 606, 28);
+      col('a7-reflect', 1, 'cracked', (e, S) => { e.open = 5.0; e.openT0 = 5.2; S.lastReflect = 0; S.mirrors[0].notch = 'face'; S.mirrors[1].notch = 'sky'; }, 612, 33, 621, 27);
+      col('a8-sweepTell', 1, 'sweepTell', (e, S) => { S.sweep = { dir: -1, x: S.G.x0 + 6, id: 1, live: false }; e.face = -1; }, 612, 33, 606, 28);
+      col('a9-sweep', 1, 'sweep', (e, S) => { S.sweep = { dir: -1, x: S.G.x0 + 90, id: 1, live: true }; e.face = -1; S.sweep.x = S.G.x0 + 90; }, 612, 33, 606, 28);
+      col('a10-quakeTell', 2, 'quakeTell', (e, S) => { S.plates = [-76, 0, 76].map(d => ({ x: 603 * 16 + d, dir: -1 })); }, 612, 33, 606, 28);
+      col('a11-slick', 2, 'idle', (e, S) => { S.cd = 99; S.slick = [-76, 0, 76].map(d => ({ x: 603 * 16 + d, dir: -1, t: 2 })); }, 612, 33, 606, 28);
+      col('a12-stomp', 1, 'stompTell', (e, S) => { e.face = -1; }, 612, 33, 610, 27);
+      col('a13-sweepwind', 1, 'sweepTell', (e, S) => { S.sweep = { dir: 1, x: S.G.x1 - 6, id: 1, live: false }; e.face = 1; }, 630, 33, 624, 22); }
     return res; })()`, 900000);
   for (const [name, d] of r) { writeFileSync(join(out, name + '.png'), Buffer.from(d.split(',')[1], 'base64')); console.log('work/claude/glasssea-art/' + tag + '/' + name + '.png'); }
   if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 3).join(' | '));

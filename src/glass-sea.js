@@ -41,6 +41,7 @@ export const ARCS = {
   mirror: { teach: [36, 50], test: [218, 246], remix: [304, 360], remix2: [500, 530], exam: [574, 600], boss: [604, 643] },   /* the first stair; the bridge; the chain; the night relay; the gaze + relay; the lance */
   slick: { teach: [12, 20], test: [128, 150], remix: [400, 420], exam: [574, 584] },                                        /* the first slide; the slide gap; the skull's back; the steps */
   shade: { teach: [20, 28], test: [196, 296], remix: [452, 571], exam: [574, 603] },                                        /* shade by day, fire by night */
+  pulse: { teach: [167, 182], remix: [260, 283] },   /* (glasssea2) the rocking mirrors: the soft pit after checkpoint one; THE HAWK GAP's two mirrors under the vultures */
 };
 export const SUNSET_X = 334;   /* the column the sun goes down at (THE FORK OBELISK) */
 
@@ -126,11 +127,19 @@ export function buildGlassSea({ painter, T, TS }) {
   sign(135, B - 4, 'GLASS SLOPES ARE SLICK. HOLD DOWN TO SLIDE; LEAP AT THE FOOT.');   /* (fix pass) on the crest itself, where the slick run starts */
   block(150, 155, B - 5, B - 5); decor.push({ kind: 'spire', x: 152, y: B, top: B - 5 });   /* shade on the landing */
   upS(161, B + 1); ground(162, 195, B);
-  vulture(170, B - 8, 'fieldVult'); skiff(168, B - 1); ent('check', 165, B - 1);   /* CHECKPOINT ONE, past the slide gap (the crossing's fight is its stretch) */
-  glassS(174, B - 1, 'fieldPair'); glassS(178, B - 1, 'fieldPair');
+  vulture(186, B - 8, 'fieldVult'); skiff(168, B - 1); ent('check', 165, B - 1);   /* CHECKPOINT ONE, past the slide gap (the crossing's fight is its stretch) */
+  glassS(184, B - 1, 'fieldPair'); glassS(187, B - 1, 'fieldPair');   /* (glasssea2) past the rocking mirror's pit: the teach is at rest */
   skiff(184, B - 1);
   thrower(192, B - 4, 'fieldThrow'); block(190, 195, B - 3, B - 1);         /* a thrower on a fused ridge over the way into the crossing */
   decor.push({ kind: 'ridge', x0: 190, x1: 195, y: B - 3 });
+  /* (glasssea2) THE ROCKING MIRROR - MIRROR PLATFORMING, SECTION A (TEACH, safe, short; Daniel 10-07 "platforming sections involving the mirrors - they DEACTIVATE and
+     REACTIVATE"): a mirror on a rocking mount over a pit. TURN it to the sand and it throws the sun on a rhythm - the beam HOLDS (gold timer), FLICKERS (the warning: the
+     glass flickers with it), DROPS (the glass crumbles) and COMES BACK. Two glass steps over a nine-wide pit; a fall is soft (no blow: back to the lip). Checkpoint one just behind it */
+  mirror('pulseA', 170, B - 2, ['sky', '\\'], { pulse: { on: 3.4, warn: 1.0, off: 2.0, ph: 0 } }); source('pulseA', 170, B - 3, 'S', 'sun');
+  crack('pulseA', 172, 180, B, { soft: true });
+  bed('pulseA', 182, B - 2, [...span(174, 175, B), ...span(178, 179, B)], { label: 'THE GLASS STEPS', fuseT: 0.3, crumbleT: 0.25, pulse: true });
+  decor.push({ kind: 'heap', x: 182, y: B - 1 });
+  sign(167, B - 1, 'A ROCKING MIRROR. TURN IT: THE GLASS HOLDS ONLY WHILE THE BEAM DOES.');
 
   // ================= 3. THE BONE CROSSING (196-295): SET PIECE ONE - THE SUN-MIRROR BRIDGE (REQUIRED) =================
   ground(196, 229, B);
@@ -150,10 +159,19 @@ export function buildGlassSea({ painter, T, TS }) {
   block(248, 252, B - 3, B - 1); decor.push({ kind: 'ridge', x0: 248, x1: 252, y: B - 3 });   /* a fused ridge on the far lip */
   thrower(250, B - 4, 'farLip'); thrower(248, B - 4, 'farLip'); glassS(245, B - 1, 'farLipScorp'); sentinel(247, B - 1, 'farLipScorp');   /* two throwers on the far lip and a scorpion at the bridge's end: they meet you as you cross */                                            /* THE RANGED ONE on the far lip: he throws while you turn the mirror */
   skiff(258, B - 1); shardAt(258, B - 1);                                   /* SHARD TWO, in the skiff's ribs */
-  glassS(266, B - 1, 'crossPair'); glassS(270, B - 1, 'crossPair'); sentinel(273, B - 1, 'crossPair');   /* the pair's sentinel in front of them */
-  block(276, 281, B - 5, B - 5); decor.push({ kind: 'spire', x: 278, y: B - 1, top: B - 5 });
-  sentinel(286, B - 1, 'crossSentinel');
+  glassS(285, B - 1, 'crossPair'); glassS(288, B - 1, 'crossPair'); sentinel(291, B - 1, 'crossPair');   /* (glasssea2) the pair and its sentinel wait past THE HAWK GAP */
+  block(284, 289, B - 5, B - 5); decor.push({ kind: 'spire', x: 286, y: B - 1, top: B - 5 });   /* (glasssea2) the spire's overhang moved off the gap onto the far lip */
   vulture(290, B - 9, 'obVult');
+  /* (glasssea2) THE HAWK GAP - MIRROR PLATFORMING, SECTION B (REMIX: longer, two rocking mirrors out of step, vultures diving overhead): mirror X on the lip throws its
+     glass over the west gap to the pillar; mirror Y on the pillar throws its glass over the east gap. Turn X, cross while it holds, turn Y, WAIT on the pillar for Y's beam
+     (it comes as X's goes), cross. The gaps are real cracks (a fall is a blow and the last safe footing: the pillar or the lip) */
+  mirror('hawkX', 262, B - 2, ['sky', '\\'], { pulse: { on: 2.6, warn: 0.8, off: 2.2, ph: 0 } }); source('hawkX', 262, B - 3, 'S', 'sun');
+  crack('hawkW', 264, 270, B, { dmg: 32 }); crack('hawkE', 274, 281, B, { dmg: 32 });   /* (glasssea2) the exam's cracks bite harder than the road's (32, not 20): THE HAWK GAP is where the rocking mirrors are tested */   /* the pillar between them: 271-273 */
+  bed('hawkX', 271, B - 2, [...span(265, 266, B), ...span(268, 269, B)], { label: 'THE WEST STEPS', fuseT: 0.3, crumbleT: 0.25, pulse: true }); decor.push({ kind: 'heap', x: 271, y: B - 1 });
+  mirror('hawkY', 273, B - 2, ['sky', '\\'], { pulse: { on: 2.6, warn: 0.8, off: 2.2, ph: 2.8 } }); source('hawkY', 273, B - 3, 'S', 'sun');
+  bed('hawkY', 282, B - 2, [...span(275, 276, B), ...span(278, 279, B)], { label: 'THE EAST STEPS', fuseT: 0.3, crumbleT: 0.25, pulse: true }); decor.push({ kind: 'heap', x: 282, y: B - 1 });
+  vulture(267, B - 9, 'hawkVult'); vulture(278, B - 10, 'hawkVult2');   /* the sand hawks over the gap: they dive while you wait on the glass */
+  sign(260, B - 1, 'THE HAWK GAP. TWO ROCKING MIRRORS: CROSS ON THEIR RHYTHM.');
 
   // ================= 4. THE FORK OBELISK (296-359): REMIX - THE TWO-MIRROR CHAIN (REQUIRED); the sun sets =================
   ground(296, 345, B);
@@ -167,8 +185,12 @@ export function buildGlassSea({ painter, T, TS }) {
   source('sunset', 313, B - 2, 'E', 'sunset');
   mirror('chainA', 316, B - 2, ['sky', '/', '\\']);
   sign(312, B - 1, 'TWO MIRRORS: THE LOW SUN, UP, AND ACROSS.');
+  /* (glasssea2) THE CRACK STIRS (Daniel 10-07: "is there a new enemy? I don't see it"): the swarm met EARLY, at dusk, on the main road - a seam at the obelisk's foot glows and
+     hisses as you come down off the chain and three skitters climb out of it; the fire under the shelf is the light they will not cross (the teach beat, told where it happens) */
+  fire('duskFire', 320, B - 1); cracks.push({ id: 'duskSeam', x0: 329, x1: 331, y: B, seam: true, stir: 3, wake: 9 });
+  sign(322, B - 1, 'AT DUSK THE CRACKS WAKE. THE SWARM WILL NOT CROSS FIRELIGHT.');
   boards(318, 321, B - 3); boards(319, 322, B - 6); boards(317, 321, B - 9);   /* up to B's shelf (rows 31, 28, 25) */
-  mirror('chainB', 316, B - 11, ['sky', '/', '\\']);                         /* B: over the top board, above A (its glass row 23) */
+  mirror('chainB', 316, B - 11, ['sky', '/', '\\'], { side: 1 });   /* (glasssea2) side: A's light comes UP into it - its post stands aside on a bracket */                      /* B: over the top board, above A (its glass row 23) */
   block(323, 326, 10, B - 4); air(323, 326, B - 11, B - 11);                /* THE OBELISK, its EYE a hole at row 23 */
   decor.push({ kind: 'obelisk', x0: 323, x1: 326, top: 10, y: B - 1, eye: B - 11 });
   shadeBox(317, 330, 10, B - 1);                                            /* its bulk is shade */
@@ -240,7 +262,7 @@ export function buildGlassSea({ painter, T, TS }) {
   fire('stepsFire', 582, B - 4); hunter(577, B - 4, 'stepsHunter');
   mirror('stepsRelay', 582, B - 6, ['sky', '/', '\\']); source('stepsRelay', 582, B - 5, 'N', 'fire');
   source('gaze', 603, B - 8, 'W', 'gaze');
-  mirror('gaze', 588, B - 8, ['sky', '/', '\\'], { shardNotch: 2 });        /* '/' sends the westward gaze DOWN; '\\' sends it UP (the vault notch, five shards) */
+  mirror('gaze', 588, B - 8, ['sky', '/', '\\'], { shardNotch: 2, side: 1 });   /* (glasssea2) side: its light goes DOWN to the heap - the post stands aside */        /* '/' sends the westward gaze DOWN; '\\' sends it UP (the vault notch, five shards) */
   boards(585, 589, B - 6);                                                  /* the gaze mirror's perch (row 28) */ boards(583, 584, B - 5);   /* (fix pass) a 2-row step up to it: no 3-row hop under the throwers */
   crack('steps', 590, 594, B - 3, { swarm: true, ring: [595, B - 6] });
   bed('stepsBridge', 588, B - 4, span(590, 594, B - 3), { label: 'THE STEPS\' BRIDGE', walk: true });
@@ -254,7 +276,7 @@ export function buildGlassSea({ painter, T, TS }) {
   // ================= THE GLASS TERRACES AND THE DUNES (a high road over the low one; no long level stretch) =================
   /* THE TERRACES: lightning-fused glass shelves (one-way) three rows over the sand - a high road beside the low one, never over a crack the rule bridges, a cliff the
      first mirror's stair climbs, the obelisk's chain or the steps' exam */
-  for (const [x0, x1, y] of [[50, 66, B - 8], [77, 97], [158, 186], [194, 214], [255, 292], [413, 441], [453, 479], [544, 557], [564, 570]]) boards(x0, x1, y ?? B - 3);
+  for (const [x0, x1, y] of [[50, 66, B - 8], [77, 97], [158, 168], [183, 189], [194, 214], [290, 296], [413, 441], [453, 479], [544, 557], [564, 570]]) boards(x0, x1, y ?? B - 3);
   /* THE DUNES: a long level stretch of sand gets a low glass dune (a row up over two columns, two across, a row down) where nothing stands - every glass slope is slick */
   { const busy = new Set(); for (const e of L.ents) for (let d = -2; d <= 2; d++) busy.add(e.x + d);
     for (const m of mirrors) for (let d = -3; d <= 3; d++) busy.add(m.x + d);

@@ -58,10 +58,23 @@ function paintShape(g, pts, tone, pal, side, s, seed) {
 }
 const inside = (P, x, y) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
 /* THE BODY, baked: ph 0 dusk, 1 night, 2 dawn */
+/* (claude/glasssea2) THE PART SPLIT for the POSE CLOCK (src/glass-colossus.js poseOf): the arms (upper, elbow, fore, fist) and the lower legs (shin, foot) are baked
+   apart, one layer a side, so a pose can lift a foot, swing an arm, lean and bob the trunk. bakeBody(ph) is still the whole giant at rest (the sheet, the flash) */
+const ARM = new Set(['upper', 'elbow', 'fore', 'fist']), LEG = new Set(['shin', 'foot']);
+export function bakePart(ph, part) {
+  return once('part' + ph + part, () => { const [c, g] = canvas(W0, H0), pal = PAL[ph], sd = part.endsWith('L') ? -1 : 1, set = part.startsWith('arm') ? ARM : LEG;
+    SHAPES.forEach(([name, pts, tone], i) => { if (set.has(name)) paintShape(g, pts, tone, pal, sd, 1, i); });
+    const vein = (pts, col) => { for (let i = 0; i + 1 < pts.length; i++) line(g, CX + pts[i][0] * sd, FY + pts[i][1], CX + pts[i + 1][0] * sd, FY + pts[i + 1][1], col); };
+    if (set === ARM) vein([[58, -140], [64, -118], [70, -96], [76, -70], [80, -40]], pal.vein); else vein([[32, -48], [32, -38], [30, -14]], pal.vein);
+    outline(c, pal.x); return c; });
+}
 export function bakeBody(ph) {
-  return once('body' + ph, () => { const [c, g] = canvas(W0, H0), pal = PAL[ph];
+  return once('body' + ph, () => { const [c, g] = canvas(W0, H0); for (const p of ['armL', 'armR', 'legL', 'legR']) g.drawImage(bakePart(ph, p), 0, 0); g.drawImage(bakeCore(ph), 0, 0); return c; });
+}
+export function bakeCore(ph) {
+  return once('core' + ph, () => { const [c, g] = canvas(W0, H0), pal = PAL[ph];
     /* the centre pieces (full width: drawn as the left half and its mirror, so the join is exact) */
-    SHAPES.forEach(([name, pts, tone], i) => { paintShape(g, pts, tone, pal, -1, 1, i); paintShape(g, pts, tone, pal, 1, 1, i); });
+    SHAPES.forEach(([name, pts, tone], i) => { if (ARM.has(name) || LEG.has(name)) return; paintShape(g, pts, tone, pal, -1, 1, i); paintShape(g, pts, tone, pal, 1, 1, i); });
     /* the chest's core window (a prism of dark glass, lit from within by the sun it will catch) */
     fillPoly(g, [[CX - 13, FY - 112], [CX + 13, FY - 112], [CX + 15, FY - 128], [CX, FY - 136], [CX - 15, FY - 128]], pal.x); fillPoly(g, [[CX - 11, FY - 114], [CX + 11, FY - 114], [CX + 12, FY - 127], [CX, FY - 133], [CX - 12, FY - 127]], pal.core);
     line(g, CX - 13, FY - 112, CX - 15, FY - 128, pal.l); line(g, CX - 15, FY - 128, CX, FY - 136, pal.l); line(g, CX + 13, FY - 112, CX + 15, FY - 128, pal.d);
@@ -79,8 +92,8 @@ export function bakeBody(ph) {
     rect(g, CX - 22, FY - 194, 44, 3, pal.rim); rect(g, CX - 22, FY - 192, 44, 2, pal.d);
     /* the veins: violet lightning down the spine, out along each arm and each leg */
     const vein = (pts, col) => { for (let i = 0; i + 1 < pts.length; i++) line(g, CX + pts[i][0], FY + pts[i][1], CX + pts[i + 1][0], FY + pts[i + 1][1], col); };
-    for (const sd of [-1, 1]) { vein([[0, -150], [8 * sd, -142], [4 * sd, -134], [10 * sd, -124], [4 * sd, -116], [8 * sd, -104], [20 * sd, -92], [26 * sd, -76], [30 * sd, -58], [32 * sd, -38], [30 * sd, -14]], pal.vein);
-      vein([[40 * sd, -150], [58 * sd, -140], [64 * sd, -118], [70 * sd, -96], [76 * sd, -70], [80 * sd, -40]], pal.vein); }
+    for (const sd of [-1, 1]) { vein([[0, -150], [8 * sd, -142], [4 * sd, -134], [10 * sd, -124], [4 * sd, -116], [8 * sd, -104], [20 * sd, -92], [26 * sd, -76], [30 * sd, -58], [32 * sd, -48]], pal.vein);   /* (the shin's and the arm's run on in their own layers) */
+      vein([[40 * sd, -150], [58 * sd, -140]], pal.vein); }
     vein([[0, -190], [-3, -176], [2, -164], [-2, -154]], pal.veinL);
     outline(c, pal.x); return c; });
 }
@@ -93,12 +106,15 @@ export function bodyExtent(yUp) {
 /* ================================ LIVE ================================ */
 const phIdx = ph => (ph === 2 ? 1 : ph === 3 ? 2 : 0);
 /* THE COLOSSUS: the baked body, then its live cracks. e = the entity (mode/open/hurtT), S = the fight state, G = geom; the centre line is e.x, the floor G.floor */
-export function drawBody(g, e, S, G, cx, cy, time, flash) {
-  const pal = PAL[phIdx(S.ph)], body = bakeBody(phIdx(S.ph)), X = R(e.x - cx), Y = R(G.floor - cy);
-  const sway = e.mode === 'shake' ? R(Math.sin(time * 40) * 3) : e.mode === 'shakeTell' ? R(Math.sin(time * 14)) : 0, ox = X - CX + sway, oy = Y - FY;
-  g.drawImage(body, ox, oy);
-  if (flash) { g.globalAlpha = 0.7; g.drawImage(once('bodyw' + phIdx(S.ph), () => whiten(body)), ox, oy); g.globalAlpha = 1; }   /* the hit flash: a white silhouette over it */
-  const T = (x, y) => [X + sway + x, Y + y];   /* centre-line relative */
+export function drawBody(g, e, S, G, cx, cy, time, flash, pose) {
+  const ph = phIdx(S.ph), pal = PAL[ph], X = R(e.x - cx), Y = R(G.floor - cy), p = pose || { lean: 0, bob: 0, footL: 0, footR: 0, armL: [0, 0], armR: [0, 0] };
+  /* (claude/glasssea2) THE POSE: the trunk leans (half at the hips) and bobs; a foot lifts; an arm swings out and up (a fist never under the floor) */
+  const sway = R(p.lean * 0.6), ox = X - CX + sway, oy = Y - FY + p.bob;
+  const at = { armL: [ox - p.armL[0], Y - FY + Math.min(2, p.bob + p.armL[1])], armR: [ox + p.armR[0], Y - FY + Math.min(2, p.bob + p.armR[1])], legL: [X - CX, Y - FY - p.footL], legR: [X - CX, Y - FY - p.footR] };
+  for (const k of ['armL', 'armR', 'legL', 'legR']) { const L = bakePart(ph, k); g.drawImage(L, at[k][0], at[k][1]); if (flash) { g.globalAlpha = 0.7; g.drawImage(once('w' + ph + k, () => whiten(L)), at[k][0], at[k][1]); g.globalAlpha = 1; } }
+  const core = bakeCore(ph); g.drawImage(core, ox, oy);
+  if (flash) { g.globalAlpha = 0.7; g.drawImage(once('corew' + ph, () => whiten(core)), ox, oy); g.globalAlpha = 1; }   /* the hit flash: a white silhouette over it */
+  const T = (x, y) => [X + sway + x, Y + p.bob + y];   /* centre-line relative (on the trunk) */
   const glow = (x, y, r, col, a) => { const q = T(x, y); g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient(q[0], q[1], 1, q[0], q[1], r); gr.addColorStop(0, 'rgba(' + col + ',' + a + ')'); gr.addColorStop(1, 'rgba(' + col + ',0)'); g.fillStyle = gr; g.fillRect(q[0] - r, q[1] - r, r * 2, r * 2); g.globalCompositeOperation = 'source-over'; };
   const crack = (x, y, len, w, col, bright) => {   /* a jagged crack: a dark seam, with a lit core when it is open */
     const q = T(x, y), pts = [[0, 0], [w * 0.4, len * 0.25], [-w * 0.3, len * 0.5], [w * 0.5, len * 0.75], [0, len]]; g.fillStyle = '#050a14';
@@ -115,9 +131,9 @@ export function drawBody(g, e, S, G, cx, cy, time, flash) {
   const live = S.legPurse > 0;
   for (const sd of [-1, 1]) { crack(34 * sd, -52, 18, 5, live ? '#ffd36b' : '#c8d8e8', true); if (live) glow(34 * sd, -52, 22, '255,200,90', 0.28 + 0.12 * pulse); else { const q = T(34 * sd, -52); g.fillStyle = 'rgba(210,225,240,0.5)'; g.fillRect(q[0] - 7, q[1] - 10, 14, 20); } }
   /* THE CHEST CORE: dark and shut; the lance's light gathers in it before it fires; cracked open it is a gold wound */
-  const core = e.mode === 'cracked', tell = e.mode === 'lanceTell';
+  const cored = e.mode === 'cracked', tell = e.mode === 'lanceTell';
   if (tell) { const a = 0.45 + 0.5 * Math.sin(time * 18); glow(0, -122, 38, '255,236,170', a); const q = T(-9, -130); g.globalAlpha = a; g.fillStyle = '#fff6c8'; g.fillRect(q[0], q[1], 18, 18); g.globalAlpha = 1; }
-  if (core) { crack(-2, -122, 26, 8, '#ffd36b', true); crack(5, -118, 20, 6, '#fff6c8', true); glow(0, -122, 44, '255,200,90', 0.5 + 0.2 * pulse); const q = T(-12, -134); g.globalAlpha = 0.4; g.fillStyle = '#ffd36b'; g.fillRect(q[0], q[1], 24, 24); g.globalAlpha = 1; }
+  if (cored) { crack(-2, -122, 26, 8, '#ffd36b', true); crack(5, -118, 20, 6, '#fff6c8', true); glow(0, -122, 44, '255,200,90', 0.5 + 0.2 * pulse); const q = T(-12, -134); g.globalAlpha = 0.4; g.fillStyle = '#ffd36b'; g.fillRect(q[0], q[1], 24, 24); g.globalAlpha = 1; }
   else { const q = T(-2, -134); g.fillStyle = 'rgba(5,10,20,0.9)'; g.fillRect(q[0], q[1], 1, 6); g.fillRect(q[0] + 1, q[1] + 3, 1, 5); }
   /* THE SHOULDER CRACKS (night): a violet seam; blazing = a cyan-white fire */
   const blaze = e.mode === 'blazing';

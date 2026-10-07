@@ -25,18 +25,24 @@
 export const COLOSSUS_STAGE = { W: 40, cc: 20, mirrors: [12, 28], fires: [2, 37], knee: 3, hip: 6, shoulder: 9, crown: 12,
   kneeW: [-5, -3], kneeE: [2, 4], hipW: [-4, -2], hipE: [1, 3], shoulderW: [-5, -2], shoulderE: [1, 4], crack: [-3, 2] };
 export const COL = {
-  hp: 2000, w: 72, h: 200,
-  lanceTell: 1.15, lanceTell3: 1.0, lanceAct: 0.45, lanceDmg: 56, lanceBand: [28, 4],
-  stompTell: 0.85, stompV: 240, stompH: 14, stompDmg: 34,
-  shardTell: 1.0, shardAct: 0.25, shardDmg: 20, shardR: 9, shardSpread: 60,
-  shakeTell: 1.0, shake: 0.9, shakeDmg: 16, shakeAfter: 1.2, shakeCd: 5,
-  swarmTell: 1.2, swarmAct: 1.4, swarmMax: 6, swarmEvery: 0.45,
-  waveTell: 1.0, waveV: 260, waveH: 16, waveDmg: 29,
-  openT: 5.2, openShoulders: 5.6, openCrown: 5.4, openMul: 2.0, plungeMul: 2.4, openCap: 0.09,
-  legPurse: [0.15, 0.09, 0.07], legMul: 1.0,
+  /* (claude/glasssea2, Daniel 10-07: "a third of the health, quicker tells, two more told attacks") hp 2000 -> 680, every tell ~15% quicker, the gaps shorter;
+     an opening may take a fifth of it (openCap 0.09 -> 0.2: the same few hits, on a smaller bar) */
+  hp: 680, w: 72, h: 200,
+  lanceTell: 0.98, lanceTell3: 0.85, lanceAct: 0.45, lanceDmg: 92, lanceBand: [28, 4],
+  stompTell: 0.72, stompV: 240, stompH: 14, stompDmg: 60,
+  shardTell: 0.85, shardAct: 0.25, shardDmg: 37, shardR: 9, shardSpread: 60,
+  shakeTell: 0.85, shake: 0.9, shakeDmg: 29, shakeAfter: 1.2, shakeCd: 5,
+  swarmTell: 1.02, swarmAct: 1.4, swarmMax: 6, swarmEvery: 0.45,
+  waveTell: 0.85, waveV: 260, waveH: 16, waveDmg: 53,
+  /* NEW P1: THE SHARD SWEEP (!!) - its arm reaches out to the wall on your side and drags back along the floor to its feet: jump it, or be up on a hold */
+  sweepTell: 0.75, sweepV: 380, sweepH: 18, sweepDmg: 47, sweepIn: 40,
+  /* NEW P2: THE GLASS QUAKE (!!) - the floor plates under you and either side heave up (marked), then lie as slick tilted shards that slide you outward */
+  quakeTell: 0.9, quakeAct: 0.35, quakeDmg: 45, quakeW: 20, quakeH: 24, quakeSpread: 76, quakeSlick: 3.0, quakePush: 70,
+  openT: 5.2, openShoulders: 5.6, openCrown: 5.4, openMul: 2.0, plungeMul: 2.4, openCap: 0.1,
+  legPurse: [0.1, 0.06, 0.05], legMul: 1.0,
   wardT: 3.0, lockT: 1.5, phase2: 0.55, phase3: 0.25, phaseT: 2.2,
-  gap: [0.65, 0.55, 0.45],
-  chain: { 1: ['lance', 'stomp', 'shards', 'lance', 'shards', 'stomp'], 2: ['swarm', 'stomp', 'shards', 'stomp', 'swarm', 'shards', 'stomp'], 3: ['lance', 'shards', 'wave', 'lance', 'stomp'] },
+  gap: [0.45, 0.4, 0.32],
+  chain: { 1: ['lance', 'stomp', 'sweep', 'shards', 'lance', 'sweep', 'shards', 'stomp'], 2: ['swarm', 'quake', 'shards', 'stomp', 'swarm', 'quake', 'stomp'], 3: ['lance', 'shards', 'wave', 'sweep', 'lance', 'stomp', 'quake'] },
 };
 /* THE STAGE: carve the arena into the level (the level lays the floor and the walls); returns { arena, carve } */
 export function stageColossus(Wr, T, TS, sx, F) {
@@ -69,12 +75,46 @@ export const colOpen = e => !!e && (e.open || 0) > 0 && ['cracked', 'blazing', '
 
 export function newFight(G) {
   return { G, ph: 1, i: 0, cd: 1.4, t: 0, ward: 0, lock: 0, phaseT: 0, legPurse: COL.legPurse[0], openTaken: 0, opened: null, by: null,
-    lance: null, rings: [], marks: [], wave: null, swarmT: 0, swarmN: 0, held: false, shakeCd: 2, bodyT: new Map(), cracks: 0,
-    mirrors: G.mirrors.map(m => ({ ...m, notch: 'face' })), n: { lance: 0, reflect: 0, stomp: 0, shards: 0, shake: 0, thrown: 0, swarm: 0, held: 0, dazzle: 0, wave: 0, opens: 0, warded: 0, shut: 0, glazed: 0, leg: 0 },
+    lance: null, rings: [], marks: [], wave: null, sweep: null, plates: [], slick: [], swarmT: 0, swarmN: 0, held: false, shakeCd: 2, bodyT: new Map(), cracks: 0, pose: POSE0(),
+    /* (claude/glasssea2, Daniel: "make the mirror read VERY clear") the shelf-mirrors start TO THE SKY: the first thing the fight asks is the verb - TURN THE MIRROR TO HIM */
+    mirrors: G.mirrors.map(m => ({ ...m, notch: 'sky' })), n: { lance: 0, reflect: 0, stomp: 0, shards: 0, shake: 0, thrown: 0, swarm: 0, held: 0, dazzle: 0, wave: 0, sweep: 0, quake: 0, slid: 0, opens: 0, warded: 0, shut: 0, glazed: 0, leg: 0 },
     told: {}, said: {} };
 }
 const NOTCH = ['face', 'fire', 'sky'];
-export const STALL_LINE = { 1: 'TURN A MIRROR BACK TO FACE THE GIANT', 2: 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM', 3: 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' };
+export const STALL_LINE = { 1: 'TURN THE MIRROR TO HIM', 2: 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM', 3: 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' };
+export const MIRROR_LINE = 'TURN THE MIRROR TO HIM: HIS LANCE COMES BACK INTO HIS CHEST';
+/* ---------- THE POSE CLOCK (claude/glasssea2; the COLOSSUS ART lane draws its parts to these keys) ----------
+   poseOf(e, S, t) -> { key, lean, bob, footL, footR, armL: [dx, dy], armR: [dx, dy] }   (px; lean + = toward +x; bob + = down; foot = lift up; arm dx + = outward)
+   keys: idle (a weight shift: lean +-3, the free foot lifts 3-4, the arms sway +-2, a 1 px bob), lanceWind, lanceFire, stompRaise, stompDown, sweepWind, sweep,
+   shardShrug, quakeRaise, quakeSlam, swarmCall, shake, waveRoll, phase, stagger (open: slumped, a tremble of 1 px or less - B4), sleep, wake */
+export const POSE_KEYS = ['idle', 'lanceWind', 'lanceFire', 'stompRaise', 'stompDown', 'sweepWind', 'sweep', 'shardShrug', 'quakeRaise', 'quakeSlam', 'swarmCall', 'shake', 'waveRoll', 'phase', 'stagger', 'sleep', 'wake'];
+function POSE0() { return { key: 'sleep', lean: 0, bob: 0, footL: 0, footR: 0, armL: [0, 0], armR: [0, 0] }; }
+export function poseOf(e, S, t) {
+  const p = POSE0(), R = Math.round, face = e.face || -1, side = (d, v) => { if (d < 0) p.armL = v; else p.armR = v; }, k = n => Math.max(0, Math.min(1, 1 - (e.modeT || 0) / n));
+  switch (e.mode) {
+    case 'sleep': p.key = 'sleep'; p.bob = 2; p.armL = [0, 3]; p.armR = [0, 3]; break;
+    case 'wake': p.key = 'wake'; p.bob = R(2 - 2 * k(1.6)); p.armL = [2, -R(4 * k(1.6))]; p.armR = [2, -R(4 * k(1.6))]; break;
+    case 'lanceTell': p.key = 'lanceWind'; p.lean = -face * 2; p.armL = [3, -5]; p.armR = [3, -5]; break;
+    case 'lance': p.key = 'lanceFire'; p.lean = face * 3; p.armL = [-2, 2]; p.armR = [-2, 2]; break;
+    case 'stompTell': p.key = 'stompRaise'; p.lean = -face * 3; if (face < 0) p.footL = R(4 + 8 * k(COL.stompTell)); else p.footR = R(4 + 8 * k(COL.stompTell)); p.armL = [4, -3]; p.armR = [4, -3]; break;
+    case 'stomp': p.key = 'stompDown'; p.bob = 2; p.armL = [2, 2]; p.armR = [2, 2]; break;
+    case 'sweepTell': { const d = S.sweep ? S.sweep.dir : face; p.key = 'sweepWind'; p.lean = -d * 2; side(d, [8, -18]); side(-d, [0, 1]); break; }
+    case 'sweep': { const d = S.sweep ? S.sweep.dir : face; p.key = 'sweep'; p.lean = d * 3; p.bob = 1; side(d, [16, 8]); side(-d, [-1, 1]); break; }
+    case 'shardTell': case 'shards': p.key = 'shardShrug'; p.bob = -2; p.armL = [3, -6]; p.armR = [3, -6]; break;
+    case 'quakeTell': p.key = 'quakeRaise'; p.bob = -1; p.armL = [2, -16]; p.armR = [2, -16]; break;
+    case 'quake': p.key = 'quakeSlam'; p.bob = 2; p.armL = [3, 8]; p.armR = [3, 8]; break;
+    case 'swarmTell': case 'swarm': p.key = 'swarmCall'; p.lean = face * 2; p.bob = 1; side(face, [2, 8]); break;
+    case 'shakeTell': case 'shake': p.key = 'shake'; p.lean = R(Math.sin(t * (e.mode === 'shake' ? 40 : 14)) * (e.mode === 'shake' ? 3 : 1)); p.armL = [4, -2]; p.armR = [4, -2]; break;
+    case 'waveTell': case 'wave': p.key = 'waveRoll'; p.armL = [6, 2]; p.armR = [6, 2]; p.bob = 1; break;
+    case 'phase': p.key = 'phase'; p.bob = -1; p.armL = [3, -8]; p.armR = [3, -8]; break;
+    case 'cracked': case 'blazing': case 'dazzled': p.key = 'stagger'; p.bob = 3; p.armL = [1, 4]; p.armR = [1, 4]; p.lean = R(Math.sin(t * 31) * 0.6); break;   /* B4: it stands its ground - a tremble, no more */
+    default: { /* IDLE: the weight shift - the slow clock a giant breathes on (3.2 s): it leans onto one foot, lifts the other, its arms swing a little against it */
+      const w = Math.sin(t * Math.PI * 2 / 3.2), w2 = Math.sin(t * Math.PI * 2 / 1.6);
+      p.key = 'idle'; p.lean = R(3 * w); p.bob = w2 > 0.3 ? 1 : 0; p.footL = w < -0.55 ? R(4 * (-w - 0.55) / 0.45) : 0; p.footR = w > 0.55 ? R(4 * (w - 0.55) / 0.45) : 0;
+      p.armL = [0, R(2 * w)]; p.armR = [0, R(-2 * w)]; }
+  }
+  return p;
+}
 export const NOTCH_WORD = { face: 'FACING THE GIANT', fire: 'TO THE FIRE', sky: 'TO THE SKY' };
 /* E at a mirror: the next notch. Returns the new notch */
 export function turnMirror(S, i) { const m = S.mirrors[i]; m.notch = NOTCH[(NOTCH.indexOf(m.notch) + 1) % 3]; m.turnedT = 0; return m.notch; }
@@ -90,7 +130,7 @@ const beginOpen = (e, S, what, t, by, c) => { e.mode = what; e.open = t; e.openT
 /* ---------- ONE FRAME ---------- heroes: [{ x, y, ground, grip, alive, pp }]; c: { hit(box, dmg, name, o), number(x, y, t, col), sound(k), shake(n),
    fx(k, x, y), music(ph), swarm(n) -> spawned, swarmAlive() -> n, held() -> crack in firelight, slap(i) (a mirror knocked round), dazzleOk() } */
 export function stepColossus(e, S, dt, heroes, c) {
-  const G = S.G; S.t += dt;
+  const G = S.G; S.t += dt; S.pose = poseOf(e, S, S.t);
   if (e.mode === 'sleep') return;
   if (e.mode === 'wake') { e.modeT = (e.modeT ?? 1.6) - dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 1.0; } return; }
   const live = heroes.filter(h => h.alive); const near = live.slice().sort((a, b) => Math.abs(a.x - G.cx) - Math.abs(b.x - G.cx))[0];
@@ -99,25 +139,31 @@ export function stepColossus(e, S, dt, heroes, c) {
   for (const m of S.mirrors) m.turnedT = (m.turnedT || 0) + dt;
   /* (fix pass) THE ARENA STALL NUDGE: no mirror on a notch that can open it this phase for 10 s -> the line, again every 10 s (never a once-only line) */
   { const can = S.ph === 2 ? ['fire'] : S.ph === 3 ? ['sky', 'face'] : ['face'];
-    if (!colOpen(e) && S.ward <= 0 && !S.mirrors.some(m => can.includes(m.notch))) { S.stallT = (S.stallT || 0) + dt; if (S.stallT >= 10) { S.stallT = 0; S.n.nudge = (S.n.nudge || 0) + 1; c.number(e.x, G.crownY - 20, S.ph === 2 ? 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM' : S.ph === 3 ? 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' : 'TURN A MIRROR BACK TO FACE THE GIANT', '#ffd36b');   /* (= STALL_LINE[S.ph]; literals for tools/hint-shown) */ } } else S.stallT = 0; }
+    if (!colOpen(e) && S.ward <= 0 && !S.mirrors.some(m => can.includes(m.notch))) { S.stallT = (S.stallT || 0) + dt; if (S.stallT >= 10) { S.stallT = 0; S.n.nudge = (S.n.nudge || 0) + 1; c.number(e.x, G.crownY - 20, S.ph === 2 ? 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM' : S.ph === 3 ? 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' : 'TURN THE MIRROR TO HIM', '#ffd36b');   /* (= STALL_LINE[S.ph]; literals for tools/hint-shown) */ } } else S.stallT = 0; }
   /* the travelling hazards: stomp rings, the shard wave */
   for (const r of S.rings) { r.x += r.dir * COL.stompV * dt; if (r.x < G.x0 || r.x > G.x1) r.dead = true; else c.hit([r.x - 10, r.x + 10, G.floor - COL.stompH, G.floor], COL.stompDmg, 'THE STOMP', { key: 'ring' + r.id });   /* (!!: a ring of shards along the ground - JUMP it; no shield turns it) */ }
   S.rings = S.rings.filter(r => !r.dead);
   if (S.wave) { const w = S.wave; w.x += w.dir * COL.waveV * dt; if (w.x < G.x0 - 20 || w.x > G.x1 + 20) S.wave = null; else c.hit([w.x - 14, w.x + 14, G.floor - COL.waveH, G.floor], COL.waveDmg, 'THE SHARD WAVE', { key: 'wave' + w.id }); }
+  /* (claude/glasssea2) THE SHARD SWEEP: the arm drags in from the wall to its feet along the floor (jump it, or be up on a hold) */
+  if (S.sweep && S.sweep.live) { const w = S.sweep; w.x -= w.dir * COL.sweepV * dt; if ((w.x - G.cx) * w.dir <= COL.sweepIn) S.sweep = null; else c.hit([w.x - 12, w.x + 12, G.floor - COL.sweepH, G.floor], COL.sweepDmg, 'THE SHARD SWEEP', { key: 'sweep' + w.id }); }
+  /* THE GLASS QUAKE's slick plates: tilted shards that slide a hero standing on them outward (c.push), until they settle */
+  for (const q of S.slick) { q.t -= dt; for (const h of live) if (h.ground && Math.abs(h.y - G.floor) < 4 && Math.abs(h.x - q.x) <= COL.quakeW) { c.push && c.push(h, q.dir * COL.quakePush, dt); S.n.slid += dt; } }
+  S.slick = S.slick.filter(q => q.t > 0);
   /* THE WARD after an opening (B3), then the lockout (B12) */
-  if (S.ward > 0) { S.ward -= dt; if (S.ward <= 0) { S.ward = 0; S.lock = COL.lockT; if (S.by != null && S.by >= 0 && S.mirrors[S.by] && S.mirrors[S.by].notch !== 'face') { S.mirrors[S.by].notch = 'face'; c.slap && c.slap(S.by); } S.by = null; } }
+  if (S.ward > 0) { S.ward -= dt; if (S.ward <= 0) { S.ward = 0; S.lock = COL.lockT; const to = S.ph === 1 ? 'sky' : 'face';   /* (claude/glasssea2) in P1 it knocks the mirror that cracked it AWAY (to the sky): every opening wants a fresh TURN TO HIM */
+    if (S.by != null && S.by >= 0 && S.mirrors[S.by] && S.mirrors[S.by].notch !== to) { S.mirrors[S.by].notch = to; c.slap && c.slap(S.by); } S.by = null; } }
   /* THE OPENINGS (B4: it stands still) */
   if (colOpen(e)) { e.open -= dt; if (e.open <= 0) { e.open = 0; e.mode = 'idle'; S.cd = COL.gap[S.ph - 1] + 0.2; S.ward = COL.wardT; S.n.warded++; c.sound && c.sound('ward'); c.fx && c.fx('ward', e.x, e.y); if (!S.told.ward) { S.told.ward = 1; c.number(e.x, G.crownY - 20, 'IT GLAZES ITS CRACKS OVER: WAIT FOR THE GLASS TO CLEAR', '#c8d8e8'); } } return; }
   /* THE PHASES (not inside an opening) */
   const k = e.hp / e.maxHp;
   if (e.mode !== 'phase' && ((S.ph === 1 && k <= COL.phase2) || (S.ph === 2 && k <= COL.phase3))) {
-    S.ph++; e.phase = S.ph; e.mode = 'phase'; e.modeT = COL.phaseT; S.lance = null; S.marks = []; S.legPurse = e.maxHp * COL.legPurse[S.ph - 1]; S.i = 0; S.ward = 0;
+    S.ph++; e.phase = S.ph; e.mode = 'phase'; e.modeT = COL.phaseT; S.lance = null; S.marks = []; S.sweep = null; S.plates = []; S.legPurse = e.maxHp * COL.legPurse[S.ph - 1]; S.i = 0; S.ward = 0;
     for (const m of S.mirrors) m.notch = 'face';
     c.music && c.music(S.ph); c.shake && c.shake(5); c.sound && c.sound('phase');
     c.number(e.x, G.crownY - 30, S.ph === 2 ? 'NIGHT FALLS IN ITS GLASS: THE LANCE IS DARK' : 'DAWN: THE SUN RETURNS TO IT', S.ph === 2 ? '#9ab0e8' : '#ffd36b'); return; }
   if (e.mode === 'phase') { e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 1.0; if (S.ph === 2) c.number(e.x, G.crownY - 30, 'IT CALLS THE SWARM: FIRELIGHT HOLDS THEM', '#ffd36b'); if (S.ph === 3) c.number(e.x, G.crownY - 30, 'A MIRROR TO THE SKY THROWS THE DAWN ON ITS CROWN', '#ffd36b'); } return; }
   /* P3: THE DAWN ON ITS CROWN - a mirror TO THE SKY, no ward, no lockout: DAZZLED (it may cancel a tell, never a blow in flight) */
-  if (S.ph === 3 && S.ward <= 0 && !['lance', 'shards', 'stomp', 'shake', 'wave'].includes(e.mode)) { const m = S.mirrors.find(q => q.notch === 'sky'); if (m) { S.n.dazzle++; S.marks = []; beginOpen(e, S, 'dazzled', COL.openCrown, m.i, c); c.number(e.x, G.crownY - 26, 'THE DAWN BURNS ITS CROWN: DAZZLED', '#ffd36b'); return; } }
+  if (S.ph === 3 && S.ward <= 0 && !['lance', 'shards', 'stomp', 'shake', 'wave', 'sweep', 'quake'].includes(e.mode)) { const m = S.mirrors.find(q => q.notch === 'sky'); if (m) { S.n.dazzle++; S.marks = []; beginOpen(e, S, 'dazzled', COL.openCrown, m.i, c); c.number(e.x, G.crownY - 26, 'THE DAWN BURNS ITS CROWN: DAZZLED', '#ffd36b'); return; } }
   e.modeT = (e.modeT || 0) - dt;
   switch (e.mode) {
     case 'idle': { if (near) e.face = Math.sign(near.x - e.x) || e.face; S.cd -= dt; if (S.cd > 0) break;
@@ -131,12 +177,15 @@ export function stepColossus(e, S, dt, heroes, c) {
       else if (name === 'stomp') { e.mode = 'stompTell'; e.modeT = COL.stompTell; c.sound && c.sound('tell'); }
       else if (name === 'shards') { S.marks = live.flatMap(h => [-COL.shardSpread, 0, COL.shardSpread].map(d => ({ x: Math.max(G.x0 + 10, Math.min(G.x1 - 10, h.x + d)), y: c.surface ? c.surface(h.x + d, h.y) : G.floor }))); e.mode = 'shardTell'; e.modeT = COL.shardTell; c.sound && c.sound('tell'); }
       else if (name === 'swarm') { e.mode = 'swarmTell'; e.modeT = COL.swarmTell; S.n.swarm++; c.sound && c.sound('tellHard'); }
+      else if (name === 'sweep') { const dir = near ? (Math.sign(near.x - G.cx) || e.face) : e.face; e.face = dir; S.n.sweep++; S.sweep = { dir, x: dir < 0 ? G.x0 + 6 : G.x1 - 6, id: S.n.sweep, live: false }; e.mode = 'sweepTell'; e.modeT = COL.sweepTell; c.sound && c.sound('tellHard'); }
+      else if (name === 'quake') { S.n.quake++; const xs = []; for (const h of live) for (const d of [-COL.quakeSpread, 0, COL.quakeSpread]) { const x = Math.max(G.x0 + COL.quakeW + 4, Math.min(G.x1 - COL.quakeW - 4, h.x + d)); if (!xs.some(q => Math.abs(q - x) < COL.quakeW * 2)) xs.push(x); }
+        S.plates = xs.map(x => ({ x, dir: Math.sign(x - G.cx) || 1 })); e.mode = 'quakeTell'; e.modeT = COL.quakeTell; c.sound && c.sound('tellHard'); }
       else if (name === 'wave') { e.mode = 'waveTell'; e.modeT = COL.waveTell; S.wave = null; S.waveDir = near && near.x < G.cx ? 1 : -1; c.sound && c.sound('tellHard'); }
       break; }
     case 'lanceTell': if (S.lance) S.lance.end = lanceEnd(S, S.lance.dir);   /* (a mirror turned during the tell changes where it ends: the ring moves) */
       if (e.modeT <= 0) { e.mode = 'lance'; e.modeT = COL.lanceAct; S.lance.fired = true; c.sound && c.sound('lance'); c.shake && c.shake(2); } break;
     case 'lance': { const L0 = S.lance; if (L0) { const x0 = G.cx, x1 = L0.end.x, [hi, lo] = COL.lanceBand; c.hit([Math.min(x0, x1), Math.max(x0, x1), G.floor - hi, G.floor - lo], COL.lanceDmg, 'THE SUN LANCE', { key: 'lance' + S.n.lance });
-        if (L0.end.mirror >= 0 && !L0.reflected && e.modeT < COL.lanceAct - 0.12) { L0.reflected = true; S.n.reflect++; c.sound && c.sound('reflect'); c.number(e.x, G.hipY - 30, 'THE MIRROR THROWS IT BACK: ITS CHEST CRACKS', '#ffd36b'); beginOpen(e, S, 'cracked', COL.openT, L0.end.mirror, c); S.by = -1; return; } }
+        if (L0.end.mirror >= 0 && !L0.reflected && e.modeT < COL.lanceAct - 0.12) { L0.reflected = true; S.n.reflect++; S.lastReflect = L0.end.mirror; c.sound && c.sound('reflect'); c.number(e.x, G.hipY - 30, 'THE MIRROR THROWS IT BACK: ITS CHEST CRACKS', '#ffd36b'); beginOpen(e, S, 'cracked', COL.openT, L0.end.mirror, c); S.by = S.ph === 1 ? L0.end.mirror : -1; return; } }
       if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; S.lance = null; if (L0 && L0.end.mirror < 0 && !S.told.miss) { S.told.miss = 1; c.number(e.x, G.hipY - 30, 'THE LANCE MISSED THE MIRRORS: NOTHING OPENS', '#9aa39a'); } } break; }
     case 'stompTell': if (e.modeT <= 0) { e.mode = 'stomp'; e.modeT = 0.3; S.n.stomp++; const id = S.n.stomp; S.rings.push({ x: G.cx - 30, dir: -1, id: id + 'w' }, { x: G.cx + 30, dir: 1, id: id + 'e' }); c.sound && c.sound('stomp'); c.shake && c.shake(4); } break;
     case 'stomp': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break;
@@ -153,6 +202,11 @@ export function stepColossus(e, S, dt, heroes, c) {
     case 'swarm': S.swarmT -= dt; if (S.swarmT <= 0) { S.swarmT = COL.swarmEvery; if (c.swarmAlive && c.swarmAlive() < COL.swarmMax && c.swarm) c.swarm(2); }
       if (c.held && c.held() && e.modeT > 0.3) { S.n.held++; c.number(e.x, G.shoulderY - 30, 'THE FIRE HOLDS THE SWARM: ITS SHOULDERS BLAZE', '#ffd36b'); const m = S.mirrors.find(q => q.notch === 'fire'); beginOpen(e, S, 'blazing', COL.openShoulders, m ? m.i : -1, c); return; }
       if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break;
+    case 'sweepTell': if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 2.0; if (S.sweep) S.sweep.live = true; c.sound && c.sound('sweep'); c.shake && c.shake(2); } break;
+    case 'sweep': if (!S.sweep || e.modeT <= 0) { S.sweep = null; e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break;
+    case 'quakeTell': if (e.modeT <= 0) { e.mode = 'quake'; e.modeT = COL.quakeAct; c.sound && c.sound('quake'); c.shake && c.shake(5);
+        for (const p of S.plates) { c.hit([p.x - COL.quakeW, p.x + COL.quakeW, G.floor - COL.quakeH, G.floor], COL.quakeDmg, 'THE GLASS QUAKE', { key: 'quake' + S.n.quake + ':' + Math.round(p.x) }); S.slick.push({ x: p.x, dir: p.dir, t: COL.quakeSlick }); } S.plates = []; } break;
+    case 'quake': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break;
     case 'waveTell': if (e.modeT <= 0) { e.mode = 'wave'; e.modeT = 0.4; S.n.wave++; S.wave = { x: S.waveDir > 0 ? G.x0 : G.x1, dir: S.waveDir, id: S.n.wave }; c.sound && c.sound('wave'); c.shake && c.shake(3); } break;
     case 'wave': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1] + 0.6; } break;
     default: e.mode = 'idle';
@@ -179,9 +233,11 @@ export function takeBlow(e, S, dmg, footY, plunge, out = {}) {
    missBait: it does not make it behind the mirror for a lance; missTurn: it fumbles a mirror's turn this time (tries again a second later); missGrip: it lets go in a shake */
 export const COL_PLAN = { react: 0.25, miss: 0.13, missBait: 0.25, missTurn: 0.2, missGrip: 0.2 };
 /* P: { x, y, ground, face, atk, vy }; returns { gx (walk to), jump, dodge, block, atk, talk (E), grip (hold down), face, why } */
-export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t, roll = true, tip = 0 }) {
+/* (claude/glasssea2) eyes: the v2 / human profile - src/lab-perceive.js already shows it his mode a reaction late (and misreads some), so the plan does not react
+   twice: a tell is answered as soon as it is SEEN; only its hands' own fumbles (the bait, the turn, the grip) stay */
+export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t, roll = true, tip = 0, eyes = false }) {
   const G = S.G, out = { gx: null, face: P.face, why: '' }, cx = G.cx, side = P.x < cx ? -1 : 1;
-  const late = (k, d) => { const key = k + ':' + (e.mode) + ':' + S.n.lance + ':' + S.n.stomp + ':' + S.n.shards + ':' + S.n.shake + ':' + S.n.wave; if (!(key in mem)) mem[key] = t + COL_PLAN.react - 0.04 + rng() * 0.1; return t >= mem[key] && !(mem['miss' + key] ??= rng() < (d ?? COL_PLAN.miss)); };
+  const late = (k, d) => { if (eyes) { if (d === undefined) return true; const key = 'f' + k + ':' + e.mode + ':' + S.n.lance + ':' + S.n.shake; return !(mem[key] ??= rng() < d); } const key = k + ':' + (e.mode) + ':' + S.n.lance + ':' + S.n.stomp + ':' + S.n.shards + ':' + S.n.shake + ':' + S.n.wave; if (!(key in mem)) mem[key] = t + COL_PLAN.react - 0.04 + rng() * 0.1; return t >= mem[key] && !(mem['miss' + key] ??= rng() < (d ?? COL_PLAN.miss)); };
   const onFloor = P.ground && P.y > G.floor - 8, onHip = P.ground && Math.abs(P.y - G.hipY) < 4, onSh = P.ground && Math.abs(P.y - G.shoulderY) < 4, onKnee = P.ground && Math.abs(P.y - G.kneeY) < 4;
   const strike = (dirX) => { out.face = dirX; if (P.atk < 0) out.atk = true; };
   /* where to stand to strike its body from side s on a ledge (a spear's TIP pays at a distance from the body's edge: the warden stands back) */
@@ -212,6 +268,10 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
      too close to answer from the ring alone; the knight, cutting its knees, ate every one). One tell in eight is missed. */
   if (e.mode === 'stompTell') mem['st' + (S.n.stomp + 1)] = true;
   for (const r of S.rings) { const k = parseInt(r.id); if (Math.sign(P.x - r.x) === r.dir && onFloor && mem['st' + k] && !(mem['ms' + k] ??= rng() < COL_PLAN.miss) && Math.abs(r.x - P.x) < 17 + COL.stompV * 0.14) { out.jump = true; out.holdJump = true; out.why = 'jump the stomp'; return out; } }
+  /* (claude/glasssea2) THE SHARD SWEEP: its arm drags in from the wall to its feet - jump it as it arrives (seen a reaction after it starts; it comes from far off) */
+  if (S.sweep && S.sweep.live && onFloor && Math.sign(P.x - G.cx) === S.sweep.dir && (S.sweep.x - P.x) * S.sweep.dir > -8 && seen('sweep' + S.sweep.id)) { const d = Math.abs(S.sweep.x - P.x); if (d < 20 + COL.sweepV * 0.12) { out.jump = true; out.holdJump = true; out.why = 'jump the sweep'; return out; } }
+  /* THE GLASS QUAKE: off the marked plates in its tell (one tell in eight late) */
+  if (e.mode === 'quakeTell' && onFloor && late('quake')) { const onP = q => Math.abs(q.x - P.x) < COL.quakeW + 9; if (S.plates.some(onP)) { const free = [P.x - 40, P.x + 40, P.x - 52, P.x + 52].find(x => x > G.x0 + 12 && x < G.x1 - 12 && !S.plates.some(q => Math.abs(q.x - x) < COL.quakeW + 10)); if (free != null) { out.gx = free; out.why = 'off the plates'; return out; } out.jump = true; out.holdJump = true; out.why = 'jump the quake'; return out; } }
   if (S.wave && onFloor && Math.sign(P.x - S.wave.x) === S.wave.dir && seen('wave' + S.wave.id) && Math.abs(S.wave.x - P.x) < 60) { out.jump = true; out.why = 'jump wave'; }
   if (e.mode === 'shardTell' && late('shard')) { const hitMe = S.marks.some(m => Math.abs(m.x - P.x) < COL.shardR + 6 && Math.abs(m.y - P.y) < 20);
     if (hitMe) { if (shield) { out.block = true; out.why = 'block shards'; return out; } const free = [P.x - 26, P.x + 26, P.x - 60, P.x + 60].find(x => x > G.x0 + 12 && x < G.x1 - 12 && !S.marks.some(m => Math.abs(m.x - x) < COL.shardR + 8)); if (free != null) { out.gx = free; out.why = 'out of shards'; return out; } } }
@@ -232,6 +292,8 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
     out.gx = kx + s * 6; if (S.legPurse > 0 && onFloor && Math.abs(P.x - cx) < 46 + reach) { out.gx = legX(s); if (Math.abs(P.x - out.gx) < 10 && (mem.legT ?? -9) < t - 0.9) { mem.legT = t; strike(-s); } } out.why = 'p2 wait'; return out; }
   if (S.ph === 3) { const skyM = S.mirrors.find(q => q.notch === 'sky');
     if (!skyM && S.ward <= 0 && e.mode !== 'lanceTell' && e.mode !== 'lance') { const m = S.mirrors[side < 0 ? 0 : 1]; out.gx = m.x; if (Math.abs(P.x - m.x) < 14 && onFloor && late('turnS' + m.notch + Math.floor(t), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(m.x - P.x) || P.face; } out.why = 'turn to the sky'; return out; } }
+  /* (claude/glasssea2) P1: THE MIRRORS START TO THE SKY and it knocks the one that cracked it away again - TURN THE MIRROR TO HIM (the nearest; a turn a second, fumbled one in five) */
+  if (S.ph === 1 && S.ward <= 0 && !S.mirrors.some(q => q.notch === 'face') && e.mode !== 'lance') { const m = myMirror; out.gx = m.x; if (Math.abs(P.x - m.x) < 14 && onFloor && late('turnF' + m.notch + Math.floor(t * 1.5), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(m.x - P.x) || P.face; } out.why = 'turn to him'; return out; }
   /* P1 (and P3's lances): wait just outside a FACING mirror on your side; while its lance is far off, cut its legs */
   const m = S.mirrors.find(q => q.notch === 'face' && Math.sign(q.x - cx) === side) || S.mirrors.find(q => q.notch === 'face');
   if (m) { const safeX = outside(m);
