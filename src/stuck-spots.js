@@ -188,6 +188,15 @@ export const STUCK_HANDS = {
     { id: 'gs-steps', zone: [574, 20, 595, 34], steps: [
       { key: 'gaze', is: ['bed.stepsBridge', 'sand'], at: [588, 25], line: "A MIRROR IN THE COLOSSUS'S GAZE" },
       { key: 'stepsRelay', is: ['crack.steps', 'boils'], at: [582, 27], line: 'A MIRROR OVER THE FIRE ON THE STEPS' } ] },
+    /* (glasssea2) THE ROCKING MIRRORS: the mirror glints until it is turned; then the far lip glints (cross while the beam holds the glass) */
+    { id: 'gs-pulseA', zone: [164, 20, 182, 37], steps: [
+      { key: 'pulseA', is: ['mirror.pulseA', 'sky'], at: [170, 31], line: 'A ROCKING MIRROR BY THE PIT: TURN IT' },
+      { key: 'pulseAGo', colLt: 181, at: [181, 33], glint: 'stall', line: 'CROSS WHILE THE BEAM HOLDS THE GLASS; WAIT WHILE IT FLICKERS' } ] },
+    { id: 'gs-hawk', zone: [256, 18, 284, 37], steps: [
+      { key: 'hawkX', is: ['mirror.hawkX', 'sky'], colLt: 270.5, at: [262, 31], line: 'A ROCKING MIRROR ON THE LIP: TURN IT' },
+      { key: 'hawkGoW', colLt: 270.5, at: [272, 33], glint: 'stall', line: 'CROSS TO THE PILLAR WHILE THE BEAM HOLDS THE GLASS' },
+      { key: 'hawkY', is: ['mirror.hawkY', 'sky'], colLt: 274, at: [273, 31], line: 'THE SECOND MIRROR, ON THE PILLAR: TURN IT' },
+      { key: 'hawkGoE', colLt: 282, at: [283, 33], glint: 'stall', line: 'WAIT ON THE PILLAR FOR ITS BEAM, THEN CROSS' } ] },
   ],
 
   redgorge: [

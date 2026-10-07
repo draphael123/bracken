@@ -36,7 +36,8 @@ function beam(want) {   /* want: { mirrorId: state } -> the receivers each sourc
   const hit = {}; for (const s of L.sources) { const r = trace(tileAt, [s], ms.filter(m => m.state !== 'sky'), R, { opaque, W: L.W, H: L.H }); for (const i of r.hit) hit[R[i].id] = s.kind; } return hit; }
 const laid = beam({});
 const NEED = [['bed.firstStair', { first: '\\' }, 'sun'], ['bed.bridge', { bridge: '\\' }, 'sun'], ['bed.headBridge', { chainA: '/', chainB: '/' }, 'sunset'], ['ring.darkCut', { relay: '/' }, 'fire'],
-  ['bed.stepsBridge', { gaze: '/' }, 'gaze'], ['ring.steps', { stepsRelay: '/' }, 'fire'], ['bed.spireStair', { spire: '\\' }, 'sun'], ['bed.vaultStair', { gaze: '\\' }, 'gaze']];
+  ['bed.stepsBridge', { gaze: '/' }, 'gaze'], ['ring.steps', { stepsRelay: '/' }, 'fire'], ['bed.spireStair', { spire: '\\' }, 'sun'], ['bed.vaultStair', { gaze: '\\' }, 'gaze'],
+  ['bed.pulseA', { pulseA: '\\' }, 'sun'], ['bed.hawkX', { hawkX: '\\' }, 'sun'], ['bed.hawkY', { hawkY: '\\' }, 'sun']];   /* (glasssea2) the rocking mirrors */
 for (const [id, want, kind] of NEED) { const h = beam(want); ok(h[id] === kind, id + ' is lit by its ' + kind + ' beam with ' + JSON.stringify(want) + ' (got ' + JSON.stringify(h[id]) + ')'); ok(!laid[id], id + ' is NOT lit as the level is laid (a TURN is needed)'); }
 { /* (glasssea2, Daniel 10-07 "the light CLIPS THROUGH the mirrors") no beam runs up a mirror's post: a mirror the light comes up into or goes down from stands aside on a
      bracket (side) or is a hood over its fire (open underneath) */
@@ -51,6 +52,15 @@ ok(L.mirrors.find(m => m.id === 'gaze').shardNotch === 2, 'the vault notch of th
 /* the required crossings: each bed bridges a crack (no way over it but the glass) */
 const crack = id => L.cracks.find(c => c.id === id);
 for (const [b, c] of [['bridge', 'crossing'], ['headBridge', 'headGap'], ['stepsBridge', 'steps']]) { const B = L.beds.find(q => q.id === b), C = crack(c); ok(B.tiles.length === C.x1 - C.x0 + 1 && B.tiles.every(([x, y]) => x >= C.x0 && x <= C.x1 && y === C.y), b + ' spans ' + c + ' (' + (C.x1 - C.x0 + 1) + ' tiles, the only way over it)'); ok(C.x1 - C.x0 + 1 >= 5, c + ' is too wide to jump (' + (C.x1 - C.x0 + 1) + ' tiles)'); }
+{ /* (glasssea2, Daniel 10-07) TWO MIRROR-PLATFORMING SECTIONS: rocking mirrors whose glass steps exist only while the beam holds them - A teaches (a soft pit), B remixes
+     (two mirrors out of step over two real cracks, vultures overhead); every gap between steps is a hop (<= 2 tiles), every window is long enough to cross */
+  const pm = L.mirrors.filter(m => m.pulse); ok(pm.map(m => m.id).join() === 'pulseA,hawkX,hawkY', 'three rocking mirrors: ' + pm.map(m => m.id).join());
+  for (const [bid, cid] of [['pulseA', 'pulseA'], ['hawkX', 'hawkW'], ['hawkY', 'hawkE']]) { const B = L.beds.find(q => q.id === bid), C = crack(cid), xs = [C.x0 - 1, ...B.tiles.map(t => t[0]).sort((a, b) => a - b), C.x1 + 1];
+    const hops = xs.slice(1).map((x, i) => x - xs[i] - 1).filter(g => g > 0); ok(B.pulse && B.tiles.every(([x, y]) => x >= C.x0 && x <= C.x1 && y === C.y) && Math.max(...hops) <= 2, bid + "'s glass steps stand in " + cid + ' with hops of ' + hops.join('/') + ' tiles (<= 2)');
+    const M = L.mirrors.find(m => m.id === bid), w = (C.x1 - C.x0 + 3) * TS / 130; ok(M.pulse.on + M.pulse.warn >= w + 1.2, bid + ' holds ' + (M.pulse.on + M.pulse.warn) + ' s, enough to cross ' + (C.x1 - C.x0 + 1) + ' tiles (~' + w.toFixed(1) + ' s at a run) with time to spare'); }
+  ok(crack('pulseA').soft && !crack('hawkW').soft && !crack('hawkE').soft, 'A is a soft teaching pit; B is two real cracks');
+  const X = L.mirrors.find(m => m.id === 'hawkX').pulse, Y = L.mirrors.find(m => m.id === 'hawkY').pulse; ok(X.on + X.warn + X.off === Y.on + Y.warn + Y.off && Y.ph > 0 && Y.ph < X.on + X.warn, 'B\'s two mirrors keep one rhythm, out of step (Y comes on ' + Y.ph + ' s after X)');
+  ok(L.ents.filter(e => e.t === 'vulture' && e.x >= 262 && e.x <= 282).length >= 2, 'vultures over THE HAWK GAP'); }
 /* THE DAY AND THE NIGHT */
 let prevS = L.START.y - 3; const surf = x => { for (let y = Math.max(0, prevS - 4); y < L.H; y++) { const t = at(x, y); if (t === T.SOLID || isSlope(t)) { if (y > prevS + 4) return prevS; prevS = y; return y; } } return prevS; };   /* (the LOW road: the sand and the rock from a little over the last one down - an overhang is not the road, a terrace is the high road, and over a crack the road is the bridge) */
 const inShade = (x, y) => L.shade.some(([x0, x1, y0, y1]) => x >= x0 && x <= x1 && y - 1 >= y0 && y - 1 <= y1) || [1, 2, 3, 4, 5].some(d => at(Math.floor(x / TS), Math.floor((y - 14) / TS) - d) === T.SOLID);

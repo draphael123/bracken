@@ -127,8 +127,18 @@ export function makeGlassSeaHands(ctx) {
     if (!GSx) return; GSx.clock += dt; const ts = TS(), P0 = ctx.hero(), Tt = T();
     GSx.retrace -= dt; if (GSx.retrace <= 0) { GSx.retrace = GS.retrace; retrace(); }
     for (const m of GSx.mirrors) m.flash = Math.max(0, m.flash - dt);
+    /* (glasssea2) THE ROCKING MIRRORS: aimed (turned off the sky), a pulse mirror throws on a rhythm of the level's clock - HOLDS (on: a gold timer), FLICKERS (warn: the
+       beam and its glass flicker), DROPS (off: rocked flat to the sky, the glass crumbles), COMES BACK. Turned back to the sky it stays there */
+    { let rt = false;
+      for (const m of GSx.mirrors) { if (!m.pulse) continue; const Q = m.pulse, per = Q.on + Q.warn + Q.off, aimed = m.n !== 0; let ph = null, st = 'sky', k = 0;
+        if (aimed) { const t = ((GSx.clock + (Q.ph || 0)) % per + per) % per; if (t < Q.on) { ph = 'on'; k = 1 - t / Q.on; } else if (t < Q.on + Q.warn) { ph = 'warn'; k = 1 - (t - Q.on) / Q.warn; } else { ph = 'off'; k = (t - Q.on - Q.warn) / Q.off; } st = ph === 'off' ? 'sky' : m.notches[m.n]; }
+        if (ph === 'off' && m.pph === 'warn') { GSx.n.drops = (GSx.n.drops || 0) + 1; if (P0 && Math.abs(P0.x - m.x * ts) < 300 && once('pulseDrop')) ctx.number(P0.x, P0.y - 34, 'THE MIRROR ROCKS OFF THE SUN: THE GLASS GOES', '#ffd36b'); }
+        m.pph = ph; m.pk = k; if (st !== m.state) { m.state = st; rt = true; } }
+      if (rt) retrace();
+      for (const b of GSx.beams) { const wm = GSx.mirrors.find(m => m.pulse && m.pph === 'warn' && b.segs.some(sg => (sg.x1 === m.x && sg.y1 === m.y) || (sg.x0 === m.x && sg.y0 === m.y))); b.warnM = !!wm; b.alpha = wm ? (Math.floor(GSx.clock * 12) % 2 ? 0.25 : 1) : 1; }
+      for (const bd of GSx.beds) bd.warn = GSx.beams.some(b => b.warnM && b.end && b.end.recv === 'bed' && b.end.x === bd.tx && b.end.y === bd.ty) ? 1 : 0; }
     /* THE BEDS: fuse while a day beam is on the heap, from the near end; crumble from the far end when it is not */
-    for (const b of GSx.beds) { const k0 = b.k; b.k = b.hit ? Math.min(1, b.k + dt / GS.fuseT) : Math.max(0, b.k - dt / GS.crumbleT);
+    for (const b of GSx.beds) { const k0 = b.k; b.k = b.hit ? Math.min(1, b.k + dt / (b.fuseT || GS.fuseT)) : Math.max(0, b.k - dt / (b.crumbleT || GS.crumbleT));   /* (glasssea2: a rocking mirror's glass steps fuse and go in a moment) */
       const want = Math.round(b.k * b.tiles.length);
       while (b.set < want) { const [x, y] = b.tiles[b.set++]; ctx.cellSet(x, y, Tt.ONEWAY); if (b.set % 3 === 1) ctx.burst(x * ts + 8, y * ts + 2, 4, ['#e8fff8', '#9ae8d0', '#ffd36b'], 40, 0.4); }
       while (b.set > want) { const [x, y] = b.tiles[--b.set]; ctx.cellSet(x, y, Tt.AIR); if (b.set % 3 === 0) ctx.burst(x * ts + 8, y * ts + 4, 4, ['#c8b48a', '#9ae8d0'], 30, 0.5); }
@@ -155,8 +165,9 @@ export function makeGlassSeaHands(ctx) {
           const side = pp.x < (l + r) / 2 ? -1 : 1; ctx.asPlayer(pp, () => { const P = ctx.hero(); ctx.hurtHero(P.x, GS.boilDmg, { unblockable: true, noKnock: true, name: 'THE SWARM' }); P.vx = side * GS.boilV; P.vy = -140; P.ground = false; });
           if (once('boil') || GSx.clock - (GSx.boilSaid || -9) > 6) { GSx.boilSaid = GSx.clock; ctx.number(pp.x, pp.y - 34, 'THE CRACK BOILS WITH THE SWARM: FIRELIGHT HOLDS IT', '#ff9a5c'); } }
         if (pp.x > l + 2 && pp.x < r - 2 && pp.y > (c.y + 1.5) * ts) { GSx.n.falls++; const s = pp.gsSafe; GSx.lastFall = { id: c.id, x: Math.round(pp.x / ts), y: Math.round(pp.y / ts), safe: s && [Math.round(s.x / ts), Math.round(s.y / ts)] };
-          ctx.asPlayer(pp, () => { const P = ctx.hero(); ctx.hurtHero(P.x, GS.fallDmg, { unblockable: true, noKnock: true, name: 'THE CRACK' }); if (!P.dead && s) ctx.place(pp, s.x, s.y); });
-          if (once('fall')) ctx.number(pp.x, pp.y - 34, 'THE CRACK THROWS YOU BACK', '#9aa39a'); } }
+          ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!c.soft) ctx.hurtHero(P.x, GS.fallDmg, { unblockable: true, noKnock: true, name: 'THE CRACK' }); if (!P.dead && s) ctx.place(pp, s.x, s.y); });
+          if (c.soft) { if (once('softFall')) ctx.number(pp.x, pp.y - 34, 'THE GLASS GAVE WAY: BACK TO THE LIP', '#9aa39a'); }   /* (glasssea2: the teaching pit costs nothing) */
+          else if (once('fall')) ctx.number(pp.x, pp.y - 34, 'THE CRACK THROWS YOU BACK', '#9aa39a'); } }
       for (const p of GSx.patches) if (Math.abs(pp.x - p.x) < GS.patchW * 8 && Math.abs(pp.y - p.y) < 8 && pp.gsPatchK <= 0) { pp.gsPatchK = GS.patchCd; ctx.asPlayer(pp, () => ctx.hurtHero(ctx.hero().x, GS.patchDmg, { unblockable: true, noKnock: true, name: 'THE GLASS SHARDS' })); }
       /* the last safe footing: on the ground, off any crack's lip and off any fused bed */
       if (pp.ground && !pp.onMover) { const tx = Math.floor(pp.x / ts), fy = Math.floor((pp.y + 2) / ts);
@@ -182,7 +193,7 @@ export function makeGlassSeaHands(ctx) {
   const handsState = name => { const [kind, id] = name.split('.');
     if (kind === 'bed') { const b = GSx.beds.find(q => q.id === id); return b ? (b.k >= 1 ? 'fused' : 'sand') : ''; }
     if (kind === 'crack') { const c = GSx.cracks.find(q => q.id === id); return c ? (c.held ? 'held' : 'boils') : ''; }
-    if (kind === 'mirror') { const m = GSx.mirrors.find(q => q.id === id); return m ? m.state : ''; }
+    if (kind === 'mirror') { const m = GSx.mirrors.find(q => q.id === id); return m ? m.notches[m.n] : ''; }   /* (glasssea2: the notch it is SET to - a rocking mirror rocked off the sun is still set) */
     if (kind === 'lit') { const b = GSx.beams.find(q => q.id === id); return b && b.end && b.end.recv ? 'on' : 'off'; }
     return ''; };
   H.handsState = n => (GSx ? handsState(n) : '');

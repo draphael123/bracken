@@ -184,6 +184,15 @@ export function drawDiscHit(g, x, y, col, time) {
 /* ---------- A SHARD PATCH (a shattered scorpion's glass in the sand) and a DAZZLE (sparks round a stunned glass scorpion) ---------- */
 export function drawPatch(g, x, y, k, time) { g.globalAlpha = 0.4 + 0.6 * k; for (let i = 0; i < 8; i++) { const dx = -15 + i * 4 + (i & 1), h = 3 + (i * 5) % 4; g.fillStyle = i % 2 ? GL.c3 : GL.c2; g.fillRect(x + dx, y - h, 2, h); g.fillStyle = GL.w; g.fillRect(x + dx, y - h, 1, 1); } g.globalAlpha = 1; }
 export function drawDazzle(g, x, y, time) { g.fillStyle = Math.floor(time * 16) % 2 ? '#ffffff' : '#9ae8d0'; for (let i = 0; i < 5; i++) g.fillRect(x - 9 + ((i * 7 + R(time * 30)) % 18), y - 4 - (i % 3) * 3, 1, 2); g.fillRect(x - 1, y - 12, 3, 1); g.fillRect(x, y - 13, 1, 3); }
+/* ---------- (glasssea2) A ROCKING MIRROR's TIMER: over its disc, how long the beam holds (gold, emptying), the flicker before it drops (red and white, fast), and the wait
+   until it comes back (a pale bar filling, a small sun at its end); a mirror still turned to the sky shows a dim empty frame ---------- */
+export function drawPulseTimer(g, x, y, m, time) {
+  const w = 24, x0 = x - w / 2, y0 = y - 22, ph = m.pph, k = Math.max(0, Math.min(1, m.pk || 0));
+  g.fillStyle = '#1b1626'; g.fillRect(x0 - 1, y0 - 1, w + 2, 5); g.fillStyle = '#4a2e1a'; g.fillRect(x0, y0, w, 3);
+  if (ph === 'on') { g.fillStyle = '#ffd36b'; g.fillRect(x0, y0, R(w * k), 3); g.fillStyle = '#fff6c8'; g.fillRect(x0, y0, R(w * k), 1); }
+  else if (ph === 'warn') { const b = Math.floor(time * 12) % 2; g.fillStyle = b ? '#ff6b6b' : '#ffffff'; g.fillRect(x0, y0, Math.max(1, R(w * k)), 3); }
+  else if (ph === 'off') { g.fillStyle = '#9aa39a'; g.fillRect(x0, y0, R(w * k), 3); const sx = x0 + R(w * k); g.fillStyle = '#ffd36b'; g.fillRect(sx - 1, y0 - 1, 3, 5); g.fillRect(sx - 2, y0, 5, 3); }
+}
 /* ---------- (glasssea2) THE SWARM, MADE OBVIOUS: a SEAM in the glass that STIRS at dusk (a jagged fissure; stirring = a violet glow pulsing out of it, sparks, the swarm's shells
    in the light; spent = a dim violet line), a violet glow under every skitter and its red-hot eyes over the night's dark ---------- */
 export function drawSeam(g, x, y, w, stirT, spent, time) {

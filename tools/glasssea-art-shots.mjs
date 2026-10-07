@@ -44,6 +44,10 @@ try {
     at('m2z-relay', 586, 27, () => { turn('stepsRelay', 1); run(30); }, [40, 40, 120, 100]);
     at('m3z-first', 42, 33, () => { turn('first', 1); run(60); }, [70, 0, 140, 130]);
     at('m4z-sky', 42, 33, null, [70, 0, 140, 130]);
+    at('p1-pulseA', 174, 33, () => { turn('pulseA', 1); run(40); });
+    at('p1b-pulseA-off', 174, 33, () => { turn('pulseA', 1); run(300); });
+    at('p2-hawk', 268, 33, () => { turn('hawkX', 1); turn('hawkY', 1); run(40); });
+    at('p2b-hawk', 274, 33, () => { turn('hawkX', 1); turn('hawkY', 1); run(220); });
     at('k1-stir', 321, 33, () => { run(70); });
     at('k2-swarm', 321, 33, () => { run(240); });
     at('k3z-skitter', 321, 33, () => { run(240); }, [150, 70, 120, 50]);

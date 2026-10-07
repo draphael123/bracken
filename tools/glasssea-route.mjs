@@ -66,11 +66,20 @@ try {
         while (P().x < foot * TS + 6 && n++ < 400) { tick(1); k.right = true; k.down = true; }
         k.down = false; k.jump = true; BK.press('jump'); for (let j = 0; j < 80; j++) { k.right = true; k.jump = j < 26; tick(1); if (j > 6 && P().ground) break; } clear(); tick(4);
         DBG.push('slide leap from ' + crest + ': landed ' + col() + ',' + feet() + ' vx ' + Math.round(P().vx)); };
+      /* (glasssea2) THE ROCKING MIRRORS: set a mirror's notch (a rocking mirror's state flips with its rhythm: count the notch, not the state); then cross its glass steps -
+         wait for a FRESH beam (the timer full), run, and take a short hop off the end of each step; a fall (soft or real) is retried from where the hand was put back */
+      const turnSet = (id, n) => { for (let i = 0; i < 4 && mirror(id).n !== n; i++) press('talk'); return mirror(id).n === n; };
+      const skip = (id, takeoffs, land) => { for (let a = 0; a < 4; a++) { const f0 = G().n.falls;
+          if (!waitFor(() => mirror(id).pph === 'on' && mirror(id).pk > 0.8 && bed(id).k >= 1, 900, { noFight: true })) { DBG.push('rhythm ' + id + ' never came'); return false; }
+          for (const c of takeoffs) { let n = 0; clear(); while (P().x < c * TS + 12 && n++ < 200) { k.right = true; tick(1); }
+            k.jump = true; BK.press('jump'); for (let j = 0; j < 70; j++) { k.right = true; k.jump = j < 9; tick(1); if (j > 4 && P().ground) break; } }
+          clear(); tick(4); if (G().n.falls === f0 && col() >= land && P().ground) return true; DBG.push('skip ' + id + ' try ' + a + ' at ' + col() + ',' + feet()); settle(); }
+        return false; };
       const LEGS = [
         ['the glass edge: the slide, the first mirror, the stair', [4, 29], () => { walk(26); walk(40, { tol: 3 }); turn('first', '\\\\'); waitFor(() => fused('firstStair'), 300);
             hop(43, 31, 0); hop(44, 29, 1); hop(47, 28, 1); walk(69); walk(95); return col() >= 93 && fused('firstStair'); }, [95, 33]],
-        ['the fulgurite field: the slide gap', [95, 33], () => { walk(134); walk(136, { tol: 2 }); slideLeap(136, 142); if (col() < 148) return false; walk(189); hop(189, 30, 1); walk(197); return col() >= 196; }, [199, 33]],
-        ['the bone crossing: the sun-mirror bridge', [165, 33], () => { walk(223, { tol: 3 }); turn('bridge', '\\\\'); waitFor(() => fused('bridge'), 300); walk(244); walk(295); return col() >= 293; }, [295, 33]],
+        ['the fulgurite field: the slide gap', [95, 33], () => { walk(134); walk(136, { tol: 2 }); slideLeap(136, 142); if (col() < 148) return false; walk(169, { tol: 3 }); turnSet('pulseA', 1); if (!skip('pulseA', [171, 175, 179], 181)) return false; walk(189); hop(189, 30, 1); walk(197); return col() >= 196; }, [199, 33]],
+        ['the bone crossing: the sun-mirror bridge', [165, 33], () => { walk(223, { tol: 3 }); turn('bridge', '\\\\'); waitFor(() => fused('bridge'), 300); walk(244); walk(261, { tol: 3 }); turnSet('hawkX', 1); if (!skip('hawkX', [263, 266, 269], 271)) return false; walk(272, { tol: 3, noFight: true }); turnSet('hawkY', 1); if (!skip('hawkY', [273, 276, 279], 282)) return false; walk(295); return col() >= 293; }, [295, 33]],
         ['the fork obelisk: the chain', [300, 33], () => { walk(316, { tol: 3 }); turn('chainA', '/'); hop(319, 30, 1); hop(320, 27, 1); hop(320, 24, 0); walk(317, { tol: 3, noFight: true }); turn('chainB', '/');
             waitFor(() => fused('headBridge'), 400); walk(322, { tol: 3 }); drop(); walk(330); hop(333, 30, 1); hop(337, 27, 1); walk(361); return fused('headBridge') && col() >= 360 && feet() === 27; }, [361, 27]],
         ['the sunken head: the climb', [361, 27], () => { hop(363, 24, 0); hop(363, 21, 0); hop(365, 18, 0); hop(368, 16, 1); walk(382); walk(400); leap(408, 412); walk(446); return col() >= 444; }, [446, 33]],
