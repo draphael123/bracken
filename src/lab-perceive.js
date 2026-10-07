@@ -30,7 +30,10 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
   const rng = mulberry(seedOf('eyes|' + key)), FPS = 60, spd = () => BK.SET.speed || 1;
   const msF = ms => Math.max(1, Math.round(ms / 1000 * FPS));
   const S = new Map(), seenTells = new Map(), stats = { reads: 0, rtSum: 0, misreads: 0, greeds: 0, unseen: 0, heard: 0 };
-  let f = 0, applied = false, enemies0 = null, greedUntil = -1, greedSwings = 0, atkWas = -1, bossHp = boss.hp, slip = false, slipAt = 0, openSeen = 0;
+  /* (claude/walker) boss === null: THE LEVEL WALKER's eyes (tools/level-walk.mjs). The same reads on every level foe; GREED is a hit landed on
+     any tracked foe (its hp went down while a swing was out). With a boss nothing here changes: the same dice in the same order. */
+  let f = 0, applied = false, enemies0 = null, greedUntil = -1, greedSwings = 0, atkWas = -1, bossHp = boss ? boss.hp : 0, slip = false, slipAt = 0, openSeen = 0;
+  const levelLanded = () => { for (const [e, st] of S) if (typeof st.hp0 === 'number' && e.alive && e.hp < st.hp0) return true; return false; };
   const P = () => BK.P, rngD = mulberry(seedOf('drawn|' + key)), drawnOf = e => (opts.drawn && opts.drawn[e.t]) || DRAWN[e.t] || null;
   const view = () => { const v = BK.view || {}, z = v.z || 1, VW = v.VW || 320, VH = v.VH || 180, cx = (v.x || 0) + VW / 2, cy = (v.y || 0) + VH / 2; return { l: cx - VW / 2 / z - 6, r: cx + VW / 2 / z + 6, t: cy - VH / 2 / z - 10, b: cy + VH / 2 / z + 10 }; };
   const onScreen0 = (e, V) => e.x + (e.w || 16) / 2 > V.l && e.x - (e.w || 16) / 2 < V.r && e.y > V.t && e.y - (e.h || 20) < V.b;
@@ -45,9 +48,9 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
   function update() {
     f++; const V = view(), p = P();
     /* GREED: a hit landed (his health went down while a swing of ours was out) */
-    if (boss.alive && boss.hp < bossHp && p && p.atk >= 0 && f > greedUntil && rng() < prof.greed) {
+    if ((boss ? boss.alive && boss.hp < bossHp : levelLanded()) && p && p.atk >= 0 && f > greedUntil && rng() < prof.greed) {
       const [a, b] = prof.greedSwings || [1, 2]; greedSwings = a + Math.floor(rng() * (b - a + 1)); greedUntil = f + msF(2500); stats.greeds++; }
-    bossHp = boss.hp;
+    bossHp = boss ? boss.hp : 0;
     if (greedSwings > 0 && p) { if (p.atk >= 0 && atkWas < 0) greedSwings--; if (greedSwings <= 0 && p.atk < 0) greedUntil = f; }
     if (f >= greedUntil) greedSwings = 0;
     atkWas = p ? p.atk : -1;
@@ -80,7 +83,7 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
       if (o && st.openAt >= 0 && f >= st.openAt && vis) st.pOpen = e.open;
       const g = e.greedT > 0; if (!g) { st.pGreed = e.greedT; st.greedAt = -1; } else if (st.greedAt < 0) { st.greedAt = f + msF(tri(rng, prof.rtMin, prof.rtMode, prof.rtMax)); st.pGreed = 0; }
       if (g && st.greedAt >= 0 && f >= st.greedAt && vis) st.pGreed = e.greedT;
-      st.vis = vis;
+      st.vis = vis; if (!boss) st.hp0 = e.hp;
       /* (claude/botreads) THE OTHER DRAWN THINGS (DRAWN): each change queued, seen a reaction late and in order, only while he is on the screen */
       const D = drawnOf(e); if (D) { st.d = st.d || {};
         for (const k of D) { const v = e[k]; let q = st.d[k]; if (!q) q = st.d[k] = { seen: v, last: v, Q: [] };
