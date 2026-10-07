@@ -207,3 +207,4 @@ Files: src/redraw/lanterneater_art.js (all drawing), src/lantern-eater-hands.js 
 - **Foreshadowing**: the glimpsed lures in the level are now the same caged bulb on a thread, swaying (drawGlimpse).
 - **Bestiary card**: jaws out of black water, the lure hung beside them, cold flank spots.
 - Stills: work/claude/lanterneater-art/stills/le-*.png (in-game), work/claude/lanterneater-art/sheet-art-lights.png and sheet-art-beast.png (cycle sheets; tools/lantern-eater-sheet.mjs).
+- ART checks (PORT 8723): lantern-eater ok (pure + page, all heroes), canal ok, canal-aloft ok, boss-read ok (its wiring pattern was already stale after the gameplay lane's wardedDamage blow arg; updated to accept it, same strictness), boss-fight-end 54/54, hint-shown ok, textfit bestiary 0 of everything. Not re-run: corpses (untouched).
