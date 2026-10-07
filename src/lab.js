@@ -7,6 +7,7 @@ import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate,
 //   await BK.fightLab({ levels: ['wood', 'spire', 'waymeet'], heroes: [...], foes: [...], reps: 2 })   -> window.__lab
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK, HEIGHT } from './marks.js';
+import { botShouldDrink } from './survival.js';   /* THE FLASK (claude/survival): a v2 profile with drinkAt drinks; legacy never does */
 import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
@@ -545,7 +546,7 @@ async function runbossLab(BK, opts) {
     if (A.carpet) { BK.board(); BK.sim(30); }   /* THE SKY FIGHT: its fight starts when the carpet is boarded */
     else { if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1);   /* A.start: a room whose floor is no place to stand (the Gate Gargoyle's spikes) says where the fight begins */ if (opts.nudge) BK.P.x += opts.nudge; BK.sim(30); }   /* opts.nudge: start a few px off, for reps of a fight no dice reach (the Deep and the Hurricane replay identically under any seed) */
     /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
-    const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null;
+    const walker = boss.t === 'quarter' ? PT.makeBot(BK) : null; if (walker && !LABP.v2) walker.drink = false;   /* (claude/survival) the legacy bot never drinks: its rows stay what they were */
     const air = boss.t === 'bellcrab' ? (await import('./deepair.js')).airBoxes(L).filter(a=>a.kind==='vent' && a.l>A.x0 && a.r<A.x1).map(a=>({...a,x:(a.l+a.r)/2,ty:A.floor-12,o:{}})) : (boss.airs||[]);
     const P = BK.P, k = BK.keys, hp0 = boss.hp, maxF = Math.round(maxSecs * 60 / (BK.SET.speed || 1));
     // ONE LIFE TELLS A DIFFERENT STORY: normal mode never refills health or clears death between blows.
@@ -598,6 +599,7 @@ async function runbossLab(BK, opts) {
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
+      if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrink(P, LABP.drinkAt)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
       { const bm = boss.mode || '';   /* (claude/herobots) what the Death Knight has SEEN of the boss's rhythm: when a tell was last up, and when the blow it told ended (his punish window) */
         if (bm !== dkS.m) { if (/Tell$/.test(dkS.m)) dkS.blow = bm; else if (dkS.blow && dkS.m === dkS.blow) { dkS.endF = f; dkS.blow = null; } dkS.m = bm; } if (/Tell$/.test(bm)) dkS.tellF = f;
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }

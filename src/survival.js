@@ -14,7 +14,7 @@
 //                  IN AN EXAM (L.examSpans, tile columns [x0, x1]) or a wood with L.fallRule === 'death', SPIKES ARE A REAL DEATH. Never untold:
 //                  the exam says so as you walk in, and tools/survival.mjs fails a span that has no hurt spikes before it to teach them.
 
-export const FLASK = { base: 3, extraMax: 2, heal: 0.35, richHeal: 0.45, drinkT: 0.7, swallowAt: 0.45 };
+export const FLASK = { base: 3, extraMax: 2, heal: 0.35, richHeal: 0.45, drinkT: 0.45, swallowAt: 0.3 };   /* GAME seconds: at the default game speed (0.6) the drink is 0.75 s on the clock, the swallow at 0.5 s */
 /* the flasks a shrine fills: three, and the smith's extra ones (PROG.flaskUp, 0..extraMax) */
 export const flaskMax = prog => FLASK.base + Math.max(0, Math.min(FLASK.extraMax, (prog && prog.flaskUp) | 0));
 export const flaskHeal = (maxHp, rich) => Math.max(1, Math.round(maxHp * (rich ? FLASK.richHeal : FLASK.heal)));

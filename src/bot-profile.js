@@ -34,6 +34,7 @@ export const PROFILES = {
     greed: 0.413, greedSwings: [1, 2],      // chance after a landed hit to stay in for 1-2 more swings, blind to his next tell
     staminaSlip: 0.2,                      // share of the fight it is not minding the roll it should keep back (re-rolled every 3 s)
     openRt: 1.0,                           // his OPEN is noticed with the same reaction (x this)
+    drinkAt: 0.35,                         // (claude/survival) drinks a flask (BK.drinkFlask) under this share of the bar, while one is held; legacy never drinks
     first: false, firstMisread: 0.5, learnAfter: 2, firstTiming: 2, openDiscover: 0.9,
   },
 };
@@ -42,7 +43,7 @@ export const STANDARD = 'human';   /* the profile the boss standard (50-60% acro
 export function profileOf(p) {
   if (!p) return PROFILES.legacy;
   if (typeof p === 'string') { const [name, ...mods] = p.split('+'); const base = PROFILES[name]; if (!base) throw Error('no bot profile ' + name);
-    return mods.reduce((o, m) => m === 'first' ? { ...o, first: true, name: o.name + '+first' } : o, base); }
+    return mods.reduce((o, m) => m === 'first' ? { ...o, first: true, name: o.name + '+first' } : m === 'dry' ? { ...o, drinkAt: 0, name: o.name + '+dry' } : o, base); }   /* +dry (claude/survival): the same hands, no flask drunk - the boss rows as they were measured before the flask */
   return { ...(PROFILES[p.base || 'human']), ...p };
 }
 /* THE BUILD a player carries at a level (claude/bot2 #3). 'bare' = the even card and no skills (the lab's floor, as BKT.setHeroLevel
