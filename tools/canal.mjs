@@ -16,7 +16,8 @@
 //     bridge out of the grid, a horn lets her into the fog wall, an archer in the fog looses only at a lit hero, the grindylow grabs at the quay's
 //     edge and three presses break it, bright weed holds and gives, dark weed holds nothing, the canal bites and hands you back; in the tunnel she
 //     waits for a rider who stands and goes for one who legs her, her lantern struck dims and lights, lit she draws a grindylow aboard and dimmed
-//     she does not, the stop-planks hold her until a real swing at their windlass, a fall off the ledge is handed back to the ledge.
+//     she does not, the stop-planks hold her until a real swing at their windlass, a fall off the ledge is handed back onto her deck; (claude/canal5) the moon
+//     shaft's grating holds, DOWN on her deck never takes a ladder, the deep lock's paddle never shuts her out, off her she glides to you (THE CALL), legging is smooth.
 // usage: node tools/canal.mjs [--no-page]
 import { readFileSync, existsSync } from 'node:fs';
 import * as R from '../src/canal-rig.js';
@@ -73,8 +74,13 @@ if (D) {
     const st = R.newCanal(D); st.D = D; for (const id of ['L1', 'L2', 'L3', 'L4']) { const r = R.reachById(st, id); r.y = r.to = R.surfaceY(r.hi); } R.gatesSettle(st); for (const q of st.bridges) { q.across = false; q.k = 1; }
     st.barge = R.newBarge(st, 252 * TS); const b = st.barge, x0 = b.x;
     for (let i = 0; i < 120; i++) R.bargeStep(st, DT, true); ok(R.inTunnel(st) && b.x === x0, 'in the tunnel she drifted with a hero aboard and nobody legging her');
-    st.leg = R.RIG.leg; for (let i = 0; i < 60; i++) R.bargeStep(st, DT, true); const lit = b.x - x0;
-    st.leg = R.RIG.legDark; const x1 = b.x; for (let i = 0; i < 60; i++) R.bargeStep(st, DT, true); const dark = b.x - x1;
+    /* (claude/canal5, Daniel 10-06 "awkward") SHE GATHERS WAY AND LOSES IT: never a snap to full speed or a dead stop; the steady speeds are measured after a second's way */
+    st.leg = R.RIG.leg; R.bargeStep(st, DT, true); const first = b.x - x0; for (let i = 0; i < 59; i++) R.bargeStep(st, DT, true); const xa = b.x; for (let i = 0; i < 60; i++) R.bargeStep(st, DT, true); const lit = b.x - xa;
+    st.leg = R.RIG.legDark; for (let i = 0; i < 60; i++) R.bargeStep(st, DT, true); const x1 = b.x; for (let i = 0; i < 60; i++) R.bargeStep(st, DT, true); const dark = b.x - x1;
+    st.leg = 0; const xg = b.x; for (let i = 0; i < 120; i++) R.bargeStep(st, DT, true); const glide = b.x - xg;
+    ok(first > 0 && first < R.RIG.leg * DT * 0.6 && glide > 1 && glide < 20 && b.lv === 0, 'legging is not smooth: she must gather way (first frame ' + first.toFixed(2) + ' px) and glide on a little when nobody legs her, then stand (' + glide.toFixed(1) + ' px)');
+    st.leg = -R.RIG.leg; for (let i = 0; i < 60 * 30; i++) R.bargeStep(st, DT, true); ok(Math.abs(b.x + b.w / 2 - D.tunnels[0][0] * TS) < 2 && R.inTunnel(st), 'legged WEST she does not stop with her middle at the tunnel mouth (' + ((b.x + b.w / 2) / TS).toFixed(2) + ')');
+    st.leg = 0; for (let i = 0; i < 60; i++) R.bargeStep(st, DT, true);
     ok(Math.abs(lit - R.RIG.leg) < 1 && Math.abs(dark - R.RIG.legDark) < 1 && R.RIG.legDark < R.RIG.leg * 0.7, 'legged lit / dimmed she does not go at RIG.leg / RIG.legDark (blind is the slower): ' + lit.toFixed(1) + ' / ' + dark.toFixed(1));
     st.leg = R.RIG.leg; for (let i = 0; i < 9000; i++) R.bargeStep(st, DT, true); const S1 = (D.stops || [])[0];
     ok(S1 && b.holdWhy === 'stop' && Math.abs(b.x + b.w - S1.x * TS) < 3, 'the stop-planks did not hold her (' + ((b.x + b.w) / TS).toFixed(1) + ', ' + b.holdWhy + ')');
@@ -190,7 +196,7 @@ if (lv && D) {
   //   grindylow), test (the stop-planks, their windlass up on a ledge past them, a lantern, a bowman and a bargee), remix (the nest: low beams over the brood, the
   //   moon shaft lighting her, a wisp), exam (the deep lock: its paddle back on the ledge, a lamplighter and a bowman, the brood on its steps); a checkpoint before it
   { const At = A.tunnel, inB = (k, x) => !!At && x >= At[k][0] && x <= At[k][1], tg = ents('grindylow').filter(e => inTun(e.x)), tb = (D.beams || []).filter(b => b.tunnel), signs = ents('sign');
-    ok(At && signs.some(e => e.x >= At.teach[0] - 6 && e.x <= At.teach[0] && /LEG HER/.test(e.text) && /HOLD DOWN/.test(e.text)) && signs.some(e => e.x >= At.teach[0] - 6 && e.x <= At.teach[0] && /LANTERN/.test(e.text) && /STRIKE/.test(e.text)), 'the tunnel is not taught at its portal (a sign naming the verb - HOLD DOWN, LEG HER - and one her lantern, STRIKE it)');
+    ok(At && signs.some(e => e.x >= At.teach[0] - 6 && e.x <= At.teach[0] && /LEG HER/.test(e.text) && /HOLD LEFT OR RIGHT/.test(e.text)) && signs.some(e => e.x >= At.teach[0] - 6 && e.x <= At.teach[0] && /LANTERN/.test(e.text) && /STRIKE/.test(e.text)), 'the tunnel is not taught at its portal (a sign naming the verb - HOLD LEFT OR RIGHT, LEG HER (claude/canal5: DOWN was dropped, Daniel 10-06) - and one her lantern, STRIKE it)');
     ok(tb.some(b => inB('teach', b.x0 / TS)) && tg.some(e => inB('teach', e.x)), 'the tunnel\'s teach has no low beam or no grindylow');
     ok((D.stops || []).some(q => inB('develop', q.x)) && ents('stopwinch').some(e => inB('develop', e.x) && e.x > D.stops[0].x && e.y < D.stops[0].top) && ents('lanternpost').some(e => inB('develop', e.x)) && ents('archer').some(e => inB('develop', e.x)) && ents('gaffer').some(e => inB('develop', e.x)) && signs.some(e => inB('develop', e.x) && /WINDLASS/.test(e.text)), 'the tunnel\'s test is not the stop-planks with their windlass past them up on a ledge (signed), a lantern, a bowman and a bargee');
     ok(tb.filter(b => inB('twist', b.x0 / TS)).length >= 3 && tg.filter(e => inB('twist', e.x)).length >= 3 && (D.moon || []).some(([a]) => inB('twist', a)) && ents('willowisp').some(e => inB('twist', e.x)), 'the tunnel\'s remix is not the nest (low beams over the brood, the moon shaft, a wisp)');
@@ -265,16 +271,16 @@ if (!NOPAGE && lv) {
       //    the stop-planks hold her until a real swing at their windlass on the ledge
       const tun = () => { fresh(); kill(e => true); const cb = C(); for (const id of ['L1', 'L2', 'L3', 'L4']) { const q = cb.reaches.find(r => r.id === id); q.y = q.to = q.hi * TS + 4; } for (const b of cb.bridges) { b.across = false; b.k = 1; } return cb; };
       { const cb = tun(); cb.barge.x = 251 * TS; sim(2); BK.tp(254, 17); P.y = cb.barge.y; P.vy = 0; sim(20); const x0 = cb.barge.x; sim(90); const stood = cb.barge.x - x0;
-        k.down = true; sim(20); const x1 = cb.barge.x; sim(60); const legLit = cb.barge.x - x1; k.down = false; sim(10);
+        k.right = true; sim(90); const x1 = cb.barge.x; sim(60); const legLit = cb.barge.x - x1; k.right = false; sim(40);   /* (claude/canal5) RIGHT held: he walks to her bow and legs her */
         P.face = -1; P.x = cb.barge.x + 30; sim(2); BK.press('atk'); sim(20); const dimmed = cb.lamp === false;
-        k.down = true; sim(20); const x2 = cb.barge.x; sim(60); const legDark = cb.barge.x - x2; k.down = false; sim(10);
+        k.right = true; sim(90); const x2 = cb.barge.x; sim(60); const legDark = cb.barge.x - x2; k.right = false; sim(40);
         P.face = -1; P.x = cb.barge.x + 30; sim(2); BK.press('atk'); sim(20); const relit = cb.lamp !== false;
-        for (let i = 0; i < 4000 && cb.barge.holdWhy !== 'stop'; i++) { k.down = true; BK.sim(1); } k.down = false;
+        for (let i = 0; i < 4000 && cb.barge.holdWhy !== 'stop'; i++) { k.right = true; BK.sim(1); } k.right = false;
         const held = cb.barge.holdWhy, plank0 = BK.L.grid[19 * BK.L.W + 289]; BK.tp(293, 14); sim(20); P.face = 1; BK.press('atk'); sim(150);
         out.tunnel = [+stood.toFixed(1), +legLit.toFixed(1), dimmed, +legDark.toFixed(1), relit, held, plank0, BK.L.grid[19 * BK.L.W + 289], +cb.stops[0].k.toFixed(2)]; }
       // 9b. HER LIGHT DRAWS THE BROOD: lit, the tunnel mouth's grindylow comes aboard as she is legged past it; dimmed, it does not
       for (const lamp of [true, false]) { const cb = tun(); const gr = BK.enemies().find(e => e.t === 'grindylow' && Math.abs(e.x - (263 * TS + 8)) < 20); gr.alive = true; cb.barge.x = 252 * TS; sim(2); BK.tp(255, 17); P.y = cb.barge.y; P.vy = 0; sim(10); cb.lamp = lamp;
-        let aboard = false; for (let i = 0; i < 60 * 12 && cb.barge.x < 270 * TS; i++) { k.down = true; P.hp = P.maxHp; BK.sim(1); if (gr.aboard) aboard = true; } k.down = false; out['brood' + (lamp ? 'Lit' : 'Dark')] = [aboard, gr.mode]; }
+        let aboard = false; for (let i = 0; i < 60 * 12 && cb.barge.x < 270 * TS; i++) { k.right = true; P.hp = P.maxHp; BK.sim(1); if (gr.aboard || gr.mode === 'boardTell' || gr.mode === 'rippleTell' || gr.mode === 'grab') aboard = true; }   /* (claude/canal5) it COMES FOR HER: aboard, or - a legger lies at her end, over the water - up at her edge for his ankle */ k.right = false; out['brood' + (lamp ? 'Lit' : 'Dark')] = [aboard, gr.mode]; }
       // 10. (claude/canalfix) A GRINDYLOW COMES ABOARD A HELD BARGE and grabs a rider standing AMIDSHIPS (the mill wharf's, the bridge holding her)
       fresh(false); { const gw = BK.enemies().find(e => e.t === 'grindylow' && Math.abs(e.x - (104 * TS + 8)) < 20); kill(e => e !== gw); const cb = C(); const l1 = cb.reaches.find(r => r.id === 'L1'); l1.y = l1.to = 33 * TS + 4;
         cb.barge.x = 112 * TS - 97; sim(10); BK.tp(Math.round((cb.barge.x + 48) / TS), 31); sim(20); let aboard = false, grab = false; const hp1 = P.hp;
@@ -283,7 +289,7 @@ if (!NOPAGE && lv) {
       fresh(false); { const cb = C(); for (const b of cb.bridges.slice(0, 2)) { b.across = false; b.k = 1; } kill(e => !e.boarder); cb.barge.x = 158 * TS; BK.tp(162, 31); sim(10);
         let onDeck = 0; for (let i = 0; i < 400; i++) { BK.sim(1); onDeck = BK.enemies().filter(e => e.alive && e.onDeck).length; if (onDeck >= 3) break; } out.gang = [onDeck, cb.barge.holdWhy, Math.round((cb.barge.x + 96) / TS)]; }
       // 12. (claude/canal4) A LOW BEAM IN THE TUNNEL finds a rider standing as she is legged under it, never one lying on her deck (legging is a duck)
-      { const cb = tun(); cb.barge.x = 252 * TS; sim(2); BK.tp(255, 17); P.y = cb.barge.y; P.vy = 0; sim(10); const h0 = P.hp; for (let i = 0; i < 60 * 8 && cb.barge.x < 264 * TS; i++) { k.down = true; BK.sim(1); } k.down = false; out.beamLeg = h0 - P.hp; }
+      { const cb = tun(); cb.barge.x = 252 * TS; sim(2); BK.tp(255, 17); P.y = cb.barge.y; P.vy = 0; sim(10); const h0 = P.hp; for (let i = 0; i < 60 * 8 && cb.barge.x < 264 * TS; i++) { k.right = true; BK.sim(1); } k.right = false; out.beamLeg = h0 - P.hp; }
       // 13. (claude/canalfix3) CLARITY: held at the first lock's shut gate, the paddle that lets her go GLINTS, her lantern swings to it, and after ~10 s with no headway a nudge names it
       fresh(); kill(e => true); { const cb = C(); cb.barge.x = 80 * TS - 97; BK.tp(78, 39); P.y = cb.barge.y; sim(30); P.vy = 0; const t0 = cb.nudges || 0, c0 = cb.clock; for (let i = 0; i < 4000 && cb.clock - c0 < 11; i++) BK.sim(1); const tg = cb.glint;
         out.clarity = [cb.barge.holdWhy, tg && tg.why, tg && tg.prop.t, tg && tg.prop.reach, +(cb.lampAng || 0).toFixed(2), (cb.nudges || 0) - t0, cb.lastNudge || null];
@@ -293,7 +299,26 @@ if (!NOPAGE && lv) {
       // 15. (claude/canalfix3) A SAFE SWIM: the flooded cellar is swum freely (no bite), and the first time, the quay's grindylow comes, bumps the grate and cannot pass
       fresh(false); { const gq = BK.enemies().find(e => e.t === 'grindylow' && e.x < 40 * TS); kill(e => e !== gq); BK.tp(24, 46); const hp2 = P.hp; let bump = false, hit = false, minX = 1e9;
         for (let i = 0; i < 500; i++) { BK.sim(1); if (gq.bump) { bump = true; if (gq.bump.hit) hit = true; } minX = Math.min(minX, gq.x); } out.swim = [P.swim, hp2 - P.hp, bump, hit, Math.floor(minX / TS)]; }
-      fresh(false); kill(e => true); { BK.tp(283, 14); sim(40); BK.tp(286, 17); P.vy = 0; const h0 = P.hp; for (let i = 0; i < 300; i++) BK.sim(1); out.ledgeBack = [h0 - P.hp, Math.floor(P.x / TS), Math.floor((P.y - 1) / TS)]; }   /* (claude/canal4) into the tunnel water off the stop-planks' ledge: bitten, and handed back to the ledge */
+      { const cb = tun(); cb.barge.x = 289 * TS - 97; sim(4); BK.god = false; BK.tp(283, 14); sim(40); BK.tp(286, 17); P.vy = 0; const h0 = P.hp; for (let i = 0; i < 300; i++) BK.sim(1); out.ledgeBack = [h0 - P.hp, !!(P.onMover && P.onMover.canal), Math.round(P.x - (cb.barge.x + cb.barge.w / 2))]; }   /* (claude/canal5, was claude/canal4's 'back to the ledge') into the tunnel water off the stop-planks' ledge: bitten, and handed back ON HER DECK, amidships */
+      // 16. (claude/canal5, Daniel 10-06: "I jumped out of the area and the raft didn't follow me... I couldn't get to the boss") SHE CAN NEVER BE LOST - with real keys:
+      //   a. the moon shaft's grating holds (up its ladder and jumping, nobody gets out over the hill), and climbing down its ladder lands you on her deck
+      { const cb = tun(); cb.barge.x = 302 * TS; sim(2); BK.tp(308, 17); P.y = cb.barge.y; P.vy = 0; sim(10); for (let i = 0; i < 400; i++) { k.up = true; BK.sim(1); } k.up = false; let minY = 1e9;
+        for (let t = 0; t < 4; t++) { k.jump = true; BK.press('jump'); k.left = t % 2 === 0; k.right = t % 2 === 1; for (let i = 0; i < 50; i++) { BK.sim(1); minY = Math.min(minY, P.y); } k.jump = k.left = k.right = false; sim(10); }
+        BK.tp(308, 5); sim(5); for (let i = 0; i < 20 && !P.climb; i++) { k.down = true; BK.sim(1); } for (let i = 0; i < 600 && !P.onMover; i++) { k.down = true; BK.sim(1); } k.down = false; sim(20); out.shaft = [Math.round(minY), !!(P.onMover && P.onMover.canal)]; }
+      //   b. DOWN on her deck (a duck) never takes hold of the deep lock's ladder and climbs you off her into the water
+      { const cb = tun(); cb.barge.x = 345 * TS - 97; sim(2); BK.tp(344, 17); P.y = cb.barge.y; P.vy = 0; sim(10); for (let i = 0; i < 60; i++) { k.down = true; BK.sim(1); } k.down = false; out.duckLadder = [P.climb, !!P.onMover]; }
+      //   c. the deep lock's paddle struck with her OUTSIDE the lock (off early on the gallery): she glides in first, then it drains - never shut out behind its upper gate
+      { const cb = tun(); cb.stops[0].k = 1; cb.stops[0].up = true; cb.barge.x = 320 * TS; sim(2); BK.tp(331, 14); sim(20); P.face = 1; BK.press('atk'); let shutOut = false; const L6 = cb.reaches.find(r => r.id === 'L6');
+        for (let i = 0; i < 60 * 25 && Math.abs(L6.y - (L6.lo * TS + 4)) > 1; i++) { BK.sim(1); if (!cb.gates.find(g => g.id === 'G7').open && cb.barge.x < 334 * TS) shutOut = true; } out.paddleOut = [Math.abs(L6.y - (L6.lo * TS + 4)) < 1, shutOut, Math.round(cb.barge.x / TS), Math.round(cb.barge.y)]; }
+      //   d. THE CALL: off her on the gallery, she glides along under you as you walk on; down the deep lock's ladder (DOWN held) you stand on her deck
+      { const cb = tun(); cb.stops[0].k = 1; cb.stops[0].up = true; cb.barge.x = 318 * TS; sim(2); BK.tp(323, 14); sim(20); for (let i = 0; i < 600 && P.x < 333 * TS + 8; i++) { k.right = true; BK.sim(1); } k.right = false; sim(60 * 6);
+        const under = Math.abs(cb.barge.x + cb.barge.w / 2 - P.x) < 40; for (let i = 0; i < 600 && P.x < 344 * TS + 4; i++) { k.right = true; BK.sim(1); } k.right = false; sim(60 * 4); for (let i = 0; i < 30 && !P.climb; i++) { k.down = true; BK.sim(1); } for (let i = 0; i < 900 && !P.onMover; i++) { k.down = true; BK.sim(1); } k.down = false; sim(20);
+        out.call = [under, (cb.calls || 0) > 0, !!(P.onMover && P.onMover.canal), Math.round(P.y - cb.barge.y)]; }
+      //   e. LEGGING IS SMOOTH: RIGHT held from the mouth to the stop-planks, the rider walks to her bow and stays there - never off her, never left behind, never snagged
+      { const cb = tun(); cb.barge.x = 251 * TS; sim(2); BK.tp(254, 17); P.y = cb.barge.y; P.vy = 0; sim(20); let drops = 0, wasOn = true, maxJump = 0, lastOff = null, f = 0;
+        for (let i = 0; i < 60 * 40 && cb.barge.holdWhy !== 'stop'; i++, f++) { k.right = true; BK.sim(1); const on = !!(P.onMover && P.onMover.canal); if (wasOn && !on) drops++; wasOn = on; const o2 = P.x - cb.barge.x; if (f > 90 && lastOff !== null) maxJump = Math.max(maxJump, Math.abs(o2 - lastOff)); lastOff = o2; } k.right = false;
+        out.smooth = [drops, +maxJump.toFixed(2), cb.barge.holdWhy, Math.round(lastOff)]; }
+
       fresh(); kill(e => true); { const cb = C(); for (const q of cb.bridges.slice(0, 2)) { q.across = false; q.k = 1; } cb.barge.x = 158 * TS; BK.tp(162, 31); sim(120); const tg = cb.glint; out.clarityFog = [cb.barge.holdWhy, tg && tg.why, tg && Math.floor(tg.prop.x / TS)]; }
       return out; })()`, 900000);
     ok(r.board && r.carried > 16, 'the barge did not carry a hero standing on her (' + JSON.stringify([r.board, r.carried]) + ')');
@@ -304,7 +329,7 @@ if (!NOPAGE && lv) {
     ok(r.tunnel[0] === 0 && r.tunnel[1] > 20, 'in the tunnel she went for a rider who stood, or not for one who legged her: ' + JSON.stringify(r.tunnel));
     ok(r.tunnel[2] && r.tunnel[3] > 0 && r.tunnel[3] < r.tunnel[1] * 0.8 && r.tunnel[4], 'her lantern did not dim and light again to a real swing, or blind she was not the slower: ' + JSON.stringify(r.tunnel));
     ok(r.tunnel[5] === 'stop' && r.tunnel[6] === 1 && r.tunnel[7] === 0 && r.tunnel[8] > 0.9, 'the stop-planks did not hold her until a real swing at their windlass wound them up: ' + JSON.stringify(r.tunnel));
-    ok(r.broodLit[0] && !r.broodDark[0], 'her light does not draw the brood: lit, the mouth\'s grindylow must come aboard, dimmed it must not (lit ' + JSON.stringify(r.broodLit) + ', dark ' + JSON.stringify(r.broodDark) + ')');
+    ok(r.broodLit[0] && !r.broodDark[0], 'her light does not draw the brood: lit, the mouth\'s grindylow must come for her (aboard, or at her end for the legger: claude/canal5 legs her from her bow), dimmed it must not (lit ' + JSON.stringify(r.broodLit) + ', dark ' + JSON.stringify(r.broodDark) + ')');
     ok(r.beamLeg === 0, 'legging her (lying on the deck) under the tunnel\'s low beams still hurt the rider: ' + r.beamLeg);
     ok(r.lockPre === 1 && r.lock[0] < 33 * TS && r.lock[1] < 33 * TS && r.lock[2] === 0 && r.lock[3], 'the paddle did not fill the lock, lift her and the hero, and open the upper gate: ' + JSON.stringify([r.lockPre, r.lock]));
     ok(r.bridgePre === 2 && r.bridge[0] === 0 && r.bridge[1] === false, 'the capstan did not swing the mill bridge out of the grid: ' + JSON.stringify([r.bridgePre, r.bridge]));
@@ -315,7 +340,12 @@ if (!NOPAGE && lv) {
     ok(r.water[0] > 0 && r.water[2] <= 39, 'the canal did not bite and hand the hero back to the bank: ' + JSON.stringify(r.water));
     ok(r.clarity[0] === 'gate' && r.clarity[1] === 'gate' && r.clarity[2] === 'locksluice' && r.clarity[3] === 'L1' && r.clarity[4] < -0.05 && r.clarity[5] === 1 && r.clarity[6] === 'THE GATE IS SHUT: FIND ITS PADDLE', 'held at the shut gate, its paddle did not glint, her lantern did not swing to it, or no nudge named it after 10 s: ' + JSON.stringify(r.clarity));
     ok(r.weedBack[1] >= 362 && r.weedBack[1] <= 370 && r.weedBack[2] <= 41, 'a bright weed mat that gave way was the ground the canal handed the hero back to (or he was left in the water): ' + JSON.stringify(r.weedBack));
-    ok(r.ledgeBack[0] > 0 && r.ledgeBack[1] >= 280 && r.ledgeBack[1] <= 285 && r.ledgeBack[2] <= 15, 'a fall into the tunnel water off the stop-planks\' ledge was not bitten and handed back to the ledge: ' + JSON.stringify(r.ledgeBack));
+    ok(r.shaft[0] >= 2 * TS && r.shaft[1], 'the moon shaft let a hero out over the hill (lowest y ' + r.shaft[0] + ', the grating is rows 0-1), or its ladder did not put him back on her deck: ' + JSON.stringify(r.shaft));
+    ok(!r.duckLadder[0] && r.duckLadder[1], 'DOWN on her deck took hold of the ladder of the deep lock and climbed the rider off her: ' + JSON.stringify(r.duckLadder));
+    ok(r.paddleOut[0] && !r.paddleOut[1] && r.paddleOut[2] >= 335, 'the paddle of the deep lock struck with her outside shut her out behind its upper gate (she must glide in, then it drains): ' + JSON.stringify(r.paddleOut));
+    ok(r.call[0] && r.call[1] && r.call[2] && Math.abs(r.call[3]) < 2, 'off her on the gallery she did not glide along to the hero (THE CALL), or down the ladder of the deep lock he did not stand on her deck: ' + JSON.stringify(r.call));
+    ok(r.smooth[0] === 0 && r.smooth[1] < 1 && r.smooth[2] === 'stop' && r.smooth[3] > 80, 'legging with RIGHT held was not smooth (the rider left her deck, jumped about on it, or was not at her bow when the planks held her): ' + JSON.stringify(r.smooth));
+    ok(r.ledgeBack[0] > 0 && r.ledgeBack[1] && Math.abs(r.ledgeBack[2]) < 4, 'a fall into the tunnel water off the stop-planks\' ledge was not bitten and handed back ONTO HER DECK: ' + JSON.stringify(r.ledgeBack) + ' (claude/canal5: back ON HER DECK amidships - a ledge she cannot reach was where heroes were stranded)');
     ok(r.swim[0] && r.swim[1] === 0 && r.swim[2] && r.swim[3] && r.swim[4] >= 36, 'the flooded cellar is not a safe swim, or the quay grindylow did not bump its grate (and stay on the green side): ' + JSON.stringify(r.swim));
     ok(r.clarityDone === null, 'the paddle worked, it still glints (' + r.clarityDone + ')');
     ok(r.clarityFog[0] === 'fog' && r.clarityFog[1] === 'fog' && r.clarityFog[2] === 163, 'held at the fog wall, the bank horn does not glint: ' + JSON.stringify(r.clarityFog));

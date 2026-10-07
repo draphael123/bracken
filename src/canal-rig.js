@@ -28,6 +28,9 @@ export const RIG = {
   drift: 72,           /* px/s the barge drifts (the hero runs 92: he can always get ahead of it and wait). claude/canalfix: 55 -> 72, the rides were long (review fix 12) */
   leg: 56,             /* (claude/canal4) px/s a rider LEGS her through the tunnel with her lantern lit (he sees the walls) */
   legDark: 32,         /* px/s with it dimmed: he legs her blind, feeling for the wall */
+  legAcc: 150,         /* (claude/canal5, Daniel 10-06 "glitchy, awkward") px/s/s she gathers way while legged: no snap to full speed */
+  legDrag: 110,        /* px/s/s she loses way when nobody legs her: she glides on a moment, then stands */
+  glide: 48,           /* px/s she glides along to a hero who CALLS her (off her deck in the tunnel, on a ledge, a ladder or the gallery): she is never left behind */
   stopLift: 1.2,       /* s the stop-planks take to wind up out of the water */
   carryR: 64,          /* px a LAMPLIGHTER's own lantern lights round him (claude/canalfix: the kill-first support) */
   deck: 6,             /* px the deck stands over the water */
@@ -146,7 +149,9 @@ export const lampLit = st => st.lamp !== false || !inTunnel(st);
 export function bargeStep(st, dt, go) {
   const b = st.barge, ev = [];
   if (b.mode !== 'float') return ev;
-  const x0 = b.x, tun = inTunnel(st), speed = tun ? (st.leg || 0) : RIG.drift; if (tun) go = speed > 0;
+  const x0 = b.x, tun = inTunnel(st), speed = tun ? (st.leg || 0) : RIG.drift;
+  if (tun) return legStep(st, dt, speed);   /* (claude/canal5) in the tunnel she is LEGGED either way, gathering and losing way smoothly (legStep) */
+  b.lv = 0;
   if (go && !bargeFogged(st)) {
     const { stop, why } = bargeStop(st, b.x + b.w), want = Math.min(b.x + speed * dt, stop - b.w - 1);
     if (want > b.x) b.x = want;
@@ -155,6 +160,30 @@ export function bargeStep(st, dt, go) {
   if (b.x !== x0) b.holdWhy = null;
   b.v = (b.x - x0) / Math.max(dt, 1e-6);
   b.reach = reachAt(st, b.x + b.w / 2); b.y = deckOf(st.reaches[b.reach].y);
+  return ev;
+}
+
+/* (claude/canal5) HOW FAR SHE CAN GO IN THE TUNNEL, either way: [lo, hi] for b.x. East: the first shut gate, stop-planks down or the canal's end ahead
+   (bargeStop). West: her middle at the tunnel's mouth (out of it the current has her again), or the first shut gate or planks down behind her */
+export function legRoom(st) {
+  const b = st.barge, mouth = (st.tunnels || []).find(([x0, x1]) => b.x + b.w / 2 >= x0 * TS - 2 && b.x + b.w / 2 < (x1 + 1) * TS);
+  let lo = mouth ? mouth[0] * TS - b.w / 2 : -Infinity;
+  for (const g of st.gates) { const gx = (g.x + 1) * TS; if (!g.open && gx <= b.x + 2 && gx > lo) lo = gx; }
+  for (const q of st.stops || []) { const qx = (q.x + 1) * TS; if (q.k < 0.5 && qx <= b.x + 2 && qx > lo) lo = qx; }
+  const { stop, why } = bargeStop(st, b.x + b.w); return { lo: Math.min(lo, b.x), hi: Math.max(b.x, stop - b.w - 1), why };
+}
+/* (claude/canal5) ONE FRAME OF HER IN THE TUNNEL: `want` px/s (signed: + east, - west) - a rider legging her, or the glide to a hero who called her.
+   She gathers way at RIG.legAcc and loses it at RIG.legDrag (never a snap), and stops dead at what holds her (a 'hold' event, east) */
+export function legStep(st, dt, want) {
+  const b = st.barge, ev = [], x0 = b.x; let v = b.lv || 0;
+  const acc = (want !== 0 && Math.sign(want) === Math.sign(v || want) && Math.abs(want) >= Math.abs(v)) ? RIG.legAcc : RIG.legDrag;
+  v += Math.sign(want - v) * Math.min(Math.abs(want - v), acc * dt);
+  const { lo, hi, why } = legRoom(st); let x = b.x + v * dt;
+  let held = false; if (x >= hi) { x = hi; if (v > 0) v = 0; held = want > 0; }
+  if (x <= lo) { x = lo; if (v < 0) v = 0; }
+  b.x = x; b.lv = v; if (b.x !== x0) b.holdWhy = null;
+  if (held && why && b.holdWhy !== why) { b.holdWhy = why; ev.push({ t: 'hold', why }); }
+  b.v = (b.x - x0) / Math.max(dt, 1e-6); b.reach = reachAt(st, b.x + b.w / 2); b.y = deckOf(st.reaches[b.reach].y);
   return ev;
 }
 

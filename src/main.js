@@ -8290,7 +8290,7 @@ function updatePlayer(dt) {
   // jump lets go with a hop, a step sideways lets go, and at the top you step off onto the last rung.
   { const netAt = (x, y) => tileAt(Math.floor(x / TS), Math.floor(y / TS)) === T.NET;
     const here = netAt(P.x, P.y - 8) || netAt(P.x, P.y - 2), below = P.ground && netAt(P.x, P.y + 2);
-    if (!P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && ((keys.up && here) || (keys.down && below && !move && !(P.onMover && P.onMover.kind === 'lifeboat')))) { P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; SFX.pStep(); }
+    if (!P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && ((keys.up && here) || (keys.down && below && !move && !(P.onMover && (P.onMover.kind === 'lifeboat' || P.onMover.canal))))) { P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; SFX.pStep(); }
     if (P.climb) {
       const lx = Math.floor(P.x / TS) * TS + 8; P.x += (lx - P.x) * Math.min(1, dt * 14); P.vx = 0; P.abuf = 0;
       const cy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = cy * 74 * (perk('climber') ? 1.25 : 1); P.climbA = (P.climbA || 0) + Math.abs(P.vy) * dt;
@@ -21066,7 +21066,7 @@ function updateFlood(dt) {
 /* ================= THE FOG CANAL (src/fog-canal.js builds it, src/canal-rig.js is its machinery, src/canal-hands.js its hands, src/canal-foes.js its two new
    foes): this is only the context those hands are given, and the reset. ================= */
 let CANAL = null;
-const CNX = { T, L: () => L, movers: () => movers, enemies: () => enemies, isSolid, box, overlap, cellSet: (x, y, t) => cellSet(x, y, t), resolve: () => resolveTiles(), attackBox: () => attackBox(),
+const CNX = { T, L: () => L, keys: () => keys, movers: () => movers, enemies: () => enemies, isSolid, box, overlap, cellSet: (x, y, t) => cellSet(x, y, t), resolve: () => resolveTiles(), attackBox: () => attackBox(),
   eachHero: fn => { for (const pp of players) asPlayer(pp, () => fn(P)); }, hero: () => P, bodies: () => players.filter(p => !p.dead).concat(enemies.filter(e => e.alive && !e.noGrav)), sfx: SFX, sparks,
   dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r, hint: msg => { hintT = 4.5; hintMsg = msg; }, time: () => time,
   chases: () => chases,   /* (claude/canalfix: the flood laps her stern on the head race) */
