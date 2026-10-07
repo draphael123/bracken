@@ -21,17 +21,17 @@
 //   P3 (30-0%): NEW: FULL BORE - '!! FULL BORE' (1.2 s), then a long charge: hold BOOST, or it runs you down. Its bores come quicker.
 export const DRILL_STAGE = { W: 22, lanes: [0, 3, 6], ceil: 10, points: 12, chute: 19 };
 export const DRILL = {
-  hp: 600, w: 28, h: 52, cruise: 150,
+  hp: 1900, w: 28, h: 52, cruise: 150,
   creep: 9, frontMin: 34, frontMax: 150, push: 46,
-  contactDmg: 28, contactCd: 1.1,
-  boreTell: 1.0, boreTell3: 0.8, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 132, bitIdle: 18, boreDmg: 24,
+  contactDmg: 40, contactCd: 1.1,
+  boreTell: 1.0, boreTell3: 0.8, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 150, bitIdle: 18, boreDmg: 35,
   grindTell: 0.8, grindT: 0.7, grindDist: 78,
-  roofTell: 1.0, roofDmg: 18, roofW: 30,
+  roofTell: 1.0, roofDmg: 27, roofW: 30,
   fullTell: 1.2, fullT: 1.4, fullDist: 150,
-  oreFirst: 3.0, oreEvery: [8.5, 8.0, 7.5], oreV: 64, oreDmg: 16, chuteTell: 1.0,
+  oreFirst: 3.0, oreEvery: [8.5, 8.0, 7.5], oreV: 64, oreDmg: 18, chuteTell: 1.0,
   jamT: 4.6, jamMul: 2.0, jamCap: 0.11, wardT: 3.0, lockT: 1.2,
   phase2: 0.6, phase3: 0.3, phaseT: 2.0,
-  gap: [1.15, 1.0, 0.85],
+  gap: [0.8, 0.7, 0.6],
   chain: { 1: ['bore', 'bore', 'grind', 'bore'], 2: ['bore', 'roof', 'bore', 'grind', 'roof'], 3: ['bore', 'full', 'roof', 'bore', 'grind', 'roof'] },
 };
 export const LANE_NAME = ['LOW', 'MID', 'HIGH'];
@@ -61,6 +61,8 @@ export function laneOf(G, y, tol = 6) { for (let i = 0; i < 3; i++) if (Math.abs
 /* the nearest line at or under a foot (for a hero in the air: where he will land) */
 export function laneUnder(G, y) { for (let i = 2; i >= 0; i--) if (y <= G.laneY[i] + 4) return i; return 0; }
 export const drillOpen = e => !!e && (e.open || 0) > 0 && e.mode === 'jammed';
+/* ITS CAB CAN BE STRUCK (B13: always, but in its told ward and while it wakes or changes phase) - what src/boss-greed.js reads as its opening: a blow on the cab is never greed */
+export const drillHittable = e => !!e && (drillOpen(e) || (!(e.gdWard > 0) && !['sleep', 'wake', 'phase'].includes(e.mode)));
 /* the CAB, world px: { l, r, t, b } - over the MID and HIGH lines on its front */
 export const cabBox = (G, S) => ({ l: S.D - DRILL.w - 2, r: S.D - 2, t: G.laneY[2] - 34, b: G.laneY[1] });
 /* the BIT on its line: { l, r, t, b } */
@@ -78,7 +80,7 @@ const beginJam = (e, S, c) => { e.mode = 'jammed'; e.open = DRILL.jamT; e.openT0
    music(ph), crash(h) (an ore cart into a hero's cart) } */
 export function stepDrill(e, S, dt, heroes, c) {
   const G = S.G; S.t += dt;
-  e.x = (cabBox(G, S).l + cabBox(G, S).r) / 2; e.y = G.laneY[1];   /* (its body for the game's blows: the cab) */
+  e.x = (cabBox(G, S).l + cabBox(G, S).r) / 2; e.y = G.laneY[1]; e.gdWard = S.ward;   /* (its body for the game's blows: the cab; its ward, for the read) */
   if (e.mode === 'sleep') return;
   if (e.mode === 'wake') { e.modeT = (e.modeT ?? 1.6) - dt; S.D = Math.min(G.x0 + DRILL.frontMin, S.D + 60 * dt); if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 1.2; } return; }
   const live = heroes.filter(h => h.alive);
@@ -164,7 +166,7 @@ export const DRILL_PLAN = { react: 0.25, miss: 0.13, missPoints: 0.2 };
 export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip = 0 }) {
   const G = S.G, out = { gx: null, face: P.face, why: '' }, lane = P.lane >= 0 ? P.lane : laneUnder(G, P.y);
   const late = k => { if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
-  const cab = cabBox(G, S), standX = cab.r + Math.max(8, Math.min(reach, 22) - 4) + tip;
+  const cab = cabBox(G, S), standX = cab.r + (tip ? tip + 4 : Math.max(10, Math.min(reach, 22) - 6));   /* (a spear's tip pays at a distance from the near edge: the warden stands back) */
   const go = l => { if (l > lane && P.ground) out.jump = true; else if (l < lane && P.ground) out.drop = true; };
   const danger = new Set();   /* lines not to be on */
   if ((e.mode === 'boreTell' || e.mode === 'boreOut' || e.mode === 'boreHold') && late('bore' + S.n.bore)) danger.add(S.bitLane);

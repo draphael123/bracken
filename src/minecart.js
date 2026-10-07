@@ -105,7 +105,7 @@ export function buildMinecart({ painter, T, TS }) {
     sign(50, t - 1, 'A LONG GAP WANTS SPEED: HOLD RIGHT TO BOOST, THEN JUMP AT THE LIP.');
     foe('bat', 57, t - 5, { squad: 'yardBat' });
     boostGap(61, t);                                                        /* THE BOOST GAP (REQUIRED): 9 wide - a cruising jump falls in */
-    ore(65, t - 4);                                                          /* (high over it: the top of a boosted arc) */
+    ore(71, t - 3);                                                          /* (on the far lip: a boosted jump lands on it) */
     ground(70, 88, t);
     foe('miner', 80, t - 1, { squad: 'yardMiner2' });
     fall(89, t, 2); }
@@ -139,7 +139,7 @@ export function buildMinecart({ painter, T, TS }) {
     gate('forkA', 238, B, 3.2, 1.5, 0);
     foe('miner', 226, B - 1, { squad: 'forkAMiner' }); }
   ground(263, 279, B); ground(308, 313, B); rail(253, 262, B - 3);
-  station(268);                                                             /* STATION TWO */
+
   foe('sapper', 274, B - 1, { squad: 'hidSapper' });
   /* THE HIDDEN LEVER: up in the roof over the line (a jump and a blow). It opens the points in the line itself - down into THE OLD SPUR (silver one), a
      working seven rows under the line that climbs back up to it on a steep ramp (the line over the spur is one-way rail: no head is cracked on it) */
@@ -149,12 +149,12 @@ export function buildMinecart({ painter, T, TS }) {
   block(280, 300, B + 7, H - 1); track.push([280, 300, B + 7]); interiors.push([280, 307, B + 1, B + 6, 'spur']);
   { let tt = B + 7; for (let i = 0; i < 7; i++) { set(301 + i, tt - 1, T.SLOPE_R1); block(301 + i, 301 + i, tt, H - 1); tt--; } track.push([301, 307, B, 'slope']); }
   ore(286, B + 6); ent('silver', 296, B + 6); foe('miner', 291, B + 6, { squad: 'spurMiner' });
-  sign(304, B - 1, 'DUST FALLS BEFORE THE ROCK. BRAKE OR BOOST OFF ITS SHADOW.');
-  rock('first', 306, 312, B);                                               /* THE FIRST ROCKFALL (taught alone) */
+  station(310);                                                             /* STATION TWO (past the spur's way back up) */
 
   // ================= 3. THE GOBLIN LINE (314-469), row 25: cart combat =================
   ground(314, 451, B);
-  station(316);                                                             /* STATION THREE */
+  sign(314, B - 1, 'DUST FALLS BEFORE THE ROCK. BRAKE OR BOOST OFF ITS SHADOW.');
+  rock('first', 316, 324, B);                                               /* THE FIRST ROCKFALL (taught alone) */
   rail(320, 446, B - 3);                                                    /* the parallel line: three rows up, one-way (jump up to it, down + jump to come down) */
   sign(318, B - 1, 'GOBLIN CARTS: STRIKE THE RIDER OFF, OR JUMP INTO HIS CART.');
   rider('archer', 322, B - 3, 30, { squad: 'gl1' });                        /* TEACH: one archer, a little ahead on the line above */
@@ -189,7 +189,7 @@ export function buildMinecart({ painter, T, TS }) {
   rock('c5', 528, 534, B);
   lever('cavein', 538, B - 3, 541, 552, B - 3, 'open', { label: 'THE LOW LINE IS GOING', retry: [528, B - 1], req: true });
   fallIn(554, B, [528, B - 1]);
-  boostGap(556, B - 3); ore(560, B - 6);                                    /* THE BOOST GAP under the falling roof: off the high line, both lines broken */
+  boostGap(556, B - 3); ore(567, B - 5);                                    /* THE BOOST GAP under the falling roof: off the high line, both lines broken */
   ground(565, 572, B); rail(565, 572, B - 3);
   rock('c6', 566, 572, B);
   { const t = fall(573, B, 7); B = t; }                                     /* and on down to row 37 at 587 */
@@ -226,7 +226,7 @@ export function buildMinecart({ painter, T, TS }) {
     rider('archer', 790, B, 40, { squad: 'exPair' }); rider('gobmage', 791, B, 110, { squad: 'exPair' });   /* the pair on the low line, ahead: up top they shoot up at you; drop down and they are in your way */
     crusher('ex', 800, t, 2.4, 0.9, 0.3); gate('ex', 806, B, 2.8, 1.2, 0.2); }
   rider('gobmage', 800, B - 3, 60, { squad: 'exRune', at: 826 });           /* waiting on the far side: a rune on the lip of the gap */
-  boostGap(813, B); ore(818, B - 6);                                        /* the exam's boost gap: both lines broken */
+  boostGap(813, B); ore(824, B - 5);                                        /* the exam's boost gap: both lines broken */
   ground(822, 857, B); rail(822, 838, B - 3);   /* (the upper line ends well short of the last gap: room to boost on the low one) */
   rider('archer', 822, B, 150, { squad: 'exSlow', slow: 70, at: 838 });     /* a goblin cart on your line: jump into it */
   foe('bat', 846, B - 5, { squad: 'exBat' });
