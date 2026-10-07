@@ -1051,3 +1051,5 @@ GROUND_KITS.underwell={density:0,kinds:[]};   /* THE UNDERWELL (claude/underwell
 ALLOWED_DECORATIONS.underwell=['husk'];   /* the Queen's cast shell by her door (the only placed decoration) */
 GROUND_KITS.skyroad={density:0,kinds:[]};   /* THE SKY ROAD (claude/skyroad): basalt and cloud, nothing sprinkled; its dressing is src/redraw/skyroad_dress.js and the level's own */
 ALLOWED_DECORATIONS.skyroad=['bones'];   /* the bones in the Roc's nest (the only placed decoration) */
+GROUND_KITS.glasssea={density:0,kinds:[]};   /* THE GLASS SEA (claude/glasssea, batch75 merge): fused glass and sand, nothing grows or is sprinkled; its dressing is src/redraw/glasssea_set.js and the hands' own (no placed decoration) */
+ALLOWED_DECORATIONS.glasssea=[];

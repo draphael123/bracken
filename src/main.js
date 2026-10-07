@@ -7066,8 +7066,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
-  if (e.elite && EK) { const kd = EK.take(e, dmg, fromX, plunge, blow); if (kd === false) return; dmg = kd; }   /* (ELITES2) an elite's GUARD BY ANGLE (a light cut off his front turned, a heavy through at half) and the riposte into his opening: src/elite-kit.js */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
+  if (e.elite && EK) { const kd = EK.take(e, dmg, fromX, plunge, blow); if (kd === false) return; dmg = kd; }   /* (ELITES2) an elite's GUARD BY ANGLE (a light cut off his front turned, a heavy through at half) and the riposte into his opening: src/elite-kit.js */
   if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }
   if (WMH && e.t === 'wickerman') { dmg = WMH.take(e, dmg); if (!dmg) return; }   /* (claude/fairfix6) THE WICKER MAN: whole in its fire, a scratch on the standing wicker */
   if (LDH && e.cnSkin && LDH.owns(e)) { dmg = LDH.take(e, dmg); if (!dmg) return; }   /* (claude/djinn3) THE LESSER DJINN: a blade passes through sand, fire turns it - until a pour opens it (and no wisp's pop: it is cut whole) */
