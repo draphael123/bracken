@@ -1,0 +1,44 @@
+  ok  knight: the flood brings him a FULL pail (claude/djinn6: was empty - no scoop needed now)
+  ok  knight: thrown, it FILLS ITSELF again 0.62 s later, wherever he stands
+  ok  knight: E in the water scoops it full, at once
+  ok  knight: he rears up - E throws the pail into his core: he CHOKES (3 s open, 26.0 hp off him, the slam never lands)
+  ok  knight: ... and a STRIKE throws it the same (3 s)
+  ok  knight: thrown when he is up and not rearing, he REELS (1.6 s open, 15.0 hp off him) - not a choke
+  ok  warden: the flood brings him a FULL pail (claude/djinn6: was empty - no scoop needed now)
+  ok  warden: thrown, it FILLS ITSELF again 0.62 s later, wherever he stands
+  ok  warden: E in the water scoops it full, at once
+  ok  warden: he rears up - E throws the pail into his core: he CHOKES (3 s open, 26.0 hp off him, the slam never lands)
+  ok  warden: ... and a STRIKE throws it the same (3 s)
+  ok  warden: thrown when he is up and not rearing, he REELS (1.6 s open, 15.0 hp off him) - not a choke
+  ok  pyro: the flood brings him a FULL pail (claude/djinn6: was empty - no scoop needed now)
+  ok  pyro: thrown, it FILLS ITSELF again 0.62 s later, wherever he stands
+  ok  pyro: E in the water scoops it full, at once
+  ok  pyro: he rears up - E throws the pail into his core: he CHOKES (3 s open, 26.0 hp off him, the slam never lands)
+  ok  pyro: ... and a STRIKE throws it the same (3 s)
+  ok  pyro: thrown when he is up and not rearing, he REELS (1.6 s open, 15.0 hp off him) - not a choke
+  ok  paladin: the flood brings him a FULL pail (claude/djinn6: was empty - no scoop needed now)
+  ok  paladin: thrown, it FILLS ITSELF again 0.62 s later, wherever he stands
+  ok  paladin: E in the water scoops it full, at once
+  ok  paladin: he rears up - E throws the pail into his core: he CHOKES (3 s open, 26.0 hp off him, the slam never lands)
+  ok  paladin: ... and a STRIKE throws it the same (3 s)
+  ok  paladin: thrown when he is up and not rearing, he REELS (1.6 s open, 15.0 hp off him) - not a choke
+  ok  pirate: the flood brings him a FULL pail (claude/djinn6: was empty - no scoop needed now)
+  ok  pirate: thrown, it FILLS ITSELF again 0.62 s later, wherever he stands
+  ok  pirate: E in the water scoops it full, at once
+  ok  pirate: he rears up - E throws the pail into his core: he CHOKES (3 s open, 26.0 hp off him, the slam never lands)
+  ok  pirate: ... and a STRIKE throws it the same (3 s)
+  ok  pirate: thrown when he is up and not rearing, he REELS (1.6 s open, 15.0 hp off him) - not a choke
+  ok  reaper: the flood brings him a FULL pail (claude/djinn6: was empty - no scoop needed now)
+  ok  reaper: thrown, it FILLS ITSELF again 0.62 s later, wherever he stands
+  ok  reaper: E in the water scoops it full, at once
+  ok  reaper: he rears up - E throws the pail into his core: he CHOKES (3 s open, 26.0 hp off him, the slam never lands)
+  ok  reaper: ... and a STRIKE throws it the same (3 s)
+  ok  reaper: thrown when he is up and not rearing, he REELS (1.6 s open, 15.0 hp off him) - not a choke
+  ok  geomancer: the flood brings him a FULL pail (claude/djinn6: was empty - no scoop needed now)
+  ok  geomancer: thrown, it FILLS ITSELF again 0.62 s later, wherever he stands
+  ok  geomancer: E in the water scoops it full, at once
+  ok  geomancer: he rears up - E throws the pail into his core: he CHOKES (3 s open, 26.0 hp off him, the slam never lands)
+  ok  geomancer: ... and a STRIKE throws it the same (3 s)
+  ok  geomancer: thrown when he is up and not rearing, he REELS (1.6 s open, 15.0 hp off him) - not a choke
+  ok  a strike throws the pail for every blade hero; every hero
+djinn-pail: 43 checks pass (knight E 3s / strike 3s, warden E 3s / strike 3s, pyro E 3s / strike 3s, paladin E 3s / strike 3s, pirate E 3s / strike 3s, reaper E 3s / strike 3s, geomancer E 3s / strike 3s)

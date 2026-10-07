@@ -185,11 +185,14 @@ export function drawOver(g, e, S, cx, cy, time) {
   /* OPEN (design standard B10 - the one read every boss shares; claude/djinn4): a GOLD RING round him, OPEN over him, a gold clock running down under it */
   if (e.open > 0) { const T = e.mode === 'mud' ? DJ.mudT : e.mode === 'bailed' ? DJ.bailT : e.mode === 'choked' ? DJ.chokeT : e.mode === 'reel' ? DJ.reelT : DJ.openT, k = Math.max(0, e.open / T), p = 0.5 + 0.5 * Math.sin(time * 10);
     const o = openRing(e, S), bx = X(e.x), by = R(o.y - cy), rx = o.rx, ry = o.ry;
-    g.globalAlpha = 0.55 + 0.4 * p; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, by, rx, ry, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
-    const ty = by - ry - 12; g.fillStyle = '#1b1626'; g.fillRect(bx - 20, ty + 4, 40, 3); g.fillStyle = '#ffd36b'; g.fillRect(bx - 20, ty + 4, R(40 * k), 3);
+    /* (claude/djinn6, Daniel 10-06 "hard to tell when to hit him": bigger and brighter - a warm glow inside, a thick bright ring, a pulsing outer ring, a wider clock) */
+    g.globalAlpha = 0.12 + 0.08 * p; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(bx, by, rx + 4, ry + 4, 0, 0, Math.PI * 2); g.fill();
+    g.globalAlpha = 0.75 + 0.25 * p; g.strokeStyle = '#ffd36b'; g.lineWidth = 3; g.beginPath(); g.ellipse(bx, by, rx + 4, ry + 4, 0, 0, Math.PI * 2); g.stroke();
+    g.globalAlpha = 0.35 + 0.35 * p; g.strokeStyle = '#fff6c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(bx, by, rx + 9 + 3 * p, ry + 9 + 3 * p, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    const ty = by - ry - 12; g.fillStyle = '#1b1626'; g.fillRect(bx - 30, ty + 3, 60, 5); g.fillStyle = '#ffd36b'; g.fillRect(bx - 29, ty + 4, R(58 * k), 3); g.fillStyle = '#fff6c8'; g.fillRect(bx - 29, ty + 4, R(58 * k), 1);
   }
   /* HIS WARD's clock (claude/djinn2): a pale bar over him that runs down - when it is gone, the water takes again */
-  if (S.ward > 0 && !(e.open > 0)) { const x = X(e.x), y = R(e.y - (S.pose === 'column' ? 190 : 100) - cy), k = Math.max(0, S.ward / DJ.wardT); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y, 40, 3); g.fillStyle = S.ph === 2 ? '#fff2c0' : S.ph === 3 ? '#bfe4ff' : '#e8d8a0'; g.fillRect(x - 20, y, R(40 * k), 3); }
+  if (S.ward > 0 && !(e.open > 0)) { const x = X(e.x), y = R(e.y - (S.pose === 'column' ? 190 : 100) - cy), k = Math.max(0, S.ward / DJG.wardLen(S)); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y, 40, 3); g.fillStyle = S.ph === 2 ? '#fff2c0' : S.ph === 3 ? '#bfe4ff' : '#e8d8a0'; g.fillRect(x - 20, y, R(40 * k), 3); }
 }
 
 /* (claude/djinn3) THE SHAFT'S LIGHT: a pale fall of daylight down the old well onto the flood - where the great bucket lands. In the flood it brightens

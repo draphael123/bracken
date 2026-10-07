@@ -1,0 +1,44 @@
+  ok  THE WELL TOWN needs 'caravan' (the desert-arc concept, not the old brief's 'sunkencaravan')
+THE WELL TOWN (704 x 60)
+  ok  everything poured: the start reaches the courtyard
+  ok  everything shut (5 mud walls, 3 fires): the courtyard cannot be reached
+  ok  REQUIRED: the mud wall @14 alone shuts the way to the courtyard
+  ok  REQUIRED: the mud wall @262 alone shuts the way to the courtyard
+  ok  REQUIRED: the mud wall @296 alone shuts the way to the courtyard
+  ok  REQUIRED: the mud wall @458 alone shuts the way to the courtyard
+  ok  REQUIRED: the barricade fire @376 alone shuts the way to the courtyard
+  ok  REQUIRED: the gateway fire @464 alone shuts the way to the courtyard
+  ok  the two taught where they cost nothing (the gate house door, the bazaar's stall fire) can be left: the way goes round
+  ok  THE GREAT WELL: with the bucket never sent down (it plugs the mouth) the cisterns, and the courtyard past the rubble, are out of reach
+  ok  and the bucket takes you down into them
+  ok  THE DOVECOTE: with its rungs gone the roofs and the roost past them are out of reach
+  ok  THE SUN: walked along the route, the longest stretch between two shades is 4.2 s (columns 415-436), the rule 5 s; next 3.0 (303), 3.0 (344), 2.7 (76)
+  ok  THE SHADE IS CAST BY THINGS: 21 awnings over the fights, the market courtyard's canopies (the Gang Leader's fight is in shade, both ends), the Kasbah courtyard's walls, the inside of the dovecote (its 18 rungs are the breather before the roost)
+  ok  THE SHADE HAS A CASTER: every one of 32 shade zones has an awning, a strung cloth, a roof or a lintel over every column of it
+  ok  AND EVERY CASTER CASTS: each of 23 awnings, cloths and roofs has its shade under it, from its own underside
+  ok  THE WATER BUDGET: 6 required pours, 5 wells and 1 jar on the road; a three-sip skin filled at each, less 7 sips to thieves and 0 drinks for the sun, is never short
+  ok  THE ROOST LEG: the burning barricade still has its sip after the well-two thieves, door two, the roof-C thief and the sun
+  ok  the first well stands before the first mud wall
+  ok  THE EXAM: after the last well (@448) two pours are asked (2) - a three-sip skin, a sip to spare for the sun
+  ok  FOUR WATER-SKINS, counted by the quest (the HUD: WATER-SKINS n/4)
+  ok  every water-skin can be reached
+  ok  THE DRY CISTERN's vault holds a silver and coins, and the town has no relic (Daniel 10-02: relics are leaving the game)
+  ok  the vault is shut until the cistern is filled, and opens onto the relic
+  ok  the HUD says what the skins are for (L.unlocks, the cistern's two callouts)
+  ok  every foe stands in a designed squad or is the elite (41 foes, 26 squads, nothing sprinkled)
+  ok  the ranged foe is THE BANDIT BOWMAN: every archer here is the reskin (bandit: true)
+  ok  THE OLD STINGER, the elite, holds a gate
+  ok  roles: ranged, melee, runner
+  ok  THE MARKET SHRINE: a checkpoint in the market, and the sign that says a lit shrine is a shop
+  ok  THE WELL STORE: the desert's walk-in room (shopWell) and its map node
+  ok  THE DJINN's hall: 40 tiles, two springs, the windlass and the crank on a ledge, on the boss room's theme (and no Queen: she is benched)
+  ok  THE OLD WELL: its shaft runs open from the street down through the vault into her hall, and the hall is reached
+  ok  his openings (MUD, DOUSED, BAILED OUT) are 5.4 s (>= 3), his OPEN_RULE row (and his slammed hand), and outside them a blade does nothing
+  ok  THE GANG LEADER: a mini in the MARKET COURTYARD (40 tiles, the great well's head), on the old King's theme
+  ok  his courtyard is the Well Square at the head of the market stair (151-192): the great well and its windlass are in it
+  ok  and the Kasbah is not his any more: nothing of his stands past column 440
+  ok  his opening (BURNING, his own bottle struck home) is 3.2 s (>= 3), and one burning takes a third of him at most (Daniel's mini rule)
+  ok  the way on to the old well runs through his courtyard: with his wall shut (6 rows) the cisterns and the old well are out of reach, until he falls and it opens
+  ok  THE KASBAH COURTYARD is not empty: 5 of the garrison in 3 squads (two bowmen on ledges, a pair of knives and a thief in the yard)
+  ok  no Bandit King: the courtyard is the Gang Leader's, the boss is the Djinn's
+welltown: 42 checks pass

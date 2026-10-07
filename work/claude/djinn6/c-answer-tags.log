@@ -1,0 +1,46 @@
+wood          block dodge ---- duck  (3)  ducks 2
+marsh         block dodge ---- duck  (3)  ducks 1
+stockade      block dodge jump duck  (4)  ducks 1
+spore         block dodge ---- duck  (3)  ducks 1
+kings         block dodge jump duck  (4)  ducks 1
+scree         block dodge jump duck  (4)  ducks 1
+hanging       block dodge ---- duck  (3)  ducks 1
+spire         block dodge jump duck  (4)  ducks 1
+moor          block dodge jump duck  (4)  ducks 3
+storm         block dodge jump duck  (4)  ducks 2
+crown         block dodge jump duck  (4)  ducks 2
+longwater     block dodge ---- duck  (3)  ducks 1
+reef          block dodge ---- duck  (3)  ducks 1
+flotilla      block dodge jump duck  (4)  ducks 10
+hurricane     block dodge jump duck  (4)  ducks 10
+lamplit       block dodge ---- duck  (3)  ducks 2
+underleaf     block dodge ---- duck  (3)  ducks 1
+deep          block dodge jump duck  (4)  ducks 12
+keep          block dodge jump duck  (4)  ducks 2
+causeway      block dodge jump duck  (4)  ducks 6
+harbor        block dodge ---- duck  (3)  ducks 9
+waymeet       block dodge ---- duck  (3)  ducks 4
+undercrown    block dodge ---- duck  (3)  ducks 1
+fields        block dodge ---- duck  (3)  ducks 6
+burial        block dodge jump duck  (4)  ducks 1
+mage          block ----- ---- duck  (2)  ducks 2
+fallingtower  block dodge ---- duck  (3)  ducks 1
+burning       block dodge jump duck  (4)  ducks 1
+witchlight    block dodge jump duck  (4)  ducks 2
+oreroad       block dodge ---- duck  (3)  ducks 1
+unburied      block dodge jump duck  (4)  ducks 1
+caravan       block dodge ---- ----  (2)
+fair          block dodge jump duck  (4)  ducks 2
+theatre       block dodge jump duck  (4)  ducks 4
+canal         block dodge jump duck  (4)  ducks 3
+welltown      block dodge ---- duck  (3)  ducks 3
+redgorge      block dodge ---- ----  (2)
+underwell     block dodge ---- ----  (2)
+skyroad       block dodge ---- duck  (3)  ducks 3
+
+411 told blows of 141 common foes answered (block 261, dodge 96, jump 43, duck 11), 0 untold foes tagged.
+4 of 39 levels ask for fewer than three answers (for the design lanes, not a failure):
+  mage          block ----- ---- duck  (2)  ducks 2
+  caravan       block dodge ---- ----  (2)
+  redgorge      block dodge ---- ----  (2)
+  underwell     block dodge ---- ----  (2)

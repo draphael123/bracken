@@ -1,0 +1,14 @@
+welltown BOSS expected L31 knight#1: DEAD 51.4s, hero lost 100%, boss left 100%, 0/1528 blows
+welltown BOSS expected L31 knight#2: DEAD 51.4s, hero lost 100%, boss left 100%, 0/1528 blows
+welltown BOSS expected L31 warden#1: DEAD 67.6s, hero lost 100%, boss left 100%, 0/2361 blows
+welltown BOSS expected L31 warden#2: DEAD 67.6s, hero lost 100%, boss left 100%, 0/2361 blows
+welltown BOSS expected L31 pyro#1: DEAD 70.1s, hero lost 100%, boss left 100%, 0/2455 blows
+welltown BOSS expected L31 pyro#2: DEAD 70.1s, hero lost 100%, boss left 100%, 0/2455 blows
+welltown MINI expected L31 knight#1: DEAD 31.8s, hero lost 100%, boss left 91%, 20/746 blows
+welltown MINI expected L31 knight#2: DEAD 29.4s, hero lost 100%, boss left 89%, 22/659 blows
+welltown MINI expected L31 warden#1: DEAD 33.5s, hero lost 100%, boss left 89%, 12/987 blows
+welltown MINI expected L31 warden#2: DEAD 30.7s, hero lost 100%, boss left 88%, 12/878 blows
+welltown MINI expected L31 pyro#1: DEAD 37.1s, hero lost 100%, boss left 69%, 56/1128 blows
+welltown MINI expected L31 pyro#2: DEAD 37.1s, hero lost 100%, boss left 67%, 57/1138 blows
+wrote docs/mash-bot.json
+errors []
