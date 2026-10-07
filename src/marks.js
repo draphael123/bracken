@@ -454,6 +454,51 @@ export const ANSWER = {
   'burieddead|novaTell': 'dodge', 'burieddead|throwTell': 'block', 'burieddead|bodyTell': 'dodge',   /* THE BURIED DEAD's three untold windups (claude/bossmarks): the poison nova is a ring on the floor (high ground is safe, nothing turns it); the thrown body is a blockable blow that lands where you stood; the body slam lands red on the marked ellipse and nothing turns it */
   'strawking|forkTell': 'block', 'strawking|slamTell': 'block', 'strawking|sweepTell': 'jump', 'strawking|baleTell': 'jump', 'strawking|lanternTell': 'dodge', 'strawking|leapTell': 'dodge',   /* THE SCARECROW KING (claude/bossmarks): fork and slam a shield turns; the sweep and the rolled bale go along the floor; the thrown lantern and his leap are spots to leave */
   'closedhelm|leapTell': 'dodge',   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP: his whole weight on the red ring, unblockable - be off it when he lands (and he lands open) */
+  /* (ELITES2) every elite kind its own two moves (src/main.js updateElite<Kind>) and the THORNED affix's spines: what the player does */
+  '*|ekRiposteTell': 'block', '*|ekThornsTell': 'dodge',
+  'apprentice|ekBoltTell': 'block',
+  'apprentice|ekRuneTell': 'dodge',
+  'armour|ekFistTell': 'block',
+  'armour|ekWhirlTell': 'dodge',
+  'boarder|ekBoardTell': 'dodge',
+  'boarder|ekGrapTell': 'block',
+  'cutlass|ekLungeTell': 'block',
+  'cutlass|ekPistolTell': 'duck',
+  'cutthroat|ekFeintTell': 'block',
+  'cutthroat|ekStampTell': 'block',
+  'cutthroat|ekKnifeTell': 'block',
+  'cutthroat|ekSkimTell': 'jump',   /* (claude/elitemoves) THE SKIMMER: a knife skimmed flat off the floor at the feet */
+  'gaffer|ekHookTell': 'block',
+  'gaffer|ekSpinTell': 'jump',
+  'goat|ekButtTell': 'block',
+  'goat|ekStampTell': 'jump',
+  'hearthgob|ekCleaverTell': 'block',
+  'hearthgob|ekPotTell': 'dodge',
+  'hearthgob|ekPot2Tell': 'dodge',   /* (claude/elitemoves) THE SECOND POT: thrown where you are going */
+  'heavy|ekCleaveTell': 'block',
+  'heavy|ekLeapTell': 'dodge',
+  'hedgeknight|ekBriarTell': 'duck',
+  'hedgeknight|ekJoustTell': 'block',
+  'hedgeknight|ekBackTell': 'jump',   /* (claude/elitemoves) THE LOW BRIAR: the flat cut turned back at the ankles */
+  'hopper|ekBellyTell': 'dodge',
+  'hopper|ekTongueTell': 'block',
+  'husk|ekClawTell': 'block',
+  'husk|ekGraspTell': 'dodge',
+  'pike|ekLongTell': 'block', 'troll|ekRockTell': 'dodge',
+  'troll|ekAfterTell': 'jump',   /* (claude/elitemoves) THE AFTERSHOCK: a ridge of rock run along the floor both ways */
+  'scarecrow|ekCrowsTell': 'block',
+  'scarecrow|ekReapTell': 'jump',
+  'scorpion|ekDigTell': 'dodge',
+  'scorpion|ekUnderTell': 'dodge',
+  'scorpion|ekTailTell': 'jump',
+  'thorn|ekRollTell': 'jump',
+  'thorn|ekSpineTell': 'block',
+  'tideguard|ekSpearTell': 'block',
+  'tideguard|ekTideTell': 'jump',
+  'tideguard|ekUnderTell': 'jump',   /* (claude/elitemoves) THE UNDERTOW: the tide running home to his feet from both ends */
+  'watch|ekChopTell': 'dodge',
+  'watch|ekThrustTell': 'block',
+  'watch|ekHookTell': 'jump',   /* (claude/elitemoves) THE HOOK: the halberd's hook out low behind your heels */
 };
 /* ANSWER:END */
 // THE HEIGHT OF EVERY BLOW (THE UNIVERSAL DUCK, claude/duck, Daniel 2026-09-29: "crouch = universal duck"). The mark says whether the
@@ -472,7 +517,6 @@ export const HEIGHT = {
   'waterthief|slashTell': 'low',   /* (claude/welltown) as the cutthroat's */
   'sandworm|lungeTell': 'low',   /* (claude/desertfoes) up out of the floor */
   'roc|diveTell': 'low',   /* (claude/skyroad) a dive from above reaches the floor */
-'*|eliteLungeTell': 'low', '*|eliteSlamTell': 'low',
   'ambusher|cutTell': 'low',
   'angler|biteTell': 'low', 'angler|castTell': 'low', 'angler|dive': 'low', 'angler|hookTell': 'low', 'angler|swellTell': 'low',
   'apprentice|castTell': 'low', 'apprentice|grabTell': 'low',
@@ -628,6 +672,51 @@ export const HEIGHT = {
   'burieddead|novaTell': 'low', 'burieddead|throwTell': 'low', 'burieddead|bodyTell': 'low',
   'strawking|forkTell': 'low', 'strawking|slamTell': 'low', 'strawking|sweepTell': 'low', 'strawking|baleTell': 'low', 'strawking|lanternTell': 'low', 'strawking|leapTell': 'low',
   'closedhelm|leapTell': 'low',   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP lands on the floor: ducking under it is no answer */
+  /* (ELITES2) every elite kind its own two moves (src/main.js updateElite<Kind>) and the THORNED affix's spines: low reaches the floor, high goes over a duck */
+  '*|ekRiposteTell': 'low', '*|ekThornsTell': 'low',
+  'apprentice|ekBoltTell': 'high',
+  'apprentice|ekRuneTell': 'low',
+  'armour|ekFistTell': 'high',
+  'armour|ekWhirlTell': 'low',
+  'boarder|ekBoardTell': 'low',
+  'boarder|ekGrapTell': 'high',
+  'cutlass|ekLungeTell': 'low',
+  'cutlass|ekPistolTell': 'high',
+  'cutthroat|ekFeintTell': 'low',
+  'cutthroat|ekStampTell': 'low',
+  'cutthroat|ekKnifeTell': 'high',
+  'cutthroat|ekSkimTell': 'low',
+  'gaffer|ekHookTell': 'low',
+  'gaffer|ekSpinTell': 'low',
+  'goat|ekButtTell': 'low',
+  'goat|ekStampTell': 'low',
+  'hearthgob|ekCleaverTell': 'low',
+  'hearthgob|ekPotTell': 'low',
+  'hearthgob|ekPot2Tell': 'low',
+  'heavy|ekCleaveTell': 'low',
+  'heavy|ekLeapTell': 'low',
+  'hedgeknight|ekBriarTell': 'high',
+  'hedgeknight|ekJoustTell': 'low',
+  'hedgeknight|ekBackTell': 'low',
+  'hopper|ekBellyTell': 'low',
+  'hopper|ekTongueTell': 'low',
+  'husk|ekClawTell': 'low',
+  'husk|ekGraspTell': 'low',
+  'pike|ekLongTell': 'low', 'troll|ekRockTell': 'low',
+  'troll|ekAfterTell': 'low',
+  'scarecrow|ekCrowsTell': 'high',
+  'scarecrow|ekReapTell': 'low',
+  'scorpion|ekDigTell': 'low',
+  'scorpion|ekUnderTell': 'low',
+  'scorpion|ekTailTell': 'low',
+  'thorn|ekRollTell': 'low',
+  'thorn|ekSpineTell': 'high',
+  'tideguard|ekSpearTell': 'low',
+  'tideguard|ekTideTell': 'low',
+  'tideguard|ekUnderTell': 'low',
+  'watch|ekChopTell': 'low',
+  'watch|ekThrustTell': 'low',
+  'watch|ekHookTell': 'low',
 };
 /* HEIGHT:END */
 // THE COMMON FOES WHOSE HARM IS NOT A TOLD WINDUP (touch, a lunge from hiding, a latch, a burst, a gust), and what the player does
