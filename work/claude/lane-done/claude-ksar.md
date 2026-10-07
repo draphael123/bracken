@@ -1,3 +1,91 @@
+# claude/ksar FIX PASS (2026-10-07): the reviewer's MUST-FIX list (scratch/review-ksar.md)
+
+This pass merged origin/claude/walker (tools/level-walk.mjs). Healing code is untouched: the SURVIVAL lane owns it, so the level is tuned against today's healing.
+
+## Must-fix status
+1. **Pits and platforming: DONE.**
+   - **The wall walk** has 4 breaches of spiked rubble. A fall in hurts and you climb out.
+     - The first breach is taught bare: a sign, no foe.
+     - The others each have a foe at the jump: a lookout plus a low hawk; a whip apprentice whose lash pulls you in; a shield sentry plus a slinger.
+   - **The exam roofs** are cut by 4 bottomless gaps. A fall there is a real death (A10 amended).
+     - A sign tells it before the first gap.
+     - A foe stands at each gap: a hawk, the lookout's race to his gong, a planted shield on the narrow roof's lip, and the climax drop.
+2. **Hard at campaign level: PARTLY.**
+   - **What changed (weight, not hazards):**
+     - Fort blows hit harder: a blade's or whip's cut x3.6 (L.foeHit).
+     - Fort men are tougher: blades and whips have x2.6 health (L.foeHp).
+     - "The fort's drill": blades and whips close faster and come again sooner. Their windups are unchanged.
+     - Squads are designed front and back, with a shield in front.
+     - Post kegs are cut from 21 to 6.
+   - **What the walker shows:** 0 to 1.5 deaths a run. They are mostly falls at the shield on the narrow roof.
+   - **What is still missed:** arrival stays near 100%. Today's kill heals (+11 a kill) refill the bar within every section.
+3. **Cut and throw required: DONE.**
+   - **Cut:** the roof bridge hangs from its gong's rope over a 7-tile drop. You cut the rope to lower it.
+   - **Throw:** the hawk tower's door is bricked. No set keg reaches it, so you throw one from the stack before it.
+   - Both are asserted in tools/ksar.mjs and in the reach fill: a cut 'ksbridge' counts as a plank.
+4. **Three-verb exam climax, checkpoint after: DONE.** It runs between checkpoint 489 and checkpoint 581:
+   - cut the bridge gong before its lookout rings it;
+   - ring the roof-three gong to draw the hawk tower's squad;
+   - throw a keg at the tower door, under three slingers.
+5. **Hawk-Mistress phases 2 and 3: DONE.**
+   - A cut courtyard gong can be hung back with E.
+   - All courtyard gongs hang again for a new attempt.
+   - The rule opening is x2.0 with a 12% cap (it was x1.6 with 6%). It is now 60 to 90% of every hero's damage.
+   - Phase 3 has one new move, the dive. The flash-powder desperation is cut.
+6. **Blades under 35%: DONE.** Blades are 26%, and the cutthroat machine as a whole is 46%. Sentries went from 2 to 7. Both limits are asserted.
+7. **Pyro spread: DONE.**
+   - **The cause:** the kit. Her red low lash left the knight no answer.
+   - **The fix:** the knight's LOW GUARD (crouch) turns a low red blow. A standing shield still cannot.
+
+## Numbers (level 35, human profile)
+- **Boss, practiced:** knight 4/8, warden 4/8, pyro 5/8 = 54%. No hero is at 0. Health is 1700. Wins take 73 to 108 s.
+- **Mash bot:**
+  - Boss: 0/6.
+  - Level: lowest health knight 0%, warden 23%, pyro 0%. Stamped LEVEL, then BOSS.
+- **Level-1 pilot:** 35 blows and 10 deaths over 3 runs.
+- **Curve:** in band.
+- **Route pilot:** all 7 heroes walk the route with 0 lifts.
+- **Walker (2 seeds a hero):**
+
+  | Hero | Deaths before | Deaths after | Arrive before (mean/min) | Arrive after (mean/min) | Lost %/section before | Lost %/section after | Measured before | Measured after |
+  |---|---|---|---|---|---|---|---|---|
+  | knight | 0 | 0 to 1.5 | 97/89 | 94 to 100 / 82 | 25 | 17 to 46 | 49% | 87 to 97% |
+  | warden | 0 | 0 to 1 | 96/92 | 84 to 92 / 43 to 56 | 27 | 34 to 48 | 49% | 81 to 97% |
+  | pyro | 0 | 0.5 to 1.5 | 100/100 | 97 to 100 / 82 | 62 | 26 to 58 | 30% | 97% |
+
+  Before this pass, every hero got stuck at the gate.
+- **Walker hands added:**
+  - a level hook (BK.walkHint) that tells the walker how a player works the level's locks;
+  - no hunting a foe from the middle of a jump;
+  - sleeping foes are not treated as in the way.
+
+## Checks
+- **Green:** ksar, level-quality, mash-gate, curve-gate, killzones, architecture, signs, sprinkle-cap, checkpoints, checkpoint-gaps, hint-shown, goblin-lint, one-new-foe, corpses, answer-tags, tells, boss-read, crouch-a, duck, threat-holes, skins, dangling-paths, homepaths, map-spacing, comments, npc-removal, audio-assets, boss-music, boss-greed.
+- **Was red, now fixed:** duck was already failing before this pass. Her feint had a HEIGHT row; it is fixed in src/marks.js.
+- **Not run:** the full suite.
+
+## QUESTIONS FOR DANIEL (each rec is what is built)
+1. **The arrival target under today's healing.** Rec: judge the level on deaths and loss per section, then re-walk it once the SURVIVAL lane lands. Alt: make foes heavier now (health sponges).
+2. **The knight's low guard turns her lash.** Rec: keep. Alt: the lash stays red for all, and the knight wins 0 to 3 of 8.
+3. **A cut courtyard gong is hung back with E.** Rec: keep.
+4. **The fort's weight sits on a level hook (L.foeHit and L.foeHp).** Rec: keep, and let other desert lanes reuse it. Alt: an act-wide table.
+5. **Falls in the exam are deaths, one gap guarded by a shield.** Rec: keep. Your playtest judges whether it is fair.
+6. **Flash-powder desperation is cut.** Rec: keep it cut.
+7. **The earlier questions 1 to 11 stand.** That includes the sun as backdrop, 6 post kegs, and the music "Desert Loop" (CC0).
+
+## ART PASS LIST
+- **Own kit and palette:** its own mud-brick and ashlar kit and palette.
+- **Breaches and gaps:** the breaches drawn as broken brick with stakes; the roof gaps with crumbling lips.
+- **The bridge:** shown raised and lowered, with its rope.
+- **The hawk tower:** drawn as a real tower with battlements, a perch and the bricked door. It should be the landmark in view from the roofs.
+- **Lights:** torches and braziers in the souq, the store, the tower room and the courtyard; lamps at the gatehouse.
+- **Dressing:** awnings, barrels, banners, perches and the huts.
+- **The battlements:** read as an inside and an outside.
+- **Bodies:** the reskins, the hawk scout, and her body and hawk.
+- **Music:** "Desert Loop" (CC0), on Daniel's pick.
+
+---
+
 # claude/ksar - THE BANDIT KSAR + THE HAWK-MISTRESS, the Opus greybox (2026-10-07)
 
 Base: origin/master b4300130 (batch75). Brief: `.claude/briefs/brief-banditksar.md` (from the approved concept; Daniel's 10-07 interview kept every rec).
