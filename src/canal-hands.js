@@ -26,7 +26,7 @@ export function canalTile(t, x, y, at, T, L) { const D = L.canal; if (!D) return
 export function canalReset(H) {
   const L = H.L(); if (!L || !L.canal) return null;
   const D = L.canal, T = H.T;
-  const st = R.newCanal(D); st.D = D; st.told = {}; st.props = []; st.beamCd = 0; st.hold = null; st.eyes = D.eyes || [];
+  const st = R.newCanal(D); st.D = D; st.told = {}; st.props = []; st.beamCd = 0; st.hold = null; st.lures = D.lures || [];
   st.brights = (D.weeds || []).filter(w => w[3] === 'bright').map(([x0, x1, row]) => ({ x0, x1, row, t: 0, gone: 0 }));   /* BRIGHT WEED: a floor for RIG.weedHold s, then water */
   /* WHERE SHE WAITS: the mooring of the checkpoint the hero wakes at (the start's, if none) - and the locks and bridges as they stood when he lit it */
   const cp = H.checkpoint(), cpT = cp ? [Math.floor(cp.x / TS), Math.floor(cp.y / TS) - 1] : null;
@@ -253,7 +253,7 @@ export function holdTarget(st) {
 function clarity(st, H, dt) {
   /* (claude/jenny3, Daniel 10-05 "thought it was sluices/water"): in JENNY GREENTEETH's lock the barge's nudges are not the fight - "THE GATE IS SHUT:
      FIND ITS PADDLE" came up over her stranding. A hero in her lock hears only her lines (src/jenny-greenteeth.js) */
-  { const ar = H.L().arena; let inLock = false; if (ar && ar.boss === 'greenteeth') H.eachHero(P => { if (!P.dead && P.x > ar.x0 - 32 && P.x < ar.x1 + 32) inLock = true; }); if (inLock) { st.glint = null; return; } }
+  { const ar = H.L().arena; let inLock = false; if (ar && ar.boss === 'lanterneater') H.eachHero(P => { if (!P.dead && P.x > ar.x0 - 32 && P.x < ar.x1 + 32) inLock = true; }); if (inLock) { st.glint = null; return; } }
   const b = st.barge, tg = holdTarget(st) || tunnelTarget(st, H), C = st.stall = st.stall || { key: null, t: 0, best: 1e9, said: -1 }; st.glint = tg;
   /* HER LANTERN SWINGS TO IT (src/redraw/canal_props.js drawBarge reads st.lampAng): toward what holds her, or a slow sway */
   const want = tg ? Math.max(-0.55, Math.min(0.55, -(tg.prop.x - (b.x + 12)) / 220)) : Math.sin(st.clock * 1.3) * 0.06; st.lampAng = (st.lampAng || 0) + (want - (st.lampAng || 0)) * Math.min(1, dt * 3);
@@ -396,7 +396,7 @@ export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
   if (st.gang && st.gang.skiff) { const sk = st.gang.skiff, sx = sk.x - cx; if (sx > -40 && sx < VW + 40) CP.drawSkiff(g, sx, st.barge.y - cy + 2, time); }
   // ---- JENNY'S LOCK, dressed: weed in curtains, slime, the sunken narrowboat that is her lair (src/redraw/canal_props.js) ----
   if (L.lockArena) CP.drawLair(g, L.lockArena, cx, cy, VW, VH, time);
-  // ---- JENNY'S SIGNS, cheap and told: a child's shoe on a lock step, bubbles by the bank where nothing lives ----
+  // ---- THE BASIN'S SIGNS, cheap and told: a child's shoe on a lock step, bubbles by the bank where nothing lives ----
   for (const [sx0, sy0] of D.shoes || []) { const x = sx0 * TS + 6 - cx, y = (sy0 + 1) * TS - cy; if (x < -10 || x > VW + 10) continue; CP.drawShoe(g, x, y); }
   for (const [bx, row] of D.bubbles || []) { const x = bx * TS + 8 - cx, s = surfaceAt(st, H, bx * TS + 8), y = (s ? s.y : row * TS) - cy; if (x < -10 || x > VW + 10) continue; const ph = (time * 0.7 + bx * 0.37) % 1; if (ph < 0.45) { g.globalAlpha = 0.6 - ph; g.strokeStyle = '#9ad8c0'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + Math.sin(bx) * 6, y, 2 + ph * 14, 1 + ph * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
 }
@@ -445,9 +445,13 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
     if (tell) { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#dcffe8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y + 1, 9, 0, 6.3); g.stroke(); } }
   if (R.inTunnel(st)) { const b = st.barge; CT4.drawHerLight(g, b.x + 12 - cx, b.y - 33 - cy, R.lampLit(st), R.RIG.bargeR, time); }   /* (claude/canal4art) her light drawn: a reach where it is lit, an ember and a short ring where it is dimmed */
   drawGlint(st, g, cx, cy, VW, VH, time);   /* (claude/canalfix3) what holds her */
-  /* EYES IN THE FOG (Jenny's, glimpsed): a pair that opens now and then where the fog is thickest, and is gone */
-  for (const [ex, ey, ph] of st.eyes) { const x = ex * TS - cx, y = ey * TS - cy; if (x < -10 || x > VW + 10 || y < -10 || y > VH + 10) continue; const u = (time * 0.23 + (ph || 0)) % 1; if (u > 0.12) continue;
-    g.globalAlpha = Math.sin(u / 0.12 * Math.PI) * 0.8; g.fillStyle = '#b8ff8a'; g.fillRect(x, y, 2, 1); g.fillRect(x + 5, y, 2, 1); g.globalAlpha = 1; }
+  /* THE LAMPS THAT ARE NOT LAMPS (claude/lanterneater, B8: THE LANTERN-EATER foreshadowed): now and then, where the fog is thickest and no post stands, a warm
+     light hangs over the water - and SWAYS, slow and smooth, on a pale stalk that goes down into the water; then it sinks and is gone (a real lantern flickers) */
+  for (const [lx, ly, ph] of st.lures) { const u = (time * 0.11 + (ph || 0)) % 1; if (u > 0.3) continue; const x = lx * TS + 8 - cx, y = ly * TS - cy; if (x < -30 || x > VW + 30 || y < -40 || y > VH + 40) continue;
+    const a = Math.sin(u / 0.3 * Math.PI), sink = u > 0.22 ? (u - 0.22) / 0.08 * 18 : 0, sw = Math.sin(time * 2.6 + lx) * 6, X = Math.round(x + sw), Y = Math.round(y + sink);
+    g.globalAlpha = 0.35 * a; g.strokeStyle = '#c8b8a0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(x - 14), Math.round(y + 26)); g.quadraticCurveTo(Math.round(x + sw * 2), Y - 20, X, Y - 8); g.stroke();
+    const gl = g.createRadialGradient(X, Y - 4, 1, X, Y - 4, 16); gl.addColorStop(0, 'rgba(255,214,128,' + (0.55 * a).toFixed(3) + ')'); gl.addColorStop(1, 'rgba(255,214,128,0)'); g.globalAlpha = 1; g.fillStyle = gl; g.fillRect(X - 16, Y - 20, 32, 32);
+    g.globalAlpha = 0.85 * a; g.fillStyle = '#e8b860'; g.fillRect(X - 2, Y - 7, 5, 6); g.fillStyle = '#fff2b0'; g.fillRect(X - 1, Y - 5, 2, 2); g.globalAlpha = 1; }
 }
 /* (claude/canal5, Daniel 10-06: readability) WHAT THE DARK STILL SHOWS: wet iron and stone catch what light there is - the low beams' hazard bars, the
    ledges' lips with their ends marked (a gap is the dark between two ends), the stop-planks' banded top while they are down. Brighter with her lantern

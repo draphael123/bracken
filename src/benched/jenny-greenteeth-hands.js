@@ -1,3 +1,7 @@
+// ===== BENCHED (claude/lanterneater, 2026-10-07): UNWIRED - saved for a future mini (kelp armour: HIT HIGH body / HIT LOW hood). =====
+// Daniel 10-07: Jenny's raft duel "just isn't working, clunky"; THE FOG CANAL's boss is THE LANTERN-EATER now (src/lantern-eater.js) on the same raft.
+// Nothing imports this file: main.js, the lab, the marks, the hint lines and the music no longer name her. Her sprites stay in src/redraw/greenteeth_art.js
+// and src/redraw/greenteeth_kelp.js. To bring her back as a mini, wire her as claude/canal4 did (git log -- src/jenny-greenteeth.js) and give her a room.
 // src/jenny-greenteeth-hands.js - JENNY GREENTEETH'S HANDS (claude/lockkeeper; claude/jenny2; claude/canal4: THE RAFT DUEL + KELP ARMOUR).
 // src/jenny-greenteeth.js is the fight, pure and proved in tools/greenteeth.mjs; this binds it to the world: THE RAFT (a mover the heroes stand on, that
 // goes out onto her water, rocks, tips when she heaves it and is dragged lower), her blows on the heroes (the slam, the charge's bow-wave, the weed net that
@@ -7,8 +11,8 @@
 // main.js calls: spawnBoss, update, strike, weedMover, drawWall, drawBack, drawOver, camY, take, warded, cap, barName, alpha, end, read.
 // Every teaching line goes through ctx.number with a line listed in src/hint-lines.js (the hint box).
 import * as GM from './jenny-greenteeth.js';
-import { bakeLockSkins } from './redraw/greenteeth_art.js';
-import * as K from './redraw/greenteeth_kelp.js';   /* (claude/canal4art) the kelp's, the raft's and the stuck claws' art */
+import { bakeLockSkins } from '../redraw/greenteeth_art.js';
+import * as K from '../redraw/greenteeth_kelp.js';   /* (claude/canal4art) the kelp's, the raft's and the stuck claws' art */
 const { GT } = GM;
 
 export function makeGreenteethHands(ctx) {

@@ -29,8 +29,9 @@
      THE PUPPETEER     drop both his puppets (gold cuts in their windups) and the lever comes free, his bar slack - that alone opens nothing; ride
                        up to the gallery and he staggers there, open (no fall); a minute of his puppets left alone - windups, blows - opens nothing
                        (claude/puppeteer, PUPPETEER3; claude/theatre3; claude/puppeteer2)
-     JENNY GREENTEETH  drain her lock (strike the lower paddle) while she is at your gate: the water runs out from under her and she is stranded in
-                       the mud, open; a minute of her left alone opens nothing (claude/lockkeeper)
+     THE LANTERN-EATER (claude/lanterneater, THE FOG CANAL's boss now - Jenny Greenteeth is benched): strike its dangling lure HIGH twice inside its gulp's
+                       tell and it is SNAGGED, open; step out of its snap once the mark has fixed and its teeth stick in the raft, open; a minute of it left alone,
+                       the hero on the raft taking every blow, opens nothing
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
      THE CISTERN QUEEN wet her mound (a pour where she will come up): SLIPPED (claude/underwell3, Daniel 10-07 - was SOAKED); a pour down her wall from its ledge: ON HER BACK; her claw struck as it comes: REARING -
@@ -207,12 +208,14 @@ try {
    if(b.mode==='slack'){P.x=A.stage.gx0+30;P.y=A.stage.gallery;P.vx=0;P.vy=0;for(let i=0;i<30&&b.mode!=='staggered';i++){P.hp=P.maxHp;BK.sim(1);}}   /* up on the gallery */
    if(b.mode==='staggered')mode='staggered';const onGal=b.mode==='staggered'&&Math.abs(b.y-A.stage.gallery)<1;for(let i=0;i<60*6;i++){P.hp=P.maxHp;BK.sim(1);op=Math.max(op,b.open||0);}
    out.puppeteer={alone:+alone.toFixed(1),swings:cutF,slackMode,free,slackOpen:+slackOpen.toFixed(1),mode,open:+op.toFixed(1),onGal};}
-  /* JENNY GREENTEETH (claude/lockkeeper; claude/canal4, Daniel 10-05: THE RAFT DUEL - the lock's paddles are gone): a minute of her left alone, the hero
-     standing on the raft taking every blow, opens nothing; stepping out of her slam once its mark has fixed sticks her claws in the raft - open */
-  {const b=boot('canal');const S=BK.greenteethHands().show(),P=BK.P;let alone=0;
+  /* THE LANTERN-EATER (claude/lanterneater, Daniel 10-07: it replaces Jenny Greenteeth on the same raft): a minute of it left alone, the hero standing on the
+     raft taking every blow, opens nothing; its dangling lure struck HIGH with real keys (the rising cut, UP + strike) inside the gulp's tell is snagged - open; in phase two,
+     stepping out of its snap once the mark has fixed sticks its teeth in the raft - open */
+  {const b=boot('canal');const S=BK.lanternEaterHands().show(),P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;BK.sim(1);alone=Math.max(alone,b.open||0);}
-   let op=0,mode=null;for(let i=0;i<60*20&&!(op>0);i++){P.hp=P.maxHp;const a=S.arms.find(q=>q.k==='slam'&&q.st==='tell');if(a&&a.t<a.len*0.4&&Math.abs(P.x-a.x)<40){P.x=a.x+(a.x-S.raft.x>S.raft.w/2?-50:50);P.vx=0;}BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='stuck')mode='stuck';}
-   out.greenteeth={alone:+alone.toFixed(1),mode,open:+op.toFixed(1),stuck:S.n.stuck};}
+   let op=0,why=null;for(let i=0;i<60*30&&!(op>0);i++){P.hp=P.maxHp;BK.keys.up=false;if(b.mode==='gulpTell'&&b.part==='lure'&&S.lure){P.x=S.lure.x-10;P.face=1;P.vx=0;if(P.ground&&P.atk<0){BK.keys.up=true;BK.press('atk');}}BK.sim(1);if(b.mode==='open'){op=Math.max(op,b.open||0);why=b.openKind;}}
+   let op2=0,why2=null;b.hp=Math.round(b.maxHp*0.6);for(let i=0;i<60*40&&!(op2>0);i++){P.hp=P.maxHp;const sn=S.snap;if(b.mode==='snapTell'&&sn&&sn.fixed&&Math.abs(P.x-sn.x)<40){P.x=sn.x+(sn.x-S.raft.x>S.raft.w/2?-50:50);P.vx=0;}BK.sim(1);if(b.mode==='open'){op2=Math.max(op2,b.open||0);why2=b.openKind;}}
+   out.lanterneater={alone:+alone.toFixed(1),snag:{why,open:+op.toFixed(1)},stuck:{why:why2,open:+op2.toFixed(1)},n:{snag:S.n.snag,stuck:S.n.stuck,jerk:S.n.jerk}};}
   /* THE CISTERN QUEEN (claude/welltown3): a minute of her left alone opens nothing; a pour while she walks the floor runs into the sand; a pour on her
      mound wets the sand - she SLIPS, open (Daniel 10-07; was SOAKED); on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -
      the grab broken, REARING, open (THE WELL TOWN holds her) */
@@ -345,8 +348,9 @@ try {
   assert.ok(r.wicker.short.open === 0 && r.wicker.short.mode !== 'burn', 'THE WICKER QUEEN: frozen short of the embers she opened: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.unseen.open === 0 && r.wicker.unseen.mode !== 'burn', 'crossing the embers with nobody looking opened her: ' + JSON.stringify(r.wicker));
   assert.ok(r.wicker.embers.mode === 'burn' && r.wicker.embers.open >= 3, 'frozen ON the embers she did not burn open for 3 s or more (the boss rule; claude/fairfix3 tightened this from > 2): ' + JSON.stringify(r.wicker));
-  assert.equal(r.greenteeth.alone, 0, 'JENNY GREENTEETH: a minute of her left alone opened her: ' + JSON.stringify(r.greenteeth));
-  assert.ok(r.greenteeth.mode === 'stuck' && r.greenteeth.open >= 3, 'stepping out of her slam on the raft did not stick her claws open for 3 s or more (the boss rule; claude/canal4: her opening is the slam stepped out of): ' + JSON.stringify(r.greenteeth));
+  assert.equal(r.lanterneater.alone, 0, 'THE LANTERN-EATER: a minute of it left alone opened it: ' + JSON.stringify(r.lanterneater));
+  assert.ok(r.lanterneater.snag.why === 'snag' && r.lanterneater.snag.open >= 3, 'its dangling lure struck high (the real rising cut) inside the tell of its gulp did not snag it open for 3 s or more (the boss rule): ' + JSON.stringify(r.lanterneater));
+  assert.ok(r.lanterneater.stuck.why === 'stuck' && r.lanterneater.stuck.open >= 3, 'stepping out of its snap on the raft did not stick its teeth open for 3 s or more (the boss rule): ' + JSON.stringify(r.lanterneater));
   assert.equal(r.puppeteer.alone, 0, 'THE PUPPETEER: a minute of his puppets left alone opened him: ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.slackMode === 'slack' && r.puppeteer.free && r.puppeteer.slackOpen === 0, 'THE PUPPETEER: both puppets down opened him by itself, or the lever did not come free (PUPPETEER2: only the visit opens him): ' + JSON.stringify(r.puppeteer));
   assert.ok(r.puppeteer.mode === 'staggered' && r.puppeteer.open >= 3 && r.puppeteer.onGal,   /* (PUPPETEER2: drop both puppets, ride up - he staggers on the gallery, open >= 3 s; no fall) */ 'both puppets cut down and the hero up on the gallery, he did not stagger open there for 3 s or more: ' + JSON.stringify(r.puppeteer));

@@ -10,8 +10,9 @@
 //     own track, its brief; NOT A WALK-RIGHT OPENER; every machine TAUGHT, DEVELOPED, TWISTED and EXAMINED where the level says, and each one the LOCK
 //     somewhere (proved on the reach model or the rig); the exam COMBINES them in one space; THE LEGGING TUNNEL teaches, tests, remixes and examines
 //     legging and her lantern (no chase is left); no sign spoils a
-//     twist; every foe in a named encounter and every foe type bound to a mechanic; three checkpoints, three silvers, JENNY GREENTEETH's footprint
-//     kept free with a checkpoint at her west door; her foreshadowing (eyes, a shoe, bubbles, the two weeds taught before her lock).
+//     twist; every foe in a named encounter and every foe type bound to a mechanic; three checkpoints, three silvers, THE LANTERN-EATER's raft chamber
+//     kept free with a checkpoint at its west door (claude/lanterneater: Jenny Greenteeth's chamber before it); its foreshadowing (the lamps that are not lamps, the
+//     bargemen's line at its door, a shoe, bubbles), the two weeds taught before the chamber.
 //   THE PAGE: the barge carries you, a low beam finds a rider standing and not one ducked, a paddle fills the lock and lifts her, a capstan swings a
 //     bridge out of the grid, a horn lets her into the fog wall, an archer in the fog looses only at a lit hero, the grindylow grabs at the quay's
 //     edge and three presses break it, bright weed holds and gives, dark weed holds nothing, the canal bites and hands you back; in the tunnel she
@@ -214,23 +215,23 @@ if (lv && D) {
   ok(ents('gaffer').every(e => e.canal && e.canal.bargee) && ents('archer').every(e => e.canal && e.canal.fogSight), 'a bargee does not hook from the towpath, or an archer does not see only the lit');
   ok(ents('willowisp').every(e => D.fogs.some(f => e.x >= f.x0 && e.x <= f.x1)), 'a wisp stands outside the fog (it is a false lantern IN the fog)');
   ok(ents('grindylow').every(e => L.pools.some(p => p.canal && p.canal !== 'dock' && e.x * TS + 8 > p.x0 && e.x * TS + 8 < p.x1 && Math.abs(p.y - (e.y + 1) * TS) < 24)), 'a grindylow lurks away from the canal\'s water');
-  // CHECKPOINTS, SILVERS, NO NPCS, JENNY GREENTEETH'S FOOTPRINT
+  // CHECKPOINTS, SILVERS, NO NPCS, THE LANTERN-EATER'S FOOTPRINT (claude/canal4's raft chamber, Jenny Greenteeth's before - claude/lanterneater)
   const ck = ents('check'); ok(ck.length === 3, 'the canal has ' + ck.length + ' checkpoints, not three');
   ok(ents('silver').length === 3, 'the canal does not carry the campaign\'s three silvers');
   ok(!L.ents.some(e => ['npc', 'stray', 'captive', 'folk'].includes(e.t)), 'an NPC or stray stands in the canal');
   const J = L.lockArena, g = (x, y) => L.grid[y * L.W + x];
-  ok(J && J.sx === 396 && J.R === 41, 'JENNY\x27S LOCK is not at sx 396, R 41 (claude/canal4: twenty on, the tunnel is longer than the weir was): ' + JSON.stringify(J));
+  ok(J && J.sx === 396 && J.R === 41, 'THE LANTERN POOL is not at sx 396, R 41 (claude/canal4: twenty on, the tunnel is longer than the weir was): ' + JSON.stringify(J));
   // HER LOCK IS WIRED (claude/greenwire): her arena is the level's, the doors stand open at bed level, the row under her bed is solid, a checkpoint just outside the west door, the gate on the quay past the east door
-  ok(L.arena && L.arena.boss === 'greenteeth' && L.arena.music === 'greenteeth' && L.arena.lock && L.arena.lock.sx === J.sx && L.arena.lock.R === J.R && L.gateAfterBoss, 'the canal is not wired to JENNY GREENTEETH (arena, music, gateAfterBoss)');
-  ok(ents('greenteeth').length === 1 && ents('greenteeth')[0].x === J.sx + 20, 'she is not in her lock once');
+  ok(L.arena && L.arena.boss === 'lanterneater' && L.arena.music === 'lanterneater' && L.arena.lock && L.arena.lock.sx === J.sx && L.arena.lock.R === J.R && L.gateAfterBoss, 'the canal is not wired to THE LANTERN-EATER (arena, music, gateAfterBoss)');
+  ok(ents('lanterneater').length === 1 && ents('lanterneater')[0].x === J.sx + 20 && !ents('greenteeth').length, 'it is not in its chamber once (or Jenny still is)');
   ok([...Array(38).keys()].every(k => g(J.sx + 1 + k, J.R + 5) === T.SOLID && g(J.sx + 1 + k, J.R + 6) === T.SOLID) && [1, 2, 3, 36, 37, 38].every(k => g(J.sx + k, J.R) === T.SOLID), 'the bed under her water, or her landings, are not solid (claude/canal4: the raft duel - stone landings at the deck\'s height, her water five rows deep)');
   ok([J.R - 6, J.R - 3, J.R - 1].every(y => g(J.sx, y) === T.AIR && g(J.sx + 39, y) === T.AIR), 'her doors (rows ' + (J.R - 6) + '-' + (J.R - 1) + ') are not open at both gates');
   ok(ck.some(e => e.x === J.sx - 1 && e.y === J.R - 1) && g(J.sx - 1, J.R) === T.SOLID, 'no checkpoint just outside her west door, at her bed level');
-  ok(!L.ents.some(e => e.x >= J.sx && e.x <= J.sx + 39 && e.t !== 'greenteeth'), 'something but her stands in her footprint');
+  ok(!L.ents.some(e => e.x >= J.sx && e.x <= J.sx + 39 && e.t !== 'lanterneater'), 'something but it stands in its footprint');
   const gt = ents('gate'); ok(gt.length === 1 && gt[0].x > J.sx + 39 && g(gt[0].x, gt[0].y + 1) === T.SOLID, 'the end gate does not stand on the quay past her east door: ' + JSON.stringify(gt));
-  ok(L.pools.some(p => p.lock && p.gtWater) && (L.moversExtra || []).filter(m => m.gtRaft).length === 1, 'her water and her raft are not in the level (claude/canal4)');
-  // JENNY, FORESHADOWED: her eyes in the fog, a child\'s shoe, bubbles by the bank; THE TWO WEEDS taught (safely) before her lock, with a sign
-  ok(D.eyes.length >= 2 && D.shoes.length >= 1 && D.bubbles.length >= 3, 'Jenny Greenteeth is not foreshadowed (eyes, a shoe, bubbles)');
+  ok(L.pools.some(p => p.lock && p.leWater) && (L.moversExtra || []).filter(m => m.leRaft).length === 1, 'its water and the raft are not in the level (claude/canal4\'s stage)');
+  // THE LANTERN-EATER, FORESHADOWED (B8): the lamps that are not lamps glimpsed in the fog, the bargemen's line at its door, a child\'s shoe, bubbles by the bank; THE TWO WEEDS taught (safely) before its chamber, with a sign
+  ok(D.lures.length >= 3 && D.shoes.length >= 1 && D.bubbles.length >= 3 && ents('sign').some(e => e.x >= 380 && e.x < J.sx && /FLICKERS/.test(e.text) && /SWAYS/.test(e.text)), 'the Lantern-Eater is not foreshadowed (the lamps that are not lamps, the bargemen\'s line, a shoe, bubbles)');
   const w0 = (D.weeds || []).filter(w => w[0] < 40); ok(w0.some(w => w[3] === 'bright') && w0.some(w => w[3] !== 'bright') && L.pools.some(p => p.shallow && p.x0 <= w0[0][0] * TS && p.x1 >= (w0[0][1] + 1) * TS)
     && ents('sign').some(e => e.x < 40 && /BRIGHT WEED/.test(e.text) && /DARK WEED/.test(e.text)), 'the two weeds are not taught, side by side and safely (over shallow water, with a sign), before her lock');
 }

@@ -1,3 +1,7 @@
+// ===== BENCHED (claude/lanterneater, 2026-10-07): UNWIRED - saved for a future mini (kelp armour: HIT HIGH body / HIT LOW hood). =====
+// Daniel 10-07: Jenny's raft duel "just isn't working, clunky"; THE FOG CANAL's boss is THE LANTERN-EATER now (src/lantern-eater.js) on the same raft.
+// Nothing imports this file: main.js, the lab, the marks, the hint lines and the music no longer name her. Her sprites stay in src/redraw/greenteeth_art.js
+// and src/redraw/greenteeth_kelp.js. To bring her back as a mini, wire her as claude/canal4 did (git log -- src/jenny-greenteeth.js) and give her a room.
 // src/jenny-greenteeth.js - JENNY GREENTEETH, the boss at the end of THE FOG CANAL (claude/lockkeeper; Daniel's pivot 2026-09-30: the river hag of the
 // English tales, who drags people under with long green arms, in place of a human lock-keeper).
 // claude/canal4 (Daniel 10-05, after playing JENNY3: "the switches just aren't fun mechanically" - he picked THE RAFT DUEL + KELP GUARD): the lock's
