@@ -113,7 +113,9 @@ export function makeGlassSeaHands(ctx) {
     if (e.cnSkin === 'glassscorpion') { if (sunLitBox(e)) { if (!(e.gsDaz > 0)) { GSx.n.dazzled++; if (once('dazzle')) ctx.number(e.x, e.y - 22, 'DAZZLED: THE BEAM STUNS GLASS', '#fff6c8'); } e.gsDaz = GS.daz; } if (e.gsDaz > 0) { e.gsDaz -= dt; return true; } return false; }
     if (e.cnSkin === 'nighthunter') { if (warmAt(e.x, e.y)) { if (!e.gsFrozen) { e.gsFrozen = 1; GSx.n.frozen++; if (once('freeze') && Math.abs(ctx.hero().x - e.x) < 220) ctx.number(e.x, e.y - 26, 'FROZEN IN THE FIRELIGHT', '#ffd36b'); } return true; } e.gsFrozen = 0; return false; }
     return false; };
-  H.fear = (e, x, y) => !!GSx && e.t === 'skitter' && (warmAt(x, y) || !!(ctx.colRelayAt && ctx.colRelayAt(x, y)));   /* (and the Colossus's relayed firelight along its floor) */
+  H.fear = (e, x, y) => { const r = !!GSx && e.t === 'skitter' && (warmAt(x, y) || !!(ctx.colRelayAt && ctx.colRelayAt(x, y)));
+    if (r) { GSx.n.feared = (GSx.n.feared || 0) + 1; const P = ctx.hero(); if (P && Math.abs(P.x - e.x) < 200 && once('fearTeach')) ctx.number(e.x, e.y - 22, 'THE SWARM WILL NOT CROSS FIRELIGHT', '#ffd36b'); }   /* (glasssea2: the teach beat, told where it happens) */
+    return r; };   /* (and the Colossus's relayed firelight along its floor) */
   H.onDeath = e => { if (!GSx || e.cnSkin !== 'glassscorpion') return; const ts = TS(); GSx.patches.push({ x: e.x, y: e.y, t: GS.patchT }); GSx.n.shattered++;
     ctx.burst(e.x, e.y - 4, 12, ['#e8fff8', '#9ae8d0', '#5ab8a8'], 60, 0.6); if (once('shatter')) ctx.number(e.x, e.y - 24, 'IT SHATTERS: SHARDS IN THE SAND', '#9ae8d0'); };
   /* THE SLICK GLASS: a slide down a glass slope runs on faster than sand's (main.js, after its slide step) */
@@ -134,6 +136,12 @@ export function makeGlassSeaHands(ctx) {
       if (k0 > 0 && b.k <= 0 && !b.hit) { GSx.n.crumbled++; if (P0 && Math.abs(P0.x - b.tx * ts) < 400) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'THE GLASS CRUMBLES BACK TO SAND', '#c8b48a'); } }
     /* THE CRACKS */
     for (const c of GSx.cracks) {
+      /* (glasssea2) A SEAM AT DUSK: THE CRACK STIRS - the first time you come near, it glows and hisses, and its swarm climbs out one by one (the teach: they will not cross firelight) */
+      if (c.seam) { if (!c.spent && !(c.stirT > 0) && P0 && !P0.dead && P0.x > (c.x0 - (c.wake || 8)) * ts && P0.x < (c.x1 + 3) * ts && Math.abs(P0.y - c.y * ts) < 64) { c.stirT = 0.001; c.n = 0; GSx.n.stirs = (GSx.n.stirs || 0) + 1; ctx.sfx.hiss && ctx.sfx.hiss(); ctx.shake && ctx.shake(2);
+          ctx.number((c.x0 + c.x1 + 1) * ts / 2, c.y * ts - 30, 'THE CRACK STIRS', '#c8a8ff'); ctx.burst((c.x0 + c.x1 + 1) * ts / 2, c.y * ts - 2, 14, ['#2a2436', '#9a7ad8', '#e8dcb0'], 50, 0.6); }
+        if (c.stirT > 0 && !c.spent) { c.stirT += dt; if (c.n < (c.stir || 3) && c.stirT > 1.0 + c.n * 0.5 && ctx.spawn && P0) { const sx = c.x0 + (c.n % (c.x1 - c.x0 + 1)), b = ctx.spawn({ t: 'skitter', x: sx, y: c.y - 1, face: P0.x < sx * ts ? -1 : 1, squad: 'stir' }); c.n++; if (b) { GSx.n.spewed++; ctx.sfx.hiss && ctx.sfx.hiss(); ctx.burst(b.x, b.y - 4, 8, ['#2a2436', '#9a7ad8', '#e8dcb0'], 40, 0.5); } }
+          if (c.n >= (c.stir || 3) && c.stirT > 3.5) c.spent = true; }
+        continue; }
       const wasHeld = c.held; c.held = !!c.swarm && (c.fireHeld || c.ringHit);
       if (c.swarm && c.held && !wasHeld && c.ringHit) { GSx.n.held++; if (P0 && Math.abs(P0.x - c.x0 * ts) < 300) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'THE FIRELIGHT HOLDS THE CRACK', '#ffd36b'); }
       const boiling = c.swarm && !c.held && night(c.x0 * ts); c.boiling = boiling;
@@ -142,7 +150,7 @@ export function makeGlassSeaHands(ctx) {
           const side = P0.x < c.x0 * ts ? -1 : 1, b = ctx.spawn({ t: 'skitter', x: side < 0 ? c.x0 - 1 : c.x1 + 1, y: c.y - 1, face: side, squad: 'spew' }); if (b) { c.out.push(b); GSx.n.spewed++; ctx.burst(b.x, b.y - 4, 6, ['#2a2436', '#9a7ad8', '#e8dcb0'], 40, 0.5); } } } }
     /* ON THE HEROES: the crack's boil and its fall, the shard patches, the cold, the safe footing */
     for (const pp of ctx.players) { if (pp.dead) continue; pp.gsBoilK = Math.max(0, (pp.gsBoilK || 0) - dt); pp.gsPatchK = Math.max(0, (pp.gsPatchK || 0) - dt);
-      for (const c of GSx.cracks) { const l = c.x0 * ts, r = (c.x1 + 1) * ts;
+      for (const c of GSx.cracks) { if (c.seam) continue; const l = c.x0 * ts, r = (c.x1 + 1) * ts;
         if (c.boiling && pp.x > l - 6 && pp.x < r + 6 && pp.y > (c.y - GS.boilRows) * ts && pp.y < (c.y + 2) * ts && pp.gsBoilK <= 0) { pp.gsBoilK = GS.boilCd; GSx.n.boils++;
           const side = pp.x < (l + r) / 2 ? -1 : 1; ctx.asPlayer(pp, () => { const P = ctx.hero(); ctx.hurtHero(P.x, GS.boilDmg, { unblockable: true, noKnock: true, name: 'THE SWARM' }); P.vx = side * GS.boilV; P.vy = -140; P.ground = false; });
           if (once('boil') || GSx.clock - (GSx.boilSaid || -9) > 6) { GSx.boilSaid = GSx.clock; ctx.number(pp.x, pp.y - 34, 'THE CRACK BOILS WITH THE SWARM: FIRELIGHT HOLDS IT', '#ff9a5c'); } }
@@ -152,7 +160,7 @@ export function makeGlassSeaHands(ctx) {
       for (const p of GSx.patches) if (Math.abs(pp.x - p.x) < GS.patchW * 8 && Math.abs(pp.y - p.y) < 8 && pp.gsPatchK <= 0) { pp.gsPatchK = GS.patchCd; ctx.asPlayer(pp, () => ctx.hurtHero(ctx.hero().x, GS.patchDmg, { unblockable: true, noKnock: true, name: 'THE GLASS SHARDS' })); }
       /* the last safe footing: on the ground, off any crack's lip and off any fused bed */
       if (pp.ground && !pp.onMover) { const tx = Math.floor(pp.x / ts), fy = Math.floor((pp.y + 2) / ts);
-        const nearCrack = GSx.cracks.some(c => tx >= c.x0 - 1 && tx <= c.x1 + 1), onBed = GSx.beds.some(b => b.tiles.some(([x, y]) => x === tx && y === fy));
+        const nearCrack = GSx.cracks.some(c => !c.seam && tx >= c.x0 - 1 && tx <= c.x1 + 1), onBed = GSx.beds.some(b => b.tiles.some(([x, y]) => x === tx && y === fy));
         if (!nearCrack && !onBed) pp.gsSafe = { x: pp.x, y: pp.y }; }
       /* THE COLD (night, off the arena) */
       const cs = pp.gsCold || (pp.gsCold = { v: 0 });
@@ -259,6 +267,7 @@ export function makeGlassSeaHands(ctx) {
     for (const v of mView) GSA.drawMirrorFace(g, v.x, v.y, v.m.state, v.m.n, v.m.notches.length, v.m.flash, time, v.locked, v.hood, v.side);
     for (const [b, P, col] of paths) { for (const [x, y] of P.bounces) if (inX(x)) GSA.drawBounce(g, R(x - cx), R(y - cy), col, time); if (P.stop === 'disc' && inX(P.end[0])) GSA.drawDiscHit(g, R(b.disc.x * ts + 8 - cx), R(b.disc.y * ts + 8 - cy), col, time); }
     for (const v of mView) if (v.m.pulse && GSA.drawPulseTimer) GSA.drawPulseTimer(g, v.x, v.y, v.m, time);
+    for (const e of ctx.enemies()) if (e.alive && e.t === 'skitter' && inX(e.x)) GSA.drawSkitterGlow && GSA.drawSkitterGlow(g, R(e.x - cx), R(e.y - cy), time, e.x);   /* (glasssea2) a violet glow under each skitter */
     for (const p of GSx.patches) if (inX(p.x)) GSA.drawPatch(g, R(p.x - cx), R(p.y - cy), p.t / GS.patchT, time);
     for (const e of ctx.enemies()) if (e.alive && e.cnSkin === 'glassscorpion' && e.gsDaz > 0 && inX(e.x)) GSA.drawDazzle(g, R(e.x - cx), R(e.y - 6 - cy), time);
     if (GSx.glint) drawGlint(g, R(GSx.glint.x - cx), R(GSx.glint.y - 18 - cy), vw, vh, time);
@@ -271,6 +280,8 @@ export function makeGlassSeaHands(ctx) {
     const lights = []; for (const f of GSx.fires) lights.push({ x: f.x * ts + 8, y: f.y * ts, r: GS.fireR * ts + 10 });
     for (const b of GSx.beams) if (b.kind !== 'sun' && b.kind !== 'sunset') for (const sg of b.segs) { const n = Math.max(Math.abs(sg.x1 - sg.x0), Math.abs(sg.y1 - sg.y0)); for (let i = 0; i <= n; i += 2) lights.push({ x: (sg.x0 + (sg.x1 - sg.x0) * i / Math.max(1, n)) * ts + 8, y: (sg.y0 + (sg.y1 - sg.y0) * i / Math.max(1, n)) * ts + 8, r: 26 }); }
     GSA.drawNight(g, vw, vh, cx, cy, darkAt, lights, time);
+    /* (glasssea2) THE SWARM GLOWS: red-hot eyes over the dark, so the night's one new foe is never lost in it */
+    for (const e of ctx.enemies()) if (e.alive && e.t === 'skitter' && e.x > cx - 20 && e.x < cx + vw + 20) GSA.drawSkitterEyes && GSA.drawSkitterEyes(g, Math.round(e.x - cx), Math.round(e.y - cy), e.face || 1, time, e.x);
   };
   /* THE HUD: by night THE FROST METER stands where the sun meter does (main.js drawCaravanHud asks first); true = drawn (the sun meter is not) */
   H.drawHud = (g, P) => { if (!GSx || !night(P.x)) return false; const cs = P.gsCold || { v: 0 }; GSA.drawFrostMeter(g, 22, 50, cs.v, cs.warm, ctx.time(), (cs.v >= 1 ? Math.min(3, (cs.n || 0) + 1) : 0)); if (cs.warm) ctx.text('FIRELIGHT', 44, 59, '#ffd36b', 'center', 6); return true; };

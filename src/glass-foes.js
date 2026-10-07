@@ -4,7 +4,8 @@
 // BITES: a short told nip (the yellow '!': a shield turns it), then skitters off a step and comes again. One is nothing; six are a fight. It will not
 // step into FIRELIGHT (src/glass-sea-hands.js fear: main.js treats a lit tile ahead as an edge), so a fire, or a fire beam laid on its crack, holds them.
 // Frames (src/redraw/glasssea_art.js bakeSkitter): 0,1 run | 2 BITE TELL (!, raised, mandibles open) | 3 BITE | 4 hurt.
-export const SKITTER = { hp: 9, speed: 78, sight: 220, biteR: 14, biteTell: 0.32, bite: 0.14, dmg: 5, cd: 0.9, back: 0.35, w: 9, h: 6 };
+/* (glasssea2, Daniel 10-07 "is there a new enemy? I don't see it"): bigger (a 13 x 9 body, 20 x 14 sprite), a little tougher and quicker - the night's signature you cannot miss */
+export const SKITTER = { hp: 12, speed: 84, sight: 220, biteR: 16, biteTell: 0.32, bite: 0.14, dmg: 5, cd: 0.9, back: 0.35, w: 13, h: 9 };
 const ev = (a, t, extra) => a.push({ t, ...extra });
 export function newSkitter(x, y) { return { kind: 'skitter', x, y, home: x, hp: SKITTER.hp, mode: 'run', t: 0, face: -1, cd: 0.4, frame: 0 }; }
 export function skitterStep(e, w, dt) {

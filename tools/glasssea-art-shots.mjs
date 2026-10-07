@@ -44,6 +44,9 @@ try {
     at('m2z-relay', 586, 27, () => { turn('stepsRelay', 1); run(30); }, [40, 40, 120, 100]);
     at('m3z-first', 42, 33, () => { turn('first', 1); run(60); }, [70, 0, 140, 130]);
     at('m4z-sky', 42, 33, null, [70, 0, 140, 130]);
+    at('k1-stir', 321, 33, () => { run(70); });
+    at('k2-swarm', 321, 33, () => { run(240); });
+    at('k3z-skitter', 321, 33, () => { run(240); }, [150, 70, 120, 50]);
     /* THE COLOSSUS in its states: forced modes on the arena (a picture, not a fight) */
     { const col = (name, ph, mode, f, hx, hy, hx2, hy2) => { if (filt && !filt.split(',').some(q => name.includes(q))) return; fresh(); BK.tp(hx || 612, hy || 33); run(90); const CO = BK.colossusHands(), S = CO && CO.show(), e = BK.boss; if (!S || !e) return; S.ph = ph; e.phase = ph; e.mode = mode; e.modeT = 99; if (f) f(e, S); BK.god = true; BK.sim(2); run(260); S.ph = ph; e.phase = ph; e.mode = mode; e.modeT = 99; if (f) f(e, S); BK.look(hx2 || 624, hy2 || 22); run(2); e.mode = mode; snap(name); };
       col('a1-dusk', 1, 'idle');

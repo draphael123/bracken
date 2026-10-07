@@ -167,6 +167,10 @@ export function buildGlassSea({ painter, T, TS }) {
   source('sunset', 313, B - 2, 'E', 'sunset');
   mirror('chainA', 316, B - 2, ['sky', '/', '\\']);
   sign(312, B - 1, 'TWO MIRRORS: THE LOW SUN, UP, AND ACROSS.');
+  /* (glasssea2) THE CRACK STIRS (Daniel 10-07: "is there a new enemy? I don't see it"): the swarm met EARLY, at dusk, on the main road - a seam at the obelisk's foot glows and
+     hisses as you come down off the chain and three skitters climb out of it; the fire under the shelf is the light they will not cross (the teach beat, told where it happens) */
+  fire('duskFire', 320, B - 1); cracks.push({ id: 'duskSeam', x0: 329, x1: 331, y: B, seam: true, stir: 3, wake: 9 });
+  sign(322, B - 1, 'AT DUSK THE CRACKS WAKE. THE SWARM WILL NOT CROSS FIRELIGHT.');
   boards(318, 321, B - 3); boards(319, 322, B - 6); boards(317, 321, B - 9);   /* up to B's shelf (rows 31, 28, 25) */
   mirror('chainB', 316, B - 11, ['sky', '/', '\\'], { side: 1 });   /* (glasssea2) side: A's light comes UP into it - its post stands aside on a bracket */                      /* B: over the top board, above A (its glass row 23) */
   block(323, 326, 10, B - 4); air(323, 326, B - 11, B - 11);                /* THE OBELISK, its EYE a hole at row 23 */

@@ -37,19 +37,21 @@ export const bakeNightHunter = base => remap(base, {
 export const bakeGlassSentinel = base => remap(base, {
   '#8a929e': '#1c2a38', '#7a828e': '#141e2c', '#b8c0ca': '#4a7a98', '#d0d8e2': '#8ab8d0', '#8a5a32': '#3a9a78', '#b88450': '#7ae8c0', '#a8583a': '#256a58', '#5a3a1e': '#16463a', '#6a2a1c': '#101a28', '#3e140e': '#08101a', '#2a1410': '#060a12' },
   (fi, img, W, H) => { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const k = (y * W + x) * 4; if (!img.data[k + 3]) continue; if (img.data[k] === 0x7a && img.data[k + 1] === 0xe8 && img.data[k + 2] === 0xc0 && (x + y) % 3 === 0) setPx(img, W, x, y, '#f0fff8'); } });
-/* THE SKITTER: 0,1 run | 2 bite tell (front raised, mandibles open, a bone-white flash) | 3 bite | 4 hurt; 14 x 10, feet on the last row, a 9 x 6 hit box */
+/* THE SKITTER (glasssea2: BIGGER and BRIGHTER - Daniel 10-07 "is there a new enemy? I don't see it"): 0,1 run | 2 bite tell (front raised, mandibles open, a bone-white flash) | 3 bite | 4 hurt;
+   20 x 14, feet on the last row, a 13 x 9 hit box. A violet glass shell with a bright lilac rim, a crest of four cyan crystal spikes with white tips, red-hot eyes (src/glass-sea-hands.js adds their glow in the dark) */
 export function bakeSkitter() {
   const F = [];
-  for (let k = 0; k < 5; k++) { const [c, g] = canvas(14, 10), hurt = k === 4;
-    const sh = hurt ? '#ffffff' : '#3a2a62', sh2 = hurt ? '#ffffff' : '#5a46a0', hi = hurt ? '#ffffff' : '#a898f0', leg = hurt ? '#ffffff' : '#1c1430', up = k === 2 ? -2 : 0, fw = k === 3 ? 2 : 0;
-    rect(g, 2 + fw, 4 + up, 8, 3, sh); rect(g, 3 + fw, 3 + up, 6, 1, sh2); rect(g, 3 + fw, 3 + up, 4, 1, hi);   /* the glass shell */
-    for (let i = 0; i < 3; i++) { const sx = 3 + i * 2 + fw; rect(g, sx, 1 + up + (i & 1), 1, 2, hurt ? '#ffffff' : '#7ad8f0'); px(g, sx, 1 + up + (i & 1), hurt ? '#ffffff' : '#e8ffff'); }   /* the crystal spikes down its back */
-    rect(g, 9 + fw, 3 + up, 3, 3, sh); px(g, 11 + fw, 4 + up, hurt ? '#ffffff' : '#ff5a5a'); px(g, 10 + fw, 3 + up, hurt ? '#ffffff' : '#ff9a9a');   /* the head and its eyes */
-    if (k === 2) { px(g, 12, 2, '#e8dcb0'); px(g, 13, 3, '#e8dcb0'); px(g, 12, 6, '#e8dcb0'); }   /* mandibles open: the tell */
-    if (k === 3) rect(g, 12 + fw - 1, 4, 2, 2, '#e8dcb0');
-    for (let i = 0; i < 3; i++) { const lx = 3 + i * 3 + (fw ? 1 : 0), ph = (k + i) % 2; px(g, lx, 7, leg); px(g, lx + (ph ? 1 : -1), 8, leg); px(g, lx + (ph ? 2 : -2), 9, leg); }   /* six legs, alternating */
+  for (let k = 0; k < 5; k++) { const [c, g] = canvas(20, 14), hurt = k === 4, W = col => (hurt ? '#ffffff' : col);
+    const sh = W('#5e3eaa'), sh2 = W('#9070ec'), hi = W('#e0d4ff'), leg = W('#241a40'), up = k === 2 ? -2 : 0, fw = k === 3 ? 2 : 0;
+    rect(g, 3 + fw, 6 + up, 12, 4, sh); rect(g, 4 + fw, 5 + up, 10, 1, sh2); rect(g, 4 + fw, 5 + up, 6, 1, hi); rect(g, 3 + fw, 9 + up, 12, 1, W('#2a1a50'));   /* the glass shell */
+    for (let i = 0; i < 4; i++) { const sx = 5 + i * 2 + fw, h = 2 + ((i + 1) & 1); rect(g, sx, 5 - h + up, 1, h, W('#9af0ff')); px(g, sx, 5 - h + up, '#ffffff'); }   /* the crystal crest down its back */
+    rect(g, 14 + fw, 5 + up, 4, 4, sh); rect(g, 14 + fw, 5 + up, 3, 1, sh2);   /* the head */
+    px(g, 16 + fw, 6 + up, W('#ff3a3a')); px(g, 17 + fw, 6 + up, W('#ffb0b0')); px(g, 16 + fw, 7 + up, W('#c81e1e'));   /* its eyes, red-hot */
+    if (k === 2) { px(g, 18, 4, '#f0e4c0'); px(g, 19, 3, '#f0e4c0'); px(g, 18, 9, '#f0e4c0'); px(g, 19, 10, '#f0e4c0'); }   /* mandibles open: the tell */
+    if (k === 3) { rect(g, 17 + fw, 6, 2, 3, '#f0e4c0'); }
+    for (let i = 0; i < 3; i++) { const lx = 5 + i * 4 + (fw ? 1 : 0), ph = (k + i) % 2; px(g, lx, 10, leg); px(g, lx + (ph ? 1 : -1), 11, leg); px(g, lx + (ph ? 2 : -2), 12, leg); px(g, lx + (ph ? 2 : -2), 13, leg); }   /* six legs, alternating */
     outline(c, '#0e0a1a'); F.push(c); }
-  return pack(F, 7, 10, 9, 6);
+  return pack(F, 10, 14, 13, 9);
 }
 /* a contact-sheet list for tools/glasssea-art-sheet.mjs: the bases and the skins, side by side */
 export async function sheetItems() {
