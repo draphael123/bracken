@@ -277,3 +277,7 @@ THE SKY ROAD (2026-10-06, claude/skyroad, Daniel's picks; the files were fetched
 - rocphoenix.ogg = "Phoenix" (2026) by Scott Buckley, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://www.scottbuckley.com.au/library/phoenix-2026/ - THE ROC's boss theme.
   Credit: "Phoenix" by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
   Changes: mono; encoded to OGG Vorbis.
+
+THE ROOTWAY (2026-10-07, claude/rootway, Daniel approved the download):
+- rootway.ogg = "Lanterns in the Hollowed Forest" (the loop version) by Tsorthan Grove, CC0 (public domain; credited all the same) - https://opengameart.org/content/lanterns-in-the-hollowed-forest - THE ROOTWAY's level track.
+  Changes: mono; encoded to OGG Vorbis (72 kbps). The Huntmaster keeps his composed-in-code theme (boss3).

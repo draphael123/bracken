@@ -33,7 +33,7 @@ export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge', 'underw
 export const REPORT_ONLY = {
   /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
   skyroad: ['music'],
-  rootway: ['music'],   /* (claude/rootway, the greybox) TODO: THE ROOTWAY plays the benched 'cave' track as a placeholder (Sporewood's old theme) - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */   /* (claude/skyroad, the greybox) TODO: THE SKY ROAD plays the retired sky ship's track and THE ROC her old track (the Monastery's arena still plays it) as placeholders - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */
+  /* (rootway: the music row is lifted - its own track, Tsorthan Grove's "Lanterns in the Hollowed Forest", CC0) */   /* (claude/rootway, the greybox) TODO: THE ROOTWAY plays the benched 'cave' track as a placeholder (Sporewood's old theme) - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */   /* (claude/skyroad, the greybox) TODO: THE SKY ROAD plays the retired sky ship's track and THE ROC her old track (the Monastery's arena still plays it) as placeholders - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */
 };
 /* Tracks two levels may share on purpose (none today: every campaign level has its own). Trial rooms and shops are not compared. */
 export const SHARED_MUSIC = [];

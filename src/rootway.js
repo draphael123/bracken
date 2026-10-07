@@ -220,7 +220,7 @@ export function buildRootway({ painter, T, TS }) {
       { kind: 'loft', opens: 'THE TROPHY LOFT (a silver)', hud: 'THE TROPHY LOFT OPENS' },
       { kind: 'hoists', opens: 'its load: a span lands across its gap (a bridge), a cage lands as a step, a hunter falls', hud: 'THE HOIST DROPS WHAT IT HOLDS' },
     ],
-    music: 'cave',   /* (the greybox) a PLACEHOLDER - Sporewood's benched track: Daniel picks the level's own CC0/CC-BY track (tools/level-quality.mjs REPORT_ONLY music) */
+    music: 'rootway',   /* "Lanterns in the Hollowed Forest" by Tsorthan Grove, CC0 (audio/CREDITS.txt); the Huntmaster keeps his composed boss3 */
     ambient: [{ x0: 0, x1: 200 * TS, kind: 'drip' }, { x0: 200 * TS, x1: 99999, kind: 'wind' }],   /* the fungus drips at the foot; the canopy's wind at the top (the art pass: its own bed) */
     weather: [{ x0: 0, x1: 180 * TS, kind: 'spore' }],
     palette: { sky: [[64, 96, 112], [196, 168, 120]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(150,130,120,0.18)', grass: '#5a8a3a', grassL: '#8ac050', grassD: '#34562a', dirt: '#4a3a30', dirtL: '#5e4a3a', dirtD: '#33261e', canopy: ['#2a1f38', '#4e3a50', '#8a5a3a', '#c88a3a'] },
