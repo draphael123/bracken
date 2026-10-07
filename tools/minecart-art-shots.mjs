@@ -15,6 +15,12 @@ try {
     const rowAt = x => { let best = null; for (const [a, b, row] of BK.L.mcTrack) if (x >= a && x <= b && (best === null || row > best)) best = row; return best; };
     const at = (name, x, row) => { const rw = row || rowAt(x); BK.tp(x, rw - 1); BK.minecart().cart(BK.P).v = 0; run(10); BK.look(x, rw - 1); snap(name); };
     for (const [n, x] of [['01-yard', 24], ['02-boostgap', 100], ['03-points', 150], ['04-switchback', 215], ['05-goblinline', 350], ['06-caveinfork', 500], ['07-crumble', 540], ['08-works', 650], ['09-high', 720], ['10-exam', 790], ['11-deepgap', 668], ['12-smelter', 925], ['13-bore', 960]]) at(n, x);
+    /* THE GREAT DRILL: the fight, then its jammed open state */
+    const A = BK.L.arena; BK.tp(A.start[0], A.start[1]); BK.minecart().cart(BK.P).v = 0; run(10);
+    for (let i = 0; i < 160; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); if (i % 4 === 0) BK.step(1); }
+    BK.look(A.start[0], A.start[1] - 3); snap('14-drill'); for (let i = 0; i < 90; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); } BK.step(1); snap('15-drill-later');
+    { const b = BK.enemies().find(e => e.t === 'greatdrill'); if (b) { b.mode = 'jammed'; b.open = 3; b.openT0 = 4.6; } for (let i = 0; i < 6; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); } BK.step(1); snap('16-drill-jammed'); }
+    { const H = BK.drillHands(), S = H.show(), b = BK.enemies().find(e => e.t === 'greatdrill'); if (S && b) { b.mode = 'idle'; b.open = 0; S.ph = 3; S.highDown = true; BK.sim(1); for (let i = 0; i < 40; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); } BK.step(1); snap('17-drill-p3-roof-down'); } }
     return res; })()`, 900000);
   for (const [name, d] of r) { writeFileSync(join(out, name + '.png'), Buffer.from(d.split(',')[1], 'base64')); console.log('work/claude/minecart-art/' + tag + '/' + name + '.png'); }
   if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 3).join(' | '));

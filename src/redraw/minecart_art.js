@@ -163,7 +163,7 @@ export function boreBack(g, x0, w, yCeil, yFloor, off, laneYs, highDown, time) {
     rc(g, rx, yCeil, 7, yFloor - yCeil, MP.t2); rc(g, rx, yCeil, 1, yFloor - yCeil, MP.t4); rc(g, rx + 6, yCeil, 1, yFloor - yCeil, MP.t0); for (let y = yCeil + 8; y < yFloor; y += 17) rc(g, rx + 2, y, 3, 1, MP.t1);   /* the rib */
     rc(g, rx - 4, yCeil, 15, 3, MP.t3); rc(g, rx - 4, yCeil, 15, 1, MP.t5); rc(g, rx - 3, yCeil + 3, 3, 7, MP.t1); rc(g, rx + 7, yCeil + 3, 3, 7, MP.t1);   /* the cap and its braces */
     if (((x / 32) | 0) % 2 === 0) { const ly = yCeil + 30; rc(g, rx + 7, ly - 2, 5, 1, MP.i3); g.drawImage(lampSprite(true), rx + 11, ly - 1); add(g, () => { g.globalAlpha = 0.9; g.drawImage(glow(34, '255,160,64'), rx + 14 - 34, ly + 4 - 34); }); } }   /* a bracketed lamp on every other rib */
-  for (let i = 0; i < 3; i++) { const y = laneYs[i]; if (i === 2 && highDown) { g.fillStyle = MP.r4; for (let x = 0; x < w; x += 11) g.fillRect(x0 + x, yFloor - 4 - ((x * 7) % 5), 8, 4 + ((x * 7) % 5)); continue; }
+  for (let i = 0; i < 3; i++) { const y = laneYs[i]; if (i === 2 && highDown) { fallenHigh(g, x0, w, yCeil, yFloor, time); continue; }
     for (let x = -16; x < w + 16; x += 16) { rc(g, x0 + x - (off % 16) + 1, y - 1, 6, 3, MP.t1); rc(g, x0 + x - (off % 16) + 1, y - 1, 6, 1, MP.t3); }   /* the sleepers, running */
     rc(g, x0, y - 3, w, 1, MP.i4); rc(g, x0, y - 2, w, 1, MP.i2); }
   g.restore();
@@ -242,4 +242,12 @@ export function lampPost(g, x, y, time, seed, next) {
   lantern(g, x + 5.5, y - 36, time, seed);
   if (next) { const x1 = x + 96; let px0 = x + 6, py0 = y - 38;
     for (let i = 1; i <= 24; i++) { const t = i / 24, lx = x + 6 + 90 * t, ly = y - 38 + Math.sin(t * Math.PI) * 7 + Math.sin(time * 1.2 + seed) * 0.5; rc(g, lx, ly, 1, 1, MP.i2); if (i % 6 === 0 && i < 24) { rc(g, lx, ly + 1, 1, 2, MP.i2); rc(g, lx - 1, ly + 3, 3, 2, MP.l2); rc(g, lx, ly + 3, 1, 1, MP.l3); add(g, () => { g.globalAlpha = 0.75; g.drawImage(glow(18, '255,160,64'), R(lx) - 18, R(ly) - 13); }); } } }
+}
+
+/* P3: THE ROOF TAKES THE HIGH LINE - a ragged gap torn in the roof where its rail hung, snapped sleepers and rail ends dangling off the tunnel's ribs, the heap of it on the floor, dust still coming down */
+function fallenHigh(g, x0, w, yCeil, yFloor, time) {
+  for (let x = 0; x < w; x += 5) { const h = 8 + ((x * 13) % 17) + ((x * 7) % 5); rc(g, x0 + x, yCeil, 5, h, '#06040a'); rc(g, x0 + x, yCeil + h, 5, 2, MP.r5); if ((x / 5) % 4 === 1) { rc(g, x0 + x + 1, yCeil + h + 2, 2, 12 + (x % 9), MP.t2); rc(g, x0 + x + 1, yCeil + h + 2, 1, 12 + (x % 9), MP.t4); } }
+  for (let x = 0; x < w; x += 7) { const h = 5 + ((x * 11) % 13); rc(g, x0 + x, yFloor - h, 8, h, ((x / 7) | 0) & 1 ? '#5e4a38' : '#4a3a2c'); rc(g, x0 + x, yFloor - h, 8, 1, '#8a7660'); rc(g, x0 + x + 7, yFloor - h, 1, h, MP.r1); }
+  for (let x = 20; x < w; x += 61) { rc(g, x0 + x, yFloor - 16, 22, 3, MP.t2); rc(g, x0 + x, yFloor - 16, 22, 1, MP.t4); rc(g, x0 + x + 20, yFloor - 20, 3, 5, MP.t1); rc(g, x0 + x + 3, yFloor - 14, 18, 1, MP.i4); }   /* a snapped tie and a bent rail in the heap */
+  for (let i = 0; i < 14; i++) { const t = (time * 0.9 + i * 0.37) % 1; g.fillStyle = 'rgba(140,120,100,' + (0.55 * (1 - t)).toFixed(2) + ')'; g.fillRect(R(x0 + ((i * 37) % w)), R(yCeil + 20 + t * (yFloor - yCeil - 30)), 2, 2); }
 }

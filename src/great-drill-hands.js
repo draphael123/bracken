@@ -6,6 +6,7 @@
 // nothing CLANKS, flashes and says WARDED.
 // main.js calls: spawnBoss, owns, on, update, take, interact, tread, drawBack, drawWorld, drawBoss, drawOver, barName, end, read, show, clear, phase.
 import * as GD from './great-drill.js';
+import * as MCA from './redraw/minecart_art.js';   /* THE ART PASS (claude/minecartart): the machine, its bit, red gears and cab, the bore's lining, the chute, the mast, the ore cart */
 import { BOSS_PHASE } from './boss-music.js';
 const { DRILL } = GD;
 
@@ -72,42 +73,24 @@ export function makeDrillHands(ctx) {
   /* ---------- DRAWING (greybox) ---------- */
   /* THE BORE behind everything: ribs and sleepers running past at the cart's cruise while it fights */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, tm = H.tread(), off = tm ? (time * DRILL.cruise) % 32 : 0, x0 = R(G.x0 - cx), w = G.x1 - G.x0;
-    g.save(); g.beginPath(); g.rect(x0, R(G.ceilY - cy), w, G.floor - G.ceilY); g.clip();
-    g.fillStyle = '#1c1612'; g.fillRect(x0, R(G.ceilY - cy), w, G.floor - G.ceilY);
-    for (let x = -32; x < w + 32; x += 32) { const rx = x0 + x - off; g.strokeStyle = '#3a2e24'; g.lineWidth = 3; g.beginPath(); g.moveTo(rx, R(G.ceilY - cy)); g.lineTo(rx + 6, R(G.floor - cy)); g.stroke(); g.lineWidth = 1; }
-    for (let i = 0; i < 3; i++) { const y = R(G.laneY[i] - cy); if (i === 2 && S.highDown) { g.fillStyle = '#4a3a2c'; for (let x = 0; x < w; x += 11) g.fillRect(x0 + x, R(G.floor - cy) - 4 - ((x * 7) % 5), 8, 4 + ((x * 7) % 5)); continue; }   /* (the high line is down: its rubble on the floor) */
-      for (let x = -16; x < w + 16; x += 16) { g.fillStyle = '#4a3220'; g.fillRect(x0 + x - (off % 16) + 2, y - 2, 4, 3); } }
-    g.restore(); };
+    MCA.boreBack(g, x0, w, R(G.ceilY - cy), R(G.floor - cy), off, G.laneY.map(v => R(v - cy)), !!S.highDown, time); };
   /* IN THE WORLD: the chute, the points mast, the ore carts */
   H.drawWorld = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     /* the chute (its tell: it rattles and the line it will drop on flashes) */
-    const chx = R(G.chuteX - cx), cty = R(G.ceilY - cy); g.fillStyle = '#3a2e24'; g.fillRect(chx - 10, cty, 20, 26); g.fillStyle = '#5a6270'; g.fillRect(chx - 12, cty + 24, 24, 4);
-    if (S.chute) { const fl = Math.floor(time * 12) % 2; ctx.text('ORE!', chx, cty + 38, fl ? '#ffd36b' : '#ff9a5c', 'center', 6); g.fillStyle = 'rgba(255,211,107,0.35)'; g.fillRect(chx - 14, R(G.laneY[S.chute.lane] - cy) - 2, 28, 2); }
+    const chx = R(G.chuteX - cx), cty = R(G.ceilY - cy); MCA.chute(g, chx, cty, !!S.chute, S.chute ? R(G.laneY[S.chute.lane] - cy) - 2 : 0, time);
+    if (S.chute) { const fl = Math.floor(time * 12) % 2; ctx.text('ORE!', chx, cty + 42, fl ? '#ffd36b' : '#ff9a5c', 'center', 6); }
     /* THE POINTS MAST */
-    const px = R(G.pointsX - cx); g.fillStyle = '#2a2622'; g.fillRect(px - 1, R(G.laneY[2] - 30 - cy), 3, G.laneY[0] - G.laneY[2] + 30); const pc = S.points ? '#ffd36b' : '#7fc4e0';
-    g.fillStyle = pc; g.beginPath(); g.arc(px, R(G.laneY[2] - 32 - cy), 6, 0, Math.PI * 2); g.fill(); g.fillStyle = '#2a2622'; g.fillRect(px - 1, R(G.laneY[2] - 35 - cy), 2, 6); if (S.points) { g.fillRect(px - 3, R(G.laneY[2] - 30 - cy), 6, 1); } else { g.fillRect(px - 3, R(G.laneY[2] - 35 - cy), 6, 1); }
-    ctx.text(S.points ? 'TO THE GEARS' : 'POINTS', px, R(G.laneY[2] - 44 - cy), pc, 'center', 5);
+    const px = R(G.pointsX - cx), pc = S.points ? '#ffd36b' : '#7fc4e0'; MCA.mast(g, px, R(G.laneY[2] - 30 - cy), R(G.laneY[0] - cy), S.points, time);
+    ctx.text(S.points ? 'TO THE GEARS' : 'POINTS', px, R(G.laneY[2] - 54 - cy), pc, 'center', 5);
     if (S.points) for (const l of [1, 2]) { g.fillStyle = 'rgba(255,211,107,0.5)'; g.fillRect(px - 8, R(G.laneY[l] - cy) - 1, 16, 2); }
     /* THE ORE CARTS */
-    for (const o of S.ores) { const x = R(o.x - cx), y = R(o.y - cy); g.fillStyle = '#2a2622'; g.fillRect(x - 11, y - 10, 22, 8); g.fillStyle = '#5a3a2a'; g.fillRect(x - 10, y - 9, 20, 6); g.fillStyle = '#d89a5a'; for (let i = 0; i < 5; i++) g.fillRect(x - 9 + i * 4, y - 13 + (i % 2), 3, 4); g.fillStyle = '#ffd36b'; g.fillRect(x - 3, y - 14, 2, 2);
-      g.fillStyle = '#1a1a1a'; g.fillRect(x - 8, y - 3, 5, 3); g.fillRect(x + 3, y - 3, 5, 3); ctx.text('ORE', x, y - 20, '#ffd36b', 'center', 5); }
+    for (const o of S.ores) { const x = R(o.x - cx), y = R(o.y - cy); MCA.tub(g, x, y, 'ore', time, 0); ctx.text('ORE', x, y - 24, '#ffd36b', 'center', 5); }
   };
   /* THE MACHINE: its body behind its front, the bit on its line, the gears on the LOW line, the cab and its goblin */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; const G = S.G, D = R(S.D - cx), top = R(G.ceilY + 6 - cy), bot = R(G.floor - cy), jam = GD.drillOpen(e), warded = S.ward > 0;
-    g.fillStyle = '#3a3a40'; g.fillRect(D - 140, top, 140, bot - top); g.fillStyle = '#5a5a64'; for (let y = top + 6; y < bot; y += 14) g.fillRect(D - 140, y, 140, 2);
-    g.fillStyle = (e.hurtT || 0) > 0 || (e.flash || 0) > 0 ? '#ffffff' : '#6a6a74'; g.fillRect(D - 8, top, 8, bot - top);
-    /* the gears on the LOW line: bare, red */
-    const gy = R(G.laneY[0] - 10 - cy); for (let i = 0; i < 3; i++) { const gx = D - 6 - i * 13, a = jam ? 0 : time * (6 - i); g.fillStyle = jam ? '#5a3a2a' : '#a8322a'; g.beginPath(); g.arc(gx, gy, 7, 0, Math.PI * 2); g.fill(); g.fillStyle = '#2a1a14';
-      for (let k = 0; k < 6; k++) { const aa = a + k * Math.PI / 3; g.fillRect(R(gx + Math.cos(aa) * 7) - 1, R(gy + Math.sin(aa) * 7) - 1, 3, 3); } }
-    ctx.text('GEARS', D - 18, gy + 14, jam ? '#ffd36b' : '#ff6b6b', 'center', 5);
-    if (jam) for (let i = 0; i < 4; i++) { g.fillStyle = 'rgba(200,200,200,0.4)'; g.fillRect(D - 30 + ((i * 11 + R(time * 30)) % 30), gy - 14 - ((i * 7 + R(time * 40)) % 30), 4, 4); }
-    /* the bit on its line */
-    const by = R(G.laneY[S.bitLane] - 8 - cy), bl = R(S.bitLen); g.fillStyle = '#c9d1dc'; g.beginPath(); g.moveTo(D, by - 8); g.lineTo(D + bl, by); g.lineTo(D, by + 8); g.fill(); g.fillStyle = '#5a6270'; for (let i = 6; i < bl; i += 8) g.fillRect(D + i, by - R(8 * (1 - i / Math.max(1, bl))), 1, R(16 * (1 - i / Math.max(1, bl))));
-    /* the cab and its goblin */
-    const cb = GD.cabBox(G, S), cx0 = R(cb.l - cx), ct = R(cb.t - cy), cw = R(cb.r - cb.l), ch = R(cb.b - cb.t);
-    g.fillStyle = '#4a4036'; g.fillRect(cx0, ct, cw, ch); g.fillStyle = jam ? '#ffd36b' : '#1b1626'; g.fillRect(cx0 + 4, ct + 6, cw - 8, 14);
-    g.fillStyle = '#5a8a3a'; g.fillRect(cx0 + cw / 2 - 4, ct + 10, 8, 8); g.fillStyle = '#ff6b6b'; g.fillRect(cx0 + cw / 2, ct + 12, 2, 2);
-    if (warded) { g.fillStyle = 'rgba(200,216,232,0.55)'; g.fillRect(cx0 - 2, ct - 2, cw + 4, ch + 4); }
+    const gy = R(G.laneY[0] - 10 - cy), by = R(G.laneY[S.bitLane] - 8 - cy), cb = GD.cabBox(G, S);
+    MCA.drill(g, D, top, bot, gy, by, R(S.bitLen), { x: R(cb.l - cx), t: R(cb.t - cy), w: R(cb.r - cb.l), h: R(cb.b - cb.t) }, jam, warded, (e.hurtT || 0) > 0 || (e.flash || 0) > 0, time, S.bitLane);
+    ctx.text('GEARS', D - 27, gy + 25, jam ? '#ffd36b' : '#ff6b6b', 'center', 5);
   };
   /* OVER EVERYTHING: the tells (the bore's line, the grind, the roof's shadows, full bore) and THE READ */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'greatdrill') return; const G = S.G, blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
