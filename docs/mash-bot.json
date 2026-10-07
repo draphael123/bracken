@@ -8483,19 +8483,19 @@
   }
  },
  "rootway": {
-  "hash": "54d8e0846911",
+  "hash": "60d9f97df210",
   "boss": {
    "boss": "huntmaster",
    "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/90",
-     "dead:100/90"
+     "dead:100/89",
+     "dead:100/89"
     ],
     "warden": [
-     "dead:100/96",
-     "dead:100/96"
+     "dead:100/91",
+     "dead:100/91"
     ],
     "pyro": [
      "dead:100/92",
@@ -8508,11 +8508,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 59.8,
+     "secs": 64,
      "hpLostPct": 100,
-     "bossLeftPct": 90,
-     "landed": 9,
-     "swings": 2401,
+     "bossLeftPct": 89,
+     "landed": 11,
+     "swings": 2574,
      "reprisalPct": 0,
      "chip": []
     },
@@ -8521,11 +8521,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 59.8,
+     "secs": 64,
      "hpLostPct": 100,
-     "bossLeftPct": 90,
-     "landed": 9,
-     "swings": 2401,
+     "bossLeftPct": 89,
+     "landed": 11,
+     "swings": 2574,
      "reprisalPct": 0,
      "chip": []
     },
@@ -8534,11 +8534,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.1,
+     "secs": 65.1,
      "hpLostPct": 100,
-     "bossLeftPct": 96,
-     "landed": 9,
-     "swings": 2401,
+     "bossLeftPct": 91,
+     "landed": 13,
+     "swings": 2569,
      "reprisalPct": 0,
      "chip": []
     },
@@ -8547,11 +8547,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 60.1,
+     "secs": 65.1,
      "hpLostPct": 100,
-     "bossLeftPct": 96,
-     "landed": 9,
-     "swings": 2401,
+     "bossLeftPct": 91,
+     "landed": 13,
+     "swings": 2569,
      "reprisalPct": 0,
      "chip": []
     },
@@ -8560,11 +8560,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 56.5,
+     "secs": 70.5,
      "hpLostPct": 100,
      "bossLeftPct": 92,
      "landed": 10,
-     "swings": 2246,
+     "swings": 2793,
      "reprisalPct": 0,
      "chip": []
     },
@@ -8573,84 +8573,81 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 56.5,
+     "secs": 70.5,
      "hpLostPct": 100,
      "bossLeftPct": 92,
      "landed": 10,
-     "swings": 2246,
+     "swings": 2793,
      "reprisalPct": 0,
      "chip": []
     }
    ]
   },
   "carried": {
-   "from": "d4cc8038720f",
+   "from": "3eb7db99d8bc",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 105,
-    "hits": 9,
+    "deaths": 0,
+    "minHpPct": 4,
+    "hpLostPct": 96,
+    "hits": 7,
     "walked": 100,
     "lifts": 27,
     "held": 0,
     "duels": 0,
-    "boardLifts": 7,
-    "rides": 7,
+    "boardLifts": 6,
+    "rides": 6,
     "pulls": 0,
     "ridden": {
-     "growcap": 6,
-     "swing": 1
+     "growcap": 6
     },
     "machines": true,
-    "frames": 10108,
+    "frames": 10488,
     "kills": 3,
     "heroLevel": 4
    },
    "warden": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 133,
-    "hits": 11,
+    "hpLostPct": 143,
+    "hits": 9,
     "walked": 100,
-    "lifts": 27,
+    "lifts": 28,
     "held": 0,
     "duels": 0,
     "boardLifts": 7,
     "rides": 6,
     "pulls": 0,
     "ridden": {
-     "growcap": 5,
-     "swing": 1
+     "growcap": 6
     },
     "machines": true,
-    "frames": 10207,
-    "kills": 2,
+    "frames": 10720,
+    "kills": 7,
     "heroLevel": 4
    },
    "pyro": {
-    "deaths": 0,
-    "minHpPct": 4,
-    "hpLostPct": 136,
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 131,
     "hits": 11,
     "walked": 100,
     "lifts": 25,
     "held": 0,
     "duels": 0,
-    "boardLifts": 8,
-    "rides": 7,
+    "boardLifts": 5,
+    "rides": 6,
     "pulls": 0,
     "ridden": {
-     "growcap": 6,
-     "swing": 1
+     "growcap": 6
     },
     "machines": true,
-    "frames": 10593,
-    "kills": 2,
+    "frames": 10074,
+    "kills": 5,
     "heroLevel": 4
    }
   }
