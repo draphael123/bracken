@@ -12,6 +12,8 @@
 //   drawWorld, drawCart(g, P), drawHud, drawOver, read, bakeOreIcon, handsState
 // GREYBOX art: rails, sleepers, trestles, levers, crushers, gates and carts are plain shapes until the art pass.
 import { MC, cartSpeed, runeAt } from './minecart.js';
+import * as MCA from './redraw/minecart_art.js';   /* THE ART PASS (claude/minecartart): the rail, bents, lamps, hazards, carts, landmarks */
+import { heightAt } from './slopes.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { resolve, newStall, stallTick, drawGlint } from './stuck-guide.js';
 
@@ -237,16 +239,20 @@ export function makeMinecartHands(ctx) {
   /* ---------- DRAWING (greybox) ---------- */
   const IRON = '#8a919c', DARK = '#2a2622', WOOD = '#6b4a2a', WOOD2 = '#8a6238';
   H.drawWorld = (g, cx, cy, time) => { if (!M || !H.on()) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), now = ctx.time(), x0c = Math.floor(cx / ts) - 1, x1c = Math.ceil((cx + vw) / ts) + 1;
-    /* trestle posts under the elevated lines */
+    /* trestle bents under the elevated lines */
     for (const [a, b, row] of M.L.mcTrestles) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x += 3) { if (ctx.cellGet(x, row) !== ctx.T.RAIL) continue; let yb = row + 1; while (yb < row + 12 && ctx.cellGet(x, yb) === ctx.T.AIR) yb++;
-      if (yb > row + 1) { g.fillStyle = WOOD; g.fillRect(R(x * ts + 6 - cx), R((row + 1) * ts - cy), 3, (yb - row - 1) * ts); g.fillStyle = WOOD2; g.fillRect(R(x * ts + 6 - cx), R((row + 1) * ts - cy), 1, (yb - row - 1) * ts); } }
-    /* the rail along every line, on whatever stands there (sleepers, two iron bars) */
+      if (yb > row + 1) MCA.bent(g, R(x * ts + 6 - cx), R((row + 1) * ts - cy), R(yb * ts - cy), x + 3 <= b && ctx.cellGet(x + 3, row) === ctx.T.RAIL, x); }
+    /* the rail along every line, on whatever stands there (sleepers and iron; laid up the ramps too) */
     for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x++) { const t = ctx.cellGet(x, row); if (!(t === ctx.T.SOLID || t === ctx.T.RAIL || t === ctx.T.ONEWAY || (t >= 20 && t <= 25))) continue;
-      const sx = R(x * ts - cx), sy = R(row * ts - cy); const slope = t >= 20 && t <= 25; if (slope) continue;
-      g.fillStyle = WOOD; g.fillRect(sx + 2, sy - 2, 4, 3); g.fillRect(sx + 10, sy - 2, 4, 3); g.fillStyle = IRON; g.fillRect(sx, sy - 3, ts, 1); g.fillStyle = '#c9d1dc'; g.fillRect(sx, sy - 3, ts, 0.5 > 0 ? 1 : 0); }
+      const sx = R(x * ts - cx), sy = R(row * ts - cy); if (t >= 20 && t <= 25) { MCA.slopeRail(g, sx, sy, t, heightAt); continue; } MCA.rail(g, sx, sy, x); }
+    /* THE LANTERN STRINGS: a lamp post every sixth tile along the lines, a wire sagging to the next with a bulb between (never at a gadget) */
+    { const gx = []; for (const k of M.crushers) gx.push([k.x - 2, k.x + k.w + 2]); for (const gt of M.gates) gx.push([gt.x - 3, gt.x + 3]); for (const b of M.beams) gx.push([b.x0 - 3, b.x1 + 3]); for (const r of M.rocks) gx.push([r.x - 2, r.x + r.w + 2]); for (const p of M.points) gx.push([p.x - 2, p.x + 2]); for (const bg of M.L.mcBoost || []) gx.push([bg.x0 - 5, bg.x1 + 3]);
+      const posts = new Map(); for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a + 1, x0c - 8); x <= Math.min(b - 1, x1c + 8); x++) { if (x % 6 !== 0) continue; const t0 = ctx.cellGet(x, row); if (!(t0 === ctx.T.SOLID || t0 === ctx.T.RAIL)) continue;
+        let clear = true; for (let k = 1; k <= 4 && clear; k++) if (ctx.cellGet(x, row - k) !== ctx.T.AIR) clear = false; if (!clear || gx.some(([p0, p1]) => x >= p0 && x <= p1)) continue; posts.set(x + ',' + row, [x, row]); }
+      for (const [x, row] of posts.values()) MCA.lampPost(g, R(x * ts + 7 - cx), R(row * ts - cy), time, x, posts.has((x + 6) + ',' + row)); }
     /* the decor: fall-ins, the roof over the hidden lever, the bore, the smelter's glow */
-    for (const d of M.L.decor) { if (d.kind === 'fallin') { const x = R(d.x * ts - cx), y = R((d.row - 2) * ts - cy); g.fillStyle = '#4a3a2c'; g.fillRect(x, y, 32, 32); g.fillStyle = '#8a7660'; for (let i = 0; i < 5; i++) g.fillRect(x + (i * 7) % 28, y + (i * 11) % 26, 5, 4); ctx.text('FALLEN IN', x + 16, y - 6, '#ff9a5c', 'center', 5); }
-      else if (d.kind === 'bore') { const x = R(d.x0 * ts - cx), w = (d.x1 - d.x0 + 1) * ts, y = R(d.row * ts - cy); g.fillStyle = 'rgba(20,14,10,0.55)'; g.fillRect(x, y - 120, w, 120); g.strokeStyle = '#6b5a48'; for (let i = 0; i < w; i += 22) { g.beginPath(); g.arc(x + i + 11, y - 60, 58, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); } }
+    for (const d of M.L.decor) { if (d.kind === 'fallin') { const x = R(d.x * ts - cx), y = R((d.row - 2) * ts - cy); MCA.fallin(g, x, y, time); ctx.text('FALLEN IN', x + 16, y - 6, '#ff9a5c', 'center', 5); }
+      else if (d.kind === 'bore') { MCA.boreArch(g, R(d.x0 * ts - cx), (d.x1 - d.x0 + 1) * ts, R(d.row * ts - cy)); }
       else if (d.kind === 'crumble') { /* THE LOW LINE GOING (review MF5): its rail cracked, rubble dropping on it, dust - drawn from 530, well before the fall-in */
         const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx), y = R(d.row * ts - cy); if (x1 < -20 || x0 > vw + 20) continue;
         g.fillStyle = '#1a1410'; for (let x = x0 + 5; x < x1; x += 13) g.fillRect(x, y - 3, 3, 3);
@@ -254,61 +260,54 @@ export function makeMinecartHands(ctx) {
         g.fillStyle = '#4a3a2c'; for (let x = x0 + 8; x < x1; x += 22) g.fillRect(x, y - 5, 6, 3);
         if (Math.floor(time * 3) % 2) ctx.text('GOING', R((x0 + x1) / 2), y + 12, '#ff9a5c', 'center', 5); }
       else if (d.kind === 'scar') { /* the drill's bore scars in the rock: round, fresh-cut, bigger toward its tunnel */
-        const x = R(d.x * ts - cx), y = R(d.row * ts - cy); if (x < -60 || x > vw + 60) continue; g.strokeStyle = '#6b5a48'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - d.r, d.r, 0, Math.PI * 2); g.stroke();
-        g.strokeStyle = '#3a2e24'; g.lineWidth = 1; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + d.x; g.beginPath(); g.moveTo(x + Math.cos(a) * d.r * 0.4, y - d.r + Math.sin(a) * d.r * 0.4); g.lineTo(x + Math.cos(a) * d.r * 0.9, y - d.r + Math.sin(a) * d.r * 0.9); g.stroke(); } }
-      else if (d.kind === 'spoil') { const x0 = R(d.x0 * ts - cx), y = R(d.row * ts - cy); g.fillStyle = '#5a4634'; for (let x = 0; x < (d.x1 - d.x0) * ts; x += 9) g.fillRect(x0 + x, y - 3 - ((x * 7) % 3), 5, 3 + ((x * 7) % 3)); }
-      else if (d.kind === 'headlight') { /* its headlight, flickering through the rock at the end of the bore */
-        const x = R(d.x * ts - cx), y = R(d.row * ts - cy), k = 0.5 + 0.5 * Math.sin(time * 9) * Math.sin(time * 2.3); g.fillStyle = 'rgba(255,220,140,' + (0.08 + 0.14 * k).toFixed(2) + ')'; g.beginPath(); g.arc(x, y, 26 + 6 * k, 0, Math.PI * 2); g.fill();
-        g.fillStyle = 'rgba(255,240,200,' + (0.2 + 0.3 * k).toFixed(2) + ')'; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill(); }
-      else if (d.kind === 'smelter') { const x = R(d.x * ts - cx), y = R(d.row * ts - cy); const k = 0.5 + 0.5 * Math.sin(time * 3); g.fillStyle = 'rgba(255,140,40,' + (0.18 + 0.12 * k).toFixed(2) + ')'; g.fillRect(x - 40, y - 34, 80, 34); ctx.text('THE SMELTER', x, y - 38, '#ffb050', 'center', 5); } }
+        const x = R(d.x * ts - cx), y = R(d.row * ts - cy); if (x < -60 || x > vw + 60) continue; MCA.scar(g, x, y, d.r, d.x); }
+      else if (d.kind === 'spoil') { MCA.spoil(g, R(d.x0 * ts - cx), R(d.row * ts - cy), (d.x1 - d.x0) * ts); }
+      else if (d.kind === 'headlight') { MCA.headlight(g, R(d.x * ts - cx), R(d.row * ts - cy), time); }   /* its headlight, flickering through the rock at the end of the bore */
+      else if (d.kind === 'smelter') { const x = R(d.x * ts - cx), y = R(d.row * ts - cy); MCA.smelterHouse(g, x, y, time); ctx.text('THE SMELTER', x, y - 56, '#ffb050', 'center', 5); } }
     /* THE POINTS: the lever (its disc's arrow) and the fork itself (set = rail; open = a chute down) */
     for (const p of M.points) { const lx = p.x * ts + 8; if (lx < cx - 40 || lx > cx + vw + 40) continue; const x = R(lx - cx), y = R(p.row * ts - cy), set = p.state === 'set', locked = p.ore && ctx.questGot() < p.ore;
-      if (p.hang) { g.fillStyle = IRON; g.fillRect(x - 1, y - 4, 2, 10); } else { g.fillStyle = DARK; g.fillRect(x - 1, y - 26, 3, 26); }
-      const dy = p.hang ? y + 10 : y - 28, fl = p.flash > 0 && Math.floor(time * 20) % 2; g.fillStyle = fl ? '#ffffff' : locked ? '#5a5a5a' : set ? '#ffd36b' : '#7fc4e0'; g.beginPath(); g.arc(x, dy, 6, 0, Math.PI * 2); g.fill();
-      g.fillStyle = DARK; if (set) { g.fillRect(x - 1, dy - 3, 2, 6); g.fillRect(x - 3, dy - 2, 6, 1); g.fillRect(x - 2, dy - 3, 4, 1); } else { g.fillRect(x - 1, dy - 3, 2, 6); g.fillRect(x - 3, dy + 1, 6, 1); g.fillRect(x - 2, dy + 2, 4, 1); }
+      const fl = p.flash > 0 && Math.floor(time * 20) % 2; const dy = MCA.lever(g, x, y, p.hang, set, locked, fl, time);
       if (locked) ctx.text('ORE ' + ctx.questGot() + '/' + p.ore, x, dy - 12, '#9aa39a', 'center', 5);
       const Ph = ctx.hero(); if (p.req && !set && Ph && lx - Ph.x > -8 && lx - Ph.x < 300) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.strokeStyle = 'rgba(255,211,107,' + (0.5 + 0.5 * k).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, dy, 9 + 3 * k, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }   /* a REQUIRED lever pulses while it is wrong (review MF5) */
       const fx0 = R(p.x0 * ts - cx), fw = (p.x1 - p.x0 + 1) * ts, fy = R(p.prow * ts - cy);
       if (!set) { g.fillStyle = 'rgba(127,196,224,0.35)'; for (let i = 0; i < fw; i += 8) g.fillRect(fx0 + i, fy - 1, 4, 2); g.fillStyle = '#7fc4e0'; g.fillRect(fx0, fy - 6, 2, 8); g.fillRect(fx0 + fw - 2, fy - 6, 2, 8); }
       else { g.fillStyle = '#ffd36b'; g.fillRect(fx0, fy - 4, fw, 1); } }
-    /* THE BOOST GAPS' LIPS (review MF4): a lantern pair and chevrons on the last sleepers - amber, RED where a fall is a death (an exam, the chase) - lit as you near */
+    /* THE BOOST GAPS' LIPS (review MF4): a real lamp on each lip and chevrons on the last sleepers - amber, RED where a fall is a death (an exam, the chase) - lit as you near */
     { const Ph = ctx.hero(); for (const bg of M.L.mcBoost || []) { const lx = bg.x0 * ts; if (lx < cx - 40 || lx > cx + vw + 40) continue; const x = R(lx - cx), y = R(bg.row * ts - cy);
-        const deadly = (M.L.mcExam || []).some(([a, b]) => bg.x0 >= a && bg.x1 <= b) || (M.L.chases || []).some(ch => lx >= ch.trigger && lx <= ch.end), col = deadly ? '#ff6b6b' : '#ffb050';
+        const deadly = (M.L.mcExam || []).some(([a, b]) => bg.x0 >= a && bg.x1 <= b) || (M.L.chases || []).some(ch => lx >= ch.trigger && lx <= ch.end);
         const near = Ph && lx - Ph.x > -4 && lx - Ph.x < 260, on = !near || Math.floor(time * 8) % 2;
-        for (const px of [x - 2, R((bg.x1 + 1) * ts - cx) + 1]) { g.fillStyle = DARK; g.fillRect(px - 1, y - 22, 2, 20); g.fillStyle = on ? col : '#5a4a3a'; g.fillRect(px - 2, y - 26, 4, 4); }
-        g.fillStyle = on ? col : '#5a4a3a'; for (let i = 1; i <= 3; i++) { const cxv = x - i * 9; g.fillRect(cxv, y - 5, 2, 1); g.fillRect(cxv + 1, y - 4, 2, 1); g.fillRect(cxv, y - 3, 2, 1); }
-        if (near && deadly) ctx.text('DEEP', x + R((bg.x1 - bg.x0 + 1) * ts / 2), y - 30, col, 'center', 5); } }
-    /* THE CRUSHERS: the block, high and still / shaking (!) / down */
+        for (const px of [x - 2, R((bg.x1 + 1) * ts - cx) + 1]) MCA.lipLamp(g, px, y, deadly, on, time);
+        MCA.chevrons(g, x, y, on, deadly);
+        if (near && deadly) ctx.text('DEEP', x + R((bg.x1 - bg.x0 + 1) * ts / 2), y - 36, '#ff6b6b', 'center', 5); } }
+    /* THE CRUSHERS: the press head, high and still / shaking (!) / down; its beacon is the warning lamp */
     for (const k of M.crushers) { const x = R(k.x * ts - cx), w = k.w * ts; if (x < -40 || x > vw + 40) continue; const ph = crushPhase(k, now), yb = k.row * ts, top = yb - 6 * ts;
-      const drop = ph.state === 'down' ? 1 : ph.state === 'warn' ? 0.05 : 0, bot = R(yb - (1 - drop) * 4.2 * ts - cy) - (ph.state === 'down' ? 0 : 0), shakeX = ph.state === 'warn' ? (Math.floor(time * 30) % 2 ? 1 : -1) : 0;
-      g.fillStyle = DARK; g.fillRect(x + w / 2 - 1, R(top - cy) - 40, 2, bot - R(top - cy) + 40 - 20); g.fillStyle = '#5a6270'; g.fillRect(x + shakeX, bot - 20, w, 20); g.fillStyle = '#c9d1dc'; for (let i = 0; i < w; i += 4) g.fillRect(x + shakeX + i, bot - 2, 2, 2);
+      const drop = ph.state === 'down' ? 1 : ph.state === 'warn' ? 0.05 : 0, bot = R(yb - (1 - drop) * 4.2 * ts - cy), shakeX = ph.state === 'warn' ? (Math.floor(time * 30) % 2 ? 1 : -1) : 0;
+      MCA.crusher(g, x + shakeX, w, R(top - cy), bot, ph.state, time);
       if (ph.state === 'warn') ctx.text('!', x + w / 2, bot - 26, '#ff6b6b', 'center', 7);
       const gk = ph.state === 'up' ? ph.k : 1; g.fillStyle = '#1b1626'; g.fillRect(x, R(yb - cy) + 3, w, 2); g.fillStyle = ph.state === 'up' ? '#8fd160' : '#ff6b6b'; g.fillRect(x, R(yb - cy) + 3, R(w * (ph.state === 'up' ? 1 - gk : 1)), 2); }
     /* THE GATES: a portcullis and its gauge */
     for (const gt of M.gates) { const x = R(gt.x * ts + 6 - cx), yb = R(gt.row * ts - cy); if (x < -30 || x > vw + 30) continue; const open = gateOpen(gt, now), t = (((now + gt.phase) % gt.period) + gt.period) % gt.period;
-      g.fillStyle = DARK; g.fillRect(x - 4, yb - 52, 14, 4); const lift = open ? 40 : 0; g.fillStyle = '#5a6270'; for (let i = 0; i < 3; i++) g.fillRect(x + i * 3 - 1, yb - 46 - lift, 2, 46); g.fillRect(x - 1, yb - 30 - lift, 8, 2); g.fillRect(x - 1, yb - 14 - lift, 8, 2);
-      const k = open ? 1 - t / gt.open : (t - gt.open) / (gt.period - gt.open); g.fillStyle = '#1b1626'; g.beginPath(); g.arc(x + 3, yb - 62, 6, 0, Math.PI * 2); g.fill(); g.strokeStyle = open ? '#8fd160' : '#ff9a5c'; g.beginPath(); g.moveTo(x + 3, yb - 62); g.lineTo(x + 3 + Math.cos(-Math.PI / 2 + k * Math.PI * 2) * 5, yb - 62 + Math.sin(-Math.PI / 2 + k * Math.PI * 2) * 5); g.stroke();
-      ctx.text(open ? 'OPEN' : 'SHUT', x + 3, yb - 72, open ? '#8fd160' : '#ff9a5c', 'center', 5); }
+      const k = open ? 1 - t / gt.open : (t - gt.open) / (gt.period - gt.open); MCA.gate(g, x, yb, open, k, time);
+      ctx.text(open ? 'OPEN' : 'SHUT', x + 3, yb - 80, open ? '#8fd160' : '#ff9a5c', 'center', 5); }
     /* THE ROCKFALLS: the dust and the shadow, then the rock */
     for (const r of M.rocks) { if (!(r.fallT > -0.6) || r.armed) continue; const x0 = R(r.x * ts - cx), w = r.w * ts, yb = R(r.row * ts - cy);
       if (r.fallT > 0) { const k = 1 - r.fallT / r.delay; g.fillStyle = 'rgba(0,0,0,' + (0.25 + 0.35 * k).toFixed(2) + ')'; g.fillRect(x0 - 2, yb - 2, w + 4, 3); g.fillStyle = '#8a7660'; for (let i = 0; i < 4; i++) g.fillRect(x0 + (i * 9 + R(time * 40)) % w, yb - 70 + ((i * 23 + R(time * 90)) % 60), 2, 2);
-        const ry = yb - 80 + 80 * k * k; g.fillStyle = '#4a3a2c'; g.fillRect(x0 + 4, R(ry) - 14, w - 8, 14); ctx.text('!', x0 + w / 2, yb - 24, '#ffd36b', 'center', 6); } }
+        MCA.boulder(g, x0, w, yb, k, time); ctx.text('!', x0 + w / 2, yb - 24, '#ffd36b', 'center', 6); } }
     /* THE BEAMS */
-    for (const b of M.beams) { const x = R(b.x0 * ts - cx), w = (b.x1 - b.x0 + 1) * ts, y = R(b.row * ts - 10 - cy); g.fillStyle = WOOD; g.fillRect(x - 2, y - 6, w + 4, 6); g.fillStyle = WOOD2; g.fillRect(x - 2, y - 6, w + 4, 1); g.fillStyle = DARK; g.fillRect(x - 2, y - 60, 3, 54); g.fillRect(x + w - 1, y - 60, 3, 54);
+    for (const b of M.beams) { const x = R(b.x0 * ts - cx), w = (b.x1 - b.x0 + 1) * ts, y = R(b.row * ts - 10 - cy); MCA.beam(g, x, w, y);
       const P = ctx.hero(); if (P && b.x0 * ts - P.x < 140 && b.x0 * ts > P.x - 4) { const fl = Math.floor(time * 8) % 2; ctx.text('DUCK', x + w / 2, y + 22, fl ? '#ff6b6b' : '#ffd36b', 'center', 6); } }
     /* THE GOBLIN CARTS (drawn under their riders) */
-    for (const c of M.carts) { if (c.state === 'gone') continue; drawTub(g, c.x - cx, c.y - cy, '#5a3a2a', time, c.v); if (c.state === 'roll' && c.e.alive && c.e.mcTelling) ctx.text('!', R(c.x - cx), R(c.y - 40 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7); }
+    for (const c of M.carts) { if (c.state === 'gone') continue; MCA.tub(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob', time, c.v); if (c.state === 'roll' && c.e.alive && c.e.mcTelling) ctx.text('!', R(c.x - cx), R(c.y - 40 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7); }
     /* arrows and runes */
     for (const s of M.shots) { g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; const a = Math.atan2(s.vy, s.vx); g.beginPath(); g.moveTo(R(s.x - cx), R(s.y - cy)); g.lineTo(R(s.x - Math.cos(a) * 7 - cx), R(s.y - Math.sin(a) * 7 - cy)); g.stroke(); }
     for (const r of M.runes) { if (r.t < 0) continue; const k = 1 - r.t / r.t0, x = R(r.x - cx), y = R(r.y - cy); g.strokeStyle = Math.floor(time * 10) % 2 ? '#b48aff' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, MC.runeR, 3, 0, 0, Math.PI * 2); g.stroke();
       g.fillStyle = 'rgba(180,138,255,' + (0.2 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - R(MC.runeR * k), y - 2, R(MC.runeR * 2 * k), 2); ctx.text('!', x, y - 14, '#b48aff', 'center', 6); }
     if (M.glint) drawGlint(g, R(M.glint.x - cx), R(M.glint.y - cy), vw, vh, time);
   };
-  function drawTub(g, x, y, col, time, v) { x = R(x); y = R(y); g.fillStyle = DARK; g.fillRect(x - 11, y - 10, 22, 8); g.fillStyle = col; g.fillRect(x - 10, y - 9, 20, 6); g.fillStyle = IRON; g.fillRect(x - 11, y - 10, 22, 1); g.fillRect(x - 11, y - 4, 22, 1);
-    const a = time * (v || 0) / 6; for (const wx of [x - 6, x + 6]) { g.fillStyle = '#1a1a1a'; g.fillRect(wx - 3, y - 3, 6, 3); g.fillStyle = IRON; g.fillRect(wx - 1 + R(Math.cos(a) * 1.5), y - 2, 2, 1); } }
+  function drawTub(g, x, y, col, time, v, kind) { MCA.tub(g, x, y, kind || 'hero', time, v); }   /* (the art pass: src/redraw/minecart_art.js) */
   /* THE HERO'S CART, drawn over his legs (he sits in the tub; ducked, he is down in it) */
-  H.drawCart = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); drawTub(g, P.x - cx, P.y - cy + 1, '#6b5034', time, c.v);
-    if (P.ducking) { g.fillStyle = '#6b5034'; g.fillRect(R(P.x - cx) - 10, R(P.y - cy) - 12, 20, 4); } };
+  H.drawCart = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); drawTub(g, P.x - cx, P.y - cy + 1, '#6b5034', time, c.v, 'hero'); MCA.prowLamp(g, R(P.x - cx), R(P.y - cy + 1), P.face || 1, time);
+    if (P.ducking) { g.fillStyle = '#6b5034'; g.fillRect(R(P.x - cx) - 10, R(P.y - cy) - 12, 20, 4); g.fillStyle = '#8e6c44'; g.fillRect(R(P.x - cx) - 10, R(P.y - cy) - 12, 20, 1); } };
   /* THE SPEEDOMETER: a needle and its word, over the bottom-left of the screen */
   H.drawHud = (g, P) => { if (!M || !H.riding(P)) return; const c = cartOf(P), x = 22, y = ctx.VH() - 16, k = Math.min(1, c.v / MC.boost), a = Math.PI + k * Math.PI;
     g.fillStyle = 'rgba(20,16,12,0.7)'; g.beginPath(); g.arc(x, y, 12, Math.PI, Math.PI * 2); g.fill(); g.strokeStyle = '#5a5048'; g.stroke();

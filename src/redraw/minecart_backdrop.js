@@ -67,10 +67,10 @@ const frameTile = () => once('frame', () => { const W = 128, H = 192, [c, g] = m
   return c; });
 
 /* ---------------- THE LANTERN: a tiny cage lamp, 7 x 10, and its glow ---------------- */
-const lampSprite = lit => once('lamp' + lit, () => { const [c, g] = mk(7, 10);
+export const lampSprite = lit => once('lamp' + lit, () => { const [c, g] = mk(7, 10);
   rc(g, 3, 0, 1, 2, MP.i3); rc(g, 1, 2, 5, 1, MP.i2); rc(g, 1, 3, 5, 5, lit ? MP.l1 : MP.t1); rc(g, 2, 4, 3, 3, lit ? MP.l3 : MP.t0); rc(g, 3, 5, 1, 1, lit ? '#ffffff' : MP.t0);
   rc(g, 1, 3, 1, 5, MP.i2); rc(g, 5, 3, 1, 5, MP.i2); rc(g, 1, 8, 5, 1, MP.i2); rc(g, 2, 9, 3, 1, MP.i1); return c; });
-const glow = (rad, rgb) => once('glow' + rad + rgb, () => { const d = rad * 2, [c, g] = mk(d, d); for (let r = rad; r > 0; r--) { g.globalAlpha = 0.05 * Math.pow(1 - r / rad, 1.6) + 0.004; g.fillStyle = 'rgb(' + rgb + ')'; g.beginPath(); g.arc(rad, rad, r, 0, 6.2832); g.fill(); } g.globalAlpha = 1; return c; });
+export const glow = (rad, rgb) => once('glow' + rad + rgb, () => { const d = rad * 2, [c, g] = mk(d, d); for (let r = rad; r > 0; r--) { g.globalAlpha = 0.05 * Math.pow(1 - r / rad, 1.6) + 0.004; g.fillStyle = 'rgb(' + rgb + ')'; g.beginPath(); g.arc(rad, rad, r, 0, 6.2832); g.fill(); } g.globalAlpha = 1; return c; });
 
 /* ---------------- THE GOBLIN WORKS: a scaffold with a winch wheel and bucket, rag banners, a bone tally (192 x 150, transparent) ---------------- */
 const worksSprite = v => once('works' + v, () => { const W = 150, H = 110, [c, g] = mk(W, H), r = mulberry(300 + v);
