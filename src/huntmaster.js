@@ -194,7 +194,7 @@ export function makeHuntmaster(ctx) {
     return dmg; };
   H.barName = e => 'THE GOBLIN HUNTMASTER' + (e.mode === 'caught' ? '  CAUGHT' : hmOpen(e) ? '  OPEN' : e.ward > 0 ? '  GUARDING' : '');
   H.end = () => { if (F) { F.arrows = []; F.pools = []; } for (const pp of ctx.players) pp.hmPoison = 0; };
-  H.read = () => F && { ph: F.ph, weak: { ...F.weak }, n: { ...F.n }, hurt: { ...F.hurt }, arrows: F.arrows.map(a => ({ kind: a.kind, x: a.x, y: a.y, vx: a.vx, vy: a.vy, back: a.back })), pools: F.pools.map(q => ({ x: q.x, t: q.t })), hoist: F.hoist || null, hoistX: F.hoistX, perches: F.perches };
+  H.read = () => F && { ph: F.ph, weak: { ...F.weak }, n: { ...F.n }, hurt: { ...F.hurt }, arrows: F.arrows.map(a => ({ id: a.id, kind: a.kind, x: a.x, y: a.y, vx: a.vx, vy: a.vy, back: a.back })), pools: F.pools.map(q => ({ x: q.x, t: q.t })), hoist: F.hoist || null, hoistX: F.hoistX, perches: F.perches };
 
   /* ---------- DRAWING (GREYBOX: plain shapes until the art pass) ---------- */
   H.drawBoss = (g, e, cx, cy, time) => {
@@ -267,13 +267,11 @@ export function hmPlan(o) {
   const R0 = R || { arrows: [] };
   for (const a of R0.arrows) { if (a.back) continue; const rx = a.x - P.x, ry = a.y - (P.y - 10), come = rx * a.vx < 0 || Math.abs(rx) < 8;
     if (!come || Math.abs(rx) > 90 || Math.abs(ry) > 40) continue;
-    const key = 'a' + Math.round(a.x * 0 + a.vx) + ':' + Math.round(a.vy) + ':' + (mem.arrowSet = mem.arrowSet || 0);
-    if (a.kind === 'gold' && o.eyes && !roll('b' + Math.round(a.vx * 7 + a.vy), PLAN.missBack)) { out.face = Math.sign(rx) || P.face; out.gx = P.x;
+    if (a.kind === 'gold' && o.eyes && !roll('b' + a.id, PLAN.missBack)) {   /* (each arrow its own roll: some let go) */ out.face = Math.sign(rx) || P.face; out.gx = P.x;
       if (Math.hypot(rx, ry) < reach + 6 + Math.hypot(a.vx, a.vy) * 0.07 && Math.abs(ry) < 26 && P.atk < 0) out.atk = true; out.why = 'strike his arrow back'; return out; }   /* (the swing comes out a beat after the press: met a beat early) */
-    if (a.kind === 'gold' && o.shield && !roll('s' + Math.round(a.vx * 7 + a.vy), PLAN.miss)) { out.block = true; out.face = Math.sign(rx) || P.face; out.why = 'block the arrow'; return out; }
+    if (a.kind === 'gold' && o.shield && !roll('s' + a.id, PLAN.miss)) { out.block = true; out.face = Math.sign(rx) || P.face; out.why = 'block the arrow'; return out; }
     if (o.deflect && a.kind === 'gold' && !(P.busy > 0)) { out.block = Math.abs(rx) < 40; out.face = Math.sign(rx) || P.face; out.why = 'sweep the arrow'; return out; }
-    if (Math.abs(rx) < 46) { if (a.kind === 'red' && P.ground && ry > -6 && !roll('j' + Math.round(a.vx * 7 + a.vy), 0.5)) { out.jump = true; out.why = 'jump the red arrow'; return out; } out.dodge = true; out.why = a.kind === 'red' ? 'roll the red arrow' : 'roll the arrow'; return out; }
-    void key; }
+    if (Math.abs(rx) < 46) { if (a.kind === 'red' && P.ground && ry > -6 && !roll('j' + a.id, 0.5)) { out.jump = true; out.why = 'jump the red arrow'; return out; } out.dodge = true; out.why = a.kind === 'red' ? 'roll the red arrow' : 'roll the arrow'; return out; } }
   /* THE POISONED FLOOR */
   for (const q of R0.pools || []) if (Math.abs(q.x - P.x) < 22 && P.ground) { out.gx = clamp(P.x + (P.x < q.x ? -40 : 40)); out.why = 'off the poison'; return out; }
   /* THE HOIST-DROP SHOT: out from under the cage */

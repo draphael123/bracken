@@ -92,7 +92,7 @@ export function makeRootwayHands(ctx) {
       if (d.load === 'hunter' && h.state === 'hang') { const e = h.hunter;
         if (!e || !e.alive) { h.state = 'down'; h.hunter = null; continue; }
         const s = e.st; s.x = e.x = d.x * TS; s.y = e.y = h.ly; e.vy = 0;
-        if (s.mode === 'hang' && P && !P.dead && Math.abs(P.x - d.x * TS) < HOIST.under && P.y > h.ly + 8 && P.y - h.ly < 15 * TS) { s.mode = 'dropTell'; s.t = HOIST.dropTell; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(e.x, e.y - 26, '!', '#ffd36b'); }
+        if (s.mode === 'hang' && P && !P.dead && Math.abs(P.x - d.x * TS) < HOIST.under && P.y > h.ly + 8 && P.y - h.ly < 15 * TS) { s.mode = 'dropTell'; s.t = HOIST.dropTell; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(e.x, e.y - 26, 'THE ROPE CREAKS', '#ffd36b'); }
         if (s.mode === 'dropTell') { h.tellT = s.t; if (s.t <= 0) { s.hang = null; s.mode = 'fall'; e.noGrav = false; h.state = 'down'; h.hunter = null; S.n.hunterDrops++; if (once('hunterDrop')) ctx.number(e.x, e.y - 30, 'THE HUNTER DROPS ON YOU', '#ff9a5c'); } } } }
     /* THE LOOKOUT IS MANNED: if its scout falls before its span is down, another takes the post (never a soft-lock) */
     for (const h of S.hs.values()) { const d = h.d; if (!d.post || h.state !== 'hang') continue;

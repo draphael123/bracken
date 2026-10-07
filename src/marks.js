@@ -69,6 +69,7 @@ export const BY_HAND = {
   'cutthroat|feintTell':'','cutthroat|slashTell':'!','slinger|slingTell':'!','slinger|kickTell':'!','ambusher|cutTell':'!',   /* THE CARAVAN'S BANDITS (desert-foes.js, by hand, 2026-09-25): the cutthroat's FEINT throws nothing, so it wears no mark (rule H) - the real cut behind it wears the yellow one; a shield turns a slingstone, a kick and the ambusher's knife */
   'sandworm|lungeTell':'!!',   /* THE SANDWORM (claude/desertfoes, by hand: src/desert-foes2.js on the desert engine): the sand domes on its spot and it comes up there - nothing turns it, be off the spot */
   'kiterider|swoopTell':'!','kiterider|kickTell':'!','roc|diveTell':'!!',   /* THE SKY ROAD (claude/skyroad, by hand: the kite-rider is a CV machine in src/sky-road-hands.js riderStep, the Roc on her eyrie is src/roc-eyrie.js): the swoop and the kick a shield turns; her dive nothing turns */
+  'trophyhunter|lungeTell':'!','trophyhunter|jabTell':'!','trophyhunter|dropTell':'','huntmaster|aimTell':'!','huntmaster|volleyTell':'!','huntmaster|splitTell':'!!','huntmaster|hoistTell':'!!','huntmaster|slashTell':'!','huntmaster|leapTell':'',   /* THE ROOTWAY (claude/rootway, by hand: the trophy-hunter is a CV machine in src/rootway-hands.js hunterStep, the Huntmaster is src/huntmaster.js): the hunter's lunge and jab a shield turns, his drop off the hoist strikes nobody (the rope creaks); the Huntmaster's aimed shot and volley are gold (a shield turns them, a blade sends them home), the split shot carries red ones nothing turns, the hoist-drop shot drops a cage nothing turns, his knife a shield turns, his leap strikes nobody */
   'raptor|watch':'!!',   /* THE CLIFF RAPTOR (claude/redgorge, by hand: the vulture's machine run by src/red-gorge-hands.js raptorStep): its stoop on the spot it marked, as the vulture's */
   'gorgecrab|pinchTell':'!','gorgecrab|crushTell':'!!','gorgecrab|boulderTell':'!!','gorgecrab|scuttleTell':'!!',
   'matriarch|pounceTell':'!!','matriarch|rakeTell':'!','matriarch|sweepTell':'!!','matriarch|screeTell':'!!','matriarch|screechTell':'!','matriarch|diveTell':'!!','matriarch|volleyTell':'!!','matriarch|surgeTell':'!!',   /* THE RAPTOR MATRIARCH (claude/redgorge2, by hand: src/raptor-matriarch.js MOVES) - ! the shield turns the rake (and the screech throws nothing a shield must turn); !! the pounce, the sweep, the scree, the dive, the quills, the surge */   /* THE GREAT RED CRAB (claude/redgorge, by hand: src/gorge-crab.js on the desert engine) - ! the shield turns the pinch; X move: the crush, the boulder, the scuttle */
@@ -200,7 +201,8 @@ export const MARK = {
   'herald|thrustTell': '!', 'heronfoe|lungeTell': '!', 'heronfoe|pinchTell': '!', 'heronfoe|shockTell': '!!', 'heronfoe|snapTell': '!', 'heronfoe|strikeTell': '!',
   'heronfoe|thrustTell': '!', 'hobbyhorse|rear': '!!', 'holdfast|gripTell': '!!', 'homunculus|flaskTell': '!!', 'homunculus|pounceTell': '!', 'homunculus|poundTell': '!!',
   'homunculus|scuttleTell': '!!', 'homunculus|swipeTell': '!', 'hopper|ekBellyTell': '!!', 'hopper|ekTongueTell': '!', 'hopper|hopTell': '!', 'horn|tell': '!!',
-  'horn|whistleTell': '', 'hound|pounceTell': '!!', 'husk|ekClawTell': '!', 'husk|ekGraspTell': '!!', 'husk|grabTell': '!', 'husk|riseTell': '',
+  'horn|whistleTell': '', 'hound|pounceTell': '!!', 'huntmaster|aimTell': '!', 'huntmaster|hoistTell': '!!', 'huntmaster|leapTell': '', 'huntmaster|slashTell': '!',
+  'huntmaster|splitTell': '!!', 'huntmaster|volleyTell': '!', 'husk|ekClawTell': '!', 'husk|ekGraspTell': '!!', 'husk|grabTell': '!', 'husk|riseTell': '',
   'imp|throwTell': '!', 'javelin|grabTell': '!!', 'javelin|raise': '!!', 'javelin|slashTell': '!', 'javelin|windUp': '!', 'jelly|biteTell': '!',
   'jelly|castTell': '!', 'jelly|dive': '!', 'jelly|hookTell': '!', 'jelly|swellTell': '!', 'king|cageTell': '!!', 'king|chargeTell': '!!',
   'king|grabTell': '!!', 'king|liftTell': '!!', 'king|shoutTell': '!!', 'king|slamTell': '!!', 'kiterider|kickTell': '!', 'kiterider|swoopTell': '!',
@@ -252,19 +254,20 @@ export const MARK = {
   'tideguard|snapTell': '!', 'tideguard|strikeTell': '!', 'tideguard|thrustTell': '!', 'tidemarauder|harpoonTell': '!', 'tidemarauder|rakeTell': '!!', 'tippler|barTell': '!',
   'tippler|heaveTell': '!!', 'tollmaster|blackoutTell': '!', 'tollmaster|darkTell': '', 'tollmaster|ledgerTell': '!', 'tollmaster|rodTell': '!', 'tollmaster|tollTell': '!!',
   'tome|tell': '!', 'topiary|swipeTell': '!', 'troll|ekAfterTell': '!!', 'troll|ekRockTell': '!!', 'troll|hurlTell': '!', 'troll|ripTell': '!!',
-  'troll|slamTell': '!!', 'troll|swatTell': '!', 'troll|throwTell': '!', 'turret|chargeTell': '!', 'turtle|lungeTell': '!', 'turtle|pinchTell': '!',
-  'turtle|shockTell': '!!', 'turtle|snapTell': '!', 'turtle|strikeTell': '!', 'turtle|thrustTell': '!', 'undeadmage|bendTell': '!', 'undeadmage|boneTell': '!!',
-  'undeadmage|decoyTell': '', 'undeadmage|fireTell': '!', 'undeadmage|handTell': '!', 'undeadmage|iceTell': '!', 'undeadmage|markTell': '!!', 'undeadmage|orbitTell': '!!',
-  'undeadmage|poisonTell': '!', 'undeadmage|pullTell': '!!', 'undeadmage|realmTell': '', 'undeadmage|scriptTell': '!!', 'undeadmage|sporeTell': '!!', 'undeadmage|stepTell': '',
-  'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'undeadmage|wallTell': '!!', 'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!',
-  'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!', 'wasp|stingTell': '!', 'watch|ekChopTell': '!!', 'watch|ekHookTell': '!!',
-  'watch|ekThrustTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!', 'waterthief|feintTell': '', 'waterthief|slashTell': '!', 'weaver|spitTell': '!',
-  'whelp|crouchTell': '!', 'whelp|fireTell': '!', 'wickerman|swingTell': '!', 'wickerman|throwTell': '!!', 'wickerqueen|crownTell': '', 'wickerqueen|floorTell': '!!',
-  'wickerqueen|lashHighTell': '!!', 'wickerqueen|lashLowTell': '!!', 'wickerqueen|leapTell': '!!', 'wickerqueen|ringTell': '!!', 'wickerqueen|stabTell': '!!', 'wickerqueen|sweepHighTell': '!!',
-  'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!', 'wickerqueen|thrustLowTell': '!!', 'wickerqueen|tossTell': '!!', 'wight|graspTell': '!!', 'willowisp|flareTell': '!',
-  'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!',
-  'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!',
-  'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'troll|slamTell': '!!', 'troll|swatTell': '!', 'troll|throwTell': '!', 'trophyhunter|dropTell': '', 'trophyhunter|jabTell': '!', 'trophyhunter|lungeTell': '!',
+  'turret|chargeTell': '!', 'turtle|lungeTell': '!', 'turtle|pinchTell': '!', 'turtle|shockTell': '!!', 'turtle|snapTell': '!', 'turtle|strikeTell': '!',
+  'turtle|thrustTell': '!', 'undeadmage|bendTell': '!', 'undeadmage|boneTell': '!!', 'undeadmage|decoyTell': '', 'undeadmage|fireTell': '!', 'undeadmage|handTell': '!',
+  'undeadmage|iceTell': '!', 'undeadmage|markTell': '!!', 'undeadmage|orbitTell': '!!', 'undeadmage|poisonTell': '!', 'undeadmage|pullTell': '!!', 'undeadmage|realmTell': '',
+  'undeadmage|scriptTell': '!!', 'undeadmage|sporeTell': '!!', 'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'undeadmage|wallTell': '!!',
+  'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!',
+  'wasp|stingTell': '!', 'watch|ekChopTell': '!!', 'watch|ekHookTell': '!!', 'watch|ekThrustTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!',
+  'waterthief|feintTell': '', 'waterthief|slashTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!', 'wickerman|swingTell': '!',
+  'wickerman|throwTell': '!!', 'wickerqueen|crownTell': '', 'wickerqueen|floorTell': '!!', 'wickerqueen|lashHighTell': '!!', 'wickerqueen|lashLowTell': '!!', 'wickerqueen|leapTell': '!!',
+  'wickerqueen|ringTell': '!!', 'wickerqueen|stabTell': '!!', 'wickerqueen|sweepHighTell': '!!', 'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!', 'wickerqueen|thrustLowTell': '!!',
+  'wickerqueen|tossTell': '!!', 'wight|graspTell': '!!', 'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!',
+  'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!',
+  'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!',
+  'zombie|riseTell': '',
 };
 /* MARK:END */
 
@@ -282,6 +285,7 @@ export const ANSWER = {
   'greathound|lungeTell': 'block', 'greathound|pounceTell': 'dodge', 'greathound|snapTell': 'block',   /* (claude/sweep1) THE GREAT HOUND: block the lunge (it skids past, open), out from under the pounce, block the snap */
   'waterthief|slashTell': 'block',   /* (claude/welltown) the cutthroat's cut */
   'sandworm|lungeTell': 'dodge',   /* (claude/desertfoes) off the domed spot */
+  'trophyhunter|lungeTell': 'block', 'trophyhunter|jabTell': 'block', 'huntmaster|aimTell': 'block', 'huntmaster|volleyTell': 'block', 'huntmaster|splitTell': 'dodge', 'huntmaster|hoistTell': 'dodge', 'huntmaster|slashTell': 'block',   /* (claude/rootway) his gold a shield turns (a blade sends it home), the red and the cage you get out of */
 
   'ambusher|cutTell': 'block',
   'angler|biteTell': 'block', 'angler|castTell': 'block', 'angler|dive': 'block', 'angler|hookTell': 'block', 'angler|swellTell': 'block',
@@ -517,6 +521,7 @@ export const HEIGHT = {
   'waterthief|slashTell': 'low',   /* (claude/welltown) as the cutthroat's */
   'sandworm|lungeTell': 'low',   /* (claude/desertfoes) up out of the floor */
   'roc|diveTell': 'low',   /* (claude/skyroad) a dive from above reaches the floor */
+  'trophyhunter|lungeTell': 'low', 'trophyhunter|jabTell': 'low', 'huntmaster|aimTell': 'low', 'huntmaster|volleyTell': 'low', 'huntmaster|splitTell': 'low', 'huntmaster|hoistTell': 'low', 'huntmaster|slashTell': 'low',   /* (claude/rootway) his arrows are aimed at the chest: no duck goes under them */
   'ambusher|cutTell': 'low',
   'angler|biteTell': 'low', 'angler|castTell': 'low', 'angler|dive': 'low', 'angler|hookTell': 'low', 'angler|swellTell': 'low',
   'apprentice|castTell': 'low', 'apprentice|grabTell': 'low',
