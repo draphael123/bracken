@@ -869,6 +869,7 @@ Object.assign(SFX, {
   wormTail() { noise(0.55, 0.2, 520, 0.5); noise(0.4, 0.12, 2000, 0.9, 0.12); tone('sawtooth', 60, 120, 0.45, 0.12); },   /* THE TAIL TELL (claude/duneworm2): sand pouring off something rising behind you, and a rattle */
   wormTangle() { for (let i = 0; i < 5; i++) noise(0.05, 0.22, 3400 - i * 300, 1.1, i * 0.04); tone('square', 900, 300, 0.14, 0.06); SFX.clank(); },   /* the awning tearing off its rollers */
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
+  mastHum(k = 0) { pad('sawtooth', 70 + k * 150, 110 + k * 260, 0.34, 0.025 + 0.04 * k, 0, 700 + 1800 * k); noise(0.05, 0.04 + 0.1 * k, 3800, 1.3); },   /* (claude/roc2) THE ROC's masts charging: a hum that climbs with the charge, and the crackle on the iron */
   stormZap() { noise(0.12, 0.22, 3200, 0.8); tone('square', 1800, 300, 0.15, 0.07); tone('sine', 700, 200, 0.22, 0.09); },
   /* THE SEA WITCH's call: not the shaman's rattle and chant. A held note over the hiss of a sea running, and her lantern ringing on its crook */
   witchCall() { pad('sine', 262, 330, 0.5, 0.06, 0, 1200); pad('sine', 784, 1046, 0.45, 0.035, 0.06, 3000); noise(0.35, 0.05, 420, 0.5); bell(1568, 0.3, 0.03, 0.12); },

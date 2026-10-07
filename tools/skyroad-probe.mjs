@@ -62,13 +62,15 @@ try {
   b.mode='fly';b.modeT=9;b.ward=0;BK.sim(2);P.x=b.x;P.y=b.y-36;P.vy=0;P.ground=false;BK.keys.down=true;BK.press('atk');let opened=false;for(let i=0;i<30&&!opened;i++){BK.sim(1);opened=BK.bossOpen?BK.bossOpen(b):(b.mode==='downed');}BK.keys.down=false;
   out.plunge={mode:b.mode,opened};let op=0;for(let i=0;i<60*8&&(b.mode==='downed');i++){op+=1/60;if(i===20){const h0=b.hp;BKT.hurtAs('light',b,40,b.x-10,false);out.openHit=+(h0-b.hp).toFixed(2);}BK.sim(1);}out.openFor=+op.toFixed(2);
   for(let i=0;i<40&&b.mode!=='fly';i++)BK.sim(1);out.ward=+(b.ward||0).toFixed(2);b.mode='fly';b.modeT=9;P.x=b.x;P.y=b.y-36;P.vy=0;P.ground=false;P.plunge=false;BK.keys.down=true;BK.press('atk');for(let i=0;i<20;i++)BK.sim(1);BK.keys.down=false;out.warded=b.mode;
-  BK.sim(200);const h1=b.hp;if(b.mode==='fly'){BKT.hurtAs('light',b,40,b.x-10,false);out.chipHit=+(h1-b.hp).toFixed(2);}
+  BK.sim(200);b.mode='fly';b.modeT=9;b.ward=0;P.x=b.x-14;P.y=A.floor;P.vy=0;P.ground=true;P.gliding=false;let h1=b.hp;BKT.hurtAs('light',b,40,b.x-10,false);out.lowHit=+(h1-b.hp).toFixed(2);   /* (claude/roc2) from the floor her talons guard low */
+  P.y=b.y;P.ground=false;h1=b.hp;BKT.hurtAs('light',b,40,b.x-10,false);out.airHit=+(h1-b.hp).toFixed(2);   /* from the air the level gives she takes it whole */
   return out;})()`, 300000);
   ok(t.snatch === 'snatch' && t.held > 20 && t.free, 'a harpy dive that lands takes you, carries you, and lets go ' + JSON.stringify([t.snatch, t.held, t.free]));
   ok(!t.rider.fly && !t.rider.kite, 'a blow on a flying kite-rider cuts his line: he falls ' + JSON.stringify(t.rider));
   ok(t.active, 'THE ROC wakes on her eyrie');
   ok(t.plunge.opened && t.openFor >= 3, 'a thermal plunge on her back knocks her down, open 3 s or more ' + JSON.stringify([t.plunge, t.openFor]));
-  ok(t.openHit > 40 * 0.5 && (t.chipHit === undefined || t.chipHit <= 40 * 0.1 + 0.01), 'a blow on her down lands, outside an opening it is a scratch: ' + t.openHit + ' / ' + t.chipHit);
+  /* (claude/roc2, Daniel 10-06: 'she DOESN'T NEED TO BE INVULNERABLE BY DEFAULT' - the old assertion was 'outside an opening it is a scratch'; she is always hittable now, guarding by height) */
+  ok(t.openHit >= 40 * 1.4 && t.lowHit >= 40 * 0.15 && t.lowHit <= 40 * 0.35 && t.airHit >= 40 * 1.1, 'a blow on her down lands x1.5; out of an opening a floor blow is turned to a quarter (GUARDS LOW) and one from the air lands whole and more: ' + [t.openHit, t.lowHit, t.airHit]);
   ok(t.ward > 1 && t.warded !== 'downed', 'after the opening her feathers are up: a second plunge does not open her ' + JSON.stringify([t.ward, t.warded]));
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
   if (pg.errors.length) bad++;

@@ -1216,6 +1216,7 @@ async function runbossLab(BK, opts) {
         if(pl.hold)k.jump=true;
         if(pl.gx!=null&&Math.abs(pl.gx-P.x)>3&&!pl.block)k[pl.gx>P.x?'right':'left']=true;
         if(pl.dodge&&!(P.dodge>0)&&(P.labDodgeF===undefined||f-P.labDodgeF>20)){BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&P.ground)BK.press('jump');   /* (claude/roc2: the v2 plan hops the chain lightning; the legacy plan never sets it) */
         if(pl.plunge&&!P.plunge){k.down=true;BK.press('atk');swings++;}
         if(P.plunge)k.down=true;
         if(pl.atk&&P.atk<0){if(pl.face)P.face=pl.face;else P.face=Math.sign(boss.x-P.x)||P.face;BK.press('atk');swings++;}
