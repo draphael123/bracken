@@ -24,6 +24,18 @@
      PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--deaths=8]
         [--jobs=1] [--profile=human+first|human|none] [--level=N] [--tonics=N] [--charm=heart|iron|none] [--json=out.json] [--strict]
         [--trace=x0-x1] (a frame log while the hero is between those columns)
+   V2 HANDS (claude/walkerhands):
+   - AN ELITE IS A DUEL (src/walk-duel.js + src/lab.js labDuelFrame): the elite on his floor (footing all the way, a row and a bit) within 9 tiles ahead /
+     4 behind is fought with the elite lab's own hands under the human gates, plus his READ - his guard by angle (a low blow goes under it; one cut short
+     of the mash count he goes low), his riposte (shield it, or step out), his spines (out of their ring), his marks (off them); a common foe on top of
+     him is cut first. 20 s without landing a blow, or 90 s in all, and the elite is written off for 30 s. The row's 'elite duels' line: won/lost, secs, hp.
+     --duel=0: the old hands (makeBot's mash).
+   - THE MINI HANDED OFF (--mini=0: stop at his door): his door hp kept (miniHp), he is put down the game's way (BKT.hurtEnemy: his wall and gate open, his
+     XP paid), and the walk goes on; the section after his door is postMini (its arrival is left out of the means: it does not carry his fight).
+   - A LEVEL'S VERBS: BK.walkHint() (the Ksar lane's hook, a level module's own) else src/walk-hints.js WALK_HINTS[level] (bot-side, same shape:
+     { x, y feet, key, face, r, hold }): stood at x he faces it and presses key every 12 frames; hold = stand and wait. The glass sea's mirrors are taught there.
+   - STAIRS: a climb over ~3.4 rows (more than a jump) is taken one footing at a time; A SLICK SLOPE before a gap: hold DOWN and leap at its foot; A SHUT
+     LOCKGATE with its key in the open on his floor: the key first; a hunt (a locked room is a fight) only on his own floor; a level-up card is tapped through.
    A measuring tool, not a gate (tools/level-walk-selftest.mjs is the check: it runs and reports). */
 import { writeFileSync } from 'node:fs';
 import { LEVELS } from '../src/level.js';
@@ -43,14 +55,14 @@ export function walkCfg(id, hero, seed, o = {}) {
   const lv = BYID[id]; if (!lv) throw Error('no such level ' + id);
   const d = DEPTH[id] ?? 1, lvl = o.level ?? campaignLevel(id), route = routeOf(lv);
   return { id, hero, seed, lvl, depth: d, beaten: beatenBefore(id), tonics: o.tonics ?? tonicsAt(d), charm: o.charm === undefined ? charmAt(d) : o.charm,
-    profile: o.profile ?? 'human+first', strict: !!o.strict, trace: o.trace || null, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, from: o.from ?? null, route };
+    profile: o.profile ?? 'human+first', strict: !!o.strict, trace: o.trace || null, traceFrom: o.traceFrom || 0, traceN: o.traceN || 400, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, from: o.from ?? null, duel: o.duel ?? true, mini: o.mini ?? true, route };
 }
 /* THE DRINK HOOK (page side): one place, so the walker keeps working when the manual flask lands */
 export const drinkJs = `const heldNow=()=>{try{if(typeof BK.flasks==='function')return +BK.flasks()||0;const PG=BKT.PROG;return +(PG.flasks??PG.tonics??0)||0;}catch{return 0;}};
   let drinkCd=0;const drinkHook=()=>{const p=BK.P;drinkCd=Math.max(0,drinkCd-1);if(!p||p.dead>0||p.hp<=0||p.hp>=p.maxHp*0.35||heldNow()<=0||drinkCd>0)return;
     if(typeof BK.drinkFlask==='function'){if(BK.drinkFlask())drinkCd=45;}else if(BK.flaskKey){BK.press(BK.flaskKey);drinkCd=45;}};`;
 export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.hero,lvl=c.lvl,TS=16;BK.manualSimulation=true;
-  const B=await import('/src/bot-profile.js'),PR=await import('/src/progression.js'),CK=await import('/src/campaign-kit.js'),{makeBot}=await import('/src/playtest.js'),PC=await import('/src/lab-perceive.js'),{mulberry}=await import('/src/px.js'),{LEVELS}=await import('/src/level.js');
+  const B=await import('/src/bot-profile.js'),PR=await import('/src/progression.js'),CK=await import('/src/campaign-kit.js'),{makeBot}=await import('/src/playtest.js'),PC=await import('/src/lab-perceive.js'),{mulberry}=await import('/src/px.js'),{LEVELS,T:TT}=await import('/src/level.js'),WH=await import('/src/walk-hints.js'),LD=await import('/src/lab.js'),WD=await import('/src/walk-duel.js'),FR=await import('/src/foe-react.js');
   const P0=BKT.PROG,kit=CK.kitPre(BKT,BK,c);
   BK.setHero(h);BK.reset({fresh:true});CK.kitPost(BKT,BK,c);
   const seedOf=s=>{let x=2166136261;for(let i=0;i<s.length;i++)x=Math.imul(x^s.charCodeAt(i),16777619);return x>>>0;};
@@ -71,7 +83,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   /* A LOCKED ROOM IS A FIGHT (an ambush or an elite shuts the portcullis until its foes are down): the hands only fight what stands in the way and write a foe off after 4 s, so they waited at the bars forever. Not getting on for 1.5 s with a foe near: go and kill it, and never write it off */
   const huntNo=new Map();let huntE=null,huntT=0,huntHp=0;
   const huntOf=()=>{const p=BK.P;let best=null,bd=1e9;for(const e of BK.enemies()){if(!e||!e.alive||e.harmless||e.dying>0||skip.has(e.t)||(huntNo.get(e)||0)>frames||(e.t==='eel'&&e.leap))continue;const dx=Math.abs(e.x-p.x),dy=Math.abs(e.y-p.y);if(dx>12*TS||dy>5*TS)continue;   /* (a river eel is not hunted: it lives under the water between two pads - claude/levelpilot) */const lo=Math.min(e.x,p.x),hi=Math.max(e.x,p.x);if((BK.L.pools||[]).some(q=>!q.shallow&&!q.swim&&!q.dry&&(q.fire||!BK.L.waterHurts)&&q.x1>lo&&q.x0<hi&&Math.abs(q.y-p.y)<3*TS))continue;   /* never across a pit that kills */
-    const d=dx+3*dy;if(d<bd){bd=d;best=e;}}
+    const d=dx+3*dy;if(d<bd&&(e.fly||e.flying||e.air||oneFloor(e))){bd=d;best=e;}}   /* (claude/walkerhands: on his own floor, never over a gap to it - the crown's fire pit was walked into after a soldier across it) */
     /* one he cannot hurt (a shell, a perch): 6 s with its health not moving, and he tries another for 10 s */
     if(best!==huntE){huntE=best;huntT=0;huntHp=best?best.hp:0;}else if(best){huntT++;if(best.hp<huntHp){huntHp=best.hp;huntT=0;lastProg=frames;}if(huntT>360){huntNo.set(best,frames+600);huntE=null;}}return best;};
   /* THE LEVEL'S MACHINES (a crank that drops a palisade, a sluice that fills a basin, a lever, a winch): a player works the one by the way on.
@@ -80,6 +92,13 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   const MACH=/^(crank|sluice|lever|winch|wheel|bulkhead|tidegate|gplate)$/,workNo=new Map();let workE=null,workT=0;
   const workOf=()=>{const p=BK.P;let best=null,bd=1e9;for(const o of BK.props()){const fare=o&&o.t==='npc'&&o.kind==='ferryman'&&BK.movers().some(m=>m.ferry&&!m.paid&&!m.free&&m.toll);if(o&&o.raftCall){const m=BK.movers().find(q=>q.kind==='raft'&&q.callId===o.raftCall);if(!m||m.x<=m.x0+1||m.returning||m.called||m.moving)continue;}if(!o||(!fare&&(o.open||o.done||o.got||(!MACH.test(o.t)&&typeof o.hits!=='number')||o.t==='lantern'||o.t==='npc'))||(workNo.get(o)||0)>frames)continue;const dx=Math.abs(o.x-p.x),dy=Math.abs(o.y-p.y);if(dx>12*TS||dy>6*TS)continue;const d=dx+2*dy;if(d<bd){bd=d;best=o;}}
     if(best!==workE){workE=best;workT=0;}else if(best&&++workT>480){workNo.set(best,frames+1800);workE=null;return null;}return best;};
+  /* A LEVEL'S OWN LOCKS (BK.walkHint, the Ksar lane's hook: the level says where a player goes and what he presses there - its gong, its winch, its kegs), else the
+     bot-side table src/walk-hints.js WALK_HINTS[level] in the same shape (the glass sea's mirrors). Stood at it, he faces it and presses; { hold } stands and waits */
+  const hintMem={T:TT,route:R};const hintOf=()=>typeof BK.walkHint==='function'?BK.walkHint():(WH.WALK_HINTS[c.id]?WH.WALK_HINTS[c.id](BK,BK.P,hintMem):null);
+  const hintHands=h=>{const p=BK.P,dx=h.x-p.x;if(Math.abs(dx)<10&&Math.abs(h.y-p.y)<28&&p.ground){BK.keys.left=BK.keys.right=false;p.face=h.face||Math.sign(dx)||p.face;if(h.key&&frames%12===0&&!(h.key==='atk'&&p.atk>=0))BK.press(h.key);}};
+  /* (claude/walkerhands) A SHUT LOCKGATE AHEAD AND ITS KEY IN THE OPEN NEAR HIM, ON HIS FLOOR (the crown's iron key before its hall gate): the key first. The play bot only looked for a key from 90 px off the bars, and then for one out of doors - an interior's key sent it back to a door. It is handed to the bot's own key-walk (bot.climbKey) */
+  const keyFirst=()=>{const p=BK.P,pr=BK.props();for(const g of pr){if(g.t!=='lockgate'||g.open||g.x<p.x-2*TS||g.x>p.x+25*TS||Math.abs(g.y-p.y)>3*TS)continue;if(pr.some(q=>q.t==='key'&&q.got&&q.kind===g.needs))continue;const k=pr.find(q=>q.t==='key'&&!q.got&&q.kind===g.needs&&Math.abs(q.y-p.y)<2.5*TS&&Math.abs(q.x-p.x)<30*TS);if(k)return k;}return null;};
+  const oneFloor=e=>{const p=BK.P,a=Math.floor(Math.min(p.x,e.x)/TS)+1,b=Math.floor(Math.max(p.x,e.x)/TS)-1,r=Math.floor(p.y/TS);for(let x=a;x<=b;x++){if(!TSTAND.has(tAt(x,r))&&!TSTAND.has(tAt(x,r+1))&&!isSl(tAt(x,r))&&!isSl(tAt(x,r-1)))return false;}return true;};   /* (claude/walkerhands) footing all the way to him on his floor: the duel is fought on one floor */
   const bridgeAhead=()=>{for(let k=ri;k<Math.min(R.length-1,ri+6);k++)if(Math.abs(R[k+1][0]-R[k][0])+Math.abs(R[k+1][1]-R[k][1])>8)return true;return false;};
   const workHands=o=>{const p=BK.P,dx=o.x-p.x;if(Math.abs(dx)<12&&Math.abs(o.y-p.y)<28){BK.keys.left=BK.keys.right=false;p.face=Math.sign(dx)||p.face;if(p.atk<0&&frames%10===0)BK.press('atk');if((o.raftCall||o.t==='npc'||!/crank|sluice/.test(o.t))&&frames%20===0){BK.press('talk');BK.keys.up=true;}}};
   /* UP IS A JUMP A PLAYER TAKES (the hands jump only at a wall or a hole, so a stair of ledges over the floor was walked under: the pilot lifted it).
@@ -88,19 +107,34 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   const climbAssist=()=>{const p=BK.P;if(rope!==null){ropeT++;if(p.y<=feet(rope)+2||ropeT>420||p.dead>0||p.swim){rope=null;}else{BK.keys.up=true;BK.keys.down=false;if(p.climb){BK.keys.left=BK.keys.right=false;}return;}}
     if(ropeUp!==null){rope=ropeUp;ropeUp=null;ropeT=0;BK.keys.up=true;BK.keys.left=BK.keys.right=false;return;}
     if(climb!==null){climbT++;if(climbHold>0){BK.keys.jump=true;climbHold--;}if(!p.ground)climbAir=true;
-      if((p.ground&&climbAir)||climbT>100||p.swim||p.climb||p.dead>0){climb=null;return;}const dx=cxR(climb)-p.x;BK.keys.left=dx<-3;BK.keys.right=dx>3;return;}
-    if(upJump!==null){const k=upJump,dx=cxR(k)-p.x;upJump=null;climb=k;climbHold=26;climbAir=false;climbT=0;BK.press('jump');BK.keys.jump=true;BK.keys.left=dx<-3;BK.keys.right=dx>3;}};
+      if((p.ground&&climbAir)||climbT>100||p.swim||p.climb||p.dead>0){climb=null;return;}const dx=climbX-p.x;BK.keys.left=dx<-3;BK.keys.right=dx>3;return;}
+    if(upJump!==null){const k=upJump,cx0=upJumpX!==null?upJumpX:cxR(k),dx=cx0-p.x;upJump=null;upJumpX=null;climb=k;climbX=cx0;climbHold=26;climbAir=false;climbT=0;BK.press('jump');BK.keys.jump=true;BK.keys.left=dx<-3;BK.keys.right=dx>3;}};
+  /* (claude/walkerhands) THE NEXT STEP UP toward route node k: a footing 1-3 rows over his feet (standable top, two rows of room over it) within 4 columns of him, toward the node */
+  const TSTAND=new Set([TT.SOLID,TT.CRATE,TT.PALISADE,TT.PORT,TT.SOFT,TT.ICE,TT.ONEWAY,TT.PLANK,TT.SHELF,TT.RAIL,TT.REED,TT.CRYST].filter(v=>v!==undefined)),TSOL=new Set([TT.SOLID,TT.CRATE,TT.PALISADE,TT.PORT,TT.SOFT,TT.ICE,TT.CLIMB].filter(v=>v!==undefined));
+  const tAt=(x,y)=>(x<0||y<0||x>=GW||y>=BK.L.H)?TT.SOLID:G[y*GW+x];
+  const stepUp=(p,k)=>{const hx=Math.floor(p.x/TS),fr=Math.round(p.y/TS),tx=R[k][0],dir=Math.sign(tx-hx)||p.face||1;let best=null,bs=1e9;
+    for(let c=hx-4;c<=hx+4;c++)for(let r=fr-1;r>=fr-3;r--){const t=tAt(c,r);if(!TSTAND.has(t)||TSOL.has(tAt(c,r-1))||TSOL.has(tAt(c,r-2))||tAt(c,r-1)===t)continue;const sc=Math.abs(c-tx)+0.5*Math.abs(c-hx)-(fr-r)*0.8+(Math.sign(c-hx)===-dir?3:0);if(sc<bs){bs=sc;best={x:c*TS+8,feet:r*TS};}}
+    return best;};
+  /* (claude/walkerhands) A SLICK SLOPE BEFORE A GAP ('HOLD DOWN TO SLIDE; LEAP AT THE FOOT'): on a slope that runs down the way on, with a hole within 10 columns
+     ahead, he holds DOWN (the slide); at its foot with no footing ahead, a full leap. The hands walked down and hopped from a standstill: a slide gap is a slide's length */
+  let leapHold=0;const isSl=t=>t>=20&&t<=25,downOf=t=>(t===20||t===22||t===23)?-1:1;
+  const gapAhead=(p,sd)=>{const tx=Math.floor(p.x/TS),fr=Math.floor(p.y/TS);for(let c=tx+sd;Math.abs(c-tx)<=10;c+=sd){let foot=false;for(let r=fr-1;r<=fr+4;r++){const t=tAt(c,r);if(TSTAND.has(t)||isSl(t)){foot=true;break;}}if(!foot)return true;}return false;};
+  const slideHands=sd=>{const p=BK.P;if(leapHold>0){BK.keys.jump=true;BK.keys.down=false;leapHold--;if(p.ground&&leapHold<20)leapHold=0;return;}if(!p.ground||p.swim||p.climb||!sd)return;
+    const tx=Math.floor(p.x/TS);let kind=0;for(const r of [Math.floor((p.y-1)/TS),Math.floor(p.y/TS)]){const t=tAt(tx,r);if(isSl(t)){kind=t;break;}}
+    if(kind&&downOf(kind)===sd&&gapAhead(p,sd)){BK.keys.down=true;return;}
+    if(p.slideOn&&!kind){const ax=Math.floor((p.x+sd*12)/TS),fr=Math.floor(p.y/TS);if(!TSTAND.has(tAt(ax,fr))&&!TSTAND.has(tAt(ax,fr+1))&&!isSl(tAt(ax,fr))){BK.press('jump');BK.keys.jump=true;BK.keys.down=false;leapHold=26;}else BK.keys.down=true;}};
   /* THE TAKE-OFF: the route node before the step up is where the reach model jumps from - walk there (the hands' goal), then jump (after the hands) */
-  let upJump=null,ropeUp=null,rope=null,ropeT=0;const upPlan=()=>{const p=BK.P;if(climb!==null||rope!==null||!p.ground||p.swim||p.climb||p.dead>0)return null;
-    for(let k=ri+1;k<Math.min(R.length,ri+14);k++){const up=p.y-feet(k);if(up<-2*TS)return null;if(up>=1.5*TS&&up<=6.5*TS){const t=G[R[k][1]*GW+R[k][0]];if(t===9||t===13){const rx=cxR(k);if(Math.abs(rx-p.x)<=6){ropeUp=k;return null;}return Math.abs(rx-p.x)<6*TS?rx:null;}   /* A ROPE OR A VINE UP: stand under it and climb (the hands only tried one after half a second of not getting on) */
+  let upJump=null,upJumpX=null,climbX=0,ropeUp=null,rope=null,ropeT=0;const upPlan=()=>{const p=BK.P;if(climb!==null||rope!==null||!p.ground||p.swim||p.climb||p.dead>0)return null;
+    for(let k=ri+1;k<Math.min(R.length,ri+14);k++){const up=p.y-feet(k);if(up<-2*TS)return null;if(up>=1.5*TS&&up<=6.5*TS){if(up>3.4*TS){const st=stepUp(p,k);if(st){if(Math.abs(st.x-p.x)<=1.2*TS){upJump=k;upJumpX=st.x;return null;}return st.x;}}   /* (claude/walkerhands) A CLIMB HIGHER THAN A JUMP (~3.2 rows) IS A STAIR: the reach model took the steps between in one edge; a player takes them one at a time */
+        const t=G[R[k][1]*GW+R[k][0]];if(t===9||t===13){const rx=cxR(k);if(Math.abs(rx-p.x)<=6){ropeUp=k;return null;}return Math.abs(rx-p.x)<6*TS?rx:null;}   /* A ROPE OR A VINE UP: stand under it and climb (the hands only tried one after half a second of not getting on) */
         const tk=k-1>=ri?k-1:-1,tx=tk>=0&&Math.abs(feet(tk)-p.y)<=TS?cxR(tk):null;
         if(Math.abs(cxR(k)-p.x)<=1.5*TS||(tx!==null&&Math.abs(tx-p.x)<=6)){upJump=k;return null;}
         return tx!==null&&Math.abs(tx-p.x)<5*TS?tx:null;}}return null;};
   /* UNDER WATER THE ROUTE HAS A HEIGHT: the hands stroke for the surface and only duck when the floor ahead drops, so a culvert under a wall was never found. Swimming, he steers to the route node in both axes, and comes up for air when the breath runs low */
   const swimTo=k=>{const p=BK.P;if(!p.swim||p.dead>0)return;const br=p.breath===undefined?6:p.breath;if(br<2.5)return;const dy=feet(k)-p.y,dx=cxR(k)-p.x;BK.keys.down=dy>10;BK.keys.up=dy<-10;BK.keys.left=dx<-4;BK.keys.right=dx>4;};
   const litN=()=>BK.shrines().filter(s=>s.lit).length;
-  const sec=()=>({lost:0,small:0,drinks:0,drinkHp:0,deaths:0,hits:0,kills:0,frames:0,lvup:0});
-  const S=[sec()],arrivals=[];const deathLog=[],trace=[];const stucks=[];let miniHp=null,resumeTo=null,resumeAt=false,resumes=0,secStart=0;let ri=0,riBest=0,riSince=0,lastProg=0,frames=0,end='frames',stuck=null,deaths=0,levelups=0;
+  const sec=()=>({postMini:false,lost:0,small:0,drinks:0,drinkHp:0,deaths:0,hits:0,kills:0,frames:0,lvup:0});
+  const S=[sec()],arrivals=[];const deathLog=[],trace=[];const stucks=[];let miniT=0,cardT=0,miniHp=null,resumeTo=null,resumeAt=false,resumes=0,secStart=0;let ri=0,riBest=0,riSince=0,lastProg=0,frames=0,end='frames',stuck=null,deaths=0,levelups=0;
   const st0=BK.stats(),d00=st0.deaths,k00=st0.kills,hit00=BK.hitsTaken;let kPrev=k00,hPrev=hit00,dPrev=d00,wasDead=false;
   let bot=makeBot(BK),jumpX=null;
   /* A PLAYER STEERS HIS FALL ONTO A PAD (the hands only ever hold the way on, so a hop off one lily pad sailed past the next into the marsh): falling, with a floating pad or raft ahead of where the jump began and under him, he leans onto its middle */
@@ -115,18 +149,29 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   let padGo=null,padHold=0,padT=0,pendDrink=0;const hitBy={};const padHop=sd=>{const p=BK.P;if(padGo!==null){padT++;if(padHold>0){BK.keys.jump=true;padHold--;}const dx=padGo-p.x;BK.keys.left=dx<-3;BK.keys.right=dx>3;if(((p.ground||p.onMover)&&padT>6)||p.swim||p.dead>0||padT>90)padGo=null;return;}
     const m=p.onMover;if(!m||m.kind!=='pad'||!sd)return;let best=null;for(const q of BK.movers()){if(q===m||q.kind!=='pad'||q.gone||(q.sink||0)>0.3)continue;const cx=q.x+(q.w||16)/2,dx=(cx-p.x)*sd;if(dx<20||dx>6*TS||Math.abs((q.y0??q.y)-(m.y0??m.y))>8)continue;if(!best||dx<best.dx)best={cx,dx};}
     if(!best)return;padGo=best.cx;padT=0;padHold=best.dx>3.5*TS?24:16;BK.press('jump');BK.keys.jump=true;BK.keys.left=sd<0;BK.keys.right=sd>0;};
+  /* (claude/walkerhands) AN ELITE IS A DUEL, NOT A MASH: src/walk-duel.js picks the elite in the way and reads his guard, his riposte, his spines and his marks; the lab's duel hands
+     (src/lab.js labDuelFrame - the elite lab's own, under the human gates) fight him. 20 s without a blow landing on him, or 90 s in all, and he is written off for 30 s (the walk goes on: a gate he holds is then a STUCK) */
+  const ER=WD.makeEliteRead({mashAt:(FR.actOf(c.id,c.depth)||{mashAt:3}).mashAt}),duelNo=new Map(),duels=[];let duelPend=null,duelE=null,duelRow=null,duelT=0,duelHp=0;
+  const duelEnd=(won)=>{if(duelRow&&!won&&duelE&&duelE.alive&&!(BK.P.dead>0)){duelPend={e:duelE,row:duelRow,f:frames};duelRow=null;duelE=null;bot=makeBot(BK);climb=null;return;}if(duelRow){duelRow.secs=Math.round((frames-duelRow.f0)/6)/10;duelRow.won=won;duelRow.hpEnd=Math.round(100*Math.max(0,BK.P.hp)/(BK.P.maxHp||100));delete duelRow.f0;duelRow=null;}duelE=null;bot=makeBot(BK);climb=null;};
   while(frames<c.frames){
     if(BK.bossActive){end='boss';break;}
+    /* (claude/walkerhands) THE MINI HANDED OFF (--mini=0: stop at his door as before): boss-rates measures his room (row 'level:mini'); the walk keeps the hp at his door, puts him down the game's own way (his death opens his wall and his gate, his XP is paid as a player's would be) and walks on. The section after his door is marked postMini: its arrival does not carry the fight's cost, so it is left out of the arrival means */
+    if(BK.miniActive&&c.mini){const mb=BK.enemies().find(e=>e&&e.alive&&e.mini);if(miniHp===null){miniHp=Math.round(100*Math.max(0,BK.P.hp)/(BK.P.maxHp||100));const cs0=S[S.length-1];cs0.end=ri;S.push({...sec(),start:ri,postMini:true});}if(mb&&++miniT<240){BKT.hurtEnemy(mb,mb.hp+999,BK.P.x,false);BK.sim(1);frames++;lastProg=frames;continue;}if(!mb){bot=makeBot(BK);continue;}}
+    if(BK.state==='card'){if(++cardT>40){BK.press('confirm');cardT=0;}BK.sim(1);frames++;lastProg=frames;continue;}   /* a level-up's card: the first pick, as a player taps through it */
     if(BK.miniActive){end='mini';miniHp=Math.round(100*Math.max(0,BK.P.hp)/(BK.P.maxHp||100));break;}   /* THE MINI'S ROOM: the mini is measured by tools/boss-rates.mjs (row 'level:mini'); its walls hold him in, so the walk stops at its door (hp on arrival kept) */
     if(BK.state==='talk'){BK.press('confirm');BK.sim(1);frames++;continue;}   /* a word from somebody: read on */
     if(BK.state!=='play'){end=BK.state==='win'?'gate':'state:'+BK.state;break;}
     const heldTop=heldNow();const p=BK.P;let gi=Math.min(R.length-1,ri+1);for(let k=gi+1;k<=Math.min(R.length-1,ri+3);k++){if(Math.abs(feet(k)-feet(gi))<2*TS&&Math.sign(R[k][0]-R[gi][0])===Math.sign(R[gi][0]*TS+8-p.x))gi=k;else break;}let wx=R[gi][0];   /* AIM ONE TO THREE NODES ON, along the same floor and the same way: the hands stop at their goal (a goal on a lily pad or a ledge lip is a stop in the water), and a goal further on, on a tall level, is on another floor */
     if(perc)perc.apply();
     try{const riding=p.onMover&&(p.onMover.moving||p.onMover.returning);if(riding)lastProg=frames;   /* ON A RIDE (a ferry, a raft, a lift): stand and let it carry him */
-      const stall=!riding&&frames-lastProg>90,hunt=stall?huntOf():null,work=!riding&&!hunt&&(stall||bridgeAhead())?workOf():null;if(hunt){wx=(hunt.x-8)/TS;if(bot.skip)bot.skip.clear();}else if(work)wx=(work.x-8)/TS;else{const ux=upPlan();if(ux!==null)wx=(ux-8)/TS;}cur=pickTarget(wx*TS+8);padSkip();drinkHook();bot(wx*TS+8);if(work)workHands(work);else climbAssist();swimTo(gi);{const sd=Math.sign(wx*TS+8-p.x);if(padGo===null)steer(sd);if(!eelWait(sd))padHop(sd);}if(SKH&&cur)SKH.step();drinkHook();}finally{if(perc)perc.restore();}
+      const de=c.duel&&!riding&&!(p.dead>0)?WD.duelPick(BK,duelE,{floor:oneFloor,dir:Math.sign(wx*TS+8-p.x)||p.face||1,no:duelNo,frame:frames,pools:BK.L.pools,waterHurts:BK.L.waterHurts}):null;
+      if(de!==duelE){if(duelE)duelEnd(!duelE.alive);if(de&&duelPend&&duelPend.e===de&&frames-duelPend.f<300){duelE=de;duelT=0;duelHp=de.hp;duelRow=duelPend.row;duelPend=null;}else if(de){if(duelPend){const pr=duelPend.row;pr.secs=Math.round((duelPend.f-pr.f0)/6)/10;pr.won=false;pr.hpEnd=pr.hp0;delete pr.f0;duelPend=null;}duelE=de;duelT=0;duelHp=de.hp;duelRow={t:de.t,affix:de.affix||null,at:[Math.floor(de.x/TS),Math.floor(de.y/TS)],f0:frames,hp0:Math.round(100*Math.max(0,p.hp)/(p.maxHp||100))};duels.push(duelRow);}}
+      if(duelE){duelT++;if(duelE.hp<duelHp){duelHp=duelE.hp;duelT=0;}if(duelT>1200||frames-(duelRow?duelRow.f0:frames)>5400){duelNo.set(duelE,frames+1800);duelEnd(false);}}
+      if(duelE){lastProg=frames;   /* (a common foe on top of him while the elite is further off - an archer, a wasp, a summoned one - is cut down first: the duel hands take one foe at a time) */let tg=duelE,nd=Math.abs(duelE.x-p.x)-10;for(const e of BK.enemies()){if(!e||!e.alive||e.elite||e.harmless||e.dying>0||skip.has(e.t)||Math.abs(e.y-p.y)>1.5*TS)continue;const d=Math.abs(e.x-p.x);if(d<44&&d<nd){nd=d;tg=e;}}cur=tg;drinkHook();LD.labDuelFrame(BK,h,tg,frames,c.profile&&c.profile!=='none'?c.profile:'human',tg===duelE?ER:null);if(SKH)SKH.step();drinkHook();}else{
+      const stall=!riding&&frames-lastProg>90,hunt=stall?huntOf():null,work=!riding&&!hunt&&(stall||bridgeAhead())?workOf():null;if(hunt){wx=(hunt.x-8)/TS;if(bot.skip)bot.skip.clear();}else if(work)wx=(work.x-8)/TS;else{const kf=keyFirst();if(kf){wx=(kf.x-8)/TS;if(!bot.climbKey)bot.climbKey=kf;}else{const ux=upPlan();if(ux!==null)wx=(ux-8)/TS;}}const lh0=!hunt&&!work?hintOf():null,lh=lh0&&Math.abs(lh0.x-p.x)<(lh0.r||6)*TS&&Math.abs(lh0.y-p.y)<2*TS?lh0:null;   /* (a lock in reach: the level's hands; out of reach the route walks him there) */if(lh){wx=(lh.x-8)/TS;if(lh.hold||Math.abs(lh.x-p.x)<12)lastProg=frames;}cur=pickTarget(wx*TS+8);padSkip();drinkHook();bot(wx*TS+8);if(lh)hintHands(lh);else if(work)workHands(work);else{climbAssist();if(climb===null&&rope===null)slideHands(Math.sign(wx*TS+8-p.x));}swimTo(gi);{const sd=Math.sign(wx*TS+8-p.x);if(padGo===null)steer(sd);if(!eelWait(sd))padHop(sd);}if(SKH&&cur)SKH.step();drinkHook();}}finally{if(perc)perc.restore();}
     const h0=p.hp,mh0=p.maxHp||100,lit0=litN(),held0=heldNow(),hl0=BKT.heroLevel?BKT.heroLevel(h):0,dead0=p.dead>0||h0<=0,px0=p.x;
     BK.sim(1);frames++;if(perc)perc.update();
-    const q=BK.P,cs=S[S.length-1],h1=q.hp;if(resumeTo){const rt=resumeTo;resumeTo=null;if(Math.abs(q.x-rt.x)>2*TS){stucks[stucks.length-1].locked=true;end='locked';break;}}   /* the restart did not take: walls hold him (an ambush or an arena still shut) */if(c.trace&&trace.length<(c.traceN||400)&&q.x/TS>=c.trace[0]&&q.x/TS<=c.trace[1]&&frames%3===0)trace.push(frames+':'+(q.x/TS).toFixed(1)+','+(q.y/TS).toFixed(1)+(q.onMover?'M'+(q.onMover.moving?'m':'')+(q.onMover.paid?'p':''):'')+(q.ground?'g':'')+(q.swim?'S':'')+(BK.keys.jump?'J':'')+(BK.keys.right?'>':'')+(BK.keys.left?'<':'')+(BK.keys.block?'B':'')+(q.atk>=0?'A':'')+(q.vx?'v'+Math.round(q.vx):'')+' r'+ri+'g'+wx+(climb!==null?'C':'')+' hp'+Math.round(h1));const mh=q.maxHp||mh0;cs.frames++;
+    const q=BK.P,cs=S[S.length-1],h1=q.hp;if(resumeTo){const rt=resumeTo;resumeTo=null;if(Math.abs(q.x-rt.x)>2*TS){stucks[stucks.length-1].locked=true;end='locked';break;}}   /* the restart did not take: walls hold him (an ambush or an arena still shut) */if(c.trace&&trace.length<(c.traceN||400)&&frames>=(c.traceFrom||0)&&q.x/TS>=c.trace[0]&&q.x/TS<=c.trace[1]&&frames%3===0)trace.push(frames+':'+(q.x/TS).toFixed(1)+','+(q.y/TS).toFixed(1)+(q.onMover?'M'+(q.onMover.moving?'m':'')+(q.onMover.paid?'p':''):'')+(q.ground?'g':'')+(q.swim?'S':'')+(BK.keys.jump?'J':'')+(BK.keys.right?'>':'')+(BK.keys.left?'<':'')+(BK.keys.block?'B':'')+(q.atk>=0?'A':'')+(q.vx?'v'+Math.round(q.vx):'')+' r'+ri+'g'+wx+(climb!==null?'C':'')+' hp'+Math.round(h1));const mh=q.maxHp||mh0;cs.frames++;
     /* a tonic drunk on the frame of the blow nets out against it: the drink goes back on both sides (lost and healed) */
     const flaskGame=typeof BK.drinkFlask==='function',drank=Math.max(0,heldTop-heldNow()),dAmt=drank&&!flaskGame?drank*((PR.perkOn(P0,h,'tonic')?60:45)):0;
     if(h1-dAmt<h0)cs.lost+=(h0-Math.max(0,h1-dAmt))/mh0;
@@ -134,11 +179,12 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     if(st.deaths>dPrev){const K=q.killer;deathLog.push({at:[Math.floor(q.x/TS),Math.floor(q.y/TS)],ri,by:K?(typeof K==='string'?K:K.name||K.t||K.who||'?'):'?',el:!!(K&&typeof K==='object'&&K.foe&&K.foe.elite),sec:S.length-1});cs.deaths+=st.deaths-dPrev;deaths+=st.deaths-dPrev;dPrev=st.deaths;}
     const lit1=litN(),held1=heldNow(),hl1=BKT.heroLevel?BKT.heroLevel(h):0;
     if(lit1>lit0&&resumeAt){resumeAt=false;cs.end=ri;S.push({...sec(),resumed:true,start:ri});}
-    else if(lit1>lit0){cs.end=ri;arrivals.push({i:arrivals.length+1,hp:Math.round(100*Math.max(0,h0)/mh0),x:Math.round(q.x/TS),frame:frames,deathsBefore:deaths,start:frames<120});S.push({...sec(),start:ri});}
+    else if(lit1>lit0){cs.end=ri;arrivals.push({i:arrivals.length+1,hp:Math.round(100*Math.max(0,h0)/mh0),x:Math.round(q.x/TS),frame:frames,deathsBefore:deaths,start:frames<120,postMini:!!cs.postMini});S.push({...sec(),start:ri});}
     else if(held1<heldTop&&!dead0){cs.drinks+=heldTop-held1;if(flaskGame)pendDrink=frames+90;else cs.drinkHp+=Math.max(0,Math.min(dAmt,h1-Math.max(0,h1-dAmt<h0?h1-dAmt:h0)))/mh;}
     else if(h1>h0&&!dead0&&!(q.dead>0)){const g=(h1-Math.max(0,h0))/mh;
       if(hl1>hl0){cs.lvup++;levelups++;} else if(pendDrink>=frames&&g>0.15){cs.drinkHp+=g;pendDrink=0;} else cs.small+=g;}   /* (the flask's swallow lands ~0.3 s after the lift: the heal that follows a drink is the drink's) */
     /* woke at a shrine (or put back on the bank by deep water): the walk picks up from the route node nearest him, never past where it had got; fresh hands */
+    if(duelE&&(q.dead>0||!duelE.alive))duelEnd(!duelE.alive&&!(q.dead>0));
     if(dead0&&!(q.dead>0)&&q.hp>0){ri=nearest(0,riBest+1)[0];riSince=ri;lastProg=frames;bot=makeBot(BK);climb=null;}
     else if(!resumeAt&&!(q.dead>0)&&Math.abs(q.x-px0)>3*TS){ri=nearest(0,riBest+1)[0];riSince=ri;bot=makeBot(BK);climb=null;}
     if(!(q.dead>0)&&q.hp>0)track();
@@ -151,12 +197,13 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
       q.onMover=null;q.x=nx.x;q.y=nx.y;q.vx=q.vy=0;q.hp=q.maxHp;resumeAt=true;resumeTo=nx;ri=ni;riSince=ni;if(ni>riBest)riBest=ni;lastProg=frames;bot=makeBot(BK);climb=null;rope=null;resumes++;continue;}
     if(frames%600===0)await new Promise(r=>setTimeout(r,0));
   }
+  if(duelPend){const pr=duelPend.row;pr.secs=Math.round((duelPend.f-pr.f0)/6)/10;pr.won=false;pr.hpEnd=pr.hp0;delete pr.f0;duelPend=null;}if(duelRow)duelEnd(!!(duelE&&!duelE.alive));   /* (a duel still open when the walk ends is booked) */
   const r2=x=>Math.round(x*100);
   return {id:c.id,hero:h,seed:c.seed,lvl,depth:c.depth,maxHp:maxHp0,kit,gear,tonics:c.tonics,flasks:typeof BK.flaskMax==='function'?BK.flaskMax():null,charm:c.charm,end,miniHp,deaths,levelups,frames,secs:Math.round(frames/60),
     kills:BK.stats().kills-k00,hits:BK.hitsTaken-hit00,walked:Math.round(100*riBest/R.length),stuck:stucks[0]||null,stucks,resumes,deathLog,hitBy:Object.fromEntries(Object.entries(hitBy).map(([k,v])=>[k,[v[0],Math.round(v[1]*100)]])),trace:c.trace?trace:undefined,arrivals,shrines:BK.shrines().length,
     coverage:Math.round(100*S.reduce((a,s,i)=>a+(!s.stuck&&(s.end!==undefined||(i===S.length-1&&/route|boss|gate/.test(end)))?((s.end??ri)-(s.start||0)):0),0)/R.length),
-    sections:S.map(s=>({stuck:!!s.stuck,resumed:!!s.resumed,lost:r2(s.lost),small:r2(s.small),drinks:s.drinks,drinkHp:r2(s.drinkHp),deaths:s.deaths,hits:s.hits,kills:s.kills,secs:Math.round(s.frames/60),lvup:s.lvup})),
-    eyes:perc?perc.stats():null,casts:SKH?SKH.casts():null};
+    sections:S.map(s=>({postMini:!!s.postMini,stuck:!!s.stuck,resumed:!!s.resumed,lost:r2(s.lost),small:r2(s.small),drinks:s.drinks,drinkHp:r2(s.drinkHp),deaths:s.deaths,hits:s.hits,kills:s.kills,secs:Math.round(s.frames/60),lvup:s.lvup})),
+    duels,eyes:perc?perc.stats():null,casts:SKH?SKH.casts():null};
   }finally{Math.random=rnd0;}})()`; }
 export async function runWalks(cfgs, { jobs = 1, onRow = null } = {}) {
   const queue = cfgs.slice(), out = [], pages = [await openRetry()];
@@ -176,11 +223,11 @@ export const line = r => r.err ? r.id + ' ' + r.hero + ' s' + r.seed + ': ERR ' 
     + ' ' + r.deaths + ' deaths, ' + r.secs + 's, ' + r.kills + ' kills, ' + r.hits + ' hits, walked ' + r.walked + '%, arrivals ' + (r.arrivals.map(a => a.hp + '%').join(' ') || '-')
     + ', measured ' + r.coverage + '% of the route' + (r.miniHp !== null && r.miniHp !== undefined ? ', AT THE MINI DOOR with ' + r.miniHp + '%' : '') + (r.stucks || []).map(st => '\n    STUCK (section #' + st.sec + ') at route node ' + st.ri + '/' + st.of + ' next tile ' + st.way.join(',') + ' (hero ' + st.at.join(',') + (st.near && st.near.length ? '; near ' + st.near.join(' ') : '') + (st.props && st.props.length ? '; props ' + st.props.join(' ') : '') + ')').join('')
     + '\n    sections: ' + r.sections.map((s, i) => '#' + i + (s.stuck ? ' STUCK' : '') + (s.resumed ? ' (resumed)' : '') + ' lost ' + s.lost + '% heal ' + (s.small + s.drinkHp) + '% (' + s.drinks + ' drinks) ' + s.deaths + 'd ' + s.hits + 'h ' + s.kills + 'k ' + s.secs + 's').join(' | ')
-    + (r.hitBy && Object.keys(r.hitBy).length ? '\n    hit by (nearest foe, hits/%hp): ' + Object.entries(r.hitBy).sort((a, b) => b[1][1] - a[1][1]).map(([k, v]) => k + ' ' + v[0] + '/' + v[1] + '%').join(' ') : '') + (r.deathLog && r.deathLog.length ? '\n    deaths: ' + r.deathLog.map(d => d.by + (d.el ? '(elite)' : '') + '@' + d.at.join(',')).join(' ') : '') + (r.pageErrors ? '\n    PAGE ERRORS ' + JSON.stringify(r.pageErrors) : '');
+    + (r.hitBy && Object.keys(r.hitBy).length ? '\n    hit by (nearest foe, hits/%hp): ' + Object.entries(r.hitBy).sort((a, b) => b[1][1] - a[1][1]).map(([k, v]) => k + ' ' + v[0] + '/' + v[1] + '%').join(' ') : '') + (r.deathLog && r.deathLog.length ? '\n    deaths: ' + r.deathLog.map(d => d.by + (d.el ? '(elite)' : '') + '@' + d.at.join(',')).join(' ') : '') + (r.duels && r.duels.length ? String.fromCharCode(10) + '    elite duels: ' + r.duels.map(d => d.t + (d.affix ? '/' + d.affix : '') + '@' + d.at[0] + ' ' + (d.won ? 'WON' : 'lost') + ' ' + d.secs + 's ' + d.hp0 + '->' + d.hpEnd + '%').join(', ') : '') + (r.pageErrors ? '\n    PAGE ERRORS ' + JSON.stringify(r.pageErrors) : '');
 /* one row a level x hero: means over its seeds, read against the targets */
 export function summarize(rows) {
   const by = {}; for (const r of rows) { if (r.err) continue; (by[r.id + '|' + r.hero] = by[r.id + '|' + r.hero] || []).push(r); }
-  return Object.values(by).map(R => { const arr = R.flatMap(r => r.arrivals.filter(a => !a.start).map(a => a.hp)), d = mean(R.map(r => r.deaths)), a = mean(arr), lost = mean(R.flatMap(r => r.sections.slice(0, r.arrivals.length).map(s => s.lost)));
+  return Object.values(by).map(R => { const arr = R.flatMap(r => r.arrivals.filter(a => !a.start && !a.postMini).map(a => a.hp)), d = mean(R.map(r => r.deaths)), a = mean(arr), lost = mean(R.flatMap(r => r.sections.slice(0, r.arrivals.length).map(s => s.lost)));
     const miss = []; if (d < TARGET.deathsLo) miss.push('deaths ' + d.toFixed(1) + ' < ' + TARGET.deathsLo); if (d > TARGET.deathsHi) miss.push('deaths ' + d.toFixed(1) + ' > ' + TARGET.deathsHi);
     if (a !== null && a >= TARGET.arriveHp) miss.push('arrive ' + Math.round(a) + '% >= ' + TARGET.arriveHp);
     return { id: R[0].id, hero: R[0].hero, lvl: R[0].lvl, runs: R.length, deaths: d, arriveMean: a, arriveMin: arr.length ? Math.min(...arr) : null, lostPerSection: lost,
@@ -197,7 +244,7 @@ if (process.argv[1] && /level-walk\.mjs$/.test(process.argv[1])) {
   const ids = args.filter(a => !a.startsWith('-')).flatMap(a => a.split(',')).filter(Boolean);
   if (!ids.length) { console.log('usage: PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--jobs=1] [--json=out.json]'); process.exit(2); }
   const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 2), jobs = Math.max(1, +opt('jobs', 1)), OUT = opt('json', '');
-  const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null, from: opt('from', '') ? +opt('from') : null };
+  const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null, traceFrom: +opt('tracefrom', 0), traceN: +opt('tracen', 400), from: opt('from', '') ? +opt('from') : null, duel: opt('duel', '1') !== '0', mini: opt('mini', '1') !== '0' };
   if (opt('tonics', null) !== null) o.tonics = +opt('tonics'); if (opt('charm', null) !== null) o.charm = opt('charm') === 'none' ? null : opt('charm');
   const cfgs = []; for (const id of ids) for (const h of heroes) for (let s = 1; s <= seeds; s++) cfgs.push(walkCfg(id, h, s, o));
   const t0 = Date.now(), rows = await runWalks(cfgs, { jobs, onRow: (r, all) => { console.log(line(r)); if (r.trace) console.log('    trace: ' + r.trace.join(' ')); if (OUT) writeFileSync(OUT, JSON.stringify(all, null, 1)); } });
