@@ -352,7 +352,7 @@ const EHP = { kiterider: 16, waterthief: 26, gangleader: GLM.GL.hp, cisternqueen
    number the sweep moved is here, on its own lines, so the act lanes never fight over the two tables above. before -> after in the comment */
 const SALVAGE_HP = 440;   /* (claude/sweep2) THE SALVAGE CAPTAIN (harbor mini): was 360 */
 const LANCER_MINI_HIT = 1.7;   /* (claude/sweep2) THE SERJEANT OF THE LISTS' own blows: his charge, swipe and cut x this (the serjeants in the level keep theirs; every mini's GREED.miniHit still comes on top) */
-const SALVAGE_HIT = 1.4;       /* (claude/sweep2) THE SALVAGE CAPTAIN's own pin, cargo and shots x this */
+const SALVAGE_HIT = 1.2;       /* (claude/sweep2) THE SALVAGE CAPTAIN's own pin, cargo and shots x this (claude/retune2: 1.4 -> 1.2 on the refit bot; through his own numbers, not BOSS_HIT, so tools/boss-greed.mjs's mini-hit ratio on him holds) */
 const LANCER_MINI_X = 3.7;   /* THE SERJEANT as the Waymeet mini: his health is the serjeant's times this (was 2: 100%, 35-60 s) */
 Object.assign(DMG, {
   kingAnchor: 16, kingSlamD: 22,   /* THE DROWNED KING: 20, 26 */
@@ -5570,7 +5570,7 @@ const DRONE_HIT = 0.55;
 /* THE ACT I RETUNE (claude/sweep1, the standard: tools/boss-rates.mjs, human profile, campaign level): ONE NUMBER PER BOSS for how hard his own
    blows land (x, on what damagePlayer0 is handed - his strikes, and what he throws where the throw names him). The bosses' own tables are left alone */
 const BOSS_HIT = { golem: 2.2, grandmother: 0.55, king: 1.5, queen: 1.5, abbot: 1.8, pyromancer: 0.75 };
-Object.assign(BOSS_HIT, { undeadmage: 1.8, captain: 0.4, gargoyle: 0.75, burieddead: 0.7, queen: 1.1, grandmother: 0.42, wickerqueen: 0.9, gangleader: 0.75, herald: 1.4, closedhelm: 1.4, greathound: 1.3, ploughman: 1.3, spider: 0.75, lance: 1.4, lampreeve: 1.15, barrowrider: 1.05, golem: 1, harbormaster: 0.85, owl: 0.85, abbot: 1.5, winchmaster: 0.85, gravewarden: 0.85, bosun: 0.85, forgemaster: 0.85, hedgewarden: 0.9 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
+Object.assign(BOSS_HIT, { undeadmage: 1.8, captain: 0.4, gargoyle: 0.75, burieddead: 0.7, queen: 1.1, grandmother: 0.42, wickerqueen: 0.9, gangleader: 0.75, herald: 1.4, closedhelm: 1.4, greathound: 1.3, ploughman: 1.3, spider: 0.75, lance: 1.4, lampreeve: 1.15, barrowrider: 1.05, golem: 1, harbormaster: 0.85, owl: 0.85, abbot: 1.5, winchmaster: 0.85, gravewarden: 0.85, hedgewarden: 0.9 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false } = {}) {
   { const src = who || updFoe; if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
     if (src && src.xpRole === 'mini' && dmg > 0) dmg = Math.round(dmg * GB.GREED.miniHit);
