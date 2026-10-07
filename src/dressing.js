@@ -335,6 +335,8 @@ export const ALLOWED_DECORATIONS = {
   ],
   "spore": [
     "bones",
+    "gobPennant",
+    "warnPost",
     "cobweb",
     "deadTree",
     "fern",
@@ -351,6 +353,10 @@ export const ALLOWED_DECORATIONS = {
   ],
   "kings": [
     "banner",
+    "sporePod",
+    "mushroom",
+    "moss",
+    "tinyCap",
     "barrels",
     "boneChime",
     "cauldron",
