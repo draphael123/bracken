@@ -139,7 +139,7 @@ export function buildRedGorge({ painter, T, TS }) {
     ledge(55, 61, 169); set(55, 166, T.ONEWAY); set(56, 166, T.ONEWAY);                                                                     /* (and again, under the landing's east lip - two boards of it, jumped up through) */
     ent('rockfall', 52, 160, { every: 3.6, tell: 0.9, seen: true });
     foe('cutthroat', 52, 165, 'climbTop', { face: 1 });
-    ent('check', 49, 190);                                                                  /* (claude/batch74: was the climb's top (46, 165), 71 route tiles before the terrace's - TOO DENSE; the rope's top shelf is 97 back from it and 113 from the start) CHECKPOINT: the rope's top shelf, mid-climb - the rapids and the climb are not replayed for one bad minute in the gorge */
+    ent('check', 46, 165);                                                                  /* (fix pass) CHECKPOINT: the climb's top, at the gorge's mouth - the rapids and the climb are not replayed for one bad minute in the gorge */
     decor.push({ kind: 'plume', x: 54, y: 165 });
   }
 
@@ -161,7 +161,7 @@ export function buildRedGorge({ painter, T, TS }) {
   // ================= 2. THE DRY FALLS (118-142): climb EAST, up the falls' face =================
   ledge(28, 31, 139);
   block(32, 44, 136, 137); ledge(27, 31, 136);                                /* THE TERRACE, and a step of boards to the plunge pool (the overhang under it) */
-  ent('check', 41, 135);                                                      /* CHECKPOINT ONE: the terrace */
+  /* (claude/batch74: CHECKPOINT ONE was the terrace (41, 135), 71 route tiles after the climb's top - TOO DENSE (RULES S4: 80); it stands at the falls' rope top, on bridge two, 100 on from the climb's top) */
   wheel(28, 135, 'falls'); gate('falls', 115);                                /* THE FIRST WHEEL: its gate across the channel over the falls */
   sign(35, 135, 'THE WHEEL SHUTS THE GATE ABOVE. SHUT, IT HOLDS ONE FLOOD.');
   block(27, 44, 119, 132);                                                    /* the falls' lip: sheer on the east - the only way up is the face */
@@ -174,6 +174,7 @@ export function buildRedGorge({ painter, T, TS }) {
   feather(4, 127); decor.push({ kind: 'nest', x: 6, y: 127 });
   block(C0, 44, 112, 114);                                                    /* the overhang over the east and the channel: cross */
   ledge(3, 44, 118);                                                          /* BRIDGE TWO */
+  ent('check', 22, 117);                                                      /* CHECKPOINT ONE: the falls' rope top, on bridge two (a death in the gorge above never replays the falls) */
 
   // ================= 3. THE RAPTOR LEDGES (94-118): the WEST face is sheer - the basket =================
   block(3, 16, 100, 117);                                                     /* the sheer face */
