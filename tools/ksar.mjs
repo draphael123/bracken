@@ -49,7 +49,7 @@ ok(sign(great.x - 6, great.x, /E RINGS IT/), 'a sign at the great gong says E RI
 ok(sign(G.winch[0] - 6, G.winch[0], /E HAULS IT/), 'a sign at the winch says E HAULS IT');
 /* REQUIRED: THROW (the powder store's arch) */
 const arch = L.barricades.find(b => b.id === 'storeArch'); ok(arch, 'the powder store has its bricked arch');
-for (let x = arch.x0 - 2; x <= arch.x1 + 2; x++) ok(at(x, arch.y0 - 1) === T.SOLID, 'the overhang closes the arch over (' + x + ',' + (arch.y0 - 1) + '): no way over it');
+ok(arch.y1 - arch.y0 + 1 >= 7, 'the arch stands ' + (arch.y1 - arch.y0 + 1) + ' rows over the roof: no jump goes over it');
 for (let x = arch.x0; x <= arch.x1; x++) ok(at(x, arch.y1 + 1) === T.SOLID, 'the arch stands on the roof (' + x + ')');
 const chain = L.setKegs.filter(k => k.chain).sort((a, b) => a.x - b.x); ok(chain.length >= 4, 'the store\'s keg chain: ' + chain.length + ' kegs');
 for (let i = 1; i < chain.length; i++) ok((chain[i].x - chain[i - 1].x) * TS <= KS.chainR, 'each keg of the chain is in reach of the one before (' + chain[i - 1].x + ' > ' + chain[i].x + ')');
@@ -116,6 +116,7 @@ const hero = [{ x: Gm.x0 + 60, y: Gm.floorY, ground: true, alive: true, air: fal
   while (HM.hmOpen(e)) HM.stepHawkMistress(e, S, 1 / 60, hero, c);
   ok(S.ward > 2.5 && S.hawk.mode === 'home', 'a told ward follows the opening (' + S.ward.toFixed(1) + ' s), the hawk on her glove');
   ok(HM.ringHeard(e, S, c) === 'home' && !HM.hmOpen(e), 'a gong in the ward finds the hawk home: nothing'); }
+{ const { e, S } = mk(); S.script = null; let opened = false; for (let i = 0; i < 60 * 60; i++) { HM.stepHawkMistress(e, S, 1 / 60, hero, c); if (HM.hmOpen(e)) opened = true; } ok(!opened, 'a minute of her left alone (no gong, no flash) never opens her: the opening is made, not waited for (B1, B13)'); }
 { const { e, S } = mk(); ok(HM.flashAt(e, S, c, S.hawk.x + 200, S.hawk.y) === 'far', 'a flash out of the hawk\'s reach does nothing');
   ok(HM.flashAt(e, S, c, S.hawk.x + 20, S.hawk.y + 30) === 'blind', 'a flash in reach blinds the hawk'); let t = 0; while (!HM.hmOpen(e) && t < 3) { HM.stepHawkMistress(e, S, 1 / 60, hero, c); t += 1 / 60; }
   ok(HM.hmOpen(e), 'blinded, she whistles it back: OPEN'); }

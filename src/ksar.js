@@ -73,7 +73,7 @@ export function buildKsar({ painter, T, TS }) {
 
   // ================= 1. THE CARAVAN ROAD (0-71): TEACH - the cut, the ring, the throw, all where failure is cheap =================
   ground(0, 7, 38); ground(8, 11, 36); ground(12, 71, B);                        /* THE FIRST SCREEN ASKS: two hops up the wadi bank onto the road */
-  sign(3, 37, 'THE BANDIT KSAR. ' + RULE);
+  sign(3, 37, 'THE BANDIT KSAR. THE FORT ANSWERS ITS GONGS.');
   decor.push({ kind: 'palmstump', x: 18, y: B - 1 }, { kind: 'milestone', x: 24, y: B - 1 });
   boards(14, 25, 31); slinger(21, 30, 'shelfSling', { face: -1 });             /* the wadi's rock shelf over the road (a second height), a slinger on it over the bank */
   /* THE FIRST GONG (TEACH, safe): its lookout is asleep beside it; the guard hut's two sleepers are in its earshot. Cut the rope (ATTACK) and it is silent;
@@ -143,7 +143,7 @@ export function buildKsar({ painter, T, TS }) {
   boards(282, 300, 27); boards(330, 346, 27); slinger(296, 26, 'souqSling', { face: -1 }); ent('silver', 284, 26);   /* the souq's roof walks (a second height): a slinger on one, a silver on the other end */
   for (const [x0, x1] of [[281, 284], [290, 293], [334, 337]]) { boards(x0, x1, 30); decor.push({ kind: 'stall', x0, x1, y: 30 }); }   /* the souq's stalls: their awnings are ledges */
   /* THE SOUQ GONG under its roof; the roof (a two-row hop off the ledge) carries a keg stack over it */
-  boards(304, 306, 31); block(308, 326, 29, 29); block(308, 308, 30, 30); block(326, 326, 30, 30); decor.push({ kind: 'souqroof', x0: 308, x1: 326, y: 29 });
+  boards(304, 306, 31); block(308, 326, 29, 29); interiors.push([309, 325, 30, B - 1, 'ksSouq']); decor.push({ kind: 'souqroof', x0: 308, x1: 326, y: 29 });   /* (the souq's covered hall: its roof stands on the hall, src/ksar-hands.js draws its posts) */
   gong('souq', 318, B - 1, { ear: 30 });
   stack('souqKegs', 323, 28, 'keg', 3); blade(358, 24, 'terraceGuard', { face: -1 });
   sign(300, B - 1, 'RING THE GONG AND THEY COME TO IT. A KEG FROM THE ROOF MEETS THEM.');
@@ -166,7 +166,7 @@ export function buildKsar({ painter, T, TS }) {
   /* THE CHAIN: six kegs set along the roof; kicked (or blasted) the first lights the next in reach, keg by keg, and the last blows THE BRICKED ARCH
      over the only way on (an overhang over it: no way over) */
   for (const [i, x] of [400, 408, 416, 424, 432, 440].entries()) kegAt('k' + i, x, 24, { chain: true });
-  block(441, 456, 17, 18); barricade('storeArch', 443, 444, 19, 24);            /* THE BRICKED ARCH under the store's overhang */
+  barricade('storeArch', 443, 444, 17, 24);                                       /* THE BRICKED ARCH: eight rows of mud-brick across the roof - no way over it */
   /* THE ROOF SQUAD (the short chain's victims) and the store's cellar under its weak roof (a seal) */
   blade(411, 24, 'roofSquad', { face: -1 }); smoke(414, 24, 'roofSquad'); blade(419, 24, 'roofSquad', { face: -1 });
   air(417, 430, 26, 31); interiors.push([417, 430, 26, 31, 'ksCellar']); for (let x = 423; x <= 425; x++) weak.push([x, 25]);   /* (three tiles: a hole a hero leaps, or drops into) */
@@ -189,7 +189,7 @@ export function buildKsar({ painter, T, TS }) {
   lookout(556, 18, 'roofLookoutC', 'roofC', { patrol: [550, 560], face: -1 }); gong('roofC', 564, 18, { ear: 22, earY: 10 });
   boards(572, 575, 15); slinger(574, 14, 'roofThreeSling', { face: -1 }); blade(567, 18, 'roofSquadC', { face: -1 }); whip(569, 18, 'roofSquadC', { face: -1 }); blade(571, 18, 'roofSquadC', { face: -1 });
   /* THE WAY DOWN to the courtyard door: a shaft east of roof three; THE STRONGROOM's door in its west wall (five seals open it) */
-  ground(576, 583, B);
+  ground(576, 583, B); interiors.push([576, 582, 26, B - 1, 'ksShaft']);   /* the shaft to the courtyard door (a room: the courtyard's wall over its door stands on it) */
   air(569, 574, 30, B - 1); interiors.push([569, 574, 30, B - 1, 'ksStrongroom']); block(575, 575, 30, B - 1); vaultDoors.push({ id: 'strongroom', x: 575, y0: 30, y1: B - 1, seals: 5 });
   ent('silver', 571, B - 1); ent('ksvault', 575, B - 1, { id: 'strongroom' });
   sign(578, B - 1, 'THE STRONGROOM. FIVE CARAVAN SEALS OPEN ITS DOOR.');
@@ -233,6 +233,7 @@ export function buildKsar({ painter, T, TS }) {
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,
+    squadBands: [{ lo: 600, hi: 799, spots: 0, why: "THE HAWK-MISTRESS'S COURTYARD: columns 584-623 are her arena - no squad stands in a boss arena (her guard comes down in phase two)" }],
     unlocks: [
       { kind: 'ksgong', opens: 'a call: every bandit in its earshot leaves his post for it (the gatehouse squad off the winch\'s brake); cut, it is silent for good', hud: 'THE GONG CALLS THEM / THE ROPE IS CUT: THE GONG IS SILENT' },
       { kind: 'kskegs', opens: 'a powder keg in the hand: thrown, it blasts the bricked arches open and sets off the store\'s chain', hud: 'POWDER KEGS: E TAKES ONE, ATTACK THROWS IT' },
