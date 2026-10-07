@@ -257,17 +257,18 @@ export function buildUnderwell({ painter, T, TS }) {
     sconce(a + 13, 42, 'spill'); sign(a + 9, 45, 'OIL FLOATS ON THE WATER. TAKE THE TORCH (E), THROW IT ON THE OIL BY THE NEST.');
     wade(a + 16, a + 33, 45); seep(a + 18, a + 33, 45);                       /* the shallows, the oil floating on them up to the nest */
     dead(a + 20, 45, 'spill'); dead(a + 28, 45, 'spill');                     /* THE DROWNED DEAD: two (the teach) */
-    bat(a + 22, 26, 'spillVault'); bat(a + 30, 25, 'spillVault');             /* CISTERN BATS in its dark vault */
+    bat(a + 22, 25, 'spillVault'); bat(a + 30, 25, 'spillVault');             /* CISTERN BATS in its dark vault */
     block(a + 34, a + 35, 22, 40); nest('spill', a + 34, a + 35, 41, 45);     /* THE SPILLWAY NEST seals the stair room (rock over it to the vault) */
     boards(a + 36, a + 39, 43); boards(a + 41, a + 44, 40); boards(a + 36, a + 39, 37); boards(a + 41, a + 44, 34); boards(a + 36, a + 39, 31); boards(a + 41, a + 44, 28);   /* the stair room */
     air(a + 45, a + 47, 22, 27); sign(a + 46, 27, 'THE SUMP IS BELOW: DROP DOWN THE OLD SHAFT.');   /* the way out, onto the old shaft's lip (it was at the works' east end) */
   }
   { const b = UW_RES;                                                         /* THE OLD RESERVOIR: 394-437 */
     air(b, b + 43, 28, 42);                                                   /* the reservoir (rows 28-42 over the stone floor, row 43) */
+    ent('check', b + 2, 42); drip(b + 4, 42);                                 /* CHECKPOINT FIVE (claude/batch77: the sump's rise to the drowned cistern's head had grown to 245 route tiles, past the 200 ceiling): before the dark, a drip */
     sign(b + 1, 42, 'THE OLD RESERVOIR. ITS TORCH HANGS UP IN THE BATS\' DARK. CARRY IT AND THEY KEEP OFF.');
     boards(b + 3, b + 6, 40); boards(b + 8, b + 11, 37); boards(b + 13, b + 18, 34);   /* up into the dark: three boards */
     block(b + 16, b + 17, 28, 30); sconce(b + 16, 31, 'reservoir');          /* its torch, hung under a pillar's foot over the top board */
-    bat(b + 7, 30, 'resBats'); bat(b + 12, 29, 'resBats'); bat(b + 24, 30, 'resBats'); bat(b + 31, 29, 'resBats');   /* the bats' dark */
+    bat(b + 7, 29, 'resBats'); bat(b + 12, 29, 'resBats'); bat(b + 24, 29, 'resBats'); bat(b + 31, 29, 'resBats');   /* the bats' dark */
     wade(b + 20, b + 36, 42); seep(b + 21, b + 36, 42);                       /* the flooded floor, oil floating on all of it up to the nest */
     sign(b + 19, 42, 'THROW THE TORCH ON THE OIL BY THE NEST: THE DEAD RISE AS YOU WADE.');
     dead(b + 22, 42, 'resDead'); dead(b + 26, 42, 'resDead'); dead(b + 30, 42, 'resDead'); dead(b + 34, 42, 'resDead');   /* THE DROWNED DEAD: four (the test) */
@@ -315,7 +316,7 @@ export function buildUnderwell({ painter, T, TS }) {
     quest: { n: 3, item: 'tap', name: 'TAPS', done: 'THREE TAPS: FIT THEM TO THE DRY FOUNTAIN', thanks: 'THE FOUNTAIN RUNS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, UNDERWELL.W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
-    checkRun: 240,                  /* (claude/underwell3: 200 -> 240 - the water sections lengthen two runs: the sump's shaft to the drowned cistern's head is 235) four checkpoints (Daniel: fewer; claude/underwell2 added the drowned cistern's head); src/level.js checkpoints() must not fill between them */
+    checkRun: 200,                  /* (claude/batch77: back to 200 - the old reservoir's checkpoint splits the 245-tile run) five checkpoints (Daniel: fewer; claude/underwell2 added the drowned cistern's head); src/level.js checkpoints() must not fill between them */
     unlocks: [
       { kind: 'stray', opens: "THE DRY FOUNTAIN's vault (a silver) once all three taps are fitted - and the fountain runs from then on (a spring)", hud: 'TAPS n/3 (the quest counter); at the fountain: THE DRY FOUNTAIN WANTS THREE BRASS TAPS' },
       { kind: 'fountain', opens: "its vault (a silver), and it is a spring from then on", hud: 'THE FOUNTAIN RUNS: ITS VAULT OPENS' },
