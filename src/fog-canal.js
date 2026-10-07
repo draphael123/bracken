@@ -264,7 +264,7 @@ export function buildFogCanal({ painter, T, TS }) {
   block(248, 345, 0, 13); block(345, 345, 14, 16);                           /* THE HILL over the tunnel and the deep lock (no way over the top) */
   air(248, 344, 14, 14);
   const tunnels = [[248, 344]], moon = [[306, 309]], stops = [];
-  fog('FT', 248, 345, 12, 49, { a: 0 });   /* THE DARK, as the machinery sees it: nothing in the tunnel is lit but by a lantern (the watchmen see only the lit). Drawn as the tunnel's own dark, not fog */
+  fog('FT', 248, 345, 11, 49, { a: 0 });   /* THE DARK, as the machinery sees it: nothing in the tunnel is lit but by a lantern (the watchmen see only the lit). Drawn as the tunnel's own dark, not fog */
   const rib = (c, w = 2) => { block(c, c + w - 1, 14, 15); beams.push({ x0: px(c), x1: px(c + w), y: 18 * TS - 2 - 9, dmg: 12, name: 'A LOW BEAM', tunnel: true }); };   /* the roof comes down in a rib, and its tie-bar hangs to a hand over her deck */
   const ledge = (x0, x1) => boards(x0, 15, x1 - x0 + 1);   /* A LEGGERS' LEDGE: stone, three rows over the water (the towpath hop up off her deck) */
   const stopPlanks = (id, x, cap) => { block(x, x, 17, 22); stops.push({ id, x, top: 17, bot: 22 }); ent('stopwinch', cap[0], cap[1], { stop: stops.length - 1 }); };
@@ -276,7 +276,7 @@ export function buildFogCanal({ painter, T, TS }) {
   coins([255, 17], [262, 17], [270, 17]);
   /* THE STOP-PLANKS (TEST): planks across the water hold her; the ledge over them, a gap in it the ledge lantern shows, the windlass past the bargee */
   ledge(280, 285); ledge(288, 297); stopPlanks('S1', 289, [295, 14]);
-  air(279, 298, 12, 13);   /* (claude/canal5) THE LEGGERS' RECESS: the vault stands two rows higher over the ledges - under the tunnel's own roof a hero on a ledge had 2 px over his head, so the gap could not be jumped at all (Daniel 10-06: "glitchy, awkward") */
+  air(279, 298, 11, 13);   /* (claude/canal5) THE LEGGERS' RECESS: the vault stands three rows higher over the ledges - under the tunnel's own roof a hero on a ledge had 2 px over his head, so the gap could not be jumped at all (Daniel 10-06: "glitchy, awkward") */
   post(284, 14); sign(281, 14, 'STOP-PLANKS HOLD HER. A WINDLASS ON THE LEDGE WINDS THEM UP.');
   bargee(291, 14, 'the stop-planks'); archer(297, 14, 'the stop-planks');   /* the watchman sees only the lit: the ledge lantern by the gap, or her own */
   grindy(286, 18, 'the stop-planks water'); grindy(293, 18, 'the stop-planks water');   /* (claude/batch73) the grindylows are on the water, the bargee and the archer on the planks: two squads, one floor each (sprinkle-cap) */
@@ -358,10 +358,10 @@ export function buildFogCanal({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START, pools: [...pools, ...jenny.pools], falls: [], moversExtra: [
       { kind: 'barge', canal: true, x: px(36), y: 40 * TS - 2, w: 96, h: 10 }, ...jenny.movers ],
     arena: jenny.arena, gateAfterBoss: true,
-    interiors: [[14, 29, 19, 38, 'cnWarehouse'], [86, 106, 13, 29, 'cnMill'], [391, 395, 37, 40, 'cnDoor'], [16, 34, 42, 49, 'cnCellar'], [380, 395, 50, 54, 'cnCistern'], [248, 344, 14, 22, 'cnTunnel'], [279, 298, 12, 13, 'cnTunnel'], [335, 344, 23, 48, 'cnTunnel']],   /* (claude/canalfix3) the safe swims' vaults; (claude/canal4) the tunnel's brick */
+    interiors: [[14, 29, 19, 38, 'cnWarehouse'], [86, 106, 13, 29, 'cnMill'], [391, 395, 37, 40, 'cnDoor'], [16, 34, 42, 49, 'cnCellar'], [380, 395, 50, 54, 'cnCistern'], [248, 344, 14, 22, 'cnTunnel'], [279, 298, 11, 13, 'cnTunnel'], [335, 344, 23, 48, 'cnTunnel']],   /* (claude/canalfix3) the safe swims' vaults; (claude/canal4) the tunnel's brick */
     canal: { reaches, gates, bridges, fogs, weedWater, weeds, beams, moorings, barge: { x: 36 }, arcs: ARCS, sections: SECTIONS,
       swims, grates, hatches,   /* (claude/canalfix3) the safe swims, their iron grates, the hatches into them */
-      tunnels, stops, moon, dark: [[248, 344, 14, 22], [279, 298, 12, 13], [334, 344, 23, 48]], tunnelEnd: 345,   /* (claude/canal4) THE LEGGING TUNNEL: where there is no current, the stop-planks, the moon shaft, the dark (tiles) */
+      tunnels, stops, moon, dark: [[248, 344, 14, 22], [279, 298, 11, 13], [334, 344, 23, 48]], tunnelEnd: 345,   /* (claude/canal4) THE LEGGING TUNNEL: where there is no current, the stop-planks, the moon shaft, the dark (tiles) */
       sides, arch: [130, 147, 32], gangAt: 165, jetties: [[175, 185, 30]], street: { railings: [[1, 12, 26], [45, 52, 37], [60, 66, 37], [176, 181, 25], [241, 246, 16], [361, 378, 34]], bollards: [[35, 39], [364, 41]] },   /* (claude/canalfix3) the one timber jetty (the fog wall's pier): every other ledge is stone, src/redraw/canal_tiles.js */   /* (claude/canalfix) her sides of the Waymeet pound; THE LONG ARCH [x0, x1, the tunnel roof's lowest row]; the fog wall's front, where the gang boards */
       /* JENNY GREENTEETH, FORESHADOWED (cheap and told): eyes that open in the fog now and then [x, y, phase], a child's shoe on a step, bubbles by the bank where nothing lives */
       eyes: [[146, 27, 0.1], [176, 29, 0.55], [235, 16, 0.75], [312, 16, 0.4], [359, 38, 0.3]], shoes: [[35, 38], [392, 36]], bubbles: [[40, 40], [61, 40], [100, 33], [175, 33], [240, 18], [297, 18], [355, 44]] },

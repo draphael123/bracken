@@ -136,7 +136,7 @@ export const CALL_LINES = new Set([
 export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 'THE BRIDGE HOLDS HER: FIND ITS CAPSTAN', fog: 'THE FOG HOLDS HER: FIND THE FOGHORN',
   door: 'THE DOOR IS TOO HIGH: THE LOCK UNDER HER IS LOW',
   /* (claude/canal4) THE LEGGING TUNNEL: the stop-planks' windlass, a rider standing on her where there is no current, a hero who has left her in the dark */
-  stop: 'STOP-PLANKS HOLD HER: FIND THE WINDLASS', leg: 'THE TUNNEL HAS NO CURRENT: SHE GOES ONLY IF YOU LEG HER', back: 'SHE WAITS IN THE DARK: GET BACK ON HER DECK' };
+  stop: 'STOP-PLANKS HOLD HER: FIND THE WINDLASS', leg: 'NO CURRENT: HOLD LEFT OR RIGHT AT HER END TO LEG HER', back: 'SHE GLIDES TO YOU: DROP BACK ONTO HER DECK' };   /* (claude/canal5) */
 /* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
 export const CALL_COUNTS = [/^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */

@@ -108,10 +108,11 @@ export function canalMover(st, H, m, dt) {
      A bell, and told once. With the fall rule (a fall in the tunnel hands you back onto HER DECK, canalUpdate) she can never be lost */
 function tunnelWant(st, H, m, dt, on) {
   const b = st.barge; let dir = 0, n = 0;
-  H.eachHero(P => { if (P.dead || P.onMover !== m || !P.ground || P.climb || P.swim || P.atk >= 0 || P.block || (P.dodge > 0)) return;
-    const k = H.keys ? H.keys() : {}; const d = (k.right ? 1 : 0) - (k.left ? 1 : 0); if (!d || k.down || k.jump || k.up) return;
+  H.eachHero(P => { if (P.dead || P.onMover !== m || !P.ground || P.climb || P.swim) return;
+    const k = H.keys ? H.keys() : {}; const d = (k.right ? 1 : 0) - (k.left ? 1 : 0); if (!d || k.jump) return;
     if (d > 0 ? P.x < b.x + b.w - 14 : P.x > b.x + 14) return;   /* walking along her deck: not at her end yet */
-    P.deckEnd = d;   /* (held that way, she does not move and he only stands at her end - but the push still tells what holds her: legStep's hold) */
+    P.deckEnd = d;   /* (her end holds him whatever else he does - a guard, a swing: a step off it is never by accident) */
+    if (P.atk >= 0 || P.block || (P.dodge > 0) || k.down || k.up) return;   /* (held that way, she does not move and he only stands at her end - but the push still tells what holds her: legStep's hold) */
     P.legging = d; dir += d; n++; });
   if (n) { st.call = 0; st.calling = false; st.legBy = 'leg'; return Math.sign(dir) * (R.lampLit(st) ? R.RIG.leg : R.RIG.legDark); }
   if (st.pend) { const r = R.reachById(st, st.pend); if (r) { const d = (r.x1 + 1) * TS - b.w - 2 - b.x; st.legBy = 'call'; return Math.sign(d) * Math.min(R.RIG.glide, Math.max(10, Math.abs(d) * 1.5)); } }   /* (claude/canal5) the deep lock's paddle set: in she glides */
@@ -120,7 +121,8 @@ function tunnelWant(st, H, m, dt, on) {
   H.eachHero(P => { if (P.dead || !(P.ground || P.climb) || P.onMover) return;
     if (R.tunnelAt(st, P.x) && P.y <= b.y + 6) { const t = P.x - b.w / 2; if (Math.abs(t - b.x) > 4 && (to === null || Math.abs(t - b.x) < Math.abs(to - b.x))) to = t; }
     else if (P.x < mouth && P.x > mouth - 30 * TS && Math.abs(P.y - b.y) <= 40) back = mouth - b.w / 2; });
-  const tgt = to !== null ? to : back !== null && back < b.x - 4 ? back : null;   /* (either way along the tunnel: the deep lock's paddle no longer shuts her out - struck with her outside, it glides her in first) */
+  let tgt = to !== null ? to : back !== null && back < b.x - 4 ? back : null;
+  { const lk = st.reaches.find(r => r.needsHer && b.x >= r.x0 * TS - 1 && b.x + b.w <= (r.x1 + 1) * TS + 1); if (lk && tgt !== null) { tgt = Math.max(lk.x0 * TS, Math.min((lk.x1 + 1) * TS - b.w - 2, tgt)); if (Math.abs(tgt - b.x) <= 4) tgt = null; } }   /* in the deep lock she stays in it: you walk back to its paddle, she waits under the gallery */   /* (either way along the tunnel: the deep lock's paddle no longer shuts her out - struck with her outside, it glides her in first) */
   if (tgt === null) { st.call = 0; st.calling = false; return 0; }
   st.call = (st.call || 0) + dt; if (st.call < 0.35) return 0;
   if (!st.calling) { st.calling = true; st.calls = (st.calls || 0) + 1; const S = H.sfx; S.bell ? S.bell() : S.chain ? S.chain() : S.clank();
@@ -134,6 +136,9 @@ function tunnelHands(st, H, b, m) {
   if (!m) return; const room = R.inTunnel(st) ? R.legRoom(st) : null;
   H.eachHero(P => {
     if (P.deckEnd && room && P.onMover === m && !P.dead) { P.x = b.x + (P.deckEnd > 0 ? b.w - 11 : 11); P.face = P.deckEnd; if (P.legging && (P.legging > 0 ? room.hi - b.x > 0.5 : b.x - room.lo > 0.5)) { P.ducking = true; P.crouch = 1; } }
+    /* (claude/canal5) A LADDER'S RUNG IS A FOOTHOLD (every rung of a ladder stands you up, main.js isOneWay NET): the deep lock's ladder runs down through her
+       water, and its rung two px under her deck stood a hero BESIDE her, off her, while she went on. Stood that close under her deck, he is on her */
+    if (!P.onMover && !P.dead && P.ground && !P.climb && R.tunnelAt(st, P.x) && P.x > b.x + 4 && P.x < b.x + b.w - 4 && P.y >= b.y - 1 && P.y <= b.y + 6) { P.y = b.y; P.vy = 0; P.onMover = m; }
     if (P.climb && !P.dead && R.tunnelAt(st, P.x) && H.keys && H.keys().down && P.x > b.x + 6 && P.x < b.x + b.w - 6 && P.y >= b.y - 3 && P.y <= b.y + 12) {
       P.climb = false; P.y = b.y; P.vy = 0; P.vx = 0; P.ground = true; P.onMover = m; } });
 }
