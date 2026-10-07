@@ -318,6 +318,8 @@ if (!NOPAGE && lv) {
       { const cb = tun(); cb.barge.x = 251 * TS; sim(2); BK.tp(254, 17); P.y = cb.barge.y; P.vy = 0; sim(20); let drops = 0, wasOn = true, maxJump = 0, lastOff = null, f = 0;
         for (let i = 0; i < 60 * 40 && cb.barge.holdWhy !== 'stop'; i++, f++) { k.right = true; BK.sim(1); const on = !!(P.onMover && P.onMover.canal); if (wasOn && !on) drops++; wasOn = on; const o2 = P.x - cb.barge.x; if (f > 90 && lastOff !== null) maxJump = Math.max(maxJump, Math.abs(o2 - lastOff)); lastOff = o2; } k.right = false;
         out.smooth = [drops, +maxJump.toFixed(2), cb.barge.holdWhy, Math.round(lastOff)]; }
+      //   f. AN OPEN GATE'S SLOT IS WATER: off the basin's west bank down the deep lock's open lower gate, a hero was stood on its sill under the water, out of every pool - stuck
+      { const cb = tun(); const L6 = cb.reaches.find(r => r.id === 'L6'); L6.y = L6.to = L6.lo * TS + 4; sim(30); BK.god = false; cb.barge.x = 346 * TS; sim(4); BK.tp(348, 40); sim(40); BK.tp(345, 47); P.vy = 0; const h0 = P.hp; for (let i = 0; i < 240; i++) BK.sim(1); out.slot = [cb.gates.find(g => g.id === 'G8').open, h0 - P.hp, Math.floor(P.x / TS), Math.floor((P.y - 1) / TS)]; }
 
       fresh(); kill(e => true); { const cb = C(); for (const q of cb.bridges.slice(0, 2)) { q.across = false; q.k = 1; } cb.barge.x = 158 * TS; BK.tp(162, 31); sim(120); const tg = cb.glint; out.clarityFog = [cb.barge.holdWhy, tg && tg.why, tg && Math.floor(tg.prop.x / TS)]; }
       return out; })()`, 900000);
@@ -345,6 +347,7 @@ if (!NOPAGE && lv) {
     ok(r.paddleOut[0] && !r.paddleOut[1] && r.paddleOut[2] >= 335, 'the paddle of the deep lock struck with her outside shut her out behind its upper gate (she must glide in, then it drains): ' + JSON.stringify(r.paddleOut));
     ok(r.call[0] && r.call[1] && r.call[2] && Math.abs(r.call[3]) < 2, 'off her on the gallery she did not glide along to the hero (THE CALL), or down the ladder of the deep lock he did not stand on her deck: ' + JSON.stringify(r.call));
     ok(r.smooth[0] === 0 && r.smooth[1] < 1 && r.smooth[2] === 'stop' && r.smooth[3] > 80, 'legging with RIGHT held was not smooth (the rider left her deck, jumped about on it, or was not at her bow when the planks held her): ' + JSON.stringify(r.smooth));
+    ok(r.slot[0] && r.slot[1] > 0 && r.slot[3] < 44, 'a hero down the open slot of the deep lock\x27s lower gate was not bitten and handed back out of it (he stood on its sill under the water, stuck): ' + JSON.stringify(r.slot));
     ok(r.ledgeBack[0] > 0 && r.ledgeBack[1] && Math.abs(r.ledgeBack[2]) < 4, 'a fall into the tunnel water off the stop-planks\' ledge was not bitten and handed back ONTO HER DECK: ' + JSON.stringify(r.ledgeBack) + ' (claude/canal5: back ON HER DECK amidships - a ledge she cannot reach was where heroes were stranded)');
     ok(r.swim[0] && r.swim[1] === 0 && r.swim[2] && r.swim[3] && r.swim[4] >= 36, 'the flooded cellar is not a safe swim, or the quay grindylow did not bump its grate (and stay on the green side): ' + JSON.stringify(r.swim));
     ok(r.clarityDone === null, 'the paddle worked, it still glints (' + r.clarityDone + ')');

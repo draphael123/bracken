@@ -103,8 +103,8 @@ export function canalMover(st, H, m, dt) {
      (RIG.legAcc) toward RIG.leg lit / RIG.legDark dimmed, and he stays at her end (pinned in canalUpdate, lying low: the duck). Where she can go
      no further that way he only stands at her end: in the tunnel the way off her is a JUMP, never a step into the water.
    THE CALL - nobody aboard: she GLIDES (RIG.glide) to put her deck under a hero who is off her in the tunnel - on a ledge, a ladder, the gallery,
-     up the moon shaft - wherever her water lets her (never through planks down or a shut gate). Ahead of her only: a hero who walks BACK along a
-     ledge (to the deep lock's paddle) does not pull her out of the lock. A hero behind the tunnel's mouth (on the summit bank) brings her back to it.
+     up the moon shaft - wherever her water lets her (never through planks down or a shut gate), either way. A hero behind the tunnel's mouth (on
+     the summit bank) brings her back to it.
      A bell, and told once. With the fall rule (a fall in the tunnel hands you back onto HER DECK, canalUpdate) she can never be lost */
 function tunnelWant(st, H, m, dt, on) {
   const b = st.barge; let dir = 0, n = 0;
@@ -118,9 +118,9 @@ function tunnelWant(st, H, m, dt, on) {
   if (on) { st.call = 0; st.calling = false; return 0; }
   const mouth = st.D.tunnels[0][0] * TS; let to = null, back = null;
   H.eachHero(P => { if (P.dead || !(P.ground || P.climb) || P.onMover) return;
-    if (R.tunnelAt(st, P.x) && P.y <= b.y + 6) { const t = P.x - b.w / 2; if (t > b.x + 4 && (to === null || t > to)) to = t; }
+    if (R.tunnelAt(st, P.x) && P.y <= b.y + 6) { const t = P.x - b.w / 2; if (Math.abs(t - b.x) > 4 && (to === null || Math.abs(t - b.x) < Math.abs(to - b.x))) to = t; }
     else if (P.x < mouth && P.x > mouth - 30 * TS && Math.abs(P.y - b.y) <= 40) back = mouth - b.w / 2; });
-  const tgt = to !== null ? to : back !== null && back < b.x - 4 ? back : null;
+  const tgt = to !== null ? to : back !== null && back < b.x - 4 ? back : null;   /* (either way along the tunnel: the deep lock's paddle no longer shuts her out - struck with her outside, it glides her in first) */
   if (tgt === null) { st.call = 0; st.calling = false; return 0; }
   st.call = (st.call || 0) + dt; if (st.call < 0.35) return 0;
   if (!st.calling) { st.calling = true; st.calls = (st.calls || 0) + 1; const S = H.sfx; S.bell ? S.bell() : S.chain ? S.chain() : S.clank();
@@ -209,7 +209,11 @@ export function canalUpdate(st, H, dt) {
   // ---- THE WAY BACK: the last dry ground you stood on (the canal hands you back to it) ----
   H.eachHero(P => { if (P.dead) return;
     if ((P.onMover === m || (R.tunnelAt(st, P.x) && P.y < 50 * TS && b.x + b.w / 2 >= st.D.tunnels[0][0] * TS - 16 * TS)) && b.mode === 'float') P.safe = { x: R.inTunnel(st) ? b.x + b.w / 2 : Math.max(b.x + 12, Math.min(b.x + b.w - 12, P.x)), y: b.y - 4, L: H.L(), deck: true };   /* off her deck into the water: back onto her deck (she waits for whoever is not aboard). (claude/canal5) ANYWHERE IN THE TUNNEL - a ledge, the gallery, a ladder - a fall puts you back ON HER DECK, wherever she is: never on a ledge she cannot reach - and amidships (her ends are where the planks, a gate and the bargees' hooks are) */
-    else if (P.ground && !P.onMover && !P.climb && !R.inWeed(st.D, st, P.x, P.y) && H.solidUnder(P.x, P.y) && !atWater(H, P)) P.safe = { x: P.x, y: P.y, L: H.L() }; });   /* (claude/canalfix3) never ON the water: a bright weed mat that gives way, a wading bed - handed back there, you were handed back into the water: stuck */
+    else if (P.ground && !P.onMover && !P.climb && !R.inWeed(st.D, st, P.x, P.y) && H.solidUnder(P.x, P.y) && !atWater(H, P) && !gateWater(st, P)) P.safe = { x: P.x, y: P.y, L: H.L() }; });   /* (claude/canalfix3) never ON the water: a bright weed mat that gives way, a wading bed - handed back there, you were handed back into the water: stuck */
+  // ---- (claude/canal5) AN OPEN GATE'S SLOT IS WATER TOO: its column is between two pools, so a hero who fell down it (off the basin's west bank, by the deep
+  //      lock's lower gate) stood on its sill under the water, out of every pool - never handed back, never out: stuck. Now the canal hands him back ----
+  H.eachHero(P => { if (P.dead || !gateWater(st, P)) { if (P.gateT) P.gateT = 0; return; } P.gateT = (P.gateT || 0) + dt; if (P.gateT < 0.25 || !P.safe || P.safe.L !== H.L()) return; P.gateT = 0;
+    H.hurtHero(P.x, R.RIG.wadeBite, { unblockable: true, name: 'THE CANAL' }); if (!P.dead) { P.x = P.safe.x; P.y = P.safe.y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; } S.splash && S.splash(); hint(st, H, 'handback', 'THE CANAL HANDS YOU BACK - AND BITES.'); });
   // ---- (claude/canalfix3, Daniel: "you fall in the water and get stuck there") A HAND-BACK POOL (shallow water with no stair out) HANDS YOU BACK TOO -
   //      after RIG.wadeBack s in one, the canal bites and puts you on the last ground you stood on. (claude/canal4: the weir's race was the last such pool; the rule stays) ----
   for (const p of H.L().pools || []) if (p.handBack && b.mode !== 'loose') H.eachHero(P => { const inIt = !P.dead && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && P.y <= (p.bottom ?? 1e9) + 4;
@@ -293,6 +297,8 @@ export function lampDraws(st, e) { if (!st || !R.inTunnel(st)) return null; cons
 /* THE WISP IN THE DARK: it sees nobody unless her light (or the moon) shows them, or he is right on it */
 export function wispBlind(st, e, P) { if (!st || !R.tunnelAt(st, e.x)) return false; if (P && Math.hypot(P.x - e.x, P.y - 10 - e.y) < 40) return false;
   if (!R.inTunnel(st)) return true; const b = st.barge; return !((R.lampLit(st) || moonlit(st)) && Math.abs(e.x - (b.x + b.w / 2)) < 200); }
+/* (claude/canal5) IN AN OPEN GATE'S SLOT, under the water that stands level either side of it */
+const gateWater = (st, P) => st.gates.some(g => g.open && P.x >= g.x * TS && P.x < (g.x + 1) * TS && P.y > Math.min(st.reaches[g.a].y, st.reaches[g.b].y) + 9 && P.y <= (g.bot + 1) * TS + 4);
 /* (claude/canalfix3) standing at a water surface or under it (a weed mat, a wading bed, a swim): no place to be handed back to */
 const atWater = (H, P) => (H.L().pools || []).some(p => !p.dry && P.x > p.x0 - 4 && P.x < p.x1 + 4 && P.y >= p.y - 6 && P.y <= (p.bottom ?? p.y + 64) + 2);
 /* ---------------- (claude/canalfix) THE PIECES THE FIX LANE ADDED ---------------- */

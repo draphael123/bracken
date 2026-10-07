@@ -89,7 +89,7 @@ try {
         let still = 0; for (let i = 0; i < 60 * 20 && still < 30; i++) { clear(); tick(1); still = Math.abs(B().v || 0) < 0.5 ? still + 1 : 0; }   /* she comes up the flight under the hand on the bank and stops */
         dropOn(600); for (let i = 0; i < 60 * 12 && !R_inTun(); i++) { clear(); tick(1); }
         if (!stage('down onto her deck from the summit bank; she carries you to the tunnel mouth', onBarge() && R_inTun())) return false;
-        if (STRAY) { leg(() => B().x + B().w / 2 > 251 * TS, 60 * 8); for (let a = 0; a < 4 && !(P().x < 247 * TS && P().ground && !onBarge()); a++) { if (onBarge()) { for (let j = 0; j < 90 && P().x > B().x + 18; j++) { clear(); k.left = true; tick(1); } hop(-1, { hold: 30 }); settle(); } for (let i = 0; i < 90 && !P().ground; i++) tick(1); if (!onBarge() && P().x >= 247 * TS) tick(60); }
+        if (STRAY) { leg(() => B().x + B().w / 2 > 250 * TS, 60 * 8); for (let a = 0; a < 4 && !(P().x < 247 * TS && P().ground && !onBarge()); a++) { if (onBarge()) { for (let j = 0; j < 90 && P().x > B().x + 18; j++) { clear(); k.left = true; tick(1); } hop(-1, { hold: 30 }); settle(); } for (let i = 0; i < 90 && !P().ground; i++) tick(1); if (!onBarge() && P().x >= 247 * TS) tick(60); }
           const back = () => B().x + B().w / 2 <= 248 * TS + 4; for (let i = 0; i < 60 * 8 && !back(); i++) { clear(); tick(1); }
           stage('STRAY: back off her onto the summit bank - she comes back to the mouth for you', back());
           walk(249, { noFight: true, tol: 4 }); settle(); if (!onBarge()) dropOn(300); if (!stage('and down onto her again', onBarge())) return false; }
@@ -146,12 +146,13 @@ try {
       walk(Math.floor(B().x / TS) + 1, { tol: 3, noFight: true }); ledgeUp(41); walk(355, { noFight: true }); walk(364);
       for (let i = 0; i < 60 && BK.enemies().some(e => e.alive && (e.elite || e.lamplighter) && e.x > 360 * TS && e.x < 372 * TS); i++) { const el = BK.enemies().filter(e => e.alive && (e.elite || e.lamplighter) && e.x > 360 * TS && e.x < 372 * TS)[0]; walk(Math.round(el.x / TS) - 1, { noFight: true }); if (!fight()) tick(10); }
       stage('basin: the island\\'s lamplighter and foreman down', !BK.enemies().some(e => e.alive && e.elite && e.x > 360 * TS && e.x < 372 * TS));
-      walk(350, { tol: 3 }); for (let i = 0; i < 700 && C().horns.find(h => h.x > 340 * TS && h.x < 352 * TS).cd > 0; i++) tick(1); strike(-1);
-      walk(363, { tol: 3, noFight: true }); if (C().bridges[3].across) strike(-1);
-      stage('basin: the horn blown, the bridge swung', !C().bridges[3].across);
-      walk(366, { noFight: true }); let aboard = dropOn(60 * 12);
-      for (let a = 0; a < 3 && !aboard; a++) { walk(350, { tol: 3 }); for (let i = 0; i < 700 && C().horns.find(h => h.x > 340 * TS && h.x < 352 * TS).cd > 0; i++) tick(1); strike(-1); walk(363, { tol: 3, noFight: true }); if (C().bridges[3].across) strike(-1); walk(366, { noFight: true }); aboard = dropOn(60 * 12); }   /* the fog rolled back before she came: the horn again */
-      stage('basin: onto her as she passes under the island', aboard);
+      let aboard = false; const horn = () => C().horns.find(h => h.x > 340 * TS && h.x < 352 * TS), br = () => C().bridges[3];
+      for (let a = 0; a < 5 && !aboard; a++) {   /* the exam's window: blow the horn, over the bridge in the clear air, swing it, and be on her under the island before the fog rolls back - again if it did */
+        if (!br().across && P().x > 359 * TS) { walk(363, { tol: 3, noFight: true }); strike(-1); for (let i = 0; i < 90 && !br().across; i++) tick(1); tick(60); }   /* (swung open behind you: bring it back across to reach the horn) */
+        walk(350, { tol: 3 }); for (let i = 0; i < 900 && horn().cd > 0; i++) tick(1); strike(-1);
+        walk(363, { tol: 3, noFight: true }); if (br().across) strike(-1);
+        walk(366, { noFight: true }); aboard = dropOn(60 * 12); }
+      stage('basin: the horn blown, the bridge swung, onto her as she passes under the island', aboard);
       for (let i = 0; i < 60 * 15 && !(B().holdWhy === 'end' || B().x > 383 * TS); i++) { clear(); if (!fight({ r: 40 })) tick(1); }
       walk(388, { tol: 3, noFight: true }); strike(1); for (let i = 0; i < 60 * 8 && !full('L5'); i++) tick(1); stage('basin: its lock filled', full('L5'));
       walk(389, { tol: 3, noFight: true }); hop(1, { hold: 30 }); walk(391); walk(395); walk(398, { noFight: true }); tick(60);
