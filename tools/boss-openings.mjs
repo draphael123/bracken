@@ -214,7 +214,7 @@ try {
   {const b=boot('canal');const S=BK.lanternEaterHands().show(),P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let op=0,why=null;for(let i=0;i<60*30&&!(op>0);i++){P.hp=P.maxHp;BK.keys.up=false;if(b.mode==='gulpTell'&&b.part==='lure'&&S.lure){P.x=S.lure.x-10;P.face=1;P.vx=0;if(P.ground&&P.atk<0){BK.keys.up=true;BK.press('atk');}}BK.sim(1);if(b.mode==='open'){op=Math.max(op,b.open||0);why=b.openKind;}}
-   let op2=0,why2=null;b.hp=Math.round(b.maxHp*0.6);for(let i=0;i<60*40&&!(op2>0);i++){P.hp=P.maxHp;const sn=S.snap;if(b.mode==='snapTell'&&sn&&sn.fixed&&Math.abs(P.x-sn.x)<40){P.x=sn.x+(sn.x-S.raft.x>S.raft.w/2?-50:50);P.vx=0;}BK.sim(1);if(b.mode==='open'){op2=Math.max(op2,b.open||0);why2=b.openKind;}}
+   let op2=0,why2=null;b.hp=Math.round(b.maxHp*0.6);for(let i=0;i<60*40&&!(op2>0);i++){P.hp=P.maxHp;const sn=S.snap;if(b.mode==='snapTell'&&sn&&sn.fixed&&Math.abs(P.x-sn.x)<40){P.x=sn.x+(sn.x-S.raft.x>S.raft.w/2?-50:50);P.vx=0;}BK.sim(1);if(b.mode==='open'&&b.phase===2){op2=Math.max(op2,b.open||0);why2=b.openKind;}}
    out.lanterneater={alone:+alone.toFixed(1),snag:{why,open:+op.toFixed(1)},stuck:{why:why2,open:+op2.toFixed(1)},n:{snag:S.n.snag,stuck:S.n.stuck,jerk:S.n.jerk}};}
   /* THE CISTERN QUEEN (claude/welltown3): a minute of her left alone opens nothing; a pour while she walks the floor runs into the sand; a pour on her
      mound wets the sand - she SLIPS, open (Daniel 10-07; was SOAKED); on her wall, a pour from that wall's ledge - ON HER BACK, open; in the flood, her claw struck as it comes -

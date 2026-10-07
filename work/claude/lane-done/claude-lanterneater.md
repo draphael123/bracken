@@ -145,7 +145,8 @@ It also strikes the bait until 0.5 s are left, then bails. It misses 12% of tell
 
 ## Checks run (PORT 8722)
 lantern-eater (pure + page, all 7 heroes), canal, tells (--write), answer-tags, boss-read, boss-music, audio-assets, hint-shown, boss-greed, boss-fight-end, modulepreload
-(1 unlisted module, matriarch_young.js, pre-existing on master), plus the second round in "Checks, final tree" below.
+(1 unlisted module, matriarch_young.js, pre-existing on master), boss-openings (canal row: alone 0, snag open 3.2 s, stuck open 3.2 s), boss-navigation (all 5 rows killed; the canal pilot fights on the raft), soundtest, canal-water, mash-gate, mash-carry, boss-fight-end (54/54 end), textfit (0 of everything).
+Not run here: the full suite, slopes-trace (the canal geometry did not change; only the boss ent and the sign text did), level-quality, canal-tunnel-route (canal6 territory, untouched).
 
 ## ART PASS needs (greybox now; the read is done, but the art should keep it)
 - **Its body:** the dark bulk under the water and its eyes. Only a shadow ellipse and two pale pixels now; it wants a real silhouette that slides under the raft.

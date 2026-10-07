@@ -20,7 +20,7 @@ try {
        depth (level 22, no skills: as tools/combat-pilots.mjs and the mash bot), the time and the asserts are the same as every row) */
     /* (claude/puppeteer2, a rules change: THE PUPPETEER is a 2-3 minute fight now - three to five visits up the batten, Daniel's brief - so the theatre row has 300 s, as tools/puppeteer.mjs's bot row; every other row keeps 180 s) */
     if(lvl==='theatre') assert.ok(result.loft,'THE PUPPETEER: the pilot must ride the batten up and stand on the fly gallery (claude/puppeteer)');
-    if(lvl==='canal') assert.ok(result.walk>60,'THE LANTERN-EATER (claude/lanterneater; Jenny Greenteeth's raft before it, claude/canal4): the pilot must fight it on the raft: '+JSON.stringify({walk:result.walk}));
+    if(lvl==='canal') assert.ok(result.walk>60,'THE LANTERN-EATER (claude/lanterneater; on the raft Jenny Greenteeth had before it, claude/canal4): the pilot must fight it on the raft: '+JSON.stringify({walk:result.walk}));
     assert.equal(row.killed,true,`${h} must reach and finish ${lvl} through ordinary inputs`);
     assert.ok(row.damage.other>row.damage.plunge,'ordinary attacks must remain the majority of credited damage');
     if(lvl==='reef') assert.ok(row.modes.stuck>0,'evading the bite must create a genuine stuck-jaw opening');
