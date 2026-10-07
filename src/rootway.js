@@ -139,7 +139,7 @@ export function buildRootway({ painter, T, TS }) {
   ground(225, 238, 27);
   foe('archer', 231, 26, 'larderBow', { face: -1 }); foe('trophyhunter', 234, 26, 'larderBow', { face: -1 });   /* (FIX PASS: a hunter on the far lip lunges at you as you top the stair) */
   /* A CLEAT ON THE ROOT'S FACE, high over the floor: grow the bud under it and strike it from the cap - the span over the next gap drops */
-  bud(237, 27); ground(239, 246, 23);   /* (FIX PASS: the cap stands flush against the root - no one-column corner between them to fall into) */
+  bud(237, 27); ground(239, 246, 23); foe('shield', 244, 22, 'highRoot', { face: -1 });   /* (FIX PASS: a shield holds the root by the span: his push is toward the well) */ /* (FIX PASS: the cap stands flush against the root - no one-column corner between them to fall into) */
   hoist('highCleat', { x: 251, top: 12, hang: 17, cleat: [238, 19], load: 'span', span: [247, 255, 23], face: true });
   sign(228, 26, 'THE CLEAT IS HIGH ON THE ROOT. GROW THE CAP UNDER IT, THEN JUMP AND STRIKE.');
   well(247, 255, 23, 35);
@@ -154,7 +154,7 @@ export function buildRootway({ painter, T, TS }) {
   /* THE HOIST YARD'S EXAM (FIX PASS, v2 recipe 4): up the hunter's bud into the hunt's pickets - a SHIELD on the root, a SCOUT on the bough over him, the SAPPER's
      bombs behind them; the checkpoint after them */
   sign(270, 18, "THE YARD'S END: THE HUNT'S PICKETS HOLD IT, A BOW ON THE BOUGH OVER THEM.");
-  foe('sapper', 284, 18, 'yardExam', { face: -1 }); foe('shield', 279, 18, 'yardExam', { face: -1 }); foe('archer', 277, 15, 'yardExam', { face: -1 }); deco(278, 18, 'hangCage', 0);
+  foe('sapper', 284, 18, 'yardExam', { face: -1 }); foe('shield', 279, 18, 'yardExam', { face: -1 }); foe('archer', 277, 15, 'yardExam', { face: -1 }); foe('trophyhunter', 287, 18, 'yardExam', { face: -1 }); deco(278, 18, 'hangCage', 0);
   ent('check', 290, 18);                                                          /* CHECKPOINT THREE */
 
   // ================= 4. THE CANOPY LOOKOUT (296-386): THE EXAM =================
@@ -193,9 +193,10 @@ export function buildRootway({ painter, T, TS }) {
   ground(A0, A1, FL); ground(447, 459, FL);
   plank(A0 + 4, A0 + 10, FL - 4); plank(A1 - 10, A1 - 4, FL - 4);               /* THE ROOT PERCHES (he leaps to them; a bud under each, so do you) */
   bud(A0 + 6, FL); bud(A1 - 8, FL);
-  hoist('hmL', { x: A0 + 7, top: 0, hang: FL - 9, cleat: [A0 + 12, FL - 1], load: 'cage', boss: true });   /* (FIX PASS: the perch cages tie off on the arena side of their perch - a few strides from the floor's middle, so the cage is an opening a hero reaches in his perch time) */
-  hoist('hmM', { x: Math.floor((A0 + A1) / 2), top: 0, hang: FL - 7, cleat: [Math.floor((A0 + A1) / 2) - 3, FL - 1], load: 'cage', boss: true });
-  hoist('hmR', { x: A1 - 6, top: 0, hang: FL - 9, cleat: [A1 - 12, FL - 1], load: 'cage', boss: true });
+  hoist('hmL', { x: A0 + 7, top: 0, hang: FL - 9, cleat: [A0 + 12, FL - 4], load: 'cage', boss: true });   /* (FIX PASS: the perch cages tie off on the arena side of their perch - a few strides from the floor's middle, so the cage is an opening a hero reaches in his perch time -
+     at the perch's height: a JUMP and a cut, never a blow that strays off a floor fight and drops the cage on nothing) */
+  hoist('hmM', { x: Math.floor((A0 + A1) / 2), top: 0, hang: FL - 7, cleat: [Math.floor((A0 + A1) / 2) - 3, FL - 4], load: 'cage', boss: true });
+  hoist('hmR', { x: A1 - 6, top: 0, hang: FL - 9, cleat: [A1 - 12, FL - 4], load: 'cage', boss: true });
   ent('huntmaster', A1 - 14, FL - 1, { face: -1 });
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'huntmaster', music: 'boss3', tint: '#c89040', tintA: 0.06,
     start: [A0 + 6, FL - 1], huntmaster: true, perches: [[A0 + 4, A0 + 10, FL - 4], [A1 - 10, A1 - 4, FL - 4]] };

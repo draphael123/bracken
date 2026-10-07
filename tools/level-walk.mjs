@@ -112,7 +112,8 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   while(frames<c.frames){
     if(BK.bossActive){end='boss';break;}
     if(BK.miniActive){end='mini';miniHp=Math.round(100*Math.max(0,BK.P.hp)/(BK.P.maxHp||100));break;}   /* THE MINI'S ROOM: the mini is measured by tools/boss-rates.mjs (row 'level:mini'); its walls hold him in, so the walk stops at its door (hp on arrival kept) */
-    if(BK.state==='talk'){BK.press('confirm');BK.sim(1);frames++;continue;}   /* a word from somebody: read on */
+    if(BK.state==='talk'){BK.press('confirm');BK.sim(1);frames++;continue;}
+    if(BK.state==='card'&&BK.cardClose){BK.cardClose();BK.sim(1);frames++;continue;}   /* a level-up card (a low-level walk levels up mid-level): take it and walk on (claude/rootway) */   /* a word from somebody: read on */
     if(BK.state!=='play'){end=BK.state==='win'?'gate':'state:'+BK.state;break;}
     const p=BK.P;let gi=Math.min(R.length-1,ri+1);for(let k=gi+1;k<=Math.min(R.length-1,ri+3);k++){if(Math.abs(feet(k)-feet(gi))<2*TS&&Math.sign(R[k][0]-R[gi][0])===Math.sign(R[gi][0]*TS+8-p.x))gi=k;else break;}let wx=R[gi][0];   /* AIM ONE TO THREE NODES ON, along the same floor and the same way: the hands stop at their goal (a goal on a lily pad or a ledge lip is a stop in the water), and a goal further on, on a tall level, is on another floor */
     if(perc)perc.apply();

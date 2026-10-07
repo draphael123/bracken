@@ -520,16 +520,16 @@
   "lostPct": 254
  },
  "rootway": {
-  "hash": "54d8e0846911",
+  "hash": "3eb7db99d8bc",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 9,
+  "hits": 14,
   "deaths": 0,
-  "kills": 15,
-  "lifts": 73,
+  "kills": 40,
+  "lifts": 89,
   "walked": 100,
   "bare": true,
-  "lostPct": 45
+  "lostPct": 50
  }
 }

@@ -17,16 +17,16 @@
 //   over YOU (its shadow on the floor first) - the rule turned on you.
 // main.js calls makeHuntmaster(ctx): spawnBoss, owns, on, update, take, caught (a boss cage landed), drawBoss, drawOver, barName, end, read, fight.
 export const HM = {
-  hp: 1100, w: 14, h: 26, markH: 44,
-  p2: 0.67, p3: 0.34,
+  hp: 1150, w: 14, h: 26, markH: 44,
+  p2: 0.75, p3: 0.4,   /* (FIX PASS: 0.67 / 0.34 -> the poisoned split and the hoist-drop shot come sooner) */
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
   gap: [0.8, 0.65, 0.55],
-  arrowV: 290, redV: 250, arrowDmg: 6, redDmg: 8, poisonTick: 3, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
-  drawCut: 0.45, drawCutIn: 28, slashAt: 50, slashTell: 0.45, slash: 0.18, slashReach: 50, slashDmg: 12,   /* (FIX PASS: 36 -> 50, reach 34 -> 50 - a spear's poke range is inside his knife, so the warden cannot cut him from outside it) */
+  arrowV: 290, redV: 250, arrowDmg: 6, redDmg: 10, poisonTick: 4, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
+  slashAt: 36, slashTell: 0.45, slash: 0.18, slashReach: 34, slashDmg: 12,
   leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 6, leapCd: 1,
-  backV: 340, backDmg: 14, reflectR: 12,
-  cageDmg: 20, openT: 3.5, openMul: 1.5, maskT: 5, maskMul: 2, stagT: 1.2, stagMul: 1.25, caughtT: 3, ward: 3, stagWard: 1.5,
+  backV: 340, backDmg: 14, reflectR: 16, strikeR: 30,
+  cageDmg: 20, openCap: 0.045, openT: 3.5, openMul: 1.5, maskT: 5, maskMul: 2, stagT: 1.2, stagMul: 1.25, caughtT: 3, ward: 3, stagWard: 1.5,
 };
 /* each cycle is a list; the phase's new move joins at its turn (k % n) */
 const CYCLE = {
@@ -90,7 +90,7 @@ export function makeHuntmaster(ctx) {
     else if (what === 'volley') { const n = F.weak[1] ? 2 : 3; for (let k = 0; k < n; k++) loose(e, 'gold', (k - (n - 1) / 2) * HM.fan, at); }
     else if (what === 'split') { loose(e, 'gold', 0, at); loose(e, 'red', -HM.fan * 1.3, at); loose(e, 'red', HM.fan * 1.3, at); } }
   /* OPEN: still where he stands (B4); the ward follows (B3) */
-  function open(e, mode, t, mul) { if (!e.alive) return; set(e, mode, t + 0.05); e.open = t; e.openMul = mul; e.ward = 0; e.vy = 0; F.n.opens++; ctx.shake(4); ctx.sfx.crack && ctx.sfx.crack();
+  function open(e, mode, t, mul) { if (!e.alive) return; set(e, mode, t + 0.05); e.open = t; e.openTaken = 0; e.openMul = mul; e.ward = 0; e.vy = 0; F.n.opens++; ctx.shake(4); ctx.sfx.crack && ctx.sfx.crack();
     ctx.burst(e.x, e.y - 18, 16, ['#ffd36b', '#e8dcc0', '#8a6a48'], 80, 0.6); }
   /* A BOSS CAGE LANDED (src/rootway-hands.js): on him, he is CAUGHT */
   H.caught = (id, x, ly) => { const e = live(); if (!e || !F) return false; if (Math.abs(e.x - x) > 22 || Math.abs(e.y - ly) > 20) return false;
@@ -120,9 +120,7 @@ export function makeHuntmaster(ctx) {
         if (e.modeT <= 0) next(e); break; }
       case 'recover': if (e.modeT <= 0) set(e, 'walk', 0.2); break;
       case 'aimTell': case 'volleyTell': case 'splitTell': e.face = Math.sign(P.x - e.x) || e.face;
-        /* (FIX PASS, B11 vs reach: a blade at the end of his knife's range early in the draw - a spear's poke, 28-50 px; inside his bow arm he cannot drop it - and he drops the draw for the knife, told as ever) */
-        if (!e.drawCut && e.modeT > HM.draw * HM.drawCut && Math.abs(P.x - e.x) < HM.slashAt && Math.abs(P.x - e.x) > HM.drawCutIn && Math.abs(P.y - e.y) < 26) { e.drawCut = true; F.n.drawCuts = (F.n.drawCuts || 0) + 1; F.n.slashes++; tell(e, 'slashTell', HM.slashTell); break; }
-        if (e.modeT <= 0) { e.drawCut = false; shoot(e, e.mode.replace('Tell', '')); set(e, 'loose', HM.loose); } break;
+        if (e.modeT <= 0) { shoot(e, e.mode.replace('Tell', '')); set(e, 'loose', HM.loose); } break;
       case 'loose': if (e.modeT <= 0) after(e); break;
       case 'hoistTell': e.face = Math.sign(F.hoistX - e.x) || e.face; if (e.modeT <= 0) { if (ctx.rw) ctx.rw.cutHoist(F.hoist); ctx.sfx.bow ? ctx.sfx.bow() : ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); F.hoist = null; set(e, 'loose', HM.loose); } break;
       case 'slashTell': if (e.modeT <= 0) set(e, 'slash', HM.slash); break;
@@ -133,7 +131,7 @@ export function makeHuntmaster(ctx) {
           e.leapDown = false; e.lf = { x0: e.x, y0: e.y, x1: to.x, y1: to.y, perch: to.perch, t: 0 }; set(e, 'leap', HM.leapT); F.n.leaps++; ctx.sfx.dodge && ctx.sfx.dodge(); ctx.dust(e.x, e.y, 6); } break;
       case 'leap': { const f = e.lf, k = Math.min(1, 1 - e.modeT / HM.leapT); e.x = f.x0 + (f.x1 - f.x0) * k; e.y = f.y0 + (f.y1 - f.y0) * k - Math.sin(k * Math.PI) * 52; e.face = Math.sign(P.x - e.x) || e.face;
         if (e.modeT <= 0) { e.x = f.x1; e.y = f.y1; e.perch = f.perch; F.perchT = 0; set(e, 'land', HM.landT); ctx.dust(e.x, e.y, 8); ctx.sfx.thud && ctx.sfx.thud();
-          if (e.perch >= 0) { F.n.perched = (F.n.perched || 0) + 1; ctx.number(e.x, e.y - 60, 'HIS CAGE HANGS OVER HIM: CUT ITS ROPE', '#8fd160'); } } break; }   /* (FIX PASS, B1: the cage's tell, every time he takes a perch) */
+          if (e.perch >= 0) { F.n.perched = (F.n.perched || 0) + 1; ctx.number(e.x, e.y - 60, 'HIS CAGE HANGS OVER HIM: JUMP AND CUT ITS ROPE', '#8fd160'); } } break; }   /* (FIX PASS, B1: the cage's tell, every time he takes a perch) */
       case 'land': if (e.modeT <= 0) set(e, 'walk', 0.4); break;
       case 'open': case 'caught': e.vy = 0; if (e.open <= 0) { e.ward = e.openMul === HM.stagMul ? HM.stagWard : HM.ward; set(e, 'recover', 0.3); ctx.number(e.x, e.y - 50, 'HE GUARDS', '#9aa39a'); } break;
       default: if (e.modeT <= -1) after(e);
@@ -155,8 +153,9 @@ export function makeHuntmaster(ctx) {
       /* a blade (or the warden's sweep) that meets it */
       const box = { l: a.x - HM.reflectR, r: a.x + HM.reflectR, t: a.y - HM.reflectR, b: a.y + HM.reflectR };
       const sweep = P0 && !P0.dead && (P0.deflectT || 0) > 0 && Math.abs(a.x - P0.x) < 22 && Math.abs(a.y - (P0.y - 10)) < 20;
-      if ((hb && ctx.overlap(hb, box)) || sweep) {
-        if (a.kind === 'gold') { a.back = true; a.life = 1.6; F.n.back++; ctx.sfx.parry && ctx.sfx.parry(); ctx.sparks(a.x, a.y, P0.face || 1, 6); if (once('back')) ctx.number(a.x, a.y - 20, 'STRUCK BACK: IT FLIES HOME', '#8fd160'); continue; }
+      const struck = hb && ctx.overlap(hb, box) && Math.abs(a.x - P0.x) < HM.strikeR && Math.abs(a.y - (P0.y - 12)) < 26;   /* (FIX PASS: struck back CLOSE IN - an arrow is met at arm's length, not at a spear's: every hero's window the same width) */
+      if (struck || sweep) {
+        if (a.kind === 'gold') { a.back = true; a.soft = !struck; a.life = 1.6; F.n.back++; if (a.soft) F.n.softBack = (F.n.softBack || 0) + 1; ctx.sfx.parry && ctx.sfx.parry(); ctx.sparks(a.x, a.y, P0.face || 1, 6); if (once('back')) ctx.number(a.x, a.y - 20, 'STRUCK BACK: IT FLIES HOME', '#8fd160'); continue; }
         if (!a.said) { a.said = true; F.n.redStruck++; ctx.number(a.x, a.y - 20, 'POISON: DODGE IT', '#ff6b6b'); } }
       a.x += a.vx * dt; a.y += a.vy * dt; a.life -= dt;
       if (ctx.solidAt(Math.floor(a.x / TS), Math.floor(a.y / TS)) || a.y > F.A.floor + 4) { a.dead = true; if (a.kind === 'red') poolAt(a.x); continue; }
@@ -176,6 +175,8 @@ export function makeHuntmaster(ctx) {
     if (e.ward > 0) { F.n.glanced++; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x, e.y - 18, 1, 4); ctx.number(e.x, e.y - 50, 'HE GUARDS: IT GLANCES OFF', '#9aa39a'); return; }
     if (hmOpen(e)) { selfHurt(e, HM.backDmg, a.x); return; }
     const ph = F.ph; selfHurt(e, HM.backDmg, a.x); if (!e.alive) return;
+    /* (FIX PASS: a PARRY - the warden's sweep - turns his arrow home but not hard enough to break his gear: it staggers him. A BLADE that STRIKES it snaps the strap) */
+    if (!F.weak[ph] && a.soft) { F.n.staggers++; open(e, 'open', HM.stagT, HM.stagMul); if (once('soft')) ctx.number(e.x, e.y - 56, 'A PARRY ONLY STAGGERS HIM: STRIKE IT', '#ffd36b'); else ctx.number(e.x, e.y - 56, 'HIS OWN ARROW: HE STAGGERS', '#8fd160'); return; }
     if (!F.weak[ph]) { F.weak[ph] = true; F.n.breaks++;
       open(e, 'open', ph === 3 ? HM.maskT : HM.openT, ph === 3 ? HM.maskMul : HM.openMul);
       if (ph === 1) ctx.number(e.x, e.y - 56, 'THE QUIVER STRAP SNAPS: HE IS OPEN', '#8fd160'); else if (ph === 2) ctx.number(e.x, e.y - 56, 'THE BRACER BREAKS: HE IS OPEN', '#8fd160'); else ctx.number(e.x, e.y - 56, 'THE MASK BREAKS: HE IS OPEN', '#8fd160'); }
@@ -191,7 +192,9 @@ export function makeHuntmaster(ctx) {
   /* A BLOW ON HIM: whole, except a blow from his FRONT at his height while he guards (B11: GO ROUND, or from the air), and nothing in his ward (B3) */
   H.take = (e, dmg, fromX, plunge) => { if (!F) return dmg; const P = ctx.hero();
     if (F.self) return dmg;
-    if (hmOpen(e)) return dmg * (e.openMul || HM.openMul);
+    if (hmOpen(e)) { const d = dmg * (e.openMul || HM.openMul); e.openTaken = (e.openTaken || 0) + d;
+      if (e.openTaken >= HM.openCap * e.maxHp) { e.open = 0; F.n.capped = (F.n.capped || 0) + 1; }   /* (FIX PASS: an opening closes once he has taken HM.openCap of his blood in it - he staggers up from a heavy blow: the same for every hero, felt by the fastest blade) */
+      return d; }
     if (e.ward > 0) { F.n.turned++; ctx.turned && ctx.turned(e, fromX, 'HE GUARDS'); return 0; }
     const frontal = (e.face || 1) * (fromX - e.x) > -2, air = !!plunge || (P && !P.ground) || (P && P.y < e.y - 14);
     if (GUARDS.has(e.mode) && frontal && !air) { F.n.turned++; ctx.turned && ctx.turned(e, fromX, 'GO ROUND'); if (once('round')) ctx.number(e.x, e.y - 60, 'HE GUARDS HIS FRONT: GO ROUND, OR FROM ABOVE', '#ffd36b'); return 0; }
@@ -275,7 +278,13 @@ export function hmPlan(o) {
   for (const a of R0.arrows) { if (a.back) continue; const rx = a.x - P.x, ry = a.y - (P.y - 10), come = rx * a.vx < 0 || Math.abs(rx) < 8;
     if (!come || Math.abs(rx) > 90 || Math.abs(ry) > 40) continue;
     if (a.kind === 'gold' && o.eyes && !roll('b' + a.id, PLAN.missBack)) {   /* (each arrow its own roll: some let go) */ out.face = Math.sign(rx) || P.face; out.gx = P.x;
-      if (Math.hypot(rx, ry) < reach + 6 + Math.hypot(a.vx, a.vy) * 0.07 && Math.abs(ry) < 26 && P.atk < 0) out.atk = true; out.why = 'strike his arrow back'; return out; }   /* (the swing comes out a beat after the press: met a beat early) */
+      const near = Math.hypot(rx, ry) < reach + 6 + Math.hypot(a.vx, a.vy) * 0.07;
+      if (near && Math.abs(ry) < 26 && P.atk < 0) out.atk = true;
+      else if (Math.abs(rx) < 40 && !(P.atk < 0)) {   /* (FIX PASS, a v2 gap: mid-swing he cannot meet it - a player takes it on the shield, sweeps it, or rolls it, not his chest) */
+        if (o.shield) { out.block = true; out.why = 'block the arrow (mid-swing)'; return out; }
+        if (o.deflect && !(P.busy > 0)) { out.block = true; out.why = 'sweep the arrow (mid-swing)'; return out; }
+        if (P.ground) { out.dodge = true; out.why = 'roll the arrow (mid-swing)'; return out; } }
+      out.why = 'strike his arrow back'; return out; }   /* (the swing comes out a beat after the press: met a beat early) */
     if (a.kind === 'gold' && o.shield && !roll('s' + a.id, PLAN.miss)) { out.block = true; out.face = Math.sign(rx) || P.face; out.why = 'block the arrow'; return out; }
     if (o.deflect && a.kind === 'gold' && !(P.busy > 0) && !roll('w' + a.id, PLAN.missBack)) { out.block = Math.abs(rx) < 40; out.face = Math.sign(rx) || P.face; out.why = 'sweep the arrow'; return out; }
     if (Math.abs(rx) < 46) { if (a.kind === 'red' && P.ground && ry > -6 && !roll('j' + a.id, 0.5)) { out.jump = true; out.why = 'jump the red arrow'; return out; } out.dodge = true; out.why = a.kind === 'red' ? 'roll the red arrow' : 'roll the arrow'; return out; } }
@@ -289,7 +298,7 @@ export function hmPlan(o) {
     if (o.shield) { out.block = true; out.why = 'block the knife'; return out; } out.gx = clamp(e.x - toHim * 70); if (ad < 52 && (e.mode === 'slash' || e.modeT < 0.2) && P.ground) out.dodge = true; out.why = 'out of the knife'; return out; }
   /* HE IS ON A PERCH: cut the rope of the cage over him (the level's verb), else up the bud */
   if (e.y < A.floor - 20) { const c = (o.cleats || []).filter(q => q.up && Math.abs(q.x - e.x) < 24)[0];
-    if (c && !(e.ward > 0) && Math.abs(P.x - c.cx) < 420) {   /* (FIX PASS: a player reads 'HIS CAGE HANGS OVER HIM' and goes for the rope from across the stand) */ out.gx = c.cx - 6; out.face = 1; if (Math.abs(P.x - (c.cx - 6)) < 8 && P.ground && P.atk < 0) { out.face = Math.sign(c.cx - P.x) || 1; out.atk = true; } out.why = 'cut the rope over him'; return out; }
+    if (c && !(e.ward > 0) && Math.abs(P.x - c.cx) < 420) {   /* (FIX PASS: a player reads 'HIS CAGE HANGS OVER HIM' and goes for the rope from across the stand) */ out.gx = c.cx - 6; out.face = 1; if (Math.abs(P.x - (c.cx - 6)) < 8) { out.face = Math.sign(c.cx - P.x) || 1; if (P.ground) out.jump = true; else if (P.y < A.floor - 18 && P.atk < 0) out.atk = true; }   /* (the cleat at his perch's height: a jump and a cut on the way up) */ out.why = 'cut the rope over him'; return out; }
     const b = (o.buds || []).sort((a, q) => Math.abs(a.x - e.x) - Math.abs(q.x - e.x))[0];
     if (b) { if (P.y < A.floor - 20) { out.gx = clamp(e.x - toHim * 14); out.face = toHim; out.atk = ad < reach + 8 && P.atk < 0 && sameFloor; out.why = 'on his perch: cut him'; return out; }
       out.gx = b.x; if (Math.abs(P.x - b.x) < 6) out.gx = P.x; if (b.grown && Math.abs(P.x - b.x) < 10 && P.ground) out.jump = true; out.why = 'up the bud to his perch'; return out; } }
