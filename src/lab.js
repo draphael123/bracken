@@ -816,8 +816,8 @@ async function runbossLab(BK, opts) {
         /* (claude/wardenkit, v2 only, the warden only) HIS REPRISAL ON THE CARPET: her plan holds her at her point's distance the whole time she waits, so every
            free frame was a thrust at his ward and his greed ring came every ~9 s (9-11 reprisals a fight, 190 of her 238 health; the knight and the pyromancer
            3-5). She now holds the blow one short of his count, as the ground hands do (labGreedStop), and flies out of a closing ring. The other heroes'
-           carpet hands are untouched (a QUESTION in work/claude/lane-done/claude-wardenkit.md) */
-        const wg=LABP.v2&&h==='warden'&&BK.greed?BK.greed:null,wgOut=wg?(wg.reach||60)+(boss.w||20)/2:0,wgFlee=!!wg&&boss.greedT>0&&Math.abs(P.x-boss.x)<wgOut+18,wgHold=!!wg&&wg.open(boss)!==true&&wg.count(boss)>=wg.limit(boss)-1;
+           carpet hands were untouched (WARDEN KIT Q4); claude/retune2: every hero's v2 carpet hands hold one short and fly out now, as a person learns to */
+        const wg=LABP.v2&&BK.greed?BK.greed:null,wgOut=wg?(wg.reach||60)+(boss.w||20)/2:0,wgFlee=!!wg&&boss.greedT>0&&Math.abs(P.x-boss.x)<wgOut+18,wgHold=!!wg&&wg.open(boss)!==true&&wg.count(boss)>=wg.limit(boss)-1;
         if(wgFlee){vx+=(P.x>=boss.x?1:-1)*3;threat=true;}
         const rest=P.st<14||(P.labRest&&P.st<40);P.labRest=rest;
         if(!threat&&!realmGoal){const want=boss.open>0?(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.55):(rest?150:(h==='warden'?boss.w/2+32:LAB_REACH[h]*0.7));   /* (claude/herokit) THE WARDEN'S POINT PAYS 34+ px out (tipPay): flown in to 0.55-0.7 of her reach she only ever struck with the haft and the middle of the shaft (0 tip hits in 66 on the Archmage) - she holds the tip distance, as a person does */const gx=boss.x-side*want,gy=by;
@@ -1003,7 +1003,7 @@ async function runbossLab(BK, opts) {
         /* THE BAR lands at his drum's mouth (his ledge) and on his housing top: shield it on the ground, or jump it as it comes */
         const mq=HS[boss.at||0],mouthY=(mq.ledgeTop+1)*TZ,mouthX=mq.at==='end'?mq.ledge[0]*TZ:(mq.ledge[1]+1)*TZ;
         const barHere=(Math.abs(P.y-mouthY)<14&&Math.abs(P.x-mouthX)<72)||(onTop(boss.at||0)&&Math.abs(P.x-boss.x)<62);
-        if(m==='leverTell'&&barHere&&!P.climb){busy=true;if(SHIELDED(h)&&P.ground){k.block=true;P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){BK.press('jump');P.labJump=14;}}
+        if(m==='leverTell'&&barHere&&!P.climb){busy=true;if((SHIELDED(h)||(LABP.v2&&h==='warden'))&&P.ground){k.block=SHIELDED(h)?true:DEFLECT_TAP(f);P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){BK.press('jump');P.labJump=14;}}
         if(!busy&&ring&&P.ground){busy=true;const side=P.x>ring.x?1:-1;go(ring.x+side*42);}
         /* ROUND SIX (claude/winch4): PHASE THREE - HE HAS COME DOWN. The hands go to the floor he stands on (the deck, or the Great Drum's
            ledge after his ride: the low line always runs to him) and duel him there: out of THE HOOK SWUNG's reach as it winds up, or,
@@ -1014,7 +1014,7 @@ async function runbossLab(BK, opts) {
         const duel=()=>{ const F=FLs[hf],dx=boss.x-P.x,ad=Math.abs(dx),side=Math.sign(dx)||1,md=boss.modeT,R=WM_K.whirlR;
           if(m==='descendTell'||m==='descend'){const rx=boss.toX,s=P.x>=rx?1:-1,out=rx+s*(WM_K.leapHit+26);if(Math.abs(P.x-rx)<WM_K.leapHit+14)go(out>F.x0+6&&out<F.x1-6?out:rx-s*(WM_K.leapHit+26));return;}
           if(m==='whirlTell'){ if(ad<R+8){const out=Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*(R+10)));if(Math.abs(out-boss.x)>R+3)go(out);else if(md<0.24&&P.ground&&!P.labJump){BK.press('jump');P.labJump=16;}} return; }   /* (no room on the deck to step out of it: over it) */
-          if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if(SHIELDED(h)&&P.ground){k.block=true;P.face=side;} else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
+          if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if((SHIELDED(h)||(LABP.v2&&h==='warden'))&&P.ground){k.block=SHIELDED(h)?true:DEFLECT_TAP(f);P.face=side;}   /* (claude/retune2, v2: the warden DEFLECTS his brake bar and wrench - both yellow; she took 8 of 8 brake bars, 0 deflects) */ else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
           if(m==='rideTell'||m==='ride'){ if((m==='ride'||toldRun(['rideTell']))&&ad<64&&P.ground&&!P.labJump){BK.press('jump');P.labJump=14;} return; }
           /* (claude/sweep1, v2 only) HIS GREED, ON THE DECK: the duel cut him whenever he was in reach, so the reprisal burst took the hands
              every few seconds (the knight's 152 health went 60% to it). As the other duels do (BK.greed): out of the burst as it is told,
@@ -1115,13 +1115,13 @@ async function runbossLab(BK, opts) {
           if(m==='diveTell'&&boss.tgt===on){const n=next(on),dir=n?Math.sign(cen(n)-P.x)||1:1,ex=dir>0?on.x+on.w-10:on.x+10;if(Math.abs(ex-P.x)>3)k[ex>P.x?'right':'left']=true;done=true;}   /* to the edge, and wait: the aim is his until he drops */
           else if(m==='dive'&&boss.tgt===on){goSlab(next(on));done=true;}   /* LATE: he has dropped - go */
           else if(m==='flareTell'&&boss.fm===on){goSlab(next(on));done=true;}
-          else if((m==='breathTell'&&boss.modeT<0.45)||m==='breath'){ if(SHIELDED(h)){k.block=true;P.face=side;} else if(m==='breathTell'){goSlab(next(on,null,true)||next(on));} done=true; }   /* THE FIRE: a shield, or off its line */
+          else if((m==='breathTell'&&boss.modeT<0.45)||m==='breath'){ if(SHIELDED(h)){k.block=true;P.face=side;} else if(LABP.v2&&h==='warden'){k.block=DEFLECT_TAP(f);P.face=side;} else if(m==='breathTell'){goSlab(next(on,null,true)||next(on));} done=true; }   /* THE FIRE: a shield, or off its line (claude/retune2, v2: the warden DEFLECTS it - it is yellow, and her slab hops off its line put her on the spikes 2-3 times a fight; the same for his fireballs below) */
           else if((m==='smash'||m==='crash')&&boss.y>on.y+8){done=true;}
           if(!done){const tx=cen(on);if(Math.abs(tx-P.x)>6)k[tx>P.x?'right':'left']=true;}
           /* THE FIREBALLS (2026-09-28, in the wing gust's place; two, one after the other, since claude/gargoyle5 - the nearest one coming in is the one it answers): slow and aimed where it was thrown - a shield faces it; the others jump it
              as it comes in (a roll could carry them off the slab) */
           const b=(boss.balls||[]).filter(q=>Math.sign(q.vx)===-(Math.sign(q.x-P.x)||side)||Math.abs(q.x-P.x)<10).sort((p,q)=>Math.abs(p.x-P.x)-Math.abs(q.x-P.x))[0];if(b){const bs=Math.sign(b.x-P.x)||side,near=Math.abs(b.x-P.x),closing=Math.sign(b.vx)===-bs||near<10;
-            if(closing&&near<70&&Math.abs(b.y-(P.y-9))<40){if(SHIELDED(h)){if(!done){k.block=true;k.left=k.right=false;P.face=bs;}}else if(near<34&&P.ground&&!P.labJump){BK.press('jump');P.labJump=10;}}}
+            if(closing&&near<70&&Math.abs(b.y-(P.y-9))<40){if(SHIELDED(h)){if(!done){k.block=true;k.left=k.right=false;P.face=bs;}}else if(LABP.v2&&h==='warden'&&near<40&&P.ground){k.block=DEFLECT_TAP(f);k.left=k.right=false;P.face=bs;}else if(near<34&&P.ground&&!P.labJump){BK.press('jump');P.labJump=10;}}}
         }
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const was=P.hp,m0=boss.mode,ball0=(boss.balls||[]).length;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:ball0>(boss.balls||[]).length&&P.hp<was?'FIREBALL':m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
@@ -1673,8 +1673,9 @@ async function runbossLab(BK, opts) {
         else if (coil) { strike = false; if (shield || h === 'warden') { goal = null; P.face = Math.sign(coil.x - P.x) || P.face; k.block = shield ? true : DEFLECT_TAP(f); } else if (Math.abs(coil.x - P.x) < 26 && !(P.dodge > 0) && P.st >= 10) { BK.press('dodge'); goal = null; } else goal = null; }
         else if ((shield || h === 'warden') && Math.abs(P.x - boss.x) < (S ? S.swingR : 54) + 16 && (m === 'swing' || (m === 'swingTell' && (LABP.v2 ? P.labDkPrev === 'swing' : boss.strLeft > 0 && !boss.punish)))) guard();   /* inside a string the guard stays up between its cuts (a player holds it through) */
         else if (!seen && /Tell$/.test(m)) { goal = boss.x; strike = !(P.labRest); }   /* not read yet */
-        else if (m === 'swingTell') { if (Math.abs(P.x - boss.x) < (S ? S.swingR : 54) + 16 && boss.modeT < 0.24) guard(); else { goal = boss.x + side * ((S ? S.swingR : 54) + 24); strike = false; } }
+        else if (m === 'swingTell') { if (Math.abs(P.x - boss.x) < (S ? S.swingR : 54) + 16 && (boss.modeT < 0.24 || (LABP.v2 && shield))) guard();   /* (claude/retune2, v2: a SHIELD goes up as his cut is SEEN - the eyes read his tell a reaction late, so waiting for its last quarter-second put the knight's guard up after the blade: 7 of 8 greatsword cuts landed on a shield) */ else { goal = boss.x + side * ((S ? S.swingR : 54) + 24); strike = false; } }
         else if (m === 'cleaveTell') { strike = false;
+          if (!boss.committed && LABP.v2 && shield && boss.modeT < 0.2) guard();   /* (claude/retune2, v2: his commit is seen a reaction late - with a fifth of a second of the lift left and no commit seen yet, the SHIELD goes up under it; it is yellow) */
           if (!boss.committed) { goal = boss.x + side * 36; P.labDkC = f; }   /* in its reach: bait the commit */
           else if ((!LABP.v2 && f - (P.labDkC ?? f) < 12) || boss.modeT > 0.14) goal = boss.x + side * 36;   /* (the commit is seen a fifth of a second late; WEIGHT's roll is short and safe only early, so it is rolled late, through the blade as it comes down) */
           else if (!(P.dodge > 0) && P.st >= 30) { k.left = side < 0; k.right = side > 0; BK.press('dodge'); goal = null; }   /* (WEIGHT: a roll is 22-28 wind - with less, it is not tried) */
