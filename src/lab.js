@@ -1236,7 +1236,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const MH=BK.matriarchHands(),S=MH&&MH.show();
         if(f===0||!P.labRmMem)P.labRmMem={};
-        const pl=S?matPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,deflect:h==='warden',brood:LABP.v2?BK.enemies().filter(q=>q.alive&&q.rmBrood):null,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRmMem}):{gx:null,face:P.face};
+        const pl=S?matPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,deflect:h==='warden',brood:LABP.v2?BK.enemies().filter(q=>q.alive&&q.rmBrood):null,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,deflectT:P.deflectT||0},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labRmMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}   /* (claude/wardenkit, v2: her step carries now - ~49 px, graced to its end - so the v2 hands take it where they roll; her button steps BACK, so she faces away from where she goes) */
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=24;}}   /* (a full jump: three rows up a pillar wants the key held to the top of the rise) */
         if(P.labJump>0){P.labJump--;k.jump=true;}
