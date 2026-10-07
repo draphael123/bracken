@@ -17,22 +17,22 @@
 //   over YOU (its shadow on the floor first) - the rule turned on you.
 // main.js calls makeHuntmaster(ctx): spawnBoss, owns, on, update, take, caught (a boss cage landed), drawBoss, drawOver, barName, end, read, fight.
 export const HM = {
-  hp: 760, w: 14, h: 26, markH: 44,
+  hp: 1100, w: 14, h: 26, markH: 44,
   p2: 0.67, p3: 0.34,
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
   gap: [0.8, 0.65, 0.55],
-  arrowV: 290, redV: 250, arrowDmg: 10, redDmg: 8, poisonTick: 3, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
-  slashAt: 40, slashTell: 0.45, slash: 0.18, slashReach: 34, slashDmg: 14,
-  leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 5.5, leapCd: 1,
+  arrowV: 290, redV: 250, arrowDmg: 8, redDmg: 8, poisonTick: 3, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
+  slashAt: 36, slashTell: 0.45, slash: 0.18, slashReach: 34, slashDmg: 12,
+  leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 4, leapCd: 1,
   backV: 340, backDmg: 14, reflectR: 9,
-  cageDmg: 20, openT: 3.5, openMul: 1.5, maskT: 5, maskMul: 2, stagT: 1.2, stagMul: 1.25, caughtT: 3, ward: 3,
+  cageDmg: 20, openT: 3.5, openMul: 1.5, maskT: 5, maskMul: 2, stagT: 1.2, stagMul: 1.25, caughtT: 3, ward: 3, stagWard: 1.5,
 };
 /* each cycle is a list; the phase's new move joins at its turn (k % n) */
 const CYCLE = {
-  1: [['aim', 'volley', 'aim', 'leap'], ['volley', 'aim', 'aim', 'leap'], ['aim', 'aim', 'volley', 'leap']],
-  2: [['split', 'aim', 'volley', 'leap'], ['aim', 'split', 'split', 'leap'], ['volley', 'split', 'aim', 'leap']],
-  3: [['hoist', 'split', 'aim', 'leap'], ['split', 'hoist', 'volley', 'leap'], ['aim', 'hoist', 'split', 'leap']],
+  1: [['aim', 'volley', 'aim', 'leap'], ['volley', 'aim', 'aim', 'volley'], ['aim', 'aim', 'volley', 'aim']],
+  2: [['split', 'aim', 'volley', 'leap'], ['aim', 'split', 'split', 'aim'], ['volley', 'split', 'aim', 'volley']],
+  3: [['hoist', 'split', 'aim', 'leap'], ['split', 'hoist', 'volley', 'aim'], ['aim', 'hoist', 'split', 'volley']],   /* (a leap one cycle in three: the perch is a place he goes, not where he lives) */
 };
 export const HM_MODES = { aimTell: '!', volleyTell: '!', splitTell: '!!', hoistTell: '!!', slashTell: '!' };   /* the marks (src/marks.js): a yellow ! a blade or a shield answers, a red !! you get out of */
 const GUARDS = new Set(['walk', 'recover', 'stand']);
@@ -78,7 +78,7 @@ export function makeHuntmaster(ctx) {
     return tell(e, 'aimTell', HM.draw * slow);
   }
   /* the boss cage hanging over a hero (P3's hoist-drop shot), from the Rootway's hands */
-  const cageOver = P => { const hs = ctx.rw ? ctx.rw.bossHoists() : []; let best = null; for (const h of hs) if (h.up && Math.abs(h.x - P.x) < 30 && (!best || Math.abs(h.x - P.x) < Math.abs(best.x - P.x))) best = h; return best; };
+  const cageOver = P => { const hs = ctx.rw ? ctx.rw.bossHoists() : []; let best = null; for (const h of hs) if (h.up && Math.abs(h.x - P.x) < 72 && (!best || Math.abs(h.x - P.x) < Math.abs(best.x - P.x))) best = h; return best; };   /* (the cage nearest you, within a few strides: the shot drops it where you were going) */
   const after = e => set(e, 'recover', HM.gap[F.ph - 1]);
   /* AN ARROW: gold (struck back flies home) or red (poisoned: a blade does not turn it) */
   function loose(e, kind, ang, aimAt) { const sx = e.x + (e.face || 1) * 8, sy = e.y - 18, v = kind === 'red' ? HM.redV : HM.arrowV;
@@ -106,6 +106,7 @@ export function makeHuntmaster(ctx) {
     if (!hmOpen(e)) { const k = e.hp / e.maxHp;
       if (F.ph === 1 && k <= HM.p2) { F.ph = 2; e.phase = 2; F.cyc = 0; F.i = 0; F.list = CYCLE[2][0].slice(); say(null, e.x, e.y - 60, 'RED ARROWS: POISON. DODGE THEM, DO NOT STRIKE THEM', '#ff6b6b'); ctx.enrage && ctx.enrage(e); }
       else if (F.ph === 2 && k <= HM.p3) { F.ph = 3; e.phase = 3; F.cyc = 0; F.i = 0; F.list = CYCLE[3][0].slice(); say(null, e.x, e.y - 60, 'HE SHOOTS THE HOISTS: WATCH THE CAGE OVER YOU', '#ff6b6b'); ctx.enrage && ctx.enrage(e); } }
+    if (e.perch >= 0) F.perchT += dt;   /* his time on a perch runs whatever he does there */
     /* he turns to you a beat late while he guards (go round him, and you have that beat) */
     if (GUARDS.has(e.mode)) { const want = Math.sign(P.x - e.x) || e.face; if (want !== e.face) { F.faceT += dt; if (F.faceT >= HM.turnLag) { e.face = want; F.faceT = 0; } } else F.faceT = 0; }
     switch (e.mode) {
@@ -115,7 +116,7 @@ export function makeHuntmaster(ctx) {
         if (e.perch < 0) { /* he keeps his range: back off when you come in, come on when you stand off */
           let want = 0; if (ad < HM.keep[0]) want = -Math.sign(d) * HM.back; else if (ad > HM.keep[1]) want = Math.sign(d) * HM.walk;
           const nx = clampX(e, e.x + want * dt); e.x = nx; e.mode = Math.abs(want) > 1 && nx !== e.x - want * dt ? 'walk' : e.mode; }
-        else { F.perchT += dt; if (F.perchT > HM.perchT || (Math.abs(P.y - e.y) < 20 && ad < 60)) { F.perchT = 0; tell(e, 'leapTell', HM.leapTell); e.leapDown = true; break; } }
+        else if (F.perchT > HM.perchT) { F.perchT = 0; tell(e, 'leapTell', HM.leapTell); e.leapDown = true; break; }   /* (you followed him up: he stays and fights you there - his knife - until his time is up) */
         if (e.modeT <= 0) next(e); break; }
       case 'recover': if (e.modeT <= 0) set(e, 'walk', 0.2); break;
       case 'aimTell': case 'volleyTell': case 'splitTell': e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { shoot(e, e.mode.replace('Tell', '')); set(e, 'loose', HM.loose); } break;
@@ -130,7 +131,7 @@ export function makeHuntmaster(ctx) {
       case 'leap': { const f = e.lf, k = Math.min(1, 1 - e.modeT / HM.leapT); e.x = f.x0 + (f.x1 - f.x0) * k; e.y = f.y0 + (f.y1 - f.y0) * k - Math.sin(k * Math.PI) * 52; e.face = Math.sign(P.x - e.x) || e.face;
         if (e.modeT <= 0) { e.x = f.x1; e.y = f.y1; e.perch = f.perch; F.perchT = 0; set(e, 'land', HM.landT); ctx.dust(e.x, e.y, 8); ctx.sfx.thud && ctx.sfx.thud(); } break; }
       case 'land': if (e.modeT <= 0) set(e, 'walk', 0.4); break;
-      case 'open': case 'caught': e.vy = 0; if (e.open <= 0) { e.ward = HM.ward; set(e, 'recover', 0.3); say(null, e.x, e.y - 50, 'HE GUARDS', '#9aa39a'); } break;
+      case 'open': case 'caught': e.vy = 0; if (e.open <= 0) { e.ward = e.openMul === HM.stagMul ? HM.stagWard : HM.ward; set(e, 'recover', 0.3); say(null, e.x, e.y - 50, 'HE GUARDS', '#9aa39a'); } break;
       default: if (e.modeT <= -1) after(e);
     }
     /* standing where he stands (a perch, or the floor); off a perch a cage knocked him from, he falls */
@@ -268,7 +269,7 @@ export function hmPlan(o) {
     if (!come || Math.abs(rx) > 90 || Math.abs(ry) > 40) continue;
     const key = 'a' + Math.round(a.x * 0 + a.vx) + ':' + Math.round(a.vy) + ':' + (mem.arrowSet = mem.arrowSet || 0);
     if (a.kind === 'gold' && o.eyes && !roll('b' + Math.round(a.vx * 7 + a.vy), PLAN.missBack)) { out.face = Math.sign(rx) || P.face; out.gx = P.x;
-      if (Math.abs(rx) < reach + 10 && Math.abs(ry) < 22 && P.atk < 0) out.atk = true; out.why = 'strike his arrow back'; return out; }
+      if (Math.abs(rx) < reach + 6 + Math.abs(a.vx) * 0.07 && Math.abs(ry) < 22 && P.atk < 0) out.atk = true; out.why = 'strike his arrow back'; return out; }   /* (the swing comes out a beat after the press: met a beat early) */
     if (a.kind === 'gold' && o.shield && !roll('s' + Math.round(a.vx * 7 + a.vy), PLAN.miss)) { out.block = true; out.face = Math.sign(rx) || P.face; out.why = 'block the arrow'; return out; }
     if (o.deflect && a.kind === 'gold' && !(P.busy > 0)) { out.block = Math.abs(rx) < 40; out.face = Math.sign(rx) || P.face; out.why = 'sweep the arrow'; return out; }
     if (Math.abs(rx) < 46) { if (a.kind === 'red' && P.ground && ry > -6 && !roll('j' + Math.round(a.vx * 7 + a.vy), 0.5)) { out.jump = true; out.why = 'jump the red arrow'; return out; } out.dodge = true; out.why = a.kind === 'red' ? 'roll the red arrow' : 'roll the arrow'; return out; }
@@ -280,22 +281,24 @@ export function hmPlan(o) {
   /* HIS KNIFE: block, sweep, or step back */
   if ((e.mode === 'slashTell' || e.mode === 'slash') && seen && ad < 60 && !roll('k' + Math.round(t * 2), PLAN.miss)) { out.face = toHim;
     if (o.deflect && !(P.busy > 0)) { out.block = e.modeT < 0.22 || e.mode === 'slash'; out.why = 'sweep the knife'; return out; }
-    if (o.shield) { out.block = true; out.why = 'block the knife'; return out; } out.gx = clamp(e.x - toHim * 70); out.why = 'out of the knife'; return out; }
+    if (o.shield) { out.block = true; out.why = 'block the knife'; return out; } out.gx = clamp(e.x - toHim * 70); if (ad < 52 && (e.mode === 'slash' || e.modeT < 0.2) && P.ground) out.dodge = true; out.why = 'out of the knife'; return out; }
   /* HE IS ON A PERCH: cut the rope of the cage over him (the level's verb), else up the bud */
   if (e.y < A.floor - 20) { const c = (o.cleats || []).filter(q => q.up && Math.abs(q.x - e.x) < 24)[0];
-    if (c && !(e.ward > 0)) { out.gx = c.cx - 6; out.face = 1; if (Math.abs(P.x - (c.cx - 6)) < 8 && P.ground && P.atk < 0) { out.face = Math.sign(c.cx - P.x) || 1; out.atk = true; } out.why = 'cut the rope over him'; return out; }
+    if (c && !(e.ward > 0) && Math.abs(P.x - c.cx) < 200) { out.gx = c.cx - 6; out.face = 1; if (Math.abs(P.x - (c.cx - 6)) < 8 && P.ground && P.atk < 0) { out.face = Math.sign(c.cx - P.x) || 1; out.atk = true; } out.why = 'cut the rope over him'; return out; }
     const b = (o.buds || []).sort((a, q) => Math.abs(a.x - e.x) - Math.abs(q.x - e.x))[0];
     if (b) { if (P.y < A.floor - 20) { out.gx = clamp(e.x - toHim * 14); out.face = toHim; out.atk = ad < reach + 8 && P.atk < 0 && sameFloor; out.why = 'on his perch: cut him'; return out; }
       out.gx = b.x; if (Math.abs(P.x - b.x) < 6) out.gx = P.x; if (b.grown && Math.abs(P.x - b.x) < 10 && P.ground) out.jump = true; out.why = 'up the bud to his perch'; return out; } }
-  /* HE GUARDS HIS FRONT: from a jump over his guard, or round him */
-  const guarding = ['walk', 'recover', 'stand'].includes(e.mode) && !(e.ward > 0);
+  /* HE GUARDS HIS FRONT: stand off his knife; cut him from a jump over his guard, or from behind when he turns late */
+  const guarding = ['walk', 'recover', 'stand'].includes(e.mode) && !(e.ward > 0), standoff = Math.max(50, reach + 22);
   if (e.ward > 0) { out.gx = clamp(e.x - toHim * 70); out.face = toHim; out.why = 'he guards: wait it out'; return out; }
+  if (!P.ground && P.atk < 0 && ad < reach + 10 && sameFloor && (o.greed || 0) < 3) { out.atk = true; out.face = toHim; out.gx = e.x; out.why = 'cut him from the air'; return out; }
   if (guarding && sameFloor) { const front = (e.face || 1) * (P.x - e.x) > 0;
-    if (front && ad < reach + 24) { out.face = toHim; if (P.ground && (o.greed || 0) < 3 && !roll('jj' + Math.floor(t * 1.5), 0.3)) { out.jump = true; out.gx = e.x; out.why = 'over his guard'; return out; }
-      if (!P.ground && P.atk < 0 && ad < reach + 10) { out.atk = true; out.why = 'cut him from the air'; return out; } out.gx = e.x; out.why = 'round him'; return out; }
-    if (!front && ad < reach + 10 && P.atk < 0 && (o.greed || 0) < 3) { out.atk = true; out.face = toHim; out.why = 'cut him from behind'; return out; } }
-  /* HE DRAWS: his front is open - cut him if close, else close in under the arrow */
-  if (/Tell$/.test(e.mode) && e.mode !== 'slashTell' && e.mode !== 'leapTell' && sameFloor && ad < reach + 8 && P.atk < 0 && (o.greed || 0) < 3) { out.atk = true; out.face = toHim; out.why = 'cut him as he draws'; return out; }
-  out.gx = clamp(e.x - toHim * Math.max(16, reach - 6)); out.face = toHim; if (!P.ground && P.atk < 0 && ad < reach + 8 && sameFloor) out.atk = true; out.why = 'close in';
+    if (!front && ad < reach + 10 && P.atk < 0 && (o.greed || 0) < 3) { out.atk = true; out.face = toHim; out.why = 'cut him from behind'; return out; }
+    if (front && ad < standoff + 8 && P.ground && (o.greed || 0) < 3 && !roll('jj' + Math.floor(t * 1.2), 0.5)) { out.jump = true; out.gx = e.x + toHim * 6; out.face = toHim; out.why = 'over his guard'; return out; }
+    out.gx = clamp(e.x - toHim * standoff); out.face = toHim; out.why = 'stand off his knife'; return out; }
+  /* HE DRAWS: both hands on the bow, his front is open - in, and cut him (a swing that meets his arrow as it leaves the string sends it home) */
+  if (/Tell$/.test(e.mode) && e.mode !== 'slashTell' && e.mode !== 'leapTell' && e.mode !== 'hoistTell' && sameFloor && seen && ad < reach + 70) { out.gx = clamp(e.x - toHim * Math.max(12, reach - 8)); out.face = toHim;
+    if (ad < reach + 8 && P.atk < 0 && (o.greed || 0) < 3) out.atk = true; out.why = 'cut him as he draws'; return out; }
+  out.gx = clamp(e.x - toHim * standoff); out.face = toHim; out.why = 'close in';
   return out;
 }
