@@ -142,7 +142,7 @@ export function drawBody(g, e, S, G, cx, cy, time, flash, pose) {
   const gem = e.mode === 'dazzled'; { const q = T(0, -196), a = S.ph === 3; g.fillStyle = '#05080f'; g.fillRect(q[0] - 5, q[1] - 6, 10, 12); g.fillStyle = gem ? '#ffffff' : a ? '#ffd36b' : S.ph === 2 ? '#5a4aa8' : '#c8a028'; g.fillRect(q[0] - 4, q[1] - 5, 8, 10); g.fillStyle = gem ? '#ffffff' : '#fff6c8'; g.fillRect(q[0] - 3, q[1] - 4, 2, 4);
     if (gem || a) glow(0, -196, gem ? 40 : 24, '255,240,190', gem ? 0.9 : 0.45 + 0.15 * pulse); }
   if (e.mode === 'stompTell') { const q = T(-70, -2); g.fillStyle = '#ffd36b'; g.fillRect(q[0], q[1], 140, 2); }
-  if (e.mode === 'swarmTell') { const q = T(-4, -208); g.fillStyle = '#ff6b6b'; g.fillRect(q[0], q[1], 8, 8); }
+  if (e.mode === 'crackTell') { const q = T(-4, -208); g.fillStyle = '#ffb050'; g.fillRect(q[0], q[1], 8, 8); }   /* (claude/colossus3) THE CRACK LINE's tell (it replaced the swarm call) */
 }
 /* THE HOLDS: crystal ledges growing out of the body, glowing; they flash at the shake's tell */
 export function drawHolds(g, e, S, G, cx, cy, time) {

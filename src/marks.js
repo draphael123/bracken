@@ -73,7 +73,7 @@ export const BY_HAND = {
   'gorgecrab|pinchTell':'!','gorgecrab|crushTell':'!!','gorgecrab|boulderTell':'!!','gorgecrab|scuttleTell':'!!',
   'matriarch|pounceTell':'!!','matriarch|rakeTell':'!','matriarch|sweepTell':'!!','matriarch|screeTell':'!!','matriarch|screechTell':'!','matriarch|diveTell':'!!','matriarch|volleyTell':'!!','matriarch|surgeTell':'!!','matriarch|followTell':'!!','matriarch|broodTell':'!','matriarch|riderTell':'!!',   /* THE RAPTOR MATRIARCH (claude/redgorge2, by hand: src/raptor-matriarch.js MOVES) - ! the shield turns the rake (and the screech throws nothing a shield must turn); !! the pounce, the sweep, the scree, the dive, the quills, the surge */   /* THE GREAT RED CRAB (claude/redgorge, by hand: src/gorge-crab.js on the desert engine) - ! the shield turns the pinch; X move: the crush, the boulder, the scuttle */
   'scorpion|clawTell':'!','scorpion|tailTell':'!!','sandgob|knifeTell':'!','vulture|watch':'!!',   /* THE SUNKEN CARAVAN (desert-foes.js, by hand): the claw and the knife a shield turns; the sting over its back and the vulture's dive nothing does */
-  'skitter|biteTell':'!', 'colossus|lanceTell':'!!', 'colossus|stompTell':'!!', 'colossus|shardTell':'!', 'colossus|shakeTell':'!!', 'colossus|waveTell':'!!', 'colossus|swarmTell':'', 'colossus|sweepTell':'!!', 'colossus|quakeTell':'!!',   /* (claude/glasssea2) THE SHARD SWEEP along the floor (jump it, or be up on a hold) and THE GLASS QUAKE's heaving plates (step off them): no shield turns either */   /* THE GLASS SEA (claude/glasssea, by hand): the skitter's nip a shield turns; THE GLASS COLOSSUS's lance (jump it, or a mirror), stomp ring and shard rain (a shield, or jump / step off), its shake (grip) and shard wave (jump); the swarm call throws no blow of its own */
+  'skitter|biteTell':'!', 'colossus|lanceTell':'!!', 'colossus|stompTell':'!!', 'colossus|shardTell':'!', 'colossus|shakeTell':'!!', 'colossus|waveTell':'!!', 'colossus|crackTell':'!!', 'colossus|sweepTell':'!!', 'colossus|quakeTell':'!!',   /* (claude/glasssea2) THE SHARD SWEEP along the floor (jump it, or be up on a hold) and THE GLASS QUAKE's heaving plates (step off them): no shield turns either */   /* THE GLASS SEA (claude/glasssea, by hand): the skitter's nip a shield turns; THE GLASS COLOSSUS's lance (jump it, or a mirror), stomp ring and shard rain (a shield, or jump / step off), its shake (grip) and shard wave (jump); (claude/colossus3) THE CRACK LINE, which replaced the swarm call: glass spikes along the floor - jump them or step off the line */
   'corpse|cutTell':'!','corpse|riseTell':'','bannerbearer|plantTell':'','bannerbearer|poleTell':'!',   /* THE UNBURIED FIELD (unburied-foes.js, by hand): a dead man's cut and the standard's pole a shield turns; rising and planting strike nobody */
   'barrowrider|rideTell':'!!','barrowrider|trampleTell':'!','barrowrider|fireTell':'!','barrowrider|lanceTell':'!!','barrowrider|thrustTell':'!','barrowrider|remountTell':'',   /* THE BARROW RIDER (2026-09-24, in the Standard-Bearer's place): the ride-through and the lance line no shield turns; the trample, the grave-fire and the thrust it does; the bones crawling back strike nobody */
   'bloodknight|swingTell':'!','bloodknight|cleaveTell':'!','bloodknight|bladeTell':'!!','bloodknight|gripTell':'!!','bloodknight|boilTell':'!!','bloodknight|coilTell':'!','bloodknight|tideTell':'!!','bloodknight|wardTell':'','bloodknight|novaTell':'!!','bloodknight|raiseTell':'','bloodknight|callTell':'','bloodknight|surgeTell':'!!',   /* THE DEATH KNIGHT (claude/dk3, rebuilt from the hero's kit): his cuts, the Cleave and the Coil a shield turns; the bolts, the chain, the boil, the tide, the nova and the surge nothing does; the ward and the raising strike nobody */
@@ -160,8 +160,8 @@ export const MARK = {
   'cisternqueen|lanceTell': '!!', 'cisternqueen|lungeTell': '!!', 'cisternqueen|pinTell': '!!', 'cisternqueen|pincerTell': '!', 'cisternqueen|pounceTell': '!!', 'cisternqueen|slamTell': '!!',
   'cisternqueen|snap2Tell': '!', 'cisternqueen|snapTell': '!', 'cisternqueen|spitTell': '!', 'cisternqueen|sslamTell': '!!', 'cisternqueen|strikeTell': '!!', 'cisternqueen|sweepHighTell': '!!',
   'cisternqueen|sweepLowTell': '!!', 'cisternqueen|tidalTell': '!!', 'cisternqueen|waveTell': '!!', 'clinger|dropTell': '!!', 'closedhelm|bashTell': '!!', 'closedhelm|cutTell': '!',
-  'closedhelm|judgeTell': '!', 'closedhelm|leapTell': '!!', 'closedhelm|oathTell': '!!', 'closedhelm|radianceTell': '!!', 'closedhelm|thrustTell': '!', 'colossus|lanceTell': '!!',
-  'colossus|quakeTell': '!!', 'colossus|shakeTell': '!!', 'colossus|shardTell': '!', 'colossus|stompTell': '!!', 'colossus|swarmTell': '', 'colossus|sweepTell': '!!',
+  'closedhelm|judgeTell': '!', 'closedhelm|leapTell': '!!', 'closedhelm|oathTell': '!!', 'closedhelm|radianceTell': '!!', 'closedhelm|thrustTell': '!', 'colossus|crackTell': '!!',
+  'colossus|lanceTell': '!!', 'colossus|quakeTell': '!!', 'colossus|shakeTell': '!!', 'colossus|shardTell': '!', 'colossus|stompTell': '!!', 'colossus|sweepTell': '!!',
   'colossus|waveTell': '!!', 'corpse|cutTell': '!', 'corpse|riseTell': '', 'courtier|clawTell': '!', 'crab|lungeTell': '!', 'crab|pinchTell': '!',
   'crab|shockTell': '!!', 'crab|snapTell': '!', 'crab|strikeTell': '!', 'crab|thrustTell': '!', 'crossbow|aim': '!', 'crossbow|cutTell': '!',
   'crossbow|leapTell': '!!', 'crossbow|shout': '!', 'crossbow|stabTell': '!', 'crossbow|swingTell': '!', 'crow|diveTell': '!!', 'cutlass|ekLungeTell': '!',
@@ -375,7 +375,7 @@ export const ANSWER = {
   'scalder|ladleTell': 'block', 'scalder|pourTell': 'dodge',
   'scarecrow|swipeTell': 'block',
   'scorpion|clawTell': 'block', 'scorpion|tailTell': 'dodge',
-  'skitter|biteTell': 'block', 'colossus|lanceTell': 'jump', 'colossus|stompTell': 'jump', 'colossus|shardTell': 'block', 'colossus|shakeTell': 'block', 'colossus|waveTell': 'jump', 'colossus|sweepTell': 'jump', 'colossus|quakeTell': 'dodge',   /* (claude/glasssea) */
+  'skitter|biteTell': 'block', 'colossus|lanceTell': 'jump', 'colossus|stompTell': 'jump', 'colossus|shardTell': 'block', 'colossus|shakeTell': 'block', 'colossus|waveTell': 'jump', 'colossus|sweepTell': 'jump', 'colossus|quakeTell': 'dodge', 'colossus|crackTell': 'jump',   /* (claude/glasssea) */
   'scout|lungeTell': 'block', 'scout|pinchTell': 'block', 'scout|snapTell': 'block', 'scout|strikeTell': 'block', 'scout|thrustTell': 'block', 'scout|shockTell': 'dodge',
   'seawitch|callTell': 'dodge',
   'sheargob|cutTell': 'dodge', 'sheargob|snipTell': 'block',
@@ -622,7 +622,7 @@ export const HEIGHT = {
   'scalder|ladleTell': 'low', 'scalder|pourTell': 'low',
   'scarecrow|swipeTell': 'low',
   'scorpion|clawTell': 'low', 'scorpion|tailTell': 'low',
-  'skitter|biteTell': 'low', 'colossus|lanceTell': 'low', 'colossus|stompTell': 'low', 'colossus|shardTell': 'high', 'colossus|shakeTell': 'low', 'colossus|waveTell': 'low', 'colossus|sweepTell': 'low', 'colossus|quakeTell': 'low',   /* (claude/glasssea) */
+  'skitter|biteTell': 'low', 'colossus|lanceTell': 'low', 'colossus|stompTell': 'low', 'colossus|shardTell': 'high', 'colossus|shakeTell': 'low', 'colossus|waveTell': 'low', 'colossus|sweepTell': 'low', 'colossus|quakeTell': 'low', 'colossus|crackTell': 'low',   /* (claude/glasssea) */
   'scout|lungeTell': 'low', 'scout|pinchTell': 'low', 'scout|snapTell': 'low', 'scout|strikeTell': 'low', 'scout|thrustTell': 'low', 'scout|shockTell': 'low',
   'seawitch|callTell': 'low',
   'shardling|shedTell': 'low',

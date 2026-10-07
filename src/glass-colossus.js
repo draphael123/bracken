@@ -15,24 +15,31 @@
 //   P1 DUSK (100-55%): SUN LANCE (red X: a line along the ground to where it ends), STOMP (!!: a shard ring runs out both ways along the ground - jump it),
 //      SHARD RAIN (!: marks where the glass falls). OPENING: bait the lance into a FACING mirror - it reflects into its chest and CRACKS it open
 //      (COL.openT). NEW MOVE: THE SHAKE (told: HOLD! - a climber who does not grip (hold DOWN) is thrown off: a blow and the floor, never a death).
-//   P2 NIGHT (55-25%): no lance (no reflection); the sky goes dark; THE SWARM CALL (new): its fist into the ground - the crack under it pours skitters
-//      unless FIRELIGHT holds it: a mirror turned TO THE FIRE throws the campfire's light along the floor onto the crack. Held, it strains and its
+//   P2 NIGHT (55-25%): no lance (no reflection); the sky goes dark; THE CRACK LINE (new; claude/colossus3 - it replaced THE SWARM CALL: Daniel wants no
+//      adds in this fight): its foot drives a crack along the floor to you - amber, told - and glass spikes erupt along it (jump, or step off the line)
+//      unless FIRELIGHT holds its crack: a mirror turned TO THE FIRE throws the campfire's light along the floor onto the crack. Held, it strains and its
 //      SHOULDER CRACKS BLAZE OPEN - climb, and strike or PLUNGE them.
 //   P3 DAWN (25-0%): the sun returns and so does the lance (the chest again). NEW: a mirror turned TO THE SKY catches the dawn and burns its CROWN -
 //      DAZZLED, the last opening. DESPERATION: THE SHARD WAVE (!!: rolled across the whole floor - jump it).
 // B3: every opening ends in a TOLD COL.wardT s ward (immune), then it KNOCKS THE MIRROR that opened it back round to FACING (no chain-lock: each
-// opening wants a fresh TURN). B12: no lance and no swarm for COL.lockT s after a ward. B4: open, it stands still.
+// opening wants a fresh TURN). B12: no lance and no crack line for COL.lockT s after a ward. B4: open, it stands still.
 export const COLOSSUS_STAGE = { W: 40, cc: 20, mirrors: [12, 28], fires: [2, 37], knee: 3, hip: 6, shoulder: 9, crown: 12,
   kneeW: [-5, -3], kneeE: [2, 4], hipW: [-4, -2], hipE: [1, 3], shoulderW: [-5, -2], shoulderE: [1, 4], crack: [-3, 2] };
 export const COL = {
   /* (claude/glasssea2, Daniel 10-07: "a third of the health, quicker tells, two more told attacks") hp 2000 -> 680, every tell ~15% quicker, the gaps shorter;
      an opening may take a fifth of it (openCap 0.09 -> 0.2: the same few hits, on a smaller bar) */
   hp: 680, w: 72, h: 200,
-  lanceTell: 0.98, lanceTell3: 0.85, lanceAct: 0.45, lanceDmg: 92, lanceBand: [28, 4],
+  /* (claude/colossus3, Daniel 10-07 after playing it: "the laser A LOT SLOWER") the windup ~1.7x longer, and the lance no longer lands along the whole line at once:
+     a BOLT of light (lanceLen px) TRAVELS out from its chest at lanceV px/s to the mirror or the wall - you see it come, and jump it as it passes */
+  lanceTell: 1.65, lanceTell3: 1.45, lanceV: 190, lanceLen: 56, lanceDmg: 92, lanceBand: [28, 4],
   stompTell: 0.72, stompV: 240, stompH: 14, stompDmg: 60,
   shardTell: 0.85, shardAct: 0.25, shardDmg: 37, shardR: 9, shardSpread: 60,
   shakeTell: 0.85, shake: 0.9, shakeDmg: 29, shakeAfter: 1.2, shakeCd: 5,
-  swarmTell: 1.02, swarmAct: 1.4, swarmMax: 6, swarmEvery: 0.45,
+  /* NEW P2 (claude/colossus3, Daniel 10-07: "no add summoning" - the swarm call is gone from the fight): THE CRACK LINE (!!) - an amber glow runs along the
+     floor from its foot to where you stand (and a little past); then glass spikes erupt along it, foot first, the front running out at crackV px/s (a spike
+     bites for crackHot s as it rises). Jump it, or step off the line (past its end, or up on a hold). FIRELIGHT on its crack as they finish HOLDS it:
+     its SHOULDERS BLAZE once the spikes are done (the phase's opening, as the swarm's was): dodge the line, then climb */
+  crackTell: 1.15, crackV: 260, crackHot: 0.22, crackH: 22, crackDmg: 52, crackFoot: 30, crackOver: 30, crackMin: 48,
   waveTell: 0.85, waveV: 260, waveH: 16, waveDmg: 53,
   /* NEW P1: THE SHARD SWEEP (!!) - its arm reaches out to the wall on your side and drags back along the floor to its feet: jump it, or be up on a hold */
   sweepTell: 0.75, sweepV: 380, sweepH: 18, sweepDmg: 47, sweepIn: 40,
@@ -42,7 +49,7 @@ export const COL = {
   legPurse: [0.1, 0.06, 0.05], legMul: 1.0,
   wardT: 3.0, lockT: 1.5, phase2: 0.55, phase3: 0.25, phaseT: 2.2,
   gap: [0.45, 0.4, 0.32],
-  chain: { 1: ['lance', 'stomp', 'sweep', 'shards', 'lance', 'sweep', 'shards', 'stomp'], 2: ['swarm', 'quake', 'shards', 'stomp', 'swarm', 'quake', 'stomp'], 3: ['lance', 'shards', 'wave', 'sweep', 'lance', 'stomp', 'quake'] },
+  chain: { 1: ['lance', 'stomp', 'sweep', 'shards', 'lance', 'sweep', 'shards', 'stomp'], 2: ['crack', 'quake', 'shards', 'stomp', 'crack', 'quake', 'stomp'], 3: ['lance', 'shards', 'wave', 'sweep', 'lance', 'stomp', 'quake'] },
 };
 /* THE STAGE: carve the arena into the level (the level lays the floor and the walls); returns { arena, carve } */
 export function stageColossus(Wr, T, TS, sx, F) {
@@ -75,19 +82,20 @@ export const colOpen = e => !!e && (e.open || 0) > 0 && ['cracked', 'blazing', '
 
 export function newFight(G) {
   return { G, ph: 1, i: 0, cd: 1.4, t: 0, ward: 0, lock: 0, phaseT: 0, legPurse: COL.legPurse[0], openTaken: 0, opened: null, by: null,
-    lance: null, rings: [], marks: [], wave: null, sweep: null, plates: [], slick: [], swarmT: 0, swarmN: 0, held: false, shakeCd: 2, bodyT: new Map(), cracks: 0, pose: POSE0(),
+    lance: null, rings: [], marks: [], wave: null, sweep: null, plates: [], slick: [], crack: null, held: false, shakeCd: 2, bodyT: new Map(), cracks: 0, pose: POSE0(),
     /* (claude/glasssea2, Daniel: "make the mirror read VERY clear") the shelf-mirrors start TO THE SKY: the first thing the fight asks is the verb - TURN THE MIRROR TO HIM */
-    mirrors: G.mirrors.map(m => ({ ...m, notch: 'sky' })), n: { lance: 0, reflect: 0, stomp: 0, shards: 0, shake: 0, thrown: 0, swarm: 0, held: 0, dazzle: 0, wave: 0, sweep: 0, quake: 0, slid: 0, opens: 0, warded: 0, shut: 0, glazed: 0, leg: 0 },
+    mirrors: G.mirrors.map(m => ({ ...m, notch: 'sky' })), n: { lance: 0, reflect: 0, stomp: 0, shards: 0, shake: 0, thrown: 0, crack: 0, held: 0, dazzle: 0, wave: 0, sweep: 0, quake: 0, slid: 0, opens: 0, warded: 0, shut: 0, glazed: 0, leg: 0 },
     told: {}, said: {} };
 }
 const NOTCH = ['face', 'fire', 'sky'];
-export const STALL_LINE = { 1: 'TURN THE MIRROR TO HIM', 2: 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM', 3: 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' };
+export const STALL_LINE = { 1: 'TURN THE MIRROR TO HIM', 2: 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE CRACK', 3: 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' };
 export const MIRROR_LINE = 'TURN THE MIRROR TO HIM: HIS LANCE COMES BACK INTO HIS CHEST';
 /* ---------- THE POSE CLOCK (claude/glasssea2; the COLOSSUS ART lane draws its parts to these keys) ----------
    poseOf(e, S, t) -> { key, lean, bob, footL, footR, armL: [dx, dy], armR: [dx, dy] }   (px; lean + = toward +x; bob + = down; foot = lift up; arm dx + = outward)
    keys: idle (a weight shift: lean +-3, the free foot lifts 3-4, the arms sway +-2, a 1 px bob), lanceWind, lanceFire, stompRaise, stompDown, sweepWind, sweep,
-   shardShrug, quakeRaise, quakeSlam, swarmCall, shake, waveRoll, phase, stagger (open: slumped, a tremble of 1 px or less - B4), sleep, wake */
-export const POSE_KEYS = ['idle', 'lanceWind', 'lanceFire', 'stompRaise', 'stompDown', 'sweepWind', 'sweep', 'shardShrug', 'quakeRaise', 'quakeSlam', 'swarmCall', 'shake', 'waveRoll', 'phase', 'stagger', 'sleep', 'wake'];
+   shardShrug, quakeRaise, quakeSlam, crackWind, crackDrive (claude/colossus3: they replace swarmCall), shake, waveRoll, phase, stagger (open: slumped, a tremble
+   of 1 px or less - B4), sleep, wake */
+export const POSE_KEYS = ['idle', 'lanceWind', 'lanceFire', 'stompRaise', 'stompDown', 'sweepWind', 'sweep', 'shardShrug', 'quakeRaise', 'quakeSlam', 'crackWind', 'crackDrive', 'shake', 'waveRoll', 'phase', 'stagger', 'sleep', 'wake'];
 function POSE0() { return { key: 'sleep', lean: 0, bob: 0, footL: 0, footR: 0, armL: [0, 0], armR: [0, 0] }; }
 export function poseOf(e, S, t) {
   const p = POSE0(), R = Math.round, face = e.face || -1, side = (d, v) => { if (d < 0) p.armL = v; else p.armR = v; }, k = n => Math.max(0, Math.min(1, 1 - (e.modeT || 0) / n));
@@ -103,7 +111,10 @@ export function poseOf(e, S, t) {
     case 'shardTell': case 'shards': p.key = 'shardShrug'; p.bob = -2; p.armL = [3, -6]; p.armR = [3, -6]; break;
     case 'quakeTell': p.key = 'quakeRaise'; p.bob = -1; p.armL = [2, -16]; p.armR = [2, -16]; break;
     case 'quake': p.key = 'quakeSlam'; p.bob = 2; p.armL = [3, 8]; p.armR = [3, 8]; break;
-    case 'swarmTell': case 'swarm': p.key = 'swarmCall'; p.lean = face * 2; p.bob = 1; side(face, [2, 8]); break;
+    /* (claude/colossus3) THE CRACK LINE: the foot on your side lifts and grinds (crackWind, 3 -> 10 px), the fist on that side drawn down toward the floor;
+       then the foot drives down and it leans in along the line (crackDrive) */
+    case 'crackTell': { const d = S.crack ? S.crack.dir : face; p.key = 'crackWind'; p.lean = -d; if (d < 0) p.footL = R(3 + 7 * k(COL.crackTell)); else p.footR = R(3 + 7 * k(COL.crackTell)); side(d, [3, 6]); side(-d, [2, -3]); break; }
+    case 'crack': { const d = S.crack ? S.crack.dir : face; p.key = 'crackDrive'; p.lean = d * 3; p.bob = 2; side(d, [6, 8]); side(-d, [1, 1]); break; }
     case 'shakeTell': case 'shake': p.key = 'shake'; p.lean = R(Math.sin(t * (e.mode === 'shake' ? 40 : 14)) * (e.mode === 'shake' ? 3 : 1)); p.armL = [4, -2]; p.armR = [4, -2]; break;
     case 'waveTell': case 'wave': p.key = 'waveRoll'; p.armL = [6, 2]; p.armR = [6, 2]; p.bob = 1; break;
     case 'phase': p.key = 'phase'; p.bob = -1; p.armL = [3, -8]; p.armR = [3, -8]; break;
@@ -128,7 +139,7 @@ export const relaying = S => S.mirrors.some(m => m.notch === 'fire');
 const beginOpen = (e, S, what, t, by, c) => { e.mode = what; e.open = t; e.openT0 = t; S.openTaken = 0; S.opened = what; S.by = by; S.lance = null; S.n.opens++; c.sound && c.sound('open'); c.fx && c.fx('open', e.x, e.y); };
 
 /* ---------- ONE FRAME ---------- heroes: [{ x, y, ground, grip, alive, pp }]; c: { hit(box, dmg, name, o), number(x, y, t, col), sound(k), shake(n),
-   fx(k, x, y), music(ph), swarm(n) -> spawned, swarmAlive() -> n, held() -> crack in firelight, slap(i) (a mirror knocked round), dazzleOk() } */
+   fx(k, x, y), music(ph), held() -> crack in firelight, slap(i) (a mirror knocked round), dazzleOk() } */
 export function stepColossus(e, S, dt, heroes, c) {
   const G = S.G; S.t += dt; S.pose = poseOf(e, S, S.t);
   if (e.mode === 'sleep') return;
@@ -139,7 +150,7 @@ export function stepColossus(e, S, dt, heroes, c) {
   for (const m of S.mirrors) m.turnedT = (m.turnedT || 0) + dt;
   /* (fix pass) THE ARENA STALL NUDGE: no mirror on a notch that can open it this phase for 10 s -> the line, again every 10 s (never a once-only line) */
   { const can = S.ph === 2 ? ['fire'] : S.ph === 3 ? ['sky', 'face'] : ['face'];
-    if (!colOpen(e) && S.ward <= 0 && !S.mirrors.some(m => can.includes(m.notch))) { S.stallT = (S.stallT || 0) + dt; if (S.stallT >= 10) { S.stallT = 0; S.n.nudge = (S.n.nudge || 0) + 1; c.number(e.x, G.crownY - 20, S.ph === 2 ? 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE SWARM' : S.ph === 3 ? 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' : 'TURN THE MIRROR TO HIM', '#ffd36b');   /* (= STALL_LINE[S.ph]; literals for tools/hint-shown) */ } } else S.stallT = 0; }
+    if (!colOpen(e) && S.ward <= 0 && !S.mirrors.some(m => can.includes(m.notch))) { S.stallT = (S.stallT || 0) + dt; if (S.stallT >= 10) { S.stallT = 0; S.n.nudge = (S.n.nudge || 0) + 1; c.number(e.x, G.crownY - 20, S.ph === 2 ? 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE CRACK' : S.ph === 3 ? 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' : 'TURN THE MIRROR TO HIM', '#ffd36b');   /* (= STALL_LINE[S.ph]; literals for tools/hint-shown) */ } } else S.stallT = 0; }
   /* the travelling hazards: stomp rings, the shard wave */
   for (const r of S.rings) { r.x += r.dir * COL.stompV * dt; if (r.x < G.x0 || r.x > G.x1) r.dead = true; else c.hit([r.x - 10, r.x + 10, G.floor - COL.stompH, G.floor], COL.stompDmg, 'THE STOMP', { key: 'ring' + r.id });   /* (!!: a ring of shards along the ground - JUMP it; no shield turns it) */ }
   S.rings = S.rings.filter(r => !r.dead);
@@ -157,13 +168,13 @@ export function stepColossus(e, S, dt, heroes, c) {
   /* THE PHASES (not inside an opening) */
   const k = e.hp / e.maxHp;
   if (e.mode !== 'phase' && ((S.ph === 1 && k <= COL.phase2) || (S.ph === 2 && k <= COL.phase3))) {
-    S.ph++; e.phase = S.ph; e.mode = 'phase'; e.modeT = COL.phaseT; S.lance = null; S.marks = []; S.sweep = null; S.plates = []; S.legPurse = e.maxHp * COL.legPurse[S.ph - 1]; S.i = 0; S.ward = 0;
+    S.ph++; e.phase = S.ph; e.mode = 'phase'; e.modeT = COL.phaseT; S.lance = null; S.marks = []; S.sweep = null; S.plates = []; S.crack = null; S.legPurse = e.maxHp * COL.legPurse[S.ph - 1]; S.i = 0; S.ward = 0;
     for (const m of S.mirrors) m.notch = 'face';
     c.music && c.music(S.ph); c.shake && c.shake(5); c.sound && c.sound('phase');
     c.number(e.x, G.crownY - 30, S.ph === 2 ? 'NIGHT FALLS IN ITS GLASS: THE LANCE IS DARK' : 'DAWN: THE SUN RETURNS TO IT', S.ph === 2 ? '#9ab0e8' : '#ffd36b'); return; }
-  if (e.mode === 'phase') { e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 1.0; if (S.ph === 2) c.number(e.x, G.crownY - 30, 'IT CALLS THE SWARM: FIRELIGHT HOLDS THEM', '#ffd36b'); if (S.ph === 3) c.number(e.x, G.crownY - 30, 'A MIRROR TO THE SKY THROWS THE DAWN ON ITS CROWN', '#ffd36b'); } return; }
+  if (e.mode === 'phase') { e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 1.0; if (S.ph === 2) c.number(e.x, G.crownY - 30, 'IT SPLITS THE GLASS TO YOU: FIRELIGHT ON ITS CRACK HOLDS IT', '#ffd36b'); if (S.ph === 3) c.number(e.x, G.crownY - 30, 'A MIRROR TO THE SKY THROWS THE DAWN ON ITS CROWN', '#ffd36b'); } return; }
   /* P3: THE DAWN ON ITS CROWN - a mirror TO THE SKY, no ward, no lockout: DAZZLED (it may cancel a tell, never a blow in flight) */
-  if (S.ph === 3 && S.ward <= 0 && !['lance', 'shards', 'stomp', 'shake', 'wave', 'sweep', 'quake'].includes(e.mode)) { const m = S.mirrors.find(q => q.notch === 'sky'); if (m) { S.n.dazzle++; S.marks = []; beginOpen(e, S, 'dazzled', COL.openCrown, m.i, c); c.number(e.x, G.crownY - 26, 'THE DAWN BURNS ITS CROWN: DAZZLED', '#ffd36b'); return; } }
+  if (S.ph === 3 && S.ward <= 0 && !['lance', 'shards', 'stomp', 'shake', 'wave', 'sweep', 'quake', 'crack'].includes(e.mode)) { const m = S.mirrors.find(q => q.notch === 'sky'); if (m) { S.n.dazzle++; S.marks = []; beginOpen(e, S, 'dazzled', COL.openCrown, m.i, c); c.number(e.x, G.crownY - 26, 'THE DAWN BURNS ITS CROWN: DAZZLED', '#ffd36b'); return; } }
   e.modeT = (e.modeT || 0) - dt;
   switch (e.mode) {
     case 'idle': { if (near) e.face = Math.sign(near.x - e.x) || e.face; S.cd -= dt; if (S.cd > 0) break;
@@ -171,22 +182,28 @@ export function stepColossus(e, S, dt, heroes, c) {
       const climber = live.find(h => (S.bodyT.get(h.pp) || 0) >= COL.shakeAfter);
       if (climber && S.shakeCd <= 0) { e.mode = 'shakeTell'; e.modeT = COL.shakeTell; S.n.shake++; c.sound && c.sound('tellHard'); c.number(e.x, G.crownY - 14, 'HOLD!', '#ff6b6b'); break; }
       const ch = COL.chain[S.ph]; let name = ch[S.i % ch.length]; S.i++;
-      if ((name === 'lance' || name === 'swarm') && S.lock > 0) name = 'shards';
+      if ((name === 'lance' || name === 'crack') && S.lock > 0) name = 'shards';
       if (name === 'stomp' && live.some(h => onBody(G, h.x, h.y, h.ground)) && S.shakeCd <= 0) { e.mode = 'shakeTell'; e.modeT = COL.shakeTell; S.n.shake++; c.number(e.x, G.crownY - 14, 'HOLD!', '#ff6b6b'); break; }   /* a stomp with a climber on it is the shake */
       if (name === 'lance') { const dir = near ? (Math.sign(near.x - G.cx) || e.face) : e.face; e.face = dir; S.lance = { dir, end: lanceEnd(S, dir) }; e.mode = 'lanceTell'; e.modeT = S.ph === 3 ? COL.lanceTell3 : COL.lanceTell; S.n.lance++; c.sound && c.sound('lanceTell'); }
       else if (name === 'stomp') { e.mode = 'stompTell'; e.modeT = COL.stompTell; c.sound && c.sound('tell'); }
       else if (name === 'shards') { S.marks = live.flatMap(h => [-COL.shardSpread, 0, COL.shardSpread].map(d => ({ x: Math.max(G.x0 + 10, Math.min(G.x1 - 10, h.x + d)), y: c.surface ? c.surface(h.x + d, h.y) : G.floor }))); e.mode = 'shardTell'; e.modeT = COL.shardTell; c.sound && c.sound('tell'); }
-      else if (name === 'swarm') { e.mode = 'swarmTell'; e.modeT = COL.swarmTell; S.n.swarm++; c.sound && c.sound('tellHard'); }
+      else if (name === 'crack') { const dir = near ? (Math.sign(near.x - G.cx) || e.face) : e.face, from = G.cx + dir * COL.crackFoot, lim = x => Math.max(G.x0 + 8, Math.min(G.x1 - 8, x));
+        let to = lim((near ? near.x : from) + dir * COL.crackOver); if ((to - from) * dir < COL.crackMin) to = lim(from + dir * COL.crackMin);
+        e.face = dir; S.n.crack++; S.crack = { dir, from, to, id: S.n.crack, front: null }; S.held = false; e.mode = 'crackTell'; e.modeT = COL.crackTell; c.sound && c.sound('tellHard'); }   /* (the words, !! CRACK LINE: JUMP OR STEP ASIDE, and the amber line: src/glass-colossus-hands.js drawOver) */
       else if (name === 'sweep') { const dir = near ? (Math.sign(near.x - G.cx) || e.face) : e.face; e.face = dir; S.n.sweep++; S.sweep = { dir, x: dir < 0 ? G.x0 + 6 : G.x1 - 6, id: S.n.sweep, live: false }; e.mode = 'sweepTell'; e.modeT = COL.sweepTell; c.sound && c.sound('tellHard'); }
       else if (name === 'quake') { S.n.quake++; const xs = []; for (const h of live) for (const d of [-COL.quakeSpread, 0, COL.quakeSpread]) { const x = Math.max(G.x0 + COL.quakeW + 4, Math.min(G.x1 - COL.quakeW - 4, h.x + d)); if (!xs.some(q => Math.abs(q - x) < COL.quakeW * 2)) xs.push(x); }
         S.plates = xs.map(x => ({ x, dir: Math.sign(x - G.cx) || 1 })); e.mode = 'quakeTell'; e.modeT = COL.quakeTell; c.sound && c.sound('tellHard'); }
       else if (name === 'wave') { e.mode = 'waveTell'; e.modeT = COL.waveTell; S.wave = null; S.waveDir = near && near.x < G.cx ? 1 : -1; c.sound && c.sound('tellHard'); }
       break; }
     case 'lanceTell': if (S.lance) S.lance.end = lanceEnd(S, S.lance.dir);   /* (a mirror turned during the tell changes where it ends: the ring moves) */
-      if (e.modeT <= 0) { e.mode = 'lance'; e.modeT = COL.lanceAct; S.lance.fired = true; c.sound && c.sound('lance'); c.shake && c.shake(2); } break;
-    case 'lance': { const L0 = S.lance; if (L0) { const x0 = G.cx, x1 = L0.end.x, [hi, lo] = COL.lanceBand; c.hit([Math.min(x0, x1), Math.max(x0, x1), G.floor - hi, G.floor - lo], COL.lanceDmg, 'THE SUN LANCE', { key: 'lance' + S.n.lance });
-        if (L0.end.mirror >= 0 && !L0.reflected && e.modeT < COL.lanceAct - 0.12) { L0.reflected = true; S.n.reflect++; S.lastReflect = L0.end.mirror; c.sound && c.sound('reflect'); c.number(e.x, G.hipY - 30, 'THE MIRROR THROWS IT BACK: ITS CHEST CRACKS', '#ffd36b'); beginOpen(e, S, 'cracked', COL.openT, L0.end.mirror, c); S.by = S.ph === 1 ? L0.end.mirror : -1; return; } }
-      if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; S.lance = null; if (L0 && L0.end.mirror < 0 && !S.told.miss) { S.told.miss = 1; c.number(e.x, G.hipY - 30, 'THE LANCE MISSED THE MIRRORS: NOTHING OPENS', '#9aa39a'); } } break; }
+      if (e.modeT <= 0) { e.mode = 'lance'; e.modeT = 9; S.lance.fired = true; S.lance.head = 0; c.sound && c.sound('lance'); c.shake && c.shake(2); } break;
+    /* (claude/colossus3) THE BOLT TRAVELS: its head runs out from the chest at lanceV; it burns only the lanceLen px behind its head (jump it as it passes);
+       it stops at the face of a FACING mirror - thrown back into its chest - or runs on to the wall */
+    case 'lance': { const L0 = S.lance; if (!L0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; break; }
+      const far = Math.abs(L0.end.x - G.cx); L0.head = (L0.head || 0) + COL.lanceV * dt; const hd = Math.min(L0.head, far), tl = Math.max(0, L0.head - COL.lanceLen), [hi, lo] = COL.lanceBand;
+      if (tl < far) { const a = G.cx + L0.dir * tl, b = G.cx + L0.dir * hd; c.hit([Math.min(a, b), Math.max(a, b), G.floor - hi, G.floor - lo], COL.lanceDmg, 'THE SUN LANCE', { key: 'lance' + S.n.lance }); }
+      if (L0.end.mirror >= 0 && !L0.reflected && L0.head >= far) { L0.reflected = true; S.n.reflect++; S.lastReflect = L0.end.mirror; c.sound && c.sound('reflect'); c.number(e.x, G.hipY - 30, 'THE MIRROR THROWS IT BACK: ITS CHEST CRACKS', '#ffd36b'); beginOpen(e, S, 'cracked', COL.openT, L0.end.mirror, c); S.by = S.ph === 1 ? L0.end.mirror : -1; return; }
+      if (tl >= far) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; S.lance = null; if (L0.end.mirror < 0 && !S.told.miss) { S.told.miss = 1; c.number(e.x, G.hipY - 30, 'THE LANCE MISSED THE MIRRORS: NOTHING OPENS', '#9aa39a'); } } break; }
     case 'stompTell': if (e.modeT <= 0) { e.mode = 'stomp'; e.modeT = 0.3; S.n.stomp++; const id = S.n.stomp; S.rings.push({ x: G.cx - 30, dir: -1, id: id + 'w' }, { x: G.cx + 30, dir: 1, id: id + 'e' }); c.sound && c.sound('stomp'); c.shake && c.shake(4); } break;
     case 'stomp': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break;
     case 'shardTell': if (e.modeT <= 0) { e.mode = 'shards'; e.modeT = COL.shardAct; S.n.shards++; c.sound && c.sound('shards');
@@ -196,12 +213,14 @@ export function stepColossus(e, S, dt, heroes, c) {
         for (const h of live) if (onBody(G, h.x, h.y, h.ground) && !h.grip) { S.n.thrown++; c.throwOff && c.throwOff(h, Math.sign(h.x - G.cx) || 1); } } break;
     case 'shake': for (const h of live) if (onBody(G, h.x, h.y, h.ground) && !h.grip) { S.n.thrown++; c.throwOff && c.throwOff(h, Math.sign(h.x - G.cx) || 1); }
       if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break;
-    case 'swarmTell': S.held = !!(c.held && c.held());
-      if (e.modeT <= 0) { if (S.held) { S.n.held++; c.number(e.x, G.shoulderY - 30, 'THE FIRE HOLDS THE SWARM: ITS SHOULDERS BLAZE', '#ffd36b'); const m = S.mirrors.find(q => q.notch === 'fire'); beginOpen(e, S, 'blazing', COL.openShoulders, m ? m.i : -1, c); return; }
-        e.mode = 'swarm'; e.modeT = COL.swarmAct; S.swarmT = 0; c.sound && c.sound('swarm'); c.shake && c.shake(3); } break;
-    case 'swarm': S.swarmT -= dt; if (S.swarmT <= 0) { S.swarmT = COL.swarmEvery; if (c.swarmAlive && c.swarmAlive() < COL.swarmMax && c.swarm) c.swarm(2); }
-      if (c.held && c.held() && e.modeT > 0.3) { S.n.held++; c.number(e.x, G.shoulderY - 30, 'THE FIRE HOLDS THE SWARM: ITS SHOULDERS BLAZE', '#ffd36b'); const m = S.mirrors.find(q => q.notch === 'fire'); beginOpen(e, S, 'blazing', COL.openShoulders, m ? m.i : -1, c); return; }
-      if (e.modeT <= 0) { e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break;
+    /* (claude/colossus3) THE CRACK LINE: the spikes ALWAYS erupt along the line (jump them or step off it); if FIRELIGHT holds its crack as they finish, it strains
+       and its SHOULDERS BLAZE - dodge the line, then climb and punish */
+    case 'crackTell': S.held = !!(c.held && c.held());
+      if (e.modeT <= 0) { e.mode = 'crack'; e.modeT = 9; if (S.crack) S.crack.front = S.crack.from; c.sound && c.sound('crack'); c.shake && c.shake(3); } break;
+    case 'crack': { const K = S.crack; if (!K || K.front == null) { S.crack = null; e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; break; }
+      K.front += K.dir * COL.crackV * dt; const back = COL.crackV * COL.crackHot, f = (K.front - K.to) * K.dir > 0 ? K.to : K.front, b0 = K.front - K.dir * back, b = (b0 - K.from) * K.dir < 0 ? K.from : b0;
+      if ((b - K.to) * K.dir < 0) c.hit([Math.min(f, b) - 3, Math.max(f, b) + 3, G.floor - COL.crackH, G.floor], COL.crackDmg, 'THE CRACK LINE', { key: 'crack' + K.id });
+      else { S.crack = null; S.held = !!(c.held && c.held()); if (S.held) { S.n.held++; c.number(e.x, G.shoulderY - 30, 'THE FIRE HOLDS THE CRACK: ITS SHOULDERS BLAZE', '#ffd36b'); const m = S.mirrors.find(q => q.notch === 'fire'); beginOpen(e, S, 'blazing', COL.openShoulders, m ? m.i : -1, c); return; } e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break; }
     case 'sweepTell': if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 2.0; if (S.sweep) S.sweep.live = true; c.sound && c.sound('sweep'); c.shake && c.shake(2); } break;
     case 'sweep': if (!S.sweep || e.modeT <= 0) { S.sweep = null; e.mode = 'idle'; S.cd = COL.gap[S.ph - 1]; } break;
     case 'quakeTell': if (e.modeT <= 0) { e.mode = 'quake'; e.modeT = COL.quakeAct; c.sound && c.sound('quake'); c.shake && c.shake(5);
@@ -272,6 +291,10 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
   if (S.sweep && S.sweep.live && onFloor && Math.sign(P.x - G.cx) === S.sweep.dir && (S.sweep.x - P.x) * S.sweep.dir > -8 && seen('sweep' + S.sweep.id)) { const d = Math.abs(S.sweep.x - P.x); if (d < 20 + COL.sweepV * 0.12) { out.jump = true; out.holdJump = true; out.why = 'jump the sweep'; return out; } }
   /* THE GLASS QUAKE: off the marked plates in its tell (one tell in eight late) */
   if (e.mode === 'quakeTell' && onFloor && late('quake')) { const onP = q => Math.abs(q.x - P.x) < COL.quakeW + 9; if (S.plates.some(onP)) { const free = [P.x - 40, P.x + 40, P.x - 52, P.x + 52].find(x => x > G.x0 + 12 && x < G.x1 - 12 && !S.plates.some(q => Math.abs(q.x - x) < COL.quakeW + 10)); if (free != null) { out.gx = free; out.why = 'off the plates'; return out; } out.jump = true; out.holdJump = true; out.why = 'jump the quake'; return out; } }
+  /* (claude/colossus3) THE CRACK LINE: unheld (no fire on its crack), step off the line past its end if there is time, else jump the spikes as their front comes */
+  if (S.crack && onFloor) { const K = S.crack, on = (P.x - K.from) * K.dir > -10 && (P.x - K.to) * K.dir < 10;
+    if (on && e.mode === 'crackTell' && late('crack')) { const off = K.to + K.dir * 22; if (off > G.x0 + 10 && off < G.x1 - 10 && Math.abs(off - P.x) / 110 < e.modeT - 0.12) { out.gx = off; out.why = 'off the crack line'; return out; } out.gx = P.x; out.why = 'wait to jump the crack'; return out; }
+    if (on && e.mode === 'crack' && K.front != null && seen('crack' + K.id)) { const d = (P.x - K.front) * K.dir; if (d > -10 && d < 16 + COL.crackV * 0.1) { out.jump = true; out.holdJump = true; out.why = 'jump the crack line'; return out; } } }
   if (S.wave && onFloor && Math.sign(P.x - S.wave.x) === S.wave.dir && seen('wave' + S.wave.id) && Math.abs(S.wave.x - P.x) < 60) { out.jump = true; out.why = 'jump wave'; }
   if (e.mode === 'shardTell' && late('shard')) { const hitMe = S.marks.some(m => Math.abs(m.x - P.x) < COL.shardR + 6 && Math.abs(m.y - P.y) < 20);
     if (hitMe) { if (shield) { out.block = true; out.why = 'block shards'; return out; } const free = [P.x - 26, P.x + 26, P.x - 60, P.x + 60].find(x => x > G.x0 + 12 && x < G.x1 - 12 && !S.marks.some(m => Math.abs(m.x - x) < COL.shardR + 8)); if (free != null) { out.gx = free; out.why = 'out of shards'; return out; } } }
@@ -280,7 +303,8 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
   if ((e.mode === 'lanceTell' || e.mode === 'lance') && S.lance && late('lance')) { const L0 = S.lance, end = L0.end, inLine = onFloor && Math.sign(P.x - cx) === L0.dir && (end.mirror < 0 || Math.abs(P.x - cx) < Math.abs(end.x - cx) + 2);
     if (inLine) { const m = S.mirrors.find(q => q.notch === 'face' && Math.sign(q.x - cx) === L0.dir);
       if (m && e.mode === 'lanceTell' && e.modeT > Math.abs(P.x - (m.x + L0.dir * 18)) / 110 + 0.1 && !(mem['bait' + S.n.lance] ??= rng() < COL_PLAN.missBait)) { out.gx = m.x + L0.dir * 20; out.why = 'behind the mirror'; return out; }
-      if (e.mode === 'lanceTell' && e.modeT < 0.32 || e.mode === 'lance') { out.jump = true; out.holdJump = true; out.why = 'jump lance'; return out; }
+      /* (claude/colossus3) the bolt TRAVELS: jump it as its head comes to you (it burns lanceLen px behind its head) */
+      if (e.mode === 'lance') { const hx = Math.abs(P.x - cx), hd = L0.head || 0; if (hx - 7 - hd < 26 && hd - COL.lanceLen < hx + 7) { out.jump = true; out.holdJump = true; out.why = 'jump lance'; return out; } }
       out.gx = P.x; out.why = 'wait to jump'; return out; } }
   /* 5. THE PLAN BY PHASE */
   const myMirror = S.mirrors.reduce((a, b) => Math.abs(b.x - P.x) < Math.abs(a.x - P.x) ? b : a), outside = m => m.x + Math.sign(m.x - cx) * 22;
@@ -288,7 +312,7 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
     if (!fireM && S.ward <= 0) { out.gx = myMirror.x; if (Math.abs(P.x - myMirror.x) < 14 && onFloor && late('turn' + myMirror.notch + Math.floor(t), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(myMirror.x - P.x) || P.face; } out.why = 'turn to the fire'; return out; }
     /* wait at its knee (under the hold), ready to climb when the shoulders blaze; cut the legs while the purse lasts */
     const s = fireM ? Math.sign(fireM.x - cx) : side; const kx = (G.knee[s < 0 ? 0 : 1].l + G.knee[s < 0 ? 0 : 1].r) / 2;
-    if (e.mode === 'swarmTell' || e.mode === 'swarm') { out.gx = kx; climbTo('top', s); out.why = 'up for the blaze'; return out; }
+    if ((e.mode === 'crackTell' || e.mode === 'crack') && fireM && !onFloor) { out.gx = kx; climbTo('top', s); out.why = 'up for the blaze'; return out; }
     out.gx = kx + s * 6; if (S.legPurse > 0 && onFloor && Math.abs(P.x - cx) < 46 + reach) { out.gx = legX(s); if (Math.abs(P.x - out.gx) < 10 && (mem.legT ?? -9) < t - 0.9) { mem.legT = t; strike(-s); } } out.why = 'p2 wait'; return out; }
   if (S.ph === 3) { const skyM = S.mirrors.find(q => q.notch === 'sky');
     if (!skyM && S.ward <= 0 && e.mode !== 'lanceTell' && e.mode !== 'lance') { const m = S.mirrors[side < 0 ? 0 : 1]; out.gx = m.x; if (Math.abs(P.x - m.x) < 14 && onFloor && late('turnS' + m.notch + Math.floor(t), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(m.x - P.x) || P.face; } out.why = 'turn to the sky'; return out; } }

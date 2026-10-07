@@ -109,18 +109,19 @@ const G = CG.geom(A, TS);
 const mk = () => { const S = CG.newFight(G); const e = { x: G.cx, y: G.floor, hp: CG.COL.hp, maxHp: CG.COL.hp, mode: 'idle', modeT: 0, open: 0, face: -1 }; S.legPurse = e.maxHp * CG.COL.legPurse[0]; S.cd = 0; return { S, e }; };
 const hits = []; const world = (extra = {}) => ({ hit: (b, d, name, o) => hits.push({ name, d, o }), number: () => {}, sound: () => {}, shake: () => {}, fx: () => {}, music: () => {}, swarm: n => n, swarmAlive: () => 0, held: () => false, slap: () => {}, throwOff: h => { h.thrown = true; }, ...extra });
 const step = (e, S, secs, hs, w) => { for (let i = 0; i < secs * 60; i++) CG.stepColossus(e, S, 1 / 60, hs, w); };
+const stepUntil = (e, S, secs, hs, w, f) => { for (let i = 0; i < secs * 60 && !f(); i++) CG.stepColossus(e, S, 1 / 60, hs, w); return f(); };   /* (claude/colossus3) the slower lance: step to the moment, not a fixed time */
 { /* (claude/glasssea2, Daniel's design change 10-07: the shelf-mirrors start TO THE SKY - the fight asks for the TURN first) */
   const { S } = mk(); ok(S.mirrors.every(m => m.notch === 'sky'), 'the shelf-mirrors start TO THE SKY: the first thing it asks is TURN THE MIRROR TO HIM'); }
 { /* the lance into a FACING mirror: the chest cracks (the mirror turned to face it first: the design change above) */
   const { S, e } = mk(); CG.turnMirror(S, 0); ok(S.mirrors[0].notch === 'face', 'one TURN from the sky faces the mirror to him'); const hero = { x: S.mirrors[0].x - 24, y: G.floor, ground: true, alive: true, pp: {} };
-  S.i = 0; step(e, S, 2.0, [hero], world()); ok(e.mode === 'cracked' && CG.colOpen(e), 'a lance baited into a FACING mirror cracks its chest open (' + e.mode + ')');
+  S.i = 0; stepUntil(e, S, 4.0, [hero], world(), () => e.mode === 'cracked'); ok(e.mode === 'cracked' && CG.colOpen(e), 'a lance baited into a FACING mirror cracks its chest open (' + e.mode + ')');
   const t0 = e.open; ok(t0 >= 3, 'the opening is ' + t0.toFixed(1) + ' s (at least 3)');
   const x0 = e.x; step(e, S, 1, [hero], world()); ok(e.x === x0 && e.mode === 'cracked', 'open, it stands still (B4)');
   ok(CG.takeBlow(e, S, 30, G.hipY, false) === 60, 'a blow from the hip holds lands double on the cracked chest');
   ok(CG.takeBlow(e, S, 30, G.shoulderY, false) === 0, 'a blow at the shoulders when the CHEST is open is turned (told LOWER)');
   step(e, S, 5, [hero], world()); ok(!CG.colOpen(e) && S.ward > 0, 'the opening ends in its told ward (B3)');
   ok(CG.takeBlow(e, S, 30, G.hipY, false) === 0 && CG.takeBlow(e, S, 30, G.floor, false) === 0, 'in the ward nothing lands (the legs neither)');
-  step(e, S, S.ward + 0.1, [hero], world()); ok(S.ward === 0 && S.lock > 0, 'after the ward, a lockout: no lance and no swarm for a moment (B12)');
+  step(e, S, S.ward + 0.1, [hero], world()); ok(S.ward === 0 && S.lock > 0, 'after the ward, a lockout: no lance and no crack line for a moment (B12)');
   ok(S.mirrors[0].notch === 'sky', 'in phase one it knocks the mirror that cracked it back TO THE SKY: every opening wants a fresh TURN (' + S.mirrors[0].notch + ')'); }
 { /* (claude/glasssea2) THE SHARD SWEEP: told (!!), it drags in along the floor from the wall on your side to its feet; a hero up on a hold is over it */
   const { S, e } = mk(); hits.length = 0; S.i = 2; const floorH = { x: G.x0 + 60, y: G.floor, ground: true, alive: true, pp: {} }; step(e, S, 0.05, [floorH], world()); ok(e.mode === 'sweepTell' && S.sweep && S.sweep.dir === -1 && Math.abs(S.sweep.x - G.x0) < 10, 'the sweep is told (sweepTell) from the wall on your side');
@@ -133,24 +134,41 @@ const step = (e, S, secs, hs, w) => { for (let i = 0; i < secs * 60; i++) CG.ste
   const gap = Math.abs(S.plates[1].x - S.plates[0].x) - 2 * CG.COL.quakeW; ok(gap >= 30, 'a real gap between the plates to step into (' + gap + ' px)');
   step(e, S, 1.2, [h], world({ push: (q, vx) => { pushed = vx; } })); ok(hits.some(q => q.name === 'THE GLASS QUAKE') && S.slick.length === 3 && pushed < 0, 'it hits a hero on a plate, and the slick plate slides him outward (' + pushed + ' px/s)');
   step(e, S, CG.COL.quakeSlick, [h], world()); ok(S.slick.length === 0, 'the slick settles in ' + CG.COL.quakeSlick + ' s'); }
-ok(CG.COL.hp <= 700 && CG.COL.lanceTell < 1.0 && CG.COL.chain[1].includes('sweep') && CG.COL.chain[2].includes('quake'), 'Daniel 10-07: about a third of the health (' + CG.COL.hp + '), quicker tells, the sweep in phase one and the quake in phase two');
+ok(CG.COL.hp <= 700 && CG.COL.chain[1].includes('sweep') && CG.COL.chain[2].includes('quake'), 'Daniel 10-07: about a third of the health (' + CG.COL.hp + '), the sweep in phase one and the quake in phase two');
+/* (claude/colossus3: Daniel's later ask on 10-07, after playing it, replaces glasssea2's "quicker lance" (lanceTell < 1.0) - a deliberate design change) */
+ok(CG.COL.lanceTell >= 1.5 && CG.COL.lanceTell3 >= 1.3 && CG.COL.lanceV <= 220, 'Daniel 10-07 (played): the SUN LANCE A LOT SLOWER - told ' + CG.COL.lanceTell + ' s (' + CG.COL.lanceTell3 + ' at dawn), the bolt at ' + CG.COL.lanceV + ' px/s');
+ok(!Object.values(CG.COL.chain).flat().includes('swarm') && CG.COL.chain[2].includes('crack') && !/spawnSkitter|coSwarm/.test(readFileSync(new URL('../src/glass-colossus-hands.js', import.meta.url), 'utf8')), "Daniel 10-07: NO ADDS in the fight - the swarm call is gone; THE CRACK LINE is phase two's new move");
 { /* THE POSE CLOCK: every mode has a key the art lane draws to; the idle shifts its weight */
-  const { S, e } = mk(); const keys = new Set(); for (const m of ['sleep', 'wake', 'idle', 'lanceTell', 'lance', 'stompTell', 'stomp', 'sweepTell', 'sweep', 'shardTell', 'quakeTell', 'quake', 'swarmTell', 'shakeTell', 'waveTell', 'phase', 'cracked']) { e.mode = m; keys.add(CG.poseOf(e, S, 1).key); }
-  ok([...keys].every(k => CG.POSE_KEYS.includes(k)) && keys.size >= 16, 'every mode wears a pose key (' + keys.size + ')');
+  const { S, e } = mk(); const keys = new Set(); for (const m of ['sleep', 'wake', 'idle', 'lanceTell', 'lance', 'stompTell', 'stomp', 'sweepTell', 'sweep', 'shardTell', 'quakeTell', 'quake', 'crackTell', 'crack', 'shakeTell', 'waveTell', 'phase', 'cracked']) { e.mode = m; keys.add(CG.poseOf(e, S, 1).key); }
+  ok([...keys].every(k => CG.POSE_KEYS.includes(k)) && keys.size >= 17, 'every mode wears a pose key (' + keys.size + ')');
   e.mode = 'idle'; const ps = [0, 0.8, 1.6, 2.4].map(t => CG.poseOf(e, S, t)); ok(new Set(ps.map(p => p.lean)).size >= 3 && ps.some(p => p.footL > 2) && ps.some(p => p.footR > 2), 'idle, it shifts its weight: it leans, and lifts one foot then the other');
   e.mode = 'cracked'; ok(Math.abs(CG.poseOf(e, S, 0.3).lean) <= 1, 'open, it trembles no more than a pixel (B4)'); }
 ok(CG.COL.shardSpread - 2 * CG.COL.shardR >= 40, 'THE SHARD RAIN leaves a real lane between its marks (' + (CG.COL.shardSpread - 2 * CG.COL.shardR) + ' px; a hero is 14): a dodge, not a shield check');
 { /* the lance with the mirror turned away: nothing opens */
   const { S, e } = mk(); S.mirrors[0].notch = 'sky'; S.mirrors[1].notch = 'sky'; const hero = { x: S.mirrors[0].x - 24, y: G.floor, ground: true, alive: true, pp: {} };
-  hits.length = 0; S.i = 0; step(e, S, 2.0, [hero], world()); ok(!CG.colOpen(e) && hits.some(h => h.name === 'THE SUN LANCE'), 'a lance that meets no FACING mirror opens nothing (and it hits you)'); }
+  hits.length = 0; S.i = 0; step(e, S, 3.2, [hero], world()); ok(!CG.colOpen(e) && hits.some(h => h.name === 'THE SUN LANCE'), 'a lance that meets no FACING mirror opens nothing (and it hits you)'); }
+{ /* (claude/colossus3, Daniel 10-07: "the laser A LOT SLOWER") a long told windup, then a BOLT that TRAVELS out - a hero far out has time; behind its tail is safe */
+  const { S, e } = mk(); const far = { x: G.x0 + 40, y: G.floor, ground: true, alive: true, pp: {} }; const got = []; const w = world({ hit: (b, d, name) => { if (name === 'THE SUN LANCE' && b[0] <= far.x + 7 && b[1] >= far.x - 7) got.push(e.mode); } });
+  S.i = 0; step(e, S, 0.05, [far], w); ok(e.mode === 'lanceTell' && e.modeT >= 1.5, 'the lance is told for ' + CG.COL.lanceTell + ' s (at least 1.5: a first-timer reads it)');
+  stepUntil(e, S, 3, [far], w, () => e.mode === 'lance'); const t0 = S.t; stepUntil(e, S, 3, [far], w, () => got.length > 0); const reach = S.t - t0, dist = Math.abs(far.x - G.cx) - 7;
+  ok(got.length && reach >= 0.9 * dist / CG.COL.lanceV && reach > 1.0, 'the bolt travels: it reaches a hero ' + Math.round(dist) + ' px out ' + reach.toFixed(2) + ' s after it fires (' + CG.COL.lanceV + ' px/s)');
+  const B = mk(); const near = { x: G.cx - 60, y: G.floor, ground: true, alive: true, pp: {} }; let late = 0; B.S.i = 0; stepUntil(B.e, B.S, 3, [near], world(), () => B.e.mode === 'lance' && B.S.lance.head > 60 + CG.COL.lanceLen + 10);
+  step(B.e, B.S, 0.1, [near], world({ hit: (b, d, name) => { if (name === 'THE SUN LANCE' && b[0] <= near.x + 7 && b[1] >= near.x - 7) late++; } })); ok(!late && CG.COL.lanceLen <= 64, 'only the bolt burns (' + CG.COL.lanceLen + ' px): once it has passed, the floor behind it is safe'); }
 { /* the legs: always hittable, from a purse, then glazed */
   const { S, e } = mk(); let tot2 = 0, d; while ((d = CG.takeBlow(e, S, 30, G.floor, false)) > 0) tot2 += d; ok(Math.abs(tot2 - e.maxHp * CG.COL.legPurse[0]) < 1, 'its knees take whole blows up to their purse (' + Math.round(tot2) + ')');
   const out = {}; ok(CG.takeBlow(e, S, 30, G.floor, false, out) === 0 && /GLAZED|GLAZE/.test(out.word), 'then they GLAZE (told: ' + out.word + ')'); }
-{ /* phase two: the swarm held by a fire relay opens its shoulders; unheld it pours */
-  const { S, e } = mk(); S.ph = 2; e.hp = e.maxHp * 0.5; S.i = 0; let spawned = 0;
-  step(e, S, 3.0, [{ x: G.x0 + 40, y: G.floor, ground: true, alive: true, pp: {} }], world({ swarm: k => { spawned += k; return k; } })); ok(spawned > 0 && !CG.colOpen(e), 'an unheld swarm call pours skitters and opens nothing');
-  const B = mk(); B.S.ph = 2; B.e.hp = B.e.maxHp * 0.5; B.S.i = 0; B.S.mirrors[0].notch = 'fire';
-  step(B.e, B.S, 3.0, [{ x: G.x0 + 40, y: G.floor, ground: true, alive: true, pp: {} }], world({ held: () => CG.relaying(B.S) })); ok(B.e.mode === 'blazing', 'a fire relayed onto its crack holds the swarm and its SHOULDERS BLAZE (' + B.e.mode + ')');
+{ /* phase two (claude/colossus3, Daniel 10-07: no adds - the swarm call's test is replaced): THE CRACK LINE - told (!!) from its foot to past where you stand; unheld,
+     spikes erupt along it (on the line: hit; past its end or up on a hold: not); held by a fire relay as the spikes finish: its SHOULDERS BLAZE. No adds, ever */
+  const { S, e } = mk(); S.ph = 2; e.hp = e.maxHp * 0.5; S.i = 0; let spawned = 0; hits.length = 0; const h = { x: G.x0 + 100, y: G.floor, ground: true, alive: true, pp: {} };
+  step(e, S, 0.05, [h], world()); ok(e.mode === 'crackTell' && S.crack && S.crack.dir === -1 && (S.crack.to - h.x) * S.crack.dir >= 20 && Math.abs(S.crack.from - G.cx) <= CG.COL.crackFoot + 1, 'the crack line is told from its foot to past where you stand (' + Math.round(S.crack.from) + ' -> ' + Math.round(S.crack.to) + ')');
+  ok(CG.COL.crackTell >= 0.9 && CG.COL.crackTell <= 1.4, 'its tell is ' + CG.COL.crackTell + ' s (one windup at a time)');
+  step(e, S, 3.0, [h], world({ swarm: k => { spawned += k; return k; }, hit: (bx, d, name) => { if (bx[0] <= h.x + 7 && bx[1] >= h.x - 7) hits.push({ name }); } })); ok(hits.some(q => q.name === 'THE CRACK LINE') && !CG.colOpen(e) && spawned === 0, 'unheld, its spikes erupt along the line and hit a hero on it (no adds; nothing opens)');
+  const C = mk(); C.S.ph = 2; C.e.hp = C.e.maxHp * 0.5; C.S.i = 0; hits.length = 0; const h2 = { x: G.x0 + 100, y: G.floor, ground: true, alive: true, pp: {} }; step(C.e, C.S, 0.05, [h2], world());
+  h2.x = C.S.crack.to - 20; step(C.e, C.S, 3.0, [h2], world({ hit: (bx, d, name) => { if (bx[0] <= h2.x + 7 && bx[1] >= h2.x - 7) hits.push({ name }); } })); ok(!hits.some(q => q.name === 'THE CRACK LINE'), "a hero who steps past the line's end in the tell is not hit");
+  const D = mk(); D.S.ph = 2; D.e.hp = D.e.maxHp * 0.5; D.S.i = 0; const kn = { x: (G.knee[0].l + G.knee[0].r) / 2, y: G.kneeY, ground: true, alive: true, pp: {} }; let up = 0; step(D.e, D.S, 3.0, [kn], world({ hit: (b, d, name) => { if (name === 'THE CRACK LINE' && b[2] < kn.y && b[3] > kn.y - 20) up++; } })); ok(!up && D.S.n.crack === 1, 'a hero up on a knee hold is over the spikes');
+  const B = mk(); B.S.ph = 2; B.e.hp = B.e.maxHp * 0.5; B.S.i = 0; B.S.mirrors[0].notch = 'fire'; hits.length = 0;
+  step(B.e, B.S, 3.0, [{ x: G.x0 + 40, y: G.floor, ground: true, alive: true, pp: {} }], world({ held: () => CG.relaying(B.S) })); ok(B.e.mode === 'blazing' && hits.some(q => q.name === 'THE CRACK LINE'), 'a fire relayed onto its crack: the spikes still come (dodge them), then it strains and its SHOULDERS BLAZE (' + B.e.mode + ')');
+  const Z = mk(); Z.S.ph = 2; Z.e.hp = Z.e.maxHp * 0.5; let calls = 0; step(Z.e, Z.S, 30, [{ x: G.x0 + 60, y: G.floor, ground: true, alive: true, pp: {} }], world({ swarm: () => { calls++; return 1; }, swarmAlive: () => { calls++; return 0; } })); ok(calls === 0 && Z.S.n.crack >= 2, 'thirty seconds of phase two call no adds (' + Z.S.n.crack + ' crack lines)');
   ok(CG.takeBlow(B.e, B.S, 20, G.shoulderY, true) === 20 * CG.COL.plungeMul, /* (20: under the opening cap of a 680 giant) */ 'a plunge on a blazing shoulder lands x' + CG.COL.plungeMul);
   step(B.e, B.S, CG.COL.openShoulders + CG.COL.wardT + 0.2, [{ x: G.x0 + 40, y: G.floor, ground: true, alive: true, pp: {} }], world()); ok(B.S.mirrors[0].notch === 'face', 'after the ward it knocks the relaying mirror round (a fresh TURN for the next opening)'); }
 { /* phase three: a mirror to the sky dazzles its crown */
@@ -171,5 +189,9 @@ ok(CG.COL.shardSpread - 2 * CG.COL.shardR >= 40, 'THE SHARD RAIN leaves a real l
 { /* (claude/glasssea2) the bot: turns a mirror TO HIM when none faces, jumps the sweep, steps off a quake plate (v2 eyes: no second reaction) */
   const { S, e } = mk(); e.mode = 'idle'; S.cd = 5; let pl = CG.colPlan({ P: { x: S.mirrors[0].x + 4, y: G.floor, ground: true, face: -1, atk: -1 }, e, S, reach: 30, shield: false, rng: () => 0.5, mem: {}, t: 5, eyes: true }); ok(pl.talk && pl.why === 'turn to him', 'the bot turns the mirror to him (' + pl.why + ')');
   e.mode = 'sweep'; S.sweep = { dir: -1, x: G.x0 + 80, id: 1, live: true }; const mem = {}; for (const t of [5, 5.6]) pl = CG.colPlan({ P: { x: G.x0 + 100, y: G.floor, ground: true, face: -1, atk: -1 }, e, S, reach: 30, shield: false, rng: () => 0.5, mem, t, eyes: true });   /* (seen a reaction after it appears: a hazard on the floor, not his pose) */ ok(pl.jump, 'the bot jumps the sweep (' + pl.why + ')');
+  { /* (claude/colossus3) the bot answers the crack line: off the line past its end in the tell, or a jump at its front */
+    const C = mk(); C.S.ph = 2; C.e.mode = 'crackTell'; C.e.modeT = 1.0; C.S.crack = { dir: -1, from: G.cx - 30, to: G.x0 + 70, id: 1, front: null };
+    let q = CG.colPlan({ P: { x: G.x0 + 100, y: G.floor, ground: true, face: -1, atk: -1 }, e: C.e, S: C.S, reach: 30, shield: false, rng: () => 0.5, mem: {}, t: 5, eyes: true }); ok(q.gx != null && q.gx < G.x0 + 70, 'the bot steps off the crack line past its end (' + q.why + ')');
+    C.e.mode = 'crack'; C.S.crack.front = G.x0 + 125; const mem = {}; for (const t of [5, 5.4]) q = CG.colPlan({ P: { x: G.x0 + 100, y: G.floor, ground: true, face: -1, atk: -1 }, e: C.e, S: C.S, reach: 30, shield: false, rng: () => 0.5, mem, t, eyes: true }); ok(q.jump, "the bot jumps the crack line's front (" + q.why + ')'); }
   S.sweep = null; e.mode = 'quakeTell'; e.modeT = 0.6; S.plates = [{ x: G.x0 + 100, dir: -1 }]; pl = CG.colPlan({ P: { x: G.x0 + 100, y: G.floor, ground: true, face: -1, atk: -1 }, e, S, reach: 30, shield: false, rng: () => 0.5, mem: {}, t: 5, eyes: true }); ok(pl.gx != null && Math.abs(pl.gx - (G.x0 + 100)) > CG.COL.quakeW, 'the bot steps off a quake plate (' + pl.why + ')'); }
 console.log('ok  glasssea  ' + n + ' checks: the rule, the beams, the day and the night, the cast, THE GLASS COLOSSUS');
