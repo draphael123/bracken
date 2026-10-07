@@ -18,7 +18,7 @@ import * as CT from './carry-throw.js';
 /* THE OIL: rehang = s before a spare rope is lowered where one burnt (claude/underwell fix pass: no softlock, a cost); burn = s a lit cell on a floor burns (burnDeep: a cell in a gutter's slot, deep oil - it burns long, so the worms under it stay down while you cross); spread = s before it lights the cells beside it; back = s before wet oil dries / spent oil seeps back; tick/dmg =
    the fire on a hero standing in it (unblockable); foeDmg on a creature in it; nestBurn = s a nest takes to burn away; relight = s before a torch's
    bracket has a flame again; pourCells = how many cells one sip wets */
-export const OIL = { rehang: 30, burn: 6, burnDeep: 16, spread: 0.04, back: 25, tick: 0.5, dmg: 13, foeDmg: 14, nestBurn: 1.0, relight: 12, pourR: 48, pourCells: 3, lampFall: 0.6, torchFall: 0.35, heatRows: 12 };
+export const OIL = { arenaBack: 12, /* (claude/underwell3, Daniel 10-07: her hall's oil RESPAWNS - it seeps back this soon, told, so the fire on her can come again) */ rehang: 30, burn: 6, burnDeep: 16, spread: 0.04, back: 25, tick: 0.5, dmg: 13, foeDmg: 14, nestBurn: 1.0, relight: 12, pourR: 48, pourCells: 3, lampFall: 0.6, torchFall: 0.35, heatRows: 12 };
 /* THE CAST's numbers: the thirsty scorpion's pull (px/s, sight px), the dust's blindness (s), a slick's width in cells */
 /* A NEST under a blade: a brood scorpion out of it every `spill` s, at most `max` of them alive from one nest */
 export const NEST = { spill: 0.6, max: 4, spray: 10 };   /* spray: what the nest's venom does to the one hacking at it (unblockable, a stack of venom) */
@@ -58,6 +58,7 @@ export function makeUnderwellHands(ctx) {
       /* (claude/underwell2) OIL FLOATS ON THE WATER: a floor cell under standing water is drawn on the water's surface (fl: px it is lifted) */
       for (const c of UW.list) { const p = (L.pools || []).find(q => c.x * TS + 8 >= q.x0 && c.x * TS + 8 <= q.x1 && q.y > c.y * TS && q.y < (c.y + 1) * TS + 2); if (p) c.fl = Math.round((c.y + 1) * TS - (p.y + 3)); }
       for (const [x, y0, y1, kind] of L.lines || []) for (let y = y0; y <= y1; y++) add(x, y, true, kind === 'pipe');
+      { const A = L.arena; if (A && A.boss === 'cisternqueen') for (const c of UW.list) if (c.x * TS >= A.x0 && c.x * TS < A.x1 && c.y * TS >= A.y0 && c.y * TS < A.y1) c.arena = true; }   /* (claude/underwell3) HER HALL's oil: it seeps back sooner (OIL.arenaBack), told */
       UW.sconces = L.ents.filter(e => e.t === 'sconce').map(e => { let below = null; for (let y = e.y; y < L.H; y++) { const c = UW.cells.get(key(e.x, y)); if (c) { below = c; break; } } let ceil = e.y - 1; while (ceil > 0 && ctx.cellGet(e.x, ceil) !== ctx.T.SOLID) ceil--; return { id: e.id, x: e.x, y: e.y, st: 'up', t: 0, below, ceil }; });
       const lp = L.ents.find(e => e.t === 'greatlamp'); if (lp) { let fy = lp.y; while (fy < L.H - 1 && ctx.cellGet(lp.x, fy + 1) === ctx.T.AIR) fy++; UW.lamp = { x: lp.x, top: lp.top || lp.y - 6, y: lp.y, floor: fy, st: 'up', t: 0, swing: 0 }; }
       UW.nests = (L.nests || []).map(m => ({ ...m, open: false, burn: 0 }));
@@ -117,6 +118,7 @@ export function makeUnderwellHands(ctx) {
   const foeAtPx = (px, py) => ctx.enemies().find(e => e.alive && !e.harmless && !e.boss && !(e.t === 'zombie' && (e.mode === 'buried' || e.mode === 'riseTell')) && Math.abs(e.x - px) < (e.w || 10) / 2 + 4 && py > e.y - (e.h || 14) - 4 && py < e.y + 2);
   const inWater = (px, py) => (ctx.L.pools || []).some(p => px >= p.x0 && px <= p.x1 && py >= p.y && py <= (p.bottom || p.y + 64));
   /* the told arc from the hand, the way it would fly now (stepTorches steps the same numbers: src/carry-throw.js stepArc) */
+  H.arcFor = (P, aim) => { const h = handAt(P), v = CT.launchOf('torch', P, { up: aim === 'high', down: aim === 'low' }); return CT.predictArc('torch', h.x, h.y, v, solidPx, { stopAt: (x, y) => nestAtPx(x, y) || foeAtPx(x, y) || null }); };   /* (claude/underwell3) the arc an aim WOULD fly (the boss lab's hands ask it before they throw) */
   H.arcOf = P => { const h = handAt(P), v = CT.launchOf('torch', P, ctx.keys ? ctx.keys() : {}); return CT.predictArc('torch', h.x, h.y, v, solidPx, { stopAt: (x, y) => nestAtPx(x, y) || foeAtPx(x, y) || null }); };
   const newTorch = (P, from) => ({ t: 'uwtorch', thrKind: 'torch', state: 'held', holder: P, x: P.x, y: P.y - 20, vx: 0, vy: 0, lieT: 0, catchT: 0, noClimb: true, from,
     launch: PP => CT.launchOf('torch', PP, ctx.keys ? ctx.keys() : {}) });
@@ -246,15 +248,18 @@ export function makeUnderwellHands(ctx) {
     /* THE FIRE CRACKLES (claude/underwellart): the nearer the burning oil, the more of it you hear (the existing ember sfx, thinned by distance) */
     if (P0 && !P0.dead && ctx.sfx.ember) { let near = 0; for (const c of UW.list) if (c.st === 'fire' && Math.abs(c.x * TS + 8 - P0.x) < 200 && Math.abs(c.y * TS - P0.y) < 80) near++; if (near && Math.random() < Math.min(0.09, 0.012 * near) * dt * 60) ctx.sfx.ember(); }
     /* THE OIL's clock */
+    let seeped = null;
     for (const c of UW.list) {
       if (c.st === 'fire') { c.age += dt; c.t -= dt;
         if (c.age >= OIL.spread) for (const q of neighbours(c)) ignite(q);
-        if (c.t <= 0) { c.st = 'spent'; c.t = OIL.back; } }
-      else if (c.st === 'wet' || c.st === 'spent') { c.t -= dt; if (c.t <= 0) { c.st = 'oil'; c.t = 0; } } }
+        if (c.t <= 0) { c.st = 'spent'; c.t = c.arena ? OIL.arenaBack : OIL.back; } }
+      else if (c.st === 'wet' || c.st === 'spent') { if (c.arena && c.t > OIL.arenaBack) c.t = OIL.arenaBack; c.t -= dt; if (c.t <= 0) { c.st = 'oil'; c.t = 0; if (c.arena && !c.vertical) seeped = c; } } }
+    /* (claude/underwell3) HER HALL's OIL SEEPS BACK - said where it does (once a pool), while she is up: another torch, another fire on her */
+    if (seeped) { const q = ctx.queen && ctx.queen(); if (q && !(UW.seepSaid > UW.clock - 4)) { UW.seepSaid = UW.clock; UW.n.seeped = (UW.n.seeped || 0) + 1; ctx.number(seeped.x * 16 + 8, seeped.y * 16 - 24, 'THE OIL SEEPS BACK: A TORCH LIGHTS IT AGAIN', '#b08ad8'); } }
     /* THE WALL TORCHES: a blow on a lit one knocks it down into the oil */
     for (const s of UW.sconces) {
       if (s.st === 'up' && hb && ctx.overlap(hb, { l: s.x * TS - 12, r: s.x * TS + 28, t: s.y * TS - 6, b: (s.y + 3) * TS })) { if (once('strikeTorch')) { const P = ctx.hero(); ctx.number(P.x, P.y - 34, 'E TAKES THE TORCH OUT OF ITS CRESSET', '#ffd36b'); } }   /* (claude/underwell2: strike-to-drop is gone - you TAKE it and THROW it) */
-      else if (s.st === 'taken') { s.t -= dt; if (s.t <= 0) { s.st = 'up'; s.t = 0; } }
+      else if (s.st === 'taken') { s.t -= dt; if (s.t <= 0) { s.st = 'up'; s.t = 0; if (/^queen/.test(s.id || '') && ctx.queen && ctx.queen()) ctx.number(s.x * TS + 8, s.y * TS - 14, 'HER TORCH BURNS AGAIN: TAKE IT', '#ffd36b'); } }   /* (claude/underwell3: her hall's torches come back, told) */
       else if (s.st === 'fall') { s.t -= dt; if (s.t <= 0) { s.st = 'down'; s.t = OIL.relight; if (s.below) lightAt(s.below, 0); else ctx.dust(s.x * TS + 8, (s.y + 2) * TS, 4); } }
       else if (s.st === 'down') { s.t -= dt; if (s.t <= 0) { s.st = 'up'; s.t = 0; } } }
     stepTorches(dt);
@@ -335,6 +340,7 @@ export function makeUnderwellHands(ctx) {
     { const plan = UWD.planDress(UW.L, ctx.T); if (!H.noSupports) UWD.drawSupports(g, cx, cy, vw, time, plan, UW.L); UWD.drawDress(g, cx, cy, vw, time, plan); }   /* the dressing and what holds the ledges up (src/redraw/underwell_dress.js) */
     for (const [x0, x1, y] of UW.sand) if (inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawSand(g, R(x0 * TS - cx), R(y * TS - cy), (x1 - x0 + 1) * TS, time);
     for (const [x0, x1, y] of UW.L.seeps || []) if (x1 - x0 > 20 && ctx.cellGet(x0 + 1, y - 1) !== ctx.T.AIR && ctx.cellGet(x0 + 1, y + 1) !== ctx.T.AIR && inX(x0 * TS, (x1 - x0) * TS + 40)) UWA.drawGutter(g, R((x0 + 1) * TS - cx), R(y * TS - cy), (x1 - x0 - 1) * TS);   /* a gutter's grate (a slot in the rock) */
+    for (const c of UW.list) if (c.arena && c.st === 'spent' && c.t < 4 && !c.vertical && inX(c.x * TS)) { const k = 1 - c.t / 4; for (let i = 0; i < 3; i++) { const ph = (time * 1.6 + i * 0.37 + c.seed * 0.11) % 1; if (ph > k) continue; g.fillStyle = i % 2 ? '#4a3e66' : '#8a6ab8'; g.fillRect(R(c.x * TS + 3 + i * 5 - cx), R((c.y + 1) * TS - 2 - ph * 6 - cy), 2, 2); } }   /* (claude/underwell3) her hall's oil SEEPING BACK: bubbles rising out of the burnt stone */
     for (const c of UW.list) { const x = c.x * TS; if (!inX(x)) continue; UWA.drawCell(g, R(x - cx), R(c.y * TS - cy) - (c.fl || 0), c.st, c.st === 'fire' ? Math.min(1, c.t / OIL.burn) : 0, time, c.vertical, c.seed, c.deep, c.side, c.pipe); }
     const Ph = ctx.hero();
     for (const d of UW.L.decor || []) if (d.kind === 'husk' && inX(d.x * TS, 60)) UWA.drawHusk(g, R(d.x * TS + 8 - cx), R((d.y + 1) * TS - cy));

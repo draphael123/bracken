@@ -5,6 +5,7 @@
 // down), SOAKED (wet and slumped, the guard down), ON HER BACK (legs kicking), REARING (up on her tail, underbelly bare), the DEATH ROLL (spinning).
 // Also: the hall's windlass, the shaft's bucket and rope, the two side tunnels, and over everything her tells on the floor and what she throws.
 //   drawQueen(g, e, S, x, y, time)   x, y = her feet on screen.   bakeCisternQueen() -> a sprite set for the bestiary and her body (CQ_F names its frames)
+import { TAIL, tailPose } from '../cistern-queen.js';   /* (claude/underwell3) her tail's one table, and the pose that picks a path */
 import { canvas, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -32,15 +33,7 @@ export function drawBody(g, o) {
   /* THE TAIL: seven segments from her rump, curled up over her back to the stinger (or out at what it is doing). Dark edge, lit top. */
   const tail = o.tail || 'curl', segs = [];
   { let px = -42, py = -22; segs.push([px, py]);
-    const path = { curl: [[-58, -40], [-60, -64], [-48, -84], [-26, -94], [-6, -88], [4, -74]],
-      high: [[-60, -44], [-62, -72], [-50, -96], [-26, -108], [0, -106], [22, -96]],
-      sweep: [[-62, -30], [-80, -32], [-98, -30], [-116, -26], [-132, -20], [-146, -14]],
-      flick: [[-60, -36], [-72, -56], [-70, -78], [-56, -92], [-36, -96], [-20, -92]],
-      down: [[-58, -24], [-74, -20], [-88, -14], [-100, -8], [-110, -4], [-118, -2]],
-      pin: [[-58, -40], [-56, -66], [-36, -84], [-6, -88], [24, -72], [44, -46]],
-      back: [[-64, -26], [-86, -22], [-108, -20], [-128, -24], [-146, -34], [-158, -50]],          /* SWEEP LOW told: drawn back low behind her, the stinger cocked up at the end */
-      backHigh: [[-62, -48], [-84, -70], [-104, -92], [-124, -108], [-146, -112], [-162, -102]],   /* SWEEP HIGH told: thrown back and up, the whole arc behind her */
-      spit: [[-58, -40], [-50, -68], [-24, -90], [6, -98], [34, -92], [58, -78]] }[tail] || null;   /* VENOM SPIT told: the tail arched forward over her head, the stinger aimed at you */
+    const path = TAIL[tail] || null; /* (claude/underwell3: the one table, src/cistern-queen.js TAIL - the stinger a blow must find is the one drawn) */
     if (tail === 'lance' && o.lanceTo) { const [tx, ty] = o.lanceTo; for (let i = 1; i <= 6; i++) { const q = i / 6, ax = px + (tx - px) * q, ay = py + (ty - py) * q - Math.sin(q * Math.PI) * 70; segs.push([ax, ay]); } }
     else for (const [ax, ay] of path || []) segs.push([ax + (tail === 'curl' ? Math.sin(t * 2.2) * 2 : 0), ay + (tail === 'curl' ? Math.cos(t * 2.2) * 2 : 0)]); }
   for (let i = segs.length - 1; i >= 1; i--) { const [x0, y0] = segs[i - 1], [x1, y1] = segs[i], r = 10.5 - i * 0.7;
@@ -81,6 +74,9 @@ export function drawBody(g, o) {
     ln(g, col, 6.5, u); ln(g, col, 6.5, d); ell(g, col, hx, hy, 14, 11); ell(g, colL, hx - 2, hy - 4, 8, 3.2); ln(g, C.rim, 1.4, [[hx - 8, hy - 6], [hx + 6, hy - 8], u[1]]); fr(g, '#f6e0b0', u[1][0] - 1, u[1][1] - 1, 4, 3); fr(g, '#f6e0b0', d[1][0] - 1, d[1][1] - 1, 4, 3); }
   /* WET: the water running off her */
   if (wet > 0) { g.globalAlpha = 0.35 * wet; ell(g, QC.wet, -4, -26, 50, 16); g.globalAlpha = 1; for (let i = 0; i < 6; i++) { const x = -40 + i * 15, y = -10 + ((t * 40 + i * 13) % 16); fr(g, QC.wetL, x, y, 1, 2); } }
+  /* (claude/underwell3) SCORCHED: the fire has cracked her shell - glowing seams across every plate, embers rising off them */
+  if (o.scorch > 0) { const p = 0.6 + 0.4 * Math.abs(Math.sin(t * 9)); g.globalAlpha = p; for (let i = 0; i < 5; i++) { const x = -38 + i * 16; ln(g, '#ffb84a', 1.4, [[x - 6, -36], [x - 1, -28], [x - 4, -20], [x + 2, -14]]); fr(g, '#fff2c0', x - 2, -29, 2, 2); }
+    ln(g, '#ff9a3c', 1.2, [[30, -34], [36, -26], [32, -18]]); g.globalAlpha = 1; for (let i = 0; i < 5; i++) { const x = -40 + ((i * 23 + t * 30) % 80), y = -40 - ((t * 50 + i * 17) % 22); fr(g, i % 2 ? '#ffd36b' : '#ff9a3c', x, y, 2, 2); } }
 }
 
 /* HER ON THE SCREEN, by pose */
@@ -105,8 +101,11 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   if (m === 'tidalTell') { o.venomHot = true; } if (m === 'waveTell') { o.claw = 'up'; } if (m === 'pounceTell') { o.claw = 'up'; o.tail = 'high'; o.crouch = true; } if (m === 'lungeTell') o.crouch = true; if (m === 'rollTell') { o.claw = 'down'; o.legs = 'still'; o.lean = true; }
   if (e.guardFx > 0) o.flash = true;
   const face = e.face || 1;
-  /* (claude/welltown5) HER STINGER STUCK in the floor after a sting: the tail runs down to it, the stinger hot-white (it glints: src/cistern-queen-hands.js) */
-  if (S.stinger && S.stinger.t > 0 && S.pose !== 'wall' && (m === 'stuck' || m === 'pinned')) { o.tail = 'lance'; o.lanceTo = [(S.stinger.x - e.x) * face, S.stinger.y - e.y]; o.hot = true; }
+  /* (claude/underwell3) HER TAIL by src/cistern-queen.js tailPose - the same choice the hit on her stinger makes; the stinger stuck in the floor (a sting, the slam, the slip) runs the tail down to it, hot-white */
+  { const tp = tailPose(e, S); o.tail = tp.tail; o.lanceTo = tp.lanceTo; if (tp.tail === 'lance') o.hot = true; }
+  if (m === 'sslamTell') { o.claw = 'up'; o.hot = true; o.crouch = true; } if (m === 'planted') { o.claw = 'down'; o.legs = 'still'; }
+  if (m === 'slip') { o.claw = 'down'; o.legs = 'splay'; o.wet = 1; o.walk = false; }
+  if (e.scorch > 0) o.scorch = Math.min(1, e.scorch);
   g.save(); g.translate(x, y);
   const onWall = S.pose === 'wall' && m !== 'pin' && m !== 'pinned';
   /* ON A WALL: her legs on the stone, her back to the hall, head down to the floor and her tail up toward the ledge over her */
@@ -158,6 +157,8 @@ export function drawOver(g, e, S, cx, cy, time, CQ) {
   /* HER TELLS ON THE FLOOR */
   const cur = S.cur || {}, m = e.mode, blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
   if (m === 'lanceTell' && cur.x != null) { const x = X(cur.x), k = 1 - Math.max(0, e.modeT) / CQ.lanceTell; g.strokeStyle = blink; g.lineWidth = 1; g.beginPath(); g.ellipse(x, R(F - 1), 16 - k * 8, 3, 0, 0, Math.PI * 2); g.stroke(); fr(g, '#ff6b6b', x - 1, R(F - 3), 2, 2); }
+  if (m === 'sslamTell' && cur.x != null) { const x = X(cur.x), k = 1 - Math.max(0, e.modeT) / CQ.sslamTell; g.strokeStyle = blink; g.lineWidth = 2; g.beginPath(); g.ellipse(x, R(F - 1), CQ.slamR + 6 - k * 8, 5, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;   /* (claude/underwell3) THE STINGER SLAM's spot: red, the width of the blow */
+    g.globalAlpha = 0.25 + 0.4 * k; g.fillStyle = '#ff6b6b'; g.beginPath(); g.ellipse(x, R(F - 1), (CQ.slamR - 4) * k + 4, 3, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; fr(g, '#ff6b6b', x - 1, R(F - 14), 2, 8); fr(g, '#ff6b6b', x - 1, R(F - 4), 2, 2); }
   if (m === 'pinTell' && cur.x != null) { g.strokeStyle = 'rgba(255,107,107,0.6)'; g.lineWidth = 1; g.beginPath(); g.moveTo(X(e.x), R(e.y - 50 - cy)); g.lineTo(X(cur.x), R(cur.y - 8 - cy)); g.stroke(); g.strokeStyle = blink; g.beginPath(); g.ellipse(X(cur.x), R(G.floor - 1 - cy), 20, 4, 0, 0, Math.PI * 2); g.stroke(); }
   if (m === 'pounceTell' && cur.x != null) { const k = 1 - Math.max(0, e.modeT) / CQ.pounceTell; g.globalAlpha = 0.25 + 0.45 * k; g.fillStyle = '#1a1210'; g.beginPath(); g.ellipse(X(cur.x), R(F), 10 + k * CQ.pounceR, 3 + k * 3, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
     g.strokeStyle = blink; g.lineWidth = 1; g.beginPath(); g.ellipse(X(cur.x), R(F), CQ.pounceR, 5, 0, 0, Math.PI * 2); g.stroke(); }
