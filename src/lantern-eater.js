@@ -26,7 +26,7 @@
 
 export const LE = {
   hp: 1900, markH: 26,
-  ward: 0.05, openMul: 1.25, openCap: 0.12, openT: 3.2, wardT: 3.0,
+  ward: 0.05, openMul: 1.4, openCap: 0.09, openT: 3.2, wardT: 3.0,
   /* THE RAFT: the last barge widened with the lock's timbers (claude/canal4's stage) */
   raftW: 224, raftSpeed: 70, bob: 1.5,
   /* THE LURE (and the lamp): its box when it dangles - the bottom LE.dangleY over the deck, LE.lureH tall (a standing swing touches it: it clanks) */
