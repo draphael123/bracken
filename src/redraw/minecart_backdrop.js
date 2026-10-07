@@ -140,7 +140,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
   { const k = 0.4, per = 210, i0 = Math.floor((cx * k - 160) / per) - 1, i1 = Math.floor((cx * k + VW) / per) + 1, spr = trestleSprite();
     g.globalAlpha = 0.85; for (let i = i0; i <= i1; i++) { const h = hash(i, 17); if (h % 3 === 0) continue; const x = Math.round(i * per + (h % 40) - cx * k), y = Math.round(70 + (h % 5) * 18 - cy * 0.25); g.drawImage(spr, x, y); } g.globalAlpha = 1; }
   /* 5. THE LANDMARKS: they stand a long way off, so they hardly move: the smelter's chimney (from the cave-in on) and the bore's mouth (from the exam on) */
-  { const smW = 922 * TS, boW = 950 * TS, f = 0.03;
+  { const smW = 922 * TS, boW = 950 * TS, f = 0.02;
     const sA = Math.max(0, Math.min(1, (tx - 440) / 40));
     if (sA > 0) { const sx = Math.round(VW / 2 + (smW - cx - VW / 2) * f) - 40, sy = Math.round(VH - 168 + (cy - 420) * -0.04);
       const fl = 0.75 + 0.25 * Math.sin(time * 3.1) * Math.sin(time * 1.7 + 1);
@@ -148,7 +148,9 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
       g.globalCompositeOperation = 'lighter'; g.globalAlpha = sA * 1.0 * fl; g.drawImage(glow(110, '255,120,40'), sx + 40 - 110, sy + 8 - 110); g.drawImage(glow(70, '255,150,60'), sx + 40 - 70, sy + 8 - 70); g.globalAlpha = sA * 0.7 * fl; g.drawImage(glow(40, '255,210,120'), sx + 40 - 40, sy + 8 - 40);
       /* sparks rising off the stack */
       for (let s = 0; s < 8; s++) { const ph = time * (0.5 + (s % 3) * 0.2) + s * 1.3, t = ph % 1, ox = Math.sin(ph * 3 + s) * (6 + t * 14); g.globalAlpha = sA * (1 - t) * 0.9; g.fillStyle = s % 2 ? MP.l2 : MP.l3; g.fillRect(Math.round(sx + 40 + ox), Math.round(sy + 4 - t * 54), 1, 1 + (s & 1)); }
-      g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
+      g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+      /* the whole far side warms with it: an orange wash off the right edge that deepens as the stack comes on */
+      { const k = Math.min(1, (tx - 440) / 460), gr = g.createLinearGradient(VW, 0, VW * 0.35, 0); gr.addColorStop(0, 'rgba(255,110,30,' + (sA * (0.16 + 0.2 * k) * fl).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,110,30,0)'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); } }
     const bA = Math.max(0, Math.min(1, (tx - 740) / 40));
     if (bA > 0) { const bx = Math.round(VW / 2 + (boW - cx - VW / 2) * f) - 55 + 70, by = Math.round(VH - 100 - 28 + (cy - 420) * -0.05); g.globalAlpha = bA * 0.95; g.drawImage(boreMouth(), bx, by); g.globalAlpha = 1; } }
   /* 3. the timber frames and the lantern strings on the wall's plane */

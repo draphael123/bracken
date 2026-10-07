@@ -56,6 +56,7 @@ export function lever(g, x, y, hang, set, locked, flash, time) {
 /* THE CRUSHER: a press head in a frame - a guide on each side, a hydraulic ram on top with a BEACON (red and flashing when it is about to fall, green when it is up and safe), a riveted iron block with hazard stripes and a toothed face */
 export function crusher(g, x, w, topY, bot, state, time) {
   const gx0 = x + 1, gx1 = x + w - 3;
+  for (const cxm of [x + 2, x + w - 3]) for (let y = -20; y < topY - 46; y += 4) { rc(g, cxm - (y & 4 ? 0 : 1), y, 2, 3, MP.i3); rc(g, cxm, y, 1, 3, MP.i4); }   /* chains up to the roof: the press hangs from it */
   rc(g, gx0, topY - 40, 2, bot - topY + 40 - 14, MP.i2); rc(g, gx1, topY - 40, 2, bot - topY + 40 - 14, MP.i2); rc(g, gx0, topY - 40, 1, bot - topY + 40 - 14, MP.i4);   /* the guides */
   rc(g, x - 2, topY - 46, w + 4, 8, MP.i1); rc(g, x - 2, topY - 46, w + 4, 1, MP.i4); rc(g, x - 2, topY - 39, w + 4, 1, MP.i0); for (let i = x; i < x + w; i += 6) rc(g, i, topY - 44, 1, 1, MP.i5);   /* the head frame */
   rc(g, x + w / 2 - 2, topY - 38, 4, bot - topY + 38 - 18, MP.i3); rc(g, x + w / 2 - 2, topY - 38, 1, bot - topY + 38 - 18, MP.i5);   /* the ram */
@@ -84,7 +85,7 @@ export function gate(g, x, yb, open, k, time) {
 }
 /* THE DUCK BEAM: a lintel across the line between two posts, hazard-striped on its underside, a chain hanging */
 export function beam(g, x, w, y, flash) {
-  rc(g, x - 3, y - 62, 5, 62, MP.t2); rc(g, x - 3, y - 62, 1, 62, MP.t4); rc(g, x + w - 2, y - 62, 5, 62, MP.t2); rc(g, x + w - 2, y - 62, 1, 62, MP.t4);   /* the posts */
+  rc(g, x - 3, -20, 5, y + 20, MP.t2); rc(g, x - 3, -20, 1, y + 20, MP.t4); rc(g, x + w - 2, -20, 5, y + 20, MP.t2); rc(g, x + w - 2, -20, 1, y + 20, MP.t4);   /* the posts: props set to the roof, up out of the picture */
   rc(g, x - 5, y - 8, w + 10, 8, MP.t3); rc(g, x - 5, y - 8, w + 10, 1, MP.t5); rc(g, x - 5, y - 1, w + 10, 1, MP.t0);
   for (let i = x - 4; i < x + w + 4; i += 8) for (let k = 0; k < 6; k++) rc(g, i + k, y - 6 + (k >> 1), 1, 4 - (k >> 1), ((i - x) / 8) & 1 ? HAZ[0] : HAZ[1]);   /* the hazard stripes */
   for (const px_ of [x - 3, x + w]) { rc(g, px_ - 1, y - 8, 7, 2, MP.i2); rc(g, px_ - 1, y - 8, 7, 1, MP.i4); }
@@ -250,4 +251,12 @@ function fallenHigh(g, x0, w, yCeil, yFloor, time) {
   for (let x = 0; x < w; x += 7) { const h = 5 + ((x * 11) % 13); rc(g, x0 + x, yFloor - h, 8, h, ((x / 7) | 0) & 1 ? '#5e4a38' : '#4a3a2c'); rc(g, x0 + x, yFloor - h, 8, 1, '#8a7660'); rc(g, x0 + x + 7, yFloor - h, 1, h, MP.r1); }
   for (let x = 20; x < w; x += 61) { rc(g, x0 + x, yFloor - 16, 22, 3, MP.t2); rc(g, x0 + x, yFloor - 16, 22, 1, MP.t4); rc(g, x0 + x + 20, yFloor - 20, 3, 5, MP.t1); rc(g, x0 + x + 3, yFloor - 14, 18, 1, MP.i4); }   /* a snapped tie and a bent rail in the heap */
   for (let i = 0; i < 14; i++) { const t = (time * 0.9 + i * 0.37) % 1; g.fillStyle = 'rgba(140,120,100,' + (0.55 * (1 - t)).toFixed(2) + ')'; g.fillRect(R(x0 + ((i * 37) % w)), R(yCeil + 20 + t * (yFloor - yCeil - 30)), 2, 2); }
+}
+
+/* THE LANTERN STRINGS' PLAN: where the lamp posts stand (pure: the level's own lists and a cell reader), used by the hands to draw and by tools/minecart-aloft.mjs to assert every post stands on a rail bed with clear air over it. [[x, row, nextPostSixTilesOn]] */
+export function lampPlan(L, cellGet, T, x0c, x1c) {
+  const gx = []; for (const k of L.mcCrushers) gx.push([k.x - 2, k.x + k.w + 2]); for (const gt of L.mcGates) gx.push([gt.x - 3, gt.x + 3]); for (const b of L.mcBeams) gx.push([b.x0 - 3, b.x1 + 3]); for (const r of L.mcRocks) gx.push([r.x - 2, r.x + r.w + 2]); for (const p of L.mcPoints) gx.push([p.x - 2, p.x + 2]); for (const bg of L.mcBoost || []) gx.push([bg.x0 - 5, bg.x1 + 3]);
+  const posts = new Map(); for (const [a, b, row] of L.mcTrack) for (let x = Math.max(a + 1, x0c - 8); x <= Math.min(b - 1, x1c + 8); x++) { if (x % 6 !== 0) continue; const t0 = cellGet(x, row); if (!(t0 === T.SOLID || t0 === T.RAIL)) continue;
+    let clear = true; for (let k = 1; k <= 4 && clear; k++) if (cellGet(x, row - k) !== T.AIR) clear = false; if (!clear || gx.some(([p0, p1]) => x >= p0 && x <= p1)) continue; posts.set(x + ',' + row, [x, row]); }
+  return [...posts.values()].map(([x, row]) => [x, row, posts.has((x + 6) + ',' + row)]);
 }

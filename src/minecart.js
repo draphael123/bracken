@@ -337,7 +337,7 @@ export function buildMinecart({ painter, T, TS }) {
     ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     rockZones: [], masonry: [],
     /* GREYBOX LOOK: a deep mine (the art pass gives it its own kit): the Ore Road's warm dark, deeper, with dust in the air */
-    palette: { sky: [[10, 8, 12], [26, 20, 22]], far: 'crag', mid: 'crag', near: 'none', dress: 'none', ledges: 'staging', haze: 'rgba(30,24,22,0.2)', murkCol: '#2a1c18', murkLit: '#8a5a30',
+    palette: { sky: [[10, 8, 12], [26, 20, 22]], far: 'crag', mid: 'crag', near: 'none', dress: 'none', noFg: true, noNear: true, ledges: 'staging', haze: 'rgba(30,24,22,0.2)', murkCol: '#2a1c18', murkLit: '#8a5a30',
       darkCol: '14,8,6', lampGlow: [255, 150, 60, 0.24], darkRim: ['#c8843c', 0.26, 0.12], footLip: ['#f0be7c', 0.62], grade: ['#ff8a3c', 0.1],
       grass: '#4a3426', grassL: '#6a4a34', grassD: '#2a1a12', dirt: '#3a2618', dirtL: '#5a3a24', dirtD: '#1e120a', canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [{ x0: 0, x1: 99999, kind: 'dust' }], duskStart: -1, duskLen: 1,

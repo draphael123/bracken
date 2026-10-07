@@ -240,16 +240,13 @@ export function makeMinecartHands(ctx) {
   const IRON = '#8a919c', DARK = '#2a2622', WOOD = '#6b4a2a', WOOD2 = '#8a6238';
   H.drawWorld = (g, cx, cy, time) => { if (!M || !H.on()) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), now = ctx.time(), x0c = Math.floor(cx / ts) - 1, x1c = Math.ceil((cx + vw) / ts) + 1;
     /* trestle bents under the elevated lines */
-    for (const [a, b, row] of M.L.mcTrestles) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x += 3) { if (ctx.cellGet(x, row) !== ctx.T.RAIL) continue; let yb = row + 1; while (yb < row + 12 && ctx.cellGet(x, yb) === ctx.T.AIR) yb++;
+    for (const [a, b, row] of M.L.mcTrestles) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x += 3) { if (ctx.cellGet(x, row) !== ctx.T.RAIL) continue; let yb = row + 1; while (yb < row + 40 && ctx.cellGet(x, yb) === ctx.T.AIR) yb++;
       if (yb > row + 1) MCA.bent(g, R(x * ts + 6 - cx), R((row + 1) * ts - cy), R(yb * ts - cy), x + 3 <= b && ctx.cellGet(x + 3, row) === ctx.T.RAIL, x); }
     /* the rail along every line, on whatever stands there (sleepers and iron; laid up the ramps too) */
     for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x++) { const t = ctx.cellGet(x, row); if (!(t === ctx.T.SOLID || t === ctx.T.RAIL || t === ctx.T.ONEWAY || (t >= 20 && t <= 25))) continue;
       const sx = R(x * ts - cx), sy = R(row * ts - cy); if (t >= 20 && t <= 25) { MCA.slopeRail(g, sx, sy, t, heightAt); continue; } MCA.rail(g, sx, sy, x); }
     /* THE LANTERN STRINGS: a lamp post every sixth tile along the lines, a wire sagging to the next with a bulb between (never at a gadget) */
-    { const gx = []; for (const k of M.crushers) gx.push([k.x - 2, k.x + k.w + 2]); for (const gt of M.gates) gx.push([gt.x - 3, gt.x + 3]); for (const b of M.beams) gx.push([b.x0 - 3, b.x1 + 3]); for (const r of M.rocks) gx.push([r.x - 2, r.x + r.w + 2]); for (const p of M.points) gx.push([p.x - 2, p.x + 2]); for (const bg of M.L.mcBoost || []) gx.push([bg.x0 - 5, bg.x1 + 3]);
-      const posts = new Map(); for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a + 1, x0c - 8); x <= Math.min(b - 1, x1c + 8); x++) { if (x % 6 !== 0) continue; const t0 = ctx.cellGet(x, row); if (!(t0 === ctx.T.SOLID || t0 === ctx.T.RAIL)) continue;
-        let clear = true; for (let k = 1; k <= 4 && clear; k++) if (ctx.cellGet(x, row - k) !== ctx.T.AIR) clear = false; if (!clear || gx.some(([p0, p1]) => x >= p0 && x <= p1)) continue; posts.set(x + ',' + row, [x, row]); }
-      for (const [x, row] of posts.values()) MCA.lampPost(g, R(x * ts + 7 - cx), R(row * ts - cy), time, x, posts.has((x + 6) + ',' + row)); }
+    for (const [x, row, nx] of MCA.lampPlan(M.L, ctx.cellGet, ctx.T, x0c, x1c)) MCA.lampPost(g, R(x * ts + 7 - cx), R(row * ts - cy), time, x, nx);
     /* the decor: fall-ins, the roof over the hidden lever, the bore, the smelter's glow */
     for (const d of M.L.decor) { if (d.kind === 'fallin') { const x = R(d.x * ts - cx), y = R((d.row - 2) * ts - cy); MCA.fallin(g, x, y, time); ctx.text('FALLEN IN', x + 16, y - 6, '#ff9a5c', 'center', 5); }
       else if (d.kind === 'bore') { MCA.boreArch(g, R(d.x0 * ts - cx), (d.x1 - d.x0 + 1) * ts, R(d.row * ts - cy)); }
