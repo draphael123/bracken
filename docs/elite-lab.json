@@ -1,0 +1,507 @@
+{
+ "kinds": {
+  "shield": {
+   "level": "wood",
+   "affix": "WARDING",
+   "ehp": 272,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 6,
+    "secs": [
+     41.7,
+     40.2,
+     30.1,
+     30.1,
+     38.4,
+     36.4
+    ]
+   }
+  },
+  "thorn": {
+   "level": "marsh",
+   "affix": "THORNED",
+   "ehp": 167,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 5,
+    "secs": [
+     26.3,
+     17.1,
+     16.9,
+     18,
+     19.9
+    ]
+   }
+  },
+  "brute": {
+   "level": "stockade",
+   "affix": "SUMMONER",
+   "ehp": 352,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 5,
+    "secs": [
+     47,
+     27.1,
+     32.6,
+     35.3,
+     38.3
+    ]
+   }
+  },
+  "troll": {
+   "level": "scree",
+   "affix": "UNSTOPPABLE",
+   "ehp": 460,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 12,
+    "wins": 10,
+    "secs": [
+     26.8,
+     26.8,
+     26.8,
+     26.8,
+     58.7,
+     58.7,
+     36,
+     39.9,
+     39.9,
+     39.8
+    ]
+   }
+  },
+  "goat": {
+   "level": "spire",
+   "affix": "SUMMONER",
+   "ehp": 383,
+   "mash": {
+    "n": 9,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 4,
+    "secs": [
+     21.2,
+     17.1,
+     52.3,
+     40.8
+    ]
+   }
+  },
+  "pike": {
+   "level": "storm",
+   "affix": "SHIELDED",
+   "ehp": 576,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 6,
+    "secs": [
+     40.8,
+     47.3,
+     14.7,
+     15.2,
+     34.5,
+     33.8
+    ]
+   }
+  },
+  "heavy": {
+   "level": "crown",
+   "affix": "UNSTOPPABLE",
+   "ehp": 410,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 5,
+    "secs": [
+     29.4,
+     29.9,
+     25.2,
+     43.9,
+     40.3
+    ]
+   }
+  },
+  "hearthgob": {
+   "level": "crown",
+   "affix": "BURNING",
+   "ehp": 578,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 12,
+    "wins": 11,
+    "secs": [
+     24.8,
+     24.8,
+     24.7,
+     24.8,
+     48.2,
+     27.3,
+     27.1,
+     28.1,
+     29.5,
+     29.6,
+     29.6
+    ]
+   }
+  },
+  "tideguard": {
+   "level": "longwater",
+   "affix": "SHIELDED",
+   "ehp": 666,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 12,
+    "wins": 9,
+    "secs": [
+     39.7,
+     15.2,
+     15.4,
+     15.9,
+     15.9,
+     41.8,
+     41.8,
+     39.9,
+     41.8
+    ]
+   }
+  },
+  "boarder": {
+   "level": "flotilla",
+   "affix": "SWIFT",
+   "ehp": 1009,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 5,
+    "secs": [
+     28.1,
+     28.1,
+     42.4,
+     33.3,
+     37.6
+    ]
+   }
+  },
+  "cutlass": {
+   "level": "hurricane",
+   "affix": "SWIFT",
+   "ehp": 304,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 4,
+    "secs": [
+     6.2,
+     10.7,
+     8.4,
+     8.4
+    ]
+   }
+  },
+  "watch": {
+   "level": "lamplit",
+   "affix": "WARDING",
+   "ehp": 734,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 12,
+    "wins": 12,
+    "secs": [
+     32.5,
+     33.9,
+     30.5,
+     24.2,
+     19.1,
+     23.4,
+     22.6,
+     17.7,
+     39.4,
+     39.4,
+     30.3,
+     39.4
+    ]
+   }
+  },
+  "drownedcaptain": {
+   "level": "keep",
+   "affix": "SHIELDED",
+   "ehp": 1148,
+   "mash": {
+    "n": 3,
+    "wins": 2
+   },
+   "human": {
+    "n": 6,
+    "wins": 0,
+    "secs": []
+   }
+  },
+  "hedgeknight": {
+   "level": "waymeet",
+   "affix": "SHIELDED",
+   "ehp": 888,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 12,
+    "wins": 8,
+    "secs": [
+     29.6,
+     23.8,
+     21.9,
+     47.7,
+     22.6,
+     19.2,
+     19.4,
+     20.5
+    ]
+   }
+  },
+  "scarecrow": {
+   "level": "fields",
+   "affix": "SUMMONER",
+   "ehp": 738,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 5,
+    "secs": [
+     16.4,
+     16.4,
+     19.6,
+     19.7,
+     25.6
+    ]
+   }
+  },
+  "husk": {
+   "level": "burial",
+   "affix": "VENOMOUS",
+   "ehp": 666,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 4,
+    "secs": [
+     56,
+     56,
+     23.7,
+     23.7
+    ]
+   }
+  },
+  "armour": {
+   "level": "mage",
+   "affix": "WARDING",
+   "ehp": 775,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 6,
+    "secs": [
+     18.8,
+     18.8,
+     59.8,
+     21.1,
+     20,
+     20
+    ]
+   }
+  },
+  "cutthroat": {
+   "level": "caravan",
+   "affix": "SWIFT",
+   "ehp": 556,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 12,
+    "wins": 10,
+    "secs": [
+     33.8,
+     33.8,
+     32.5,
+     32.5,
+     32.5,
+     32.5,
+     23.5,
+     23.5,
+     23.5,
+     23.5
+    ]
+   }
+  },
+  "barker": {
+   "level": "fair",
+   "affix": "WARDING",
+   "ehp": 315,
+   "mash": {
+    "n": 3,
+    "wins": 1
+   },
+   "human": {
+    "n": 6,
+    "wins": 2,
+    "secs": [
+     41.5,
+     41.5
+    ]
+   }
+  },
+  "hobbyhorse": {
+   "level": "fair",
+   "affix": "SWIFT",
+   "ehp": 778,
+   "mash": {
+    "n": 9,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 3,
+    "secs": [
+     14.9,
+     40.4,
+     40.4
+    ]
+   }
+  },
+  "gaffer": {
+   "level": "canal",
+   "affix": "UNSTOPPABLE",
+   "ehp": 360,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 5,
+    "secs": [
+     37.4,
+     37.4,
+     53.3,
+     9.3,
+     9.3
+    ]
+   }
+  },
+  "scorpion": {
+   "level": "welltown",
+   "affix": "VENOMOUS",
+   "ehp": 823,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 4,
+    "secs": [
+     48.9,
+     9.7,
+     23.5,
+     23.5
+    ]
+   }
+  },
+  "archer": {
+   "level": "stockade",
+   "affix": "SWIFT",
+   "ehp": 99,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 4,
+    "secs": [
+     24.6,
+     23.4,
+     38.8,
+     22.1
+    ]
+   }
+  },
+  "apprentice": {
+   "level": "fallingtower",
+   "affix": "WARDING",
+   "ehp": 599,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 4,
+    "secs": [
+     49.8,
+     47.1,
+     24.6,
+     24.6
+    ]
+   }
+  }
+ },
+ "stamp": "359e70171cdf",
+ "heroes": [
+  "knight",
+  "warden",
+  "pyro"
+ ],
+ "note": "tools/elite-lab.mjs: mash = the mash bot (must lose: 0 wins), human = the human-speed bot (target ~75-85%)"
+}
