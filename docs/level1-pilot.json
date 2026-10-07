@@ -108,14 +108,14 @@
   "bare": true
  },
  "glasssea": {
-  "hash": "d78dd64ed3a8",
+  "hash": "a4af8f5e2973",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 44,
-  "deaths": 2,
-  "kills": 33,
-  "lifts": 92,
+  "hits": 36,
+  "deaths": 3,
+  "kills": 23,
+  "lifts": 98,
   "walked": 100,
   "bare": true
  }

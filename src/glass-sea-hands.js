@@ -165,7 +165,7 @@ export function makeGlassSeaHands(ctx) {
           const side = pp.x < (l + r) / 2 ? -1 : 1; ctx.asPlayer(pp, () => { const P = ctx.hero(); ctx.hurtHero(P.x, GS.boilDmg, { unblockable: true, noKnock: true, name: 'THE SWARM' }); P.vx = side * GS.boilV; P.vy = -140; P.ground = false; });
           if (once('boil') || GSx.clock - (GSx.boilSaid || -9) > 6) { GSx.boilSaid = GSx.clock; ctx.number(pp.x, pp.y - 34, 'THE CRACK BOILS WITH THE SWARM: FIRELIGHT HOLDS IT', '#ff9a5c'); } }
         if (pp.x > l + 2 && pp.x < r - 2 && pp.y > (c.y + 1.5) * ts) { GSx.n.falls++; const s = pp.gsSafe; GSx.lastFall = { id: c.id, x: Math.round(pp.x / ts), y: Math.round(pp.y / ts), safe: s && [Math.round(s.x / ts), Math.round(s.y / ts)] };
-          ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!c.soft) ctx.hurtHero(P.x, GS.fallDmg, { unblockable: true, noKnock: true, name: 'THE CRACK' }); if (!P.dead && s) ctx.place(pp, s.x, s.y); });
+          ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!c.soft) ctx.hurtHero(P.x, c.dmg || GS.fallDmg, { unblockable: true, noKnock: true, name: 'THE CRACK' }); if (!P.dead && s) ctx.place(pp, s.x, s.y); });
           if (c.soft) { if (once('softFall')) ctx.number(pp.x, pp.y - 34, 'THE GLASS GAVE WAY: BACK TO THE LIP', '#9aa39a'); }   /* (glasssea2: the teaching pit costs nothing) */
           else if (once('fall')) ctx.number(pp.x, pp.y - 34, 'THE CRACK THROWS YOU BACK', '#9aa39a'); } }
       for (const p of GSx.patches) if (Math.abs(pp.x - p.x) < GS.patchW * 8 && Math.abs(pp.y - p.y) < 8 && pp.gsPatchK <= 0) { pp.gsPatchK = GS.patchCd; ctx.asPlayer(pp, () => ctx.hurtHero(ctx.hero().x, GS.patchDmg, { unblockable: true, noKnock: true, name: 'THE GLASS SHARDS' })); }

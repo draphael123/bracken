@@ -166,7 +166,7 @@ export function buildGlassSea({ painter, T, TS }) {
      glass over the west gap to the pillar; mirror Y on the pillar throws its glass over the east gap. Turn X, cross while it holds, turn Y, WAIT on the pillar for Y's beam
      (it comes as X's goes), cross. The gaps are real cracks (a fall is a blow and the last safe footing: the pillar or the lip) */
   mirror('hawkX', 262, B - 2, ['sky', '\\'], { pulse: { on: 2.6, warn: 0.8, off: 2.2, ph: 0 } }); source('hawkX', 262, B - 3, 'S', 'sun');
-  crack('hawkW', 264, 270, B); crack('hawkE', 274, 281, B);   /* the pillar between them: 271-273 */
+  crack('hawkW', 264, 270, B, { dmg: 32 }); crack('hawkE', 274, 281, B, { dmg: 32 });   /* (glasssea2) the exam's cracks bite harder than the road's (32, not 20): THE HAWK GAP is where the rocking mirrors are tested */   /* the pillar between them: 271-273 */
   bed('hawkX', 271, B - 2, [...span(265, 266, B), ...span(268, 269, B)], { label: 'THE WEST STEPS', fuseT: 0.3, crumbleT: 0.25, pulse: true }); decor.push({ kind: 'heap', x: 271, y: B - 1 });
   mirror('hawkY', 273, B - 2, ['sky', '\\'], { pulse: { on: 2.6, warn: 0.8, off: 2.2, ph: 2.8 } }); source('hawkY', 273, B - 3, 'S', 'sun');
   bed('hawkY', 282, B - 2, [...span(275, 276, B), ...span(278, 279, B)], { label: 'THE EAST STEPS', fuseT: 0.3, crumbleT: 0.25, pulse: true }); decor.push({ kind: 'heap', x: 282, y: B - 1 });

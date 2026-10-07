@@ -507,16 +507,16 @@
   "lostPct": 131
  },
  "glasssea": {
-  "hash": "d78dd64ed3a8",
+  "hash": "a4af8f5e2973",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 47,
+  "hits": 36,
   "deaths": 3,
-  "kills": 30,
-  "lifts": 94,
+  "kills": 23,
+  "lifts": 98,
   "walked": 100,
   "bare": true,
-  "lostPct": 254
+  "lostPct": 261
  }
 }
