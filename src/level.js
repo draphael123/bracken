@@ -559,7 +559,22 @@ function marshWood() {
   // AND NOTHING THAT SHOOTS OVER THE FIRST PADS: the garrison stood an archer on the bank at 14, in range of the whole lily
   // pond, and a turtle at its edge. The pond is where the sink is learnt.
   F.R.calm = F.R.calm.concat([[8, 46, 14, 22]]);
-  return F.done();
+  const M = F.done();
+  /* THE DIFFICULTY PILOT (claude/levelpilot, Daniel 2026-10-07: 'levels are still incredibly easy' - a middle ground between SHOVEL KNIGHT and
+     SALT & SANCTUARY, scratch/brief-levelsweep.md v2). The marsh's threat stood in ONE room - the thorn elite locked in on the archers' stilts
+     (x56-72) - and the crossings, where the marsh's own question is asked, had none. It is spread to the platforming now (FINAL columns):
+     - the long river's first half is section two's EXAM, with the checkpoint on the reed bed after it: a stinging wasp in the arc of the
+       bud pad's throw, and an archer at the far end of the first stage - the high road's coins are a fight on a board over the water now,
+       and its arrows reach the low road's pads (a hit on a sinking pad is a swim back to the bank);
+     - a spitter on the second reed bed lobs onto the pads either side of it, so the rest is not a rest until it is cut down.
+     THE ELITE THORN moved off the stilts to the far bank of the archer island (ELITES.marsh), where section one ends: an exam on the bank with
+     the water at your back, the checkpoint after it. The stilts keep their two archers.
+     (A wasp hung in the reed climb's hops under the stilt archer was tried and taken out: with it a fresh level-1 knight lost 280% a run, over
+     act I's ceiling of 250% in tools/rule-state.mjs CURVE_BANDS - the climb is the second thing the marsh teaches, and the archer covers it.) */
+  const pilot = (t, x, y, o) => M.ents.push(Object.assign({ t, x, y, face: -1 }, o || {}));
+  pilot('wasp', 238, 12, { sting: true, pogo: true }); pilot('archer', 247, 13);
+  pilot('spit', 275, 15);
+  return M;
 ;
 }
 
@@ -6979,6 +6994,22 @@ function theDrownedCauseway() {
     for (const x of [344, 470]) if (bed(x)) wreck(x, 39);
   }
 
+  /* THE DIFFICULTY PILOT (claude/levelpilot, Daniel 2026-10-07: 'levels are still incredibly easy' - SHOVEL KNIGHT meets SALT & SANCTUARY,
+     scratch/brief-levelsweep.md v2). The walker read the causeway at campaign level (L20) as 0 deaths and 76-84% health at every shrine: its
+     eighty foes stood on the flat road, where a hero with three skills cuts them down, and the road's own platforming - the stones, the
+     broken spans, the breakers - asked nothing of him. Foes at the platforming moments now, and one weighty exam at the end of the road:
+     - THE STONES: a petrel over the hops and a scout on the far road covering them (a blow mid-hop is a fall into the channel's current);
+     - THE BROKEN SPANS: a petrel over each of the first two breaks, a tide guard holding the landing of the first (a shield on the lip, the
+       sea at your back), and a scout at the end of the second span covering the next break;
+     - a scout past the ARCADE's broken span, a netter on the WAYSTATION's holm over the climb from the boom;
+     - THE LAST MILE is the road's EXAM: its tide guard is an ELITE (ELITES.causeway) who holds the light's foot while the breakers come over,
+       a scout on a parapet stone behind him - a stone's lee keeps your feet, his does not move him. The checkpoint at 561 is after it. */
+  ent('petrel', 131, 23); ent('scout', 148, R - 1, { face: -1 });
+  ent('petrel', 436, 20); ent('petrel', 454, 20); ent('tideguard', 440, R - 1, { face: -1 }); ent('scout', 449, R - 1, { face: -1 });
+  ent('scout', 533, R - 2, { face: -1 });
+  /* AND THE BOW COVERS THE JUMPS (the walker: on this road the blows that land come from range - a melee foe on the flat is cut down before
+     it swings): a scout past the arcade's broken span, a netter on the waystation's holm over the climb up from the boom */
+  ent('scout', 229, RH - 1, { face: -1 }); ent('netter', 494, 18, { face: -1 });
   const tideSea = { x0: 4 * TS, x1: 565 * TS, y: LWR * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.42, grad: false, causeTide: true, loY: LWR * TS, hiY: HW * TS };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: RH - 1 }, falls: [], interiors, airRooms, deep: D,
@@ -8379,7 +8410,7 @@ const ELITES = {
   witchlight: [['husk', 110, 76, { face: -1 }], ['armour', 300, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver (at 300 since the garden grew, claude/hedgewarden2) */
   fallingtower: [['husk', 52, 146, { face: -1 }]],   /* the cistern's husk over the poison: it sits ON the cistern's own first-tier husk, so it is UPGRADED, not added - one husk in the tower, and it is this one. Since the rework of 2026-09-25 (docs/briefs/falling-tower-rework.md) the tower's other two elites are gone into its named fights: the orrery's armour CAPTAINS THE ORRERY PIT (AMBUSH, below) and the bell loft's warden became THE SEXTON, its mini - an elite beside either would be back to back with it (rule Q). */
   wood: [['shield', 147, 21, { gate: 157 }]],
-  marsh: [['thorn', 65, 15, { gate: 72 }]],
+  marsh: [['thorn', 98, 15, { gate: 105 }]],   /* (claude/levelpilot: on the stilts at 65/72, with both stilt archers shut in with him, he was the marsh's whole threat in one locked room; he holds the far bank of the archer island now, one on one with the water at your back - section one's exam, the checkpoint at 109 after it. An elite frog was tried here: the lab's human bot killed it in 1.8 s, no exam) */
   stockade: [['brute', 302, 19, { gate: 317 }]],
   spore: [['shield', 412, 13, { gate: 430 }]],
   kings: [['brute', 433, 20]],
@@ -8401,7 +8432,7 @@ const ELITES = {
   hurricane: [['boarder', 38, 19, { gate: 46 }], ['cutlass', 456, 18]],   /* the only column on the ship a gate holds is the passage out of the cabin: everything past it has three ways round */
   lamplit: [['watch', 595, 21]],
   deep: [['watch', 30, 27, { gate: 41 }]],
-  causeway: [['tideguard', 66, 23, { gate: 79 }]],
+  causeway: [['tideguard', 66, 23, { gate: 79, affix: 'SUMMONER' }], ['tideguard', 530, 23, { gate: 538, affix: 'UNSTOPPABLE' }]],   /* (claude/levelpilot: the second holds THE LAST MILE, the road's exam, in the breakers; two of a kind key by column, so each names its own affix) */
   waymeet: [['hedgeknight', 465, 35], ['heavy', 548, 35]],
   fields: [['scarecrow', 230, 33]],
   mage: [['armour', 447, 39, { face: -1 }]],   /* (claude/hintsweep: the Rune Library's armour - the elite batch46 dropped when the +150 columns put the old one (354) in THE READING ROOM. 447 is well past that room (314-330), the mini (334-358) and every checkpoint, on the library floor's own armour, so it is UPGRADED, not added) */

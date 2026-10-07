@@ -77,7 +77,7 @@ export function holdPresses(P, hold) {
    level-card spread; these are the numbers that bring it to 58% - every knob below is runtime-tunable and the report lists both sets).
    The brief's value is in the comment where it differs. */
 export const STAM = {
-  regen: 75,          /* /s (brief 55; it was 75) */
+  regen: 105,         /* /s (brief 55; it was 75; Daniel 10-07 A10b: ~40% faster everywhere from the start, 75 x 1.4 = 105 - src/survival.js STAM_REGEN_MUL; the level/perk multipliers stack on it) */
   delay: 0.3,         /* s of no regen after a spend (brief 0.5; it was 0.2) */
   exhausted: 0.6,     /* s of no regen when the bar hits 0 (brief 1.0) */
   windedMul: 0.6,     /* the regen until the bar is back to windedTo */

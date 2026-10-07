@@ -13,7 +13,7 @@
  *      golden table in tools/store-stock.json (the stock the three rooms and the equip board always had).
  *   G. OLD SAVES: two seeded saves (a batch50-era one and a version-0 one with bought skills and training) open the store with
  *      everything they owned and everything they could buy, through every entry.
- *   H. BUYING STILL WORKS (a skin, an edge, a tonic, an ability) and BROWSING COSTS NOTHING: the whole save and the slot's text are
+ *   H. BUYING STILL WORKS (a skin, an edge, an extra flask - the old tonic line, an ability) and BROWSING COSTS NOTHING: the whole save and the slot's text are
  *      byte-identical after every entry, every tab and every row has been looked at.
  */
 import assert from 'node:assert/strict';
@@ -176,7 +176,7 @@ for(const [name,old] of Object.entries(SEEDS)){
     if(!had&&!k.needs&&!k.feat&&k.state!=='buy'&&k.state!=='enter')rec.problems.push(how+': '+t.id+'/'+k.id+' could be bought, shows '+k.state);}}
   BK.press('pause');BK.sim(2);}
  const vals=Object.values(rec.entries);rec.sameEverywhere=vals.every(v=>v===vals[0]);
- rec.tonics=P.tonics;rec.kept={skillOwned:JSON.stringify(P.skillOwned.knight||{}),loadout:JSON.stringify(P.loadouts.knight||[])};
+ rec.tonics=P.tonics;rec.flaskUp=P.flaskUp;rec.refund=P.tonicRefund||0;rec.kept={skillOwned:JSON.stringify(P.skillOwned.knight||{}),loadout:JSON.stringify(P.loadouts.knight||[])};
  /* BROWSING COSTS NOTHING: every entry, every tab, every row, then compare the slot's text and the whole save with before */
  BK.state='map';BK.load(0);BK.ui.storeOpen('map','heroes');BK.step(3);BK.press('pause');BK.sim(2);
  const snap=()=>JSON.stringify({ls:Object.fromEntries(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)])),prog:BKT.PROG});const before=snap();
@@ -185,7 +185,7 @@ for(const [name,old] of Object.entries(SEEDS)){
 /* H. buying still works, from the map */
 localStorage.clear();localStorage.setItem('bracken.progress.0',JSON.stringify(SEEDS.batch50));BK.loadSlot(0);BK.applyUpgrades();BK.state='map';BK.load(0);
 {const P=BKT.PROG,buy=(tab,id)=>{BK.ui.storeOpen('map',tab);const t=BK.ui.storeRows().find(q=>q.id===tab);BK.ui.storeI=t.rows.findIndex(k=>k.id===id);BK.step(2);const c=P.coins;BK.press('confirm');BK.sim(1);BK.press('pause');BK.sim(2);return c-P.coins;};
- out.buy={skin:buy('skins','purple'),edge:buy('smith','edge2'),tonic:buy('smith','tonic'),weapon:buy('weapons','ember'),own:{purple:!!P.skins.purple,edge2:!!P.items.edge2,ember:!!P.swords.ember,tonics:P.tonics,skin:P.skin},
+ out.buy={skin:buy('skins','purple'),edge:buy('smith','edge2'),tonic:buy('smith','tonic'),weapon:buy('weapons','ember'),own:{purple:!!P.skins.purple,edge2:!!P.items.edge2,ember:!!P.swords.ember,flaskUp:P.flaskUp,skin:P.skin},
   locked:buy('smith','mail'),mail:!!P.items.mail};
  BK.ui.storeOpen('map','skills');BK.ui.treeTab=0;const ns0=BKT.treeNodes(),ix=ns0.findIndex(n=>n.active&&!(P.skillOwned.knight||{})[n.id]&&n.level<=BKT.heroLevel()&&n.price<=P.coins);BK.ui.treeI=ix;const n0=ns0[ix],c0=P.coins;BK.step(2);BK.press('confirm');BK.sim(1);out.buy.skill=[c0-P.coins===n0.price,!!P.skillOwned.knight[n0.id]];}
 out.errors=[];return out;})()`);
@@ -196,13 +196,14 @@ out.errors=[];return out;})()`);
     assert.ok(rec.coinsAfter >= rec.coinsBefore, name + ': the store opened with fewer coins than the save held (' + rec.coinsBefore + ' -> ' + rec.coinsAfter + ')');
     assert.ok(rec.pure, name + ': BROWSING changed the save or the slot text');
   }
-  assert.equal(res.saves.batch50.tonics, 2, 'the tonics an old save carried are gone');
+  /* (claude/survival, Daniel's approved design change 2026-10-07: the tonic is a FLASK every hero carries; the two RED TONICS an old save carried are PAID BACK at 40 each, and the store line is an EXTRA FLASK)  */
+  assert.equal(res.saves.batch50.tonics, 0, 'the old save still carries red tonics'); assert.equal(res.saves.batch50.refund, 80, 'the two tonics an old save carried were not paid back (80 gold)'); assert.equal(res.saves.batch50.flaskUp, 0, 'the tonics of an old save turned into flasks');
   assert.equal(res.saves.batch50.kept.skillOwned, '{"shieldThrow":true}', 'an owned ability was lost');
   assert.equal(res.saves.batch50.kept.loadout, '["shieldThrow"]', 'the loadout was lost');
   assert.equal(res.saves.ancient.kept.skillOwned.includes('shieldThrow'), true, 'the ancient save\'s bought skill was not carried into the skills tab');
   assert.ok(res.buy.skin > 0 && res.buy.own.purple && res.buy.own.skin === 'purple', 'buying a skin from the map store broke: ' + JSON.stringify(res.buy));
   assert.ok(res.buy.edge > 0 && res.buy.own.edge2, 'buying the smith\'s razor edge broke (spore is cleared in this save)');
-  assert.ok(res.buy.tonic > 0 && res.buy.own.tonics === 3, 'buying a tonic broke');
+  assert.ok(res.buy.tonic === 150 && res.buy.own.flaskUp === 1, 'buying an EXTRA FLASK broke: ' + JSON.stringify(res.buy));
   assert.equal(res.buy.locked, 0, 'a locked line (ringmail: Kingswood not cleared) sold');
   assert.equal(res.buy.mail, false);
   assert.deepEqual(res.buy.skill, [true, true], 'buying an ability in the SKILLS tab broke');

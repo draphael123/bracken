@@ -84,7 +84,7 @@ check('stat thresholds', () => {
   /* what the thresholds are tied to: the src (no page): commit.js seam, the poise rule, the kill heal, the revive */
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), cm = readFileSync(new URL('../src/commit.js', import.meta.url), 'utf8');
   assert(/lean: \(\) => thr\('e', 0\)/.test(main) && /wind: \(\) => thr\('e', 1\)/.test(main), 'ENDURANCE thresholds are not bound to the stamina seam');
-  assert(/thr\('v', 0\)[^\n]*P\.hp \+ 2/.test(main), 'VIGOR 10 does not heal on a kill'); assert(/thrOn\(PROG, helper\.hero \|\| PROG\.hero, 'v', 1\)/.test(main), 'VIGOR 20 does not touch the revive');
+  assert(/bloodDrawn: !!thr\('v', 0\)/.test(main), 'VIGOR 10 does not heal on a kill (claude/survival, Daniel 10-07: its +1 goes through SV.killHeal, capped at 5 a kill)'); assert(/thrOn\(PROG, helper\.hero \|\| PROG\.hero, 'v', 1\)/.test(main), 'VIGOR 20 does not touch the revive');
   assert(/thr\('m', 0\)[^\n]*n \*= 1\.25/.test(main), 'MIGHT 10 does not lean on the poise'); assert(/thr\('m', 1\) && !e\.mighted/.test(main), 'MIGHT 20 does not hit a staggered foe harder');
   assert(/leanMul\(P\)/.test(cm) && /SECOND_WIND/.test(cm));
 });
@@ -164,7 +164,7 @@ check('skill ranks', () => {
     for (const r of rows) { assert(!/\b(burn|freeze|leech|heavy|gold): true/.test(r), 'a weapon keeps a stat: ' + r.slice(0, 60)); assert(/dmg: 10, cost: 15/.test(r), 'a weapon cuts differently: ' + r.slice(0, 60));
       const p = +r.match(/price: (\d+)/)[1], silver = /silver: true/.test(r), id = r.match(/id: '(\w+)'/)[1]; if (id === 'steel') continue;
       assert(silver ? p >= 6 && p <= 10 : p >= 150 && p <= 400, id + ' priced ' + p); } });
-  check('sinks', () => { assert(/id: 'tonic'[^\n]*max: 5/.test(src), 'tonics do not reach five'); assert(/id: 'edge4'/.test(src) && /id: 'mail2'/.test(src), 'no late smith');
+  check('sinks', () => { assert(/id: 'tonic'[^\n]*max: 2/.test(src), 'the extra flasks do not take a hero to three (claude/survival2, Daniel 10-07 A10b: the tonic line is EXTRA FLASK, 1 + 2)'); assert(/id: 'edge4'/.test(src) && /id: 'mail2'/.test(src), 'no late smith');
     for (const n of PR.SKILLS.filter(n => n.active && ['knight', 'warden', 'geomancer'].includes(n.hero) && PR.TOP_PRICE[n.level])) assert.equal(n.price, PR.TOP_PRICE[n.level], n.id);
     assert.equal(DC.bankStake(400), 0); assert.equal(DC.bankStake(900), 100); assert.equal(DC.bankStake(5000), 300); assert.equal(DC.bankStake(-5), 0);
     notes.push('bank stake on death: bank 1k ' + DC.bankStake(1000) + ', 2k ' + DC.bankStake(2000) + ', 5k ' + DC.bankStake(5000)); }); }

@@ -4,26 +4,26 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 19,
+  "hits": 16,
   "deaths": 0,
-  "kills": 37,
-  "lifts": 93,
+  "kills": 36,
+  "lifts": 96,
   "walked": 100,
   "bare": true,
-  "lostPct": 86
+  "lostPct": 69
  },
  "marsh": {
-  "hash": "7f2d68c03b1a",
+  "hash": "a0cb1f611ceb",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 30,
+  "hits": 33,
   "deaths": 1,
-  "kills": 26,
-  "lifts": 81,
+  "kills": 30,
+  "lifts": 90,
   "walked": 100,
   "bare": true,
-  "lostPct": 154
+  "lostPct": 195
  },
  "stockade": {
   "hash": "c88404798755",
@@ -56,26 +56,26 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 26,
-  "deaths": 5,
-  "kills": 31,
-  "lifts": 102,
+  "hits": 25,
+  "deaths": 2,
+  "kills": 35,
+  "lifts": 110,
   "walked": 100,
   "bare": true,
-  "lostPct": 176
+  "lostPct": 185
  },
  "scree": {
   "hash": "c679d31e9ad3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 46,
-  "deaths": 7,
-  "kills": 38,
-  "lifts": 102,
+  "hits": 42,
+  "deaths": 5,
+  "kills": 35,
+  "lifts": 122,
   "walked": 100,
   "bare": true,
-  "lostPct": 414
+  "lostPct": 376
  },
  "hanging": {
   "hash": "18fa441395de",
@@ -108,13 +108,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 46,
+  "hits": 61,
   "deaths": 3,
-  "kills": 22,
-  "lifts": 108,
+  "kills": 25,
+  "lifts": 114,
   "walked": 100,
   "bare": true,
-  "lostPct": 332
+  "lostPct": 393
  },
  "storm": {
   "hash": "0562836747f2",
@@ -130,17 +130,17 @@
   "lostPct": 26
  },
  "crown": {
-  "hash": "21b34220ee0c",
+  "hash": "72b39b51eba5",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 55,
-  "deaths": 7,
-  "kills": 84,
-  "lifts": 223,
+  "hits": 34,
+  "deaths": 4,
+  "kills": 51,
+  "lifts": 261,
   "walked": 100,
   "bare": true,
-  "lostPct": 506
+  "lostPct": 307
  },
  "longwater": {
   "hash": "8ce17bb1e629",
@@ -247,17 +247,17 @@
   "lostPct": 256
  },
  "causeway": {
-  "hash": "23edd5e3ab40",
+  "hash": "ae47c47a9ea8",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 28,
-  "deaths": 0,
-  "kills": 10,
-  "lifts": 113,
+  "hits": 49,
+  "deaths": 6,
+  "kills": 9,
+  "lifts": 109,
   "walked": 100,
   "bare": true,
-  "lostPct": 71
+  "lostPct": 276
  },
  "harbor": {
   "hash": "ce45ca81cf76",
@@ -303,13 +303,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 32,
-  "deaths": 6,
+  "hits": 25,
+  "deaths": 2,
   "kills": 20,
-  "lifts": 174,
+  "lifts": 157,
   "walked": 100,
   "bare": true,
-  "lostPct": 230
+  "lostPct": 213
  },
  "burial": {
   "hash": "c84122b2f9ce",
@@ -364,17 +364,17 @@
   "lostPct": 131
  },
  "witchlight": {
-  "hash": "689494d5b2ac",
+  "hash": "a2eec68bdc33",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 40,
-  "deaths": 4,
-  "kills": 17,
-  "lifts": 124,
+  "hits": 39,
+  "deaths": 2,
+  "kills": 9,
+  "lifts": 132,
   "walked": 100,
   "bare": true,
-  "lostPct": 239
+  "lostPct": 217
  },
  "oreroad": {
   "hash": "34c3d716f6ad",
@@ -416,17 +416,17 @@
   "lostPct": 198
  },
  "fair": {
-  "hash": "ee7d7bc0fed6",
+  "hash": "fd51c55d8516",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 47,
-  "deaths": 0,
-  "kills": 35,
-  "lifts": 81,
+  "hits": 40,
+  "deaths": 3,
+  "kills": 20,
+  "lifts": 117,
   "walked": 100,
   "bare": true,
-  "lostPct": 198
+  "lostPct": 370
  },
  "theatre": {
   "hash": "010422831498",
