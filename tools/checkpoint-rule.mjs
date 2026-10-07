@@ -32,6 +32,33 @@ export function judgeLevel(lv, r, L = lv.build()) {
   const s = r.stats, exempt = [...(CHECK_PIN[lv.id] || []).map(([x, y]) => [x, y]), ...arenaOutside(L).map(e => [e.x, e.y])];
   return judge({ checks: s.checkList, end: s.endAt, doors: s.doors.map(d => d.at === null && d.c !== 'B' ? undefined : d.at).filter(d => d !== undefined), exempt });
 }
+/* A10b (Daniel 2026-10-07, after playing the pilot Marsh): FEWER SHRINES - about one per section and one before the boss, A10B.min-A10B.max walked
+   route tiles apart (the rule above is >= MIN / <= MAX). REPORT-ONLY until the level sweep moves the shrines level by level: tools/checkpoint-gaps.mjs
+   lists every level that misses, and fails none for it. judgeA10b -> { miss: [reasons], gaps: [route tiles between stops] }.
+     SPARSE  a run longer than A10B.max with no shrine (start -> shrine -> ... -> the boss's trigger)
+     DENSE   two shrines (or the start and the first) closer than A10B.min, neither a door one nor pinned (exempt)
+     NO DOOR a boss/mini/ambush room with no shrine before it, or one more than A10B.max back */
+export const A10B = { min: 140, max: 260 };
+export function judgeA10b({ checks, end, doors, exempt = [] }) {
+  const miss = [], on = checks.filter(c => c.at !== null && c.at <= end + 30).map(c => ({ ...c, at: Math.min(c.at, end) })).sort((a, b) => a.at - b.at), door = new Set();
+  const isEx = c => exempt.some(([x, y]) => x === c.x && y === c.y), free = c => door.has(c) || isEx(c);
+  for (const d of doors) { const e = d === null ? end : d, before = on.filter(c => c.at <= e);
+    if (!before.length) { miss.push('NO DOOR: no shrine before the room at route ' + e); continue; }
+    const c = before[before.length - 1]; door.add(c); if (e - c.at > A10B.max) miss.push('NO DOOR: the room at route ' + e + ' has its shrine ' + (e - c.at) + ' tiles back'); }
+  const stops = [0, ...on.map(c => c.at), end], gaps = [];
+  for (let i = 1; i < stops.length; i++) { const g = stops[i] - stops[i - 1]; gaps.push(g); if (g > A10B.max) miss.push('SPARSE: ' + g + ' tiles from route ' + stops[i - 1]); }
+  for (let i = 0; i < on.length; i++) { const b = on[i], a = i ? on[i - 1] : null, gap = b.at - (a ? a.at : 0);
+    if (gap < A10B.min && !free(b) && !(a && free(a))) miss.push('DENSE: the shrine at route ' + b.at + ' is ' + gap + ' from ' + (a ? 'the one at ' + a.at : 'the start')); }
+  return { miss, gaps, count: on.length };
+}
+export function judgeLevelA10b(lv, r, L = lv.build()) {
+  const s = r.stats, exempt = [...(CHECK_PIN[lv.id] || []).map(([x, y]) => [x, y]), ...arenaOutside(L).map(e => [e.x, e.y])];
+  return judgeA10b({ checks: s.checkList, end: s.endAt, doors: s.doors.map(d => d.at === null && d.c !== 'B' ? undefined : d.at).filter(d => d !== undefined), exempt });
+}
+{ const cs = a => a.map(at => ({ x: at, y: 0, at }));
+  assert.equal(judgeA10b({ checks: cs([200, 400]), end: 600, doors: [590] }).miss.length, 0, 'A10b: shrines ~200 apart with a door one pass');
+  assert(judgeA10b({ checks: cs([150]), end: 600, doors: [] }).miss.some(b => /SPARSE/.test(b)), 'A10b: a 450-tile run is listed');
+  assert(judgeA10b({ checks: cs([150, 250, 420]), end: 600, doors: [] }).miss.some(b => /DENSE/.test(b)), 'A10b: shrines 100 apart are listed'); }
 export const assertRule = (lv, r, L) => { const j = judgeLevel(lv, r, L); assert.equal(j.bad.length, 0, 'checkpoints (RULES S4: one per section, at most ' + MAX + ' route tiles apart, at least ' + MIN + ', one before every door): ' + j.bad.join('; ')); return j; };
 /* THE RULE BITES: made-up levels */
 { const cs = a => a.map(at => ({ x: at, y: 0, at }));

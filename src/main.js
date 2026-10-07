@@ -485,7 +485,7 @@ const UPGRADES = [
   { id: 'edge4', name: 'RUNED EDGE', price: 600, desc: '+3 more damage: runes the old smiths cut', needs: 'fields', needsName: 'the Hexed Fields' },
   { id: 'mail2', name: 'WARDED PLATE', price: 900, desc: 'another tenth less damage from every blow', needs: 'mage', needsName: "the Mage's Folly" },
   /* (claude/survival, Daniel 10-07: the tonic is a FLASK you drink, src/survival.js) the store line is one more flask a shrine fills, two at most: PROG.flaskUp. The id stays 'tonic' for old saves and the golden stock */
-  { id: 'tonic', name: 'EXTRA FLASK', price: 150, consumable: true, max: 2, desc: 'one more red flask to carry. a lit shrine fills them all. you start with three; the smith can make it five.' },
+  { id: 'tonic', name: 'EXTRA FLASK', price: 150, consumable: true, max: 2, desc: 'one more red flask to carry. you start with one; the smith can make it three. a shrine gives one back, a death all.' },   /* (survival2, A10b: base 1, max 3; a save that bought them keeps them, one for one - no refund, each still +1) */
 ];
 const CHARMS = [
   { id: 'lucky', name: 'LUCKY CHARM', price: 70, desc: 'gold drifts to you' },
@@ -3830,10 +3830,10 @@ function shrineLights(s, px, py, swim) {
   for (let ty = Math.floor((py - 8) / TS); ty < Math.floor(s.y / TS); ty++) if (isSolid(tx, ty)) return false;
   return (L.pools || []).some(p => p.swim && !p.dry && s.x >= p.x0 && s.x <= p.x1 && py - 8 >= p.y);
 }
-function respawn() { CM.clearCommit(P); P.windRide = null; P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
+function respawn() { lifeN++; CM.clearCommit(P); P.windRide = null; P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
-  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, kPoseT: 0, flasks: SV.flaskMax(PROG), drinkT: 0, examIn: null, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
+  Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, kPoseT: 0, flasks: SV.deathRefill(P.flasks, SV.flaskMax(PROG)), drinkT: 0, breakT: 0, examIn: null, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
   mendAll(); wallsMendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; if (GEO) GEO.clear(); if (CRB) CRB.clear(); wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; hallows = []; hammers = []; kegs = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
@@ -4004,7 +4004,7 @@ function startGame() {
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
-  respawn(); levelFoes = enemies.filter(e => !e.harmless && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'bale').length + (L.ambushes || []).reduce((n, A) => n + A.waves.reduce((m, w) => m + w.length, 0), 0);   /* the ambushers are in the body count before they arrive */
+  for (const s of shrines) { s.broken = false; s.life = -1; } respawn(); P.flasks = SV.flaskMax(PROG); levelFoes = enemies.filter(e => !e.harmless && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'bale').length + (L.ambushes || []).reduce((n, A) => n + A.waves.reduce((m, w) => m + w.length, 0), 0);   /* the ambushers are in the body count before they arrive */
   xpStart(); camX = P.x - VW / 2; camY = P.y - 100; bannerT = 2.6; SFX.levelStart();
 }
 /* ---------- XP (src/xp.js) ----------
@@ -5789,7 +5789,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.skill2)) skill2Press = true;
   if(e.key.toLowerCase()===SET.skill3Key)skill3Press=true;if(e.key.toLowerCase()===SET.skill4Key)skill4Press=true;
   if (isKey(e, KEYS.flask)) flaskPress = true;   /* THE FLASK: drink (src/survival.js) */
-  if (isKey(e, KEYS.talk)) talkPress = true;
+  if (isKey(e, KEYS.talk)) { talkPress = true; keys.talk = true; }   /* (survival2) held: BREAK THE SHRINE is a hold */
   padLast = false;
   if (isKey(e, KEYS.left)) { keys.left = true; leftPress = true; }
   if (isKey(e, KEYS.right)) { keys.right = true; rightPress = true; }
@@ -5813,6 +5813,7 @@ addEventListener('keyup', e => {
   if (isKey(e, KEYS.block) && !SET.blockToggle) keys.block = false;
   if (isKey(e, KEYS.dodge)) keys.dodge = false;
   if (isKey(e, KEYS.throw)) keys.throw = false;
+  if (isKey(e, KEYS.talk)) keys.talk = false;
   if (isKey(e, KEYS.dance)) keys.dance = false;
   if (isKey(e, KEYS.left)) keys.left = false;
   if (isKey(e, KEYS.right)) keys.right = false;
@@ -5864,7 +5865,7 @@ function pollGamepad() {
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; } }
   if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('talk')) talkPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
-  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
+  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance', 'talk']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
   pad.prev = now;
 }
 /* ====== THE GLUE FOR src/controls.js: the tables, the rebind screen and the raw pad tick ====== */
@@ -6454,15 +6455,28 @@ function drinkTick(dt) {
 /* the flask in his hand: up to his mouth by the swallow, then down */
 function drawFlaskDrink(cx, cy) { if (!(P.drinkT > 0) || P.dead) return; const el = SV.FLASK.drinkT - P.drinkT, up = Math.min(1, el / SV.FLASK.swallowAt), lift = P.drunk ? Math.max(0, 1 - (el - SV.FLASK.swallowAt) / (SV.FLASK.drinkT - SV.FLASK.swallowAt)) : up;
   const x = Math.round(P.x - cx + P.face * (6 - 2 * lift)) - 3, y = Math.round(P.y - cy - 12 - 9 * lift) - 4; g.drawImage(TONIC_ICON, x, y); }
-/* A SHRINE IS DRY (claude/survival): it lights the checkpoint, banks what you carry, fills the flasks and the stamina - it does not heal. Said twice a save */
-function shrineFill() { P.st = P.maxSt; for (const p of players) p.flasks = SV.flaskMax(PROG); P.flasks = SV.flaskMax(PROG); P.drinkT = 0;
+/* A SHRINE IS DRY (claude/survival): it lights the checkpoint, banks what you carry, fills the stamina - it does not heal. Said twice a save.
+   (claude/survival2, Daniel 10-07 A10b) It gives back ONE flask, once a shrine a LIFE (lifeN: a death, never R, starts a new one): no touch-farming */
+let lifeN = 0, litSeq = 0;
+function shrineFill() { P.st = P.maxSt; const fm = SV.flaskMax(PROG); for (const p of players) p.flasks = SV.shrineRefill(p.flasks, fm);
   if ((PROG.shrineTold || 0) < 2) { PROG.shrineTold = (PROG.shrineTold || 0) + 1; hintT = 5; hintMsg = SV.LINES.shrine.replace('(KEY)', '(' + flaskKeyName() + ')'); } }
+/* BREAK THE SHRINE (claude/survival2, Daniel 10-07; src/survival.js SHRINE): HOLD the interact key at a lit shrine - told by the prompt over it.
+   Never a bot (keys.talk is only ever a person's key or pad), never in a boss fight, its arena or at the pre-boss shrine (SV.breakBlock) */
+let breakAt = null;
+function shrineBreakTick(dt) { breakAt = null;
+  const s = !P.dead && state === 'play' ? shrines.find(q => q.lit && !q.broken && shrineLights(q, P.x, P.y, P.swim)) : null;
+  if (!s || SV.breakBlock(L, s, shrines, { bossActive, TS })) { P.breakT = 0; return; }
+  breakAt = s;
+  if (keys.talk && P.ground && !(P.drinkT > 0) && P.atk < 0 && !(P.hurt > 0)) { P.breakT = (P.breakT || 0) + dt; if (P.breakT >= SV.SHRINE.breakHold) breakShrine(s); } else P.breakT = 0; }
+function breakShrine(s) { s.broken = true; s.lit = false; P.breakT = 0; breakAt = null; P.flasks = (P.flasks | 0) + 1;   /* +1, over the max if it must be: it stays until drunk */
+  if (Math.abs(checkpoint.x - s.x) < 1 && Math.abs(checkpoint.y - s.y) < 1) { const w = SV.wakeShrine(shrines); checkpoint = w ? { x: w.x, y: w.y } : { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS }; }   /* a death wakes at the shrine lit before it, or the start */
+  SFX.crack(); SFX.heavy && SFX.heavy(); shakeCam(4); burst(s.x, s.y - 16, 22, ['#6a6a7a', '#3a3444', '#ffd36b', '#8a8a9a'], 90, 0.8, 0, 1); number(s.x, s.y - 44, 'SHRINE BROKEN  +1 FLASK', '#ff9a5c'); hintT = 4; hintMsg = SV.LINES.broken; }
 const flaskKeyName = () => padLast ? 'LT' : TCH.on ? 'FLASK' : String(KEYS.flask[0] || 'U').toUpperCase();
 /* HURT, WITH A FLASK HELD, AND NEVER DRUNK ONE: say how, twice a save */
 function drinkHint() { if ((PROG.drinkTold || 0) >= 2 || P.dead || !((P.flasks | 0) > 0) || P.hp > P.maxHp * 0.5 || hintT > 0.5 || state !== 'play' || (L && L.trial)) return; PROG.drinkTold = (PROG.drinkTold || 0) + 1; hintT = 4.5; hintMsg = SV.LINES.drink.replace('KEY', flaskKeyName()); }
 function returnToShrine() {
   if (P.dead || rushOn()) return false;
-  const hpWas = P.hp, flWas = P.flasks; respawn(); P.hp = P.hpShown = Math.max(1, Math.min(P.maxHp, hpWas)); P.flasks = Math.min(flWas | 0, SV.flaskMax(PROG));   /* (claude/survival) NOT A FREE HEAL: the shrines are dry now, so going back to one carries your health and flasks with you */
+  const hpWas = P.hp, flWas = P.flasks, lifeWas = lifeN; respawn(); lifeN = lifeWas; P.hp = P.hpShown = Math.max(1, Math.min(P.maxHp, hpWas)); P.flasks = flWas | 0;   /* (survival2) R is not a new life: no shrine gives a flask back for it, and a broken shrine's extra stays */   /* (claude/survival) NOT A FREE HEAL: the shrines are dry now, so going back to one carries your health and flasks with you */
   burst(P.x, P.y - 12, 12, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.6); number(P.x, P.y - 34, 'BACK TO THE SHRINE', '#ffd36b');
   return true;
 }
@@ -6579,7 +6593,7 @@ function dcTick(dt) {
 /* THE HERO'S OWN PASS: banking at a shrine, and picking his bundle up (the pair have one each, and neither can take the other's) */
 function dcTouch() {
   if (P.dead || !dcOn()) return;
-  for (const s of shrines) if (shrineLights(s, P.x, P.y, P.swim)) { dcBank(); break; }
+  for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { dcBank(); break; }
   const b = dcHid(bundleOf(P)); if (!dcMine(b) || b.mode !== 'spot' || Math.abs(b.x - P.x) > 12 || Math.abs(b.y - P.y) > 20) return;
   const c = carryOf(P);
   if (b.coins) { if (b.sess === dcSess) { got += b.coins; c.coins += b.coins; } else { PROG.coins = (PROG.coins || 0) + b.coins; c.purse += b.coins; } }
@@ -9476,7 +9490,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     if (Math.abs(a.x - P.x) < 10 * (perk('magnet') ? 1.7 : 1) && Math.abs(a.y - (P.y - 7)) < 12 * (perk('magnet') ? 1.7 : 1)) { a.got = true; got++; dcGot(1); if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
       if (isPirate()) piratePurse(true); coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
-  dcTouch(); for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; shrineFill(); if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
@@ -12833,7 +12847,7 @@ function magePlayer(dt) {
   if (P.y > LH * TS + 30 && !P.dead) { deathCost(P, { name: 'THE FALL' }); P.hp = 0; P.dead = 1.2; SFX.pDie(); }
   /* the coins, the hearts and the shrines */
   for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 12 && Math.abs(a.y - (P.y - P.h / 2 * gs)) < 14) collectAcorn(a);
-  dcTouch(); for (const s of shrines) if (!s.lit && shrineLights(s, P.x, P.y, P.swim)) { s.lit = true; checkpoint = { x: s.x, y: s.y }; shrineFill(); SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  dcTouch(); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
   return true;
 }
 /* ---------- the props and the machinery, every frame ---------- */
@@ -21955,7 +21969,7 @@ function chaseDemo(heroId) {
   L.ents = (L.ents || []).filter(e => !(e.x >= x0 - 2 && e.x <= x1 + 2 && e.y >= fy - 12 && e.y <= fy + 2)); grid0.set(L.grid);
   L.chases = [{ id: 'demo', name: 'THE DEMO CHASE', axis: 'x', dir: 1, trigger: (sx + 6) * CHASE_TS, end: (sx + 58) * CHASE_TS, gap0: 200, curve: [[0, 60], [150, 78, 'THE ROOF GROANS'], [380, 96, 'IT QUICKENS']],
     contact: 'kill', autoscroll: true, look: 'rock', music: 'boss', beams: [{ x0: (sx + 34) * CHASE_TS, x1: (sx + 37) * CHASE_TS, y: fy * CHASE_TS - 11, th: 6, period: 3, up: 1.2 }] }];
-  chasesLoad(); shrines.push({ x: (sx + 1) * CHASE_TS + 8, y: fy * CHASE_TS, lit: false });   /* the checkpoint right before the start line */
+  chasesLoad(); shrines.push({ x: (sx + 1) * CHASE_TS + 8, y: fy * CHASE_TS, lit: false, noBreak: true });   /* the checkpoint right before the start line */
   checkpoint = { x: (sx + 1) * CHASE_TS + 8, y: (fy) * CHASE_TS }; respawn();
   camX = P.x - VW / 2; camY = P.y - 100;
   return true;
@@ -27985,7 +27999,9 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.mage) drawMageProps(cx, cy);   /* THE MAGE'S FOLLY: the fonts, the arches, the glyphs, the plates, the spitters, the runes and the shots */   /* the tide bells */
   const shKind = shrineKind();
   const shPair = (PROP.shrineOf && PROP.shrineOf[shKind]) || PROP.shrine;
-  for (const s of shrines) { g.drawImage(shPair[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
+  for (const s of shrines) { if (s.broken) { g.globalAlpha = 0.5; g.drawImage(shPair[0], s.x - 10 - cx, s.y - 34 - cy); g.globalAlpha = 1; g.fillStyle = '#1b1626'; const bx = Math.round(s.x - cx), by = Math.round(s.y - cy); for (const [dx, dy, w, h] of [[-1, -30, 2, 6], [0, -24, 2, 5], [-2, -19, 2, 6], [-1, -13, 2, 5], [-8, -2, 4, 2], [5, -2, 3, 2], [9, -1, 2, 1]]) g.fillRect(bx + dx, by + dy, w, h); continue; }   /* (survival2) A BROKEN SHRINE: dark, split down the middle, rubble at its foot */
+    if (s === breakAt) { const k = Math.min(1, (P.breakT || 0) / SV.SHRINE.breakHold), key = padLast ? 'UP' : TCH.on ? 'TALK' : String(KEYS.talk[0] || 'E').toUpperCase(); text('HOLD ' + key + ': BREAK THE SHRINE', s.x - cx, s.y - 60 - cy, k > 0 ? '#ff9a5c' : '#c8c0b0', 'center', 6); text('+1 FLASK, NO CHECKPOINT', s.x - cx, s.y - 52 - cy, '#9aa39a', 'center', 6); if (k > 0) { g.fillStyle = '#3a3444'; g.fillRect(Math.round(s.x - 16 - cx), Math.round(s.y - 44 - cy), 32, 2); g.fillStyle = '#ff9a5c'; g.fillRect(Math.round(s.x - 16 - cx), Math.round(s.y - 44 - cy), Math.round(32 * k), 2); } }   /* the told prompt, and the hold filling */
+    g.drawImage(shPair[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
   if (gate) g.drawImage(PROP.gate, gate.x - 24 - cx, gate.y - 52 - cy);
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10 && ((time * 0.7 + a.ph) % 3) < 0.18) { const gx = Math.round(a.x - cx) + 2, gy = Math.round(a.y - 4 + Math.sin(time * 4 + a.ph) * 1.5 - cy) - 4; g.fillStyle = '#fff6c8'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); } // a glint now and then
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
@@ -29960,7 +29976,7 @@ function render() {
     bar(16, 6, 70, 6, P.hp / P.maxHp, P.hp > 30 ? '#e04848' : (Math.floor(time * 6) % 2 ? '#ff7a6b' : '#e04848'), P.hpShown / P.maxHp);
     g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(16, 6, Math.round(70 * Math.max(0, P.hp / P.maxHp)), 1); for (let i = 1; i < 4; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(16 + Math.round(70 * i / 4), 6, 1, 6); }
     text(String(Math.max(0, Math.ceil(P.hp))), 90, 6, '#fff6e0');
-    if (L && !L.shop && !L.trial) { const fm = SV.flaskMax(PROG); for (let i = 0; i < fm; i++) { g.globalAlpha = i < (P.flasks | 0) ? 1 : 0.25; g.drawImage(TONIC_ICON, 90 + i * 7, 14); } g.globalAlpha = 1; } // THE FLASKS: full ones bright, drunk ones faint (claude/survival)
+    if (L && !L.shop && !L.trial) { const fm = SV.flaskMax(PROG), fn = P.flasks | 0; for (let i = 0; i < Math.max(fm, fn); i++) { g.globalAlpha = i < fn ? 1 : 0.25; g.drawImage(TONIC_ICON, 90 + i * 7, 14); if (i >= fm) { g.fillStyle = '#ffd36b'; g.fillRect(91 + i * 7, 12, 3, 1); } } g.globalAlpha = 1; }   /* (survival2) a flask OVER the max (a broken shrine's): a gold mark over it */ // THE FLASKS: full ones bright, drunk ones faint (claude/survival)
     if (campaignTag) text(campaignTag, 4, VH - 9, '#e8d9a0', 'left', 6);   /* ?level=/?boss= with &campaign=1 (claude/levelpilot) */
     if (coop()) drawCoopHud();   // and player two's small plate beside his
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
@@ -30389,6 +30405,7 @@ window.BK = { uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toa
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
      stands or hangs. src/floatlab.js reads the pixels of these to find what is in the air. */
   shrines: () => shrines,   /* which checkpoints are lit: a harness that swims a level reads it */
+  checkpointAt: () => checkpoint, breakShrineAt: () => breakAt, get lifeN() { return lifeN; },   /* (survival2) where a death wakes; the shrine the BREAK prompt stands over; the life count (one flask a shrine a life) */
   drawables() { const out = [], sh =(PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
     for (const d of deco) out.push({ what: d.kind, c: d.anim ? d.anim[0] : d.c, x: d.x, y: d.y, bg: !!d.bg, stand: !!d.stand, hang: !!d.hang });
     for (const s of signs) out.push({ what: 'sign', c: L.canal ? CNH.signArt() : PROP.sign, x: s.x - 9, y: s.y - 18, stand: true });

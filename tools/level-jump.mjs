@@ -5,6 +5,7 @@ import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { campaignLevel } from './boss-level.mjs';
 import { beatenBefore, tonicsAt, charmAt } from './level-walk.mjs';
+import { flasksAt } from '../src/campaign-kit.js';
 import { depthsOf } from '../src/campaign-order.js';
 const pg = await openPage({ audio: false, fonts: false }); const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -47,7 +48,7 @@ try {
     ok(k.loadout.length > 0, id + ': no skills in the slots');
     ok(JSON.stringify(k.items.slice().sort()) === JSON.stringify(k.wantItems.slice().sort()), id + ': smith gear ' + k.items + ' want ' + k.wantItems);
     ok(k.tonics === tonicsAt(d) && k.charm === charmAt(d), id + ': tonics/charm ' + k.tonics + '/' + k.charm + ' want ' + tonicsAt(d) + '/' + charmAt(d));
-    ok(k.flasks === k.flaskMax && k.flaskMax > 0, id + ': flasks ' + k.flasks + '/' + k.flaskMax);
+    ok(k.flasks === k.flaskMax && k.flaskMax === flasksAt(id, d), id + ': flasks ' + k.flasks + '/' + k.flaskMax + ' want ' + flasksAt(id, d) + ' (survival2: 1 in act I, 2 from act II, 3 from act III)');
     ok((await store()) === c0, 'THE SAVE CHANGED after ?level=' + id + '&campaign=1');
     console.log('  ' + id + ' campaign: L' + k.lvl + ' ' + k.hp + 'hp ' + k.loadout.join('+') + ' gear[' + k.items.join(',') + '] tonics ' + k.tonics + ' charm ' + k.charm + ' flasks ' + k.flasks + ' tag "' + k.tag + '"');
   }
