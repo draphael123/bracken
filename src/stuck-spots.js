@@ -172,6 +172,18 @@ export const STUCK = {
    The order is the order of the old nextThing list: the first spot with a step that fits wins. Append a level's spots; do not reorder. */
 const WHOLE = [0, 0, 999, 999];
 export const STUCK_HANDS = {
+  /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
+     and the climbs over the towers on the walk and out of the store's cellar glint after a stall */
+  ksar: [
+    { id: 'ks-tower2', zone: [86, 18, 96, 28], steps: [ { key: 'tower2', rows: [20, 28], at: [94, 25], glint: 'stall', line: 'THE TOWER STANDS ON THE WALK: THE WAY IS OVER IT' } ] },
+    { id: 'ks-tower3', zone: [148, 18, 157, 28], steps: [ { key: 'tower3', rows: [18, 28], at: [153, 25], glint: 'stall', line: 'THE TOWER STANDS ON THE WALK: THE WAY IS OVER IT' } ] },
+    { id: 'ks-gate', zone: [226, 16, 258, 34], steps: [
+      { key: 'greatGong', is: ['gate', 'braked'], at: [236, 24], line: 'THE GREAT GONG: ITS EARSHOT REACHES THE GATEHOUSE' },
+      { key: 'winch', is: ['gate', 'free'], at: [253, 33], line: 'THE GATE WINCH: THE BRAKE IS OFF' } ] },
+    { id: 'ks-store', zone: [386, 14, 446, 25], steps: [ { key: 'storeKeg', is: ['arch.storeArch', 'whole'], at: [400, 24], line: 'A KEG CHAIN ON THE ROOF: A BLOW LIGHTS THE FIRST' } ] },
+    { id: 'ks-cellar', zone: [417, 26, 430, 31], steps: [ { key: 'cellar', at: [420, 28], glint: 'stall', line: 'THE LEDGES LEAD BACK UP THROUGH THE HOLE' } ] },
+    { id: 'ks-vault', zone: [562, 26, 583, 34], steps: [ { key: 'vault', is: ['vault.strongroom', 'due'], at: [575, 33], line: 'THE STRONGROOM: FIVE SEALS OPEN IT' } ] },
+  ],
   /* THE GLASS SEA (claude/glasssea): every mirror the route needs glints until its beam does its work (src/glass-sea-hands.js handsState: bed.<id> sand/fused,
      crack.<id> held/boils, mirror.<id> its notch); the slide gap and the Sunken Head's holds glint as places (the glow marks the holds) */
   glasssea: [

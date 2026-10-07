@@ -37,6 +37,7 @@ import { gtOpen } from './jenny-greenteeth.js';
 import { qOpen } from './cistern-queen.js';
 import { matOpen } from './raptor-matriarch.js';
 import { colOpen } from './glass-colossus.js';
+import { hmOpen } from './hawk-mistress.js';   /* THE HAWK-MISTRESS (claude/ksar) */
 import { glOpen } from './gang-leader.js'; import { djOpen } from './djinn.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
@@ -104,6 +105,7 @@ export const OPEN_RULE = {
   grandmother: e => H.granOpen(e),                                           // (claude/bosswave1) her rap after a silent listen, or her feel turned on a shield
   greenteeth: e => gtOpen(e) || !!e.bareHit,                                 // (claude/canal4) stuck in the raft - or a blow at her BARE angle (the kelp guard: always hittable, the right blow is not greed; her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   cisternqueen: e => qOpen(e) || e.sting > 0 || e.scorch > 0 || !!(e.cqBare && e.cqBare()),   /* (claude/underwell3, Daniel 10-07: her STINGER is her weak spot - a blow on it, wherever it is (e.cqBare: the hands ask the blow's box), and her body while the fire SCORCHES her) */                                             // soaked out of her burrow, on her back off her wall (doused), rearing from a broken grab (claude/welltown3); her STUCK STINGER (claude/welltown5)
+  hawkmistress: e => hmOpen(e),                                              // THE HAWK-MISTRESS (claude/ksar): the hawk wheeled off by a gong or blinded by a flash - she whistles it back, open
   colossus: e => colOpen(e),                                                 // THE GLASS COLOSSUS (claude/glasssea): its chest cracked by its own lance off a mirror, its shoulders blazing (the swarm held by firelight), its crown dazzled by the dawn - its legs are its own purse (OWN_WARD)
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
@@ -130,6 +132,7 @@ export const NO_OPENING = {
 /* A DUELIST, NOT A PUZZLE: full damage on every hero blow (no chip), his own defence instead - ward faces, dodges, guards (the design standard, B2).
    His OPEN_RULE still names his openings (they pay more in his own code), and greed is still counted outside them (the mash reprisal stays). */
 export const FULL_DAMAGE = {
+  hawkmistress: 'a human duelist (design standard B11): always hittable, her gauntlet GUARDS BY ANGLE (a blow from the front at her height while she is on guard is turned; from behind or above it lands, and in her tells and strikes every blow lands); her openings pay x1.6 in her own code (claude/ksar)',
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",
   roc: 'Daniel 10-06 (claude/roc2): "you can jump on the gliding platforms / thermals and actually hit her, so she does not need to be invulnerable by default" - a beast, always hittable, guarding by HEIGHT (src/roc-eyrie.js take: whole and a little more from the air the level gives, GUARDS LOW from the floor); her plunge and her nest are x1.5',
   matriarch: 'a beast duelist (design standard B11): always hittable, her talons GUARD BY ANGLE (a blow from the front at her height is turned; from behind or above it lands); her openings pay x1.6 in her own code (claude/redgorge2)',

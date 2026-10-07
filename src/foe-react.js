@@ -33,7 +33,7 @@ export const ACTS = [
   { act: 2, name: 'THE CRAGS', cap: 2, dmg: 1.1, mashAt: 3, levels: ['scree', 'underleaf', 'hanging', 'spire', 'moor', 'skyroad', 'oreroad', 'storm', 'crown', 'undercrown'] },
   { act: 3, name: 'THE SEA', cap: 2, dmg: 1.2, mashAt: 2, levels: ['longwater', 'reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor'] },
   { act: 4, name: 'THE OLD KINGDOM', cap: 2, dmg: 1.25, mashAt: 2, levels: ['waymeet', 'canal', 'theatre', 'fair', 'fields', 'burial', 'witchlight', 'mage', 'unburied', 'fallingtower'] },
-  { act: 5, name: 'THE DESERT', cap: 3, dmg: 1.3, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea'] },
+  { act: 5, name: 'THE DESERT', cap: 3, dmg: 1.3, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea', 'ksar'] },
 ];
 /* THE DIFFICULTY PILOT'S WEIGHT (claude/levelpilot, scratch/brief-levelsweep.md v2: SALT & SANCTUARY - fewer, weightier foes, every one a 1v1 threat at the
    campaign level; 'act damage scaling, no hp sponges'). A level reworked to the v2 recipe may stand its common foes' blows a step over its act's tier
