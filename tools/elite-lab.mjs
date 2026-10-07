@@ -40,8 +40,8 @@ try {
   await pg.reload();
   await pg.evalp(`(async () => { const { mulberry } = await import('/src/px.js'); const lab = await import('/src/lab.js'); const real = Math.random;
     const hash = s => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
-    window.__elite = async o => { const P0 = BKT.PROG; BKT.setHeroLevel(o.hero, o.lvl); P0.skillOwned[o.hero] = {}; P0.loadouts[o.hero] = []; if (P0.talents) P0.talents[o.hero] = {};
-      Math.random = mulberry(hash(o.level + '|' + o.kind + '|' + o.hero + '|' + o.mode + '|' + o.seed)); try { return await lab.eliteLab(BK, o); } finally { Math.random = real; } };
+    window.__elite = async o => { const P0 = BKT.PROG, progRow = JSON.stringify(P0); /* (claude/harness) the fight leaves the save as it found it: the XP of a kill and the lessons told must not reach the next row (tools/lab-order.mjs) */ BKT.setHeroLevel(o.hero, o.lvl); P0.skillOwned[o.hero] = {}; P0.loadouts[o.hero] = []; if (P0.talents) P0.talents[o.hero] = {};
+      Math.random = mulberry(hash(o.level + '|' + o.kind + '|' + o.hero + '|' + o.mode + '|' + o.seed)); try { return await lab.eliteLab(BK, o); } finally { Math.random = real; const p0 = JSON.parse(progRow); for (const k of Object.keys(BKT.PROG)) if (!(k in p0)) delete BKT.PROG[k]; Object.assign(BKT.PROG, p0); } };
     return true; })()`);
   for (const j of jobs) for (const hero of heroes) {
     for (const [mode, n] of [['mash', mashSeeds], ['human', seeds]]) for (let seed = 0; seed < n; seed++) {
