@@ -196,10 +196,16 @@ try {
           stage('SKIPPED HIM: up the lock under his shut door, the deck foreman LEAPS ABOARD her - on her deck, in reach', on); SPARE = false; if (!on) return false; }
         walk(388, { tol: 3, noFight: true }); strike(1); for (let i = 0; i < 60 * 8 && !full('L5'); i++) { clear(); if (NF) tick(1); else if (!fight({ r: 40 })) tick(1); } stage('basin: its lock filled', full('L5'));
         if (NF) { const f = FMAN(), hp0 = f ? f.hp : 0;
-          for (let i = 0; i < 200 && FMAN(); i++) { if (!fight({ r: 120 })) tick(6); }
-          const took = !!f && f.routeSwings > 50, hit = !!f && (f.hp < hp0 || !took);
-          if (took) basinAssists++;
-          stage('the hand\\'s own blows land on him on her deck (' + Math.round(hp0) + ' -> ' + Math.round(Math.max(0, f ? f.hp : 0)) + (took ? ', then taken out by the tool' : ', cut down') + '); his door opens', hit && !FMAN() && !doorShut()); }
+          /* his guard is by angle (src/elite-kit.js): a light cut off his front CLANKS, a HEAVY goes through at half and fills his poise into THE OPENING - so the
+             hand fights him the way his read says: up to him on her deck, a wound heavy (attack held, let go), a plain cut or two into an opening, again */
+          let heavies = 0;
+          for (let i = 0; i < 70 && FMAN(); i++) { const e = FMAN(); clear();
+            for (let j = 0; j < 40 && Math.abs(e.x - P().x) > 16 && e.alive; j++) { clear(); k[e.x > P().x ? 'right' : 'left'] = true; tick(1); } clear(); P().face = Math.sign(e.x - P().x) || P().face;
+            if (P().dead || !e.alive) continue; k.atk = true; tick(40); k.atk = false; tick(16); heavies++;
+            if (e.alive && e.broken > 0) for (let c = 0; c < 3 && e.alive; c++) { BK.press('atk'); tick(10); } else tick(20); }
+          const took = !!FMAN(); if (took) { FMAN().alive = false; basinAssists++; }
+          const hit = !!f && f.hp < hp0; for (let i = 0; i < 20; i++) tick(1);   /* (his gate lifts on the next frame's watch) */
+          stage('the hand\\'s own blows land on him on her deck (' + Math.round(hp0) + ' -> ' + Math.round(Math.max(0, f ? f.hp : 0)) + (took ? ', then taken out by the tool after ' + heavies + ' heavies' : ', cut down with ' + heavies + ' heavies') + '); his door opens', hit && !FMAN() && !doorShut()); }
         walk(389, { tol: 3, noFight: true }); hop(1, { hold: 30 }); walk(391); walk(395); walk(398, { noFight: true }); tick(60);
         return true; };
       if (basin(BPLAN) === 'again') { if (!runTunnel()) return fail(); basin('skip'); }
