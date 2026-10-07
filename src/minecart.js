@@ -101,7 +101,7 @@ export function buildMinecart({ painter, T, TS }) {
   const boostGap = (x0, row) => { gap(x0, x0 + BOOST_GAP - 1); boosts.push({ x0, x1: x0 + BOOST_GAP - 1, row }); ent('mcgap', x0, row - 1, { w: BOOST_GAP }); };
   /* a GOBLIN ON A CART (an EXISTING foe: 'archer' or 'gobmage'): it waits off the screen until you pass `trig`, then rolls in on its line (`row`) and keeps
      `off` px from you (+ ahead / - behind). slow: a cart rolling at that pace on YOUR line, ahead (a hazard and a platform). until: its line ends there */
-  const rider = (t, trig, row, off, o) => { const x = o && o.at !== undefined ? o.at : trig + Math.round(off / TS); ent(t, x, row - 1, { face: -1, ride: Object.assign({ row, off, trig }, o || {}) }); ent('mcgobcart', x, row - 1, {}); };
+  const rider = (t, trig, row, off, o) => { const x = o && o.at !== undefined ? o.at : trig + Math.round(off / TS); ent(t, x, row - 1, { face: -1, cnSkin: t === 'gobmage' ? 'gobcaster' : 'gobrider', ride: Object.assign({ row, off, trig }, o || {}) });   /* (the art pass: a cart-rider wears the mine goblin's skin, src/redraw/minecart_skins.js) */ ent('mcgobcart', x, row - 1, {}); };
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, o || {}));
   const station = (x, y = B - 1) => ent('check', x, y);
   /* A TELL (review MF1): the cart's teaching is never a sign you stop to read. Crossing column x (and before column at, the place it can first hurt) puts
