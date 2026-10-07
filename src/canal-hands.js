@@ -190,6 +190,8 @@ export function canalUpdate(st, H, dt) {
   st.carriers = H.enemies().filter(e => e.alive && e.lamplighter).map(e => ({ x: e.x, y: e.y }));
   // ---- (claude/canalfix, UPGRADE C) THE BOARDING GANG: held at the fog wall with a hero aboard or beside her, a skiff comes out of the fog and they board ----
   gangStep(st, H, dt, b, m);
+  jennysWater(st, H);   /* (claude/canal6) a man in the canal is drowned; an elite is put back at his post */
+  foremanStep(st, H, dt, b);   /* (claude/canal6) the deck foreman is never left behind his own door */
   for (const pr of st.props) if (pr.flash > 0) pr.flash -= dt;
   // ---- THE BRIGHT WEED: stood on, it holds a moment and gives; empty, it knits together again ----
   for (const w of st.brights) { const x0 = w.x0 * TS, x1 = (w.x1 + 1) * TS, top = w.row * TS; let on = false;
@@ -335,6 +337,50 @@ function gangStep(st, H, dt, b, m) {
       if (u >= 1) { e.leap = null; e.onDeck = true; e.lastB = b.x; H.dust(e.x, e.y, 6); S.thud(); } continue; }
     if (e.onDeck) { e.x += b.x - (e.lastB ?? b.x); e.lastB = b.x; e.x = Math.max(b.x + 6, Math.min(b.x + b.w - 6, e.x)); e.y = b.y; e.vy = 0; }
   }
+}
+/* (claude/canal6, Daniel 10-07: "little enemies get stuck on the bottom that you can't see") JENNY'S WATER TAKES WHAT FALLS IN. A man who walked or was
+   knocked off a ledge into the canal used to land on its BED, five rows under the surface, and walk there for the rest of the attempt: under the water and
+   the barge, drawn behind the water's murk, out of every blade's reach (the stop-planks' bargee, on most runs a warden knocked him off). The game's own rule
+   for deep water (hazardFoe: DROWNED) only ran on a body still in its throw, so one that WALKED off, or whose throw had run out over the ledge, was never
+   asked. Now every frame: a foe of the land (not the brood - the grindylow lives there and the wisp floats; not a boarder pinned to her deck; no boss) whose
+   feet are under canal water is DROWNED, told, at once. An ELITE is not drowned by a misstep: he is put back at his post (the leash's own return, at
+   once instead of 1.5 s later), so the gate he holds always has him where a hero can reach him */
+const LAND = e => e.alive && !e.noGrav && !e.maxHp && !e.mini && !F.CANAL_FOES.has(e.t) && !e.boarder && !e.harmless;
+export const inCanalWater = (H, e) => (H.L().pools || []).find(p => p.canal && !p.shallow && !p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6 && (p.bottom === undefined || e.y <= p.bottom + 8)) || null;
+function jennysWater(st, H) {
+  for (const e of H.enemies()) { if (!LAND(e)) continue; const p = inCanalWater(H, e); if (!p) continue;
+    if (e.elite && e.home) { H.smoke(e.x, p.y); H.sfx.splash && H.sfx.splash(); e.x = e.home.x; e.y = e.home.y; e.vx = 0; e.vy = 0; e.knock = 0; e.kvx = 0; e.kvy = 0; e.leashT = 0; H.smoke(e.x, e.y - 8); H.mark(e, 'BACK AT HIS POST', '#ffd36b'); continue; }
+    H.drown(e); }
+}
+/* (claude/canal6, Daniel 10-07: "you can get softlocked if you don't defeat the elite") THE DECK FOREMAN IS NEVER LEFT BEHIND. His elite gate shuts the
+   corridor to Jenny's door until he is down - and he stands on the island, which the barge passes UNDER. A hero who rode her past him (or lured him over the
+   bridge and swung it on him) came up the basin lock to a shut door with nothing behind him but the lock's walls and its water: no way back to the island,
+   the attempt over. Now: with her in the lock under his door and a hero there with her, a living foreman will not let her go - a told leap (!!, a crouch,
+   then the long jump) from wherever he stands ONTO HER DECK, and he fights there, pinned to her as the boarding gang is (a throw cannot put him off her;
+   his post is her deck now, so the leash and Jenny's water put him back on it). His door still opens only when he is down. The island fight stays the
+   way the exam asks for (in the dark, before the horn): this is the hand that never lets the route depend on where he wandered */
+const FM = { tell: 0.6, fly: 0.9, arc: 70, end: 22 };   /* end: he keeps this far in from her ends, so there is deck behind him to go round to (his guard is by angle) */
+function foremanStep(st, H, dt, b) {
+  if (!b) return; const S = H.sfx;
+  for (const e of H.enemies()) { if (!e.alive || !e.elite || !e.bargee || e.gate === undefined) continue;
+    if (e.cnDeck) { e.x += b.x - (e.lastB ?? b.x); e.lastB = b.x; e.x = Math.max(b.x + FM.end, Math.min(b.x + b.w - FM.end, e.x)); e.y = b.y; e.vy = 0; if (e.knock > 0) { e.kvx = 0; e.kvy = Math.min(e.kvy || 0, 0); }
+      e.home = { x: e.x, y: b.y }; continue; }   /* ON HER DECK: pinned to her (claude/canalfix's boarders), his post wherever he stands on it */
+    const lk = st.reaches[R.reachAt(st, (e.gate - 3) * TS)]; if (!lk) continue;   /* the lock under his door */
+    const x0 = lk.x0 * TS, x1 = (lk.x1 + 1) * TS, mid = b.x + b.w / 2;
+    if (e.cnLeap) { const J = e.cnLeap; J.t += dt; e.vx = 0; e.vy = 0; e.elT = Math.max(e.elT || 0, 0.8); e.cd = Math.max(e.cd || 0, 0.6);
+      if (J.t < FM.tell) { e.x = J.x0; e.y = J.y0; continue; }   /* the crouch: told */
+      const u = Math.min(1, (J.t - FM.tell) / FM.fly), tx = b.x + J.bx;
+      e.x = J.x0 + (tx - J.x0) * u; e.y = J.y0 + (b.y - J.y0) * u - Math.sin(u * Math.PI) * FM.arc;
+      if (u >= 1) { e.cnLeap = null; e.cnDeck = true; e.lastB = b.x; e.y = b.y; e.home = { x: e.x, y: b.y }; H.dust(e.x, e.y, 8); S.thud && S.thud(); H.shake(1.5); H.mark(e, 'ABOARD', '#ff6b6b'); }
+      continue; }
+    if (!(mid > x0 && mid < x1)) continue;
+    let here = null; H.eachHero(P => { if (!P.dead && P.x > x0 - 8 && P.x < e.gate * TS) here = P; }); if (!here) continue;   /* a hero up the lock with her, short of the door */
+    if (e.x > x0 && e.x < x1 && Math.abs(e.y - b.y) < 6) { e.cnDeck = true; e.lastB = b.x; continue; }   /* (already on her) */
+    if (e.knock > 0 || e.carried > 0 || e.pinned > 0 || e.broken > 0 || e.elBack) continue;   /* busy: the moment he is free */
+    const bx = here.x > mid ? FM.end : b.w - FM.end;   /* her far end from the hero */
+    e.cnLeap = { t: 0, x0: e.x, y0: e.y, bx }; e.home = { x: b.x + bx, y: b.y }; e.leashT = 0; e.vx = 0; e.vy = 0;
+    H.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.charge && S.charge();
+    hint(st, H, 'foreman', 'THE DECK FOREMAN WILL NOT LET HER GO: HE LEAPS ABOARD. HIS DOOR OPENS WHEN HE IS DOWN.'); }
 }
 /* IS (x, y) LIT: out of the fog, in air a horn has cleared, or in a lantern's light */
 export const litAt = (st, x, y) => !st || R.litAt(st, x, y);
