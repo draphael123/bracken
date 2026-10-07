@@ -192,7 +192,7 @@ export function drawOver(g, e, S, cx, cy, time) {
     const ty = by - ry - 12; g.fillStyle = '#1b1626'; g.fillRect(bx - 30, ty + 3, 60, 5); g.fillStyle = '#ffd36b'; g.fillRect(bx - 29, ty + 4, R(58 * k), 3); g.fillStyle = '#fff6c8'; g.fillRect(bx - 29, ty + 4, R(58 * k), 1);
   }
   /* HIS WARD's clock (claude/djinn2): a pale bar over him that runs down - when it is gone, the water takes again */
-  if (S.ward > 0 && !(e.open > 0)) { const x = X(e.x), y = R(e.y - (S.pose === 'column' ? 190 : 100) - cy), k = Math.max(0, S.ward / DJ.wardT); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y, 40, 3); g.fillStyle = S.ph === 2 ? '#fff2c0' : S.ph === 3 ? '#bfe4ff' : '#e8d8a0'; g.fillRect(x - 20, y, R(40 * k), 3); }
+  if (S.ward > 0 && !(e.open > 0)) { const x = X(e.x), y = R(e.y - (S.pose === 'column' ? 190 : 100) - cy), k = Math.max(0, S.ward / DJG.wardLen(S)); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y, 40, 3); g.fillStyle = S.ph === 2 ? '#fff2c0' : S.ph === 3 ? '#bfe4ff' : '#e8d8a0'; g.fillRect(x - 20, y, R(40 * k), 3); }
 }
 
 /* (claude/djinn3) THE SHAFT'S LIGHT: a pale fall of daylight down the old well onto the flood - where the great bucket lands. In the flood it brightens

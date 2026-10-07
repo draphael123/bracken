@@ -68,3 +68,24 @@ hint-shown (I removed the stale line 'A PAIL FLOATS UP: E SCOOPS THE FLOOD' from
    playtest decides. A person who now reads the openings and keeps a full pail should spend less time waiting. Alt: Q1's caps.
 
 No music this lane.
+
+## ADDENDUM (2026-10-07): Daniel answered Q1 - ADD THE BIGGER OPENINGS (the bot near 100% is accepted; his feel is the gate)
+Built on top of everything above (src/djinn.js, src/redraw/djinn_art.js, tools/djinn.mjs):
+- **The sand and fire ward is 2.5 s** (DJ.wardT12; djinnWard uses wardLen). The flood's shroud stays 3.0 s. Both are told, so B3 still holds.
+- **A pour reaches him at 80 px** (was 66).
+- **Each opening takes more of him:**
+  - a mud or a douse 5.1% -> 6.6%;
+  - a bail 7% -> 8.5%;
+  - the choke 1.5% + 2.5% -> 1.8% + 3%;
+  - the reel 0.8% + 1.2% -> 1.0% + 1.6%.
+  - His health is unchanged.
+- **The honest bot** (work/claude/djinn6/r15.log; human profile, L31, 8 seeds a hero): knight 8/8, warden 8/8, pyro 8/8 = 100%.
+  - Mean fight 89.6 s (DJINN5: 112 s, about 20% shorter).
+  - Mean damage taken 116 of 250 (DJINN5: 202).
+- **Assertions updated** (Daniel's design change), in tools/djinn.mjs:
+  - the P1/P2 ward checks compare against wardT12;
+  - the ward-length check covers wardT12 between 2.5 s and wardT;
+  - the openings check now asserts the bigger caps, the shorter P1/P2 ward and the longer pour.
+- **Checks green** (PORT 8692): djinn (123), djinn-pail (43), welltown (42), boss-read, boss-openings, boss-greed, boss-fight-end, tells, answer-tags, hint-shown, mash-gate.
+- **Mash**, re-stamped LEVEL then BOSS: boss 0/6 (left at 100% each), mini 0/6, the level kills every hero.
+- **Q1 is answered.** Q2 (the warden) is moot at 8/8. Q3 still stands: keep the 0.6 s pail refill (rec) or slow it to 1.0 s.
