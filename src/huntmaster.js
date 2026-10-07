@@ -17,7 +17,7 @@
 //   over YOU (its shadow on the floor first) - the rule turned on you.
 // main.js calls makeHuntmaster(ctx): spawnBoss, owns, on, update, take, caught (a boss cage landed), drawBoss, drawOver, barName, end, read, fight.
 export const HM = {
-  hp: 1080, w: 14, h: 26, markH: 44,
+  hp: 1100, w: 14, h: 26, markH: 44,
   p2: 0.67, p3: 0.34,
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,

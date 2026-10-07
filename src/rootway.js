@@ -120,15 +120,15 @@ export function buildRootway({ painter, T, TS }) {
      east half of each. Cut a cage down and it lands on its stump as a half-step: stump, cage, next stump, cage, the far lip. All three ropes tie off on the near lip */
   sign(198, 31, 'THE TROPHY LARDER. CUT THE CAGES DOWN ONTO THE STUMPS: THEY MAKE A STAIR.');
   air(207, 224, 0, 44); ground(207, 224, 45); for (const r of [42, 39, 36, 33]) plank(207, 208, r);   /* the pit, and root shelves up its near wall (a fall costs the climb) */
-  ground(210, 213, 39); ground(215, 218, 35); ground(220, 223, 31);               /* THE STUMPS: tops 39, 35, 31 - four rows apart (the far lip is 27) */
+  ground(210, 214, 39); ground(215, 219, 35); ground(220, 224, 31);   /* (each stump runs to the next: no one-column slot to fall into between them) */               /* THE STUMPS: tops 39, 35, 31 - four rows apart (the far lip is 27) */
   hoist('larder1', { x: 213, top: 19, hang: 31, cleat: [201, 31], load: 'cage', land: [212, 37] });
   hoist('larder2', { x: 218, top: 17, hang: 27, cleat: [203, 31], load: 'cage', land: [217, 33] });
   hoist('larder3', { x: 223, top: 15, hang: 23, cleat: [205, 31], load: 'cage', land: [222, 29] });
   decor.push({ kind: 'larder', x0: 207, x1: 224, y: 15 });
   plank(226, 228, 24); plank(229, 231, 21); ent('silver', 230, 20);              /* SILVER TWO: up a root over the far lip (a pocket) */
   coins([210, 37], [215, 33], [220, 29]);
-  deco(213, 44, 'skullPile', 0); deco(219, 44, 'bones', 0); glow(215, 44);
-  foe('sporeling', 214, 44, 'larderPit', { face: -1 });
+  deco(208, 44, 'skullPile', 0); glow(207, 44);
+  foe('sporeling', 209, 44, 'larderPit', { face: -1 });
   ground(225, 238, 27);
   foe('archer', 231, 26, 'larderBow', { face: -1 });
   /* A CLEAT ON THE ROOT'S FACE, high over the floor: grow the bud under it and strike it from the cap - the span over the next gap drops */
