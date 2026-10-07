@@ -142,7 +142,7 @@ All runs: `PORT=8688 node tools/boss-rates.mjs skyroad --ways=practiced --jobs=2
   - knight: lowest health 10%
   - warden: lowest health 6%
   - pyro: dies
-- **Boss**: 0/6.  holds.
+- **Boss**: 0/6. `node tools/mash-bot.mjs --assert skyroad` holds.
 
 **Reds**: none of mine. `tools/tells.mjs` prints that `updateScalder` pourTell and ladleTell are entered with no mark. That was there before this lane and is not the Roc.
 
