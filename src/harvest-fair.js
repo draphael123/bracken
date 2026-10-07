@@ -448,7 +448,7 @@ export function buildHarvestFair({ painter, T, TS }) {
   const effigies = [{ x: 78, stage: 0 }, { x: 196, stage: 1 }, { x: 322, stage: 2 }, { x: 461, stage: 3, burns: true, world: true }, { x: 592, stage: 'ash' }];   /* (claude/fairfix2) the fourth stands on the bank at the fire's start line and BURNS; after it, ash */
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra, interiors: [],
-    carousels, haystacks, lamps: lampsOut(lamps), arc: ARC, stair: { x0: 150, top: 162 }, green: G, tints, arena, gateAfterBoss: true,
+    carousels, haystacks, lamps: lampsOut(lamps), arc: ARC, examSpans: [ARC.exam] /* (claude/survival, A10 amended: in THE LAST ROUND the spike yard is a real death - told as you walk in; src/survival.js) */, stair: { x0: 150, top: 162 }, green: G, tints, arena, gateAfterBoss: true,
     walls, gallery: galleries[0], galleries, strikers, tickets, booth: null, backLot, hall, halls: [hall, canopy], blinds, unlit, tower, wheel: WH, slide: { x0: 367, y0: tower.top, n: 11, stall: { x0: 372, x1: 377 } }, corn, scarecrows, effigies,
     chases, fallen, zipLines, poles, cages, ticketGates, crumbles, fortune, boats, chairos, awnings, gallop, elevator,   /* (claude/fairfix5) the springy awnings, the gallopers' ride */
     unlocks: [   /* (claude/batch52) what each collectible or target opens, for tools/level-quality.mjs; the HUD lines are src/fair-keys.js KEYS_TEXT */
