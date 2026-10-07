@@ -134,6 +134,7 @@ export const NO_OPENING = {
 export const FULL_DAMAGE = {
   huntmaster: 'a duelist (design standard B11, claude/rootway): always hittable, he GUARDS BY ANGLE between his moves (a blow from his front at his height is turned: GO ROUND, or from above); his openings pay x1.5 (x2 behind the broken mask) in his own code (src/huntmaster.js)',
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",
+  roc: 'Daniel 10-06 (claude/roc2): "you can jump on the gliding platforms / thermals and actually hit her, so she does not need to be invulnerable by default" - a beast, always hittable, guarding by HEIGHT (src/roc-eyrie.js take: whole and a little more from the air the level gives, GUARDS LOW from the floor); her plunge and her nest are x1.5',
   matriarch: 'a beast duelist (design standard B11): always hittable, her talons GUARD BY ANGLE (a blow from the front at her height is turned; from behind or above it lands); her openings pay x1.6 in her own code (claude/redgorge2)',
 };
 export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */

@@ -272,7 +272,7 @@ try {
    const quiet=()=>{for(let i=0;i<60*8&&(S().ward>0||BIG.includes(b.mode)||S().burst>0||S().pending.length||b.mode==='fly'||b.mode==='wobble');i++){P.hp=P.maxHp;BK.sim(1);}};
    const pull=()=>{S().sluice.W=1;P.x=lever;P.y=G.topY;P.vx=0;BK.press('talk');};
    quiet();b.x=G.tops.find(t=>t.id==='B2').cx;b.y=G.topY;b.mode='walk';b.modeT=4;pull();let wasted=0;for(let i=0;i<150;i++){P.hp=P.maxHp;P.x=lever;BK.sim(1);if(BIG.includes(b.mode))wasted=Math.max(wasted,b.open||0);}
-   quiet();const n1=G.tops.find(t=>t.id==='N1');b.x=n1.l-30;b.y=G.floorY;b.mode='walk';b.modeT=5;pull();let op=0,mode=null;for(let i=0;i<60*5;i++){P.hp=P.maxHp;P.x=lever;BK.sim(1);if(BIG.includes(b.mode)){mode=mode||b.mode;op=Math.max(op,b.open||0);}}
+   quiet();const n1=G.tops.find(t=>t.id==='N1');b.x=n1.l-30;b.y=G.floorY;b.mode='recover';b.modeT=5;pull();/* (claude/matriarch2: standing between moves - her quicker stalk reached the bank in the burst's 0.4 s; assertion unchanged) */let op=0,mode=null;for(let i=0;i<60*5;i++){P.hp=P.maxHp;P.x=lever;BK.sim(1);if(BIG.includes(b.mode)){mode=mode||b.mode;op=Math.max(op,b.open||0);}}
    out.matriarch={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:MH.read().n.wasted,mode,open:+op.toFixed(1)};}
   return out;})()`, 300000);
 

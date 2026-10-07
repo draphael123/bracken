@@ -35,8 +35,8 @@ ok(!chipped({ t: 'spider', xpRole: 'mini' }, false), 'a mini with no opening (th
 /* (claude/dk3) A DUELIST ON FULL DAMAGE (THE DEATH KNIGHT, Daniel 10-03): never chipped, but his openings are still named, so greed still counts outside them */
 for (const t of Object.keys(FULL_DAMAGE || {})) { ok(!chipped({ t }, true), t + ' is on FULL_DAMAGE and must never be chipped'); ok(OPEN_RULE[t], t + ' is on FULL_DAMAGE but has no opening rule: greed would never count'); }
 /* (claude/redgorge2) the duelists off the chip, named one by one (design standard B11: a beast duelist guards by angle instead) - a new name here is a design call (QUESTION in the lane report) */
-const DUELISTS = ['bloodknight', 'matriarch'];
-ok(FULL_DAMAGE && DUELISTS.every(k => FULL_DAMAGE[k]) && Object.keys(FULL_DAMAGE).length === DUELISTS.length, 'FULL_DAMAGE is the named duelists alone (the Death Knight, the Raptor Matriarch; nobody else is taken off the chip): ' + Object.keys(FULL_DAMAGE || {}));
+const DUELISTS = ['bloodknight', 'matriarch', 'roc'];   /* (claude/roc2: THE ROC - Daniel 10-06, 'she DOESN'T NEED TO BE INVULNERABLE BY DEFAULT': a beast guarding by height, src/roc-eyrie.js take) */
+ok(FULL_DAMAGE && DUELISTS.every(k => FULL_DAMAGE[k]) && Object.keys(FULL_DAMAGE).length === DUELISTS.length, 'FULL_DAMAGE is the named duelists alone (the Death Knight, the Raptor Matriarch, the Roc; nobody else is taken off the chip): ' + Object.keys(FULL_DAMAGE || {}));
 for (const t of Object.keys(NO_OPENING)) ok(!chipped({ t }, true), t + ' is on NO_OPENING and must never be chipped (left at full damage, never made unbeatable)');
 
 const pg = await openPage({ audio: false, fonts: false });

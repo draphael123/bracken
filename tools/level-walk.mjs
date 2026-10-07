@@ -31,32 +31,28 @@ import { depthsOf, gateOf } from '../src/campaign-order.js';
 import { pacing } from './pacing.mjs';
 import { campaignLevel, levelOverride } from './boss-level.mjs';
 import { openRetry } from './boss-run.mjs';
+import { beatenBeforeIn, tonicsAt, charmAt } from '../src/campaign-kit.js';
 const DEPTH = depthsOf(LEVELS), BYID = Object.fromEntries(LEVELS.map(l => [l.id, l]));
 export const TARGET = { deathsLo: 1, deathsHi: 2, arriveHp: 50 };
 /* the woods beaten before id (its ancestors on the gate chain) */
-export function beatenBefore(id) { const out = []; let p = gateOf(BYID[id]); while (p && !out.includes(p)) { out.push(p); p = gateOf(BYID[p]); } return out; }
-export const tonicsAt = d => d <= 1 ? 1 : d < 8 ? 3 : 5;
-export const charmAt = d => d >= 4 ? 'heart' : null;
+export const beatenBefore = id => beatenBeforeIn(LEVELS, id);   /* (src/campaign-kit.js: the same kit the playtest jump ?level=<id>&campaign=1 gives) */
+export { tonicsAt, charmAt };
 /* THE ROUTE: tools/pacing.mjs's main route (the reach fill's movement graph, start to gate), every node: [x, y] = the column and the BODY row (feet at (y+1)*16) */
 export const routeOf = lv => pacing(lv).route.map(([x, y]) => [x, y]);
 export function walkCfg(id, hero, seed, o = {}) {
   const lv = BYID[id]; if (!lv) throw Error('no such level ' + id);
   const d = DEPTH[id] ?? 1, lvl = o.level ?? campaignLevel(id), route = routeOf(lv);
   return { id, hero, seed, lvl, depth: d, beaten: beatenBefore(id), tonics: o.tonics ?? tonicsAt(d), charm: o.charm === undefined ? charmAt(d) : o.charm,
-    profile: o.profile ?? 'human+first', strict: !!o.strict, trace: o.trace || null, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, route };
+    profile: o.profile ?? 'human+first', strict: !!o.strict, trace: o.trace || null, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, from: o.from ?? null, route };
 }
 /* THE DRINK HOOK (page side): one place, so the walker keeps working when the manual flask lands */
 export const drinkJs = `const heldNow=()=>{try{if(typeof BK.flasks==='function')return +BK.flasks()||0;const PG=BKT.PROG;return +(PG.flasks??PG.tonics??0)||0;}catch{return 0;}};
   let drinkCd=0;const drinkHook=()=>{const p=BK.P;drinkCd=Math.max(0,drinkCd-1);if(!p||p.dead>0||p.hp<=0||p.hp>=p.maxHp*0.35||heldNow()<=0||drinkCd>0)return;
-    if(typeof BK.drinkFlask==='function'){BK.drinkFlask();drinkCd=45;}else if(BK.flaskKey){BK.press(BK.flaskKey);drinkCd=45;}};`;
+    if(typeof BK.drinkFlask==='function'){if(BK.drinkFlask())drinkCd=45;}else if(BK.flaskKey){BK.press(BK.flaskKey);drinkCd=45;}};`;
 export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.hero,lvl=c.lvl,TS=16;BK.manualSimulation=true;
-  const B=await import('/src/bot-profile.js'),PR=await import('/src/progression.js'),{makeBot}=await import('/src/playtest.js'),PC=await import('/src/lab-perceive.js'),{mulberry}=await import('/src/px.js'),{LEVELS}=await import('/src/level.js');
-  const P0=BKT.PROG;BKT.setHeroLevel(h,lvl);P0.skillOwned=P0.skillOwned||{};P0.loadouts=P0.loadouts||{};P0.skillOwned[h]={};P0.loadouts[h]=[];if(P0.talents)P0.talents[h]={};
-  P0.card[h]=B.typicalWalkCard(h,lvl,n=>(PR.heroPerkAt(h,n)||{}).id);
-  const kit=(B.TYPICAL_SKILLS[h]||[]).filter(id=>{const n=PR.skillFor(h,id);return n&&n.active&&n.level<=lvl;}).slice(0,PR.slotsAt(lvl));for(const id of kit)P0.skillOwned[h][id]=true;P0.loadouts[h]=kit.slice();
-  P0.items=P0.items||{};for(const u of BK.UPGRADES){if(u.consumable)continue;P0.items[u.id]=u.needs?c.beaten.includes(u.needs):c.depth>=2;}
-  P0.charmOf=P0.charmOf||{};P0.charm=c.charm||null;P0.charmOf[h]=c.charm||null;
-  BK.setHero(h);BK.reset({fresh:true});P0.tonics=c.tonics;P0.coins=c.coins;BK.applyUpgrades();
+  const B=await import('/src/bot-profile.js'),PR=await import('/src/progression.js'),CK=await import('/src/campaign-kit.js'),{makeBot}=await import('/src/playtest.js'),PC=await import('/src/lab-perceive.js'),{mulberry}=await import('/src/px.js'),{LEVELS}=await import('/src/level.js');
+  const P0=BKT.PROG,kit=CK.kitPre(BKT,BK,c);
+  BK.setHero(h);BK.reset({fresh:true});CK.kitPost(BKT,BK,c);
   const seedOf=s=>{let x=2166136261;for(let i=0;i<s.length;i++)x=Math.imul(x^s.charCodeAt(i),16777619);return x>>>0;};
   const rnd0=Math.random;Math.random=mulberry(seedOf('walk|'+c.id+'|'+h+'|'+c.seed));
   try{
@@ -74,7 +70,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   const track=()=>{let [bi,bd]=nearest(ri-8,ri+48);if(bd>6*TS){const [b2,d2]=nearest(ri+48,R.length);if(d2<bd)bi=b2;}ri=bi;if(ri>riSince){riSince=ri;lastProg=frames;}if(ri>riBest)riBest=ri;};
   /* A LOCKED ROOM IS A FIGHT (an ambush or an elite shuts the portcullis until its foes are down): the hands only fight what stands in the way and write a foe off after 4 s, so they waited at the bars forever. Not getting on for 1.5 s with a foe near: go and kill it, and never write it off */
   const huntNo=new Map();let huntE=null,huntT=0,huntHp=0;
-  const huntOf=()=>{const p=BK.P;let best=null,bd=1e9;for(const e of BK.enemies()){if(!e||!e.alive||e.harmless||e.dying>0||skip.has(e.t)||(huntNo.get(e)||0)>frames)continue;const dx=Math.abs(e.x-p.x),dy=Math.abs(e.y-p.y);if(dx>12*TS||dy>5*TS)continue;const lo=Math.min(e.x,p.x),hi=Math.max(e.x,p.x);if((BK.L.pools||[]).some(q=>!q.shallow&&!q.swim&&!q.dry&&(q.fire||!BK.L.waterHurts)&&q.x1>lo&&q.x0<hi&&Math.abs(q.y-p.y)<3*TS))continue;   /* never across a pit that kills */
+  const huntOf=()=>{const p=BK.P;let best=null,bd=1e9;for(const e of BK.enemies()){if(!e||!e.alive||e.harmless||e.dying>0||skip.has(e.t)||(huntNo.get(e)||0)>frames||(e.t==='eel'&&e.leap))continue;const dx=Math.abs(e.x-p.x),dy=Math.abs(e.y-p.y);if(dx>12*TS||dy>5*TS)continue;   /* (a river eel is not hunted: it lives under the water between two pads - claude/levelpilot) */const lo=Math.min(e.x,p.x),hi=Math.max(e.x,p.x);if((BK.L.pools||[]).some(q=>!q.shallow&&!q.swim&&!q.dry&&(q.fire||!BK.L.waterHurts)&&q.x1>lo&&q.x0<hi&&Math.abs(q.y-p.y)<3*TS))continue;   /* never across a pit that kills */
     const d=dx+3*dy;if(d<bd){bd=d;best=e;}}
     /* one he cannot hurt (a shell, a perch): 6 s with its health not moving, and he tries another for 10 s */
     if(best!==huntE){huntE=best;huntT=0;huntHp=best?best.hp:0;}else if(best){huntT++;if(best.hp<huntHp){huntHp=best.hp;huntT=0;lastProg=frames;}if(huntT>360){huntNo.set(best,frames+600);huntE=null;}}return best;};
@@ -109,30 +105,40 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   let bot=makeBot(BK),jumpX=null;
   /* A PLAYER STEERS HIS FALL ONTO A PAD (the hands only ever hold the way on, so a hop off one lily pad sailed past the next into the marsh): falling, with a floating pad or raft ahead of where the jump began and under him, he leans onto its middle */
   const steer=sd=>{const p=BK.P;if(p.ground||p.onMover){jumpX=p.x;return;}if(p.swim||p.climb||!(p.vy>0)||!sd)return;let best=null,bd=1e9;for(const m of BK.movers()){if(m.gone||(m.sink||0)>0.55||(m.kind!=='pad'&&m.kind!=='raft'))continue;const cx=m.x+(m.w||16)/2,dy=m.y-p.y,dx=cx-p.x;if(dy<-2||dy>5*TS||Math.abs(dx)>4*TS)continue;if(jumpX!==null&&(cx-jumpX)*sd<12)continue;if(Math.abs(dx)<bd){bd=Math.abs(dx);best=dx;}}if(best===null)return;BK.keys.left=best<-3;BK.keys.right=best>3;};
+  /* --from=X (a DEBUG start, not a first run: claude/levelpilot): put him on the route at column X to read one stretch without walking to it */
+  if(c.from!==null){const k=R.findIndex(n=>n[0]>=c.from);if(k>0){const p=BK.P;p.x=cxR(k);p.y=feet(k);p.vx=p.vy=0;ri=riSince=riBest=k;}}
+  /* ON A SINKING PAD A PLAYER DOES NOT STOP TO FIGHT THE FISH (claude/levelpilot: the hands turned round on the marsh river's pad to cut the eel behind them, sank, and were handed back to the bank - STUCK 229,17 in every run): a fish in the water by the pad is left to its leap */
+  const padSkip=()=>{const p=BK.P,m=p.onMover;if(!m||m.kind!=='pad'||!bot.skip)return;for(const e of BK.enemies())if(e&&e.alive&&/^(eel|gar)$/.test(e.t)&&Math.abs(e.x-p.x)<4*TS)bot.skip.set(e,(bot.frame||0)+20);};
+  /* AND HE WAITS OUT A TOLD LEAP (the sign: 'wait on the pad and go after it drops'): footed, a river eel's ! or leap in the next gap ahead holds him where he stands */
+  const eelWait=sd=>{const p=BK.P;if(!(p.ground||p.onMover)||p.swim||!sd)return;for(const e of BK.enemies()){if(!e||!e.alive||e.t!=='eel'||!e.leap)continue;const dx=(e.x-p.x)*sd;if(dx<-6||dx>4.5*TS)continue;if(e.mode==='leapTell'||e.mode==='leap'){if(padGo!==null&&padT>2)return false;padGo=null;BK.keys.left=BK.keys.right=false;BK.keys.jump=false;lastProg=frames;return true;}}return false;};
+  /* PAD TO PAD IS A FULL HOP (the hands' short hop off a two-tile leaf came down in the gap between it and the next): footed on a lily pad, the next one ahead on the same row that is still afloat gets a held jump, steered onto its middle */
+  let padGo=null,padHold=0,padT=0,pendDrink=0;const hitBy={};const padHop=sd=>{const p=BK.P;if(padGo!==null){padT++;if(padHold>0){BK.keys.jump=true;padHold--;}const dx=padGo-p.x;BK.keys.left=dx<-3;BK.keys.right=dx>3;if(((p.ground||p.onMover)&&padT>6)||p.swim||p.dead>0||padT>90)padGo=null;return;}
+    const m=p.onMover;if(!m||m.kind!=='pad'||!sd)return;let best=null;for(const q of BK.movers()){if(q===m||q.kind!=='pad'||q.gone||(q.sink||0)>0.3)continue;const cx=q.x+(q.w||16)/2,dx=(cx-p.x)*sd;if(dx<20||dx>6*TS||Math.abs((q.y0??q.y)-(m.y0??m.y))>8)continue;if(!best||dx<best.dx)best={cx,dx};}
+    if(!best)return;padGo=best.cx;padT=0;padHold=best.dx>3.5*TS?24:16;BK.press('jump');BK.keys.jump=true;BK.keys.left=sd<0;BK.keys.right=sd>0;};
   while(frames<c.frames){
     if(BK.bossActive){end='boss';break;}
     if(BK.miniActive){end='mini';miniHp=Math.round(100*Math.max(0,BK.P.hp)/(BK.P.maxHp||100));break;}   /* THE MINI'S ROOM: the mini is measured by tools/boss-rates.mjs (row 'level:mini'); its walls hold him in, so the walk stops at its door (hp on arrival kept) */
     if(BK.state==='talk'){BK.press('confirm');BK.sim(1);frames++;continue;}
     if(BK.state==='card'&&BK.cardClose){BK.cardClose();BK.sim(1);frames++;continue;}   /* a level-up card (a low-level walk levels up mid-level): take it and walk on (claude/rootway) */   /* a word from somebody: read on */
     if(BK.state!=='play'){end=BK.state==='win'?'gate':'state:'+BK.state;break;}
-    const p=BK.P;let gi=Math.min(R.length-1,ri+1);for(let k=gi+1;k<=Math.min(R.length-1,ri+3);k++){if(Math.abs(feet(k)-feet(gi))<2*TS&&Math.sign(R[k][0]-R[gi][0])===Math.sign(R[gi][0]*TS+8-p.x))gi=k;else break;}let wx=R[gi][0];   /* AIM ONE TO THREE NODES ON, along the same floor and the same way: the hands stop at their goal (a goal on a lily pad or a ledge lip is a stop in the water), and a goal further on, on a tall level, is on another floor */
+    const heldTop=heldNow();const p=BK.P;let gi=Math.min(R.length-1,ri+1);for(let k=gi+1;k<=Math.min(R.length-1,ri+3);k++){if(Math.abs(feet(k)-feet(gi))<2*TS&&Math.sign(R[k][0]-R[gi][0])===Math.sign(R[gi][0]*TS+8-p.x))gi=k;else break;}let wx=R[gi][0];   /* AIM ONE TO THREE NODES ON, along the same floor and the same way: the hands stop at their goal (a goal on a lily pad or a ledge lip is a stop in the water), and a goal further on, on a tall level, is on another floor */
     if(perc)perc.apply();
     try{const riding=p.onMover&&(p.onMover.moving||p.onMover.returning);if(riding)lastProg=frames;   /* ON A RIDE (a ferry, a raft, a lift): stand and let it carry him */
-      const stall=!riding&&frames-lastProg>90,hunt=stall?huntOf():null,work=!riding&&!hunt&&(stall||bridgeAhead())?workOf():null;if(hunt){wx=(hunt.x-8)/TS;if(bot.skip)bot.skip.clear();}else if(work)wx=(work.x-8)/TS;else{const ux=upPlan();if(ux!==null)wx=(ux-8)/TS;}cur=pickTarget(wx*TS+8);bot(wx*TS+8);if(work)workHands(work);else if(!bot.rwJob)climbAssist();swimTo(gi);steer(Math.sign(wx*TS+8-p.x));if(SKH&&cur)SKH.step();drinkHook();}finally{if(perc)perc.restore();}
-    const h0=p.hp,mh0=p.maxHp||100,lit0=litN(),held0=heldNow(),hl0=BKT.heroLevel?BKT.heroLevel(h):0,dead0=p.dead>0||h0<=0,px0=p.x;
+<<<<<<< HEAD
+      const stall=!riding&&frames-lastProg>90,hunt=stall?huntOf():null,work=!riding&&!hunt&&(stall||bridgeAhead())?workOf():null;if(hunt){wx=(hunt.x-8)/TS;if(bot.skip)bot.skip.clear();}else if(work)wx=(work.x-8)/TS;else{const ux=upPlan();if(ux!==null)wx=(ux-8)/TS;}cur=pickTarget(wx*TS+8);padSkip();drinkHook();bot(wx*TS+8);if(work)workHands(work);else if(!bot.rwJob)climbAssist();swimTo(gi);{const sd=Math.sign(wx*TS+8-p.x);if(padGo===null)steer(sd);if(!eelWait(sd))padHop(sd);}if(SKH&&cur)SKH.step();drinkHook();}finally{if(perc)perc.restore();}
     BK.sim(1);frames++;if(perc)perc.update();
     const q=BK.P,cs=S[S.length-1],h1=q.hp;if(resumeTo){const rt=resumeTo;resumeTo=null;if(Math.abs(q.x-rt.x)>2*TS){stucks[stucks.length-1].locked=true;end='locked';break;}}   /* the restart did not take: walls hold him (an ambush or an arena still shut) */if(c.trace&&trace.length<(c.traceN||400)&&q.x/TS>=c.trace[0]&&q.x/TS<=c.trace[1]&&frames%3===0)trace.push(frames+':'+(q.x/TS).toFixed(1)+','+(q.y/TS).toFixed(1)+(q.onMover?'M'+(q.onMover.moving?'m':'')+(q.onMover.paid?'p':''):'')+(q.ground?'g':'')+(q.swim?'S':'')+(BK.keys.jump?'J':'')+(BK.keys.right?'>':'')+(BK.keys.left?'<':'')+(BK.keys.block?'B':'')+(q.atk>=0?'A':'')+(q.vx?'v'+Math.round(q.vx):'')+' r'+ri+'g'+wx+(climb!==null?'C':'')+' hp'+Math.round(h1));const mh=q.maxHp||mh0;cs.frames++;
     /* a tonic drunk on the frame of the blow nets out against it: the drink goes back on both sides (lost and healed) */
-    const drank=Math.max(0,held0-heldNow()),dAmt=drank?drank*(typeof BK.drinkFlask==='function'?0.35*mh0:(PR.perkOn(P0,h,'tonic')?60:45)):0;
+    const flaskGame=typeof BK.drinkFlask==='function',drank=Math.max(0,heldTop-heldNow()),dAmt=drank&&!flaskGame?drank*((PR.perkOn(P0,h,'tonic')?60:45)):0;
     if(h1-dAmt<h0)cs.lost+=(h0-Math.max(0,h1-dAmt))/mh0;
-    const st=BK.stats();if(st.kills>kPrev){cs.kills+=st.kills-kPrev;kPrev=st.kills;}if(BK.hitsTaken>hPrev){cs.hits+=BK.hitsTaken-hPrev;hPrev=BK.hitsTaken;}
-    if(st.deaths>dPrev){const K=q.killer;deathLog.push({at:[Math.floor(q.x/TS),Math.floor(q.y/TS)],ri,by:K?(typeof K==='string'?K:K.name||K.t||K.who||'?'):'?',sec:S.length-1});cs.deaths+=st.deaths-dPrev;deaths+=st.deaths-dPrev;dPrev=st.deaths;}
+    const st=BK.stats();if(st.kills>kPrev){cs.kills+=st.kills-kPrev;kPrev=st.kills;}if(BK.hitsTaken>hPrev){cs.hits+=BK.hitsTaken-hPrev;hPrev=BK.hitsTaken;let nb=null,nd=80;for(const e of BK.enemies()){if(!e||!e.alive)continue;const d=Math.abs(e.x-q.x)+Math.abs(e.y-q.y)*0.5;if(d<nd){nd=d;nb=e;}}const hk=nb?nb.t+(nb.elite?'*':''):'other',hb=hitBy[hk]=hitBy[hk]||[0,0];hb[0]++;hb[1]+=Math.max(0,h0-h1)/mh0;}   /* WHAT HIT HIM (the nearest foe at the blow: an estimate, * an elite) */
+    if(st.deaths>dPrev){const K=q.killer;deathLog.push({at:[Math.floor(q.x/TS),Math.floor(q.y/TS)],ri,by:K?(typeof K==='string'?K:K.name||K.t||K.who||'?'):'?',el:!!(K&&typeof K==='object'&&K.foe&&K.foe.elite),sec:S.length-1});cs.deaths+=st.deaths-dPrev;deaths+=st.deaths-dPrev;dPrev=st.deaths;}
     const lit1=litN(),held1=heldNow(),hl1=BKT.heroLevel?BKT.heroLevel(h):0;
     if(lit1>lit0&&resumeAt){resumeAt=false;cs.end=ri;S.push({...sec(),resumed:true,start:ri});}
     else if(lit1>lit0){cs.end=ri;arrivals.push({i:arrivals.length+1,hp:Math.round(100*Math.max(0,h0)/mh0),x:Math.round(q.x/TS),frame:frames,deathsBefore:deaths,start:frames<120});S.push({...sec(),start:ri});}
-    else if(held1<held0&&!dead0){cs.drinks+=held0-held1;cs.drinkHp+=Math.max(0,Math.min(dAmt,h1-Math.max(0,h1-dAmt<h0?h1-dAmt:h0)))/mh;}
+    else if(held1<heldTop&&!dead0){cs.drinks+=heldTop-held1;if(flaskGame)pendDrink=frames+90;else cs.drinkHp+=Math.max(0,Math.min(dAmt,h1-Math.max(0,h1-dAmt<h0?h1-dAmt:h0)))/mh;}
     else if(h1>h0&&!dead0&&!(q.dead>0)){const g=(h1-Math.max(0,h0))/mh;
-      if(hl1>hl0){cs.lvup++;levelups++;} else cs.small+=g;}
+      if(hl1>hl0){cs.lvup++;levelups++;} else if(pendDrink>=frames&&g>0.15){cs.drinkHp+=g;pendDrink=0;} else cs.small+=g;}   /* (the flask's swallow lands ~0.3 s after the lift: the heal that follows a drink is the drink's) */
     /* woke at a shrine (or put back on the bank by deep water): the walk picks up from the route node nearest him, never past where it had got; fresh hands */
     if(dead0&&!(q.dead>0)&&q.hp>0){ri=nearest(0,riBest+1)[0];riSince=ri;lastProg=frames;bot=makeBot(BK);climb=null;}
     else if(!resumeAt&&!(q.dead>0)&&Math.abs(q.x-px0)>3*TS){ri=nearest(0,riBest+1)[0];riSince=ri;bot=makeBot(BK);climb=null;}
@@ -147,8 +153,8 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     if(frames%600===0)await new Promise(r=>setTimeout(r,0));
   }
   const r2=x=>Math.round(x*100);
-  return {id:c.id,hero:h,seed:c.seed,lvl,depth:c.depth,maxHp:maxHp0,kit,gear,tonics:c.tonics,charm:c.charm,end,miniHp,deaths,levelups,frames,secs:Math.round(frames/60),
-    kills:BK.stats().kills-k00,hits:BK.hitsTaken-hit00,walked:Math.round(100*riBest/R.length),stuck:stucks[0]||null,stucks,resumes,deathLog,trace:c.trace?trace:undefined,arrivals,shrines:BK.shrines().length,
+  return {id:c.id,hero:h,seed:c.seed,lvl,depth:c.depth,maxHp:maxHp0,kit,gear,tonics:c.tonics,flasks:typeof BK.flaskMax==='function'?BK.flaskMax():null,charm:c.charm,end,miniHp,deaths,levelups,frames,secs:Math.round(frames/60),
+    kills:BK.stats().kills-k00,hits:BK.hitsTaken-hit00,walked:Math.round(100*riBest/R.length),stuck:stucks[0]||null,stucks,resumes,deathLog,hitBy:Object.fromEntries(Object.entries(hitBy).map(([k,v])=>[k,[v[0],Math.round(v[1]*100)]])),trace:c.trace?trace:undefined,arrivals,shrines:BK.shrines().length,
     coverage:Math.round(100*S.reduce((a,s,i)=>a+(!s.stuck&&(s.end!==undefined||(i===S.length-1&&/route|boss|gate/.test(end)))?((s.end??ri)-(s.start||0)):0),0)/R.length),
     sections:S.map(s=>({stuck:!!s.stuck,resumed:!!s.resumed,lost:r2(s.lost),small:r2(s.small),drinks:s.drinks,drinkHp:r2(s.drinkHp),deaths:s.deaths,hits:s.hits,kills:s.kills,secs:Math.round(s.frames/60),lvup:s.lvup})),
     eyes:perc?perc.stats():null,casts:SKH?SKH.casts():null};
@@ -167,11 +173,11 @@ export async function runWalks(cfgs, { jobs = 1, onRow = null } = {}) {
 export const HAZARD = /^(A TRAP|THE FALL|DROWNED|THE FIRE|THE SPIKES|SPIKES|THE WATER|THE CRACK|BURNED)/;
 const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null;
 export const line = r => r.err ? r.id + ' ' + r.hero + ' s' + r.seed + ': ERR ' + r.err
-  : r.id + ' ' + r.hero + ' s' + r.seed + ' L' + r.lvl + ' (' + r.maxHp + 'hp, ' + (r.kit.join('+') || 'no skills') + ', ' + r.tonics + ' tonics' + (r.charm ? ', ' + r.charm + ' charm' : '') + '): ' + r.end.toUpperCase()
+  : r.id + ' ' + r.hero + ' s' + r.seed + ' L' + r.lvl + ' (' + r.maxHp + 'hp, ' + (r.kit.join('+') || 'no skills') + ', ' + (r.flasks != null ? r.flasks + ' flasks' : r.tonics + ' tonics') + (r.charm ? ', ' + r.charm + ' charm' : '') + '): ' + r.end.toUpperCase()
     + ' ' + r.deaths + ' deaths, ' + r.secs + 's, ' + r.kills + ' kills, ' + r.hits + ' hits, walked ' + r.walked + '%, arrivals ' + (r.arrivals.map(a => a.hp + '%').join(' ') || '-')
     + ', measured ' + r.coverage + '% of the route' + (r.miniHp !== null && r.miniHp !== undefined ? ', AT THE MINI DOOR with ' + r.miniHp + '%' : '') + (r.stucks || []).map(st => '\n    STUCK (section #' + st.sec + ') at route node ' + st.ri + '/' + st.of + ' next tile ' + st.way.join(',') + ' (hero ' + st.at.join(',') + (st.near && st.near.length ? '; near ' + st.near.join(' ') : '') + (st.props && st.props.length ? '; props ' + st.props.join(' ') : '') + ')').join('')
     + '\n    sections: ' + r.sections.map((s, i) => '#' + i + (s.stuck ? ' STUCK' : '') + (s.resumed ? ' (resumed)' : '') + ' lost ' + s.lost + '% heal ' + (s.small + s.drinkHp) + '% (' + s.drinks + ' drinks) ' + s.deaths + 'd ' + s.hits + 'h ' + s.kills + 'k ' + s.secs + 's').join(' | ')
-    + (r.deathLog && r.deathLog.length ? '\n    deaths: ' + r.deathLog.map(d => d.by + '@' + d.at.join(',')).join(' ') : '') + (r.pageErrors ? '\n    PAGE ERRORS ' + JSON.stringify(r.pageErrors) : '');
+    + (r.hitBy && Object.keys(r.hitBy).length ? '\n    hit by (nearest foe, hits/%hp): ' + Object.entries(r.hitBy).sort((a, b) => b[1][1] - a[1][1]).map(([k, v]) => k + ' ' + v[0] + '/' + v[1] + '%').join(' ') : '') + (r.deathLog && r.deathLog.length ? '\n    deaths: ' + r.deathLog.map(d => d.by + (d.el ? '(elite)' : '') + '@' + d.at.join(',')).join(' ') : '') + (r.pageErrors ? '\n    PAGE ERRORS ' + JSON.stringify(r.pageErrors) : '');
 /* one row a level x hero: means over its seeds, read against the targets */
 export function summarize(rows) {
   const by = {}; for (const r of rows) { if (r.err) continue; (by[r.id + '|' + r.hero] = by[r.id + '|' + r.hero] || []).push(r); }
@@ -180,10 +186,10 @@ export function summarize(rows) {
     if (a !== null && a >= TARGET.arriveHp) miss.push('arrive ' + Math.round(a) + '% >= ' + TARGET.arriveHp);
     return { id: R[0].id, hero: R[0].hero, lvl: R[0].lvl, runs: R.length, deaths: d, arriveMean: a, arriveMin: arr.length ? Math.min(...arr) : null, lostPerSection: lost,
       drinks: mean(R.map(r => r.sections.reduce((s, x) => s + x.drinks, 0))), kills: mean(R.map(r => r.kills)), secs: mean(R.map(r => r.secs)), walked: mean(R.map(r => r.walked)),
-      coverage: mean(R.map(r => r.coverage)), stucks: R.flatMap(r => (r.stucks || []).map(st => st.way.join(','))), hazard: mean(R.map(r => (r.deathLog || []).filter(d => HAZARD.test(d.by)).length)), ends: R.map(r => r.end).join('/'), miss }; });
+      coverage: mean(R.map(r => r.coverage)), stucks: R.flatMap(r => (r.stucks || []).map(st => st.way.join(','))), hazard: mean(R.map(r => (r.deathLog || []).filter(d => HAZARD.test(d.by)).length)), elite: mean(R.map(r => (r.deathLog || []).filter(d => d.el).length)), ends: R.map(r => r.end).join('/'), miss }; });
 }
-export const table = S => ['level'.padEnd(11) + 'hero'.padEnd(7) + 'L'.padStart(3) + ' runs  deaths(hazard)  arrive%(mean/min)  lost%/sec  drinks  kills  secs  walked  meas  end            vs target',
-  ...S.map(s => s.id.padEnd(11) + s.hero.padEnd(7) + String(s.lvl).padStart(3) + String(s.runs).padStart(5) + (s.deaths.toFixed(1) + '(' + s.hazard.toFixed(1) + ')').padStart(16) + ((s.arriveMean === null ? '-' : Math.round(s.arriveMean)) + '/' + (s.arriveMin ?? '-')).padStart(19)
+export const table = S => ['level'.padEnd(11) + 'hero'.padEnd(7) + 'L'.padStart(3) + ' runs deaths(haz/elite) arrive%(mean/min)  lost%/sec  drinks  kills  secs  walked  meas  end            vs target',
+  ...S.map(s => s.id.padEnd(11) + s.hero.padEnd(7) + String(s.lvl).padStart(3) + String(s.runs).padStart(5) + (s.deaths.toFixed(1) + '(' + s.hazard.toFixed(1) + '/' + s.elite.toFixed(1) + ')').padStart(16) + ((s.arriveMean === null ? '-' : Math.round(s.arriveMean)) + '/' + (s.arriveMin ?? '-')).padStart(19)
     + (s.lostPerSection === null ? '-' : Math.round(s.lostPerSection)).toString().padStart(11) + s.drinks.toFixed(1).padStart(8) + Math.round(s.kills).toString().padStart(7) + Math.round(s.secs).toString().padStart(6) + (Math.round(s.walked) + '%').padStart(8) + (Math.round(s.coverage) + '%').padStart(6) + '  ' + s.ends.padEnd(15)
     + (s.miss.length ? 'MISS: ' + s.miss.join(', ') : 'on target') + (s.stucks.length ? '  STUCK ' + [...new Set(s.stucks)].join(' ') : ''))].join('\n');
 
@@ -192,7 +198,7 @@ if (process.argv[1] && /level-walk\.mjs$/.test(process.argv[1])) {
   const ids = args.filter(a => !a.startsWith('-')).flatMap(a => a.split(',')).filter(Boolean);
   if (!ids.length) { console.log('usage: PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--jobs=1] [--json=out.json]'); process.exit(2); }
   const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 2), jobs = Math.max(1, +opt('jobs', 1)), OUT = opt('json', '');
-  const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null };
+  const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null, from: opt('from', '') ? +opt('from') : null };
   if (opt('tonics', null) !== null) o.tonics = +opt('tonics'); if (opt('charm', null) !== null) o.charm = opt('charm') === 'none' ? null : opt('charm');
   const cfgs = []; for (const id of ids) for (const h of heroes) for (let s = 1; s <= seeds; s++) cfgs.push(walkCfg(id, h, s, o));
   const t0 = Date.now(), rows = await runWalks(cfgs, { jobs, onRow: (r, all) => { console.log(line(r)); if (r.trace) console.log('    trace: ' + r.trace.join(' ')); if (OUT) writeFileSync(OUT, JSON.stringify(all, null, 1)); } });

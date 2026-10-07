@@ -24,6 +24,7 @@ import { LEVELS, T, TS } from './level.js';
 import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap, measureLevel } from './threat.js';
 import { floodReach } from './reachcore.js';
 import { checkDrawables } from './floatlab.js';
+import { botShouldDrink } from './survival.js';   /* THE FLASK (claude/survival): the walker drinks like a person - under a third of the bar, a flask held */
 
 const SEV = { bug: 3, odd: 2, note: 1 };
 const solidT = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
@@ -159,6 +160,7 @@ export function makeBot(BK) {
       return false; };
     let fx = Math.floor(P.x / TS), fy = Math.floor(P.y / TS);
     doorCd = Math.max(0, doorCd - 1);
+    if (tick.drink !== false && BK.drinkFlask && botShouldDrink(P)) BK.drinkFlask();   /* (tick.drink = false: a walk that must not drink) */
 
     // ---- THE DOORS. Where am I, and what is this room for? ----
     const props = BK.props();

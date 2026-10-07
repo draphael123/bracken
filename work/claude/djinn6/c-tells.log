@@ -1,0 +1,10 @@
+== the mark audit ==
+367 tells checked across 265 creature functions
+
+every mark agrees with the blow behind it.
+
+2 windup(s) entered with no mark at all:
+  updateScalder pourTell             line 20578  wants !! (red)
+  updateScalder ladleTell            line 20581  wants ! (yellow)
+
+the mark over every windup on the screen comes from this table (src/marks.js, 731 rows).

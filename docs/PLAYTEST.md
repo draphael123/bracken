@@ -70,6 +70,18 @@ Starts any level from its own entrance (its START), the way `?boss=` starts a fi
 that matches nothing leaves the title screen alone and prints the known ids to the console. **It never writes a save**: it sets the same `bossJumpOn`
 guard first, so clearing the level, dying or going back to the map persists nothing; reload the page to play for real.
 
+### Campaign mode: `&campaign=1` (claude/levelpilot)
+
+    http://localhost:<port>/?level=<id>&campaign=1[&hero=<id>]      (and ?boss=<id>&campaign=1[&hero=<id>])
+
+Plays the level as a player ARRIVING there would, not a fresh save: the hero at the level's campaign level (tools/boss-level.mjs `campaignLevel`: the higher
+of its depth and the level the road before it banks, never under L3), the typical build (perks, and TYPICAL_SKILLS in the slots his level has), the smith's
+gear of every level beaten before it, the tonics a player carries (1 / 3 / 5 by depth), a heart charm from depth 4, and the flasks the survival rules give
+(`BK.reset` fills them to `flaskMax`). It is the same kit `tools/level-walk.mjs` gives its walker: both call `src/campaign-kit.js`. A small line at the
+bottom left reads `CAMPAIGN L<n> - <HERO>`. Still never writes a save (the `bossJumpOn` guard is set first; the kit lives in memory). The page takes a
+few frames longer to come up (it reads `tools/fixtures/campaign-xp.json`; if that is missing the level falls back to its depth). Without `&campaign=1`
+nothing changes.
+
 `BK.levelJump(id, hero)` is the same function for harnesses. `node tools/level-jump.mjs` proves it (lands in play at the entrance with the hero asked
 for, at full health, no god mode; the save is byte-identical after the level is run to its gate; a bad id starts nothing). It was run red first with
 the save guard taken out (THE SAVE CHANGED), then green.
