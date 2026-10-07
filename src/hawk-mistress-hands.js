@@ -127,7 +127,6 @@ export function makeHawkMistressHands(ctx) {
       if (k.mode === 'wheel' || k.mode === 'blind') ctx.text(k.mode === 'wheel' ? 'WHEELING' : 'BLIND', hx, hy - 14, '#ffd36b', 'center', 5); }
     if (S.mark && (e.mode === 'spotTell' || e.mode === 'markLashTell' || e.mode === 'diveTell' || k.mode === 'dive')) { const x = R(S.mark.x - cx), y = R(G.floorY - 2 - cy), r = e.mode === 'diveTell' || k.mode === 'dive' ? HM.diveR : HM.markR;
       g.fillStyle = 'rgba(30,10,10,0.55)'; g.fillRect(x - r, y, r * 2, 3); g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, y - 6); g.lineTo(x + 6, y + 2); g.moveTo(x + 6, y - 6); g.lineTo(x - 6, y + 2); g.stroke(); }
-    if (e.mode === 'flashTell') { g.strokeStyle = blink; g.beginPath(); g.arc(R(e.x - cx), R(e.y - 14 - cy), HM.flashR, 0, Math.PI * 2); g.stroke(); }
     if (S.flashFx > 0) { g.globalAlpha = S.flashFx * 1.5; g.fillStyle = '#ffffff'; g.beginPath(); g.arc(R(e.x - cx), R(e.y - 14 - cy), HM.flashR, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
     /* THE READ (B10) */
     const x = R(e.x - cx), y = R(e.y - HM.h / 2 - cy);

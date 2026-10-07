@@ -23,7 +23,7 @@ import { STUCK_HANDS } from './stuck-spots.js';
    haulCd: s between hauls; refill: s a stack takes to put one back */
 export const KS = { hum: 4, muster: 3.2, callV: 82, sight: 150, sightY: 40, runV: 96, strikeT: 1.0, patrolV: 30, kegFuse: 0.9, kickFuse: 1.1, chainFuse: 0.45,
   kegR: 64, breakR: 62, chainR: 150, kegDmg: 60, kegHero: 28, flashR: 84, stunR: 52, stunT: 1.6, smokeR: 44, smokeT: 6, potDmg: 10, lashReach: 62, pull: 170,
-  brakeR: 3, dropT: 1.1, haulCd: 0.32, refill: 8, gongR: 20, takeR: 18, hitMul: 1.2, stoneDmg: 13, holeEvery: 0.9, holeTell: 0.45, holeDmg: 14 };   /* THE MURDER HOLES: while the gatehouse is manned, a stone every holeEvery s on a hero at the gate or in its passage (told: dust and a mark, holeTell s) */
+  brakeR: 3, dropT: 1.1, haulCd: 0.32, refill: 8, gongR: 20, takeR: 18, stoneDmg: 16, holeEvery: 0.9, holeTell: 0.45, holeDmg: 14 };   /* THE MURDER HOLES: while the gatehouse is manned, a stone every holeEvery s on a hero at the gate or in its passage (told: dust and a mark, holeTell s) */
 CT.addKind('keg', { aims: { low: { vx: 70, vy: -120 }, mid: { vx: 125, vy: -190 }, high: { vx: 95, vy: -300 } }, g: 700, r: 4, ring: 12, dots: 14 });
 CT.addKind('flask', { aims: { low: { vx: 110, vy: -130 }, mid: { vx: 170, vy: -210 }, high: { vx: 120, vy: -330 } }, g: 640, r: 3, ring: 10, dots: 14 });
 const FORT = new Set(['ksarblade', 'gonglookout', 'whipapprentice', 'shieldsentry', 'smokethrower', 'wallslinger']);
@@ -50,12 +50,12 @@ export function makeKsarHands(ctx) {
     }
     K.stacks = (K.L.stacks || []).map(s => ({ ...s, left: s.n, t: 0 }));
     K.items = []; K.smokes = []; K.fx = []; K.drops = []; K.holeT = 0; K.glint = null; K.stalls = {}; K.stallKey = null; K.arc = null;
-    for (const g of K.gongs) { g.hum = 0; g.ring = 0; }
+    for (const g of K.gongs) { g.hum = 0; g.ring = 0; if (g.arena) g.cut = false; }   /* (fix pass) the courtyard's gongs hang again for a new attempt at her */
     for (const k of K.setKegs) if (k.st === 'lit') k.st = 'set';
     if (K.gate && !K.gate.pinned) K.gate.notch = 0;
     for (const pp of ctx.players) { if (pp.carry && (pp.carry.t === 'kskeg' || pp.carry.t === 'ksflask')) pp.carry = null; pp.ksPullK = 0; }
     bindFoes();
-    if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { ksar: () => K, ksarHands: () => H });
+    if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { ksar: () => K, ksarHands: () => H, walkHint: () => H.walkHint(ctx.hero()) });
   };
   /* every placed fort bandit learns his role from his ent (spawnEnt does not copy it: its xpKey names the ent) */
   function bindFoes() {
@@ -95,10 +95,13 @@ export function makeKsarHands(ctx) {
   /* CUT a gong's rope: the disc falls, silent for good */
   function cut(g) { if (g.cut) return;
     if (g.great) { if (K.clock - (g.chainSaid || -9) > 3) { g.chainSaid = K.clock; number(gx(g), gy(g) - 56, 'THE GREAT GONG HANGS ON A CHAIN', '#9aa39a'); ctx.sfx.clank && ctx.sfx.clank(); } return; }   /* (no soft lock: its call is the only way the gatehouse empties) */
-    g.cut = true; K.n.cuts++; ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(gx(g), gy(g) - 30, 10, ['#d9b36a', '#8a6a3a', '#ffd36b'], 60, 0.6);
+    g.cut = true; K.n.cuts++; if (g.bridge) lowerBridge(g); ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(gx(g), gy(g) - 30, 10, ['#d9b36a', '#8a6a3a', '#ffd36b'], 60, 0.6);
     number(gx(g), gy(g) - 56, 'THE ROPE IS CUT: THE GONG IS SILENT', '#8fd160');
     for (const e of foes()) if (e.ks.gong === g.id && (e.ks.st === 'run' || e.ks.st === 'strike')) { e.ks.st = 'fight'; number(e.x, e.y - 30, 'THE ROPE IS CUT!', '#ff9a5c'); } }
   H.cutGong = id => cut(gongOf(id));
+  /* THE ROOF BRIDGE (fix pass, review MUST 3: CUT REQUIRED): the bridge gong's rope holds the bridge up on the far side of the widest drop; cut, the bridge comes down for good */
+  function lowerBridge(g) { const [x0, x1, row] = g.bridge, ts = TS(); for (let x = x0; x <= x1; x++) { ctx.cellSet(x, row, T().ONEWAY); ctx.burst(x * ts + 8, row * ts, 3, ['#8a6a3a', '#c9a060'], 50, 0.5); } ctx.sfx.thud && ctx.sfx.thud(); ctx.shake(3); K.n.bridges = (K.n.bridges || 0) + 1;
+    number((x0 + x1) / 2 * ts, row * ts - 30, 'THE ROPE IS CUT: THE BRIDGE COMES DOWN', '#8fd160'); }
   /* THE ALARM: a hawk's shriek (or a blow on a sleeping lookout): every lookout in reach runs for his gong, every sentry strikes his */
   function alarm(x, y, r) { const ts = TS();
     for (const e of foes()) { if (Math.abs(e.x - x) > r * ts || Math.abs(e.y - y) > 14 * ts) continue;
@@ -121,7 +124,9 @@ export function makeKsarHands(ctx) {
 
   /* ---------- THE FORT'S MEN: main.js asks before a foe's own machine runs. true = the hands move him this frame (asleep, called, running, stunned) ---------- */
   const fall = (e, dt) => { e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); ctx.moveFoeY(e, e.vy * dt); };
-  const walk = (e, tx, v, dt) => { const d = tx - e.x; if (Math.abs(d) < 3) return true; const s = Math.sign(d); e.face = s; if (e.st) e.st.face = s;
+  /* (fix pass) a called man stops at a lip: a breach's rubble, a gap between the roofs, the raised bridge - he never walks off one (true: as far as he goes) */
+  const lipAhead = (e, s) => { const ts = TS(), tx = Math.floor((e.x + s * 8) / ts), fy = Math.floor((e.y + 1) / ts); for (let y = fy; y <= fy + 1; y++) if (ctx.standable(tx, y) && ctx.cellGet(tx, y) !== T().SPIKE) return false; return true; };
+  const walk = (e, tx, v, dt) => { const d = tx - e.x; if (Math.abs(d) < 3) return true; const s = Math.sign(d); e.face = s; if (e.st) e.st.face = s; if (lipAhead(e, s)) { e.vx = 0; return true; }
     const x0 = e.x; ctx.moveFoe(e, s * Math.min(Math.abs(d), v * dt)); if (e.st) { e.st.x = e.x; e.st.frame = Math.floor(K.clock * 8) % 2; e.st.mode = 'walk'; } e.mode = 'walk'; e.anim = (e.anim || 0) + dt; e.vx = s * v;
     return Math.abs(e.x - x0) < v * dt * 0.2; };   /* (true: there, or blocked - a wall, a tower's foot) */
   H.hold = (e, dt) => {
@@ -167,7 +172,7 @@ export function makeKsarHands(ctx) {
     for (const v of evs) {
       if (v.t === 'spot') { K.n.shrieks++; K.fx.push({ k: 'shriek', x: v.x, y: v.y, t: 0.8 }); ctx.sfx.hawk ? ctx.sfx.hawk() : ctx.sfx.hiss && ctx.sfx.hiss(); alarm(v.x, ctx.hero().y, HAWK.earshot);
         if (once('shriek') || K.clock - (K.shriekSaid || -9) > 10) { K.shriekSaid = K.clock; number(ctx.hero().x, ctx.hero().y - 44, 'THE HAWK SHRIEKS: THE LOOKOUTS RUN', '#ff9a5c'); } }
-      if (v.t === 'hit' && FORT.has(e.cnSkin) && !v.ksMul) { v.ksMul = 1; if (v.stone) v.dmg = KS.stoneDmg; else v.dmg = Math.round(v.dmg * KS.hitMul); }   /* THE FORT HITS HARD: its men's blows x hitMul, a slinger's stone off a parapet as a gorge stone */
+      if (v.t === 'hit' && FORT.has(e.cnSkin) && !v.ksMul && v.stone) { v.ksMul = 1; v.dmg = KS.stoneDmg; }   /* THE FORT HITS HARD: a slinger's stone off a parapet as a gorge stone (its men's blows: L.foeHit in main.js damagePlayer0) */
       if (v.t === 'hit' && v.what === 'slash' && e.cnSkin === 'whipapprentice') { const f = e.face || 1; v.box = [f > 0 ? e.x + 2 : e.x - KS.lashReach, f > 0 ? e.x + KS.lashReach : e.x - 2, e.y - 16, e.y - 2]; v.lash = true; } } };
   /* A BLOW THAT LANDED: the lash PULLS you a step toward him (out of cover) */
   H.onHit = (e, v, landed, P) => { if (!K || !landed || !v.lash || P.dead) return; const d = Math.sign(e.x - P.x) || 1; P.vx = d * KS.pull; P.ksPullK = 0.25; K.n.pulls++;
@@ -243,6 +248,9 @@ export function makeKsarHands(ctx) {
     if (P.carry) return false;
     const lying = K.items.find(q => q.state === 'lie' && Math.abs(q.x - P.x) < KS.takeR && Math.abs(q.y - P.y) < 16);
     if (lying) { lying.state = 'held'; lying.holder = P; lying.hurtWas = P.hurt > 0; P.carry = lying; ctx.sfx.clank && ctx.sfx.clank(); return true; }
+    /* (fix pass, review MUST 5) A FALLEN COURTYARD GONG: E hangs it back on its frame - a cut there never kills her ring opening for good */
+    const fg = K.gongs.find(q => q.cut && q.arena && Math.abs(gx(q) - P.x) <= KS.gongR && Math.abs(gy(q) - P.y) <= 18);
+    if (fg) { fg.cut = false; fg.hum = 0.6; K.n.rehung = (K.n.rehung || 0) + 1; ctx.sfx.clank && ctx.sfx.clank(); number(gx(fg), gy(fg) - 56, 'YOU HANG THE GONG BACK: IT CAN RING', '#ffd36b'); return true; }
     const g = K.gongs.find(q => !q.cut && Math.abs(gx(q) - P.x) <= KS.gongR && Math.abs(gy(q) - P.y) <= 18);
     if (g) { if (ring(g, 'hero') === 'rung') ctx.burst(gx(g), gy(g) - 26, 8, ['#ffd36b', '#e0b060'], 50, 0.5); return true; }
     const st = K.stacks.find(s => Math.abs(s.x * ts + 8 - P.x) <= KS.takeR && Math.abs((s.y + 1) * ts - P.y) <= 18);
@@ -308,6 +316,27 @@ export function makeKsarHands(ctx) {
       for (const k of K.setKegs) if (k.st === 'set' && near(k.x * ts, (k.y + 1) * ts, 120) && once('setKegs')) { number(P0.x, P0.y - 34, 'A KEG CHAIN: ONE BLAST SETS OFF THE NEXT', '#ffd36b'); break; } }
     stall(P0, dt);
   };
+
+  /* ---------- A PLAYER'S HANDS AT THE RULE'S LOCKS (tools/level-walk.mjs asks BK.walkHint(): where a player goes next and what he presses there) ----------
+     The walker's bot fights and walks the route; it has no idea a gong is rung or a keg thrown. A player does: at the gate he rings THE GREAT GONG and hauls the
+     winch, at the store he kicks the first keg and stands clear, at THE ROOF BRIDGE he cuts its gong's rope, at THE HAWK TOWER he takes a keg and throws it at the
+     bricked door. { x, y, key: 'talk'|'atk'|null, face } in world px, or null (nothing to work here) */
+  H.walkHint = P => {
+    if (!K || !P || P.dead) return null; const ts = TS(), c = P.x / ts, G = K.gate, here = (x, row, key, face) => ({ x: x * ts + 8, y: (row + 1) * ts, key, face: face || 0 });
+    if (G && !G.pinned && c > 226 && c < 258) { const gg = gongOf('great');
+      if (braked()) return gg && gg.hum <= 0 && !squad().some(e => ['called', 'exit', 'muster'].includes(e.ks.st)) ? here(gg.x, gg.y, 'talk', 1) : here(G.winch[0], G.winch[1], null, 1);
+      return here(G.winch[0], G.winch[1], 'talk', 1); }
+    const arch = K.barricades.find(b => b.id === 'storeArch');
+    if (arch && !arch.broken && c > 386 && c < 446) { const k0 = K.setKegs.find(k => k.chain && k.st === 'set'), lit = K.setKegs.some(k => k.chain && k.st === 'lit');
+      return lit || !k0 ? here(390, 24, null, 1) : here(k0.x - 1, k0.y, 'atk', 1); }
+    const bg = K.gongs.find(g => g.bridge && !g.cut);
+    if (bg && c > 490 && c < 524 && Math.abs(P.y - gy(bg)) < 3 * ts) return here(bg.x - 1, bg.y, 'atk', 1);
+    const ta = K.barricades.find(b => b.id === 'towerArch');
+    if (ta && !ta.broken && c > 531 && c < 562) { const q = held(P), st = K.stacks.find(s => s.id === 'towerKegs');
+      if (K.items.some(i => i.thrKind === 'keg' && i.state === 'fuse')) return here(ta.x0 - 9, 20, null, 1);
+      if (q && q.thrKind === 'keg') return here(ta.x0 - 6, 20, 'atk', 1);
+      if (st && st.left > 0) return here(st.x, st.y, 'talk', 1); }
+    return null; };
 
   /* ---------- THE GLINT AND THE NUDGE (the route list: src/stuck-spots.js STUCK_HANDS.ksar) ---------- */
   const handsState = name => { const [kind, id] = name.split('.');

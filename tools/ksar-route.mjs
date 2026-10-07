@@ -61,16 +61,18 @@ try {
       const cutGong = id => { const g = gong(id); if (!g || g.cut) return true; walk(g.x - 1, { tol: 3 }); for (let i = 0; i < 4 && !gong(id).cut; i++) press('atk', 1); DBG.push('cut ' + id + ': ' + gong(id).cut); return gong(id).cut; };
       const LEGS = [
         ['the caravan road: the first gong, up the outer wall', [3, 37], () => { walk(20); cutGong('g1'); walk(60); hop(61, 31, 1); hop(65, 29, 1); hop(69, 27, 1); walk(74); return col() >= 72 && feet() === 27; }, [74, 27]],
-        ['the outer walls: the lookout\\'s gong, the sentry\\'s', [74, 27], () => { walk(91); hop(91, 25, 1); hop(94, 23, 1); hop(96, 21, 1); walk(104); walk(120); cutGong('g2'); walk(151); hop(151, 25, 1); hop(154, 23, 1); hop(157, 20, 1); walk(164); walk(188); cutGong('g3'); walk(230); hop(231, 24, 1); return col() >= 231 && feet() === 24; }, [233, 24]],
+        ['the outer walls: the lookout\\'s gong, the sentry\\'s', [74, 27], () => { leap(83, 87); walk(91); hop(91, 25, 1); hop(94, 23, 1); hop(96, 21, 1); walk(104); walk(121); leap(123, 127); cutGong('g2'); walk(151); hop(151, 25, 1); hop(154, 23, 1); hop(157, 20, 1); walk(164); walk(186); cutGong('g3'); leap(188, 192); walk(211); leap(213, 217); walk(230); hop(231, 24, 1); return col() >= 231 && feet() === 24; }, [233, 24]],
         ['the gate winch: ring the great gong, haul the gate', [168, 27], () => { walk(235, { tol: 3 }); press('talk', 1); DBG.push('great gong rung: ' + (gong('great').hum > 0));
             walk(251, { noFight: true }); walk(253, { tol: 3 }); settle(); walk(253, { tol: 2 }); settle(); DBG.push('at the winch ' + col() + ',' + feet()); for (let i = 0; i < 12 && !K().gate.pinned; i++) { press('talk', 1); wait(14); } DBG.push('gate ' + JSON.stringify({ n: K().gate.notch, p: K().gate.pinned }));
             if (!K().gate.pinned) return false; walk(276); return col() >= 274; }, [276, 33]],
-        ['the souq yard: up the stair to the terrace', [276, 33], () => { walk(348); hop(349, 30, 1); hop(352, 27, 1); hop(355, 24, 1); cutGong('terrace'); walk(392); return col() >= 390 && feet() === 24; }, [392, 24]],
+        ['the souq yard: up the stair to the terrace', [276, 33], () => { walk(343); hop(345, 31, 1); hop(349, 29, 1); hop(352, 27, 1); hop(354, 25, 1); hop(355, 24, 1); cutGong('terrace'); walk(392); return col() >= 390 && feet() === 24; }, [392, 24]],
         ['the powder store: kick the first keg, the chain blows the arch', [392, 24], () => { walk(398, { tol: 3 }); for (let i = 0; i < 3 && K().setKegs[0].st === 'set'; i++) press('atk', 1);
             walk(390, { noFight: true }); waitFor(() => K().barricades.find(b => b.id === 'storeArch').broken, 900); DBG.push('chain: ' + K().setKegs.map(q => q.st).join(','));
             if (!K().barricades.find(b => b.id === 'storeArch').broken) return false; walk(424); settle(); if (feet() > 24) { if (feet() > 27) { hop(420, 28, 1); } hop(424, 26, 1); hop(425, 24, 1); } walk(455); DBG.push('past the arch ' + col() + ',' + feet()); return col() >= 452; }, [455, 24]],
-        ['the hawk tower roofs: three roofs to the courtyard door', [455, 24], () => { hop(455, 21, 1); hop(458, 18, 1); walk(479); cutGong('roofA'); walk(498); walk(518); cutGong('roofB'); walk(538); hop(539, 18, 1);
-            walk(562); cutGong('roofC'); walk(575); walk(581); settle(); DBG.push('the door ' + col() + ',' + feet()); return col() >= 579 && feet() === 33; }, [581, 33]],
+        ['the hawk tower roofs: the gaps, the bridge gong, the tower door', [455, 24], () => { hop(455, 21, 1); hop(458, 18, 1); leap(466, 470); cutGong('roofA'); leap(478, 482); walk(489); leap(490, 494);
+            cutGong('bridge'); DBG.push('bridge ' + K().n.bridges); walk(533); cutGong('roofC'); walk(557, { tol: 3 }); settle(); press('talk', 1); DBG.push('keg in hand ' + !!(P().carry && P().carry.thrKind)); walk(554, { tol: 3, noFight: true }); press('atk', 1);
+            waitFor(() => K().barricades.find(b => b.id === 'towerArch').broken, 240, { noFight: true }); DBG.push('tower door ' + K().barricades.find(b => b.id === 'towerArch').broken); if (!K().barricades.find(b => b.id === 'towerArch').broken) return false;
+            walk(574); walk(581); settle(); DBG.push('the door ' + col() + ',' + feet()); return col() >= 579 && feet() === 33; }, [581, 33]],
       ];
       let lifts = [], retries = 0;
       for (const [name, foot, plan, end] of LEGS) {

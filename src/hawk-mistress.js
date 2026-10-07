@@ -5,7 +5,7 @@
 // WHAT SHE IS (design standard B11): A HUMAN DUELIST, NOT A PUZZLE. She is ALWAYS HITTABLE and GUARDS BY ANGLE: her falconer's GAUNTLET turns a blow from
 //   the front by a hero standing at her height while she is ON GUARD (walking, recovering) - CLANK, "HER GAUNTLET" (src/boss-read.js's read); from BEHIND
 //   her, or from ABOVE (a jump), it lands whole; in her tells and her strikes she is committed and every blow lands. She is on src/boss-greed.js
-//   FULL_DAMAGE (no global chip; greed is still counted - the mash bot's reprisal). Her kit: THE WHIP, A CURVED KNIFE, FLASH POWDER, and THE HAWK.
+//   FULL_DAMAGE (no global chip; greed is still counted - the mash bot's reprisal). Her kit: THE WHIP, A CURVED KNIFE, and THE HAWK.
 // THE HAWK (her kit, not a foe: never in the enemy list, a blade passes through it - "IT RIDES THE AIR"). It circles over her: her eyes.
 // HER OPENINGS ARE THE RULE'S (B1): THE FORT ANSWERS ITS GONGS -
 //   RING A GONG (E: the courtyard's gongs are the level's, src/ksar-hands.js) and the noise sends the hawk WHEELING off; or BLIND IT with a FLASH FLASK
@@ -16,27 +16,27 @@
 // PHASE ONE - THE COURTYARD DUEL (to HM.p2): WHIP LASH (!! a long low lash that wraps a shield: jump it), KNIFE FEINT (a feint step, nothing - then the
 //   real cut, !: a shield turns it), THE HAWK SPOTS (! it drops over you and shrieks: your spot is MARKED - her next lash cracks there, !!: step off it).
 // PHASE TWO - HER GUARD ANSWERS THE GONGS (HM.p2 to HM.p3). NEW MOVE: THE CALL (! two notes): a guard runs the wall walk for the nearest gong; rung, a door
-//   opens and her guard comes down (HM.guardCap alive). CUT THE ROPES to fight her alone - a cut gong cannot call her guard, but it cannot send the hawk
-//   off either: then the FLASKS are the way in. The arena changes: the guard doors and the runners on the wall walk.
-// PHASE THREE - THE POWDER STORE BURNS (HM.p3 to 0). NEW MOVE: THE HAWK DIVES (!! its shadow marks your spot, it stoops: step off it - no shield turns
-//   it). The arena changes: the store's fire burns along the yard's two ends and the ROOF LEDGES CRUMBLE end by end (told: "THE ROOF GOES").
-//   DESPERATION (once, under HM.desp): FLASH POWDER (!! a white burst round her: be out of it).
+//   opens and her guard comes down (HM.guardCap alive). CUT ITS ROPE before he gets there - a cut gong cannot call her guard, and it cannot send the hawk off
+//   either - and HANG IT BACK (E at the fallen disc) when you want it rung (fix pass, review MUST 5: a cut never kills the ring opening for good; the flasks
+//   are the other way in, and their racks refill). Every courtyard gong hangs again for a new attempt. The arena changes: the guard doors and the runners.
+// PHASE THREE - THE POWDER STORE BURNS (HM.p3 to 0). ONE NEW MOVE: THE HAWK DIVES (!! its shadow marks your spot, it stoops: step off it - no shield turns
+//   it). The arena changes: the store's fire burns along the yard's two ends and the ROOF LEDGES CRUMBLE end by end (told: "THE ROOF GOES"). (Fix pass, B5:
+//   the old flash-powder desperation is cut - one new move a phase.)
 // PURE: no DOM, no main.js. The world is a context `c` (src/hawk-mistress-hands.js binds it). hmPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const HM = {
   hp: 1400, w: 16, h: 30, markH: 48,
-  openMul: 1.6, openCap: 0.06, openT: 3.6, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80,
-  p2: 0.6, p3: 0.25, desp: 0.12,
+  openMul: 2.0, openCap: 0.12, openT: 3.6, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80,
+  p2: 0.6, p3: 0.25,
   walk: 70, keep: 50, turn: 0.35, gap: [0.5, 0.42, 0.36],
   lashTell: 0.55, lashT: 0.16, lashReach: 86, lashH: 16, lashRange: 110,
   feintTell: 0.42, feintHold: 0.24, cutTell: 0.34, cutT: 0.18, cutReach: 34, cutStep: 210,   /* (the knife LUNGES: ~38 px in on the cut) */
   spotTell: 0.9, markLashTell: 0.65, markR: 22,
   callTell: 0.8, runT: 2.4, guardCap: 2,
   diveTell: 0.95, diveFly: 0.32, diveR: 20, diveLow: 0.7,
-  flashTell: 0.85, flashR: 62,
   hawkAlt: 74, hawkR: 30,
   fireW: 3, fireTick: 0.5, roofEvery: 4.0,
-  dmg: { lash: 31, cut: 34, markLash: 36, dive: 36, flash: 26, fire: 9 },
+  dmg: { lash: 31, cut: 34, markLash: 36, dive: 36, fire: 9 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
@@ -47,9 +47,9 @@ export const CYCLES = {
 /* THE MOVES: the mode while it is told, its mark, the answer (src/marks.js keeps the same rows) */
 export const MOVES = {
   lashTell: { mark: '!!', answer: 'jump' }, feintTell: { mark: '', answer: '' }, cutTell: { mark: '!', answer: 'block' }, spotTell: { mark: '!', answer: '' },
-  markLashTell: { mark: '!!', answer: 'dodge' }, callTell: { mark: '!', answer: '' }, diveTell: { mark: '!!', answer: 'dodge' }, flashTell: { mark: '!!', answer: 'dodge' },
+  markLashTell: { mark: '!!', answer: 'dodge' }, callTell: { mark: '!', answer: '' }, diveTell: { mark: '!!', answer: 'dodge' },
 };
-export const MOVE_NAME = { lash: 'HER WHIP', cut: 'HER KNIFE', markLash: 'HER WHIP', dive: 'HER HAWK', flash: 'HER FLASH POWDER', fire: 'THE FIRE' };
+export const MOVE_NAME = { lash: 'HER WHIP', cut: 'HER KNIFE', markLash: 'HER WHIP', dive: 'HER HAWK', fire: 'THE FIRE' };
 
 /* ---------- THE COURTYARD ---------- */
 /* local columns (0..39), the floor's surface row R (the hero stands on R-1). Two GONGS by the walls (the level's gongs: src/ksar-hands.js rings and cuts them),
@@ -82,13 +82,13 @@ export function geom(A, TS = 16) {
 
 /* ---------- ONE FIGHT ---------- */
 export function newFight(G) {
-  return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, ward: 0, openTaken: 0, behindT: 0, pend: 0, pendWhy: '', mark: null, runner: null, despDone: false,
+  return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, ward: 0, openTaken: 0, behindT: 0, pend: 0, pendWhy: '', mark: null, runner: null, 
     hawk: { mode: 'circle', a: 0, x: 0, y: 0, t: 0, fx: 0, fy: 0, tx: 0, ty: 0 }, roofT: HM.roofEvery, fireT: 0, told: {},
     n: { cycles: 0, opens: 0, wheels: 0, blinds: 0, wards: 0, warded: 0, guarded: 0, rings: 0, ringsHome: 0, calls: 0, callsCut: 0, guards: 0, spots: 0, dives: 0, lashes: 0, cuts: 0, flashes: 0, crumbles: 0, moves: {} } };
 }
 export const hPhase = e => (e.hp <= e.maxHp * HM.p3 ? 3 : e.hp <= e.maxHp * HM.p2 ? 2 : 1);
 export const hmOpen = e => !!e && e.mode === 'whistle' && (e.open || 0) > 0;
-const STRIKE = new Set(['lash', 'cut', 'markLash', 'flash']);
+const STRIKE = new Set(['lash', 'cut', 'markLash']);
 const GUARD_MODES = new Set(['walk', 'recover', 'feintHold']);
 /* HER GAUNTLET: a blow from in front of her by a hero at her height (not from above, not in the air over her), while she is on guard */
 export const guarded = (e, hx, hy, airborne) => !!e && !hmOpen(e) && !(e.broken > 0) && GUARD_MODES.has(e.mode) && (e.face || 1) * (hx - e.x) > -6 && !(airborne && hy < e.y - 10) && Math.abs(hy - e.y) < 26;
@@ -141,7 +141,7 @@ export function stepHawkMistress(e, S, dt, h, c) {
   const want = hPhase(e);
   if (want > S.ph && !hmOpen(e) && S.pend <= 0 && (e.mode === 'walk' || e.mode === 'recover')) {
     S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want; c.music(want);
-    if (want === 2) { c.number(e.x, e.y - 70, 'HER GUARD ANSWERS THE GONGS: CUT THE ROPES', '#ff9a5c'); c.sound('whistle'); setMode(e, 'recover', 0.6);
+    if (want === 2) { c.number(e.x, e.y - 70, 'HER GUARD ANSWERS THE GONGS: CUT THE ROPE HE RUNS FOR', '#ff9a5c'); c.sound('whistle'); setMode(e, 'recover', 0.6);
       for (const g of c.gongs().filter(q => !q.cut).slice(0, HM.guardCap)) if (c.guards() < HM.guardCap && c.guardRing(g.id)) S.n.guards++;   /* her whistle: every gong still hanging rings for her, and her guard comes down */
       return; }
     if (want === 3) { c.number((G.x0 + G.x1) / 2, G.floorY - 120, 'THE POWDER STORE BURNS: THE ROOFS GO', '#ff6b6b'); c.sound('blast'); c.shake(6); setMode(e, 'recover', 0.8); return; } }
@@ -161,7 +161,6 @@ function nextMove(e, S, P, c) {
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; }
   let m = S.script[S.step++]; const dx = P.x - e.x, ad = Math.abs(dx);
   e.face = Math.sign(dx) || e.face;
-  if (!S.despDone && e.hp <= e.maxHp * HM.desp) { S.despDone = true; m = 'flash'; }
   if (m === 'lash' && ad > HM.lashRange) { setMode(e, 'walk', 0.45); S.step--; return; }      /* out of the whip's reach: she closes first */
   if (m === 'feint' && ad > HM.lashRange + 30) { setMode(e, 'walk', 0.45); S.step--; return; }
   if ((m === 'spot' || m === 'dive') && !hawkAloft(S)) m = 'lash';
@@ -173,7 +172,6 @@ function nextMove(e, S, P, c) {
     case 'spot': { tell(e, S, c, 'spotTell', HM.spotTell); S.mark = { x: clampX(G0(S), P.x) }; S.hawk.mode = 'spot'; S.hawk.t = HM.spotTell; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; S.n.spots++; c.sound('hawk'); return; }
     case 'call': { tell(e, S, c, 'callTell', HM.callTell); const gs = c.gongs().filter(g => !g.cut).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x)); S.callGong = gs[0].id; S.n.calls++; return; }
     case 'dive': { tell(e, S, c, 'diveTell', HM.diveTell); S.mark = { x: clampX(G0(S), P.x) }; S.hawk.mode = 'diveTell'; S.hawk.t = HM.diveTell; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; c.fx('mark', S.mark.x, S.G.floorY); c.sound('hawk'); return; }
-    case 'flash': tell(e, S, c, 'flashTell', HM.flashTell); c.number(e.x, e.y - 70, 'FLASH POWDER: GET CLEAR OF HER', '#ff6b6b'); return;
   }
   setMode(e, 'walk', 0.5);
 }
@@ -197,9 +195,6 @@ function stepMove(e, S, dt, P, h, c) {
     case 'callTell': if (e.modeT <= 0) { S.runner = { gong: S.callGong, t: HM.runT, t0: HM.runT, from: (S.callGong && c.gongs().find(g => g.id === S.callGong) || { x: e.x }).x < (G.x0 + G.x1) / 2 ? G.x1 - 30 : G.x0 + 30 };
         if (!S.told.call) { S.told.call = 1; c.number((G.x0 + G.x1) / 2, G.wallY + 30, 'A GUARD RUNS FOR A GONG: CUT ITS ROPE', '#ffd36b'); } after(0.4); } return;
     case 'diveTell': if (e.modeT <= 0) { S.hawk.mode = 'dive'; S.hawk.t = HM.diveFly; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; S.n.dives++; setMode(e, 'recover', HM.diveFly + HM.diveLow + 0.3); } return;
-    case 'flashTell': if (e.modeT <= 0) { setMode(e, 'flash', 0.2); S.n.flashes++; c.sound('blast'); c.fx('flash', e.x, e.y - 14);
-        for (const q of h) if (q.alive && Math.hypot(q.x - e.x, (q.y - 10) - (e.y - 14)) < HM.flashR) c.hit([q.x - 4, q.x + 4, q.y - 20, q.y], HM.dmg.flash, MOVE_NAME.flash, { key: 'flash' + S.act, blind: true }); } return;
-    case 'flash': if (e.modeT <= 0) after(0.6); return;
     default: setMode(e, 'walk', 0.5);
   }
 }
@@ -267,7 +262,6 @@ export function hmPlan(s) {
   if (/Tell$/.test(e.mode) || e.mode === 'lash' || e.mode === 'cut' || S.hawk.mode === 'dive') {
     const miss = s.v2 ? false : roll(key + 'm', PLAN.miss), seen = seenFor('a' + S.act + e.mode);
     if (seen && !miss) {
-      if (e.mode === 'flashTell') { if (Math.abs(P.x - kx) < HM.flashR + 24) { out.gx = safeX(kx + side * (HM.flashR + 40)); if (dx < HM.flashR && e.modeT < 0.3 && P.ground && !s.noRoll) { out.dodge = true; } out.why = 'clear of the flash'; return out; } }
       if ((e.mode === 'markLashTell' || e.mode === 'spotTell') && S.mark && Math.abs(P.x - S.mark.x) < HM.markR + 14) { const d = roomDir(S.mark.x); out.gx = safeX(S.mark.x + d * (HM.markR + 26)); if (e.mode === 'markLashTell' && e.modeT < 0.25 && P.ground && !s.noRoll) out.dodge = true; out.why = 'off the hawk\'s mark'; return out; }
       if ((e.mode === 'diveTell' || S.hawk.mode === 'dive') && S.mark && Math.abs(P.x - S.mark.x) < HM.diveR + 14) { const d = roomDir(S.mark.x); out.gx = safeX(S.mark.x + d * (HM.diveR + 30)); if (S.hawk.mode === 'dive' && P.ground && !s.noRoll) out.dodge = true; out.why = 'off the dive\'s shadow'; return out; }
       if ((e.mode === 'lashTell' || e.mode === 'lash') && dx < HM.lashReach + 14 && same && (e.face || 1) * (P.x - kx) > -6) {
@@ -289,16 +283,16 @@ export function hmPlan(s) {
     out.face = Math.sign(hdx) || 1; out.gx = P.x; out.atk = P.atk < 0 && P.ground; out.why = 'flask: throw it at the hawk'; return out; }
   /* 4. PHASE TWO: a runner going for a hanging gong - cut that rope first */
   if (S.runner) { const g = gongs.find(q => q.id === S.runner.gong); if (g && !g.cut) { out.gx = clamp(g.x + (P.x < g.x ? -10 : 10)); if (Math.abs(P.x - g.x) < reach + 6) { out.face = Math.sign(g.x - P.x) || 1; out.gx = P.x; out.atk = P.atk < 0; } out.why = 'cut the rope before he gets there'; return out; } }
-  /* 5. MAKE AN OPENING (the rule): a hanging, quiet gong (phase one: ring it; phase two: cut it unless the flasks are gone) - or a flask */
-  const free = gongs.filter(g => !g.cut && !(g.hum > 0));
-  if (S.ph >= 2 && !mem.p2cut) { const g = gongs.filter(q => !q.cut).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-    if (g && racks.some(r => r.n > 0)) { out.gx = clamp(g.x + (P.x < g.x ? -10 : 10)); if (Math.abs(P.x - g.x) < reach + 6) { out.face = Math.sign(g.x - P.x) || 1; out.gx = P.x; out.atk = P.atk < 0; } out.why = 'phase two: cut her gongs'; return out; }
-    if (!g) mem.p2cut = true; }
+  /* 5. MAKE AN OPENING (the rule): RING a hanging, quiet gong; HANG BACK a fallen one (E at its disc - then it rings); or THROW a flask from a rack - whichever is
+     nearest (fix pass: phase two no longer cuts every rope first - it cuts a runner's, step 4, and hangs it back when it wants the hawk off) */
+  const free = gongs.filter(g => !g.cut && !(g.hum > 0)), fallen = gongs.filter(g => g.cut);
   if (hawkAloft(S) && !/Tell$/.test(e.mode)) {
-    if (S.ph === 1 || (S.ph === 3 && free.length)) { const g = free.sort((a, b) => Math.abs(a.x - kx) - Math.abs(b.x - kx))[0];
-      if (g && Math.abs(g.x - kx) < 260) { out.gx = clamp(g.x + (kx > g.x ? 10 : -10)); if (Math.abs(P.x - g.x) < 18 && dx < PLAN.ringR + 60 && !roll('ring' + Math.floor(t / 3), PLAN.missRing)) { out.talk = true; out.face = Math.sign(g.x - P.x) || 1; out.why = 'ring the gong: the hawk is up'; } else out.why = 'to a gong'; return out; } }
-    const r = racks.filter(q => q.n > 0).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-    if (r && (S.ph >= 2 || !free.length)) { out.gx = r.x; if (Math.abs(P.x - r.x) < 10 && P.ground) { out.talk = true; out.why = 'take a flask'; } else out.why = 'to a flask rack'; return out; } }
+    const near = a => a.slice().sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0];
+    const g = free.slice().sort((a, b) => Math.abs(a.x - kx) - Math.abs(b.x - kx))[0], r = near(racks.filter(q => q.n > 0)), f = near(fallen);
+    const dG = g && Math.abs(g.x - kx) < 260 ? Math.abs(g.x - P.x) : 1e9, dR = r ? Math.abs(r.x - P.x) + (S.ph === 1 ? 80 : 0) : 1e9, dF = f ? Math.abs(f.x - P.x) + 60 : 1e9;
+    if (dG < 1e9 && dG <= dR && dG <= dF) { out.gx = clamp(g.x + (kx > g.x ? 10 : -10)); if (Math.abs(P.x - g.x) < 18 && dx < PLAN.ringR + 60 && !roll('ring' + Math.floor(t / 3), PLAN.missRing)) { out.talk = true; out.face = Math.sign(g.x - P.x) || 1; out.why = 'ring the gong: the hawk is up'; } else out.why = 'to a gong'; return out; }
+    if (dF < 1e9 && dF < dR) { out.gx = clamp(f.x + (kx > f.x ? 10 : -10)); if (Math.abs(P.x - f.x) < 18 && P.ground && !roll('hang' + Math.floor(t / 3), PLAN.missRing)) { out.talk = true; out.face = Math.sign(f.x - P.x) || 1; out.why = 'hang the gong back'; } else out.why = 'to a fallen gong'; return out; }
+    if (r) { out.gx = r.x; if (Math.abs(P.x - r.x) < 10 && P.ground) { out.talk = true; out.why = 'take a flask'; } else out.why = 'to a flask rack'; return out; } }
   /* 5b. WINDED (the lab's stamina rest): off her, out of her whip's reach, until the bar is back */
   if (s.rest) { out.gx = safeX(kx + side * (HM.lashReach + 40)); out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off her'; return out; }
   /* 6. FIGHT HER: her back when she turns from you; from a jump over her gauntlet (B11) */

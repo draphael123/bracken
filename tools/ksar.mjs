@@ -56,6 +56,36 @@ for (let i = 1; i < chain.length; i++) ok((chain[i].x - chain[i - 1].x) * TS <= 
 ok(Math.hypot((arch.x0 * TS + 8) - (chain[chain.length - 1].x * TS + 8), (arch.y1 * TS + 8) - ((chain[chain.length - 1].y + 1) * TS - 6)) < KS.breakR, 'the chain\'s last keg breaks the arch');
 ok(sign(chain[0].x - 8, chain[0].x, /A BLOW LIGHTS A KEG/), 'a sign at the store says A BLOW LIGHTS A KEG');
 ok(sign(20, 40, /A BLADE CUTS ITS ROPE; E RINGS IT/) && sign(50, 60, /ATTACK THROWS IT/), 'the first gong and the first keg stack are taught at the point of use (CUT, RING, THROW)');
+/* (fix pass, review MUST 1) THE BREACHES AND THE GAPS: real platforming on the walls (spiked rubble: a hurt, never a death) and in the exam (a fall between the roofs is a
+   death, A10 amended - told by a sign before the first gap). The first breach is taught bare; every other breach and gap has a foe AT the jump */
+const foeEnts = L.ents.filter(e => e.ks || e.t === 'hawkscout'), foeNear = (x0, x1, r) => foeEnts.filter(e => (e.t === 'hawkscout' ? Math.max(e.x0, x0 - r) <= Math.min(e.x1, x1 + r) : e.x >= x0 - r && e.x <= x1 + r));
+const walls = L.breaches.filter(([x0]) => x0 >= 72 && x0 <= 231); ok(walls.length >= 3, 'the wall walk is breached ' + walls.length + ' times (real platforming on the walls)');
+for (const [x0, x1, row] of L.breaches) { let rub = true; for (let x = x0; x <= x1; x++) rub = rub && at(x, row) === T.AIR && at(x, row + 1) === T.SPIKE && at(x, row + 2) === T.SOLID; ok(rub, 'breach ' + x0 + '-' + x1 + ': rubble with spikes in it (a hurt you climb out of, not a fall)');
+  ok(x1 - x0 + 1 >= 3, 'breach ' + x0 + '-' + x1 + ' is a jump (' + (x1 - x0 + 1) + ' wide)'); }
+ok(sign(walls[0][0] - 6, walls[0][0], /BREACHED/) && foeNear(walls[0][0], walls[0][1], 4).length === 0, 'the first breach is taught bare: a sign, no foe at it');
+for (const [x0, x1] of walls.slice(1)) ok(foeNear(x0, x1, 6).length > 0, 'breach ' + x0 + '-' + x1 + ' has a foe at the jump: ' + foeNear(x0, x1, 6).map(e => e.cnSkin || e.t).join(','));
+const exam = L.drops.filter(([x0]) => x0 >= 446 && x0 < 584); ok(exam.length >= 4, 'the exam\'s roofs are broken: ' + exam.length + ' gaps');
+for (const [x0, x1] of exam) { let open = true; for (let x = x0; x <= x1; x++) for (let y = 0; y < L.H; y++) open = open && at(x, y) === T.AIR; ok(open, 'gap ' + x0 + '-' + x1 + ' falls to the world\'s floor (a real death)');
+  ok(foeNear(x0, x1, 6).length > 0, 'gap ' + x0 + '-' + x1 + ' has a foe at the jump: ' + foeNear(x0, x1, 6).map(e => e.cnSkin || e.t).join(',')); }
+ok(sign(exam[0][0] - 8, exam[0][0], /FALL/) && !L.drops.some(([x0]) => x0 < exam[0][0]), 'the first deadly gap is told by a sign before it, and no deadly gap comes before the exam (taught by the breaches)');
+/* (MUST 3) CUT REQUIRED: THE ROOF BRIDGE - its gong's rope holds the bridge up over the widest drop; nothing else crosses it */
+const bg = L.gongs.find(g => g.bridge); ok(bg && !bg.great, 'the bridge gong hangs on a rope (it can be cut)');
+const [bx0, bx1, brow] = bg.bridge, bd = L.drops.find(([x0, x1]) => x0 === bx0 && x1 === bx1); ok(bd && bx1 - bx0 + 1 >= 7, 'THE ROOF BRIDGE spans the widest drop: ' + (bx1 - bx0 + 1) + ' tiles, past any jump');
+ok(at(bx0 - 1, brow) === T.SOLID && at(bx1 + 1, brow) === T.SOLID && bg.x < bx0 && bx0 - bg.x <= 4, 'the bridge lies between two roofs at their own height, its gong on the near lip');
+ok(sign(bg.x - 26, bg.x, /A BLADE CUTS IT/), 'a sign at the bridge gong says A BLADE CUTS IT');
+ok(L.ents.some(e => e.ks === 'lookout' && e.gong === bg.id), 'a lookout races you for the bridge gong (cut it before he rings it)');
+/* (MUST 3) THROW REQUIRED: THE HAWK TOWER's bricked door - no set keg's blast reaches it, so a keg must be THROWN; a stack before it */
+const ta = L.barricades.find(b => b.id === 'towerArch'); ok(ta && ta.y1 - ta.y0 + 1 >= 7, 'the hawk tower\'s door is ' + (ta.y1 - ta.y0 + 1) + ' rows of brick');
+for (let y = 0; y < ta.y0; y++) if (y >= ta.y0 - 5) ok(at(ta.x0, y) === T.SOLID, 'the tower stands over its door (' + ta.x0 + ',' + y + '): no way over');
+ok(!L.setKegs.some(k => { for (let cy = ta.y0; cy <= ta.y1; cy++) for (let cx = ta.x0; cx <= ta.x1; cx++) if (Math.hypot(cx * TS + 8 - (k.x * TS + 8), cy * TS + 8 - ((k.y + 1) * TS - 6)) < KS.breakR) return true; return false; }), 'no set keg\'s blast reaches the tower door: only a THROWN keg opens it');
+ok(L.stacks.some(s => s.kind === 'keg' && s.x < ta.x0 && ta.x0 - s.x <= 6) && sign(ta.x0 - 6, ta.x0, /THROWN KEG/), 'a keg stack and a sign (A THROWN KEG) stand before the tower door');
+/* (MUST 4) THE CLIMAX, THEN A CHECKPOINT: CUT (the bridge), RING (the roof-three gong over the tower's squad), THROW (the door) between checkpoint four and five */
+const cpx = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), c4 = cpx[cpx.length - 2], c5 = cpx[cpx.length - 1];
+ok(c4 < bg.x && c5 > ta.x1 && L.gongs.some(g => !g.bridge && !g.arena && g.x > bx1 && g.x < ta.x0), 'the climax (bridge gong ' + bg.x + ', a gong on roof three, the tower door ' + ta.x0 + ') sits between checkpoint ' + c4 + ' and checkpoint ' + c5 + ' (after it)');
+ok(L.ents.filter(e => e.ks === 'reserve' && e.x > bx1 && e.x < ta.x0).length >= 3, 'the hawk tower\'s squad sleeps in its hut on roof three (a ring calls them)');
+/* (MUST 2) THE FORT HITS HARD: weight, not hazards; the post kegs cut to a dozen */
+ok(['ksarblade', 'whipapprentice', 'shieldsentry'].every(k => L.foeHit[k] >= 1.8) && L.foeHit.gonglookout >= 1.5, 'the fort\'s men hit hard (L.foeHit ' + JSON.stringify(L.foeHit) + ')');
+ok(L.setKegs.length <= 14, 'set kegs: ' + L.setKegs.length + ' (the chain and a few by the squads - not a keg at every post)');
 /* THE GONG RULE IN THE HANDS (a fake world: the grid, the men, a hero) */
 const grid = L.grid.slice(), P = { x: 30 * TS, y: 34 * TS, face: 1, dead: false, hp: 100, hurt: 0, ground: true, w: 10, h: 18 };
 const men = L.ents.map((e, i) => ({ e, i })).filter(({ e }) => e.ks).map(({ e, i }) => ({ t: e.t, cnSkin: e.cnSkin, x: e.x * TS + 8, y: (e.y + 1) * TS, alive: true, hp: 30, face: e.face || -1, xpKey: i + '.0', vy: 0 }));
@@ -82,6 +112,10 @@ const keg0 = K.setKegs.find(k => k.id === 'k0'); K.setKegs.filter(k => k.chain).
 keg0.st = 'lit'; keg0.t = 0.01; H.update(0.02); ok(keg0.st === 'spent' && K.setKegs.find(k => k.id === 'k1').st === 'lit', 'a keg that blasts lights the next one in reach (the chain)');
 for (let i = 0; i < 400; i++) H.update(1 / 60);
 ok(K.barricades.find(b => b.id === 'storeArch').broken && grid[arch.y1 * W2 + arch.x0] === T.AIR, 'the chain runs to the arch and the brick gives');
+/* (fix pass) the bridge gong rung calls the tower's squad - who stop at the lip of the drop, never walk off it; cut, the bridge comes down for good */
+{ const sq = men.filter(m => m.ks.role === 'reserve' && m.x > bx1 * TS && m.x < ta.x0 * TS); ok(H.ringGong('bridge', 'bandit') === 'rung' && sq.every(m => m.ks.st === 'called'), 'the bridge gong calls the tower squad (' + sq.length + ')');
+  for (let i = 0; i < 300; i++) H.update(1 / 60), sq.forEach(m => H.hold(m, 1 / 60)); ok(sq.every(m => m.x > (bx1 + 1) * TS - 2), 'called over the raised bridge, they stop at the lip (' + sq.map(m => (m.x / TS).toFixed(1)).join(',') + ')');
+  H.cutGong('bridge'); let down = true; for (let x = bx0; x <= bx1; x++) down = down && grid[brow * W2 + x] === T.ONEWAY; ok(K.gongs.find(g => g.bridge).cut && down, 'cut, THE ROOF BRIDGE comes down across the drop'); }
 /* THE CAST */
 const foes = L.ents.filter(e => ['cutthroat', 'slinger', 'shield', 'sapper', 'hawkscout'].includes(e.t)), kind = e => e.cnSkin || e.t, cnt = {};
 for (const e of foes) cnt[kind(e)] = (cnt[kind(e)] || 0) + 1;
@@ -89,7 +123,8 @@ ok(!L.ents.some(e => /gob|goblin/.test(e.t) || /gob/.test(e.cnSkin || '')), 'no 
 ok(foes.filter(e => e.t === 'hawkscout').length >= 3 && Object.keys(cnt).length >= 7, 'the cast: the hawk scout (the one new AI) and the reskins ' + JSON.stringify(cnt));
 ok(foes.filter(e => e.t !== 'hawkscout').every(e => e.cnSkin), 'every man is a reskin by cnSkin (corpses die in their own skin)');
 ok(cnt.wallslinger >= 3 && cnt.smokethrower >= 2, 'ranged men: wall slingers and smoke throwers');
-ok(Math.max(...Object.values(cnt)) / foes.length <= 0.4, 'no one kind over ~40% (' + Math.round(100 * Math.max(...Object.values(cnt)) / foes.length) + '%)');
+ok(Math.max(...Object.values(cnt)) / foes.length <= 0.35, 'no one kind over ~35% (' + Math.round(100 * Math.max(...Object.values(cnt)) / foes.length) + '%: ' + JSON.stringify(cnt) + ')');
+ok(((cnt.ksarblade || 0) + (cnt.gonglookout || 0) + (cnt.whipapprentice || 0)) / foes.length <= 0.5, 'the cutthroat machine (blade, lookout, whip) is at most half the cast (' + Math.round(100 * ((cnt.ksarblade || 0) + (cnt.gonglookout || 0) + (cnt.whipapprentice || 0)) / foes.length) + '%)');
 /* CHECKPOINTS, SEALS, SILVER */
 const cps = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), stops = [L.START.x, ...cps];
 for (let i = 1; i < stops.length; i++) ok(stops[i] - stops[i - 1] >= 90 && stops[i] - stops[i - 1] <= 175, 'checkpoints ' + stops[i - 1] + ' > ' + stops[i] + ': ' + (stops[i] - stops[i - 1]) + ' columns (90..175)');
