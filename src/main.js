@@ -512,7 +512,7 @@ const HEROES = [
   { id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: "cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. A kill seats the next ball, so does a parry, and failing both it loads itself in eight seconds: his powder is whatever the fight is worth. tap C: THE PARRY, a quick guard that turns a blow met on the beat. HOLD C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. RUM is a skill bought with coins: it mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dodge: THE BOARDING LUNGE, through small foes, and a guard is thrown wide." },
   { id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, desc: 'maul and holy light. slower and heavier, 120 health. every blow and every hit turned aside fills the LIGHT. tap C: MEND (half the bar). hold C: AEGIS, a ward in front of him for a breath and a half; it cannot turn what a shield cannot. a full bar and C again: JUDGEMENT, light out of the sky on everything near. the plunge is HAMMERFALL. X early in a dodge: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' },
   { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a tall staff with an amber geode in stone claws, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C and she plants the stave and a RUNE-WARD of stone rises in front of her and over her head. It turns YELLOW blows and shots for wind, but she cannot walk while it stands; a RED blow breaks through. Raised as a blow lands it throws a shot back and EMPOWERS her for three seconds: harder blows, and TREMOR twice as fast. HOLD X and let go: FAULT LINE, a crack that races along the floor ahead of her and hits everything on it - the longer the hold, the longer and harder, and a full one ends in a spike that hits hardest and launches. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dodge kicks a ROLLING STONE. Blows the ward stops and foes her stone launches fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
-  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last third of the shaft hits 30% harder and rings when it lands, the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it. X early in a dodge: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
+  { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last third of the shaft hits 30% harder and rings when it lands (half again into a boss in his opening), the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat, from in front or from overhead, and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it (and the tap still sweeps). X early in a dodge: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
    not what he carries. Every clause is checked against the code, so none of it is a talent's promise: the knight's perfect
@@ -629,7 +629,13 @@ const dodgeCost = (back = false) => CM.rollCost(P, hero(), { back, shave: Math.r
    tip rule is about, not for one big escape. The third waits (STEP_CD). And because it is cheap and repeatable its
    GRACE IS SHORT: STEP_INV, a good deal less than the old roll's whole length, or she would simply step through
    everything in the game instead of spacing it. ==== */
-const STEP_INV = 0.15, STEP_PAIR = 0.75, STEP_CD = 0.62, STEP_GAP = 0.1;   /* s untouchable, how long a pair stays a pair, the wait after the second, the wait after the first */
+const STEP_INV = 0.18, STEP_PAIR = 0.75, STEP_CD = 0.62, STEP_GAP = 0.1;   /* s untouchable, how long a pair stays a pair, the wait after the second, the wait after the first */
+/* (claude/wardenkit, Daniel 10-06: fix HER KIT, not the boss) THE STEP CARRIES. Her back-step was a push the floor ate: 175 px/s bled off by a
+   twentieth a second for 0.18 s, then the run's friction - 12-22 px measured in the boss lab, against the knight's and the pyromancer's 51-55 px roll,
+   so it took her off nothing: a pounce's landing, a dive's mark, a reprisal's ring (60 px out) all still found her. Now her feet KEEP the pace for the
+   whole step (STEP_PACE, held, as a roll is) and the grace covers the whole step (STEP_INV = its length, 0.18; the knight's roll is graced 0.26 of
+   0.30). About 45 px a step and still taken in pairs: the pair is her real evade, and a single step is still the small adjustment of range. */
+const STEP_PACE = 200;
 const stepCost = () => dodgeCost(true);   /* WEIGHT: her back-step 15, her step forward a roll's 24 (src/commit.js ROLL_COST, STEP_BACK_COST) */
 CM.bindStamina({ lvGrow: () => LV_GROW(), lungs: () => perk('lungs'), fleet: () => perk('fleet'), rest: () => perk('rest'), lean: () => thr('e', 0), wind: () => thr('e', 1) });   /* THE SEAM: the level's growth reaches the bar only through CM.staminaOf (LEVELING's ENDURANCE feeds P.maxSt) */
 const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge (it was the dash's, and the same number) */
@@ -5630,7 +5636,9 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   }
   /* THE WARDEN'S DEFLECT: the shaft swept across her body on the beat. It turns ANY yellow blow from the front, the
      same as every other hero's answer, and never a red one - `unblockable` is the whole test, and it is not hers to bend. */
-  if (isWarden() && (P.deflectT || 0) > 0 && front && !unblockable) {
+  /* (claude/wardenkit) AND FROM OVERHEAD: what falls on her (`up`: a shard, a bolt out of the sky, a wash from above) is met by the shaft swept over her head,
+     as the Geomancer's rune-ward meets it - the knight's shield turns only what comes at its face, but he can hold it there; she has a beat, not a wall */
+  if (isWarden() && (P.deflectT || 0) > 0 && (front || up) && !unblockable) {
     const f = nearFoe(fromX);
     if (f) { f.stagger = Math.max(f.stagger || 0, f.maxHp ? 0.4 : 1.1 * (tal('standFast') ? 2 : 1)); f.flash = 0.2; if (!f.maxHp) f.vx = Math.sign(f.x - P.x) * 150;
       if (tal('counterpoise')) { f.sunder = 2.5; number(f.x, f.y - (f.h || 16) - 22, 'OPENED UP', '#8fd160'); } }   /* COUNTERPOISE */
@@ -6186,7 +6194,7 @@ function impale(e) {
    a sweep that met nothing leaves her with DEF_REC of recovery she can neither sweep nor swing in, so mistiming costs.
    IT SETS P.parryT - one of the clocks palOpened already reads. That is how the Paladin's ward opens to her: by the
    one rule on the clocks an answer sets, with no hero named in a branch of it. ==== */
-const DEF_LIVE = 0.5, DEF_REC = 0.26, DEF_COST = 9, DEF_REACH = 44;   /* s live, s of recovery, wind, and how far out along the shaft it swats */
+const DEF_LIVE = 0.5, DEF_REC = 0.26, DEF_COST = 9, DEF_REACH = 44, DEF_BUF = 0.15;   /* s live, s of recovery, wind, and how far out along the shaft it swats */
 function deflect() {
   if (!spend(Math.max(3, Math.round(DEF_COST * (1 - 0.2 * tal('quickShaft')))))) { SFX.buzz(); P.stFlash = 0.3; return; }
   P.deflectT = DEF_LIVE + 0.04 * prk('wdef'); P.deflectRec = DEF_REC * (1 - 0.2 * tal('quickShaft')) * (1 - 0.08 * prk('wrec'));   /* QUICK SHAFT: cheaper, and back in her hands sooner */
@@ -8097,8 +8105,13 @@ function updatePlayer(dt) {
     for (const k of ['deflectT', 'deflectRec', 'parryT']) P[k] = Math.max(0, (P[k] || 0) - dt);
     const cDown = keys.block && !P.cWas; P.cWas = !!keys.block;
     const free = !stunned && !dodging && !P.plunge && !attacking && !P.pinning && !(P.perch > 0) && !(P.blastT > 0);
-    if (cDown && free && (P.vigil || 0) >= 100) spendVigil();
-    else if (cDown && free && P.deflectRec <= 0 && P.deflectT <= 0) deflect();   /* THE DEFLECT: a tap, never a hold */
+    /* (claude/wardenkit) THE TAP IS KEPT: a C pressed while she is still in a thrust, a step or a plunge was simply lost (the gate read only
+       the frame the key went down), so a deflect asked for on the beat out of her own swing never came - every other hero's answer is buffered
+       through a commit (src/commit.js THE HELD BUFFER). It is kept DEF_BUF s and fires on her first free frame. */
+    if (cDown && !free) P.cBuf = DEF_BUF; else P.cBuf = Math.max(0, (P.cBuf || 0) - dt);
+    const cGo = cDown || (free && P.cBuf > 0);
+    if (cGo && free && (P.vigil || 0) >= 100) { P.cBuf = 0; spendVigil(); if (P.deflectRec <= 0 && P.deflectT <= 0) deflect(); }   /* (claude/wardenkit) A FULL BAR NO LONGER EATS THE DEFLECT: the same tap raises the phalanx AND sweeps the shaft - with a full bar a tap on the beat of a yellow blow was a phalanx and no turn, and the blow landed */
+    else if (cGo && free && P.deflectRec <= 0 && P.deflectT <= 0) { P.cBuf = 0; deflect(); }   /* THE DEFLECT: a tap, never a hold */
     if (P.deflectT > 0) deflectSwat();
     /* THE POINT IS OUT: her thrust and her run-through carry it in front of her, and a charge that runs onto it is
        spitted with no button held. The rising cut goes over her head and the low sweep along the floor - neither is a
@@ -8185,7 +8198,7 @@ function updatePlayer(dt) {
       else if (airDodge) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); P.airRolled = true;   /* SLIPSTREAM: a second before you land */
         P.vy = (tal('airRoll') || (isPirate() && tal('swash'))) ? Math.min(P.vy, -80) : Math.min(P.vy, 40);   /* AIR ROLL / SWASHBUCKLE: the one in the air lifts you; without it, it holds the fall level, as the dash did */
         streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); }
-      P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5;   /* WEIGHT: heavy heroes roll heavier - the paladin 0.30 s (it was 0.26) */
+      P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5; P.stepHeld = back && !P.swim && !airDodge ? P.dodge : 0;   /* WEIGHT: heavy heroes roll heavier - the paladin 0.30 s (it was 0.26) */   /* (her back-step on her feet holds its pace: STEP_PACE) */
       P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.STAM.rollInv);   /* WEIGHT (Daniel 10-02, Q3): the first 0.20 s is untouchable, the TAIL is not */
       const burrow = isGeo() && P.ground && !P.swim;
       if (burrow) { P.geoBurrow = { dir }; burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
@@ -8199,7 +8212,7 @@ function updatePlayer(dt) {
       P.dashCd = P.dodgeCd;   /* (one cooldown: the lab's hands still read the dash's name for it) */
       /* THE WARDEN STEPS. She does not roll through a blow, she gives ground with the point still up - so whatever she just left
          is back at the end of the spear by the time she lands. Tapped forward, the same step goes in, and a jump out of it vaults. */
-      P.vx = dir * (perk('stride') ? 1.12 : 1) * (isPaladin() ? 230 : isPyro() ? 300 : isPirate() ? (285 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 265 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? (back ? 175 : 265) * (1 + 0.15 * tal('lightFoot')) : burrow ? 190 : 265);   /* the dash's pace (RUM: longer; LONG PASSING: half again; LIGHT FOOT: her step either way) */
+      P.vx = dir * (perk('stride') ? 1.12 : 1) * (isPaladin() ? 230 : isPyro() ? 300 : isPirate() ? (285 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 265 * (tal('longPassing') ? 1.5 : 1) : isWarden() ? (back ? (P.stepHeld ? STEP_PACE : 175) : 265) * (1 + 0.15 * tal('lightFoot')) : burrow ? 190 : 265);   /* the dash's pace (RUM: longer; LONG PASSING: half again; LIGHT FOOT: her step either way) */
       P.block = false; dodges++; noteVerb('dodge');
       if (!back && !burrow && !P.swim) { streaks(P.x, P.y - 9, -dir, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - dir * 6, P.y, 3); }
       /* GIVE GROUND: whatever had got inside the spear is left reeling as she leaves - the hop buys the distance AND the beat */
@@ -8275,7 +8288,12 @@ function updatePlayer(dt) {
   } else if (!dodging) {
     const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 70 : 1100) : 200;
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
-  } else if (P.dash > 0 && !P.swim) { const s = Math.sign(P.vx) || P.face; P.vx = s * Math.max(Math.min(cap, Math.abs(P.vx)), Math.abs(P.vx) - 400 * dt); }   /* THE DODGE CARRIES as the dash did: its pace bleeds off to a run, held or not */
+  }   else if (P.dash > 0 && !P.swim) { const s = Math.sign(P.vx) || P.face; P.vx = s * Math.max(Math.min(cap, Math.abs(P.vx)), Math.abs(P.vx) - 400 * dt); }   /* THE DODGE CARRIES as the dash did: its pace bleeds off to a run, held or not */
+else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);   /* HER STEP CARRIES (claude/wardenkit): the pace it was given, held to its end (STEP_PACE) */
+    /* AND SHE KNOWS WHERE HER HEEL IS: a back-step that would carry her off an edge (open air under the heel, two tiles down) stops at it - she gives
+       ground, she does not fall off it (the Matriarch's pillars put her in the water five times a fight). A jump or a forward step still goes over */
+    if (P.ground && !P.onMover) { const tx = Math.floor((P.x + Math.sign(P.vx) * (P.w / 2 + 3)) / TS), ty = Math.floor((P.y + 1) / TS);
+      if (tileAt(tx, ty) === T.AIR && tileAt(tx, ty + 1) === T.AIR) { P.vx = 0; P.stepHeld = 0; } } }
   else { P.vx *= Math.pow(0.05, dt); }
   /* THE VAULT CARRIES HER ON: for the rise off the shaft her way is kept at VAULT_FWD whatever the stick does, unless it is
      pulled back against the vault - then it is hers to brake, as any air is. Let go and she still goes over, not straight up. */
@@ -24426,7 +24444,7 @@ function startSwing() { const quick = inRun(); P.swingKind = null; P.dashCut = f
    The tip gets its own spark and its own ringing note EVERY time, and the haft its own dull wooden knock: the game
    hides floating words in play unless they are on the MOVE_WORDS allowlist, so the sound and the spark carry this,
    not a word. A first-few-times hint says it once in words and then never again. ==== */
-const TIP_AT = 28, SHAFT_AT = 14;   /* (claude/herokit) 34 / 18: the tip was a 10 px band at the end of a 44 px spear and, on the second thrust of a run (it reaches 39), a 5 px one - the bot landed 0 tips in 66 hits on the Archmage */
+const TIP_AT = 28, SHAFT_AT = 14, TIP_GAP = 1.5;   /* (claude/herokit) 34 / 18: the tip was a 10 px band at the end of a 44 px spear and, on the second thrust of a run (it reaches 39), a 5 px one - the bot landed 0 tips in 66 hits on the Archmage */
 const tipReach = e => { const b = box(e); return P.face > 0 ? b.l - P.x : P.x - b.r; };
 function tipPay(e) {
   const d = tipReach(e), stretch = P.stretchT > 0 && !wardJav;   /* FULL STRETCH: every blow of the spear is the tip */
@@ -24440,7 +24458,12 @@ function tipPay(e) {
        standing at the right distance and waiting, which is the whole of how she is meant to be played. */
     if (tal('exact') && windingUp(e)) { flinch(e); number(e.x, e.y - (e.h || 16) - 26, 'OPENED UP', '#8fd160'); }
     /* DEEP SET: the further out it landed, the harder it bit - up to a fifth more at full stretch */
-    return stretch ? 1.5 : 1.3 * (tal('deepSet') ? 1 + 0.2 * Math.min(1, Math.max(0, d - TIP_AT) / 12) : 1);
+    /* THE POINT FINDS THE GAP (claude/wardenkit): a boss or a mini IN HIS OPENING (src/boss-greed.js openOf: the same window the chip reads) has no guard
+       for the point to glance off, and the tip pays TIP_GAP, a full stretch's worth. Her damage per opening measured ~0.8 of the knight's (fewer blows
+       land: she strikes from further out), so the opening is where her spear catches up - never outside it, so the chip and the greed are as they were. */
+    const gap = !stretch && (e === boss || e.xpRole === 'mini') && GB.openOf(e) === true;
+    if (gap) sparks(e.x, e.y - e.h / 2, P.face, 5);
+    return stretch ? 1.5 : (gap ? TIP_GAP : 1.3) * (tal('deepSet') ? 1 + 0.2 * Math.min(1, Math.max(0, d - TIP_AT) / 12) : 1);
   }
   if (d >= SHAFT_AT) return 0.75;
   /* THE HAFT: she has let it get inside the spear, and all this blow does is buy the ground back */
