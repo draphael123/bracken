@@ -239,6 +239,35 @@ export function makeBot(BK) {
     // sand it taps, about five a second, and walks the way on while it does - what the sign tells a player to do.
     if (P.qsDepth > 0) { keys.jump = false; tick.jumping = 0; hold = 0; if ((tick.qsT = (tick.qsT || 0) + 1) % 7 === 0) BK.press('jump'); return null; }
 
+    // ---- THE ROOTWAY'S HOISTS (claude/rootway fix pass): a hoist is a machine on the way on, and the two things a player does at one. ----
+    //   CUT THE CLEAT: an uncut hoist's cleat up to six tiles ahead (and no more than eight rows over his feet): walk to the tile before it, face it and
+    //   swing - a JUMP and a swing when it is over his head (THE HIGH CLEAT, from its grown cap). STRIKE THE ARROW BACK: at an `arrow` hoist (THE LOOKOUT)
+    //   stand on the near lip of its gap, face the post, and swing at an arrow that comes into reach. Ten seconds on one and he gives it up for twenty.
+    { const RWB = L.rootway && BK.rootway ? BK.rootway() : null;
+      if (RWB && !P.swim && !(P.dead > 0) && !P.climb) {
+        tick.rwNo = tick.rwNo || new Map(); tick.frame2 = (tick.frame2 || 0) + 1;
+        const gd = Math.sign(goalX - P.x) || P.face || 1; let job = null, jd = 1e9;
+        for (const d of (L.hoists || [])) { if (d.boss) continue; const h = RWB.hoist(d.id); if (!h || h.state !== 'hang' || (tick.rwNo.get(d.id) || 0) > tick.frame2) continue;
+          const sx = d.arrow ? (d.span[0] - 1) * TS + 8 : d.cleat[0] * TS + 8 - gd * 14, dx = sx - P.x, top = (d.cleat[1] - 1) * TS;
+          if (Math.abs(dx) > 6 * TS || dx * gd < -4 * TS) continue;
+          if (d.arrow ? Math.abs((d.span[2]) * TS - P.y) > 2 * TS : (P.y - top > 9 * TS || top - P.y > TS)) continue;
+          if (Math.abs(dx) < jd) { jd = Math.abs(dx); job = { d, sx }; } }
+        if (job) { const d = job.d, dx = job.sx - P.x;
+          if (tick.rwJob !== d.id) { tick.rwJob = d.id; tick.rwT = 0; } else if (++tick.rwT > 600 && !d.arrow) { tick.rwNo.set(d.id, tick.frame2 + 1200); tick.rwJob = null; }
+          const m = P.onMover, growing = m && m.kind === 'growcap' && m.state !== 'up';
+          if (Math.abs(dx) > 5 && !growing) { keys.left = dx < 0; keys.right = dx > 0; keys.jump = false; hold = 0; still = 0; tick.jumping = 0; return null; }
+          keys.left = keys.right = false; hold = 0; tick.jumping = 0; still = 0;
+          if (d.arrow) { P.face = Math.sign(d.post[0] * TS + 8 - P.x) || 1; keys.jump = false;
+            for (const q of (BK.seeds ? BK.seeds() : [])) { if (q.dead || q.reflected || !q.arrow) continue; const rx = q.x - P.x, ry = q.y - (P.y - 10);
+              if (rx * (q.vx || 0) < 0 && Math.abs(rx) < 34 && Math.abs(ry) < 26 && P.atk < 0) { P.face = Math.sign(rx) || P.face; BK.press('atk'); break; } }
+            return null; }
+          if (growing) { keys.jump = false; return null; }   /* the bud is still growing under him: stand */
+          if ((d.cleat[1] + 1) * TS - P.y > 6) { keys.jump = false; if (P.ground && at(Math.floor(P.x / TS), Math.floor(P.y / TS)) === T.ONEWAY) { keys.down = true; if (tick.rwT % 10 === 0) BK.press('jump'); } return null; }   /* on a ledge over the cleat: drop through to it (down and jump) */
+          P.face = Math.sign(d.cleat[0] * TS + 8 - P.x) || P.face;
+          if (P.ground) tick.rwFeet = P.y; const over = (d.cleat[1] + 1) * TS < (tick.rwFeet ?? P.y) - 30;   /* the cleat's box ends over his head: a jump and a swing */
+          if (over) { if (P.ground) { if (!tick.rwAir) { BK.press('jump'); tick.rwAir = 1; tick.rwAirF = 0; } keys.jump = true; } else { keys.jump = true; if (++tick.rwAirF >= 4 && P.vy < 0 && P.atk < 0) BK.press('atk'); } if (P.ground && tick.rwAir && tick.rwT % 50 === 49) tick.rwAir = 0; return null; }   /* (the swing pressed on the way up: it is out as he tops the jump) */
+          tick.rwAir = 0; keys.jump = false; if (P.ground && P.atk < 0 && tick.rwT % 12 === 0) BK.press('atk'); return null; }
+        tick.rwJob = null; } }
     // ---- THE MOVERS. There are two things to do on one and they are opposites. If it is CARRYING you
     // the right way, stand still and let it. If it is not, the edge of it is a gap and the answer is to
     // JUMP - which is the whole marsh crossing, six lily pads three tiles apart, each one sinking under
@@ -251,7 +280,9 @@ export function makeBot(BK) {
       if (m && m.kind === 'growcap' && m.state === 'up' && dir) { keys.left = dir < 0; keys.right = dir > 0; keys.jump = false; hold = 0; still = 0; return null; }   /* grown: walk off the end onto what it grew you to - a leap from a cap is a leap over what it just carried you across */
       if (!m && P.ground && (dir || tick.budT > 0)) {
         const wall = dir && (at(fx + dir, fy - 1) === T.SOLID || at(fx + dir, fy - 2) === T.SOLID), gap = dir && !foot(fx + dir, fy) && !foot(fx + dir, fy + 1);
-        const bud = (wall || gap || tick.budT > 0) && BK.movers().find(q => q.kind === 'growcap' && q.state === 'bud' && !(q.cd > 0) && Math.abs(q.x + q.w / 2 - P.x) < 64 && Math.abs(q.y - P.y) < 14);
+        /* A LEANING BUD on the lip carries you over a gap its root shelves hide from the gap test (a shelf a row down reads as a step): with the goal past its lean, it is the way (claude/rootway fix pass) */
+        const leanBud = BK.movers().find(q => q.kind === 'growcap' && q.lean && q.state === 'bud' && !(q.cd > 0) && Math.abs(q.x + q.w / 2 - P.x) < 64 && Math.abs(q.y - P.y) < 14 && (goalX - (q.x + q.w / 2)) * dir > q.lean * 0.5);
+        const bud = ((wall || gap || tick.budT > 0) && BK.movers().find(q => q.kind === 'growcap' && q.state === 'bud' && !(q.cd > 0) && Math.abs(q.x + q.w / 2 - P.x) < 64 && Math.abs(q.y - P.y) < 14)) || leanBud;
         if (bud) { const bc = bud.x + bud.w / 2; tick.budT = tick.budT > 0 ? tick.budT - 1 : 90; keys.left = bc < P.x - 5; keys.right = bc > P.x + 5; keys.jump = false; hold = 0; still = 0;
           if (!keys.left && !keys.right) { BK.press('jump'); keys.jump = true; tick.hopT = 8; } return null; } else tick.budT = 0; }
       else if (!m && !P.ground && tick.budT > 0) { const bud = BK.movers().find(q => q.kind === 'growcap' && q.state === 'bud' && Math.abs(q.x + q.w / 2 - P.x) < 64 && Math.abs(q.y - P.y) < 40);
