@@ -91,14 +91,14 @@ The tuning path, in order:
 - The warden runs low (3/12) and the pyro high (10/12), as on glasssea2 (4-5/12 and 11/12).
 
 ## RE-STAMPS
-- The level's data is unchanged (src/glass-sea.js is untouched; levelHash is the same), so **only the BOSS row** was re-stamped: .
+- The level's data is unchanged (src/glass-sea.js is untouched; levelHash is the same), so **only the BOSS row** was re-stamped: `mash-bot glasssea --write`.
 - The boss holds **0/6**: every mash hero is dead in 15-22 s with the boss at 93-100%.
--  passes. The level row is unchanged.
+- `mash-bot --assert glasssea` passes. The level row is unchanged.
 
 ## CHECKS RUN (targeted; no full suite)
 Green:
 - glasssea (122)
-- tells ( for the new mark)
+- tells (`--write` for the new mark)
 - answer-tags
 - hint-shown
 - boss-read
@@ -106,7 +106,8 @@ Green:
 - boss-openings
 - boss-greed
 - arena-shut (new; 53 fights + the control)
-- mash-bot - boss-rates (above)
+- mash-bot `--assert glasssea`
+- boss-rates (above)
 
 Nothing is red.
 
