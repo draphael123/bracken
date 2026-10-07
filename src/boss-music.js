@@ -34,7 +34,7 @@
 //   'djinn'      THE DJINN OF THE GREAT WELL (claude/underwell, his own theme - the Queen has hers back in the Underwell). D Hijaz, 4/4 at 100, 16 bars = 38 s:
 //                a D drone, a doumbek's maqsum, the wind in the well, a breathy ney; ':p2' (fire) quicker, the ney up an octave, crackles; ':p3' (flood) the water.
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { hawkmistress: 1, ksar: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -401,19 +401,7 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
-// ---------------------------------------------------------------- THE BANDIT KSAR (claude/ksar, the greybox's own bed until Daniel picks a track)
-// A Hijaz (A Bb C# D E F G), 4/4 at 80 (eighth = 0.375 s), 8 bars = 24 s. THE FORT AT REST: a low A drone (a lowpassed saw pair, breathing over four bars),
-// an OUD-LIKE PLUCK OSTINATO (a triangle with a sharp attack, A - Bb - C# - D falling back), a soft DARBUKA (dum on 1, tek on the off-beats), and a FAR GONG
-// on the first beat of every eighth bar (the rule, heard: low inharmonic sines with a long tail). Never builds: the fort is asleep until you wake it.
-const KSM_STEP = 60 / 80 / 2, KSM_LEN = 8, KSM_BARSN = 8;
-const KSM_OUD = [['A3', '-', 'Bb3', 'C#4', 'D4', '-', 'C#4', 'Bb3'], ['A3', '-', 'C#4', '-', 'E4', 'D4', 'C#4', '-'], ['D4', '-', 'C#4', 'Bb3', 'A3', '-', 'G3', '-'], ['A3', 'Bb3', 'A3', '-', '-', '-', 'E3', '-']];
-function ksar(i, delay, variant, env) {
-  const bar = Math.floor(i / KSM_LEN), s = i % KSM_LEN, g = env.gain;
-  if (s === 0 && bar % 4 === 0) held(env, 'sawtooth', nf('A1'), KSM_STEP * KSM_LEN * 4 * 0.98, 0.05 * g, delay, { lp: 320, att: KSM_STEP * 6, hold: 0.7, det: 8 });
-  if (s === 0 && bar % 8 === 0) for (const [f, v] of [[98, 0.16], [141, 0.07], [233, 0.04]]) pluck(env, 'sine', f, 3.2, v * g, delay, { to: f * 0.985 });   /* the far gong */
-  if (s === 0 || s === 3) pluck(env, 'sine', 90, 0.22, 0.28 * g, delay, { to: 52 }); if (s === 2 || s === 6 || s === 7) noise(env, 0.03, 0.05 * g, 4200, 2, delay);   /* dum, tek */
-  const c = KSM_OUD[bar % 4][s]; if (c !== '-') { const f = nf(c); pluck(env, 'triangle', f, KSM_STEP * 1.6, 0.08 * g, delay, { to: f * 0.997, lp: 2400 }); pluck(env, 'square', f * 2, 0.05, 0.012 * g, delay, { lp: 3000 }); }
-}
+// (THE BANDIT KSAR has no synth bed: 'Desert Loop' by iamoneabe is its file, claude/ksar art pass; THE HAWK-MISTRESS below keeps her composed theme)
 // ---------------------------------------------------------------- THE HAWK-MISTRESS (claude/ksar, her composed theme: three phases)
 // D Phrygian dominant (D Eb F# G A Bb C), 4/4 at 100 (eighth = 0.3 s), 16 bars = 38 s. THE DUEL: a frame drum (a bendir: dum on 1 and the and of 2, a slap on
 // 4), a D-A drone, a reedy ZURNA lead (a narrow square through a lowpass, a scoop into every note) on a hunting figure, and a WHIP CRACK (a bright noise snap)
@@ -454,7 +442,7 @@ function colossus(i, delay, variant, env) {
 
 export const SYNTH_BOSS = {
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
-  ksar: { step: KSM_STEP, total: KSM_LEN * KSM_BARSN, play: ksar }, hawkmistress: { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) the greybox level bed and her theme */
+  hawkmistress: { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) the greybox level bed and her theme */
   djinn: { step: DJM_STEP, total: DJM_LEN * DJM_BARSN, play: djinn },
   cisternqueen: { step: CQM_STEP, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
   gorgecrab: { step: GCM_STEP, total: GCM_LEN * GCM_BARSN, play: gorgecrab },
