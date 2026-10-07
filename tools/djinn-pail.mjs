@@ -25,11 +25,13 @@ try {
     const r={hero,given:!!P.djPail,full0:!!(P.djPail&&P.djPail.full)};
     const still=()=>{P.hp=P.maxHp;P.x=G.windlass+60;P.y=G.floor;P.vx=0;P.vy=0;P.ground=true;P.atk=-1;P.climb=false;P.snare=0;S.tide={st:'low',t:60};S.water=DJG.DJ.waterH;};
     const calm=()=>{b.open=0;b.mode='hover';b.modeT=5;S.ward=0;S.marks=[];S.hand=null;S.held=null;S.pails=[];};
-    const scoop=()=>{still();calm();BK.sim(14);still();BK.press('talk');BK.sim(1);return !!(P.djPail&&P.djPail.full);};
+    const scoop=()=>{still();calm();if(P.djPail&&P.djPail.full){P.djPail.full=false;P.djPail.refill=0;}BK.sim(14);still();BK.press('talk');BK.sim(1);return !!(P.djPail&&P.djPail.full);};
+    const refill=()=>{still();calm();P.djPail.full=true;BK.press('talk');BK.sim(1);let k=1;const e0=!P.djPail.full;for(;k<120&&!P.djPail.full;k++){still();calm();BK.sim(1);}return {emptied:e0,full:!!P.djPail.full,t:+(k/60).toFixed(2)};};
     const rear=()=>{still();calm();b.x=P.x+80;P.face=1;S.act++;S.cur={k:'slam',id:S.act,x:P.x,y:G.floor};S.marks=[{x:P.x,y:G.floor,t:0.9,k:'slam',key:'slT'+S.act}];b.mode='slamTell';b.modeT=0.9;b.face=-1;};
     const after=(n)=>{const hp0=b.hp;let choked=0,reel=0,slam=0,h0=P.hp;for(let k=0;k<n;k++){P.hp=Math.max(P.hp,P.maxHp*0.5);const hh=P.hp;BK.sim(1);if(P.hp<hh)slam+=(hh-P.hp);if(b.mode==='choked')choked=Math.max(choked,b.open);if(b.mode==='reel')reel=Math.max(reel,b.open);}return {choked:+choked.toFixed(2),reel:+reel.toFixed(2),took:hp0-b.hp,slam};};
     const hold=()=>{for(let k=0;k<24;k++){still();BK.sim(1);}};
     /* E */
+    r.refill=refill();r.refillT=DJG.DJ.pailRefill;
     hold();r.scoopE=scoop();rear();BK.sim(18);BK.press('talk');const e1=after(40);r.throwE=e1;r.openRule=BK.bossOpen?!!BK.bossOpen(b):null;
     /* a strike */
     hold();calm();r.scoop2=scoop();rear();BK.sim(18);P.face=1;BK.press('atk');const e2=after(40);r.throwAtk=e2;
@@ -42,7 +44,8 @@ if (process.env.DUMP) console.log(JSON.stringify(rows));
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; console.log('  ok  ' + m); };
 const strikeless = [];
 for (const r of rows) {
-  ok(r.given && !r.full0, r.hero + ': the flood brings him an empty pail');
+  ok(r.given && r.full0, r.hero + ': the flood brings him a FULL pail (claude/djinn6: was empty - no scoop needed now)');
+  ok(r.refill.emptied && r.refill.full && r.refill.t <= r.refillT + 0.1, r.hero + ': thrown, it FILLS ITSELF again ' + r.refill.t + ' s later, wherever he stands');
   ok(r.scoopE && r.scoop2 && r.scoop3, r.hero + ': E in the water scoops it full, at once');
   ok(r.throwE.choked >= 1.8 && r.throwE.took >= r.chokeHit && r.throwE.slam === 0, r.hero + ': he rears up - E throws the pail into his core: he CHOKES (' + r.throwE.choked + ' s open, ' + r.throwE.took.toFixed(1) + ' hp off him, the slam never lands)');
   if (r.throwAtk.choked >= 1.8) ok(r.throwAtk.took >= r.chokeHit && r.throwAtk.slam === 0, r.hero + ': ... and a STRIKE throws it the same (' + r.throwAtk.choked + ' s)'); else strikeless.push(r.hero);

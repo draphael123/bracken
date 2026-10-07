@@ -28,17 +28,14 @@ export const CURVE_BANDS = {
    tools/curve-gate.mjs (and level-quality for a gated level); a listed level that is back in its band fails too - take it out, as MASH_REPORT_ONLY.
    Each entry: what it measured, and which way it misses. */
 export const CURVE_REPORT_ONLY = {
-  kings: 'act 1: 176% lost a run, 5 deaths - over the act I death ceiling (3)',
-  scree: 'act 2: 414% lost, 7 deaths - over the act II death ceiling (6) and its health ceiling (400%)',
   underleaf: 'act 2: 45% lost, 0 deaths - EASY for act II (floor 70%)',
   storm: 'act 2: 26% lost, 0 deaths - EASY for act II (floor 70%): the level-1 pilot is lifted past most of it',
-  crown: 'act 2: 506% lost, 7 deaths - over both act II ceilings',
   undercrown: 'act 2: 345% lost, 9 deaths - over the act II death ceiling (6)',
   longwater: 'act 3: 63% lost, 0 deaths - EASY for act III (floor 100%, 1 death)',
   reef: 'act 3: 97% lost, 0 deaths - under the act III floor (100%, 1 death)',
   keep: 'act 3: 256% lost, 0 deaths - no deaths (act III wants >= 1)',
   causeway: 'act 3: 71% lost, 0 deaths - EASY for act III',
-  fair: 'act 4: 198% lost, 0 deaths - no deaths (act IV wants >= 1)',
+  /* (claude/survival, 10-07: kings 185%/2, scree 376%/5, crown 307%/4 and fair 370%/3 are back in their bands under the FLASK + dry shrines - gated again) */
   /* (claude/redgorge2: redgorge is back in its band - 246% lost, 6 deaths in 3 runs - and gated by the curve again) */
 };
 /* THE RULE'S STATE, by the built level's own keys. Each holds places: {x0,x1} / {x} / [x0, x1, ..] in tiles or pixels (read by size). */

@@ -67,14 +67,17 @@ export const UNB = {
   /* (claude/unburied4, Daniel's playtest 10-05: "a bit slower and slightly less damage" - he won. Every tell, his recovery and his pause x1.12, his walk 80 -> 70, every blow of his x0.85;
      his health untouched. tools/deathknight-pilot.mjs re-measured: see work/claude/lane-done/claude-unburied4.md) */
   bk: { walk: 70, walkP2: 1.2, keep: 48, keepMin: 30, cd: 0.56, p2: 0.8, crowd: 0.3,
-    tell: { swing: 0.47, swingNext: 0.34, swingTurn: 0.13, punish: 0.34, cleave: 1.12, cleaveCombo: 0.9, cleaveAfter: 0.62, commit: 0.36, blade: 1.06, grip: 0.84, boil: 0.95, coil: 0.78, tide: 1.06, ward: 0.39, nova: 0.67, raise: 1.01, call: 1.23, surge: 1.34 },
-    swingR: 54, swingRec: 0.34, lunge: 10, cleaveR: 62, cleaveBack: 8, stuckT: 1.5, p2At: 0.6, openMul: 1.6,   /* (claude/weakboss, Daniel: 'a bit too easy' - the stuck blade held him 2.0 s, and his phase two came at half health) */
+    /* (claude/retune2, the refit bot won him 75% and Daniel calls him hard: B5 SHARPER, not walled - his own kit's tells shorter, his stuck blade and broken ward
+       briefer, his passing quicker to read a string; was cleave 1.12 / combo 0.9 / after 0.62 / commit 0.36 / blade 1.06 / grip 0.84 / boil 0.95 /
+       coil 0.78 / tide 1.06, stuckT 1.5, reelT 1.8, passing on a string 0.25 / 0.35 and its cooldown 2.4 s, the ward raised when pressed 0.5; his 1700 is Daniel's gate - tools/weak-bosses.mjs) */
+    tell: { swing: 0.47, swingNext: 0.34, swingTurn: 0.13, punish: 0.34, cleave: 0.95, cleaveCombo: 0.77, cleaveAfter: 0.53, commit: 0.30, blade: 0.93, grip: 0.74, boil: 0.84, coil: 0.69, tide: 0.93, ward: 0.39, nova: 0.67, raise: 1.01, call: 1.23, surge: 1.34 },
+    swingR: 54, swingRec: 0.34, lunge: 10, cleaveR: 62, cleaveBack: 8, stuckT: 1.25, p2At: 0.6, openMul: 1.6,   /* (claude/weakboss, Daniel: 'a bit too easy' - the stuck blade held him 2.0 s, and his phase two came at half health) */
     strings: [1, 2, 2, 3], stringsP2: [2, 3, 3],
     bolts: 3, boltsP2: 5, gap: 46, gapP2: 40, boltT: 0.85, boltG: 300,
     gripR: 170, chainV: 460, dragV: 420, boilR: 28, boilT: 2.4, boilTick: 0.5, coilV: 125, coilTurn: 2.4, coilT: 2.6, coilHeal: 40, coilMin: 72,
     tideN: 7, tideStep: 26, tideFrom: 26, tideGap: 0.09, tideHold: 0.5, tideR: 11,
-    wardT: 1.6, wardFull: 3, reelT: 1.8, novaR: 64, novaPer: 10, guardT: 1.4, wardHeat: 2, heatFall: 1.1, wardReact: 0.5, wardCd: 5,
-    dodge: { near: 80, read: 0.12, heavy: 0.45, heavyP2: 0.55, combo: 2, swing: 0.25, swingP2: 0.35, cd: 2.4, cdP2: 0.8, past: 34, back: 70, t: 0.3 },
+    wardT: 1.6, wardFull: 3, reelT: 1.5, novaR: 64, novaPer: 10, guardT: 1.4, wardHeat: 2, heatFall: 1.1, wardReact: 0.65, wardCd: 5,
+    dodge: { near: 80, read: 0.12, heavy: 0.45, heavyP2: 0.55, combo: 2, swing: 0.35, swingP2: 0.45, cd: 1.8, cdP2: 0.8, past: 34, back: 70, t: 0.3 },
     surgeR: 90, raise: 1, call: 3, addsMax: 3,
     order: ['string', 'blade', 'string', 'grip', 'coil', 'string', 'boil', 'ward', 'string', 'raise'],
     orderP2: ['string', 'tide', 'string', 'coil', 'blade', 'string', 'grip', 'surge', 'string', 'boil', 'ward', 'call'] },

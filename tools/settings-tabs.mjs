@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { TABS, TAB_ITEMS, LEGACY_ROWS, tabOf, isHeaderRow } from '../src/settings-ui.js';
-import { cardRows, keysTable, KB_DEFAULT, cleanBinds, emptyBinds, setSlot, conflicts, PROFILES } from '../src/controls.js';
+import { cardRows, keysTable, KB_DEFAULT, cleanBinds, emptyBinds, setSlot, conflicts, PROFILES, ACTION_IDS } from '../src/controls.js';
 
 /* ---- 1. the tabs, statically ---- */
 assert.deepEqual(TABS.map(t => t.name), ['AUDIO', 'DISPLAY', 'GAMEPLAY', 'CONTROLS', 'ACCESSIBILITY']);
@@ -85,7 +85,7 @@ try {
     const saved = localStorage.getItem('bracken.settings'); out.savedHasBinds = /"binds"/.test(saved) && /"i"/.test(saved);
     ui.readSettings('{}'); out.afterBlank = JSON.stringify(ui.settings().binds); ui.readSettings(saved); out.reloaded = JSON.stringify(ui.settings().binds.kb.jump);
     /* the reset */
-    ui.rebind.open(0); const rr = ui.rebind.state(); rr.i = 15; key('Enter'); out.armed = rr.arm > 0; key('Enter'); out.afterReset = JSON.stringify(ui.settings().binds.kb);
+    ui.rebind.open(0); const rr = ui.rebind.state(); rr.i = ${ACTION_IDS.length}; key('Enter'); out.armed = rr.arm > 0; key('Enter'); out.afterReset = JSON.stringify(ui.settings().binds.kb);
     ui.rebind.open(1); ui.readSettings('{}');
 
     /* ---- 5. the card in the game ---- */

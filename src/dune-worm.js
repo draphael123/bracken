@@ -30,7 +30,7 @@
 // rises at the commit (only the real one bulges: readable, late).
 
 export const WORM = {
-  hp: 2600,       /* (claude/duneworm2: 1100 when every blow outside the tangle was a twentieth; behind the plates a blow lands whole now) */
+  hp: 2200,       /* (claude/retune2: 2600 -> 2200 on the refit bot) (claude/duneworm2: 1100 when every blow outside the tangle was a twentieth; behind the plates a blow lands whole now) */
   /* A LITTLE FASTER (claude/duneworm2: ~12% off every beat of his, every tell still >= 0.5 s; the commit, his signature's read, is kept) */
   rippleSpeed: 170, rippleTrack: 0.88, rippleCommit: 0.45, commitSpeed: 215,
   breachR: 14, breachH: 60, breachT: 0.3,
@@ -48,7 +48,7 @@ export const WORM = {
   turn: 0.5,      /* s a hero may stand behind him while he is up before he TURNS his plates to you (a beast guards: it does not hold still to be cut) */
   plateDead: 6,   /* px: a blow from closer to his middle than this is on the plates (from the front) */
   phase2: 0.5,
-  dmg: { breach: 64, spit: 14, lunge: 64, bite: 64, sweep: 72, wave: 58 },
+  dmg: { breach: 41, spit: 9, lunge: 41, bite: 41, sweep: 46, wave: 37 },   /* (claude/retune2: x0.64 - 64 / 14 / 64 / 64 / 72 / 58 killed an L30 hero of 240 in four, the refit bot won 0/8 0/8 5/8) */
   /* THE STORM IN THE HOLLOW: a gust's push along the sand, px/s. The pyramid's storm is 150 (src/desert-rules.js); this is a
      hollow forty tiles wide with a wall at each end, and a push of 150 over a 1.6 s gust carried a hero the width of the awning
      and into the far wall. At 100 an unbraced hero goes about ten tiles, and walking INTO it gets you nowhere - so a ripple that commits in a

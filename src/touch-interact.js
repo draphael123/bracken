@@ -23,6 +23,8 @@ export const CTX_HOOKS = [];
 export function ctxButton(c) {
   const P = c.P; if (!P || c.state !== 'play' || P.dead || P.hurt > 0 || P.asleep > 0) return null;
   for (const h of CTX_HOOKS) { let r = null; try { r = h(c); } catch { r = null; } if (r && r.label) return { label: String(r.label).toUpperCase(), key: r.key || 'throw', dim: !!r.dim }; }
+  /* AND WHEN NO LANE'S HOOK ANSWERS, THE FLASK (claude/survival): hurt, a flask held, on his feet - main.js's c.flask() says so */
+  if (c.flask) { let r = null; try { r = c.flask(); } catch { r = null; } if (r && r.label) return { label: String(r.label).toUpperCase(), key: r.key || 'flask', dim: !!r.dim }; }
   return null;
 }
 

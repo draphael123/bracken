@@ -22,22 +22,28 @@ export const PROFILES = {
     /* CALIBRATED 2026-10-05 night (tools/bot-calibrate.mjs --feel, d=0.3 of the one dial; grid 0.3/0.6/0.9 x 4 bosses x 3 heroes x 3 seeds): the
        Puppeteer 56% (good: 55), Jenny 78% (easy: 80), the Djinn 56% (a little too hard: 42); the Death Knight sits at 63-100% under every dial
        (his hands read hidden state) and is left out of the fit - see work/claude/lane-done/claude-bot2.md. Refit when the recorder's logs arrive. */
-    rtMin: 218, rtMax: 446, rtMode: 302,   // reaction to a change it can SEE, ms: triangular(min, mode, max), drawn per read
+    /* REFIT 2026-10-06 (claude/retune2, after BOT READS removed the double reaction): tools/bot-calibrate.mjs --feel, grid 0.3/0.6/0.9/1.2 x 4 bosses x 3 heroes x 4 seeds
+       (n=12 a cell). d=0.9 = the lowest loss over ALL FOUR bosses (14.6; d=1.2 14.8, d=0.6 17.5, d=0.3 35.4): Death Knight 75 (hard: 30), Djinn 75 (a little too hard: 42, a
+       feel from before DJINN5 made him easier), Puppeteer 58 (good: 55), Jenny 67 (easy: 80, a feel from before CANAL4 rebuilt her). The tool's own pick, d=1.2, fits only the
+       Puppeteer and Jenny (it drops the two it cannot explain) and lies past the dial's 0-1 range. The d=0.3 profile is kept as human03. */
+    rtMin: 254, rtMax: 578, rtMode: 386,   // reaction to a change it can SEE, ms: triangular(min, mode, max), drawn per read
     rtUnmarked: 120,                       // + ms when the windup wears no mark and says nothing (a pose alone)
     rtHeard: 180,                          // + ms for a windup off the screen, known only by its tell sound
     timingSd: 0.06,                        // s of game time: the error in reading how long a tell has left (per read)
-    misread: 0.062,                         // chance a tell is answered as another tell of his it has seen (or not answered at all)
-    greed: 0.19, greedSwings: [1, 2],      // chance after a landed hit to stay in for 1-2 more swings, blind to his next tell
+    misread: 0.146,                         // chance a tell is answered as another tell of his it has seen (or not answered at all)
+    greed: 0.413, greedSwings: [1, 2],      // chance after a landed hit to stay in for 1-2 more swings, blind to his next tell
     staminaSlip: 0.2,                      // share of the fight it is not minding the roll it should keep back (re-rolled every 3 s)
     openRt: 1.0,                           // his OPEN is noticed with the same reaction (x this)
+    drinkAt: 0.35,                         // (claude/survival) drinks a flask (BK.drinkFlask) under this share of the bar, while one is held; legacy never drinks
     first: false, firstMisread: 0.5, learnAfter: 2, firstTiming: 2, openDiscover: 0.9,
   },
 };
+PROFILES.human03 = { ...PROFILES.human, name: 'human03', rtMin: 218, rtMax: 446, rtMode: 302, misread: 0.062, greed: 0.19 };   /* BOT2's d=0.3 human, for re-reading old tables */
 export const STANDARD = 'human';   /* the profile the boss standard (50-60% across knight / warden / pyro) is measured with */
 export function profileOf(p) {
   if (!p) return PROFILES.legacy;
   if (typeof p === 'string') { const [name, ...mods] = p.split('+'); const base = PROFILES[name]; if (!base) throw Error('no bot profile ' + name);
-    return mods.reduce((o, m) => m === 'first' ? { ...o, first: true, name: o.name + '+first' } : o, base); }
+    return mods.reduce((o, m) => m === 'first' ? { ...o, first: true, name: o.name + '+first' } : m === 'dry' ? { ...o, drinkAt: 0, name: o.name + '+dry' } : o, base); }   /* +dry (claude/survival): the same hands, no flask drunk - the boss rows as they were measured before the flask */
   return { ...(PROFILES[p.base || 'human']), ...p };
 }
 /* THE BUILD a player carries at a level (claude/bot2 #3). 'bare' = the even card and no skills (the lab's floor, as BKT.setHeroLevel
