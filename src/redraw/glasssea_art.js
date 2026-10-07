@@ -119,16 +119,17 @@ export function drawRing(g, x, y, on, time, crack, col) {
 }
 /* ---------- BEAMS: a soft glow, a mid band, a white-hot core (crisp, axis-aligned) and motes running down it */
 const BEAM = { sun: ['#ffffff', '#fff2a8', '#ffa828', 'rgba(255,214,110,0.22)'], sunset: ['#fff0e0', '#ffc080', '#ff7030', 'rgba(255,150,70,0.22)'], fire: ['#fff4dc', '#ffcc70', '#ff7a20', 'rgba(255,140,50,0.22)'], gaze: ['#ffffff', '#c8f6ff', '#2aa8e8', 'rgba(110,210,255,0.22)'] };
-export function drawBeam(g, x0, y0, x1, y1, col, time) {
+export function drawBeam(g, x0, y0, x1, y1, col, time, a = 1) {
   const c = BEAM[col] || BEAM.sun, xa = R(Math.min(x0, x1)), xb = R(Math.max(x0, x1)), ya = R(Math.min(y0, y1)), yb = R(Math.max(y0, y1)), hor = (yb - ya) < (xb - xa) || (yb === ya);
   const pulse = 0.85 + 0.15 * Math.sin(time * 18);
   /* a warm halo (additive), then three opaque bands: a saturated edge (it reads on the pale day sky), a pale middle, a white-hot core */
-  g.globalCompositeOperation = 'lighter'; g.fillStyle = c[3];
+  g.globalCompositeOperation = 'lighter'; g.fillStyle = c[3]; g.globalAlpha = a;
   if (hor) g.fillRect(xa, ya - 5, xb - xa + 1, 11); else g.fillRect(xa - 5, ya, 11, yb - ya + 1);
   g.globalCompositeOperation = 'source-over';
-  if (hor) { g.fillStyle = c[2]; g.globalAlpha = 0.75; g.fillRect(xa, ya - 2, xb - xa + 1, 5); g.globalAlpha = 1; g.fillStyle = c[1]; g.globalAlpha = pulse; g.fillRect(xa, ya - 1, xb - xa + 1, 3); g.globalAlpha = 1; g.fillStyle = c[0]; g.fillRect(xa, ya, xb - xa + 1, 1); }
-  else { g.fillStyle = c[2]; g.globalAlpha = 0.75; g.fillRect(xa - 2, ya, 5, yb - ya + 1); g.globalAlpha = 1; g.fillStyle = c[1]; g.globalAlpha = pulse; g.fillRect(xa - 1, ya, 3, yb - ya + 1); g.globalAlpha = 1; g.fillStyle = c[0]; g.fillRect(xa, ya, 1, yb - ya + 1); }
+  if (hor) { g.fillStyle = c[2]; g.globalAlpha = 0.75 * a; g.fillRect(xa, ya - 2, xb - xa + 1, 5); g.fillStyle = c[1]; g.globalAlpha = pulse * a; g.fillRect(xa, ya - 1, xb - xa + 1, 3); g.globalAlpha = a; g.fillStyle = c[0]; g.fillRect(xa, ya, xb - xa + 1, 1); }
+  else { g.fillStyle = c[2]; g.globalAlpha = 0.75 * a; g.fillRect(xa - 2, ya, 5, yb - ya + 1); g.fillStyle = c[1]; g.globalAlpha = pulse * a; g.fillRect(xa - 1, ya, 3, yb - ya + 1); g.globalAlpha = a; g.fillStyle = c[0]; g.fillRect(xa, ya, 1, yb - ya + 1); }
   const len = hor ? xb - xa : yb - ya; for (let i = 0; i < len / 22; i++) { const t = ((time * 70 + i * 22) % Math.max(22, len)), mx = hor ? xa + t : xa, my = hor ? ya : ya + t; g.fillStyle = '#ffffff'; g.fillRect(mx - (hor ? 1 : 2), my - (hor ? 2 : 1), hor ? 3 : 5, hor ? 5 : 3); g.fillStyle = c[0]; g.fillRect(mx, my - 1, 1, 3); }
+  g.globalAlpha = 1;
 }
 /* ---------- A CAMPFIRE: a pit ringed with glass lumps, bleached bones laid crossed over embers, flames in three layers; its light is the night's (drawNight) and a pool on the ground here ---------- */
 export function drawFire(g, x, y, time, seed) {
@@ -140,26 +141,45 @@ export function drawFire(g, x, y, time, seed) {
   for (let i = 0; i < 3; i++) { const t = (time * 0.9 + i * 0.33 + seed * 0.13) % 1; g.fillStyle = i % 2 ? '#ffd890' : '#ffb050'; g.fillRect(R(x - 3 + i * 3 + Math.sin(t * 6 + i) * 2), R(y - 12 - t * 18), 1, 1); }   /* sparks */
   g.globalCompositeOperation = 'lighter'; const pool = g.createRadialGradient(x, y, 2, x, y, 38); pool.addColorStop(0, 'rgba(255,170,80,0.34)'); pool.addColorStop(1, 'rgba(255,140,60,0)'); g.fillStyle = pool; g.save(); g.translate(x, y); g.scale(1, 0.32); g.translate(-x, -y); g.fillRect(x - 40, y - 40, 80, 80); g.restore(); g.globalCompositeOperation = 'source-over';   /* a pool of warm light on the glass */
 }
-/* ---------- A MIRROR: the glass at (x, y) by its notch ('sky' = flat to the sky, '/' and '\\' slanted); a bronze hood on a post (foot = px down to the ground, 'hood' = a tripod over a fire) and a brass dial of studs under it ---------- */
+/* ---------- A MIRROR: the glass at (x, y) by its notch ('sky' = flat to the sky, '/' and '\\' slanted); a bronze hood on a post (foot = px down to the ground, 'hood' = a tripod over a fire) and a brass dial of studs.
+   (glasssea2, Daniel 10-07 "the light kind of CLIPS THROUGH them") drawn in TWO passes round the beams: drawMirrorBase (the post, the tripod) UNDER the beam, drawMirrorFace (the disc, the pivot,
+   the dial) OVER it - so a beam meets the polished face and never runs across the bronze. side: the post stands that many px aside on a bracket (a mirror a beam comes up into or goes
+   down from: the light runs where a post would be); a hood (over a fire) is open underneath: the firelight comes up through it ---------- */
 const BRONZE = { d: '#4a2e1a', m: '#8a5a2a', l: '#c89a4a', h: '#ffd36b' };
-export function drawMirror(g, x, y, st, n, of, flash, time, locked, foot, hood) {
-  const gy = y + (foot || 24);
-  if (hood) { for (const dx of [-9, 9]) { g.fillStyle = BRONZE.d; for (let i = 0; i < gy - y - 6; i++) g.fillRect(x + R(dx * (1 - i / (gy - y)) * 1) , y + 6 + i, 2, 1); g.fillStyle = BRONZE.l; g.fillRect(x + dx, gy - 2, 3, 2); } }   /* a tripod's two legs straddling the fire */
-  else { g.fillStyle = BRONZE.d; g.fillRect(x - 2, y + 4, 4, gy - y - 4); g.fillStyle = BRONZE.m; g.fillRect(x - 2, y + 4, 2, gy - y - 4); g.fillStyle = BRONZE.l; g.fillRect(x - 2, y + 4, 1, gy - y - 4); g.fillStyle = BRONZE.d; g.fillRect(x - 6, gy - 3, 12, 3); g.fillStyle = BRONZE.m; g.fillRect(x - 6, gy - 3, 12, 1); }   /* the post and its foot plate */
-  /* the hood: a bronze half shell behind the disc, and the disc */
-  g.fillStyle = BRONZE.d; g.fillRect(x - 3, y + 2, 6, 5); g.fillStyle = BRONZE.l; g.fillRect(x - 2, y + 2, 4, 1);
+export function drawMirrorBase(g, x, y, foot, hood, side) {
+  const gy = y + (foot || 24), px0 = x + (side || 0);
+  if (hood) { for (const dx of [-9, 9]) { g.fillStyle = BRONZE.d; for (let i = 0; i < gy - y - 6; i++) g.fillRect(x + R(dx * (1 - i / (gy - y))), y + 6 + i, 2, 1); g.fillStyle = BRONZE.l; g.fillRect(x + dx, gy - 2, 3, 2); } return; }   /* a tripod's two legs straddling the fire */
+  g.fillStyle = BRONZE.d; g.fillRect(px0 - 2, y + 4, 4, gy - y - 4); g.fillStyle = BRONZE.m; g.fillRect(px0 - 2, y + 4, 2, gy - y - 4); g.fillStyle = BRONZE.l; g.fillRect(px0 - 2, y + 4, 1, gy - y - 4);
+  g.fillStyle = BRONZE.d; g.fillRect(px0 - 6, gy - 3, 12, 3); g.fillStyle = BRONZE.m; g.fillRect(px0 - 6, gy - 3, 12, 1);   /* the post and its foot plate */
+  if (side) { const a = Math.min(x, px0) + 2, b = Math.max(x, px0) - 1; g.fillStyle = BRONZE.d; g.fillRect(a, y + 2, b - a + 1, 3); g.fillStyle = BRONZE.l; g.fillRect(a, y + 2, b - a + 1, 1); }   /* the bracket arm to the pivot */
+}
+export function drawMirrorFace(g, x, y, st, n, of, flash, time, locked, hood, side) {
+  /* the hood: a bronze half shell behind the disc (none under a hood or a side-post mirror: a beam passes there); a hood shows its bowl's two lips */
+  if (hood) { g.fillStyle = BRONZE.d; g.fillRect(x - 9, y + 1, 3, 4); g.fillRect(x + 7, y + 1, 3, 4); g.fillStyle = BRONZE.l; g.fillRect(x - 9, y + 1, 3, 1); g.fillRect(x + 7, y + 1, 3, 1); }
+  else if (!side) { g.fillStyle = BRONZE.d; g.fillRect(x - 3, y + 2, 6, 5); g.fillStyle = BRONZE.l; g.fillRect(x - 2, y + 2, 4, 1); }
   const glass = flash > 0 ? '#ffffff' : '#d8f8ff', rimL = BRONZE.h, rimD = BRONZE.d;
   if (st === 'sky') { for (let i = -7; i <= 7; i++) { const t = i / 7, hh = R((1 - t * t) * 3); g.fillStyle = rimD; g.fillRect(x + i, y - hh - 1, 1, 2 * hh + 3); g.fillStyle = glass; g.fillRect(x + i, y - hh, 1, 2 * hh + 1); if (hh > 1) { g.fillStyle = '#7ad0e8'; g.fillRect(x + i, y + hh - 1, 1, 1); } } g.fillStyle = rimL; g.fillRect(x - 7, y, 1, 1); g.fillRect(x + 7, y, 1, 1);
     g.fillStyle = 'rgba(255,255,255,0.8)'; g.fillRect(x - 3, y - 2, 3, 1); }   /* flat, face up to the sky: no beam */
-  else { const sgn = st === '/' ? -1 : 1;   /* '/' rises to the right: the strip runs from lower left to upper right */
-    for (let i = -8; i <= 8; i++) { const yy = y + i * (-sgn) * 1 * (st === '/' ? 1 : 1); const xx = x + i; const px0 = xx, py0 = st === '/' ? y - i : y + i;
+  else { for (let i = -8; i <= 8; i++) { const px0 = x + i, py0 = st === '/' ? y - i : y + i;   /* '/' rises to the right: the strip runs from lower left to upper right */
       g.fillStyle = rimD; g.fillRect(px0, py0 - 2, 1, 5); g.fillStyle = glass; g.fillRect(px0, py0 - 1, 1, 3); g.fillStyle = '#7ad0e8'; g.fillRect(px0, py0 + 1, 1, 1); if (Math.abs(i) > 6) { g.fillStyle = rimL; g.fillRect(px0, py0, 1, 1); } }
     const gl = (R(time * 4) % 9) - 4; g.fillStyle = '#ffffff'; g.fillRect(x + gl, (st === '/' ? y - gl : y + gl) - 1, 1, 1); }
   g.fillStyle = BRONZE.h; g.fillRect(x - 1, y - 1, 3, 3); g.fillStyle = BRONZE.d; g.fillRect(x, y, 1, 1);   /* the pivot */
   if (flash > 0) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = Math.min(1, flash * 2.5); const f = g.createRadialGradient(x, y, 1, x, y, 20); f.addColorStop(0, 'rgba(255,250,210,0.9)'); f.addColorStop(1, 'rgba(255,230,150,0)'); g.fillStyle = f; g.fillRect(x - 20, y - 20, 40, 40); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
-  /* the dial: a brass plate with one stud per notch - the lit stud is where it throws; the stuck one is dark red with a keyhole */
-  const dw = of * 5 + 3, dx0 = x - R(dw / 2), dy0 = y + 9; g.fillStyle = BRONZE.d; g.fillRect(dx0, dy0, dw, 5); g.fillStyle = BRONZE.m; g.fillRect(dx0, dy0, dw, 1);
+  /* the dial: a brass plate with one stud per notch - the lit stud is where it throws; the stuck one is dark red with a keyhole (under the disc; beside it when a beam runs under the disc) */
+  const dw = of * 5 + 3, dx0 = hood || side ? x + 7 : x - R(dw / 2), dy0 = hood || side ? y + 6 : y + 9; g.fillStyle = BRONZE.d; g.fillRect(dx0, dy0, dw, 5); g.fillStyle = BRONZE.m; g.fillRect(dx0, dy0, dw, 1);
   for (let i = 0; i < of; i++) { const stuck = locked && i === of - 1, on = i === n; g.fillStyle = on ? '#fff0a0' : stuck ? '#7a2020' : '#2a2a34'; g.fillRect(dx0 + 2 + i * 5, dy0 + 1, 3, 3); if (on) { g.fillStyle = '#ffffff'; g.fillRect(dx0 + 3 + i * 5, dy0 + 1, 1, 1); } if (stuck) { g.fillStyle = '#1a0808'; g.fillRect(dx0 + 3 + i * 5, dy0 + 2, 1, 1); } }
+}
+export function drawMirror(g, x, y, st, n, of, flash, time, locked, foot, hood, side) { drawMirrorBase(g, x, y, foot, hood, side); drawMirrorFace(g, x, y, st, n, of, flash, time, locked, hood, side); }
+/* WHERE A BEAM BOUNCES (the glint on the polished face) and WHERE ONE LANDS ON A DISC TURNED TO THE SKY (it soaks into the face: a soft glow on the glass, no target ring) */
+export function drawBounce(g, x, y, col, time) {
+  const c = BEAM[col] || BEAM.sun, p = 0.75 + 0.25 * Math.sin(time * 16 + x);
+  g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient(x, y, 1, x, y, 11); gr.addColorStop(0, 'rgba(255,250,230,' + (0.85 * p).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,220,140,0)'); g.fillStyle = gr; g.fillRect(x - 11, y - 11, 22, 22); g.globalCompositeOperation = 'source-over';
+  const arm = 3 + R(2 * p); g.fillStyle = c[1]; g.fillRect(x - arm - 1, y, 2 * arm + 3, 1); g.fillRect(x, y - arm - 1, 1, 2 * arm + 3); g.fillStyle = '#ffffff'; g.fillRect(x - arm, y, 2 * arm + 1, 1); g.fillRect(x, y - arm, 1, 2 * arm + 1); g.fillRect(x - 1, y - 1, 3, 3);
+}
+export function drawDiscHit(g, x, y, col, time) {
+  const p = 0.6 + 0.4 * Math.sin(time * 9 + x);
+  g.globalCompositeOperation = 'lighter'; g.save(); g.translate(x, y); g.scale(1, 0.45); const gr = g.createRadialGradient(0, 0, 1, 0, 0, 12); gr.addColorStop(0, 'rgba(255,246,210,' + (0.7 * p).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,220,140,0)'); g.fillStyle = gr; g.fillRect(-12, -12, 24, 24); g.restore(); g.globalCompositeOperation = 'source-over';
+  g.fillStyle = '#ffffff'; g.fillRect(x - 4 + R(time * 6) % 9, y - 1, 1, 1); g.fillRect(x + 2, y, 2, 1);
 }
 /* ---------- A SHARD PATCH (a shattered scorpion's glass in the sand) and a DAZZLE (sparks round a stunned glass scorpion) ---------- */
 export function drawPatch(g, x, y, k, time) { g.globalAlpha = 0.4 + 0.6 * k; for (let i = 0; i < 8; i++) { const dx = -15 + i * 4 + (i & 1), h = 3 + (i * 5) % 4; g.fillStyle = i % 2 ? GL.c3 : GL.c2; g.fillRect(x + dx, y - h, 2, h); g.fillStyle = GL.w; g.fillRect(x + dx, y - h, 1, 1); } g.globalAlpha = 1; }

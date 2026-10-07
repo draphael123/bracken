@@ -73,7 +73,9 @@ export function makeGlassSeaHands(ctx) {
         if (r.kind === 'bed') { if (!fire) r.ref.hit = true; else if (once('fireBed')) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'FIRELIGHT WILL NOT FUSE SAND: IT WANTS THE SUN', '#ffd36b'); }
         if (r.kind === 'ring') { if (fire) r.ref.ringHit = true; } }
       const last = res.segs[res.segs.length - 1];
-      GSx.beams.push({ id: s.id, kind: s.kind, segs: res.segs, end: end ? { x: end.x, y: end.y, recv: end.kind } : last ? { x: last.x1, y: last.y1, recv: null } : null });
+      /* (glasssea2) a beam that stops on a mirror turned TO THE SKY lands on its disc (drawn soaking into the face, no ring) */
+      let disc = null; if (!end && last) { const d = { E: [1, 0], W: [-1, 0], N: [0, -1], S: [0, 1] }[last.dir], q = GSx.mirrors.find(m => m.x === last.x1 + d[0] && m.y === last.y1 + d[1] && m.state === 'sky'); if (q) disc = { x: q.x, y: q.y, id: q.id }; }
+      GSx.beams.push({ id: s.id, kind: s.kind, segs: res.segs, disc, end: end ? { x: end.x, y: end.y, recv: end.kind } : last ? { x: last.x1, y: last.y1, recv: null } : null });
     }
   }
   /* the next tile a mirror's beam would go, for each notch: told by the dial, and the glint's ring */
@@ -197,32 +199,66 @@ export function makeGlassSeaHands(ctx) {
     GSA.drawHorizon(g, vw, vh, cx, prog, kk, time, midX >= ax - 6 * ts);
   };
   /* is there something to stand a mirror's post on (rows under it), and a fire under a hood */
-  const footOf = m => { const ts = TS(); for (let yy = m.y + 1; yy < m.y + 9; yy++) { const t = ctx.cellGet(m.x, yy); if (t === ctx.T.SOLID || t === ctx.T.ONEWAY || isSlope(t)) return yy * ts - (m.y * ts + 8); } return 24; };
+  const footOf = (m, side = 0) => { const ts = TS(), col = Math.floor((m.x * ts + 8 + side) / ts); for (let yy = m.y + 1; yy < m.y + 9; yy++) { const t = ctx.cellGet(col, yy); if (t === ctx.T.SOLID || t === ctx.T.ONEWAY || isSlope(t)) return yy * ts - (m.y * ts + 8); } return 24; };
+  /* THE BEAM'S PATH IN PX (glasssea2, Daniel 10-07 "the light CLIPS THROUGH the mirrors"): the trace is whole tiles, centre to centre; the drawing starts where the light comes
+     from (the sun's shaft out of the open sky, the low sunset ray from the west, the fire's flame top, the giant's eyes at the wall) and stops where it lands: a receiver's
+     ring (the tile's centre), a disc turned TO THE SKY (its face - the light soaks into the glass, no ring), or a wall (the wall's face). Bounces are the disc's centre (a
+     slanted face passes through it). -> { pts: [[x, y]..], bounces: [[x, y]..], stop: 'recv' | 'disc' | 'wall', end: [x, y] } */
+  const opaqueAt = (x, y) => { const t = ctx.cellGet(x, y); return t == null || opaqueT(t); };
+  function beamPath(b) { const ts = TS(), L = GSx.L, s = (L.sources || []).find(q => q.id === b.id), C = v => v * ts + 8, pts = [], bounces = [];
+    if (!s || !b.segs.length) return null;
+    const sg0 = b.segs[0]; let x0 = C(sg0.x0), y0 = C(sg0.y0);
+    if (s.kind === 'sun') { let y = s.y - 1, n = 0; while (y >= 0 && n++ < 40 && !opaqueAt(s.x, y)) y--; y0 = (y + 1) * ts; }   /* the sun's shaft, out of the open sky */
+    else if (s.kind === 'sunset') { let x = s.x - 1, n = 0; while (x >= 0 && n++ < 60 && !opaqueAt(x, s.y)) x--; x0 = (x + 1) * ts; }   /* the low ray, from the west */
+    else if (s.kind === 'fire') y0 = (s.y + 2) * ts - 14;   /* out of the flame's top */
+    else if (s.kind === 'gaze') x0 = (s.x + 1) * ts;   /* out of the wall the eyes shine through */
+    pts.push([x0, y0]);
+    for (let i = 0; i < b.segs.length; i++) { const sg = b.segs[i]; pts.push([C(sg.x1), C(sg.y1)]); if (i < b.segs.length - 1) bounces.push([C(sg.x1), C(sg.y1)]); }
+    const last = b.segs[b.segs.length - 1], [dx, dy] = { E: [1, 0], W: [-1, 0], N: [0, -1], S: [0, 1] }[last.dir], e = pts[pts.length - 1];
+    let stop = 'wall';
+    if (b.end && b.end.recv) stop = 'recv';
+    else if (b.disc) { stop = 'disc'; e[0] = C(b.disc.x) - dx * 7; e[1] = C(b.disc.y) - dy * 3; }   /* the face of a disc flat to the sky: 7 px from its pivot along, 3 px across */
+    else { e[0] += dx * 8; e[1] += dy * 8; }   /* the wall's face */
+    if (pts.length === 2 && pts[0][0] === pts[1][0] && pts[0][1] === pts[1][1]) return { pts: [], bounces, stop, end: e };
+    return { pts, bounces, stop, end: e };
+  }
+  /* a post that would stand in a beam's way: the light comes up into it from below, or goes down from it (src/glass-sea.js marks these mirrors side: their post stands aside on a bracket) */
+  const SIDE = 9;
+  H.beamPath = b => (GSx ? beamPath(b) : null);
   H.drawWorld = (g, cx, cy, time) => {
     if (!GSx) return; const R = Math.round, vw = ctx.VW(), vh = ctx.VH(), ts = TS(), inX = (x, m = 60) => x > cx - m && x < cx + vw + m, L = GSx.L;
     GSET.drawProps(g, L, T(), cx, cy, vw, vh, time);   /* the supports, the decor kinds, the dressing */
     { const sunX = L.sunsetX * ts; for (const z of L.shade || []) { if (z[1] < cx || z[0] > cx + vw || z[0] > sunX) continue; GSA.drawShade(g, R(z[0] - cx), R(z[1] - cx), R(z[2] - cy), R(z[3] - cy), Math.max(0, Math.min(1, (sunX - z[0]) / (12 * ts)))); } }   /* the day's shade, soft-edged (it fades into the dusk) */
-    for (const c of GSx.cracks) { if (!inX(c.x0 * ts, 80) && !inX(c.x1 * ts, 80)) continue; GSA.drawCrack(g, R(c.x0 * ts - cx), R(c.y * ts - cy), (c.x1 - c.x0 + 1) * ts, c.swarm ? (c.held ? 'held' : night(c.x0 * ts) ? 'boil' : 'dark') : 'pit', time, GS.boilRows * ts, (L.glasssea && L.pitRow ? L.pitRow : 44) * ts - c.y * ts); }
+    for (const c of GSx.cracks) { if (!inX(c.x0 * ts, 80) && !inX(c.x1 * ts, 80)) continue; if (c.seam) { GSA.drawSeam && GSA.drawSeam(g, R(c.x0 * ts - cx), R(c.y * ts - cy), (c.x1 - c.x0 + 1) * ts, c.stirT || 0, c.spent, time); continue; }
+      GSA.drawCrack(g, R(c.x0 * ts - cx), R(c.y * ts - cy), (c.x1 - c.x0 + 1) * ts, c.swarm ? (c.held ? 'held' : night(c.x0 * ts) ? 'boil' : 'dark') : 'pit', time, GS.boilRows * ts, (L.glasssea && L.pitRow ? L.pitRow : 44) * ts - c.y * ts); }
     const plan = GPL.plan(L, T());
+    const mView = GSx.mirrors.filter(m => inX(m.x * ts)).map(m => ({ m, x: R(m.x * ts + 8 - cx), y: R(m.y * ts + 8 - cy), hood: GSx.fires.some(f => f.x === m.x && f.y > m.y && f.y - m.y <= 3), side: m.side ? SIDE : 0, locked: m.shardNotch !== undefined && ctx.questGot() < ctx.questN() }));
+    /* 1. THE MIRRORS' POSTS AND TRIPODS, under the light */
+    for (const v of mView) GSA.drawMirrorBase(g, v.x, v.y, footOf(v.m, v.side), v.hood, v.side);
+    /* 2. THE BEAMS: from where the light comes from to where it lands (beamPath) */
+    const paths = []; for (const b of GSx.beams) { const col = b.kind === 'fire' ? 'fire' : b.kind === 'gaze' ? 'gaze' : b.kind === 'sunset' ? 'sunset' : 'sun', P = beamPath(b); if (!P) continue; paths.push([b, P, col]);
+      for (let i = 0; i + 1 < P.pts.length; i++) { const [x0, y0] = P.pts[i], [x1, y1] = P.pts[i + 1]; if (Math.max(x0, x1) - cx < -20 || Math.min(x0, x1) - cx > vw + 20) continue; GSA.drawBeam(g, x0 - cx, y0 - cy, x1 - cx, y1 - cy, col, time, b.alpha ?? 1); } }
+    /* 3. THE BEDS (the glass over the light that fused it) */
     for (const b of GSx.beds) { if (!inX(b.tx * ts, 400)) continue;
       /* a bed that is still sand: the ghost of the glass it will be (dotted, faint; brighter while a beam is on its heap) */
       for (let i = b.set; i < b.tiles.length; i++) { const [x, y] = b.tiles[i]; const a = b.hit ? 0.5 : 0.2 + 0.06 * Math.sin(time * 3 + x); g.fillStyle = 'rgba(255,236,170,' + a.toFixed(3) + ')'; for (let xx = 0; xx < 16; xx += 4) g.fillRect(R(x * ts - cx) + xx, R(y * ts - cy) + 2, 2, 1); g.fillRect(R(x * ts - cx), R(y * ts - cy) + 2, 1, 3); g.fillRect(R(x * ts - cx) + 15, R(y * ts - cy) + 2, 1, 3); }
       /* the fused tiles' supports, then the slabs (the arch of a long span under it) */
       for (const p of plan.posts) if (p.bed === b.id) { const idx = b.tiles.findIndex(([x, y]) => x === p.x && y === p.y0); if (idx >= 0 && idx < b.set && inX(p.x * ts)) GSET.drawPost(g, p, cx, cy, Math.min(1, 0.4 + b.k)); }
       for (const ar of plan.arches) if (ar.bed === b.id && b.set > 0) GSET.drawArch(g, ar, cx, cy, Math.min(1, b.set / b.tiles.length));
+      const warn = b.warn > 0 && Math.floor(time * 14) % 2;   /* (a pulse bed whose mirror is about to rock off: the glass flickers) */
       for (let i = 0; i < b.set; i++) { const [x, y] = b.tiles[i], prev = b.tiles[i - 1], next = b.tiles[i + 1];
         const l = !(prev && prev[1] === y && prev[0] === x - 1), r = !(next && next[1] === y && next[0] === x + 1);
-        GSA.drawFused(g, shelfTile(x, y, l, r), R(x * ts - cx), R(y * ts - cy), b.hit ? 1 : b.k, time, b.hit, l, r); }
+        if (warn) g.globalAlpha = 0.55;
+        GSA.drawFused(g, shelfTile(x, y, l, r), R(x * ts - cx), R(y * ts - cy), b.hit ? 1 : b.k, time, b.hit, l, r); g.globalAlpha = 1; }
       GSA.drawHeap(g, R(b.tx * ts + 8 - cx), R((b.ty + 1) * ts - cy), b.hit, time); }
     for (const c of GSx.cracks) if (c.ring && inX(c.ring[0] * ts)) GSA.drawRing(g, R(c.ring[0] * ts + 8 - cx), R(c.ring[1] * ts + 8 - cy), c.ringHit, time, true);
+    /* 4. WHERE EACH BEAM LANDS: a target ring on a receiver or a wall (never on a disc: a disc turned to the sky soaks the light into its face) */
+    for (const [b, P, col] of paths) if (P.stop !== 'disc' && inX(P.end[0])) GSA.drawRing(g, R(P.end[0] - cx), R(P.end[1] - cy), P.stop === 'recv', time, false, col);
     for (const f of GSx.fires) if (inX(f.x * ts)) GSA.drawFire(g, R(f.x * ts + 8 - cx), R((f.y + 1) * ts - cy), time, f.x);
-    for (const m of GSx.mirrors) { if (!inX(m.x * ts)) continue; const locked = m.shardNotch !== undefined && ctx.questGot() < ctx.questN();
-      const hood = GSx.fires.some(f => f.x === m.x && f.y > m.y && f.y - m.y <= 3);
-      GSA.drawMirror(g, R(m.x * ts + 8 - cx), R(m.y * ts + 8 - cy), m.state, m.n, m.notches.length, m.flash, time, locked, footOf(m), hood); }
-    /* THE BEAMS: a white-hot line tile to tile, and a TARGET RING where each lands */
-    for (const b of GSx.beams) { const col = b.kind === 'fire' ? 'fire' : b.kind === 'gaze' ? 'gaze' : b.kind === 'sunset' ? 'sunset' : 'sun';
-      for (const sg of b.segs) { const x0 = sg.x0 * ts + 8 - cx, y0 = sg.y0 * ts + 8 - cy, x1 = sg.x1 * ts + 8 - cx, y1 = sg.y1 * ts + 8 - cy; if (Math.max(x0, x1) < -20 || Math.min(x0, x1) > vw + 20) continue; GSA.drawBeam(g, x0, y0, x1, y1, col, time); }
-      if (b.end && inX(b.end.x * ts)) GSA.drawRing(g, R(b.end.x * ts + 8 - cx), R(b.end.y * ts + 8 - cy), !!b.end.recv, time, false, col); }
+    /* 5. THE MIRRORS' FACES OVER THE LIGHT (the polished disc, the pivot, the dial), then the glint where a beam bounces and the glow where one soaks into a disc */
+    for (const v of mView) GSA.drawMirrorFace(g, v.x, v.y, v.m.state, v.m.n, v.m.notches.length, v.m.flash, time, v.locked, v.hood, v.side);
+    for (const [b, P, col] of paths) { for (const [x, y] of P.bounces) if (inX(x)) GSA.drawBounce(g, R(x - cx), R(y - cy), col, time); if (P.stop === 'disc' && inX(P.end[0])) GSA.drawDiscHit(g, R(b.disc.x * ts + 8 - cx), R(b.disc.y * ts + 8 - cy), col, time); }
+    for (const v of mView) if (v.m.pulse && GSA.drawPulseTimer) GSA.drawPulseTimer(g, v.x, v.y, v.m, time);
     for (const p of GSx.patches) if (inX(p.x)) GSA.drawPatch(g, R(p.x - cx), R(p.y - cy), p.t / GS.patchT, time);
     for (const e of ctx.enemies()) if (e.alive && e.cnSkin === 'glassscorpion' && e.gsDaz > 0 && inX(e.x)) GSA.drawDazzle(g, R(e.x - cx), R(e.y - 6 - cy), time);
     if (GSx.glint) drawGlint(g, R(GSx.glint.x - cx), R(GSx.glint.y - 18 - cy), vw, vh, time);

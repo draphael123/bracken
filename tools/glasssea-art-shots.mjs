@@ -37,6 +37,13 @@ try {
     at('z5-notch1', 42, 33, () => { turn('first', 1); run(10); }, [100, 66, 56, 56]);
     at('z6-notch2', 42, 33, () => { turn('first', 2); run(10); }, [100, 66, 56, 56]);
     at('g11-arena', 612, 33);
+    /* (glasssea2) the mirrors and their light: every kind of source, bounce and stop */
+    at('m1-chain', 318, 27, () => { turn('chainA', 1); turn('chainB', 1); run(120); });
+    at('m1z-chain', 318, 27, () => { turn('chainA', 1); turn('chainB', 1); run(60); }, [70, 20, 90, 120]);
+    at('m2-gaze', 586, 27, () => { turn('gaze', 1); turn('stepsRelay', 1); run(120); });
+    at('m2z-relay', 586, 27, () => { turn('stepsRelay', 1); run(30); }, [40, 40, 120, 100]);
+    at('m3z-first', 42, 33, () => { turn('first', 1); run(60); }, [70, 0, 140, 130]);
+    at('m4z-sky', 42, 33, null, [70, 0, 140, 130]);
     /* THE COLOSSUS in its states: forced modes on the arena (a picture, not a fight) */
     { const col = (name, ph, mode, f, hx, hy, hx2, hy2) => { if (filt && !filt.split(',').some(q => name.includes(q))) return; fresh(); BK.tp(hx || 612, hy || 33); run(90); const CO = BK.colossusHands(), S = CO && CO.show(), e = BK.boss; if (!S || !e) return; S.ph = ph; e.phase = ph; e.mode = mode; e.modeT = 99; if (f) f(e, S); BK.god = true; BK.sim(2); run(260); S.ph = ph; e.phase = ph; e.mode = mode; e.modeT = 99; if (f) f(e, S); BK.look(hx2 || 624, hy2 || 22); run(2); e.mode = mode; snap(name); };
       col('a1-dusk', 1, 'idle');

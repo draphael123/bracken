@@ -168,7 +168,7 @@ export function buildGlassSea({ painter, T, TS }) {
   mirror('chainA', 316, B - 2, ['sky', '/', '\\']);
   sign(312, B - 1, 'TWO MIRRORS: THE LOW SUN, UP, AND ACROSS.');
   boards(318, 321, B - 3); boards(319, 322, B - 6); boards(317, 321, B - 9);   /* up to B's shelf (rows 31, 28, 25) */
-  mirror('chainB', 316, B - 11, ['sky', '/', '\\']);                         /* B: over the top board, above A (its glass row 23) */
+  mirror('chainB', 316, B - 11, ['sky', '/', '\\'], { side: 1 });   /* (glasssea2) side: A's light comes UP into it - its post stands aside on a bracket */                      /* B: over the top board, above A (its glass row 23) */
   block(323, 326, 10, B - 4); air(323, 326, B - 11, B - 11);                /* THE OBELISK, its EYE a hole at row 23 */
   decor.push({ kind: 'obelisk', x0: 323, x1: 326, top: 10, y: B - 1, eye: B - 11 });
   shadeBox(317, 330, 10, B - 1);                                            /* its bulk is shade */
@@ -240,7 +240,7 @@ export function buildGlassSea({ painter, T, TS }) {
   fire('stepsFire', 582, B - 4); hunter(577, B - 4, 'stepsHunter');
   mirror('stepsRelay', 582, B - 6, ['sky', '/', '\\']); source('stepsRelay', 582, B - 5, 'N', 'fire');
   source('gaze', 603, B - 8, 'W', 'gaze');
-  mirror('gaze', 588, B - 8, ['sky', '/', '\\'], { shardNotch: 2 });        /* '/' sends the westward gaze DOWN; '\\' sends it UP (the vault notch, five shards) */
+  mirror('gaze', 588, B - 8, ['sky', '/', '\\'], { shardNotch: 2, side: 1 });   /* (glasssea2) side: its light goes DOWN to the heap - the post stands aside */        /* '/' sends the westward gaze DOWN; '\\' sends it UP (the vault notch, five shards) */
   boards(585, 589, B - 6);                                                  /* the gaze mirror's perch (row 28) */ boards(583, 584, B - 5);   /* (fix pass) a 2-row step up to it: no 3-row hop under the throwers */
   crack('steps', 590, 594, B - 3, { swarm: true, ring: [595, B - 6] });
   bed('stepsBridge', 588, B - 4, span(590, 594, B - 3), { label: 'THE STEPS\' BRIDGE', walk: true });

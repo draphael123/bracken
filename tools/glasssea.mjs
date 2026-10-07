@@ -38,6 +38,14 @@ const laid = beam({});
 const NEED = [['bed.firstStair', { first: '\\' }, 'sun'], ['bed.bridge', { bridge: '\\' }, 'sun'], ['bed.headBridge', { chainA: '/', chainB: '/' }, 'sunset'], ['ring.darkCut', { relay: '/' }, 'fire'],
   ['bed.stepsBridge', { gaze: '/' }, 'gaze'], ['ring.steps', { stepsRelay: '/' }, 'fire'], ['bed.spireStair', { spire: '\\' }, 'sun'], ['bed.vaultStair', { gaze: '\\' }, 'gaze']];
 for (const [id, want, kind] of NEED) { const h = beam(want); ok(h[id] === kind, id + ' is lit by its ' + kind + ' beam with ' + JSON.stringify(want) + ' (got ' + JSON.stringify(h[id]) + ')'); ok(!laid[id], id + ' is NOT lit as the level is laid (a TURN is needed)'); }
+{ /* (glasssea2, Daniel 10-07 "the light CLIPS THROUGH the mirrors") no beam runs up a mirror's post: a mirror the light comes up into or goes down from stands aside on a
+     bracket (side) or is a hood over its fire (open underneath) */
+  const hood = m => L.fires.some(f => f.x === m.x && f.y > m.y && f.y - m.y <= 3), bad = [];
+  for (const [, want] of NEED) { const ms = L.mirrors.map(m => ({ ...m, state: want[m.id] ?? m.notches[0] }));
+    const tileAt = (x, y) => { const m = ms.find(q => q.x === x && q.y === y); return m && m.state === 'sky' ? T.SOLID : at(x, y); };
+    for (const s of L.sources) { const r = trace(tileAt, [s], ms.filter(m => m.state !== 'sky'), [], { opaque, W: L.W, H: L.H });
+      for (const sg of r.segs) if (sg.x0 === sg.x1) for (const m of L.mirrors) if (m.x === sg.x0 && !m.side && !hood(m) && Math.max(sg.y0, sg.y1) > m.y && Math.min(sg.y0, sg.y1) <= m.y) bad.push(m.id + ' (' + s.id + ')'); } }
+  ok(!bad.length, 'no beam runs up a mirror\'s post (side-post or hood mirrors only): ' + (bad.join(', ') || 'none')); }
 ok(!beam({ chainA: '/' })['bed.headBridge'] && !beam({ chainB: '/' })['bed.headBridge'], 'THE CHAIN wants both mirrors: either alone does not reach the Head');
 ok(L.mirrors.find(m => m.id === 'gaze').shardNotch === 2, 'the vault notch of the gaze mirror wants the five shards');
 /* the required crossings: each bed bridges a crack (no way over it but the glass) */
