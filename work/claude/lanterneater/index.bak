@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- viewport-fit=cover and no user scaling: on a phone the game wants the whole glass, and a pinch-zoom in the
+     middle of a fight is never what anybody meant -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1410">
+<meta name="apple-mobile-web-app-title" content="BRACKEN">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
+<title>BRACKEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen&family=VT323&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1410; }
+  /* dvh follows the phone's shrinking address bar; the old 100% jumped every time it hid */
+  @supports (height: 100dvh) { html, body { height: 100dvh; } }
+  /* the notch and the home bar, read by src/touch.js so no button sits under them (viewport-fit=cover above) */
+  #safe { position: fixed; left: 0; top: 0; width: 0; height: 0; visibility: hidden; pointer-events: none;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+  body { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+  #boot { position: fixed; left: 12px; bottom: 10px; color: #cfc6b0; font: 12px monospace; opacity: .8; pointer-events: none; }
+  /* TURN IT SIDEWAYS: the game is a wide window and a portrait phone letterboxes it into a stamp */
+  #rotate { position: fixed; inset: 0; display: none; z-index: 30; background: #0b1410; color: #e8dcc0;
+    font: 14px/1.6 monospace; text-align: center; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 24px; }
+  #rotate b { color: #ffd36b; letter-spacing: 2px; }
+  #rotate .ph { width: 54px; height: 90px; border: 3px solid #8fd160; border-radius: 8px; animation: tip 1.8s ease-in-out infinite; }
+  @keyframes tip { 0%, 40% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
+  #rotate .bk { color: #ffd36b; font: 22px monospace; letter-spacing: 6px; }
+  #rotate button { margin-top: 6px; background: none; border: 2px solid #8fd160; color: #8fd160; font: 12px monospace;
+    padding: 8px 14px; border-radius: 6px; letter-spacing: 1px; }
+  @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
+  body.upright #rotate { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="safe"></div>
+<div id="rotate"><div class="bk">BRACKEN</div><div class="ph"></div><b>TURN IT SIDEWAYS</b><div>BRACKEN plays in landscape.<br>Rotate the phone and tap to play full screen.</div><button id="anyway">play it upright anyway</button></div>
+<div id="boot"></div>
+<script>
+  // and a way past it: some people are going to play this on a phone held upright whatever we say
+  addEventListener('DOMContentLoaded', () => { const b = document.getElementById('anyway');
+    if (b) b.addEventListener('click', e => { e.stopPropagation(); document.body.classList.add('upright'); }); });
+</script>
+<script>
+  // DEV TEXT ONLY WITH ?debug: a player is shown the loading scene, never "booting..."
+  if (/[?&]debug/.test(location.search)) { const b0 = document.getElementById('boot'); if (b0) b0.textContent = 'booting…'; }
+  window.addEventListener('error', e => { const b = document.getElementById('boot'); if (b) { b.textContent = 'ERROR: ' + e.message + ' @' + (e.filename||'').split('/').pop() + ':' + e.lineno; b.style.color = '#ff7a6b'; } });
+  setTimeout(() => { const b = document.getElementById('boot'); if (b && !window.BK) { b.textContent = /[?&]debug\b/.test(location.search) ? 'still booting after 8s - check console' : 'STILL LOADING - SLOW CONNECTION?'; } }, 8000);
+
+  // FULL SCREEN ON A PHONE. A browser only grants it inside a real gesture, so the first touch asks for it (and
+  // for landscape, where the platform allows). Desktop is left alone: there a key or the menu asks instead.
+  (function () {
+    const coarse = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+    const go = () => {
+      const el = document.documentElement;
+      try { if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) {}
+      try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+    };
+    window.bkFullscreen = () => { if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (e) {} } else go(); };
+    if (coarse) {
+      const once = () => { go(); removeEventListener('touchend', once); removeEventListener('pointerup', once); };
+      addEventListener('touchend', once, { passive: true });
+      addEventListener('pointerup', once, { passive: true });
+    }
+    // and if the phone comes back from the lock screen into portrait, the rotate card is CSS-driven, so it
+    // reappears on its own; nothing to do here but keep the canvas the size of what we were given
+    addEventListener('resize', () => { const c = document.getElementById('c'); if (c) { c.style.width = '100%'; c.style.height = '100%'; } });
+  })();
+</script>
+<script>
+  // INSTALLABLE: a service worker keeps the game shell for a fast, offline-tolerant relaunch (sw.js: network first, so a deploy always wins).
+  // Only on https (or ?sw=1 on localhost); never inside a tool run (?nosw), where a cache between the test and the code would only confuse.
+  (function () { try { const p = new URLSearchParams(location.search); if (!('serviceWorker' in navigator) || p.has('nosw')) return;
+    if (location.protocol !== 'https:' && p.get('sw') !== '1') return;
+    addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {})); } catch (e) {} })();
+</script>
+<!-- modulepreload:begin (tools/modulepreload.mjs --write) -->
+<link rel="modulepreload" href="./src/ability-preview.js">
+<link rel="modulepreload" href="./src/additional-areas.js">
+<link rel="modulepreload" href="./src/ambush.js">
+<link rel="modulepreload" href="./src/archmage-acts.js">
+<link rel="modulepreload" href="./src/art.js">
+<link rel="modulepreload" href="./src/attack-animation.js">
+<link rel="modulepreload" href="./src/attack-tokens.js">
+<link rel="modulepreload" href="./src/audio.js">
+<link rel="modulepreload" href="./src/bandit-mystic-hands.js">
+<link rel="modulepreload" href="./src/bandit-mystic.js">
+<link rel="modulepreload" href="./src/bellcrab.js">
+<link rel="modulepreload" href="./src/boss-greed.js">
+<link rel="modulepreload" href="./src/boss-music.js">
+<link rel="modulepreload" href="./src/boss-read.js">
+<link rel="modulepreload" href="./src/boss-view.js">
+<link rel="modulepreload" href="./src/breakable-walls.js">
+<link rel="modulepreload" href="./src/burial-caverns.js">
+<link rel="modulepreload" href="./src/burial-expansion.js">
+<link rel="modulepreload" href="./src/burial-looks.js">
+<link rel="modulepreload" href="./src/burial-variety.js">
+<link rel="modulepreload" href="./src/buried-dead-art.js">
+<link rel="modulepreload" href="./src/buried-dead.js">
+<link rel="modulepreload" href="./src/burning-village.js">
+<link rel="modulepreload" href="./src/campaign-order.js">
+<link rel="modulepreload" href="./src/canal-foes.js">
+<link rel="modulepreload" href="./src/canal-hands.js">
+<link rel="modulepreload" href="./src/canal-rig.js">
+<link rel="modulepreload" href="./src/carpet.js">
+<link rel="modulepreload" href="./src/carry-throw.js">
+<link rel="modulepreload" href="./src/chars.js">
+<link rel="modulepreload" href="./src/chase.js">
+<link rel="modulepreload" href="./src/checkpoint-thin.js">
+<link rel="modulepreload" href="./src/cistern-queen-hands.js">
+<link rel="modulepreload" href="./src/cistern-queen.js">
+<link rel="modulepreload" href="./src/city_props.js">
+<link rel="modulepreload" href="./src/city_tiles.js">
+<link rel="modulepreload" href="./src/coast-town.js">
+<link rel="modulepreload" href="./src/coastal-foes.js">
+<link rel="modulepreload" href="./src/combat.js">
+<link rel="modulepreload" href="./src/commit.js">
+<link rel="modulepreload" href="./src/contrast-rim.js">
+<link rel="modulepreload" href="./src/controls.js">
+<link rel="modulepreload" href="./src/coop-help.js">
+<link rel="modulepreload" href="./src/credits.js">
+<link rel="modulepreload" href="./src/crouch-a.js">
+<link rel="modulepreload" href="./src/crouch-b.js">
+<link rel="modulepreload" href="./src/crown_tiles.js">
+<link rel="modulepreload" href="./src/deadends.js">
+<link rel="modulepreload" href="./src/deadly-water.js">
+<link rel="modulepreload" href="./src/death-card.js">
+<link rel="modulepreload" href="./src/death-cost.js">
+<link rel="modulepreload" href="./src/death-fx.js">
+<link rel="modulepreload" href="./src/deep-holds.js">
+<link rel="modulepreload" href="./src/deep-split.js">
+<link rel="modulepreload" href="./src/deep_props.js">
+<link rel="modulepreload" href="./src/deepair.js">
+<link rel="modulepreload" href="./src/desert-bosses.js">
+<link rel="modulepreload" href="./src/desert-foes.js">
+<link rel="modulepreload" href="./src/desert-foes2-hands.js">
+<link rel="modulepreload" href="./src/desert-foes2.js">
+<link rel="modulepreload" href="./src/desert-rules.js">
+<link rel="modulepreload" href="./src/djinn-hands.js">
+<link rel="modulepreload" href="./src/djinn.js">
+<link rel="modulepreload" href="./src/draft/sunken-caravan.js">
+<link rel="modulepreload" href="./src/draft/unburied-field.js">
+<link rel="modulepreload" href="./src/dressing.js">
+<link rel="modulepreload" href="./src/drowned-knights.js">
+<link rel="modulepreload" href="./src/duck.js">
+<link rel="modulepreload" href="./src/dune-worm.js">
+<link rel="modulepreload" href="./src/elite-kit.js">
+<link rel="modulepreload" href="./src/ember-ward.js">
+<link rel="modulepreload" href="./src/fair-foes.js">
+<link rel="modulepreload" href="./src/fair-games.js">
+<link rel="modulepreload" href="./src/fair-keys.js">
+<link rel="modulepreload" href="./src/fair-rides.js">
+<link rel="modulepreload" href="./src/false-abbot.js">
+<link rel="modulepreload" href="./src/finishers.js">
+<link rel="modulepreload" href="./src/fire-spread.js">
+<link rel="modulepreload" href="./src/fixtures.js">
+<link rel="modulepreload" href="./src/flot_props.js">
+<link rel="modulepreload" href="./src/flot_tiles.js">
+<link rel="modulepreload" href="./src/foe-react.js">
+<link rel="modulepreload" href="./src/foe-tactics.js">
+<link rel="modulepreload" href="./src/foe-tempo.js">
+<link rel="modulepreload" href="./src/fog-canal.js">
+<link rel="modulepreload" href="./src/gang-leader.js">
+<link rel="modulepreload" href="./src/gargoyle-whelp.js">
+<link rel="modulepreload" href="./src/gate-gargoyle.js">
+<link rel="modulepreload" href="./src/gear-tiers.js">
+<link rel="modulepreload" href="./src/geomancer.js">
+<link rel="modulepreload" href="./src/glass-colossus-hands.js">
+<link rel="modulepreload" href="./src/glass-colossus.js">
+<link rel="modulepreload" href="./src/glass-foes.js">
+<link rel="modulepreload" href="./src/glass-sea-hands.js">
+<link rel="modulepreload" href="./src/glass-sea.js">
+<link rel="modulepreload" href="./src/goblin-sweep.js">
+<link rel="modulepreload" href="./src/gorge-crab-hands.js">
+<link rel="modulepreload" href="./src/gorge-crab.js">
+<link rel="modulepreload" href="./src/grave-warden.js">
+<link rel="modulepreload" href="./src/hanging-village.js">
+<link rel="modulepreload" href="./src/harbor-boss.js">
+<link rel="modulepreload" href="./src/harbor-expansion.js">
+<link rel="modulepreload" href="./src/harbor-landmarks.js">
+<link rel="modulepreload" href="./src/harvest-fair.js">
+<link rel="modulepreload" href="./src/haunted-coast.js">
+<link rel="modulepreload" href="./src/hedge-warden.js">
+<link rel="modulepreload" href="./src/hero-poses.js">
+<link rel="modulepreload" href="./src/hint-lines.js">
+<link rel="modulepreload" href="./src/juice.js">
+<link rel="modulepreload" href="./src/keep-expansion.js">
+<link rel="modulepreload" href="./src/keep-looks.js">
+<link rel="modulepreload" href="./src/keep-passages.js">
+<link rel="modulepreload" href="./src/king_swim.js">
+<link rel="modulepreload" href="./src/lance-support.js">
+<link rel="modulepreload" href="./src/lantern-eater-hands.js">
+<link rel="modulepreload" href="./src/lantern-eater.js">
+<link rel="modulepreload" href="./src/landmarks.js">
+<link rel="modulepreload" href="./src/lesser-djinn-hands.js">
+<link rel="modulepreload" href="./src/lesser-djinn.js">
+<link rel="modulepreload" href="./src/level.js">
+<link rel="modulepreload" href="./src/light.js">
+<link rel="modulepreload" href="./src/lw_props.js">
+<link rel="modulepreload" href="./src/lw_tiles.js">
+<link rel="modulepreload" href="./src/mage-realms.js">
+<link rel="modulepreload" href="./src/map-card.js">
+<link rel="modulepreload" href="./src/map-plates.js">
+<link rel="modulepreload" href="./src/marks.js">
+<link rel="modulepreload" href="./src/maskwright-theatre.js">
+<link rel="modulepreload" href="./src/moor-rocks-hands.js">
+<link rel="modulepreload" href="./src/mummer.js">
+<link rel="modulepreload" href="./src/opening-panels.js">
+<link rel="modulepreload" href="./src/ore-road.js">
+<link rel="modulepreload" href="./src/playrec.js">
+<link rel="modulepreload" href="./src/pogo-chain.js">
+<link rel="modulepreload" href="./src/poise-break.js">
+<link rel="modulepreload" href="./src/progression-catalog.js">
+<link rel="modulepreload" href="./src/progression.js">
+<link rel="modulepreload" href="./src/puppeteer-hands.js">
+<link rel="modulepreload" href="./src/puppeteer.js">
+<link rel="modulepreload" href="./src/push-blocks.js">
+<link rel="modulepreload" href="./src/px.js">
+<link rel="modulepreload" href="./src/quicksand.js">
+<link rel="modulepreload" href="./src/raptor-matriarch-hands.js">
+<link rel="modulepreload" href="./src/raptor-matriarch.js">
+<link rel="modulepreload" href="./src/reach-slopes.js">
+<link rel="modulepreload" href="./src/reachcore.js">
+<link rel="modulepreload" href="./src/red-gorge-hands.js">
+<link rel="modulepreload" href="./src/red-gorge.js">
+<link rel="modulepreload" href="./src/redraw/cabins.js">
+<link rel="modulepreload" href="./src/redraw/callerram.js">
+<link rel="modulepreload" href="./src/redraw/canal_backdrop.js">
+<link rel="modulepreload" href="./src/redraw/canal_foes_art.js">
+<link rel="modulepreload" href="./src/redraw/canal_props.js">
+<link rel="modulepreload" href="./src/redraw/canal_tiles.js">
+<link rel="modulepreload" href="./src/redraw/canal_tunnel.js">
+<link rel="modulepreload" href="./src/redraw/caravan_bandits.js">
+<link rel="modulepreload" href="./src/redraw/caravan_ruins.js">
+<link rel="modulepreload" href="./src/redraw/carousel_ring.js">
+<link rel="modulepreload" href="./src/redraw/cistern_queen_art.js">
+<link rel="modulepreload" href="./src/redraw/city.js">
+<link rel="modulepreload" href="./src/redraw/crag_redress.js">
+<link rel="modulepreload" href="./src/redraw/desert.js">
+<link rel="modulepreload" href="./src/redraw/desert2.js">
+<link rel="modulepreload" href="./src/redraw/desert_foes.js">
+<link rel="modulepreload" href="./src/redraw/desert_foes2.js">
+<link rel="modulepreload" href="./src/redraw/desert_glass.js">
+<link rel="modulepreload" href="./src/redraw/djinn_art.js">
+<link rel="modulepreload" href="./src/redraw/fair_art.js">
+<link rel="modulepreload" href="./src/redraw/fair_backdrop.js">
+<link rel="modulepreload" href="./src/redraw/fair_folk.js">
+<link rel="modulepreload" href="./src/redraw/fair_keys.js">
+<link rel="modulepreload" href="./src/redraw/fair_newrides.js">
+<link rel="modulepreload" href="./src/redraw/fair_rides.js">
+<link rel="modulepreload" href="./src/redraw/fair_tiles.js">
+<link rel="modulepreload" href="./src/redraw/fair_world.js">
+<link rel="modulepreload" href="./src/redraw/fallen_tower.js">
+<link rel="modulepreload" href="./src/redraw/false_abbot.js">
+<link rel="modulepreload" href="./src/redraw/fields_foes.js">
+<link rel="modulepreload" href="./src/redraw/fields_world.js">
+<link rel="modulepreload" href="./src/redraw/foes1.js">
+<link rel="modulepreload" href="./src/redraw/foes2.js">
+<link rel="modulepreload" href="./src/redraw/foes_v2.js">
+<link rel="modulepreload" href="./src/redraw/frogking.js">
+<link rel="modulepreload" href="./src/redraw/frost.js">
+<link rel="modulepreload" href="./src/redraw/gang_leader_art.js">
+<link rel="modulepreload" href="./src/redraw/glass_colossus_art.js">
+<link rel="modulepreload" href="./src/redraw/glasssea_art.js">
+<link rel="modulepreload" href="./src/redraw/glasssea_foes.js">
+<link rel="modulepreload" href="./src/redraw/glasssea_props.js">
+<link rel="modulepreload" href="./src/redraw/glasssea_set.js">
+<link rel="modulepreload" href="./src/redraw/glasssea_tiles.js">
+<link rel="modulepreload" href="./src/redraw/ground-slopes.js">
+<link rel="modulepreload" href="./src/redraw/hanging-town.js">
+<link rel="modulepreload" href="./src/redraw/harbour.js">
+<link rel="modulepreload" href="./src/redraw/hunt.js">
+<link rel="modulepreload" href="./src/redraw/kraken.js">
+<link rel="modulepreload" href="./src/redraw/lanterneater_art.js">
+<link rel="modulepreload" href="./src/redraw/lesser_djinn_art.js">
+<link rel="modulepreload" href="./src/redraw/lich.js">
+<link rel="modulepreload" href="./src/redraw/mage_foes.js">
+<link rel="modulepreload" href="./src/redraw/mage_world.js">
+<link rel="modulepreload" href="./src/redraw/masthead.js">
+<link rel="modulepreload" href="./src/redraw/matriarch_cast.js">
+<link rel="modulepreload" href="./src/redraw/matriarch_ledge.js">
+<link rel="modulepreload" href="./src/redraw/monastery.js">
+<link rel="modulepreload" href="./src/redraw/moor_tiles.js">
+<link rel="modulepreload" href="./src/redraw/mystic_art.js">
+<link rel="modulepreload" href="./src/redraw/pirates.js">
+<link rel="modulepreload" href="./src/redraw/prince.js">
+<link rel="modulepreload" href="./src/redraw/puppeteer_art.js">
+<link rel="modulepreload" href="./src/redraw/queenchief.js">
+<link rel="modulepreload" href="./src/redraw/queue_bosses.js">
+<link rel="modulepreload" href="./src/redraw/redgorge2_art.js">
+<link rel="modulepreload" href="./src/redraw/redgorge_art.js">
+<link rel="modulepreload" href="./src/redraw/redgorge_backdrop.js">
+<link rel="modulepreload" href="./src/redraw/redgorge_props.js">
+<link rel="modulepreload" href="./src/redraw/redgorge_tiles.js">
+<link rel="modulepreload" href="./src/redraw/redress2.js">
+<link rel="modulepreload" href="./src/redraw/reef.js">
+<link rel="modulepreload" href="./src/redraw/scalder.js">
+<link rel="modulepreload" href="./src/redraw/sea_wildlife.js">
+<link rel="modulepreload" href="./src/redraw/sexton.js">
+<link rel="modulepreload" href="./src/redraw/shore.js">
+<link rel="modulepreload" href="./src/redraw/skyroad_art.js">
+<link rel="modulepreload" href="./src/redraw/skyroad_backdrop.js">
+<link rel="modulepreload" href="./src/redraw/skyroad_dress.js">
+<link rel="modulepreload" href="./src/redraw/skyroad_tiles.js">
+<link rel="modulepreload" href="./src/redraw/skyroad_world.js">
+<link rel="modulepreload" href="./src/redraw/slopes.js">
+<link rel="modulepreload" href="./src/redraw/soldiers.js">
+<link rel="modulepreload" href="./src/redraw/stone-town.js">
+<link rel="modulepreload" href="./src/redraw/storm.js">
+<link rel="modulepreload" href="./src/redraw/strawking.js">
+<link rel="modulepreload" href="./src/redraw/theatre_foes.js">
+<link rel="modulepreload" href="./src/redraw/theatre_props.js">
+<link rel="modulepreload" href="./src/redraw/theatre_rooms.js">
+<link rel="modulepreload" href="./src/redraw/theatre_tiles.js">
+<link rel="modulepreload" href="./src/redraw/tidebound.js">
+<link rel="modulepreload" href="./src/redraw/tome.js">
+<link rel="modulepreload" href="./src/redraw/unburied_art.js">
+<link rel="modulepreload" href="./src/redraw/unburied_chapel.js">
+<link rel="modulepreload" href="./src/redraw/unburied_sets.js">
+<link rel="modulepreload" href="./src/redraw/unburied_siege.js">
+<link rel="modulepreload" href="./src/redraw/unburied_tiles.js">
+<link rel="modulepreload" href="./src/redraw/unburied_world.js">
+<link rel="modulepreload" href="./src/redraw/undercrown_skins.js">
+<link rel="modulepreload" href="./src/redraw/underwell_art.js">
+<link rel="modulepreload" href="./src/redraw/underwell_backdrop.js">
+<link rel="modulepreload" href="./src/redraw/underwell_dress.js">
+<link rel="modulepreload" href="./src/redraw/underwell_tiles.js">
+<link rel="modulepreload" href="./src/redraw/variety_skins.js">
+<link rel="modulepreload" href="./src/redraw/waymeet.js">
+<link rel="modulepreload" href="./src/redraw/welltown_art.js">
+<link rel="modulepreload" href="./src/redraw/welltown_backdrop.js">
+<link rel="modulepreload" href="./src/redraw/welltown_props.js">
+<link rel="modulepreload" href="./src/redraw/welltown_tiles.js">
+<link rel="modulepreload" href="./src/redraw/wicker_fx.js">
+<link rel="modulepreload" href="./src/redraw/wicker_man_art.js">
+<link rel="modulepreload" href="./src/redraw/wicker_queen.js">
+<link rel="modulepreload" href="./src/redraw/wildwood.js">
+<link rel="modulepreload" href="./src/redraw/winchmaster.js">
+<link rel="modulepreload" href="./src/redraw/witch_world.js">
+<link rel="modulepreload" href="./src/reef_props.js">
+<link rel="modulepreload" href="./src/reef_tiles.js">
+<link rel="modulepreload" href="./src/relics.js">
+<link rel="modulepreload" href="./src/roc-eyrie.js">
+<link rel="modulepreload" href="./src/route-art.js">
+<link rel="modulepreload" href="./src/salvage-captain.js">
+<link rel="modulepreload" href="./src/sanctum.js">
+<link rel="modulepreload" href="./src/scree-rework.js">
+<link rel="modulepreload" href="./src/sea_looks.js">
+<link rel="modulepreload" href="./src/settings-ui.js">
+<link rel="modulepreload" href="./src/sexton.js">
+<link rel="modulepreload" href="./src/skill-glyphs.js">
+<link rel="modulepreload" href="./src/sky-road-hands.js">
+<link rel="modulepreload" href="./src/sky-road.js">
+<link rel="modulepreload" href="./src/slide.js">
+<link rel="modulepreload" href="./src/slopes.js">
+<link rel="modulepreload" href="./src/spike-winds.js">
+<link rel="modulepreload" href="./src/spiral-chase.js">
+<link rel="modulepreload" href="./src/store.js">
+<link rel="modulepreload" href="./src/storm-ship.js">
+<link rel="modulepreload" href="./src/stormhold-town.js">
+<link rel="modulepreload" href="./src/stuck-guide.js">
+<link rel="modulepreload" href="./src/stuck-spots.js">
+<link rel="modulepreload" href="./src/sunken-caravan.js">
+<link rel="modulepreload" href="./src/sunstroke.js">
+<link rel="modulepreload" href="./src/theatre-foes.js">
+<link rel="modulepreload" href="./src/theatre-hands.js">
+<link rel="modulepreload" href="./src/theatre-masks.js">
+<link rel="modulepreload" href="./src/theatre-rig.js">
+<link rel="modulepreload" href="./src/threat.js">
+<link rel="modulepreload" href="./src/throwables.js">
+<link rel="modulepreload" href="./src/title-card.js">
+<link rel="modulepreload" href="./src/tome.js">
+<link rel="modulepreload" href="./src/touch-interact.js">
+<link rel="modulepreload" href="./src/touch.js">
+<link rel="modulepreload" href="./src/tower-ascent.js">
+<link rel="modulepreload" href="./src/tower-collapse.js">
+<link rel="modulepreload" href="./src/tower-flyers.js">
+<link rel="modulepreload" href="./src/tower-hall.js">
+<link rel="modulepreload" href="./src/town_art.js">
+<link rel="modulepreload" href="./src/tribute-ship.js">
+<link rel="modulepreload" href="./src/ui-hud.js">
+<link rel="modulepreload" href="./src/unburied-field.js">
+<link rel="modulepreload" href="./src/unburied-foes.js">
+<link rel="modulepreload" href="./src/undead-mage.js">
+<link rel="modulepreload" href="./src/underwell-hands.js">
+<link rel="modulepreload" href="./src/underwell.js">
+<link rel="modulepreload" href="./src/variety-pass.js">
+<link rel="modulepreload" href="./src/venom-hud.js">
+<link rel="modulepreload" href="./src/village_tiles.js">
+<link rel="modulepreload" href="./src/waterfalls.js">
+<link rel="modulepreload" href="./src/well-town-hands.js">
+<link rel="modulepreload" href="./src/well-town.js">
+<link rel="modulepreload" href="./src/whirlpools.js">
+<link rel="modulepreload" href="./src/wicker-carousel.js">
+<link rel="modulepreload" href="./src/wicker-man-hands.js">
+<link rel="modulepreload" href="./src/wicker-man.js">
+<link rel="modulepreload" href="./src/wicker-queen.js">
+<link rel="modulepreload" href="./src/winchmaster.js">
+<link rel="modulepreload" href="./src/witchlight.js">
+<link rel="modulepreload" href="./src/xp.js">
+<!-- modulepreload:end -->
+<script type="module" src="./src/loading-screen.js"></script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

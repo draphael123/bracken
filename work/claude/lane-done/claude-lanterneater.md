@@ -194,3 +194,16 @@ Stills: work/claude/lane-done/lanterneater/greybox/ (tools/lantern-eater-shots.m
    - THE FOG CANAL keys HIGH (phases 1 and 3) and LOW (phase 2).
    - Waymeet before it is a duelist (exempt). The fair after it is keyed PR in scratch/audit-keys.md.
    - Rec: no clash.
+
+## ART PASS (Sonnet, 2026-10-07 evening) - art only: no hit box, tell length, damage, timing or lure/lamp rule touched
+Files: src/redraw/lanterneater_art.js (all drawing), src/lantern-eater-hands.js (draw calls only: surfacing/sinking/snap poses, per-lamp snuff, death, swell, lantern light), src/canal-hands.js (the glimpsed lures), tools/lantern-eater-sheet.mjs (cycle sheet).
+- **Lure vs lamp**: both wear the same iron-capped, ringed, glassed cage and the same warm glow. The LAMP hangs on a visible iron chain (links fading into the fog), a ragged flame tongue that gutters low and leaps (flick sets its height; at the low end the cage nearly goes dark), a thread of smoke, dead still. The LURE has a round fleshy bulb that only BREATHES (slow pulse), a barely-there thread stalk, and it sways. Snagged: the stalk shows pale and veined with a pulse running up it, the cage turns to flesh, the whole thing jerks with sparks.
+- **Body**: an anglerfish seen under the water (deep head, ragged dorsal spines, forked tail, pectoral fin, belly, pulsing cold-green flank spots, slit eye, teeth line, folded rod), breathing.
+- **Jaws**: warty mottled hide, black throat, needle teeth of varied length, a wet pink GUMS band (the brightest part, the LOW key), big slit eye, water sheeting off and foam at the rail.
+- **Poses**: surfacing (boil with bubbles and growing shadow, then jaws rising out of the water), jaws open/breathing, snap lunge (jaws shut), clamped in the timber (shaking head, rolling eye, splinters, drool), sinking (shut jaws drop under the waterline), gulp/hunt (jaws burst up, lower jaw drops then closes, spray), snagged lure jerking, death (body sinks into the black, the lure flickers at last, dims, falls into the water in a ring).
+- **Swell**: a foam-crested water hump along the deck with its dark body under the surface and spray (the raft is not drawn lifting: the raft's bob is gameplay state).
+- **Darkness**: basin lamps now go out ONE BY ONE across the 2.4 s snuff (guttering flame, smoke puff, then a red wick and a wavering smoke thread); the raft lantern's light falls off in a soft pool with a warm additive glow that breathes; dimmed it is a shuttered iron lantern with an ember and a small red glow; decoys are small caged lure-lights, and the jaws taking one throw a ring and a plume.
+- **Raft lantern**: hip-height post with arm, hook and ring, caged lantern; lit (flame, glass, halo) and shuttered (iron plates, ember through the slit, smoke).
+- **Foreshadowing**: the glimpsed lures in the level are now the same caged bulb on a thread, swaying (drawGlimpse).
+- **Bestiary card**: jaws out of black water, the lure hung beside them, cold flank spots.
+- Stills: work/claude/lanterneater-art/stills/le-*.png (in-game), work/claude/lanterneater-art/sheet-art-lights.png and sheet-art-beast.png (cycle sheets; tools/lantern-eater-sheet.mjs).

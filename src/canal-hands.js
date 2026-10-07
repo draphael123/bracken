@@ -10,6 +10,7 @@ import { duckBox, duckClears } from './duck.js';
 import { beamHit } from './chase.js';
 import * as CTL from './redraw/canal_tiles.js';
 import * as CP from './redraw/canal_props.js';
+import * as LEA from './redraw/lanterneater_art.js';   /* (the Lantern-Eater's glimpsed lures) */
 import * as CT4 from './redraw/canal_tunnel.js';   /* (claude/canal4art) the legging tunnel's art */
 import { CANAL_NUDGE } from './hint-lines.js';
 import { NUDGE as SG_NUDGE, stallTick, drawGlint as glintAt } from './stuck-guide.js';   /* (claude/stuckfix: the glint and the 10 s stall clock are the shared module's now) */
@@ -449,9 +450,7 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
      light hangs over the water - and SWAYS, slow and smooth, on a pale stalk that goes down into the water; then it sinks and is gone (a real lantern flickers) */
   for (const [lx, ly, ph] of st.lures) { const u = (time * 0.11 + (ph || 0)) % 1; if (u > 0.3) continue; const x = lx * TS + 8 - cx, y = ly * TS - cy; if (x < -30 || x > VW + 30 || y < -40 || y > VH + 40) continue;
     const a = Math.sin(u / 0.3 * Math.PI), sink = u > 0.22 ? (u - 0.22) / 0.08 * 18 : 0, sw = Math.sin(time * 2.6 + lx) * 6, X = Math.round(x + sw), Y = Math.round(y + sink);
-    g.globalAlpha = 0.35 * a; g.strokeStyle = '#c8b8a0'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(x - 14), Math.round(y + 26)); g.quadraticCurveTo(Math.round(x + sw * 2), Y - 20, X, Y - 8); g.stroke();
-    const gl = g.createRadialGradient(X, Y - 4, 1, X, Y - 4, 16); gl.addColorStop(0, 'rgba(255,214,128,' + (0.55 * a).toFixed(3) + ')'); gl.addColorStop(1, 'rgba(255,214,128,0)'); g.globalAlpha = 1; g.fillStyle = gl; g.fillRect(X - 16, Y - 20, 32, 32);
-    g.globalAlpha = 0.85 * a; g.fillStyle = '#e8b860'; g.fillRect(X - 2, Y - 7, 5, 6); g.fillStyle = '#fff2b0'; g.fillRect(X - 1, Y - 5, 2, 2); g.globalAlpha = 1; }
+    LEA.drawGlimpse(g, x, Y, sw, Math.round(x - 14), Math.round(y + 26), a, time); }   /* (the art pass: the same caged bulb on its thread, swaying) */
 }
 /* (claude/canal5, Daniel 10-06: readability) WHAT THE DARK STILL SHOWS: wet iron and stone catch what light there is - the low beams' hazard bars, the
    ledges' lips with their ends marked (a gap is the dark between two ends), the stop-planks' banded top while they are down. Brighter with her lantern

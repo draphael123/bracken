@@ -1,0 +1,9 @@
+file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-lanterneater/tools/cdp.mjs:62
+  if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
+                                    ^
+
+Error: the page never put up window.BK
+    at openPage (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-lanterneater/tools/cdp.mjs:62:37)
+    at async file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-lanterneater/tools/soundtest.mjs:14:12
+
+Node.js v24.19.0

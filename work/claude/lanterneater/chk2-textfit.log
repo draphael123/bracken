@@ -1,0 +1,34 @@
+74 hint messages read out of src/main.js
+  scope hints             74 screens  6.2s
+  scope bestiary         243 screens  9.7s
+  scope store            672 screens  21.4s
+  scope tree             185 screens  9.4s
+  scope pick               3 screens  4.2s
+  scope trial              7 screens  4.3s
+  scope erase              5 screens  1.3s
+  scope opening            4 screens  0.1s
+  scope press              1 screens  0.0s
+  scope mapcard           40 screens  40.1s
+  scope death              7 screens  3.7s
+  scope results            1 screens  2.0s
+  scope card              59 screens  10.4s
+  scope talk[knight]     626 screens  123.9s
+  scope slots             10 screens  7.7s
+  scope practice           8 screens  0.1s
+  scope bossjump          60 screens  15.7s
+  scope menu              18 screens  3.1s
+  scope talk[warden]     626 screens  148.2s
+  scope settings         149 screens  23.8s
+  scope soundtest        120 screens  4.9s
+  scope boss            1500 screens  177.3s
+  scope credits            9 screens  2.0s
+  scope hud               12 screens  10.7s
+  scope plates          1200 screens  190.1s
+  scope talk[pyro]       626 screens  90.3s
+  scope bossfix          225 screens  37.5s
+  scope talk[pirate]     626 screens  93.3s
+  scope talk[paladin]    626 screens  143.5s
+  scope talk[reaper]     626 screens  160.3s
+
+8368 screens drawn, 87100 strings measured, 405s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-lanterneater\audits\readability\textfit

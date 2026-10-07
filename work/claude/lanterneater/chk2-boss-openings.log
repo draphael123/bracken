@@ -1,0 +1,15 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: stepping out of its snap on the raft did not stick its teeth open for 3 s or more (the boss rule): {"alone":0,"snag":{"why":"snag","open":3.2},"stuck":{"why":"snag","open":3.2},"n":{"snag":1,"stuck":0,"jerk":1}}
+    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-lanterneater/tools/boss-openings.mjs:353:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

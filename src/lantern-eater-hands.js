@@ -110,7 +110,7 @@ export function makeLanternEaterHands(ctx) {
     if (bot - top <= VH) return (top + bot) / 2 - VH / 2;
     return Math.max(bot - VH, Math.min(ty, top)); };
   /* ITS DEATH: it sinks under the raft, the lamps come back, and the raft drifts to the east landing (the way on) */
-  H.end = e => { if (!show) return; show.lights = []; show.jaws = null; show.snap = null; show.swell = null; show.gulp = null; show.raft.to = show.A.moorE; show.dead = 0.001; show.lantern.lit = true; e.y = show.A.surf + 30; SOUND.die(); };
+  H.end = e => { if (!show) return; show.deathAt = { x: e.x, face: e.face || 1 }; show.lights = []; show.jaws = null; show.snap = null; show.swell = null; show.gulp = null; show.raft.to = show.A.moorE; show.dead = 0.001; show.lantern.lit = true; e.y = show.A.surf + 30; SOUND.die(); };
   H.read = () => show && { mode: ctx.boss && ctx.boss.mode, phase: ctx.boss && ctx.boss.phase, part: ctx.boss && ctx.boss.part, n: { ...show.n }, cycle: show.cycle, lit: show.lantern.lit, dark: +show.dark.toFixed(2),
     lights: show.lights.map(L => ({ kind: L.kind, x: Math.round(L.x), y: Math.round(L.y) })), jaws: show.jaws && { ...show.jaws }, snap: show.snap && { x: Math.round(show.snap.x), fixed: show.snap.fixed },
     raft: { x: Math.round(show.raft.x), w: show.raft.w }, hurt: { ...(show.hurt || {}) } };
@@ -125,7 +125,7 @@ export function makeLanternEaterHands(ctx) {
     for (let y = 0; y < bed - top; y += 8) { const row = (y / 8) | 0; g.fillStyle = '#1e2226'; g.fillRect(x0, top + y, w, 1); for (let x = (row % 2) * 12; x < w; x += 24) g.fillRect(x0 + x, top + y, 1, 8); }
     g.fillStyle = 'rgba(14,24,30,0.5)'; g.fillRect(x0, sf - 24, w, bed - sf + 24); g.fillStyle = 'rgba(90,130,120,0.45)'; g.fillRect(x0, sf - 2, w, 2);   /* the tide-mark */
     g.fillStyle = '#4a4c50'; g.fillRect(x0, top - 3, w, 3); g.fillStyle = '#6a6c70'; g.fillRect(x0, top - 3, w, 1);
-    const out = show.dark > 0.5 || (ctx.boss && ctx.boss.phase === 3 && ctx.boss.alive && !show.dead); for (const lx of lampXs(G)) LA.drawBasinLamp(g, lx - cx, sf - 26, out, time); };
+    lampXs(G).forEach((lx, i) => { const k = show.dead ? 0 : (ctx.boss && ctx.boss.phase === 3 && ctx.boss.alive && show.dark >= 1) ? 1 : Math.max(0, Math.min(1, (show.dark - i * 0.2) / 0.2)); LA.drawBasinLamp(g, lx - cx, sf - 26, k >= 1 ? true : k <= 0 ? false : k, time); }); };   /* (the lamps go out one by one, each in a puff of smoke) */
   /* THE RAFT (before the bodies) and its bulk under the water */
   H.drawBack = (cx, cy, time) => {
     const S = A(); if (!S || !show) return; const g = ctx.g(), G = show.A, r = show.raft, y = R(G.deck + r.bob - cy), x = R(r.x - cx), w = r.w;
@@ -133,6 +133,7 @@ export function makeLanternEaterHands(ctx) {
     const e = ctx.boss && ctx.boss.t === 'lanterneater' && ctx.boss.alive ? ctx.boss : null;
     if (e && !show.dead) { const near = ['surface', 'jaws', 'snapTell', 'swellTell', 'swell', 'gulpTell', 'huntTell'].includes(e.mode) ? 1 : e.mode === 'sleep' ? 0.1 : 0.4;
       LA.drawBulk(g, (e.part === 'lure' ? (show.lure ? show.lure.x : e.x) : e.x) - cx, G.surf - cy, near, e.face || 1, time); }
+    if (show.dead && show.deathAt && show.dead < 1) LA.drawBulk(g, show.deathAt.x - cx, G.surf - cy + R(show.dead * 26), 0.9 * (1 - show.dead), show.deathAt.face, time);   /* it sinks, slowly, into the black */
     LA.drawRaft(g, x, y, w);
     const lx = LM.lanternX(show) - cx; LA.drawRaftLantern(g, lx, y, show.lantern.lit, time, show.dark > 0.3);
   };
@@ -140,23 +141,24 @@ export function makeLanternEaterHands(ctx) {
   H.drawBoss = (g, e, cx, cy, time) => {
     if (!show || !e.alive) return; const G = show.A, dy = R(G.deck + show.raft.bob - cy), m = e.mode;
     if (show.jaws && (m === 'jaws' || m === 'snapTell')) { const gape = m === 'snapTell' ? 1 - 0.6 * Math.max(0, e.modeT) / (e.modeLen || 1) : 0.6 + 0.1 * Math.sin(time * 3); LA.drawJaws(g, show.jaws.x - cx, dy, show.jaws.side, gape, time, m === 'jaws'); }
-    if (m === 'surface' && show.jaws) { const k = 1 - Math.max(0, e.modeT) / LE.surfaceT; LA.drawBoil(g, show.jaws.x - cx, G.surf - cy, 18, k, time); }
+    if (m === 'surface' && show.jaws) { const k = 1 - Math.max(0, e.modeT) / LE.surfaceT; LA.drawBoil(g, show.jaws.x - cx, G.surf - cy, 18, k, time); LA.drawJaws(g, show.jaws.x - cx, dy, show.jaws.side, 0.2, time, false, Math.max(0, (k - 0.45) / 0.55)); }   /* the boil, then the jaws rising out of it */
     if (m === 'open' && e.part === 'jaws') LA.drawClamped(g, e.x - cx, dy, time);
     if ((m === 'gulp' || m === 'hunt' || (m === 'snapTell' && false))) LA.drawGulp(g, e.x - cx, dy + 4, 1 - Math.max(0, e.modeT) / (e.modeLen || 0.3), time);
-    if (m === 'snap' || (m === 'sink' && e.modeT > LE.sinkT - 0.15)) LA.drawGulp(g, e.x - cx, dy + 4, 0.5, time);
+    if (m === 'snap') LA.drawGulp(g, e.x - cx, dy + 4, 0.5, time, true, 0);   /* the lunge: shut on the deck */
+    if (m === 'sink' && e.modeT > 0) LA.drawGulp(g, e.x - cx, dy + 4, 0.5, time, true, 1 - Math.max(0, e.modeT) / LE.sinkT);   /* and sinking, the jaws shut */
   };
   /* ---------- OVER EVERYTHING: phase three's dark, the lights, the tells, the key, OPEN and its clock, the ward ---------- */
   let DARK = null;
   H.drawOver = (cx, cy, time) => {
     const S = A(); if (!S || !show) return; const g = ctx.g(), G = show.A, e = ctx.boss && ctx.boss.t === 'lanterneater' && ctx.boss.alive ? ctx.boss : null, pulse = 0.5 + 0.5 * Math.sin(time * 18), dy = R(G.deck + show.raft.bob - cy), sf = R(G.surf - cy);
     g.fillStyle = 'rgba(16,30,40,0.25)'; g.fillRect(R(G.pool.x0 - cx), sf, R(G.pool.x1 - G.pool.x0), R(G.bed - G.surf));   /* its water is black-green */
-    if (!e) return;
+    if (!e) { if (show.dead && show.deathAt && show.dead < 1) LA.drawGutter(g, show.deathAt.x - cx, sf - 40, show.dead, time, sf); if (show.dead) show.dead = Math.min(1, show.dead + 1 / 120); return; }
     /* PHASE THREE'S DARK: every lamp snuffed; your lantern's light the only hole in it (wide lit, an ember dimmed) */
     if (show.dark > 0.02) { const VW = ctx.VW(), VH = ctx.VH(); if (!DARK || DARK.width !== VW || DARK.height !== VH) DARK = ctx.makeCanvas(VW, VH);
       if (DARK) { const dg = DARK.getContext('2d'); dg.globalCompositeOperation = 'source-over'; dg.clearRect(0, 0, VW, VH); dg.fillStyle = 'rgba(2,4,8,' + (0.88 * show.dark).toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH);
-        dg.globalCompositeOperation = 'destination-out'; const hole = (x, y, r) => { const gr = dg.createRadialGradient(x, y, r * 0.3, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); dg.fillStyle = gr; dg.fillRect(x - r, y - r, r * 2, r * 2); };
+        dg.globalCompositeOperation = 'destination-out'; const hole = (x, y, r) => { const gr = dg.createRadialGradient(x, y, r * 0.3, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.55, 'rgba(0,0,0,0.7)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); dg.fillStyle = gr; dg.fillRect(x - r, y - r, r * 2, r * 2); };
         hole(LM.lanternX(show) - cx, dy - 16, show.lantern.lit ? 120 : 34); for (const pp of ctx.players) if (!pp.dead) hole(pp.x - cx, pp.y - 10 - cy, 22);
-        for (const L of show.lights) hole(L.x + (L.sway || 0) - cx, L.y - 11 - cy, 30); dg.globalCompositeOperation = 'source-over'; g.drawImage(DARK, 0, 0); } }
+        for (const L of show.lights) hole(L.x + (L.sway || 0) - cx, L.y - 11 - cy, 30); dg.globalCompositeOperation = 'source-over'; g.drawImage(DARK, 0, 0); LA.drawLanternLight(g, LM.lanternX(show) - cx, dy - 16, show.lantern.lit, time, show.dark); } }
     /* THE LIGHTS: the lamp on its chain (it flickers), the lure on its stalk (it sways) - and under each, while they dangle, the UP chevrons (the key: HIT HIGH) */
     const stalkX = L => { const [x0, x1] = LM.raftEnds(show); return L.x < (x0 + x1) / 2 ? Math.max(G.pool.x0 + 6, x0 - 26) : Math.min(G.pool.x1 - 6, x1 + 26); };
     for (const L of show.lights) { const x = L.x - cx, y = L.y - cy;
@@ -171,7 +173,7 @@ export function makeLanternEaterHands(ctx) {
     /* THE SWELL told: red lines along the deck from where it comes, then the swell humping the deck */
     if (show.swell) { const s = show.swell, x = R(s.x - cx);
       if (s.st === 'tell') { const k = 1 - Math.max(0, e.modeT) / (e.modeLen || 1), len = 40 + 120 * k; g.globalAlpha = 0.4 + 0.45 * pulse * k; g.fillStyle = '#ff6b6b'; g.fillRect(s.dir > 0 ? x : x - R(len), dy - 14, R(len), 1); g.fillRect(s.dir > 0 ? x : x - R(len), dy + 3, R(len), 1); g.globalAlpha = 1; }
-      else { g.fillStyle = '#e8f4f0'; g.fillRect(x - 10, dy - 14, 20, 4); g.fillStyle = '#bfe6f5'; g.fillRect(x - 14, dy - 10, 28, 6); g.fillStyle = '#7cc8c8'; g.fillRect(x - 18, dy - 4, 36, 4); } }
+      else LA.drawSwell(g, x, dy, sf, s.dir, time); }
     /* THE COPIES of your light it bites at, dimmed */
     for (const d of show.decoys) LA.drawDecoy(g, d.x - cx, sf, d.t, time);
     /* OPEN, and its clock: the gold ring and the timer bar (B10), the green line the opening's share left */

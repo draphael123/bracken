@@ -1,0 +1,21 @@
+canal practiced knight s1 L22: death 57.6s left 46% taken 208 rt429 mis2 greed9
+canal practiced knight s3 L22: ERR TypeError: Cannot read properties of null (reading 'x')
+    at lanternPlan (http://localhost:8722/src/lantern-eater.js:3
+canal practiced knight s2 L22: ERR TypeError: Cannot read properties of null (reading 'x')
+    at lanternPlan (http://localhost:8722/src/lantern-eater.js:3
+canal practiced warden s1 L22: win 171.7s left 0% taken 164 rt397 mis4 greed29
+canal practiced warden s3 L22: ERR TypeError: Failed to fetch dynamically imported module: http://localhost:8722/src/lab.js
+canal practiced warden s2 L22: ERR TypeError: Cannot read properties of null (reading 'x')
+    at lanternPlan (http://localhost:8722/src/lantern-eater.js:3
+canal practiced warden s4 L22: ERR TypeError: Failed to fetch dynamically imported module: http://localhost:8722/src/lab.js
+canal practiced pyro s1 L22: ERR TypeError: Cannot read properties of null (reading 'x')
+    at lanternPlan (http://localhost:8722/src/lantern-eater.js:3
+canal practiced pyro s2 L22: win 87.5s left 0% taken 42 rt396 mis0 greed16
+canal practiced pyro s4 L22: win 92.4s left 0% taken 57 rt399 mis2 greed18
+canal practiced pyro s3 L22: ERR TypeError: Cannot read properties of null (reading 'x')
+    at lanternPlan (http://localhost:8722/src/lantern-eater.js:3
+canal practiced knight s4 L22: ERR Runtime.evaluate did not answer within 11000ms
+
+BOSS RATES  profile human  (12 fights, 9 min)
+row                 L  practiced kn/wa/py        band
+canal              22  0/1 1/1 2/2 = 75%         HIGH +15  zero: knight

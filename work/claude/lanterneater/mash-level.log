@@ -1,0 +1,7 @@
+canal: level hash changed: carried the boss row(s) of the old hash (re-run the boss to refresh them: node tools/mash-bot.mjs <id> --write)
+canal LEVEL L22 knight: lowest hp 0%, hp lost 592%, deaths 6, walked 100% of waypoints, 7 rides {"barge":7}, 0 pulls, 7 boarding lifts, 33 lifts (7 HELD: put back by a room it could not finish), 81 blows taken
+canal LEVEL L22 warden: lowest hp 0%, hp lost 592%, deaths 6, walked 100% of waypoints, 7 rides {"barge":7}, 0 pulls, 7 boarding lifts, 33 lifts (7 HELD: put back by a room it could not finish), 81 blows taken
+canal LEVEL L22 pyro: lowest hp 0%, hp lost 601%, deaths 6, walked 100% of waypoints, 7 rides {"barge":7}, 0 pulls, 7 boarding lifts, 33 lifts (7 HELD: put back by a room it could not finish), 81 blows taken
+wrote docs/mash-bot.json
+errors []
+level exit 0
