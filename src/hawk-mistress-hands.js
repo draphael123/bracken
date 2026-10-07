@@ -8,13 +8,14 @@
 // main.js calls: spawnBoss, owns, on, update, take, drawBack, drawBoss, drawOver, barName, end, read, show, clear, onRing, onFlash, hawk.
 import * as HMM from './hawk-mistress.js';
 import { BOSS_PHASE } from './boss-music.js';
+import * as KSA from './redraw/ksar_art.js';
 const { HM } = HMM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), lash: s => (s.whip || s.slash)(), slash: s => (s.foeSlash || s.slash)(),
   hawk: s => (s.hawk || s.hiss)(), whistle: s => (s.whistle || s.bell || s.tell)(false), blast: s => (s.boom || s.crack)() };
 
 export function makeHawkMistressHands(ctx) {
-  let S = null;
+  let S = null, MS = null, HW = null;   /* her baked body (src/redraw/ksar_art.js bakeMistressSet) and her hawk's poses, baked on first use */
   const H = {};
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'hawkmistress' ? ctx.L.arena : null);
   const R = Math.round;
@@ -94,36 +95,39 @@ export function makeHawkMistressHands(ctx) {
   /* ---------- DRAWING (GREYBOX) ---------- */
   /* the courtyard: the back wall's walk (the runners), the guard doors, the burning store's ends (phase three) */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
-    g.fillStyle = '#6a4a30'; g.fillRect(R(G.x0 - cx), R(G.wallY - 6 - cy), G.x1 - G.x0, 6);
-    for (const d of G.doors) { g.fillStyle = '#3a2416'; g.fillRect(R(d - 10 - cx), R(G.floorY - 30 - cy), 20, 30); g.fillStyle = '#7a5a3a'; g.fillRect(R(d - 10 - cx), R(G.floorY - 32 - cy), 20, 3); }
     if (S.runner) { const r = S.runner, gg = gongs().find(q => q.id === r.gong), k = 1 - r.t / r.t0, x = r.from + ((gg ? gg.x : r.from) - r.from) * k;
-      g.fillStyle = '#5a1e1e'; g.fillRect(R(x - 3 - cx), R(G.wallY - 18 - cy), 6, 12); ctx.text('!', R(x - cx), R(G.wallY - 24 - cy), Math.floor(time * 10) % 2 ? '#ff6b6b' : '#fff6e0', 'center', 6);
+      g.fillStyle = '#a8302a'; g.fillRect(R(x - 3 - cx), R(G.wallY - 12 - cy), 6, 10); g.fillStyle = '#e8d8b0'; g.fillRect(R(x - 3 - cx), R(G.wallY - 14 - cy), 6, 3); g.fillStyle = '#1b1626'; g.fillRect(R(x - 3 - cx), R(G.wallY - 3 - cy), 6, 2); ctx.text('!', R(x - cx), R(G.wallY - 24 - cy), Math.floor(time * 10) % 2 ? '#ff6b6b' : '#fff6e0', 'center', 6);
       if (gg) { g.strokeStyle = 'rgba(255,107,107,0.5)'; g.beginPath(); g.moveTo(R(x - cx), R(G.wallY - cy)); g.lineTo(R(gg.x - cx), R(G.floorY - 46 - cy)); g.stroke(); } }
-    if (S.ph === 3) for (const [a, b] of G.fire) for (let x = a; x < b; x += 4) { const h = 6 + 5 * Math.abs(Math.sin(time * 9 + x)); g.fillStyle = (x / 4) % 2 ? '#ff9a3c' : '#ffd36b'; g.fillRect(R(x - cx), R(G.floorY - h - cy), 3, h); }
+    if (S.ph === 3) for (const [a, b] of G.fire) for (let x = a; x < b; x += 3) { const h = 9 + 8 * Math.abs(Math.sin(time * 9 + x)), k = (x / 3) | 0; g.fillStyle = '#d8481a'; g.fillRect(R(x - cx), R(G.floorY - h - cy), 3, h); g.fillStyle = '#ff8a2a'; g.fillRect(R(x - cx), R(G.floorY - h * 0.75 - cy), 3, h * 0.75); g.fillStyle = k % 2 ? '#ffc84a' : '#ffd36b'; g.fillRect(R(x - cx) + 1, R(G.floorY - h * 0.45 - cy), 1, h * 0.45); if (k % 5 === 0) { g.fillStyle = '#3a2a22'; g.fillRect(R(x - cx), R(G.floorY - h - 8 - ((time * 20 + x) % 10) - cy), 2, 2); } }
   };
   /* HER: a falconer in a red-brown coat, the whip coiled at her hip, a leather gauntlet on her left arm; her pose by mode (greybox) */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
+    if (!MS) MS = KSA.bakeMistressSet();
     const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, m = e.mode, flash = (e.hurtT || 0) > 0;
+    const POSE = { sleep: 'sleep', wake: 'recover', recover: 'recover', feintTell: 'feint', feintHold: 'feint', lashTell: 'lashTell', markLashTell: 'lashTell', lash: 'lash', markLash: 'lash', cutTell: 'cutTell', cut: 'cut', whistle: 'whistle', spotTell: 'guard', diveTell: 'whistle', callTell: 'whistle' };
+    let pose = POSE[m] || (m === 'walk' ? (Math.floor(time * 6 + e.x * 0.05) & 1 ? 'walkA' : 'walkB') : 'guard');
+    if (m === 'walk' && !(Math.abs(e.vx || 0) > 4)) pose = 'guard';
+    if (flash && pose !== 'sleep') pose = 'hurt';
+    const i = MS.names.indexOf(pose), set = flash ? MS.white : MS, spr = (f > 0 ? set.R : set.L)[i];
     g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(x - 10, y - 1, 20, 2); g.globalAlpha = 1;
-    const coat = flash ? '#ffffff' : '#7a3a2a', skin = flash ? '#ffffff' : '#c89870';
-    g.fillStyle = coat; g.fillRect(x - 6, y - 26, 12, 18); g.fillRect(x - 7, y - 10, 14, 4);   /* the coat */
-    g.fillStyle = '#3a2418'; g.fillRect(x - 5, y - 8, 4, 8); g.fillRect(x + 1, y - 8, 4, 8);     /* boots */
-    g.fillStyle = skin; g.fillRect(x - 4, y - 33, 8, 7); g.fillStyle = '#2a1a12'; g.fillRect(x - 5, y - 35, 10, 3); g.fillRect(x + f * 3, y - 31, 1, 1);   /* head, a dark hood */
-    const guard = m === 'walk' || m === 'recover' || m === 'feintHold';
-    g.fillStyle = '#c9a060'; if (guard || m === 'whistle') g.fillRect(x + f * 6 - 2, y - 30, 5, 8); else g.fillRect(x - f * 8 - 2, y - 22, 5, 6);   /* the GAUNTLET up in front of her (on guard) */
-    if (m === 'lashTell' || m === 'markLashTell') { g.strokeStyle = '#3a2418'; g.beginPath(); g.moveTo(x - f * 4, y - 24); g.quadraticCurveTo(x - f * 20, y - 44, x - f * 6, y - 40); g.stroke(); }
-    if (m === 'lash' || m === 'markLash') { g.strokeStyle = '#3a2418'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + f * 6, y - 20); const tx = m === 'markLash' && S.mark ? S.mark.x - cx : x + f * HM.lashReach; g.quadraticCurveTo((x + tx) / 2, y - 30, tx, y - 6); g.stroke(); g.lineWidth = 1; }
-    if (m === 'cutTell' || m === 'cut') { g.fillStyle = '#e8e8f0'; g.fillRect(x + f * 8, y - 20, f * 9, 2); }
-    if (m === 'whistle') ctx.text('~', x + f * 4, y - 40 - R(Math.sin(time * 8) * 2), '#e8f4ff', 'center', 7);
-    if (e.guardFx > 0) { g.fillStyle = '#ffffff'; g.fillRect(x + f * 8 - 2, y - 32, 5, 12); }
+    const bob = pose === 'sleep' ? Math.round(Math.sin(time * 1.5)) : 0;
+    g.drawImage(spr, x - (f > 0 ? MS.ax : spr.width - MS.ax), y - MS.ay + bob);
+    if (pose === 'sleep') ctx.text('Z', x + 8 * f, y - 20 - R((time * 8) % 8), '#c8d8e8', 'center', 6);
+    /* the whip's lash and the knife's flash, live: the pose holds the hand, these are the reach */
+    if (m === 'lash' || m === 'markLash') { const hx = x + f * 14, hy = y - 22, tx = m === 'markLash' && S.mark ? S.mark.x - cx : x + f * HM.lashReach; g.strokeStyle = '#3a2418'; g.lineWidth = 2; g.beginPath(); g.moveTo(hx, hy); g.quadraticCurveTo((hx + tx) / 2, hy - 12, tx, y - 6); g.stroke(); g.lineWidth = 1; g.fillStyle = '#e8e0c0'; g.fillRect(R(tx) - 1, y - 7, 3, 3); }
+    if (m === 'lashTell' || m === 'markLashTell') { g.strokeStyle = 'rgba(58,36,24,0.8)'; g.beginPath(); g.moveTo(x - f * 7, y - 34); g.quadraticCurveTo(x - f * 18, y - 48, x - f * 4, y - 46); g.stroke(); }
+    if (m === 'cut') { g.fillStyle = 'rgba(255,255,255,0.7)'; g.fillRect(x + f * 12 - (f < 0 ? 12 : 0), y - 22, 12, 1); }
+    if (e.guardFx > 0) { g.fillStyle = '#ffffff'; g.fillRect(x + f * 10 - 2, y - 38, 5, 14); }
   };
   /* THE HAWK, the marks, and THE READ (open ring + timer, ward shell, the gauntlet's word) */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'hawkmistress') return; const G = S.G;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', k = S.hawk;
     /* THE HAWK: a hawk over her (wings beating), blinded it flaps with white stars, home it sits on her glove; its shadow on the floor when it spots or dives */
-    { const hx = R(k.x - cx), hy = R(k.y - cy), w = k.mode === 'home' ? 0 : Math.sin(time * (k.mode === 'blind' ? 30 : 12)) * 5;
-      g.fillStyle = '#5a3a22'; g.fillRect(hx - 4, hy - 2, 8, 5); g.fillStyle = '#8a6a3a'; g.fillRect(hx - 11, hy - 3 + R(w), 7, 2); g.fillRect(hx + 4, hy - 3 + R(w), 7, 2); g.fillStyle = '#e8d070'; g.fillRect(hx + (e.face || 1) * 4, hy - 1, 2, 2);
-      if (k.mode === 'blind') for (let i = 0; i < 3; i++) { const a = time * 7 + i * 2.1; g.fillStyle = '#ffffff'; g.fillRect(hx + R(Math.cos(a) * 9), hy - 8 + R(Math.sin(a) * 3), 2, 2); }
+    { const hx = R(k.x - cx), hy = R(k.y - cy); if (!HW) HW = [0, 1, 2, 3, 4, 5, 6].map(i => KSA.bakeHerHawk(i)); const wing = Math.floor(time * (k.mode === 'blind' ? 14 : 7)) & 1;
+      const pose = k.mode === 'home' ? 5 : k.mode === 'blind' ? 4 : k.mode === 'dive' || k.mode === 'low' ? 3 : k.mode === 'diveTell' || k.mode === 'spot' ? 6 : k.mode === 'wheel' || k.mode === 'return' ? 2 : wing;
+      S.hawkF = k.x > (S.hawkLastX ?? k.x) + 0.2 ? 1 : k.x < (S.hawkLastX ?? k.x) - 0.2 ? -1 : (S.hawkF || (e.face || 1)); S.hawkLastX = k.x; const hf = k.mode === 'home' ? (e.face || 1) : S.hawkF, H0 = HW[pose], bob = k.mode === 'circle' ? R(Math.sin(time * 3) * 1) : 0;
+      if (hf > 0) g.drawImage(H0.c, hx - H0.ax, hy - H0.ay + bob); else { g.save(); g.translate(hx, 0); g.scale(-1, 1); g.drawImage(H0.c, -H0.ax, hy - H0.ay + bob); g.restore(); }
+      if (k.mode === 'blind') for (let i = 0; i < 3; i++) { const a = time * 7 + i * 2.1; g.fillStyle = '#ffffff'; g.fillRect(hx + R(Math.cos(a) * 9), hy - 10 + R(Math.sin(a) * 3), 2, 2); }
       if (k.mode === 'wheel' || k.mode === 'blind') ctx.text(k.mode === 'wheel' ? 'WHEELING' : 'BLIND', hx, hy - 14, '#ffd36b', 'center', 5); }
     if (S.mark && (e.mode === 'spotTell' || e.mode === 'markLashTell' || e.mode === 'diveTell' || k.mode === 'dive')) { const x = R(S.mark.x - cx), y = R(G.floorY - 2 - cy), r = e.mode === 'diveTell' || k.mode === 'dive' ? HM.diveR : HM.markR;
       g.fillStyle = 'rgba(30,10,10,0.55)'; g.fillRect(x - r, y, r * 2, 3); g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, y - 6); g.lineTo(x + 6, y + 2); g.moveTo(x + 6, y - 6); g.lineTo(x - 6, y + 2); g.stroke(); }

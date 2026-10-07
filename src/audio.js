@@ -703,13 +703,18 @@ const SYNTH_BEDS = {
   /* THE GLASS SEA (claude/glasssea fix pass): its own air, all synth, nothing downloaded. GLASSDAY: a dry wind over glass dunes (a bandpassed gust that rises
      and falls, a thin high whistle over the fulgurite) and now and then a shard chiming as the wind turns it. GLASSNIGHT: THE COLD - a hushed low wind, no
      drips, no chains; glass ticking as it cools (dry high clicks), a far chime when a shard falls, and a long low moan through the ridges. */
-  /* THE BANDIT KSAR (claude/ksar, the greybox): the air of a mud-brick fort on the old road, all synth and the one creak clip on disk. WIND over the walls (a
+  /* THE BANDIT KSAR (claude/ksar, art pass: torch crackle, an anvil, a camel, the winch's chain on top of the greybox's wind, far gong, souq, hawk and flag): the air of a mud-brick fort on the old road, all synth and the one creak clip on disk. WIND over the walls (a
      bandpassed gust), a FAR GONG now and then (low inharmonic sines with a long tail - the rule in the air), the SOUQ (a low murmur of voices, a bray), a HAWK
      crying high over the towers, and a FLAG snapping on a parapet. */
   ksar() {
     const wind = loopNoise(420, 0.75, 0.2); lfoOn(wind.g.gain, 0.11, 0.1); lfoOn(wind.f.frequency, 0.06, 140);
     const souq = loopNoise(520, 0.9, 0.05, 'lowpass'); lfoOn(souq.g.gain, 0.19, 0.03);
+    const fire = loopNoise(2800, 2.2, 0.018); lfoOn(fire.g.gain, 0.8, 0.012);   /* (art pass) the torches' and braziers' low crackle under it all */
     ambTick = () => {
+      if (Math.random() < 0.05) { tone('triangle', 1650 + Math.random() * 300, 1500, 0.09, 0.025); tone('triangle', 3300, 3100, 0.05, 0.01, 0.01); }   /* a smith's hammer on an anvil somewhere in the fort */
+      if (Math.random() < 0.012) { tone('sawtooth', 135, 88, 0.9, 0.02); tone('sawtooth', 142, 92, 0.8, 0.01, 0.05); }   /* a camel's groan from the yard */
+      if (Math.random() < 0.08) noise(0.015 + Math.random() * 0.02, 0.03, 3600 + Math.random() * 1800, 2);   /* a spit of fire */
+      if (Math.random() < 0.03) { tone('sine', 520, 490, 0.35, 0.012); tone('sine', 780, 740, 0.3, 0.006, 0.02); }   /* a chain's link turning on the winch */
       if (Math.random() < 0.02) for (const [f, v] of [[96, 0.03], [139, 0.014], [229, 0.008]]) tone('sine', f, f * 0.985, 3.0, v);   /* a far gong */
       if (Math.random() < 0.05) { const f = 2100 + Math.random() * 600; tone('sine', f, f * 0.7, 0.6, 0.03); tone('sine', f * 1.02, f * 0.72, 0.5, 0.012, 0.18); }   /* a hawk over the towers */
       if (Math.random() < 0.06) noise(0.12, 0.02, 1500 + Math.random() * 600, 3);   /* a flag snapping */
