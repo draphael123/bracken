@@ -1033,7 +1033,7 @@ GROUND_KITS.waymeet={density:.2,kinds:['flower','tuft']};
 GROUND_KITS.fair={density:.15,kinds:['flower','tuft']};   /* THE HARVEST FAIR: a village green at sunset, and Waymeet's props (its stalls, bunting, hay and lanterns) are the fair's own */
 ALLOWED_DECORATIONS.fair=ALLOWED_DECORATIONS.waymeet.slice();
 GROUND_KITS.theatre={density:0,kinds:[]};   /* THE MASKWRIGHT'S THEATRE: a playhouse - nothing is sprinkled; the furniture is placed by hand (src/redraw/theatre_props.js) */
-ALLOWED_DECORATIONS.theatre=['mirror','wardrobe','seats','stands','rack','props'];
+ALLOWED_DECORATIONS.theatre=['mirror','wardrobe','seats','stands','rack','props'];
 GROUND_KITS.canal={density:0,kinds:[]};   /* THE FOG CANAL: a night city street of cobbles and stone - nothing sprinkled (claude/canalfix3: the towpath grass went with the wood); the locks, bridges, lanterns, railings and bollards are the level's own (src/fog-canal.js, src/redraw/canal_props.js) */
 ALLOWED_DECORATIONS.canal=[...ALLOWED_DECORATIONS.waymeet,'rowboat'];   /* off Waymeet's road: its barrels, crates and lanterns on the wharves, and a rowboat tied up */
 ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels','capstanWreck','bellWreck');   /* the wreck junk: a capstan and a bell nobody will turn or ring (docs/briefs/reef-longer.md) */
@@ -1057,5 +1057,7 @@ GROUND_KITS.underwell={density:0,kinds:[]};   /* THE UNDERWELL (claude/underwell
 ALLOWED_DECORATIONS.underwell=['husk'];   /* the Queen's cast shell by her door (the only placed decoration) */
 GROUND_KITS.skyroad={density:0,kinds:[]};   /* THE SKY ROAD (claude/skyroad): basalt and cloud, nothing sprinkled; its dressing is src/redraw/skyroad_dress.js and the level's own */
 ALLOWED_DECORATIONS.skyroad=['bones'];   /* the bones in the Roc's nest (the only placed decoration) */
+GROUND_KITS.rootway={density:0.22,kinds:['moss','rock','fern']};   /* THE ROOTWAY (claude/rootway): fungus at the foot thinning to fern and stone in the canopy (the art pass gives it its own kit) */
+ALLOWED_DECORATIONS.rootway=['sporePod','tinyCap','moss','mushroom','rootDecor','rock','fern','bones','skullPile','gobPennant','warnPost','trophyRack','hangCage','skullTotem','boneChime'];   /* the fungus's own, and the goblins' first marks (their pennants, posts, trophy racks and cages) */
 GROUND_KITS.glasssea={density:0,kinds:[]};   /* THE GLASS SEA (claude/glasssea, batch75 merge): fused glass and sand, nothing grows or is sprinkled; its dressing is src/redraw/glasssea_set.js and the hands' own (no placed decoration) */
 ALLOWED_DECORATIONS.glasssea=[];

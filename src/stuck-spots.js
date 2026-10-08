@@ -161,6 +161,22 @@ export const STUCK = {
     { id: 'sk-stone-4', zone: [346, 12, 353, 20], at: [352, 19], done: ['sunstone', 352, 19, 'on'], line: 'A SUN-STONE ON THE CRACKED SPAN' },
     { id: 'sk-stone-6', zone: [360, 10, 367, 17], at: [364, 16], done: ['sunstone', 364, 16, 'on'], line: 'A SUN-STONE ON THE SECOND SPAN' },
   ],
+  /* THE ROOTWAY (claude/rootway): every bud the route needs, every cleat the route needs until its rope is cut, the lookout's rope (an arrow cuts it) */
+  rootway: [
+    { id: 'rw-bud-wall', zone: [20, 36, 30, 41], at: [29, 41], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-cellar-span', zone: [44, 30, 52, 37], at: [51, 37], done: ['hoist', 51, 37, 'on'], line: 'THE SPAN HANGS ON A HOIST: ITS CLEAT IS ON THE ROOT' },
+    { id: 'rw-lean-1', zone: [96, 28, 104, 34], at: [103, 34], line: 'A BUD ON THE LIP LEANS OUT OVER THE GAP' },
+    { id: 'rw-gap-span', zone: [159, 28, 172, 34], at: [171, 34], done: ['hoist', 171, 34, 'on'], line: 'THE SPAN OVER THE GAP HANGS ON A HOIST: ITS CLEAT' },
+    { id: 'rw-larder', zone: [191, 24, 206, 31], steps: [
+      { at: [201, 31], done: ['hoist', 201, 31, 'on'], line: 'THE LARDER CAGES HANG ON THEIR CLEATS' },
+      { at: [203, 31], done: ['hoist', 203, 31, 'on'], line: 'THE SECOND CAGE STILL HANGS: ITS CLEAT' },
+      { at: [205, 31], done: ['hoist', 205, 31, 'on'], line: 'THE THIRD CAGE STILL HANGS: ITS CLEAT' } ] },
+    { id: 'rw-high-cleat', zone: [225, 20, 238, 26], steps: [
+      { at: [238, 19], done: ['hoist', 238, 19, 'on'], line: 'THE CLEAT IS HIGH: GROW THE BUD UNDER IT, THEN JUMP AND STRIKE' } ] },
+    { id: 'rw-bud-hunter', zone: [256, 17, 268, 22], at: [267, 22], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-lookout', zone: [296, 12, 303, 18], at: [312, 15], glint: 'stall', done: ['hoist', 312, 15, 'on'], line: 'THE SPAN HANGS ON THE LOOKOUT\'S ROPE' },
+    { id: 'rw-lean-2', zone: [330, 12, 340, 18], at: [339, 18], line: 'A BUD ON THE LIP LEANS OUT OVER THE GAP' },
+  ],
   canal: [
     { id: 'cn-board', zone: [0, 22, 50, 56], mover: { canal: true }, off: { canal: true }, line: 'THE BARGE WAITS BELOW: STEP ONTO HER DECK' },
   ],

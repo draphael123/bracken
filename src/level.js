@@ -10,6 +10,7 @@ import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (doc
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
 import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */
+import { buildRootway } from './rootway.js';   /* THE ROOTWAY (claude/rootway, the greybox; .claude/briefs/brief-rootway.md): the bridge between SPOREWOOD and KINGSWOOD; its boss is THE GOBLIN HUNTMASTER (src/huntmaster.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
@@ -7734,7 +7735,7 @@ export const LEVELS = [
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
-  { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
+  { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'rootway' },   /* (claude/rootway, Daniel 10-07: THE ROOTWAY comes between it and Sporewood) */
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
@@ -7828,6 +7829,9 @@ export const LEVELS = [
   /* THE BANDIT KSAR (claude/ksar, the OPUS GREYBOX, 2026-10-07; Daniel's concept interview 10-07): the raiders' mud-brick fortress on the old road past THE GLASS SEA, into the Buried City
      (not built yet: it will need 'ksar'). The fort answers its gongs. APPENDED, so no index and no save moves. THE HAWK-MISTRESS (src/hawk-mistress.js) is its boss */
   { id: 'ksar', arc: 'the desert', name: 'THE BANDIT KSAR', sub: 'the raiders\' fortress on the old road', rule: 'THE FORT ANSWERS ITS GONGS: A RUNG GONG CALLS EVERY BANDIT IN EARSHOT, AND A CUT ROPE SILENCES IT.', build: () => buildKsar({ painter, T, TS }), needs: 'glasssea' },
+  /* THE ROOTWAY (claude/rootway, the OPUS GREYBOX, 2026-10-07): the climb up out of the deep fungus through giant roots into the goblins' canopy - after SPOREWOOD,
+     before KINGSWOOD (the bridge Daniel booked 10-07). APPENDED, so no index and no save moves; its place on the road is its needs and its map node */
+  { id: 'rootway', name: 'THE ROOTWAY', sub: "up out of the fungus, into the goblins' wood", rule: "THE CAPS GROW INTO STEPS; THE GOBLINS' HOISTS DROP WHAT THEY HOLD. STOP ON A BUD TO GROW IT; CUT A HOIST'S ROPE TO DROP ITS LOAD.", build: () => buildRootway({ painter, T, TS }), needs: 'spore' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

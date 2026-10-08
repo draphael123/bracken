@@ -50,6 +50,12 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     if (L.underwell) for (const m of [...(L.nests || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     /* THE SKY ROAD (src/sky-road.js, claude/skyroad): THE RIDERS' LOFT opens on the four kite cloths the level lays down: done, like the old nest (tools/skyroad.mjs proves it is a lock) */
     if (L.skyroad) for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+    /* THE ROOTWAY (src/rootway.js, claude/rootway): a HOIST is one blow on its cleat (or one arrow struck back through its rope) and what it drops STAYS - a span
+       across its gap, a cage as a 2x2 step where it lands - so both count as done; THE TROPHY LOFT opens on the four tags the level lays down (tools/rootway.mjs proves
+       each required hoist is a lock). A boss cage is winched back up: not footing. The plain fill: legs only */
+    if (L.rootway) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+      for (const h of (L.hoists || [])) { if (h.boss) continue; if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+        if (h.land) for (let y = h.land[1]; y <= h.land[1] + 1; y++) for (let x = h.land[0]; x <= h.land[0] + 1; x++) g[y * W + x] = T.SOLID; } }
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
