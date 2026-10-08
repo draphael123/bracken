@@ -148,9 +148,10 @@ export function makeTowpathHands(ctx) {
   /* ---------- A BLOW AT A GADGET (any hero's blade): a paddle, a capstan, a lamp ---------- */
   function strikes(dt) {
     for (const [g, t] of K.cd) { const v = t - dt; if (v <= 0) K.cd.delete(g); else K.cd.set(g, v); }
-    for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.atk >= 0)) return; const hb = ctx.attackBox(); if (!hb) return;
-      for (const g of K.gadgets) { if (K.cd.has(g) || !(g.t === 'tppaddle' || g.t === 'tpcapstan' || g.t === 'tplamp')) continue;
-        if (!ctx.overlap(hb, { l: g.x - 8, r: g.x + 8, t: g.y - 30, b: g.y })) continue; K.cd.set(g, TP.hitCd); use(g, P); } });
+    for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.atk >= 0)) { pp.tpStruck = null; return; } const hb = ctx.attackBox(); if (!hb) return;
+      pp.tpStruck = pp.tpStruck || new Set();   /* ONE SWING, ONE TURN: a long blade (the Death Knight's) stays out past the cooldown - it works a gadget once a swing */
+      for (const g of K.gadgets) { if (K.cd.has(g) || pp.tpStruck.has(g) || !(g.t === 'tppaddle' || g.t === 'tpcapstan' || g.t === 'tplamp')) continue;
+        if (!ctx.overlap(hb, { l: g.x - 8, r: g.x + 8, t: g.y - 30, b: g.y })) continue; K.cd.set(g, TP.hitCd); pp.tpStruck.add(g); use(g, P); } });
   }
   function use(g, P) {
     g.flash = 0.3;
@@ -179,7 +180,7 @@ export function makeTowpathHands(ctx) {
     if (!K) return; K.clock += dt; const ts = TS(), P0 = ctx.hero();
     stepLocks(dt); stepBridges(dt); strikes(dt);
     /* THE LAST DRY FOOTING is never in a lock: a rung or a sill in a chamber is under the water when it fills (the hand-back would put you in it again) */
-    K.safe = K.safe || new Map(); for (const pp of ctx.players) { const sf = pp.safe; if (!sf || sf.L !== K.L) continue; const n = pp.n || 1;
+    K.safe = K.safe || new Map(); for (const pp of ctx.players) { const n = pp.n || 1; if (!K.safe.has(n) && K.L.START) K.safe.set(n, { x: K.L.START.x * TS() + 8, y: (K.L.START.y + 1) * TS(), L: K.L }); const sf = pp.safe; if (!sf || sf.L !== K.L) { pp.safe = K.safe.get(n); continue; }
       const wet = (K.L.pools || []).some(p => p.tp && sf.x > p.x0 - 14 && sf.x < p.x1 + 14 && sf.y > p.y - 120); if (!wet) K.safe.set(n, sf); else if (K.safe.get(n)) pp.safe = K.safe.get(n); }
     /* THE TEACH'S LOW WATER ONLY WETS YOU: wading in a shallow chamber, you are handed back to the bank after a moment (no cost: the mill-pond lock is the soft lesson) */
     for (const pp of ctx.players) { if (pp.dead) continue; const p = (K.L.pools || []).find(q => q.tp && q.shallow && !q.dry && pp.x > q.x0 && pp.x < q.x1 && pp.y > q.y + 6);
@@ -203,7 +204,7 @@ export function makeTowpathHands(ctx) {
   H.walkHint = P => {
     if (!K || !P || P.dead) return null; const ts = TS(), c = P.x / ts, row = P.y / ts;
     const at = (x, feetPx, key, face, hold) => ({ x, y: feetPx, key, face: face || 0, hold: !!hold });
-    const puntEnd = id => { const m = ctx.movers().find(q => q.towpath === id); return m ? { x: m.x + m.w - 7, y: m.y } : null; };
+    const puntEnd = id => { const m = ctx.movers().find(q => q.towpath === id), k = lockOf(id); if (!m || !k) return null; const pd = K.gadgets.find(g => g.t === 'tppaddle' && g.lock === id && g.x >= k.x0 * ts && g.x < (k.x1 + 1) * ts); return { x: pd ? pd.x - 14 : m.x + m.w - 7, y: m.y }; };   /* (on the punt: a step short of its chamber paddle, facing it) */
     const onPunt = id => !!(P.onMover && P.onMover.towpath === id);
     const lockStep = (id, bank, bankRow) => { const k = lockOf(id); if (!k) return null; const lv = levelOf(k), pe = puntEnd(id);
       if (onPunt(id)) { if (lv === 'hi') return null; if (k.to <= k.hiY + 1) return at(pe.x, pe.y, null, 1, true); return at(pe.x, pe.y, 'atk', 1); }

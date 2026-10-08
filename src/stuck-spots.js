@@ -175,7 +175,7 @@ export const STUCK_HANDS = {
   /* THE TOWPATH (claude/towpath): every lock, the race and every swing bridge the route needs glints until its water stands where the way needs it (src/towpath-hands.js
      handsState: lock.<id> lo | hi | dry | up | down, bridge.<id> across | open); rows are the sheet's (the design rows + 10) */
   towpath: [
-    { id: 'tp-lockA', zone: [40, 40, 56, 55], steps: [ { key: 'lockA', is: ['lock.A', 'lo'], at: [55, 49], line: 'THE LOCK PADDLE, BY THE PUNT' } ] },
+    { id: 'tp-lockA', zone: [40, 40, 56, 55], steps: [ { key: 'lockA', is: ['lock.A', 'lo'], at: [54, 49], line: 'THE LOCK PADDLE, BY THE PUNT' } ] },
     { id: 'tp-race', zone: [92, 35, 110, 55], steps: [ { key: 'race', is: ['lock.race', 'hi'], at: [98, 43], line: 'THE RACE PADDLE ON THE BANK' } ] },
     { id: 'tp-tail', zone: [126, 35, 140, 45], steps: [ { key: 'tail', is: ['bridge.tail', 'open'], at: [130, 41], line: 'THE CAPSTAN BY THE CUT' } ] },
     { id: 'tp-f1', zone: [152, 30, 168, 48], steps: [
@@ -187,7 +187,7 @@ export const STUCK_HANDS = {
     { id: 'tp-f3', zone: [175, 22, 183, 38], steps: [ { key: 'f3', is: ['lock.F3', 'lo'], at: [182, 32], line: 'THE PADDLE BY THE PUNT' } ] },
     { id: 'tp-basin', zone: [216, 20, 238, 30], steps: [ { key: 'basin', is: ['bridge.basin', 'open'], at: [220, 26], line: 'A CAPSTAN ON EACH BANK' } ] },
     { id: 'tp-x', zone: [262, 20, 280, 37], steps: [ { key: 'x', is: ['lock.X', 'hi'], colLt: 268, at: [266, 26], line: 'THE LAST LOCK IS FULL: ITS PADDLE IS ON THE BANK' } ] },
-    { id: 'tp-y', zone: [280, 20, 293, 37], steps: [ { key: 'y', is: ['lock.Y', 'dry'], at: [290, 36], line: 'THE PADDLE BY THE PUNT' } ] },
+    { id: 'tp-y', zone: [280, 20, 293, 37], steps: [ { key: 'y', is: ['lock.Y', 'dry'], at: [291, 36], line: 'THE PADDLE BY THE PUNT' } ] },
     { id: 'tp-cut', zone: [292, 18, 302, 26], steps: [ { key: 'cut', is: ['bridge.cut', 'open'], at: [296, 23], line: 'THE CAPSTAN BY THE CUT' } ] },
   ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),

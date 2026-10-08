@@ -75,7 +75,7 @@ export function buildTowpath({ painter, T, TS }) {
     pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: Math.min(y, R(bed)), shallow: false, swim: false, clear: true, bottom: R(bed), tp: id, dry: init !== 'hi' && lo >= bed });
     locks.push(Object.assign({ id, x0, x1, bed: bed + O, lo: lo + O, hi: hi + O, init, pool: pools.length - 1, gate: o.gate ? { x: o.gate[0], top: o.gate[1] + O, bot: o.gate[2] + O } : null, shallowLo: !!o.shallowLo, race: !!o.race }));
     return id; };
-  /* A PUNT moored in a lock (columns x0..x0+w-1): a mover whose deck rides the chamber's water (on its bed when it is dry) - and for the reach model, a ride from lo to hi */
+  /* A PUNT moored in a lock (columns x0..x0+w-1: the chamber's width, gate to sill - you step on from the bank and off onto the other): a mover whose deck rides the chamber's water (on its bed when it is dry) - and for the reach model, a ride from lo to hi */
   const punt = (id, x0, w = 4) => { const k = locks.find(q => q.id === id); moversExtra.push({ kind: 'punt', towpath: id, x: x0 * TS, y: 0, w: w * TS, h: 8 });
     rigBands.push([x0, x0 + w - 1, k.hi - 0, Math.min(k.lo, k.bed - 1)]); };
   const paddle = (x, y, id, o) => ent('tppaddle', x, y, Object.assign({ lock: id }, o || {}));
@@ -108,7 +108,7 @@ export function buildTowpath({ painter, T, TS }) {
      high water is the upper bank's level (row 34). Four rows up: no jump makes it - the lock does. The PADDLE stands on the chamber's east wall, struck from the punt */
   block(47, 47, 38, H - 1 - O);
   lock('A', 48, 55, 44, 40, 34, 'lo', { gate: [47, 33, 37], shallowLo: true });
-  punt('A', 51, 4); paddle(55, 39, 'A'); paddle(46, 37, 'A');   /* (its twin on the lower bank: a punt that rode up without you comes back down) */
+  punt('A', 48, 8); paddle(54, 39, 'A'); paddle(46, 37, 'A');   /* (its twin on the lower bank: a punt that rode up without you comes back down) */
   sign(45, 37, 'A LOCK. ITS PADDLE FILLS IT, AND THE WATER LIFTS THE PUNT.');
   ground(56, 99, 34);
   /* THE UPPER BANK: a hedge knight waits where the punt lets you off - the lock at your back */
@@ -127,13 +127,13 @@ export function buildTowpath({ painter, T, TS }) {
   lock('race', 100, 108, 44, 43, 35, 'hi', { race: true });
   paddle(98, 33, 'race');
   sign(96, 33, 'THE RACE TURNS THE WHEEL. ITS PADDLE IS ON THE BANK.');
-  wheels.push({ id: 'mill', race: 'race', cx: 105, cy: 31 + O, r: 4, steps: [[100, 101, 31 + O], [102, 103, 28 + O], [105, 106, 26 + O]] });
-  ground(109, 128, 27);   /* THE MILL: its loft floor */
-  interiors.push([110, 127, 20 + O, 26 + O, 'tpMill']); block(109, 128, 19, 19); block(128, 128, 20, 23);   /* its roof, its east wall to the door (24-26) */
+  wheels.push({ id: 'mill', race: 'race', cx: 105, cy: 31 + O, r: 4, steps: [[100, 102, 32 + O], [103, 105, 30 + O], [106, 108, 28 + O]] });
+  ground(109, 125, 27);   /* THE MILL: its loft floor */
+  interiors.push([110, 124, 20 + O, 26 + O, 'tpMill']); block(109, 125, 19, 19); block(125, 125, 20, 23);   /* its roof, its east wall to the door (24-26) */
   crossbow(120, 26, 'loft', { face: -1 }); sworn(114, 26, 'loft', { face: -1 });   /* the loft's crossbow covers the wheel climb */
   /* THE YARD and THE TAIL RACE: a drop from the loft's door to the yard; the cut (132-138) too wide to jump; its SWING BRIDGE stands clear of it - its capstan on
      this bank swings it across (taught safe: nobody on the far side) */
-  ground(129, 131, 32);
+  ground(126, 131, 32);   /* (the yard: wide enough to land in off the loft door) */
   pound('tail', 132, 138, 42, 33);
   bridge('tail', 132, 138, 32, 'open', [[130, 31]]);
   sign(129, 31, 'THE SWING BRIDGE. ITS CAPSTAN TURNS IT ACROSS THE CUT.');
@@ -154,17 +154,17 @@ export function buildTowpath({ painter, T, TS }) {
      the gate opens; aboard, its chamber paddle fills it again and you ride up. (Drain, then fill: the rule both ways) */
   block(160, 160, 32, H - 1 - O);
   lock('F1', 161, 166, 38, 33, 27, 'hi', { gate: [160, 26, 31] });
-  punt('F1', 161, 4); paddle(159, 31, 'F1'); paddle(166, 32, 'F1');
+  punt('F1', 161, 6); paddle(159, 31, 'F1'); paddle(166, 32, 'F1');
   ground(167, 168, 27);
   /* F2: DRY, and a pair of bargemen on its bed with the punt. Drop in and fight them in the pit - or FILL it from the landing and the water takes them
      (then drain it for the punt). The bed paddle lifts you either way */
   lock('F2', 169, 174, 33, 33, 22, 'lo', { gate: [168, 22, 26] });
-  punt('F2', 169, 4); paddle(167, 26, 'F2'); paddle(174, 32, 'F2');
+  punt('F2', 169, 6); paddle(167, 26, 'F2'); paddle(174, 32, 'F2');
   bargeman(171, 32, 'dryChamber', { face: -1 }); bargeman(173, 32, 'dryChamber', { face: -1 });
   ground(175, 176, 22);
   /* F3: in the fog. A watchman on the top gate's beam over it looses only at a lit hero; a grindylow in its water. Ride it up dim */
   lock('F3', 177, 182, 28, 23, 17, 'lo', { gate: [176, 17, 21] });
-  punt('F3', 177, 4); paddle(182, 22, 'F3'); paddle(175, 21, 'F3');
+  punt('F3', 177, 6); paddle(182, 22, 'F3'); paddle(175, 21, 'F3');
   grindy(181, 23, 'flightTop');
   boards(183, 188, 13); watchman(186, 12, 'flightTop', { face: -1 }); ent('silver', 184, 12);   /* (the top gate's beam: a silver behind the watchman) */
   boards(195, 212, 13);   /* (the flight's footbridge over the top pound's bank: a second height) */
@@ -200,7 +200,7 @@ export function buildTowpath({ painter, T, TS }) {
   ground(265, 267, 17);
   lock('X', 268, 279, 27, 27, 18, 'hi');
   for (let x = 268; x <= 279; x++) set(x, 26, T.SPIKE);
-  boards(269, 270, 20); boards(272, 273, 22); boards(275, 276, 24);
+  boards(269, 273, 21); boards(275, 279, 24);   /* (two ledges over the irons: a jump off the bank, a jump down to the culvert's lip) */
   paddle(266, 16, 'X');
   sign(265, 16, 'THE LAST LOCK. DRAINED, ITS BED IS THE OLD GATE IRONS.');
   block(280, 284, 14, 22); air(280, 284, 23, 25); block(280, 284, 26, 26);   /* the east wall over THE CULVERT (rows 23-25) into Y */
@@ -208,7 +208,7 @@ export function buildTowpath({ painter, T, TS }) {
   watchman(282, 13, 'xRim', { face: -1 });
   /* Y: dry, its punt on the bed. Its bed paddle REFILLS it: the punt rides up thirteen rows to the upper bank - where a bargeman waits to hook you off it */
   lock('Y', 285, 292, 27, 27, 14, 'lo');
-  punt('Y', 286, 4); paddle(290, 26, 'Y'); paddle(283, 25, 'Y');   /* (and one on the culvert's floor: a punt that rode up without you comes back down) */
+  punt('Y', 285, 8); paddle(291, 26, 'Y'); paddle(283, 25, 'Y');   /* (and one on the culvert's floor: a punt that rode up without you comes back down) */
   block(293, 296, 14, H - 1 - O);
   bargeman(295, 13, 'yTop', { face: -1 });
   /* THE LAST CUT: its bridge stands clear; the capstan on this bank swings it across - to THE DECK FOREMAN (the exam's elite) and a watchman */
@@ -219,7 +219,7 @@ export function buildTowpath({ painter, T, TS }) {
   fog(265, 315, 0.7, { rises: 0.15 });
   lamp(267, 16, false); lamp(303, 13, true);
   ent('check', 313, 13);   /* THE SHRINE AFTER THE EXAM, and before him */
-  coins([270, 19], [276, 23], [304, 13]);
+  coins([271, 20], [277, 23], [304, 13]);
 
   // ================= 6. THE TOWPATH'S END (316-360): THE FOG KNIGHT =================
   const AX = 316, AR = 14;
