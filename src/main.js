@@ -23522,7 +23522,7 @@ function motherVolley(e){const f=L.arena.floor,ang=Math.atan2(e.aimY-(f-74),e.ai
 function motherRain(e,xs,bg){const f=L.arena.floor;for(const dx of xs)seeds.push({x:e.x+dx,y:f-130,vx:0,vy:40,dead:false,life:3,g:320,mrain:!!bg});}
 function motherPattern(e,kind){
   const A=L.arena,f=A.floor,T=MOTHER_T.zoneTell;e.zones=[];
-  const zone=(l,r,t,b)=>e.zones.push({l,r,t:T+MOTHER_T.zoneLive,top:t,b,live:MOTHER_T.zoneLive});
+  const zone=(l,r,t,b)=>e.zones.push({l,r,t:T+MOTHER_T.zoneLive,top:t,b,live:MOTHER_T.zoneLive,kind});   /* (claude/mothermarks: the kind, so drawMother draws roots or spores, not a box) */
   // Store geometric top separately: t is the warning/lifetime clock.
   if(kind==='floorSurge')zone(A.x0+8,A.x1-8,f-14,f);
   if(kind==='sporeSweep')zone(A.x0+8,A.x1-8,f-64,f-42);
@@ -23552,6 +23552,7 @@ function motherJam(e){
   number(e.x,L.arena.floor-110,'HER CAP JAMS. THE HEART OPENS.','#ff7a9a');SFX.gillOpen();burst(e.x,L.arena.floor-70,34,['#ff7a9a','#fff1a8','#e0b0f0'],150,.8);return true;
 }
 function updateMother(e,dt){
+  if(e.mode!==e.poseMode){e.poseMode=e.mode;e.poseT0=Math.max(.05,e.modeT||.05);}   /* (claude/mothermarks) how long this move is, for drawMother's pose: read the moment it starts */
   const A=L.arena,floor=A.floor;e.anim+=dt;e.modeT-=dt;e.nodeRest=Math.max(0,(e.nodeRest||0)-dt);
   if(e.mode==='sleep')return;
   const node=props.find(p=>p.motherNode);
@@ -29101,27 +29102,107 @@ function drawReflections(cx, cy) {
   }
 }
 // The Mother Cap: drawn from shapes; stalk, cap, gills, and the heart once she tips.
+/* THE MOTHER'S TELLS AND STRIKES, DRAWN (claude/mothermarks, Daniel 10-07: "the mother root has red and yellow hitboxes at points, but
+   there's actually no animation or nothing that comes out"). Her marks were honest - every one led to a blow - but the blow was a box:
+   the floor surge, the spore sweep and the root columns were a yellow outline and then a red one, nothing in her body moved for any
+   windup, and the stab was a puff of dust. Now every windup is on her body (motherPose: the cap REARS for the clap, BEARS DOWN with her
+   roots writhing for every root attack, SWELLS with her gills lit and spores gathering for every spore attack), the warning is on the
+   ground (dashed, cracks that glow, a haze where the sweep will pass), and the strike is the thing itself: roots break the floor, root
+   pillars stand up in the marked columns, a cloud of spores rolls along the sweep, a spike comes up under the stab mark, the cap slams
+   down. The live area keeps a faint red wash so where it hurts still reads. Checked by tools/mark-integrity.mjs (every marked windup
+   moves the body and lands something). */
+const MOTHER_ROOTY = new Set(['rootFan', 'rootStab', 'floorSurge', 'rootColumns']), MOTHER_SPORY = new Set(['sporeVolley', 'sporeSweep', 'sporeWheel', 'seedRain']);
+function motherPose(m) {
+  const md = typeof m.mode === 'string' ? m.mode : '';
+  if (md !== m.poseMode) { m.poseMode = md; m.poseT0 = Math.max(0.05, m.modeT || 0.05); }   /* (normally updateMother has already read it as the move began) */
+  const tell = md.endsWith('Tell'), kind = tell ? md.slice(0, -4) : md, k = Math.max(0, Math.min(1, 1 - (m.modeT || 0) / m.poseT0)), ek = k * k * (3 - 2 * k);
+  const o = { kind, tell, k: ek, capDy: 0, rot: 0, sx: 1, sy: 1, shake: 0, gill: 0, roots: 0, slam: 0 };
+  if (!m.alive || m.mode === 'open' || m.mode === 'phaseRise') return o;
+  if (kind === 'capClap') { if (tell) { o.capDy = -Math.round(22 * ek); o.rot = -0.06 * ek; o.sy = 1 + 0.06 * ek; o.shake = Math.round(Math.sin(time * 38) * ek * 1.5); o.gill = 0.3 * ek; }
+    else { const s = 1 - ek; o.capDy = Math.round(8 * s); o.sy = 1 - 0.1 * s; o.sx = 1 + 0.06 * s; o.slam = s; } }
+  else if (MOTHER_ROOTY.has(kind)) { if (tell) { o.capDy = Math.round(6 * ek); o.sy = 1 - 0.05 * ek; o.shake = Math.round(Math.sin(time * 50) * (0.5 + 2 * ek)); o.roots = 0.35 + 0.65 * ek; }
+    else { o.roots = 1 - ek * 0.7; o.capDy = Math.round(3 * (1 - ek)); } }
+  else if (MOTHER_SPORY.has(kind)) { if (tell) { o.sx = 1 + 0.07 * ek; o.sy = 1 + 0.05 * ek; o.capDy = -Math.round(4 * ek); o.gill = 0.35 + 0.65 * ek; }
+    else { o.gill = 1 - ek; o.sx = 1 + 0.03 * (1 - ek); } }
+  return o;
+}
+/* her roots at the foot of the stalk: they writhe while she winds up a root attack, and the cracks run out to where it will come up */
+function drawMotherRoots(m, ps, x, fy, cx, cy) {
+  if (ps.slam > 0.05) { g.globalAlpha = 0.6 * ps.slam; g.strokeStyle = '#e0b0f0'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 40 + 90 * (1 - ps.slam), 6 + 6 * (1 - ps.slam), 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+  if (ps.roots <= 0.02) return;
+  const R = ps.roots;
+  for (let i = 0; i < 8; i++) { const side = i % 2 ? 1 : -1, len = (14 + 7 * (i % 3)) * (0.6 + R), wob = Math.sin(time * 9 + i * 1.7) * 4 * R;
+    let px = x + side * (8 + (i >> 1) * 2), py = fy;
+    for (let q = 0; q < len; q += 2) { px += side * 2; py = fy - Math.round(Math.sin(q / len * Math.PI) * (5 + (i % 3) * 3 + wob)); g.fillStyle = ART.OUT; g.fillRect(Math.round(px) - 1, py - 2, 4, 5); g.fillStyle = q % 6 < 3 ? '#6a5446' : '#4a3a38'; g.fillRect(Math.round(px), py - 1, 2, 3); }
+    g.fillStyle = ps.tell && Math.floor(time * 10) % 2 ? '#ffd36b' : '#8fd160'; g.fillRect(Math.round(px), py - 2, 2, 2); }
+  if (ps.tell) { g.globalAlpha = 0.5 + 0.4 * ps.k; g.fillStyle = '#ffd36b';
+    if (ps.kind === 'rootStab' && m.rootMark !== undefined) { const sx = Math.round(m.rootMark - cx), w = 4 + Math.round(10 * ps.k);
+      for (let q = -w; q <= w; q += 2) g.fillRect(sx + q, fy - 1 - ((q * 7 + 21) % 3 === 0 ? 1 : 0), 1, Math.abs(q) < 3 ? 3 : 1);
+      if (Math.random() < 0.5) parts.push({ x: m.rootMark + (Math.random() - 0.5) * w * 2, y: L.arena.floor - 1, vx: (Math.random() - 0.5) * 20, vy: -30 - Math.random() * 40, life: 0.3, max: 0.3, col: '#6a5a48', size: 1, grav: 300 }); }
+    if (ps.kind === 'rootFan') { const run = Math.round(110 * ps.k); for (let q = 8; q < run; q += 3) { g.fillRect(x + q, fy - 1 - (q % 5 === 0 ? 1 : 0), 2, 1); g.fillRect(x - q - 2, fy - 1 - (q % 7 === 0 ? 1 : 0), 2, 1); } }
+    g.globalAlpha = 1; }
+  /* THE STAB: a root spike, up out of the crack */
+  if (m.mode === 'rootStab' && m.rootMark !== undefined) { const sx0 = Math.round(m.rootMark - cx), up = Math.max(0, Math.min(1, Math.min(1, (1 - ps.k) * 4) * (1 - Math.max(0, ps.k - 0.6) / 0.4)));
+    for (const [ox, tall, bw] of [[-11, 22, 4], [11, 24, 4], [0, 40, 7]]) { const sx = sx0 + ox, h = Math.round(tall * up);   /* a cluster as wide as the blow (18 px each side of the mark) */
+      for (let q = 0; q < h; q++) { const w = Math.max(1, Math.round(bw * (1 - q / h))); g.fillStyle = ART.OUT; g.fillRect(sx - w - 1 + Math.round(Math.sin(q * 0.5)), fy - q, w * 2 + 2, 1); g.fillStyle = q % 4 < 2 ? '#6a5446' : '#4a3a38'; g.fillRect(sx - w + Math.round(Math.sin(q * 0.5)), fy - q, w * 2, 1); }
+      if (h > 3) { g.fillStyle = '#8fd160'; g.fillRect(sx - 1, fy - h - 1, 2, 2); g.fillStyle = '#dfffa0'; g.fillRect(sx, fy - h - 2, 1, 1); } } }
+}
+/* her gills light and the spores gather under the cap before she lets them go */
+function drawMotherGills(m, ps, x, capY) {
+  const G = ps.gill; g.globalAlpha = 0.15 + 0.35 * G; g.fillStyle = '#e0b0f0'; g.beginPath(); g.ellipse(x, capY + 14, 60 * (0.7 + 0.3 * G), 9, 0, 0, 7); g.fill();
+  g.globalAlpha = 0.6 * G; g.fillStyle = '#fff1a8'; for (let q = -48; q <= 48; q += 8) g.fillRect(x + q, capY + 12 + ((q / 8) % 2 ? 1 : 0), 2, 3);
+  if (ps.tell) { g.globalAlpha = 0.85; for (let i = 0; i < 12; i++) { const a = i / 12 * 6.283 + time * 1.5, r = 14 + 56 * (1 - ps.k) * (0.6 + 0.2 * (i % 3)); g.fillStyle = i % 3 ? '#c9a0ff' : '#fff1ff'; g.fillRect(Math.round(x + Math.cos(a) * r), Math.round(capY + 18 + Math.sin(a) * r * 0.35), 2, 2); } }
+  g.globalAlpha = 1;
+}
+/* THE ZONES: a warning on the ground, then what comes out of it - roots break the floor, pillars stand in the columns, spores roll along the sweep */
+function drawMotherZones(m, cx, cy) {
+  for (const z of (m.alive ? (m.zones || []) : [])) { const zx = Math.round(z.l - cx), zy = Math.round(z.top - cy), w = z.r - z.l, h = z.b - z.top, live = z.t <= z.live, kind = z.kind || 'floorSurge';
+    if (!live) { const k = Math.max(0, Math.min(1, 1 - (z.t - z.live) / MOTHER_T.zoneTell)), fl = Math.floor(time * 8) % 2;
+      g.fillStyle = 'rgba(255,190,90,' + (0.08 + 0.12 * k).toFixed(3) + ')'; g.fillRect(zx, zy, w, h);
+      g.fillStyle = fl ? '#ffd36b' : '#ff9b2c';   /* dashed, so it reads as a warning on the world and not a box */
+      for (let q = 0; q < w; q += 6) { g.fillRect(zx + q, zy, 3, 1); g.fillRect(zx + q, zy + h - 1, 3, 1); }
+      for (let q = 0; q < h; q += 6) { g.fillRect(zx, zy + q, 1, 3); g.fillRect(zx + w - 1, zy + q, 1, 3); }
+      if (kind === 'sporeSweep') { g.globalAlpha = 0.25 + 0.4 * k; g.fillStyle = '#c9a0ff'; for (let q = 4; q < w; q += 14) g.fillRect(zx + q + Math.round(Math.sin(time * 3 + q) * 3), zy + 4 + ((q * 3) % Math.max(1, h - 8)), 2, 2); g.globalAlpha = 1; }
+      else { g.fillStyle = '#ffd36b'; g.globalAlpha = 0.4 + 0.5 * k; for (let q = 2; q < w; q += 5) g.fillRect(zx + q, zy + h - 2 - ((q * 7) % 3 === 0 ? 1 : 0), 2, 1);
+        if (Math.random() < 0.35 * k) parts.push({ x: z.l + Math.random() * w, y: z.b - 1, vx: (Math.random() - 0.5) * 16, vy: -40 - Math.random() * 40, life: 0.3, max: 0.3, col: '#6a5a48', size: 1, grav: 300 }); g.globalAlpha = 1; }
+      continue; }
+    const el = z.live - z.t, rise = Math.min(1, el / 0.08), fade = Math.min(1, z.t / 0.12);
+    g.fillStyle = 'rgba(201,70,61,' + (0.22 * fade).toFixed(3) + ')'; g.fillRect(zx, zy, w, h);   /* where it hurts, still read */
+    if (!z.out) { z.out = true; const cxz = (z.l + z.r) / 2;   /* SOMETHING COMES OUT: earth thrown up where the roots break the floor, a puff of spores along the sweep (thrown from the draw, so the fight's own dice are not touched) */
+      if (kind === 'sporeSweep') burst(cxz, (z.top + z.b) / 2, 26, ['#c9a0ff', '#e0b0f0', '#fff1ff'], 120, 0.7, -20); else burst(cxz, z.b, kind === 'rootColumns' ? 14 : 30, ['#8fd160', '#6a5a48', '#4a4050'], kind === 'rootColumns' ? 110 : 150, 0.55); }
+    if (kind === 'sporeSweep') { for (let q = 0; q < w; q += 9) { const ph = (q * 13) % 7, rx = zx + q + Math.round(Math.sin(time * 4 + ph) * 3), ry = zy + h / 2 + Math.round(Math.sin(time * 5 + q) * (h / 4)), rr = (5 + ph) * (0.6 + 0.4 * rise);
+        g.globalAlpha = 0.55 * fade; g.fillStyle = ph % 2 ? '#c9a0ff' : '#e0b0f0'; g.beginPath(); g.ellipse(rx, ry, rr, rr * 0.7, 0, 0, 7); g.fill(); g.globalAlpha = 0.8 * fade; g.fillStyle = '#fff1ff'; g.fillRect(rx - 1, ry - 1, 2, 2); } g.globalAlpha = 1; }
+    else if (kind === 'rootColumns') { const H = Math.round(h * rise * fade);
+      for (let q = 0; q < H; q++) { const tw = Math.round(Math.sin((q + time * 30) * 0.25) * 2), ww = Math.max(2, Math.round((w / 2 - 2) * (1 - 0.5 * q / h))); g.fillStyle = (q >> 2) % 2 ? '#5a4640' : '#4a3a38'; g.fillRect(zx + w / 2 - ww + tw, zy + h - q, ww * 2, 1); if (q % 9 === 0) { g.fillStyle = '#8fd160'; g.fillRect(zx + w / 2 + ww + tw - 1, zy + h - q, 3, 1); } }
+      if (H > 4) { g.fillStyle = '#8fd160'; g.fillRect(zx + w / 2 - 2, zy + h - H - 2, 4, 3); g.fillStyle = '#dfffa0'; g.fillRect(zx + w / 2 - 1, zy + h - H - 3, 2, 1); } }
+    else { const H = Math.round(h * rise * fade);   /* the floor surge: a hedge of root spikes the length of the room */
+      for (let q = 0; q < w; q += 4) { const sh = Math.max(2, Math.round(H * (0.55 + 0.45 * (((q * 7) % 5) / 4)))); for (let r = 0; r < sh; r++) { const ww = Math.max(1, Math.round(3 * (1 - r / sh))); g.fillStyle = ART.OUT; g.fillRect(zx + q + 2 - ww - 1, zy + h - r, ww * 2 + 2, 1); g.fillStyle = r % 3 ? '#6a5446' : '#4a3a38'; g.fillRect(zx + q + 2 - ww, zy + h - r, ww * 2, 1); } g.fillStyle = (q >> 2) % 2 ? '#8fd160' : '#dfffa0'; g.fillRect(zx + q + 1, zy + h - sh - 1, 2, 2); } }
+  }
+}
 function drawMother(cx, cy) {
   const m = mother, floor = L.arena.floor, x = Math.round(m.x - cx), fy = Math.round(floor - cy);
   const oK = m.openK ?? (m.tipped ? 1 : 0), oE = oK * oK * (3 - 2 * oK);   /* how far open she is: 0 sealed, 1 open, eased */
   const tip = m.mode === 'tip' ? Math.min(1, 1 - m.modeT / 1.6) : oE;
-  const shakeX = (m.mode === 'shake' ? Math.round(Math.sin(time * 40) * 3) : 0) + (oK > 0.02 && oK < 0.98 ? Math.round(Math.sin(time * 46) * 2.5 * (1 - oE)) : 0);   /* she shudders as she tears open, and as she closes */
+  const ps = motherPose(m);   /* (claude/mothermarks) EVERY TELL IS ON HER BODY: the cap rears for the clap, bears down for the roots, swells for the spores */
+  const shakeX = ps.shake + (m.mode === 'shake' ? Math.round(Math.sin(time * 40) * 3) : 0) + (oK > 0.02 && oK < 0.98 ? Math.round(Math.sin(time * 46) * 2.5 * (1 - oE)) : 0);   /* she shudders as she tears open, and as she closes */
   // her breath IS the fight, so it is on her body: sealed she draws in and narrows, open she flares and lights up
   const open = !!m.gillsOpen && m.mode !== 'open', torn = oK > 0.45;
   if (m.openWas !== open) { m.openWas = open; m.openT0 = time; }
   const ease = Math.min(1, (time - (m.openT0 || 0)) / 0.35); m.breathK = open ? ease : 1 - ease;
   const swell = 1 + m.breathK * 0.055, breathe = (1 + Math.sin(time * 1.2) * 0.02) * swell;
-  const capY = fy - 96 + Math.round(Math.sin(time * 1.2) * 2) - Math.round(m.breathK * 3);
-  for(const z of (m.alive?(m.zones||[]):[])){const zx=Math.round(z.l-cx),zy=Math.round(z.top-cy),w=z.r-z.l,h=z.b-z.top;g.fillStyle=z.t>z.live?'rgba(255,190,90,0.18)':'rgba(201,70,61,0.65)';g.fillRect(zx,zy,w,h);g.strokeStyle=z.t>z.live?'#ffd36b':'#ff7a9a';g.strokeRect(zx+.5,zy+.5,w-1,h-1);for(let q=zx;q<zx+w;q+=12)g.fillRect(q,zy+h-4,3,4);}
+  const capY = fy - 96 + Math.round(Math.sin(time * 1.2) * 2) - Math.round(m.breathK * 3) + ps.capDy;
+  drawMotherZones(m, cx, cy);   /* (claude/mothermarks) the warning on the ground, then the roots and the spores that come out of it */
   if((m.creep||0)>0.5){if(!m.alive)m.creep=Math.max(0,m.creep-2);const A=L.arena,gy=Math.round(A.floor-cy);   /* THE MYCELIUM: in from both walls, and back to them when she dies */
     for(const [l,r] of [[A.x0,A.x0+m.creep],[A.x1-m.creep,A.x1]]){const zx=Math.round(l-cx),w=Math.max(1,Math.round(r-l));g.fillStyle='rgba(92,150,48,0.55)';g.fillRect(zx,gy-3,w,3);g.fillStyle='#a6e04a';for(let q=0;q<w;q+=5){const hh=2+((q*7+Math.floor(time*3))%3);g.fillRect(zx+q,gy-2-hh,1,hh);}g.fillStyle='#d8ffb0';for(let q=2;q<w;q+=11)g.fillRect(zx+q,gy-5-((q*3)%4),2,2);}}
   const node=props.find(p=>p.motherNode);
   if(node&&m.alive){const nx=Math.round(node.x-cx),ny=Math.round(node.y-cy)-10,ready=!(m.nodeRest>0)&&m.mode!=='open'&&m.mode!=='phaseRise';g.strokeStyle=ready?'#fff1a8':'#776b85';g.lineWidth=2;g.beginPath();g.moveTo(nx,ny-12);g.lineTo(nx+10,ny);g.lineTo(nx,ny+12);g.lineTo(nx-10,ny);g.closePath();g.stroke();g.lineWidth=1;if(nx>20&&nx<VW-20){g.fillStyle='rgba(12,10,22,.9)';g.fillRect(nx-37,ny-25,74,10);text(ready?'STRIKE ROOT':'ROOT RESTING',nx,ny-24,ready?'#fff1a8':'#b4a6c4','center',6);}else if(bossActive&&ready){const edge=nx<20?38:VW-38;g.fillStyle='rgba(12,10,22,.9)';g.fillRect(edge-34,Math.min(VH-36,Math.max(55,ny-24)),68,10);text(nx<20?'< ROOT':'ROOT >',edge,Math.min(VH-36,Math.max(55,ny-24))+1,'#fff1a8','center',6);}}
   const MC = PROP.motherCap;
   g.drawImage(MC.stalk, x - 16, fy - 100);
-  g.save(); g.translate(x + shakeX, capY); g.rotate(tip * 0.45); g.scale(breathe, 1 / breathe);
+  drawMotherRoots(m, ps, x, fy, cx, cy);
+  g.save(); g.translate(x + shakeX, capY); g.rotate(tip * 0.45 + ps.rot); g.scale(breathe * ps.sx, 1 / breathe / ps.sx * ps.sy);
   g.drawImage(torn ? MC.capTorn : open ? MC.capOpen : MC.cap, -80, -34);
   g.restore();
+  if (ps.gill > 0) drawMotherGills(m, ps, x + shakeX, capY);
   if (open && !torn) { g.globalAlpha = 0.10 + 0.06 * Math.sin(time * 3); g.fillStyle = '#c9a0ff'; g.beginPath(); g.ellipse(x, capY + 16, 78, 22, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
   if (Math.random() < 0.12) parts.push({ x: m.x + 20 + Math.random() * 60, y: capY + cy + 8, vx: 0, vy: 30, life: 0.9, max: 0.9, col: '#b8c060', size: Math.random() < 0.4 ? 2 : 1, grav: 160 });
   // eyes under the cap, watching
