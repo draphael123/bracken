@@ -30,8 +30,8 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/fog-knight-hands.js binds it). fkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const FK = {
-  hp: 1850, w: 18, h: 34, markH: 50,
-  openMul: 1.5, openCap: 0.12, openT: 3.4, scatterT: 3.0, wardT: 3.0, reelT: 1.1, burnT: 4.2, burnR: 84, burnDecay: 0.35, arcR: 34,
+  hp: 1450, w: 18, h: 34, markH: 50,
+  openMul: 1.6, openCap: 0.12, openT: 3.4, scatterT: 3.0, wardT: 3.0, reelT: 1.1, burnT: 3.6, fireBurn: 0.06, burnR: 84, burnDecay: 0.35, arcR: 34,
   p2: 0.66, p3: 0.33,
   walk: 62, keep: 40, turn: 0.3, gap: [0.55, 0.48, 0.42],
   stanceTell: [0.5, 0.42, 0.36], litEarly: 0.18, darkLate: 0.14,
@@ -40,7 +40,7 @@ export const FK = {
   doubleTell: 0.7, doubleLag: 0.55, refill: 12, drainT: 1.4,
   shroudTell: 1.0, stepTell: 0.55, dissolveT: 0.5, reformD: 60, chainHits: 3, chainT: 2.0,
   lastSeenEvery: 1.2,
-  dmg: { cut: 36, lunge: 44, double: 24, step: 38 },
+  dmg: { cut: 30, lunge: 38, double: 20, step: 32 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]); 'high' / 'low' / 'full' = take that stance (told) */
 export const CYCLES = {
@@ -110,6 +110,7 @@ export function takeAt(e, S, angle) {
   if (S.ward > 0) return { k: 0, word: 'WARDED' };
   if (fkOpen(e)) return { k: FK.openMul, word: '' };
   if (angle === 'burn') return { k: 0.5, word: '' };   /* (fire burns fog: a burn tick lands at half, whatever his stance) */
+  if (angle === 'fire') { S.burn = Math.min(0.95, S.burn + FK.fireBurn); return { k: 0.5, word: '' }; }   /* (a thrown flame - the pyromancer's embers - burns the fog as the lantern does: half a blow, whatever his stance, and it feeds THE BURN) */
   if (COMMITTED.has(e.mode)) return { k: 1, word: '' };
   if (GUARD_MODES.has(e.mode)) { if (beatsStance(S.stance, angle)) return { k: 1, word: '', reel: S.stance === 'full' }; return { k: 0, word: STANCE_WORD[S.stance] }; }
   return { k: 1, word: '' };

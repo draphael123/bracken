@@ -114,7 +114,7 @@ export function makeFogKnightHands(ctx) {
     return Math.max(0, Math.min(0.88, S.shroud * (0.86 - 0.22 * lit))); };
   /* A BLOW ON HIM, by its angle: the ward turns everything; open x FK.openMul (one opening FK.openCap of him at most); on guard, his stance turns the wrong angle */
   H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero();
-    const tag = Array.isArray(blow) ? blow : blow ? [blow] : [], angle = !blow ? 'burn' : tag.includes('plunge') || P.plunge ? 'plunge' : blowAngle(P);
+    const tag = Array.isArray(blow) ? blow : blow ? [blow] : [], angle = !blow ? 'burn' : tag.includes('plunge') || P.plunge ? 'plunge' : tag.includes('shot') && ctx.isPyro && ctx.isPyro() ? 'fire' : blowAngle(P);
     const r = FKM.takeAt(e, S, angle);
     if (r.k <= 0) { if (e.mode === 'sleep' || e.mode === 'wake') return 0; S.n[S.ward > 0 ? 'warded' : 'turned']++; e.guardFx = 0.25; e.guardWord = r.word; ctx.turned(e, P.x, r.word === 'FULL GUARD' ? 'FULL GUARD: FROM ABOVE' : r.word); return 0; }
     if (FKM.fkOpen(e)) { const cap = e.maxHp * FK.openCap, d = Math.min(dmg * r.k, Math.max(0, cap - S.openTaken)); S.openTaken += d;
