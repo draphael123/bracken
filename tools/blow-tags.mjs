@@ -12,7 +12,7 @@
       wrong blow is turned and NAMES the key; his glyph is drawn; a boss with no row is untouched (keys-core keys no boss). */
 import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
-import { KEYS, KEY_ORDER, KEY_ROWS, ROOM_TAGS, keyOf, keyed, roomBlow, tagHas, drawKeyGlyph, glyphAt, makeBossRead, behind } from '../src/boss-read.js';
+import { KEYS, KEY_ORDER, KEY_ROWS, ROOM_TAGS, keyOf, keyed, roomBlow, tagHas, drawKeyGlyph, glyphAt, makeBossRead, behind, GUARD } from '../src/boss-read.js';
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const bodyOf = name => { const i = main.indexOf('\nfunction ' + name + '('); assert.ok(i >= 0, 'main.js has ' + name); const j = main.indexOf('\nfunction ', i + 10); return main.slice(i, j); };
 /* the calls in a body whose name looks like a boss hook: fooHurt(...), fooTake(...), XYZ.take(...), PUPH.hurtPuppet(...), ROCE.plungeHit(...), pyroReads(...) */
@@ -92,4 +92,15 @@ try {
 } finally { delete KEY_ROWS.testkey; }
 assert.ok(/BR\.keyOf\(e\)\) BR\.drawKey\(g, e, cx, cy, time\);/.test(main), 'main.js draws the key over a keyed boss or mini');
 assert.ok(/const kt = tag && \(e === boss \|\| e\.xpRole === 'mini'\) \? BR\.takes\(e, tag, fromX\) : null; if \(kt\) \{ if \(kt\.ok\) e\.keyHit = time; else if \(!GB\.openOf\(e\)\) BR\.turnedKey\(e, fromX, kt\.key\); \}/.test(main), 'hurtEnemy0 asks the key once, before the per-boss ladder');
-console.log('blow-tags: ok (' + hooks + ' boss hooks get the tag; no boolean plunge gate; throw / reflect / riposte tagged; 8 keys, words, glyphs; no boss keyed yet)');
+/* 5. B13, THE DUELIST'S WALL (claude/keyscore): the four waiting rooms are always hittable, guarded by angle */
+{
+  for (const t of ['lance', 'closedhelm', 'captain', 'quarter']) {
+    assert.strictEqual(GUARD[t], 'wall', t + ': his front is a wall (B11), not a flat NO');
+    const e = { t, x: 100, y: 200, w: 24, h: 40, face: 1, alive: true };
+    assert.ok(BR.beats(e, 60, false) && BR.beats(e, 140, true) && !BR.beats(e, 140, false), t + ': beaten from behind or from above, turned from the front at his height'); }
+  for (const gone of ["number(e.x, e.y - 44, 'THE SEA HAS HIM'", "number(e.x, e.y - 30, 'HER GUARD HOLDS'", "number(e.x, e.y - e.h - 8, 'HIS PLATE TURNS IT'", "hintMsg = 'NOTHING GETS THROUGH HIS WARD."])
+    assert.ok(!main.includes(gone), 'the flat NO is gone: ' + gone);
+  assert.ok(main.includes("if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));") && main.includes("const wallUp = e => e.t !== 'quarter' || !!e.guard || e.mode === 'stride' || e.mode === 'stanceTell';"), 'round or over the wall a blow lands at ANGLE.wall; the Quartermaster drops hers to commit');
+  assert.ok(/if \(blow && GUARD_WALL\(e\) && wallUp\(e\) && e\.mode !== 'sleep' && !GB\.openOf\(e\) && !BR\.beats\(e, fromX, pl \|\| \(!P\.ground && P\.y < e\.y - e\.h \* 0\.5\), false\)\) \{/.test(main), 'the wall turns a front blow at his height, outside his openings');
+  assert.ok(/if \(e\.t === 'quarter'\) e\.flash = Math\.max\(e\.flash \|\| 0, 0\.06\);/.test(main), 'the Quartermaster still answers a cut into her EN GARDE'); }
+console.log('blow-tags: ok (' + hooks + ' boss hooks get the tag; no boolean plunge gate; throw / reflect / riposte tagged; 8 keys, words, glyphs; no boss keyed yet; B13: the Lance, the Paladin, the Captain and the Quartermaster guard by angle)');

@@ -29,15 +29,22 @@ export const TURN = {
   NOT_THERE: 'NOT THERE',      // nothing there to cut (between stones, vanished)
 };
 
-/* B11: the duelists, and the way each one guards. 'front' = his face side ('GO ROUND' beats it from behind); 'high' = a low blow or one from
+/* B11: the duelists, and the way each one guards. 'front' = his face side ('GO ROUND' beats it from behind); 'wall' = from behind or from above (claude/keyscore); 'high' = a low blow or one from
    the air beats it; 'low' = a blow from the air beats it. A boss is here ONLY if his header says he is a duelist. */
 export const GUARD = {
   ram: 'front',      // THE RAM LORD: his horns are his guard - from behind he is a beast like any other (claude/sweep1)
   chief: 'front',    // THE GOBLIN CHIEFTAIN: the shield on his arm - round it, or wait for his club in the ground (claude/sweep1)
   cisternqueen: 'front',   // THE CISTERN QUEEN: her raised claws on the floor - round her (claude/sweep3, Daniel 10-06: never fully invulnerable)
+  /* (claude/keyscore, B13 CHIP SWEEP - Daniel 10-05: no waiting-room invulnerability) 'wall' = his front is a wall: a blow from behind him OR from above him
+     (a plunge, or a hero in the air over his feet) beats it and lands at ANGLE.mul; from the front at his height it is TURNED (GO ROUND). In his
+     openings (src/boss-greed.js OPEN_RULE) every blow lands whole. These four were a flat NO, or a twentieth, until he chose to open. */
+  lance: 'wall',          // THE QUEEN'S LANCE: plate and shield on his front - round him or over him; committed (planted, thrusting, reeling) he is open
+  closedhelm: 'wall',     // THE WAYMEET PALADIN: his ward faces you - round him or over him; his sword met on the beat still breaks it (x2)
+  captain: 'wall',        // THE SALVAGE CAPTAIN: on his own wave the sea is in front of him - cut him from behind it or from above; beached he is open
+  quarter: 'wall',        // THE QUARTERMASTER: EN GARDE (and her deck guard) offers the blade to the front - a cut into it is answered; round her or over her lands
 };
 export const ROLL_SOON = 'TOO SOON';   /* (claude/sweep2) the Waymeet Paladin: a roll that started before the last beat of his swing passes through and opens nothing */
-export const ANGLE = { mul: 0.5 };   // a blow that beats the guard lands at half (his openings still pay more: they are not chipped either, and his own code's multipliers stand)
+export const ANGLE = { mul: 0.5, wall: 0.3 };   /* (claude/keyscore) wall: round or over THE DUELIST'S WALL (GUARD 'wall') - his front is the whole of his defence, so the way round it is a third of a blow, not a half */   // a blow that beats the guard lands at half (his openings still pay more: they are not chipped either, and his own code's multipliers stand)
 
 /* the word his turned blow says, per type (a string, or (e, fromX) => string). Anything not here: the guard's word, else WARDED. */
 export const behind = (e, fromX) => Math.sign(fromX - e.x) === -(e.face || 1);   /* (claude/keyscore: exported - B14's FROM BEHIND key and every hands file ask the same question) */
@@ -54,9 +61,9 @@ export const TURN_WORD = {
   greathound: TURN.WARDED,
   queen: 'THE SWARM',                                       // her drones close over her
   /* (claude/sweep2) ACT II */
-  captain: e => e.mode === 'ride' ? 'ON THE WAVE' : TURN.WARDED,                   // he rides the wave he called: wait for it to beach him
+  captain: TURN.ROUND,                                      // (claude/keyscore, B13) on his wave or on his feet his front is a wall: round him or over him (was ON THE WAVE: wait for the beach)
   reefmaw: e => ['lurk', 'sink', 'sleep', 'drain'].includes(e.mode) ? 'IN ITS HOLE' : TURN.WARDED,   // in its hole: make it come out (the bait, the jaw)
-  lance: 'HIS PLATE',                                       // plate all round until he plants or reels: step off his line
+  lance: TURN.ROUND,                                        // (claude/keyscore, B13) his plate faces you: round him or over him (was HIS PLATE: plate all round until he committed)
   kraken: 'NOT THE BODY',                                   // the body is out at sea: cut the arms on the road
   /* ACT III (claude/sweep3) */
   archmage: e => e.mode === 'ward' ? 'THE RUNES HOLD' : e.mode === 'blink' || e.mode === 'change' || e.mode === 'wake' ? TURN.NOT_THERE : e.stage === 2 ? 'REACH HIM' : TURN.WARDED,   // the runes take it; in a room he has written, the way through the room is the opening
@@ -153,6 +160,6 @@ export function makeBossRead(api) {
     drawKey(g, e, cx, cy, t) { const r = keyOf(e); if (!r || !e || !e.alive) return false; const at = glyphAt(r.key, e), hot = e.keyFlash !== undefined && t - e.keyFlash < 0.3;
       return drawKeyGlyph(g, r.key, Math.round(at.x - cx), Math.round(at.y - cy), t, hot ? 1.4 : 1); },
     beats(e, fromX, air, low) { const g = e && GUARD[e.t]; if (!g || !e.alive) return false;
-      return g === 'front' ? behind(e, fromX) : g === 'high' ? !!(air || low) : g === 'low' ? !!air : false; },
+      return g === 'front' ? behind(e, fromX) : g === 'wall' ? behind(e, fromX) || !!air : g === 'high' ? !!(air || low) : g === 'low' ? !!air : false; },
   };
 }

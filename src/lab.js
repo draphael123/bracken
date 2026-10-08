@@ -2014,6 +2014,14 @@ async function runbossLab(BK, opts) {
       /* (claude/herobots) THE DEATH KNIGHT'S SWING IS A SECOND OF COMMITMENT (0.9 s light, 1.75 heavy; armoured through it, but the ward cannot come up and he cannot roll): a player does not
          begin one into a boss that is winding up - he keeps the ward up and punishes in the half second after the boss's blow has gone, or in his rest, his open and his reel. Only while the boss
          is attacking in tells (one seen in the last six seconds); v2 profiles, and prof.dkPunish false turns it off. */
+      /* (claude/keyscore, B11 + B13) THE DUELIST'S WALL (the Lance, the Waymeet Paladin, the Salvage Captain, the Quartermaster - src/boss-read.js GUARD 'wall'): a cut into
+         his front at his height is turned, so a player outside his openings does not stand and swing into it - he cuts from BEHIND when he is there, else he goes OVER:
+         a jump, and the cut once his feet are over the duelist's waist. v2 profiles only (the legacy rows stay as they were). */
+      if (LABP.v2 && BK.bossWall && BK.bossWall(boss) && !open && !tell && !rushing && boss.mode !== 'stanceTell' && strike && ad <= reach + 12 && !k.block) {
+        const behindHim = Math.sign(P.x - boss.x) === -(boss.face || 1);
+        if (!behindHim) { strike = false;
+          if (P.ground && P.atk < 0 && !P.labJump) { BK.press('jump'); P.labJump = 16; }
+          else if (!P.ground && P.y < boss.y - (boss.h || 30) * 0.5 && P.atk < 0) { P.face = Math.sign(d) || P.face; BK.press('atk'); swings++; } } }
       if (LABP.v2 && LABP.dkPunish !== false && h === 'reaper' && strike && P.atk < 0 && ad < 110 && !dkSwingOK()) { strike = false; k.block = true; P.face = Math.sign(d) || P.face; k.left = k.right = false; }
       if (!mixedHeavy && !cutGo && strike && ad <= reach && P.atk < 0 && !k.block) { P.face = Math.sign(d) || P.face; if (d > 0) k.left = false; else if (d < 0) k.right = false;
         /* A SMALL FOE IN FRONT WANTS THE LOW SWEEP, not the plain cut this generic swing otherwise throws (tools/small-adds.mjs):
