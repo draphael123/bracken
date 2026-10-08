@@ -7,13 +7,15 @@
 // top). It cannot model a mover, a swing or a gust, so a level that leans on those comes back ASSISTED and
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
 import { slopeReachGrid } from './reach-slopes.js';   /* THE SLOPES REACH RULE, one line inside floodReach below */
+import { heroJumps, slideSpeeds } from './reach-hero.js';
+import { MOVE } from './hero-move.js';   /* PER HERO (opts.hero, claude/reachcore): each hero's own jump, the run-up, the slide, the clearance over a gap */
 const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
 const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
 const JUMP_ACROSS = 6;                                        // with a run-up, about six tiles of float
 const BOUNCE_UP = Math.ceil((480 * 480) / (2 * G) / TSZ);     // a spring throws you much higher
 const BUD_UP = Math.floor((420 * 420) / (2 * G) / TSZ);       // a bud pad throws you a tier: five rows (floor, not ceil: 89 px is not six rows)
 
-export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones); opts.across: a real hero's jump, not the model's six (tools/checkpoint-stand.mjs)
+export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as built: opts.hero slides on its slopes) */ // opts.maxUp: cap a plain jump's rise (2 = only the comfortable ones); opts.across: a real hero's jump, not the model's six (tools/checkpoint-stand.mjs)
   /* SLOPES, and it has to be the FIRST line: a slope tile is the cell you stand in, ON THE ROCK UNDER IT, so the fill
      reads slopes as AIR and stands on that rock. Pessimistic by up to 16 px and never optimistic - the reasoning is in
      src/reach-slopes.js. A level with no slopes gets the SAME OBJECT back, so nothing about today's 30 levels changes,
@@ -34,7 +36,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   }
   /* THE FAIR'S OWN GIVES (src/harvest-fair.js): a secret wall that says `reach` is one heavy blow (every hero has one), the gallery's planks stand once three targets are hit, and a striker's pad throws
      you as high as its launch: all of it is something every hero can do, so the fill counts it as done (the plain fill does not: it is legs and nothing else) */
-  const strikeUp = new Map();
+  const strikeUp = new Map(), strikeLaunch = new Map();
   if (!plain) {
     for (const w of (L.walls || [])) if (w.reach) for (let y = w.y0; y <= w.y1; y++) for (let x = w.x0; x <= w.x1; x++) g[y * W + x] = T.AIR;
     for (const gl of (L.galleries || (L.gallery ? [L.gallery] : []))) for (const [x0, x1, row] of (gl.planks || [])) for (let x = x0; x <= x1; x++) if (g[row * W + x] === T.AIR) g[row * W + x] = T.ONEWAY;
@@ -56,7 +58,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     if (L.rootway) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
       for (const h of (L.hoists || [])) { if (h.boss) continue; if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
         if (h.land) for (let y = h.land[1]; y <= h.land[1] + 1; y++) for (let x = h.land[0]; x <= h.land[0] + 1; x++) g[y * W + x] = T.SOLID; } }
-    for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
+    for (const s of (L.strikers || [])) { strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ)); strikeLaunch.set(s.x + ',' + (s.row - 1), s.launch); }
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
   // model treats them as already done rather than calling the far side unreachable
@@ -203,14 +205,105 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   const ridden = new Set();
   /* a glide sinks as it goes: d columns out it is at least (d - 6) / 2 rows under its start (and no more than 3 over it) - every column on the way needs open air in that band */
   const glideAcross = (x, dx, y, r) => { const s1 = Math.sign(dx); for (let c = x + s1, d = 1; c !== x + dx; c += s1, d++) { const lo = Math.max(0, y - 3 + Math.max(0, Math.ceil((d - 6) / 2))); let ok = false; for (let rr = lo; rr <= r && !ok; rr++) ok = !wall(at(c, rr)); if (!ok) return false; } return true; };
+  /* STRAIGHT DOWN IS A COLUMN TOO (claude/reachcore; the SKYROAD2 lane's note): dx 0 pushed the footing under you at any depth, so the fill "glided" down
+     through the mesa into the sealed cave pocket. A glide straight down needs the column open from the cell to the floor it lands on */
+  const clearDown = (x, y, r) => { for (let rr = y + 1; rr < r; rr++) if (wall(at(x, rr))) return false; return true; };
   const glideFrom = (x, y, push) => {
-    for (let dy = 0; dy <= 34 && y + dy < H; dy++) { const span = 6 + 2 * dy, r = y + dy;
-      for (const fx of (rowFoot.get(r) || [])) { const dx = fx - x; if (Math.abs(dx) <= span && (!dx || glideAcross(x, dx, y, r))) push(fx, r); } }
-    for (const v of therm) { if (ridden.has(v) || v.y < y - 2) continue; const dx = v.x - x; if (Math.abs(dx) - 1 > 6 + 2 * Math.max(0, v.y - y) || (dx && !glideAcross(x, dx, y, v.y))) continue; ride(v, push); }
+    const gs = HJ ? glideSpan(x, y) : null;   /* per hero: the cloak's sink at his own air speed, and a tile clear of a far lip */
+    for (let dy = 0; dy <= 34 && y + dy < H; dy++) { const span = gs ? gs.cols(dy) : 6 + 2 * dy, r = y + dy;
+      for (const fx of (rowFoot.get(r) || [])) { const dx = fx - x; if (Math.abs(dx) <= span && (!dx ? clearDown(x, y, r) : glideAcross(x, dx, y, r)) && (!gs || !dx || gs.fits(fx, r))) push(fx, r); } }
+    for (const v of therm) { if (ridden.has(v) || v.y < y - 2) continue; const dx = v.x - x; if (Math.abs(dx) - 1 > (gs ? gs.cols(Math.max(0, v.y - y)) : 6 + 2 * Math.max(0, v.y - y)) || (dx && !glideAcross(x, dx, y, v.y))) continue; ride(v, push); }
   };
   const ride = (v, push) => { if (ridden.has(v)) return; ridden.add(v); const top = tTop(v);
     for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -3; dx <= 3; dx++) push(v.x + dx, ty);
     glideFrom(v.x, top - 1, push); };
+  /* ---- PER HERO (opts.hero: 'knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'; claude/reachcore, Daniel-approved 10-07) ----
+     The fill above jumps three rows and SIX columns for everybody and counts a toe on the far lip. With opts.hero the plain jump and the walk off an
+     edge are that hero's own (src/reach-hero.js flies src/hero-move.js's numbers): how high he rises, how far he carries from the run-up the floor
+     behind him gives (a sprint only from a run long enough to earn it), a SLIDE's speed off a slope (slideStep, the Glass Sea's slick glass), and a
+     landing over a GAP counts only with the centre a whole tile past the lip. A miss that only drops you back to where you started (or one row under
+     it) is no gap: there the toe and the mantle are fair, as in play. Springs, buds, strikers and the water's leap keep the shared model (rides). */
+  const HJ = opts.hero ? heroJumps(opts.hero) : null, slid = HJ ? slideSpeeds(L0, T, opts.heroGlass) : null;   /* (opts.heroGlass: a fixture's own slick-glass numbers) */
+  const slickAt = (x, y) => (L.slick || []).some(z => x >= z[0] && x <= z[1] && y + 1 === z[2]) || (!!L.iceLedges && at(x, y + 1) === T.CRYST);
+  /* where you can take off from (x, y) going s: the centre at the edge of the floor (u, forward), and what a landing on (c, r) costs from there.
+     THE CLEARANCE IS A HAND'S TIME, NOT A PIXEL (Daniel's "a tile clear of the lip, never a toe on it"): the take-off is the last pixel of the edge,
+     so the room past the lip is the slack a person has to jump early. At a run that slack is one tile; at a slide's speed a tile goes by in half the
+     time, so the room asked for is the ground the take-off covers in the time a run takes over one tile (TS / RUN), and never less than a tile.
+     (opts.heroClear: a fixed room in px instead, for a probe.) */
+  const SLACK_T = TSZ / MOVE.RUN;
+  const landing = (x, y, s) => {
+    const edge = !footing.has(key(x + s, y)) && !solid(at(x + s, y));
+    const u0 = (s > 0 ? (x + 1) * TSZ + (edge ? 4 : -1) : -(x * TSZ - (edge ? 4 : 0))) + (edge && opts.heroCoyote ? opts.heroCoyote : 0);
+    const inside = c => s > 0 ? c * TSZ : -(c * TSZ + 15), toe = c => s > 0 ? c * TSZ - 4 : -(c * TSZ + 19);
+    return { u0, need(c, r, v, toeOnly) {   /* v: the take-off's forward speed; toeOnly: the toe's need (the margin report) */
+      if (springs.has(key(c, r))) return (s > 0 ? c * TSZ - 8 : -(c * TSZ + 23)) - u0;   /* a head is struck, not stood on: the plunge meets it from half a body off */
+      let l = c; while (l - s !== x && footing.has(key(l - s, r))) l -= s;
+      if (l - s === x) return inside(c) - u0;
+      const m = l - s; let mr = r; while (mr < H - 1 && !footing.has(key(m, mr)) && !wall(at(m, mr))) mr++;   /* where a miss short of the lip comes down */
+      const safe = wall(at(m, r)) || (footing.has(key(m, mr)) && mr <= Math.max(y, r) + 1);
+      if (safe || toeOnly) return (c === l ? toe(c) : inside(c)) - u0;
+      const CLR = opts.heroClear ?? Math.max(TSZ, Math.abs(v || 0) * SLACK_T), clear = s > 0 ? l * TSZ + CLR : -(l * TSZ + 15 - CLR);
+      /* a WALL just past the landing stops the body: aim long and it holds you on the step (the far wall face, the body's half-width off it) */
+      const stop = wall(at(c + s, r)) ? (s > 0 ? (c + 1) * TSZ - 5 : -(c * TSZ + 5)) : Infinity;
+      return Math.max(toe(c), Math.min(c === l ? Infinity : Math.max(inside(c), clear), stop)) - u0; } };
+  };
+  const runway = (x, y, s) => { if (opts.heroSprint) return 24; let n = 0; while (n < 24 && footing.has(key(x - s * n, y)) && !water.has(key(x - s * n, y))) n++; return Math.max(1, n); };
+  /* THE SPRINT CARRIES (main.js: runT is kept through a jump while the pace is held). A cell where he can be at a full sprint going s - a long enough
+     run on its own floor, or a landing off a sprinting jump the same way, or a walk on (level, or down a step) from one - is noted, and the cell is
+     looked at again with the sprint in hand. A step UP stops a run (the riser stops the legs), and so does turning round. */
+  const sprintAt = new Set(), SPRINT_FULL = MOVE.SPRINT_AFTER + MOVE.SPRINT_RAMP - 1e-6;
+  const markSprint = (x, y, s) => { const k = x + ',' + y + ',' + s; if (!HJ || sprintAt.has(k) || !footing.has(key(x, y)) || water.has(key(x, y))) return; sprintAt.add(k); seen.add(key(x, y)); q.push([x, y]); };
+  /* what throws him from (x, y), if anything: a striker, a springy tile, a head, a bud (null: his legs) */
+  const thrownAt = (x, y) => { const k0 = key(x, y);
+    if (strikeUp.has(k0)) return HJ.throwOf('striker', { launch: strikeLaunch.get(k0) });
+    if (at(x, y + 1) === T.BOUNCER) return HJ.throwOf('bounce', { awning: (L.awnings || []).some(a => x >= a.x0 && x <= a.x1 && y + 1 === a.row) });
+    if (springs.has(k0)) { let fu = false; for (let r = y + 2; r <= y + 4 && !fu; r++) fu = stand(at(x, r)); return HJ.throwOf('head', { footUnder: fu }); }
+    return buds.has(k0) ? HJ.throwOf('bud') : null; };
+  /* the launches from (x, y) going s: his legs from the floor behind him (and the sprint, if he has it here going this way), the slide, or what throws him */
+  const launches = (x, y, s, thrown, capPx) => { const ls = [], slick = slickAt(x, y);
+    if (thrown) ls.push({ f: HJ.fly(thrown, capPx), v: thrown.vx, kind: 'thrown' });
+    else { const n = runway(x, y, s), run = HJ.run(n, slick), runs = [run];
+      if (run.runT < SPRINT_FULL && sprintAt.has(x + ',' + y + ',' + s)) runs.push(HJ.run(24, slick));
+      for (const rn of runs) ls.push({ f: HJ.fly(rn, capPx), v: rn.vx, walk: HJ.fly(HJ.walkOf(rn)), sprint: rn.runT >= SPRINT_FULL, kind: rn.runT >= SPRINT_FULL ? 'sprint' : 'run ' + n });
+      const sv = slid && (slid.get(key(x, y)) || []).find(q0 => q0.dir === s); if (sv) ls.push({ f: HJ.fly(HJ.slideOf(sv.v), capPx), v: sv.v, kind: 'slide' }); }
+    return ls; };
+  const headOf = (x, y, thrown) => { const up = thrown ? Math.floor(HJ.fly(thrown).rise / TSZ) : HJ.rise; let head = 0; while (head < up && !solid(at(x, y - 1 - head))) head++;
+    return { up, head, capPx: head < up ? head * TSZ + 2 : Infinity, apexRow: y - Math.min(up, head) }; };
+  /* THE MARGIN of one crossing (x, y) -> (c, r) for the reports (tools/reach-heroes.mjs): px short of the clearance, px short of a toe on the lip, the take-off */
+  const heroMargin = (x, y, c, r) => { if (!HJ || c === x) return null; const s = Math.sign(c - x);
+    while (footing.has(key(x + s, y)) && x + s !== c && seen.has(key(x + s, y)) && !thrownAt(x, y)) x += s;   /* he walks to the edge first */
+    const thrown = thrownAt(x, y), { up, head, capPx } = headOf(x, y, thrown), Lc = landing(x, y, s), [cl, cr] = carryAt(x, y), carry = (s < 0 ? cl : cr) * TSZ;
+    /* the platform's own cells from its near lip on: the best landing on it, and the toe on its lip */
+    let l = c; while (l - s !== x && footing.has(key(l - s, r))) l -= s; const cells = [l]; for (let k = 1; k <= 4 && footing.has(key(l + s * k, r)); k++) cells.push(l + s * k);
+    let best = null; for (const lc of launches(x, y, s, thrown, capPx)) { const D = r <= y ? (y - r <= Math.min(up, head) ? lc.f.up[y - r] ?? -1 : -1) : Math.max(lc.f.down[Math.min(r - y, 48)] ?? -1, lc.walk ? lc.walk.down[Math.min(r - y, 48)] ?? -1 : -1);
+      if (D < 0) { if (!best) best = { short: Infinity, toeShort: Infinity, kind: lc.kind, v: Math.round(lc.v), high: true }; continue; }
+      const m = { short: Math.min(...cells.map(cc => Lc.need(cc, r, lc.v))) - D - carry, toeShort: Lc.need(l, r, lc.v, true) - D - carry, kind: lc.kind, v: Math.round(lc.v), lip: l };
+      if (!best || m.short < best.short) best = m; }
+    return best; };
+  const heroJump = (x, y, push, thrown) => {   /* thrown: a launch that throws him from this cell (a spring, a bud, a striker, a head) instead of his legs */
+    const { up, head, capPx, apexRow } = headOf(x, y, thrown);
+    for (let k = 1; k <= Math.min(up, head); k++) push(x, y - k);   /* straight up, through the boards over your head */
+    const [cl, cr] = carryAt(x, y), slick = slickAt(x, y);
+    for (const s of [-1, 1]) {
+      const ls = launches(x, y, s, thrown, capPx);
+      const carry = (s < 0 ? cl : cr) * TSZ, Lc = landing(x, y, s);
+      const land = (c, r, D, lc) => { if (Lc.need(c, r, lc.v) > D + carry) return false; push(c, r); if (lc.sprint) markSprint(c, r, s); return true; };
+      for (let kk = 0; kk <= Math.min(up, head); kk++) { const r = y - kk;
+        for (const lc of ls) { const D = lc.f.up[kk] ?? -1; if (D < 0) continue;
+          for (let j = 1, J = Math.ceil((D + carry + 24) / TSZ) + 1; j <= J; j++) { const c = x + s * j; if (!footing.has(key(c, r))) continue;
+            if (across(x, s * j, apexRow, Math.min(y, r))) land(c, r, D, lc); } } }
+      for (const lc of ls) { const Ddn = kk => Math.max(lc.f.down[Math.min(kk, 48)] ?? -1, lc.walk ? lc.walk.down[Math.min(kk, 48)] ?? -1 : -1);
+        for (let j = 1, J = Math.ceil((Ddn(48) + carry + 24) / TSZ) + 1; j <= J; j++) { const c = x + s * j;
+          if (wall(at(c, y)) || !across(x, s * j, apexRow, y)) continue;
+          let ny = y; while (ny < H - 1 && !footing.has(key(c, ny)) && !wall(at(c, ny))) ny++;
+          if (ny > y && footing.has(key(c, ny))) land(c, ny, Ddn(ny - y), lc); } }
+      if (!thrown && sprintAt.has(x + ',' + y + ',' + s)) { if (footing.has(key(x + s, y))) markSprint(x + s, y, s); else if (!solid(at(x + s, y))) markSprint(x + s, y + 1, s); }   /* and the run goes on along the floor (or down a step) */
+      if (!thrown && HJ.run(runway(x, y, s), slick).runT >= SPRINT_FULL) markSprint(x, y, s);
+    }
+  };
+  /* the cloak per hero: a jump off the edge, then the glide at his air speed (tiles across for a landing dy rows under the start), and a far lip cleared */
+  function glideSpan(x, y) { const fl = [-1, 1].map(s => { const rn = HJ.run(sprintAt.has(x + ',' + y + ',' + s) ? 24 : runway(x, y, s), slickAt(x, y)); return { f: HJ.fly(HJ.glideOf(rn)), v: rn.vx }; }), D = dy => Math.max(...fl.map(o => (dy ? o.f.down[Math.min(dy, 48)] : o.f.up[0]) ?? -1));
+    return { cols: dy => Math.max(0, Math.floor((D(dy) + 4) / TSZ) + 1), fits: (fx, r) => { const s1 = Math.sign(fx - x); return landing(x, y, s1).need(fx, r, fl[s1 > 0 ? 1 : 0].v) <= D(r - y); } }; }
   const expand = (x, y, push) => {
     if (sky) { glideFrom(x, y, push); for (const v of therm) if (Math.abs(v.x - x) <= 1 && y <= v.y && y >= tTop(v) - 1) ride(v, push); }
     const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = strikeUp.has(key(x, y)) ? strikeUp.get(key(x, y)) : springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
@@ -238,6 +331,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     // could step onto one from directly above - so a shaft entered at the top of its own rope read as
     // sealed. That is what stranded thirty rows of the Undercrown and everything they led to.
     if (at(x, y + 1) === T.NET) push(x, y + 1);
+    if (HJ && !water.has(key(x, y))) heroJump(x, y, push, thrownAt(x, y));   /* PER HERO: his legs, or what throws him */
+    else {
     // jump: anything within the arc, near side first
     let head = 0; while (head < up && !solid(at(x, y - 1 - head))) head++; // no jumping up through a ceiling
     for (let dy = -Math.min(up, head); dy <= 0; dy++) {
@@ -254,6 +349,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
       if (dx && (wall(at(x + dx, y)) || !across(x, dx, y, y))) continue; // walk off the edge: nothing in the way, and not into a wall
       while (ny < H - 1 && !footing.has(key(x + dx, ny)) && !wall(at(x + dx, ny))) ny++;
       if (footing.has(key(x + dx, ny))) push(x + dx, ny); }
+    }
     // DOWN ON A LEDGE FALLS THROUGH IT. The model had no drop-through at all, so a room whose only door is
     // the planking in its ceiling read as sealed - which is how a silver in Kingswood spent months being
     // reported unreachable when you get in by pressing down on the boards over it.
@@ -274,5 +370,5 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   // - with open air between you and it: a coin on a roof is not got from the room under the roof
   const clearCol = (x, y0, y1) => { for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) if (solid(at(x, y)) && !climbable(at(x, y))) return false; return true; }; // (a rock face you cling to is not in the way)
   const jumpNear = (x, y) => { for (let dy = -2; dy <= 4; dy++) for (let dx = -2; dx <= 2; dx++) if (seen.has(key(x + dx, y + dy)) && clearCol(x + dx, y, y + dy) && clearCol(x, y, y + dy)) return true; return inVent(x, y); };
-  return { seen, footing, assisted, assists, key, near, jumpNear, expand };
+  return { seen, footing, assisted, assists, key, near, jumpNear, expand, heroMargin, sprintAt };
 }
