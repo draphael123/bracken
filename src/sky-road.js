@@ -121,8 +121,10 @@ export function buildSkyRoad({ painter, T, TS }) {
   foe('kiterider', 226, 8, 'riders', { home: 226 }); foe('kiterider', 258, 8, 'riders', { home: 258 });
   foe('crow', 262, 14, 'crowsA', { ph: 0 }); foe('crow', 267, 15, 'crowsB', { ph: 1.3 }); foe('crow', 272, 13, 'crowsC', { ph: 2.1 });   /* A STRING OF CRAG CROWS (the moor's): they come west over R3 and R4, and a crow's shadow on a thermal kills it for a beat */
   rock(265, 298, 18); plank(268, 280, 14); rock(285, 288, 16); rock(291, 292, 16);                  /* THE FAR CLIFF, the riders' racks over it, a fallen block */
-  foe('rockgoblin', 268, 17, 'cliffSling', { face: -1, cnSkin: 'gobslinger' }); foe('shield', 283, 17, 'cliffSling', { face: -1 });   /* (FIX PASS: a heavy past the roosts) */
-  ent('check', 278, 17);                                                        /* CHECKPOINT THREE */
+  foe('rockgoblin', 268, 17, 'cliffSling', { face: -1, cnSkin: 'gobslinger' });
+  /* THE CRAG TROLL (claude/elitegates, Daniel 10-07): the Sky Road's GATEKEEPER ELITE, in the shield's place (difficulty v2: one weighty foe). He holds the far cliff - the first footing the roost chain's thermals feed - and the portcullis at 290 comes down over the cliff's east end (the bridgehead and the sun-disc) until he is dead. Behind you the last roost's air is under the cloud bank and the cloud sea is under the west edge; his slam and rockfall are told. The checkpoint is past his gate. */
+  foe('troll', 277, 17, 'cliffTroll', { face: -1, elite: true, gate: 290 });
+  ent('check', 294, 17);                                                        /* CHECKPOINT THREE: past the troll's gate, at the bridgehead (it was at 278, in his yard) */
 
   // ================= 4. THE BROKEN SKY BRIDGE (298-388): THE SUN-DISC, then THE EXAM =================
   ent('sundisc', 295, 17, { id: 'disc' }); decor.push({ kind: 'bridgehead', x: 293, y: 17 });
@@ -130,10 +132,8 @@ export function buildSkyRoad({ painter, T, TS }) {
   pinnacle(303, 15, 'disc:disc', { order: 0 }); pinnacle(310, 14, 'disc:disc', { order: 1 }); pinnacle(317, 13, 'disc:disc', { order: 2 }); pinnacle(324, 12, 'disc:disc', { order: 3 });
   cloudBank(300, 330, 5, 14, 14, 10);
   foe('kiterider', 314, 6, 'discRidersA', { home: 317 }); foe('kiterider', 326, 5, 'discRidersB', { home: 324 });
-  rock(333, 347, 16); sign(346, 15, 'THE SPANS ARE CRACKED. STRIKE EACH STONE BEFORE ITS SPAN GOES.');   /* THE EAST TOWER, its broken parapet; the sign for the spans' stones s4 and s6 (FIX PASS) */
-  foe('horn', 334, 15, 'towerHorn', { face: -1 });
-  /* THE CRAG TROLL (claude/elitegates, Daniel 10-07): the Sky Road's GATEKEEPER ELITE. He holds the east tower - the first footing past the disc road - and the portcullis at 343 comes down over its east mouth until he is dead. The disc's air lapses behind you (16 s), the cloud sea is under the west edge, and his slam and rockfall are told: fight him on the stone, not in the air. The tower's lookout plank is gone (a jump over the gate) and the shield and bow that stood here made way for him (difficulty v2: one weighty foe). */
-  foe('troll', 337, 15, 'towerTroll', { face: -1, elite: true, gate: 343 }); ent('check', 345, 15);   /* ...and the checkpoint is past his gate: his fight is the exam, the spans are the next section */
+  rock(333, 345, 16); plank(335, 343, 13); sign(345, 15, 'THE SPANS ARE CRACKED. STRIKE EACH STONE BEFORE ITS SPAN GOES.');   /* THE EAST TOWER, its broken parapet; the sign for the spans' stones s4 and s6 (FIX PASS) */
+  foe('horn', 336, 15, 'towerHorn', { face: -1 }); foe('shield', 340, 15, 'towerHead', { face: -1 }); foe('archer', 344, 15, 'towerHead', { face: -1 });
   /* THE EXAM: the broken spans - cracked stone that goes three beats after you land - between thermals you wake and thermals the clouds take */
   crumble(349, 353, 20); stone(352, 19, 's4');                                  /* SPAN A, and a stone ON it: turn it before the span goes */
   pinnacle(357, 13, 'stone:s4');                                                /* R5 */
@@ -146,7 +146,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   for (let y = 6; y <= 10; y++) set(365, y, T.SOLID); vaultDoors.push({ x0: 365, x1: 365, y0: 6, y1: 10 });
   ent('loft', 367, 10); ent('silver', 361, 10); foe('goat', 368, 10, 'loftGoat', { face: -1 });
   crumble(376, 379, 17);                                                        /* SPAN C */
-  rock(381, 389, FL); plank(382, 386, 15); ent('check', 383, FL - 1); sign(387, FL - 1, 'THE ROOSTS ARE HERS. THE ROC NESTS PAST THIS DOOR.');   /* (FIX PASS, B8: she is set up - the sign, her feathers on the bridge, her shadow over span C) */
+  rock(381, 389, FL); plank(382, 386, 15); ent('check', 384, FL - 1); sign(387, FL - 1, 'THE ROOSTS ARE HERS. THE ROC NESTS PAST THIS DOOR.');   /* (FIX PASS, B8: she is set up - the sign, her feathers on the bridge, her shadow over span C) */
   for (const [fx, fy] of [[299, 17], [339, 15], [350, 19], [377, 16], [385, 17]]) decor.push({ kind: 'feather', x: fx, y: fy });                                /* THE EYRIE DOOR, CHECKPOINT FOUR */
 
   // ================= 5. THE EYRIE (390-440): THE ROC =================
