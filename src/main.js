@@ -4232,11 +4232,11 @@ const CRAG_NODES = [
   { id: 'hanging', kind: 'level', level: 6, x: 76, y: 113, name: 'THE HANGING VILLAGE' },
   { id: 'highstore', kind: 'store', shop: 'shopCrag', needs: 'scree', x: 105, y: 106, plate: 'below', name: 'THE HIGH STORE' },
   { id: 'spire', kind: 'level', level: 7, x: 149, y: 71, plate: 'above', name: 'THE MONASTERY' },   /* the Sunspire and its Roc went in the monastery rework; the map had not heard */
-  { id: 'moor', kind: 'level', level: 8, x: 190, y: 77, plate: 'right', name: 'GALE MOOR' },
-  { id: 'skyroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyroad'), x: 268, y: 108, plate: 'below', name: 'THE SKY ROAD' },   /* THE SKY ROAD (claude/skyroad): on the main road after GALE MOOR, before THE ORE ROAD (Daniel 10-03) */
-  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 232, y: 74, plate: 'right', name: 'THE ORE ROAD' },
-  { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 238, y: 20, plate: 'left', spur: true, name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart): a spur off THE ORE ROAD, down into its mine */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
-  { id: 'storm', kind: 'level', level: 9, x: 264, y: 55, plate: 'below', name: 'STORMHOLD' },
+  { id: 'moor', kind: 'level', level: 8, x: 191, y: 90, plate: 'below', name: 'GALE MOOR' },
+  { id: 'skyroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyroad'), x: 268, y: 140, plate: 'below', name: 'THE SKY ROAD' },   /* THE SKY ROAD (claude/skyroad): on the main road after GALE MOOR, before THE ORE ROAD (Daniel 10-03) */
+  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 281, y: 103, plate: 'rightup', name: 'THE ORE ROAD' },
+  { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 258, y: 103, plate: 'left', spur: true, name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart): a spur off THE ORE ROAD, down into its mine */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
+  { id: 'storm', kind: 'level', level: 9, x: 264, y: 55, plate: 'leftup', name: 'STORMHOLD' },
   { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, plate: 'below', name: 'HIGHCROWN' },
   { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 276, y: 8, plate: 'above', spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
 ];
@@ -4244,7 +4244,7 @@ const CRAG_NODES = [
    self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
    no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
    relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
-const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [190,77], [268,108], [232,74], [264,55], [260,26]];   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
+const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,103], [264,55], [260,26]];   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 158, y: 154, plate: 'right', name: 'THE LONG WATER' },
