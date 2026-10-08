@@ -1,5 +1,60 @@
 # claude/towpath - THE TOWPATH greybox + THE FOG KNIGHT (2026-10-08, Opus)
 
+## FIX PASS (2026-10-08 afternoon, TOWPATH FIX lane, Opus) - scratch/review-towpath.md MUST-FIX M1-M6 + SHOULD-FIX S1 S2 S4
+Merged claude/batch79 e5d54026 first (check.mjs conflict: their list + 'towpath'). Everything below is on claude/towpath.
+**M5 F3 gate rat**: F2 narrowed to cols 169-172 (punt 4, bed paddle 172, the pair at 170/172); F2's top landing `ground(173,176,22)` (a 4-col duel floor);
+the river rat at 174. `inGate()` holds the gate for a HERO anywhere in the doorway, for a FOE only when his middle is in the gate column above the sill;
+a foe holding it says once SOMETHING STANDS IN THE GATE. The walker's hint now reads the widened landing as F3's bank (its STUCK at 182,26 is gone).
+Real-key route pilot WITH FOES (scripted hand that does not fight): F3 passes for knight/warden/pyro (was LIFTED for all three).
+**M1 weight** (no extra foe count): BARGEMAN CHAMPION (gaffer elite, SWIFT) at col 196 on the flight's top deck in place of the dozer at 200 (the review
+said 190: at 190 he met the rising punt at the lip and spun the walker back down every run - 12 cols gives a player room to step off; the lip is still
+behind you); the beam watchman to col 188. RIVER-RAT CHAMPION (gaffer elite, WARDING, dozing) at 239 in place of the rat at 243; that rat became a
+watchman (S1). Hedge champion SHIELDED, foreman UNSTOPPABLE (src/elite-kit.js AFFIX_AT towpath rows). A placed elite's own weight row: new ent field
+`wKey` (main.js: L.foeHp / L.foeHit look up `wKey || cnSkin`) - foeHp hedgechampion 2.0, bargechampion 2.2, ratchampion 2.2, deckforeman 2.4;
+foeHit 1.7 / 3.6 / 3.6 / 3.6; the common men's hit up a notch (bargeman/riverrat 3.4, watchman 2.8). THIRD SHRINE at col **244** (after the basin's
+champion), not 218: tools/checkpoint-gaps measured 218 at 65 route tiles from the hut's shrine (gate MIN 80); 244 reads 89 (A10b report-only still
+lists it under 140 - three shrines in 162 columns cannot make 140 each). tools/towpath.mjs's shrine rows rewritten for three (each after its elite).
+**THE LAST GATE (elites check, red on the lane's head too)**: the deck foreman now holds a gate at col 311 (`gate: 311`; the crane jib removed - the gate
+was walked round over it and he perched on it); src/reachcore.js learns the towpath (a drained race's wheel stair, a swing bridge across, a lock is
+water only below its LOW level) - tools/elites.mjs ok for towpath.
+**M2 the cut**: `FK.cutTell 0.5 -> 0.62`, and a cut / step-out cut is read at most `FK.cutDark` 0.06 late when dim (was darkLate 0.14 + 0.04 in P3).
+Health given back: hp 1450 -> **1850** (1600 = 72%, 1750 = 72%, 2000 = 44%, 1850 = 58%).
+**M3 lantern**: taken walking INTO the hut (col 156, no E) with the E-lights-it line. REQUIRED LIT USE: the last lock's bank paddle (266) is `dark`:
+in the fog under the unlit lamp it shows only a post's shape and does nothing until it stands in a light (a LIT lantern - a dim ember does not count -
+or the lamp struck); E there with a dim lantern lights the lantern first; THE LAMP IS OUT: STRIKE IT, OR LIGHT THE LANTERN (line + STUCK_HANDS step
+`xlamp`, handsState lamp.x). **M4 approach**: the lock-keeper's empty armour on its stand in the hut (fog in the visor) + sign "THE LOCK-KEEPER WENT UP
+TO THE LAST GATE. ONLY HIS ARMOUR CAME BACK."; a knight's plate shape held in the fog by the flight's top lamp (191) and across the last cut (309) -
+it thins as you come and is gone for good at 4 cols, and the lamps by it gutter. **M6 map**: towpath (41,153) on the path, canal (41,122), theatre
+(111,134), fair (130,115), INLAND_PATH as the review gave; tools/additional-areas.mjs's chain rows now waymeet>towpath>canal.
+**S1** gaffer family 8/24 = 33%. **S2** the lock / race / bridge signs say STRIKE. **S4** STUCK_HANDS.towpath += the stilled wheel's climb, the
+warehouse ladder, the culvert (glint after a stall; tools/towpath.mjs checks each is on its climb). Not done: S3 (church door left as the hook, per
+the coordinator), S5 (vault / exam silver - the level already has its 3 silvers), S6, S9.
+
+### Numbers (fix pass)
+- **FOG KNIGHT dry** (practiced, human+dry, L22, 8 seeds): knight 3/8, warden 6/8, pyro 5/8 = **58% in band**, no hero under 2/6. Fights 55-113 s
+  (was 58-124; still a little short of 90-150 in the losses). **With flasks** (profile human, 6 seeds): 6/6 6/6 6/6 = 100% (HIGH +40) - reported, not tuned to.
+- **Mash BOSS** re-stamped: 0/6 (knight 0 blows land, warden boss 91% left, pyro 89% left). **Mash LEVEL** re-stamped: every hero dies (knight 3, warden 5, pyro 4).
+- **Level-1 pilot** re-stamped: 34 blows, 8 deaths, walked 100%. **Curve** act 4: 352% / 7 deaths (band 120-600%, 1-12). level-quality: CLEARS THE BAR.
+- **Walker** (campaign L22, typical build, human+first, 3 seeds a hero): knight 0.7 deaths, arrive 60% (min 10); warden 2.0 deaths, 54% (min 13);
+  pyro 0.0 deaths, 41% (min 7). Was 0/0/0 deaths, 69/76/69%. Elite duels now 13-60 s and cost 0-60% hp. Deaths mostly the bargeman champion's haft
+  spin at the F3 lip and the foreman. Still a MISS on the letter for knight/pyro (deaths < 1) and knight/warden (arrive >= 50) - close.
+  Walker hand gaps left (real keys pass): warden at the basin's west grindylow (230,26); the foreman's gate (314,23) when the duel hands land nothing
+  in 20 s on him (UNSTOPPABLE) and write him off; once the alley pocket (255,23).
+- **Route pilot** (real keys, god, no foes): all 7 heroes walk the whole route, 0 lifts.
+### Checks run green (fix pass)
+towpath (169), elites, stuck, hint-shown, signs, checkpoints, checkpoint-gaps, sprinkle-cap, map-spacing, map-grammar, additional-areas (+runtime),
+level-quality, mash-gate, curve-gate, one-new-foe, skins, comments, threat-holes, tells, goblin-lint, corpses, boss-greed, boss-openings, boss-read,
+boss-fight-end, level-jump, verb-matrix, answer-tags, architecture, audio-assets, npc-removal, slopes, slopes-trace, floating-geometry, keys, killzones,
+collectables, spawns, deadends, homepaths, dangling-paths, weapon-skins, burial3-keys. (tools/check.mjs with a list - note it runs profile-sweep
+--kill-orphans first, which ends ORPHANED headless bracken browsers only.)
+### QUESTIONS FOR DANIEL (fix pass)
+1. Third shrine at 244 (after the basin's champion) instead of 218 (checkpoint-gaps' MIN 80). Rec: keep 244. Built.
+2. The deck foreman now HOLDS THE LAST GATE (311) - the elites check wants a gated elite where there is no mini. Rec: keep (it is the lock-keeper's
+   "last gate", and the canal's foreman does the same). Built.
+3. The flight's champion at 196 not 190 (he met the punt at the lip every time). Rec: 196. Built.
+4. Flask regime: the Fog Knight is 58% dry but 100% with three flasks (same question as every boss this week). Rec: decide game-wide; not tuned here.
+5. The Fog Knight stays DANIEL'S PLAYTEST GATE (B9).
+
 Base: claude/batch79 11c4b577 (still current at report time). Concept: scratch/concept-towpath.md (Daniel 10-07, Fog Knight approved ~12:45).
 
 ## What was built
