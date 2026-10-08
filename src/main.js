@@ -4181,7 +4181,8 @@ function winLevel() {
   winLevelUp = heroLevel() > lvAtStart;
   if (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret) { heroDone()[id] = 1; const gw = (PROG.xpGot[hero()] || {})[id]; if (gw) delete gw.k; }   /* a finished wood pays a fifth for everything in it, so its list of the fallen can go */
   if (winLevelUp) { applyUpgrades(); regear(); P.hp = P.maxHp; setTimeout(() => { if (state === 'win') SFX.rankUp(); }, 1500); }
-  { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now); }
+  { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now);
+    for (const c of LEVELS) { const o = c.opensOn; if (o && o.level === id && o.medal && now >= (MEDAL_RANK[o.medal] || o.medal) && was < (MEDAL_RANK[o.medal] || o.medal) && !(PROG[c.id] && PROG[c.id].cleared)) { hintMsg = c.name + ' IS OPEN: A NEW ROAD OFF THE MAP'; hintT = 6; } } }
   if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true; dcBankAll();
   saveProgress();
 }
@@ -4199,7 +4200,7 @@ const killPct = lv => { const n = lv.needsKills; if (!n) return 1; const p = PRO
    is open the moment this code runs, no migration step needed - both read straight off saved PROG. */
 const MEDAL_RANK = { bronze: 1, silver: 2, gold: 3 };
 const medalMet = (id, rank) => { const p = PROG[id]; return !!(p && (p.medal || 0) >= rank); };
-const opensLocked = lv => { const o = lv.opensOn; if (!o) return false; if (PROG[lv.id] && PROG[lv.id].cleared) return false; return !medalMet(o.level, MEDAL_RANK[o.medal] || o.medal); };
+const opensLocked = lv => { const o = lv.opensOn; if (!o) return false; if (PROG[lv.id] && PROG[lv.id].cleared) return false; if (!o.medal) return !(PROG[o.level] && PROG[o.level].cleared); return !medalMet(o.level, MEDAL_RANK[o.medal] || o.medal); };   /* NO medal named = open once the junction level is CLEARED (any time): the class levels' own roads (Daniel 10-07: a silver-time gate left THE BURNING VILLAGE unreachable on the map in a normal run) */
 const levelLocked = lv => !godMode() && (!!lv.locked || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
 
 // ---------- world map ----------
@@ -4301,9 +4302,13 @@ const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.
    own opensOn and this finds it - nothing here names 'burning' or 'unburied'. Underleaf and the Undercrown have no
    opensOn (they gate on needsTime/needsKills, unchanged), so they are never returned here and stay panel-only. */
 const spurAt = id => NODES.find(n => n.spur && n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].opensOn && LEVELS[n.level].opensOn.level === id);
-const spurReqText = lv => { const o = lv.opensOn; const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
+const spurReqText = lv => { const o = lv.opensOn; if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
   const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();
   return 'BEAT ' + nm + ' IN ' + fmt(t) + ' TO OPEN THIS ROAD'; };
+/* THE LOCKED-ROAD TIP (Daniel 10-07: the rule must be SHOWN). Pressing toward a shut side road, or tapping/clicking its node, raises this for a few seconds: what it asks and the best time you hold on that level. */
+const mapTip = { id: null, t: 0 };
+const spurTip = lv => { const o = lv.opensOn, p = PROG[o.level] || {}, j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return ['LOCKED: ' + spurReqText(lv), p.best !== undefined ? 'YOUR BEST ' + (j ? j.name : o.level.toUpperCase()) + ': ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; };
+const raiseTip = nd => { mapTip.id = nd.id; mapTip.t = 6; };
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
 /* A LEVEL THAT LEADS ON (LEVELS leadsTo, claude/archmage3: THE FALLING TOWER's portal takes you to the desert): won, the map puts you on the next node of the road, not back on this one */
@@ -4496,7 +4501,7 @@ let mapGoal = null;
 const lockedSay = nd => number(nd.x, nd.y - 14, LEVELS[nd.level].secret ? 'NOT YET' : 'LOCKED', '#9aa39a');   /* what a shut node says when it is walked onto or tapped */
 function mapTap(nd) { if (mapPanel.open || map.walking || state !== 'map') return; const i = NODES.indexOf(nd);
   if (i === map.node) { confirmPress = true; return; }
-  if (nodeLocked(nd) && nd.kind === 'level') { SFX.buzz(); lockedSay(nd); return; }
+  if (nodeLocked(nd) && nd.kind === 'level') { SFX.buzz(); lockedSay(nd); if (nd.spur && LEVELS[nd.level].opensOn) raiseTip(nd); return; }
   if (nd.spur) { map.node = i; map.seg = NODE_AT[i]; map.t = 0; PROG.mapNode = i; PROG.mapNodeId = nd.id; const a = PATH[NODE_AT[i]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55)); SFX.uiSel(); return; }
   mapGoal = i; }
 function mapGo(dir) {
@@ -4525,11 +4530,12 @@ function branchStep(dir) {
     PROG.mapNode = map.node; PROG.mapNodeId = j.id; SFX.uiSel(); return true; }
   const child = spurAt(nd.id); if (!child) return false;
   if (dir !== (child.y < nd.y ? -1 : 1)) return false;
-  if (nodeLocked(child)) { SFX.buzz(); return true; }   /* the requirement text is drawn continuously at this junction (drawMap); no popup to lose */
+  if (nodeLocked(child)) { SFX.buzz(); raiseTip(child); return true; }   /* the requirement text is drawn continuously at this junction (drawMap); no popup to lose */
   map.node = NODES.indexOf(child); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
   PROG.mapNode = map.node; PROG.mapNodeId = child.id; SFX.uiSel(); return true;
 }
 function updateMap(dt) {
+  if (mapTip.t > 0) mapTip.t -= dt;
   if (!map.walking && !mapPanel.open && PROG.cardNew && cardOwed(hero()) && openCard('map')) return;   /* THE CARD, on the map, after a level was gained and not chosen (PROG.cardNew: levelUp sets it, closing the card clears it) */
   if (mapPress && !map.walking) mapPanelToggle();
   if (mapPanel.open) { updateMapPanel(dt); PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; return; }
@@ -4619,7 +4625,11 @@ function drawMap() {
      every junction on the sheet at once), and only while its own side road is still shut - once it opens this
      plate has nothing to say and stops drawing itself. 320x180 buffer: fitText, never a guessed width. */
   if (!map.walking) { const here = NODES[map.node], child = here && !here.spur && spurAt(here.id);
-    if (child && nodeLocked(child)) { const maxW = VW - 12, msg = fitText(spurReqText(LEVELS[child.level]), maxW, 6), tw = Math.min(maxW + 4, textW(msg, 6) + 6);
+    if (child && nodeLocked(child) && mapTip.t > 0 && mapTip.id === child.id) { const maxW = VW - 12, ls = spurTip(LEVELS[child.level]).map(m => fitText(m, maxW, 6)), tw = Math.min(maxW + 4, Math.max(...ls.map(m => textW(m, 6))) + 6);
+      const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -33 : 14);
+      g.fillStyle = 'rgba(18,14,24,0.92)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), 18); g.strokeStyle = '#c9463d'; g.strokeRect(Math.round(lx - tw / 2) + 0.5, ly + 0.5, Math.round(tw) - 1, 17);
+      text(ls[0], Math.round(lx), ly + 2, '#ff8a7a', 'center', 6); text(ls[1], Math.round(lx), ly + 10, '#e8dcc0', 'center', 6); }
+    else if (child && nodeLocked(child)) { const maxW = VW - 12, msg = fitText(spurReqText(LEVELS[child.level]), maxW, 6), tw = Math.min(maxW + 4, textW(msg, 6) + 6);
       const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -24 : 14);
       g.fillStyle = 'rgba(18,14,24,0.85)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), 9);
       text(msg, Math.round(lx), ly + 1, '#c9463d', 'center', 6); } }
@@ -30273,7 +30283,7 @@ setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now
 await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
 await LS.step('final');
 document.getElementById('boot').remove();
-window.BK = { uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
+window.BK = { uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), coinHeroes: () => HEROES.filter(h => h.coinNeeds).map(h => ({ id: h.id, needs: h.coinNeeds, boss: !!h.coinBoss })), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: v2 => mageAdvice(v2), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: v2 => krakenAdvice(!!v2), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
@@ -30421,7 +30431,7 @@ if (q.get('playtest') === '1') setTimeout(async () => {
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 window.BK.levelJump = (id, h) => levelJump(id, h);
-window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
+window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.mapTip = () => ({ id: mapTip.id, t: mapTip.t, lines: mapTip.id ? spurTip(LEVELS[NODES.find(n => n.id === mapTip.id).level]) : null }); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'))) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'))) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();
