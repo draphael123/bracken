@@ -44,10 +44,28 @@ export function drawThermal(g, pr, cx, cy, time, top, k, flick) {
     for (let i = 0; i < 10; i++) { const ph = (time * (56 + i * 6) + i * 43) % h, yy = foot - ph, xx = x + Math.sin(time * 2.6 + i * 1.7 + yy * 0.045) * (hw - 3) * (0.5 + 0.5 * (ph / h));
       g.globalAlpha = (0.3 + 0.5 * k) * flick * (1 - ph / h); g.fillStyle = i % 3 === 0 ? '#ffb84a' : i % 3 === 1 ? '#fff6c8' : '#e8d0a0'; g.fillRect(R(xx), R(yy), 1, i % 2 ? 3 : 2); }
     g.globalAlpha = 1;
+    /* (claude/skyroad2, Daniel 10-08: "the wind currents need to be easier to see") THE COLUMN'S WALLS, ITS RISE AND ITS CREST, drawn with SOURCE-OVER so they read on the bright
+       pink and violet sky (additive gold vanished there): a dark rim outside a cream wall on each side, its dashes running UP at the lift's pace; cream chevrons climbing the
+       middle (more and brighter the stronger it is); and at the top the CREST - the air spilling over in two curls - so you see how high it carries you */
+    { const a = Math.min(1, k * flick), y0 = Math.max(tp, -12), y1 = Math.min(foot - 2, 420), run = (time * 70) % 12, D = '#4a1e3a', C = '#fff1c4';
+      g.globalAlpha = 0.1 * a; g.fillStyle = '#fff4d8'; g.fillRect(x - hw, y0, hw * 2, y1 - y0);   /* the column itself, a pale band over whatever sky is behind it */
+      g.globalAlpha = 0.45 * a; g.fillStyle = D; g.fillRect(x - hw - 1, y0, 1, y1 - y0); g.fillRect(x + hw, y0, 1, y1 - y0);
+      g.globalAlpha = 0.9 * a; g.fillStyle = C; for (let y = y1 - run; y > y0; y -= 12) { const yy = R(y), w = Math.round(Math.sin(time * 3 + yy * 0.08)); g.fillRect(x - hw + w, yy - 6, 2, 7); g.fillRect(x + hw - 2 - w, yy - 6, 2, 7); }
+      const step = k > 0.7 ? 20 : 32, cr = (time * 64) % step;
+      for (let y = y1 - 6 - cr; y > y0 + 6; y -= step) { const yy = R(y), fade = Math.min(1, (yy - tp) / 30, (foot - yy) / 20); if (fade <= 0) continue;
+        for (const [col, dy, al] of [[D, 2, 0.4], [C, 0, 0.85]]) { g.globalAlpha = al * a * fade; g.fillStyle = col; for (let j = 0; j < 5; j++) { g.fillRect(x - 5 + j, yy + 4 - j + dy, 1, 2); g.fillRect(x + 5 - j, yy + 4 - j + dy, 1, 2); } } }
+      if (tp > -16 && tp < 420) { const b = Math.round(Math.sin(time * 4) * 1.5);
+        for (const [col, dy, al] of [[D, 2, 0.45], [C, 0, 0.95]]) { g.globalAlpha = al * a; g.fillStyle = col; g.fillRect(x - hw + 2, tp + b + dy, hw * 2 - 4, 2);
+          for (const sd of [-1, 1]) { const ex = x + sd * (hw - 1) - (sd < 0 ? 3 : 0); g.fillRect(ex, tp + b - 2 + dy, 4, 2); g.fillRect(x + sd * (hw + 3) - (sd < 0 ? 1 : 0), tp + b - 1 + dy, 2, 4); g.fillRect(x + sd * (hw + 1) - (sd < 0 ? 1 : 0), tp + b + 3 + dy, 2, 1); } } }
+      /* a load the air carries: two feathers that turn as they climb */
+      for (let i = 0; i < 2; i++) { const ph = (time * (44 + i * 13) + pr.x * (i + 2)) % (h + 30), yy = foot - ph; if (ph >= h || yy < -8 || yy > 420) continue; const xx = R(x + Math.sin(time * 2.2 + i * 2.4 + pr.x) * (hw - 5)), flip = Math.floor(time * 6 + i * 3) % 2;
+        g.globalAlpha = 0.95 * a; g.fillStyle = '#f4f0ea'; if (flip) g.fillRect(xx - 2, R(yy), 5, 2); else g.fillRect(xx, R(yy) - 2, 2, 5); g.fillStyle = '#7a6a80'; g.fillRect(xx, R(yy), 1, 1); }
+      g.globalAlpha = 1; }
     /* a torn scrap of kite-cloth and a feather carried up it (the wind has a load) */
     { const ph = (time * 30 + pr.x * 3) % (h + 40), yy = foot - ph, xx = x + Math.sin(time * 3 + pr.x) * (hw - 4); if (ph < h) { g.globalAlpha = 0.9 * flick; g.fillStyle = '#c9463d'; g.fillRect(R(xx), R(yy), 3, 2); g.fillStyle = '#efe6d2'; g.fillRect(R(xx) + 1, R(yy) + 1, 2, 1); g.globalAlpha = 1; } }
-  } else if (pr.src0 === false) {   /* DEAD until its stone is struck: a faint dotted ghost of the column, waiting */
-    g.fillStyle = 'rgba(200,210,240,0.2)'; for (let y = foot - 6; y > Math.max(tp, foot - 80); y -= 6) { g.fillRect(x - hw, y, 1, 2); g.fillRect(x + hw - 1, y, 1, 2); }
+  } else if (pr.src0 === false || pr.shade) {   /* DEAD until its stone is struck: a faint dotted ghost of the column, waiting (claude/skyroad2: and under a cloud - where the air comes back when the sun does) */
+    for (let y = foot - 6; y > Math.max(tp, -8); y -= 8) { g.fillStyle = 'rgba(40,30,70,0.25)'; g.fillRect(x - hw - 1, y + 1, 1, 3); g.fillRect(x + hw + 1, y + 1, 1, 3); g.fillStyle = 'rgba(214,224,248,0.5)'; g.fillRect(x - hw, y, 1, 3); g.fillRect(x + hw - 1, y, 1, 3); }
+    if (tp > -8 && tp < 420) { g.fillStyle = 'rgba(214,224,248,0.5)'; for (let xx = x - hw + 2; xx < x + hw - 2; xx += 4) g.fillRect(xx, tp, 2, 1); }   /* (claude/skyroad2) where it WOULD carry you, dotted: the crest it is waiting to make */
     g.fillStyle = 'rgba(200,210,240,0.3)'; g.fillRect(x - 2, foot - 10 - ((time * 6) % 10 | 0), 1, 1);
   }
   /* the rock it rises from: a plate worked into the stone, orange and cracked when hot, slate when waiting, frost-pale under a cloud */

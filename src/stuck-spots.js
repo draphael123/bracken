@@ -147,6 +147,7 @@ export const STUCK = {
     { id: 'sk-cloak', zone: [70, 20, 104, 34], steps: [
       { at: [97, 33], done: ['cloak', 97, 33, 'on'], line: "THE RIDER'S CLOAK HANGS ON ITS MAST" },
       { zone: [99, 28, 104, 34], when: ['cloak', 97, 33, 'on'], at: [118, 37], line: "LEDGE ONE IS IN A GLIDE'S REACH OVER THE GAP" } ] },   /* (FIX PASS: glide one) */
+    { id: 'sk-shelf-air', zone: [105, 41, 112, 45], at: [113, 44], glint: 'stall', line: 'THE RISING AIR BY THE SHELF GOES BACK UP' },   /* (claude/skyroad2: the thermal entries - after a stall) */
     { id: 'sk-stone-1', zone: [105, 30, 123, 46], steps: [
       { at: [120, 37], done: ['sunstone', 120, 37, 'on'], line: 'A SUN-STONE LIES FACE DOWN BY THE CHASM' },
       { zone: [116, 30, 123, 37], when: ['sunstone', 120, 37, 'on'], at: [131, 30], line: 'THE AIR OVER THE PINNACLE RISES NOW: GLIDE INTO IT' } ] },   /* (FIX PASS: into thermal four) */
@@ -154,12 +155,31 @@ export const STUCK = {
       { at: [139, 25], done: ['sunstone', 139, 25, 'on'], line: "THE REEL'S STONE IS FACE DOWN: THE FLUE IS COLD" },
       { mover: { sky: 'reel' }, line: 'THE CAGE COMES DOWN TO THE DECK: STEP ON IT THERE' } ] },
     { id: 'sk-glide-roost', zone: [183, 8, 190, 13], at: [202, 19], line: "ROOST ONE IS IN A GLIDE'S REACH OFF THE DECK" },   /* (FIX PASS: deck to roost one) */
+    { id: 'sk-r1', zone: [199, 14, 204, 19], at: [210, 40], glint: 'stall', line: 'THE RISING AIR OVER THE NEAR PINNACLE' },
     { id: 'sk-stone-3', zone: [216, 10, 219, 18], at: [218, 17], done: ['sunstone', 218, 17, 'on'], line: 'A SUN-STONE ON THE ROOST' },
     { id: 'sk-disc', zone: [265, 8, 298, 18], steps: [
       { at: [295, 17], glint: 'stall', done: ['sundisc', 295, 17, 'on'], line: 'THE SUN-DISC AT THE BRIDGEHEAD' },
       { zone: [288, 8, 298, 18], when: ['sundisc', 295, 17, 'on'], at: [303, 20], line: 'THE ROAD OF AIR IS LIT: THE EAST TOWER IS IN REACH' } ] },   /* (FIX PASS: the disc road) */
-    { id: 'sk-stone-4', zone: [346, 12, 353, 20], at: [352, 19], done: ['sunstone', 352, 19, 'on'], line: 'A SUN-STONE ON THE CRACKED SPAN' },
-    { id: 'sk-stone-6', zone: [360, 10, 367, 17], at: [364, 16], done: ['sunstone', 364, 16, 'on'], line: 'A SUN-STONE ON THE SECOND SPAN' },
+    { id: 'sk-stone-4', zone: [346, 12, 355, 20], steps: [
+      { zone: [346, 12, 353, 20], at: [352, 19], done: ['sunstone', 352, 19, 'on'], line: 'A SUN-STONE ON THE CRACKED SPAN' },
+      { when: ['sunstone', 352, 19, 'on'], at: [357, 40], glint: 'stall', line: 'THE AIR OVER THE NEXT PINNACLE RISES NOW' } ] },   /* (claude/skyroad2: into R5) */
+    { id: 'sk-stone-6', zone: [360, 10, 367, 17], steps: [
+      { at: [364, 16], done: ['sunstone', 364, 16, 'on'], line: 'A SUN-STONE ON THE SECOND SPAN' },
+      { when: ['sunstone', 364, 16, 'on'], at: [371, 40], glint: 'stall', line: 'THE AIR OVER THE LAST PINNACLE RISES NOW' } ] },   /* (claude/skyroad2: into R6) */
+    { id: 'sk-r3', zone: [228, 4, 233, 9], at: [242, 30], glint: 'stall', line: 'THE RISING AIR PAST THE SPIRE' },
+    { id: 'sk-r4', zone: [248, 13, 251, 18], at: [258, 30], glint: 'stall', line: 'THE RISING AIR OFF THE LAST PINNACLE' },
+    /* (claude/skyroad2, Daniel 10-08 stuck on the disc road) THE DEAD-AIR FOOTINGS (L.airOnly, tools/skyroad-stuck.mjs): a gated pinnacle, the low roost - while their air is dead the only
+       way off is down into the cloud sea, whose updraft now throws you back to the road (src/sky-road-hands.js). After a stall the sea beside it glints */
+    { id: 'sk-deadair-130', zone: [130, 51, 132, 52], at: [133, 55], glint: 'stall', done: ['vent', 131, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-225', zone: [225, 51, 227, 52], at: [228, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-302', zone: [302, 51, 304, 52], at: [306, 55], glint: 'stall', done: ['vent', 303, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-309', zone: [309, 51, 311, 52], at: [313, 55], glint: 'stall', done: ['vent', 310, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-316', zone: [316, 51, 318, 52], at: [320, 55], glint: 'stall', done: ['vent', 317, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-323', zone: [323, 51, 325, 52], at: [327, 55], glint: 'stall', done: ['vent', 324, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-356', zone: [356, 51, 358, 52], at: [360, 55], glint: 'stall', done: ['vent', 357, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-370', zone: [370, 51, 372, 52], at: [374, 55], glint: 'stall', done: ['vent', 371, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-220', zone: [220, 28, 222, 29], at: [224, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-223', zone: [223, 42, 224, 43], at: [224, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
   ],
   canal: [
     { id: 'cn-board', zone: [0, 22, 50, 56], mover: { canal: true }, off: { canal: true }, line: 'THE BARGE WAITS BELOW: STEP ONTO HER DECK' },

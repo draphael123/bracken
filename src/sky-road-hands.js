@@ -40,7 +40,7 @@ export function makeSkyRoadHands(ctx) {
     const keep = S && S.L === lv;   /* a respawn keeps the cloak (taken once); a fresh load of the level takes it back */
     S = { L: lv, stones, disc: d ? { x: d.x * TS + 8, y: (d.y + 1) * TS, litAt: -99, until: -99, turnT: 0 } : null,
       cloak: keep ? S.cloak : false, cloakAt: c ? { x: c.x * TS + 8, y: (c.y + 1) * TS } : null, loft: lo ? { x: lo.x * TS + 8, y: (lo.y + 1) * TS, open: keep ? S.loft && S.loft.open : false } : null,
-      reelK: 0, reelPh: 'cold', reelT: 0, safe: null, said: new Set(), n: { catches: 0, glides: 0, snatches: 0, stones: 0, disc: 0, rides: 0 }, hung: keep ? S.hung : false };
+      reelK: 0, reelPh: 'cold', reelT: 0, safe: null, safeLand: null, said: new Set(), n: { catches: 0, glides: 0, snatches: 0, stones: 0, disc: 0, rides: 0 }, hung: keep ? S.hung : false };
     if (ctx.crumbleInit) ctx.crumbleInit();
   };
   /* the cloak survives a death on the level (it is the level's tool, taken once); a new load of the level takes it back off you */
@@ -94,13 +94,18 @@ export function makeSkyRoadHands(ctx) {
     else if (p.ground || !jumpHeld || p.vy < 0 && !p.gliding) p.gliding = false;
     /* the last SOLID footing: rock under both feet, not a crumbling span, not a mover */
     if (p.ground && !p.onMover) { const tx = Math.floor(p.x / TS), ty = Math.floor((p.y + 2) / TS), cr = (L().crumbles || []).some(c => ty === c.row && tx >= c.x0 - 1 && tx <= c.x1 + 1);
-      if (!cr && ctx.solidAt(tx, ty) && ctx.solidAt(Math.floor((p.x - 5) / TS), ty) && ctx.solidAt(Math.floor((p.x + 5) / TS), ty)) S.safe = { x: p.x, y: p.y }; }
+      if (!cr && ctx.solidAt(tx, ty) && ctx.solidAt(Math.floor((p.x - 5) / TS), ty) && ctx.solidAt(Math.floor((p.x + 5) / TS), ty)) { const ao = H.airOnlyAt(tx, ty - 1); S.safe = { x: p.x, y: p.y, vent: ao ? ao.vent : null }; if (!ao) S.safeLand = S.safe; } }
     if (p.y > L().cloudSea + CATCH.below * TS) {
       S.n.catches++; ctx.burst(p.x, L().cloudSea, 18, ['#ffffff', '#eaeff6', '#d6dfec'], 110, 0.7, -200, 2); ctx.sfx.puff && ctx.sfx.puff();
       ctx.damage(p.x, CATCH.dmg, { unblockable: true, noKnock: true, name: 'THE DROP' });
-      if (!p.dead && p.hp > 0) { const s = S.safe || ctx.checkpoint(); p.x = s.x; p.y = s.y; p.vx = 0; p.vy = 0; p.onMover = null; p.gliding = false; ctx.number(p.x, p.y - 30, 'THE UPDRAFT THROWS YOU BACK', '#bfe6f5'); }
+      if (!p.dead && p.hp > 0) { const s = (S.safe && !(S.safe.vent !== null && !H.airLive(S.safe.vent)) ? S.safe : S.safeLand) || ctx.checkpoint();   /* (claude/skyroad2) never back onto footing whose only way out is dead air */ p.x = s.x; p.y = s.y; p.vx = 0; p.vy = 0; p.onMover = null; p.gliding = false; ctx.number(p.x, p.y - 30, 'THE UPDRAFT THROWS YOU BACK', '#bfe6f5'); }
     }
   };
+  /* (claude/skyroad2, Daniel 10-08) L.airOnly: footing whose only way out is one thermal's air (a gated pinnacle, the low roost). airLive: that air will carry
+     you out - its source is on (and the disc's sun has three seconds or more left on it); a passing cloud does not count, it moves on */
+  H.airOnlyAt = (tx, row) => (L().airOnly || []).find(a => row === a.row && tx >= a.x0 && tx <= a.x1) || null;
+  H.airLive = col => { const pr = ctx.props().find(q => q.t === 'vent' && q.thermal && Math.floor(q.x / TS) === col); if (!pr || !sourceOn(pr)) return false;
+    return !(pr.src && pr.src.startsWith('disc:') && S.disc && S.disc.until - ctx.time() < 3); };
   H.hasCloak = () => !!(S && S.cloak && !S.hung);
   H.hang = () => { if (S) S.hung = true; };   /* the Roc is down: the cloak goes back on a mast (src/roc-eyrie.js says when) */
 
