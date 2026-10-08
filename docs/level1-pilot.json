@@ -130,5 +130,17 @@
   "lifts": 86,
   "walked": 100,
   "bare": true
+ },
+ "burning": {
+  "hash": "676515e906cb",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 51,
+  "deaths": 2,
+  "kills": 53,
+  "lifts": 89,
+  "walked": 100,
+  "bare": true
  }
 }

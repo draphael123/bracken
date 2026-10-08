@@ -351,17 +351,17 @@
   "lostPct": 547
  },
  "burning": {
-  "hash": "c4d0fd689ed1",
+  "hash": "676515e906cb",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 37,
-  "deaths": 0,
-  "kills": 57,
-  "lifts": 83,
+  "hits": 44,
+  "deaths": 1,
+  "kills": 56,
+  "lifts": 94,
   "walked": 100,
   "bare": true,
-  "lostPct": 131
+  "lostPct": 156
  },
  "witchlight": {
   "hash": "a2eec68bdc33",
