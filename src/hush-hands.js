@@ -32,8 +32,8 @@ export const BELLMAN = { hp: 26, w: 10, h: 18, patrol: 18, walk: 36, ear: 70, ne
 export const TOLL = { every: 9, tell: 1.4, len: 1.9 };
 /* THE GRANDMOTHER (her rework, B11/B13/B14 - keyed FROM BEHIND): back = her back is open this long after she lashes at a lure; backMul / rapMul;
    ward = the told ward after every opening (B3); pullCd = a bell-pull's chime swings this long before it rings again */
-export const GRAN = { back: 2.6, backMul: 2, rapMul: 1.5, purse: 0.2, jabTell: 0.3, jabCd: 1.6, ward: 3, lureTell: 0.4, lash: 0.32, lashR: 36, p2: 0.66, p3: 0.33, knellEvery: 6, knellTell: 0.75,
-  waveV: 230, waveDmg: 12, chimeR: 260, pullCd: 5, lureMin: 22 };
+export const GRAN = { back: 2.6, backMul: 2, rapMul: 1.5, purse: 0.18, rapPurse: 0.08, hurlAt: 100, hurlCd: 6, jabTell: 0.3, jabCd: 1.6, ward: 3, lureTell: 0.4, lash: 0.32, lashR: 36, p2: 0.66, p3: 0.33, knellEvery: 6, knellTell: 0.75,
+  waveV: 230, waveDmg: 16, chimeR: 260, pullCd: 5, lureMin: 22 };
 /* THE CAPITAL LINES this module says (each routed: src/hint-lines.js CALL_LINES) */
 export const LINES = {
   potTake: 'INTERACT TAKES THE POT. ATTACK THROWS IT. UP LOBS, DOWN TOSSES.',
@@ -241,19 +241,21 @@ export function makeHushHands(ctx) {
   /* a hero's blow on her: the multiplier, or 0 (turned: the clank and the word are said here) */
   /* A PURSE AN OPENING (the minis' rule, src/boss-greed.js MINI_CAP, kept for her: one opening is never the whole fight): what her back or her rap
      can lose in one opening is GRAN.purse of her; the blow that empties it ends the opening - she knows where you are (her ward, told) */
-  const purse = (e, dmg, k) => { if (e.purseLeft === undefined) e.purseLeft = Math.max(1, Math.round(e.maxHp * GRAN.purse));
+  const purse = (e, dmg, k, frac) => { if (e.purseLeft === undefined) e.purseLeft = Math.max(1, Math.round(e.maxHp * (frac || GRAN.purse)));
     const d = Math.round(dmg * k); if (d < e.purseLeft) { e.purseLeft -= d; return k; }
     const out = e.purseLeft / Math.max(1, dmg); e.purseLeft = 0; e.modeT = 0; e.purseShut = true; return out; };
   H.granTake = (e, fromX, blow, dmg) => {
     /* (every HIT on her comes through here - a sword, a spell, a jet, a shot; a burn's tick does not, and what is on her is on her) */
     if (e.mode === 'sleep' || e.mode === 'wake') return 1;
     if (e.ward > 0 || e.purseShut) { ctx.turned(e, fromX, 'WARDED'); H.n.warded++; return 0; }
-    if (e.mode === 'rap') { H.n.rapHits++; return purse(e, dmg || 1, GRAN.rapMul); }
+    if (e.mode === 'rap') { H.n.rapHits++; return purse(e, dmg || 1, GRAN.rapMul, GRAN.rapPurse); }   /* (her rap is the bonus opening: a smaller purse than her back) */
     const back = behindOf(e, fromX);
-    if (!back) { ctx.turned(e, fromX, 'SHE HEARD YOU'); H.n.parried++; e.ear = fromX; e.earT = 1.6; if (e.mode === 'walk' && !(e.jabCd > 0)) e.jabNow = true; return 0; }   /* she heard the swing coming - her stick turns it, and comes back at your knuckles */
+    if (!back) { ctx.turned(e, fromX, 'SHE HEARD YOU'); H.n.parried++; e.ear = fromX; e.earT = 1.6; e.parryAt = ctx.time(); e.burnBefore = e.burn || 0; if (e.mode === 'walk' && !(e.jabCd > 0)) e.jabNow = true; return 0; }   /* she heard the swing coming - her stick turns it, and comes back at your knuckles */
     if (granBack(e)) { H.n.backHits++; return purse(e, dmg || 1, GRAN.backMul); }
     H.n.backHits++; return 1;
   };
+  /* A TURNED BLOW SETS NOTHING ALIGHT: what a parried hit's caller put on her (a pyro's flame) is taken off again (main.js updateGrandmother, each frame) */
+  H.granUnburn = e => { if (e.parryAt !== undefined && ctx.time() - e.parryAt < 0.12 && (e.burn || 0) > (e.burnBefore || 0)) e.burn = e.burnBefore || 0; };
   /* an opening over (main.js granWard): the purse is full again for the next */
   H.granRefill = e => { e.purseLeft = undefined; e.purseShut = false; };
   /* a lure: she whirls to it and lashes - her back is yours. Only on her walk (a move once started is finished), never in her ward */
@@ -292,7 +294,7 @@ export function makeHushHands(ctx) {
 
   H.update = dt => { if (!H.on()) return; updatePots(dt); updateStreets(dt); updateToll(dt); updateKeys(dt); updateArena(dt); };
   H.n = { breaks: 0, taken: 0, silent: 0, alarms: 0, caches: 0, rings: 0, tolls: 0, keyDown: 0, lures: 0, pulls: 0, parried: 0, warded: 0, backHits: 0, rapHits: 0 };
-  H.secs = () => secs;
+  H.secs = () => secs; H.knells = () => knells;
 
   /* ---------- DRAWING ---------- */
   const R = Math.round;
@@ -357,11 +359,34 @@ export function makeHushHands(ctx) {
     if (!c.fallen) { g.fillStyle = '#e8dcc0'; g.fillRect(x - 1, y - 7, 3, 7); g.fillStyle = Math.floor(time * 9 + c.x) % 2 ? '#ffd36b' : '#ff9a5c'; g.fillRect(x, y - 10, 1, 3);
       g.globalAlpha = 0.12; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 9, 10, 0, 7); g.fill(); g.globalAlpha = 1; }
     else { g.fillStyle = '#e8dcc0'; g.fillRect(x - 3, y - 2, 7, 2); if (c.burnT > 0) { g.fillStyle = Math.floor(time * 14) % 2 ? '#ff9a5c' : '#ffd36b'; for (let k = 0; k < 6; k++) g.fillRect(x - 8 + k * 3, y - 2 - (k % 2), 2, 2); } } }
+  /* HER RUGS: a woven runner laid over the boards (the quiet floor) - and after the candles, a charred stripe and its ash */
   function drawRugs(g, cx, cy, time) {
     const lv = L(), burnt = propsOf('grancandle').some(c => c.fallen);
     for (const [x0, x1, row] of (lv.rugs || [])) { const x = R(x0 * TS - cx), w = (x1 - x0 + 1) * TS, y = R(row * TS - cy); if (x > ctx.VW() || x + w < 0) continue;
-      if (burnt) { g.fillStyle = '#2a1e18'; for (let q = 2; q < w; q += 5) g.fillRect(x + q, y, 3, 1); continue; }
-      g.fillStyle = '#6a2a2a'; g.fillRect(x + 1, y - 1, w - 2, 2); g.fillStyle = '#c9a03a'; for (let q = 3; q < w - 3; q += 6) g.fillRect(x + q, y - 1, 2, 1); g.fillStyle = '#8a3a32'; g.fillRect(x + 1, y + 1, w - 2, 1); } }
+      if (burnt) { g.fillStyle = '#5c4a2c'; g.fillRect(x, y, w, 3); g.fillStyle = '#1b1414'; for (let q = 1; q < w - 1; q += 4) g.fillRect(x + q, y, 2 + (q % 3), 2); g.fillStyle = '#3a2e2a'; for (let q = 3; q < w; q += 7) g.fillRect(x + q, y - 1, 2, 1); continue; }
+      g.fillStyle = '#1b1626'; g.fillRect(x, y - 1, w, 5); g.fillStyle = '#7a2e2a'; g.fillRect(x + 1, y - 1, w - 2, 4); g.fillStyle = '#a8443a'; g.fillRect(x + 1, y - 1, w - 2, 1);
+      g.fillStyle = '#c9a03a'; for (let q = 4; q < w - 4; q += 6) { g.fillRect(x + q, y, 2, 1); g.fillRect(x + q + 1, y + 1, 1, 1); } g.fillStyle = '#e8dcc0'; for (let q = 0; q < w; q += 3) { g.fillRect(x + q, y + 3, 1, 1); } } }
+  /* HER COTTAGE (the room the fight is in): a plaster wall between timber posts, the beam her bell-pulls run along, the thatch's underside, one window
+     with the moon in it, a hearth, shelves of jars and herbs hung to dry - dark, so everything that moves reads against it */
+  function drawCottage(g, cx, cy, time) {
+    const A = L().arena; if (!A || A.boss !== 'grandmother') return;
+    const x0 = R(A.x0 - 24 - cx), x1 = R(A.x1 + 24 - cx), top = R((A.floor / TS - 12) * TS - cy), floor = R(A.floor - cy), beam = R((A.floor / TS - 7) * TS - cy);
+    if (x1 < 0 || x0 > ctx.VW()) return;
+    g.fillStyle = '#231f29'; g.fillRect(x0, top, x1 - x0, floor - top);
+    g.fillStyle = '#2b2632'; for (let y = top + 6; y < floor; y += 9) for (let x = x0 + ((y >> 3) % 2) * 7; x < x1; x += 14) g.fillRect(x, y, 6, 1);   /* the plaster's daub */
+    g.fillStyle = '#3a2a1c'; for (let x = x0 + 8; x < x1; x += 72) { g.fillRect(x, top, 5, floor - top); g.fillStyle = '#4a3624'; g.fillRect(x, top, 1, floor - top); g.fillStyle = '#3a2a1c'; }   /* the posts */
+    g.fillStyle = '#4a3422'; g.fillRect(x0, beam - 2, x1 - x0, 6); g.fillStyle = '#5c4430'; g.fillRect(x0, beam - 2, x1 - x0, 1); g.fillStyle = '#2a1e14'; g.fillRect(x0, beam + 4, x1 - x0, 1);   /* the beam */
+    g.fillStyle = '#3a3020'; g.fillRect(x0, top - 8, x1 - x0, 8); g.fillStyle = '#5c4a2c'; for (let x = x0; x < x1; x += 3) g.fillRect(x, top - 1 - ((x * 7) % 5), 1, 2 + ((x * 3) % 4));   /* the thatch from under */
+    const wx = R((A.x0 + A.x1) / 2 - 40 - cx), wy = beam - 34;   /* the window */
+    g.fillStyle = '#1b1626'; g.fillRect(wx - 1, wy - 1, 26, 22); g.fillStyle = '#34405e'; g.fillRect(wx, wy, 24, 20); g.fillStyle = '#c9d1dc'; g.beginPath(); g.arc(wx + 16, wy + 7, 4, 0, 7); g.fill();
+    g.fillStyle = '#3a2a1c'; g.fillRect(wx + 11, wy, 2, 20); g.fillRect(wx, wy + 9, 24, 2);
+    g.globalAlpha = 0.07; g.fillStyle = '#c9d1dc'; g.beginPath(); g.moveTo(wx, wy + 20); g.lineTo(wx + 24, wy + 20); g.lineTo(wx + 44, floor); g.lineTo(wx - 10, floor); g.fill(); g.globalAlpha = 1;   /* moonlight on the floor */
+    for (const sx of [x0 + 60, x1 - 120]) { g.fillStyle = '#4a3422'; g.fillRect(sx, beam - 18, 40, 2); for (let k = 0; k < 5; k++) { g.fillStyle = ['#5a4a6a', '#6a5a3a', '#4a6a5a', '#7a4a3a', '#5a5a6a'][k]; g.fillRect(sx + 3 + k * 7, beam - 24 + (k % 2), 5, 6 - (k % 2)); } }   /* shelves of jars */
+    for (let k = 0; k < 9; k++) { const hx = x0 + 120 + k * 58; if (hx > x1 - 20) break; const sw = Math.sin(time * 1.3 + k) * 0.6; g.fillStyle = '#4a5a3a'; g.fillRect(R(hx + sw), beam + 5, 2, 7 + (k % 3)); g.fillStyle = '#6a7a4a'; g.fillRect(R(hx - 1 + sw), beam + 9 + (k % 3), 4, 2); }   /* herbs hung to dry */
+    const hx = R(A.x1 - 70 - cx), lit = !propsOf('grancandle').some(c => c.fallen);   /* the hearth */
+    g.fillStyle = '#3a3640'; g.fillRect(hx - 18, floor - 30, 36, 30); g.fillStyle = '#16121a'; g.fillRect(hx - 11, floor - 18, 22, 18);
+    g.fillStyle = Math.floor(time * 8) % 2 ? '#ff9a5c' : '#c9463d'; g.fillRect(hx - 6, floor - 5, 12, 3); g.globalAlpha = lit ? 0.1 : 0.2; g.fillStyle = '#ff9a5c'; g.beginPath(); g.arc(hx, floor - 6, 26, 0, 7); g.fill(); g.globalAlpha = 1;
+  }
   /* THE SNEAK MARK and THE BELLMAN'S EAR: what a quiet player reads */
   function drawReads(g, cx, cy, time) {
     const P = hero(), t = sneakTarget();
@@ -390,7 +415,7 @@ export function makeHushHands(ctx) {
   /* drawn in the world, under the creatures */
   H.drawWorld = (g, cx, cy, time) => {
     if (!H.on()) return;
-    drawRugs(g, cx, cy, time);
+    drawCottage(g, cx, cy, time); drawRugs(g, cx, cy, time);
     for (const pr of ctx.props()) {
       if (pr.t === 'npot' && pr.state !== 'return') drawPot(g, pr, cx, cy, time);
       else if (pr.t === 'streetgate') drawStreetGate(g, pr, cx, cy, time);

@@ -35,7 +35,7 @@ ok(!chipped({ t: 'spider', xpRole: 'mini' }, false), 'a mini with no opening (th
 /* (claude/dk3) A DUELIST ON FULL DAMAGE (THE DEATH KNIGHT, Daniel 10-03): never chipped, but his openings are still named, so greed still counts outside them */
 for (const t of Object.keys(FULL_DAMAGE || {})) { ok(!chipped({ t }, true), t + ' is on FULL_DAMAGE and must never be chipped'); ok(OPEN_RULE[t], t + ' is on FULL_DAMAGE but has no opening rule: greed would never count'); }
 /* (claude/redgorge2) the duelists off the chip, named one by one (design standard B11: a beast duelist guards by angle instead) - a new name here is a design call (QUESTION in the lane report) */
-const DUELISTS = ['bloodknight', 'matriarch', 'roc', 'hawkmistress'];   /* (claude/roc2: THE ROC - Daniel 10-06, 'she DOESN'T NEED TO BE INVULNERABLE BY DEFAULT': a beast guarding by height, src/roc-eyrie.js take) */
+const DUELISTS = ['bloodknight', 'matriarch', 'roc', 'hawkmistress', 'grandmother'];   /* (claude/underleaf2: THE GRANDMOTHER - Daniel's brief 10-08, "off the x0.05 chip (FULL_DAMAGE entry with the reason)": keyed FROM BEHIND, her front turns a blade (guard by angle, B11)) */   /* (claude/roc2: THE ROC - Daniel 10-06, 'she DOESN'T NEED TO BE INVULNERABLE BY DEFAULT': a beast guarding by height, src/roc-eyrie.js take) */
 ok(FULL_DAMAGE && DUELISTS.every(k => FULL_DAMAGE[k]) && Object.keys(FULL_DAMAGE).length === DUELISTS.length, 'FULL_DAMAGE is the named duelists alone (the Death Knight, the Raptor Matriarch, the Roc, the Hawk-Mistress; nobody else is taken off the chip): ' + Object.keys(FULL_DAMAGE || {}));
 for (const t of Object.keys(NO_OPENING)) ok(!chipped({ t }, true), t + ' is on NO_OPENING and must never be chipped (left at full damage, never made unbeatable)');
 
@@ -56,7 +56,7 @@ try {
     /* a closed mode for each sampled boss (his own idle) */
     const shut = { wood: b => { b.mode = 'hover'; b.modeT = 9; for (const d of BK.enemies()) if (d.t === 'wasp' && d.drone) d.alive = false; },
       hurricane: b => { b.mode = 'idle'; b.modeT = 9; }, lamplit: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; }, spire: b => { b.mode = 'idle'; b.modeT = 9; },
-      theatre: b => { b.mode = 'idle'; b.modeT = 9; }, underleaf: b => { b.mode = 'walk'; b.alpha = 1; b.modeT = 9; b.listenT = b.sweepT = b.teleT = b.fireT = b.callT = b.feelT = 99; b.stagger = 0; }, burning: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; } };
+      theatre: b => { b.mode = 'idle'; b.modeT = 9; }, underleaf: b => { b.mode = 'walk'; b.alpha = 1; b.modeT = 9; b.listenT = b.sweepT = b.teleT = b.fireT = b.callT = b.feelT = b.knellT = 99; b.stagger = 0; b.ward = 0; b.face = 1; b.jabNow = false; },   /* (claude/underleaf2: facing away from the hero's blow at b.x - 12 - her BACK, which takes it whole; her front's turn is tools/underleaf.mjs's) */ burning: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; } };
     const opener = { wood: b => { b.mode = 'winded'; b.modeT = 9; }, hurricane: b => { b.mode = 'beach'; b.modeT = 9; }, lamplit: b => { b.open = 3; b.onFoot = true; }, spire: b => { b.mode = 'downed'; b.modeT = 9; },
       theatre: b => { b.mode = 'staggered'; b.modeT = 9; b.openT = 9; const S = BK.puppeteerHands().show(); if (S) S.visitLeft = 999; }, burning: b => { b.open = 3; }, underleaf: b => { b.mode = 'rap'; b.modeT = 9; } };   /* (claude/bosswave1: her rap after a silent listen) */
     for (const id of ['wood', 'hurricane', 'lamplit', 'spire', 'theatre', 'underleaf', 'burning']) {
@@ -98,7 +98,9 @@ for (const [id, o] of Object.entries(R)) {
   if (exempt) { ok(o.heroShut >= 20, id + ' (' + o.t + ', no opening): a hero blow of 40 must land whole-ish, not chipped (took ' + o.heroShut + ')'); continue; }
   ok(o.openShut === false, id + ': the sampled closed mode must read as NOT open (BK.greed.open = ' + o.openShut + ')');
   if (own) ok(o.heroShut === Math.max(1, Math.round(40 * 0.05)), id + ': his own ward keeps his own number (a blow of 40 took ' + o.heroShut + ', not ' + Math.max(1, Math.round(40 * 0.05)) + ': a chip of a chip?)');
+  else if (FULL_DAMAGE[o.t]) ok(o.heroShut >= 30, id + ': ' + o.t + ' is a duelist on FULL_DAMAGE - a hero blow of 40 outside his opening lands WHOLE, never chipped (took ' + o.heroShut + ')');   /* (claude/burnvillage2's row, taken by claude/underleaf2 for the Grandmother) */
   else ok(o.heroShut <= chipMax(40, o.t), id + ': a hero blow of 40 outside his opening must take at most ' + chipMax(40, o.t) + ' (took ' + o.heroShut + ')');
+  if (FULL_DAMAGE[o.t]) { ok(o.roomShut >= 30, id + ': a blow from the ROOM lands whole (took ' + o.roomShut + ')'); if (o.openOpen !== undefined) { ok(o.openOpen === true, id + ': forced into his opening, BK.greed.open must say so'); ok(o.heroOpen >= 40, id + ': in his opening a hero blow of 40 lands whole or better (took ' + o.heroOpen + ')'); } continue; }   /* (his chip rows are a chip boss's) */
   const cr = GREED.chipBy[o.t] ?? GREED.chip;
   if (!own) ok((o.t === 'pyromancer' || o.heroRun >= 20 * 20 * cr - 1) && o.heroRun <= 20 * 20 * cr + 1, id + ': 20 hero blows of 20 outside his opening must add up to a twentieth (' + 20 * 20 * GREED.chip + '), took ' + o.heroRun);
   if (!own && cr < 0.5) ok(o.roomShut > chipMax(40, o.t), id + ': a blow from the ROOM (no hero blow) must not be chipped (took ' + o.roomShut + ')');

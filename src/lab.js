@@ -1535,7 +1535,7 @@ async function runbossLab(BK, opts) {
       /* THE GUN FOR HER GUARD: a deck gun on her own deck, cold, inside the arena - the nearest one to the bot */
       const gunT = boss.t === 'quarter' && boss.guard ? BK.props().filter(q => q.t === 'cannon' && q.deck && !(q.cool > 0) && Math.abs(q.y - boss.y) < 30 && q.x > A.x0 - 16 && q.x < A.x1 + 16)
         .sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
-      const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
+      const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && !(boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'lureTell')) && ad < 90;   /* (claude/underleaf2: her LISTEN throws no blow - stand still; her lash at a lure goes at the sound, not at you) */
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
       const rushing = ((boss.mode === 'rush' || (boss.t === 'masthead' && boss.mode === 'sail')) && ad < 46) || (boss.t === 'master' && boss.mode === 'charge' && ad < 64 && (boss.x - P.x) * boss.vx < 0);   /* THE HOUND MASTER's charge is no Tell by the time it reaches you either */   /* THE RAM is answered as it arrives, like the shoulder */
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
@@ -1901,11 +1901,13 @@ async function runbossLab(BK, opts) {
          listens he stands still (the branch below). Nothing is rung or thrown for the bot: a real swing at the cord, a real pot taken and thrown. */
       else if (boss.t === 'grandmother' && BK.hushHands && BK.hushHands() && !['listenTell', 'listen', 'sleep', 'wake'].includes(boss.mode)) {
         const side = Math.sign(P.x - boss.x) || -1, back = -(boss.face || 1), behind = side === back;
-        if (boss.mode === 'rap') { goal = boss.x; strike = true; }
+        const knell = BK.hushHands().knells().some(q => Math.abs(q.x - P.x) < 36 && (P.x - q.x) * q.dir > 0);   /* HER KNELL runs the boards at you: jumped as it comes, as a player jumps a wave he can see */
+        if (knell || P.labKnell > 0) { if (knell && P.ground && !(P.labKnell > 0)) { BK.press('jump'); P.labKnell = 16; } if (P.labKnell > 0) { P.labKnell--; k.jump = true; } goal = null; strike = false; }
+        else if (boss.mode === 'rap') { goal = boss.x; strike = true; }
         else if (boss.mode === 'turned') { if (behind) { goal = boss.x; strike = true; } else { goal = boss.x + back * 20; strike = false; } }   /* round to her back if the lure went the wrong way */
         else if (boss.ward > 0 || boss.mode === 'lureTell' || boss.mode === 'lash') { goal = boss.x + side * 70; strike = false; }
-        else if (P.carry && P.carry.t === 'npot') { strike = false; goal = boss.x + side * 40;
-          if (ad >= 30 && ad <= 46 && P.ground && P.atk < 0 && boss.mode === 'walk') { P.face = -side; k.left = k.right = false; goal = null; BK.press('atk'); } }   /* a plain toss from here breaks just past her */
+        else if (P.carry && P.carry.t === 'npot') { strike = false; goal = boss.x + side * 42;
+          if (ad >= 28 && ad <= 60 && P.ground && P.atk < 0 && !['lureTell', 'lash', 'turned'].includes(boss.mode)) { P.face = -side; k.left = k.right = false; k.up = true; goal = null; BK.press('atk'); } }   /* LOBBED over her head (UP held): it breaks well behind her, and she turns her back on you to go for it */
         else { const pulls = BK.props().filter(p => p.t === 'granpull' && !(p.cd > 0) && !p.jangle);
           const pull = pulls.find(p => Math.sign(p.x - boss.x) === side && Math.sign(p.chimeX - boss.x) === -side && Math.abs(p.x - boss.x) > 44 && Math.abs(p.x - boss.x) < 150);   /* (near enough that her back is a few strides away when she turns) */
           const pot = BK.props().filter(p => p.t === 'npot' && p.state === 'rest' && Math.abs(p.y - P.y) < 20 && Math.abs(p.x - boss.x) > 50).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
@@ -2096,7 +2098,7 @@ async function runbossLab(BK, opts) {
          P.st untouched, so it was never a stamina question - the ward was ripped down by this check, not run dry. Excluded here, not
          removed: every OTHER stuck state (the spring, a jump held with no ground contact) never sets P.warding, so this still catches
          them exactly as before. */
-      if (f % 30 === 0) { const stuck = !P.warding && !(LABP.v2 && MA && MA.wait) && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
+      if (f % 30 === 0) { const stuck = !P.warding && !(LABP.v2 && MA && MA.wait) && !(boss.t === 'grandmother' && ['listenTell', 'listen', 'turned', 'lureTell', 'lash'].includes(boss.mode)) && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
         P.labStuckF = stuck ? (P.labStuckF || 0) + 1 : 0; P.labStuckX = P.x; P.labStuckHp = boss.hp; }
       /* HOLDING JUMP DOWN FOREVER IS ITS OWN STUCK STATE (found chasing this same herald-pirate check, claude/botfix
          follow-up): this used to set k.jump = true directly, with nothing to ever let it go again while P.labStuckF

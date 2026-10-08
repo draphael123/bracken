@@ -1646,6 +1646,7 @@ function underleaf() {
   pot(101, 13);                                                                    /* the miller's pot: throw it past a sleeper to turn it */
   ent('sprig', 116, 13, { face: -1, sleeper: true }); ent('sprig', 104, 10, { face: 1, sleeper: true });
   ent('thief', 111, 8, { face: -1, sleeper: true });
+  ent('hearthgob', 119, 13, { face: -1, elite: true, squad: 'miller' });   /* THE MILLER, by the tail door: the loft's own fight (the hearth boss's cleaver and his pot) */
   ent('spider', 102, 6, { drop: 60 });                                            /* the odd spider, in the rafters */
   coins([104, 10], [111, 8], [116, 10], [108, 11], [112, 6]);
   ent('sign', 97, 13, { text: 'THE MILLER SLEEPS. THE BRASS KEY IS ON THE HOIST BEAM. SOMETHING IS ABOVE.' });
@@ -1654,7 +1655,9 @@ function underleaf() {
   ent('sign', 147, R - 1, { text: 'THE BERSERKER CANNOT TURN WHILE HE RUNS. GO THROUGH HIM AND HIT HIS BACK.' });
   ent('sapper', 84, R - 1, { face: 1, sleeper: true });
   ent('archer', 92, R - 1, { face: -1, sleeper: true }); ent('shield', 128, 27, { face: -1, sleeper: true });
-  ent('sprig', 94, R - 1, { face: 1, sleeper: true }); ent('assassin', 144, R - 1, { face: -1 });
+  ent('sprig', 94, R - 1, { face: 1, sleeper: true }); ent('assassin', 144, R - 1, { face: -1, squad: 'mill-race' });
+  /* THE MILL'S EXAM (the back lane and the mill's last fight): the shield captain at the race, the assassin in its spray, the chained berserker behind them - and the shrine after */
+  ent('shield', 149, R - 1, { face: -1, elite: true, squad: 'mill-race' });
   ent('assassin', 86, R - 1, { face: -1 });                                        /* (he stood at the lane's end: the Bellman has that now) */
   pot(80, R - 1);
   ent('deco', 80, R - 1, { kind: 'barrels' }); ent('deco', 86, R - 1, { kind: 'pot' });
@@ -1728,7 +1731,8 @@ function underleaf() {
   ladder(273, 25); run(275, 293, 25, 3);
   ent('window', 288, R - 3, { gob: 'shield', dx: 293, dy: R - 1 });
   ent('sapper', 306, R - 1, { face: -1, sleeper: true });
-  ent('brute', 330, R - 1, { face: -1, sleeper: true }); ent('sprig', 278, 25, { face: 1, sleeper: true });
+  /* THE CHURCHYARD'S EXAM, at the tower's foot before the iron gate: the pike serjeant, awake under the toll, and his goblin asleep at his heel */
+  ent('pike', 331, R - 1, { face: -1, elite: true, squad: 'tower-foot' }); ent('sprig', 328, R - 1, { face: -1, sleeper: true, squad: 'tower-foot' }); ent('sprig', 278, 25, { face: 1, sleeper: true });
   ent('assassin', 302, R - 1, { face: 1 }); ent('archer', 290, 25, { face: -1, sleeper: true });
   /* THE CHURCHYARD'S BELLMAN walks between the church and the tower: under the toll he hears nothing either */
   bellman(300, 295, 312, 1, -1);
@@ -1742,6 +1746,7 @@ function underleaf() {
   for (let x = 184; x <= 190; x++) set(x, 9, T.PLANK);                                 /* the rood beam */
   ent('key', 188, 8, { kind: 'iron' });
   ent('torch', 148, 16); ent('torch', 186, 16); ent('brazier', 168, 16);
+  ent('hearthgob', 171, 16, { face: -1, elite: true, squad: 'nave' });   /* THE SEXTON'S GOBLIN at the brazier in the nave, awake: the church's fight */
   ent('deco', 158, 16, { kind: 'counter' }); ent('deco', 176, 16, { kind: 'coffer' });
   ent('sprig', 160, 16, { face: -1, sleeper: true }); ent('shield', 178, 16, { face: -1, sleeper: true });
   ent('sprig', 167, 10, { face: 1, sleeper: true }); ent('archer', 181, 10, { face: -1, sleeper: true });
@@ -1796,15 +1801,17 @@ function underleaf() {
   ent('deco', 248, 9, { kind: 'clerkDesk' }); ent('torch', 216, 15);
   /* (THE STREET'S CACHE, the school and the green's, is on the school roof by the bell-cote, where the relic was: laid at the top, cache(368, 27, 2)) */
   ent('assassin', 244, 12, { face: -1 }); ent('sprig', 222, 12, { face: 1, sleeper: true });
-  ent('cutter', 236, 15, { face: -1, sleeper: true }); ent('thief', 218, 15, { face: 1, sleeper: true });
+  ent('shield', 233, 15, { face: -1, elite: true, squad: 'class' });   /* THE HEAD BOY: a shield captain among the benches */
+  ent('cutter', 236, 15, { face: -1, sleeper: true, squad: 'class' }); ent('thief', 218, 15, { face: 1, sleeper: true });
   pot(226, 15);
   ent('sign', 211, 15, { text: 'GOBLINS LEARN THREE THINGS; THE THIRD IS WHEN TO RUN.' });
   coins([222, 12], [232, 12], [242, 12], [250, 9], [220, 14], [238, 14]);
-  ent('assassin', 383, 27, { face: -1 });
+  /* THE SCHOOL'S EXAM, on the roof beyond the bell-cote: the archer captain and his cutter - the bone key falls at their feet */
+  ent('archer', 384, 27, { face: -1, elite: true, squad: 'bell-cote' });
   ent('berserker', 400, R - 1, { face: -1 });
   ent('shield', 348, R - 1, { face: 1, sleeper: true }); ent('sapper', 362, 27, { face: 1, sleeper: true });
   ent('sprig', 389, R - 1, { face: -1, sleeper: true }); ent('thief', 342, R - 1, { face: 1, sleeper: true });
-  ent('cutter', 387, 27, { face: -1, sleeper: true });
+  ent('cutter', 387, 27, { face: -1, sleeper: true, squad: 'bell-cote' });
   pot(396, R - 1);
   coins([344, R - 2], [396, R - 2], [402, R - 2], [338, R - 2], [350, R - 2], [392, R - 2], [406, R - 2]);
 
