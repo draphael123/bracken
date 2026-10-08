@@ -9,7 +9,7 @@ import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
-import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */
+import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js'; import { buildLitChurch, RULE as CHURCH_RULE } from './lit-church.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
@@ -7828,6 +7828,11 @@ export const LEVELS = [
   /* THE BANDIT KSAR (claude/ksar, the OPUS GREYBOX, 2026-10-07; Daniel's concept interview 10-07): the raiders' mud-brick fortress on the old road past THE GLASS SEA, into the Buried City
      (not built yet: it will need 'ksar'). The fort answers its gongs. APPENDED, so no index and no save moves. THE HAWK-MISTRESS (src/hawk-mistress.js) is its boss */
   { id: 'ksar', arc: 'the desert', name: 'THE BANDIT KSAR', sub: 'the raiders\' fortress on the old road', rule: 'THE FORT ANSWERS ITS GONGS: A RUNG GONG CALLS EVERY BANDIT IN EARSHOT, AND A CUT ROPE SILENCES IT.', build: () => buildKsar({ painter, T, TS }), needs: 'glasssea' },
+  /* THE LIT CHURCH (claude/litchurch, the OPUS GREYBOX, 2026-10-08; Daniel's concept 10-01 + the 10-07 settled lines): the optional cruciform church up the hill road,
+     where LIGHT is the level; THE PALADIN (src/paladin-boss.js) is its boss and clearing it sells the Paladin hero for 800 coins (classFor). APPENDED, so no index and no
+     save moves. AN OPTIONAL SPLIT PATH whose fork is THE TOWPATH's first screen (claude/towpath, in parallel): until the integrator joins them it hangs off WAYMEET
+     (needs + opensOn); then both become 'towpath' (src/lit-church.js FORK) */
+  { id: 'church', arc: 'the road inland', name: 'THE LIT CHURCH', sub: 'the chapel the paladins were sworn to', rule: CHURCH_RULE, build: () => buildLitChurch({ painter, T, TS }), needs: 'waymeet', classFor: 'paladin', opensOn: { level: 'waymeet', medal: 'bronze' } },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
@@ -8380,6 +8385,10 @@ const AMBUSH = {
     waves: [[['brute', 388, null, { elite: true }], ['burngob', 368], ['sprig', 378], ['archer', 370, 19]]] }],
   crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 816, wallR: 852, check: [809, 19],
     waves: [[['brute', 838, null, { elite: true }], ['soldier', 826], ['hearthgob', 830], ['javelin', 846, 23]]] }],
+  /* THE LIT CHURCH (claude/litchurch): THE SEALED VAULT in the crypt - the one ambush. The crypt's dead under their grave captain (the caverns' husk: he calls up the dead);
+     a wight, a haunt over the shelves and a bone archer. No door checkpoint of its own (CHECKPOINT TWO is in the gallery; THREE stands at the altar past it) */
+  church: [{ name: 'THE SEALED VAULT', row: 62, wallL: 110, wallR: 139, check: false,
+    waves: [[['husk', 133, null, { elite: true }], ['wight', 119], ['haunt', 125, 55], ['bonearcher', 131, 58]]] }],
 };
 /* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);

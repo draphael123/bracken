@@ -172,6 +172,36 @@ export const STUCK = {
    The order is the order of the old nextThing list: the first spot with a step that fits wins. Append a level's spots; do not reorder. */
 const WHOLE = [0, 0, 999, 999];
 export const STUCK_HANDS = {
+  /* THE LIT CHURCH (claude/litchurch): every lamp the route needs glints - first the fire that gives the flame, then the lamp (src/lit-church-hands.js handsState:
+     need.<lamp> fire / lamp / done, lamp.<id> lit / dark, door.<id> open / shut, stubs due / short); the bellows, the key desk, the seal lamp and the well glint as the
+     route reaches them; the climbs (the piers, the tower's drop, the well) after a stall */
+  church: [
+    { id: 'lc-porch', zone: [0, 30, 43, 47], steps: [
+      { key: 'brazier', is: ['need.porch', 'fire'], at: [9, 45], line: 'THE SEXTON\'S BRAZIER BURNS: A FLAME TO CARRY' },
+      { key: 'porch', is: ['need.porch', 'lamp'], at: [40, 45], line: 'THE PORCH LAMP IS DARK' } ] },
+    { id: 'lc-piers', zone: [140, 38, 159, 45], steps: [ { key: 'piers', is: ['lamp.chapel1', 'dark'], at: [157, 39], glint: 'stall', line: 'THE PIERS CLIMB TO THE NORTH TRANSEPT' } ] },
+    { id: 'lc-transept', zone: [158, 29, 178, 37], steps: [
+      { key: 'votive1', is: ['need.chapel1', 'fire'], at: [162, 37], line: 'A VOTIVE STAND BURNS BY THE CHAPEL DOOR' },
+      { key: 'lamp1', is: ['need.chapel1', 'lamp'], at: [176, 37], line: 'LAMP ONE, ON THE TRANSEPT ALTAR' },
+      { key: 'bellows', is: ['need.chapel1', 'done'], at: [166, 37], line: 'THE ORGAN\'S BELLOWS: ITS PIPE GOES UP' } ] },
+    { id: 'lc-desk', zone: [106, 14, 160, 27], steps: [ { key: 'desk', is: ['lamp.chapel2', 'dark'], at: [109, 27], line: 'THE ORGAN\'S KEY DESK, BY THE BROKEN LOFT' } ] },
+    { id: 'lc-console', zone: [56, 14, 96, 27], steps: [
+      { key: 'votive2', is: ['need.chapel2', 'fire'], at: [66, 27], line: 'A VOTIVE STAND BURNS BY THE CONSOLE' },
+      { key: 'lamp2', is: ['need.chapel2', 'lamp'], at: [60, 27], line: 'LAMP TWO, ON THE ORGAN\'S CONSOLE' },
+      { key: 'towerDoor', is: ['need.chapel2', 'done'], at: [55, 27], glint: 'stall', line: 'THE TOWER DOOR AT THE GALLERY\'S END' } ] },
+    { id: 'lc-seal', zone: [46, 15, 55, 40], steps: [
+      { key: 'seal', is: ['lamp.seal', 'lit'], at: [53, 31], line: 'THE SEAL LAMP HOLDS THE CRYPT SHUT' },
+      { key: 'towerDrop', is: ['lamp.seal', 'dark'], at: [47, 45], glint: 'stall', line: 'THE HATCH IS IN THE NARTHEX FLOOR, BELOW' } ] },
+    { id: 'lc-hatch', zone: [45, 41, 55, 45], steps: [ { key: 'hatch', is: ['door.hatch', 'open'], at: [49, 46], line: 'THE CRYPT HATCH IS OPEN' } ] },
+    { id: 'lc-altar', zone: [140, 48, 178, 62], steps: [
+      { key: 'vigil', is: ['need.chapel3', 'fire'], at: [172, 62], line: 'THE VIGIL CANDLE BURNS BY THE CRYPT ALTAR' },
+      { key: 'lamp3', is: ['need.chapel3', 'lamp'], at: [175, 62], line: 'LAMP THREE, ON THE CRYPT ALTAR' },
+      { key: 'well', is: ['door.rood', 'shut'], at: [163, 47], glint: 'stall', line: 'THE GRATE ABOVE IS OPEN: CLIMB THE WELL' } ] },
+    { id: 'lc-rood', zone: [152, 39, 178, 45], steps: [
+      { key: 'rood3', is: ['need.rood3', 'lamp'], at: [178, 43], line: 'THE ROOD SCREEN\'S THIRD SCONCE IS DARK' },
+      { key: 'rood3fire', is: ['need.rood3', 'fire'], at: [163, 47], line: 'A FLAME FROM THE CRYPT: THE THIRD SCONCE' } ] },
+    { id: 'lc-reliquary', zone: [180, 40, 200, 49], steps: [ { key: 'reliquary', is: ['stubs', 'due'], at: [188, 49], line: 'THE RELIQUARY: FIVE STUBS OPEN IT' } ] },
+  ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
      and the climbs over the towers on the walk and out of the store's cellar glint after a stall */
   ksar: [

@@ -627,6 +627,16 @@ const SYNTH_BEDS = {
       if (Math.random() < 0.025) { const f = 900 + Math.random() * 500; tone('sine', f, f, 0.9, 0.012); tone('sine', f * 2.4, f * 2.4, 0.5, 0.004); } };   /* a bell on the wind */
     ambTickMs = 250;
   },
+  /* (claude/litchurch) THE LIT CHURCH's own air, all synth: the stone's low hum, a draught along the nave that rises and falls, a drip in the crypt now and then,
+     a pew creaking, and very rarely a far bell up in the tower */
+  litchurch() {
+    const hum = loopNoise(120, 0.8, 0.45, 'lowpass'); lfoOn(hum.g.gain, 0.06, 0.15);
+    const draught = loopNoise(340, 1.3, 0.3); lfoOn(draught.g.gain, 0.11, 0.2); lfoOn(draught.f.frequency, 0.05, 80);
+    ambTick = () => { if (Math.random() < 0.05) { const d = 1500 + Math.random() * 600; tone('sine', d, d * 0.6, 0.12, 0.02); }                             /* a drip in the crypt */
+      if (Math.random() < 0.02) tone('sawtooth', 95 + Math.random() * 30, 75, 0.4, 0.008);                                                              /* a pew creaks */
+      if (Math.random() < 0.008) { tone('sine', 220, 219, 2.4, 0.012); tone('sine', 528, 527, 1.6, 0.005); } };                                       /* the tower's bell, far up */
+    ambTickMs = 400;
+  },
   fairlot() {
     const air = loopNoise(220, 1.5, 0.5); lfoOn(air.g.gain, 0.08, 0.3); lfoOn(air.f.frequency, 0.05, 70);
     let chug = 0;
