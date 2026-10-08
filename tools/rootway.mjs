@@ -33,9 +33,18 @@ ok(!!budAt(29) && !at(ent('check', 92), noBud(29)), 'the root wall bud is a lock
 ok(!at(ent('check', 92), noHoist('cellarSpan')), 'the cellar span is a lock: without it the pit stops the road');
 ok(!!budAt(103) && !at(ent('check', 193), noBud(103)), 'the leaning cap over the root gap is a lock');
 ok(!at(ent('check', 193), noHoist('gapSpan')), 'the gap span is a lock');
-for (const id of ['larder1', 'larder2', 'larder3']) ok(!at(ent('check', 290), noHoist(id)), 'THE TROPHY LARDER: cage ' + id.slice(-1) + ' is a lock (without it the stair has a four-row step)');
-ok(!at(ent('check', 290), noHoist('highCleat')), 'the high cleat\'s span is a lock');
-ok(!!budAt(267) && !at(ent('check', 290), noBud(267)), 'the hunter\'s bud is a lock (the root wall past it is four rows)');
+for (const id of ['larder1', 'larder2', 'larder3']) ok(!at(ent('check', 299), noHoist(id)), 'THE TROPHY LARDER: cage ' + id.slice(-1) + ' is a lock (without it the stair has a four-row step)');
+ok(!at(ent('check', 299), noHoist('highCleat')), 'the high cleat\'s span is a lock');
+ok(!!budAt(267) && !at(ent('check', 299), noBud(267)), 'the hunter\'s bud is a lock (the root wall past it is four rows)');
+/* THE HUNTERS' GANTRY (claude/ziproot): the road's last well is crossed by the trophy line and by nothing else - the cage is a step to the gantry, the line is the way over */
+const noZip = id => floodReach({ ...L, zipLines: (L.zipLines || []).filter((z, i) => i !== id) }, T);
+ok(!at(ent('check', 299), noHoist('gantry')), 'THE GANTRY: its cage is a lock (without the step the gantry is five rows over the road)');
+ok((L.zipLines || []).length === 2 && !at(ent('check', 299), noZip(1)), 'THE GANTRY: the trophy line over the well is a lock (route use of a zip line: without it the well stops the road)');
+ok(at(ent('check', 299), noZip(0)), 'the first trophy line (the taught one over the scouts) is a lesson, not a lock: the road walks under it');
+{ const z = L.zipLines[0], g = (x, y) => L.grid[y * L.W + x]; ok(g(Math.floor(z.x1 / TS), Math.floor((z.y1 + 12) / TS)) === T.SOLID && g(Math.floor(z.x0 / TS), Math.floor((z.y0 + 12) / TS)) === T.ONEWAY, 'the taught line runs from a root deck (one-way) to the floor under its foot'); }
+{ const z = L.zipLines[1], g = (x, y) => L.grid[y * L.W + x]; ok(g(Math.floor(z.x1 / TS), Math.floor((z.y1 + 12) / TS)) === T.SOLID && g(Math.floor(z.x0 / TS), Math.floor((z.y0 + 12) / TS)) === T.ONEWAY, 'the gantry line runs from the gantry deck to the ledge floor');
+  ok(L.ents.some(e => /^(trophyhunter|shield|archer)$/.test(e.t) && e.squad === 'gantryLanding' && Math.abs(e.x * TS - z.x1) < 6 * TS), 'a foe holds the landing of the route line (difficulty v2)');
+  ok(!L.ents.some(e => e.squad && Math.abs(e.x * TS - (L.zipLines[0].x1)) < 3 * TS && e.y * TS > L.zipLines[0].y1 - 40 && e.y * TS < L.zipLines[0].y1 + 40), 'no foe stands at the TAUGHT line landing (a miss costs a drop, not a death)'); }
 ok(!at(ent('check', 384), noHoist('lookout')), 'THE LOOKOUT\'s span is a lock');
 ok(!!budAt(339) && !at(ent('check', 384), noBud(339)), 'the last leaning cap is a lock');
 { const r = floodReach({ ...L, vaultDoors: [] }, T); ok(!at(ent('silver', 366), r), 'the trophy loft is a lock: with its door shut its silver is out of reach'); }
@@ -57,7 +66,7 @@ const strikeFrom = (r, h, buds) => { const [cx, cy] = h.cleat, top = (cy - 1) * 
   const cx = h.cleat[0] * TS + 8, yAt = by - 5 + (py - (by - 5)) * (bx - cx) / (bx - px);   /* the arrow struck back flies straight at his chest (owner.y - 5) */
   ok(yAt > (h.cleat[1] - 2) * TS && yAt < (h.cleat[1] + 3) * TS && cx > px && cx < bx, 'an arrow struck back from the lip crosses the rope at the cleat (y ' + Math.round(yAt) + ')'); }
 /* EVERY WELL BEFORE THE EXAM IS CHEAP: from its floor the fill gets back to the near lip, and never to the far one (with its span not dropped) */
-for (const [x0, x1, lip, bottom, id] of [[105, 114, 35, 45, null], [173, 181, 35, 45, 'gapSpan'], [247, 255, 23, 35, 'highCleat'], [53, 60, 38, 42, 'cellarSpan'], [207, 224, 32, 45, 'larder1']]) {
+for (const [x0, x1, lip, bottom, id] of [[105, 114, 35, 45, null], [173, 181, 35, 45, 'gapSpan'], [247, 255, 23, 35, 'highCleat'], [53, 60, 38, 42, 'cellarSpan'], [207, 224, 32, 45, 'larder1'], [281, 290, 19, 27, 'gantry']]) {
   const Lw = { ...L, hoists: L.hoists.filter(h => !id || !h.id.startsWith(id.replace(/\d$/, ''))), moversExtra: L.moversExtra.filter(m => !m.lean || Math.abs(m.x / TS - x0) > 4), START: { x: x0 + 2, y: bottom - 1 } };
   const r = floodReach(Lw, T); ok(r.seen.has((x0 - 1) + ',' + (lip - 1)) && !r.seen.has((x1 + 1) + ',' + (lip - 1)) && ![...r.seen].some(k => { const [x, y] = k.split(',').map(Number); return x > x1 + 1 && x < x1 + 30 && y < lip; }), 'the well at ' + x0 + '-' + x1 + ': from its floor, back up to the near lip only'); }
 /* THE EXAM's GAPS ARE REAL FALLS (A10 amended): open air from the lip to the world's last row in every column; a warning post on the near lip; the sign before

@@ -44,7 +44,9 @@ export function buildRootway({ painter, T, TS }) {
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
   const deco = (x, y, kind, v) => ent('deco', x, y, { kind, v: v || 0 });
   const tag = (x, y) => ent('stray', x, y, { kind: 'tag' });            /* A TROPHY TAG: the quest (L.quest) - the hunters' bone tags */
-  const caps = [], hoists = [], decor = [], vaultDoors = [];
+  const caps = [], hoists = [], decor = [], vaultDoors = [], zips = [];
+  /* A TROPHY LINE (src/zipline.js, claude/ziproot): from the deck at column x0 (standing row top) down to column x1 (landing floor row endRow); the rope hangs 12 px over the feet at each end */
+  const rope = (x0, top, x1, endRow, groundRow) => ({ x0: x0 * TS + 8, y0: top * TS - 12, x1: x1 * TS + 8, y1: endRow * TS - 12, posts: [[x0 * TS + 8, top * TS - 12, top * TS], [x1 * TS + 8, endRow * TS - 12, groundRow * TS]] });
   /* A BUD (Sporewood's sprout, the same mover): `row` is the ground row it sits on; it spans columns x..x+1 */
   const bud = (x, row, o = {}) => { const rise = o.rise ?? 56, y0 = row * TS - 8; caps.push({ kind: 'growcap', x: x * TS, y: y0, y0, y1: y0 - rise, w: 32, h: 8, rise, state: 'bud', k: 0, ...(o.lean ? { bx: x * TS } : {}), ...o }); };
   /* A HOIST: id, the rope's column `x` (a load is centred on it), its pulley row `top`, the load's bottom row while it hangs `hang`, the CLEAT [x, y]
@@ -109,6 +111,8 @@ export function buildRootway({ painter, T, TS }) {
   deco(131, 37, 'trophyRack'); coins([133, 36], [144, 36]);
   /* THE TROPHY-HUNTER (the one new foe): he rides a hoist down onto you as you pass under - cut its cleat first and he falls dazed */
   plank(143, 151, 35);
+  /* THE TROPHY LINE, TAUGHT (claude/ziproot): the root over the scouts' road has a hunters' line from its east end down to the floor - UP takes the handle, the line carries you down. A miss costs a drop to the road, nothing else; trophies hang along it */
+  zips.push(rope(125,32,134,38,38)); sign(121,31,"A TROPHY LINE. UP TAKES THE HANDLE; IT CARRIES YOU DOWNHILL. JUMP LETS GO, DOWN DROPS."); coins([127,32],[129,33],[131,34]);
   hoist('hunterA', { x: 154, top: 24, hang: 32, cleat: [148, 37], load: 'hunter' }); foe('trophyhunter', 154, 32, 'hoistA', { face: -1, hang: 'hunterA' });
   sign(146, 37, 'A HUNTER RIDES THE HOIST. CUT ITS ROPE AND HE FALLS.'); ent('rockfall', 152, 0, { spore: true, every: 2.9, tell: 0.9 });
   tag(157, 37);                                                                   /* TROPHY TAG ONE, where he hung */
@@ -152,23 +156,33 @@ export function buildRootway({ painter, T, TS }) {
   /* A HUNTER HANGS OVER THE BUD YOU MUST GROW (the root wall beyond is four rows): stop on the bud and he drops on you - cut him first */
   bud(267, 23);   /* (FIX PASS: flush against the root wall - no one-column corner between the cap and the wall) */
   hoist('hunterB', { x: 267, top: 6, hang: 12, cleat: [262, 22], load: 'hunter' }); foe('trophyhunter', 267, 12, 'hoistB', { face: -1, hang: 'hunterB' });
-  ground(269, 303, 19);
-  tag(272, 18);                                                                   /* TROPHY TAG TWO */
-  plank(273, 282, 16); plank(288, 296, 16); coins([276, 15], [292, 15]); ent('vent', 295, 18, { period: 4, on: 1.4, h: 90, phase: 1 });   /* the canopy's upper boughs, a vine between them, a vent up to the last */
-  /* THE HOIST YARD'S EXAM (FIX PASS, v2 recipe 4): up the hunter's bud into the hunt's pickets - a SHIELD on the root, a SCOUT on the bough over him, the SAPPER's
-     bombs behind them; the checkpoint after them */
-  sign(270, 18, "THE YARD'S END: THE HUNT'S PICKETS HOLD IT, A BOW ON THE BOUGH OVER THEM.");
-  foe('sapper', 284, 18, 'yardExam', { face: -1 }); foe('shield', 276, 18, 'yardExam', { face: -1 }); foe('archer', 277, 15, 'yardExam', { face: -1 }); foe('trophyhunter', 287, 18, 'yardExam', { face: -1 }); deco(278, 18, 'hangCage', 0);
-  ent('check', 290, 18);                                                          /* CHECKPOINT THREE */
+  ground(269,303,19);
+  tag(272,18);                                                                   /* TROPHY TAG TWO */
+  /* THE HUNTERS' GANTRY (claude/ziproot, Daniel 2026-10-08: ZIP LINES): the road's last stretch is a well ten wide with a ledge a storey under the far lip. The hunters' trophy line
+     hangs from a gantry five rows over the road - no jump reaches it - and a CAGE hangs over the road at its foot: cut it down and it lands as a two-row step (cage, gantry, ledge).
+     UP takes the handle and the line carries you over the well to the ledge, where the hunt holds the landing; the ledge's bud grows you up the root wall to the road. A miss is a
+     fall into the well (a shelf stair up its near wall, A10). The bow on the bough over the road covers the line. */
+  sign(270,18,"THE HUNTERS' GANTRY. CUT THE CAGE DOWN FOR A STEP, THEN UP THE STEP: THE TROPHY LINE CARRIES YOU OVER THE WELL.");
+  air(281, 290, 0, 26); ground(281, 290, 27); plank(281, 282, 24); plank(281, 282, 21);                                                             /* the well, and root shelves up its near wall (a fall costs the climb) */
+  hoist('gantry', { x: 275, top: 9, hang: 13, cleat: [271,18], load: 'cage', land: [274,17] });
+  coins([277,13],[279,13]);
+  plank(276,280,14); ent('rockfall', 272, 0, { spore: true, every: 2.8, tell: 0.9 });   /* THE GANTRY, a hunters' deck over the road (rope + 12 = feet) */
+  air(291, 296, 19, 22); ground(291, 296, 23);                                          /* THE LEDGE a storey under the far lip, and the root wall to the road (the ledge's bud, flush against it) */
+  bud(295,23);
+  zips.push(rope(279,14,292,23,23));                                               /* the trophy line: gantry to ledge (the hero's feet = rope + 12) */
+  foe('trophyhunter', 294, 22, 'gantryLanding', { face: -1 }); foe('archer', 303, 18, 'gantryLanding', { face: -1 }); deco(291,22,'warnPost',0); glow(293,22);   /* THE LANDING: the hunter holds the ledge and a bow covers the line (difficulty v2: a foe at the landing) */
+  coins([284,13],[287,14],[290,16]);                                               /* a trail of trophies along the line */
+  ent('check', 299, 18);                                                          /* CHECKPOINT THREE */
+  deco(278, 13, 'hangCage', 0);
 
   // ================= 4. THE CANOPY LOOKOUT (296-386): THE EXAM =================
   /* SET PIECE B, THE LOOKOUT: a scout on a lookout across a chasm eight wide; the bridge span hangs on a hoist whose tie-off runs down past his
      post to a cleat no blade reaches. Strike his arrow back: it flies home through the rope and the span drops. (If he falls, another takes the post) */
-  sign(297, 18, 'HE CANNOT MISS FROM THERE. STRIKE HIS ARROW BACK: IT FLIES HOME THROUGH THE ROPE.');
+  sign(302, 18, 'HE CANNOT MISS FROM THERE. STRIKE HIS ARROW BACK: IT FLIES HOME THROUGH THE ROPE.');
   /* (FIX PASS, THE EXAM: a TROPHY-HUNTER hangs over the lookout's near lip - he rides down BEHIND you as you wait for the arrow, and his lunge drives you at the
      chasm. Told as every hunter is (the creak, the '!'); taught at hunter A and the hunter's bud; cut his cleat first and he falls dazed) */
   hoist('hunterC', { x: 301, top: 5, hang: 11, cleat: [298, 18], load: 'hunter' }); foe('trophyhunter', 301, 11, 'lookoutHunter', { face: 1, hang: 'hunterC' });
-  sign(292, 18, 'NO ROOTS UNDER THE CANOPY: FROM HERE A FALL IS THE END.');
+  sign(301, 18, 'NO ROOTS UNDER THE CANOPY: FROM HERE A FALL IS THE END.');
   chasm(304, 311, 19); ent('rockfall', 302, 0, { spore: true, every: 2.6, tell: 0.9 });   /* (THE EXAM: a spore drop on the lip where you wait for his arrow) */                                                            /* THE EXAM's first gap: no floor (A10 amended) */
   ground(312, 340, 19);
   plank(314, 318, 16); decor.push({ kind: 'lookout', x0: 313, x1: 319, y: 16 });
@@ -209,8 +223,8 @@ export function buildRootway({ painter, T, TS }) {
 
   const START = { x: 3, y: 41 };
   return {
-    W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: caps.concat([{ kind: 'swing', px: 285 * TS + 8, py: 9 * TS, arm: 80, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.5, vine: true }]),   /* a root vine between the canopy's upper boughs (a second way along them, never the only one) */
-    arena, gateAfterBoss: true, rootway: true, hoists, decor, vaultDoors,
+    W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: caps,
+    arena, gateAfterBoss: true, rootway: true, hoists, decor, vaultDoors, zipLines: zips, ropes: zips,
     squadBands: [{ lo: 386, hi: 459, spots: 0, why: "THE HUNTMASTER'S STAND: columns 386-459 are his arena and the road out - no squad stands in a boss arena (as the sky road)" }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* four checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */

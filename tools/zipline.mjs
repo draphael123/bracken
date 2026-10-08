@@ -14,8 +14,8 @@ import { openPage } from './cdp.mjs';
 const HEROES = ['knight', 'warden', 'geomancer', 'paladin', 'pyro', 'pirate', 'reaper'];
 const only = (process.argv.find(a => a.startsWith('--heroes=')) || '').slice(9).split(',').filter(Boolean);
 const pg = await openPage({ audio: false, fonts: false, seed: 20261008 });
-const PAGE = `(async (hero) => {
-  const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === 'storm'), T = lvm.T, TS = 16, rows = [];
+const PAGE = `(async (hero, levelId) => {
+  const lvm = await import('./src/level.js'), idx = lvm.LEVELS.findIndex(l => l.id === levelId), T = lvm.T, TS = 16, rows = [];
   const solid = t => t === T.SOLID || t === T.PORT || t === T.CRATE || t === T.PALISADE;
   const fresh = () => { BK.setHero(hero); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = true; BK.sim(5); for (const e of BK.enemies()) e.alive = false;
     const k = BK.keys; k.left = k.right = k.up = k.down = k.jump = false; return { L: BK.L, P: BK.P, k }; };
@@ -64,7 +64,7 @@ const PAGE = `(async (hero) => {
       row(tag + ' ' + how + ': ' + (how === 'jump' ? 'a hop clear of it' : 'a drop') + ', lands, not re-caught', off && !again && P.ground && !(P.dead > 0) && (how === 'jump' ? vy1 < 0 : vy1 >= 0) && Math.abs(P.x - xOff) > 4, 'vy ' + Math.round(vy1) + ' again=' + again + ' ' + JSON.stringify(info(P)) + ' off at ' + Math.round(xOff)); }
   }
   /* THE TWO LINES OF THIS TOOL, laid over the open road at Stormhold's west end: one down to the EAST, one down to the WEST. Isolated (the level's own ropes are taken out for them). */
-  for (const dirn of [1, -1]) { let { L, P, k } = fresh(); L.zipLines.splice(0);
+  if (levelId === 'storm') for (const dirn of [1, -1]) { let { L, P, k } = fresh(); L.zipLines.splice(0);
     const road = 36 * TS, x0 = 24, x1 = 200, lowY = road - 12, hiY = lowY - 44;
     const z = dirn > 0 ? { x0, y0: hiY, x1, y1: lowY } : { x0: x1, y0: hiY, x1: x0, y1: lowY }; L.zipLines.push(z);
     const tag = 'a line down to the ' + (dirn > 0 ? 'EAST' : 'WEST'), hiX = dirn > 0 ? x0 : x1, loX = dirn > 0 ? x1 : x0;
@@ -83,10 +83,10 @@ const PAGE = `(async (hero) => {
     row(tag + ': UP right at its foot has no ride left to give', !up, 'took hold at the foot: ' + JSON.stringify(info(P))); }
   return rows; })(`;
 const t0 = Date.now(); let bad = 0, total = 0;
-for (const h of (only.length ? only : HEROES)) {
-  const rows = await pg.evalp(PAGE + JSON.stringify(h) + ')', 600000);
+for (const lvId of ['storm', 'rootway']) for (const h of (only.length ? only : HEROES)) {
+  const rows = await pg.evalp(PAGE + JSON.stringify(h) + ',' + JSON.stringify(lvId) + ')', 600000);
   const fails = rows.filter(r => !r.ok), skipped = rows.filter(r => r.skipped).length;
-  console.log((fails.length ? 'FAIL ' : ' ok  ') + h.padEnd(10) + (rows.length - skipped - fails.length) + '/' + (rows.length - skipped) + ' lines of play pass' + (skipped ? ' (' + skipped + ' not on this level)' : ''));
+  console.log((fails.length ? 'FAIL ' : ' ok  ') + lvId.padEnd(8) + h.padEnd(10) + (rows.length - skipped - fails.length) + '/' + (rows.length - skipped) + ' lines of play pass' + (skipped ? ' (' + skipped + ' not on this level)' : ''));
   for (const r of fails) console.log('        ' + r.name + ': ' + r.why);
   bad += fails.length; total += rows.length - skipped;
   if (h === (only.length ? only : HEROES)[0]) for (const r of rows) console.log('      ' + (r.skipped ? '-' : r.ok ? '+' : 'x') + ' ' + r.name + (r.frames ? ' (' + r.frames + ' frames)' : ''));

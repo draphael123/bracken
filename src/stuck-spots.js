@@ -180,7 +180,10 @@ export const STUCK = {
     { id: 'rw-high-cleat', zone: [225, 20, 238, 26], steps: [
       { at: [238, 19], done: ['hoist', 238, 19, 'on'], line: 'THE CLEAT IS HIGH: GROW THE BUD UNDER IT, THEN JUMP AND STRIKE' } ] },
     { id: 'rw-bud-hunter', zone: [256, 17, 268, 22], at: [267, 22], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
-    { id: 'rw-lookout', zone: [296, 12, 303, 18], at: [312, 15], glint: 'stall', done: ['hoist', 312, 15, 'on'], line: 'THE SPAN HANGS ON THE LOOKOUT\'S ROPE' },
+    { id: 'rw-gantry-cage', zone: [269, 12, 275, 18], at: [271, 18], done: ['hoist', 271, 18, 'on'], line: 'CUT THE CAGE DOWN: IT IS A STEP UP TO THE GANTRY' },   /* (claude/ziproot) THE HUNTERS' GANTRY */
+    { id: 'rw-gantry-rope', zone: [276, 11, 281, 13], at: [279, 13], dy: 6, glint: 'stall', line: "THE HUNTERS' TROPHY LINE IS THE WAY OVER THE WELL" },
+    { id: 'rw-bud-ledge', zone: [291, 17, 296, 22], at: [295, 22], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-lookout', zone: [299, 12, 303, 18], at: [312, 15], glint: 'stall', done: ['hoist', 312, 15, 'on'], line: 'THE SPAN HANGS ON THE LOOKOUT\'S ROPE' },
     { id: 'rw-lean-2', zone: [330, 12, 340, 18], at: [339, 18], line: 'A BUD ON THE LIP LEANS OUT OVER THE GAP' },
   ],
   canal: [
