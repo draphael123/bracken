@@ -174,6 +174,16 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   for (const p of (L.pools || [])) { if (!p.swim || p.arenaTide) continue; const topPx = p.streetTide ? p.base + p.tideHi : p.y; const r0 = Math.floor(topPx / TSZ), r1 = Math.floor(((p.bottom ?? topPx + 64) - 1) / TSZ);
     for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) if (!solid(at(x, y))) { water.add(key(x, y)); footing.add(key(x, y)); surfRow.set(key(x, y), r0); } }
 
+  /* A ZIP LINE (src/zipline.js, claude/zipline): take hold anywhere along its run - UP with the rope in your reach, or a touch from a jump - ride it downhill, and let go at its low end onto the floor under its foot. A frayed one
+     (the Fair's bunting rope, `snap`) snaps over its pit and carries nobody across, so the fill leaves it out. board(x, y): is the rope within a hand's reach of a hero standing in this cell, or a jump above it? land: the footing under its foot. */
+  const zips = plain ? [] : (L.zipLines || []).filter(z => !z.snap).flatMap(z => {
+    const dx = z.x1 - z.x0, dy = z.y1 - z.y0, xa = Math.min(z.x0, z.x1), xb = Math.max(z.x0, z.x1), slope = dx ? dy / dx : 0, hang = z.hang ?? 12;
+    const dirs = z.dir !== undefined && z.dir !== 0 ? [z.dir] : Math.abs(dy) < 2 ? [1, -1] : [(dy > 0 ? 1 : -1) * Math.sign(dx)];
+    return dirs.map(dir => ({ xa, xb, dir, ly: px => z.y0 + slope * (Math.max(xa, Math.min(xb, px)) - z.x0),
+      land() { const lx = dir > 0 ? xb : xa, row = Math.floor((z.y0 + slope * (lx - z.x0) + hang - 1) / TSZ), out = [];
+        for (let k = -1; k <= 3; k++) { const cx = Math.floor(lx / TSZ) + dir * k; let ny = row; while (ny < H - 1 && !footing.has(key(cx, ny))) ny++; if (footing.has(key(cx, ny))) out.push([cx, ny]); } return out; },
+      board(x, y) { const px = x * TSZ + 8, feet = (y + 1) * TSZ; if (dir > 0 ? (px < xa - 10 || px > xb - 12) : (px > xb + 10 || px < xa + 12)) return false; const l = this.ly(px); return l >= feet - 72 && l <= feet - 4; } })); });
+  const zipLand = new Map();
   const seen = new Set(), q = [];
   const push = (x, y) => { const k = key(x, y); if (footing.has(k) && !seen.has(k)) { seen.add(k); q.push([x, y]); } };
   // start where the knight starts, and fall to whatever is under it
@@ -215,6 +225,7 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
       const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -half; dx <= half; dx++) push(v.x + dx, ty); }
     for (const lf of lifts) if (x >= lf.x0 - 2 && x <= lf.x1 + 2 && y >= lf.y0 - 2 && y <= lf.y1 && !wallBetween(x, y, lf)) for (let ty = lf.y0 - 1; ty <= lf.y1; ty++) for (let dx = -2; dx <= lf.x1 - lf.x0 + 2; dx++) push(lf.x0 + dx, ty);
+    for (const zl of zips) if (zl.board(x, y)) for (const [lx, ly] of (zipLand.get(zl) || (zipLand.set(zl, zl.land()), zipLand.get(zl)))) push(lx, ly);   /* a zip line: on it anywhere, off at its foot */
     for (const arc of swings) if (arc.some(([ax, ay]) => Math.abs(ax - x) <= 2 && y - ay >= -1 && y - ay <= 3)) for (const [ax, ay] of arc) for (let dy = -3; dy <= 2; dy++) for (let dx = -3; dx <= 3; dx++) push(ax + dx, ay + dy);
     for (const grp of groups) if (grp.set.has(key(x, y))) for (const [gx, gy] of grp.cells) push(gx, gy);   /* a wheel carries you round to any of its paddles */
     /* the great kite: take hold of it and the Sky Road lets you down anywhere along it */

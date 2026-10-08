@@ -337,6 +337,8 @@ export const SFX = {
   tink() { tone('triangle', 2400, 2250, 0.05, 0.07); tone('sine', 3600, 3500, 0.09, 0.03, 0.005); noise(0.03, 0.06, 5200, 2); },   /* a pick on rock: small and bright */
   cartRoll() { noise(0.18, 0.05, 260, 0.9); tone('square', 70, 64, 0.12, 0.025); },   /* iron wheels on the rail */
   ratchet() { tone('square', 1300, 1100, 0.02, 0.04); noise(0.02, 0.05, 3000, 2); },   /* a winch's pawl, one click */
+  zipCatch() { tone('square', 900, 600, 0.05, 0.07); noise(0.09, 0.09, 2400, 1.4); tone('sawtooth', 220, 330, 0.18, 0.05, 0.03); },   /* THE ZIP LINE (src/zipline.js): the grip snaps onto the rope, the wheel bites and takes up */
+  zipWhine() { tone('sawtooth', 1500, 1750, 0.11, 0.022); noise(0.1, 0.04, 3600, 3); },   /* and the pulley's thin whine, while he rides */
   sackThud() { noise(0.12, 0.12, 300, 0.7); tone('sine', 110, 60, 0.1, 0.08); },   /* a sack of ore put down */
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
   /* THE KNIGHT'S PERFECT GUARD: a clang that rings like a bell - the steel knock high and bright, and two long clean partials over it.
@@ -977,7 +979,7 @@ Object.assign(SFX, {
   pupSpot() { if (!gate('pups', 0.3)) return; tone('sine', 1760, 1760, 0.5, 0.03); tone('sawtooth', 60, 60, 0.4, 0.04); noise(0.3, 0.03, 5000, 2); },   /* the limelight's hiss and hum as it is swung and opened */
   pupScene() { noise(1.2, 0.08, 300, 0.5); for (let i = 0; i < 6; i++) tone('square', 180 - i * 8, 170 - i * 8, 0.08, 0.03, i * 0.18); bell(587, 0.4, 0.03, 0.1); },   /* the stage lights drop and the flats rumble on their tracks */
   pupWake() { [147, 175, 220, 294].forEach((f, i) => pad('sawtooth', f, f, 1.6, 0.05, i * 0.03, 1200)); [880, 698, 587].forEach((f, i) => bell(f, 0.5, 0.04, 0.6 + i * 0.16)); },
-  /* ---- JENNY GREENTEETH (src/jenny-greenteeth.js, claude/lockkeeper): bubbles boiling up in a ring (her grab coming), an arm bursting out of the water,
+  /* ---- JENNY GREENTEETH (src/benched/jenny-greenteeth.js, claude/lockkeeper): bubbles boiling up in a ring (her grab coming), an arm bursting out of the water,
      a wet grip, the lash along the water, a drip, her hiss, the snap of her teeth, weed torn, a culvert boiling, the surge, the paddle's iron ratchet,
      the lock gurgling empty, her body slapping into the mud, the drag, the bell in the fog, and her waking: a gurgling laugh under the water ---- */
   gtBubble() { if (!gate('gtb', 0.2)) return; for (let i = 0; i < 6; i++) tone('sine', 300 + i * 90 + Math.random() * 60, 700 + i * 120, 0.06, 0.03, i * 0.07); noise(0.3, 0.04, 600, 1.2); },

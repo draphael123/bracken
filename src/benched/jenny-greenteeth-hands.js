@@ -1,9 +1,9 @@
 // ===== BENCHED (claude/lanterneater, 2026-10-07): UNWIRED - saved for a future mini (kelp armour: HIT HIGH body / HIT LOW hood). =====
 // Daniel 10-07: Jenny's raft duel "just isn't working, clunky"; THE FOG CANAL's boss is THE LANTERN-EATER now (src/lantern-eater.js) on the same raft.
 // Nothing imports this file: main.js, the lab, the marks, the hint lines and the music no longer name her. Her sprites stay in src/redraw/greenteeth_art.js
-// and src/redraw/greenteeth_kelp.js. To bring her back as a mini, wire her as claude/canal4 did (git log -- src/jenny-greenteeth.js) and give her a room.
-// src/jenny-greenteeth-hands.js - JENNY GREENTEETH'S HANDS (claude/lockkeeper; claude/jenny2; claude/canal4: THE RAFT DUEL + KELP ARMOUR).
-// src/jenny-greenteeth.js is the fight, pure and proved in tools/greenteeth.mjs; this binds it to the world: THE RAFT (a mover the heroes stand on, that
+// and src/redraw/greenteeth_kelp.js. To bring her back as a mini, wire her as claude/canal4 did (git log -- src/benched/jenny-greenteeth.js) and give her a room.
+// src/benched/jenny-greenteeth-hands.js - JENNY GREENTEETH'S HANDS (claude/lockkeeper; claude/jenny2; claude/canal4: THE RAFT DUEL + KELP ARMOUR).
+// src/benched/jenny-greenteeth.js is the fight, pure and proved in tools/greenteeth.mjs; this binds it to the world: THE RAFT (a mover the heroes stand on, that
 // goes out onto her water, rocks, tips when she heaves it and is dragged lower), her blows on the heroes (the slam, the charge's bow-wave, the weed net that
 // tangles - P.rootT - and the vine that yanks you to her), THE KELP (a blow at the bare angle lands whole, one on the kelp CLANKS and says which way to hit),
 // a swing along her stuck arm, the raft kept as the ground a hero is handed back to when he falls into her water, and the drawing: the lock's back wall,
@@ -109,7 +109,7 @@ export function makeGreenteethHands(ctx) {
     if (!show || !hb) return; const e = ctx.boss; if (!e || e.t !== 'greenteeth' || !e.alive || !ctx.bossActive) return;
     for (const rr of GM.strikeAt(e, show, hb, ctx.P.hitSet)) if (rr.what === 'claw' && ctx.hurtBoss && ctx.hurtBoss(e)) ctx.burst(e.claw ? e.claw.x : e.x, (e.claw ? e.claw.y : e.y) - 6, 6, ['#5e8a4a', '#86b060'], 60, 0.35);
   };
-  /* ---------- THE KELP: what a blow takes off her, by its angle (src/jenny-greenteeth.js blowAngle); a blow on the kelp CLANKS and says so ---------- */
+  /* ---------- THE KELP: what a blow takes off her, by its angle (src/benched/jenny-greenteeth.js blowAngle); a blow on the kelp CLANKS and says so ---------- */
   H.take = e => { if (!show) return GM.gtTake(e); const ang = GM.blowAngle(ctx.P), k = GM.gtTakeAt(e, show, ang); e.lastAngle = ang;
     if (k >= 1 && !GM.gtOpen(e)) { e.bareHit = true; show.n.bare++; } return k; };
   H.warded = e => { if (!show) return; show.n.clank++; ctx.SFX.clank(); ctx.sparks(e.x, e.y - GT.h / 2, -(ctx.P.face || 1), 5);

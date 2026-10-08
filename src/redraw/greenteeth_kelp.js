@@ -1,4 +1,4 @@
-// greenteeth_kelp.js - JENNY GREENTEETH's raft duel, drawn (claude/canal4art). Pure drawing: src/jenny-greenteeth-hands.js calls these with the live state; nothing here moves a thing.
+// greenteeth_kelp.js - JENNY GREENTEETH's raft duel, drawn (claude/canal4art). Pure drawing: src/benched/jenny-greenteeth-hands.js calls these with the live state; nothing here moves a thing.
 //   HER KELP, told apart by SHAPE and COLOUR as well as by the bar and the gold outline:
 //     the KELP BODY (HIT HIGH) a blue-teal mantle round her hips and legs with a twisted-stipe belt and pale air bladders at the waist: her HEAD is bare. Wide at the foot, ragged fringe.
 //     the KELP HOOD (HIT LOW)  a tall rust-brown cowl, peaked over her head, two lappets down her chest, amber bladders at the crown, her eyes burning in its shadow: her LEGS are bare.

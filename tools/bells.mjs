@@ -29,7 +29,8 @@ const FLOOR = new Set([T.SOLID, T.ONEWAY, T.PLANK, T.SHELF, T.RAIL, T.NET]);
 for (const lv of LEVELS) {
   if ((lv.hidden && !lv.secret) || lv.id === 'custom' || !lv.build) continue;
   const L = lv.build(), at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
-  const alarms = L.alarms || [], ids = new Set(alarms.map(a => a.id));
+  /* the Ksar's L.alarms are RULE-STATE SPANS ({x0,x1}: each gong's earshot, read by tools/rule-state.mjs), not bell alarms - a bell alarm has an id and gates (batch79 integ) */
+  const alarms = (L.alarms || []).filter(a => !(a.id === undefined && a.x0 !== undefined && a.x1 !== undefined && !a.gates)), ids = new Set(alarms.map(a => a.id));
   const bells = L.ents.filter(e => e.t === 'bell' && e.section), sentries = L.ents.filter(e => e.t === 'sentry' && e.section);
   for (const e of [...bells, ...sentries]) if (!ids.has(e.section)) fails.push(lv.id + ' tagged: the ' + e.t + ' at ' + e.x + ',' + e.y + ' is in section "' + e.section + '", and no alarm has that id: a dead bell');
   const locks = new Set(L.ents.filter(e => e.t === 'lockgate').map(e => e.x));

@@ -1061,3 +1061,5 @@ GROUND_KITS.rootway={density:0.22,kinds:['moss','rock','fern']};   /* THE ROOTWA
 ALLOWED_DECORATIONS.rootway=['sporePod','tinyCap','moss','mushroom','rootDecor','rock','fern','bones','skullPile','gobPennant','warnPost','trophyRack','hangCage','skullTotem','boneChime'];   /* the fungus's own, and the goblins' first marks (their pennants, posts, trophy racks and cages) */
 GROUND_KITS.glasssea={density:0,kinds:[]};   /* THE GLASS SEA (claude/glasssea, batch75 merge): fused glass and sand, nothing grows or is sprinkled; its dressing is src/redraw/glasssea_set.js and the hands' own (no placed decoration) */
 ALLOWED_DECORATIONS.glasssea=[];
+GROUND_KITS.ksar={density:0,kinds:[]};   /* THE BANDIT KSAR (claude/ksar, batch79 integ): mud-brick, ashlar and bedrock; nothing grows or is sprinkled - its dressing is src/redraw/ksar_set.js and the hands' own */
+ALLOWED_DECORATIONS.ksar=[];

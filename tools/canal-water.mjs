@@ -20,7 +20,7 @@ const solid = t => t === T.SOLID || t === T.CRATE;
 const stand = t => solid(t) || t === T.ONEWAY;
 const D = L.canal || {};
 const levelsOf = p => { if (p.lock && (p.gtWater || p.leWater)) return [p.y];   /* (claude/canal4) the water under the raft stands at one level (claude/lanterneater: the Lantern-Eater's now) */
-  if (p.lock) { const d = [0, 40, 48, 80, 112]; return d.map(v => p.bottom - v); }   /* Jenny's chamber: dry, the fog's shoal, low, half, high (src/jenny-greenteeth.js GT.lv) */
+  if (p.lock) { const d = [0, 40, 48, 80, 112]; return d.map(v => p.bottom - v); }   /* Jenny's chamber: dry, the fog's shoal, low, half, high (src/benched/jenny-greenteeth.js GT.lv) */
   const r = (D.reaches || []).find(q => q.id === p.canal); return r ? [...new Set([r.lo, r.hi])].map(row => row * TS + 4) : [p.y]; };
 const deep = p => !p.shallow && !p.swim;
 const pools = (L.pools || []).filter(p => !p.dry || p.lock);
