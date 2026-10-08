@@ -7,6 +7,8 @@
 import { STUCK_HANDS } from './stuck-spots.js';
 import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
+  /* claude/survival2: the manual flask and the exam spikes (src/main.js drinkFlask, shrine break, SV.examAt) - routed so the player can see them */
+  'NO FLASKS', 'FULL', 'SPILLED', 'SHRINE BROKEN  +1 FLASK', 'THE SPIKES KILL HERE',
   /* claude/slide: the first slope a hero stands on */
   'HOLD DOWN TO SLIDE: FEET FIRST',
   /* claude/weight: the bar hit 0 - EXHAUSTED (src/commit.js): no roll and no guard until it is back to 30% */
