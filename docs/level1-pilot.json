@@ -130,5 +130,17 @@
   "lifts": 86,
   "walked": 100,
   "bare": true
+ },
+ "towpath": {
+  "hash": "ac320e32019b",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 23,
+  "deaths": 2,
+  "kills": 5,
+  "lifts": 55,
+  "walked": 100,
+  "bare": true
  }
 }
