@@ -103,7 +103,8 @@ function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] 
 const setLight = (S, v) => { S.light = Math.max(0, Math.min(PB.light.max, v)); };
 function falter(e, S, c) { setMode(e, 'falter', PB.falterT + 0.05); e.open = PB.falterT; S.falterTaken = 0; S.n.falters++; S.chainLeft = 0; S.marks = []; S.leap = null; c.fx('open', e.x, e.y); c.sound('falter'); c.shake(3);
   c.number(e.x, e.y - 74, 'HIS LIGHT IS OUT: HE FALTERS - STRIKE', '#8fd160'); }
-function endFalter(e, S, c) { e.open = 0; S.ward = PB.wardT; S.n.wards++; S.falterTaken = 0; setLight(S, PB.light.refill); c.fx('ward', e.x, e.y); c.sound('tell');
+function endFalter(e, S, c) { e.open = 0; e.burn = 0;   /* (paladin tune) the light coming back up him puts out a fire on him */
+  S.ward = PB.wardT; S.n.wards++; S.falterTaken = 0; setLight(S, PB.light.refill); c.fx('ward', e.x, e.y); c.sound('tell');
   c.number(e.x, e.y - 74, 'THE LIGHT RETURNS: HE IS WARDED', '#9ab0c0'); }
 
 /* ---------- THE RULE ON HIM (the hands call these) ---------- */
@@ -123,11 +124,11 @@ export function blowOn(e, S, c, dmg, hx, hy, airborne, heavy) {
 }
 /* A BURN ON HIM (the pyro's fire, a tick with no blow behind it; paladin tune 10-08): it is not a blow, so it never touches HIS LIGHT - his aegis does not drink it and
    it does not drain him (21-40 ticks a fight landed from behind and each drained a whole blow's light: the pyro starved him for free, 12/12). His ward stops it;
-   open it pays x falterMul inside the falter's cap; otherwise it burns whole (B15). */
+   open it pays x1 inside the falter's cap; otherwise it burns whole (B15); his ward, when the light comes back, puts the fire out. */
 export function burnOn(e, S, dmg) {
   if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake' || S.ward > 0) return { dmg: 0, read: 'ward' };
   S.n.burns = (S.n.burns || 0) + 1;
-  if (pbOpen(e)) { const d = Math.max(0, Math.min(Math.round(dmg * PB.falterMul), Math.round(e.maxHp * PB.falterCap - S.falterTaken))); S.falterTaken += d; return { dmg: d, read: 'open' }; }
+  if (pbOpen(e)) { const d = Math.max(0, Math.min(dmg, Math.round(e.maxHp * PB.falterCap - S.falterTaken))); S.falterTaken += d; return { dmg: d, read: 'open' }; }   /* (the falter's x falterMul is for blows: a burn pays x1 inside its cap) */
   return { dmg, read: 'burn' };
 }
 /* HIS BLOW TURNED (the hands, off what damagePlayer said): a shield that takes his hammer or his bash dims his light; one answered ON THE BEAT (a parry, a perfect
