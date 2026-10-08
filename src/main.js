@@ -22416,7 +22416,8 @@ function updateMonkProps(dt, hb) {
     if (pr.cool > 0) { SFX.ui(); number(pr.x, pr.y - 36, 'STILL RINGING', '#9aa39a'); continue; }
     if (pr.guard && pr.tollT > 0) { SFX.clank(); number(pr.x, pr.y - 36, 'THE BELL IS SWINGING', '#9aa39a'); continue; }   /* THE GUARDIAN'S TOLL set it swinging: it cannot be struck till it settles */
     pr.ring = 1.2; if (TGM && (pr.span || pr.guard || pr.offer)) { if (pr.span) TGM.bellNote(pr); } else { ringAt(pr.x, pr.y - 12, 40, '#e8c88a', 0.5); SFX.seaBell(); }   /* THE BELL IS A NOTE (src/temple-guardian.js bellNote): its ring dazes goblins, birds and priests in it */
-    if (pr.offer) { pr.cool = 1.5; if (TGM) TGM.bellNote(pr); for (const s of silvers) if (s.hung && Math.abs(s.x - pr.x) < 6 * TS && s.y < pr.y && pr.y - s.y < 10 * TS) { s.hung = false; marks.add(s.key); SFX.gateDrop(); number(s.x, s.y0 - 20, 'THE OFFERING COMES DOWN', '#8fd160'); } }   /* (claude/monastery2) THE MONKS' OFFERING: the bell lets it down */
+    if (pr.offer) { pr.cool = 1.5; if (TGM) TGM.bellNote(pr); for (const s of silvers) if (s.hung && Math.abs(s.x - pr.x) < 6 * TS && s.y < pr.y && pr.y - s.y < 10 * TS) { s.hung = false; marks.add(s.key); SFX.gateDrop(); number(s.x, s.y0 - 20, 'THE OFFERING COMES DOWN', '#8fd160'); }
+      if (!marks.has(pr.key + ':offer')) { marks.add(pr.key + ':offer'); for (let k = 0; k < 6; k++) acorns.push({ x: pr.x - 40 + k * 7, y: pr.y - 6, got: false, ph: Math.random() * 6 }); SFX.gateDrop(); burst(pr.x - 24, pr.y - 10, 12, ['#ffd36b', '#fff6c8', '#8a6640'], 60, 0.5); number(pr.x - 24, pr.y - 40, 'THE OFFERING COMES DOWN', '#8fd160'); } }   /* (claude/monastery2) THE MONKS' OFFERING: the bell lets it down */
     if (pr.span) { pr.cool = 1.5;
       if (!pr.down) { pr.down = true; pr.lowerT = 0.6; marks.add(pr.key); const [x0, x1, row] = pr.span;
         for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.PLANK; tileSpr[i] = null; } }
@@ -22446,6 +22447,7 @@ function updateMonkProps(dt, hb) {
 function drawTBell(pr, cx, cy) {
   const M = mo(), x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -420 || x > VW + 420 || y < -60 || y > VH + 60) return;
   const f = pr.swing > 0 ? 1 + (Math.floor(time * 10) % 2) : 0;
+  if (pr.offer && !marks.has(pr.key + ':offer')) { const bx = x - 24, by = y - 70; g.fillStyle = '#3a2a1c'; g.fillRect(bx, by - 60, 1, 60); g.fillStyle = '#6a4a2c'; g.fillRect(bx - 7, by, 14, 9); g.fillStyle = '#8a6640'; g.fillRect(bx - 7, by, 14, 1); g.fillRect(bx - 7, by + 4, 14, 1); g.fillStyle = '#ffd36b'; g.fillRect(bx - 4, by - 2, 2, 2); g.fillRect(bx + 1, by - 3, 3, 3); }   /* (claude/monastery2) THE MONKS' OFFERING, hung over the belfry in its basket */
   if (pr.hang) { const top = Math.round(pr.top - cy); g.fillStyle = '#3a2a1c'; g.fillRect(x, top, 1, Math.max(0, y - 20 - top)); g.drawImage(M.bell[f], x - 9, y - 20); }
   else if(pr.roc){g.drawImage(M.bellFrame,x-26,y-60,52,60);g.drawImage(M.bell[f],x-18,y-52,36,40);} else { g.drawImage(M.bellFrame, x - 13, y - 30); g.drawImage(M.bell[f], x - 9, y - 26); }
   /* WHAT IT HANGS: a bridge rolled on its ropes under the belfry, and run out across the gap as it comes down */

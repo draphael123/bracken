@@ -2214,8 +2214,8 @@ function theMonastery() {
   tower(8, 118, 131);
   tower(41, 118, 131);
   // THE BELL IS A NOTE (claude/monastery2, idea b): the second tower's bell rings over its belfry - its note dazes what is in it (the priest there) - and lets
-  // down the monks' OFFERING, hung in a basket over the belfry since they left
-  ent('tbell', 46, 117, { offer: true }); ent('silver', 44, 117, { offer: 5 });
+  // down the monks' OFFERING, hung in a basket over the belfry since they left (gold: the wood's three silvers are the loft, the bellows alcove and the vault)
+  ent('tbell', 46, 117, { offer: true });
   tower(70, 118, 131);
   ent('tbell', 11, 117, { span: [16, 40, 118] });                   // the first bell: the drawbridge over the broken floor
   ent('sign', 9, 117, { text: 'A BELL. STRIKE IT AND WHAT HANGS FROM ITS TOWER COMES DOWN.' });
