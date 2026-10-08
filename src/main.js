@@ -4233,14 +4233,14 @@ const WOOD_NODES = [
   { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 68, plate: 'left', name: 'THE STORE' },
   { id: 'marsh', kind: 'level', level: 1, x: 251, y: 129, plate: 'right', name: 'MARSH WOOD' },
   { id: 'stockade', kind: 'level', level: 2, x: 288, y: 47, plate: 'right', name: 'THE STOCKADE' },
-  { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 216, y: 106, spur: true, name: 'THE BURNING VILLAGE' },   /* A SPUR off the road between the Stockade and Sporewood: the Pyromancer's class level, and optional, so the road does not go through it */
+  { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 304, y: 38, plate: 'above', spur: true, name: 'THE BURNING VILLAGE' },   /* A SPUR off the road between the Stockade and Sporewood: the Pyromancer's class level, and optional, so the road does not go through it */
   { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
-  { id: 'rootway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'rootway'), x: 222, y: 66, plate: 'right', name: 'THE ROOTWAY' },   /* THE ROOTWAY (claude/rootway): between SPOREWOOD and KINGSWOOD (Daniel 10-07): the only spot map-spacing passes near them, so the road dips south to it and climbs back to Kingswood (the map lane may relay the sheet) */
+  { id: 'rootway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'rootway'), x: 221, y: 68, plate: 'right', name: 'THE ROOTWAY' },   /* THE ROOTWAY (claude/rootway): between SPOREWOOD and KINGSWOOD (Daniel 10-07): the only spot map-spacing passes near them, so the road dips south to it and climbs back to Kingswood (the map lane may relay the sheet) */
   { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
   { id: 'underleaf', kind: 'level', level: LEVELS.findIndex(l => l.id === 'underleaf'), x: 60, y: 56, plate: 'below', name: 'UNDERLEAF' },   /* UNDERLEAF (claude/underleafroad, Daniel 10-08): a MAIN-ROAD level now, between KINGSWOOD and THE SCREE PATH - it was a secret spur at (67,70); the road bends through it */
 ];
 /* the road itself, and nothing but: the Burning Village hangs off it on a spur (NODES `spur: true`); UNDERLEAF is ON it (between Kingswood and the Scree Path) */
-const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [263,80], [288,47], [254,27], [199,38], [222,66], [141,24], [98,33], [60,56], [40,64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
+const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [263,80], [288,47], [254,27], [199,38], [221,68], [141,24], [98,33], [60,56], [40,64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
 /* OPTION B — THE SINGLE DIAGONAL S (docs/crag-options.png, letter B). Every node moved. One continuous climb from
    bottom-left to top-right, X sweeping through a smooth ogee (half-sine) curve as Y falls strictly - no hairpins,
    no loop, one line the eye can follow start to finish. Correct by construction: strictly-falling Y means no two
@@ -16367,7 +16367,7 @@ function updateGreatHound(e, dt) {
     if (e.modeT <= 0 && !P.dead) {
       if (e.howlT <= 0 && pups.length === 0) { e.howlT = 16; tell('HOWLS', '#c080ff', 0.7, 'howlTell'); }
       else if (p2 && ad < 28 && Math.abs(P.y - e.y) < 20) { tell('!', '#ffd36b', 0.25, 'snapTell'); }
-      else if (e.boughT <= 0 && ad < 240) { const bt = p2 ? GHD.GH.bough.tellP2 : GHD.GH.bough.tell; e.boughT = p2 ? GHD.GH.bough.everyP2 : GHD.GH.bough.every; e.pounceT = Math.max(e.pounceT, 1.2); e.lungeT = Math.max(e.lungeT, 1.2); e.boughs = GHD.boughSpots(P.x, M.x0, M.x1); e.boughT0 = bt; tell('!!', '#ff6b6b', bt, 'boughTell'); number(e.x, e.y - e.h - 24, 'THE BOUGHS: GET CLEAR', '#d08a3a'); SFX.roar(); SFX.greathound && SFX.greathound(); shakeCam(2); }   /* (claude/hound) THE BOUGHS: red rings where they will land */
+      else if (e.boughT <= 0 && ad < 240) { const bt = p2 ? GHD.GH.bough.tellP2 : GHD.GH.bough.tell; e.boughT = p2 ? GHD.GH.bough.everyP2 : GHD.GH.bough.every; e.pounceT = Math.max(e.pounceT, 1.2); e.lungeT = Math.max(e.lungeT, 1.2); e.boughs = GHD.boughSpots(P.x, M.x0, M.x1); e.boughT0 = bt; tell('!!', '#ff6b6b', bt, 'boughTell'); number(e.x, e.y - e.h - 24, 'THE BOUGHS: GET CLEAR', '#d08a3a'); SFX.roar(); shakeCam(2); }   /* (claude/hound) THE BOUGHS: red rings where they will land */
       else if (e.pounceT <= 0 && ad > 26 && ad < 200) { e.pounceT = 4; tell('!!', '#ff6b6b', 0.5, 'pounceTell'); SFX.charge(); }
       else if (e.lungeT <= 0 && ad > 24) { e.lungeT = 3.4; tell('!', '#ff6b6b', 0.45, 'lungeTell'); SFX.charge(); }
       else if (ad < 34 && Math.random() < 0.5) { e.mode = 'backstep'; e.modeT = 0.32; e.vx = -e.face * 230; SFX.step(); }
