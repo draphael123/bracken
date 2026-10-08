@@ -531,5 +531,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 433
+ },
+ "church": {
+  "hash": "04c6966a3239",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 14,
+  "deaths": 7,
+  "kills": 3,
+  "lifts": 79,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 312
  }
 }
