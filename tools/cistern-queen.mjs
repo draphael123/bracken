@@ -19,10 +19,14 @@ let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; console.log('  ok  ' + m
 const SPEC = { 1: { 'Stinger Slam': 'sslam', 'Sand Strike': 'burrow:strike', 'Burrow Charge': 'burrow:charge', 'Pincer Snap': 'pincer', 'Snap-Snap-Lunge': 'snapsnap', 'Tail Lance': 'lance', 'Sand Flick': 'flick' },
   /* (claude/underwell3, Daniel 10-07) THE STINGER SLAM in every phase */
   2: { 'Stinger Slam': 'sslam', 'Venom Spit': 'spit', 'Tail Sweep high': 'sweep:high', 'Tail Sweep low': 'sweep:low', 'Drop Pounce': 'pounce', 'Skitter Ambush': 'ambush', 'Wall Slam': 'slam', 'Stinger Pin': 'pin' },
-  3: { 'Stinger Slam': 'sslam', 'Wave Thrash': 'wave', 'Grab and Sting': 'grab', 'Death Roll': 'roll', 'Tidal Tail': 'tidal', 'Brood Shield': 'brood' } };
+  /* (claude/queen4, Daniel 10-07 - DESIGN CHANGE: the DEATH ROLL is replaced by THE VENOM BLOOM, P3's new move; the BROOD SHIELD is cut - no add summons in her fight) */
+  3: { 'Stinger Slam': 'sslam', 'Wave Thrash': 'wave', 'Grab and Sting': 'grab', 'Venom Bloom': 'bloom', 'Tidal Tail': 'tidal' } };
 for (const ph of [1, 2, 3]) { const used = new Set(CYCLES[ph].flat());
   for (const [name, k] of Object.entries(SPEC[ph])) ok(used.has(k), 'P' + ph + ' ' + name + ' (' + k + ') is in her phase-' + ph + ' cycles'); }
-ok(CYCLES.enraged.includes('combo'), 'ENRAGED under ' + CQ.enrage * 100 + '%: SNAP-SNAP-STING into the DEATH ROLL (the combo) is in her enraged cycle');
+ok(CYCLES.enraged.includes('combo'), 'ENRAGED under ' + CQ.enrage * 100 + '%: SNAP-SNAP-STING into the VENOM BLOOM (the combo) is in her enraged cycle (claude/queen4: was into the death roll)');
+/* (claude/queen4, Daniel 10-07) NO ADD SUMMONS, NO TUMBLE: nothing of the brood shield or the death roll is left in her fight */
+ok(!Object.values(CYCLES).flat(2).some(m => m === 'brood' || m === 'roll') && !('broodTell' in MOVES) && !('rollTell' in MOVES) && !('cisternqueen|rollTell' in BY_HAND) && !('cisternqueen|broodTell' in BY_HAND) && !('cisternqueen|rollTell' in MARK),
+  'no brood shield and no death roll in any cycle, move row or mark row');
 /* TOLD: her own mark for every told mode is the marks table's (by hand and traced) */
 for (const [mode, m] of Object.entries(MOVES)) { const k = 'cisternqueen|' + mode;
   ok(BY_HAND[k] === m.mark && MARK[k] === m.mark, k + ' wears ' + (m.mark || 'no mark') + ' (src/marks.js agrees)');
@@ -38,15 +42,50 @@ const A = { queen: { sx: 528, F: 56, vault: 40, top: 28, lr: 48 } }, G = CQG.geo
 function run(secs, o = {}) {
   const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid + 60, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'wake', modeT: 1.6, open: 0, alive: true };
   const hero = [{ x: o.x ?? G.mid - 80, y: G.floor, ground: true, alive: true, onLedge: null, pp: { snare: 0 } }], seen = new Set(); let idle = 0, maxIdle = 0, maxOpen = 0;
-  const c = { hit() {}, band() {}, number() {}, sound() {}, fx() {}, shake() {}, music() {}, mark() {}, water() {}, grab: () => null, free: () => true, holdAt() {}, release() {}, spawnBrood: (x, y) => ({ x, y, alive: true }), drown() {} };
+  let spawned = 0; const c = { hit() {}, band() {}, number() {}, sound() {}, fx() {}, shake() {}, music() {}, mark() {}, water() {}, grab: () => null, free: () => true, holdAt() {}, release() {}, spawnBrood: (x, y) => { spawned++; return { x, y, alive: true }; }, drown() {} };
+  /* (claude/queen4) HOW SHE MOVES, frame to frame, as drawn (S.view): the biggest step of her drawn body, of its turn, of its flip; how often she is hidden for one frame */
+  const mo = { step: 0, rot: 0, sx: 0, sy: 0, blinks: 0, hidden: 0, at: '' }; let last = null;
+  const drawn = () => !(S.pose === 'burrow' || S.pose === 'tunnel' || (e.gone > 0 && S.pose !== 'shaft' && e.mode !== 'pounce'));
   for (let t = 0; t < secs; t += 1 / 60) { if (o.hp) e.hp = o.hp(t, e); CQG.stepQueen(e, S, 1 / 60, hero, c); seen.add(e.mode);
-    if (e.mode === 'walk' || e.mode === 'cling' || e.mode === 'hang') { idle += 1 / 60; maxIdle = Math.max(maxIdle, idle); } else idle = 0; maxOpen = Math.max(maxOpen, e.open || 0); }
-  return { S, e, seen, maxIdle, maxOpen };
+    if (e.mode === 'walk' || e.mode === 'cling' || e.mode === 'hang') { idle += 1 / 60; maxIdle = Math.max(maxIdle, idle); } else idle = 0; maxOpen = Math.max(maxOpen, e.open || 0);
+    const V = S.view, vis = drawn() && V.sink < CQ.sinkH - 1, p = CQG.framePoint(e, V, 0, -24);
+    if (!vis) mo.hidden++; else { if (mo.hidden === 1) mo.blinks++; mo.hidden = 0; }
+    if (vis && last && last.vis) { const d = Math.hypot(p.x - last.p.x, p.y - last.p.y); if (d > mo.step) { mo.step = d; mo.at = last.m + '>' + e.mode; }
+      mo.rot = Math.max(mo.rot, Math.abs(V.rot - last.rot)); mo.sx = Math.max(mo.sx, Math.abs(V.sx - last.sx)); mo.sy = Math.max(mo.sy, Math.abs(V.sy - last.sy)); }
+    last = { vis, p, rot: V.rot, sx: V.sx, sy: V.sy, m: e.mode }; }
+  return { S, e, seen, maxIdle, maxOpen, spawned, mo };
 }
+/* (claude/queen4, Daniel 10-07: "her animations jumping around look really awkward") NOTHING POPS: drawn, frame to frame, her body never jumps (a pounce out of the shaft
+   is her fastest motion), never snaps a turn or a flip, and is never hidden for a single frame (no e.gone flicker) - in every phase */
+for (const [ph, hp] of [[1, null], [2, 600], [3, 300]]) { const r = run(120, hp ? { hp: () => hp } : {}), m = r.mo;
+  ok(m.step <= 45 && m.rot <= 0.33 && m.sx <= 0.25 && m.sy <= 0.2 && m.blinks === 0, 'phase ' + ph + ': nothing pops - her drawn body moves at most ' + m.step.toFixed(1) + ' px a frame (' + m.at + '), turns ' + m.rot.toFixed(2) + ' rad, flips ' + m.sx.toFixed(2) + '/' + m.sy.toFixed(2) + ' a frame; one-frame vanishings: ' + m.blinks); }
+{ const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 600, maxHp: 1000, face: -1, mode: 'walk', modeT: 0, open: 0, alive: true }; S.ph = 2; S.script = ['wall:W', 'spit', 'wall:E', 'spit', 'shaft', 'pounce']; S.step = 0;
+  const c = { hit() {}, band() {}, number() {}, sound() {}, fx() {}, shake() {}, music() {}, mark() {}, water() {}, grab: () => null, free: () => true, holdAt() {}, release() {} };
+  const hero = [{ x: G.mid + 100, y: G.floor, ground: true, alive: true, onLedge: null, pp: { snare: 0 } }], legs = [];
+  for (let t = 0; t < 14; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero, c); if (legs[legs.length - 1] !== e.mode) legs.push(e.mode); }
+  const str = legs.join(' ');
+  ok(/crawl climb/.test(str) && /descend crawl climb/.test(str) && /crawl leap pounceTell/.test(str) && /pounce/.test(str), 'she is SEEN to get about: scuttles to a wall and backs up it, climbs down it to cross to the other, scuttles under the shaft and leaps into it (' + str.replace(/ (spitTell|spit|cling|hang)(?= )/g, '').slice(0, 160) + ')'); }
 { const r = run(120); ok(r.maxOpen === 0, 'two minutes of her left alone (phase one) opens nothing'); ok(r.maxIdle <= 1.6, 'SHE ALWAYS FIGHTS: never more than ' + r.maxIdle.toFixed(2) + ' s between blows'); ok(r.S.n.cycles >= 6, r.S.n.cycles + ' cycles in two minutes'); }
 { const r = run(120, { hp: () => 600 }); ok(r.S.ph === 2 && r.maxOpen === 0 && ['spitTell', 'sweepLowTell', 'slamTell', 'pinTell'].every(m => r.seen.has(m)), 'phase two: she takes to the walls (spit, sweeps, slam, pin), and left alone opens nothing'); }
-{ const r = run(120, { hp: () => 300 }); ok(r.S.ph === 3 && r.S.flood && r.S.water > 10 && ['waveTell', 'grabTell', 'rollTell', 'tidalTell', 'broodTell'].every(m => r.seen.has(m)), 'phase three: the cistern floods and the waves, the grab, the roll, the tidal tail and the brood come'); }
-{ const r = run(60, { hp: () => 100 }); ok(r.seen.has('barbTell'), 'enraged under 15%: the snap-snap-sting combo'); }
+{ const r = run(120, { hp: () => 300 }); ok(r.S.ph === 3 && r.S.flood && r.S.water > 10 && ['waveTell', 'grabTell', 'bloomTell', 'bloom', 'bloomBurst', 'tidalTell'].every(m => r.seen.has(m)), 'phase three: the cistern floods and the waves, the grab, the VENOM BLOOM and the tidal tail come (claude/queen4: was the roll and the brood)');
+  ok(r.spawned === 0 && !r.seen.has('broodTell') && !r.seen.has('rollTell') && !r.seen.has('roll'), 'and she calls no brood and never rolls (Daniel 10-07)'); }
+{ const r = run(60, { hp: () => 100 }); ok(r.seen.has('barbTell') && r.seen.has('bloomTell'), 'enraged under 15%: the snap-snap-sting combo, into the VENOM BLOOM'); }
+/* (claude/queen4, Daniel 10-07) THE VENOM BLOOM: told (the word, a red !!, the ring drawn from the first frame), the stinger driven into the water and EXPOSED while the slick
+   spreads (a short opening: x stingMul, one sting's cap), the ring's edge growing to its size, then the bloom - on whoever is in the ring on the floor, not on a ledge or outside */
+{ const one = (hx, hy) => { const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 300, maxHp: 1000, face: 1, mode: 'walk', modeT: 0, open: 0, alive: true }; S.ph = 3; S.flood = true; S.water = CQ.waterH; S.script = ['bloom']; S.step = 0;
+    const said = [], marks = [], hits = []; const c = { hit: (b, d, n, o) => { if (n === CQG.MOVE_NAME.bloom && hx >= b[0] && hx <= b[1] && hy > b[2] && hy - 20 < b[3] && !hits.some(q => q.key === o.key)) hits.push({ d, venom: o && o.venom, key: o.key }); }   /* (a blow is keyed once: the world's c.hit) */, band() {}, number: (x, y, t) => said.push(t), sound() {}, fx() {}, shake() {}, music() {}, mark: m => marks.push(m), water() {}, grab: () => null, free: () => true, holdAt() {}, release() {} };
+    const hero = [{ x: hx, y: hy, ground: true, alive: true, onLedge: hy < G.floor - 40 ? 'W' : null, pp: { snare: 0 } }], o = { told: 0, ringAtTell: false, exposed: 0, ks: [], stBig: null };
+    for (let t = 0; t < 4; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero, c); if (e.mode === 'bloomTell') { o.told += 1 / 60; if (S.bloom && S.bloom.R === CQ.bloomR) o.ringAtTell = true; }
+      if ((e.mode === 'bloom' || e.mode === 'bloomBurst') && CQG.stingerOut(S) && S.stinger.k === 'bloom') { o.exposed += 1 / 60; o.stBig = !!S.stinger.big; }
+      if (e.mode === 'bloom' && S.bloom) o.ks.push(S.bloom.k); if (e.mode === 'walk' && o.exposed > 0) break; }
+    return { S, e, said, marks, hits, o }; };
+  const near = one(G.mid + 40, G.floor), r = near;
+  ok(r.said.includes('VENOM BLOOM: OUT OF THE RING BEFORE IT BLOOMS') && r.marks.includes('!!') && r.o.told >= CQ.bloomTell - 0.02 && CQ.bloomTell >= 0.75 && r.o.ringAtTell, 'THE VENOM BLOOM is told: the word, a red !! (no shield takes it), ' + CQ.bloomTell + ' s, and its ring is drawn from the first frame (' + CQ.bloomR + ' px either side)');
+  const ks = r.o.ks; ok(ks.length > 20 && ks[0] < 0.1 && ks[ks.length - 1] > 0.95 && ks.every((k, i) => !i || k >= ks[i - 1]), 'the slick SPREADS from the stinger to its ring over ' + CQ.bloomSpread + ' s - its edge grows (' + ks[0].toFixed(2) + ' to ' + ks[ks.length - 1].toFixed(2) + ')');
+  ok(r.o.exposed >= CQ.bloomSpread && r.o.exposed <= CQ.bloomSpread + CQ.bloomT + CQ.bloomPull + 0.1 && r.o.stBig === false && CQ.stingCap <= 0.07, 'while the stinger is in the water it is EXPOSED ' + r.o.exposed.toFixed(1) + ' s (a gold ring on it: a blow there x' + CQ.stingMul + ', one sting\'s cap - ' + CQ.stingCap * 100 + '% of her)');
+  ok(r.hits.length === 1 && r.hits[0].venom === 2 && !(r.e.open > 0), 'it BLOOMS on a hero still in the ring (once, two stacks of venom) - and opens nothing of her');
+  const out = one(G.mid + CQ.bloomR + CQ.bloomReach + 30, G.floor), up = one(G.mid + 40, G.ledgeY);
+  ok(out.hits.length === 0 && up.hits.length === 0, 'out of the ring, or up on a ledge over it, the bloom does not reach you'); }
 /* THE OPENINGS: each >= 3 s; the claws guard the front only, and only outside an opening */
 ok(CQ.openT >= 3 && CQ.openCap > 0 && CQ.openCap <= 0.2, 'her openings last ' + CQ.openT + ' s (>= 3) and one takes no more than ' + CQ.openCap * 100 + '% of her');
 { const e = { x: 100, face: 1, mode: 'walk', open: 0 }; ok(CQG.guarded(e, 140) && !CQG.guarded(e, 40), 'outside an opening her raised claws turn a blow from the front, not one from behind');

@@ -1,6 +1,6 @@
 // src/glass-colossus-hands.js - THE GLASS COLOSSUS's HANDS (claude/glasssea; drawn by src/redraw/glass_colossus_art.js since the art pass). src/glass-colossus.js is the fight (pure: its three phases,
 // its moves, its openings, the bot's reading); this binds it to the world: its told blows on the heroes (keyed once a blow; a shield turns only the
-// yellow ones), THE SHELF-MIRRORS (E turns one: FACING THE GIANT / TO THE FIRE / TO THE SKY), the swarm out of the crack under it (THE CRACK SWARM's
+// yellow ones), THE SHELF-MIRRORS (E turns one: FACING THE GIANT / TO THE FIRE / TO THE SKY), THE CRACK LINE out of the crack under it (claude/colossus3: it replaced the swarm call - no adds in the fight; THE CRACK SWARM's
 // skitters, src/glass-foes.js) and the firelight that holds it, THE SHAKE that throws a climber who does not grip (hold DOWN: never a death - a blow and
 // the floor), and the drawing (src/redraw/glass_colossus_art.js: its body, holds and shelf-mirrors; this file keeps the B10 read).
 // THE SHARED READ (design standard B10): OPEN = a gold ring round the weak point and a timer bar; WARDED = a pale glass shell and the word; a blow that does
@@ -12,7 +12,7 @@ import * as COA from './redraw/glass_colossus_art.js';
 const { COL } = CG;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), lanceTell: s => (s.charge || s.hiss || s.tell)(), lance: s => (s.zap || s.fireWhoosh || s.heavy)(),
-  reflect: s => { (s.crack || s.clank)(); }, stomp: s => (s.heavy || s.thud)(), shards: s => (s.crack || s.thud)(), shake: s => { (s.rumble || s.heavy)(); }, swarm: s => (s.hiss || s.thud)(),
+  reflect: s => { (s.crack || s.clank)(); }, stomp: s => (s.heavy || s.thud)(), shards: s => (s.crack || s.thud)(), shake: s => { (s.rumble || s.heavy)(); }, crack: s => { (s.crack || s.clank)(); (s.rubble || s.heavy)(); },
   wave: s => (s.rubble || s.heavy)(), sweep: s => (s.rubble || s.heavy)(), quake: s => { (s.heavy || s.thud)(); (s.crack || s.clank)(); }, open: s => (s.crack || s.clank)(), ward: s => (s.clank || s.thud)(), phase: s => (s.roar || s.heavy)() };
 
 export function makeColossusHands(ctx) {
@@ -38,7 +38,6 @@ export function makeColossusHands(ctx) {
 
   /* ---------- THE WORLD AS IT SEES IT ---------- */
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, grip: ctx.down(pp), pp }));
-  const swarm = () => ctx.enemies().filter(q => q.alive && q.coSwarm);
   function world(e) {
     const G = S.G;
     return {
@@ -52,8 +51,7 @@ export function makeColossusHands(ctx) {
       throwOff: (h, dir) => { const pp = h.pp; if ((pp.coThrown || 0) > ctx.time()) return; pp.coThrown = ctx.time() + 1.0;
         ctx.asPlayer(pp, () => { const P = ctx.hero(); hurt('THE SHAKE', () => ctx.damagePlayer(P.x, COL.shakeDmg, { who: e, name: 'THE SHAKE', unblockable: true, noKnock: true })); if (P.dead) return; P.vx = dir * 170; P.vy = -120; P.ground = false; P.drop = 0.45; P.climb = false; });
         ctx.burst(pp.x, pp.y - 8, 8, ['#e8fff8', '#9ae8d0'], 60, 0.5); if (!S.told.thrown) { S.told.thrown = 1; ctx.number(pp.x, pp.y - 40, 'THROWN OFF: HOLD DOWN TO GRIP WHEN IT SAYS HOLD', '#ffd36b'); } },
-      swarm: n => { let k = 0; for (let i = 0; i < n; i++) { const b = ctx.spawnSkitter(G.cx + (i % 2 ? 1 : -1) * (20 + Math.random() * 18), G.floor - 1); if (b) { b.coSwarm = true; k++; } } return k; },
-      swarmAlive: () => swarm().length,
+      /* (claude/colossus3, Daniel 10-07: no adds in this fight) the swarm call is gone: THE CRACK LINE (src/glass-colossus.js) took its place */
       held: () => CG.relaying(S),
       /* (claude/glasssea2) THE GLASS QUAKE's slick plates slide a hero outward: moved by hand, never into a wall or past the arena's */
       push: (h, vx, dt) => { const pp = h.pp; ctx.asPlayer(pp, () => { const P = ctx.hero(), nx = P.x + vx * dt, ts = ctx.TS; if (nx < G.x0 + 10 || nx > G.x1 - 10) return;
@@ -68,9 +66,6 @@ export function makeColossusHands(ctx) {
     if (e.mode === 'wake' && !S.woke) { S.woke = true; ctx.number(e.x, S.G.crownY - 30, 'THE GLASS COLOSSUS WAKES', '#ffd36b'); ctx.shake(6); }
     CG.stepColossus(e, S, dt, heroes(), world(e));
     e.phase = S.ph;
-    /* the swarm will not cross firelight: the edges' campfires, and in phase two a relayed beam along the floor (src/glass-sea-hands.js fear asks warmAt;
-       the arena's fires are ents of the level's hands too) */
-    if (S.ph !== 2) for (const q of swarm()) if (q.alive && (e.mode !== 'swarm')) { q.coLeft = (q.coLeft || 6) - dt; if (q.coLeft <= 0) { q.alive = false; ctx.burst(q.x, q.y, 4, ['#5a4a8a', '#e8dcb0'], 30, 0.4); } }
     if (!S.told.mirror && e.mode !== 'wake' && S.ph === 1) { S.told.mirror = 1; ctx.number(S.G.cx, S.G.crownY - 50, 'TURN THE MIRROR TO HIM: HIS LANCE COMES BACK INTO HIS CHEST', '#ffd36b'); }   /* (= CG.MIRROR_LINE; a literal for tools/hint-shown) */
   };
   /* E AT A SHELF-MIRROR: the next notch */
@@ -82,7 +77,7 @@ export function makeColossusHands(ctx) {
     if (d <= 0) { e.chipHit = ctx.time(); ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(fromX + (Math.sign(e.x - fromX) || 1) * 10, P.y - 12, -(Math.sign(e.x - fromX) || 1), 4); }
     return d; };
   H.barName = e => 'THE GLASS COLOSSUS' + (e.mode === 'cracked' ? '  CHEST CRACKED' : e.mode === 'blazing' ? '  SHOULDERS BLAZE' : e.mode === 'dazzled' ? '  DAZZLED' : S && S.ward > 0 ? '  WARDED' : '');
-  H.end = e => { if (S) { S.rings = []; S.marks = []; S.wave = null; S.lance = null; } for (const q of swarm()) { q.alive = false; ctx.burst(q.x, q.y, 6, ['#5a4a8a', '#e8dcb0'], 40, 0.5); } BOSS_PHASE.colossus = 1; if (ctx.L) ctx.L.gsColossusDown = true; };
+  H.end = e => { if (S) { S.rings = []; S.marks = []; S.wave = null; S.lance = null; S.crack = null; } BOSS_PHASE.colossus = 1; if (ctx.L) ctx.L.gsColossusDown = true; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, n: JSON.parse(JSON.stringify(S.n)), mirrors: S.mirrors.map(m => m.notch), ward: S.ward, legPurse: Math.round(S.legPurse), hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING (src/redraw/glass_colossus_art.js: its own body; the holds and the shelf-mirrors; the relayed light) ---------- */
@@ -98,7 +93,6 @@ export function makeColossusHands(ctx) {
     for (const m of S.mirrors) COA.drawShelfMirror(g, m, G, cx, cy, time, S.ph);   /* (claude/glasssea2) AFTER the beams: a beam starts at the disc's face, it never crosses the bronze */
     /* the crack under its feet (the swarm's): a dark seam, violet at night, gold when the relay holds it */
     const cw = R(G.crack[1] - G.crack[0]); g.fillStyle = '#04080e'; g.fillRect(R(G.crack[0] - cx), R(G.floor - cy), cw, 3); g.fillStyle = S.ph === 2 ? (CG.relaying(S) ? '#ffb050' : '#9a7ad8') : '#3a9a92'; g.fillRect(R(G.crack[0] - cx), R(G.floor - cy), cw, 1);
-    if (e && e.mode === 'swarm') { for (let i = 0; i < 12; i++) { const sx = R(G.crack[0] + ((i * 29 + time * 50) % (G.crack[1] - G.crack[0])) - cx), sy = R(G.floor - 4 - ((i * 7 + time * 40) % 22) - cy); g.fillStyle = '#2a1e50'; g.fillRect(sx, sy, 4, 3); g.fillStyle = '#ff5a5a'; g.fillRect(sx + 3, sy + 1, 1, 1); } }
   };
   /* IT: the body, drawn by src/redraw/glass_colossus_art.js; its cracks by state */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
@@ -117,8 +111,12 @@ export function makeColossusHands(ctx) {
       if (e.mode === 'lanceTell') { g.fillStyle = blink; for (let x = Math.min(x0, x1); x < Math.max(x0, x1); x += 6) g.fillRect(x, y, 3, 1);
         g.strokeStyle = blink; g.beginPath(); g.moveTo(x1 - 5, y - 6); g.lineTo(x1 + 5, y + 4); g.moveTo(x1 + 5, y - 6); g.lineTo(x1 - 5, y + 4); g.stroke();
         if (S.lance.end.mirror >= 0) ctx.text('THE MIRROR', x1, y - 14, '#ffd36b', 'center', 5); }
-      if (e.mode === 'lance' && S.lance.end.mirror >= 0) bounce(S.lance.end.mirror, 1);
-      else { g.fillStyle = 'rgba(255,240,180,0.55)'; g.fillRect(Math.min(x0, x1), R(G.floor - COL.lanceBand[0] - cy), Math.abs(x1 - x0), COL.lanceBand[0] - COL.lanceBand[1]); g.fillStyle = '#fffbe0'; g.fillRect(Math.min(x0, x1), y - 1, Math.abs(x1 - x0), 3); } }
+      /* (claude/colossus3) the tell's charge: a sun gathering at its chest, growing over the (longer) windup - and the words */
+      if (e.mode === 'lanceTell') { const k = Math.max(0, Math.min(1, 1 - e.modeT / (S.ph === 3 ? COL.lanceTell3 : COL.lanceTell))), r = 2 + R(7 * k); g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,236,170,0.55)'; g.beginPath(); g.arc(x0, R(G.hipY - 20 - cy), r + 3, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fffbe0'; g.beginPath(); g.arc(x0, R(G.hipY - 20 - cy), r, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = 'source-over';
+        ctx.text('!! SUN LANCE: A MIRROR, OR JUMP IT', x0 + S.lance.dir * 70, y - 34, '#ff6b6b', 'center', 6); }
+      /* the BOLT travelling out along the floor (its head, and the lanceLen px behind it that burn) */
+      if (e.mode === 'lance') { const far = Math.abs(S.lance.end.x - G.cx), hd = Math.min(S.lance.head || 0, far), tl = Math.max(0, (S.lance.head || 0) - COL.lanceLen), a = R(G.cx + S.lance.dir * tl - cx), b = R(G.cx + S.lance.dir * hd - cx);
+        if (tl < far) { g.fillStyle = 'rgba(255,240,180,0.55)'; g.fillRect(Math.min(a, b), R(G.floor - COL.lanceBand[0] - cy), Math.abs(b - a), COL.lanceBand[0] - COL.lanceBand[1]); g.fillStyle = '#fffbe0'; g.fillRect(Math.min(a, b), y - 1, Math.abs(b - a), 3); g.fillRect(b - 2, R(G.floor - COL.lanceBand[0] - 2 - cy), 4, COL.lanceBand[0] - COL.lanceBand[1] + 4); } } }
     for (const r of S.rings) { const x = R(r.x - cx), y = R(G.floor - cy); g.fillStyle = '#9ae8d0'; for (let i = 0; i < 4; i++) g.fillRect(x - 6 + i * 4, y - 4 - (i % 2) * 6, 2, 4 + (i % 2) * 6); }
     for (const m of S.marks) { const x = R(m.x - cx), y = R(m.y - 2 - cy); g.fillStyle = e.mode === 'shardTell' ? blink : '#9ae8d0'; g.fillRect(x - COL.shardR, y, COL.shardR * 2, 2);
       if (e.mode === 'shardTell') { const k = Math.max(0, e.modeT / COL.shardTell); g.fillStyle = '#e8fff8'; g.fillRect(x - 2, R(y - 60 * k - 8), 4, 6); } }
@@ -132,6 +130,12 @@ export function makeColossusHands(ctx) {
     if (S.sweep && S.sweep.live) { const x = R(S.sweep.x - cx), y = R(G.floor - cy), d = S.sweep.dir, ax = R(G.cx + d * 44 - cx);
       g.fillStyle = '#5cc8b4'; g.fillRect(Math.min(x, ax), y - 12, Math.abs(ax - x), 4); g.fillStyle = '#b4f4de'; g.fillRect(Math.min(x, ax), y - 12, Math.abs(ax - x), 1);
       for (let i = 0; i < 5; i++) { const sx = x - d * (i * 4) - 2, h = COL.sweepH - (i % 2) * 6; g.fillStyle = i % 2 ? '#7adcc4' : '#e8fff8'; g.fillRect(sx, y - h, 3, h); } }
+    /* (claude/colossus3) THE CRACK LINE: the amber glow runs out along the floor from its foot to past where you stood (the tell), then the spikes erupt along it */
+    if (S.crack && e.mode === 'crackTell') { const K = S.crack, k = Math.max(0, Math.min(1, 1 - e.modeT / COL.crackTell)), xa = R(K.from - cx), xe = R(K.to - cx), xg = R(K.from + (K.to - K.from) * Math.min(1, k * 1.6) - cx), y = R(G.floor - cy);
+      g.fillStyle = 'rgba(255,176,80,0.35)'; g.fillRect(Math.min(xa, xe), y - 3, Math.abs(xe - xa), 3); g.fillStyle = Math.floor(time * 12) % 2 ? '#ffb050' : '#fff0c8'; g.fillRect(Math.min(xa, xg), y - 2, Math.abs(xg - xa), 2);
+      g.fillStyle = '#ff6b6b'; g.fillRect(xe - 1, y - 14, 3, 12); ctx.text('!! CRACK LINE: JUMP OR STEP ASIDE', R((K.from + K.to) / 2 - cx), y - 30, '#ffb050', 'center', 6); }
+    if (S.crack && e.mode === 'crack' && S.crack.front != null) { const K = S.crack, y = R(G.floor - cy), f = (K.front - K.to) * K.dir > 0 ? K.to : K.front;
+      for (let x = K.from; (f - x) * K.dir >= 0; x += K.dir * 6) { const age = Math.abs(f - x) / COL.crackV, h = age < COL.crackHot ? COL.crackH - R(age * 20) : Math.max(0, R(10 - (age - COL.crackHot) * 30)); if (h <= 0) continue; const sx = R(x - cx); g.fillStyle = age < COL.crackHot ? '#e8fff8' : '#7adcc4'; g.fillRect(sx - 1, y - h, 3, h); g.fillStyle = '#ffb050'; g.fillRect(sx - 1, y - 1, 3, 1); } }
     /* THE GLASS QUAKE: the marked plates (!! red and white) heave; after, the slick tilted shards with the way they slide you */
     if (e.mode === 'quakeTell') { const k = Math.max(0, Math.min(1, 1 - e.modeT / COL.quakeTell)); for (const p of S.plates) { const x = R(p.x - cx), y = R(G.floor - cy); g.fillStyle = blink; g.fillRect(x - COL.quakeW, y - 2, COL.quakeW * 2, 2); g.fillRect(x - COL.quakeW, y - 2 - R(4 * k), 2, R(4 * k)); g.fillRect(x + COL.quakeW - 2, y - 2 - R(4 * k), 2, R(4 * k)); }
       if (S.plates.length) ctx.text('!! OFF THE PLATES', R(S.plates[0].x - cx), R(G.floor - 30 - cy), '#ff6b6b', 'center', 6); }

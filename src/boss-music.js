@@ -33,8 +33,10 @@
 //                ':p2' (the well shaft) quicker with the motif an octave up, ':p3' (the flood) adds the water: a surge and drips.
 //   'djinn'      THE DJINN OF THE GREAT WELL (claude/underwell, his own theme - the Queen has hers back in the Underwell). D Hijaz, 4/4 at 100, 16 bars = 38 s:
 //                a D drone, a doumbek's maqsum, the wind in the well, a breathy ney; ':p2' (fire) quicker, the ney up an octave, crackles; ':p3' (flood) the water.
+//   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
+//                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { lanterneater: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -341,7 +343,7 @@ function cisternqueen(i, delay, variant, env) {
 // next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
 // PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
 // sweeps up under the stop (rising noise and a saw sliding up an octave).
-export const BOSS_PHASE = { gorgecrab: 1, matriarch: 1 };
+export const BOSS_PHASE = { gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1 };
 const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
 const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
 const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
@@ -401,6 +403,24 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
+// (THE BANDIT KSAR has no synth bed: 'Desert Loop' by iamoneabe is its file, claude/ksar art pass; THE HAWK-MISTRESS below keeps her composed theme)
+// ---------------------------------------------------------------- THE HAWK-MISTRESS (claude/ksar, her composed theme: three phases)
+// D Phrygian dominant (D Eb F# G A Bb C), 4/4 at 100 (eighth = 0.3 s), 16 bars = 38 s. THE DUEL: a frame drum (a bendir: dum on 1 and the and of 2, a slap on
+// 4), a D-A drone, a reedy ZURNA lead (a narrow square through a lowpass, a scoop into every note) on a hunting figure, and a WHIP CRACK (a bright noise snap)
+// on the last eighth of every second bar. 'hawkmistress:p2' HER GUARD: the GONG every second bar (low inharmonic sines) and a second drum doubling the dum.
+// 'hawkmistress:p3' THE STORE BURNS: quicker (eighth 0.25 s), the zurna an octave up, fire crackling on the off-beats and a low boom every fourth bar.
+const HMM_STEP = 60 / 100 / 2, HMM_STEP3 = 60 / 120 / 2, HMM_LEN = 8, HMM_BARSN = 16;
+const HMM_LEAD = [['D5', '-', 'Eb5', 'F#5', 'G5', '-', 'F#5', 'Eb5'], ['D5', '-', '-', 'A4', 'Bb4', 'A4', 'G4', '-'], ['F#4', 'G4', 'A4', '-', 'Bb4', '-', 'A4', 'G4'], ['F#4', '-', 'Eb4', '-', 'D4', '-', '-', '-']];
+function hawkmistress(i, delay, variant, env) {
+  const guard = variant === 'p2', burn = variant === 'p3', step = burn ? HMM_STEP3 : HMM_STEP, bar = Math.floor(i / HMM_LEN), s = i % HMM_LEN, second = bar >= 8, g = env.gain;
+  if (s === 0 && bar % 2 === 0) { pluck(env, 'sine', nf('D2'), step * HMM_LEN * 2 * 0.95, 0.3 * g, delay, { to: nf('D2') * 0.995 }); held(env, 'sawtooth', nf('A2'), step * HMM_LEN * 2 * 0.95, 0.03 * g, delay, { lp: 420, att: step * 3, hold: 0.6, det: 10 }); }
+  if (s === 0 || s === 3) pluck(env, 'sine', 96, 0.26, 0.42 * g, delay, { to: 50 }); if (s === 6) noise(env, 0.05, 0.12 * g, 2400, 1.4, delay);   /* the bendir */
+  if ((guard || burn) && (s === 0 || s === 4)) pluck(env, 'sine', 120, 0.18, 0.22 * g, delay + step / 2, { to: 60 });
+  if (s === 7 && bar % 2 === 1) noise(env, 0.03, 0.14 * g, 6400, 4, delay + step * 0.4);   /* the whip */
+  if (guard && s === 0 && bar % 2 === 0) for (const [f, v] of [[110, 0.14], [158, 0.06], [262, 0.035]]) pluck(env, 'sine', f, 2.4, v * g, delay, { to: f * 0.985 });   /* her gong */
+  if (burn) { if (s % 2 === 1) noise(env, 0.02, 0.06 * g, 7400, 3, delay); if (s === 0 && bar % 4 === 0) pluck(env, 'sine', 58, 0.9, 0.5 * g, delay, { to: 30 }); }
+  const c = HMM_LEAD[bar % 4][s]; if (c !== '-') { const f = nf(c) * (burn || second ? 2 : 1) * (burn && second ? 0.5 : 1); held(env, 'square', f, step * 1.7, 0.035 * g, delay, { lp: 1800, att: 0.02, hold: 0.55, from: 0.94 }); }
+}
 // (THE GLASS SEA has no synth bed: "Eastern Arctic Dubstep" by VishwaJai is its file, claude/glasssea art pass; THE GLASS COLOSSUS below keeps his composed theme)
 // ---------------------------------------------------------------- THE GLASS COLOSSUS (claude/glasssea, its composed theme: the brief's three phases)
 // B minor (B C# D E F# G A), 4/4 at 84 (eighth = 0.36 s), 16 bars = 46 s. DUSK: a slow GLASSY CHIME OSTINATO (sine bells, B - F# - D - F# - E - D - C# - F#)
@@ -422,8 +442,37 @@ function colossus(i, delay, variant, env) {
       held(env, 'sawtooth', n, step * 3.6, 0.07 * g, delay, { lp: second ? 2600 : 1900, att: 0.04, hold: 0.6, det: 11, from: 0.96 }); held(env, 'square', n * 0.5, step * 3.6, 0.025 * g, delay, { lp: 1100, att: 0.04, hold: 0.5 }); } }
 }
 
+// ---------------------------------------------------------------- THE LANTERN-EATER (claude/lanterneater): A minor with the flat second (A Phrygian:
+// A Bb C D E F G), 4/4 at 84 (eighth = 0.357 s), 16 bars = 46 s. Under the water: a slow HEARTBEAT (a deep thump on one and the 'and' of two) and a
+// low drone that never resolves. Over it THE LURE: a glassy two-note pendulum (E5 - F5, the flat second rubbing) that SWAYS steadily back and forth,
+// bar after bar - the lure's own motion - and DRIPS off the raft on the off-beats. The bass creeps up the Phrygian steps and falls back. The second
+// half answers the lure with a low reedy line. BOSS_PHASE.lanterneater (its hands set it): 2 = it surfaces (a clack of teeth on the off-beats, the
+// bass doubled); 3 = the lamps are snuffed (the lure's pendulum drops out to every other bar, the drone opens an octave down, the heartbeat quickens).
+const LEM_STEP = 60 / 84 / 2, LEM_LEN = 8, LEM_BARSN = 16;
+const LEM_BASS = [['A1', 'A1', 'Bb1', 'A1'], ['C2', 'Bb1', 'A1', 'G1'], ['F1', 'G1', 'A1', 'Bb1'], ['A1', 'G1', 'F1', 'E1']];
+const LEM_LINE = [['A3', 'C4', 'Bb3', 'A3'], ['G3', 'Bb3', 'A3', 'F3'], ['E3', 'F3', 'G3', 'A3'], ['Bb3', 'A3', 'G3', 'E3']];
+function lanterneater(i, delay, variant, env) {
+  const bar = Math.floor(i / LEM_LEN), s = i % LEM_LEN, g = env.gain, ph = BOSS_PHASE.lanterneater || 1, second = bar >= 8, dark = ph >= 3;
+  // THE HEARTBEAT under the water: a deep thump on one and the 'and' of two (quickened in the dark: on five as well)
+  if (s === 0 || s === 3 || (dark && s === 5)) { pluck(env, 'sine', s === 0 ? 70 : 82, 0.34, (s === 0 ? 0.8 : 0.55) * g, delay, { to: 34 }); noise(env, 0.08, 0.08 * g, 180, 0.6, delay); }
+  // THE DRONE: A, with the flat second rubbing in every fourth bar; in the dark an octave lower and wider
+  if (s === 0 && bar % 2 === 0) { const r = bar % 4 === 2 ? 'Bb1' : 'A1', f = nf(r) * (dark ? 0.5 : 1); held(env, 'sawtooth', f * 2, LEM_STEP * LEM_LEN * 2 * 0.95, 0.04 * g, delay, { lp: dark ? 260 : 380, att: 0.5, hold: 0.7, det: dark ? 16 : 9 }); }
+  // THE BASS creeps up the Phrygian steps and falls back (doubled an octave up when it has surfaced)
+  if (s % 2 === 0) { const n = LEM_BASS[bar % 4][s / 2]; pluck(env, 'triangle', nf(n), LEM_STEP * 1.6, 0.2 * g, delay, { lp: 500 }); if (ph === 2) pluck(env, 'sawtooth', nf(n) * 2, LEM_STEP * 0.8, 0.06 * g, delay, { lp: 900 }); }
+  // THE LURE: a glassy pendulum E5 - F5, swaying, steady (in the dark only every other bar: it comes only to a light)
+  if ((s === 1 || s === 5) && (!dark || bar % 2 === 0)) { const n = s === 1 ? 'E5' : 'F5'; pluck(env, 'triangle', nf(n), LEM_STEP * 2.4, 0.07 * g, delay); pluck(env, 'sine', nf(n) * 2, LEM_STEP * 1.2, 0.025 * g, delay); }
+  // DRIPS off the raft on the off-beats
+  if (s === 2 || s === 7) pluck(env, 'sine', [1760, 1568, 1976, 1397][(bar + s) % 4], 0.09, 0.05 * g, delay, { to: 900 });
+  // THE SECOND HALF: a low reedy line answers the lure
+  if (second && s % 2 === 0) held(env, 'sawtooth', nf(LEM_LINE[bar % 4][s / 2]), LEM_STEP * 1.8, 0.035 * g, delay, { lp: 1100, att: 0.06, hold: 0.55, det: 7, from: 0.97 });
+  // IT HAS SURFACED: a clack of teeth on the off-beats
+  if (ph === 2 && (s === 3 || s === 7)) noise(env, 0.04, 0.14 * g, 3200, 1.2, delay);
+}
+
 export const SYNTH_BOSS = {
+  lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
+  hawkmistress: { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) the greybox level bed and her theme */
   djinn: { step: DJM_STEP, total: DJM_LEN * DJM_BARSN, play: djinn },
   cisternqueen: { step: CQM_STEP, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
   gorgecrab: { step: GCM_STEP, total: GCM_LEN * GCM_BARSN, play: gorgecrab },
@@ -436,6 +485,7 @@ export const SYNTH_BOSS = {
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
+  'hawkmistress:p2': { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress }, 'hawkmistress:p3': { step: HMM_STEP3, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) her guard, the store burning */
   'colossus:p2': { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, 'colossus:p3': { step: COM_STEP3, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) its night and its dawn */
   'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking },
   'cisternqueen:p2': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen }, 'cisternqueen:p3': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen },

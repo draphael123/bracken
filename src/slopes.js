@@ -216,12 +216,12 @@ export function footSlope(tileAt, b) { const sl = slopeInColumn(tileAt, b.x, b.y
    slideStep(s, dt, {kind, ground, down, move}) -> mutates s = { vx, sliding, carry } and returns it. `kind` is the slope
    under the foot (0 on flat). The caller skips its own walk/friction for the frame while s.sliding or s.carry is set. */
 export const SLIDE = { acc: 700, maxSteep: 180, maxGentle: 140, flatFric: 150, airFric: 50, endSpeed: 60 };   /* tuned in tools/slopes.mjs: the leap out of a steep slide ~+70% on a full-run jump, not a new traversal verb */
-export function slideStep(s, dt, { kind, ground, down, jumped }) {
+export function slideStep(s, dt, { kind, ground, down, jumped, keep }) {   /* keep (claude/slickslope): a multiplier on the hill's top speed up to which a speed the hill did not give (THE GLASS SEA's slick glass, src/glass-sea-hands.js) is KEPT, not bled; 1 = every other level, unchanged */
   if (ground && kind && down) {
     const dirDown = -slopeRise(kind), max = slopeGrade(kind) === 1 ? SLIDE.maxSteep : SLIDE.maxGentle;
     if (!s.sliding) { s.sliding = true; if (Math.sign(s.vx) === -dirDown) s.vx *= 0.3; }   // pressing down while climbing turns you round
-    const was = Math.abs(s.vx); s.vx += dirDown * SLIDE.acc * slopeGrade(kind) * dt;
-    if (Math.abs(s.vx) > max) s.vx = Math.sign(s.vx) * (was <= max ? max : Math.max(max, was - 400 * dt));   // the hill's own top speed; anything faster (a gust, a carpet) bleeds down to it
+    const was = Math.abs(s.vx), ceil = max * Math.max(1, keep || 1); s.vx += dirDown * SLIDE.acc * slopeGrade(kind) * dt;
+    if (Math.abs(s.vx) > max) s.vx = Math.sign(s.vx) * (was <= max ? max : was <= ceil ? was : Math.max(ceil, was - 400 * dt));   // the hill's own top speed; anything faster (a gust, a carpet) bleeds down to it (to the ceiling a slick floor keeps)
     s.carry = false;
   } else if (s.sliding && ground && !kind) {   // off the foot of the hill: the flat takes it back slowly
     const sg = Math.sign(s.vx); s.vx -= sg * SLIDE.flatFric * dt; if (Math.sign(s.vx) !== sg) s.vx = 0;

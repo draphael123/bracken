@@ -22,16 +22,17 @@ import { LEVELS } from '../src/level.js';
 import { pacing } from './pacing.mjs';
 import { THIN, CHECK_DROP, CHECK_PIN } from '../src/checkpoint-thin.js';
 
-import { MAX, MIN, judgeLevel } from './checkpoint-rule.mjs';
+import { MAX, MIN, judgeLevel, A10B, judgeLevelA10b } from './checkpoint-rule.mjs';
 export { MAX, MIN };
 const KNOWN = new Map([
 ]);
-const bad = [], stale = [], rows = []; let total = 0;
+const bad = [], stale = [], rows = [], a10b = []; let total = 0;
 for (const lv of LEVELS) {
   if (lv.hidden && !lv.secret) continue;
   let r; try { r = pacing(lv); } catch (e) { bad.push(lv.id + ': the route could not be measured (' + e.message + ')'); continue; }
   const s = r.stats, j = judgeLevel(lv, r);
   rows.push([lv.id, j.worst]); total += s.checksTotal;
+  if (!lv.hidden && !/^(trial|shop|custom)/.test(lv.id)) { const k = judgeLevelA10b(lv, r); if (k.miss.length) a10b.push(lv.id + ' (' + k.count + ' shrines, gaps ' + k.gaps.join('/') + '): ' + k.miss.join('; ')); }   /* A10b, REPORT-ONLY (survival2) */
   if (j.bad.length && !KNOWN.has(lv.id)) bad.push(lv.id + ' (' + s.checksOnRoute + '/' + s.checksTotal + ' checkpoints on the route):\n      ' + j.bad.join('\n      '));
   if (!j.bad.length && KNOWN.has(lv.id)) stale.push(lv.id + ': now passes - delete its KNOWN line in tools/checkpoint-gaps.mjs');
 }
@@ -39,6 +40,8 @@ for (const lv of LEVELS) {
 { THIN.off = true; const gone = []; try { for (const lv of LEVELS) { if (!CHECK_DROP[lv.id] && !CHECK_PIN[lv.id]) continue; const have = lv.build().ents.filter(e => e.t === 'check'); for (const [x, y] of [...(CHECK_DROP[lv.id] || []), ...(CHECK_PIN[lv.id] || [])]) if (!have.some(e => e.x === x && e.y === y)) gone.push(lv.id + ' @' + x + ',' + y); } } finally { THIN.off = false; }
   for (const id of [...Object.keys(CHECK_DROP), ...Object.keys(CHECK_PIN)]) if (!LEVELS.some(l => l.id === id)) gone.push(id + ' (no such level)');
   assert.equal(gone.length, 0, gone.length + ' CHECK_DROP/CHECK_PIN entr(y/ies) name no checkpoint (rerun node tools/checkpoint-thin.mjs --write for a drop; a pin is hand-edited): ' + gone.join(', ')); }
+/* A10b (Daniel 10-07): REPORT-ONLY - the level sweep enforces it level by level. Never fails. */
+console.log('A10b REPORT-ONLY (shrines ~' + A10B.min + '-' + A10B.max + ' route tiles apart, ~1 a section + 1 before the boss): ' + a10b.length + ' level(s) miss' + (a10b.length ? ':\n  ' + a10b.join('\n  ') : ''));
 for (const [id, why] of KNOWN) console.log('  known  ' + id.padEnd(8) + why);
 assert.equal(stale.length, 0, 'a KNOWN level no longer needs its entry:\n  ' + stale.join('\n  '));
 assert.equal(bad.length, 0, bad.length + ' level(s) break the checkpoint rule (one per section: at most ' + MAX + ' route tiles apart, at least ' + MIN + ', one before every door):\n  ' + bad.join('\n  '));

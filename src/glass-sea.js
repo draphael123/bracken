@@ -121,10 +121,14 @@ export function buildGlassSea({ painter, T, TS }) {
   bed('spireStair', 115, B - 2, [...span(110, 112, B - 3), ...span(112, 113, B - 6), ...span(113, 114, B - 9)], { label: 'THE SPIRE STAIR' });
   glassS(122, B - 1, 'fieldScorp'); skiff(126, B - 1);                                         /* in the spire mirror's beam row: a beam on it dazzles it (taught once) */
   sign(105, B - 1, 'A BEAM ON GLASS DAZZLES IT.');
-  /* THE SLIDE GAP (TEST, REQUIRED): up a gentle glass rise, then a steep slick run down and over the crack - slide (hold down) and leap at the foot */
-  { let t = rise(128, B, 3, true); ground(134, 136, t); t = fall(137, t, 5, false);   /* 137-141 down to row 36 */
-    ground(142, 142, t); crack('slideGap', 143, 147, t); ground(148, 160, t - 1); }
-  sign(135, B - 4, 'GLASS SLOPES ARE SLICK. HOLD DOWN TO SLIDE; LEAP AT THE FOOT.');   /* (fix pass) on the crest itself, where the slick run starts */
+  /* THE SLIDE GAP (TEST, REQUIRED): up a steep glass dune, then a LONG steep slick run down and over the crack - slide (hold down) and leap at the foot.
+     (claude/slickslope, Daniel 10-07 on the geomancer: "this jump can't be beat") the run was five tiles off a gentle rise and the slide-jump landed on the far lip with
+     nothing spare; now the dune climbs five rows steep and the slide runs seven, and the slick glass KEEPS what the long slide builds (glass-sea-hands slideKeep): every
+     hero clears it by more than a tile from the foot, and a plain running jump still falls in (tools/glasssea-slide.mjs, per hero, real keys). The crack, the foot and
+     the landing did not move */
+  { let t = rise(128, B, 5, false); ground(133, 134, t); t = fall(135, t, 7, false);   /* 128-132 up to row 29; the crest 133-134; 135-141 down to row 36 */
+    ground(142, 142, t); crack('slideGap', 143, 147, t, { soft: true }); ground(148, 160, t - 1); }   /* (claude/slickslope) SOFT: the gap is the slide's teach (A4/A10): a fall puts you back on the lip with no blow */
+  sign(134, B - 6, 'GLASS SLOPES ARE SLICK. HOLD DOWN TO SLIDE; LEAP AT THE FOOT.');   /* (fix pass) on the crest itself, where the slick run starts */
   block(150, 155, B - 5, B - 5); decor.push({ kind: 'spire', x: 152, y: B, top: B - 5 });   /* shade on the landing */
   upS(161, B + 1); ground(162, 195, B);
   vulture(186, B - 8, 'fieldVult'); skiff(168, B - 1); ent('check', 165, B - 1);   /* CHECKPOINT ONE, past the slide gap (the crossing's fight is its stretch) */

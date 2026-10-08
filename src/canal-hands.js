@@ -10,6 +10,7 @@ import { duckBox, duckClears } from './duck.js';
 import { beamHit } from './chase.js';
 import * as CTL from './redraw/canal_tiles.js';
 import * as CP from './redraw/canal_props.js';
+import * as LEA from './redraw/lanterneater_art.js';   /* (the Lantern-Eater's glimpsed lures) */
 import * as CT4 from './redraw/canal_tunnel.js';   /* (claude/canal4art) the legging tunnel's art */
 import { CANAL_NUDGE } from './hint-lines.js';
 import { NUDGE as SG_NUDGE, stallTick, drawGlint as glintAt } from './stuck-guide.js';   /* (claude/stuckfix: the glint and the 10 s stall clock are the shared module's now) */
@@ -26,7 +27,7 @@ export function canalTile(t, x, y, at, T, L) { const D = L.canal; if (!D) return
 export function canalReset(H) {
   const L = H.L(); if (!L || !L.canal) return null;
   const D = L.canal, T = H.T;
-  const st = R.newCanal(D); st.D = D; st.told = {}; st.props = []; st.beamCd = 0; st.hold = null; st.eyes = D.eyes || [];
+  const st = R.newCanal(D); st.D = D; st.told = {}; st.props = []; st.beamCd = 0; st.hold = null; st.lures = D.lures || [];
   st.brights = (D.weeds || []).filter(w => w[3] === 'bright').map(([x0, x1, row]) => ({ x0, x1, row, t: 0, gone: 0 }));   /* BRIGHT WEED: a floor for RIG.weedHold s, then water */
   /* WHERE SHE WAITS: the mooring of the checkpoint the hero wakes at (the start's, if none) - and the locks and bridges as they stood when he lit it */
   const cp = H.checkpoint(), cpT = cp ? [Math.floor(cp.x / TS), Math.floor(cp.y / TS) - 1] : null;
@@ -190,6 +191,8 @@ export function canalUpdate(st, H, dt) {
   st.carriers = H.enemies().filter(e => e.alive && e.lamplighter).map(e => ({ x: e.x, y: e.y }));
   // ---- (claude/canalfix, UPGRADE C) THE BOARDING GANG: held at the fog wall with a hero aboard or beside her, a skiff comes out of the fog and they board ----
   gangStep(st, H, dt, b, m);
+  jennysWater(st, H);   /* (claude/canal6) a man in the canal is drowned; an elite is put back at his post */
+  foremanStep(st, H, dt, b);   /* (claude/canal6) the deck foreman is never left behind his own door */
   for (const pr of st.props) if (pr.flash > 0) pr.flash -= dt;
   // ---- THE BRIGHT WEED: stood on, it holds a moment and gives; empty, it knits together again ----
   for (const w of st.brights) { const x0 = w.x0 * TS, x1 = (w.x1 + 1) * TS, top = w.row * TS; let on = false;
@@ -253,7 +256,7 @@ export function holdTarget(st) {
 function clarity(st, H, dt) {
   /* (claude/jenny3, Daniel 10-05 "thought it was sluices/water"): in JENNY GREENTEETH's lock the barge's nudges are not the fight - "THE GATE IS SHUT:
      FIND ITS PADDLE" came up over her stranding. A hero in her lock hears only her lines (src/jenny-greenteeth.js) */
-  { const ar = H.L().arena; let inLock = false; if (ar && ar.boss === 'greenteeth') H.eachHero(P => { if (!P.dead && P.x > ar.x0 - 32 && P.x < ar.x1 + 32) inLock = true; }); if (inLock) { st.glint = null; return; } }
+  { const ar = H.L().arena; let inLock = false; if (ar && ar.boss === 'lanterneater') H.eachHero(P => { if (!P.dead && P.x > ar.x0 - 32 && P.x < ar.x1 + 32) inLock = true; }); if (inLock) { st.glint = null; return; } }
   const b = st.barge, tg = holdTarget(st) || tunnelTarget(st, H), C = st.stall = st.stall || { key: null, t: 0, best: 1e9, said: -1 }; st.glint = tg;
   /* HER LANTERN SWINGS TO IT (src/redraw/canal_props.js drawBarge reads st.lampAng): toward what holds her, or a slow sway */
   const want = tg ? Math.max(-0.55, Math.min(0.55, -(tg.prop.x - (b.x + 12)) / 220)) : Math.sin(st.clock * 1.3) * 0.06; st.lampAng = (st.lampAng || 0) + (want - (st.lampAng || 0)) * Math.min(1, dt * 3);
@@ -336,6 +339,50 @@ function gangStep(st, H, dt, b, m) {
     if (e.onDeck) { e.x += b.x - (e.lastB ?? b.x); e.lastB = b.x; e.x = Math.max(b.x + 6, Math.min(b.x + b.w - 6, e.x)); e.y = b.y; e.vy = 0; }
   }
 }
+/* (claude/canal6, Daniel 10-07: "little enemies get stuck on the bottom that you can't see") JENNY'S WATER TAKES WHAT FALLS IN. A man who walked or was
+   knocked off a ledge into the canal used to land on its BED, five rows under the surface, and walk there for the rest of the attempt: under the water and
+   the barge, drawn behind the water's murk, out of every blade's reach (the stop-planks' bargee, on most runs a warden knocked him off). The game's own rule
+   for deep water (hazardFoe: DROWNED) only ran on a body still in its throw, so one that WALKED off, or whose throw had run out over the ledge, was never
+   asked. Now every frame: a foe of the land (not the brood - the grindylow lives there and the wisp floats; not a boarder pinned to her deck; no boss) whose
+   feet are under canal water is DROWNED, told, at once. An ELITE is not drowned by a misstep: he is put back at his post (the leash's own return, at
+   once instead of 1.5 s later), so the gate he holds always has him where a hero can reach him */
+const LAND = e => e.alive && !e.noGrav && !e.maxHp && !e.mini && !F.CANAL_FOES.has(e.t) && !e.boarder && !e.harmless;
+export const inCanalWater = (H, e) => (H.L().pools || []).find(p => p.canal && !p.shallow && !p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6 && (p.bottom === undefined || e.y <= p.bottom + 8)) || null;
+function jennysWater(st, H) {
+  for (const e of H.enemies()) { if (!LAND(e)) continue; const p = inCanalWater(H, e); if (!p) continue;
+    if (e.elite && e.home) { H.smoke(e.x, p.y); H.sfx.splash && H.sfx.splash(); e.x = e.home.x; e.y = e.home.y; e.vx = 0; e.vy = 0; e.knock = 0; e.kvx = 0; e.kvy = 0; e.leashT = 0; H.smoke(e.x, e.y - 8); H.mark(e, 'BACK AT HIS POST', '#ffd36b'); continue; }
+    H.drown(e); }
+}
+/* (claude/canal6, Daniel 10-07: "you can get softlocked if you don't defeat the elite") THE DECK FOREMAN IS NEVER LEFT BEHIND. His elite gate shuts the
+   corridor to Jenny's door until he is down - and he stands on the island, which the barge passes UNDER. A hero who rode her past him (or lured him over the
+   bridge and swung it on him) came up the basin lock to a shut door with nothing behind him but the lock's walls and its water: no way back to the island,
+   the attempt over. Now: with her in the lock under his door and a hero there with her, a living foreman will not let her go - a told leap (!!, a crouch,
+   then the long jump) from wherever he stands ONTO HER DECK, and he fights there, pinned to her as the boarding gang is (a throw cannot put him off her;
+   his post is her deck now, so the leash and Jenny's water put him back on it). His door still opens only when he is down. The island fight stays the
+   way the exam asks for (in the dark, before the horn): this is the hand that never lets the route depend on where he wandered */
+const FM = { tell: 0.6, fly: 0.9, arc: 70, end: 22 };   /* end: he keeps this far in from her ends, so there is deck behind him to go round to (his guard is by angle) */
+function foremanStep(st, H, dt, b) {
+  if (!b) return; const S = H.sfx;
+  for (const e of H.enemies()) { if (!e.alive || !e.elite || !e.bargee || e.gate === undefined) continue;
+    if (e.cnDeck) { e.x += b.x - (e.lastB ?? b.x); e.lastB = b.x; e.x = Math.max(b.x + FM.end, Math.min(b.x + b.w - FM.end, e.x)); e.y = b.y; e.vy = 0; if (e.knock > 0) { e.kvx = 0; e.kvy = Math.min(e.kvy || 0, 0); }
+      e.home = { x: e.x, y: b.y }; continue; }   /* ON HER DECK: pinned to her (claude/canalfix's boarders), his post wherever he stands on it */
+    const lk = st.reaches[R.reachAt(st, (e.gate - 3) * TS)]; if (!lk) continue;   /* the lock under his door */
+    const x0 = lk.x0 * TS, x1 = (lk.x1 + 1) * TS, mid = b.x + b.w / 2;
+    if (e.cnLeap) { const J = e.cnLeap; J.t += dt; e.vx = 0; e.vy = 0; e.elT = Math.max(e.elT || 0, 0.8); e.cd = Math.max(e.cd || 0, 0.6);
+      if (J.t < FM.tell) { e.x = J.x0; e.y = J.y0; continue; }   /* the crouch: told */
+      const u = Math.min(1, (J.t - FM.tell) / FM.fly), tx = b.x + J.bx;
+      e.x = J.x0 + (tx - J.x0) * u; e.y = J.y0 + (b.y - J.y0) * u - Math.sin(u * Math.PI) * FM.arc;
+      if (u >= 1) { e.cnLeap = null; e.cnDeck = true; e.lastB = b.x; e.y = b.y; e.home = { x: e.x, y: b.y }; H.dust(e.x, e.y, 8); S.thud && S.thud(); H.shake(1.5); H.mark(e, 'ABOARD', '#ff6b6b'); }
+      continue; }
+    if (!(mid > x0 && mid < x1)) continue;
+    let here = null; H.eachHero(P => { if (!P.dead && P.x > x0 - 8 && P.x < e.gate * TS) here = P; }); if (!here) continue;   /* a hero up the lock with her, short of the door */
+    if (e.x > x0 && e.x < x1 && Math.abs(e.y - b.y) < 6) { e.cnDeck = true; e.lastB = b.x; continue; }   /* (already on her) */
+    if (e.knock > 0 || e.carried > 0 || e.pinned > 0 || e.broken > 0 || e.elBack) continue;   /* busy: the moment he is free */
+    const bx = here.x > mid ? FM.end : b.w - FM.end;   /* her far end from the hero */
+    e.cnLeap = { t: 0, x0: e.x, y0: e.y, bx }; e.home = { x: b.x + bx, y: b.y }; e.leashT = 0; e.vx = 0; e.vy = 0;
+    H.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.charge && S.charge();
+    hint(st, H, 'foreman', 'THE DECK FOREMAN WILL NOT LET HER GO: HE LEAPS ABOARD. HIS DOOR OPENS WHEN HE IS DOWN.'); }
+}
 /* IS (x, y) LIT: out of the fog, in air a horn has cleared, or in a lantern's light */
 export const litAt = (st, x, y) => !st || R.litAt(st, x, y);
 export const clearedAt = (st, x, y) => !!st && R.fogAt(st, x, y).some(f => f.fade < 0.3);
@@ -396,7 +443,7 @@ export function drawCanal(st, g, H, cx, cy, VW, VH, time) {
   if (st.gang && st.gang.skiff) { const sk = st.gang.skiff, sx = sk.x - cx; if (sx > -40 && sx < VW + 40) CP.drawSkiff(g, sx, st.barge.y - cy + 2, time); }
   // ---- JENNY'S LOCK, dressed: weed in curtains, slime, the sunken narrowboat that is her lair (src/redraw/canal_props.js) ----
   if (L.lockArena) CP.drawLair(g, L.lockArena, cx, cy, VW, VH, time);
-  // ---- JENNY'S SIGNS, cheap and told: a child's shoe on a lock step, bubbles by the bank where nothing lives ----
+  // ---- THE BASIN'S SIGNS, cheap and told: a child's shoe on a lock step, bubbles by the bank where nothing lives ----
   for (const [sx0, sy0] of D.shoes || []) { const x = sx0 * TS + 6 - cx, y = (sy0 + 1) * TS - cy; if (x < -10 || x > VW + 10) continue; CP.drawShoe(g, x, y); }
   for (const [bx, row] of D.bubbles || []) { const x = bx * TS + 8 - cx, s = surfaceAt(st, H, bx * TS + 8), y = (s ? s.y : row * TS) - cy; if (x < -10 || x > VW + 10) continue; const ph = (time * 0.7 + bx * 0.37) % 1; if (ph < 0.45) { g.globalAlpha = 0.6 - ph; g.strokeStyle = '#9ad8c0'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + Math.sin(bx) * 6, y, 2 + ph * 14, 1 + ph * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
 }
@@ -445,9 +492,11 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
     if (tell) { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#dcffe8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y + 1, 9, 0, 6.3); g.stroke(); } }
   if (R.inTunnel(st)) { const b = st.barge; CT4.drawHerLight(g, b.x + 12 - cx, b.y - 33 - cy, R.lampLit(st), R.RIG.bargeR, time); }   /* (claude/canal4art) her light drawn: a reach where it is lit, an ember and a short ring where it is dimmed */
   drawGlint(st, g, cx, cy, VW, VH, time);   /* (claude/canalfix3) what holds her */
-  /* EYES IN THE FOG (Jenny's, glimpsed): a pair that opens now and then where the fog is thickest, and is gone */
-  for (const [ex, ey, ph] of st.eyes) { const x = ex * TS - cx, y = ey * TS - cy; if (x < -10 || x > VW + 10 || y < -10 || y > VH + 10) continue; const u = (time * 0.23 + (ph || 0)) % 1; if (u > 0.12) continue;
-    g.globalAlpha = Math.sin(u / 0.12 * Math.PI) * 0.8; g.fillStyle = '#b8ff8a'; g.fillRect(x, y, 2, 1); g.fillRect(x + 5, y, 2, 1); g.globalAlpha = 1; }
+  /* THE LAMPS THAT ARE NOT LAMPS (claude/lanterneater, B8: THE LANTERN-EATER foreshadowed): now and then, where the fog is thickest and no post stands, a warm
+     light hangs over the water - and SWAYS, slow and smooth, on a pale stalk that goes down into the water; then it sinks and is gone (a real lantern flickers) */
+  for (const [lx, ly, ph] of st.lures) { const u = (time * 0.11 + (ph || 0)) % 1; if (u > 0.3) continue; const x = lx * TS + 8 - cx, y = ly * TS - cy; if (x < -30 || x > VW + 30 || y < -40 || y > VH + 40) continue;
+    const a = Math.sin(u / 0.3 * Math.PI), sink = u > 0.22 ? (u - 0.22) / 0.08 * 18 : 0, sw = Math.sin(time * 2.6 + lx) * 6, X = Math.round(x + sw), Y = Math.round(y + sink);
+    LEA.drawGlimpse(g, x, Y, sw, Math.round(x - 14), Math.round(y + 26), a, time); }   /* (the art pass: the same caged bulb on its thread, swaying) */
 }
 /* (claude/canal5, Daniel 10-06: readability) WHAT THE DARK STILL SHOWS: wet iron and stone catch what light there is - the low beams' hazard bars, the
    ledges' lips with their ends marked (a gap is the dark between two ends), the stop-planks' banded top while they are down. Brighter with her lantern

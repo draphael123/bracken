@@ -66,7 +66,7 @@ export const MINOR_PERKS = [
  { id: 'climber', name: 'CLIMBER', what: 'ROPES AND VINES: A QUARTER FASTER', minor: true },
  { id: 'buffer', name: 'BUFFER', what: 'A PRESS IS KEPT A LITTLE LONGER', minor: true },
  { id: 'rest', name: 'BREATHER', what: 'STAMINA WAITS A FIFTH LESS TO RETURN', minor: true },
- { id: 'tonic', name: 'RICH TONIC', what: 'A RED TONIC HEALS 60, NOT 45', minor: true },
+ { id: 'tonic', name: 'RICH FLASK', what: 'A FLASK HEALS 45%, NOT 35%', minor: true },
  { id: 'grit', name: 'GRIT', what: 'AFTER A HIT YOU ARE SAFE A MOMENT LONGER', minor: true },
 ];
 /* THE HERO'S OWN: at every milestone ONE of the three is the hero's (the third, marked). Two per hero, alternating by milestone, and each pick adds
@@ -89,7 +89,7 @@ export const perkRank = (p, h, id) => { const c = cardOf(p, h); return c ? Objec
    poise bar a quarter harder (never a tap: the heavies-only rule of a boss or mini is untouched) / a staggered foe takes a quarter more from the next blow. */
 export const THRESH_AT = [10, 20];
 export const THRESH = {
- v: [{ name: 'BLOOD DRAWN', what: 'EVERY KILL HEALS 2' }, { name: 'STEADY HANDS', what: 'REVIVES: FASTER, MORE HP' }],
+ v: [{ name: 'BLOOD DRAWN', what: 'EVERY KILL HEALS 1' }, { name: 'STEADY HANDS', what: 'REVIVES: FASTER, MORE HP' }],
  e: [{ name: 'LEAN ROLL', what: 'CHEAPER ROLLS UNDER HALF' }, { name: 'SECOND WIND', what: 'ONCE A FIGHT, A SURGE' }],
  m: [{ name: 'HEAVY HAND', what: 'HEAVIES BREAK POISE FASTER' }, { name: 'FINISHER', what: 'BROKEN FOES TAKE MORE' }],
 };
@@ -108,7 +108,7 @@ export const PERKS = [
  { id: 'light', name: 'LIGHT HAND', what: 'SWINGS COST A FIFTH LESS STAMINA' },
  { id: 'arcane', name: 'MASTERY', what: 'ABILITIES HIT 15% HARDER' },
  { id: 'heart', name: 'GREAT HEART', what: '+10% MAX HEALTH' },
- { id: 'leech', name: 'BLOODLETTER', what: 'EVERY KILL HEALS 4' },
+ { id: 'leech', name: 'BLOODLETTER', what: 'EVERY KILL HEALS 2' },
  { id: 'fleet', name: 'FLEET', what: 'DODGES COST A QUARTER LESS STAMINA' },
  { id: 'focus', name: 'FOCUS', what: 'ABILITY WAITS 15% SHORTER' },
 ];

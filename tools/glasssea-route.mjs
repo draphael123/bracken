@@ -66,6 +66,9 @@ try {
         while (P().x < foot * TS + 6 && n++ < 400) { tick(1); k.right = true; k.down = true; }
         k.down = false; k.jump = true; BK.press('jump'); for (let j = 0; j < 80; j++) { k.right = true; k.jump = j < 26; tick(1); if (j > 6 && P().ground) break; } clear(); tick(4);
         DBG.push('slide leap from ' + crest + ': landed ' + col() + ',' + feet() + ' vx ' + Math.round(P().vx)); };
+      /* (claude/slickslope) THE LANDING HAS ROOM: col() >= 148 passed a toe on the far lip (the mantle's catch) and the hand's frame-perfect leap hid that a person had
+         nothing to spare (Daniel's geomancer, 10-07). A leap over the slide gap counts only a tile clear of the far lip (tools/glasssea-slide.mjs measures the window) */
+      const pastGap = id => { const c = BK.level.cracks.find(q => q.id === id); return P().ground && P().x >= (c.x1 + 2) * TS; };
       /* (glasssea2) THE ROCKING MIRRORS: set a mirror's notch (a rocking mirror's state flips with its rhythm: count the notch, not the state); then cross its glass steps -
          wait for a FRESH beam (the timer full), run, and take a short hop off the end of each step; a fall (soft or real) is retried from where the hand was put back */
       const turnSet = (id, n) => { for (let i = 0; i < 4 && mirror(id).n !== n; i++) press('talk'); return mirror(id).n === n; };
@@ -78,7 +81,7 @@ try {
       const LEGS = [
         ['the glass edge: the slide, the first mirror, the stair', [4, 29], () => { walk(26); walk(40, { tol: 3 }); turn('first', '\\\\'); waitFor(() => fused('firstStair'), 300);
             hop(43, 31, 0); hop(44, 29, 1); hop(47, 28, 1); walk(69); walk(95); return col() >= 93 && fused('firstStair'); }, [95, 33]],
-        ['the fulgurite field: the slide gap', [95, 33], () => { walk(134); walk(136, { tol: 2 }); slideLeap(136, 142); if (col() < 148) return false; walk(169, { tol: 3 }); turnSet('pulseA', 1); if (!skip('pulseA', [171, 175, 179], 181)) return false; walk(189); hop(189, 30, 1); walk(197); return col() >= 196; }, [199, 33]],
+        ['the fulgurite field: the slide gap', [95, 33], () => { walk(131); walk(134, { tol: 2 }); slideLeap(134, 142); if (!pastGap('slideGap')) return false; walk(169, { tol: 3 }); turnSet('pulseA', 1); if (!skip('pulseA', [171, 175, 179], 181)) return false; walk(189); hop(189, 30, 1); walk(197); return col() >= 196; }, [199, 33]],
         ['the bone crossing: the sun-mirror bridge', [165, 33], () => { walk(223, { tol: 3 }); turn('bridge', '\\\\'); waitFor(() => fused('bridge'), 300); walk(244); walk(261, { tol: 3 }); turnSet('hawkX', 1); if (!skip('hawkX', [263, 266, 269], 271)) return false; walk(272, { tol: 3, noFight: true }); turnSet('hawkY', 1); if (!skip('hawkY', [273, 276, 279], 282)) return false; walk(295); return col() >= 293; }, [295, 33]],
         ['the fork obelisk: the chain', [300, 33], () => { walk(316, { tol: 3 }); turn('chainA', '/'); hop(319, 30, 1); hop(320, 27, 1); hop(320, 24, 0); walk(317, { tol: 3, noFight: true }); turn('chainB', '/');
             waitFor(() => fused('headBridge'), 400); walk(322, { tol: 3 }); drop(); walk(330); hop(333, 30, 1); hop(337, 27, 1); walk(361); return fused('headBridge') && col() >= 360 && feet() === 27; }, [361, 27]],

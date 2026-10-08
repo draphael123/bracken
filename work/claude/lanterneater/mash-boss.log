@@ -1,0 +1,9 @@
+canal BOSS expected L22 knight#1: DEAD 31.2s, hero lost 100%, boss left 99%, 11/860 blows
+canal BOSS expected L22 knight#2: DEAD 23.6s, hero lost 100%, boss left 99%, 11/554 blows
+canal BOSS expected L22 warden#1: DEAD 31.5s, hero lost 100%, boss left 99%, 9/989 blows
+canal BOSS expected L22 warden#2: DEAD 23.6s, hero lost 100%, boss left 100%, 5/697 blows
+canal BOSS expected L22 pyro#1: DEAD 40.8s, hero lost 100%, boss left 98%, 32/1347 blows
+canal BOSS expected L22 pyro#2: DEAD 41.1s, hero lost 100%, boss left 96%, 38/1369 blows
+wrote docs/mash-bot.json
+errors []
+boss exit 0

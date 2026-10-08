@@ -14,6 +14,7 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   burning: './audio/burning.mp3', pyroboss: './audio/pyroboss.ogg', minicharge: './audio/minicharge.ogg', monastery: './audio/monastery.ogg', northumberland: './audio/northumberland.mp3', windcaller: './audio/windcaller.ogg', hangingvillage: './audio/hangingvillage.ogg', sporewood: './audio/sporewood.mp3', duneworm: './audio/duneworm.ogg', lance: './audio/lance.ogg', caravan: './audio/caravan.ogg', monasterygolem: './audio/monasterygolem.ogg',
   redgorge: './audio/redgorge.ogg',
   skyroad: './audio/skyroad.ogg', rocphoenix: './audio/rocphoenix.ogg', underwell: './audio/underwell.ogg',   /* THE UNDERWELL (claude/underwellart, Daniel's pick): "Ossuary 6 - Air" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
+  ksar: './audio/ksar.ogg',   /* THE BANDIT KSAR (claude/ksar art pass, Daniel's pick): "Desert Loop" by iamoneabe, CC0 (audio/CREDITS.txt) - the level track; THE HAWK-MISTRESS keeps her composed theme */
   glasssea: './audio/glasssea.ogg',   /* THE GLASS SEA (claude/glasssea art pass, Daniel's pick): "Eastern Arctic Dubstep" by VishwaJai (credited Vishwa Jay), CC0 (audio/CREDITS.txt) - the level track; THE GLASS COLOSSUS keeps his own theme composed in code (src/boss-music.js) */
   undeadmage: './audio/undeadmage.ogg',   /* THE UNDEAD ARCHMAGE (claude/archmage2b, Daniel's pick): "Colossal Boss Battle Theme" (Blackmoor Colossus, the loop with the choir) by Matthew Pablo, CC-BY 3.0 (audio/CREDITS.txt) - his stair chase and his fight */   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
   matriarch: './audio/matriarch.ogg',   /* THE RAPTOR MATRIARCH (claude/redgorge2 art pass, Daniel's pick): "Volatile Reaction" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
@@ -58,7 +59,7 @@ export const musicIsFile = () => !!trackBuf[currentTrack];
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
-const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : kind === 'battlefield' ? 0.26 : kind === 'cistern' ? 0.3 : kind === 'canyon' ? 0.28 : kind === 'highair' ? 0.26 : kind === 'glassday' ? 0.2 : kind === 'glassnight' ? 0.22 : 0.14) * ambVol;
+const ambTarget = kind => (kind === 'forest' ? 0.3 : kind === 'rain' ? 0.09 : kind === 'water' ? 0.16 : kind === 'wind' ? 0.24 : kind === 'town' ? 0.34 : kind === 'shore' ? 0.3 : kind === 'ship' ? 0.32 : kind === 'cave' ? 0.36 : kind === 'deep' ? 0.34 : kind === 'drip' ? 0.3 : kind === 'tavern' ? 0.32 : kind === 'hold' ? 0.36 : kind === 'hall' ? 0.22 : kind === 'fire' ? 0.28 : kind === 'crowd' ? 0.3 : kind === 'barn' ? 0.22 : kind === 'fair' ? 0.3 : kind === 'fairlot' ? 0.2 : kind === 'battlefield' ? 0.26 : kind === 'cistern' ? 0.3 : kind === 'canyon' ? 0.28 : kind === 'highair' ? 0.26 : kind === 'glassday' ? 0.2 : kind === 'glassnight' ? 0.22 : kind === 'ksar' ? 0.24 : 0.14) * ambVol;
 function applyMusicFilter() { if (!musicLP) return; const f = muffled ? 480 : lowHp ? 1500 : 20000; musicLP.frequency.setTargetAtTime(f, ac.currentTime, 0.18); }
 
 // ---------- where a sound comes from ----------
@@ -540,7 +541,7 @@ const WAY_BASS = ['D3', 'F3', 'A2', 'D3'];
 
 // JENNY GREENTEETH (claude/lockkeeper): no file - a folk lament drowned in a canal at night. A thin whistle line in D that keeps falling back to
 // where it started, over a drone of an open fifth that never moves; water dripping off the gates at odd beats, and a bell somewhere in the fog.
-// Slow (66), and it never builds: she does not need it to. (Played for arena.music 'greenteeth'.)
+// Slow (66), and it never builds: she does not need it to. (It was played for arena.music 'greenteeth'. BENCHED with her, claude/lanterneater: no arena plays it and the Sound Test does not list it.)
 const GT_LEAD = [['D4', null, 'F4', null, 'E4', 'D4', null, 'C4'], ['D4', null, null, 'A3', null, 'C4', 'D4', null],
   ['F4', null, 'G4', null, 'A4', 'G4', 'F4', null], ['E4', null, 'D4', null, 'C4', null, 'D4', null]];
 const GT_DRIP = [3, 13, 18, 29];   /* the steps a drop falls on, out of the thirty-two */
@@ -702,6 +703,25 @@ const SYNTH_BEDS = {
   /* THE GLASS SEA (claude/glasssea fix pass): its own air, all synth, nothing downloaded. GLASSDAY: a dry wind over glass dunes (a bandpassed gust that rises
      and falls, a thin high whistle over the fulgurite) and now and then a shard chiming as the wind turns it. GLASSNIGHT: THE COLD - a hushed low wind, no
      drips, no chains; glass ticking as it cools (dry high clicks), a far chime when a shard falls, and a long low moan through the ridges. */
+  /* THE BANDIT KSAR (claude/ksar, art pass: torch crackle, an anvil, a camel, the winch's chain on top of the greybox's wind, far gong, souq, hawk and flag): the air of a mud-brick fort on the old road, all synth and the one creak clip on disk. WIND over the walls (a
+     bandpassed gust), a FAR GONG now and then (low inharmonic sines with a long tail - the rule in the air), the SOUQ (a low murmur of voices, a bray), a HAWK
+     crying high over the towers, and a FLAG snapping on a parapet. */
+  ksar() {
+    const wind = loopNoise(420, 0.75, 0.2); lfoOn(wind.g.gain, 0.11, 0.1); lfoOn(wind.f.frequency, 0.06, 140);
+    const souq = loopNoise(520, 0.9, 0.05, 'lowpass'); lfoOn(souq.g.gain, 0.19, 0.03);
+    const fire = loopNoise(2800, 2.2, 0.018); lfoOn(fire.g.gain, 0.8, 0.012);   /* (art pass) the torches' and braziers' low crackle under it all */
+    ambTick = () => {
+      if (Math.random() < 0.05) { tone('triangle', 1650 + Math.random() * 300, 1500, 0.09, 0.025); tone('triangle', 3300, 3100, 0.05, 0.01, 0.01); }   /* a smith's hammer on an anvil somewhere in the fort */
+      if (Math.random() < 0.012) { tone('sawtooth', 135, 88, 0.9, 0.02); tone('sawtooth', 142, 92, 0.8, 0.01, 0.05); }   /* a camel's groan from the yard */
+      if (Math.random() < 0.08) noise(0.015 + Math.random() * 0.02, 0.03, 3600 + Math.random() * 1800, 2);   /* a spit of fire */
+      if (Math.random() < 0.03) { tone('sine', 520, 490, 0.35, 0.012); tone('sine', 780, 740, 0.3, 0.006, 0.02); }   /* a chain's link turning on the winch */
+      if (Math.random() < 0.02) for (const [f, v] of [[96, 0.03], [139, 0.014], [229, 0.008]]) tone('sine', f, f * 0.985, 3.0, v);   /* a far gong */
+      if (Math.random() < 0.05) { const f = 2100 + Math.random() * 600; tone('sine', f, f * 0.7, 0.6, 0.03); tone('sine', f * 1.02, f * 0.72, 0.5, 0.012, 0.18); }   /* a hawk over the towers */
+      if (Math.random() < 0.06) noise(0.12, 0.02, 1500 + Math.random() * 600, 3);   /* a flag snapping */
+      if (Math.random() < 0.02) ambClip('amb_creak', 0.08, 1000);   /* a winch rope, loaded */
+    };
+    ambTickMs = 480;
+  },
   glassday() {
     const w = loopNoise(380, 0.8, 0.85); lfoOn(w.g.gain, 0.1, 0.4); lfoOn(w.f.frequency, 0.05, 120);
     const wh = loopNoise(2600, 6, 0.05); lfoOn(wh.g.gain, 0.13, 0.04); lfoOn(wh.f.frequency, 0.07, 400);
@@ -958,6 +978,22 @@ Object.assign(SFX, {
   gtStrand() { tone('sine', 110, 50, 0.3, 0.2); noise(0.3, 0.2, 500, 0.6); noise(0.2, 0.1, 1800, 1, 0.1); },   /* a body into the mud */
   gtDrag() { noise(0.7, 0.14, 700, 0.7); tone('sawtooth', 120, 80, 0.6, 0.04); },
   gtBell() { bell(146.83, 3.0, 0.07); bell(220, 2.2, 0.03, 0.4); },
+  /* ---- THE LANTERN-EATER (src/lantern-eater.js, claude/lanterneater): its lure coming down (a soft glassy hum), the water boiling where its jaws will come (a
+     ring of bubbles), the gulp (a vast wet slam and a sucking roar), its teeth clacking as the snap winds up, the snap (a crunch of timber), the lure snagged
+     (a wet twang), its growl under the raft, the swell (a rush along the deck), the lamps snuffed one by one, a copy of the light bitten far off, the lantern
+     struck (a tin clink), and its sinking (a long low draw of water) ---- */
+  leLure() { if (!gate('lel', 0.5)) return; tone('sine', 880, 870, 0.9, 0.035); tone('sine', 1320, 1310, 0.7, 0.02, 0.1); tone('triangle', 440, 445, 1.0, 0.02, 0.05); },
+  leBoil() { if (!gate('leb', 0.3)) return; noise(0.8, 0.12, 380, 0.6); for (let i = 0; i < 9; i++) tone('sine', 180 + Math.random() * 260, 420, 0.05, 0.035, i * 0.08); },
+  leGulp() { noise(0.5, 0.3, 500, 0.5); tone('sine', 90, 40, 0.7, 0.2); tone('sawtooth', 70, 45, 0.5, 0.06, 0.05); noise(0.6, 0.12, 1800, 0.7, 0.15); },
+  leTeeth() { if (!gate('let', 0.25)) return; for (let i = 0; i < 4; i++) tone('square', 1200 - i * 90, 700 - i * 60, 0.03, 0.05, i * 0.09); },
+  leSnap() { tone('square', 900, 300, 0.06, 0.1); noise(0.12, 0.22, 2400, 0.9); noise(0.25, 0.16, 600, 0.6, 0.04); tone('sine', 120, 60, 0.25, 0.12); },
+  leSnag() { tone('triangle', 700, 260, 0.25, 0.1); noise(0.1, 0.12, 1600, 1); tone('sine', 1400, 900, 0.15, 0.04, 0.05); },
+  leGrowl() { if (!gate('leg', 0.6)) return; tone('sawtooth', 55, 48, 1.2, 0.08); tone('sawtooth', 58, 50, 1.2, 0.05, 0.05); noise(1.0, 0.06, 220, 0.5); },
+  leSwell() { noise(1.0, 0.2, 700, 0.5); noise(0.6, 0.1, 1900, 0.8, 0.15); tone('sine', 80, 55, 0.8, 0.1); },
+  leSnuff() { for (let i = 0; i < 4; i++) { noise(0.25, 0.08, 3800, 1.6, i * 0.45); tone('sine', 660 - i * 80, 330 - i * 40, 0.3, 0.03, i * 0.45 + 0.05); } tone('sawtooth', 50, 42, 2.0, 0.05, 0.3); },
+  leDecoy() { if (!gate('led', 0.4)) return; noise(0.3, 0.07, 800, 0.6); tone('sine', 300, 120, 0.25, 0.03); },
+  leLantern() { tone('triangle', 1760, 1700, 0.08, 0.06); tone('square', 900, 880, 0.04, 0.03, 0.02); },
+  leSink() { noise(1.4, 0.12, 300, 0.6); tone('sine', 140, 50, 1.2, 0.1); for (let i = 0; i < 5; i++) tone('sine', 400 - i * 40, 200, 0.12, 0.03, 0.3 + i * 0.2); },
   gtWake() { noise(1.0, 0.1, 500, 0.6); for (let i = 0; i < 5; i++) tone('sawtooth', 260 - i * 18, 200 - i * 18, 0.12, 0.05, 0.3 + i * 0.13); bell(146.83, 2.4, 0.05, 0.2); },   /* a gurgling laugh under the water */
   wqRustle() { if (!gate('wqr', 0.3)) return; noise(0.14, 0.07, 1700, 0.9); noise(0.08, 0.05, 3400, 1.4, 0.05); tone('triangle', 180, 140, 0.1, 0.025, 0.02); },   /* dry wicker creaking as she glides */
   wqWake() { noise(0.6, 0.14, 1400, 0.7); tone('sawtooth', 110, 70, 0.8, 0.08); [659, 784, 988].forEach((f, i) => bell(f, 0.5, 0.03, 0.2 + i * 0.12)); },
@@ -1108,6 +1144,7 @@ const DIE = {
   mummer() { tone('triangle', 520, 200, 0.16, 0.08); noise(0.2, 0.12, 900, 0.5); [2349, 2093, 1760].forEach((f, i) => bell(f, 0.2, 0.03, 0.08 + i * 0.09)); },   /* THE MUMMER goes down: the wooden mask knocks, the sackcloth slumps, the cap bells roll away (claude/fair3: it fell back on the generic cry) */
   hobbyhorse() { noise(0.4, 0.2, 700, 0.5); tone('square', 300, 90, 0.3, 0.1); for (let i = 0; i < 4; i++) bell(1568 * (1 + (i % 2) * 0.12), 0.25, 0.04, 0.1 + i * 0.07); },   /* the pole cracks and the bridle bells scatter */
   puppeteer() { tone('sawtooth', 260, 60, 1.2, 0.14); noise(0.9, 0.2, 1200, 0.4, 0.1); [587, 554, 523, 494, 466].forEach((f, i) => bell(f, 0.4, 0.04, 0.2 + i * 0.18)); },   /* THE PUPPETEER goes down: a long cry, and the music box winds down a semitone at a time */
+  lanterneater() { noise(1.6, 0.3, 400, 0.5); tone('sine', 110, 35, 1.8, 0.2); tone('sawtooth', 60, 40, 1.6, 0.06, 0.1); for (let i = 0; i < 4; i++) bell(392 - i * 40, 0.8, 0.03, 0.6 + i * 0.25); },   /* THE LANTERN-EATER goes down: a long sinking roar, the water closing over it, and the basin's lamps ringing back */
   greenteeth() { tone('sawtooth', 300, 70, 1.4, 0.12); noise(1.2, 0.2, 600, 0.5, 0.1); for (let i = 0; i < 6; i++) tone('sine', 600 - i * 60, 300, 0.1, 0.03, 0.5 + i * 0.15); bell(146.83, 3, 0.05, 0.6); },   /* JENNY GREENTEETH goes down: a long gurgling shriek, the bubbles, and the bell */
   wickerqueen() { noise(1.6, 0.34, 800, 0.5); tone('sawtooth', 140, 40, 1.6, 0.18); for (let i = 0; i < 6; i++) noise(0.06, 0.1, 3000 - i * 300, 1.4, 0.2 + i * 0.15); },   /* THE WICKER QUEEN goes up: the whoomph, the crackle, the frame coming down */
   strawking() { noise(1.4, 0.36, 900, 0.5); tone('sawtooth', 120, 30, 1.6, 0.24); tone('sine', 70, 30, 2, 0.2, 0.2); },   /* the field burning down with him in it */
@@ -1305,6 +1342,7 @@ const HURT = {
   mummer() { tone('triangle', 420, 300, 0.07, 0.07); noise(0.05, 0.08, 1200, 0.6); bell(2349, 0.08, 0.02, 0.02); },   /* a blow on a wooden mask, a bell shaken */
   hobbyhorse() { tone('square', 260, 180, 0.08, 0.08); noise(0.07, 0.1, 900, 0.5); bell(1568, 0.1, 0.025, 0.02); },   /* a knock on the carved head, the bridle jingles */
   puppeteer() { tone('triangle', 320, 180, 0.18, 0.1); noise(0.1, 0.14, 1600, 0.6); },   /* a thin man in a good coat, struck: a yelp and a rustle */
+  lanterneater() { tone('triangle', 520, 300, 0.12, 0.08); noise(0.1, 0.16, 1400, 0.7); },   /* a blade into the fleshy lure or its gums: a wet thud and a hiss */
   greenteeth() { tone('sawtooth', 380, 220, 0.16, 0.08); noise(0.1, 0.14, 1800, 0.8); },   /* a blade into wet weed and skin: a hiss and a splash */
   wickerqueen() { noise(0.18, 0.22, 1500, 0.6); tone('triangle', 200, 120, 0.2, 0.08); },   /* a blade into basketwork: a dry crunch, and the wicker creaks */
   strawking() { noise(0.2, 0.3, 1100, 0.4); tone('sawtooth', 130, 80, 0.3, 0.18); tone('sine', 90, 60, 0.3, 0.1, 0.05); },   /* a barn's worth of straw taking a blade, and a laugh under it */
@@ -1519,10 +1557,10 @@ Object.assign(SFX, {
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
-export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'skyroad', 'rocphoenix', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'glasssea', 'gorgecrab', 'matriarch', 'undeadmage'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon', 'glassday', 'glassnight'];
+export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'skyroad', 'rocphoenix', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'theme4', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'glasssea', 'gorgecrab', 'matriarch', 'undeadmage', 'lanterneater'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon', 'glassday', 'glassnight', 'ksar'];
 /* WHAT THE UNBURIED FIELD'S BED IS MADE OF (tools/unburied-look.mjs 8): synth beds and the one creak clip already on disk - nothing downloaded, and never a horn (the horn is the volley's tell) */
-export const AMBIENT_SOURCES = { canyon: ['synth:wind', 'synth:river-roar', 'synth:spillway', 'synth:raptor-cry', 'synth:gust', 'file:amb_creak'], highair: ['synth:gust', 'synth:whistle', 'synth:cloth-crack', 'synth:line-hum', 'synth:grit', 'synth:raptor', 'file:amb_creak'], cistern: ['synth:air', 'synth:drip', 'synth:scuttle', 'synth:oil-gurgle', 'synth:chain', 'file:amb_creak'], battlefield: ['synth:wind', 'synth:dead-grass', 'synth:far-battle', 'synth:shout', 'synth:banner', 'synth:crow', 'file:amb_creak'], hall: ['file:ambCave', 'synth:drip', 'synth:distant-bell'], glassday: ['synth:wind', 'synth:whistle', 'synth:shard-chime', 'synth:sand-hiss'], glassnight: ['synth:hush', 'synth:frost', 'synth:glass-tick', 'synth:far-chime', 'synth:low-moan'] };
+export const AMBIENT_SOURCES = { canyon: ['synth:wind', 'synth:river-roar', 'synth:spillway', 'synth:raptor-cry', 'synth:gust', 'file:amb_creak'], highair: ['synth:gust', 'synth:whistle', 'synth:cloth-crack', 'synth:line-hum', 'synth:grit', 'synth:raptor', 'file:amb_creak'], cistern: ['synth:air', 'synth:drip', 'synth:scuttle', 'synth:oil-gurgle', 'synth:chain', 'file:amb_creak'], battlefield: ['synth:wind', 'synth:dead-grass', 'synth:far-battle', 'synth:shout', 'synth:banner', 'synth:crow', 'file:amb_creak'], hall: ['file:ambCave', 'synth:drip', 'synth:distant-bell'], glassday: ['synth:wind', 'synth:whistle', 'synth:shard-chime', 'synth:sand-hiss'], glassnight: ['synth:hush', 'synth:frost', 'synth:glass-tick', 'synth:far-chime', 'synth:low-moan'], ksar: ['synth:wind', 'synth:far-gong', 'synth:souq', 'synth:hawk-cry', 'synth:flag', 'file:amb_creak'] };
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
 // that page was CC0 or CC-BY (Daniel's 10-01 rule change) WITH its credit line here and in CREDITS.txt - 'Dark Carnival' and 'At Work' are the CC-BY ones; see the credited lanes' own reports). Three tracks have
 // no outside credit because nothing outside BRACKEN made them (store, underkeep, fallingtower, stormharbor, burial
@@ -1562,7 +1600,7 @@ export const MUSIC_CREDITS = {
   houndmaster: '"Boss Fight 2" — ansimuz', masthead: '"Slay The Evil" — HydroGene', hilltroll: '"Boss Battle #6" — nene',
   rimewright: '"Fields of Ice" — Jonathan So', captain: '"Stereotypical Boss" — Spring',
   tollmaster: '"Infinite Darkness" — HydroGene', grandmother: '"Ghost Land" — HydroGene',
-  welltown: '"Desert Calmness" — Dizzy Crow', banditking: '"The Gang Leader" — BRACKEN', cisternqueen: '"The Cistern Queen" — BRACKEN', djinn: '"The Great Well" — BRACKEN',   /* (claude/welltown-fix: Dizzy Crow's CC0 track; the synth themes, src/boss-music.js) */
+  welltown: '"Desert Calmness" — Dizzy Crow', banditking: '"The Gang Leader" — BRACKEN', cisternqueen: '"The Cistern Queen" — BRACKEN', djinn: '"The Great Well" — BRACKEN', lanterneater: '"The Lantern-Eater" — BRACKEN',   /* (claude/welltown-fix: Dizzy Crow's CC0 track; the synth themes, src/boss-music.js) */
   theatre: '"Apparitions Ball" — Bobjt', canal: '"Hollowed Forest" — T. Grove', fields: '"Halloween Hullabaloo" — StarlightFrost', scarecrowking: '"Witch\'s Lair" — Juhani Junkala',
   causeway: '"Solemn Tide" — madameberry', kraken: '"Castle Boss" — madameberry',
   witchlight: '"Iremos Forest" — beardalaxy', oreroad: '"12 Music Loops" — SubspaceAudio',
@@ -1580,6 +1618,7 @@ export const MUSIC_CREDITS = {
   rocphoenix: '"Phoenix" by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au',
   underwell: '"Ossuary 6 - Air" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/underwellart: the credit EXACTLY as the licence asks) */
   redgorge: '"Old Road" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/redgorge-fix: the credit EXACTLY as the licence asks; the Sound Test row trims it to fit, the credits page and audio/CREDITS.txt carry it whole) */
+  ksar: '"Desert Loop" — iamoneabe, CC0',   /* (claude/ksar art pass: CC0, credited all the same) */
   glasssea: '"Eastern Arctic Dubstep" — Vishwa Jay',   /* (claude/glasssea art pass: CC0 - Daniel asked for the credit anyway: the composer is VishwaJai on OpenGameArt, credited as Vishwa Jay) */
   gorgecrab: '"The Great Red Crab" — BRACKEN',
   matriarch: '"Volatile Reaction" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/redgorge2 art pass: the credit EXACTLY as the licence asks; the Sound Test row is MUSIC_CREDITS_ROW) */

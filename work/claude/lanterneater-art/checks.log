@@ -1,0 +1,25 @@
+== lantern-eater
+{"heroes":{"knight":{"jump":{"keyHits":1,"clank":0,"angle":"high","open":false,"took":0},"plain":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0},"sweep":{"keyHits":1,"clank":0,"angle":"low","open":false,"took":0},"plainJaws":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0}},"pyro":{"jump":{"keyHits":1,"clank":0,"angle":"high","open":false,"took":0},"plain":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0},"sweep":{"keyHits":1,"clank":0,"angle":"low","open":false,"took":0},"plainJaws":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0}},"paladin":{"jump":{"keyHits":1,"clank":0,"angle":"high","open":false,"took":0},"plain":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0},"sweep":{"keyHits":1,"clank":0,"angle":"low","open":false,"took":0},"plainJaws":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0}},"pirate":{"jump":{"keyHits":1,"clank":0,"angle":"high","open":false,"took":0},"plain":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0},"sweep":{"keyHits":1,"clank":0,"angle":"low","open":false,"took":0},"plainJaws":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0}},"reaper":{"jump":{"keyHits":1,"clank":0,"angle":"high","open":false,"took":0},"plain":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0},"sweep":{"keyHits":1,"clank":0,"angle":"low","open":false,"took":0},"plainJaws":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0}},"warden":{"jump":{"keyHits":1,"clank":0,"angle":"high","open":false,"took":0},"plain":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0},"sweep":{"keyHits":1,"clank":0,"angle":"low","open":false,"took":0},"plainJaws":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0}},"geomancer":{"jump":{"keyHits":1,"clank":0,"angle":"high","open":false,"took":0},"plain":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0},"sweep":{"keyHits":1,"clank":0,"angle":"low","open":false,"took":0},"plainJaws":{"keyHits":0,"clank":1,"angle":"mid","open":false,"took":0}}},"woke":{"active":true,"mode":"lights","onRaft":true,"raftX":6544,"mid":6544},"lamp":{"hit":1,"took":0},"lantern":{"afterOne":false,"afterTwo":true},"open":{"dmg":14,"open":true},"fall":{"bit":16,"back":true,"x":6590,"raft":[6544,6768]},"death":{"alive":false,"active":false,"raftX":6688,"moorE":6688}}
+ok  lantern-eater  its four blows told and fired, one new blow a phase and one windup at a time, its keys (the lure HIGH, its gums LOW, the wrong height named), the read (a swaying lure, a flickering lamp, opposite ends, the gulp under the lure), its keyed part in reach every cycle, the openings from fighting it (snagged, the snap stepped out of: 3 s, its share), left alone it never opens and after each it is warded, the lamps snuffed and the lantern dimmed and raised, fiercer each phase, a human bot, the stage foreshadowed, and in the page for every hero
+== canal
+ok  canal  the rig (locks, barge, bridges, fog and horns, the legging tunnel) and its two foes hold; the level sits between Waymeet and the fair with its own track, opens with a drop and a branch, teaches, develops, twists and examines all five machines and makes each one a lock, combines them in the exam, teaches, tests, remixes and examines the legging tunnel, keeps three checkpoints and Jenny Greenteeth's footprint, and foreshadows her; and in the page the barge carries you, the low beam finds the standing, a paddle fills a lock, a capstan swings a bridge, a horn opens the fog wall, the archers see only the lit, the grindylow grabs and is shaken off, the weeds hold and give, the canal hands you back, in the tunnel she is legged, her lantern dims and lights and draws the brood, the stop-planks wind up
+== canal-aloft
+ok   the mouth's archivolt rests on solid hill (cols 248-251)
+ok   1 stop-planks with a sheave on a ledge, 1 windlass on a ledge
+ok   the deep lock's paddle gear stands on the gallery
+ok   the DEEP LOCK plate hangs from the gallery over cols 323-326
+ok   the moon shaft's grating spans solid walls where it is drawn (rows 0-1; the niche opens off it lower down)
+canal-aloft: all held
+== boss-read
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+== boss-fight-end
+Every one of 54 boss and mini fights (40 bosses, 14 minis) ends when its boss dies.
+== hint-shown
+hint-shown source: 1436 number() literals the filter drops: 539 routed to the hint box, 897 old silent flavour (none new)
+hint-shown OK: HE IS OPEN, STRIKE ITS LEVER, THE FIRE IS OUT - GO, THE GOBLIN QUEEN: OPEN and a counted line are drawn in the page; a flavour line is not
+== textfit

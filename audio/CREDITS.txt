@@ -277,3 +277,7 @@ THE SKY ROAD (2026-10-06, claude/skyroad, Daniel's picks; the files were fetched
 - rocphoenix.ogg = "Phoenix" (2026) by Scott Buckley, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://www.scottbuckley.com.au/library/phoenix-2026/ - THE ROC's boss theme.
   Credit: "Phoenix" by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
   Changes: mono; encoded to OGG Vorbis.
+
+THE BANDIT KSAR (2026-10-07, claude/ksar art pass, Daniel's pick; he approved the download):
+- ksar.ogg = "Desert Loop" by iamoneabe, CC0 (public domain, credited all the same) - https://opengameart.org/content/desert-loop - THE BANDIT KSAR's level track (the fort only; THE HAWK-MISTRESS's fight keeps her composed theme).
+  Credit: "Desert Loop" by iamoneabe (OpenGameArt.org), CC0. Changes: mono; encoded to OGG Vorbis q4 (64 s, loops).

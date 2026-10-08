@@ -1,0 +1,4 @@
+{"freshHasTheme":true,"freshHasSelect":true,"freshLockedCount":98,"freshTargetLocked":true,"lockedDrawnAsQuestions":true,"lockedNameLeaked":false,"lockedRefusedToPlay":true,"unlockedInMemory":true,"savedToSlot":true,"survivesSlotReload":true,"unlockedNameShown":true,"unlockedPlays":true}
+{"hasEntry":true,"keepsSettings":true,"opensSoundTest":true,"backGoesToTitle":true}
+ok  soundtest  the title screen also opens SOUND TEST straight from its main menu, and ESC from it returns to the title
+ok  soundtest  a fresh or old save opens with only the title theme and stage-select unlocked, every other song shown as ??? and refusing to play; hearing one in play unlocks and saves it, the unlock survives a save reload, and the Sound Test then shows its name and plays it
