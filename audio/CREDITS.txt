@@ -281,3 +281,9 @@ THE SKY ROAD (2026-10-06, claude/skyroad, Daniel's picks; the files were fetched
 THE BANDIT KSAR (2026-10-07, claude/ksar art pass, Daniel's pick; he approved the download):
 - ksar.ogg = "Desert Loop" by iamoneabe, CC0 (public domain, credited all the same) - https://opengameart.org/content/desert-loop - THE BANDIT KSAR's level track (the fort only; THE HAWK-MISTRESS's fight keeps her composed theme).
   Credit: "Desert Loop" by iamoneabe (OpenGameArt.org), CC0. Changes: mono; encoded to OGG Vorbis q4 (64 s, loops).
+
+THE LIT CHURCH (2026-10-08, claude/churchart, Daniel's picks; he approved the download and both licences were re-read on the pages today):
+- litchurch.ogg = "Cathedral" by Umplix, CC0 (public domain, credited all the same) - https://opengameart.org/content/cathedral-0 - THE LIT CHURCH's level track (the church only; THE PALADIN's fight has the next one).
+  Credit: "Cathedral" by Umplix (OpenGameArt.org), CC0. Changes: mono, +2.5 dB (to about -20 LUFS), encoded to OGG Vorbis q4 (72 s, loops).
+- paladin.ogg = "Church combat" by Centurion_of_war, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://opengameart.org/content/church-combat - THE PALADIN's boss theme.
+  Credit: "Church combat" by Centurion_of_war (OpenGameArt.org), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes: lowered 3 dB (to about -14 LUFS), encoded to OGG Vorbis q4 stereo (69 s, loops).

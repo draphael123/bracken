@@ -12,7 +12,6 @@
 // main.js calls: reset, on, update, hold, interact, holes, drawWorld, drawOver, drawHud, read, handsState, walkHint, lampsOf, light, foeMul.
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
-import { BOSS_PHASE } from './boss-music.js';
 
 /* (deadDark: the dead's blows x this in a dark room) THE NUMBERS. FLAME: life s a taper burns, takeR/useR px you reach a fire / a lamp in, glow px it lights round you. LC: litMul/darkMul a priest's blows by his room's
    light, knightLit a knight's; heal: of the healed one's health (x litHeal lit / x darkHeal dark), healCd/healTell/healR; relightT a priest's rite, acoRelightT an
@@ -261,7 +260,6 @@ export function makeLitChurchHands(ctx) {
     rooms(); stepOrgan(dt); stepGrates(dt); stepDark(dt);
     /* THE FIRST LOOK at a room: its name and its state, once */
     if (P0 && !P0.dead) { const r = roomAt(P0.x, P0.y); if (r && r !== K.inRoom) { K.inRoom = r; K.roomT = 2.2; } K.roomT = Math.max(0, (K.roomT || 0) - dt); }
-    BOSS_PHASE.litchurch = K.inRoom && !K.inRoom.lit && !K.inRoom.arena ? 2 : 1;   /* the church's bed: a dark room brings up the low choir (src/boss-music.js litchurch) */
     stall(P0, dt);
   };
 

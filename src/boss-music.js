@@ -36,7 +36,7 @@
 //   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
 //                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { litchurch: 1, paladin: 1, lanterneater: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { lanterneater: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -469,44 +469,9 @@ function lanterneater(i, delay, variant, env) {
   if (ph === 2 && (s === 3 || s === 7)) noise(env, 0.04, 0.14 * g, 3200, 1.2, delay);
 }
 
-// ---------------------------------------------------------------- THE LIT CHURCH (claude/litchurch, the greybox level bed: composed in code until Daniel picks a track)
-// D Dorian, 4/4 at 66 (eighth = 0.455 s), 16 bars = 58 s. THE ORGAN: a held chord on every bar (a square and a detuned saw through a slow lowpass, the
-// pedal an octave under), Dm - C - Bb - Am, then Dm - Gm - A - Dm; THE PLAINCHANT over it: one unaccompanied line in quarters (a breathy triangle with a
-// slow scoop, a sine an octave up for the boys' voices in the second half); a far BELL on the first bar of every four. BOSS_PHASE.litchurch 2 (the room you
-// are in is DARK: src/lit-church-hands.js sets it): the chant drops out to every other bar and a LOW CHOIR comes up under the organ (two saws a fifth apart, low).
-const LCM_STEP = 60 / 66 / 2, LCM_LEN = 8, LCM_BARSN = 16;
-const LCM_CHORD = [['D3', 'F3', 'A3'], ['C3', 'E3', 'G3'], ['Bb2', 'D3', 'F3'], ['A2', 'C3', 'E3'], ['D3', 'F3', 'A3'], ['G2', 'Bb2', 'D3'], ['A2', 'C#3', 'E3'], ['D3', 'F3', 'A3']];
-const LCM_CHANT = [['D4', 'E4', 'F4', 'E4'], ['G4', 'F4', 'E4', 'D4'], ['F4', 'G4', 'A4', 'G4'], ['E4', 'D4', 'C4', 'D4'], ['A4', 'G4', 'A4', 'C5'], ['Bb4', 'A4', 'G4', 'F4'], ['E4', 'F4', 'G4', 'E4'], ['D4', '-', 'D4', '-']];
-function litchurch(i, delay, variant, env) {
-  const bar = Math.floor(i / LCM_LEN), s = i % LCM_LEN, g = env.gain, dark = (BOSS_PHASE.litchurch || 1) >= 2, second = bar >= 8, ch = LCM_CHORD[bar % 8];
-  if (s === 0) { for (const n of ch) held(env, 'square', nf(n), LCM_STEP * LCM_LEN * 0.98, 0.022 * g, delay, { lp: 900, att: 0.6, hold: 0.7 }); held(env, 'sawtooth', nf(ch[0]) / 2, LCM_STEP * LCM_LEN * 0.98, 0.03 * g, delay, { lp: 360, att: 0.5, hold: 0.7, det: 6 }); }
-  if (s === 0 && bar % 4 === 0) bell(env, nf('D5'), 3.6, 0.03 * g, delay);
-  if (s % 2 === 0 && (!dark || bar % 2 === 0)) { const c = LCM_CHANT[bar % 8][s / 2]; if (c !== '-') { held(env, 'triangle', nf(c), LCM_STEP * 1.9, 0.05 * g, delay, { lp: 1600, att: 0.12, hold: 0.7, from: 0.97 }); if (second) held(env, 'sine', nf(c) * 2, LCM_STEP * 1.7, 0.016 * g, delay + 0.02, { lp: 3000, att: 0.15, hold: 0.6 }); } }
-  if (dark && s === 0) { held(env, 'sawtooth', nf('D2'), LCM_STEP * LCM_LEN * 0.98, 0.035 * g, delay, { lp: 260, att: 1.2, hold: 0.7, det: 12 }); held(env, 'sawtooth', nf('A2'), LCM_STEP * LCM_LEN * 0.98, 0.022 * g, delay, { lp: 300, att: 1.4, hold: 0.7, det: 10 }); }
-}
-// ---------------------------------------------------------------- THE PALADIN (claude/litchurch, his composed theme: the church's theme as a march, three phases)
-// D minor, 4/4 at 112 (eighth = 0.268 s), 16 bars = 34 s. A field drum (the kick on one and three, a snare on two and four, a roll into every fourth bar),
-// THE ORGAN stabbed on the beat (Dm - Bb - C - A), the BRASS carrying the church's chant as a march (a detuned saw pair), a pedal on the one. 'paladin:p2' THE
-// ROSE WINDOW: bells on the off-bars and the brass an octave up in the second half. 'paladin:p3' JUDGEMENT: quicker (eighth 0.23 s), the pedal doubled and a
-// timpani on every quarter.
-const PLM_STEP = 60 / 112 / 2, PLM_STEP3 = 60 / 130 / 2, PLM_LEN = 8, PLM_BARSN = 16;
-const PLM_CHORD = [['D3', 'F3', 'A3'], ['Bb2', 'D3', 'F3'], ['C3', 'E3', 'G3'], ['A2', 'C#3', 'E3']];
-const PLM_LEAD = [['D4', '-', 'E4', 'F4', 'E4', '-', 'D4', '-'], ['F4', '-', 'G4', 'A4', 'G4', 'F4', 'E4', '-'], ['A4', '-', 'G4', 'A4', 'C5', '-', 'Bb4', 'A4'], ['G4', 'F4', 'E4', '-', 'D4', '-', '-', '-']];
-function paladin(i, delay, variant, env) {
-  const rose = variant === 'p2', judge = variant === 'p3', step = judge ? PLM_STEP3 : PLM_STEP, bar = Math.floor(i / PLM_LEN), s = i % PLM_LEN, g = env.gain, second = bar >= 8, ch = PLM_CHORD[bar % 4];
-  if (s === 0 || s === 4) pluck(env, 'sine', 90, 0.24, 0.5 * g, delay, { to: 46 });
-  if (s === 2 || s === 6) noise(env, 0.09, 0.12 * g, 1800, 0.9, delay);
-  if (bar % 4 === 3 && s >= 6) { noise(env, 0.05, 0.08 * g, 2000, 1, delay); noise(env, 0.05, 0.08 * g, 2000, 1, delay + step / 2); }
-  if (s === 0 || s === 4) for (const n of ch) pluck(env, 'square', nf(n), step * 1.6, 0.03 * g, delay, { lp: 1100 });
-  if (s === 0) { pluck(env, 'sawtooth', nf(ch[0]) / 2, step * 6, 0.07 * g, delay, { lp: 300 }); if (judge) pluck(env, 'sawtooth', nf(ch[0]) / 4, step * 6, 0.06 * g, delay, { lp: 220 }); }
-  if (judge && s % 2 === 0) pluck(env, 'sine', 70, 0.3, 0.3 * g, delay, { to: 40 });
-  if (rose && s === 0 && bar % 2 === 1) bell(env, nf(['D5', 'F5', 'A5', 'D6'][(bar >> 1) % 4]), 2.2, 0.03 * g, delay);
-  const c = PLM_LEAD[bar % 4][s]; if (c !== '-') { const f = nf(c) * ((rose || judge) && second ? 2 : 1); held(env, 'sawtooth', f, step * 1.7, 0.05 * g, delay, { lp: 2200, att: 0.03, hold: 0.6, det: 9, from: 0.97 }); }
-}
+// (THE LIT CHURCH has no synth bed and THE PALADIN no composed theme: 'Cathedral' by Umplix and 'Church combat' by Centurion_of_war are their files, claude/churchart; see audio/CREDITS.txt)
 
 export const SYNTH_BOSS = {
-  litchurch: { step: LCM_STEP, total: LCM_LEN * LCM_BARSN, play: litchurch },   /* (claude/litchurch) the church's greybox bed */
-  paladin: { step: PLM_STEP, total: PLM_LEN * PLM_BARSN, play: paladin },   /* (claude/litchurch) his theme */
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
   hawkmistress: { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) the greybox level bed and her theme */
@@ -522,7 +487,6 @@ export const SYNTH_BOSS = {
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
-  'paladin:p2': { step: PLM_STEP, total: PLM_LEN * PLM_BARSN, play: paladin }, 'paladin:p3': { step: PLM_STEP3, total: PLM_LEN * PLM_BARSN, play: paladin },   /* (claude/litchurch) the rose window, judgement */
   'hawkmistress:p2': { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress }, 'hawkmistress:p3': { step: HMM_STEP3, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) her guard, the store burning */
   'colossus:p2': { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, 'colossus:p3': { step: COM_STEP3, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) its night and its dawn */
   'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking },

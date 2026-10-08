@@ -20,7 +20,7 @@ import * as PBM from '../src/paladin-boss.js';
 import { makeLitChurchHands, FLAME, LC } from '../src/lit-church-hands.js';
 import { BY_HAND, ANSWER } from '../src/marks.js';
 import { OPEN_RULE, FULL_DAMAGE } from '../src/boss-greed.js';
-import { SYNTH_BOSS, SYNTH_VARIANT } from '../src/boss-music.js';
+import { SYNTH_BOSS } from '../src/boss-music.js';
 import { STUCK_HANDS } from '../src/stuck-spots.js';
 import { isCallout } from '../src/hint-lines.js';
 import { ROLES } from './level-quality.mjs';
@@ -93,7 +93,9 @@ ok(L.ents.filter(e => e.t === 'check').length === 4, 'four checkpoints (one per 
 ok(L.ents.filter(e => e.t === 'stray' && e.kind === 'candlestub').length === 5 && L.quest.n === 5, 'five candle stubs, the reliquary\'s key');
 ok(L.ents.filter(e => e.t === 'silver').length <= 3, 'at most three silvers');
 ok(L.ents.some(e => e.t === 'gate') && L.arena.boss === 'paladinboss' && L.arena.music === 'paladin' && L.music === 'litchurch', 'the sanctuary is THE PALADIN\'s arena; its music and the church\'s are named');
-ok(SYNTH_BOSS.litchurch && SYNTH_BOSS.paladin && SYNTH_VARIANT['paladin:p2'] && SYNTH_VARIANT['paladin:p3'], 'the church\'s bed and his theme are composed (no file until Daniel picks one)');
+{ const au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8'), cr = readFileSync(new URL('../audio/CREDITS.txt', import.meta.url), 'utf8'), cs = readFileSync(new URL('../src/credits.js', import.meta.url), 'utf8');
+  ok(!SYNTH_BOSS.litchurch && !SYNTH_BOSS.paladin && au.includes("litchurch: './audio/litchurch.ogg'") && au.includes("paladin: './audio/paladin.ogg'"), 'the level track and his theme are FILES (art pass: no composed bed, no composed theme)');
+  ok(cr.includes('"Cathedral" by Umplix, CC0') && cr.includes('"Church combat" by Centurion_of_war') && cr.includes('CC BY 4.0') && cs.includes("'Cathedral', 'Umplix', 'CC0'") && cs.includes("'Church combat', 'Centurion_of_war', 'CC-BY 4.0'") && au.includes('Umplix, CC0') && au.includes('Centurion_of_war, CC-BY'), 'both tracks are credited in CREDITS.txt, MUSIC_CREDITS and the credits page (the CC-BY one with its author, licence and link)'); }
 ok((STUCK_HANDS.church || []).length >= 8 && STUCK_HANDS.church.every(sp => (sp.steps || [sp]).every(s => s.line && s.line.length <= 62)), 'the glint and the nudge: STUCK_HANDS.church');
 
 /* ---------- THE HANDS IN A FAKE WORLD ---------- */

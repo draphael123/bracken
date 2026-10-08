@@ -35,7 +35,7 @@ export function makePaladinHands(ctx) {
   function world(e) {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), time: () => ctx.time(),
-      music: ph => { BOSS_PHASE.paladin = ph; if (ctx.music) ctx.music(ph > 1 ? 'paladin:p' + ph : 'paladin'); },
+      music: ph => { BOSS_PHASE.paladin = ph; },   /* (his theme is the file 'Church combat': the phases do not switch it) */
       mark: m => ctx.number(e.x, e.y - PB.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       lamps: () => (ctx.lamps ? ctx.lamps() : []), kindle: id => (ctx.kindle ? ctx.kindle(id) : false),
       fx: (k, x, y) => {
