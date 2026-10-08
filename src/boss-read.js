@@ -49,7 +49,7 @@ export const TURN_WORD = {
   frog: 'THE HIDE',
   windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : TURN.WARDED,
   grandmother: e => (e.alpha !== undefined && e.alpha < 0.35) || e.mode === 'vanish' ? TURN.NOT_THERE : TURN.WARDED,
-  winchmaster: 'IRON',                                      // his plate: jam his drum
+  winchmaster: e => (e.ward > 0 && !e.armour ? TURN.WARDED : 'ORE: THROW IT'),   // (claude/winch5) his ORE ARMOUR: a rock off his skip breaks it; his ward after a stagger
   greathound: TURN.WARDED,
   queen: 'THE SWARM',                                       // her drones close over her
   /* (claude/sweep2) ACT II */

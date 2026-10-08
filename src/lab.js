@@ -996,6 +996,7 @@ async function runbossLab(BK, opts) {
         if(P.ground||P.climb)P.labAir=null;
         /* THE THREAT, wherever the hands are: the hook as it comes, a sent bucket, the bar (shield, or out of its reach), the roof's ring */
         /* the hook: jumped as it comes - and close in, where it is on you the instant it leaves his hand, as its tell runs out */
+        const ph0=boss.phase===3;
         const hk=boss.hk&&boss.hk.st==='out'?boss.hk:null,hkNear=(hk&&Math.hypot(hk.x-P.x,hk.y-(P.y-9))<46)||(m==='hookTell'&&boss.modeT<0.1&&Math.hypot(boss.x-P.x,boss.y-P.y)<90);
         const rw=boss.runaway&&!(boss.runaway.delay>0)?boss.runaway:null;let rwNear=false;
         if(rw){const q=HS[rw.at],ln=BK.L.cableway.lines.find(l=>l.id===q.line),p=ln.pts,n=q.at==='end'?p[p.length-1]:p[0],f2=q.at==='end'?p[0]:p[p.length-1],x=n[0]+(Math.sign(f2[0]-n[0])||-1)*rw.s;rwNear=Math.abs(x-P.x)<56&&Math.abs(P.y-n[1])<16;}
@@ -1007,6 +1008,15 @@ async function runbossLab(BK, opts) {
         const barHere=(Math.abs(P.y-mouthY)<14&&Math.abs(P.x-mouthX)<72)||(onTop(boss.at||0)&&Math.abs(P.x-boss.x)<62);
         if(m==='leverTell'&&barHere&&!P.climb){busy=true;if((SHIELDED(h)||(LABP.v2&&h==='warden'))&&P.ground){k.block=SHIELDED(h)?true:DEFLECT_TAP(f);P.face=Math.sign(boss.x-P.x)||1;}else if(boss.modeT<0.22&&P.ground){BK.press('jump');P.labJump=14;}}
         if(!busy&&ring&&P.ground){busy=true;const side=P.x>ring.x?1:-1;go(ring.x+side*42);}
+        /* ROUND SEVEN (claude/winch5): ORE TOSS - over its ring as it comes down (a ledge is too narrow to walk out of it); SPILL - out from
+           under the skip he tips, along whatever you stand on */
+        const ts=boss.toss;if(!busy&&ts&&Math.abs(P.x-ts.tx)<WM_K.tossR+8&&Math.abs(P.y-ts.ty)<26){busy=true;if(ts.T-ts.t<0.2&&(P.ground||on)&&!P.labJump){BK.press('jump');P.labJump=12;}}
+        if(!busy&&m==='spillTell'&&boss.spillM&&boss.spillM.vis){const sx=boss.spillM.x+boss.spillM.w/2;if(Math.abs(sx-P.x)<34&&P.y>boss.spillM.y){busy=true;const d=P.x>=sx?1:-1;if(!on||(d>0?P.x<on.x+on.w-6:P.x>on.x+6))k[d>0?'right':'left']=true;}}
+        /* THE ROCK (round seven): his ORE ARMOUR is drawn on him, and a player who has read the sign takes a rock off a skip of his and throws
+           it along the told arc - the hands read the same arc (BK.winchRocks().aimAt(): the aim whose ring closes on him) */
+        const WR=BK.winchRocks?BK.winchRocks():null,arm=!ph0&&!!(boss.armour||m==='plating'),held=!!(WR&&WR.held()),needRock=!!(WR&&arm&&!held);
+        if(WR&&held&&P.atk<0&&!P.climb){const fs=Math.sign(boss.x-P.x)||1,f0=P.face;P.face=fs;const aim=WR.aimAt();if(aim){k.up=aim==='high';k.down=aim==='low';BK.press('atk');swings++;busy=true;}else{P.face=f0;if(!arm&&(P.labTalkF===undefined||f-P.labTalkF>20)){BK.press('talk');P.labTalkF=f;}}}
+        if(WR&&needRock&&WR.canTake()&&(P.labTalkF===undefined||f-P.labTalkF>12)){BK.press('talk');P.labTalkF=f;}
         /* ROUND SIX (claude/winch4): PHASE THREE - HE HAS COME DOWN. The hands go to the floor he stands on (the deck, or the Great Drum's
            ledge after his ride: the low line always runs to him) and duel him there: out of THE HOOK SWUNG's reach as it winds up, or,
            with no room to step out of it, a roll through it; THE WRENCH shielded (or backed off, without a shield) and cut while it
@@ -1017,6 +1027,7 @@ async function runbossLab(BK, opts) {
           if(m==='descendTell'||m==='descend'){const rx=boss.toX,s=P.x>=rx?1:-1,out=rx+s*(WM_K.leapHit+26);if(Math.abs(P.x-rx)<WM_K.leapHit+14)go(out>F.x0+6&&out<F.x1-6?out:rx-s*(WM_K.leapHit+26));return;}
           if(m==='whirlTell'){ if(ad<R+8){const out=Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*(R+10)));if(Math.abs(out-boss.x)>R+3)go(out);else if(md<0.24&&P.ground&&!P.labJump){BK.press('jump');P.labJump=16;}} return; }   /* (no room on the deck to step out of it: over it) */
           if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if((SHIELDED(h)||(LABP.v2&&h==='warden'))&&P.ground){k.block=SHIELDED(h)?true:DEFLECT_TAP(f);P.face=side;}   /* (claude/retune2, v2: the warden DEFLECTS his brake bar and wrench - both yellow; she took 8 of 8 brake bars, 0 deflects) */ else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
+          if(m==='sweepTell'||m==='sweep'){ if(m==='sweepTell'&&md<0.16&&P.ground&&!P.labJump&&ad<WM_K.sweepR+6){BK.press('jump');P.labJump=14;} return; }   /* (round seven: THE CHAIN SWEEP - over it) */
           if(m==='rideTell'||m==='ride'){ if((m==='ride'||toldRun(['rideTell']))&&ad<64&&P.ground&&!P.labJump){BK.press('jump');P.labJump=14;} return; }
           /* (claude/sweep1, v2 only) HIS GREED, ON THE DECK: the duel cut him whenever he was in reach, so the reprisal burst took the hands
              every few seconds (the knight's 152 health went 60% to it). As the other duels do (BK.greed): out of the burst as it is told,
@@ -1027,17 +1038,18 @@ async function runbossLab(BK, opts) {
           if(!greedy&&ad<reach2&&Math.abs(P.y-boss.y)<40&&P.atk<0&&m!=='whirl'){P.face=side;BK.press('atk');swings++;} };
         if(busy){}
         else if(ph3&&onF(hf))duel();
-        else if((m==='downed'||m==='thrown')&&Math.abs(P.y-(boss.toY??boss.y))<30&&!P.climb){ /* THE BONUS WINDOW: he is down on a ledge beside you - cut */
+        else if((m==='downed'||m==='thrown'||m==='stagger')&&Math.abs(P.y-(boss.toY??boss.y))<30&&!P.climb){ /* THE BONUS WINDOW: he is down on a ledge beside you - cut */
           const lx=boss.toX??boss.x,dx=boss.x-P.x,side=Math.sign(lx-P.x)||1,d=Math.abs(lx-P.x);
           const ln0=on?BK.L.cableway.lines[on.line]:null;
           if(ln0&&ln0.jam>0)k[ln0.dir>0?'right':'left']=true;   /* out of the jammed skip onto the ledge: when he cuts loose he takes the cable, and the skip goes into the pit */
           else if(P.atk<0&&d>reach2-4)k[side>0?'right':'left']=true;
-          if(Math.abs(dx)<reach2&&P.atk<0&&m==='downed'){P.face=Math.sign(dx)||1;BK.press('atk');swings++;} }
+          if(Math.abs(dx)<reach2&&P.atk<0&&(m==='downed'||m==='stagger')){P.face=Math.sign(dx)||1;BK.press('atk');swings++;} }
         else if(on){ /* RIDING (round three: the room's floor is the pit, so the lines are the way round) - answer him and stay on: in the
           MIDDLE of the skip (a rider on its trailing lip who jumps the bar comes down behind it), and off onto the ledge at the far end */
           const ln0=BK.L.cableway.lines[on.line],p0=ln0.pts,end=ln0.dir>0?p0[p0.length-1]:p0[0],cx=on.x+on.w/2;
           if(ln0.jam>0||Math.abs(end[0]-cx)<10)k[ln0.dir>0?'right':'left']=true; else if(Math.abs(cx-P.x)>5)k[cx>P.x?'right':'left']=true;
           if(ph3&&(m==='ride'||toldRun(['rideTell']))&&Math.abs(boss.x-P.x)<64&&Math.abs(boss.y-P.y)<20&&!P.labJump){BK.press('jump');P.labJump=14;} }   /* (phase three: his skip coming along the line - over it) */
+        else if(!ph3&&onTop(tgt)&&needRock&&!(boss.ward>0)){ /* (round seven) HE IS PLATED and the hands have no rock: back down his ladder to his ledge, where his skips come in */ const lx=HS[tgt].ladder[0]*TZ+8; if(Math.abs(lx-P.x)>3)go(lx);else k.down=true; }
         else if(!ph3&&onTop(tgt)){ /* UP WITH HIM: in to reach, and cut */
           const dx=boss.x-P.x,side=Math.sign(dx)||1;
           const Gq=LABP.v2?BK.greed:null,greedy=Gq&&!BK.bossOpen(boss)&&Gq.count(boss)>=Gq.limit(boss)-2,q=HS[tgt];   /* (claude/sweep1, v2 only: his greed on his housing, as in the duel below) */
@@ -1047,9 +1059,9 @@ async function runbossLab(BK, opts) {
         else if(P.climb){ /* ON A LADDER: to the row this housing is reached from, and off it there */
           const lx=Math.floor(P.x/TZ);let want=null,off=0;
           if(ph3){ if(lx===LB){want=row(O.deck);off=Math.sign(deck1-LB);} else k.down=true; }   /* phase three: every ladder leads down - the Head Frame's to the deck */
-          else if(lx===LB){ if(tgt===1){want=null;k.up=true;} else if(tgt===2){want=row(HB.ledgeTop);off=Math.sign(HB.ledge[0]-LB);} else {want=row(O.deck);off=Math.sign(deck1-LB);} }
-          else if(lx===LA){ if(tgt===0)k.up=true; else k.down=true; }
-          else if(lx===LC){ if(tgt===2)k.up=true; else k.down=true; }
+          else if(lx===LB){ if(tgt===1&&!needRock){want=null;k.up=true;} else if(tgt===1){want=row(HB.ledgeTop);off=Math.sign(HB.ledge[0]-LB);} else if(tgt===2){want=row(HB.ledgeTop);off=Math.sign(HB.ledge[0]-LB);} else {want=row(O.deck);off=Math.sign(deck1-LB);} }
+          else if(lx===LA){ if(tgt===0&&!needRock)k.up=true; else if(P.y>=row(GA.ledgeTop)-2)k[GA.ledge[0]<LA?'left':'right']=true; else k.down=true; }   /* (claude/winch5: at the foot, step off onto the ledge - pressing on down there held the hands on the rungs) */
+          else if(lx===LC){ if(tgt===2&&!needRock)k.up=true; else if(P.y>=row(HC.ledgeTop)-2)k[HC.ledge[0]<LC?'left':'right']=true; else k.down=true; }
           else k.up=true;
           /* step off from a hair ABOVE the floor it leads to (letting go level with it drops you a few pixels short, into the pit) */
           if(want!==null){ if(P.y<=want-2&&P.y>want-10)k[off>0?'right':'left']=true; else if(P.y>want-2)k.up=true; else k.down=true; } }
@@ -1067,7 +1079,7 @@ async function runbossLab(BK, opts) {
           const deck=at2(deck0,LB,O.deck);   /* (the Head Frame's ladder at deck level is part of the deck: that is where the low line is boarded) */
           if(ph3){ /* PHASE THREE, not on his floor: down off any housing, along whatever line runs to him, down the Head Frame's ladder to the deck */
             if(topAt>=0){const lx=HS[topAt].ladder[0]*TZ+8;if(Math.abs(lx-P.x)>3)go(lx);else k.down=true;}
-            else if(onLad!==undefined){ if(onLad===LB){const w=row(O.deck);if(P.y<=w&&P.y>w-10)k[Math.sign(deck1-LB)>0?'right':'left']=true;else if(P.y>w)k.up=true;else k.down=true;} else k.down=true; }
+            else if(onLad!==undefined&&!((onLad===LA&&Math.abs(P.y-row(GA.ledgeTop))<3)||(onLad===LC&&Math.abs(P.y-row(HC.ledgeTop))<3))){ if(onLad===LB){const w=row(O.deck);if(P.y<=w&&P.y>w-10)k[Math.sign(deck1-LB)>0?'right':'left']=true;else if(P.y>w)k.up=true;else k.down=true;} else k.down=true; }
             else if(deck){ if(hf===1)board(lo,(LB+1)*TZ,1); }
             else if(at2(HB.ledge[0],HB.ledge[1],HB.ledgeTop))climb(LB);
             else if(at2(HC.ledge[0],HC.ledge[1],HC.ledgeTop))board(hi,HC.ledge[0]*TZ,-1);
@@ -1075,16 +1087,16 @@ async function runbossLab(BK, opts) {
             else if(PD&&at2(PD.ledge[0],PD.ledge[1],PD.ledge[2]))climb(PD.ladder[0]);
             else go(LB*TZ+8); }
           else if(deck&&tgt===0)board(lo,(LB+1)*TZ,1);
-          else if(onLad!==undefined&&topAt<0){ /* STANDING ON A LADDER (its top, or a rung level with a floor): take hold the way it leads */
-            if(onLad===LB){ const w=tgt===1?-1:tgt===2?row(HB.ledgeTop):row(O.deck),side=tgt===2?Math.sign(HB.ledge[0]-LB):Math.sign(deck1-LB); if(w<0)k.up=true; else if(P.y<=w&&P.y>w-10)k[side>0?'right':'left']=true; else if(P.y>w)k.up=true; else k.down=true; }
-            else if((onLad===LA&&tgt===0)||(onLad===LC&&tgt===2))k.up=true; else k.down=true; }
+          else if(onLad!==undefined&&topAt<0&&!((onLad===LA&&Math.abs(P.y-row(GA.ledgeTop))<3)||(onLad===LC&&Math.abs(P.y-row(HC.ledgeTop))<3))){ /* (claude/winch5: the foot of the Great Drum's or the Tail Wheel's ladder IS its ledge - the ledge's own branch below takes it; pressing down there held the hands still for minutes) STANDING ON A LADDER (its top, or a rung level with a floor): take hold the way it leads */
+            if(onLad===LB){ const w=tgt===1&&!needRock?-1:tgt===1||tgt===2?row(HB.ledgeTop):row(O.deck),side=tgt===2?Math.sign(HB.ledge[0]-LB):Math.sign(deck1-LB); if(w<0)k.up=true; else if(P.y<=w&&P.y>w-10)k[side>0?'right':'left']=true; else if(P.y>w)k.up=true; else k.down=true; }
+            else if(((onLad===LA&&tgt===0)||(onLad===LC&&tgt===2))&&!needRock)k.up=true; else k.down=true; }
           else if(topAt===tgt){ /* at the top of his ladder: step onto the housing */ const q=HS[tgt]; k[q.ladder[0]<q.x0?'right':'left']=true; }
           else if(topAt>=0){ /* up on a housing he has left: back down its ladder */ const lx=HS[topAt].ladder[0]*TZ+8; if(Math.abs(lx-P.x)>3)go(lx);else k.down=true; }
           else if(deck){ /* THE ENTRANCE DECK, for the Head Frame or the Tail Wheel: his ladder */ climb(LB); }
-          else if(at2(HB.ledge[0],HB.ledge[1],HB.ledgeTop)){ /* the Head Frame's ledge */ if(tgt===2)board(hi,(HB.ledge[1]+1)*TZ,1); else climb(LB); }
-          else if(at2(HC.ledge[0],HC.ledge[1],HC.ledgeTop)){ /* the Tail Wheel's ledge */ if(tgt===2)climb(LC);
+          else if(at2(HB.ledge[0],HB.ledge[1],HB.ledgeTop)){ /* the Head Frame's ledge */ if(tgt===2)board(hi,(HB.ledge[1]+1)*TZ,1); else if(tgt===1&&needRock)go((HB.ledge[1]+1)*TZ-12); else climb(LB); }
+          else if(at2(HC.ledge[0],HC.ledge[1],HC.ledgeTop)){ /* the Tail Wheel's ledge */ if(tgt===2&&needRock)go(HC.ledge[0]*TZ+12); else if(tgt===2)climb(LC);
             else board(hi,HC.ledge[0]*TZ,-1); /* for the Head Frame, and for the Great Drum the long way, never through the spikes - back along the high line, down the Head Frame's ladder to the deck, and the low line in */ }
-          else if(at2(GA.ledge[0],GA.ledge[1],GA.ledgeTop)){ /* the Great Drum's ledge */ if(tgt===0)climb(LA); else if(lo.dir<0)board(lo,GA.ledge[0]*TZ,-1); else go((GA.ledge[0]+1)*TZ); }   /* (the low line runs in only while he is on the Great Drum: wait for it to turn, do not step into the pit) */
+          else if(at2(GA.ledge[0],GA.ledge[1],GA.ledgeTop)){ /* the Great Drum's ledge */ if(tgt===0&&needRock)go(GA.ledge[0]*TZ+12); else if(tgt===0)climb(LA); else if(lo.dir<0)board(lo,GA.ledge[0]*TZ,-1); else go((GA.ledge[0]+1)*TZ); }   /* (the low line runs in only while he is on the Great Drum: wait for it to turn, do not step into the pit) */
           else if(PD&&at2(PD.ledge[0],PD.ledge[1],PD.ledge[2])){ /* the pit's recovery ledge */ climb(PD.ladder[0]); }
           else go(LB*TZ+8); }
         else if(P.labAir) k[P.labAir]=true;

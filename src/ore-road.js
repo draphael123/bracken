@@ -428,7 +428,7 @@ export function buildOreRoad({ painter, T }) {
   for (const [x, y0, y1] of A.ropes) rope(x, y0, y1);   /* out of the spoil: to the deck (the low line), and to each high ledge (the high line) */
   for (const Hs of A.housings) rope(...Hs.ladder);   /* ROUND TWO: a ladder up onto every housing */
   ent('winchmaster', Math.floor(A.housings[0].home), A.housing, { face: -1 });
-  ent('sign', 477, A.deck, { text: 'CLIMB UP AND FIGHT HIM, OR RIDE A LOADED BUCKET INTO HIS DRUM.' });
+  ent('sign', 477, A.deck, { text: 'HIS ORE ARMOUR TURNS BLADES. TAKE A ROCK OFF A LOADED SKIP (E) AND THROW IT (ATTACK) TO BREAK IT.' });
   ent('minerlamp', 480, A.deck, { lit: true });   /* THE DRUM HOUSE was the one dark room with no lamp in it at all - LAMP_EVERY stops short of the arena (A.x0 - 2), so nothing ever lit it */
   for (const [x, y] of A.lamps) ent('minerlamp', x, y, { lit: true });   /* round four: a lamp on every housing, at the end away from its drum's mouth */
 
