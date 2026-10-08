@@ -9,7 +9,7 @@
 //   THE SCREE SLOPE  THE GROUND GOES: the dry stepping ledges over the scree are LOOSE ROCK (the snapping shelf, in stone) -
 //                    stand still on one and it drops you onto the scree; and the scree carries you over each step's lip onto
 //                    a bed of BROKEN STONE unless you brace or jump. Goats charge down it; a rock goblin rides a loose ledge
-//   THE CRAG WALL and THE GLASS QUARRY  a thrower at the top of the climb; a lookout on the stagings
+//   THE CRAG WALL and THE STONE QUARRY (it was the glass quarry: claude/scree2)  a thrower at the top of the climb; a lookout on the stagings
 // Applied to the finished level (after every grow), so no coordinate in screePath() moves. Proved by tools/scree-rework.mjs.
 export const SCREE = {
   LOOSE: [280, 312, 10, 17],                                   // where a hanging ledge becomes loose rock

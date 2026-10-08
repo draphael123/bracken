@@ -1190,10 +1190,11 @@ export function bakeShelf(seed) { const rnd = mulberry(seed); const [c, g] = can
 /* LOOSE ROCK (THE SCREE PATH, 2026-09-23): the snapping shelf in stone - a slab of the hill split off its bed, a crack across it,
    grit already trickling off its underside. It must read as footing AND as a slab that is not holding. */
 export function bakeLooseRock(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T);
-  rect(g, 0, 1, T, 6, '#6e6e7a'); rect(g, 0, 1, T, 1, '#a8a8b4'); rect(g, 0, 6, T, 1, '#3a3a44'); rect(g, 1, 7, T - 3, 1, '#4a4a56');
-  const cx = 4 + ((rnd() * 8) | 0); for (let y = 1; y < 7; y++) px(g, cx + ((y % 2) ? 1 : 0), y, '#2a2a34');   /* the crack */
-  for (let i = 0; i < 5; i++) px(g, (rnd() * T) | 0, 2 + ((rnd() * 4) | 0), '#8a8a96');
-  for (let i = 0; i < 3; i++) px(g, 1 + ((rnd() * (T - 2)) | 0), 8 + ((rnd() * 4) | 0), '#5a5a66');             /* grit under it */
+  /* (claude/scree2: OCHRE - only the Scree Path has loose rock, and its cold blue-grey read as ice) */
+  rect(g, 0, 1, T, 6, '#7a6046'); rect(g, 0, 1, T, 1, '#c8a070'); rect(g, 0, 6, T, 1, '#3e3024'); rect(g, 1, 7, T - 3, 1, '#5a4632');
+  const cx = 4 + ((rnd() * 8) | 0); for (let y = 1; y < 7; y++) px(g, cx + ((y % 2) ? 1 : 0), y, '#2e2218');   /* the crack */
+  for (let i = 0; i < 5; i++) px(g, (rnd() * T) | 0, 2 + ((rnd() * 4) | 0), '#a8865a');
+  for (let i = 0; i < 3; i++) px(g, 1 + ((rnd() * (T - 2)) | 0), 8 + ((rnd() * 4) | 0), '#6b5238');             /* grit under it */
   return c; }
 // Puffball: a pale ball that bursts into spores.
 export function bakePuffball() { const [c, g] = canvas(14, 12); ellipse(g, 7, 7, 6.5, 5, '#e8e0d0', '#c8bcb0'); ellipse(g, 5, 5, 3, 2, '#fff8f0'); px(g, 7, 2, '#b8a8a0'); rect(g, 5, 11, 4, 1, '#a89890'); return outline(c, OUT); }
@@ -1805,7 +1806,7 @@ export function bakeNearCrag(w, h, seed) {
 export function bakeHeather(seed) { const rnd = mulberry(seed); const [c, g] = canvas(12, 7); ellipse(g, 6, 5, 5, 2.5, '#5a4a6a', '#3a2e3a'); for (let i = 0; i < 7; i++) { const x = 1 + ((rnd() * 10) | 0), y = 1 + ((rnd() * 4) | 0); px(g, x, y, rnd() < 0.5 ? '#a07ab8' : '#c9a0e0'); } return c; }
 export function bakeGorse(seed) { const rnd = mulberry(seed); const [c, g] = canvas(18, 12); ellipse(g, 9, 8, 8, 4, '#3a5a2a', '#2a3a1a'); ellipse(g, 7, 5, 5, 3, '#4a6a3a'); for (let i = 0; i < 9; i++) px(g, 2 + ((rnd() * 14) | 0), 2 + ((rnd() * 8) | 0), rnd() < 0.7 ? '#e0c040' : '#ffe070'); return outline(c, OUT); }
 export function bakeThistle(seed) { const rnd = mulberry(seed); const [c, g] = canvas(8, 14); rect(g, 3, 5, 2, 9, '#4a6a3a'); for (let i = 0; i < 3; i++) rect(g, rnd() < 0.5 ? 0 : 5, 7 + i * 2, 3, 1, '#4a6a3a'); ellipse(g, 4, 4, 2.5, 3, '#6a8a4a'); ellipse(g, 4, 2, 2.5, 2, '#b070d0', '#8a4aa0'); px(g, 3, 1, '#e0a0f0'); return outline(c, OUT); }
-export function bakeStandingStone(seed) { const rnd = mulberry(seed); const [c, g] = canvas(16, 30); const w = 8 + ((rnd() * 5) | 0); fillPoly(g, [[3, 30], [4, 4], [4 + w * 0.4, 1], [3 + w, 3], [4 + w, 30]], '#7c8797'); fillPoly(g, [[4, 30], [5, 5], [5 + w * 0.3, 3], [5, 30]], '#9aa3b0'); for (let i = 0; i < 6; i++) px(g, 5 + ((rnd() * (w - 2)) | 0), 4 + ((rnd() * 24) | 0), rnd() < 0.5 ? '#5a6270' : '#8fb060'); return outline(c, OUT); }
+export function bakeStandingStone(seed, warm = false) { const rnd = mulberry(seed); const [c, g] = canvas(16, 30); const w = 8 + ((rnd() * 5) | 0); const [b, l, d] = warm ? ['#8a7258', '#b8a080', '#5a4632'] : ['#7c8797', '#9aa3b0', '#5a6270'];   /* warm: the Scree Path's ochre sandstone (claude/scree2) */ fillPoly(g, [[3, 30], [4, 4], [4 + w * 0.4, 1], [3 + w, 3], [4 + w, 30]], b); fillPoly(g, [[4, 30], [5, 5], [5 + w * 0.3, 3], [5, 30]], l); for (let i = 0; i < 6; i++) px(g, 5 + ((rnd() * (w - 2)) | 0), 4 + ((rnd() * 24) | 0), rnd() < 0.5 ? d : '#8fb060'); return outline(c, OUT); }
 /* A CAIRN IS STONES. It was four grey slabs stepped into a symmetric pyramid with a black line round it, which read as a
    sandcastle or a wedding cake. Now it is fieldstones picked up where they lay: rounded, every one a different size and a
    different grey or brown, stacked the way a hand stacks them - a broad base pair, the next one sat off the joint, a
@@ -1836,7 +1837,7 @@ function cairnStones(g, rnd, STONES) {
 export function bakeDrystone(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); for (let y = 0; y < T; y += 4) { let x = (y / 4) % 2 ? 2 : 0; while (x < T) { const w = 3 + ((rnd() * 4) | 0); rect(g, x, y, Math.min(w, T - x), 3, rnd() < 0.5 ? '#7c8797' : '#6a707c'); px(g, x, y, '#9aa3b0'); x += w + 1; } } return c; }
 export function bakeDrystoneTop(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); for (let y = 3; y < T; y += 4) { let x = (y / 4) % 2 ? 2 : 0; while (x < T) { const w = 3 + ((rnd() * 4) | 0); rect(g, x, y, Math.min(w, T - x), 3, rnd() < 0.5 ? '#7c8797' : '#6a707c'); px(g, x, y, '#9aa3b0'); x += w + 1; } } for (let x = 0; x < T; x += 3) { rect(g, x, 0, 2, 3, '#8a919c'); px(g, x, 0, '#b0b8c4'); } return c; }
 // Scree: a loose grey top tile. Anything standing on it slides.
-export function bakeScreeTop(seed, dir) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); rect(g, 0, 0, T, 5, '#6a707c'); for (let i = 0; i < 14; i++) { const x = (rnd() * T) | 0, y = (rnd() * T) | 0; rect(g, x, y, 2, 1, rnd() < 0.5 ? '#8a919c' : '#5a6270'); } for (let i = 0; i < 3; i++) { const x = 2 + i * 5; px(g, x + (dir > 0 ? 1 : 0), 2, '#b0b8c4'); px(g, x, 3, '#9aa3b0'); } return c; }
+export function bakeScreeTop(seed, dir) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#5a4632'); rect(g, 0, 0, T, 5, '#7a6046'); for (let i = 0; i < 14; i++) { const x = (rnd() * T) | 0, y = (rnd() * T) | 0; rect(g, x, y, 2, 1, rnd() < 0.5 ? '#a8865a' : '#6b5238'); } for (let i = 0; i < 3; i++) { const x = 2 + i * 5; px(g, x + (dir > 0 ? 1 : 0), 2, '#d8b888'); px(g, x, 3, '#c8a070'); } return c; }   /* (claude/scree2: OCHRE scree - its blue-grey read as ice; the arrows of light pebbles still run the way it slides) */
 // A falling boulder, 14×12, and its shatter is particles.
 export function bakeBoulder() { const [c, g] = canvas(14, 12); ellipse(g, 7, 6, 6.5, 5.5, '#6a707c', '#4a4f5a'); ellipse(g, 5, 4, 3, 2, '#9aa3b0'); px(g, 9, 8, '#4a4f5a'); px(g, 3, 8, '#4a4f5a'); return outline(c, OUT); }
 // The shepherd's bothy: a stone hut with a turf roof, a lit window and a chimney. 56×40.
@@ -1863,7 +1864,7 @@ export function bakeMill() {
 // A sail arm: drawn along +y from the hub, 10×46 — rotated in place by the drawer.
 export function bakeSail() { const [c, g] = canvas(10, 46); rect(g, 4, 0, 2, 46, '#5c3a1d'); for (let y = 6; y < 44; y += 5) rect(g, 0, y, 9, 4, '#e8dcc0'); for (let y = 6; y < 44; y += 5) rect(g, 0, y, 9, 1, '#c9b27c'); rect(g, 0, 6, 1, 38, '#5c3a1d'); return c; }
 // The sheep-fold gate at the Ram Lord's arena: two stone posts with a hurdle. 24×22.
-export function bakeFoldGate() { const [c, g] = canvas(24, 22); rect(g, 0, 2, 4, 20, '#7c8797'); rect(g, 20, 2, 4, 20, '#7c8797'); rect(g, 0, 2, 4, 1, '#9aa3b0'); rect(g, 20, 2, 4, 1, '#9aa3b0'); for (let y = 6; y < 20; y += 4) rect(g, 4, y, 16, 2, '#8a5a32'); rect(g, 11, 4, 2, 16, '#5c3a1d'); return outline(c, OUT); }
+export function bakeFoldGate() { const [c, g] = canvas(24, 22); rect(g, 0, 2, 4, 20, '#8a7258'); rect(g, 20, 2, 4, 20, '#8a7258'); rect(g, 0, 2, 4, 1, '#b8a080'); rect(g, 20, 2, 4, 1, '#b8a080');   /* (claude/scree2: ochre gateposts, the hill's own stone) */ for (let y = 6; y < 20; y += 4) rect(g, 4, y, 16, 2, '#8a5a32'); rect(g, 11, 4, 2, 16, '#5c3a1d'); return outline(c, OUT); }
 
 // ---------- scenery pass ----------
 // A fallen log with a broken end and moss, 30×10.

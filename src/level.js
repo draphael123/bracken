@@ -1419,7 +1419,7 @@ function screePath() {
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
     duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: false,
-    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#6a5642', dirtL: '#80694e', dirtD: '#3e3226',   /* (claude/scree2: warm earth, not the cold blue-grey) */ canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
@@ -1483,18 +1483,19 @@ function screePath() {
   B.coins([68, 17], [71, 17], [77, 18], [84, 17], [88, 17], [100, 17], [103, 17], [96, 18]);
   B.ent('check', 106, 19);
   const RD = B.done();
-  // ---- 5c. THE GLASS QUARRY: where the hill folk took the glass out of the crag, and what grew back in it ----
+  // ---- 5c. THE STONE QUARRY: where the hill folk cut the ochre stone for their walls and bothies (claude/scree2, Daniel 10-08 "too many ice blocks": it was
+  // THE GLASS QUARRY, a seam of the cut Suncatcher's crystal floor - blue-white glass in the foothills. Now cut blocks, a derrick, a worked face) ----
   const Q = grow(RD, RD, 436, 44);
   Q.block(436, 479, 9, 27);
-  for (let x = 447; x <= 469; x++) Q.set(x, 9, T.CRYST);      // the seam: his floor, and the half of the room that burns
   Q.ent('check', 438, 8);
-  Q.ent('sign', 442, 8, { text: 'THE GLASS QUARRY. THE HIGH ROAD GOES OVER THE SEAM; THE LOW ONE GOES THROUGH.' });
-  // the stagings the quarrymen left: the cold road over his seam, and never more than three tiles a hop
+  Q.ent('sign', 442, 8, { text: 'THE OLD QUARRY. THE HIGH ROAD GOES OVER THE CUT; THE LOW ONE GOES THROUGH IT.' });
+  Q.ent('deco', 445, 8, { kind: 'quarryFace' }); Q.ent('deco', 448, 8, { kind: 'quarryBlocks', v: 0 }); Q.ent('deco', 463, 8, { kind: 'derrick' }); Q.ent('deco', 470, 8, { kind: 'quarryBlocks', v: 1 }); Q.ent('deco', 477, 8, { kind: 'quarryBlocks', v: 2 });   /* the quarry's own: a worked face, cut blocks with the chisel's marks, the derrick that lifts them */
+  // the stagings the quarrymen left: the high road over the cut, and never more than three tiles a hop
   Q.plat(445, 6, 3); Q.plat(450, 5, 3); Q.plat(455, 4, 3); Q.plat(460, 4, 3); Q.plat(465, 5, 3); Q.plat(470, 6, 3);
   Q.coins([446, 5], [451, 4], [461, 3], [466, 4], [471, 5], [443, 8], [473, 8]);
   Q.ent('deco', 439, 8, { kind: 'stone' }); Q.ent('deco', 474, 8, { kind: 'stone', v: 1 });
   Q.ent('deco', 444, 8, { kind: 'cairn' }); Q.ent('silver', 456, 3);
-  // ---- THE QUARRY EXAM (S3, the audit's plan 3): the dead crystal floor lives with the level's own rule under pressure -
+  // ---- THE QUARRY EXAM (S3, the audit's plan 3): the quarry floor lives with the level's own rule under pressure -
   // a scree chute down the low road, a loose ledge over it, broken stone at its foot, a rockfall on a count, and a goat
   // charging down it. Checkpoint 438 stands before it (above); the fold's stile at the gully's end stands outside it.
   Q.R.scree.push({ x0: 452, x1: 458, y: 9, dir: 1 });

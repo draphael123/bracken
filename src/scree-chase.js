@@ -59,10 +59,10 @@ export const FOES = [['harpy', 289, 10], ['harpy', 318, 11], ['harpy', 340, 9], 
 export const ROCKS = [[298, 2.4], [339, 2.2], [349, 2.6], [372, 2.3], [380, 2.7], [408, 2.5]];
 export const CHASE = {
   id: 'rockslide', name: 'THE ROCKSLIDE', axis: 'x', dir: 1, look: 'scree', say: 'THE HILL COMES DOWN: RUN!', music: 'boss2',
-  trigger: TRIGGER * 16, end: BANK * 16 + 2, gap0: 170,
-  curve: [[0, 74], [950, 90, 'THE HILL QUICKENS'], [1950, 104, 'THE WHOLE SLOPE IS COMING']],
-  lead: 1.6, accel: 120, rubber: { min: 80, max: 230, slow: 0.62, catch: 1.4 },
-  contact: 'hurt', dmg: 30, hold: 0.9, autoscroll: true, glow: 260, band: true,
+  trigger: TRIGGER * 16, end: BANK * 16 + 2, gap0: 120,
+  curve: [[0, 110], [950, 122, 'THE HILL QUICKENS'], [1950, 132, 'THE WHOLE SLOPE IS COMING']],   /* a hero walks the hill at ~92 px/s (faster down a scree run): the front is faster, so it is ON HIM - the rubber band slows it under him (min/slow), so a hero who keeps going is never caught and one who stops for a second is */
+  lead: 1.6, accel: 120, rubber: { min: 64, max: 200, slow: 0.5, catch: 1.4 },   /* slowed under him it is 55-66 px/s: the slowest walker (the reaper) still pulls away */
+  contact: 'hurt', dmg: 30, hold: 0.9, autoscroll: true, show: 44, showKeep: 0.4, glow: 260, band: true,   /* show: the camera keeps the front on the screen behind you (never at the cost of 40% of the view ahead) */
   zone: [X0 * 16, (BANK + 1) * 16, 12 * 16, 27 * 16],   /* a hero on the miller's ridge over the crest (rows 1-11) is not on the hill: the start line waits for one on it */
   checkpoint: [CHECK_BEFORE, 13],
 };
