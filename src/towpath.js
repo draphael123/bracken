@@ -124,10 +124,11 @@ export function buildTowpath({ painter, T, TS }) {
   // ================= 2. THE MILLS (96-160): TEST - the race and the wheel; the tail race's swing bridge =================
   /* THE MILLRACE: the race pit (100-108) between the towpath and the mill. While the race RUNS the wheel turns - its blades in the pit, no footing on it; DRAIN
      the race (its paddle on the bank) and the wheel stands still: its paddles are a stair (src/towpath-hands.js sets the cells) up to the mill's loft */
-  lock('race', 100, 108, 44, 43, 35, 'hi', { race: true });
+  lock('race', 100, 108, 44, 44, 35, 'hi', { race: true });   /* (drained, the race runs DRY: its bed is a pit you climb out of by the wheel-pit ladder) */
+  ladder(100, 33, 43); ladder(108, 29, 43);   /* (a ladder up each end of the pit: the east one to the wheel's top paddle) */
   paddle(98, 33, 'race');
   sign(96, 33, 'THE RACE TURNS THE WHEEL. ITS PADDLE IS ON THE BANK.');
-  wheels.push({ id: 'mill', race: 'race', cx: 105, cy: 31 + O, r: 4, steps: [[100, 102, 32 + O], [103, 105, 30 + O], [106, 108, 28 + O]] });
+  wheels.push({ id: 'mill', race: 'race', cx: 105, cy: 31 + O, r: 4, steps: [[100, 102, 32 + O], [103, 105, 30 + O], [106, 108, 27 + O]] });
   ground(109, 125, 27);   /* THE MILL: its loft floor */
   interiors.push([110, 124, 20 + O, 26 + O, 'tpMill']); block(109, 125, 19, 19); block(125, 125, 20, 23);   /* its roof, its east wall to the door (24-26) */
   crossbow(120, 26, 'loft', { face: -1 }); sworn(114, 26, 'loft', { face: -1 });   /* the loft's crossbow covers the wheel climb */
@@ -161,7 +162,7 @@ export function buildTowpath({ painter, T, TS }) {
   lock('F2', 169, 174, 33, 33, 22, 'lo', { gate: [168, 22, 26] });
   punt('F2', 169, 6); paddle(167, 26, 'F2'); paddle(174, 32, 'F2');
   bargeman(171, 32, 'dryChamber', { face: -1 }); bargeman(173, 32, 'dryChamber', { face: -1 });
-  ground(175, 176, 22);
+  ground(175, 176, 22); riverrat(176, 21, 'f2Landing', { face: -1 });   /* (a river rat on F2's top landing: he hooks you back into the chamber as you step off the punt) */
   /* F3: in the fog. A watchman on the top gate's beam over it looses only at a lit hero; a grindylow in its water. Ride it up dim */
   lock('F3', 177, 182, 28, 23, 17, 'lo', { gate: [176, 17, 21] });
   punt('F3', 177, 6); paddle(182, 22, 'F3'); paddle(175, 21, 'F3');
@@ -242,6 +243,9 @@ export function buildTowpath({ painter, T, TS }) {
     waterHurts: true, noWade: true,   /* the locks' and the cuts' deep water bites (A10: ~27% and back to the bank) and is no floor to the reach model - the punts (rigBands) are */
     examSpans: [[268, 301]],          /* THE LAST LOCK: the old gate irons kill (told as you walk in: src/survival.js examAt) */
     calm: [[0, W - 1, 0, H - 1]],     /* placed wholly by hand: nothing sprinkled */
+    /* THE CANAL MEN'S WEIGHT (difficulty v2: fewer, weightier foes): a bargeman's hook and a watchman's bolt hit like the act's, and they stand a blow or two longer (main.js reads L.foeHit / L.foeHp by cnSkin) */
+    foeHit: { bargeman: 3.0, riverrat: 3.0, watchman: 2.4, deckforeman: 2.6 },
+    foeHp: { bargeman: 1.8, riverrat: 1.6, watchman: 1.4, deckforeman: 1.3 },
     checkRun: 200,
     squadBands: [{ lo: AX, hi: W - 1, spots: 0, why: "THE FOG KNIGHT's towpath: no squad stands in a boss arena" }],
     unlocks: [
