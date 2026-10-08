@@ -35,7 +35,7 @@ export function levelOverride(argv = process.argv.slice(2), env = process.env) {
 export const levelJs = n => `(async()=>{const PR=await import('/src/progression.js'),P=BKT.PROG;P.skillOwned=P.skillOwned||{};P.loadouts=P.loadouts||{};for(const h of PR.HERO_IDS){BKT.setHeroLevel(h,${n});P.skillOwned[h]={};P.loadouts[h]=[];if(P.talents)P.talents[h]={};}return true;})()`;
 /* --profile=NAME (or BOT_PROFILE=NAME): the boss bot's profile for every bossLab this page runs that names none (src/bot-profile.js). Left out,
    the STANDARD (claude/bot2: 'human', the calibrated player); --profile=legacy is the old bot. --first adds a first attempt. */
-export function profileOverride(argv = process.argv.slice(2), env = process.env) { let p = null; for (const a of argv) { const m = /^--profile=([w+]+)$/.exec(a); if (m) p = m[1]; }
+export function profileOverride(argv = process.argv.slice(2), env = process.env) { let p = null; for (const a of argv) { const m = /^--profile=([\w+]+)$/.exec(a); if (m) p = m[1]; }
   p = p || env.BOT_PROFILE || STANDARD; if (argv.includes('--first') && !p.includes('+first')) p += '+first'; return p; }
 export async function openLevelPage(opts = {}) {
   const pg = await openPage(opts), evalp0 = pg.evalp, ov = levelOverride(), prof = profileOverride(); let warned = false;

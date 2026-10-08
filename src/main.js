@@ -21983,6 +21983,7 @@ function updateChase(dt) {
     c.st.flashT = Math.max(0, (c.st.flashT || 0) - dt);
     for (const e of chaseStep(c.sp, c.st, chaseHero(c.sp), dt, !!P.ground)) chaseEvent(c, e);
     if (c.sp.runsOver && c.st.phase === 'run') for (const q of enemies) if (q.alive && !q.boss && (q.x - c.st.pos) * c.sp.dir < 0 && chaseInZone(c.sp, q.x, q.y - 4)) { q.alive = false; burst(q.x, q.y - 10, 12, COLS[q.t] || ['#9ae0a8', '#ffffff'], 80, 0.5); spawnCorpse(q, 1); if (FAIR) FAIR.runOver++; }   /* THE GHOST TRAIN runs over what it overtakes in its cutting too (claude/fairfix) */
+    if (c.sp.look === 'scree') updateRockslide(c, dt);   /* THE ROCKSLIDE (claude/scree2, src/scree-chase.js): grit off the crest before it, dust and stones off its front */
     const k = chaseDanger(c.sp, c.st, chaseHero(c.sp)); c.st.rumT -= dt; const r = rumbleFor(k);
     if (r && c.st.rumT <= 0) { shakeCam(r.n); rumble(80, 0.25 * k); c.st.rumT = r.every; } }
 }
@@ -22006,7 +22007,7 @@ function chaseRespawn() {   /* A DEATH PUTS EVERY CHASE BACK AT ITS START, unles
 }
 function drawChase(cx, cy) {
   if (!chases.length || state !== 'play') return;
-  for (const c of chases) drawChaser(g, c.sp, c.st, cx, cy, VW, VH, time);
+  for (const c of chases) if (c.sp.look === 'scree') drawRockslide(c, cx, cy); else drawChaser(g, c.sp, c.st, cx, cy, VW, VH, time);
 }
 function drawStairs(cx, cy) { if (L && L.spiral && state === 'play') drawStairFx(g, stairFx, cx, cy, VW, VH, time); }
 function drawChaseGlow() {
@@ -22032,6 +22033,26 @@ function chaseDemo(heroId) {
   checkpoint = { x: (sx + 1) * CHASE_TS + 8, y: (fy) * CHASE_TS }; respawn();
   camX = P.x - VW / 2; camY = P.y - 100;
   return true;
+}
+/* THE ROCKSLIDE CHASE (claude/scree2, src/scree-chase.js): the Scree Path's front runs on the chase engine now. TOLD BEFORE IT: grit trickles off the crest over
+   the start line while you stand near it; once it runs, dust and stones spray off its front and a told stone now and then bounds ahead of it down the hill. */
+function updateRockslide(c, dt) {
+  const st = c.st, sp = c.sp;
+  if (st.phase === 'idle') { if (Math.abs(P.x - sp.trigger) < 200 && Math.random() < dt * 6) parts.push({ x: sp.trigger - 60 + Math.random() * 120, y: P.y - 120 - Math.random() * 40, vx: (Math.random() - 0.5) * 10, vy: 30, life: 1.2, max: 1.2, col: Math.random() < 0.5 ? '#a8865a' : '#6b5238', size: 1, grav: 260 }); return; }
+  if (st.phase !== 'run') return;
+  const fx = st.pos, fl = slideFloor(fx);
+  if (Math.random() < dt * 50) parts.push({ x: fx - Math.random() * 30, y: fl - Math.random() * 30, vx: 40 + Math.random() * 90, vy: -50 - Math.random() * 90, life: 0.6, max: 0.6, col: ['#a8865a', '#6b5238', '#c8a070', '#8a6a48'][(Math.random() * 4) | 0], size: 2, grav: 420 });
+  if (Math.random() < dt * 14) parts.push({ x: fx - 20 - Math.random() * 60, y: fl - 20 - Math.random() * 40, vx: 20 + Math.random() * 30, vy: -20 - Math.random() * 20, life: 1.4, max: 1.4, col: 'rgba(200,170,120,0.55)', size: 4, grav: -10 });
+}
+/* THE FRONT, drawn: a heap of tumbling ochre boulders that follows the ground (slideFloor), two and three high at its nose, under a wall of dust. The engine's band and glow stay on the screen edge it comes from. */
+function drawRockslide(c, cx, cy) {
+  const st = c.st; if (st.phase === 'idle') return; const S = st, t = time, fx = S.pos;
+  if (fx - cx < -40 || fx - cx > VW + 300) return;
+  g.save(); const lo = Math.round(fx - 300 - cx), hi = Math.round(fx + 6 - cx), dg = g.createLinearGradient(lo, 0, hi, 0); dg.addColorStop(0, 'rgba(120,92,62,0.92)'); dg.addColorStop(0.8, 'rgba(150,118,80,0.7)'); dg.addColorStop(1, 'rgba(190,160,110,0)');
+  g.fillStyle = dg; g.fillRect(lo, 0, hi - lo, VH);
+  for (let i = 0; i < 26; i++) { const row = i % 3, k = Math.floor(i / 3), bx = fx - k * 12 - row * 5 + Math.sin(t * 6 + i) * 3, fl = slideFloor(bx), r = 4 + ((i * 7) % 5), by = fl - r - row * 9 - Math.abs(Math.sin(t * (6 + row) + i * 1.3)) * (10 - row * 2);
+    const X = Math.round(bx - cx), Y = Math.round(by - cy); g.fillStyle = ['#6b5238', '#8a6a48', '#5a4630'][i % 3]; g.beginPath(); g.arc(X, Y, r, 0, 7); g.fill(); g.fillStyle = '#c8a070'; g.fillRect(X - 2, Y - r + 1, 3, 2); g.fillStyle = 'rgba(40,28,18,0.5)'; g.fillRect(X - 1, Y + r - 3, r, 2); }
+  g.restore();
 }
 let slide = null; // the rockslide: a front of boulders that chases you down the scree once
 function updateSlide(dt) {

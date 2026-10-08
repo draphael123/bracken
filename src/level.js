@@ -15,6 +15,7 @@ import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/unde
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
+import { chaseScree } from './scree-chase.js';   /* THE ROCKSLIDE CHASE (claude/scree2) */
 import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
@@ -1502,7 +1503,7 @@ function screePath() {
   Q.ent('rockfall', 456, 4, { every: 2.6 });
   Q.ent('goat', 449, 9, { face: 1 });                          // charges down the chute ahead of you
   /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
-  return reworkScree(Q.done(), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js */
+  return chaseScree(reworkScree(Q.done(), T), T, grow);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js; then THE ROCKSLIDE CHASE (claude/scree2): the old scree steps repainted as a hillside run and 96 columns grown in after them - src/scree-chase.js */
 ;
 }
 
@@ -7898,7 +7899,7 @@ const REVIEW = {
   kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 405, 20);
     L.tints = [[-24, 14, [150, 90, 200], 0.12], [-24, 40, [230, 150, 70], 0.15]];   /* THE SEAM (claude/sporeseam): the fungus violet still on the first screens, warming into the autumn amber, so the cut from Sporewood is a fade */
     for (const [x, k, v] of [[1, 'sporePod', 0], [3, 'mushroom', 0], [5, 'tinyCap', 1], [8, 'moss', 0], [14, 'tinyCap', 2], [16, 'mushroom', 1], [24, 'moss', 1], [31, 'tinyCap', 0]]) R.ent('deco', x, 19, { kind: k, v }); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
-  scree: L => { rv(L).ent('check', 330, 18); },
+  scree: L => {},   /* (the slope's checkpoint at 330 is gone with the slope: claude/scree2's rockslide chase has its shrines before and after it, src/scree-chase.js) */
   // the sappers' tunnel was the busiest 38 tiles in the busiest level: the brute and one sapper go, and it is a
   // held breath between the walls instead of another fight
   stockade: L => { L.ents = L.ents.filter(e => !((e.t === 'brute' && e.x === 372 && e.y >= 21) || (e.t === 'sapper' && e.x === 368 && e.y >= 21))); },
@@ -8420,7 +8421,7 @@ const ELITES = {
   stockade: [['brute', 302, 19, { gate: 317 }]],
   spore: [['shield', 412, 13, { gate: 430 }]],
   kings: [['brute', 433, 20]],
-  scree: [['troll', 409, 18, { gate: 414 }]],   /* 409: at 403 he stood a tile from the checkpoint at 404 - the landing (level review, 2026-09-24) */
+  scree: [['troll', 505, 18, { gate: 510 }]],   /* (claude/scree2: +96, the rockslide chase grew in before him) 409: at 403 he stood a tile from the checkpoint at 404 - the landing (level review, 2026-09-24) */
   hanging: [['shield', 85, 107]],
   /* THE MONASTERY keeps the Temple Guardian in its hall, so neither of its two holds a gate. Both stand on a floor the
      level walks the LENGTH of, and neither stands at the trapdoor either end of it: a crag troll loose in the
