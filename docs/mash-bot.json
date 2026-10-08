@@ -661,7 +661,7 @@
   }
  },
  "kings": {
-  "hash": "28f85bc660e1",
+  "hash": "11a3b329f288",
   "boss": {
    "boss": "king",
    "wins": 0,
@@ -861,7 +861,7 @@
    ]
   },
   "carried": {
-   "from": "2c8a083fe49f",
+   "from": "28f85bc660e1",
    "parts": [
     "boss",
     "mini"
@@ -909,23 +909,23 @@
     "heroLevel": 4
    },
    "pyro": {
-    "deaths": 1,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 196,
-    "hits": 11,
+    "hpLostPct": 200,
+    "hits": 13,
     "walked": 100,
     "lifts": 42,
-    "held": 15,
+    "held": 14,
     "duels": 0,
-    "boardLifts": 6,
+    "boardLifts": 5,
     "rides": 3,
-    "pulls": 2,
+    "pulls": 0,
     "ridden": {
      "swing": 3
     },
     "machines": true,
-    "frames": 15645,
-    "kills": 9,
+    "frames": 15075,
+    "kills": 11,
     "heroLevel": 4
    }
   }
