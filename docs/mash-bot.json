@@ -7828,7 +7828,7 @@
   }
  },
  "skyroad": {
-  "hash": "668e4c06b3d2",
+  "hash": "eefcb0d183a3",
   "boss": {
    "boss": "roc",
    "wins": 0,
@@ -7929,7 +7929,7 @@
    ]
   },
   "carried": {
-   "from": "423582834dab",
+   "from": "668e4c06b3d2",
    "parts": [
     "boss"
    ]
@@ -7937,49 +7937,49 @@
   "level": {
    "knight": {
     "deaths": 0,
-    "minHpPct": 10,
-    "hpLostPct": 137,
-    "hits": 12,
+    "minHpPct": 20,
+    "hpLostPct": 130,
+    "hits": 11,
     "walked": 100,
     "lifts": 22,
     "held": 0,
     "duels": 0,
-    "boardLifts": 2,
+    "boardLifts": 1,
     "rides": 2,
     "pulls": 0,
     "ridden": {
      "lift": 2
     },
     "machines": true,
-    "frames": 6830,
+    "frames": 6796,
     "kills": 0,
     "heroLevel": 9
    },
    "warden": {
     "deaths": 0,
-    "minHpPct": 6,
-    "hpLostPct": 155,
-    "hits": 13,
+    "minHpPct": 28,
+    "hpLostPct": 108,
+    "hits": 9,
     "walked": 100,
-    "lifts": 22,
+    "lifts": 23,
     "held": 0,
     "duels": 0,
-    "boardLifts": 1,
-    "rides": 2,
+    "boardLifts": 2,
+    "rides": 1,
     "pulls": 0,
     "ridden": {
-     "lift": 2
+     "lift": 1
     },
     "machines": true,
-    "frames": 6804,
-    "kills": 0,
+    "frames": 7136,
+    "kills": 1,
     "heroLevel": 9
    },
    "pyro": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 151,
-    "hits": 13,
+    "deaths": 0,
+    "minHpPct": 22,
+    "hpLostPct": 118,
+    "hits": 9,
     "walked": 100,
     "lifts": 22,
     "held": 0,
@@ -7991,7 +7991,7 @@
      "lift": 2
     },
     "machines": true,
-    "frames": 6734,
+    "frames": 6717,
     "kills": 0,
     "heroLevel": 9
    }
