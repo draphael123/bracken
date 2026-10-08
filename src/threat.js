@@ -151,6 +151,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE BANDIT KSAR (claude/ksar): THE HAWK SCOUT is a vulture's marked stoop (a 2) whose shriek sends the lookouts running: a 2.5. THE HAWK-MISTRESS is a boss: a 6. The gongs, keg stacks,
      flask racks, set kegs, bricked arches, the winch and the strongroom fight nobody */
   hawkscout: 2.5, hawkmistress: 6, ksgong: 0, kskegs: 0, ksflasks: 0, kskeg: 0, ksbarricade: 0, kswinch: 0, ksvault: 0,
+  /* THE TOWPATH (claude/towpath): THE FOG KNIGHT is a boss: a 6. The paddles, capstans, lamps, the lantern, the lychgate and the church door fight nobody */
+  fogknight: 6, tppaddle: 0, tpcapstan: 0, tplamp: 0, tplantern: 0, tplychgate: 0, tpchurch: 0,
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,
   /* THE FAIR'S GAMES (claude/fairlevel, src/fair-games.js): a striker's pad, a gallery's target, a ticket and the prize booth are machines you work, not foes - furniture, written down at 0 so the tools read them as gadgets */
