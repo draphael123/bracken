@@ -88,7 +88,7 @@ function cryptTile(x, y, o) {
 function earthTile(x, y, o) {
   return once(['e', x % 5, y % 4, o.up ? 'U' : '', o.aL ? 'L' : '', o.aR ? 'R' : '', o.depth > 2 ? 3 : o.depth].join(''), () => { const [c, g] = canvas(16, 16), wx0 = x * 16, wy0 = y * 16;
     for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const wx = wx0 + xx, wy = wy0 + yy; let col = CK.soil[(hash(wx >> 1, wy >> 1) + (wy >> 3)) % 4]; const dp = o.depth * 16 + yy;
-      if (hash(wx, wy) % 67 === 0) col = CK.pebble[hash(wx, wy + 3) % 3]; if (dp > 24 && hash(wx, wy) % 131 === 1) col = CK.bone; px(g, xx, yy, col); }
+      if (hash(wx, wy) % 211 === 0) col = CK.pebble[hash(wx, wy + 3) % 3]; if (dp > 24 && hash(wx, wy) % 397 === 1) col = CK.bone; px(g, xx, yy, col); }
     if (o.up) { for (let xx = 0; xx < 16; xx++) { const h = hash(wx0 + xx, 2) % 3; for (let k = 0; k < 4 + h; k++) px(g, xx, k, CK.turf[(hash(wx0 + xx, k) + k) % 4]); px(g, xx, 0, hash(wx0 + xx, 9) % 3 ? CK.turfHi : CK.turf[2]); if (hash(wx0 + xx, 4) % 5 === 0) px(g, xx, -0, '#7aa484'); } }
     if (o.aL) for (let yy = 0; yy < 16; yy++) px(g, 0, yy, CK.soil[3]);
     return c; });

@@ -6,6 +6,7 @@
 // blow CLANKS, flashes and says HIS AEGIS: GO ROUND - and his light bar ticks up gold (you fed him) - never silent.
 // main.js calls: spawnBoss, owns, on, update, take, drawBoss, drawOver, barName, end, read, show, clear, onLamp, onKindled.
 import * as PBM from './paladin-boss.js';
+import * as PAL from './redraw/paladin_art.js';
 import { BOSS_PHASE } from './boss-music.js';
 const { PB } = PBM;
 
@@ -77,49 +78,37 @@ export function makePaladinHands(ctx) {
   H.end = e => { if (S) { S.marks = []; S.holy = []; S.leap = null; } BOSS_PHASE.paladin = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, light: Math.round(S.light), n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, hurt: { ...(S.hurt || {}) } };
 
-  /* ---------- DRAWING (GREYBOX) ---------- */
-  /* HIM: white-and-gold plate, a great maul, a pale aegis in front while he guards; his pose by mode (plain shapes until the art pass) */
+  /* ---------- DRAWING (the art pass: src/redraw/paladin_art.js paints him from a pose rig that glides between his moves) ---------- */
+  /* HIM: white-and-gold plate, a gilt-rimmed aegis, a great maul, a nimbus that is his light bar made visible; the pose by mode, eased (no pops) */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
-    const x = R(e.x - cx), y = R(e.y - cy - (e.lift || 0)), f = e.face || 1, m = e.mode, flash = (e.hurtT || 0) > 0;
-    const plate = flash ? '#ffffff' : '#d8dce4', shade = flash ? '#ffffff' : '#9aa0ac', gold = flash ? '#ffffff' : '#d8b040', dark = '#1b1626';
-    g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(x - 11, R(e.y - cy) - 1, 22, 2); g.globalAlpha = 1;
-    const kneel = m === 'falter', crouch = kneel ? 10 : m === 'leapTell' ? 4 : 0;
-    /* legs, body, helm */
-    g.fillStyle = shade; g.fillRect(x - 6, y - 12 + crouch, 5, 12 - crouch); g.fillRect(x + 1, y - 12 + crouch, 5, 12 - crouch);
-    g.fillStyle = plate; g.fillRect(x - 8, y - 28 + crouch, 16, 17); g.fillStyle = gold; g.fillRect(x - 8, y - 20 + crouch, 16, 2); g.fillRect(x - 1, y - 28 + crouch, 2, 8);
-    g.fillStyle = plate; g.fillRect(x - 5, y - 36 + crouch, 10, 9); g.fillStyle = dark; g.fillRect(x + (f > 0 ? 1 : -4), y - 33 + crouch, 3, 2); g.fillStyle = gold; g.fillRect(x - 5, y - 37 + crouch, 10, 1);
-    g.fillStyle = '#e8e0c8'; g.fillRect(x - f * 9, y - 26 + crouch, 3, 14);   /* the tabard's tail */
-    /* THE MAUL, by pose: up for a tell, down through a blow, its head on the floor when he falters */
-    const up = /Tell$/.test(m) && m !== 'mendTell' && m !== 'kindleTell', swing = m === 'chain' || m === 'bash' || m === 'land' || m === 'rad';
-    let hx = x + f * 10, hy = y - 22 + crouch;
-    if (up) { hx = x - f * 4; hy = y - 46; } else if (swing) { hx = x + f * 22; hy = y - 8; } else if (kneel) { hx = x + f * 14; hy = y - 3; }
-    g.strokeStyle = '#6a4a2a'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + f * 4, y - 20 + crouch); g.lineTo(hx, hy); g.stroke(); g.lineWidth = 1;
-    g.fillStyle = flash ? '#ffffff' : '#7c8797'; g.fillRect(hx - 5, hy - 4, 10, 8); g.fillStyle = gold; g.fillRect(hx - 5, hy - 1, 10, 2);
-    if (up && (m === 'radTell' || m === 'leapTell')) { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 14); g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(hx, hy, 7, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-    /* HIS AEGIS: a pale arc of light in front of him while he guards (the angle it turns), brighter as the light is fuller */
-    if (m === 'walk' || m === 'recover') { const k = 0.25 + 0.5 * (S.light / PB.light.max); g.globalAlpha = k; g.strokeStyle = '#fff6c8'; g.lineWidth = 2; g.beginPath(); g.arc(x + f * 6, y - 18, 16, f > 0 ? -1.1 : Math.PI - 1.1 + 0.0, f > 0 ? 1.1 : Math.PI + 1.1); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
-    /* the bash: the aegis shoved forward */
-    if (m === 'bash' || m === 'bashTell') { g.globalAlpha = m === 'bash' ? 0.8 : 0.4; g.fillStyle = '#fff6c8'; g.fillRect(x + f * 12 - (f < 0 ? 4 : 0), y - 32, 4, 28); g.globalAlpha = 1; }
+    const p = e.pa || (e.pa = PAL.newPose()), dt = e.paT == null ? 1 / 60 : Math.max(0.001, Math.min(0.06, time - e.paT)); e.paT = time;
+    PAL.stepPose(p, e.mode, dt, e.x, { ward: S.ward > 0 });
+    const f = e.face || 1, x = R(e.x - cx), y = R(e.y - cy - (e.lift || 0)), fy = R(e.y - cy), flash = (e.hurtT || 0) > 0, m = e.mode, open = PBM.pbOpen(e);
+    g.globalAlpha = 0.3 * (1 - Math.min(1, (e.lift || 0) / 90)); g.fillStyle = '#10060a'; g.fillRect(x - 12, fy - 1, 24, 2); g.globalAlpha = 1;   /* his shadow stays on the floor when he leaps */
+    const spr = PAL.bakeFigure(p, { light: open ? 0 : S.light / PB.light.max, flash, phase3: S.ph >= 3, guard: m === 'walk' || m === 'recover', hammerGlow: m === 'rad' || m === 'radTell' ? 1 : 0 });
+    if (f > 0) g.drawImage(spr, x - PAL.OX, y - PAL.OY); else { g.save(); g.translate(x, 0); g.scale(-1, 1); g.drawImage(spr, -PAL.OX, y - PAL.OY); g.restore(); }
+    /* HIS AEGIS: a ward arc of light in front of him while he guards (the angle it turns): brighter as the light is fuller */
+    if (m === 'walk' || m === 'recover') { const k = 0.25 + 0.5 * (S.light / PB.light.max); g.globalAlpha = k * (0.8 + 0.2 * Math.sin(time * 8)); g.strokeStyle = '#fff6c8'; g.lineWidth = 2; g.beginPath(); g.arc(x + f * 9, y - 18, 17, f > 0 ? -1.1 : Math.PI - 1.1, f > 0 ? 1.1 : Math.PI + 1.1); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+    if (m === 'bash' || m === 'bashTell') { g.globalAlpha = m === 'bash' ? 0.7 : 0.35; g.fillStyle = '#fff6c8'; g.fillRect(x + f * 18 - (f < 0 ? 3 : 0), y - 30, 3, 24); g.globalAlpha = 1; }
     /* a prayer (mend, kindle): gold rising round him */
-    if (m === 'mendTell' || m === 'kindleTell') { g.globalAlpha = 0.4 + 0.3 * Math.sin(time * 12); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 18, 18, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; ctx.text(m === 'mendTell' ? 'MEND' : 'KINDLE', x, y - 48, '#ffd36b', 'center', 6); }
-    if (m === 'sleep') ctx.text('Z', x + 8 * f, y - 40 - R((time * 8) % 8), '#c8d8e8', 'center', 6);
-    if (e.guardFx > 0) { g.fillStyle = '#ffffff'; g.fillRect(x + f * 12 - 2, y - 34, 5, 18); }
+    if (m === 'mendTell' || m === 'kindleTell') { for (let i = 0; i < 7; i++) { const t = (time * 0.9 + i / 7) % 1; g.globalAlpha = 0.9 * (1 - t); g.fillStyle = i & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(x - 12 + ((i * 19) % 25), R(y - 6 - t * 38), 1, 2); } g.globalAlpha = 1; ctx.text(m === 'mendTell' ? 'MEND' : 'KINDLE', x, y - 58, '#ffd36b', 'center', 6); }
+    if (m === 'sleep') ctx.text('Z', x + 8 * f, y - 52 - R((time * 8) % 8), '#c8d8e8', 'center', 6);
+    if (e.guardFx > 0) { g.fillStyle = '#ffffff'; g.fillRect(x + f * 14 - 2, y - 34, 5, 18); }
   };
   /* THE MARKS, THE HOLY FLOOR, THE LIGHT BAR, and THE READ (open ring + timer, ward shell, the aegis's word) */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'paladinboss') return; const G = S.G;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', fy = R(G.floorY - cy);
     /* RADIANCE: red crosses on the floor, then the columns (the window's light) */
     for (const mk of S.marks) { const x = R(mk.x - cx);
-      if (e.mode === 'radTell') { g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, fy - 8); g.lineTo(x + 6, fy); g.moveTo(x + 6, fy - 8); g.lineTo(x - 6, fy); g.stroke(); g.globalAlpha = 0.15 + 0.1 * Math.sin(time * 10); g.fillStyle = '#fff6c8'; g.fillRect(x - PB.radR, R(G.roofY - cy), PB.radR * 2, fy - R(G.roofY - cy)); g.globalAlpha = 1; }
-      if (e.mode === 'rad') { g.globalAlpha = 0.75; g.fillStyle = '#fff6c8'; g.fillRect(x - PB.radR, R(G.roofY - cy), PB.radR * 2, fy - R(G.roofY - cy)); g.globalAlpha = 1; } }
+      if (e.mode === 'radTell') { g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, fy - 8); g.lineTo(x + 6, fy); g.moveTo(x + 6, fy - 8); g.lineTo(x - 6, fy); g.stroke(); PAL.drawColumn(g, x, R(G.roofY - cy), fy, PB.radR, time, 0.16 + 0.1 * Math.sin(time * 10)); }
+      if (e.mode === 'rad') PAL.drawColumn(g, x, R(G.roofY - cy), fy, PB.radR, time, 1); }
     /* JUDGEMENT: the red ring where he will land */
     if (S.leap && (e.mode === 'leapTell' || e.mode === 'leap')) { const x = R(S.leap.x - cx); g.strokeStyle = blink; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 1, PB.leapR, 5, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }
     /* THE HOLY FLOOR: it burns where he landed */
-    for (const q of S.holy) { const x = R(q.x - cx); for (let i = -PB.holyW; i < PB.holyW; i += 3) { const h = 4 + 5 * Math.abs(Math.sin(time * 9 + i)); g.fillStyle = (i / 3) & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(x + i, fy - R(h), 2, R(h)); } }
+    for (const q of S.holy) PAL.drawHolyFloor(g, R(q.x - cx), fy, PB.holyW, time, 1);
     /* THE LIGHT BAR over him (drawn with every change: gold up when his aegis drinks a blow, a dark notch when one lands) */
     const x = R(e.x - cx), by = R(e.y - PB.h - 18 - cy - (e.lift || 0)), w = 40, k = S.light / PB.light.max;
-    g.fillStyle = '#1b1626'; g.fillRect(x - w / 2 - 1, by - 1, w + 2, 5); g.fillStyle = PBM.pbOpen(e) ? '#5a5a6a' : S.barUp > 0 ? '#ffffff' : '#ffd36b'; g.fillRect(x - w / 2, by, R(w * k), 3);
-    if (S.barDown > 0) { g.fillStyle = '#ff6b6b'; g.fillRect(x - w / 2 + R(w * k), by, 3, 3); }
+    PAL.drawLightBar(g, x, by, w, k, { open: PBM.pbOpen(e), up: S.barUp > 0, down: S.barDown > 0 });
     ctx.text('LIGHT', x - w / 2 - 14, by - 1, '#ffd36b', 'center', 4);
     /* THE READ (B10) */
     const yy = R(e.y - PB.h / 2 - cy);

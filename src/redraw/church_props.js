@@ -172,10 +172,14 @@ export function bakeDoorBars(w, h, lit) { return once('bars' + w + h + lit, () =
   if (lit === 'rood') { rect(g, 0, 0, w, h, '#3a3a4a'); for (let x = 2; x < w; x += 5) rect(g, x, 0, 2, h, C.ironHi); for (let y = 4; y < h; y += 14) rect(g, 0, y, w, 2, C.iron); for (let y = 5; y < h; y += 14) for (let x = 3; x < w; x += 10) circle(g, x, y, 1.2, C.brassHi); return c; }
   rect(g, 0, 0, w, h, '#2a2230'); for (let x = 1; x < w; x += 4) { rect(g, x, 0, 2, h, C.iron); px(g, x, 0, C.ironHi); fillPoly(g, [[x - 1, h], [x + 3, h], [x + 1, h + 0]], C.iron); } for (let y = 6; y < h; y += 16) rect(g, 0, y, w, 2, C.ironLo); return c; }); }
 
+/* THE CANDLE STUB (the quest's find: five of them open the reliquary): a guttered stub of wax on a little brass dish, a thread of smoke, a glint */
+export function bakeStubIcon() { return once('stub', () => { const [c, g] = canvas(12, 14);
+  rect(g, 1, 11, 10, 2, C.brass); rect(g, 1, 11, 10, 1, C.brassHi); rect(g, 3, 6, 6, 5, C.wax); rect(g, 3, 6, 2, 5, '#ffffff'); rect(g, 7, 7, 2, 4, C.waxLo); rect(g, 8, 8, 1, 3, '#d8c898'); rect(g, 3, 5, 6, 1, '#d8d0b4'); px(g, 5, 4, C.wick); px(g, 5, 3, '#ffd36b'); px(g, 6, 3, '#ff9a3c'); px(g, 5, 2, '#fff6c8'); px(g, 10, 9, '#fff0a8');
+  outline(c, O); return c; }); }
 /* a contact sheet list for tools/lit-church-art-sheet.mjs */
 export function sheetItems() { const out = [];
   for (const f of [0, 1, 2, 3]) out.push(bakeFlame(0, f), bakeFlame(1, f), bakeFlame(2, f));
   out.push(bakeLampstand(), bakeCandelabrum(), bakeSconce(0), bakeSconce(1), bakeSealLamp(), bakeBrazier(), bakeVotive(), bakeVigil(), bakeCandleRack(1), bakeCandleRack(4), bakePipe(60), bakePipe(40, 1), bakeBellows(), bakeConsole());
   out.push(bakeHeadstone(0), bakeHeadstone(1), bakeHeadstone(2), bakeCross(), bakeTomb(4), bakeYew(0), bakeMoon(), bakeFence(), bakePew(4), bakePulpit(), bakeBanner(0), bakeBanner(1), bakeBanner(2), bakeBanner(3), bakeStatue(0), bakeStatue(1), bakeChandelier(), bakeBell(), bakeAltar(), bakeReliquary(3), bakeFont(), bakeConfessional());
-  out.push(bakeBonePile(0), bakeBonePile(1), bakeCoffin(0), bakeCoffin(1), bakeSarcophagus(), bakeChain(), bakeWeb(), bakeGrate(0), bakeGrate(1), bakeDoorBars(32, 80, 'west'), bakeDoorBars(16, 80, 'rood'));
+  out.push(bakeStubIcon(), bakeBonePile(0), bakeBonePile(1), bakeCoffin(0), bakeCoffin(1), bakeSarcophagus(), bakeChain(), bakeWeb(), bakeGrate(0), bakeGrate(1), bakeDoorBars(32, 80, 'west'), bakeDoorBars(16, 80, 'rood'));
   return out; }
