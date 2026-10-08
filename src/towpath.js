@@ -109,7 +109,7 @@ export function buildTowpath({ painter, T, TS }) {
   block(47, 47, 38, H - 1 - O);
   lock('A', 48, 55, 44, 40, 34, 'lo', { gate: [47, 33, 37], shallowLo: true });
   punt('A', 48, 8); paddle(54, 39, 'A'); paddle(46, 37, 'A');   /* (its twin on the lower bank: a punt that rode up without you comes back down) */
-  sign(45, 37, 'A LOCK. ITS PADDLE FILLS IT, AND THE WATER LIFTS THE PUNT.');
+  sign(45, 37, 'A LOCK: STRIKE ITS PADDLE (OR E) AND THE WATER LIFTS THE PUNT.');   /* (review S2: the sign says the VERB) */
   ground(56, 99, 34);
   /* THE UPPER BANK: a hedge knight waits where the punt lets you off - the lock at your back */
   hedge(60, 33, 'lockTop', { face: -1 });
@@ -127,7 +127,7 @@ export function buildTowpath({ painter, T, TS }) {
   lock('race', 100, 108, 44, 44, 35, 'hi', { race: true });   /* (drained, the race runs DRY: its bed is a pit you climb out of by the wheel-pit ladder) */
   ladder(100, 33, 43); ladder(108, 29, 43);   /* (a ladder up each end of the pit: the east one to the wheel's top paddle) */
   paddle(98, 33, 'race');
-  sign(96, 33, 'THE RACE TURNS THE WHEEL. ITS PADDLE IS ON THE BANK.');
+  sign(96, 33, 'THE RACE TURNS THE WHEEL. STRIKE ITS PADDLE ON THE BANK.');
   wheels.push({ id: 'mill', race: 'race', cx: 105, cy: 31 + O, r: 4, steps: [[100, 102, 32 + O], [103, 105, 30 + O], [106, 108, 27 + O]] });
   ground(109, 125, 27);   /* THE MILL: its loft floor */
   interiors.push([110, 124, 20 + O, 26 + O, 'tpMill']); block(109, 125, 19, 19); block(125, 125, 20, 23);   /* its roof, its east wall to the door (24-26) */
@@ -137,17 +137,20 @@ export function buildTowpath({ painter, T, TS }) {
   ground(126, 131, 32);   /* (the yard: wide enough to land in off the loft door) */
   pound('tail', 132, 138, 42, 33);
   bridge('tail', 132, 138, 32, 'open', [[130, 31]]);
-  sign(129, 31, 'THE SWING BRIDGE. ITS CAPSTAN TURNS IT ACROSS THE CUT.');
+  sign(129, 31, 'THE SWING BRIDGE: STRIKE THE CAPSTAN (OR E) TO TURN IT ACROSS.');
   grindy(138, 33, 'tailRace');   /* THE FIRST GRINDYLOW, alone under the far bank's lip: ripples at the edge (the canal's imp, met here first) */
   ground(139, 160, 32); boards(141, 148, 28);   /* (the mill yard's drying rack: a second height) */
   sign(140, 31, 'RIPPLES AT THE WATER\'S EDGE: SOMETHING IS UNDER. JUMP IT, OR STRIKE THE RIPPLE.');
   /* THE MILLS' EXAM: a HEDGE KNIGHT CHAMPION on the bank where the bridge lets you off - the cut at your back */
-  hedge(145, 31, 'millExam', { face: -1, elite: true });
+  hedge(145, 31, 'millExam', { face: -1, elite: true, wKey: 'hedgechampion' });   /* (claude/towpath fix, review M1a: weighty - L.foeHp/foeHit 'hedgechampion', SHIELDED: src/elite-kit.js AFFIX_AT) */
   /* THE LOCK-KEEPER'S HUT: the shrine after the exam, and THE LANTERN on its hook (E takes it) */
   ent('check', 151, 31);
   block(153, 158, 27, 27); block(153, 153, 28, 29); block(158, 158, 28, 29); interiors.push([154, 157, 28 + O, 31 + O, 'tpHut']);
   ent('tplantern', 156, 31);
   sign(154, 31, 'THE LOCK-KEEPER\'S LANTERN: E LIGHTS IT, OR DIMS IT.');
+  /* THE APPROACH SETS HIM UP (B8, review M4): the lock-keeper's armour on its stand in the hut, empty, fog in the visor - and what became of him */
+  decor.push({ kind: 'emptyArmour', x: 157, y: 31 + O });
+  sign(152, 31, 'THE LOCK-KEEPER WENT UP TO THE LAST GATE. ONLY HIS ARMOUR CAME BACK.');
   coins([147, 31], [159, 31]);
 
   // ================= 3. THE LOCK FLIGHT (161-221): THE SET PIECE - three locks up the hill as the fog comes in =================
@@ -159,21 +162,25 @@ export function buildTowpath({ painter, T, TS }) {
   ground(167, 168, 27);
   /* F2: DRY, and a pair of bargemen on its bed with the punt. Drop in and fight them in the pit - or FILL it from the landing and the water takes them
      (then drain it for the punt). The bed paddle lifts you either way */
-  lock('F2', 169, 174, 33, 33, 22, 'lo', { gate: [168, 22, 26] });
-  punt('F2', 169, 6); paddle(167, 26, 'F2'); paddle(174, 32, 'F2');
-  bargeman(171, 32, 'dryChamber', { face: -1 }); bargeman(173, 32, 'dryChamber', { face: -1 });
-  ground(175, 176, 22); riverrat(176, 21, 'f2Landing', { face: -1 });   /* (a river rat on F2's top landing: he hooks you back into the chamber as you step off the punt) */
+  lock('F2', 169, 172, 33, 33, 22, 'lo', { gate: [168, 22, 26] });
+  punt('F2', 169, 4); paddle(167, 26, 'F2'); paddle(172, 32, 'F2');
+  bargeman(170, 32, 'dryChamber', { face: -1 }); bargeman(172, 32, 'dryChamber', { face: -1 });
+  /* F2's TOP LANDING: a 4-column duel floor where the punt lets you off (claude/towpath fix, review M5: the river rat stood IN F3's lower-gate doorway at col 176,
+     held the gate open and hooked you off F3's punt - now he waits on the landing's middle, fought before you board) */
+  ground(173, 176, 22); riverrat(174, 21, 'f2Landing', { face: -1 });
   /* F3: in the fog. A watchman on the top gate's beam over it looses only at a lit hero; a grindylow in its water. Ride it up dim */
   lock('F3', 177, 182, 28, 23, 17, 'lo', { gate: [176, 17, 21] });
   punt('F3', 177, 6); paddle(182, 22, 'F3'); paddle(175, 21, 'F3');
   grindy(181, 23, 'f3Water');
-  boards(183, 188, 13); watchman(186, 12, 'f3Beam', { face: -1 }); ent('silver', 184, 12);   /* (the top gate's beam: a silver behind the watchman) */
+  boards(183, 188, 13); watchman(188, 12, 'f3Beam', { face: -1 }); ent('silver', 184, 12);   /* (the top gate's beam: a silver behind the watchman) */
   boards(195, 212, 13);   /* (the flight's footbridge over the top pound's bank: a second height) */
   ground(183, 221, 17);
   fog(156, 221, 0.35, { rises: 0.25 });   /* THE FOG COMES IN up the flight: thin at the hut, thickening as the night does */
   lamp(163, 26, true); lamp(189, 16, false);
-  /* the top of the flight: a bargeman dozing on his bollard in the fog, a lamp you can douse */
-  bargeman(200, 16, 'flightTopDozer', { face: -1, tp: { bargee: true, tpDoze: true } });
+  decor.push({ kind: 'fogKnight', x: 191, y: 16 + O, flight: true });   /* (B8: once a flight, the fog's edge by the top lamp holds a knight's shape - gone as you come to it) */
+  /* THE FLIGHT'S EXAM (review M1b): THE BARGEMAN CHAMPION on the top deck, six columns off F3's lip - a heavy blow and you go back down eleven rows into
+     the grindylow's water */
+  bargeman(190, 16, 'flightExam', { face: -1, elite: true, wKey: 'bargechampion' });
   coins([186, 16], [194, 16], [210, 16]);
   decor.push({ kind: 'bollard', x: 199, y: 16 + O }, { kind: 'milestone', x: 214, y: 16 + O });
 
@@ -184,7 +191,10 @@ export function buildTowpath({ painter, T, TS }) {
   bridge('basin', 222, 234, 17, 'across', [[220, 16], [236, 16]]);
   grindy(224, 18, 'basinW'); grindy(233, 18, 'basinE');
   ground(235, 265, 17);
-  riverrat(240, 16, 'basinSquad', { face: -1, tp: { bargee: true, tpDoze: true } }); riverrat(243, 16, 'basinSquad', { face: -1, tp: { bargee: true, tpDoze: true } });
+  /* THE BASIN'S EXAM (review M1c): THE RIVER-RAT CHAMPION dozing seven columns off the bridge's east lip, the basin behind you - come dim and you have the
+     first blow; come lit and he wakes with his squad and crosses (swing the deck from under him). A watchman on the bank with him (S1: one fewer canal man) */
+  riverrat(239, 16, 'basinSquad', { face: -1, elite: true, wKey: 'ratchampion', tp: { bargee: true, tpDoze: true } }); watchman(242, 16, 'basinSquad', { face: -1 });
+  ent('check', 244, 16);   /* THE THIRD SHRINE, after the basin's exam (review M1d asked col 218; tools/checkpoint-gaps measured that 65 route tiles from the hut's - under its MIN 80) */
   fog(222, 265, 0.6, { rises: 0.2 });
   lamp(237, 16, true);
   /* THE WAREHOUSES: brick, the canal town's first. Over the roofs (a ladder up the first's face); the alley under the gap is a pocket (a silver, a ladder out) */
@@ -202,7 +212,7 @@ export function buildTowpath({ painter, T, TS }) {
   lock('X', 268, 279, 27, 27, 18, 'hi');
   for (let x = 268; x <= 279; x++) set(x, 26, T.SPIKE);
   boards(269, 273, 21); boards(275, 279, 24);   /* (two ledges over the irons: a jump off the bank, a jump down to the culvert's lip) */
-  paddle(266, 16, 'X');
+  paddle(266, 16, 'X', { dark: true });   /* (review M3b: in the fog under an UNLIT lamp - the paddle is found only in a light: the lantern lit, or the lamp struck) */
   sign(265, 16, 'THE LAST LOCK. DRAINED, ITS BED IS THE OLD GATE IRONS.');
   block(280, 284, 14, 22); air(280, 284, 23, 25); block(280, 284, 26, 26);   /* the east wall over THE CULVERT (rows 23-25) into Y */
   interiors.push([280, 284, 23 + O, 25 + O, 'tpCulvert']);
@@ -215,10 +225,11 @@ export function buildTowpath({ painter, T, TS }) {
   /* THE LAST CUT: its bridge stands clear; the capstan on this bank swings it across - to THE DECK FOREMAN (the exam's elite) and a watchman */
   pound('cut', 297, 301, 22, 15);
   bridge('cut', 297, 301, 14, 'open', [[296, 13]]);
-  ground(302, 315, 14); boards(304, 311, 10);   /* (the warehouse crane's jib over the last bank) */
-  bargeman(306, 13, 'foreman', { face: -1, elite: true, cnSkin: 'deckforeman' }); watchman(311, 13, 'foreman', { face: -1 });
+  ground(302, 315, 14);   /* (the foreman's deck: flat - no jib over it for him to stand out of reach on) */
+  bargeman(306, 13, 'foreman', { face: -1, elite: true, cnSkin: 'deckforeman', gate: 311 }); watchman(309, 13, 'foreman', { face: -1 });   /* (THE LAST GATE: the foreman holds it - 311 - until he is down: tools/elites.mjs) */
   fog(265, 315, 0.7, { rises: 0.15 });
   lamp(267, 16, false); lamp(303, 13, true);
+  decor.push({ kind: 'fogKnight', x: 309, y: 13 + O });   /* (B8: an armour's shape pooled in the fog across the last cut - gone when you step to it; the lamp by it gutters as you pass) */
   ent('check', 313, 13);   /* THE SHRINE AFTER THE EXAM, and before him */
   coins([271, 20], [277, 23], [304, 13]);
 
@@ -244,8 +255,8 @@ export function buildTowpath({ painter, T, TS }) {
     examSpans: [[268, 301]],          /* THE LAST LOCK: the old gate irons kill (told as you walk in: src/survival.js examAt) */
     calm: [[0, W - 1, 0, H - 1]],     /* placed wholly by hand: nothing sprinkled */
     /* THE CANAL MEN'S WEIGHT (difficulty v2: fewer, weightier foes): a bargeman's hook and a watchman's bolt hit like the act's, and they stand a blow or two longer (main.js reads L.foeHit / L.foeHp by cnSkin) */
-    foeHit: { bargeman: 3.0, riverrat: 3.0, watchman: 2.4, deckforeman: 2.6 },
-    foeHp: { bargeman: 1.8, riverrat: 1.6, watchman: 1.4, deckforeman: 1.3 },
+    foeHit: { bargeman: 3.4, riverrat: 3.4, watchman: 2.8, deckforeman: 3.6, hedgechampion: 1.7, bargechampion: 3.6, ratchampion: 3.6 },
+    foeHp: { bargeman: 1.8, riverrat: 1.6, watchman: 1.4, deckforeman: 2.4, hedgechampion: 2.0, bargechampion: 2.2, ratchampion: 2.2 },   /* (review M1a: the elites WEIGHTY - a 25-40 s duel; wKey names an elite's own row over its skin's) */
     checkRun: 200,
     squadBands: [{ lo: AX, hi: W - 1, spots: 0, why: "THE FOG KNIGHT's towpath: no squad stands in a boss arena" }],
     unlocks: [

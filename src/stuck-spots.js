@@ -176,17 +176,20 @@ export const STUCK_HANDS = {
      handsState: lock.<id> lo | hi | dry | up | down, bridge.<id> across | open); rows are the sheet's (the design rows + 10) */
   towpath: [
     { id: 'tp-lockA', zone: [40, 40, 56, 55], steps: [ { key: 'lockA', is: ['lock.A', 'lo'], at: [54, 49], line: 'THE LOCK PADDLE, BY THE PUNT' } ] },
-    { id: 'tp-race', zone: [92, 35, 110, 55], steps: [ { key: 'race', is: ['lock.race', 'hi'], at: [98, 43], line: 'THE RACE PADDLE ON THE BANK' } ] },
+    { id: 'tp-race', zone: [92, 35, 110, 55], steps: [ { key: 'race', is: ['lock.race', 'hi'], at: [98, 43], line: 'THE RACE PADDLE ON THE BANK' },
+      { key: 'wheel', is: ['wheel.mill', 'still'], rows: [37.2, 60], colLt: 109, at: [107, 36], glint: 'stall', line: 'THE WHEEL STANDS STILL: CLIMB ITS PADDLES' } ] },   /* (claude/towpath fix, review S4: the stilled wheel, the warehouse ladder, the culvert) */
     { id: 'tp-tail', zone: [126, 35, 140, 45], steps: [ { key: 'tail', is: ['bridge.tail', 'open'], at: [130, 41], line: 'THE CAPSTAN BY THE CUT' } ] },
     { id: 'tp-f1', zone: [152, 30, 168, 48], steps: [
       { key: 'f1bank', is: ['lock.F1', 'hi'], colLt: 160, at: [159, 41], line: 'THE LOCK IS FULL: ITS PADDLE IS ON THE BANK' },
       { key: 'f1punt', is: ['lock.F1', 'lo'], at: [166, 42], line: 'THE PADDLE BY THE PUNT' } ] },
     { id: 'tp-f2', zone: [167, 25, 176, 44], steps: [
-      { key: 'f2', is: ['lock.F2', 'dry'], at: [174, 42], line: 'THE PADDLE IN THE DRY CHAMBER' },
+      { key: 'f2', is: ['lock.F2', 'dry'], at: [172, 42], line: 'THE PADDLE IN THE DRY CHAMBER' },
       { key: 'f2hi', is: ['lock.F2', 'hi'], colLt: 169, at: [167, 36], line: 'THE PUNT RODE UP: ITS PADDLE IS ON THE LANDING' } ] },
     { id: 'tp-f3', zone: [175, 22, 183, 38], steps: [ { key: 'f3', is: ['lock.F3', 'lo'], at: [182, 32], line: 'THE PADDLE BY THE PUNT' } ] },
     { id: 'tp-basin', zone: [216, 20, 238, 30], steps: [ { key: 'basin', is: ['bridge.basin', 'open'], at: [220, 26], line: 'A CAPSTAN ON EACH BANK' } ] },
-    { id: 'tp-x', zone: [262, 20, 280, 37], steps: [ { key: 'x', is: ['lock.X', 'hi'], colLt: 268, at: [266, 26], line: 'THE LAST LOCK IS FULL: ITS PADDLE IS ON THE BANK' } ] },
+    { id: 'tp-ladder', zone: [243, 20, 246, 28], steps: [ { key: 'ladder', rows: [25.5, 27.5], colLt: 246, at: [245, 25], glint: 'stall', line: 'THE LADDER UP THE WAREHOUSE FACE' } ] },
+    { id: 'tp-x', zone: [262, 20, 280, 37], steps: [ { key: 'xlamp', is: ['lamp.x', 'out'], colLt: 268, at: [266, 26], line: 'THE LAMP IS OUT: STRIKE IT, OR LIGHT THE LANTERN' }, { key: 'x', is: ['lock.X', 'hi'], colLt: 268, at: [266, 26], line: 'THE LAST LOCK IS FULL: ITS PADDLE IS ON THE BANK' } ] },
+    { id: 'tp-culvert', zone: [268, 28, 279, 37], steps: [ { key: 'culvert', is: ['lock.X', 'dry'], rows: [29, 35.5], at: [282, 35], glint: 'stall', line: 'THE CULVERT UNDER THE EAST WALL' } ] },
     { id: 'tp-y', zone: [280, 20, 293, 37], steps: [ { key: 'y', is: ['lock.Y', 'dry'], at: [291, 36], line: 'THE PADDLE BY THE PUNT' } ] },
     { id: 'tp-cut', zone: [292, 18, 302, 26], steps: [ { key: 'cut', is: ['bridge.cut', 'open'], at: [296, 23], line: 'THE CAPSTAN BY THE CUT' } ] },
   ],

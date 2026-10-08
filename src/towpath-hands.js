@@ -39,7 +39,8 @@ export function makeTowpathHands(ctx) {
     K.wheels = D.wheels.map(w => ({ ...w, a: 0, v: 0, cd: 0 }));
     K.gadgets = []; K.cd = new Map(); K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = [];
     for (const e of L.ents) if (e.t === 'tppaddle' || e.t === 'tpcapstan' || e.t === 'tplamp' || e.t === 'tplantern' || e.t === 'tpchurch' || e.t === 'tplychgate')
-      K.gadgets.push({ t: e.t, x: e.x * ts + 8, y: (e.y + 1) * ts, lock: e.lock, bridge: e.bridge, arena: !!e.arena, to: e.to, ex: e.x, ey: e.y, flash: 0 });
+      K.gadgets.push({ t: e.t, x: e.x * ts + 8, y: (e.y + 1) * ts, lock: e.lock, bridge: e.bridge, arena: !!e.arena, to: e.to, ex: e.x, ey: e.y, flash: 0, dark: !!e.dark });
+    K.decor = (D.decor || []).map(d => ({ ...d, a: d.kind === 'fogKnight' ? 1 : 0, gone: false }));
     for (const k of K.locks) { gateCells(k); syncPool(k); }
     for (const b of K.bridges) bridgeCells(b);
     for (const w of K.wheels) wheelCells(w);
@@ -60,9 +61,12 @@ export function makeTowpathHands(ctx) {
   const levelOf = k => (k.y >= k.loY - 3 ? (k.lo * TS() >= k.bedY - 1 ? 'dry' : 'lo') : k.y <= k.hiY + 3 ? 'hi' : k.to < k.y ? 'up' : 'down');
   function syncPool(k) { if (k.virtual) return; const p = (ctx.L.pools || [])[k.pool]; if (!p) return; p.y = Math.min(k.y, k.bedY); p.depth = Math.max(0, k.bedY - k.y); p.dry = p.depth <= 3; p.shallow = !!k.shallowLo && p.depth <= 72; }
   function gateCells(k) { if (!k.gate) return; const shut = !k.gateOpen; for (let y = k.gate.top; y <= k.gate.bot; y++) ctx.cellSet(k.gate.x, y, shut ? T().SOLID : T().AIR); }
-  /* is a body in the gate's doorway (its column, its rows) */
-  const inGate = k => { if (!k.gate) return false; const ts = TS(), l = k.gate.x * ts, r = l + ts, t = k.gate.top * ts, b = (k.gate.bot + 1) * ts;
-    return ctx.bodies().some(q => { const bx = ctx.box(q); return bx.r > l && bx.l < r && bx.b > t && bx.t < b; }); };
+  /* is a body in the gate's doorway (its column, its rows above the sill). A HERO anywhere in it holds the gate (it never shuts on you); a FOE only when he
+     stands IN the doorway - his middle in the gate's column, his feet above its sill - not one fighting on the landing beside it (claude/towpath fix, review M5:
+     the F2 landing's river rat held F3's gate open and the water waited on him). Returns 'hero' | 'foe' | false */
+  const inGate = k => { if (!k.gate) return false; const ts = TS(), l = k.gate.x * ts, r = l + ts, t = k.gate.top * ts, b = (k.gate.bot + 1) * ts, heroes = new Set(ctx.players);
+    let who = false; for (const q of ctx.bodies()) { const bx = ctx.box(q); if (!(bx.r > l && bx.l < r && bx.b > t && bx.t < b)) continue;
+      if (heroes.has(q) || q === ctx.hero()) return 'hero'; const mx = (bx.l + bx.r) / 2; if (mx >= l && mx < r && bx.b <= b + 1) who = 'foe'; } return who; };
   /* A PADDLE: a low (or dry, or draining) chamber fills, a high (or filling) one drains. by: 'hero' | 'boss' */
   function work(k, by) {
     if (!k) return null; const ts = TS();
@@ -86,7 +90,7 @@ export function makeTowpathHands(ctx) {
       /* the lower gate: it must shut before the water stands over the lower pound - and it never shuts on a body in its doorway (the water waits) */
       let target = k.to;
       if (k.gate) { const wantShut = Math.min(k.y, target) < k.loY - 3;
-        if (wantShut && k.gateOpen) { if (inGate(k)) target = Math.max(target, k.loY - 3); else { k.gateOpen = false; gateCells(k); ctx.resolve && ctx.resolve(); ctx.sfx.clank && ctx.sfx.clank(); } }
+        if (wantShut && k.gateOpen) { const held = inGate(k); if (held) { target = Math.max(target, k.loY - 3); if (held === 'foe' && once('gateFoe:' + k.id)) number(k.gate.x * ts + 8, k.gate.top * ts - 20, 'SOMETHING STANDS IN THE GATE'); } else { k.gateOpen = false; gateCells(k); ctx.resolve && ctx.resolve(); ctx.sfx.clank && ctx.sfx.clank(); } }
         if (!wantShut && !k.gateOpen && k.y >= k.loY - 3) { k.gateOpen = true; gateCells(k); ctx.sfx.clank && ctx.sfx.clank(); } }
       if (Math.abs(target - k.y) > 0.5) { const was = k.y; k.y += Math.sign(target - k.y) * Math.min(Math.abs(target - k.y), TP.fill * dt); if ((k.y < was) && Math.random() < dt * 8) ctx.burst((k.x0 + Math.random() * (k.x1 - k.x0 + 1)) * ts, k.y, 1, ['#cfe6f0', '#9ac0d0'], 20, 0.4); }
       syncPool(k);
@@ -133,6 +137,11 @@ export function makeTowpathHands(ctx) {
       if (d < r) best = Math.max(best, 1 - d / r); }
     const ts = TS(); for (const l of K.lamps) if (l.lit) { const d = Math.hypot(l.x * ts + 8 - x, l.y * ts - 14 - y); if (d < TP.lampR) best = Math.max(best, 1 - d / TP.lampR); } return best; };
   H.lightAt = (x, y) => (K ? lightAt(x, y) : 0);
+  /* IS IT LIT HERE: a LIT lantern's clearing or a lit lamp's (a dimmed ember finds nothing) - THE LAST LOCK's paddle stands in the dark under an unlit lamp (review M3b) */
+  const litAt = (x, y) => { const ts = TS(); for (const pp of ctx.players) { if (pp.dead) continue; const q = lantern(pp); if (q.has && q.lit && Math.hypot(pp.x - x, pp.y - 10 - y) < TP.litR) return true; }
+    return K.lamps.some(l => l.lit && Math.hypot(l.x * ts + 8 - x, l.y * ts - 14 - y) < TP.lampR); };
+  const darkPaddle = g => !!(g && g.dark && !litAt(g.x, g.y - 14));
+  H.litAt = (x, y) => (K ? litAt(x, y) : false);
   H.fogAt = x => fogAt(x);
   /* IS THIS HERO SEEN by foe e: out of the fog, yes (the game's own eyes); in it, only if he is lit (his lantern, or a lamp's clearing) and in range, or at e's elbow */
   const seenBy = (e, pp) => { if (!pp || pp.dead) return false; const d = Math.hypot(pp.x - e.x, pp.y - e.y); if (d < TP.elbow) return true;
@@ -155,7 +164,7 @@ export function makeTowpathHands(ctx) {
   }
   function use(g, P) {
     g.flash = 0.3;
-    if (g.t === 'tppaddle') return !!work(lockOf(g.lock), 'hero');
+    if (g.t === 'tppaddle') { if (darkPaddle(g)) { if (!(K.darkSaid > 0)) { K.darkSaid = 4; number(P.x, P.y - 34, 'THE LAMP IS OUT: STRIKE IT, OR LIGHT THE LANTERN'); } return false; } return !!work(lockOf(g.lock), 'hero'); }
     if (g.t === 'tpcapstan') return !!swing(bridgeOf(g.bridge), 'hero');
     if (g.t === 'tplamp') { const l = K.lamps.find(q => q.x * TS() + 8 === g.x); if (!l) return false; l.lit = !l.lit; K.n.lamps++; ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(g.x, g.y - 22, 6, l.lit ? ['#ffd36b', '#fff2b0'] : ['#5a5048', '#3a3430'], 30, 0.3);
       if (l.lit && once('lamp')) number(g.x, g.y - 44, 'THE LAMP BURNS THE FOG OFF ROUND IT'); if (l.arena && ctx.bossLamp) ctx.bossLamp(l); return true; }
@@ -168,8 +177,10 @@ export function makeTowpathHands(ctx) {
   H.interact = P => {
     if (!K || !P || P.dead) return false; let best = null, bd = TP.reach;
     for (const g of K.gadgets) { if (g.t === 'tplychgate') continue; if (g.t === 'tplantern' && lantern(P).has) continue; const d = Math.abs(g.x - P.x); if (d < bd && Math.abs(g.y - P.y) < 30) { bd = d; best = g; } }
+    const q = lantern(P);
+    if (best && darkPaddle(best) && q.has && !q.lit) best = null;   /* (E at the paddle in the dark: your lantern first) */
     if (best) return use(best, P);
-    const q = lantern(P); if (!q.has) return false;
+    if (!q.has) return false;
     q.lit = !q.lit; if (q.lit) K.n.lights++; else K.n.dims++; ctx.sfx.clank && ctx.sfx.clank();
     if (once(q.lit ? 'lit' : 'dim')) number(P.x, P.y - 34, q.lit ? 'LIT: YOU SEE THE WAY - AND THEY SEE YOU' : 'DIMMED: THE FOG HIDES YOU - AND THE WAY');
     return true;
@@ -186,8 +197,9 @@ export function makeTowpathHands(ctx) {
     for (const pp of ctx.players) { if (pp.dead) continue; const p = (K.L.pools || []).find(q => q.tp && q.shallow && !q.dry && pp.x > q.x0 && pp.x < q.x1 && pp.y > q.y + 6);
       pp.tpWade = p ? (pp.tpWade || 0) + dt : 0; if (pp.tpWade > 1.2 && K.safe.get(pp.n || 1)) { const s = K.safe.get(pp.n || 1); pp.x = s.x; pp.y = s.y; pp.vx = 0; pp.vy = 0; pp.tpWade = 0; ctx.sfx.splash && ctx.sfx.splash(); if (once('wade')) number(pp.x, pp.y - 34, 'YOU WADE OUT TO THE BANK'); } }
     for (const g of K.gadgets) g.flash = Math.max(0, g.flash - dt);
-    /* THE LANTERN ON ITS HOOK: walked past without it, it is yours (and said) - the rest of the level reads it */
-    for (const pp of ctx.players) { const q = lantern(pp); if (!q.has && pp.x > (K.D.lantern.x + 3) * ts && !pp.dead) { q.has = true; q.lit = true; if (once('lanternPast')) number(pp.x, pp.y - 34, "THE LOCK-KEEPER'S LANTERN: E LIGHTS IT, OR DIMS IT"); } }
+    /* THE LANTERN ON ITS HOOK: walked through the hut (to its hook - no E), it is yours, lit (and said) - every player holds it before the flight (review M3a) */
+    K.darkSaid = Math.max(0, (K.darkSaid || 0) - dt);
+    for (const pp of ctx.players) { const q = lantern(pp); if (!q.has && pp.x >= K.D.lantern.x * ts && !pp.dead) { q.has = true; q.lit = true; if (once('lanternPast')) number(pp.x, pp.y - 34, "THE LOCK-KEEPER'S LANTERN: E LIGHTS IT, OR DIMS IT"); } }
     /* A DROWNING: a man under a lock's or a cut's water - a chamber filled over him, a bridge swung from under him - is drowned (the game's own hazardFoe) */
     for (const p of ctx.L.pools || []) { if (!p.tp || p.dry || p.shallow) continue; for (const e of ctx.enemies()) { if (!e.alive || e.noGrav || e.t === 'grindylow' || e === ctx.boss || !(e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6 && e.y <= (p.bottom ?? p.y + 400) + 8)) continue;
       if (ctx.drown(e)) { K.n.drowned++; if (once('drowned')) number(e.x, p.y - 30, 'THE WATER TAKES HIM'); } } }
@@ -196,6 +208,10 @@ export function makeTowpathHands(ctx) {
       for (const k of K.locks) if (!k.virtual && !k.race && near((k.x0 + k.x1) / 2 * ts, k.y, 120) && once('lockSeen')) number(P0.x, P0.y - 34, 'A LOCK: ITS PADDLE MOVES THE WATER');
       if (fogAt(P0.x) > 0.45 && once('fog')) number(P0.x, P0.y - 34, 'THE FOG IS IN: A WATCHMAN SEES ONLY WHAT IS LIT');
       if (K.L.examSpans && K.L.examSpans.some(s => P0.x >= s[0] * ts && P0.x < (s[1] + 1) * ts) && once('exam')) number(P0.x, P0.y - 44, 'THE LAST LOCK: DRAINED, ITS IRONS KILL'); }
+    /* THE APPROACH (B8, review M4): a knight's shape held in the fog's edge - it thins as you come and is gone for good at four columns; the lamps by it gutter */
+    if (P0 && !P0.dead) for (const d of K.decor) { if (d.kind !== 'fogKnight' || d.gone) continue; const dc = Math.abs(P0.x - (d.x * ts + 8)) / ts;
+      d.a = Math.max(0, Math.min(1, (dc - 4) / 8)); if (dc < 4) { d.gone = true; d.a = 0; for (const l of K.lamps) if (Math.abs(l.x - d.x) < 9) l.gutter = 1.4; ctx.sfx.tell && ctx.sfx.tell(false); } }
+    for (const l of K.lamps) if (l.gutter > 0) l.gutter = Math.max(0, l.gutter - dt);
     stall(P0, dt);
   };
 
@@ -224,7 +240,9 @@ export function makeTowpathHands(ctx) {
       if (lv === 'dry' && !live) { const pe = puntEnd('F2'); return pe ? at(pe.x, pe.y, null, 1) : null; } return null; }
     if (c > 174 && c < 183 && row > 15 + O) return lockStep('F3', 175, 21 + O);
     if (c > 218 && c < 238 && row < 19 + O) { const b = bridgeOf('basin'); if (b && !b.across) { const cap = c < 228 ? 220 : 236; return at(cap * ts + 8 + (c < 228 ? -10 : 10), (16 + 1 + O) * ts, 'atk', c < 228 ? 1 : -1); } }
-    if (c > 263 && c < 280 && row < 18 + O) { const k = lockOf('X'), lv = levelOf(k); if (lv === 'hi') return at(266 * ts + 8 - 10, (17 + O) * ts, 'atk', 1); if (lv === 'down') return at(266 * ts, (17 + O) * ts, null, 1, true); }
+    if (c > 263 && c < 280 && row < 18 + O) { const k = lockOf('X'), lv = levelOf(k), pd = K.gadgets.find(g => g.t === 'tppaddle' && g.lock === 'X');
+      if (lv === 'hi' && darkPaddle(pd)) return at(266 * ts + 8 - 10, (17 + O) * ts, 'talk', 1);   /* (in the dark: E lights the lantern) */
+      if (lv === 'hi') return at(266 * ts + 8 - 10, (17 + O) * ts, 'atk', 1); if (lv === 'down') return at(266 * ts, (17 + O) * ts, null, 1, true); }
     if (c > 279 && c < 293 && row > 20 + O) return lockStep('Y', 283, 25 + O);
     if (c > 292 && c < 297 && row < 15 + O) { const b = bridgeOf('cut'); if (b && !b.across) return at(296 * ts + 8 - 10, (14 + O) * ts, 'atk', 1); }
     return null; };
@@ -235,6 +253,7 @@ export function makeTowpathHands(ctx) {
     if (kind === 'bridge') { const b = bridgeOf(id); return b ? (b.across ? 'across' : 'open') : ''; }
     if (kind === 'wheel') { const w = K.wheels.find(q => q.id === id); return w ? (w.still ? 'still' : 'turning') : ''; }
     if (kind === 'lantern') { const q = lantern(ctx.hero()); return q.has ? (q.lit ? 'lit' : 'dim') : 'none'; }
+    if (kind === 'lamp') { const pd = K.gadgets.find(g => g.t === 'tppaddle' && g.lock === id.toUpperCase() && g.dark); return pd ? (darkPaddle(pd) && levelOf(lockOf(pd.lock)) === 'hi' ? 'out' : 'lit') : ''; }   /* (out: dark while the lock still wants its paddle) */
     if (kind === 'squad') return ctx.enemies().some(e => e.alive && e.squad === id) ? 'alive' : 'gone';
     return ''; };
   H.handsState = n => (K ? handsState(n) : '');
@@ -273,19 +292,24 @@ export function makeTowpathHands(ctx) {
       else { g.fillStyle = '#4a3820'; g.fillRect(pivL, y - 7, len, 1); for (let i = 0; i <= len; i += 16) g.fillRect(pivL + i, y - 7, 1, 7); } }
     /* THE GADGETS: paddles (a rack post and its windlass), capstans (a drum), lamps, the lantern on its hook, the lychgate, the church door */
     for (const q of K.gadgets) { if (!inX(q.x)) continue; const x = R(q.x - cx), y = R(q.y - cy), fl = q.flash > 0;
+      if (q.t === 'tppaddle' && darkPaddle(q)) { g.fillStyle = 'rgba(40,40,44,0.5)'; g.fillRect(x - 2, y - 22, 4, 22); continue; }   /* (in the dark: only a post's shape) */
       if (q.t === 'tppaddle') { const k = lockOf(q.lock); g.fillStyle = fl ? '#fff6c8' : '#4a3a2a'; g.fillRect(x - 2, y - 22, 4, 22); g.fillStyle = '#8a8a8a'; g.fillRect(x - 5, y - 24, 10, 3);
         g.strokeStyle = fl ? '#fff6c8' : '#c8c8c8'; g.beginPath(); g.arc(x, y - 14, 5, 0, Math.PI * 2); g.stroke(); const a = time * (k && Math.abs(k.to - k.y) > 0.5 ? 6 : 0); g.beginPath(); g.moveTo(x, y - 14); g.lineTo(x + Math.cos(a) * 7, y - 14 + Math.sin(a) * 7); g.stroke();
         if (k) { const up = k.to < k.y - 0.5, dn = k.to > k.y + 0.5; if (up || dn) ctx.text(up ? 'FILLING' : 'DRAINING', x, y - 34, '#cfe6f0', 'center', 5); } }
       else if (q.t === 'tpcapstan') { g.fillStyle = fl ? '#fff6c8' : '#5a4630'; g.fillRect(x - 5, y - 12, 10, 12); g.fillStyle = '#3a2e20'; g.fillRect(x - 7, y - 13, 14, 2); const a = time * 2; g.fillStyle = '#8a7048'; g.fillRect(x + R(Math.cos(a) * 8) - 1, y - 9, 3, 2); }
-      else if (q.t === 'tplamp') { const l = K.lamps.find(z => z.x * ts + 8 === q.x); g.fillStyle = '#2e2a26'; g.fillRect(x - 1, y - 26, 3, 26); g.fillStyle = l && l.lit ? '#ffd36b' : '#4a4640'; g.fillRect(x - 3, y - 32, 7, 7);
-        if (l && l.lit) { g.globalAlpha = 0.25 + 0.08 * Math.sin(time * 9); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 28, 14, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; } }
+      else if (q.t === 'tplamp') { const l = K.lamps.find(z => z.x * ts + 8 === q.x), gut = l && l.gutter > 0 && Math.sin(time * 40) > 0; g.fillStyle = '#2e2a26'; g.fillRect(x - 1, y - 26, 3, 26); g.fillStyle = l && l.lit && !gut ? '#ffd36b' : '#4a4640'; g.fillRect(x - 3, y - 32, 7, 7);
+        if (l && l.lit && !gut) { g.globalAlpha = 0.25 + 0.08 * Math.sin(time * 9); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 28, 14, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; } }
       else if (q.t === 'tplantern') { if (lantern(ctx.hero()).has) continue; g.fillStyle = '#3a2e20'; g.fillRect(x - 1, y - 30, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(x - 3, y - 22, 7, 8); g.globalAlpha = 0.3; g.beginPath(); g.arc(x, y - 18, 12, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       else if (q.t === 'tplychgate') { g.fillStyle = '#4a3a2a'; g.fillRect(x - 18, y - 30, 4, 30); g.fillRect(x + 14, y - 30, 4, 30); g.fillStyle = '#6a3a2a'; g.beginPath(); g.moveTo(x - 24, y - 30); g.lineTo(x, y - 44); g.lineTo(x + 24, y - 30); g.fill();
         g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 30, 4, 4); }
       else if (q.t === 'tpchurch') { g.fillStyle = '#5a5048'; g.fillRect(x - 12, y - 34, 24, 34); g.fillStyle = '#2a2420'; g.fillRect(x - 7, y - 26, 14, 26); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 32, 4, 4);
         if (Math.abs(ctx.hero().x - q.x) < 40 && Math.abs(ctx.hero().y - q.y) < 40) ctx.text('THE LIT CHURCH', x, y - 44, '#ffe9a0', 'center', 5); } }
     /* THE DECOR (greybox): milestones, willows, cattle, bollards */
-    for (const d of K.D.decor) { if (!inX(d.x * ts)) continue; const x = R(d.x * ts + 8 - cx), y = R((d.y + 1) * ts - cy);
+    for (const d of K.decor) { if (!inX(d.x * ts)) continue; const x = R(d.x * ts + 8 - cx), y = R((d.y + 1) * ts - cy);
+      if (d.kind === 'emptyArmour') { g.fillStyle = '#3a3026'; g.fillRect(x - 1, y - 4, 3, 4); g.fillStyle = '#2a2622'; g.fillRect(x - 6, y - 30, 12, 18); g.fillRect(x - 4, y - 12, 3, 9); g.fillRect(x + 1, y - 12, 3, 9);
+        g.fillRect(x - 4, y - 38, 8, 8); g.fillStyle = 'rgba(200,210,220,' + (0.35 + 0.15 * Math.sin(time * 1.3)).toFixed(2) + ')'; g.fillRect(x - 3, y - 35, 6, 2); continue; }   /* (the lock-keeper's armour, rust-black, fog in its visor) */
+      if (d.kind === 'fogKnight') { if (d.gone || d.a <= 0.02) continue; g.globalAlpha = 0.28 * d.a; g.fillStyle = '#d8e0e8'; g.fillRect(x - 7, y - 32, 14, 20); g.fillRect(x - 5, y - 12, 4, 12); g.fillRect(x + 1, y - 12, 4, 12);
+        g.fillRect(x - 5, y - 42, 10, 10); g.fillRect(x + 8, y - 40, 2, 34); g.globalAlpha = 0.6 * d.a; g.fillStyle = '#9ad0ff'; g.fillRect(x - 3, y - 38, 6, 2); g.globalAlpha = 1; continue; }   /* (a plate shape in the fog: gone as you come) */
       if (d.kind === 'milestone') { g.fillStyle = '#8a8478'; g.fillRect(x - 3, y - 10, 6, 10); }
       else if (d.kind === 'willow') { g.fillStyle = '#3a3024'; g.fillRect(x - 2, y - 30, 4, 30); g.fillStyle = 'rgba(70,100,60,0.8)'; for (let i = -3; i <= 3; i++) g.fillRect(x + i * 4, y - 34 + Math.abs(i) * 2, 2, 22 - Math.abs(i) * 2); }
       else if (d.kind === 'cattle') { g.fillStyle = '#5a4a3a'; g.fillRect(x - 10, y - 10, 20, 7); g.fillRect(x + 8, y - 13, 5, 5); g.fillRect(x - 8, y - 3, 2, 3); g.fillRect(x + 6, y - 3, 2, 3); }

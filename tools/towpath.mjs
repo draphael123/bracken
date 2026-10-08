@@ -48,9 +48,12 @@ ok(L.rigBands.length === L.moversExtra.filter(q => q.kind === 'punt').length, 'e
 let spikes = 0, spikesOut = 0; for (let y = 0; y < L.H; y++) for (let x = 0; x < L.W; x++) if (at(x, y) === T.SPIKE) { spikes++; if (!L.examSpans.some(s => x >= s[0] && x <= s[1])) spikesOut++; }
 ok(spikes > 0 && spikesOut === 0, 'the old gate irons are in the exam only');
 /* SHRINES */
-const cps = ents('check').map(e => e.x).sort((a, b) => a - b); ok(cps.length === 2, 'two shrines (one after the mills\' exam, one after the last lock)');
-ok(cps[0] >= 140 && cps[0] <= 260 && cps[1] - cps[0] >= 140 && cps[1] - cps[0] <= 260, 'shrines 140-260 columns apart');
-ok(cps[1] < L.arena.wallL, 'the second shrine stands before the Fog Knight');
+/* (claude/towpath fix, review M1d - Daniel's standing rec: a third shrine, after the basin's exam. The route between them is checkpoint-gaps' to measure in walked
+   tiles: >= 80 between two shrines unless the second is the boss's door; the first stands 140-260 from the start; the last before him) */
+const cps = ents('check').map(e => e.x).sort((a, b) => a - b); ok(cps.length === 3, 'three shrines (after the mills\' exam, after the basin\'s exam, after the last lock)');
+ok(cps[0] >= 140 && cps[0] <= 260 && cps[1] - cps[0] >= 80 && cps[1] - cps[0] <= 200 && cps[2] - cps[1] <= 200, 'the first shrine 140-260 columns in, the next 80-200 on, the door shrine within 200');
+ok(cps[0] > 145 && cps[1] > 239 && cps[2] > 306, 'each shrine stands AFTER its section\'s elite (145, 239, 306)');
+ok(cps[2] < L.arena.wallL, 'the last shrine stands before the Fog Knight');
 /* THE CAST */
 const foes = L.ents.filter(e => ['swornsword', 'hedgeknight', 'crossbow', 'gaffer', 'archer', 'grindylow'].includes(e.t));
 ok(foes.length >= 14 && foes.length <= 24, 'fewer, weightier foes: ' + foes.length);
@@ -91,9 +94,33 @@ ok(!L.ents.some(e => /gob|goblin|sprig/.test(e.t)), 'no living goblins past the 
   const watch = { x: fogX + 150, y: 28 * TS, tpSight: true, alive: true }; pp.x = fogX; pp.y = 28 * TS;
   ok(H.seen(watch, pp), 'lit, the watchman sees you'); H.interact(pp); ok(!H.lanternOf(pp).lit, 'E dims it'); ok(!H.seen(watch, pp), 'dimmed in the fog, he does not');
   pp.x = watch.x - 30; ok(H.seen(watch, pp), 'at his elbow he does');
+  /* (claude/towpath fix, review M3a) THE LANTERN IS TAKEN WALKING THROUGH THE HUT: at its hook, no E */
+  const p2 = { n: 2, x: D.lantern.x * TS + 2, y: 40 * TS, dead: false, face: 1 }; ctx.players.push(p2); run(0.05); ok(H.lanternOf(p2).has && H.lanternOf(p2).lit, 'at the hut\'s hook the lantern is yours, lit (no E)');
+  ctx.players.pop();
+  /* (review M3b) A REQUIRED LIT USE: THE LAST LOCK's paddle stands in the dark under an unlit lamp - found only in a light */
+  const xp = L.ents.find(e => e.t === 'tppaddle' && e.lock === 'X'); ok(xp && xp.dark && D.lamps.some(l => Math.abs(l.x - xp.x) <= 1 && !l.lit), 'the last lock\'s paddle is a dark one, an unlit lamp by it');
+  ok(H.fogAt(xp.x * TS) >= 0.6, 'and it stands in thick fog');
+  pp.x = xp.x * TS + 8 - 10; pp.y = (xp.y + 1) * TS; H.setLantern(pp, true, false); const xTo = H.lock('X').to;
+  ok(H.handsState('lamp.x') === 'lit' || H.lockLevel('X') !== 'hi', 'drained, the dark paddle wants nothing');
+  H.work('X'); run(12); ok(H.lockLevel('X') === 'hi', 'X refilled (the tool\'s own hand)');
+  ok(H.handsState('lamp.x') === 'out' && !H.litAt(xp.x * TS + 8, (xp.y + 1) * TS - 14), 'dim, at the full lock: the paddle is in the dark (the glint names the lamp)');
+  H.interact(pp); ok(H.lanternOf(pp).lit && H.lockLevel('X') === 'hi' && H.lock('X').to <= H.lock('X').hiY + 1, 'E at the dark paddle lights your lantern first - the lock does not move');
+  ok(H.handsState('lamp.x') === 'lit', 'lit: the paddle is found'); H.interact(pp); run(10); ok(H.lockLevel('X') === 'dry', 'and E then drains the last lock');
+  H.work('X'); run(12); H.setLantern(pp, false, false); H.interact(pp); run(2); ok(H.lockLevel('X') === 'hi', 'no lantern, no lamp: the dark paddle does nothing');
+  H.state().lamps.find(l => Math.abs(l.x - xp.x) <= 1).lit = true; H.interact(pp); run(10); ok(H.lockLevel('X') === 'dry', 'the lamp struck alight: the paddle drains it');
+  void xTo;
+  /* (review M5) F3's lower gate waits on a HERO in its doorway, or a foe stood IN it - not on a foe fighting on the landing beside it */
+  const F3 = H.lock('F3'), g3 = F3.gate; ok(L.ents.some(e => e.squad === 'f2Landing' && e.x < g3.x - 1), 'the F2 landing\'s river rat stands off F3\'s gate column');
+  const rat = { t: 'gaffer', x: g3.x * TS - 3, y: (g3.bot + 1) * TS, alive: true }; men.push(rat);
+  H.work('F3'); run(8); ok(H.lockLevel('F3') === 'hi' && at(g3.x, g3.top) === T.SOLID, 'a foe at the gate\'s edge (his middle on the landing): the gate shuts, F3 fills');
+  H.work('F3'); run(8); rat.x = g3.x * TS + 8; H.work('F3'); run(8); ok(H.lockLevel('F3') !== 'hi' && at(g3.x, g3.top) === T.AIR, 'a foe stood IN the doorway: the gate waits, the water with it');
+  rat.alive = false;
 }
 /* THE GLINT: every route need in STUCK_HANDS.towpath targets a paddle or a capstan */
-for (const sp of STUCK_HANDS.towpath) for (const s of sp.steps) ok(L.ents.some(e => (e.t === 'tppaddle' || e.t === 'tpcapstan') && e.x === s.at[0] && e.y === s.at[1]), 'the glint ' + s.key + ' is on its gadget');
+/* (claude/towpath fix, review S4) the route's climbs that are not gadgets glint only after a stall, and each on its own thing: the stilled wheel's top paddle, the ladder, the culvert */
+const onThing = s => s.key === 'wheel' ? D.wheels.some(w => w.steps.some(([a, b, r]) => s.at[0] >= a && s.at[0] <= b && s.at[1] === r - 1)) : s.key === 'ladder' ? at(s.at[0], s.at[1]) === T.NET
+  : s.key === 'culvert' ? L.interiors.some(q => q[4] === 'tpCulvert' && s.at[0] >= q[0] && s.at[0] <= q[1] && s.at[1] >= q[2] && s.at[1] <= q[3]) && at(s.at[0], s.at[1]) === T.AIR : false;
+for (const sp of STUCK_HANDS.towpath) for (const s of sp.steps) ok(L.ents.some(e => (e.t === 'tppaddle' || e.t === 'tpcapstan') && e.x === s.at[0] && e.y === s.at[1]) || (s.glint === 'stall' && onThing(s)), 'the glint ' + s.key + ' is on its gadget (or its climb)');
 /* THE FOG KNIGHT */
 const A = L.arena; ok(A && A.boss === 'fogknight' && L.ents.some(e => e.t === 'fogknight'), 'THE FOG KNIGHT stands at the towpath\'s end');
 const G = FK.geom(A);

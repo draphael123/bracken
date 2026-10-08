@@ -30,12 +30,12 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/fog-knight-hands.js binds it). fkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const FK = {
-  hp: 1450, w: 18, h: 34, markH: 50,
+  hp: 1850, w: 18, h: 34, markH: 50,
   openMul: 1.6, openCap: 0.12, openT: 3.4, scatterT: 3.0, wardT: 3.0, reelT: 1.1, burnT: 3.6, fireBurn: 0.06, burnR: 84, burnDecay: 0.35, arcR: 34,
   p2: 0.66, p3: 0.33,
   walk: 62, keep: 40, turn: 0.3, gap: [0.55, 0.48, 0.42],
-  stanceTell: [0.5, 0.42, 0.36], litEarly: 0.18, darkLate: 0.14,
-  cutTell: 0.5, cutT: 0.16, cutReach: 46, cutRec: 0.55,
+  stanceTell: [0.5, 0.42, 0.36], litEarly: 0.18, darkLate: 0.14, cutDark: 0.06,
+  cutTell: 0.62, cutT: 0.16, cutReach: 46, cutRec: 0.55,
   lungeTell: 0.8, lungeT: 0.26, lungeV: 420, lungeRec: 0.7, lungeRange: 150, lungeBeat: 0.22,
   doubleTell: 0.7, doubleLag: 0.55, refill: 12, drainT: 1.4,
   shroudTell: 1.0, stepTell: 0.55, dissolveT: 0.5, reformD: 60, chainHits: 3, chainT: 2.0,
@@ -119,7 +119,7 @@ export function takeAt(e, S, angle) {
 const nextScript = S => { const set = CYCLES[S.ph]; return set[S.cycle % set.length].slice(); };
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 const clampX = (G, x) => Math.max(G.x0 + 16, Math.min(G.x1 - 16, x));
-const tellLen = (S, base, lit) => Math.max(0.2, base + (lit ? 0 : -FK.darkLate) - (S.ph === 3 && !lit ? 0.04 : 0));
+const tellLen = (S, base, lit, cut) => cut ? base - (lit ? 0 : FK.cutDark) : Math.max(0.2, base + (lit ? 0 : -FK.darkLate) - (S.ph === 3 && !lit ? 0.04 : 0));   /* (claude/towpath fix, review M2) HIS CUTS ARE READ BY EVERY HERO: a dim hero reads the cut (and the step-out cut) at most FK.cutDark late - 0.56 s, over the human reaction (0.42 s) - so a hero with no shield can roll it too */
 function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : 'tell'); }
 function endOpen(e, S, c) { e.open = 0; S.ward = FK.wardT; S.n.wards++; S.openTaken = 0; S.burn = 0; c.number(e.x, e.y - 74, 'THE FOG POURS BACK INTO HIM', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
 function open(e, S, c, why) { setMode(e, 'empty', (why === 'scatter' ? FK.scatterT : FK.openT) + 0.05); e.open = why === 'scatter' ? FK.scatterT : FK.openT; S.openTaken = 0; S.n.opens++; S.burn = 0; S.lunge = null;
@@ -172,7 +172,7 @@ export function stepFogKnight(e, S, dt, h, c) {
     case 'reel': if (e.modeT <= 0) { setMode(e, 'recover', 0.35); } return;
     case 'recover': if (e.modeT <= 0) nextMove(e, S, P, c, lit); return;
     case 'dissolve': if (e.modeT <= 0) { e.x = S.stepTo ?? e.x; S.stepTo = null; c.fx('reform', e.x, e.y); e.face = Math.sign((P ? P.x : e.x) - e.x) || e.face;
-        if (S.stepCut) { S.stepCut = false; tell(e, S, c, 'stepTell', tellLen(S, FK.stepTell, lit)); } else setMode(e, 'recover', 0.3); } return;
+        if (S.stepCut) { S.stepCut = false; tell(e, S, c, 'stepTell', tellLen(S, FK.stepTell, lit, true)); } else setMode(e, 'recover', 0.3); } return;
     case 'walk': {
       const d = tx - e.x;
       if ((e.face || 1) * d < -8) { S.behindT += dt; if (S.behindT > FK.turn) { e.face = Math.sign(d) || e.face; S.behindT = 0; } } else S.behindT = 0;
@@ -192,7 +192,7 @@ function nextMove(e, S, P, c, lit) {
   if (m === 'lunge' && ad > FK.lungeRange + 40) { setMode(e, 'walk', 0.45); S.step--; return; }
   switch (m) {
     case 'high': case 'low': case 'full': S.want = m; tell(e, S, c, 'stanceTell', tellLen(S, FK.stanceTell[S.ph - 1] + (lit ? FK.litEarly : 0), lit)); return;
-    case 'cut': tell(e, S, c, 'cutTell', tellLen(S, FK.cutTell, lit)); return;
+    case 'cut': tell(e, S, c, 'cutTell', tellLen(S, FK.cutTell, lit, true)); return;
     case 'lunge': tell(e, S, c, 'lungeTell', tellLen(S, FK.lungeTell, lit)); S.lunge = { to: tx, t0: e.modeT }; return;
     case 'double': tell(e, S, c, 'doubleTell', FK.doubleTell); return;
     case 'step': tell(e, S, c, 'shroudTell', 0.6); S.stepTo = clampX(S.G, P.x - (P.face || 1) * 34); return;
