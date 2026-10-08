@@ -64,7 +64,7 @@ export function makePaladinHands(ctx) {
   };
   /* THE RULE ON HIM: a sanctuary lamp snuffed by a hero (src/lit-church-hands.js) */
   H.onLamp = () => { const e = live(); if (!S || !e || !ctx.bossActive) return; PBM.lampOut(e, S, world(e)); };
-  H.onKindled = () => { const e = live(); if (!S || !e) return; ctx.number(e.x, e.y - 70, 'THE LAMP BURNS AGAIN: HIS LIGHT FILLS', '#ff9a5c'); };
+  H.onKindled = () => { const e = live(); if (!S || !e) return; ctx.number(e.x, e.y - 70, 'THE LAMP BURNS AGAIN: HIS LIGHT CLIMBS FROM IT', '#ff9a5c'); };
   /* A BLOW ON HIM: src/paladin-boss.js blowOn - the ward turns everything; his aegis turns the front while he guards (and drinks it); open, x falterMul */
   H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero(), t = ctx.time();
     const heavy = ctx.blowHas ? ctx.blowHas(blow, 'heavy') : false, r = PBM.blowOn(e, S, world(e), dmg, P.x, P.y, !P.ground && !P.climb, heavy);

@@ -8387,8 +8387,8 @@ const AMBUSH = {
     waves: [[['brute', 838, null, { elite: true }], ['soldier', 826], ['hearthgob', 830], ['javelin', 846, 23]]] }],
   /* THE LIT CHURCH (claude/litchurch): THE SEALED VAULT in the crypt - the one ambush. The crypt's dead under their grave captain (the caverns' husk: he calls up the dead);
      a wight, a haunt over the shelves and a bone archer. No door checkpoint of its own (CHECKPOINT TWO is in the gallery; THREE stands at the altar past it) */
-  church: [{ name: 'THE SEALED VAULT', row: 62, wallL: 110, wallR: 139, check: false,
-    waves: [[['husk', 133, null, { elite: true }], ['wight', 119], ['haunt', 125, 55], ['bonearcher', 131, 58]]] }],
+  church: [{ name: 'THE SEALED VAULT', row: 53, wallL: 108, wallR: 141, check: false,   /* (the crypt's floor is row 54: its walls drop under the vault's lintels) */
+    waves: [[['husk', 133, null, { elite: true }], ['wight', 119], ['haunt', 125, 47], ['bonearcher', 131, 51]]] }],
 };
 /* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);

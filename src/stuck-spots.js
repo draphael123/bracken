@@ -199,7 +199,7 @@ export const STUCK_HANDS = {
       { key: 'well', is: ['door.rood', 'shut'], at: [163, 38], glint: 'stall', line: 'THE GRATE ABOVE IS OPEN: CLIMB THE WELL' } ] },
     { id: 'lc-rood', zone: [152, 30, 178, 36], steps: [
       { key: 'rood3', is: ['need.rood3', 'lamp'], at: [178, 34], line: 'THE ROOD SCREEN\'S THIRD SCONCE IS DARK' },
-      { key: 'rood3fire', is: ['need.rood3', 'fire'], at: [163, 38], line: 'A FLAME FROM THE CRYPT: THE THIRD SCONCE' } ] },
+      { key: 'rood3fire', is: ['need.rood3', 'fire'], at: [176, 28], line: 'LAMP ONE BURNS ON: A FLAME FOR THE THIRD SCONCE' } ] },
     { id: 'lc-reliquary', zone: [180, 31, 200, 40], steps: [ { key: 'reliquary', is: ['stubs', 'due'], at: [188, 40], line: 'THE RELIQUARY: FIVE STUBS OPEN IT' } ] },
   ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),

@@ -125,10 +125,10 @@ export function buildLitChurch({ painter, T, TS }) {
   /* the pews: low benches in rows (one-way: hop them, stand on them) and a broken stretch of floor over the charnel (a shallow pit, iron in it: it bites) */
   for (const [x0, x1] of [[60, 63], [65, 68], [71, 74], [92, 95], [97, 100], [113, 116], [118, 121], [138, 141]]) { boards(x0, x1, NF - 2); decor.push({ kind: 'pew', x0, x1, y: NF - 2 }); }
   /* THE TRIFORIUM: ledges along the north wall (a second height): a crossbowman on it covers the nave's lamps */
-  for (const [x0, x1, y] of [[58, 66, 33], [69, 77, 31], [102, 110, 33], [113, 118, 31], [124, 134, 32], [143, 150, 33]]) { boards(x0, x1, y); decor.push({ kind: 'triforium', x0, x1, y }); }   /* (off a pew: three rows; ledge to ledge: two or three) */
+  for (const [x0, x1, y] of [[58, 66, 33], [69, 77, 31], [102, 110, 33], [113, 120, 31], [123, 134, 33], [143, 150, 33]]) { boards(x0, x1, y); decor.push({ kind: 'triforium', x0, x1, y }); }   /* (off a pew: three rows; ledge to ledge: two or three) */
   ent('crossbow', 106, 32, { face: -1, room: 'nave', cnSkin: 'chapelbow', lc: 'knight' });
   /* the capital of the fourth pillar holds a CANDLE STUB (off the route: up the triforium, then the capital) */
-  boards(126, 128, 30); stub(127, 29);
+  boards(126, 128, 31); stub(127, 30);
   /* NAVE ENCOUNTER ONE (the lamp, the knight): a priest and a sworn knight at the first nave lamp, a grate at its foot */
   lamp('naveA', 76, NF - 1, 'nave', 'lamp', { lit: true });
   priest(79, NF - 1, 'nave'); knight(73, NF - 1, 'nave'); grate(70, NF, 'nave'); grate(86, NF, 'nave');
@@ -174,7 +174,7 @@ export function buildLitChurch({ painter, T, TS }) {
      east lip (col 109): E holds a chord - a told gust blows WEST along the gallery; jump into it and it carries you over */
   air(97, 105, GF, GF); drops.push([97, 105, 'nave']);
   desks.push({ id: 'desk', x: 109, y: GF - 1, dir: -1, x0: 92, x1: 112, y0: 8, y1: GF - 1 }); ent('lcdesk', 109, GF - 1, { id: 'desk' });
-  sign(111, GF - 1, 'THE ORGAN\'S KEY DESK: E HOLDS A CHORD. THE GUST BLOWS WEST.');
+  sign(111, GF - 1, 'THE ORGAN\'S KEY DESK: E PLAYS A CHORD. THE GUST BLOWS WEST.');
   ent('haunt', 101, 12, { room: 'gallery', lc: 'dead' });                                       /* a haunt over the broken loft: at the jump */
   /* THE CONSOLE (west end): LAMP TWO on it, a votive stand, the organist priest */
   lamp('chapel2', 60, GF - 1, 'gallery', 'chapel'); source('votive2', 66, GF - 1, 'votive');
@@ -222,7 +222,7 @@ export function buildLitChurch({ painter, T, TS }) {
   priest(166, 49, 'well', { asleep: true, face: -1 }); acolyte(166, 41, 'well', { asleep: true, face: -1 });
   boards(154, 156, 50); stub(155, 49);                                           /* a CANDLE STUB on a ledge off the lowest landing (a jump west, off the route) */
   /* THE SACRISTY STAIR up the altar room's east wall to THE SACRISTY PASSAGE (rows 48-49, cols 179-183, under the crossing's step): its door is the reliquary's */
-  boards(174, 178, 50); boards(170, 174, 47); boards(174, 178, 44); boards(170, 178, 41); air(179, 183, 39, 40);
+  boards(176, 178, 52); boards(172, 174, 50); boards(176, 178, 48); boards(172, 174, 46); boards(176, 178, 44); boards(170, 178, 42); air(179, 183, 39, 40);   /* (two-row steps; the last a hop onto the passage floor) */
   room('well', 'THE CRYPT WELL', 158, NF + 1, 168, CF - 1, { dark: true, rises: { floor: CF, top: NF + 1 } });
 
   // ================= 6. THE SOUTH TRANSEPT (180-236): THE EXAM - THE ARCHDEACON's lit chapel over THE CHARNEL PIT =================
@@ -250,6 +250,7 @@ export function buildLitChurch({ painter, T, TS }) {
   doors.push({ id: 'sacristy', x0: 184, x1: 184, y0: 39, y1: 40, by: 'stubs' });
   sign(190, SF - 1, 'THE RELIQUARY. FIVE CANDLE STUBS OPEN IT.');
   ent('check', 238, SF - 1);                                                     /* CHECKPOINT FOUR, after the exam: before the sanctuary */
+  sign(236, SF - 1, 'THE SANCTUARY. THE PALADIN KEEPS ITS LAMPS.');   /* (B8: he does not come from nowhere - his order's chapel lamps, his name at his door) */
 
   // ================= 7. THE SANCTUARY (241-282): THE PALADIN =================
   const AX = 241;

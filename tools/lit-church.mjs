@@ -70,7 +70,7 @@ for (const d of L.doors) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x
   ok(gap.length >= 9 && gap[gap.length - 1] - gap[0] === gap.length - 1, 'THE BROKEN LOFT is ' + gap.length + ' columns: no jump crosses it (the real jump is ~4 tiles)');
   for (const x of gap) for (let y = 6; y < CHURCH.gallery; y++) ok(at(x, y) === T.AIR, 'nothing to land on over the broken loft (' + x + ',' + y + ')');
   const d = L.desks[0]; ok(d && d.dir === -1 && d.x0 <= gap[0] - 4 && d.x1 >= gap[gap.length - 1] + 4 && d.x > gap[gap.length - 1], 'the key desk is on the loft\'s east lip and its gust covers the gap, blowing west');
-  ok(sign(160, 168, /THE ORGAN'S BELLOWS: STRIKE IT/) && sign(106, 114, /E HOLDS A CHORD/), 'the bellows and the key desk are taught at the point of use'); }
+  ok(sign(160, 168, /THE ORGAN'S BELLOWS: STRIKE IT/) && sign(106, 114, /E PLAYS A CHORD/), 'the bellows and the key desk are taught at the point of use'); }
 /* REQUIRED: THE CRYPT - lamp three cracks the crossing's grate, the only way up */
 { ok(lamp('chapel3').cracks && door('cryptgrate').by === 'chapel3', 'lamp three cracks the crossing\'s crypt grate');
   const w = L.rooms.find(r => r.rises); ok(w && w.rises.floor === CHURCH.crypt, 'the crypt well is where the dark rises');
@@ -86,6 +86,9 @@ ok(foes.some(e => ROLES.ranged.includes(e.cnSkin || e.t)), 'a ranged foe (the pr
 { const roles = new Set(); for (const e of foes) for (const [r, ks] of Object.entries(ROLES)) if (ks.includes(e.cnSkin || e.t)) roles.add(r); ok(roles.size >= 3, 'three roles at least: ' + [...roles].join(', ')); }
 ok(L.ents.filter(e => ['gobmage', 'acolyte', 'swornsword', 'hedgeknight', 'crossbow'].includes(e.t)).every(e => e.lc && e.room), 'every clergy and knight is tied to a room\'s light');
 ok(L.ents.filter(e => e.t === 'gobmage' && e.elite).length === 1 && L.ents.find(e => e.elite).cnSkin === 'archdeacon' && L.ents.find(e => e.elite).gate, 'THE ARCHDEACON is the exam\'s elite and holds the sanctuary\'s way');
+{ const A = (L.ambushes || []).find(q => q.name === 'THE SEALED VAULT'); ok(A && A.row === CHURCH.crypt - 1, 'THE SEALED VAULT stands on the crypt floor (row ' + (A && A.row) + ')');
+  for (const x of [A.wallL, A.wallR]) { ok(at(x, A.row) === T.AIR && at(x, A.row + 1) === T.SOLID, 'its wall column ' + x + ' drops onto the floor'); let y = A.row; while (y > 0 && at(x, y) === T.AIR) y--; ok(A.row - y >= 4 && A.row - y <= 9, 'its wall ' + x + ' hangs under the lintel (' + (A.row - y) + ' rows)'); }
+  for (const [k, x, y] of A.waves.flat()) if (y != null) ok(at(x, y) === T.AIR, 'the vault ' + k + ' stands in the room (' + x + ',' + y + ')'); }
 ok(L.ents.filter(e => e.t === 'check').length === 4, 'four checkpoints (one per stretch, one before the sanctuary)');
 ok(L.ents.filter(e => e.t === 'stray' && e.kind === 'candlestub').length === 5 && L.quest.n === 5, 'five candle stubs, the reliquary\'s key');
 ok(L.ents.filter(e => e.t === 'silver').length <= 3, 'at most three silvers');

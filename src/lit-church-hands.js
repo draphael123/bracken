@@ -22,7 +22,7 @@ import { BOSS_PHASE } from './boss-music.js';
 export const FLAME = { life: 14, takeR: 24, useR: 26, glow: 70 };
 export const LC = { litMul: 1.3, darkMul: 0.7, knightLit: 1.15, heal: 0.16, litHeal: 1.5, darkHeal: 0.5, healCd: 7, healTell: 1.0, healR: 130, relightT: 1.5, acoRelightT: 0.6,
   priestV: 44, acoV: 92, riseEvery: 4.5, riseTell: 1.0, riseCap: 3, deadDark: 1.8, riseNear: 260, burnDps: 16, bellowsT: 2.8, lift: 230, chordTell: 0.55, chordT: 2.6, gustAir: 300, gustGround: 150,
-  darkV: 15, darkTick: 0.6, darkPct: 0.06, holdT: 5, darkSpawn: 4.5, archHealCd: 9, archHealTell: 1.4, archHeal: 0.2, archRelight: 1.0 };
+  darkV: 24, darkTick: 0.6, darkPct: 0.06, holdT: 5, darkSpawn: 4.5, archHealCd: 9, archHealTell: 1.4, archHeal: 0.2, archRelight: 1.0 };
 /* what a dark room's grates bring up (by room; the rest bring wights and haunts) */
 const RISE = { graveyard: ['wight'], narthex: ['haunt'], nave: ['wight', 'haunt', 'boo'], transept: ['haunt', 'wight'], gallery: ['boo', 'haunt'], ossuary: ['wight', 'haunt'], altar: ['wight', 'haunt'], south: ['wight', 'haunt', 'boo'], tower: ['boo'] };
 const RELIGHT = new Set(['lamp', 'sconce', 'arena']);   /* what the clergy light again (a chapel lamp, the rood screen's sconces and the seal are not theirs) */
@@ -97,7 +97,7 @@ export function makeLitChurchHands(ctx) {
       if (l.cracks) crack(); }
     if (l.kind === 'rood' || l.kind === 'chapel') { if (K.lamps.filter(q => q.kind === 'rood').every(q => q.lit)) openDoor('rood'); }
     if (l.kind === 'arena' && ctx.bossKindled) ctx.bossKindled(l);
-    if (l.room === 'well' && l.hold) { for (const e of ctx.enemies()) if (e.alive && e.lc && e.lc.room === 'well' && e.lc.st === 'asleep') { e.lc.st = 'free'; ctx.number(e.x, e.y - 30, '!', '#ff6b6b'); }
+    if (l.room === 'well' && l.hold) { for (const e of ctx.enemies()) if (e.alive && e.lc && e.lc.room === 'well' && e.lc.st === 'asleep' && Math.abs(e.y - py(l)) < 4.5 * TS())   /* (only the landing's own: each sconce is its own trade) */ { e.lc.st = 'free'; ctx.number(e.x, e.y - 30, '!', '#ff6b6b'); }
       if (once('wellWake')) number(px(l), py(l) - 40, 'THE LIGHT WAKES THE CLERGY ON THE STAIR', '#ff9a5c'); }
     rooms(); return true; }
   function snuff(l, by) {
@@ -280,7 +280,11 @@ export function makeLitChurchHands(ctx) {
       if (!lampOf('chapel2').lit) return want(lampOf('chapel2'), 'votive2'); return here(52, GF - 1, null, -1); }
     if (row > GF && row < GF + 5 && c < 56) { const s = lampOf('seal'); return s.lit ? here(s.x - 1, s.y, 'atk', 1) : here(47, s.y, null, -1); }
     if (row > NF && c < 179) { const l3 = lampOf('chapel3'); if (!l3.lit) return c > 140 ? want(l3, 'vigil') : null;
-      if (!K.escaped) { const nxt = K.lamps.filter(l => l.room === 'well' && !l.lit && py(l) < P.y - 4).sort((a, b) => py(b) - py(a))[0]; if (P.lcFlame < 4 && nxt && Math.abs(py(nxt) - P.y) < 40) return want(nxt, 'vigil'); return null; } }
+      if (!K.escaped) { /* THE RELAY UP THE WELL: on each landing, light its sconce with the flame you carry, or take a fresh one off it when yours is low (the top one always: the carry to the screen) */
+        const here2 = K.lamps.find(l => l.room === 'well' && l.hold && Math.abs(py(l) - P.y) < 20 && Math.abs(px(l) - P.x) < 6 * ts); const top = here2 && here2.id === 'wellC';
+        if (here2 && !here2.lit && P.lcFlame > 0) return here(here2.x, here2.y, 'talk', -1);
+        if (here2 && here2.lit && P.lcFlame < (top ? 12 : 6)) return here(here2.x, here2.y, 'talk', -1);
+        return null; } }
     if (row > TR && row < NF && c >= 150 && c <= 179 && !lampOf('rood3').lit) { const r3 = lampOf('rood3'); if (P.lcFlame > 0) return here(r3.x, NF - 1, 'talk', 1); return null; }
     return null; };
 
@@ -356,7 +360,7 @@ export function makeLitChurchHands(ctx) {
   };
   /* OVER EVERYTHING: the rising dark, and the flame in your hand */
   H.drawOver = (g, cx, cy, time) => { if (!K) return; const ts = TS(), D = K.dark, ro = K.L.rooms.find(r => r.rises);
-    if (ro && (D.st === 'rising' || D.st === 'tell' || D.st === 'done')) { const alt = K.L.rooms.find(r => r.id === 'altar') || ro, x0 = R(alt.x0 * ts - cx), x1 = R((alt.x1 + 1) * ts - cx), top = R(D.y - cy), bot = R((ro.rises.floor + 1) * ts - cy);
+    if (ro && (D.st === 'rising' || D.st === 'tell'))   /* (once you are out it sinks back into the crypt's own dark: a respawn at the altar is not a black room) */ { const alt = K.L.rooms.find(r => r.id === 'altar') || ro, x0 = R(alt.x0 * ts - cx), x1 = R((alt.x1 + 1) * ts - cx), top = R(D.y - cy), bot = R((ro.rises.floor + 1) * ts - cy);
       if (bot > 0 && top < ctx.VH()) { g.globalAlpha = 0.82; g.fillStyle = '#0a0612'; g.fillRect(x0, top, x1 - x0, bot - top); g.globalAlpha = 0.6; g.fillStyle = '#3a2a5a';
         for (let x = x0; x < x1; x += 4) g.fillRect(x, top - 2 + R(Math.sin(time * 3 + x * 0.2) * 2), 4, 3); g.globalAlpha = 1; } }
     for (const pp of ctx.players) { if (!(pp.lcFlame > 0) || pp.dead) continue; const x = R(pp.x - cx), y = R(pp.y - 30 - cy), k = Math.min(1, pp.lcFlame / FLAME.life), f = Math.sin(time * 13);

@@ -174,7 +174,7 @@ function nextMove(e, S, P, c) {
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; }
   let m = S.script[S.step++]; const dx = P.x - e.x, ad = Math.abs(dx);
   e.face = Math.sign(dx) || e.face;
-  if (m === 'mend' && (S.light < PB.light.mendCost || e.hp >= e.maxHp)) m = 'chain';
+  if (m === 'mend' && (S.light < PB.light.mendCost + 8 || e.hp >= e.maxHp)) m = 'chain';   /* (his own mend never empties his bar: a falter is yours to earn) */
   if (m === 'rad' && S.light < PB.light.radCost) m = 'chain';
   if ((m === 'chain' || m === 'bash') && ad > PB.chainReach + 46) { setMode(e, 'walk', 0.45); S.step--; return; }   /* out of the maul's reach: he closes first */
   switch (m) {
