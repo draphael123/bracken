@@ -91,17 +91,17 @@
   "lostPct": 112
  },
  "spire": {
-  "hash": "51661748b761",
+  "hash": "b455d76a59e9",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 17,
-  "deaths": 0,
-  "kills": 26,
-  "lifts": 100,
+  "hits": 15,
+  "deaths": 1,
+  "kills": 19,
+  "lifts": 108,
   "walked": 100,
   "bare": true,
-  "lostPct": 102
+  "lostPct": 105
  },
  "moor": {
   "hash": "49537d2fb3cd",

@@ -2173,7 +2173,7 @@ function theMonastery() {
   ent('sign', 73, 177, { text: 'A COLD CENSER. STRIKE IT AND IT BREATHES - ANY BRAZIER DOES, WHEN YOU STRIKE IT.' });
   band(172, 73, 5);
   coins([74, 190], [74, 186], [79, 181], [75, 175]);
-  ent('harpy', 50, 184); ent('bat', 84, 182); ent('bat', 62, 178);
+  ent('harpy', 50, 184); ent('harpy', 78, 181); ent('bat', 62, 178);   // (claude/monastery2, difficulty v2: FOES AT PLATFORMING MOMENTS - a harpy over the second column's ride, not a bat off to the side)
   ent('check', 60, 195);
 
   // ---- 3. THE SCRIPTORIUM: a gallery dug into the cliff, its shelves, and the first prayer wheel ----
@@ -2229,7 +2229,7 @@ function theMonastery() {
   block(84, 84, 101, 114); block(84, 94, 118, 131);
   masonry.push([84, 84, 101, 131], [84, 94, 118, 131]); interiors.push([85, 94, 103, 117, 'monkFlue']);
   brazier(90, 118, 8, { phase: 0 }); plat(85, 110, 4);
-  brazier(86, 110, 10, { snuff: true });                          // cold: strike it from the ledge
+  brazier(86, 110, 10, { snuff: true }); ent('harpy', 89, 104);   // cold: strike it from the ledge - with a harpy in the flue over the ride
   coins([90, 112], [86, 104], [87, 116]);
   ent('sign', 17, 131, { text: 'THE BELL TOWERS. NOBODY HAS RUNG THEM SINCE THE GOBLINS CAME.' });
   ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
