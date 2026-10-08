@@ -1,8 +1,8 @@
 // ===== BENCHED (claude/lanterneater, 2026-10-07): UNWIRED - saved for a future mini (kelp armour: HIT HIGH body / HIT LOW hood). =====
 // Daniel 10-07: Jenny's raft duel "just isn't working, clunky"; THE FOG CANAL's boss is THE LANTERN-EATER now (src/lantern-eater.js) on the same raft.
 // Nothing imports this file: main.js, the lab, the marks, the hint lines and the music no longer name her. Her sprites stay in src/redraw/greenteeth_art.js
-// and src/redraw/greenteeth_kelp.js. To bring her back as a mini, wire her as claude/canal4 did (git log -- src/jenny-greenteeth.js) and give her a room.
-// src/jenny-greenteeth.js - JENNY GREENTEETH, the boss at the end of THE FOG CANAL (claude/lockkeeper; Daniel's pivot 2026-09-30: the river hag of the
+// and src/redraw/greenteeth_kelp.js. To bring her back as a mini, wire her as claude/canal4 did (git log -- src/benched/jenny-greenteeth.js) and give her a room.
+// src/benched/jenny-greenteeth.js - JENNY GREENTEETH, the boss at the end of THE FOG CANAL (claude/lockkeeper; Daniel's pivot 2026-09-30: the river hag of the
 // English tales, who drags people under with long green arms, in place of a human lock-keeper).
 // claude/canal4 (Daniel 10-05, after playing JENNY3: "the switches just aren't fun mechanically" - he picked THE RAFT DUEL + KELP GUARD): the lock's
 // paddles, culverts, drain, flood and lure are GONE. The last barge WIDENS into a raft (the lock's timbers lashed to her) and goes out on Jenny's water -
@@ -27,9 +27,9 @@
 //   PHASE 2  SHE PULLS THE KELP OVER HER HEAD: HIT LOW. + the charge; and SHE HEAVES THE RAFT (told: it tips down toward her side and you slide to her)
 //   PHASE 3  SHE DRAGS THE RAFT LOWER: its ends go under (told on the ends first) and the deck is narrower. + the net; the kelp shifts every few cycles
 // AFTER HER OPENING SHE IS WARY (GT.wardT, told: a ring of weed about her, kelp everywhere - B3, she cannot be chain-stuck), then she fights on.
-// A fall into her water bites and hands you back onto the raft (src/jenny-greenteeth-hands.js keeps the raft as the ground you are handed back to).
+// A fall into her water bites and hands you back onto the raft (src/benched/jenny-greenteeth-hands.js keeps the raft as the ground you are handed back to).
 //
-// PURE: no DOM, no main.js. The world is a context c (src/jenny-greenteeth-hands.js binds it); the frame's events are returned for tools/greenteeth.mjs.
+// PURE: no DOM, no main.js. The world is a context c (src/benched/jenny-greenteeth-hands.js binds it); the frame's events are returned for tools/greenteeth.mjs.
 // Her water and the raft are laid by stageGreenteeth (THE FOG CANAL calls it, src/fog-canal.js section 7).
 
 export const GT = {
@@ -316,7 +316,7 @@ export function segHitsBox(x0, y0, x1, y1, b) {
    FOOTPRINT: 40 columns, sx .. sx+39 (the two gates are sx and sx+39), rows R-16 .. R+STAGE.depth+1.
      - the gates' columns are solid from row R-16 down, with a door at rows R-6 .. R-1 in each (the arena walls close it when she wakes);
      - a stone LANDING inside each door (STAGE.land columns, floor row R), and between them her WATER (rows R .. R+depth-1, the bed under it);
-     - THE RAFT is a mover (her bright weed's old slot: m.weed + m.gtRaft, src/jenny-greenteeth-hands.js moves it), moored at the west landing.
+     - THE RAFT is a mover (her bright weed's old slot: m.weed + m.gtRaft, src/benched/jenny-greenteeth-hands.js moves it), moored at the west landing.
    Returns { arena, movers, pools }. */
 export function stageGreenteeth(W, T, TS, sx, R) {
   const { set, block, ent } = W, ex = sx + STAGE.W - 1, top = R - STAGE.top, D = STAGE.depth;
