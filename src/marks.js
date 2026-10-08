@@ -267,8 +267,8 @@ export const MARK = {
   'wickerqueen|leapTell': '!!', 'wickerqueen|ringTell': '!!', 'wickerqueen|stabTell': '!!', 'wickerqueen|sweepHighTell': '!!', 'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!',
   'wickerqueen|thrustLowTell': '!!', 'wickerqueen|tossTell': '!!', 'wight|graspTell': '!!', 'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!',
   'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|whirlTell': '!!',
-  'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!', 'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!',
-  'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'winchmaster|wrenchTell': '!', 'windcaller|galeTell': '!', 'windcaller|howlTell': '', 'windcaller|stoneTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!',
+  'zombie|riseTell': '',
 };
 /* MARK:END */
 

@@ -47,7 +47,7 @@ export const TURN_WORD = {
   ram: (e, fromX) => behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   chief: (e, fromX) => behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   frog: 'THE HIDE',
-  windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : TURN.WARDED,
+  windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : e.mode === 'step' && !(e.ward > 0) ? 'HE STEPS AWAY' : TURN.WARDED,   // (claude/windcaller3) a duelist on his ledge: his ward after a fall, his step away
   grandmother: e => (e.alpha !== undefined && e.alpha < 0.35) || e.mode === 'vanish' ? TURN.NOT_THERE : TURN.WARDED,
   winchmaster: 'IRON',                                      // his plate: jam his drum
   greathound: TURN.WARDED,
