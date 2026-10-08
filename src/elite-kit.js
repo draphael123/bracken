@@ -54,6 +54,7 @@ export const affixFits = (id, affix, ambush) => !!AFFIX[affix] && !(ambush && af
 /* THE HAND-PICKED TABLE. One row a placed elite (and one an ambush room's captain, #amb: a room has waves of its own, so no SUMMONER there).
    The key is level|kind, or level|kind#n for the nth of that kind in the level by column. Edit only your own rows. */
 export const AFFIX_AT = {
+  'church|gobmage': 'WARDING', 'church|husk#amb': 'THORNED',   /* (claude/litchurch) THE ARCHDEACON's ward over his clergy (kill him first); the sealed vault's grave captain grows bone spines at a mash */
   'wood|shield': 'WARDING', 'wood|shield#amb': 'SHIELDED',
   'marsh|thorn': 'THORNED', 'marsh|thorn#amb': 'VENOMOUS',
   'stockade|brute': 'SUMMONER', 'stockade|archer#amb': 'SWIFT',
