@@ -95,8 +95,11 @@ try {
   console.log(JSON.stringify(r));
   const WAS = 510, ehpLine = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').split('\n').find(l => l.startsWith('const EHP = {')) || '';
   const ehp = +((ehpLine.match(/\bpyromancer: *(\d+)/) || [])[1]);
-  assert.ok(ehp >= Math.round(WAS * 1.14) && ehp <= Math.round(WAS * 1.16), 'about 15% more health than the ' + WAS + ' he had: ' + ehp);
-  assert.ok(r.hp.max > WAS * 0.98 * 1.1, 'and it is the health he fights with in the square: ' + r.hp.max);
+  /* (claude/burnvillage2, Daniel 10-07: he takes WHOLE blows now - FULL_DAMAGE, no quarter chip - so his health was measured again at campaign level,
+     human+dry, 12 seeds a hero: 1225 = knight 7/12, warden 9/12, pyro 4/12, 56%. Was: 'about 15% more than the ' + WAS + ' he had', 587) */
+  const NOW = 1225;
+  assert.equal(ehp, NOW, 'his health is the measured ' + NOW + ': ' + ehp);
+  assert.ok(r.hp.max > NOW * 0.95 && r.hp.max <= NOW * 1.05, 'and it is the health he fights with in the square: ' + r.hp.max);
   /* 1 */
   assert.equal(r.combo.cuts, 3, 'a run of three cuts, told one by one: ' + r.combo.seq.join(' > '));
   assert.ok(r.combo.seq.filter(m => m === 'cutTell').length === 3, 'every cut of the run has its own tell: ' + r.combo.seq.join(' > '));

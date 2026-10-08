@@ -133,7 +133,7 @@ try {
    const pr3=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket')[0];V().take(pr3);pr3.state='fly';pr3.x=b.x;pr3.y=b.y-12;pr3.vx=1;pr3.vy=10;for(let i=0;i<12&&b.mode!=='doused';i++){if(pr3.state==='fly'){pr3.x=b.x;pr3.y=b.y-12;pr3.vy=10;}freeze();BK.sim(1);}out.again=b.mode;
    b.mode='overheat';b.modeT=3;b.open=3;b.ward=0;out.over=blow(20);}
   /* 4. THE TOWN BEHIND BURNS on the level's clock: the far town's fire pixels at the start and later */
-  {boot('knight',300,25);const fireAt=t=>{let sum=0;for(let k=0;k<4;k++){BK.villageWater.levelTime(t);for(let i=0;i<5;i++)BK.step(1);sum+=one();}return Math.round(sum/4);};const one=()=>{const c=BK.buf.getContext('2d').getImageData(0,0,320,110).data;let n=0;for(let i=0;i<c.length;i+=4){const r=c[i],g=c[i+1],bb=c[i+2];if(r>200&&g>90&&bb<120)n++;}return n;};
+  {boot('knight',300,25);const fireAt=t=>{let sum=0;for(let k=0;k<8;k++){BK.villageWater.levelTime(t);for(let i=0;i<5;i++)BK.step(1);sum+=one();}return Math.round(sum/8);};const one=()=>{const c=BK.buf.getContext('2d').getImageData(0,0,320,110).data;let n=0;for(let i=0;i<c.length;i+=4){const r=c[i],g=c[i+1],bb=c[i+2];if(r>200&&g>90&&bb<120)n++;}return n;};
    const t0=fireAt(1),t1=fireAt(330);out.town={t0,t1};}
   return out;})()`, 900000);
   console.log(JSON.stringify(r));
