@@ -53,7 +53,7 @@ export const STUCK = {
     { id: 'lw-flats-gate', zone: [388, 0, 418, 28], ats: [[419, 22], [390, 25]], glint: 'stall', line: 'THE FLATS GATE LIFTS AT LOW WATER: DRAIN THE STREET OR WAIT' },
   ],
   kings: [
-    { id: 'kg-court-gate', zone: [568, 0, 584, 14], at: [583, 8], done: ['plate', 583, 8, 'down'], line: 'THE COURT GATE IS SHUT: A PLATE ON THE LEDGE ABOVE THE CARPET' },
+    { id: 'kg-court-gate', zone: [568, 0, 584, 14], at: [583, 7], done: ['plate', 583, 7, 'down'], line: 'THE COURT GATE IS SHUT: STAND ON THE PLATE ON THE LEDGE' },   /* (claude/kingsgate) the plate stands ON its ledge now, and the nudge names the verb */
   ],
   theatre: [
     { id: 'th-hatch-rope', zone: [108, 26, 140, 34], at: [130, 28], line: 'A ROPE BY THE RACKS: CLIMB IT' },
@@ -299,7 +299,7 @@ export const STUCK_SIGNS = {
     { x: 321, text: 'THE BORE STONES. STAND ON ONE AND LET THE SEA GO UNDER YOU. THE SEA GATE LIFTS BEHIND IT.' },
     { x: 393, text: 'STRIKE THE SLUICE WHEEL TO DRAIN THE STREET. THE FLATS GATE LIFTS ONLY AT LOW WATER.' } ],
     add: [{ x: 385, y: 26, text: 'THE QUAY GATE LIFTS AT HIGH WATER, WHEN THE SEA BELL TURNS.' }] },
-  kings: { fix: [{ x: 570, text: 'FIRE ARCHERS LIGHT THE GRASS. THE GATE PLATE IS ON THE LEDGE, OVER THE GUARDS.' }] },
+  kings: { fix: [{ x: 570, text: 'FIRE ARCHERS LIGHT THE GRASS. STAND ON THE LEDGE PLATE: IT LIFTS THE GATE.' }] },
   theatre: { add: [
     { x: 136, y: 24, text: 'A ROPE-LOCK. STRIKE IT AND ITS SHUTTER FLIES.' },
     { x: 214, y: 15, text: 'THE FLOOR STOPS. STRIKE THE LOCK: ITS BATTEN BRIDGES THE GAP.' },

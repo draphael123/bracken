@@ -1085,7 +1085,7 @@ function kingswood() {
   plat(85, 12, 4); plat(91, 10, 3); plat(96, 8, 4);
   movers.push({ kind: 'swing', px: 104 * TS, py: 2 * TS, arm: 80, x: 0, y: 0, w: 48, h: 8, period: 3.2, phase: 0 });
   block(111, 113, 8, 8); ent('thief', 112, 7, { face: -1 }); ent('dropcage', 112, 3); plat(116, 9, 4); ent('wasp', 121, 7);   /* a plate and cage on the HIGH road too (design audit item 1): the low road already had one, so a high-road player met it first in the boss */
-  plat(103, 10, 3); plat(107, 9, 2); ent('plate', 118, 9, { cage: 112 }); plat(123, 10, 2); plat(126, 11, 3); plat(130, 10, 2); // a ledge road under each swing: the swing is the fast way, never the only way
+  plat(103, 10, 3); plat(107, 9, 2); ent('plate', 118, 8, { cage: 112 }); plat(123, 10, 2); plat(126, 11, 3); plat(130, 10, 2); // a ledge road under each swing: the swing is the fast way, never the only way
   movers.push({ kind: 'swing', px: 127 * TS, py: 2 * TS, arm: 88, x: 0, y: 0, w: 48, h: 8, period: 3.6, phase: 1.6 });
   plat(134, 9, 4); ent('thief', 136, 8, { face: -1 }); plat(140, 11, 3); plat(145, 13, 4);
   coins([87, 11], [93, 9], [98, 7], [104, 6], [112, 6], [118, 8], [127, 6], [135, 8], [141, 10], [146, 12]);
@@ -1120,7 +1120,7 @@ function kingswood() {
   movers.push({ kind: 'swing', px: 254 * TS, py: 1 * TS, arm: 96, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 2.2 });
   plat(261, 9, 3); plat(266, 11, 3); plat(271, 11, 4);
   plat(228, 9, 2); plat(231, 10, 3); plat(235, 8, 2); plat(250, 10, 2); plat(253, 11, 3); plat(257, 10, 2); // a ledge road under each canopy swing
-  ent('plate', 262, 9, { cage: 262 });   /* THE TWIST (design audit item 2): fork one's plate and cage are both on the low road; here they invert - the plate is on the canopy, the cage drops through a hatch onto the patrol walking the roots below */
+  ent('plate', 262, 8, { cage: 262 });   /* THE TWIST (design audit item 2): fork one's plate and cage are both on the low road; here they invert - the plate is on the canopy, the cage drops through a hatch onto the patrol walking the roots below */
   coins([212, 10], [217, 8], [223, 6], [231, 6], [239, 6], [245, 7], [254, 6], [262, 8], [267, 10], [272, 10]);   /* the apex of the arc was a course over the top of anybody's jump */
   // roots
   block(211, 275, 21, 27); ceiling(211, 274, 15);   /* the roof stops a column short of the way out: ending ON the exit block left a gap one tile high, and nobody fits through that */
@@ -1147,7 +1147,7 @@ function kingswood() {
   plat(286, 10, 4); plat(292, 8, 3); ent('archer', 288, 9, { face: -1, fire: true }); ent('firepit', 294, 13, { period: 3.4, on: 1.4, phase: 0.6 }); coins([287, 9], [293, 7], [294, 7]);   /* the fire archer lights the grass: a firepit in it, not just an arrow in flight */
   // the cache: a hidden loft above the court holds the Thief Cloak
   plat(303, 9, 3); plat(307, 7, 3); coins([304, 8], [308, 6], [309, 6]); ent('vault', 308, 6);
-  plat(284, 12, 2); plat(298, 8, 3); ent('plate', 299, 8, { cage: 296, gate: 301 }); gate(301, 0, 13);   /* THE COURT'S PORTCULLIS (ruleuse, the rule-use audit): the ONE trap the road makes you use. It stands shut before the throne and the plate on the ledge lifts it, dropping the cage on the carpet guards as it goes (src/main.js: a plate with a gate: lifts that column). Everywhere else the traps stay optional weapons. */  // a step up to the court's ledges (they started a head too high to jump) and one across the gap to the loft; the plate on it drops the cage on the carpet guards below
+  plat(284, 12, 2); plat(298, 8, 3); ent('plate', 299, 7, { cage: 296, gate: 301 });   /* (claude/kingsgate) ON the ledge: at row 8 the plate sat INSIDE its ledge, a tile under the feet of anyone standing there, so it never went down and the court gate never lifted (Daniel, live: THIS GATE CANNOT BE OPENED). A plate's row is the row you stand in - tools/gate-openers.mjs */ gate(301, 0, 13);   /* THE COURT'S PORTCULLIS (ruleuse, the rule-use audit): the ONE trap the road makes you use. It stands shut before the throne and the plate on the ledge lifts it, dropping the cage on the carpet guards as it goes (src/main.js: a plate with a gate: lifts that column). Everywhere else the traps stay optional weapons. */  // a step up to the court's ledges (they started a head too high to jump) and one across the gap to the loft; the plate on it drops the cage on the carpet guards below
   ent('check', 312, 13);
 
   // ---- 7. The throne room: King Gorm Underleaf on his palanquin. ----
