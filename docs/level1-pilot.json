@@ -142,5 +142,17 @@
   "lifts": 89,
   "walked": 100,
   "bare": true
+ },
+ "minecart": {
+  "hash": "b8d78a140878",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 24,
+  "deaths": 3,
+  "kills": 45,
+  "lifts": 26,
+  "walked": 100,
+  "bare": true
  }
 }

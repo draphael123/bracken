@@ -11,6 +11,7 @@ import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
 import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */
 import { buildRootway } from './rootway.js';   /* THE ROOTWAY (claude/rootway, the greybox; .claude/briefs/brief-rootway.md): the bridge between SPOREWOOD and KINGSWOOD; its boss is THE GOBLIN HUNTMASTER (src/huntmaster.js) */
+import { buildMinecart } from './minecart.js';   /* THE DEEP RAILS (claude/minecart, the greybox): the side road off the Ore Road; its boss is THE GREAT DRILL (src/great-drill.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
@@ -7831,6 +7832,9 @@ export const LEVELS = [
   /* THE ROOTWAY (claude/rootway, the OPUS GREYBOX, 2026-10-07): the climb up out of the deep fungus through giant roots into the goblins' canopy - after SPOREWOOD,
      before KINGSWOOD (the bridge Daniel booked 10-07). APPENDED, so no index and no save moves; its place on the road is its needs and its map node */
   { id: 'rootway', name: 'THE ROOTWAY', sub: "up out of the fungus, into the goblins' wood", rule: "THE CAPS GROW INTO STEPS; THE GOBLINS' HOISTS DROP WHAT THEY HOLD. STOP ON A BUD TO GROW IT; CUT A HOIST'S ROPE TO DROP ITS LOAD.", build: () => buildRootway({ painter, T, TS }), needs: 'spore' },
+  /* THE DEEP RAILS (claude/minecart, the OPUS GREYBOX, 2026-10-07): a SIDE ROAD off THE ORE ROAD, down into its mine - all cart, start to finish. APPENDED, so no index
+     and no save moves; `needs: 'oreroad'` is what groups it under the Ore Road (Stormhold still needs the Ore Road: this is a spur, not the road). THE GREAT DRILL is its boss */
+  { id: 'minecart', name: 'THE DEEP RAILS', sub: "the goblins' ore line under the road", rule: 'YOU RIDE THE WHOLE WAY. THROW THE POINTS TO PICK YOUR LINE; LEFT BRAKES, RIGHT BOOSTS.', build: () => buildMinecart({ painter, T, TS }), needs: 'oreroad' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

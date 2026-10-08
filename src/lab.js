@@ -23,6 +23,7 @@ import { rocEyriePlan } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude
 import { matPlan, matOpen } from './raptor-matriarch.js';   /* THE RAPTOR MATRIARCH (claude/redgorge2): the bot reads her tells, the water and the levers off her own module */
 import { colPlan, colOpen } from './glass-colossus.js'; import { hmPlan, hmOpen } from './hawk-mistress.js';   /* THE HAWK-MISTRESS (claude/ksar): the bot reads her tells, the hawk, the runners and the courtyard's gongs and racks off her own module */   /* THE GLASS COLOSSUS (claude/glasssea): the bot reads its tells, the lance's end and the mirrors off its own module, turns the mirrors and climbs */
 import { hmPlan as hnPlan, hmOpen as hnOpen } from './huntmaster.js';   /* THE GOBLIN HUNTMASTER (claude/rootway): the bot reads his tells and his arrows off his own module; v2 strikes the gold ones back */
+import { drillPlan, drillOpen, laneOf as drillLane } from './great-drill.js';   /* THE GREAT DRILL (claude/minecart): the bot rides the treadmill - boost / brake to hold its place, jump / drop between the lines, E at the points mast */
 import { gorgeCrabPlan, crabOpen } from './gorge-crab.js';   /* THE GREAT RED CRAB (claude/redgorge): the bot reads his tells, the dam's water and his channel off his own module, and works the sluice gate */
 import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
@@ -606,7 +607,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='huntmaster'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='huntmaster'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1251,6 +1252,23 @@ async function runbossLab(BK, opts) {
         if((k.left||k.right)&&P.ground&&!pl.dodge){P.labRmStill=Math.abs(P.x-(P.labRmX??-1))<0.25?(P.labRmStill||0)+1:0;if(P.labRmStill>5&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=24;k.jump=true;P.labRmStill=0;}}else P.labRmStill=0;P.labRmX=P.x;   /* (a step in the way - a crack's lip, a pillar: a player hops it) */
         if(matOpen(boss)&&!wasOpen)opened++;wasOpen=matOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:matOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='greatdrill'){
+        /* THE GREAT DRILL (claude/minecart): src/great-drill.js drillPlan reads what a player sees - its bore's line a quarter-second late (some misread), the roof's
+           shadows, the ore carts and the chute, the points mast - and rides: RIGHT (boost) and LEFT (brake) hold its place on the treadmill, JUMP / DOWN + JUMP change
+           line, E sets the points for an ore cart, X strikes the cab (always), harder when it is JAMMED. It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const DH=BK.drillHands(),S=DH&&DH.show();
+        if(f===0||!P.labGdMem)P.labGdMem={};
+        const pl=S?drillPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,lane:P.ground?drillLane(S.G,P.y):-1},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,t:f/60,rng:Math.random,mem:P.labGdMem}):{gx:null,face:P.face};
+        if(pl.drop&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){k.down=true;BK.press('jump');P.labJumpF=f;P.labDrop=6;}
+        else if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=26;}
+        if(P.labJump>0){P.labJump--;k.jump=true;} if(P.labDrop>0){P.labDrop--;k.down=true;}
+        if(pl.gx!=null&&Math.abs(pl.gx-P.x)>6)k[pl.gx>P.x?'right':'left']=true;
+        if(pl.talk&&(P.labTalkF===undefined||f-P.labTalkF>12)){BK.press('talk');P.labTalkF=f;}
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(drillOpen(boss)&&!wasOpen)opened++;wasOpen=drillOpen(boss);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:drillOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='colossus'){
         /* THE GLASS COLOSSUS (claude/glasssea): src/glass-colossus.js colPlan reads what a player sees - its tells a quarter-second late (some misread), the lance's line
