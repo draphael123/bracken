@@ -27,7 +27,7 @@ export function makePaladinHands(ctx) {
 
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
     S = PBM.newFight(PBM.geom(Ar, ctx.TS)); BOSS_PHASE.paladin = 1;
-    const e = { ...base, t: 'paladinboss', w: PB.w, h: PB.h, hp: ctx.EHP.paladinboss, maxHp: ctx.EHP.paladinboss, noGrav: true, markH: PB.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, light: S.light };
+    const e = { ...base, t: 'paladinboss', w: PB.w, h: PB.h, hp: ctx.EHP.paladinboss, maxHp: ctx.EHP.paladinboss, noGrav: true, markH: PB.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, pbLight: S.light };
     e.y = S.G.floorY; for (const pp of ctx.players) pp.pbKeys = null; return e; };
 
   /* ---------- THE WORLD AS HE SEES IT ---------- */
@@ -47,7 +47,8 @@ export function makePaladinHands(ctx) {
         else if (k === 'ring' || k === 'cross') ctx.ring(x, y - 4, k === 'ring' ? PB.leapR : PB.radR, '#ff6b6b'); },
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
-          const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock })); if (P.hp < hp0) any = true; }); return any; },
+          const hp0 = P.hp; let res; hurt(name, () => { res = ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock }); }); if (P.hp < hp0) any = true;
+          if (o.blockable && (res === 'blocked' || (ctx.answered && ctx.answered(res)))) PBM.blowTurned(e, S, world(e), !!(ctx.answered && ctx.answered(res))); }); return any; },
     };
   }
 

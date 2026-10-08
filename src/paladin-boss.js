@@ -19,8 +19,8 @@
 //   B3: when the falter ends A TOLD PB.wardT s WARD: the light comes back up his hammer (every blow clanks WARDED) and the bar refills to PB.light.refill.
 // HE KINDLES: with two of his lamps dark he walks to the nearest and lights it again (no mark: a gold glow and the word; PB.kindleT s, committed - a blow
 //   that lands cuts it and it stays dark).
-// PHASE ONE - THE OATH (to PB.p2): HAMMER CHAIN (! two or three blows of the maul, stepping in: a shield turns each), AEGIS BASH (!! the ward shoved
-//   forward - no shield turns it: jump it or roll), MEND (no mark - a gold glow and the word MEND, PB.mendT s: a blow cuts it and the light stays spent).
+// PHASE ONE - THE OATH (to PB.p2): HAMMER CHAIN (! two or three blows of the maul, stepping in: a shield turns each), AEGIS BASH (! the ward shoved
+//   forward: a shield takes it - the concept's shield bash - or jump it, or roll), MEND (no mark - a gold glow and the word MEND, PB.mendT s: a blow cuts it and the light stays spent).
 // PHASE TWO - THE ROSE WINDOW (PB.p2 to PB.p3). NEW MOVE: RADIANCE (!! red crosses on the floor - one for each lamp still burning: columns of light come
 //   down on them PB.radTell s later; step off). The arena changes: the rose window over the altar blazes (drawn), and his regen climbs with it.
 // PHASE THREE - JUDGEMENT (PB.p3 to 0). NEW MOVE: JUDGEMENT (!! his Hammer Leap: a red ring at your feet, he leaps and slams it - the ring's floor burns
@@ -28,17 +28,18 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/paladin-boss-hands.js binds it). pbPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const PB = {
-  hp: 2100, w: 18, h: 34, markH: 54,
-  light: { max: 100, start: 80, regen: 2.6, feed: 13, drain: 10, drainHeavy: 17, mendCost: 30, radCost: 20, lampDim: 14, refill: 65 },
+  hp: 3200, w: 18, h: 34, markH: 54,
+  light: { max: 100, start: 80, regen: 2.6, feed: 13, drain: 10, drainHeavy: 17, mendCost: 30, radCost: 20, lampDim: 14, refill: 65, turned: 6, riposte: 12 },   /* turned: a hammer or bash a hero turns aside dims him; riposte: one answered on the beat (a parry, a perfect guard, a roll through) more, and he reels */
+  reelT: 0.8,
   falterT: 3.0, falterMul: 1.8, falterCap: 0.13, wardT: 3.0,
-  mendT: 1.0, mendHeal: 0.05, kindleT: 1.4,
+  mendT: 1.0, mendHeal: 0.05, kindleT: 1.4, kindleCd: 7,   /* kindleCd: s before he goes for a lamp again (he always fights: a kindle is a beat, not a loop) */
   p2: 0.6, p3: 0.3,
   walk: 62, keep: 38, turn: 0.45, gap: [0.55, 0.45, 0.4],
-  chainTell: 0.5, chainBeat: 0.34, chainT: 0.16, chainN: [2, 3, 3], chainReach: 38, chainStep: 130,
+  chainTell: 0.5, chainBeat: 0.34, chainT: 0.16, chainN: [2, 2, 3], chainReach: 38, chainStep: 130,
   bashTell: 0.62, bashT: 0.2, bashReach: 34, bashStep: 200,
   radTell: 0.95, radR: 13, radT: 0.35, radGap: 46,
   leapTell: 0.85, leapFly: 0.45, leapR: 24, holyT: 2.6, holyW: 26,
-  dmg: { chain: 28, bash: 32, rad: 34, leap: 40, holy: 7 },
+  dmg: { chain: 24, bash: 36, rad: 40, leap: 46, holy: 8 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
@@ -48,7 +49,7 @@ export const CYCLES = {
 };
 /* THE MOVES: the mode while it is told, its mark, the answer (src/marks.js keeps the same rows) */
 export const MOVES = {
-  chainTell: { mark: '!', answer: 'block' }, chainBeatTell: { mark: '!', answer: 'block' }, bashTell: { mark: '!!', answer: 'dodge' },
+  chainTell: { mark: '!', answer: 'block' }, chainBeatTell: { mark: '!', answer: 'block' }, bashTell: { mark: '!', answer: 'block' },
   mendTell: { mark: '', answer: '' }, kindleTell: { mark: '', answer: '' }, radTell: { mark: '!!', answer: 'dodge' }, leapTell: { mark: '!!', answer: 'dodge' },
 };
 export const MOVE_NAME = { chain: 'HIS HAMMER', bash: 'HIS AEGIS', rad: 'THE RADIANCE', leap: 'JUDGEMENT', holy: 'THE HOLY FLOOR' };
@@ -90,7 +91,7 @@ export const pPhase = e => (e.hp <= e.maxHp * PB.p3 ? 3 : e.hp <= e.maxHp * PB.p
 export const pbOpen = e => !!e && e.mode === 'falter' && (e.open || 0) > 0;
 const STRIKE = new Set(['chain', 'bash', 'rad', 'leap', 'land']);
 const GUARD_MODES = new Set(['walk', 'recover']);
-const COMMITTED = new Set(['chainTell', 'chainBeatTell', 'chain', 'bashTell', 'bash', 'mendTell', 'kindleTell', 'radTell', 'rad', 'leapTell', 'leap', 'land']);
+const COMMITTED = new Set(['reel', 'chainTell', 'chainBeatTell', 'chain', 'bashTell', 'bash', 'mendTell', 'kindleTell', 'radTell', 'rad', 'leapTell', 'leap', 'land']);
 /* HIS AEGIS: a blow from in front of him by a hero at his height (not from above, not in the air over him), while he is on guard */
 export const guarded = (e, hx, hy, airborne) => !!e && !pbOpen(e) && !(e.broken > 0) && GUARD_MODES.has(e.mode) && (e.face || 1) * (hx - e.x) > -6 && !(airborne && hy < e.y - 12) && Math.abs(hy - e.y) < 26;
 export const litLamps = c => (c.lamps ? c.lamps().filter(l => l.lit).length : 3);
@@ -120,6 +121,10 @@ export function blowOn(e, S, c, dmg, hx, hy, airborne, heavy) {
   if (!S.told.drain) { S.told.drain = 1; c.number(e.x, e.y - 64, 'IT LANDS: HIS LIGHT DRAINS', '#8fd160'); }
   return { dmg, read: 'landed' };
 }
+/* HIS BLOW TURNED (the hands, off what damagePlayer said): a shield that takes his hammer or his bash dims his light; one answered ON THE BEAT (a parry, a perfect
+   guard, a roll through it - main.js answered) is the RIPOSTE the concept asks for: more light, and he REELS PB.reelT s (committed: every blow lands) */
+export function blowTurned(e, S, c, perfect) { if (!e || !e.alive || pbOpen(e) || S.ward > 0) return; setLight(S, S.light - (perfect ? PB.light.riposte : PB.light.turned)); S.n.turned = (S.n.turned || 0) + 1;
+  if (perfect && (e.mode === 'chain' || e.mode === 'bash' || e.mode === 'chainBeatTell')) { S.n.ripostes = (S.n.ripostes || 0) + 1; S.chainLeft = 0; setMode(e, 'reel', PB.reelT); c.number(e.x, e.y - 64, S.told.riposte ? 'HE REELS ON THE BEAT' : 'ON THE BEAT: HE REELS, HIS LIGHT DIMS', '#8fd160'); S.told.riposte = 1; } }
 /* A SANCTUARY LAMP SNUFFED (a hero's blade through it): his light dims at once, and his regen with it */
 export function lampOut(e, S, c) { if (!e || !e.alive || e.mode === 'sleep') return; S.n.lampsOut++; setLight(S, S.light - PB.light.lampDim);
   c.number(e.x, e.y - 64, S.told.lamp ? 'HIS LIGHT DIMS' : 'THE LAMP DIES: HIS LIGHT DIMS', '#8fd160'); S.told.lamp = 1; }
@@ -129,9 +134,9 @@ export function lampOut(e, S, c) { if (!e || !e.alive || e.mode === 'sleep') ret
    c.lamps() -> [{ id, x, lit }]   c.kindle(id) (a lamp lit again) ---------- */
 export function stepPaladin(e, S, dt, h, c) {
   const G = S.G, P = h.filter(q => q.alive).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];
-  e.modeT -= dt; e.y = G.floorY; S.flash = Math.max(0, S.flash - dt);
+  e.modeT -= dt; e.y = G.floorY; S.flash = Math.max(0, S.flash - dt); S.kindleCd = Math.max(0, (S.kindleCd || 0) - dt);
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
-  if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; e.light = S.light;
+  if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; e.pbLight = S.light;   /* (not e.light: main.js's own field - a ghost's lantern) */
   stepHoly(e, S, dt, h, c);
   if (e.mode === 'sleep') return;
   if (e.mode === 'wake') { if (e.modeT <= 0) { S.script = nextScript(S); S.step = 0; setMode(e, 'walk', 0.6); } return; }
@@ -165,7 +170,7 @@ export function stepPaladin(e, S, dt, h, c) {
 function nextMove(e, S, P, c) {
   /* HIS LAMPS: two of them dark, he goes to light one (not in a falter or a ward) */
   const lamps = c.lamps ? c.lamps() : [], dark = lamps.filter(l => !l.lit);
-  if (dark.length >= 2 && S.ward <= 0) { const l = dark.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; S.kindleId = l.id; setMode(e, 'kindleWalk', 2.6); return; }
+  if (dark.length >= 2 && S.ward <= 0 && !(S.kindleCd > 0)) { S.kindleCd = PB.kindleCd; const l = dark.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; S.kindleId = l.id; setMode(e, 'kindleWalk', 2.6); return; }
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; }
   let m = S.script[S.step++]; const dx = P.x - e.x, ad = Math.abs(dx);
   e.face = Math.sign(dx) || e.face;
@@ -195,7 +200,7 @@ function stepMove(e, S, dt, P, h, c) {
       if (e.modeT <= 0) { S.chainLeft--; if (S.chainLeft > 0) { e.face = Math.sign(P.x - e.x) || f; tell(e, S, c, 'chainBeatTell', PB.chainBeat); } else after(); } return; }
     case 'bashTell': if (e.modeT <= 0) { setMode(e, 'bash', PB.bashT); c.sound('bash'); } return;
     case 'bash': { e.x = clampX(G, e.x + f * PB.bashStep * dt);
-      c.hit([f > 0 ? e.x - 4 : e.x - PB.bashReach, f > 0 ? e.x + PB.bashReach : e.x + 4, e.y - 32, e.y], PB.dmg.bash, MOVE_NAME.bash, { key: 'bash' + S.act, knock: f });
+      c.hit([f > 0 ? e.x - 4 : e.x - PB.bashReach, f > 0 ? e.x + PB.bashReach : e.x + 4, e.y - 32, e.y], PB.dmg.bash, MOVE_NAME.bash, { blockable: true, key: 'bash' + S.act, knock: f });
       if (e.modeT <= 0) after(0.5); return; }
     case 'mendTell': if (e.modeT <= 0) { const heal = Math.round(e.maxHp * PB.mendHeal); e.hp = Math.min(e.maxHp, e.hp + heal); c.fx('mend', e.x, e.y); c.number(e.x, e.y - 50, '+' + heal, '#ffd36b'); after(0.35); } return;
     case 'kindleTell': if (e.modeT <= 0) { if (c.kindle) c.kindle(S.kindleId); after(0.35); } return;
@@ -208,6 +213,7 @@ function stepMove(e, S, dt, P, h, c) {
         c.hit([S.leap.x - PB.leapR, S.leap.x + PB.leapR, G.floorY - 40, G.floorY + 4], PB.dmg.leap, MOVE_NAME.leap, { key: 'leap' + S.act });
         S.holy.push({ x: S.leap.x, t: PB.holyT }); S.leap = null; } return; }
     case 'land': if (e.modeT <= 0) after(0.3); return;   /* (he lands committed: a beat to punish) */
+    case 'reel': if (e.modeT <= 0) after(0.3); return;   /* (the riposte's beat: B4, he stands) */
     default: setMode(e, 'walk', 0.5);
   }
 }
@@ -245,6 +251,7 @@ export function pbPlan(s) {
       if ((e.mode === 'radTell' || e.mode === 'rad') && S.marks.some(m => Math.abs(P.x - m.x) < PB.radR + 12)) { const m = S.marks.find(q => Math.abs(P.x - q.x) < PB.radR + 12), d = roomDir(m.x); out.gx = safeX(m.x + d * (PB.radR + 20)); if (e.mode === 'radTell' && e.modeT < 0.2 && P.ground && !s.noRoll) out.dodge = true; out.why = 'off the cross'; return out; }
       if ((e.mode === 'leapTell' || e.mode === 'leap') && S.leap && Math.abs(P.x - S.leap.x) < PB.leapR + 16) { const d = roomDir(S.leap.x); out.gx = safeX(S.leap.x + d * (PB.leapR + 30)); if (e.mode === 'leap' && P.ground && !s.noRoll) out.dodge = true; out.why = 'off the judgement ring'; return out; }
       if ((e.mode === 'bashTell' || e.mode === 'bash') && dx < PB.bashReach + 40 && same && (e.face || 1) * (P.x - kx) > -6) {
+        if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the bash'; return out; }
         if ((e.mode === 'bash' || e.modeT < 0.2) && P.ground) { if (!s.noRoll && dx < 40) { out.dodge = true; out.gx = clamp(kx + (e.face || 1) * 60); out.why = 'roll through the bash'; return out; } out.jump = true; out.gx = P.x; out.why = 'jump the bash'; return out; }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'ready for the bash'; return out; }
       if ((e.mode === 'chainTell' || e.mode === 'chainBeatTell' || e.mode === 'chain') && dx < PB.chainReach + 40 && same) {
@@ -265,6 +272,7 @@ export function pbPlan(s) {
   /* 4b. WINDED (the lab's stamina rest): off him, out of the hammer's reach */
   if (s.rest) { out.gx = safeX(kx + side * (PB.chainReach + 60)); out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off him'; return out; }
   /* 5. FIGHT HIM: his back when he turns from you; in his tells (committed); from a jump over his aegis (B11) - never into it */
+  if (e.mode === 'reel' && dx < hitR + 6 && same) { swing(kx); out.gx = P.x; out.why = 'the riposte: he reels'; return out; }
   if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) { swing(kx); out.gx = P.x; out.why = 'hit his back'; return out; }
   if (/Tell$/.test(e.mode) && e.mode !== 'chainTell' && e.mode !== 'chainBeatTell' && e.mode !== 'bashTell' && dx < hitR + 2 && same) { swing(kx); out.gx = P.x; out.why = 'hit him in his tell'; return out; }
   if ((e.mode === 'walk' || e.mode === 'recover' || e.mode === 'land') && dx < hitR + 34) { out.face = Math.sign(kx - P.x) || 1;

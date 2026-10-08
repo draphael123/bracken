@@ -37,7 +37,7 @@ try {
     /* the rood screen */
     at(172, 62); press('talk'); at(177, 45); press('talk'); say('rood3', { rood3: H.read().lamps.rood3, rood: H.read().doors.rood });
     /* the boss */
-    at(243, 49); BK.sim(240); const b = BK.boss; say('boss', b ? { t: b.t, mode: b.mode, hp: b.hp, light: Math.round(b.light) } : null);
+    at(243, 49); BK.sim(240); const b = BK.boss; say('boss', b ? { t: b.t, mode: b.mode, hp: b.hp, light: Math.round(b.pbLight) } : null);
     say('n', H.read().n);
     return out;
   })()`);
