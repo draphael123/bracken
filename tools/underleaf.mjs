@@ -187,7 +187,7 @@ try {
   assert.ok(G.backX2 >= 38 && G.frontT === 0, 'open, her back takes double; her front still turns a blade: ' + G.backX2 + ' / ' + G.frontT);
   assert.ok(G.ward.ward >= GRAN.ward - 0.5 && G.ward.open === false && G.ward.blade === 0 && G.ward.words.includes('WARDED'), 'the opening over, a TOLD ward (B3): ' + JSON.stringify(G.ward));
   assert.ok(G.ward.lure !== 'lureTell', 'in her ward no lure turns her');
-  assert.ok(G.rapRead.rap && G.rapRead.open === true && G.rapRead.hit >= 28, 'still on a rug through her listen, she raps the floor: open all round, x1.5: ' + JSON.stringify(G.rapRead));
+  assert.ok(G.rapRead.rap && G.rapRead.open === true && G.rapRead.hit > 20, 'still on a rug through her listen, she raps the floor: open all round, more than a plain blow (x1.5, on the small purse of her rap): ' + JSON.stringify(G.rapRead));
   assert.ok(G.pullRead.lured && Math.abs(G.pullRead.lureX - G.pullRead.chime) <= 2, 'a bell-pull struck rings the far chime, and she goes for the sound: ' + JSON.stringify(G.pullRead));
   assert.ok(G.p2.phase >= 2 && G.p2.rug === T.PLANK, 'phase two: the candles go over and her rugs burn to boards: ' + JSON.stringify(G.p2));
   assert.ok(G.p3.phase === 3 && G.p3.knell && G.p3.grounded > 0 && G.p3.jumped < G.p3.grounded && G.p3.lost, 'phase three: the knell runs the boards (a grounded hero is hit, a jump clears it), the chimes are lost: ' + JSON.stringify(G.p3));

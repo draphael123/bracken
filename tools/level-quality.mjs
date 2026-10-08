@@ -27,7 +27,7 @@ const TS = 16;
 
 /* WHICH LEVELS ARE HELD TO IT. New or reworked levels only: the old campaign misses the bar in places (--all shows where) and is not being reworked.
    Add a level id here in the lane that builds or reworks it. An id that is not in LEVELS yet is skipped with a note (the theatre lane lands later). */
-export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge', 'underwell', 'skyroad', 'glasssea', 'ksar', 'rootway'];   /* (claude/rootway: THE ROOTWAY gated from its greybox) */   /* (claude/ksar: THE BANDIT KSAR gated from its greybox) */   /* (claude/skyroad: THE SKY ROAD gated from its greybox) */   /* the fair re-gated by claude/fairfix2 (the rework it waited for); THE FOG CANAL gated by claude/canalfix */
+export const GATE = ['theatre', 'fair', 'canal', 'welltown', 'redgorge', 'underwell', 'skyroad', 'glasssea', 'ksar', 'rootway', 'underleaf'];   /* (claude/underleaf2: UNDERLEAF gated with its rework - sound is a verb, the street climbs) */   /* (claude/rootway: THE ROOTWAY gated from its greybox) */   /* (claude/ksar: THE BANDIT KSAR gated from its greybox) */   /* (claude/skyroad: THE SKY ROAD gated from its greybox) */   /* the fair re-gated by claude/fairfix2 (the rework it waited for); THE FOG CANAL gated by claude/canalfix */
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {

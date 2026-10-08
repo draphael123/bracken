@@ -33,7 +33,7 @@ export const BELLMAN = { hp: 26, w: 10, h: 18, patrol: 18, walk: 36, ear: 70, ne
 export const TOLL = { every: 9, tell: 1.4, len: 1.9 };
 /* THE GRANDMOTHER (her rework, B11/B13/B14 - keyed FROM BEHIND): back = her back is open this long after she lashes at a lure; backMul / rapMul;
    ward = the told ward after every opening (B3); pullCd = a bell-pull's chime swings this long before it rings again */
-export const GRAN = { back: 2.6, backMul: 2, rapMul: 1.5, purse: 0.18, rapPurse: 0.08, hurlAt: 100, hurlCd: 4.5, jabTell: 0.3, jabCd: 1.6, ward: 3, lureTell: 0.4, lash: 0.32, lashR: 36, p2: 0.66, p3: 0.33, knellEvery: 6, knellTell: 0.75,
+export const GRAN = { back: 2.6, backMul: 2, rapMul: 1.5, purse: 0.18, rapPurse: 0.075, hurlAt: 100, hurlCd: 4.5, jabTell: 0.3, jabCd: 1.6, ward: 3, lureTell: 0.4, lash: 0.32, lashR: 36, p2: 0.66, p3: 0.33, knellEvery: 6, knellTell: 0.75,
   waveV: 230, waveDmg: 20, chimeR: 260, pullCd: 5, lureMin: 22 };
 /* THE CAPITAL LINES this module says (each routed: src/hint-lines.js CALL_LINES) */
 export const LINES = {
