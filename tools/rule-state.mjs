@@ -31,7 +31,6 @@ export const CURVE_REPORT_ONLY = {
   underleaf: 'act 2: 45% lost, 0 deaths - EASY for act II (floor 70%)',
   storm: 'act 2: 26% lost, 0 deaths - EASY for act II (floor 70%): the level-1 pilot is lifted past most of it',
   undercrown: 'act 2: 345% lost, 9 deaths - over the act II death ceiling (6)',
-  keep: 'act 3: 256% lost, 0 deaths - no deaths (act III wants >= 1)',
   /* (claude/levelpilot: causeway is back in its band - 276% lost, 6 deaths in 3 runs - and gated by the curve again) */
   /* (claude/survival, 10-07: kings 185%/2, scree 376%/5, crown 307%/4 and fair 370%/3 are back in their bands under the FLASK + dry shrines - gated again) */
   /* (claude/redgorge2: redgorge is back in its band - 246% lost, 6 deaths in 3 runs - and gated by the curve again) */

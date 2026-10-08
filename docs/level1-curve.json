@@ -238,13 +238,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 60,
-  "deaths": 0,
+  "hits": 63,
+  "deaths": 6,
   "kills": 0,
-  "lifts": 182,
+  "lifts": 183,
   "walked": 100,
   "bare": true,
-  "lostPct": 256
+  "lostPct": 272
  },
  "causeway": {
   "hash": "ae47c47a9ea8",
