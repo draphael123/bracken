@@ -4235,7 +4235,7 @@ const CRAG_NODES = [
   { id: 'moor', kind: 'level', level: 8, x: 190, y: 77, plate: 'right', name: 'GALE MOOR' },
   { id: 'skyroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyroad'), x: 268, y: 108, plate: 'below', name: 'THE SKY ROAD' },   /* THE SKY ROAD (claude/skyroad): on the main road after GALE MOOR, before THE ORE ROAD (Daniel 10-03) */
   { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 232, y: 74, plate: 'right', name: 'THE ORE ROAD' },
-  { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 214, y: 96, plate: 'left', spur: true, name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart): a spur off THE ORE ROAD, down into its mine */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
+  { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 238, y: 20, plate: 'left', spur: true, name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart): a spur off THE ORE ROAD, down into its mine */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
   { id: 'storm', kind: 'level', level: 9, x: 264, y: 55, plate: 'below', name: 'STORMHOLD' },
   { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, plate: 'below', name: 'HIGHCROWN' },
   { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 276, y: 8, plate: 'above', spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
