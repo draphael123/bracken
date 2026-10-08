@@ -121,7 +121,7 @@ export function buildRootway({ painter, T, TS }) {
   /* THE GREAT ROOTS' EXAM (FIX PASS, v2 recipe 4): the goblins hold the far side of the span - a SHIELD on the landing, a TROPHY-HUNTER who lunges at you as you
      step off it (knockback by a well), a SCOUT on the root step over them; the checkpoint after them */
   sign(166, 34, 'THE GOBLINS HOLD THE FAR SIDE. DROP THE SPAN, THEN CROSS UNDER THEIR BOW.');
-  foe('shield', 188, 34, 'gapGuard', { face: -1 }); foe('trophyhunter', 184, 34, 'gapGuard', { face: -1 }); foe('archer', 191, 31, 'gapGuard', { face: -1 });
+  foe('shield', 184, 34, 'gapGuard', { face: -1 }); foe('trophyhunter', 188, 34, 'gapGuard', { face: -1 }); foe('archer', 191, 31, 'gapGuard', { face: -1 });
   deco(185, 34, 'warnPost', 0); coins([184, 33], [187, 33]);
   ent('check', 193, 31);                                                          /* CHECKPOINT TWO */
   plank(196, 205, 29); foe('archer', 201, 28, 'larderGallery', { face: 1 }); ent('vent', 198, 31, { period: 4.5, on: 1.6, h: 70, phase: 2 }); coins([199, 28], [203, 28]);   /* a vent up to the larder's gallery */
@@ -158,7 +158,7 @@ export function buildRootway({ painter, T, TS }) {
   /* THE HOIST YARD'S EXAM (FIX PASS, v2 recipe 4): up the hunter's bud into the hunt's pickets - a SHIELD on the root, a SCOUT on the bough over him, the SAPPER's
      bombs behind them; the checkpoint after them */
   sign(270, 18, "THE YARD'S END: THE HUNT'S PICKETS HOLD IT, A BOW ON THE BOUGH OVER THEM.");
-  foe('sapper', 284, 18, 'yardExam', { face: -1 }); foe('shield', 279, 18, 'yardExam', { face: -1 }); foe('archer', 277, 15, 'yardExam', { face: -1 }); foe('trophyhunter', 287, 18, 'yardExam', { face: -1 }); deco(278, 18, 'hangCage', 0);
+  foe('sapper', 284, 18, 'yardExam', { face: -1 }); foe('shield', 276, 18, 'yardExam', { face: -1 }); foe('archer', 277, 15, 'yardExam', { face: -1 }); foe('trophyhunter', 287, 18, 'yardExam', { face: -1 }); deco(278, 18, 'hangCage', 0);
   ent('check', 290, 18);                                                          /* CHECKPOINT THREE */
 
   // ================= 4. THE CANOPY LOOKOUT (296-386): THE EXAM =================
