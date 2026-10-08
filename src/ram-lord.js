@@ -23,7 +23,7 @@ export const RAM = {
   sweepTell: 0.65, sweepR: 42, sweepH: 22,
   carry: 52,            // px/s the P2 scree floor carries a hero toward the bank (x0)
 };
-export const LIP = { rearm: 7, creak: 0.32, fall: 0.2, zone: 76, gap: 0, propW: 8, propH: 28, rock: 16 };   /* creak + fall: about half a second from the blow to the rock */
+export const LIP = { rearm: 7, creak: 0.32, fall: 0.2, zone: 76, gap: 0, propW: 8, propH: 28, rock: 16, foeDmg: 45 };   /* foeDmg: what the road's overhangs do to a foe under them (he is BURIED, stood still) */   /* creak + fall: about half a second from the blow to the rock */
 /* THE TWO OVERHANGS of a fold A (px): a prop 5 tiles in from each wall; its fall line runs from the prop toward the middle of the fold */
 export function ramLips(A, TS = 16) {
   return [1, -1].map(side => { const x = side > 0 ? A.x0 + 5 * TS + 8 : A.x1 - 5 * TS - 8, z0 = x + side * LIP.gap, z1 = x + side * (LIP.gap + LIP.zone);
@@ -54,24 +54,30 @@ export function ramStep(e, c) {
   /* P3: THE RAIN - a told rock where the hero is going, now and then */
   if (S.ph >= 3 && e.mode !== 'sleep') { S.rainT -= dt; if (S.rainT <= 0) { S.rainT = RAM.rainEvery; const x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, c.P.x + (c.P.vx || 0) * 0.5 + (Math.random() - 0.5) * 50)); c.rock(x, floor - 150, { delay: RAM.rainTell, tx: x }); } }
   /* THE OVERHANGS */
-  for (const L of S.lips) {
-    L.glow = Math.max(0, L.glow - dt);
-    if (L.state === 'armed') {
-      if (c.hb && c.P && !c.P.dead && Math.abs(c.P.x - L.x) < 30 && overlap(c.hb, propBox(L, floor)) && !L.hitBy) {   /* struck standing AT it (a spear swung at him from across the fold does not knock it by chance) */ L.hitBy = true; L.state = 'creak'; L.t = LIP.creak; L.n++; c.sfx('crack'); c.shake(3); c.dust(L.x, floor - 6, 6); c.say(L.x, floor - 44, 'THE PROP GOES', '#ffd36b'); }
-      if (inZone(L, e.x, (e.w || 48) / 2 - 8) && !(e.ward > 0) && !ramOpenMode(e)) L.glow = 0.25;   /* he is in its fall line: the prop glints */
-    } else if (L.state === 'creak') { L.t -= dt; if (L.t <= 0) { L.state = 'fall'; L.t = LIP.fall; c.sfx('rumble'); c.shake(5);
-        for (let i = 0; i < 6; i++) { const x = L.z0 + (L.z1 - L.z0) * (i + 0.5) / 6; c.rock(x, floor - 120 - Math.random() * 20, { delay: 0, tx: x, lip: true }); } } }
-    else if (L.state === 'fall') { L.t -= dt; if (L.t <= 0) { L.state = 'spent'; L.t = LIP.rearm; c.shake(9); c.sfx('heavy'); for (let i = 0; i < 5; i++) c.dust(L.z0 + (L.z1 - L.z0) * i / 4, floor, 6);
-        if (Math.abs(e.y - floor) < 6 && inZone(L, e.x, (e.w || 48) / 2 - 8) && e.mode !== 'leap' && e.mode !== 'butt') {
-          if (e.ward > 0) c.say(e.x, e.y - e.h - 14, 'HE SHRUGS THE STONE OFF: WARDED', '#c9d1dc');
-          else { e.mode = 'stun'; e.modeT = RAM.stunT; e.openT0 = RAM.stunT; e.stagger = RAM.stunT; e.vx = 0; e.stunN = (e.stunN || 0) + 1; c.say(e.x, e.y - e.h - 14, 'THE CLIFF HAS HIM: STUNNED', '#ffd36b'); c.sfx('sting'); } }
-        if (!c.P.dead && inZone(L, c.P.x) && Math.abs(c.P.y - floor) < 30) c.hurtP(L.x + L.side * 30, LIP.rock, { up: true, name: 'THE OVERHANG' }); } }
-    else if (L.state === 'spent') { L.t -= dt; if (L.t <= 0) { L.state = 'armed'; L.hitBy = false; c.say(L.x, floor - 44, 'THE CLIFF LOOSENS AGAIN', '#ffd36b'); } }
-    if (!c.hb) L.hitBy = false;   /* one swing, one prop */
-  }
+  for (const L of S.lips) stepLip(L, c, floor, inZone(L, e.x, (e.w || 48) / 2 - 8) && !(e.ward > 0) && !ramOpenMode(e), () => {
+    if (Math.abs(e.y - floor) < 6 && inZone(L, e.x, (e.w || 48) / 2 - 8) && e.mode !== 'leap' && e.mode !== 'butt') {
+      if (e.ward > 0) c.say(e.x, e.y - e.h - 14, 'HE SHRUGS THE STONE OFF: WARDED', '#c9d1dc');
+      else { e.mode = 'stun'; e.modeT = RAM.stunT; e.openT0 = RAM.stunT; e.stagger = RAM.stunT; e.vx = 0; e.stunN = (e.stunN || 0) + 1; c.say(e.x, e.y - e.h - 14, 'THE CLIFF HAS HIM: STUNNED', '#ffd36b'); c.sfx('sting'); } } });
   if (e.mode === 'stun') { e.vx = 0; if (e.modeT <= 0) {   /* (updateRam ticks modeT) */ e.mode = 'pace'; e.modeT = 0.5; e.stagger = 0; ward(e, c); } return true; }
   return false;
 }
+/* ONE OVERHANG, ONE FRAME (the fold's two, and THE LEVEL'S own - the 'overhang' ent, taught on the road before him: B14, the key is taught first). glowNow: something
+   worth dropping it on stands in its line (the prop glints). onDown(L): the rock is down - the caller says what it caught. c as ramStep's. */
+export function stepLip(L, c, floor, glowNow, onDown) {
+  const dt = c.dt; L.glow = Math.max(0, L.glow - dt);
+  if (L.state === 'armed') {
+    if (c.hb && c.P && !c.P.dead && Math.abs(c.P.x - L.x) < 30 && overlap(c.hb, propBox(L, floor)) && !L.hitBy) {   /* struck standing AT it (a spear swung at him from across the fold does not knock it by chance) */ L.hitBy = true; L.state = 'creak'; L.t = LIP.creak; L.n++; c.sfx('crack'); c.shake(3); c.dust(L.x, floor - 6, 6); c.say(L.x, floor - 44, 'THE PROP GOES', '#ffd36b'); }
+    if (glowNow) L.glow = 0.25;   /* something stands in its fall line: the prop glints */
+  } else if (L.state === 'creak') { L.t -= dt; if (L.t <= 0) { L.state = 'fall'; L.t = LIP.fall; c.sfx('rumble'); c.shake(5);
+      for (let i = 0; i < 6; i++) { const x = L.z0 + (L.z1 - L.z0) * (i + 0.5) / 6; c.rock(x, floor - 120 - Math.random() * 20, { delay: 0, tx: x, lip: true }); } } }
+  else if (L.state === 'fall') { L.t -= dt; if (L.t <= 0) { L.state = 'spent'; L.t = LIP.rearm; c.shake(9); c.sfx('heavy'); for (let i = 0; i < 5; i++) c.dust(L.z0 + (L.z1 - L.z0) * i / 4, floor, 6);
+      onDown(L); if (!c.P.dead && inZone(L, c.P.x) && Math.abs(c.P.y - floor) < 30) c.hurtP(L.x + L.side * 30, LIP.rock, { up: true, name: 'THE OVERHANG' }); } }
+  else if (L.state === 'spent') { L.t -= dt; if (L.t <= 0) { L.state = 'armed'; L.hitBy = false; c.say(L.x, floor - 44, 'THE CLIFF LOOSENS AGAIN', '#ffd36b'); } }
+  if (!c.hb) L.hitBy = false;   /* one swing, one prop */
+}
+/* A LEVEL OVERHANG (the 'overhang' ent at column x, standing on row `row`'s floor, its line running `side` from the prop) */
+export function levelLip(x, row, side, TS = 16) { const px = x * TS + 8, z0 = px + side * LIP.gap, z1 = px + side * (LIP.gap + LIP.zone);
+  return { x: px, side, z0: Math.min(z0, z1), z1: Math.max(z0, z1), floor: (row + 1) * TS, state: 'armed', t: 0, n: 0, glow: 0, level: true }; }
 /* THE WARD after an opening (B3): told, and drawn */
 export function ward(e, c) { e.ward = RAM.wardT; c.say(e.x, e.y - e.h - 14, 'HE SHAKES IT OFF: WARDED', '#c9d1dc'); c.sfx('snort'); }
 const overlap = (a, b) => a.r > b.l && a.l < b.r && a.b > b.t && a.t < b.b;
@@ -80,18 +86,23 @@ const overlap = (a, b) => a.r > b.l && a.l < b.r && a.b > b.t && a.t < b.b;
    lip is gone, a scar in the cliff, the rubble on the floor */
 export function drawRamLips(g, e, floor, cx, cy, t) {
   const S = e && e.rl; if (!S) return;
-  for (const L of S.lips) {
+  for (const L of S.lips) drawLip(g, L, floor, cx, cy, t);
+}
+export function drawLip(g, L, floor, cx, cy, t) {
+  {
     const px = Math.round(L.x - cx), fy = Math.round(floor - cy), lipX0 = Math.round(Math.min(L.x, L.x + L.side * (LIP.gap + LIP.zone)) - cx), lipW = LIP.gap + LIP.zone + 10;
-    const up = L.state === 'armed' || L.state === 'creak', shake = L.state === 'creak' ? Math.round(Math.sin(t * 60) * 2) : 0, drop = L.state === 'fall' ? Math.round((1 - L.t / LIP.fall) * 80) : 0;
+    const up = L.state === 'armed' || L.state === 'creak', shake = L.state === 'creak' ? Math.round(Math.sin(t * 60) * 2) : 0, drop = L.state === 'fall' ? Math.round((1 - L.t / LIP.fall) * 50) : 0;
+    { const wx = L.side > 0 ? lipX0 : lipX0 + lipW, ay = fy - 58; g.fillStyle = '#4e3c2c'; g.beginPath(); g.moveTo(wx, ay + 16); g.lineTo(wx + L.side * 16, ay); g.lineTo(wx - L.side * 6, ay - 200); g.lineTo(wx - L.side * 34, ay - 200); g.lineTo(wx - L.side * 14, ay + 16); g.closePath(); g.fill(); g.fillStyle = '#6b5238'; g.fillRect(Math.round(wx - L.side * 14), ay - 60, 2, 70); }   /* THE CRAG ARM it leans out on, up out of the view */
     if (up || L.state === 'fall') {   /* THE LIP: a slab of ochre rock out of the cliff, its underside ragged */
-      const ly = fy - 118 + drop; g.fillStyle = '#6b5238'; g.fillRect(lipX0 + shake, ly, lipW, 16); g.fillStyle = '#8a6a48'; g.fillRect(lipX0 + shake, ly, lipW, 4); g.fillStyle = '#c8a070'; g.fillRect(lipX0 + shake, ly, lipW, 1);
+      const ly = fy - 58 + drop; g.fillStyle = '#6b5238'; g.fillRect(lipX0 + shake, ly, lipW, 16); g.fillStyle = '#8a6a48'; g.fillRect(lipX0 + shake, ly, lipW, 4); g.fillStyle = '#c8a070'; g.fillRect(lipX0 + shake, ly, lipW, 1);
       for (let i = 0; i < lipW; i += 6) { g.fillStyle = '#5a4632'; g.fillRect(lipX0 + shake + i, ly + 16, 4, 3 + ((i * 7) % 5)); }
       g.fillStyle = '#2e2218'; for (let i = 4; i < lipW - 4; i += 11) g.fillRect(lipX0 + shake + i, ly + 5, 1, 8);   /* its cracks */
       if (L.state === 'armed' && Math.floor(t * 3 + L.x) % 2 === 0) { g.fillStyle = '#a8865a'; g.fillRect(lipX0 + ((t * 40) % lipW | 0), ly + 20 + ((t * 70) % 90 | 0), 1, 2); } }
-    else { g.fillStyle = '#3e3024'; g.fillRect(lipX0, fy - 118, lipW, 3); }   /* the scar where it came away */
+    else { g.fillStyle = '#3e3024'; g.fillRect(lipX0, fy - 58, lipW, 3); }   /* the scar where it came away */
     /* THE PROP: a dry-stone pillar under it, cracked; gold while he is in the fall line */
-    if (up) { const gl = L.glow > 0 || L.state === 'creak'; g.fillStyle = '#7a6046'; g.fillRect(px - 6, fy - LIP.propH, 12, LIP.propH); g.fillStyle = '#a8865a'; for (let y = fy - LIP.propH; y < fy; y += 5) g.fillRect(px - 6 + ((y / 5) % 2 ? 2 : 0), y, 8, 1);
-      g.fillStyle = '#2e2218'; g.fillRect(px - 1, fy - 20, 1, 12); g.fillRect(px, fy - 9, 2, 1);
+    if (up) { const gl = L.glow > 0 || L.state === 'creak';   /* THE PROP: a dry-stone pier, its stones in courses, wider at the foot, a crack up its middle */
+      for (let k = 0; k < 7; k++) { const y = fy - 4 - k * 4, w = 14 - Math.floor(k / 2) * 2, off = k % 2 ? 1 : -1; for (let q = 0; q < 3; q++) { const bw = Math.ceil(w / 3), bx = px - w / 2 + q * bw + off; g.fillStyle = (k + q) % 2 ? '#7a6046' : '#8a7058'; g.fillRect(Math.round(bx), y, bw - 1, 4); g.fillStyle = '#b8956a'; g.fillRect(Math.round(bx), y, bw - 1, 1); } }
+      g.fillStyle = '#2e2218'; g.fillRect(px - 1, fy - 22, 1, 6); g.fillRect(px, fy - 16, 1, 6); g.fillRect(px - 1, fy - 10, 1, 5);
       if (gl) { const k = 0.5 + 0.5 * Math.sin(t * 12); g.globalAlpha = 0.5 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(px - 8, fy - LIP.propH - 2, 16, LIP.propH + 2); g.fillStyle = '#fff6c8'; g.fillRect(px - 1, fy - 22, 2, 2);
         g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(L.z0 - cx), fy - 1, Math.round(L.z1 - L.z0), 1); g.globalAlpha = 1; } }
     else { g.fillStyle = '#5a4632'; g.fillRect(px - 7, fy - 5, 14, 5); }   /* the prop's rubble */

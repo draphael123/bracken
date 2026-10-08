@@ -123,6 +123,11 @@ export const STUCK = {
       { at: [292, 37], done: ['key', 292, 37, 'got'], line: 'THE LOCKGATE WANTS A KEY: THE CLERK HAS IT' },
       { at: [326, 37], done: ['lockgate', 326, 37, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
   ],
+  /* THE SCREE PATH (claude/scree2): the ropeway's lift out of the gorge bank, and the crag wall's ochre climb rock up to the plateau - both route needs */
+  scree: [
+    { id: 'sc-ropeway-lift', zone: [440, 14, 455, 26], mover: { ropeway: true }, glint: 'stall', line: 'THE ROPEWAY LIFT: THE GORGE IS CROSSED UP ABOVE' },
+    { id: 'sc-crag-climb', zone: [508, 12, 522, 21], at: [523, 13], glint: 'stall', line: 'THE OCHRE ROCK ON THE CRAG WALL CLIMBS TO THE PLATEAU' },
+  ],
   hanging: [
     { id: 'hg-hoist', zone: [0, 80, 16, 100], mover: { hoist: 'rope', well: 2 }, line: 'THE HOIST: DROP A COIL IN THE WELL, THEN STAND ON IT' },
   ],

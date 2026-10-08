@@ -15,7 +15,8 @@ import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/unde
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
-import { chaseScree } from './scree-chase.js';   /* THE ROCKSLIDE CHASE (claude/scree2) */
+import { chaseScree } from './scree-chase.js';
+import { reliefScree } from './scree-relief.js';   /* the Scree Path's knolls, ledges and road overhangs (claude/scree2) */   /* THE ROCKSLIDE CHASE (claude/scree2) */
 import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
@@ -1431,7 +1432,7 @@ function screePath() {
   GA.ent('sign', 256, 18, { text: 'RIDE THE LIFT, THEN THE MILL SAILS, THEN THE CABLE SWING. NOTHING STAYS STILL.' });
   GA.plat(260, 17, 3); GA.plat(264, 16, 2); GA.plat(268, 16, 3); // stone steps off the cliff top: two up, never more than two across
   GA.R.ropes = [{ x0: 279 * TS + 8, y0: 6 * TS + 4, x1: 305 * TS + 8, y1: 6 * TS + 4, posts: [[279 * TS + 8, 6 * TS + 4, 19 * TS], [305 * TS + 8, 6 * TS + 4, 19 * TS]] }]; // the ropeway cable the swing hangs from
-  GA.R.moversExtra.push({ kind: 'lift', x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
+  GA.R.moversExtra.push({ kind: 'lift', ropeway: true, x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
   GA.plat(276, 12, 2);
   GA.block(279, 283, 19, 23); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on an arch: the gorge floor runs under it
   for (let i = 0; i < 4; i++) GA.R.moversExtra.push({ kind: 'wheel', px: 281 * TS + 8, py: 19 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
@@ -1504,7 +1505,7 @@ function screePath() {
   Q.ent('rockfall', 456, 4, { every: 2.6 });
   Q.ent('goat', 449, 9, { face: 1 });                          // charges down the chute ahead of you
   /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
-  return chaseScree(reworkScree(Q.done(), T), T, grow);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js; then THE ROCKSLIDE CHASE (claude/scree2): the old scree steps repainted as a hillside run and 96 columns grown in after them - src/scree-chase.js */
+  return reliefScree(chaseScree(reworkScree(Q.done(), T), T, grow), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js; then THE ROCKSLIDE CHASE (claude/scree2): the old scree steps repainted as a hillside run and 96 columns grown in after them - src/scree-chase.js */
 ;
 }
 
