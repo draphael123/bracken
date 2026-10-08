@@ -119,8 +119,9 @@ export function stormholdTown({ painter, T, TS }) {
   ent('key', 44, 22, { kind: 'brass' }); ent('brazier', 40, 22);
   ent('sign', 39, 35, { text: 'THE GATE WATCH HOLDS THE BRASS KEY. WHEN THE POT TIPS, GET OFF THE LADDER.' });
   coins([43, 29], [45, 29], [46, 26], [45, 22]);
-  roof(56, 68, 31);   // a shut cottage under the tower's rope
-  ent('deco', 52, 35, { kind: 'lanternPost' }); ent('archer', 62, 28, { face: -1 });
+  ent('sign', 46, 22, { text: 'A ROPE RUNS DOWN TO THE GATE. UP TAKES THE HANDLE, JUMP LETS GO, DOWN DROPS.' });   /* THE ZIP LINE's one lesson (src/zipline.js): the verb, at the first rope, where a miss is a drop to the road */
+  roof(56, 60, 31);   // a shut cottage beside the tower's rope (it ends on the road now, so the rope runs clear over the cottage's west end)
+  ent('deco', 52, 35, { kind: 'lanternPost' }); ent('archer', 58, 28, { face: -1 });
   ent('sprig', 72, 35, { face: -1 }); ent('hound', 60, 35, { face: -1 }); ent('hound', 66, 35, { face: -1 }); ent('check', 76, 35);   /* the gate's dogs, loose on the road */
   coins([54, 34], [58, 34], [64, 34], [70, 34], [74, 34]);
   // THE BARBICAN: the wall's gatehouse, sealed from the band to the arch; the brass gate in its passage
@@ -202,6 +203,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('scalder', 298, 27, { face: -1, post: [298, 298] });   // over the first ladder
   ent('scalder', 301, 20, { face: -1, post: [301, 302] });   // over the second
   ent('key', 299, 20, { kind: 'iron' }); ent('brazier', 298, 20);
+  ent('sign', 303, 20, { text: 'THE ROPE RUNS DOWN TO THE INNER GATE. HOLD UP AT ITS HANDLE.' });
   ent('silver', 297, 24);
   // COMBINE THE BELL WITH THE TOWER (the audit's plan item 3): a sentry stands the second floor, square on the ladder
   // route between the first and second Scalder. He never sees the west window's shortcut, two rows above him - only the
@@ -213,11 +215,16 @@ export function stormholdTown({ painter, T, TS }) {
   ent('check', 274, 31); coins([270, 28], [275, 26], [279, 26], [286, 24], [290, 24], [299, 27], [300, 24], [298, 20]);
   // the close: a churchyard under the tower, the east house and its archer, and the inner wall
   facades.push([315, 337, 24, 31, 'townrow']);
-  for (const [x, v] of [[312, 0], [318, 1], [324, 2], [330, 0]]) ent('deco', x, 31, { kind: 'grave', v });
+  for (const [x, v] of [[312, 0], [318, 1], [334, 2]]) ent('deco', x, 31, { kind: 'grave', v });
   ent('deco', 336, 31, { kind: 'yew', v: 1 });
   roof(306, 314, 27); ent('archer', 311, 24, { face: -1 });
-  ent('check', 306, 31); ent('shield', 320, 31, { face: -1 }); ent('sprig', 327, 31, { face: -1 }); ent('pike', 316, 31, { face: -1 }); ent('rockgoblin', 334, 31, { face: -1 });
-  coins([316, 30], [322, 30], [330, 29], [338, 30]);
+  ent('check', 306, 31); ent('shield', 320, 31, { face: -1 }); ent('sprig', 336, 31, { face: -1 }); ent('pike', 316, 31, { face: -1 }); ent('rockgoblin', 334, 31, { face: -1 });
+  coins([316, 30], [338, 30]);
+  /* THE BREACH IN THE CLOSE (claude/zipline, Daniel 10-08: a zip line ON THE ROUTE): ten columns of the street are gone - a spiked cut too wide for any jump (6). Taken the way the Gate Watch taught
+     (a rope off a tower deck, where a miss was a drop to the road), the Bell Watch's rope is the way over: key in hand, UP at its handle on the belfry deck, and the line carries you across and sets you down
+     by the inner gate. A fall is the street's spikes (a bite, and back to the last safe ground: the hazard rule); a hero who misses the rope part-way and drops has the same. The reach model knows the rope (src/reachcore.js). */
+  for (let x = 322; x <= 331; x++) { set(x, 32, T.AIR); set(x, 33, T.SPIKE); }
+  ent('sign', 319, 31, { text: "THE STREET IS BREACHED. THE BELL WATCH'S ROPE GOES OVER IT." });
   block(344, 348, 19, 26); masonry.push([344, 348, 19, 26]);
   ent('lockgate', 346, 31, { needs: 'iron', h: 5 }); gateCol(346, 27, 31);
   ent('check', 340, 31);
@@ -285,6 +292,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('key', 528, 21, { kind: 'bone' }); ent('brazier', 524, 21);
   ent('sign', 521, 28, { text: 'THE WALL WATCH HOLDS THE BONE KEY. THE ROPE GOES DOWN TO THE BRIDGE GATE.' });
   coins([527, 24], [528, 24], [527, 21]);
+  ent('sign', 530, 21, { text: 'THE BRIDGE GATE ROPE. HOLD UP AT ITS HANDLE, JUMP TO LET GO.' });
   // THE BRIDGEHEAD YARD, and THE EXAM (RULES S3): the last stretch before the boss door combines the level's own
   // mechanics under pressure. A checkpoint opens it, a pike line stands under a fire-cage weight - the Lance's own
   // verb, cut the cage down on what stands under it - and there is nothing between here and the checkpoint outside
@@ -331,7 +339,7 @@ export function stormholdTown({ painter, T, TS }) {
   // ---- THE TOWERS' ROPES: from each top deck's east edge down to the foot of its own gate. UP grabs, JUMP lets go. ----
   const rope = (x0, top, x1, endRow, groundRow) => ({ x0: x0 * TS + 8, y0: top * TS - 12, x1: x1 * TS + 8, y1: endRow * TS - 12,
     posts: [[x0 * TS + 8, top * TS - 12, top * TS], [x1 * TS + 8, endRow * TS - 12, groundRow * TS]] });
-  const zipLines = [rope(47, T1.top, 80, 31, 36), rope(302, T2.top, 342, 27, 32), rope(530, T3.top, 538, 26, 30)];
+  const zipLines = [rope(47, T1.top, 80, 36, 36), rope(302, T2.top, 338, 32, 32), rope(530, T3.top, 541, 30, 30)];   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12): a ride that sets you down, and a rope you can reach from the ground at its foot (src/zipline.js) */
   const watchtowers = [T1, T2, T3];
 
   // THE LADDERS, LAST: nothing is dug after this line

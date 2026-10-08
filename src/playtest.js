@@ -24,6 +24,7 @@ import { LEVELS, T, TS } from './level.js';
 import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap, measureLevel } from './threat.js';
 import { floodReach } from './reachcore.js';
 import { checkDrawables } from './floatlab.js';
+import { inReach as zipInReach } from './zipline.js';   /* THE ZIP LINE (claude/zipline): the bot takes a rope that runs his way, and lets it carry him */
 import { botShouldDrink } from './survival.js';   /* THE FLASK (claude/survival): the walker drinks like a person - under a third of the bar, a flask held */
 
 const SEV = { bug: 3, odd: 2, note: 1 };
@@ -339,6 +340,10 @@ export function makeBot(BK) {
            plunging on it again from a standstill is a plunge into the pit with extra steps */
         if (Math.abs(e.x - P.x) < 15 && dy > 8 && dy < 50) { keys.down = true; tick.pogoCd = 18; break; } }
     }
+
+    /* ---- A ZIP LINE (src/zipline.js): riding one, he lets it carry him (no keys, no pogo on what is under it); at the high end of one that runs the way his goal lies, with the rope in his reach, he takes hold (UP). A frayed one (the Fair's, `snap`) is not a way he takes. ---- */
+    if (P.zip) { keys.left = keys.right = keys.up = keys.down = keys.jump = false; hold = 0; tick.jumping = 0; tick.pogoCd = 20; still = 0; }
+    else if (L.zipLines && dir && P.ground && !(P.zipRelease > 0) && !P.climb && L.zipLines.some(z => !z.snap && (z.dir || dir) === dir && Math.abs(goalX - P.x) > 8 * TS && zipInReach(z, P))) { keys.up = true; keys.left = keys.right = false; still = 0; }
 
     // ================================ THE FIGHT ================================
     // It could only do one thing: swing at whatever happened to be in arm's reach, so it walked into a

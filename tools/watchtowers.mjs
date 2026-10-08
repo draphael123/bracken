@@ -4,9 +4,9 @@
      a rope ladder reaches the top deck (the reach model does not ride a rope, so the ladder is the way down too);
      its rope starts on the top deck, runs east and down, ends LEFT of its gate, and a hero hanging off it meets no rock;
      the sign at its foot names the key it holds.
-   Then drives updateTowerSlides out of main.js in a vm: UP grabs the rope, the rope carries him east, JUMP lets go. */
-import assert from 'node:assert/strict'; import { readFileSync } from 'node:fs'; import vm from 'node:vm'; import { LEVELS, T } from '../src/level.js';
-const TS = 16, L = LEVELS.find(l => l.id === 'storm').build(), s = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+   Then drives the zip line's own step (src/zipline.js, the code updateTowerSlides calls): UP grabs the rope, the rope carries him east, JUMP lets go. */
+import assert from 'node:assert/strict'; import { LEVELS, T } from '../src/level.js'; import { zipStep } from '../src/zipline.js';
+const TS = 16, L = LEVELS.find(l => l.id === 'storm').build();
 const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
 assert.equal(L.watchtowers.length, 3, 'three watchtowers'); assert.equal(L.zipLines.length, 3, 'a rope off each');
 const kinds = new Set();
@@ -26,8 +26,9 @@ for (const [i, t] of L.watchtowers.entries()) { const tag = t.name || 'tower ' +
   assert.ok(L.ents.some(e => e.t === 'sign' && Math.abs(e.x - t.x0) <= 3 && e.text.includes(t.key.toUpperCase() + ' KEY')), tag + ': the sign at its foot names the ' + t.key + ' key');
 }
 assert.equal(kinds.size, 3, 'three different keys');
-const z = L.zipLines[0], P = { x: z.x0, y: z.y0 + 12, vx: 0, vy: 0 }, noop = () => {}, c = vm.createContext({ L, P, keys: { up: true }, jumpPress: false, SFX: new Proxy({}, { get: () => noop }) });
-vm.runInContext(s.slice(s.indexOf('function updateTowerSlides'), s.indexOf('function towerLever')), c);
-c.updateTowerSlides(1 / 60); assert.equal(P.zip, z); assert.equal(P.vx, 210);
-c.jumpPress = true; c.updateTowerSlides(1 / 60); assert.equal(P.zip, null); assert.equal(P.vy, -240); assert.equal(P.zipRelease, .6);
+/* THE ROPE, DRIVEN (src/zipline.js: main.js's updateTowerSlides is one call into zipStep, so this runs the same code): UP at the top grabs it, the rope carries him east, JUMP lets go.
+   (The real-key, real-page, every-hero version of the same lines is tools/zipline.mjs.) */
+const z = L.zipLines[0], P = { x: z.x0, y: z.y0 + 12, vx: 0, vy: 0 }, noop = () => {}, keys = { up: true }, c = { P, L, keys, upPress: false, jumpPress: false, SFX: new Proxy({}, { get: () => noop }), callout: noop, burst: noop, sparks: noop, number: noop };
+zipStep(c, 1 / 60); assert.equal(P.zip, z); assert.equal(P.vx, 210);
+c.jumpPress = true; zipStep(c, 1 / 60); assert.equal(P.zip, null); assert.equal(P.vy, -240); assert.equal(P.zipRelease, .6);
 console.log('Three watchtowers, three keys on their top decks, a ladder up each and a clear rope down to each gate; grab and jump-release verified.');
