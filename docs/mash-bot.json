@@ -5610,23 +5610,23 @@
   }
  },
  "burning": {
-  "hash": "c4d0fd689ed1",
+  "hash": "676515e906cb",
   "boss": {
    "boss": "pyromancer",
    "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/88",
-     "dead:100/91"
+     "dead:100/84",
+     "dead:100/83"
     ],
     "warden": [
-     "dead:100/89",
-     "dead:100/85"
+     "dead:100/82",
+     "dead:100/68"
     ],
     "pyro": [
-     "dead:100/94",
-     "dead:100/93"
+     "dead:100/85",
+     "dead:100/82"
     ]
    },
    "rows": [
@@ -5637,10 +5637,10 @@
      "out": "dead",
      "secs": 70.9,
      "hpLostPct": 100,
-     "bossLeftPct": 88,
-     "landed": 20,
-     "swings": 2759,
-     "reprisalPct": 5,
+     "bossLeftPct": 84,
+     "landed": 18,
+     "swings": 2633,
+     "reprisalPct": 11,
      "chip": []
     },
     {
@@ -5648,12 +5648,12 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 70,
+     "secs": 70.9,
      "hpLostPct": 100,
-     "bossLeftPct": 91,
+     "bossLeftPct": 83,
      "landed": 19,
-     "swings": 2734,
-     "reprisalPct": 0,
+     "swings": 2619,
+     "reprisalPct": 9,
      "chip": []
     },
     {
@@ -5663,10 +5663,10 @@
      "out": "dead",
      "secs": 69.5,
      "hpLostPct": 100,
-     "bossLeftPct": 89,
-     "landed": 28,
-     "swings": 2680,
-     "reprisalPct": 0,
+     "bossLeftPct": 82,
+     "landed": 25,
+     "swings": 2573,
+     "reprisalPct": 5,
      "chip": []
     },
     {
@@ -5674,12 +5674,12 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 76.3,
+     "secs": 69.3,
      "hpLostPct": 100,
-     "bossLeftPct": 85,
-     "landed": 31,
-     "swings": 2915,
-     "reprisalPct": 0,
+     "bossLeftPct": 68,
+     "landed": 30,
+     "swings": 2541,
+     "reprisalPct": 23,
      "chip": []
     },
     {
@@ -5687,12 +5687,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 61.5,
+     "secs": 63.7,
      "hpLostPct": 100,
-     "bossLeftPct": 94,
-     "landed": 18,
-     "swings": 2342,
-     "reprisalPct": 3,
+     "bossLeftPct": 85,
+     "landed": 22,
+     "swings": 2247,
+     "reprisalPct": 4,
      "chip": []
     },
     {
@@ -5700,69 +5700,75 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 62.1,
+     "secs": 67.8,
      "hpLostPct": 100,
-     "bossLeftPct": 93,
-     "landed": 20,
-     "swings": 2390,
-     "reprisalPct": 0,
+     "bossLeftPct": 82,
+     "landed": 25,
+     "swings": 2457,
+     "reprisalPct": 6,
      "chip": []
     }
    ]
   },
+  "carried": {
+   "from": "c4d0fd689ed1",
+   "parts": [
+    "boss"
+   ]
+  },
   "level": {
    "knight": {
-    "deaths": 29,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 2976,
-    "hits": 237,
+    "hpLostPct": 204,
+    "hits": 17,
     "walked": 100,
-    "lifts": 42,
-    "held": 87,
-    "duels": 29,
+    "lifts": 37,
+    "held": 3,
+    "duels": 1,
     "boardLifts": 0,
     "rides": 0,
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 54392,
-    "kills": 135,
+    "frames": 13387,
+    "kills": 13,
     "heroLevel": 3
    },
    "warden": {
-    "deaths": 13,
+    "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 1418,
-    "hits": 119,
+    "hpLostPct": 289,
+    "hits": 23,
     "walked": 100,
     "lifts": 37,
-    "held": 42,
-    "duels": 14,
+    "held": 8,
+    "duels": 1,
     "boardLifts": 0,
     "rides": 0,
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 39174,
-    "kills": 62,
+    "frames": 13359,
+    "kills": 20,
     "heroLevel": 3
    },
    "pyro": {
-    "deaths": 22,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 2200,
-    "hits": 141,
+    "hpLostPct": 266,
+    "hits": 21,
     "walked": 100,
-    "lifts": 38,
-    "held": 66,
-    "duels": 22,
+    "lifts": 35,
+    "held": 8,
+    "duels": 1,
     "boardLifts": 0,
     "rides": 0,
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 41629,
-    "kills": 93,
+    "frames": 13375,
+    "kills": 16,
     "heroLevel": 3
    }
   }
