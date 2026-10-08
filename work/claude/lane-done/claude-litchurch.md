@@ -105,3 +105,43 @@ hash is the same on base), slopes-trace canal (identical diff on base), elites k
 10. **The charnel pit is 2 wide** (every hero clears it; the templar's shove makes it the risk). Rec: keep.
 11. **The concept's "priests re-light the arena lamps in P2"** is not built (no adds, your 10-07 preference) - he KINDLES them himself. Rec: keep.
 12. **Music**: pick from the three above (rec "Cathedral" + "Church combat"). The bed and his theme stay composed in code until you do.
+
+# claude/litchurch - THE PALADIN TUNE (2026-10-08, Opus; Daniel: "even it out before he plays it")
+Built on 96dd8c5a. Measured: `PORT=8734 BOT_PROFILE=human+dry node tools/boss-rates.mjs church --ways=practiced --profile=human+dry --seeds=12` (L22, dry, 12 seeds a hero).
+Helper (not a check): work/claude/paladintune/pb-diag.mjs prints his counts (S.n), the damage each of his moves did, and the hero's state the frame before each hit.
+
+## Rates
+| | knight | warden | pyro | overall |
+|---|---|---|---|---|
+| before (greybox+art, re-measured, 6 seeds) | 3/6 | 3/6 | 6/6 | 67% |
+| after (12 seeds) | **7/12 (58%)** | **5/12 (42%)** | **8/12 (67%)** | **56%, in band** |
+Fight lengths (mean): wins knight 91 s, warden 128 s, pyro 108 s; deaths 69-92 s. **Mash boss 0/6** (re-stamped, boss row only: dead in 34-37 s, he keeps 87-96%).
+
+## Why the pyro was free (fixed)
+Her staff's BURN TICKS (2 dmg each, 0.3 s, no blow behind them) went through his `take` as if they were blows. From behind / in his tells, 21-40 ticks a fight
+LANDED and each drained his light by a full blow's 10 (another 47-50 paid x1.8 in his falters). She starved him without swinging. Now:
+- `burnOn` (src/paladin-boss.js) - a burn tick NEVER touches his light (no feed, no drain); whole outside his ward (B15), **x1 (was x1.8)** inside the falter's cap, 0 in his ward.
+- **His returning light puts the fire out**: the ward after a falter sets `e.burn = 0`.
+- src/main.js (3 small lines): `BURN_TICK` is raised round the burn tick's `wardedDamage` call and handed to the Paladin's hands (`ctx.burnTick`), so the firedrop and other no-blow hits stay blows.
+
+## Why the knight struggled (fixed)
+pb-diag: 12 of his 21 hits landed while he was AIRBORNE (the knight's reach 22 leaves "jump his aegis" as his only safe way in, and he cannot shield in the air), and the
+shield's own answer paid almost nothing (a blocked bash: -6 light, nothing else; a riposte only on a perfect guard). Now:
+- **A BASH TAKEN ON A SHIELD (or a deflect) REBOUNDS HIM**: `reboundT` **0.6 s** in 'reel' (committed: blows land), told "HIS BASH ON YOUR SHIELD: HE REBOUNDS" / "THE BASH REBOUNDS"
+  (both added to src/hint-lines.js). The concept's shield bash, answered by the shield - a window a roll does not make.
+- Light: `turned` **6 -> 8** (a hammer/bash turned plainly), `riposte` **12 -> 16** (on the beat). `reelT` unchanged at 0.8 (tried 1.2: worse - the bot was still mid-swing when he came back).
+- **B15 (Daniel 10-08) on his aegis**: a blow his aegis turns now bites at **`aegisTake` 0.4** (was 0) - still clanks, still says HIS AEGIS, still FEEDS his light (+13). Hammering the front for a minute still never opens him (asserted).
+- The bot (pbPlan, the boss's own human bot): a SHIELD hero now BAITS him most cycles (`PLAN.bait` **0.6**: stand just off his maul, guard up) instead of always jumping the aegis,
+  and walks in on a reel ("in on his reel") instead of only swinging if already in reach. Pyro/warden reads are unchanged.
+Unchanged: hp 3200, every damage number, tells, timings, falter 3.0 s x1.8 cap 13%, ward 3 s, P2 radiance, P3 judgement, kindle, lamps, all poses (lit-church-aloft green).
+
+## Checks (PORT 8734 only), green
+lit-church (330: the aegis assert now reads B15's 0.4 and still feeds - a deliberate design change; new asserts for the burn tick, the rebound and the riposte), lit-church-aloft,
+boss-read, tells, boss-greed, mash-bot (church --arena-only --write: boss row only). Not run: the 40-minute suite. Nothing killed but my own tools' own children.
+
+## QUESTIONS FOR DANIEL (rec first; the rec is what is built)
+1. **B15 on his aegis**: a frontal blow on his guard now lands at 0.4 (and still feeds his light). Rec: keep (your 10-08 floor). Alt: 0.25 if the front feels too profitable in your playtest.
+2. **A shield-taken bash rebounds him 0.6 s** (only shields/deflects; a roll does not). Rec: keep - it is the knight's (and the hero Paladin's) window. Alt: perfect-guard only.
+3. **His returning light snuffs a fire on him**, and burn pays x1 in a falter. Rec: keep. Alt: leave the fire burning through the ward.
+4. **Warden at 5/12 (42%)** - inside 40-70 but the low one. Rec: judge in your playtest. Alt: the warden's deflect counts as "on the beat" for the riposte.
+5. **Your playtest gate (B9)** - he is new; every number above is a bot's.
