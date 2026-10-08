@@ -57,9 +57,9 @@ export function breakBlock(L, s, shrines, { bossActive = false, TS = 16 } = {}) 
 }
 /* where a death wakes once a shrine is broken: the last lit, unbroken shrine (litN order), else null (the wood's start) */
 export const wakeShrine = shrines => shrines.filter(s => s.lit && !s.broken).sort((a, b) => (b.litN || 0) - (a.litN || 0))[0] || null;
-/* STAMINA (Daniel 10-07 A10b): the bar refills STAM_REGEN_MUL faster everywhere from the start (src/commit.js STAM.regen 75 -> 105); every stamina
+/* STAMINA (Daniel 10-07 A10b): the bar refills STAM_REGEN_MUL faster everywhere from the start (src/commit.js STAM.regen 75 -> 90; Daniel 10-08: x1.4 -> x1.2, the masher cleared the Rootway); every stamina
    upgrade still multiplies on top (staminaOf regenMul) */
-export const STAM_REGEN_MUL = 1.4;
+export const STAM_REGEN_MUL = 1.2;
 
 /* water and spikes: a share of the bar (25-30%, Daniel), whatever the wood, the difficulty or the armour */
 export const HAZARD = { pct: 0.27 };

@@ -12,10 +12,10 @@
  *   4. DRY SHRINES. A shrine lights, fills the flasks and the stamina, and does NOT heal; a death does heal in full and fills them; R (back to
  *      the shrine) carries health and flasks. HEARTS heal 12% of max; KILL HEALS halve and cap at 5 (the charm alone: 3).
  *   5. (claude/survival2, Daniel 10-07 A10b - the approved design change, same strictness: 3 flasks -> ONE to start, the smith's two -> max 3; a
- *      shrine FILLED them -> gives back ONE, once a shrine a LIFE; stamina regen 75 -> 105) a shrine reached gives one back and no more that life
+ *      shrine FILLED them -> gives back ONE, once a shrine a LIFE; stamina regen 75 -> 90, Daniel 10-08 pulled x1.4 back to x1.2) a shrine reached gives one back and no more that life
  *      (R is not a new life); a death gives back all (and keeps a broken shrine's undrunk extra); BREAKING a shrine (hold interact) takes its
  *      checkpoint for the run (a death wakes at the one lit before), gives +1 over the max, is told, never at the pre-boss shrine or in a boss
- *      fight, and blocks nothing (he walks on past it); the bar refills ~40% faster.
+ *      fight, and blocks nothing (he walks on past it); the bar refills ~20% faster (x1.2).
  */
 import assert from 'node:assert/strict';
 import { LEVELS, T } from '../src/level.js';
@@ -45,7 +45,7 @@ assert.ok(spans >= 1, 'no wood marks an exam span');
 assert.equal(SV.killHeal({ charm: true, bloodDrawn: true, bloodletter: true }), 5, 'kill heals cap at 5'); assert.equal(SV.killHeal({ charm: true }), 3);
 assert.equal(SV.flaskMax({}), 1); assert.equal(SV.flaskMax({ flaskUp: 9 }), 3);   /* (survival2: one to start, max three) */
 assert.equal(SV.shrineRefill(0, 3), 1); assert.equal(SV.shrineRefill(3, 3), 3); assert.equal(SV.shrineRefill(4, 3), 4); assert.equal(SV.deathRefill(0, 3), 3); assert.equal(SV.deathRefill(4, 3), 4);
-assert.equal(STAM.regen, Math.round(75 * SV.STAM_REGEN_MUL), 'stamina regen is not ~40% faster than 75 (Daniel 10-07 A10b)');
+assert.equal(STAM.regen, Math.round(75 * SV.STAM_REGEN_MUL), 'stamina regen is not ~20% faster than 75 (Daniel 10-08: x1.2)');
 { const m = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); assert.equal(m.split('keys.talk = true').length - 1, 1, 'keys.talk (the BREAK hold) must be set only by a person key (and the pad held list): a bot never breaks a shrine'); } assert.equal(SV.flaskHeal(200), 70); assert.equal(SV.heartHeal(200), 24);
 
 /* ---------- the page ---------- */
@@ -144,7 +144,7 @@ return out;})()`);
   assert.ok(b.death.x && b.death.flasks === b.broke.max + 1 && b.death.still, 'a death after a break did not wake at the shrine before it, keep the undrunk extra and leave it broken: ' + JSON.stringify(b.death));
   if (b.preBlock !== undefined) assert.ok(b.preBlock && !b.preBroken, 'the pre-boss shrine broke: ' + JSON.stringify(b));
   assert.ok(b.fightBlock, 'a shrine is breakable in a boss fight'); assert.ok(b.mended, 'a restarted wood kept a broken shrine');
-  assert.ok(r.stam.rate >= 75 * SV.STAM_REGEN_MUL * 0.97, 'stamina refills at ' + r.stam.rate.toFixed(1) + '/s, not ~40% over 75: ' + JSON.stringify(r.stam));
+  assert.ok(r.stam.rate >= 75 * SV.STAM_REGEN_MUL * 0.97, 'stamina refills at ' + r.stam.rate.toFixed(1) + '/s, not ~20% over 75: ' + JSON.stringify(r.stam));
   assert.equal(d.heart, d.heartWant, 'a heart heals ' + d.heart + ', not 12% (' + d.heartWant + ')');
   assert.equal(d.kill, 3, 'the HEART CHARM heals ' + d.kill + ' a kill, not 3');
   assert.deepEqual(pg.errors, []);
