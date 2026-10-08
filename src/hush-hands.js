@@ -33,8 +33,8 @@ export const BELLMAN = { hp: 26, w: 10, h: 18, patrol: 18, walk: 36, ear: 70, ne
 export const TOLL = { every: 9, tell: 1.4, len: 1.9 };
 /* THE GRANDMOTHER (her rework, B11/B13/B14 - keyed FROM BEHIND): back = her back is open this long after she lashes at a lure; backMul / rapMul;
    ward = the told ward after every opening (B3); pullCd = a bell-pull's chime swings this long before it rings again */
-export const GRAN = { back: 2.6, backMul: 2, rapMul: 1.5, purse: 0.18, rapPurse: 0.08, hurlAt: 100, hurlCd: 6, jabTell: 0.3, jabCd: 1.6, ward: 3, lureTell: 0.4, lash: 0.32, lashR: 36, p2: 0.66, p3: 0.33, knellEvery: 6, knellTell: 0.75,
-  waveV: 230, waveDmg: 18, chimeR: 260, pullCd: 5, lureMin: 22 };
+export const GRAN = { back: 2.6, backMul: 2, rapMul: 1.5, purse: 0.18, rapPurse: 0.08, hurlAt: 100, hurlCd: 4.5, jabTell: 0.3, jabCd: 1.6, ward: 3, lureTell: 0.4, lash: 0.32, lashR: 36, p2: 0.66, p3: 0.33, knellEvery: 6, knellTell: 0.75,
+  waveV: 230, waveDmg: 20, chimeR: 260, pullCd: 5, lureMin: 22 };
 /* THE CAPITAL LINES this module says (each routed: src/hint-lines.js CALL_LINES) */
 export const LINES = {
   potTake: 'INTERACT TAKES THE POT. ATTACK THROWS IT. UP LOBS, DOWN TOSSES.',
@@ -259,7 +259,8 @@ export function makeHushHands(ctx) {
     const back = behindOf(e, fromX);
     if (!back) { ctx.turned(e, fromX, 'SHE HEARD YOU'); H.n.parried++; e.ear = fromX; e.earT = 1.6; e.parryAt = ctx.time(); e.burnBefore = e.burn || 0; if (e.mode === 'walk' && !(e.jabCd > 0)) e.jabNow = true; return 0; }   /* she heard the swing coming - her stick turns it, and comes back at your knuckles */
     if (granBack(e)) { H.n.backHits++; return purse(e, dmg || 1, GRAN.backMul); }
-    H.n.backHits++; return 1;
+    /* her back, outside an opening: it lands whole - and she turns on the blow (she felt it, and now she knows where you are) */
+    H.n.backHits++; e.turnTo = fromX; return 1;   /* (main.js updateGrandmother turns her on her next beat) */
   };
   /* A TURNED BLOW SETS NOTHING ALIGHT: what a parried hit's caller put on her (a pyro's flame) is taken off again (main.js updateGrandmother, each frame) */
   H.granUnburn = e => { if (e.parryAt !== undefined && ctx.time() - e.parryAt < 0.12 && (e.burn || 0) > (e.burnBefore || 0)) e.burn = e.burnBefore || 0; };
@@ -440,7 +441,20 @@ export function makeHushHands(ctx) {
   H.drawOver = (g, cx, cy, time) => { if (H.on()) drawReads(g, cx, cy, time); };
   /* THE WALKER'S HANDS (tools/level-walk.mjs via src/walk-hints.js): where a player goes for the required throw, and what he presses there */
   H.walkHint = P => {
-    if (!H.on() || !P || P.dead) return null; const n = propsOf('keynail').find(q => q.key && !q.key.got); if (!n) return null;
+    if (!H.on() || !P || P.dead) return null;
+    /* A HOUSE IS CROSSED, NOT VISITED (every enterable building has a far door): a walker inside one with no key left in it goes out at its far door */
+    const lv = L(), tx = P.x / TS, ty = P.y / TS, room = (lv.interiors || []).find(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && ty >= y0 && ty <= y1 + 1.5);
+    if (room) { const keyIn = ctx.props().some(p => p.t === 'key' && !p.got && !p.hung && p.x / TS >= room[0] && p.x / TS <= room[1] + 1 && p.y / TS >= room[2] && p.y / TS <= room[3] + 1.5);
+      const far = (lv.ents || []).filter(e => e.t === 'doorway' && e.lock && e.x >= room[0] && e.x <= room[1]).map(d => ({ d, to: (lv.ents || []).find(q => q.t === 'doorway' && q.id === d.to) })).filter(o => o.to).sort((a, b) => b.to.x - a.to.x)[0];
+      if (!keyIn && far) return { x: far.d.x * TS + 8, y: P.y, key: 'talk', face: 0, r: 60 };
+      }
+    /* A DROPPED STREET GATE: to the ladder at the gable, up its rungs (a hop at a time, as a player climbs a rope ladder), along the roof past the gate */
+    for (const sg of propsOf('streetgate')) { if (!sg.shut || sg.ladder === undefined) continue; const r = gateRoof(sg); if (!r) continue;
+      const gx = sg.col * TS + 8, lx = sg.ladder * TS + 8, street = (sg.y1 + 1) * TS, roofY = r[2] * TS;
+      if (P.x >= gx - 4 || P.x < lx - 20 * TS) continue;
+      if (P.y > roofY + 8) return Math.abs(P.x - lx) > 10 && Math.abs(P.y - street) < 24 ? { x: lx, y: P.y, key: null, face: 0, r: 30 } : { x: lx, y: P.y, key: 'jump', face: 0, r: 30 };
+      return { x: Math.max(gx + 24, (r[1] - 1) * TS + 8), y: P.y, key: null, face: 1, r: 40 }; }
+    const n = propsOf('keynail').find(q => q.key && !q.key.got); if (!n) return null;
     const k = n.key, roofY = k.floorY;
     if (n.down) return k.falling ? { x: P.x, y: P.y, key: null, hold: true, r: 14 } : { x: k.x, y: roofY, key: null, face: 0, r: 14 };
     if (Math.abs(P.y - roofY) > 2 * TS || P.x < n.x - 40 * TS || P.x > n.x + 8 * TS) return null;
