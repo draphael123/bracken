@@ -4530,3 +4530,22 @@ function geoKitPoses(F, sh) {
   F.gAval = [KF({ dy: -2, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 3, Y - 10], arm2: [OFF[0], OFF[1], X - 4, Y - 10], stave: [X - 7, Y - 12, X + 6, Y - 13], plume: 2, bits: [o(-4, -18, M), o(4, -20, M), o(9, -17, M)] }),
     KF({ dy: 3, legs: 'crouch', arm: [X, Y, X + 4, Y], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 6, Y + 9, X + 5, Y - 8], plume: 0, bits: [o(3, 9, D), o(9, 9, D), o(1, 8, M), o(11, 8, M), o(5, -14, A)] })];
 }
+
+// THE BELLMAN (UNDERLEAF 2, claude/underleaf2) - the blind night-watchman: a long watch-coat, a wide hat, a cloth over his eyes, a brass EAR
+// TRUMPET at his ear and a HANDBELL at his side. 14x17, faces right. Frames: 0/1 walk, 2 listen (the trumpet up), 3 ring (the bell over his
+// head), 4 swing (the bell out at you), 5 knocked back.
+export function bakeBellman() {
+  const BP = Object.assign({}, EP, { c: '#3a4258', C: '#262c3c', h: '#2a2430', H: '#4a3e50', k: '#e8dcc0', y: '#e0b040', Y: '#a8842a', z: '#6a5a40', N: '#3a2a1c' });
+  const f = rows => outline(fromGrid(rows, BP, 1), OUT);
+  const hat = ['....hhhh......', '...hHhhhh.....', '.hhhhhhhhhh...'];
+  const head = ['...gkkkkgYy...', '...ggggggyyy..', '....gGGg..y...'];
+  const coat = ['...cccccc.....', '..cCccccCc....', '..cccccccc....', '..cCccccccz...', '..cccccc.zz...', '..cCcccc.yyy..', '..cccccc.yyy..', '...cccc...y...'];
+  const legA = ['...NN..NN.....', '..NN....NN....', '.NNN....NNN...'], legB = ['....NNNN......', '...NN..NN.....', '..NN....NN....'];
+  const walkA = f([...hat, ...head, ...coat, ...legA]), walkB = f([...hat, ...head, ...coat, ...legB]);
+  const listen = f([...hat, '...gkkkkgYYy..', '...ggggggyyyy.', '....gGGg..yy..', ...coat, ...legA]);
+  const bare = ['...cccccc.....', '..cCccccCc....', '..cccccccc....', '..cCcccccc....', '..cccccc......', '..cCcccc......', '..cccccc......', '...cccc.......'];
+  const ring = f(['....hhhh..yyy.', '...hHhhhh.yyy.', '.hhhhhhhhhyYy.', '...gkkkkg..z..', '...gggggg.zz..', '....gGGg.cc...', ...bare, ...legA]);
+  const swing = f([...hat, '...gkkkkg.....', '...gggggg.....', '....gGGg......', '...cccccc.....', '..cCccccCc....', '..cccccccczzz.', '..cCcccccc.yyy', '..cccccc...yyy', '..cCcccc....y.', '..cccccc......', '...cccc.......', ...legA]);
+  const stun = f(['..............', '.hhhh.........', 'hhhhhhhh......', '...gkkkkg.....', '...ggoggg.....', '....gGGg......', ...coat, ...legB]);
+  return pack([walkA, walkB, listen, ring, swing, stun], 8, 18, 10, 17);
+}

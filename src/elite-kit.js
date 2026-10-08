@@ -59,6 +59,7 @@ export const AFFIX_AT = {
   'stockade|brute': 'SUMMONER', 'stockade|archer#amb': 'SWIFT',
   'spore|shield': 'VENOMOUS', 'spore|shield#amb': 'THORNED',
   'kings|brute': 'UNSTOPPABLE', 'kings|archer#amb': 'WARDING',
+  'underleaf|brute#1': 'WARDING', 'underleaf|brute#2': 'SWIFT',   /* (claude/underleaf2) the terrace's captain at the windmill foot (his sprig takes half from the front: him first), the green's captain in the open */
   'burning|shield': 'BURNING', 'burning|brute#amb': 'BURNING',
   'scree|troll': 'UNSTOPPABLE', 'scree|troll#amb': 'THORNED',
   'hanging|shield': 'SWIFT', 'hanging|brute#amb': 'UNSTOPPABLE',

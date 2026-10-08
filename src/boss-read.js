@@ -48,7 +48,7 @@ export const TURN_WORD = {
   chief: (e, fromX) => behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   frog: 'THE HIDE',
   windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : TURN.WARDED,
-  grandmother: e => (e.alpha !== undefined && e.alpha < 0.35) || e.mode === 'vanish' ? TURN.NOT_THERE : TURN.WARDED,
+  grandmother: e => (e.ward > 0 ? TURN.WARDED : 'SHE HEARD YOU'),           // (claude/underleaf2) B14 FROM BEHIND: her front hears the blade and turns it; her ward after an opening
   winchmaster: 'IRON',                                      // his plate: jam his drum
   greathound: TURN.WARDED,
   queen: 'THE SWARM',                                       // her drones close over her

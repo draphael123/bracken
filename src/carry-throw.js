@@ -20,6 +20,8 @@
 // THE RULE IT KEEPS: the arc you are shown is the arc it flies (tools/underwell.mjs: a thrown torch lands within a tile of the ring, every hero).
 export const KINDS = {
   torch: { aims: { low: { vx: 100, vy: -110 }, mid: { vx: 170, vy: -175 }, high: { vx: 125, vy: -285 } }, g: 600, r: 3, ring: 9, dots: 14 },
+  /* (claude/underleaf2) UNDERLEAF's POT: a noise where it breaks (src/hush-hands.js). UP lobs it over a head, DOWN tosses it short; g is THROW_KIND.pot's own */
+  pot: { aims: { low: { vx: 100, vy: -110 }, mid: { vx: 175, vy: -185 }, high: { vx: 120, vy: -320 } }, g: 600, r: 3, ring: 10, dots: 14 },
 };
 export const addKind = (kind, def) => { KINDS[kind] = def; return def; };
 export function aimOf(kind, face, keys) {

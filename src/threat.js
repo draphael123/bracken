@@ -163,6 +163,9 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   puppeteer: 6, marionette: 0, harlequin: 0, acrobat: 0, masterpiece: 0,
   /* GALE MOOR's half-built windmill frame on the goblin scaffold (claude/moor2): a thing you cut down, not a foe */
   gustframe: 0,
+  /* UNDERLEAF 2 (claude/underleaf2, src/hush-hands.js): THE BELLMAN rings the street awake more than he fights (a weak handbell swing): a 1.5. The pots, the
+     streets' gates, alarms and caches, the toll bell, the key's nail and the Grandmother's bell-pulls and candles are things you work, not foes */
+  bellman: 1.5, npot: 0, streetgate: 0, alarm: 0, darkcache: 0, tollbell: 0, keynail: 0, granpull: 0, grancandle: 0,
 };
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and

@@ -1511,12 +1511,22 @@ function screePath() {
 // King Gorm Underleaf was named after somewhere, and this is it. You come down off his court by the
 // back road, and the village does not know yet: the runners he sent never got home, and it is two in the morning.
 //
-// THE RULE: IT IS NIGHT, SO NOTHING CAN SEE YOU. IT CAN ONLY HEAR YOU.
+// THE RULE: IT IS NIGHT, SO NOTHING CAN SEE YOU. IT CAN ONLY HEAR YOU - AND A SOUND IS A THING YOU CAN THROW.
 //   1. The ground has a voice. Thatch and moss and rope are silent; a loose board is the worst
 //      thing in the village. The way through Underleaf is a way across MATERIALS.
 //   2. Your verbs have a voice. A swing carries. A heavy blow carries further. A kill carries
-//      furthest of all. Blocking makes no sound at all, which is the answer to the last fight.
-//   3. What wakes wakes its neighbours. Not an alarm - a WINDOW LIGHTING, and then the door.
+//      furthest of all. Blocking makes no sound at all.
+//   3. What wakes wakes its neighbours. A WINDOW LIGHTING, and then the door - and a street with two
+//      windows lit (or its Bellman's bell) rings its ALARM and drops its STREET GATE: the roofs go round.
+// UNDERLEAF 2 (claude/underleaf2, Daniel's interview 10-08, scratch/brief-underleaf2.md): SOUND IS A VERB (A2). The player
+// THROWS a noise (pots, the churchyard's stones: src/hush-hands.js) - a sleeper rolls over to face it, THE BELLMAN goes to look,
+// THE GRANDMOTHER whirls to it. QUIET PAYS: a sleeper struck from behind dies in one silent blow, and each street's SILVER
+// CACHE opens only for a street that stayed dark. LOUD COSTS: the alarm and the gate. The CHURCH BELL TOLLS in the churchyard
+// and nothing is heard under it (the mill's din made a clock - the remix). TEACH (the back lane: the sleeper facing away, the
+// first pot, the first Bellman) -> TEST (the mill, the terrace) -> REMIX (the toll) -> EXAM (the school's bell-cote: the ONE
+// REQUIRED throw, the bone key on its nail; the green, nowhere to hide).
+// The street is no longer one row: the back lane drops into its DITCH, and the CHURCH, its TOWER and the SCHOOL stand across
+// the street (a building is not an arch over a road) - their roofs are the way over, their doors the way through.
 //
 // It is not a stealth level with a fail state. You choose when the village wakes up: you can go
 // quiet the whole way, or kick the first door in and fight the length of the street.
@@ -1542,37 +1552,67 @@ function underleaf() {
   // roof it serves is a ladder into a ceiling, and that is what was blocking the tower.
   const ladder = (x, top) => { for (let y = top; y <= R - 1; y++) set(x, y, T.NET); };
   const run = (x0, x1, y, step) => { for (let x = x0; x <= x1; x += (step || 4)) coins([x, y]); };
+  /* UNDERLEAF 2's pieces (src/hush-hands.js): a pot (or a stone) on its shelf; a street's watch-gate under a roof (the alarm drops it), its alarm
+     post, its silver cache; a sleeper. `sec` is the street: 0 the back lane and the mill, 1 the terrace and the churchyard, 2 the school and the green */
+  const pot = (x, y, kind) => ent('npot', x, y, kind ? { kind } : {});
+  const streetGate = (x, sec) => ent('streetgate', x, R - 1, { h: 3, sec });
+  const alarm = (x, sec) => ent('alarm', x, R - 1, { sec });
+  const cache = (x, y, sec) => { ent('darkcache', x, y, { sec }); ent('silver', x, y); };   /* the silver is the level's own; the cache keeps it until it opens */
+  const bellman = (x, x0, x1, sec, face) => ent('bellman', x, R - 1, { x0, x1, sec, face: face || 1 });
+  /* A BUILDING ACROSS THE STREET: its front wall fills the street under its roof between its two doors - over the roof, or through it */
+  const across = (x0, x1, y0) => block(x0, x1, y0, R - 1);
+  /* THE THREE STREETS' CACHES, laid first and in this order: a silver's place in the level's list is its bit in every save (src/relics.js
+     VAULT_SILVER: silver #0 lies where the relic did, on the school roof; #1 is the church gallery's, as it always was; #2 is the mill roof's) */
+  cache(368, 27, 2); cache(170, 10, 1); cache(138, 27, 0);
 
-  // ---- 1. THE BACK LANE. Over the garden wall, in among the beans, and the first window. ----
+  // ---- 1. THE BACK LANE. Over the garden wall, in among the beans, and the first window. (TEACH) ----
   floor(0, 74, R);
-  moss(0, 20, R); boards(40, 52, R); moss(56, 74, R);
+  moss(0, 20, R); moss(56, 74, R);
   ent('sign', 4, R - 1, { text: 'UNDERLEAF SLEEPS, BUT HEARS. MOSS AND THATCH ARE QUIET; BOARDS AND KILLS ARE NOT.' });
-  
+
   ent('check', 15, R - 1);
   ent('deco', 6, R - 1, { kind: 'gardenWall', v: 0 }); ent('deco', 24, R - 1, { kind: 'waterButt' });
   ent('deco', 14, R - 1, { kind: 'beanpoles', v: 0 }); ent('deco', 28, R - 1, { kind: 'skep' });
   ent('deco', 18, R - 1, { kind: 'washing' }); ent('deco', 12, R - 1, { kind: 'pot' });
-  coins([8, R - 2], [22, R - 2], [50, R - 2], [4, R - 2], [16, R - 2], [32, R - 2], [42, R - 2], [54, R - 2]);
+  coins([8, R - 2], [22, R - 2], [4, R - 2], [16, R - 2], [32, R - 2], [42, R - 2]);
+  /* TEACH QUIET: the first sleeper lies facing away from where you come in, on the moss - come up behind it */
+  ent('sign', 10, R - 1, { text: 'A SLEEPER FACING AWAY: STRIKE IT FROM BEHIND AND IT DIES WITHOUT A SOUND.' });
+  ent('archer', 20, R - 1, { face: 1, sleeper: true });
+  /* TEACH THE THROW: the first pot, by the water butt */
+  pot(25, R - 1);
+  ent('sign', 22, R - 1, { text: 'A POT: INTERACT TAKES IT, ATTACK THROWS IT. WHERE IT BREAKS, THE VILLAGE LOOKS.' });
   // the first house teaches the whole level on one screen: a loud board, a ladder, a window in the wall
   thatch(30, 44, 28);
   ent('window', 36, R - 3, { gob: 'sprig', dx: 38, dy: R - 1 });
   ent('sign', 26, R - 1, { text: 'THE DITCH BOARDS ARE LOUD; THE THATCH IS QUIET. THE LADDER IS AT THE GABLE END.' });
   ladder(29, 27); plat(46, 30, 3);
   run(31, 43, 27, 3);
-  loose(48, 50, R);                                /* a board somebody never nailed back down */
+  /* THE DITCH (claude/underleaf2): the lane drops into the garden ditch past the house and climbs out the far side - its boards are
+     the loud floor the sign means, and a board somebody never nailed back down lies in the bottom of it */
+  for (let x = 45; x <= 53; x++) for (let y = R; y <= R + 2; y++) set(x, y, T.AIR);
+  set(45, R + 1, T.SOLID); set(45, R + 2, T.SOLID); set(53, R + 1, T.SOLID); set(53, R + 2, T.SOLID);   /* a step down at each end */
+  boards(46, 52, R + 3); loose(48, 50, R + 3);
+  coins([47, R + 1], [51, R + 1]);
+  /* THE ROOT CELLAR: a low store off the ditch, in under the first house - a dead end with the family's pot and their savings in it */
+  for (let x = 38; x <= 44; x++) for (let y = R + 1; y <= R + 2; y++) set(x, y, T.AIR);
+  set(45, R + 1, T.AIR); set(45, R + 2, T.AIR); boards(38, 45, R + 3);
+  pot(40, R + 2); coins([38, R + 2], [39, R + 2], [41, R + 2], [42, R + 2]);
   ent('deco', 54, R - 1, { kind: 'cart' }); ent('deco', 38, R - 1, { kind: 'barrels' });
-  ent('deco', 46, R - 1, { kind: 'gardenWall', v: 1 }); ent('deco', 60, R - 1, { kind: 'waterButt' });
-  ent('deco', 52, R - 1, { kind: 'beanpoles', v: 1 }); ent('deco', 66, R - 1, { kind: 'gardenWall', v: 2 });
+  ent('deco', 44, R - 1, { kind: 'gardenWall', v: 1 }); ent('deco', 60, R - 1, { kind: 'waterButt' });
+  ent('deco', 56, R - 1, { kind: 'beanpoles', v: 1 }); ent('deco', 66, R - 1, { kind: 'gardenWall', v: 2 });
   ent('deco', 68, R - 1, { kind: 'washing' }); ent('deco', 72, R - 1, { kind: 'chickenCoop' });
   ent('hearthgob', 42, 27, { face: -1, sleeper: true });        /* out on the warm thatch over his own fire */
-  ent('sprig', 62, R - 1, { face: -1, sleeper: true }); ent('sprig', 34, 27, { face: 1, sleeper: true });
-  ent('archer', 20, R - 1, { face: 1, sleeper: true }); ent('thief', 44, R - 1, { face: -1, sleeper: true });
-  ent('thief', 56, R - 1, { face: -1, sleeper: true });
-  ent('assassin', 70, R - 1, { face: -1 });
-  ent('sign', 64, R - 1, { text: 'ONE OF THEM IS AWAKE. HIS LUNGE CANNOT BE BLOCKED; THE STAB AFTER IT CAN.' });
+  ent('sprig', 34, 27, { face: 1, sleeper: true });
+  ent('thief', 43, R - 1, { face: -1, sleeper: true });
+  ent('thief', 58, R - 1, { face: -1, sleeper: true }); ent('sprig', 63, R - 1, { face: -1, sleeper: true });
+  /* TEACH THE BELLMAN: his beat is the moss at the end of the lane. A pot thrown past him (the lane's end, by the coop) sends him to look -
+     his back to you - and there is a second pot on the cart if the first goes wrong */
+  ent('sign', 55, R - 1, { text: 'THE BELLMAN IS BLIND. HEAR YOU NEAR, HE RINGS. A THROWN POT, HE GOES TO LOOK.' });
+  bellman(66, 61, 73, 0, -1);
+  pot(54, R - 1);
   coins([58, R - 2], [64, R - 2], [72, R - 2]);
 
-  // ---- 2. THE MILL. The wheel is the loudest thing in the valley and it is on your side. ----
+  // ---- 2. THE MILL. The wheel is the loudest thing in the valley and it is on your side. (TEST) ----
   floor(75, 158, R);
   for (let x = 98; x <= 114; x++) set(x, R, T.AIR);
   block(98, 114, R + 1, 45); water(98, 114, R);     /* the millpond: one tile deep, and wading is the loudest floor here */
@@ -1583,13 +1623,17 @@ function underleaf() {
   thatch(118, 139, 28);
   ent('deco', 122, R - 1, { kind: 'mill' });
   ladder(117, 27);
-  run(119, 138, 27, 4);
+  run(119, 136, 27, 4);
   // IN ONE END AND OUT THE OTHER. A house you have to walk back out of the way you came in is a dead end with
   // furniture in it, so every enterable building in Underleaf has a far door: you cross it, you do not visit it.
   ent('doorway', 122, R - 1, { id: 'mill-out', to: 'mill-in', kind: 'goblin' });
   ent('doorway', 136, R - 1, { id: 'mill-far', to: 'mill-back', kind: 'goblin' });
   ent('doorway', 126, 27, { id: 'mill-top', to: 'mill-in', kind: 'goblin', label: 'DOWN THE CHIMNEY' });
   ent('window', 132, R - 3, { gob: 'sapper', dx: 134, dy: R - 1 });
+  /* THE STREET'S GATE (the back lane and the mill): under the mill's roof, between its doors - the alarm drops it, and the roof and the loft go round */
+  streetGate(129, 0); alarm(115, 0);
+  ent('sign', 116, R - 1, { text: 'TWO WINDOWS LIT, OR THE BELLMAN RINGS: THE ALARM, AND THE STREET GATE DROPS.' });
+  /* (THE STREET'S CACHE is on the quiet end of the mill roof: laid at the top, cache(138, 27, 0)) */
   // ---- THE MILL LOFT: sacks to get up on, the hoist beam, and the brass key out on the end of it ----
   room(96, 124, 5, 13, 'hall');
   ent('doorway', 99, 13, { id: 'mill-in', to: 'mill-out', lock: [96, 124], label: 'THE MILL LOFT' });
@@ -1598,7 +1642,8 @@ function underleaf() {
   for (let x = 108; x <= 114; x++) set(x, 7, T.PLANK);                            /* the hoist beam over the trap */
   ent('key', 112, 6, { kind: 'brass' });
   ent('deco', 103, 13, { kind: 'barrels' }); ent('deco', 118, 13, { kind: 'wares' }); ent('torch', 107, 13);
-  ent('deco', 100, 13, { kind: 'pot' }); ent('deco', 120, 13, { kind: 'waterButt' });
+  ent('deco', 120, 13, { kind: 'waterButt' });
+  pot(101, 13);                                                                    /* the miller's pot: throw it past a sleeper to turn it */
   ent('sprig', 116, 13, { face: -1, sleeper: true }); ent('sprig', 104, 10, { face: 1, sleeper: true });
   ent('thief', 111, 8, { face: -1, sleeper: true });
   ent('spider', 102, 6, { drop: 60 });                                            /* the odd spider, in the rafters */
@@ -1610,13 +1655,16 @@ function underleaf() {
   ent('sapper', 84, R - 1, { face: 1, sleeper: true });
   ent('archer', 92, R - 1, { face: -1, sleeper: true }); ent('shield', 128, 27, { face: -1, sleeper: true });
   ent('sprig', 94, R - 1, { face: 1, sleeper: true }); ent('assassin', 144, R - 1, { face: -1 });
+  ent('assassin', 86, R - 1, { face: -1 });                                        /* (he stood at the lane's end: the Bellman has that now) */
+  pot(80, R - 1);
   ent('deco', 80, R - 1, { kind: 'barrels' }); ent('deco', 86, R - 1, { kind: 'pot' });
   ent('deco', 96, R - 1, { kind: 'trough' }); ent('deco', 142, R - 1, { kind: 'cart' });
-  ent('check', 60, R - 1); ent('check', 92, R - 1); ent('check', 140, R - 1); ent('check', 154, R - 1);
-  coins([82, R - 2], [90, R - 2], [148, R - 2], [78, R - 2], [86, R - 2], [96, R - 2], [144, R - 2], [152, R - 2], [156, R - 2]);
+  /* (claude/underleaf2, A10b: a shrine a section and one before her door - 15, 154, 334, 466 (L.checkRun 200: the fill adds none between); the lane's and the mill's 60, 92 and 140 are gone) */
+  ent('check', 154, R - 1);
+  coins([82, R - 2], [90, R - 2], [148, R - 2], [78, R - 2], [96, R - 2], [144, R - 2], [152, R - 2], [156, R - 2]);
   gateCol(157, 26, R - 1); ent('lockgate', 157, R - 1, { needs: 'brass', h: 8 });
 
-  // ---- 3. THE TERRACE AND THE WINDMILL. Every door here has somebody behind it. ----
+  // ---- 3. THE TERRACE AND THE WINDMILL. Every door here has somebody behind it. (TEST) ----
   floor(158, 250, R);
   boards(162, 192, R);
   ent('sign', 159, R - 1, { text: 'THIS STREET IS ALL BOARDS. THE THATCH ABOVE IS QUIET; EVERY HOUSE HAS A LADDER.' });
@@ -1624,58 +1672,68 @@ function underleaf() {
   // storey up in the WALL (never in the sky over the straw), and a run of coins along the top.
   for (const [x0, x1, y, gob] of [[164, 176, 28, 'sprig'], [180, 192, 26, 'archer'], [196, 208, 28, 'sprig'], [212, 224, 26, 'shield'], [228, 240, 27, 'sapper']]) {
     thatch(x0, x1, y);
-    ent('window', x0 + 4, R - 3, { gob, dx: x0 + 6, dy: R - 1 });
+    ent('window', x0 + 4, R - 3, { gob, dx: x0 + (x0 === 196 ? 3 : 6), dy: R - 1 });
     ent('deco', x0 + 9, R - 1, { kind: 'waterButt' });
     ent('deco', x0 + 11, y - 1, { kind: 'washing' });
     ladder(x0 - 1, y - 1);
     run(x0 + 1, x1 - 1, y - 1, 3);
   }
   plat(177, 27, 2); plat(193, 27, 2); plat(209, 27, 2); plat(225, 26, 2);   /* and a board between each pair */
-  coins([168, R - 2], [186, R - 2], [206, R - 2], [224, R - 2], [242, R - 2], [172, R - 2], [198, R - 2], [214, R - 2], [236, R - 2]);
+  coins([168, R - 2], [186, R - 2], [206, R - 2], [224, R - 2], [242, R - 2], [172, R - 2], [214, R - 2], [236, R - 2]);
+  /* THE TERRACE'S BELLMAN walks the boards; a pot from the first roof sends him down the street, or up it */
+  bellman(178, 163, 194, 1, 1);
+  pot(161, R - 1); pot(172, 27); pot(232, R - 1);
+  /* THE STREET'S GATE (the terrace and the churchyard): under the third house, and its alarm at the end of the Bellman's beat */
+  streetGate(203, 1); alarm(195, 1);
   ent('assassin', 188, 25, { face: -1 }); ent('assassin', 220, 25, { face: -1 });
   ent('assassin', 208, 27, { face: 1 });
   ent('brute', 172, R - 1, { face: -1, sleeper: true });
-  ent('shield', 202, R - 1, { face: 1, sleeper: true });
+  ent('shield', 199, R - 1, { face: 1, sleeper: true });
   ent('hearthgob', 218, 25, { face: -1, sleeper: true });
   ent('sprig', 234, R - 1, { face: -1, sleeper: true }); ent('pike', 246, R - 1, { face: -1, sleeper: true });
   ent('archer', 166, 27, { face: 1, sleeper: true }); ent('thief', 198, 27, { face: -1, sleeper: true });
-  ent('silver', 204, 26);
-  ent('check', 200, R - 1);
+  /* the terrace's exam, at its far end by the windmill: a goblin captain and his pike on the boards, the loose board behind them */
+  ent('brute', 225, R - 1, { face: -1, elite: true, squad: 'mill-end' }); ent('sprig', 222, R - 1, { face: -1, squad: 'mill-end' });
+  loose(229, 230, R);
   // THE WINDMILL. Its sails turn well clear of its own cap, and they are the lift onto the high line: step on
   // at the bottom of the turn off the cap, ride it up, step off at the top onto the boards over the churchyard.
   thatch(243, 251, 25);
   for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', px: 247 * TS + 8, py: 22 * TS, r: 34, phase: i * Math.PI / 2, period: 7.5, x: 0, y: 0, w: 22, h: 6 });
   ladder(242, 24);
   ent('sign', 236, R - 1, { text: 'RIDE A WINDMILL SAIL UP TO THE HIGH BOARDS. NOBODY SLEEPS UP THERE.' });
-  
-  ent('check', 238, R - 1);
 
-  // ---- 4. THE CHURCHYARD AND THE CHURCH. The high line comes down onto the nave. ----
+
+  // ---- 4. THE CHURCHYARD AND THE CHURCH. The high line comes down onto the nave. (REMIX: THE TOLL) ----
   floor(251, 336, R);
   moss(254, 270, R); moss(296, 314, R);
   // the high line: staging boards from the top of the sails down onto the church roof
   plat(254, 21, 4); plat(262, 22, 4); plat(268, 24, 3);
   coins([255, 20], [263, 21], [269, 23], [258, 20], [265, 21]);
   ent('archer', 262, 21, { face: 1 }); ent('assassin', 254, 20, { face: 1 });
-  ent('sign', 254, R - 1, { text: 'THE BELL TOWER HAS A STRAW ROOF AND NOBODY ON IT. CLIMB UP: A CANDLE IS BURNING BY THE BELL.' });
+  ent('sign', 254, R - 1, { text: 'THE CHURCH BELL TOLLS. WHILE IT RINGS, NOTHING YOU DO IN THE CHURCHYARD IS HEARD.' });
   /* (the lychgate that stood at the bell tower went: the lychgate/dovecote/stocks set is WAYMEET'S alone - claude/identity0) */
   ent('deco', 260, R - 1, { kind: 'yew', v: 0 }); ent('deco', 300, R - 1, { kind: 'yew', v: 1 });
   for (const [gx, v] of [[256, 0], [258, 1], [266, 2], [269, 0], [272, 1], [304, 2], [308, 0], [312, 1]])
     ent('deco', gx, R - 1, { kind: 'grave', v });
   ent('sign', 264, R - 1, { text: 'EVERY GOBLIN YOU HAVE KILLED CAME FROM A PLACE LIKE THIS. THINGS SLEEP UNDER THE YEW.' });
   ent('spider', 260, 27, { drop: 120 });            /* the odd spider, in the yew */
-  ent('check', 268, R - 1);
-  thatch(274, 294, 26);                             /* the nave roof, over an open street */
+  pot(254, R - 1, 'stone'); pot(310, R - 1, 'stone');   /* the churchyard's stones: a grave's loose ones */
+  /* THE YEW'S SLEEPERS, under the toll: a shield asleep facing on (his back to you), a goblin and his archer facing you - wait for the bell, or go round */
+  ent('shield', 257, R - 1, { face: 1, sleeper: true, squad: 'yew' }); ent('sprig', 261, R - 1, { face: -1, sleeper: true, squad: 'yew' }); ent('archer', 263, R - 1, { face: -1, sleeper: true, squad: 'yew' });
+  thatch(274, 294, 26);                             /* the nave roof */
+  across(279, 291, 29);                             /* (claude/underleaf2) the church stands ACROSS the street: through its doors, or over its nave */
   ent('doorway', 278, R - 1, { id: 'church-out', to: 'church-in', kind: 'goblin' });
   ent('doorway', 292, R - 1, { id: 'church-far', to: 'church-back', kind: 'goblin' });
   ent('doorway', 284, 25, { id: 'church-top', to: 'church-in', kind: 'goblin', label: 'IN THROUGH THE LOUVRE' });
   ladder(273, 25); run(275, 293, 25, 3);
-  ent('window', 288, R - 3, { gob: 'shield', dx: 290, dy: R - 1 });
-  ent('sapper', 286, R - 1, { face: -1, sleeper: true });
-  ent('brute', 328, R - 1, { face: -1, sleeper: true }); ent('sprig', 278, 25, { face: 1, sleeper: true });
+  ent('window', 288, R - 3, { gob: 'shield', dx: 293, dy: R - 1 });
+  ent('sapper', 306, R - 1, { face: -1, sleeper: true });
+  ent('brute', 330, R - 1, { face: -1, sleeper: true }); ent('sprig', 278, 25, { face: 1, sleeper: true });
   ent('assassin', 302, R - 1, { face: 1 }); ent('archer', 290, 25, { face: -1, sleeper: true });
+  /* THE CHURCHYARD'S BELLMAN walks between the church and the tower: under the toll he hears nothing either */
+  bellman(300, 295, 312, 1, -1);
   ent('deco', 296, R - 1, { kind: 'gardenWall', v: 1 });
-  coins([260, R - 2], [306, R - 2], [332, R - 2], [254, R - 2], [270, R - 2], [298, R - 2], [310, R - 2], [322, R - 2], [334, R - 2]);
+  coins([260, R - 2], [306, R - 2], [332, R - 2], [254, R - 2], [270, R - 2], [298, R - 2], [310, R - 2], [334, R - 2]);
   // ---- THE CHURCH INSIDE: a nave with a gallery over the aisle, the rood beam, and the vestry door out ----
   room(140, 196, 5, 16, 'hall');
   ent('doorway', 144, 16, { id: 'church-in', to: 'church-out', lock: [140, 196], label: 'THE CHURCH' });
@@ -1688,56 +1746,69 @@ function underleaf() {
   ent('sprig', 160, 16, { face: -1, sleeper: true }); ent('shield', 178, 16, { face: -1, sleeper: true });
   ent('sprig', 167, 10, { face: 1, sleeper: true }); ent('archer', 181, 10, { face: -1, sleeper: true });
   ent('assassin', 190, 16, { face: -1 });
+  pot(150, 16);
   ent('sign', 141, 16, { text: 'THE IRON KEY IS ON THE ROOD BEAM. THE ONES AWAKE ARE ON THE GALLERY.' });
   coins([150, 15], [158, 15], [166, 15], [176, 15], [184, 15], [153, 10], [167, 10], [181, 10], [188, 8]);
-  ent('silver', 170, 10);
-  // THE TOWER. It is a house like every other house here - straw on top, a front below, the street running
-  // under it - so nothing on this stretch is a bare stone slab. The ladders run PAST the straw on both sides.
+  /* (THE STREET'S CACHE, the terrace and the churchyard's, is on the gallery: laid at the top, cache(170, 10, 1)) */
+  // THE TOWER. It is a house like every other house here - straw on top, a front below - and now it stands across the
+  // street (claude/underleaf2): the way on is up one ladder, under the bell, and down the other. The bell is THE TOLL.
   thatch(314, 328, 21);
+  across(315, 327, 24);
   ladder(313, 20); ladder(329, 20);
   plat(310, 27, 3); plat(330, 27, 3);
   ent('deco', 320, 20, { kind: 'bellTower' });
-  ent('bell', 320, 20);   /* THE ROOF IS A REWARD, NOT A FIGHT: the Bellringer mini that held it was cut after a playtest, and his portcullis at column 330 with him. What is left up here is quiet straw, a coin run, the lamp and a bell nobody rings */
-  coins([316, 20], [324, 20], [320, 20], [311, 26], [331, 26]);
-  
+  ent('tollbell', 320, 20, { x0: 251, x1: 336 });   /* THE TOLL (src/hush-hands.js TOLL): every 9 s it swings back and tolls; for ~2 s nothing in the churchyard is heard */
+  coins([316, 20], [324, 20], [311, 26], [331, 26]);
+
   ent('check', 334, R - 1);
   gateCol(336, 26, R - 1); ent('lockgate', 336, R - 1, { needs: 'iron', h: 8 });
 
-  // ---- 5. THE SCHOOL. One long low roof, a yard of boards, the bone key on the master's desk. ----
+  // ---- 5. THE SCHOOL. One long low roof across the yard, and the bone key on its bell-cote. (EXAM, 1: THE REQUIRED THROW) ----
   floor(337, 408, R);
   boards(344, 364, R);
-  ent('sign', 340, R - 1, { text: 'THE SCHOOL: A LOUD YARD, A QUIET ROOF. THE BONE KEY IS ON THE MASTER\'S DESK.' });
+  ent('sign', 340, R - 1, { text: 'THE SCHOOL: A LOUD YARD, A QUIET ROOF. THE BONE KEY HANGS ON ITS BELL-COTE.' });
   thatch(352, 390, 28);
+  across(357, 385, 31);                             /* (claude/underleaf2) the school stands across the street: through its doors, or over its roof */
   ent('doorway', 356, R - 1, { id: 'school-out', to: 'school-in', kind: 'goblin' });
   ent('doorway', 386, R - 1, { id: 'school-far', to: 'school-back', kind: 'goblin' });
   ent('doorway', 370, 27, { id: 'school-top', to: 'school-in', kind: 'goblin', label: 'DOWN THE BELL-COTE' });
-  ent('window', 364, R - 3, { gob: 'archer', dx: 362, dy: R - 1 });
+  ent('window', 364, R - 3, { gob: 'archer', dx: 354, dy: R - 1 });
   ladder(351, 27); ladder(391, 27); run(353, 389, 27, 3);
   ent('deco', 342, R - 1, { kind: 'gardenWall', v: 0 }); ent('deco', 350, R - 1, { kind: 'trough' });
   ent('deco', 398, R - 1, { kind: 'skep' });   /* (the dovecote went with the set: Waymeet's alone) */
-  ent('deco', 374, 27, { kind: 'washing' }); ent('deco', 394, R - 1, { kind: 'barrels' });
-  // ---- THE SCHOOLROOM: three benches to stand on, and the master's desk up on its dais ----
+  ent('deco', 366, 27, { kind: 'washing' }); ent('deco', 394, R - 1, { kind: 'barrels' });
+  /* THE ONE REQUIRED THROW (A4): the bone key hangs on the bell-cote's nail, out of reach of any blade - a thrown pot knocks it down onto the
+     roof. The chimney pots by the ladder are the pots; the sign stands where you take one. (The key's place in the data is the roof under the nail,
+     where it falls: every reach tool finds it there; src/hush-hands.js hangs it on the nail at runtime.) */
+  pot(354, 27); pot(356, 27);
+  ent('sign', 358, 27, { text: 'THE BONE KEY HANGS OUT OF REACH. KNOCK IT DOWN WITH A POT: HOLD UP TO LOB.' });
+  ent('keynail', 378, 22, { post: 27 });
+  ent('key', 378, 27, { kind: 'bone' });
+  /* THE YARD'S BELLMAN, under the school's eaves */
+  bellman(346, 339, 355, 2, 1);
+  // ---- THE SCHOOLROOM: three benches to stand on, and the master's strongbox up on his dais ----
   room(210, 258, 7, 15, 'hall');
   ent('doorway', 214, 15, { id: 'school-in', to: 'school-out', lock: [210, 258], label: 'THE SCHOOLROOM' });
   ent('doorway', 255, 15, { id: 'school-back', to: 'school-far', lock: [210, 258], label: 'OUT AT THE BELL-COTE' });
   for (const bx of [220, 230, 240]) { plat(bx, 13, 5); ent('deco', bx + 1, 12, { kind: 'counter' }); }
   plat(243, 12, 3); plat(246, 10, 6);
-  ent('key', 250, 9, { kind: 'bone' }); ent('deco', 248, 9, { kind: 'counter' });   /* HOTFIX 2026-09-26: the master's DESK the sign names, on the dais beside the key */
+  ent('deco', 248, 9, { kind: 'counter' });   /* HOTFIX 2026-09-26: the master's DESK the sign names, on the dais */
   ent('deco', 248, 9, { kind: 'clerkDesk' }); ent('torch', 216, 15);
+  /* (THE STREET'S CACHE, the school and the green's, is on the school roof by the bell-cote, where the relic was: laid at the top, cache(368, 27, 2)) */
   ent('assassin', 244, 12, { face: -1 }); ent('sprig', 222, 12, { face: 1, sleeper: true });
   ent('cutter', 236, 15, { face: -1, sleeper: true }); ent('thief', 218, 15, { face: 1, sleeper: true });
-  ent('sign', 211, 15, { text: 'GOBLINS LEARN THREE THINGS; THE THIRD IS WHEN TO RUN. THE KEY IS ON THE DAIS.' });
+  pot(226, 15);
+  ent('sign', 211, 15, { text: 'GOBLINS LEARN THREE THINGS; THE THIRD IS WHEN TO RUN.' });
   coins([222, 12], [232, 12], [242, 12], [250, 9], [220, 14], [238, 14]);
-  ent('assassin', 378, 27, { face: -1 });
+  ent('assassin', 383, 27, { face: -1 });
   ent('berserker', 400, R - 1, { face: -1 });
-  ent('shield', 348, R - 1, { face: 1, sleeper: true }); ent('sapper', 360, 27, { face: 1, sleeper: true });
-  ent('sprig', 378, R - 1, { face: -1, sleeper: true }); ent('thief', 342, R - 1, { face: 1, sleeper: true });
-  ent('cutter', 386, 27, { face: -1, sleeper: true });
-  ent('vault', 368, 27);
-  ent('check', 366, R - 1); ent('check', 404, R - 1);
-  coins([344, R - 2], [396, R - 2], [402, R - 2], [338, R - 2], [350, R - 2], [358, R - 2], [366, R - 2], [382, R - 2], [392, R - 2], [406, R - 2]);
+  ent('shield', 348, R - 1, { face: 1, sleeper: true }); ent('sapper', 362, 27, { face: 1, sleeper: true });
+  ent('sprig', 389, R - 1, { face: -1, sleeper: true }); ent('thief', 342, R - 1, { face: 1, sleeper: true });
+  ent('cutter', 387, 27, { face: -1, sleeper: true });
+  pot(396, R - 1);
+  coins([344, R - 2], [396, R - 2], [402, R - 2], [338, R - 2], [350, R - 2], [392, R - 2], [406, R - 2]);
 
-  // ---- 6. THE GREEN. Nowhere to hide, and two wells that are the same well. ----
+  // ---- 6. THE GREEN. Nowhere to hide, and two wells that are the same well. (EXAM, 2) ----
   floor(409, 470, R);
   ent('sign', 412, R - 1, { text: 'THE GREEN HAS NOTHING TO HIDE BEHIND. THE TWO WELLS ARE JOINED BELOW.' });
   ent('well', 418, R - 1, { pair: 462 }); ent('well', 462, R - 1, { pair: 418 });
@@ -1750,24 +1821,34 @@ function underleaf() {
   ladder(419, 27); ladder(451, 27); plat(432, 31, 3); plat(447, 31, 3);
   ent('window', 424, R - 3, { gob: 'archer', dx: 426, dy: R - 1 });
   ent('window', 456, R - 3, { gob: 'sprig', dx: 458, dy: R - 1 });
+  /* THE STREET'S GATE (the school and the green): under the far house; its alarm by the stalls */
+  streetGate(457, 2); alarm(449, 2);
+  /* THE GREEN'S BELLMAN walks the whole of it: the exam - pots by the wells, a captain asleep in the open, nothing to hide behind */
+  bellman(434, 412, 449, 2, 1);
+  pot(416, R - 1); pot(445, R - 1); pot(466, R - 1);
   ent('assassin', 446, R - 1, { face: -1 });
   ent('assassin', 426, 27, { face: 1 });
   ent('archer', 422, 27, { face: 1, sleeper: true });
   ent('sapper', 460, 27, { face: -1, sleeper: true });
-  ent('brute', 414, R - 1, { face: 1, sleeper: true }); ent('shield', 444, R - 1, { face: -1, sleeper: true });
+  ent('brute', 414, R - 1, { face: -1, elite: true, squad: 'green' }); ent('shield', 444, R - 1, { face: -1, sleeper: true, squad: 'green' });
   ent('pike', 466, R - 1, { face: -1, sleeper: true });
-  ent('silver', 439, 33);
   run(421, 429, 27, 3); run(453, 461, 27, 3);
   coins([416, R - 2], [434, 30], [440, 30], [446, R - 2], [452, R - 2], [464, R - 2]);
-  ent('check', 432, R - 1); ent('check', 466, R - 1);
+  ent('check', 466, R - 1);
   gateCol(469, 26, R - 1); ent('lockgate', 469, R - 1, { needs: 'bone', h: 8 });
 
-  // ---- 7. THE GRANDMOTHER. She never was asleep. ----
+  // ---- 7. THE GRANDMOTHER. She never was asleep. Her cottage: rugs and boards, candles, two bell-pulls and two pots. ----
   floor(470, 519, R);
-  boards(470, 519, R);   /* HER ROOM IS ONE LONG BRIDGE. It was boards, moss and loose planks, and the loose ones gave way under her own feet. */
-  ent('sign', 472, R - 1, { text: 'SHE HUNTS BY SOUND. A RAISED SHIELD IS SILENT, BUT SHE DOES NOT ONLY LISTEN.' });
+  boards(470, 519, R);   /* HER ROOM IS ONE LONG FLOOR OF BOARDS, and her rugs on it (src/hush-hands.js: the rugs are the quiet floor, until she kicks the candles over) */
+  const rugs = [[477, 483, R], [491, 497, R], [505, 511, R]];
+  for (const [x0, x1] of rugs) moss(x0, x1, R);
+  ent('sign', 472, R - 1, { text: 'SHE HEARS A BLADE COMING. A SOUND BEHIND HER TURNS HER: HER BACK IS YOURS.' });
   /* (the yew that stood here went: 470 grew through the lock gate, and 476 put a tree's roots through the bridge's boards - level review, 2026-09-24) */   /* (the garden wall, the skeps and the beanpoles are gone: the bridge is the room) */
   coins([480, R - 2], [492, R - 2], [512, R - 2], [486, R - 2], [500, R - 2], [508, R - 2], [474, R - 2]);
+  /* HER BELL-PULLS: struck, each rings the chime at the FAR end of the room (the cord runs along the beam) - and she goes for the sound */
+  ent('granpull', 475, R - 1, { chime: 513, chimeY: 30, beam: 27 }); ent('granpull', 513, R - 1, { chime: 475, chimeY: 30, beam: 27 });
+  ent('grancandle', 485, R - 1); ent('grancandle', 499, R - 1); ent('grancandle', 489, R - 1);
+  pot(474, R - 1); pot(515, R - 1);
   ent('grandmother', 504, R - 1);
   ent('gate', 518, R - 1);
 
@@ -1780,7 +1861,15 @@ function underleaf() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
-    indoorRow: 18, hush: true,
+    indoorRow: 18, hush: true, checkRun: 200,   /* (claude/underleaf2) a shrine a street: 15, 154, 334 and her door's - no filler between (src/level.js checkpoints) */
+    /* THE STREETS (src/hush-hands.js): each rings its own alarm, drops its own gate and keeps its own cache - by column */
+    hushSecs: [{ x0: 0, x1: 157 }, { x0: 158, x1: 336 }, { x0: 337, x1: 469 }],
+    /* WHERE A SOUND RINGS OUT (tools/rule-state.mjs reads it: a fight here is a fight under the rule): each street's alarm post to its gate, and the churchyard under the toll */
+    alarms: [{ x0: 113, x1: 130, done: true }, { x0: 190, x1: 204, done: true }, { x0: 447, x1: 458, done: true }, { x0: 251, x1: 336, done: true }],   /* (done: never one of main.js's castle alarm sections - those carry an id, gates and a garrison) */
+    rugs,
+    /* what the cache and the bone key's nail open (tools/level-quality.mjs unlocks) */
+    unlocks: [{ kind: 'npot', opens: 'secret', hud: 'a pot breaks: the village turns to the sound - and the bone key comes off its nail' },
+      { kind: 'darkcache', opens: 'secret', hud: 'THE STREET SLEPT: THE CACHE OPENS' }],
     duskStart: -1, duskLen: 1, music: 'underleaf', night: true, glowNight: true, nightA: 0.24,
     // the mill's own din: inside this, nothing you do can be heard over the wheel
     din: [{ x0: 108 * TS, x1: 136 * TS }],
@@ -7746,7 +7835,7 @@ export const LEVELS = [
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
   { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE WASH COMES FROM WINDWARD. THE RIGGING IS THE LEVEL.', build: theHurricane, needs: 'flotilla' },
   { id: 'lamplit', name: 'THE LAMPLIT STREET', sub: 'the city under it', rule: 'THE LAMPS ARE AIR.', build: theLamplitStreet, needs: 'hurricane' },
-  { id: 'underleaf', name: 'UNDERLEAF', sub: "the king's own village, asleep", rule: 'NOTHING HERE CAN SEE YOU. IT CAN HEAR YOU.', build: underleaf, needs: 'kings' },   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
+  { id: 'underleaf', name: 'UNDERLEAF', sub: "the king's own village, asleep", rule: 'NOTHING HERE CAN SEE YOU, ONLY HEAR YOU. A THROWN POT IS A SOUND YOU CHOOSE.', build: underleaf, needs: 'kings' },   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'trial_open', name: 'THE OPEN YARD', sub: 'straw men, ledges and room', build: openYard, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
@@ -8192,7 +8281,7 @@ const GOBLIN_CAMP = {
   kings: [['gobPennant', 16, 19, 2], ['warnPost', 35, 19, 1], ['cauldron', 167, 12], ['cookSpit', 194, 12], ['boneChime', 432, 16, 0, true], ['skullTotem', 497, 13, 0], ['warStandard', 506, 13, 1], ['lootHeap', 684, 13, 1], ['idol', 702, 13, 0]],
   storm: [['warnPost', 66, 35, 0], ['hideRack', 119, 15, 0], ['lootHeap', 133, 15, 1], ['gobPennant', 178, 31, 1], ['cookSpit', 266, 31], ['cauldron', 420, 29]],
   crown: [['warnPost', 22, 71, 1], ['hideBanner', 33, 71, 1],['gobPennant', 684, 7, 3], ['ragBanner', 716, 7, 2], ['cauldron', 706, 63], ['boneChime', 712, 54, 0, true], ['trophyRack', 710, 51, 1], ['skullTotem', 745, 51, 0], ['clothStrip', 724, 10, 3, true], ['warStandard', 738, 19, 1]],   /* the keep's own moved 220 right with the siege lines, the crag walk and the bakehouse yard grown in front of it, and 84 more with the armoury */
-  underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 325, 33], ['lootHeap', 376, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
+  underleaf: [['gobPennant', 32, 33, 2], ['cookSpit', 333, 33], ['lootHeap', 394, 33, 0], ['boneChime', 237, 7, 1, true], ['idol', 444, 33, 1]],
   undercrown: [['stakeFence', 80, 28, 0], ['skullTotem', 42, 111, 1], ['boneChime', 26, 88, 0, true], ['ragBanner', 58, 122, 0], ['clothStrip', 20, 88, 2, true], ['warnPost', 26, 140, 0], ['lootHeap', 52, 140, 1], ['cauldron', 68, 140]],
 };
 /* WHAT HANGS FROM THE ROCK, and how tall it is. The sprinkler finds floor; one of these wants a roof over that floor

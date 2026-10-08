@@ -55,4 +55,7 @@ function glassSea(BK, P, mem) {
     return { x: m.x * TS + 8, y: (m.y + 2) * TS, key: 'talk', face: 0, r: 30 }; }
   return null;
 }
-export const WALK_HINTS = { glasssea: glassSea };
+/* UNDERLEAF (claude/underleaf2, src/hush-hands.js walkHint): the one required throw - a pot from the school roof's chimney stack, lobbed (UP) at the
+   bell-cote's nail, and the bone key that falls */
+const underleaf = (BK, P) => (BK.hushHands && BK.hushHands() ? BK.hushHands().walkHint(P) : null);
+export const WALK_HINTS = { glasssea: glassSea, underleaf };
