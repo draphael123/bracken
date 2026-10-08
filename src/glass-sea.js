@@ -155,6 +155,7 @@ export function buildGlassSea({ painter, T, TS }) {
   mirror('bridge', 224, B - 2, ['sky', '\\', '/']); source('bridge', 224, B - 3, 'S', 'sun');
   sentinel(221, B - 1, 'mirrorGuard', { face: -1 }); sentinel(227, B - 1, 'mirrorGuard', { face: -1 });   /* two sentinels: one before the mirror, one on the lip behind it */
   sign(217, B - 1, 'THE BONE CROSSING. TURN THE MIRROR: THE BEAM FUSES A ROAD.');
+  skiff(228, B - 1);   /* (claude/ksar2) THE SUN v2 - more shade: a bone skiff on the near lip before the crossing (the rule walk is 4 s now) */
   crack('crossing', 230, 241, B);
   bed('bridge', 243, B - 2, span(230, 241, B), { label: 'THE BRIDGE', walk: true });
   ground(242, 295, B);

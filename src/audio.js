@@ -1458,6 +1458,8 @@ SFX.stoneThud = () => { if (!gate('thud', 0.1)) return; noise(0.06, 0.14, 700, 0
 /* THE SUN BUILDS (THE SUNKEN CARAVAN, 2026-09-25): a tick of sunstroke at full is a dry sizzle, and each stage of the build (1, 2, 3:
    3, 5, 8 damage) is a step higher and harder than the last, so the ear hears it getting worse before the bar does */
 SFX.sunBurn = (st = 1) => { if (!gate('sunBurn', 0.3)) return; noise(0.16 + 0.04 * st, 0.07 + 0.03 * st, 2400 + 900 * st, 0.5); tone('sawtooth', 260 + 150 * st, 170 + 110 * st, 0.14 + 0.03 * st, 0.04 + 0.02 * st); if (st >= 3) tone('square', 1300, 900, 0.08, 0.03, 0.05); };
+/* (claude/ksar2) THE SUN v2's STEP-OUT WARNING: a hot bright tick at the shade's edge, once an approach (src/sun-hands.js) */
+SFX.sunWarn = () => { if (!gate('sunWarn', 0.8)) return; tone('triangle', 1800, 2400, 0.07, 0.04); tone('sine', 900, 1200, 0.1, 0.03, 0.05); noise(0.05, 0.03, 4200, 0.5, 0.02); };
 SFX.lampOn = () => { noise(0.09, 0.1, 3400, 0.7); tone('triangle', 900, 1500, 0.08, 0.05, 0.02); tone('sine', 620, 740, 0.22, 0.04, 0.06); };
 // THE CAST. A man in this game died on a square wave or on a goblin slowed down. Now: people REPLACE their synth
 // with a voice from a kit (bosses keep their synth under it, for the size of the moment), creatures LAYER a voice
