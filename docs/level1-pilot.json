@@ -36,13 +36,13 @@
   "bare": true
  },
  "canal": {
-  "hash": "7ddafa893c53",
+  "hash": "3e4445d07050",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 95,
-  "deaths": 12,
-  "kills": 31,
+  "hits": 89,
+  "deaths": 14,
+  "kills": 14,
   "lifts": 113,
   "walked": 100,
   "bare": true

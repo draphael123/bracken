@@ -239,7 +239,7 @@ export function drawLair(g, lk, cx, cy, VW, VH, time) {
   /* slime sliding down the wall faces */
   g.globalAlpha = 0.5; g.fillStyle = '#6aa860'; for (let i = 0; i < 10; i++) { const wx = (i < 5 ? sx + TS - 1 - 0 : ex) - cx + (i < 5 ? 0 : 0), ph = (time * 5 + i * 13) % 40; if (wx < -4 || wx > VW + 4) continue; g.fillRect(wx + ((i * 3) % 12) * (i < 5 ? 1 : -1) - (i < 5 ? 0 : 3), bed - 12 * TS - cy + ((i * 17) % 90) + Math.round(ph * 0.4), 1, 3); } g.globalAlpha = 1;
   /* THE LAIR: the sunken narrowboat on the bed - a rotted cabin frame over its deck (ribs, a torn tarpaulin, a snapped tiller), weed streaming off it, two cold-green eyes in the dark of its hatch */
-  if (lk.raft) return;   /* (claude/canal4: the raft duel - no sunken narrowboat on her bed; the raft is drawn by src/jenny-greenteeth-hands.js) */
+  if (lk.raft) return;   /* (claude/canal4: the raft duel - no sunken narrowboat on her bed; the raft is drawn by src/benched/jenny-greenteeth-hands.js) */
   const wx0 = (lk.sx + 15) * TS - cx, wx1 = (lk.sx + 25) * TS - cx, deck = (lk.R - 2) * TS - cy; if (wx1 < -10 || wx0 > VW + 10) return;
   g.fillStyle = '#18120c'; g.fillRect(wx0 + 8, deck - 24, 3, 24); g.fillRect(wx0 + 22, deck - 22, 3, 22); g.fillRect(wx0 + 38, deck - 26, 3, 26); g.fillRect(wx0 + 54, deck - 20, 3, 20); g.fillRect(wx0 + 8, deck - 24, 50, 3);
   g.fillStyle = '#26301c'; g.fillRect(wx0 + 8, deck - 24, 50, 1); for (let k = 0; k < 50; k += 3) g.fillRect(wx0 + 8 + k, deck - 23, 2, 2 + ((k * 7) % 5));

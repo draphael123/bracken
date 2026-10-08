@@ -1,4 +1,4 @@
-// greenteeth_art.js - JENNY GREENTEETH and her lock (claude/lockkeeper; src/jenny-greenteeth.js is the fight). px.js primitives only. Every frame faces
+// greenteeth_art.js - JENNY GREENTEETH and her lock (claude/lockkeeper; src/benched/jenny-greenteeth.js is the fight). px.js primitives only. Every frame faces
 // RIGHT, L is the flip, ax = the body's centre column, ay = the row under the lowest pixel.
 //   JENNY GREENTEETH (GT_F): a hunched old hag, green-skinned and wet, with a curtain of weed for hair that hangs past her shoulders, long thin arms
 //     with knuckly clawed hands, a mouth full of sharp green teeth, and eyes that glow yellow-green. Rags of sodden sacking. In the water only her head
@@ -23,7 +23,7 @@ function bake(n, W, H, draw, ax, hw, hh) {
 /* (claude/jenny2, Daniel 10-02: "the sprite looks a bit odd") REDRAWN AT HER OWN SIZE - one pixel is one pixel, no upscale. A gaunt river hag half out of
    the water: a long jaw full of green teeth, a hooked nose, eyes sunk in their sockets and lit yellow-green, a curtain of weed for hair that hangs past
    her shoulders and drips, duckweed caught in it, long thin knuckly arms with long nails, rags of sodden sacking. The canvas is 76 x 64; her body box
-   (src/jenny-greenteeth.js GT.w/h) is 30 x 46 - head and shoulders over the water's skin (23 px over the box's foot), the rest under it. Every told
+   (src/benched/jenny-greenteeth.js GT.w/h) is 30 x 46 - head and shoulders over the water's skin (23 px over the box's foot), the rest under it. Every told
    blow has its own pose. */
 const JW = 76, JH = 64, JX = 34, JB = 62;
 export const JC = { skin: '#5e8a4a', skinD: '#3e6030', skinDD: '#2c4824', skinL: '#86b060', skinH: '#a8c878', hair: '#23401e', hairD: '#162a14', hairL: '#4f7a2e', weed: '#6a9a3a', duck: '#9ac850',

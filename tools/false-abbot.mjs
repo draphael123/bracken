@@ -161,7 +161,7 @@ console.log('THE FALSE ABBOT');
   ok(!!tick, 'the burn tick is still in main.js');
   ok(!!tick && tick.includes('wardedDamage(e, 2)'), 'BURN BYPASSES EVERY WARD AGAIN: the tick must go through wardedDamage, not write e.hp directly');
   ok(!!tick && !/e[.]hp -= 2[^0-9]/.test(tick), 'the burn tick writes e.hp directly again');
-  ok(main.includes('function wardedDamage(e, dmg)'), 'wardedDamage is gone: the wards are inline again and burn will be skipping them');
+  ok(/function wardedDamage\(e, dmg(, blow)?\)/.test(main), 'wardedDamage is gone: the wards are inline again and burn will be skipping them');
   ok(Math.max(1, Math.round(2 * ABBOT.wardTake)) === 1, 'a burn tick through the rite should be 1, not ' + Math.max(1, Math.round(2 * ABBOT.wardTake))); }
 
 console.log(fails ? `\n${fails} FAILED` : '\nall false abbot checks pass');
