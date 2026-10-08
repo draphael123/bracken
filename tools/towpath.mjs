@@ -128,5 +128,5 @@ ok(typeof OPEN_RULE.fogknight === 'function' && FULL_DAMAGE.fogknight, 'src/boss
 ok(SYNTH_BOSS.towpath && SYNTH_BOSS.fogknight && SYNTH_VARIANT['fogknight:p2'] && SYNTH_VARIANT['fogknight:p3'], 'the level bed and his three-phase theme are composed in code');
 ok(L.music === 'towpath' && A.music === 'fogknight' && AMBIENT_NAMES.includes('towpath') && L.ambient.some(a => a.kind === 'towpath'), 'its own music and its own air (not the forest\'s)');
 for (const f of ['towpath-hands.js', 'fog-knight.js', 'fog-knight-hands.js']) { const src = readFileSync(new URL('../src/' + f, import.meta.url), 'utf8');
-  for (const m of src.matchAll(/number\([^;]*?'([A-Z][^']*?(?:\\'[^']*?)*)'/g)) { const line = m[1].replace(/\\'/g, "'"); if (line.length > 3) ok(isCallout(line), f + ': the line "' + line + '" is in src/hint-lines.js'); } }
+  for (const m of src.matchAll(/number\([^;()]*?(?:'([A-Z](?:[^'\\]|\\.)*)'|"([A-Z][^"]*)")/g)) { const line = (m[1] || m[2]).replace(/\\'/g, "'"); if (line.length > 3) ok(isCallout(line), f + ': the line "' + line + '" is in src/hint-lines.js'); } }
 console.log('towpath: ' + n + ' checks ok');

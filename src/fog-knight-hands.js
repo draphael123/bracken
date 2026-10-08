@@ -100,7 +100,7 @@ export function makeFogKnightHands(ctx) {
     if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 120, 'FOG IS HIS BODY: YOUR LANTERN BURNS IT OUT OF HIM', '#ffd36b'); }
     const was = e.mode;
     FKM.stepFogKnight(e, S, dt, heroes(), world(e));
-    if (was !== e.mode && e.mode === 'stanceTell' && !S.told['st' + S.want]) { S.told['st' + S.want] = 1; ctx.number(e.x, e.y - 66, FKM.STANCE_HOW[S.want] || '', '#ffe9a0'); }
+    if (was !== e.mode && e.mode === 'stanceTell' && !S.told['st' + S.want]) { S.told['st' + S.want] = 1; if (S.want === 'high') ctx.number(e.x, e.y - 66, 'GUARDS HIGH: HIT LOW', '#ffe9a0'); else if (S.want === 'low') ctx.number(e.x, e.y - 66, 'GUARDS LOW: HIT HIGH', '#ffe9a0'); else ctx.number(e.x, e.y - 66, 'FULL GUARD: PLUNGE ON HIM', '#ffe9a0'); }   /* (each line literal: tools/hint-shown.mjs reads the calls) */
     e.phase = S.ph;
     /* A BLADE THROUGH THE DOUBLE: nothing there (fog) */
     if (S.dbl) for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.atk >= 0)) return; const hb = ctx.attackBox(); if (!hb) return;

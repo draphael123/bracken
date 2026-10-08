@@ -8328,69 +8328,7 @@
   }
  },
  "towpath": {
-  "hash": "ac320e32019b",
-  "level": {
-   "knight": {
-    "deaths": 3,
-    "minHpPct": 0,
-    "hpLostPct": 307,
-    "hits": 15,
-    "walked": 100,
-    "lifts": 30,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 3,
-    "rides": 3,
-    "pulls": 0,
-    "ridden": {
-     "punt": 3
-    },
-    "machines": true,
-    "frames": 9819,
-    "kills": 4,
-    "heroLevel": 22
-   },
-   "warden": {
-    "deaths": 2,
-    "minHpPct": 0,
-    "hpLostPct": 275,
-    "hits": 14,
-    "walked": 100,
-    "lifts": 27,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 5,
-    "rides": 5,
-    "pulls": 0,
-    "ridden": {
-     "punt": 5
-    },
-    "machines": true,
-    "frames": 10466,
-    "kills": 5,
-    "heroLevel": 22
-   },
-   "pyro": {
-    "deaths": 2,
-    "minHpPct": 0,
-    "hpLostPct": 300,
-    "hits": 13,
-    "walked": 100,
-    "lifts": 26,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 4,
-    "rides": 4,
-    "pulls": 0,
-    "ridden": {
-     "punt": 4
-    },
-    "machines": true,
-    "frames": 9741,
-    "kills": 3,
-    "heroLevel": 22
-   }
-  },
+  "hash": "2ebf1f78cb62",
   "boss": {
    "boss": "fogknight",
    "wins": 0,
@@ -8489,6 +8427,74 @@
      "chip": []
     }
    ]
+  },
+  "carried": {
+   "from": "ac320e32019b",
+   "parts": [
+    "boss"
+   ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 3,
+    "minHpPct": 0,
+    "hpLostPct": 307,
+    "hits": 15,
+    "walked": 100,
+    "lifts": 30,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 3,
+    "rides": 3,
+    "pulls": 0,
+    "ridden": {
+     "punt": 3
+    },
+    "machines": true,
+    "frames": 9819,
+    "kills": 4,
+    "heroLevel": 22
+   },
+   "warden": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 275,
+    "hits": 14,
+    "walked": 100,
+    "lifts": 27,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 5,
+    "rides": 5,
+    "pulls": 0,
+    "ridden": {
+     "punt": 5
+    },
+    "machines": true,
+    "frames": 10466,
+    "kills": 5,
+    "heroLevel": 22
+   },
+   "pyro": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 300,
+    "hits": 13,
+    "walked": 100,
+    "lifts": 26,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 4,
+    "rides": 4,
+    "pulls": 0,
+    "ridden": {
+     "punt": 4
+    },
+    "machines": true,
+    "frames": 9741,
+    "kills": 3,
+    "heroLevel": 22
+   }
   }
  }
 }

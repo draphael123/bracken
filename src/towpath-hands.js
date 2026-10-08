@@ -98,7 +98,7 @@ export function makeTowpathHands(ctx) {
       if (still !== w.still) { w.still = still; wheelCells(w); ctx.resolve && ctx.resolve(); if (still && once('wheel')) number(w.cx * ts, w.cy * ts - 80, 'THE WHEEL STANDS STILL: ITS PADDLES ARE A STAIR'); }
       w.cd = Math.max(0, w.cd - dt);
       if (!still) for (const pp of ctx.players) { if (pp.dead) continue; const d = Math.hypot(pp.x - (w.cx * ts + 8), pp.y - 8 - w.cy * ts); if (d < w.r * ts + 6 && w.cd <= 0) { w.cd = TP.wheelCd; K.n.wheelBites++;
-        ctx.asPlayer(pp, () => ctx.hurtHero(w.cx * ts + 8, TP.wheelDmg, { unblockable: true, name: 'THE MILL WHEEL' })); if (once('wheelBite')) number(pp.x, pp.y - 34, 'THE WHEEL\'S BLADES: STILL IT FIRST'); } } }
+        ctx.asPlayer(pp, () => ctx.hurtHero(w.cx * ts + 8, TP.wheelDmg, { unblockable: true, name: 'THE MILL WHEEL' })); if (once('wheelBite')) number(pp.x, pp.y - 34, "THE WHEEL'S BLADES: STILL IT FIRST"); } } }
   }
   function wheelCells(w) { const still = !!w.still || w.v < 0.05; for (const [a, b, row] of w.steps) for (let x = a; x <= b; x++) ctx.cellSet(x, row, still ? T().ONEWAY : T().AIR); }
 
@@ -160,7 +160,7 @@ export function makeTowpathHands(ctx) {
     if (g.t === 'tplamp') { const l = K.lamps.find(q => q.x * TS() + 8 === g.x); if (!l) return false; l.lit = !l.lit; K.n.lamps++; ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(g.x, g.y - 22, 6, l.lit ? ['#ffd36b', '#fff2b0'] : ['#5a5048', '#3a3430'], 30, 0.3);
       if (l.lit && once('lamp')) number(g.x, g.y - 44, 'THE LAMP BURNS THE FOG OFF ROUND IT'); if (l.arena && ctx.bossLamp) ctx.bossLamp(l); return true; }
     if (g.t === 'tplantern') { const q = lantern(P); if (q.has) return false; q.has = true; q.lit = true; K.n.lights++; ctx.sfx.pickup ? ctx.sfx.pickup() : ctx.sfx.clank && ctx.sfx.clank();
-      number(P.x, P.y - 34, 'THE LOCK-KEEPER\'S LANTERN: E LIGHTS IT, OR DIMS IT'); return true; }
+      number(P.x, P.y - 34, "THE LOCK-KEEPER'S LANTERN: E LIGHTS IT, OR DIMS IT"); return true; }
     if (g.t === 'tpchurch') { K.n.church++; if (ctx.enterLevel && ctx.enterLevel(g.to || K.D.fork.church)) return true; number(g.x, g.y - 40, 'THE LIT CHURCH: THE WAY UP IS NOT OPEN YET'); return true; }
     return false;
   }
@@ -187,7 +187,7 @@ export function makeTowpathHands(ctx) {
       pp.tpWade = p ? (pp.tpWade || 0) + dt : 0; if (pp.tpWade > 1.2 && K.safe.get(pp.n || 1)) { const s = K.safe.get(pp.n || 1); pp.x = s.x; pp.y = s.y; pp.vx = 0; pp.vy = 0; pp.tpWade = 0; ctx.sfx.splash && ctx.sfx.splash(); if (once('wade')) number(pp.x, pp.y - 34, 'YOU WADE OUT TO THE BANK'); } }
     for (const g of K.gadgets) g.flash = Math.max(0, g.flash - dt);
     /* THE LANTERN ON ITS HOOK: walked past without it, it is yours (and said) - the rest of the level reads it */
-    for (const pp of ctx.players) { const q = lantern(pp); if (!q.has && pp.x > (K.D.lantern.x + 3) * ts && !pp.dead) { q.has = true; q.lit = true; if (once('lanternPast')) number(pp.x, pp.y - 34, 'THE LOCK-KEEPER\'S LANTERN: E LIGHTS IT, OR DIMS IT'); } }
+    for (const pp of ctx.players) { const q = lantern(pp); if (!q.has && pp.x > (K.D.lantern.x + 3) * ts && !pp.dead) { q.has = true; q.lit = true; if (once('lanternPast')) number(pp.x, pp.y - 34, "THE LOCK-KEEPER'S LANTERN: E LIGHTS IT, OR DIMS IT"); } }
     /* A DROWNING: a man under a lock's or a cut's water - a chamber filled over him, a bridge swung from under him - is drowned (the game's own hazardFoe) */
     for (const p of ctx.L.pools || []) { if (!p.tp || p.dry || p.shallow) continue; for (const e of ctx.enemies()) { if (!e.alive || e.noGrav || e.t === 'grindylow' || e === ctx.boss || !(e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6 && e.y <= (p.bottom ?? p.y + 400) + 8)) continue;
       if (ctx.drown(e)) { K.n.drowned++; if (once('drowned')) number(e.x, p.y - 30, 'THE WATER TAKES HIM'); } } }

@@ -124,7 +124,7 @@ function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] 
 function endOpen(e, S, c) { e.open = 0; S.ward = FK.wardT; S.n.wards++; S.openTaken = 0; S.burn = 0; c.number(e.x, e.y - 74, 'THE FOG POURS BACK INTO HIM', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
 function open(e, S, c, why) { setMode(e, 'empty', (why === 'scatter' ? FK.scatterT : FK.openT) + 0.05); e.open = why === 'scatter' ? FK.scatterT : FK.openT; S.openTaken = 0; S.n.opens++; S.burn = 0; S.lunge = null;
   if (why === 'scatter') S.n.scatters++; else S.n.burns++; c.fx('open', e.x, e.y); c.sound('open');
-  c.number(e.x, e.y - 74, why === 'scatter' ? 'THE BRIDGE SCATTERS THE FOG: THE ARMOUR STANDS EMPTY - CUT IT' : 'THE LANTERN BURNS THE FOG OUT OF HIM: THE ARMOUR STANDS EMPTY - CUT IT', '#8fd160'); }
+  c.number(e.x, e.y - 74, why === 'scatter' ? 'THE BRIDGE SCATTERS THE FOG: THE ARMOUR STANDS EMPTY' : 'THE LANTERN BURNS THE FOG OUT: THE ARMOUR STANDS EMPTY', '#8fd160'); }
 const canOpen = (e, S) => !!e && e.alive && e.mode !== 'sleep' && e.mode !== 'wake' && e.mode !== 'dissolve' && e.mode !== 'gone' && !fkOpen(e) && !(S.ward > 0);
 
 /* ---------- THE RULE ON HIM (the hands call these) ---------- */
@@ -216,7 +216,7 @@ function stepMove(e, S, dt, P, h, c, lit, tx) {
       if (e.modeT <= 0) { S.lunge = null; setMode(e, 'lungeRec', FK.lungeRec); } return; }
     case 'lungeRec': if (e.modeT <= 0) after(); return;
     case 'doubleTell': if (e.modeT <= 0) { if (c.lockFull() && !S.dbl) { S.dbl = { x: e.x, face: -f, stance: S.stance, mode: 'walk', y: e.y }; S.n.doubles++; c.fx('double', e.x, e.y);
-        if (!S.told.dbl) { S.told.dbl = 1; c.number(e.x, e.y - 80, 'A SECOND KNIGHT OUT OF THE LOCK MIST: THE REAL ONE\'S VISOR GLOWS', '#ffd36b'); } } after(0.4); } return;
+        if (!S.told.dbl) { S.told.dbl = 1; c.number(e.x, e.y - 80, "A SECOND KNIGHT OF MIST: THE REAL ONE'S VISOR GLOWS", '#ffd36b'); } } after(0.4); } return;
     case 'shroudTell': if (e.modeT <= 0) { setMode(e, 'dissolve', FK.dissolveT); S.n.steps++; c.fx('dissolve', e.x, e.y); S.stepCut = true; } return;
     case 'stepTell': if (e.modeT <= 0) { setMode(e, 'stepCut', FK.cutT); c.sound('slash'); } return;
     case 'stepCut': c.hit([f > 0 ? e.x - 4 : e.x - FK.cutReach, f > 0 ? e.x + FK.cutReach : e.x + 4, e.y - 30, e.y], FK.dmg.step, MOVE_NAME.step, { blockable: true, key: 'step' + S.act });

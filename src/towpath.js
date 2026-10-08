@@ -115,8 +115,8 @@ export function buildTowpath({ painter, T, TS }) {
   hedge(60, 33, 'lockTop', { face: -1 });
   /* THE COTTAGE: a crossbowman on its roof over the bank, a sworn sword on the stile */
   block(67, 75, 29, 29); block(67, 67, 30, 31); block(75, 75, 30, 31);   /* (its roof a ledge over the bank, its walls hung from it: you walk under) */ interiors.push([69, 73, 30 + O, 33 + O, 'tpCottage']);
-  crossbow(72, 28, 'cottage', { face: -1 }); boards(64, 66, 31);   /* (a water butt by its wall: the step up onto the roof) */
-  ground(80, 83, 32); sworn(82, 31, 'cottage', { face: -1 });
+  crossbow(72, 28, 'cottageRoof', { face: -1 }); boards(64, 66, 31);   /* (a water butt by its wall: the step up onto the roof) */
+  ground(80, 83, 32); sworn(82, 31, 'stile', { face: -1 });
   coins([74, 28], [88, 33]); ent('silver', 70, 28);   /* (the cottage roof: a silver, up the water butt under the crossbow) */
   boards(84, 92, 30);   /* (the hay loft's lip over the bank: a second height) */
   decor.push({ kind: 'cattle', x: 62, y: 33 + O }, { kind: 'milestone', x: 90, y: 33 + O });
@@ -147,7 +147,7 @@ export function buildTowpath({ painter, T, TS }) {
   ent('check', 151, 31);
   block(153, 158, 27, 27); block(153, 153, 28, 29); block(158, 158, 28, 29); interiors.push([154, 157, 28 + O, 31 + O, 'tpHut']);
   ent('tplantern', 156, 31);
-  sign(154, 31, 'THE LOCK-KEEPER\'S LANTERN. E LIGHTS IT, OR DIMS IT. IN THE FOG IT SHOWS YOU THE WAY - AND SHOWS YOU.');
+  sign(154, 31, 'THE LOCK-KEEPER\'S LANTERN: E LIGHTS IT, OR DIMS IT.');
   coins([147, 31], [159, 31]);
 
   // ================= 3. THE LOCK FLIGHT (161-221): THE SET PIECE - three locks up the hill as the fog comes in =================
@@ -166,8 +166,8 @@ export function buildTowpath({ painter, T, TS }) {
   /* F3: in the fog. A watchman on the top gate's beam over it looses only at a lit hero; a grindylow in its water. Ride it up dim */
   lock('F3', 177, 182, 28, 23, 17, 'lo', { gate: [176, 17, 21] });
   punt('F3', 177, 6); paddle(182, 22, 'F3'); paddle(175, 21, 'F3');
-  grindy(181, 23, 'flightTop');
-  boards(183, 188, 13); watchman(186, 12, 'flightTop', { face: -1 }); ent('silver', 184, 12);   /* (the top gate's beam: a silver behind the watchman) */
+  grindy(181, 23, 'f3Water');
+  boards(183, 188, 13); watchman(186, 12, 'f3Beam', { face: -1 }); ent('silver', 184, 12);   /* (the top gate's beam: a silver behind the watchman) */
   boards(195, 212, 13);   /* (the flight's footbridge over the top pound's bank: a second height) */
   ground(183, 221, 17);
   fog(156, 221, 0.35, { rises: 0.25 });   /* THE FOG COMES IN up the flight: thin at the hut, thickening as the night does */
