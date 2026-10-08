@@ -1080,7 +1080,7 @@ async function runbossLab(BK, opts) {
           if(ph3){ /* PHASE THREE, not on his floor: down off any housing, along whatever line runs to him, down the Head Frame's ladder to the deck */
             if(topAt>=0){const lx=HS[topAt].ladder[0]*TZ+8;if(Math.abs(lx-P.x)>3)go(lx);else k.down=true;}
             else if(onLad!==undefined&&!((onLad===LA&&Math.abs(P.y-row(GA.ledgeTop))<3)||(onLad===LC&&Math.abs(P.y-row(HC.ledgeTop))<3))){ if(onLad===LB){const w=row(O.deck);if(P.y<=w&&P.y>w-10)k[Math.sign(deck1-LB)>0?'right':'left']=true;else if(P.y>w)k.up=true;else k.down=true;} else k.down=true; }
-            else if(deck){ if(hf===1)board(lo,(LB+1)*TZ,1); }
+            else if(deck){ if(hf===1)board(lo,(LB+1)*TZ,1); else go(boss.x); }   /* (claude/winch5: on the deck's far planks, past the floor he keeps - in to him) */
             else if(at2(HB.ledge[0],HB.ledge[1],HB.ledgeTop))climb(LB);
             else if(at2(HC.ledge[0],HC.ledge[1],HC.ledgeTop))board(hi,HC.ledge[0]*TZ,-1);
             else if(at2(GA.ledge[0],GA.ledge[1],GA.ledgeTop)){ if(lo.dir<0)board(lo,GA.ledge[0]*TZ,-1); else go((GA.ledge[0]+1)*TZ); }

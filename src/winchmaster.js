@@ -92,7 +92,7 @@ function drawHook(g, x, y, frame, face, cx, cy) {
   g.drawImage(spr, Math.round(x - cx) - HOOK.ax, Math.round(y - cy) - HOOK.ay);
 }
 export const WINCH = {
-  hp: 360, pace: 22,   /* (claude/sweep1: 600 - the standard bot won 0/12 at L10) */
+  hp: 480, pace: 22,   /* (claude/sweep1: 600 - the standard bot won 0/12 at L10) */
   /* ROUND THREE: drawn 1.3x (main.js bigF; his box grows with it) - hand is where the hook leaves him, at that size */
   scale: 1.3, hand: 34,
   tell: { reverse: 0.45, send: 0.8, hook: 0.7, lever: 0.55, letgo: 0.7, leap: 0.9 },
@@ -157,7 +157,7 @@ Object.assign(WINCH, { armourMul: 0.4, plateT: 1.1, staggerT: 4.0, staggerMul: 2
 Object.assign(WINCH.tell, { toss: 0.8, spill: 0.9, sweep: 0.75 });
 Object.assign(WINCH.dmg, { toss: 22, sweep: 20 });
 /* THE ACT I RETUNE (claude/sweep1): every blow of his at WINCH_HIT of what it was - the human-speed bot died to his send / lever / stalk at 0/12 */
-export const WINCH_HIT = 0.55; for (const k of Object.keys(WINCH.dmg)) WINCH.dmg[k] = Math.round(WINCH.dmg[k] * WINCH_HIT);
+export const WINCH_HIT = 1.3; for (const k of Object.keys(WINCH.dmg)) WINCH.dmg[k] = Math.round(WINCH.dmg[k] * WINCH_HIT);
 const SAY = { reverseTell: 'HE THROWS THE BRAKE', sendTell: 'HE SENDS ONE DOWN', hookTell: 'THE HOOK', leverTell: 'THE BRAKE BAR', leapTell: 'HE CROUCHES TO LEAP',
   descendTell: 'HE COMES DOWN', whirlTell: 'HE SWINGS THE HOOK', wrenchTell: 'THE WRENCH', rideTell: 'HE TAKES A SKIP',
   tossTell: 'ORE TOSS', spillTell: 'HE TIPS A SKIP OVER YOU', sweepTell: 'THE CHAIN SWEEPS LOW' };
@@ -311,7 +311,7 @@ function comeDown(e, c) {
 /* THE LOW LINE, IN PHASE THREE, RUNS TO WHICHEVER FLOOR HE IS ON (so from the other one you can always ride to him), and the high line
    runs home to the Head Frame's ledge, whose ladder goes down to the deck - nobody is left up on the Tail Wheel with no way to him */
 function driveFoot(e, c) { c.drive(0, e.fl === 1 ? 1 : -1, 1); c.drive(1, 1, 1); }
-const onFloor = (c, F) => { const P = c.P; return !P.dead && !!P.ground && !P.onMover && Math.abs(P.y - F.y) < 4 && P.x > F.x0 - 8 && P.x < F.x1 + 8; };
+const onFloor = (c, F) => { const P = c.P; return !P.dead && !!P.ground && !P.onMover && Math.abs(P.y - F.y) < 4 && P.x > F.x0 - 24 && P.x < F.x1 + 24; };   /* (claude/winch5: 24 px past either end - the deck's planks run on past the Head Frame's ladder, and a hero stood there was on no floor of his: the page bot waited out the clock beside him) */
 /* ON FOOT: he walks at you along his floor and fights you there - THE HOOK SWUNG round him and THE WRENCH, in turn - and if you are
    not on his floor he takes a skip along the low line to the one you are on (or throws the hook at you, if you are in its reach) */
 function stepFoot(e, dt, c) {

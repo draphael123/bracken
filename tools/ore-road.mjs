@@ -623,6 +623,11 @@ const toFoot = w => { w.e.hp = w.e.maxHp * 0.24; w.run(WINCH.tell.descend + WINC
   const w3 = world(); w3.run(0.3); w3.e.revCd = w3.e.sendCd = w3.e.hookCd = w3.e.leverCd = w3.e.tossCd = 999; w3.e.qMark = -1e9; w3.e.hp = w3.e.maxHp * 0.45; w3.c.P.x = 9999;
   WM.winchRock(w3.e, w3.c); let plated = false; for (let t = 0; t < (WINCH.staggerT + WINCH.wardT + WINCH.rearmP2 + 12) * 60; t++) { w3.step(); if (w3.e.mode === 'plating') plated = true; w3.e.revCd = w3.e.sendCd = w3.e.hookCd = w3.e.leverCd = w3.e.tossCd = 999; }
   ok(plated && WM.winchArmoured(w3.e), `PHASE TWO PLATES HIM MORE OFTEN: bare ${WINCH.rearmP2} s on his drums and he packs his ore again`);
+  const w4 = world(); w4.run(0.3); w4.e.revCd = w4.e.sendCd = w4.e.hookCd = w4.e.leverCd = w4.e.tossCd = 999; w4.e.qMark = -1e9; w4.e.hp = w4.e.maxHp * 0.45; w4.c.P.x = 9999; w4.run(20); done(w4);
+  ok(!w4.modes.has('leapTell') && w4.e.at === 0, 'phase two, PLATED HE HOLDS HIS DRUM: twenty seconds in his ore and not one leap (bare, he leaps - proved in ROUND THREE)');
+  const w5 = world(); w5.run(0.3); w5.e.revCd = w5.e.sendCd = w5.e.hookCd = w5.e.leverCd = w5.e.tossCd = 999; WM.winchRock(w5.e, w5.c); w5.run(WINCH.thrownT + 0.05);
+  let paid = 0; for (let i = 0; i < 40 && w5.e.mode === 'stagger'; i++) { paid += WM.winchPurse(w5.e, 30); w5.step(); }
+  ok(paid <= Math.ceil(w5.e.maxHp * WINCH.openCap) + 1 && w5.e.mode !== 'stagger' && WINCH.openCap <= 0.2, `AN OPENING IS NEVER THE WHOLE FIGHT: a stagger pays out ${paid} of his ${w5.e.maxHp} (openCap ${WINCH.openCap}) and the blow that empties it ends it`);
   ok(WM.winchRock({ ...w.e, phase: 3, mode: 'foot', armour: false, ward: 0 }, w.c) === 'hit' && !WM.winchArmoured({ phase: 3, armour: true, mode: 'foot' }), 'phase three: no ore on foot - a rock is only a rock'); }
 /* ---- ORE TOSS (!!, phase one): at a rider in range, told, a ring where it lands; it takes one who stays, misses one who steps out */
 { const mk = () => { const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = 999; w.e.tossCd = 0; w.ride = { h: 0, dist: 160 }; w.e.cd = 0; return w; };
