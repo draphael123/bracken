@@ -4200,17 +4200,9 @@ function winLevel() {
   winLevelUp = heroLevel() > lvAtStart;
   if (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret) { heroDone()[id] = 1; const gw = (PROG.xpGot[hero()] || {})[id]; if (gw) delete gw.k; }   /* a finished wood pays a fifth for everything in it, so its list of the fallen can go */
   if (winLevelUp) { applyUpgrades(); regear(); P.hp = P.maxHp; setTimeout(() => { if (state === 'win') SFX.rankUp(); }, 1500); }
-<<<<<<< ours
-  { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now);
+  { const was = p.medal || 0, now = SET.invincible ? 0 : medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now);
     for (const c of LEVELS) { const o = c.opensOn; if (o && o.level === id && (o.time ? (PROG[id].best <= o.time && !(winPrevBest !== null && winPrevBest <= o.time)) : (o.medal && now >= (MEDAL_RANK[o.medal] || o.medal) && was < (MEDAL_RANK[o.medal] || o.medal))) && !(PROG[c.id] && PROG[c.id].cleared)) { hintMsg = c.name + ' IS OPEN: A NEW ROAD OFF THE MAP'; hintT = 6; } } }
-  if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true; dcBankAll();
-||||||| base
-  { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now); }
-  if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true; dcBankAll();
-=======
-  { const was = p.medal || 0, now = SET.invincible ? 0 : medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now); }
   if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0 && !SET.invincible) PROG[id].noHit = true; if (SET.iron && !SET.invincible) PROG[id].iron = true; dcBankAll();
->>>>>>> theirs
   saveProgress();
 }
 
@@ -9412,14 +9404,8 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     if (p.fire) { burst(P.x, p.y, 18, ['#fff6c8', '#ffd36b', '#ff6b2c'], 90, 0.6, -160, 2); SFX.puff(); number(P.x, p.y - 14, 'BURNED', '#ff9a5c'); }
     else { burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5'); }
     /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
-<<<<<<< ours
     if (L.waterHurts && L.fallRule !== 'death' && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; hazardSay(); } }
-||||||| base
-    if (L.waterHurts && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; } }
-=======
-    if (L.waterHurts && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; } }
-    else if (SET.invincible) godSafe();
->>>>>>> theirs
+      else if (SET.invincible) godSafe();
     else { die({ name: p.fire ? 'THE FIRE' : 'DROWNED', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.8; }
     break;
   }
