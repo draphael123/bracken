@@ -20,15 +20,16 @@ export const KNOLLS = [[23, 24, 19], [25, 28, 18], [29, 29, 19], [46, 47, 19], [
 export const LEDGES = [
   [19, 15, 4], [25, 15, 4], [31, 15, 3], [42, 15, 4], [48, 15, 4], [54, 15, 3],                        // the drovers' ledges over the pasture knolls
   [66, 15, 3], [74, 15, 4], [80, 15, 3], [90, 15, 4], [96, 15, 3], [102, 15, 3],                       // the hamlet's roof road
-  [204, 11, 3], [210, 11, 3], [216, 11, 4], [222, 11, 3],                                               // over the windmill rise's approach
+  [266, 11, 3], [271, 11, 3],                                                                           // over the crest, where the rockslide starts
   [306, 14, 3], [312, 14, 3], [322, 14, 3],                                                             // over the rockslide's first runs
   [370, 18, 2], [373, 16, 4], [379, 16, 4],                                                             // the boulder field's shelf
-  [491, 17, 2], [494, 15, 4], [500, 15, 4], [506, 15, 3], [511, 15, 3],                                 // the gorge bank
-  [526, 6, 3], [531, 6, 3], [536, 6, 3], [570, 6, 3], [575, 6, 3], [580, 5, 3],                        // the plateau and the gully
+  [2, 16, 3], [7, 16, 3], [13, 17, 2],                                                                  // the bothy's roof ledges
+  [385, 17, 2], [388, 16, 4], [399, 17, 2], [402, 16, 3],                                               // the boulder field's shelf, on
+  [526, 6, 3], [531, 6, 3], [536, 6, 3], [570, 6, 3], [575, 6, 3], [580, 5, 3], [585, 5, 3], [590, 5, 3],                        // the plateau and the gully
 ];
-/* THE QUARRYMEN'S LIFTS (a stone cage on a rope - the derrick's own): up the crag wall from the gorge bank to the plateau, and up the quarry face from the floor
-   to the high stagings; the ropeway's lift is the first. [column, low top row, high top row] */
-export const LIFTS = [[521, 20, 9], [561, 9, 4]];
+/* THE QUARRYMEN'S LIFTS (a stone cage on a rope - the derrick's own): up the quarry face from the floor to the high stagings, and at the gully's mouth up to its
+   high ledges; the ropeway's lift is the first. (One up the crag wall stood in the climb rock's way: the walker stuck under it, claude/scree2.) [column, low top row, high top row] */
+export const LIFTS = [[561, 9, 4], [577, 9, 5]];
 export function reliefScree(R, T) {
   const W = R.W, set = (x, y, t) => { if (x >= 0 && x < W && y >= 0 && y < R.H) R.grid[y * W + x] = t; }, at = (x, y) => R.grid[y * W + x];
   for (const [x0, x1, top] of KNOLLS) for (let x = x0; x <= x1; x++) for (let y = top; y < R.H; y++) set(x, y, T.SOLID);

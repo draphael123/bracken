@@ -54,7 +54,7 @@ export const BROKEN = [[344, 18], [354, 19], [423, 20]];
    thrower on the ropeway's high ledge and an archer on its last step (foes at platforming moments: you are on the sails or the swing), a harpy over the lift,
    a sprig in the pasture, a ram on the windmill rise, a thrower on the quarry floor [type, x, y] */
 export const ROAD_FOES = [['sprig', 56, 19], ['goat', 160, 13], ['harpy', 462, 5], ['rockgoblin', 470, 11], ['archer', 481, 13], ['rockgoblin', 540, 8]];
-export const FOES = [['harpy', 289, 10], ['harpy', 318, 11], ['harpy', 340, 9], ['rockgoblin', 348, 13], ['goat', 376, 19], ['harpy', 396, 13], ['rockgoblin', 410, 17]];
+export const FOES = [['harpy', 289, 10], ['harpy', 324, 11], ['harpy', 340, 9], ['rockgoblin', 348, 13], ['goat', 376, 19], ['harpy', 402, 13], ['rockgoblin', 410, 17]];
 /* ROCKS OFF THE CLIFF, AHEAD (told: the red mark on the fall line pulses as the next one works loose; only while on screen) [x, every s] */
 export const ROCKS = [[298, 2.4], [339, 2.2], [349, 2.6], [372, 2.3], [380, 2.7], [408, 2.5]];
 export const CHASE = {
