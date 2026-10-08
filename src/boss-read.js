@@ -50,7 +50,7 @@ export const TURN_WORD = {
   windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : TURN.WARDED,
   grandmother: e => (e.alpha !== undefined && e.alpha < 0.35) || e.mode === 'vanish' ? TURN.NOT_THERE : TURN.WARDED,
   winchmaster: 'IRON',                                      // his plate: jam his drum
-  greathound: TURN.WARDED,
+  greathound: TURN.ROUND,                                   // (claude/hound) his jaws turn part of a blow into his face: go round, or come down on him
   queen: 'THE SWARM',                                       // her drones close over her
   /* (claude/sweep2) ACT II */
   captain: e => e.mode === 'ride' ? 'ON THE WAVE' : TURN.WARDED,                   // he rides the wave he called: wait for it to beach him
