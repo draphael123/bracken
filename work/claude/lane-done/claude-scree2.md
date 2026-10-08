@@ -51,3 +51,12 @@ Level: walker (campaign L7, human+first, 1 seed) deaths knight 1 / warden 1 / py
 6. Music (download nothing): level - "Mountain Theme Loop", beardalaxy, CC0, https://opengameart.org/content/mountain-theme-loop ; "Mist Covered Mountains",
    Bo Jingles, CC-BY 3.0, https://opengameart.org/node/123220 ; Ram Lord - "Heavy Boss Battle 1", MintoDog, CC0 (per search: read the page's licence before
    use), https://opengameart.org/node/183631 .
+
+## MUSIC + PEN WALL (2026-10-08, screemusic lane; Daniel approved the download)
+- Licences READ ON THE PAGES: "Mountain Theme Loop" (beardalaxy) CC0; "Heavy Boss Battle 1" (MintoDog) CC0 (page, not just search results).
+- audio/mountain.ogg = Mountain Theme Loop (12.3 s loop, stereo, +3.5 dB w/ limiter, vorbis q5, -14.5 LUFS) -> THE SCREE PATH level music (was theme4 Junkala "Level 1": retired, file + TRACK_GAIN + sound-test entry removed).
+- audio/ramlord.ogg overwritten with Heavy Boss Battle 1 (108 s, -2.3 dB, q5, -13.3 LUFS) -> Ram Lord boss music (was HydroGene "Strong Boss"). Key names unchanged for the boss; new 'mountain' key for the level.
+- Credited: audio/CREDITS.txt, MUSIC_CREDITS (+ sound test), src/credits.js CC0 rows (credits page).
+- The 'foothills' synth AMBIENT bed (gusts, sheep bells, scree) is kept: it is the atmosphere under the music, as the Rootway keeps its bed under its track.
+- ART: src/scree-art.js bakeOchreWall + TILE.ochreWall; the Ram's arena walls use it (setWall, boss 'ram' only); other bosses keep the grey drystone.
+- Checks green: audio-assets, boss-music, soundtest.
