@@ -84,7 +84,7 @@ const foes = L.ents.filter(e => e.lc || ['wight', 'haunt', 'boo', 'bonearcher', 
 ok(L.ents.filter(e => GOB.has(e.t)).every(e => e.cnSkin), 'no living goblin: every goblin machine wears the church\'s skin');
 ok(foes.some(e => ROLES.ranged.includes(e.cnSkin || e.t)), 'a ranged foe (the priest\'s light bolt)');
 { const roles = new Set(); for (const e of foes) for (const [r, ks] of Object.entries(ROLES)) if (ks.includes(e.cnSkin || e.t)) roles.add(r); ok(roles.size >= 3, 'three roles at least: ' + [...roles].join(', ')); }
-ok(L.ents.filter(e => ['gobmage', 'runner', 'swornsword', 'hedgeknight', 'crossbow'].includes(e.t)).every(e => e.lc && e.room), 'every clergy and knight is tied to a room\'s light');
+ok(L.ents.filter(e => ['gobmage', 'acolyte', 'swornsword', 'hedgeknight', 'crossbow'].includes(e.t)).every(e => e.lc && e.room), 'every clergy and knight is tied to a room\'s light');
 ok(L.ents.filter(e => e.t === 'gobmage' && e.elite).length === 1 && L.ents.find(e => e.elite).cnSkin === 'archdeacon' && L.ents.find(e => e.elite).gate, 'THE ARCHDEACON is the exam\'s elite and holds the sanctuary\'s way');
 ok(L.ents.filter(e => e.t === 'check').length === 4, 'four checkpoints (one per stretch, one before the sanctuary)');
 ok(L.ents.filter(e => e.t === 'stray' && e.kind === 'candlestub').length === 5 && L.quest.n === 5, 'five candle stubs, the reliquary\'s key');

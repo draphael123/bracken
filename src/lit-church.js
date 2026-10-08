@@ -60,11 +60,11 @@ export function buildLitChurch({ painter, T, TS }) {
   const foe = (t, x, y, room, o) => ent(t, x, y, Object.assign({ face: -1, room }, o || {}));
   /* THE CAST (proven machines under the church's skins; src/lit-church-hands.js gives each its twist - every one of them lives by the light):
      priest    THE PRIEST: the goblin mage's caster (keep off, a told LIGHT BOLT !, a red !! sigil under you) + HEAL (told, no mark: a blow cuts it) + RE-LIGHT
-     acolyte   THE ACOLYTE: the Waymeet runner's body; he does not fight - he runs for a snuffed lamp with his taper and lights it in a breath (catch him)
+     acolyte   THE ACOLYTE (the ONE new foe: the Waymeet runner's body and sheet): he does not fight - he runs for a snuffed lamp with his taper and lights it in a breath (catch him)
      swornsword / hedgeknight / crossbow: Waymeet's own roadmen, here THE CHAPEL KNIGHTS (the priests' escort) and a crossbowman on the triforium
      wight / haunt / boo / bonearcher / husk: the crypt's dead (placed in the crypt; the grates bring more up into a dark room) */
   const priest = (x, y, room, o) => foe('gobmage', x, y, room, Object.assign({ cnSkin: 'priest', lc: 'priest' }, o || {}));
-  const acolyte = (x, y, room, o) => foe('runner', x, y, room, Object.assign({ cnSkin: 'acolyte', lc: 'acolyte' }, o || {}));
+  const acolyte = (x, y, room, o) => foe('acolyte', x, y, room, Object.assign({ lc: 'acolyte' }, o || {}));
   const knight = (x, y, room, o) => foe('swornsword', x, y, room, Object.assign({ cnSkin: 'chapelknight', lc: 'knight' }, o || {}));
   const hedge = (x, y, room, o) => foe('hedgeknight', x, y, room, Object.assign({ cnSkin: 'templar', lc: 'knight' }, o || {}));
   /* THE RULE'S PIECES (src/lit-church-hands.js reads them off L) */
@@ -203,7 +203,7 @@ export function buildLitChurch({ painter, T, TS }) {
   /* THE SEALED VAULT (cols 110-140): the one ambush - its walls shut when you are in, and the crypt's captain and his dead come (src/level.js AMBUSH.church) */
   block(107, 108, NF + 2, CF - 6); block(141, 142, NF + 2, CF - 6);              /* the vault's lintels (the ambush's walls drop under them) */
   decor.push({ kind: 'vault', x0: 109, x1: 140, y: CF });
-  boards(116, 121, 52); boards(129, 134, 52); ent('silver', 125, CF - 1);         /* the vault's shelves and a silver on its floor (the ambush pays it) */
+  boards(116, 121, 52); boards(129, 134, 52); boards(120, 124, 50); boards(124, 127, 48); ent('silver', 126, 47);   /* the vault's shelves, and a silver on the top one (a climb of two-row steps: the vault's own reward, off the floor) */
   room('vault', 'THE SEALED VAULT', 107, NF + 2, 142, CF - 1, { dark: true });
   /* THE CRYPT ALTAR (cols 146-178): corpse candles, the dead, the VIGIL CANDLE (a source) and LAMP THREE on the altar; the well at its west end */
   block(150, 152, CF - 2, CF - 1); boards(146, 149, 52);
@@ -277,7 +277,7 @@ export function buildLitChurch({ painter, T, TS }) {
        the route goes by the places the rule sends you IN ORDER (the porch lamp, lamp one, lamp two, the seal, lamp three, the rood screen) - the rooms are stacked */
     reachDoors: doors.filter(d => d.id !== 'reliquary' && d.id !== 'sacristy'), reachVents: bellows.map(b => ({ t: 'vent', x: b.x, y: b.y, h: (b.y + 1 - b.top) * TS + TS })),
     reachGusts: desks.map(d => ({ x0: d.x0 * TS, x1: (d.x1 + 1) * TS, y0: d.y0 * TS, y1: (d.y1 + 1) * TS, dir: d.dir })),
-    routeVia: [[40, NF - 1], [176, 28], [60, GF - 1], [52, 22], [175, CF - 1], [177, NF - 1]],
+    routeVia: [[40, NF - 1], [176, 28], [60, GF - 1], [52, 22], [145, CF - 1], [175, CF - 1], [177, NF - 1]],   /* (the altar's door: the crypt is walked end to end - its grate in the crossing only cracks at lamp three) */
     /* THE CHURCH'S WEIGHT (difficulty v2, the act's tier on top): a priest's bolt and sigil, a knight's cut - each a 1v1 threat at the campaign level. The light
        moves the clergy on top of this (src/lit-church-hands.js lcMul: lit x1.3, dark x0.7) */
     foeHit: { priest: 1.5, archdeacon: 1.7, chapelknight: 1.6, templar: 1.5, chapelbow: 1.4, acolyte: 0.5 },
