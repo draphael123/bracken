@@ -15,7 +15,7 @@ const run=(i,kind,lift)=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(i)
   const e=BK.enemies().find(q=>q.t===A.boss&&q.alive&&(kind==='boss'||q.mini||q.t==='greathound'));if(!e)return null;
   BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);let f=0;for(;f<240&&!live();f++){BK.P.inv=99;BK.P.hp=BK.P.maxHp;BK.sim(1);}
   if(!live())return {started:false};
-  const out=BK.enemies().filter(q=>q.alive&&q!==e&&!q.maxHp&&!q.mini&&(q.x<A.x0-2||q.x>A.x1+2)),x0=out.map(q=>q.x);let held=out.filter(q=>q.arenaHeld).length,moved=0,stones=0;
+  const out=BK.enemies().filter(q=>q.alive&&q!==e&&!q.maxHp&&!q.mini&&q.t!=='magechase'&&(q.x<A.x0-2||q.x>A.x1+2)),x0=out.map(q=>q.x);let held=out.filter(q=>q.arenaHeld).length,moved=0,stones=0;
   for(let k=0;k<360;k++){if(lift)for(const q of out)q.arenaHeld=false;BK.P.inv=99;BK.P.hp=BK.P.maxHp;BK.sim(1);
     for(const q of out)if(q.alive&&q.st&&q.st.stone&&q.st.stone.t<0.05)stones++;}
   const mv=[];out.forEach((q,j)=>{if(q.alive&&Math.abs(q.x-x0[j])>1){moved++;mv.push(q.t+":"+Math.round(q.x-x0[j])+(q.x>=A.x0&&q.x<=A.x1?"IN":""));}});
