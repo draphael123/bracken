@@ -159,9 +159,9 @@ export function makeLitChurchHands(ctx) {
       if (lt && !roomOf(q.room).arena) { q.burn = (q.burn || 0) + LC.burnDps * dt; if (Math.random() < dt * 12) ctx.burst(e.x, e.y - 10, 1, ['#fff6c8', '#ffd36b'], 30, 0.4);
         if (q.burn >= 4) { const d = Math.floor(q.burn); q.burn -= d; ctx.hurtFoe(e, d); if (!e.alive) K.n.burnt++; if (once('burnDead')) number(e.x, e.y - 30, 'THE LIGHT BURNS THE DEAD', '#ffd36b'); } }
       return false; }
-    if (hit && (q.st === 'rite' || q.st === 'heal')) { if (q.st === 'rite') { K.n.ritesCut++; number(e.x, e.y - 34, 'THE RITE IS CUT', '#8fd160'); } else { K.n.healsCut++; number(e.x, e.y - 34, 'THE PRAYER IS CUT', '#8fd160'); } q.st = 'free'; q.cd = 3; }
+    if (hit && (q.st === 'rite' || q.st === 'heal')) { if (q.st === 'rite') { K.n.ritesCut++; q.relCd = 2.5; number(e.x, e.y - 34, 'THE RITE IS CUT', '#8fd160'); } else { K.n.healsCut++; number(e.x, e.y - 34, 'THE PRAYER IS CUT', '#8fd160'); } q.st = 'free'; q.cd = 3; }
     if (q.st === 'asleep') { if (hit) { q.st = 'free'; return false; } fall(e, dt); e.vx = 0; e.mode = q.role === 'acolyte' ? 'walk' : e.mode; return true; }
-    q.cd -= dt;
+    q.cd -= dt; q.relCd = Math.max(0, (q.relCd || 0) - dt);
     const dP = P && !P.dead ? Math.abs(P.x - e.x) : 1e9, sameY = P && Math.abs(P.y - e.y) < 40;
     if (q.role === 'acolyte') return holdAcolyte(e, q, dt, dP, sameY);
     if (q.role !== 'priest') return false;
@@ -180,7 +180,7 @@ export function makeLitChurchHands(ctx) {
     if (q.cd <= 0 && (e.mode === 'keep' || !e.mode || e.mode === 'walk')) {
       const hurt = ctx.enemies().some(o => o.alive && o.lc && o.lc.room === q.room && o.lc.role !== 'dead' && o.maxHp0 && o.hp < o.maxHp0 * 0.75 && Math.abs(o.x - e.x) < (arch ? 400 : LC.healR));
       if (hurt) { q.st = 'heal'; q.t = arch ? LC.archHealTell : LC.healTell; number(e.x, e.y - 34, arch ? 'THE ARCHDEACON PRAYS OVER HIS ROOM' : 'HE PRAYS: A BLOW CUTS IT', '#ffd36b'); return true; } }
-    const l = wantLamp(e, q); if (l && !(dP < 70 && sameY) && (e.mode === 'keep' || !e.mode || e.mode === 'walk')) { q.st = 'toLamp'; q.lamp = l; return true; }
+    const l = q.relCd > 0 ? null : wantLamp(e, q); if (l && !(dP < 70 && sameY) && (e.mode === 'keep' || !e.mode || e.mode === 'walk')) { q.st = 'toLamp'; q.lamp = l; return true; }
     return false; };
   /* a prayer: every one of his own in reach (his whole room, for the Archdeacon) mends - by the room's light */
   function pray(e, q, arch) { const k = lit(q.room) ? LC.litHeal : LC.darkHeal; let n = 0;
@@ -211,9 +211,10 @@ export function makeLitChurchHands(ctx) {
 
   /* ---------- THE ORGAN: a bellows' breath lifts you up its pipe; the key desk's chord blows west ---------- */
   function stepOrgan(dt) { const ts = TS();
-    for (const b of K.bellows) { b.air = Math.max(0, b.air - dt); if (b.air <= 0) continue; const x0 = (b.x - 1) * ts, x1 = (b.x + 2) * ts, top = b.top * ts, bot = (b.y + 1) * ts + 2;
+    for (const b of K.bellows) { b.air = Math.max(0, b.air - dt); if (b.air <= 0) continue; const x0 = (b.x - 1) * ts - 6, x1 = (b.x + 2) * ts + 6, top = b.top * ts, bot = (b.y + 1) * ts + 2, mid = b.x * ts + 8, kk = ctx.keys();
       if (Math.random() < dt * 30) ctx.burst(x0 + Math.random() * (x1 - x0), bot - Math.random() * (bot - top), 1, ['#e8dcc0', '#c9b27c'], 20, 0.5);
       for (const pp of ctx.players) { if (pp.dead || pp.x < x0 || pp.x > x1 || pp.y < top - 4 || pp.y > bot) continue; if (pp.y > top + 18) { pp.vy = Math.min(pp.vy, -LC.lift); pp.ground = false; } else pp.vy = Math.min(pp.vy, 10);
+        if (!kk.left && !kk.right) pp.vx += ((mid - pp.x) * 3 - pp.vx) * Math.min(1, dt * 6);   /* the breath holds you in its column until you steer off it */
         if (!pp.lcLift) { pp.lcLift = 1; K.n.lifts++; } } }
     for (const pp of ctx.players) if (pp.lcLift && !K.bellows.some(b => b.air > 0)) pp.lcLift = 0;
     for (const d of K.desks) { if (d.tell > 0) { d.tell -= dt; if (d.tell <= 0) d.on = LC.chordT; continue; } if (d.on <= 0) continue; d.on -= dt;
@@ -257,7 +258,7 @@ export function makeLitChurchHands(ctx) {
       for (const l of K.lamps) if (l.lit && ctx.overlap(hb, { l: px(l) - 7, r: px(l) + 7, t: py(l) - (l.kind === 'sconce' ? 26 : 34), b: py(l) - 6 })) snuff(l, 'hero');
       for (const b of K.bellows) if (b.air < LC.bellowsT - 0.4 && ctx.overlap(hb, { l: b.x * ts - 6, r: b.x * ts + 22, t: (b.y + 1) * ts - 16, b: (b.y + 1) * ts })) { b.air = LC.bellowsT; K.n.breaths++; ctx.sfx.whoosh ? ctx.sfx.whoosh() : ctx.sfx.thud && ctx.sfx.thud();
         if (once('breath')) number(b.x * ts + 8, (b.y + 1) * ts - 40, 'THE PIPE BREATHES: RIDE IT UP', '#ffd36b'); } });
-    stepOrgan(dt); stepGrates(dt); stepDark(dt);
+    rooms(); stepOrgan(dt); stepGrates(dt); stepDark(dt);
     /* THE FIRST LOOK at a room: its name and its state, once */
     if (P0 && !P0.dead) { const r = roomAt(P0.x, P0.y); if (r && r !== K.inRoom) { K.inRoom = r; K.roomT = 2.2; } K.roomT = Math.max(0, (K.roomT || 0) - dt); }
     BOSS_PHASE.litchurch = K.inRoom && !K.inRoom.lit && !K.inRoom.arena ? 2 : 1;   /* the church's bed: a dark room brings up the low choir (src/boss-music.js litchurch) */
@@ -269,19 +270,19 @@ export function makeLitChurchHands(ctx) {
      the fire nearest the lamp the route needs, carry it there, press E; strike the bellows and stand in its breath; play the chord and run west into it */
   H.walkHint = P => {
     if (!K || !P || P.dead) return null; const ts = TS(), c = P.x / ts, row = (P.y - 1) / ts, here = (x, r, key, face) => ({ x: x * ts + 8, y: (r + 1) * ts, key, face: face || 0 });
+    const { nave: NF, gallery: GF, crypt: CF } = K.L.rows, TR = NF - 9;   /* TR: the north transept's floor (its feet row is TR - 1) */
     const want = (l, fireId) => { if (!l || l.lit) return null; if (P.lcFlame > 1) return here(l.x, l.y, 'talk', Math.sign(l.x * ts + 8 - P.x) || 1); const s = K.sources.find(q => q.id === fireId); return s ? here(s.x, s.y, 'talk', 1) : null; };
-    if (c < 44 && row > 30) return want(lampOf('porch'), 'brazier');
-    if (row > 36 && row < 46 && c >= 150 && c <= 179 && !lampOf('chapel1').lit) return here(156, 39, null, 1);   /* (up the piers) */
-    if (row > 28 && row < 38.5 && c >= 158 && c <= 179) { if (!lampOf('chapel1').lit) return want(lampOf('chapel1'), 'votive1'); const b = K.bellows.find(q => q.id === 'transept'); return b.air > 0.3 ? Object.assign(here(b.x, b.y, null, 1), { lift: true }) : here(b.x - 1, b.y, 'atk', 1); }
-    if (row < 28 && c >= 56 && c <= 179) { const d = K.desks[0];
-      if (c > 106) return d.on > 0.6 ? Object.assign(here(94, 27, null, -1), { jump: c < 109, run: true }) : here(d.x, d.y, 'talk', -1);
-      if (!lampOf('chapel2').lit) return want(lampOf('chapel2'), 'votive2'); return here(52, 27, null, -1); }
-    if (row > 28 && row < 33 && c < 56) { const s = lampOf('seal'); return s.lit ? here(s.x - 1, s.y, 'atk', 1) : here(47, 31, null, -1); }
-    if (row > 46 && c < 179) { const l3 = lampOf('chapel3'); if (!l3.lit) return c > 140 ? want(l3, 'vigil') : null;
+    if (c < 44 && row > NF - 16) return want(lampOf('porch'), 'brazier');
+    if (row > TR - 2 && row < NF && c >= 150 && c <= 179 && !lampOf('chapel1').lit) return here(156, TR + 1, null, 1);   /* (up the piers) */
+    if (row > GF && row < TR + 0.5 && c >= 158 && c <= 179) { if (!lampOf('chapel1').lit) return want(lampOf('chapel1'), 'votive1'); const b = K.bellows.find(q => q.id === 'transept'); return b.air > 0.3 ? Object.assign(here(b.x, b.y, null, 1), { lift: true }) : here(b.x - 1, b.y, 'atk', 1); }
+    if (row < GF && c >= 56 && c <= 179) { const d = K.desks[0];
+      if (c > 106) return d.on > 0.6 ? Object.assign(here(94, GF - 1, null, -1), { jump: c < 109, run: true }) : here(d.x, d.y, 'talk', -1);
+      if (!lampOf('chapel2').lit) return want(lampOf('chapel2'), 'votive2'); return here(52, GF - 1, null, -1); }
+    if (row > GF && row < GF + 5 && c < 56) { const s = lampOf('seal'); return s.lit ? here(s.x - 1, s.y, 'atk', 1) : here(47, s.y, null, -1); }
+    if (row > NF && c < 179) { const l3 = lampOf('chapel3'); if (!l3.lit) return c > 140 ? want(l3, 'vigil') : null;
       if (!K.escaped) { const nxt = K.lamps.filter(l => l.room === 'well' && !l.lit && py(l) < P.y - 4).sort((a, b) => py(b) - py(a))[0]; if (P.lcFlame < 4 && nxt && Math.abs(py(nxt) - P.y) < 40) return want(nxt, 'vigil'); return null; } }
-    if (row > 38 && row < 46 && c >= 150 && c <= 179 && !lampOf('rood3').lit) { const r3 = lampOf('rood3'); if (P.lcFlame > 0) return here(r3.x, NF_ROW(), 'talk', 1); return null; }
+    if (row > TR && row < NF && c >= 150 && c <= 179 && !lampOf('rood3').lit) { const r3 = lampOf('rood3'); if (P.lcFlame > 0) return here(r3.x, NF - 1, 'talk', 1); return null; }
     return null; };
-  const NF_ROW = () => 45;
 
   /* ---------- THE GLINT AND THE NUDGE (the route list: src/stuck-spots.js STUCK_HANDS.church) ---------- */
   const handsState = name => { const [kind, id] = name.split('.');

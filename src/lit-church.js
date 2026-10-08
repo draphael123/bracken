@@ -21,7 +21,7 @@
 // THE THEMED KEY: five CANDLE STUBS (L.quest), each in a pocket off the route. All five open THE RELIQUARY behind the south transept's altar: a SILVER,
 // and its back door - THE SACRISTY PASSAGE - a shortcut from the south transept back to the crossing (no relic).
 //
-// THE CROSS IN SIDE VIEW (columns; the nave's floor is row 46, the gallery's row 28, the crypt's row 63):
+// THE CROSS IN SIDE VIEW (columns; the nave's floor is row 37, the gallery's row 19, the crypt's row 54):
 //   0-44     THE GRAVEYARD + WEST DOOR  TEACH    take a flame at the sexton's brazier, light the porch lamp: the west door opens; the dark lets a wight up
 //   45-151   THE NARTHEX + THE NAVE     TEST     a priest by a lit lamp (snuff it: he weakens, the grate wakes); the pulpit's priest, the pews, the knights
 //   152-178  THE CROSSING + N TRANSEPT  TEST     up the piers to the north transept chapel: LAMP ONE (a votive stand by it); the bellows to the gallery
@@ -34,7 +34,7 @@
 //   241-282  THE SANCTUARY              BOSS     THE PALADIN (src/paladin-boss.js stagePaladin), lit by the lamps you lit
 import { stagePaladin, PB_STAGE } from './paladin-boss.js';
 
-export const CHURCH = { W: 290, H: 70, nave: 46, gallery: 28, crypt: 63, south: 50 };
+export const CHURCH = { W: 290, H: 60, nave: 37, gallery: 19, crypt: 54, south: 41 };
 export const RULE = 'LIGHT IS THE CLERGY\'S: A LIT ROOM MAKES THE PRIESTS STRONG, A DARK ONE LETS THE DEAD UP. CARRY A FLAME TO LIGHT A LAMP; A BLOW SNUFFS IT.';
 export const SECTIONS = [['THE GRAVEYARD', 0], ['THE NAVE', 45], ['THE NORTH TRANSEPT', 152], ['THE ORGAN GALLERY', 1000], ['THE CRYPT', 2000], ['THE CRYPT WELL', 3000], ['THE SOUTH TRANSEPT', 180], ['THE SANCTUARY', 241]];   /* (the gallery, the crypt and the well stack over the nave: their order is the route's, see ROUTE_ORDER) */
 export const ROUTE_ORDER = ['THE GRAVEYARD', 'THE NAVE', 'THE NORTH TRANSEPT', 'THE ORGAN GALLERY', 'THE CRYPT', 'THE CRYPT WELL', 'THE SOUTH TRANSEPT', 'THE SANCTUARY'];
@@ -85,7 +85,7 @@ export function buildLitChurch({ painter, T, TS }) {
   // ================= 1. THE GRAVEYARD + THE WEST DOOR (0-44): TEACH - the flame, the porch lamp, the dark lets the dead up =================
   air(0, 43, 0, NF - 1);                                                         /* the night sky over the graves */
   block(0, 5, NF - 2, NF - 1);                                                   /* THE FIRST SCREEN ASKS: the mound you start on (two rows up) */
-  decor.push({ kind: 'yew', x: 3, y: NF - 3 }, { kind: 'moon', x: 22, y: 6 });
+  decor.push({ kind: 'yew', x: 3, y: NF - 3 }, { kind: 'moon', x: 22, y: -3 });
   source('brazier', 9, NF - 1, 'brazier');                                      /* THE SEXTON'S BRAZIER: it always burns */
   sign(7, NF - 1, 'THE LIT CHURCH. E AT A FIRE TAKES A FLAME; E AT A DARK LAMP LIGHTS IT.');
   block(13, 13, NF - 2, NF - 1); decor.push({ kind: 'headstone', x: 13, y: NF - 3 });   /* a headstone to hop */
@@ -99,19 +99,19 @@ export function buildLitChurch({ painter, T, TS }) {
   /* THE PORCH and THE WEST DOOR: the porch lamp (dark); lit, the door's bars lift (src/lit-church-hands.js) */
   lamp('porch', 40, NF - 1, 'graveyard', 'lamp', { opens: 'west' });
   sign(37, NF - 1, 'THE WEST DOOR OPENS TO A LIT LAMP.');
-  block(44, 45, 14, NF - 1); doors.push({ id: 'west', x0: 44, x1: 45, y0: NF - 5, y1: NF - 1, by: 'porch' });   /* the west wall and its door (the door's cells: bars until the lamp is lit) */
+  block(44, 45, 5, NF - 1); doors.push({ id: 'west', x0: 44, x1: 45, y0: NF - 5, y1: NF - 1, by: 'porch' });   /* the west wall and its door (the door's cells: bars until the lamp is lit) */
   room('graveyard', 'THE GRAVEYARD', 0, 0, 43, NF + 2, { outside: true });
 
   // ================= 2. THE NARTHEX, THE WEST TOWER and THE NAVE (45-151) =================
   /* THE WEST TOWER (cols 46-54) stands over THE NARTHEX (rows 41-45): the west door goes through its foot; the tower's stair comes down from the gallery
      (row 27) to THE SEAL LAMP's landing (row 32), and a drop to the narthex floor (one way: nothing climbs back up). THE CRYPT HATCH (cols 48-50) is in the
      narthex floor, held shut by the seal lamp's light */
-  air(46, 54, 15, 40); air(46, 55, NF - 5, NF - 1);                              /* the tower's shaft, the narthex */
-  block(46, 50, 28, 28); air(55, 55, 24, 27);                                    /* the ringing floor (row 28) and the door into it from the gallery */
-  boards(46, 54, 32); air(46, 48, 32, 32);                                       /* THE SEAL LAMP's landing (a hole at its west end: the drop to the narthex) */
-  lamp('seal', 53, 31, 'tower', 'seal', { lit: true, opens: 'hatch' });
-  sign(51, 31, 'THE SEAL LAMP: ITS LIGHT HOLDS THE CRYPT SHUT.');
-  room('tower', 'THE WEST TOWER', 46, 15, 54, 40);
+  air(46, 54, 6, 31); air(46, 55, NF - 5, NF - 1);                              /* the tower's shaft, the narthex */
+  block(46, 49, 19, 19); air(55, 55, 15, 18);                                    /* the ringing floor (row 19) and the door into it from the gallery */
+  boards(46, 54, 23); air(46, 48, 23, 23);                                       /* THE SEAL LAMP's landing (a hole at its west end: the drop to the narthex) */
+  lamp('seal', 53, 22, 'tower', 'seal', { lit: true, opens: 'hatch' });
+  sign(51, 22, 'THE SEAL LAMP: ITS LIGHT HOLDS THE CRYPT SHUT.');
+  room('tower', 'THE WEST TOWER', 46, 6, 54, 31);
   doors.push({ id: 'hatch', x0: 48, x1: 50, y0: NF, y1: NF + 1, by: 'seal', snuff: true });   /* THE CRYPT HATCH (bars of light while the seal burns) */
   /* THE NARTHEX's lesson: a priest by a LIT lamp over a grate - snuff it (a blow) and he is weaker; the grate wakes */
   lamp('narthex', 52, NF - 1, 'narthex', 'lamp', { lit: true });
@@ -125,10 +125,10 @@ export function buildLitChurch({ painter, T, TS }) {
   /* the pews: low benches in rows (one-way: hop them, stand on them) and a broken stretch of floor over the charnel (a shallow pit, iron in it: it bites) */
   for (const [x0, x1] of [[60, 63], [65, 68], [71, 74], [92, 95], [97, 100], [113, 116], [118, 121], [138, 141]]) { boards(x0, x1, NF - 2); decor.push({ kind: 'pew', x0, x1, y: NF - 2 }); }
   /* THE TRIFORIUM: ledges along the north wall (a second height): a crossbowman on it covers the nave's lamps */
-  for (const [x0, x1, y] of [[58, 66, 42], [69, 77, 40], [102, 110, 42], [113, 118, 40], [124, 134, 41], [143, 150, 42]]) { boards(x0, x1, y); decor.push({ kind: 'triforium', x0, x1, y }); }   /* (off a pew: three rows; ledge to ledge: two or three) */
-  ent('crossbow', 106, 41, { face: -1, room: 'nave', cnSkin: 'chapelbow', lc: 'knight' });
+  for (const [x0, x1, y] of [[58, 66, 33], [69, 77, 31], [102, 110, 33], [113, 118, 31], [124, 134, 32], [143, 150, 33]]) { boards(x0, x1, y); decor.push({ kind: 'triforium', x0, x1, y }); }   /* (off a pew: three rows; ledge to ledge: two or three) */
+  ent('crossbow', 106, 32, { face: -1, room: 'nave', cnSkin: 'chapelbow', lc: 'knight' });
   /* the capital of the fourth pillar holds a CANDLE STUB (off the route: up the triforium, then the capital) */
-  boards(126, 128, 39); stub(127, 38);
+  boards(126, 128, 30); stub(127, 29);
   /* NAVE ENCOUNTER ONE (the lamp, the knight): a priest and a sworn knight at the first nave lamp, a grate at its foot */
   lamp('naveA', 76, NF - 1, 'nave', 'lamp', { lit: true });
   priest(79, NF - 1, 'nave'); knight(73, NF - 1, 'nave'); grate(70, NF, 'nave'); grate(86, NF, 'nave');
@@ -143,72 +143,72 @@ export function buildLitChurch({ painter, T, TS }) {
   // ================= 3. THE CROSSING and THE NORTH TRANSEPT (152-178): TEST - lamp one; THE BELLOWS (required) =================
   air(152, 178, GF + 1, NF - 1);
   /* the crossing's piers: steps up to THE NORTH TRANSEPT CHAPEL (its floor row 37, cols 160-178); under it the crossing runs on to the rood screen */
-  boards(152, 156, 44); boards(155, 158, 42); boards(156, 159, 40); block(160, 178, 38, 38);
+  boards(152, 156, 35); boards(155, 158, 33); boards(156, 159, 31); block(160, 178, 29, 29);
   /* THE CRYPT WELL's head: the crossing's crypt grate (cols 162-165, rows 46-47) - bars until LAMP THREE cracks it */
   doors.push({ id: 'cryptgrate', x0: 162, x1: 165, y0: NF, y1: NF, by: 'chapel3' });
   /* THE ROOD SCREEN (col 179): a stone screen to the vault, its door (rows 41-45) barred until its three sconces burn; the sconces over the door */
   block(179, 179, GF + 1, NF - 1); doors.push({ id: 'rood', x0: 179, x1: 179, y0: NF - 5, y1: NF - 1, by: 'rood' });
   lamp('rood1', 176, NF - 3, 'crossing', 'rood', { of: 'chapel1' }); lamp('rood2', 177, NF - 3, 'crossing', 'rood', { of: 'chapel2' }); lamp('rood3', 178, NF - 3, 'crossing', 'rood', { of: 'chapel3', hand: true });
   sign(172, NF - 1, 'THE ROOD SCREEN OPENS WHEN ITS THREE SCONCES BURN.');
-  room('crossing', 'THE CROSSING', 152, 39, 178, NF - 1);
+  room('crossing', 'THE CROSSING', 152, 30, 178, NF - 1);
   /* THE NORTH TRANSEPT CHAPEL (rows 29-36): LAMP ONE on its altar, a votive stand by the door, the priest pair, their knight, an acolyte; the BELLOWS at the
      organ's foot (col 166): struck, a column of air lifts you up its pipe through the gallery's floor */
-  lamp('chapel1', 176, 37, 'transept', 'chapel'); source('votive1', 162, 37, 'votive');
-  sign(161, 37, 'LAMP ONE. THE THREE CHAPEL LAMPS LIGHT THE ROOD SCREEN.');
-  priest(171, 37, 'transept'); priest(174, 37, 'transept', { face: -1 }); knight(168, 37, 'transept'); acolyte(163, 37, 'transept', { face: 1 }); grate(170, 38, 'transept');
-  bellow('transept', 166, 37, 18); air(165, 167, GF, GF);                        /* THE BELLOWS and its shaft up through the gallery floor */
-  sign(164, 37, 'THE ORGAN\'S BELLOWS: STRIKE IT AND THE PIPE BREATHES.');
-  ent('check', 157, 39);                                                         /* CHECKPOINT ONE, on the piers' last step */
-  room('transept', 'THE NORTH TRANSEPT', 158, GF + 1, 178, 37);
+  lamp('chapel1', 176, 28, 'transept', 'chapel'); source('votive1', 162, 28, 'votive');
+  sign(161, 28, 'LAMP ONE. THE THREE CHAPEL LAMPS LIGHT THE ROOD SCREEN.');
+  priest(171, 28, 'transept'); priest(174, 28, 'transept', { face: -1 }); knight(168, 28, 'transept'); acolyte(163, 28, 'transept', { face: 1 }); grate(170, 29, 'transept');
+  bellow('transept', 166, 28, 9); air(165, 167, GF, GF);                        /* THE BELLOWS and its shaft up through the gallery floor */
+  sign(164, 28, 'THE ORGAN\'S BELLOWS: STRIKE IT AND THE PIPE BREATHES.');
+  ent('check', 157, 30);                                                         /* CHECKPOINT ONE, on the piers' last step */
+  room('transept', 'THE NORTH TRANSEPT', 158, GF + 1, 178, 28);
 
   // ================= 4. THE ORGAN GALLERY (row 28, cols 56-178): REMIX - in the dark, the pipes, the broken loft, lamp two =================
-  air(56, 178, 15, GF - 1);
-  /* THE ORGAN over the transept: its pipes stand on the gallery floor (solid columns of rising height - the climb over them west); the organ case's top */
-  for (const [x, h] of [[156, 2], [152, 4], [148, 2], [144, 4]]) { block(x, x + 1, GF - h, GF - 1); decor.push({ kind: 'pipe', x, h, y: GF }); }
+  air(56, 178, 6, GF - 1);
+  /* THE ORGAN over the transept: its pipes stand on the gallery floor in two ranks, each a stair of two-row steps (2 then 4 high): the climb over them west */
+  for (const [x, h] of [[156, 2], [154, 4], [150, 2], [148, 4]]) { block(x, x + 1, GF - h, GF - 1); decor.push({ kind: 'pipe', x, h, y: GF }); }
   /* THE PIPE BELLOWS (col 136): a second breath up to the organ case's top (row 17) - a CANDLE STUB and a silver up there (off the route) */
-  bellow('pipes', 136, GF - 1, 15); boards(130, 139, 18); stub(132, 17); ent('silver', 138, 17);
+  bellow('pipes', 136, GF - 1, 6); boards(130, 139, 9); stub(132, 8); ent('silver', 138, 8);
   /* the gallery's own dead (it is dark until lamp two burns): a haunt over the pipes, a boo along the rail, a priest at the console */
-  ent('haunt', 126, 22, { room: 'gallery', lc: 'dead' }); ent('boo', 88, 24, { room: 'gallery', lc: 'dead' });
+  ent('haunt', 126, 13, { room: 'gallery', lc: 'dead' }); ent('boo', 88, 15, { room: 'gallery', lc: 'dead' });
   acolyte(120, GF - 1, 'gallery'); knight(115, GF - 1, 'gallery');
   /* THE BROKEN LOFT (cols 97-105: nine columns of the gallery's floor are gone - a fall is the nave floor, far below, and the climb back). THE KEY DESK on its
      east lip (col 109): E holds a chord - a told gust blows WEST along the gallery; jump into it and it carries you over */
   air(97, 105, GF, GF); drops.push([97, 105, 'nave']);
-  desks.push({ id: 'desk', x: 109, y: GF - 1, dir: -1, x0: 92, x1: 112, y0: 17, y1: GF - 1 }); ent('lcdesk', 109, GF - 1, { id: 'desk' });
+  desks.push({ id: 'desk', x: 109, y: GF - 1, dir: -1, x0: 92, x1: 112, y0: 8, y1: GF - 1 }); ent('lcdesk', 109, GF - 1, { id: 'desk' });
   sign(111, GF - 1, 'THE ORGAN\'S KEY DESK: E HOLDS A CHORD. THE GUST BLOWS WEST.');
-  ent('haunt', 101, 21, { room: 'gallery', lc: 'dead' });                                       /* a haunt over the broken loft: at the jump */
+  ent('haunt', 101, 12, { room: 'gallery', lc: 'dead' });                                       /* a haunt over the broken loft: at the jump */
   /* THE CONSOLE (west end): LAMP TWO on it, a votive stand, the organist priest */
   lamp('chapel2', 60, GF - 1, 'gallery', 'chapel'); source('votive2', 66, GF - 1, 'votive');
   priest(70, GF - 1, 'gallery'); acolyte(75, GF - 1, 'gallery', { face: 1 });
   sign(63, GF - 1, 'LAMP TWO, ON THE ORGAN\'S CONSOLE.');
   ent('check', 82, GF - 1);                                                     /* CHECKPOINT TWO, past the broken loft */
-  room('gallery', 'THE ORGAN GALLERY', 56, 15, 178, GF - 1);
+  room('gallery', 'THE ORGAN GALLERY', 56, 6, 178, GF - 1);
   /* the gallery's west door into the tower (col 55, rows 24-27) is carved above; the tower's shaft goes down to the seal lamp's landing */
 
   // ================= 5. THE CRYPT (cols 46-178, rows 48-62; floor row 63): REMIX - the dead's own dark; THE SEALED VAULT; LAMP THREE =================
   air(46, 178, NF + 2, CF - 1);
   air(48, 50, NF, NF + 1);                                                       /* the hatch's shaft (its bars are the door above) */
-  boards(46, 52, 51); boards(49, 55, 55); boards(46, 52, 59);                     /* the hatch stair down (one way: you do not come back up it) */
+  boards(46, 52, 42); boards(49, 55, 46); boards(46, 52, 50);                     /* the hatch stair down (one way: you do not come back up it) */
   source('hatchfire', 56, CF - 1, 'brazier');                                    /* THE SEXTON'S LANTERN at the stair's foot: a flame to carry in */
   sign(58, CF - 1, 'THE CRYPT. THE DARK IS THE DEAD\'S: A LIT CANDLE HOLDS THEM DOWN.');
   /* THE OSSUARY (60-100): shelves of bone (ledges), tombs, a bone pit, corpse candles (sconces) and the dead */
-  for (const [x0, x1, y] of [[62, 67, 61], [66, 72, 59], [84, 90, 61], [93, 98, 59]]) { boards(x0, x1, y); decor.push({ kind: 'shelf', x0, x1, y }); }
+  for (const [x0, x1, y] of [[62, 67, 52], [66, 72, 50], [84, 90, 52], [93, 98, 50]]) { boards(x0, x1, y); decor.push({ kind: 'shelf', x0, x1, y }); }
   block(74, 76, CF - 2, CF - 1); block(102, 104, CF - 2, CF - 1);                 /* chest tombs */
-  air(78, 81, CF, CF + 1); spikes(78, 81, CF + 1); drops.push([78, 81, 'hurt']);   /* a bone pit */
+  air(78, 80, CF, CF + 1); spikes(78, 80, CF + 1); drops.push([78, 80, 'hurt']);   /* a bone pit */
   lamp('candleA', 64, CF - 1, 'ossuary', 'sconce'); lamp('candleB', 96, CF - 1, 'ossuary', 'sconce');
-  ent('wight', 70, CF - 1, { room: 'ossuary', lc: 'dead' }); ent('wight', 88, CF - 1, { room: 'ossuary', lc: 'dead' }); ent('bonearcher', 95, 58, { room: 'ossuary', lc: 'dead', face: -1 });
-  ent('haunt', 84, 52, { room: 'ossuary', lc: 'dead' });
+  ent('wight', 70, CF - 1, { room: 'ossuary', lc: 'dead' }); ent('wight', 88, CF - 1, { room: 'ossuary', lc: 'dead' }); ent('bonearcher', 95, 49, { room: 'ossuary', lc: 'dead', face: -1 });
+  ent('haunt', 84, 43, { room: 'ossuary', lc: 'dead' });
   grate(72, CF, 'ossuary'); grate(91, CF, 'ossuary');
-  stub(68, 58);                                                                  /* a CANDLE STUB on the high shelf */
+  stub(68, 49);                                                                  /* a CANDLE STUB on the high shelf */
   room('ossuary', 'THE OSSUARY', 46, NF + 2, 106, CF - 1, { dark: true });
   /* THE SEALED VAULT (cols 110-140): the one ambush - its walls shut when you are in, and the crypt's captain and his dead come (src/level.js AMBUSH.church) */
   block(107, 108, NF + 2, CF - 6); block(141, 142, NF + 2, CF - 6);              /* the vault's lintels (the ambush's walls drop under them) */
   decor.push({ kind: 'vault', x0: 109, x1: 140, y: CF });
-  boards(116, 121, 61); boards(129, 134, 61); ent('silver', 125, CF - 1);         /* the vault's shelves and a silver on its floor (the ambush pays it) */
+  boards(116, 121, 52); boards(129, 134, 52); ent('silver', 125, CF - 1);         /* the vault's shelves and a silver on its floor (the ambush pays it) */
   room('vault', 'THE SEALED VAULT', 107, NF + 2, 142, CF - 1, { dark: true });
   /* THE CRYPT ALTAR (cols 146-178): corpse candles, the dead, the VIGIL CANDLE (a source) and LAMP THREE on the altar; the well at its west end */
-  block(150, 152, CF - 2, CF - 1); boards(146, 149, 61);
+  block(150, 152, CF - 2, CF - 1); boards(146, 149, 52);
   lamp('candleC', 154, CF - 1, 'altar', 'sconce');
-  ent('wight', 157, CF - 1, { room: 'altar', lc: 'dead' }); ent('haunt', 150, 53, { room: 'altar', lc: 'dead' });
+  ent('wight', 157, CF - 1, { room: 'altar', lc: 'dead' }); ent('haunt', 150, 44, { room: 'altar', lc: 'dead' });
   source('vigil', 172, CF - 1, 'vigil'); lamp('chapel3', 175, CF - 1, 'altar', 'chapel', { cracks: true });
   sign(170, CF - 1, 'LAMP THREE: THE LIGHT THE CHURCH KEEPS OVER ITS DEAD.');
   grate(158, CF, 'altar');
@@ -216,50 +216,53 @@ export function buildLitChurch({ painter, T, TS }) {
   ent('check', 147, CF - 1);                                                     /* CHECKPOINT THREE, at the altar's door (after the vault) */
   /* THE CRYPT WELL (cols 160-167): landings up to the crossing's grate (rows 46-47); a sconce on three of them, a priest and an acolyte asleep on two */
   air(162, 165, NF, NF);
-  for (const [x0, x1, y] of [[159, 163, 61], [163, 167, 59], [159, 163, 57], [163, 167, 55], [159, 163, 53], [163, 167, 51], [159, 163, 49]]) boards(x0, x1, y);   /* the landings, two rows apart, side to side */
+  for (const [x0, x1, y] of [[159, 163, 52], [163, 167, 50], [159, 163, 48], [163, 167, 46], [159, 163, 44], [163, 167, 42], [159, 163, 40]]) boards(x0, x1, y);   /* the landings, two rows apart, side to side */
   boards(162, 165, NF + 1);                                                      /* THE GRATE'S STEP under the crossing's grate (row 47): from it, a hop onto the crossing's floor */
-  lamp('wellA', 160, 60, 'well', 'sconce', { hold: true }); lamp('wellB', 166, 54, 'well', 'sconce', { hold: true }); lamp('wellC', 160, 48, 'well', 'sconce', { hold: true });
-  priest(166, 58, 'well', { asleep: true, face: -1 }); acolyte(166, 50, 'well', { asleep: true, face: -1 });
-  boards(154, 156, 59); stub(155, 58);                                           /* a CANDLE STUB on a ledge off the lowest landing (a jump west, off the route) */
+  lamp('wellA', 160, 51, 'well', 'sconce', { hold: true }); lamp('wellB', 166, 45, 'well', 'sconce', { hold: true }); lamp('wellC', 160, 39, 'well', 'sconce', { hold: true });
+  priest(166, 49, 'well', { asleep: true, face: -1 }); acolyte(166, 41, 'well', { asleep: true, face: -1 });
+  boards(154, 156, 50); stub(155, 49);                                           /* a CANDLE STUB on a ledge off the lowest landing (a jump west, off the route) */
   /* THE SACRISTY STAIR up the altar room's east wall to THE SACRISTY PASSAGE (rows 48-49, cols 179-183, under the crossing's step): its door is the reliquary's */
-  boards(174, 178, 59); boards(170, 174, 56); boards(174, 178, 53); boards(170, 178, 50); air(179, 183, 48, 49);
+  boards(174, 178, 50); boards(170, 174, 47); boards(174, 178, 44); boards(170, 178, 41); air(179, 183, 39, 40);
   room('well', 'THE CRYPT WELL', 158, NF + 1, 168, CF - 1, { dark: true, rises: { floor: CF, top: NF + 1 } });
 
   // ================= 6. THE SOUTH TRANSEPT (180-236): THE EXAM - THE ARCHDEACON's lit chapel over THE CHARNEL PIT =================
-  air(180, 237, 30, SF - 1); air(180, 186, NF - 5, NF - 1);                     /* the chapel (its floor sunk to row 50) and the step down from the screen */
+  air(180, 237, 21, SF - 1); air(180, 186, NF - 5, NF - 1);                     /* the chapel (its floor sunk to row 41) and the step down from the screen */
   block(180, 184, NF, SF - 1);                                                   /* the step down off the crossing's floor */
   sign(186, SF - 1, 'THE CHARNEL PIT: A FALL BETWEEN THE FLOORS IS THE END.');
-  /* THE CHARNEL PIT (cols 202-206): open to the dark under the church - a fall is a death here (A10 amended: the exam; told by the sign above) */
-  air(202, 206, SF, H - 1); drops.push([202, 206, 'death']);
+  /* THE CHARNEL PIT (cols 203-204: a jump every hero makes - the knight's shove and the dead at its lip make it a risk): open to the dark under the church - a fall is a death here (A10 amended: the exam; told by the sign above) */
+  air(203, 204, SF, H - 1); drops.push([203, 204, 'death']);
   /* THE HIGH LAMP on the north ledge (row 41, cols 193-201): reached only by the chapel's BELLOWS (col 190); a priest guards it */
-  boards(194, 201, 41); bellow('south', 193, SF - 1, 36);
-  lamp('southHigh', 198, 40, 'south', 'lamp', { lit: true }); priest(195, 40, 'south', { face: 1 });
+  boards(194, 201, 32); bellow('south', 193, SF - 1, 27);
+  lamp('southHigh', 198, 31, 'south', 'lamp', { lit: true }); priest(195, 31, 'south', { face: 1 });
   /* THE FLOOR: the hedge knight on the pit's east lip (his poleaxe's shove is a step back into it), the acolyte, THE ARCHDEACON on his dais by the altar */
   lamp('southLow', 214, SF - 1, 'south', 'lamp', { lit: true });
   hedge(208, SF - 1, 'south'); acolyte(217, SF - 1, 'south');
   block(222, 228, SF - 2, SF - 1); priest(225, SF - 3, 'south', { cnSkin: 'archdeacon', elite: true, gate: 234, face: -1 });   /* THE ARCHDEACON (elite: src/lit-church-hands.js his room heal) */
   grate(196, SF, 'south'); grate(212, SF, 'south'); grate(219, SF, 'south');
   sign(209, SF - 1, 'THE ARCHDEACON\'S HEAL REACHES HIS WHOLE ROOM WHILE IT IS LIT.');
-  boards(209, 215, 48);                                                           /* a ledge over the floor (the angle over the knight) */
-  room('south', 'THE SOUTH TRANSEPT', 180, 30, 237, SF - 1);
+  boards(209, 215, 39);                                                           /* a ledge over the floor (the angle over the knight) */
+  room('south', 'THE SOUTH TRANSEPT', 180, 21, 237, SF - 1);
   /* THE RELIQUARY (cols 185-187: the closet behind the chapel's west altar, its door at col 188): FIVE CANDLE STUBS open it - a SILVER, and its back door:
      THE SACRISTY DOOR (col 184, rows 48-49) onto THE SACRISTY PASSAGE under the step, down into the crypt altar room - a shortcut from CHECKPOINT THREE to the
      exam that skips the well (no relic: Daniel 10-07) */
   block(185, 188, SF - 6, SF - 1); air(185, 187, SF - 3, SF - 1); ent('silver', 186, SF - 1); decor.push({ kind: 'altar', x: 186, y: SF - 7 });
   doors.push({ id: 'reliquary', x0: 188, x1: 188, y0: SF - 3, y1: SF - 1, by: 'stubs' }); ent('lcreliquary', 188, SF - 1, { id: 'reliquary' });
-  doors.push({ id: 'sacristy', x0: 184, x1: 184, y0: 48, y1: 49, by: 'stubs' });
+  doors.push({ id: 'sacristy', x0: 184, x1: 184, y0: 39, y1: 40, by: 'stubs' });
   sign(190, SF - 1, 'THE RELIQUARY. FIVE CANDLE STUBS OPEN IT.');
   ent('check', 238, SF - 1);                                                     /* CHECKPOINT FOUR, after the exam: before the sanctuary */
 
   // ================= 7. THE SANCTUARY (241-282): THE PALADIN =================
   const AX = 241;
-  air(234, AX - 1, 34, SF - 1);
+  air(234, AX - 1, 25, SF - 1);
   const stage = stagePaladin({ set, block, ent, air }, T, TS, AX, SF);
   block(AX + PB_STAGE.W, W - 1, 0, H - 1);
   stage.carve(); lamps.push(...stage.lamps);
   room('sanctuary', 'THE SANCTUARY', AX, SF - 20, AX + PB_STAGE.W - 1, SF - 1, { arena: true });
   ent('gate', AX + PB_STAGE.W - 2, SF - 1);
 
+  /* INDOORS: every room but the graveyard is under the church's roof (the weather, the reverb, and src/architecture's load path: a room carries its ceiling) */
+  for (const r of rooms) if (!r.outside) interiors.push([r.x0, r.x1, Math.max(0, r.y0), r.y1, 'church']);
+  interiors.push([46, 54, 6, NF - 1, 'church']);   /* (the west tower's shaft and the narthex under it are one hall: its floor is the narthex's) */
   /* THE DOORS are barred as laid (T.PORT): the hands lift them (src/lit-church-hands.js) */
   for (const d of doors) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) set(x, y, T.PORT);
   /* every placed foe in a room learns it from its ent (the hands read e.room); a grate's dead come up as wights, haunts and boos (the room's own `dead` list) */
@@ -267,9 +270,14 @@ export function buildLitChurch({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
-    litchurch: true, dark: 0.08,   /* dark: the base under the rooms' own (src/lit-church-hands.js sets each room's darkZones value from its lamps every frame) */
+    litchurch: true, rows: { nave: NF, gallery: GF, crypt: CF, south: SF }, dark: 0.08,   /* dark: the base under the rooms' own (src/lit-church-hands.js sets each room's darkZones value from its lamps every frame) */
     darkZones: rooms.map(r => ({ x0: r.x0 * TS, x1: (r.x1 + 1) * TS, y0: r.y0 * TS, y1: (r.y1 + 1) * TS, dark: r.dark ? 0.78 : 0.3, room: r.id })),
     rooms, lamps, sources, bellows, desks, grates, doors, decor, vaultDoors, drops,
+    /* THE STATIC ROUTE (tools/pacing.mjs, src/reachcore.js): the doors the rule opens stand open to the model, the bellows are vents, the key desk's chord is a gust west, and
+       the route goes by the places the rule sends you IN ORDER (the porch lamp, lamp one, lamp two, the seal, lamp three, the rood screen) - the rooms are stacked */
+    reachDoors: doors.filter(d => d.id !== 'reliquary' && d.id !== 'sacristy'), reachVents: bellows.map(b => ({ t: 'vent', x: b.x, y: b.y, h: (b.y + 1 - b.top) * TS + TS })),
+    reachGusts: desks.map(d => ({ x0: d.x0 * TS, x1: (d.x1 + 1) * TS, y0: d.y0 * TS, y1: (d.y1 + 1) * TS, dir: d.dir })),
+    routeVia: [[40, NF - 1], [176, 28], [60, GF - 1], [52, 22], [175, CF - 1], [177, NF - 1]],
     /* THE CHURCH'S WEIGHT (difficulty v2, the act's tier on top): a priest's bolt and sigil, a knight's cut - each a 1v1 threat at the campaign level. The light
        moves the clergy on top of this (src/lit-church-hands.js lcMul: lit x1.3, dark x0.7) */
     foeHit: { priest: 1.5, archdeacon: 1.7, chapelknight: 1.6, templar: 1.5, chapelbow: 1.4, acolyte: 0.5 },

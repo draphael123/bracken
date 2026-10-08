@@ -58,7 +58,7 @@ export function pacing(lv) {
     /* THE WIND CARRIES YOU. reachcore has no gust (Gale Moor's six-tile gaps are crossed on a tailwind), so a tile
        inside a gust reaches footing up to ten tiles downwind of it, a little above or below. Route only: no tool that
        fails a level uses this. */
-    for (const gu of (L.gusts || [])) { if (gu.arena || ux * TS < gu.x0 || ux * TS >= gu.x1 || uy * TS < gu.y0 - 3 * TS || uy * TS >= gu.y1) continue;
+    for (const gu of (L.gusts || []).concat(L.reachGusts || [])) { if (gu.arena || ux * TS < gu.x0 || ux * TS >= gu.x1 || uy * TS < gu.y0 - 3 * TS || uy * TS >= gu.y1) continue;
       for (let k = 2; k <= 10; k++) for (let dy = -3; dy <= 4; dy++) { const x = ux + gu.dir * k, y = uy + dy; if (x < 0 || y < 0 || x >= W || y >= H) continue; const v = y * W + x; if (foot[v] && !stamp.has(v)) { stamp.add(v); a.push(v, k); } } }
     adjCache.set(u, a); return a; };
   const bridges = new Map();   /* u -> [[v, w]]: a way on the model cannot see (a gust, a creature chain, a ride it does not know) */
@@ -77,6 +77,16 @@ export function pacing(lv) {
   dist[s0] = 0; run([s0]);
   let goal = -1;
   if (goalXY) goal = settle(goalXY[0], goalXY[1]);
+  /* THE WAY ROUND (claude/litchurch): L.routeVia [[x, y], ..] - the places a level's rule sends you to IN ORDER before the gate (THE LIT CHURCH: the porch lamp, lamp one,
+     lamp two, the seal, lamp three, the rood screen - its rooms are stacked, and its doors are opened by what you do in them, so the shortest way start-to-gate is not
+     the way it is walked). The route is walked leg by leg: start to the first, the first to the second, .., the last to the gate */
+  if (L.routeVia && L.routeVia.length && goal >= 0) {
+    const legs = [s0, ...L.routeVia.map(([x, y]) => settle(x, y)).filter(u => u >= 0), goal], whole = [];
+    for (let k = 0; k + 1 < legs.length; k++) { dist.fill(Infinity); par.fill(-1); dist[legs[k]] = 0; run([legs[k]]);
+      const part = []; for (let u = legs[k + 1]; u >= 0 && part.length < N; u = par[u]) { part.push(u); if (u === legs[k]) break; }
+      if (part[part.length - 1] !== legs[k]) { if (process.env.PACE_DEBUG) console.log('  routeVia: leg ' + k + ' not reached'); whole.length = 0; break; }
+      part.reverse(); if (whole.length) part.shift(); whole.push(...part); }
+    if (whole.length) { L._viaRoute = whole; dist[goal] = whole.length; } }
   if (goal < 0) { let bx = -1; for (let i = 0; i < N; i++) if (dist[i] < Infinity && i % W > bx) { bx = i % W; goal = i; } }
   // a goal the fill does not reach: bridge from the reached ground nearest the unreached ground that lies toward the goal
   let bridged = 0;
@@ -98,6 +108,7 @@ export function pacing(lv) {
   }
   const route = []; for (let u = goal; u >= 0 && route.length < N; u = par[u]) { route.push(u); if (u === s0) break; }
   route.reverse();
+  if (L._viaRoute) { route.length = 0; route.push(...L._viaRoute); }   /* (claude/litchurch) the way round, leg by leg (L.routeVia above) */
   const isBridge = (u, v) => (bridges.get(u) || []).some(([b]) => b === v);
 
   // ---- WHAT EACH STEP OF IT IS ----

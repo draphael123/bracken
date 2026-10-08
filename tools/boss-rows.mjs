@@ -2,4 +2,4 @@
 export const BOSS_ROWS = ['spire:mini', 'burial', 'causeway', 'deep', 'oreroad', 'storm', 'wood', 'mage', 'fields', 'underleaf', 'scree', 'canal', 'fair', 'flotilla', 'harbor',
   'kings', 'lamplit', 'longwater', 'unburied', 'undercrown', 'waymeet', 'kings:mini', 'reef', 'spore', 'hanging', 'crown', 'keep', 'burial:mini', 'fields:mini',
   'lamplit:mini', 'mage:mini', 'unburied:mini', 'waymeet:mini', 'hurricane', 'marsh', 'moor', 'witchlight:mini', 'hanging:mini', 'harbor:mini', 'redgorge',
-  'spire', 'caravan', 'stockade', 'welltown:mini', 'fallingtower', 'witchlight', 'crown:mini', 'fallingtower:mini', 'burning', 'theatre', 'welltown', 'underwell', 'skyroad'];   /* (claude/retune2: THE ROC, batch73, was missing from --all) */
+  'spire', 'caravan', 'stockade', 'welltown:mini', 'fallingtower', 'witchlight', 'crown:mini', 'fallingtower:mini', 'burning', 'theatre', 'welltown', 'underwell', 'skyroad', 'church'];   /* (claude/litchurch: THE PALADIN) */   /* (claude/retune2: THE ROC, batch73, was missing from --all) */

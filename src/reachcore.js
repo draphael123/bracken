@@ -71,13 +71,16 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
      down and goes, every time, so it is a floor you can go DOWN through and nothing else - a one-way to the model. Only `opens`:
      every other failing section is footing that comes back, and the model is right to stand on it. */
   for (const c of (L.crumbles || [])) if (c.opens) for (let y = c.row; y < c.row + (c.rows || 1); y++) for (let x = c.x0; x <= c.x1; x++) { const i = y * W + x; if (g[i] === T.SOLID) g[i] = y === c.row ? T.ONEWAY : T.AIR; }
+  /* A LEVEL'S OWN DOORS (claude/litchurch): L.reachDoors [{ x0, x1, y0, y1 }] are barred as laid (T.PORT) and opened by the level's rule - a lit lamp, a snuffed
+     seal - which every hero can do: the full fill has them open (the plain fill is legs and nothing else, so they stay shut there) */
+  if (!plain) for (const d of (L.reachDoors || [])) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) { const i = y * W + x; if (g[i] === T.PORT) g[i] = T.AIR; }
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
   const climbable = t => t === T.CLIMB; // a NET is one-way rungs: a rope ladder is climbed by hopping rung to rung, so it is footing, not a ladder
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
   const doors = (L.ents || []).filter(e => (e.t === 'doorway' || e.t === 'ringdoor') && e.id);   /* (a RINGDOOR is the Undead Archmage's ring as a door - the Falling Tower's parapet to his spiral stair, src/spiral-chase.js: walked into, not pressed, and the same pair to the fill) */
   const doorTo = new Map(doors.map(d => [d.id, d]));
-  const vents = (L.ents || []).filter(e => e.t === 'vent');
+  const vents = (L.ents || []).filter(e => e.t === 'vent').concat(plain ? [] : (L.reachVents || []));   /* (claude/litchurch) L.reachVents: a column of air the level's own hands raise - THE LIT CHURCH's bellows, struck - ridden like a vent */
   // the rides the model CAN follow, from L.moversExtra: a pulley lift (stand on it anywhere along its run and step
   // off anywhere along it) and a swinging bucket (board it near any point of its arc, get off near any other)
   const lifts = (plain ? [] : (L.moversExtra || [])).filter(m => m.kind === 'lift' || m.kind === 'growcap' || (m.kind === 'hexvine' && !opts.fairVines)).map(m => m.cwBand ? { kind: 'counterweight', ...m.cwBand }   /* A COUNTERWEIGHT PAIR is one ride: board either basket, get off the other anywhere from the top of its rise to the foot of its fall */

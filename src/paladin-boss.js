@@ -135,10 +135,10 @@ export function stepPaladin(e, S, dt, h, c) {
   stepHoly(e, S, dt, h, c);
   if (e.mode === 'sleep') return;
   if (e.mode === 'wake') { if (e.modeT <= 0) { S.script = nextScript(S); S.step = 0; setMode(e, 'walk', 0.6); } return; }
-  /* HIS LAMPS feed him (not while he falters or is warded) */
-  if (!pbOpen(e) && S.ward <= 0) setLight(S, S.light + PB.light.regen * litLamps(c) * (S.ph >= 2 ? 1.25 : 1) * dt);
   /* STARVED: the bar is empty - he falters, breaking off whatever he was telling (a blow already moving finishes first) */
-  if (S.light <= 0 && !pbOpen(e) && S.ward <= 0 && !STRIKE.has(e.mode)) { falter(e, S, c); return; }
+  if (S.light <= 0 && e.mode !== 'falter' && S.ward <= 0 && !STRIKE.has(e.mode)) { falter(e, S, c); return; }
+  /* HIS LAMPS feed him (not while he falters or is warded; never off an empty bar - an empty bar is a falter coming) */
+  if (!pbOpen(e) && S.ward <= 0 && S.light > 0) setLight(S, S.light + PB.light.regen * litLamps(c) * (S.ph >= 2 ? 1.25 : 1) * dt);
   /* BROKEN (his poise bar, emptied by heavies): he reels where he stands (B4) */
   if (e.broken > 0 && !pbOpen(e) && (GUARD_MODES.has(e.mode) || /Tell$/.test(e.mode))) { e.modeT += dt; return; }
   /* THE PHASES: a new one waits for the blow in hand and never cuts an opening short */
