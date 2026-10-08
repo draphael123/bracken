@@ -13,7 +13,7 @@
    for the whole tell, the boughs seen falling for its last part). Get clear of the rings (a roll, a step) - no shield turns a bough (!!).
    He stands in his rear the while: the move is also a window to cut him. */
 export const GH = {
-  hp: 700,          // (220 on master, on the chip - he is hit whole now; the bot measured him into the mini band)
+  hp: 800,          // (220 on master, ON THE CHIP: outside a 3 s window a blow took a twentieth. Hit whole now, the bot put him at 72% (kings:mini, human, 5/6 3/6 5/6) at 800)
   front: 0.4,       // a blow into his face at his height
   openMul: 1.5, openT: 3.0, wardT: 3.0,
   bough: { tell: 0.95, tellP2: 0.8, fall: 0.4, every: 7.5, everyP2: 5.5, spread: 50, r: 13, dmg: 16 },
