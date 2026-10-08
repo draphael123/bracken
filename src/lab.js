@@ -597,7 +597,7 @@ async function runbossLab(BK, opts) {
     /* (claude/botreads, v2) A TOLD RUN: a charge / rush / bash / ride whose TELL was read (seen within the last 1.5 s) is known to be coming, so the hands answer it
        on its BODY - drawn, moving at you - from the frame it moves, not only once the running pose itself has been seen a reaction late */
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
-    for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) {
+    for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
       if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrink(P, LABP.drinkAt)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
       { const bm = boss.mode || '';   /* (claude/herobots) what the Death Knight has SEEN of the boss's rhythm: when a tell was last up, and when the blow it told ended (his punish window) */
@@ -1921,10 +1921,21 @@ async function runbossLab(BK, opts) {
         const down=['grounded','crash','pinned','stuckTalons'].includes(boss.mode);
         if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(lamp){goal=lamp.x;if(!lamp.lit&&Math.abs(P.x-lamp.x)<22&&P.atk<0){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
         if (boss.mode === 'skim' && Math.abs(boss.x-P.x)<64 && (boss.x-P.x)*boss.vx<0 && P.ground){k.jump=true;BK.press('jump');}
+        /* (claude/owl2) HER SWOOP RUNS HEAD HIGH: under it, as it comes (a shield hero too - no shield turns her talons; duckNow lets a guard-holder off once the red mark has gone from her tell) */
+        /* (claude/owl2) OFF THE CHIP: she takes 0.4 of a blow wherever she is at his height - a player cuts her as she mantles beside him for her skim or her swoop */
+        if ((boss.mode === 'skimTell' && boss.skimAt || boss.mode === 'swoopTell' && boss.swAt) && Math.abs(boss.x - P.x) < 70 && P.ground) { goal = boss.x - (Math.sign(boss.x - P.x) || 1) * 14; strike = true; }
+        owlDuck = boss.mode === 'swoop' && P.ground && Math.abs(boss.x-P.x)<80 && (boss.x-P.x)*Math.sign(boss.vx||0)<24;   /* (until she is past him by more than her talons reach) */
         /* HER SWOOP, BY A LIT LAMP (claude/bosswave1: her windows pay x1.3 now, not double): "step aside by a lit lantern and it crashes into the light" -
            the lamp put between her and you as she comes */
         if (boss.mode === 'swoop' && (boss.x-P.x)*(boss.vx||0)<0 && Math.abs(boss.x-P.x)<120) { const lit=BK.props().filter(p=>p.owl&&!p.perch&&p.lit).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];
           if (lit && Math.abs(lit.x-P.x)<56) { strike=false; goal=lit.x+(Math.sign(lit.x-boss.x)||1)*30; } }
+        /* (claude/owl2) HER BOUGH'S SHADOWS and HER LAMP'S STRIP, as drawn: out from under a shadow to the nearest gap, out of the strip (or the burning oil) to its nearer end */
+        if ((boss.mode === 'shakeTell' || boss.mode === 'shake') && boss.shade) { const sh = boss.shade.filter((x, i) => !(boss.cones && boss.cones[i] && boss.cones[i].done)), free = x => sh.every(s => Math.abs(s - x) >= 15);
+          if (!free(P.x)) { let best = null; for (let dx = 2; dx <= 70 && best === null; dx += 2) for (const x of [P.x - dx, P.x + dx]) if (best === null && x > A.x0 + 14 && x < A.x1 - 14 && free(x)) best = x; if (best !== null) { goal = best; strike = false; } }
+          else if (!down) { goal = P.x; strike = false; } }
+        { const st = boss.oil ? [boss.oil.x0, boss.oil.x1] : (boss.mode === 'lampTell' || boss.mode === 'lampFall') && boss.dropX !== undefined ? [boss.dropX - 40, boss.dropX + 40] : null;
+          if (st && P.x > st[0] - 8 && P.x < st[1] + 8) { const l = st[0] - 16, r = st[1] + 16; goal = (P.x - st[0] < st[1] - P.x && l > A.x0 + 14) || r > A.x1 - 14 ? l : r; strike = false; }
+          else if (st && goal !== null && goal > st[0] - 8 && goal < st[1] + 8) { goal = P.x; } }
       }
       /* THE WINDCALLER'S HOWL (claude/bosswave1: his fall is now his only opening): HE CALLS THE WIND is told, and a player braces through it -
          DOWN held on the ground (every hero has it; block is the same brace) - and he falls */
@@ -2086,7 +2097,7 @@ async function runbossLab(BK, opts) {
         else k[f % 40 < 20 ? 'left' : 'right'] = true;
         if (P.ground) { BK.press('jump'); P.labJump = 18; if (!(LABP.v2 && h === 'warden') || Math.abs((boss.y - (boss.h || 16) / 2) - (P.y - 9)) < 30) BK.press('dodge'); } }   /* (claude/wardenkit, v2: the warden's step here only when he is at her height - it is her BACK-step, it carries ~45 px now, and a warden waiting under the Owl at her lamp read as 'stuck' 48 times a fight and was stepped off it each time; the jump unsticks her) */
       { const cb = crouchBPlan(BK, h); if (cb) { crouchBKeys(BK, cb); P.labJump = 0; } }   /* THE CROUCH TWISTS, when the room is calm (crouchBPlan) */
-      if (duckNow(BK, h, boss) || emberNow(BK, h, boss)) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
+      if (duckNow(BK, h, boss) || emberNow(BK, h, boss) || owlDuck) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }

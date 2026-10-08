@@ -83,10 +83,14 @@ for (const lv of LEVELS) {
   const tile = (x, y) => (x < 0 || x >= W) ? T.SOLID : (y < 0 || y >= H) ? T.AIR : grid[y * W + x];
   const gnd = (x, y) => SOLID.has(tile(x, y)) || LEDGE.has(tile(x, y));
   const settle = (x, y0) => { let y = y0, n = 0; while (gnd(x, y) && n++ < 3) y--; if (gnd(x, y)) return null; n = 0; while (!gnd(x, y + 1) && n++ < 3) y++; return gnd(x, y + 1) ? y : null; };
-  const dropped = [], air = [], marks = [], castles = sandCastles(R, tile), veinsFloating = veinFloats(R, tile), mineFloating = mineFloats(R, tile);
+  const dropped = [], air = [], unhungLamps = [], marks = [], castles = sandCastles(R, tile), veinsFloating = veinFloats(R, tile), mineFloating = mineFloats(R, tile);
   for (const e of ents) {
     const dec = e.t === 'deco';
     if (dec && decoHangs(e)) { let k = 0; while (k < 5 && !SOLID.has(tile(e.x, e.y - 1 - k))) k++; if (k >= 5) unhung++; continue; }   /* main.js leaves it out: not in the air */
+    /* A HUNG LAMP (claude/owl2: the Owl Reeve's three perch lanterns were drawn on posts that stood on nothing): it hangs from rock over it, or from one of
+       the level's drawn beams (R.hangers [x0, x1, row]: the crown pine's bough) over its column - never from the air */
+    if (e.perch && e.t === 'lantern') { let k = 0; while (k < 8 && !SOLID.has(tile(e.x, e.y - 1 - k))) k++; const beam = (R.hangers || []).some(([x0, x1, row]) => e.x >= x0 && e.x <= x1 && row < e.y);
+      checked++; if (k >= 8 && !beam) unhungLamps.push('lantern@' + e.x + ',' + e.y); continue; }
     if (dec ? !decoStands(e) : (!STANDS_T.has(e.t) || e.perch)) continue;
     checked++;
     let y = settle(e.x, e.y), found = y !== null;
@@ -98,7 +102,7 @@ for (const lv of LEVELS) {
   if (foot < 0) marks.push('the ' + mk + ' marker cannot be read out of src/art.js');
   else if (foot < FOOT_ROW) for (const e of ents) if (e.t === 'check' && !SOLID.has(tile(e.x, e.y - 2)) && !SOLID.has(tile(e.x, e.y - 3))) marks.push(mk + ' marker@' + e.x + ',' + e.y);   /* drawn hanging from its top, three rows up */
   const say = (list, what) => { if (!list.length) return; bad += list.length; console.log('  ' + lv.id.padEnd(10) + list.length + ' ' + what + ': ' + list.slice(0, 12).join(' ') + (list.length > 12 ? ' ...' : '')); };
-  say(dropped, 'with no floor near them, left out'); say(air, 'with no floor near them, left in the air'); say(marks, 'checkpoints drawn hanging from nothing');
+  say(dropped, 'with no floor near them, left out'); say(air, 'with no floor near them, left in the air'); say(unhungLamps, 'hung lamps with no rock and no beam over them, hanging from nothing'); say(marks, 'checkpoints drawn hanging from nothing');
   say(castles, 'sprinkled onto a bridge over open sky (sand castles)');
   say(veinsFloating, 'ore veins with no footing under the open air in front of them, floating'); say(mineFloating, 'ore on the floor with no footing under it, floating');
 }
