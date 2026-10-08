@@ -6847,7 +6847,7 @@ const FAMILY_OF = {}; for (const f in FAMILY) for (const t of FAMILY[f].kinds) F
 const SHOT_CLOSE = 50, SHOT_FAR = 180;
 /* WHAT THE HAND DID, for the one blow being struck. Set just before a hero's blow goes into hurtEnemy (hurtAs) and taken by it at
    once, so a blow that sets off another (a shardling's burst, a slam) passes nothing on. */
-let BLOW = null;
+let BLOW = null, BURN_TICK = false;   /* BURN_TICK: a burn's tick is being dealt (no blow behind it: THE PALADIN's light ignores it - src/paladin-boss.js burnOn) */
 const blowHas = (b, v) => !!b && (b === v || (Array.isArray(b) && b.includes(v)));
 const famHas = (list, blow) => !!list && [].concat(list).some(v => blowHas(blow, v));   /* a family's key, glance or unbalance: one verb or a list of them */
 function hurtAs(blow, e, dmg, fromX, plunge) { BLOW = blow; return hurtEnemy(e, dmg, fromX, plunge); }
@@ -23997,7 +23997,7 @@ function updateEnemies(dt) {
     if (e.gustBlown > 0 && MRH && MRH.blow(e, dt)) continue;   /* GALE MOOR: struck as a scaffold gust blows, the wind has it (src/moor-rocks-hands.js; its own AI waits) */
     if (e.t === 'heart') { e.burn=0; e.bleed=0; } // the living membrane takes deliberate cuts only
     if(e.fleeT>0){e.fleeT-=dt;e.vx=e.face*100;e.vy=Math.min(300,(e.vy||0)+900*dt);moveBody(e,e.vx*dt,e.vy*dt,false);if(e.fleeT<=0)e.alive=false;continue;}
-    if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { const bd = bossChip(e, wardedDamage(e, 2), 2, true); e.hp -= bd; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; if (bd >= 1) number(e.x, e.y - e.h - 8, bd, '#ff9a5c');   /* (a burn on a boss outside his opening is chipped too: claude/combat3) */ if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
+    if (e.burn > 0) { e.burn -= dt; e.burnTick = (e.burnTick || 0) - dt; if (e.burnTick <= 0) { e.burnTick = 0.3; if (e.alive) { BURN_TICK = true; const bd = bossChip(e, wardedDamage(e, 2), 2, true); BURN_TICK = false; e.hp -= bd; if (e.heatOwner) asPlayer(e.heatOwner, () => gainHeat(HEAT.burn)); e.flash = 0.06; if (bd >= 1) number(e.x, e.y - e.h - 8, bd, '#ff9a5c');   /* (a burn on a boss outside his opening is chipped too: claude/combat3) */ if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } } if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - Math.random() * e.h, vx: 0, vy: -40, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 }); }
     if (e.bleed > 0) { e.bleed -= dt; e.bleedT = (e.bleedT || 0) - dt; if (e.bleedT <= 0) { e.bleedT = 0.5; if (e.alive) { e.hp -= (e.bleedN || 1); e.flash = 0.05; number(e.x, e.y - e.h - 8, e.bleedN || 1, '#c9463d'); if (e.hp <= 0) hurtEnemy(e, 0, e.x + 1, false); } }
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * e.w, y: e.y - e.h / 2, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#8f2f28', size: 1, grav: 120 }); }
     if (e.frozen > 0) e.frozen -= dt;
@@ -24857,7 +24857,7 @@ LCH = makeLitChurchHands({ boss: () => boss, get L() { return L; }, get players(
   keys: () => keys, questGot: () => straysGot.size,
   spawn: (t, tx, ty) => { const n0 = enemies.length; spawnEnt({ t, x: tx, y: ty, face: -1 }); const q = enemies[n0] || null; if (q) { q.woke = 1; q.summoned = true; } return q; },
   bossLamp: () => { if (PBH) PBH.onLamp(); }, bossKindled: () => { if (PBH) PBH.onKindled(); } });
-PBH = makePaladinHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
+PBH = makePaladinHands({ burnTick: () => BURN_TICK, get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); }, blowHas: (b, v) => blowHas(b, v), answered: res => answered(res),
   lamps: () => (LCH && LCH.on() ? LCH.lampsOf('sanctuary') : []), kindle: id => (LCH && LCH.on() ? LCH.light(id) : false) });

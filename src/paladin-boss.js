@@ -29,8 +29,8 @@
 
 export const PB = {
   hp: 3200, w: 18, h: 34, markH: 54,
-  light: { max: 100, start: 80, regen: 2.6, feed: 13, drain: 10, drainHeavy: 17, mendCost: 30, radCost: 20, lampDim: 14, refill: 65, turned: 6, riposte: 12 },   /* turned: a hammer or bash a hero turns aside dims him; riposte: one answered on the beat (a parry, a perfect guard, a roll through) more, and he reels */
-  reelT: 0.8,
+  light: { max: 100, start: 80, regen: 2.6, feed: 13, drain: 10, drainHeavy: 17, mendCost: 30, radCost: 20, lampDim: 14, refill: 65, turned: 8, riposte: 16 },   /* turned: a hammer or bash a hero turns aside dims him; riposte: one answered on the beat (a parry, a perfect guard, a roll through) more, and he reels */
+  reelT: 0.8, reboundT: 0.6, aegisTake: 0.4,   /* reboundT: his BASH taken on a shield (or a deflect) throws him back on his heels; aegisTake: B15, a blow his aegis turns still lands at 0.4 (paladin tune 10-08) */
   falterT: 3.0, falterMul: 1.8, falterCap: 0.13, wardT: 3.0,
   mendT: 1.0, mendHeal: 0.05, kindleT: 1.4, kindleCd: 7,   /* kindleCd: s before he goes for a lamp again (he always fights: a kindle is a beat, not a loop) */
   p2: 0.6, p3: 0.3,
@@ -113,7 +113,7 @@ export function blowOn(e, S, c, dmg, hx, hy, airborne, heavy) {
   if (S.ward > 0) { S.n.warded++; return { dmg: 0, read: 'ward' }; }
   if (pbOpen(e)) { const cap = e.maxHp * PB.falterCap - S.falterTaken; const d = Math.max(0, Math.min(Math.round(dmg * PB.falterMul), Math.round(cap))); S.falterTaken += d; return { dmg: d, read: 'open' }; }
   if (guarded(e, hx, hy, airborne)) { S.n.guarded++; S.n.fed++; setLight(S, S.light + PB.light.feed); S.flash = 0.3;
-    if (!S.told.aegis || S.n.guarded % 4 === 0) { S.told.aegis = 1; c.number(e.x, e.y - 64, 'HIS AEGIS DRINKS IT: GO ROUND', '#ffd36b'); } return { dmg: 0, read: 'aegis' }; }
+    if (!S.told.aegis || S.n.guarded % 4 === 0) { S.told.aegis = 1; c.number(e.x, e.y - 64, 'HIS AEGIS DRINKS IT: GO ROUND', '#ffd36b'); } return { dmg: Math.max(1, Math.round(dmg * PB.aegisTake)), read: 'aegis' }; }   /* B15 (Daniel 10-08): never a wall - it still bites at PB.aegisTake, but it FEEDS him */
   /* it LANDS: the man takes it, and his light goes */
   S.n.landed++; S.n.drained++; setLight(S, S.light - (heavy ? PB.light.drainHeavy : PB.light.drain));
   if (e.mode === 'mendTell') { S.n.mendsCut++; setMode(e, 'recover', 0.5); c.number(e.x, e.y - 64, 'THE MEND IS CUT: THE LIGHT IS SPENT', '#8fd160'); }
@@ -121,9 +121,19 @@ export function blowOn(e, S, c, dmg, hx, hy, airborne, heavy) {
   if (!S.told.drain) { S.told.drain = 1; c.number(e.x, e.y - 64, 'IT LANDS: HIS LIGHT DRAINS', '#8fd160'); }
   return { dmg, read: 'landed' };
 }
+/* A BURN ON HIM (the pyro's fire, a tick with no blow behind it; paladin tune 10-08): it is not a blow, so it never touches HIS LIGHT - his aegis does not drink it and
+   it does not drain him (21-40 ticks a fight landed from behind and each drained a whole blow's light: the pyro starved him for free, 12/12). His ward stops it;
+   open it pays x falterMul inside the falter's cap; otherwise it burns whole (B15). */
+export function burnOn(e, S, dmg) {
+  if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake' || S.ward > 0) return { dmg: 0, read: 'ward' };
+  S.n.burns = (S.n.burns || 0) + 1;
+  if (pbOpen(e)) { const d = Math.max(0, Math.min(Math.round(dmg * PB.falterMul), Math.round(e.maxHp * PB.falterCap - S.falterTaken))); S.falterTaken += d; return { dmg: d, read: 'open' }; }
+  return { dmg, read: 'burn' };
+}
 /* HIS BLOW TURNED (the hands, off what damagePlayer said): a shield that takes his hammer or his bash dims his light; one answered ON THE BEAT (a parry, a perfect
    guard, a roll through it - main.js answered) is the RIPOSTE the concept asks for: more light, and he REELS PB.reelT s (committed: every blow lands) */
 export function blowTurned(e, S, c, perfect) { if (!e || !e.alive || pbOpen(e) || S.ward > 0) return; setLight(S, S.light - (perfect ? PB.light.riposte : PB.light.turned)); S.n.turned = (S.n.turned || 0) + 1;
+  if (!perfect && e.mode === 'bash') { S.n.rebounds = (S.n.rebounds || 0) + 1; setMode(e, 'reel', PB.reboundT); c.number(e.x, e.y - 64, S.told.rebound ? 'THE BASH REBOUNDS' : 'HIS BASH ON YOUR SHIELD: HE REBOUNDS', '#8fd160'); S.told.rebound = 1; return; }   /* (paladin tune 10-08) the concept's shield bash, answered by a shield: he is thrown back on his heels - the shield's own window, the one a roll does not make */
   if (perfect && (e.mode === 'chain' || e.mode === 'bash' || e.mode === 'chainBeatTell')) { S.n.ripostes = (S.n.ripostes || 0) + 1; S.chainLeft = 0; setMode(e, 'reel', PB.reelT); c.number(e.x, e.y - 64, S.told.riposte ? 'HE REELS ON THE BEAT' : 'ON THE BEAT: HE REELS, HIS LIGHT DIMS', '#8fd160'); S.told.riposte = 1; } }
 /* A SANCTUARY LAMP SNUFFED (a hero's blade through it): his light dims at once, and his regen with it */
 export function lampOut(e, S, c) { if (!e || !e.alive || e.mode === 'sleep') return; S.n.lampsOut++; setLight(S, S.light - PB.light.lampDim);
@@ -229,7 +239,7 @@ function stepHoly(e, S, dt, h, c) {
    swings into his aegis on purpose - it goes ROUND (behind him: he turns in PB.turn s) or comes DOWN on him from a jump; it cuts his MEND and his KINDLE; when
    he is far and at least one of his lamps burns, it SNUFFS the nearest (a blade through it). Open, it hits him hard; warded, it waits off him.
    s = { P: { x, y, face, ground, atk }, e, S, lamps: [{ id, x, lit }], reach, shield, t, rng, mem, v2, hero, rest } -> { gx, face, atk, jump, dodge, block, down, why } */
-export const PLAN = { react: 0.25, miss: 0.12, lampR: 110 };
+export const PLAN = { react: 0.25, miss: 0.12, lampR: 110, bait: 0.6 };
 export function pbPlan(s) {
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, talk: false, up: false, down: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
@@ -272,11 +282,14 @@ export function pbPlan(s) {
   /* 4b. WINDED (the lab's stamina rest): off him, out of the hammer's reach */
   if (s.rest) { out.gx = safeX(kx + side * (PB.chainReach + 60)); out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off him'; return out; }
   /* 5. FIGHT HIM: his back when he turns from you; in his tells (committed); from a jump over his aegis (B11) - never into it */
-  if (e.mode === 'reel' && dx < hitR + 6 && same) { swing(kx); out.gx = P.x; out.why = 'the riposte: he reels'; return out; }
+  if (e.mode === 'reel' && same) { if (dx > hitR - 2) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in on his reel'; return out; } swing(kx); out.gx = P.x; out.why = 'the riposte: he reels'; return out; }
   if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) { swing(kx); out.gx = P.x; out.why = 'hit his back'; return out; }
   if (/Tell$/.test(e.mode) && e.mode !== 'chainTell' && e.mode !== 'chainBeatTell' && e.mode !== 'bashTell' && dx < hitR + 2 && same) { swing(kx); out.gx = P.x; out.why = 'hit him in his tell'; return out; }
   if ((e.mode === 'walk' || e.mode === 'recover' || e.mode === 'land') && dx < hitR + 34) { out.face = Math.sign(kx - P.x) || 1;
     if (e.mode === 'land' && dx < hitR + 2 && same) { swing(kx); out.gx = P.x; out.why = 'hit him as he lands'; return out; }
+    /* (paladin tune 10-08) A SHIELD BAITS HIM: most cycles a shield hero stands just off his maul, guard up, and lets him swing - the bash rebounds, a hammer on the beat
+       is the riposte - instead of jumping his aegis (the knight's reach makes the jump his only other way in, and it caught him in the air: 12 of 21 hits) */
+    if (s.shield && same && e.mode !== 'land' && roll('bait' + S.cycle + '_' + S.step, PLAN.bait)) { out.gx = clamp(kx + side * (hitR + 6)); out.block = Math.abs(P.x - out.gx) < 8; out.why = 'bait his hammer'; return out; }
     if (dx > hitR - 4) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in to him'; return out; }
     out.gx = P.x; if (P.ground) { out.jump = true; out.why = 'up over his aegis'; return out; } if (P.y < e.y - 14) out.atk = P.atk < 0; out.why = 'down on him from the jump'; return out; }
   out.gx = safeX(kx + side * Math.max(46, hitR + 18)); out.face = Math.sign(kx - P.x) || 1; out.why = 'keep off his hammer'; return out;

@@ -68,10 +68,11 @@ export function makePaladinHands(ctx) {
   H.onKindled = () => { const e = live(); if (!S || !e) return; ctx.number(e.x, e.y - 70, 'THE LAMP BURNS AGAIN: HIS LIGHT CLIMBS FROM IT', '#ff9a5c'); };
   /* A BLOW ON HIM: src/paladin-boss.js blowOn - the ward turns everything; his aegis turns the front while he guards (and drinks it); open, x falterMul */
   H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero(), t = ctx.time();
+    if (!blow && ctx.burnTick && ctx.burnTick()) return PBM.burnOn(e, S, dmg).dmg;   /* (paladin tune 10-08) A BURN TICK is not a blow: the fire on him neither feeds nor drains his light (src/paladin-boss.js burnOn) */
     const heavy = ctx.blowHas ? ctx.blowHas(blow, 'heavy') : false, r = PBM.blowOn(e, S, world(e), dmg, P.x, P.y, !P.ground && !P.climb, heavy);
     if (r.read === 'ward') { e.guardFx = 0.25; e.guardWord = 'WARDED'; ctx.sfx.clank && ctx.sfx.clank(); return 0; }
     if (r.read === 'aegis') { e.guardFx = 0.25; e.guardWord = S.n.guarded < 6 ? ['HIS AEGIS: GO ROUND', 'HIS AEGIS: STRIKE FROM ABOVE'][S.n.guarded % 2] : 'HIS AEGIS';
-      ctx.sfx.aegis ? ctx.sfx.aegis() : ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(P.x - e.x) || 1) * 12, e.y - 20, Math.sign(P.x - e.x) || 1, 5); return 0; }
+      ctx.sfx.aegis ? ctx.sfx.aegis() : ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(P.x - e.x) || 1) * 12, e.y - 20, Math.sign(P.x - e.x) || 1, 5); return r.dmg; }   /* (B15, paladin tune: it bites at PB.aegisTake - and it fed him) */
     e.angleHit = t;   /* (a blow round his aegis is the right blow: not greed - src/main.js greedHit) */
     return r.dmg; };
   H.barName = e => 'THE PALADIN' + (PBM.pbOpen(e) ? '  OPEN' : S && S.ward > 0 ? '  WARDED' : '');
