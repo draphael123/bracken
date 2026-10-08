@@ -533,16 +533,16 @@
   "lostPct": 433
  },
  "church": {
-  "hash": "04c6966a3239",
+  "hash": "46c49bf8f4ae",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 14,
-  "deaths": 7,
+  "hits": 21,
+  "deaths": 11,
   "kills": 3,
-  "lifts": 79,
+  "lifts": 80,
   "walked": 100,
   "bare": true,
-  "lostPct": 312
+  "lostPct": 486
  }
 }

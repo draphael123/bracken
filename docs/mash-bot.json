@@ -8328,63 +8328,7 @@
   }
  },
  "church": {
-  "hash": "04c6966a3239",
-  "level": {
-   "knight": {
-    "deaths": 0,
-    "minHpPct": 17,
-    "hpLostPct": 83,
-    "hits": 2,
-    "walked": 100,
-    "lifts": 26,
-    "held": 14,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 6480,
-    "kills": 0,
-    "heroLevel": 22
-   },
-   "warden": {
-    "deaths": 0,
-    "minHpPct": 10,
-    "hpLostPct": 90,
-    "hits": 2,
-    "walked": 100,
-    "lifts": 26,
-    "held": 14,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 6240,
-    "kills": 0,
-    "heroLevel": 22
-   },
-   "pyro": {
-    "deaths": 0,
-    "minHpPct": 4,
-    "hpLostPct": 96,
-    "hits": 2,
-    "walked": 100,
-    "lifts": 25,
-    "held": 14,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 6450,
-    "kills": 0,
-    "heroLevel": 22
-   }
-  },
+  "hash": "46c49bf8f4ae",
   "boss": {
    "boss": "paladinboss",
    "wins": 0,
@@ -8483,6 +8427,68 @@
      "chip": []
     }
    ]
+  },
+  "carried": {
+   "from": "04c6966a3239",
+   "parts": [
+    "boss"
+   ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 200,
+    "hits": 7,
+    "walked": 100,
+    "lifts": 23,
+    "held": 6,
+    "duels": 2,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 12449,
+    "kills": 1,
+    "heroLevel": 22
+   },
+   "warden": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 200,
+    "hits": 7,
+    "walked": 100,
+    "lifts": 24,
+    "held": 6,
+    "duels": 2,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 11944,
+    "kills": 2,
+    "heroLevel": 22
+   },
+   "pyro": {
+    "deaths": 3,
+    "minHpPct": 0,
+    "hpLostPct": 300,
+    "hits": 13,
+    "walked": 100,
+    "lifts": 25,
+    "held": 11,
+    "duels": 2,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 12037,
+    "kills": 2,
+    "heroLevel": 22
+   }
   }
  }
 }

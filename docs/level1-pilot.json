@@ -132,14 +132,14 @@
   "bare": true
  },
  "church": {
-  "hash": "04c6966a3239",
+  "hash": "46c49bf8f4ae",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 16,
   "deaths": 9,
-  "kills": 5,
-  "lifts": 76,
+  "kills": 8,
+  "lifts": 82,
   "walked": 100,
   "bare": true
  }
