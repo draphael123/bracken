@@ -56,7 +56,7 @@ try {
    /* seaward of the arm that has you, it still drags you on out to sea - not back to the arm */hold();P.x=a.bx+40;const x1=P.x;BK.sim(30);out.hit.draggedPast=Math.round(P.x-x1);
    hold();BK.sim(1);BK.press('dodge');BK.sim(3);out.hit.rolled=e.mode!=='held';
    hold();let f=0;for(;f<300&&e.mode==='held';f++)BK.sim(1);out.hit.heldS=+(f/60).toFixed(2);
-   hush(e);stand(569*TS+8);P.y=20*TS;/* up on the tower, out of its way: a sweep that lands stops the world a beat */const b=e.arms.find(q=>!q.severed&&q.st==='idle');e.armI=b.i;b.st='lower';e.sweepFrom=A.x0+20;e.sweepTo=A.x1-20;e.mode='sweepTell';e.modeT=0;for(let i=0;i<30&&e.mode!=='sweep';i++)BK.sim(1);let n=0;while(e.mode==='sweep'&&n<200){BK.sim(1);n++;}out.hit.sweepS=+(n/60).toFixed(2);}
+   hush(e);stand(569*TS+8);P.y=20*TS;/* up on the tower, out of its way: a sweep that lands stops the world a beat */const b=e.arms.find(q=>!q.severed&&q.st==='idle');e.armI=b.i;b.st='lower';/* from the bare road's end, where every sweep starts now (claude/kraken2: it rides up over the stone it meets, so one started inside the tower's footing came up over the hero standing on it) */const re=BKT.krkRoadEnds?BKT.krkRoadEnds():[A.x0+20,A.x1-20];e.sweepFrom=re[0];e.sweepTo=re[1];e.mode='sweepTell';e.modeT=0;for(let i=0;i<30&&e.mode!=='sweep';i++)BK.sim(1);let n=0;while(e.mode==='sweep'&&n<200){BK.sim(1);n++;}out.hit.sweepS=+(n/60).toFixed(2);}
   /* ---- THE INK (stage 2): told first, then a band of the road dark for ~3.5 s - never the hero's own tile, wherever he goes ---- */
   {const e=boot(),A=BK.L.arena,fl=A.floor,P=BK.P;out.ink={};stand(575*TS);
    e.T.ink=0;BK.sim(60);out.ink.stage1=!!(e.inkTell>0||e.inkT>0);
