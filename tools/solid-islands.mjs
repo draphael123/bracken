@@ -21,18 +21,15 @@ import { islandsOf } from '../src/island-posts.js';
 const NATURAL = 'organic ledge art that grows where it stands (logs in the canopy, caps, reeds, rock slabs): the forest/crag convention, checked by screenshot 2026-10-08; the complaint is BUILT places';
 const OWNED = (lane, n) => [n, 'owned by ' + lane + ', fixing tonight (2026-10-08): TEMPORARY'];
 export const ALLOW = {
-  wood: [24, NATURAL], marsh: [14, NATURAL], stockade: [24, NATURAL], spore: [28, NATURAL], kings: [101, NATURAL], scree: [55, NATURAL], hanging: [35, NATURAL], moor: [25, NATURAL],
-  skyroad: [19, NATURAL + ' (sky road: floating slabs are the level)'], rootway: [17, NATURAL + ' (root-shelf caps)'], glasssea: [28, 'floating glass shards are the Glass Sea (theme, screenshot-checked)'],
+  wood: [25, NATURAL], marsh: [14, NATURAL], stockade: [25, NATURAL], spore: [31, NATURAL], kings: [103, NATURAL], scree: [55, NATURAL], hanging: [37, NATURAL], moor: [25, NATURAL],
+  skyroad: [19, NATURAL + ' (sky road: floating slabs are the level)'], rootway: [17, NATURAL + ' (root-shelf caps)'], glasssea: [29, 'floating glass shards are the Glass Sea (theme, screenshot-checked)'],
   witchlight: [32, 'floating stone blocks round the witch spire are the level (theme, screenshot-checked); the lane may add chains/runes'],
-  spire: OWNED('spire', 3), flotilla: OWNED('flotilla', 2), hurricane: OWNED('hurricane', 17), crown: OWNED('crown', 1), ksar: OWNED('ksar', 6), oreroad: OWNED('winch/oreroad', 11),
-  fair: [11, 'rides, stage and stall frames are drawn by src/fair-rides.js / fair-kit (six spots screenshot-checked); stage-roof and slide islands left to the fair lane'],
-  minecart: [6, 'mine ceilings and rail trestles: timber frames drawn behind (mcBeams, screenshot-checked); one rail pair at 960-981 listed for the minecart lane'],
-  lamplit: [2, 'two bridge-pier stumps with a rope (SOLID+NET): listed for the lamplit lane'],
-  deep: [2, 'a rope-hung slab and a drowned block, in water: listed for the deep lane'],
-  causeway: [3, 'a stone gateway, a rope and a ruin at the waterline: listed for the causeway lane'],
-  mage: [2, 'library plinths: listed for the mage lane'], fallingtower: [2, 'two slate stubs of the broken tower: listed for the fallingtower lane'],
-  unburied: [1, 'the tomb pit lid (SOFT): listed for the unburied lane'],
-  canal: [6, 'warehouse and lock masses in fog: listed for the canal lane'], welltown: [4, 'sandstone towers: listed for the welltown lane'], redgorge: [3, 'timber slabs of the gorge camp: listed for the redgorge lane'],
+  spire: OWNED('spire', 90), flotilla: OWNED('flotilla', 2), hurricane: OWNED('hurricane', 17), crown: OWNED('crown', 53), ksar: OWNED('ksar', 25), oreroad: OWNED('winch/oreroad', 11),
+  fair: [4, 'stage-roof and slide islands of the fairground: the rest are drawn rides/stalls (src/fair-*.js, six spots screenshot-checked); listed for the fair lane'],
+  minecart: [1, 'one rail pair at 960-981: listed for the minecart lane'],
+  undercrown: [3, 'three ledges over pit shafts, void under them: listed for the undercrown lane'],
+  mage: [7, 'library ledges and one plinth high in the hall, void under: listed for the mage lane'], fallingtower: [1, 'a loose slate plank run high in the tower: listed for the fallingtower lane'],
+  canal: [2, 'warehouse and lock masses in fog: listed for the canal lane'], welltown: [3, 'sandstone towers: listed for the welltown lane'], redgorge: [1, 'a timber slab of the gorge camp: listed for the redgorge lane'],
 };
 
 const SUPPORT_DECO = new Set(['stilt', 'bridgepost', 'bridgetower', 'pierPost', 'column', 'pillar', 'archPillar', 'canopyPost', 'mastStump', 'mastTall', 'netPoles', 'rigging', 'boardingNet', 'spar', 'brokenPillar', 'poles', 'gatehouse', 'bellFrame', 'bellTower', 'siege', 'ubGantry', 'flagPost']);
@@ -61,9 +58,11 @@ export function supportsOf(L, s) {
   for (const t of (L.fields && L.fields.trunks) || []) if (t[0] >= s.x0 - 1 && t[0] <= s.x1 + 1 && t[1] <= s.y1 + 2 && t[2] >= s.y0) { why.push('trunk'); break; }   /* the Hexed Fields' drawn dead trunks [x, top, bottom] hold their planks up */
   for (const z of [...(L.structures || []), ...(L.watchtowers || [])]) if (anyCell(z.x0, z.x1, z.top, z.floor, 1)) { why.push('structure'); break; }
   for (const z of L.houses || []) if (anyCell(z.x0, z.x1, z.y0 - 3, z.y1 + 1, 1)) { why.push('house'); break; }
-  for (const k of ['hullZones', 'cabins', 'shipZones', 'masonry', 'airRooms']) for (const z of L[k] || []) if (Array.isArray(z) && anyCell(z[0], z[1], z[2], z[3], 1)) { why.push(k); break; }
-  for (const z of (L.interiors || [])) if (Array.isArray(z) && z[4] && anyCell(z[0], z[1], z[2], z[3], 1)) { why.push('interior'); break; }
-  for (const z of (L.facades || [])) if (Array.isArray(z) && anyCell(z[0], z[1], z[2], z[3], 0)) { why.push('facade'); break; }
+  /* A WALL BEHIND IS NOT A POST: a facade, a masonry rect or a room carries the ROCK inside it (laid stone is a wall), never the boards laid in front of it (the Monastery's scaffold, 2026-09-25) */
+  const boards = s.raw.some(k => k === T.ONEWAY || k === T.PLANK || k === T.REED || k === T.SHELF || k === T.RAIL || k === T.BOUNCER);
+  for (const k of boards ? ['hullZones', 'cabins', 'shipZones'] : ['hullZones', 'cabins', 'shipZones', 'masonry', 'airRooms']) for (const z of L[k] || []) if (Array.isArray(z) && anyCell(z[0], z[1], z[2], z[3], 1)) { why.push(k); break; }
+  for (const z of (L.interiors || [])) if (!boards && Array.isArray(z) && z[4] && anyCell(z[0], z[1], z[2], z[3], 1)) { why.push('interior'); break; }
+  for (const z of (L.facades || [])) if (!boards && Array.isArray(z) && anyCell(z[0], z[1], z[2], z[3], 0)) { why.push('facade'); break; }
   for (const e of L.ents || []) { const x = e.x, y = e.y;
     if (e.t === 'deco' && SUPPORT_DECO.has(e.kind) && x >= s.x0 - 1 && x <= s.x1 + 1 && y >= s.y0 - 3 && y <= s.y1 + 40) { why.push(e.kind); break; }
     if (SUPPORT_ENT.has(e.t) && x >= s.x0 - 2 && x <= s.x1 + 2 && y >= s.y0 - 6 && y <= s.y1 + 40) { why.push(e.t); break; } }
