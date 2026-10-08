@@ -57,6 +57,7 @@ try {
       P[j] = { cleared: true, medal: { bronze: 1, silver: 2, gold: 3 }[lv.opensOn.medal] || 0, ...(lv.opensOn.time ? { best: lv.opensOn.time } : {}) };
       for (const key of ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); if (BKT.PROG.mapNodeId === id) { s.dir = key; s.onSpur = true; break; } }
       if (!s.onSpur) s.onSpur = false; }
+    out.road = LEVELS.filter(l => l.id === 'underleaf').map(l => ({ id: l.id, hidden: !!l.hidden, secret: !!l.secret, needs: l.needs, timed: !!(l.needsTime || l.needsKills), spur: !!m.spur[m.ids.indexOf(l.id)], onMap: m.ids.includes(l.id), next: (LEVELS.find(c => c.needs === l.id) || {}).id }));
     out.coin = BK.store.coinHeroes().map(h => ({ ...h, level: LEVELS.some(l => l.id === h.needs) }));
     return out;
   })()`);
@@ -69,6 +70,8 @@ try {
   assert.deepEqual(orphans, [], 'levels unreachable from a fresh save by normal play: ' + orphans.join(', '));
   for (const s of r.steps) assert.ok(s.tip && /LOCKED/.test(s.tip[0]) && /12:57/.test(s.tip[1]), s.id + ': the shut road does not SHOW its rule and the player best time (' + JSON.stringify(s.tip) + ')');
   for (const s of r.steps) assert.ok(s.onSpur, s.id + ' (a spur off ' + s.junction + ') cannot be stepped onto from its junction with the map keys once the junction is cleared');
+  /* UNDERLEAF IS A MAIN-ROAD LEVEL (Daniel 10-08): Kingswood -> Underleaf -> the Scree Path, a node ON the road, no secret and no clock */
+  for (const u of r.road) { assert.ok(!u.hidden && !u.secret && !u.timed && u.needs === 'kings' && u.next === 'scree' && u.onMap && !u.spur, 'underleaf is not a plain main-road level between kings and scree: ' + JSON.stringify(u)); }
   for (const h of r.coin) { assert.ok(h.level, 'hero ' + h.id + ' coinNeeds names no level: ' + h.needs); if (!h.boss) assert.ok(reached.has(h.needs), 'hero ' + h.id + ': its coinNeeds level ' + h.needs + ' is unreachable'); }
   assert.deepEqual(pg.errors, []);
   console.log('Level reachability: every level is reachable from a fresh save through the map, every spur steps on from its junction, every hero coin level is reachable.');

@@ -212,13 +212,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 7,
+  "hits": 8,
   "deaths": 0,
-  "kills": 3,
+  "kills": 5,
   "lifts": 114,
   "walked": 100,
   "bare": true,
-  "lostPct": 45
+  "lostPct": 55
  },
  "deep": {
   "hash": "f26c65d342aa",
