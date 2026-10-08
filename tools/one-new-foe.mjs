@@ -54,8 +54,8 @@ const EHP = new Set([...ehp.slice(0, ehp.indexOf('};')).matchAll(/([a-zA-Z][a-zA
 assert.ok(EHP.size > 80, 'only ' + EHP.size + ' creatures read out of EHP: the parse has stopped working and this check guards nothing');
 
 /* A store, a trial yard and YOUR WOOD are not campaign levels and never were. Everything else is, INCLUDING THE
-   TWO SECRETS: Underleaf is gated on `needsTime: { id: 'kings', t: 180 }` and the Undercrown on
-   `needsKills: { id: 'crown', pct: 0.8 }`, which name the level you must be standing in just as exactly as
+   THE SECRET: the Undercrown is gated on `needsKills: { id: 'crown', pct: 0.8 }` (Underleaf was one too, on
+   `needsTime: { id: 'kings', t: 180 }`, until claude/underleafroad put it on the main road, 10-08), which names the level you must be standing in just as exactly as
    `needs` does. A walk that reads only `needs` has no position at all for those two and either drops them or
    leaves them wherever the array put them - so campaign-order.mjs reads all three gates. */
 const rows = [];
@@ -81,7 +81,7 @@ assert.equal(C.order.length, rows.length, 'the walk placed ' + C.order.length + 
 
 /* A LEVEL DANIEL GAVE A NUMBER OF NEW FOES (the floor is one; this is exact). THE FOG CANAL (claude/canal, Daniel 2026-09-30): the rule is lifted to TWO for it -
    the GRINDYLOW and the WILL-O'-THE-WISP - and its bargees and archers are the game's own (the gaffer and the archer), so it brings those two and no other */
-const NEW_EXACTLY = { canal: ['grindylow', 'willowisp'], welltown: ['waterthief'], redgorge: ['raptor'], underwell: ['sandworm'], skyroad: ['kiterider'], glasssea: ['skitter'], ksar: ['hawkscout'] }, exact = [];   /* (claude/underwell, Daniel 10-05: THE UNDERWELL's cast is 'a lot of SANDWORM and SCORPION enemies' - it stands before the gorge on the road, so the sandworm is met there first and is the Underwell's one new foe; the gorge keeps the raptor) */   /* (claude/desertfoes, Daniel 10-03: THE SANDWORM is the gorge's second new foe, by his brief - its dynamite bandit and shield guard are the sapper and the shieldgob reskinned, its fire and venom scorpions the scorpion's) */   /* THE RED GORGE (claude/redgorge, the desert-arc concept: MAX ONE new foe a level): the cliff raptor - its slingers and knives are the caravan's, its scorpions the desert's */   /* THE WELL TOWN (claude/welltown, the desert-arc concept 2026-10-01: MAX ONE new foe a level): the water-thief alone - its bowmen are the archer reskinned, its knives the caravan's cutthroats */
+const NEW_EXACTLY = { rootway: ['trophyhunter'], canal: ['grindylow', 'willowisp'], welltown: ['waterthief'], redgorge: ['raptor'], underwell: ['sandworm'], skyroad: ['kiterider'], glasssea: ['skitter'], ksar: ['hawkscout'] }, exact = [];   /* (claude/underwell, Daniel 10-05: THE UNDERWELL's cast is 'a lot of SANDWORM and SCORPION enemies' - it stands before the gorge on the road, so the sandworm is met there first and is the Underwell's one new foe; the gorge keeps the raptor) */   /* (claude/desertfoes, Daniel 10-03: THE SANDWORM is the gorge's second new foe, by his brief - its dynamite bandit and shield guard are the sapper and the shieldgob reskinned, its fire and venom scorpions the scorpion's) */   /* THE RED GORGE (claude/redgorge, the desert-arc concept: MAX ONE new foe a level): the cliff raptor - its slingers and knives are the caravan's, its scorpions the desert's */   /* THE WELL TOWN (claude/welltown, the desert-arc concept 2026-10-01: MAX ONE new foe a level): the water-thief alone - its bowmen are the archer reskinned, its knives the caravan's cutthroats */
 const seen = new Set();
 const fresh = [], failed = [], stale = [];
 for (const id of C.order) {

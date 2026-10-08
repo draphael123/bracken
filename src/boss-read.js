@@ -64,6 +64,8 @@ export const TURN_WORD = {
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
   hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'HER GAUNTLET'),   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
   lanterneater: e => (e.mode === 'open' ? TURN.WARDED : ['gulpTell', 'huntTell'].includes(e.mode) && e.part === 'lure' ? 'TOO LOW' : ['jaws', 'snapTell'].includes(e.mode) ? 'TOO HIGH' : TURN.WARDED),   // (claude/lanterneater) B14 keys: its lure HIGH, its gums LOW - the word names the wrong height (src/lantern-eater.js KEY_WORD)
+  /* (claude/rootway) THE GOBLIN HUNTMASTER: the bow across him guards his front between moves (GO ROUND, or from a jump); in his ward after an opening, HE GUARDS */
+  huntmaster: (e, fromX) => e.ward > 0 ? 'HE GUARDS' : behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   roc: e => e.ward > 0 ? TURN.WARDED : TURN.LOW,           // (claude/roc2) THE ROC: her feathers' ward after an opening; else her talons guard low - strike her from the air (src/roc-eyrie.js)
 };
 const COL = '#d8e2ee', RING = '#eef4ff';

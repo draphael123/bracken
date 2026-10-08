@@ -10,6 +10,7 @@ import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (doc
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
 import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */
+import { buildRootway } from './rootway.js';   /* THE ROOTWAY (claude/rootway, the greybox; .claude/briefs/brief-rootway.md): the bridge between SPOREWOOD and KINGSWOOD; its boss is THE GOBLIN HUNTMASTER (src/huntmaster.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
@@ -1506,9 +1507,9 @@ function screePath() {
 }
 
 // ============================================================================================
-// THE SECRET LEVEL - UNDERLEAF. King Gorm Underleaf was named after somewhere, and this is it.
-// You only get here by putting him down in under three minutes, which means the runners he sent
-// never got home: the village does not know, and it is two in the morning.
+// UNDERLEAF (a MAIN-ROAD level since Daniel 10-08, claude/underleafroad: Kingswood -> Underleaf -> the Scree Path).
+// King Gorm Underleaf was named after somewhere, and this is it. You come down off his court by the
+// back road, and the village does not know yet: the runners he sent never got home, and it is two in the morning.
 //
 // THE RULE: IT IS NIGHT, SO NOTHING CAN SEE YOU. IT CAN ONLY HEAR YOU.
 //   1. The ground has a voice. Thatch and moss and rope are silent; a loose board is the worst
@@ -2440,9 +2441,8 @@ function theMonastery() {
 // So you are not clearing a mine. You are choosing which parts of it still exist, and you are doing it
 // in one direction, because everything you break is behind you the moment you use it.
 //
-// It opens on the ONE THING Highcrown can be asked for that its gold time cannot: four goblins in five.
-// Underleaf asks you to be quick through Kingswood; the Undercrown asks you to leave nothing standing in
-// Highcrown, which is the opposite instruction to the same castle.
+// It opens on the ONE THING Highcrown can be asked for that its gold time cannot: four goblins in five,
+// the opposite instruction to the same castle. (Underleaf used to ask for a quick Kingswood; it is on the main road now.)
 // ============================================================================================
 function undercrown() {
   const L = painter(154, 196);
@@ -7734,8 +7734,8 @@ export const LEVELS = [
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
-  { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'spore' },
-  { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
+  { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'rootway' },   /* (claude/rootway, Daniel 10-07: THE ROOTWAY comes between it and Sporewood) */
+  { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'underleaf' },   /* (claude/underleafroad, Daniel 10-08: UNDERLEAF sits between Kingswood and here) */
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
@@ -7746,7 +7746,7 @@ export const LEVELS = [
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
   { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE WASH COMES FROM WINDWARD. THE RIGGING IS THE LEVEL.', build: theHurricane, needs: 'flotilla' },
   { id: 'lamplit', name: 'THE LAMPLIT STREET', sub: 'the city under it', rule: 'THE LAMPS ARE AIR.', build: theLamplitStreet, needs: 'hurricane' },
-  { id: 'underleaf', name: 'UNDERLEAF', sub: "the king's own village, asleep", rule: 'NOTHING HERE CAN SEE YOU. IT CAN HEAR YOU.', build: underleaf, hidden: true, secret: true, needsTime: { id: 'kings', t: 180 } },
+  { id: 'underleaf', name: 'UNDERLEAF', sub: "the king's own village, asleep", rule: 'NOTHING HERE CAN SEE YOU. IT CAN HEAR YOU.', build: underleaf, needs: 'kings' },   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'trial_open', name: 'THE OPEN YARD', sub: 'straw men, ledges and room', build: openYard, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
@@ -7779,7 +7779,7 @@ export const LEVELS = [
      to it - the general rule every future class level (the Cathedral off Waymeet, the Saint's Purse off the
      Hurricane Deck) declares the same two fields for. `needs: 'stockade'` stays: it is what the side panel and
      mapPanelIdx group this spur under, and opensOn is the STRICTER gate on top of it. */
-  { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade', classFor: 'pyro', opensOn: { level: 'stockade', medal: 'silver' } },
+  { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade', classFor: 'pyro', opensOn: { level: 'stockade', time: 300 } },
   /* THE WITCHLIGHT STAIR (batch 4c): the run up the tower's hill between the Burial Caverns and the Folly. Appended, like the
      village, so no index moves; the Folly needs it now */
   { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: ()=>buildWitchlight({painter,T,TS}), needs: 'burial' },
@@ -7828,6 +7828,9 @@ export const LEVELS = [
   /* THE BANDIT KSAR (claude/ksar, the OPUS GREYBOX, 2026-10-07; Daniel's concept interview 10-07): the raiders' mud-brick fortress on the old road past THE GLASS SEA, into the Buried City
      (not built yet: it will need 'ksar'). The fort answers its gongs. APPENDED, so no index and no save moves. THE HAWK-MISTRESS (src/hawk-mistress.js) is its boss */
   { id: 'ksar', arc: 'the desert', name: 'THE BANDIT KSAR', sub: 'the raiders\' fortress on the old road', rule: 'THE FORT ANSWERS ITS GONGS: A RUNG GONG CALLS EVERY BANDIT IN EARSHOT, AND A CUT ROPE SILENCES IT.', build: () => buildKsar({ painter, T, TS }), needs: 'glasssea' },
+  /* THE ROOTWAY (claude/rootway, the OPUS GREYBOX, 2026-10-07): the climb up out of the deep fungus through giant roots into the goblins' canopy - after SPOREWOOD,
+     before KINGSWOOD (the bridge Daniel booked 10-07). APPENDED, so no index and no save moves; its place on the road is its needs and its map node */
+  { id: 'rootway', name: 'THE ROOTWAY', sub: "up out of the fungus, into the goblins' wood", rule: "THE CAPS GROW INTO STEPS; THE GOBLINS' HOISTS DROP WHAT THEY HOLD. STOP ON A BUD TO GROW IT; CUT A HOIST'S ROPE TO DROP ITS LOAD.", build: () => buildRootway({ painter, T, TS }), needs: 'spore' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
@@ -8413,6 +8416,7 @@ const ELITES = {
   witchlight: [['husk', 110, 76, { face: -1 }], ['armour', 300, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver (at 300 since the garden grew, claude/hedgewarden2) */
   fallingtower: [['husk', 52, 146, { face: -1 }]],   /* the cistern's husk over the poison: it sits ON the cistern's own first-tier husk, so it is UPGRADED, not added - one husk in the tower, and it is this one. Since the rework of 2026-09-25 (docs/briefs/falling-tower-rework.md) the tower's other two elites are gone into its named fights: the orrery's armour CAPTAINS THE ORRERY PIT (AMBUSH, below) and the bell loft's warden became THE SEXTON, its mini - an elite beside either would be back to back with it (rule Q). */
   wood: [['shield', 147, 21, { gate: 157 }]],
+  rootway: [['shield', 184, 34, { face: -1, gate: 190 }], ['shield', 276, 18, { face: -1 }]],   /* (claude/stamina12, Daniel 10-08: stamina x1.4 -> x1.2 and the mash bot cleared the Rootway: the great roots' exam is the shield captain at the gap (checkpoint 193 after), the hoist yard's the shield at the yard's cages (checkpoint 290 after)) */
   marsh: [['thorn', 98, 15, { gate: 105 }]],   /* (claude/levelpilot: on the stilts at 65/72, with both stilt archers shut in with him, he was the marsh's whole threat in one locked room; he holds the far bank of the archer island now, one on one with the water at your back - section one's exam, the checkpoint at 109 after it. An elite frog was tried here: the lab's human bot killed it in 1.8 s, no exam) */
   stockade: [['brute', 302, 19, { gate: 317 }]],
   spore: [['shield', 412, 13, { gate: 430 }]],

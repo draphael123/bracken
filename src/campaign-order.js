@@ -21,9 +21,9 @@
 // shorter one comes after it, which is a choice, so anything whose answer depends on that choice is a result
 // that needs saying out loud rather than trusting.
 
-// THE THREE WAYS A LEVEL IS GATED. `needs` is the campaign road. The two secret levels are gated on a clock
-// and a body count instead - `needsTime: { id: 'kings', t: 180 }` and `needsKills: { id: 'crown', pct: 0.8 }` -
-// and they still name the level you must be standing in, so they place just as exactly. A tool that reads only
+// THE THREE WAYS A LEVEL IS GATED. `needs` is the campaign road. A secret level is gated on a clock
+// or a body count instead - `needsKills: { id: 'crown', pct: 0.8 }` (the Undercrown today; Underleaf was `needsTime: { id: 'kings', t: 180 }`
+// until Daniel put it on the main road, 10-08) - and it still names the level you must be standing in, so it places just as exactly. A tool that reads only
 // `needs` has NO POSITION AT ALL for those two and silently drops them or leaves them wherever the array put
 // them; both are wrong, so all three are read here.
 export const gateOf = lv => (lv && (lv.needs || (lv.needsTime && lv.needsTime.id) || (lv.needsKills && lv.needsKills.id))) || null;
