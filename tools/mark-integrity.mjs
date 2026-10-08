@@ -9,7 +9,8 @@
 //      two frames are the same picture is a mark over a creature that does not move: a PHANTOM POSE.
 //   2. A LANDING: within the windup and 1.5 s after it, something comes of it - the hero is hurt or thrown, or something is put in the
 //      world (a seed, a vine, a wave, a rock, a fire, a mover, a creature, a burst of earth or spores, an impact ring), or the creature
-//      itself goes somewhere (a charge, a leap).
+//      itself goes somewhere (a charge, a leap), or the strike is DRAWN (the frame just after the windup differs from the creature in
+//      the mode before it: a crate dropped where you are not still comes down where you can see it).
 //      A marked windup that never lands anything over every time it was seen is a PHANTOM MARK.
 // A finding fails the run unless it is listed in KNOWN below with the reason (a list that only ever shrinks).
 //   node tools/mark-integrity.mjs                 every boss and mini (PORT=<port> for the page)
@@ -47,15 +48,19 @@ const FIGHT = String.raw`async (row, secs) => {
     const e = find(); if (!e) break;
     if (fr % 150 === 0) { const side = fr % 300 ? 1 : -1, fl = A && A.floor ? A.floor : e.y; BK.tp((e.x + side * 44) / 16 - 0.5, fl / 16 - 1); tpd = true; }
     p.maxHp = 5000; p.hp = 5000; p.inv = 0; p.dead = false;
-    const w0 = world(), hp0 = p.hp, np0 = BK.parts().length, nr0 = BK.rings().length; BK.sim(1);
-    const hurt = p.hp < hp0, thrown = !tpd && Math.hypot(p.x - lastP[0], p.y - lastP[1]) > 6, grew = world() > w0 || BK.parts().length - np0 >= 8 || BK.rings().length > nr0;   /* a burst of earth or spores, an impact ring: something came out where you can see it */ tpd = false; lastP = [p.x, p.y];
+    const own = () => { let n = 0; for (const k in e) { const v = e[k]; if (Array.isArray(v)) n += v.length; } return n; };   /* its own things: her zones, his crowns, the cargo marks */
+    const w0 = world() + own(), hp0 = p.hp, np0 = BK.parts().length, nr0 = BK.rings().length; BK.sim(1);
+    const hurt = p.hp < hp0, thrown = !tpd && Math.hypot(p.x - lastP[0], p.y - lastP[1]) > 6, grew = world() + own() > w0 || BK.parts().length - np0 >= 8 || BK.rings().length > nr0;   /* a burst of earth or spores, an impact ring: something came out where you can see it */ tpd = false; lastP = [p.x, p.y];
     for (const o of open) { if (hurt || thrown || grew) o.land = true; if (Math.hypot(e.x - o.ex, e.y - o.ey) > 14) o.land = true; o.left--; }
     const mark = BK.markShown(e), key = mark ? M.tellKey(e) : null;
     if (key !== curKey) {
-      if (cur) { cur.left = 90; }
+      if (cur) { cur.left = 90; cur.strikeAt = 4; }
       cur = null; curKey = key;
       if (key) { cur = { key, mark, land: false, left: 1e9, ex: e.x, ey: e.y, frames: 0, pose: null, prev: prevMode }; open.push(cur); }
     }
+    /* THE STRIKE, DRAWN: four frames after the windup ends, the frame as it is against the frame with the creature back in the mode before
+       the windup. A blow that falls on nobody (a crate where you are not, a crown thrown past you) still comes out where you can see it. */
+    for (const o of open) if (o.strikeAt != null && --o.strikeAt === 0 && !o.land && e.mode !== o.prev && !BK.markShown(e) && o.prev != null) { if (poseDiff(e, o.prev) >= 20) { o.land = true; o.drawnStrike = true; } }
     if (cur) { cur.frames++; cur.ex = e.x; cur.ey = e.y; if (cur.frames === 6 && cur.prev != null) cur.pose = poseDiff(e, cur.prev); }
     if (!key) prevMode = e.mode;
     for (let i = open.length - 1; i >= 0; i--) if (open[i].left <= 0) { const o = open.splice(i, 1)[0]; const r = rows[o.key] = rows[o.key] || { mark: o.mark, n: 0, landed: 0, posed: 0, poseN: 0, minPose: 1e9, maxPose: 0 };
