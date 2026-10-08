@@ -654,8 +654,9 @@ const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv
 /* 'boss:<level id>': the boss of that level has been beaten (PROG.bossDown, set when he dies - not when the level is cleared) */
 const featDone = f => String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
 let K = null;   /* the hero's frames: baked once, by applySkin() ahead of the sprite bakes below (it used to be a plain knight here and the real hero at the end) */
-// TESTING (for now): GOD MODE owns everything and every wood is open, for as long as it is on - nothing is written into
-// the save, so switching it off puts the game back; INVINCIBLE takes no damage and a fall puts you back on the last checkpoint.
+// TESTING (for now): UNLOCK EVERYTHING (SET.godmode, the old GOD MODE) owns everything and every wood is open, for as long as it is on - nothing is written into
+// the save, so switching it off puts the game back; GOD MODE (SET.invincible, the old INVINCIBLE; claude/godmode) takes no damage, never tires, jumps in the air and holds JUMP to rise,
+// a fall puts you back on safe ground - and it is an ASSIST: no medals, no silver, no no-hit, no boss feats while it is on.
 const godMode = () => !!SET.godmode;
 const owns = (tab, id) => godMode() || !!(PROG[tab.owned] && PROG[tab.owned][id]);
 const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro'; const isPaladin = () => hero() === 'paladin'; const isPirate = () => hero() === 'pirate'; const isReaper = () => hero() === 'reaper'; const isWarden = () => hero() === 'warden'; const isGeo = () => hero() === 'geomancer'; let GEO = null; let EMBER = null;   /* THE PYROMANCER'S EMBER WARD (src/ember-ward.js), bound beside the Geomancer's kit */   /* THE GEOMANCER's kit (src/geomancer.js), bound below once the world it reaches into exists */
@@ -3990,7 +3991,7 @@ function rushDied() {
 function rushWin() {
   const rec = PROG.rush || {};
   const t = Math.round(rush.t), lives = rush.lives, hits = rush.hits;
-  if (!rush.single) { if (!rec.bestT || t < rec.bestT) rec.bestT = t; if (!rec.bestHits || hits < rec.bestHits) rec.bestHits = hits; rec.done = true; PROG.rush = rec; saveProgress(); }
+  if (!rush.single && !SET.invincible) { if (!rec.bestT || t < rec.bestT) rec.bestT = t; if (!rec.bestHits || hits < rec.bestHits) rec.bestHits = hits; rec.done = true; PROG.rush = rec; saveProgress(); }
   state = 'rushwin'; SFX.win(); rushMsg = ''; rushMsgT = 0;
 }
 function updateRush(dt) {
@@ -4191,7 +4192,7 @@ function winLevel() {
   const id = LEVELS[levelIndex].id, p = PROG[id] || {};
   winPrevBest = p.best !== undefined && p.best !== null && !Number.isNaN(p.best) ? p.best : null;
   const ofAll = levelFoes || enemies.filter(e => !e.harmless).length;
-  PROG[id] = { quest: p.quest, silver: p.silver, cleared: true, best: p.best ? Math.min(p.best, levelTime) : levelTime, gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths),
+  PROG[id] = { quest: p.quest, silver: p.silver, cleared: true, best: SET.invincible ? p.best : (p.best ? Math.min(p.best, levelTime) : levelTime), gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths),
     slain: Math.max(p.slain || 0, kills), slainOf: Math.max(p.slainOf || 0, ofAll) };
   PROG.coins = (PROG.coins || 0) + got; earned = got;
   /* THE WOOD'S SHARE (XP_CLEAR in src/xp.js). The first finish of a wood was a level; it is XP now, and the fights paid the rest on the way */
@@ -4199,9 +4200,17 @@ function winLevel() {
   winLevelUp = heroLevel() > lvAtStart;
   if (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret) { heroDone()[id] = 1; const gw = (PROG.xpGot[hero()] || {})[id]; if (gw) delete gw.k; }   /* a finished wood pays a fifth for everything in it, so its list of the fallen can go */
   if (winLevelUp) { applyUpgrades(); regear(); P.hp = P.maxHp; setTimeout(() => { if (state === 'win') SFX.rankUp(); }, 1500); }
+<<<<<<< ours
   { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now);
     for (const c of LEVELS) { const o = c.opensOn; if (o && o.level === id && (o.time ? (PROG[id].best <= o.time && !(winPrevBest !== null && winPrevBest <= o.time)) : (o.medal && now >= (MEDAL_RANK[o.medal] || o.medal) && was < (MEDAL_RANK[o.medal] || o.medal))) && !(PROG[c.id] && PROG[c.id].cleared)) { hintMsg = c.name + ' IS OPEN: A NEW ROAD OFF THE MAP'; hintT = 6; } } }
   if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true; dcBankAll();
+||||||| base
+  { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now); }
+  if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true; dcBankAll();
+=======
+  { const was = p.medal || 0, now = SET.invincible ? 0 : medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now); }
+  if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0 && !SET.invincible) PROG[id].noHit = true; if (SET.iron && !SET.invincible) PROG[id].iron = true; dcBankAll();
+>>>>>>> theirs
   saveProgress();
 }
 
@@ -5503,6 +5512,7 @@ const partScale = () => SET.parts === 'few' ? 0.5 : SET.parts === 'many' ? 1.8 :
 let menuKind = 'pause';
 // one line each, so nobody has to guess what a switch does
 const SETTING_TIPS = {
+  'Unlock everything': 'everything open and free while on; the save is untouched', 'God mode': 'an assist: never hurt or tired, jump in the air. no medals',
   'Skills': 'the store, open on your abilities and their loadout (Q)', 'Level card': 'what each level gave: vigor, endurance, might, and the perks', 'Store': 'buy and equip anything (V on the map)', 'Difficulty': 'how hard foes hit and how much they take', 'Game speed': 'slow the whole game down', 'Jump assist': 'a longer coyote step off ledges',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk boxes fill',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
@@ -5556,8 +5566,8 @@ function menuAdjust(dir) {
   else if (k === 'HUD') SET.hud = SET.hud === 'full' ? 'minimal' : 'full'; else if (k === 'Screen filter') SET.filter = FILTERS[(FILTERS.indexOf(SET.filter) + dir + FILTERS.length) % FILTERS.length]; else if (k === 'Foe health') SET.foeBars = !SET.foeBars; else if (k === 'Boss health') SET.bossHp = BOSSHP_MODES[(Math.max(0, BOSSHP_MODES.indexOf(SET.bossHp)) + dir + BOSSHP_MODES.length) % BOSSHP_MODES.length]; else if (k === 'Look down') SET.lookDown = !SET.lookDown; else if (k === 'Boss intro') SET.bossIntro = !SET.bossIntro; else if (k === 'Rumble') SET.rumble = !SET.rumble; else if (k === 'Tenths') SET.tenths = !SET.tenths;
   else if (k === 'Flashes') SET.flashes = !SET.flashes; else if (k === 'Vignette') SET.vignette = !SET.vignette; else if (k === 'Weather') SET.weather = !SET.weather; else if (k === 'Impact FX') SET.impact = !SET.impact; else if (k === 'Tips') SET.tips = !SET.tips; else if (k === 'Block') SET.blockToggle = !SET.blockToggle; else if (k === 'Text speed') SET.textFast = !SET.textFast; else if (k === 'Reduce motion') { SET.reduceMotion = !SET.reduceMotion; if (SET.reduceMotion) { SET.shake = false; SET.hitstop = false; SET.flashes = false; } menuMsg = SET.reduceMotion ? 'no shake, no stop, no flashes, no zoom' : 'motion back on'; menuMsgT = 3; }
   else if (k === 'Full screen') { try { if (window.bkFullscreen) window.bkFullscreen(); } catch (e) {} menuMsg = document.fullscreenElement ? 'windowed' : 'full screen'; menuMsgT = 2; }
-  else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'God mode') { SET.godmode = !SET.godmode; menuMsg = SET.godmode ? 'everything unlocked and free while this is on' : 'back to what you have earned'; menuMsgT = 2; if (!SET.godmode) { for (const tb of STORE_TABS) if (tb.key && tb.owned && PROG[tb.key] && !(PROG[tb.owned] || {})[PROG[tb.key]] && PROG[tb.key] !== 'none') PROG[tb.key] = tb.key === 'hero' ? 'knight' : (tb.items[0] || {}).id; applySkin(); applyUpgrades(); } }
-  else if (k === 'Invincible') { SET.invincible = !SET.invincible; menuMsg = SET.invincible ? 'nothing can hurt you (for testing)' : 'you can be hurt again'; menuMsgT = 2; }
+  else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Unlock everything') { SET.godmode = !SET.godmode; menuMsg = SET.godmode ? 'everything unlocked and free while this is on' : 'back to what you have earned'; menuMsgT = 2; if (!SET.godmode) { for (const tb of STORE_TABS) if (tb.key && tb.owned && PROG[tb.key] && !(PROG[tb.owned] || {})[PROG[tb.key]] && PROG[tb.key] !== 'none') PROG[tb.key] = tb.key === 'hero' ? 'knight' : (tb.items[0] || {}).id; applySkin(); applyUpgrades(); } }
+  else if (k === 'God mode') { SET.invincible = !SET.invincible; menuMsg = SET.invincible ? 'GOD MODE: no harm, endless stamina, jump in the air, hold JUMP to rise (no medals or feats)' : 'you can be hurt again'; menuMsgT = 2; }
   else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects vol') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') { SET.shakeMode = SET.shakeMode === 'off' ? 'hit' : 'off'; SET.shake = SET.shakeMode !== 'off'; } else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles; else if (k === 'Character voices') SET.voices = SET.voices === false;
   else if (k === 'Way-on arrow') { if (SET.wayOn) { SET.wayOn = false; SET.wayStall = false; } else if (SET.wayStall === false) SET.wayStall = true; else SET.wayOn = true; menuMsg = SET.wayOn ? 'an arrow to the next gate, key, shrine or the way out' : SET.wayStall !== false ? 'an arrow only when you have been stuck for ten seconds' : 'no arrow: find your own way'; menuMsgT = 3; }
   else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Hit numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
@@ -6253,6 +6263,10 @@ function zoomKick(amt, t = 0.14) { if (SET.shake && SET.shakeMode === 'full' && 
 /* A DODGE IS UNTOUCHABLE FOR AS LONG AS ITS OWN GRACE LASTS, not for as long as it lasts. P.dodgeInv is set at the
    start of every one of them (the roll's whole length for everybody else, STEP_INV for the Warden's back-step), so a
    cheap repeatable step cannot be a cheap repeatable invulnerability. */
+/* GOD MODE (SET.invincible; claude/godmode): health and stamina are held full every frame (the damage paths already refuse a hit; this catches the poisons and drains), a pit or fire puts him back on safe ground */
+const godOn = () => !!SET.invincible;
+function godTend() { if (!SET.invincible || P.dead) return; P.hp = P.maxHp; P.st = P.maxSt; P.winded = false; P.windedNew = false; P.stDelay = 0; }
+const godSafe = () => { const s = P.safe && P.safe.L === L ? P.safe : checkpoint; P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; };
 const invulnerable = () => P.inv > 0 || P.grace > 0 || (P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0)) || P.divineT > 0 || SET.invincible || (window.BK && window.BK.god);
 // the creatures that have a recoil frame: it is the LAST frame of their set, and it holds for a fifth of a second
 /* HURT, FOR THE REST OF THEM. Ten of the most-placed creatures had no hurt pose, so a blow landed on them the way it lands on a
@@ -8774,7 +8788,7 @@ function updatePlayer(dt) {
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel');
   if (P.landT > 0 && (P.jbuf > 0 || P.dbuf > 0)) P.landT = 0; // a landing can always be left early: the controls never take the wheel
-  CM.staminaTick(P, dt, { extra: P.venomSlow || 1, hold: P.plungeN > 0, hero: hero() }); if (P.windedNew) { P.windedNew = false; number(P.x, P.y - 22, 'WINDED: NO ROLL, NO GUARD', '#ff6b6b'); }
+  CM.staminaTick(P, dt, { extra: P.venomSlow || 1, hold: P.plungeN > 0, hero: hero() }); godTend(); if (P.windedNew) { P.windedNew = false; number(P.x, P.y - 22, 'WINDED: NO ROLL, NO GUARD', '#ff6b6b'); }
   if (P.windSurge) { P.windSurge = false; number(P.x, P.y - 22, 'SECOND WIND', '#8fd160'); ringAt(P.x, P.y - 10, 18, '#8fd160', 0.3); }   /* ENDURANCE 20 */
   if (parries !== mendSeen) { if (parries > mendSeen && perk('mend') && P.hp > 0 && P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 3); number(P.x + 8, P.y - 34, '+3', '#8fd160'); } mendSeen = parries; }   /* TURNED BLOW (a minor perk): every turned blow counts in parries */   /* WEIGHT: no regen while committed, rolling or guarding; EXHAUSTED at 0 (src/commit.js staminaTick) */   /* (P.venomSlow: THE CISTERN QUEEN's venom, src/cistern-queen-hands.js) */
   P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
@@ -9133,6 +9147,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     else if ((P.jbufUpT = (P.jbufUpT || 0) + dt) < UP_SLASH.grace) { P.jbufStash = P.jbuf; P.jbuf = 0; }
     else P.jbufUp = false; }
   if (P.jbuf > 0 && P.ballast && P.swim) { P.jbuf = 0; dropBallast(true); }
+  else if (SET.invincible && P.jbuf > 0 && !P.ground && !(P.coyote > 0) && !stunned && !P.swim && !P.climb && !P.plunge) { P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* GOD MODE: jump again in mid-air, as often as you like */
   else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
   /* THE POLE VAULT: a jump taken OUT OF A DASH. She plants the heel and goes over - the same distance every time,
      never from the air, and it wants ground under the plant. It is a RIDE and not a jump: the reach model must never
@@ -9162,6 +9177,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
      top of this function, before the jump above had read them, so each lost a frame: the 0.12 s buffer held six frames, not
      seven, and the coyote step only reached its sixth frame on a remainder of 1e-17. They are read, then spent; a remainder
      under a thousandth of a frame is nothing, not one more frame (tools/audit-input.mjs: coyote 6, buffer 7). */
+  if (SET.invincible && !P.ground && !stunned && !P.swim && !P.climb && !P.plunge && !P.dead) { if (keys.down) { P.vy = Math.max(P.vy, 300); P.canCut = false; } else if (keys.jump && P.vy > -70) { P.vy = -70; P.canCut = false; } }   /* GOD MODE: hold JUMP to rise slowly (and float), hold DOWN to drop */
   for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
   if (P.jbufStash > 0) { P.jbuf = P.jbufStash; P.jbufStash = 0; }
   if (jumpHeld) P.jbuf = jumpHeld;   /* (the up-key jump held for its grace: it is still asked for next frame) */
@@ -9386,7 +9402,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   for (let ty = Math.floor(pb.t / TS); ty <= Math.floor((pb.b - 1) / TS); ty++) for (let tx = Math.floor(pb.l / TS); tx <= Math.floor((pb.r - 1) / TS); tx++) {
     if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6 && !windFall(tx, ty)) spikeBite(tx, 'THE SPIKES');   /* (a WIND ZONE's spikes are the zone's: one bite and the wind, spike-winds.js) */
   }
-  if (P.y > LH * TS + 30) { if (SET.invincible) { P.x = checkpoint.x; P.y = checkpoint.y; P.vx = 0; P.vy = 0; } else { die({ name: 'THE FALL', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; } }   /* (in co-op the fall put him DOWN, and a downed hero is not also a dead one) */
+  if (P.y > LH * TS + 30) { if (SET.invincible) godSafe(); else { die({ name: 'THE FALL', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; } }   /* (in co-op the fall put him DOWN, and a downed hero is not also a dead one) */
   /* A POOL HAS A BOTTOM. This was "in its columns and anywhere below its surface", so the Undercrown's flooded level
      killed everyone who walked into the Pit Warden's arena a hundred and ten rows under it. Below the pool's own
      floor (its bottom, or the first rock under its surface) you are not in it. */
@@ -9396,7 +9412,14 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     if (p.fire) { burst(P.x, p.y, 18, ['#fff6c8', '#ffd36b', '#ff6b2c'], 90, 0.6, -160, 2); SFX.puff(); number(P.x, p.y - 14, 'BURNED', '#ff9a5c'); }
     else { burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5'); }
     /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
+<<<<<<< ours
     if (L.waterHurts && L.fallRule !== 'death' && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; hazardSay(); } }
+||||||| base
+    if (L.waterHurts && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; } }
+=======
+    if (L.waterHurts && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; } }
+    else if (SET.invincible) godSafe();
+>>>>>>> theirs
     else { die({ name: p.fire ? 'THE FIRE' : 'DROWNED', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.8; }
     break;
   }
@@ -17627,7 +17650,7 @@ function orePitStep(dt) {
     /* A FIFTH OF HIS HEALTH, taken straight off it: through damagePlayer the difficulty scales it, and a scaled
        bite can take the last point - which a pit must never do */
     const bite = Math.min(Math.round(P.maxHp * OR.PIT_BITE), P.hp - 1);
-    if (bite > 0) { P.hp -= bite; P.hurt = 0.25; flash = Math.max(flash, 0.12); SFX.pHurt(); number(P.x, P.y - 20, '-' + bite, '#ff6b6b'); }
+    if (bite > 0 && !SET.invincible) { P.hp -= bite; P.hurt = 0.25; flash = Math.max(flash, 0.12); SFX.pHurt(); number(P.x, P.y - 20, '-' + bite, '#ff6b6b'); }
     P.inv = 1; P.pitLift = { q, t: 0 }; q.kick = 1.5; P.pitFalls = (P.pitFalls || 0) + 1;
     SFX.puff(); SFX.charge(); shakeCam(3); burst(P.x, q.floor * TS + 4, 12, ['#dfe8f0', '#9aa0aa'], 90, 0.5);
     number(P.x, P.y - 30, 'THE TURBINES TAKE YOU', '#dfe8f0'); }
@@ -17881,7 +17904,7 @@ const windSlabs = z => (z && z.arena ? gargSlabs().filter(m => !m.broken) : []);
 /* a hero's body in a zone's spikes: ONE bite, and the wind has him. Returns true when it was a zone's (so the engine's spikes keep off) */
 function windFall(tx, ty) {
   if (P.windRide) return true; const z = windZoneAt(L, tx, ty); if (!z || P.dead) return false;
-  const bite = windBite(P); if (bite > 0) { P.hp -= bite; P.hurt = 0.25; flash = Math.max(flash, 0.12); SFX.pHurt(); number(P.x, P.y - 20, '-' + bite, '#ff6b6b'); }
+  const bite = windBite(P); if (bite > 0 && !SET.invincible) { P.hp -= bite; P.hurt = 0.25; flash = Math.max(flash, 0.12); SFX.pHurt(); number(P.x, P.y - 20, '-' + bite, '#ff6b6b'); }
   P.windFalls = (P.windFalls || 0) + 1; windCatch(P, z, 'fall', windSlabs(z)); SFX.puff(); SFX.gust(); shakeCam(3); burst(P.x, z.row * TS + 8, 12, ['#e0f4ff', '#c8a0ff'], 90, 0.5);
   number(P.x, P.y - 30, 'THE WIND TAKES YOU UP', '#e0f4ff'); return true; }
 /* THE STOMP on stone lying on the spikes - the Gate Gargoyle stunned, a whelp stuck: a stomp's worth off him (all of a whelp), a bounce,
@@ -19833,7 +19856,7 @@ function unbDied(e) {
   if (e.t === 'deathknight' || e.t === 'bloodknight') for (const q of enemies) if (q.alive && q.t === 'corpse' && q.from === e) { q.alive = false; burst(q.x, q.y - 6, 8, COLS.corpse, 50, 0.5); }
   /* HE IS BEATEN: the hero he is opens in the shop (his feat 'boss:unburied', and his gold route). Set on his death in his own
      level - not on clearing it, and not in a boss rush. A save that already owns the hero keeps him whatever this says. */
-  if (e.t === 'bloodknight' && !rushOn() && curId() === 'unburied') { PROG.bossDown = PROG.bossDown || {};
+  if (e.t === 'bloodknight' && !rushOn() && !SET.invincible && curId() === 'unburied') { PROG.bossDown = PROG.bossDown || {};
     if (!PROG.bossDown.unburied) { PROG.bossDown.unburied = true; saveProgress(); number(e.x, e.y - 60, 'THE DEATH KNIGHT CAN BE HAD IN THE SHOP', '#c8b6ff'); } }
 }
 function unbReset() {
@@ -23433,7 +23456,7 @@ function wardStop(dmg, fromX) {
   if ((P.wardG || 0) >= cap - 0.5) { wardBreak(fromX); return 'broken'; }
   const blood = L && L.trial ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1)));   /* a trial never hurts */
   if (blood >= P.hp) return 'bled';
-  P.hp -= blood; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood, '#c0283a');
+  if (!SET.invincible) P.hp -= blood; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood, '#c0283a');
   P.wardG = Math.min(cap, (P.wardG || 0) + (8 + dmg * 0.9) * (1 + 0.12 * prk('dward')));
   P.st = Math.max(0, P.st - WARD_HIT); P.stDelay = ST.delay; P.inv = Math.max(P.inv, 0.22); P.hurt = 0; P.wardFlash = 0.2; blocks++; gainHarvest(2);
   const k = P.wardG / cap, sd = Math.sign(fromX - P.x) || P.face, x = P.x + sd * 13, y = P.y - 18;
@@ -25590,7 +25613,7 @@ function updateProps(dt) {
   if (LEH && LEH.on()) LEH.strike(hb);   /* THE LANTERN-EATER: a swing on the basin's real lamp (it clanks), or on the raft's lantern (phase three: dim it, raise it) */
   if (embers.length) updateEmbers(dt);
   if (meteors.length || fireRings.length || lanceBeams.length || moons.length) updateSkillFx(dt);
-  for (const s of silvers) if (!s.got && !P.dead && Math.abs(s.x - P.x) < 13 && Math.abs(s.y - (P.y - 7)) < 15) { s.got = true; const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].silver = (PROG[id].silver || 0) | (1 << s.i); saveProgress(); const n = silvers.filter(q => q.got).length; SFX.medal(); SFX.sting(); number(s.x, s.y - 18, 'SILVER ' + n + '/' + silvers.length, '#dfe8ff'); burst(s.x, s.y, 12, ['#dfe8ff', '#ffffff'], 60, 0.6, -30, 1); ringAt(s.x, s.y, 20, '#dfe8ff', 0.4); slowT = 0.3; }
+  for (const s of silvers) if (!s.got && !P.dead && !SET.invincible && Math.abs(s.x - P.x) < 13 && Math.abs(s.y - (P.y - 7)) < 15) { s.got = true; const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].silver = (PROG[id].silver || 0) | (1 << s.i); saveProgress(); const n = silvers.filter(q => q.got).length; SFX.medal(); SFX.sting(); number(s.x, s.y - 18, 'SILVER ' + n + '/' + silvers.length, '#dfe8ff'); burst(s.x, s.y, 12, ['#dfe8ff', '#ffffff'], 60, 0.6, -30, 1); ringAt(s.x, s.y, 20, '#dfe8ff', 0.4); slowT = 0.3; }
   for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const G = gustNow(z), on = G.on, soon = G.tell >= 0, zd = G.dir;
     if (z.told) { const near = !P.dead && P.x > z.x0 - 260 && P.x < z.x1 + 260 && P.y > z.y0 - 120 && P.y < z.y1 + 120; if (soon && !z.rose && near) { z.rose = true; SFX.gustRise(); } if (!soon) z.rose = false; }   /* THE TOLD GUST's whistle, once a build-up, heard before you are in it */
     if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (!z.current) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; }
@@ -29670,7 +29693,7 @@ function drawMenu() {
     const yy = top0 + (i - base - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); g.fillStyle = '#ffd36b'; for (const dx of [x + w / 2 - hw - 2, x + w / 2 + hw + 1]) { g.fillRect(Math.round(dx), yy + 2, 1, 3); g.fillRect(Math.round(dx) - 1, yy + 3, 3, 1); } text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
-    const tv = TCH.rowValue(k), v = tv != null ? tv : k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? (SET.wayOn ? 'ALWAYS' : SET.wayStall !== false ? 'STUCK' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Gear tiers' ? onoff(SET.gear !== false) : k === 'Graphics' ? UIH.gfxOf(SET).toUpperCase() : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Boss health' ? (BOSSHP_LABEL[SET.bossHp] || 'BAR') : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'God mode' ? onoff(SET.godmode) : k === 'Invincible' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeMode === 'off' ? 'OFF' : SET.shakeMode === 'full' ? 'FULL' : 'ON HIT') : k === 'Shake strength' ? (SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
+    const tv = TCH.rowValue(k), v = tv != null ? tv : k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? (SET.wayOn ? 'ALWAYS' : SET.wayStall !== false ? 'STUCK' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Gear tiers' ? onoff(SET.gear !== false) : k === 'Graphics' ? UIH.gfxOf(SET).toUpperCase() : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? SET.hud.toUpperCase() : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Boss health' ? (BOSSHP_LABEL[SET.bossHp] || 'BAR') : k === 'Look down' ? onoff(SET.lookDown) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Unlock everything' ? onoff(SET.godmode) : k === 'God mode' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeMode === 'off' ? 'OFF' : SET.shakeMode === 'full' ? 'FULL' : 'ON HIT') : k === 'Shake strength' ? (SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? (SET.speed === 1 ? 'FULL' : Math.round(SET.speed * 100) + '%') : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
     const vs = v ? (sel ? '< ' + v + ' >' : String(v)) : '';
     const vw = vs ? textW(vs, 8) + 8 : 0;
     if (!isHeader(k) && k !== '@TABS') TCH.hit(x + 5, yy - 2, w - 10, 11, gx => { menuI = i; menuBarY = null; if (!vs) confirmPress = true; else if (gx >= x + w - 10 - vw && gx < x + w - 10 - vw / 2) leftPress = true; else rightPress = true; });   /* a tap on a row: a plain row goes in, a row with a value turns it (the left half of the value turns it back) */
@@ -30221,7 +30244,7 @@ function render() {
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
     if (SET.invincible || SET.godmode) { const ph = (SET.iron ? 36 : 24) + 10 + xpRow;
-      text((SET.invincible ? 'INVINCIBLE ' : '') + (SET.godmode ? 'GOD MODE' : ''), 6, 2 + ph + 3, '#ff9a5c', 'left', 6); }
+      text((SET.invincible ? 'GOD MODE ' : '') + (SET.godmode ? 'UNLOCK ALL' : ''), 6, 2 + ph + 3, '#ff9a5c', 'left', 6); }
     g.drawImage(PROP.bolt, 6, 15);
     if (hero() === 'knight') { const hy = SET.iron ? 41 : 29, full = (P.resolve || 0) >= 100, on = lcOn(), fill = on ? (P.lcBrace > 0 ? 1 : Math.max(0, P.lcLeft / LC_DIST)) : (P.resolve || 0) / 100;   /* RESOLVE: a shield for the icon; while THE LAST CHARGE runs, the bar is the road left in it */
       bar(16, hy, 70, 4, fill, on || full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#c9d1dc', fill);
