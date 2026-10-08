@@ -46,7 +46,7 @@ import { doorSpot, standing, cleanBundle, drop, normalizeDeathCost, freshDeathCo
   db.setItem('slot', old); const ld = loadProgress(db, 'slot', old); assert.equal(ld.progress.deathCost.bundle, null); assert.equal(ld.changed, false); }
 
 /* THE SHRINES tools/checkpoint-stand.mjs documents as gaps in the reach MODEL (a wasp pogo, a gust ride, a breakable wall the fill has no pick for): a door beside one can not be filled either, for the same reason */
-const MODEL_GAPS = { wood: [[510, 8]], oreroad: [[470, 12]], glasssea: [[600, 30]] };   /* (claude/glasssea, batch75: the reach fill has no slide - see tools/checkpoint-stand.mjs) */
+const MODEL_GAPS = { wood: [[510, 8]], oreroad: [[470, 12]], glasssea: [[600, 30]], ksar: [[581, 33]] };   /* (ksar, batch79 integ: the tower's bricked arch needs a thrown keg - see tools/checkpoint-stand.mjs) */   /* (claude/glasssea, batch75: the reach fill has no slide - see tools/checkpoint-stand.mjs) */
 /* (claude/moor2: the moor's landing is walked now - the kite ride that hid it is gone) */
 /* ---- 3. EVERY ARENA'S DOOR IS STANDING ROOM THE FILL REACHES (a boss never carries one) ---- */
 { const misses = [], skipped = []; let n = 0;
