@@ -157,20 +157,21 @@ export function buildRootway({ painter, T, TS }) {
   bud(267, 23);   /* (FIX PASS: flush against the root wall - no one-column corner between the cap and the wall) */
   hoist('hunterB', { x: 267, top: 6, hang: 12, cleat: [262, 22], load: 'hunter' }); foe('trophyhunter', 267, 12, 'hoistB', { face: -1, hang: 'hunterB' });
   ground(269,303,19);
-  tag(272,18);                                                                   /* TROPHY TAG TWO */
+  tag(269,18);                                                                   /* TROPHY TAG TWO */
   /* THE HUNTERS' GANTRY (claude/ziproot, Daniel 2026-10-08: ZIP LINES): the road's last stretch is a well ten wide with a ledge a storey under the far lip. The hunters' trophy line
-     hangs from a gantry five rows over the road - no jump reaches it - and a CAGE hangs over the road at its foot: cut it down and it lands as a two-row step (cage, gantry, ledge).
+     hangs from a gantry five rows over the road - no jump reaches it - and a CAGE hangs over the road at its foot: cut it down and it lands on a root stump as a two-row step (stump, cage, gantry, ledge).
      UP takes the handle and the line carries you over the well to the ledge, where the hunt holds the landing; the ledge's bud grows you up the root wall to the road. A miss is a
      fall into the well (a shelf stair up its near wall, A10). The bow on the bough over the road covers the line. */
   sign(270,18,"THE HUNTERS' GANTRY. CUT THE CAGE DOWN FOR A STEP, THEN UP THE STEP: THE TROPHY LINE CARRIES YOU OVER THE WELL.");
   air(281, 290, 0, 26); ground(281, 290, 27); plank(281, 282, 24); plank(281, 282, 21);                                                             /* the well, and root shelves up its near wall (a fall costs the climb) */
-  hoist('gantry', { x: 275, top: 9, hang: 13, cleat: [271,18], load: 'cage', land: [274,17] });
-  coins([277,13],[279,13]);
-  plank(276,280,14); ent('rockfall', 272, 0, { spore: true, every: 2.8, tell: 0.9 });   /* THE GANTRY, a hunters' deck over the road (rope + 12 = feet) */
+  hoist('gantry', { x: 275, top: 9, hang: 13, cleat: [271,18], load: 'cage', land: [274,16] });
+  ground(273, 275, 18);                                                            /* a root stump under the cage's place: one row up from the road (a step), and the cage lands on it - road, stump, cage, gantry: 1 + 2 + 2 rows, nothing taller than a jump */
+  coins([277,13],[279,13]); foe('shield', 276, 18, 'yardExam', { face: -1 });   /* (the yard's shield captain: level.js ELITES upgrades him; the squad spans the road and the landing - one fight) */
+  plank(276,280,14);   /* THE GANTRY, a hunters' deck over the road (rope + 12 = feet) */
   air(291, 296, 19, 22); ground(291, 296, 23);                                          /* THE LEDGE a storey under the far lip, and the root wall to the road (the ledge's bud, flush against it) */
   bud(295,23);
   zips.push(rope(279,14,292,23,23));                                               /* the trophy line: gantry to ledge (the hero's feet = rope + 12) */
-  foe('trophyhunter', 294, 22, 'gantryLanding', { face: -1 }); foe('archer', 303, 18, 'gantryLanding', { face: -1 }); deco(291,22,'warnPost',0); glow(293,22);   /* THE LANDING: the hunter holds the ledge and a bow covers the line (difficulty v2: a foe at the landing) */
+  foe('trophyhunter', 294, 22, 'yardExam', { face: -1 }); deco(291,22,'warnPost',0); glow(293,22);   /* THE LANDING: the hunter holds the ledge and a bow covers the line (difficulty v2: a foe at the landing) */
   coins([284,13],[287,14],[290,16]);                                               /* a trail of trophies along the line */
   ent('check', 299, 18);                                                          /* CHECKPOINT THREE */
   deco(278, 13, 'hangCage', 0);

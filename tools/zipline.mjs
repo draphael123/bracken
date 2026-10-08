@@ -81,9 +81,32 @@ const PAGE = `(async (hero, levelId) => {
     ({ L, P, k } = fresh()); L.zipLines.splice(0); L.zipLines.push(z);
     stand(P, loX - dirn * 4, road); k.up = true; BK.sim(20); const up = !!P.zip; k.up = false;
     row(tag + ': UP right at its foot has no ride left to give', !up, 'took hold at the foot: ' + JSON.stringify(info(P))); }
+  /* THE ROOTWAY's HUNTERS' GANTRY (claude/ziproot) - the route use, played with the real keys: the road ends in a well ten wide; cut the cage down (a blow on its cleat), climb the cage, jump to the gantry,
+     UP takes the trophy line and it sets him on the ledge across, alive; and a hero on the well's shelf, or at its lip, cannot reach the line without the step (the cage is the lock) */
+  if (levelId === 'rootway') { const RW = BK.rootway, cellTp = (x, y) => { BK.tp(x, y); BK.sim(4); };
+    { let { L, P, k } = fresh(); const z = L.zipLines[1], hz = RW().hoist('gantry'); const hp0 = P.hp;
+      cellTp(271, 18); P.face = 1; BK.press('atk'); for (let i = 0; i < 24; i++) BK.sim(1); for (let i = 0; i < 160 && hz.state !== 'down'; i++) BK.sim(1);
+      row('gantry: a blow on the cleat drops the cage over the road', hz.state === 'down' && L.grid[17 * L.W + 274] === T.SOLID, 'cage ' + hz.state);
+      for (let i = 0; i < 90 && (P.atk >= 0 || P.abuf > 0 || P.hurt > 0); i++) BK.sim(1);   /* (his swing is over before he walks) */
+      /* climb: road -> the stump (1 row) -> the cage top (2 rows) -> the gantry deck (2 rows), each a held jump with the right key */
+      const hop = (rf, jf) => { k.right = true; k.jump = true; BK.press('jump'); for (let i = 0; i < jf; i++) BK.sim(1); k.jump = false; for (let i = 0; i < rf && !P.ground; i++) BK.sim(1); k.right = false; for (let i = 0; i < 60 && !P.ground; i++) BK.sim(1); BK.sim(2); };   /* (right held through the jump and a little after, as a player does; then let go on the step) */
+      cellTp(272, 18); hop(4, 14);
+      row('gantry: a jump from the road reaches the stump (a one-row step)', P.ground && Math.abs(P.y - 18 * TS) < 6 && P.x > 272.5 * TS, info(P).x + ',' + info(P).y);
+      hop(4, 18);
+      row('gantry: a jump from the stump reaches the cage top (a two-row step)', P.ground && Math.abs(P.y - 16 * TS) < 6 && P.x > 274 * TS - 4, info(P).x + ',' + info(P).y);
+      P.x = 275 * TS + 4; BK.sim(2); hop(8, 18);
+      row('gantry: and a jump from the cage top reaches the gantry deck (two rows)', P.ground && Math.abs(P.y - 14 * TS) < 6 && P.x > 275 * TS, info(P).x + ',' + info(P).y);
+      if (P.ground && Math.abs(P.y - 14 * TS) < 6) { P.x = 279 * TS + 8; BK.sim(2); k.up = true; let got = false; for (let f = 0; f < 20 && !got; f++) { BK.sim(1); got = P.zip === z; } k.up = false;
+        row('gantry: UP takes the trophy line', got, 'not on the line: ' + JSON.stringify(info(P)));
+        if (got) { rideOut(P, z); settle(P); row('gantry: the line sets him on the ledge across the well, alive and unhurt', P.ground && Math.abs(P.x - 292 * TS) < 40 && Math.abs(P.y - 23 * TS) < 6 && !(P.dead > 0) && P.hp === hp0, 'ended ' + JSON.stringify(info(P)) + ' hp ' + hp0 + '>' + P.hp); } } }
+    /* the cage is the lock: with it still hanging, the well's shelf and the road's lip cannot reach the line, by a jump or by UP */
+    for (const [tx, ty, what] of [[282, 20, 'the well shelf'], [280, 18, 'the road lip'], [276, 18, 'under the gantry']]) { const { L, P, k } = fresh(); const z = L.zipLines[1];
+      cellTp(tx, ty); k.up = true; k.jump = true; BK.press('jump'); let got = false; for (let f = 0; f < 50 && !got; f++) { BK.sim(1); got = P.zip === z; } k.up = false; k.jump = false;
+      row('gantry: ' + what + ' cannot reach the line (a jump with UP held) before the cage drops', !got, 'caught the line from ' + what + ': ' + JSON.stringify(info(P))); } }
   return rows; })(`;
 const t0 = Date.now(); let bad = 0, total = 0;
-for (const lvId of ['storm', 'rootway']) for (const h of (only.length ? only : HEROES)) {
+const onlyLv = (process.argv.find(a => a.startsWith('--levels=')) || '').slice(9).split(',').filter(Boolean);
+for (const lvId of ['storm', 'rootway'].filter(l => !onlyLv.length || onlyLv.includes(l))) for (const h of (only.length ? only : HEROES)) {
   const rows = await pg.evalp(PAGE + JSON.stringify(h) + ',' + JSON.stringify(lvId) + ')', 600000);
   const fails = rows.filter(r => !r.ok), skipped = rows.filter(r => r.skipped).length;
   console.log((fails.length ? 'FAIL ' : ' ok  ') + lvId.padEnd(8) + h.padEnd(10) + (rows.length - skipped - fails.length) + '/' + (rows.length - skipped) + ' lines of play pass' + (skipped ? ' (' + skipped + ' not on this level)' : ''));
