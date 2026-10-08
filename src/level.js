@@ -8425,7 +8425,7 @@ const ELITES = {
      shrines' ledge above the cloud, clear of the way up at 31-37, the cellar at 81-89 and the bellows at 14 */
   spire: [['troll', 61, 171], ['goat', 62, 79]],
   /* moor: the Kite Field's herd billy and the Gallery's crag troll are built in galeMoor() in their final columns */
-  storm: [['pike', 373, 29, { gate: 378 }]],   /* THE PIKE SERJEANT, THE HALLS: he holds the gap the Longhouse's second roof frames at 378 (this rework, docs/briefs/stormhold-town.md) */
+  storm: [['shield', 33, 35, { face: -1, gate: 38 }], ['brute', 162, 31, { face: -1 }], ['brute', 214, 31, { face: -1 }], ['shield', 343, 31, { face: -1 }], ['pike', 373, 29, { gate: 378 }], ['shield', 470, 43, { face: -1, gate: 475 }]],   /* (claude/stormtough: one weighty elite a section, the exams of the Road, the Square, Smoke Row, the Close's far bank and the gorge; the Pike Serjeant keeps the Halls) */   /* THE PIKE SERJEANT, THE HALLS: he holds the gap the Longhouse's second roof frames at 378 (this rework, docs/briefs/stormhold-town.md) */
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],

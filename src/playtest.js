@@ -198,7 +198,7 @@ export function makeBot(BK) {
         if (Math.abs(k.y + 6 - P.y) < 20) { goalX = k.x; tick.ladderX = undefined; }
         else if (!P.climb) { let lx, bd = 1e9; for (let x = kx - 10; x <= kx + 10; x++) if (at(x, fy - 1) === T.NET && at(x, fy - 2) === T.NET) { const q = Math.abs(x * TS + 8 - P.x); if (q < bd) { bd = q; lx = x; } }
           tick.ladderX = lx; goalX = lx !== undefined ? lx * TS + 8 : k.x; } }
-      if (!tick.seek && !tick.climbKey && (shut || still > 60) && doorCd <= 0) {
+      if (!tick.seek && !tick.climbKey && !L.noDoorKeys && (shut || still > 60) && doorCd <= 0) {
         let d = null, bd = 1e9;
         for (const p of props) { if (p.t !== 'doorway' || p.lock || (tick.used && tick.used.has(p.id))) continue;
           const q = Math.abs(p.x - P.x); if (q < bd) { bd = q; d = p; } }
@@ -328,7 +328,7 @@ export function makeBot(BK) {
     if (tap > 0) { tapT++; if (tapT === 1) { keys.left = keys.right = false; } if (tapT === 3) { keys.left = dir < 0; keys.right = dir > 0; tap = 0; } }
 
     // drop through a ledge if the goal is a long way below
-    if (P.ground && still > 70 && at(fx, fy) === T.ONEWAY) keys.down = true;
+    if (P.ground && still > 70 && at(fx, fy) === T.ONEWAY && !(L.zipLines && L.zipLines.some(z => !z.snap && Math.abs(Math.min(z.x0, z.x1) - P.x) < 5 * TS && Math.abs(z.y0 - P.y) < 3 * TS))) keys.down = true;   /* (claude/stormtough: not off the deck that holds a rope's high end - the rope IS the way down; the walker dropped through Stormhold's first deck to the road, 3000 frames a lap) */
 
     // A CREATURE UNDER YOU WHILE YOU ARE FALLING IS A STEP. Plunge on it and you bounce, and four wasps
     // over a pit is a bridge - which is the whole middle of Bracken Wood and every pogo chain after it.
@@ -342,8 +342,8 @@ export function makeBot(BK) {
     }
 
     /* ---- A ZIP LINE (src/zipline.js): riding one, he lets it carry him (no keys, no pogo on what is under it); at the high end of one that runs the way his goal lies, with the rope in his reach, he takes hold (UP). A frayed one (the Fair's, `snap`) is not a way he takes. ---- */
-    if (P.zip) { keys.left = keys.right = keys.up = keys.down = keys.jump = false; hold = 0; tick.jumping = 0; tick.pogoCd = 20; still = 0; }
-    else if (L.zipLines && dir && P.ground && !(P.zipRelease > 0) && !P.climb && L.zipLines.some(z => !z.snap && (z.dir || dir) === dir && Math.abs(goalX - P.x) > 8 * TS && zipInReach(z, P))) { keys.up = true; keys.left = keys.right = false; still = 0; }
+    if (P.zip) { keys.left = keys.right = keys.up = keys.down = keys.jump = false; BK.unpress(); hold = 0; tick.jumping = 0; tick.pogoCd = 20; still = 0; }
+    else if (L.zipLines && dir && P.ground && !(P.zipRelease > 0) && !P.climb && L.zipLines.some(z => !z.snap && (z.dir || dir) === dir && Math.abs(goalX - P.x) > 8 * TS && zipInReach(z, P))) { keys.up = true; keys.left = keys.right = false; keys.jump = false; tick.jumping = 0; hold = 0; BK.unpress(); still = 0; }   /* (claude/stormtough: not a jump on the grab frame - the deck-end leap of a goal that lies beyond the rope kicked him off it the frame he took hold, so the walker never rode Stormhold's first rope) */
 
     // ================================ THE FIGHT ================================
     // It could only do one thing: swing at whatever happened to be in arm's reach, so it walked into a
