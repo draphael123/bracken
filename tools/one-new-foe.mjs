@@ -54,8 +54,8 @@ const EHP = new Set([...ehp.slice(0, ehp.indexOf('};')).matchAll(/([a-zA-Z][a-zA
 assert.ok(EHP.size > 80, 'only ' + EHP.size + ' creatures read out of EHP: the parse has stopped working and this check guards nothing');
 
 /* A store, a trial yard and YOUR WOOD are not campaign levels and never were. Everything else is, INCLUDING THE
-   TWO SECRETS: Underleaf is gated on `needsTime: { id: 'kings', t: 180 }` and the Undercrown on
-   `needsKills: { id: 'crown', pct: 0.8 }`, which name the level you must be standing in just as exactly as
+   THE SECRET: the Undercrown is gated on `needsKills: { id: 'crown', pct: 0.8 }` (Underleaf was one too, on
+   `needsTime: { id: 'kings', t: 180 }`, until claude/underleafroad put it on the main road, 10-08), which names the level you must be standing in just as exactly as
    `needs` does. A walk that reads only `needs` has no position at all for those two and either drops them or
    leaves them wherever the array put them - so campaign-order.mjs reads all three gates. */
 const rows = [];
