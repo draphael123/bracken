@@ -944,7 +944,7 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/94",
+     "dead:100/95",
      "dead:100/100"
     ],
     "warden": [
@@ -964,7 +964,7 @@
      "out": "dead",
      "secs": 36,
      "hpLostPct": 100,
-     "bossLeftPct": 94,
+     "bossLeftPct": 95,
      "landed": 4,
      "swings": 1275,
      "reprisalPct": 0,

@@ -16,7 +16,7 @@
 //     jump it. NO ADDS: his flock call is gone (Daniel: no adds unless the brief says so).
 // main.js wires it (updateRam calls ramStep; the hit code asks ramGuard; the draw asks drawRamLips/drawRamRead). tools/ram-lord.mjs is its check.
 export const RAM = {
-  hp: 1750,             // (was 360 on the chip; a duelist's blows land - and a fight is ~90-150 s)
+  hp: 1950,             // (was 360 on the chip; a duelist's blows land - and a fight is ~90-150 s)
   stunT: 3.4, stunMul: 2, crashMul: 1.5, wardT: 3, burnMul: 0.35, paceExtra: [0.5, 0.35, 0.2],   /* burnMul: a burn tick outside his openings (off the chip, the pyro's fire ran whole: 4/4 in 34-48 s) */
   p2: 0.66, p3: 0.33,
   rainEvery: 2.1, rainTell: 0.95,
