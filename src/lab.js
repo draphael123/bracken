@@ -1935,6 +1935,14 @@ async function runbossLab(BK, opts) {
             else { goal = Math.max(AX0, Math.min(AX1, tp.x - (Math.sign((aimP ? boss.tx : boss.x) - tp.x) || 1) * 15)); strike = false; } }   /* and wait by it, on the side away from her */
           /* wait just on HER side of the nearest chandelier: she stops 56 px short of you, which is right under it */
           else { const c = cs.sort((a, b) => Math.abs(a.x - boss.x) - Math.abs(b.x - boss.x))[0]; goal = c ? c.x - (Math.sign(boss.x - c.x) || 1) * 22 : boss.x - Math.sign(d || 1) * 70; strike = false; } } }
+      /* THE RAM LORD's OVERHANGS (claude/scree2, src/ram-lord.js), played as the sign says: while he is not open and not warded, wait at an armed
+         overhang's prop on the wall's side of it; when he stands in its fall line (the prop glints), knock the prop out with a real swing on its own box, and
+         stay off the line. Open (stunned, or in the wall), the default below: in and cut. */
+      else if (boss.t === 'ram' && BK.ramLips && BK.ramLips().some(l => (l.state === 'creak' || l.state === 'fall') && BK.ramLip.inZone(l, P.x, 10))) { const l = BK.ramLips().find(q => (q.state === 'creak' || q.state === 'fall') && BK.ramLip.inZone(q, P.x, 10)); goal = BK.ramLip.lipSpot(l); strike = false; }   /* the prop is going: off its line until the rock is down */
+      else if (boss.t === 'ram' && BK.ramLips && !BK.bossOpen(boss) && !(boss.ward > 0) && BK.ramLips().some(l => l.state === 'armed')) {
+        const RL = BK.ramLip, lips = BK.ramLips().filter(l => l.state === 'armed'), lip = lips.sort((a, b) => Math.abs(RL.lipSpot(a) - P.x) - Math.abs(RL.lipSpot(b) - P.x))[0], spot = RL.lipSpot(lip);
+        goal = spot; strike = false;
+        if (Math.abs(P.x - spot) < 10 && P.ground && P.atk < 0 && RL.inZone(lip, boss.x, 12) && Math.abs(boss.y - A.floor) < 6 && Math.abs(boss.vx || 0) < 60 && boss.mode !== 'leap' && boss.mode !== 'butt') { P.face = Math.sign(lip.x - P.x) || 1; k.left = k.right = false; goal = null; BK.press('atk'); swings++; } }
       else { goal = boss.x; strike = true; }
       /* THE OWL'S DEAD BOUGHS: when the Reeve is low under one the bot cuts its peg, as a player standing at it would, and it hops the skim */
       if (boss.t === 'owl') {
@@ -1950,8 +1958,15 @@ async function runbossLab(BK, opts) {
          DOWN held on the ground (every hero has it; block is the same brace) - and he falls */
       if (boss.t === 'windcaller' && (boss.mode === 'howlTell' || boss.mode === 'howl') && P.ground) { strike = false; goal = null; k.left = k.right = false; k.down = true; }
       /* THE RAM'S CHARGE (claude/bosswave1: a charge that finds you stops on you and dazes nothing): rolled through as it arrives, so it runs on into the wall */
+      /* (claude/scree2) A SHIELD BRACES HIS CHARGE (the slope's sign: BLOCK TO BRACE): shoved, not hurt - and no wall for him either */
+      else if (boss.t === 'ram' && SHIELDED(h) && (boss.mode === 'charge' || toldRun(['lower', 'rear'])) && Math.abs(boss.x - P.x) < 90 && (boss.x - P.x) * (boss.vx || 0) < 0) { strike = false; goal = null; k.left = k.right = false; P.face = Math.sign(boss.x - P.x) || P.face; k.block = true; }
       else if (boss.t === 'ram' && (boss.mode === 'charge' || toldRun(['lower', 'rear'])) && Math.abs(boss.x - P.x) < 72 && (boss.x - P.x) * (boss.vx || 0) < 0 && !(P.dodge > 0)) { strike = false; k.block = false; k[boss.x > P.x ? 'right' : 'left'] = true; BK.press('dodge'); }
-      else if (boss.t === 'ram' && (boss.mode === 'lower' || boss.mode === 'rear')) strike = false;   /* (his head goes down: no swing started that would still be running when he comes) */
+      else if (boss.t === 'ram' && (boss.mode === 'lower' || boss.mode === 'rear')) strike = false;
+      /* (claude/scree2) HIS LEAP comes down where you stood (its shadow shows where): out from under it; HIS HORN SWEEP (P3) is jumped as it comes round */
+      else if (boss.t === 'ram' && boss.mode === 'leap' && Math.abs((boss.landX ?? boss.x) - P.x) < 44) { strike = false; goal = null; const away = Math.sign(P.x - (boss.landX ?? boss.x)) || (P.x < (A.x0 + A.x1) / 2 ? 1 : -1); k.left = away < 0; k.right = away > 0; k.block = false; }
+      else if (boss.t === 'ram' && boss.mode === 'tossTell' && ad < 46 && boss.modeT < 0.25 && !(P.dodge > 0)) { strike = false; k.block = false; k[boss.x > P.x ? 'left' : 'right'] = true; BK.press('dodge'); }   /* his horns go up under you: out of it */
+      else if (boss.t === 'ram' && P.ground && BK.waves().some(w => w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4)) { BK.press('jump'); P.labJump = 12; strike = false; }   /* his stamp's and his landing's shock along the floor: jumped */
+      else if (boss.t === 'ram' && boss.mode === 'sweepTell' && ad < 72) { strike = false; if (P.ground && boss.modeT < 0.32) { BK.press('jump'); P.labJump = 16; } }   /* (his head goes down: no swing started that would still be running when he comes) */
       /* THE GRANDMOTHER LISTENS (claude/bosswave1: her rap and her feel turned are her openings now): SHE IS LISTENING is told, and a player stands
          still and silent through it - no step, no swing - and she raps the floor, open */
       else if (boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'listen')) { strike = false; goal = null; k.left = k.right = false; }

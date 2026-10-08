@@ -1409,7 +1409,7 @@ function screePath() {
   // room's own size - the player CAUSES it by choosing which side to stand on when he lowers his head. A bank of
   // loose scree is stacked against the west wall (313): his crash always shakes rock down (updateRam, main.js),
   // and a ram baited into THIS wall buries himself deeper for it - a caused opening, not a waited one.
-  ent('sign', 307, 7, { text: 'THE RAM LORD TURNS STEEL. CUT HIM WHEN A GREEN RING SHOWS: AFTER A WALL OR LEAP.' });
+  ent('sign', 307, 7, { text: 'HIS HORNS TURN STEEL: GO ROUND HIM. WHEN HE STANDS UNDER AN OVERHANG, KNOCK OUT ITS PROP.' });   /* (claude/scree2: the reworked Ram Lord - src/ram-lord.js) */
   ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 341, 8, { kind: 'foldGate' });
   ent('deco', 313, 8, { kind: 'cairn' }); ent('deco', 341, 8, { kind: 'cairn' });
   for (const x of [314, 315, 316]) ent('deco', x, 8, { kind: 'stone', v: x % 3 }); // THE SCREE BANK: banked loose stone against the west wall
@@ -1422,7 +1422,7 @@ function screePath() {
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#6a5642', dirtL: '#80694e', dirtD: '#3e3226',   /* (claude/scree2: warm earth, not the cold blue-grey) */ canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'foothills' }],   /* its OWN bed (claude/scree2, A8): gusts, sheep bells, trickling scree, a far rockfall, a hawk - src/audio.js */
     arena: { x0: 312 * TS, x1: 342 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 343, boss: 'ram', music: 'ramlord', tint: '#6a4a7a', tintA: 0.12, fx: 'dust', bank: -1 },   /* bank: -1 - the loose scree is banked against the LOW (west, x0) wall (A11) */
   }
   // ---- 4b. THE ROPEWAY: the gorge proper. A swing, a rope lift, the old mill's sails, another swing; harpies on the wind, rocks off the cliff, a ladder out of the bottom. ----
