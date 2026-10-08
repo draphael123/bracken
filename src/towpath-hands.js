@@ -232,13 +232,13 @@ export function makeTowpathHands(ctx) {
     if (c > 94 && c < 100 && row < 35 + O) { const r = lockOf('race'); if (r && !(levelOf(r) === 'lo' || levelOf(r) === 'dry')) return at(98 * ts + 8 - 10, (33 + 1 + O) * ts, r.to <= r.hiY + 1 ? 'atk' : null, 1, r.to > r.hiY + 1); }
     if (c > 126 && c < 132 && row < 33 + O) { const b = bridgeOf('tail'); if (b && !b.across) return at(130 * ts + 8 - 10, (31 + 1 + O) * ts, 'atk', 1); }
     if (c > 152 && c < 168 && row > 25 + O) return lockStep('F1', 159, 31 + O);
-    if (c > 166 && c < 176 && row > 20 + O) { const k = lockOf('F2'), lv = levelOf(k), live = ctx.enemies().some(e => e.alive && e.squad === 'dryChamber'), onLanding = row <= 27 + O + 0.2 && c < 169;
+    if (c > 166 && c < 173 && row > 20 + O && !(row <= 22 + O + 0.2 && c >= 172.5)) { const k = lockOf('F2'), lv = levelOf(k), live = ctx.enemies().some(e => e.alive && e.squad === 'dryChamber'), onLanding = row <= 27 + O + 0.2 && c < 169;
       if (onPunt('F2')) return lockStep('F2', null, 26 + O);
       if (onLanding) { if (live && (lv === 'dry' || lv === 'lo')) return at(167 * ts + 8 - 8, (27 + O) * ts, 'atk', 1);
         if (lv === 'up' || lv === 'down') return at(167 * ts, (27 + O) * ts, null, 1, true);
         if (lv === 'hi') return at(167 * ts + 8 - 8, (27 + O) * ts, 'atk', 1); }
       if (lv === 'dry' && !live) { const pe = puntEnd('F2'); return pe ? at(pe.x, pe.y, null, 1) : null; } return null; }
-    if (c > 174 && c < 183 && row > 15 + O) return lockStep('F3', 175, 21 + O);
+    if (c > 172 && c < 183 && row > 15 + O) return lockStep('F3', 175, 21 + O);   /* (from F2's top landing, 173-176: the landing is F3's bank) */
     if (c > 218 && c < 238 && row < 19 + O) { const b = bridgeOf('basin'); if (b && !b.across) { const cap = c < 228 ? 220 : 236; return at(cap * ts + 8 + (c < 228 ? -10 : 10), (16 + 1 + O) * ts, 'atk', c < 228 ? 1 : -1); } }
     if (c > 263 && c < 280 && row < 18 + O) { const k = lockOf('X'), lv = levelOf(k), pd = K.gadgets.find(g => g.t === 'tppaddle' && g.lock === 'X');
       if (lv === 'hi' && darkPaddle(pd)) return at(266 * ts + 8 - 10, (17 + O) * ts, 'talk', 1);   /* (in the dark: E lights the lantern) */

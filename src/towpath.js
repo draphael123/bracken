@@ -178,9 +178,9 @@ export function buildTowpath({ painter, T, TS }) {
   fog(156, 221, 0.35, { rises: 0.25 });   /* THE FOG COMES IN up the flight: thin at the hut, thickening as the night does */
   lamp(163, 26, true); lamp(189, 16, false);
   decor.push({ kind: 'fogKnight', x: 191, y: 16 + O, flight: true });   /* (B8: once a flight, the fog's edge by the top lamp holds a knight's shape - gone as you come to it) */
-  /* THE FLIGHT'S EXAM (review M1b): THE BARGEMAN CHAMPION on the top deck, six columns off F3's lip - a heavy blow and you go back down eleven rows into
+  /* THE FLIGHT'S EXAM (review M1b): THE BARGEMAN CHAMPION on the top deck, twelve columns off F3's lip (room to step off the punt before he comes; review asked six - he met the punt at the lip and spun you back down every time) - a heavy blow and you go back down eleven rows into
      the grindylow's water */
-  bargeman(190, 16, 'flightExam', { face: -1, elite: true, wKey: 'bargechampion' });
+  bargeman(196, 16, 'flightExam', { face: -1, elite: true, wKey: 'bargechampion' });
   coins([186, 16], [194, 16], [210, 16]);
   decor.push({ kind: 'bollard', x: 199, y: 16 + O }, { kind: 'milestone', x: 214, y: 16 + O });
 
