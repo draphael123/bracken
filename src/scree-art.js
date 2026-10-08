@@ -37,3 +37,22 @@ export function bakeQuarryFace() {
   for (const [x, y] of [[38, 10], [43, 10], [48, 10], [18, 24], [24, 24], [29, 24]]) rect(g, x, y, 2, 3, O.deep);   /* the wedge slots */
   return outline(c, OUT);
 }
+
+/* THE RAM'S PEN WALL (claude/scree2, Daniel 10-08): the fold's shut walls were the generic grey drystone and read icy; this is the same dry-stone course laid in the level's OCHRE
+   (warm rubble, dark joints, a lit top edge, the odd moss tuft) - used for the Ram Lord's arena only (src/main.js setWall). Same 16x16 tile, three seeds. */
+export function bakeOchreWall(seed = 0) {
+  const rnd = mulberry(960 + seed), [c, g] = canvas(16, 16), O = OCHRE;
+  rect(g, 0, 0, 16, 16, O.deep);
+  const tones = [O.mid, O.light, O.dark, O.mid];
+  for (let y = 0; y < 16; y += 4) {
+    let x = (y / 4) % 2 ? 2 : 0;
+    while (x < 16) {
+      const w = 3 + ((rnd() * 4) | 0), t = tones[(rnd() * tones.length) | 0];
+      rect(g, x, y, Math.min(w, 16 - x), 3, t);
+      px(g, x, y, O.hi); if (w > 3 && rnd() < 0.5) px(g, x + 1, y, O.pale);
+      if (rnd() < 0.08) px(g, x + 1, y + 2, O.moss);
+      x += w + 1;
+    }
+  }
+  return c;
+}

@@ -1419,7 +1419,7 @@ function screePath() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'mountain', night: false, glowNight: false,
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#6a5642', dirtL: '#80694e', dirtD: '#3e3226',   /* (claude/scree2: warm earth, not the cold blue-grey) */ canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],

@@ -21,7 +21,7 @@ Anything not in the manifest is synthesised in src/audio.js.
 - theme2.ogg = "2. Stage 2" from the same Junkala pack (CC0) - the Marsh Wood theme
 - ambience_forest.mp3 = "Forest Ambience" by TinyWorlds (CC0) https://opengameart.org/content/forest-ambience
 - knight effort/laugh = goblin grunts and chatter from the Goblins Sound Pack, pitched
-- theme4.mp3 = "Level 1" from "Retro Game Music Pack" (5 Action Chiptunes) by Juhani Junkala (CC0) - The Scree Path theme. theme3/theme4 are lowpassed at 8.5 kHz to tame the top end.
+- (theme4.mp3, "Level 1" by Juhani Junkala, was the Scree Path theme until 2026-10-08; replaced by mountain.ogg below and removed.)
 
 - king.mp3 = "Great Boss" by Spring Spring (Julie Damsgaard / Spring Enterprises), CC0 - https://opengameart.org/content/great-boss - King Gorm Underleaf's own theme. boss2.ogg now plays for the Goblin Chieftain.
 - town.mp3 = "Exploring Town" by Spring Spring (Julie Damsgaard / Spring Enterprises), CC0 - https://opengameart.org/content/exploring-town - a menu tune sold at the store (trimmed to 132 s with a fade).
@@ -103,7 +103,7 @@ LEVELS
 BOSSES
 - frogking.ogg    = "Battle! vs Minor Gyokaijuu" by Spring Spring - https://opengameart.org/content/battle-vs-minor-gyokaijuu - the Frog King (MARSH WOOD)
 - sporemother.ogg = "Nightmare{Chiptune}[Final]" by Centurion_of_war - https://opengameart.org/content/nightmarechiptunefinal - the fungus mother (SPOREWOOD)
-- ramlord.ogg     = "8-bit Danger!! Strong Boss" by HydroGene - https://opengameart.org/content/8-bit-danger-strong-boss - the Ram Lord (THE SCREE PATH)
+- ramlord.ogg     = "Heavy Boss Battle 1" (the ogg) by MintoDog, CC0 (licence read on the page) - https://opengameart.org/node/183631 - the Ram Lord (THE SCREE PATH). Changes: gain -2.3 dB, re-encoded to OGG Vorbis q5 (replaces HydroGene's "8-bit Danger!! Strong Boss", 2026-10-08)
 - owlreeve.ogg    = "Zelda Style 8-bit Boss Theme" by HydroGene - https://opengameart.org/content/zelda-style-8-bit-boss-theme - the Owl Reeve (THE HANGING VILLAGE)
 - grandmother.ogg = "MonsterVania - Ghost Land" by HydroGene - https://opengameart.org/content/monstervania-ghost-land - UNDERLEAF's boss
 - herald.ogg      = "Phantasy Boss Battle Encounter" (BossBattle.ogg from bossbattle_files.zip) by ansimuz - https://opengameart.org/content/phantasy-boss-battle-encounter - the Tide Herald (THE LONG WATER)
@@ -285,3 +285,8 @@ THE BANDIT KSAR (2026-10-07, claude/ksar art pass, Daniel's pick; he approved th
 THE ROOTWAY (2026-10-07, claude/rootway, Daniel approved the download):
 - rootway.ogg = "Lanterns in the Hollowed Forest" (the loop version) by Tsorthan Grove, CC0 (public domain; credited all the same) - https://opengameart.org/content/lanterns-in-the-hollowed-forest - THE ROOTWAY's level track.
   Changes: mono; encoded to OGG Vorbis (72 kbps). The Huntmaster keeps his composed-in-code theme (boss3).
+
+THE SCREE PATH (2026-10-08, claude/scree2, Daniel approved the download):
+- mountain.ogg = "Mountain Theme Loop" (mountain_in_game.ogg) by beardalaxy, CC0 (public domain; credited all the same, the author appreciates it) - https://opengameart.org/content/mountain-theme-loop - THE SCREE PATH's level track.
+  Changes: gain +3.5 dB with a -2 dBFS limiter, re-encoded to OGG Vorbis q5 (stereo, loop untouched).
+- ramlord.ogg = "Heavy Boss Battle 1" by MintoDog, CC0 - https://opengameart.org/node/183631 - the Ram Lord (see BOSSES above).
