@@ -14,14 +14,14 @@ import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { BOSS_PHASE } from './boss-music.js';
 
-/* THE NUMBERS. FLAME: life s a taper burns, takeR/useR px you reach a fire / a lamp in, glow px it lights round you. LC: litMul/darkMul a priest's blows by his room's
+/* (deadDark: the dead's blows x this in a dark room) THE NUMBERS. FLAME: life s a taper burns, takeR/useR px you reach a fire / a lamp in, glow px it lights round you. LC: litMul/darkMul a priest's blows by his room's
    light, knightLit a knight's; heal: of the healed one's health (x litHeal lit / x darkHeal dark), healCd/healTell/healR; relightT a priest's rite, acoRelightT an
    acolyte's, priestV/acoV their walk; riseEvery/riseTell/riseCap/riseNear a dark room's grates; burnDps the light on the dead; bellowsT/lift a bellows' breath;
    chordTell/chordT/gustAir/gustGround the key desk's chord; darkV px/s the rising dark climbs, darkTick/darkPct its bite, holdT s a sconce holds it, darkSpawn its
    dead; archHealCd/archHealTell/archHeal THE ARCHDEACON's prayer over his room */
 export const FLAME = { life: 14, takeR: 24, useR: 26, glow: 70 };
 export const LC = { litMul: 1.3, darkMul: 0.7, knightLit: 1.15, heal: 0.16, litHeal: 1.5, darkHeal: 0.5, healCd: 7, healTell: 1.0, healR: 130, relightT: 1.5, acoRelightT: 0.6,
-  priestV: 44, acoV: 92, riseEvery: 5.5, riseTell: 1.0, riseCap: 2, riseNear: 260, burnDps: 16, bellowsT: 2.8, lift: 230, chordTell: 0.55, chordT: 2.6, gustAir: 300, gustGround: 150,
+  priestV: 44, acoV: 92, riseEvery: 4.5, riseTell: 1.0, riseCap: 3, deadDark: 1.8, riseNear: 260, burnDps: 16, bellowsT: 2.8, lift: 230, chordTell: 0.55, chordT: 2.6, gustAir: 300, gustGround: 150,
   darkV: 15, darkTick: 0.6, darkPct: 0.06, holdT: 5, darkSpawn: 4.5, archHealCd: 9, archHealTell: 1.4, archHeal: 0.2, archRelight: 1.0 };
 /* what a dark room's grates bring up (by room; the rest bring wights and haunts) */
 const RISE = { graveyard: ['wight'], narthex: ['haunt'], nave: ['wight', 'haunt', 'boo'], transept: ['haunt', 'wight'], gallery: ['boo', 'haunt'], ossuary: ['wight', 'haunt'], altar: ['wight', 'haunt'], south: ['wight', 'haunt', 'boo'], tower: ['boo'] };
@@ -154,7 +154,7 @@ export function makeLitChurchHands(ctx) {
     if (!K || !e.alive) return false;
     if (!e.lc) { if (e.lcRisen) e.lc = { role: 'dead', room: e.lcRisen, st: 'free', hp: e.hp }; else return false; }
     const q = e.lc, P = ctx.hero(), lt = lit(q.room), hit = e.hp < q.hp - 0.01; q.hp = e.hp;
-    if (q.role === 'priest') e.lcMul = lt ? LC.litMul : LC.darkMul; else if (q.role === 'knight') e.lcMul = lt ? LC.knightLit : 1; else e.lcMul = 1;
+    if (q.role === 'priest') e.lcMul = lt ? LC.litMul : LC.darkMul; else if (q.role === 'knight') e.lcMul = lt ? LC.knightLit : 1; else if (q.role === 'dead') e.lcMul = lt ? 1 : LC.deadDark; else e.lcMul = 1;   /* the dark is the dead's: in it they hit harder */
     if (q.role === 'dead') { /* THE LIGHT BURNS THE DEAD: in a lit room they smoke and sink */
       if (lt && !roomOf(q.room).arena) { q.burn = (q.burn || 0) + LC.burnDps * dt; if (Math.random() < dt * 12) ctx.burst(e.x, e.y - 10, 1, ['#fff6c8', '#ffd36b'], 30, 0.4);
         if (q.burn >= 4) { const d = Math.floor(q.burn); q.burn -= d; ctx.hurtFoe(e, d); if (!e.alive) K.n.burnt++; if (once('burnDead')) number(e.x, e.y - 30, 'THE LIGHT BURNS THE DEAD', '#ffd36b'); } }

@@ -280,8 +280,8 @@ export function buildLitChurch({ painter, T, TS }) {
     routeVia: [[40, NF - 1], [176, 28], [60, GF - 1], [52, 22], [145, CF - 1], [175, CF - 1], [177, NF - 1]],   /* (the altar's door: the crypt is walked end to end - its grate in the crossing only cracks at lamp three) */
     /* THE CHURCH'S WEIGHT (difficulty v2, the act's tier on top): a priest's bolt and sigil, a knight's cut - each a 1v1 threat at the campaign level. The light
        moves the clergy on top of this (src/lit-church-hands.js lcMul: lit x1.3, dark x0.7) */
-    foeHit: { priest: 1.5, archdeacon: 1.7, chapelknight: 1.6, templar: 1.5, chapelbow: 1.4, acolyte: 0.5 },
-    foeHp: { priest: 1.8, archdeacon: 1.2, chapelknight: 1.8, templar: 1.5, chapelbow: 1.4, acolyte: 1.2 },
+    foeHit: { priest: 3.0, archdeacon: 2.6, chapelknight: 3.4, templar: 3.0, chapelbow: 2.6 },
+    foeHp: { priest: 4, archdeacon: 1.2, chapelknight: 4, templar: 3.2, chapelbow: 3 },
     alarms: rooms.filter(r => !r.arena).map(r => ({ x0: r.x0, x1: r.x1 })),   /* THE RULE'S STATE for tools/rule-state.mjs: each room's lamps are where the light is */
     quest: { n: 5, item: 'candlestub', name: 'CANDLE STUBS', done: 'FIVE STUBS: THE RELIQUARY OPENS', thanks: 'THE RELIQUARY OPENS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
