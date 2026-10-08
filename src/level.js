@@ -7779,7 +7779,7 @@ export const LEVELS = [
      to it - the general rule every future class level (the Cathedral off Waymeet, the Saint's Purse off the
      Hurricane Deck) declares the same two fields for. `needs: 'stockade'` stays: it is what the side panel and
      mapPanelIdx group this spur under, and opensOn is the STRICTER gate on top of it. */
-  { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade', classFor: 'pyro', opensOn: { level: 'stockade', medal: 'silver' } },
+  { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade', classFor: 'pyro', opensOn: { level: 'stockade', time: 300 } },
   /* THE WITCHLIGHT STAIR (batch 4c): the run up the tower's hill between the Burial Caverns and the Folly. Appended, like the
      village, so no index moves; the Folly needs it now */
   { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: ()=>buildWitchlight({painter,T,TS}), needs: 'burial' },
