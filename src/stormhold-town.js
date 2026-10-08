@@ -215,11 +215,16 @@ export function stormholdTown({ painter, T, TS }) {
   ent('check', 274, 31); coins([270, 28], [275, 26], [279, 26], [286, 24], [290, 24], [299, 27], [300, 24], [298, 20]);
   // the close: a churchyard under the tower, the east house and its archer, and the inner wall
   facades.push([315, 337, 24, 31, 'townrow']);
-  for (const [x, v] of [[312, 0], [318, 1], [324, 2], [330, 0]]) ent('deco', x, 31, { kind: 'grave', v });
+  for (const [x, v] of [[312, 0], [318, 1], [334, 2]]) ent('deco', x, 31, { kind: 'grave', v });
   ent('deco', 336, 31, { kind: 'yew', v: 1 });
   roof(306, 314, 27); ent('archer', 311, 24, { face: -1 });
-  ent('check', 306, 31); ent('shield', 320, 31, { face: -1 }); ent('sprig', 327, 31, { face: -1 }); ent('pike', 316, 31, { face: -1 }); ent('rockgoblin', 334, 31, { face: -1 });
-  coins([316, 30], [322, 30], [330, 29], [338, 30]);
+  ent('check', 306, 31); ent('shield', 320, 31, { face: -1 }); ent('sprig', 336, 31, { face: -1 }); ent('pike', 316, 31, { face: -1 }); ent('rockgoblin', 334, 31, { face: -1 });
+  coins([316, 30], [338, 30]);
+  /* THE BREACH IN THE CLOSE (claude/zipline, Daniel 10-08: a zip line ON THE ROUTE): ten columns of the street are gone - a spiked cut too wide for any jump (6). Taken the way the Gate Watch taught
+     (a rope off a tower deck, where a miss was a drop to the road), the Bell Watch's rope is the way over: key in hand, UP at its handle on the belfry deck, and the line carries you across and sets you down
+     by the inner gate. A fall is the street's spikes (a bite, and back to the last safe ground: the hazard rule); a hero who misses the rope part-way and drops has the same. The reach model knows the rope (src/reachcore.js). */
+  for (let x = 322; x <= 331; x++) { set(x, 32, T.AIR); set(x, 33, T.SPIKE); }
+  ent('sign', 319, 31, { text: "THE STREET IS BREACHED. THE BELL WATCH'S ROPE GOES OVER IT." });
   block(344, 348, 19, 26); masonry.push([344, 348, 19, 26]);
   ent('lockgate', 346, 31, { needs: 'iron', h: 5 }); gateCol(346, 27, 31);
   ent('check', 340, 31);
@@ -334,7 +339,7 @@ export function stormholdTown({ painter, T, TS }) {
   // ---- THE TOWERS' ROPES: from each top deck's east edge down to the foot of its own gate. UP grabs, JUMP lets go. ----
   const rope = (x0, top, x1, endRow, groundRow) => ({ x0: x0 * TS + 8, y0: top * TS - 12, x1: x1 * TS + 8, y1: endRow * TS - 12,
     posts: [[x0 * TS + 8, top * TS - 12, top * TS], [x1 * TS + 8, endRow * TS - 12, groundRow * TS]] });
-  const zipLines = [rope(47, T1.top, 80, 36, 36), rope(302, T2.top, 342, 32, 32), rope(530, T3.top, 543, 30, 30)];   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12): a ride that sets you down, and a rope you can reach from the ground at its foot (src/zipline.js) */
+  const zipLines = [rope(47, T1.top, 80, 36, 36), rope(302, T2.top, 338, 32, 32), rope(530, T3.top, 541, 30, 30)];   /* each rope ends ON its landing's floor (the hero's feet = the rope + 12): a ride that sets you down, and a rope you can reach from the ground at its foot (src/zipline.js) */
   const watchtowers = [T1, T2, T3];
 
   // THE LADDERS, LAST: nothing is dug after this line
