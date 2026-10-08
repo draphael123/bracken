@@ -46,7 +46,7 @@ import { wardenOpen as graveOpen } from './grave-warden.js';
 import { rocEyrieOpen } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad) */
 
 export const GREED = {
-  chipBy: { queen: 1, pyromancer: 0.25, herald: 0.2, cisternqueen: 0.5 },   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
+  chipBy: { queen: 1, herald: 0.2, cisternqueen: 0.5 },   /* (claude/burnvillage2, Daniel 10-07: THE PYROMANCER is off the chip - FULL_DAMAGE, below) */   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
                            // drones are up) and is not chipped: at a twentieth - and at a quarter, and at a half - the human-speed bot lost her 2-3 of 3 (it won
                            // 2 of 3 before; the mash bot never beat her). Her greed reprisal stands. THE PYROMANCER takes a quarter: blows are what open him
                            // (each heats him), and at a twentieth the bot won 1 of 3 (3 of 3 before), at a quarter 2 of 3. THE TIDE HERALD takes a fifth (he took
@@ -120,7 +120,7 @@ export const OPEN_RULE = {
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */
 /* BLOWS ARE HIS MECHANIC: the Pyromancer is opened by being HIT while he runs hot (every blow heats him, src/main.js hurtEnemy0), so a run of
-   blows is the answer, not greed: no reprisal (his chip stands - a blow outside his opening is still a twentieth) */
+   blows is the answer, not greed: no reprisal (claude/burnvillage2: and no chip either - he is a duelist on FULL_DAMAGE) */
 export const NO_GREED = new Set(['pyromancer']);
 export const OWN_WARD = new Set(['puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
@@ -136,6 +136,7 @@ export const FULL_DAMAGE = {
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",
   roc: 'Daniel 10-06 (claude/roc2): "you can jump on the gliding platforms / thermals and actually hit her, so she does not need to be invulnerable by default" - a beast, always hittable, guarding by HEIGHT (src/roc-eyrie.js take: whole and a little more from the air the level gives, GUARDS LOW from the floor); her plunge and her nest are x1.5',
   matriarch: 'a beast duelist (design standard B11): always hittable, her talons GUARD BY ANGLE (a blow from the front at her height is turned; from behind or above it lands); her openings pay x1.6 in her own code (claude/redgorge2)',
+  pyromancer: 'Daniel 10-07 (claude/burnvillage2): "the PYROMANCER boss must NEVER be invulnerable: some fire resistance is fine, but he takes real damage normally (B11/B13)" - a hero-turned-boss duelist: a blow lands whole, he READS a run (the third light blow is turned, a heavy goes through) and no burn takes on him (FIREPROOF); water STUNS him x2, then his told steam ward (src/village-water.js)',
 };
 export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */
 /* MINIS ON THE CHIP (claude/bosswave1, Daniel 10-02: "give each a real opening first, then put minis on the chip"): each has a told opening of

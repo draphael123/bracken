@@ -1,7 +1,7 @@
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
-import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js';   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
+import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
 import { emptyCarry, carryHas, drop as dcDrop, doorSpot, freshDeathCost, bankStake } from './death-cost.js';   /* THE DEATH COST: the rules and the save shape, no game in them */
 import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
@@ -2519,7 +2519,7 @@ function spawnEnt(e) {
       case 'captive': props.push({ t: 'captive', x: px, y: py, hot: !!e.hot, hotNear: !!e.hotNear, boards: 2, freed: straysGot.has(px), alt: (e.x & 1) === 1, coolT: 0, blowT: 0 }); break;
       case 'watertrough': props.push({ t: 'vtrough', x: px, y: py, water: 1, refillT: 0 }); break;
       case 'villagewell': props.push({ t: 'vwell', x: px, y: py, cd: 0, kind: e.kind || 'well', noSplash: e.splash === false });
-        if (e.bucket) props.push({ t: 'vbucket', x: px + 12, y: py, hx: px + 12, hy: py, state: 'rest', kind: e.kind || 'well', thrKind: 'bucket' }); break;   /* THE BUCKET (burning village rework, 2026-09-25; thrown, CARRY & THROW, 2026-09-28) */
+        if (e.bucket) { const thrKind = e.kind === 'jug' ? 'jug' : 'bucket', jx = px + (e.kind === 'jug' ? 0 : 12), jy = py - (e.kind === 'jug' ? 9 : 0); props.push({ t: 'vbucket', x: jx, y: jy, hx: jx, hy: jy, state: 'rest', kind: e.kind || 'well', thrKind, launch: P0 => CTW.launchOf(thrKind, P0, keys) }); } break;   /* (claude/burnvillage2) a JUG on its shelf (kind 'jug'), and the told arc: UP lobs, DOWN tosses short (src/carry-throw.js) */   /* THE BUCKET (burning village rework, 2026-09-25; thrown, CARRY & THROW, 2026-09-28) */
       case 'sweep': enemies.push({ ...base, t: 'sweep', w: 8, h: 12, hp: EHP.sweep, mode: 'hide', modeT: Math.random(), gone: 1 }); break;
       case 'chimpot': props.push({ t: 'chimpot', x: px, y: py, ph: Math.random() * 3 }); break;
       case 'dummy': enemies.push({ ...base, t: 'dummy', w: 12, h: 22, hp: 9999, hp0: 9999, face: -1 }); break;
@@ -7198,7 +7198,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   if (e.t === 'sandgob' && e.st && !DF.sandGobTouchable(e.st)) return;   /* THE SAND GOBLIN under its mound: the blade goes through sand */
   if (e.t === 'ambusher' && e.st && !DF.ambusherTouchable(e.st)) return;   /* THE SAND-CLOAKED AMBUSHER under his cloak: the same */
   if (UNBF.UNB_FOES.has(e.t)) { const ud = unbHurt(e, dmg, fromX); if (ud === false) return; dmg = ud; }   /* THE UNBURIED FIELD: the fallen only fall under a banner; the Death Knight and the Barrow Rider open */   /* ON HIS KNEES IN THE GRAVE: double */
-  if (e.t === 'pyromancer') { if (pyroReads(e, blow, plunge)) return; if (e.open > 0) dmg = Math.round(dmg * 1.5); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
+  if (e.t === 'pyromancer') { if (e.ward > 0) { BR.turned(e, fromX, 'WARDED'); return; }   /* (claude/burnvillage2) HIS STEAM WARD (B3): told, short, and it says so (B10) */
+    if (pyroReads(e, blow, plunge)) return; dmg = Math.round(dmg * VWA.pyroMul(e)); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; STUNNED by water x2, overheated x1.5 (src/village-water.js) - and outside them a hero's blow lands WHOLE (FULL_DAMAGE: never invulnerable, B11/B13) */   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
   if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
   /* THE CLOSED HELM. Full plate, and it is not a damage reduction: it is a NO. Only the window his own
@@ -20710,11 +20711,10 @@ function drawBurningTown(cx, cy) {
   drawBurningBackdrop(g, VW, VH, base, off, time, VG.heat || 0);   /* banded glow + the far ridge, driven by the fire that is really burning */
   for (let k = Math.floor(off / 46) - 1; k < Math.floor((off + VW) / 46) + 2; k++) {
     const h = 26 + ((k * 37) % 5) * 7, w = 30 + ((k * 13) % 3) * 8, x = Math.round(k * 46 - off), y = base - h, peak = 10 + ((k * 7) % 3) * 4, lit = (k * 11) % 4;
-    g.fillStyle = '#1a0e10'; g.fillRect(x, y, w, h + 30); g.beginPath(); g.moveTo(x - 3, y + 1); g.lineTo(x + w / 2, y - peak); g.lineTo(x + w + 3, y + 1); g.fill();
-    if ((k * 5) % 3 === 0) { g.fillRect(x + w - 9, y - peak - 6, 5, peak + 6); }   /* a chimney */
-    g.fillStyle = Math.floor(time * 6 + k) % 3 ? '#ff9a3c' : '#ffd36b'; for (let q = 0; q < 1 + lit; q++) g.fillRect(x + 5 + q * 9, y + 8 + (q % 2) * 7, 3, 4);   /* windows alight */
-    if (lit >= 2) drawTownFlame(g, x + w / 2, y - peak + 4, 16 + (k % 3) * 6, time, k, VG.heat || 0);   /* the thatch burning: tongues of fire, not boxes (burning-village.js) */
-    if ((k * 3) % 4 === 1 || (VG.heat || 0) > 0.5 && (k * 3) % 4 === 3) drawPixelSmoke(g, x + w / 2, y - peak - 10, time, k, VG.heat || 0);   /* pixel smoke, thicker as the fire grows */
+    /* (claude/burnvillage2) EACH HOUSE BEHIND THE STREET BURNS THROUGH ITS OWN FIRE (src/village-blaze.js): the roof, then down the walls and out of the
+       windows, the roof falls in, a shell - and the fire front moves east over the level's clock. Its world tile is where the camera stands when it is centred */
+    const wx = ((k * 46 + w / 2 - VW / 2) / par + VW / 2) / TS;
+    drawBlazingHouse(g, x, y, w, h, peak, blazeAt(wx, k, levelTime), time, k, VG.heat || 0, (k * 5) % 3 === 0);
   }
   drawFacades(cx, cy);   /* THE VILLAGE'S OWN WALLS, over the town behind it: drawFacades runs before this backdrop, so the burning fronts and the barn's back wall were painted over by the sky (burning village rework, 2026-09-25) */
 }
@@ -20827,7 +20827,7 @@ function pourBucket(pr, tg) {
   else if (tg.cap) { tg.cap.coolT = BUCKET.cool; tg.cap.cooled = true; number(tg.cap.x, tg.cap.y - 40, 'COOLED', '#9ad0ff'); }
   else if (tg.beam) { tg.beam.wet = BUCKET.beamWet; tg.beam.t = -1; number((tg.beam.x0 + tg.beam.x1 + 1) * 8, tg.beam.row * TS - 20, 'THE BEAM HOLDS', '#9ad0ff'); }
   else if (tg.bar) { const bs = fires.filter(f => f.barrier && !f.heap); for (const f of bs) f.delay = 12; number(tg.bar.x, tg.bar.y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); }
-  else if (tg.cell) { const cx0 = tg.cell.x, cy0 = tg.cell.y; const n = douse(VG, cx0, cy0, 2) + quench(VG, cx0, cy0, 2); number(fx, fy - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff'); }
+  else if (tg.cell) { const cx0 = tg.cell.x, cy0 = tg.cell.y, r = VWA.SPLASH[pr.thrKind || 'bucket'] || 2; const n = douse(VG, cx0, cy0, r) + quench(VG, cx0, cy0, r); number(fx, fy - 30, n ? 'PUT OUT' : 'SPLASH', '#9ad0ff'); }   /* (claude/burnvillage2) a bucket's splash is two tiles, a jug's one */
   for (let i = 0; i < 22; i++) parts.push({ x: fx, y: fy - 10, vx: dir * (60 + Math.random() * 90), vy: -90 - Math.random() * 90, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
   SFX.splash(); pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; pr.spent = (pr.spent || 0) + 1;
 }
@@ -20839,6 +20839,8 @@ function hitThrownBucket(pr, e) {
   if (e.t === 'pyromancer') e[PYRO_HIT_FIELD] = time;   /* (set BEFORE the hit: hurtEnemy's pyroReads knows a bucket by it, and a bucket is never a blow he reads) */
   hurtEnemy(e, throwDamage(pr.thrKind || 'bucket', e.t), pr.x, false);
   if (isFireFoe(e.t)) { e.doused = 2; number(e.x, e.y - e.h - 10, 'DOUSED', '#9ad0ff'); }
+  if (e.t === 'emberwisp' && e.alive) { number(e.x, e.y - e.h - 18, 'PUT OUT', '#9ad0ff'); hurtEnemy(e, e.hp + 1, pr.x, false); }   /* (claude/burnvillage2) A WISP IS A FLAME: water puts it out */
+  if (e.burn > 0 && e.t !== 'pyromancer') { e.burn = 0; SFX.hiss(); }   /* and a foe alight is put out */
   sparks(e.x, e.y - e.h / 2, Math.sign(pr.vx) || 1, 6);
   for (let i = 0; i < 16; i++) parts.push({ x: pr.x, y: pr.y - 6, vx: (Math.random() - 0.5) * 100, vy: -70 - Math.random() * 70, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#9ad0ff' : '#e8f6ff', size: 2, grav: 500 });
   SFX.splash(); pr.state = 'return'; pr.retT = THROW_KIND[pr.thrKind || 'bucket'].respawn; pr.spent = (pr.spent || 0) + 1;
@@ -20864,6 +20866,13 @@ function stepBucketFlight(pr, dt) {
   if (isSolid(Math.floor((pr.x + Math.sign(pr.vx || 1) * 4) / TS), Math.floor(pr.y / TS))) { landBucket(pr); return; }   /* a wall stops it flat, not through */
   if (pr.y > LH * TS || pr.x < 0 || pr.x > LW * TS) { pr.state = 'return'; pr.retT = 0.5; }
 }
+/* (claude/burnvillage2) THE TOLD ARC of a carried water (src/carry-throw.js predictArc on the numbers it will fly): stopped on what it would put out or hit */
+function waterArc(pr) {
+  const kind = pr.thrKind || 'bucket', v = CTW.launchOf(kind, P, keys);
+  const solid = (px, py, falling) => { const tx = Math.floor(px / TS), ty = Math.floor(py / TS); return isSolid(tx, ty) || (falling && isOneWay(tileAt(tx, ty))); };
+  const hitAt = (px, py) => bucketTargets(px, py) || enemies.find(e => e.alive && !e.harmless && overlap({ l: px - 5, r: px + 5, t: py - 9, b: py + 3 }, box(e))) || null;
+  return CTW.predictArc(kind, pr.x, pr.y, v, solid, { stopAt: hitAt });
+}
 /* CARRY & THROW's throw half, for THE BURNING VILLAGE's buckets: called from updatePlayer's carry block on ATTACK */
 function throwCarry() {
   const pr = P.carry; if (!pr) return;
@@ -20887,7 +20896,8 @@ function updateBuckets(dt) {
     if (pr.state === 'fly') { stepBucketFlight(pr, dt); continue; }
     /* WALK ONTO IT AND PRESS INTERACT (CARRY & THROW's pick-up half) - at its rack, or wherever it landed */
     if (pr.state === 'rest' && talkPress && !took && !P.carry && !P.dead && P.ground && Math.abs(pr.x - P.x) < 18 && Math.abs(pr.y - P.y) < 14) { took = true;
-      P.carry = pr; pr.state = 'held'; pr.hurtWas = false; SFX.clank(); number(P.x, P.y - 30, 'THE BUCKET', '#9ad0ff');
+      P.carry = pr; pr.state = 'held'; pr.hurtWas = false; SFX.clank(); number(P.x, P.y - 30, pr.thrKind === 'jug' ? 'THE JUG' : 'THE BUCKET', '#9ad0ff');
+      if (pr.thrKind === 'jug' && !(PROG.jugTold > 1)) { PROG.jugTold = (PROG.jugTold || 0) + 1; hintT = 5; hintMsg = 'A JUG IS LIGHT: IT LOBS FURTHER AND PUTS OUT LESS. HOLD UP TO LOB, DOWN TO TOSS SHORT.'; }
       if (!(PROG.bucketTold > 1)) { PROG.bucketTold = (PROG.bucketTold || 0) + 1; hintT = 5; hintMsg = 'INTERACT TAKES THE BUCKET. ATTACK THROWS IT AT A FIRE. A BLOW OR A FALL SPILLS IT.'; } }
   }
   for (const z of L.deckBreaks || []) if (z.wet > 0) { z.wet -= dt; if (!z.down) z.t = -1; }   /* A DOUSED BEAM HOLDS: its fuse cannot start while it is wet */
@@ -20898,9 +20908,21 @@ function drawPail(x, y, full) {   /* a wooden pail: staves, two iron hoops, a ro
   g.fillStyle = '#c9b27c'; g.fillRect(x - 4, y - 11, 1, 3); g.fillRect(x + 3, y - 11, 1, 3); g.fillRect(x - 3, y - 12, 6, 1);
   if (full) { g.fillStyle = '#4a8ac0'; g.fillRect(x - 3, y - 8, 6, 1); g.fillStyle = '#bfe6f5'; g.fillRect(x - 2, y - 8, 2, 1); }
 }
+function drawJug(x, y) {   /* (claude/burnvillage2) a clay jug: a round belly, a narrow neck, a handle, water at the lip */
+  g.fillStyle = '#7a4a26'; g.fillRect(x - 3, y - 7, 7, 6); g.fillRect(x - 2, y - 8, 5, 1); g.fillRect(x - 2, y - 1, 5, 1); g.fillStyle = '#a8663a'; g.fillRect(x - 2, y - 6, 2, 4);
+  g.fillStyle = '#7a4a26'; g.fillRect(x - 1, y - 11, 3, 3); g.fillStyle = '#5a3418'; g.fillRect(x + 4, y - 7, 1, 4); g.fillRect(x + 2, y - 9, 2, 1); g.fillStyle = '#4a8ac0'; g.fillRect(x - 1, y - 11, 3, 1); }
+/* THROWABLES ARE HIGHLIGHTED (claude/burnvillage2, A6): every water at rest wears a pale OUTLINE (its own shape drawn a pixel out each way, in
+   white, under it) and a GLINT that sweeps across it every couple of seconds, wherever it is on the screen - and the take-me ring in reach */
+function drawThrowWater(pr, x, y) { if (pr.thrKind === 'jug') drawJug(x, y); else drawPail(x, y, true); }
+function drawWaterOutline(pr, x, y) { const was = g.fillStyle; g.save(); g.globalAlpha = 0.55 + 0.25 * Math.sin(time * 4 + pr.hx);
+  const fr = g.fillRect.bind(g); g.fillRect = (a, b, c, d) => { g.fillStyle = '#eef8ff'; fr(a - 1, b, c + 2, d); fr(a, b - 1, c, d + 2); };   /* every rect of its shape, grown a pixel: its outline */
+  try { drawThrowWater(pr, x, y); } finally { g.fillRect = fr; delete g.fillRect; g.restore(); g.fillStyle = was; } }
 function drawBuckets(cx, cy) {
   for (const pr of props) { if (pr.t !== 'vbucket' || pr.state === 'return') continue; const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy); if (x < -20 || x > VW + 20) continue;
-    drawPail(x, y, true);
+    if (pr.state === 'rest') { drawWaterOutline(pr, x, y); pr.glint = true; }   /* THE OUTLINE */
+    drawThrowWater(pr, x, y);
+    if (pr.state === 'rest') { const ph = (time * 0.55 + pr.hx * 0.013) % 1; if (ph < 0.22) { const gx = x - 5 + Math.round(ph / 0.22 * 10), gy = y - 10 + Math.round(ph / 0.22 * 6); g.fillStyle = '#ffffff'; g.fillRect(gx, gy, 1, 1); g.globalAlpha = 0.7; g.fillRect(gx - 1, gy, 3, 1); g.fillRect(gx, gy - 1, 1, 3); g.globalAlpha = 1; } }   /* THE GLINT */
+    if (pr.state === 'held' && P.carry === pr && !P.dead) { const arc = waterArc(pr); pr.arc = arc; CTW.drawArc(g, arc, cx, cy, time, '#9ad0ff'); }   /* (claude/burnvillage2) THE TOLD ARC: where it will land, UP lobs, DOWN tosses short */
     if (pr.state !== 'held' && pr.state !== 'fly' && !P.carry && Math.abs(pr.x - P.x) < 48 && Math.abs(pr.y - P.y) < 32) { g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 5 + pr.hx); g.strokeStyle = '#9ad0ff'; g.beginPath(); g.arc(x, y - 6, 9, 0, 7); g.stroke(); g.globalAlpha = 1; } }   /* take me */
 }
 /* THE SMOKE's clock: up for SMOKE.up seconds of its period, thickening for SMOKE.tell seconds before it */
@@ -20960,6 +20982,7 @@ function drawVillage(cx, cy) {
   for (const z of L.deckBreaks || []) { if (!(z.log || z.beam) || z.down) continue; const x = Math.round(z.x0 * TS - cx), y = Math.round(z.row * TS - cy), w = (z.x1 - z.x0 + 1) * TS; if (x > VW || x + w < 0) continue;   /* THE BURNING LOG */
     const hot = z.t >= 0; g.fillStyle = '#1b1626'; g.fillRect(x - 1, y - 1, w + 2, 9); g.fillStyle = hot ? '#6a2a14' : '#4a2e1a'; g.fillRect(x, y, w, 7); g.fillStyle = '#7a4a2a'; g.fillRect(x, y, w, 2);
     g.fillStyle = '#2e1c12'; for (let q = 6; q < w; q += 11) g.fillRect(x + q, y + 2, 1, 4);
+    if (z.bridge) { g.fillStyle = '#3a2616'; g.fillRect(x - 2, y - 14, 3, 15); g.fillRect(x + w - 1, y - 14, 3, 15); g.fillStyle = hot ? '#ff9a5c' : '#8a7340'; for (let q = 0; q < w; q += 2) g.fillRect(x + q, y - 12 + Math.round(Math.sin(q / w * Math.PI) * 4), 2, 1); }   /* (claude/burnvillage2) A BURNING BRIDGE: its two posts and a rope rail (alight once it is going) */
     g.fillStyle = hot ? (Math.floor(time * 14) % 2 ? '#ffd36b' : '#ff6b2c') : '#ff7a2c'; for (let q = 2; q < w; q += 5) if ((q * 7 + Math.floor(time * 4)) % 3 === 0 || hot) g.fillRect(x + q, y + 5 + ((q >> 2) % 2), 2, 1);
     if (hot || Math.random() < 0.06) parts.push({ x: z.x0 * TS + Math.random() * w, y: z.row * TS, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#ff9a5c', size: 1, grav: -10 }); }
   for (const r of vflee) { const set = SPR.hearthgob; if (!set) break; drawSet(set, null, 4 + Math.floor(r.t * 12) % 2, Math.round(r.x - cx), Math.round(r.y - cy), 1, false); g.fillStyle = '#ff9a5c'; if (Math.floor(r.t * 10) % 2) g.fillRect(Math.round(r.x - cx) - 6, Math.round(r.y - cy) - 17, 2, 2); }   /* goblins running from what they lit */
@@ -20986,6 +21009,7 @@ function drawVillage(cx, cy) {
     else if (pr.t === 'vtrough') { g.fillStyle = '#4a3222'; g.fillRect(x - 12, y - 9, 24, 9); g.fillStyle = '#2a1c12'; g.fillRect(x - 12, y - 9, 24, 1); g.fillRect(x - 10, y - 1, 3, 1); g.fillRect(x + 7, y - 1, 3, 1);
       const lvl = pr.water >= 1 ? 1 : Math.max(0, 1 - pr.refillT / 8); if (lvl > 0.05) { g.fillStyle = '#4a8ac0'; g.fillRect(x - 10, y - 8 + Math.round((1 - lvl) * 5), 20, Math.max(1, Math.round(lvl * 5))); g.fillStyle = '#bfe6f5'; g.fillRect(x - 10, y - 8 + Math.round((1 - lvl) * 5), 20, 1); } }
     else if (pr.t === 'vwell' && pr.kind === 'butt') { g.fillStyle = '#3a2616'; g.fillRect(x - 7, y - 15, 14, 15); g.fillStyle = '#5a3a22'; for (let k = -6; k < 7; k += 4) g.fillRect(x + k, y - 15, 2, 15); g.fillStyle = '#8a919c'; g.fillRect(x - 7, y - 13, 14, 1); g.fillRect(x - 7, y - 4, 14, 1); g.fillStyle = '#4a8ac0'; g.fillRect(x - 6, y - 15, 12, 1); }   /* THE RAIN BUTT on the Hall's roof */
+    else if (pr.t === 'vwell' && pr.kind === 'jug') { g.fillStyle = '#3a2616'; g.fillRect(x - 8, y - 9, 16, 2); g.fillRect(x - 7, y - 7, 2, 7); g.fillRect(x + 5, y - 7, 2, 7); g.fillStyle = '#5a3a22'; g.fillRect(x - 8, y - 9, 16, 1); }   /* (claude/burnvillage2) THE JUG SHELF: a bench, its jug on top */
     else if (pr.t === 'vwell' && pr.kind === 'pump') { g.fillStyle = '#4a4a52'; g.fillRect(x - 3, y - 26, 6, 26); g.fillStyle = '#6a6a74'; g.fillRect(x - 3, y - 26, 2, 26); g.fillRect(x - 12, y - 25, 10, 2); g.fillStyle = '#3a3a42'; g.fillRect(x + 3, y - 18, 6, 3); g.fillRect(x + 7, y - 15, 2, 3); g.fillStyle = '#5a5850'; g.fillRect(x - 8, y - 3, 22, 3); g.fillStyle = '#4a8ac0'; if (Math.floor(time * 2) % 3 === 0) g.fillRect(x + 7, y - 11, 1, 2); }   /* THE SQUARE'S PUMP */
     else if (pr.t === 'vwell') { g.fillStyle = '#5a5850'; g.fillRect(x - 12, y - 14, 24, 14); g.fillStyle = '#6e6c62'; for (let k = 0; k < 4; k++) g.fillRect(x - 12 + k * 6 + (k % 2), y - 12, 5, 3); g.fillStyle = '#3a3830'; g.fillRect(x - 12, y - 14, 24, 1);
       g.fillStyle = '#4a3222'; g.fillRect(x - 11, y - 36, 2, 22); g.fillRect(x + 9, y - 36, 2, 22); g.fillRect(x - 13, y - 38, 26, 3); g.fillStyle = '#8a8478'; g.fillRect(x - 1, y - 35, 1, 12 + (pr.cd > 0 ? 6 : 0));
@@ -21053,7 +21077,9 @@ function drawEmberWisp(e, cx, cy) {
   g.fillStyle = '#3a0c08'; g.fillRect(x - 2, y - 6, 1, 1); g.fillRect(x + 1, y - 6, 1, 1);
   if (Math.hypot(P.x - e.x, P.y - 10 - e.y) < 96 && !(e.recoil > 0)) tellQ.push({ txt: '!!', x, y: y - 28, col: '#ff6b6b', a: 1 });   /* THE RED CROSS: its touch is its blow, and nothing turns it */
 }
-/* THE PYROMANCER: a renegade of the Pyromancers' order, fought in the square - AS A MIRROR DUEL (Daniel, 2026-09-28: "a tad
+/* (claude/burnvillage2, Daniel 10-07) A DUELIST, NEVER INVULNERABLE (B11/B13): a hero's blow lands WHOLE outside his openings (src/boss-greed.js FULL_DAMAGE),
+   he guards by READING a run, no burn takes on him; WATER STUNS HIM (gold ring + bar, x2), then a told ~3 s STEAM WARD (B3) - src/village-water.js.
+   THE PYROMANCER: a renegade of the Pyromancers' order, fought in the square - AS A MIRROR DUEL (Daniel, 2026-09-28: "a tad
    harder and play more like a duel where they jump on platforms and use their regular/heavy attacks"). He fights with the
    hero's own staff: HER RUN OF THREE (the thrust, the run's second cut, and a heavier third that shoves), HER HELD BLOW (THE
    BELLOWS, the cone of fire out of the staff that goes through a guard), and ONE of her spells, the ember. He HOPS the square's
@@ -21074,7 +21100,7 @@ const PYRO_DUEL = {
   shove: 170,                                              /* the third cut shoves, as hers does (a blow that lands or a shield that takes it) */
   bellowsTell: 0.62, bellowsT: 0.5, cone: Math.round(PYRO_STAFF.heavyReach * PYRO_SCALE) + 35,   /* HER HELD BLOW: the gather, then the cone - the staff's 38 px and the fire's flight past it */
   read: 1.4,                                               /* HE READS A RUN: blows further apart than this are not a run */
-  doused: 3.0, wet: 6,                                     /* a bucket opens him for 3 s; he is wet for 6 s after, and a bucket then only cools him */
+  doused: 3.0, wet: 6,                                     /* (claude/burnvillage2: no longer read - the stun and the steam ward after it are src/village-water.js STUN / WARD) */
   hopMax: 340, hopFar: 210,                                /* a hop's top speed, and the furthest spot he will hop for (further, he walks first) */
 };
 /* THE STALLS, read off the grid once a fight: every one-way run in his arena above the floor he can stand on */
@@ -21103,14 +21129,20 @@ function pyroHop(e, tx, ty) {
 }
 /* THE BUCKET OPENING (CARRY & THROW's hook, PYRO_HIT_FIELD): his flames out, his heat gone - and staggered, OPEN. A bucket while
    he is already open, or still wet from the last, only cools him: nothing a player can chain into a lock. */
+/* (claude/burnvillage2, Daniel 10-07: "a thrown water splash STUNS him (B10 shared read: gold ring + timer) and he takes x2 damage while stunned,
+   followed by a told ~3 s ward (B3)"; src/village-water.js). Water in his steam ward is TURNED (clank, flash, WARDED); on a stunned man it only cools. */
 function pyroDouse(e) {
-  const D = PYRO_DUEL; e.heat = 0; e.readN = 0; e.calmT = 0; SFX.hiss(); SFX.splash();
+  const how = VWA.waterOn(e); SFX.hiss(); SFX.splash();
   for (let i = 0; i < 24; i++) parts.push({ x: e.x + (Math.random() - 0.5) * 18, y: e.y - 10 - Math.random() * 26, vx: (Math.random() - 0.5) * 50, vy: -50 - Math.random() * 50, life: 0.9, max: 0.9, col: Math.random() < 0.5 ? '#e8f6ff' : '#9a9aa4', size: 2, grav: -30 });
-  if (e.open > 0 || e.wetT > 0 || e.mode === 'sleep' || e.mode === 'wake') { number(e.x, e.y - 56, 'DOUSED', '#9ad0ff'); return; }
-  e.mode = 'doused'; e.modeT = D.doused; e.open = D.doused; e.wetT = D.doused + D.wet; e.vx = 0; if (e.vy < 0) e.vy = 0;
-  number(e.x, e.y - 56, 'DOUSED - HE IS OPEN', '#9ad0ff'); ringAt(e.x, e.y - 20, 26, '#9ad0ff', 0.4); shakeCam(3);
-  if (!(PROG.pyroDousedTold > 1)) { PROG.pyroDousedTold = (PROG.pyroDousedTold || 0) + 1; hintT = 4; hintMsg = 'WATER PUTS HIM OUT. WHILE HE STANDS THERE DRIPPING, HE IS OPEN.'; }
+  if (how === 'ward') { BR.turned(e, P.x, 'WARDED'); return; }
+  if (how !== 'stun') { number(e.x, e.y - 56, 'DOUSED', '#9ad0ff'); return; }
+  e.heat = 0; e.readN = 0; e.calmT = 0;
+  e.mode = 'doused'; e.modeT = VWA.STUN.t; e.open = VWA.STUN.t; e.wetT = VWA.STUN.t + VWA.WARD.t; e.vx = 0; if (e.vy < 0) e.vy = 0;
+  number(e.x, e.y - 56, 'STUNNED', '#ffd36b'); turnWord(e.x, e.y - 66, 'STUNNED', '#ffd36b'); ringAt(e.x, e.y - 20, 26, '#ffd36b', 0.4); shakeCam(3); SFX.clank();
+  if (!(PROG.pyroDousedTold > 1)) { PROG.pyroDousedTold = (PROG.pyroDousedTold || 0) + 1; hintT = 2.8; hintMsg = 'WATER STUNS HIM. WHILE THE GOLD RING RUNS, EVERY BLOW LANDS DOUBLE.'; }   /* (2.8 s: gone before the stun ends, so the ward's own line is seen) */
 }
+/* THE STEAM WARD (B3): the stun over, he steams dry - told (a hiss, the word, the pale shell) - and for WARD.t nothing goes through it */
+function pyroWard(e) { e.ward = VWA.WARD.t; SFX.hiss(); if (SFX.aegis) SFX.aegis(); number(e.x, e.y - 56, 'HE WARDS IN STEAM', '#dfe8ff'); turnWord(e.x, e.y - 66, 'STEAM WARD', '#dfe8ff'); ringAt(e.x, e.y - 20, 22, '#dfe8ff', 0.35); }
 /* HE READS YOU (hurtEnemy0): a blow the hero struck - light, a sweep, a dash, a shot - counts toward a run; two in a row and his
    guard comes up, and the THIRD is turned. A HEAVY (or a plunge) goes through it and breaks the read. What is not a hero's blow
    (a spell, a burn, the bucket) is not read at all, and open he reads nothing. Returns true when the blow was turned. */
@@ -21128,7 +21160,7 @@ function pyroReads(e, blow, plunge) {
 }
 function updatePyromancer(e, dt) {
   const A = L.arena, floor = A.floor, D = PYRO_DUEL, d = P.x - e.x, ad = Math.abs(d), p2 = e.hp < e.maxHp * 0.5;
-  e.modeT -= dt; e.cd -= dt; e.calmT = (e.calmT || 0) + dt; e.open = Math.max(0, (e.open || 0) - dt); e.anim += dt; e.wetT = Math.max(0, (e.wetT || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt);
+  e.modeT -= dt; e.cd -= dt; e.calmT = (e.calmT || 0) + dt; e.open = Math.max(0, (e.open || 0) - dt); e.anim += dt; e.wetT = Math.max(0, (e.wetT || 0) - dt); e.guardT = Math.max(0, (e.guardT || 0) - dt); e.ward = Math.max(0, (e.ward || 0) - dt);
   if (time - (e.readAt ?? -99) > D.read) e.readN = 0;
   if (p2 && e.phase === 1) { e.phase = 2; number(e.x, e.y - 56, 'HE TAKES THE STALLS', '#ff9a5c'); SFX.roar(); }
   if (e[PYRO_HIT_FIELD] !== undefined && e[PYRO_HIT_FIELD] !== e.wetSeen) { e.wetSeen = e[PYRO_HIT_FIELD]; pyroDouse(e); }
@@ -21198,7 +21230,7 @@ function updatePyromancer(e, dt) {
         seeds.push({ x: sx, y: sy, vx: dx2 / dd * 200 + (Math.random() - 0.5) * 30, vy: dy2 / dd * 200 - 40, g: 160, life: 2.4, dead: false, spore: false, dmg: DMG.pyroEmber, shot: true, fire: true, pyroEmber: true, owner: e }); SFX.spark(); }
       if (e.modeT <= 0 && e.shots <= 0) { heat(12); after(); } break;
     case 'doused': e.vx = 0; if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 14, y: e.y - 6 - Math.random() * 24, vx: 0, vy: 40, life: 0.4, max: 0.4, col: '#9ad0ff', size: 1, grav: 300 });
-      if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; } break;
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; e.open = 0; pyroWard(e); } break;   /* (claude/burnvillage2) the stun over: THE STEAM WARD, told */
     case 'overheat': if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 16, y: e.y - 30 - Math.random() * 10, vx: (Math.random() - 0.5) * 20, vy: -40 - Math.random() * 30, life: 1.1, max: 1.1, col: Math.random() < 0.7 ? '#4a4048' : '#ff9a5c', size: 3, grav: -30 });
       if (e.modeT <= 0 && e.heat < PYRO_VENT_AT) { e.mode = 'stalk'; e.cd = 0.6; }   /* (a bucket put him out while he stood there: nothing left to vent) */
       else if (e.modeT <= 0) { e.mode = 'ventTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); } break;
@@ -21236,6 +21268,13 @@ function drawPyromancer(e, cx, cy) {
   const white = e.flash > 0 || (e.mode === 'overheat' && Math.floor(time * 10) % 2 === 0) || (/Tell$/.test(e.mode) && Math.floor(time * 12) % 3 === 0);
   drawSet(set, key, frame, x, y, e.face, white, PYRO_SCALE, PYRO_SCALE);
   if (e.wetT > 0) { g.fillStyle = '#9ad0ff'; for (let q = 0; q < 3; q++) { const k2 = (time * 1.7 + q / 3) % 1; g.globalAlpha = 1 - k2; g.fillRect(Math.round(x - 8 + q * 7), Math.round(y - 38 + k2 * 34), 1, 2); } g.globalAlpha = 1; }   /* WET: he drips */
+  /* (claude/burnvillage2) THE SHARED READ (B10): OPEN (stunned by water, or overheated) = the gold ring at his feet and a gold bar over him that runs out
+     with it; WARDED = a pale shell round him and its own pale bar */
+  const rd = VWA.pyroRead(e, PYRO_OVER); e.readNow = rd ? rd.st : null;
+  if (rd) { const X = Math.round(x), Y = Math.round(y), pul = 0.5 + 0.5 * Math.sin(time * 10), gold = rd.st !== 'ward';
+    if (gold) { g.globalAlpha = 0.5 + 0.35 * pul; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(X, Y - 1, 18 + pul * 2, 5, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+    else { g.globalAlpha = 0.28 + 0.15 * pul; g.strokeStyle = '#dfe8ff'; g.beginPath(); g.ellipse(X, Y - 22, 17, 26, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 0.1; g.fillStyle = '#dfe8ff'; g.fill(); g.globalAlpha = 1; }
+    g.fillStyle = ART.OUT; g.fillRect(X - 21, Y - 62, 42, 5); g.fillStyle = gold ? '#ffd36b' : '#dfe8ff'; g.fillRect(X - 20, Y - 61, Math.round(40 * rd.k), 3); }
   if (e.mode === 'stalk' && (e.guardT > 0 || e.readN >= 2)) { g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 14); g.strokeStyle = '#dfe8ff'; g.beginPath(); g.arc(Math.round(x + e.face * 12), Math.round(y - 22), 12, e.face > 0 ? -1.2 : Math.PI - 1.2, e.face > 0 ? 1.2 : Math.PI + 1.2); g.stroke(); g.globalAlpha = 1; }   /* HIS GUARD: a pale arc in front of him */
 }
 function drawPyroHeat(b) {   /* HIS HEAT, over his bar: the class's own meter, and the fight's clock - on its own line of the plate, under his name */
@@ -27501,7 +27540,7 @@ function drawFacades(cx, cy) {
     if (!f.spr && String(kind).startsWith('ub')) f.spr = UBS.bakeFacade(kind, x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7, o);   /* THE UNBURIED FIELD's own: the toppled tower, the chapel-fort (src/redraw/unburied_sets.js) */
     if (!f.spr) f.spr = (String(kind).startsWith('monk') ? MON.bakeFacade : CRT.bakeFacade)(kind, x1 - x0 + 1, y1 - y0 + 1, x0 * 131 + y0 * 7, Object.assign({}, o || {}, o && o.arch ? { arch: [o.arch[0] - y0, o.arch[1] - y0] } : {}));
     g.drawImage(f.spr, sx, sy);
-    if (kind === 'burning') { g.globalAlpha = 0.045 + 0.03 * Math.sin(time * 7 + x0) + 0.015 * Math.sin(time * 17 + y0); g.fillStyle = '#ff8a3c'; g.fillRect(Math.max(0, sx), Math.max(0, sy + (h >> 2)), Math.min(VW, sx + w) - Math.max(0, sx), h - (h >> 2)); g.globalAlpha = 1; }
+    if (kind === 'burning') drawBlazingFront(g, sx, sy, w, h, blazeAt((x0 + x1) / 2, x0, levelTime), time, x0, VG ? VG.heat || 0 : 0);   /* (claude/burnvillage2) the fire climbs the front and goes through it (src/village-blaze.js) */
   }
 }
 
@@ -30568,6 +30607,7 @@ if (q.get('playtest') === '1') setTimeout(async () => {
 if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 window.BK.levelJump = (id, h, campaign) => levelJump(id, h, campaign); Object.defineProperty(window.BK, 'campaignTag', { get: () => campaignTag });
+window.BK.villageWater = { levelTime: v => { if (v !== undefined) levelTime = v; return levelTime; }, arc: () => P.carry && P.carry.t === 'vbucket' ? waterArc(P.carry) : null, ward: e => pyroWard(e) };   /* (claude/burnvillage2) tools/village-water.mjs: the level's clock the town's blaze runs on, a carried water's told arc */
 window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.mapTip = () => ({ id: mapTip.id, t: mapTip.t, lines: mapTip.id ? spurTip(LEVELS[NODES.find(n => n.id === mapTip.id).level]) : null }); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */

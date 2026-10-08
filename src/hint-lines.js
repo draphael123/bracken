@@ -7,6 +7,8 @@
 import { STUCK_HANDS } from './stuck-spots.js';
 import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
+  /* claude/burnvillage2: THROW WATER and THE PYROMANCER's stun and steam ward (src/village-water.js) - routed so the player can see them */
+  'STUNNED', 'HE WARDS IN STEAM', 'THE JUG', 'THE BUCKET', 'PUT OUT',
   /* claude/survival2: the manual flask and the exam spikes (src/main.js drinkFlask, shrine break, SV.examAt) - routed so the player can see them */
   'NO FLASKS', 'FULL', 'SPILLED', 'SHRINE BROKEN  +1 FLASK', 'THE SPIKES KILL HERE',
   /* claude/slide: the first slope a hero stands on */
@@ -32,7 +34,7 @@ export const CALL_LINES = new Set([
   /* (claude/sweep2 gap-closer) THE WAYMEET PALADIN'S LEAP: its tell (off the red ring) and his whiff (the ward down beside you) */
   'HE LEAPS: GET OFF THE RING', 'HE OVERREACHED: STRIKE',
   /* the states that mean "hit him now" / "the ward is down" */
-  'OPEN', 'WARDED', 'GO ROUND', 'HIS TAIL: JUMP IT, AND AGAIN', 'HE IS OPEN', 'DOUSED - HE IS OPEN', 'HIS HEAD IS UP. HE IS OPEN', 'HER SIDE IS OPEN', 'HER GUARD IS BROKEN',
+  'OPEN', 'WARDED', 'GO ROUND', 'HIS TAIL: JUMP IT, AND AGAIN', 'HE IS OPEN', 'HIS HEAD IS UP. HE IS OPEN', 'HER SIDE IS OPEN', 'HER GUARD IS BROKEN',
   'THE GOBLIN QUEEN  OPEN', "THE QUEEN'S LANCE  OPEN", 'THE PALADIN  THE WARD IS DOWN', 'THE RAM LORD  DAZED', 'THE ROC  GROUNDED', 'THE RIMEWRIGHT  THAWED',
   'THE BURIED PRINCE  BAREHEADED', 'THE BURIED PRINCE  IN THE LIGHT', 'THE FORGEMASTER  STUNNED', 'THE FORGEMASTER  SCALDED', 'THE WINDCALLER  HOLD ON',
   /* the openings that say what to do */

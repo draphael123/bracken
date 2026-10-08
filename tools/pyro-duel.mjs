@@ -5,9 +5,10 @@
                      ember) - the jet, the cinder step, the fire wall and the wisp are gone - and he HOPS between the square's
                      stalls to meet you on your own floor
      2. HE READS YOU  the third light blow in a row is turned; a heavy still goes through
-     3. THE BUCKET    a thrown water bucket that hits him douses his flames (his heat to nothing) and staggers him OPEN - and a
-                     second one while he is still wet cools him without staggering him again (no lock); a rack is always in
-                     reach of every tile of his square, and one stands off the burning floor, on a stall
+     3. THE BUCKET    a thrown water bucket that hits him douses his flames (his heat to nothing) and STUNS him OPEN - and a
+                     second one inside the stun does not lengthen it; the stun over, his told STEAM WARD (claude/burnvillage2,
+                     Daniel 10-07, design standard B3) turns the next water outright (no lock); a rack is always in reach of every
+                     tile of his square, and one stands off the burning floor, on a stall
      4. A TAD HARDER  ~15% more health than the 510 he had; every blow told (the marks table: a yellow ! over the cuts and the
                      ember, a red !! over the Bellows and the vent), and a cut that lands ends his run - no second blow into a
                      hero still reeling from the first
@@ -82,8 +83,8 @@ try {
    const toss=()=>{const pr=V.buckets().filter(q=>q.state==='rest')[0];hold(b,b.x-40);V.take(pr);for(let i=0;i<6;i++){hold(b,b.x-40);b.cd=99;BK.sim(1);}BK.press('atk');let hit=false;for(let i=0;i<40&&!hit;i++){hold(b,b.x-40);b.cd=99;BK.sim(1);hit=b.mode==='doused'||pr.state==='return';}for(let i=0;i<3;i++){hold(b,b.x-40);b.cd=99;BK.sim(1);}return pr;};
    toss();const first={mode:b.mode,open:+(b.open||0).toFixed(2),heat:Math.round(b.heat)};
    BK.sim(20);const o1=b.open;toss();const second={mode:b.mode,open:+(b.open||0).toFixed(2),grew:(b.open||0)>o1+0.01};
-   for(let i=0;i<400&&b.mode==='doused';i++){b.cd=99;BK.sim(1);}const after={mode:b.mode,open:+(b.open||0).toFixed(2),wet:+(b.wetT||0).toFixed(2)};
-   b.heat=50;toss();const wet={mode:b.mode,open:+(b.open||0).toFixed(2),heat:Math.round(b.heat)};
+   for(let i=0;i<400&&b.mode==='doused';i++){b.cd=99;BK.sim(1);}const after={mode:b.mode,open:+(b.open||0).toFixed(2),wet:+(b.wetT||0).toFixed(2),ward:+(b.ward||0).toFixed(2)};
+   b.heat=50;toss();const wet={mode:b.mode,open:+(b.open||0).toFixed(2),heat:Math.round(b.heat),ward:+(b.ward||0).toFixed(2)};
    for(let i=0;i<60*12;i++){b.cd=99;BK.sim(1);}b.heat=50;b.mode='stalk';toss();const dry={mode:b.mode,open:+(b.open||0).toFixed(2)};
    out.bucket={first,second,after,wet,dry};}
   /* 1. ONE SPELL: forty seconds of the fight with the hero put all over the square, and only the duel's own modes come up */
@@ -118,7 +119,8 @@ try {
   assert.ok(r.bucket.first.open >= 2.5 && r.bucket.first.heat === 0, 'his flames out and he is OPEN: ' + JSON.stringify(r.bucket.first));
   assert.ok(!r.bucket.second.grew, 'a second bucket inside the first stagger does not lengthen it: ' + JSON.stringify(r.bucket.second));
   assert.equal(r.bucket.after.mode, 'stalk', 'and he fights again when it is over: ' + JSON.stringify(r.bucket.after));
-  assert.ok(r.bucket.wet.mode !== 'doused' && r.bucket.wet.open === 0 && r.bucket.wet.heat === 0, 'still wet, a bucket cools him and staggers nothing - no lock: ' + JSON.stringify(r.bucket.wet));
+  assert.ok(r.bucket.after.ward >= 2.5, 'the stun over, his STEAM WARD is up, told (claude/burnvillage2, B3): ' + JSON.stringify(r.bucket.after));
+  assert.ok(r.bucket.wet.mode !== 'doused' && r.bucket.wet.open === 0 && r.bucket.wet.ward > 0, 'in his ward a bucket is turned and staggers nothing - no lock: ' + JSON.stringify(r.bucket.wet));
   assert.equal(r.bucket.dry.mode, 'doused', 'dried out, the bucket opens him again: ' + JSON.stringify(r.bucket.dry));
   /* 4 */
   assert.equal(r.lock.hits, 1, 'a cut that lands ends his run - one blow, never a chain into a reeling hero: ' + JSON.stringify(r.lock));

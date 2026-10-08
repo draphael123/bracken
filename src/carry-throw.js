@@ -20,6 +20,10 @@
 // THE RULE IT KEEPS: the arc you are shown is the arc it flies (tools/underwell.mjs: a thrown torch lands within a tile of the ring, every hero).
 export const KINDS = {
   torch: { aims: { low: { vx: 100, vy: -110 }, mid: { vx: 170, vy: -175 }, high: { vx: 125, vy: -285 } }, g: 600, r: 3, ring: 9, dots: 14 },
+  /* (claude/burnvillage2) THE BURNING VILLAGE's water: its mid aim is the throw it always had (src/throwables.js THROW_KIND: the bucket flat and fast,
+     the jug a lob), UP lobs over a fire to the one behind it, DOWN tosses it short at your feet. g is THROW_KIND's own, so the arc told is the arc flown */
+  bucket: { aims: { low: { vx: 120, vy: -40 }, mid: { vx: 210, vy: -70 }, high: { vx: 150, vy: -240 } }, g: 520, r: 4, ring: 12, dots: 14 },
+  jug: { aims: { low: { vx: 110, vy: -90 }, mid: { vx: 190, vy: -150 }, high: { vx: 140, vy: -285 } }, g: 600, r: 3, ring: 9, dots: 14 },
 };
 export const addKind = (kind, def) => { KINDS[kind] = def; return def; };
 export function aimOf(kind, face, keys) {
