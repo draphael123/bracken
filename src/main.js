@@ -4200,7 +4200,7 @@ function winLevel() {
 }
 
 // A LEVEL CAN ASK FOR A TIME. Everything else on the map opens because you finished the thing before it;
-// UNDERLEAF opens because you finished Kingswood in under three minutes, which is well inside its gold.
+// (UNDERLEAF used to open because you finished Kingswood in under three minutes; it is a main-road level now (Daniel 10-08), and no level asks for a time any more - the rule stays for the next one that does.)
 const timeLocked = lv => { const n = lv.needsTime; if (!n) return false; const p = PROG[n.id] || {}; return !(p.best !== undefined && p.best <= n.t); };
 const killLocked = lv => { const n = lv.needsKills; if (!n) return false; const p = PROG[n.id] || {}; return !((p.slain || 0) > 0 && (p.slainOf || 0) > 0 && p.slain / p.slainOf >= n.pct); };
 const killPct = lv => { const n = lv.needsKills; if (!n) return 1; const p = PROG[n.id] || {}; return p.slainOf ? (p.slain || 0) / p.slainOf : 0; };
@@ -4229,10 +4229,10 @@ const WOOD_NODES = [
   { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
   { id: 'rootway', kind: 'level', level: LEVELS.findIndex(l => l.id === 'rootway'), x: 222, y: 66, plate: 'right', name: 'THE ROOTWAY' },   /* THE ROOTWAY (claude/rootway): between SPOREWOOD and KINGSWOOD (Daniel 10-07): the only spot map-spacing passes near them, so the road dips south to it and climbs back to Kingswood (the map lane may relay the sheet) */
   { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
-  { id: 'underleaf', kind: 'level', level: 16, x: 67, y: 70, plate: 'right', spur: true, name: 'UNDERLEAF' },   /* the secret, and now off the road in the picture as well as in the fiction */
+  { id: 'underleaf', kind: 'level', level: LEVELS.findIndex(l => l.id === 'underleaf'), x: 60, y: 56, plate: 'below', name: 'UNDERLEAF' },   /* UNDERLEAF (claude/underleafroad, Daniel 10-08): a MAIN-ROAD level now, between KINGSWOOD and THE SCREE PATH - it was a secret spur at (67,70); the road bends through it */
 ];
-/* the road itself, and nothing but: the Burning Village and Underleaf hang off it on spurs (NODES `spur: true`) */
-const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [263,80], [288,47], [254,27], [199,38], [222,66], [141,24], [98,33], [66,54], [40,64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
+/* the road itself, and nothing but: the Burning Village hangs off it on a spur (NODES `spur: true`); UNDERLEAF is ON it (between Kingswood and the Scree Path) */
+const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [263,80], [288,47], [254,27], [199,38], [222,66], [141,24], [98,33], [60,56], [40,64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
 /* OPTION B — THE SINGLE DIAGONAL S (docs/crag-options.png, letter B). Every node moved. One continuous climb from
    bottom-left to top-right, X sweeping through a smooth ogee (half-sine) curve as Y falls strictly - no hairpins,
    no loop, one line the eye can follow start to finish. Correct by construction: strictly-falling Y means no two
@@ -4313,8 +4313,8 @@ const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[40, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]), DESERT_PATH.map(([x, y]) => [x, y + DESERT_Y]));
 const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.y)<Math.hypot(PATH[best][0]-n.x,PATH[best][1]-n.y)?i:best,0));
 /* THE SPUR OFF A JUNCTION, if it declares one (opensOn.level === nd.id). Any future class level just declares its
-   own opensOn and this finds it - nothing here names 'burning' or 'unburied'. Underleaf and the Undercrown have no
-   opensOn (they gate on needsTime/needsKills, unchanged), so they are never returned here and stay panel-only. */
+   own opensOn and this finds it - nothing here names 'burning' or 'unburied'. The Undercrown has no
+   opensOn (it gates on needsKills, unchanged), so they are never returned here and stay panel-only. */
 const spurAt = id => NODES.find(n => n.spur && n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].opensOn && LEVELS[n.level].opensOn.level === id);
 const spurReqText = lv => { const o = lv.opensOn; const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
   const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();

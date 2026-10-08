@@ -1507,9 +1507,9 @@ function screePath() {
 }
 
 // ============================================================================================
-// THE SECRET LEVEL - UNDERLEAF. King Gorm Underleaf was named after somewhere, and this is it.
-// You only get here by putting him down in under three minutes, which means the runners he sent
-// never got home: the village does not know, and it is two in the morning.
+// UNDERLEAF (a MAIN-ROAD level since Daniel 10-08, claude/underleafroad: Kingswood -> Underleaf -> the Scree Path).
+// King Gorm Underleaf was named after somewhere, and this is it. You come down off his court by the
+// back road, and the village does not know yet: the runners he sent never got home, and it is two in the morning.
 //
 // THE RULE: IT IS NIGHT, SO NOTHING CAN SEE YOU. IT CAN ONLY HEAR YOU.
 //   1. The ground has a voice. Thatch and moss and rope are silent; a loose board is the worst
@@ -2441,9 +2441,8 @@ function theMonastery() {
 // So you are not clearing a mine. You are choosing which parts of it still exist, and you are doing it
 // in one direction, because everything you break is behind you the moment you use it.
 //
-// It opens on the ONE THING Highcrown can be asked for that its gold time cannot: four goblins in five.
-// Underleaf asks you to be quick through Kingswood; the Undercrown asks you to leave nothing standing in
-// Highcrown, which is the opposite instruction to the same castle.
+// It opens on the ONE THING Highcrown can be asked for that its gold time cannot: four goblins in five,
+// the opposite instruction to the same castle. (Underleaf used to ask for a quick Kingswood; it is on the main road now.)
 // ============================================================================================
 function undercrown() {
   const L = painter(154, 196);
@@ -7736,7 +7735,7 @@ export const LEVELS = [
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'rootway' },   /* (claude/rootway, Daniel 10-07: THE ROOTWAY comes between it and Sporewood) */
-  { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'kings' },
+  { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'underleaf' },   /* (claude/underleafroad, Daniel 10-08: UNDERLEAF sits between Kingswood and here) */
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
@@ -7747,7 +7746,7 @@ export const LEVELS = [
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
   { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE WASH COMES FROM WINDWARD. THE RIGGING IS THE LEVEL.', build: theHurricane, needs: 'flotilla' },
   { id: 'lamplit', name: 'THE LAMPLIT STREET', sub: 'the city under it', rule: 'THE LAMPS ARE AIR.', build: theLamplitStreet, needs: 'hurricane' },
-  { id: 'underleaf', name: 'UNDERLEAF', sub: "the king's own village, asleep", rule: 'NOTHING HERE CAN SEE YOU. IT CAN HEAR YOU.', build: underleaf, hidden: true, secret: true, needsTime: { id: 'kings', t: 180 } },
+  { id: 'underleaf', name: 'UNDERLEAF', sub: "the king's own village, asleep", rule: 'NOTHING HERE CAN SEE YOU. IT CAN HEAR YOU.', build: underleaf, needs: 'kings' },   /* (claude/underleafroad, Daniel 10-08: a MAIN-ROAD level now - Kingswood -> UNDERLEAF -> THE SCREE PATH. It was `hidden: true, secret: true, needsTime: { id: 'kings', t: 180 }`: only on level select, after Gorm in under three minutes. ARRAY position unchanged (saves count levels by index); the road is the `needs` chain) */
   { id: 'shop', name: 'THE STORE', sub: 'ask the keeper', build: theShop, hidden: true },
   { id: 'trial_open', name: 'THE OPEN YARD', sub: 'straw men, ledges and room', build: openYard, hidden: true },
   { id: 'trial_knight', name: "THE KNIGHT'S TRIAL", sub: 'sword, shield and plunge', build: () => trialYard('knight'), hidden: true },
