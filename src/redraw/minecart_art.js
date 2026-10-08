@@ -106,6 +106,43 @@ export function fallin(g, x, y, time) {
   add(g, () => { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 3); g.drawImage(glow(26, '200,120,60'), x + 16 - 26, y + 10 - 26); });
 }
 
+/* THE LOW LINE GOING (the cave-in's crumbling rail, x0..x1 on screen at rail height y): sleepers snapped, the rail cracked and sagging in gaps, rubble heaped between the
+   sleepers and more coming down out of the roof with a dust streak behind each rock, a rim of grit over the whole run. 'seed' = the decor's first column, so the heaps keep their
+   places as the camera scrolls. */
+export function crumble(g, x0, x1, y, time, seed) {
+  const w = x1 - x0, n = Math.max(1, Math.floor(w / 15));
+  for (let i = 0; i < n; i++) { const h = hash(seed, i), bx = x0 + 4 + i * 15 + (h % 5), sag = 1 + (h >> 3) % 3;
+    rc(g, bx, y - 1, 7, 3, DARK); rc(g, bx + 1, y, 5, 1, MP.t0);          /* a sleeper broken through, its splinters */
+    rc(g, bx - 3, y - 3 + sag, 5, 1, MP.i1); rc(g, bx - 3, y - 4 + sag, 5, 1, MP.i3);  /* the rail slumped into the gap, its cracked end bright */
+    if (h % 3 === 0) rc(g, bx + 2, y - 4, 1, 3, MP.t3);                   /* a prop-stump standing in it */
+    const hw = 6 + h % 7, hh = 3 + (h >> 4) % 4, hx = bx + 7 + (h >> 6) % 3;   /* the heap */
+    rc(g, hx, y - hh, hw, hh, MP.r3); rc(g, hx + 1, y - hh - 1, hw - 2, 1, MP.r5); rc(g, hx + 2, y - hh - 2, Math.max(1, hw - 5), 1, MP.r6); rc(g, hx, y - 1, hw, 1, MP.r1); rc(g, hx + hw - 2, y - hh + 1, 2, hh - 1, MP.r2);
+    if (h % 4 === 1) rc(g, hx + 2, y - hh + 1, 2, 1, MP.go2);               /* a fleck of ore in it */ }
+  /* the roof letting go: each rock a lit corner and a dark side, a streak of dust above it, drifting down the run on its own beat */
+  for (let i = 0; i < 6; i++) { const ph = (time * (0.7 + (i % 3) * 0.25) + i * 0.37) % 1, rx = x0 + ((i * 53 + 11) % Math.max(1, w - 6)), ry = y - 92 + ph * 86, s = 2 + (i % 3);
+    rc(g, rx, ry - 8, 1, 7, 'rgba(110,98,120,0.35)'); rc(g, rx + 1, ry - 14, 1, 6, 'rgba(110,98,120,0.2)');
+    rc(g, rx, ry, s, s, MP.r4); rc(g, rx, ry, s, 1, MP.r6); rc(g, rx + s - 1, ry + 1, 1, s - 1, MP.r2); }
+  /* grit hanging over the run, and a cold amber gleam where the lamps catch it */
+  add(g, () => { g.globalAlpha = 0.07 + 0.03 * Math.sin(time * 5); g.fillStyle = '#c8641c'; g.fillRect(R(x0), R(y - 40), R(w), 40); });
+  for (let i = 0; i < 9; i++) { const gx = x0 + ((i * 41 + R(time * 23) * 3) % Math.max(1, w)), gy = y - 4 - ((i * 17 + R(time * 40)) % 36); rc(g, gx, gy, 1, 1, MP.r6); }
+}
+/* THE CART'S SPEEDOMETER: an iron half-dial on a bracket, a brass-ringed face with its ticks (the CRUISE tick pale, the BOOST tick gold), a copper needle on a rivet, a lamp
+   in the housing that burns amber on a boost and blue when the cart is slowed. k 0..1 the speed up the dial, kc where cruise sits, mode 'boost' | 'cruise' | 'brake' | 'stopped'. */
+export function speedo(g, x, y, k, kc, mode, time) {
+  const rim = 14;
+  rc(g, x - 17, y + 1, 35, 4, MP.i1); rc(g, x - 17, y + 1, 35, 1, MP.i3); rc(g, x - 17, y + 4, 35, 1, MP.i0); for (const bx of [x - 15, x + 14]) rc(g, bx, y + 2, 2, 2, MP.i5);   /* the bracket and its bolts */
+  for (let dy = -rim; dy <= 0; dy++) { const hw = Math.floor(Math.sqrt(rim * rim - dy * dy + 0.5)); rc(g, x - hw, y + dy, hw * 2 + 1, 1, dy < -rim + 2 ? MP.i4 : MP.i2); }       /* the housing's iron */
+  for (let dy = -(rim - 2); dy <= 0; dy++) { const hw = Math.floor(Math.sqrt((rim - 2) * (rim - 2) - dy * dy + 0.5)); rc(g, x - hw, y + dy, hw * 2 + 1, 1, MP.i0); }       /* the face */
+  for (let a = 0; a <= 20; a++) { const aa = Math.PI + a / 20 * Math.PI; rc(g, x + Math.cos(aa) * (rim - 1), y + Math.sin(aa) * (rim - 1), 1, 1, MP.go1); }                  /* the brass ring */
+  for (let a = 0; a <= 8; a++) { const aa = Math.PI + a / 8 * Math.PI, c = a === 8 ? MP.go3 : Math.abs(a / 8 - kc) < 0.07 ? MP.i5 : MP.i3, r0 = a % 4 === 0 || a === 8 ? 8 : 9;
+    for (let r = r0; r <= 11; r++) rc(g, x + Math.cos(aa) * r, y + Math.sin(aa) * r, 1, 1, c); }                                                                         /* the ticks */
+  const na = Math.PI + Math.max(0, Math.min(1, k)) * Math.PI, nc = mode === 'boost' ? MP.go3 : mode === 'brake' ? '#7fc4e0' : MP.l3;
+  for (let r = 1; r <= 10; r++) { rc(g, x + Math.cos(na) * r, y + Math.sin(na) * r + 1, 1, 1, MP.i0); } for (let r = 1; r <= 10; r++) rc(g, x + Math.cos(na) * r, y + Math.sin(na) * r, 1, 1, r > 6 ? nc : MP.l1);   /* the needle, its shadow under it */
+  rc(g, x - 1, y - 2, 3, 3, MP.i4); rc(g, x, y - 1, 1, 1, MP.i5);                                                                                                           /* the rivet it turns on */
+  const lit = mode === 'boost' || mode === 'brake'; rc(g, x - 1, y - 6, 3, 2, lit ? (mode === 'boost' ? MP.l2 : '#7fc4e0') : MP.i1);
+  if (lit) add(g, () => { g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 12); g.drawImage(glow(12, mode === 'boost' ? '255,168,60' : '127,196,224'), R(x) - 12, R(y - 5) - 12); });
+}
+
 /* ---------------- THE CARTS ---------------- */
 /* kind: 'hero' (timber tub, iron-banded), 'gob' (rust iron, a bone bumper and a rag), 'ore' (loaded), 'caster' (a goblin's rune cart: a dark hull with a violet lamp) */
 export function tub(g, x, y, kind, time, v) {

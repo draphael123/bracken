@@ -252,9 +252,7 @@ export function makeMinecartHands(ctx) {
       else if (d.kind === 'bore') { MCA.boreArch(g, R(d.x0 * ts - cx), (d.x1 - d.x0 + 1) * ts, R(d.row * ts - cy)); }
       else if (d.kind === 'crumble') { /* THE LOW LINE GOING (review MF5): its rail cracked, rubble dropping on it, dust - drawn from 530, well before the fall-in */
         const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx), y = R(d.row * ts - cy); if (x1 < -20 || x0 > vw + 20) continue;
-        g.fillStyle = '#1a1410'; for (let x = x0 + 5; x < x1; x += 13) g.fillRect(x, y - 3, 3, 3);
-        g.fillStyle = '#8a7660'; for (let i = 0; i < 7; i++) { const px = x0 + ((i * 53 + R(time * 17) * 7) % Math.max(1, x1 - x0)), py = y - 90 + ((i * 37 + R(time * 120)) % 88); g.fillRect(px, py, 3, 3); }
-        g.fillStyle = '#4a3a2c'; for (let x = x0 + 8; x < x1; x += 22) g.fillRect(x, y - 5, 6, 3);
+        MCA.crumble(g, x0, x1, y, time, d.x0);
         if (Math.floor(time * 3) % 2) ctx.text('GOING', R((x0 + x1) / 2), y + 12, '#ff9a5c', 'center', 5); }
       else if (d.kind === 'scar') { /* the drill's bore scars in the rock: round, fresh-cut, bigger toward its tunnel */
         const x = R(d.x * ts - cx), y = R(d.row * ts - cy); if (x < -60 || x > vw + 60) continue; MCA.scar(g, x, y, d.r, d.x); }
@@ -306,11 +304,9 @@ export function makeMinecartHands(ctx) {
   H.drawCart = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); drawTub(g, P.x - cx, P.y - cy + 1, '#6b5034', time, c.v, 'hero'); MCA.prowLamp(g, R(P.x - cx), R(P.y - cy + 1), P.face || 1, time);
     if (P.ducking) { g.fillStyle = '#6b5034'; g.fillRect(R(P.x - cx) - 10, R(P.y - cy) - 12, 20, 4); g.fillStyle = '#8e6c44'; g.fillRect(R(P.x - cx) - 10, R(P.y - cy) - 12, 20, 1); } };
   /* THE SPEEDOMETER: a needle and its word, over the bottom-left of the screen */
-  H.drawHud = (g, P) => { if (!M || !H.riding(P)) return; const c = cartOf(P), x = 22, y = ctx.VH() - 16, k = Math.min(1, c.v / MC.boost), a = Math.PI + k * Math.PI;
-    g.fillStyle = 'rgba(20,16,12,0.7)'; g.beginPath(); g.arc(x, y, 12, Math.PI, Math.PI * 2); g.fill(); g.strokeStyle = '#5a5048'; g.stroke();
-    for (const [kk, col] of [[MC.cruise / MC.boost, '#c9d1dc'], [1, '#ffd36b']]) { const aa = Math.PI + kk * Math.PI; g.fillStyle = col; g.fillRect(R(x + Math.cos(aa) * 10), R(y + Math.sin(aa) * 10), 1, 1); }
-    g.strokeStyle = c.v > MC.cruise + 20 ? '#ffd36b' : c.v < MC.cruise - 30 ? '#7fc4e0' : '#e8dcc0'; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * 10, y + Math.sin(a) * 10); g.stroke();
-    ctx.text(c.v > MC.cruise + 20 ? 'BOOST' : c.v < 4 ? 'STOPPED' : c.v < MC.cruise - 30 ? 'BRAKE' : 'CRUISE', x, y + 8, '#e8dcc0', 'center', 5); };
+  H.drawHud = (g, P) => { if (!M || !H.riding(P)) return; const c = cartOf(P), x = 24, y = ctx.VH() - 18, k = Math.min(1, c.v / MC.boost), mode = c.v > MC.cruise + 20 ? 'boost' : c.v < 4 ? 'stopped' : c.v < MC.cruise - 30 ? 'brake' : 'cruise';
+    MCA.speedo(g, x, y, k, MC.cruise / MC.boost, mode, ctx.time());
+    ctx.text(mode === 'boost' ? 'BOOST' : mode === 'stopped' ? 'STOPPED' : mode === 'brake' ? 'BRAKE' : 'CRUISE', x, y + 10, '#e8dcc0', 'center', 5); };
   H.bakeOreIcon = () => { const c = document.createElement('canvas'); c.width = 10; c.height = 8; const k = c.getContext('2d');
     k.fillStyle = '#3a2e26'; k.fillRect(1, 2, 8, 6); k.fillRect(2, 1, 6, 7); k.fillStyle = '#d89a5a'; k.fillRect(3, 3, 2, 2); k.fillStyle = '#ffd36b'; k.fillRect(6, 2, 2, 2); k.fillRect(4, 5, 1, 1); k.fillStyle = '#fff6c8'; k.fillRect(6, 2, 1, 1); return c; };
   H.read = () => M && { points: Object.fromEntries(M.points.map(p => [p.id, p.state])), carts: M.carts.map(c => ({ t: c.e.t, x: R(c.x), row: c.row, state: c.state, v: R(c.v) })), shots: M.shots.length, runes: M.runes.length, n: { ...M.n },
