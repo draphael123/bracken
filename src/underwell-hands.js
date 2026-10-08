@@ -140,7 +140,7 @@ export function makeUnderwellHands(ctx) {
     if (once('takeTorch')) ctx.number(P.x, P.y - 34, 'ATTACK THROWS IT: UP LOBS IT, DOWN TOSSES IT SHORT', '#ffd36b');
     return true; };
   /* a torch reaches what it falls on: the oil there catches, a nest catches, a foe is struck (and fire-hurt) */
-  const strikeFoe = (q, e) => { const mul = e.cnSkin === DROWNED_SKIN ? TORCH.fireMul : e.cnSkin === THIEF_SKIN ? TORCH.thiefMul : 1; ctx.hurtFoe(e, TORCH.hit * mul); UW.n.torchHits = (UW.n.torchHits || 0) + 1;
+  const strikeFoe = (q, e) => { const mul = e.cnSkin === DROWNED_SKIN ? TORCH.fireMul : e.cnSkin === THIEF_SKIN ? TORCH.thiefMul : 1; ctx.hurtFoe(e, TORCH.hit * mul, 'throw'); UW.n.torchHits = (UW.n.torchHits || 0) + 1;
     ctx.burst(e.x, e.y - (e.h || 14) / 2, 10, ['#ff8a2a', '#ffd36b', '#c8281e'], 60, 0.5); ctx.sparks(e.x, e.y - 8, Math.sign(q.vx) || 1, 5);
     if (mul > 1 && once('fireTakes' + e.cnSkin)) ctx.number(e.x, e.y - 34, e.cnSkin === DROWNED_SKIN ? 'FIRE TAKES THE DROWNED DEAD' : 'THEIR COATS ARE SOAKED IN OIL: FIRE TAKES THEM', '#ff9a5c'); };
   const landTorch = (q, why) => { q.vx = 0; q.vy = 0; const gy = groundY(q.x, q.y); if (gy !== null) q.y = gy; q.state = 'lie'; q.lieT = TORCH.lie; q.catchT = 0.05; UW.n.torchLand = (UW.n.torchLand || 0) + 1;
