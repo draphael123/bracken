@@ -494,30 +494,30 @@
   "lostPct": 291
  },
  "skyroad": {
-  "hash": "3b1e589175e5",
+  "hash": "5f209187c7c4",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 25,
-  "deaths": 0,
-  "kills": 7,
-  "lifts": 51,
+  "hits": 24,
+  "deaths": 3,
+  "kills": 8,
+  "lifts": 55,
   "walked": 100,
   "bare": true,
-  "lostPct": 131
+  "lostPct": 135
  },
  "glasssea": {
-  "hash": "20355d1b686a",
+  "hash": "fa078de9f03f",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 33,
-  "deaths": 3,
+  "hits": 39,
+  "deaths": 6,
   "kills": 29,
-  "lifts": 95,
+  "lifts": 100,
   "walked": 100,
   "bare": true,
-  "lostPct": 207
+  "lostPct": 291
  },
  "ksar": {
   "hash": "84dc032df59e",
