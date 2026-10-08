@@ -24,6 +24,9 @@ export const BEAM = { fuse: 1.8, back: 5 };
 /* THE ROOFTOPS' BEAM (design audit §13.2, TWIST): its own, shorter fuse - the fastest hero (the pyromancer) needs 1.43 s
    for its nine tiles, so 1.2 s outruns nobody unwatered. Doused (BUCKET.beamWet, main.js), a beam holds regardless of fuse. */
 export const BEAM_TWIST = 1.2;
+/* (claude/burnvillage2) THE BURNING BRIDGES on the street (seven tiles each): taught slow, tested shorter - the slowest hero (the paladin) needs
+   1.35 s for seven tiles, so both are runnable, the tested one with nothing to spare for a hero who stops */
+export const BRIDGE = { taught: 2.0, tested: 1.5 };
 /* THE SMOKE: a plume rises for `up` seconds of every period, after `tell` seconds of thickening; airborne in it you rise at `lift` px/s */
 export const SMOKE = { up: 1.6, tell: 0.8, lift: 190, half: 12 };
 
@@ -55,6 +58,12 @@ export function buildBurningVillage({ painter, T, TS }) {
   const pits = [], logs = [];
   const pit = (x0, x1) => { pits.push([x0, x1]); for (let x = x0; x <= x1; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); set(x, R, T.ONEWAY); } logs.push([x0, x1, R]); coins([x0 + 1, R + 1]); };
   const still = (x, y) => stillFires.push([x, y]);
+  /* (claude/burnvillage2, Daniel's brief 10-07 #3) A BURNING BRIDGE ON THE ROUTE: a span of timber over an ember pit wider than any running jump
+     (seven tiles: the knight's carries four, the reach model's six), told the moment you stand on it (onTop: it flashes, a ! over every tile) and burning through
+     `fuse` seconds later into the embers - fire, not death, and a jump gets you out; it is back BEAM.back seconds after. Water on it and it
+     HOLDS (main.js bucketTargets: a doused beam's fuse cannot start). Seven tiles at the slowest hero's pace is 1.35 s. */
+  const bridge = (x0, x1, fuse) => { for (let x = x0; x <= x1; x++) { set(x, R, T.AIR); set(x, R + 1, T.AIR); set(x, R, T.ONEWAY); }
+    extraBreaks.push({ x0, x1, row: R, t: -1, down: false, regrow: true, beam: true, bridge: true, onTop: true, fuse }); pits.push([x0, x1]); coins([x0 + 2, R + 1]); };
 
   floor(0, W - 1, R);
 
@@ -91,6 +100,12 @@ export function buildBurningVillage({ painter, T, TS }) {
   house(134, 150, 16);                                 // two storeys
   foe('archer', 142, 13); foe('sapper', 147, 13); ent('silver', 149, 12); coins([136, 12], [139, 12]);
   foe('shield', 156, S); facades.push([158, 168, 17, 25, 'burning']); still(163, S);
+  /* (claude/burnvillage2) THE FIRST BURNING BRIDGE - TAUGHT: the street has burned through into a root cellar, a seven-tile span over its embers,
+     a slow fuse (BRIDGE.taught) and nothing in the air over it. The JUG is met here too, on a shelf at its foot (the first-use sign beside it):
+     a jug thrown on the span and it holds - or run it. A fall is a few embers and a jump out, back on the near side. */
+  ent('sign', 153, S, { text: 'A BURNING BRIDGE GOES AS YOU STAND ON IT. RUN IT, OR THROW THE JUG ON IT AND IT HOLDS.' });
+  ent('villagewell', 154, S, { bucket: true, kind: 'jug', splash: false });   /* (before the Crofts' shield: his gate stands at the bridge's far end, 166) */
+  bridge(159, 165, BRIDGE.taught);
   straw(170, 184); foe('burngob', 178, S); foe('hound', 184, S);
   plat(172, 23, 4); plat(176, 20, 4); foe('emberwisp', 178, 18); coins([173, 22], [177, 19]);
   ent('check', 187, S);
@@ -208,8 +223,12 @@ export function buildBurningVillage({ painter, T, TS }) {
      the well's own water has to cross what it is lighting, under an archer, to the last hot door; and one more burning
      beam - the same told, onTop mechanic met first at 188-191 and again on the rooftops - bridges the ground to his step. */
   ent('check', 404, S);
+  /* (claude/burnvillage2) THE SECOND BURNING BRIDGE - TESTED: the same seven tiles, a shorter fuse (BRIDGE.tested), and a wisp hanging over the
+     span, so the run is made under it (the jug from the shelf behind the checkpoint puts it out, or the span, not both) */
+  ent('villagewell', 402, S, { bucket: true, kind: 'jug', splash: false });
+  bridge(405, 411, BRIDGE.tested); foe('emberwisp', 408, 21);
   ent('villagewell', 414, S, { bucket: true });              /* struck, it splashes (as it always did); INTERACT, and its bucket is yours */
-  ent('sign', 408, S, { text: 'THE WELL PUTS OUT WHAT IS NEAR IT. IN HIS SQUARE, THE FLOOR BURNS AS HE RUNS HOT.' });
+  ent('sign', 413, S, { text: 'THE WELL PUTS OUT WHAT IS NEAR IT. IN HIS SQUARE, THE FLOOR BURNS AS HE RUNS HOT.' });
   straw(415, 419); foe('burngob', 417, S);
   house(420, 432, 19, 1); captive(422, S, { hot: true });
   foe('archer', 426, 16); foe('emberwisp', 436, 20); coins([418, S - 1], [426, 15], [430, 15]);
@@ -232,7 +251,8 @@ export function buildBurningVillage({ painter, T, TS }) {
      (main.js pyroDouse). So a bucket is always in reach in his square: the pump at the west door, a rain butt at the east wall, and
      one up on the middle stall, off the floor his heat sets alight (tools/pyro-duel.mjs) */
   ent('villagewell', 492, F - 1, { bucket: true, kind: 'butt', splash: false });
-  ent('villagewell', 476, F - 4, { bucket: true, kind: 'butt', splash: false });
+  ent('villagewell', 476, F - 4, { bucket: true, kind: 'jug', splash: false });   /* (claude/burnvillage2) a JUG up on the middle stall: lobbed down on him from the height */
+  ent('sign', 449, F - 1, { text: 'WATER STUNS HIM AND EVERY BLOW LANDS DOUBLE. THEN HE WARDS HIMSELF IN STEAM.' });   /* (claude/burnvillage2) the first-use sign, at his door */
   burn.push([455, 495, F - 1, { square: true }]);
   foe('pyromancer', 484, F - 1, { boss: true });
   facades.push([448, 500, 12, F - 1, 'burning']);
@@ -254,7 +274,7 @@ export function buildBurningVillage({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: S }, pools: [], falls: [], moversExtra: [], interiors, roofs, houses, facades,
     burn, stillFires, beams, roofFire, village: true, emberPits: pits, deckBreaks: logs.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, log: true }))
       .concat(beamSpans.map(([x0, x1, row]) => ({ x0, x1, row, t: -1, down: false, regrow: true, beam: true, onTop: true, fuse: BEAM.fuse })))
-      .concat(extraBreaks),
+      .concat(extraBreaks.filter(z => !z.bridge)).concat(extraBreaks.filter(z => z.bridge)),   /* (claude/burnvillage2: the street's bridges last - the rooftops' beam stays the first beam a reader finds) */
     heaps, trench, cellarFires, smoke,
     calm: trench.map(([a, b, y0, y1]) => [a, b, y0, y1]).concat([[80, 100, 14, S]]),   /* and the croft well's yard, where the bucket is taught */   /* nobody is garrisoned on a cellar floor: it is on fire */
     quest: { n: 6, item: 'folk', name: 'SAVED', done: 'THE VILLAGE IS OUT', thanks: 'THE VILLAGE THANKS YOU' },   /* the villagers are the level's quest: the count on the HUD and on the card */ night: true, glowNight: true, nightA: 0.18, duskStart: -1, duskLen: 1,

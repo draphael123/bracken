@@ -15,6 +15,9 @@ export const THROW_KIND = {
   // hitSmall/hitFire: the damage a thrown one does to a foe it hits square-on - a small hit to anything, more to
   // a foe fire already owns (burngob, emberwisp - see FIRE_FOES). carrySpeed caps how fast you walk holding one.
   bucket: { vx: 210, vy: -70, g: 520, respawn: 3, hitSmall: 1, hitFire: 3, carrySpeed: 58, carrySpeedSwim: 54 },
+  // (claude/burnvillage2) THE JUG: THE BURNING VILLAGE's light water - nearly a run to carry, lobbed higher and further, a small splash
+  // (src/village-water.js SPLASH). Its told arc is src/carry-throw.js KINDS.jug (UP lobs, DOWN tosses short), the same numbers it flies on.
+  jug: { vx: 190, vy: -150, g: 600, respawn: 2, hitSmall: 1, hitFire: 3, carrySpeed: 80, carrySpeedSwim: 56 },
   // barrel: { vx: 120, vy: -160, g: 640, respawn: 4, hitSmall: 2, hitFire: 2, carrySpeed: 46, carrySpeedSwim: 44 },
   // pot:    { vx: 170, vy: -190, g: 600, respawn: 2, hitSmall: 1, hitFire: 1, carrySpeed: 62, carrySpeedSwim: 56 },
   // rock:   { vx: 140, vy: -150, g: 700, respawn: 5, hitSmall: 3, hitFire: 1, carrySpeed: 50, carrySpeedSwim: 46 },
@@ -35,6 +38,7 @@ export const THROW_KIND = {
 // goblin's straw-ignite pauses under `doused` (main.js, updateVillage's burngob loop). The Pyromancer is not in
 // this set: his own duel (a separate lane) decides what a thrown bucket costs him, not this list.
 export const FIRE_FOES = new Set(['burngob', 'emberwisp']);
+export const WATER_KINDS = new Set(['bucket', 'jug']);   /* (claude/burnvillage2) the thrown kinds that are water: they douse what they hit */
 export const isFireFoe = t => FIRE_FOES.has(t);
 export const throwDamage = (kind, foeType) => { const k = THROW_KIND[kind]; return isFireFoe(foeType) ? k.hitFire : k.hitSmall; };
 // THE PYROMANCER HOOK (decision 3): when a thrown bucket lands on him, main.js sets e.thrownWaterHit = <the frame
