@@ -141,12 +141,13 @@ export const FULL_DAMAGE = {
   huntmaster: 'a duelist (design standard B11, claude/rootway): always hittable, he GUARDS BY ANGLE between his moves (a blow from his front at his height is turned: GO ROUND, or from above); his openings pay x1.5 (x2 behind the broken mask) in his own code (src/huntmaster.js)',
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",
   roc: 'Daniel 10-06 (claude/roc2): "you can jump on the gliding platforms / thermals and actually hit her, so she does not need to be invulnerable by default" - a beast, always hittable, guarding by HEIGHT (src/roc-eyrie.js take: whole and a little more from the air the level gives, GUARDS LOW from the floor); her plunge and her nest are x1.5',
+  greathound: 'Daniel 10-07 (claude/hound): "too difficult simply because he is invincible outside of very small windows ... he should not be invincible" - a beast duelist (B11/B13): always hit for real, his jaws turn part of a blow into his face (GO ROUND), whole from behind or above; his skid and his whine are bonus openings x1.5 (src/great-hound.js)',
   matriarch: 'a beast duelist (design standard B11): always hittable, her talons GUARD BY ANGLE (a blow from the front at her height is turned; from behind or above it lands); her openings pay x1.6 in her own code (claude/redgorge2)',
 };
-export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/bosswave1: the bosun and the great hound have openings now) */
+export const MINI_EVERY_BLOW = new Set(['spider']);   /* (claude/hound: THE GREAT HOUND is off CHIP_MINI and on FULL_DAMAGE - Daniel 10-07, 'he should NOT be invincible') */   /* (claude/bosswave1: the bosun and the great hound have openings now) */
 /* MINIS ON THE CHIP (claude/bosswave1, Daniel 10-02: "give each a real opening first, then put minis on the chip"): each has a told opening of
    3 s or more in OPEN_RULE and in its own code, and outside it a hero's blow lands at GREED.chip like a boss's. The rest keep full damage. */
-export const CHIP_MINI = new Set(['greathound', 'bosun', 'lancer', 'homunculus', 'hedgewarden']);   /* (claude/hedgewarden4: the Hedge Warden's told opening - his move answered, his sword stuck - 3 s) */
+export const CHIP_MINI = new Set(['bosun', 'lancer', 'homunculus', 'hedgewarden']);   /* (claude/hedgewarden4: the Hedge Warden's told opening - his move answered, his sword stuck - 3 s) */
 export function install(helpers) { H = helpers || {}; }
 
 /* A MINI'S OPENING IS WORTH A THIRD OF HIM AT MOST (claude/bosswave2, Daniel 10-04, from BOSS WAVE 1's hound and homunculus): one opening
