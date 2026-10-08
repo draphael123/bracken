@@ -19,7 +19,7 @@ assert(L.ents.some(e => e.t === 'plate' && e.cage === 160), 'and a plate on the 
 assert.equal(L.grid[8 * L.W + 160], T.SOLID, 'the thief\'s ledge is solid now, so the cage has something to land on');
 
 // item 2: fork two's TWIST — the plate moves to the canopy, its cage drops through a hatch onto the roots
-assert(L.ents.some(e => e.t === 'plate' && e.x === 454 && e.y === 9 && e.cage === 454), 'the canopy holds the plate now, not the roots');
+assert(L.ents.some(e => e.t === 'plate' && e.x === 454 && e.y === 8 && e.cage === 454), 'the canopy holds the plate now, not the roots');   /* (claude/kingsgate) row 8, standing ON the canopy ledge (row 9): at row 9 it sat inside the ledge and never went down */
 assert(L.ents.some(e => e.t === 'dropcage' && e.x === 454 && e.y === 4), 'its cage waits high in the canopy');
 assert.equal(L.grid[13 * L.W + 453], T.AIR, 'the hatch is cut through the roof between canopy and roots');
 assert.equal(L.grid[13 * L.W + 454], T.AIR, 'the hatch is two tiles wide');
