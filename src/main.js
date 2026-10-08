@@ -23796,7 +23796,7 @@ function foeHasFooting(e) {
    the fight is over (won, or a death: the respawn builds the foes anew). Adds a fight spawns later are not held. */
 function arenaShut(A, except) {
   if (!A || A.x0 === undefined || A.x1 === undefined) return;
-  for (const e of enemies) { if (!e.alive || e === except || e === boss || e.maxHp || e.mini || (e.x >= A.x0 - 2 && e.x <= A.x1 + 2)) continue;
+  for (const e of enemies) { if (!e.alive || e === except || e === boss || e.maxHp || e.mini || e.t === 'magechase' || (e.x >= A.x0 - 2 && e.x <= A.x1 + 2)) continue;
     e.arenaHeld = true; e.vx = 0; if (e.st) { e.st.stone = null; if (e.t === 'slinger' && e.st.mode === 'slingTell') e.st.mode = 'stand'; } }
 }
 function arenaHeld(e) { if (!bossActive && !miniActive) { e.arenaHeld = false; return false; } e.vx = 0; return true; }
