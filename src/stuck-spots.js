@@ -128,6 +128,20 @@ export const STUCK = {
   ],
   spire: [
     { id: 'sp-baskets', zone: [14, 126, 34, 140], mover: { cw: 'cw0' }, line: 'THE BOOK-HOIST BASKETS CARRY YOU UP' },
+    /* (claude/monastery2, review M6) EVERY MACHINE THE ROUTE NEEDS: the incense columns, the bells, the wheels (tools/stuck.mjs asserts one spot each) */
+    { id: 'sp-terrace-1', zone: [60, 190, 80, 195], at: [74, 195], glint: 'stall', line: 'THE BRAZIER BY THE WALL: ITS SMOKE GOES UP THE TERRACE' },
+    { id: 'sp-terrace-2', zone: [72, 182, 80, 185], at: [79, 185], glint: 'stall', line: 'THE NEXT BRAZIER, AT THE END OF THE LEDGE' },
+    { id: 'sp-terrace-3', zone: [73, 174, 77, 177], at: [75, 177], line: 'A COLD CENSER: IT ANSWERS A BLOW' },
+    { id: 'sp-flue-1', zone: [85, 112, 94, 117], at: [90, 117], glint: 'stall', line: 'THE HEARTH IN THE FLUE STILL BREATHES' },
+    { id: 'sp-flue-2', zone: [85, 105, 88, 109], at: [86, 109], line: 'A COLD CENSER ON THE LEDGE: IT ANSWERS A BLOW' },
+    { id: 'sp-bellows', zone: [12, 74, 20, 79], at: [14, 79], glint: 'stall', line: 'THE BELLOWS BRAZIER THROWS YOU HIGH' },
+    { id: 'sp-bellows-2', zone: [16, 64, 26, 68], at: [19, 68], line: 'A COLD EMBER BRAZIER: IT ANSWERS A BLOW' },
+    { id: 'sp-bellows-3', zone: [22, 58, 27, 61], at: [25, 61], glint: 'stall', line: 'THE LAST BELLOWS BRAZIER: UP TO THE TRAPDOOR' },
+    { id: 'sp-bell-1', zone: [9, 112, 15, 117], at: [11, 117], done: ['tbell', 11, 117, 'down'], line: 'THE FIRST BELL: WHAT HANGS FROM ITS TOWER' },
+    { id: 'sp-bell-2', zone: [70, 112, 77, 117], at: [73, 117], done: ['tbell', 73, 117, 'down'], line: 'THE BELL IN THE THIRD TOWER: THE WAY TO THE FLUE' },
+    { id: 'sp-wheel-1', zone: [40, 164, 56, 171], at: [48, 171], glint: 'stall', line: 'THE PRAYER WHEEL TURNS ITS STAIR' },
+    { id: 'sp-wheel-2', zone: [14, 92, 30, 99], at: [21, 99], glint: 'stall', line: 'THE CLOISTER WHEEL TURNS ITS STAIR' },
+    { id: 'sp-wheel-3', zone: [35, 33, 50, 37], at: [43, 37], glint: 'stall', line: 'THE LAST WHEEL: ITS STAIR IS THE WAY UP' },
   ],
   stockade: [
     { id: 'sk-crank', zone: [118, 10, 141, 26], at: [138, 19], line: 'THE PALISADE HOLDS: FIND ITS CRANK' },

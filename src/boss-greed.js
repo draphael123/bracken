@@ -109,7 +109,7 @@ export const OPEN_RULE = {
   colossus: e => colOpen(e),                                                 // THE GLASS COLOSSUS (claude/glasssea): its chest cracked by its own lance off a mirror, its shoulders blazing (the swarm held by firelight), its crown dazzled by the dawn - its legs are its own purse (OWN_WARD)
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
-  gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.crackT > 0 || e.mode === 'stagger',
+  gravewarden: e => graveOpen(e), forgemaster: e => H.forgeOpen(e), golem: e => e.open > 0,   /* (claude/monastery2) staggered by a bell's note or its own thrown stone (src/temple-guardian.js) */
   lancer: e => e.open > 0,   // (claude/bosswave1) unhorsed, reared on a shield, or his swipe or cut answered: 3 s each (on foot or after every charge was open before)
   greathound: e => e.open > 0,   // (claude/bosswave1) its lunge taken on a shield (it skids), or its pups killed in time (it whines)
   bosun: e => e.open > 0,   // (claude/bosswave1, the mini) his belaying pin parried

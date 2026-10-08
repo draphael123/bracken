@@ -55,4 +55,27 @@ function glassSea(BK, P, mem) {
     return { x: m.x * TS + 8, y: (m.y + 2) * TS, key: 'talk', face: 0, r: 30 }; }
   return null;
 }
-export const WALK_HINTS = { glasssea: glassSea };
+/* THE MONASTERY (claude/monastery2, review: "the walker cannot drive vents or wheels, so 88% of the level is unmeasured"): what a player does with
+   what the monks built. AN INCENSE BRAZIER the route rises from (a route node over its column, its smoke's height above it): stand in its column and
+   wait for its breath - or, cold or spent, strike it (STRIKE THE CENSER). A PRAYER WHEEL whose OTHER stair the route walks: strike it. A BELL whose
+   bridge the route crosses and that is not down yet: strike it. Each only on his own floor (within 2 rows) and near (r tiles). */
+function spire(BK, P, mem) {
+  if (!P || P.dead || !P.ground) return null; const L = BK.L, R = mem.route || [], W = L.W, at = (x, y) => L.grid[y * W + x];
+  const ahead = R.filter(([rx, ry]) => Math.abs(rx * TS + 8 - P.x) < 26 * TS && Math.abs(ry * TS - P.y) < 22 * TS);
+  for (const v of BK.props()) { if (v.t !== 'vent' || !v.incense || Math.abs(P.y - v.y) > 6 || Math.abs(P.x - v.x) > 7 * TS) continue;
+    const vx = Math.floor(v.x / TS), top = (v.y - v.h) / TS, base = v.y / TS;
+    if (!ahead.some(([rx, ry]) => Math.abs(rx - vx) <= 5 && ry < base - 3 && ry >= top - 3)) continue;
+    if (v.active) return { x: v.x, y: v.y, key: null, hold: true, r: 8 };
+    if ((v.snuff || mem.ventWait > 200) && !(v.coolT > 0)) { return { x: v.x - 6, y: v.y, key: 'atk', face: 1, r: 8 }; }
+    mem.ventWait = (mem.ventWait || 0) + 1; return { x: v.x, y: v.y, key: null, hold: true, r: 8 }; }
+  mem.ventWait = 0;
+  for (const w of BK.props()) { if (w.t !== 'pwheel' || Math.abs(P.y - w.y) > 40 || Math.abs(P.x - w.x) > 12 * TS || w.turnT > 0 || w.cool > 0) continue;
+    const other = w.st ? w.a : w.b, on = (arm, x, y) => arm.some(([x0, ay, n]) => y === ay && x >= x0 && x < x0 + n);
+    const needOther = ahead.some(([rx, ry]) => on(other, rx, ry + 1) || on(other, rx, ry)), needThis = ahead.some(([rx, ry]) => on(w.st ? w.b : w.a, rx, ry + 1));
+    if (needOther && !needThis) return { x: w.x - 10, y: w.y, key: 'atk', face: 1, r: 12 }; }
+  for (const b of BK.props()) { if (b.t !== 'tbell' || !b.span || b.down || Math.abs(P.y - b.y) > 40 || Math.abs(P.x - b.x) > 12 * TS) continue;
+    const [x0, x1, row] = b.span; if (!ahead.some(([rx, ry]) => rx >= x0 && rx <= x1 && Math.abs(ry - row) <= 2)) continue;
+    const side = (x0 + x1) / 2 * TS > b.x ? -1 : 1; return { x: b.x + side * 12, y: b.y, key: 'atk', face: -side, r: 12 }; }
+  return null;
+}
+export const WALK_HINTS = { glasssea: glassSea, spire };

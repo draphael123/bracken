@@ -100,6 +100,10 @@ for (const lv of LEVELS) {
   const say = (list, what) => { if (!list.length) return; bad += list.length; console.log('  ' + lv.id.padEnd(10) + list.length + ' ' + what + ': ' + list.slice(0, 12).join(' ') + (list.length > 12 ? ' ...' : '')); };
   say(dropped, 'with no floor near them, left out'); say(air, 'with no floor near them, left in the air'); say(marks, 'checkpoints drawn hanging from nothing');
   say(castles, 'sprinkled onto a bridge over open sky (sand castles)');
+  /* A VENT STANDS ON SOMETHING (claude/monastery2, review M1): a vent lifts a body only while its feet are at the vent's base (main.js: P.y <= pr.y + 2), so a
+     vent with no footing under it - the Monastery's crawl brazier, a tile over the floor - is drawn at head height and lifts nobody. An air vent says so (air: true) */
+  const ventsAir = ents.filter(e => e.t === 'vent' && !e.air && !e.thermal && !SOLID.has(tile(e.x, e.y + 1)) && !LEDGE.has(tile(e.x, e.y + 1))).map(e => 'vent@' + e.x + ',' + e.y);
+  say(ventsAir, 'vents with no footing under them (they lift nobody)');
   say(veinsFloating, 'ore veins with no footing under the open air in front of them, floating'); say(mineFloating, 'ore on the floor with no footing under it, floating');
 }
 

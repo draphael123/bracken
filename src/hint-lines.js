@@ -7,6 +7,9 @@
 import { STUCK_HANDS } from './stuck-spots.js';
 import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
+  /* claude/monastery2: THE TEMPLE GUARDIAN reworked (src/temple-guardian.js LINES) - its keys, its ward, its blocks, its toll */
+  'THE NOTE STAGGERS IT: CUT IT', 'THE STONE STAGGERS IT: CUT IT', 'IT WARDS ITSELF', 'IT RAISES STONE: TAKE ONE (INTERACT)', 'ATTACK THROWS THE STONE', 'IT HURLS ITS STONE', 'THE BELLS SWING',
+  'THE BELL IS SWINGING', 'IT IS NOT UNDER THE BELL', 'IT RAISES STONE', 'THE GUARDIAN WAKES FULLY', 'THE STAIR GOES OUT FROM UNDER HIM', 'THE OFFERING COMES DOWN',
   /* claude/survival2: the manual flask and the exam spikes (src/main.js drinkFlask, shrine break, SV.examAt) - routed so the player can see them */
   'NO FLASKS', 'FULL', 'SPILLED', 'SHRINE BROKEN  +1 FLASK', 'THE SPIKES KILL HERE',
   /* claude/slide: the first slope a hero stands on */
