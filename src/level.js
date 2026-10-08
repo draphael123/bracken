@@ -1555,7 +1555,7 @@ function underleaf() {
   /* UNDERLEAF 2's pieces (src/hush-hands.js): a pot (or a stone) on its shelf; a street's watch-gate under a roof (the alarm drops it), its alarm
      post, its silver cache; a sleeper. `sec` is the street: 0 the back lane and the mill, 1 the terrace and the churchyard, 2 the school and the green */
   const pot = (x, y, kind) => ent('npot', x, y, kind ? { kind } : {});
-  const streetGate = (x, sec) => ent('streetgate', x, R - 1, { h: 3, sec });
+  const streetGate = (x, sec, ladder) => ent('streetgate', x, R - 1, { h: 3, sec, ladder });   /* ladder: the column of the ladder up onto the roof over it (its glint) */
   const alarm = (x, sec) => ent('alarm', x, R - 1, { sec });
   const cache = (x, y, sec) => { ent('darkcache', x, y, { sec }); ent('silver', x, y); };   /* the silver is the level's own; the cache keeps it until it opens */
   const bellman = (x, x0, x1, sec, face) => ent('bellman', x, R - 1, { x0, x1, sec, face: face || 1 });
@@ -1631,7 +1631,7 @@ function underleaf() {
   ent('doorway', 126, 27, { id: 'mill-top', to: 'mill-in', kind: 'goblin', label: 'DOWN THE CHIMNEY' });
   ent('window', 132, R - 3, { gob: 'sapper', dx: 134, dy: R - 1 });
   /* THE STREET'S GATE (the back lane and the mill): under the mill's roof, between its doors - the alarm drops it, and the roof and the loft go round */
-  streetGate(129, 0); alarm(115, 0);
+  streetGate(129, 0, 117); alarm(115, 0);
   ent('sign', 116, R - 1, { text: 'TWO WINDOWS LIT, OR THE BELLMAN RINGS: THE ALARM, AND THE STREET GATE DROPS.' });
   /* (THE STREET'S CACHE is on the quiet end of the mill roof: laid at the top, cache(138, 27, 0)) */
   // ---- THE MILL LOFT: sacks to get up on, the hoist beam, and the brass key out on the end of it ----
@@ -1687,7 +1687,7 @@ function underleaf() {
   bellman(178, 163, 194, 1, 1);
   pot(161, R - 1); pot(172, 27); pot(232, R - 1);
   /* THE STREET'S GATE (the terrace and the churchyard): under the third house, and its alarm at the end of the Bellman's beat */
-  streetGate(203, 1); alarm(195, 1);
+  streetGate(203, 1, 195); alarm(195, 1);
   ent('assassin', 188, 25, { face: -1 }); ent('assassin', 220, 25, { face: -1 });
   ent('assassin', 208, 27, { face: 1 });
   ent('brute', 172, R - 1, { face: -1, sleeper: true });
@@ -1829,7 +1829,7 @@ function underleaf() {
   ent('window', 424, R - 3, { gob: 'archer', dx: 426, dy: R - 1 });
   ent('window', 456, R - 3, { gob: 'sprig', dx: 458, dy: R - 1 });
   /* THE STREET'S GATE (the school and the green): under the far house; its alarm by the stalls */
-  streetGate(457, 2); alarm(449, 2);
+  streetGate(457, 2, 451); alarm(449, 2);
   /* THE GREEN'S BELLMAN walks the whole of it: the exam - pots by the wells, a captain asleep in the open, nothing to hide behind */
   bellman(434, 412, 449, 2, 1);
   pot(416, R - 1); pot(445, R - 1); pot(466, R - 1);

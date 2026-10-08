@@ -3170,63 +3170,7 @@
   }
  },
  "underleaf": {
-  "hash": "d2069f293fd9",
-  "level": {
-   "knight": {
-    "deaths": 2,
-    "minHpPct": 0,
-    "hpLostPct": 200,
-    "hits": 12,
-    "walked": 100,
-    "lifts": 36,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 1,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 9672,
-    "kills": 2,
-    "heroLevel": 6
-   },
-   "warden": {
-    "deaths": 2,
-    "minHpPct": 0,
-    "hpLostPct": 227,
-    "hits": 14,
-    "walked": 100,
-    "lifts": 38,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 1,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 9777,
-    "kills": 5,
-    "heroLevel": 6
-   },
-   "pyro": {
-    "deaths": 2,
-    "minHpPct": 0,
-    "hpLostPct": 203,
-    "hits": 10,
-    "walked": 100,
-    "lifts": 36,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 1,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 9624,
-    "kills": 4,
-    "heroLevel": 6
-   }
-  },
+  "hash": "e5cf1d597a9b",
   "boss": {
    "boss": "grandmother",
    "wins": 0,
@@ -3325,6 +3269,74 @@
      "chip": []
     }
    ]
+  },
+  "carried": {
+   "from": "d2069f293fd9",
+   "parts": [
+    "boss"
+   ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 196,
+    "hits": 13,
+    "walked": 100,
+    "lifts": 36,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 3,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "wheel": 2
+    },
+    "machines": true,
+    "frames": 11412,
+    "kills": 3,
+    "heroLevel": 6
+   },
+   "warden": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 205,
+    "hits": 15,
+    "walked": 100,
+    "lifts": 38,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 3,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "wheel": 2
+    },
+    "machines": true,
+    "frames": 11391,
+    "kills": 6,
+    "heroLevel": 6
+   },
+   "pyro": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 227,
+    "hits": 13,
+    "walked": 100,
+    "lifts": 37,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 3,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "wheel": 2
+    },
+    "machines": true,
+    "frames": 11172,
+    "kills": 4,
+    "heroLevel": 6
+   }
   }
  },
  "deep": {

@@ -21,6 +21,7 @@
 // The Grandmother's own fight (her cottage: rugs, candles, bell-pulls and chimes, her back) is here too (granTake / granLure / the arena props);
 // her AI stays main.js's updateGrandmother, which calls back into this module for the rules.
 import * as CTW from './carry-throw.js';
+import { drawGlint, NUDGE } from './stuck-guide.js';
 
 /* THE POT: ring = how far its break carries (px), wakeK = the share of the ring close enough to wake a sleeper outright, windowR = how near a
    window it must break to light it, hit = what it does to a foe it hits square-on, respawn: THROW_KIND.pot's own */
@@ -33,7 +34,7 @@ export const TOLL = { every: 9, tell: 1.4, len: 1.9 };
 /* THE GRANDMOTHER (her rework, B11/B13/B14 - keyed FROM BEHIND): back = her back is open this long after she lashes at a lure; backMul / rapMul;
    ward = the told ward after every opening (B3); pullCd = a bell-pull's chime swings this long before it rings again */
 export const GRAN = { back: 2.6, backMul: 2, rapMul: 1.5, purse: 0.18, rapPurse: 0.08, hurlAt: 100, hurlCd: 6, jabTell: 0.3, jabCd: 1.6, ward: 3, lureTell: 0.4, lash: 0.32, lashR: 36, p2: 0.66, p3: 0.33, knellEvery: 6, knellTell: 0.75,
-  waveV: 230, waveDmg: 16, chimeR: 260, pullCd: 5, lureMin: 22 };
+  waveV: 230, waveDmg: 18, chimeR: 260, pullCd: 5, lureMin: 22 };
 /* THE CAPITAL LINES this module says (each routed: src/hint-lines.js CALL_LINES) */
 export const LINES = {
   potTake: 'INTERACT TAKES THE POT. ATTACK THROWS IT. UP LOBS, DOWN TOSSES.',
@@ -163,7 +164,13 @@ export function makeHushHands(ctx) {
     for (const e of ctx.enemies()) if (e.alive && e.sleeper && !e.woke && secOf(e.x) === i && (!al || Math.abs(e.x - al.x) < ALARM.wakeR)) { e.woke = 1; e.sleeper = false; e.emote = 'shock'; e.emoteT = 0.6; }
     ctx.number(P.x, P.y - 34, 'THE STREET IS AWAKE: ITS GATE IS DOWN. GO BY THE ROOFS', '#ff9a5c');
   };
+  /* A DROPPED GATE IS GLINTED (A6): the roof that goes over it is glinted from the street before it, and a hero who stands at it NUDGE.after s is told */
+  const gateRoof = g => (L().roofs || []).find(([x0, x1]) => g.col > x0 && g.col < x1) || null;
+  function updateGateNudge(dt) { const P = hero();
+    for (const g of propsOf('streetgate')) { if (!g.shut) continue; const gx = g.col * TS + 8, before = P.x < gx && gx - P.x < 6 * TS && Math.abs(P.y - (g.y1 + 1) * TS) < 2 * TS;
+      g.stallT = before ? (g.stallT || 0) + dt : 0; if (g.stallT > NUDGE.after && !g.nudged) { g.nudged = true; ctx.hint('THE STREET GATE IS DOWN: THE ROOFS GO OVER IT', 4.5); } } }
   function updateStreets(dt) {
+    updateGateNudge(dt);
     for (const s of secs) if (!s.alarm && litIn(s.i) >= ALARM.windows) H.alarm(s.i, 'windows');
     for (const pr of propsOf('alarm')) { pr.ringT = Math.max(0, (pr.ringT || 0) - dt); if (pr.ringT > 0 && Math.floor(pr.ringT * 2.5) !== Math.floor((pr.ringT + dt) * 2.5)) ctx.sfx.priestBell(); }
     const P = hero();
@@ -394,6 +401,8 @@ export function makeHushHands(ctx) {
     for (const e of ctx.enemies()) { if (!e.alive || e.t !== 'bellman' || Math.abs(e.x - P.x) > 220) continue; const x = R(e.x - cx), y = R(e.y - cy);
       if (!e.rung) { g.globalAlpha = 0.22; g.strokeStyle = '#d8e070'; g.setLineDash && g.setLineDash([2, 3]); g.beginPath(); g.ellipse(x, y - 2, BELLMAN.ear, BELLMAN.ear * 0.3, 0, 0, 7); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1; }
       if (e.emoteT > 0 && (e.mode === 'heed' || e.mode === 'go')) { g.fillStyle = '#d8e070'; g.fillRect(x - 1, y - e.h - 14, 3, 1); g.fillRect(x + 1, y - e.h - 13, 1, 2); g.fillRect(x, y - e.h - 11, 1, 1); g.fillRect(x, y - e.h - 9, 1, 1); } }
+    for (const sg of propsOf('streetgate')) { if (!sg.shut || sg.ladder === undefined) continue; const gx = sg.col * TS + 8, r = gateRoof(sg);
+      if (r && P.x < gx && gx - P.x < 16 * TS && Math.abs(P.y - (sg.y1 + 1) * TS) < 3 * TS) drawGlint(g, R(sg.ladder * TS + 8 - cx), R(r[2] * TS - 6 - cy), ctx.VW(), ctx.VH(), time); }
     for (const w of waves) { const k = w.t / 1.6, x = R(w.x - cx), y = R(w.y - cy); g.globalAlpha = (1 - k) * 0.6; g.strokeStyle = '#f6f6ee'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y, 30 + k * 260, (30 + k * 260) * 0.3, 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
     for (const k of knells) { const x = R(k.x - cx), y = R(k.y - cy); g.fillStyle = '#f6f6ee'; g.globalAlpha = 0.85; g.fillRect(x - 3, y - 6, 6, 6); g.fillRect(x - 5, y - 3, 10, 3); g.globalAlpha = 1; }
     /* a carried pot's told arc: where it breaks */

@@ -100,6 +100,8 @@ try {
   /* 3. the Bellman hears you: his street's alarm, its gate, its cache; a death puts it back */
   {boot(56,33);const bm=BK.enemies().find(e=>e.t==='bellman'&&e.x<80*16);bm.x=66*16;bm.face=-1;bm.mode='look';bm.modeT=9;P().x=bm.x-18;P().face=1;const modes=new Set();for(let i=0;i<90;i++){BK.sim(1);modes.add(bm.mode);}const tellMode=modes.has('ringTell')?'ringTell':[...modes].join(',');
    const g=BK.props().find(p=>p.t==='streetgate'&&p.sec===0);out.ring={tellMode,mode:bm.mode,rung:bm.rung,alarm:S().secs[0].alarm,gate:g.shut,tiles:[g.y0,g.y1].map(y=>BK.L.grid[y*BK.L.W+g.col]),cache:S().caches.find(c=>c.sec===0).state,others:S().secs.slice(1).map(s=>s.alarm)};
+   /* the dropped gate is glinted and, stood at, nudged: the roofs go over it */
+   {const sg=BK.props().find(p=>p.t==='streetgate'&&p.sec===0);P().x=(sg.col-3)*16;P().y=34*16;P().vx=0;let hint=null;for(let i=0;i<60*12&&!hint;i++){P().x=(sg.col-3)*16;P().vx=0;BK.sim(1);const t=BKT.hintNow;if(t&&/GATE IS DOWN/.test(t.msg||''))hint=t.msg;}out.ring.nudge=hint;}
    BK.god=false;P().hp=1;BKT.hurtPlayer?BKT.hurtPlayer(99):(P().hp=0,P().dead=1);for(let i=0;i<60*4&&(P().dead||BK.state!=='play');i++)BK.sim(1);
    const g2=BK.props().find(p=>p.t==='streetgate'&&p.sec===0);out.reset={gate:g2.shut,tile:BK.L.grid[g2.y1*BK.L.W+g2.col],alarm:S().secs[0].alarm,cache:S().caches.find(c=>c.sec===0).state,dead:P().dead};}
   /* 3. two windows lit: the same */
@@ -165,6 +167,7 @@ try {
   assert.equal(r.ring.tellMode, 'ringTell', 'the Bellman who has you raises his bell first (told)');
   assert.ok(r.ring.rung && r.ring.alarm && r.ring.gate && r.ring.tiles.every(t => t === T.PORT) && r.ring.cache === 'barred', 'he RINGS: his street\'s alarm, its gate down (rock), its cache barred: ' + JSON.stringify(r.ring));
   assert.ok(r.ring.others.every(a => !a), 'and only his street');
+  assert.ok(r.ring.nudge, 'stood at the dropped gate, the hero is told the roofs go over it (A6): ' + r.ring.nudge);
   assert.ok(!r.reset.gate && r.reset.tile === T.AIR && !r.reset.alarm && r.reset.cache === 'shut', 'a death puts the street back to sleep: ' + JSON.stringify(r.reset));
   assert.ok(r.windows.alarm && r.windows.why === 'windows' && r.windows.gate, 'two windows lit ring the alarm too: ' + JSON.stringify(r.windows));
   /* 4 */

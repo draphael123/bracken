@@ -99,14 +99,12 @@ export const STUCK = {
       { zone: [175, 18, 345, 45], at: [278, 33], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS IN THE CHURCH: FIND ITS DOOR' },
       { zone: [175, 18, 345, 45], at: [336, 33], when: ['key', 188, 8, 'got'], done: ['lockgate', 336, 33, 'open'], line: 'THE IRON GATE WANTS THE KEY YOU CARRY' } ] },
     /* (claude/underleaf2) THE ONE REQUIRED THROW: the bone key hangs on the school's bell-cote - its nail glints from the roof (and the chimney pots
-       by the ladder), the key where it falls, then the gate. The streets' gates: a dropped one names the roof that goes over it */
+       by the ladder), the key where it falls, then the gate. (A street gate the alarm drops is glinted and nudged by src/hush-hands.js itself: it is
+       not there in a fresh street, so it is no route-list spot) */
     { id: 'ul-bone', zone: [337, 2, 475, 45], steps: [
       { zone: [345, 18, 400, 33], ats: [[378, 22], [355, 27]], done: ['keynail', 378, 22, 'down'], line: 'THE BONE KEY HANGS ON THE BELL-COTE' },
       { zone: [345, 18, 470, 45], at: [378, 27], when: ['keynail', 378, 22, 'down'], done: ['key', 378, 27, 'got'], line: 'THE BONE KEY FELL ON THE SCHOOL ROOF' },
       { zone: [340, 18, 475, 45], at: [469, 33], when: ['key', 378, 27, 'got'], done: ['lockgate', 469, 33, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
-    { id: 'ul-gate0', zone: [100, 18, 128, 45], at: [117, 27], when: ['streetgate', 129, 33, 'shut'], line: 'THE STREET GATE IS DOWN: THE MILL ROOF GOES OVER' },
-    { id: 'ul-gate1', zone: [178, 18, 202, 45], at: [195, 27], when: ['streetgate', 203, 33, 'shut'], line: 'THE STREET GATE IS DOWN: THE ROOF GOES OVER' },
-    { id: 'ul-gate2', zone: [436, 18, 456, 45], at: [451, 27], when: ['streetgate', 457, 33, 'shut'], line: 'THE STREET GATE IS DOWN: THE ROOF GOES OVER' },
   ],
   burning: [
     { id: 'bn-fallen-house', zone: [200, 22, 232, 30], ats: [[227, 25], [208, 23]], line: 'TOO HIGH TO JUMP: WATER, OR THE ROOFS' },
