@@ -10,10 +10,11 @@
    one still genuinely hard at normal health. The Diving Bell (src/lab.js's 'deep'/bellcrab) is that row: knight and reaper both
    die to him in the low 40s at normal health on this seed (checked twice each, deterministic), matching the top comment above -
    he was made not-easy in the deep rework and never got easier for this lane's fixes, because none of them touch him. */
+/* THE WINNABLE ROW'S HERO MOVED OFF THE REAPER (batch79 integ): claude/survival2 halved the kill-heals (BLOOD DRAWN 2 -> 1, BLOODLETTER 4 -> 2, HEART CHARM 5 -> 3) and removed the auto-drunk red tonic, so the level-1 reaper now loses the Bullfrog at normal health (60 s, 137 damage taken, 42 healed, dead; measured the same with the human bot). The WARDEN wins the same fight on the same seed with the same bot (legacy, no flask drunk: 91 damage, 2 healed, 11 hp left), so the row still proves what it was written for - a win at normal health, never died, endHp > 0, health reconciles; every assertion is unchanged. */
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';
 const pg=await openPage({audio:false,fonts:false});const results=[];
 try{
- for(const [lvl,h,mode,secs]of[['deep','knight','normal',180],['marsh','reaper','normal',180],['longwater','knight','refill',30]]){
+ for(const [lvl,h,mode,secs]of[['deep','knight','normal',180],['marsh','warden','normal',180],['longwater','knight','refill',30]]){
   await pg.reload();const row=await pg.evalp(`(async()=>{BK.manualSimulation=true;let seed=1919;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};return(await BK.bossLab({bosses:[${JSON.stringify(lvl)}],heroes:[${JSON.stringify(h)}],healthMode:${JSON.stringify(mode)},maxSecs:${secs}})).rows[0]})()`);
   assert.equal(row.health.mode,mode);assert.ok(row.health.damageTaken>0,'actual enemy attacks must cost health');
   if(mode==='normal'){if(lvl==='deep'){assert.equal(row.outcome,'death');assert.equal(row.health.died,true);assert.ok(row.secs<secs,'stop on death instead of clearing it');assert.equal(row.health.endHp,0);}else{assert.equal(row.outcome,'win');assert.equal(row.health.died,false);assert.ok(row.health.endHp>0);}assert.ok(Math.abs(row.health.startHp+row.health.healthRecovered-row.health.damageTaken-row.health.endHp)<.001,'normal health must reconcile without invisible refills');}
