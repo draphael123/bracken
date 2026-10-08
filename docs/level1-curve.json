@@ -147,39 +147,39 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
-  "deaths": 0,
-  "kills": 19,
-  "lifts": 126,
+  "hits": 34,
+  "deaths": 4,
+  "kills": 24,
+  "lifts": 107,
   "walked": 100,
   "bare": true,
-  "lostPct": 63
+  "lostPct": 242
  },
  "reef": {
   "hash": "b3422bf51375",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 19,
-  "deaths": 0,
-  "kills": 7,
-  "lifts": 67,
+  "hits": 26,
+  "deaths": 5,
+  "kills": 4,
+  "lifts": 70,
   "walked": 100,
   "bare": true,
-  "lostPct": 97
+  "lostPct": 174
  },
  "flotilla": {
   "hash": "33db89df5387",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 29,
-  "deaths": 1,
-  "kills": 10,
+  "hits": 38,
+  "deaths": 4,
+  "kills": 14,
   "lifts": 67,
   "walked": 100,
   "bare": true,
-  "lostPct": 111
+  "lostPct": 255
  },
  "hurricane": {
   "hash": "80edbcefc163",
@@ -537,12 +537,12 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 36,
-  "deaths": 7,
-  "kills": 0,
+  "hits": 30,
+  "deaths": 8,
+  "kills": 2,
   "lifts": 59,
   "walked": 100,
   "bare": true,
-  "lostPct": 352
+  "lostPct": 340
  }
 }
