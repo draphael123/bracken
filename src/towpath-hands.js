@@ -181,6 +181,9 @@ export function makeTowpathHands(ctx) {
     /* THE LAST DRY FOOTING is never in a lock: a rung or a sill in a chamber is under the water when it fills (the hand-back would put you in it again) */
     K.safe = K.safe || new Map(); for (const pp of ctx.players) { const sf = pp.safe; if (!sf || sf.L !== K.L) continue; const n = pp.n || 1;
       const wet = (K.L.pools || []).some(p => p.tp && sf.x > p.x0 - 14 && sf.x < p.x1 + 14 && sf.y > p.y - 120); if (!wet) K.safe.set(n, sf); else if (K.safe.get(n)) pp.safe = K.safe.get(n); }
+    /* THE TEACH'S LOW WATER ONLY WETS YOU: wading in a shallow chamber, you are handed back to the bank after a moment (no cost: the mill-pond lock is the soft lesson) */
+    for (const pp of ctx.players) { if (pp.dead) continue; const p = (K.L.pools || []).find(q => q.tp && q.shallow && !q.dry && pp.x > q.x0 && pp.x < q.x1 && pp.y > q.y + 6);
+      pp.tpWade = p ? (pp.tpWade || 0) + dt : 0; if (pp.tpWade > 1.2 && K.safe.get(pp.n || 1)) { const s = K.safe.get(pp.n || 1); pp.x = s.x; pp.y = s.y; pp.vx = 0; pp.vy = 0; pp.tpWade = 0; ctx.sfx.splash && ctx.sfx.splash(); if (once('wade')) number(pp.x, pp.y - 34, 'YOU WADE OUT TO THE BANK'); } }
     for (const g of K.gadgets) g.flash = Math.max(0, g.flash - dt);
     /* THE LANTERN ON ITS HOOK: walked past without it, it is yours (and said) - the rest of the level reads it */
     for (const pp of ctx.players) { const q = lantern(pp); if (!q.has && pp.x > (K.D.lantern.x + 3) * ts && !pp.dead) { q.has = true; q.lit = true; if (once('lanternPast')) number(pp.x, pp.y - 34, 'THE LOCK-KEEPER\'S LANTERN: E LIGHTS IT, OR DIMS IT'); } }

@@ -101,6 +101,7 @@ export function buildTowpath({ painter, T, TS }) {
   ground(18, 23, 36); ground(24, 46, 38);
   sworn(42, 37, 'theBank', { face: -1 });
   decor.push({ kind: 'milestone', x: 26, y: 37 + O }, { kind: 'willow', x: 30, y: 37 + O });
+  boards(27, 34, 35);   /* (the willow's bough over the bank: a second height) */
 
   // ================= 1. THE MILL-POND LOCK (40-95): TEACH - onto the punt, strike the paddle, ride up =================
   /* the lower gate (col 47) stands open at the low water; the chamber (48-55) is a mill pond's lock: its low water only wets you (shallow - the teach), its
@@ -109,7 +110,6 @@ export function buildTowpath({ painter, T, TS }) {
   lock('A', 48, 55, 44, 40, 34, 'lo', { gate: [47, 33, 37], shallowLo: true });
   punt('A', 51, 4); paddle(55, 39, 'A'); paddle(46, 37, 'A');   /* (its twin on the lower bank: a punt that rode up without you comes back down) */
   sign(45, 37, 'A LOCK. ITS PADDLE FILLS IT, AND THE WATER LIFTS THE PUNT.');
-  ladder(48, 39, 43);   /* (a ladder out of the chamber's low water, back to the bank) */
   ground(56, 99, 34);
   /* THE UPPER BANK: a hedge knight waits where the punt lets you off - the lock at your back */
   hedge(60, 33, 'lockTop', { face: -1 });
@@ -117,7 +117,8 @@ export function buildTowpath({ painter, T, TS }) {
   block(67, 75, 29, 29); block(67, 67, 30, 31); block(75, 75, 30, 31);   /* (its roof a ledge over the bank, its walls hung from it: you walk under) */ interiors.push([69, 73, 30 + O, 33 + O, 'tpCottage']);
   crossbow(72, 28, 'cottage', { face: -1 }); boards(64, 66, 31);   /* (a water butt by its wall: the step up onto the roof) */
   ground(80, 83, 32); sworn(82, 31, 'cottage', { face: -1 });
-  coins([70, 28], [74, 28], [88, 33]);
+  coins([74, 28], [88, 33]); ent('silver', 70, 28);   /* (the cottage roof: a silver, up the water butt under the crossbow) */
+  boards(84, 92, 30);   /* (the hay loft's lip over the bank: a second height) */
   decor.push({ kind: 'cattle', x: 62, y: 33 + O }, { kind: 'milestone', x: 90, y: 33 + O });
 
   // ================= 2. THE MILLS (96-160): TEST - the race and the wheel; the tail race's swing bridge =================
@@ -130,7 +131,6 @@ export function buildTowpath({ painter, T, TS }) {
   ground(109, 128, 27);   /* THE MILL: its loft floor */
   interiors.push([110, 127, 20 + O, 26 + O, 'tpMill']); block(109, 128, 19, 19); block(128, 128, 20, 23);   /* its roof, its east wall to the door (24-26) */
   crossbow(120, 26, 'loft', { face: -1 }); sworn(114, 26, 'loft', { face: -1 });   /* the loft's crossbow covers the wheel climb */
-  ent('silver', 125, 26);   /* (the loft's sack store: a silver, for the climb under the bow) */
   /* THE YARD and THE TAIL RACE: a drop from the loft's door to the yard; the cut (132-138) too wide to jump; its SWING BRIDGE stands clear of it - its capstan on
      this bank swings it across (taught safe: nobody on the far side) */
   ground(129, 131, 32);
@@ -138,7 +138,7 @@ export function buildTowpath({ painter, T, TS }) {
   bridge('tail', 132, 138, 32, 'open', [[130, 31]]);
   sign(129, 31, 'THE SWING BRIDGE. ITS CAPSTAN TURNS IT ACROSS THE CUT.');
   grindy(138, 33, 'tailRace');   /* THE FIRST GRINDYLOW, alone under the far bank's lip: ripples at the edge (the canal's imp, met here first) */
-  ground(139, 160, 32);
+  ground(139, 160, 32); boards(141, 148, 28);   /* (the mill yard's drying rack: a second height) */
   sign(140, 31, 'RIPPLES AT THE WATER\'S EDGE: SOMETHING IS UNDER. JUMP IT, OR STRIKE THE RIPPLE.');
   /* THE MILLS' EXAM: a HEDGE KNIGHT CHAMPION on the bank where the bridge lets you off - the cut at your back */
   hedge(145, 31, 'millExam', { face: -1, elite: true });
@@ -166,7 +166,8 @@ export function buildTowpath({ painter, T, TS }) {
   lock('F3', 177, 182, 28, 23, 17, 'lo', { gate: [176, 17, 21] });
   punt('F3', 177, 4); paddle(182, 22, 'F3'); paddle(175, 21, 'F3');
   grindy(181, 23, 'flightTop');
-  boards(183, 188, 13); watchman(186, 12, 'flightTop', { face: -1 });
+  boards(183, 188, 13); watchman(186, 12, 'flightTop', { face: -1 }); ent('silver', 184, 12);   /* (the top gate's beam: a silver behind the watchman) */
+  boards(195, 212, 13);   /* (the flight's footbridge over the top pound's bank: a second height) */
   ground(183, 221, 17);
   fog(156, 221, 0.35, { rises: 0.25 });   /* THE FOG COMES IN up the flight: thin at the hut, thickening as the night does */
   lamp(163, 26, true); lamp(189, 16, false);
@@ -213,7 +214,7 @@ export function buildTowpath({ painter, T, TS }) {
   /* THE LAST CUT: its bridge stands clear; the capstan on this bank swings it across - to THE DECK FOREMAN (the exam's elite) and a watchman */
   pound('cut', 297, 301, 22, 15);
   bridge('cut', 297, 301, 14, 'open', [[296, 13]]);
-  ground(302, 315, 14);
+  ground(302, 315, 14); boards(304, 311, 10);   /* (the warehouse crane's jib over the last bank) */
   bargeman(306, 13, 'foreman', { face: -1, elite: true, cnSkin: 'deckforeman' }); watchman(311, 13, 'foreman', { face: -1 });
   fog(265, 315, 0.7, { rises: 0.15 });
   lamp(267, 16, false); lamp(303, 13, true);
