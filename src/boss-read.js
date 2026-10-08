@@ -44,7 +44,7 @@ export const GUARD = {
   quarter: 'wall',        // THE QUARTERMASTER: EN GARDE (and her deck guard) offers the blade to the front - a cut into it is answered; round her or over her lands
 };
 export const ROLL_SOON = 'TOO SOON';   /* (claude/sweep2) the Waymeet Paladin: a roll that started before the last beat of his swing passes through and opens nothing */
-export const ANGLE = { mul: 0.5, wall: 0.3 };   /* (claude/keyscore) wall: round or over THE DUELIST'S WALL (GUARD 'wall') - his front is the whole of his defence, so the way round it is a third of a blow, not a half */   // a blow that beats the guard lands at half (his openings still pay more: they are not chipped either, and his own code's multipliers stand)
+export const ANGLE = { mul: 0.5, wall: 1, front: 0.4 };   /* (claude/keyscore, B15) THE DUELIST'S WALL (GUARD 'wall'): round or over it a blow lands WHOLE (wall); into it at his height ANGLE.front (0.4: somewhat resistant, never invulnerable) */
 
 /* the word his turned blow says, per type (a string, or (e, fromX) => string). Anything not here: the guard's word, else WARDED. */
 export const behind = (e, fromX) => Math.sign(fromX - e.x) === -(e.face || 1);   /* (claude/keyscore: exported - B14's FROM BEHIND key and every hands file ask the same question) */

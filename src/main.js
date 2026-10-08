@@ -370,16 +370,16 @@ Object.assign(DMG, {
 Object.assign(EHP, {
   tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
   prince: 2000,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights) */
-  closedhelm: 2150,  /* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */ /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
+  closedhelm: 2800,  /* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */ /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
   lampreeve: 560,    /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75) */
-  quarter: 920,     /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
+  quarter: 1150,     /* (claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */ /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
-  captain: 860,     /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
+  captain: 1700,     /* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */ /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
   forgemaster: 520,  /* THE FORGEMASTER (crown mini): 480 (83-92%) */
   reefmaw: 830,
   herald: 370,
   drownedking: 500,  /* THE DROWNED KING (keep): 560 (33-42%, warden 0) */
-  lance: 330,        /* (claude/keyscore, B13: his plate faces you - round him or over him lands at ANGLE.wall; 305 measured 14/18 dry) */ /* THE QUEEN'S LANCE (storm): 380 (25%) */       /* THE TIDE HERALD: 340 (67%) */      /* THE REEFMAW: 500 (75-83%: 22-54 s) */
+  lance: 800,        /* (claude/keyscore, B13: his plate faces you - round him or over him lands at ANGLE.wall; 305 measured 14/18 dry) */ /* THE QUEEN'S LANCE (storm): 380 (25%) */       /* THE TIDE HERALD: 340 (67%) */      /* THE REEFMAW: 500 (75-83%: 22-54 s) */
   bellcrab: 740,   /* THE DIVING BELL: 750 (0/12; a third of him is the soft crab out of the bell, and the bot died there with 20-30% left) */
   kraken: 640,   /* THE KRAKEN: 480 (83% once the bot could see him, 0/12 before) */
 });
@@ -7280,16 +7280,16 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
        second and a bit after it, where every cut lands */
     e.mode = 'reel'; e.modeT = OFF_BALANCE; e.stagger = OFF_BALANCE; e.vx = -e.face * 70; e.braceT = time + 7;
     number(e.x, e.y - e.h - 20, 'OFF BALANCE', '#ffd36b'); breakBeat(e); lessonHint('dashatk'); return; }
-  if (e.t === 'lance' && lanceOpen(e) && e.mode === 'planted') dmg = Math.round(dmg * 1.6);
+  if (e.t === 'lance' && lanceOpen(e)) dmg = Math.round(dmg * (e.mode === 'planted' ? 1.6 : 1.5));   /* (claude/keyscore, B15: an opening pays 1.5-2x - committed x1.5, the lance stuck x1.6) */
   /* B11 + B13, THE DUELIST'S WALL (claude/keyscore; src/boss-read.js GUARD 'wall'): the Lance, the Waymeet Paladin, the Salvage Captain and the Quartermaster
      were a flat NO (his plate, his ward, THE SEA HAS HIM, HER GUARD HOLDS) or a twentieth until they chose to open - a waiting room. Now each is ALWAYS
-     HITTABLE and GUARDS BY ANGLE: a hero's blow from the front at his height is TURNED (the clank, the flash, GO ROUND); from behind or from above it
-     beats the wall and lands at ANGLE.mul (the angB line below: no chip, no greed); in his openings it lands whole. The Quartermaster still answers a cut
+     HITTABLE and GUARDS BY ANGLE: a hero's blow from the front at his height is TURNED to ANGLE.front (0.4 - B15, never invulnerable: the clank, the flash, GO ROUND); from
+     behind or from above it beats the wall and lands at ANGLE.wall, whole (the angB line below: no greed); in his openings 1.5-2x. FULL_DAMAGE: no chip. The Quartermaster still answers a cut
      into her EN GARDE (she reads the flash). The room's blows (a cannon ball, a throw) are not a hero's hand and land as before. */
   if (blow && GUARD_WALL(e) && wallUp(e) && e.mode !== 'sleep' && !GB.openOf(e) && !BR.beats(e, fromX, pl || (!P.ground && P.y < e.y - e.h * 0.5), false)) {   /* (above him: a plunge, or a hero in the air with his feet over the duelist's waist - OVER the guard, not a hop into it) */
-    BR.turned(e, fromX); e.wallTurned = (e.wallTurned || 0) + 1; if (e.t === 'closedhelm') { e.wardHit = 0.35; SFX.aegis(); } if (e.t === 'quarter') e.flash = Math.max(e.flash || 0, 0.06);
+    BR.turned(e, fromX, undefined, { stop: false }); e.wallTurned = (e.wallTurned || 0) + 1; dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front));   /* B15 (Daniel 10-08): never totally invulnerable - the wall takes most of it (ANGLE.front), told by the clank and GO ROUND; greed still counts below */ if (e.t === 'closedhelm') { e.wardHit = 0.35; SFX.aegis(); } if (e.t === 'quarter') e.flash = Math.max(e.flash || 0, 0.06);
     if (!(e.wallSaid > time)) { e.wallSaid = time + 8; PROG.wallTold = (PROG.wallTold || 0) + 1; if (PROG.wallTold <= 3) { hintT = 4.5; hintMsg = WALL_HINT[e.t] || WALL_HINT.lance; } }
-    return; }
+    }
   if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); } } // his iron turns half of every cut; stunned or scalded he takes it doubled
   if (e.t === 'frog' && !frogOpen(e) && e.mode !== 'sleep') { dmg = Math.max(1, Math.round(dmg * 0.5)); if (!(e.hideSaid > 0)) { e.hideSaid = 2.5; number(e.x, e.y - e.h - 16, 'THE HIDE TURNS IT', '#9aa39a');
       PROG.frogHideTold = (PROG.frogHideTold || 0) + 1; if (PROG.frogHideTold <= 2) { hintT = 4.5; hintMsg = 'HIS WET HIDE TURNS HALF A BLOW. MAKE HIM FLOP, CHOKE OR BITE HIS TONGUE, THEN CUT.'; } } }
@@ -7328,7 +7328,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
   const angB = !!blow && (e === boss || e.xpRole === 'mini') && (BR.beats(e, fromX, pl || !P.ground, blowHas(blow, 'sweep') || blowHas(blow, 'low')) || (GUARD_WALL(e) && !wallUp(e))) && !GB.openOf(e);   /* B11 (claude/sweep1): a duelist guards ONE way - from the other way the blow is not chipped */
-  if (angB) e.angleHit = time;
+  if (angB && !GUARD_WALL(e)) e.angleHit = time;   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands WHOLE, so it is still greed outside his openings: a masher who walks through him to his back meets the reprisal */
   dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg, blow, tag) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg, blow, tag), raw0, !!blow);
   if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   greedHit(e, fromX, blow);
@@ -21633,7 +21633,9 @@ const GUARD_WALL = e => BR_GUARD[e.t] === 'wall';
 const wallUp = e => e.t !== 'quarter' || !!e.guard || e.mode === 'stride' || e.mode === 'stanceTell';   /* (claude/keyscore) the duelists whose front is a wall (src/boss-read.js GUARD) */
 const WALL_HINT = { lance: 'HIS PLATE FACES YOU. GET BEHIND HIM OR COME DOWN ON HIM - AND CUT HIM WHENEVER HE COMMITS.', closedhelm: 'HIS WARD FACES YOU. GO ROUND HIM OR COME DOWN ON HIM - OR MEET HIS SWORD AT THE FLASH AND THE WARD BREAKS.',
   captain: 'HIS FRONT IS GUARDED - ON THE WAVE TOO. CUT HIM FROM BEHIND OR FROM ABOVE; BEACHED, HE IS OPEN.', quarter: 'HER BLADE IS OFFERED TO THE FRONT. CUT INTO IT AND SHE ANSWERS - GO ROUND HER, OR COME DOWN ON HER.' };
-const lanceOpen = e => e.mode === 'planted' || e.mode === 'thrust' || e.mode === 'sweep' || e.mode === 'guardSwing' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
+/* (claude/keyscore, B13 + B15) HIS OPENINGS are what he is LEFT in, not the blow itself: stuck, reeling, stumbling, over his front foot, his hands empty. In his thrust,
+   sweep and guard swing he is a wall like any other moment (0.4 into it, whole round or over) - the knight mash bot took him 2/6 when every active frame paid x1.5 */
+const lanceOpen = e => e.mode === 'planted' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
 /* WHEN A RUN AT HIM IS A RUN AT A WALL: coming at you, or with the shield already coming round. Everything else he
    is standing on his feet for, and a dash attack takes them out from under him (hurtEnemy0) */
 const LANCE_BRACED = new Set(['sleep', 'wake', 'couch', 'charge', 'rushTell', 'rush', 'bashTell', 'bash', 'vaultTell', 'vault', 'whirlTell', 'whirl']);

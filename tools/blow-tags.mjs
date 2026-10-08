@@ -102,5 +102,7 @@ assert.ok(/const kt = tag && \(e === boss \|\| e\.xpRole === 'mini'\) \? BR\.tak
     assert.ok(!main.includes(gone), 'the flat NO is gone: ' + gone);
   assert.ok(main.includes("if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));") && main.includes("const wallUp = e => e.t !== 'quarter' || !!e.guard || e.mode === 'stride' || e.mode === 'stanceTell';"), 'round or over the wall a blow lands at ANGLE.wall; the Quartermaster drops hers to commit');
   assert.ok(/if \(blow && GUARD_WALL\(e\) && wallUp\(e\) && e\.mode !== 'sleep' && !GB\.openOf\(e\) && !BR\.beats\(e, fromX, pl \|\| \(!P\.ground && P\.y < e\.y - e\.h \* 0\.5\), false\)\) \{/.test(main), 'the wall turns a front blow at his height, outside his openings');
+  { const { ANGLE } = await import('../src/boss-read.js'); assert.ok(ANGLE.front >= 0.4 && ANGLE.wall >= 1, 'B15 (Daniel 10-08): never invulnerable - 0.4 or more into the wall, whole round or over it'); }
+  assert.ok(main.includes('dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front));'), 'B15: the wall takes ANGLE.front of a front blow - it never returns nothing');
   assert.ok(/if \(e\.t === 'quarter'\) e\.flash = Math\.max\(e\.flash \|\| 0, 0\.06\);/.test(main), 'the Quartermaster still answers a cut into her EN GARDE'); }
 console.log('blow-tags: ok (' + hooks + ' boss hooks get the tag; no boolean plunge gate; throw / reflect / riposte tagged; 8 keys, words, glyphs; no boss keyed yet; B13: the Lance, the Paladin, the Captain and the Quartermaster guard by angle)');

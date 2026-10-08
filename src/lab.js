@@ -2016,8 +2016,8 @@ async function runbossLab(BK, opts) {
          is attacking in tells (one seen in the last six seconds); v2 profiles, and prof.dkPunish false turns it off. */
       /* (claude/keyscore, B11 + B13) THE DUELIST'S WALL (the Lance, the Waymeet Paladin, the Salvage Captain, the Quartermaster - src/boss-read.js GUARD 'wall'): a cut into
          his front at his height is turned, so a player outside his openings does not stand and swing into it - he cuts from BEHIND when he is there, else he goes OVER:
-         a jump, and the cut once his feet are over the duelist's waist. v2 profiles only (the legacy rows stay as they were). */
-      if (LABP.v2 && BK.bossWall && BK.bossWall(boss) && !open && !tell && !rushing && boss.mode !== 'stanceTell' && strike && ad <= reach + 12 && !k.block) {
+         a jump, and the cut once his feet are over the duelist's waist. A SHIELD hero keeps his guard and cuts into the wall (B15: 0.4) between blocks. v2 profiles only (the legacy rows stay as they were). */
+      if (LABP.v2 && BK.bossWall && BK.bossWall(boss) && !open && !tell && !rushing && boss.mode !== 'stanceTell' && !SHIELDED(h) && strike && ad <= reach + 12 && !k.block) {
         const behindHim = Math.sign(P.x - boss.x) === -(boss.face || 1);
         if (!behindHim) { strike = false;
           if (P.ground && P.atk < 0 && !P.labJump) { BK.press('jump'); P.labJump = 16; }
