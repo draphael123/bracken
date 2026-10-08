@@ -12,6 +12,7 @@
 // main.js calls: reset, on, update, hold, interact, holes, drawWorld, drawOver, drawHud, read, handsState, walkHint, lampsOf, light, foeMul.
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
+import * as SET from './redraw/church_set.js';
 
 /* (deadDark: the dead's blows x this in a dark room) THE NUMBERS. FLAME: life s a taper burns, takeR/useR px you reach a fire / a lamp in, glow px it lights round you. LC: litMul/darkMul a priest's blows by his room's
    light, knightLit a knight's; heal: of the healed one's health (x litHeal lit / x darkHeal dark), healCd/healTell/healR; relightT a priest's rite, acoRelightT an
@@ -302,50 +303,42 @@ export function makeLitChurchHands(ctx) {
     if (stallTick(C, Math.hypot(P.x - t.x, P.y - t.y), dt, K.clock, false)) { K.n.nudges++; K.lastNudge = r.line; K.glint.show = true; ctx.number(P.x, P.y - 34, r.line, '#ffe9a0'); } };
 
   /* ---------- THE LIGHT IN THE DARK (main.js's dark pass: a hole for every lit lamp, every fire, the flame in your hand) ---------- */
+  const roomIdOf = l => SET.roomIdAt(K.L, l.x, l.row);
   H.holes = (hole, cx, cy) => { if (!K) return; const vw = ctx.VW(), inX = x => x > cx - 120 && x < cx + vw + 120;
     for (const l of K.lamps) if (l.lit && inX(px(l))) hole(px(l) - cx, py(l) - (l.kind === 'sconce' || l.kind === 'rood' ? 18 : 26) - cy, l.kind === 'arena' ? 90 : l.kind === 'chapel' ? 96 : l.kind === 'sconce' || l.kind === 'rood' ? 56 : 84);
     for (const s of K.sources) if (inX(px(s))) hole(px(s) - cx, py(s) - 12 - cy, 64);
+    if (K.plan) for (const l of K.plan.lights) if (inX(l.wx) && (l.yard || lit(roomIdOf(l)))) hole(l.wx - cx, l.wy - 16 - cy, l.r, l.kind === 'grave' ? 0.6 : 0.85);   /* the dressing's candles burn with their room */
     for (const pp of ctx.players) if (pp.lcFlame > 0 && !pp.dead) hole(pp.x - cx, pp.y - 30 - cy, FLAME.glow * (0.6 + 0.4 * Math.min(1, pp.lcFlame / 4)));
     for (const b of K.bellows) if (b.air > 0 && inX(b.x * TS())) hole(b.x * TS() + 8 - cx, (b.y + 1) * TS() - 30 - cy, 30, 0.4); };
 
-  /* ---------- DRAWING (GREYBOX: plain shapes until the art pass) ---------- */
+  /* ---------- DRAWING (the art pass: src/redraw/church_set.js draws every piece; this decides WHEN and keeps the rule's overlays) ---------- */
   const R = Math.round;
-  function drawLamp(g, l, cx, cy, time) { const x = R(px(l) - cx), y = R(py(l) - cy), f = 0.5 + 0.5 * Math.sin(time * 9 + l.x);
-    if (l.kind === 'sconce' || l.kind === 'rood') { g.fillStyle = '#4a4458'; g.fillRect(x - 3, y - 18, 6, 3); g.fillRect(x - 1, y - 15, 2, 6); g.fillStyle = '#e8e0c8'; g.fillRect(x - 1, y - 22, 3, 4); }
-    else if (l.kind === 'chapel') { g.fillStyle = '#5a4a3a'; g.fillRect(x - 9, y - 10, 18, 10); g.fillStyle = '#c9a050'; g.fillRect(x - 6, y - 22, 12, 4); g.fillRect(x - 1, y - 18, 3, 8); g.fillStyle = '#e8d0a0'; g.fillRect(x - 10, y - 11, 20, 1); }
-    else if (l.kind === 'seal') { g.fillStyle = '#6a6a8a'; g.fillRect(x - 1, y - 28, 2, 26); g.fillStyle = '#a8a8c8'; g.fillRect(x - 5, y - 30, 10, 3); }
-    else { g.fillStyle = '#5a5060'; g.fillRect(x - 1, y - 26, 3, 26); g.fillRect(x - 5, y - 1, 11, 1); g.fillStyle = '#8a7a5a'; g.fillRect(x - 5, y - 30, 11, 4); }
-    const top = l.kind === 'sconce' || l.kind === 'rood' ? y - 24 : l.kind === 'chapel' ? y - 26 : l.kind === 'seal' ? y - 34 : y - 34;
-    if (l.lit) { const big = l.kind === 'chapel' ? 1.5 : 1; g.globalAlpha = 0.25 + 0.1 * f; g.fillStyle = l.kind === 'seal' ? '#d8e0ff' : '#ffd36b'; g.beginPath(); g.arc(x, top, 9 * big, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
-      g.fillStyle = l.kind === 'seal' ? '#e8f0ff' : '#ff9a3c'; g.fillRect(x - 1, top - 3 - R(f * 2), 3, 5); g.fillStyle = '#fff6c8'; g.fillRect(x, top - 1 - R(f), 1, 3); }
-    else { g.fillStyle = '#2a2a34'; g.fillRect(x - 1, top - 1, 3, 2); if (Math.random() < 0.02) ctx.burst(px(l), py(l) + (top - y) - 2, 1, ['#6a6a7a'], 10, 0.8); }
-    if (l.kind === 'rood' && !l.lit) { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 4); g.strokeStyle = '#ffd36b'; g.strokeRect(x - 3, y - 25, 7, 8); g.globalAlpha = 1; }
-    if (l.hold && l.lit && K.dark.st === 'rising' && l.holdSaid) { const k = Math.max(0, l.hold / LC.holdT); g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 30, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 30, R(16 * k), 2); } }
+  const V = { g: null, cx: 0, cy: 0, vw: 320, vh: 180, time: 0, L: null, T: null, lit: id => lit(id), glow: 0.5, stubs: 0, paladinLight: 1 };
+  function vstate(g, cx, cy, time) { V.g = g; V.cx = cx; V.cy = cy; V.vw = ctx.VW(); V.vh = ctx.VH(); V.time = time; V.L = K.L; V.T = T();
+    const ch = K.lamps.filter(l => l.kind === 'chapel'); V.glow = ch.length ? ch.filter(l => l.lit).length / ch.length : 0.5; V.stubs = ctx.questGot ? ctx.questGot() : 0;
+    const ar = K.lamps.filter(l => l.kind === 'arena'), bo = ctx.boss && ctx.boss(); V.paladinLight = bo && !bo.alive ? 0 : ar.length ? 0.3 + 0.7 * ar.filter(l => l.lit).length / ar.length : 1;
+    if (!K.plan) K.plan = SET.plan(K.L, T()); return V; }
+  H.drawBack = (g, cx, cy, vw, vh, time, dy) => { if (!K) return; const v = vstate(g, cx, cy, time); v.vw = vw; v.vh = vh; v.dy = dy || 0; try { SET.drawBackdrop(v); } catch (e) { if (typeof window !== 'undefined') window.__lcerr = String(e.stack).slice(0, 300); } };
   H.drawWorld = (g, cx, cy, time) => {
-    if (!K) return; const ts = TS(), vw = ctx.VW(), inX = (x, m = 60) => x > cx - m && x < cx + vw + m;
+    if (!K) return; const ts = TS(), vw = ctx.VW(), inX = (x, m = 60) => x > cx - m && x < cx + vw + m; const v = vstate(g, cx, cy, time);
+    SET.paintWorld(v, K.plan);
     /* THE DOORS: the west door's bars, the hatch's bars of light (the seal), the crossing's grate, the rood screen's door, the reliquary's and the sacristy's */
-    for (const d of K.doors) { if (d.open || !inX(d.x0 * ts, 80)) continue; const x0 = R(d.x0 * ts - cx), y0 = R(d.y0 * ts - cy), w = (d.x1 - d.x0 + 1) * ts, h = (d.y1 - d.y0 + 1) * ts;
-      if (d.id === 'hatch') { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 3); g.fillStyle = '#d8e0ff'; for (let x = x0 + 2; x < x0 + w; x += 5) g.fillRect(x, y0, 2, h); g.globalAlpha = 1; }
-      else { g.fillStyle = d.id === 'rood' ? '#5a4a3a' : '#3a3440'; g.fillRect(x0, y0, w, h); g.fillStyle = d.id === 'rood' ? '#8a6a3a' : '#6a6478'; for (let x = x0 + 2; x < x0 + w; x += 4) g.fillRect(x, y0, 1, h); g.fillRect(x0, y0, w, 1); g.fillRect(x0, y0 + R(h / 2), w, 1); } }
+    for (const d of K.doors) { if (d.open || !inX(d.x0 * ts, 80)) continue; SET.drawDoor(v, d); }
     /* THE GRATES: iron bars in the floor; a dark room's glows cold before its dead come up */
-    for (const q of K.grates) { if (!inX(q.x * ts)) continue; const x = R(q.x * ts - cx), y = R(q.y * ts - cy); g.fillStyle = '#1a1820'; g.fillRect(x + 1, y - 1, 14, 3); g.fillStyle = '#5a5668'; for (let i = 0; i < 4; i++) g.fillRect(x + 2 + i * 4, y - 1, 1, 3);
-      if (q.glow > 0) { g.globalAlpha = 0.4 + 0.4 * Math.sin(time * 14); g.fillStyle = '#9ab0e0'; g.fillRect(x, y - 6, 16, 6); g.globalAlpha = 1; } }
+    for (const q of K.grates) { if (!inX(q.x * ts)) continue; SET.drawGrate(v, q); }
     /* THE FIRES (sources): the brazier, the votive stands, the vigil candle */
-    for (const s of K.sources) { if (!inX(px(s))) continue; const x = R(px(s) - cx), y = R(py(s) - cy), f = Math.sin(time * 11 + s.x);
-      if (s.kind === 'brazier') { g.fillStyle = '#3a3036'; g.fillRect(x - 6, y - 8, 12, 8); g.fillRect(x - 1, y - 12, 2, 4); g.fillStyle = '#ff6b2c'; g.fillRect(x - 5, y - 14 - R(f), 10, 6); g.fillStyle = '#ffd36b'; g.fillRect(x - 3, y - 16 - R(f), 6, 4); }
-      else { g.fillStyle = '#4a3a2a'; g.fillRect(x - 7, y - 10, 14, 10); g.fillStyle = '#e8e0c8'; for (let i = -5; i <= 5; i += 3) g.fillRect(x + i, y - 14, 2, 4); g.fillStyle = '#ffd36b'; for (let i = -5; i <= 5; i += 3) g.fillRect(x + i, y - 17 - R(Math.abs(Math.sin(time * 9 + i)) * 1.5), 2, 3); } }
-    for (const l of K.lamps) if (inX(px(l))) drawLamp(g, l, cx, cy, time);
+    for (const s of K.sources) { if (!inX(px(s))) continue; SET.drawSource(v, s); }
+    for (const l of K.lamps) if (inX(px(l))) { SET.drawLamp(v, l); if (l.hold && l.lit && K.dark.st === 'rising' && l.holdSaid) { const x = R(px(l) - cx), y = R(py(l) - cy), k = Math.max(0, l.hold / LC.holdT); g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 30, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 30, R(16 * k), 2); }
+      if (l.kind === 'rood' && !l.lit) { const x = R(px(l) - cx), y = R(py(l) - cy); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 4); g.strokeStyle = '#ffd36b'; g.strokeRect(x - 3, y - 25, 7, 8); g.globalAlpha = 1; } }
     /* THE BELLOWS: a leather bellows on its frame and a gauge; breathing, it heaves */
-    for (const b of K.bellows) { if (!inX(b.x * ts)) continue; const x = R(b.x * ts + 8 - cx), y = R((b.y + 1) * ts - cy), k = b.air > 0 ? Math.abs(Math.sin(time * 10)) : 0;
-      g.fillStyle = '#5a3a2a'; g.fillRect(x - 9, y - 8 + R(k * 2), 18, 8 - R(k * 2)); g.fillStyle = '#7a5a3a'; g.fillRect(x - 9, y - 10 + R(k * 3), 18, 2); g.fillStyle = '#3a3036'; g.fillRect(x - 10, y - 1, 20, 1);
+    for (const b of K.bellows) { if (!inX(b.x * ts)) continue; const x = R(b.x * ts + 8 - cx), y = R((b.y + 1) * ts - cy); SET.drawBellows(v, b);
       if (b.air > 0) { g.globalAlpha = 0.18; g.fillStyle = '#e8dcc0'; g.fillRect(R((b.x - 1) * ts - cx), R(b.top * ts - cy), ts * 3, y - R(b.top * ts - cy)); g.globalAlpha = 1;
-        g.fillStyle = '#1b1626'; g.fillRect(x - 9, y - 16, 18, 2); g.fillStyle = '#e8dcc0'; g.fillRect(x - 9, y - 16, R(18 * b.air / LC.bellowsT), 2); } }
+        g.fillStyle = '#1b1626'; g.fillRect(x - 9, y - 22, 18, 2); g.fillStyle = '#e8dcc0'; g.fillRect(x - 9, y - 22, R(18 * b.air / LC.bellowsT), 2); } }
     /* THE KEY DESK and its gust: a told wheeze (dust gathering at the pipes), then the gust's streaks west */
-    for (const d of K.desks) { if (!inX(d.x * ts, 300)) continue; const x = R(d.x * ts + 8 - cx), y = R((d.y + 1) * ts - cy);
-      g.fillStyle = '#4a3a2a'; g.fillRect(x - 8, y - 12, 16, 12); g.fillStyle = '#e8e0c8'; g.fillRect(x - 7, y - 13, 14, 2); g.fillStyle = '#1a1820'; for (let i = -6; i < 7; i += 2) g.fillRect(x + i, y - 13, 1, 1);
+    for (const d of K.desks) { if (!inX(d.x * ts, 300)) continue; const x = R(d.x * ts + 8 - cx), y = R((d.y + 1) * ts - cy); SET.drawDesk(v, d);
       if (d.tell > 0 || d.on > 0) { const y0 = d.y0 * ts, y1 = (d.y1 + 1) * ts; g.globalAlpha = d.tell > 0 ? 0.35 : 0.6; g.fillStyle = '#e8dcc0';
         for (let i = 0; i < 26; i++) { const sx = ((i * 97 + time * (d.on > 0 ? 420 : 60) * -d.dir) % ((d.x1 - d.x0 + 1) * ts) + (d.x1 - d.x0 + 1) * ts) % ((d.x1 - d.x0 + 1) * ts) + d.x0 * ts, sy = y0 + ((i * 53) % (y1 - y0)); g.fillRect(R(sx - cx), R(sy - cy), d.on > 0 ? 10 : 3, 1); }
-        g.globalAlpha = 1; ctx.text(d.tell > 0 ? 'THE PIPES DRAW BREATH' : 'THE GUST', x, y - 24, d.tell > 0 ? '#ffd36b' : '#e8dcc0', 'center', 5); } }
+        g.globalAlpha = 1; ctx.text(d.tell > 0 ? 'THE PIPES DRAW BREATH' : 'THE GUST', x, y - 30, d.tell > 0 ? '#ffd36b' : '#e8dcc0', 'center', 5); } }
     /* THE RELIQUARY's door: a stub count on it */
     for (const d of K.doors) if (d.id === 'reliquary' && !d.open && inX(d.x0 * ts)) ctx.text(Math.min(5, ctx.questGot()) + '/5', R(d.x0 * ts + 8 - cx), R(d.y0 * ts - 8 - cy), '#ffe9a8', 'center', 5);
     /* THE CLERGY's tells: a priest's rite and prayer glow gold over him; asleep, a Z; a priest's light pip by his room (lit gold, dark grey) */

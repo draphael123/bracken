@@ -302,6 +302,6 @@ export function buildLitChurch({ painter, T, TS }) {
     ambient: [{ x0: 0, x1: 99999, kind: 'litchurch' }],   /* its own bed: src/audio.js (an organ's held drone and a far plainchant; the crypt's low wind) */
     masonry: [[44, W - 1, 0, H - 1]], rockZones: [],
     palette: { set: 'night', near: 'none', dress: 'none', noFg: true, noNear: true, haze: 'rgba(120,130,170,0.08)', darkCol: '8,8,18' },
-    night: true, duskStart: -1, duskLen: 1,
+    night: true, nightA: 0.1, duskStart: -1, duskLen: 1,
   };
 }
