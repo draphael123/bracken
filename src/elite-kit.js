@@ -84,6 +84,7 @@ export const AFFIX_AT = {
   'unburied|husk#amb': 'VENOMOUS',
   'fair|barker#1': 'WARDING', 'fair|barker#2': 'SUMMONER', 'fair|hobbyhorse': 'SWIFT',
   'canal|gaffer': 'UNSTOPPABLE',
+  'glasssea|cutthroat': 'UNSTOPPABLE', 'skyroad|troll': 'THORNED',
   'caravan|cutthroat': 'SWIFT', 'caravan|scorpion#amb': 'BURNING',
   'welltown|scorpion': 'VENOMOUS', 'redgorge|scorpion': 'BURNING', 'underwell|scorpion': 'UNSTOPPABLE',
 };

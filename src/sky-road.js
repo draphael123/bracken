@@ -130,8 +130,10 @@ export function buildSkyRoad({ painter, T, TS }) {
   pinnacle(303, 15, 'disc:disc', { order: 0 }); pinnacle(310, 14, 'disc:disc', { order: 1 }); pinnacle(317, 13, 'disc:disc', { order: 2 }); pinnacle(324, 12, 'disc:disc', { order: 3 });
   cloudBank(300, 330, 5, 14, 14, 10);
   foe('kiterider', 314, 6, 'discRidersA', { home: 317 }); foe('kiterider', 326, 5, 'discRidersB', { home: 324 });
-  rock(333, 345, 16); plank(335, 343, 13); sign(345, 15, 'THE SPANS ARE CRACKED. STRIKE EACH STONE BEFORE ITS SPAN GOES.');   /* THE EAST TOWER, its broken parapet; the sign for the spans' stones s4 and s6 (FIX PASS) */
-  foe('horn', 336, 15, 'towerHorn', { face: -1 }); foe('shield', 340, 15, 'towerHead', { face: -1 }); foe('archer', 344, 15, 'towerHead', { face: -1 });
+  rock(333, 347, 16); sign(346, 15, 'THE SPANS ARE CRACKED. STRIKE EACH STONE BEFORE ITS SPAN GOES.');   /* THE EAST TOWER, its broken parapet; the sign for the spans' stones s4 and s6 (FIX PASS) */
+  foe('horn', 334, 15, 'towerHorn', { face: -1 });
+  /* THE CRAG TROLL (claude/elitegates, Daniel 10-07): the Sky Road's GATEKEEPER ELITE. He holds the east tower - the first footing past the disc road - and the portcullis at 343 comes down over its east mouth until he is dead. The disc's air lapses behind you (16 s), the cloud sea is under the west edge, and his slam and rockfall are told: fight him on the stone, not in the air. The tower's lookout plank is gone (a jump over the gate) and the shield and bow that stood here made way for him (difficulty v2: one weighty foe). */
+  foe('troll', 337, 15, 'towerTroll', { face: -1, elite: true, gate: 343 }); ent('check', 345, 15);   /* ...and the checkpoint is past his gate: his fight is the exam, the spans are the next section */
   /* THE EXAM: the broken spans - cracked stone that goes three beats after you land - between thermals you wake and thermals the clouds take */
   crumble(349, 353, 20); stone(352, 19, 's4');                                  /* SPAN A, and a stone ON it: turn it before the span goes */
   pinnacle(357, 13, 'stone:s4');                                                /* R5 */

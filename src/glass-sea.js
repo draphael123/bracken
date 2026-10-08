@@ -250,9 +250,11 @@ export function buildGlassSea({ painter, T, TS }) {
   mirror('relay', 502, B - 3, ['sky', '/', '\\']); source('relay', 502, B - 2, 'N', 'fire');   /* the polished hood over the fire: its light comes UP into it */
   sign(499, B - 1, 'A MIRROR OVER THE FIRE: TURN IT TO THROW THE FIRELIGHT.');
   crack('darkCut', 520, 522, B, { swarm: true, ring: [523, B - 3] });       /* the boiling crack across the cut (its target ring on the far lip) */
-  hunter(512, B - 1, 'cutHunter'); hunter(529, B - 1, 'cutHunter2');   /* two in the dark of the cut: frozen once the relay lights it */ thrower(532, B - 1, 'cutThrow', { face: -1 });
+  hunter(512, B - 1, 'cutHunter');   /* one in the dark of the cut: frozen once the relay lights it (difficulty v2: fewer, weightier - the second hunter and the thrower made way for the alpha) */
+  /* THE ALPHA HUNTER (claude/elitegates, Daniel 10-07): the cut's GATEKEEPER ELITE - the pack's best blade, east of the boiling crack, so the crack and the dark are at your back. The relay is the answer to the cold, not to him: firelight freezes the pack, never the alpha (src/glass-sea-hands.js). The portcullis comes down at 539 over the cut's east mouth and lifts when he dies. */
+  foe('cutthroat', 530, B - 1, 'cutAlpha', { cnSkin: 'nighthunter', elite: true, gate: 539 });
   skitter(521, B - 1, 'cutSwarm'); shardAt(536, B - 1);   /* SHARD FIVE, past the boiling crack */
-  fire('flatsFire4', 544, B - 1);
+  fire('flatsFire4', 544, B - 1); ent('check', 548, B - 1);   /* CHECKPOINT (the alpha's): past his gate, beside the fire - the night's second rest */
   hunter(552, B - 1, 'flatsHunter2'); glassS(556, B - 1, 'flatsScorp2'); thrower(550, B - 4, 'flatsTerrace2');
   crack('flats3', 560, 562, B, { swarm: true });                           /* held by flatsFire5 */
   fire('flatsFire5', 566, B - 1);
