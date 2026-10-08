@@ -56,7 +56,8 @@ export function drawHound(g, e, cx, cy, time, floorY) {
   if (e.mode === 'boughTell' && e.boughs) {
     const T = e.boughT0 || GH.bough.tell, left = Math.max(0, e.modeT), fall = GH.bough.fall;
     for (const bx of e.boughs) { const sx = Math.round(bx - cx), q = 0.5 + 0.5 * Math.sin(time * 16);
-      g.globalAlpha = 0.45 + 0.45 * q; g.strokeStyle = '#ff6b6b'; g.beginPath(); g.ellipse(sx, fy - 1, GH.bough.r, 3, 0, 0, Math.PI * 2); g.stroke();
+      g.globalAlpha = 0.55 + 0.45 * q; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(sx, fy - 1, GH.bough.r, 4, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+      for (let i = 0; i < 4; i++) { const ly = fy - 12 - ((Math.floor(time * 60) + i * 23) % 90), lx = sx - 8 + ((i * 7 + Math.floor(time * 3)) % 17); g.fillStyle = i % 2 ? '#d08a3a' : '#8a5a2a'; g.fillRect(lx, ly, 2, 1); }   /* leaves shaken loose over the ring */
       g.fillStyle = 'rgba(10,8,14,0.5)'; g.beginPath(); g.ellipse(sx, fy - 1, Math.round(GH.bough.r * (1 - Math.min(1, left / T) * 0.6)), 2, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
       if (left < fall) { const by = fy - 4 - Math.round(150 * (left / fall));   /* the bough, seen coming down */
         g.fillStyle = '#1a120a'; g.fillRect(sx - 9, by - 3, 18, 5); g.fillStyle = '#6a4a2a'; g.fillRect(sx - 8, by - 2, 16, 3); g.fillStyle = '#8a6a3a'; g.fillRect(sx - 8, by - 2, 16, 1);
