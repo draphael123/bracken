@@ -88,3 +88,12 @@ It is **off by default**. Nothing is sent over the network: the log stays in thi
   opening and whether you used it; skills cast. It holds no name, save data or account.
 - **Use it:** put the files in `playtest-logs/` (gitignored) and run `node tools/bot-calibrate.mjs playtest-logs/*.json`. The tool
   compares your deaths and damage per boss with the bot's and fits the profile in `src/bot-profile.js` (reaction, misread, greed).
+
+## The two TESTING settings (claude/godmode, 2026-10-07)
+
+Settings > GAMEPLAY > TESTING has two rows. **UNLOCK EVERYTHING** (saved key `godmode`; it was called GOD MODE) owns every hero, skin, skill and wood
+and opens the map, writing nothing to the save. **GOD MODE** (saved key `invincible`; it was called INVINCIBLE) is the real thing: health and stamina
+are held full every frame, a pit or fire puts you back on the last safe ground, you can jump again in mid-air as often as you like, hold JUMP to rise
+slowly, DOWN to drop (keyboard, pad and touch, every hero). It is an assist: while it is on a level finish earns no medal, no best time, no no-hit or
+iron mark, no silver pickup, no Death Knight feat and no boss-rush record. The harness flag `BK.god` (invulnerable only) is unchanged, so the route
+pilots and `?level=` checks keep working. Check: `node tools/godmode.mjs`.
