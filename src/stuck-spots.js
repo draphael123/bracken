@@ -14,6 +14,12 @@ import { uwX, UW_SPILL, UW_RES } from './underwell.js';   /* (claude/underwell3)
 const uwSpot = s => ({ ...s, ...(s.zone ? { zone: [uwX(s.zone[0]), s.zone[1], uwX(s.zone[2]), s.zone[3]] } : {}), ...(s.steps ? { steps: s.steps.map(uwSpot) } : {}),
   ...(s.at ? { at: [uwX(s.at[0]), s.at[1]] } : {}), ...(s.is && /^fire\.\d+$/.test(s.is[0]) ? { is: ['fire.' + uwX(+s.is[0].slice(5)), s.is[1]] } : {}) });
 export const STUCK = {
+  /* STORMHOLD's THREE TOWER ROPES (claude/zipline; src/zipline.js): after ten seconds on the deck, the rope's handle glints and the guide names it */
+  storm: [
+    { id: 'sh-rope-1', zone: [40, 20, 47, 23], at: [47, 22], dy: 6, glint: 'stall', line: "THE GATE WATCH'S ROPE IS THE WAY DOWN TO THE BARBICAN" },
+    { id: 'sh-rope-2', zone: [300, 19, 303, 21], at: [302, 20], dy: 6, glint: 'stall', line: "THE BELL WATCH'S ROPE IS THE WAY DOWN TO THE INNER GATE" },
+    { id: 'sh-rope-3', zone: [529, 20, 530, 22], at: [530, 21], dy: 6, glint: 'stall', line: "THE WALL WATCH'S ROPE IS THE WAY DOWN TO THE BRIDGE GATE" },
+  ],
   /* THE FALLING TOWER'S ORRERY LOFT (claude/archmage3; src/spiral-chase.js): the next world round on each wheel glints (m.next, kept by updateStairFx) from
      the gallery's landing and the board step (wheel A), and from the pier (wheel B) - never while you ride that wheel */
   fallingtower: [
@@ -93,15 +99,15 @@ export const STUCK = {
     { id: 'ul-brass', zone: [90, 2, 170, 45], steps: [
       { zone: [96, 2, 124, 17], at: [112, 6], done: ['key', 112, 6, 'got'], line: 'THE BRASS KEY HANGS ON THE HOIST BEAM' },
       { zone: [90, 18, 170, 45], at: [122, 33], done: ['key', 112, 6, 'got'], line: 'THE BRASS KEY IS IN THE MILL: FIND ITS DOOR' },
-      { zone: [96, 18, 170, 45], at: [157, 33], when: ['key', 112, 6, 'got'], done: ['lockgate', 157, 33, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
+      { zone: [96, 18, 170, 45], at: [157, 33], done: ['lockgate', 157, 33, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
     { id: 'ul-iron', zone: [140, 2, 345, 45], steps: [
       { zone: [140, 2, 196, 17], at: [188, 8], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS ON THE ROOD BEAM' },
       { zone: [175, 18, 345, 45], at: [278, 33], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS IN THE CHURCH: FIND ITS DOOR' },
-      { zone: [175, 18, 345, 45], at: [336, 33], when: ['key', 188, 8, 'got'], done: ['lockgate', 336, 33, 'open'], line: 'THE IRON GATE WANTS THE KEY YOU CARRY' } ] },
+      { zone: [175, 18, 345, 45], at: [336, 33], done: ['lockgate', 336, 33, 'open'], line: 'THE IRON GATE WANTS THE KEY YOU CARRY' } ] },
     { id: 'ul-bone', zone: [210, 2, 475, 45], glint: 'stall', steps: [
       { zone: [210, 2, 258, 17], at: [250, 9], done: ['key', 250, 9, 'got'], line: "THE BONE KEY IS ON THE MASTER'S DESK" },
       { zone: [340, 18, 470, 45], at: [356, 33], done: ['key', 250, 9, 'got'], line: 'THE BONE KEY IS IN THE SCHOOL: FIND ITS DOOR' },
-      { zone: [340, 18, 475, 45], at: [469, 33], when: ['key', 250, 9, 'got'], done: ['lockgate', 469, 33, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
+      { zone: [340, 18, 475, 45], at: [469, 33], done: ['lockgate', 469, 33, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
   ],
   burning: [
     { id: 'bn-fallen-house', zone: [200, 22, 232, 30], ats: [[227, 25], [208, 23]], line: 'TOO HIGH TO JUMP: WATER, OR THE ROOFS' },
