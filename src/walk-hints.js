@@ -60,19 +60,25 @@ function glassSea(BK, P, mem) {
    wait for its breath - or, cold or spent, strike it (STRIKE THE CENSER). A PRAYER WHEEL whose OTHER stair the route walks: strike it. A BELL whose
    bridge the route crosses and that is not down yet: strike it. Each only on his own floor (within 2 rows) and near (r tiles). */
 function spire(BK, P, mem) {
-  if (!P || P.dead || !P.ground) return null; const L = BK.L, R = mem.route || [], W = L.W, at = (x, y) => L.grid[y * W + x];
+  if (!P || P.dead) return null; const L = BK.L, R = mem.route || [], W = L.W, at = (x, y) => L.grid[y * W + x];
   const ahead = R.filter(([rx, ry]) => Math.abs(rx * TS + 8 - P.x) < 26 * TS && Math.abs(ry * TS - P.y) < 22 * TS);
+  /* RIDING THE SMOKE: in a breathing column, stay in it until the feet are over the landing the route steps off onto, then steer */
+  if (!P.ground) { const v = BK.props().find(q => q.t === 'vent' && q.incense && q.active && Math.abs(P.x - q.x) < 14 && P.y <= q.y + 2 && P.y > q.y - q.h);
+    if (!v) return null; const vx = Math.floor(v.x / TS), base = v.y / TS, land = ahead.filter(([rx, ry]) => Math.abs(rx - vx) <= 6 && ry < base - 3 && ry >= (v.y - v.h) / TS - 3).reduce((m, [, ry]) => Math.max(m, ry), -1);
+    if (land < 0 || P.y < (land + 1) * TS - 18) return null; return { x: v.x, y: P.y, key: null, hold: true, r: 4 }; }
   for (const v of BK.props()) { if (v.t !== 'vent' || !v.incense || Math.abs(P.y - v.y) > 6 || Math.abs(P.x - v.x) > 7 * TS) continue;
     const vx = Math.floor(v.x / TS), top = (v.y - v.h) / TS, base = v.y / TS;
     if (!ahead.some(([rx, ry]) => Math.abs(rx - vx) <= 5 && ry < base - 3 && ry >= top - 3)) continue;
-    if (v.active) return { x: v.x, y: v.y, key: null, hold: true, r: 8 };
-    if ((v.snuff || mem.ventWait > 200) && !(v.coolT > 0)) { return { x: v.x - 6, y: v.y, key: 'atk', face: 1, r: 8 }; }
-    mem.ventWait = (mem.ventWait || 0) + 1; return { x: v.x, y: v.y, key: null, hold: true, r: 8 }; }
+    if (v.active) return { x: v.x, y: v.y, key: null, hold: true, r: 8, at: true };
+    if ((v.snuff || mem.ventWait > 200) && !(v.coolT > 0)) { return { x: v.x - 6, y: v.y, key: 'atk', face: 1, r: 8, at: true }; }
+    mem.ventWait = (mem.ventWait || 0) + 1; return { x: v.x, y: v.y, key: null, hold: true, r: 8, at: true }; }
   mem.ventWait = 0;
   for (const w of BK.props()) { if (w.t !== 'pwheel' || Math.abs(P.y - w.y) > 40 || Math.abs(P.x - w.x) > 12 * TS || w.turnT > 0 || w.cool > 0) continue;
     const other = w.st ? w.a : w.b, on = (arm, x, y) => arm.some(([x0, ay, n]) => y === ay && x >= x0 && x < x0 + n);
-    const needOther = ahead.some(([rx, ry]) => on(other, rx, ry + 1) || on(other, rx, ry)), needThis = ahead.some(([rx, ry]) => on(w.st ? w.b : w.a, rx, ry + 1));
-    if (needOther && !needThis) return { x: w.x - 10, y: w.y, key: 'atk', face: 1, r: 12 }; }
+    /* the route's NEXT use of this wheel (from the node nearest him on): on the stair that is not laid - strike it; on the laid one - leave it be */
+    const px = P.x / TS, pr = P.y / TS - 1; let ni = 0, nd = 1e9; R.forEach(([rx, ry], i) => { const d = Math.abs(rx - px) + Math.abs(ry - pr); if (d < nd) { nd = d; ni = i; } });
+    const next = R.slice(ni, ni + 40).find(([rx, ry]) => on(w.a, rx, ry + 1) || on(w.b, rx, ry + 1));
+    if (next && on(other, next[0], next[1] + 1)) return { x: w.x - 10, y: w.y, key: 'atk', face: 1, r: 12, at: true }; }
   for (const b of BK.props()) { if (b.t !== 'tbell' || !b.span || b.down || Math.abs(P.y - b.y) > 40 || Math.abs(P.x - b.x) > 12 * TS) continue;
     const [x0, x1, row] = b.span; if (!ahead.some(([rx, ry]) => rx >= x0 && rx <= x1 && Math.abs(ry - row) <= 2)) continue;
     const side = (x0 + x1) / 2 * TS > b.x ? -1 : 1; return { x: b.x + side * 12, y: b.y, key: 'atk', face: -side, r: 12 }; }
