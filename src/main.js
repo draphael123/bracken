@@ -4182,7 +4182,7 @@ function winLevel() {
   if (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret) { heroDone()[id] = 1; const gw = (PROG.xpGot[hero()] || {})[id]; if (gw) delete gw.k; }   /* a finished wood pays a fifth for everything in it, so its list of the fallen can go */
   if (winLevelUp) { applyUpgrades(); regear(); P.hp = P.maxHp; setTimeout(() => { if (state === 'win') SFX.rankUp(); }, 1500); }
   { const was = p.medal || 0, now = medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now);
-    for (const c of LEVELS) { const o = c.opensOn; if (o && o.level === id && o.medal && now >= (MEDAL_RANK[o.medal] || o.medal) && was < (MEDAL_RANK[o.medal] || o.medal) && !(PROG[c.id] && PROG[c.id].cleared)) { hintMsg = c.name + ' IS OPEN: A NEW ROAD OFF THE MAP'; hintT = 6; } } }
+    for (const c of LEVELS) { const o = c.opensOn; if (o && o.level === id && (o.time ? (PROG[id].best <= o.time && !(winPrevBest !== null && winPrevBest <= o.time)) : (o.medal && now >= (MEDAL_RANK[o.medal] || o.medal) && was < (MEDAL_RANK[o.medal] || o.medal))) && !(PROG[c.id] && PROG[c.id].cleared)) { hintMsg = c.name + ' IS OPEN: A NEW ROAD OFF THE MAP'; hintT = 6; } } }
   if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0) PROG[id].noHit = true; if (SET.iron) PROG[id].iron = true; dcBankAll();
   saveProgress();
 }
@@ -4200,7 +4200,8 @@ const killPct = lv => { const n = lv.needsKills; if (!n) return 1; const p = PRO
    is open the moment this code runs, no migration step needed - both read straight off saved PROG. */
 const MEDAL_RANK = { bronze: 1, silver: 2, gold: 3 };
 const medalMet = (id, rank) => { const p = PROG[id]; return !!(p && (p.medal || 0) >= rank); };
-const opensLocked = lv => { const o = lv.opensOn; if (!o) return false; if (PROG[lv.id] && PROG[lv.id].cleared) return false; if (!o.medal) return !(PROG[o.level] && PROG[o.level].cleared); return !medalMet(o.level, MEDAL_RANK[o.medal] || o.medal); };   /* NO medal named = open once the junction level is CLEARED (any time): the class levels' own roads (Daniel 10-07: a silver-time gate left THE BURNING VILLAGE unreachable on the map in a normal run) */
+const opensLocked = lv => { const o = lv.opensOn; if (!o) return false; if (PROG[lv.id] && PROG[lv.id].cleared) return false; if (o.time) { const b = (PROG[o.level] || {}).best; return !(b !== undefined && b !== null && b <= o.time); }   /* a TIME threshold: the junction's best clear must be at or under it (seconds), independent of its medal times */
+  if (!o.medal) return !(PROG[o.level] && PROG[o.level].cleared); return !medalMet(o.level, MEDAL_RANK[o.medal] || o.medal); };   /* NO medal named = open once the junction level is CLEARED (any time): the class levels' own roads (Daniel 10-07: a silver-time gate left THE BURNING VILLAGE unreachable on the map in a normal run) */
 const levelLocked = lv => !godMode() && (!!lv.locked || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
 
 // ---------- world map ----------
@@ -4302,7 +4303,7 @@ const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.
    own opensOn and this finds it - nothing here names 'burning' or 'unburied'. Underleaf and the Undercrown have no
    opensOn (they gate on needsTime/needsKills, unchanged), so they are never returned here and stay panel-only. */
 const spurAt = id => NODES.find(n => n.spur && n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].opensOn && LEVELS[n.level].opensOn.level === id);
-const spurReqText = lv => { const o = lv.opensOn; if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
+const spurReqText = lv => { const o = lv.opensOn; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
   const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();
   return 'BEAT ' + nm + ' IN ' + fmt(t) + ' TO OPEN THIS ROAD'; };
 /* THE LOCKED-ROAD TIP (Daniel 10-07: the rule must be SHOWN). Pressing toward a shut side road, or tapping/clicking its node, raises this for a few seconds: what it asks and the best time you hold on that level. */

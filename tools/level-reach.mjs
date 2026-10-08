@@ -32,7 +32,8 @@ try {
         if (!lv || m.locked[i] || (P[id] && P[id].cleared)) return;
         /* a junction whose side road asks for a medal is cleared AT that medal: the stated condition is met in normal play (the achievable-time part is measured by tools/stockade-silver-time note, and the rule is SHOWN: see the tip check below) */
         const need = LEVELS.filter(c => c.opensOn && c.opensOn.level === id).reduce((a, c) => Math.max(a, { bronze: 1, silver: 2, gold: 3 }[c.opensOn.medal] || 0), 0);
-        P[id] = { cleared: true, medal: need }; out.opened.push(id); changed = true; });
+        const tmin = LEVELS.filter(c => c.opensOn && c.opensOn.level === id && c.opensOn.time).reduce((a, c) => Math.min(a, c.opensOn.time), 1e9);
+        P[id] = { cleared: true, medal: need, ...(tmin < 1e9 ? { best: tmin } : {}) }; out.opened.push(id); changed = true; });
       /* THE SECRETS (needsTime / needsKills): earned by a feat on a level that is itself reached, so satisfy the feat once its level is cleared */
       for (const l of LEVELS) { const n = l.needsTime || l.needsKills; if (!n || !(P[n.id] && P[n.id].cleared) || (P[l.id] && P[l.id].cleared)) continue;
         if (l.needsTime) { if (!(P[n.id].best <= n.t)) { P[n.id].best = n.t; changed = true; } } else if (!(P[n.id].slain)) { P[n.id].slain = 10; P[n.id].slainOf = 10; changed = true; } } }
@@ -53,7 +54,7 @@ try {
       /* SHOWN: with the junction cleared at bronze the road is shut and pressing at it raises the tip naming the rule and the player's best time */
       P[j] = { cleared: true, medal: 0, best: 777 };
       for (const key of ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); const tp = BK.mapTip(); if (tp.id === id && tp.lines) { s.tip = tp.lines; break; } }
-      P[j] = { cleared: true, medal: { bronze: 1, silver: 2, gold: 3 }[lv.opensOn.medal] || 0 };
+      P[j] = { cleared: true, medal: { bronze: 1, silver: 2, gold: 3 }[lv.opensOn.medal] || 0, ...(lv.opensOn.time ? { best: lv.opensOn.time } : {}) };
       for (const key of ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); if (BKT.PROG.mapNodeId === id) { s.dir = key; s.onSpur = true; break; } }
       if (!s.onSpur) s.onSpur = false; }
     out.coin = BK.store.coinHeroes().map(h => ({ ...h, level: LEVELS.some(l => l.id === h.needs) }));
