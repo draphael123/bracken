@@ -90,7 +90,7 @@ const pageSrc = `(() => {
       const MACH = /^(lever|crank|winch|capstan|pump|pwheel|awningwinch|sluice|tbell|bell|seabell|tidebell)$/;
       const clear = () => { k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false; if (k.throw !== undefined) k.throw = false; };
       const step = () => { const before = P.hp; BK.sim(1); frames++; lostHp += Math.max(0, before - Math.max(0, P.hp)); minHp = Math.min(minHp, Math.max(0, P.hp) / P.maxHp); };
-      const mash = () => { if (P.atk < 0) BK.press('atk'); };
+      const mash = () => { if (BK.state === 'talk') { BK.press('atk'); return; } if (P.atk < 0) BK.press('atk'); };   /* (claude/remeasure) A MASHER CLOSES A SIGN: the ride's 'talk' presses opened a sign box and the bot never closed it, so the world stood FROZEN (state 'talk': nothing moves, nothing hits) for the rest of the run and the bot was lifted through a stopped level - Red Gorge 'cleared' with warden and pyro that way. Mashing attack advances the box exactly as a player's thumb would. */
       const learn = () => { for (const m of BK.movers()) { if (m.x === undefined || m.y === undefined || Number.isNaN(m.y)) continue; const b = boxes.get(m) || { x0: 1e9, x1: -1e9, y0: 1e9, y1: -1e9 };
         const xs = [m.x, m.x + (m.w || 16)], ys = [m.y, m.y + (m.h || 8)]; if (m.x0 !== undefined) xs.push(m.x0, m.x0 + (m.range || 0) + (m.w || 16)); if (m.y0 !== undefined) ys.push(m.y0); if (m.y1 !== undefined) ys.push(m.y1);
         b.x0 = Math.min(b.x0, ...xs); b.x1 = Math.max(b.x1, ...xs); b.y0 = Math.min(b.y0, ...ys); b.y1 = Math.max(b.y1, ...ys); boxes.set(m, b); } };

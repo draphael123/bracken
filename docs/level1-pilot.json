@@ -96,13 +96,13 @@
   "bare": true
  },
  "skyroad": {
-  "hash": "668e4c06b3d2",
+  "hash": "eefcb0d183a3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
+  "hits": 21,
   "deaths": 0,
-  "kills": 8,
+  "kills": 6,
   "lifts": 51,
   "walked": 100,
   "bare": true
@@ -128,6 +128,42 @@
   "deaths": 11,
   "kills": 9,
   "lifts": 127,
+  "walked": 100,
+  "bare": true
+ },
+ "rootway": {
+  "hash": "269d8b9e4e46",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 26,
+  "deaths": 1,
+  "kills": 39,
+  "lifts": 87,
+  "walked": 100,
+  "bare": true
+ },
+ "minecart": {
+  "hash": "ad73fd7be795",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 24,
+  "deaths": 3,
+  "kills": 45,
+  "lifts": 26,
+  "walked": 100,
+  "bare": true
+ },
+ "burning": {
+  "hash": "676515e906cb",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 51,
+  "deaths": 2,
+  "kills": 53,
+  "lifts": 89,
   "walked": 100,
   "bare": true
  }
