@@ -1,7 +1,8 @@
 /* tools/windcaller-gusts.mjs [heroes] - THE WINDCALLER 3's SUMMIT, PER HERO, WITH REAL KEYS (claude/windcaller3, scratch/brief-windcaller3.md;
    design standard A7 + B12: every hero reaches every ledge with base movement). In the page, the fight live and the shaman held still (his clocks
    frozen, his bolts cleared), NO god mode, once per hero (default: every hero in src/progression.js HERO_IDS):
-     RIDES (the sign's way)   walk into an updraft as its gust arrives and hold toward the ledge: you land on it, unhurt.
+     RIDES (the sign's way)   walk into an updraft as its gust arrives and hold toward the ledge: you land on it, brace (crouch) through the rest
+                              of the gust (on his ledges it walks you off otherwise), and are still on it, unhurt.
        the lip's updraft, the gust east          -> THE WEST LEDGE
        the fall stone's updraft, the gust east   -> THE EAST LEDGE
        the fall stone's updraft, the gust west   -> THE WEST LEDGE   (phase two: the gusts alternate)
@@ -39,7 +40,7 @@ try {
     const waitGust=(dir,lead)=>{const q=z();for(let i=0;i<60*20;i++){const p=ph();if(dir===0){if(p>q.on+0.3&&p<q.on+0.4)return true;}else if(p>=q.period-lead&&p<q.period-lead+0.03&&dirAt(BK.time+lead+0.05)===dir)return true;step(1);}return false;};
     const ride=(vent,from,dir,hdir,want)=>{place(vent.x-hdir*40);const h=BK.P.hp;if(!waitGust(dir,0.3))return {ok:false,why:'no gust'};
       let landed=false,maxUp=0;const y0=BK.P.y;K[hdir>0?'right':'left']=true;let air=false;for(let i=0;i<60*5;i++){step(1);maxUp=Math.max(maxUp,y0-BK.P.y);if(!BK.P.ground)air=true;if(air&&BK.P.ground){landed=true;break;}if(!air&&i>90)break;}
-      clear();step(2);const ok=want(BK.P)&&BK.P.hp>=h;return {ok,x:Math.floor(BK.P.x/16),y:Math.floor(BK.P.y/16),up:Math.round(maxUp),hurt:BK.P.hp<h,landed};};
+      clear();if(landed&&dir!==0){K.down=true;step(150);K.down=false;}step(2);const ok=want(BK.P)&&BK.P.hp>=h;   /* (landed on a ledge in the gust: it walks you off unless you brace - crouch through the rest of it, as the moor teaches) */return {ok,x:Math.floor(BK.P.x/16),y:Math.floor(BK.P.y/16),up:Math.round(maxUp),hurt:BK.P.hp<h,landed};};
     const jumpAt=(x,hdir)=>{place(x-hdir*48);const h=BK.P.hp;K[hdir>0?'right':'left']=true;let j=false;for(let i=0;i<60*3;i++){if(!j&&Math.abs(BK.P.x-x)<6){BK.press('jump');K.jump=true;j=true;}step(1);if(j&&BK.P.ground&&i>30)break;}clear();step(2);return {onLedge:onAnyLedge(),x:Math.floor(BK.P.x/16),y:Math.floor(BK.P.y/16)};};
     /* RIDES */
     let A=boot(1);const [v1,v2]=vents();
