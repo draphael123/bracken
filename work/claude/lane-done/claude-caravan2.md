@@ -1,153 +1,151 @@
-# Lane report: `claude/caravan2` - THE SUNKEN CARAVAN: ruins, a harsher sun, bandits
+# Lane report: `claude/caravan2` (2026-10-09) - THE SUNKEN CARAVAN level pass + THE DUNE WORM rework
 
-Daniel, 2026-09-25: "the new desert level is great, just a few things" - taller ruined buildings (towers), a sun that punishes, and
-no goblins (new bandits instead). Design: `docs/briefs/caravan-ruins-bandits.md` (written and committed first). Built to RULES A-F,
-Q and section S (S1-S8, from `claude/difficulty-rules`). Everything below is on `claude/caravan2`, merged with `origin/master`.
+Daniel's live playtest of 10-09 (scratch/brief-caravan2.md, the photo scratch/caravan-logs-1009.jpg). Base: origin/master 36c83412 (batch80).
+One Opus lane: level mechanics + the boss, greybox; the art follow-ups are listed at the end. (The SEPTEMBER lane of the same name -
+ruins, a harsher sun, bandits - is in this file's history: commit 3de7bdc8.)
 
-## Commits
+## B. THE DUNE WORM (src/dune-worm.js, his hands in src/main.js, the lab bot in src/lab.js)
 
-| commit | what |
+| brief | built |
 |---|---|
-| `bfc8932` | the brief; `tools/caravan-walk.mjs` records what each section cost (S8); before captures and walk (`work/caravan2/before`, `walk-before.txt`) |
-| `40c4aa6` | no goblins: three bandit kinds (state machines, sprites, voices, bestiary, marks, threat weights), `tools/bandits.mjs` (in the suite as `bandits`) |
-| `c6c85e8` | the ruined town: four tall towers, four houses, three lintels, ruin faces, the far skyline; the bandits placed to S1; the exam; S1-S6 in `tools/caravan-level.mjs` |
-| `80c1371` | the sun: fill 9 -> 6 s, the build 3 / 5 / 8 a second at full, maxWalk 7.5 -> 5 s; `tools/dune-worm.mjs` starts each test cool |
-| `0d0551e` | the broken twin's roof is a way on (the bot died of the sun against its corner); the walk tool names each death; `tools/caravan-jumps.mjs`, `tools/caravan-probe.mjs` |
-| `2eeb814` | the skyline and the ruin rooms in px.js primitives; after captures, walk, jumps, probe |
-| `6865d5b` | merge `origin/master` (check.mjs: kept every name from both sides; `bandits` last; the list check greps clean) |
-| `306c289` | the slinger throws only at what is under the sky, and his stone breaks on stone; `docs/desert-foes.png` with the bandits; the post-merge check log |
-| (this one) | THE DUNE WORM pilot after the sun change; this report |
+| B1 invulnerable except head-on-ledge (Daniel's B15 exception) | `wormTake` is x1.5 while STUNNED and 0 otherwise. A blow on him up out of the sand CLANKS (boss-read `turned`) and says **HIDE TOO THICK** + **MAKE HIM HIT A LEDGE** (and a hint line the first three times); through the sand nothing (and nothing said). His breach under a standing ledge = **STUNNED 3 s** (gold ring + timer bar + stars, B10), then a told **3 s WARD** (pale shell, WARDED; a breach under a ledge in the ward stuns nothing and says WARDED: NOT YET, B3). The ledge he hit cracks and sinks. |
+| B2 more ledges, random | `WORM.LEDGE`: **2 up at once (3 in phase two - the arena changes, B5)**, each 3 tiles of sandstone 3 rows up, rising at a random slot on whole tiles, clear of the walls, the rim's overhang and the gate (`L.arena.stoneAvoid`), never within 44 px of the hero, 24 px apart; **told rise 1.0 s** (the sand cracks along it, dust, a grinding rumble `stoneRise`, A LEDGE RISES), standing 11-15 s on the dice, sinking 0.7 s. Longest stretch with none up in the Node fight: **1.0 s** (cap 6). |
+| B3 ledges give shade | a standing ledge is a shade box handed to `cvCanopies()` (the sun is off under it) and one-way **rock-shelf footing** (tiles set while it stands, restored on sink / death / retry / his death). A breach that catches a ledge stops at its underside: a hero standing ON it is never hit. **Integ note:** claude/ksar2's sun v2 builds its shade from `cvShaded` + `zones()` = `CV.zones + cvCanopies()` - the ledges are already in `cvCanopies`, so drain.js needs no change; the merge only has to keep my `.concat(dwStoneShade())` on the `cvCanopies` line. |
+| B4 kill attack slower | lunge coil 0.6 -> **0.9 s**, sinkhole 0.8 -> **1.2 s** (+50%), told twice (word HE COILS TO LUNGE / THE SAND GIVES WAY, red, the hiss + a churn of sand), a count bar under his shadow; no one-shot (31 dmg at L32 vs ~300 hp). |
+| B5 SAND BREATH replaces the projectiles | `breathTell` 0.8 s (throat glows, sand drawn in, a faint cone on the sand where it will go, HE DRAWS BREATH, yellow `!`), then `breath` 0.9 s: a cone 130 px from his mouth to the floor, the direction locked at the tell; **blockable** (a shield facing him) or got behind / rolled; a landed blast = 18 dmg + **GRIT IN YOUR EYES** (1.4 s sand vignette). Marks rows: MARK `!`, ANSWER block, HEIGHT low. The spit and its clots are gone. |
+| B6 quicksand in the arena | two 3-tile patches at +11..+13 and +27..+29 (the draft's QS columns, src/quicksand.js rules); ledges may rise over them (a choice: wade and mash out, or go round). No soft-lock: quicksand never kills. |
+| B7 less damage | -25% on every move (breach/lunge/bite 41->31, tail 46->35, crash 37->28). |
+| B8 numbers | **hp 2150**, WITH FLASKS (human, L32): see Numbers. |
 
-## What I built
+The hollow's winch + great awning are gone (the ledges are the opening now); the hollow's middle wreck's lee was an INVISIBLE shade patch
+(shadeZones ran before the wreck was removed) - fixed. Sounds: `wormBreath`, `wormStun`, `stoneRise`, `stoneSink` (src/audio.js).
 
-**1. THE RUINS.** A town stood under the dunes before the caravan road; its bones come up through the sand. All of it is laid stone
-(`L.masonry`, drawn as coursed ashlar with bitten, sun-bleached top courses - `src/redraw/caravan_ruins.js`), `tools/architecture.mjs`
-holds every piece up (38 pieces, none in the air), and the garrison keeps off it (`L.calm`).
-- **Four tall towers you climb** - in at a door (a doorway facade: the wall comes down to the sand either side of it), up ledges two
-  rows apart (E4), out of a two-tile hatch onto the roof, where a slinger stands. Each inside is a room (violet, slit windows with a
-  shaft of sun, rubble) and shade.
-  - THE WATCHTOWER (col 145, 12 rows + a 4-course broken corner) alone at the end of the caravan road; its roof keeps a quest stray.
-  - THE TWIN TOWERS either side of the caravanserai in the sinking way (col 399, 12 rows; col 419, 8 rows "its top fell"). With the
-    caravanserai (9 rows, now laid stone too) they are **THE ROOFTOP ROUTE**: roof to roof, three tiles apart, from 12 down to 9 to 8,
-    paid with a 10-coin cache on the tallest roof (S7). A cutthroat waits at the top of the caravanserai's climb.
-  - THE LAST TOWER (col 479, 14 rows) over the exam on the rim.
-- **Four half-buried houses** you walk through (waydown, road crest, ox line, the town's end), each with a hole in its roof where
-  the beams went; **three walls with their lintels still on** (the old town's gate you start under, the town gate out of the camp,
-  the rim's last shade); **three ruin faces** standing behind the play (the slide's landing, the tent, the arch).
-- **The far town on the backdrop**: towers with broken tops, domes, broken arches and colonnades, pale and flat in front of the mesas.
-- The level grew **505 -> 536 columns** to the hollow (F1 kept: waydown 67, road 96, ox line 79, dune sea 71, camp 69, sinking 80, rim 74).
-- The quicksand the road jumps is now three tiles everywhere (S2): the ox line's four, the slide's five and the sinking way's six-wide
-  fields (crossed on wagon tops) became three-tile pits with firm ground and a three-tile island (a sunk wagon's roof) between.
+## A. THE LEVEL (src/draft/sunken-caravan.js, src/sunken-caravan.js, src/main.js desert hands)
 
-**2. THE SUN, MORE PUNISHING** (`src/sunstroke.js`). `SUN.fill` 9 -> **6 s**; `SUN.cool` stays **1.2 s**; at full the ticks come a
-second apart and **build: 3, then 5, then 8** (and 8 after that); any shade that takes the meter off full starts it again at 3.
-**Told (C1):** at full the HUD shows one, two, three pips beside the meter and says BURNING / HOTTER / SCORCHING, flashing faster and
-redder as it climbs; each tick is a sizzle a step higher than the last (`SFX.sunBurn`); the glare deepens with the stage.
-`SUN.maxWalk` 7.5 -> **5 s**; the ruins are the shade that makes it hold. `tools/caravan.mjs` proves the build, its reset by a moment's
-shade, that the HUD's stage names each tick before it lands, and that the warning (the swim, 3.3 s) still comes 3.2 s before the harm.
+1. **THE LOGS ARE GONE.** The photo was THE GREAT RIBCAGE: its ribs were NET (drawn as wooden ladders), its spine a ONEWAY plank and two
+   roped SWING planks over the basin. All out. The basin is now **THE SINKING WAGONS**: a half-buried WAGON BED (`pad` with `wreck: true` -
+   it sinks under you like a lily pad and drops you into the sand at the bottom, told by its flashing lip) and a SLAB of the old road lying on
+   the quicksand (`L.crumbles`, src/tower-collapse.js: three beats, it cracks and goes in, back 4 s later). The lead wagon's plank, the
+   trader's platform (planks in the air) are a **sandstone shelf on two ruined piers drawn behind the play** (masonry + facades, held as a
+   lintel - tools/architecture.mjs green); the market stall's board is gone (the yard's floor stays clear for THE OLD STINGER's fight). `L.timberPlanks` is empty: no wood in the level but
+   the wagon beds. The sinking way's first island is under the sand: nine tiles crossed on a wagon bed + a slab under the twin tower's slinger.
+2. **QUICKSAND, TAUGHT -> TESTED -> REMIXED -> EXAM (A4), each with an encounter (A5):** TEACH the ox line's first pit (a sign
+   QUICKSAND HOLDS YOU. JUMP, AND KEEP JUMPING., a calm zone - nobody to fight); TEST the second pit + THE SINKING WAGONS basin (a vulture
+   over it, a sandworm on the far shore whose dome drives you back toward the sand, torn lean-tos at each shore); REMIX the slide pits, the
+   sunken wagons under the slinger, the third slide's wagon-bed run (a vulture); EXAM the rim's island pits + the exam slide (slinger,
+   ambusher, a vulture, THE FIRST KNIFE). ruleFight 16 of 30 encounters stand where the rule is active.
+3. **DUNE SLIDE-JUMPS** (rec built: **DOWN to slide**, the game's own slide - src/slopes.js slideStep; auto-slide was not built).
+   `L.duneSlides` = `[{ id, x, crest, foot, gap, use }]` - **the hook the game-wide SLOPE MOMENTUM lane absorbs**. Four uses: `teach` (the
+   first dune, a 5-tile pit a running jump falls into; sign + glint), `long` (THE LONG SLIDE is a ten-row hill now - Daniel's "big hills" -
+   into 5 tiles, an ambusher where you land), `beds` (remix: down into six tiles with a wagon bed in the middle - hop it, or carry the slide over
+   the lot; optional), `exam` (the rim's last dune, 5 tiles, the First Knife past it). Three are REQUIRED. **tools/caravan-slides.mjs** (new,
+   real keys) drives all SEVEN heroes over each required one: a plain run + jump from any frame never clears it; the slide-jump clears it by
+   ~1.7 tiles at 180 px/s with a ~20-frame take-off window (a 14-frame press still clears). Stall glints + nudges at each (src/stuck-spots.js
+   `caravan`: the first quicksand, the basin's bed, the three slides).
+4. **THE MINI SAND WORMS: WHY NOTHING SHOWED.** No row ever placed one: the caravan's GARRISON is scorpion/cutthroat/vulture and the draft
+   placed none - the sandworm (src/desert-foes2.js) was the Underwell's. Now three PLACED worms (the road by the first wagon, the basin's far
+   shore, under the arch), each on a firm bed. **tools/caravan-worms.mjs** (new, real keys, knight/warden/pyro, no god): each EMERGES (drawn on
+   its sand), is TOLD (its dome `lungeTell`, `!!`, heard), LANDS on a hero standing on the dome, and DIES (step off the dome, cut it while it
+   sways) in 12-22 s. tools/one-new-foe.mjs: the sandworm is met first in the caravan now, so the Underwell's `NEW_EXACTLY` is `[]` (QUESTION 1).
+5. **Difficulty v2.** Shrines: the picker's five stand (~111 route tiles apart; the start, the ox line, the yard door, the sinking way, the
+   arena door) - A10b's report lists the caravan as DENSE (58 from the start; report-only, 38 levels); QUESTION 4. Mash, walker, pilot/curve:
+   Numbers. level-quality: mechanics (5 kinds / 4 developed), roles (the vulture and sandworm are hit-and-run RUNNERS, as the raptor is),
+   secrets (the ribcage's silver moved to THE WATCHTOWER's roof), route bands (5, thanks to the ten-row dune) all CLEAR NOW; the one miss is the
+   MULTI-HEIGHT share (18%, the bar is 40%) - **not gated** (QUESTION 3). Wall-walks through the town (`wallWalk` helper, kept, uncalled) got it to
+   31% and were taken out: the walked route climbed them, the level-1 pilot was lifted over the whole road (6 hits / 3 runs, out of act 5's
+   curve band) and their shade took the exam's sun under its warning.
 
-**3. NO GOBLINS - THREE BANDITS** (`src/desert-foes.js`, `src/redraw/caravan_bandits.js`). The sand goblin, the goblin thieves and
-the goblin archer are out of the level (the sand goblin's code stays: the Buried City's draft plans it).
-- **THE CUTTHROAT** (38 hp, scimitar): every other time he comes in he FEINTS - the blade half raised and a stamp, told by its pose and
-  a scrape, and it wears **no mark** because it throws nothing (rule H); then the REAL windup, distinct in every channel: blade high
-  and back with a white glint, the yellow `!`, a ringing sound. `tools/bandits.mjs`: blocking on the mark takes 0; a fighter who blocks
-  the first windup he sees and lowers his shield is cut 8 times in 30 s by the real one.
-- **THE ROOFTOP SLINGER** (24 hp): whirls (the tell: `!`, the cord's circle over his head, a red dotted arc growing from his sling to a
-  red cross on the spot you stood on), then the stone flies that arc to that spot, 1.55 s after the mark. Step off it or block it. Up
-  close he kicks (`!`). He throws only where he can see: not through his own roof at you inside his tower.
-- **THE SAND-CLOAKED AMBUSHER** (bestiary: THE SAND-CLOAK, 32 hp): the sand goblin's machine with his own numbers - buried, a mound with
-  a hood's peak and two gold eyes, untouchable and harmless; he rises when you pass with the sand pouring off the cloak; two told cuts
-  (`!`); the cloak over himself, and up again ahead of you. Dies into sand (death-fx).
-- Each: sprite on one canvas (E6, the check caught three clipped frames), a man's voice from the cast kits with cloth under it (E9),
-  a bestiary row that fits (textfit), its marks (`node tools/tells.mjs --write`), a threat weight, a spawn case, the hurt frame.
-- The scorpions, the vultures, THE OLD STINGER and THE DUNE WORM stay. THE TRADERS' YARD: THE OLD STINGER + two cutthroats + a slinger
-  on the stacked cargo (the sun takes the bandits when the great awning rolls in). The rim's elite is **THE FIRST KNIFE** (a cutthroat,
-  `lunge`), in the rim lintel's shade, holding the gate at the foot of the slide into the hollow.
+## Numbers
+**THE DUNE WORM** (hp **2150**, L32 = the caravan's campaign level, normal health, tools/boss-rates.mjs `practiced`, 10 seeds a hero):
+| profile | knight | warden | pyro | total | fight length |
+|---|---|---|---|---|---|
+| **human (WITH flasks)** - the target 60-70% | 8/10 | 2/10 | 9/10 | **19/30 = 63%** | 75-172 s, median ~120 |
+| human+dry | 4/10 | 2/10 | 8/10 | 14/30 = 47% | |
+| MASH (tools/mash-bot.mjs, re-stamped after the level row) | 0/2 | 0/2 | 0/2 | **0/6** - boss left 100%, 0-1 blows of ~1000 landed | 35-46 s |
 
-## Numbers, before -> after
+The tuning walk (the dice are not seeded - ledges, stun timing - so 18-fight samples swing +-12 points): hp 1500 83% (6) -> 2100 72% (18) ->
+2300 67% / 44% / 47% (66 fights, 52%) -> 2000 77% (30) -> **2150 63% (30)**. In the scripted Node fight (tools/caravan.mjs) the baiter stuns
+him 9 times and kills him in 90 s; with no ledge up, 400+ blows take nothing.
 
-| | before (`ab26448`) | after |
-|---|---|---|
-| columns to the arena / level width | 505 / 547 | 536 / 578 |
-| INDEX (`tools/curve.mjs`) | 64 (foes 50, threat 127, 6 kinds, gap 48) | **81** (foes 60, threat 180, 6 kinds, gap 71) |
-| foe kinds (not the boss) | scorpion, sand goblin, vulture, goblin thief, goblin archer | scorpion, vulture, cutthroat, slinger, ambusher |
-| shades along the road / longest walk in the open | 19 / 7.3 s (with a 9 s fill) | 26 / **4.3 s** (rule 5 s) |
-| sun: fill, harm at full | 9 s; 3 every 1.4 s | 6 s; 3, 5, 8, 8... a second |
-| share of the road over the sun's warning at a steady run | 44% (fill 9) | 22% (fill 6) - see S6 |
-| checkpoints (draft) | 8, gaps 80/83/21/75/51/92 | 10, gaps 57/66/67/71/57/55/40/45/70 |
-| main-road jumps 2.5-3.0 / over 3.0 | 2 / 6 | 12 / 0 |
-| play bot, knight, no god mode | 0 deaths; worst section the rim (51 hp) | 2 deaths (dune sea, both SUNSTROKE); worst the ox line (161 hp) |
-| play bot, warden | 0 deaths; worst the road (40 hp) | 1 death (ox line, SUNSTROKE); worst the ox line (183 hp) |
-| bot time, start -> the yard (knight / warden) | 167 s / 179 s | 312 s / 275 s |
+**THE LEVEL** (level hash after the last edit; rows re-stamped LEVEL then BOSS):
+- mash LEVEL (L32, machines): knight 2 deaths / lowest 0%, warden 4 / 0%, pyro 2 / 0% - **the mash bot cannot clear it** (mash-gate green).
+- level-1 pilot curve row: **182% lost a run, 3 deaths in 3 runs** - inside act 5's band (150-700%, 2-12); curve-gate green.
+- campaign WALKER (tools/level-walk.mjs, L32 typical build, human+first, 2 seeds): knight 0 deaths, arrive 96% (min 84) - LOCKED in the
+  Traders' Yard both seeds: his duel hands lose THE OLD STINGER (20 s cap; pyro and warden win it), so the room stays shut; warden 0 / 82%
+  (min 44); pyro 0 / 93% (min 74). **MISS** against brief-levelsweep v2's 1-2 deaths / < 50% - see QUESTION 6. Its STUCK points: the yard (the
+  duel), 266,23 (the arch's lintel top - the route hops it), 426,30 (past the second twin tower).
+- the dune slides (tools/caravan-slides.mjs, all 7 heroes x 3 required slides): a plain run + jump never clears (41 take-offs, all in the
+  sand); the slide-jump lands 1.70-1.75 tiles past the far lip at 180 px/s; 20-frame windows (a 14-frame press: ~1.0 tile, 17-18 frames).
+- the sandworms (tools/caravan-worms.mjs, 3 worms x knight/warden/pyro): all emerge, are told (`lungeTell`, `!!`, heard), land (24) and die
+  in 12-22 s.
+- level-quality caravan: flat 4%, bands 5, mechanics 5 kinds / 4 developed (quicksand, duneSlides, pad, crumbles; awningwinch), music,
+  secrets 2, checks 5 (one per 111 route tiles), density 1.36, roles 3, ruleFight 16/30, curve ok - **misses only the multi-height share**
+  (18% vs 40%): not gated (QUESTION 3).
 
-Per-section tables (hp lost, deaths and where, share of time over the warning / at full): `work/caravan2/walk-before.txt` and
-`walk-after.txt`. Every hero's real running jump (`work/caravan2/jumps.txt`, centre to centre): paladin 3.57, knight / warden / pirate /
-geomancer 3.97, reaper 3.96, pyro 4.56 tiles - every one clears the widest pit on the road (3.0) with at least half a tile to spare.
-Captures: `work/caravan2/before/` and `after/` (the same eleven places plus nine new ones), `probe/sun.png` (the HUD at SCORCHING).
+## Checks run (this lane, PORT 8787; never the full suite - the PC is loaded)
+Node: caravan, caravan-level, tells, comments, dangling-paths, audit, content-audit, traps, signs, killzones, collectables, keys, elites,
+spawns, deadends, architecture, ambush-listed, ambush-reach, checkpoint-gaps, sprinkle-cap, answer-tags, arena-supplies, boss-greed,
+weak-bosses, level-quality (every gated level clears), floating-geometry, one-new-foe, curve-gate, mash-gate, mash-carry, stuck --static - all green.
+Page: dune-worm, boss-openings, caravan-slides (new), caravan-worms (new), desert-ledge-art, slide, floaters, footing-art, runtime-footing
+(one launch flake, green on the rerun), boss-fight-end, boss-read, boss-jump, bandits, desert-foes2, duck, boss-navigation - green.
+**RED, not this lane's** (no Rootway / Undead Mage file touched): `stuck` runtime fails ONE Rootway spot, a different one each run
+(rw-lean-2, then rw-cellar-span) - every caravan spot passes; `mark-integrity` reports `undeadmage|markTell: PHANTOM POSE` (the Dune Worm's
+ripple / breath / tail marks are posed and land). One slip: boss-greed + weak-bosses ran once on the checkout's own port (before the runner
+pinned PORT=8787) - their own server, closed by the tool. Not run: the full suite (the PC was loaded all afternoon).
 
-## Rule S, item by item
+## Tests changed (each to Daniel's 10-09 design, same strictness - never weakened)
+- tools/caravan.mjs worm section rewritten: five told attacks (the breath for the spit), the opening caused (bait 9 stuns / no stone 0 /
+  stand-and-mash 0), the hide takes nothing from 400+ blows, every stun ends in a ward, ledges 2/3 never more, never under the hero, never in
+  the overhang/gate, never none for > 6 s, the caught breach misses a hero on the ledge, the breath cone front-only + blockable, the kill
+  tells +50%, -25% damage, the other beats unchanged, the tail/crash checks kept.
+- tools/dune-worm.mjs (page): the plates-by-angle block became the HIDE block (0 from every side, answered; stunned x1.5); new: the ledges
+  are footing + shade + gone on sink, the stun for real (BK.bossOpen), the breath's grit, a retry clears every ledge; the winch is gone.
+- tools/boss-openings.mjs worm row: open sand / a ledge in the ward / a standing ledge (stunned >= 2.4 s, the ledge goes down).
+- tools/caravan-level.mjs: A7 (the hollow is level ground, sand + floor-height quicksand), B2 (a wagon bed rests on the quicksand), S2 (a
+  basin crossed on beds/slabs is judged by its widest hop; a pit over 3.0 is allowed only at a declared dune slide's foot, <= 5, and >= 3
+  slide pits must exist - the slide-jump itself is proved per hero by tools/caravan-slides.mjs).
+- tools/level-quality.mjs: `duneSlides` is a system array; ROLES.runner + vulture, sandworm (data, with reasons).
+- tools/one-new-foe.mjs: NEW_EXACTLY.underwell `['sandworm']` -> `[]` (QUESTION 1 - this is a design-rule row Daniel set on 10-05).
 
-- **S1 placement** - done. Nine foes placed with a reason each (in the draft, `placed: true`, kept by the build): a slinger on each of
-  the four towers (the watchtower over the open road to its door; the first twin over two pits and the island; the second twin over
-  the rooftop jump and two pits; the last tower over four exam pits), ambushers where a jump lands (the ox line's house, the slide's
-  landing, the island past the town, the exam's landing), a cutthroat at the top of the caravanserai's climb. The garrison is only
-  the crowd between them (scorpions, cutthroats, vultures). Checked (`caravan-level` S1).
-- **S2 jumps that can fail** - done. Twelve three-tile quicksand jumps on the main road (a miss holds you in the sun, under a slinger),
-  none over 3.0 (the ribcage's basin is crossed on its spine). Measured with every hero's real jump (3.57-4.56). Checked (S2).
-- **S3 an exam** - done. The rim (74 columns) is the last stretch: the sun (the meter reaches 98% in a bot trace), four pits under
-  THE LAST TOWER's slinger, an ambusher at the landing, THE FIRST KNIFE under the lintel, the slide into the hollow. Its checkpoint is
-  at the door (col 463) and the next is outside the arena (533): none inside. Checked (S3).
-- **S4 spacing** - done: 40-72 route tiles apart (72 because `checkpoints()` in src/level.js fills any longer run itself, and would
-  have put one in the exam). The ox line's head checkpoint went (19 tiles from the ribcage's). Checked (S4).
-- **S5 healing** - done: no free heart on the road; the yard and THE FIRST KNIFE pay theirs; the dead-end hearts are section R's. Checked.
-- **S6 the meter squeezes** - PARTLY. The exam takes it to the edge, and the bot spends 41-77% of its time over the warning in most
-  sections. But at a steady run with no stops the road is over the warning only 22% of its length: the new shade every ~25 tiles
-  cools you fully each time (1.2 s). See question 2.
-- **S7 the hard road pays** - done: the rooftop route (10 coins on the tallest roof), the watchtower's roof (a quest stray). The main
-  road never needs a roof except the caravanserai's own climb (as before).
-- **S8 measure it** - done: `tools/caravan-walk.mjs` per section, before and after, above. The hardest section moved from the rim
-  (knight) / road (warden) to the ox line for both, and the level now kills the bot - three deaths, all to the sun.
+## QUESTIONS FOR DANIEL (each: rec + what I built)
+1. **The sandworm now debuts in the caravan** (the brief's "mini sand worms must appear"), so THE UNDERWELL no longer brings a brand-new foe
+   (its 10-05 row said: the sandworm). Rec + built: keep the debut here (the Dune Worm's kin foreshadows him, B8); the Underwell keeps its
+   many + FAST worms and its four scorpion skins; `NEW_EXACTLY.underwell = []`. Alternative: a new caravan-only "wormling" kind.
+2. **The rule line** stays "THE SUN IS OUT HERE. SHADE IS LIFE." - quicksand and the slides are the level's verbs with their own A4 runs.
+   Rec + built: keep it. Alternative: "THE SUN BURNS AND THE SAND SWALLOWS".
+3. **level-quality's multi-height bar (40%)** - the caravan's ground is dunes, pits and slides; 18%. Rec: leave it ungated and give the art/
+   upper-route pass a ruined upper road through the town (the `wallWalk` helper is there); built: nothing gated.
+4. **Shrines**: five, ~111 route tiles apart (A10b wants 140-260; report-only). Rec: drop the road-head shrine (x62) when the act-5 sweep
+   lands; built: unchanged (tools/caravan-level.mjs's old S4 40-72 rule would need retiring first).
+5. **The Dune Worm with flasks lands at 63%** but the WARDEN trails (2/10 vs knight 8/10, pyro 9/10): the tail sweep is most of what kills
+   her (the bot's jump timing). Rec: accept (no hero at 0); a bot pass if you want her closer.
+6. **The campaign walker never dies here** (0 deaths, arrives 80-96%) while the level-1 pilot sits inside act 5's curve and the mash bot dies
+   2-4 times. Rec: let the act-5 difficulty sweep take it after ksar2's sun v2 lands (its drain is the act's pressure); built here: foes at
+   the platforming moments (vultures over the basin, the third slide and the exam slide, worms at the basin's shore, an ambusher at the long
+   slide's landing). Alternatively make the exam's slide pit a real death (A10 amended).
+7. **Sun v2 (claude/ksar2)** is not on this branch: the level and the boss were measured on today's sun. Rec: re-measure the Dune Worm and
+   the walker after the integ merges ksar2 (its drain is stronger; the ledges' shade is the answer in his hollow).
 
-## Checks run (after the merge with origin/master)
+## Integration notes
+- claude/ksar2 adds torn awnings at caravan columns [20, 62, 123, 285, 441]: **285 is now the big dune's slope** (move it to 286 - I put a
+  torn lean-to on that crest already, so DROP 285) and 441 is the third slide's crest (fine). Its `tools/caravan.mjs` sun hunks and mine (the
+  worm section) do not overlap. main.js: my hunks are the worm block (20544-...), `cvCanopies`, `caravanReset`, `updateCaravan` (the crumbles
+  step + the quicksand-on-a-mover guard), the pad spawn/update/draw, the hurt line, DMG/bestiary - ksar2 rewrites the sun loop in
+  `updateCaravan` next to them: keep both.
+- docs/mash-bot.json, docs/level1-curve.json re-stamped (level THEN boss).
 
-`caravan`, `caravan-level`, `draft-level sunken-caravan`, `bandits`, `dune-worm`, `desert-foes`, `desert-rules`, `desert-art`,
-`desert-art2`, `desert-sets`, `desert-west-art`, `desert-v2`, `desert-tomb-art`, `desert-glass-art`, `desert-bosses`, `newlevel`,
-`caravan-map`, `phase-two`, `skeleton-king`, `sun-priest`, `sun-priest-art`, `light`, `occluders`, `slopes`, `one-new-foe`, `tells`,
-`spawns`, `floaters`, `architecture`, `audit`, `content-audit`, `traps`, `killzones`, `collectables`, `deadends`, `checkpoints`,
-`checkpoint-gaps`, `signs`, `textfit`, `dressing`, `skins`, `map-grammar`, `threat-holes`, `elites`, `ambush-single`, `ambush-reach`,
-`boss-openings`, `boss-fight-end`, `arena-supplies`, `readability`, `comments`, `syntax`, `homepaths`, `dangling-paths`, `keys`.
-Results: `work/caravan2/checks-final.txt`. Every new assertion was run against the old code first and failed there (the sun walk,
-S1-S4, the goblin check, E6 caught three clipped frames).
-
-## UNVERIFIED
-
-- **Nobody has played it.** The play bot cannot fight or read a tell (RULES M); its deaths are all SUNSTROKE because it dawdles.
-- **THE DUNE WORM with the harsher sun**: `node tools/duneworm-pilot.mjs` (21 fights, three salts x seven heroes) went from 17/21 (81%,
-  median win 95 s; the duneworm lane's number) to **14/21 (67%, median win 113 s)** - now inside the house band (60-75%, 90-150 s) it was
-  above. By hero: knight 2/3, warden 3/3, pyro 2/3, paladin 1/3, pirate 3/3, reaper 1/3, geomancer 2/3 (`work/caravan2/duneworm-pilot-after.txt`).
-  Scripted bots, not a person: the sun's share of it is not separated out.
-- The feint reads in Node (and on the contact sheet); whether a person reads "no mark = not real" at speed is a feel question.
-- The slinger's stone breaks on the stone it meets and he does not throw at a hero under cover; checked in the page for one tower
-  (`inside 0 throws, the island 2 that land, by the wall 2 broken`), looked at in stills, not in motion. Standing hard against a
-  tower's wall under its parapet is a dead zone for its own slinger - I think that is right (it is the shelter a player would try).
-- `SUN` numbers for the Glass Sea's day half (level 4, same module) now follow the harsher sun too if it reuses `SUN` - not checked.
-- The new art (towers, doorways, skyline) was looked at in page captures at 2x; not on a phone.
-- The catch-up banner still says "THIS WOOD EXPECTS LEVEL 26" in the desert (the known text bug, not this lane's).
-
-## QUESTIONS FOR DANIEL
-
-1. **The Well Town's bandits.** Its brief has "bandits (swords)" and "bandit archers" as new foes; the Caravan now brings the cutthroat
-   and the slinger first. Recommendation: the Well Town reuses them as the Bandit King's men and keeps the water-thief as its new foe
-   (F10 still holds there), rather than drawing a second set of desert bandits.
-2. **S6 at a steady run is 22%, not a third.** The ruins give shade every ~25 tiles and shade cools you in 1.2 s, so a runner who never
-   stops reaches the warning only on the longest walks. Recommendation: leave the numbers you gave and judge it in play - the bot is
-   over the warning 41-77% of its time because fights happen in the sun. If it feels soft, make the swim start at 50% (a 3.0 s warning)
-   rather than taking shade out.
-3. **The sun kills now.** Every bot death after the change is SUNSTROKE (three, where there were none). Recommendation: keep it - it is
-   what you asked for and it is told - but play the ox line and the dune sea first; if they are too much, raise `SUN.cool`'s effect (a
-   shorter walk) before softening the 8.
-4. **Music.** Still `musBeach` (no desert track in audio/, and this lane downloads nothing). Recommendation: pick a CC0 desert track.
-5. **The skyline and ruins' look.** Coursed pale ashlar for the ruins, the rock's strata for the arch and the rim's overhang.
-   Recommendation: keep the two materials apart as they are (built vs natural), and tell me if the towers should be taller still.
-6. **THE DUNE WORM got harder with the sun** (pilot 81% -> 67% wins, median win 95 -> 113 s). It is now inside the house band rather
-   above it. Recommendation: keep it; if the hollow feels unfair in play, make the rim's overhang wider rather than softening the sun.
+## For the SONNET ART LANE
+Everything is greybox. Sonnet lane, in this order:
+1. **THE DUNE WORM**: a STUNNED pose (head down against the ledge's underside, dazed - today the old `tangled` frame), the SAND BREATH (a
+   rear-and-inhale `breathTell`, a jaws-wide blast `breath` - today the spit's two frames) and a proper cone/stream sprite (today a filled
+   polygon + particles), the WARD's sand-shell, the GRIT vignette's texture.
+2. **THE RISING LEDGES**: a slab of old-town sandstone on two piers that come up out of the sand (cracking crust, sand pouring off), a
+   cracked variant for the one he hit, the piers drawn BEHIND the play (today in the boss FX pass, over the hero).
+3. **THE WAGON BED** (`pad` + `wreck`, `cvWreckBed` in main.js): a half-buried wagon bed with a wheel rim, three sink states, the lip's
+   warning (today 6 px of boards + an arc).
+4. **THE SLABS** on the quicksand (cracked sandstone lying on the sand; the crumble cracks draw over it today) and the two ruined-pier
+   SHELVES (the lead wagon's, the trader's) - their piers are facades behind the play.
+5. **THE GREAT RIBCAGE** as a landmark again: big ox bones arching BEHIND the sinking-wagons basin (dressing - nothing to climb); today two
+   small `oxRibs` props.
+6. **THE BIG DUNE** (ten rows): a crest silhouette / wind-blown lip, a sand spray while sliding, the glint art on the three slide crests.
+7. Optional: an UPPER RUIN ROUTE through the town (the `wallWalk` helper) if Daniel wants the multi-height bar (QUESTION 3).
