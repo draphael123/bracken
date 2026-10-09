@@ -1,6 +1,6 @@
 # claude/rootwayfix - THE ROOTWAY: the "impossible jump" + its own music (2026-10-09, sonnet, PORT 8798)
 
-Branch `claude/rootwayfix` = origin/claude/batch81 + small commits (jump fix, music). reachcore: batch81 has no `reach-heroes` / `REACH_HERO`, and a plain
+Branch `claude/rootwayfix` = origin/claude/batch81 + small commits (jump fix, music). reachcore: batch81 has no reach-heroes / REACH_HERO, and a plain
 `git merge origin/claude/reachcore` conflicts in 6 files, so the work and its checks ran on a dev branch cut from `origin/claude/reachcore-b81`
 (the coordinator's resolved batch81+reachcore trial); the commits on `claude/rootwayfix` are cherry-picked onto batch81 and touch only
 src/main.js (1 token), src/rootway-hands.js, src/rootway.js, src/audio.js, src/credits.js, audio/*, tools/boss-music.mjs.
@@ -17,10 +17,13 @@ src/main.js (1 token), src/rootway-hands.js, src/rootway.js, src/audio.js, src/c
   hero at the lip strikes it back. No tile moved, so no hash / stamp moved.
 - Proof, per hero (base movement, the game's own sim, hero at col 303, no god-mode shortcut for the verb, blade swung when an arrow is within 40 px): knight, warden,
   pyro, paladin, pirate, reaper, geomancer all drop the span (first arrow at 1.7-2.4 s; done in 3.3-6.1 s game time). `tools/rootway-probe.mjs` green.
-  `REACH_HERO` / `node tools/reach-heroes.mjs rootway`: every hero 0 required crossings his own legs cannot make (7 route targets each, 0 known crossings). No jump in
+  The per-hero reach sweep (reach-heroes rootway, run on the reachcore trial): every hero 0 required crossings his own legs cannot make (7 route targets each, 0 known crossings). No jump in
   the Rootway is required of any hero beyond the verbs; no other frame-perfect crossing found (the Rootway has no entry in reach-heroes KNOWN).
 - Not done on purpose: no jumpable alternative at the chasm. tools/rootway.mjs pins that the road past it is out of reach without the span (a required use, A4);
   weakening that would be weakening a test.
+
+### Follow-up (Daniel confirmed the spot, 10-09): THE SCOUT'S HORN
+The first time the scout sights you (each life, until his span drops) he sounds a two-blast goblin horn (SFX.scouthorn, follows the sound setting), a told "THE SCOUT SEES YOU" (in hint-lines), a burst, and his bow is drawn (e.draw). No screen flash. src/rootway-hands.js H.lookHorn; once per life (a death rebuilds the hoist state). tools/rootway-probe.mjs: every hero - silent out of sight, one blast from the checkpoint, none again that life, again next life, bow drawn (green). The gantry sign was 3 lines (signs red, ziproot's): shortened. No tile changed: no re-stamp.
 
 ## 2. MUSIC (Daniel 10-09: its own music, both)
 Downloads each in its own new folder (scratch/rwf/dl-forestwhisper, dl-calltowar), header checked (RIFF/WAVE, PK zip -> OggS/RIFF), nothing executed; the zip
@@ -50,4 +53,4 @@ Stamps: see the commit that restamps docs/level1-pilot.json, level1-curve.json, 
    second, louder tell (a horn blast when he first spots you)? Not built.
 2. Music: Forest Whisper (acoustic, quiet) vs cynicmusic's "Dark Forest Theme" (CC0, guitar + strings, mp3 - brooding, not a clean loop) for the level; Call to War vs
    Tsorthan Grove's "Bamboo Blitz" (CC0, tribal drums, bright) for the hunt. Built the first of each. Please listen.
-3. tools/reach-heroes.mjs in the reachcore-b81 trial has a syntax error (an apostrophe in a KNOWN reason string); fixed on my dev branch, one line.
+3. the reach-heroes tool in the reachcore-b81 trial has a syntax error (an apostrophe in a KNOWN reason string); fixed on my dev branch, one line.

@@ -949,6 +949,7 @@ Object.assign(SFX, {
   golemShatter() { noise(0.4, 0.45, 3200, 0.7); [2093, 1760, 1396, 1046, 784].forEach((f, i) => tone('sine', f, f * 0.7, 0.35, 0.12, i * 0.05)); tone('sawtooth', 120, 40, 0.5, 0.2); },
   golemThrow() { noise(0.12, 0.2, 1800, 0.8); tone('sine', 1400, 2200, 0.1, 0.08); },
   kiteChatter() { for (let i = 0; i < 3; i++) tone('square', 900 + i * 120, 1300, 0.04, 0.06, i * 0.05); noise(0.05, 0.08, 2400, 1.2, 0.15); },
+  scouthorn() { tone('sawtooth', 220, 190, 0.5, 0.07); tone('square', 110, 95, 0.5, 0.04); tone('sawtooth', 330, 300, 0.55, 0.06, 0.45); noise(0.12, 0.1, 900, 0.3, 0); },   /* THE ROOTWAY's LOOKOUT SCOUT sights you (claude/rootwayfix, Daniel 10-09): two blasts of a goblin horn, the second higher */
   hornDraw() { tone('sawtooth', 96, 150, 1.9, 0.05); tone('square', 48, 75, 1.9, 0.025); },   /* THE STOCKADE'S HORN, drawn breath: a note that climbs the whole time he is putting it to his mouth */
   badgerHuff() { noise(0.12, 0.22, 500, 0.6); tone('sawtooth', 160, 110, 0.12, 0.08); noise(0.08, 0.16, 1600, 0.5, 0.12); noise(0.08, 0.16, 1600, 0.5, 0.26); },   /* a snort, and its claws raking the ground twice */
   badgerCharge() { tone('sawtooth', 120, 70, 0.18, 0.12); noise(0.3, 0.18, 400, 0.6, 0.02); },

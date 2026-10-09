@@ -79,7 +79,7 @@ export function makeRootwayHands(ctx) {
   }
 
   /* ---------- EVERY FRAME ---------- */
-  H.update = dt => {
+  H.update = dt => { H.lookHorn(dt, ctx.players()[0]);
     if (!S) return; const P = ctx.players()[0];
     /* AN ARROW STRUCK BACK cuts the rope of an `arrow` hoist it flies through (THE LOOKOUT) */
     for (const s of ctx.seeds()) { if (s.dead || !s.reflected || !s.arrow) continue;
@@ -104,6 +104,14 @@ export function makeRootwayHands(ctx) {
       S.lookT += dt; if (S.lookT >= LOOKOUT.respawn) { S.lookT = 0; const got = ctx.spawn({ t: 'archer', x: d.post[0], y: d.post[1], face: -1, cnSkin: 'gobscout' }); for (const e of got) { e.rwLookout = h.id; e.sight = LOOKOUT.sight; } S.n.lookouts++;
         ctx.number(d.post[0] * TS + 8, d.post[1] * TS - 10, 'ANOTHER SCOUT TAKES THE POST', '#ff9a5c'); } }
   };
+
+  /* (LOOKOUT HORN, claude/rootwayfix, Daniel 10-09) the first time the scout sights you - each life, until his span is down - a goblin horn, a told word and his bow drawn,
+     so the moment cannot be missed. The sound follows the sound setting; the number and the burst are drawn, no screen flash. */
+  H.lookHorn = (dt, P) => { if (!S) return; for (const h of S.hs.values()) { const d = h.d; if (!d.post) continue;
+    if (h.state !== 'hang' || !P || P.dead) { if (!P || P.dead) h.sighted = false; continue; }
+    const e = ctx.enemies().find(q => q.alive && q.rwLookout === h.id); if (!e || h.sighted) continue;
+    if (Math.abs(P.x - e.x) < (e.sight || 230) && Math.abs(P.y - e.y) < 70) { h.sighted = true; S.n.horns = (S.n.horns || 0) + 1; ctx.sfx.scouthorn && ctx.sfx.scouthorn();
+      ctx.number(e.x, e.y - e.h - 18, 'THE SCOUT SEES YOU', '#ff9a5c'); ctx.burst(e.x, e.y - 12, 8, ['#ffd36b', '#ff9a5c', '#e8dcc0'], 70, 0.5); e.draw = Math.max(e.draw || 0, 0.6); e.timer = Math.max(e.timer || 0, 0.6); } } };
 
   /* ---------- A BLOW ON A CLEAT ---------- */
   H.strike = hb => { if (!S || !hb) return; for (const h of S.hs.values()) { const d = h.d; if (d.arrow || h.state !== 'hang') continue; if (ctx.overlap(hb, cleatBox(d))) cut(h, 'blade'); } };
@@ -150,6 +158,7 @@ export function makeRootwayHands(ctx) {
     if (S.loft) out.push({ t: 'loft', x: S.loft.x, y: S.loft.y, on: S.loft.open }); return out; };
   H.read = () => S ? { hoists: [...S.hs.values()].map(h => ({ id: h.id, state: h.state, ly: h.ly })), loft: !!(S.loft && S.loft.open), n: { ...S.n } } : null;
   H.hoist = id => S && S.hs.get(id);
+  H.horns = () => (S && S.n.horns) || 0;   /* (the lookout scout's horn blasts: tools/rootway-probe.mjs) */
 
   /* ---------- DRAWING (the Rootway's art pass: src/redraw/rootway_world.js draws every machine; this keeps the state and the geometry) ---------- */
   const R = Math.round;
