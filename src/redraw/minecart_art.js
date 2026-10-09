@@ -413,7 +413,7 @@ export function tunnel(g, x0, x1, yCeil, yFloor, vh, scroll, laneYs, highDown, t
    a roof lamp), the engine block and its smokestack (smoke), the tracks and road wheels under all of it, and the conical BIT on the front drilling the rock face ahead.
    o: { jam, ward, hurt, rev, spray: { lane, on, k } | null, moving, scroll, plateW, plateH, cabIn, cabW, ph } */
 export function rig(g, rx, lanes, ceilY, o, time) {
-  const L0 = lanes[0], L1 = lanes[1], L2 = lanes[2], flash = o.hurt ? '#ffffff' : null, pw = o.plateW, ph = o.plateH, ci = o.cabIn, cw = o.cabW, bodyR = rx + 170, top = L2 - 34;
+  const L0 = lanes[0], L1 = lanes[1], L2 = lanes[2], flash = o.hurt ? '#ffffff' : null, pw = o.plateW, ph = o.plateH, ci = o.cabIn, cw = o.cabW, bodyR = rx + 170, top = L1 - (o.cabH || 40);   /* (its roof under the HIGH line: that line runs on over it to the stack) */
   /* the rock face it is boring into, and its spoil flying back */
   rc(g, bodyR + 66, ceilY - 40, 400, L0 - ceilY + 80, MP.r1); for (let y = ceilY; y < L0 + 30; y += 9) rc(g, bodyR + 66 + ((y * 7) % 8), y, 400, 1, MP.r2);
   for (let i = 0; i < 8; i++) { const t = (time * 2.2 + i * 0.125) % 1; rc(g, bodyR + 60 - t * 40 + ((i * 13) % 20), (L1 + L0) / 2 - 20 + ((i * 29) % 40) - t * 10 + t * t * 30, 3, 2, i % 3 ? MP.r5 : MP.go1); }
@@ -427,7 +427,7 @@ export function rig(g, rx, lanes, ceilY, o, time) {
   for (let y = top + 9; y < L0 - 16; y += 15) { rc(g, bx, y, bodyR - bx, 2, '#1c1a22'); rc(g, bx, y + 2, bodyR - bx, 1, '#46444e'); for (let x = bx + 4; x < bodyR - 4; x += 12) rc(g, x, y + 4, 2, 2, MP.i5); }
   for (let x = bx + 6; x < bodyR - 8; x += 8) for (let k = 0; k < 6; k++) rc(g, x + k, L0 - 22 + (k >> 1), 1, 5 - (k >> 1), ((x - bx) / 8 & 1) ? HAZ[0] : HAZ[1]);
   /* the smokestack up through the roof, and its smoke (it puffs harder in P3) */
-  const sx = bx + 50; rc(g, sx, ceilY - 6, 14, top - ceilY + 6, '#1e1c24'); rc(g, sx, ceilY - 6, 2, top - ceilY + 6, MP.i4); rc(g, sx - 3, top - 4, 20, 5, '#26242c'); rc(g, sx - 3, top - 4, 20, 1, MP.i4);
+  const sx = rx + (o.stackX || 150) - 2; rc(g, sx, ceilY - 6, 14, top - ceilY + 6, '#1e1c24'); rc(g, sx, ceilY - 6, 2, top - ceilY + 6, MP.i4); rc(g, sx - 3, top - 4, 20, 5, '#26242c'); rc(g, sx - 3, top - 4, 20, 1, MP.i4);
   for (let i = 0; i < (o.ph === 3 ? 6 : 4); i++) { const t = (time * 0.9 + i * 0.22) % 1; g.fillStyle = 'rgba(70,64,74,' + (0.55 * (1 - t)).toFixed(2) + ')'; g.fillRect(R(sx + 3 + Math.sin(time * 2 + i) * 4 - t * 30), R(ceilY + 4 + t * 20), 9 + R(t * 10), 7 + R(t * 6)); }
   /* the BIT on the front: a big fluted cone, its spiral turning, its teeth biting the face */
   const by = (L1 + L0) / 2 - 6, bh = 26, bl = 66, bf = bodyR;
@@ -448,9 +448,9 @@ export function rig(g, rx, lanes, ceilY, o, time) {
   rc(g, rx + 4, L1 - 2, 8, 6, MP.i1); rc(g, rx + 2, L1 - 1, 3, 4, MP.i3);
   /* the DECK at the MID line, and the CAB on it (over the MID and HIGH lines): armoured plate, an amber window, the goblin driver looking back over his shoulder at you */
   rc(g, rx, L1, pw, L0 - ph - L1 + 1, '#2a2830'); rc(g, rx, L1, pw, 1, MP.i4);
-  const cx0 = rx + ci, ct = L2 - 22, ch = L1 - ct;
+  const cx0 = rx + ci, ct = L1 - (o.cabH || 40), ch = L1 - ct;
   rc(g, cx0, ct, cw, ch, flash || '#5a4a3c'); rc(g, cx0, ct, cw, 2, '#8a7660'); rc(g, cx0, ct, 2, ch, '#7a6650'); rc(g, cx0 + cw - 2, ct, 2, ch, '#2a2018');
-  for (let y = ct + 26; y < ct + ch - 4; y += 10) { rc(g, cx0 + 2, y, cw - 4, 1, '#2a2018'); rc(g, cx0 + 3, y + 2, 1, 1, MP.i5); rc(g, cx0 + cw - 5, y + 2, 1, 1, MP.i5); }
+  for (let y = ct + 27; y < ct + ch - 3; y += 6) { rc(g, cx0 + 2, y, cw - 4, 1, '#2a2018'); rc(g, cx0 + 3, y + 2, 1, 1, MP.i5); rc(g, cx0 + cw - 5, y + 2, 1, 1, MP.i5); }
   rc(g, cx0 + 3, ct + 5, cw - 6, 17, '#0e0a10'); rc(g, cx0 + 4, ct + 6, cw - 8, 15, o.jam ? '#ffd36b' : '#e0a040'); rc(g, cx0 + 4, ct + 6, cw - 8, 2, '#f8d890');
   const gm = cx0 + R(cw / 2) - 2, look = Math.sin(time * 1.3) > 0.6 ? 1 : 0;   /* the goblin: green head, a rusty helm, red eyes looking back (left) at you, a snarl; his hands on the levers */
   rc(g, gm - 5, ct + 11, 10, 9, '#4a7a30'); rc(g, gm - 5, ct + 11, 10, 1, '#6aa048'); rc(g, gm - 8, ct + 13, 3, 2, '#4a7a30'); rc(g, gm - 6, ct + 9, 12, 3, '#6a3a1a'); rc(g, gm - 6, ct + 9, 12, 1, '#a0602a');

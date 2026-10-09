@@ -1272,7 +1272,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const DH=BK.drillHands(),S=DH&&DH.show();
         if(f===0||!P.labGdMem)P.labGdMem={};
-        const pl=S?drillPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,lane:P.ground?drillLane(S.G,P.y):-1,v:BK.minecart()?BK.minecart().cart(P).v:0},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,t:f/60,rng:Math.random,mem:P.labGdMem}):{gx:null,face:P.face};
+        const pl=S?drillPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,lane:P.ground?drillLane(S.G,P.y):-1,v:BK.minecart()?BK.minecart().cart(P).v:0},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,t:f/60,rng:Math.random,mem:P.labGdMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
         if(pl.drop&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){k.down=true;BK.press('jump');P.labJumpF=f;P.labDrop=6;}
         else if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=26;}
         if(P.labJump>0){P.labJump--;k.jump=true;} if(P.labDrop>0){P.labDrop--;k.down=true;}

@@ -36,7 +36,7 @@ export function makeDrillHands(ctx) {
 
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
     highLine(true); S = GD.newFight(GD.geom(Ar, ctx.TS)); S.R = DRILL.maxR + 80; BOSS_PHASE.greatdrill = 1;
-    const e = { ...base, t: 'greatdrill', w: DRILL.cabW, h: S.G.laneY[1] - (S.G.laneY[2] - 22), hp: ctx.EHP.greatdrill, maxHp: ctx.EHP.greatdrill, noGrav: true, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, boss: true };
+    const e = { ...base, t: 'greatdrill', w: DRILL.cabW, h: DRILL.cabH, hp: ctx.EHP.greatdrill, maxHp: ctx.EHP.greatdrill, noGrav: true, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, boss: true };
     const cb = GD.cabBox(S.G, S); e.x = (cb.l + cb.r) / 2; e.y = cb.b; for (const pp of ctx.players) pp.gdKeys = null; return e; };
 
   const heroes = () => ctx.players.map(pp => { const c = ctx.cartOf ? ctx.cartOf(pp) : null; return { x: pp.x, y: pp.y, vx: pp.vx, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, lane: pp.ground ? GD.laneOf(S.G, pp.y) : -1, v: c ? c.v : 0, pp }; });
@@ -82,8 +82,8 @@ export function makeDrillHands(ctx) {
     if (fight || inArena()) { const x0 = fight ? 0 : R(G.x0 - cx), x1 = fight ? vw : R(G.x1 - cx);
       MCA.tunnel(g, x0, x1, R(G.ceilY - cy), R(G.floor - cy), vh, S.scroll || 0, G.laneY.map(v => R(v - cy)), !!S.highDown, time); }
     /* the chute (its tell: it rattles and its shadow is on the LOW line) */
-    if (S.chute) { const x = R(S.chute.x - cx), y = R(G.laneY[0] - cy), k = 1 - S.chute.t / DRILL.chuteTell; MCA.chute(g, x, R(G.ceilY - cy), true, y - 2, time);
-      g.fillStyle = 'rgba(0,0,0,' + (0.3 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - 12, y - 2, 24, 3); txt('ORE!', x, R(G.ceilY - cy) + 42, Math.floor(time * 12) % 2 ? '#ffd36b' : '#ff9a5c', 'center', 6); }
+    if (S.chute) { const x = R(GD.rearX(S) - cx), y = R(G.laneY[0] - cy), k = 1 - S.chute.t / DRILL.chuteTell, sh = Math.floor(time * 24) % 2;   /* ITS ORE CART on its back deck, rattling - then kicked off onto the LOW line */
+      MCA.tub(g, x - 12 + sh, R(G.laneY[1] - cy) - 1, 'ore', time, 0); g.fillStyle = 'rgba(0,0,0,' + (0.3 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - 30, y - 2, 24, 3); txt('ORE!', x - 14, R(G.laneY[1] - cy) - 26, Math.floor(time * 12) % 2 ? '#ffd36b' : '#ff9a5c', 'center', 6); }
     /* THE ORE CARTS (rammed, one flies up the line trailing sparks) */
     for (const o of S.ores) { const x = R(o.x - cx), y = R(o.y + o.dy - cy); MCA.tub(g, x, y, 'ore', time, o.fly ? 300 : 150); if (o.fly) { for (let i = 1; i < 4; i++) { g.fillStyle = i & 1 ? '#ffd36b' : '#ff9a3c'; g.fillRect(x - 12 - i * 6, y - 4 - (i % 2), 3, 1); } }
       else txt('RAM IT', x, y - 26, '#ffd36b', 'center', 5); }
@@ -94,12 +94,12 @@ export function makeDrillHands(ctx) {
   /* THE RIG: its rear (the gear housing, the gears, the deck and the cab with its goblin), its engine and stack, its tracks, the bit drilling the face ahead */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; const G = S.G, rx = R(GD.rearX(S) - cx), jam = GD.drillOpen(e), ward = S.ward > 0, lanes = G.laneY.map(v => R(v - cy));
     MCA.rig(g, rx, lanes, R(G.ceilY - cy), { jam, ward, hurt: (e.hurtT || 0) > 0 || (e.flash || 0) > 0, rev: e.mode === 'revTell' || e.mode === 'reverse', spray: S.spray ? { lane: S.spray.lane, on: S.spray.on, k: S.spray.on ? 1 : 1 - S.spray.t / DRILL.sparkTell } : null,
-      moving: fighting() && !jam, scroll: S.scroll || 0, plateW: DRILL.plateW, plateH: DRILL.plateH, cabIn: DRILL.cabIn, cabW: DRILL.cabW, ph: S.ph }, time);
+      moving: fighting() && !jam, scroll: S.scroll || 0, plateW: DRILL.plateW, plateH: DRILL.plateH, cabIn: DRILL.cabIn, cabW: DRILL.cabW, cabH: DRILL.cabH, stackX: DRILL.stackX, ph: S.ph }, time);
     if (rx > -40 && rx < ctx.VW() + 40) txt('GEARS', rx + 8, lanes[0] + 10, jam ? '#ffd36b' : '#ff6b6b', 'center', 5); };
   /* OVER EVERYTHING: the tells (the reverse, the sparks' cone) and THE READ (the jam's outline and timer, the words) */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'greatdrill') return; const G = S.G, rx = R(GD.rearX(S) - cx), blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
-    if (e.mode === 'revTell') { const k = 1 - Math.max(0, e.modeT) / DRILL.revTell, sw = R(DRILL.revV * DRILL.revT); g.fillStyle = 'rgba(255,90,70,' + (0.12 + 0.18 * k).toFixed(2) + ')'; g.fillRect(rx - sw, R(G.laneY[0] - cy) - DRILL.plateH, sw, DRILL.plateH);
-      g.fillStyle = 'rgba(255,90,70,' + (0.08 + 0.12 * k).toFixed(2) + ')'; g.fillRect(rx + DRILL.cabIn - sw, R(G.laneY[2] - 22 - cy), sw, R(G.laneY[1] - G.laneY[2] + 22));
+    if (e.mode === 'revTell') { const k = 1 - Math.max(0, S.mT || 0) / DRILL.revTell, sw = R(DRILL.revV * DRILL.revT); g.fillStyle = 'rgba(255,90,70,' + (0.12 + 0.18 * k).toFixed(2) + ')'; g.fillRect(rx - sw, R(G.laneY[0] - cy) - DRILL.plateH, sw, DRILL.plateH);
+      g.fillStyle = 'rgba(255,90,70,' + (0.08 + 0.12 * k).toFixed(2) + ')'; g.fillRect(rx + DRILL.cabIn - sw, R(G.laneY[1] - DRILL.cabH - cy), sw, DRILL.cabH); if (!S.highDown) { g.fillStyle = 'rgba(255,90,70,' + (0.06 + 0.08 * k).toFixed(2) + ')'; g.fillRect(rx + DRILL.stackX - sw, R(G.laneY[2] - 40 - cy), sw, 40); }
       txt('!! REVERSE', rx - 50, R(G.laneY[2] - 34 - cy), blink, 'center', 7); }
     if (S.spray && !S.spray.on) { const y = R(G.laneY[S.spray.lane] - cy), k = 1 - S.spray.t / DRILL.sparkTell; g.fillStyle = 'rgba(255,170,60,' + (0.15 + 0.25 * k).toFixed(2) + ')';
       g.beginPath(); g.moveTo(rx, y - 18); g.lineTo(rx - DRILL.sparkLen, y - 30); g.lineTo(rx - DRILL.sparkLen, y); g.lineTo(rx, y - 4); g.closePath(); g.fill(); txt('!! SPARKS', rx - 70, y - 38, blink, 'center', 6); }

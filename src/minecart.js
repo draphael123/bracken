@@ -53,7 +53,7 @@ export const MC = {
   foremanRams: 3, foremanPace: 120, foremanArmour: 0.35,   /* THE FOREMAN (the exam's elite): three rams take his cart apart; a blade dents it (x0.35, a told clank) */
   leverReach: 30,     /* px: E (or a blow) throws a lever this close */
   softCrash: 100,
-  treadBack: 100, treadAcc: 520,   /* THE DRILL's tunnel: held brake drifts you back at most this fast; the pace eases this quick */
+  treadBack: 110, treadAcc: 560,   /* THE DRILL's tunnel: held brake drifts you back at most this fast; the pace eases this quick */
   hold: 1.2,            /* s: at the start and at a station the cart waits this long before it rolls off on its own (RIGHT goes at once) - the first tell is read standing */
   tellGap: 1.6,         /* s: the least time between two tells in the hint box (one is never written over another) */
 };
