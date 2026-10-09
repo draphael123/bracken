@@ -1,0 +1,21 @@
+== level-quality
+  FAIL mash       the level changed since the mash bot ran: re-run node tools/mash-bot.mjs rootway --level rootway --write
+  ok   ruleFight  25 of 49 designed encounters stand where the rule is active (>=2; rule state from hoists)
+  ok   curve      the level changed since its curve row (re-run node tools/level1-pilot.mjs rootway --curve)
+  ok   route      route spans 24 rows, 0 tiles back, 6 branches/pockets (>=2)
+
+2 level(s) miss the quality bar (docs/LEVEL-QUALITY.md).
+== frame-cost
+Error: Page.navigate did not answer within 15000ms
+    at Timeout._onTimeout (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-forestsupports/tools/cdp.mjs:43:71)
+    at listOnTimeout (node:internal/timers:635:17)
+    at process.processTimers (node:internal/timers:571:7)
+
+Node.js v24.19.0
+== stuck
+Error: dev server did not come up on http://localhost:8770/
+    at openPage (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-forestsupports/tools/cdp.mjs:24:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-forestsupports/tools/stuck.mjs:86:12
+
+Node.js v24.19.0

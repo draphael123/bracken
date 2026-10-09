@@ -1,0 +1,7 @@
+== frame-cost
+wood, 120 frames in play: 0 read-backs; view change: 18 + 9 canvases (a level load makes 729); theatre, 25 s: 1 canvases
+frame cost: no read-back in play, a view change re-bakes only the backdrop, the theatre keeps its trimmed blocks.
+== stuck
+stuck (static) OK: 1104 checks - 118 steps in 96 spots over 21 levels resolve a glint target and a nudge from their stall point
+stuck (runtime): 1 failure(s)
+  rw-lean-2: {"p":[336,18],"at":[337,19],"spot":"rw-lean-2","key":"rw-lean-2","want":"rw-lean-2","said":null,"line":null,"nudges":0,"targets":1,"way":false,"g0":"rw-lean-2"}
