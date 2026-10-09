@@ -44,6 +44,7 @@ const STOPS = [   // name, tile x, tile y (the hero's feet), facing, frames to r
   ['c6-ghost-late', 548, 27, 1, 60, '', 'the last carousel in the dark'],
   ['c7-queen-skyline', 600, 27, 1, 60, '', 'the Wicker Queen on the skyline, the moon'],
   ['c8-green-approach', 625, 27, 1, 60, '', 'nearing the green'],
+  ['c9-moon-zoom', 497, 27, 1, 60, '', 'the sky: moon, stars', [60, 0, 200, 90]],
   ['c5z-scarecrow-zoom', 497, 27, 1, 60, '', 'the late scarecrow, close up', [160, 30, 160, 80]],
   ['c2z-scarecrow-zoom', 293, 27, 1, 60, '', 'the rides-yard scarecrow, close up', [160, 30, 160, 80]],
   ['c3z-carousel-zoom', 372, 27, 1, 60, '', 'the ghost carousel, close up', [100, 20, 120, 80]],

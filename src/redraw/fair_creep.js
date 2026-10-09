@@ -38,7 +38,7 @@ const rc = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x)
 
 // ====================================================== THE SKY: night wash, stars, the moon, the Wicker Queen ======================================================
 let STARS = null;
-const moonPos = (VW, cx, d, dY) => ({ x: Math.round(VW * 0.4 - cx * 0.004), y: Math.round(lerp(70, 38, smooth(0.05, 0.8, d)) + dY * 0.1), r: lerp(8, 13, smooth(0, 1, d)) });
+const moonPos = (VW, cx, d, dY) => ({ x: Math.round(VW * 0.4 - cx * 0.004), y: Math.round(lerp(54, 30, smooth(0.05, 0.8, d)) + dY * 0.1), r: lerp(8, 13, smooth(0, 1, d)) });
 /* the Wicker Queen's stance this frame: where she stands (hx, base), her height h, u = h / 100, how near the green is (prox) and how visible she is (a0). null when she is not on the skyline */
 function queenAt(L, cx, VW, VH, d, dY) {
   const G = L.green; if (!G) return null; const ref = G.door * TS - VW / 2, far = Math.abs(cx - ref), prox = clamp01(1 - far / Math.max(1, ref)), a0 = smooth(0.2, 0.5, prox) * smooth(0.05, 0.4, d); if (a0 <= 0.02) return null;
@@ -53,11 +53,15 @@ export function skyHoles(L, cx, cy, VW, VH, d, dY) {
 /* drawn after the sky and its clouds, before the far hills: the dusk sky is darkened by the stretch (a wash heavier at the top), pin stars come out, the moon climbs, and far off on a
    hill (very low parallax, like the big wheel's landmark) a tall woven figure stands against it, closer and bigger as the green does */
 export function drawSky(g, cx, cy, VW, VH, L, time, d, dY) {
-  const t = smooth(0.12, 1, d);
+  const t = smooth(0.08, 0.85, d);
   if (t > 0.01) { const gr = g.createLinearGradient(0, 0, 0, VH * 0.85); gr.addColorStop(0, 'rgba(6,8,30,' + (0.9 * t).toFixed(3) + ')'); gr.addColorStop(0.6, 'rgba(18,16,46,' + (0.62 * t).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(40,24,50,' + (0.32 * t).toFixed(3) + ')'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }
   const sa = smooth(0.35, 0.9, d);
   if (sa > 0.02) { if (!STARS) { const r = mulberry(7311); STARS = Array.from({ length: 70 }, () => ({ u: r(), v: r() * 0.55, p: r() * 6.28, s: r() < 0.15 ? 2 : 1 })); }
     for (const s of STARS) { const a = sa * (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(time * (0.8 + s.p * 0.2) + s.p * 9))) * (1 - s.v * 0.9); if (a < 0.08) continue; g.fillStyle = 'rgba(232,232,255,' + a.toFixed(2) + ')'; g.fillRect(Math.round(s.u * VW - cx * 0.004 * (s.s + 1)), Math.round(s.v * VH + dY * 0.05), s.s, s.s); } }
+  drawQueen(g, cx, VW, VH, L, time, d, dY);
+}
+/* the moon is laid AFTER the far and mid layers (they cover the sky behind them): a low orange harvest moon at first, climbing and going bone-white, a little too big */
+export function drawMoon(g, cx, VW, d, dY, time) {
   const ma = smooth(0.08, 0.6, d);
   if (ma > 0.02) {   // the moon: a low orange harvest moon at first, climbing and going bone-white, a little too big
     const { x: mx, y: my, r } = moonPos(VW, cx, d, dY), warm = 1 - smooth(0.05, 0.75, d);
@@ -66,7 +70,6 @@ export function drawSky(g, cx, cy, VW, VH, L, time, d, dY) {
     g.beginPath(); g.arc(mx, my, r, 0, 6.3); g.fill();
     g.fillStyle = 'rgba(120,112,120,0.34)'; for (const [dx, dy, rr] of [[-0.35, -0.2, 0.26], [0.3, 0.15, 0.2], [-0.05, 0.45, 0.16], [0.42, -0.4, 0.12]]) { g.beginPath(); g.arc(mx + dx * r, my + dy * r, rr * r, 0, 6.3); g.fill(); }
     g.restore(); }
-  drawQueen(g, cx, VW, VH, L, time, d, dY);
 }
 /* THE WICKER QUEEN on the skyline: a tall figure of woven willow on the far hill - skirt, raised arms, a crown of twigs - dark against the moon, with two ember eyes that burn
    brighter the nearer you are. Anchored on the boss green; she is never closer than the far hills, and she does not move (she sways, a little). */

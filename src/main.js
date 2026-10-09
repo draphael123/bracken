@@ -28742,7 +28742,7 @@ function drawWorld(cx, cy, showPlayer) {
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }
       g.globalAlpha = 1; }
   }
-  if (FAIR && !L.dark && !(L.green && P.x > L.green.door * TS)) FCR.drawVeil(g, VW, VH, time, dusk());   /* the light drains from the edges as the night comes (claude/faircreepy) */
+  if (FAIR && !L.dark && !(L.green && P.x > L.green.door * TS)) { FCR.drawMoon(g, cx, VW, dusk(), bgDY(cy), time); FCR.drawVeil(g, VW, VH, time, dusk()); }   /* the light drains from the edges as the night comes (claude/faircreepy) */
   if (FAIR) FR.drawNight(g, cx, cy, VW, VH, L, FAIR, { time, text, tkShow: FAIR.tkShow || 0, areas: FAIR.games ? FK.ticketsLeft(L, FAIR.games) : [], areaI: FK.areaAt(L, P.x / TS), skip: !!L.dark || (L.green && P.x > L.green.door * TS), heroes: players.filter(p => !p.dead).map(p => ({ x: p.x, y: p.y })), glows: enemies.filter(q => q.alive && q.t === 'mummer' && q.mode === 'glow').concat(FCR.skyHoles(L, cx, cy, VW, VH, dusk(), bgDY(cy))) });   /* (+ the moon and the Wicker Queen shine through it, claude/faircreepy) */   /* THE NIGHT that comes with height, and the ticket count (src/redraw/fair_rides.js) */
   if (FAIR && !L.dark && !(L.green && P.x > L.green.door * TS)) FR.drawTopLips(g, cx, cy, VW, VH, L, time);   /* (claude/fairfix5) every standable top in the dark keeps its lit lip */
   if (FAIR && !L.dark) FR.drawLips(g, cx, cy, VW, L, FAIR, time);   /* (claude/fairfix5) the booths' and the nests' lit lips, OVER the night: the tent floors read in the dark */
