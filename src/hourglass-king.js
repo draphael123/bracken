@@ -25,18 +25,18 @@
 // HUMAN bot (src/lab.js): it reads his glass and works the levers.
 
 export const HK = {
-  hp: 1800, w: 20, h: 38, markH: 56,
-  glass: 12, glass3: 8, lowAt: 0.36,
+  hp: 1750, w: 20, h: 38, markH: 56,
+  glass: 12, glass3: 8, lowAt: 0.48,   /* (resume pass: the low window 4.3 s -> 5.8 s - a melee hero has a lever to reach across the room, round his blows) */
   openMul: 2.0, openCap: 0.13, openT: 4.0, wardT: 3.0, wardMul: 0.4, resist: 0.45, turnT: 1.4, turnMul: 1.0, dragV: 300, dragStop: 40, fullJam: 1.6,
   p2: 0.6, p3: 0.25,
   walk: 42, keep: 46, gap: [0.6, 0.5, 0.42],
   pendTell: 0.62, pendT: 0.2, pendReach: 56, pendRange: 74,
   gearTell: 0.7, gearV: 165, gearR: 9,
   streamTell: 0.85, streamT: 0.45, streamR: 18,
-  slipTell: 0.9, slipR: 22, slipUp: 0.3,
+  slipTell: 1.0, slipR: 22, slipUp: 0.3,
   hourTell: 0.95, hourV: 210, hourH: 14,
   pourW: 22, pourTick: 0.5,
-  dmg: { pend: 28, gear: 23, stream: 30, slip: 31, hour: 26, pour: 6 },   /* (resume pass: 33% with flasks at 34/28/36/38/31 and 1900 hp - eased to the 60-70% band) */
+  dmg: { pend: 24, gear: 23, stream: 28, slip: 24, hour: 26, pour: 6 },   /* (resume pass: 33% with flasks at 34/28/36/38/31 and 1900 hp - eased to the 60-70% band) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {

@@ -8427,6 +8427,62 @@
      "chip": []
     }
    ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 114,
+    "hits": 6,
+    "walked": 100,
+    "lifts": 48,
+    "held": 1,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 11716,
+    "kills": 0,
+    "heroLevel": 36
+   },
+   "warden": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 114,
+    "hits": 6,
+    "walked": 100,
+    "lifts": 48,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 11689,
+    "kills": 0,
+    "heroLevel": 36
+   },
+   "pyro": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 115,
+    "hits": 7,
+    "walked": 100,
+    "lifts": 48,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 11673,
+    "kills": 0,
+    "heroLevel": 36
+   }
   }
  }
 }
