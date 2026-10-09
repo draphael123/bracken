@@ -38,9 +38,10 @@ const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
   for (const id of ['extra2', 'rich', 'distilled', 'sunlight', 'quick']) assert.equal(F2.lockText(F2.itemOf(id), p1), null, id + ' still locked once its rule is met');
   assert.equal(F2.displayName(F2.itemOf('sunlight'), p1), 'BOTTLED SUNLIGHT', 'a found line still ???');
   /* the heal and the drink */
-  assert.equal(F2.healPct({}), 0.35); assert.equal(Math.round(100 * F2.healPct({}, true)), 45, 'the card RICH FLASK adds 10');
+  assert.equal(F2.healPct({}), 0.35); assert.equal(F2.POTENCY.cap, 0.50);   /* (Daniel 10-09: the store's tiers only - the card no longer heals) */
+  { const PR = await import('../src/progression.js'), c = PR.MINOR_PERKS.find(k => k.id === 'tonic'); assert.ok(c && c.name === 'SECOND DRAUGHT' && !/HEAL|%/.test(c.what), 'the old RICH FLASK card is not the non-heal SECOND DRAUGHT: ' + JSON.stringify(c)); }
   const own = (...ids) => ({ flaskItems: Object.fromEntries(ids.map(i => [i, true])) });
-  assert.equal(F2.healPct(own('rich')), 0.40); assert.equal(F2.healPct(own('rich', 'distilled')), 0.45); assert.equal(F2.healPct(own('sunlight')), 0.50); assert.equal(F2.healPct(own('rich', 'sunlight')), 0.50, 'the best one owned');
+  assert.equal(F2.healPct(own('rich')), 0.40); assert.equal(F2.healPct(own('rich', 'distilled')), 0.45); assert.equal(F2.healPct(own('sunlight')), 0.50); assert.equal(F2.healPct(own('rich', 'sunlight')), 0.50, 'the best one owned'); assert.equal(F2.healPct(own('rich', 'distilled', 'sunlight')), 0.50, 'potency caps at 50%');
   assert.deepEqual(F2.drinkTimes({}, SV.FLASK), { drinkT: SV.FLASK.drinkT, swallowAt: SV.FLASK.swallowAt });
   const q = F2.drinkTimes(own('quick'), SV.FLASK); assert.ok(q.drinkT < SV.FLASK.drinkT && q.swallowAt < SV.FLASK.swallowAt && Math.abs(q.drinkT / 0.6 - 0.5) < 0.02, 'QUICK DRAUGHT is ~0.5 s on the clock: ' + JSON.stringify(q));
   assert.equal(F2.shrineGives({}), 1); assert.equal(F2.shrineGives(own('blessing')), 2);
@@ -133,11 +134,13 @@ try {
   /* C3. THE DRINK: the swallow at its time, QUICK sooner; a blow before it spills; STEADY HAND keeps it */
   res.drink = await E(`(async()=>{const o={};const sp=BK.SET.speed||1;
     const swallow=(extra)=>{${go('wood')}eval(extra);const P=BK.P;P.flasks=2;P.hp=30;P.inv=0;BK.sim(5);const hp0=P.hp;const began=BK.drinkFlask();let n=0;while(n<90&&P.hp===hp0){BK.sim(1);n++;}return {began,frames:n,heal:P.hp-hp0,pct:BK.flaskHealPct()};};
-    o.std=swallow('');o.quick=swallow("BKT.PROG.flaskItems.quick=true;");o.rich=swallow("BKT.PROG.flaskItems.rich=true;");
+    o.std=swallow('');o.card=swallow("BKT.PROG.card=BKT.PROG.card||{};const cc=BKT.PROG.card.knight||(BKT.PROG.card.knight={});cc.ms=Object.assign({},cc.ms,{5:'tonic'});BK.P.st=1;");o.cardSt=BK.P.st>=BK.P.maxSt-0.5;o.quick=swallow("BKT.PROG.flaskItems.quick=true;");o.rich=swallow("BKT.PROG.flaskItems.rich=true;");
     const spill=(extra)=>{${go('wood')}eval(extra);const P=BK.P;P.flasks=2;P.hp=30;P.inv=0;P.hurt=0;BK.sim(5);BK.drinkFlask();BK.sim(6);P.inv=0;BKT.damagePlayer(P.x+20,10,{unblockable:true});const hpHit=P.hp;for(let i=0;i<40&&P.drinkT>0;i++)BK.sim(1);
       const r={spent:2-P.flasks,flying:BK.flaskHud.spills.filter(s=>!s.cork).length,shake:BK.flaskHud.spillT>0};BK.sim(60);r.healed=P.hp-hpHit;r.drinking=P.drinkT>0;return r;};
     o.spill=spill('');o.steady=spill("BKT.PROG.flaskItems.steady=true;");o.speed=sp;return o;})()`);
   { const d = res.drink, want = Math.round(SV.FLASK.swallowAt * 60 / (d.speed || 1)), wantQ = Math.round(F2.QUICK.swallowAt * 60 / (d.speed || 1));
+    ok(d.card.pct === d.std.pct && d.card.heal === d.std.heal, 'the SECOND DRAUGHT card changed the heal: ' + JSON.stringify([d.card, d.std]));
+    ok(d.cardSt, 'SECOND DRAUGHT did not refill the stamina');
     ok(d.std.began && Math.abs(d.std.frames - want) <= 3, 'the swallow lands at ' + d.std.frames + ' frames, want ~' + want);
     ok(d.quick.began && Math.abs(d.quick.frames - wantQ) <= 3 && d.quick.frames < d.std.frames, 'QUICK DRAUGHT swallows at ' + d.quick.frames + ', want ~' + wantQ);
     ok(Math.abs(d.rich.pct - 0.40) < 1e-9 && d.rich.heal > d.std.heal, 'RICH DRAUGHT: ' + JSON.stringify(d.rich) + ' vs ' + JSON.stringify(d.std));

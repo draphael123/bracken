@@ -17,7 +17,7 @@ export const charmAt = d => d >= 4 ? 'heart' : null;
 export const flaskUpAtOld = (id, d) => Math.min(2, Math.max(0, actOf(id, d).act - 1));   /* (the survival2 rule, kept for the before/after tables) */
 /* (claude/flasks2, Daniel 10-08) THE TYPICAL FLASK BUILD - the CAMPAIGN KIT's flasks, what B6 tunes every boss WITH (src/flasks2.js typicalFlaskKit):
      EXTRA FLASK I from depth 3, EXTRA FLASK II once the Goblin Queen (crown) is beaten  -> 1 flask to depth 2, 2 to Highcrown, 3 after it
-     RICH DRAUGHT once the Stockade is beaten (40%), DISTILLED once the Underwater Keep is beaten (45%); the card's RICH FLASK (+10, the typical L5 pick) on top
+     RICH DRAUGHT once the Stockade is beaten (40%), DISTILLED once the Underwater Keep is beaten (45%); the store's tiers only (the card is SECOND DRAUGHT, stamina, since 10-09)
      QUICK DRAUGHT from act II (0.5 s drink), SHRINE BLESSING from act III. The hidden three are never typical.
    beaten: the level ids cleared before this one (beatenBeforeIn). */
 export const flaskKitAt = (id, d, beaten = []) => F2.typicalFlaskKit({ depth: d, beaten, act: actOf(id, d).act });

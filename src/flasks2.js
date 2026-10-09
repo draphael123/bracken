@@ -6,18 +6,18 @@
 //              EXTRA FLASK III (HIDDEN: the FLASK SHARD in the Undercrown). Each is +1 flask: 1 to start, 4 at most. PROG.flaskUp stays the count
 //              (survival.js flaskMax reads it) and is re-derived from the items on every load and buy.
 //     POTENCY  RICH DRAUGHT (THE STOCKADE cleared: the Chieftain), DISTILLED DRAUGHT (THE UNDERWATER KEEP cleared: the Drowned King),
-//              BOTTLED SUNLIGHT (HIDDEN: the Glass Sea's silver vault). The best one owned is the flask's heal; the level-up card's RICH FLASK
-//              (progression.js minor perk 'tonic') still adds its +10 on top.
+//              BOTTLED SUNLIGHT (HIDDEN: the Glass Sea's silver vault). The best one owned is the flask's heal, 50% at most. (Daniel 10-09: the level-up
+//              card's RICH FLASK, minor perk 'tonic', is folded in: the card is SECOND DRAUGHT now - a flask also refills the stamina.)
 //     PERKS    QUICK DRAUGHT (OBJECTIVE: clear any level without drinking) - the drink is ~0.5 s, not 0.75; STEADY HAND (HIDDEN: a Harvest Fair
 //              cellar) - a blow interrupts the drink but the flask is not spilled; SHRINE BLESSING (OBJECTIVE: break 5 shrines) - a shrine reached
 //              gives back TWO flasks, not one.
 //   A LOCKED line shows its requirement; a HIDDEN one is '???' (name and text) until its find is picked up. Finding a hidden thing does not give
 //   it: it puts it on the smith's list (bought with gold like the rest). GOD MODE (the assist guard) earns no objective.
 //   OLD SAVES: PROG.flaskUp 1/2 (the old EXTRA FLASK line bought once/twice) becomes EXTRA FLASK I/II owned, whatever is beaten - a save keeps
-//   every flask it had. Nothing else existed to migrate (the old RICH FLASK is the level-up card perk and stays one).
+//   every flask it had. Nothing else existed to migrate (the old RICH FLASK card pick keeps its id: it is SECOND DRAUGHT now).
 //   THE CAMPAIGN KIT (src/campaign-kit.js) reads typicalFlaskKit: the flask build a typical player has bought by each point of the road.
 
-export const POTENCY = { base: 0.35, perk: 0.10 };   /* +35% of max health a flask; the card's RICH FLASK adds +10 on top of the store's tier */
+export const POTENCY = { base: 0.35, cap: 0.50 };   /* +35% of max health a flask; the store's tiers only, 50% at most (Daniel 10-09: the card's RICH FLASK is folded in - it is SECOND DRAUGHT now, stamina) */
 export const QUICK = { drinkT: 0.30, swallowAt: 0.20 };   /* GAME s: at game speed 0.6 the drink is 0.5 s on the clock, the swallow at 0.33 s (was 0.45 / 0.3) */
 export const BLESSING_REFILL = 2;
 export const SHRINES_FOR_BLESSING = 5;
@@ -65,7 +65,7 @@ export const displayName = (k, prog) => shownAsHidden(k, prog) ? '???' : k.name;
 /* the count of extra flasks owned (PROG.flaskUp) and the heal share */
 export const countOf = prog => COUNT_IDS.filter(id => owned(prog, id)).length;
 export const tierHeal = prog => FLASK_ITEMS.filter(k => k.heal && owned(prog, k.id)).reduce((m, k) => Math.max(m, k.heal), POTENCY.base);
-export const healPct = (prog, cardPerk = false) => tierHeal(prog) + (cardPerk ? POTENCY.perk : 0);
+export const healPct = prog => Math.min(POTENCY.cap, tierHeal(prog));
 /* the drink's timing: QUICK DRAUGHT owned, or the standard one (src/survival.js FLASK) */
 export const drinkTimes = (prog, FLASK) => owned(prog, 'quick') ? { drinkT: QUICK.drinkT, swallowAt: QUICK.swallowAt } : { drinkT: FLASK.drinkT, swallowAt: FLASK.swallowAt };
 export const shrineGives = prog => owned(prog, 'blessing') ? BLESSING_REFILL : 1;
@@ -119,9 +119,9 @@ export function typicalFlaskKit({ depth = 1, beaten = [], act = 1 } = {}) {
   return it;
 }
 /* a one-line read of a kit (the reports and the walker's table) */
-export function kitLine(items, cardPerk = false) {
+export function kitLine(items) {
   const p = { flaskItems: items || {} };
-  return (1 + countOf(p)) + ' flasks ' + Math.round(100 * healPct(p, cardPerk)) + '%' + (owned(p, 'quick') ? ' quick' : '') + (owned(p, 'blessing') ? ' blessing' : '') + (owned(p, 'steady') ? ' steady' : '');
+  return (1 + countOf(p)) + ' flasks ' + Math.round(100 * healPct(p)) + '%' + (owned(p, 'quick') ? ' quick' : '') + (owned(p, 'blessing') ? ' blessing' : '') + (owned(p, 'steady') ? ' steady' : '');
 }
 
 /* THE HUD ROW (directly under the health and stamina bars, its own row: y 20-28 of the HUD-SLIM layout; never under the skill slots, which sit

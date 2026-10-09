@@ -25,7 +25,7 @@ fontpair -> hudslim -> flasks2 (flasks2 is a fast-forward over hudslim step 1; l
    STEADY HAND (a drinker's glove) in the Harvest Fair's second secret cellar (334,34). Gold glint, bobbing; picked up once a save.
 6. **SAVES**: PROG.flaskItems / flaskFinds / flaskObj / shrinesBroken. Old saves: flaskUp 1/2 (the old EXTRA FLASK line) -> EXTRA FLASK I/II
    owned regardless of what is beaten - no flask lost, no refund needed; flaskUp stays the count (survival.js flaskMax reads it; extraMax 3).
-   The old RICH FLASK is the level-up card's minor perk (progression.js 'tonic') - kept as is, +10 on top of the store tier.
+   (10-09, Daniel) The old RICH FLASK level-up card is FOLDED into the store: potency is the store tiers only, capped at 50%. The card (minor perk id 'tonic', same slot in the card set and the typical L5 pick) is now SECOND DRAUGHT - "a flask also refills your stamina" (non-heal, flask-related). A save that took RICH FLASK keeps the pick under the same id, so it gets SECOND DRAUGHT: no re-pick, no loss of a card slot.
 7. **THE CAMPAIGN KIT** (src/campaign-kit.js flaskKitAt / flaskUpAt / flasksAt, rule in src/flasks2.js typicalFlaskKit) + **tools/boss-run.mjs /
    boss-rates.mjs `--flasks=kit|bare`** (default kit; or BOSS_FLASKS=bare). Before this lane the boss runner carried NO kit flasks at all: every
    boss row was measured with a fresh page's 1 flask at 35% (the practiced card has no RICH FLASK pick).
@@ -42,11 +42,11 @@ fontpair -> hudslim -> flasks2 (flasks2 is a fast-forward over hudslim step 1; l
 | PERKS | QUICK DRAUGHT | 250 | OBJECTIVE: clear any level without drinking | drink 0.5 s (was 0.75) |
 | PERKS | STEADY HAND | 300 | HIDDEN: Harvest Fair cellar | a blow stops the drink, the flask is kept |
 | PERKS | SHRINE BLESSING | 250 | OBJECTIVE: break 5 shrines | a shrine gives back 2 |
-Best potency owned counts; the card's RICH FLASK adds +10 (max 60%). Max flasks 4 (+ a broken shrine's over-max).
+Best potency owned counts, capped at 50% (no card bonus since 10-09). Max flasks 4 (+ a broken shrine's over-max).
 
 ## THE CAMPAIGN KIT (typical flask build; B6 tunes bosses WITH this)
 - EXTRA FLASK I from depth 3; EXTRA FLASK II once crown is beaten -> 1 flask to depth 2 (Chieftain), 2 to Highcrown, 3 after.
-- RICH DRAUGHT once stockade is beaten (40%), DISTILLED once keep is beaten (45%); + the card's +10 where the card has it (typical L5 pick).
+- RICH DRAUGHT once stockade is beaten (40%), DISTILLED once keep is beaten (45%); no card bonus (the card is SECOND DRAUGHT now).
 - QUICK DRAUGHT from act II; SHRINE BLESSING from act III. Hidden lines never typical.
 - Examples: kings {I, rich} 2x40%; crown {I, rich, quick} 2x40% quick; keep {I, II, rich, quick, blessing} 3x40%; mage/redgorge/glasssea 3x45% quick.
 
@@ -63,11 +63,17 @@ Read: the kit moves rates UP (warden on kings/redgorge, pyro on mage); four of f
 even BARE at n=3, so the per-act FLASK RETUNE lanes should re-measure with --flasks=kit (the default now) at 6+ seeds. Not retuned here (per brief).
 Raw: work/claude/flasks2/boss-{bare,kit}.{log,json} (rows carry flasks0/heal0 - the kit was applied: 2/2/3/3/3 flasks, 40/40/40/45/45%).
 
+## 10-09 follow-up (Daniel's answers)
+- RICH FLASK card folded: src/progression.js (tonic -> SECOND DRAUGHT), src/flasks2.js (POTENCY.cap 0.50, healPct takes no card), main.js drinkTick (heal = store tier; perk('tonic') refills stamina at the swallow).
+- Tests updated to the new design (stated): tools/flasks2.mjs asserts the cap, that the card is the non-heal SECOND DRAUGHT, that it leaves the heal unchanged and refills the stamina.
+- Boss table above was measured BEFORE the fold: the practiced boss bot carries the even card (no RICH FLASK pick), so its rows are unaffected; only 'built'-way and walker runs (typical L5 card) lose the old +10 heal.
+
 ## Checks
 - tools/flasks2.mjs (new) GREEN: rules, migration, kit along the road, finds reachable (BFS to a silver/START), the row clear of the slots on
   5 screens (16:9, 4:3, ultrawide, phone landscape + portrait with the touch buttons on) x both HUD modes, counts/buy/over-max, drink timing
   (swallow 30 f, quick 20 f), spill + flying flask + red shake, steady hand, unlocks/??? in the store, dry clear, God Mode guard, 5 shrines,
   blessing, Glass Sea find, old save.
+- 10-09 rerun after the fold: flasks2, survival, leveling, hint-shown, textfit (same 2/2/2 pre-existing) all exit 0.
 - survival, store (golden stock rewritten with STORE_WRITE: +FLASKS tab, deliberate), leveling, hint-shown, level-jump, textfit (1 page:
   0 new; remaining OVERFLOW/COVERS/COLLIDE are pre-existing welltown/underwell/marsh/fallingtower/fair lines) - all exit 0.
 - Test edits (design changes, not weakened): survival flaskMax max 3 -> 4; leveling 'sinks' reads the FLASKS tab's three count lines;
@@ -80,10 +86,10 @@ Raw: work/claude/flasks2/boss-{bare,kit}.{log,json} (rows carry flasks0/heal0 - 
 - Depends on claude/hudslim (merged in): if hudslim is dropped, the flask row must be re-slotted into master's old HUD layout.
 
 ## QUESTIONS FOR DANIEL (built the rec in each case)
-1. Potency tiers 40/45/50 + the card's RICH FLASK +10 (so up to 60%). Rec: keep the card perk (built). Alt: fold the card perk into the store.
-2. Typical kit timing (EXTRA I from depth 3, QUICK from act II). Rec: as built; the per-act retune lanes tune with it.
+1. ANSWERED 10-09: fold RICH FLASK into the store (done: cap 50%, the card is SECOND DRAUGHT - stamina refill on the swallow).
+2. ANSWERED 10-09: campaign kit as built - kept.
 3. Hidden find spots: Undercrown planks by the deep silver / Glass Sea vault / Fair cellar 2. Rec: as built (no level hash moved).
-4. A find unlocks the line for gold rather than giving it. Rec: as built.
+4. ANSWERED 10-09: finds unlock, then you pay - kept.
 
 ## ART FOLLOW-UPS (Sonnet lane)
 - Real drinking frames per hero (7): uncork at the chest, head tipped back with two gulp frames, lower. Today: the existing pose + an overlay
