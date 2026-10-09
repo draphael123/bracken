@@ -1,0 +1,72 @@
+=== render-layers
+render layers: scenery behind tiles and a continuous foreground mask.
+=== readability
+Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+=== frame-cost
+wood, 120 frames in play: 0 read-backs; view change: 18 + 9 canvases (a level load makes 729); theatre, 25 s: 1 canvases
+frame cost: no read-back in play, a view change re-bakes only the backdrop, the theatre keeps its trimmed blocks.
+=== floaters
+
+2915 standing things checked (53 set down a row or more at load; 38 hung ones with no rock over them are left out). every one can be set down.
+=== dressing
+2452 scatter, dressing and hand-placed decorations use their level allowlist.
+no sprinkled decoration under the water of a level that is not the sea.
+no sprinkled decoration within three tiles of a fire on the floor.
+=== harvest-fair
+harvest-fair pure + level: ok
+file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-faircreepy/tools/cdp.mjs:62
+  if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
+                                    ^
+
+Error: the page never put up window.BK
+    at openPage (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-faircreepy/tools/cdp.mjs:62:37)
+    at async file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-faircreepy/tools/harvest-fair.mjs:414:15
+
+Node.js v24.19.0
+=== fair-pilot
+  ok   gate to the tent poles {"x":96.2,"y":28,"hp":91} deaths 0 lost 9
+  ok   the fallen big top: pole to pole {"x":103.8,"y":28,"hp":91} deaths 0 lost 9
+  MISS to the swingboats {"x":220,"y":29.42,"hp":0} deaths 1 lost 115
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 2 lost 215
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 3 lost 315
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 4 lost 415
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 5 lost 515
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 6 lost 615
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 7 lost 715
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 8 lost 815
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 9 lost 915
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 10 lost 1015
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 11 lost 1115
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 12 lost 1215
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 13 lost 1315
+{"hero":"knight","level":1,"maxHp":100,"done":false,"reached":{"x":220.5,"y":29.39,"hp":0},"lost":1315,"deaths":13,"dips":13,"seed":0,"gaveUp":[],"secs":342.4,"byWho":{"mummer":18,"brute":18,"barker":18,"wickerman":1261},"bySection":{"gate":9,"stalls":1306},"fail":[]}
+errors []
+=== audio-assets
+{"levelsChecked":41,"bossesChecked":41,"minisChecked":14,"tracksOnDisk":107,"manifestFiles":373,"musicNames":100,"creditsFor":102,"sfxTableSize":374,"sfxCallsFound":325,"unreferencedSfx":55,"decode":"skipped (pass --decode to run it)"}
+ok  audio-assets  41 levels all have music, 41 boss arenas and 14 minis all resolve to a real track, every TRACKS/manifest file exists on disk, and every SFX.*() the source calls is in the table (decode not run: pass --decode)
+=== textfit
+  scope mapcard           41 screens  32.9s
+  scope death              7 screens  1.7s
+  scope results            1 screens  3.5s
+  scope card              59 screens  17.4s
+  scope slots             10 screens  0.2s
+  scope practice           8 screens  0.2s
+  scope bossjump          61 screens  15.6s
+  scope menu              18 screens  4.8s
+  scope settings         149 screens  6.1s
+  scope soundtest        120 screens  5.8s
+  scope credits            9 screens  3.3s
+  scope talk[warden]     640 screens  154.7s
+  scope hud               12 screens  20.1s
+  scope talk[knight]     640 screens  209.0s
+  scope talk[pirate]     640 screens  65.5s
+  scope talk[reaper]     640 screens  91.9s
+  scope bossfix          225 screens  37.5s
+
+TEXTFIT SCOPE "boss" FAILED after 481s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+
+TEXTFIT SCOPE "plates" FAILED after 481s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+
+TEXTFIT SCOPE "talk[pyro]" FAILED after 586s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+
+TEXTFIT SCOPE "talk[paladin]" FAILED after 577s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms

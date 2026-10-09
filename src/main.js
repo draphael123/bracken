@@ -73,7 +73,7 @@ import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen, drawSpear as wqDrawSpear } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
 import * as FAF from './fair-foes.js'; import * as FK from './fair-keys.js'; import * as FKD from './redraw/fair_keys.js'; import * as FFK from './redraw/fair_folk.js'; import * as WMN from './wicker-man.js'; import { makeWickerManHands } from './wicker-man-hands.js'; import * as WMA from './redraw/wicker_man_art.js'; let WMH = null;   /* (claude/fairfix6) THE WICKER MAN: the fair's one new foe, the Wicker Queen's lesser echo - strike its fire back */   /* (claude/fairfix2) the fair's keys: ticket gates, bull's-eyes on rides, the mirror door, its sharper foes; and their drawing */   /* (fair-foes.js: THE HARVEST FAIR's string-jack and barker, claude/fairfix) */
 import * as FRS from './fair-rides.js'; import * as WQD from './redraw/wicker_fx.js';   /* (claude/fairfix3) the Wicker Queen's new fires, balls, sweep and leap marks */   /* (claude/fairfix3) THE SWINGBOATS and THE CHAIR-O-PLANE: the chairs' clock (src/redraw/fair_newrides.js draws them, from fair_rides.js) */
-import * as FTL from './redraw/fair_tiles.js';   /* (claude/fairfix5) THE HARVEST FAIR's own tile kit */
+import * as FTL from './redraw/fair_tiles.js';   /* (claude/fairfix5) THE HARVEST FAIR's own tile kit */   import * as FCR from './redraw/fair_creep.js';   /* (claude/faircreepy) THE HARVEST FAIR, CREEPIER: the dying day, the fog, the watching scarecrows, the ghost rides, the skyline (art only) */
 import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides.js'; import * as FB from './redraw/fair_backdrop.js';   /* THE HARVEST FAIR's vertical rebuild (claude/fairlevel): the games and the sight (pure), and the rides' art */
 import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
 import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js'; import * as TMK from './theatre-masks.js';   /* (claude/theatre4) THE THEATRE's mummers swap masks */   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
@@ -20175,6 +20175,7 @@ function updateBarker(e, dt) {
 }
 /* THE CAROUSEL: standing on the ride, a hero is TURNED ROUND every period seconds after a warning, and cannot turn back for a moment */
 function updateFair(dt) {
+  if (FAIR) { const dk = FCR.depth(L, camX, VW); ambient.creep(dk); if (!bossActive) music.warp(dk); if (FCR.lampCreep(FAIR.lamps, P.x, time, dt, L) && SET.ambient) SFX.lampGutter(); }   /* (claude/faircreepy) the fair tune drifts out of tune and its air goes wrong with the depth; lanterns gutter behind you (drawing only) */
   for (const pp of players) if (pp.faceLock > 0) pp.faceLock = Math.max(0, pp.faceLock - dt);
   if (FAIR) for (const lp of FAIR.lamps) if (lp.life > 0 && lp.life < 1) { const was = lp.lit; lp.b = FAW.lampBright(lp, time); lp.lit = lp.b > 0.3; if (lp.lit !== was && Math.abs(lp.x * TS - P.x) < 240 && SET.ambient && Math.random() < 0.35) SFX.lampGutter(); }
   if (FAIR) { FAIR.wheelHold = Math.max(0, (FAIR.wheelHold || 0) - dt); { const w0 = movers.find(m => m.fair === 'gondola'); if (w0 && w0.ft !== undefined) FAIR.wheelT = w0.ft; } }   /* (claude/fairfix5) the big wheel's own clock (it stops when its bull's-eye is struck) */
@@ -20215,7 +20216,7 @@ function updateFairGames(dt) {
 /* the dressing the tiles do not carry (src/redraw/fair_world.js): the haystacks over their spring caps, the carousel, the lamps, the maypole green and its bonfire, and the halo behind a glowing mask */
 function drawFair(cx, cy) {
   if (!FAIR) return;
-  FAW.drawDressing(g, cx, cy, VW, L, time, dusk());   /* (claude/fairfix5) THE FAIR IN THE PLAY LAYER: the arch, the booth, the stall fronts, the generator, the organ, the barns' prizes, the wagons (src/redraw/fair_world.js) */
+  FAW.drawDressing(g, cx, cy, VW, L, time, dusk()); FCR.drawCard(g, cx, cy, VW, L, time, P.x, dusk());   /* (claude/faircreepy) the fortune card flips as you pass */   /* (claude/fairfix5) THE FAIR IN THE PLAY LAYER: the arch, the booth, the stall fronts, the generator, the organ, the barns' prizes, the wagons (src/redraw/fair_world.js) */
   for (const z of (L.haystacks || [])) { const x0 = z[0] * TS, x1 = (z[1] + 1) * TS; if (x1 < cx - 8 || x0 > cx + VW + 8) continue; FAW.drawHay(g, cx, cy, z, FAIR.sq[z[0]] || 0); }
   for (const z of (L.carousels || [])) FAW.drawCarousel(g, cx, cy, VW, z, time, !!(P.car && P.car.warned && P.ground && P.x >= z.x0 * TS && P.x <= (z.x1 + 1) * TS), false);
   FAW.drawLamps(g, cx, cy, VW, FAIR.lamps, time, false);
@@ -26420,6 +26421,7 @@ function updateMovers(dt) {
     m.dx = m.x - oldX;
   }
 }
+const fairCalm = () => !bossActive && !enemies.some(e => e.alive && Math.abs(e.x - P.x) < 150 && Math.abs(e.y - P.y) < 90);   /* (claude/faircreepy) the watching scarecrows turn their heads only while nothing is within reach of you */
 const dusk = () => L && L.duskStart !== undefined ? Math.max(0, Math.min(1, (camX - L.duskStart) / L.duskLen)) : 0;
 function updatePolish(dt) {
   coinComboT = Math.max(0, coinComboT - dt);
@@ -28013,7 +28015,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (L.minecart) MCB.drawBackdrop(g, cx, cy, VW, VH, L, time);   /* THE DEEP RAILS' own deep mine: the rock wall, ore veins, timber frames, lantern strings, the goblin works, the smelter's chimney and the bore's mouth (claude/minecartart, src/redraw/minecart_backdrop.js) */
   else if (L.canal) CNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE FOG CANAL's own far fields, mill, steeple, hedges, cottages and boats (src/redraw/canal_backdrop.js), not Waymeet's town */
   else if (L.welltown) WTB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE WELL TOWN's own dunes, oasis line, skyline, dovecote and Kasbah (src/redraw/welltown_backdrop.js), not the caravan's mesas */
-  else if (FAIR) FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full');   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
+  else if (FAIR) { FCR.drawSky(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full'); FCR.drawMid(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), { hx: P.x - cx, calm: fairCalm() }); }   /* + the night sky, moon and Wicker Queen before the far hills, and the scarecrows, ghost rides and vanishing townsfolk after the mid layer (claude/faircreepy) */   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
   else { if (SET.parallax === 'full') drawLayer(BG.far, 0.15, VH - 90, cx, cy);
   if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
@@ -28025,7 +28027,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
-  if (FAIR) { FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time, { x: P.x, face: P.face || 1 }); if (SET.parallax !== 'off') { FB.drawNear(g, cx, cy, VW, L, dusk(), time); FB.drawMotes(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); } }   /* the crowd and the bunting, the fireflies and sparks */
+  if (FAIR) { FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time, { x: P.x, face: P.face || 1 }); if (SET.parallax !== 'off') { FB.drawNear(g, cx, cy, VW, L, dusk(), time); FB.drawMotes(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); if (!L.dark && !(L.green && P.x > L.green.door * TS)) FCR.drawFog(g, cx, cy, VW, VH, L, time, dusk(), FCR.depth(L, cx, VW)); } }   /* the crowd and the bunting, the fireflies and sparks, the low fog behind the road (claude/faircreepy) */
   if (L.canal && SET.parallax !== 'off') CNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* the canal's reeds, mooring posts and hung lanterns */
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
@@ -29197,7 +29199,8 @@ function drawWorld(cx, cy, showPlayer) {
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }
       g.globalAlpha = 1; }
   }
-  if (FAIR) FR.drawNight(g, cx, cy, VW, VH, L, FAIR, { time, text, tkShow: FAIR.tkShow || 0, areas: FAIR.games ? FK.ticketsLeft(L, FAIR.games) : [], areaI: FK.areaAt(L, P.x / TS), skip: !!L.dark || (L.green && P.x > L.green.door * TS), heroes: players.filter(p => !p.dead).map(p => ({ x: p.x, y: p.y })), glows: enemies.filter(q => q.alive && q.t === 'mummer' && q.mode === 'glow') });   /* THE NIGHT that comes with height, and the ticket count (src/redraw/fair_rides.js) */
+  if (FAIR && !L.dark && !(L.green && P.x > L.green.door * TS)) { FCR.drawMoon(g, cx, VW, dusk(), bgDY(cy), time); FCR.drawVeil(g, VW, VH, time, dusk()); }   /* the light drains from the edges as the night comes (claude/faircreepy) */
+  if (FAIR) FR.drawNight(g, cx, cy, VW, VH, L, FAIR, { time, text, tkShow: FAIR.tkShow || 0, areas: FAIR.games ? FK.ticketsLeft(L, FAIR.games) : [], areaI: FK.areaAt(L, P.x / TS), skip: !!L.dark || (L.green && P.x > L.green.door * TS), heroes: players.filter(p => !p.dead).map(p => ({ x: p.x, y: p.y })), glows: enemies.filter(q => q.alive && q.t === 'mummer' && q.mode === 'glow').concat(FCR.skyHoles(L, cx, cy, VW, VH, dusk(), bgDY(cy))) });   /* (+ the moon and the Wicker Queen shine through it, claude/faircreepy) */   /* THE NIGHT that comes with height, and the ticket count (src/redraw/fair_rides.js) */
   if (FAIR && !L.dark && !(L.green && P.x > L.green.door * TS)) FR.drawTopLips(g, cx, cy, VW, VH, L, time);   /* (claude/fairfix5) every standable top in the dark keeps its lit lip */
   if (FAIR && !L.dark) FR.drawLips(g, cx, cy, VW, L, FAIR, time);   /* (claude/fairfix5) the booths' and the nests' lit lips, OVER the night: the tent floors read in the dark */
   if (WMH && WMH.balls.length) WMH.drawBalls(g, cx, cy, time);   /* (claude/fairfix6) THE WICKER MAN's fire, rolling - over the night, so it reads in it */
@@ -29225,7 +29228,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (L.night) { g.fillStyle = 'rgba(8,10,30,' + (L.nightA !== undefined ? L.nightA : 0.42) + ')'; g.fillRect(0, 0, VW, VH); }
     g.globalCompositeOperation = 'lighter';
     const glow = (x, y, r, a) => { const gr = g.createRadialGradient(x, y, 2, x, y, r); gr.addColorStop(0, 'rgba(255,170,80,' + a + ')'); gr.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
-    for (const lt of lights) if (lt.x > cx - 60 && lt.x < cx + VW + 60 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit)) { if (lt.glow) { const gr = g.createRadialGradient(lt.x - cx, lt.y - cy, 2, lt.x - cx, lt.y - cy, lt.r); gr.addColorStop(0, lt.pink ? 'rgba(255,160,200,0.34)' : 'rgba(90,200,210,0.34)'); gr.addColorStop(1, 'rgba(40,120,140,0)'); g.fillStyle = gr; g.fillRect(lt.x - cx - lt.r, lt.y - cy - lt.r, lt.r * 2, lt.r * 2); } else glow(lt.x - cx, lt.y - cy, lt.r + Math.sin(time * 9 + lt.x) * 2, 0.32); }
+    for (const lt of lights) if (lt.x > cx - 60 && lt.x < cx + VW + 60 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit)) { if (lt.glow) { const gr = g.createRadialGradient(lt.x - cx, lt.y - cy, 2, lt.x - cx, lt.y - cy, lt.r); gr.addColorStop(0, lt.pink ? 'rgba(255,160,200,0.34)' : 'rgba(90,200,210,0.34)'); gr.addColorStop(1, 'rgba(40,120,140,0)'); g.fillStyle = gr; g.fillRect(lt.x - cx - lt.r, lt.y - cy - lt.r, lt.r * 2, lt.r * 2); } else glow(lt.x - cx, lt.y - cy, lt.r + Math.sin(time * 9 + lt.x) * 2, 0.32 * (lt.lantern && lt.lantern.cb !== undefined ? lt.lantern.cb : 1)); }   /* (cb: a lantern snuffed behind you, claude/faircreepy) */
     for (const f of fires) if (f.delay <= 0 && f.x > cx - 40 && f.x < cx + VW + 40) glow(f.x - cx, f.y - 8 - cy, 30, 0.35);
     for (const p of (L.pools || [])) if (p.fire && p.y - cy < VH + 30 && p.y - cy > -40) for (let x = Math.max(p.x0, Math.floor(cx / 40) * 40 - 40); x < Math.min(p.x1, cx + VW + 40); x += 40) glow(x + 20 - cx, p.y - 6 - cy, 46, 0.3);   /* a burning ditch lights the night over it */
     for (const pr of props) if (pr.t === 'brazier' && pr.lit) glow(pr.x - cx, pr.y - 12 - cy, 44, 0.3);

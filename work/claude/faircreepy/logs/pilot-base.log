@@ -1,0 +1,18 @@
+  ok   gate to the tent poles {"x":96.2,"y":28,"hp":91} deaths 0 lost 9
+  ok   the fallen big top: pole to pole {"x":103.8,"y":28,"hp":91} deaths 0 lost 9
+  MISS to the swingboats {"x":220.4,"y":30,"hp":0} deaths 1 lost 115
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 2 lost 215
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 3 lost 315
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 4 lost 415
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 5 lost 515
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 6 lost 615
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 7 lost 715
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 8 lost 815
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 9 lost 915
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 10 lost 1015
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 11 lost 1115
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 12 lost 1215
+  MISS the swingboats: let go at the top {"x":220.5,"y":29.39,"hp":0} deaths 13 lost 1315
+{"hero":"knight","level":1,"maxHp":100,"done":false,"reached":{"x":220.5,"y":29.39,"hp":0},"lost":1315,"deaths":13,"dips":13,"seed":0,"gaveUp":[],"secs":343.4,"byWho":{"mummer":18,"brute":18,"wickerman":1279},"bySection":{"gate":9,"stalls":1306},"fail":[]}
+errors []
+done
