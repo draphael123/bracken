@@ -5056,10 +5056,10 @@ function drawStore() {
     if (storeKeyLast !== storeTab + ':' + storeI) { storeKeyLast = storeTab + ':' + storeI; storePage = 0; }
     g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], sx0 - 11, y + 3); text(silv, sx0, y + 4, UI.silver, 'left');
     g.drawImage(PROP.coin[Math.floor(time * 8) % 4], gx - 11, y + 3); text(gold, gx, y + 4, UI.gold, 'left'); }
-  // TWO ROWS OF TABS, FOUR ACROSS (the order is src/store.js's); each is 9 tall so the skills tab still has its room
-  { const perRow = 4, tw = Math.floor((w - 16) / perRow);
+  // TWO ROWS OF TABS, FOUR (FIVE since the FLASKS tab, claude/flasks2) ACROSS (the order is src/store.js's); each is 9 tall so the skills tab still has its room
+  { const perRow = Math.max(4, Math.ceil(STORE_TABS.length / 2)), tw = Math.floor((w - 16) / perRow);
     STORE_TABS.forEach((t, k) => { const row = Math.floor(k / perRow), col = k % perRow, tx = x + 8 + col * tw, ty = 16 + row * 10, sel = k === storeTab; g.fillStyle = sel ? 'rgba(60,90,60,0.8)' : 'rgba(40,36,50,0.7)'; g.fillRect(tx, ty, tw - 3, 9); if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(tx + 0.5, ty + 0.5, tw - 4, 8); } text(t.name, tx + (tw - 3) / 2, ty + 2, sel ? UI.sel : UI.dim, 'center', 6); }); }
-  { const perRow = 4, tw = Math.floor((w - 16) / perRow); STORE_TABS.forEach((t, k) => TCH.hit(x + 8 + (k % perRow) * tw, 16 + Math.floor(k / perRow) * 10 - 1, tw - 3, 11, () => { if (storeTab !== k) { storeTab = k; storeI = 0; storeMsgT = 0; SFX.ui(); } })); }   /* (the tabs, tapped) */
+  { const perRow = Math.max(4, Math.ceil(STORE_TABS.length / 2)), tw = Math.floor((w - 16) / perRow); STORE_TABS.forEach((t, k) => TCH.hit(x + 8 + (k % perRow) * tw, 16 + Math.floor(k / perRow) * 10 - 1, tw - 3, 11, () => { if (storeTab !== k) { storeTab = k; storeI = 0; storeMsgT = 0; SFX.ui(); } })); }   /* (the tabs, tapped) */
   const tab = STORE_TABS[storeTab];
   if (tab.talent) { drawSkills(); return; }   /* SKILLS is the tree and its loadout, with the live previews */
   const items = storeItems(tab);
