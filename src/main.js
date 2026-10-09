@@ -15781,7 +15781,7 @@ function updateGaffer(e, dt) {
   e.modeT -= dt; e.cd = Math.max(0, (e.cd || 0) - dt);
   e.vy = Math.min(320, e.vy + 1000 * dt);
   if (e.stagger > 0 && (e.mode === 'hookTell' || e.mode === 'haftTell')) { e.mode = 'walk'; e.modeT = 0.8; e.cd = 1.5; number(e.x, e.y - e.h - 10, 'THE POLE DROPS', '#8fd160'); }
-  const d = P.x - e.x, ad = Math.abs(d), near = !P.dead && ad < 200 && Math.abs(e.y - P.y) < 80;
+  const d = P.x - e.x, ad = Math.abs(d), near = !P.dead && ad < 200 && Math.abs(e.y - P.y) < 80 && !(e.bargee && CNH.darkBlind(CANAL, e, P));   /* (claude/tunnelfix) in the legging tunnel's dark a bargee hooks only a hero her light shows */
   let want = 0;
   switch (e.mode) {
     case 'hookTell': e.face = Math.sign(d) || e.face;
@@ -30959,6 +30959,7 @@ window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
+  draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */

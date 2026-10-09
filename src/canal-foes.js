@@ -16,7 +16,7 @@
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten } from './px.js';
 import * as CFA from './redraw/canal_foes_art.js';   /* (claude/canalart) the grindylow's and the wisp's pictures */
 
-export const GRIND = { hp: 20, w: 14, h: 14, leash: 56, swim: 60, tell: 0.75, reach: 18, hold: 2.4, pull: 26, mash: 3, grabDmg: 6, stun: 1.6, cd: 2.4, weak: 2, strandT: 7, edgeNear: 16 };
+export const GRIND = { hp: 20, w: 14, h: 14, leash: 56, swim: 60, tell: 0.75, reach: 18, hold: 2.4, pull: 26, mash: 3, grabDmg: 6, stun: 1.6, cd: 2.4, weak: 2, strandT: 7, edgeNear: 16, gunwale: 4, barReach: 6 };   /* (claude/tunnelfix: gunwale = how far outside her end it surfaces; barReach = the extra reach that makes up for it) */
 export const WISP = { hp: 1, w: 10, h: 10, notice: 170, ahead: 56, drift: 34, turn: 1.5, harass: 48, home: 160, tell: 0.55, dash: 150, dashT: 0.45, hit: 11, dmg: 14, recoil: 0.8, cd: 1.6, reform: 2.2 };   /* (claude/canalfix3: the ember wisp's numbers - its turn, its tell, its dart; deadly by its 14-damage dart, never by hp) */
 export const CANAL_FOES = new Set(['grindylow', 'willowisp']);
 
@@ -27,8 +27,8 @@ export function edgeOf(P, X) {
   if (!P || P.dead || P.climb) return null;
   const b = X.barge();
   if (b && P.onMover && P.onMover.canal) {   /* on the barge: its two ends are over the water */
-    if (P.x - b.x < GRIND.edgeNear) return { x: b.x + 4, y: P.y, dir: -1, barge: true };
-    if (b.x + b.w - P.x < GRIND.edgeNear) return { x: b.x + b.w - 4, y: P.y, dir: 1, barge: true };
+    if (P.x - b.x < GRIND.edgeNear) return { x: b.x - GRIND.gunwale, y: P.y, dir: -1, barge: true };   /* (claude/tunnelfix) BESIDE the hull, never in it: it surfaces at her gunwale */
+    if (b.x + b.w - P.x < GRIND.edgeNear) return { x: b.x + b.w + GRIND.gunwale, y: P.y, dir: 1, barge: true };
     return null;
   }
   if (!P.ground || P.onMover) return null;
@@ -53,7 +53,20 @@ function boardable(e, X, P) {
   return e.hx < b.x + b.w / 2 ? 6 : b.w - 6;   /* the near end */
 }
 /* one frame. X: { hero(), barge(), surfaceAt(x), solidAt(x, y), press(), hurtHero(x, dmg, o), mark(e, txt, col), sfx, hint(k, msg), ring(x, y, r, col) } */
-export function stepGrindylow(e, dt, X) {
+export function stepGrindylow(e, dt, X) { stepGrindylow0(e, dt, X); hullSolid(e, X); }
+/* (claude/tunnelfix, Daniel 10-08: "they get under the boat and their hitboxes clip") HER HULL IS SOLID TO SWIMMERS: nothing in the water goes under her or into her space - a swimmer whose
+   place would be under the barge is put beside her (the nearer end, ahead of the bow or astern), at her gunwale. Only a boarder AFLOAT-AND-ABOARD is on her, and it is on the deck */
+function hullSolid(e, X) {
+  const b = X.barge(); if (!b || e.aboard || e.mode === 'stranded' || e.mode === 'bump' || e.mode === 'boardTell') return; const s = X.surfaceAt(e.x); if (!s || Math.abs(s.y - b.y) > 30) return;
+  const m = GRIND.gunwale - 1, lo = b.x - m, hi = b.x + b.w + m; if (!(e.x > lo && e.x < hi)) return;
+  /* a free place beside her: water of her own level, no stone (a lock's wall, the stop-planks, a grate) there OR between here and there - it swims round, it does not pass through walls */
+  const y = e.y, free = x => { const s2 = X.surfaceAt(x); return !!s2 && Math.abs(s2.y - s.y) < 8 && !X.solidAt(x, y) && !X.solidAt(x, s.y + 4); };
+  const reach = to => { const d = Math.sign(to - e.x) || 1; for (let x = e.x; d > 0 ? x < to : x > to; x += d * 4) if (X.solidAt(x, y)) return false; return free(to); };
+  const west = e.x - lo < hi - e.x; let to = null;
+  for (let d = 0; d <= 140 && to === null; d += 4) for (const sx of west ? [lo - 1 - d, hi + 1 + d] : [hi + 1 + d, lo - 1 - d]) if (reach(sx)) { to = sx; break; }
+  if (to === null) { if (e.mode === 'rippleTell' || e.mode === 'grab') { if (e.grabbed) { e.grabbed.caged = 0; e.grabbed = null; } e.mode = 'dunk'; e.modeT = 1; } e.cd = Math.max(e.cd, 1); return; }   /* squeezed with nowhere beside her to be: it can do nothing (it is under the water, ripples only) */
+  e.x = to; if (e.mode === 'rippleTell' || e.mode === 'grab') e.y = (e.edge ? e.edge.y : s.y - 6) + 6; }
+function stepGrindylow0(e, dt, X) {
   const G = GRIND, P = X.hero(), S = X.sfx;
   e.modeT -= dt; e.cd -= dt; e.bubT -= dt;
   if (e.aboard) return stepAboard(e, dt, X, P);
@@ -73,8 +86,8 @@ export function stepGrindylow(e, dt, X) {
   e.lastSurf = s.y;
   /* COMING ABOARD: from the lurk, at a held barge (or the loose one at the junction) with a rider */
   if (e.mode === 'lurk' && e.cd <= 0) { const end = boardable(e, X, P);
-    if (end !== null) { const b = X.barge(); e.mode = 'boardTell'; e.modeT = 0.55; e.bx = end; e.x = b.x + end; e.y = s.y + 4; X.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.splash && S.splash(); X.ring(e.x, s.y, 10, '#9ad8c0'); } }
-  if (e.mode === 'boardTell') { const b = X.barge(); if (!b) { e.mode = 'lurk'; return; } e.x = b.x + e.bx; e.y = s.y + 4;
+    if (end !== null) { const b = X.barge(); e.mode = 'boardTell'; e.modeT = 0.55; e.bx = end; e.x = b.x + (end < b.w / 2 ? -GRIND.gunwale : b.w + GRIND.gunwale); e.y = s.y + 4; X.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.splash && S.splash(); X.ring(e.x, s.y, 10, '#9ad8c0'); } }
+  if (e.mode === 'boardTell') { const b = X.barge(); if (!b) { e.mode = 'lurk'; return; } e.x = b.x + (e.bx < b.w / 2 ? -GRIND.gunwale : b.w + GRIND.gunwale); e.y = s.y + 4;
     if (e.modeT <= 0) { e.aboard = true; e.mode = 'deck'; e.modeT = 0.4; e.cd = 0.5; e.y = b.y; S.splash && S.splash(); X.mark(e, 'ABOARD', '#ff6b6b'); X.hint('board', 'A GRINDYLOW HAULS ITSELF ABOARD. OUT OF THE WATER IT IS WEAK: CUT IT, AND JUMP ITS GRAB.'); }
     e.vx = 0; e.vy = 0; return; }
   const edge = edgeOf(P, X), inReach = edge && Math.abs(edge.x - e.hx) <= G.leash + 8;
@@ -84,7 +97,7 @@ export function stepGrindylow(e, dt, X) {
       e.y = (e.edge ? e.edge.y : s.y - 6) + 6;   /* reaching up to the lip: the ripple is where your blade can find it */
       if (e.bubT <= 0) { e.bubT = 0.12; X.ring(e.x, s.y, 6 + Math.random() * 6, '#9ad8c0'); }
       if (e.modeT <= 0) {
-        const hold = edge && Math.abs(P.x - e.x) < G.reach && (P.ground || (P.onMover && P.onMover.canal)) && !P.dead;
+        const hold = edge && Math.abs(P.x - e.x) < G.reach + (edge.barge ? G.barReach : 0) && (P.ground || (P.onMover && P.onMover.canal)) && !P.dead;
         if (hold) { e.mode = 'grab'; e.modeT = G.hold; e.presses = 0; e.grabbed = P; e.edge = edge; S.splash && S.splash(); X.hurtHero(e.x, G.grabDmg, { unblockable: true, who: e, name: 'THE GRINDYLOW' }); X.hint('grab', 'IT HAS YOUR ANKLE: JUMP, STRIKE, PULL AWAY - QUICKLY, OR INTO THE WATER.'); }
         else { e.mode = 'dunk'; e.modeT = 0.8; e.cd = G.cd * 0.6; }
       }
