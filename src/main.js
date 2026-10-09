@@ -16003,7 +16003,7 @@ function updateWindcaller(e, dt) {
       if (e.castT <= 0 && close) e.castT = 0.3;
       /* (claude/windcaller3) HIS BLAST: stood beside him on his ledge he does not throw - he gathers the wind in his hands (red: no shield holds it, and no brace) and blows you off it; step back out of it or go over it */
       e.blastCd = Math.max(0, (e.blastCd ?? 2) - dt); e.closeT = Math.abs(P.x - e.x) < CALLER_BLAST_R && Math.abs(P.y - e.y) < 30 && !P.galeRide ? (e.closeT || 0) + dt : 0;
-      if (e.closeT >= CALLER_BLAST_WAIT[ph - 1] && e.blastCd <= 0 && !P.dead) { e.closeT = 0; e.mode = 'blastTell'; e.modeT = CALLER_BLAST_TELL; e.blastDir = Math.sign(P.x - e.x) || e.face || 1; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); number(e.x, e.y - 34, 'HE GATHERS THE WIND', '#bfe6f5'); SFX.gustRise(); SFX.callerChant(); break; }
+      if (e.closeT >= CALLER_BLAST_WAIT[ph - 1] && e.blastCd <= 0 && !P.dead) { e.closeT = 0; e.mode = 'blastTell'; e.modeT = CALLER_BLAST_TELL; e.blastDir = Math.sign(P.x - e.x) || e.face || 1; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); number(e.x, e.y - 34, 'HE GATHERS THE WIND: STEP BACK', '#bfe6f5'); SFX.gustRise(); SFX.callerChant(); break; }
       else if (e.castT <= 0 && !P.dead && !P.galeRide) { e.castT = CALLER_CAST[ph - 1]; const a = Math.atan2((P.y - 8) - (e.y - 14), P.x - e.x);
         seeds.push({ x: e.x + Math.cos(a) * 12, y: e.y - 14 + Math.sin(a) * 12, vx: Math.cos(a) * 150, vy: Math.sin(a) * 150, dead: false, life: 3.4, bolt: true, owner: e, dmg: CALLER_BOLT_DMG });   /* (claude/sweep1: owner - his bolts are his blows, BOSS_HIT) */
         e.castFlash = 0.25; SFX.callerBlast(); }
@@ -16029,7 +16029,7 @@ function updateWindcaller(e, dt) {
     case 'stone': if (e.modeT <= 0) toCast(); break;
     case 'blastTell': { if (Math.random() < dt * 50) { const a = Math.random() * 6.283; parts.push({ x: e.x + Math.cos(a) * 26, y: e.y - 14 + Math.sin(a) * 18, vx: -Math.cos(a) * 60, vy: -Math.sin(a) * 50, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 }); }
       if (e.modeT <= 0) { e.mode = 'blast'; e.modeT = 0.35; SFX.gust(); SFX.buzz(); shakeCam(3); for (let i = 0; i < 18; i++) parts.push({ x: e.x + e.blastDir * 10, y: e.y - 4 - Math.random() * 28, vx: e.blastDir * (220 + Math.random() * 160), vy: (Math.random() - 0.5) * 40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#e8f0f8' : '#bfe6f5', size: 2, grav: 0 });
-        if (!P.dead && !P.galeRide && (P.x - e.x) * e.blastDir > -8 && Math.abs(P.x - e.x) < CALLER_BLAST_R + 12 && Math.abs(P.y - e.y) < 34) { const r = damagePlayer(e.x, CALLER_BLAST_DMG, { unblockable: true, who: e, name: 'HIS BLAST' }); if (r === 'hit') { P.vx = e.blastDir * 260; P.vy = -200; P.ground = false; P.onMover = null; number(P.x, P.y - 30, 'BLOWN OFF', '#bfe6f5'); } } } break; }
+        if (!P.dead && !P.galeRide && (P.x - e.x) * e.blastDir > -8 && Math.abs(P.x - e.x) < CALLER_BLAST_R + 12 && Math.abs(P.y - e.y) < 34) { const r = damagePlayer(e.x, CALLER_BLAST_DMG, { unblockable: true, who: e, name: 'HIS BLAST' }); if (r === 'hit') { P.vx = e.blastDir * 260; P.vy = -200; P.ground = false; P.onMover = null; } } } break; }
     case 'blast': if (e.modeT <= 0) { e.blastCd = CALLER_BLAST_CD[ph - 1]; toCast(castLen * 0.6); e.castT = 0.5; } break;
     case 'wallTell': { // THE WHITE WALL: the gale drives a curtain of hail down the moor, and there is one gap in it
       if (Math.random() < dt * 60) parts.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, vx: -200, vy: 40, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 });

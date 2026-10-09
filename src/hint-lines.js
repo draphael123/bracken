@@ -7,6 +7,8 @@
 import { STUCK_HANDS } from './stuck-spots.js';
 import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
+  /* claude/windcaller3: THE WINDCALLER 3 - the phases change the wind, his blast, his step away, the gale home, the falling ledge, and his opening */
+  'THE WIND TURNS: READ THE FLAGS', 'THE STORM: THE EAST LEDGE GIVES', 'HE GATHERS THE WIND: STEP BACK', 'HE STEPS AWAY', 'HE BLOWS YOU HOME', 'THE GALE TAKES YOU HOME', 'THE LEDGE FALLS', 'HIS OWN BOLT: HE FALLS - CUT HIM',
   /* claude/survival2: the manual flask and the exam spikes (src/main.js drinkFlask, shrine break, SV.examAt) - routed so the player can see them */
   'NO FLASKS', 'FULL', 'SPILLED', 'SHRINE BROKEN  +1 FLASK', 'THE SPIKES KILL HERE',
   /* claude/slide: the first slope a hero stands on */
