@@ -61,3 +61,35 @@ console.log('  the charge: ' + PB.speed + 'px/s behind a ' + TELL[0] + 's tell (
   const early=swing(c.PAL_ROLL_BEAT+0.05);assert.notEqual(early.mode,'broken','an early roll passes through him: no open');assert(!(early.open>0));assert(said.includes('TOO SOON'),'and says so: '+said.join(','));
   console.log('  roll: opens him started within '+c.PAL_ROLL_BEAT+' s of the blow, TOO SOON before'); }
 console.log('Enraged oath sweep and three-column radiance: told unblockable attacks, jump/position counters and 1.6-second openings.');
+/* THE CRUSADER (claude/crusader, Daniel 10-08): the parry is 0.2 s on the GLINT, a missed parry is answered by a follow-up through the shield,
+   CRUSADER'S GRAB is rolled through (caught: held over him and hurled down, unblockable), HOLY BRAND's fire runs the floor (jump it), and
+   the delayed overhead glints the same CRUS_GLINT before its true release. The numbers are main.js's own (the slice defines them). */
+{ const said=[];c.number=(x,y,t)=>said.push(t);c.invulnerable=()=>false;c.motes=noop;c.SFX=new Proxy({},{get:()=>noop});
+  const CB=vm.runInContext('CRUS_BEAT',c),CG=vm.runInContext('CRUS_GLINT',c),GR=vm.runInContext('CRUS_GRAB',c),BR=vm.runInContext('CRUS_BRAND',c),DL=vm.runInContext('CRUS_DELAY',c);
+  assert(CB<=0.22&&CB>=0.15,'the parry window is ~0.2 s ('+CB+')');assert(CG>CB,'the glint comes before the beat opens, so it can be reacted to');
+  /* the glint: not before CRUS_GLINT, then once */
+  const gl=enemy();gl.phase=1;gl.mode='delayTell';gl.modeT=DL.tell[0];gl.glint=0;c.P.x=gl.x+40;c.P.y=320;c.updateClosedHelm(gl,.02);assert(!gl.glint,'no glint while the overhead is held');
+  gl.modeT=CG-.01;c.updateClosedHelm(gl,.02);assert(gl.glint===1&&gl.glintT>0,'the glint marks the true release of the delayed overhead');
+  /* a guard held from before the beat only holds - and the follow-up comes back through the shield */
+  c.P.blockT=1;c.P.parryT=0;   /* a guard up long before the glint */
+  const fu=enemy();fu.phase=1;fu.mode='cutTell';fu.modeT=0;fu.glint=1;c.P.x=fu.x+30;c.P.dodge=0;hits.length=0;c.damagePlayer=(x,d,o)=>{hits.push({x,d,o});return 'blocked';};
+  said.length=0;c.updateClosedHelm(fu,.02);assert.equal(fu.mode,'cut');assert(said.includes('TOO EARLY: AT THE GLINT'),'an early guard is told: '+said.join(','));
+  let n=0;while(fu.mode==='cut'&&n<50){c.updateClosedHelm(fu,.02);n++;}assert.equal(fu.mode,'followTell','a missed parry is punished: the follow-up');assert(said.includes('!'),'told with the yellow mark');
+  hits.length=0;n=0;while(fu.mode==='followTell'&&n<60){c.updateClosedHelm(fu,.02);n++;}assert(hits.length===1&&hits[0].o.pierce,'the follow-up goes through a held shield');
+  n=0;while(fu.mode!=='stalk'&&n<200){c.updateClosedHelm(fu,.02);n++;}assert.equal(fu.mode,'stalk','and no follow-up of the follow-up');
+  /* the grab: caught -> held -> hurled down, unblockable; rolled -> he grasps air and is left open to a whole blow */
+  c.damagePlayer=(x,d,o)=>{hits.push({x,d,o});return 'hit';};
+  const g1=enemy();g1.phase=1;g1.mode='grabTell';g1.modeT=0;c.P.x=g1.x+24;   /* (moveBody is a stub here: he does not travel, so the hero stands where the lunge would carry the hand) */c.P.y=320;c.P.dead=false;hits.length=0;n=0;
+  while(g1.mode!=='grabHold'&&n<40){c.updateClosedHelm(g1,.02);n++;}assert.equal(g1.mode,'grabHold','in reach, the hand closes');assert.equal(hits.length,0,'the catch itself costs nothing');
+  c.updateClosedHelm(g1,.02);assert(c.P.y<g1.y-40,'held up over him');n=0;while(g1.mode==='grabHold'&&n<100){c.updateClosedHelm(g1,.02);n++;}
+  assert.equal(g1.mode,'grabSlam');assert(hits.length===1&&hits[0].o.unblockable,'hurled down: no shield turns it');
+  c.invulnerable=()=>true;const g2=enemy();g2.phase=1;g2.mode='grabTell';g2.modeT=0;c.P.x=g2.x+24;c.P.y=320;n=0;while(!['grabMiss','grabHold'].includes(g2.mode)&&n<60){c.updateClosedHelm(g2,.02);n++;}
+  assert.equal(g2.mode,'grabMiss','rolled through: he grasps air');c.invulnerable=()=>false;
+  /* the brand: phase three only; the fire runs the floor both ways and finds a grounded hero, not one in the air */
+  const b0=enemy();b0.phase=2;b0.brandT=0;b0.radianceT=20;b0.oathT=20;b0.hp=100;b0.maxHp=1000;c.P.x=b0.x+60;c.P.y=320;c.updateClosedHelm(b0,.02);assert.equal(b0.phase,3,'under '+BR.at+' of his health he takes up the brand');
+  n=0;while(b0.mode!=='brandTell'&&n<200){c.updateClosedHelm(b0,.02);n++;}assert.equal(b0.mode,'brandTell');assert(said.includes('!!'),'told red');
+  b0.modeT=0;hits.length=0;c.updateClosedHelm(b0,.02);assert.equal(b0.fires.length,2,'two lines of fire, both ways');
+  c.P.x=b0.x+80;c.P.y=320-30;n=0;while(b0.fires.some(f=>f.dir>0&&f.x<b0.x+100)&&n<100){c.updateClosedHelm(b0,.02);n++;}assert.equal(hits.length,0,'jumped: the fire passes under');
+  const b1=enemy();b1.phase=3;b1.mode='brandTell';b1.modeT=0;c.P.x=b1.x-70;c.P.y=320;hits.length=0;c.updateClosedHelm(b1,.02);n=0;while(!hits.length&&n<100){c.updateClosedHelm(b1,.02);n++;}
+  assert(hits.length===1&&hits[0].o.unblockable,'stood on the floor: branded, unblockable');
+  console.log('  the crusader: parry '+CB+' s, glint '+CG+' s before, follow-up through the shield, grab rolled or hurled, brand jumped'); }
