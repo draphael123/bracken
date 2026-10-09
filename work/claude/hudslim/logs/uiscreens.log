@@ -1,0 +1,6 @@
+ok  static         boot line empty without ?debug, 14 loading tips, 4 opening panels
+ok  press card     PRESS ANY KEY with no menu behind it; one key takes it down without choosing anything; then the menu
+ok  opening        4 panels each with its title and two lines; X skips to the hero pick and writes the flag; tool runs skip it
+ok  hero pick      each of the 3 heroes shows a named signature move, and the window moves
+ok  map card       recommended level, best, three medal times, quest in words, a paged blurb
+ok  console        no page errors

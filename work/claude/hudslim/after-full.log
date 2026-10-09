@@ -1,7 +1,9 @@
 wrote hud-welltown
+welltown []
 wrote hud-redgorge
+redgorge []
 wrote hud-reef
+reef []
 wrote boss-bar
-wrote boss-pct
 wrote boss-num
 SET.hud= full bossHp= num

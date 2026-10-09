@@ -1,0 +1,3 @@
+  title items: CONTINUE, CHOOSE A SAVE, LOCAL CO-OP, PRACTICE, SETTINGS, SOUND TEST, CONTROLS, CREDITS
+  frame (update+draw) in the Wood, lighter effects 4.85 ms, particles MANY + full parallax 4.52 ms; the touch overlay 0.004 ms a frame
+touch: the stick, the buttons, the action button, the tap menus, the settings, the assists, the haptics and the installable app all hold.

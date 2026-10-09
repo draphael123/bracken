@@ -5514,7 +5514,7 @@ const SETTING_TIPS = {
   'Co-op': 'a friend on a pad, or the game playing him', 'Co-op guide': 'how a second player joins, is downed and is lifted',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts, shouts and cries from heroes and foes',
-  'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
+  'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'minimal bars, or the plate',
   'Ground light': 'depth, carved edges and a sun on the ground', 'The air': 'haze, drifting motes and things in the way', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds', 'Hitboxes': 'draw the boxes the game actually tests: what you hit with, what hits you',
   'Brightness': 'lifts or drops the whole picture', 'Screen filter': 'a colour grade over everything', 'Film grain': 'a faint moving grain, like old tape',
   'Parallax': 'how many background layers move', 'Arena tint': 'the colour wash over boss rooms', 'Particles': 'how much comes off a hit',
