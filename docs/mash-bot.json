@@ -8338,7 +8338,7 @@
   }
  },
  "rootway": {
-  "hash": "d1084c7215b6",
+  "hash": "269d8b9e4e46",
   "boss": {
    "boss": "huntmaster",
    "wins": 0,
@@ -8439,7 +8439,7 @@
    ]
   },
   "carried": {
-   "from": "00caeb0d1a27",
+   "from": "d1084c7215b6",
    "parts": [
     "boss"
    ]
@@ -8508,7 +8508,7 @@
   }
  },
  "minecart": {
-  "hash": "b8d78a140878",
+  "hash": "ad73fd7be795",
   "boss": {
    "boss": "greatdrill",
    "wins": 0,
@@ -8609,7 +8609,7 @@
    ]
   },
   "carried": {
-   "from": "8c88f69d3a71",
+   "from": "f3159662c4b1",
    "parts": [
     "boss"
    ]
@@ -8618,8 +8618,26 @@
    "knight": {
     "deaths": 4,
     "minHpPct": 0,
-    "hpLostPct": 477,
-    "hits": 17,
+    "hpLostPct": 404,
+    "hits": 15,
+    "walked": 100,
+    "lifts": 9,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 9155,
+    "kills": 19,
+    "heroLevel": 13
+   },
+   "warden": {
+    "deaths": 4,
+    "minHpPct": 0,
+    "hpLostPct": 402,
+    "hits": 13,
     "walked": 100,
     "lifts": 10,
     "held": 0,
@@ -8629,33 +8647,15 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 9482,
-    "kills": 15,
-    "heroLevel": 11
-   },
-   "warden": {
-    "deaths": 4,
-    "minHpPct": 0,
-    "hpLostPct": 511,
-    "hits": 14,
-    "walked": 100,
-    "lifts": 11,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 9538,
-    "kills": 15,
-    "heroLevel": 11
+    "frames": 9139,
+    "kills": 17,
+    "heroLevel": 13
    },
    "pyro": {
     "deaths": 4,
     "minHpPct": 0,
-    "hpLostPct": 504,
-    "hits": 14,
+    "hpLostPct": 412,
+    "hits": 16,
     "walked": 100,
     "lifts": 11,
     "held": 0,
@@ -8665,9 +8665,9 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 9551,
-    "kills": 13,
-    "heroLevel": 11
+    "frames": 9658,
+    "kills": 14,
+    "heroLevel": 13
    }
   }
  }

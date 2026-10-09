@@ -15,6 +15,7 @@ const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.t
 BOSS_PHASE.greatdrill = BOSS_PHASE.greatdrill || 1;
 
 export function makeDrillHands(ctx) {
+  const txt = (s, x, ...a) => { if (!(x > -48 && x < ctx.VW() + 48)) return; ctx.text(s, x, ...a); };   /* screen words only where the screen is (textfit: a label drawn off the page is a smudge on a wide view) */
   let S = null;
   const H = {};
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'greatdrill' ? ctx.L.arena : null);
@@ -78,32 +79,33 @@ export function makeDrillHands(ctx) {
   H.drawWorld = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     /* the chute (its tell: it rattles and the line it will drop on flashes) */
     const chx = R(G.chuteX - cx), cty = R(G.ceilY - cy); MCA.chute(g, chx, cty, !!S.chute, S.chute ? R(G.laneY[S.chute.lane] - cy) - 2 : 0, time);
-    if (S.chute) { const fl = Math.floor(time * 12) % 2; ctx.text('ORE!', chx, cty + 42, fl ? '#ffd36b' : '#ff9a5c', 'center', 6); }
+    const vw = ctx.VW(), onS = x => x > -40 && x < vw + 40;   /* (labels only where the screen is: textfit found them drawn off the page) */
+    if (S.chute && onS(chx)) { const fl = Math.floor(time * 12) % 2; txt('ORE!', chx, cty + 42, fl ? '#ffd36b' : '#ff9a5c', 'center', 6); }
     /* THE POINTS MAST */
     const px = R(G.pointsX - cx), pc = S.points ? '#ffd36b' : '#7fc4e0'; MCA.mast(g, px, R(G.laneY[2] - 30 - cy), R(G.laneY[0] - cy), S.points, time);
-    ctx.text(S.points ? 'TO THE GEARS' : 'POINTS', px, R(G.laneY[2] - 54 - cy), pc, 'center', 5);
+    if (onS(px)) txt(S.points ? 'TO THE GEARS' : 'POINTS', px + 8, R(G.laneY[1] - 22 - cy), pc, 'left', 5);
     if (S.points) for (const l of [1, 2]) { g.fillStyle = 'rgba(255,211,107,0.5)'; g.fillRect(px - 8, R(G.laneY[l] - cy) - 1, 16, 2); }
     /* THE ORE CARTS */
-    for (const o of S.ores) { const x = R(o.x - cx), y = R(o.y - cy); MCA.tub(g, x, y, 'ore', time, 0); ctx.text('ORE', x, y - 24, '#ffd36b', 'center', 5); }
+    for (const o of S.ores) { const x = R(o.x - cx), y = R(o.y - cy); MCA.tub(g, x, y, 'ore', time, 0); if (onS(x)) txt('ORE', x, y - 24, '#ffd36b', 'center', 5); }
   };
   /* THE MACHINE: its body behind its front, the bit on its line, the gears on the LOW line, the cab and its goblin */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; const G = S.G, D = R(S.D - cx), top = R(G.ceilY + 6 - cy), bot = R(G.floor - cy), jam = GD.drillOpen(e), warded = S.ward > 0;
     const gy = R(G.laneY[0] - 10 - cy), by = R(G.laneY[S.bitLane] - 8 - cy), cb = GD.cabBox(G, S);
     MCA.drill(g, D, top, bot, gy, by, R(S.bitLen), { x: R(cb.l - cx), t: R(cb.t - cy), w: R(cb.r - cb.l), h: R(cb.b - cb.t) }, jam, warded, (e.hurtT || 0) > 0 || (e.flash || 0) > 0, time, S.bitLane);
-    ctx.text('GEARS', D - 27, gy + 25, jam ? '#ffd36b' : '#ff6b6b', 'center', 5);
+    if (D - 27 > -40 && D - 27 < ctx.VW() + 40) txt('GEARS', D - 27, gy + 25, jam ? '#ffd36b' : '#ff6b6b', 'center', 5);
   };
   /* OVER EVERYTHING: the tells (the bore's line, the grind, the roof's shadows, full bore) and THE READ */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'greatdrill') return; const G = S.G, blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     if (e.mode === 'boreTell') { const y = R(G.laneY[S.bitLane] - cy); g.fillStyle = 'rgba(255,90,70,' + (0.25 + 0.2 * Math.sin(time * 20)).toFixed(2) + ')'; g.fillRect(R(S.D - cx), y - 18, R(DRILL.boreLen + 10), 18);
-      ctx.text('!! BORE: ' + GD.LANE_NAME[S.bitLane], R(S.D + 70 - cx), y - 24, blink, 'center', 6); }
-    if (e.mode === 'grindTell' || e.mode === 'fullTell') { ctx.text(e.mode === 'grindTell' ? '!! GRIND' : '!! FULL BORE', R(S.D + 50 - cx), R(G.laneY[2] - 50 - cy), blink, 'center', 7); g.fillStyle = 'rgba(255,60,30,0.25)'; g.fillRect(R(S.D - cx), R(G.ceilY - cy), 40, G.floor - G.ceilY); }
+      txt('!! BORE: ' + GD.LANE_NAME[S.bitLane], R(S.D + 70 - cx), y - 24, blink, 'center', 6); }
+    if (e.mode === 'grindTell' || e.mode === 'fullTell') { txt(e.mode === 'grindTell' ? '!! GRIND' : '!! FULL BORE', R(S.D + 50 - cx), R(G.laneY[2] - 50 - cy), blink, 'center', 7); g.fillStyle = 'rgba(255,60,30,0.25)'; g.fillRect(R(S.D - cx), R(G.ceilY - cy), 40, G.floor - G.ceilY); }
     for (const r of S.roof) if (r.t > 0) { const x = R(r.x - cx), y = R(G.laneY[r.lane] - cy), k = 1 - r.t / DRILL.roofTell; g.fillStyle = 'rgba(0,0,0,' + (0.3 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - DRILL.roofW / 2, y - 2, DRILL.roofW, 3);
-      g.fillStyle = '#4a3a2c'; g.fillRect(x - 8, R(y - 44 + 40 * k * k), 16, 10); ctx.text('!', x, y - 50, '#ffd36b', 'center', 6); }
+      g.fillStyle = '#4a3a2c'; g.fillRect(x - 8, R(y - 44 + 40 * k * k), 16, 10); txt('!', x, y - 50, '#ffd36b', 'center', 6); }
     const cb = GD.cabBox(G, S), mx = R((cb.l + cb.r) / 2 - cx), my = R((cb.t + cb.b) / 2 - cy);
     if (GD.drillOpen(e)) { const k = Math.max(0, e.open / (e.openT0 || DRILL.jamT)); g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(mx, my, 26, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-      const byy = my - 40; ctx.text('JAMMED: OPEN', mx, byy - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(mx - 18, byy, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(mx - 18, byy, R(36 * k), 3); }
-    if (S.ward > 0) ctx.text('WARDED', mx, my - 40, '#c8d8e8', 'center', 5);
-    if (e.guardFx > 0 && e.guardWord) { e.guardFx = Math.max(0, e.guardFx - 1 / 60); ctx.text(e.guardWord, mx, my - 52 - R((0.3 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#c8d8e8', 'center', 6); }
+      const byy = my - 40; txt('JAMMED: OPEN', mx, byy - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(mx - 18, byy, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(mx - 18, byy, R(36 * k), 3); }
+    if (S.ward > 0) txt('WARDED', mx, my - 40, '#c8d8e8', 'center', 5);
+    if (e.guardFx > 0 && e.guardWord) { e.guardFx = Math.max(0, e.guardFx - 1 / 60); txt(e.guardWord, mx, my - 52 - R((0.3 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#c8d8e8', 'center', 6); }
   };
   return H;
 }
