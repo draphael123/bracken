@@ -427,6 +427,7 @@ export function makeKsarHands(ctx) {
     const tr = K.trails.find(q => q.id === 'trail'), tw = K.barricades.find(b => b.id === 'trailWall'); if (tr && tw && !tw.broken && c > 682 && c < 697) return tr.st !== 'dry' ? Object.assign(here(684, 33, null, 1), { r: 14 }) : tk ? here(688, 33, null, 1) : torchFor('trailTorches', 688, 33);
     const aa = K.barricades.find(b => b.id === 'alleyArch'); if (aa && !aa.broken && c > 702 && c < 777) { const a0 = K.setKegs.find(k => k.alley && k.st === 'set'), lit = K.setKegs.some(k => k.alley && k.st === 'lit');
       return lit ? Object.assign(here(705, 33, null, 1), { r: 14 }) : a0 ? here(a0.x - 1, a0.y, 'atk', 1) : null; }
+    if (aa && aa.broken && c >= 781 && c <= 789 && P.y > 18 * ts && P.y <= 34.5 * ts) return { x: 786 * ts + 8, y: P.y, key: 'jump', face: 1 };   /* THE TOWER'S STAIR: its boards overlap at column 786 - a player stands there and jumps straight up through the next (the walker read the zigzag STUCK from its foot) */
     if (c >= 789 && c <= 795 && P.y < 17 * ts) return here(795, 15, 'up', 1);
     return null; };
 
