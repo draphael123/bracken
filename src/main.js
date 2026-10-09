@@ -3142,10 +3142,7 @@ function drawEliteVolley(e, cx, cy) {
   if (e.vol.ek) return drawEliteMark(e, cx, cy);   /* (ELITES2) a leap's, a pot's, a grasp's, a rune's mark */
   const V = e.vol, A = EL_ARCH, x0 = Math.round(V.x - A.half - cx), x1 = Math.round(V.x + A.half - cx), fy = Math.round(V.y - cy);
   if (e.mode === 'elVolleyTell') { const k = Math.min(1, V.t / A.tell), p = 0.5 + 0.5 * Math.sin(time * (10 + k * 14));
-    g.globalAlpha = 0.16 + 0.2 * k; g.fillStyle = '#ff6b6b'; g.fillRect(x0, fy - 22, x1 - x0, 22);
-    g.globalAlpha = 0.7 + 0.3 * p; g.fillStyle = ART.OUT; g.fillRect(x0 - 1, fy - 2, x1 - x0 + 2, 3);
-    g.fillStyle = '#ff6b6b'; for (let x = x0; x < x1; x += 5) g.fillRect(x, fy - 1, 3, 1);
-    for (const [bx, s] of [[x0, 1], [x1 - 1, -1]]) { g.fillStyle = ART.OUT; g.fillRect(bx - 1, fy - 12, 3, 12); g.fillRect(bx, fy - 12, s * 4 + (s < 0 ? 1 : 0), 3); g.fillStyle = '#ff6b6b'; g.fillRect(bx, fy - 11, 1, 10); g.fillRect(s > 0 ? bx : bx - 2, fy - 11, 3, 1); }
+    tellBar(x0, x1, fy, 4, k, '#ff6b6b', 0.7 + 0.3 * p);   /* (claude/tellposes) a dithered floor patch with its two posts, not a red wash, a rail and brackets */
     /* and the arrows' shadows gathering on it as the moment comes */
     if (k > 0.45) { g.globalAlpha = (k - 0.45) * 1.4; g.fillStyle = '#1a0e10'; for (let i = 0; i < 9; i++) { const ax = x0 + 3 + ((i * 37) % (x1 - x0 - 6)); g.fillRect(ax - 1, fy - 3, 3, 1); } }
     g.globalAlpha = 1; return; }
@@ -3793,9 +3790,7 @@ function drawEliteKit(e, cx, cy) {
 function drawEliteMark(e, cx, cy) {
   const V = e.vol, x0 = Math.round(V.x - V.half - cx), x1 = Math.round(V.x + V.half - cx), fy = Math.round(V.y - cy), tellT = /Tell$/.test(e.mode || '') ? 1 : 0;
   const k = tellT ? Math.min(1, V.t / 0.7) : 1, p = 0.5 + 0.5 * Math.sin(time * (10 + k * 14));
-  g.globalAlpha = 0.14 + 0.22 * k; g.fillStyle = e.t === 'apprentice' ? '#c8a0ff' : '#ff6b6b'; g.fillRect(x0, fy - 18, x1 - x0, 18);
-  g.globalAlpha = 0.7 + 0.3 * p; g.fillStyle = ART.OUT; g.fillRect(x0 - 1, fy - 2, x1 - x0 + 2, 3);
-  g.fillStyle = '#ff6b6b'; for (let x = x0; x < x1; x += 5) g.fillRect(x, fy - 1, 3, 1);
+  tellBar(x0, x1, fy, 4, k, e.t === 'apprentice' ? '#c8a0ff' : '#ff6b6b', 0.7 + 0.3 * p);   /* (claude/tellposes) dithered floor patch */
   if (e.ekLift > 0) { g.globalAlpha = 0.5; g.fillStyle = '#1a0e10'; g.fillRect(Math.round(e.x - cx) - 6, fy - 2, 12, 2); }
   g.globalAlpha = 1;
 }
@@ -12715,7 +12710,7 @@ function drawFieldsProps(cx, cy) {
       for (const f of pm.furrows || []) { const x0 = Math.round(f.x0 - cx), x1 = Math.round(f.x1 - cx), y = Math.round(fl - cy); if (x1 < -4 || x0 > VW + 4) continue; const k = Math.min(1, f.t / 3);
         g.globalAlpha = 0.85 * k; g.fillStyle = '#3a2c1e'; g.fillRect(x0, y - 2, x1 - x0, 2); g.fillStyle = '#5e4c34'; for (let x = x0; x < x1; x += 6) g.fillRect(x, y - 3, 3, 1);
         if (pm.phase === 2) { const tell = pm.mode === 'furrowTell' || pm.mode === 'furrow', q = 0.5 + 0.5 * Math.sin(time * (tell ? 24 : 5) + f.x0);
-          g.globalAlpha = k * (tell ? 0.45 + 0.5 * q : 0.25 + 0.2 * q); g.fillStyle = tell ? '#ff6b6b' : '#ff9a5c'; g.fillRect(x0, y - (tell ? 4 : 2), x1 - x0, tell ? 3 : 1); }
+          if (tell) tellBar(x0, x1, y, 3, 0.4 + 0.5 * q, '#ff6b6b', k); else { g.globalAlpha = k * (0.25 + 0.2 * q); g.fillStyle = '#ff9a5c'; for (let xx = x0; xx < x1; xx += 2) g.fillRect(xx, y - 2, 1, 1); } }   /* (claude/tellposes) a dithered strip, not a flat red bar */
         g.globalAlpha = 1; }
       for (const b of plBaits()) { const x = Math.round(b.x - cx + (b.shake > 0 ? Math.sin(time * 70) * 2 : 0)), y = Math.round(fl - cy); if (x < -40 || x > VW + 40) continue;
         const c = b.kind === 'fence' ? fa().fence[0] : fa().trough[0]; g.drawImage(c, x - (c.width >> 1), y - c.height);
@@ -12736,13 +12731,13 @@ function drawFieldsOverlay(cx, cy) {
     g.fillStyle = lit ? HEX[1] : mo.ph === 'warn' ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b') : '#4a4a60'; g.fillRect(x, y, Math.round(w * Math.max(0, Math.min(1, frac))), 4); g.strokeStyle = '#1b1626'; g.strokeRect(x + 0.5, y - 0.5, w, 5); }
   /* THE PLOUGHMAN'S HEAD: where it will come down, red, following you until it is thrown and then still (claude/weakboss) */
   { const pm = enemies.find(q => q.t === 'ploughman' && q.alive && q.mode === 'headTell' && q.headAt != null); if (pm && L.mini) { const k = 0.5 + 0.5 * Math.sin(time * 16), x = Math.round(pm.headAt - cx), y = Math.round(L.mini.floor - cy);
-    g.globalAlpha = 0.4 + 0.45 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, 14, 3.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
+    tellRing(x, y - 1, 14, 3.5, 0.5 + 0.4 * k, '#ff6b6b'); } }   /* (claude/tellposes) a ring of floor pixels */
   /* the rooks' marks on the ground */
   for (const e of enemies) if (e.alive && e.t === 'rook' && (e.mode === 'diveTell' || e.mode === 'dive') && e.mx !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 16); g.globalAlpha = 0.35 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(e.mx - cx), Math.round(e.my + 5 - cy), 8, 2.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
   /* THE KING: his openings ringed green, his fire, his bales, his lantern in the air */
   const b = boss; if (b && b.t === 'strawking' && b.alive && L.arena) { const fl = L.arena.floor;
     if (b.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(b.x - cx), Math.round(b.y - 2 - cy), 26 + k * 3, 7, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
-    if (b.mode === 'sweepTell') { const k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(Math.round(b.x - cx), Math.round(b.y - 6 - cy)); g.lineTo(Math.round(b.x + b.face * 64 * (b.grown || 1) - cx), Math.round(b.y - 6 - cy)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+    if (b.mode === 'sweepTell') { const k = 0.5 + 0.5 * Math.sin(time * 20); tellLine(Math.round(b.x - cx), Math.round(b.x + b.face * 64 * (b.grown || 1) - cx), Math.round(b.y - 6 - cy), k, '#ff6b6b'); }
     if (b.mode === 'leapTell' || b.mode === 'leap') { g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.ellipse(Math.round(b.lx - cx), Math.round(b.ly - 1 - cy), 18, 4, 0, 0, 7); g.fill(); }
     if (b.lantern) fbloom(b.x + b.face * 16 - cx, b.y - 66 - cy, 16, 0.5, 'warm');
     if (b.mode === 'ablaze') fbloom(b.x - cx, b.y - 40 - cy, 40, 0.5, 'warm'); }
@@ -13860,28 +13855,28 @@ function drawMageOverlay(cx, cy) {
     for (let i = 0; i < 6; i++) { const a = time * 0.8 + i * 1.05, rx = x + Math.cos(a) * 12, ry = y - 14 + Math.sin(a * 1.3) * 6; g.globalAlpha = 0.28 * k; g.fillStyle = i % 2 ? '#6a5a7a' : '#9a8aaa'; g.beginPath(); g.arc(rx, ry, 9 + (i % 3) * 2, 0, 7); g.fill(); }
     g.globalAlpha = 1; }
   /* THE HOMUNCULUS'S RING: where its flask will break, red, following you until it is thrown and then still */
-  { const h = enemies.find(q => q.t === 'homunculus' && q.alive && q.mode === 'flaskTell' && q.flaskAt != null); if (h && L.mini) { const k = 0.5 + 0.5 * Math.sin(time * 16), x = Math.round(h.flaskAt - cx), y = Math.round(L.mini.floor - cy), locked = h.modeT <= 0.3; g.globalAlpha = locked ? 0.9 : 0.45 + 0.3 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 2, 20 + (locked ? 0 : k * 2), 5, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(x, y - 2, 9, 2.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
+  { const h = enemies.find(q => q.t === 'homunculus' && q.alive && q.mode === 'flaskTell' && q.flaskAt != null); if (h && L.mini) { const k = 0.5 + 0.5 * Math.sin(time * 16), x = Math.round(h.flaskAt - cx), y = Math.round(L.mini.floor - cy), locked = h.modeT <= 0.3; tellRing(x, y - 2, 20 + (locked ? 0 : Math.round(k * 2)), 5, locked ? 1 : 0.3 + 0.3 * k, '#ff6b6b'); tellRing(x, y - 2, 9, 2.5, locked ? 1 : 0.3 + 0.3 * k, '#ff6b6b'); } }   /* (claude/tellposes) */
   /* THE ARCHMAGE'S MARKS: his circle, his runes, his opening; the familiar's eye */
   const b = boss, R = MG.A; if (b && b.t === 'archmage' && b.alive && R) {
     /* WHERE HE WILL STAND (claude/archfix): his blink's flash - a column of his light on the spot and an outline of him, brightening as he comes */
     if (b.mode === 'blinkTell' && b.blinkTo && b.alive) { const x = Math.round(b.blinkTo.x - cx), y = Math.round(b.blinkTo.y - cy), k = Math.max(0, Math.min(1, 1 - b.modeT / 0.5)), p = Math.floor(time * 12) % 2;
-      g.globalAlpha = 0.3 + 0.45 * k; g.fillStyle = MVIO[2]; g.fillRect(x - 7, y - 44, 14, 44); g.globalAlpha = 0.6 + 0.4 * k; g.strokeStyle = p ? MVIO[3] : '#ffffff'; g.lineWidth = 1; g.strokeRect(x - 10.5, y - 44.5, 21, 44);
-      g.beginPath(); g.ellipse(x, y - 1, 14 + 6 * (1 - k), 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1; fbloom(x, y - 20, 22, 0.25 + 0.3 * k, 'green'); }
-    if (R.circle) { const c = R.circle, k = 0.5 + 0.5 * Math.sin(time * 16), x = Math.round(c.x - cx), y = Math.round(c.y - cy); g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = c.col; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 2, 16 + k * 2, 5, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(x, y - 2, 8, 2.5, 0, 0, 7); g.stroke(); g.fillStyle = c.col; g.fillRect(x - 1, y - 6, 2, 8); g.globalAlpha = 1; }
+      tellColumn(x - 7, y - 44, y, 14, k, MVIO[2], 0.6 + 0.4 * k); tellColumn(x - 10, y - 44, y, 1, 1, p ? MVIO[3] : '#ffffff'); tellColumn(x + 10, y - 44, y, 1, 1, p ? MVIO[3] : '#ffffff');
+      tellRing(x, y - 1, 14 + Math.round(6 * (1 - k)), 4, k, p ? MVIO[3] : '#ffffff'); fbloom(x, y - 20, 22, 0.25 + 0.3 * k, 'green'); }
+    if (R.circle) { const c = R.circle, k = 0.5 + 0.5 * Math.sin(time * 16), x = Math.round(c.x - cx), y = Math.round(c.y - cy); tellRing(x, y - 2, 16 + Math.round(k * 2), 5, k, c.col); tellRing(x, y - 2, 8, 2.5, k, c.col); g.fillStyle = c.col; g.fillRect(x - 1, y - 6, 2, 8); }   /* (claude/tellposes) */
     /* THE IMAGES' CIRCLES: the same shape as his, in grey, and a slower pulse - nothing in them */
     for (const c of R.fakes || []) { const k = 0.5 + 0.5 * Math.sin(time * 9 + c.x), x = Math.round(c.x - cx), y = Math.round(c.y - cy); g.globalAlpha = 0.3 + 0.3 * k; g.strokeStyle = c.col; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 2, 16 + k * 2, 5, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(x, y - 2, 8, 2.5, 0, 0, 7); g.stroke(); g.fillStyle = c.col; g.fillRect(x - 1, y - 6, 2, 8); g.globalAlpha = 1; }
     /* HIS APPRENTICE'S PORTAL: a violet slit standing on the floor, opening over the breath of its warning */
     if (R.portal) { const p = R.portal, k = Math.min(1, p.t / p.dur), x = Math.round(p.x - cx), y = Math.round(p.y - cy), h = Math.round(6 + 22 * k), w = Math.round(2 + 7 * k), s = 0.5 + 0.5 * Math.sin(time * 14);
       g.fillStyle = '#1b1626'; g.beginPath(); g.ellipse(x, y - h, w, h, 0, 0, 7); g.fill(); g.globalAlpha = 0.6 + 0.4 * s; g.strokeStyle = MVIO[3]; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - h, w + 1, h + 1, 0, 0, 7); g.stroke(); g.strokeStyle = MVIO[2]; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - h, Math.max(1, w - 2), Math.max(1, h - 3), 0, 0, 7); g.stroke(); g.globalAlpha = 1; fbloom(x, y - h, 18, 0.35, 'green'); }
-    if (R.circle2) { const c = R.circle2, k = 0.5 + 0.5 * Math.sin(time * 16 + 1), x = Math.round(c.x - cx), y = Math.round(c.y - cy); g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = c.col; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 2, 16 + k * 2, 5, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(x, y - 2, 8, 2.5, 0, 0, 7); g.stroke(); g.fillStyle = c.col; g.fillRect(x - 1, y - 6, 2, 8); g.globalAlpha = 1; }
+    if (R.circle2) { const c = R.circle2, k = 0.5 + 0.5 * Math.sin(time * 16 + 1), x = Math.round(c.x - cx), y = Math.round(c.y - cy); tellRing(x, y - 2, 16 + Math.round(k * 2), 5, k, c.col); tellRing(x, y - 2, 8, 2.5, k, c.col); g.fillStyle = c.col; g.fillRect(x - 1, y - 6, 2, 8); }   /* (claude/tellposes) */
     /* THE STACK THAT COMES DOWN (the flood): its books shaking in the dark over you, and the column it will fill, in red, down to your footing */
     if (R.crush) { const c = R.crush, x = Math.round(c.x - c.w / 2 - cx), top = 2 * TS - cy, bot = Math.round(c.fy - cy), landed = c.land >= 0, k = landed ? Math.max(0, 1 - Math.max(0, c.land - 0.25) / 0.3) : Math.min(1, c.t / ARCH.tell.crush) * 0.12, hh = Math.round((bot - top) * (landed ? k : 0) + 2 * TS * (landed ? 0 : 1)), sh = landed ? 0 : Math.round(Math.sin(time * 50) * 1.5);
-      if (!landed) { const p = 0.5 + 0.5 * Math.sin(time * 14); g.globalAlpha = 0.25 + 0.3 * p; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x + 0.5, top + 0.5, c.w - 1, bot - top - 1); g.fillStyle = '#ff6b6b'; g.fillRect(x, bot - 2, c.w, 2); g.globalAlpha = 1; }
+      if (!landed) { const p = 0.5 + 0.5 * Math.sin(time * 14); tellColumn(x, top, bot, 1, p, '#ff6b6b', 0.6); tellColumn(x + c.w - 1, top, bot, 1, p, '#ff6b6b', 0.6); tellBar(x, x + c.w, bot - 1, 3, p, '#ff6b6b'); }   /* (claude/tellposes) the column it will fill, in dithered edges and a floor patch */
       if (hh > 0) { const y = top + (landed ? 0 : Math.round(k * 20)); g.fillStyle = '#4a3624'; g.fillRect(x + sh, y, c.w, hh); const cols = ['#5a2a3a', '#2a4a3a', '#3a2a5a', '#5a4a2a']; for (let yy = 3; yy < hh - 2; yy += 11) { g.fillStyle = '#2e2016'; g.fillRect(x + sh + 1, y + yy + 8, c.w - 2, 2); for (let xx = 2; xx < c.w - 2; xx += 3) { g.fillStyle = cols[((xx + yy) / 3 | 0) % 4]; g.fillRect(x + sh + xx, y + yy, 2, 8); } } g.fillStyle = '#1b1626'; g.fillRect(x + sh, y + hh - 1, c.w, 1); } }
     /* THE BOOKS, off the wall and hanging in the air before they come, shaking */
     if (R.books && ma().book) { const b = R.books, c = ma().book[Math.floor(time * 8) % 2]; for (let i = 0; i < ARCH.books; i++) { const x = Math.round(b.x - cx + b.side * i * 10 + Math.sin(time * 45 + i) * 1.5), y = Math.round(b.y - cy - 4 - i * 3); g.drawImage(c, x - (c.width >> 1), y); } fbloom(b.x - cx, b.y - cy, 18, 0.3, 'warm'); }
     /* THE GLYPH under your feet on the ceiling: violet, with the red rim of a blow no shield turns, closing as it comes */
-    if (R.glyph) { const q = R.glyph, k = Math.min(1, q.t / ARCH.tell.glyph), p = 0.5 + 0.5 * Math.sin(time * 18), x = Math.round(q.x - cx), y = Math.round(q.y - cy); g.globalAlpha = 0.5 + 0.4 * p; g.strokeStyle = MVIO[3]; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y + 2, ARCH.glyphR + 6 - k * 4, 5, 0, 0, 7); g.stroke(); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y + 2, ARCH.glyphR + 10 - k * 4, 7, 0, 0, 7); g.stroke(); g.fillStyle = MVIO[2]; g.fillRect(x - 1, y, 2, 7); g.fillRect(x - 4, y + 3, 8, 1); g.globalAlpha = 1; fbloom(x, y + 2, 16, 0.3, 'green'); }
+    if (R.glyph) { const q = R.glyph, k = Math.min(1, q.t / ARCH.tell.glyph), p = 0.5 + 0.5 * Math.sin(time * 18), x = Math.round(q.x - cx), y = Math.round(q.y - cy); tellRing(x, y + 2, ARCH.glyphR + 6 - k * 4, 5, 1, MVIO[3]); tellRing(x, y + 2, ARCH.glyphR + 10 - k * 4, 7, p, '#ff6b6b'); g.globalAlpha = 0.5 + 0.4 * p; g.fillStyle = MVIO[2]; g.fillRect(x - 1, y, 2, 7); g.fillRect(x - 4, y + 3, 8, 1); g.globalAlpha = 1; fbloom(x, y + 2, 16, 0.3, 'green'); }
     for (const r of R.runes) { const x = Math.round(r.x - cx), y = Math.round(r.y - cy);
       if (r.hp <= 0) { if (R.reseal > 0) { const k = 1 - R.reseal / (R.resealLen || ARCH.reseal); g.globalAlpha = 0.15 + 0.5 * k * (0.5 + 0.5 * Math.sin(time * (8 + 16 * k))); g.strokeStyle = MVIO[2]; g.lineWidth = 1; g.strokeRect(x - 3.5, y - 3.5, 7, 7); g.globalAlpha = 1; } continue; }   /* A CUT RUNE, WAITING: a ghost that brightens and quickens as the ward comes back */
       { const fy = Math.round(r.y0 + ARCH.runeUp - cy), p = 0.5 + 0.5 * Math.sin(time * 5 + r.a); g.globalAlpha = 0.18 + 0.14 * p; g.fillStyle = MVIO[2]; g.fillRect(x - 2, y + 4, 4, Math.max(0, fy - y - 4)); g.globalAlpha = 0.5 + 0.3 * p; g.strokeStyle = MVIO[2]; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 1, 9, 2.5, 0, 0, 7); g.stroke(); g.globalAlpha = 1; fbloom(x, y, 14, 0.35, 'green'); }   /* A RUNE STANDING IN THE ROOM (claude/archfix): a thread of its light down to a ring on the floor, so it is seen across the room */
@@ -20989,7 +20984,7 @@ const smokePh = s => (time + s.ph) % s.per, smokeUp = s => smokePh(s) < SMOKE.up
 function drawSmoke(cx, cy) {
   for (const s of L.smoke || []) { const x = Math.round(s.x * TS + 8 - cx), top = Math.round(s.y0 * TS - cy), base = Math.round((s.y1 + 1) * TS - cy); if (x < -30 || x > VW + 30) continue;
     const up = smokeUp(s), tell = smokeTell(s), ph = smokePh(s), n = up ? 26 : tell ? 10 : 5, rise = up ? 150 : 40;
-    if (tell || up) { g.globalAlpha = up ? 0.35 : 0.2 + 0.2 * Math.sin(time * 18); g.fillStyle = '#ff6b2c'; g.fillRect(x - 6, base - 3, 12, 3); g.globalAlpha = 1; }   /* the vent glows as it gathers */
+    if (tell || up) { tellBar(x - 6, x + 6, base - 1, 3, up ? 1 : 0.3 + 0.3 * Math.sin(time * 18), '#ff6b2c', up ? 0.7 : 0.9); }   /* the vent glows as it gathers */
     for (let q = 0; q < n; q++) { const k = ((time * rise / Math.max(1, base - top)) + q / n + s.x * 0.37) % 1, y = Math.round(base - k * (base - top)), w = up ? 4 + Math.round(k * 8) : 2 + Math.round(k * 4);
       const sx = Math.round(x + Math.sin(time * 1.3 + q * 2.1 + s.x) * (2 + k * (up ? 6 : 3)) - w / 2);
       g.globalAlpha = (up ? 0.62 : tell ? 0.42 : 0.2) * (1 - k * 0.6); g.fillStyle = k < 0.15 ? '#8a5a44' : q % 3 ? '#6e6266' : '#948880'; g.fillRect(sx, y, w, w); }   /* lit from under by the cellar fire: grey on a red sky, never black on black */
@@ -21058,7 +21053,7 @@ function drawVillage(cx, cy) {
       if ((pr.fuse || 0) > 0) { const left = fuseLeft(pr), bw = Math.round(22 * left);   /* THE FUSE: a flame bar burning down over the door */
         g.fillStyle = '#1a0e0a'; g.fillRect(x - 12, y - 38, 24, 4); g.fillStyle = left < 0.2 ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b') : left < 0.5 ? '#ff9a3c' : '#ffd36b'; g.fillRect(x - 11, y - 37, bw, 2);
         if (pr.fuseOn) { g.fillStyle = '#fff0b0'; g.fillRect(x - 11 + bw - 1, y - 38 + (Math.floor(time * 10) % 2), 1, 2); } }
-      if (pr.hotNow) { g.globalAlpha = 0.22 + 0.1 * Math.sin(time * 9 + pr.x); g.fillStyle = '#ff6b2c'; g.fillRect(x - 11, y - 30, 22, 30); g.globalAlpha = 1; }
+      if (pr.hotNow) tellColumn(x - 11, y - 30, y, 22, 1, '#ff6b2c', 0.45 + 0.2 * Math.sin(time * 9 + pr.x));
       g.fillStyle = '#1e140c'; g.fillRect(x - 10, y - 30, 20, 30);                        /* the doorway, dark behind them */
       drawSet(pr.alt ? SPR.folk2 : SPR.folk, null, 2, pr.x - cx, pr.y - cy, P.x < pr.x ? -1 : 1, false);
       g.fillStyle = '#6a4a2a'; for (let b = 0; b < pr.boards; b++) { const by = y - 22 + b * 10; g.fillRect(x - 11, by, 22, 4); g.fillStyle = '#3a2616'; g.fillRect(x - 11, by + 3, 22, 1); g.fillStyle = '#6a4a2a'; }
@@ -23917,12 +23912,61 @@ function startle(dead) { let who = null;
   if (who && GOBLINISH.has(who.t)) SFX.foeGasp(who.t); }
 // THE BODY: breath at rest, a bob in the walk, a crouch into every wind-up and a stretch out of it, a recoil when struck,
 // a hop when startled or laughing, a shake when nearly dead; drawn over whatever frame the creature is on
+/* THE TELL IS A POSE (claude/tellposes, art-direction finding 17): a wind-up is the foe's own anticipation - three HELD keyframes, drawn, not tweened:
+   key 0 (the first ~3 frames) it rises and takes a breath, and the whole body flashes white once (drawTellFlash) ; key 1 it leans back off the blow ;
+   key 2 it coils, low and wide, with the shudder of a held strain. Timing is the mode's own (draw-side clock only: nothing in the sim reads it).
+   Bosses that are not a figure (the worm, the kraken, the winch, the crusader and the tower) keep the old squash: their own lanes own their poses. */
+const WIND_STILL = new Set(['duneworm', 'kraken', 'winchmaster', 'crusader', 'fallingtower', 'glasscolossus', 'colossus']);
+function tellClock(e) { if (e._twAt === undefined || time - (e._twLast || 0) > 0.3 || e._twMode !== e.mode) e._twAt = time; e._twMode = e.mode; e._twLast = time; return time - e._twAt; }
+/* THE DANGER DECAL (claude/tellposes, art-direction findings 3/17/18): where a blow will land is a DITHERED FLOOR PATCH - hard 1px squares in a 2x2 checker
+   that swaps phase as it pulses - not a flat rect, a smooth ring or a dashed line. The colour keeps its meaning (red = nothing turns it, amber = blockable,
+   green = an opening); the shape is pixels. k 0..1 = how close the blow is (denser, and the end posts rise). tellBar: a strip of floor x0..x1 (screen px) whose
+   top row is at fy; tellRing: an oval of floor (what the old ellipse rings were); tellColumn: a vertical patch (a wall of it). */
+function tellBar(x0, x1, fy, h, k, col, a = 1) {
+  x0 = Math.round(x0); x1 = Math.round(x1); fy = Math.round(fy); const ph = Math.floor(time * 8) & 1, dense = k > 0.7; g.globalAlpha = a; g.fillStyle = col;
+  for (let y = 0; y < h; y++) for (let x = x0; x < x1; x++) if (dense && y === h - 1 ? true : ((x + y + ph) & 1) === 0) g.fillRect(x, fy - y, 1, 1);
+  const post = 3 + Math.round(k * 5); for (const bx of [x0, x1 - 1]) g.fillRect(bx, fy - post, 1, post + 1);
+  g.globalAlpha = 1; }
+function tellRing(x, y, rx, ry, k, col, a = 1) {
+  x = Math.round(x); y = Math.round(y); const ph = Math.floor(time * 8) & 1, n = Math.max(12, Math.round((rx + ry) * 1.6)); g.globalAlpha = a; g.fillStyle = col;
+  for (let i = 0; i < n; i++) { if (k < 0.7 && ((i + ph) & 1)) continue; const t = i / n * Math.PI * 2; g.fillRect(Math.round(x + Math.cos(t) * rx), Math.round(y + Math.sin(t) * ry), 1, 1); }
+  g.fillRect(x, y, 1, 1); g.globalAlpha = 1; }
+function tellLine(xa, xb, y, k, col, a = 1) {   /* a LINE of floor a blow will run along: a 2px dithered strip that crawls toward the blow (was a dashed stroke) */
+  const x0 = Math.round(Math.min(xa, xb)), x1 = Math.round(Math.max(xa, xb)), ph = Math.floor(time * 10) & 3; g.globalAlpha = a; g.fillStyle = col;
+  for (let x = x0; x < x1; x++) { if (((x >> 1) + ph) & 1) continue; g.fillRect(x, Math.round(y), 1, 1); if (k > 0.5 || (x & 1)) g.fillRect(x, Math.round(y) - 1, 1, 1); }
+  g.globalAlpha = 1; }
+function tellColumn(x, y0, y1, w, k, col, a = 1) {
+  x = Math.round(x); y0 = Math.round(y0); y1 = Math.round(y1); const ph = Math.floor(time * 8) & 1; g.globalAlpha = a; g.fillStyle = col;
+  for (let yy = y0; yy < y1; yy++) for (let xx = 0; xx < w; xx++) if (((xx + yy + ph) & 1) === 0) g.fillRect(x + xx, yy, 1, 1);
+  g.globalAlpha = 1; }
+function windKeys(o, e) {
+  const a = tellClock(e), f = e.face || 1, big = !!e.maxHp || WIND_STILL.has(e.t), fly = FLYERS.has(e.t);
+  if (WIND_STILL.has(e.t)) { o.sy *= 0.9; o.sx *= 1.08; return; }
+  if (a < 0.07) { o.sy *= 1.07; o.sx *= 0.95; o.dy -= 1; }
+  else if (a < 0.2) { o.sy *= 1.02; o.sx *= 0.98; o.rot = (o.rot || 0) - f * (fly ? 0.05 : big ? 0.05 : 0.1); o.dx -= f * (big ? 1 : 2); }
+  else { o.sy *= 0.88; o.sx *= 1.1; o.rot = (o.rot || 0) - f * (fly ? 0.08 : big ? 0.07 : 0.17); o.dx -= f * (big ? 1 : 3); if (a > 0.32 && Math.floor(time * 24) % 2) o.dx += f; }
+}
+/* the white frame that opens a wind-up, and the glint on the weapon hand: a hard-pixel four-point star (white for a ! , red-cored for a !!) that
+   catches at the start and again on a held beat. */
+function drawTellFlash(e, sprSet, frame, dx0, dy0, ps, pSX, pSY, pRot) {
+  if (!e.alive || e.harmless || !SET.flashes || !sprSet.white || WIND_STILL.has(e.t)) return;
+  if (time - (e._twAt === undefined ? -9 : e._twAt) < 0.04) drawSet(sprSet, null, frame, dx0, dy0, ps.face, true, pSX, pSY, 1, pRot);
+}
+function drawTellGlint(e, x, y, bigF, ps) {
+  if (!e.alive || e.harmless || WIND_STILL.has(e.t)) return;
+  const a = time - (e._twAt === undefined ? -9 : e._twAt); if (a > 2.5) return;
+  const hard = markOf(e) === '!!', on = a < 0.14 || Math.floor((a - 0.2) * 9) % 3 === 2; if (!on) return;
+  const f = ps.face || 1, gx = Math.round(x + f * (e.w / 2 + 3) * Math.max(1, bigF)), gy = Math.round(y - e.h * 0.8 * Math.max(1, bigF));
+  g.fillStyle = hard ? '#ff6b6b' : '#ffffff'; g.fillRect(gx, gy - 2, 1, 5); g.fillRect(gx - 2, gy, 5, 1); g.fillStyle = '#ffffff'; g.fillRect(gx, gy, 1, 1);
+}
 function poseOf(e, wind) {
   const o = { dx: 0, dy: 0, sx: 1, sy: 1, face: e.lookT > 0 && !e.seenP ? -e.face : e.face };
   if (e.ceiling && !(e.gs > 0)) { o.sy = -1; o.dy = -e.h; }   /* THE MAGE'S FOLLY: a turret hung under a ceiling is drawn feet up from its root (and THE WITCHLIGHT STAIR's roof armour, while it walks the roof: e.gs) */
   if (!e.alive) return o;
   const fly = FLYERS.has(e.t), mv = Math.abs(e.vx || 0) > 4, seed = ((e.hx || e.x0 || 0) * 0.37) % 6;
-  if (wind) { o.sy *= 0.9; o.sx *= 1.08; }
+  if (wind) windKeys(o, e);   /* THE WIND-UP IS KEYFRAMED (claude/tellposes): rise, lean back, coil - held poses, not a squash */
+  else { e._twAt = undefined; }
+  if (wind) { /* (the keys above own the pose) */ }
   else if (e.relT > 0) { const k = e.relT / 0.18; o.sy *= 1 + 0.12 * k; o.sx *= 1 - 0.08 * k; }
   else if (!mv && !fly) { const b = Math.sin(e.anim * 2.8 + seed); o.sy *= 1 + 0.03 * b; o.sx *= 1 - 0.015 * b; }
   if (mv && !fly) o.dy -= Math.round(Math.abs(Math.sin(e.anim * 9 + seed)) * 1.2);
@@ -28463,7 +28507,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'queen') { g.globalAlpha = 0.3; g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, L.arena.floor - 2 - cy); g.globalAlpha = 1; }
     if (e.t === 'kite' && e.alive) { const kx = Math.round(e.x - cx), ky = Math.round(e.y - e.h - 26 - cy) + (e.mode === 'fall' ? 10 : 0); g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(kx + 0.5, Math.round(e.y - e.h - cy)); g.lineTo(kx + 0.5, ky + 8); g.stroke(); g.fillStyle = e.col; g.beginPath(); g.moveTo(kx, ky - 8); g.lineTo(kx + 7, ky); g.lineTo(kx, ky + 8); g.lineTo(kx - 7, ky); g.closePath(); g.fill(); g.fillStyle = '#2a2230'; g.fillRect(kx, ky - 8, 1, 16); g.fillRect(kx - 7, ky, 14, 1); for (let k = 1; k < 4; k++) { g.fillStyle = k % 2 ? '#ffd36b' : e.col; g.fillRect(kx - 1 + Math.round(Math.sin(time * 6 + k) * 2), ky + 8 + k * 4, 2, 2); } }
     if (e.t === 'windcaller' && e.alive && callerOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 18 + k * 3, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-    if (e.t === 'golem' && e.alive && e.mode === 'sweepTell') { const fy = Math.round((e.mini ? L.mini : L.arena).floor - cy) - 3, k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = 0.35 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(Math.round(e.x - 66 - cx), fy); g.lineTo(Math.round(e.x + 66 - cx), fy); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }   /* THE SWEEP, told where: the length of the staff along the floor */
+    if (e.t === 'golem' && e.alive && e.mode === 'sweepTell') { const fy = Math.round((e.mini ? L.mini : L.arena).floor - cy) - 3, k = 0.5 + 0.5 * Math.sin(time * 20); tellLine(Math.round(e.x - 66 - cx), Math.round(e.x + 66 - cx), fy, k, '#ff6b6b'); }   /* THE SWEEP, told where: the length of the staff along the floor */
     if (e.t === 'golem' && e.alive && e.crackT > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 26 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* cracked: the green ring every opening wears */
     if (e.t === 'golem' && e.alive && e.cb) { const x0 = Math.round(e.cb.x0 - cx), y0 = Math.round(e.cb.y0 - cy), x1 = Math.round(e.cb.x1 - cx), y1 = Math.round(e.cb.y1 - cy); g.globalAlpha = 0.3; g.strokeStyle = '#ff7ab8'; g.lineWidth = 9; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.globalAlpha = 0.95; g.strokeStyle = '#fff0f6'; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'golem' && e.alive) { const gx = Math.round(e.x - cx), gy = Math.round(e.y - cy); const NEED = { blue: '#bfe6f5', violet: '#c8a8ff', green: '#a8ffb8', both: '#fff6e0' }; const gems = [[0, -34], [-11, -25], [11, -25], [0, -18]]; gems.forEach(([ox, oy], k) => { const broken = k < (e.facets || 0), isNext = k === (e.facets || 0); const okNow = e.lit && (e.need === 'both' ? (e.litCols && e.litCols.size >= 2) : (e.litCols && e.litCols.has(e.need))); g.fillStyle = broken ? '#2a3a50' : isNext ? (okNow ? (Math.floor(time * 10) % 2 ? '#fff6e0' : NEED[e.need]) : NEED[e.need]) : '#a8306a'; g.fillRect(gx + ox - 2, gy + oy - 2, 4, 4); if (!broken && e.lit) { g.globalAlpha = 0.35; g.fillStyle = '#ff7ab8'; g.beginPath(); g.arc(gx + ox, gy + oy, 7, 0, 7); g.fill(); g.globalAlpha = 1; } }); if (e.lit) { g.globalAlpha = 0.18; g.fillStyle = '#eefaff'; g.fillRect(gx - 18, gy - e.h - 2, 36, e.h + 2); g.globalAlpha = 1; } }
@@ -28500,10 +28544,10 @@ function drawWorld(cx, cy, showPlayer) {
     /* HER SHADOW WHERE SHE WILL LAND (the quake's tell, with its red !!): dark on the floor, and growing as she comes down; and her plate in pieces */
     if (e.t === 'gqueen' && e.alive && (e.mode === 'hallLeapTell' || e.mode === 'hallLeap') && e.tx !== undefined) { const k = e.mode === 'hallLeap' ? Math.min(1, (e.airT || 0) / GQC.air) : 0.5 + 0.5 * Math.sin(time * 14), fy = Math.round(L.arena.floor - cy);
       g.globalAlpha = 0.35 + 0.35 * k; g.fillStyle = '#0e0a14'; g.beginPath(); g.ellipse(Math.round(e.tx - cx), fy - 1, 22 + k * 14, 4 + k * 2, 0, 0, Math.PI * 2); g.fill();
-      g.globalAlpha = 0.5; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(e.tx - cx), fy - 1, GQC.quakeR - 8, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+      tellRing(e.tx - cx, fy - 1, GQC.quakeR - 8, 5, k, '#ff6b6b'); }
     if (e.t === 'gqueen' && gqShards.length) drawGqShards(cx, cy);
     if (e.t === 'gqueen' && e.alive && e.mode === 'pinned') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 36 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-    if (e.t === 'gqueen' && e.alive && e.mode === 'point' && e.markX && e.markT > 0) { const k = 0.5 + 0.5 * Math.sin(time * 18), fy = Math.round(L.arena.floor - cy) - 2, mx = Math.round(e.markX - cx); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.moveTo(mx - 10, fy - 4); g.lineTo(mx + 10, fy + 2); g.moveTo(mx + 10, fy - 4); g.lineTo(mx - 10, fy + 2); g.stroke(); g.globalAlpha = 1; }
+    if (e.t === 'gqueen' && e.alive && e.mode === 'point' && e.markX && e.markT > 0) { const k = 0.5 + 0.5 * Math.sin(time * 18), fy = Math.round(L.arena.floor - cy) - 2, mx = Math.round(e.markX - cx); g.globalAlpha = 0.6 + 0.4 * k; g.fillStyle = '#ff6b6b'; for (let q = -10; q <= 10; q++) { const yy = fy - 4 + Math.round((q + 10) * 0.3); g.fillRect(mx + q, yy, 1, 1); g.fillRect(mx - q, yy, 1, 1); } g.globalAlpha = 1; }   /* (claude/tellposes) a hard-pixel X on the floor */
     if (e.t === 'gqueen' && e.alive && e.gather > 0 && e.markX !== undefined && !e.rodTarget) { const k = 1 - e.gather / 0.9, fy = Math.round(L.arena.roof - cy); g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#dfe8ff'; g.lineWidth = 1; for (const mx of (e.marks || [e.markX])) { g.beginPath(); g.ellipse(Math.round(mx - cx), fy - 1, 22 - k * 10, 5 - k * 2, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
     if (e.t === 'roc' && e.alive && rocOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 26 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     // A GUARD YOU CANNOT SEE IS NOT A TELL, IT IS A SURPRISE. A soldier, a watchman, a crab, a hearth goblin
@@ -28521,14 +28565,14 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'reefmaw' && e.alive && e.mode === 'beached') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 40 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* BEACHED: the green ring every opening wears */
     if (e.t === 'lance' && e.alive && lanceOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 24 + k * 3, 6, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'ram' && ramOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 28 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; for (let q = 0; q < 3; q++) { const a = time * 5 + q * 2.1; g.fillStyle = q % 2 ? '#8fd160' : '#fff6c8'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 22), Math.round(e.y - e.h * 1.5 - cy) - 8 + Math.round(Math.sin(a * 1.4) * 4), 2, 2); } } // dazed: a green ring under him, green motes over him
-    if (e.t === 'roc' && e.mode === 'rakeLine') { const y = Math.round(L.arena.floor - 14 - cy), k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(Math.round(L.arena.x0 - cx), y); g.lineTo(Math.round(L.arena.x1 - cx), y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+    if (e.t === 'roc' && e.mode === 'rakeLine') { const y = Math.round(L.arena.floor - 14 - cy), k = 0.5 + 0.5 * Math.sin(time * 20); tellLine(Math.round(L.arena.x0 - cx), Math.round(L.arena.x1 - cx), y, k, '#ff6b6b'); }
     /* THE SHRIEK, told where: every board she screams at rings red through the tell, and splinters stand up out of each when she lets go */
     if (e.t === 'roc' && e.alive && (e.mode === 'shriekTell' || e.mode === 'shriek') && e.panes) { const k = 0.5 + 0.5 * Math.sin(time * 22), sing = e.mode === 'shriekTell', gr = sing ? 0 : 1 - Math.max(0, e.modeT) / 0.5;
       for (const i of e.panes) { const px = Math.round((i % LW) * TS - cx), py = Math.round(Math.floor(i / LW) * TS - cy); if (px < -20 || px > VW + 20) continue;
-        if (sing) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(px + 0.5, py + 0.5, TS - 1, 4); g.globalAlpha = 1; }
+        if (sing) tellBar(px, px + TS, py + 3, 2, k, '#ff6b6b');
         else { const hh = Math.round(22 * Math.min(1, gr * 3) * (1 - Math.max(0, gr - 0.6) / 0.4)); g.fillStyle = '#b08a5c'; g.beginPath(); g.moveTo(px + 3, py); g.lineTo(px + 8, py - hh); g.lineTo(px + 13, py); g.fill(); g.fillStyle = '#e8d0a0'; g.fillRect(px + 7, py - hh + 3, 1, Math.max(0, hh - 4)); } } }
     if (e.t === 'owl' && (e.mode === 'stalk' || e.mode === 'plunge')) { const k = e.mode === 'plunge' ? 1 : 1 - e.modeT / 1.3, fl = L.arena.floor; g.fillStyle = 'rgba(10,8,20,' + (0.25 + 0.35 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(fl - cy) - 1, 8 + 8 * k, 2 + 2 * k, 0, 0, Math.PI * 2); g.fill(); }
-    if (e.t === 'owl' && e.mode === 'skimTell' && e.skimAt) { const y = Math.round(L.arena.floor - 4 - cy), k = 0.5 + 0.5 * Math.sin(time * 20), x0 = Math.round(e.x - cx), x1 = Math.round(Math.max(L.arena.x0, Math.min(L.arena.x1, e.x + e.skimDir * 400)) - cx); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }   /* THE SKIM'S LINE: where the talons will run, while it mantles */
+    if (e.t === 'owl' && e.mode === 'skimTell' && e.skimAt) { const y = Math.round(L.arena.floor - 4 - cy), k = 0.5 + 0.5 * Math.sin(time * 20), x0 = Math.round(e.x - cx), x1 = Math.round(Math.max(L.arena.x0, Math.min(L.arena.x1, e.x + e.skimDir * 400)) - cx); tellLine(x0, x1, y, k, '#ff6b6b'); }   /* THE SKIM'S LINE: where the talons will run, while it mantles */
     if (e.t === 'grandmother' && e.balls) for (const b of e.balls) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy), fl = Math.floor(time * 20) % 2;   /* her fireballs */
       g.fillStyle = 'rgba(255,120,40,0.3)'; g.beginPath(); g.arc(bx, by, b.r + 5, 0, 7); g.fill(); g.fillStyle = fl ? '#ff9a5c' : '#ff6b2c'; g.beginPath(); g.arc(bx, by, b.r, 0, 7); g.fill();
       g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(bx - 2, by - 2, b.r * 0.55, 0, 7); g.fill(); g.fillStyle = '#fff6c8'; g.fillRect(bx - 3, by - 4, 2, 2); }
@@ -28537,13 +28581,13 @@ function drawWorld(cx, cy, showPlayer) {
       /* WHERE HE WILL COME DOWN: a shadow on the deck that darkens as he gets ready to drop */
       if (e.mode === 'climb' || e.mode === 'dropTell' || e.mode === 'drop') { const k = e.mode === 'drop' ? 1 : e.mode === 'dropTell' ? 1 - Math.max(0, e.modeT) / 0.78 : 0.2; g.fillStyle = 'rgba(10,8,20,' + (0.2 + 0.4 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(ex, fy - 1, 10 + 10 * k, 2 + 2 * k, 0, 0, Math.PI * 2); g.fill(); }
       /* THE BOOM: a red line along the deck as far as it goes, for the whole of the tell, and then the spar itself */
-      if (e.mode === 'boomTell') { const k = 0.5 + 0.5 * Math.sin(time * 20); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(ex, fy - 2); g.lineTo(ex + e.face * 108, fy - 2); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+      if (e.mode === 'boomTell') { const k = 0.5 + 0.5 * Math.sin(time * 20); tellLine(ex, ex + e.face * 108, fy - 2, k, '#ff6b6b'); }
       if (e.mode === 'boom') { const k = Math.min(1, 1 - e.modeT / 0.36), len = 20 + 88 * k, a = Math.round(Math.min(ex + e.face * 8, ex + e.face * len)), b2 = Math.round(Math.max(ex + e.face * 8, ex + e.face * len));
         g.fillStyle = ART.OUT; g.fillRect(a - 1, fy - 12, b2 - a + 2, 6); g.fillStyle = '#7c5e31'; g.fillRect(a, fy - 11, b2 - a, 4); g.fillStyle = '#c29c5e'; g.fillRect(a, fy - 11, b2 - a, 1); }
       /* FOULED: the opening, ringed the way every opening is */
       if (mastOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(ex, fy - 2, 26 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
     if (e.t === 'closedhelm' && e.alive && e.mode !== 'sleep') drawPaladinMarks(e, cx, cy);
-    if (e.t === 'lancer' && e.alive && e.mounted && e.mode === 'chargeTell') { const k = 0.5 + 0.5 * Math.sin(time * 20), fy = Math.round(e.y - cy) - 2, ex = Math.round(e.x - cx); g.globalAlpha = 0.3 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(ex, fy); g.lineTo(Math.round((e.face > 0 ? e.hx1 : e.hx0) - cx), fy); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }   /* THE LINE HE WILL RIDE, for the length of the tell */
+    if (e.t === 'lancer' && e.alive && e.mounted && e.mode === 'chargeTell') { const k = 0.5 + 0.5 * Math.sin(time * 20), fy = Math.round(e.y - cy) - 2, ex = Math.round(e.x - cx); tellLine(ex, Math.round((e.face > 0 ? e.hx1 : e.hx0) - cx), fy, k, '#ffd36b'); }   /* THE LINE HE WILL RIDE, for the length of the tell */
     if (e.t === 'lancer' && e.alive && !e.mounted && e.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 14 + k * 2, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
     /* THE HURT FRAME (the redraw pass): a blow that lands shows on the body - but never over a windup, which is the tell */
     if (V2_HURT[e.t] !== undefined && e.flash > 0.06 && e.alive && (!reskinSet(e) || reskinSet(e).R[V2_HURT[e.t]]) && !(typeof e.mode === 'string' && /Tell$|swing|swipe|dive|leap|aim|stab|cut/.test(e.mode))) frame = V2_HURT[e.t];
@@ -28583,6 +28627,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.breakFlash > 0 && SET.flashes && sprSet.white) for (const [ox, oy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, 1], [-1, 1], [1, -1]]) drawSet(sprSet, null, frame, dx0 + ox, dy0 + oy, ps.face, true, pSX, pSY, 1, pRot);
       const pupQ = PUPH && e.alive && PM.isPuppet(e) ? { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot } : null; if (pupQ) PUPH.under(e, pupQ);   /* (claude/theatre4) HIS PUPPETS' READ: a gold outline when it can be hit (src/puppeteer-hands.js under/over) */
       drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
+      if (wind) { drawTellFlash(e, sprSet, frame, dx0, dy0, ps, pSX, pSY, pRot); drawTellGlint(e, dx0, dy0, bigF, ps); }   /* (claude/tellposes) the white frame and the glint on the weapon hand */
       if (pupQ) PUPH.over(e, pupQ);   /* ...and grey steel when it cannot */
       if (!(e.flash > 0)) drawWarm('tint', sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, e.x, e.y - e.h / 2);
       if (e.alive && e.t === 'undeadmage' && e.realm) { const op = e.open > 0; drawTinted(sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, op ? (Math.floor(time * 8) % 2 ? '#ffd36b' : '#ff9b2c') : '#6a7488', op ? 0.65 : 0.4); e.realm.tint = op ? 'open' : 'warded'; }
