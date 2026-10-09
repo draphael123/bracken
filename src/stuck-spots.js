@@ -218,6 +218,7 @@ export const STUCK_HANDS = {
     { id: 'bc-pit', zone: [260, 30, 276, 40], steps: [ { key: 'bulbUp', at: [273, 30], glint: 'stall', line: 'THE LEDGES LEAD UP OUT OF THE PIT' } ] },
     { id: 'bc-wheel', zone: [303, 18, 317, 34], steps: [ { key: 'greatWheel', is: ['wheel.great', 'shut'], at: [313, 33], line: 'THE GREAT SAND-GATE: ITS WHEEL' } ] },
     { id: 'bc-quarter', zone: [317, 19, 372, 41], steps: [ { key: 'quarterClimb', at: [367, 30], glint: 'stall', line: 'THE OLD STREET\'S DOOR IS PAST THE TOWER: OVER THE HOUSES' } ] },
+    { id: 'bc-yard', zone: [397, 36, 404, 42], steps: [ { key: 'yardLever', is: ['room.yard', 'empty'], at: [403, 41], line: 'AN OPEN FLOOR-GATE IS A DROP: ITS LEVER SHUTS IT' } ] },   /* (fix pass M3) */
     { id: 'bc-shaft', zone: [419, 18, 433, 42], steps: [ { key: 'shaftLever', is: ['room.shaft', 'empty'], rows: [36, 42], at: [423, 41], line: 'THE WAY ON IS HIGH: THE SHAFT\'S SAND-GATE' } ] },
     { id: 'bc-trap', zone: [440, 24, 452, 30], steps: [ { key: 'trapLever', is: ['room.trap', 'empty'], at: [449, 29], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' } ] },
     { id: 'bc-vault', zone: [493, 29, 503, 33], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [497, 32], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },

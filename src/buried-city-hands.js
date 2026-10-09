@@ -157,6 +157,7 @@ export function makeBuriedCityHands(ctx) {
     const ub = roomOf('upperbulb'); if (ub && ub.level > 2 && c > 238 && c < 248) return here(245, 29, ub.gate === 'shut' ? 'talk' : null, 1, { r: 10, wait: ub.gate === 'open' });
     const gr = roomOf('great'); if (gr && !K.wheel.done && c > 304 && c < 317) return here(K.L.wheel.x, K.L.wheel.row, K.wheel.cd > 0 ? null : 'talk', 1, { r: 10 });
     if (gr && gr.level > 3 && c > 304 && c < 317) return here(314, 33, null, 1, { r: 12, wait: true });
+    const yd = roomOf('yard'); if (yd && c > 397 && c < 405 && feet <= 41 && yd.level < yd.full - 0.05) return here(403, 41, yd.gate === 'open' ? 'talk' : null, 1, { r: 10, wait: yd.gate === 'shut' });   /* (fix pass M3) the foundry's floor-gate: shut it from the lip and wait for the sand bridge */
     const sh = roomOf('shaft'); if (sh && c > 419 && c < 433 && feet > 28) { if (sh.gate === 'open') return here(423, 41, 'talk', 1); return Object.assign(here(Math.min(432, Math.max(426, Math.round(c))), sandTopRow(sh) - 1, null, 1), { r: 40, wait: true }); }
     const tr = roomOf('trap'); if (tr && c > 442 && c < 452 && tr.level < tr.full - 0.05) return here(449, 29, tr.gate === 'open' ? 'talk' : null, 1, { r: 10, wait: tr.gate === 'shut' });
     return null; };

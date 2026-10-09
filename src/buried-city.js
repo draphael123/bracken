@@ -171,10 +171,10 @@ export function buildBuriedCity({ painter, T, TS }) {
   interiors.push([317, 372, 19, 41, 'bcQuarter']);
   /* its ruins: houses, a tower, balconies - footing at three heights once the sand is gone */
   block(326, 329, 39, 41); ledge(330, 334, 36); block(336, 338, 33, 41); ledge(339, 343, 30); gear(341, 29);   /* GEAR FOUR, up the ruined houses' balconies */
-  block(350, 353, 39, 41); ledge(354, 358, 36); block(360, 363, 33, 41); block(366, 368, 31, 41);   /* the broken tower (its silver moved to the dome's lantern: the cap is three, and the route climbs it) */
+  block(350, 353, 39, 41); ledge(354, 358, 36); block(360, 363, 33, 41); block(366, 368, 31, 41); ledge(364, 365, 33); ledge(364, 365, 37);   /* (fix pass: a fallen beam over the two-wide well between the tower and the house, and a step in it - the walker's warden fell in and the well's walls are nine rows: no way out) */   /* the broken tower (its silver moved to the dome's lantern: the cap is three, and the route climbs it) */
   decor.push({ kind: 'greatgate', x0: 344, x1: 348, y: LO }); ledge(344, 348, 38);   /* the great gate's housing: a step over its grille */
   /* the quarter's dormant watch and its drowned: under the sand on a fresh load - the hands stand them up when the sand has gone off them (sandWait) */
-  construct(346, LO - 1, 'quarterWatch', { sandWait: 'great', dormant: true }); construct(370, LO - 1, 'quarterWatch2', { sandWait: 'great', dormant: true });
+  construct(346, LO - 1, 'quarterWatch', { sandWait: 'great', dormant: true }); construct(370, LO - 1, 'quarterWatch2', { sandWait: 'great' });   /* (fix pass: awake - wound down by the door it never woke for a hero on the tower over it, and the walker's warden stood on the tower cutting at it) */
   drowned(322, LO - 1, 'quarterDrift', { sandWait: 'great' }); drowned(356, LO - 1, 'quarterDrift2', { sandWait: 'great' }); slinger(361, 32, 'quarterSling', { sandWait: 'great' });
   /* THE OLD STREET east of the quarter (374-419): the foundry's yard */
   ground(374, 419, LO); roof(374, 419, 30);
