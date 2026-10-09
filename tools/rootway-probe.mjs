@@ -21,8 +21,8 @@ try {
   tp(29,39);for(let i=0;i<150;i++)BK.sim(1);const bud=BK.movers().find(m=>m.kind==='growcap'&&Math.floor(m.x/16)===29);out.bud={state:bud.state,k:+bud.k.toFixed(2),feet:+(P.y/16).toFixed(2)};
   /* THE CELLAR SPAN: strike the cleat */
   tp(50,37);swing(1);for(let i=0;i<90;i++)BK.sim(1);out.span={state:hz('cellarSpan').state,cells:[53,56,60].map(x=>cell(x,38))};
-  /* (claude/rootway2) THE HOLLOW TRUNK's SPRING CAP: land on it holding jump and it throws you up through the root plank onto it */
-  tp(146,29);P.vx=0;BK.sim(8);P.x=143*16+8;P.y=26*16;P.vy=0;const kk=BK.keys||{};kk.jump=true;let top=99,bounced=false;for(let i=0;i<120;i++){BK.sim(1);top=Math.min(top,P.y/16);if(P.vy<-200)bounced=true;kk.left=bounced&&!P.ground;}kk.jump=false;kk.left=false;for(let i=0;i<60;i++)BK.sim(1);out.spring={top:+top.toFixed(2),feet:+(P.y/16).toFixed(2),ground:P.ground};
+  /* (claude/rootway2) SPOREWOOD's SPRING CAP, taught in the cellar: land on it and it throws you up through the root shelf onto it */
+  tp(20,40);P.vx=0;BK.sim(8);P.x=20*16+8;P.y=37*16;P.vy=0;const kk=BK.keys||{};kk.jump=true;let top=99,bounced=false;for(let i=0;i<120;i++){BK.sim(1);top=Math.min(top,P.y/16);if(P.vy<-200)bounced=true;kk.left=bounced&&!P.ground;}kk.jump=false;kk.left=false;for(let i=0;i<60;i++)BK.sim(1);out.spring={top:+top.toFixed(2),feet:+(P.y/16).toFixed(2),ground:P.ground};
   /* A LARDER CAGE: crushes what is under it (a scout brought to its stump for it) */
   { const sc=BK.enemies().find(e=>e.t==='archer');if(sc){sc.alive=true;sc.hp=10;sc.x=213*16+8;sc.y=39*16;sc.vy=0;}
   tp(200,31);swing(1);for(let i=0;i<120;i++)BK.sim(1);out.cage={state:hz('larder1').state,cells:[cell(213,37),cell(214,38)],scouts:sc&&sc.alive&&Math.abs(sc.x-213.5*16)<30?1:0,n:RW.read().n.crushed}; }
@@ -38,7 +38,7 @@ try {
   return out;})()`, 300000);
   ok(r.bud.state === 'up' && r.bud.k > 0.9 && r.bud.feet < 38.2, 'a bud grows under a hero who stops on it, and stands him level with the root wall ' + JSON.stringify(r.bud));
   ok(r.span.state === 'down' && r.span.cells.every(c => c === 2), 'a blow on the cleat drops the span across the pit: a bridge of one-way cells ' + JSON.stringify(r.span));
-  ok(r.spring.top < 23.2 && Math.abs(r.spring.feet - 24) < 0.3 && r.spring.ground, 'THE HOLLOW TRUNK: a held jump on the spring cap throws a hero up through the root plank, and he stands on it ' + JSON.stringify(r.spring));
+  ok(r.spring.top < 37.2 && Math.abs(r.spring.feet - 39) < 0.3 && r.spring.ground, 'THE CELLAR: the spring cap throws a hero up through the root shelf, and he stands on it ' + JSON.stringify(r.spring));
   ok(r.cage.state === 'down' && r.cage.cells.every(c => c === 1) && r.cage.scouts < 1, 'a larder cage drops onto its stump (a solid step) and crushes the scout under it ' + JSON.stringify(r.cage));
   ok(r.hangs && r.hunterDrop.dropped && r.hunterDrop.ground, 'a trophy-hunter hangs on his hoist and rides it down onto a hero who passes under ' + JSON.stringify([r.hangs, r.hunterDrop]));
   ok(r.hunterCut.cut === 'down' && r.hunterCut.daze, 'his hoist cut, the hunter falls dazed ' + JSON.stringify(r.hunterCut));

@@ -74,12 +74,13 @@ export function buildRootway({ painter, T, TS }) {
   foe('sporeling', 14, 41, 'cellarA', { face: -1 }); foe('spitcap', 21, 41, 'cellarA', { face: -1 }); foe('weaver', 18, 41, 'cellarA', { face: -1 });   /* (FIX PASS: a weaver in the first squad - Sporewood's own, heavier than fodder) */
   coins([12, 39], [16, 39]);
   plank(5, 13, 39); plank(16, 23, 39); coins([8, 38], [20, 38]);                  /* root shelves over the cellar floor (a second height) */
+  set(20, 41, T.BOUNCER); coins([20, 36], [20, 33]); sign(9, 41, 'A SPRING CAP. LAND ON IT AND IT THROWS YOU UP: HOLD JUMP FOR HIGHER.');   /* (claude/rootway2) SPOREWOOD's SPRING CAP, taught safe under the cellar roof: up through the root shelf, a coin column */
   ent('vent', 14, 41, { period: 5, on: 1.6, h: 140, phase: 0 }); plank(13, 15, 35); coins([14, 34]); foe('spitcap', 13, 34, 'cellarA', { perch: true, face: 1 });   /* (FIX PASS: a ranged foe over the road - fire from above that a blade on the floor does not reach, v2) */   /* a spore vent up to a root knot */
   /* THE ROOT WALL: four rows, more than any jump - and a bud at its foot. The first REQUIRED use, with nothing else on it */
   ground(31, 52, 38);
   bud(29, 42); sign(25, 41, 'THE CAPS GROW INTO STEPS. JUMP ONTO A BUD AND STAND STILL: IT RISES UNDER YOU.');
   glow(33, 37); coins([34, 36], [36, 36]); deco(44, 37, 'rootDecor', 1);
-  foe('sporeling', 42, 37, 'wallTop', { face: -1 }); foe('lurker', 35, 37, 'wallTop'); foe('spider', 39, 26, 'wallTop', { perch: true, drop: 180 });   /* (FIX PASS: a spider in the root roof drops on the wall top) */   /* (FIX PASS: a lurker in the wall top where the cap sets you down - a foe at the platforming moment) */
+  foe('sporeling', 42, 37, 'wallTop', { face: -1 }); foe('trophyhunter', 47, 37, 'wallTop', { face: -1 });   /* (claude/rootway2, v2: the hunters have come down into the cellar - a lunge where the bud sets you down) */ foe('lurker', 35, 37, 'wallTop'); foe('spider', 39, 26, 'wallTop', { perch: true, drop: 180 });   /* (FIX PASS: a spider in the root roof drops on the wall top) */   /* (FIX PASS: a lurker in the wall top where the cap sets you down - a foe at the platforming moment) */
   /* THE FIRST HOIST: a lashed root span hangs over a pit eight wide (no jump crosses it). The pit has a floor and a bud by its near wall that takes
      you back up to the near lip only (the far wall is four rows, and seven columns off the grown cap): a miss costs the climb. Strike the cleat
      and the span drops into place */
@@ -91,7 +92,7 @@ export function buildRootway({ painter, T, TS }) {
   ground(61, 75, 38);
   /* (a hollow under the far shelf, in off the pit's floor: a dead end with the first silver - fall in, or drop through the span) */
   air(61, 70, 40, 43); ent('silver', 69, 43); coins([63, 43], [66, 43]); glow(62, 43);
-  foe('lurker', 67, 37, 'shelfB'); foe('sporeling', 72, 37, 'shelfB', { face: -1 }); foe('spitcap', 63, 37, 'shelfB', { face: -1 });   /* (FIX PASS: a spitcap on the far lip spits at you as you cut the cleat and cross the span) */
+  foe('lurker', 67, 37, 'shelfB'); foe('sporeling', 72, 37, 'shelfB', { face: -1 }); foe('spitcap', 63, 37, 'shelfB', { face: -1 }); foe('shield', 70, 37, 'shelfB', { face: -1 });   /* (FIX PASS: a spitcap on the far lip spits at you as you cut the cleat and cross the span) */
   ent('vent', 64, 37, { period: 4.5, on: 1.6, h: 110, phase: 1 }); plank(63, 65, 33); coins([63, 32], [65, 32]); foe('spitcap', 64, 32, 'shelfB', { perch: true, face: -1 });   /* a spore vent's puff to a root shelf five rows up (a pocket over the road) */
   plank(66, 74, 35);                                                              /* a root over the shelf */
   ent('rockfall', 75, 20, { spore: true, every: 2.7, tell: 0.9 });   /* (a spore drop at the foot of the three-row step) */
@@ -103,38 +104,40 @@ export function buildRootway({ painter, T, TS }) {
   deco(96, 34, 'gobPennant', 0);                                                  /* the first goblin mark */
 
   // ================= 2. THE HOLLOW TRUNK (96-196): the bud TESTED - a climb up the inside of a great hollow trunk (claude/rootway2, Daniel 10-09) =================
-  /* In at its foot, up its insides, out at THE KNOTHOLE near its top: a bud against a root shelf (four rows - no jump), Sporewood's SPRING CAP (hold jump: it throws you up
+  /* In at its foot, up its insides, out at THE KNOTHOLE near its top: a bud against a root shelf (four rows - no jump), Sporewood's SPRING CAP (jump onto it: it throws you up
      through a root plank), a bud on the plank against the high shelf, and the LEANING CAP across the shaft to the knothole's ledge. Every miss is a fall to a shelf or the
      hollow's floor (cheap: the climb again). The fungus is still thick down here and thins as you climb; spore pods and puffballs in the dark (L.darkZones) */
   sign(98, 34, 'THE HOLLOW TRUNK. THE CAPS GROW INTO STEPS: CLIMB ITS INSIDES TO THE KNOTHOLE.');
   block(103, 110, 0, 31);                                                         /* the trunk's west wall: in at its foot (rows 32-34) */
   ground(105, 150, 35);                                                           /* the hollow's floor */
   block(111, 150, 0, 6);                                                          /* the trunk goes on up over you */
-  block(151, 156, 0, H - 1); air(151, 156, 16, 19);                               /* its east wall, and THE KNOTHOLE near its top */
+  block(151, 156, 0, H - 1); air(151, 156, 19, 22);                               /* its east wall, and THE KNOTHOLE near its top */
   glow(108, 34); glow(119, 34); glow(131, 34); deco(114, 34, 'sporePod'); deco(124, 34, 'tinyCap', 1); deco(136, 34, 'mushroom', 1);
   ent('puffball', 121, 34); foe('sporeling', 116, 34, 'trunkFloor', { face: -1 }); foe('weaver', 129, 34, 'trunkFloor', { face: -1 });
   ent('vent', 126, 34, { period: 4.5, on: 1.6, h: 96, phase: 1 }); coins([126, 31], [126, 29]);                          /* a puff of spores up to a few coins (a lift to nowhere: the way is the caps) */
   /* TIER ONE: a bud against the first root shelf, four rows up */
-  bud(140, 35); block(142, 150, 31, 32);
-  foe('lurker', 148, 30, 'trunkShelf');                                           /* (v2: a foe where the cap sets you down) */
-  /* TIER TWO: SPOREWOOD's SPRING CAP on the shelf - land on it and HOLD JUMP: it throws you up through the root plank (a plain bounce falls a row short) */
-  set(143, 30, T.BOUNCER); sign(146, 30, 'A SPRING CAP. LAND ON IT AND HOLD JUMP: IT THROWS YOU HIGH.'); coins([143, 27], [142, 25]);
-  plank(134, 141, 24); foe('spitcap', 138, 23, 'trunkShelf', { face: -1 }); ent('rockfall', 137, 7, { spore: true, every: 2.8, tell: 0.9 });   /* (spores shed from the trunk's insides where you land) */
+  bud(139, 35); block(141, 150, 31, 34);
+  /* TIER TWO: a second bud on the shelf against the next one up (four rows), and the root plank west off it */
+  bud(143, 31); block(145, 150, 27, 30); foe('trophyhunter', 148, 26, 'trunkShelf', { face: -1 });   /* (v2: a weighty foe where the cap sets you down - his lunge throws you back down the shaft) */
+  foe('lurker', 142, 30, 'trunkShelf');
+  /* SPOREWOOD's SPRING CAPS on the hollow's floor (the climb's side-show: a bounce up a coin column under the high shelf - hold jump and they throw you higher) */
+  set(116, 35, T.BOUNCER); set(117, 35, T.BOUNCER); coins([116, 31], [117, 29], [116, 28]);
+  plank(134, 144, 27); foe('spider', 136, 9, 'trunkShelf', { perch: true, drop: 200 }); ent('rockfall', 138, 7, { spore: true, every: 2.8, tell: 0.9 });   /* (spores shed from the trunk's insides where you land) */
   /* TIER THREE: a bud on the plank's end against the high shelf (four rows) */
-  bud(134, 24); block(111, 133, 20, 21); foe('spider', 122, 7, 'trunkHigh', { perch: true, drop: 180 }); foe('spitcap', 115, 19, 'trunkHigh', { face: 1 });
-  tag(112, 19);                                                                   /* TROPHY TAG ONE, at the high shelf's back (off the road: a step aside) */
+  bud(134, 27); block(111, 133, 23, 26); foe('spider', 122, 8, 'trunkHigh', { perch: true, drop: 180 }); foe('archer', 116, 22, 'trunkHigh', { face: 1 }); foe('spitcap', 128, 22, 'trunkHigh', { face: 1 });
+  tag(112, 22);                                                                   /* TROPHY TAG ONE, at the high shelf's back (off the road: a step aside) */
   /* TIER FOUR: THE LEANING CAP across the shaft to the knothole's ledge (ten wide: no jump) - the first real test of the lean, over the plank and the floor */
-  bud(132, 20, { rise: 16, lean: 160, growT: 1.6 }); sign(127, 19, 'THIS CAP LEANS. STOP ON IT AT THE EDGE AND IT CARRIES YOU ACROSS.');
-  block(144, 150, 20, 21); ent('rockfall', 147, 7, { spore: true, every: 2.9, tell: 0.9 });
+  bud(132, 23, { rise: 16, lean: 160, growT: 1.6 }); sign(126, 22, 'THIS CAP LEANS. STOP ON IT AT THE EDGE AND IT CARRIES YOU ACROSS.');
+  block(144, 150, 23, 24); ent('rockfall', 147, 7, { spore: true, every: 2.9, tell: 0.9 });
   /* THE HOLLOW TRUNK's EXAM (v2 recipe 4): the goblins hold the knothole - a SHIELD CAPTAIN on the ledge the leaning cap sets you down on (level.js ELITES, gate 157:
      a knock-back is a fall into the shaft, cheap but the climb again), a TROPHY-HUNTER in the knothole behind him, a bow on the bough outside */
-  foe('shield', 147, 19, 'knothole', { face: -1 }); foe('trophyhunter', 154, 19, 'knothole', { face: -1 }); foe('archer', 161, 19, 'knothole', { face: -1 });
-  sign(145, 19, 'THE GOBLINS HOLD THE KNOTHOLE. THE WAY OUT IS THROUGH THEM.');
-  /* OUT ON THE BOUGH: root steps down to the road (four rows each), and THE TROPHY LINE, TAUGHT (claude/ziproot): from the bough's deck down to the road - UP takes the
+  foe('shield', 147, 22, 'knothole', { face: -1 }); foe('trophyhunter', 154, 22, 'knothole', { face: -1 }); foe('archer', 161, 22, 'knothole', { face: -1 });
+  sign(145, 22, 'THE GOBLINS HOLD THE KNOTHOLE. THE WAY OUT IS THROUGH THEM.');
+  /* OUT ON THE BOUGH: root steps down to the road, and THE TROPHY LINE, TAUGHT (claude/ziproot): from the bough's deck down to the road - UP takes the
      handle, the line carries you down. Optional (the steps walk down); a miss costs nothing; no foe at its landing */
-  ground(157, 162, 20); plank(163, 168, 20); ground(167, 170, 24); ground(171, 174, 28); ground(175, 190, 32);
-  zips.push(rope(168, 20, 186, 32, 32)); sign(164, 19, 'A TROPHY LINE. UP TAKES THE HANDLE; IT CARRIES YOU DOWNHILL. JUMP LETS GO, DOWN DROPS.'); coins([171, 21], [175, 23], [179, 25]);
-  deco(158, 19, 'gobPennant', 1); deco(176, 31, 'trophyRack'); glow(188, 31);
+  ground(157, 162, 23); plank(163, 168, 23); ground(167, 170, 26); ground(171, 174, 29); ground(175, 190, 32);
+  zips.push(rope(168, 23, 186, 32, 32)); sign(164, 22, 'A TROPHY LINE. UP TAKES THE HANDLE; IT CARRIES YOU DOWNHILL. JUMP LETS GO, DOWN DROPS.'); coins([171, 24], [175, 26], [179, 28]);
+  deco(158, 22, 'gobPennant', 1); deco(176, 31, 'trophyRack'); glow(188, 31);
   ground(191, 206, 32);
   ent('check', 193, 31);                                                          /* CHECKPOINT TWO */
   plank(196, 205, 29); foe('archer', 201, 28, 'larderGallery', { face: 1 }); ent('vent', 198, 31, { period: 4.5, on: 1.6, h: 70, phase: 2 }); coins([199, 28], [203, 28]);   /* a vent up to the larder's gallery */
@@ -154,14 +157,14 @@ export function buildRootway({ painter, T, TS }) {
   deco(208, 44, 'skullPile', 0); glow(207, 44);
   foe('sporeling', 209, 44, 'larderPit', { face: -1 });
   ground(225, 238, 27); ent('rockfall', 226, 0, { spore: true, every: 2.8, tell: 0.9 });   /* (on the larder's far lip, where the stair tops out) */
-  foe('archer', 231, 26, 'larderBow', { face: -1 }); foe('trophyhunter', 234, 26, 'larderBow', { face: -1 });   /* (FIX PASS: a hunter on the far lip lunges at you as you top the stair) */
+  foe('archer', 231, 26, 'larderBow', { face: -1 }); foe('trophyhunter', 234, 26, 'larderBow', { face: -1 }); foe('shield', 227, 26, 'larderBow', { face: -1 });   /* (claude/rootway2, v2: a shield where the stair tops out - his push is back down the larder) */   /* (FIX PASS: a hunter on the far lip lunges at you as you top the stair) */
   /* A CLEAT ON THE ROOT'S FACE, high over the floor: grow the bud under it and strike it from the cap - the span over the next gap drops */
   bud(237, 27); ground(239, 246, 23); foe('shield', 244, 22, 'highRoot', { face: -1 });   /* (FIX PASS: a shield holds the root by the span: his push is toward the well) */ /* (FIX PASS: the cap stands flush against the root - no one-column corner between them to fall into) */
   hoist('highCleat', { x: 251, top: 12, hang: 17, cleat: [238, 19], load: 'span', span: [247, 255, 23], face: true });
   sign(228, 26, 'THE CLEAT IS HIGH ON THE ROOT. GROW THE CAP UNDER IT, THEN JUMP AND STRIKE.');
   well(247, 255, 23, 35);
   ground(256, 268, 23); plank(256, 261, 20);
-  foe('brute', 259, 22, 'yardBrute', { face: -1 }); coins([257, 21], [260, 21]);
+  foe('brute', 259, 22, 'yardBrute', { face: -1 }); foe('spitcap', 258, 19, 'yardBrute', { perch: true, face: -1 }); coins([257, 21], [260, 21]);
   /* A HUNTER HANGS OVER THE BUD YOU MUST GROW (the root wall beyond is four rows): stop on the bud and he drops on you - cut him first */
   bud(267, 23);   /* (FIX PASS: flush against the root wall - no one-column corner between the cap and the wall) */
   hoist('hunterB', { x: 267, top: 6, hang: 12, cleat: [262, 22], load: 'hunter' }); foe('trophyhunter', 267, 12, 'hoistB', { face: -1, hang: 'hunterB' });

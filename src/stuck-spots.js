@@ -214,10 +214,10 @@ export const STUCK = {
     { id: 'rw-bud-wall', zone: [20, 36, 30, 41], at: [29, 41], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
     { id: 'rw-cellar-span', zone: [44, 30, 52, 37], at: [51, 37], done: ['hoist', 51, 37, 'on'], line: 'THE SPAN HANGS ON A HOIST: ITS CLEAT IS ON THE ROOT' },
     /* (claude/rootway2) THE HOLLOW TRUNK's climb: the bud against the first shelf, the spring cap, the bud on the plank, the leaning cap across the shaft */
-    { id: 'rw-trunk-bud1', zone: [130, 28, 141, 34], at: [140, 34], line: 'A BUD BY THE ROOT SHELF: JUMP ONTO IT AND STAND STILL' },
-    { id: 'rw-trunk-spring', zone: [142, 25, 150, 30], at: [143, 29], line: 'THE SPRING CAP: LAND ON IT AND HOLD JUMP' },
-    { id: 'rw-trunk-bud2', zone: [134, 18, 141, 23], at: [134, 23], line: 'A BUD BY THE ROOT SHELF: JUMP ONTO IT AND STAND STILL' },
-    { id: 'rw-trunk-lean', zone: [111, 14, 133, 19], at: [132, 19], line: 'A BUD ON THE LIP LEANS OUT OVER THE GAP' },
+    { id: 'rw-trunk-bud1', zone: [130, 28, 140, 34], at: [139, 34], line: 'A BUD BY THE ROOT SHELF: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-trunk-bud1b', zone: [141, 26, 144, 30], at: [143, 30], line: 'A BUD BY THE ROOT SHELF: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-trunk-bud2', zone: [134, 22, 141, 26], at: [134, 26], line: 'A BUD BY THE ROOT SHELF: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-trunk-lean', zone: [111, 17, 133, 22], at: [132, 22], line: 'A BUD ON THE LIP LEANS OUT OVER THE GAP' },
     { id: 'rw-larder', zone: [191, 24, 206, 31], steps: [
       { at: [201, 31], done: ['hoist', 201, 31, 'on'], line: 'THE LARDER CAGES HANG ON THEIR CLEATS' },
       { at: [203, 31], done: ['hoist', 203, 31, 'on'], line: 'THE SECOND CAGE STILL HANGS: ITS CLEAT' },
