@@ -1,0 +1,54 @@
+kings practiced knight s1 L5: win 61.4s left 0% taken 61 rt401 mis3 greed8
+kings practiced knight s2 L5: win 61.2s left 0% taken 66 rt397 mis3 greed8
+kings practiced knight s3 L5: win 72.2s left 0% taken 108 rt403 mis4 greed8
+kings practiced warden s1 L5: win 84.8s left 0% taken 194 rt396 mis5 greed5
+kings practiced warden s2 L5: win 45.3s left 0% taken 61 rt403 mis0 greed7
+kings practiced warden s3 L5: win 39.9s left 0% taken 33 rt421 mis0 greed4
+kings practiced pyro s1 L5: win 50.3s left 0% taken 69 rt401 mis2 greed7
+kings practiced pyro s2 L5: win 43.2s left 0% taken 61 rt393 mis0 greed8
+kings practiced pyro s3 L5: win 58.4s left 0% taken 89 rt416 mis3 greed8
+crown practiced knight s1 L14: win 46.3s left 0% taken 112 rt402 mis2 greed9
+crown practiced knight s2 L14: win 54.2s left 0% taken 192 rt406 mis2 greed6
+crown practiced knight s3 L14: win 54.8s left 0% taken 79 rt412 mis5 greed9
+crown practiced warden s1 L14: win 74.8s left 0% taken 112 rt415 mis2 greed5
+crown practiced warden s2 L14: win 31.1s left 0% taken 0 rt402 mis0 greed5
+crown practiced warden s3 L14: win 27.6s left 0% taken 15 rt417 mis3 greed5
+crown practiced pyro s1 L14: win 49.3s left 0% taken 114 rt420 mis0 greed7
+crown practiced pyro s2 L14: win 44.2s left 0% taken 39 rt407 mis0 greed7
+crown practiced pyro s3 L14: win 35.7s left 0% taken 42 rt409 mis2 greed5
+keep practiced knight s1 L21: death 87.3s left 5% taken 198 rt413 mis2 greed14
+keep practiced knight s2 L21: win 59.2s left 0% taken 197 rt410 mis3 greed13
+keep practiced knight s3 L21: win 54.7s left 0% taken 84 rt401 mis2 greed12
+keep practiced warden s1 L21: win 62.5s left 0% taken 159 rt427 mis3 greed13
+keep practiced warden s2 L21: win 53.4s left 0% taken 167 rt384 mis1 greed16
+keep practiced warden s3 L21: win 47.4s left 0% taken 146 rt406 mis1 greed10
+keep practiced pyro s1 L21: win 65.1s left 0% taken 143 rt404 mis1 greed14
+keep practiced pyro s2 L21: win 51.2s left 0% taken 140 rt401 mis1 greed11
+keep practiced pyro s3 L21: win 68.7s left 0% taken 176 rt423 mis2 greed15
+mage practiced knight s1 L30: timeout 240s left 23% taken 284 rt418 mis14 greed22
+mage practiced knight s2 L30: timeout 240s left 18% taken 473 rt417 mis12 greed24
+mage practiced knight s3 L30: timeout 240s left 17% taken 273 rt414 mis17 greed27
+mage practiced warden s1 L30: win 134.1s left 0% taken 177 rt416 mis17 greed13
+mage practiced warden s2 L30: win 131.5s left 0% taken 149 rt407 mis12 greed16
+mage practiced warden s3 L30: win 120.2s left 0% taken 163 rt414 mis14 greed13
+mage practiced pyro s1 L30: win 114.8s left 0% taken 246 rt418 mis12 greed15
+mage practiced pyro s2 L30: win 139s left 0% taken 213 rt415 mis10 greed17
+mage practiced pyro s3 L30: win 121s left 0% taken 279 rt418 mis9 greed17
+redgorge practiced knight s1 L35: win 116.6s left 0% taken 236 rt407 mis2 greed17
+redgorge practiced knight s2 L35: win 97s left 0% taken 148 rt414 mis2 greed13
+redgorge practiced knight s3 L35: win 129.7s left 0% taken 299 rt402 mis6 greed21
+redgorge practiced warden s1 L35: win 188.7s left 0% taken 446 rt408 mis9 greed20
+redgorge practiced warden s2 L35: win 238.4s left 0% taken 309 rt398 mis7 greed28
+redgorge practiced warden s3 L35: win 152s left 0% taken 389 rt410 mis8 greed15
+redgorge practiced pyro s1 L35: win 142.3s left 0% taken 174 rt409 mis5 greed15
+redgorge practiced pyro s2 L35: win 112.5s left 0% taken 127 rt407 mis3 greed14
+redgorge practiced pyro s3 L35: win 142.5s left 0% taken 277 rt403 mis10 greed16
+
+BOSS RATES  profile human  flasks kit  (45 fights, 16 min)
+row                 L  practiced kn/wa/py        band
+kings               5  3/3 3/3 3/3 = 100%        HIGH +40
+crown              14  3/3 3/3 3/3 = 100%        HIGH +40
+keep               21  2/3 3/3 3/3 = 89%         HIGH +29
+mage               30  0/3 3/3 3/3 = 67%         HIGH +7  zero: knight
+redgorge           35  3/3 3/3 3/3 = 100%        HIGH +40
+exit 0
