@@ -1455,6 +1455,43 @@ async function runbossLab(BK, opts) {
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:leOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
+      if(boss.t==='golem'&&LABP.v2&&BK.tg&&BK.tg()){
+        /* THE TEMPLE GUARDIAN 2 (claude/monastery2, src/temple-guardian.js): played the way its sign and its reads say. Its floor blows are JUMPED (the stamp's
+           waves, its LOW sweep late in the tell, its TOLL's ring of sound); a block it hurls is stepped off its landing ring. Its KEYS: a block it raised is TAKEN
+           (INTERACT) and THROWN at it from a few steps off (ATTACK); with none standing, the hands go up onto the gallery under a bell, let it walk into that
+           bell's drawn reach, and strike the bell from a jump (up and strike near the top) - unless its toll has the bells swinging. Staggered (its gold ring),
+           they drop down and cut it; warded, they stand off at a blade's length and chip it short of its greed */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const TGs=BK.tg(),Mn=BK.L.mini,fl=Mn.floor,dg=boss.x-P.x,adg=Math.abs(dg),sg=Math.sign(dg)||1,reachG=LAB_REACH[h]+boss.w/2,onGal=P.ground&&P.y<fl-20;
+        const bells=BK.props().filter(p=>p.t==='tbell'&&p.guard),ready=b=>!(b.cool>0)&&!(b.tollT>0);
+        const tollNear=(TGs.tolls||[]).some(w=>w.life>0&&Math.abs(w.x-P.x)<38&&(P.x-w.x)*w.dir>0);
+        const waveNear=BK.waves().some(w=>!w.royal&&w.life>0&&Math.abs(w.x-P.x)<32&&(P.x-w.x)*w.dir>0&&P.y>w.y-6);
+        const sweepIn=((boss.mode==='sweepTell'&&boss.modeT<0.1)||boss.mode==='sweep')&&adg<100, stompIn=boss.mode==='stompTell'&&boss.modeT<0.12&&adg<66;
+        const hurl=(TGs.blocks||[]).find(b=>b.by==='golem'&&(b.state==='lift'||b.state==='fly')&&Math.abs(b.aimX-P.x)<36);
+        const stand=(TGs.blocks||[]).filter(b=>b.state==='stand');
+        let gx=null,face=sg,atk=false,jump=false,talk=false,drop=false;
+        if(!onGal&&P.ground&&(tollNear||waveNear||sweepIn||stompIn))jump=true;
+        else if(hurl)gx=hurl.aimX+(P.x<hurl.aimX?-56:56);
+        else if(boss.open>0){ if(onGal&&Math.abs(boss.x-P.x)>8){gx=boss.x;drop=true;} else {gx=boss.x-sg*Math.max(8,LAB_STAND[h]+boss.w/2);atk=adg<reachG+4&&P.atk<0;} }
+        else if(P.carry&&P.carry.t==='tgblock'){ if(onGal){gx=boss.x-sg*90;drop=true;} else if(boss.ward>0)gx=boss.x-sg*130; else {gx=boss.x-sg*80;atk=P.ground&&adg>48&&adg<118&&P.atk<0;} }
+        else if(stand.length&&!(boss.ward>1.2)&&!P.carry){ const b=stand.sort((a,c)=>Math.abs(a.tx*16+8-P.x)-Math.abs(c.tx*16+8-P.x))[0],bx=b.tx*16+8,side=Math.sign(P.x-bx)||-sg;
+          if(onGal){gx=bx+side*16;drop=true;} else {gx=bx+side*14;if(Math.abs(P.x-gx)<6&&P.ground&&f%6===0)talk=true;} }
+        else if(boss.ward>0){ gx=boss.x-sg*(reachG-2); const G=BK.greed; atk=adg<reachG+2&&P.atk<0&&!(G&&G.count(boss)>=G.limit(boss)-2)&&!(boss.greedT>0); if(boss.greedT>0)gx=boss.x-sg*130; }
+        else { /* THE BELL: the one whose reach it is nearer, from its gallery's inner end */
+          const bl=bells.slice().sort((a,c)=>Math.abs(a.x-boss.x)-Math.abs(c.x-boss.x))[0];
+          if(bl){ const inner=Math.sign((Mn.x0+Mn.x1)/2-bl.x)||1,spot=bl.x-inner*14,inR=Math.abs(boss.x-bl.x)<=82;
+            if(!onGal){ gx=spot; if(Math.abs(P.x-spot)<6&&P.ground&&!(P.labJump>0)){jump=true;} }
+            else { gx=spot; face=inner; if(inR&&ready(bl)&&P.ground&&Math.abs(P.x-spot)<8&&!(P.labJump>0))jump=true; }
+            if(!P.ground&&P.y-bl.y<50&&P.y-bl.y>-24&&P.vy>-150&&P.atk<0&&ready(bl)&&inR){P.face=Math.sign(bl.x-P.x)||inner;if(P.y-bl.y>16)k.up=true;atk=true;} } }
+        if(jump&&P.ground&&!(P.labJump>0)){BK.press('jump');P.labJump=18;}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(drop&&onGal&&P.ground&&gx!==null&&Math.abs(gx-P.x)<70){k.down=true;if(!(P.labDrop>0)){BK.press('jump');P.labDrop=20;}}
+        if(P.labDrop>0)P.labDrop--;
+        if(gx!==null){gx=Math.max(Mn.x0+12,Math.min(Mn.x1-12,gx));if(Math.abs(gx-P.x)>4&&!k.down)k[gx>P.x?'right':'left']=true;else if(!k.left&&!k.right&&P.ground)P.face=face;}
+        if(talk)BK.press('talk');
+        if(atk&&!k.down){if(!(k.up))P.face=P.carry?sg:P.face===sg||adg<reachG+4?sg:P.face;BK.press('atk');swings++;}
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='puppeteer'){
         /* THE PUPPETEER (claude/puppeteer): src/puppeteer.js puppetPlan reads what a player sees - a glowing string in reach is cut, a told blow is blocked,
            jumped, ducked or stepped out of, the opening (him re-stringing, or fallen) is run to, and from phase 2 the batten takes it up to the gallery */

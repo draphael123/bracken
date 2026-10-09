@@ -2173,13 +2173,14 @@ function theMonastery() {
   // hot smoke that carries you straight up while you stay in it. A brazier lifts you `rise` rows and two
   // more, so you come out over the ledge beside it with time to steer onto it. Every ledge in a chain
   // sits one tile clear of the column below it, never over it.
-  const brazier = (x, row, rise, o = {}) => ent('vent', x, row - 1, { heat: true, incense: true, h: (rise + 2) * TS, period: o.period || 4.2, on: o.on || 2.2, phase: o.phase || 0, lift: o.lift || 190, w: 12, ember: !!o.ember });
+  const brazier = (x, row, rise, o = {}) => ent('vent', x, row - 1, { heat: true, incense: true, h: (rise + 2) * TS, period: o.period || 4.2, on: o.on || 2.2, phase: o.phase || 0, lift: o.lift || 190, w: 12, ember: !!o.ember, snuff: !!o.snuff });   /* (claude/monastery2) STRIKE THE CENSER: a blow makes any brazier breathe NOW (a told recharge after); a SNUFFED one breathes only when struck */
   const band = (top, gx, gw) => { block(1, gx - 1, top, top + 2); block(gx + gw, W - 2, top, top + 2); boards(gx, top, gw); return { top, gx, gw }; };
   // a CELLAR: a hollow under a trapdoor in the flags. Press down to drop in; jump up through the boards to come out.
   const cellar = (x0, x1, top) => {
     block(x0 - 1, x1 + 1, top + 3, top + 3);
     air(x0, x1, top + 1, top + 2);
     boards(x0 + 1, top, x1 - x0 - 1);
+    set(x1 - 1, top + 2, T.SOLID); masonry.push([x1 - 1, x1 - 1, top + 2, top + 2]);   // (claude/monastery2, review M8: a STEP under the trapdoor's end - the way out was a 3-row jump with 1.4 px to spare)
   };
   // a CHIMNEY: two rock faces two apart up a wall, kicked up. Slow, and nothing about it moves.
   const chimney = (floorRow, topBand) => {
@@ -2259,7 +2260,7 @@ function theMonastery() {
   ent('sign', 6, 195, { text: 'THE HERB GARDEN. THE GOBLIN IN THE ROBE MENDS THE OTHERS: STRIKE IT BEFORE ITS RITE ENDS.' });
   ent('check', 8, 195); coins([21, 194], [75, 194]);
   cellar(14, 22, 196); coins([18, 195], [15, 198], [17, 198], [19, 198], [21, 198], [30, 195], [38, 195], [44, 195]);
-  ent('sentry', 20, 198, { face: -1 }); ent('sprig', 66, 195, { face: -1 });   // a lookout posted on the root cellar, and a looter in the bean rows
+  ent('sentry', 20, 195, { face: -1 }); ent('sprig', 66, 195, { face: -1 });   // a lookout posted on the root cellar, and a looter in the bean rows
   /* THE GOBLIN PRIESTS, one lesson a floor and never without a flock to bless (tools/gob-priest.mjs): the first here in the garden
      between two rock goblins, where the sign says what the robe does; then behind the troll among the copyists' desks, saying grace
      in the refectory, and over the looters' bead in the dorter. The shrines keep their pair and the crawl its garrison's own. */
@@ -2269,12 +2270,13 @@ function theMonastery() {
     [54, 'beanpoles', 1], [58, 'gardenWall', 2], [68, 'herbBed', 0], [84, 'fruitTree', 2], [91, 'dovecote', 0]]) ent('deco', x, 195, { kind: k, v });
   coins([88, 195], [92, 195]);
   ent('sign', 48, 195, { text: 'THE INCENSE STILL BURNS. STAND IN THE SMOKE AS IT RISES, AND STEER OFF AT THE TOP.' });
-  brazier(74, 196, 10, { phase: 0 }); plat(76, 186, 5);
-  brazier(79, 186, 8, { phase: 1.4 }); plat(73, 178, 5);
-  brazier(75, 178, 6, { phase: 2.8 });
+  brazier(74, 196, 10, { phase: 0 }); plat(72, 186, 9); hangers.push([72, 187, 195], [80, 187, 195]);   // (claude/monastery2: the landing reaches back over the column - a FORGIVING ride: the knight's and warden's 40% was the pyro's 90%)
+  brazier(79, 186, 8, { phase: 1.4 }); plat(73, 178, 5); hangers.push([73, 179, 185], [77, 179, 185]);
+  brazier(75, 178, 6, { snuff: true });                            // THE FIRST COLD CENSER: strike it and it breathes
+  ent('sign', 73, 177, { text: 'A COLD CENSER. STRIKE IT AND IT BREATHES - ANY BRAZIER DOES, WHEN YOU STRIKE IT.' });
   band(172, 73, 5);
   coins([74, 190], [74, 186], [79, 181], [75, 175]);
-  ent('harpy', 50, 184); ent('bat', 84, 182); ent('bat', 62, 178);
+  ent('harpy', 50, 184); ent('harpy', 78, 181); ent('bat', 62, 178);   // (claude/monastery2, difficulty v2: FOES AT PLATFORMING MOMENTS - a harpy over the second column's ride, not a bat off to the side)
   ent('check', 60, 195);
 
   // ---- 3. THE SCRIPTORIUM: a gallery dug into the cliff, its shelves, and the first prayer wheel ----
@@ -2314,6 +2316,9 @@ function theMonastery() {
   // ---- 4. THE BELL TOWERS: three towers and a flue, a bell in each belfry, and the bridges between them ----
   tower(8, 118, 131);
   tower(41, 118, 131);
+  // THE BELL IS A NOTE (claude/monastery2, idea b): the second tower's bell rings over its belfry - its note dazes what is in it (the priest there) - and lets
+  // down the monks' OFFERING, hung in a basket over the belfry since they left (gold: the wood's three silvers are the loft, the bellows alcove and the vault)
+  ent('tbell', 46, 117, { offer: true });
   tower(70, 118, 131);
   ent('tbell', 11, 117, { span: [16, 40, 118] });                   // the first bell: the drawbridge over the broken floor
   ent('sign', 9, 117, { text: 'A BELL. STRIKE IT AND WHAT HANGS FROM ITS TOWER COMES DOWN.' });
@@ -2327,7 +2332,7 @@ function theMonastery() {
   block(84, 84, 101, 114); block(84, 94, 118, 131);
   masonry.push([84, 84, 101, 131], [84, 94, 118, 131]); interiors.push([85, 94, 103, 117, 'monkFlue']);
   brazier(90, 118, 8, { phase: 0 }); plat(85, 110, 4);
-  brazier(86, 110, 10, { phase: 1.6 });
+  brazier(86, 110, 10, { snuff: true }); ent('harpy', 89, 104);   // cold: strike it from the ledge - with a harpy in the flue over the ride
   coins([90, 112], [86, 104], [87, 116]);
   ent('sign', 17, 131, { text: 'THE BELL TOWERS. NOBODY HAS RUNG THEM SINCE THE GOBLINS CAME.' });
   ent('check', 13, 117); ent('check', 6, 131); coins([31, 117], [36, 117], [58, 117], [63, 117]);
@@ -2362,27 +2367,25 @@ function theMonastery() {
   // THE ALCOVE, where the second wheel's other stair goes: a shrine walled in on the ledge
   air(4, 9, 81, 82); boards(4, 80, 6);
   block(12, 12, 74, 79); block(1, 12, 73, 73); masonry.push([1, 12, 73, 73], [12, 12, 74, 79]); interiors.push([1, 11, 74, 79, 'monkShrine']);
-  ent('deco', 6, 79, { kind: 'shrine', v: 1 }); coins([3, 79], [5, 79], [8, 79], [10, 79]); ent('mend', 10, 79);
+  ent('deco', 6, 79, { kind: 'shrine', v: 1 }); coins([3, 79], [5, 79], [10, 79]); ent('mend', 10, 79); ent('silver', 8, 79);   // (claude/monastery2, review M7: the alcove's find)
   ent('sign', 26, 79, { text: 'THE UPPER SHRINES. PRAYER FLAGS ON EVERY LINE, AND NOBODY LEFT TO READ THEM.' });
   ent('check', 22, 79); coins([28, 79], [60, 79], [44, 79]);
   ent('fledgling', 50, 79, { face: -1 }); ent('fledgling', 68, 79, { face: -1 });   /* (the harpy over them at 62,72 made way for the priests) */
   // THE GOBLIN PRIESTS at the shrines: one among the chicks and the herd billy on the ledge, where a blessed billy is the
   // reason to go for the robe first, and one by the foot of the scaffold, behind the goat that grazes up it. Both clear
   // of the way up through the boards at 31-37 and the cellar's trapdoor at 81-89
-  ent('gobpriest', 57, 79, { face: -1 }); ent('gobpriest', 41, 79, { face: 1 });
+  ent('gobpriest', 57, 79, { face: -1 }); ent('gobpriest', 37, 79, { face: 1 });
   ent('sign', 16, 79, { text: 'THE BELLOWS THROW YOU HIGH. KEEP GOING AT THE TOP.' });
-  brazier(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 5);
-  // COMBINE INCENSE AND LOOSE MASONRY (design audit, plan 2): a lip cut into the shaft right over the first plume's
-  // landing, dressed loose - the fire under it shivers it same as the crawl's own stone does (stal(17,68), below)
-  block(16, 18, 67, 67);
-  brazier(19, 69, 7, { lift: 230, period: 4.6, on: 2.4, phase: 1.5 });
-  plat(23, 62, 5); brazier(25, 62, 6, { lift: 230, period: 4.6, on: 2.4, phase: 3.0 });
+  brazier(14, 80, 11, { lift: 230, period: 4.6, on: 2.4, phase: 0 }); plat(16, 69, 11); hangers.push([17, 70, 79], [25, 70, 79]);   // (claude/monastery2, review M5: the plume lands you on this board, and a missed second plume lands back on it - never 12 rows down)
+  // (the lip that hung over the first plume's landing is gone - claude/monastery2, review M3/M5: a grass slab in open sky, and it caught you two rows over the board)
+  brazier(19, 69, 7, { lift: 230, period: 4.6, on: 2.4, snuff: true, ember: true });   // EMBER BRAZIERS (claude/monastery2): cold till struck, and the coals bring a harpy over them down
+  plat(22, 62, 6); hangers.push([22, 63, 68], [27, 63, 68]); brazier(25, 62, 6, { lift: 230, period: 4.6, on: 2.4, phase: 3.0, ember: true });
   band(56, 23, 5);
   coins([14, 74], [19, 65], [25, 59], [14, 70], [19, 67]);
   ent('harpy', 30, 64);   /* (not a second at 40,70 over the priest by the scaffold: a bird and a blessing on the same few tiles is a crowd) */
   cellar(80, 90, 80); coins([81, 82], [83, 82], [85, 82], [87, 82], [89, 82], [70, 79], [76, 79]);
   // THE SCAFFOLD the monks left up the east face, with a shrine at the top of it
-  for (const [x, y] of [[44, 78], [49, 76], [54, 74], [59, 72], [64, 70], [69, 68], [74, 66], [78, 64]]) plat(x, y, 4);
+  for (const [x, y] of [[44, 78], [49, 76], [54, 74], [59, 72], [64, 70], [69, 68], [74, 66], [78, 64]]) { plat(x, y, 4); hangers.push([x, y + 1, 79], [x + 3, y + 1, 79]); }   // (claude/monastery2, review M4: the scaffold stands on its poles)
   coins([45, 77], [55, 73], [65, 69], [75, 65], [79, 63]); ent('silver', 81, 63); ent('deco', 80, 63, { kind: 'shrine', v: 0 });
   // FAILING STONE, IN THE UPPER RUINS (Daniel's backlog): the scaffold is old timber, and one board of it goes - weight
   // starts its count, it drops, and it is whole again four seconds after (src/tower-collapse.js, the Falling Tower's own rule)
@@ -2391,18 +2394,22 @@ function theMonastery() {
   flags.push([2, 60, 22, 57], [30, 66, 76, 60], [8, 86, 36, 84], [50, 44, 90, 40], [4, 42, 30, 46]);
 
   // ---- 6b. THE TEMPLE HALL: the guardian the monks set over their relics, still standing its watch ----
-  // Stone does not bleed. A bell does what a blade cannot: its note goes into the stone and cracks it for a
-  // few seconds, and the hall has two, hung low enough to strike from a jump. It is only cracked if it is
-  // standing under the bell when the bell is struck.
-  block(29, 50, 48, 49);                                            // the hall's roof
-  for (let y = 50; y <= 55; y++) set(51, y, T.PORT);                // the way on, shut while it stands
-  masonry.push([29, 51, 48, 49]); interiors.push([30, 50, 50, 55, 'monkHall']);
-  ent('check', 24, 55);
-  ent('sign', 27, 55, { text: 'STONE DOES NOT BLEED. STRIKE A BELL WHILE IT STANDS UNDER IT, AND THE NOTE CRACKS IT.' });
-  ent('tbell', 36, 51, { guard: true, hang: true }); ent('tbell', 45, 51, { guard: true, hang: true });
+  // THE TEMPLE GUARDIAN 2 (claude/monastery2, Daniel 10-08: 'much bigger'): the hall is RAISED (rows 46-55, roof 44-45) and WIDENED (30-56) for a
+  // guardian twice the size. Stone takes a blade badly (src/temple-guardian.js): a bell struck while it stands in that bell's reach (drawn on
+  // the floor under it) STAGGERS it, and so does a block of its own floor thrown at it. The bells hang over two side galleries of boards, three
+  // rows up (a jump for every hero), and are struck from a jump off them - or off a block it raised.
+  block(29, 57, 44, 45);                                            // the hall's roof
+  block(29, 29, 46, 49); block(57, 57, 46, 49);                     // the walls over its two doors (the west door is the fight's wall, the east the gate)
+  for (let y = 50; y <= 55; y++) set(57, y, T.PORT);                // the way on, shut while it stands
+  masonry.push([29, 57, 44, 45], [29, 29, 46, 49], [57, 57, 46, 49]); interiors.push([30, 56, 46, 55, 'monkHall']);
+  boards(30, 53, 4); boards(53, 53, 4);                             // the bell galleries
+  hangers.push([30, 46, 52], [33, 46, 52], [53, 46, 52], [56, 46, 52]);   // hung from the roof on posts
+  ent('check', 22, 55);
+  ent('sign', 26, 55, { text: 'THE GUARDIAN. A BELL STRUCK WITH IT IN REACH STAGGERS IT. SO DOES ITS OWN STONE, THROWN.' });
+  ent('tbell', 34, 48, { guard: true, hang: true, top: 46 }); ent('tbell', 52, 48, { guard: true, hang: true, top: 46 });
   ent('golem', 43, 55, { mini: true });
-  coins([33, 55], [38, 55], [47, 55], [49, 55]);
-  ent('deco', 31, 55, { kind: 'statue', v: 0 }); ent('deco', 40, 55, { kind: 'candelabra', v: 0 }); ent('deco', 49, 55, { kind: 'candelabra', v: 0 });   /* THE CHAPEL: the founder's statue and the altar candles */
+  coins([36, 55], [40, 55], [47, 55], [50, 55], [31, 52], [55, 52]);
+  ent('deco', 38, 55, { kind: 'statue', v: 0 }); ent('deco', 42, 55, { kind: 'candelabra', v: 0 }); ent('deco', 49, 55, { kind: 'candelabra', v: 0 });   /* THE CHAPEL: the founder's statue and the altar candles */
 
   // ---- 6c. THE LAST CLIMB, and the second chimney: the way up it that nothing turns ----
   stair(56, 36, 52, 84, 78, 15); // the stair to the nest starts at the FAR end of the ledge: the hall is on the road, not beside it
@@ -2429,7 +2436,8 @@ function theMonastery() {
   ent('sign', 22, 29, { text: 'STRIKE THE GREAT BELL WITH HIM UNDER IT: THE NOTE GOES THROUGH THE RITE.' });
   ent('abbot', 72, 29);   /* THE FALSE ABBOT, at the far end of the ringing floor: the great bell is at 56, and getting him under it is the fight */
   // the last hop to the gate is over the thorns on two stones set on a pillar
-  plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29);
+  plat(79, 29, 5); block(85, 87, 27, 27); block(89, 91, 27, 27); block(87, 87, 28, 29); block(91, 91, 28, 29);
+  masonry.push([85, 91, 27, 29]);   // (claude/monastery2, review M3: the two stones are LAID - a pier under each, not grass slabs in the sky)
   ent('gate', 92, 29);   /* (no checkpoint on the ringing floor: 18,29 stood inside the Abbot's walls, B6; the one at 12,35 is the door) */
   ent('silver', 90, 26);
   ent('vault', 38, 29);
@@ -2437,13 +2445,15 @@ function theMonastery() {
   for (let y = 32; y <= 34; y++) { for (let x = 70; x <= 93; x++) set(x, y, T.AIR); for (let x = 3; x <= 16; x++) set(x, y, T.AIR); }
   coins([74, 35], [78, 35], [86, 35], [90, 35]); ent('deco', 82, 35, { kind: 'bones', v: 1 });
   ent('deco', 6, 35, { kind: 'prayerFlags', v: 1 }); coins([4, 35], [9, 35], [15, 35]);
-  // A THIRD WHEEL, IN THE CRAWL'S RIGHT HOLLOW (design audit, plan 3 + the exam, plan 4): between two priests' flocks,
-  // a small brazier to carry you up past it - so the last stretch before the belfry door is an EXAM (game-wide pattern
-  // 1): incense, a wheel, a priest and (garrison's own) a harpy all in the same 80 route tiles, a foe right by the hop
-  ent('gobpriest', 71, 35, { face: 1 }); ent('troll', 73, 35, { face: 1 });
-  brazier(74, 35, 2, { lift: 150, period: 4.0, on: 2.0, phase: 0 });
-  wheel(35, 77, 34, 1, 'b');
-  ent('sign', 45, 35, { text: 'A THIRD WHEEL. FLIP IT WITH ONE OF THEM ON ITS STAIR, AND IT GOES OUT FROM UNDER HIM.' });
+  // THE EXAM: THE STAIR GOES OUT FROM UNDER HIM (claude/monastery2, review M2 + idea 3 - it replaces the crawl's third wheel, which hung under the
+  // roof where no board of it could be stood on, and the crawl brazier a tile off the floor that lifted nobody). The way up to the ringing floor is a
+  // prayer wheel's stair in the roof's well, over a thorn pit, and an elite troll holds it with a priest's flock behind: strike the wheel with him on its
+  // stair and the stair goes out from under him (into the thorns: a real death in the exam, for him or for you).
+  for (let x = 38; x <= 41; x++) set(x, 33, T.AIR);                  // (the old landing: the wheel's pivot is the way up now)
+  air(35, 45, 36, 37); spikes(38, 40, 37); masonry.push([35, 45, 38, 38]);   // the roof's WELL, sunk two rows under the crawl, a thorn pit in its floor
+  wheel(37, 42, 35, 1, 'b');                                          // pivot 42-44@35 (a jump off the well floor); its stair 40-42@33 (over the pit) or 44-45@33; the trapdoor 3 rows over either
+  ent('troll', 41, 32, { face: 1 });                                 // on the stair (a hill troll: heavy, not an elite - the well is under the Abbot's floor, and an elite never stands that near a boss room)
+  ent('sign', 46, 35, { text: 'THE LAST WHEEL. STRIKE IT WITH ONE OF THEM ON ITS STAIR AND IT GOES OUT FROM UNDER HIM.' });
 
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
   // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in
@@ -2455,16 +2465,17 @@ function theMonastery() {
     while (y > shelfTop + 6) { const x = k % 2 ? xb : xa; plat(x, y, 3); if (k % 2) coins([x + 1, y - 1]); y -= 2; k++; }
     // the last three stack straight up under the gap: the far ledges are under the rock, and a jump from there bangs its head
     plat(xa, shelfTop + 6, 3); plat(xa, shelfTop + 4, 3); plat(xa, shelfTop + 2, 3); coins([xa + 1, shelfTop + 1]);
+    hangers.push([xa, shelfTop + 3, floorRow - 1], [xa + 2, shelfTop + 3, floorRow - 1], [xb + 1, shelfTop + 7, floorRow - 1]);   // (claude/monastery2, review M4: a goat path of boards on poles, not planks in the sky)
   };
   sideRoute(218, 196, 86, 90);     // the gatehouse, up the far wall past the pilgrims' shelter
   sideRoute(196, 172, 4, 8);       // the terraces' near end, up into the scriptorium
   sideRoute(80, 56, 84, 88);       // the bellows' far side, up to the chimney's foot
   // LOOSE MASONRY: a stone in the vault over a step you have to stand on shivers when you pass under, and drops.
   const stal = (x, y) => { if (L.grid[(y - 1) * W + x] === T.SOLID && L.grid[y * W + x] === T.AIR) ent('stal', x, y, { stone: true }); };
-  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32], [17, 68]]) stal(x, y);
+  for (const [x, y] of [[51, 199], [91, 199], [9, 175], [24, 103], [44, 103], [88, 103], [41, 83], [84, 84], [77, 59], [39, 39], [10, 32], [80, 32]]) stal(x, y);
   // and more of the mountain's own: bats in the shade below the cloud, harpies and fledglings above it
   ent('bat', 60, 205); ent('bat', 24, 186); ent('harpy', 20, 142);
-  ent('harpy', 40, 44); ent('fledgling', 62, 55, { face: -1 });
+  ent('harpy', 40, 41); ent('fledgling', 62, 55, { face: -1 });
 
   // ---- THE RINGING FLOOR. It was a NEST while the Roc had it - heaped rafters, bones she did not finish, the shells
   // of what she hatched - and with her gone the roof stays ON (she is what tore it off, mid-fight), so this is a ROOM
@@ -2497,11 +2508,12 @@ function theMonastery() {
   facades.push(
     [0, 7, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true, spring: 6 }], [16, 40, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true }],   /* THE BELL ARCHES: tower to tower, each on its two springings */
     [49, 69, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true }], [78, 84, CLOUD + 3, CLOUD + 10, 'monkArch', { spans: true, spring: 6 }],
-    [27, 53, 36, 58, 'monkChapel', { roseY: 104 }]);                 /* THE CHAPEL's clerestory over the golem's hall: the rose window */
+    [27, 59, 36, 58, 'monkChapel', { roseY: 104 }]);                 /* THE CHAPEL's clerestory over the golem's hall: the rose window */
   // NOTHING IS DUG AFTER THIS LINE: the goat path's rock face above is the last tile laid
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 4, y: 217 }, pools: [], falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'monastery', night: false, cloudLine: CLOUD, snowLine: 28,   /* "rpgchip07_the_shrine_of_mysteries" from 15 Melodic RPG Chiptunes by Aureolus_Omicron, CC0 - THE MONASTERY's own theme, benching sunspire (audio/CREDITS.txt) */
+    examSpans: [[38, 40]],   /* (claude/monastery2) the nest stair's thorn pit is a section EXAM: its spikes are a real death (src/survival.js spikeRule) */
     belfry: {roofGone:false}, monk: { flags, hangers, boards: roofBoards }, facades, masonry, interiors, crumbles,
     /* THE GROUND KIT BY PLACE: bees and herb beds belong in the garden, not on the belfry floor (GROUND_KITS.spire is the rest) */
     kits: [[1, 94, 196, 196, { density: 0.3, kinds: ['herbBed', 'skep'] }], [72, 94, 218, 218, { density: 0.25, kinds: ['bones'] }]],
@@ -2514,7 +2526,7 @@ function theMonastery() {
       dirt: '#726255', dirtL: '#8f7d68', dirtD: '#4f4034', canopy: ['#5f584a', '#746b58', '#8f8265', '#b0a17a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
     arena: { x0: 2 * TS, x1: 94 * TS, floor: 30 * TS, y0: 24 * TS, trigger: 40 * TS, wallL: 1, wallR: 94, boss: 'abbot', music: 'roc', tint: '#e8c88a', tintA: 0.10, fx: 'motes' },   /* it used to wake a quarter of the way across the summit, before you had seen the nest. THE FALSE ABBOT has it now (2026-09-22): the Roc was a giant bird in a bell tower, and this level's own rule is that what the monks built answers a blow. Her code is untouched and she is placed nowhere - restorable, as the Harbor was. (The track is still hers: he has not got one of his own yet.) */
-    mini: { x0: 30 * TS, x1: 50 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 51, boss: 'golem', y0: 48 * TS, y1: 57 * TS, music: 'monasterygolem' },   /* "Boss Battle #6 [8-bit]" V1 by nene, CC0, converted WAV -> OGG - the Monastery's Golem mini's own track (audio/CREDITS.txt) */
+    mini: { x0: 30 * TS, x1: 57 * TS, floor: 56 * TS, trigger: 34 * TS, wallL: 29, gate: 57, boss: 'golem', y0: 44 * TS, y1: 57 * TS, music: 'monasterygolem' },   /* "Boss Battle #6 [8-bit]" V1 by nene, CC0, converted WAV -> OGG - the Monastery's Golem mini's own track (audio/CREDITS.txt) */
   };
 }
 

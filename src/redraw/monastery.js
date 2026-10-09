@@ -543,7 +543,9 @@ export function bakeGuardian() {
     else { arm(27, 14, 29, 24 + bob); staff(29, 6, 31, 35); arm(13, 14, 11, 24 + bob); }
     if (pose === 5) { line(g, 15, 13, 22, 22, S.k); line(g, 22, 22, 18, 29, S.k); line(g, 24, 4, 21, 9, S.k); px(g, 19, 7, S.E); }
     return outline(c, OUT); };
-  return pack([0, 1, 2, 3, 4, 5, 6, 7, 8].map(frame), 20, 36, 30, 34);
+  /* MUCH BIGGER, THE SAME LOOK (claude/monastery2, Daniel 10-08: 'keep its current look'): every frame drawn at twice its size, pixel for pixel - 80x80, anchor 40,72, body 56x66 (src/temple-guardian.js TG) */
+  const big = c => { const [b, gb] = canvas(c.width * 2, c.height * 2); gb.imageSmoothingEnabled = false; gb.drawImage(c, 0, 0, c.width * 2, c.height * 2); return b; };
+  return pack([0, 1, 2, 3, 4, 5, 6, 7, 8].map(frame).map(big), 40, 72, 56, 66);
 }
 
 // ---------- THE GOBLIN PRIEST ----------

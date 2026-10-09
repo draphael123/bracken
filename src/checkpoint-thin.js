@@ -25,7 +25,7 @@ export const CHECK_DROP = {
   kings: [[43,19],[153,21],[241,13],[405,20],[566,11]],
   scree: [[58,19],[105,19],[222,13],[493,18],[500,18],[534,8]],   /* (claude/scree2: the rockslide chase grew 96 columns in at 339 - 404/438 are 500/534 now; the ropeway's own shrine (493) goes for the chase's shrine on the gorge bank (441); the slope's 330 went with the slope; and the pasture's 58, 56 tiles from the start: difficulty v2, one a section) */
   hanging: [[12,51],[43,79],[98,107]],
-  spire: [[8,195],[13,117],[21,217],[24,55],[30,99],[72,151]],
+  spire: [[8,195],[13,117],[21,217],[22,55],[30,99],[72,151]],
   moor: [[25,21],[52,21],[204,21],[296,13],[399,13],[406,13],[494,13]],
   storm: [[29,35],[76,35],[173,31],[190,31],[258,31],[274,31],[306,31],[351,29],[388,29],[425,29],[503,28],[533,29]],
   crown: [[12,95],[196,63],[282,63],[326,63],[395,63],[660,63],[750,51]],

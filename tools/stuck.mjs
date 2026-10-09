@@ -75,6 +75,13 @@ for (const [id, S] of Object.entries(STUCK_SIGNS)) { const lv = levels.get(id); 
 /* THE VERBS: no capstan sign says TURN any more (the verb is a strike) */
 { const L = levels.get('reef').build(); ok(!L.ents.some(e => e.t === 'sign' && /\bTURN THE CAPSTAN/.test(e.text)), 'reef: no sign says TURN THE CAPSTAN (the verb is STRIKE)'); }
 
+/* EVERY MONASTERY MACHINE HAS ITS SPOT (claude/monastery2, review M6: the guide knew only the baskets): each route bell (not the guardian's hall bells, the
+   Abbot's or an offering's), each prayer wheel and each incense brazier of a monk level has a STUCK spot whose glint target is on it (within 1.5 tiles) */
+for (const [id, lv] of levels) { let L; try { L = lv.build(); } catch { continue; } if (!L.monk) continue;
+  const tg = (STUCK[id] || []).flatMap(sp => stepsOf(sp).flatMap(s => s.ats || (s.at ? [s.at] : [])));
+  for (const e of L.ents.filter(e => (e.t === 'tbell' && !e.guard && !e.abbot && !e.roc && !e.offer) || e.t === 'pwheel' || (e.t === 'vent' && e.incense)))
+    ok(tg.some(([c, r]) => Math.abs(c - e.x) <= 1.5 && Math.abs(r - e.y) <= 1.5), id + ': the ' + e.t + ' at ' + e.x + ',' + e.y + ' has a stuck spot (glint + 10 s nudge)'); }
+
 if (fails.length) { console.log('stuck (static): ' + fails.length + ' failure(s)\n  ' + fails.join('\n  ')); process.exit(1); }
 console.log('stuck (static) OK: ' + okc.length + ' checks - ' + Object.values(STUCK).reduce((n, a) => n + a.reduce((m, s) => m + stepsOf(s).length, 0), 0) + ' steps in ' + Object.values(STUCK).reduce((n, a) => n + a.length, 0) + ' spots over ' + Object.keys(STUCK).length + ' levels resolve a glint target and a nudge from their stall point');
 if (process.argv.includes('--static')) process.exit(0);
