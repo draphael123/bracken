@@ -19,6 +19,7 @@ import { heightAt } from './slopes.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { resolve, newStall, stallTick, drawGlint } from './stuck-guide.js';
 
+const RAM_LINE = ['HIS CART IS WRECKED', 'RAMMED! ONE MORE', 'RAMMED! TWO MORE'];   /* (the foreman's count, as lines the hint box knows) */
 export function makeMinecartHands(ctx) {
   const txt = (s, x, ...a) => { if (!(x > -48 && x < ctx.VW() + 48)) return; ctx.text(s, x, ...a); };
   let M = null;   /* the level's live state */
@@ -187,7 +188,7 @@ export function makeMinecartHands(ctx) {
     if (pc.v >= MC.ramV) { M.n.rams++; M.n.foremanRams++; cart.rams++; cart.stun = 0.8; pc.crashCd = 0.4;
       const d = Math.ceil(e.maxHp / MC.foremanRams) + 1; M.ramming = true; try { ctx.hitFoe(e, d); } finally { M.ramming = false; }
       ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(cart.x - 10, cart.y - 10, 16, ['#5a6270', '#d89a5a', '#ffd36b', '#ffffff'], 120, 0.5);
-      ctx.number(cart.x, cart.y - 34, e.alive ? 'RAMMED! ' + (MC.foremanRams - cart.rams > 0 ? (MC.foremanRams - cart.rams) + ' MORE' : '') : 'HIS CART IS WRECKED', '#ffd36b');
+      ctx.number(cart.x, cart.y - 34, RAM_LINE[e.alive ? Math.max(1, Math.min(2, MC.foremanRams - cart.rams)) : 0], '#ffd36b');
       bounceBack(pc, 70); if (!e.alive) { cart.state = 'fall'; cart.vy = -200; cart.v = 120; } }
     else { M.n.bumps++; pc.crashCd = MC.crashCd; ctx.hurtHero(cart.x, MC.bumpDmg, { unblockable: true, name: "THE FOREMAN'S CART", noKnock: true }); ctx.sfx.clank && ctx.sfx.clank(); ctx.shake(2); bounceBack(pc, 56);
       (sayOk('foremanBump', true) && ctx.number(P.x, P.y - 34, 'TOO SLOW: PUMP, THEN RAM HIM', '#ff9a5c')); } }
@@ -249,7 +250,7 @@ export function makeMinecartHands(ctx) {
     if (P.ground && !P.dead) { c.lastGround = { x: P.x, y: P.y }; c.histT = (c.histT || 0) - dt; if (c.histT <= 0) { c.histT = 0.1; c.hist.push({ x: P.x, y: P.y }); if (c.hist.length > 60) c.hist.shift(); } }
     /* A LAUNCH RAMP (deeprails2): crossing its lip on the line throws the cart up - its pace is its distance */
     const prevX = c.prevX === undefined ? P.x : c.prevX; c.prevX = P.x;
-    for (const r of M.ramps) { const lip = (r.x + 1) * ts; if (prevX < lip && P.x >= lip && Math.abs(P.y - r.row * ts) < 8 && P.vy > -60) { const vy = MC.rampV0 + MC.rampK * Math.max(c.v, 0); P.vy = -vy; P.ground = false; P.coyote = 0; M.n.launches++;
+    for (const r of M.ramps) { const lip = (r.x + 1) * ts; if (prevX < lip && P.x >= lip && Math.abs(P.y - r.row * ts) < 8 && P.vy > -60) { const vy = MC.rampV0 + MC.rampK * Math.max(c.v, 0); P.vy = -vy; P.ground = false; P.coyote = 0; P.canCut = false;   /* (a launch is not a jump: letting go of JUMP does not cut it short) */ M.n.launches++;
         ctx.sfx.heavy && ctx.sfx.heavy(); ctx.shake(3); ctx.burst(lip, r.row * ts - 2, 10, ['#ffd36b', '#ff9a3c', '#8a919c'], 90, 0.4); (sayOk('ramp') && ctx.number(P.x, P.y - 40, c.v >= MC.boost - 20 ? 'FLY!' : 'NOT ENOUGH PUMP!', c.v >= MC.boost - 20 ? '#ffd36b' : '#ff9a5c')); } }
     /* A FALL: in an EXAM it is the end (the game's own fall); elsewhere a share of health and back on the rail, MC.retryBack behind the lip (or, off a rail that
        broke, back before the break with the rail relaid) */

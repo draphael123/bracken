@@ -38,6 +38,7 @@ export const DRILL = {
   chain: { 1: ['rocks', 'reverse', 'rocks', 'reverse'], 2: ['sparks', 'rocks', 'reverse', 'sparks', 'rocks'], 3: ['reverse', 'sparks', 'rocks', 'reverse', 'sparks', 'rocks'] },
 };
 export const LANE_NAME = ['LOW', 'MID', 'HIGH'];
+export const SPARK_LINE = ['!! SPARKS: LOW', '!! SPARKS: MID', '!! SPARKS: HIGH'];
 /* THE STAGE: carve the arena into the level; returns { arena, carve } */
 export function stageDrill(Wr, T, TS, sx, F) {
   const S = DRILL_STAGE;
@@ -151,7 +152,7 @@ export function stepDrill(e, S, dt, heroes, c) {
       else if (name === 'reverse') { e.mode = 'revTell'; e.modeT = S.ph === 3 ? DRILL.revTell * 0.85 : DRILL.revTell; S.n.reverse++; c.sound && c.sound('klaxon');
         c.number(rearX(S) - 30, G.laneY[2] - 40, S.told.rev ? '!! REVERSE' : '!! IT BACKS AT YOU: BRAKE, OR JUMP UP', '#ff6b6b'); S.told.rev = 1; }
       else if (name === 'sparks') { e.mode = 'spray'; S.n.sparks++; S.spray = { lane: hl, t: DRILL.sparkTell, on: false, tick: 0 }; c.sound && c.sound('tellHard');
-        c.number(rearX(S) - 40, G.laneY[hl] - 44, S.told.spark ? '!! SPARKS: ' + LANE_NAME[hl] : '!! SPARKS DOWN YOUR LINE: CHANGE LINE', '#ffb070'); S.told.spark = 1; }
+        c.number(rearX(S) - 40, G.laneY[hl] - 44, S.told.spark ? SPARK_LINE[hl] : '!! SPARKS DOWN YOUR LINE: CHANGE LINE', '#ffb070'); S.told.spark = 1; }
       break; }
     case 'rockTell': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; } break;
     case 'revTell': if (e.modeT <= 0) { e.mode = 'reverse'; e.modeT = DRILL.revT; S.revV = DRILL.revV; c.sound && c.sound('reverse'); c.shake && c.shake(4); } break;

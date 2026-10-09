@@ -300,7 +300,7 @@ export function buildMinecart({ painter, T, TS }) {
   tell(735, 758, 'LINE ENDS: TAKE THE LIFT');
   decor.push({ kind: 'buffer', x: 759, row: B, soft: true });               /* (the line's end: you step out - no crash) */
   ground(759, 764, B);
-  air(765, 767, B, B + 3); block(765, 767, B + 4, H - 1);
+  ground(765, 767, B);                                                      /* (the cage rests on the yard floor: no pit under it) */
   ent('mover', 765, B, { len: 3, vert: true, rise: 10, period: 5.6 });      /* THE CAGE LIFT: down at the yard, up at the high line, and down again */
   decor.push({ kind: 'lift', x0: 765, x1: 767, y0: B - 10, y1: B });
   sign(761, B - 1, 'THE LIFT. RIDE IT UP: A CART WAITS AT THE TOP.');
