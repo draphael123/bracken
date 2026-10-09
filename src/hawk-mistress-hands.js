@@ -141,7 +141,7 @@ export function makeHawkMistressHands(ctx) {
     if (!MS) MS = KSA.bakeMistressSet();
     const x = R(e.x - cx), y = R(e.y + (e.yOff || 0) - cy), f = e.face || 1, m = e.mode, flash = (e.hurtT || 0) > 0;
     const POSE = { sleep: 'sleep', wake: 'recover', recover: 'recover', feintTell: 'feint', feintHold: 'feint', lashTell: 'lashTell', markLashTell: 'lashTell', lash: 'lash', markLash: 'lash', cutTell: 'cutTell', cut: 'cut', whistle: 'whistle', spotTell: 'guard', diveTell: 'whistle', callTell: 'whistle',
-      snareTell: 'lashTell', snare: 'lash', fanTell: 'cutTell', fan: 'cut', kegTell: 'feint', rakeTell: 'whistle', snatchTell: 'whistle', leap: 'walkA' };
+      snareTell: 'lashTell', snare: 'lash', fanTell: 'cutTell', fan: 'cut', kegTell: 'feint', rakeTell: 'whistle', hawkGrabTell: 'whistle', leap: 'walkA' };
     let pose = POSE[m] || (m === 'walk' ? (Math.floor(time * 6 + e.x * 0.05) & 1 ? 'walkA' : 'walkB') : 'guard');
     if (m === 'walk' && !(Math.abs(e.vx || 0) > 4)) pose = 'guard';
     if (flash && pose !== 'sleep') pose = 'hurt';

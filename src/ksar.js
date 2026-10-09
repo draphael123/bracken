@@ -322,7 +322,7 @@ export function buildKsar({ painter, T, TS }) {
   shadeBox(584, 589, 30, B - 1);
   /* THE SHADE (THE SUN v2: no walk on the route over SUN.maxWalk): awnings over the alley's squads and gong, the stair's lee, the tower top's parapet awning, the landing's */
   awning(700, 704, 28, B); awning(710, 714, 28, B); awning(727, 731, 28, B); awning(745, 749, 28, B); shadeBox(754, 758, 30, B - 1); awning(768, 772, 28, B); shadeBox(781, 789, 27, B - 1);
-  awning(783, 786, 18, 31); awning(791, 795, 11, 16); awning(805, 809, 28, B); awning(668, 672, 26, 32); awning(683, 687, 28, B); awning(48, 52, 28, B); awning(188, 195, 21, 28); awning(61, 65, 25, B); awning(428, 432, 19, 25);
+  awning(783, 786, 18, 31); awning(791, 795, 11, 16); awning(805, 809, 28, B); awning(668, 672, 26, 32); awning(683, 687, 28, B); awning(48, 52, 28, B); awning(188, 195, 21, 28); awning(181, 187, 19, 24); awning(61, 65, 25, B); awning(428, 432, 19, 25);
   // ================= THE HAWK-MISTRESS's COURTYARD (src/hawk-mistress.js) =================
   const AX = 812;
   const stage = stageHawkMistress({ set, block, ent, air }, T, TS, AX, B);

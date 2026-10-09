@@ -60,7 +60,7 @@ export const MOVES = {
   lashTell: { mark: '!!', answer: 'jump' }, feintTell: { mark: '', answer: '' }, cutTell: { mark: '!', answer: 'block' }, spotTell: { mark: '!', answer: '' },
   markLashTell: { mark: '!!', answer: 'dodge' }, callTell: { mark: '!', answer: '' },
   snareTell: { mark: '!!', answer: 'jump' }, fanTell: { mark: '!', answer: 'block' }, kegTell: { mark: '!!', answer: 'jump' },
-  rakeTell: { mark: '!', answer: 'block' }, snatchTell: { mark: '!', answer: 'block' },
+  rakeTell: { mark: '!', answer: 'block' }, hawkGrabTell: { mark: '!', answer: 'block' },
 };
 export const MOVE_NAME = { lash: 'HER WHIP', cut: 'HER KNIFE', markLash: 'HER WHIP', rake: 'HER HAWK', fire: 'THE FIRE', snare: 'HER WHIP', knife: 'HER KNIVES', keg: 'HER KEG', snatch: 'HER HAWK' };
 export const NEW_MOVES = { 1: 'snare', 2: 'fan', 3: 'keg' };   /* hers, one a phase (B5) */
@@ -229,7 +229,7 @@ function nextMove(e, S, P, c) {
       S.rake = { x0: sx, y0: G.floorY - 112, x1: tx, y1: G.floorY - 8, t: 0, key: 'rake' + S.act }; S.n.rakes++;
       S.hawk.mode = 'rakeTell'; S.hawk.t = HM.rakeTell; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; c.sound('hawk');
       if (!S.told.rake) { S.told.rake = 1; c.number(e.x, e.y - 60, 'THE RAKE: STEP OFF ITS LINE, OR STRIKE THE HAWK', '#ffd36b'); } return; }
-    case 'snatch': { tell(e, S, c, 'snatchTell', HM.snatchTell); S.snatch = { x: clampX(G, P.x), t: 0, key: 'snatch' + S.act, lock: false }; S.n.snatches++;
+    case 'snatch': { tell(e, S, c, 'hawkGrabTell', HM.snatchTell); S.snatch = { x: clampX(G, P.x), t: 0, key: 'snatch' + S.act, lock: false }; S.n.snatches++;
       S.hawk.mode = 'hover'; S.hawk.t = HM.snatchTell; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; c.sound('hawk');
       if (!S.told.snatch) { S.told.snatch = 1; c.number(e.x, e.y - 60, 'THE SNATCH: BLOCK IT OR STRIKE IT AS IT DROPS', '#ffd36b'); } return; }
   }
@@ -264,7 +264,7 @@ function stepMove(e, S, dt, P, h, c) {
     case 'callTell': if (e.modeT <= 0) { S.runner = { gong: S.callGong, t: HM.runT, t0: HM.runT, from: (S.callGong && c.gongs().find(g => g.id === S.callGong) || { x: e.x }).x < (G.x0 + G.x1) / 2 ? G.x1 - 30 : G.x0 + 30 };
         if (!S.told.call) { S.told.call = 1; c.number((G.x0 + G.x1) / 2, G.wallY + 30, 'A GUARD RUNS FOR A GONG: CUT ITS ROPE', '#ffd36b'); } after(0.4); } return;
     case 'rakeTell': if (e.modeT <= 0) { after(HM.rakeFly + 0.35); } return;           /* the hawk flies its line (stepHawk); she watches it go */
-    case 'snatchTell': if (e.modeT <= 0) { after(HM.snatchDrop + 0.4); } return;
+    case 'hawkGrabTell': if (e.modeT <= 0) { after(HM.snatchDrop + 0.4); } return;
     default: setMode(e, 'walk', 0.5);
   }
 }
