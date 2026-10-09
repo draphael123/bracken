@@ -48,14 +48,14 @@
   "bare": true
  },
  "welltown": {
-  "hash": "139ac9df7c80",
+  "hash": "9fd89c05c44b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 42,
-  "deaths": 4,
-  "kills": 11,
-  "lifts": 137,
+  "hits": 30,
+  "deaths": 3,
+  "kills": 15,
+  "lifts": 145,
   "walked": 100,
   "bare": true
  },
@@ -108,26 +108,26 @@
   "bare": true
  },
  "glasssea": {
-  "hash": "20355d1b686a",
+  "hash": "d60e3fa99613",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 33,
+  "hits": 24,
   "deaths": 3,
-  "kills": 29,
-  "lifts": 95,
+  "kills": 30,
+  "lifts": 101,
   "walked": 100,
   "bare": true
  },
  "ksar": {
-  "hash": "ae6114a6041b",
+  "hash": "393b2970c957",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 39,
-  "deaths": 13,
+  "hits": 38,
+  "deaths": 14,
   "kills": 10,
-  "lifts": 139,
+  "lifts": 138,
   "walked": 100,
   "bare": true
  }

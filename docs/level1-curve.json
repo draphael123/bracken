@@ -455,17 +455,17 @@
   "lostPct": 436
  },
  "welltown": {
-  "hash": "139ac9df7c80",
+  "hash": "9fd89c05c44b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 47,
-  "deaths": 6,
-  "kills": 23,
-  "lifts": 136,
+  "hits": 33,
+  "deaths": 5,
+  "kills": 10,
+  "lifts": 146,
   "walked": 100,
   "bare": true,
-  "lostPct": 240
+  "lostPct": 264
  },
  "redgorge": {
   "hash": "100fc3ff15e7",
@@ -507,29 +507,29 @@
   "lostPct": 131
  },
  "glasssea": {
-  "hash": "20355d1b686a",
+  "hash": "d60e3fa99613",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 33,
+  "hits": 25,
   "deaths": 3,
-  "kills": 29,
-  "lifts": 95,
+  "kills": 30,
+  "lifts": 102,
   "walked": 100,
   "bare": true,
-  "lostPct": 207
+  "lostPct": 226
  },
  "ksar": {
-  "hash": "84dc032df59e",
+  "hash": "393b2970c957",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 37,
-  "deaths": 9,
-  "kills": 8,
-  "lifts": 87,
+  "hits": 34,
+  "deaths": 12,
+  "kills": 9,
+  "lifts": 134,
   "walked": 100,
   "bare": true,
-  "lostPct": 433
+  "lostPct": 564
  }
 }
