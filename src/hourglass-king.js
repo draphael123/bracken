@@ -25,7 +25,7 @@
 // HUMAN bot (src/lab.js): it reads his glass and works the levers.
 
 export const HK = {
-  hp: 1900, w: 20, h: 38, markH: 56,
+  hp: 1800, w: 20, h: 38, markH: 56,
   glass: 12, glass3: 8, lowAt: 0.36,
   openMul: 2.0, openCap: 0.13, openT: 4.0, wardT: 3.0, wardMul: 0.4, resist: 0.45, turnT: 1.4, turnMul: 1.0, dragV: 300, dragStop: 40, fullJam: 1.6,
   p2: 0.6, p3: 0.25,
@@ -36,7 +36,7 @@ export const HK = {
   slipTell: 0.9, slipR: 22, slipUp: 0.3,
   hourTell: 0.95, hourV: 210, hourH: 14,
   pourW: 22, pourTick: 0.5,
-  dmg: { pend: 34, gear: 28, stream: 36, slip: 38, hour: 31, pour: 7 },
+  dmg: { pend: 28, gear: 23, stream: 30, slip: 31, hour: 26, pour: 6 },   /* (resume pass: 33% with flasks at 34/28/36/38/31 and 1900 hp - eased to the 60-70% band) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
