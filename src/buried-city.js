@@ -99,7 +99,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   for (const [x0, x1] of [[93, 96], [101, 104], [108, 111]]) { ledge(x0, x1, 31); decor.push({ kind: 'stall', x0, x1, y: 31 }); }   /* the stalls: their awnings are ledges */
   ledge(97, 100, 28); ledge(112, 116, 28);                                        /* balconies over the stalls */
   ledge(92, 95, 25); ent('silver', 93, 24);                                       /* A SILVER on the high cornice (a jump off the balcony) */
-  slinger(98, 27, 'marketWatch'); scorpion(103, B - 1, 'marketWatch'); scorpion(110, B - 1, 'marketWatch', { face: 1 });   /* THE MARKET WATCH: a slinger over the stalls, brass scorpions under them */
+  slinger(98, 27, 'marketWatchSling'); scorpion(103, B - 1, 'marketWatch'); scorpion(110, B - 1, 'marketWatch', { face: 1 });   /* THE MARKET WATCH: a slinger over the stalls, brass scorpions under them */
   slinger(114, 27, 'marketWatch2', { face: -1 });
   /* THE GRANARY (TEST, RIDE IT UP): the way on is HIGH in its east wall; inside, its lever shuts the gate and the pour carries you up */
   ground(118, 132, B); block(117, 118, 18, 30); block(133, 133, 18, 22); ground(133, 133, 26);   /* its floor and walls: the west door at the floor, the east door high (rows 23-25) */
@@ -111,15 +111,15 @@ export function buildBuriedCity({ painter, T, TS }) {
   ledge(129, 132, 23); slinger(131, 22, 'granarySling', { face: -1 });            /* a slinger on the shaft's top ledge: he throws while you rise */
   /* THE UPPER STREET (134-175): the market's roofs; the first construct */
   ground(134, 175, U);
-  ent('check', 139, U - 1);                                                        /* CHECKPOINT ONE, past the granary */
+  ent('check', 145, U - 1);                                                        /* CHECKPOINT ONE, past the granary */
   ledge(152, 156, 23); slinger(154, 22, 'upperWatch', { face: -1 });
-  construct(149, U - 1, 'firstConstruct');                                        /* THE FIRST CONSTRUCT, in the open: its poke, its sweep */
-  sign(143, U - 1, 'THE CITY\'S CONSTRUCTS: SAND IN THEIR GEARS JAMS THEM.');
+  construct(152, U - 1, 'firstConstruct');                                        /* THE FIRST CONSTRUCT, in the open: its poke, its sweep */
+  sign(140, U - 1, 'THE CITY\'S CONSTRUCTS: SAND IN THEIR GEARS JAMS THEM.');
   ledge(162, 165, 23); decor.push({ kind: 'dome', x0: 160, x1: 168, y: 25 });
   drowned(167, U - 1, 'upperDrift'); scorpion(171, U - 1, 'upperDrift');
   ground(176, 178, 28); ground(179, 181, 30); ground(182, 184, 32); ground(185, 211, B);   /* the steps back down to the street */
   ledge(188, 192, 31); ledge(194, 198, 28); ledge(203, 206, 31);                 /* balconies on the market's last houses */
-  construct(193, B - 1, 'marketEnd'); slinger(196, 27, 'marketEnd');              /* a construct under a slinger's balcony */
+  construct(193, B - 1, 'marketEnd'); slinger(196, 27, 'marketEndSling');              /* a construct under a slinger's balcony */
 
   // ================= 3. THE HOURGLASS HALLS (220-306): REMIX - fill to cross the spikes; run the upper bulb down into the lower =================
   roof(220, 306, 21);
@@ -163,7 +163,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   /* THE OLD STREET east of the quarter (374-419): the foundry's yard */
   ground(374, 419, LO); roof(374, 419, 30);
   ledge(380, 384, 39); ledge(392, 396, 39); ledge(404, 408, 39);
-  construct(388, LO - 1, 'foundry'); slinger(394, 38, 'foundry'); drowned(400, LO - 1, 'foundry');   /* THE FOUNDRY's squad: a construct, a slinger over him, a drowned */
+  construct(388, LO - 1, 'foundry'); slinger(394, 38, 'foundrySling'); drowned(400, LO - 1, 'foundry');   /* THE FOUNDRY's squad: a construct, a slinger over him, a drowned */
   ent('check', 410, LO - 1);                                                        /* CHECKPOINT THREE, after the quarter */
 
   // ================= 5. THE THRONE STREET (420-523): THE EXAM - ride the shaft under a slinger; fill the trap hall under a squad; deadly drops =================
@@ -184,7 +184,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   construct(447, TH - 1, 'trapLip', { face: 1 }); drowned(443, TH - 1, 'trapLip');   /* THE EXAM's squad on the lip while the hall fills */
   ground(466, 523, TH); ledge(469, 473, 27); slinger(471, 26, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
   ledge(480, 484, 27); ledge(486, 490, 24);
-  construct(486, TH - 1, 'throneGuard'); scorpion(492, TH - 1, 'throneGuard'); slinger(488, 23, 'throneGuard');   /* THE THRONE GUARD: a construct, a scorpion, a slinger over them */
+  construct(486, TH - 1, 'throneGuard'); scorpion(492, TH - 1, 'throneGuard'); slinger(488, 23, 'throneGuardSling');   /* THE THRONE GUARD: a construct, a scorpion, a slinger over them */
   /* THE CLOCKWORK VAULT: a low cellar under the street, WEST of a hatch in it (drop in; its door opens on five gears). The cellar is two rows deep and ends at
      the hatch's east edge, and a one-way step stands under the hatch: a hero who drops in by mistake lands on it, two rows under the street */
   air(500, 501, TH, TH); air(494, 501, 31, 32); ledge(500, 501, 32);              /* the hatch, the cellar (floor row 33), the step under the hatch */

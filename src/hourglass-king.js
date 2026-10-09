@@ -167,7 +167,7 @@ function stepMove(e, S, dt, P, c) {
     case 'pendTell': if (e.modeT <= 0) { setMode(e, 'pend', HK.pendT); c.sound('swing');
         c.hit([f > 0 ? e.x - 4 : e.x - HK.pendReach, f > 0 ? e.x + HK.pendReach : e.x + 4, e.y - 34, e.y], HK.dmg.pend, MOVE_NAME.pend, { blockable: true, key: 'pend' + S.act }); } return;
     case 'pend': if (e.modeT <= 0) after(); return;
-    case 'gearTell': if (e.modeT <= 0) { S.gears.push({ x: e.x + f * 16, dir: f, key: 'gear' + S.act }); c.sound('gear'); after(0.45); } return;
+    case 'gearTell': if (e.modeT <= 0) { S.gears.push({ x: e.x + f * 8, dir: f, key: 'gear' + S.act }); c.sound('gear'); after(0.45); } return;
     case 'streamTell': if (e.modeT <= 0) { S.stream = { x: S.mark ? S.mark.x : P.x, t: HK.streamT, key: 'stream' + S.act }; S.mark = null; c.sound('pour'); after(0.4); } return;
     case 'slipTell': if (e.modeT <= 0) { setMode(e, 'slipRise', HK.slipUp); e.x = S.mark ? S.mark.x : P.x; c.sound('rumble');
         c.hit([e.x - HK.slipR, e.x + HK.slipR, e.y - 44, e.y + 2], HK.dmg.slip, MOVE_NAME.slip, { key: 'slip' + S.act }); c.fx('erupt', e.x, G.floorY); S.mark = null; } return;
@@ -226,7 +226,7 @@ export function hkPlan(s) {
       if (S.stream && Math.abs(P.x - S.stream.x) < HK.streamR + 12) { const d = roomDir(S.stream.x); out.gx = safeX(S.stream.x + d * (HK.streamR + 30)); out.why = 'out of the stream'; return out; }
       if ((e.mode === 'pendTell' || e.mode === 'pend') && dx < HK.pendReach + 16 && same) { if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the pendulum'; return out; }
         out.gx = safeX(kx + side * (HK.pendReach + 34)); if (dx < 40 && e.mode === 'pendTell' && e.modeT < 0.2 && !s.noRoll) out.dodge = true; out.why = 'back off the pendulum'; return out; }
-      if (e.mode === 'hourTell' || e.mode === 'gearTell') { out.gx = P.x; out.why = 'ready to jump'; return out; }
+      if (e.mode === 'hourTell' || e.mode === 'gearTell') { out.gx = P.x; if (dx < 80 && e.modeT < 0.14 && P.ground) { out.jump = true; out.gx = P.x + side * 20; out.why = 'jump it as it is let go'; return out; } out.why = 'ready to jump'; return out; }
     }
   }
   /* 3. OPEN: strike him; WARDED: off him; TURNING: strike him */
