@@ -4643,8 +4643,10 @@ function drawMap() {
     if (nodeSecret(nd)) { ghostPathT = 0; ghostT0 = null; g.globalAlpha = 0.2; g.fillStyle = '#120c1c'; g.beginPath(); g.ellipse(nd.x, nd.y, 6, 3, 0, 0, 7); g.fill(); g.globalAlpha = 0.12 + 0.05 * Math.sin(time * 1.3); g.fillStyle = '#c8b6ff'; g.fillRect(nd.x - 1, nd.y - 1, 2, 1); g.globalAlpha = 1; continue; }
     const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === LEVELS[nd.level].spurOf)); if (!jn) continue;
     if (PROG.fieldPathDrawn) ghostPathT = 1; else { if (ghostT0 === null) ghostT0 = time; ghostPathT = Math.min(1, (time - ghostT0) / 3); if (ghostPathT >= 1) { PROG.fieldPathDrawn = 1; saveProgress(); } }
+    g.fillStyle = 'rgba(20,40,20,0.35)'; g.beginPath(); g.arc(nd.x, nd.y + 1, 8, 0, 7); g.fill(); g.fillStyle = '#5e3b21'; g.beginPath(); g.arc(nd.x, nd.y, 7, 0, 7); g.fill(); g.fillStyle = '#c9b27c'; g.beginPath(); g.arc(nd.x, nd.y, 5.5, 0, 7); g.fill();   /* its pad, the one the bake would have laid */
     const dx = nd.x - jn.x, dy = nd.y - jn.y, len = Math.hypot(dx, dy) || 1, upto = len * ghostPathT;
-    for (let d = 7; d < Math.min(len - 6, upto); d += 4) { g.globalAlpha = 0.32 + 0.16 * Math.sin(time * 3 + d); g.fillStyle = '#c8b6ff'; g.fillRect(Math.round(jn.x + dx * d / len), Math.round(jn.y + dy * d / len), 2, 2); }
+    { const e0 = Math.min(len - 6, upto); if (e0 > 6) { g.globalAlpha = 0.4; g.strokeStyle = '#3a2858'; g.lineWidth = 4; g.beginPath(); g.moveTo(jn.x + dx * 6 / len, jn.y + dy * 6 / len); g.lineTo(jn.x + dx * e0 / len, jn.y + dy * e0 / len); g.stroke(); } }   /* a bruise of shadow under the dashes, so the short road reads */
+    for (let d = 6; d < Math.min(len - 5, upto); d += 3) { g.globalAlpha = 0.55 + 0.3 * Math.sin(time * 3 + d); g.fillStyle = '#d8ccff'; g.fillRect(Math.round(jn.x + dx * d / len), Math.round(jn.y + dy * d / len), 2, 2); }
     if (ghostPathT < 1) { g.globalAlpha = 0.8; g.fillStyle = '#ffffff'; g.fillRect(Math.round(jn.x + dx * upto / len), Math.round(jn.y + dy * upto / len), 2, 2); } g.globalAlpha = 1; }
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;               /* it is not on the map until you have earned it */

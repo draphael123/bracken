@@ -58,7 +58,7 @@ try {
       /* SHOWN: with the junction cleared at bronze the road is shut and pressing at it raises the tip naming the rule and the player's best time */
       if (secret) { /* a SECRET has no rule on show: no tip, and the press does not step onto it until the three banners are in hand */
         P[j] = { cleared: true, medal: 3, best: 777 }; s.secret = true; s.tipWhileSecret = null; s.stepWhileSecret = false;
-        for (const key of ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); const tp = BK.mapTip(); if (tp.id) s.tipWhileSecret = tp.lines || true; if (BKT.PROG.mapNodeId === id) s.stepWhileSecret = true; }
+        for (const key of ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); const tp = BK.mapTip(); if (tp.id === id) s.tipWhileSecret = tp.lines || true; if (BKT.PROG.mapNodeId === id) s.stepWhileSecret = true; }
         P.lostBanners = Object.fromEntries(Object.keys(LOST_BANNERS).map(i => [i, 1])); }
       else {
       P[j] = { cleared: true, medal: 0, best: 777 };
