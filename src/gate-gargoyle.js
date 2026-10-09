@@ -24,7 +24,13 @@
 //   THE PERCH SHRIEK    back to the gate; a GARGOYLE WHELP comes out of the tower's cornices - ONE of his at a time: while it lives he
 //                        does not shriek, he picks another attack. Stone on its face until it swoops (src/gargoyle-whelp.js). Like
 //                        him, it breaks only by a stomp on the spikes.
-// HE IS STONE (Daniel, 2026-09-27: "INVULNERABLE except then"): no blade, shot, spell or burn takes anything off him (gargTake). THE
+// DANIEL, 2026-10-08 (live, claude/witchfix): "he takes NO DAMAGE even when he's down on the spikes" - the plunge players use to come down on
+// him met gargTake's 0 and pogoed them off his back, and every blade and fire was 0 too. HIS CALL, AND AN EXCEPTION TO B15 FOR HIM ONLY (the
+// resistance floor: no boss is ever totally invulnerable): he stays INVULNERABLE EVERYWHERE EXCEPT DOWN ON THE SPIKES, and THERE EVERY BLOW
+// LANDS - blade, plunge, shot, skill, fire, and the stomp (still the big one, GARG.stompDmg, and it tears him free). The opening wears the
+// shared read (B10: a gold ring and a timer bar, OPEN); when it ends he is WARDED for GARG.ward s, told (a stone shell and the word), and
+// nothing puts him back on the spikes until it lifts (B3). Outside it a turned blow clanks and names the verb: DROP HIM ON THE SPIKES.
+// THE OLD RULE, round three (Daniel, 2026-09-27: "INVULNERABLE except then"): no blade, shot, spell or burn takes anything off him (gargTake). THE
 // OPENING IS YOURS: be on the slab his shadow finds and leave it LATE - after he has dropped - and nothing takes his weight: HE SMASHES
 // THROUGH IT (the crack runs across it first) and CRASHES DOWN ONTO THE SPIKES, where he lies STUNNED for GARG.stun seconds. Then, and
 // only then, JUMP ON HIM: a STOMP takes a fifth of him (GARG.stomps to kill), and THE WINDS carry you back up to a slab while he tears
@@ -40,6 +46,8 @@ export const GARG = {
   dmg: { dive: 22, fireball: 13, breath: 15, crash: 15 },   /* (claude/sweep3: 18 / 10 / 12 / 12 - the standard bot won 9/12 at L28; band 50-60%) */
   diveV: 430, diveUp: 150, land: 1.1, recover: 0.9, rise: 0.55, reset: 1.4,
   smashAny: true, smashT: 0.24, crashG: 1500, stun: 3.5,
+  /* (claude/witchfix, Daniel 10-08) ON THE SPIKES EVERY BLOW LANDS, at openMul of itself (the stomp keeps stompDmg); after the opening, the told WARD (s) */
+  openMul: 1, ward: 3,
   /* HIS FLYING (Daniel, 2026-09-28: "he moves too quickly"): he eased toward where he wanted to be at a rate that grew with the distance, so a
      side-swap or a hop of yours had him streak 200-300 px/s. Now the ease is gentler and CAPPED: px/s while he hovers and repositions, while he
      sets up a breath or a fireball, and while he climbs back up. The dive itself (diveV, and his climb out of sight before it) is untouched. */
@@ -65,15 +73,18 @@ export const gargOpen = e => e.mode === 'stunned';
 export function gargFrame(e) {
   const fly = 1 + Math.floor((e.anim || 0) * 8) % 2;
   switch (e.mode) {
-    case 'sleep': case 'wake': case 'land': return 0; case 'diveTell': return 3; case 'dive': return 4; case 'smash': case 'crash': return 11;
+    case 'sleep': case 'land': return 0;   /* (claude/witchfix: not 'wake' - frame 0 stands on the gate's ledge, and the ledge flew off with him) */ case 'diveTell': return 3; case 'dive': return 4; case 'smash': case 'crash': return 11;
     case 'fireballTell': return 5; case 'fireball': return 6; case 'breathTell': return 7; case 'breath': return 8;
     case 'flareTell': case 'shriek': return 9; case 'stunned': return 10;
   }
   return fly;
 }
-/* HIS HEALTH: STONE. Nothing but a stomp while he lies stunned on the spikes takes anything off him - main.js sets e.stompNow to the
-   stomp's damage for the one call that is the stomp (a burn, a bleed, a shot or a blade all come through here as 0) */
-export function gargTake(e, dmg) { return e.stompNow > 0 && gargOpen(e) ? e.stompNow : 0; }
+/* HIS HEALTH: STONE OFF THE SPIKES, and on them EVERY BLOW LANDS (Daniel 10-08, an exception to B15 for him only - see the header).
+   main.js sets e.stompNow to the stomp's damage for the one call that is the stomp; anything else that reaches him while he lies there - a
+   blade, a plunge, a shot, a skill, a burn - lands at GARG.openMul of itself. Off the spikes: 0 (main.js's turned-blow read says so). */
+export function gargTake(e, dmg) { if (!gargOpen(e)) return 0; return e.stompNow > 0 ? e.stompNow : Math.max(0, dmg) * GARG.openMul; }
+/* THE WARD after an opening (B3): told, and while it holds nothing puts him back on the spikes */
+export const gargWarded = e => !!e && (e.wardT || 0) > 0;
 /* WHICH SLABS GIVE under a dive that finds nobody: every one, or (smashAny false) only the cracked ones */
 export const gargGives = m => !!m && !m.broken && (GARG.smashAny || !!m.cracked);
 /* HOW LONG A BROKEN SLAB STAYS GONE */
@@ -83,7 +94,7 @@ export function gargKeepFooting(slabs) { const live = slabs.filter(m => !m.broke
   const m = slabs.filter(q => q.broken).sort((a, b) => (a.brokenT || 0) - (b.brokenT || 0))[0]; if (m) { m.broken = false; m.brokenT = 0; } return m || null; }
 /* THE STOMP LANDED (main.js has taken the health): he tears himself off the spikes and goes back up, untouchable, and the fight
    goes round again. Returns what to say. */
-export function gargStomped(e) { e.mode = 'reset'; e.modeT = GARG.reset; e.open = 0; e.cd = Math.max(e.cd || 0, 0.8); e.queue = []; e.paired = false; e.stomped = (e.stomped || 0) + 1; return 'STOMPED'; }
+export function gargStomped(e) { e.mode = 'reset'; e.modeT = GARG.reset; e.open = 0; e.cd = Math.max(e.cd || 0, 0.8); e.queue = []; e.paired = false; e.stomped = (e.stomped || 0) + 1; e.wardT = GARG.ward; return 'STOMPED'; }
 /* THE CAMERA FRAMES HIM AND YOU TOGETHER (Daniel: "much further zoomed out"): the point between you, weighted to you, never letting
    you out of the frame; and low enough that the spiked floor - where he lies when he is open - is in it while you are over it.
    Returns the view's top-left target; the engine eases towards it. */
@@ -151,7 +162,7 @@ const aimAt = (e, P) => Math.atan2(P.y - 10 - (e.y - 18 * K), P.x - (e.x + (e.fa
 export function updateGargoyle(e, dt, c) {
   const { P, A } = c, slabs = c.slabs, rnd = c.rnd || Math.random;
   if (!e.alive || e.mode === 'sleep') return;
-  e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.flareCd = (e.flareCd ?? 4) - dt; e.shriekCd = (e.shriekCd ?? 8) - dt;
+  e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.wardT = Math.max(0, (e.wardT || 0) - dt); e.cd = (e.cd ?? 1) - dt; e.flareCd = (e.flareCd ?? 4) - dt; e.shriekCd = (e.shriekCd ?? 8) - dt;
   e.open = gargOpen(e) ? Math.max(0, e.modeT) : 0; e.slabsSeen = slabs;   /* (the breath's told line is drawn stopped where the jet will stop) */
   if (e.balls && e.balls.length) stepBall(e, dt, c);   /* HIS FIREBALLS fly on whatever he does next */
   const slab = onSlab(P, slabs), top = A.top, riding = !!P.windRide;
@@ -184,7 +195,7 @@ export function updateGargoyle(e, dt, c) {
       const onIt = !P.dead && Math.abs(P.x - e.x) < 24 * K && (Math.abs(P.y - gy) < 26 || under);
       if (onIt) c.hit(e.x, GARG.dmg.dive, true, 'THE STONE DIVE');
       /* THE OPENING: nobody under him to take his weight, and the slab gives - the crack runs across it, then he goes through */
-      else if (gargGives(m)) { e.mode = 'smash'; e.modeT = GARG.smashT; e.sm = m; e.off = e.x - m.x; c.sound('crack'); c.say('THE SLAB GIVES', false); return; }
+      else if (gargGives(m) && !gargWarded(e)) { e.mode = 'smash'; e.modeT = GARG.smashT; e.sm = m; e.off = e.x - m.x; c.sound('crack'); c.say('THE SLAB GIVES', false); return; }
       e.mode = 'land'; e.modeT = e.phase === 2 && !e.paired ? 0.5 : GARG.land; e.onM = m; e.off = e.x - m.x; return; }
     case 'smash': { const m = e.sm; if (m && !m.broken) { e.x = m.x + e.off; e.y = m.y; }
       if (e.modeT <= 0) { if (m && !m.broken) c.breakSlab(m); e.sm = null; e.mode = 'crash'; e.vy = 40; e.modeT = 3; c.sound('whoosh'); } return; }
@@ -192,8 +203,8 @@ export function updateGargoyle(e, dt, c) {
     case 'crash': { e.vx = 0; e.vy += GARG.crashG * dt; e.y += e.vy * dt; if (e.y < A.floor && e.modeT > 0) return;
       e.y = A.floor; e.vy = 0; c.shake(11); c.sound('slam'); c.dust(e.x, A.floor); if (c.crash) c.crash(e.x, A.floor);
       if (!P.dead && !riding && Math.abs(P.x - e.x) < 20 * K && Math.abs(P.y - A.floor) < 30) c.hit(e.x, GARG.dmg.crash, true, 'THE CRASH');
-      e.mode = 'stunned'; e.modeT = GARG.stun; e.open = GARG.stun; c.say('ON THE SPIKES: JUMP ON HIM', false, true); c.sound('crack'); return; }
-    case 'stunned': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = GARG.rise * 1.6; e.cd = 0.9; c.say('HE TEARS HIMSELF OFF', false); } return;
+      e.mode = 'stunned'; e.modeT = GARG.stun; e.open = GARG.stun; e.wardT = 0; c.say('ON THE SPIKES: EVERY BLOW LANDS', false, true); c.sound('crack'); return; }
+    case 'stunned': if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = GARG.rise * 1.6; e.cd = 0.9; e.wardT = GARG.ward; c.say('HE TEARS HIMSELF OFF: WARDED', false); } return;
     /* STOMPED: off the spikes and back up over his slabs, untouchable, while the wind takes you up too */
     case 'reset': toward(e, Math.max(A.x0 + 40, Math.min(A.x1 - 40, e.x)), top - GARG.hoverUp - 30, dt, 2.2, GARG.flyUp); e.face = Math.sign(P.x - e.x) || e.face;
       if (e.modeT <= 0) { e.mode = 'hover'; e.cd = Math.max(e.cd, 0.9); } return;
@@ -277,7 +288,7 @@ export function drawFlame(g, L5, cx, cy, time) {
    slab is empty, since that is where he is going; the crack running across a slab as it gives; the glyph lit under a slab; the fire
    breath's line (dotted while it follows you, solid once it is set) and its jet; the fireball's glow in his jaws and the ball; and the stunned mark, circling stars
    in a green ring and a green arrow over his back - JUMP ON HIM - for as long as he lies open */
-export function drawGargoyleWorld(g, e, cx, cy, time, P) {
+export function drawGargoyleWorld(g, e, cx, cy, time, P, text) {   /* text(s, x, y, col, align, size): main.js's, for the read's words (optional) */
   if (!e || !e.alive) return;
   const shadow = (x, y, k, a) => { g.globalAlpha = a * (0.35 + 0.3 * k); g.fillStyle = '#120e18'; g.beginPath(); g.ellipse(x, y + 1, (18 + 6 * k) * K, 4 * K, 0, 0, Math.PI * 2); g.fill(); };
   const cross = (x, y, a) => { g.globalAlpha = 0.9 * a; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.moveTo(x - 7, y - 26); g.lineTo(x + 7, y - 12); g.moveTo(x + 7, y - 26); g.lineTo(x - 7, y - 12); g.stroke(); g.lineWidth = 1; };
@@ -305,13 +316,21 @@ export function drawGargoyleWorld(g, e, cx, cy, time, P) {
     g.globalAlpha = 0.25 + 0.35 * k; g.fillStyle = '#ff9a3c'; g.beginPath(); g.arc(x, y, r + 5 + (fl ? 1 : 0), 0, 7); g.fill();
     g.globalAlpha = 0.6 + 0.4 * k; g.fillStyle = fl ? '#ff9a5c' : '#ff6b2c'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#fff0b0'; g.fillRect(x - 1, y - 1, 2, 2); g.globalAlpha = 1; }
   for (const b of e.balls || []) drawBall(g, b, cx, cy, time, GARG.ball.r);
+  /* (claude/witchfix, Daniel 10-08) THE SHARED READ (B10): OPEN on the spikes = a GOLD ring round him, OPEN over him and a timer bar that
+     empties with the stun, the stars round his head and the gold arrow onto his back (the stomp is still the big one) */
   if (e.mode === 'stunned') { const k = 0.5 + 0.5 * Math.sin(time * 10), hx = Math.round(e.x + (e.face || 1) * 12 * K - cx), hy = Math.round(e.y - 18 * K - cy), left = Math.max(0, e.modeT) / GARG.stun;
-    g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - 12 * K - cy), 30 + k * 3, 18, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+    g.globalAlpha = 0.55 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - 12 * K - cy), 30 + k * 3, 18, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
     g.globalAlpha = 1; for (let q = 0; q < 3; q++) { const a = time * 5 + q * 2.09, sx = hx + Math.round(Math.cos(a) * 12), sy = hy + Math.round(Math.sin(a) * 4);   /* THE STARS: round his head */
-      g.fillStyle = q === 1 ? '#8fd160' : '#ffd36b'; g.fillRect(sx - 1, sy, 3, 1); g.fillRect(sx, sy - 1, 1, 3); }
-    const ax = Math.round(e.x - cx), ay = Math.round(e.y - 30 * K - cy) - 10 - Math.round(3 * k);   /* THE ARROW: down onto his back */
-    g.fillStyle = '#8fd160'; g.fillRect(ax - 1, ay - 8, 3, 6); for (let q = 0; q < 4; q++) g.fillRect(ax - 4 + q, ay - 2 + q, 9 - 2 * q, 1);
-    g.globalAlpha = 0.8; g.fillRect(Math.round(e.x - cx) - 14, Math.round(e.y - 30 * K - cy), Math.round(28 * left), 2); g.globalAlpha = 1; }   /* and how long he has left down there */
+      g.fillStyle = q === 1 ? '#fff6c8' : '#ffd36b'; g.fillRect(sx - 1, sy, 3, 1); g.fillRect(sx, sy - 1, 1, 3); }
+    const ax = Math.round(e.x - cx), ay = Math.round(e.y - 30 * K - cy) - 14 - Math.round(3 * k);   /* THE ARROW: down onto his back */
+    g.fillStyle = '#ffd36b'; g.fillRect(ax - 1, ay - 8, 3, 6); for (let q = 0; q < 4; q++) g.fillRect(ax - 4 + q, ay - 2 + q, 9 - 2 * q, 1);
+    const bx = Math.round(e.x - cx) - 18, by = Math.round(e.y - 30 * K - cy) - 4;   /* THE TIMER: how long he has left down there */
+    g.fillStyle = '#1b1626'; g.fillRect(bx, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(bx, by, Math.round(36 * left), 3);
+    if (text) text('OPEN', Math.round(e.x - cx), by - 30, Math.floor(time * 8) % 2 ? '#ffffff' : '#ffd36b', 'center', 6); }
+  /* THE WARD after it (B3), told: a pale stone shell round him and the word, for as long as it holds */
+  if (gargWarded(e) && e.mode !== 'stunned') { const x = Math.round(e.x - cx), y = Math.round(e.y - 14 * K - cy), k = Math.min(1, e.wardT / 0.4);
+    g.globalAlpha = (0.3 + 0.25 * Math.sin(time * 6)) * k; g.strokeStyle = '#c8d0dc'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y, 32, 26, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+    if (text) text('WARDED', x, Math.round(e.y - 34 * K - cy), '#c8d0dc', 'center', 5); }
 }
 /* ONE FIREBALL IN FLIGHT, r its radius: a flickering ball with its trail and halo - his (GARG.ball.r) and, smaller, a common whelp's
    (WH.ball.r, src/gargoyle-whelp.js: claude/courtyard) */
@@ -335,7 +354,7 @@ export const inRune = (e, col) => !!e && e.alive && RUNE_AIR.has(e.mode) && Math
 export function runeStep(e, col, dt, struck, c) {
   col.flare = Math.max(0, (col.flare || 0) - dt); col.cd = Math.max(0, (col.cd || 0) - dt);
   if (struck && col.cd <= 0) { col.flare = RUNE.flare; col.cd = RUNE.cd; col.lit = (col.lit || 0) + 1; c.sound('zap'); }
-  if (col.flare > 0 && inRune(e, col)) { col.flare = 0; col.caught = (col.caught || 0) + 1;
+  if (col.flare > 0 && inRune(e, col) && !gargWarded(e)) { col.flare = 0; col.caught = (col.caught || 0) + 1;
     e.mode = 'crash'; e.vy = 40; e.modeT = 3; e.sm = null; e.queue = []; e.paired = false; e.jet = null;
     c.say('THE RUNE TURNS HIM OVER', false, true); c.sound('crack'); c.shake(6); return true; }
   return false;
@@ -350,4 +369,25 @@ export function drawRune(g, col, cx, cy, time) {
   g.globalAlpha = 1;
   if (!ready) { const k = 1 - col.cd / RUNE.cd; g.fillStyle = '#1b1626'; g.fillRect(x - 10, b - 8, 20, 3); g.fillStyle = '#c8a0ff'; g.fillRect(x - 9, b - 7, Math.round(18 * k), 1); }
   else if (col.mid !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 6), y = Math.round(col.mid - cy); g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, RUNE.w / 2 + 2 + k, 8 + k, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
+}
+
+/* A SLAB'S PIECES (claude/witchfix, Daniel 10-08: "some blocks attached to him"): the broken slab was baked INTO his crash and stunned frames
+   (chunks drawn round his claws), so its pieces rode down with him and lay glued to his sprite on the spikes. Now his frames carry no slab at
+   all and the slab's pieces are THE WORLD'S: they fly off where it broke, fall, and shatter on whatever they meet (the spikes, stone).
+   slabShards(m) makes them; stepShards moves them (c.solid(x, y), c.floor: the spikes' line; c.pop(x, y) when one shatters); drawShards draws them. */
+export const SHARD = { n: 5, g: 900, life: 3 };
+export function slabShards(m, rnd = Math.random) {
+  const out = [], n = SHARD.n, w = m.w || 48;
+  for (let k = 0; k < n; k++) out.push({ x: m.x + (k + 0.5) * w / n, y: m.y + 3, w: 4 + Math.floor(rnd() * 4), h: 3 + Math.floor(rnd() * 3), vx: (k - (n - 1) / 2) * 22 + (rnd() - 0.5) * 30, vy: -30 - rnd() * 50, rot: 0, spin: (rnd() - 0.5) * 9, t: 0 });
+  return out;
+}
+export function stepShards(list, dt, c) {
+  if (!list || !list.length) return list || [];
+  for (const s of list) { s.t += dt; s.vy += SHARD.g * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.rot += s.spin * dt;
+    if (s.t > SHARD.life || (c.floor !== undefined && s.y >= c.floor - 2) || (s.vy > 0 && s.t > 0.08 && c.solid && c.solid(s.x, s.y + s.h / 2))) { s.gone = true; if (c.pop) c.pop(s.x, Math.min(s.y, c.floor ?? s.y)); } }
+  return list.filter(s => !s.gone);
+}
+export function drawShards(g, list, cx, cy) {
+  for (const s of list || []) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.rot);
+    g.fillStyle = '#7a7a84'; g.fillRect(-s.w / 2, -s.h / 2, s.w, s.h); g.fillStyle = '#9a9aa4'; g.fillRect(-s.w / 2, -s.h / 2, s.w, 1); g.fillStyle = '#5a5a64'; g.fillRect(-s.w / 2, s.h / 2 - 1, s.w, 1); g.restore(); }
 }

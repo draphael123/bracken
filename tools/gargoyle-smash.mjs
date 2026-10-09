@@ -8,8 +8,8 @@
         side columns, and a STUNNED pose and a CRASH pose of his own.
      3. THE CAMERA frames him and you together (gargCam): you always on screen, him too when you are a screen apart, the floor in it.
      4. ON THE PAGE: the zoomed-out view comes on when he wakes; the same dive three ways - a slab LEFT LATE breaks under him and he
-        CRASHES ONTO THE SPIKES, STUNNED for GARG.stun seconds (round three, 2026-09-27: stone even then - only a stomp hurts him,
-        tools/gargoyle-stomp.mjs); a slab KEPT is a hit and a landing, and opens nothing; a slab left EARLY only moves his aim. The
+        CRASHES ONTO THE SPIKES, STUNNED for GARG.stun seconds (round three, 2026-09-27: stone even then - only a stomp hurt him; Daniel
+        10-08, claude/witchfix: there EVERY blow lands now, and he is stone everywhere else - tools/gargoyle-spikes.mjs); a slab KEPT is a hit and a landing, and opens nothing; a slab left EARLY only moves his aim. The
         slab grows back after GARG.regrow seconds, slower in phase two, and never fewer than GARG.minLive slabs stand.
    (Round three put SPIKES where the garden floor was and thirteen slabs in two tiers: the room's questions follow it, the floor
    is no longer walked and no hero stands under a slab, so those two asks went with it.)
@@ -60,7 +60,7 @@ try {
     const on=m=>{BK.P.x=m.x+m.w/2;BK.P.y=m.y;BK.P.vy=0;BK.P.onMover=m;BK.P.ground=true;};
     const v0=BK.view.VW;on(sl()[1]);BK.sim(150);BK.step(2);out.wake={active:!!BK.bossActive,VW0:v0,VW:BK.view.VW,VH:BK.view.VH,w:g.w,h:g.h};
     const next=m=>sl().filter(q=>q!==m&&!q.broken).sort((a,b)=>Math.abs(a.x-m.x)-Math.abs(b.x-m.x))[0];
-    const dive=(m,how,phase)=>{g.mode='hover';g.hp=phase===2?Math.floor(g.maxHp*0.4):g.maxHp;g.phase=phase||1;g.cd=99;g.queue=[];g.paired=true;BK.sim(2);on(m);
+    const dive=(m,how,phase)=>{g.wardT=0;/* (claude/witchfix: each dive is set up fresh - the ward after his last opening is lifted, as the mode and the cooldown are) */g.mode='hover';g.hp=phase===2?Math.floor(g.maxHp*0.4):g.maxHp;g.phase=phase||1;g.cd=99;g.queue=[];g.paired=true;BK.sim(2);on(m);
       g.mode='diveTell';g.modeT=0.4;g.tgt=m;g.off=m.w/2;g.cd=99;BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.inv=0;const hp0=BK.P.hp;
       if(how==='early')on(next(m));if(how==='under'){BK.P.x=m.x+m.w/2;BK.P.y=A.floor;BK.P.onMover=null;BK.P.vy=0;}
       for(let i=0;i<120&&g.mode==='diveTell';i++){if(how==='late'||how==='stay')on(m);BK.sim(1);}
@@ -89,7 +89,9 @@ try {
   ok(r.wake.active && r.wake.VW > r.wake.VW0 && r.wake.VW > 320, 'the zoomed-out view comes on when he wakes: ' + r.wake.VW0 + ' -> ' + r.wake.VW + 'x' + r.wake.VH);
   ok(r.wake.w >= 44 && r.wake.h >= 44, 'his body is 45 px: ' + r.wake.w + 'x' + r.wake.h);
   ok(r.late.broken && r.late.seen.includes('crash') && r.late.mode === 'stunned' && Math.abs(r.late.dy) <= 4 && r.late.open >= GARG.stun - 0.3, 'LEFT LATE: the slab breaks, he crashes to the garden floor and lies there stunned, open: ' + JSON.stringify(r.late));
-  ok(r.late.dmgShut === 0 && r.late.dmgOpen === 0, 'he is stone, stunned or not: a blade takes ' + r.late.dmgOpen + ' and ' + r.late.dmgShut + ' (only a stomp hurts him: tools/gargoyle-stomp.mjs)');
+  /* (claude/witchfix, Daniel 10-08: ON THE SPIKES EVERY BLOW LANDS - his design, an exception to B15 for him only.) This was 'stone, stunned or not:
+     a blade takes 0 and 0'; it asks the same two blows at the same strictness, the stunned one now exactly GARG.openMul of itself, the other still 0 */
+  ok(r.late.dmgShut === 0 && Math.abs(r.late.dmgOpen - 10 * GARG.openMul) < 0.01, 'stone off the spikes, every blow on them: a 10-point blade takes ' + r.late.dmgOpen + ' stunned (x' + GARG.openMul + ') and ' + r.late.dmgShut + ' hovering (tools/gargoyle-spikes.mjs asks it with real keys)');
   ok(Math.abs(r.late.stunSecs - GARG.stun) < 0.35 && r.late.after !== 'stunned', 'the stun lasts about ' + GARG.stun + ' s and ends: ' + r.late.stunSecs);
   ok(Math.abs(r.late.regrow - GARG.regrow) < 1.2, 'the slab grows back after about ' + GARG.regrow + ' s: ' + r.late.regrow);
   ok(!r.stay.broken && r.stay.mode === 'land' && r.stay.open === 0 && r.stay.hit > 0, 'KEPT: his dive hits you and he lands on the slab; nothing opens: ' + JSON.stringify(r.stay));

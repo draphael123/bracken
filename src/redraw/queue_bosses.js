@@ -187,17 +187,16 @@ export function bakeGateGargoyle() {
     if (f === 0) { rect(g, cx - 24, floor - 3, 48, 4, GG.slabD); rect(g, cx - 24, floor - 4, 48, 1, GG.slabL);   // PERCHED on the gate's ledge, wings folded like a cloak
       wing(g, cx - 3, y - 3, -4, 12, true); legs(g, cx, y - 2); body(g, cx, y, 2); wing(g, cx, y, -6, 10); return; }
     if (f === 10) { // STUNNED - THE OPENING: through the slab and flat on the garden floor, wings splayed, the witchlight in his eye gone dim
-      for (const [dx, w] of [[-50, 12], [34, 10], [-30, 8], [44, 7]]) chunk(g, cx + dx, floor - 5, w, 5);                                  // the slab, in pieces round him
+      /* (claude/witchfix, Daniel 10-08: "some blocks attached to him") NO SLAB IN HIS FRAMES: its pieces were baked round him here and lay glued to him on the spikes - the world throws and shatters them now (gate-gargoyle.js slabShards) */
       wing(g, cx - 6, floor - 14, -10, 28, true);                                                                                         // the far wing flung out flat behind him
       for (const dx of [-12, 4]) { thick(g, cx + dx, floor - 8, cx + dx - 7, floor - 1, GG.sd, 4); for (let t = 0; t < 3; t++) line(g, cx + dx - 10 + t * 3, floor - 1, cx + dx - 9 + t * 3, floor + 1, GG.claw); }   // the legs buckled under him
       body(g, cx - 2, floor - 16, 3, -2.5, GG.dim);                                                                                        // slumped, chin on the stones, the witchlight in his eye gone dim
       wing(g, cx + 2, floor - 10, -12, 22);                                                                                              // the near wing slack along the ground
       line(g, cx - 12, floor - 26, cx - 4, floor - 18, GG.sD); line(g, cx - 4, floor - 18, cx + 2, floor - 22, GG.sD);                    // a new crack down his back
-      grit(g, cx, floor - 2, 14, 70); return; }
+      return; }
     if (f === 11) { // THE CRASH: going through the slab, wings thrown up over him, the slab breaking round his claws
       wing(g, cx - 2, y - 4, 26, 24, true); legs(g, cx + 2, y + 2, -2); body(g, cx, y + 2, 1, -1); wing(g, cx + 2, y - 2, 30, 22);         // tipped forward, the wings thrown up and back by the fall
-      chunk(g, cx - 40, y + 12, 16, 6); chunk(g, cx + 22, y + 10, 14, 6); chunk(g, cx - 16, y + 20, 10, 5); chunk(g, cx + 8, y + 21, 8, 4);   // the slab going to pieces round him
-      grit(g, cx, y + 16, 16, 72); return; }
+      return; }   /* (no slab pieces round him: the world breaks the slab, claude/witchfix) */
     const lift = [0, 0, 22, -8, 30, 14, 2, 0, 0, 20][f] ?? 0, spread = [0, 0, 26, 24, 30, 22, 26, 20, 20, 26][f] ?? 22;   /* 5,6: wings raised to throw, then down with it (claude/gargoyle5) */
     if (f === 4) { // DIVE: plummeting, wings swept back, claws first
       wing(g, cx + 9, y - 21, 18, 14, true); body(g, cx, y - 6, 0, -2); wing(g, cx + 12, y - 18, 22, 16); legs(g, cx + 3, y + 3, 3); return; }
@@ -206,7 +205,7 @@ export function bakeGateGargoyle() {
     const [hx, hy] = body(g, cx, y, 0, f === 7 ? 2 : f === 9 ? 3 : f === 5 ? 1.5 : f === 6 ? -1 : 0);
     wing(g, cx, y - 3, lift, spread);
     if (f === 7) { ellipse(g, hx + 10, hy + 1, 4, 4, GG.witch); ellipse(g, hx + 10, hy + 1, 2, 2, GG.witchL); }                              // SPIT TELL: head back, the throat lit
-    if (f === 8) for (const [dx, dy] of [[26, -9], [34, 0], [28, 9]]) { chunk(g, hx + dx, hy + dy, 6, 6); px(g, hx + dx + 1, hy + dy + 1, GG.S); }   // SPIT: three chunks of masonry
+    /* f 8 is THE FIRE BREATH now (drawn as flame by gate-gargoyle.js drawFlame): the old SPIT's three chunks of masonry stuck to his jaw went with it (claude/witchfix) */
     if (f === 9) { fillPoly(g, [[hx + 6, hy - 1], [hx + 18, hy - 10], [hx + 18, hy + 5]], GG.sD); for (let k = 0; k < 3; k++) thick(g, hx + 21 + k * 4, hy - 9 - k * 3, hx + 24 + k * 4, hy - 13 - k * 3, GG.witch, 2); }   // SHRIEK
     if (f === 5) { // FIREBALL TELL (claude/gargoyle5, in the gust's old frame): head up, the jaw dropped open and a ball of fire held in it, glowing
       const sx = hx + 17, sy = hy + 1.5 - 1.5 * 3;                                                                                           // the snout's tip (head 1.5)
