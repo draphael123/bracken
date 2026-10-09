@@ -495,9 +495,28 @@
      24.6
     ]
    }
+  },
+  "gobmage": {
+   "level": "church",
+   "affix": "WARDING",
+   "ehp": 436,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 4,
+    "secs": [
+     8.1,
+     8.1,
+     14.6,
+     14.6
+    ]
+   }
   }
  },
- "stamp": "359e70171cdf",
+ "stamp": "848cc9ec3a5a",
  "heroes": [
   "knight",
   "warden",

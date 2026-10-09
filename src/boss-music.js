@@ -343,7 +343,7 @@ function cisternqueen(i, delay, variant, env) {
 // next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
 // PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
 // sweeps up under the stop (rising noise and a saw sliding up an octave).
-export const BOSS_PHASE = { gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1 };
+export const BOSS_PHASE = { gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, paladin: 1, litchurch: 1 };
 const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
 const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
 const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
@@ -484,6 +484,8 @@ function lanterneater(i, delay, variant, env) {
   // IT HAS SURFACED: a clack of teeth on the off-beats
   if (ph === 2 && (s === 3 || s === 7)) noise(env, 0.04, 0.14 * g, 3200, 1.2, delay);
 }
+
+// (THE LIT CHURCH has no synth bed and THE PALADIN no composed theme: 'Cathedral' by Umplix and 'Church combat' by Centurion_of_war are their files, claude/churchart; see audio/CREDITS.txt)
 
 export const SYNTH_BOSS = {
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */

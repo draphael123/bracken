@@ -1065,3 +1065,5 @@ GROUND_KITS.ksar={density:0,kinds:[]};   /* THE BANDIT KSAR (claude/ksar, batch7
 ALLOWED_DECORATIONS.ksar=[];
 GROUND_KITS.minecart={density:0,kinds:[]};   /* THE MINE WORKS (claude/minecartmap, batch80 integ): rock, timber and rail; nothing grows or is sprinkled - its dressing is the level's own decor rows */
 ALLOWED_DECORATIONS.minecart=[];
+GROUND_KITS.church={density:0,kinds:[]};   /* THE LIT CHURCH (claude/churchart): cut stone, flags, bone-niched crypt and turf under a roof - nothing is sprinkled; its dressing is src/redraw/church_set.js (read off the grid and the level's own decor) */
+ALLOWED_DECORATIONS.church=[];

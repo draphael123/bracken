@@ -47,3 +47,15 @@ level-quality gated; LEVEL-1 NO-ABILITY pilot must take real damage; tools/lit-c
 PROCESS: Opus greybox -> reviewer vs Mage's Folly -> fixes -> Sonnet art/music. Paladin boss = Opus lane alongside.
 SCHEDULE: build after FAIRFIX2 + the canal land (not today). Worktrees bracken-church / bracken-paladinboss to be
 recreated off master.
+
+## SETTLED 2026-10-07 (Daniel, the coordinator's HANDOFF 12:30 / 12:55 / 13:00) - these supersede the lines above where they differ
+- STRUCTURE (approved as presented): cruciform - graveyard / west door TEACH -> nave + north transept TEST -> ORGAN GALLERY (bellows + chord gust: KEPT)
+  -> crypt -> THE DARK RISES -> south transept EXAM with THE ARCHDEACON elite (KEPT) -> sanctuary: THE PALADIN.
+- THE RELIQUARY pays a SILVER and opens a SHORTCUT (no relic). Built to difficulty v2 (scratch/brief-levelsweep.md).
+- THE PALADIN is a B11 DUELIST (always hittable, guards by angle, NOT the x0.05 chip) with a LIGHT BAR; 'starve the light' -> a 3 s FALTER is the big
+  told opening; an anti-spam ward after it; one new move per phase. New boss: human bot 50-60% dry, mash 0/6, Daniel's playtest gate.
+- THE ROAD: an OPTIONAL SPLIT PATH - the church's fork stands at the start of THE TOWPATH (its lychgate: the hill path to the church, the river path to
+  the canal). Until the Towpath lands the church hangs off WAYMEET (src/lit-church.js FORK names the hook for the integrator).
+- Waymeet's boss is renamed THE CRUSADER (names and strings only). Clearing the church sells the Paladin hero for 800 coins.
+- Built by claude/litchurch (2026-10-08): src/lit-church.js, src/lit-church-hands.js, src/paladin-boss.js, src/paladin-boss-hands.js, tools/lit-church.mjs;
+  the lane report is work/claude/lane-done/claude-litchurch.md.

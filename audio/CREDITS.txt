@@ -285,3 +285,9 @@ THE BANDIT KSAR (2026-10-07, claude/ksar art pass, Daniel's pick; he approved th
 THE ROOTWAY (2026-10-07, claude/rootway, Daniel approved the download):
 - rootway.ogg = "Lanterns in the Hollowed Forest" (the loop version) by Tsorthan Grove, CC0 (public domain; credited all the same) - https://opengameart.org/content/lanterns-in-the-hollowed-forest - THE ROOTWAY's level track.
   Changes: mono; encoded to OGG Vorbis (72 kbps). The Huntmaster keeps his composed-in-code theme (boss3).
+
+THE LIT CHURCH (2026-10-08, claude/churchart, Daniel's picks; he approved the download and both licences were re-read on the pages today):
+- litchurch.ogg = "Cathedral" by Umplix, CC0 (public domain, credited all the same) - https://opengameart.org/content/cathedral-0 - THE LIT CHURCH's level track (the church only; THE PALADIN's fight has the next one).
+  Credit: "Cathedral" by Umplix (OpenGameArt.org), CC0. Changes: mono, +2.5 dB (to about -20 LUFS), encoded to OGG Vorbis q4 (72 s, loops).
+- paladin.ogg = "Church combat" by Centurion_of_war, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://opengameart.org/content/church-combat - THE PALADIN's boss theme.
+  Credit: "Church combat" by Centurion_of_war (OpenGameArt.org), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes: lowered 3 dB (to about -14 LUFS), encoded to OGG Vorbis q4 stereo (69 s, loops).

@@ -32,7 +32,7 @@ export const ACTS = [
   { act: 1, name: 'THE GREENWOOD', cap: 2, dmg: 1.0, mashAt: 3, levels: ['wood', 'marsh', 'stockade', 'spore', 'rootway', 'burning', 'kings', 'underleaf'] },   /* (claude/underleafroad, Daniel 10-08: UNDERLEAF is on the road between KINGSWOOD and THE SCREE PATH, and the crags begin at the Scree Path (LEVELS arc: 'the crags') - it was act 2 as a secret) */   /* (claude/rootway: THE ROOTWAY, between Sporewood and Kingswood) */
   { act: 2, name: 'THE CRAGS', cap: 2, dmg: 1.1, mashAt: 3, levels: ['scree', 'hanging', 'spire', 'moor', 'skyroad', 'oreroad', 'storm', 'crown', 'undercrown'] },
   { act: 3, name: 'THE SEA', cap: 2, dmg: 1.2, mashAt: 2, levels: ['longwater', 'reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor'] },
-  { act: 4, name: 'THE OLD KINGDOM', cap: 2, dmg: 1.25, mashAt: 2, levels: ['waymeet', 'canal', 'theatre', 'fair', 'fields', 'burial', 'witchlight', 'mage', 'unburied', 'fallingtower'] },
+  { act: 4, name: 'THE OLD KINGDOM', cap: 2, dmg: 1.25, mashAt: 2, levels: ['waymeet', 'canal', 'theatre', 'fair', 'fields', 'burial', 'witchlight', 'mage', 'unburied', 'fallingtower', 'church'] },
   { act: 5, name: 'THE DESERT', cap: 3, dmg: 1.3, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea', 'ksar'] },
 ];
 /* THE DIFFICULTY PILOT'S WEIGHT (claude/levelpilot, scratch/brief-levelsweep.md v2: SALT & SANCTUARY - fewer, weightier foes, every one a 1v1 threat at the
@@ -42,7 +42,7 @@ export const ACTS = [
    (1.4 / 1.5 / 1.7 were walked: the bot is hit too rarely for it to move his numbers much - most of what lands is from range - so this is set for a
    person, who is hit more often than the walker). The per-act lanes fold this into ACTS[].dmg
    once Daniel has played the pilot; until then it is one level's knob, so the rest of the act is untouched. */
-export const LEVEL_DMG = { causeway: 1.5 };
+export const LEVEL_DMG = { causeway: 1.5, church: 1.5 };   /* (claude/litchurch: THE LIT CHURCH, built to difficulty v2 - its dead and its clergy alike) */
 /* a level not in the table (a new one, a trial, the shop) takes the act of its depth on the gate chain, else act 1 */
 const DEPTH_ACT = [[29, 5], [21, 4], [12, 3], [5, 2], [0, 1]];
 export function actOf(id, depth) {
