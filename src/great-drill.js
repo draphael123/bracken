@@ -1,43 +1,41 @@
-// src/great-drill.js - THE GREAT DRILL, THE DEEP RAILS' boss (claude/minecart, the OPUS GREYBOX). Pure: no DOM, no main.js. The world (the treadmill,
-// the ore carts, the points mast) and the drawing are src/great-drill-hands.js; the bot that fights it is drillPlan below (src/lab.js drives the keys).
+// src/great-drill.js - THE GREAT DRILL, THE DEEP RAILS' boss (claude/minecart, the OPUS GREYBOX; GREAT DRILL 2, claude/deeprails2 - Daniel's live playtest 10-09).
+// Pure: no DOM, no main.js. The world (the endless tunnel, the ore carts, the chute) and the drawing are src/great-drill-hands.js; the bot that fights it is drillPlan
+// below (src/lab.js drives the keys).
 //
-// A CONSTRUCT (design standard B14), THE RULE PERSONIFIED: a goblin boring machine that chases you down its own three-line tunnel. You never leave
-// the cart. THE ARENA is a TREADMILL: the bore's walls and sleepers run past at the cart's cruise, so the arena stands still while you ride - BOOST
-// pulls you ahead of it, BRAKE lets it come at you, the lines are three (LOW, MID, HIGH, three rows apart, one-way rail: jump up, down + jump to drop).
-// ALWAYS HITTABLE (B13): its CAB - the goblin driver's box on its front, over the MID and HIGH lines - takes a hero's blow whole, any time it is not
-// WARDED, from a cart alongside it (brake back to it, face it, strike). No chip waiting room.
-// ITS KEY (B14: 'throw it' - you send it, you never ride it): THE LOADED ORE CART. A TIPPLER CHUTE over the far end drops one on the MID or HIGH line;
-// it rolls back down the bore. THE POINTS MAST in the middle of the arena (a blow or E) SETS THE POINTS: an ore cart that rolls over set points drops
-// to the LOW line, where the drill's GEARS turn bare under its bit (three red cogs, drawn, and 'GEARS' under them). Into the gears: JAMMED - the bit
-// stops, the gears smoke, the cab's hatch blows (gold ring + timer, x2 on the cab, capped). An ore cart that reaches it on the MID or HIGH line is
-// eaten by the bit; one that rolls into YOUR cart is a crash. (THE WINCHMASTER's drum is a load you RIDE in; this is points you THROW.)
-// THE SHARED READ (B10): OPEN = gold ring + timer bar on the cab; WARDED = pale plates over it and the word; a blow that does nothing CLANKS and says
-// WARDED. B3: after every jam a TOLD 3 s ward ('IT CLEARS ITS GEARS'), then it KNOCKS THE POINTS BACK (each opening wants a fresh throw). B4: jammed,
-// it stands still (no creep, no bore).
-// THE PHASES (one new move each - B5):
-//   P1 (100-60%): THE BORE (!!: the bit swings to a line - the line flashes 'BORE' - and lunges down it: change line), THE GRIND (!!: it surges
-//      after you - 'GRIND' and the glow: boost away).
-//   P2 (60-30%): NEW: THE ROOF - it bores the roof: rock shadows on two lines (! ~1.0 s), the third is clear (or brake / boost off the shadow).
-//   P3 (30-0%): THE ARENA CHANGES (B5; fix pass, review): its roof bore brings the roof down on the HIGH line - the rail is gone, TWO LINES LEFT (LOW
-//      and MID: the bore, the roof and the ore cart all come at the two). NEW: FULL BORE - '!! FULL BORE' (1.2 s), then a long charge: hold BOOST, or it
-//      runs you down. Its bores come quicker.
-export const DRILL_STAGE = { W: 22, lanes: [0, 3, 6], ceil: 10, points: 12, chute: 19 };
+// A GOBLIN DRIVING A DRILL RIG (Daniel 10-09: "a conventional drill rig, a goblin driver in the cab"): a big conical bit, an engine block and its smokestack, tracks
+// and rail wheels, and a goblin in the cab looking back over his shoulder at you. A CONSTRUCT (design standard B14), THE RULE PERSONIFIED: it never stops - it bores
+// on AHEAD of you down an ENDLESS TUNNEL (the hands loop the tunnel seamlessly: everything in it runs past at cruise, nothing half-moves) and you chase it in your cart.
+// THE ARENA: three lines (LOW, MID, HIGH: three rows apart, one-way rail - jump up, down + jump to drop). Its REAR faces you: low on the LOW line its GEAR HOUSING (the
+// bare red GEARS and a ram plate), on the housing a deck at the MID line, and on the deck its CAB (over the MID and HIGH lines) - the goblin's box.
+// THE READ (B10, B15): outside its opening the cab is ARMOURED - a blow takes x0.4 (it CLANKS and says ARMOURED: JAM ITS GEARS); never totally invulnerable.
+// ITS KEY (B14 - the level's verb: PUMP AND RAM): a LOADED ORE CART drops from a roof chute onto the LOW line ahead of you ('ORE!' and its shadow); it is still in the
+// world, so it comes at you down the tunnel. RAM IT AT FULL PUMP (MC.ramV) and it flies up the line into the drill's GEARS: JAMMED - the bit stops, the gears smoke,
+// the rig drifts back to you; a gold outline on the cab and the gears and a timer bar (B10); the cab takes x2 (capped a share a jam). Met slower, the ore cart is a
+// crash (it spills). B3: after every jam a TOLD 3 s WARD ('IT CLEARS ITS GEARS': its plates up - x0.4 still, B15, but an ore cart rammed now is shrugged off).
+// B4: jammed, it stands its ground (no move, no ram).
+// THE MOVES (every one told, one at a time - B5; one new a phase):
+//   P1 (100-60%): BOULDER DROP - its bit cracks the roof: two shadows slide at you down two lines (!, ~1.1 s), rock falls on them - the third line is clear, or
+//                 change your pace off them.  REVERSE RAM - !! its reverse lamps and a klaxon (1.0 s), then it backs at you down the tunnel: brake back out of its
+//                 sweep, or (close behind on the LOW line) jump up - the cab sits back on its deck, so on the MID line its sweep is shorter.
+//   P2 (60-30%): NEW: SPARK SPRAY - its exhaust grinds: a told amber cone down YOUR line (0.9 s), then a jet of sparks along it - change line or brake out of reach.
+//   P3 (30-0%):  THE ARENA CHANGES (B5): the bit brings the roof down on the HIGH line - its rail is gone, TWO LINES LEFT (LOW and MID: the boulders, the sparks and the
+//                ram all come at the two); everything comes quicker.
+export const DRILL_STAGE = { W: 30, lanes: [0, 3, 6], ceil: 10, chute: 12 };
 export const DRILL = {
-  /* THE FIX PASS NUMBERS (review MF3, measured tools/boss-rates.mjs --profile=human, campaign L11, 10 seeds a hero: knight 7, warden 7, pyro 3 = 57%).
-     The pyro lost on the BORE: her flame's recovery ate the old 1.0 s tell, so she was struck on the line she could not leave (102 of her 142 in 18 s).
-     So the bore is told longer (1.0 -> 1.25, P3 0.8 -> 1.0) and every hit and the cadence are heavier to keep the band; the key pays more; hp up */
-  hp: 2700, w: 28, h: 52, cruise: 150,
-  creep: 9, frontMin: 34, frontMax: 150, push: 46,
-  contactDmg: 42, contactCd: 1.1,
-  boreTell: 1.25, boreTell3: 1.0, boreOut: 0.22, boreHold: 0.3, boreBack: 0.4, boreLen: 150, bitIdle: 18, boreDmg: 42,
-  grindTell: 0.8, grindT: 0.7, grindDist: 100,
-  roofTell: 1.0, roofDmg: 34, roofW: 30,
-  fullTell: 1.2, fullT: 1.4, fullDist: 150,
-  oreFirst: 3.0, oreEvery: [8.5, 8.0, 7.5], oreV: 64, oreDmg: 18, chuteTell: 1.0,
-  jamT: 4.6, jamMul: 2.5, jamCap: 0.2,   /* (fix pass: 2.0 / 0.11 -> 2.5 / 0.2 - the key pays more, for every hero) */ wardT: 3.0, lockT: 1.2,
+  /* GREAT DRILL 2 NUMBERS (claude/deeprails2; measured tools/boss-rates.mjs --profile=human WITH flasks, campaign level - the lane report holds the table) */
+  hp: 2600, cruise: 150,
+  homeR: 290, minR: 150, maxR: 320,     /* the rig's rear face, px from the arena's left edge: at home, and the nearest a reverse brings it */
+  plateW: 62, cabIn: 30, cabW: 30, plateH: 40,
+  contactDmg: 30, contactCd: 1.0, shove: 60,
+  armour: 0.4,                          /* B15: outside the jam a blow on the cab takes this */
+  rockTell: 1.1, rockDmg: 30, rockW: 26,
+  revTell: 1.0, revV: 260, revT: 0.45, revHold: 0.4, revBack: 120, revDmg: 34,
+  sparkTell: 0.9, sparkT: 1.0, sparkLen: 150, sparkDmg: 9, sparkTick: 0.25,
+  oreFirst: 3.5, oreEvery: [8.0, 7.5, 7.0], chuteTell: 1.1, oreDmg: 18, oreFly: 300, oreAhead: 110,
+  jamT: 4.6, jamMul: 2.0, jamCap: 0.2, wardT: 3.0, drift: 45,
   phase2: 0.6, phase3: 0.3, phaseT: 2.0,
-  gap: [0.6, 0.5, 0.4],   /* (fix pass: 0.8 / 0.7 / 0.6 -> 0.6 / 0.5 / 0.4 with the longer bore tell) */
-  chain: { 1: ['bore', 'bore', 'grind', 'bore'], 2: ['bore', 'roof', 'bore', 'grind', 'roof'], 3: ['bore', 'full', 'roof', 'bore', 'grind', 'roof'] },
+  gap: [0.9, 0.75, 0.6],
+  chain: { 1: ['rocks', 'reverse', 'rocks', 'reverse'], 2: ['sparks', 'rocks', 'reverse', 'sparks', 'rocks'], 3: ['reverse', 'sparks', 'rocks', 'reverse', 'sparks', 'rocks'] },
 };
 export const LANE_NAME = ['LOW', 'MID', 'HIGH'];
 /* THE STAGE: carve the arena into the level; returns { arena, carve } */
@@ -48,18 +46,17 @@ export function stageDrill(Wr, T, TS, sx, F) {
     Wr.block(sx - 1, sx + S.W + 5, 0, F - S.ceil - 1);
     Wr.air(sx, sx + S.W - 1, F - S.ceil, F - 1);
     for (const ln of S.lanes) if (ln) for (let x = sx; x < sx + S.W; x++) Wr.set(x, F - ln, T.RAIL);
-    Wr.ent('greatdrill', sx + 3, F - 1, { face: 1 });
-    Wr.ent('drillpoints', sx + S.points, F - 1, {});
+    Wr.ent('greatdrill', sx + 20, F - 1, { face: -1 });
     Wr.ent('oretip', sx + S.chute, F - 8, {});
   };
-  const arena = { x0: sx * TS, x1: (sx + S.W) * TS, floor: F * TS, trigger: (sx + 9) * TS, wallL: sx - 1, wallR: sx + S.W, boss: 'greatdrill', music: 'greatdrill',
-    tint: '#d89a5a', tintA: 0.05, start: [sx + 12, F - 1], drill: { sx, F } };
+  const arena = { x0: sx * TS, x1: (sx + S.W) * TS, floor: F * TS, trigger: (sx + 4) * TS, wallL: sx - 1, wallR: sx + S.W, boss: 'greatdrill', music: 'greatdrill',
+    tint: '#d89a5a', tintA: 0.05, start: [sx + 6, F - 1], drill: { sx, F } };
   return { arena, carve };
 }
 /* the arena in world px */
 export function geom(A, TS = 16) {
   const q = A.drill, S = DRILL_STAGE, sx = q.sx, F = q.F;
-  return { x0: sx * TS, x1: (sx + S.W) * TS, F, TS, floor: F * TS, laneY: S.lanes.map(l => (F - l) * TS), pointsX: (sx + S.points) * TS + 8, chuteX: (sx + S.chute) * TS + 8, ceilY: (F - S.ceil) * TS };
+  return { x0: sx * TS, x1: (sx + S.W) * TS, F, TS, floor: F * TS, laneY: S.lanes.map(l => (F - l) * TS), chuteX: (sx + S.chute) * TS + 8, ceilY: (F - S.ceil) * TS };
 }
 /* the lines there are: three, or two once P3 has brought the roof down on the HIGH line */
 export const lanesOf = S => (S && S.highDown ? [0, 1] : [0, 1, 2]);
@@ -68,134 +65,139 @@ export function laneOf(G, y, tol = 6) { for (let i = 0; i < 3; i++) if (Math.abs
 /* the nearest line at or under a foot (for a hero in the air: where he will land) */
 export function laneUnder(G, y) { for (let i = 2; i >= 0; i--) if (y <= G.laneY[i] + 4) return i; return 0; }
 export const drillOpen = e => !!e && (e.open || 0) > 0 && e.mode === 'jammed';
-/* ITS CAB CAN BE STRUCK (B13: always, but in its told ward and while it wakes or changes phase) - what src/boss-greed.js reads as its opening: a blow on the cab is never greed */
-export const drillHittable = e => !!e && (drillOpen(e) || (!(e.gdWard > 0) && !['sleep', 'wake', 'phase'].includes(e.mode)));
-/* the CAB, world px: { l, r, t, b } - over the MID and HIGH lines on its front */
-export const cabBox = (G, S) => ({ l: S.D - DRILL.w - 2, r: S.D - 2, t: G.laneY[2] - 34, b: G.laneY[1] });
-/* the BIT on its line: { l, r, t, b } */
-export const bitBox = (G, S) => ({ l: S.D - 4, r: S.D + S.bitLen, t: G.laneY[S.bitLane] - 15, b: G.laneY[S.bitLane] });
+/* ITS CAB CAN BE STRUCK whenever it is up (B13/B15: armoured x0.4, jammed x2) - what src/boss-greed.js reads as its opening: only the jam is the opening */
+export const drillHittable = e => !!e && drillOpen(e);
+/* the rig's rear (world px) and its parts: the gear housing on the LOW line, the cab on its deck over the MID and HIGH lines */
+export const rearX = S => S.G.x0 + S.R;
+export const plateBox = (G, S) => ({ l: rearX(S), r: rearX(S) + DRILL.plateW, t: G.laneY[0] - DRILL.plateH, b: G.laneY[0] });
+export const gearBox = (G, S) => ({ l: rearX(S), r: rearX(S) + 16, t: G.laneY[0] - 34, b: G.laneY[0] - 4 });
+export const cabBox = (G, S) => ({ l: rearX(S) + DRILL.cabIn, r: rearX(S) + DRILL.cabIn + DRILL.cabW, t: G.laneY[2] - 22, b: G.laneY[1] });
+/* where a hero on line `lane` meets the rig: its plate on the LOW line, its cab above */
+export const frontFor = (G, S, lane) => (lane <= 0 ? rearX(S) : cabBox(G, S).l);
 
 export function newFight(G) {
-  return { G, ph: 1, i: 0, cd: 1.6, t: 0, ward: 0, lock: 0, D: G.x0 + DRILL.frontMin, bitLane: 1, bitLen: DRILL.bitIdle, boreLane: -1, surge: 0, surgeV: 0,
-    points: false, ores: [], oreT: DRILL.oreFirst, oreN: 0, chute: null, roof: [], openTaken: 0, contactCd: 0,
-    n: { bore: 0, grind: 0, roof: 0, full: 0, ores: 0, jams: 0, eaten: 0, crashed: 0, warded: 0, cab: 0, contact: 0, knocked: 0 }, told: {} };
+  return { G, ph: 1, i: 0, cd: 1.8, t: 0, ward: 0, R: DRILL.homeR, rocks: [], spray: null, ores: [], oreT: DRILL.oreFirst, oreN: 0, chute: null, openTaken: 0, contactCd: 0, revV: 0,
+    n: { rocks: 0, reverse: 0, sparks: 0, ores: 0, jams: 0, rammed: 0, crashed: 0, shrugged: 0, warded: 0, cab: 0, armoured: 0, contact: 0, revHits: 0, sparkHits: 0, rockHits: 0 }, told: {} };
 }
-const beginJam = (e, S, c) => { e.mode = 'jammed'; e.open = DRILL.jamT; e.openT0 = DRILL.jamT; S.openTaken = 0; S.n.jams++; S.bitLen = DRILL.bitIdle; S.surge = 0; S.D = Math.max(S.G.x0 + DRILL.frontMin, S.D - 24);
-  c.sound && c.sound('jam'); c.shake && c.shake(6); c.number(S.D, S.G.laneY[0] - 50, 'THE ORE CART JAMS ITS GEARS: STRIKE THE CAB', '#ffd36b'); };
+const beginJam = (e, S, c) => { e.mode = 'jammed'; e.open = DRILL.jamT; e.openT0 = DRILL.jamT; S.openTaken = 0; S.n.jams++; S.spray = null; S.revV = 0;
+  c.sound && c.sound('jam'); c.shake && c.shake(6); c.number(rearX(S), S.G.laneY[1] - 40, 'THE ORE JAMS ITS GEARS: STRIKE THE CAB', '#ffd36b'); };
 
-/* ---------- ONE FRAME ---------- heroes: [{ x, y, ground, alive, pp, lane }]; c: { hit(box, dmg, name, o) -> bool, number(x, y, t, col), sound(k), shake(n),
-   music(ph), crash(h) (an ore cart into a hero's cart) } */
+/* ---------- ONE FRAME ---------- heroes: [{ x, y, ground, alive, pp, lane, v (the cart's world pace) }]; c: { hit(box, dmg, name, o) -> bool, number(x, y, t, col),
+   sound(k), shake(n), music(ph), crash(h, o) (an ore cart into a hero's cart), shove(h, px) (the rig throws a cart back), arena(k) } */
 export function stepDrill(e, S, dt, heroes, c) {
   const G = S.G; S.t += dt;
-  e.x = (cabBox(G, S).l + cabBox(G, S).r) / 2; e.y = G.laneY[1]; e.gdWard = S.ward;   /* (its body for the game's blows: the cab; its ward, for the read) */
+  { const cb = cabBox(G, S); e.x = (cb.l + cb.r) / 2; e.y = cb.b; e.gdWard = S.ward; }   /* (its body for the game's blows: the cab; its ward, for the read) */
   if (e.mode === 'sleep') return;
-  if (e.mode === 'wake') { e.modeT = (e.modeT ?? 1.6) - dt; S.D = Math.min(G.x0 + DRILL.frontMin, S.D + 60 * dt); if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 1.2; } return; }
+  if (e.mode === 'wake') { e.modeT = (e.modeT ?? 1.6) - dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 1.4; } return; }
   const live = heroes.filter(h => h.alive);
-  S.contactCd = Math.max(0, S.contactCd - dt); S.lock = Math.max(0, S.lock - dt);
-  /* THE ORE CARTS: the chute's tell, then the cart rolls back down its line; set points drop it to the LOW line; the gears, the bit, a hero */
+  S.contactCd = Math.max(0, S.contactCd - dt);
+  /* THE ORE CARTS: the chute's tell, then a loaded cart on the LOW line ahead of you - still in the world, so it comes at you at the tunnel's pace. RAMMED at full pump
+     it flies up the line into the gears; met slower it is a crash */
   if (!drillOpen(e) && e.mode !== 'phase') S.oreT -= dt;
-  if (S.oreT <= 0 && !S.chute && S.ores.length === 0) { S.chute = { lane: S.oreN % 2 && !S.highDown ? 2 : 1, t: DRILL.chuteTell }; S.oreN++; c.sound && c.sound('chute');
-    if (!S.told.ore) { S.told.ore = 1; c.number(G.chuteX, G.laneY[2] - 40, 'A LOADED ORE CART: SET THE POINTS AND IT DROPS TO ITS GEARS', '#ffd36b'); } }
-  if (S.chute) { S.chute.t -= dt; if (S.chute.t <= 0) { S.ores.push({ x: G.chuteX, lane: S.chute.lane, id: S.oreN, vy: 0, y: G.laneY[S.chute.lane], drop: false }); S.chute = null; S.n.ores++; S.oreT = DRILL.oreEvery[S.ph - 1]; c.sound && c.sound('oreLand'); } }
+  if (S.oreT <= 0 && !S.chute && S.ores.length === 0) { const lead = live.slice().sort((a, b) => b.x - a.x)[0];
+    const x = Math.max(G.x0 + 120, Math.min(rearX(S) - 70, (lead ? lead.x : G.x0 + 120) + DRILL.oreAhead + DRILL.cruise * DRILL.chuteTell));
+    S.chute = { x, t: DRILL.chuteTell }; S.oreN++; c.sound && c.sound('chute');
+    if (!S.told.ore) { S.told.ore = 1; c.number(x, G.laneY[2] - 30, 'A LOADED ORE CART: PUMP AND RAM IT INTO ITS GEARS', '#ffd36b'); } }
+  if (S.chute) { S.chute.t -= dt; S.chute.x -= DRILL.cruise * dt; if (S.chute.t <= 0) { S.ores.push({ x: S.chute.x, lane: 0, id: S.oreN, y: G.laneY[0], fly: false, vy: 0, dy: -40 }); S.chute = null; S.n.ores++; S.oreT = DRILL.oreEvery[S.ph - 1]; c.sound && c.sound('oreLand'); } }
   for (const o of S.ores) {
-    if (o.drop) { o.vy = (o.vy || 0) + 900 * dt; o.y += o.vy * dt; if (o.y >= G.laneY[0]) { o.y = G.laneY[0]; o.lane = 0; o.drop = false; o.vy = 0; } }
-    else o.x -= DRILL.oreV * dt;
-    if (!o.drop && o.lane > 0 && S.points && Math.abs(o.x - G.pointsX) < 6 && !o.passed) { o.passed = true; o.drop = true; c.sound && c.sound('points'); }
-    if (!o.drop && Math.abs(o.x - G.pointsX) < 6) o.passed = true;
-    /* into a hero's cart on its line: a crash (and the load is spilt) */
-    for (const h of live) if (h.lane === o.lane && !o.drop && Math.abs(h.x - o.x) < 14 && !o.dead) { o.dead = true; S.n.crashed++; c.crash && c.crash(h, o); }
-    if (o.dead) continue;
-    if (o.x <= S.D + 4) { o.dead = true;
-      if (o.lane === 0 && !drillOpen(e) && S.ward <= 0) beginJam(e, S, c);
-      else { S.n.eaten++; c.sound && c.sound('eat'); c.number(S.D + 10, G.laneY[o.lane] - 24, o.lane === 0 ? 'IT SHRUGS THE CART OFF' : 'THE BIT EATS IT: THE GEARS ARE ON THE LOW LINE', '#9aa39a'); } }
+    if (o.dy < 0) { o.vy += 900 * dt; o.dy = Math.min(0, o.dy + o.vy * dt); }
+    if (o.fly) { o.x += DRILL.oreFly * dt; if (o.x >= rearX(S) - 4) { o.dead = true;
+        if (!drillOpen(e) && S.ward <= 0 && e.mode !== 'phase') beginJam(e, S, c); else { S.n.shrugged++; c.sound && c.sound('eat'); c.number(rearX(S), G.laneY[0] - 50, S.ward > 0 ? 'ITS PLATES ARE UP: IT SHRUGS IT OFF' : 'IT SHRUGS IT OFF', '#9aa39a'); } }
+      continue; }
+    o.x -= DRILL.cruise * dt;
+    if (o.x < G.x0 - 20) { o.dead = true; continue; }
+    if (o.dy < -2) continue;
+    for (const h of live) if ((h.lane === 0 || (h.lane < 0 && Math.abs(h.y - G.laneY[0]) < 20)) && Math.abs(h.x - o.x) < 16 && !o.dead) {
+      if (h.v >= c.ramV) { o.fly = true; S.n.rammed++; c.sound && c.sound('ram'); c.shake && c.shake(4); c.number(o.x, G.laneY[0] - 34, 'RAMMED: INTO ITS GEARS!', '#ffd36b'); c.rammed && c.rammed(h, o); }
+      else { o.dead = true; S.n.crashed++; c.crash && c.crash(h, o); }
+      break; }
   }
   S.ores = S.ores.filter(o => !o.dead);
-  /* THE ROOF's rocks */
-  for (const r of S.roof) { r.t -= dt; if (r.t <= 0 && !r.hit) { r.hit = true; c.hit([r.x - DRILL.roofW / 2, r.x + DRILL.roofW / 2, G.laneY[r.lane] - 30, G.laneY[r.lane]], DRILL.roofDmg, 'THE ROOF', { key: 'roof' + r.id }); c.sound && c.sound('rock'); } }
-  S.roof = S.roof.filter(r => r.t > -0.4);
-  /* THE FRONT: contact hurts and throws it back (no teleport: IT gives ground, not you - B7) */
-  for (const h of live) if (h.x - 5 < S.D && S.contactCd <= 0) { S.contactCd = DRILL.contactCd; S.n.contact++; if (c.hit([S.D - 40, S.D + 2, G.ceilY, G.floor], DRILL.contactDmg, 'THE GREAT DRILL', { key: 'front' + S.n.contact })) S.D = Math.max(G.x0 + DRILL.frontMin, S.D - DRILL.push); }
-  /* THE BIT on its line */
-  if (S.bitLen > DRILL.bitIdle + 4) for (const h of live) { const b = bitBox(G, S); if (h.lane === S.bitLane && h.x > b.l && h.x - 5 < b.r) c.hit([b.l, b.r, b.t, b.b], DRILL.boreDmg, 'THE BORE', { key: 'bore' + S.n.bore }); }
-  /* THE WARD after a jam (B3), then the points knocked back */
-  if (S.ward > 0) { S.ward -= dt; if (S.ward <= 0) { S.ward = 0; S.lock = DRILL.lockT; if (S.points) { S.points = false; c.number(G.pointsX, G.laneY[2] - 34, 'IT KNOCKS THE POINTS BACK', '#9aa39a'); c.sound && c.sound('points'); } } }
-  /* JAMMED: it stands still (B4) */
-  if (drillOpen(e)) { e.open -= dt; if (e.open <= 0) { e.open = 0; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.4; S.ward = DRILL.wardT; S.n.warded++; c.sound && c.sound('ward');
-      if (!S.told.ward) { S.told.ward = 1; c.number(S.D - 10, G.laneY[2] - 44, 'IT CLEARS ITS GEARS: ITS PLATES ARE UP', '#c8d8e8'); } } return; }
+  /* THE BOULDERS: their shadows slide at you down the tunnel; the rock falls on them */
+  for (const r of S.rocks) { r.x -= DRILL.cruise * dt; r.t -= dt; if (r.t <= 0 && !r.hit) { r.hit = true; S.n.rockHits += c.hit([r.x - DRILL.rockW / 2, r.x + DRILL.rockW / 2, G.laneY[r.lane] - 30, G.laneY[r.lane]], DRILL.rockDmg, 'A BOULDER', { key: 'rock' + r.id }) ? 1 : 0; c.sound && c.sound('rock'); } }
+  S.rocks = S.rocks.filter(r => r.t > -0.5);
+  /* THE SPARKS on their line */
+  if (S.spray) { const sp = S.spray; sp.t -= dt;
+    if (sp.on) { sp.tick -= dt; if (sp.tick <= 0) { sp.tick = DRILL.sparkTick; const x1 = rearX(S); S.n.sparkHits += c.hit([x1 - DRILL.sparkLen, x1, G.laneY[sp.lane] - 34, G.laneY[sp.lane]], DRILL.sparkDmg, 'THE SPARKS', { key: 'spark' + S.n.sparks + ':' + Math.round(sp.t * 4), blockable: false }) ? 1 : 0; } }
+    if (sp.t <= 0) { if (!sp.on) { sp.on = true; sp.t = DRILL.sparkT; sp.tick = 0; c.sound && c.sound('sparks'); c.shake && c.shake(2); } else { S.spray = null; e.mode = e.mode === 'spray' ? 'idle' : e.mode; S.cd = DRILL.gap[S.ph - 1]; } } }
+  /* THE REAR: a hero who rolls into it is struck and thrown back (IT gives no ground; the cart is shoved, never teleported - B7) */
+  for (const h of live) { const lane = h.lane >= 0 ? h.lane : laneUnder(G, h.y), fx = frontFor(G, S, lane);
+    if (h.x + 6 > fx && S.contactCd <= 0) { const rev = e.mode === 'reverse' && S.revV > 0, d = rev ? DRILL.revDmg : DRILL.contactDmg;
+      if (c.hit([fx - 4, fx + 60, lane <= 0 ? G.laneY[0] - DRILL.plateH : G.laneY[2] - 22, lane <= 0 ? G.laneY[0] : G.laneY[1]], d, rev ? 'THE REVERSE RAM' : 'THE GREAT DRILL', { key: 'rear' + S.n.contact + ':' + S.n.reverse })) { S.contactCd = DRILL.contactCd; S.n.contact++; if (rev) S.n.revHits++; c.shove && c.shove(h, DRILL.shove); } } }
+  /* THE WARD after a jam (B3) */
+  if (S.ward > 0) { S.ward -= dt; if (S.ward <= 0) S.ward = 0; }
+  /* JAMMED: it stands its ground and drifts back to you (B4: no move) */
+  if (drillOpen(e)) { e.open -= dt; S.R = Math.max(DRILL.minR + 20, S.R - DRILL.drift * dt);
+    if (e.open <= 0) { e.open = 0; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.4; S.ward = DRILL.wardT; S.n.warded++; c.sound && c.sound('ward');
+      c.number(rearX(S), G.laneY[2] - 34, S.told.ward ? 'ITS PLATES ARE UP' : 'IT CLEARS ITS GEARS: ITS PLATES ARE UP', '#c8d8e8'); S.told.ward = 1; } return; }
   /* THE PHASES */
   const k = e.hp / e.maxHp;
-  if (e.mode !== 'phase' && ((S.ph === 1 && k <= DRILL.phase2) || (S.ph === 2 && k <= DRILL.phase3))) {
-    S.ph++; e.phase = S.ph; e.mode = 'phase'; e.modeT = DRILL.phaseT; S.i = 0; S.bitLen = DRILL.bitIdle; S.surge = 0; c.music && c.music(S.ph); c.shake && c.shake(5); c.sound && c.sound('phase');
-    if (S.ph === 3) { S.highDown = true; c.arena && c.arena('highDown'); c.sound && c.sound('rock');   /* THE ARENA CHANGES: the HIGH line comes down (an ore cart on it drops to the mid) */
-      for (const o of S.ores) if (o.lane === 2 && !o.drop) { o.lane = 1; o.y = G.laneY[1]; } }
-    c.number(S.D, G.laneY[2] - 40, S.ph === 2 ? 'IT BORES THE ROOF: WATCH FOR THE SHADOWS' : 'THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT', S.ph === 2 ? '#ffb070' : '#ff6b6b'); return; }
-  if (e.mode === 'phase') { e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 0.8; } return; }
-  /* THE CREEP: it is always coming (and a surge moves it more) */
-  const near = live.slice().sort((a, b) => a.x - b.x)[0];
-  if (S.surge > 0) { S.surge -= dt; S.D += S.surgeV * dt; } else if (e.mode === 'idle' || e.mode === 'boreTell') S.D += DRILL.creep * dt;
-  S.D = Math.max(G.x0 + DRILL.frontMin, Math.min(G.x0 + DRILL.frontMax + (e.mode === 'full' ? 120 : 0), S.D));
+  if (e.mode !== 'phase' && e.mode !== 'reverse' && ((S.ph === 1 && k <= DRILL.phase2) || (S.ph === 2 && k <= DRILL.phase3))) {
+    S.ph++; e.phase = S.ph; e.mode = 'phase'; e.modeT = DRILL.phaseT; S.i = 0; S.spray = null; c.music && c.music(S.ph); c.shake && c.shake(5); c.sound && c.sound('phase');
+    if (S.ph === 3) { S.highDown = true; c.arena && c.arena('highDown'); c.sound && c.sound('rock'); }
+    c.number(rearX(S), G.laneY[2] - 34, S.ph === 2 ? 'IT GRINDS HOTTER: SPARKS DOWN YOUR LINE' : 'THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT', S.ph === 2 ? '#ffb070' : '#ff6b6b'); return; }
+  if (e.mode === 'phase') { e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 0.9; } return; }
+  /* home: it eases back to its place ahead of you */
+  if (e.mode !== 'reverse') { const d = DRILL.homeR - S.R; S.R += Math.sign(d) * Math.min(Math.abs(d), DRILL.revBack * dt); }
+  const near = live.slice().sort((a, b) => b.x - a.x)[0];
   e.modeT = (e.modeT || 0) - dt;
   switch (e.mode) {
-    case 'idle': { S.cd -= dt; if (S.cd > 0) break;
-      const ch = DRILL.chain[S.ph]; let name = ch[S.i % ch.length]; S.i++;
-      if (name === 'bore' || !near) { const lane = Math.min(lanesOf(S).length - 1, near ? (near.lane >= 0 ? near.lane : laneUnder(G, near.y)) : 1); S.boreLane = lane; S.bitLane = lane; e.mode = 'boreTell'; e.modeT = S.ph === 3 ? DRILL.boreTell3 : DRILL.boreTell; S.n.bore++; c.sound && c.sound('tellHard'); }
-      else if (name === 'grind') { e.mode = 'grindTell'; e.modeT = DRILL.grindTell; c.sound && c.sound('tellHard'); c.number(S.D, G.laneY[2] - 30, 'GRIND', '#ff6b6b'); }
-      else if (name === 'roof') { const ls = lanesOf(S), hl = Math.min(ls[ls.length - 1], near ? (near.lane >= 0 ? near.lane : laneUnder(G, near.y)) : 1); const clear = ls.length === 2 ? ls.find(l => l !== hl) : ls.filter(l => l !== hl)[S.n.roof % 2]; S.n.roof++;
-        const x = near ? near.x + (near.vx || 0) * 0.3 : G.pointsX; S.roof = ls.filter(l => l !== clear).map((lane, j) => ({ lane, x: Math.max(S.D + 40, Math.min(G.x1 - 20, x)), t: DRILL.roofTell, id: S.n.roof * 3 + j }));
-        e.mode = 'roofTell'; e.modeT = DRILL.roofTell; c.sound && c.sound('tell'); }
-      else if (name === 'full') { e.mode = 'fullTell'; e.modeT = DRILL.fullTell; S.n.full++; c.sound && c.sound('tellHard'); if (!S.told.full) { S.told.full = 1; c.number(S.D, G.laneY[2] - 30, 'FULL BORE: IT WILL RUN YOU DOWN - BOOST', '#ff6b6b'); } else c.number(S.D, G.laneY[2] - 30, '!! FULL BORE', '#ff6b6b'); }
+    case 'idle': { S.cd -= dt; if (S.cd > 0 || !near) break;
+      const ch = DRILL.chain[S.ph]; const name = ch[S.i % ch.length]; S.i++;
+      const ls = lanesOf(S), hl = Math.min(ls[ls.length - 1], near.lane >= 0 ? near.lane : laneUnder(G, near.y));
+      if (name === 'rocks') { const clear = ls.length === 2 ? ls.find(l => l !== hl) : ls.filter(l => l !== hl)[S.n.rocks % 2]; S.n.rocks++;
+        S.rocks = ls.filter(l => l !== clear).map((lane, j) => ({ lane, x: Math.min(rearX(S) - 20, near.x + DRILL.cruise * DRILL.rockTell + (j ? 18 : 0)), t: DRILL.rockTell, id: S.n.rocks * 3 + j }));
+        e.mode = 'rockTell'; e.modeT = DRILL.rockTell; c.sound && c.sound('tell'); if (!S.told.rocks) { S.told.rocks = 1; c.number(rearX(S) - 40, G.laneY[2] - 40, 'IT CRACKS THE ROOF: OFF THE SHADOWS', '#ffb070'); } }
+      else if (name === 'reverse') { e.mode = 'revTell'; e.modeT = S.ph === 3 ? DRILL.revTell * 0.85 : DRILL.revTell; S.n.reverse++; c.sound && c.sound('klaxon');
+        c.number(rearX(S) - 30, G.laneY[2] - 40, S.told.rev ? '!! REVERSE' : '!! IT BACKS AT YOU: BRAKE, OR JUMP UP', '#ff6b6b'); S.told.rev = 1; }
+      else if (name === 'sparks') { e.mode = 'spray'; S.n.sparks++; S.spray = { lane: hl, t: DRILL.sparkTell, on: false, tick: 0 }; c.sound && c.sound('tellHard');
+        c.number(rearX(S) - 40, G.laneY[hl] - 44, S.told.spark ? '!! SPARKS: ' + LANE_NAME[hl] : '!! SPARKS DOWN YOUR LINE: CHANGE LINE', '#ffb070'); S.told.spark = 1; }
       break; }
-    case 'boreTell': if (e.modeT <= 0) { e.mode = 'boreOut'; e.modeT = DRILL.boreOut; c.sound && c.sound('bore'); } break;
-    case 'boreOut': S.bitLen = DRILL.bitIdle + (DRILL.boreLen - DRILL.bitIdle) * Math.min(1, 1 - e.modeT / DRILL.boreOut); if (e.modeT <= 0) { e.mode = 'boreHold'; e.modeT = DRILL.boreHold; S.bitLen = DRILL.boreLen; c.shake && c.shake(2); } break;
-    case 'boreHold': if (e.modeT <= 0) { e.mode = 'boreBack'; e.modeT = DRILL.boreBack; } break;
-    case 'boreBack': S.bitLen = DRILL.bitIdle + (DRILL.boreLen - DRILL.bitIdle) * Math.max(0, e.modeT / DRILL.boreBack); if (e.modeT <= 0) { S.bitLen = DRILL.bitIdle; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; S.boreLane = -1; } break;
-    case 'grindTell': if (e.modeT <= 0) { e.mode = 'grind'; e.modeT = DRILL.grindT; S.surge = DRILL.grindT; S.surgeV = DRILL.grindDist / DRILL.grindT; S.n.grind++; c.sound && c.sound('grind'); c.shake && c.shake(3); } break;
-    case 'grind': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; } break;
-    case 'roofTell': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.2; } break;
-    case 'fullTell': if (e.modeT <= 0) { e.mode = 'full'; e.modeT = DRILL.fullT; S.surge = DRILL.fullT; S.surgeV = DRILL.fullDist / DRILL.fullT; c.sound && c.sound('grind'); c.shake && c.shake(5); } break;
-    case 'full': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.5; S.D = Math.min(S.D, G.x0 + DRILL.frontMax); } break;
+    case 'rockTell': if (e.modeT <= 0) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; } break;
+    case 'revTell': if (e.modeT <= 0) { e.mode = 'reverse'; e.modeT = DRILL.revT; S.revV = DRILL.revV; c.sound && c.sound('reverse'); c.shake && c.shake(4); } break;
+    case 'reverse': if (S.revV > 0) { S.R = Math.max(DRILL.minR, S.R - S.revV * dt); if (e.modeT <= 0) { S.revV = 0; e.modeT = DRILL.revHold; } }
+      else if (e.modeT <= 0) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; } break;
+    case 'spray': if (!S.spray) e.mode = 'idle'; break;
     default: e.mode = 'idle';
   }
 }
-/* A HERO'S BLOW ON IT (the cab): what comes off the bar (0 = turned, with the word in out.word) */
+/* A HERO'S BLOW ON IT (the cab): what comes off the bar (and the word in out.word). Armoured x0.4 (B15: never totally invulnerable), jammed x2 capped a share a jam */
 export function takeBlow(e, S, dmg, out = {}) {
-  if (e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'phase') { out.word = 'WARDED'; return 0; }
-  if (S.ward > 0) { S.n.warded++; out.word = 'WARDED'; return 0; }
+  if (e.mode === 'sleep' || e.mode === 'wake') { out.word = 'ARMOURED'; return Math.round(dmg * DRILL.armour); }
   S.n.cab++;
   if (drillOpen(e)) { const cap = Math.max(0, e.maxHp * DRILL.jamCap - S.openTaken), d = Math.min(dmg * DRILL.jamMul, cap); S.openTaken += d;
     if (cap - d <= 0.01 && e.open > 0.3) { e.open = 0.3; out.word = 'IT FREES ITS GEARS'; } return d; }
-  return dmg;
+  S.n.armoured++; if (S.ward > 0) S.n.warded++; out.word = S.ward > 0 ? 'PLATES UP' : 'ARMOURED: JAM ITS GEARS';
+  return dmg * DRILL.armour;
 }
-/* THE POINTS MAST: a throw sets / clears the points */
-export function throwPoints(S) { S.points = !S.points; return S.points; }
 
 /* ---------- THE BOT (src/lab.js): what a player sees, read a quarter-second late (react 0.25 s, a tell misread one time in eight) ----------
-   P: { x, y, ground, face, atk, vy, lane }; returns { gx (where to hold, arena px), jump, drop (down + jump), duck, atk, talk (E), face, why } */
-export const DRILL_PLAN = { react: 0.25, miss: 0.13, missPoints: 0.2 };
+   P: { x, y, ground, face, atk, vy, lane, v }; returns { gx (where to hold, arena px), jump, drop (down + jump), atk, boost (pump hard), face, why } */
+export const DRILL_PLAN = { react: 0.25, miss: 0.13, missRam: 0.15 };
 export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip = 0 }) {
-  const G = S.G, out = { gx: null, face: P.face, why: '' }, lane = P.lane >= 0 ? P.lane : Math.min(lanesOf(S).length - 1, laneUnder(G, P.y)), LS = lanesOf(S);
+  const G = S.G, out = { gx: null, face: 1, why: '' }, lane = P.lane >= 0 ? P.lane : Math.min(lanesOf(S).length - 1, laneUnder(G, P.y)), LS = lanesOf(S);
   const late = k => { if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
-  const cab = cabBox(G, S), standX = cab.r + (tip ? tip + 4 : Math.max(10, reach - 8));   /* (a spear's tip pays at a distance from the near edge: the warden stands back; fix pass, review MF3: every hero stands where HER reach pays - the pyro's flame reaches 30, so she stands back too, as a player would) */
+  const cab = cabBox(G, S), R0 = rearX(S), standX = cab.l - (tip ? tip + 4 : Math.max(10, reach - 8));   /* (a spear's tip pays at a distance: the warden stands back) */
   const go = l => { if (l > lane && P.ground) out.jump = true; else if (l < lane && P.ground) out.drop = true; };
-  const danger = new Set();   /* lines not to be on */
-  if ((e.mode === 'boreTell' || e.mode === 'boreOut' || e.mode === 'boreHold') && late('bore' + S.n.bore)) danger.add(S.bitLane);
-  for (const r of S.roof) if (r.t > 0 && Math.abs(r.x - P.x) < DRILL.roofW && late('roof' + r.id)) danger.add(r.lane);
-  for (const o of S.ores) if (!o.drop && o.x > P.x - 4 && o.x - P.x < 90) danger.add(o.lane); else if (o.drop) danger.add(0);
+  const danger = new Set();
+  for (const r of S.rocks) if (r.t > 0 && Math.abs(r.x - DRILL.cruise * r.t - P.x) < DRILL.rockW + 6 && late('rock' + r.id)) danger.add(r.lane);
+  if (S.spray && late('spray' + S.n.sparks) && P.x > R0 - DRILL.sparkLen - 20) danger.add(S.spray.lane);
+  const revOn = (e.mode === 'revTell' || (e.mode === 'reverse' && S.revV > 0)) && late('rev' + S.n.reverse);
   const safe = [lane, 1, 2, 0].filter(l => LS.includes(l)).find(l => !danger.has(l));
-  /* 1. THE SURGES: get ahead of it */
-  if ((e.mode === 'grindTell' || e.mode === 'grind' || e.mode === 'fullTell' || e.mode === 'full') && late('surge' + S.n.grind + ':' + S.n.full)) { out.gx = Math.min(G.x1 - 24, S.D + (e.mode.startsWith('full') ? 230 : 150)); out.why = 'outrun'; }
-  /* 2. THE OPENING: to the cab, off the bit's line (there is no bit out when jammed), and strike */
-  else if (drillOpen(e)) { const want = lane === 0 ? 1 : lane; if (lane !== want) go(want); out.gx = standX; out.face = -1; if (Math.abs(P.x - standX) < 10 && lane >= 1 && P.atk < 0) out.atk = true; out.why = 'jammed: cab'; }
-  /* 3. AN ORE CART COMING: set the points, keep off its line */
-  else if ((S.chute || S.ores.some(o => !o.drop && o.lane > 0 && o.x > G.pointsX)) && !S.points && late('pts' + S.oreN)) {
-    out.gx = G.pointsX + 6; if (Math.abs(P.x - G.pointsX) < 24) { if (!(mem['mp' + S.oreN] ??= rng() < DRILL_PLAN.missPoints) || (mem['pt' + S.oreN] || 0) > 1.2) { out.talk = true; } else mem['pt' + S.oreN] = (mem['pt' + S.oreN] || 0) + 1 / 60; } out.why = 'points'; }
-  /* 4. OTHERWISE: work the cab from a line the bit is not on, between its blows */
-  else { const boring = e.mode === 'boreTell' || e.mode === 'boreOut' || e.mode === 'boreHold' || e.mode === 'boreBack';
-    if (S.ward > 0) { out.gx = Math.min(G.x1 - 30, S.D + 90); out.why = 'wait'; }
-    else { out.gx = standX; out.face = -1; if (Math.abs(P.x - standX) < 10 && lane >= 1 && !(boring && lane === S.bitLane) && P.atk < 0 && (mem.atkT ?? -9) < t - 0.35) { mem.atkT = t; out.atk = true; } out.why = 'cab'; if (boring && lane === S.bitLane && !danger.has(lane)) danger.add(lane); }
-    if (lane === S.bitLane || lane === 0) { const l2 = [1, 2].filter(l => LS.includes(l)).find(l => l !== S.bitLane && !danger.has(l)); if (l2 !== undefined && !out.jump && !out.drop) go(l2); } }
+  /* 1. THE REVERSE: out of its sweep - brake back (a player brakes; one close behind on the LOW line also jumps up to the MID) */
+  if (revOn) { const sweep = DRILL.revV * DRILL.revT + 26; out.gx = Math.max(G.x0 + 14, frontFor(G, S, lane) - sweep - 30); out.why = 'reverse: brake';
+    if (lane === 0 && P.x > R0 - sweep && LS.includes(1) && !danger.has(1)) go(1); }
+  /* 2. THE OPENING: to the cab (MID line), and strike */
+  else if (drillOpen(e)) { const want = lane === 0 ? 1 : lane; if (lane !== want) go(want); out.gx = standX; if (Math.abs(P.x - standX) < 12 && lane >= 1 && P.atk < 0) out.atk = true; out.why = 'jammed: cab'; }
+  /* 3. AN ORE CART: down to the LOW line behind it, and PUMP into it */
+  else if ((S.chute || S.ores.some(o => !o.fly && o.dy >= -2 && o.x > P.x - 8)) && S.ward <= 0 && late('ore' + S.oreN)) { const o = S.ores.find(q => !q.fly);
+    if (lane !== 0) go(0); out.why = 'ore: ram';
+    if (o && lane === 0) { if (!(mem['mr' + S.oreN] ??= rng() < DRILL_PLAN.missRam)) { out.gx = o.x + 40; out.boost = true; } else out.gx = o.x - 30; }
+    else out.gx = Math.max(G.x0 + 30, (S.chute ? S.chute.x : P.x) - 120); }
+  /* 4. OTHERWISE: work the cab from the MID line between its moves (x0.4 is still damage), or wait off its sweep while its plates are up */
+  else { const busy = e.mode === 'revTell' || e.mode === 'reverse' || (S.spray && S.spray.lane === lane);
+    out.gx = standX; if (lane === 0 && LS.includes(1)) go(1); if (Math.abs(P.x - standX) < 12 && lane >= 1 && !busy && P.atk < 0 && (mem.atkT ?? -9) < t - 0.35) { mem.atkT = t; out.atk = true; } out.why = 'cab'; }
   if (danger.has(lane) && safe !== undefined && safe !== lane) { out.jump = false; out.drop = false; go(safe); out.why += ' +dodge'; }
-  /* never sit in its front */
-  if (out.gx !== null) out.gx = Math.max(S.D + 12, out.gx);
+  if (out.gx !== null) out.gx = Math.min(out.gx, frontFor(G, S, lane) - 10);
   return out;
 }

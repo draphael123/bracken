@@ -2329,7 +2329,7 @@ function spawnEnt(e) {
       case 'hawkscout': { const st = KSF.newHawk((e.x0 ?? e.x - 30) * TS + 8, (e.x1 ?? e.x + 30) * TS + 8, py); st.face = e.face || 1; enemies.push({ ...base, t: 'hawkscout', w: KSF.HAWK.w, h: KSF.HAWK.h, hp: EHP.hawkscout, noGrav: true, x: st.x, y: st.y, mode: st.mode, st }); break; }   /* THE HAWK SCOUT (src/ksar-foes.js): the Ksar's one new foe */
       case 'ksgong': case 'kskegs': case 'ksflasks': case 'kskeg': case 'ksbarricade': case 'kswinch': case 'ksvault': case 'ksbridge': break;   /* THE BANDIT KSAR's gongs, keg stacks, flask racks, set kegs, bricked arches, winch and strongroom: src/ksar-hands.js reads them from L */
       case 'greatdrill': { const a = GDH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* THE GREAT DRILL (src/great-drill.js): its fight is made here */
-      case 'mcpoints': case 'mcgobcart': case 'mccrusher': case 'mcgate': case 'mcrock': case 'mcbeam': case 'mcgap': case 'drillpoints': case 'oretip': break;   /* THE DEEP RAILS' gadgets: src/minecart-hands.js / src/great-drill-hands.js read them from L */
+      case 'mcpoints': case 'mccart': case 'mcramp': case 'mcgobcart': case 'mccrusher': case 'mcgate': case 'mcrock': case 'mcbeam': case 'mcgap': case 'drillpoints': case 'oretip': break;   /* THE DEEP RAILS' gadgets: src/minecart-hands.js / src/great-drill-hands.js read them from L */
       case 'fogknight': { const a = FKH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* THE FOG KNIGHT (src/fog-knight.js): at the Towpath's end; his fight is made here */
       case 'tppaddle': case 'tpcapstan': case 'tplamp': case 'tplantern': case 'tplychgate': case 'tpchurch': break;   /* THE TOWPATH's paddles, capstans, lamps, the lantern, the lychgate and the church door: src/towpath-hands.js reads them from L */
       case 'skitter': { const st = GSF.newSkitter(px, py); st.face = e.face || -1; enemies.push({ ...base, t: 'skitter', w: GSF.SKITTER.w, h: GSF.SKITTER.h, hp: EHP.skitter, mode: st.mode, st }); break; }   /* THE CRACK SWARM (src/glass-foes.js): the Glass Sea's one new foe */
@@ -2894,7 +2894,7 @@ function eliteGates() {
   if (laid) resolveTiles();
 }
 function eliteWatch() {
-  for (const e of eliteList) { if (e.alive || e.paid) continue;
+  for (const e of eliteList) { if (e.alive || e.paid || e.mcWait) continue;   /* (claude/deeprails2: THE FOREMAN waits off the line - not alive, not dead - until you reach him) */
     e.paid = true; if (e.ambush) continue;   /* AN AMBUSH'S CAPTAIN: the room is its gate and the room pays, and the room is put back whole on a death */
     if (!rushOn()) marks.add(e.key);
     if (e.shut && e.shut.length) { const cols = new Map();
@@ -3860,7 +3860,7 @@ function drawElitePlate(e, cx, cy, bigF) {
   if (!nearP) { crown(x, top - 16); pip(x, top - 16); return; }
   const w = 28, bx = x - w / 2, by = top - 16, k = Math.max(0, e.hp / (e.hp0 || e.hp));
   g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, w + 2, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, w, 2); g.fillStyle = k > 0.34 ? '#e0b040' : '#ff6b6b'; g.fillRect(bx, by, Math.round(w * k), 2);
-  { const nw = textW(ELITE[e.t].name, 6); crown(bx - 7, by + 1); pip(bx - 7, by + 1); text(ELITE[e.t].name, Math.max(nw / 2 + 2, Math.min(VW - nw / 2 - 2, x)), by - 9, '#ffd36b', 'center', 6); }   /* the name kept on the screen: a captain at the edge of the view was THE SHIELD CAPTAI */
+  { const nw = textW(e.eliteName || ELITE[e.t].name, 6); crown(bx - 7, by + 1); pip(bx - 7, by + 1); text(e.eliteName || ELITE[e.t].name, Math.max(nw / 2 + 2, Math.min(VW - nw / 2 - 2, x)), by - 9, '#ffd36b', 'center', 6); }   /* the name kept on the screen: a captain at the edge of the view was THE SHIELD CAPTAI */
   if (e.broken > 0 && e.ekOpenT > 0) { const ok = Math.max(0, Math.min(1, e.broken / e.ekOpenT)); g.fillStyle = ART.OUT; g.fillRect(bx - 1, by + 3, w + 2, 3); g.fillStyle = '#ffd36b'; g.fillRect(bx, by + 4, Math.round(w * ok), 1); }   /* OPEN: the gold timer under his bar */
   if (AF) { const t = '- ' + e.affix + ' -', tw = textW(t, 6); text(t, Math.max(tw / 2 + 2, Math.min(VW - tw / 2 - 2, x)), by + 7, AF, 'center', 6); }   /* THE FIRST KNIFE - SWIFT: the affix under the plate */
   if (e.ekSayT > 0 && e.ekSay) { const tw = textW(e.ekSay, 6); text(e.ekSay, Math.max(tw / 2 + 2, Math.min(VW - tw / 2 - 2, x)), by - 17, e.ekSayCol || '#ffd36b', 'center', 6); }   /* GUARD UP, GO ROUND, OPEN, ROUSED, DOUSED: over the plate, never a floating word */
@@ -4295,7 +4295,7 @@ const CRAG_NODES = [
   { id: 'moor', kind: 'level', level: 8, x: 191, y: 90, plate: 'below', name: 'GALE MOOR' },
   { id: 'skyroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyroad'), x: 268, y: 140, plate: 'below', name: 'THE SKY ROAD' },   /* THE SKY ROAD (claude/skyroad): on the main road after GALE MOOR, before THE ORE ROAD (Daniel 10-03) */
   { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 281, y: 103, plate: 'rightup', name: 'THE ORE ROAD' },
-  { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 258, y: 103, plate: 'left', spur: true, name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart): a spur off THE ORE ROAD, down into its mine */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
+  { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 274, y: 79, plate: 'left', name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart; claude/deeprails2, Daniel 10-09): ON THE ROAD, between THE ORE ROAD and STORMHOLD - down into the mine and up into the hold */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
   { id: 'storm', kind: 'level', level: 9, x: 264, y: 55, plate: 'leftup', name: 'STORMHOLD' },
   { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, plate: 'below', name: 'HIGHCROWN' },
   { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 276, y: 8, plate: 'above', spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
@@ -4304,7 +4304,7 @@ const CRAG_NODES = [
    self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
    no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
    relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
-const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,103], [264,55], [260,26]];   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
+const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,103], [274,79], [264,55], [260,26]];   /* (claude/deeprails2: THE DEEP RAILS on the road between the Ore Road and Stormhold) */   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 158, y: 154, plate: 'right', name: 'THE LONG WATER' },
@@ -25183,7 +25183,7 @@ GSH = makeGlassSeaHands({ get L() { return L; }, get players() { return players;
 MCH = makeMinecartHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH, LH: () => LH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n), overlap: (a, b) => overlap(a, b),
   asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), attackBox: () => attackBox(), duckBox: b => duckBox(b), duckClears: (b, y) => duckClears(b, y), cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
-  killFoe: e => { if (e.alive) hurtEnemy(e, Math.max(9999, (e.hp || 0) + 1), e.x, false); }, questGot: () => straysGot.size, chaseRunning: () => chases.some(c => c.st.phase === 'run'), drillTread: () => (GDH ? GDH.tread() : null) });
+  killFoe: e => { if (e.alive) hurtEnemy(e, Math.max(9999, (e.hp || 0) + 1), e.x, false); }, hitFoe: (e, d) => { if (e.alive) hurtEnemy(e, d, e.x, false); }, movers: () => movers, questGot: () => straysGot.size, chaseRunning: () => chases.some(c => c.st.phase === 'run'), drillTread: p => (GDH ? GDH.tread(p) : null) });
 GDH = makeDrillHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, EHP, sfx: SFX, cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), attackBox: () => attackBox(), cartOf: pp => (MCH ? MCH.cart(pp) : null),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); } });
@@ -29081,6 +29081,7 @@ function drawWorld(cx, cy, showPlayer) {
         if (step[0] === 'jump') dY = -Math.round(Math.sin(ph * Math.PI) * 6);
         else if (step[0] === 'crouch' || step[0] === 'land') dY = 1; }
       if (key !== 'swim' && key !== 'tread') swimRot = 0;   /* the victory dance can borrow the frame list mid-swim; nothing else in it should tilt */
+      if (MCH && MCH.riding(P)) { if (!P.ducking) dY -= 3; MCH.drawCartBack(g, P, cx, cy, time); }   /* (claude/deeprails2) THE DEEP RAILS: the tub's back wall and its dark inside behind him - he sits IN the cart */
       const k = P.sqT > 0 ? P.sqT / 0.12 : 0, sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
       const br = 1;   /* at rest he breathes in the frames themselves now: a sub-pixel stretch on top of them only shimmered */
       const hs = isReaper() ? 1.22 : 1, shadowed = isReaper() && ((P.passT || 0) > 0 || P.dodge > 0);   /* the Death Knight is the biggest of them, and when he steps he is a shadow */
@@ -29221,6 +29222,7 @@ function drawWorld(cx, cy, showPlayer) {
     SEA.seaHoles(hole);   /* and a sea level's own lights, where its far water drew them this frame */
     for (const e of enemies) if (e.t === 'angler' && e.alive) hole(e.x - cx, e.y - 10 - cy, e.mode === 'biteTell' ? 44 : 26); // and an angler carries its own
     if (UWH && UWH.on()) UWH.holes(hole, cx, cy);
+    if (MCH && MCH.on()) MCH.holes(hole, cx, cy, dg);   /* (claude/deeprails2) THE DARK DRIFT: the cart's headlamp cone, the goblins' lanterns, every lever's and crusher's lamp */
     if (LCH && LCH.on()) LCH.holes(hole, cx, cy);   /* THE LIT CHURCH: every lit lamp, every fire, the flame in your hand */   /* THE UNDERWELL: every lit torch, burning cell, burning nest, the great lamp and the candle niches is a hole in its dark */
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
     g.drawImage(DARKC, 0, 0); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);

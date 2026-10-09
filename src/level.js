@@ -7859,7 +7859,7 @@ export const LEVELS = [
   { id: 'hanging', name: 'THE HANGING VILLAGE', sub: 'the town on the cliff', rule: 'THE VILLAGE HANGS ON ROPES, AND A ROPE CAN BE CUT.', build: hangingVillage, needs: 'scree' },
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
-  { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES. EVERY KEY HANGS IN A WATCHTOWER.', build: () => stormholdTown({ painter, T, TS }), needs: 'oreroad' },
+  { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES. EVERY KEY HANGS IN A WATCHTOWER.', build: () => stormholdTown({ painter, T, TS }), needs: 'minecart' },   /* (claude/deeprails2, Daniel 10-09: THE DEEP RAILS is on the main road - Ore Road -> Deep Rails -> Stormhold) */
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },   /* (2026-09-23: the Ore Road is the way to her gate now) */
   { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
@@ -7951,9 +7951,9 @@ export const LEVELS = [
   /* THE ROOTWAY (claude/rootway, the OPUS GREYBOX, 2026-10-07): the climb up out of the deep fungus through giant roots into the goblins' canopy - after SPOREWOOD,
      before KINGSWOOD (the bridge Daniel booked 10-07). APPENDED, so no index and no save moves; its place on the road is its needs and its map node */
   { id: 'rootway', name: 'THE ROOTWAY', sub: "up out of the fungus, into the goblins' wood", rule: "THE CAPS GROW INTO STEPS; THE GOBLINS' HOISTS DROP WHAT THEY HOLD. STOP ON A BUD TO GROW IT; CUT A HOIST'S ROPE TO DROP ITS LOAD.", build: () => buildRootway({ painter, T, TS }), needs: 'spore' },
-  /* THE DEEP RAILS (claude/minecart, the OPUS GREYBOX, 2026-10-07): a SIDE ROAD off THE ORE ROAD, down into its mine - all cart, start to finish. APPENDED, so no index
-     and no save moves; `needs: 'oreroad'` is what groups it under the Ore Road (Stormhold still needs the Ore Road: this is a spur, not the road). THE GREAT DRILL is its boss */
-  { id: 'minecart', name: 'THE DEEP RAILS', sub: "the goblins' ore line under the road", rule: 'YOU RIDE THE WHOLE WAY. THROW THE POINTS TO PICK YOUR LINE; LEFT BRAKES, RIGHT BOOSTS.', build: () => buildMinecart({ painter, T, TS }), needs: 'oreroad' },
+  /* THE DEEP RAILS (claude/minecart, the OPUS GREYBOX, 2026-10-07; DEEP RAILS 2, claude/deeprails2, Daniel 10-09): ON THE MAIN ROAD - Ore Road -> DEEP RAILS -> Stormhold
+     (Stormhold needs it). APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE GREAT DRILL is its boss */
+  { id: 'minecart', name: 'THE DEEP RAILS', sub: "the goblins' ore line under the road", rule: 'THE CART NEVER STOPS. HOLD RIGHT TO PUMP, LEFT TO BRAKE, AND THROW THE POINTS AT THE JUNCTIONS.', build: () => buildMinecart({ painter, T, TS }), needs: 'oreroad' },
   /* THE LIT CHURCH (claude/litchurch, the OPUS GREYBOX, 2026-10-08; Daniel's concept 10-01 + the 10-07 settled lines): the optional cruciform church up the hill road,
      where LIGHT is the level; THE PALADIN (src/paladin-boss.js) is its boss and clearing it sells the Paladin hero for 800 coins (classFor). APPENDED, so no index and no
      save moves. AN OPTIONAL SPLIT PATH whose fork is THE TOWPATH's first screen (claude/towpath, in parallel): until the integrator joins them it hangs off WAYMEET
