@@ -8,5 +8,7 @@ export const MAP_BLURB = {
   waymeet: 'where the roads meet',
   theatre: 'where the masks are made',
   underwell: 'the dry cisterns under the town',
+  church: "the paladins' sworn chapel",
+  towpath: 'the river road, lock by lock',
   ksar: "the raiders' fortress on the road",
 };
