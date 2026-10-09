@@ -84,6 +84,7 @@ export const AFFIX_AT = {
   'fallingtower|husk': 'VENOMOUS', 'fallingtower|apprentice#amb': 'WARDING',
   'witchlight|husk': 'SUMMONER', 'witchlight|armour': 'THORNED',
   'oreroad|heavy': 'UNSTOPPABLE', 'oreroad|gaffer#amb': 'SWIFT',
+  'minecart|brute': 'UNSTOPPABLE',   /* (claude/deeprails2) THE FOREMAN in his armoured cart: no blow throws him - only a ram dents it */
   'unburied|husk#amb': 'VENOMOUS',
   'fair|barker#1': 'WARDING', 'fair|barker#2': 'SUMMONER', 'fair|hobbyhorse': 'SWIFT',
   'canal|gaffer': 'UNSTOPPABLE',

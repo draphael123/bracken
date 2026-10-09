@@ -28,7 +28,7 @@ const TS = 16, lv = LEVELS.find(l => l.id === 'oreroad'), L = lv.build(), at = (
 const footing = t => t === T.SOLID || t === T.PLANK || t === T.ONEWAY || t === T.NET;
 const JUMP = 92 * (2 * 320 / 1000);                              // the running jump, in pixels: 92 px/s for two thirds of a second at world speed
 console.log('THE ORE ROAD');
-ok(lv.needs === 'skyroad' && LEVELS.find(l => l.id === 'skyroad').needs === 'moor' && LEVELS.find(l => l.id === 'storm').needs === 'oreroad' && LEVELS.find(l => l.id === 'crown').needs === 'storm', 'it sits between Gale Moor and Stormhold (Daniel, 2026-09-23): it needs the Sky Road (which needs the Moor: moor > skyroad > oreroad, claude/skyroad, Daniel 2026-10-03), Stormhold needs it, and Highcrown needs Stormhold');
+ok(lv.needs === 'skyroad' && LEVELS.find(l => l.id === 'skyroad').needs === 'moor' && LEVELS.find(l => l.id === 'minecart').needs === 'oreroad' && LEVELS.find(l => l.id === 'storm').needs === 'minecart' && LEVELS.find(l => l.id === 'crown').needs === 'storm', 'it sits between Gale Moor and Stormhold (Daniel, 2026-09-23): it needs the Sky Road (which needs the Moor: moor > skyroad > oreroad, claude/skyroad, Daniel 2026-10-03), THE DEEP RAILS needs it and Stormhold needs the Deep Rails (claude/deeprails2, Daniel 10-09: oreroad > minecart > storm), and Highcrown needs Stormhold');
 ok(L.music === 'oreroad' && L.arena.boss === 'winchmaster', "its own track ('oreroad', a real recording - 'mineworks' was a synth that played as silence), and the Winchmaster in its arena");
 ok(/oreroad: '\.\/audio\/oreroad\.ogg'/.test(readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8')), 'and that track is a FILE in TRACKS, not a name that falls through to the synth');
 

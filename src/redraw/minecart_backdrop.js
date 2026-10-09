@@ -23,8 +23,9 @@ export const MP = {
   i0: '#14141a', i1: '#24242c', i2: '#3a3a46', i3: '#585866', i4: '#80808e', i5: '#b0b0be',
   gb: '#3c5a2a', gb2: '#5a8a3a', rag: '#7a1a14', rag2: '#b02a1c' };
 
-/* the zone of the line: 0 the loading yard, 1 the switchbacks, 2 the goblin line, 3 the cave-in, 4 the crusher works, 5 the exam, 6 the smelter and the bore */
-export const zoneOf = tx => tx < 171 ? 0 : tx < 314 ? 1 : tx < 472 ? 2 : tx < 610 ? 3 : tx < 765 ? 4 : tx < 900 ? 5 : 6;
+/* the zone of the line (DEEP RAILS 2, claude/deeprails2 - the areas): 0 THE LAMP YARD, 1 THE DARK DRIFT, 2 THE GOBLIN LINE, 3 THE GLOW CAVERN (the lava's light),
+   4 THE WRECK + THE CRUSHER WORKS + THE LIFT, 5 THE FLOODED RUN (a cold cast off the water), 6 the smelter and the bore */
+export const zoneOf = tx => tx < 171 ? 0 : tx < 310 ? 1 : tx < 472 ? 2 : tx < 625 ? 3 : tx < 786 ? 4 : tx < 900 ? 5 : 6;
 
 /* ---------------- THE WALL: one 192 x 192 seamless tile of dark rock ---------------- */
 const wallTile = () => once('wall', () => { const S = 192, [c, g] = mk(S, S), r = mulberry(7741);
@@ -124,7 +125,7 @@ const boreMouth = () => once('bore', () => { const W = 110, H = 100, [c, g] = mk
 
 /* ---------------- THE FRAME ---------------- */
 const dim = (cy) => Math.min(0.5, 0.04 + Math.max(0, cy) / 840 * 0.4);
-const zoneTint = [[255, 150, 60, 0.05], [255, 190, 90, 0.04], [90, 140, 60, 0.06], [200, 70, 40, 0.09], [255, 120, 50, 0.07], [120, 40, 30, 0.08], [255, 90, 30, 0.11]];
+const zoneTint = [[255, 150, 60, 0.06], [30, 30, 60, 0.1], [90, 150, 60, 0.08], [255, 90, 30, 0.14], [255, 120, 50, 0.07], [60, 110, 170, 0.1], [255, 90, 30, 0.11]];   /* (deeprails2: the drift colder and darker, the goblin line greener, the cavern's lava, the flood's cold) */
 
 export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
   const tx = Math.floor((cx + VW / 2) / TS), z = zoneOf(tx), Z = zoneTint[z];

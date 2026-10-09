@@ -175,7 +175,7 @@ export function buildMinecart({ painter, T, TS }) {
     for (let x = 140; x <= 149; x++) set(x, t, T.SOLID);                    /* (the trestle is rock over the last ten: a tunnel - the low line's end is a fall-in) */
     ent('mend', 147, B - 2); ent('coin', 145, B - 2); ent('coin', 146, B - 2); ent('coin', 148, B - 2); ent('coin', 149, B - 2);
     rail(70, 88, 25); for (const x of [74, 78, 82]) ent('coin', x, 24);      /* a jump-up line over the hump */
-    station(144, t - 1);                                                    /* STATION ONE, on the high line past the points */
+    station(148, t - 1);                                                    /* STATION ONE, on the high line past the points (148: >= 140 route tiles from the start, A10b) */
     foe('bat', 158, t - 3, { squad: 'yardBat2' });
     rise(169, t, 1); ground(171, 172, t - 1); }                            /* on up to row 25 at 171 */
 

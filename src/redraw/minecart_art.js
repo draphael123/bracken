@@ -303,9 +303,9 @@ export function lampPlan(L, cellGet, T, x0c, x1c) {
 /* THE BESTIARY CARD (batch80 integ-2): the machine drawn once, whole, and shrunk to a card - the Great Drill draws itself live (src/great-drill-hands.js), so the bestiary had no sprite for it
    (textfit: "Cannot read properties of null (reading 'R')" on the BOSSES tab). Same shape as the Lantern-Eater's card. */
 export function bakeDrillCard() {
-  const [big, bg] = canvas(200, 130);
-  drill(bg, 140, 30, 120, 72, 64, 44, { x: 34, t: 44, w: 52, h: 26 }, false, false, false, 0, 1);
-  const [c, g] = canvas(80, 52); g.imageSmoothingEnabled = false; g.drawImage(big, 0, 0, 200, 130, 0, 0, 80, 52);
+  const [big, bg] = canvas(260, 130);   /* (GREAT DRILL 2: the rig, its goblin in the cab, its bit) */
+  rig(bg, 12, [118, 70, 22], 6, { jam: false, ward: false, hurt: false, rev: false, spray: null, moving: false, scroll: 0, plateW: 62, plateH: 40, cabIn: 30, cabW: 30, cabH: 40, stackX: 150, ph: 1 }, 0);
+  const [c, g] = canvas(80, 52); g.imageSmoothingEnabled = false; g.drawImage(big, 0, 0, 260, 130, 0, 0, 80, 40);
   return { R: [c], L: [c], w: 76, h: 48 };
 }
 

@@ -125,7 +125,7 @@ export function makeMinecartHands(ctx) {
     const y = sp.ledge ? row * ts : surfaceY(x, row); if (y === null) return;
     const cart = { e, row, x, y, v: sp.ledge || sp.foreman ? 0 : sp.slow || sp.pace || cartOf(P).v || MC.cruise, off: sp.off, slow: sp.slow || 0, pace: sp.pace || 0, hold: sp.at !== undefined, ledge: !!sp.ledge, foreman: !!sp.foreman,
       state: sp.ledge ? 'ledge' : 'roll', cd: 0.9 + Math.random() * 0.5, tell: 0, vy: 0, id: M.carts.length, rams: 0, stun: 0, maxX: sp.foreman && e.gate !== undefined ? e.gate * ts - 26 : 1e9 };
-    M.carts.push(cart); e.mcCart = cart; e.mcWait = false; e.alive = true; e.x = x; e.y = y - (cart.ledge ? 0 : 6); e.vx = 0; e.vy = 0; e.face = Math.sign(P.x - x) || -1;
+    cart.hp0 = e.hp; M.carts.push(cart); e.mcCart = cart; e.mcWait = false; e.alive = true; e.x = x; e.y = y - (cart.ledge ? 0 : 6); e.vx = 0; e.vy = 0; e.face = Math.sign(P.x - x) || -1;
     if (!M.said['cart' + e.t + cart.ledge]) { M.said['cart' + e.t + cart.ledge] = 1; ctx.number(P.x, P.y - 40, cart.foreman ? 'THE FOREMAN: AN ARMOURED CART' : cart.ledge ? 'A GOBLIN THROWER ON A LEDGE' : e.t === 'gobmage' ? 'A GOBLIN CASTER ON A CART' : 'A GOBLIN ARCHER ON A CART', '#ffd36b'); }
     if (!cart.ledge) ctx.sfx.rattle && ctx.sfx.rattle(1);
   }
@@ -186,7 +186,8 @@ export function makeMinecartHands(ctx) {
   }
   function ramForeman(P, pc, cart) { const e = cart.e;
     if (pc.v >= MC.ramV) { M.n.rams++; M.n.foremanRams++; cart.rams++; cart.stun = 0.8; pc.crashCd = 0.4;
-      const d = Math.ceil(e.maxHp / MC.foremanRams) + 1; M.ramming = true; try { ctx.hitFoe(e, d); } finally { M.ramming = false; }
+      const d = Math.ceil((cart.hp0 || e.hp0 || e.hp) / MC.foremanRams) + 1;   /* (a third of what he rolled in with: no guard, no poise - a ram is the whole cart) */
+      if (e.hp - d <= 0) { M.ramming = true; try { ctx.killFoe(e); } finally { M.ramming = false; } } else { e.hp -= d; e.flash = 0.25; e.hurtT = 0.25; }
       ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(cart.x - 10, cart.y - 10, 16, ['#5a6270', '#d89a5a', '#ffd36b', '#ffffff'], 120, 0.5);
       ctx.number(cart.x, cart.y - 34, RAM_LINE[e.alive ? Math.max(1, Math.min(2, MC.foremanRams - cart.rams)) : 0], '#ffd36b');
       bounceBack(pc, 70); if (!e.alive) { cart.state = 'fall'; cart.vy = -200; cart.v = 120; } }
