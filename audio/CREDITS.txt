@@ -285,3 +285,7 @@ THE BURIED CITY (2026-10-09, claude/buriedcity music pass; Daniel approved the d
 THE BANDIT KSAR (2026-10-07, claude/ksar art pass, Daniel's pick; he approved the download):
 - ksar.ogg = "Desert Loop" by iamoneabe, CC0 (public domain, credited all the same) - https://opengameart.org/content/desert-loop - THE BANDIT KSAR's level track (the fort only; THE HAWK-MISTRESS's fight keeps her composed theme).
   Credit: "Desert Loop" by iamoneabe (OpenGameArt.org), CC0. Changes: mono; encoded to OGG Vorbis q4 (64 s, loops).
+
+THE ROOTWAY (2026-10-07, claude/rootway, Daniel approved the download):
+- rootway.ogg = "Lanterns in the Hollowed Forest" (the loop version) by Tsorthan Grove, CC0 (public domain; credited all the same) - https://opengameart.org/content/lanterns-in-the-hollowed-forest - THE ROOTWAY's level track.
+  Changes: mono; encoded to OGG Vorbis (72 kbps). The Huntmaster keeps his composed-in-code theme (boss3).

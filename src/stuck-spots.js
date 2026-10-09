@@ -53,7 +53,7 @@ export const STUCK = {
     { id: 'lw-flats-gate', zone: [388, 0, 418, 28], ats: [[419, 22], [390, 25]], glint: 'stall', line: 'THE FLATS GATE LIFTS AT LOW WATER: DRAIN THE STREET OR WAIT' },
   ],
   kings: [
-    { id: 'kg-court-gate', zone: [568, 0, 584, 14], at: [583, 8], done: ['plate', 583, 8, 'down'], line: 'THE COURT GATE IS SHUT: A PLATE ON THE LEDGE ABOVE THE CARPET' },
+    { id: 'kg-court-gate', zone: [568, 0, 584, 14], at: [583, 7], done: ['plate', 583, 7, 'down'], line: 'THE COURT GATE IS SHUT: STAND ON THE PLATE ON THE LEDGE' },   /* (claude/kingsgate) the plate stands ON its ledge now, and the nudge names the verb */
   ],
   theatre: [
     { id: 'th-hatch-rope', zone: [108, 26, 140, 34], at: [130, 28], line: 'A ROPE BY THE RACKS: CLIMB IT' },
@@ -147,6 +147,7 @@ export const STUCK = {
     { id: 'sk-cloak', zone: [70, 20, 104, 34], steps: [
       { at: [97, 33], done: ['cloak', 97, 33, 'on'], line: "THE RIDER'S CLOAK HANGS ON ITS MAST" },
       { zone: [99, 28, 104, 34], when: ['cloak', 97, 33, 'on'], at: [118, 37], line: "LEDGE ONE IS IN A GLIDE'S REACH OVER THE GAP" } ] },   /* (FIX PASS: glide one) */
+    { id: 'sk-shelf-air', zone: [105, 41, 112, 45], at: [113, 44], glint: 'stall', line: 'THE RISING AIR BY THE SHELF GOES BACK UP' },   /* (claude/skyroad2: the thermal entries - after a stall) */
     { id: 'sk-stone-1', zone: [105, 30, 123, 46], steps: [
       { at: [120, 37], done: ['sunstone', 120, 37, 'on'], line: 'A SUN-STONE LIES FACE DOWN BY THE CHASM' },
       { zone: [116, 30, 123, 37], when: ['sunstone', 120, 37, 'on'], at: [131, 30], line: 'THE AIR OVER THE PINNACLE RISES NOW: GLIDE INTO IT' } ] },   /* (FIX PASS: into thermal four) */
@@ -154,12 +155,47 @@ export const STUCK = {
       { at: [139, 25], done: ['sunstone', 139, 25, 'on'], line: "THE REEL'S STONE IS FACE DOWN: THE FLUE IS COLD" },
       { mover: { sky: 'reel' }, line: 'THE CAGE COMES DOWN TO THE DECK: STEP ON IT THERE' } ] },
     { id: 'sk-glide-roost', zone: [183, 8, 190, 13], at: [202, 19], line: "ROOST ONE IS IN A GLIDE'S REACH OFF THE DECK" },   /* (FIX PASS: deck to roost one) */
+    { id: 'sk-r1', zone: [199, 14, 204, 19], at: [210, 40], glint: 'stall', line: 'THE RISING AIR OVER THE NEAR PINNACLE' },
     { id: 'sk-stone-3', zone: [216, 10, 219, 18], at: [218, 17], done: ['sunstone', 218, 17, 'on'], line: 'A SUN-STONE ON THE ROOST' },
     { id: 'sk-disc', zone: [265, 8, 298, 18], steps: [
       { at: [295, 17], glint: 'stall', done: ['sundisc', 295, 17, 'on'], line: 'THE SUN-DISC AT THE BRIDGEHEAD' },
       { zone: [288, 8, 298, 18], when: ['sundisc', 295, 17, 'on'], at: [303, 20], line: 'THE ROAD OF AIR IS LIT: THE EAST TOWER IS IN REACH' } ] },   /* (FIX PASS: the disc road) */
-    { id: 'sk-stone-4', zone: [346, 12, 353, 20], at: [352, 19], done: ['sunstone', 352, 19, 'on'], line: 'A SUN-STONE ON THE CRACKED SPAN' },
-    { id: 'sk-stone-6', zone: [360, 10, 367, 17], at: [364, 16], done: ['sunstone', 364, 16, 'on'], line: 'A SUN-STONE ON THE SECOND SPAN' },
+    { id: 'sk-stone-4', zone: [346, 12, 355, 20], steps: [
+      { zone: [346, 12, 353, 20], at: [352, 19], done: ['sunstone', 352, 19, 'on'], line: 'A SUN-STONE ON THE CRACKED SPAN' },
+      { when: ['sunstone', 352, 19, 'on'], at: [357, 40], glint: 'stall', line: 'THE AIR OVER THE NEXT PINNACLE RISES NOW' } ] },   /* (claude/skyroad2: into R5) */
+    { id: 'sk-stone-6', zone: [360, 10, 367, 17], steps: [
+      { at: [364, 16], done: ['sunstone', 364, 16, 'on'], line: 'A SUN-STONE ON THE SECOND SPAN' },
+      { when: ['sunstone', 364, 16, 'on'], at: [371, 40], glint: 'stall', line: 'THE AIR OVER THE LAST PINNACLE RISES NOW' } ] },   /* (claude/skyroad2: into R6) */
+    { id: 'sk-r3', zone: [228, 4, 233, 9], at: [242, 30], glint: 'stall', line: 'THE RISING AIR PAST THE SPIRE' },
+    { id: 'sk-r4', zone: [248, 13, 251, 18], at: [258, 30], glint: 'stall', line: 'THE RISING AIR OFF THE LAST PINNACLE' },
+    /* (claude/skyroad2, Daniel 10-08 stuck on the disc road) THE DEAD-AIR FOOTINGS (L.airOnly, tools/skyroad-stuck.mjs): a gated pinnacle, the low roost - while their air is dead the only
+       way off is down into the cloud sea, whose updraft now throws you back to the road (src/sky-road-hands.js). After a stall the sea beside it glints */
+    { id: 'sk-deadair-130', zone: [130, 51, 132, 52], at: [133, 55], glint: 'stall', done: ['vent', 131, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-225', zone: [225, 51, 227, 52], at: [228, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-302', zone: [302, 51, 304, 52], at: [306, 55], glint: 'stall', done: ['vent', 303, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-309', zone: [309, 51, 311, 52], at: [313, 55], glint: 'stall', done: ['vent', 310, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-316', zone: [316, 51, 318, 52], at: [320, 55], glint: 'stall', done: ['vent', 317, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-323', zone: [323, 51, 325, 52], at: [327, 55], glint: 'stall', done: ['vent', 324, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-356', zone: [356, 51, 358, 52], at: [360, 55], glint: 'stall', done: ['vent', 357, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-370', zone: [370, 51, 372, 52], at: [374, 55], glint: 'stall', done: ['vent', 371, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-220', zone: [220, 28, 222, 29], at: [224, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+    { id: 'sk-deadair-223', zone: [223, 42, 224, 43], at: [224, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
+  ],
+  /* THE ROOTWAY (claude/rootway): every bud the route needs, every cleat the route needs until its rope is cut, the lookout's rope (an arrow cuts it) */
+  rootway: [
+    { id: 'rw-bud-wall', zone: [20, 36, 30, 41], at: [29, 41], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-cellar-span', zone: [44, 30, 52, 37], at: [51, 37], done: ['hoist', 51, 37, 'on'], line: 'THE SPAN HANGS ON A HOIST: ITS CLEAT IS ON THE ROOT' },
+    { id: 'rw-lean-1', zone: [96, 28, 104, 34], at: [103, 34], line: 'A BUD ON THE LIP LEANS OUT OVER THE GAP' },
+    { id: 'rw-gap-span', zone: [159, 28, 172, 34], at: [171, 34], done: ['hoist', 171, 34, 'on'], line: 'THE SPAN OVER THE GAP HANGS ON A HOIST: ITS CLEAT' },
+    { id: 'rw-larder', zone: [191, 24, 206, 31], steps: [
+      { at: [201, 31], done: ['hoist', 201, 31, 'on'], line: 'THE LARDER CAGES HANG ON THEIR CLEATS' },
+      { at: [203, 31], done: ['hoist', 203, 31, 'on'], line: 'THE SECOND CAGE STILL HANGS: ITS CLEAT' },
+      { at: [205, 31], done: ['hoist', 205, 31, 'on'], line: 'THE THIRD CAGE STILL HANGS: ITS CLEAT' } ] },
+    { id: 'rw-high-cleat', zone: [225, 20, 238, 26], steps: [
+      { at: [238, 19], done: ['hoist', 238, 19, 'on'], line: 'THE CLEAT IS HIGH: GROW THE BUD UNDER IT, THEN JUMP AND STRIKE' } ] },
+    { id: 'rw-bud-hunter', zone: [256, 17, 268, 22], at: [267, 22], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-lookout', zone: [296, 12, 303, 18], at: [312, 15], glint: 'stall', done: ['hoist', 312, 15, 'on'], line: 'THE SPAN HANGS ON THE LOOKOUT\'S ROPE' },
+    { id: 'rw-lean-2', zone: [330, 12, 340, 18], at: [339, 18], line: 'A BUD ON THE LIP LEANS OUT OVER THE GAP' },
   ],
   canal: [
     { id: 'cn-board', zone: [0, 22, 50, 56], mover: { canal: true }, off: { canal: true }, line: 'THE BARGE WAITS BELOW: STEP ONTO HER DECK' },
@@ -197,6 +233,13 @@ export const STUCK_HANDS = {
     { id: 'ks-store', zone: [386, 14, 446, 25], steps: [ { key: 'storeKeg', is: ['arch.storeArch', 'whole'], at: [400, 24], line: 'A KEG CHAIN ON THE ROOF: A BLOW LIGHTS THE FIRST' } ] },
     { id: 'ks-cellar', zone: [417, 26, 430, 31], steps: [ { key: 'cellar', at: [420, 28], glint: 'stall', line: 'THE LEDGES LEAD BACK UP THROUGH THE HOLE' } ] },
     { id: 'ks-vault', zone: [562, 26, 583, 34], steps: [ { key: 'vault', is: ['vault.strongroom', 'due'], at: [575, 33], line: 'THE STRONGROOM: FIVE SEALS OPEN IT' } ] },
+  ],
+  /* THE DEEP RAILS (claude/minecart): the levers the route needs glint until they are SET (src/minecart-hands.js handsState: points.<id> open / set); the first
+     boost gap glints after a stall (a cart that keeps falling in) */
+  minecart: [
+    { id: 'mc-boost', zone: [44, 18, 70, 31], steps: [ { key: 'yardGap', at: [61, 27], glint: 'stall', line: 'A LONG GAP: HOLD RIGHT TO BOOST BEFORE THE LIP' } ] },
+    { id: 'mc-yard', zone: [112, 18, 152, 31], steps: [ { key: 'yardPts', is: ['points.yard', 'open'], at: [125, 25], line: 'THE POINTS LEVER: THE LOW LINE IS FALLEN IN' } ] },
+    { id: 'mc-cavein', zone: [524, 20, 555, 31], steps: [ { key: 'caveinPts', is: ['points.cavein', 'open'], at: [538, 26], line: 'THE POINTS LEVER UP TOP: THE LOW LINE IS GOING' } ] },
   ],
   /* THE GLASS SEA (claude/glasssea): every mirror the route needs glints until its beam does its work (src/glass-sea-hands.js handsState: bed.<id> sand/fused,
      crack.<id> held/boils, mirror.<id> its notch); the slide gap and the Sunken Head's holds glint as places (the glow marks the holds) */
@@ -325,7 +368,7 @@ export const STUCK_SIGNS = {
     { x: 321, text: 'THE BORE STONES. STAND ON ONE AND LET THE SEA GO UNDER YOU. THE SEA GATE LIFTS BEHIND IT.' },
     { x: 393, text: 'STRIKE THE SLUICE WHEEL TO DRAIN THE STREET. THE FLATS GATE LIFTS ONLY AT LOW WATER.' } ],
     add: [{ x: 385, y: 26, text: 'THE QUAY GATE LIFTS AT HIGH WATER, WHEN THE SEA BELL TURNS.' }] },
-  kings: { fix: [{ x: 570, text: 'FIRE ARCHERS LIGHT THE GRASS. THE GATE PLATE IS ON THE LEDGE, OVER THE GUARDS.' }] },
+  kings: { fix: [{ x: 570, text: 'FIRE ARCHERS LIGHT THE GRASS. STAND ON THE LEDGE PLATE: IT LIFTS THE GATE.' }] },
   theatre: { add: [
     { x: 136, y: 24, text: 'A ROPE-LOCK. STRIKE IT AND ITS SHUTTER FLIES.' },
     { x: 214, y: 15, text: 'THE FLOOR STOPS. STRIKE THE LOCK: ITS BATTEN BRIDGES THE GAP.' },

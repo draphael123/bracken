@@ -69,8 +69,8 @@ The table lives in `src/foe-react.js` (`ACTS`). A level not listed takes the act
 
 | act | levels | purse (TOKENS.cap) | common foe's blow | a mashed foe guards at cut |
 |---|---|---|---|---|
-| I THE GREENWOOD | wood, marsh, stockade, spore, burning, kings | 2 | x1.0 | 3 |
-| II THE CRAGS | scree, underleaf, hanging, spire, moor, oreroad, storm, crown, undercrown | 2 | x1.1 | 3 |
+| I THE GREENWOOD | wood, marsh, stockade, spore, burning, kings, underleaf | 2 | x1.0 | 3 |
+| II THE CRAGS | scree, hanging, spire, moor, oreroad, storm, crown, undercrown | 2 | x1.1 | 3 |
 | III THE SEA | longwater, reef, flotilla, hurricane, lamplit, deep, keep, causeway, harbor | 2 | x1.2 | 2 |
 | IV THE OLD KINGDOM | waymeet, canal, theatre, fair, fields, burial, witchlight, mage, unburied, fallingtower | 2 | x1.25 | 2 |
 | V THE DESERT | caravan, welltown, redgorge | 3 | x1.3 | 2 |

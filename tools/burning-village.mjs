@@ -87,9 +87,11 @@ const L = lv.build();
     /* without it, the only way on is DOWN: into the cellar under it and through its fire to the ladder at the far end (a floor
        the model may not stand on is a floor of spikes to it) */
     const G = L.grid.slice(); for (let x = z.x0; x <= z.x1; x++) G[z.row * L.W + x] = T.AIR;
-    assert.ok(seenAt(reach(G), [L.arena.x0 / TS - 60, S]), 'fall off it and the cellar still lets you out (C5)');
+    const far = z.x1 < L.arena.x0 / TS - 60 ? [L.arena.x0 / TS - 60, S] : [z.x1 + 3, S];   /* (claude/burnvillage2: a bridge east of that mark is asked for the street just past it) */
+    assert.ok(seenAt(reach(G), far), 'fall off it and the cellar still lets you out (C5)');
     for (const [a, b, , y1] of L.trench) for (let x = Math.max(a, z.x0 - 1); x <= b; x++) if (G[y1 * L.W + x] === T.AIR) G[y1 * L.W + x] = T.SPIKE;
-    assert.ok(!seenAt(reach(G), [L.arena.x0 / TS - 60, S]), 'and the beam is the only way across that stays out of the fire'); }
+    for (const [a, b] of L.emberPits || []) if (a <= z.x1 && b >= z.x0) for (let x = a; x <= b; x++) for (const y of [z.row, z.row + 1]) if (G[y * L.W + x] === T.AIR) G[y * L.W + x] = T.SPIKE;   /* (claude/burnvillage2) a BURNING BRIDGE on the street: its ember pit is the fire under it */
+    assert.ok(!seenAt(reach(G), far), 'and the beam at ' + z.x0 + ' is the only way across that stays out of the fire'); }
   /* THE SMOKE: a plume stands in a gap between the roofs (no slab in its column), from a cellar floor up past the roofs */
   assert.ok((L.smoke || []).length >= 3, 'smoke rises out of the cellars');
   for (const s of L.smoke) { for (let y = s.y0; y <= s.y1; y++) assert.notEqual(at(L.grid, s.x, y), T.SOLID, 'the plume at ' + s.x + ' rises through open air (row ' + y + ')');

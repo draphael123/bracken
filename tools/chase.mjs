@@ -214,7 +214,7 @@ ok(/chaseDemo\(q\.get\('hero'\)\)/.test(src) && /if \(q\.get\('chase'\) === 'dem
 ok((src.match(/chaseDemo\(/g) || []).length === 2, 'chaseDemo is called from somewhere other than the param and the BK tool');
 
 console.log('level scan', JSON.stringify(R0));
-ok(R0.n > 40, 'the level scan saw too few levels'); ok(JSON.stringify(R0.withChases) === JSON.stringify(['fallingtower', 'fair']), 'the levels with L.chases are not the ones listed (the Falling Tower spiral stair; the Harvest Fair ghost train, claude/fairfix; THE FOG CANAL\'s weir chase was removed by claude/canal4, Daniel 10-05; a new chase lane adds its level here): ' + R0.withChases.join(', '));
+ok(R0.n > 40, 'the level scan saw too few levels'); ok(JSON.stringify(R0.withChases) === JSON.stringify(['fallingtower', 'fair', 'minecart']), 'the levels with L.chases are not the ones listed (the Falling Tower spiral stair; the Harvest Fair ghost train, claude/fairfix; the Minecart road rockslide, claude/minecartmap; THE FOG CANAL\'s weir chase was removed by claude/canal4, Daniel 10-05; a new chase lane adds its level here): ' + R0.withChases.join(', '));
 for (const [id, p] of Object.entries(R0.lint)) ok(p.length === 0, id + ' fails the chase lint: ' + p.join('; '));
 ok(R0.on === false && R0.demoOn === false && R0.bj === false && !R0.chases, 'the page without ?chase= has a chase or is in playtest mode: ' + JSON.stringify(R0));
 const D = R; console.log('demo', JSON.stringify(D));

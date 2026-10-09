@@ -57,6 +57,12 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
       for (const [x0, x1, y0, y1] of (L.sandSolid || [])) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * W + x; if (g[i] === T.AIR || g[i] === T.SPIKE || g[i] === T.ONEWAY) g[i] = T.SOFT; }
       for (const [x0, x1, y0, y1] of (L.sandRungs || [])) for (const y of [...Array(Math.max(0, Math.ceil((y1 - 1 - y0) / 3))).keys()].map(k => y1 - 2 - 3 * k).filter(y => y > y0).concat(y0)) for (let x = x0; x <= x1; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }   /* (and the full sand's top: where the ride ends) */
       for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) g[y * W + m.x] = T.AIR; }
+    /* THE ROOTWAY (src/rootway.js, claude/rootway): a HOIST is one blow on its cleat (or one arrow struck back through its rope) and what it drops STAYS - a span
+       across its gap, a cage as a 2x2 step where it lands - so both count as done; THE TROPHY LOFT opens on the four tags the level lays down (tools/rootway.mjs proves
+       each required hoist is a lock). A boss cage is winched back up: not footing. The plain fill: legs only */
+    if (L.rootway) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+      for (const h of (L.hoists || [])) { if (h.boss) continue; if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+        if (h.land) for (let y = h.land[1]; y <= h.land[1] + 1; y++) for (let x = h.land[0]; x <= h.land[0] + 1; x++) g[y * W + x] = T.SOLID; } }
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
@@ -153,6 +159,9 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
      without this every tool called the far bank of a ride unreachable - and fixing that one row by hand would have been a lie.
      opts.rides only, with the other rides: the plain fill is legs and nothing else. */
   const carries = (opts.rides && !plain) ? (L.gusts || []).filter(z => z.carry > 0).map(z => ({ x0: Math.floor(z.x0 / TSZ) - 1, x1: Math.ceil(z.x1 / TSZ), y0: Math.floor(z.y0 / TSZ), y1: Math.ceil(z.y1 / TSZ), n: z.carry, dir: z.dir, alt: !!z.alt })) : [];
+  /* THE DEEP RAILS (src/minecart.js, claude/minecart): a BOOST GAP is crossed on a boosted cart (9 tiles: wider than the model's jump - tools/minecart-route.mjs --probe measures it), so a jump off its lip
+     carries five tiles further, the way a gust does (rides only: the plain fill is legs). The points are read SET, as the grid is built (every line reachable) */
+  if (opts.rides && !plain && L.minecart) for (const g of (L.mcBoost || [])) carries.push({ x0: g.x0 - 3, x1: g.x0, y0: g.row - 2, y1: g.row, n: 5, dir: 1, alt: false });
   const carryAt = (x, y) => { let l = 0, r = 0; for (const c of carries) if (x >= c.x0 && x <= c.x1 && y >= c.y0 && y <= c.y1) { if (c.dir > 0 || c.alt) r = Math.max(r, c.n); if (c.dir < 0 || c.alt) l = Math.max(l, c.n); } return [l, r]; };
   const assisted = !L.reachExact && (!!(L.moversExtra && L.moversExtra.some(m => m.kind !== 'lift' && m.kind !== 'swing' && m.kind !== 'growcap' && m.kind !== 'hexvine')) || (L.ents || []).some(e => ['mover', 'cart'].includes(e.t)) || !!(L.gusts && L.gusts.length)
     || !!L.sanctum);   /* A PORTAL IS A RIDE THE FILL CANNOT FOLLOW: the Falling Tower's gate stands past the sanctum's second door, on purpose (tools/tower-ascent.mjs). The tower read ASSISTED only because the bell loft had lifts in it; when the lifts became the Sexton's deck (2026-09-25) the bot called its gate UNREACHABLE */

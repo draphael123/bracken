@@ -68,6 +68,7 @@ export const AFFIX_AT = {
   'crown|heavy': 'UNSTOPPABLE', 'crown|hearthgob': 'BURNING', 'crown|brute#amb': 'WARDING',
   'longwater|tideguard': 'SHIELDED', 'longwater|tideguard#amb': 'SWIFT',
   'reef|tideguard': 'VENOMOUS',
+  'rootway|shield#1': 'WARDING', 'rootway|shield#2': 'SHIELDED',
   'flotilla|boarder': 'SWIFT', 'flotilla|boarder#amb': 'SHIELDED',
   'hurricane|boarder': 'SUMMONER', 'hurricane|cutlass': 'SWIFT', 'hurricane|cutlass#amb': 'WARDING',
   'lamplit|watch': 'WARDING', 'lamplit|watch#amb': 'SHIELDED',
