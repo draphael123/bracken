@@ -53,7 +53,7 @@ export function drawCoopHelp(c, page, pages) {
   g.fillStyle = 'rgba(10,14,12,0.88)'; g.fillRect(0, 0, VW, VH);
   const x = 12, y = 4, w = VW - 24, h = VH - 8; panel(x, y, w, h);
   const p = pages[page];
-  text('HOW TO PLAY CO-OP', VW / 2, y + 5, UI.title, 'center');
+  text('HOW TO PLAY CO-OP', VW / 2, y + 5, UI.title, 'center', 9);   /* 9 = TYPE.head (main.js FONT.size): the panel header in Press Start 2P */
   text(p.title, VW / 2, y + 17, '#ffd36b', 'center', 8);
   let yy = y + 31;
   for (const [tag, s] of p.lines) {

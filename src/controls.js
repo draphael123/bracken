@@ -231,7 +231,7 @@ export function drawRebind(c, rb, binds) {
   const { g, text, fitText, textW, panel, UI, VW, VH, time } = c;
   g.fillStyle = 'rgba(10,14,12,0.85)'; g.fillRect(0, 0, VW, VH);
   const x = 14, y = 2, w = VW - 28, h = VH - 4; panel(x, y, w, h);
-  text('REBIND', VW / 2, y + 4, UI.title, 'center');
+  text('REBIND', VW / 2, y + 4, UI.title, 'center', 9);   /* 9 = TYPE.head (main.js FONT.size): the panel header in Press Start 2P */
   const prof = rebindProfile(rb), conf = conflicts(binds, prof);
   /* the strip: three pages, the selected one bracketed (row -1 is the strip itself) */
   { let sx = x + 8; PROFILES.forEach((p, k) => { const on = k === rb.prof, tw = textW(p.name, 6) + 8;

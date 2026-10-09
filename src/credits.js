@@ -31,11 +31,15 @@ export const composers = credits => {
   return [...seen.values()].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 };
 /* PAGES: first the CC-BY credits in full, CCBY_PER to a page (claude/puppeteer2: a fourth would not fit on one), then the composers, ROWS to a column, two columns to a page */
+/* THE TYPE (claude/fontpair): the two faces the whole game is written in, both under the SIL Open Font License 1.1 (fonts/OFL-*.txt) */
+export const FONT_CREDITS = [['Press Start 2P', 'Cody "CodeMan38" Boisclair', 'display: titles and names'], ['Silkscreen', 'Jason Kottke', 'body: menus, signs, numbers']];
+export const FONT_LICENCE = 'SIL OFL 1.1 (OFL): scripts.sil.org/OFL';
 export const CCBY_PER = 2;
 export const CREDIT_ROWS = 8;
 export function creditPages(credits) {
   const names = composers(credits), per = CREDIT_ROWS * 2, pages = [];
   for (let i = 0; i < CC_BY.length; i += CCBY_PER) pages.push({ kind: 'ccby', items: CC_BY.slice(i, i + CCBY_PER), last: i + CCBY_PER >= CC_BY.length });
   for (let i = 0; i < names.length; i += per) pages.push({ kind: 'names', names: names.slice(i, i + per) });
+  pages.push({ kind: 'fonts' });
   return pages;
 }
