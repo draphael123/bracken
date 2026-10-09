@@ -1,0 +1,61 @@
+    KNOWN HOLE  src/bandit-king.js  (2 citations)
+      REMOVED ON PURPOSE (claude/welltown3, Daniel 10-02): THE BANDIT KING became THE GANG LEADER, a mini (src/gang-leader.js), and the Well Town boss is THE CISTERN QUEEN (src/cistern-queen.js). Only the old lane report cites it.
+      cited by: src/main.js, work/claude/lane-done/claude-welltown.md
+    KNOWN HOLE  src/bandit-king-hands.js  (1 citation)
+      REMOVED ON PURPOSE with src/bandit-king.js (claude/welltown3): his hands went with him. Only the old lane report cites it.
+      cited by: work/claude/lane-done/claude-welltown.md
+    KNOWN HOLE  tools/weighty.mjs  (3 citations)
+      RETIRED ON PURPOSE (claude/retireweighty, Daniel 10-02): Combat3 made classic hit harder than Weighty, so the Weighty mode and its check were deleted. The old lane reports (claude-ssproto, claude-combat3) still name it as history.
+      cited by: work/claude/lane-done/claude-combat3.md, work/claude/lane-done/claude-retireweighty.md, work/claude/lane-done/claude-ssproto.md
+    KNOWN HOLE  src/weighty.js  (2 citations)
+      RETIRED ON PURPOSE with tools/weighty.mjs (claude/retireweighty): the Weighty combat module is gone; claude-ssproto.md describes it as history.
+      cited by: work/claude/lane-done/claude-retireweighty.md, work/claude/lane-done/claude-ssproto.md
+    KNOWN HOLE  tools/lit-church.mjs  (3 citations)
+      NOT BUILT YET, SAID SO. docs/concepts/the-lit-church.md and its brief name the level check the church lane will write; the level is scheduled after FAIRFIX2. Delete this line when the file is committed.
+      cited by: docs/concepts/the-lit-church-brief.md, docs/concepts/the-lit-church.md, work/claude/lane-done/claude-checklist.md
+    KNOWN HOLE  .claude/briefs/desert-arc.md  (1 citation)
+      AN INSTRUCTION NOT YET CARRIED OUT, not lost design. docs/desert-arc-brief.md:5 says to copy itself here when its branch merges; the branch has not merged, and the design is readable at docs/desert-arc-brief.md meanwhile. Delete this line when the copy happens - or drop the instruction if the arc is going to keep living in docs/.
+      cited by: docs/desert-arc-brief.md
+    KNOWN HOLE  work/  (19 citations)
+      SCRATCH, AND SEVERAL OF THESE CARRY A SESSION UUID (work/a33bc100-.../). Tracked documents cite a directory no clone has. Harmless where it is an aside about how a number was got; a dead end where a reader is told to go and read it. Re-point or drop them as each document is next touched.
+      cited by: audits/animation-audit.md, audits/audio-audit.md, audits/combat-audit.md, tools/loading-screen.mjs, tools/redress-shots.mjs, work/claude/KICKOFF.md and more
+    KNOWN HOLE  audits/audio-audit.json  (1 citation)
+      GENERATED. tools/audit-audio.mjs writes it; audits/*/ and this file are tool output, kept out of git on purpose. The citation is a tool naming its own output, which is right.
+      cited by: tools/audit-audio.mjs
+    KNOWN HOLE  audits/combat/  (1 citation)
+      GENERATED. tools/audit-lib.mjs writes it; ignored by audits/*/ on purpose.
+      cited by: tools/audit-lib.mjs
+    KNOWN HOLE  src/jenny-greenteeth.js  (4 citations)
+      MOVED ON PURPOSE (claude/lanterneater, batch79): THE LANTERN-EATER replaced Jenny Greenteeth on the Fog Canal, and she is benched UNWIRED in src/benched/jenny-greenteeth.js. Live source cites the new path; only the old lane reports name the old one.
+      cited by: work/claude/lane-done/claude-canal4.md, work/claude/lane-done/claude-canalfix3.md, work/claude/lane-done/claude-jenny2.md, work/claude/lane-done/claude-lockkeeper.md
+    KNOWN HOLE  src/jenny-greenteeth-hands.js  (3 citations)
+      MOVED ON PURPOSE with src/jenny-greenteeth.js (claude/lanterneater): now src/benched/jenny-greenteeth-hands.js. Only the old lane reports cite the old path.
+      cited by: work/claude/lane-done/claude-canal4art.md, work/claude/lane-done/claude-jenny2.md, work/claude/lane-done/claude-lockkeeper.md
+    KNOWN HOLE  tools/greenteeth.mjs  (8 citations)
+      REPLACED ON PURPOSE (claude/lanterneater): tools/lantern-eater.mjs holds the Lantern-Eater to the same rules rule for rule (and says so in its header); the Jenny check was deleted with her wiring. Old lane reports and the benched files cite it as history.
+      cited by: src/benched/jenny-greenteeth-hands.js, src/benched/jenny-greenteeth.js, tools/lantern-eater.mjs, work/claude/lane-done/claude-canal4.md, work/claude/lane-done/claude-greenwire.md, work/claude/lane-done/claude-jenny2.md and more
+    KNOWN HOLE  tools/greenteeth-pilot.mjs  (4 citations)
+      RETIRED ON PURPOSE with tools/greenteeth.mjs (claude/lanterneater): Jenny's pilot; only the old lane reports cite it.
+      cited by: work/claude/lane-done/claude-greenwire.md, work/claude/lane-done/claude-jenny2.md, work/claude/lane-done/claude-jenny3.md, work/claude/lane-done/claude-lockkeeper.md
+    KNOWN HOLE  tools/greenteeth-shots.mjs  (4 citations)
+      RETIRED ON PURPOSE with tools/greenteeth.mjs (claude/lanterneater): Jenny's shots; only the old lane reports cite it.
+      cited by: work/claude/lane-done/claude-greenwire.md, work/claude/lane-done/claude-jenny2.md, work/claude/lane-done/claude-jenny3.md, work/claude/lane-done/claude-lockkeeper.md
+    KNOWN HOLE  tools/greenteeth-sheet.mjs  (1 citation)
+      RETIRED ON PURPOSE with tools/greenteeth.mjs (claude/lanterneater): Jenny's sheet; only claude-jenny2.md cites it.
+      cited by: work/claude/lane-done/claude-jenny2.md
+    KNOWN HOLE  tools/canal4art-jenny-shots.mjs  (1 citation)
+      RETIRED ON PURPOSE (claude/lanterneater): Jenny's art shots tool; only claude-canal4art.md cites it.
+      cited by: work/claude/lane-done/claude-canal4art.md
+    KNOWN HOLE  src/tower-return.js  (1 citation)
+      STALE CITATION - docs/audit-new-levels-0920.md:47 names a module that is in no commit. Correct the reference or say what replaced it; do not create the file to satisfy the check.
+      cited by: docs/audit-new-levels-0920.md
+    KNOWN HOLE  docs/audit/ranking-2026-09-24.md  (4 citations)
+      ON A BRANCH, SAID SO. docs/INTEGRATOR.md cites the ranking and says it is on claude/audit, which has not merged. Delete this line when it does.
+      cited by: docs/INTEGRATOR.md, work/claude/lane-done/claude-desert1.md, work/claude/lane-done/claude-hanging2.md, work/claude/lane-done/claude-spurs.md
+    KNOWN HOLE  docs/level-design/  (16 citations)
+      ON A BRANCH, SAID SO. The whole directory (and its wood-to-highcrown-design.md, the design audit) lives on origin/claude/designaudit, which has not merged; claude/hanging2 was briefed to read it there (`git show origin/claude/designaudit:docs/level-design/wood-to-highcrown-design.md`). Delete this line once that branch merges.
+      cited by: tools/crown-exam.mjs, tools/hanging-exam.mjs, tools/kings2-beats.mjs, tools/wood2-beats.mjs, work/claude/lane-done/claude-crown2.md, work/claude/lane-done/claude-foeposes.md and more
+    KNOWN HOLE  docs/visual-audit/  (11 citations)
+      ON A BRANCH, SAID SO. lanes.md and foes.md (the sprite-camo + missing-hurt-pose cluster this brief was cut from) live on origin/claude/visualaudit, which has not merged; claude/foeposes was briefed to read them there (`git show origin/claude/visualaudit:docs/visual-audit/foes.md`). Delete this line once that branch merges.
+      cited by: src/contrast-rim.js, src/redraw/sea_wildlife.js, work/claude/lane-done/claude-foeposes.md, work/claude/lane-done/claude-shopart.md
+ok  dangling-paths 4586 tracked files, every repo path they cite resolves in a fresh clone (20 known holes listed above, forgiven on purpose).

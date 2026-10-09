@@ -1,0 +1,7 @@
+79 hint messages read out of src/main.js
+  scope hints             79 screens  1.8s
+  scope menu              18 screens  3.5s
+  scope hud               30 screens  5.2s
+
+127 screens drawn, 824 strings measured, 10s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-hudslim\audits\readability\textfit

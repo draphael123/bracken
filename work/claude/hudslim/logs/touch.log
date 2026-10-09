@@ -1,0 +1,4 @@
+  title items: CONTINUE, CHOOSE A SAVE, LOCAL CO-OP, PRACTICE, SETTINGS, SOUND TEST, CONTROLS, CREDITS
+  frame (update+draw) in the Wood, lighter effects 5.08 ms, particles MANY + full parallax 5.51 ms; the touch overlay 0.004 ms a frame
+FAIL press-card: Input.dispatchTouchEvent did not answer within 15000ms
+FAIL the shell was not cached: ["bracken-shell-v2"]

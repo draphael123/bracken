@@ -611,11 +611,12 @@ try {
     await nav('&sw=1&a=1', 'controlled load');
     ok(await E('!!navigator.serviceWorker.controller'), 'the page is not controlled by the service worker');
     const cached = await E('caches.keys().then(async ks => { const out = {}; for (const k of ks) out[k] = (await (await caches.open(k)).keys()).map(r => new URL(r.url).pathname); return out; })');
-    ok(cached['bracken-shell-v1'] && cached['bracken-shell-v1'].includes('/index.html') && cached['bracken-shell-v1'].some(p => p.endsWith('/src/main.js')), 'the shell was not cached: ' + JSON.stringify(Object.keys(cached)));
-    ok(!(cached['bracken-shell-v1'] || []).some(p => /\.(ogg|mp3|wav)$/.test(p)), 'audio was cached');
-    say('cached ' + (cached['bracken-shell-v1'] || []).length + ' files');
+    const shellKey = Object.keys(cached).find(k => /^bracken-shell-v\d+$/.test(k));   /* (the cache is named by sw.js VERSION: v2 since the font pair; the test follows the name, it checks the same files) */
+    ok(shellKey && cached[shellKey].includes('/index.html') && cached[shellKey].some(p => p.endsWith('/src/main.js')), 'the shell was not cached: ' + JSON.stringify(Object.keys(cached)));
+    ok(!(cached[shellKey] || []).some(p => /\.(ogg|mp3|wav)$/.test(p)), 'audio was cached');
+    say('cached ' + (cached[shellKey] || []).length + ' files');
     // NETWORK FIRST: poison the cached copy of a script; an online load must still run the real one
-    await E('caches.open("bracken-shell-v1").then(c => c.put("/src/touch-interact.js", new Response("throw new Error(\\"STALE\\");", { headers: { "content-type": "text/javascript" } })))');
+    await E('caches.open("' + shellKey + '").then(c => c.put("/src/touch-interact.js", new Response("throw new Error(\\"STALE\\");", { headers: { "content-type": "text/javascript" } })))');
     ok(await nav('&sw=1&b=1', 'load with a poisoned cache'), 'a stale cached script beat the network: the deploy would never reach a player (the worker must be network first)');
     // OFFLINE: reload with no network and the game still comes up from the shell
     await pg.send('Network.enable'); await pg.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });

@@ -1,0 +1,15 @@
+tf2 0
+fonts 0
+signs 0
+hint-shown 0
+modulepreload 0
+dangling-paths 0
+ui-hud 0
+settings-tabs 0
+touch 1
+uiscreens 0
+death-screen 0
+godmode 0
+readability 0
+zoom-coverage 0
+ALLDONE

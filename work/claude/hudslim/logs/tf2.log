@@ -1,0 +1,10 @@
+79 hint messages read out of src/main.js
+  scope death              7 screens  2.4s
+  scope results            1 screens  3.1s
+  scope card              59 screens  5.9s
+  scope bossjump          63 screens  8.5s
+  scope bossfix          225 screens  24.8s
+  scope plates          1272 screens  170.9s
+
+1627 screens drawn, 5695 strings measured, 195s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-hudslim\audits\readability\textfit

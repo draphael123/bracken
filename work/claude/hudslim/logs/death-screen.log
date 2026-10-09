@@ -1,0 +1,6 @@
+ok  rules          the tell for red, yellow, piercing, a pit and the unknown
+ok  timing         the death lasts 1.20 s, 124 frames to the respawn
+ok  content        YOU FELL / BANDIT BOWMAN   THE SHIELD CHARGE / the red tell / the cost
+ok  tells          yellow -> the shield, piercing -> a parry, a pit -> mind the edge
+ok  recap          "FELLED BY ..." after the respawn, gone after ~3 s
+ok  console        no page errors

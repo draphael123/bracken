@@ -1,0 +1,16 @@
+wrote hud-welltown
+welltown []
+wrote hud-redgorge
+redgorge []
+wrote hud-wood
+wood []
+wrote hud-reef
+reef []
+wrote hud-canal
+canal []
+wrote hud-theatre
+theatre []
+wrote boss-bar
+wrote boss-pct
+wrote boss-num
+SET.hud= minimal bossHp= num

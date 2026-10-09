@@ -1,0 +1,11 @@
+wrote hud-welltown
+wrote hud-redgorge
+wrote hud-wood
+wrote hud-reef
+wrote hud-canal
+wrote hud-theatre
+wrote boss-bar
+wrote boss-pct
+wrote boss-num
+wrote boss-both
+SET.hud= full bossHp= both

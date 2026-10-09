@@ -299,7 +299,7 @@ export function makeGlassSeaHands(ctx) {
     for (const e of ctx.enemies()) if (e.alive && e.t === 'skitter' && e.x > cx - 20 && e.x < cx + vw + 20) GSA.drawSkitterEyes && GSA.drawSkitterEyes(g, Math.round(e.x - cx), Math.round(e.y - cy), e.face || 1, time, e.x);
   };
   /* THE HUD: by night THE FROST METER stands where the sun meter does (main.js drawCaravanHud asks first); true = drawn (the sun meter is not) */
-  H.drawHud = (g, P) => { if (!GSx || !night(P.x)) return false; const cs = P.gsCold || { v: 0 }; GSA.drawFrostMeter(g, 22, 50, cs.v, cs.warm, ctx.time(), (cs.v >= 1 ? Math.min(3, (cs.n || 0) + 1) : 0)); if (cs.warm) ctx.text('FIRELIGHT', 44, 59, '#ffd36b', 'center', 6); return true; };
+  H.drawHud = (g, P) => { if (!GSx || !night(P.x)) return false; const cs = P.gsCold || { v: 0 }; g.fillStyle = 'rgba(10,8,20,0.55)'; g.fillRect(2, 47, 98, 15); GSA.drawFrostMeter(g, 22, 52, cs.v, cs.warm, ctx.time(), (cs.v >= 1 ? Math.min(3, (cs.n || 0) + 1) : 0)); if (cs.warm) ctx.text('FIRELIGHT', 44, 61, '#ffd36b', 'center', 6); return true; };
   H.read = () => GSx && { n: { ...GSx.n }, mirrors: GSx.mirrors.map(m => ({ id: m.id, state: m.state })), beds: GSx.beds.map(b => ({ id: b.id, k: +b.k.toFixed(2), hit: b.hit })),
     cracks: GSx.cracks.map(c => ({ id: c.id, held: c.held, boiling: !!c.boiling })), glint: GSx.glint && GSx.glint.key, lastNudge: GSx.lastNudge || null, lastFall: GSx.lastFall || null, cold: ctx.hero() && ctx.hero().gsCold ? +ctx.hero().gsCold.v.toFixed(2) : 0 };
   return H;
