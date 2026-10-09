@@ -23,8 +23,8 @@ const split = k => { const [who, blow] = String(k.name || 'A TRAP').split('   ')
 export function drawDeathCard(g, text, fit, UI, o) {   // o: { k, cost: [[str, col]...], a (0..1), VW, VH, colorSafe }
   const { k, VW, VH } = o, { who, blow } = split(k), tell = tellOf(k, o.colorSafe), cost = o.cost && o.cost.length ? o.cost : [['NOTHING DROPPED', '#c9d1dc']];
   const w = Math.min(VW - 20, 264), x = Math.round((VW - w) / 2), h = 50 + (tell ? 11 : 0) + cost.length * 9 + (blow ? 9 : 0), y = Math.round((VH - h) / 2) - 4;
-  g.globalAlpha = o.a; g.fillStyle = 'rgba(24,8,12,0.94)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-  g.strokeStyle = 'rgba(255,255,255,0.10)'; g.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
+  g.globalAlpha = o.a;
+  if (o.board) o.board(x, y, w, h); else { g.fillStyle = 'rgba(24,8,12,0.94)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); }   /* (main.js hands in the iron plate; the bare card is for a caller with none) */
   let ty = y + 6; text('YOU FELL', VW / 2, ty, '#ff6b6b', 'center', 12); ty += 17;
   text(fit(who, w - 16, 8), VW / 2, ty, '#fff6e0', 'center', 8); ty += 11;
   if (blow) { text(fit(blow, w - 16, 6), VW / 2, ty, tell ? tell.col : '#c9d1dc', 'center', 6); ty += 9; }

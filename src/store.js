@@ -58,14 +58,14 @@ export const refusal = ({ fight }) => fight ? STORE_REFUSAL : null;
 
 /* WHERE COINS MAY BE SPENT. 'map' and 'shop' always; 'wood' only at a lit shrine with no fight (the rule the skills loadout has always had) */
 export const mayBuy = ({ where, fight, atShrine }) => where === 'map' || where === 'shop' ? true : !fight && !!atShrine;
-export const BUY_HINT = 'VIEW ONLY: BUY AT A SHRINE, THE MAP OR A SHOP';
+export const BUY_HINT = 'VIEW ONLY: BUY AT A SHRINE, MAP OR SHOP';
 /* the footer of each page (drawn fitted): where buying is allowed, and where it is not */
 export const STORE_HELP = {
-  buy: 'LEFT/RIGHT: TABS   Z BUY OR EQUIP   ESC BACK',
-  look: 'Z EQUIP   BUY AT A SHRINE, THE MAP OR A SHOP',
-  skills: 'TAB/Q TABS  L/R LIST  Z BUY  F/G SLOT  X MORE',
+  buy: 'L/R tabs  Z buy  ESC back',
+  look: 'Z equip  buy at a shrine, map or shop',
+  skills: 'TAB/Q tabs  L/R list  Z buy  F/G slot  X more',
   skillsLook: BUY_HINT,
-  passives: 'PASSIVES COME WITH LEVELS  TAB/Q: TABS',
+  passives: 'PASSIVES COME WITH LEVELS',
 };
 
 /* WHAT HOLDS AN ITEM BACK. One place for the three locks a stock line can carry:

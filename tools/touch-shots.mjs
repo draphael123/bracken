@@ -23,7 +23,7 @@ try {
   const toPlay = async () => { await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.state = 'play'; BK.manualSimulation = true; BK.sim(150); BK.step(2); })()`); };
   await goto();
   await sleep(1500); await shot('title');
-  const items = await E('BK.ui.titleItems()'); await tapGame(items.indexOf('SETTINGS')); await sleep(400);
+  const items = await E('BK.ui.titleItems()'); await tapGame(items.indexOf('OPTIONS')); await sleep(400); const sub = await E('BK.ui.titleItems()'); await tapGame(sub.indexOf('SETTINGS')); await sleep(400);
   await tapGame(5); await sleep(300); await shot('settings-touch-tab');
   const rows = await E('BK.ui.menuRows()'); const rb = n => 6 + rows.filter(r => r[0] !== '-' && r !== '@TABS' && r !== 'Back').indexOf(n);
   await tapGame(rb('Edit layout')); await sleep(400); await shot('edit-layout');

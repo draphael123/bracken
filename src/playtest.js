@@ -471,7 +471,7 @@ async function sweepScreens(BK, inst, F) {
         for (let i = 0; i < U.treeRows(); i += 3) faces.push(() => { U.storeTab = U.skillsTab; U.treeI = i; }); }
       else if (st === 'bestiary') { for (const tb of [0, 1]) for (let i = 0; i < 40; i += 7) faces.push(() => { U.bestTab = tb; U.bestI = Math.min(i, Math.max(0, U.beasts() - 1)); }); }
       else if (st === 'practice') { for (let i = 0; i < 6; i++) faces.push(() => { U.practiceI = i; }); }
-      else if (st === 'title') { for (let i = 0; i < 7; i++) faces.push(() => { U.titleI = i; }); }
+      else if (st === 'title') { for (let i = 0; i < 6; i++) faces.push(() => { U.titleOpts = false; U.titleI = i; }); }
       else if (st === 'menu') { for (let i = 0; i < 26; i += 4) faces.push(() => { U.menuI = Math.min(i, Math.max(0, U.menuCount() - 1)); }); }
       for (const set of faces) {
         try { set(); inst.clearTexts(); BK.step(1); }
