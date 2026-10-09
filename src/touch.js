@@ -36,7 +36,7 @@ export const TOUCH_TIPS = {
   'Frame rate': '30 halves the drawing work on a slow phone (the game still plays at full speed)',
 };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const FONT = '"Press Start 2P", monospace';
+const FONT = '"Silkscreen", "Press Start 2P"';   /* the body face of the strict pair (main.js FONT) */
 /* states where a tap anywhere means "go on" (a card, a line of talk, a result): there is nothing to aim at */
 const TAP_ANY = new Set(['talk', 'intro', 'win', 'victory', 'gameover', 'rushover', 'rushwin', 'credits', 'coophelp', 'herocard']);
 /* states where a held stick direction repeats like a held key (the lists that do not repeat themselves) */

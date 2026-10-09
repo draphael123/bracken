@@ -69,7 +69,7 @@ export function drawKeys(g, cx, cy, VW, VH, L, F, time) {
 /* a ticket plate over a gate: the price (or ALL), green once paid */
 function plate(g, x, y, s, open, time) {
   const w = 8 + s.length * 5; r(g, x - w / 2, y - 6, w, 10, open ? '#3a6a3a' : '#ece0c4'); r(g, x - w / 2, y - 6, 3, 10, open ? '#5aa860' : K.teal);
-  g.fillStyle = open ? '#dff7c8' : K.ink; g.font = '7px monospace'; g.textAlign = 'center'; g.fillText(s, x + 1, y + 2); g.textAlign = 'left';
+  g.fillStyle = open ? '#dff7c8' : K.ink; g.font = '8px "Silkscreen", "Press Start 2P"'; g.textAlign = 'center'; g.fillText(s, x + 1, y + 2); g.textAlign = 'left';
 }
 
 /* THE DOOR IN THE GLASS: a pale door, shimmering, with the prompt over it */

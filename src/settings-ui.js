@@ -24,7 +24,7 @@ export const TABS = [
 export const TAB_ITEMS = {
   audio: ['Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices'],
   display: ['- PICTURE -', 'Graphics', 'Full screen', 'Pixel scale', 'Camera', 'Brightness', 'Screen filter', 'Scanlines', 'Film grain', 'Vignette',
-    '- LOOK -', 'UI colour', 'Font', 'Text colour', 'HUD', 'Gear tiers', 'Foe health', 'Boss health', 'Hit numbers', 'Tenths', 'FPS counter',
+    '- LOOK -', 'UI colour', 'Text colour', 'HUD', 'Gear tiers', 'Foe health', 'Boss health', 'Hit numbers', 'Tenths', 'FPS counter',
     '- WORLD -', 'Ground light', 'The air', 'Parallax', 'Arena tint', 'Weather', 'Ambient life', 'Look down',
     '- EFFECTS -', 'Particles', 'Impact FX', 'Boss intro'],
   gameplay: ['- RULES -', 'Difficulty', 'Game speed', 'Hit stop', 'Iron Knight',
@@ -40,7 +40,7 @@ export const TAB_ITEMS = {
    (a saved value is keyed by the SET field behind the name, which the tabs never touch). */
 export const LEGACY_ROWS = ['Difficulty', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble',
   'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices',
-  'Full screen', 'Font', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness',
+  'Full screen', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness',
   'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes',
   'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', 'Export save', 'Import save', 'Erase this save',
   'Unlock everything', 'God mode', 'Hitboxes'];

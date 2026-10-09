@@ -63,7 +63,7 @@ import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
 import {bakeBellcrab,bakeBellguard,bakeBellcrabOut,bakeBellShell,BELL,BELL_OUT_F,bellOutFrame} from './bellcrab.js';
 import * as DH from './deep-holds.js';
-import { creditPages, CC_BY } from './credits.js';   /* THE MUSIC CREDITS page: every outside composer, the CC-BY tracks with their licence */
+import { creditPages, CC_BY, FONT_CREDITS, FONT_LICENCE } from './credits.js';   /* THE MUSIC CREDITS page: every outside composer, the CC-BY tracks with their licence */
 import { lanceSupport, LANCE_SUPPORT, gateHas, gateCatch, gateStep, drawLanceGate } from './lance-support.js';   /* THE QUEEN'S BOWS: the archers he calls to the end lookouts (docs/briefs/lance-support.md) */
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import {fallBounds} from './waterfalls.js';
@@ -246,7 +246,7 @@ addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); res
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
-const SET = { font: 'press', ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
+const SET = { ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'full', filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
 const TIER = { church: 2.0, rootway: 0.52, minecart: 1.2, skyroad: 1.12, welltown: 2.45, redgorge: 2.5, glasssea: 2.55, ksar: 2.6, towpath: 1.9, caravan: 2.4, unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75, underwell: 2.47 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
@@ -1957,7 +1957,7 @@ function drawPauseMap() {
   g.fillStyle = 'rgba(10,14,12,0.85)'; g.fillRect(0, 0, VW, VH);
   panel(x, y, w, h);
   g.fillStyle = 'rgba(12,10,18,0.92)'; g.fillRect(x + 4, y + 3, w - 8, 12);
-  text('MAP', x + 10, y + 5, UI.title); text(fitText(LEVELS[levelIndex].name, w - 70, 8), x + w - 10, y + 5, UI.dim, 'right');
+  text('MAP', x + 10, y + 5, UI.title, 'left', TYPE.head); text(fitText(LEVELS[levelIndex].name, w - 70, 8), x + w - 10, y + 5, UI.dim, 'right');
   const px0 = Math.round(mapPX), py0 = Math.round(mapPY);
   g.fillStyle = '#0a0810'; g.fillRect(G.ax - 1, G.ay - 1, G.aw + 2, G.ah + 2);
   g.drawImage(mapBase, px0, py0, vw, vh, ox, oy, vw * s, vh * s);
@@ -5091,7 +5091,7 @@ function drawStore() {
   if (storeBack === 'map') { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); } else { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); }
   const x = 3, y = 2, w = VW - 6, h = VH - 4;
   panel(x, y, w, h);
-  text('THE STORE', x + 8, y + 4, UI.title);
+  text('THE STORE', x + 8, y + 4, UI.title, 'left', TYPE.head);
   { const gold = String(PROG.coins), silv = String(silverAvail());
     const gx = x + w - 10 - textW(gold, 8), sx0 = gx - 22 - textW(silv, 8);
     if (storeKeyLast !== storeTab + ':' + storeI) { storeKeyLast = storeTab + ':' + storeI; storePage = 0; }
@@ -5473,7 +5473,7 @@ const slotLevel = p => { const h = p.hero || 'knight', x = p.xp && p.xp[h]; retu
 const slotRect = i => ({ x: 2, y: 14 + i * 30, w: 316, h: 28 });
 function drawSlots() {
   g.fillStyle = 'rgba(10,6,20,0.55)'; g.fillRect(0, 0, VW, VH);
-  text('CHOOSE A SAVE', VW / 2, 2, UI.title, 'center');
+  text('CHOOSE A SAVE', VW / 2, 2, UI.title, 'center', TYPE.head);
   const levels = LEVELS.filter(l => !l.hidden).length;
   for (let i = 0; i < SLOTS; i++) {
     const p = readSlot(i), { x, y, w, h } = slotRect(i), sel = i === slotI;
@@ -5509,7 +5509,7 @@ function drawSlots() {
 }
 function drawBestiary() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.6)'); vg.addColorStop(1, 'rgba(10,20,14,0.9)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
-  text('BESTIARY', VW / 2, 4, UI.title, 'center');
+  text('BESTIARY', VW / 2, 4, UI.title, 'center', TYPE.head);
   text((bestTab === 0 ? '>' : ' ') + 'FOES', 8, 16, bestTab === 0 ? '#8fd160' : '#6a7a6a', 'left', 6); text((bestTab === 1 ? '>' : ' ') + 'BOSSES', 50, 16, bestTab === 1 ? '#8fd160' : '#6a7a6a', 'left', 6);
   const list = beastList(), lx = 8, ly = 30, ROWS = 11, off = Math.max(0, Math.min(list.length - ROWS, bestI - ROWS + 2));
   const LW2 = 96; // the width the names have before the card starts: anything longer is drawn small, and then loses its THE
@@ -5576,7 +5576,7 @@ const SETTING_TIPS = {
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts, shouts and cries from heroes and foes',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'full, or just the bars',
-  'Ground light': 'depth, carved edges and a sun on the ground', 'The air': 'haze, drifting motes and things in the way', 'Font': 'the face everything is written in', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds', 'Hitboxes': 'draw the boxes the game actually tests: what you hit with, what hits you',
+  'Ground light': 'depth, carved edges and a sun on the ground', 'The air': 'haze, drifting motes and things in the way', 'Text colour': 'the ink of the words', 'UI colour': 'the frames, plates and highlights', 'Big text': 'larger talk and menu text', 'Colour tells': 'shapes as well as colour on wind-ups', 'FPS counter': 'frames and milliseconds', 'Hitboxes': 'draw the boxes the game actually tests: what you hit with, what hits you',
   'Brightness': 'lifts or drops the whole picture', 'Screen filter': 'a colour grade over everything', 'Film grain': 'a faint moving grain, like old tape',
   'Parallax': 'how many background layers move', 'Arena tint': 'the colour wash over boss rooms', 'Particles': 'how much comes off a hit',
   'Foe outline': 'a bright rim on foes, easier to pick out', 'Gear tiers': 'the cape, crest and glow a hero earns by level: yours and co-op', 'Boss intro': 'the letterbox and the name card', 'Foe health': 'bars over hurt foes', 'Boss health': 'the boss bar: just the bar, or with a percentage, numbers or both',
@@ -5615,7 +5615,6 @@ function menuAdjust(dir) {
   else if (k === 'Shake strength') { const i = SHAKES.indexOf(SET.shakeAmt); SET.shakeAmt = SHAKES[(i < 0 ? 1 : i + dir + SHAKES.length) % SHAKES.length]; }
   else if (k === 'Ground light') SET.groundLight = SET.groundLight === false;
   else if (k === 'The air') SET.air = SET.air === false;
-  else if (k === 'Font') { const i = Math.max(0, FONTS.findIndex(f => f.id === SET.font)); SET.font = FONTS[(i + dir + FONTS.length) % FONTS.length].id; }
   else if (k === 'Text colour') { const i = Math.max(0, INKS.findIndex(f => f.id === SET.ink)); SET.ink = INKS[(i + dir + INKS.length) % INKS.length].id; applyLook(); }
   else if (k === 'UI colour') { const i = Math.max(0, UI_THEMES.findIndex(f => f.id === SET.uiTheme)); SET.uiTheme = UI_THEMES[(i + dir + UI_THEMES.length) % UI_THEMES.length].id; applyLook(); }
   else if (k === 'HUD') SET.hud = SET.hud === 'full' ? 'minimal' : 'full'; else if (k === 'Screen filter') SET.filter = FILTERS[(FILTERS.indexOf(SET.filter) + dir + FILTERS.length) % FILTERS.length]; else if (k === 'Foe health') SET.foeBars = !SET.foeBars; else if (k === 'Boss health') SET.bossHp = BOSSHP_MODES[(Math.max(0, BOSSHP_MODES.indexOf(SET.bossHp)) + dir + BOSSHP_MODES.length) % BOSSHP_MODES.length]; else if (k === 'Look down') SET.lookDown = !SET.lookDown; else if (k === 'Boss intro') SET.bossIntro = !SET.bossIntro; else if (k === 'Rumble') SET.rumble = !SET.rumble; else if (k === 'Tenths') SET.tenths = !SET.tenths;
@@ -9742,7 +9741,7 @@ function updateBossJump() {
 function drawBossJump() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 16, y = 6, w = VW - 32, h = VH - 12; panel(x, y, w, h);
-  text('BOSS JUMP  (PLAYTEST)', VW / 2, y + 6, UI.title, 'center');
+  text('BOSS JUMP  (PLAYTEST)', VW / 2, y + 6, UI.title, 'center', TYPE.head);
   if (!bjTable) { text('LISTING THE BOSSES', VW / 2, VH / 2, UI.dim, 'center'); return; }
   const n = bjTable.length, start = Math.max(0, Math.min(n - BJ_ROWS, bjI - (BJ_ROWS >> 1)));
   for (let i = start; i < Math.min(n, start + BJ_ROWS); i++) { const r = bjTable[i], cy0 = y + 20 + (i - start) * 11, sel = i === bjI;
@@ -26907,10 +26906,17 @@ function update(dt) {
 // ---------- render ----------
 // THE LOOK: three faces to read in, a colour for the ink, and a colour for the frames and the
 // highlights. All of it is one setting each, and every menu, plate and talk box follows.
-/* (TERMINAL is retired: VT323 has one-pixel strokes on a sixteen-pixel em and nothing at this scale draws it without a
-   smear. A save that chose it reads in PIXEL, which is what fontNow() gives any id it does not know.) */
-const FONTS = [{ id: 'press', name: 'PIXEL', fam: '"Press Start 2P", monospace', sc: 1 },
-  { id: 'silk', name: 'SILKSCREEN', fam: '"Silkscreen", "Press Start 2P", monospace', sc: 1 }];
+/* THE STRICT FONT PAIR (Daniel 10-09). Two faces and nothing else, both local files in fonts/ (SIL OFL, see fonts/OFL-*.txt and the credits):
+     DISPLAY  Press Start 2P  titles, level and boss names, big headers - ALL CAPS, size 16 and up (x2 and x3 of its eight-pixel cell)
+     BODY     Silkscreen      menu rows, signs, hints, labels, the HUD numbers and the timer - size 15 and under (x1 of 8, x2 for numbers)
+   The size LADDER lives in FONT.size; the face a size is drawn in is decided by FONT.displayFrom alone. No system monospace, no third bitmap face
+   (the old 5x5 "small hand" is gone: Silkscreen is that hand, drawn from a real font). There is no Font setting any more: a pair is not a preference. */
+const FONTS = [{ id: "display", name: "PRESS START 2P", fam: '"Press Start 2P"', dx: -1, dy: -1, ih: 8 },
+  { id: "body", name: "SILKSCREEN", fam: '"Silkscreen"', dx: -2, dy: -3, ih: 5 }];
+const FONT = { display: FONTS[0], body: FONTS[1], displayFrom: 16,
+  size: { hint: 8, body: 8, row: 8, label: 8, head: 9, num: 12, title: 16, big: 16, logo: 24 } };   /* the ladder: 8 (body x1), 9 (display x1: Press Start at its own cell, the panel header), 12 (body x2: HUD numbers, timer), 16 (display x2), 24 (display x3) */
+/* Silkscreen has no arrows or dingbats: those few characters (and only those) are cut from Press Start 2P, which has them */
+const SILK_HAS = c => c < 0x7f ? c >= 0x20 : (c >= 0xa0 && c <= 0xff) || c === 0x152 || c === 0x153 || c === 0x2014 || c === 0x2013 || c === 0x2026 || c === 0x2018 || c === 0x2019 || c === 0x201c || c === 0x201d || c === 0x2022 || c === 0x20ac || c === 0x2122;
 const INKS = [{ id: 'parchment', name: 'PARCHMENT', c: '#fff6e0' }, { id: 'white', name: 'WHITE', c: '#ffffff' }, { id: 'amber', name: 'AMBER', c: '#ffd36b' },
   { id: 'green', name: 'GREEN', c: '#b8f0a0' }, { id: 'cyan', name: 'CYAN', c: '#bfe6f5' }, { id: 'rose', name: 'ROSE', c: '#ffc0d0' }];
 // each theme: the body, the heading, the quiet text, the frame, the highlight, gold, silver, and the plate behind it all
@@ -26921,7 +26927,6 @@ const UI_THEMES = [
   { id: 'tide', name: 'TIDE', text: '#d8f0f0', title: '#f0ffff', dim: '#8aa8b0', border: '#4aa0a8', sel: '#7cc8c8', gold: '#ffd36b', silver: '#dfe8ff', plate: 'rgba(10,26,32,0.92)' },
   { id: 'moss', name: 'MOSS', text: '#e0f0d0', title: '#f4ffe8', dim: '#94a888', border: '#8fb05a', sel: '#8fd160', gold: '#ffd34a', silver: '#dfe8ff', plate: 'rgba(14,24,16,0.92)' },
   { id: 'plain', name: 'PLAIN', text: '#ffffff', title: '#ffffff', dim: '#d0d0d0', border: '#ffffff', sel: '#ffee40', gold: '#ffee40', silver: '#ffffff', plate: 'rgba(0,0,0,0.94)' }];
-const fontNow = () => FONTS.find(f => f.id === SET.font) || FONTS[0];
 const inkNow = () => (INKS.find(i => i.id === SET.ink) || INKS[0]).c;
 const themeNow = () => UI_THEMES.find(t => t.id === SET.uiTheme) || UI_THEMES[0];
 function applyLook() { const t = themeNow(); for (const k of ['text', 'title', 'dim', 'border', 'sel', 'gold', 'silver']) UI[k] = t[k]; UI.plate = t.plate;
@@ -26942,24 +26947,21 @@ function spk(x, y, col) {   // a speaker with a bar through it: eight pixels tha
 }
 
 // ONE TYPE SYSTEM, AND ALL OF IT ON THE PIXEL GRID. The canvas draws every font it is handed anti-aliased: measured,
-// eight pixels of Press Start 2P came out 85% half-lit pixels and six of it 91%, and lower case at six pixels was
-// a grey smear. So no string reaches the screen through fillText any more. There are two faces, both baked white
-// once and tinted per colour: THE SMALL HAND (ART.TINY, 5px caps with lower case and descenders, a 6px advance)
-// and THE EIGHT (Press Start 2P or Silkscreen, rendered at 8px once per character, snapped to whole pixels by a
-// threshold at the offset that lands the face on the grid). Bigger text is one of them at a whole multiple.
+// eight pixels of Press Start 2P came out 85% half-lit pixels, so no string reaches the screen through fillText. There are exactly
+// two faces (FONT above), both rendered at 8px once per character and snapped to whole pixels by a threshold at the offset that
+// lands the face on the grid, then tinted per colour. Bigger text is one of them at a whole multiple.
 // Every string is drawn at a whole-pixel position with a dark shadow (on a plate) or a full outline (over the world).
-/* THE TYPE TABLE: a size for each job. Anything not in it snaps to the nearest face:
-     up to 7  the small hand x1     8 to 11  the eight x1     12 to 15  the small hand x2     16 to 23  the eight x2     24 up  the eight x3 */
-const TYPE = { title: 12, head: 8, body: 6, label: 6, hint: 6, popup: 8, big: 16, logo: 24 };
-const BODY_LH = 8;   /* a line of the small hand: 7 rows of glyph and one of air */
-let TINYF = null;
-const tinyOK = (s2, size) => size <= 7;   /* the small hand takes every string at this size now, in either case */
-const faceOf = size => size <= 7 ? { f: 'small', k: 1 } : size < 12 ? { f: 'eight', k: 1 } : size < 16 ? { f: 'small', k: 2 } : size < 24 ? { f: 'eight', k: 2 } : { f: 'eight', k: 3 };
-const EIGHT = new Map();   /* font id -> { ready, dx, dy, glyphs: Map(ch -> { c, adv }) } */
-function eightFace() {
-  const fnt = fontNow(); let F = EIGHT.get(fnt.id); if (F) return F;
-  const fam = fnt.fam.split(',')[0].trim(), ready = !document.fonts || document.fonts.check('8px ' + fam);
-  if (!ready) return { ready: false };
+/* THE TYPE TABLE: a size for each job (it is FONT.size, kept under its old name so call sites do not move). Anything not in it snaps to the nearest face:
+     8 to 11 Silkscreen x1 (9 alone: Press Start 2P x1, the panel header)     12 to 15  Silkscreen x2     16 to 23  Press Start 2P x2     24 up  Press Start 2P x3 */
+const TYPE = { title: FONT.size.title, head: FONT.size.head, body: FONT.size.body, label: FONT.size.label, hint: FONT.size.hint, popup: FONT.size.body, big: FONT.size.big, logo: FONT.size.logo, num: FONT.size.num };
+const BODY_LH = 8;   /* a line of body text: 5 rows of cap, 2 of descender-room and one of air */
+/* off: body text asked for at 8 to 11 sits one row lower (rows 1-5) so its five rows of cap centre where the old seven-row Press Start line did; asked for at 7 or less it keeps rows 0-4 */
+const faceOf = size => size === 9 ? { f: FONT.display, k: 1, off: 0 } : size < 12 ? { f: FONT.body, k: 1, off: size >= 8 ? 1 : 0 } : size < FONT.displayFrom ? { f: FONT.body, k: 2, off: 0 } : size < 24 ? { f: FONT.display, k: 2, off: 0 } : { f: FONT.display, k: 3, off: 0 };
+const EIGHT = new Map();   /* font id -> { ready, px, py, glyphs: Map(ch -> { c, adv }) } */
+const faceReady = fnt => !document.fonts || document.fonts.check('8px ' + fnt.fam);
+function eightFace(fnt) {
+  let F = EIGHT.get(fnt.id); if (F) return F;
+  if (!faceReady(fnt)) return { ready: false };
   F = { ready: true, glyphs: new Map(), px: 5, py: 5 };
   /* THE GRID: both faces are drawn on eight design pixels to the em, so at 80px every design pixel is ten real ones. The phase
      of the 10x10 sampling grid is the one whose centres land clear of every edge (fewest samples half in, half out). */
@@ -26971,36 +26973,31 @@ function eightFace() {
       if (bad < best) { best = bad; F.px = px; F.py = py; } } }
   EIGHT.set(fnt.id, F); return F;
 }
-function eightGlyph(F, ch) {
+/* the face a CHARACTER comes from: the line's own face, or Press Start 2P for the few marks Silkscreen does not have */
+const glyphFace = (fnt, ch) => fnt === FONT.body && !SILK_HAS(ch.codePointAt(0)) ? FONT.display : fnt;
+function eightGlyph(fnt0, ch) {
+  const fnt = glyphFace(fnt0, ch), F = eightFace(fnt); if (!F.ready) return { c: null, adv: 8, dx: 0, dy: 0 };
   let q = F.glyphs.get(ch); if (q) return q;
-  const fnt = fontNow(), Z = 10, big = document.createElement('canvas'); big.width = 12 * Z; big.height = 12 * Z; const bx = big.getContext('2d');
+  const Z = 10, big = document.createElement('canvas'); big.width = 12 * Z; big.height = 12 * Z; const bx = big.getContext('2d');
   bx.font = 8 * Z + 'px ' + fnt.fam; bx.textBaseline = 'top'; bx.fillStyle = '#fff'; bx.fillText(ch, Z, Z);
   const d = bx.getImageData(0, 0, big.width, big.height).data, c = document.createElement('canvas'); c.width = 10; c.height = 10; const x = c.getContext('2d'); x.fillStyle = '#fff';
   for (let j = 0; j < 10; j++) for (let i = 0; i < 10; i++) if (d[((j * Z + F.py) * big.width + i * Z + F.px) * 4 + 3] >= 128) x.fillRect(i, j, 1, 1);
-  q = { c, adv: Math.max(1, Math.round(bx.measureText(ch).width / Z)) }; F.glyphs.set(ch, q); return q;
+  q = { c, adv: Math.max(1, Math.round(bx.measureText(ch).width / Z)), dx: fnt.dx, dy: fnt.dy + (fnt0 === FONT.body && fnt !== fnt0 ? 1 : 0) }; F.glyphs.set(ch, q); return q;
 }
 /* THE ADVANCE of one character in a face, at x1 */
-function advOf(face, ch) {
-  if (face.f === 'small') return ART.TINY.adv;
-  const F = eightFace(); return F.ready ? eightGlyph(F, ch).adv : 8;
-}
+function advOf(face, ch) { return eightGlyph(face.f, ch).adv; }
 /* A STRING, WHITE, AT x1: [canvas, ink width, ink height] */
 function whiteLine(s, face) {
-  const A = ART.TINY;
-  if (face.f === 'small') { if (!TINYF) TINYF = ART.bakeTinyFont();
-    const c = document.createElement('canvas'); c.width = Math.max(1, s.length * A.adv); c.height = A.h; const x = c.getContext('2d');
-    for (let i = 0; i < s.length; i++) { let k = A.order.indexOf(s[i]); if (k < 0) k = A.order.indexOf(s[i].toUpperCase()); if (k < 0) continue; x.drawImage(TINYF, k * A.adv, 0, A.w, A.h, i * A.adv, 0, A.w, A.h); }
-    return [c, Math.max(0, s.length * A.adv - 1), [...s].some(ch => A.desc.includes(ch)) ? A.h : A.cap]; }
-  const F = eightFace(); let w = 0; for (const ch of s) w += F.ready ? eightGlyph(F, ch).adv : 8;
+  const fnt = face.f; let w = 0; for (const ch of s) w += eightGlyph(fnt, ch).adv;
   const c = document.createElement('canvas'); c.width = Math.max(1, w + 2); c.height = 10; const x = c.getContext('2d');
-  if (!F.ready) { const fnt = fontNow(); x.font = '8px ' + fnt.fam; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText(s, 0, 0); }   /* (only until the web font has arrived) */
-  else { let px = 0; for (const ch of s) { const q = eightGlyph(F, ch); x.drawImage(q.c, px - 1, -1); px += q.adv; } }
-  return [c, Math.max(0, w - 1), 8];
+  if (!faceReady(fnt)) { x.font = '8px ' + fnt.fam; x.textBaseline = 'top'; x.fillStyle = '#fff'; x.fillText(s, 0, 0); }   /* (only until the web font has arrived) */
+  else { let px = 0; for (const ch of s) { const q = eightGlyph(fnt, ch); if (q.c) x.drawImage(q.c, px + q.dx, q.dy + (face.off || 0)); px += q.adv; } }
+  return [c, Math.max(0, w - 1), fnt.ih !== 5 || face.off ? 8 : [...s].some(ch => ',;'.includes(ch)) ? 7 : 5];
 }
 const TEXT_CACHE = new Map();
 /* A STRING READY TO STAMP: tinted, scaled by whole pixels, with its shadow or outline baked into it */
 function stampOf(s, size, col, style) {
-  const face = faceOf(size), F = face.f === 'eight' ? eightFace() : null, key = face.f + face.k + (F ? fontNow().id + F.ready : '') + '|' + style + '|' + col + '|' + s;
+  const face = faceOf(size), key = face.f.id + face.k + face.off + faceReady(face.f) + '|' + style + '|' + col + '|' + s;
   let st = TEXT_CACHE.get(key); if (st) { TEXT_CACHE.delete(key); TEXT_CACHE.set(key, st); return st; }
   const [line, iw, ih] = whiteLine(s, face), k = face.k, W = line.width * k, H = line.height * k, pad = style === 'none' ? 0 : 1;
   const tint = c0 => { const t = document.createElement('canvas'); t.width = W; t.height = H; const x = t.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(line, 0, 0, W, H); x.globalCompositeOperation = 'source-in'; x.fillStyle = c0; x.fillRect(0, 0, W, H); return t; };
@@ -27026,7 +27023,7 @@ function text(s, x, y, col, align = 'left', size = 8, style = 'shadow') {
 /* THE WIDTH A STRING TAKES ON THE LINE (its advances, the trailing gap included) */
 function textW(s, size = 8) { s = String(s); const face = faceOf(size); let w = 0; for (const ch of s) w += advOf(face, ch); return w * face.k; }
 /* ITS INK: what is actually lit, left edge to right edge */
-function inkW(s, size = 8) { s = String(s); if (!s) return 0; const face = faceOf(size); return textW(s, size) - (face.f === 'small' ? 1 : 1) * face.k; }
+function inkW(s, size = 8) { s = String(s); if (!s) return 0; const face = faceOf(size); return textW(s, size) - face.k; }
 function fitText(s, maxW, size = 8) { if (textW(s, size) <= maxW) return s; let t = s; while (t.length > 1 && textW(t, size) > maxW) t = t.slice(0, -1); if (window.__textRec) textRec('cut', { s, out: t, maxW, size }); return t; }
 /* MEASURED WITH THE FACE IT IS DRAWN IN, so a wrapped line is never wider than the box it was wrapped for. A word too long for the
    line on its own is broken, not left hanging out of the box. */
@@ -29844,7 +29841,7 @@ function drawMother(cx, cy) {
 function drawHeroCard() { // who you are right now: the numbers behind the bars
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h);
-  const H = HEROES.find(k => k.id === hero()) || HEROES[0]; text(H.name, VW / 2, y + 6, UI.title, 'center');
+  const H = HEROES.find(k => k.id === hero()) || HEROES[0]; text(H.name, VW / 2, y + 6, UI.title, 'center', TYPE.head);
   if (!touchOn) text('ESC back', x + 8, y + 6, UI.dim, 'left', 6);   /* up in the header: the loop under the name took the foot's tenth row */
   /* THE LOOP (HERO_LOOP) under the name, two lines of the small hand; the rows start under it */
   const loop = wrap(HERO_LOOP[hero()] || '', w - 10, 6); loop.forEach((ln, i) => text(ln, VW / 2, y + 15 + i * BODY_LH, UI.text, 'center', 6));
@@ -29895,7 +29892,7 @@ function drawPractice() {
   // out of the space that is actually left now, and every string in here is measured before it is drawn.
   g.fillStyle = 'rgba(10,14,12,0.82)'; g.fillRect(0, 0, VW, VH);
   const x = 8, y = 8, w = VW - 16, h = VH - 16; panel(x, y, w, h);
-  text('THE PRACTICE YARDS', VW / 2, y + 5, UI.title, 'center');
+  text('THE PRACTICE YARDS', VW / 2, y + 5, UI.title, 'center', TYPE.head);
   text(fitText('every verb he has, and nothing that can hurt you', w - 12, 6), VW / 2, y + 17, UI.dim, 'center', 6);
   const rows = YARDS(), top = y + 27, foot = 20;                       /* two lines of footer at the bottom */
   const rowH = Math.max(15, Math.min(22, Math.floor((h - (top - y) - foot) / rows.length)));
@@ -29916,7 +29913,7 @@ function drawPractice() {
 function drawControls() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 20, y = 2, w = VW - 40, h = VH - 4; panel(x, y, w, h);   /* (eighteen rows of the small hand at 8, and a clear line between the header and the first) */
-  text('CONTROLS', VW / 2, y + 5, UI.title, 'center');
+  text('CONTROLS', VW / 2, y + 5, UI.title, 'center', TYPE.head);
   const rows = controlsCardRows();   /* (src/controls.js: the hero's own words, the keys the player has chosen) */
   /* IN CO-OP THE TWO COLUMNS ARE TWO PEOPLE: player one on the keys, player two on the first pad */
   text(coop() ? 'KEYBOARD  P1' : 'KEYBOARD', x + 80, y + 15, '#9aa39a', 'left', 6); text(coop() ? 'PAD  P2' : 'PAD', x + w - 10, y + 15, '#9aa39a', 'right', 6);
@@ -29960,7 +29957,7 @@ function drawCredits() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h);
   const pages = creditPages(MUSIC_CREDITS), pg = pages[Math.min(creditsPage, pages.length - 1)];
-  text('CREDITS - MUSIC', VW / 2, y + 6, UI.title, 'center');
+  text('CREDITS - MUSIC', VW / 2, y + 6, UI.title, 'center', TYPE.head);
   if (pg.kind === 'ccby') {
     text('CREDIT REQUIRED (CC-BY)', VW / 2, y + 20, '#8fd160', 'center', 6);
     let yy = y + 31;   /* each CC-BY track: its name and composer, and its licence - or, where the licensor words the credit, that wording whole (claude/redgorge-fix: Kevin MacLeod's) */
@@ -29968,6 +29965,10 @@ function drawCredits() {
       let row = 0; lines.forEach((ln, j) => wrap(ln, w - 6, 6).forEach(part => { text(part, VW / 2, yy + row * 8, j ? UI.dim : UI.text, 'center', 6); row++; })); yy += row * 8 + 3; }   /* (a licence line is drawn whole, as it always was: a long one wraps onto a second row inside the panel instead of running off both sides) */
     if (pg.last !== false) { text('ALL THE REST IS CC0 OR PUBLIC DOMAIN,', VW / 2, yy + 2, UI.dim, 'center', 6);
       text('FROM OPENGAMEART.ORG. THANK YOU:', VW / 2, yy + 11, UI.dim, 'center', 6); }   /* (on the last CC-BY page only: claude/puppeteer2 split the CC-BY credits two to a page) */
+  } else if (pg.kind === 'fonts') {
+    text('THE TYPE', VW / 2, y + 22, '#8fd160', 'center', 8);
+    FONT_CREDITS.forEach(([fam, who, use], i) => { const yy = y + 38 + i * 34; text(fam, VW / 2, yy, UI.text, 'center', 8); text('by ' + who, VW / 2, yy + 10, UI.dim, 'center', 8); text(use, VW / 2, yy + 19, UI.dim, 'center', 8); });
+    text(FONT_LICENCE, VW / 2, y + 38 + 2 * 34 + 2, UI.dim, 'center', 8);
   } else {
     const colW = (w - 20) / 2;
     pg.names.forEach((n, i) => { const col = Math.floor(i / 8), row = i % 8; text(fitText(n, colW - 10, 6), x + 12 + col * colW, y + 24 + row * 11, UI.text, 'left', 6); });
@@ -29978,7 +29979,7 @@ function drawCredits() {
 function drawSoundTest() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h);
-  text('SOUND TEST', VW / 2, y + 6, UI.title, 'center');
+  text('SOUND TEST', VW / 2, y + 6, UI.title, 'center', TYPE.head);
   const cats = ['EFFECTS', 'MUSIC', 'AMBIENCE'], lists = [SFX_NAMES(), MUSIC_NAMES, AMBIENT_NAMES], list = lists[soundCat];
   cats.forEach((c, i) => { const sel = i === soundCat; text((sel ? '< ' : '') + c + (sel ? ' >' : ''), x + w / 2 + (i - 1) * 84, y + 18, sel ? '#8fd160' : UI.dim, 'center'); });
   /* MUSIC keeps three rows spare at the foot of its list: one gap, then a row of its own for the credit line below
@@ -30057,7 +30058,7 @@ function drawMenu() {
   g.fillStyle = 'rgba(10,14,12,' + (0.7 * eo).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
   const tabbed = menuKind === 'settings', x = tabbed ? 24 : 54, y = 6 + Math.round((1 - eo) * -14), w = tabbed ? VW - 48 : VW - 108, h = 168;
   panel(x, y, w, h);
-  text(menuKind === 'pause' ? 'PAUSED' : 'SETTINGS  ' + SET_TABS_NAME(settingsTab), VW / 2, y + 6, UI.title, 'center');
+  text(menuKind === 'pause' ? 'PAUSED' : 'SETTINGS  ' + SET_TABS_NAME(settingsTab), VW / 2, y + 6, UI.title, 'center', TYPE.head);
   const M = menuItems(), base = tabbed ? 1 : 0, rowsN = tabbed ? 9 : MENU_ROWS, top0 = tabbed ? y + 30 : y + 22;
   const off = Math.max(0, Math.min(M.length - base - rowsN, Math.max(0, menuI - base) - rowsN + 2));
   if (tabbed) drawTabStrip(x, y + 17, w);
@@ -30533,7 +30534,7 @@ function drawEditor() {
 }
 function drawEdPalette() {
   g.fillStyle = 'rgba(10,8,16,0.94)'; g.fillRect(0, 0, VW, VH);
-  text('THE PALETTE', VW / 2, 3, UI.title, 'center');
+  text('THE PALETTE', VW / 2, 3, UI.title, 'center', TYPE.head);
   const bw = 96, bh = 11, x0 = 8, y0 = 26;
   ED_CATS.forEach((c, i) => { const tx = x0 + i * 54, sel = i === edCat;
     g.fillStyle = sel ? 'rgba(60,90,60,0.9)' : 'rgba(40,36,50,0.8)'; g.fillRect(tx, 12, 52, 11);
@@ -30602,7 +30603,7 @@ function render() {
   if (state === 'play' || (state === 'talk' && !talkOverHud) || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
     if (SET.hud === 'minimal' && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !venomIcon(P, CQG.CQ.venom) && !bossActive && bannerT <= 0 && !Object.values(P.cds || {}).some(v => v > 0)) { /* nothing to say: hide the plates until something changes */ } else {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, VW - 16, [TYPE.title, 8]); g.fillStyle = 'rgba(10,8,16,0.66)'; g.fillRect(0, VH / 2 - 12, VW, (z >= 12 ? 10 : 8) + 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', z, 'outline'); } }   /* on a band of its own, and a name too wide for the card drops a size */
+    if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.11 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); g.fillStyle = 'rgba(10,8,16,0.66)'; g.fillRect(0, VH / 2 - 12, VW, (z >= 12 ? 16 : 8) + 12); text(nm, VW / 2, VH / 2 - 6, '#ffd36b', 'center', z, 'outline'); } }   /* on a band of its own, and a name too wide for the card drops a size */
     const hudMeter = hudMeterLabel(), hudPW = Math.max(touchOn ? 110 : 116, hudMeter ? (isReaper() ? 112 : 92) + inkW(hudMeter.s, 6) + 5 : touchOn ? 110 : 116), xpRow = xpWood() ? 8 : 0, hudPH = (SET.iron ? 38 : 26) + 10 + xpRow;   /* (xpRow: the XP bar's line) */   /* the plate is as wide as what C does */
     { const cn = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total) + '|' + silvers.filter(s => s.got).length, xn = heroXp() + ':' + heroLevel(); if (cn !== uiFade.coin) { uiFade.coin = cn; uiFade.coinAt = time; } if (xn !== uiFade.xp) { uiFade.xp = xn; uiFade.xpAt = time; } }   /* IDLE COUNTERS FADE: the coins, the clock and the XP line settle back a few seconds after they last changed */
     const coinA = state === 'play' ? UIH.idleAlpha(time - uiFade.coinAt) : 1, xpA = state === 'play' && !(lvUpT > 0) ? UIH.idleAlpha(time - uiFade.xpAt, 5, 1.5, 0.45) : 1;
@@ -31070,7 +31071,7 @@ window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P
     talkers: () => [...signs.map(s => ({ kind: 'sign', x: Math.floor(s.x / TS), y: Math.floor(s.y / TS), lines: [s.text], name: null })),
       ...props.filter(p => p.t === 'npc').map(p => { let lines = []; try { lines = NPC_LINES(p); } catch (e) { lines = ['(NPC_LINES threw: ' + e.message + ')']; } return { kind: 'npc:' + p.kind, x: Math.floor(p.x / TS), y: Math.floor(p.y / TS), lines, name: p.name || NPC_NAME[p.kind] || null }; })],
     bossTitle: b => bossTitle(b), miniName: () => miniName(), beasts: () => BEASTS, beastName: e => beastName(e),   /* (claude/fairfix3: the name a foe wears in the threat read and the death line - the fair's reskins wear their own) */
-    cardFit: s => { const z = fitSize(s, VW - 16, [TYPE.title, 8]); return [z, inkW(s, z)]; } },   /* the size the boss's name card draws a name at, and how wide it comes out */
+    cardFit: s => { const z = fitSize(s, Math.min(VW, 320) - 16, [TYPE.title, 8]); return [z, inkW(s, z)]; } },   /* the size the boss's name card draws a name at, and how wide it comes out */
   get cam() { return [camX, camY]; }, get stop() { return stop; }, buf, g,
   get sea() { return { roll, wash, strike, msg: seaMsg, calm: seaCalm(), tilt: seaTilt(), hard: stormK('wash') }; },
   stormBolt(t = 0.34) { boltBack = { t, x: camX * 0.15 + VW / 2, i: 0 }; return { quiet: stormQuiet(), flash: boltFlash() }; },   /* the backdrop's lightning, now, for a picture of it (t: how much of it is left) */   /* the Hurricane's sea state, for the harness */
@@ -31132,10 +31133,10 @@ if (q.get('playtest') === '1') setTimeout(async () => {
   const r = await window.BK.playtest({ mode: q.get('mode') || 'both', levels: q.get('level') ? [q.get('level')] : null });
   window.__PLAYTEST = r;
   const pre = document.createElement('pre');
-  pre.style.cssText = 'position:fixed;inset:0;overflow:auto;background:#0e0c14;color:#dfe8ff;font:11px/1.4 monospace;padding:12px;z-index:99;white-space:pre';
+  pre.style.cssText = 'position:fixed;inset:0;overflow:auto;background:#0e0c14;color:#dfe8ff;font:16px/1.4 Silkscreen;padding:12px;z-index:99;white-space:pre';
   pre.textContent = r.text; document.body.appendChild(pre);
 }, 1200);
-if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"').catch(() => {});
+if (document.fonts && document.fonts.load) { document.fonts.load('8px "Press Start 2P"').catch(() => {}); document.fonts.load('8px "Silkscreen"').catch(() => {}); }
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 window.BK.hush = () => (HUH ? HUH.read() : null); window.BK.hushHands = () => HUH; window.BK.noiseAt = (x, y, r, w) => noiseAt(x, y, r, w);   /* (claude/underleaf2) tools/underleaf.mjs and the bots: UNDERLEAF's streets, pots, caches, toll and nail (src/hush-hands.js read) */
 window.BK.levelJump = (id, h, campaign) => levelJump(id, h, campaign); Object.defineProperty(window.BK, 'campaignTag', { get: () => campaignTag });

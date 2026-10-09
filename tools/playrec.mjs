@@ -30,7 +30,7 @@ try {
   if (r.row.health.damageTaken > 0) assert.ok(F.taken > 0 && Object.keys(F.hurt).length > 0, 'the blows that hurt are logged by foe and move');
   assert.ok(!JSON.stringify(F).match(/@|password|email|token/i), 'no personal data in a row');
   assert.ok(r.dl && r.dl.href.startsWith('blob:') && /^bracken-playtest-.*\.json$/.test(r.dl.name), 'F9 makes a local file download: ' + JSON.stringify(r.dl));
-  const away = reqs.filter(q => { try { const u = new URL(q.url); return !(u.protocol === 'blob:' || u.protocol === 'data:' || (q.method === 'GET' && ((u.hostname === 'localhost' && u.port === PORT) || /^fonts.(googleapis|gstatic).com$/.test(u.hostname)) && !/rec|playtest/i.test(u.search)));   /* (the page's own files, and the font stylesheet index.html links) */ } catch { return true; } });
+  const away = reqs.filter(q => { try { const u = new URL(q.url); return !(u.protocol === 'blob:' || u.protocol === 'data:' || (q.method === 'GET' && ((u.hostname === 'localhost' && u.port === PORT)) && !/rec|playtest/i.test(u.search)));   /* (the page's own files: the fonts are local, fonts/) */ } catch { return true; } });
   assert.deepEqual(away, [], 'nothing leaves the page: ' + JSON.stringify(away.slice(0, 3)));
   await pg.evalp(`localStorage.removeItem('bracken.rec');localStorage.removeItem('bracken.playrec');true`);
   console.log('playrec: off by default; one fight logged (' + F.boss + ' ' + F.outcome + ', ' + F.t + ' s, ' + F.hits + ' hits, ' + F.taken + ' taken from ' + Object.keys(F.hurt).length + ' moves); F9 = a local file; ' + reqs.length + ' requests, all the game\'s own');
