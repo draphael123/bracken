@@ -41,9 +41,9 @@ assert.equal(arena('unburied').music, 'blacklord', "THE DEATH KNIGHT's arena is 
 assert.ok(A.MUSIC_NAMES.includes('blacklord') && /Ronhul Maggot/.test(A.MUSIC_CREDITS.blacklord || ''), 'For the Black Lord has no Sound Test entry and CC-BY credit');
 assert.ok(A.MUSIC_NAMES.includes('cisternqueen') && A.MUSIC_CREDITS.cisternqueen, 'THE CISTERN QUEEN has no Sound Test entry of her own');
 assert.ok(A.MUSIC_NAMES.includes('banditking') && A.MUSIC_CREDITS.banditking, 'THE BANDIT KING has no Sound Test entry of his own');
-for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab', 'matriarch', 'lanterneater']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
+for (const n of ['archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'puppeteer', 'gorgecrab', 'matriarch', 'lanterneater', 'huntmaster']) assert.ok(A.MUSIC_NAMES.includes(n), n + ' is not in MUSIC_NAMES (the Sound Test)');
 const generic = new Set(['boss', 'boss2', 'boss3', 'boss4', 'king', 'queen']);
-for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
+for (const [id, name] of [['mage', 'archmage'], ['fallingtower', 'undeadmage'], ['kings', 'king'], ['crown', 'gqueen'], ['keep', 'drownedking'], ['oreroad', 'winchmaster'], ['witchlight', 'gargoyle'], ['rootway', 'huntmaster']]) assert.ok(!generic.has(arena(id).music), name + ' is still on a generic boss track');
 
 // ---- 2. the scheduler, both tracks and the undead voicing
 A.initAudio(); A.music.set(true);
