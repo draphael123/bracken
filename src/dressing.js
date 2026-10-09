@@ -1063,3 +1063,5 @@ GROUND_KITS.glasssea={density:0,kinds:[]};   /* THE GLASS SEA (claude/glasssea, 
 ALLOWED_DECORATIONS.glasssea=[];
 GROUND_KITS.ksar={density:0,kinds:[]};   /* THE BANDIT KSAR (claude/ksar, batch79 integ): mud-brick, ashlar and bedrock; nothing grows or is sprinkled - its dressing is src/redraw/ksar_set.js and the hands' own */
 ALLOWED_DECORATIONS.ksar=[];
+GROUND_KITS.minecart={density:0,kinds:[]};   /* THE MINE WORKS (claude/minecartmap, batch80 integ): rock, timber and rail; nothing grows or is sprinkled - its dressing is the level's own decor rows */
+ALLOWED_DECORATIONS.minecart=[];

@@ -132,19 +132,19 @@
   "bare": true
  },
  "rootway": {
-  "hash": "d1084c7215b6",
+  "hash": "269d8b9e4e46",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
-  "deaths": 0,
-  "kills": 35,
-  "lifts": 89,
+  "hits": 26,
+  "deaths": 1,
+  "kills": 39,
+  "lifts": 87,
   "walked": 100,
   "bare": true
  },
  "minecart": {
-  "hash": "b8d78a140878",
+  "hash": "ad73fd7be795",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
