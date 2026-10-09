@@ -24,6 +24,14 @@ const trackBuf = {}, trackPending = {};
 let musicSrc = null, musicSrcs = [], musicTimer = null, musicGen = 0, currentTrack = null, wantTrack = 'theme', silenced = false;
 // Chrome's AudioBufferSourceNode.loop turns to static after the first pass on buffers longer than ~70s (boss, theme3, theme4),
 // so a track loops by chaining fresh sources at the exact end time instead of the loop flag.
+/* THE FAIR TUNE DECAYS (claude/faircreepy, Daniel 10-08: "the fair tune drifts OUT OF TUNE the deeper you go"): main.js hands music.warp(k) the depth of the stretch (0 at the gate .. 1 at
+   the green) while 'harvestfair' plays. Every source of the file is detuned flat (k^1.4 of 160 cents: a tape slowing, the tempo goes with the pitch) and a wow-and-flutter LFO (two slow
+   sines) wobbles it, wider the deeper you are. A warp nobody has asked for in 1.5 s is no warp (leaving the level, the Sound Test), so nothing stays out of tune behind you. */
+let warpK = 0, warpAt = -1e9, warpDone = -1, warpLfoG = null;
+const warpLive = () => typeof performance !== 'undefined' && performance.now() - warpAt < 1500;
+const warpCents = k => -Math.pow(k, 1.4) * 160;
+function warpLfo() { if (warpLfoG || !ac) return warpLfoG; warpLfoG = ac.createGain(); warpLfoG.gain.value = 0; for (const [hz, a] of [[0.55, 1], [0.17, 0.6]]) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = hz; g.gain.value = a; o.connect(g); g.connect(warpLfoG); o.start(); } return warpLfoG; }
+function warpAttach(s, name) { if (!ac || name !== 'harvestfair' || !s.detune || !warpLive()) return; try { s.detune.value = warpCents(warpK); const lf = warpLfo(); lf.connect(s.detune); s.__warped = true; s.addEventListener('ended', () => { try { lf.disconnect(s.detune); } catch {} }); } catch {} }
 function stopMusic() { for (const s of musicSrcs) { try { s.stop(); } catch {} } musicSrcs = []; musicSrc = null; if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicGen++; }
 const clips = {}; // name -> [AudioBuffer]
 
@@ -488,7 +496,7 @@ function playFile(name) {
   const chain = first => {
     if (gen !== musicGen || currentTrack !== name) return;
     const off = first ? 0 : Math.min(TRACK_INTRO[name] || 0, end - 1), len = end - off;   /* AN INTRO, ONCE: every pass after the first starts at the loop (TRACK_INTRO) */
-    const s = loopCopy(ac, b, len, tg, at, first, off); musicSrcs.push(s); musicSrc = s;
+    const s = loopCopy(ac, b, len, tg, at, first, off); musicSrcs.push(s); musicSrc = s; warpAttach(s, name);
     s.addEventListener('ended', () => { musicSrcs = musicSrcs.filter(q => q !== s); });
     const startAt = at; at += len - LOOP_XF;   // the next copy comes in under the last LOOP_XF of this one
     musicTimer = setTimeout(() => chain(false), Math.max(50, (startAt + len * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
@@ -513,6 +521,9 @@ export const music = {
   preload(name) { if (ac) loadTrack(name); },
   act(n) { theatreAct(n); },   /* THE MASKWRIGHT'S THEATRE: which act the show is in (0 the overture, 1-3 the acts): the waltz is told lighter and faster */
   stop() { wantTrack = null; silenced = true; stopMusic(); currentTrack = null; },
+  warp(k) { warpK = Math.max(0, Math.min(1, +k || 0)); warpAt = performance.now(); if (!ac || currentTrack !== 'harvestfair' || Math.abs(warpK - warpDone) < 0.004) return; warpDone = warpK;   /* THE FAIR TUNE DECAYS (above) */
+    const lf = warpLfo(); lf.gain.setTargetAtTime(32 * Math.pow(warpK, 1.2), ac.currentTime, 0.8);
+    for (const s of musicSrcs) { try { if (!s.__warped) { lf.connect(s.detune); s.__warped = true; s.addEventListener('ended', () => { try { lf.disconnect(s.detune); } catch {} }); } s.detune.setTargetAtTime(warpCents(warpK), ac.currentTime, 0.7); } catch {} } },
   loaded(name) { return !!trackBuf[name]; },
   set(v) { musicOn = !!v; if (musicGain && currentTrack) musicGain.gain.value = musicOn ? trackVol(currentTrack) : 0; else if (musicGain && bossSynthOf(wantTrack)) musicGain.gain.value = musicOn ? synthBossGain() : 0; },
   duck(on) { const t = on ? 0.35 : 1; if (t === duckT) return; duckT = t; if (musicGain && currentTrack && musicOn) musicGain.gain.setTargetAtTime(trackVol(currentTrack), ac.currentTime, 0.25); else applySynthBoss(); },
@@ -613,6 +624,24 @@ function loopNoise(freq, q, gain, type = 'bandpass') {
 }
 function lfoOn(param, hz, depth) { const o = ac.createOscillator(); o.frequency.value = hz; const d = ac.createGain(); d.gain.value = depth; o.connect(d); d.connect(param); o.start(); ambNodes.push(o); }
 let ambTick = null, ambTickMs = 500;
+/* THE FAIR GOES WRONG (claude/faircreepy): composed here, no files, heard through ambGain (so the ambient volume rules them) and a lowpass, so they stay far off. The far laugh slows and
+   sinks with the depth, a children's rhyme (a falling sing-song that goes flatter with every line) drifts over the stalls, and crows call from the corn. creepNow(): the depth, 0 if main.js
+   has stopped telling us (a stale value is no value). */
+let creepK = 0, creepAt = -1e9;
+const creepNow = () => (typeof performance !== 'undefined' && performance.now() - creepAt < 1500 ? creepK : 0);
+function farVoice(type, f0, f1, dur, v, delay, lp) {
+  if (!ac) return; const t = ac.currentTime + delay, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+  f.type = 'lowpass'; f.frequency.value = lp; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + Math.min(0.04, dur * 0.3)); g.gain.exponentialRampToValueAtTime(0.0005, t + dur);
+  o.connect(f); f.connect(g); g.connect(ambGain); o.start(t); o.stop(t + dur + 0.05);
+}
+const RHYME = [[392, 330, 392, 330, 392, 392, 330, 0], [440, 440, 392, 392, 330, 330, 294, 262], [392, 330, 392, 330, 294, 262, 294, 0]];   /* sol-mi and the steps down: three lines of a skipping rhyme, no words */
+function creepLaugh(k) { const n = 4 + ((Math.random() * 3) | 0), base = (300 + Math.random() * 130) * (1 - 0.22 * k), sp = 0.12 + 0.08 * k;
+  for (let i = 0; i < n; i++) { const f = base * (1 - 0.03 * i); farVoice('triangle', f, f * 0.8, 0.1 + 0.03 * k, 0.5, i * sp, 900 - 350 * k); farVoice('sine', f * 2.01, f * 1.6, 0.08, 0.14, i * sp, 1400); } }
+function creepRhyme(k) { const line = RHYME[(Math.random() * RHYME.length) | 0], len = 0.3 + 0.1 * k;
+  line.forEach((f, i) => { if (!f) return; const ff = f * Math.pow(2, -(i * 0.012 + Math.random() * 0.6 * k) / 4); farVoice('sine', ff, ff * 0.992, len * 0.92, 0.42, i * len, 1500); farVoice('triangle', ff * 2.005, ff * 1.99, len * 0.5, 0.1, i * len, 1900); }); }
+function creepCrows(k) { const n = 2 + ((Math.random() * 3) | 0); for (let i = 0; i < n; i++) { const d = i * (0.32 + Math.random() * 0.12), f = 640 + Math.random() * 160; farVoice('sawtooth', f, f * 0.56, 0.2, 0.34, d, 2000); noise(0.16, 0.16, 1500, 2.2, d, ambGain); } }
+function creepBeats(k, rhymeP, crowP) { if (Math.random() < (k > 0.12 ? rhymeP * (0.15 + k) : 0)) creepRhyme(k); if (Math.random() < crowP * (0.4 + k)) creepCrows(k); }
 const SYNTH_BEDS = {
   /* (claude/fairfix5) THE HARVEST FAIR's own air, all synth (no file): a far crowd murmur that never comes closer, with a laugh carried on the wind; canvas flapping;
      a ride creaking on its chains; the showman's generator chugging; bells on the wind. 'fairlot' is the back lot's: the crowd gone, a generator dying, one creak */
@@ -620,10 +649,12 @@ const SYNTH_BEDS = {
     const crowd = loopNoise(420, 1.2, 0.55, 'bandpass'); lfoOn(crowd.g.gain, 0.13, 0.2); lfoOn(crowd.f.frequency, 0.07, 90);
     const air = loopNoise(260, 1.4, 0.35); lfoOn(air.g.gain, 0.09, 0.22);
     let chug = 0;
-    ambTick = () => { chug++; if (chug % 2 === 0) tone('sine', 52, 44, 0.12, 0.05);                                                            /* the generator: a low chug every half second */
-      if (Math.random() < 0.035) for (let i = 0; i < 3 + ((Math.random() * 3) | 0); i++) tone('triangle', 300 + Math.random() * 120, 240, 0.08, 0.008, i * 0.11);   /* a laugh, far off */
+    ambTick = () => { chug++; const kk = creepNow(); if (chug % 4 === 0) { crowd.g.gain.setTargetAtTime(0.55 * (1 - 0.8 * kk), ac.currentTime, 1.2); air.g.gain.setTargetAtTime(0.35 + 0.4 * kk, ac.currentTime, 1.2); }   /* the crowd thins out, the wind comes up: the fair empties as you go (claude/faircreepy) */
+      if (chug % 2 === 0) tone('sine', 52, 44, 0.12, 0.05);                                                            /* the generator: a low chug every half second */
+      if (Math.random() < 0.035 * (1 - 0.5 * kk)) creepLaugh(kk);                                                                                /* a laugh, far off: slower and lower the deeper you go */
+      creepBeats(kk, 0.012, 0.012);                                                                                                             /* a children's rhyme over the stalls, crows in the corn */
       if (Math.random() < 0.06) noise(0.18 + Math.random() * 0.14, 0.06, 900, 0.5);                                                             /* canvas flapping */
-      if (Math.random() < 0.04) { tone('sawtooth', 120 + Math.random() * 40, 90, 0.5, 0.012); tone('square', 1900, 1700, 0.03, 0.01, 0.3); }      /* a ride creaks; its chain clinks */
+      if (Math.random() < 0.04 + 0.03 * kk) { tone('sawtooth', 120 + Math.random() * 40, 90, 0.5, 0.012); tone('square', 1900, 1700, 0.03, 0.01, 0.3); }      /* a ride creaks; its chain clinks */
       if (Math.random() < 0.025) { const f = 900 + Math.random() * 500; tone('sine', f, f, 0.9, 0.012); tone('sine', f * 2.4, f * 2.4, 0.5, 0.004); } };   /* a bell on the wind */
     ambTickMs = 250;
   },
@@ -632,7 +663,8 @@ const SYNTH_BEDS = {
     let chug = 0;
     ambTick = () => { chug++; if (chug % 5 === 0 && Math.random() < 0.6) tone('sine', 46, 38, 0.16, 0.035);                                     /* the generator, dying: a chug that misses */
       if (Math.random() < 0.03) tone('sawtooth', 100 + Math.random() * 30, 80, 0.6, 0.01);                                                      /* one creak */
-      if (Math.random() < 0.012) { const f = 700 + Math.random() * 300; tone('sine', f, f * 0.97, 1.2, 0.006); } };                            /* a far bell, out of tune */
+      if (Math.random() < 0.012) { const f = 700 + Math.random() * 300; tone('sine', f, f * 0.97, 1.2, 0.006); }                              /* a far bell, out of tune */
+      creepBeats(1, 0.02, 0.02); if (Math.random() < 0.012) creepLaugh(1); };                                                                   /* (claude/faircreepy) the back lot is the deepest: a rhyme, a crow, a slow laugh */
     ambTickMs = 300;
   },
   fire() {
@@ -807,6 +839,7 @@ export const ambient = {
     start();
   },
   get kind() { return ambKind; },
+  creep(k) { creepK = Math.max(0, Math.min(1, +k || 0)); creepAt = performance.now(); },   /* THE HARVEST FAIR's depth (0 gate .. 1 green), told by main.js each frame: the fair bed goes wrong with it (below) */
   bell: bellScatter,
 };
 

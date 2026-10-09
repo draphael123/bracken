@@ -137,6 +137,13 @@ const tint = (d2, d, far) => {   // the sunset at the gate, the deep blue at the
   const t = smooth(0, 1, d), a = far ? lerp(0.5, 0.78, t) : lerp(0.2, 0.56, t), rr = lerp(210, 22, t), gg = lerp(110, 26, t), bb = lerp(96, 64, t);
   d2.globalCompositeOperation = 'source-atop'; d2.fillStyle = 'rgba(' + Math.round(rr) + ',' + Math.round(gg) + ',' + Math.round(bb) + ',' + a.toFixed(3) + ')'; d2.fillRect(0, 0, d2.canvas.width, d2.canvas.height); d2.globalCompositeOperation = 'source-over'; };
 
+/* (claude/faircreepy) WHERE THE MID LAYER STANDS this frame, for the creepy dressing (fair_creep.js): the strip's scroll, its ground line, the layout; and the column -> strip x of the layout */
+export function midFrame(L, cx, VH, dY) { const Ly = layout(L.W), off = Math.round(cx * F_MID), gl = Math.round(VH - 94 + dY * F_MID); return { off, y0: gl - MID_GL, Ly }; }
+export const midColX = col => Math.round(col * TS * F_MID) + 120;
+/* (claude/faircreepy) THE LIGHTS FLICKER: more of them stutter as the night comes - a tent door, a stall lamp, a group of the string's bulbs drop out for a beat; seeded per light so it is
+   never the whole fair at once. Returns a 0..1 multiplier on the light */
+export const flick = (seed, time, d) => { const k = smooth(0.12, 0.9, d); if (k < 0.02) return 1; const s = Math.floor(time * 5 + seed * 0.37), h = Math.sin(s * 12.9898 + seed * 78.233) * 43758.5453, r = h - Math.floor(h); return r < 0.02 + 0.14 * k ? 0.1 + 0.4 * r : 1; };
+
 /* ================= FAR and MID: laid in place of the town's layers ================= */
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, d, dY, full) {
   const Ly = layout(L.W);
@@ -173,7 +180,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, d, dY, full) {
     for (const t of Ly.tops) { const tx = t.x - off; if (tx < -20 || tx > VW + 20) continue; const fy = y0 + t.y, fw = 7 + Math.sin(time * 4 + t.x) * 1.2; tri(s, tx, fy, tx + fw, fy + 2 + Math.sin(time * 5 + t.x) * 0.8, tx, fy + 4, '#c8341c'); }
     tint(s, d, false); g.drawImage(SC, 0, 0);
     // the lamps: tent doors, stall lamps, the wheel's rim, the strings' bulbs
-    for (const l of Ly.lights) { const x = l.x - off, y = y0 + l.y; if (x < -30 || x > VW + 30 || y < -30 || y > VH + 30) continue; const dk = darkAt(L, d, y + cy); lamp(g, x, y, l.r, 0.4 + dk * 0.7, 0.92 + 0.08 * Math.sin(time * 7 + l.x)); if (l.k === 'stall') dot(g, x, y + 2, '#ffe9a0', 2); }
+    for (const l of Ly.lights) { const x = l.x - off, y = y0 + l.y; if (x < -30 || x > VW + 30 || y < -30 || y > VH + 30) continue; const dk = darkAt(L, d, y + cy); const fk = flick(l.x, time, d); lamp(g, x, y, l.r, 0.4 + dk * 0.7, (0.92 + 0.08 * Math.sin(time * 7 + l.x)) * fk); if (l.k === 'stall' && fk > 0.5) dot(g, x, y + 2, '#ffe9a0', 2); }
     for (const w of Ly.wheels) { const hx = w.x - off; if (hx < -w.r - 20 || hx > VW + w.r + 20) continue; const hy = y0 + Ly.hillMid(w.x) - w.r - 10, dk = darkAt(L, d, hy + cy), ang = time * 0.09;
       lamp(g, hx, hy, w.r * 1.15, dk * 0.28, 1);
       for (let i = 0; i < 30; i++) { const a = ang * 0.5 + i * Math.PI / 15, tw = ((i * 7 + Math.floor(time * 2.2 + i * 0.7)) % 5 === 0) ? 0.25 : 1, x = hx + Math.cos(a) * (w.r - 1), y = hy + Math.sin(a) * (w.r - 1), a2 = (0.45 + dk * 0.55) * tw; if (a2 < 0.2) continue; dot(g, x, y, i % 6 === 0 ? '#ff7060' : i % 6 === 3 ? '#9fe0ff' : '#ffd36b', 2); lamp(g, x, y, 4, a2 * 0.8); }
@@ -181,7 +188,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, d, dY, full) {
       dot(g, hx, hy, '#ffe9a0', 3); }
     for (const st of Ly.strings) { if (st.x1 - off < -20 || st.x0 - off > VW + 20) continue; const sw = Math.sin(time * 1.3 + st.sd), n = Math.max(3, Math.round((st.x1 - st.x0) / 10));
       for (let i = 1; i < n; i++) { const u = i / n, x = lerp(st.x0, st.x1, u) - off + Math.sin(time * 1.1 + st.sd + u * 3) * 0.7 * u * (1 - u) * 4, y = y0 + lerp(st.y0, st.y1, u) + st.sag * 4 * u * (1 - u) * (1 + 0.1 * sw) + 2 + Math.sin(time * 2.1 + i * 1.3 + st.sd) * 0.5, dk = darkAt(L, d, y + cy), a = 0.4 + dk * 0.6;
-        dot(g, x, y, i % 3 === 0 ? '#ffb070' : '#ffe08a', 2); lamp(g, x, y, 5 + dk * 3, a * 0.6, 0.85 + 0.15 * Math.sin(time * 3 + i * 2 + st.sd)); } }
+        const fk = flick(st.sd * 10 + (i >> 2) * 7, time, d); if (fk < 0.5) { dot(g, x, y, '#5a4a40', 1); continue; } dot(g, x, y, i % 3 === 0 ? '#ffb070' : '#ffe08a', 2); lamp(g, x, y, 5 + dk * 3, a * 0.6, 0.85 + 0.15 * Math.sin(time * 3 + i * 2 + st.sd)); } }
   }
 }
 

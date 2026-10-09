@@ -45,10 +45,10 @@ export function lampBright(l, time) {
   return k; }
 export function drawLamps(g, cx, cy, VW, lamps, time, glowOnly) {
   for (const l of lamps) { const x = l.x * TS + 8, y = (l.y + 1) * TS; if (x < cx - 40 || x > cx + VW + 40) continue;
-    const b = l.b === undefined ? lampBright(l, time) : l.b, sx = Math.round(x - 7 - cx), sy = Math.round(y - 44 - cy);
+    const b = (l.b === undefined ? lampBright(l, time) : l.b) * (l.cb === undefined ? 1 : l.cb), sx = Math.round(x - 7 - cx), sy = Math.round(y - 44 - cy);   /* (l.cb, claude/faircreepy: a lantern snuffed behind you is only DRAWN dark - src/redraw/fair_creep.js lampCreep) */
     if (l.hung) continue;   /* (claude/fairfix5) a nest's lantern hangs in its stall (src/redraw/fair_newrides.js draws it): it is a lamp for the light, not a post */
     if (!glowOnly) { g.drawImage(LAMP(), sx, sy); g.drawImage(LANTERN(b > 0.3), sx + 8, sy + 8);
-      if (l.life <= 0) { for (let i = 0; i < 6; i++) { const t = (time * 0.5 + i / 6) % 1; g.globalAlpha = 0.28 * (1 - t); g.fillStyle = '#9a96a8'; g.fillRect(Math.round(sx + 12 + Math.sin(time + i) * 2 * t), Math.round(sy + 6 - t * 14), 1, 1); } g.globalAlpha = 1; } }
+      if (l.life <= 0 || l.cb === 0) { for (let i = 0; i < 6; i++) { const t = (time * 0.5 + i / 6) % 1; g.globalAlpha = 0.28 * (1 - t); g.fillStyle = '#9a96a8'; g.fillRect(Math.round(sx + 12 + Math.sin(time + i) * 2 * t), Math.round(sy + 6 - t * 14), 1, 1); } g.globalAlpha = 1; } }
     else if (b > 0.05) { const lx = sx + 12, ly = sy + 14, r = 22 + b * 18, gr = g.createRadialGradient(lx, ly, 1, lx, ly, r);
       gr.addColorStop(0, 'rgba(255,190,90,' + (0.42 * b) + ')'); gr.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = gr; g.fillRect(lx - r, ly - r, r * 2, r * 2); } } }
 
