@@ -172,7 +172,6 @@ export function buildKsar({ painter, T, TS }) {
   block(356, 445, 25, H - 1);                                                    /* the terrace and the store's long roof (row 25) */
   decor.push({ kind: 'minaret', x: 366, y: 24, top: 8 });
   /* THE TERRACE: its runner and the second souq gong (CUT under pressure) */
-  sentry(386, 24, 'terraceElite', null, { ks: 'post', face: -1, elite: true });   /* (resume 2) WEIGHT on the terrace (difficulty v2: a squad or an elite at a platforming moment - the terrace's ledges and the stair's top) */
   lookout(372, 24, 'terraceLookout', 'terrace', { patrol: [362, 376], face: -1 });
   boards(358, 363, 16); slinger(360, 15, 'minaretSling', { face: -1 });          /* the minaret's balcony and its slinger */
   hut(382, 388, 19, 25); blade(384, 24, 'terraceHut', { ks: 'reserve', face: -1 }); blade(386, 24, 'terraceHut', { ks: 'reserve', face: 1 });   /* the terrace's guard hut: its sleepers answer the terrace gong */
@@ -326,7 +325,7 @@ export function buildKsar({ painter, T, TS }) {
   shadeBox(584, 589, 30, B - 1);
   /* THE SHADE (THE SUN v2: no walk on the route over SUN.maxWalk): (resume) an awning over the fourth breach's far lip - the shield's shove into the spikes was fought in full sun, the warden walker died there twice; awnings over the alley's squads and gong, the stair's lee, the tower top's parapet awning, the landing's */
   awning(700, 704, 28, B); awning(710, 714, 28, B); awning(727, 731, 28, B); awning(745, 749, 28, B); shadeBox(754, 758, 30, B - 1); awning(768, 772, 28, B); shadeBox(781, 789, 27, B - 1);
-  awning(783, 786, 18, 31); awning(791, 795, 11, 16); awning(805, 809, 28, B); awning(668, 672, 26, 32); awning(683, 687, 28, B); awning(48, 52, 28, B); awning(188, 195, 21, 28); awning(181, 187, 19, 24); awning(218, 224, 22, 28); awning(61, 65, 25, B); awning(428, 432, 19, 25);
+  awning(783, 786, 18, 31); awning(791, 795, 11, 16); awning(805, 809, 28, B); awning(668, 672, 26, 32); awning(683, 687, 28, B); awning(48, 52, 28, B); awning(188, 195, 21, 28); awning(197, 203, 22, 28); awning(208, 213, 22, 28); awning(181, 187, 19, 24); awning(218, 224, 22, 28); awning(61, 65, 25, B); awning(428, 432, 19, 25);
   // ================= THE HAWK-MISTRESS's COURTYARD (src/hawk-mistress.js) =================
   const AX = 812;
   const stage = stageHawkMistress({ set, block, ent, air }, T, TS, AX, B);

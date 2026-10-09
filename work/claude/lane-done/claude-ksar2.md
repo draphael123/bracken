@@ -83,3 +83,29 @@ Not run: the full suite (machine at 100% all morning).
 3. **Desert bosses under the sun v2 drain** were not re-measured with flasks (Dune Worm, Well Town, Colossus). Rec: the batch's re-measure lane
    runs `boss-rates.mjs caravan,welltown,glasssea --profile=human` when the PC is quieter. Built: nothing.
 4. **The lab-reload deadline**: rec keep `LAB_BOOT_MS` (default unchanged 90 s) and have the coordinator cap parallel page lanes at ~6.
+
+# PART B (Sonnet lane, 2026-10-09): walker tune, then the art
+
+Merged origin/master (batch80) first (conflicts: main.js case list, marks.js table (re-generated with `tells --write`), check.mjs list, level-walk.mjs upPlan (+rwJob), hint-lines, level1-curve.json).
+
+## Step 1 - walker tune (level only; src/ksar.js, src/ksar-hands.js walkHint)
+- THE STUCK at 652,33: the teach zip line lands him 8 tiles past the first keg stack (642); the level's hint only reached 6 tiles, so the route walked him into the bricked wall. The powder-run hints (stack, carry, throw) now reach 14 tiles (`r: 14`). pyro no longer sticks there (3 runs).
+- Fairness: signs before the 3rd and 4th breach (the whip's lash and the shield's shove both pull/push you into the spikes), the 4th breach's shield sentry stands 3 tiles further from the lip (222, was 219), awnings over 197-203 and 208-213 (the warden died in the sun fighting here).
+- Weight: a planted ELITE shield sentry where the raised bridge lands (683, a platforming moment). A second elite on the terrace (386) made the pyro/knight arrival ~52% but the warden lost both duels and died there 3 of 3 runs, so it was dropped.
+- Rows re-stamped (level hash changed): mash level row, pilot, curve (level THEN boss: boss rows carried, the boss was not touched).
+- Walker (human+first, 1 seed, 600 s cap), final level: warden 3 deaths (spikes 216, sun 347, a fall 481), arrive 39%, STUCK once at 436,24 (the store arch's stray props - walker-only, seed-dependent; seeds before this tune: STUCK at the stair 350,27); knight 1 death, arrive 52%; pyro 0 deaths, arrive 74%, NO STUCK (the 652,33 wall passes), won the bridge-lip elite duel. Band (1-2 deaths, arrive < 50%): knight and pyro still a little high on arrival, pyro 0 deaths, warden one death over - not overshot; the warden dies mostly in the wall's sun/spikes and loses elite duels (see QUESTIONS).
+- Level-1 curve row now 11 deaths (act-5 bar <= 12), pilot row 14 deaths over 3 runs; mash level row: knight 3, warden 3, pyro 4 deaths, all 0% lowest hp; mash-gate, curve-gate (ksar not stale), level-quality ksar/glasssea/welltown clear.
+
+## Step 2 - the art (draw-only: the level hash did not move; art checked against the stamped rows)
+New `src/redraw/ksar_props2.js` (+ `tools/ksar2-shots.mjs`, `tools/ksar-art-sheet.mjs props2|mistress|keep` Node sheets), hooked in `src/ksar-hands.js` and one line in `src/main.js` (the keep, after the far dunes).
+- THE SHAFTS + UPDRAFT: brick flue, kiln grate with ember slits and iron spikes, flagged posts at the lips; the updraft is pale wobbling streaks + a plume over the lip + rising sand grit (only the grate glows - no orange wash).
+- Reeds whole / burning (flames climb, stalks char bottom up) / burnt (ash bed, scorched stubs); the raised bridge (iron-bound leaf, pulley beam, rope + cleat) raised / burning (flame walks the rope, leaf shakes) / down (plank deck with rope rails, burnt rope end hanging); the powder trail dry (grains) / lit (a sparking head, soot, smoke); archer nests (palm posts, woven screen, striped canvas, quiver, lantern) and BLINDED (bleached, stars, canvas flapping); raider-line rigs (A-frame post, pulley, tied tail; the tower's outrigger beam + eye bolt; CUT: frayed ends hanging at both) and the teach lines' posts and buffer; torch racks (n torches, oil pot), a carried / flying / lying torch; sparks on lit kegs; rubble where an arch was blown; the alley tower's stair-well (rails, posts, lanterns); merlon crowns on towers two, three, the alley tower and the gatehouse + a hawk crest; THE KEEP on the horizon over the souq (hazy, banner, lit windows); the roofs' back parapets, rugs and drying racks.
+- THE HAWK-MISTRESS: 16 new keyframed poses (lashCoil -> lashTell, snareWind -> cast, fanDraw -> fanHold -> fanThrow per knife, kegSet -> kegKick (leg cocked then swung), leapCrouch -> leapAir, whistleA -> whistleB), stepped by how far into the tell she is; an idle that beckons, lifts her chin and strokes the hawk; the hawk HOODED (red leather, plume) with long jesses and bell while home.
+- Shots: work/claude/ksar2art/after/*.png (a01-a05 fortress, b01-b18 props, c01-c04 rooftops, d01-d10 her windups); node sheets before-gate.png / before-wall.png (before) vs p2-a.png, mistress-a.png, keep-test.png.
+- Checks (this lane, final): ksar.mjs 214 ok; glasssea 126 ok; caravan all passed; tells ok (table regenerated); boss-read ok; architecture (1 pre-existing storm finding); dressing ok; modulepreload ok; dangling-paths ok (after commit); level-quality clear; mash-gate / curve-gate ok for ksar; mark-integrity: hawkmistress rows posed + landed, 2 PHANTOMS both undercrown's undeadmage (master's, not touched). textfit has no ksar scope; solid-islands tool not in the repo.
+- Not done: before-shots of the greybox props (needs a second checkout on the port; node before sheets only); the awnings' SUN shade footprint over the new art was only checked in the shots, not measured.
+
+## QUESTIONS FOR DANIEL (part B)
+1. The warden walker trails everywhere on the Ksar (wall sun, spikes, elite duels - lost both terrace duels). Rec: keep one elite (bridge lip); let the hero-balance lane look at the warden. Built: terrace elite removed.
+2. Knight/pyro arrive 52% / 74% (band < 50%). Rec: accept (sun + attrition already carry the wall); more weight would only hit the warden harder.
+3. The keep is deliberately faint (parallax haze); say if you want it bolder.
