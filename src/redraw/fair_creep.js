@@ -231,5 +231,5 @@ export function lampCreep(lamps, heroX, time, dt, L) {
   }
   return out;
 }
-/* where the dressing stands (a debug hook for tools/fair-creep.mjs): world columns of the scarecrows, rides and townsfolk */
+/* where the dressing stands (a debug hook for tools/fair-creepy-shots.mjs): world columns of the scarecrows, rides and townsfolk */
 export const creepStats = (L, VH = 180, cx = 0) => { const F = midFrame(L, cx, VH, 0), D = decor(L, F.Ly); return { scare: D.scare.map(s => s.col + ':' + Math.round(s.x - F.off) + ':' + s.a.toFixed(2)), rides: D.rides.map(s => s.kind + '@' + s.col + ':' + Math.round(s.x - F.off)), folk: D.folk.length }; };

@@ -22,7 +22,7 @@ const NATURAL = 'organic ledge art that grows where it stands (logs in the canop
 const OWNED = (lane, n) => [n, 'owned by ' + lane + ', fixing tonight (2026-10-08): TEMPORARY'];
 export const ALLOW = {
   wood: [25, NATURAL], marsh: [14, NATURAL], stockade: [25, NATURAL], spore: [31, NATURAL], kings: [103, NATURAL], /* scree hanging moor skyroad rootway glasssea witchlight: 0 - every slab stands on its own drawn kit (src/forest-supports.js) */
-  spire: OWNED('spire', 90), flotilla: OWNED('flotilla', 2), hurricane: OWNED('hurricane', 17), crown: OWNED('crown', 53), ksar: OWNED('ksar', 25), oreroad: OWNED('winch/oreroad', 11),
+  spire: OWNED('spire', 49), church: [42, 'THE LIT CHURCH greybox (claude/litchurch): undrawn-support slabs of the greybox, listed for the church art lane (batch81 integ)'], towpath: [15, 'THE TOWPATH greybox (claude/towpath): undrawn-support slabs of the greybox, listed for the towpath art lane (batch81 integ)'], flotilla: OWNED('flotilla', 2), hurricane: OWNED('hurricane', 17), crown: OWNED('crown', 53), ksar: OWNED('ksar', 25), oreroad: OWNED('winch/oreroad', 11),
   fair: [4, 'stage-roof and slide islands of the fairground: the rest are drawn rides/stalls (src/fair-*.js, six spots screenshot-checked); listed for the fair lane'],
   minecart: [1, 'one rail pair at 960-981: listed for the minecart lane'],
   undercrown: [3, 'three ledges over pit shafts, void under them: listed for the undercrown lane'],

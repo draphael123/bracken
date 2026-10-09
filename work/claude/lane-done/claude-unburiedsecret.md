@@ -10,7 +10,7 @@ map-grammar, map-spacing, dangling-paths, class-spurs, level-reach, tools/unburi
 tools/unburied-secret.mjs takes ~3.5 min and its Chrome teardown is slow on a loaded machine (close can take 20 s to minutes); the test now awaits pg.close(). No assertion was touched.
 
 ## Not done
-- Map screenshots of the dim spot / ghost-path (tools/_tmp/shots.mjs is an untracked scratch, not committed).
+- Map screenshots of the dim spot / ghost-path (the shots script is an untracked scratch, not committed).
 - Full suite not run (40 min); no level hash changed beyond the banner ent - re-stamp rows only if the suite flags the Fields/Burial/Witchlight hashes (banner ent is added after build, so builders are unchanged; check level hashes in the suite).
 
 ## QUESTIONS FOR DANIEL

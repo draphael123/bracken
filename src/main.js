@@ -7251,7 +7251,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
   if(e.t==='familiar')dmg*=e.open>0?1.8:.6;
   if(e.t==='bellcrab') dmg*=e.phase===3?BELL.out.soft:e.open>0?BELL.openMul:BELL.shutMul;   /* shut, until a stone on his crown opens him; out of the bell, soft (src/bellcrab.js BELL) */
-  if (e.t === 'grandmother' && HUH && HUH.on()) { const k = HUH.granTake(e, fromX, blow, dmg); if (!k) return; dmg = Math.round(dmg * k); }   /* (claude/underleaf2, B11/B14) THE GRANDMOTHER: she hears a blade from the front and turns it (SHE HEARD YOU); her BACK takes it whole - double while she lashes at a lure; her rap x1.5; her ward turns everything (src/hush-hands.js granTake) */
+  if (e.t === 'grandmother' && HUH && HUH.on()) { const k = HUH.granTake(e, fromX, blow, dmg, tag); if (!k) return; dmg = Math.round(dmg * k); }   /* (claude/underleaf2, B11/B14) THE GRANDMOTHER: she hears a blade from the front and turns it (SHE HEARD YOU); her BACK takes it whole - double while she lashes at a lure; her rap x1.5; her ward turns everything (src/hush-hands.js granTake) */
   if (L && L.hush && blow && HUH && HUH.sneakKill(e, fromX)) { dmg = Math.max(dmg, e.hp); HUH.killedSilently(e); }   /* (claude/underleaf2) QUIET PAYS: asleep, or the unwary Bellman, struck from behind - one silent blow */
   if (e === boss && !bossActive && e.mode === 'sleep' && L.arena && e.alive) { bossStart(); SFX.clank(); return; } // a sleeping boss is not a free kill: the blow wakes the fight
   /* B14, THE KEY (claude/keyscore, src/boss-read.js): ONE ask before the per-boss ladder. A boss or mini in a KEYED phase (KEY_ROWS) marks the right blow (e.keyHit, which his
@@ -7349,7 +7349,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'heart') { if (!mother || mother.mode !== 'open') return; dmg = 1; mother.mode = 'idle'; mother.modeT=2; mother.nodeRest=10; mother.tipped=false; mother.gillsOpen=false; mother.nodeMove=true; e.burn=0; e.bleed=0; } // each cut closes the heart: return to the living knot
   /* (claude/bosswave1) her windows pay x1.3 now, not double (the boss rule chips her everywhere else): the old double on the boards, and 2.5x under the bough,
      gave the mash bot 92% of her in one grounded window. The bough, the window the player makes, still pays best. */
-  if (e.t === 'owl') dmg = Math.round(dmg * owlTake(e));   /* (claude/owl2) the lamp crash x2, on the boards x1.5, under the bough x1.6, nothing in her ward - and 0.4 anywhere else (the chip, src/boss-greed.js) */
+  if (e.t === 'owl') dmg = Math.round(dmg * owlTake(e, tag));   /* (claude/owl2) the lamp crash x2, on the boards x1.5, under the bough x1.6, nothing in her ward - and 0.4 anywhere else (the chip, src/boss-greed.js) */
   if (e.t === 'owl' && e.mode === 'sit') e.hits = (e.hits || 0) + 1;
   if (e.t === 'king' && e.mode === 'held') dmg *= 2; // held by a cage: his head is down
   if (e.t === 'windcaller' && !callerThere(e)) { SFX.buzz(); return; } // between stones there is nothing to cut (on a stone he is there: the boss rule chips him, claude/bosswave1)
@@ -7373,7 +7373,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'kite' && e.mode !== 'fall') { e.mode = 'fall'; e.vy = -40; e.vx = (Math.sign(e.x - fromX) || 1) * 60; number(e.x, e.y - 40, 'THE STRING', '#ffd36b'); SFX.crack(); }
   if (e.t === 'kiterider' && SKY) SKY.riderHurt(e, fromX);   /* THE SKY ROAD: a blow on a kite-rider in the air cuts his line */
   if (e.t === 'whelp' && WHF.whelpStone(e) && dmg > 0) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 5, e.y - 8, Math.sign(e.x - fromX) || 1, 4); e.seen = true; if (!(e.stoneSaid > time)) { e.stoneSaid = time + 2; number(e.x, e.y - e.h - 12, 'STONE', '#c8bca8'); } }   /* THE WHELP ON ITS PERCH: the blade chips it (wardedDamage holds it to a chip) */
-  if (e.t === 'golem' && TGM && e.hp > 0) { dmg = TGM.take(e, dmg, fromX); if (!(dmg > 0)) return; }   /* THE TEMPLE GUARDIAN (src/temple-guardian.js): stone takes a blade at TG.take (B15) and says its key; staggered by a bell or its own stone, x2 */
+  if (e.t === 'golem' && TGM && e.hp > 0) { dmg = TGM.take(e, dmg, fromX, tag); if (!(dmg > 0)) return; }   /* THE TEMPLE GUARDIAN (src/temple-guardian.js): stone takes a blade at TG.take (B15) and says its key; staggered by a bell or its own stone, x2 */
   if (e.t === 'suncatcher') { if (rimeOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.6)); if (Math.random() < 0.4) { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 24, Math.sign(e.x - fromX) || 1, 3); } if (!(e.rimeSaid > 0)) { e.rimeSaid = 5; number(e.x, e.y - e.h - 8, 'THE RIME TURNS PART OF IT', '#9aa39a'); } } }   /* rimed it takes a little over half; thawed or cracked it takes half as much again */
   /* THE SECOND WAY IN (and the same rule the shield family keeps): a DASH ATTACK into his guard knocks him OFF BALANCE
      and his plate is no use to him lying down, so every hero has a way to MAKE an opening as well as wait for one.
