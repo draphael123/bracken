@@ -36,7 +36,7 @@
 //   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
 //                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { buriedcity: 1, hourglassking: 1, lanterneater: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { hourglassking: 1, lanterneater: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -403,19 +403,7 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
-// ---------------------------------------------------------------- THE BURIED CITY (claude/buriedcity, the greybox's own bed until Daniel picks a track)
-// D minor with a raised fourth (D E F G# A Bb C#), 4/4 at 72 (eighth = 0.417 s), 8 bars = 33 s. THE CITY UNDER THE SAND: a low D drone breathing over four bars,
-// a CLOCKWORK TICK on every eighth (a dry high click, the tock a fifth below on the off-beats), a slow MUSIC-BOX line (sine bells, a little out of tune, as
-// if wound long ago) and a HISS OF SAND pouring on the first beat of every fourth bar. Never builds: the city is asleep.
-const BCM_STEP = 60 / 72 / 2, BCM_LEN = 8, BCM_BARSN = 8;
-const BCM_BOX = [['D5', '-', 'F5', '-', 'A5', '-', 'G#5', '-'], ['A5', '-', 'F5', '-', 'E5', '-', '-', '-'], ['D5', '-', 'E5', 'F5', 'G#5', '-', 'A5', '-'], ['C#5', '-', '-', '-', 'D5', '-', '-', '-']];
-function buriedcity(i, delay, variant, env) {
-  const bar = Math.floor(i / BCM_LEN), s = i % BCM_LEN, g = env.gain;
-  if (s === 0 && bar % 4 === 0) held(env, 'sawtooth', nf('D2'), BCM_STEP * BCM_LEN * 4 * 0.98, 0.045 * g, delay, { lp: 300, att: BCM_STEP * 6, hold: 0.7, det: 8 });
-  pluck(env, 'square', s % 2 ? 1320 : 1980, 0.025, 0.018 * g, delay, { lp: 4200 });   /* the clockwork: tick, tock */
-  if (s === 0 && bar % 4 === 0) noise(env, BCM_STEP * 6, 0.025 * g, 5200, 0.6, delay);   /* the sand pouring */
-  const c = BCM_BOX[bar % 4][s]; if (c !== '-') { const f = nf(c) * 0.994; pluck(env, 'sine', f, BCM_STEP * 3, 0.06 * g, delay, { to: f * 0.998 }); pluck(env, 'sine', f * 3.01, BCM_STEP, 0.012 * g, delay); }
-}
+// (THE BURIED CITY has no synth bed: 'Loopable Dungeon Ambience' by JaggedStone is its file, claude/buriedcity music pass; THE HOURGLASS KING below keeps his composed theme)
 // ---------------------------------------------------------------- THE HOURGLASS KING (claude/buriedcity, his composed theme: three phases)
 // D minor (harmonic: D E F G A Bb C#), 4/4 at 92 (eighth = 0.326 s), 16 bars = 42 s. THE KING'S HOUR: a PENDULUM BASS swinging D - A every beat (his sceptre),
 // a heavy ESCAPEMENT CLACK on one and three (a low thud with a click), a brass CHORALE (a detuned saw pair, slow) climbing the minor and falling back, and a
@@ -499,7 +487,7 @@ function lanterneater(i, delay, variant, env) {
 
 export const SYNTH_BOSS = {
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },
-  buriedcity: { step: BCM_STEP, total: BCM_LEN * BCM_BARSN, play: buriedcity }, hourglassking: { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the greybox level bed and his theme */   /* (claude/lanterneater) */
+  hourglassking: { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the greybox level bed and his theme */   /* (claude/lanterneater) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
   hawkmistress: { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) the greybox level bed and her theme */
   djinn: { step: DJM_STEP, total: DJM_LEN * DJM_BARSN, play: djinn },

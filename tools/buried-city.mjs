@@ -154,5 +154,5 @@ for (const m of ['pendTell', 'gearTell', 'streamTell', 'slipTell', 'hourTell']) 
 const hkSrc = readFileSync(new URL('../src/hourglass-king.js', import.meta.url), 'utf8') + readFileSync(new URL('../src/hourglass-king-hands.js', import.meta.url), 'utf8');
 ok(!/ctx.spawn(?!Boss)|enemies().push|enemies.push/.test(hkSrc), 'NO ADDS: the king summons nothing');
 ok(OPEN_RULE.hourglassking && OWN_WARD.has('hourglassking'), 'the greed rule knows his opening; his brass is his own ward (no x0.05 chip)');
-ok(SYNTH_BOSS.hourglassking && SYNTH_VARIANT['hourglassking:p2'] && SYNTH_VARIANT['hourglassking:p3'] && SYNTH_BOSS.buriedcity, 'his three-phase theme and the city\'s bed are composed in code');
+ok(SYNTH_BOSS.hourglassking && SYNTH_VARIANT['hourglassking:p2'] && SYNTH_VARIANT['hourglassking:p3'] && !SYNTH_BOSS.buriedcity, "his three-phase theme is composed in code; the city's greybox synth bed is gone (music pass: 'Loopable Dungeon Ambience' is the level track)");
 console.log('buried-city: ' + n + ' checks green');
