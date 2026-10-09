@@ -403,17 +403,17 @@
   "lostPct": 352
  },
  "caravan": {
-  "hash": "a58a91e52616",
+  "hash": "140c6d732d6d",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 63,
+  "hits": 62,
   "deaths": 3,
-  "kills": 12,
-  "lifts": 81,
+  "kills": 21,
+  "lifts": 105,
   "walked": 100,
   "bare": true,
-  "lostPct": 198
+  "lostPct": 182
  },
  "fair": {
   "hash": "fd51c55d8516",

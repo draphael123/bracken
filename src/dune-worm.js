@@ -34,7 +34,7 @@
 // rises at the commit (only the real one bulges: readable, late), and a THIRD stone stands in the hollow (the arena changes, B5).
 
 export const WORM = {
-  hp: 2300,       /* (claude/caravan2: every blow outside the stun is nothing now, so his health is what the stuns pay for - tuned WITH FLASKS) */
+  hp: 2150,       /* (claude/caravan2: every blow outside the stun is nothing now, so his health is what the stuns pay for - tuned WITH FLASKS) */
   rippleSpeed: 170, rippleTrack: 0.88, rippleCommit: 0.45, commitSpeed: 215,
   breachR: 14, breachH: 60, breachT: 0.3,
   stunned: 3.0, stunMult: 1.5,                    /* THE OPENING: his head on the stone. B15: openings pay 1.5-2x */
