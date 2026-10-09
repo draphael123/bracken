@@ -1,0 +1,7 @@
+wrote hud-welltown
+wrote hud-redgorge
+wrote hud-reef
+wrote boss-bar
+wrote boss-pct
+wrote boss-num
+SET.hud= full bossHp= num

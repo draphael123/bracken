@@ -1,0 +1,12 @@
+import { pathToFileURL } from 'node:url';
+const WT = process.argv[2];
+const { openPage } = await import(pathToFileURL(WT + '/tools/cdp.mjs').href);
+const pg = await openPage({ audio: false, fonts: true });
+const E = (e, t = 300000) => pg.evalp(e, t);
+await new Promise(r => setTimeout(r, 1500));
+console.log('boot', await E('__gnull()'));
+await E('BK.manualSimulation=true;BK.step(1)'); console.log('s1', await E('__gnull()'));
+await E('BK.step(5)'); console.log('s5', await E('__gnull()'), await E('BK.state'));
+await E(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.setHero('knight');BK.reset({fresh:true});BK.load(0);BK.state='play';BK.step(1)})()`); console.log('play', await E('__gnull()'));
+await E('window.__tr=[];BK.step(1)'); console.log('play2', await E('__gnull()'), await E('JSON.stringify(__tr)'));
+await pg.close();

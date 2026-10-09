@@ -276,7 +276,7 @@ export function makeWellTownHands(ctx) {
   /* THE SKIN on the HUD, under the sun meter: a drop a sip, and what E does now (FILL, POUR, DRINK; a deep well's bucket says WIND) */
   const VERB_COL = { FILL: '#e8f4f8', 'POUR IN': '#8fd160', POUR: '#8fd160', DRINK: '#7ab8e8', WIND: '#ffd36b', EMPTY: '#ff9a5c' };
   H.drawHud = (g, P) => {
-    if (!WT || !P) return; const sk = skinOf(P), x = 22, y = 64;
+    if (!WT || !P) return; const sk = skinOf(P), x = 22, y = 66;
     drawIcon(g, 'drop', x - 12, y - 1, '#7ab8e8');
     for (let i = 0; i < (sk.max || SKINMAX); i++) { const dx = x + 12 + i * 8; g.fillStyle = 'rgba(20,20,40,0.6)'; g.fillRect(dx - 1, y - 1, 7, 8); g.fillStyle = i < sk.sips ? '#3a7ab8' : '#1a2430'; g.fillRect(dx, y, 5, 6); if (i < sk.sips) { g.fillStyle = '#7ab8e8'; g.fillRect(dx + 1, y + 1, 2, 2); } }
     const v = !P.dead && H.verbNow(P);
