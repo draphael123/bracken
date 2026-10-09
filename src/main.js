@@ -365,7 +365,7 @@ Object.assign(DMG, {
   reeveSweep: 31, reeveLunge: 42, reeveHook: 25, reeveDouse: 25,   /* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14 */
   bellLeap: 18, bellClaw: 22, bellPressure: 20,   /* THE DIVING BELL: 24, 26, 24 */
   palLeap: 26,   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP: new, his bash's weight */
-  krakSlam: 36, krakSweep: 33, krakRoar: 28, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22,   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
+  krakSlam: 36, krakSweep: 33, krakRoar: 28, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22, krakWave: 22, krakQuake: 14, krakShake: 14,   /* (claude/kraken2: THE WAVE, the slam's shockwave, the shaken ramp) */   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
   tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
@@ -9050,7 +9050,7 @@ function updatePlayer(dt) {
   if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
-  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : isGeo() && P.ground ? 0.92 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
+  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : isGeo() && P.ground ? 0.92 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK) * (KRS.inked > 0 && P.ground ? KRK_INK_SLOW : 1)) + (P.gustT > 0 && !P.ground ? 150 : 0);   /* (THE KRAKEN's ink patch: wading it, claude/kraken2) */ // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
   /* UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down"): walking up a dune the legs cap at 0.6 of a run on a steep slope, 0.8 on a gentle one, and down it they run a little free (1.1). Walking only - the slide (below) keeps its own speeds. */
   const slopeK = SLOPES_ON && P.ground && move && !P.swim ? footSlope(tileAt, P) : 0, capW = slopeK ? cap * (slopeRise(slopeK) === move ? (slopeGrade(slopeK) === 1 ? UPHILL.steep : UPHILL.gentle) : UPHILL.down) : cap;
@@ -13927,10 +13927,84 @@ function krakenWreck(e, up) { const A = L.arena; if (!A.wreck) return; const fy 
   let ch = false; for (const [i, t0] of A.wreckSave) { const t = up ? t0 : T.AIR; if (L.grid[i] !== t) { L.grid[i] = t; tileSpr[i] = null; ch = true; } }
   if (!up && ch) { for (let x = w0; x <= w1; x++) { krakenDebris(x * TS + 8, A.floor - 20, 8, KRK_WOOD); } krakenSplash((w0 + w1 + 1) / 2 * TS, A.floor, 20); SFX.crack(); SFX.heavy(); shakeCam(12); }
   if (ch) resolveTiles(); }
+/* ================= THE KRAKEN 2 (claude/kraken2, Daniel 2026-10-08, scratch/brief-kraken2.md) =================
+   He is what the goblins of the Long Water paid their tribute to for a hundred years: the sea, come up the causeway to collect.
+   I. THE ARMS - harder, more going on, still slow and told: INK (blobs lobbed from the far water, told by a ring where each lands; the
+      patch it leaves hides an arm lying in it and slows a hero wading through it), more SPOUTS (three marks), THE WAVE (a real shove: brace
+      behind a crate or a stone, get up high, or jump the crest), THE SLAM's SHOCKWAVE (its reach ringed on the stones while it is told;
+      jump it or take it on the shield), and the arms COORDINATE (one slams while another sweeps from the far end of the road).
+   II. OUT AT SEA / THE CARGO - kept; THE BELLS made plain: a big BREATH bubble and timer over him while he breathes, every bell that can
+      knell him glints and shows its reach out to him, a struck bell sends a shock ring out along it, and a sign teaches it as the stage begins.
+   III. THE CLIMB (replaces the maw's tentacle round): he hauls himself up against the end of the road. An arm he slams down and you CUT
+      THROUGH falls against him as a RAMP up to his head; climb it while he SHAKES it (told: jump), his great EYE opens (gold ring and
+      timer, x2) and shuts behind a told WARD, and his BEAK bites at the top of the ramp (told). The waystone still pins his spear. */
+const KRK_P1 = { ink: 10.5, spout: 11, wave: 14, co: 9, crate: 6.5, crateMax: 3, slam: 2.2 };
+const KRK_INK_SLOW = 0.7, KRK_BLOB_W = 46, KRK_BLOB_LIFE = 6;   /* a patch: how much it slows a hero wading it, how wide, how long */
+const KRK_WAVE_V = 250, KRK_WAVE_H = 36, KRK_WAVE_SHOVE = 0.5;     /* THE WAVE: its speed landward, the height of its crest, and how long the shove carries you */
+const KRK_QUAKE_R = 76, KRK_QUAKE_V = 240;                        /* THE SLAM'S SHOCKWAVE: how far it runs out along the stones, and how fast */
+const KRK_BELL_FLY = 0.35;                                        /* a struck bell's shock ring, out to him */
+const KRK_RAMP_T = 11, KRK_EYE_OPEN = 3.2, KRK_EYE_WARD = 3, KRK_EYE_TAKE = 0.12, KRK_SHUT = 0.4;   /* THE CLIMB: the ramp's life, the eye open, its ward, its price, and B15's floor */
+const KRK_CLIMB_ARM = 0.6;   /* an arm in the climb: a share of a first-stage arm, so one slam and a few cuts fell it */
+const KRK_CLIMB_Q = ['eye', 'shake', 'bite', 'eye', 'shake', 'bite'];
+/* INK: two blobs out of his mouth in the far water, each on a ring where it will come down; a patch where it lands */
+function krakenInkLob(e) { const A = L.arena, side = Math.random() < 0.5 ? -1 : 1, from = krakenMouth(e);
+  for (const x0 of [P.x, P.x + side * (64 + Math.random() * 28)]) e.blobs.push({ x: Math.max(A.x0 + 40, Math.min(A.x1 - 30, x0)), t: 0, dur: 1.1, fx: from.x, fy: from.y });
+  number(P.x, L.arena.floor - 60, 'INK', '#b9a6e0'); SFX.gutter(); SFX.spit(); e.inkLobs = (e.inkLobs || 0) + 1; }
+function krakenBlobAt(b) { const k = Math.min(1, b.t / b.dur), ty = krkTop(b.x) - 4; return { x: b.fx + (b.x - b.fx) * k, y: b.fy + (ty - b.fy) * k - Math.sin(k * Math.PI) * 70, k }; }
+function krakenInkTick2(e, dt) { const fl = L.arena.floor;
+  for (const b of e.blobs) { b.t += dt; if (b.t >= b.dur) { b.done = true; e.patches.push({ x: b.x, w: KRK_BLOB_W, life: KRK_BLOB_LIFE, y: krkTop(b.x) }); krakenSplash(b.x, krkTop(b.x), 6); for (let i = 0; i < 14; i++) parts.push({ x: b.x + (Math.random() - 0.5) * 30, y: krkTop(b.x) - 4, vx: (Math.random() - 0.5) * 120, vy: -40 - Math.random() * 90, life: 0.6, max: 0.6, col: i % 2 ? '#140c1c' : '#3a2a4a', size: 2, grav: 380 }); SFX.splash(); } }
+  e.blobs = e.blobs.filter(b => !b.done); for (const p of e.patches) p.life -= dt; e.patches = e.patches.filter(p => p.life > 0);
+  KRS.inked = !P.dead && P.ground && e.patches.some(p => Math.abs(P.x - p.x) < p.w / 2 && Math.abs(P.y - p.y) < 6) ? 1 : 0;
+  if (KRS.inked) e.inkedT = (e.inkedT || 0) + dt; }
+const krakenInked = (e, x, y) => (e.patches || []).some(p => Math.abs(x - p.x) < p.w / 2 && Math.abs(y - p.y) < 14);
+/* THE ARMS COORDINATE: one slams on you while another comes along the road from the far end of it */
+function krakenCoSweep(e, b, tell) { const re = krkRoadEnds(), mid = (L.arena.x0 + L.arena.x1) / 2, from = b.bx < mid ? re[0] : re[1], to = b.bx < mid ? re[1] : re[0];
+  b.st = 'lower'; b.want = [from, krkTop(from, true) - 12]; e.co = { i: b.i, from, to, t: tell, tell, dur: 0.78, hit: false, go: false, k: 0 }; e.cos = (e.cos || 0) + 1;
+  number(P.x, L.arena.floor - 60, '!!', '#ff6b6b'); SFX.anchorSwing(); }
+function krakenCoTick(e, dt) { const c = e.co; if (!c) return; const a = e.arms[c.i]; if (!a || krkLost(a) || a.severed) { e.co = null; return; }
+  if (!c.go) { c.t -= dt; a.st = 'lower'; a.want = [c.from, krkTop(c.from, true) - 12]; if (c.t <= 0) { c.go = true; a.st = 'sweep'; SFX.anchorSwing(); SFX.throwWhoosh(); } return; }
+  c.k += dt / c.dur; const sx = c.from + (c.to - c.from) * Math.min(1, c.k), sy = krkTop(sx, true); a.st = 'sweep'; a.tx = sx; a.ty = sy - 12;
+  if (!c.hit && !P.dead && Math.abs(P.x - sx) < 20 && P.y > sy - 16 && P.y <= sy + 4) { c.hit = true; e.coHits = (e.coHits || 0) + 1; const res = damagePlayer(sx, DMG.krakSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(c.to - c.from) * 260; P.vy = -170; P.ground = false; } }
+  if (c.k >= 1) { a.st = 'drag'; a.t = 0.7; e.co = null; } }
+/* THE SLAM'S SHOCKWAVE: out along the surface it came down on, both ways; a hero on that surface in its front is hit (the shield turns it,
+   as it turns the slam: the yellow ! promises both), a hero in the air over it is not */
+function krakenQuakeTick(e, dt) {
+  for (const q of e.quakes) { q.r += KRK_QUAKE_V * dt;
+    if (!q.hit && !P.dead && P.ground && Math.abs(P.y - q.y) < 6) { const d = Math.abs(P.x - q.x); if (d > 30 && d <= q.r && d > q.r - 26) { q.hit = true; e.quakeHits = (e.quakeHits || 0) + 1; const res = damagePlayer(q.x, DMG.krakQuake); if (res === 'hit') { P.vy = -150; P.vx = (Math.sign(P.x - q.x) || 1) * 150; P.ground = false; } } }
+    if (Math.random() < dt * 40) for (const s of [-1, 1]) parts.push({ x: q.x + s * q.r, y: q.y - 2, vx: s * 30, vy: -60 - Math.random() * 60, life: 0.3, max: 0.3, col: '#c9b27c', size: 1, grav: 300 });
+    if (q.r >= KRK_QUAKE_R) q.done = true; }
+  e.quakes = e.quakes.filter(q => !q.done); }
+/* THE WAVE: a wall of the sea up the road from his end. Up high (the plinth, the tower) or in the air over its crest it goes under you;
+   tucked in behind something that stands in it (a crate, a pier stone, the plinth's foot) it breaks on that; anywhere else it SHOVES you
+   landward, hard */
+function krakenWaveHit(e, hurt) { const fl = L.arena.floor, fy = fl / TS;
+  if (e.waveHit || P.dead || Math.abs(P.x - e.waveX) > 12 || P.swim) return; e.waveHit = true;
+  if (P.y < fl - KRK_WAVE_H) { e.waveOver = (e.waveOver || 0) + 1; return; }
+  for (let x = P.x + 3; x <= P.x + 22; x += 4) if (isSolid(Math.floor(x / TS), fy - 1)) { e.waveBraced = (e.waveBraced || 0) + 1; number(P.x, P.y - 30, 'BRACED', '#8fd160'); krakenSplash(x, fl - 16, 10); SFX.splash(); return; }
+  e.waveHits = (e.waveHits || 0) + 1; const res = hurt();
+  if (res === 'hit' || res === 'blocked') { P.vx = -430; P.vy = -140; P.ground = false; e.shoveT = KRK_WAVE_SHOVE; number(P.x, P.y - 30, 'SWEPT', '#ff6b6b'); }
+  krakenSplash(P.x, fl, 14); SFX.waveCrash(); shakeCam(6); }
+/* ---- III. THE CLIMB ---- where his great eye is when he hauls himself up against the end of the road (the near place, frame 0, up) */
+function krakenEyeW(e) { const F = krkArt().far, fl = L.arena.floor, [ex, ey] = F.eyes[0][0]; return { x: L.arena.rest - 26, y: Math.round(fl - 8 - F.wl * 2 + ey * 2) }; }
+/* THE RAMP: the arm you cut through, fallen against him - from the road past the plinth up to the foot of his eye */
+function krakenRampMake(e, a) { const A = L.arena, eye = krakenEyeW(e), x0 = A.plinth[1] + 18, x1 = eye.x - 20, y1 = eye.y + 20;
+  e.ramp = { x0, y0: A.floor, x1, y1, t: KRK_RAMP_T, fall: 0.6, max: KRK_RAMP_T, from: a ? a.bx : x0 }; e.ramps = (e.ramps || 0) + 1;
+  e.climbN = 0; e.T.climb = 1.1; e.eyeT = 0; e.wardT = 0; e.mode = 'stride3'; e.modeT = 0.4;
+  for (const q of e.arms) if (!q.severed && !q.spear && (q.st === 'rise' || q.st === 'slam' || q.st === 'lower' || q.st === 'rakeUp')) { q.st = 'idle'; q.low = false; }
+  number((x0 + x1) / 2, (A.floor + y1) / 2 - 30, 'HIS ARM FALLS - CLIMB IT', '#ffd36b'); SFX.thud(); SFX.bellow(); shakeCam(10); zoomKick(1.08, 0.4); dust((x0 + x1) / 2, A.floor, 16); }
+const krakenRampY = (r, x) => r.y0 + (r.y1 - r.y0) * Math.max(0, Math.min(1, (x - r.x0) / (r.x1 - r.x0)));
+/* A HERO ON THE RAMP stands on it (it is not in the grid: it is his arm). Landed on from above, walked onto from the road at its foot */
+function krakenRampTick(e, dt) { const r = e.ramp; e.onRamp = false; if (!r) return; r.t -= dt; if (r.fall > 0) { r.fall -= dt; return; }
+  if (r.t <= 0) { e.ramp = null; e.eyeT = 0; krakenSplash((r.x0 + r.x1) / 2, L.arena.floor, 20); SFX.splash(); SFX.bellow(); if (e.mode === 'shakeTell' || e.mode === 'shake' || e.mode === 'biteTell' || e.mode === 'bite') { e.mode = 'stride3'; e.modeT = 0.6; } return; }
+  if (e.rampOff > 0) { e.rampOff -= dt; return; }
+  if (P.dead || P.swim || P.x < r.x0 - 2 || P.x > r.x1 + 8) return; const sy = krakenRampY(r, P.x);
+  if (P.vy >= 0 && P.y >= sy - 4 && P.y <= sy + 12) { P.y = sy; P.vy = 0; P.ground = true; e.onRamp = true; e.rampT = (e.rampT || 0) + dt; } }
+const krakenOnRamp = e => !!(e.ramp && e.onRamp);
 function krakenInit(e) {
   const A = L.arena, fl = A.floor, armHp = Math.max(20, Math.round(e.maxHp * 0.3 / 4));
   e.stage = 1; e.stageFloor = Math.round(e.maxHp * 0.7); e.skyT = 0; e.inkT = 0; e.back = 'stride';
-  e.seaY = fl + 2 * TS; e.seaWant = fl + 2 * TS; e.T = { grab: 4, sweep: 6.5, slam: 1.2, hurl: 0, beat: 99, arm: 99, lunge: 0, roar: 0, roll: 0, crate: 1.2, rake: 99, look: 99 };
+  e.seaY = fl + 2 * TS; e.seaWant = fl + 2 * TS; e.T = { grab: 4, sweep: 6.5, slam: 1.2, hurl: 0, beat: 99, arm: 99, lunge: 0, roar: 0, roll: 0, crate: 1.2, rake: 99, look: 99, ink: 6, spout: 4.5, wave: 9, co: 3.5, climb: 99 };
+  e.blobs = []; e.patches = []; e.quakes = []; e.co = null; e.waveX = null; e.shoveT = 0; e.bellRings = []; e.ramp = null; e.eyeT = 0; e.wardT = 0; e.signT = 0; KRS.inked = 0;
   e.far = 0; e.farWant = 0; e.farQ = []; e.cargo = []; e.crates = []; e.bridges = []; e.orbs = []; e.geys = []; e.hurls = []; e.brimT = 0; e.hurlN = 0; e.slam2 = null;
   e.shards = []; e.drift = []; e.headX = A.rest; e.tideN = 0; e.tideShow = A.x1; e.tideWarn = 0; e.tideSurge = null; e.T.tide = KRK_TIDE_EVERY[1];   /* what is going back at him, and what the flood is bringing in. headX is only WHERE HE IS - the end of the road - never a body on it */
   /* HIS BODY, in the background: NEAR is up close behind the last stones (the breath, the look, the maw), LURK is low in the far water
@@ -13971,6 +14045,7 @@ function krakenSever(K, a) {
   a.severed = true; a.hp = 0; a.back = 0;
   a.snap = krkArmPts(a, L.arena.floor, 0); a.cutT = 0; a.st = 'gone'; a.low = false; if (a.ae) a.ae.alive = false;
   if (K.stage >= 3 && K.alive) (K.renew = K.renew || []).push({ o: Math.round((a.bx - 8 - L.arena.x0) / TS), spear: !!a.spear, t: a.spear ? 5 : 7 });   /* IN THE MAW A CUT ARM COMES BACK: a new one, out of the same sea */
+  if (K.stage >= 3 && K.alive && !a.spear && !K.ramp) krakenRampMake(K, a);   /* THE CLIMB: an arm cut through falls against him - a ramp up to his head (claude/kraken2) */
   if (K.mode === 'held' && K.armI === a.i) { K.mode = K.back; K.modeT = 0.6; }
   for (let i = 0; i < 46; i++) parts.push({ x: a.tx + (Math.random() - 0.5) * 30, y: a.ty - Math.random() * 20, vx: (Math.random() - 0.5) * 220, vy: -60 - Math.random() * 220, life: 1.2, max: 1.2, col: ['#161018', '#161018', '#7c3a4a', '#e6c2a6'][(Math.random() * 4) | 0], size: 2, grav: 420 });
   hitstop(0.12); shakeCam(10); zoomKick(1.1, 0.35); killFlash = 0.08; ringAt(a.tx, a.ty - 8, 34, '#e6c2a6', 0.5); SFX.crack(); SFX.bellow();
@@ -14009,7 +14084,7 @@ function krakenArmsTick(e, dt) {
     /* HOTFIX SAFETY NET (Daniel, 2026-09-26: 'he can softlock by getting his tentacles stuck in platforms'): an arm whose tip stays inside rock or a board for 2 s draws back into the sea and comes up again as normal. The cause is next week's; this only makes sure a fight can never hang on it */
     if (a.st !== 'hid' && a.st !== 'retreat' && a.st !== 'gone') { const tt = tileAt(Math.floor(a.tx / TS), Math.floor(a.ty / TS)); if (isSolid(Math.floor(a.tx / TS), Math.floor(a.ty / TS)) || tt === T.ONEWAY || tt === T.PLANK) a.stuckT = (a.stuckT || 0) + dt; else a.stuckT = 0; if (a.stuckT > 2) { a.stuckT = 0; a.st = 'retreat'; a.t = 1; a.low = false; if (a.ae) a.ae.alive = false; a.back = 2; a.backHp = a.hp; } }   /* (claude/sweep2) and it COMES BACK: a.back brings it up out of 'hid' with the health it had. Without it a stuck arm stayed under for good and stage 1 (it ends when every arm is cut) never ended - the 0/12 soft-lock */
     /* A CUT LEFT TOO LONG CLOSES: KRK_REGROW seconds after the last cut the arm is whole again (the damage it cost him stays) */
-    if (a.healT > 0 && a.hp > 0 && a.hp < a.max) { a.healT -= dt; if (a.healT <= 0) { a.hp = a.max; if (a.ae) a.ae.hp = a.max; a.flash = 0.2; e.heals = (e.heals || 0) + 1; if (a.st !== 'hid' && typeof number === 'function') { number(a.tx, fl - 44, 'IT HEALS', '#9aa39a'); SFX.hiss(); } } }
+    if (a.healT > 0 && a.hp > 0 && a.hp < a.max && e.stage < 3) { a.healT -= dt;   /* (THE CLIMB: a cut there does not close - claude/kraken2) */ if (a.healT <= 0) { a.hp = a.max; if (a.ae) a.ae.hp = a.max; a.flash = 0.2; e.heals = (e.heals || 0) + 1; if (a.st !== 'hid' && typeof number === 'function') { number(a.tx, fl - 44, 'IT HEALS', '#9aa39a'); SFX.hiss(); } } }
     switch (a.st) {
       case 'hid': ease(a, a.bx, fl + 60, 3); a.low = false;
         /* IN THE MAW A CUT ARM COMES BACK: the body is out of reach now, and an arm lost for good would leave the stage nothing to cut */
@@ -14041,7 +14116,7 @@ function krakenHurt(e, dmg, fromX, plunge, tag) {
   if (e.t === 'krakenarm') { const a = e.arm, K = e.parent;
     if (!a || !a.low || a.st === 'gone' || !K || !K.alive) { SFX.clank(); return false; }
     /* UNDER THE TIDE: an arm lying on stones the sea has taken is out of reach of a blade (THE TIDE RISES) */
-    { const bx = fromX + (Math.sign(e.x - fromX) || 1) * 14; if (krakenFlooded(K, bx)) { SFX.splash(); number(bx, A0y(K) - 20, 'UNDER THE TIDE', '#9ad8d8'); return false; } }
+    let floor = 1; { const bx = fromX + (Math.sign(e.x - fromX) || 1) * 14; if (krakenFlooded(K, bx) && a.ty > A0y(K) - 16) { SFX.splash(); number(bx, A0y(K) - 20, 'UNDER THE TIDE', '#9ad8d8'); floor = KRK_SHUT; } }   /* (B15, claude/kraken2: under the sea it is a fraction, never nothing) */
     /* THE OPENINGS ARE IN HIS ARMS NOW, because his arms are all of him that is on the road. KNELLED, both lie limp across the stones and
        a cut goes through to him two and a half times without costing the arm (it is not a race to sever them). PINNED in a waystone,
        the spear the same. While he LOOKS, a cut goes through at a third again, up to KRK_LOOK_TAKE of him */
@@ -14051,11 +14126,12 @@ function krakenHurt(e, dmg, fromX, plunge, tag) {
        knelled (on top of the bell's own blow), KRK_PIN_TAKE pinned. Without it the opening paid by the weight of the blade and not by the
        read: the first cut of the limp arms had one bell take 140 to 210 of him - the whole of the second stage - and a pinned spear 250 */
     if (knell || pin || look) { const cap = Math.round(K.maxHp * (knell ? KRK_KNELL_TAKE : pin ? KRK_PIN_TAKE : KRK_LOOK_TAKE)), left = cap - (K.openTaken || 0);
-      if (left <= 0) { SFX.clank(); return false; }
-      d = Math.min(d, left); K.openTaken = (K.openTaken || 0) + d;
+      if (left <= 0) d = Math.max(1, Math.round(dmg * KRK_SHUT));   /* (an opening already paid in full: B15's floor, not nothing) */
+      else { d = Math.min(d, left); K.openTaken = (K.openTaken || 0) + d; }
       if (K.openTaken >= cap) { if (pin || look) K.modeT = Math.min(K.modeT, 0.2);
         for (const q of K.arms) if ((pin ? q.spear : q.two) && q.low && !krkLost(q) && q.st !== 'hold') { if (q.spear) { q.st = 'retreat'; q.t = 0.8; } else { q.st = 'drag'; q.t = 0.5; } q.low = false; }
         SFX.bellow(); } }
+    if (floor < 1) d = Math.max(1, Math.round(dmg * floor));
     const through = knell || pin || a.spear;
     const take = Math.min(d, a.hp); a.hp -= take; e.hp = Math.max(0, a.hp); e.flash = 0.12; a.flash = 0.12; a.healT = KRK_REGROW;
     /* THE LAST CUT is a blow on him, so it goes through hurtEnemy and he dies the way every boss does */
@@ -14072,6 +14148,12 @@ function krakenHurt(e, dmg, fromX, plunge, tag) {
   /* THE BODY ITSELF IS NEVER ON THE ROAD, so no blade reaches it: what hurts him is what reaches him - a cut on an arm, a crate
      thrown out to him, the bell. (passThrough is his arm's last cut, handed on so he dies the way every boss does) */
   if (e.passThrough) { e.passThrough = false; return dmg; }
+  /* THE CLIMB: up the ramp, his head is in reach. His EYE open takes a blade twice (up to KRK_EYE_TAKE of him an opening); shut or warded
+     it is horn and lid - B15's floor, KRK_SHUT, told */
+  if (e.stage >= 3 && L.arena) { const ey = krakenEyeW(e);
+    if (e.eyeT > 0) { const left = Math.round(e.maxHp * KRK_EYE_TAKE) - (e.eyeTaken || 0);
+      if (left > 0) { const d = Math.max(1, Math.min(left, Math.round(dmg * 2))); e.eyeTaken = (e.eyeTaken || 0) + d; krakenLedger(e, 'eye', d); e.recoil = Math.max(e.recoil || 0, 0.5); number(ey.x, ey.y - 24, 'IN THE EYE', '#ffd36b'); if (e.eyeTaken >= Math.round(e.maxHp * KRK_EYE_TAKE)) { e.eyeT = Math.min(e.eyeT, 0.05); } return d; } }
+    const d = Math.max(1, Math.round(dmg * KRK_SHUT)); krakenLedger(e, e.wardT > 0 ? 'ward' : 'shut', d); SFX.clank(); if (!(e.shutSaid > 0) || time - e.shutSaid > 0.8) { e.shutSaid = time; number(ey.x, ey.y - 24, e.wardT > 0 ? 'WARDED' : 'THE EYE IS SHUT', '#9aa39a'); } sparks(ey.x - 10, ey.y, -1, 5); return d; }
   return false;
 }
 const A0y = K => L.arena ? L.arena.floor : K.y;
@@ -14145,7 +14227,7 @@ const KRK_LOOK_EVERY = 17;
 const KRK_LOOK_OPEN = 1.8;     /* up close, and gone again */
 const KRK_LOOK_TAKE = 0.035;   /* the most the arms lying still can cost him in one look, as a share of him: a good cut or two */
 const KRK_KNELL_TAKE = 0.05;   /* knelled, the arms limp across the road: on top of the bell's own six percent */
-const KRK_PIN_TAKE = 0.06;    /* the spear pinned in a waystone: the maw's one opening, so the biggest (was 0.065; the paladin's cargo run
+const KRK_PIN_TAKE = 0.045;   /* (claude/kraken2: 0.06 - in THE CLIMB the pin is the second opening, the eye the first) */    /* the spear pinned in a waystone: the maw's one opening, so the biggest (was 0.065; the paladin's cargo run
    sat under the 90s floor at that price, and this is the smaller of the two knobs that fixed it - the crate rate was left alone) */
 /* WHAT THE PAIR CAME TO, body in the background, causeway, six heroes, two reps (BK.krakCargo): WORKING THE CARGO knight 107.8/109.6,
    warden 116.1/111.9, pyro 131.4/131.8, paladin 99.2/98.6, pirate 99.2/99.2, reaper 109.4/119.3 - all inside 90-150. WALKING PAST IT
@@ -14222,7 +14304,7 @@ function krakenTideTick(e, dt) {
 const krakenTowerBell = pr => !!L.arena && pr.x < L.arena.plinth[0];
 const krakenBellSpent = (e, pr) => krakenTowerBell(pr) && e.towerKnelled === e.stage;
 function krakenBellRung(e, pr) {
-  if (krakenBreathing(e)) { if (krakenBellSpent(e, pr)) { number(pr.x, pr.y - 52, 'HE KNOWS THAT BELL', '#9aa39a'); SFX.clank(); e.spentRung = (e.spentRung || 0) + 1; } else { e.knellHit = true; e.knellBell = krakenTowerBell(pr) ? 'tower' : 'shrine'; } }
+  if (krakenBreathing(e)) { if (krakenBellSpent(e, pr)) { number(pr.x, pr.y - 52, 'HE KNOWS THAT BELL', '#9aa39a'); SFX.clank(); e.spentRung = (e.spentRung || 0) + 1; } else { (e.bellRings = e.bellRings || []).push({ x0: pr.x, y0: pr.y - 20, t: 0, dur: KRK_BELL_FLY, bell: krakenTowerBell(pr) ? 'tower' : 'shrine' }); ringAt(pr.x, pr.y - 20, 30, '#ffd36b', 0.5); } }   /* (claude/kraken2: the ring goes OUT to him along the bell's reach, and knells him when it arrives) */
   if (e.mode === 'rise1' || e.mode === 'rise2' || e.mode === 'wake' || e.mode === 'emerge' || e.tideSurge) return;
   if ((e.tideN || 0) > 0) { e.tideN--; e.tideWarn = 0; e.tideToll = 0; e.T.tide = KRK_TIDE_EVERY[e.stage] || 12; e.tideRung = (e.tideRung || 0) + 1; pr.cool = Math.max(pr.cool || 0, 3);
     SFX.waveCrash(); SFX.wave(); number(pr.x, pr.y - 40, 'THE TIDE GOES BACK', '#7cc8b8'); shakeCam(3); krakenSplash(krakenTideLine(e) + 8, L.arena.floor, 12); }
@@ -14383,8 +14465,8 @@ function krakenOrbAt(e, o) { const m = o.from || (o.from = krakenMouth(e)), fl =
   if (o.ret > 0) { const k = Math.min(1, o.ret / 0.7), to = krakenMouth(e); return { x: o.rx + (to.x - o.rx) * k, y: o.ry + (to.y - o.ry) * k - Math.sin(k * Math.PI) * 40, r: 7 - 5 * k }; }
   const k = Math.max(0, Math.min(1, o.t / o.dur)); return { x: m.x + (o.mx - m.x) * k, y: m.y + (fl - 5 - m.y) * k * k - Math.sin(k * Math.PI) * 46, r: 2 + 5 * k }; }
 /* THE SPOUT: two marks, the second a breath after the first; a crate on a mark goes up with it, and a spout in a break fills it */
-function krakenGeyserMarks(e) { const A = L.arena, side = Math.random() < 0.5 ? -1 : 1;
-  return [P.x, P.x + side * 64].map((x, i) => { const gx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, x)), c = Math.floor(gx / TS); return { x: gx, delay: i * 0.3, t: -1, burst: false, hit: false, hole: A.holes.some(([a, b]) => c >= a && c <= b) }; }); }
+function krakenGeyserMarks(e, n = 2) { const A = L.arena, side = Math.random() < 0.5 ? -1 : 1;
+  return [P.x, P.x + side * 64, P.x - side * 64].slice(0, n).map((x, i) => { const gx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, x)), c = Math.floor(gx / TS); return { x: gx, delay: i * 0.3, t: -1, burst: false, hit: false, hole: A.holes.some(([a, b]) => c >= a && c <= b) }; }); }
 function krakenSpout(e, q) { const c = Math.floor(q.x / TS); for (const k of e.crates) if (Math.abs(k.c - c) <= 1) k.life = 0; if (q.hole) e.brimT = Math.max(e.brimT, 2); }
 function updateKraken(e, dt) {
   const A = L.arena, fl = A.floor, sea = (L.pools || []).find(p => p.krakenSea); e.modeT -= dt; e.anim += dt;
@@ -14401,8 +14483,19 @@ function updateKraken(e, dt) {
      air, up out of the drain - the flood is still running landward over the wreck field and still laying cargo on the stones. That is
      the change: a player always has something to work with, and never has to wait for him to throw one */
   if (e.stage === 2 && e.mode !== 'rise1' && e.mode !== 'rise2' && e.T.crate <= 0) { e.T.crate = KRK_CRATE_EVERY; if (e.crates.length + e.drift.length < KRK_CRATE_MAX) krakenTideCrate(e); }
+  /* THE FIRST STAGE'S CARGO: the flood brings a crate in now and then from the start - footing, and something to brace behind when the wave comes */
+  const p1 = e.stage === 1 && e.mode !== 'wake' && e.mode !== 'emerge' && e.mode !== 'rise1';
+  if (p1 && e.T.crate <= 0) { e.T.crate = KRK_P1.crate; if (e.crates.length + e.drift.length < KRK_P1.crateMax) krakenTideCrate(e); }
+  /* INK, lobbed out of the far water while his arms work: no blow of itself, so it goes up whatever they are doing */
+  if (p1 && e.T.ink <= 0 && !P.dead) { e.T.ink = KRK_P1.ink; krakenInkLob(e); }
+  if (e.shoveT > 0) { e.shoveT -= dt; if (!P.dead) P.vx = Math.min(P.vx, -260); }
+  /* A STRUCK BELL'S RING goes out along its reach to him, and knells him when it gets there if he is still breathing */
+  for (const r of e.bellRings) { r.t += dt; if (r.t >= r.dur) { r.done = true; if (krakenBreathing(e)) { e.knellHit = true; e.knellBell = r.bell; } } }
+  e.bellRings = e.bellRings.filter(r => !r.done); if (e.signT > 0) e.signT -= dt;
+  if (e.eyeT > 0) { e.eyeT -= dt; if (e.eyeT <= 0) { e.wardT = KRK_EYE_WARD; number(krakenEyeW(e).x, krakenEyeW(e).y - 30, 'WARDED', '#9aa39a'); SFX.clank(); SFX.bellow(); } }
+  else if (e.wardT > 0) e.wardT -= dt;
   if (e.stage >= 3 && e.renew && e.renew.length) { for (const r of e.renew) { r.t -= dt; if (r.t > 0 || r.done) continue; r.done = true;
-      if (r.spear) { if (!krkSpear(e)) krakenNewSpear(e); } else { const a = krakenNewArm(e, r.o, 1, { regrown: true }); a.st = 'idle'; a.tx = a.bx; a.ty = fl - 20; krakenSplash(a.bx, fl, 18); SFX.splash(); } }
+      if (r.spear) { if (!krkSpear(e)) krakenNewSpear(e); } else { const a = krakenNewArm(e, r.o, KRK_CLIMB_ARM, { regrown: true }); a.st = 'idle'; a.tx = a.bx; a.ty = fl - 20; krakenSplash(a.bx, fl, 18); SFX.splash(); } }
     e.renew = e.renew.filter(r => !r.done); }
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'emerge'; e.modeT = 2.8; e.emerged = 0; SFX.boreRoar(); rumble(90, 0.8); } break;
@@ -14414,15 +14507,27 @@ function updateKraken(e, dt) {
     case 'stride': { if (e.modeT > 0 || P.dead || !free.length) break;
       /* THE GRAB FIRST: the arms want you off the road and into the sea, and that is the fight (rule E2) */
       if (e.T.grab <= 0 && onRoad && P.ground && free.some(a => near(a) < 200)) { const a = pick(free.filter(q => near(q) < 200)), gx = P.x; e.armI = a.i; a.st = 'reach'; e.T.grab = 7; e.mode = 'grabTell'; e.modeT = 0.8 * tk; number(gx, fl - 44, '!!', '#ff6b6b'); SFX.snort(); SFX.ropeHaul(); }
-      else if (e.T.sweep <= 0 && onRoad) { const a = pick(free), mid = (A.x0 + A.x1) / 2, re = krkRoadEnds(); e.armI = a.i; e.sweepFrom = a.bx < mid ? re[0] : re[1]; e.sweepTo = a.bx < mid ? re[1] : re[0]; a.st = 'lower'; e.T.sweep = 7; const sx = P.x; e.mode = 'sweepTell'; e.modeT = 0.85 * tk; number(sx, fl - 44, '!!', '#ff6b6b'); SFX.anchorSwing(); }
-      else if (e.T.slam <= 0) { const a = pick(free), sx = P.x; e.armI = a.i; a.st = 'rise'; e.slamX = P.x; e.T.slam = 1.7; e.mode = 'slamTell'; e.modeT = 0.8 * tk; number(sx, fl - 44, '!', '#ffd36b'); SFX.charge(); }
+      /* THE WAVE: the sea itself up the road from his end - told by the foam standing up out there, the word and the red mark */
+      else if (e.T.wave <= 0 && !e.co) { e.T.wave = KRK_P1.wave; e.mode = 'waveTell'; e.modeT = 1.15 * tk; number(P.x, fl - 58, '!!', '#ff6b6b'); number(A.x1 - 40, fl - 70, 'THE WAVE', '#9ad8d8'); SFX.waveCrash(); SFX.hiss(); rumble(80, 0.8); }
+      /* THE ARMS COORDINATE: one comes down on you (yellow !) while another lowers at the far end of the road to come along it (red !!) */
+      else if (e.T.co <= 0 && onRoad && free.length >= 2 && !e.co) { const a = pick(free), b = free.filter(q => q !== a).sort((p, q) => near(q) - near(p))[0];
+        e.T.co = KRK_P1.co; e.T.slam = Math.max(e.T.slam, 2.2); e.T.sweep = Math.max(e.T.sweep, 3); e.armI = a.i; a.st = 'rise'; e.slamX = P.x; e.mode = 'slamTell'; e.modeT = 0.8 * tk; number(P.x, fl - 44, '!', '#ffd36b'); SFX.charge(); krakenCoSweep(e, b, 1.2 * tk); }
+      else if (e.T.sweep <= 0 && onRoad && !e.co) { const a = pick(free), mid = (A.x0 + A.x1) / 2, re = krkRoadEnds(); e.armI = a.i; e.sweepFrom = a.bx < mid ? re[0] : re[1]; e.sweepTo = a.bx < mid ? re[1] : re[0]; a.st = 'lower'; e.T.sweep = 7; const sx = P.x; e.mode = 'sweepTell'; e.modeT = 0.85 * tk; number(sx, fl - 44, '!!', '#ff6b6b'); SFX.anchorSwing(); }
+      /* MORE SPOUTS: three marks boil, one after another */
+      else if (e.T.spout <= 0 && !e.co) { e.T.spout = KRK_P1.spout; e.geys = krakenGeyserMarks(e, 3); e.mode = 'geyserTell'; e.modeT = 0.95 * tk; number(P.x, fl - 44, '!!', '#ff6b6b'); SFX.rumble(); }
+      else if (e.T.slam <= 0) { const a = pick(free), sx = P.x; e.armI = a.i; a.st = 'rise'; e.slamX = P.x; e.T.slam = KRK_P1.slam; e.mode = 'slamTell'; e.modeT = 0.8 * tk; number(sx, fl - 44, '!', '#ffd36b'); SFX.charge(); }
       break; }
+    case 'waveTell': if (Math.random() < dt * 30) parts.push({ x: A.x1 - 6 - Math.random() * 30, y: fl - 4, vx: -30 - Math.random() * 40, vy: -90 - Math.random() * 100, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#eefaff' : '#9ad8d8', size: 2, grav: 300 });
+      if (e.modeT <= 0) { e.mode = 'wave'; e.waveX = A.x1 - 4; e.waveHit = false; e.waves1 = (e.waves1 || 0) + 1; SFX.waveCrash(); SFX.wave(); shakeCam(7); } break;
+    case 'wave': e.waveX -= KRK_WAVE_V * dt; krakenWaveHit(e, () => damagePlayer(e.waveX, DMG.krakWave, { unblockable: true })); if (Math.random() < dt * 40) parts.push({ x: e.waveX + Math.random() * 10, y: fl - KRK_WAVE_H + Math.random() * 10, vx: -KRK_WAVE_V * 0.4, vy: -80 - Math.random() * 60, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 420 });
+      if (e.waveX <= A.x0 + 4) { e.waveX = null; e.mode = e.back; e.modeT = 0.6; } break;
     case 'slamTell': { const a = e.arms[e.armI]; if (krkLost(a)) { e.mode = e.back; e.modeT = 0.4; break; }
       if (e.modeT > (e.stage === 2 ? 0.26 : 0.5 * tk)) e.slamX += (P.x - e.slamX) * Math.min(1, dt * (e.stage === 2 ? 7 : 4));   /* it follows you for the first half of the tell, then it has chosen, and the shadow on the road says where */
       a.want = [e.slamX, fl - 240];
       if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.16; a.st = 'slam'; SFX.throwWhoosh(); } break; }
     case 'slam': { const a = e.arms[e.armI]; if (krkLost(a)) { e.mode = e.back; e.modeT = 0.4; break; }
-      if (e.modeT <= 0) { const st = krkTop(e.slamX); a.st = 'down'; a.t = p3 ? 1.3 : 1.8; a.tx = e.slamX; a.ty = st - 6; shakeCam(7); SFX.boom(); zoomKick(1.05, 0.15); dust(e.slamX - 20, st, 8); dust(e.slamX + 20, st, 8);
+      if (e.modeT <= 0) { const st = krkTop(e.slamX); a.st = 'down'; a.t = p3 ? 1.7 : 1.8; a.tx = e.slamX; a.ty = st - 6; shakeCam(7); SFX.boom(); zoomKick(1.05, 0.15); dust(e.slamX - 20, st, 8); dust(e.slamX + 20, st, 8);
+        if (e.stage === 1) e.quakes.push({ x: e.slamX, y: st, r: 20, hit: false });   /* THE SHOCKWAVE out along the stones from where it came down */
         if (!P.dead && Math.abs(P.x - e.slamX) < 34 && P.y > st - 34 && P.y <= st + 4) { const res = damagePlayer(e.slamX, DMG.krakSlam); if (res === 'hit') { P.vy = -200; P.vx = (Math.sign(P.x - e.slamX) || 1) * 160; } }
         /* TWO ARMS IN SEQUENCE: out at the tide, the second arm is already up when the first comes down */
         const b = e.slam2 !== null && e.slam2 !== undefined ? e.arms[e.slam2] : null; e.slam2 = null;
@@ -14470,7 +14575,7 @@ function updateKraken(e, dt) {
       if (k > 0.3 && !e.roared1) { e.roared1 = true; SFX.roar(); SFX.boreRoar(); shakeCam(13); zoomKick(1.14, 0.6); flash = Math.max(flash, 0.15); if (!P.dead && Math.abs(P.y - fl) < 40) P.vx = -220; }
       if (k > 0.62 && !e.broke) { e.broke = true; krakenBreakRoad(); }
       if (k > 0.8 && !e.armsBack) { e.armsBack = true; for (const o of [KRK_HOLES[0], KRK_HOLES[3]]) krakenNewArm(e, o, 0.75, { two: true }); krakenArmsUp(e); }   /* and two arms come back up out of the sea, thinner and quicker */
-      if (e.modeT <= 0) { e.mode = 'stride2'; e.modeT = 0.9; e.T.beat = 9; e.T.hurl = 0.6; e.T.arm = 1.6; e.T.crate = 0.4; e.T.look = 4.5; } break; }
+      if (e.modeT <= 0) { e.mode = 'stride2'; e.modeT = 0.9; e.T.beat = 9; e.T.hurl = 0.6; e.T.arm = 1.6; e.T.crate = 0.4; e.T.look = 4.5; e.signT = 9; e.co = null; e.blobs = []; e.patches = []; KRS.inked = 0; hintMsg = 'HE MUST COME UP TO BREATHE. RING A BELL WHILE HE DOES: HIS ARMS FALL LIMP.'; hintT = 6; } break; }
     /* ---------------- II. OUT AT SEA ---------------- */
     /* THE ARMS AND THE CARGO: two arms back up out of the sea, quicker than the four were, and what the wreck field held comes down on
        the road in arcs. What lands stays: a crate is cover and footing for what comes next, a barrel rolls, a chest can be struck back
@@ -14531,19 +14636,19 @@ function updateKraken(e, dt) {
       if (e.modeT <= 0 && e.orbs.every(o => o.done)) { e.mode = 'far'; e.modeT = 0.45; } break; }
     /* THE SPOUT: the road goes dark and boils over two marks, and a column of the sea comes up through them, one and then the other */
     case 'geyserTell': for (const q of e.geys) if (Math.random() < dt * 30) parts.push({ x: q.x + (Math.random() - 0.5) * 22, y: fl - 1, vx: 0, vy: -30 - Math.random() * 40, life: 0.3, max: 0.3, col: '#dff0f5', size: 1, grav: 60 });
-      if (e.modeT <= 0) { e.mode = 'geyser'; e.modeT = 0.95; for (const q of e.geys) q.t = 0; SFX.waveCrash(); shakeCam(7); } break;
+      if (e.modeT <= 0) { e.mode = 'geyser'; e.modeT = 0.95 + 0.3 * Math.max(0, e.geys.length - 2); for (const q of e.geys) q.t = 0; SFX.waveCrash(); shakeCam(7); } break;
     case 'geyser': { for (const q of e.geys) { q.t += dt; const up = q.t >= q.delay;
         if (up && !q.burst) { q.burst = true; krakenSplash(q.x, fl, 16); SFX.splash(); SFX.boom(); krakenSpout(e, q); }
         if (up && !q.hit && q.t < q.delay + 0.55 && !P.dead && Math.abs(P.x - q.x) < 14 && P.y > fl - (q.hole ? 150 : 110)) { q.hit = true; const res = damagePlayer(q.x, DMG.krakGeyser, { unblockable: true }); if (res === 'hit') { P.vy = -430; P.vx = (Math.sign(P.x - q.x) || 1) * 90; P.ground = false; } } }
-      if (e.modeT <= 0) { e.geys = []; e.mode = 'far'; e.modeT = 0.45; } break; }
+      if (e.modeT <= 0) { e.geys = []; e.mode = e.stage === 2 ? 'far' : e.back; e.modeT = e.stage === 2 ? 0.45 : 0.7; } break; }   /* (the first stage's spouts go back to its arms) */
     /* HE HAS TO BREATHE. Out at sea he goes down, and comes up for air CLOSE, right behind the end of the road: the sea sheeting off him,
        the siphon heaving. RING THE OLD BELLS while he breathes and he is KNELLED; strike a CHEST out off the end of the road into him and
        he is KNELLED. Stung by his own water, he comes up sooner and stays up longer */
     case 'farSink': e.farWant = 0; krakenArmsUnder(e); if (e.modeT <= 0) { e.mode = 'surface'; e.modeT = 0.8; SFX.splash(); krakenSplash(A.x1 - 10, fl, 14); } break;
-    case 'surface': e.nearWant = 1; if (e.modeT <= 0) { e.mode = 'breath'; e.modeT = e.stung ? 6 : 4.4; e.knellHit = false; SFX.gasp(); } break;
+    case 'surface': e.nearWant = 1; if (e.modeT <= 0) { e.mode = 'breath'; e.modeT = e.breathMax = e.stung ? 6 : 4.4; e.knellHit = false; e.breaths = (e.breaths || 0) + 1; if (e.breaths <= 2) e.signT = Math.max(e.signT, 4.4); SFX.gasp(); } break;
     case 'breath': { e.nearWant = 1; e.gaspT = (e.gaspT || 0) - dt; if (e.gaspT <= 0) { e.gaspT = 1.3; SFX.breathIn(); krakenSplash(A.x1 - 12, fl, 3); }
       if (e.knellHit) { krakenKnell(e); break; }
-      if (e.modeT <= 0) { e.mode = 'sink'; e.modeT = 0.7; } break; }
+      if (e.modeT <= 0 && !e.bellRings.length) { e.mode = 'sink'; e.modeT = 0.7; } break; }
     case 'knelled': e.nearWant = 1; { const eye = krakenEyeAt(e); if (Math.random() < dt * 6) parts.push({ x: eye.x + (Math.random() - 0.5) * 30, y: eye.y - 20, vx: 0, vy: -20, life: 0.5, max: 0.5, col: '#fff6c8', size: 1, grav: 0 }); }   /* the stars over his head */
       if (e.modeT <= 0) { e.mode = 'sink'; e.modeT = 0.8; } break;
     /* AND DOWN AGAIN, and the arms come back up for the next beat */
@@ -14569,18 +14674,22 @@ function updateKraken(e, dt) {
       if (Math.random() < dt * 8) shakeCam(4);
       if (k > 0.2 && !e.bolted) { e.bolted = true; bolts.push({ x: A.x1 - 90, y: fl - 200, life: 0.5, storm: true }); SFX.thunder(); flash = Math.max(flash, 0.3); }
       if (k > 0.5 && !e.roared2) { e.roared2 = true; SFX.roar(); SFX.bellow(); shakeCam(15); zoomKick(1.16, 0.7); if (!P.dead && Math.abs(P.y - fl) < 40) P.vx = -260;
-        for (const o of [KRK_HOLES[1], KRK_HOLES[2]]) { const a = krakenNewArm(e, o, 1, { regrown: true }); a.st = 'idle'; a.tx = a.bx; a.ty = fl - 20; krakenSplash(a.bx, fl, 18); } }
-      if (e.modeT <= 0) { e.mode = 'stride3'; e.modeT = 1; e.T.lunge = 0.5; e.T.roar = 5; e.T.roll = 11; e.T.slam = 3; e.T.sweep = 7; e.T.rake = 4; e.T.grab = 999; e.T.look = 999; } break; }   /* the look is the tide's beat: in the maw he is up, and stays up */
+        for (const o of [KRK_HOLES[1], KRK_HOLES[2]]) { const a = krakenNewArm(e, o, KRK_CLIMB_ARM, { regrown: true }); a.st = 'idle'; a.tx = a.bx; a.ty = fl - 20; krakenSplash(a.bx, fl, 18); } }
+      if (e.modeT <= 0) { e.mode = 'stride3'; e.modeT = 1; e.T.lunge = 0.5; e.T.roar = 8; e.T.roll = 12; e.T.slam = 1.6; e.T.sweep = 999; e.T.rake = 999; e.T.grab = 999; e.T.look = 999; hintMsg = 'CUT THROUGH AN ARM HE SLAMS DOWN: IT FALLS AGAINST HIM. CLIMB IT TO HIS EYE.'; hintT = 6; } break; }   /* the look is the tide's beat: in the maw he is up, and stays up (and THE CLIMB has no sweep or rake: claude/kraken2, it is not a second round of tentacles) */   /* the look is the tide's beat: in the maw he is up, and stays up */
     /* ---------------- III. THE MAW ---------------- */
     case 'stride3': { e.nearWant = 1; if (e.modeT > 0 || P.dead) break;
       const beak = e.headX - 46;
+      /* THE CLIMB: while his arm lies against him he deals with whoever is on it - he SHAKES it (told), opens his EYE, BITES at the top of it (told) */
+      if (e.ramp) { if (e.ramp.fall > 0 || e.T.climb > 0) break; const r = e.ramp, nx = KRK_CLIMB_Q[(e.climbN++) % KRK_CLIMB_Q.length], mid = (r.x0 + r.x1) / 2;
+        if (nx === 'shake') { const my = Math.min(P.y, krakenRampY(r, P.x)) - 40; e.mode = 'shakeTell'; e.modeT = 1.0 * tk; number(P.x, my, '!!', '#ff6b6b'); number(mid, krakenRampY(r, mid) - 50, 'HE SHAKES IT', '#ff9a5c'); SFX.bellow(); rumble(90, 1); }
+        else if (nx === 'eye') { if (r.t < 2) { e.T.climb = 9; break; } const ey = krakenEyeW(e); e.eyeT = KRK_EYE_OPEN; e.eyeTaken = 0; e.wardT = 0; e.eyes = (e.eyes || 0) + 1; e.T.climb = KRK_EYE_OPEN + 0.25; number(ey.x, ey.y - 34, 'HIS EYE', '#ffd36b'); ringAt(ey.x, ey.y, 26, '#ffd36b', 0.6); SFX.gasp(); }
+        else { const ey = krakenEyeW(e); e.mode = 'biteTell'; e.modeT = 0.85 * tk; number(ey.x - 30, ey.y - 16, '!!', '#ff6b6b'); SFX.snort(); SFX.bellow(); }
+        break; }
       /* THE SPEAR FIRST: the waystones are the answer to it, and that is the stage (rule E2) */
-      if (e.T.lunge <= 0 && P.x < beak + 10) { e.T.lunge = desp ? 4.4 : 6; krakenAim(e); e.mode = 'lungeTell'; e.modeT = 1.05 * tk; number(beak, fl - 64, '!!', '#ff6b6b'); SFX.bellow(); }
-      else if (e.T.roar <= 0) { e.T.roar = desp ? 7 : 9.5; e.mode = 'roarTell'; e.modeT = 0.95 * tk; number(beak, fl - 64, '!!', '#ff6b6b'); SFX.snort(); }
+      if (e.T.lunge <= 0 && P.x < beak + 10 && !e.ramp) { e.T.lunge = desp ? 5 : 7; krakenAim(e); e.mode = 'lungeTell'; e.modeT = 1.05 * tk; number(beak, fl - 64, '!!', '#ff6b6b'); SFX.bellow(); }
+      else if (e.T.roar <= 0) { e.T.roar = desp ? 8 : 11; e.mode = 'roarTell'; e.modeT = 0.95 * tk; number(beak, fl - 64, '!!', '#ff6b6b'); SFX.snort(); }
       else if (e.T.roll <= 0) { e.T.roll = desp ? 12 : 16; e.mode = 'rollTell'; e.modeT = 1.2 * tk; number(beak, fl - 64, '!!', '#ff6b6b'); rumble(100, 1); }
-      else if (free.length && e.T.sweep <= 0 && onRoad) { const a = pick(free), mid = (A.x0 + A.x1) / 2, re = krkRoadEnds(); e.armI = a.i; e.sweepFrom = a.bx < mid ? re[0] : re[1]; e.sweepTo = a.bx < mid ? re[1] : re[0]; a.st = 'lower'; e.T.sweep = desp ? 4.5 : 6.5; const sx = P.x; e.mode = 'sweepTell'; e.modeT = 0.85 * tk; number(sx, fl - 44, '!!', '#ff6b6b'); SFX.anchorSwing(); }
-      else if (free.length && e.T.rake <= 0 && onRoad) { const a = pick(free), band = krakenRakeBand(); e.armI = a.i; e.rakeFrom = A.x1 - 16; e.rakeTo = A.x0 + 16; e.rakeDur = 0.9; a.st = 'rakeUp'; a.want = [e.rakeFrom, band[0] + 20]; e.T.rake = desp ? 6 : 9; e.mode = 'rakeTell'; e.modeT = 1.0 * tk; number(P.x, fl - 58, 'HIGH', '#ff6b6b'); SFX.anchorSwing(); SFX.hiss(); }
-      else if (free.length && e.T.slam <= 0) { const a = pick(free), sx = P.x; e.armI = a.i; a.st = 'rise'; e.slamX = P.x; e.T.slam = desp ? 2.1 : 3; e.mode = 'slamTell'; e.modeT = 0.8 * tk; number(sx, fl - 44, '!', '#ffd36b'); SFX.charge(); }
+      else if (free.length && e.T.slam <= 0 && onRoad) { const a = pick(free), sx = P.x; e.armI = a.i; a.st = 'rise'; e.slamX = P.x; e.T.slam = desp ? 2.1 : 2.6; e.mode = 'slamTell'; e.modeT = 0.8 * tk; number(sx, fl - 44, '!', '#ffd36b'); SFX.charge(); }
       break; }
     /* THE SPEAR comes up out of the sea at the end of the road and draws back along the last stones, coiled, while the lane is red */
     case 'lungeTell': { const a = krkSpear(e); if (a) { a.st = 'rise'; a.want = [A.x1 - 20 - Math.min(1, 1 - e.modeT / 1.05) * 18, fl - 46]; }
@@ -14592,6 +14701,15 @@ function updateKraken(e, dt) {
         e.mode = 'stuck'; e.openTaken = 0; e.modeT = desp ? 2.4 : 2.9; e.stagger = e.modeT; e.recoil = 1; e.flash = 0.2; shakeCam(11); SFX.crack(); SFX.boom(); SFX.bellow(); zoomKick(1.1, 0.3); dust(beak, fl - 10, 16); ringAt(beak, fl - 20, 40, '#8fd160', 0.5); }
         else { e.mode = 'recover'; e.modeT = 0.9; shakeCam(5); dust(beak, fl, 10); } } break; }
     case 'stuck': if (e.modeT <= 0) { e.mode = 'retract'; e.modeT = 0.9; SFX.bellow(); } break;
+    /* HE SHAKES THE RAMP: whoever stands on it when it bucks is thrown off (in the air over it, you ride it out) */
+    case 'shakeTell': if (Math.random() < dt * 14) shakeCam(2); if (!e.ramp) { e.mode = 'stride3'; e.modeT = 0.4; break; }
+      if (e.modeT <= 0) { e.mode = 'shake'; e.modeT = 0.35; e.shakeHit = false; SFX.waveCrash(); SFX.thud(); shakeCam(9);
+        if (krakenOnRamp(e) && !P.dead) { e.shakeHit = true; e.shaken = (e.shaken || 0) + 1; const res = damagePlayer(P.x + 20, DMG.krakShake, { unblockable: true }); P.vx = -170; P.vy = -250; P.ground = false; e.rampOff = 0.6; } } break;
+    case 'shake': if (e.modeT <= 0) { e.mode = 'stride3'; e.modeT = 0.3; e.T.climb = 0.5; } break;
+    /* HIS BEAK BITES AT THE TOP OF THE RAMP */
+    case 'biteTell': if (e.modeT <= 0 || !e.ramp) { e.mode = 'bite'; e.modeT = 0.25; e.biteHit = false; SFX.snort(); SFX.crack(); } break;
+    case 'bite': { const ey = krakenEyeW(e); if (!e.biteHit && !P.dead && P.x > ey.x - 74 && P.x < ey.x + 24 && P.y > ey.y - 30 && P.y < ey.y + 64) { e.biteHit = true; e.bitten = (e.bitten || 0) + 1; const res = damagePlayer(ey.x, DMG.krakBeak, { unblockable: true }); if (res === 'hit') { P.vx = -240; P.vy = -120; P.ground = false; e.rampOff = 0.3; } }
+      if (e.modeT <= 0) { e.mode = 'stride3'; e.modeT = 0.4; e.T.climb = 0.7; } break; }
     case 'recover': if (e.modeT <= 0) { e.mode = 'retract'; e.modeT = 0.8; } break;
     case 'retract': { const a = krkSpear(e); if (a && a.st === 'spear') { a.st = 'retreat'; a.t = 0.8; a.low = false; }
       if (e.modeT <= 0) { e.mode = 'stride3'; e.modeT = desp ? 0.25 : 0.7; if (desp) e.T.sweep = Math.min(e.T.sweep, 0); } break; }
@@ -14617,9 +14735,11 @@ function updateKraken(e, dt) {
   krakenArmsTick(e, dt);
   /* AND THE BOX A BLADE WOULD FIND HIM IN is out past the end of the road, beyond the wall, in the sea he is drawn in: nothing reaches it */
   e.x = A.x1 + 48; e.y = fl + 40; e.w = 40; e.h = 30;
+  if (e.stage >= 3 && e.mode !== 'rise2' && e.alive) { const ey = krakenEyeW(e); e.x = ey.x; e.y = ey.y + 16; e.w = 30; e.h = 32; }   /* THE CLIMB: his head up against the end of the road - its eye is where a blade finds him */
+  krakenCoTick(e, dt); krakenQuakeTick(e, dt); krakenInkTick2(e, dt); krakenRampTick(e, dt);
   if (e.stage < 2) e.seaWant = fl + 2 * TS;
 }
-const krakenBarName = b => b.tideWarn > 0 ? 'THE KRAKEN  THE TIDE COMES' : b.stage === 1 ? 'THE KRAKEN  ' + b.arms.filter(a => a.st !== 'gone').length + ' ARMS' : b.mode === 'knelled' ? 'THE KRAKEN  KNELLED' : b.mode === 'look' || b.mode === 'lookTell' ? 'THE KRAKEN  HE LOOKS' : b.mode === 'stuck' ? 'THE KRAKEN  PINNED' : b.stage === 2 ? (krakenBreathing(b) ? 'THE KRAKEN  BREATHES' : (b.far || 0) > 0.3 ? 'THE KRAKEN  AT SEA' : 'THE KRAKEN  THE TIDE') : 'THE KRAKEN  THE MAW';
+const krakenBarName = b => b.tideWarn > 0 ? 'THE KRAKEN  THE TIDE COMES' : b.stage === 1 ? 'THE KRAKEN  ' + b.arms.filter(a => a.st !== 'gone').length + ' ARMS' : b.mode === 'knelled' ? 'THE KRAKEN  KNELLED' : b.mode === 'look' || b.mode === 'lookTell' ? 'THE KRAKEN  HE LOOKS' : b.mode === 'stuck' ? 'THE KRAKEN  PINNED' : b.stage === 2 ? (krakenBreathing(b) ? 'THE KRAKEN  BREATHES' : (b.far || 0) > 0.3 ? 'THE KRAKEN  AT SEA' : 'THE KRAKEN  THE TIDE') : b.eyeT > 0 ? 'THE KRAKEN  HIS EYE IS OPEN' : b.wardT > 0 ? 'THE KRAKEN  WARDED' : b.ramp ? 'THE KRAKEN  CLIMB IT' : 'THE KRAKEN  THE CLIMB';
 // FOR THE BOSS LAB: what a player standing here can see coming, and what is open. It reads the same things the marks are drawn from.
 function krakenAdvice(v2) {
   const e = boss; if (!e || e.t !== 'kraken' || !e.alive || !L.arena || !e.arms) return null;
@@ -14628,6 +14748,9 @@ function krakenAdvice(v2) {
   if (e.mode === 'held') { o.mash = true; if ((P.st || 0) >= 12) { o.dodge = true; o.dodgeDir = -1; } return o; }
   if (e.mode === 'sweep' || (e.mode === 'sweepTell' && e.modeT < 0.2)) { const a = e.arms[e.armI], tip = e.mode === 'sweep' ? a.tx : e.sweepFrom, dir = Math.sign(e.sweepTo - e.sweepFrom); if ((P.x - tip) * dir > -4 && Math.abs(P.x - tip) < 70) o.jump = true; }
   if (e.mode === 'roar') for (const w of e.waves) if (!w.hit && w.x > P.x - 4 && w.x - P.x < 40) o.jump = true;
+  /* (claude/kraken2) THE ARMS TOGETHER: the far arm's sweep is jumped like the other; THE SHOCKWAVE is jumped as its front comes */
+  if (e.co) { const c = e.co, a = e.arms[c.i], tip = c.go ? a.tx : c.from, dir = Math.sign(c.to - c.from); if ((c.go || c.t < 0.18) && (P.x - tip) * dir > -4 && Math.abs(P.x - tip) < 70) o.jump = true; }
+  for (const q of e.quakes || []) { const d = Math.abs(P.x - q.x); if (!q.hit && P.ground && Math.abs(P.y - q.y) < 6 && d > 30 && d > q.r - 4 && d < q.r + 34) o.jump = true; }
   /* THE RAKE IS THE OPPOSITE READ to the sweep: not jumped, got DOWN from. Off the cargo, onto bare stone, and nothing jumped while
      it is coming - the air over the road is exactly where it is */
   if (e.mode === 'rake' || e.mode === 'rakeTell') { o.duck = true;
@@ -14666,6 +14789,11 @@ function krakenAdvice(v2) {
   if (e.mode === 'hurl') for (const h of (e.hurls || [])) if (!h.done && h.dur - h.t < 0.2 && Math.abs(P.x - h.x) < 34) { o.dodge = true; o.dodgeDir = away(h.x); }
   else krkTells();
   if (v2 && e.mode !== 'hurl') krkTells();
+  /* (claude/kraken2) THE CLIMB: up the arm to his eye while it is open, off the top when the beak is coming, and in the air when he shakes it */
+  if (e.stage >= 3 && e.ramp && e.ramp.fall <= 0 && !o.dodge) { const r = e.ramp, ey = krakenEyeW(e);
+    if (e.mode === 'biteTell' || e.mode === 'bite') { if (P.x > ey.x - 96) o.goal = ey.x - 120; }
+    else { o.goal = r.x1 - 6; o.kind = 'eye'; if (Math.abs(P.x - (r.x1 - 6)) < 26 && P.y < L.arena.floor - 20) o.strike = ey.x; }
+    if (e.mode === 'shakeTell' && e.modeT < 0.2 && krakenOnRamp(e)) o.jump = true; }
   if (o.goal === null && !o.jump) {
     if ((e.mode === 'stuck' || e.mode === 'recover') && e.arms.some(q => q.spear && q.low && !q.severed)) { const a = krkSpear(e); o.goal = a.tx - 10; o.strike = a.tx + 8; o.climb = true; o.kind = 'spear'; }   /* PINNED: the spear where it went into the stone - hop the stone to it */
     else if (e.arms.some(a => a.low && a.st !== 'sweep' && a.st !== 'spear' && !krkLost(a))) { const a = e.arms.filter(q => q.low && q.st !== 'sweep' && q.st !== 'spear' && !krkLost(q)).sort((p, q) => Math.abs(p.tx - P.x) - Math.abs(q.tx - P.x))[0];
@@ -14674,7 +14802,7 @@ function krakenAdvice(v2) {
       const ch = e.cargo.filter(q => q.k === 'chest' && q.st === 'rest' && q.x < e.headX - 90).sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0]; o.goal = ch.x - 13; o.kind = 'chest'; o.strike = ch.x; }
     else if (krakenBreathing(e)) { const bell = props.filter(q => q.t === 'knell' && !krakenBellSpent(e, q)).sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0], bx = bell ? bell.x : A.tower;
       o.goal = bx + 4; o.kind = 'bell'; o.climb = Math.abs(P.x - bx) < 80; if (P.y < fl - 30 && Math.abs(P.x - bx) < 30) o.strike = bx; }
-    else if (e.stage === 3) o.goal = A.stones[A.stones.length - 1] - 36;
+    else if (e.stage === 3) o.goal = A.plinth[1] + 30;   /* (claude/kraken2) THE CLIMB: on the bare road past the plinth - where his slammed arm lies on stone to be cut through, the ramp's foot is, and the spear still sticks in the waystone beyond */
     /* THE CARGO, whenever nothing better is open. This is the second stage's own verb now: go to the nearest crate and break it, and
        what is left of it goes back into whatever of him is in reach - an arm on the road, the head if it is up, the far water if he
        is out in it. (BK.krakCargo(false) takes this branch away, and that is the run the crate route has to beat.) */
@@ -14701,6 +14829,12 @@ function krakenAdvice(v2) {
      the plinth's step spent every breath of the second stage against it while the bell rang for nobody */
   if (e.stage >= 2 && !P.swim && !o.jump && o.goal !== null && Math.abs(o.goal - P.x) > 16 && (o.strike === null || Math.abs(o.strike - P.x) > 40)) { const dir = Math.sign(o.goal - P.x);   /* (not among the four arms: there it jumped at steps beside arms it should have been cutting, and the first stage ran twice as long) */
     if (isSolid(Math.floor((P.x + dir * 9) / TS), Math.floor((P.y - 3) / TS)) || (!P.ground && P.vy < 0 && o.climb)) { o.jump = true; o.hold = true; } }
+  /* (claude/kraken2) THE WAVE: in behind the nearest thing that stands in it (a crate, a pier stone, the plinth's foot), or up high; failing
+     that, jump the crest as it comes */
+  if (e.mode === 'waveTell' || e.mode === 'wave') { const fy2 = Math.floor(fl / TS); if (P.y > fl - KRK_WAVE_H) { let best = null, bd = 1e9;
+      for (let c = Math.floor(A.x0 / TS) + 1; c < Math.floor(A.x1 / TS); c++) if (isSolid(c, fy2 - 1) && !isSolid(c - 1, fy2 - 1) && isSolid(c - 1, fy2)) { const x = c * TS - 7, d = Math.abs(x - P.x); if (d < bd && (e.mode === 'waveTell' || (e.waveX !== null && x < e.waveX - 20))) { bd = d; best = x; } }
+      if (best !== null && bd < 130 && !(e.mode === 'wave' && bd > 6 && e.waveX - P.x < 70)) { o.goal = best; o.strike = null; o.jump = false; o.climb = false; }
+      else if (e.mode === 'wave' && e.waveX !== null && e.waveX > P.x && e.waveX - P.x < 58) o.jump = true; } }
   /* LAST: nothing is jumped while the rake is coming across - unless the sea has you, and getting out of the sea beats everything */
   if (o.duck && !P.swim && P.y <= fl + 4) { o.jump = false; o.hold = false; o.climb = false; }
   return o;
@@ -14724,9 +14858,20 @@ function drawKrakArm(a, cx, cy, art, fl, deadT) {
     g.drawImage(c, Math.round(x + nx * r * 0.62 - cx - c.width / 2), Math.round(y + ny * r * 0.62 - cy - c.height / 2)); }
   g.globalAlpha = 1;
 }
+/* THE RAMP: the arm cut through, fallen against him - thick at his head, thin at the road, its back the surface you walk up */
+function drawKrakRamp(e, cx, cy, art) { const r = e.ramp; if (!r) return; const drop = r.fall > 0 ? (r.fall / 0.6) * 70 : 0, jit = e.mode === 'shakeTell' ? Math.sin(time * 40) * 1.5 : e.mode === 'shake' ? Math.sin(time * 60) * 4 : 0;
+  const n = 34, pts = []; for (let i = 0; i <= n; i++) { const t = i / n, x = r.x1 + 16 + (r.x0 - 6 - r.x1 - 16) * t, rad = 11 - 6 * t; pts.push([x, krakenRampY(r, x) + rad - 1 - drop * (1 - t) + jit * (1 - t), rad]); }
+  g.globalAlpha = r.t < 1 ? Math.max(0, r.t) : 1;
+  for (let i = 0; i <= n; i++) { const [x, y, rr] = pts[i], c = art.arm.rim[Math.max(1, Math.min(22, Math.round(rr)))]; g.drawImage(c, Math.round(x - cx - c.width / 2), Math.round(y - cy - c.height / 2)); }
+  for (let i = 0; i <= n; i++) { const [x, y, rr] = pts[i], c = art.arm.seg[Math.max(1, Math.min(22, Math.round(rr)))]; g.drawImage(c, Math.round(x - cx - c.width / 2), Math.round(y - cy - c.height / 2)); }
+  for (let i = 1; i < n; i += 2) { const [x, y, rr] = pts[i], c = art.arm.suck[Math.max(1, Math.min(22, Math.round(rr)))]; if (rr >= 3 && c) g.drawImage(c, Math.round(x - cx - c.width / 2), Math.round(y + rr * 0.6 - cy - c.height / 2)); }
+  g.globalAlpha = 1;
+  /* its back, the way up: a pale line along it while it lies there to be climbed */
+  if (r.fall <= 0 && e.alive) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.fillStyle = '#ffd36b'; for (let x = r.x0; x < r.x1; x += 10) g.fillRect(Math.round(x - cx), Math.round(krakenRampY(r, x) - cy) - 1, 5, 1); g.globalAlpha = 1; } }
 function drawKraken(e, cx, cy) {
   const A = L.arena; if (!A || !e.arms) return;
   const art = krkArt(), fl = A.floor, deadT = e.alive ? null : time - (e.deadAt || time);
+  drawKrakRamp(e, cx, cy, art);
   /* ONLY HIS ARMS ARE DRAWN HERE, on the road. His body is in the background (drawKrakenFar, from the sky pass): it is never drawn over
      the stones, and there is no head left that could be */
   for (const a of e.arms) { drawKrakArm(a, cx, cy, art, fl, deadT);
@@ -14846,7 +14991,7 @@ function drawCauseOverlay(cx, cy) {
   if (!e.alive) return;
   const dash = (x0, x1, y, col) => { g.globalAlpha = 0.35 + 0.45 * pulse; g.strokeStyle = col; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(Math.round(x0 - cx), y); g.lineTo(Math.round(x1 - cx), y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; };
   const ring = (x, y, rx, ry, col) => { g.globalAlpha = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(time * 10)); g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(x - cx), Math.round(y - cy), rx, ry, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; };
-  if (e.mode === 'slamTell') { const k = 1 - Math.max(0, e.modeT) / (e.stage === 2 ? 0.5 : 0.8); g.fillStyle = 'rgba(10,8,20,' + (0.2 + 0.45 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(Math.round(e.slamX - cx), fy - 1, 14 + 22 * k, 3 + 2 * k, 0, 0, Math.PI * 2); g.fill();
+  if (e.mode === 'slamTell') { const k = Math.max(0, 1 - Math.max(0, e.modeT) / (e.stage === 2 ? 0.5 : 0.8)); g.fillStyle = 'rgba(10,8,20,' + (0.2 + 0.45 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(Math.round(e.slamX - cx), fy - 1, 14 + 22 * k, 3 + 2 * k, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#ffd36b'; g.globalAlpha = 0.6 + 0.4 * pulse; for (const s of [-1, 1]) g.fillRect(Math.round(e.slamX - cx + s * 36) - (s > 0 ? 3 : 0), fy - 3, 4, 2); g.globalAlpha = 1; }
   if (e.mode === 'sweepTell' || e.mode === 'sweep') dash(e.sweepFrom, e.sweepTo, fy - 12, '#ff6b6b');
   /* THE RAKE'S LANE: red between two dashes at the height it comes across, chevrons running LANDWARD - the way it comes, every time -
@@ -14913,10 +15058,60 @@ function drawCauseOverlay(cx, cy) {
   /* AND WHILE HE IS UP, EVERY CRATE STANDING IS AN OPENING, ringed like one: break it and it goes out into him */
   if (e.stage === 2 && krakenCargoPays(e)) for (const k of e.crates || []) { const kx = k.c * TS + 8; if (Math.abs(kx - P.x) < 96) ring(kx, fl - 8, 12, 8, '#8fd160'); }   /* (only while a throw would hurt him: lurking, a crate is not an opening) */
   /* THE OPENINGS, ringed in green the way every opening in the game is */
-  for (const a of e.arms) if (a.low && (a.st === 'down' || a.st === 'stun' || a.st === 'hold')) { const x0 = Math.min(a.tx, a.bx), x1 = Math.max(a.tx, a.bx); ring((x0 + x1) / 2, fl - 2, Math.max(16, (x1 - x0) / 2 + 6), 6, a.regrown ? '#9aa39a' : '#8fd160'); }
+  for (const a of e.arms) if (a.low && (a.st === 'down' || a.st === 'stun' || a.st === 'hold')) { const x0 = Math.min(a.tx, a.bx), x1 = Math.max(a.tx, a.bx); ring((x0 + x1) / 2, Math.min(fl, a.ty + 6) - 2, Math.max(16, (x1 - x0) / 2 + 6), 6, a.regrown ? '#ffd36b' : '#8fd160'); }   /* (on whatever it lies on; in the climb gold: cut it through and it falls against him) */
+  krakenDrawMarks2(e, cx, cy, fy, pulse, dash, ring);
   { const sp = krkSpear(e); if (sp && sp.low && (e.mode === 'stuck' || e.mode === 'recover')) ring((sp.tx + A.x1) / 2, fl - 14, Math.max(20, (A.x1 - sp.tx) / 2), 10, '#8fd160'); }   /* PINNED: the spear, ringed along its length */
 }
 
+/* THE KRAKEN 2's MARKS (claude/kraken2): the ink, the spouts' third, the wave, the shockwave's reach, the coordinated sweep, the breath and the
+   bells' reach, the sign, and the climb - its eye, its ward, its bite and its shake. Greybox: plain shapes, every one of them told */
+function krakenDrawMarks2(e, cx, cy, fy, pulse, dash, ring) {
+  const A = L.arena, fl = A.floor;
+  /* INK: blobs in the air over a purple ring where each will land; the patch, a murk standing up off the stones */
+  for (const b of e.blobs || []) { const q = krakenBlobAt(b), sx = Math.round(q.x - cx), sy = Math.round(q.y - cy);
+    ring(b.x, krkTop(b.x) - 2, 22 - 10 * q.k + pulse * 2, 5, '#b9a6e0');
+    g.fillStyle = '#140c1c'; g.beginPath(); g.arc(sx, sy, 4 + 2 * q.k, 0, 7); g.fill(); g.fillStyle = '#3a2a4a'; g.fillRect(sx - 2, sy - 3, 2, 2); }
+  for (const p of e.patches || []) { const k = Math.min(1, (KRK_BLOB_LIFE - p.life) / 0.3, p.life / 0.6), x0 = Math.round(p.x - p.w / 2 - cx), y = Math.round(p.y - cy);
+    for (let h = 0; h < 56; h += 4) { g.fillStyle = 'rgba(14,8,22,' + (0.9 * k * (1 - h / 60)).toFixed(3) + ')'; const wob = Math.round(Math.sin(time * 3 + h * 0.3 + p.x) * 3); g.fillRect(x0 + wob + Math.round(h / 8), y - h - 4, p.w - Math.round(h / 4), 4); }
+    g.fillStyle = 'rgba(30,18,44,' + (0.95 * k).toFixed(2) + ')'; g.fillRect(x0 - 2, y - 2, p.w + 4, 3); }
+  /* THE SLAM'S REACH while it is told (the shockwave's ring on the stones), and the shockwave running out */
+  if (e.mode === 'slamTell' && e.stage === 1) { const st = krkTop(e.slamX); g.globalAlpha = 0.35 + 0.45 * pulse; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.setLineDash([3, 3]); g.beginPath(); g.ellipse(Math.round(e.slamX - cx), Math.round(st - cy) - 1, KRK_QUAKE_R, 5, 0, 0, 7); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+  for (const q of e.quakes || []) { g.globalAlpha = Math.max(0, 0.9 - q.r / KRK_QUAKE_R * 0.6); g.strokeStyle = '#fff6c8'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(q.x - cx), Math.round(q.y - cy) - 1, q.r, 4, 0, 0, 7); g.stroke(); g.lineWidth = 1;
+    g.fillStyle = '#c9b27c'; for (const s of [-1, 1]) g.fillRect(Math.round(q.x + s * q.r - cx) - 1, Math.round(q.y - cy) - 8, 3, 8); g.globalAlpha = 1; }
+  /* THE ARMS TOGETHER: the far arm's lane along the road while it lowers, red */
+  if (e.co) { const c = e.co; dash(c.from, c.to, fy - 12, '#ff6b6b'); if (!c.go) { g.globalAlpha = 0.5 + 0.5 * pulse; g.fillStyle = '#ff6b6b'; g.fillRect(Math.round(c.from - cx) - 1, fy - 30, 3, 30); g.globalAlpha = 1; } }
+  /* THE WAVE: foam standing up at his end while it is told, a red band where it will run and the height of its crest; then the wall of water */
+  if (e.mode === 'waveTell') { const k = 1 - Math.max(0, e.modeT) / 1.15; g.globalAlpha = 0.1 + 0.16 * k + 0.08 * pulse; g.fillStyle = '#ff6b6b'; g.fillRect(Math.round(A.x0 - cx), fy - KRK_WAVE_H, Math.round(A.x1 - A.x0), KRK_WAVE_H); g.globalAlpha = 1;
+    dash(A.x0, A.x1, fy - KRK_WAVE_H, '#ff6b6b'); g.fillStyle = '#ff6b6b'; g.globalAlpha = 0.55 + 0.4 * pulse;
+    for (let x = A.x0 + 20; x < A.x1; x += 40) { const sx = Math.round(x - cx - ((time * 80) % 40)), my = fy - 18; for (let q = 0; q < 5; q++) { g.fillRect(sx + q, my - q, 1, 1); g.fillRect(sx + q, my + q, 1, 1); } }
+    g.fillStyle = '#eefaff'; g.globalAlpha = 0.8; g.fillRect(Math.round(A.x1 - cx) - 22, fy - Math.round(KRK_WAVE_H * k), 22, Math.round(KRK_WAVE_H * k)); g.globalAlpha = 1; }
+  if (e.mode === 'wave' && e.waveX !== null) { const sx = Math.round(e.waveX - cx), h = KRK_WAVE_H;
+    g.globalAlpha = 0.85; g.fillStyle = '#2e6a78'; g.fillRect(sx, fy - h, Math.round(A.x1 - e.waveX), h); g.fillStyle = '#4a9aa0'; g.fillRect(sx, fy - h, 26, h); g.fillStyle = '#9ad8d8'; g.fillRect(sx, fy - h, 12, h);
+    g.fillStyle = '#eefaff'; g.fillRect(sx - 2, fy - h - 3, 30, 4); for (let q = 0; q < 6; q++) g.fillRect(sx - 4 + ((q * 5 + Math.floor(time * 30)) % 14), fy - h - 6 - (q % 3) * 2, 2, 2); g.globalAlpha = 1; }
+  /* THE BREATH: a big bubble over him with the time he has left, while he breathes - and every bell that can knell him shows its reach out to him */
+  if (krakenBreathing(e)) { const ey = krakenEyeAt(e), bx = Math.round(ey.x - cx), by = Math.round(ey.y - cy) - 50, k = e.mode === 'breath' ? Math.max(0, e.modeT) / (e.breathMax || 4.4) : 1;
+    g.globalAlpha = 0.75; g.fillStyle = 'rgba(190,230,245,0.25)'; g.beginPath(); g.arc(bx, by, 17 + pulse, 0, 7); g.fill(); g.strokeStyle = '#eefaff'; g.lineWidth = 2; g.beginPath(); g.arc(bx, by, 17 + pulse, 0, 7); g.stroke(); g.lineWidth = 1; g.fillStyle = '#ffffff'; g.fillRect(bx - 8, by - 9, 4, 3); g.globalAlpha = 1;
+    text('BREATH', bx, by - 3, '#eefaff', 'center', 6);
+    g.fillStyle = ART.OUT; g.fillRect(bx - 21, by + 21, 42, 5); g.fillStyle = '#8fd160'; g.fillRect(bx - 20, by + 22, Math.round(40 * k), 3);
+    for (const pr of props) if (pr.t === 'knell' && !krakenBellSpent(e, pr)) { g.globalAlpha = 0.3 + 0.35 * pulse; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.setLineDash([2, 4]); g.beginPath(); g.moveTo(Math.round(pr.x - cx), Math.round(pr.y - 20 - cy)); g.quadraticCurveTo(Math.round((pr.x + ey.x) / 2 - cx), Math.round(Math.min(pr.y, ey.y) - 70 - cy), bx, by + 10); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; } }
+  for (const r of e.bellRings || []) { const ey = krakenEyeAt(e), k = Math.min(1, r.t / r.dur), x = r.x0 + (ey.x - r.x0) * k, y = r.y0 + (ey.y - r.y0) * k - Math.sin(k * Math.PI) * 50;
+    for (let q = 0; q < 3; q++) { g.globalAlpha = 0.85 - q * 0.25; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(Math.round(x - cx), Math.round(y - cy), 6 + q * 5 + k * 6, 0, 7); g.stroke(); } g.lineWidth = 1; g.globalAlpha = 1; }
+  /* THE SIGN: as the second stage begins (and at his first breaths), a board by the shrine's plinth */
+  if (e.stage === 2 && e.signT > 0) { const sx = Math.round(A.plinth[0] - 40 - cx), sy = Math.round(fl - cy), a = Math.min(1, e.signT / 0.5);
+    g.globalAlpha = a; g.fillStyle = '#3a2616'; g.fillRect(sx - 1, sy - 30, 2, 30); g.fillRect(sx + 63, sy - 30, 2, 30); g.fillStyle = '#7a5232'; g.fillRect(sx - 6, sy - 44, 76, 22); g.fillStyle = '#9a6e44'; g.fillRect(sx - 5, sy - 43, 74, 1);
+    text('RING THE BELL', sx + 32, sy - 41, '#fff6e0', 'center', 6); text('WHILE HE BREATHES', sx + 32, sy - 32, '#ffd36b', 'center', 6); g.globalAlpha = 1; }
+  /* ---- THE CLIMB ---- */
+  if (e.stage >= 3 && e.alive && e.mode !== 'rise2') { const ey = krakenEyeW(e), ex = Math.round(ey.x - cx), eyy = Math.round(ey.y - cy);
+    if (e.eyeT > 0) { const k = e.eyeT / KRK_EYE_OPEN; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(ex, eyy, 11, 8, 0, 0, 7); g.fill(); g.fillStyle = '#140c1c'; g.fillRect(ex - 1, eyy - 6, 3, 12); g.fillStyle = '#fff6c8'; g.fillRect(ex - 6, eyy - 4, 2, 2);
+      g.globalAlpha = 0.55 + 0.45 * pulse; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(ex, eyy, 17 + pulse * 2, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+      g.fillStyle = ART.OUT; g.fillRect(ex - 17, eyy + 21, 34, 5); g.fillStyle = '#ffd36b'; g.fillRect(ex - 16, eyy + 22, Math.round(32 * k), 3); }
+    else { g.fillStyle = '#2a1e2e'; g.beginPath(); g.ellipse(ex, eyy, 11, 7, 0, 0, 7); g.fill(); g.fillStyle = '#5a4050'; g.fillRect(ex - 9, eyy, 18, 1);
+      if (e.wardT > 0) { g.globalAlpha = 0.5 + 0.3 * pulse; g.strokeStyle = '#9aa39a'; g.lineWidth = 2; g.setLineDash([3, 2]); g.beginPath(); g.arc(ex, eyy, 16, 0, 7); g.stroke(); g.setLineDash([]); g.lineWidth = 1; g.globalAlpha = 1;
+        g.fillStyle = ART.OUT; g.fillRect(ex - 17, eyy + 21, 34, 5); g.fillStyle = '#9aa39a'; g.fillRect(ex - 16, eyy + 22, Math.round(32 * e.wardT / KRK_EYE_WARD), 3); } }
+    if (e.mode === 'biteTell' || e.mode === 'bite') { const x0 = Math.round(ey.x - 74 - cx), y0 = Math.round(ey.y - 30 - cy); g.globalAlpha = (e.mode === 'bite' ? 0.35 : 0.12) + 0.14 * pulse; g.fillStyle = '#ff6b6b'; g.fillRect(x0, y0, 98, 94); g.globalAlpha = 1;
+      g.strokeStyle = '#ff6b6b'; g.globalAlpha = 0.5 + 0.4 * pulse; g.setLineDash([4, 3]); g.strokeRect(x0 + 0.5, y0 + 0.5, 97, 93); g.setLineDash([]); g.globalAlpha = 1; text('THE BEAK', ex - 26, y0 - 9, '#ff6b6b', 'center', 6); }
+    if (e.mode === 'shakeTell' && e.ramp) { const r = e.ramp; g.fillStyle = '#ff6b6b'; g.globalAlpha = 0.45 + 0.45 * pulse; for (let x = r.x0 + 8; x < r.x1; x += 16) { const sx = Math.round(x - cx), sy = Math.round(krakenRampY(r, x) - cy) - 8; g.fillRect(sx, sy - (Math.floor(time * 20 + x) % 2) * 3, 2, 5); } g.globalAlpha = 1; } }
+}
 function updateQuarter(e, dt) {
   const A = L.arena; e.modeT -= dt; e.anim += dt;
   const D = qDeck(e), floor = D.y, d = P.x - e.x, ad = Math.abs(d), sameDeck = Math.abs(P.y - floor) < 30;

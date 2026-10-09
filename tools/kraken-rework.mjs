@@ -43,7 +43,7 @@ try {
    out.open.lookFree=look(false);out.open.lookCaused=look(true);
    /* the tower bell knells him once a stage; after that only the shrine's */
    const breathe=()=>{hush(e);e.mode='breath';e.modeT=9;e.knellHit=false;for(const q of BK.props())if(q.t==='knell')q.cool=0;};
-   /* (a bell struck stops the world a beat - hitstop - so each is given ten frames) */breathe();BK.krakRing(0);BK.sim(10);out.open.tower1=e.mode;breathe();BK.krakRing(0);BK.sim(10);out.open.tower2=e.mode;breathe();BK.krakRing(1);BK.sim(10);out.open.shrine=e.mode;
+   /* (a bell struck stops the world a beat - hitstop - and since claude/kraken2 its ring travels out to him (0.35 s) and knells him on arrival, so each is given forty frames) */breathe();BK.krakRing(0);BK.sim(40);out.open.tower1=e.mode;breathe();BK.krakRing(0);BK.sim(40);out.open.tower2=e.mode;breathe();BK.krakRing(1);BK.sim(40);out.open.shrine=e.mode;
    /* and the maw is reached: at its floor stage 2 turns, the spear and two new arms come */
    hush(e);e.hp=e.stageFloor;for(let i=0;i<600&&e.mode!=='stride3';i++)BK.sim(1);hush(e);out.open.maw=e.stage;
    const rg=()=>e.arms.filter(a=>a.regrown&&!a.severed);out.open.spear=e.arms.some(a=>a.spear&&!a.severed);out.open.regrown=rg().length;
@@ -77,7 +77,8 @@ try {
   assert.equal(T.after, 2, 'the tide took a section');
   assert(T.hits >= 1 && T.swept, 'caught where it came: hit and swept');
   assert(T.carried > 20, 'the flooded road carries you out (' + T.carried + ' px)');
-  assert.equal(T.underCut, 0, 'an arm under the tide was cut');
+  /* B15 (Daniel 10-08, claude/kraken2): under the tide an arm takes B15's floor - a told fraction (UNDER THE TIDE), never nothing and never a whole cut */
+  assert(T.underCut > 0 && T.underCut <= Math.ceil(T.dryCut * 0.45), 'an arm under the tide took ' + T.underCut + ' of a dry ' + T.dryCut + ' (B15: a fraction, never nothing)');
   assert(T.dryCut > 0, 'an arm out of the tide could not be cut');
   assert.equal(T.rungTo, 1, 'a knell bell pushes the tide back a section');
   assert(T.line > T.stone, 'the tide takes the waystone the spear sticks in');
