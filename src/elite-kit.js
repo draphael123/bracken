@@ -88,6 +88,7 @@ export const AFFIX_AT = {
   'fair|barker#1': 'WARDING', 'fair|barker#2': 'SUMMONER', 'fair|hobbyhorse': 'SWIFT',
   'canal|gaffer': 'UNSTOPPABLE',
   'towpath|hedgeknight': 'SHIELDED', 'towpath|gaffer#1': 'SWIFT', 'towpath|gaffer#2': 'WARDING', 'towpath|gaffer#3': 'UNSTOPPABLE',
+  'glasssea|cutthroat': 'UNSTOPPABLE', 'skyroad|troll': 'THORNED',
   'caravan|cutthroat': 'SWIFT', 'caravan|scorpion#amb': 'BURNING',
   'welltown|scorpion': 'VENOMOUS', 'redgorge|scorpion': 'BURNING', 'underwell|scorpion': 'UNSTOPPABLE',
 };

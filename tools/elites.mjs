@@ -13,15 +13,26 @@ import { LEVELS, T, eliteGate } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { readFileSync } from 'fs';
 
-const PENDING = new Set(['skyroad', 'glasssea', 'ksar', 'minecart']);   /* minecart (claude/minecart, batch80): THE DEEP RAILS is all cart with goblin archers/casters on carts and no mini or gated elite - the same design call for Daniel as ksar/glasssea (its boss is the Great Drill) */   /* ksar (claude/ksar, batch79): built with no mini and no elite - the same design call for Daniel as glasssea (its boss is the Hawk-Mistress; a gatekeeper elite is a call for him) */   /* glasssea (claude/glasssea, batch75): built with no mini and no elite either - the same design call for Daniel (see the batch75 status). skyroad (claude/skyroad): built with no mini and no elite - a gatekeeper is a design call for Daniel, listed pending until one lands. A level being rebuilt goes in here, and comes out of it when its elites land */
+const PENDING = new Set(['ksar', 'minecart']);   /* minecart (claude/minecart, batch80): THE DEEP RAILS is all cart with goblin archers/casters on carts and no mini or gated elite - the same design call for Daniel as ksar/glasssea (its boss is the Great Drill) */   /* ksar (claude/ksar, batch79): built with no mini and no elite - the same design call for Daniel as glasssea (its boss is the Hawk-Mistress; a gatekeeper elite is a call for him) */   /* glasssea (claude/glasssea, batch75): built with no mini and no elite either - the same design call for Daniel (see the batch75 status). skyroad (claude/skyroad): built with no mini and no elite - a gatekeeper is a design call for Daniel, listed pending until one lands. A level being rebuilt goes in here, and comes out of it when its elites land */
 const NO_KEEPER = new Set(['underleaf', 'burial', 'undercrown']);   /* undercrown: Daniel cut its Overman mini (2026-09-21), and its route has no gate an elite should hold */   /* Daniel's call, not a gap: UNDERLEAF's Bellringer mini was cut after a playtest (2026-09-17). It is the secret stealth village - you choose when it wakes - and nothing on its street holds a gate */
 // Burial's Sexton was explicitly removed: The Buried Dead is the requested final boss, not a replacement mini.
+/* A LEVEL WHOSE RULE LAYS ITS OWN ROAD (claude/elitegates): the Glass Sea's glass bridges and stairs are fused by a beam, so as laid its grid is a
+   level of sand and pits that the plain fill leaves at column 47. The gate and the elite are asked about the level WITH its rule solved - every bed (but the
+   vault's optional stair) fused to glass - the way a player who has turned the mirrors sees it. The gate is still shut on top of that, so it must hold. */
+function solvedRule(L) {
+  if (!L.glasssea || !L.beds) return L;
+  const grid = L.grid.slice();
+  for (const b of L.beds) { if (/vault/i.test(b.id)) continue; for (const [x, y] of b.tiles) grid[y * L.W + x] = T.SOLID; }
+  const sg = (L.cracks || []).find(c => c.id === 'slideGap');   /* the SLIDE: a 5-column gap every hero clears sliding down the glass dune (tools/glasssea-slide.mjs measures it with real keys); the plain fill has no slide (tools/checkpoint-stand.mjs MODEL_GAPS) */
+  if (sg) for (let x = sg.x0; x <= sg.x1; x++) grid[sg.y * L.W + x] = T.SOLID;
+  return { ...L, grid };
+}
 const want = (process.argv[2] || '').split(',').filter(Boolean);
 const TS = 16;
 let bad = 0, n = 0;
 for (const lv of LEVELS) {
   if ((lv.hidden && !lv.secret) || lv.id === 'custom' || (want.length && !want.includes(lv.id))) continue;
-  const L = lv.build(), els = L.ents.filter(e => e.elite), out = [];
+  const L = solvedRule(lv.build()), els = L.ents.filter(e => e.elite), out = [];
   if(lv.id==='burial' && L.arena?.boss!=='burieddead')out.push('Burial must retain its requested final boss');
   if (PENDING.has(lv.id) && !els.length) { console.log(' --  ' + lv.id.padEnd(11) + 'pending (being rebuilt)'); continue; }
   const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];

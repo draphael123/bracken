@@ -25,9 +25,9 @@ const without = (srcs, extra) => { const ents = L.ents.filter(e => !(e.t === 've
 const ent = (t, x) => L.ents.find(e => e.t === t && e.x === x);
 ok(!at(ent('sunstone', 139), without(['stone:s1'])), 'stone s1 is a lock: with its thermal dead the station\'s lower deck is out of reach');
 ok(!at(ent('check', 181), floodReach({ ...L, moversExtra: [] }, T)), 'THE GREAT KITE REEL is a lock: without its cage the upper deck is out of reach');
-ok(!at(ent('check', 278), without(['stone:s3'])), 'stone s3 is a lock: with R2 dead the spire and the far cliff are out of reach');
+ok(!at(ent('check', 294), without(['stone:s3'])), 'stone s3 is a lock: with R2 dead the spire and the far cliff are out of reach');
 ok(!at(ent('sunstone', 364), without(['stone:s4', 'stone:s6'])), 'stone s4 is a lock: with R5 dead (and R6 dead until span B\'s stone) span B is out of reach');
-ok(!at(ent('check', 383), without(['stone:s6'])), 'stone s6 is a lock: with R6 dead the Eyrie door is out of reach');
+ok(!at(ent('check', 384), without(['stone:s6'])), 'stone s6 is a lock: with R6 dead the Eyrie door is out of reach');
 ok(!at(ent('sunstone', 352), without(['disc:disc'])), 'the sun-disc is a lock: with its road dead the east tower and the spans are out of reach');
 { const r = floodReach({ ...L, vaultDoors: [] }, T); /* (the loft's door as built: the fill opens only the doors L.vaultDoors names) */ const s = ent('silver', 361); ok(!at(s, r), "the riders' loft is a lock: with its woven door shut its silver is out of reach"); }
 const ch = L.ents.filter(e => e.t === 'check').sort((a, b) => a.x - b.x); ok(ch.length >= 4 && ch.every((c, i) => !i || c.x - ch[i - 1].x >= 90), 'checkpoints: ' + ch.map(c => c.x).join(', ') + ' (four, 90+ columns apart)');

@@ -111,7 +111,7 @@ export function makeGlassSeaHands(ctx) {
   /* ---------- THE CAST's TWISTS (main.js updateDesertFoe asks hold before a machine steps, fear before a walker steps) ---------- */
   H.hold = (e, dt) => { if (!GSx || !e.alive) return false;
     if (e.cnSkin === 'glassscorpion') { if (sunLitBox(e)) { if (!(e.gsDaz > 0)) { GSx.n.dazzled++; if (once('dazzle')) ctx.number(e.x, e.y - 22, 'DAZZLED: THE BEAM STUNS GLASS', '#fff6c8'); } e.gsDaz = GS.daz; } if (e.gsDaz > 0) { e.gsDaz -= dt; return true; } return false; }
-    if (e.cnSkin === 'nighthunter') { if (warmAt(e.x, e.y)) { if (!e.gsFrozen) { e.gsFrozen = 1; GSx.n.frozen++; if (once('freeze') && Math.abs(ctx.hero().x - e.x) < 220) ctx.number(e.x, e.y - 26, 'FROZEN IN THE FIRELIGHT', '#ffd36b'); } return true; } e.gsFrozen = 0; return false; }
+    if (e.cnSkin === 'nighthunter') { if (e.elite) return false; if (warmAt(e.x, e.y)) { if (!e.gsFrozen) { e.gsFrozen = 1; GSx.n.frozen++; if (once('freeze') && Math.abs(ctx.hero().x - e.x) < 220) ctx.number(e.x, e.y - 26, 'FROZEN IN THE FIRELIGHT', '#ffd36b'); } return true; } e.gsFrozen = 0; return false; }
     return false; };
   H.fear = (e, x, y) => { const r = !!GSx && e.t === 'skitter' && (warmAt(x, y) || !!(ctx.colRelayAt && ctx.colRelayAt(x, y)));
     if (r) { GSx.n.feared = (GSx.n.feared || 0) + 1; const P = ctx.hero(); if (P && Math.abs(P.x - e.x) < 200 && once('fearTeach')) ctx.number(e.x, e.y - 22, 'THE SWARM WILL NOT CROSS FIRELIGHT', '#ffd36b'); }   /* (glasssea2: the teach beat, told where it happens) */
