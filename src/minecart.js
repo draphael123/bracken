@@ -154,7 +154,7 @@ export function buildMinecart({ painter, T, TS }) {
     ground(198, 262, B);                                                    /* the low line under it: slow and told */
     rail(198, 217, t); rail(222, 231, t); rail(240, 252, t);                /* the high line: a gap, then a BOOST GAP (fix pass: miss it and you drop to the low line, at its gate), ore, bats in the jumps, an archer at the landing */
     tell(176, 199, 'FORK: ORE UP, CRUSHERS DOWN');
-    sign(196, t - 1, 'FORK: THE HIGH LINE IS QUICK AND HAS ORE, AND ARROWS. STRIKE THE POINTS FOR THE LOW LINE: CRUSHERS AND A GATE.');
+    sign(196, t - 1, 'FORK: HIGH LINE IS QUICK, WITH ORE AND ARROWS. STRIKE THE POINTS FOR LOW: CRUSHERS, A GATE.');
     /* (fix pass, review: fork A's default was the safe low line - a test passed by doing nothing. Now it is SET: you ride the high line (two gaps with a bat
        in each jump, ore, an archer at its end) unless you throw it, and the low line costs too - two crushers and the gate) */
     lever('forkA', 199, t, 202, 213, t, 'set', { label: 'HIGH: QUICK, ORE, ARROWS / LOW: CRUSHERS, A GATE' });
