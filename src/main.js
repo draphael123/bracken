@@ -29204,14 +29204,14 @@ function drawWorld(cx, cy, showPlayer) {
   }
   if (CANAL && state !== 'win') CNH.drawCanalFog(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's fog: holes for the lit, the theatre's glow, the wisps and lanterns on top */
   drawBloom(cx, cy); drawWindFx(); drawSpiderSigns(cx, cy); drawSlick(cx, cy); drawStairs(cx, cy); drawSkillFx(cx, cy); if (L.hush) drawHush(cx, cy);
-  if (L.dark && (L.dark > 0.05 || (L.darkZones || []).some(z => P.x > z.x0 - 200 && P.x < z.x1 + 200 && P.y > z.y0 - 100 && P.y < z.y1 + 100) || darkNow > 0.05)) { // the mine: black, with holes for every lamp, fire and the light you carry
+  if ((L.dark || L.darkLocal) && (L.dark > 0.05 || (L.darkZones || []).some(z => P.x > z.x0 - 200 && P.x < z.x1 + 200 && P.y > z.y0 - 100 && P.y < z.y1 + 100) || darkNow > 0.05)) { // the mine: black, with holes for every lamp, fire and the light you carry
     if (!DARKC || DARKC.width !== VW || DARKC.height !== VH) { DARKC = document.createElement('canvas'); DARKC.width = VW; DARKC.height = VH; }
     const dg = DARKC.getContext('2d'); dg.globalCompositeOperation = 'source-over'; dg.clearRect(0, 0, VW, VH);
     /* THE DARK EASES between zones as you walk, and SNAPS when the camera jumps - a level load, a respawn, a warp, the bot's
        teleport - the way the near layer does. It only ever eased, from wherever the last level left it (0.5 at the start of the
        game), and it eases in the DRAW, so the first half-second of every dark level wore the last one's dark, and the readability
        pass - which draws a frame or two per place - measured the Undercrown at 0.44 when its dark is 0.14. */
-    { let dk = L.dark; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) dk = z.dark;
+    { let dk = L.dark || 0; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) dk = z.dark;
       const jump = Math.abs(cx - DARK_A.cx) > VW / 2 || Math.abs(cy - DARK_A.cy) > VH / 2 || DARK_A.id !== curId(); DARK_A.cx = cx; DARK_A.cy = cy; DARK_A.id = curId();
       darkNow += (dk - darkNow) * (jump ? 1 : 0.08); }
     dg.fillStyle = 'rgba(' + ((L.palette && L.palette.darkCol) || '4,4,10') + ',' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH);   /* palette.darkCol: a level's own dark (THE ORE ROAD's is a warm brown-black, not a cold one) */ dg.globalCompositeOperation = 'destination-out';

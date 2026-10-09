@@ -248,7 +248,7 @@ export function buildRootway({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: caps,
     arena, gateAfterBoss: true, rootway: true, podCaps, jaws, nets, hoists,
-    dark: 0.01, darkZones: [{ x0: 0, x1: 102 * TS, y0: 0, y1: H * TS, dark: 0.55, name: 'THE ROOT CELLAR' }, { x0: 103 * TS, x1: 157 * TS, y0: 21 * TS, y1: H * TS, dark: 0.35, name: 'THE HOLLOW TRUNK' }],   /* (claude/rootway2) the cellar under the fungus line is DARK - its spore glow is its light; the trunk's foot is dim */ decor, vaultDoors, zipLines: zips, ropes: zips,
+    darkLocal: true, darkZones: [{ x0: 0, x1: 102 * TS, y0: 0, y1: H * TS, dark: 0.55, name: 'THE ROOT CELLAR' }, { x0: 103 * TS, x1: 157 * TS, y0: 21 * TS, y1: H * TS, dark: 0.35, name: 'THE HOLLOW TRUNK' }],   /* (claude/rootway2) the cellar under the fungus line is DARK - its spore glow is its light; the trunk's foot is dim. darkLocal: main.js's dark pass runs in these zones only (L.dark stays 0: the level keeps its own sky, its steps, its reverb) */ decor, vaultDoors, zipLines: zips, ropes: zips,
     squadBands: [{ lo: 400, hi: 459, spots: 0, why: "THE HUNTMASTER'S STAND: columns 386-459 are his arena and the road out - no squad stands in a boss arena (as the sky road)" }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* four checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */

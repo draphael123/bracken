@@ -6,7 +6,7 @@ import * as RWA from './redraw/rootway_art.js';   /* THE HUNTMASTER's pose paint
 // standing) - the great bow across him turns a blow from his FRONT at his height to HM.guardMul (B15: never totally shut, the clank says GO ROUND); from
 // BEHIND, from the AIR (a jump, a plunge) or while he draws, throws, blows or sets a trap he takes it whole. No chip (src/boss-greed.js FULL_DAMAGE).
 // HIS OPENING (B10/B14): SEND HIS OWN GOLD ARROW HOME (strike it back) or HIT HIM WITH A THROWN SPORE POD (src/hunt-pods.js) and he STAGGERS LONG -
-//   HM.stagLong s, gold OPEN ring + timer, he drops off his perch, he stands still (B4) - so you can cross the stand to him. But only the first HM.hitCap blows
+//   HM.stagLong s, gold OPEN ring + timer, he drops off his perch, he stands still (B4) - so you can cross the stand to him. But only THREE BLOWS' WORTH lands (HM.hitCap x HM.blowRef: the pips)
 //   land (x HM.openMul, x HM.maskMul once the mask is broken); the next one ends it and his told WARD follows (B3: HM.ward s, a pale ring, HE GUARDS - blows
 //   at HM.wardMul, B15). A parry (the warden's sweep) turns the arrow home softly: a short stagger (HM.stagT, HM.softCap blows).
 //   The first gold arrow home in each phase also breaks that phase's weak point - P1 the QUIVER STRAP (his volleys lose an arrow), P2 the BRACER (his draw
@@ -22,12 +22,12 @@ import * as RWA from './redraw/rootway_art.js';   /* THE HUNTMASTER's pose paint
 // The read (B10): gold glint + a yellow ! = strike it back; a red trail + a red !! = get out of its way; a pale rope ball + !! = roll through it.
 // main.js calls makeHuntmaster(ctx): spawnBoss, owns, on, update, take, caught (a boss cage landed), podHit (a thrown pod), drawBoss, drawOver, barName, end, read, fight.
 export const HM = {
-  hp: 980, w: 14, h: 26, markH: 44,
+  hp: 940, w: 14, h: 26, markH: 44,
   p2: 0.7, p3: 0.38,
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
   gap: [0.8, 0.7, 0.6],
-  arrowV: 290, redV: 250, arrowDmg: 7, redDmg: 11, poisonTick: 4, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
+  arrowV: 290, redV: 250, arrowDmg: 9, redDmg: 12, poisonTick: 4, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
   /* THE NET THROW: a told throw (netTell), a slow lobbed net you ROLL THROUGH; caught = held `net` s and a HEAVY ARROW on its way (heavyTell) */
   netTell: 0.7, netV: 200, netLift: -150, netG: 260, netR: 13, net: 1.1, netDmg: 3, heavyTell: 0.42, heavyV: 330, heavyDmg: 14,
   /* THE SNARES: a told crouch, then hops about the stand dropping JAW TRAPS (src/snares.js) - at most snareMax set at once */
@@ -35,12 +35,12 @@ export const HM = {
   /* THE HUNTING HORN: once a phase from P2 - two goblin archers onto the root perches */
   hornTell: 1.1, hornAdds: 2, addLife: 15, addHp: 12,   /* (his bows stay addLife s, then fall back off the perches; addHp: two or three blows) */
   /* THE KNIFE FLURRY: rush him and the knife comes out (a told windup), three cuts a step apart */
-  flurryAt: 40, flurryTell: 0.5, flurryCuts: 3, flurryCut: 0.2, flurryReach: 34, flurryDmg: 9, flurryStep: 9,
+  flurryAt: 46, flurryTell: 0.5, flurryCuts: 3, flurryCut: 0.2, flurryReach: 34, flurryDmg: 9, flurryStep: 9,
   /* THE DODGE ROLL (B12): away from a blade up close, once a cycle, never in or within rollAfter s of an opening */
   rollAt: 30, roll: 0.42, rollDist: 92, rollAfter: 2.5,
   leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 4, leapCd: 1,
   backV: 340, backDmg: 14, reflectR: 16, strikeR: 30,
-  cageDmg: 20, openMul: 1.5, maskMul: 2, stagLong: 3.75, hitCap: 3, stagT: 1.4, softCap: 2, caughtT: 3.75, ward: 3, wardMul: 0.4, guardMul: 0.4,
+  cageDmg: 20, openMul: 1.5, maskMul: 2, stagLong: 3.75, hitCap: 3, blowRef: 15, maxBlows: 4, stagT: 1.4, softCap: 1, caughtT: 3.75, ward: 3, wardMul: 0.4, guardMul: 0.4,
 };
 /* each cycle is a list; the phase's new move joins at its turn (k % n). 'horn' is once a phase (a second one reads as 'aim') */
 const CYCLE = {
@@ -116,7 +116,7 @@ export function makeHuntmaster(ctx) {
     const vx = (P.x - sx) / T, vy = ((P.y - 12) - sy - 0.5 * HM.netG * T * T) / T;
     F.nets.push({ x: sx, y: sy, vx, vy: Math.max(HM.netLift, Math.min(60, vy)), life: 1.6 }); ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); }
   /* OPEN: still where he stands (B4) - off his perch he drops; the hit cap and the ward follow (B3) */
-  function open(e, mode, t, mul, cap) { if (!e.alive) return; set(e, mode, t + 0.05); e.open = t; e.openT0 = t; e.openHits = 0; e.hitCap = cap; e.openMul = mul * (F.weak[3] ? HM.maskMul / HM.openMul : 1); e.ward = 0; e.vy = 0; F.n.opens++; F.sinceOpen = 0;
+  function open(e, mode, t, mul, cap) { if (!e.alive) return; set(e, mode, t + 0.05); e.open = t; e.openT0 = t; e.openHits = 0; e.hitCap = cap; e.capLeft = cap * HM.blowRef; e.openMul = mul * (F.weak[3] ? HM.maskMul / HM.openMul : 1); e.ward = 0; e.vy = 0; F.n.opens++; F.sinceOpen = 0;
     if (e.perch >= 0) { e.perch = -1; }   /* (he drops off his perch: the stagger knocks him down to the floor, where you can reach him) */
     ctx.shake(4); ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(e.x, e.y - 18, 16, ['#ffd36b', '#e8dcc0', '#8a6a48'], 80, 0.6); }
   const longStag = (e, how) => { F.n.longStag++; open(e, 'open', HM.stagLong, HM.openMul, HM.hitCap); ctx.number(e.x, e.y - 56, how === 'pod' ? 'THE POD BURSTS IN HIS FACE: HE STAGGERS' : 'HIS OWN ARROW: HE STAGGERS', '#8fd160');
@@ -264,8 +264,8 @@ export function makeHuntmaster(ctx) {
      open, the first HM.hitCap blows pay x openMul and the next one ends it (the hit cap) */
   H.take = (e, dmg, fromX, plunge) => { if (!F) return dmg; const P = ctx.hero();
     if (F.self) return dmg;
-    if (hmOpen(e)) { e.openHits = (e.openHits || 0) + 1; const d = dmg * (e.openMul || HM.openMul);
-      if (e.openHits >= (e.hitCap || HM.hitCap)) { e.open = 0; F.n.capped++; }   /* (the hit cap: the blow that fills it lands, and he is up out of it - the ward follows) */
+    if (hmOpen(e)) { F.n.openDmg = (F.n.openDmg || 0) + dmg; F.n.openBlows = (F.n.openBlows || 0) + 1; e.openHits = (e.openHits || 0) + 1; const left = e.capLeft ?? (e.hitCap || HM.hitCap) * HM.blowRef, use = Math.min(dmg, Math.max(0, left)), d = use * (e.openMul || HM.openMul); e.capLeft = left - dmg;
+      if (e.capLeft <= 0.01 || e.openHits >= HM.maxBlows) { e.open = 0; F.n.capped++; }   /* (THE HIT CAP is THREE BLOWS' WORTH (hitCap x blowRef of a blow): a heavy spear fills it in two and a bit, a quick sword in three, a light flame in four (never more than maxBlows) - the blow that fills it lands what is left, and he is up out of it; the ward follows) */
       return d; }
     if (e.ward > 0) { F.n.turned++; F.n.wardHits++; ctx.turned && ctx.turned(e, fromX, 'HE GUARDS'); return Math.max(1, Math.round(dmg * HM.wardMul)); }
     const frontal = (e.face || 1) * (fromX - e.x) > -2, air = !!plunge || (P && !P.ground) || (P && P.y < e.y - 14);
@@ -275,7 +275,7 @@ export function makeHuntmaster(ctx) {
   H.end = () => { if (F) { F.arrows = []; F.pools = []; F.nets = []; for (const a of F.adds) if (a.alive) { a.alive = false; a.hp = 0; } F.adds = []; } if (ctx.snares) ctx.snares.clearBoss(); for (const pp of ctx.players) pp.hmPoison = 0; };
   H.read = () => F && { ph: F.ph, weak: { ...F.weak }, n: { ...F.n }, hurt: { ...F.hurt }, arrows: F.arrows.map(a => ({ id: a.id, kind: a.kind, x: a.x, y: a.y, vx: a.vx, vy: a.vy, back: a.back })), pools: F.pools.map(q => ({ x: q.x, t: q.t })),
     nets: F.nets.map(n => ({ x: n.x, y: n.y, vx: n.vx, vy: n.vy })), traps: ctx.snares ? ctx.snares.read().jaws.filter(j => j.boss) : [], adds: F.adds.filter(a => a.alive).map(a => ({ x: a.x, y: a.y, hp: a.hp })),
-    hoist: F.hoist || null, hoistX: F.hoistX, perches: F.perches, hits: F.e ? F.e.openHits || 0 : 0, hitCap: F.e ? F.e.hitCap || HM.hitCap : HM.hitCap, rollUsed: F.rollUsed, sinceOpen: F.sinceOpen };
+    hoist: F.hoist || null, hoistX: F.hoistX, perches: F.perches, hits: F.e ? F.e.openHits || 0 : 0, hitCap: F.e ? F.e.hitCap || HM.hitCap : HM.hitCap, capLeft: F.e ? F.e.capLeft : 0, spent: !!F.e && hmOpen(F.e) && (F.e.capLeft <= 0.01 || (F.e.openHits || 0) >= HM.maxBlows), rollUsed: F.rollUsed, sinceOpen: F.sinceOpen };
 
   /* ---------- DRAWING (src/redraw/rootway_art.js paintHuntmaster draws him; the new moves borrow its poses until the art pass - the net, the horn and the traps drawn here) ---------- */
   const POSE = { netTell: 'aimTell', heavyTell: 'aimTell', hornTell: 'aimTell', snareTell: 'leapTell', snareHop: 'leap', flurryTell: 'slashTell', flurry: 'slash', roll: 'leap', sleep: 'land' };
@@ -291,7 +291,7 @@ export function makeHuntmaster(ctx) {
     /* OPEN: the gold ring and its timer (B10), and the blows left in it (pips); CAUGHT: the cage's bars over him; THE WARD: a pale ring */
     if (open) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.45 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, by + 6, 20, 0, 7); g.stroke(); g.globalAlpha = 1;
       const kk = Math.max(0, e.open / (e.openT0 || HM.stagLong)); g.fillStyle = '#1b1626'; g.fillRect(x - 16, by - 20, 32, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 16, by - 20, R(32 * kk), 3);
-      const cap = e.hitCap || HM.hitCap, left = Math.max(0, cap - (e.openHits || 0)); for (let i = 0; i < cap; i++) { g.fillStyle = i < left ? '#ffd36b' : '#3a3438'; g.fillRect(x - cap * 3 + i * 6 + 1, by - 25, 4, 3); } }
+      const cap = e.hitCap || HM.hitCap, left = Math.max(0, (e.capLeft ?? cap * HM.blowRef) / HM.blowRef); for (let i = 0; i < cap; i++) { const f = Math.max(0, Math.min(1, left - i)); g.fillStyle = '#3a3438'; g.fillRect(x - cap * 3 + i * 6 + 1, by - 25, 4, 3); if (f > 0) { g.fillStyle = '#ffd36b'; g.fillRect(x - cap * 3 + i * 6 + 1, by - 25, Math.max(1, Math.round(4 * f)), 3); } } }   /* (the pips: three blows' worth, each emptying as the blows land) */
     if (m === 'caught') { /* THE CAGE'S BARS: bound timber with iron straps, tied at the top, over him */
       for (let k = -2; k <= 2; k++) { g.fillStyle = '#5a3c26'; g.fillRect(x + k * 7 - 1, y - 34, 4, 34); g.fillStyle = '#a07448'; g.fillRect(x + k * 7 - 1, y - 34, 1, 34); g.fillStyle = '#3a2618'; g.fillRect(x + k * 7 + 2, y - 34, 1, 34); }
       g.fillStyle = '#3a3438'; g.fillRect(x - 17, y - 36, 34, 3); g.fillRect(x - 17, y - 3, 34, 3); g.fillRect(x - 17, y - 20, 34, 2); g.fillStyle = '#8a8490'; g.fillRect(x - 17, y - 36, 34, 1); g.fillRect(x - 17, y - 3, 34, 1);
@@ -352,7 +352,7 @@ export function hmPlan(o) {
   const trapAhead = gx => { if (gx == null || !P.ground) return null; const dir = Math.sign(gx - P.x); if (!dir) return null; return (R0.traps || []).find(j => j.state === 'set' && (j.x - P.x) * dir > 0 && Math.abs(j.x - P.x) < 22 && Math.abs(j.y - P.y) < 6) || null; };
   const withTraps = res => { const j = trapAhead(res.gx); if (j && !roll('t' + Math.round(j.x) + ':' + Math.floor(t / 3), PLAN.missTrap)) { res.jump = true; res.why += ' (over a trap)'; } return res; };
   /* OPEN or CAUGHT: cut him - until the pips are spent */
-  if (hmOpen(e)) { if ((R0.hits || 0) >= (R0.hitCap || 3)) { out.gx = clamp(e.x - toHim * 60); out.face = toHim; out.why = 'the pips are spent: out'; return withTraps(out); }
+  if (hmOpen(e)) { if (R0.spent) { out.gx = clamp(e.x - toHim * 60); out.face = toHim; out.why = 'the pips are spent: out'; return withTraps(out); }
     if (!sameFloor && e.y < P.y - 20) { const b = (o.buds || []).sort((a, q) => Math.abs(a.x - e.x) - Math.abs(q.x - e.x))[0]; if (b) { out.gx = b.x; out.why = 'up the bud to him'; if (Math.abs(P.x - b.x) < 6 && P.ground && P.y <= b.top + 2) out.jump = true; return out; } }
     out.gx = clamp(e.x - toHim * Math.max(10, reach * 0.6)); out.face = toHim; out.atk = ad < reach + 10 && P.atk < 0 && Math.abs(e.y - P.y) < 30; out.why = 'cut him: he is open'; return withTraps(out); }
   /* THE ARROWS FROM HIS BOWS (the horn's archers): a shield takes one, the warden sweeps it, anyone else rolls or jumps it (some do not see it) */

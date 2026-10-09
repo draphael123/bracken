@@ -82,7 +82,7 @@ try {
   ok(t.key.opened && t.key.weak[1] && t.openFor >= 3, 'his gold arrow struck back breaks the quiver strap and opens him, 3 s or more ' + JSON.stringify([t.key, t.openFor]));
   ok(t.ward > 1 && t.wardHit > 0 && Math.abs(t.wardHit / t.behind - 0.4) < 0.08, 'after the opening his ward turns blades to 0.4 (B3 + B15: never totally shut) ' + JSON.stringify([t.ward, t.wardHit]));
   ok(t.key.t >= 3.5 && t.key.t <= 4.1, 'his own arrow home is THE LONG STAGGER (3.5-4 game seconds): ' + t.key.t);
-  ok(t.cap.open && t.cap.hits.length === 3 && t.cap.hits.every(h => h >= 29) && t.cap.after.mode !== 'open' && t.cap.after.ward > 2.4, 'THE HIT CAP: open, three blows land x1.5 and the third ends it; his told ward follows ' + JSON.stringify(t.cap));
+  { const sum = t.cap.hits.reduce((a, b) => a + b, 0); ok(t.cap.open && t.cap.hits[0] >= 29 && t.cap.hits[1] >= 29 && Math.abs(sum - 67.5) < 1.5 && t.cap.after.mode !== 'open' && t.cap.after.ward > 2.4, 'THE HIT CAP: open, THREE BLOWS WORTH lands x1.5 (two heavy blows and what is left of the third) and it ends him open; his told ward follows ' + JSON.stringify(t.cap)); }
   ok(t.pod.r === 'stagger' && t.pod.mode === 'open' && t.pod.open > 3 && t.pod.perch === -1 && t.pod.onFloor, 'a thrown spore pod on him is the long stagger, and he drops off his perch to the floor ' + JSON.stringify(t.pod));
   ok(t.net.held && t.net.heavy, 'HIS NET: a hero it catches is held, and he draws the heavy arrow ' + JSON.stringify(t.net));
   ok(t.snare >= 2, 'HIS SNARES: he sets jaw traps about the stand (' + t.snare + ')');
