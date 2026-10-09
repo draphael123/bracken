@@ -26,7 +26,10 @@ export function makeBuriedCityHands(ctx) {
     else if (id === 'upperbulb') number(x, y, 'THE HOURGLASS: THIS HALL RUNS DOWN INTO THE NEXT'); else if (id === 'shaft') number(x, y, 'SHUT THE GATE: RIDE THE SAND UP THE SHAFT'); else if (id === 'trap') number(x, y, 'SHUT THE FLOOR-GATE: THE HALL FILLS'); };
   H.on = () => !!K;
   H.state = () => K;
-  H.noSun = x => !!K && !!K.L.arena && x >= K.L.arena.x0;   /* the throne room is roofed (the city is: the sun is the dunes' only) */
+  /* THE SUN IS THE DUNES' ONLY: the city is under its sand roof (rooms ten and more rows tall - sunstroke.js's 5-row roof read cannot see it), so the sun reaches
+     only the columns L.sun names. THE LOCAL SUN HOOK (A13): when the shared drain (src/drain.js, claude/ksar2) lands, the integrator points it at L.sun / this */
+  H.sunAt = x => !!K && (K.L.sun || []).some(z => x >= z.x0 * TS() && x < (z.x1 + 1) * TS());
+  H.noSun = x => !!K && !H.sunAt(x);
 
   /* ---------- RESET: a fresh load builds the rooms; a respawn puts every small room back as it was built and keeps THE GREAT SAND-GATE as it was left ---------- */
   H.reset = () => {

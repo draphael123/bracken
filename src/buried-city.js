@@ -74,7 +74,12 @@ export function buildBuriedCity({ painter, T, TS }) {
   const slinger = (x, y, squad, o) => foe('slinger', x, y, squad, Object.assign({ cnSkin: 'sandslinger' }, o || {}));                       /* THE SAND-FOLK SLINGER: the ranged one (the draft's sand-goblin, a man now) */
   const scorpion = (x, y, squad, o) => foe('scorpion', x, y, squad, Object.assign({ cnSkin: 'brassscorpion' }, o || {}));                   /* THE BRASS SCORPION: the city's clockwork vermin on the scorpion's machine */
   const gear = (x, y) => ent('stray', x, y, { kind: 'gear' });
-  const decor = [], interiors = [], vaultDoors = [], shade = [];
+  const decor = [], interiors = [], vaultDoors = [], shade = [], crumbles = [], quicksand = [];
+  /* THE SAND EATS THE CITY (two of its kit's pieces, both the city's sand: level-quality's gadget count asks for them, and they are platforming the rule's sand
+     makes sense of): A ROTTEN BALCONY (src/tower-collapse.js crumbles: stand on it and it counts three and gives way, and it is back four seconds later -
+     never on the main route's only footing) and A DRIFT (src/quicksand.js: a one-row pit of loose sand on the street - it holds you; jump, and keep jumping) */
+  const rotten = (x0, x1, y) => { ledge(x0, x1, y); crumbles.push({ x0, x1, row: y, rows: 1, count: 3 }); };
+  const drift = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.AIR); quicksand.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: y * TS }); };
   const shadeBox = (x0, x1, y0, y1) => shade.push([x0 * TS, (x1 + 1) * TS, y0 * TS, (y1 + 1) * TS + 1]);
 
   // ================= 1. THE SAND STAIR (0-89): TEACH - the first sand room, its lever outside, nothing in reach of it =================
@@ -85,12 +90,17 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(25, 28, 24); ground(29, 32, 26); ground(33, 36, 28); ground(37, 40, 30); ground(41, 44, 32); ground(45, 89, B);   /* THE SINKHOLE STAIR down into the street */
   roof(34, 89, 21);                                                                /* the sand roof: past the sinkhole the city is under it */
   decor.push({ kind: 'sinkhole', x0: 25, x1: 33 });
+  ledge(9, 12, 19);                                                                /* a spire's fallen drum on the dunes (a second height) */
+  ledge(5, 8, 16); ent('silver', 6, 15);                                           /* A SILVER on the spire's broken top (off the route: up off the drum) */
   ledge(38, 41, 26);                                                               /* a broken lintel in the sinkhole's wall (a second height on the stair) */
   /* THE FIRST SAND ROOM (TEACH, safe): full to the top of its doorway; its lever stands outside it on the street */
   { const r = ROOMS[0]; roof(55, 68, 25); block(55, 55, 26, 30); block(68, 68, 26, 30); interiors.push([56, 67, 26, 33, 'bcRoom']); }
   sign(47, B - 1, 'THE ROOMS FILL WITH SAND. E PULLS A SAND-GATE: THE ROOM DRAINS.');
   ent('sandlever', 51, B - 1, { room: 'first' }); ent('sandlever', 66, B - 1, { room: 'first', chain: 5 });
-  ledge(72, 76, 31); gear(74, 30);                                                 /* GEAR ONE, on a balcony past the room */
+  ledge(45, 49, 31);                                                               /* a balcony over the street by the first room */
+  rotten(72, 76, 31); gear(74, 30);                                                /* GEAR ONE, on a ROTTEN balcony past the room (it gives way: cheap here, a drop to the street) */
+  sign(78, B - 1, 'A DRIFT HOLDS YOU. JUMP, AND KEEP JUMPING.');
+  drift(82, 84, B);                                                                /* THE FIRST DRIFT: the drowned rise either side of it */
   ledge(80, 84, 31); decor.push({ kind: 'house', x0: 78, x1: 86, y: 31 });
   drowned(81, B - 1, 'firstDrift'); drowned(86, B - 1, 'firstDrift');             /* THE FIRST DROWNED: up out of the drift past the room (the road's first fight, out of the teach room's reach) */
 
@@ -98,7 +108,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(90, 117, B); roof(90, 219, 17);                                          /* the market hall: a higher roof */
   for (const [x0, x1] of [[93, 96], [101, 104], [108, 111]]) { ledge(x0, x1, 31); decor.push({ kind: 'stall', x0, x1, y: 31 }); }   /* the stalls: their awnings are ledges */
   ledge(97, 100, 28); ledge(112, 116, 28);                                        /* balconies over the stalls */
-  ledge(92, 95, 25); ent('silver', 93, 24);                                       /* A SILVER on the high cornice (a jump off the balcony) */
+  ledge(92, 95, 25);                                                               /* the high cornice (a perch off the balcony; its silver moved to the spire: the cap is three) */
   slinger(98, 27, 'marketWatchSling'); scorpion(103, B - 1, 'marketWatch'); scorpion(110, B - 1, 'marketWatch', { face: 1 });   /* THE MARKET WATCH: a slinger over the stalls, brass scorpions under them */
   slinger(114, 27, 'marketWatch2', { face: -1 });
   /* THE GRANARY (TEST, RIDE IT UP): the way on is HIGH in its east wall; inside, its lever shuts the gate and the pour carries you up */
@@ -112,10 +122,14 @@ export function buildBuriedCity({ painter, T, TS }) {
   /* THE UPPER STREET (134-175): the market's roofs; the first construct */
   ground(134, 175, U);
   ent('check', 145, U - 1);                                                        /* CHECKPOINT ONE, past the granary */
+  ledge(136, 141, 23);                                                             /* a balcony over the checkpoint */
   ledge(152, 156, 23); slinger(154, 22, 'upperWatch', { face: -1 });
+  drift(158, 160, U);                                                              /* a drift under the slinger's balcony: in it, you are his mark */
   construct(152, U - 1, 'firstConstruct');                                        /* THE FIRST CONSTRUCT, in the open: its poke, its sweep */
   sign(140, U - 1, 'THE CITY\'S CONSTRUCTS: SAND IN THEIR GEARS JAMS THEM.');
   ledge(162, 165, 23); decor.push({ kind: 'dome', x0: 160, x1: 168, y: 25 });
+  ledge(164, 167, 20); ent('silver', 166, 19);                                     /* A SILVER on the dome's lantern, under the market roof (off the route: a climb off the balcony) */
+  ledge(169, 173, 23);
   drowned(167, U - 1, 'upperDrift'); scorpion(171, U - 1, 'upperDrift');
   ground(176, 178, 28); ground(179, 181, 30); ground(182, 184, 32); ground(185, 211, B);   /* the steps back down to the street */
   ledge(188, 192, 31); ledge(194, 198, 28); ledge(203, 206, 31);                 /* balconies on the market's last houses */
@@ -143,8 +157,9 @@ export function buildBuriedCity({ painter, T, TS }) {
   construct(264, 39, 'bulbFloor', { face: 1 }); construct(269, 39, 'bulbFloor');  /* the lower bulb's watch: the sand that runs down carries them up JAMMED */
   gear(266, 39);                                                                    /* GEAR THREE, on the lower bulb's floor (among the constructs) */
   drowned(284, TH - 1, 'hallsEnd'); scorpion(289, TH - 1, 'hallsEnd'); construct(295, TH - 1, 'hallsEnd');   /* the halls' last squad */
+  rotten(286, 291, 27);                                                            /* a ROTTEN balcony over the halls' corridor */
   ent('check', 280, TH - 1);                                                       /* CHECKPOINT TWO, past the hourglass */
-  ground(301, 302, 32); ground(303, 316, B);                                       /* down to the street at the Drowned Quarter */
+  ground(301, 302, 32); ground(303, 316, B); ledge(303, 307, 31);                                       /* down to the street at the Drowned Quarter */
 
   // ================= 4. THE DROWNED QUARTER (307-419): SET PIECE - THE GREAT SAND-GATE (REQUIRED) =================
   roof(301, 380, 18);
@@ -155,14 +170,15 @@ export function buildBuriedCity({ painter, T, TS }) {
   interiors.push([317, 372, 19, 41, 'bcQuarter']);
   /* its ruins: houses, a tower, balconies - footing at three heights once the sand is gone */
   block(326, 329, 39, 41); ledge(330, 334, 36); block(336, 338, 33, 41); ledge(339, 343, 30); gear(341, 29);   /* GEAR FOUR, up the ruined houses' balconies */
-  block(350, 353, 39, 41); ledge(354, 358, 36); block(360, 363, 33, 41); block(366, 368, 31, 41); ent('silver', 367, 30);   /* A SILVER on the broken tower's top (a climb off the houses) */
-  decor.push({ kind: 'greatgate', x0: 344, x1: 348, y: LO });
+  block(350, 353, 39, 41); ledge(354, 358, 36); block(360, 363, 33, 41); block(366, 368, 31, 41);   /* the broken tower (its silver moved to the dome's lantern: the cap is three, and the route climbs it) */
+  decor.push({ kind: 'greatgate', x0: 344, x1: 348, y: LO }); ledge(344, 348, 38);   /* the great gate's housing: a step over its grille */
   /* the quarter's dormant watch and its drowned: under the sand on a fresh load - the hands stand them up when the sand has gone off them (sandWait) */
   construct(346, LO - 1, 'quarterWatch', { sandWait: 'great', dormant: true }); construct(370, LO - 1, 'quarterWatch2', { sandWait: 'great', dormant: true });
   drowned(322, LO - 1, 'quarterDrift', { sandWait: 'great' }); drowned(356, LO - 1, 'quarterDrift2', { sandWait: 'great' }); slinger(361, 32, 'quarterSling', { sandWait: 'great' });
   /* THE OLD STREET east of the quarter (374-419): the foundry's yard */
   ground(374, 419, LO); roof(374, 419, 30);
-  ledge(380, 384, 39); ledge(392, 396, 39); ledge(404, 408, 39);
+  ledge(374, 378, 39); ledge(380, 384, 39); ledge(386, 390, 36); ledge(392, 396, 39); ledge(398, 402, 36); ledge(404, 408, 39); ledge(412, 416, 39);
+  drift(397, 399, LO);                                                             /* a drift in the foundry yard, under the slinger */
   construct(388, LO - 1, 'foundry'); slinger(394, 38, 'foundrySling'); drowned(400, LO - 1, 'foundry');   /* THE FOUNDRY's squad: a construct, a slinger over him, a drowned */
   ent('check', 410, LO - 1);                                                        /* CHECKPOINT THREE, after the quarter */
 
@@ -182,7 +198,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   sign(446, TH - 1, 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: A FALL HERE IS THE END.');
   ent('sandlever', 449, TH - 1, { room: 'trap' }); ent('sandlever', 468, TH - 1, { room: 'trap' });
   construct(447, TH - 1, 'trapLip', { face: 1 }); drowned(443, TH - 1, 'trapLip');   /* THE EXAM's squad on the lip while the hall fills */
-  ground(466, 523, TH); ledge(469, 473, 27); slinger(471, 26, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
+  ground(466, 523, TH); ledge(469, 473, 27); ledge(474, 477, 27); drift(476, 478, TH); slinger(471, 26, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
   ledge(480, 484, 27); ledge(486, 490, 24);
   construct(486, TH - 1, 'throneGuard'); scorpion(492, TH - 1, 'throneGuard'); slinger(488, 23, 'throneGuardSling');   /* THE THRONE GUARD: a construct, a scorpion, a slinger over them */
   /* THE CLOCKWORK VAULT: a low cellar under the street, WEST of a hatch in it (drop in; its door opens on five gears). The cellar is two rows deep and ends at
@@ -191,6 +207,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   block(497, 497, 31, 32); interiors.push([498, 501, 31, 32, 'bcVaultHall'], [494, 496, 31, 32, 'bcVault']);
   vaultDoors.push({ id: 'clockwork', x: 497, y0: 31, y1: 32, gears: 5 }); ent('gearvault', 497, 32, { id: 'clockwork' }); ent('silver', 495, 32);
   sign(504, TH - 1, 'THE CLOCKWORK VAULT, DOWN THE HATCH. FIVE GEARS OPEN ITS DOOR.');
+  rotten(508, 512, 27); ledge(517, 521, 27);                                       /* a ROTTEN balcony and a sound one by the throne door */
   ent('check', 515, TH - 1);                                                        /* CHECKPOINT FOUR, before the king (after the exam) */
 
   // ================= THE HOURGLASS KING's THRONE ROOM (src/hourglass-king.js) =================
@@ -210,7 +227,7 @@ export function buildBuriedCity({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
     buriedcity: true, caravan: true,   /* caravan: the desert's hands in main.js (the bandits' and scorpions' machines, the sand and stone skins, THE SUN on the dunes - the city is under its roof) */
-    rooms: ROOMS.map(r => ({ ...r, levers: r.levers.map(a => a.slice()) })), wheel: { ...WHEEL }, arenaLevers: stage.levers, vaultDoors, decor, sandSolid, sandRungs,
+    rooms: ROOMS.map(r => ({ ...r, levers: r.levers.map(a => a.slice()) })), wheel: { ...WHEEL }, arenaLevers: stage.levers, vaultDoors, decor, sandSolid, sandRungs, crumbles, quicksand,
     /* THE CITY HITS HARD (difficulty v2: weight, not numbers of foes): a blow x this on top of the act's tier, by skin (main.js damagePlayer0 reads L.foeHit) */
     foeHit: { sanddrowned: 3.0, sandslinger: 1.0, brassscorpion: 2.6 },
     foeHp: { sanddrowned: 2.2, sandslinger: 1.6, brassscorpion: 2.2 },

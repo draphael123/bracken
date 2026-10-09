@@ -40,6 +40,7 @@ try {
         while (Math.abs(P().x - goal) > (o.tol || 4) && n++ < (o.max || 2500)) {
           if (!o.noFight && fight()) continue;
           clear(); k[goal > P().x ? 'right' : 'left'] = true;
+          if (P().qsDepth > 0) { if (n % 7 === 0) BK.press('jump'); tick(1); continue; }   /* A DRIFT holds you: jump, and keep jumping (the play bot's hands, src/playtest.js) */
           if (Math.abs(P().x - lx) < 0.3) still++; else still = 0; lx = P().x;
           if (still > 8 && P().ground && !o.noJump) { k.jump = true; BK.press('jump'); still = 0; tick(14); continue; }
           tick(1); }

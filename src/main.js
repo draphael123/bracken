@@ -20732,7 +20732,7 @@ function updateVillage(dt) {
   if (STK && state === 'play') STK.update(dt);   /* THE GLINT + STALL NUDGE for the route list (src/stuck-guide.js) */
   if (WTH && WTH.on()) WTH.update(dt);
   if (UWH && UWH.on()) UWH.update(dt);
-  if (KSH && KSH.on()) KSH.update(dt);   if (BCH && BCH.on()) BCH.update(dt);   /* THE BURIED CITY (src/buried-city-hands.js): the sand rooms, the levers, the great gate, the risen, the vault */   /* THE BANDIT KSAR (src/ksar-hands.js): the gongs, the calls, the kegs and flasks, the smoke, the gate */
+  if (KSH && KSH.on()) KSH.update(dt);   if (BCH && BCH.on()) { BCH.update(dt); if (L.crumbles && L.crumbles.length) updateCrumbles(dt); }   /* (its ROTTEN BALCONIES: src/tower-collapse.js crumbles) */   /* THE BURIED CITY (src/buried-city-hands.js): the sand rooms, the levers, the great gate, the risen, the vault */   /* THE BANDIT KSAR (src/ksar-hands.js): the gongs, the calls, the kegs and flasks, the smoke, the gate */
   if (GSH && GSH.on()) GSH.update(dt);   /* THE GLASS SEA (src/glass-sea-hands.js): the mirrors, the beams, the beds, the cracks, the cold */   /* THE UNDERWELL (src/underwell-hands.js): the oil, the torches, the lamp, the nests */
   if (RGH && RGH.on()) RGH.update(dt);   /* THE RED GORGE (src/red-gorge-hands.js) */
   if (SKY && SKY.on()) { SKY.update(dt); if (L.crumbles && L.crumbles.length) updateCrumbles(dt); }   /* THE SKY ROAD: the stones, the disc, the horn's call; THE BROKEN SKY BRIDGE's cracked spans (src/tower-collapse.js) */
