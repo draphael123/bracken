@@ -36,7 +36,16 @@
      { x, y feet, key, face, r, hold }): stood at x he faces it and presses key every 12 frames; hold = stand and wait. The glass sea's mirrors are taught there.
    - STAIRS: a climb over ~3.4 rows (more than a jump) is taken one footing at a time; A SLICK SLOPE before a gap: hold DOWN and leap at its foot; A SHUT
      LOCKGATE with its key in the open on his floor: the key first; a hunt (a locked room is a fight) only on his own floor; a level-up card is tapped through.
-   A measuring tool, not a gate (tools/level-walk-selftest.mjs is the check: it runs and reports). */
+   V3 CONTROLS (claude/walkerctl, Daniel 10-09: Stormhold stuck on the walker's OWN controls, not the level) - src/walk-graph.js (the reach fill's edges + a Dijkstra) and:
+   - A SIDE TRIP FOR A KEY (sub-route 'key'): a shut lockgate on the route whose key stands off the floor (a tower deck, behind nets): the graph gives route -> key ->
+     back onto the route, walked node by node (each node reached within a tile and a row); the key first; once it is in his pack, straight back onto the route.
+   - AN ESCAPE (sub-route 'escape'): 2.5 s off the route by more than four rows (a pit, a chimney slot): routed back onto it from where he stands.
+   - NETS: up a net of any height, off it sideways (a jump clears ~2 rows; higher ledges: on up until within one), to the top rung; a foe on the top rung is jumped round.
+   - A RUNNING LEAP between ledges (the zigzag one-way stair): walk back along the ledge for the run, leap at the tip with the run on, flown without the bot.
+   - NO more: striking a kennel (drop) winch, hunting a foe behind him or on another floor, door-hunting on a level whose keys are off the floor, a stale 'climb the
+     ledges' plan after an ambush wall lifts, a progress clock that a door loop could re-earn for ever (progress = a NEW best route node).
+   --subs=0: no side trips/escapes. --nofoes=x0-x1 (remove the foes in those columns: read the footwork alone). --dk (trace the keys at three points of the hands).
+   A measuring tool, not a gate (tools/level-walk-selftest.mjs is the check: it runs and reports; tools/walk-controls.mjs keeps the four moves taught). */
 import { writeFileSync } from 'node:fs';
 import { LEVELS } from '../src/level.js';
 import { depthsOf, gateOf } from '../src/campaign-order.js';
