@@ -12,8 +12,7 @@ import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 
 export const BCS = { leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2 };
-const RULE_SAID = { first: 'THE SAND-GATE: OPEN, THE ROOM DRAINS', granary: 'SHUT THE GATE: THE SAND CARRIES YOU UP', cellar: 'SHUT THE GATE: THE SAND COVERS THE STAKES',
-  upperbulb: 'THE HOURGLASS: THIS HALL RUNS DOWN INTO THE NEXT', shaft: 'SHUT THE GATE: RIDE THE SAND UP THE SHAFT', trap: 'SHUT THE FLOOR-GATE: THE HALL FILLS' };
+const RULE_SAID = { first: 1, granary: 1, cellar: 1, upperbulb: 1, shaft: 1, trap: 1 };   /* the rooms whose lever says what it does there, on the first look */
 
 export function makeBuriedCityHands(ctx) {
   let K = null;
@@ -21,6 +20,10 @@ export function makeBuriedCityHands(ctx) {
   const TS = () => ctx.TS, T = () => ctx.T;
   const once = k => { if (K.said[k]) return false; K.said[k] = 1; return true; };
   const number = (x, y, t, col) => ctx.number(x, y, t, col || '#ffd36b');   /* (every teaching line is a src/hint-lines.js line: tools/hint-shown.mjs reads these calls) */
+  /* the first look at each room's lever: what it does there (literal number() calls, so tools/hint-shown.mjs reads them) */
+  const sayRule = (id, x, y) => {
+    if (id === 'first') number(x, y, 'THE SAND-GATE: OPEN, THE ROOM DRAINS'); else if (id === 'granary') number(x, y, 'SHUT THE GATE: THE SAND CARRIES YOU UP'); else if (id === 'cellar') number(x, y, 'SHUT THE GATE: THE SAND COVERS THE STAKES');
+    else if (id === 'upperbulb') number(x, y, 'THE HOURGLASS: THIS HALL RUNS DOWN INTO THE NEXT'); else if (id === 'shaft') number(x, y, 'SHUT THE GATE: RIDE THE SAND UP THE SHAFT'); else if (id === 'trap') number(x, y, 'SHUT THE FLOOR-GATE: THE HALL FILLS'); };
   H.on = () => !!K;
   H.state = () => K;
   H.noSun = x => !!K && !!K.L.arena && x >= K.L.arena.x0;   /* the throne room is roofed (the city is: the sun is the dunes' only) */
@@ -95,7 +98,7 @@ export function makeBuriedCityHands(ctx) {
     if (W.cd > 0) return; W.cd = BCS.wheelCd; W.turns++; K.n.turns++; ctx.sfx.ratchet && ctx.sfx.ratchet(); ctx.shake(2 + W.turns);
     r.gate = 'open'; r.drain = [0, 1.0, 2.0, 4.0][Math.min(3, W.turns)];
     if (W.turns >= (K.L.wheel.turns || 3)) { W.done = true; number(P.x, P.y - 34, 'THE GREAT SAND-GATE IS OPEN: THE QUARTER DRAINS', '#8fd160'); ctx.shake(6); ctx.sfx.boom && ctx.sfx.boom(); }
-    else number(P.x, P.y - 34, 'THE GREAT GATE OPENS A NOTCH (' + W.turns + '/' + (K.L.wheel.turns || 3) + ')', '#ffd36b');
+    else number(P.x, P.y - 34, `THE GREAT GATE OPENS A NOTCH (${W.turns}/${K.L.wheel.turns || 3})`, '#ffd36b');
   }
   function openVault(v) { v.open = true; const ts = TS(); for (let y = v.y0; y <= v.y1; y++) { ctx.cellSet(v.x, y, T().AIR); ctx.burst(v.x * ts + 8, y * ts + 8, 3, ['#d9b36a', '#8a6a3a'], 40, 0.5); } ctx.sfx.gateLift && ctx.sfx.gateLift(); number(v.x * ts, v.y0 * ts - 20, 'THE CLOCKWORK VAULT OPENS', '#8fd160'); }
 
@@ -122,7 +125,7 @@ export function makeBuriedCityHands(ctx) {
       const made = ctx.spawnEnt ? ctx.spawnEnt(q.e, q.k) : null; if (made) ctx.burst(made.x, made.y - 6, 10, ['#d8b070', '#a87a40'], 60, 0.6); }
     /* THE FIRST LOOK at a thing: a line once (what it is) */
     if (P0 && !P0.dead) { const near = (x, y, r) => Math.abs(x - P0.x) < r && Math.abs(y - P0.y) < 70;
-      for (const r of K.rooms) { const lv = (r.levers || [])[0]; if (lv && RULE_SAID[r.id] && near(px(lv[0]), (lv[1] + 1) * TS(), 70) && once('room' + r.id)) number(P0.x, P0.y - 34, RULE_SAID[r.id], '#ffd36b'); }
+      for (const r of K.rooms) { const lv = (r.levers || [])[0]; if (lv && RULE_SAID[r.id] && near(px(lv[0]), (lv[1] + 1) * TS(), 70) && once('room' + r.id)) sayRule(r.id, P0.x, P0.y - 34); }
       const W = K.L.wheel; if (W && near(px(W.x), (W.row + 1) * TS(), 90) && once('wheel')) number(P0.x, P0.y - 34, 'THE GREAT SAND-GATE: E TURNS THE WHEEL', '#ffd36b'); }
     stall(P0, dt);
   };

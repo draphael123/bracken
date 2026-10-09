@@ -150,6 +150,9 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   matriarch: 6, mlever: 0,
   /* THE BANDIT KSAR (claude/ksar): THE HAWK SCOUT is a vulture's marked stoop (a 2) whose shriek sends the lookouts running: a 2.5. THE HAWK-MISTRESS is a boss: a 6. The gongs, keg stacks,
      flask racks, set kegs, bricked arches, the winch and the strongroom fight nobody */
+  /* THE BURIED CITY (claude/buriedcity): THE CLOCKWORK CONSTRUCT is a slow heavy halberd (a poke a shield turns, a low sweep to jump): a 3. THE HOURGLASS KING is a boss: a 6.
+     The sand-gate levers, the great wheel and the clockwork vault fight nobody */
+  construct: 3, hourglassking: 6, sandlever: 0, sandwheel: 0, gearvault: 0,
   hawkscout: 2.5, hawkmistress: 6, ksgong: 0, kskegs: 0, ksflasks: 0, kskeg: 0, ksbarricade: 0, kswinch: 0, ksvault: 0,
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,

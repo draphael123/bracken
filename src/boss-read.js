@@ -62,6 +62,7 @@ export const TURN_WORD = {
   gargoyle: TURN.STONE,                                     // stone until he lies on the spikes
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
+  hourglassking: e => (e.ward > 0 ? TURN.WARDED : 'HIS BRASS'),   // (claude/buriedcity) his brass takes most of a blow until a sand-gate stalls him (B15: x0.45, never nothing)
   hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'HER GAUNTLET'),   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
   lanterneater: e => (e.mode === 'open' ? TURN.WARDED : ['gulpTell', 'huntTell'].includes(e.mode) && e.part === 'lure' ? 'TOO LOW' : ['jaws', 'snapTell'].includes(e.mode) ? 'TOO HIGH' : TURN.WARDED),   // (claude/lanterneater) B14 keys: its lure HIGH, its gums LOW - the word names the wrong height (src/lantern-eater.js KEY_WORD)
   roc: e => e.ward > 0 ? TURN.WARDED : TURN.LOW,           // (claude/roc2) THE ROC: her feathers' ward after an opening; else her talons guard low - strike her from the air (src/roc-eyrie.js)

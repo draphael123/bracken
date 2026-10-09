@@ -184,7 +184,7 @@ export const STUCK_HANDS = {
     { id: 'bc-quarter', zone: [317, 19, 372, 41], steps: [ { key: 'quarterClimb', at: [367, 30], glint: 'stall', line: 'THE OLD STREET\'S DOOR IS PAST THE TOWER: OVER THE HOUSES' } ] },
     { id: 'bc-shaft', zone: [419, 18, 433, 42], steps: [ { key: 'shaftLever', is: ['room.shaft', 'empty'], rows: [36, 42], at: [423, 41], line: 'THE WAY ON IS HIGH: THE SHAFT\'S SAND-GATE' } ] },
     { id: 'bc-trap', zone: [440, 24, 452, 30], steps: [ { key: 'trapLever', is: ['room.trap', 'empty'], at: [449, 29], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' } ] },
-    { id: 'bc-vault', zone: [496, 30, 507, 35], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [503, 34], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
+    { id: 'bc-vault', zone: [493, 29, 503, 33], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [497, 32], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
   ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
      and the climbs over the towers on the walk and out of the store's cellar glint after a stall */

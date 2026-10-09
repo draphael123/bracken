@@ -185,11 +185,12 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(466, 523, TH); ledge(469, 473, 27); slinger(471, 26, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
   ledge(480, 484, 27); ledge(486, 490, 24);
   construct(486, TH - 1, 'throneGuard'); scorpion(492, TH - 1, 'throneGuard'); slinger(488, 23, 'throneGuard');   /* THE THRONE GUARD: a construct, a scorpion, a slinger over them */
-  /* THE CLOCKWORK VAULT: a cellar under the street (drop through the hatch); its door opens on five gears */
-  air(498, 499, TH, TH); air(498, 506, 31, 34); ledge(500, 501, 33);              /* the hatch, the cellar, a ledge back up beside the hatch */
-  block(503, 503, 31, 34); interiors.push([498, 502, 31, 34, 'bcVaultHall'], [504, 506, 31, 34, 'bcVault']);
-  vaultDoors.push({ id: 'clockwork', x: 503, y0: 31, y1: 34, gears: 5 }); ent('gearvault', 503, 34, { id: 'clockwork' }); ent('silver', 505, 34);
-  sign(496, TH - 1, 'THE CLOCKWORK VAULT. FIVE GEARS OPEN ITS DOOR.');
+  /* THE CLOCKWORK VAULT: a low cellar under the street, WEST of a hatch in it (drop in; its door opens on five gears). The cellar is two rows deep and ends at
+     the hatch's east edge, and a one-way step stands under the hatch: a hero who drops in by mistake lands on it, two rows under the street */
+  air(500, 501, TH, TH); air(494, 501, 31, 32); ledge(500, 501, 32);              /* the hatch, the cellar (floor row 33), the step under the hatch */
+  block(497, 497, 31, 32); interiors.push([498, 501, 31, 32, 'bcVaultHall'], [494, 496, 31, 32, 'bcVault']);
+  vaultDoors.push({ id: 'clockwork', x: 497, y0: 31, y1: 32, gears: 5 }); ent('gearvault', 497, 32, { id: 'clockwork' }); ent('silver', 495, 32);
+  sign(504, TH - 1, 'THE CLOCKWORK VAULT, DOWN THE HATCH. FIVE GEARS OPEN ITS DOOR.');
   ent('check', 515, TH - 1);                                                        /* CHECKPOINT FOUR, before the king (after the exam) */
 
   // ================= THE HOURGLASS KING's THRONE ROOM (src/hourglass-king.js) =================
