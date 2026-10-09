@@ -380,7 +380,7 @@ Object.assign(DMG, {
   lanceCharge: 18, lanceThrust: 14, lanceVault: 12, lanceSweep: 14, lanceRush: 14, lanceBash: 8, lanceGuard: 16, lanceJav: 9, lanceWhirl: 10,   /* THE QUEEN'S LANCE (storm): 30, 22, 16, 18, 18, 10, 20, 11, 12 (25%: an L11 hero dead in 30-60 s) */
   reeveSweep: 31, reeveLunge: 42, reeveHook: 25, reeveDouse: 25,   /* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14 */
   bellLeap: 18, bellClaw: 22, bellPressure: 20,   /* THE DIVING BELL: 24, 26, 24 */
-  palLeap: 26,   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP: new, his bash's weight */
+  palLeap: 26, palDelay: 24, palFollow: 18, palGrab: 26, palBrand: 22,   /* (claude/crusader) the delayed overhead, the follow-up after a missed parry, the grab's throw, the brand's fire */
   krakSlam: 33, krakSweep: 33, krakRoar: 23, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22, krakWave: 20, krakQuake: 12, krakShake: 14, krakCoSweep: 26, krakSlam1: 26, krakSweep1: 28,   /* (roar 26 -> 23: the climb's double roar was the warden's death at 2-9% left) */   /* (the first stage has more going on now: its own slam and sweep weigh a little less) */   /* (claude/kraken2: THE WAVE, the slam's shockwave, the shaken ramp) */   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
@@ -5341,7 +5341,7 @@ const BEASTS = [
   { t: 'hedgeknight', name: 'HEDGE KNIGHT', sub: 'nobody owns him', desc: 'A great helm, a poleaxe and a surcoat that has been washed too many times. The swing round the side is a single mark and can be taken on the beat. The jump is a double mark and cannot be answered at all - it can only be left. Sometimes the first swing is a feint: guard on the second.' },
   { t: 'runner', name: 'THE RUNNER', sub: "somebody's squire", desc: 'Quick, unarmoured, and barely worth a swing. What he is for is the shout: once, he stops and fetches every sworn sword who can hear him, and they come at a trot. Reach him before he opens his mouth or deal with what he brings.' },
   { t: 'crossbow', name: 'CROSSBOWMAN', sub: 'up a stair', desc: 'He does not move and he will not come down. He winds, he levels, and the bolt goes where you were standing when he levelled it. The shield turns it - and sends it back up the stair - so he is the reason your guard is up when somebody walks in with a sword. A bolt goes through a shield held up early: only a guard raised as it lands turns it, and that one goes back up the stair.' },
-  { t: 'closedhelm', name: 'THE CRUSADER', sub: 'sworn to the chapel', desc: 'A holy ward stands round him and every blade, bolt and flame comes off it. His own SWORD opens him: the cut and the thrust are single marks - meet them on the beat (a parry, a ward raised or let go as it lands, or a roll through it) and the ward breaks for a breath. THE BASH is a double mark along a red line: roll through it or be gone. JUDGEMENT marks where you stand: guard it or step off the mark. Enraged, his red OATH sweeps low: jump it. RADIANCE fixes three red columns: step into a gap. Neither can be blocked; both leave his ward open.' },
+  { t: 'closedhelm', name: 'THE CRUSADER', sub: 'sworn to the chapel', desc: 'His ward faces you: go round him or over him - or answer his SWORD. Every blow is told by his stance and a GLINT on the blade: guard, parry or roll AT the glint and the ward breaks; too early and he cuts straight back through your shield. One overhead is held long - wait for the glint. His GRAB is red: roll through it. THE BASH runs a red line: roll it or be gone. JUDGEMENT marks your feet: step off. Enraged, the low OATH (jump) and RADIANCE (a gap); near the end HOLY BRAND runs fire along the floor: jump it.' },
   { t: 'drunk', name: 'THE DRUNK', sub: 'a regular, gone rowdy', desc: 'He has been at the Broken Lance since noon and he has found a balcony. He throws what is to hand - a tankard, a turnip, a stool - and a yellow mark means the shield turns it. A red mark is a bottle: it cannot be blocked and it leaves glass. Watch the ring on the ground. One blow puts him on his back.' },
   { t: 'lancer', name: 'SERJEANT', sub: 'mounted, on the bridge', desc: 'A man-at-arms on a barded horse, riding his beat end to end. The charge is a single mark: take it on the shield and he goes over the back of his horse, or jump or roll it. Close to him he swipes with his sword. Mounted, the barding takes some of every cut; in the road he is a man with a sword and no horse.' },
   { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Fought from the carpet in his burning hall. Guard or fly from fire and ice, leave the lightning mark, keep out of the poison, out-fly the death hand. A DEATH MARK that finds no one comes back on him. His RINGS work both ways: dodge through the one he opens by you and come out beside him, open. Of two rings, only one holds the desert. Burning, he fights ring to ring. At three quarters, half and a quarter he tears a portal into a realm of his spells - fire, ice, poison - where his ward holds until you find its opening. His BONE STORM rings you with skulls: fly out through a gap. Wounded, his ECHO casts each spell twice; burning, THE GRAVE drags your carpet toward its void. His WARD turns every blow until an opening breaks it. His ORRERY swings worlds round him; his GRAVE SCRIPT burns every line of the sky but one.'},
@@ -6392,7 +6392,7 @@ const DRONE_HIT = 0.55;
 /* THE ACT I RETUNE (claude/sweep1, the standard: tools/boss-rates.mjs, human profile, campaign level): ONE NUMBER PER BOSS for how hard his own
    blows land (x, on what damagePlayer0 is handed - his strikes, and what he throws where the throw names him). The bosses' own tables are left alone */
 const BOSS_HIT = { golem: 2.2, grandmother: 0.55, king: 1.5, queen: 1.5, abbot: 1.8, pyromancer: 0.75 };
-Object.assign(BOSS_HIT, { undeadmage: 1.8, captain: 0.4, gargoyle: 0.75, burieddead: 0.7, queen: 1.1, grandmother: 0.42, wickerqueen: 0.9, gangleader: 0.75, herald: 1.4, closedhelm: 1.4, greathound: 1.5, ploughman: 1.3, spider: 0.75, lance: 1.4, lampreeve: 1.15, barrowrider: 1.05, golem: 1, harbormaster: 0.85, owl: 1.45 /* (claude/owl2: 0.85 - her told pairs are read well, so each one that lands is worth fearing; tuned with the flask) */, abbot: 1.5, winchmaster: 0.85, gravewarden: 0.85, hedgewarden: 0.9 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
+Object.assign(BOSS_HIT, { undeadmage: 1.8, captain: 0.4, gargoyle: 0.75, burieddead: 0.7, queen: 1.1, grandmother: 0.42, wickerqueen: 0.9, gangleader: 0.75, herald: 1.4, closedhelm: 1.55 /* (claude/crusader: 1.4; the bot reads his new tells well - 83% n=18 with flasks) */, greathound: 1.5, ploughman: 1.3, spider: 0.75, lance: 1.4, lampreeve: 1.15, barrowrider: 1.05, golem: 1, harbormaster: 0.85, owl: 1.45 /* (claude/owl2: 0.85 - her told pairs are read well, so each one that lands is worth fearing; tuned with the flask) */, abbot: 1.5, winchmaster: 0.85, gravewarden: 0.85, hedgewarden: 0.9 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0 } = {}) {
   { const src = who || updFoe; if (src && src.elite && dmg > 0) dmg = Math.max(1, Math.round(dmg * tuneOf(src.t).dmg));   /* (ELITETUNE) per-kind elite damage, elite-kit.js TUNE */
     if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
@@ -8006,8 +8006,8 @@ let novas = [];   /* the BLOOD NOVA's rings, going out */
    and holding it twelve a second; a blow on its face costs five and fills it by 8 + 0.9 of the blow. The NOVA's power is what
    it held over a base full ward of 60: 28 px and 5 damage empty, 72 px and 32 full (the damage in step with his sword), and he
    heals the blood the ward cost him (THE BLOOD PRICE, below). Let go inside the BEAT before a blow lands and the blow is RETURNED - against the Paladin's
-   sword the beat is the one every hero gets from him (PAL_BEAT, 0.45 s). */
-const WARD_UP = 0.08, WARD_HOLD = 15, WARD_RAISE = 8, WARD_HIT = 6, WARD_BASE = 60, WARD_BEAT = 0.22, WARD_BEAT_PAL = 0.45, NOVA_CD = 0.6, SURGE_HOLD = 0.3;
+   sword the beat is the one every hero gets from him (CRUS_BEAT, 0.2 s - claude/crusader; it was PAL_BEAT, 0.45). */
+const WARD_UP = 0.08, WARD_HOLD = 15, WARD_RAISE = 8, WARD_HIT = 6, WARD_BASE = 60, WARD_BEAT = 0.22, WARD_BEAT_PAL = 0.2, NOVA_CD = 0.6, SURGE_HOLD = 0.3;
 /* THE BLOOD PRICE (2026-09-17: "Deathknights block ability is op"). The ward was free and paid out in damage and health, so holding it
    through everything was the best play. Now a blow on its face still costs him WARD_PRICE of itself in health - that BLOOD is what the
    nova heals back (NOVA_HEAL of it: a release repays the blood, DEEP RED turns a profit) - and a FULL ward struck again BREAKS: half the
@@ -17658,33 +17658,49 @@ const palOpened = res => {
   return palRolled(res) && palRollAge() <= PAL_ROLL_BEAT;
 };
 function updateClosedHelm(e, dt) {
-  const A = L.arena, floor = A.floor, p2 = e.phase === 2, ph = p2 ? 1 : 0;
-  e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.anim = (e.anim || 0) + dt;
+  const A = L.arena, floor = A.floor, p2 = e.phase >= 2, ph = p2 ? 1 : 0;
+  e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.anim = (e.anim || 0) + dt; e.glintT = Math.max(0, (e.glintT || 0) - dt);
   e.open = Math.max(0, (e.open || 0) - dt); e.wardHit = Math.max(0, (e.wardHit || 0) - dt); e.wardSaid = Math.max(0, (e.wardSaid || 0) - dt);
   e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300;
   const d = P.x - e.x, ad = Math.abs(d), dyP = Math.abs(P.y - e.y);
   if (e.mode === 'sleep') { const r0 = moveBody(e, 0, e.vy * dt, false); if (r0.ground) e.vy = 0; return; }
   if (p2 && !e.told2) { e.told2 = 1; number(e.x, e.y - e.h - 22, 'HIS OATH IS SWORN', '#fff3b0'); SFX.judgement(); shakeCam(6); ringAt(e.x, e.y - 30, 50, '#fff3b0', 0.5); }
-  const BREAK = () => { e.open = PAL.open; e.mode = 'broken'; e.modeT = PAL.open; e.vx = -e.face * 90; e.opens = (e.opens || 0) + 1;
+  /* (claude/crusader) PHASE THREE, THE BRAND: under CRUS_BRAND.at of his health the sword goes into the ground and the floor burns (B5: one new move) */
+  if (e.phase === 2 && e.hp <= e.maxHp * CRUS_BRAND.at) { e.phase = 3; e.brandT = 1.2; number(e.x, e.y - e.h - 22, 'HE TAKES UP THE BRAND', '#fff3b0'); SFX.judgement(); shakeCam(6); }
+  const BREAK = () => { e.open = PAL.open; e.mode = 'broken'; e.modeT = PAL.open; e.vx = -e.face * 90; e.opens = (e.opens || 0) + 1; e.followNext = 0;
     number(e.x, e.y - e.h - 22, 'THE WARD BREAKS', '#8fd160'); SFX.parry(); SFX.golemShatter(); hitstop(0.1); zoomKick(1.07, 0.3); shakeCam(5);
     ringAt(e.x, e.y - 30, 40, '#fff3b0', 0.45); burst(e.x, e.y - 30, 18, ['#fff3b0', '#f2cc58', '#ffffff'], 130, 0.6); };
-  const tell = (mode, t, mark, col) => { e.mode = mode; e.modeT = t; e.glint = 0; number(e.x, e.y - e.h - 12, mark, col); SFX.charge(); };
-  /* THE FLASH: the moment to raise the guard, drawn on the blade and heard */
-  const glint = () => { if (e.glint || e.modeT > PAL_BEAT) return; e.glint = 1; ringAt(e.x + e.face * 20, e.y - e.h + 10, 10, '#ffffff', 0.3); burst(e.x + e.face * 20, e.y - e.h + 10, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); };
+  /* THE GLINT: the instant before the release, drawn on the blade (a white flash and its own frame) and heard. It comes CRUS_GLINT before the
+     blow, and the beat that breaks the ward is the last CRUS_BEAT of it - so the guard is raised as the glint is SEEN, not before it */
+  const glint = () => { if (e.glint || e.modeT > CRUS_GLINT) return; e.glint = 1; e.glintT = 0.14; ringAt(e.x + e.face * 20, e.y - e.h + 10, 10, '#ffffff', 0.3); burst(e.x + e.face * 20, e.y - e.h + 10, 8, ['#ffffff', '#fff3b0'], 90, 0.3); SFX.tell ? SFX.tell(false) : SFX.clank(); };
+  /* WHAT HIS SWORD MET: on the beat the ward breaks; a guard held from before the glint only HOLDS it, and a roll started too soon passes
+     through - and either way the blade comes straight back round (the follow-up cut, through a held shield) */
+  const answer = (res, last) => { if (crusOpened(res)) { BREAK(); return; }
+    if (res === 'blocked' || palSoon(res)) { number(e.x, e.y - e.h - 12, res === 'blocked' ? 'TOO EARLY: AT THE GLINT' : ROLL_SOON, '#9aa39a'); if (!last) e.followNext = 1; } };
+  if (e.fires && e.fires.length) {   /* THE BRAND'S FIRE runs along the floor to the wall: over it, or burnt */
+    for (const f of e.fires) { f.x += f.dir * CRUS_BRAND.speed * dt; f.life -= dt;
+      if (!f.hit && !P.dead && Math.abs(P.x - f.x) < CRUS_BRAND.w && P.y > floor - CRUS_BRAND.h) { f.hit = true; const res = damagePlayer(f.x - f.dir * 6, DMG.palBrand, f.o); if (res === 'hit') number(P.x, P.y - 30, 'BRANDED', '#ff6b6b'); }
+      if (Math.random() < dt * 40) motes(f.x, floor - 4, 1, 4); }
+    e.fires = e.fires.filter(f => f.life > 0 && f.x > A.x0 + 4 && f.x < A.x1 - 4); }
   let want = 0;
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.8; } break;
     case 'stalk': { e.face = Math.sign(d) || e.face; want = ad > 48 ? e.face * (p2 ? 34 : 26) : ad < 28 ? -e.face * 22 : 0;
-      if (e.leapT === undefined) e.leapT = 3; e.farT = ad > PAL_LEAP.far && !P.dead ? (e.farT || 0) + dt : 0;   /* (claude/sweep2 gap-closer) how long you have stood off */
-      for (const k of ['cutT', 'thrustT', 'bashT', 'judgeT', 'oathT', 'radianceT', 'leapT']) e[k] -= dt;
+      if (e.leapT === undefined) e.leapT = 3; if (e.grabT === undefined) e.grabT = CRUS_GRAB.first; if (e.brandT === undefined) e.brandT = 1.2;
+      e.farT = ad > PAL_LEAP.far && !P.dead ? (e.farT || 0) + dt : 0;   /* (claude/sweep2 gap-closer) how long you have stood off */
+      for (const k of ['cutT', 'thrustT', 'bashT', 'judgeT', 'oathT', 'radianceT', 'leapT', 'grabT', 'brandT']) e[k] -= dt;
       if (e.modeT <= 0 && !P.dead) {
         /* THE SWORD FIRST (rules E2): the parry is what this fight is about, so the two sword blows are asked for before
            anything else in reach - and the bash and the judgement, which a close player would starve, fire anyway once late */
-        if(p2&&e.radianceT<=0){e.radianceT=10;e.marks=[-64,0,64].map(dx=>Math.max(A.x0+24,Math.min(A.x1-24,P.x+dx)));e.mode = 'radianceTell';e.modeT=1.15;number(e.x,e.y-e.h-12,'!!','#ff6b6b');SFX.judgement();}
+        if (e.phase >= 3 && e.brandT <= 0 && dyP < 60) { e.brandT = CRUS_BRAND.cd; e.face = Math.sign(d) || e.face; e.mode = 'brandTell'; e.modeT = CRUS_BRAND.tell; e.glint = 0; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'THE BRAND: OVER THE FIRE', '#ff9a8a'); SFX.judgement(); SFX.charge(); }   /* (claude/crusader) HOLY BRAND */
+        else if(p2&&e.radianceT<=0){e.radianceT=10;e.marks=[-64,0,64].map(dx=>Math.max(A.x0+24,Math.min(A.x1-24,P.x+dx)));e.mode = 'radianceTell';e.modeT=1.15;number(e.x,e.y-e.h-12,'!!','#ff6b6b');SFX.judgement();}
         else if(p2&&e.oathT<=0&&ad<120&&dyP<48){e.oathT=7;e.mode = 'oathTell';e.modeT=0.95;number(e.x,e.y-e.h-12,'!!','#ff6b6b');SFX.heavy();}
         else if (e.leapT <= 0 && e.farT >= PAL_LEAP.linger[ph] && dyP < 60) { e.leapT = PAL_LEAP.cd[ph]; e.farT = 0; e.leapX = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x)); e.mode = 'leapTell'; e.modeT = PAL_LEAP.tell[ph]; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HE LEAPS: GET OFF THE RING', '#ff9a8a'); SFX.charge(); SFX.heavy(); }   /* (claude/sweep2 gap-closer) THE LEAP: you stood off, so he comes to you */
-        else if (e.cutT <= 0 && ad < 62 && dyP < 40) { e.cutT = p2 ? 1.8 : 2.4; e.mode = 'cutTell'; e.modeT = PAL.cut[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
-        else if (e.thrustT <= 0 && ad >= 50 && ad < 112 && dyP < 40) { e.thrustT = p2 ? 2.6 : 3.4; e.mode = 'thrustTell'; e.modeT = PAL.thrust[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
+        else if ((e.grabT <= 0 || (P.block && e.grabT <= CRUS_GRAB.turtle)) && ad < CRUS_GRAB.reach && dyP < 36) { e.grabT = CRUS_GRAB.cd[ph]; e.face = Math.sign(d) || e.face; e.mode = 'grabTell'; e.modeT = CRUS_GRAB.tell[ph]; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); SFX.grip ? SFX.grip() : SFX.heavy(); }   /* (claude/crusader) CRUSADER'S GRAB: a shield held up in his face invites it */
+        else if (e.cutT <= 0 && ad < 62 && dyP < 40) { e.cutT = p2 ? 1.8 : 2.4; e.cutN = (e.cutN || 0) + 1;
+          if (e.cutN > 1 && Math.random() < CRUS_DELAY.chance[ph]) { e.mode = 'delayTell'; e.modeT = CRUS_DELAY.tell[ph]; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }   /* (claude/crusader) THE DELAYED OVERHEAD: held a beat longer - wait for the glint */
+          else { e.mode = 'cutTell'; e.modeT = PAL.cut[ph]; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
+        else if (e.thrustT <= 0 && ad >= 50 && ad < 112 && dyP < 40) { e.thrustT = p2 ? 2.6 : 3.4; e.mode = 'thrustTell'; e.modeT = PAL.thrust[ph]; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
         else if (e.bashT <= 0 && ((ad > 44 && ad < 150) || e.bashT < -4) && dyP < 40) { e.bashT = p2 ? 4.8 : 6.5; e.face = Math.sign(d) || e.face; e.bashX1 = Math.max(A.x0 + 22, Math.min(A.x1 - 22, e.x + e.face * 170)); e.mode = 'bashTell'; e.modeT = PAL.bash[ph]; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.charge(); }
         else if (e.judgeT <= 0 && (ad > 70 || e.judgeT < -3)) { e.judgeT = p2 ? 6 : 8.5;   /* (claude/sweep2) the stopgap (every 6 / 4.5 s at range) is gone: THE LEAP is his answer to range now */ e.marks = [P.x]; e.mode = 'judgeTell'; e.modeT = PAL.judge[ph]; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } }
       break; }
@@ -17698,20 +17714,58 @@ function updateClosedHelm(e, dt) {
           if(!P.dead&&Math.abs(P.x-x)<18&&P.y>floor-110)damagePlayer(x,DMG.palRadiance,{ unblockable: true, up: true });}}
       break;
     case 'oathRecover': want=0;if(e.modeT<=0){e.mode='stalk';e.modeT=0.6;}break;
-    /* THE CUT: over his head and down, slow, and the question he asks most */
-    case 'cutTell': want = 0; glint(); if (e.modeT > 0.35) e.face = Math.sign(d) || e.face;
-      if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = 0.4; SFX.slash(); SFX.heavy(); shakeCam(4); e.vx = e.face * 90;
-        if (!P.dead && Math.sign(d) === e.face && ad < 66 && dyP < 40) { const res = damagePlayer(e.x, DMG.palCut);
-          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'TOO EARLY: AT THE FLASH', '#9aa39a'); else if (palSoon(res)) number(e.x, e.y - e.h - 12, ROLL_SOON, '#9aa39a'); } }
+    /* THE CUT: weight onto the back foot and the blade up behind him, a hold, THE GLINT, and over and down - heavy, and he is left bent over it */
+    case 'cutTell': want = 0; glint(); if (e.modeT > CRUS_GLINT) e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = CRUS_SWING; SFX.slash(); SFX.heavy(); shakeCam(4); e.vx = e.face * 90;
+        if (!P.dead && Math.sign(d) === e.face && ad < 66 && dyP < 40) answer(damagePlayer(e.x, DMG.palCut)); }
       break;
-    case 'cut': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
-    /* THE THRUST: from further off, the point first, and he comes with it */
-    case 'thrustTell': want = 0; glint(); if (e.modeT > 0.3) e.face = Math.sign(d) || e.face;
-      if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = 0.45; SFX.slash(); e.vx = e.face * 300;
-        if (!P.dead && Math.sign(d) === e.face && ad < 90 && dyP < 40) { const res = damagePlayer(e.x, DMG.palThrust);
-          if (palOpened(res)) BREAK(); else if (res === 'blocked') number(e.x, e.y - e.h - 12, 'TOO EARLY: AT THE FLASH', '#9aa39a'); else if (palSoon(res)) number(e.x, e.y - e.h - 12, ROLL_SOON, '#9aa39a'); } }
+    /* THE DELAYED OVERHEAD (claude/crusader): coiled low with the blade cocked back behind him, held a beat past where the cut would fall.
+       The glint still marks the true release - the same CRUS_GLINT before it - so it is fair: guard on the glint, never on the rhythm */
+    case 'delayTell': want = 0; glint(); if (e.modeT > CRUS_GLINT) e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'cut'; e.modeT = CRUS_SWING; SFX.slash(); SFX.heavy(); shakeCam(5); e.vx = e.face * 120;
+        if (!P.dead && Math.sign(d) === e.face && ad < 70 && dyP < 40) answer(damagePlayer(e.x, DMG.palDelay)); }
       break;
-    case 'thrust': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
+    case 'cut': want = 0; if (e.modeT <= 0) { if (e.followNext) { e.followNext = 0; e.mode = 'followTell'; e.modeT = CRUS_FOLLOW.tell; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } else { e.mode = 'cutRec'; e.modeT = CRUS_REC[ph]; } } break;
+    /* THE FOLLOW-UP (claude/crusader): a missed parry is punished - the blade comes straight back round, quick, and THROUGH a held shield
+       (pierce: only a guard raised on its own glint turns it, and met on the beat it breaks the ward like any of his sword blows) */
+    case 'followTell': want = 0; glint(); if (e.modeT <= 0) { e.mode = 'follow'; e.modeT = CRUS_SWING; SFX.slash(); e.vx = e.face * 120;
+        if (!P.dead && Math.sign(d) === e.face && ad < CRUS_FOLLOW.reach && dyP < 40) answer(damagePlayer(e.x, DMG.palFollow, { pierce: true }), true); }
+      break;
+    case 'follow': want = 0; if (e.modeT <= 0) { e.mode = 'cutRec'; e.modeT = CRUS_REC[ph]; } break;
+    /* THE THRUST: from further off, drawn back low with the point on you, the glint, and he comes with it - over-reached at the end */
+    case 'thrustTell': want = 0; glint(); if (e.modeT > CRUS_GLINT) e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'thrust'; e.modeT = CRUS_SWING + 0.06; SFX.slash(); e.vx = e.face * 300;
+        if (!P.dead && Math.sign(d) === e.face && ad < 90 && dyP < 40) answer(damagePlayer(e.x, DMG.palThrust)); }
+      break;
+    case 'thrust': want = 0; if (e.modeT <= 0) { if (e.followNext) { e.followNext = 0; e.mode = 'followTell'; e.modeT = CRUS_FOLLOW.tell; e.glint = 0; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); } else { e.mode = 'thrustRec'; e.modeT = CRUS_REC[ph]; } } break;
+    /* HIS RECOVERIES: committed, and punishable - the ward does not face you while he is bent over his own blow (OPEN_RULE in src/boss-greed.js, B11) */
+    case 'cutRec': case 'thrustRec': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
+    /* CRUSADER'S GRAB (claude/crusader): down low, arms wide, the sword let hang - then he lunges with an open hand. No shield stops a hand:
+       roll through it (or be out of his reach). Caught, you are lifted over his head and hurled down. Whiffed, he stumbles on - punish him */
+    case 'grabTell': want = 0; if (e.modeT > 0.2) e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = CRUS_GRAB.lunge; e.vx = e.face * CRUS_GRAB.speed; e.grabO = { unblockable: true, up: true }; SFX.throwWhoosh(); SFX.shoulder(); }
+      break;
+    case 'grab': want = e.vx;
+      if (!P.dead && !invulnerable() && Math.abs(P.x - (e.x + e.face * 14)) < CRUS_GRAB.hand && dyP < 30) { e.mode = 'grabHold'; e.modeT = CRUS_GRAB.hold; e.vx = 0; P.block = false; number(P.x, P.y - 30, 'SEIZED', '#ff6b6b'); SFX.grip ? SFX.grip() : SFX.clank(); shakeCam(3); }
+      else if (e.modeT <= 0) { e.mode = 'grabMiss'; e.modeT = CRUS_GRAB.miss; e.vx = e.face * 40; number(e.x, e.y - e.h - 22, 'HE GRASPS AIR: STRIKE', '#8fd160'); SFX.clank(); }
+      break;
+    case 'grabHold': want = 0;
+      if (P.dead) { e.mode = 'grabRec'; e.modeT = 0.4; break; }
+      P.x = Math.max(A.x0 + 12, Math.min(A.x1 - 12, e.x + e.face * 6)); P.y = e.y - 46 - Math.min(1, (CRUS_GRAB.hold - e.modeT) * 4) * 8; P.vx = 0; P.vy = 0; P.ground = false; P.caged = 0.2; P.dodge = 0;
+      if (e.modeT <= 0) { e.mode = 'grabSlam'; e.modeT = 0.5; P.x = Math.max(A.x0 + 12, Math.min(A.x1 - 12, e.x + e.face * 18)); P.y = floor; P.caged = 0;
+        const res = damagePlayer(e.x, DMG.palGrab, e.grabO || { unblockable: true, up: true }); if (res === 'hit') { P.vx = e.face * 140; P.vy = -120; P.ground = false; number(P.x, P.y - 30, 'HURLED DOWN', '#ff6b6b'); }
+        shakeCam(8); zoomKick(1.08, 0.25); SFX.heavy(); SFX.thud(); dust(P.x, floor, 12); }
+      break;
+    case 'grabSlam': case 'grabRec': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
+    case 'grabMiss': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
+    /* HOLY BRAND (claude/crusader, phase three): the sword reversed and raised in both hands, point down, lit - and driven into the floor.
+       A line of holy fire runs out along the floor both ways to the walls: jump it. The sword is in the ground a while after (punish him) */
+    case 'brandTell': want = 0; if (Math.random() < dt * 30) motes(e.x + e.face * 3, e.y - 70, 1, 4);
+      if (e.modeT <= 0) { e.mode = 'brand'; e.modeT = 0.2; shakeCam(7); zoomKick(1.06, 0.2); SFX.judgement(); SFX.heavy(); dust(e.x + e.face * 8, floor, 10);
+        e.fires = [-1, 1].map(dir => ({ x: e.x + dir * 16, dir, life: CRUS_BRAND.run, hit: false, o: { unblockable: true, up: true } })); }
+      break;
+    case 'brand': want = 0; if (e.modeT <= 0) { e.mode = 'brandRec'; e.modeT = CRUS_BRAND.rec; } break;
+    case 'brandRec': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = PAL.gap[ph]; } break;
     /* THE BASH: down behind the shield, the shield lit, a red line along the floor as far as he will go - and then he goes */
     case 'bashTell': want = 0; if (Math.random() < dt * 18) dust(e.x - e.face * 12, floor, 2);
       if (e.modeT <= 0) { e.mode = 'bash'; e.modeT = PAL_BASH.run; e.bashHit = false; SFX.shoulder(); SFX.heavy(); }
@@ -17755,7 +17809,7 @@ function updateClosedHelm(e, dt) {
     case 'reward': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
     default: e.mode = 'stalk'; e.modeT = 0.5;
   }
-  if (e.mode !== 'bash' && e.mode !== 'leap') e.vx += (want - e.vx) * Math.min(1, dt * 5);
+  if (e.mode !== 'bash' && e.mode !== 'leap' && e.mode !== 'grab') e.vx += (want - e.vx) * Math.min(1, dt * 5);
   /* HE STANDS ON THE FLOOR: the body is moved against the tiles, and only the arena's walls are clamped */
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; if (r.hitX && e.mode === 'bash') e.modeT = 0; e.palGround = !!r.ground;   /* (claude/sweep2 gap-closer) the leap lands on this */
   e.x = Math.max(A.x0 + 22, Math.min(A.x1 - 22, e.x));
@@ -17769,6 +17823,50 @@ function updateClosedHelm(e, dt) {
    is in the ground, the ward down for `rec` s right beside you (the green ring, HE OVERREACHED). Land on you and he is up again in
    `hitRec` s, the ward still up. One windup at a time, like all of his: it is chosen only from his stalk. [phase one, phase two] */
 const PAL_LEAP = { far: 110, linger: [0.8, 0.6], cd: [6, 4.5], tell: [1.0, 0.85], fix: 0.3, air: 0.6, r: 30, rec: 1.5, hitRec: 0.7 };
+/* THE CRUSADER (claude/crusader, Daniel 10-08: "too generous with the blocking windows; make it really clear when he's about to strike - think
+   Dark Souls; 1-2 more UNBLOCKABLE attacks"). [phase one, phase two+] where a pair.
+   CRUS_BEAT   the parry: only a guard raised (or a parry, an aegis, a ward let go, a roll started) in the last CRUS_BEAT s before his blade lands
+               breaks the ward - it was PAL_BEAT, 0.45 s, the trial yard's beat, which a held-early guard nearly always met. A guard up before
+               that only HOLDS the blow, and is punished: THE FOLLOW-UP comes straight back round, through a held shield (pierce).
+   CRUS_GLINT  the blade glints this long before the release (its own frame, a white flash, a sound): see the glint, raise the guard.
+   CRUS_SWING  the blow itself (the smear frame); CRUS_REC the recovery after it, bent over his blade - the ward does not face you then (src/boss-greed.js OPEN_RULE: whole, not x2).
+   CRUS_DELAY  THE DELAYED OVERHEAD: coiled low, the blade cocked back, held past where a cut would fall - after his first cut, chance a cut is this.
+   CRUS_GRAB   CRUSADER'S GRAB (!!): first / cooldown s; a held guard in his reach invites it once its clock is under 'turtle'; tell, the lunge (s,
+               px/s), the hand's width, the hold over his head before he hurls you down, and the stumble when he grasps air (punishable).
+   CRUS_BRAND  HOLY BRAND (!!, phase three, under 'at' of his health): the sword driven into the floor and a line of fire running out both ways to
+               the walls at 'speed' - jump it ('h' px high, 'w' wide); the sword stays in the floor 'rec' s (punishable). */
+const CRUS_BEAT = 0.2, CRUS_GLINT = 0.32, CRUS_SWING = 0.14, CRUS_REC = [0.6, 0.5];
+const CRUS_FOLLOW = { tell: 0.42, reach: 64 };
+const CRUS_DELAY = { tell: [1.75, 1.55], chance: [0.3, 0.4] };
+const CRUS_GRAB = { first: 7, cd: [7.5, 6], turtle: 3, reach: 70, tell: [1.0, 0.9], lunge: 0.24, speed: 260, hand: 16, hold: 0.75, miss: 1.0 };
+const CRUS_BRAND = { at: 0.3, cd: 6.5, tell: 1.1, speed: 210, w: 10, h: 14, run: 3, rec: 1.0 };
+/* HIS FRAMES (src/redraw/waymeet.js): anticipation for the first moments of a tell, the held pose, THE GLINT frame while it shines, the swing,
+   the recovery. null = the old table (main.js's draw) */
+const CRUS_FRAME = e => { if (e.open > 0) return null; const m = e.mode, ph = e.phase >= 2 ? 1 : 0, gl = e.glintT > 0;
+  switch (m) {
+    case 'cutTell': return gl ? 15 : PAL.cut[ph] - e.modeT < 0.3 ? 14 : 3;
+    case 'thrustTell': return gl ? 18 : PAL.thrust[ph] - e.modeT < 0.25 ? 17 : 5;
+    case 'delayTell': return gl ? 21 : CRUS_DELAY.tell[ph] - e.modeT < 0.25 ? 14 : 20;
+    case 'followTell': return gl ? 30 : 29;
+    case 'cut': case 'follow': return 4;
+    case 'cutRec': return 16;
+    case 'thrustRec': return 19;
+    case 'grabTell': return 22;
+    case 'grab': return 23;
+    case 'grabHold': return 24;
+    case 'grabSlam': case 'grabRec': return 25;
+    case 'grabMiss': return 26;
+    case 'brandTell': return 27;
+    case 'brand': case 'brandRec': return 28;
+  } return null; };
+/* WHAT COUNTS AS MEETING HIS SWORD (palOpened's rule on the clocks every hero's answer sets, at the Crusader's own beat): THE WARDEN's sweep is
+   live half a second, so hers counts only if it went out inside the beat (+ the shaft's own travel) */
+const crusOpened = res => {
+  if (res === 'blocked') { const defAge = (P.deflectT || 0) > 0 ? DEF_LIVE + 0.04 * prk('wdef') - P.deflectT : null;
+    if (defAge !== null && (P.parryT || 0) > 0) return defAge <= CRUS_BEAT + 0.05;
+    return (P.parryT || 0) > 0 || (P.blockT || 0) < CRUS_BEAT || (!!P.aegis && (P.aegisT ?? 9) < CRUS_BEAT) || (P.retSince ?? 9) < 0.02; }
+  return palRolled(res) && palRollAge() <= PAL_ROLL_BEAT;
+};
 /* HIS MARKS, drawn where they will land: the ward round him, the red line of the bash, the gold of judgement on the floor,
    and the green ring while the ward is down. Two states for the ward and never both. */
 function drawPaladinMarks(e, cx, cy) {
@@ -17788,6 +17886,13 @@ function drawPaladinMarks(e, cx, cy) {
   if ((e.mode === 'leapTell' || e.mode === 'leap') && e.leapX !== undefined) { const lx = Math.round(e.leapX - cx), fixed = e.mode === 'leap' || e.modeT <= PAL_LEAP.fix, k = 0.5 + 0.5 * Math.sin(time * (fixed ? 24 : 12));   /* (claude/sweep2 gap-closer) THE LEAP'S RING: red, dashed while it follows you, solid once it stops */
     g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; if (!fixed) g.setLineDash([4, 3]); g.beginPath(); g.ellipse(lx, fy - 1, PAL_LEAP.r, 6, 0, 0, 7); g.stroke(); g.setLineDash([]);
     if (fixed) { g.globalAlpha = 0.18 + 0.12 * k; g.fillStyle = '#ff6b6b'; g.beginPath(); g.ellipse(lx, fy - 1, PAL_LEAP.r, 6, 0, 0, 7); g.fill(); } g.globalAlpha = 1; }
+  /* (claude/crusader) HOLY BRAND: while he raises it, the floor it will run along is marked - a dithered line of gold motes out to both walls
+     (a floor decal, not a box); once the sword is in, the fire itself - hard pixel flames, white at the root */
+  if (e.mode === 'brandTell') { const k = 0.5 + 0.5 * Math.sin(time * (8 + 20 * (1 - Math.max(0, e.modeT) / CRUS_BRAND.tell))), x0 = Math.round(L.arena.x0 - cx), x1 = Math.round(L.arena.x1 - cx);
+    g.globalAlpha = 0.35 + 0.45 * k; g.fillStyle = '#ffd36b'; for (let x = x0 + 6; x < x1 - 6; x += 2) { if (Math.abs(x - ex) < 12) continue; g.fillRect(x, fy - 1 - ((x >> 1) & 1), 1, 1); } g.globalAlpha = 1; }
+  for (const f of e.fires || []) { const fx = Math.round(f.x - cx);
+    for (let i = -4; i <= 4; i++) { const hgt = Math.max(2, Math.round((CRUS_BRAND.h - Math.abs(i) * 2.4) * (0.75 + 0.25 * Math.sin(time * 30 + i * 1.7)))); g.fillStyle = Math.abs(i) < 2 ? '#fff6c8' : '#ffd36b'; g.fillRect(fx + i - f.dir * 2, fy - hgt, 1, hgt); g.fillStyle = '#ff9a3c'; g.fillRect(fx + i - f.dir * 2, fy - hgt, 1, 1); }
+    g.globalAlpha = 0.5; g.fillStyle = '#ffd36b'; for (let j = 1; j < 6; j++) g.fillRect(fx - f.dir * (6 + j * 3), fy - 1, 2, 1); g.globalAlpha = 1; }
   if(e.mode==='oathTell'){g.globalAlpha=0.5+0.25*Math.sin(time*20);g.strokeStyle='#ff6b6b';g.lineWidth=2;g.beginPath();g.ellipse(ex,fy-2,82,8,0,0,7);g.stroke();g.globalAlpha=1;}
   if(e.mode==='radianceTell')for(const x of e.marks||[]){const sx=Math.round(x-cx);g.fillStyle='#ff6b6b';g.globalAlpha=0.15;g.fillRect(sx-18,fy-110,36,110);g.globalAlpha=0.85;g.fillRect(sx-18,fy-2,36,2);g.globalAlpha=1;}
   if ((e.mode === 'judgeTell' || e.mode === 'judge') && e.marks) for (const m of e.marks) { const mx = Math.round(m - cx);
@@ -22230,7 +22335,7 @@ const GUARD_WALL = e => BR_GUARD[e.t] === 'wall';
 /* IS HIS WALL UP? Always, for the Lance, the Paladin and the Captain. THE QUARTERMASTER offers her blade on guard - striding the deck, EN GARDE, or behind her deck guard -
    and drops it to commit: in her slash and her pistol (tell and blow) a blow from any side lands at ANGLE.wall (claude/keyscore: the time given back to attacks) */
 const wallUp = e => e.t !== 'quarter' || !!e.guard || e.mode === 'stride' || e.mode === 'stanceTell';   /* (claude/keyscore) the duelists whose front is a wall (src/boss-read.js GUARD) */
-const WALL_HINT = { lance: 'HIS PLATE FACES YOU. GET BEHIND HIM OR COME DOWN ON HIM - AND CUT HIM WHENEVER HE COMMITS.', closedhelm: 'HIS WARD FACES YOU. GO ROUND HIM OR COME DOWN ON HIM - OR MEET HIS SWORD AT THE FLASH AND THE WARD BREAKS.',
+const WALL_HINT = { lance: 'HIS PLATE FACES YOU. GET BEHIND HIM OR COME DOWN ON HIM - AND CUT HIM WHENEVER HE COMMITS.', closedhelm: 'HIS WARD FACES YOU. GO ROUND HIM OR COME DOWN ON HIM - OR MEET HIS SWORD AT THE GLINT AND THE WARD BREAKS.',
   captain: 'HIS FRONT IS GUARDED - ON THE WAVE TOO. CUT HIM FROM BEHIND OR FROM ABOVE; BEACHED, HE IS OPEN.', quarter: 'HER BLADE IS OFFERED TO THE FRONT. CUT INTO IT AND SHE ANSWERS - GO ROUND HER, OR COME DOWN ON HER.' };
 /* (claude/keyscore, B13 + B15) HIS OPENINGS are what he is LEFT in, not the blow itself: stuck, reeling, stumbling, over his front foot, his hands empty. In his thrust,
    sweep and guard swing he is a wall like any other moment (0.4 into it, whole round or over) - the knight mash bot took him 2/6 when every active frame paid x1.5 */
@@ -29064,6 +29169,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'runner') frame = e.mode === 'shout' ? 2 : (e.mode === 'stabTell' || e.mode === 'stab') ? 3 : Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 9) % 2) : 0;
     else if (e.t === 'crossbow') frame = e.mode === 'span' ? 0 : e.mode === 'loose' ? 2 : 1;
     else if (e.t === 'drunk') frame = e.mode === 'lobTell' ? 4 : e.mode === 'lob' ? 5 : e.mode === 'bottleTell' ? 6 : e.mode === 'down' ? 7 : e.mode === 'getup' ? 8 : Math.abs(e.vx) > 4 ? 2 + Math.floor(e.anim * 4) % 2 : Math.floor(e.anim * 1.6) % 2;   /* he sways where he stands, and the tell is on screen for all of it */
+    else if (e.t === 'closedhelm' && CRUS_FRAME(e) !== null) frame = CRUS_FRAME(e);   /* (claude/crusader) the wind-ups, glints, recoveries, the grab and the brand */
     else if (e.t === 'closedhelm') frame = e.open > 0 ? 11 : ({ oathTell: 3, radianceTell: 9, oathRecover: 11, cutTell: 3, cut: 4, thrustTell: 5, thrust: 6, bashTell: 7, bash: 8, judgeTell: 9, judge: 10, reward: 9, leapTell: 3, leap: 6, leapLand: 10 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 3) % 2 : 0);
     else if (e.t === 'bellcrab' && e.phase === 3) frame = bellOutFrame(e);
     else if (e.t === 'bellcrab') frame=({clawTell:2,claw:3,ballastTell:4,slam:5,pressureTell:6,pressure:7,scuttleTell:8,scuttle:9,vent:10,broodTell:10})[e.mode]??(Math.abs(e.vx)>2?1:0);
