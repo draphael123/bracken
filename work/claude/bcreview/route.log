@@ -1,0 +1,35 @@
+
+== knight (hp 100) GOD NO FOES
+  ok   the sand stair: down into the city, drain the first room                 tries 1  at 89,33  hp 100  26.8 s  {}
+  ok   the market: THE GRANARY - shut its gate, ride the sand up                tries 1  at 140,25  hp 100  23.9 s  {}
+  ok   the upper street and down to the cellar lip                              tries 1  at 206,33  hp 100  17.4 s  {}
+  ok   THE SPIKE CELLAR: shut its gate, wait for the fill, walk over            tries 1  at 244,29  hp 100  18.7 s  {}
+  ok   THE HOURGLASS: open the upper hall, it runs into the lower; over both    tries 1  at 310,33  hp 100  25.4 s  {}
+  ok   THE GREAT SAND-GATE: three turns, the quarter drains, over the ruins     tries 1  at 400,41  hp 100  37.9 s  {}
+  ok   THE CLOCK SHAFT: shut its gate, ride the sand up to the throne street    tries 1  at 445,29  hp 100  27.4 s  {}
+  ok   THE TRAP HALL: shut its floor-gate, wait for the fill, over to the throne door tries 1  at 520,29  hp 100  31.3 s  {}
+  level-up cards 0;  deaths 0, retries 0, lifts 0, lowest 100%, 209 s  {"pulls":6,"opens":2,"shuts":4,"fills":0,"drains":3,"lifts":20,"jams":0,"turns":3,"nudges":0,"risen":5,"full":4,"kingPulls":0}
+
+== warden (hp 100) GOD NO FOES
+  ok   the sand stair: down into the city, drain the first room                 tries 1  at 89,33  hp 100  26.8 s  {}
+  ok   the market: THE GRANARY - shut its gate, ride the sand up                tries 1  at 140,25  hp 100  23.9 s  {}
+  ok   the upper street and down to the cellar lip                              tries 1  at 206,33  hp 100  17.4 s  {}
+  ok   THE SPIKE CELLAR: shut its gate, wait for the fill, walk over            tries 1  at 244,29  hp 100  18.7 s  {}
+  ok   THE HOURGLASS: open the upper hall, it runs into the lower; over both    tries 1  at 310,33  hp 100  25.4 s  {}
+  ok   THE GREAT SAND-GATE: three turns, the quarter drains, over the ruins     tries 1  at 400,41  hp 100  37.9 s  {}
+  ok   THE CLOCK SHAFT: shut its gate, ride the sand up to the throne street    tries 1  at 445,29  hp 100  27.4 s  {}
+  ok   THE TRAP HALL: shut its floor-gate, wait for the fill, over to the throne door tries 1  at 520,29  hp 100  31.3 s  {}
+  level-up cards 0;  deaths 0, retries 0, lifts 0, lowest 100%, 209 s  {"pulls":6,"opens":2,"shuts":4,"fills":0,"drains":3,"lifts":20,"jams":0,"turns":3,"nudges":0,"risen":5,"full":4,"kingPulls":0}
+
+== pyro (hp 88) GOD NO FOES
+  ok   the sand stair: down into the city, drain the first room                 tries 1  at 89,33  hp 88  24.1 s  {}
+  ok   the market: THE GRANARY - shut its gate, ride the sand up                tries 1  at 140,25  hp 88  22.3 s  {}
+  ok   the upper street and down to the cellar lip                              tries 1  at 206,33  hp 88  15.3 s  {}
+  ok   THE SPIKE CELLAR: shut its gate, wait for the fill, walk over            tries 1  at 244,29  hp 88  17.5 s  {}
+  LIFT THE HOURGLASS: open the upper hall, it runs into the lower; over both    tries 3  at 310,33  hp 88  52.9 s  {}
+  ok   THE GREAT SAND-GATE: three turns, the quarter drains, over the ruins     tries 1  at 400,41  hp 88  37.2 s  {}
+  ok   THE CLOCK SHAFT: shut its gate, ride the sand up to the throne street    tries 1  at 445,29  hp 88  26.1 s  {}
+  ok   THE TRAP HALL: shut its floor-gate, wait for the fill, over to the throne door tries 1  at 520,29  hp 88  27.9 s  {}
+  level-up cards 0;  deaths 0, retries 3, lifts 1 (THE HOURGLASS: open the upper hall, it runs into the lower; over both), lowest 100%, 223 s  {"pulls":6,"opens":2,"shuts":4,"fills":0,"drains":3,"lifts":20,"jams":0,"turns":3,"nudges":0,"risen":5,"full":4,"kingPulls":0}
+
+knight: walked, 0 deaths | warden: walked, 0 deaths | pyro: 1 LIFTED, 0 deaths

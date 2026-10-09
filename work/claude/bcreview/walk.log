@@ -1,0 +1,16 @@
+buriedcity knight s1 L36 (325hp, swordOfRealm+groundSlam+lunge, 3 flasks, heart charm): BOSS 0 deaths, 231s, 19 kills, 1 hits, walked 96%, arrivals 100% 100% 93%, measured 71% of the route
+    STUCK (section #0) at route node 25/106 next tile 141,25 (hero 132,23)
+    sections: #0 STUCK lost 0% heal 0% (0 drinks) 0d 0h 5k 80s | #1 (resumed) lost 0% heal 0% (0 drinks) 0d 0h 3k 48s | #2 lost 0% heal 0% (0 drinks) 0d 0h 7k 51s | #3 lost 13% heal 6% (0 drinks) 0d 1h 4k 49s | #4 lost 0% heal 0% (0 drinks) 0d 0h 0k 3s
+    hit by (nearest foe, hits/%hp): ambusher 1/13%
+buriedcity warden s1 L36 (325hp, rainOfSpears+spearDance+javelin, 3 flasks, heart charm): BOSS 0 deaths, 334s, 25 kills, 2 hits, walked 96%, arrivals 100% 100% 100% 100%, measured 96% of the route
+    sections: #0 lost 0% heal 0% (0 drinks) 0d 0h 4k 73s | #1 lost 8% heal 8% (0 drinks) 0d 1h 6k 81s | #2 lost 12% heal 12% (0 drinks) 0d 1h 8k 79s | #3 lost 0% heal 0% (0 drinks) 0d 0h 7k 98s | #4 lost 0% heal 0% (0 drinks) 0d 0h 0k 3s
+    hit by (nearest foe, hits/%hp): ambusher 1/12% construct 1/8%
+buriedcity pyro s1 L36 (313hp, meteor+fireWall+wisp, 3 flasks, heart charm): BOSS 0 deaths, 223s, 23 kills, 2 hits, walked 96%, arrivals 93% 100% 100% 100%, measured 96% of the route
+    sections: #0 lost 8% heal 1% (0 drinks) 0d 2h 5k 64s | #1 lost 0% heal 7% (0 drinks) 0d 0h 7k 53s | #2 lost 0% heal 0% (0 drinks) 0d 0h 6k 54s | #3 lost 0% heal 0% (0 drinks) 0d 0h 5k 50s | #4 lost 0% heal 0% (0 drinks) 0d 0h 0k 2s
+    hit by (nearest foe, hits/%hp): other 2/8%
+
+LEVEL WALK  (campaign level, typical build, profile human+first, 3 runs, 1 min)  target: 1-2 deaths a first run, arrive < 50%
+level      hero     L runs deaths(haz/elite) arrive%(mean/min)  lost%/sec  drinks  kills  secs  walked  meas  end            vs target
+buriedcity knight  36    1    0.0(0.0/0.0)              98/93          0     0.0     19   231     96%   71%  boss           MISS: deaths 0.0 < 1, arrive 98% >= 50  STUCK 141,25
+buriedcity warden  36    1    0.0(0.0/0.0)            100/100          5     0.0     25   334     96%   96%  boss           MISS: deaths 0.0 < 1, arrive 100% >= 50
+buriedcity pyro    36    1    0.0(0.0/0.0)              98/93          2     0.0     23   223     96%   96%  boss           MISS: deaths 0.0 < 1, arrive 98% >= 50

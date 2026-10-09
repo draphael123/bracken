@@ -1,0 +1,550 @@
+[
+ {
+  "id": "buriedcity",
+  "hero": "knight",
+  "seed": 1,
+  "lvl": 36,
+  "depth": 36,
+  "maxHp": 325,
+  "kit": [
+   "swordOfRealm",
+   "groundSlam",
+   "lunge"
+  ],
+  "gear": [
+   "heart",
+   "wind",
+   "edge",
+   "edge2",
+   "edge3",
+   "mail",
+   "plate",
+   "edge4",
+   "mail2"
+  ],
+  "tonics": 5,
+  "flasks": 3,
+  "charm": "heart",
+  "end": "boss",
+  "miniHp": null,
+  "deaths": 0,
+  "levelups": 0,
+  "frames": 13870,
+  "secs": 231,
+  "kills": 19,
+  "hits": 1,
+  "walked": 96,
+  "stuck": {
+   "ri": 25,
+   "of": 106,
+   "way": [
+    141,
+    25
+   ],
+   "at": [
+    132,
+    23
+   ],
+   "near": [],
+   "pst": "w=10 h=14 ground=true groundTile=2 coyote=0.1 atk=-1 canCut=true dodge=0 anim=46.15 dust=0.08 sqX=1.2 sqY=0.8 n=1 flasks=3 loaded=true breath=6 realmT=-0.01 dcGT=1571 airArt=0.1 resolve=9.2 airTopY=318.89 landArtMax=0.2 wmAtkP=-1 jumpT=51.97 revRoom=true kPoseMax=0.42 lungeT=0 combo=2 lastSwingT=53.53 swingMul=1 wmFresh=true wmSwingAt=53.53 runHoldT=54.05 swingEndT=54.17 airHold=0.12 flourishT=0.3 dodgeMax=0.3 dashDur=0.3",
+   "tiles": "00001000/00001000",
+   "props": [],
+   "sec": 0
+  },
+  "stucks": [
+   {
+    "ri": 25,
+    "of": 106,
+    "way": [
+     141,
+     25
+    ],
+    "at": [
+     132,
+     23
+    ],
+    "near": [],
+    "pst": "w=10 h=14 ground=true groundTile=2 coyote=0.1 atk=-1 canCut=true dodge=0 anim=46.15 dust=0.08 sqX=1.2 sqY=0.8 n=1 flasks=3 loaded=true breath=6 realmT=-0.01 dcGT=1571 airArt=0.1 resolve=9.2 airTopY=318.89 landArtMax=0.2 wmAtkP=-1 jumpT=51.97 revRoom=true kPoseMax=0.42 lungeT=0 combo=2 lastSwingT=53.53 swingMul=1 wmFresh=true wmSwingAt=53.53 runHoldT=54.05 swingEndT=54.17 airHold=0.12 flourishT=0.3 dodgeMax=0.3 dashDur=0.3",
+    "tiles": "00001000/00001000",
+    "props": [],
+    "sec": 0
+   }
+  ],
+  "resumes": 1,
+  "deathLog": [],
+  "hitBy": {
+   "ambusher": [
+    1,
+    13
+   ]
+  },
+  "arrivals": [
+   {
+    "i": 1,
+    "hp": 100,
+    "x": 280,
+    "frame": 7686,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 2,
+    "hp": 100,
+    "x": 410,
+    "frame": 10767,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 3,
+    "hp": 93,
+    "x": 515,
+    "frame": 13700,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   }
+  ],
+  "shrines": 4,
+  "coverage": 71,
+  "sections": [
+   {
+    "postMini": false,
+    "stuck": true,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 5,
+    "secs": 80,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": true,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 3,
+    "secs": 48,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 7,
+    "secs": 51,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 13,
+    "small": 6,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 1,
+    "kills": 4,
+    "secs": 49,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 0,
+    "secs": 3,
+    "lvup": 0
+   }
+  ],
+  "duels": [],
+  "eyes": {
+   "reads": 92,
+   "rtSum": 41486.66959860109,
+   "misreads": 5,
+   "greeds": 14,
+   "unseen": 0,
+   "heard": 18,
+   "rtMean": 451
+  },
+  "casts": {
+   "lunge": 16,
+   "swordOfRealm": 5,
+   "groundSlam": 25
+  }
+ },
+ {
+  "id": "buriedcity",
+  "hero": "warden",
+  "seed": 1,
+  "lvl": 36,
+  "depth": 36,
+  "maxHp": 325,
+  "kit": [
+   "rainOfSpears",
+   "spearDance",
+   "javelin"
+  ],
+  "gear": [
+   "heart",
+   "wind",
+   "edge",
+   "edge2",
+   "edge3",
+   "mail",
+   "plate",
+   "edge4",
+   "mail2"
+  ],
+  "tonics": 5,
+  "flasks": 3,
+  "charm": "heart",
+  "end": "boss",
+  "miniHp": null,
+  "deaths": 0,
+  "levelups": 0,
+  "frames": 20064,
+  "secs": 334,
+  "kills": 25,
+  "hits": 2,
+  "walked": 96,
+  "stuck": null,
+  "stucks": [],
+  "resumes": 0,
+  "deathLog": [],
+  "hitBy": {
+   "construct": [
+    1,
+    8
+   ],
+   "ambusher": [
+    1,
+    12
+   ]
+  },
+  "arrivals": [
+   {
+    "i": 1,
+    "hp": 100,
+    "x": 145,
+    "frame": 4387,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 2,
+    "hp": 100,
+    "x": 280,
+    "frame": 9253,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 3,
+    "hp": 100,
+    "x": 410,
+    "frame": 14007,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 4,
+    "hp": 100,
+    "x": 515,
+    "frame": 19894,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   }
+  ],
+  "shrines": 4,
+  "coverage": 96,
+  "sections": [
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 4,
+    "secs": 73,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 8,
+    "small": 8,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 1,
+    "kills": 6,
+    "secs": 81,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 12,
+    "small": 12,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 1,
+    "kills": 8,
+    "secs": 79,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 7,
+    "secs": 98,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 0,
+    "secs": 3,
+    "lvup": 0
+   }
+  ],
+  "duels": [],
+  "eyes": {
+   "reads": 159,
+   "rtSum": 67791.06655991859,
+   "misreads": 10,
+   "greeds": 11,
+   "unseen": 0,
+   "heard": 18,
+   "rtMean": 426
+  },
+  "casts": {
+   "javelin": 26,
+   "rainOfSpears": 12,
+   "spearDance": 20
+  }
+ },
+ {
+  "id": "buriedcity",
+  "hero": "pyro",
+  "seed": 1,
+  "lvl": 36,
+  "depth": 36,
+  "maxHp": 313,
+  "kit": [
+   "meteor",
+   "fireWall",
+   "wisp"
+  ],
+  "gear": [
+   "heart",
+   "wind",
+   "edge",
+   "edge2",
+   "edge3",
+   "mail",
+   "plate",
+   "edge4",
+   "mail2"
+  ],
+  "tonics": 5,
+  "flasks": 3,
+  "charm": "heart",
+  "end": "boss",
+  "miniHp": null,
+  "deaths": 0,
+  "levelups": 0,
+  "frames": 13406,
+  "secs": 223,
+  "kills": 23,
+  "hits": 2,
+  "walked": 96,
+  "stuck": null,
+  "stucks": [],
+  "resumes": 0,
+  "deathLog": [],
+  "hitBy": {
+   "other": [
+    2,
+    8
+   ]
+  },
+  "arrivals": [
+   {
+    "i": 1,
+    "hp": 93,
+    "x": 145,
+    "frame": 3812,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 2,
+    "hp": 100,
+    "x": 280,
+    "frame": 7021,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 3,
+    "hp": 100,
+    "x": 410,
+    "frame": 10286,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 4,
+    "hp": 100,
+    "x": 515,
+    "frame": 13258,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   }
+  ],
+  "shrines": 4,
+  "coverage": 96,
+  "sections": [
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 8,
+    "small": 1,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 2,
+    "kills": 5,
+    "secs": 64,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 7,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 7,
+    "secs": 53,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 6,
+    "secs": 54,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 5,
+    "secs": 50,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 0,
+    "secs": 2,
+    "lvup": 0
+   }
+  ],
+  "duels": [],
+  "eyes": {
+   "reads": 68,
+   "rtSum": 31204.98312065004,
+   "misreads": 6,
+   "greeds": 13,
+   "unseen": 0,
+   "heard": 17,
+   "rtMean": 459
+  },
+  "casts": {
+   "meteor": 11,
+   "wisp": 11,
+   "fireWall": 21
+  }
+ }
+]
