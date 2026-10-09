@@ -66,7 +66,14 @@ content-audit, audit, tells, floaters, readability, light-support, ambient-landm
 Page (8790): fire-room, fallingtower2-keys, undead-realms, archmage-rings, boss-openings, rule-openings, weak-bosses, boss-greed,
 archmage-room, tower-ascent, tower-collapse, tower-chase, sexton, flip-actions, stuck, level-reach, mark-integrity, chase, mini-walls,
 corpses, courtyard, folly-runtime, undead-foes, death-cost, runtime-footing, footing-art, foe-tactics, small-adds.
-STAMPS_PLACEHOLDER
+Re-stamped (level THEN boss): level1-pilot (knight fresh: 69 hits, 11 deaths, 100% walked) and level1-curve; mash LEVEL (knight/warden/pyro
+all die in the level: 6/7/4 deaths) then BOSS: the Archmage 0/6 (mash), the Sexton mini 2/6 (it was 3/6 on master - pre-existing, not this
+lane's). level-quality, curve-gate, mash-gate green.
+WALKER (tools/level-walk.mjs, L31, human+first): knight 4 deaths (the pendulum gallery's spikes), warden 0, pyro 1 - but it measures only
+2% of the route: its hands stick at the library stair, the observatory, the pendulums, the loft/treasury, the crown and the spiral. The
+same on the A-only base (e928ec46: 2-4% measured, the same stuck nodes) - a walker-hands gap, not this rework (QUESTION 8).
+REDS: none standing. Flakes seen once each under load, green on the re-run: stuck (runtime: rw-lean-2, the Rootway - not this
+level) and tower-collapse (in play: the lesson tier's drop timing).
 Not run: the full suite (40 min; a suite was already running on the PC).
 
 ## Tests changed (deliberate design changes - each a question below)
@@ -88,6 +95,9 @@ Not run: the full suite (40 min; a suite was already running on the PC).
    REC: keep. Built (test updated).
 6. The outer face is on the WEST face (the east is his stair tower's rock, held by tower-chase). REC: keep. Built.
 7. The lab's stones four wide (two-tile poison gaps) - the paladin was 2 px short at three. REC: keep. Built.
+8. The walker cannot measure the Falling Tower (2-4% of the route, before and after this lane): REC a walker-hands lane (ropes through
+   dividers, the flip, pendulums, the telescope, the chunk). Built: nothing; the level is proved by fallingtower2-keys (real keys, 7 heroes),
+   reach-heroes and the pilot instead.
 
 ## ART / SOUND FOLLOW-UPS (the Sonnet pass)
 Greybox drawing only (src/tower-fall2.js ftDraw): debris stones/shelf/brass chunks; the burning book piles and flames; the syrup and fizz
