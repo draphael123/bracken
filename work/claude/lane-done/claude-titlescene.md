@@ -12,7 +12,7 @@ Shots: work/claude/titlescene/{before,after}-*.png (tools/titlescene-shots.mjs).
 
 ## Checks (alone, PORT 8782)
 textfit scoped --strict incl. new `title` scope: 0 findings (3066 screens). uiscreens ok. tools/titlescene.mjs (new, in check.mjs list) ok. save-slots, soundtest, modulepreload, dangling-paths, map-footer, map-grammar, architecture, comments, settings-tabs ok.
-touch.mjs: passes alone on the base tree; on this tree press-card+title sections pass; the full run is slow under the machine's load (>10 min, pwa-live alone 190s) - see final message for the finished result.
+touch.mjs: full run passes (exit 0) when the machine is not starved; one earlier run under load timed out on its first evaluate and was not a code fault (press-card+title pass alone, base tree passes).
 textfit --full not run (8+ min, no title/pick changes beyond the scoped scenes).
 
 ## Not done / notes
