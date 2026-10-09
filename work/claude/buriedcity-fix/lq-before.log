@@ -1,0 +1,49 @@
+LEVEL QUALITY, every campaign level (a report: nothing here fails the suite; the gated list is theatre, fair, canal, welltown, redgorge, underwell, skyroad, glasssea, minecart, ksar, rootway, buriedcity)
+
+level       flat% ground%   bands gadg/dev secr chk dens slope rng roles unlk pilot  fails
+wood            0      47    5/17%      3/0    1    5  1.0     -  13     3   ok     -  bands,mechanics,secrets,route
+marsh           0      17    3/13%      6/1    1    5  1.3     -  21     2   ok     -  bands,mechanics,secrets,checks,roles
+stockade        0      38    6/33%      5/2    1    5  0.9     -  14     4   ok     -  bands,mechanics,secrets,route
+spore           0      45    7/23%      4/2    1    4  1.1     -  13     4   ok     -  bands,mechanics,secrets
+kings           0      29    4/69%      8/4    2    6  1.1     -  12     4   ok     -  bands,music
+scree          11      66    7/30%      4/0    2    5  1.3     -  12     4   ok     -  flat,bands,mechanics
+hanging         0       0   19/95%     11/3    3    6    -     -  10     4   ok     -  checks
+spire           0       0   41/50%      6/3    1    5    -     -  11     4   ok     -  secrets
+moor            7      29    7/11%      7/3    3    6  1.3     -   8     4   ok     -  bands,route
+storm           4      71    5/48%      8/5    3    5  0.9     -  18     5   ok     -  flat
+crown           0       0   22/55%     11/0    2   11    -     -  33     4   ok     -  mechanics,music
+longwater       0      19    7/45%      4/0    1    4  1.2     -  17     3   ok     -  mechanics,secrets
+reef            0       4    6/74%      5/1    3    4  1.3     -  11     3   ok     -  mechanics
+flotilla        8      30    4/76%      5/2    3    3  0.9     -   3     3   ok     -  bands,mechanics
+hurricane      16      49   2/100%     10/3    3    6  1.1     -  16     3   ok     -  bands,route
+lamplit         0      38    3/97%      4/1    0    7  1.1     -  10     4   ok     -  bands,mechanics,secrets,route
+underleaf       0      95    1/65%      3/1    2    4  0.7     -   7     4   ok     -  flat,bands,mechanics,density,route
+deep            0       0   55/96%      1/1    3    4    -     -  10     3   ok     -  mechanics
+keep            0       0    6/96%      5/3    3    6    -     -   2     4   ok     -  PASS
+causeway        0      49    5/46%      3/2    3    6  1.2     -  19     3   ok     -  mechanics
+harbor          4      73    3/45%      3/0    1    9  1.3     -  14     4   ok     -  flat,bands,mechanics,secrets
+waymeet         3      47    2/40%      2/1    1    6  0.9     -  21     4   ok     -  bands,mechanics,secrets,route
+undercrown      0       0   12/87%      5/2    1    4    -     -  13     2   ok     -  mechanics,secrets,roles
+fields          8      28    9/39%      8/3    1    6  1.1     -   2     4   ok     -  bands,secrets
+burial          0       0   14/45%      5/2    3    7    -     -  13     3   ok     -  mechanics
+mage            0      22    8/61%     12/4    2    7  1.0     -   7     3   ok     3  PASS
+fallingtower    0       0  61/100%      5/0    1    9    -     -  21     3   ok     -  mechanics,secrets,checks
+burning         0      48    5/65%      6/4    2    5  1.5     -   7     4   ok    51  PASS
+witchlight      0       0   14/18%      5/2    3    6    -     -  13     4   ok     -  bands,mechanics,encounters,route
+oreroad         0      12   10/36%      7/4    2    3  0.9    ok  20     4   ok     -  bands
+unburied        0       4    6/34%      7/4    1    5  0.7     -  10     5   ok    29  bands,secrets,density
+caravan         4      57    4/21%      3/1    2    5  1.1    ok   5     2   ok     -  bands,mechanics,roles
+fair            0      11    5/43%     15/5    3    5  1.3    ok   8     5   ok    43  PASS
+theatre         7       9    8/62%     10/4    3    5  2.1     -  13     4   ok    21  PASS
+canal           0       0    7/57%      7/4    3    3  2.3     -  11     5   ok    89  PASS
+welltown        0      31   10/59%      7/3    3    6  1.5    ok  19     3   ok    42  PASS
+redgorge        0       0   43/94%     10/3    3    3    -     -  12     4   ok    27  PASS
+underwell       0      47   10/49%      8/4    3    5  1.4     -   5     3   ok    48  PASS
+skyroad        18      25   11/42%      8/3    2    4  1.4     -   5     5   ok    21  PASS
+glasssea        0      22    6/42%      5/4    3    4  1.6    ok  11     4   ok    33  PASS
+ksar            8      26    6/46%      7/5    2    5  1.8     -  18     4   ok    35  PASS
+rootway         0      18    7/46%      6/4    3    4  2.4     -  21     4   ok    26  PASS
+minecart        6      38    5/59%      9/7    3    6  1.1    ok  18     4   ok    24  PASS
+buriedcity      9      38    6/43%      5/3    2    4  1.1     -   9     3   ok    14  pilot,mash
+
+14 of 44 clear the bar. Columns: flat% = share of the route in long flat empty runs (limit 30), ground% = share in long level-ground runs (60), bands = height bands on the route / % of width with a second height, gadg/dev = gadget kinds / those in 3+ places, secr = silver+relic off the route, chk = checkpoints, dens = designed encounters a screen.

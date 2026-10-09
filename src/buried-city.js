@@ -55,7 +55,8 @@ export const ROOMS = [
   { id: 'lowerbulb', x0: 260, x1: 275, floor: 40, full: 10, init: 'empty', levers: [], pour: false, fill: 2.0, drain: 2.0, use: 'fill', need: true },   /* (need: the upper bulb's sand is in it by the time you reach it - the reach model counts it full) */
   { id: 'great', x0: 317, x1: 372, floor: 42, full: 18, init: 'full', levers: [], pour: false, fill: 0, drain: 3.0, use: 'drain', great: true, door: [373, 38, 41] },
   { id: 'shaft', x0: 421, x1: 432, floor: 42, full: 12, init: 'empty', levers: [[423, 41]], pour: true, fill: 1.2, drain: 2.4, use: 'ride', door: [433, 27, 29] },
-  { id: 'trap', x0: 452, x1: 465, floor: 44, full: 14, init: 'empty', levers: [[449, 29], [468, 29]], pour: true, fill: 2.2, drain: 3.0, use: 'fill', need: true, trap: true },
+  { id: 'yard', x0: 405, x1: 407, floor: 44, full: 2, init: 'empty', levers: [[403, 41]], pour: true, fill: 1.4, drain: 3.0, use: 'fill', trap: true, teach: true, lips: [403, 409] },   /* (fix pass M3: THE FOUNDRY'S FLOOR-GATE, the safe teach of the trap hall: open, a three-row drop onto the floor that costs a quarter and puts you back on the lip) */
+  { id: 'trap', x0: 452, x1: 465, floor: 44, full: 14, init: 'empty', levers: [[449, 29], [468, 29]], pour: true, fill: 2.2, drain: 3.0, use: 'fill', need: true, trap: true, lamps: [451, 466] },
 ];
 export const WHEEL = { x: 313, row: 33, room: 'great', turns: 3 };
 
@@ -109,8 +110,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   for (const [x0, x1] of [[93, 96], [101, 104], [108, 111]]) { ledge(x0, x1, 31); decor.push({ kind: 'stall', x0, x1, y: 31 }); }   /* the stalls: their awnings are ledges */
   ledge(97, 100, 28); ledge(112, 116, 28);                                        /* balconies over the stalls */
   ledge(92, 95, 25);                                                               /* the high cornice (a perch off the balcony; its silver moved to the spire: the cap is three) */
-  slinger(98, 27, 'marketWatchSling'); scorpion(103, B - 1, 'marketWatch'); scorpion(110, B - 1, 'marketWatch', { face: 1 });   /* THE MARKET WATCH: a slinger over the stalls, brass scorpions under them */
-  slinger(114, 27, 'marketWatch2', { face: -1 });
+  slinger(98, 27, 'marketWatchSling'); scorpion(103, B - 1, 'marketWatch');   /* THE MARKET WATCH: a slinger over the stalls, a brass scorpion under them (fix pass M4: the second scorpion (110) and the second slinger (114) cut - fewer, weightier) */
   /* THE GRANARY (TEST, RIDE IT UP): the way on is HIGH in its east wall; inside, its lever shuts the gate and the pour carries you up */
   ground(118, 132, B); block(117, 118, 18, 30); block(133, 133, 18, 22); ground(133, 133, 26);   /* its floor and walls: the west door at the floor, the east door high (rows 23-25) */
   air(118, 118, 26, 28);                                                           /* (an ALCOVE in the west wall, open only to the room, half way up: a gear for a hero who catches the sand there) */
@@ -118,7 +118,8 @@ export function buildBuriedCity({ painter, T, TS }) {
   interiors.push([119, 132, 18, 33, 'bcGranary']);
   sign(115, B - 1, 'THE WAY ON IS HIGH. SHUT THE GATE AND THE SAND CARRIES YOU UP.');
   ent('sandlever', 121, B - 1, { room: 'granary' });
-  ledge(129, 132, 23); slinger(131, 22, 'granarySling', { face: -1 });            /* a slinger on the shaft's top ledge: he throws while you rise */
+  ledge(129, 131, 23); slinger(130, 22, 'granarySling', { face: -1 });            /* a slinger on the shaft's top ledge: he throws while you rise (fix pass: the ledge ends at 131 - at 132 it dead-ended into the wall - and the door is a row taller, (133, 22)) */
+  set(133, 22, T.AIR);
   /* THE UPPER STREET (134-175): the market's roofs; the first construct */
   ground(134, 175, U);
   ent('check', 145, U - 1);                                                        /* CHECKPOINT ONE, past the granary */
@@ -130,10 +131,10 @@ export function buildBuriedCity({ painter, T, TS }) {
   ledge(162, 165, 23); decor.push({ kind: 'dome', x0: 160, x1: 168, y: 25 });
   ledge(164, 167, 20); ent('silver', 166, 19);                                     /* A SILVER on the dome's lantern, under the market roof (off the route: a climb off the balcony) */
   ledge(169, 173, 23);
-  drowned(167, U - 1, 'upperDrift'); scorpion(171, U - 1, 'upperDrift');
+  drowned(167, U - 1, 'upperDrift');   /* (M4: the scorpion at 171 cut) */
   ground(176, 178, 28); ground(179, 181, 30); ground(182, 184, 32); ground(185, 211, B);   /* the steps back down to the street */
   ledge(188, 192, 31); ledge(194, 198, 28); ledge(203, 206, 31);                 /* balconies on the market's last houses */
-  construct(193, B - 1, 'marketEnd'); slinger(196, 27, 'marketEndSling');              /* a construct under a slinger's balcony */
+  drowned(193, B - 1, 'marketEnd');              /* a drowned under the market's last balconies (fix pass M4: the slinger at 196 cut, and this was a plain construct - with three ELITE constructs as the exams the cast kept the construct at 35% at most) */
 
   // ================= 3. THE HOURGLASS HALLS (220-306): REMIX - fill to cross the spikes; run the upper bulb down into the lower =================
   roof(220, 306, 21);
@@ -142,7 +143,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   interiors.push([212, 227, B, 39, 'bcCellar']);
   sign(205, B - 1, 'SAND COVERS SPIKES. SHUT THE GATE AND WAIT FOR THE FILL.');
   ent('sandlever', 208, B - 1, { room: 'cellar' }); ent('sandlever', 230, B - 1, { room: 'cellar' });
-  ledge(232, 236, 29); slinger(234, 28, 'cellarSling', { face: -1 }); scorpion(232, B - 1, 'cellarLip');   /* across the cellar: a slinger over its far lip, a scorpion on it */
+  ledge(232, 236, 29); slinger(234, 28, 'cellarSling', { face: -1 });   /* across the cellar: a slinger over its far lip (M4: the scorpion on the lip cut) */
   ground(228, 238, B); ground(239, 240, 32); ground(241, 247, TH);                /* up to the halls' corridor (row 30) */
   roof(236, 247, 25);
   /* THE HOURGLASS: THE UPPER BULB (full, across the corridor) runs down into THE LOWER BULB (the pit after it) */
@@ -156,9 +157,9 @@ export function buildBuriedCity({ painter, T, TS }) {
   ledge(270, 274, 37); ledge(272, 274, 34); ledge(273, 275, 31);                   /* the way up out of the lower bulb's floor (if you drop in before it fills) */
   construct(264, 39, 'bulbFloor', { face: 1 }); construct(269, 39, 'bulbFloor');  /* the lower bulb's watch: the sand that runs down carries them up JAMMED */
   /* (GEAR THREE is in the UPPER bulb: the lower bulb is full by the time you reach it, so a gear on its floor was buried for good) */
-  drowned(284, TH - 1, 'hallsEnd'); scorpion(289, TH - 1, 'hallsEnd'); construct(295, TH - 1, 'hallsEnd');   /* the halls' last squad */
+  construct(295, TH - 1, 'hallsEnd', { elite: true });   /* THE HALLS' EXAM (fix pass M4): an ELITE construct alone on the corridor, the lower bulb's pit just behind you and checkpoint two after him (the drowned at 284 and the scorpion at 289 cut) */
   rotten(286, 291, 27);                                                            /* a ROTTEN balcony over the halls' corridor */
-  ent('check', 280, TH - 1);                                                       /* CHECKPOINT TWO, past the hourglass */
+  ent('check', 300, TH - 1);                                                       /* CHECKPOINT TWO, after the halls' exam (fix pass: 280 -> 300, the shrine after the elite) */
   ground(301, 302, 32); ground(303, 316, B); ledge(303, 307, 31);                                       /* down to the street at the Drowned Quarter */
 
   // ================= 4. THE DROWNED QUARTER (307-419): SET PIECE - THE GREAT SAND-GATE (REQUIRED) =================
@@ -179,8 +180,13 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(374, 419, LO); roof(374, 419, 30);
   ledge(374, 378, 39); ledge(380, 384, 39); ledge(386, 390, 36); ledge(392, 396, 39); ledge(398, 402, 36); ledge(404, 408, 39); ledge(412, 416, 39);
   drift(397, 399, LO);                                                             /* a drift in the foundry yard, under the slinger */
-  construct(388, LO - 1, 'foundry'); slinger(394, 38, 'foundrySling'); drowned(400, LO - 1, 'foundry');   /* THE FOUNDRY's squad: a construct, a slinger over him, a drowned */
-  ent('check', 410, LO - 1);                                                        /* CHECKPOINT THREE, after the quarter */
+  construct(388, LO - 1, 'foundry', { elite: true }); slinger(394, 38, 'foundrySling');   /* THE QUARTER'S EXAM (fix pass M4): an ELITE construct with the drift at 397-399 behind him (held in it, you are his mark) and a slinger over it (the drowned at 400 cut) */
+  /* THE FOUNDRY'S FLOOR-GATE (fix pass M3, the TEACH): a small OPEN floor-gate in the yard's street (405-407): a drop of three rows onto the foundry's floor -
+     it costs you about a quarter and puts you back on the lip (src/buried-city-hands.js dropBack). Its lever on the west lip shuts it and the sand bridges it.
+     The trap hall in the exam is the same thing without a floor */
+  air(405, 407, LO, LO + 2);
+  ent('sandlever', 403, LO - 1, { room: 'yard' });
+  sign(400, LO - 1, 'AN OPEN FLOOR-GATE IS A DROP. SHUT IT AND THE SAND BRIDGES IT.');
 
   // ================= 5. THE THRONE STREET (420-523): THE EXAM - ride the shaft under a slinger; fill the trap hall under a squad; deadly drops =================
   /* THE CLOCK SHAFT (RIDE IT UP, the exam's first lock): the old street's end is a shaft; its way on is high in its east wall (rows 27-29) */
@@ -193,11 +199,12 @@ export function buildBuriedCity({ painter, T, TS }) {
   /* THE THRONE STREET (434-523, row 30) */
   ground(434, 451, TH); roof(434, 523, 20);
   ledge(437, 441, 27); gear(439, 26);                                              /* GEAR FIVE, on the street's first balcony */
+  ent('check', 437, TH - 1);                                                        /* CHECKPOINT THREE, out of the shaft (fix pass: 410 -> 437 - a trap-hall death costs the squad, not the shaft ride again) */
   /* THE TRAP HALL (FILL TO CROSS, REQUIRED, the exam): its floor-gate is OPEN - a drop to the end - until you shut it; then the hall fills and you walk over */
   air(452, 465, TH, H - 1); interiors.push([452, 465, TH, 43, 'bcTrap']);
-  sign(446, TH - 1, 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: A FALL HERE IS THE END.');
+  sign(450, TH - 1, 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: A FALL HERE IS THE END.');   /* (fix pass M3: on the lip side of the lever - 446 was under the squad's feet) */
   ent('sandlever', 449, TH - 1, { room: 'trap' }); ent('sandlever', 468, TH - 1, { room: 'trap' });
-  construct(447, TH - 1, 'trapLip', { face: 1 }); drowned(443, TH - 1, 'trapLip');   /* THE EXAM's squad on the lip while the hall fills */
+  construct(447, TH - 1, 'trapLip', { face: 1 });   /* THE EXAM's construct on the lip while the hall fills (M4: the drowned at 443 cut) */
   ground(466, 523, TH); ledge(469, 473, 27); ledge(474, 477, 27); drift(476, 478, TH); slinger(471, 26, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
   ledge(480, 484, 27); ledge(486, 490, 24);
   construct(486, TH - 1, 'throneGuard', { elite: true, gate: 493 }); scorpion(492, TH - 1, 'throneGuard'); slinger(488, 23, 'throneGuardSling');   /* THE THRONE GUARD: THE THRONE'S WARDEN (an ELITE construct: his gate at 493 shuts the street until he falls - the exam's peak, the trap hall behind you, the checkpoint after), a scorpion, a slinger over them */
@@ -233,7 +240,7 @@ export function buildBuriedCity({ painter, T, TS }) {
     buriedcity: true, caravan: true,   /* caravan: the desert's hands in main.js (the bandits' and scorpions' machines, the sand and stone skins, THE SUN on the dunes - the city is under its roof) */
     rooms: ROOMS.map(r => ({ ...r, levers: r.levers.map(a => a.slice()) })), wheel: { ...WHEEL }, arenaLevers: stage.levers, vaultDoors, decor, sandSolid, sandRungs, crumbles, quicksand,
     /* THE CITY HITS HARD (difficulty v2: weight, not numbers of foes): a blow x this on top of the act's tier, by skin (main.js damagePlayer0 reads L.foeHit) */
-    foeHit: { sanddrowned: 3.8, sandslinger: 1.8, brassscorpion: 3.4 },   /* (the resume pass: the walker took 3 blows in the level at L36 - weightier) */
+    foeHit: { sanddrowned: 4.6, sandslinger: 1.8, brassscorpion: 4.2 },   /* (fix pass M4: drowned 3.8 -> 4.6, scorpion 3.4 -> 4.2) */   /* (the resume pass: the walker took 3 blows in the level at L36 - weightier) */
     foeHp: { sanddrowned: 2.8, sandslinger: 2.0, brassscorpion: 2.8 },
     alarms: ROOMS.map(r => ({ x0: r.x0, x1: r.x1 })),   /* THE RULE'S STATE for tools/rule-state.mjs: the sand rooms are where the rule is live */
     sun: [{ x0: 0, x1: 34 }], shade, shadeArt: shade,   /* THE DESERT'S SUN on the dunes only (the city is under its roof). TODO(integrator): claude/ksar2's shared drain (src/drain.js, THE SUN v2) replaces src/sunstroke.js here when it lands */

@@ -212,7 +212,7 @@ export const STUCK_HANDS = {
      room.<id> full / empty / filling / draining, wheel.great open / shut, vault.<id>); the climb out of the lower bulb's pit glints after a stall */
   buriedcity: [
     { id: 'bc-first', zone: [44, 26, 56, 34], steps: [ { key: 'firstLever', is: ['room.first', 'full'], at: [51, 33], line: 'THE ROOM IS FULL TO ITS DOOR: ITS SAND-GATE LEVER' } ] },
-    { id: 'bc-granary', zone: [117, 18, 133, 34], steps: [ { key: 'granaryLever', is: ['room.granary', 'empty'], rows: [27, 34], at: [121, 33], line: 'THE WAY ON IS HIGH: THE GRANARY\'S SAND-GATE' } ] },
+    { id: 'bc-granary', zone: [117, 18, 133, 34], steps: [ { key: 'granaryLever', is: ['room.granary', 'empty'], rows: [27, 34], at: [121, 33], line: 'THE WAY ON IS HIGH: THE GRANARY\'S SAND-GATE' }, { key: 'granaryDoor', is: ['room.granary', 'full'], at: [133, 25], line: 'THE SAND IS AT THE DOOR: THE WAY ON IS EAST' } ] },   /* (fix pass: the door glints once the sand is full) */
     { id: 'bc-cellar', zone: [200, 26, 212, 34], steps: [ { key: 'cellarLever', is: ['room.cellar', 'empty'], at: [208, 33], line: 'STAKES ACROSS THE CELLAR: ITS SAND-GATE' } ] },
     { id: 'bc-bulb', zone: [238, 22, 248, 30], steps: [ { key: 'bulbLever', is: ['room.upperbulb', 'full'], at: [245, 29], line: 'THE UPPER HALL IS FULL: ITS SAND-GATE' } ] },
     { id: 'bc-pit', zone: [260, 30, 276, 40], steps: [ { key: 'bulbUp', at: [273, 30], glint: 'stall', line: 'THE LEDGES LEAD UP OUT OF THE PIT' } ] },

@@ -87,6 +87,7 @@ export const AFFIX_AT = {
   'canal|gaffer': 'UNSTOPPABLE',
   'caravan|cutthroat': 'SWIFT', 'caravan|scorpion#amb': 'BURNING',
   'welltown|scorpion': 'VENOMOUS', 'redgorge|scorpion': 'BURNING', 'underwell|scorpion': 'UNSTOPPABLE',
+  'buriedcity|construct#1': 'SHIELDED', 'buriedcity|construct#2': 'BURNING', 'buriedcity|construct#3': 'UNSTOPPABLE',   /* (claude/buriedcity: the halls' exam - go round his brass front; the foundry's - hot from the furnace yard; the throne's warden) */
 };
 /* ELITETUNE (claude/elitetune): per-kind health and elite-damage multipliers, measured with tools/elite-lab.mjs toward the human bot's 75-85%
    (docs/elite-lab.json). hp scales the ELITE table's own hp in main.js; dmg scales every blow of his that lands (damagePlayer0). tell = windup length, every = the gap between his moves: both below 1 = sooner; a tell shortened by it never goes under 0.5 s, nor longer than as built. 1 = as built. */

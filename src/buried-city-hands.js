@@ -11,8 +11,8 @@
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 
-export const BCS = { leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2 };
-const RULE_SAID = { first: 1, granary: 1, cellar: 1, upperbulb: 1, shaft: 1, trap: 1 };   /* the rooms whose lever says what it does there, on the first look */
+export const BCS = { dropBite: 0.27, leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2 };
+const RULE_SAID = { first: 1, granary: 1, cellar: 1, upperbulb: 1, yard: 1, shaft: 1, trap: 1 };   /* the rooms whose lever says what it does there, on the first look */
 
 export function makeBuriedCityHands(ctx) {
   let K = null;
@@ -23,7 +23,8 @@ export function makeBuriedCityHands(ctx) {
   /* the first look at each room's lever: what it does there (literal number() calls, so tools/hint-shown.mjs reads them) */
   const sayRule = (id, x, y) => {
     if (id === 'first') number(x, y, 'THE SAND-GATE: OPEN, THE ROOM DRAINS'); else if (id === 'granary') number(x, y, 'SHUT THE GATE: THE SAND CARRIES YOU UP'); else if (id === 'cellar') number(x, y, 'SHUT THE GATE: THE SAND COVERS THE STAKES');
-    else if (id === 'upperbulb') number(x, y, 'THE HOURGLASS: THIS HALL RUNS DOWN INTO THE NEXT'); else if (id === 'shaft') number(x, y, 'SHUT THE GATE: RIDE THE SAND UP THE SHAFT'); else if (id === 'trap') number(x, y, 'SHUT THE FLOOR-GATE: THE HALL FILLS'); };
+    else if (id === 'upperbulb') number(x, y, 'THE HOURGLASS: THIS HALL RUNS DOWN INTO THE NEXT'); else if (id === 'shaft') number(x, y, 'SHUT THE GATE: RIDE THE SAND UP THE SHAFT'); else if (id === 'trap') number(x, y, 'SHUT THE FLOOR-GATE: THE HALL FILLS');
+    else if (id === 'yard') number(x, y, 'AN OPEN FLOOR-GATE IS A DROP: SHUT IT AND THE SAND BRIDGES IT'); };
   H.on = () => !!K;
   H.state = () => K;
   /* THE SUN IS THE DUNES' ONLY: the city is under its sand roof (rooms ten and more rows tall - sunstroke.js's 5-row roof read cannot see it), so the sun reaches
@@ -130,8 +131,19 @@ export function makeBuriedCityHands(ctx) {
     if (P0 && !P0.dead) { const near = (x, y, r) => Math.abs(x - P0.x) < r && Math.abs(y - P0.y) < 70;
       for (const r of K.rooms) { const lv = (r.levers || [])[0]; if (lv && RULE_SAID[r.id] && near(px(lv[0]), (lv[1] + 1) * TS(), 70) && once('room' + r.id)) sayRule(r.id, P0.x, P0.y - 34); }
       const W = K.L.wheel; if (W && near(px(W.x), (W.row + 1) * TS(), 90) && once('wheel')) number(P0.x, P0.y - 34, 'THE GREAT SAND-GATE: E TURNS THE WHEEL', '#ffd36b'); }
+    dropBack(P0);
     stall(P0, dt);
   };
+  /* THE FOUNDRY'S FLOOR-GATE (fix pass M3, A10 base): the TEACH of the trap hall - a hero who drops through the small open floor-gate lands three rows down, and
+     it costs him about a quarter of his health (never the last point: this one is not the end) and puts him back on the lip he came from, told */
+  function dropBack(P) {
+    if (!P || P.dead) return; const ts = TS();
+    for (const r of K.rooms) { if (!r.teach || r.gate !== 'open') continue;
+      if (P.x <= r.x0 * ts || P.x >= (r.x1 + 1) * ts || P.y < r.floor * ts) continue;
+      const bite = Math.min(Math.round((P.maxHp || 100) * BCS.dropBite), Math.max(0, P.hp - 1)); if (bite > 0) { P.hp -= bite; P.hurt = 0.25; ctx.number(P.x, P.y - 20, '-' + bite, '#ff6b6b'); }
+      const lip = (P.face || 1) > 0 ? r.lips[0] : r.lips[1]; P.x = px(lip); P.y = (r.floor - r.full) * ts; P.vx = 0; P.vy = 0; P.inv = Math.max(P.inv || 0, 1);
+      K.n.drops = (K.n.drops || 0) + 1; ctx.sfx.pHurt && ctx.sfx.pHurt(); ctx.shake(3);
+      number(P.x, P.y - 34, 'THE OPEN FLOOR-GATE DROPS YOU: BACK TO THE LIP', '#ff9a5c'); return; } }
 
   /* ---------- A PLAYER'S HANDS AT THE RULE'S LOCKS (tools/level-walk.mjs asks BK.walkHint(): where a player goes next and what he presses there) ----------
      { x, y, key: 'talk'|null, face, r?, wait? } in world px, or null (nothing to work here). At a full doorway: its lever. At a ride: shut the gate from the floor
@@ -185,6 +197,13 @@ export function makeBuriedCityHands(ctx) {
     for (const r of K.rooms) {
       const l = r.x0 * ts - cx, w = (r.x1 - r.x0 + 1) * ts; if (l > vw + 16 || l + w < -16) continue;
       const n = sandRows(r), topY = (r.floor - n) * ts - cy, bot = r.floor * ts - cy, frac = r.level - n;
+      /* THE SPIKE CELLAR's stakes (fix pass: they were invisible in its dark box): pale iron points on its floor - the sand covers them */
+      if (r.spikes) { const sy = r.spikes * ts - cy; for (let x = r.x0; x <= r.x1; x++) for (let k = 0; k < 3; k++) { const bx = x * ts - cx + 2 + k * 5; g.fillStyle = '#3a3038'; g.fillRect(R(bx), R(sy + 10), 4, 6); g.fillStyle = '#c8c0b8'; g.fillRect(R(bx + 1), R(sy + 4), 2, 8); g.fillStyle = '#f0ece4'; g.fillRect(R(bx + 1), R(sy + 2), 1, 3); } }
+      /* THE TRAP HALL OPEN is a VOID (fix pass M3): it darkens to nothing under the lips, sand falls away into it - the end; THE FOUNDRY'S floor-gate (the teach) shows its floor */
+      if (r.trap && r.gate === 'open' && n < r.full) { const y0 = (r.floor - r.full) * ts - cy, yb = r.teach ? bot + ts : vh + 40;
+        if (!r.teach) { const gr = g.createLinearGradient(0, Math.max(y0, topY), 0, yb); gr.addColorStop(0, 'rgba(20,10,4,0.55)'); gr.addColorStop(0.45, 'rgba(8,4,2,0.9)'); gr.addColorStop(1, 'rgba(0,0,0,1)'); g.fillStyle = gr; g.fillRect(R(l), R(Math.max(y0, topY)), w, R(yb - Math.max(y0, topY)));
+          g.fillStyle = 'rgba(226,196,130,0.5)'; for (let i = 0; i < 7; i++) { const sx = l + 6 + ((i * 37) % Math.max(8, w - 12)), sy = y0 + ((time * 140 + i * 53) % Math.max(20, yb - y0)); g.fillRect(R(sx), R(sy), 1, 7); } }
+        else { g.fillStyle = '#1e140c'; g.fillRect(R(l), R(y0), w, R(bot + ts - y0)); g.fillStyle = SAND.dark; g.fillRect(R(l), R(bot + ts - 3), w, 3); } }
       if (n > 0) { g.fillStyle = SAND.body; g.fillRect(R(l), R(topY), w, R(bot - topY)); g.fillStyle = SAND.dark; for (let y = topY + 6; y < bot; y += 9) g.fillRect(R(l), R(y), w, 1);
         g.fillStyle = SAND.top; g.fillRect(R(l), R(topY), w, 2); }
       if (frac > 0.02 && n < r.full) { g.fillStyle = SAND.loose; g.fillRect(R(l), R(topY - frac * ts), w, R(frac * ts)); }   /* the loose row rising */
@@ -194,6 +213,10 @@ export function makeBuriedCityHands(ctx) {
       /* the floor-gate: a slot that runs while it drains (THE HOURGLASS: a neck into the next hall) */
       if (r.gate === 'open' && r.level > 0) { const sx = l + w / 2 - 12; g.fillStyle = SAND.slot; g.fillRect(R(sx), R(bot - 2), 24, 3); g.fillStyle = SAND.stream; for (let i = 0; i < 4; i++) g.fillRect(R(sx + 3 + i * 6), R(bot - 2 + ((time * 60 + i * 5) % 6)), 2, 3); }
       if (r.trap) { const shut = r.gate === 'shut'; g.fillStyle = shut ? '#5a4024' : '#140c06'; g.fillRect(R(l), R(bot), w, shut ? ts : 3); if (shut) { g.fillStyle = '#8a6a3a'; for (let x = 0; x < w; x += 8) g.fillRect(R(l + x), R(bot), 1, ts); } }
+      /* the lamps at the trap hall's lips (M3): RED while its floor-gate is open (a fall is the end), GOLD once it is shut */
+      for (const lc of (r.lamps || [])) { const lx = lc * ts + 8 - cx, ly = (r.floor - r.full) * ts - cy, col = r.gate === 'open' ? '#ff5a3a' : '#ffd36b';
+        g.fillStyle = '#3a2a18'; g.fillRect(R(lx - 1), R(ly - 22), 2, 22); g.fillStyle = '#5a4024'; g.fillRect(R(lx - 3), R(ly - 26), 6, 5);
+        g.globalAlpha = 0.22 + 0.08 * Math.sin(time * 5 + lc); g.fillStyle = col; g.beginPath(); g.arc(R(lx), R(ly - 23), 14, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = col; g.fillRect(R(lx - 2), R(ly - 25), 4, 3); }
       if (r.great && K.wheel.done && r.level > 0) { g.globalAlpha = 0.6; g.fillStyle = SAND.stream; const gx = (r.x0 + r.x1) / 2 * ts - cx; g.fillRect(R(gx - 30), R(bot - 3), 60, 6); g.globalAlpha = 1; }
     }
     /* THE LEVERS and their GAUGES (A3: the room's level, OPEN / SHUT). M5: the throne room's levers GLOW gold while his glass is low (a pull stalls him), the nearer one ringed */

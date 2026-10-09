@@ -44,7 +44,17 @@ ok(sign(44, 51, /E PULLS A SAND-GATE/), 'a sign at the first lever says E PULLS 
 ok(sign(110, 121, /SHUT THE GATE/), 'a sign at the granary says SHUT THE GATE');
 ok(sign(200, 208, /SHUT THE GATE/), 'a sign at the cellar says SHUT THE GATE');
 ok(sign(300, 313, /TURNS THE WHEEL/), 'a sign at the great wheel says E TURNS THE WHEEL');
-ok(sign(440, 449, /FALL HERE IS THE END/), 'the trap hall\'s deadly drop is told before it');
+ok(sign(440, 451, /FALL HERE IS THE END/), 'the trap hall\'s deadly drop is told before it (its lip is 451: the sign stands on the lip side of the lever, fix pass M3)');
+/* THE TRAP HALL'S DEATH IS TAUGHT FIRST (A10 amended: an exam death once taught, never untold - the BCREVIEW's M3): a small OPEN floor-gate before it, survivable,
+   with a floor under it and its own lever and sign; and the exam hall is drawn lethal (its lamps) */
+{ const yd = ROOMS.find(r => r.id === 'yard'), tr = ROOMS.find(r => r.id === 'trap');
+  ok(yd && yd.trap && yd.teach && yd.init === 'empty' && yd.x1 < tr.x0, 'THE FOUNDRY\'S FLOOR-GATE (open on a fresh load) comes before the trap hall: the drop is taught');
+  ok([...Array(yd.x1 - yd.x0 + 1).keys()].every(k => at(yd.x0 + k, yd.floor + 1) === T.SOLID), 'the foundry\'s floor-gate has a floor under it: survivable');
+  ok(sign(yd.x0 - 8, yd.x0 - 1, /FLOOR-GATE IS A DROP/), 'a sign before the foundry\'s floor-gate says AN OPEN FLOOR-GATE IS A DROP');
+  ok(L.ents.some(e => e.t === 'sandlever' && e.room === 'yard' && e.x < yd.x0), 'the foundry\'s floor-gate has its lever on the near lip');
+  ok((tr.lamps || []).length === 2, 'the trap hall\'s lips are lamp-lit (red open, gold shut)'); }
+/* THE SECTION EXAMS ARE ELITES (fix pass M4): the halls, the quarter and the throne street */
+ok([295, 388, 486].every(x => L.ents.some(e => e.t === 'construct' && e.x === x && e.elite)), 'the three section exams are ELITE constructs (295, 388, 486)');
 /* REQUIRED: the reach model */
 const arenaCol = L.arena.x0 / TS + 4, arenaRow = L.arena.floor / TS - 1;
 const reaches = Lx => { const R = floodReach(Lx, T); for (const k of R.seen) { const [x, y] = k.split(',').map(Number); if (x >= arenaCol - 2 && x <= arenaCol + 6 && Math.abs(y - arenaRow) <= 1) return true; } return false; };
