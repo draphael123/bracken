@@ -52,7 +52,7 @@ export const ROOMS = [
   { id: 'granary', x0: 119, x1: 132, floor: 34, full: 8, init: 'empty', levers: [[121, 33]], pour: true, fill: 1.1, drain: 2.4, use: 'ride', door: [133, 23, 25] },
   { id: 'cellar', x0: 212, x1: 227, floor: 40, full: 6, init: 'empty', levers: [[208, 33], [230, 33]], pour: true, fill: 1.3, drain: 2.0, use: 'fill', need: true, spikes: 39 },
   { id: 'upperbulb', x0: 248, x1: 257, floor: 30, full: 5, init: 'full', levers: [[245, 29], [255, 29, 5]], pour: true, fill: 0.9, drain: 1.0, use: 'drain', into: 'lowerbulb', door: [258, 27, 29] },
-  { id: 'lowerbulb', x0: 260, x1: 275, floor: 40, full: 10, init: 'empty', levers: [], pour: false, fill: 2.0, drain: 2.0, use: 'fill' },
+  { id: 'lowerbulb', x0: 260, x1: 275, floor: 40, full: 10, init: 'empty', levers: [], pour: false, fill: 2.0, drain: 2.0, use: 'fill', need: true },   /* (need: the upper bulb's sand is in it by the time you reach it - the reach model counts it full) */
   { id: 'great', x0: 317, x1: 372, floor: 42, full: 18, init: 'full', levers: [], pour: false, fill: 0, drain: 3.0, use: 'drain', great: true, door: [373, 38, 41] },
   { id: 'shaft', x0: 421, x1: 432, floor: 42, full: 12, init: 'empty', levers: [[423, 41]], pour: true, fill: 1.2, drain: 2.4, use: 'ride', door: [433, 27, 29] },
   { id: 'trap', x0: 452, x1: 465, floor: 44, full: 14, init: 'empty', levers: [[449, 29], [468, 29]], pour: true, fill: 2.2, drain: 3.0, use: 'fill', need: true, trap: true },
@@ -147,7 +147,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   roof(236, 247, 25);
   /* THE HOURGLASS: THE UPPER BULB (full, across the corridor) runs down into THE LOWER BULB (the pit after it) */
   ground(248, 258, TH); roof(247, 258, 22); block(247, 247, 23, 26); block(258, 258, 23, 26);   /* the upper bulb: doorways rows 27-29 both ends */
-  interiors.push([248, 257, 23, 29, 'bcBulb']);
+  interiors.push([248, 257, 23, 29, 'bcBulb']); gear(252, 29);                   /* GEAR THREE, on the upper bulb's floor: the draining sand leaves it lying there */
   sign(242, TH - 1, 'THE HOURGLASS: THE UPPER HALL DRAINS INTO THE LOWER.');
   ent('sandlever', 245, TH - 1, { room: 'upperbulb' }); ent('sandlever', 255, TH - 1, { room: 'upperbulb', chain: 5 });
   ground(259, 259, TH); air(260, 275, TH, 39); ground(260, 275, 40); ground(276, 300, TH);   /* the lower bulb: a pit sixteen wide, its floor row 40 */
@@ -155,7 +155,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   interiors.push([260, 275, TH, 39, 'bcBulbLow']);
   ledge(270, 274, 37); ledge(272, 274, 34); ledge(273, 275, 31);                   /* the way up out of the lower bulb's floor (if you drop in before it fills) */
   construct(264, 39, 'bulbFloor', { face: 1 }); construct(269, 39, 'bulbFloor');  /* the lower bulb's watch: the sand that runs down carries them up JAMMED */
-  gear(266, 39);                                                                    /* GEAR THREE, on the lower bulb's floor (among the constructs) */
+  /* (GEAR THREE is in the UPPER bulb: the lower bulb is full by the time you reach it, so a gear on its floor was buried for good) */
   drowned(284, TH - 1, 'hallsEnd'); scorpion(289, TH - 1, 'hallsEnd'); construct(295, TH - 1, 'hallsEnd');   /* the halls' last squad */
   rotten(286, 291, 27);                                                            /* a ROTTEN balcony over the halls' corridor */
   ent('check', 280, TH - 1);                                                       /* CHECKPOINT TWO, past the hourglass */
