@@ -1,0 +1,22 @@
+causeway practiced knight s1 L20: death 48.3s left 70% taken 196 rt420 mis4 greed3
+causeway practiced knight s2 L20: death 130.2s left 1% taken 196 rt408 mis3 greed9
+causeway practiced knight s4 L20: death 101.3s left 10% taken 196 rt402 mis3 greed10
+causeway practiced knight s3 L20: death 115.9s left 7% taken 196 rt403 mis1 greed6
+causeway practiced knight s5 L20: death 105s left 10% taken 196 rt406 mis3 greed11
+causeway practiced knight s6 L20: ERR the fresh lab page did not initialize
+causeway practiced warden s1 L20: ERR the fresh lab page did not initialize
+causeway practiced warden s2 L20: death 112.5s left 6% taken 196 rt414 mis4 greed11
+causeway practiced warden s3 L20: death 109.3s left 10% taken 196 rt410 mis5 greed5
+causeway practiced warden s4 L20: death 110.6s left 7% taken 196 rt394 mis3 greed12
+causeway practiced warden s5 L20: death 40.1s left 78% taken 196 rt408 mis0 greed4
+causeway practiced warden s6 L20: death 86.6s left 39% taken 196 rt409 mis4 greed9
+causeway practiced pyro s1 L20: win 113.4s left 0% taken 151 rt416 mis4 greed11
+causeway practiced pyro s2 L20: win 118s left 0% taken 115 rt398 mis6 greed10
+causeway practiced pyro s3 L20: ERR the fresh lab page did not initialize
+causeway practiced pyro s4 L20: ERR the fresh lab page did not initialize
+causeway practiced pyro s5 L20: ERR the fresh lab page did not initialize
+causeway practiced pyro s6 L20: ERR the fresh lab page did not initialize
+
+BOSS RATES  profile human+dry  (18 fights, 24 min)
+row                 L  practiced kn/wa/py        band
+causeway           20  0/5 0/5 2/2 = 17%         LOW -33  zero: knight,warden

@@ -1,0 +1,22 @@
+causeway practiced knight s2 L20: ERR the fresh lab page did not initialize
+causeway practiced knight s1 L20: ERR the fresh lab page did not initialize
+causeway practiced knight s4 L20: ERR the fresh lab page did not initialize
+causeway practiced knight s3 L20: ERR the fresh lab page did not initialize
+causeway practiced knight s5 L20: win 143.5s left 0% taken 233 rt409 mis3 greed11
+causeway practiced knight s6 L20: win 145.3s left 0% taken 190 rt402 mis4 greed12
+causeway practiced warden s1 L20: win 132.8s left 0% taken 136 rt403 mis4 greed9
+causeway practiced warden s2 L20: death 118.8s left 7% taken 265 rt408 mis3 greed12
+causeway practiced warden s3 L20: death 121.2s left 5% taken 265 rt410 mis7 greed7
+causeway practiced warden s4 L20: death 135.7s left 2% taken 265 rt394 mis3 greed12
+causeway practiced warden s5 L20: death 65.3s left 70% taken 265 rt400 mis3 greed6
+causeway practiced warden s6 L20: death 116.1s left 9% taken 265 rt405 mis4 greed15
+causeway practiced pyro s1 L20: win 113.4s left 0% taken 151 rt416 mis4 greed11
+causeway practiced pyro s2 L20: win 118s left 0% taken 115 rt398 mis6 greed10
+causeway practiced pyro s3 L20: win 94.4s left 0% taken 187 rt413 mis4 greed9
+causeway practiced pyro s4 L20: win 125.6s left 0% taken 140 rt402 mis5 greed11
+causeway practiced pyro s5 L20: win 116.2s left 0% taken 152 rt415 mis5 greed10
+causeway practiced pyro s6 L20: win 127.7s left 0% taken 123 rt400 mis5 greed9
+
+BOSS RATES  profile human  (18 fights, 21 min)
+row                 L  practiced kn/wa/py        band
+causeway           20  2/2 1/6 6/6 = 64%         HIGH +4
