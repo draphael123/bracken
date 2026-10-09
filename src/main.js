@@ -365,7 +365,7 @@ Object.assign(DMG, {
   reeveSweep: 31, reeveLunge: 42, reeveHook: 25, reeveDouse: 25,   /* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14 */
   bellLeap: 18, bellClaw: 22, bellPressure: 20,   /* THE DIVING BELL: 24, 26, 24 */
   palLeap: 26,   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP: new, his bash's weight */
-  krakSlam: 36, krakSweep: 33, krakRoar: 28, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22, krakWave: 22, krakQuake: 14, krakShake: 14,   /* (claude/kraken2: THE WAVE, the slam's shockwave, the shaken ramp) */   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
+  krakSlam: 33, krakSweep: 33, krakRoar: 26, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22, krakWave: 20, krakQuake: 12, krakShake: 14, krakCoSweep: 26, krakSlam1: 26, krakSweep1: 28,   /* (the first stage has more going on now: its own slam and sweep weigh a little less) */   /* (claude/kraken2: THE WAVE, the slam's shockwave, the shaken ramp) */   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
   tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
@@ -381,7 +381,7 @@ Object.assign(EHP, {
   drownedking: 500,  /* THE DROWNED KING (keep): 560 (33-42%, warden 0) */
   lance: 800,        /* (claude/keyscore, B13: his plate faces you - round him or over him lands at ANGLE.wall; 305 measured 14/18 dry) */ /* THE QUEEN'S LANCE (storm): 380 (25%) */       /* THE TIDE HERALD: 340 (67%) */      /* THE REEFMAW: 500 (75-83%: 22-54 s) */
   bellcrab: 740,   /* THE DIVING BELL: 750 (0/12; a third of him is the soft crab out of the bell, and the bot died there with 20-30% left) */
-  kraken: 640,   /* THE KRAKEN: 480 (83% once the bot could see him, 0/12 before) */
+  kraken: 670,   /* (claude/kraken2: 640 -> 670, THE KRAKEN 2 in the 60-70% band with flasks) THE KRAKEN: 480 (83% once the bot could see him, 0/12 before) */
 });
 Object.assign(EHP, { burieddead: 950 });   /* (claude/retune2) THE REFIT RETUNE's health, after sweep2's block so it wins (merge care: its own line) - before -> after in work/claude/lane-done/claude-retune2.md */
 
@@ -13938,13 +13938,13 @@ function krakenWreck(e, up) { const A = L.arena; if (!A.wreck) return; const fy 
    III. THE CLIMB (replaces the maw's tentacle round): he hauls himself up against the end of the road. An arm he slams down and you CUT
       THROUGH falls against him as a RAMP up to his head; climb it while he SHAKES it (told: jump), his great EYE opens (gold ring and
       timer, x2) and shuts behind a told WARD, and his BEAK bites at the top of the ramp (told). The waystone still pins his spear. */
-const KRK_P1 = { ink: 10.5, spout: 11, wave: 14, co: 9, crate: 6.5, crateMax: 3, slam: 2.2 };
+const KRK_P1 = { ink: 10.5, spout: 11, wave: 16, co: 11, crate: 6.5, crateMax: 3, slam: 2.2 };
 const KRK_INK_SLOW = 0.7, KRK_BLOB_W = 46, KRK_BLOB_LIFE = 6;   /* a patch: how much it slows a hero wading it, how wide, how long */
 const KRK_WAVE_V = 250, KRK_WAVE_H = 36, KRK_WAVE_SHOVE = 0.5;     /* THE WAVE: its speed landward, the height of its crest, and how long the shove carries you */
 const KRK_QUAKE_R = 76, KRK_QUAKE_V = 240;                        /* THE SLAM'S SHOCKWAVE: how far it runs out along the stones, and how fast */
 const KRK_BELL_FLY = 0.35;                                        /* a struck bell's shock ring, out to him */
 const KRK_RAMP_T = 11, KRK_EYE_OPEN = 3.2, KRK_EYE_WARD = 3, KRK_EYE_TAKE = 0.12, KRK_SHUT = 0.4;   /* THE CLIMB: the ramp's life, the eye open, its ward, its price, and B15's floor */
-const KRK_CLIMB_ARM = 0.6;   /* an arm in the climb: a share of a first-stage arm, so one slam and a few cuts fell it */
+const KRK_CLIMB_ARM = 0.5;   /* an arm in the climb: a share of a first-stage arm, so one slam and a few cuts fell it */
 const KRK_CLIMB_Q = ['eye', 'shake', 'bite', 'eye', 'shake', 'bite'];
 /* INK: two blobs out of his mouth in the far water, each on a ring where it will come down; a patch where it lands */
 function krakenInkLob(e) { const A = L.arena, side = Math.random() < 0.5 ? -1 : 1, from = krakenMouth(e);
@@ -13964,7 +13964,7 @@ function krakenCoSweep(e, b, tell) { const re = krkRoadEnds(), mid = (L.arena.x0
 function krakenCoTick(e, dt) { const c = e.co; if (!c) return; const a = e.arms[c.i]; if (!a || krkLost(a) || a.severed) { e.co = null; return; }
   if (!c.go) { c.t -= dt; a.st = 'lower'; a.want = [c.from, krkTop(c.from, true) - 12]; if (c.t <= 0) { c.go = true; a.st = 'sweep'; SFX.anchorSwing(); SFX.throwWhoosh(); } return; }
   c.k += dt / c.dur; const sx = c.from + (c.to - c.from) * Math.min(1, c.k), sy = krkTop(sx, true); a.st = 'sweep'; a.tx = sx; a.ty = sy - 12;
-  if (!c.hit && !P.dead && Math.abs(P.x - sx) < 20 && P.y > sy - 16 && P.y <= sy + 4) { c.hit = true; e.coHits = (e.coHits || 0) + 1; const res = damagePlayer(sx, DMG.krakSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(c.to - c.from) * 260; P.vy = -170; P.ground = false; } }
+  if (!c.hit && !P.dead && Math.abs(P.x - sx) < 20 && P.y > sy - 16 && P.y <= sy + 4) { c.hit = true; e.coHits = (e.coHits || 0) + 1; const res = damagePlayer(sx, DMG.krakCoSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(c.to - c.from) * 260; P.vy = -170; P.ground = false; } }
   if (c.k >= 1) { a.st = 'drag'; a.t = 0.7; e.co = null; } }
 /* THE SLAM'S SHOCKWAVE: out along the surface it came down on, both ways; a hero on that surface in its front is hit (the shield turns it,
    as it turns the slam: the yellow ! promises both), a hero in the air over it is not */
@@ -14001,7 +14001,7 @@ function krakenRampTick(e, dt) { const r = e.ramp; e.onRamp = false; if (!r) ret
   if (P.vy >= 0 && P.y >= sy - 4 && P.y <= sy + 12) { P.y = sy; P.vy = 0; P.ground = true; e.onRamp = true; e.rampT = (e.rampT || 0) + dt; } }
 const krakenOnRamp = e => !!(e.ramp && e.onRamp);
 function krakenInit(e) {
-  const A = L.arena, fl = A.floor, armHp = Math.max(20, Math.round(e.maxHp * 0.3 / 4));
+  const A = L.arena, fl = A.floor, armHp = Math.max(20, Math.round(e.maxHp * 0.24 / 4));   /* (claude/kraken2: 0.3 - the first stage has more going on now, so its arms are cut through sooner; it still ends at 70% of him) */
   e.stage = 1; e.stageFloor = Math.round(e.maxHp * 0.7); e.skyT = 0; e.inkT = 0; e.back = 'stride';
   e.seaY = fl + 2 * TS; e.seaWant = fl + 2 * TS; e.T = { grab: 4, sweep: 6.5, slam: 1.2, hurl: 0, beat: 99, arm: 99, lunge: 0, roar: 0, roll: 0, crate: 1.2, rake: 99, look: 99, ink: 6, spout: 4.5, wave: 9, co: 3.5, climb: 99 };
   e.blobs = []; e.patches = []; e.quakes = []; e.co = null; e.waveX = null; e.shoveT = 0; e.bellRings = []; e.ramp = null; e.eyeT = 0; e.wardT = 0; e.signT = 0; KRS.inked = 0;
@@ -14084,7 +14084,7 @@ function krakenArmsTick(e, dt) {
     /* HOTFIX SAFETY NET (Daniel, 2026-09-26: 'he can softlock by getting his tentacles stuck in platforms'): an arm whose tip stays inside rock or a board for 2 s draws back into the sea and comes up again as normal. The cause is next week's; this only makes sure a fight can never hang on it */
     if (a.st !== 'hid' && a.st !== 'retreat' && a.st !== 'gone') { const tt = tileAt(Math.floor(a.tx / TS), Math.floor(a.ty / TS)); if (isSolid(Math.floor(a.tx / TS), Math.floor(a.ty / TS)) || tt === T.ONEWAY || tt === T.PLANK) a.stuckT = (a.stuckT || 0) + dt; else a.stuckT = 0; if (a.stuckT > 2) { a.stuckT = 0; a.st = 'retreat'; a.t = 1; a.low = false; if (a.ae) a.ae.alive = false; a.back = 2; a.backHp = a.hp; } }   /* (claude/sweep2) and it COMES BACK: a.back brings it up out of 'hid' with the health it had. Without it a stuck arm stayed under for good and stage 1 (it ends when every arm is cut) never ended - the 0/12 soft-lock */
     /* A CUT LEFT TOO LONG CLOSES: KRK_REGROW seconds after the last cut the arm is whole again (the damage it cost him stays) */
-    if (a.healT > 0 && a.hp > 0 && a.hp < a.max && e.stage < 3) { a.healT -= dt;   /* (THE CLIMB: a cut there does not close - claude/kraken2) */ if (a.healT <= 0) { a.hp = a.max; if (a.ae) a.ae.hp = a.max; a.flash = 0.2; e.heals = (e.heals || 0) + 1; if (a.st !== 'hid' && typeof number === 'function') { number(a.tx, fl - 44, 'IT HEALS', '#9aa39a'); SFX.hiss(); } } }
+    if (a.healT > 0 && a.hp > 0 && a.hp < a.max && e.stage < 3) { a.healT -= dt;   /* (THE CLIMB: a cut there does not close - claude/kraken2) */ if (a.healT <= 0) { a.hp = e.stage === 1 ? Math.round(a.hp + (a.max - a.hp) / 2) : a.max; if (a.ae) a.ae.hp = a.hp;   /* (claude/kraken2: in the first stage it closes HALF of what was cut - the cutting you did there stays half done) */ a.flash = 0.2; e.heals = (e.heals || 0) + 1; if (a.st !== 'hid' && typeof number === 'function') { number(a.tx, fl - 44, 'IT HEALS', '#9aa39a'); SFX.hiss(); } } }
     switch (a.st) {
       case 'hid': ease(a, a.bx, fl + 60, 3); a.low = false;
         /* IN THE MAW A CUT ARM COMES BACK: the body is out of reach now, and an arm lost for good would leave the stage nothing to cut */
@@ -14133,7 +14133,7 @@ function krakenHurt(e, dmg, fromX, plunge, tag) {
         SFX.bellow(); } }
     if (floor < 1) d = Math.max(1, Math.round(dmg * floor));
     const through = knell || pin || a.spear;
-    const take = Math.min(d, a.hp); a.hp -= take; e.hp = Math.max(0, a.hp); e.flash = 0.12; a.flash = 0.12; a.healT = KRK_REGROW;
+    const take = Math.min(d, a.hp); a.hp -= take; e.hp = Math.max(0, a.hp); e.flash = 0.12; a.flash = 0.12; a.healT = K.stage === 1 ? KRK_REGROW1 : KRK_REGROW;
     /* THE LAST CUT is a blow on him, so it goes through hurtEnemy and he dies the way every boss does */
     krakenLedger(K, knell ? 'knell' : pin ? 'pin' : look ? 'look' : a.spear ? 'spear' : 'arm' + K.stage, take);
     if (K.stage >= 3 && K.hp - take <= 0) { K.passThrough = true; hurtEnemy(K, take, fromX, false); }
@@ -14222,7 +14222,7 @@ const KRK_CRATE_MAX = 4;       /* and never more than four standing: past four t
 /* AND HE COMES UP TO LOOK ABOUT ONCE A BEAT - often enough to learn the place, and BRIEF. (It replaced the drain he used to come up
    through, and kept its price: the drain's first cut was two and a half seconds wide open at two and a half times, and a knight took
    the whole second stage off it alone, 95s to 43s. An opening is a punctuation mark, rule A5.) */
-const KRK_REGROW = 4;       /* an arm cut and then left this long closes up whole again (2026-09-25: fewer free openings) */
+const KRK_REGROW = 4; const KRK_REGROW1 = 7;   /* (claude/kraken2: the first stage has more going on now - a cut there stays open longer before it closes) */       /* an arm cut and then left this long closes up whole again (2026-09-25: fewer free openings) */
 const KRK_LOOK_EVERY = 17;
 const KRK_LOOK_OPEN = 1.8;     /* up close, and gone again */
 const KRK_LOOK_TAKE = 0.035;   /* the most the arms lying still can cost him in one look, as a share of him: a good cut or two */
@@ -14528,7 +14528,7 @@ function updateKraken(e, dt) {
     case 'slam': { const a = e.arms[e.armI]; if (krkLost(a)) { e.mode = e.back; e.modeT = 0.4; break; }
       if (e.modeT <= 0) { const st = krkTop(e.slamX); a.st = 'down'; a.t = p3 ? 1.7 : 1.8; a.tx = e.slamX; a.ty = st - 6; shakeCam(7); SFX.boom(); zoomKick(1.05, 0.15); dust(e.slamX - 20, st, 8); dust(e.slamX + 20, st, 8);
         if (e.stage === 1) e.quakes.push({ x: e.slamX, y: st, r: 20, hit: false });   /* THE SHOCKWAVE out along the stones from where it came down */
-        if (!P.dead && Math.abs(P.x - e.slamX) < 34 && P.y > st - 34 && P.y <= st + 4) { const res = damagePlayer(e.slamX, DMG.krakSlam); if (res === 'hit') { P.vy = -200; P.vx = (Math.sign(P.x - e.slamX) || 1) * 160; } }
+        if (!P.dead && Math.abs(P.x - e.slamX) < 34 && P.y > st - 34 && P.y <= st + 4) { const res = damagePlayer(e.slamX, e.stage === 1 ? DMG.krakSlam1 : DMG.krakSlam); if (res === 'hit') { P.vy = -200; P.vx = (Math.sign(P.x - e.slamX) || 1) * 160; } }
         /* TWO ARMS IN SEQUENCE: out at the tide, the second arm is already up when the first comes down */
         const b = e.slam2 !== null && e.slam2 !== undefined ? e.arms[e.slam2] : null; e.slam2 = null;
         if (e.stage === 2 && b && b.st === 'idle' && !P.dead) { e.armI = b.i; b.st = 'rise'; e.slamX = P.x; e.mode = 'slamTell'; e.modeT = 0.48; number(P.x, fl - 44, '!', '#ffd36b'); SFX.charge(); }
@@ -14538,7 +14538,7 @@ function updateKraken(e, dt) {
       if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = krakenSweepDur(e); e.sweepHit = false; a.st = 'sweep'; SFX.anchorSwing(); SFX.throwWhoosh(); } break; }
     case 'sweep': { const a = e.arms[e.armI]; if (krkLost(a)) { e.mode = e.back; e.modeT = 0.4; break; }
       const k = 1 - Math.max(0, e.modeT) / krakenSweepDur(e), sx = e.sweepFrom + (e.sweepTo - e.sweepFrom) * k, sy = krkTop(sx, true); a.tx = sx; a.ty = sy - 12;   /* along the stones at knee height, and up over the plinth's (not over the cargo: a crate is still where you get up out of it) */
-      if (!e.sweepHit && !P.dead && Math.abs(P.x - sx) < 20 && P.y > sy - 16 && P.y <= sy + 4) { e.sweepHit = true; const res = damagePlayer(sx, DMG.krakSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(e.sweepTo - e.sweepFrom) * 260; P.vy = -170; P.ground = false; } }
+      if (!e.sweepHit && !P.dead && Math.abs(P.x - sx) < 20 && P.y > sy - 16 && P.y <= sy + 4) { e.sweepHit = true; const res = damagePlayer(sx, e.stage === 1 ? DMG.krakSweep1 : DMG.krakSweep, { unblockable: true }); if (res === 'hit') { P.vx = Math.sign(e.sweepTo - e.sweepFrom) * 260; P.vy = -170; P.ground = false; } }
       if (e.modeT <= 0) { a.st = 'drag'; a.t = 0.7; e.mode = e.back; e.modeT = 0.6; } break; }
     /* THE OTHER SWEEP: THE RAKE. The arm lifts to the lane at the seaward end, and when the mark goes it comes across LANDWARD - always
        the same way, so the road reads which way to look - at the height of a man standing on a crate. A hero flat on the stones is UNDER
