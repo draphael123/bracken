@@ -18,6 +18,7 @@ import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
 import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped, CHIP_MINI, FULL_DAMAGE } from '../src/boss-greed.js';
 import { openPage } from './cdp.mjs';
+import { GUARD, ANGLE } from '../src/boss-read.js';   /* (claude/keyscore) the duelists whose front is a wall (B11/B13): their front blows are TURNED, not chipped */
 
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
 /* NODE: the table covers the campaign */
@@ -35,8 +36,8 @@ ok(!chipped({ t: 'spider', xpRole: 'mini' }, false), 'a mini with no opening (th
 /* (claude/dk3) A DUELIST ON FULL DAMAGE (THE DEATH KNIGHT, Daniel 10-03): never chipped, but his openings are still named, so greed still counts outside them */
 for (const t of Object.keys(FULL_DAMAGE || {})) { ok(!chipped({ t }, true), t + ' is on FULL_DAMAGE and must never be chipped'); ok(OPEN_RULE[t], t + ' is on FULL_DAMAGE but has no opening rule: greed would never count'); }
 /* (claude/redgorge2) the duelists off the chip, named one by one (design standard B11: a beast duelist guards by angle instead) - a new name here is a design call (QUESTION in the lane report) */
-const DUELISTS = ['bloodknight', 'matriarch', 'roc', 'hawkmistress', 'greathound', 'pyromancer', 'huntmaster'];   /* (claude/rootway: THE GOBLIN HUNTMASTER is a duelist, src/boss-greed.js FULL_DAMAGE - the list lagged the module) */   /* (claude/burnvillage2: THE PYROMANCER - Daniel's brief 10-07, "must NEVER be invulnerable... takes real damage normally (B11/B13)") */   /* (claude/hound: THE GREAT HOUND - Daniel 10-07, 'he should NOT be invincible': a design change by Daniel, the same strictness) */   /* (claude/roc2: THE ROC - Daniel 10-06, 'she DOESN'T NEED TO BE INVULNERABLE BY DEFAULT': a beast guarding by height, src/roc-eyrie.js take) */
-ok(FULL_DAMAGE && DUELISTS.every(k => FULL_DAMAGE[k]) && Object.keys(FULL_DAMAGE).length === DUELISTS.length, 'FULL_DAMAGE is the named duelists alone (the Death Knight, the Raptor Matriarch, the Roc, the Hawk-Mistress, the Great Hound, the Pyromancer, the Huntmaster; nobody else is taken off the chip): ' + Object.keys(FULL_DAMAGE || {}));
+const DUELISTS = ['bloodknight', 'matriarch', 'roc', 'hawkmistress', 'greathound', 'pyromancer', 'huntmaster', 'lance', 'closedhelm', 'captain', 'quarter'];   /* (claude/rootway: THE GOBLIN HUNTMASTER is a duelist, src/boss-greed.js FULL_DAMAGE - the list lagged the module) */   /* (claude/burnvillage2: THE PYROMANCER - Daniel's brief 10-07, "must NEVER be invulnerable... takes real damage normally (B11/B13)") */   /* (claude/hound: THE GREAT HOUND - Daniel 10-07, 'he should NOT be invincible': a design change by Daniel, the same strictness) */   /* (claude/roc2: THE ROC - Daniel 10-06, 'she DOESN'T NEED TO BE INVULNERABLE BY DEFAULT': a beast guarding by height, src/roc-eyrie.js take) */   /* (claude/keyscore: the four waiting rooms, B13 + Daniel's B15 10-08 - duelists with a WALL, src/boss-read.js GUARD) */   
+ok(FULL_DAMAGE && DUELISTS.every(k => FULL_DAMAGE[k]) && Object.keys(FULL_DAMAGE).length === DUELISTS.length, 'FULL_DAMAGE is the named duelists alone (the Death Knight, the Raptor Matriarch, the Roc, the Hawk-Mistress, the Great Hound, the Pyromancer, the Huntmaster, and the four WALL duelists Lance/Crusader/Captain/Quartermaster; nobody else is taken off the chip): ' + Object.keys(FULL_DAMAGE || {}));
 for (const t of Object.keys(NO_OPENING)) ok(!chipped({ t }, true), t + ' is on NO_OPENING and must never be chipped (left at full damage, never made unbeatable)');
 
 const pg = await openPage({ audio: false, fonts: false });
@@ -97,12 +98,15 @@ for (const [id, o] of Object.entries(R)) {
   const own = o.t === 'puppeteer', exempt = !!NO_OPENING[o.t];
   if (exempt) { ok(o.heroShut >= 20, id + ' (' + o.t + ', no opening): a hero blow of 40 must land whole-ish, not chipped (took ' + o.heroShut + ')'); continue; }
   ok(o.openShut === false, id + ': the sampled closed mode must read as NOT open (BK.greed.open = ' + o.openShut + ')');
+  const wall = GUARD[o.t] === 'wall';   /* (claude/keyscore, B13 + B15) a duelist WALL: off the chip, 0.4 into his front (src/boss-read.js ANGLE.front) */
   if (own) ok(o.heroShut === Math.max(1, Math.round(40 * 0.05)), id + ': his own ward keeps his own number (a blow of 40 took ' + o.heroShut + ', not ' + Math.max(1, Math.round(40 * 0.05)) + ': a chip of a chip?)');
+  else if (wall) ok(o.heroShut === Math.round(40 * ANGLE.front), id + ': B15 - a duelist WALL takes ANGLE.front of a front blow outside his opening, never nothing (a blow of 40 took ' + o.heroShut + ')');
   else if (FULL_DAMAGE[o.t]) ok(o.heroShut >= 30, id + ': ' + o.t + ' is a duelist on FULL_DAMAGE - a hero blow of 40 outside his opening lands WHOLE, never chipped (took ' + o.heroShut + ')');   /* (claude/burnvillage2) */
   else ok(o.heroShut <= chipMax(40, o.t), id + ': a hero blow of 40 outside his opening must take at most ' + chipMax(40, o.t) + ' (took ' + o.heroShut + ')');
   if (FULL_DAMAGE[o.t]) { ok(o.roomShut >= 30, id + ': a blow from the ROOM lands whole (took ' + o.roomShut + ')'); if (o.openOpen !== undefined) { ok(o.openOpen === true, id + ': forced into his opening, BK.greed.open must say so'); ok(o.heroOpen >= 40, id + ': in his opening a hero blow of 40 lands whole or better (took ' + o.heroOpen + ')'); } continue; }   /* (his chip rows are a chip boss's: a duelist has none - the rest of his read is tools/village-water.mjs) */
   const cr = GREED.chipBy[o.t] ?? GREED.chip;
-  if (!own) ok((o.t === 'pyromancer' || o.heroRun >= 20 * 20 * cr - 1) && o.heroRun <= 20 * 20 * cr + 1, id + ': 20 hero blows of 20 outside his opening must add up to a twentieth (' + 20 * 20 * GREED.chip + '), took ' + o.heroRun);
+  if (wall) ok(o.heroRun === 20 * Math.round(20 * ANGLE.front), id + ': a duelist WALL (B11/B13/B15, claude/keyscore) takes ANGLE.front of every front blow at his height outside his opening - 20 blows of 20 took ' + o.heroRun);
+  if (!own && !wall) ok((o.t === 'pyromancer' || o.heroRun >= 20 * 20 * cr - 1) && o.heroRun <= 20 * 20 * cr + 1, id + ': 20 hero blows of 20 outside his opening must add up to a twentieth (' + 20 * 20 * GREED.chip + '), took ' + o.heroRun);
   if (!own && cr < 0.5) ok(o.roomShut > chipMax(40, o.t), id + ': a blow from the ROOM (no hero blow) must not be chipped (took ' + o.roomShut + ')');
   if (!own && cr < 0.5) ok(o.heroBroken > chipMax(40, o.t) * 3, id + ': broken by his poise bar he is open (a hero blow of 40 took ' + o.heroBroken + ')');
   if (o.openOpen !== undefined) { ok(o.openOpen === true, id + ': forced into his opening, BK.greed.open must say so'); ok(o.heroOpen >= 30, id + ': in his opening a hero blow of 40 lands whole (took ' + o.heroOpen + ')'); }
@@ -113,7 +117,8 @@ for (const [id, o] of Object.entries(R)) {
   ok(o.farMin > GREED.reach + 40, id + ': the stood-off hero must really stand off (closest he got: ' + o.farMin + ' px; reach ' + GREED.reach + ' + half the boss)');
   ok(o.hurtFar === 0, id + ': a hero who stood off is not hurt by it (lost ' + o.hurtFar + ')');
   if (o.greedInOpen !== undefined) ok(!o.greedInOpen, id + ': blows in his opening must never count as greed');
-  if (!own) ok(o.burn4s <= 4 * 2 / 0.3 * cr + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
+  if (wall) ok(o.burn4s > 4 * 2 / 0.3 * GREED.chip + 1, id + ': B15 - a duelist WALL is off the chip: his burn lands (2 s of burn took ' + o.burn4s + ')');
+  if (!own && !wall) ok(o.burn4s <= 4 * 2 / 0.3 * cr + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
 }
 { const m = R.bosunMini; ok(m && m.t === 'bosun', 'the bosun mini was not found');
   if (m && m.t) { ok(m.heroBlow <= Math.ceil(40 * GREED.chip), 'a mini on the chip (CHIP_MINI, claude/bosswave1): a hero blow of 40 on the bosun outside his opening took ' + m.heroBlow);

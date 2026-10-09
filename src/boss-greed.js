@@ -137,6 +137,9 @@ export const NO_OPENING = {
 /* A DUELIST, NOT A PUZZLE: full damage on every hero blow (no chip), his own defence instead - ward faces, dodges, guards (the design standard, B2).
    His OPEN_RULE still names his openings (they pay more in his own code), and greed is still counted outside them (the mash reprisal stays). */
 export const FULL_DAMAGE = {
+  /* (claude/keyscore, B13 + B15) THE DUELIST'S WALL (src/boss-read.js GUARD 'wall'): off the chip - his front takes ANGLE.front (0.4, told GO ROUND), round or over him whole, his openings 1.5-2x */
+  lance: 'B13/B15 (claude/keyscore): plate on his front - 0.4 into it, whole round or over, committed x1.5 (stuck x1.6)', closedhelm: 'B13/B15 (claude/keyscore): his ward faces you - 0.4 into it, whole round or over, his sword on the beat breaks it (x2)',
+  captain: 'B13/B15 (claude/keyscore): on his wave or his feet his front is guarded - 0.4 into it, whole round or over, beached x2', quarter: 'B13/B15 (claude/keyscore): her blade offered to the front on guard - 0.4 into it, whole round or over and in her slash and pistol, her blade in a rope x1.5',
   hawkmistress: 'a human duelist (design standard B11): always hittable, her gauntlet GUARDS BY ANGLE (a blow from the front at her height while she is on guard is turned; from behind or above it lands, and in her tells and strikes every blow lands); her openings pay x1.6 in her own code (claude/ksar)',
   huntmaster: 'a duelist (design standard B11, claude/rootway): always hittable, he GUARDS BY ANGLE between his moves (a blow from his front at his height is turned: GO ROUND, or from above); his openings pay x1.5 (x2 behind the broken mask) in his own code (src/huntmaster.js)',
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",

@@ -95,7 +95,7 @@ import * as MCK from './redraw/minecart_skins.js'; import * as MCB from './redra
 import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
-import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
+import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
 import { installTactics, braceHit } from './foe-tactics.js'; import { installReact } from './foe-react.js'; import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
@@ -373,16 +373,16 @@ Object.assign(DMG, {
 Object.assign(EHP, {
   tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
   prince: 2000,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights) */
-  closedhelm: 2150,  /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
+  closedhelm: 2800,  /* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */ /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
   lampreeve: 560,    /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75) */
-  quarter: 920,     /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
+  quarter: 1150,     /* (claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */ /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
-  captain: 860,     /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
+  captain: 1700,     /* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */ /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
   forgemaster: 520,  /* THE FORGEMASTER (crown mini): 480 (83-92%) */
   reefmaw: 830,
   herald: 370,
   drownedking: 500,  /* THE DROWNED KING (keep): 560 (33-42%, warden 0) */
-  lance: 305,        /* THE QUEEN'S LANCE (storm): 380 (25%) */       /* THE TIDE HERALD: 340 (67%) */      /* THE REEFMAW: 500 (75-83%: 22-54 s) */
+  lance: 800,        /* (claude/keyscore, B13: his plate faces you - round him or over him lands at ANGLE.wall; 305 measured 14/18 dry) */ /* THE QUEEN'S LANCE (storm): 380 (25%) */       /* THE TIDE HERALD: 340 (67%) */      /* THE REEFMAW: 500 (75-83%: 22-54 s) */
   bellcrab: 740,   /* THE DIVING BELL: 750 (0/12; a third of him is the soft crab out of the bell, and the bot died there with 20-30% left) */
   kraken: 640,   /* THE KRAKEN: 480 (83% once the bot could see him, 0/12 before) */
 });
@@ -5159,7 +5159,7 @@ const BEASTS = [
   { t: 'watch', name: 'THE DROWNED WATCH', sub: "a constable on his beat", desc: 'Still walking a beat in a city that drowned a hundred years ago. He guards with the haft of the halberd, so a light blow turns on it and only a HEAVY one gets through. He cannot see you under a burning lamp, and out of the light he hears you from twice as far and comes faster. His thrust has the longest reach of any foot soldier: step in or step out, never back. Crowd him and he takes your feet with the butt of the spear.' },
   { t: 'lampreeve', name: 'THE LAMPREEVE', sub: 'he goes the other way now', desc: 'He lit this street for forty years and has been putting it out ever since. He walks to the nearest burning lamp and hoods it. STRIKE THE LAMP UNDER HIS HOOD: it flares in his face and he is blind, and open; otherwise his wet coat takes most of a blow. Jump the low sweep; the black water blinds you; a line beats the hook. Out of the light he lunges, red. At half health he takes YOUR light: relight it at a lamp.' },
   { t: 'tollmaster', name: 'THE TOLLMASTER', sub: 'the magistrate of a drowned city', desc: 'He never stopped collecting. He is carried on a bier, which keeps him out of an easy reach, and the room is his weapon: he puts out a ring of lamps at a time, so the light you breathe and the light you see his tells by are the same light. PARRY the chained ledger and it staggers him outright. The coin weight cannot be blocked, only dodged. Jump the rod. Half down he sets the bier on the stones and the four bearers come off it, and that is the only time he is slow. Last of all he fills the square, and then the last lamp is the only air in the room.' },
-  { t: 'captain', name: 'THE CAPTAIN', sub: 'he has not left her', desc: 'Four things, and he tells you every one: two cuts of the sabre up close, a brace of pistols levelled across her deck, a grapnel that hauls you in unless you have a hand on a line, and a lit keg kicked down her planking. He can call the sea himself - it carries him, nothing will cut him while it does, and it leaves him beached for a breath. Cut him in that breath.' },
+  { t: 'captain', name: 'THE CAPTAIN', sub: 'he has not left her', desc: 'Four things, and he tells you every one: two cuts of the sabre up close, a brace of pistols levelled across her deck, a grapnel that hauls you in unless you have a hand on a line, and a lit keg kicked down her planking. He can call the sea himself and ride it: the wave guards his front, so cut him from behind it or from above, and when it leaves him beached cut him whole.' },
   /* THE HEXED FIELDS */
   { t: 'scarecrow', name: 'SCARECROW', sub: 'the hexed fields', desc: 'It only moves while your back is to it: a twitch, then a lurch nearer. Face it and it stands like straw. Close in, it swings its sickle on a yellow mark.' },
   { t: 'rook', name: 'FIELD ROOK', sub: 'the hexed fields', desc: 'Perched on the fences until you come near. It circles, marks a spot on the ground under you, and dives at it. One blow brings it down, and it makes a fine step.' },
@@ -5184,7 +5184,7 @@ const BEASTS = [
   { t: 'kraken', name: 'THE KRAKEN', sub: 'the end of the road', desc: 'Its arms come up along the road: the grab and the sweep turn on no shield, the slam does. Cut them where they lie. Then the tide keeps laying cargo on the stones: BREAK A CRATE and it goes back into him. A HIGH rake takes whoever stands on one. He is out in the sea, never on the road: break a crate while he is up and it hits him, while he is low it glances off. When he comes up close to look, his arms lie still - cut them. Ring the old bell while he breathes and they fall limp. Last: stand behind a waystone and his spear arm sticks in it.' },
   { t: 'feeler', name: 'FEELER', sub: 'an arm in the flats', desc: 'The mud stirs, and then there is an arm in it. It rears back over its root and lashes along the ground: the shield turns it, and a turned lash lies out on the stone to be cut. Hidden, it cannot be struck.' },
   { t: 'masthead', name: 'THE MASTHEAD', sub: 'the wind is his floor', desc: 'The biggest sail goblin. His gaff swing the shield turns. He fills his sail and rams you down the deck: block him, let him hit the rail, or turn the wind on him at the winch, and he fouls in his canvas. He drops out of the rigging and lets the boom go at your knees: nothing turns either.' },
-  { t: 'quarter', name: 'THE QUARTERMASTER', sub: 'she holds the flotilla', desc: 'She will not stand and fight on one deck. Wide cutlass swings the shield can hold, an aimed pistol shot it cannot. Hurt her enough and she goes up a deck and cuts the way you came up. On the last deck she cuts the ship herself. When her blade is in a rope she cannot answer for it. When she stops and says EN GARDE, do not cut: nothing turns her answer. Wait, and the point drops.' },
+  { t: 'quarter', name: 'THE QUARTERMASTER', sub: 'she holds the flotilla', desc: 'She will not stand and fight on one deck. Wide cutlass swings the shield can hold, an aimed pistol shot it cannot. Hurt her enough and she goes up a deck and cuts the way you came up. On the last deck she cuts the ship herself. When her blade is in a rope she cannot answer for it. When she says EN GARDE her blade is offered to the front: cut into it and nothing turns her answer. Go round her or come down on her.' },
   { t: 'sailor', name: 'DROWNED SAILOR', sub: 'still working the wreck', desc: 'Slow and heavy, and the boathook reaches a long way low. Jump the sweep or take it on the shield: a parried hook leaves him wide open. He guards while you swing, so hit him after his own swing, not before.' },
   { t: 'netter', name: 'NETTER', sub: 'the drowned fisher', desc: 'Keeps its distance and throws a weighted net that holds you where it lands. Mash anything to tear out. It has only the one net: rush it while it is empty-handed.' },
   { t: 'merrowspear', name: 'THE SPEARFISHER', sub: 'the sea has its own goblins', desc: 'Throws a harpoon on a line. Raise a shield and the head turns; roll through the line before it lands and it parts. Caught, it hauls you toward her, so keep your feet under you or you go where she wants.' },
@@ -5235,7 +5235,7 @@ const BEASTS = [
   { t: 'sweep', name: 'CHIMNEY SWEEP', sub: 'up the flue', desc: 'He lives in the stacks. Walk past and he comes up out of one with a handful of soot, throws it, and stays up a moment to watch it land: that moment is the only time you can reach him. Then he is back down the flue.' },
   { t: 'stormshaman', name: 'STORM SHAMAN', sub: 'the weather is his', desc: 'A goblin with a staff who stands at the far end of a span and throws the storm at whoever is crossing it. His bolts are slow: strike one, or take it on a shield, and it goes back at him.' },
   { t: 'seawitch', name: 'THE SEA WITCH', sub: 'she signed the articles too', desc: "The ship's conjuror, in the crew's own coat, with a storm lantern on her crook. She marks a spot on the deck and the sky finds it a second later: no shield turns lightning, so move. Out of the weather she throws it by hand instead, slow enough to strike out of the air or send back off a shield." },
-  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the bridge', desc: 'A goblin knight in plate the size of a door, and every blade turns on it except when he is committed. He cannot steer a charge: step off his line and the lance goes into a post and he goes with it, and that is when he bleeds. Or MAKE the opening: a DASH ATTACK into his guard takes his feet out and he reels - it draws no blood itself, and he sets his feet against the next one for a while. Not while he is coming at you. His thrust can be parried; the low sweep cannot, so jump it. When a horn goes on a tower, one of HER bowmen is coming down onto an end lookout: he is only an archer, so cut him down. Half dead he throws the lance away, takes a shield, and becomes the opposite problem.' },
+  { t: 'lance', name: "THE QUEEN'S LANCE", sub: 'he holds the bridge', desc: 'A goblin knight in plate the size of a door: it turns a blade from the front, not from behind or above, and committed he is open. He cannot steer a charge: step off his line and the lance goes into a post and he goes with it, and that is when he bleeds. Or MAKE the opening: a DASH ATTACK into his guard takes his feet out and he reels - it draws no blood itself, and he sets his feet against the next one for a while. Not while he is coming at you. His thrust can be parried; the low sweep cannot, so jump it. When a horn goes on a tower, one of HER bowmen is coming down onto an end lookout: he is only an archer, so cut him down. Half dead he throws the lance away, takes a shield, and becomes the opposite problem.' },
   { t: 'snuffer', name: 'THE SNUFFER', sub: 'lamp-killer', desc: 'It is not hunting you. It walks the boughs putting the village out, one lantern at a time, and the Reeve is glad of it. It swings the pole if you crowd it. Light what it snuffs, or cut it and the lamps stay lit.' },
   { t: 'sailer', name: 'SAIL GOBLIN', sub: 'carried, not driven', desc: 'A plank of sail and no way to steer. In the lull she shuffles at you and is nothing. When the gust takes her she is a battering ram: block her and she spills, or step aside and let the stone take her. THE MASTHEAD is the biggest of them.' },
   { t: 'horn', name: 'HORNBLOWER', sub: 'a gale of his own', desc: 'A goblin on a mound with a ram\'s horn. He winds it at you and a horn\'s worth of wind comes with it: on the ground it slides you back, in the air it throws you. Get under it or get to him; one good cut and he stops blowing.' },
@@ -6873,7 +6873,10 @@ let BLOW = null;
 const blowHas = (b, v) => !!b && (b === v || (Array.isArray(b) && b.includes(v)));
 const famHas = (list, blow) => !!list && [].concat(list).some(v => blowHas(blow, v));   /* a family's key, glance or unbalance: one verb or a list of them */
 function hurtAs(blow, e, dmg, fromX, plunge) { BLOW = blow; return hurtEnemy(e, dmg, fromX, plunge); }
-const meleeBlow = plunge => plunge || P.plunge ? 'plunge' : P.heavy ? 'heavy' : P.swingKind === 'sweep' ? 'sweep' : P.swingKind === 'rise' || P.swingKind === 'airUp' ? 'rise' : P.dashCut ? 'dash' : 'light';
+const meleeBlow0 = plunge => plunge || P.plunge ? 'plunge' : P.heavy ? 'heavy' : P.swingKind === 'sweep' ? 'sweep' : P.swingKind === 'rise' || P.swingKind === 'airUp' ? 'rise' : P.dashCut ? 'dash' : 'light';
+/* (claude/keyscore, B14) A CUT OUT OF A PARRY says so: the swing a perfect guard or a parry opened (P.swingRiposte) is [verb, 'riposte'] - the verb first, so every
+   reader that takes one verb (src/elite-kit.js kindOf, the family table) reads it as before, and a boss keyed to the parry (src/boss-read.js KEYS.riposte) can tell */
+const meleeBlow = plunge => { const v = meleeBlow0(plunge); return v !== 'plunge' && P.swingRiposte && P.atk >= 0 ? [v, 'riposte'] : v; };
 const familyOf = e => (e.xpRole || e.mini || e.elite || e.big || e.trainer || e.turncoat || e === boss) ? null : FAMILY[FAMILY_OF[e.t]] || null;   /* (not maxHp: Waymeet's sworn swords and hedge knights carry one, and are the common roster all the same) */
 const foeOpen0 = e => (e.disarmOpenT || 0) > time || e.broken > 0 || e.open > 0 || e.parried > 0 || (e.stagger || 0) >= 0.5 || e.knock > 0 || e.frozen > 0 || (e.launchedT || 0) > time;
 /* OPEN BEFORE THE BLOW, not because of it: the swing pass works out a cut's damage (swingDmg, which staggers on a third cut) before
@@ -7120,31 +7123,33 @@ function bossChip(e, dmg, raw = dmg, hero = false) {
   if (hero && e.xpRole === 'mini') dmg = GB.miniCap(e, dmg, raw, q => { number(q.x, q.y - (q.h || 20) - 18, 'HE GATHERS HIMSELF', '#9aa39a'); SFX.clank(); });   /* (claude/bosswave2) A MINI'S OPENING IS A THIRD OF HIM AT MOST (src/boss-greed.js miniCap) */
   return dmg;
 }
-function wardedDamage(e, dmg, blow) {   /* (blow: the hero's blow that dealt it - none for a burn tick: claude/lanterneater reads a keyed angle only off a real blow) */
+function wardedDamage(e, dmg, blow, tag = blow) {   /* (claude/keyscore) tag: the blow's NAME for every boss hook (a throw, a reflect too); none for a burn tick */   /* (blow: the hero's blow that dealt it - none for a burn tick: claude/lanterneater reads a keyed angle only off a real blow) */
   if (MYH && e !== boss && !e.mini) dmg = MYH.ward(e, dmg);   /* (claude/djinn2) THE BANDIT MYSTICS' LAMP: a foe inside its warding light takes half */
   if (e.geoTomb && GEO) dmg = GEO.tombHit(e, dmg);   /* ENTOMBED: a blow on the tomb cracks it and lands half as hard again (geomancer.js) */
-  if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg);
-  if (e.t === 'sexton') { const d0 = dmg; dmg = sextonTake(e, dmg); if (dmg > d0) sparks(e.x, e.y - 30, -(e.face || 1), 6); }   /* THE SEXTON caught in his own bell pit: every blow lands double */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
-  if (e.t === 'abbot') dmg = Math.max(1, Math.round(dmg * abbotTake(e))); if (e.t === 'lanterneater' && LEH) { const k = LEH.take(e, blow); dmg = Math.max(1, Math.round(dmg * k)); if (k < 1) LEH.warded(e); else dmg = Math.max(1, LEH.cap(e, dmg)); }   /* THE LANTERN-EATER: its key (B14) - the keyed angle whole on what is in reach, the wrong one at a twentieth (it clanks and names it); open, every angle (src/lantern-eater.js leTakeAt) */ if (e.t === 'wickerqueen') dmg = Math.max(1, Math.round(dmg * WQN.wqTake(e))); if (e.t === 'puppeteer' && PUPH) { const k = PUPH.take(e); dmg = Math.max(1, Math.round(dmg * k)); if (PM.pupOpen(e)) dmg = PUPH.cap(e, dmg); else PUPH.warded(e); }   /* (PUPPETEER2: staggered on the gallery a blow lands whole, up to the visit's share of him - PUPH.cap) */   /* THE PUPPETEER: his hands on the bars take a blow; re-stringing, or fallen with his masterpiece, he is open (puppeteer.js pupTake) */   /* THE WICKER QUEEN: the wicker takes a blow and stands; frozen on the embers it burns open (wicker-queen.js) */   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
-  if (e.t === 'gorgecrab' && GCH) dmg = dmg * GCH.take(e);
-  if (e.t === 'hawkmistress' && HMH) dmg = HMH.take(e, dmg);   /* THE HAWK-MISTRESS: her gauntlet turns the front (0), her ward everything; open x1.6 (src/hawk-mistress.js); FULL_DAMAGE (no chip) */
-  if (e.t === 'roc' && ROCE && ROCE.on()) dmg = ROCE.take(e, dmg, P.x);   /* THE ROC (claude/roc2, B11/B13): always hittable - whole from the air the level gives (a thermal, the cloak, a height), GUARDS LOW from the floor; x1.5 open; nothing in her ward (src/roc-eyrie.js); she is on FULL_DAMAGE (no chip) */
-  if (e.t === 'matriarch' && MTH) dmg = MTH.take(e, dmg);   /* THE RAPTOR MATRIARCH: her talons turn a blow from the front (0), her ward everything; an opening x1.6 (src/raptor-matriarch.js); she is on FULL_DAMAGE (no chip) */   /* THE GREAT RED CRAB: x1.6 on his back (the global chip, src/boss-greed.js, makes every other blow a scratch) */
-  if (e.t === 'djinn' && DJH) dmg = DJH.take(e, dmg);   /* THE DJINN: x2.5 in his water openings (mud, doused, bailed), his slammed hand whole; anything else passes through (claude/welltown5) */
-  if (e.t === 'cisternqueen' && CQH) dmg = CQH.take(e, dmg);   /* THE CISTERN QUEEN: x2.2 in her openings (soaked, on her back, rearing); her raised claws turn a frontal blow outside them; from behind the global chip */
-  if (e.t === 'gangleader' && GLH) dmg = GLH.take(e, dmg);   /* THE GANG LEADER: x1.6 while he burns, a third of him a burning at most; otherwise whole (a mini) - unless he slips it */
-  if (e.t === 'winchmaster') { const k = winchTake(e); dmg = Math.max(1, Math.round(dmg * k));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge - and HALF while his drum runs (round four), told over him */
+  if (e.t === 'hedgewarden') dmg = hedgeTake(e, dmg, tag);
+  if (e.t === 'sexton') { const d0 = dmg; dmg = sextonTake(e, dmg, tag); if (dmg > d0) sparks(e.x, e.y - 30, -(e.face || 1), 6); }   /* THE SEXTON caught in his own bell pit: every blow lands double */   /* THE HEDGE WARDEN: three growths and their roots, a burning stump twice (hedge-warden.js) */
+  if (e.t === 'abbot') dmg = Math.max(1, Math.round(dmg * abbotTake(e, tag))); if (e.t === 'lanterneater' && LEH) { const k = LEH.take(e, blow, tag); dmg = Math.max(1, Math.round(dmg * k)); if (k < 1) LEH.warded(e); else dmg = Math.max(1, LEH.cap(e, dmg)); }   /* THE LANTERN-EATER: its key (B14) - the keyed angle whole on what is in reach, the wrong one at a twentieth (it clanks and names it); open, every angle (src/lantern-eater.js leTakeAt) */ if (e.t === 'wickerqueen') dmg = Math.max(1, Math.round(dmg * WQN.wqTake(e, tag))); if (e.t === 'puppeteer' && PUPH) { const k = PUPH.take(e, tag); dmg = Math.max(1, Math.round(dmg * k)); if (PM.pupOpen(e)) dmg = PUPH.cap(e, dmg); else PUPH.warded(e); }   /* (PUPPETEER2: staggered on the gallery a blow lands whole, up to the visit's share of him - PUPH.cap) */   /* THE PUPPETEER: his hands on the bars take a blow; re-stringing, or fallen with his masterpiece, he is open (puppeteer.js pupTake) */   /* THE WICKER QUEEN: the wicker takes a blow and stands; frozen on the embers it burns open (wicker-queen.js) */   /* THE FALSE ABBOT: a fifth while the rite wards him, double while the bell has him down (false-abbot.js) */
+  if (e.t === 'gorgecrab' && GCH) dmg = dmg * GCH.take(e, tag);
+  if (e.t === 'hawkmistress' && HMH) dmg = HMH.take(e, dmg, tag);   /* THE HAWK-MISTRESS: her gauntlet turns the front (0), her ward everything; open x1.6 (src/hawk-mistress.js); FULL_DAMAGE (no chip) */
+  if (e.t === 'roc' && ROCE && ROCE.on()) dmg = ROCE.take(e, dmg, P.x, tag);   /* THE ROC (claude/roc2, B11/B13): always hittable - whole from the air the level gives (a thermal, the cloak, a height), GUARDS LOW from the floor; x1.5 open; nothing in her ward (src/roc-eyrie.js); she is on FULL_DAMAGE (no chip) */
+  if (e.t === 'matriarch' && MTH) dmg = MTH.take(e, dmg, tag);   /* THE RAPTOR MATRIARCH: her talons turn a blow from the front (0), her ward everything; an opening x1.6 (src/raptor-matriarch.js); she is on FULL_DAMAGE (no chip) */   /* THE GREAT RED CRAB: x1.6 on his back (the global chip, src/boss-greed.js, makes every other blow a scratch) */
+  if (e.t === 'djinn' && DJH) dmg = DJH.take(e, dmg, tag);   /* THE DJINN: x2.5 in his water openings (mud, doused, bailed), his slammed hand whole; anything else passes through (claude/welltown5) */
+  if (e.t === 'cisternqueen' && CQH) dmg = CQH.take(e, dmg, tag);   /* THE CISTERN QUEEN: x2.2 in her openings (soaked, on her back, rearing); her raised claws turn a frontal blow outside them; from behind the global chip */
+  if (e.t === 'gangleader' && GLH) dmg = GLH.take(e, dmg, tag);   /* THE GANG LEADER: x1.6 while he burns, a third of him a burning at most; otherwise whole (a mini) - unless he slips it */
+  if (e.t === 'winchmaster') { const k = winchTake(e, tag); dmg = Math.max(1, Math.round(dmg * k));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge - and HALF while his drum runs (round four), told over him */
     if (k < 1 && !(e.chipSaid > 0)) { e.chipSaid = WINCH.chipSay; number(e.x, e.y - (e.h || 36) - 14, 'THE IRON TAKES HALF: JAM HIS DRUM', '#9aa39a'); } }
-  if (e.t === 'whelp') dmg = WHF.whelpTake(e, dmg);   /* THE WHELP IS STONE: nothing but a stomp while it is stuck on the spikes (last, so no finisher gets round it) */
-  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE IS STONE: nothing but a stomp while he lies stunned on the spikes (gate-gargoyle.js) */
+  if (e.t === 'whelp') dmg = WHF.whelpTake(e, dmg, tag);   /* THE WHELP IS STONE: nothing but a stomp while it is stuck on the spikes (last, so no finisher gets round it) */
+  if (e.t === 'gargoyle') dmg = gargTake(e, dmg, tag);   /* THE GATE GARGOYLE IS STONE: nothing but a stomp while he lies stunned on the spikes (gate-gargoyle.js) */
   return dmg;
 }
 /* THE TURNED BLOW (claude/sweep1, src/boss-read.js, design-standard B10): a blow that meets a boss or a mini and takes nothing clanks, flashes and says a word */
 function turnWord(x, y, txt, col) { if (!SET.numbers || (L && L.trial)) return; for (let i = nums.length - 1; i >= 0; i--) if (nums[i].txt === txt && Math.abs(nums[i].x - x) < 60) nums.splice(i, 1); nums.push({ x, y, txt, col, life: 0.75, vy: -38 }); }   /* (renewed in place, never stacked: one word over him, as fresh as the last blow) */
 const BR = makeBossRead({ time: () => time, clank: () => SFX.clank(), sparks: (x, y, d, n) => sparks(x, y, d, n), ring: (x, y, r, c, l) => ringAt(x, y, r, c, l), word: turnWord, hitstop: t => hitstop(t) });
-function hurtEnemy(e, dmg, fromX, plunge) { const blow = BLOW; BLOW = null;   /* taken at once, so nothing this blow sets off inherits it */
+function hurtEnemy(e, dmg, fromX, plunge) { const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null;   /* taken at once, so nothing this blow sets off inherits it */
+  /* (claude/keyscore, B14) THE TAG IS EVERY BLOW'S NAME, the BLOW is a HERO'S HAND: a thrown prop ('throw') and a seed sent back ('reflect') reach every boss hook by their tag,
+     but they are the ROOM's blow (src/boss-read.js ROOM_TAGS) - never chipped, never greed, never turned - exactly as they were before they had a name */
   if (!(e.broken > 0)) e.mighted = false; else if (thr('m', 1) && !e.mighted && dmg > 0 && e.alive) { e.mighted = true; dmg = Math.round(dmg * 1.25); number(e.x, e.y - (e.h || 16) - 14, 'FINISHER', '#ffd36b'); }   /* MIGHT 20: the first blow into a broken foe lands a quarter harder */   /* taken at once, so nothing this blow sets off inherits it */
-  const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, alive0 = e.alive, mode0 = e.mode, br0 = e.broken || 0, r = hurtEnemy0(e, dmg, fromX, plunge, blow);
+  const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, alive0 = e.alive, mode0 = e.mode, br0 = e.broken || 0, r = hurtEnemy0(e, dmg, fromX, plunge, blow, tag);
   if (alive0 && blow && dmg > 0 && (e === boss || e.xpRole === 'mini')) BR.auto(e, fromX, { hp: hp0, mode: mode0, broken: br0 });   /* B10: never a silent no-damage hit (src/boss-read.js) */
   /* WHOSE BLOW IT WAS. During a hero's pass P is that hero, so the damage and the kill go on HIS tally; outside a
      pass there is only ever one hero to mean. A burn or a bleed is booked to whoever lit it, which is right, and a
@@ -7152,7 +7157,7 @@ function hurtEnemy(e, dmg, fromX, plunge) { const blow = BLOW; BLOW = null;   /*
   if (alive0 && hp0 > e.hp && !e.harmless && dmg > 0) { gainHeat(P.jetHit ? HEAT.jet : HEAT.hit); if (isPyro()) e.heatOwner = P; }   /* a miss or an invulnerable shell warms nothing */
   if(e===boss&&hp0>e.hp){e.damageLedger=e.damageLedger||{plunge:0,other:0};e.damageLedger[plunge||blowHas(blow,'plunge')?'plunge':'other']+=Math.min(hp0, hp0-e.hp);}
   if (P.score) { P.score.dmg += Math.max(0, hp0 - e.hp); if (alive0 && !e.alive) P.score.kills++; }
-  if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgE', t: e.t, e, dmg, fromX, plunge: !!plunge, hp0, hp: e.hp, alive: e.alive, poise0: po0, poise: e.poise || 0, broken: e.broken || 0, atk: P.atk, heavy: !!P.heavy, combo: P.combo, swingKind: P.swingKind || null, blow, glanced: e.glancedAt === time, keyed: e.keyHit === time, stop, shake, kick, time, stack: new Error().stack });   /* (the audits' ear: see damagePlayer) */
+  if (window.BK && window.BK.log) window.BK.log.push({ k: 'dmgE', t: e.t, e, dmg, fromX, plunge: !!plunge, hp0, hp: e.hp, alive: e.alive, poise0: po0, poise: e.poise || 0, broken: e.broken || 0, atk: P.atk, heavy: !!P.heavy, combo: P.combo, swingKind: P.swingKind || null, blow, tag, glanced: e.glancedAt === time, keyed: e.keyHit === time, stop, shake, kick, time, stack: new Error().stack });   /* (the audits' ear: see damagePlayer) */
   return r; } finally { emitAt(was); } }
 /* GREED (claude/combat3, src/boss-greed.js): a hero's blow that met the chip says so, and the GREED.n-th outside an opening starts his reprisal */
 function greedHit(e, fromX, blow) {
@@ -7164,7 +7169,7 @@ function greedHit(e, fromX, blow) {
       PROG.chipTold = (PROG.chipTold || 0) + 1; if (PROG.chipTold <= 2) { hintT = 4.5; hintMsg = 'A CLANK OR A SCRATCH MEANS THE WRONG BLOW. GO ROUND, OR HIT HIM IN HIS OPENING.'; } } }
   if (e.angleHit !== time && !(P.atk >= 0 && CM.swingTotal(hero(), P) > GB.GREED.tell) && GB.noteGreed(e, time, isB, isM)) SFX.tell(true);   /* (a blow round his guard is the right blow: no greed, claude/sweep1) */
 }
-function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
+function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');   /* (claude/keyscore, B14 + THE PYRO BUG) pl: a PLUNGE BY ITS TAG - the pyromancer's FIREDROP is hurtAs('plunge', ..., false): the boolean is the hero's own body, the tag is the blow. Every boss hook below gets the tag (tools/blow-tags.mjs) */
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
@@ -7182,14 +7187,18 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   if(e.t==='bellcrab') dmg*=e.phase===3?BELL.out.soft:e.open>0?BELL.openMul:BELL.shutMul;   /* shut, until a stone on his crown opens him; out of the bell, soft (src/bellcrab.js BELL) */
   if (e.t === 'grandmother' && (e.mode === 'vanish' || (e.alpha !== undefined && e.alpha < 0.35))) return;   /* nothing there to hit */
   if (e === boss && !bossActive && e.mode === 'sleep' && L.arena && e.alive) { bossStart(); SFX.clank(); return; } // a sleeping boss is not a free kill: the blow wakes the fight
+  /* B14, THE KEY (claude/keyscore, src/boss-read.js): ONE ask before the per-boss ladder. A boss or mini in a KEYED phase (KEY_ROWS) marks the right blow (e.keyHit, which his
+     OPEN_RULE and his own code may read - the Lantern-Eater's way) and a wrong one, outside an opening, is TURNED and NAMES the key (FROM ABOVE, THROW IT...).
+     What it lands is still his own code's and the chip's: the per-act key lanes write the numbers. No boss has a row yet, so nothing changes today. */
+  { const kt = tag && (e === boss || e.xpRole === 'mini') ? BR.takes(e, tag, fromX) : null; if (kt) { if (kt.ok) e.keyHit = time; else if (!GB.openOf(e)) BR.turnedKey(e, fromX, kt.key); } }
   if (e.t === 'dummy') { if (dmg > 0) gainHeat(P.jetHit ? HEAT.jet : HEAT.hit); e.flash = 0.12; SFX.stone(); burst(e.x, e.y - 12, 6, COLS.dummy, 50, 0.4); if (dmg > 0) number(e.x, e.y - e.h - 6, Math.round(dmg), '#fff6e0'); return; } // straw takes it and stands
   if (L && L.trial && e.t === 'archer') { SFX.clank(); return; } // the trial's archer is there to shoot at you
-  if (PM.isPuppet(e)) { if (PUPH) PUPH.hurtPuppet(e, dmg, fromX); return; }
+  if (PM.isPuppet(e)) { if (PUPH) PUPH.hurtPuppet(e, dmg, fromX, tag); return; }
   if (e.mk && e.t === 'mummer' && blow) { const k = TMK.maskBlow(e.mk, e.x, e.face || 1, fromX, blowHas(blow, 'heavy') || !!(P.heavy && P.atk >= 0), !!plunge || blowHas(blow, 'plunge'));   /* (claude/theatre4) THE MASK ANSWERS A HERO'S BLOW (never a sandbag or the room): a tragedy guards its front (a held heavy or a plunge breaks it), a comedy cartwheels away from its first blow */
     if (k === 'guard') { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 6, e.y - 14, Math.sign(fromX - e.x) || 1, 6); e.mk.sayW = 'GUARDS'; e.mk.sayT = 0.9; hitstop(0.03); if (THEATRE) THEATRE.guards = (THEATRE.guards || 0) + 1; return; }
     if (k === 'cartwheel') { if (e.mk.sayW !== 'CARTWHEEL' || e.mk.sayT <= 0) { e.mk.sayW = 'CARTWHEEL'; e.mk.sayT = 0.9; SFX.throwWhoosh(); if (THEATRE) THEATRE.carts = (THEATRE.carts || 0) + 1; } return; }
     if (k === 'break') { SFX.crack && SFX.crack(); e.mk.sayW = 'GUARD BROKEN'; e.mk.sayT = 0.9; burst(e.x, e.y - 18, 8, ['#bfd8ff', '#ffffff'], 70, 0.4); } }   /* HIS PUPPETS TAKE A BLOW like anything else (PUPPETEER3): a flash, a number, their health; the strings are the shortcut (updateProps, PUPH.strike) */
-  if (e.t === 'captain' && (e.ride || e.mode === 'ride')) { SFX.splash(); sparks(e.x, e.y - 16, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 44, 'THE SEA HAS HIM', '#9aa39a'); return; }
+  /* (claude/keyscore, B13) THE SEA NO LONGER HAS HIM: riding his wave he is a duelist with a wall in front (THE DUELIST'S WALL below) - cut him from behind the wave or from above */
   /* THE SWARM IS THE HORNET QUEEN'S ARMOUR. She was the shortest real fight in the game (18-73 s against a 90-150 s
      target) because her drones were scenery: two of them hung over the hall, darted at you and changed nothing. Now
      while TWO or more are up they close over her and she takes a third of any blow - so the first boss of the game
@@ -7207,38 +7216,34 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head
   else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach
   if (e.t === 'temperer' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 6); }   /* THE TEMPERER at his fire: both hands on the blade, his back to the room, and you are the reason he is standing there */
-  if (e.t === 'lampreeve') dmg = reeveHurt(e, dmg, fromX);   /* blind in the flare of the lamp you struck he takes the blow; out of it his wet coat takes most of it (claude/weakboss) */
-  if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, plunge); if (kd === false) return; dmg = kd; }
+  if (e.t === 'lampreeve') dmg = reeveHurt(e, dmg, fromX, tag);   /* blind in the flare of the lamp you struck he takes the blow; out of it his wet coat takes most of it (claude/weakboss) */
+  if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, pl, tag); if (kd === false) return; dmg = kd; }
   if (e.t === 'huntmaster' && HNH) { dmg = HNH.take(e, dmg, fromX, plunge); if (!(dmg > 0)) return; }   /* THE GOBLIN HUNTMASTER (src/huntmaster.js): a duelist - whole, but his FRONT guarded while he stands (GO ROUND, or from above), nothing in his ward; x1.5 open, x2 behind the broken mask */
-  if (e.t === 'colossus' && COH) { dmg = COH.take(e, dmg, fromX, plunge || blow === 'plunge'); /* (claude/glasssea2, B14 keys audit: the plunge bonus goes by the blow's TAG - the pyro's firedrop is a plunge too) */ if (!(dmg > 0)) return; }   /* THE GLASS COLOSSUS (src/glass-colossus.js takeBlow): its legs whole from a purse, its cracks x2 when open, everything else turned and told (its own ward: boss-greed OWN_WARD) */
+  if (e.t === 'colossus' && COH) { dmg = COH.take(e, dmg, fromX, pl, tag); /* (claude/glasssea2, B14 keys audit: the plunge bonus goes by the blow's TAG - the pyro's firedrop is a plunge too; claude/keyscore: pl) */ if (!(dmg > 0)) return; }   /* THE GLASS COLOSSUS (src/glass-colossus.js takeBlow): its legs whole from a purse, its cracks x2 when open, everything else turned and told (its own ward: boss-greed OWN_WARD) */
   if (e.t === 'greatdrill' && GDH) { dmg = GDH.take(e, dmg); if (!(dmg > 0)) return; }   /* THE GREAT DRILL's cab: whole, x2 jammed, turned while warded */
   if (e.mcCart && MCH) dmg = MCH.knock(e, dmg);   /* (claude/minecart) a goblin on a cart: a blow that lands throws him off it */
-  if (e.t === 'strawking') { const sd = strawHurt(e, dmg, fromX, plunge); if (sd === false) return; dmg = sd; }
-  if (e.t === 'archmage') { const md = archHurt(e, dmg, fromX, blow); if (md === false) return; dmg = md; }   /* THE MAGE'S FOLLY: nothing through the runes, twice when he is open, a third through the familiar's hide */
-  if (e.t === 'homunculus') dmg = homHurt(e, dmg);   /* and the Homunculus takes its blows while it pants */   /* THE HEXED FIELDS: straw takes little that finds no opening */
+  if (e.t === 'strawking') { const sd = strawHurt(e, dmg, fromX, pl, tag); if (sd === false) return; dmg = sd; }
+  if (e.t === 'archmage') { const md = archHurt(e, dmg, fromX, blow, tag); if (md === false) return; dmg = md; }   /* THE MAGE'S FOLLY: nothing through the runes, twice when he is open, a third through the familiar's hide */
+  if (e.t === 'homunculus') dmg = homHurt(e, dmg, tag);   /* and the Homunculus takes its blows while it pants */   /* THE HEXED FIELDS: straw takes little that finds no opening */
   if (e.t === 'ploughman') dmg = e.open > 0 ? Math.round(dmg * 1.4) : Math.max(1, Math.round(dmg * 0.4));   /* (claude/weakboss: 1.8 and 0.6 were, and he stuck on his own) */   /* the plough takes the blows in front of him; heaving at his stuck share, nothing does */   /* an arm only lying on the road, the body only where the fight has opened it */
   if (e.t === 'masthead' && e.mode === 'sail') { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 50, 'THE SAIL TAKES IT', '#9aa39a'); return; }   /* under sail the canvas is in the way */
   if (e.t === 'masthead' && e.mode === 'fouled') dmg = Math.round(dmg * 2);   /* wrapped in his own canvas */
   if (e.t === 'masthead' && (e.mode === 'tangled' || e.mode === 'reel')) dmg = Math.round(dmg * 1.5);
   if ((e.t === 'burieddead'||e.t === 'harbormaster') && e.open > 0) dmg=Math.round(dmg*1.3);
   if (e.t === 'gravewarden' && graveOpen(e)) dmg = Math.round(dmg * GRAVE_W.kneelMul);
-  if (e.t === 'duneworm' && e.st) { const k = DWM.wormTake(e.st, fromX); if (!k) { if (DWM.wormPlated(e.st, fromX)) dwPlated(e, fromX); return; } if (k > 1) { dmg = Math.round(dmg * k); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 6); } }   /* THE DUNE WORM: the blade goes through sand; his crown plates turn a blow from the front (GO ROUND, claude/duneworm2); from behind or on his reared belly it lands whole; tangled in the awning he takes double (THE OPENING) */
+  if (e.t === 'duneworm' && e.st) { const k = DWM.wormTake(e.st, fromX, tag); if (!k) { if (DWM.wormPlated(e.st, fromX)) dwPlated(e, fromX); return; } if (k > 1) { dmg = Math.round(dmg * k); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 6); } }   /* THE DUNE WORM: the blade goes through sand; his crown plates turn a blow from the front (GO ROUND, claude/duneworm2); from behind or on his reared belly it lands whole; tangled in the awning he takes double (THE OPENING) */
   if (e.t === 'sandworm' && e.st && !DF2.sandwormTouchable(e.st)) return;   /* THE SANDWORM under its ripple: the blade goes through sand (claude/desertfoes) */
   if (e.t === 'sandgob' && e.st && !DF.sandGobTouchable(e.st)) return;   /* THE SAND GOBLIN under its mound: the blade goes through sand */
   if (e.t === 'ambusher' && e.st && !DF.ambusherTouchable(e.st)) return;   /* THE SAND-CLOAKED AMBUSHER under his cloak: the same */
-  if (UNBF.UNB_FOES.has(e.t)) { const ud = unbHurt(e, dmg, fromX); if (ud === false) return; dmg = ud; }   /* THE UNBURIED FIELD: the fallen only fall under a banner; the Death Knight and the Barrow Rider open */   /* ON HIS KNEES IN THE GRAVE: double */
+  if (UNBF.UNB_FOES.has(e.t)) { const ud = unbHurt(e, dmg, fromX, tag); if (ud === false) return; dmg = ud; }   /* THE UNBURIED FIELD: the fallen only fall under a banner; the Death Knight and the Barrow Rider open */   /* ON HIS KNEES IN THE GRAVE: double */
   if (e.t === 'pyromancer') { if (e.ward > 0) { BR.turned(e, fromX, 'WARDED'); return; }   /* (claude/burnvillage2) HIS STEAM WARD (B3): told, short, and it says so (B10) */
-    if (pyroReads(e, blow, plunge)) return; dmg = Math.round(dmg * VWA.pyroMul(e)); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; STUNNED by water x2, overheated x1.5 (src/village-water.js) - and outside them a hero's blow lands WHOLE (FULL_DAMAGE: never invulnerable, B11/B13) */   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
+    if (pyroReads(e, blow, plunge, tag)) return; dmg = Math.round(dmg * VWA.pyroMul(e)); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; STUNNED by water x2, overheated x1.5 (src/village-water.js) - and outside them a hero's blow lands WHOLE (FULL_DAMAGE: never invulnerable, B11/B13) */   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
   if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
-  /* THE CLOSED HELM. Full plate, and it is not a damage reduction: it is a NO. Only the window his own
-     blow opens - a parry, or a dodge taken through it - lets anything at all reach him. */
-  if (e.t === 'closedhelm' && !(e.open > 0)) { SFX.clank(); SFX.aegis(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 22, e.y - 30, Math.sign(fromX - e.x) || 1, 6); e.wardHit = 0.35; hitstop(0.03);
-    if (!(e.wardSaid > 0)) { e.wardSaid = 0.9; number(e.x, e.y - 72, 'WARDED', '#fff3b0'); ringAt(e.x, e.y - 30, 30, '#fff3b0', 0.3);
-      PROG.palTold = (PROG.palTold || 0) + 1; if (PROG.palTold <= 3) { hintT = 4.5; hintMsg = 'NOTHING GETS THROUGH HIS WARD. GUARD OR ROLL AS HIS SWORD FLASHES AND THE WARD BREAKS.'; } }
-    return; }   /* THE WARD: not a reduction, a NO. Only his own sword, answered on the beat, takes it down */
+  /* THE CLOSED HELM (claude/keyscore, B13): his ward was a NO - nothing reached him until his own sword was met on the beat. It FACES you now (the duelist's
+     wall, THE DUELIST'S WALL below): round him or over him it lands, and his sword met on the beat still breaks it (open, x2) */
   if (e.hill && e.mode === 'pinned') { dmg = Math.round(dmg * 2); }   /* under the stone, every blow lands twice */
-  if (e.t === 'prince') { const pd = princeHurt(e, dmg); if (pd === null) return; dmg = pd; }   /* THE TOMB'S MULTIPLIERS: buried, reeling, bareheaded, in the light - or shrouded, or under the floor */
+  if (e.t === 'prince') { const pd = princeHurt(e, dmg, tag); if (pd === null) return; dmg = pd; }   /* THE TOMB'S MULTIPLIERS: buried, reeling, bareheaded, in the light - or shrouded, or under the floor */
   if (e.t === 'closedhelm' && e.open > 0) { dmg = Math.round(dmg * 2); }   /* the ward is down: the blow finds the man */
   if (e.t === 'lancer') { if (e.mounted && e.mode !== 'blown' && e.mode !== 'rear' && e.mode !== 'reel') dmg = Math.max(1, Math.round(dmg * 0.6)); else if (e.open > 0) dmg = Math.round(dmg * 1.5); }   /* THE BARDING takes some of every cut; in the road he takes all of it */
   if (e.t === 'drownedking' && e.open > 0) dmg = Math.round(dmg * 1.35);   /* in the stone or in the floor: every blow lands */
@@ -7246,7 +7251,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
   /* THE HOUND MASTER's war-hound takes the cut for him while it stands square under him: a third gets through. Reared,
      sprawled, shied or bitten it cannot, and he comes half out of the saddle into the blow. */
   if (e.t === 'master' && e.mode !== 'sleep') { if (e.open > 0) dmg = Math.round(dmg * 1.6); else { dmg = Math.max(1, Math.round(dmg * 0.33)); SFX.clank(); if (!(e.guardSaid > 0)) { e.guardSaid = 1.2; number(e.x, e.y - e.h - 6, 'THE HOUND TAKES IT', '#9aa39a'); } } }
-  if (e.t === 'quarter' && e.guard) { SFX.clank(); sparks(e.x, e.y - 12, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 30, 'HER GUARD HOLDS', '#9aa39a'); return; }
+  /* (claude/keyscore, B13) HER GUARD HOLDS only to the front now (THE DUELIST'S WALL below): a gun brought to bear still breaks it whole (updateBalls) */
   if (e.t === 'quarter' && (e.mode === 'cut' || e.mode === 'reel')) dmg = Math.round(dmg * 1.5); // her blade is in a rope: she cannot answer
   if (e.t === 'reefmaw') { // only the open jaw and the caught head take a proper cut
     if (e.mode === 'sleep' || e.mode === 'lurk' || e.mode === 'sink' || e.mode === 'drain') { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 34, 'ITS HIDE TURNS IT', '#9aa39a'); return; }
@@ -7297,7 +7302,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
       PROG.gqTold = (PROG.gqTold || 0) + 1;
       if (PROG.gqTold <= 3 || (e.phase === 2 && !e.plateHinted)) { if (e.phase === 2) e.plateHinted = true; hintT = 4.5; hintMsg = e.phase === 2 ? 'CRACK HER PLATE: DROP A CHANDELIER ON HER, OR STRIKE HER BACK WHILE SHE POINTS.' : 'BREAK HER PILLAR: THREE BLOWS DROP IT ON HER. OR CUT A CHANDELIER DOWN.'; } }
     return; } } // her court's plate turns every blade: a pin gets through (a pillar or a chandelier on her), and in round two her plate off
-  if (e.t === 'roc' && ROCE && ROCE.on() && (plunge || P.plunge) && !rocOpen(e)) ROCE.plungeHit(e);   /* THE SKY ROAD: a plunge that lands on her back in the air knocks her down (src/roc-eyrie.js) */
+  if (e.t === 'roc' && ROCE && ROCE.on() && (pl || P.plunge) && !rocOpen(e)) ROCE.plungeHit(e, tag);   /* THE SKY ROAD: a plunge that lands on her back in the air knocks her down (src/roc-eyrie.js) */
   if (e.t === 'roc' && !(ROCE && ROCE.on())) { if (rocOpen(e)) dmg = Math.round(dmg * 1.5); else { dmg = Math.max(1, Math.round(dmg * 0.1)); if (Math.random() < 0.5) { sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 3); } } } // in the air she is quick and hard to hurt; down, she is not (a tenth, not a half: the quick blades were killing her off her rakes and her rises, and the openings stopped being the fight) - the belfry's Roc only: on her EYRIE she takes her blows in ROCE.take (claude/roc2, wardedDamage)
   if (e.t === 'kite' && e.mode !== 'fall') { e.mode = 'fall'; e.vy = -40; e.vx = (Math.sign(e.x - fromX) || 1) * 60; number(e.x, e.y - 40, 'THE STRING', '#ffd36b'); SFX.crack(); }
   if (e.t === 'kiterider' && SKY) SKY.riderHurt(e, fromX);   /* THE SKY ROAD: a blow on a kite-rider in the air cuts his line */
@@ -7316,13 +7321,22 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
        second and a bit after it, where every cut lands */
     e.mode = 'reel'; e.modeT = OFF_BALANCE; e.stagger = OFF_BALANCE; e.vx = -e.face * 70; e.braceT = time + 7;
     number(e.x, e.y - e.h - 20, 'OFF BALANCE', '#ffd36b'); breakBeat(e); lessonHint('dashatk'); return; }
-  if (e.t === 'lance') { if (lanceOpen(e)) { if (e.mode === 'planted') dmg = Math.round(dmg * 1.6); } else { SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 12, e.y - 18, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - e.h - 8, 'HIS PLATE TURNS IT', '#9aa39a'); return; } }
+  if (e.t === 'lance' && lanceOpen(e)) dmg = Math.round(dmg * (e.mode === 'planted' ? 1.6 : 1.5));   /* (claude/keyscore, B15: an opening pays 1.5-2x - committed x1.5, the lance stuck x1.6) */
+  /* B11 + B13, THE DUELIST'S WALL (claude/keyscore; src/boss-read.js GUARD 'wall'): the Lance, the Waymeet Paladin, the Salvage Captain and the Quartermaster
+     were a flat NO (his plate, his ward, THE SEA HAS HIM, HER GUARD HOLDS) or a twentieth until they chose to open - a waiting room. Now each is ALWAYS
+     HITTABLE and GUARDS BY ANGLE: a hero's blow from the front at his height is TURNED to ANGLE.front (0.4 - B15, never invulnerable: the clank, the flash, GO ROUND); from
+     behind or from above it beats the wall and lands at ANGLE.wall, whole (the angB line below: no greed); in his openings 1.5-2x. FULL_DAMAGE: no chip. The Quartermaster still answers a cut
+     into her EN GARDE (she reads the flash). The room's blows (a cannon ball, a throw) are not a hero's hand and land as before. */
+  if (blow && GUARD_WALL(e) && wallUp(e) && e.mode !== 'sleep' && !GB.openOf(e) && !BR.beats(e, fromX, pl || (!P.ground && P.y < e.y - e.h * 0.5), false)) {   /* (above him: a plunge, or a hero in the air with his feet over the duelist's waist - OVER the guard, not a hop into it) */
+    BR.turned(e, fromX, undefined, { stop: false }); e.wallTurned = (e.wallTurned || 0) + 1; dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front));   /* B15 (Daniel 10-08): never totally invulnerable - the wall takes most of it (ANGLE.front), told by the clank and GO ROUND; greed still counts below */ if (e.t === 'closedhelm') { e.wardHit = 0.35; SFX.aegis(); } if (e.t === 'quarter') e.flash = Math.max(e.flash || 0, 0.06);
+    if (!(e.wallSaid > time)) { e.wallSaid = time + 8; PROG.wallTold = (PROG.wallTold || 0) + 1; if (PROG.wallTold <= 3) { hintT = 4.5; hintMsg = WALL_HINT[e.t] || WALL_HINT.lance; } }
+    }
   if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); } } // his iron turns half of every cut; stunned or scalded he takes it doubled
   if (e.t === 'frog' && !frogOpen(e) && e.mode !== 'sleep') { dmg = Math.max(1, Math.round(dmg * 0.5)); if (!(e.hideSaid > 0)) { e.hideSaid = 2.5; number(e.x, e.y - e.h - 16, 'THE HIDE TURNS IT', '#9aa39a');
       PROG.frogHideTold = (PROG.frogHideTold || 0) + 1; if (PROG.frogHideTold <= 2) { hintT = 4.5; hintMsg = 'HIS WET HIDE TURNS HALF A BLOW. MAKE HIM FLOP, CHOKE OR BITE HIS TONGUE, THEN CUT.'; } } }
   if (e.t === 'frog' && (e.mode === 'croak' || e.mode === 'dazed')) { dmg *= 2; if (e.mode === 'croak') number(e.x, e.y - e.h - 16, 'THROAT', '#8fd160'); }
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
-  if (e.t === 'frog' && plunge && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
+  if (e.t === 'frog' && pl && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
   /* THE FAMILY TABLE (above POISE_HEAVY): the right tool bites, the wrong one glances. After every boss's own gate, and never on one */
   let glance = false, wheel = false, mixed = false; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
   { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
@@ -7355,9 +7369,10 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow) { const raw0 = dmg;
      moment he stands still with nothing to answer it. The blows still land on his CONCENTRATION: two of them break the
      spell (undead-mage.js), and that is the window the player makes in this fight. */
   if (e.t === 'greathound') { const gt = GHD.houndTake(e, dmg, fromX, !!plunge || !P.ground, !!blow); dmg = gt.dmg; if (gt.turned) BR.turned(e, fromX, 'GO ROUND', { stop: false }); else if (blow && !GHD.houndOpen(e)) e.angleHit = time; }   /* THE GREAT HOUND (claude/hound, B11): his jaws turn part of a blow into his face (GO ROUND); behind or above him it lands whole; open x1.5 (src/great-hound.js) */
-  const angB = !!blow && (e === boss || e.xpRole === 'mini') && BR.beats(e, fromX, !!plunge || !P.ground, blowHas(blow, 'low')) && !GB.openOf(e);   /* B11 (claude/sweep1): a duelist guards ONE way - from the other way the blow is not chipped */
-  if (angB) e.angleHit = time;
-  dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg, blow) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg, blow), raw0, !!blow);   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
+  const angB = !!blow && (e === boss || e.xpRole === 'mini') && (BR.beats(e, fromX, pl || !P.ground, blowHas(blow, 'sweep') || blowHas(blow, 'low')) || (GUARD_WALL(e) && !wallUp(e))) && !GB.openOf(e);   /* B11 (claude/sweep1): a duelist guards ONE way - from the other way the blow is not chipped */
+  if (angB && !GUARD_WALL(e)) e.angleHit = time;   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands WHOLE, so it is still greed outside his openings: a masher who walks through him to his back meets the reprisal */
+  dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg, blow, tag) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg, blow, tag), raw0, !!blow);
+  if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   greedHit(e, fromX, blow);
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
@@ -11773,7 +11788,7 @@ function reeveFlare(e, pr) {
   number(pr.x, pr.y - 56, 'THE LAMP FLARES', '#ffd36b'); number(e.x, e.y - 46, 'BLIND: CUT HIM', '#8fd160');
 }
 /* HIS COAT: out of the flare it takes three quarters of any blow; blind, 1.4 times gets through */
-function reeveHurt(e, dmg, fromX) {
+function reeveHurt(e, dmg, fromX, tag) {   /* (tag: the blow's name, B14 - claude/keyscore) */
   if (e.open > 0) { sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); return Math.round(dmg * 1.4); }
   if ((PROG.reeveCoat || 0) < 2 && Math.random() < 0.25) { PROG.reeveCoat = (PROG.reeveCoat || 0) + 1; hintT = 4; hintMsg = 'HIS WET COAT TAKES MOST OF IT. STRIKE THE LAMP HE HOODS, AND THE FLARE BLINDS HIM.'; }
   return Math.max(1, Math.round(dmg * 0.25));
@@ -12578,7 +12593,7 @@ function updateStrawKing(e, dt) {
   if (e.y > fl + 40) { e.y = fl; e.vy = 0; }
 }
 /* what gets through his straw */
-function strawHurt(e, dmg, fromX, plunge) {
+function strawHurt(e, dmg, fromX, plunge, tag) {   /* (claude/keyscore) plunge: the blow is a plunge BY ITS TAG (hurtEnemy0's pl) - so the pyromancer's FIREDROP knocks his lantern in too */
   if (e.mode === 'rebuild' || e.mode === 'lightTell' || e.mode === 'poleLeap') { SFX.clank(); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 4); return false; }
   if (e.stage === 3 && e.lantern && !(e.open > 0) && (P.heavySwing || P.dashAtk > 0 || plunge)) {
     e.mode = 'ablaze'; e.modeT = 5; e.open = 5; e.lantern = false; e.relight = 9; FLD.shots = []; SFX.pyreBoom(); shakeCam(8); zoomKick(1.1, 0.3); flame(e.x, e.y - 40, 20, 14, 90, 4); fieldsHint('ablaze', 'HIS OWN LANTERN IS IN HIS STRAW. HE BURNS: CUT HIM.'); return Math.round(dmg * 2.2); }
@@ -13634,7 +13649,7 @@ function archRide(e) { const m = movers.find(q => q.arm && q.first); if (!m) ret
 /* THE COUNTERWEIGHT BITES only while his arm comes down past it, low and on its side of the wheel: then it glows, and then a blow on it throws him */
 function archWeightLive(w) { const R = MG && MG.A, m = movers.find(q => q.arm && q.first); if (!R || !R.ride || !m || !w || w.down > 0) return false; const a = ((time * 2 * Math.PI / m.period + m.phase) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); return a > Math.PI * 0.5 && a < Math.PI * 1.1; }
 /* what a blow to him is worth: nothing while the runes stand; twice when he is open; a third of it through the familiar's hide */
-function archHurt(e, dmg, fromX, blow) {
+function archHurt(e, dmg, fromX, blow, tag) {
   const R = MG && MG.A;
   if (e.mode === 'change' || e.mode === 'swallow' || e.mode === 'blink' || e.mode === 'wake') { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); return false; }
   if (R && archRunesUp(R)) { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 46, 'THE RUNES HOLD', MVIO[2]); return false; }
@@ -13658,7 +13673,7 @@ function archHurt(e, dmg, fromX, blow) {
 /* the health each part of the fight ends at (ARCH.gates): the duel at two thirds, the flood, the orrery and the room turned over 12% each
    (66-54-42-30), and THE MIRRORS from 30% to the end (claude/folly3) */
 function archGate(e) { const R = MG && MG.A, sub = R ? R.sub : 0; return e.stage === 1 ? e.maxHp * ARCH.gates[0] : e.stage === 2 ? e.maxHp * (ARCH.gates[sub] ?? 0) : 0; }
-function homHurt(e, dmg) { if (e.hidden) return 0; return e.open > 0 ? Math.round(dmg * HOM.bareTake) : Math.max(1, Math.round(dmg * 0.3)); }   /* (claude/bosswave1: the jar 0.35 -> 0.3, as bare fell 1.6 -> 1.15, so the jar still turns most of a blow) bare, it takes the blow; in its jar most of it glances; in the smoke there is nothing there to hit (claude/weakboss: 2 and 0.55 were) */
+function homHurt(e, dmg, tag) { if (e.hidden) return 0; return e.open > 0 ? Math.round(dmg * HOM.bareTake) : Math.max(1, Math.round(dmg * 0.3)); }   /* (claude/bosswave1: the jar 0.35 -> 0.3, as bare fell 1.6 -> 1.15, so the jar still turns most of a blow) bare, it takes the blow; in its jar most of it glances; in the smoke there is nothing there to hit (claude/weakboss: 2 and 0.55 were) */
 const archBarName = b => b.fam ? (b.open > 0 ? 'THE FAMILIAR  THE EYE' : 'THE FAMILIAR  UNBOUND') : b.mode === 'ward' ? 'THE ARCHMAGE  WARDED' : b.open > 0 ? 'THE ARCHMAGE  OPEN' : b.stage === 2 ? (MG && MG.A && MG.A.sub === 1 ? 'THE ARCHMAGE  THE FLOOD' : MG && MG.A && MG.A.sub === 2 ? 'THE ARCHMAGE  THE ORRERY' : 'THE ARCHMAGE  TURNED OVER') : 'THE ARCHMAGE';
 /* the room's timekeeping that is not his: the circle he draws, and the orrery's counterweight */
 function updateArchmageRoom(dt, hb) {
@@ -14055,7 +14070,7 @@ function krakenArmsTick(e, dt) {
   }
 }
 // what a blow on it does: an arm takes it only lying on the road; the body only where the fight has opened it
-function krakenHurt(e, dmg, fromX, plunge) {
+function krakenHurt(e, dmg, fromX, plunge, tag) {
   if (e.t === 'feeler') return e.mode === 'hide' || e.mode === 'sink' ? false : e.mode === 'stuck' ? Math.round(dmg * 1.5) : dmg;
   if (e.t === 'krakenarm') { const a = e.arm, K = e.parent;
     if (!a || !a.low || a.st === 'gone' || !K || !K.alive) { SFX.clank(); return false; }
@@ -14982,7 +14997,7 @@ function updateQuarter(e, dt) {
       e.x = e.lx0 + (lx - e.lx0) * along;
       if (e.modeT <= 0) { e.deck = e.deckTo; e.x = lx; e.y = qDeck(e).y; e.lx0 = undefined; e.mode = 'cut'; e.modeT = 0.9; SFX.thud(); } break; }
     case 'cut': { e.vx = 0; if (e.modeT <= 0) { cutLine(e, e.deck - 1); e.mode = 'stride'; e.modeT = 0.8;
-        e.guard = true; e.guardT = 16; number(e.x, e.y - 40, 'BEHIND HER GUARD: BRING A GUN TO BEAR', '#ff9a5c'); SFX.clank();
+        e.guard = true; e.guardT = 16; number(e.x, e.y - 40, 'HER GUARD IS UP: GO ROUND HER, OR BRING A GUN TO BEAR', '#ff9a5c'); SFX.clank();
         if (p3) { L.deckFall = { x: A.fallFrom !== undefined ? A.fallFrom : A.x1 / TS - 2, row: Math.floor(A.floor / TS), t: 0 }; number(e.x, e.y - 44, 'THE DECK IS GOING', '#ff6b6b'); } } break; }
     case 'reel': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.6; } break;
     case 'dead': return;
@@ -16625,7 +16640,7 @@ function princeBuried(e) {
   tombHint('Buried', 'BURIED AGAIN: WHILE THE ROOF PINS HIM, EVERY BLOW LANDS TWICE.');
 }
 // THE ROOM'S MULTIPLIERS on a blow, or null for a blow that finds nothing (he is under the floor)
-function princeHurt(e, dmg) {
+function princeHurt(e, dmg, tag) {
   if (e.mode === 'sunk') { SFX.stone(); dust(e.crack || e.x, L.arena.floor, 4); if (!(e.saidT > 0)) { e.saidT = 1; number(e.crack || e.x, L.arena.floor - 14, 'UNDER THE DIRT', '#9aa39a'); } return null; }
   let k = 1;
   if (e.mode === 'buried') k *= 2; else if (e.mode === 'reel') k *= 1.5;
@@ -19830,7 +19845,7 @@ function updateDeathKnightBoss(e, dt) { const A = L.arena; if (!A) return;
   if (e.mode === 'novaTell' && e.modeT > UNBF.UNB.dk.tell.nova - dt) zoomKick(1.05, 0.3);   /* the room draws in with the nova */
   UNBF.updateDeathKnight(e, dt, unbC(e, { x0: A.x0, x1: A.x1, floor: A.floor })); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); }
 /* a blow on one of the four: the fallen only FALL under a banner (and are finished lying down); the two big ones open */
-function unbHurt(e, dmg, fromX) {
+function unbHurt(e, dmg, fromX, tag) {
   if (e.t === 'bloodknight') { const d = UNBF.bkHurt(e, dmg, fromX); if (d === 0) { number(e.x, e.y - e.h * UNBF.BK_SCALE - 14, 'THE WARD KEEPS IT', '#ff6b6b'); SFX.clank(); sparks(e.x + e.wardFace * 18, e.y - 30, -e.wardFace, 6); return false; } return d; }   /* THE BLOOD WARD: a blow on its face is kept; from behind it finds the man */
   if (e.t === 'corpse') { if (e.scythed) return Math.max(dmg, e.hp + 1); const r = UNBF.corpseHurt(e, dmg, unbCover(e), e.burn > 0);
     if (r === false) { number(e.x, e.y - 24, 'IT FALLS - FINISH IT', '#c8b6ff'); SFX.clank(); burst(e.x, e.y - 8, 6, COLS.corpse, 50, 0.4); } return r; }
@@ -20894,7 +20909,7 @@ function pourBucket(pr, tg) {
    is not touched here. */
 function hitThrownBucket(pr, e) {
   if (e.t === 'pyromancer') e[PYRO_HIT_FIELD] = time;   /* (set BEFORE the hit: hurtEnemy's pyroReads knows a bucket by it, and a bucket is never a blow he reads) */
-  hurtEnemy(e, throwDamage(pr.thrKind || 'bucket', e.t), pr.x, false);
+  hurtAs('throw', e, throwDamage(pr.thrKind || 'bucket', e.t), pr.x, false);   /* (claude/keyscore, B14) tagged THROW: the room's blow (not chipped, not greed - as before), named for a boss keyed to it */
   if (isFireFoe(e.t)) { e.doused = 2; number(e.x, e.y - e.h - 10, 'DOUSED', '#9ad0ff'); }
   if (e.t === 'emberwisp' && e.alive) { number(e.x, e.y - e.h - 18, 'PUT OUT', '#9ad0ff'); hurtEnemy(e, e.hp + 1, pr.x, false); }   /* (claude/burnvillage2) A WISP IS A FLAME: water puts it out */
   if (e.burn > 0 && e.t !== 'pyromancer') { e.burn = 0; SFX.hiss(); }   /* and a foe alight is put out */
@@ -21204,7 +21219,7 @@ function pyroWard(e) { e.ward = VWA.WARD.t; SFX.hiss(); if (SFX.aegis) SFX.aegis
 /* HE READS YOU (hurtEnemy0): a blow the hero struck - light, a sweep, a dash, a shot - counts toward a run; two in a row and his
    guard comes up, and the THIRD is turned. A HEAVY (or a plunge) goes through it and breaks the read. What is not a hero's blow
    (a spell, a burn, the bucket) is not read at all, and open he reads nothing. Returns true when the blow was turned. */
-function pyroReads(e, blow, plunge) {
+function pyroReads(e, blow, plunge, tag) {
   if (!blow || e[PYRO_HIT_FIELD] === time || e.open > 0) return false;
   if (plunge || blowHas(blow, 'heavy') || blowHas(blow, 'plunge') || (P.heavy && P.atk >= 0)) { e.readN = 0; return false; }
   e.readN = time - (e.readAt ?? -99) > PYRO_DUEL.read ? 1 : (e.readN || 0) + 1; e.readAt = time;
@@ -21720,7 +21735,15 @@ function drawBowCall(c, cx, cy) { const k = Math.min(1, 1 - c.t / LANCE_SUPPORT.
   g.fillStyle = ART.OUT; g.fillRect(x - w / 2 - 1, y - 1, w + 2, 4); g.fillStyle = k > 0.7 ? '#ff6b6b' : '#ff9a5c'; g.globalAlpha = pulse; g.fillRect(x - w / 2, y, Math.max(1, Math.round(w * k)), 2); g.globalAlpha = 1;
   g.fillStyle = '#ffd36b'; if (x !== x0) { const s = x0 < x ? -1 : 1; for (let q = 0; q < 3; q++) g.fillRect(x + s * (w / 2 + 2 + q), y - 2 + q, 1, 5 - 2 * q); }   /* an arrow, point outward, toward the lookout */
   else { g.fillRect(x, y + 5, 1, 3); g.fillRect(x - 1, y + 7, 3, 1); } }
-const lanceOpen = e => e.mode === 'planted' || e.mode === 'thrust' || e.mode === 'sweep' || e.mode === 'guardSwing' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
+const GUARD_WALL = e => BR_GUARD[e.t] === 'wall';
+/* IS HIS WALL UP? Always, for the Lance, the Paladin and the Captain. THE QUARTERMASTER offers her blade on guard - striding the deck, EN GARDE, or behind her deck guard -
+   and drops it to commit: in her slash and her pistol (tell and blow) a blow from any side lands at ANGLE.wall (claude/keyscore: the time given back to attacks) */
+const wallUp = e => e.t !== 'quarter' || !!e.guard || e.mode === 'stride' || e.mode === 'stanceTell';   /* (claude/keyscore) the duelists whose front is a wall (src/boss-read.js GUARD) */
+const WALL_HINT = { lance: 'HIS PLATE FACES YOU. GET BEHIND HIM OR COME DOWN ON HIM - AND CUT HIM WHENEVER HE COMMITS.', closedhelm: 'HIS WARD FACES YOU. GO ROUND HIM OR COME DOWN ON HIM - OR MEET HIS SWORD AT THE FLASH AND THE WARD BREAKS.',
+  captain: 'HIS FRONT IS GUARDED - ON THE WAVE TOO. CUT HIM FROM BEHIND OR FROM ABOVE; BEACHED, HE IS OPEN.', quarter: 'HER BLADE IS OFFERED TO THE FRONT. CUT INTO IT AND SHE ANSWERS - GO ROUND HER, OR COME DOWN ON HER.' };
+/* (claude/keyscore, B13 + B15) HIS OPENINGS are what he is LEFT in, not the blow itself: stuck, reeling, stumbling, over his front foot, his hands empty. In his thrust,
+   sweep and guard swing he is a wall like any other moment (0.4 into it, whole round or over) - the knight mash bot took him 2/6 when every active frame paid x1.5 */
+const lanceOpen = e => e.mode === 'planted' || e.mode === 'reel' || e.mode === 'stumble' || e.mode === 'recover' || e.mode === 'javThrow';
 /* WHEN A RUN AT HIM IS A RUN AT A WALL: coming at you, or with the shield already coming round. Everything else he
    is standing on his feet for, and a dash attack takes them out from under him (hurtEnemy0) */
 const LANCE_BRACED = new Set(['sleep', 'wake', 'couch', 'charge', 'rushTell', 'rush', 'bashTell', 'bash', 'vaultTell', 'vault', 'whirlTell', 'whirl']);
@@ -24657,7 +24680,7 @@ function updateEnemies(dt) {
     if (s.fire && !s.reflected && Math.random() < dt * 40) parts.push({ x: s.x, y: s.y, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.25, max: 0.25, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 });
     if (s.bolt && Math.random() < dt * 50) parts.push({ x: s.x, y: s.y, vx: (Math.random() - 0.5) * 30, vy: (Math.random() - 0.5) * 30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#c9a0ff' : '#f0e4ff', size: 1, grav: 0 });
     if (s.life <= 0 || isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { s.dead = true; if (s.jav && s.owner && s.owner.t === 'javelin' && s.life > 0) javFoothold(s, dt); burst(s.x, s.y, 3, [s.arrow ? '#e8dcc0' : s.spore ? '#c9a0ff' : s.acid ? '#b8d878' : '#ff9a5c'], 30, 0.2, 0, 1); if (s.lantern) { const ty = Math.floor(s.y / TS); const fy = isSolid(Math.floor(s.x / TS), ty) ? ty * TS : Math.floor((s.y + 8) / TS) * TS; fires.push({ x: s.x, y: fy, life: 2.4, delay: 0 }); SFX.crack(); if (inGas(s.x, s.y) && !P.gasCd) { P.gasCd = 2; gasBlast(s.x, s.y); } } if (s.acid) { for (let k = 0; k < 4; k++) parts.push({ x: s.x + (Math.random() - 0.5) * 10, y: s.y, vx: (Math.random() - 0.5) * 40, vy: -20, life: 0.4, max: 0.4, col: '#b8d878', size: 1, grav: 200 }); } if (s.fire && !s.reflected && s.life > 0) { const fy = Math.floor(s.y / TS) * TS; fires.push({ x: s.x, y: fy, life: s.pyroEmber ? 1.2 : 2.6, delay: 0, dmg: s.pyroEmber ? DMG.squareFire : 0 }); SFX.crack(); }   /* (his embers come in threes: each scorches where it lands for a breath, not the others' two and a half of full fire) */ if (s.slag) { const fy = Math.floor(s.y / TS) * TS; fires.push({ x: s.x, y: fy, life: 1.6, delay: 0 }); } if (s.spore && s.life > 0) clouds2.push({ x: s.x, y: s.y - 6, r: s.pod ? 20 : 11, life: s.pod ? 2.6 : 1.6, mild: true }); continue; }
-    if (s.reflected) for (const e of enemies) if (e.alive && e.t !== 'queen' && e.t !== 'frog' && overlap({ l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 }, box(e))) { s.dead = true; if (e.t === 'windcaller') knockCaller(e); hurtEnemy(e, 10, s.x - s.vx, false); number(e.x, e.y - e.h - 14, 'RETURNED', '#8fd160'); break; }
+    if (s.reflected) for (const e of enemies) if (e.alive && e.t !== 'queen' && e.t !== 'frog' && overlap({ l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 }, box(e))) { s.dead = true; if (e.t === 'windcaller') knockCaller(e); hurtAs('reflect', e, 10, s.x - s.vx, false);   /* (claude/keyscore, B14) tagged REFLECT: his own seed, sent back */ number(e.x, e.y - e.h - 14, 'RETURNED', '#8fd160'); break; }
   }
   for (const s of seeds) if (s.menhir && !s.dead) { // his stone: it tumbles, and where it lands it breaks
     if (isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { s.dead = true; burst(s.x, s.y, 16, ['#9aa39a', '#c9d1dc', '#5a6470'], 90, 0.7); SFX.stone(); shakeCam(4);
@@ -24945,7 +24968,7 @@ HNH = makeHuntmaster({ get L() { return L; }, get players() { return players || 
   solidAt: (tx, ty) => isSolid(tx, ty), hurt: (e, d, x) => hurtEnemy(e, d, x, false), turned: (e, fromX, w) => BR.turned(e, fromX, w), rw: { cutHoist: id => RWH.cutHoist(id), bossHoists: () => RWH.bossHoists() } });
 UWH = makeUnderwellHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n), attackBox: () => attackBox(), overlap: (a, b) => overlap(a, b),
-  asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), cellGet: (x, y) => tileAt(x, y),
+  asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d, tag) => (tag ? hurtAs(tag, e, d, e.x, false) : hurtEnemy(e, d, e.x, false)), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), cellGet: (x, y) => tileAt(x, y),
   cellOpen: (x, y) => { if (x >= 0 && y >= 0 && x < LW && y < LH) { cellSet(x, y, T.AIR); destroyed.add(y * LW + x); } },   /* a nest burnt away, a vault opened: for good */
   cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },   /* a rope burnt to ash: until a respawn hangs it again */
   spawn: o => { const n0 = enemies.length; spawnEnt(o); return enemies[n0] || null; },   /* a brood scorpion spilled out of a nest under a blade */
@@ -28223,6 +28246,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const e of enemies) {
     if (e.behind) continue;   /* (claude/fairfix3) round the back of the chair-o-plane: drawn small behind its mast (src/redraw/fair_newrides.js) */
     if (e.alive && (e.poise > 0 || e.broken > 0)) drawPoise(e, cx, cy);   /* the stagger bar over its head */
+    if (e.alive && (e === boss || e.xpRole === 'mini') && BR.keyOf(e)) BR.drawKey(g, e, cx, cy, time);   /* B14 (claude/keyscore): HIS KEY, SHOWN - the per-key glyph over a keyed boss or mini (src/boss-read.js KEY_ROWS; none yet: the per-act key lanes add them) */
     if (e.alive && (e.rxGuard > 0 || e.rxVary || e.rxFlash > 0 || e.rxStamp > 0) && e.x > cx - 40 && e.x < cx + VW + 40) RX.draw(g, e, cx, cy, time);   /* told: a raised guard, a held or quick swing, a feint's stamp (src/foe-react.js) */
     if (e.t === 'kraken') { drawKraken(e, cx, cy); continue; }   /* most of it is off the screen and in the sea: it draws itself, dead or alive */
     if (e.t === 'krakenarm') continue;
@@ -30760,6 +30784,7 @@ window.BK = { uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toa
   /* (claude/combat3) ONE PREDICATE FOR EVERY BOSS AND MINI NOW (src/boss-greed.js OPEN_RULE): the chip, the lab's bot and the mash probe ask the same one */
   tempo: TEMPO,   /* (claude/combat3) the common foes' tempo knob, for tools/foe-tempo.mjs */
   greed: { chipped: e => GB.chipped(e, e === boss), open: e => GB.openOf(e), count: e => GB.greedCount(e, time), limit: e => (e === boss ? GB.GREED.n : GB.GREED.nMini), reach: GB.GREED.reach, G: GB.GREED, rules: GB },
+  bossWall: e => !!e && GUARD_WALL(e) && wallUp(e),   /* (claude/keyscore) a duelist whose front is a wall (src/boss-read.js GUARD): the boss bot goes round or over */
   bossOpen(e) { const g0 = GB.openOf(e); if (g0 !== null) return g0; return e && (e.t === 'lampreeve' || e.t === 'homunculus') ? e.open > 0 : e && e.t === 'puppeteer' ? PM.pupOpen(e) : e && e.t === 'lanterneater' ? LEM.leOpen(e) : e && e.t === 'cisternqueen' ? CQG.qOpen(e) : e && e.t === 'gangleader' ? GLM.glOpen(e) : e && e.t === 'gqueen' ? gqOpen(e) : e && e.t === 'reefmaw' ? ['stuck', 'reel', 'beached'].includes(e.mode) : e && e.t === 'duneworm' ? !!(e.st && DWM.wormOpen(e.st)) : e && e.t === 'gargoyle' ? gargOpen(e) : e && e.t === 'lance' ? lanceOpen(e) : e && e.t === 'pyromancer' ? e.open > 0 : e && e.t === 'abbot' ? abbotOpen(e) : e && e.t === 'wickerqueen' ? WQN.wqOpen(e) : e && e.t === 'winchmaster' ? winchOpen(e) : e && e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') : null; }, heavyCost: () => heavyCost(), windingUp: e => windingUp(e), stepCost: () => (CM.SWING_COST[hero()] ?? sword().cost),
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
