@@ -156,7 +156,9 @@ export function makeBuriedCityHands(ctx) {
     if (kind === 'vault') { const v = K.vault.find(q => q.id === id); return v ? (v.open ? 'open' : ctx.questGot() >= v.gears ? 'due' : 'shut') : ''; }
     return ''; };
   H.handsState = n => (K ? handsState(n) : '');
+  const kingLever = P => (ctx.kingLit && ctx.kingLit() && P) ? levers().filter(q => q.arena).sort((a, b) => Math.abs(px(a.x) - P.x) - Math.abs(px(b.x) - P.x))[0] || null : null;   /* M5: the nearer throne-room lever while a pull stalls him */
   const stall = (P, dt) => { if (!P || P.dead) return; const ts = TS();
+    { const a = kingLever(P); if (a) { K.glint = { key: 'kinglever', x: px(a.x), y: (a.row + 1) * ts, show: true }; K.stallKey = null; return; } }   /* the guide's arrow points at it (B10: with ~1.4 s of slack nobody hunts for the lever) */
     const r = resolve('buriedcity', Math.floor(P.x / ts), Math.floor((P.y - 1) / ts), { TS: ts, props: [], movers: ctx.movers(), hero: P, state: handsState }, STUCK_HANDS);
     if (!r) { K.glint = null; K.stallKey = null; return; } const t = r.targets[0]; K.glint = { key: r.key, x: t.x, y: t.y, show: r.glint !== 'stall' };
     const C = K.stalls[r.key] = K.stalls[r.key] || newStall(); if (r.key !== K.stallKey) { K.stallKey = r.key; C.t = 0; C.best = 1e9; }
@@ -194,10 +196,13 @@ export function makeBuriedCityHands(ctx) {
       if (r.trap) { const shut = r.gate === 'shut'; g.fillStyle = shut ? '#5a4024' : '#140c06'; g.fillRect(R(l), R(bot), w, shut ? ts : 3); if (shut) { g.fillStyle = '#8a6a3a'; for (let x = 0; x < w; x += 8) g.fillRect(R(l + x), R(bot), 1, ts); } }
       if (r.great && K.wheel.done && r.level > 0) { g.globalAlpha = 0.6; g.fillStyle = SAND.stream; const gx = (r.x0 + r.x1) / 2 * ts - cx; g.fillRect(R(gx - 30), R(bot - 3), 60, 6); g.globalAlpha = 1; }
     }
-    /* THE LEVERS and their GAUGES (A3: the room's level, OPEN / SHUT) */
+    /* THE LEVERS and their GAUGES (A3: the room's level, OPEN / SHUT). M5: the throne room's levers GLOW gold while his glass is low (a pull stalls him), the nearer one ringed */
+    const kl = kingLever(ctx.hero());
     for (const lv of levers()) { const x = px(lv.x) - cx, y = (lv.row + 1) * ts - cy; if (x < -40 || x > vw + 40) continue;
       if (lv.chain) { g.strokeStyle = '#6a6a72'; g.beginPath(); g.moveTo(R(x), R(y - (lv.chain + 1) * ts)); g.lineTo(R(x), R(y - 10)); g.stroke(); for (let k = 0; k < lv.chain; k++) { g.fillStyle = '#9a9aa6'; g.fillRect(R(x - 1), R(y - 14 - k * ts), 3, 3); } }
       const r = lv.r, open = r ? r.gate === 'open' : false, fx = K.fx.find(f => f.kind === 'pull' && Math.abs(f.x - px(lv.x)) < 2);
+      if (lv.arena && kl) { const near = kl.arena === lv.arena; g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 10); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(R(x), R(y - 8), near ? 18 : 13, 0, 7); g.fill(); g.globalAlpha = 1;
+        if (near) { g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(R(x), R(y - 8), 21 + 3 * Math.sin(time * 8), 0, 7); g.stroke(); g.lineWidth = 1; ctx.text('PULL', R(x), R(y - 34), '#ffd36b', 'center', 5); } }
       g.fillStyle = '#4a3a2a'; g.fillRect(R(x - 4), R(y - 4), 8, 4); g.strokeStyle = lv.arena ? '#ffd36b' : '#c8a060'; g.lineWidth = 2; g.beginPath(); g.moveTo(R(x), R(y - 3)); const a = (open || (fx && fx.t > 0.25)) ? 0.9 : -0.9; g.lineTo(R(x + Math.sin(a) * 12), R(y - 3 - Math.cos(a) * 12)); g.stroke(); g.lineWidth = 1;
       g.fillStyle = '#e8c070'; g.fillRect(R(x + Math.sin(a) * 12 - 2), R(y - 3 - Math.cos(a) * 12 - 2), 4, 4);
       if (r) { const k = r.full ? r.level / r.full : 0; g.fillStyle = '#1b1626'; g.fillRect(R(x + 8), R(y - 20), 5, 18); g.fillStyle = SAND.top; g.fillRect(R(x + 9), R(y - 3 - 16 * k), 3, R(16 * k)); ctx.text(open ? 'OPEN' : 'SHUT', R(x + 10), R(y - 26), open ? '#8fd160' : '#ffb060', 'center', 4); }

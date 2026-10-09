@@ -28,7 +28,7 @@ export function makeHourglassKingHands(ctx) {
   const live = () => { const e = ctx.boss; return e && e.alive && e.t === 'hourglassking' ? e : null; };
   /* phase two's BANKS: sand cells at both walls (T.SOFT), written once, taken away again on a new attempt */
   let banked = [];
-  function bank() { const G = S.G, T = ctx.T; for (const [a, b] of [[0, 5], [34, 39]]) for (let c = a; c <= b; c++) for (let k = 1; k <= 3; k++) { const x = G.sx + c, y = G.R - k; if (ctx.cellGet(x, y) === T.AIR) { ctx.cellSet(x, y, T.SOFT); banked.push([x, y]); } }
+  function bank() { const G = S.G, T = ctx.T; for (const [a, b] of HKM.HK_STAGE.banks) for (let c = a; c <= b; c++) for (let k = 1; k <= 3; k++) { const x = G.sx + c, y = G.R - k; if (ctx.cellGet(x, y) === T.AIR) { ctx.cellSet(x, y, T.SOFT); banked.push([x, y]); } }
     for (const pp of ctx.players) if (!pp.dead && pp.y > G.bankTop && G.banks.some(([l, r]) => pp.x > l - 4 && pp.x < r + 4)) { pp.y = G.bankTop; if (pp.vy > 0) pp.vy = 0; } }
   function unbank() { if (!banked.length) return; const T = ctx.T; for (const [x, y] of banked) ctx.cellSet(x, y, T.AIR); banked = []; }
 
@@ -66,6 +66,9 @@ export function makeHourglassKingHands(ctx) {
     e.phase = S.ph;
   };
   /* THE RULE ON HIM: a hero's pull on a throne-room lever (src/buried-city-hands.js) */
+  /* M5 (fix pass 10-09, B10/A3): THE LEVERS ARE LIT while his glass is low and a pull will stall him (not warded, not turning, not already stalled) -
+     src/buried-city-hands.js glows both throne-room levers gold, rings the nearer one and points the guide's arrow at it */
+  H.leversLit = () => { const e = live(); return !!(S && e && ctx.bossActive && A() && HKM.glassLow(S) && S.ward <= 0 && !/^(stall|turn|sleep|wake|die)$/.test(e.mode)); };
   H.onLever = x => { const e = live(); if (!S || !e || !ctx.bossActive) return 'busy'; return HKM.leverPulled(e, S, world(e), x); };
   /* A BLOW ON HIM (B15): open x HK.openMul (one opening HK.openCap of him at most); turning, whole; warded, the floor with a clank; else his BRASS takes the share */
   H.take = (e, dmg) => { if (!S) return dmg; const t = ctx.time();

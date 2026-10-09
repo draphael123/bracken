@@ -24956,7 +24956,7 @@ HMH = makeHawkMistressHands({ get L() { return L; }, get players() { return play
 /* THE BURIED CITY's HANDS (claude/buriedcity, src/buried-city-hands.js) and THE HOURGLASS KING's (src/hourglass-king-hands.js): main.js owns the world; the modules own the sand, the levers, the gate, the vault, and him */
 BCH = makeBuriedCityHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
-  questGot: () => straysGot.size, bossLever: x => (HGK ? HGK.onLever(x) : 'busy'),
+  questGot: () => straysGot.size, bossLever: x => (HGK ? HGK.onLever(x) : 'busy'), kingLit: () => !!(HGK && HGK.leversLit()),
   spawnEnt: (e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) { enemies[i].xpKey = k + '.' + (i - n0); if (e.squad) enemies[i].squad = e.squad; } return enemies[n0] || null; } });
 HGK = makeHourglassKingHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),

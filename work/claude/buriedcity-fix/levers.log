@@ -1,0 +1,32 @@
+ok  knight  phase 1 lever W walk  {"ph":1,"phNow":1,"banks":false,"side":"W","mode":"walk","frames":139,"at":[527.83,30,true],"dx":3.1,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 1 lever E walk  {"ph":1,"phNow":1,"banks":false,"side":"E","mode":"walk","frames":139,"at":[560.17,30,true],"dx":3.1,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 2 lever W walk  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"walk","frames":141,"at":[527.83,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 2 lever W wall  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 2 lever E walk  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"walk","frames":141,"at":[560.17,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 2 lever E wall  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 3 lever W walk  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"walk","frames":143,"at":[527.85,30,true],"dx":3.4,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 3 lever W wall  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 3 lever E walk  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"walk","frames":143,"at":[560.15,30,true],"dx":3.4,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 3 lever E wall  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 1 lever W walk  {"ph":1,"phNow":1,"banks":false,"side":"W","mode":"walk","frames":139,"at":[527.83,30,true],"dx":3.1,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 1 lever E walk  {"ph":1,"phNow":1,"banks":false,"side":"E","mode":"walk","frames":139,"at":[560.17,30,true],"dx":3.1,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 2 lever W walk  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"walk","frames":141,"at":[527.83,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 2 lever W wall  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 2 lever E walk  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"walk","frames":141,"at":[560.17,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 2 lever E wall  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 3 lever W walk  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"walk","frames":143,"at":[527.85,30,true],"dx":3.4,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 3 lever W wall  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 3 lever E walk  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"walk","frames":143,"at":[560.15,30,true],"dx":3.4,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 3 lever E wall  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 1 lever W walk  {"ph":1,"phNow":1,"banks":false,"side":"W","mode":"walk","frames":123,"at":[527.82,30,true],"dx":2.5,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 1 lever E walk  {"ph":1,"phNow":1,"banks":false,"side":"E","mode":"walk","frames":123,"at":[560.18,30,true],"dx":2.5,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 2 lever W walk  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"walk","frames":125,"at":[527.81,30,true],"dx":2.5,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 2 lever W wall  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 2 lever E walk  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"walk","frames":125,"at":[560.19,30,true],"dx":2.5,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 2 lever E wall  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 3 lever W walk  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"walk","frames":127,"at":[527.83,30,true],"dx":2.8,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 3 lever W wall  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 3 lever E walk  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"walk","frames":127,"at":[560.17,30,true],"dx":2.8,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 3 lever E wall  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+buried-city-levers: 30 pulls green - knight/warden/pyro walk to and pull both levers in all three phases (and from against the wall), the levers lit while his glass is low
+exit 0

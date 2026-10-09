@@ -17,7 +17,7 @@
 // PHASE ONE - THE THRONE ROOM (to HK.p2): THE PENDULUM ('!' his sceptre's sweep close in: block it), THE GEAR ('!!' a brass cog bowled along the floor at you:
 //   jump it), THE SAND STREAM ('!!' a red X on your spot and a trickle from the roof, then the column comes down: leave it).
 // PHASE TWO - THE SANDS RISE (HK.p2 to HK.p3): the arena changes - the roof's sand slides down the walls and BANKS AT BOTH ENDS (mounds three rows high: the
-//   levers stand over them, in reach). ONE NEW MOVE: THE TIME SLIP ('!!' a swirl opens on your spot - he sinks into the floor and comes up THERE: be gone).
+//   levers stay on the floor two tiles clear of them, in reach - fix pass 10-09: the banks were [0-5]/[34-39] and buried both levers). ONE NEW MOVE: THE TIME SLIP ('!!' a swirl opens on your spot - he sinks into the floor and comes up THERE: be gone).
 // PHASE THREE - THE GLASS CRACKS (HK.p3 to 0): the arena changes - his glass is cracked and runs in HK.glass3 s (his low window comes round faster), and the
 //   roof gives way in two places: two STEADY POURS stand in the room (a tick on a hero under one; drawn). ONE NEW MOVE: THE HOUR STRIKES ('!!' his sceptre up,
 //   the chime, then a wave of sand runs along the floor both ways from him: jump it).
@@ -54,7 +54,7 @@ export const MOVE_NAME = { pend: 'HIS PENDULUM', gear: 'A BRASS GEAR', stream: '
 /* ---------- THE THRONE ROOM ---------- */
 /* local columns (0..39), the floor's surface row R (the hero stands on R-1). Two SAND-GATE LEVERS on the walls (the level's levers: src/buried-city-hands.js),
    two ROOF HOLES (phase three's pours), two LEDGES (one-way: the angle from above, and out of a wave), the BANKS phase two piles at the ends, the THRONE */
-export const HK_STAGE = { W: 40, door: 6, levers: [3, 36], pours: [12, 27], ledges: [{ x0: 8, x1: 13, dy: 3 }, { x0: 26, x1: 31, dy: 3 }], banks: [[0, 5], [34, 39]], bankRows: 3, king: 20, throne: 20 };
+export const HK_STAGE = { W: 40, door: 6, levers: [3, 36], pours: [12, 27], ledges: [{ x0: 8, x1: 13, dy: 3 }, { x0: 26, x1: 31, dy: 3 }], banks: [[0, 2], [37, 39]], bankRows: 3, king: 20, throne: 20 };
 export function stageHourglassKing(W, T, TS, sx, R) {
   const { set, block, ent, air } = W, ex = sx + HK_STAGE.W;
   const carve = () => {
@@ -132,7 +132,8 @@ export function stepHourglassKing(e, S, dt, h, c) {
   if (want > S.ph && !hkOpen(e) && (e.mode === 'walk' || e.mode === 'recover')) {
     S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want; c.music(want);
     if (want === 2) { c.number((G.x0 + G.x1) / 2, G.floorY - 120, 'THE SANDS RISE: THEY BANK AT THE WALLS', '#ff9a5c'); c.banks(true); c.shake(5); c.sound('rumble'); setMode(e, 'recover', 0.9); return; }
-    if (want === 3) { S.glassMax = HK.glass3; S.glass = Math.min(S.glass, S.glassMax); c.number((G.x0 + G.x1) / 2, G.floorY - 120, 'HIS GLASS CRACKS: THE ROOF GIVES WAY', '#ff6b6b'); c.shake(6); c.sound('rumble'); setMode(e, 'recover', 0.9); return; } }
+    if (want === 3) { c.banks(true);   /* (fix pass: the banks stand in phase three too, even if a run of blows took him past phase two between his moves) */
+      S.glassMax = HK.glass3; S.glass = Math.min(S.glass, S.glassMax); c.number((G.x0 + G.x1) / 2, G.floorY - 120, 'HIS GLASS CRACKS: THE ROOF GIVES WAY', '#ff6b6b'); c.shake(6); c.sound('rumble'); setMode(e, 'recover', 0.9); return; } }
   switch (e.mode) {
     case 'stall': {   /* B4: he stands where the sand drags him, frozen - the drag is the opening coming to you (B12) */
       if (S.dragTo != null) { const d = S.dragTo - e.x; if (Math.abs(d) > 2) e.x = clampX(G, e.x + Math.sign(d) * Math.min(Math.abs(d), HK.dragV * dt)); else S.dragTo = null; }
