@@ -10,8 +10,9 @@ Merged origin/claude/floatsweep first (solid-islands ratchet + island-posts), pu
 - ALLOW: scree 55, hanging 37, moor 25, skyroad 19, rootway 17, glasssea 29, witchlight 32 all lowered to 0 (entries removed). `node tools/solid-islands.mjs` passes. Nothing removed, no slab deleted.
 - Not touched: wood/marsh/stockade/spore/kings (act-I remaster), spire/crown/ksar/hurricane/flotilla/oreroad.
 
-## Checks
-solid-islands, floaters, architecture, render-layers green. level-quality: reds are PRE-EXISTING at the base, not from this lane (levelHash unchanged by supports): rootway pilot+mash stale (batch80's rootway "elevated bows" commit changed its ents after the rows were stamped) + rootway density 3.06 (>2.5); minecart pilot+mash stale. I did NOT re-stamp (my change did not alter any hash). frame-cost / stuck: see below.
+## Checks (after merging origin/claude/batch80 a12b02f4+)
+solid-islands, floaters, architecture, render-layers, frame-cost, level-quality ("every gated level clears the quality bar": the rootway/minecart stale rows were batch80's, fixed by its re-stamp that I merged) all green. levelHash does not include routeSupports, so no row needed re-stamping for this lane.
+stuck: static OK; runtime has ONE red, rw-lean-2 (rootway 336,18: way arrow not handed a target) - IDENTICAL on a clean batch80 checkout (a998a005), so not this lane's; for the rootway lane.
 Screenshots (headless, 8770): work/claude/forestsupports/<level>-N-x_y.png, six per level. Script: tools/forestsupports-shots.mjs.
 
 ## Notes
