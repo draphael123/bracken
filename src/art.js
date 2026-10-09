@@ -776,7 +776,7 @@ export function bakeMap(w, h, nodes, path, seed, style = 'wood') {
     if (nd.id === 'wood') { for (let i = 0; i < 6; i++) px(g, (ox - 20 + rnd() * 40) | 0, (oy + 10 + rnd() * 10) | 0, ['#f4d35e', '#e8788a', '#fbf6ea'][(rnd() * 3) | 0]); }
   }
   // a parchment vignette so the edges read as the edge of the map
-  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(60,40,20,0)'); vg.addColorStop(1, 'rgba(60,40,20,0.35)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  orderedVignette(g, w, h, '60,40,20', 0.35);
   // node discs
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(20,40,20,0.35)'); circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
@@ -788,7 +788,7 @@ function bakeCragMap(c, g, w, h, nodes, path, rnd) {
   for (let i = 0; i < 5; i++) ellipse(g, rnd() * w, 30 + rnd() * (h - 30), 26 + rnd() * 40, 10 + rnd() * 16, '#4e4e5a', '#5e5e6c');
   for (let i = 0; i < w * h / 14; i++) px(g, (rnd() * w) | 0, (rnd() * h) | 0, rnd() < 0.5 ? '#68687a' : '#525260');
   for (let i = 0; i < 60; i++) { const x = (rnd() * w) | 0, y = 20 + ((rnd() * (h - 20)) | 0); px(g, x, y, ['#7a5a8a', '#6a4a7a', '#c9b84a'][(rnd() * 3) | 0]); }
-  for (let y = 0; y < 34; y++) for (let x = 0; x < w; x++) if (rnd() < (34 - y) / 34 * 0.9) px(g, x, y, (x + y) & 1 ? '#dfe8ee' : '#c9d4dc');
+  for (let y = 0; y < 34; y++) for (let x = 0; x < w; x++) if (bayerOn(x, y, (34 - y) / 34 * 0.9)) px(g, x, y, (x + y) & 1 ? '#dfe8ee' : '#c9d4dc');   /* the snow line is ordered dither, not static */
   const peaks = [];
   for (let i = 0; i < 40; i++) { const x = rnd() * w, y = 30 + rnd() * (h - 30); let near = false; for (const p of path) if (Math.hypot(p[0] - x, p[1] - y) < 22) near = true; for (const nd of nodes) if (Math.hypot(nd.x - x, nd.y - y) < 30) near = true; if (!near) peaks.push([x, y, 10 + rnd() * 16]); }
   peaks.sort((a, b) => a[1] - b[1]);
@@ -799,7 +799,7 @@ function bakeCragMap(c, g, w, h, nodes, path, rnd) {
   for (const nd of nodes) { const ox = nd.x, oy = nd.y;
     if (nd.id === 'scree') { for (const [dx, dy] of [[-26, 10], [-10, 14], [12, 12], [28, 8]]) { rect(g, ox + dx, oy + dy, 5, 3, '#8a8478'); px(g, ox + dx + 1, oy + dy - 1, '#a8a090'); } for (let i = 0; i < 5; i++) px(g, (ox - 20 + rnd() * 40) | 0, (oy + 6 + rnd() * 12) | 0, '#c9b84a'); }
     if (nd.kind === 'pass') { fillPoly(g, [[ox - 22, oy + 12], [ox - 12, oy - 8], [ox - 2, oy + 12]], '#4a4a58'); fillPoly(g, [[ox + 2, oy + 12], [ox + 12, oy - 8], [ox + 22, oy + 12]], '#4a4a58'); } }
-  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(20,20,40,0)'); vg.addColorStop(1, 'rgba(20,20,40,0.45)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  orderedVignette(g, w, h, '20,20,40', 0.45);
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(20,20,40,0.35)'); circle(g, nd.x, nd.y, 7, '#3a3a44'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'pass' ? '#dfe8ee' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
 }
@@ -841,8 +841,8 @@ function bakeHauntedMap(c, g, w, h, nodes, path, rnd) {
      lobes at slightly different heights with a scatter of loose pixels torn off the top of it, and it lies FLAT:
      three or four pixels tall against forty wide, because this is fog seen from above lying in a hollow. */
   const bank = (x, y, rx, a) => {
-    const lobes = 3 + ((rnd() * 3) | 0), col = 'rgba(204,212,204,' + a + ')';
-    for (let k = 0; k < lobes; k++) ellipse(g, x + (k - (lobes - 1) / 2) * rx * 0.72, y + ((rnd() * 3) | 0) - 1, rx * (0.3 + rnd() * 0.22), 2 + rnd() * 2.4, col);
+    const lobes = 3 + ((rnd() * 3) | 0), col = 'rgba(204,212,204,' + Math.min(0.22, a * 3.2).toFixed(3) + ')';
+    for (let k = 0; k < lobes; k++) ellipse(g, x + (k - (lobes - 1) / 2) * rx * 0.72, y + ((rnd() * 3) | 0) - 1, rx * (0.3 + rnd() * 0.22), 2 + rnd() * 2.4, col, 'rgba(0,0,0,0)');   /* (a checker of fog: every other pixel, hard-edged) */
     for (let k = 0; k < rx * 0.8; k++) px(g, (x - rx + rnd() * rx * 2) | 0, (y - 4 + rnd() * 8) | 0, 'rgba(214,220,212,' + (a * 0.9).toFixed(3) + ')');   // and the edge of it, torn
   };   /* KEEP THE ALPHA LOW. Every lobe and every torn pixel composites separately, so a bank laid at the alpha a single
         puff wants comes out as a white bar across the sheet - it reads as a snow drift, not as weather. */
@@ -958,7 +958,7 @@ function bakeHauntedMap(c, g, w, h, nodes, path, rnd) {
   for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5;
     for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n);
       px(g, x + (k & 1 ? 1 : -1), y, '#7c7660'); if (k % 3 === 0) px(g, x, y + 1, '#d8d2b8'); } }
-  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(22,28,24,0)'); vg.addColorStop(1, 'rgba(22,28,24,0.5)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  orderedVignette(g, w, h, '22,28,24', 0.5);
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(18,22,18,0.35)'); circle(g, nd.x, nd.y, 7, '#33382c'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
 }
@@ -979,11 +979,42 @@ function bakeDesertMap(c, g, w, h, nodes, path, rnd) {
     for (let i = 0; i + 1 < path.length; i++) { const dx = path[i + 1][0] - path[i][0], dy = path[i + 1][1] - path[i][1], n = Math.hypot(dx, dy) / 5;
       for (let k = 1; k < n; k++) { const x = Math.round(path[i][0] + dx * k / n), y = Math.round(path[i][1] + dy * k / n); px(g, x + (k & 1 ? 1 : -1), y, '#c9a562'); if (k % 3 === 0) px(g, x, y + 1, '#f0dca0'); } }
   }
-  const vg = g.createRadialGradient(w / 2, h / 2, h * 0.45, w / 2, h / 2, h * 0.95); vg.addColorStop(0, 'rgba(80,54,20,0)'); vg.addColorStop(1, 'rgba(80,54,20,0.3)'); g.fillStyle = vg; g.fillRect(0, 0, w, h);
+  orderedVignette(g, w, h, '80,54,20', 0.3);
   for (const nd of nodes) { circle(g, nd.x, nd.y + 1, 8, 'rgba(60,40,10,0.3)'); circle(g, nd.x, nd.y, 7, '#5e3b21'); circle(g, nd.x, nd.y, 5.5, nd.kind === 'store' ? '#e0b040' : '#c9b27c'); px(g, nd.x - 2, nd.y - 2, '#fff1c0'); }
   return c;
 }
 // Soft cloud puffs for level skies and the map, three sizes.
+/* THE MAP'S DITHER IS ORDERED (claude/mapscale, style guide: "ordered 2x2 at region edges only"): a 4x4 Bayer threshold, so a fade is a pattern of whole pixels
+   that repeats the same way everywhere, not a smooth gradient (soft against a hard-pixel map) and not random speckle (noise). t in 0..1 = the share of pixels lit. */
+const BAYER4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+export const bayerOn = (x, y, t) => (BAYER4[y & 3][x & 3] + 0.5) / 16 < t;
+/* the edge-darkening of a region sheet: the same radial ramp the gradient had (clear inside 0.45 h, full at 0.95 h), as ordered dither of one flat tone */
+function orderedVignette(g, w, h, rgb, amax) {
+  g.fillStyle = 'rgba(' + rgb + ',' + amax + ')';
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const t = (Math.hypot(x - w / 2, y - h / 2) - h * 0.45) / (h * 0.5); if (t > 0 && bayerOn(x, y, Math.min(1, t))) g.fillRect(x, y, 1, 1); }
+}
+/* the seam between two sheets: a band of ordered dither over 32 rows, peaking mid-band (what the linear gradient did) */
+function orderedSeam(g, w, y, rgb, a) {
+  g.fillStyle = 'rgba(' + rgb + ',' + a + ')';
+  for (let j = 0; j < 32; j++) { const u = j / 31, t = 1 - Math.abs(u - 0.8125) / (u < 0.8125 ? 0.8125 : 0.1875); for (let x = 0; x < w; x++) if (bayerOn(x, y - 26 + j, Math.max(0, t))) g.fillRect(x, y - 26 + j, 1, 1); }
+}
+/* THE MAP'S CLOUDS: hard-edged pixel clouds (the old ones were alpha ellipses drawn at 0.7: soft on a hard map). A lit top, a shaded belly, one pixel of rim, and a
+   body that is an ordered checker (every other pixel), so it is see-through and still pure pixel art. `shadow` is the same silhouette in ground-shade, the other phase. */
+export function bakeMapClouds() {
+  return [[26, 9], [36, 11], [48, 13]].map(([w, h]) => {
+    const mask = document.createElement('canvas'); mask.width = w; mask.height = h; const m = mask.getContext('2d'); m.imageSmoothingEnabled = false;
+    const blob = (cx, cy, rx, ry) => ellipse(m, cx, cy, rx, ry, '#fff');
+    blob(w * 0.5, h * 0.7, w * 0.46, h * 0.28); blob(w * 0.33, h * 0.5, w * 0.22, h * 0.38); blob(w * 0.62, h * 0.44, w * 0.21, h * 0.36);
+    const d = m.getImageData(0, 0, w, h).data, solid = (x, y) => x >= 0 && y >= 0 && x < w && y < h && d[(y * w + x) * 4 + 3] > 0;
+    const img = canvas(w, h)[0], ig = img.getContext('2d'), sh = canvas(w, h)[0], sg = sh.getContext('2d');
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { if (!solid(x, y)) continue;
+      const top = !solid(x, y - 1), belly = !solid(x, y + 1) || !solid(x, y + 2), side = !solid(x - 1, y) || !solid(x + 1, y);
+      if (top || side) { ig.fillStyle = '#ffffff'; ig.fillRect(x, y, 1, 1); }   /* the rim is solid so the shape reads, every pixel of it */
+      else if (((x + y) & 1) === 0) { ig.fillStyle = belly ? '#b9c6d8' : '#eef2f6'; ig.fillRect(x, y, 1, 1); }
+      if (((x + y) & 1) === 1) { sg.fillStyle = 'rgba(10,26,10,0.34)'; sg.fillRect(x, y, 1, 1); } }
+    return { img, shadow: sh };
+  });
+}
 export function bakeClouds() {
   return [[28, 10], [40, 13], [56, 16]].map(([w, h], i) => {
     const [c, g] = canvas(w, h + 2);
@@ -2293,10 +2324,7 @@ export function bakeWorldMap(w, h, regions, connectors) { const [c, g] = canvas(
   /* A seam is either a plain Y (the grey-green every region but the desert's uses) or {y, gold: true} - the
      INLAND/DESERT seam reads green-to-gold instead, answering the gold portal on the level side (map-redesign §5). */
   for (const r of regions) if (r.seam) { const y = typeof r.seam === 'object' ? r.seam.y : r.seam, gold = typeof r.seam === 'object' && r.seam.gold;
-    const gr = g.createLinearGradient(0, y - 26, 0, y + 6);
-    if (gold) { gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(197,158,74,0.5)'); gr.addColorStop(1, 'rgba(224,176,64,0)'); }
-    else { gr.addColorStop(0, 'rgba(94,94,108,0)'); gr.addColorStop(0.5, 'rgba(94,110,80,0.5)'); gr.addColorStop(1, 'rgba(79,138,58,0)'); }
-    g.fillStyle = gr; g.fillRect(0, y - 26, w, 32); } return c; }
+    if (gold) orderedSeam(g, w, y, '197,158,74', 0.5); else orderedSeam(g, w, y, '94,110,80', 0.5); } return c; }
 
 // ---------- The Mineworks ----------
 // Rails on sleepers over rock. 16×16, standable like a plank.
