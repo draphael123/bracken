@@ -70,7 +70,7 @@ export function makeHourglassKingHands(ctx) {
   /* A BLOW ON HIM (B15): open x HK.openMul (one opening HK.openCap of him at most); turning, whole; warded, the floor with a clank; else his BRASS takes the share */
   H.take = (e, dmg) => { if (!S) return dmg; const t = ctx.time();
     if (e.mode === 'sleep' || e.mode === 'wake') return 0;
-    if (HKM.hkOpen(e)) { const cap = e.maxHp * HK.openCap, d = Math.min(dmg * HK.openMul, Math.max(0, cap - S.openTaken)); S.openTaken += d;
+    if (HKM.hkOpen(e)) { const cap = e.maxHp * HK.openCap, d = Math.max(dmg * HK.resist, Math.min(dmg * HK.openMul, Math.max(0, cap - S.openTaken))); S.openTaken += d;   /* (B15: past the cap a blow still pays the brass floor, never nothing) */
       if (S.openTaken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; ctx.number(e.x, e.y - 74, 'THE SAND STIRS IN HIM', '#9aa39a'); } return d; }
     if (e.mode === 'turn') { S.n.turnHits++; return dmg * HK.turnMul; }
     if (S.ward > 0) { e.chipHit = t; S.n.warded++; e.guardFx = 0.25; e.guardWord = 'WARDED'; ctx.sfx.clank && ctx.sfx.clank(); return dmg * HK.wardMul; }

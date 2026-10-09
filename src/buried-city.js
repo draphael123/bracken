@@ -200,7 +200,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   construct(447, TH - 1, 'trapLip', { face: 1 }); drowned(443, TH - 1, 'trapLip');   /* THE EXAM's squad on the lip while the hall fills */
   ground(466, 523, TH); ledge(469, 473, 27); ledge(474, 477, 27); drift(476, 478, TH); slinger(471, 26, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
   ledge(480, 484, 27); ledge(486, 490, 24);
-  construct(486, TH - 1, 'throneGuard'); scorpion(492, TH - 1, 'throneGuard'); slinger(488, 23, 'throneGuardSling');   /* THE THRONE GUARD: a construct, a scorpion, a slinger over them */
+  construct(486, TH - 1, 'throneGuard', { elite: true, gate: 493 }); scorpion(492, TH - 1, 'throneGuard'); slinger(488, 23, 'throneGuardSling');   /* THE THRONE GUARD: THE THRONE'S WARDEN (an ELITE construct: his gate at 493 shuts the street until he falls - the exam's peak, the trap hall behind you, the checkpoint after), a scorpion, a slinger over them */
   /* THE CLOCKWORK VAULT: a low cellar under the street, WEST of a hatch in it (drop in; its door opens on five gears). The cellar is two rows deep and ends at
      the hatch's east edge, and a one-way step stands under the hatch: a hero who drops in by mistake lands on it, two rows under the street */
   air(500, 501, TH, TH); air(494, 501, 31, 32); ledge(500, 501, 32);              /* the hatch, the cellar (floor row 33), the step under the hatch */
@@ -216,12 +216,16 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(AX, AX + HK_STAGE.W - 1, TH);
   block(AX + HK_STAGE.W, W - 1, 0, H - 1);
   stage.carve();
+  roof(AX - 1, AX + HK_STAGE.W, TH - 19);                                         /* the city's sand over the throne room's roof (its roof is not a slab in the air) */
   ent('gate', AX + HK_STAGE.W - 2, TH - 1);
 
   /* THE SAND'S BOXES for the reach model (src/reachcore.js, L.buriedcity): FILL-TO-CROSS rooms count as full, RIDE rooms as a stair of rungs - the verb done.
      The grid itself is every room DRAINED (the hands write the sand in on load): nothing spawns inside sand, and the tools see the street */
   const sandSolid = ROOMS.filter(r => r.need).map(r => [r.x0, r.x1, r.floor - r.full, r.floor - 1]);
   const sandRungs = ROOMS.filter(r => r.use === 'ride').map(r => [r.x0, r.x1, r.floor - r.full, r.floor - 1]);
+  /* THE LAID STONE: every column of the city from the first row under its sand roof down (a run of columns with the same roof is one rectangle) */
+  const masonry = []; { const roofEnd = x => { let y = 0; while (y < H && L.grid[y * W + x] !== T.AIR) y++; return y; };
+    for (let x = 34; x < W; ) { const y0 = roofEnd(x); let x1 = x; while (x1 + 1 < W && roofEnd(x1 + 1) === y0) x1++; if (y0 < H) masonry.push([x, x1, y0, H - 1]); x = x1 + 1; } }
   const START = { x: 3, y: 21 };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
@@ -229,8 +233,8 @@ export function buildBuriedCity({ painter, T, TS }) {
     buriedcity: true, caravan: true,   /* caravan: the desert's hands in main.js (the bandits' and scorpions' machines, the sand and stone skins, THE SUN on the dunes - the city is under its roof) */
     rooms: ROOMS.map(r => ({ ...r, levers: r.levers.map(a => a.slice()) })), wheel: { ...WHEEL }, arenaLevers: stage.levers, vaultDoors, decor, sandSolid, sandRungs, crumbles, quicksand,
     /* THE CITY HITS HARD (difficulty v2: weight, not numbers of foes): a blow x this on top of the act's tier, by skin (main.js damagePlayer0 reads L.foeHit) */
-    foeHit: { sanddrowned: 3.0, sandslinger: 1.0, brassscorpion: 2.6 },
-    foeHp: { sanddrowned: 2.2, sandslinger: 1.6, brassscorpion: 2.2 },
+    foeHit: { sanddrowned: 3.8, sandslinger: 1.8, brassscorpion: 3.4 },   /* (the resume pass: the walker took 3 blows in the level at L36 - weightier) */
+    foeHp: { sanddrowned: 2.8, sandslinger: 2.0, brassscorpion: 2.8 },
     alarms: ROOMS.map(r => ({ x0: r.x0, x1: r.x1 })),   /* THE RULE'S STATE for tools/rule-state.mjs: the sand rooms are where the rule is live */
     sun: [{ x0: 0, x1: 34 }], shade, shadeArt: shade,   /* THE DESERT'S SUN on the dunes only (the city is under its roof). TODO(integrator): claude/ksar2's shared drain (src/drain.js, THE SUN v2) replaces src/sunstroke.js here when it lands */
     quest: { n: 5, item: 'gear', name: 'GEARS', done: 'FIVE GEARS: THE CLOCKWORK VAULT OPENS', thanks: 'THE CLOCKWORK VAULT OPENS' },
@@ -245,7 +249,7 @@ export function buildBuriedCity({ painter, T, TS }) {
     ],
     music: 'buriedcity',
     ambient: [{ x0: 0, x1: 99999, kind: 'buriedcity' }],   /* its own bed: src/audio.js SYNTH_BEDS.buriedcity (the sand's hiss, a far chime, the gears) */
-    rockZones: [], masonry: [[34, 563, 0, H - 1]],   /* the city is laid sandstone: main.js paints it as coursed masonry, not the dunes' strata */
+    rockZones: [], masonry,   /* the city is laid sandstone UNDER ITS SAND ROOF: main.js paints it as coursed masonry; the roof (the top run of rock in each column) is the dunes' sand, natural rock the city's walls hang from (tools/architecture.mjs) */
     palette: { set: 'desert', near: 'none', dress: 'none', noFg: true, noNear: true, haze: 'rgba(200,150,90,0.10)' },
     duskStart: -1, duskLen: 1,
   };

@@ -12,8 +12,8 @@
 // Drowned Quarter (st.dormant) and wind up when you come near once the quarter is drained.
 // Frames (src/redraw/desert_glass.js bakeConstruct): 0,1 walk | 2 POKE TELL | 3 POKE | 4 WOUND DOWN (dormant, jammed) | 5 hurt. The sweep's tell is the poke's
 // pose held low (frame 2) and its blow the thrust (frame 3); the marks (src/marks.js) say which one it is.
-export const CONSTRUCT = { hp: 70, w: 12, h: 18, speed: 22, beat: 54, sight: 150, sightY: 34, pokeR: 34, pokeTell: 0.62, poke: 0.2, sweepR: 46, sweepTell: 0.8, sweep: 0.26,
-  cd: 0.85, wake: 64, wakeT: 0.9, dmg: { poke: 15, sweep: 18 } };
+export const CONSTRUCT = { hp: 105, w: 12, h: 18, speed: 22, beat: 54, sight: 150, sightY: 34, pokeR: 34, pokeTell: 0.62, poke: 0.2, sweepR: 46, sweepTell: 0.8, sweep: 0.26,
+  cd: 0.85, wake: 64, wakeT: 0.9, dmg: { poke: 21, sweep: 25 } };
 const ev = (a, t, extra) => a.push({ t, ...extra });
 export function newConstruct(x, y, dormant) { return { kind: 'construct', x, y, home: x, hp: CONSTRUCT.hp, mode: dormant ? 'dormant' : 'walk', t: 0, face: -1, cd: 0.8, frame: dormant ? 4 : 0, n: 0, dormant: !!dormant }; }
 export const constructJammed = s => s.mode === 'jammed';
