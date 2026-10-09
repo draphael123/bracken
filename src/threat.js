@@ -155,6 +155,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, w
   /* THE LIT CHURCH (claude/litchurch): THE PALADIN is a boss: a 6. The lamps, fires, bellows, the key desk, the grates and the reliquary fight nobody */
   acolyte: 1.5,   /* (claude/litchurch) the runner's body: he does not fight - he relights (a support and a runner) */
   paladinboss: 6, lclamp: 0, lcsource: 0, lcbellows: 0, lcdesk: 0, lcgrate: 0, lcreliquary: 0,
+  /* THE TOWPATH (claude/towpath): THE FOG KNIGHT is a boss: a 6. The paddles, capstans, lamps, the lantern, the lychgate and the church door fight nobody */
+  fogknight: 6, tppaddle: 0, tpcapstan: 0, tplamp: 0, tplantern: 0, tplychgate: 0, tpchurch: 0,
   /* THE WICKER QUEEN, the fair's boss (claude/fair3): a boss is a 6 */
   wickerqueen: 6,
   /* THE FAIR'S GAMES (claude/fairlevel, src/fair-games.js): a striker's pad, a gallery's target, a ticket and the prize booth are machines you work, not foes - furniture, written down at 0 so the tools read them as gadgets */

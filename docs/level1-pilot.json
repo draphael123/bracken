@@ -178,5 +178,17 @@
   "lifts": 82,
   "walked": 100,
   "bare": true
+ },
+ "towpath": {
+  "hash": "43ba3fec92c0",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 34,
+  "deaths": 8,
+  "kills": 0,
+  "lifts": 58,
+  "walked": 100,
+  "bare": true
  }
 }

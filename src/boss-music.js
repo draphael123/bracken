@@ -36,7 +36,7 @@
 //   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
 //                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { greatdrill: 1, lanterneater: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -343,7 +343,7 @@ function cisternqueen(i, delay, variant, env) {
 // next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
 // PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
 // sweeps up under the stop (rising noise and a saw sliding up an octave).
-export const BOSS_PHASE = { gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, paladin: 1, litchurch: 1 };
+export const BOSS_PHASE = { gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
 const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
 const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
 const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
@@ -487,7 +487,37 @@ function lanterneater(i, delay, variant, env) {
 
 // (THE LIT CHURCH has no synth bed and THE PALADIN no composed theme: 'Cathedral' by Umplix and 'Church combat' by Centurion_of_war are their files, claude/churchart; see audio/CREDITS.txt)
 
+// ---------------------------------------------------------------- THE TOWPATH (claude/towpath, the greybox's own bed until Daniel picks a track)
+// D Dorian, 6/8 at 66 (an eighth = 0.45 s), 8 bars = 22 s. A BARGE SONG AT DUSK: a low D-A drone breathing over two bars, a slow walking bass on the dotted beats,
+// a CONCERTINA lead (a narrow square through a lowpass, swelled) on a lilting tune, and drips; the second half flattens the sixth (the fog coming in) and thins.
+const TPM_STEP = 60 / 66 / 2, TPM_LEN = 6, TPM_BARSN = 8;
+const TPM_BASS = [['D2', 'A2'], ['C2', 'G2'], ['Bb1', 'F2'], ['A1', 'E2']];
+const TPM_TUNE = [['A4', '-', 'B4', 'C5', '-', 'A4'], ['G4', '-', '-', 'E4', 'F4', 'G4'], ['F4', '-', 'E4', 'D4', '-', 'C4'], ['D4', '-', '-', '-', 'E4', '-']];
+function towpath(i, delay, variant, env) {
+  const bar = Math.floor(i / TPM_LEN), s = i % TPM_LEN, g = env.gain, fog = bar >= 4;
+  if (s === 0 && bar % 2 === 0) { held(env, 'sawtooth', nf('D2'), TPM_STEP * TPM_LEN * 2 * 0.96, 0.035 * g, delay, { lp: 360, att: TPM_STEP * 3, hold: 0.7, det: 7 }); held(env, 'sawtooth', nf('A2'), TPM_STEP * TPM_LEN * 2 * 0.96, 0.02 * g, delay, { lp: 420, att: TPM_STEP * 4, hold: 0.6, det: 9 }); }
+  if (s === 0 || s === 3) pluck(env, 'triangle', nf(TPM_BASS[bar % 4][s === 0 ? 0 : 1]), TPM_STEP * 2.6, 0.17 * g, delay, { lp: 520 });
+  const c = TPM_TUNE[bar % 4][s]; if (c !== '-' && !(fog && s % 2 === 1)) { let fr = nf(c); if (fog && c[0] === 'B') fr *= Math.pow(2, -1 / 12); held(env, 'square', fr, TPM_STEP * 1.8, 0.03 * g, delay, { lp: fog ? 1100 : 1700, att: 0.05, hold: 0.6, from: 0.985 }); }
+  if (s === 4 && Math.random() < 0.5) pluck(env, 'sine', 1400 + Math.random() * 500, 0.12, 0.02 * g, delay, { to: 900 });   /* a drip off a lock gate */
+}
+// ---------------------------------------------------------------- THE FOG KNIGHT (claude/towpath, his composed theme: three phases)
+// E Aeolian, 4/4 at 84, 16 bars = 46 s. THE DUEL ON THE TOWPATH: a low drum on one and three, a choir-like pad (detuned saws, slow swell), a TOLLING BELL every
+// second bar (low inharmonic sines: the lock-keeper's bell, nobody ringing it), and a falling chromatic line in the strings (triangles).
+// 'fogknight:p2' THE DOUBLE: the line answered a beat late a fifth below (the second knight). 'fogknight:p3' THE SHROUD: slower, the pad an octave down, a heartbeat.
+const FKM_STEP = 60 / 84 / 2, FKM_STEP3 = 60 / 72 / 2, FKM_LEN = 8, FKM_BARSN = 16;
+const FKM_PAD = [['E3', 'G3', 'B3'], ['C3', 'E3', 'G3'], ['A2', 'C3', 'E3'], ['B2', 'D#3', 'F#3']];
+const FKM_LINE = [['B4', '-', 'A#4', '-', 'A4', '-', 'G#4', '-'], ['G4', '-', '-', 'F#4', 'E4', '-', '-', '-'], ['C5', '-', 'B4', '-', 'A4', 'G4', 'F#4', '-'], ['D#4', '-', '-', '-', 'E4', '-', '-', '-']];
+function fogknight(i, delay, variant, env) {
+  const dbl = variant === 'p2', shroud = variant === 'p3', step = shroud ? FKM_STEP3 : FKM_STEP, bar = Math.floor(i / FKM_LEN), s = i % FKM_LEN, g = env.gain;
+  if (s === 0 || s === 4) pluck(env, 'sine', s === 0 ? 62 : 74, 0.4, 0.5 * g, delay, { to: 32 });
+  if (shroud && (s === 0 || s === 1)) pluck(env, 'sine', 50, 0.25, 0.35 * g, delay + (s === 1 ? step * 0.4 : 0), { to: 30 });   /* the heartbeat */
+  if (s === 0 && bar % 2 === 0) for (const n of FKM_PAD[(bar / 2) % 4]) held(env, 'sawtooth', nf(n) * (shroud ? 0.5 : 1), step * FKM_LEN * 2 * 0.95, 0.022 * g, delay, { lp: shroud ? 500 : 800, att: step * 4, hold: 0.7, det: 12 });
+  if (s === 0 && bar % 2 === 1) for (const [fr, v] of [[165, 0.12], [233, 0.05], [392, 0.03]]) pluck(env, 'sine', fr, 3.0, v * g, delay, { to: fr * 0.99 });   /* the bell, tolling for nobody */
+  const c = FKM_LINE[bar % 4][s]; if (c !== '-' && bar >= 2) { pluck(env, 'triangle', nf(c), step * 2.2, 0.09 * g, delay, { lp: 2200 }); if (dbl) pluck(env, 'triangle', nf(c) * Math.pow(2, -7 / 12), step * 2.2, 0.06 * g, delay + step * 2, { lp: 1600 }); }
+}
+
 export const SYNTH_BOSS = {
+  towpath: { step: TPM_STEP, total: TPM_LEN * TPM_BARSN, play: towpath }, fogknight: { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the greybox level bed and his theme */
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
   greatdrill: { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
@@ -504,6 +534,7 @@ export const SYNTH_BOSS = {
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
+  'fogknight:p2': { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight }, 'fogknight:p3': { step: FKM_STEP3, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the double, the shroud */
   'hawkmistress:p2': { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress }, 'hawkmistress:p3': { step: HMM_STEP3, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) her guard, the store burning */
   'greatdrill:p2': { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill }, 'greatdrill:p3': { step: GDM_STEP3, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) the roof and full bore */
   'colossus:p2': { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, 'colossus:p3': { step: COM_STEP3, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) its night and its dawn */

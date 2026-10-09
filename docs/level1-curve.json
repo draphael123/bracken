@@ -557,5 +557,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 486
+ },
+ "towpath": {
+  "hash": "43ba3fec92c0",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 36,
+  "deaths": 7,
+  "kills": 0,
+  "lifts": 59,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 352
  }
 }

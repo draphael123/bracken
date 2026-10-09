@@ -252,6 +252,12 @@
    "foeXp": 434,
    "bossXp": 228,
    "clear": 260
+  },
+  "towpath": {
+   "run": 1046,
+   "foeXp": 436,
+   "bossXp": 435,
+   "clear": 262
   }
  }
 }

@@ -56,6 +56,9 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
     if (L.rootway) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
       for (const h of (L.hoists || [])) { if (h.boss) continue; if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
         if (h.land) for (let y = h.land[1]; y <= h.land[1] + 1; y++) for (let x = h.land[0]; x <= h.land[0] + 1; x++) g[y * W + x] = T.SOLID; } }
+    /* THE TOWPATH (src/towpath.js, claude/towpath fix): the mill race drained stands its WHEEL still - its paddles a stair - and a SWING BRIDGE struck across is a deck: each one blow of a paddle or a capstan on the bank before it, so done (the locks themselves are rides: L.rigBands) */
+    if (L.towpath) { for (const w of (L.towpath.wheels || [])) for (const [x0, x1, y] of w.steps) for (let x = x0; x <= x1; x++) if (g[y * W + x] === T.AIR) g[y * W + x] = T.ONEWAY;
+      for (const b of (L.towpath.bridges || [])) if (b.x0 !== undefined && b.row !== undefined) for (let x = b.x0; x <= b.x1; x++) if (g[b.row * W + x] === T.AIR) g[b.row * W + x] = T.ONEWAY; }
     for (const s of (L.strikers || [])) strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ));
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
@@ -171,7 +174,8 @@ export function floodReach(L, T, opts = {}) { // opts.maxUp: cap a plain jump's 
   for (const k0 of extraFoot) footing.add(k0);
   /* DEEP WATER THAT HURTS IS NOT A FLOOR (THE FOG CANAL, L.noWade): a fall into it costs health and hands you back to the bank (L.waterHurts), so the
      canal's bed under it is nowhere anyone walks - only the barge (its L.rigBands) crosses. Only a level that says so: no other level's fill moves */
-  if (L.noWade) for (const p of (L.pools || [])) { if (p.swim || p.shallow) continue; const r0 = Math.floor(p.y / TSZ), r1 = Math.floor(((p.bottom ?? p.y + 64) - 1) / TSZ);
+  if (L.noWade) for (const p of (L.pools || [])) { if (p.swim || p.shallow) continue; const lk = L.towpath && p.tp ? (L.towpath.locks || []).find(k => k.id === p.tp && !k.virtual) : null;   /* (claude/towpath fix: a LOCK is water only down from its LOW level - a paddle on the bank drains it to there, and a dry one is a floor) */
+    const r0 = Math.floor((lk ? Math.max(p.y, lk.lo * TSZ + 4) : p.y) / TSZ), r1 = Math.floor(((p.bottom ?? p.y + 64) - 1) / TSZ);
     const onRide = (x, y) => (L.rigBands || []).some(([a, b, y0, y1]) => x >= a && x <= b && y >= y0 - 1 && y <= y1);   /* (claude/canalfix) her deck at any level her water can stand at stays footing: a lock that starts FULL must not drown its own low stop */
     for (let x = Math.floor(p.x0 / TSZ); x < Math.ceil(p.x1 / TSZ); x++) for (let y = r0; y <= r1; y++) if (!onRide(x, y)) footing.delete(key(x, y)); }
   // SWIM WATER (the Long Water): every open cell of a swimmable pool is somewhere you can be - you swim to any

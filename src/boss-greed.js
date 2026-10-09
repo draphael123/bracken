@@ -41,6 +41,7 @@ import { hmOpen } from './hawk-mistress.js';   /* THE HAWK-MISTRESS (claude/ksar
 import { hmOpen as hnOpen } from './huntmaster.js';   /* THE GOBLIN HUNTMASTER (claude/rootway) */
 import { drillHittable } from './great-drill.js';   /* THE GREAT DRILL (claude/minecart) */
 import { pbOpen } from './paladin-boss.js';   /* THE PALADIN (claude/litchurch) */
+import { fkOpen } from './fog-knight.js';   /* THE FOG KNIGHT (claude/towpath) */
 import { glOpen } from './gang-leader.js'; import { djOpen } from './djinn.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
@@ -112,6 +113,7 @@ export const OPEN_RULE = {
   hawkmistress: e => hmOpen(e),                                              // THE HAWK-MISTRESS (claude/ksar): the hawk wheeled off by a gong or blinded by a flash - she whistles it back, open
   huntmaster: e => hnOpen(e),                                               // THE GOBLIN HUNTMASTER (claude/rootway): his own gold arrow struck home (a weak point broken, or a stagger), or caught in his own cage
   greatdrill: e => drillHittable(e),                                         // THE GREAT DRILL (claude/minecart): a CONSTRUCT whose cab is ALWAYS hittable (B13/B14, Daniel 10-07) - only its told ward after a jam turns a blow, so only a blow on the ward is greed; the jam (a routed ore cart in its gears) pays x2 in its own code
+  fogknight: e => fkOpen(e) || e.mode === 'reel',                            // THE FOG KNIGHT (claude/towpath): the armour standing empty - the lantern burnt the fog out of it, or the swing bridge scattered it - and reeling from a plunge through his full guard
   colossus: e => colOpen(e),                                                 // THE GLASS COLOSSUS (claude/glasssea): its chest cracked by its own lance off a mirror, its shoulders blazing (the swarm held by firelight), its crown dazzled by the dawn - its legs are its own purse (OWN_WARD)
   /* THE MINIS (greed only: they keep their damage) */
   lampreeve: e => e.open > 0, homunculus: e => e.open > 0, ploughman: e => e.open > 0,
@@ -145,6 +147,7 @@ export const FULL_DAMAGE = {
   paladinboss: 'a human duelist (design standard B11; Daniel 10-07: "B11 duelist, NOT x0.05 chip"): always hittable, his AEGIS GUARDS BY ANGLE (a blow from the front at his height while he is on guard is turned - and feeds his light; from behind, from above or in his tells and swings it lands and drains it); STARVED of light he FALTERS (x1.8, 3 s): src/paladin-boss.js',
   hawkmistress: 'a human duelist (design standard B11): always hittable, her gauntlet GUARDS BY ANGLE (a blow from the front at her height while she is on guard is turned; from behind or above it lands, and in her tells and strikes every blow lands); her openings pay x1.6 in her own code (claude/ksar)',
   huntmaster: 'a duelist (design standard B11, claude/rootway): always hittable, he GUARDS BY ANGLE between his moves (a blow from his front at his height is turned: GO ROUND, or from above); his openings pay x1.5 (x2 behind the broken mask) in his own code (src/huntmaster.js)',
+  fogknight: 'a duelist (design standard B11): always hittable, GUARDS BY STANCE (high: a low blow lands; low: a high blow or a plunge; full: only a plunge, which breaks it); every angle lands in his own blows; his openings pay x1.6 in his own code (claude/towpath)',
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",
   roc: 'Daniel 10-06 (claude/roc2): "you can jump on the gliding platforms / thermals and actually hit her, so she does not need to be invulnerable by default" - a beast, always hittable, guarding by HEIGHT (src/roc-eyrie.js take: whole and a little more from the air the level gives, GUARDS LOW from the floor); her plunge and her nest are x1.5',
   greathound: 'Daniel 10-07 (claude/hound): "too difficult simply because he is invincible outside of very small windows ... he should not be invincible" - a beast duelist (B11/B13): always hit for real, his jaws turn part of a blow into his face (GO ROUND), whole from behind or above; his skid and his whine are bonus openings x1.5 (src/great-hound.js)',
