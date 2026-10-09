@@ -33,7 +33,8 @@ for (const lv of LEVELS) {
     if (!has) bad.push(lv.id + ': section ' + (s + 1) + ' (' + (tall ? 'rows ' : 'columns ') + s * size + '-' + ((s + 1) * size - 1) + ') has no designed encounter (no squad ent)');
   }
   /* A FLYMAN is exempt from the one-floor test (claude/theatre3, A PINCER: a rigging-gallery thrower stands on the loading gallery ON PURPOSE, above the floor squad he belongs to; his ledge is the design, and moving him to its own squad would count him as a second encounter against the density bar). Every other member of the squad still has to share one floor. */
-  for (const n of names) { const m = sq.filter(e => e.squad === n); if (new Set(m.filter(e => !e.flyman).map(e => e.y)).size > 1) bad.push(lv.id + ': squad ' + n + ' is not on one floor'); if (m.some(e => e.garrison)) bad.push(lv.id + ': squad ' + n + ' carries garrison:true (it is sprinkled, not designed)'); }
+  /* A PERCH (claude/batch80, the Rootway): a bow or a spitcap on a plank over the road, a spider in the root roof, stands ABOVE the floor squad he belongs to on purpose (fire from above that a blade on the floor does not reach). Splitting each into its own squad doubled the encounter count past the density bar (3.06 a screen), so e.perch exempts that one member, as e.flyman does; every other member still has to share one floor. */
+  for (const n of names) { const m = sq.filter(e => e.squad === n); if (new Set(m.filter(e => !e.flyman && !e.perch).map(e => e.y)).size > 1) bad.push(lv.id + ': squad ' + n + ' is not on one floor'); if (m.some(e => e.garrison)) bad.push(lv.id + ': squad ' + n + ' carries garrison:true (it is sprinkled, not designed)'); }
   if (sp.some(e => e.t === 'topiary')) bad.push(lv.id + ': sprinkled topiary (the maze is gone)');
   rows.push([lv.id, sp.length, sq.length, names.size, worst, screens.toFixed(1)]);
 }
