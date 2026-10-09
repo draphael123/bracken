@@ -38,10 +38,10 @@ const LOOT = new Set(['silver', 'relic', 'stray', 'mend']);
 const SYSTEMS = ['gusts', 'wash', 'streetTide', 'bore', 'slide', 'sleeps', 'flight', 'roll', 'airRooms', 'deep', 'timber', 'lampAir', 'swell',
   'hullZones', 'darkZones', 'scree', 'vines', 'perches', 'slick', 'hags', 'thermals', 'storm2', 'masts', 'ballast', 'hush', 'roofs', 'cloudSea', 'wetZone', 'ropes'];
 
-export function pacing(lv) {
+export function pacing(lv, o = {}) {   /* o.hero (claude/reachcore, opt-in): the route in THAT hero's own legs (src/reachcore.js opts.hero) - tools/level-walk.mjs --reach-hero */
   const L = lv.build(), W = L.W, H = L.H, N = W * H, ents = L.ents || [];
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
-  const R = floodReach(L, T, { rides: true });
+  const R = floodReach(L, T, { rides: true, hero: o.hero });
   const parse = k => { const c = k.indexOf(','); return [+k.slice(0, c), +k.slice(c + 1)]; };
   const foot = new Uint8Array(N);
   for (const k of R.footing) { const [x, y] = parse(k); if (x >= 0 && y >= 0 && x < W && y < H) foot[y * W + x] = 1; }

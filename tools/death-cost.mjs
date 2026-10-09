@@ -13,6 +13,7 @@
 //   SAVE        the carried/banked split and a live bundle go through the save and back (nothing live - no creature - is ever written), a bundle
 //               is handed back to its foe on a reload, and an OLD save (none of this in it) migrates with everything it holds counted as banked.
 // usage: node tools/death-cost.mjs
+//   REACH_HERO=<knight|warden|pyro|paladin|pirate|reaper|geomancer> node tools/death-cost.mjs  runs it with that hero's own legs (src/reachcore.js opts.hero, claude/reachcore; tools/reach-heroes.mjs sweeps them all) (the static part)
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { LEVELS, T } from '../src/level.js';
@@ -50,7 +51,7 @@ const MODEL_GAPS = { wood: [[510, 8]], oreroad: [[470, 12]], glasssea: [[600, 30
 /* (claude/moor2: the moor's landing is walked now - the kite ride that hid it is gone) */
 /* ---- 3. EVERY ARENA'S DOOR IS STANDING ROOM THE FILL REACHES (a boss never carries one) ---- */
 { const misses = [], skipped = []; let n = 0;
-  for (const lv of LEVELS) { const L = lv.build(), R = floodReach(L, T, { rides: true, across: 5 }), W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
+  for (const lv of LEVELS) { const L = lv.build(), R = floodReach(L, T, { rides: true, across: 5, hero: process.env.REACH_HERO }), W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
     const solid = (x, y) => { const t = at(x, y); return t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT || t === T.ICE || t === T.WEB; };
     const spike = (x, y) => at(x, y) === T.SPIKE;
     for (const [name, A] of [['arena', L.arena], ['mini', L.mini]]) { if (!A) continue; n++;
