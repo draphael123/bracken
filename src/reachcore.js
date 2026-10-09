@@ -58,6 +58,11 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     if (L.rootway) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
       for (const h of (L.hoists || [])) { if (h.boss) continue; if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
         if (h.land) for (let y = h.land[1]; y <= h.land[1] + 1; y++) for (let x = h.land[0]; x <= h.land[0] + 1; x++) g[y * W + x] = T.SOLID; } }
+    /* THE GLASS SEA (src/glass-sea.js, claude/reachcore): a SAND BED fuses to glass steps under a beam (a mirror turned to it - every hero turns one; tools/glasssea.mjs
+       proves each), and its vault opens on the shards the level lays down. ONLY for the per-hero audits (opts.hero, or opts.glassBeds): the build's own fills (the coin sprinkler,
+       payDeadEnds) and the way arrow keep the fill they were stamped with - a fused bed there would move the level's stash. Without it the fill stopped at column 47 */
+    if ((opts.hero || opts.glassBeds) && L.glassFrom !== undefined) { for (const b of (L.beds || [])) for (const [x, y] of b.tiles) if (g[y * W + x] === T.AIR) g[y * W + x] = T.ONEWAY;
+      for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR; }
     for (const s of (L.strikers || [])) { strikeUp.set(s.x + ',' + (s.row - 1), Math.floor((s.launch * s.launch) / (2 * G) / TSZ)); strikeLaunch.set(s.x + ',' + (s.row - 1), s.launch); }
   }
   // a gun laid on a hull opens the hull, and a stowed boarding plank becomes a bridge: both are one blow, so the
@@ -245,7 +250,9 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
       const CLR = opts.heroClear ?? Math.max(TSZ, Math.abs(v || 0) * SLACK_T), clear = s > 0 ? l * TSZ + CLR : -(l * TSZ + 15 - CLR);
       /* a WALL just past the landing stops the body: aim long and it holds you on the step (the far wall face, the body's half-width off it) */
       const stop = wall(at(c + s, r)) ? (s > 0 ? (c + 1) * TSZ - 5 : -(c * TSZ + 5)) : Infinity;
-      return Math.max(toe(c), Math.min(c === l ? Infinity : Math.max(inside(c), clear), stop)) - u0; } };
+      /* (the slack is the take-off's, not the landing's: a jump one slack early must still put the centre on the lip - so a narrow top, a pillar, is landed the same
+         way: aim long and steer back onto it) */
+      return Math.max(toe(c), Math.min(Math.max(c === l ? toe(c) : inside(c), clear), stop)) - u0; } };
   };
   const runway = (x, y, s) => { if (opts.heroSprint) return 24; let n = 0; while (n < 24 && footing.has(key(x - s * n, y)) && !water.has(key(x - s * n, y))) n++; return Math.max(1, n); };
   /* THE SPRINT CARRIES (main.js: runT is kept through a jump while the pace is held). A cell where he can be at a full sprint going s - a long enough
@@ -287,16 +294,24 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     for (const s of [-1, 1]) {
       const ls = launches(x, y, s, thrown, capPx);
       const carry = (s < 0 ? cl : cr) * TSZ, Lc = landing(x, y, s);
+      /* THE FLIGHT HAS TO FIT THE COLUMNS IT CROSSES: the body's front comes over column c at most as high as the flight goes there (hAt), so the column needs
+         open air from that height down to the lower of the take-off and the landing - a wall he cannot be over by then stops it (the shared fill's band from
+         the apex let a jump go over the Ore Road's breakable wall long after it had come down) */
+      const fits = (j, rLand, lc, D) => { const sc = carry && D > 0 ? D / (D + carry) : 1;   /* (a gust or a boost carries the same arc further: its columns are passed in proportion) */
+        for (let k = 1; k < j; k++) { const c = x + s * k, d = ((s > 0 ? c * TSZ - 5 : -((c + 1) * TSZ + 4)) - Lc.u0) * sc; if (d <= 0) continue;
+          const hm = Math.max(lc.f.hAt(d), lc.walk ? lc.walk.hAt(d) : -Infinity); if (hm === -Infinity) return false;
+          const top = hm >= 0 ? y - Math.floor(hm / TSZ) : y + Math.ceil(-hm / TSZ), bot = Math.max(y, rLand); let open = false;
+          for (let rr = Math.max(0, top); rr <= bot && !open; rr++) open = !wall(at(c, rr)); if (!open) return false; } return true; };
       const land = (c, r, D, lc) => { if (Lc.need(c, r, lc.v) > D + carry) return false; push(c, r); if (lc.sprint) markSprint(c, r, s); return true; };
       for (let kk = 0; kk <= Math.min(up, head); kk++) { const r = y - kk;
         for (const lc of ls) { const D = lc.f.up[kk] ?? -1; if (D < 0) continue;
           for (let j = 1, J = Math.ceil((D + carry + 24) / TSZ) + 1; j <= J; j++) { const c = x + s * j; if (!footing.has(key(c, r))) continue;
-            if (across(x, s * j, apexRow, Math.min(y, r))) land(c, r, D, lc); } } }
+            if (across(x, s * j, apexRow, Math.min(y, r)) && fits(j, r, lc, D)) land(c, r, D, lc); } } }
       for (const lc of ls) { const Ddn = kk => Math.max(lc.f.down[Math.min(kk, 48)] ?? -1, lc.walk ? lc.walk.down[Math.min(kk, 48)] ?? -1 : -1);
         for (let j = 1, J = Math.ceil((Ddn(48) + carry + 24) / TSZ) + 1; j <= J; j++) { const c = x + s * j;
           if (wall(at(c, y)) || !across(x, s * j, apexRow, y)) continue;
           let ny = y; while (ny < H - 1 && !footing.has(key(c, ny)) && !wall(at(c, ny))) ny++;
-          if (ny > y && footing.has(key(c, ny))) land(c, ny, Ddn(ny - y), lc); } }
+          if (ny > y && footing.has(key(c, ny)) && fits(j, ny, lc, Ddn(ny - y))) land(c, ny, Ddn(ny - y), lc); } }
       if (!thrown && sprintAt.has(x + ',' + y + ',' + s)) { if (footing.has(key(x + s, y))) markSprint(x + s, y, s); else if (!solid(at(x + s, y))) markSprint(x + s, y + 1, s); }   /* and the run goes on along the floor (or down a step) */
       if (!thrown && HJ.run(runway(x, y, s), slick).runT >= SPRINT_FULL) markSprint(x, y, s);
     }

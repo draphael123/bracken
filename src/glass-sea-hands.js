@@ -9,7 +9,7 @@
 // main.js calls: reset, on, update, interact, noSun, slide, hold, fear, onDeath, drawBack, drawWorld, drawOver, drawHud, read.
 // Every teaching line goes through ctx.number with a line listed in src/hint-lines.js.
 import { trace, makeOpaque } from './light.js';
-import { isSlope, slopeGrade, SLIDE } from './slopes.js';
+import { isSlope, slopeGrade, SLIDE, slideKeepAt } from './slopes.js';
 import { RIDE_MOVE } from './hero-move.js';   /* (claude/reachcore) the slick glass's numbers, one copy: src/reach-hero.js slides on them too */
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
@@ -123,7 +123,7 @@ export function makeGlassSeaHands(ctx) {
   /* (claude/slickslope, Daniel 10-07 "this jump can't be beat by the geomancer") THE MOMENTUM IS KEPT: slopes.js slideStep bled anything over the hill's top speed at 400 px/s/s,
      so the extra below came to ~5 px/s and a glass slide ran as a sand one. slideKeep tells slideStep the ceiling the glass keeps; the build is slow (slideAcc) so a LONG slide
      carries more than a short one (tools/glasssea-slide.mjs measures it per hero) */
-  H.slideKeep = (P, kind) => (GSx && kind && P.x >= (GSx.L.glassFrom || 0) * TS() ? GS.slideCap : 1);
+  H.slideKeep = (P, kind) => (GSx ? slideKeepAt(GSx.L, P.x, kind) : 1);   /* (claude/reachcore: the one copy is src/slopes.js slideKeepAt - main.js and the reach model ask it directly) */
   H.slide = (P, ss, kind, dt) => { const max = slopeGrade(kind) === 1 ? SLIDE.maxSteep : SLIDE.maxGentle; if (!GSx || !ss.sliding || !kind || P.x < (GSx.L.glassFrom || 0) * TS()) return; const s = Math.sign(ss.vx) || 0; if (!s) return;
     ss.vx += s * GS.slideAcc * dt; const cap = max * GS.slideCap; if (Math.abs(ss.vx) > cap) ss.vx = s * cap; if (!P.gsSlid) { P.gsSlid = 1; GSx.n.slides++; } };
 

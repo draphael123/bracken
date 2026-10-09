@@ -15,7 +15,7 @@
 // real jump in the game and fails if these numbers and the game's disagree.
 import { MOVE, RIDE_MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK } from './hero-move.js';
 import { POGO_CHAIN } from './pogo-chain.js';
-import { SLIDE, slideStep, isSlope, slopeRise, slopeGrade } from './slopes.js';
+import { SLIDE, slideStep, slideKeepAt, isSlope, slopeRise, slopeGrade } from './slopes.js';
 
 const TS = 16, DT = MOVE.DT, MAX_DROP = 48, RUNWAY_MAX = 24;
 const cache = new Map();
@@ -45,7 +45,7 @@ export function flight(hero, launch, capPx = Infinity) {
   const k = 'fl|' + hero + '|' + JSON.stringify(launch) + '|' + capPx;
   return memo(k, () => {
     let u = 0, h = 0, vx = launch.slide ? launch.slide : launch.vx, vy = launch.walkOff ? 0 : launch.vy0 ?? MOVE.JUMPV, rise = 0;
-    const up = [], down = [], sk = sprintK(launch.runT || 0);
+    const up = [], down = [], tu = [], th = [], sk = sprintK(launch.runT || 0);   /* tu/th: the flight frame by frame (the highest he can be as he passes a column: hAt) */
     const cap = MOVE.RUN * heroRunMul(hero, false) * (1 + MOVE.SPRINT_BONUS * sk);
     up[0] = null;
     for (let i = 0; i < 1200; i++) {
@@ -62,16 +62,20 @@ export function flight(hero, launch, capPx = Infinity) {
       if (launch.glide && vy > RIDE_MOVE.GLIDE_FALL) vy = RIDE_MOVE.GLIDE_FALL;
       const u0 = u, h0 = h; u += vx * DT; h -= vy * DT;
       if (h > capPx) { h = capPx; if (vy < 0) vy = 0; }
-      rise = Math.max(rise, h);
-      if (vy > 0) {   /* coming down through a floor line: the furthest forward the feet meet it */
+      rise = Math.max(rise, h); tu.push(u); th.push(h);
+      if (vy > 0) {   /* coming down through a floor line: the furthest forward the feet meet it (the frame's whole step: the game moves x before it stands him on the floor) */
         for (let r = Math.floor(h0 / TS); r * TS > h && r * TS <= h0; r--) {
-          const at = u0 + (u - u0) * (h0 - r * TS) / Math.max(1e-9, h0 - h);
+          const at = u;
           if (r >= 0) up[r] = Math.max(up[r] ?? -1, at); else down[-r] = Math.max(down[-r] ?? -1, at);
         }
       }
       if (h < -MAX_DROP * TS) break;
     }
-    return { up, down, rise };
+    /* hAt(d): the highest his feet can be (px over the take-off) as his front comes d px forward - the apex until the stick-forward flight has passed it, then
+       that flight's own height there (slower is later, and after the apex later is lower) */
+    let ia = 0; for (let i = 1; i < th.length; i++) if (th[i] > th[ia]) ia = i;
+    const hAt = d => { if (d <= tu[ia]) return rise; let lo = ia, hi = tu.length - 1; if (d > tu[hi]) return -Infinity; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (tu[m] >= d) hi = m; else lo = m; } return th[hi]; };
+    return { up, down, rise, hAt };
   });
 }
 
@@ -79,7 +83,7 @@ export function flight(hero, launch, capPx = Infinity) {
    (Map 'x,y' -> [{ dir, v }]). A chain of slope tiles is slid from rest at its crest with DOWN held (slideStep, frame by frame; the Glass Sea's
    glass adds its own build up to its ceiling, as src/glass-sea-hands.js does after slideStep), then on along the flat at its foot until the
    slide dies or the floor ends. The cell a slope tile gives is the tile's own cell (src/reach-slopes.js: you stand ON THE ROCK UNDER IT). */
-export function slideSpeeds(L, T, glass = { acc: RIDE_MOVE.GLASS_SLIDE_ACC, cap: RIDE_MOVE.GLASS_SLIDE_CAP, keep: RIDE_MOVE.GLASS_SLIDE_CAP }) {   /* glass: the slick glass's numbers (a fixture can hand the old ones: tools/reach-heroes.mjs) */
+export function slideSpeeds(L, T, glass = { acc: RIDE_MOVE.GLASS_SLIDE_ACC, cap: RIDE_MOVE.GLASS_SLIDE_CAP }) {   /* glass: the slick glass's numbers (a fixture can hand the old ones: tools/reach-heroes.mjs) */
   const W = L.W, H = L.H, g = L.grid, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x], out = new Map();
   const glassFrom = L.glassFrom !== undefined ? L.glassFrom : Infinity;   /* THE GLASS SEA: glass from this column on */
   const stand = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.CLIMB || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
@@ -96,7 +100,7 @@ export function slideSpeeds(L, T, glass = { acc: RIDE_MOVE.GLASS_SLIDE_ACC, cap:
     let px = dir > 0 ? x * TS : (x + 1) * TS - 0.01, idx = 0;
     for (let f = 0; f < 4000 && idx < chain.length; f++) {
       const [cx, cy, kind] = chain[idx];
-      slideStep(s, DT, { kind, ground: true, down: true, jumped: false, keep: px >= glassFrom * TS ? glass.keep : 1 });
+      slideStep(s, DT, { kind, ground: true, down: true, jumped: false, keep: glass.keep !== undefined && px >= glassFrom * TS ? glass.keep : slideKeepAt(L, px, kind) });   /* the game's own keep (src/slopes.js slideKeepAt: main.js asks the same) - a fixture's glass.keep overrides it on its glass */
       if (px >= glassFrom * TS && s.sliding) { const max = slopeGrade(kind) === 1 ? SLIDE.maxSteep : SLIDE.maxGentle, cap = max * glass.cap, sg = Math.sign(s.vx);
         if (sg) { s.vx += sg * glass.acc * DT; if (Math.abs(s.vx) > cap) s.vx = sg * cap; } }
       px += s.vx * DT;
@@ -134,7 +138,7 @@ export function heroJumps(hero) {
       throwOf: (kind, o = {}) => memo('th|' + hero + '|' + kind + '|' + JSON.stringify(o), () => { const air = MOVE.RUN * heroRunMul(hero, false);
         if (kind === 'bounce') return { vx: air, vy0: SPRING_MOVE.BOUNCE_HELD * (o.awning ? SPRING_MOVE.AWNING : 1) };
         if (kind === 'bud') return { vx: 0, vy0: SPRING_MOVE.BUD };
-        if (kind === 'striker') return { vx: air, vy0: -o.launch };
+        if (kind === 'striker') return { vx: air, vy0: -Math.abs(o.launch) };   /* (L.strikers' launch is the upward vy, negative) */
         if (hero === 'warden') return o.footUnder ? { vx: -WARDEN_SPEAR.PERCH_BACK, vy0: WARDEN_SPEAR.PERCH_KICK } : { vx: air, vy0: WARDEN_SPEAR.VAULT_HIGH, fwd: WARDEN_SPEAR.VAULT_FWD, fwdT: WARDEN_SPEAR.VAULT_CARRY };
         return { vx: air, vy0: POGO_CHAIN.plunge }; }),
     };

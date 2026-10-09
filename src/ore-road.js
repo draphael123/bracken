@@ -412,6 +412,10 @@ export function buildOreRoad({ painter, T }) {
      table's work (462-466) and of the checkpoint at 470 - the landing is genuinely blocked between THE DRUM YARD's fight
      and the boss arena until it gives. Gold: this section leans toward the drum, like the rest of the landing's ore */
   block(468, 468, WINCH - 5, WINCH);
+  /* (claude/reachcore) AND IT GOES UP TO THE ROCK: the plug stood six rows tall with open air over it, and from the drum house's shed roof (its rope at 461) a running jump
+     cleared it and dropped behind it onto the checkpoint at 470 - every hero, real keys (tools/reach-heroes.mjs found it: the per-hero fill walked round the gate the shared
+     fill never could). Rock from the shed roof's height up over the seam: the ore is the only way through */
+  block(468, 468, WINCH - 11, WINCH - 6);
   walls.push(makeWall(468, 468, WINCH - 5, WINCH, 'ore', oreBias(468), ORES[oreBias(468)]));
   ent('tippler', 428, WINCH - 7, { face: -1 }); ent('tippler', 460, WINCH - 9, { face: -1 });   /* the first stands over THE ORE SHAFT itself now - the middle of the ride - its stream lands on the spill ledge */
   meet('THE SHAFT BATS', 421, 450, [['bat', 427, WINCH - 5], ['bat', 441, WINCH - 6]]);          // loose over the ride, under the roof

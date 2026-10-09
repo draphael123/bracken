@@ -8,6 +8,7 @@
 // in fact reach. Every such miss is listed as ASSISTED rather than UNREACHABLE, and the levels that lean
 // on them say so at the top.
 // usage: node tools/reach.mjs [levelId] [--plain]
+//   REACH_HERO=<knight|warden|pyro|paladin|pirate|reaper|geomancer> node tools/reach.mjs  runs it with that hero's own legs (src/reachcore.js opts.hero, claude/reachcore; tools/reach-heroes.mjs sweeps them all)
 //
 // --plain runs the fill a SECOND time with nothing that moves and nothing that is only there sometimes (no vine, no
 // ghost furniture, no cart, no wheel, no swing, no phantom plank: reachcore's noAssist) and lists every CLIMB that leans
@@ -27,7 +28,7 @@ for (const lv of LEVELS) {
   if (lv.hidden && !lv.secret) continue;
   if (want && lv.id !== want) continue;
   const L = lv.build(), W = L.W;
-  const { seen, footing, assisted, near, jumpNear } = floodReach(L, T, { rides: true });
+  const { seen, footing, assisted, near, jumpNear } = floodReach(L, T, { rides: true, hero: process.env.REACH_HERO });
   if (plainMode) {
     /* THE CLIMBS, ONE AT A TIME. A plain fill from the start stops at the first assisted climb and everything behind it
        reads as assisted too, which says nothing. So: fill plain; find every assist the plain fill can board (stand within

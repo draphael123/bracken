@@ -377,17 +377,17 @@
   "lostPct": 217
  },
  "oreroad": {
-  "hash": "34c3d716f6ad",
+  "hash": "ab423b5df398",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 14,
-  "deaths": 2,
-  "kills": 24,
-  "lifts": 59,
+  "hits": 15,
+  "deaths": 3,
+  "kills": 26,
+  "lifts": 47,
   "walked": 100,
   "bare": true,
-  "lostPct": 136
+  "lostPct": 171
  },
  "unburied": {
   "hash": "08498834c072",
