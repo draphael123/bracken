@@ -36,7 +36,7 @@
 //   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
 //                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -343,7 +343,7 @@ function cisternqueen(i, delay, variant, env) {
 // next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
 // PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
 // sweeps up under the stop (rising noise and a saw sliding up an octave).
-export const BOSS_PHASE = { gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
+export const BOSS_PHASE = { hourglassking: 1, gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
 const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
 const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
 const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
@@ -403,6 +403,22 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
+// (THE BURIED CITY has no synth bed: 'Loopable Dungeon Ambience' by JaggedStone is its file, claude/buriedcity music pass; THE HOURGLASS KING below keeps his composed theme)
+// ---------------------------------------------------------------- THE HOURGLASS KING (claude/buriedcity, his composed theme: three phases)
+// D minor (harmonic: D E F G A Bb C#), 4/4 at 92 (eighth = 0.326 s), 16 bars = 42 s. THE KING'S HOUR: a PENDULUM BASS swinging D - A every beat (his sceptre),
+// a heavy ESCAPEMENT CLACK on one and three (a low thud with a click), a brass CHORALE (a detuned saw pair, slow) climbing the minor and falling back, and a
+// high CHIME on the first beat of every fourth bar (the hour). 'hourglassking:p2' THE SANDS RISE: a sand hiss on the off-beats, the bass doubled an octave
+// down. 'hourglassking:p3' THE GLASS CRACKS: quicker (eighth 0.27 s), the chime every bar, a cracked bell (two detuned sines) and the chorale an octave up.
+const HKM_STEP = 60 / 92 / 2, HKM_STEP3 = 60 / 112 / 2, HKM_LEN = 8, HKM_BARSN = 16;
+const HKM_CHOR = [['D4', 'F4'], ['E4', 'G4'], ['F4', 'A4'], ['E4', 'C#5']];
+function hourglassking(i, delay, variant, env) {
+  const sands = variant === 'p2', crack = variant === 'p3', step = crack ? HKM_STEP3 : HKM_STEP, bar = Math.floor(i / HKM_LEN), s = i % HKM_LEN, second = bar >= 8, g = env.gain;
+  if (s % 2 === 0) { const f = nf(s % 4 === 0 ? 'D2' : 'A1'); pluck(env, 'triangle', f, step * 1.8, 0.24 * g, delay, { lp: 600 }); if (sands || crack) pluck(env, 'sine', f / 2, step * 1.6, 0.2 * g, delay); }   /* the pendulum */
+  if (s === 0 || s === 4) { pluck(env, 'sine', 80, 0.22, 0.5 * g, delay, { to: 42 }); noise(env, 0.02, 0.1 * g, 3600, 2, delay); }   /* the escapement */
+  if ((s === 0 && (crack || bar % 4 === 0))) { const f = nf('A5'); pluck(env, 'sine', f, 1.8, 0.05 * g, delay, { to: f * 0.999 }); if (crack) pluck(env, 'sine', f * 1.06, 1.4, 0.03 * g, delay, { to: f * 1.05 }); }   /* the hour */
+  if (sands && s % 2 === 1) noise(env, step * 0.8, 0.03 * g, 6000, 0.8, delay);
+  if (s === 0 || s === 4) { const row = HKM_CHOR[(bar >> 1) % 4], n = nf(row[s === 0 ? 0 : 1]) * (crack || second ? 2 : 1) * (crack && second ? 0.5 : 1); held(env, 'sawtooth', n, step * 3.6, 0.055 * g, delay, { lp: 1500, att: 0.06, hold: 0.6, det: 10, from: 0.97 }); }
+}
 // (THE BANDIT KSAR has no synth bed: 'Desert Loop' by iamoneabe is its file, claude/ksar art pass; THE HAWK-MISTRESS below keeps her composed theme)
 // ---------------------------------------------------------------- THE HAWK-MISTRESS (claude/ksar, her composed theme: three phases)
 // D Phrygian dominant (D Eb F# G A Bb C), 4/4 at 100 (eighth = 0.3 s), 16 bars = 38 s. THE DUEL: a frame drum (a bendir: dum on 1 and the and of 2, a slap on
@@ -519,6 +535,7 @@ function fogknight(i, delay, variant, env) {
 export const SYNTH_BOSS = {
   towpath: { step: TPM_STEP, total: TPM_LEN * TPM_BARSN, play: towpath }, fogknight: { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the greybox level bed and his theme */
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
+  hourglassking: { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the greybox level bed and his theme */   /* (claude/lanterneater) */
   greatdrill: { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
   hawkmistress: { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) the greybox level bed and her theme */
@@ -535,6 +552,7 @@ export const SYNTH_BOSS = {
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
   'fogknight:p2': { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight }, 'fogknight:p3': { step: FKM_STEP3, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the double, the shroud */
+  'hourglassking:p2': { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking }, 'hourglassking:p3': { step: HKM_STEP3, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the sands rise, the glass cracks */
   'hawkmistress:p2': { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress }, 'hawkmistress:p3': { step: HMM_STEP3, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) her guard, the store burning */
   'greatdrill:p2': { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill }, 'greatdrill:p3': { step: GDM_STEP3, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) the roof and full bore */
   'colossus:p2': { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, 'colossus:p3': { step: COM_STEP3, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) its night and its dawn */

@@ -570,5 +570,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 340
+ },
+ "buriedcity": {
+  "hash": "8a82a66a2e07",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 9,
+  "deaths": 3,
+  "kills": 0,
+  "lifts": 105,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 170
  }
 }

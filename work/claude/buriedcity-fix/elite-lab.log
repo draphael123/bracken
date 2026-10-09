@@ -1,0 +1,14 @@
+1 kinds: construct@buriedcity
+construct    buriedcity   knight  mash   dead     32.7s  hero   0%  elite 100%  SHIELDED
+construct    buriedcity   knight  human  timeout    60s  hero  72%  elite  81%  SHIELDED
+construct    buriedcity   knight  human  timeout    60s  hero  72%  elite  81%  SHIELDED
+construct    buriedcity   warden  mash   dead     32.6s  hero   0%  elite  55%  SHIELDED
+construct    buriedcity   warden  human  win      25.3s  hero  86%  elite   0%  SHIELDED roused
+construct    buriedcity   warden  human  win      25.3s  hero  86%  elite   0%  SHIELDED roused
+construct    buriedcity   pyro    mash   dead       35s  hero   0%  elite  68%  SHIELDED
+construct    buriedcity   pyro    human  win      46.7s  hero  93%  elite   0%  SHIELDED roused
+construct    buriedcity   pyro    human  win      39.8s  hero  85%  elite   0%  SHIELDED roused
+
+kind          level         affix        mash wins   human wins   human secs
+construct    buriedcity    SHIELDED     0/3         4/6 (67%)    34.3
+wrote docs/elite-lab.json

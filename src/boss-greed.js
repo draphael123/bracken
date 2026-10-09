@@ -37,7 +37,7 @@ import { leOpen } from './lantern-eater.js';   /* THE LANTERN-EATER (claude/lant
 import { qOpen } from './cistern-queen.js';
 import { matOpen } from './raptor-matriarch.js';
 import { colOpen } from './glass-colossus.js';
-import { hmOpen } from './hawk-mistress.js';   /* THE HAWK-MISTRESS (claude/ksar) */
+import { hmOpen } from './hawk-mistress.js'; import { hkOpen } from './hourglass-king.js';   /* THE HOURGLASS KING (claude/buriedcity) */   /* THE HAWK-MISTRESS (claude/ksar) */
 import { hmOpen as hnOpen } from './huntmaster.js';   /* THE GOBLIN HUNTMASTER (claude/rootway) */
 import { drillHittable } from './great-drill.js';   /* THE GREAT DRILL (claude/minecart) */
 import { pbOpen } from './paladin-boss.js';   /* THE PALADIN (claude/litchurch) */
@@ -110,6 +110,7 @@ export const OPEN_RULE = {
   lanterneater: e => leOpen(e) || !!e.keyHit,                               // (claude/lanterneater) snagged / its teeth in the timber - or a blow at its KEY on what is in reach (B14: the keyed angle lands whole and is not greed; the wrong one is; its own ward of a twentieth: OWN_WARD)  //                                 // (claude/canal4) stuck in the raft - or a blow at her BARE angle (the kelp guard: always hittable, the right blow is not greed; her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   cisternqueen: e => qOpen(e) || e.sting > 0 || e.scorch > 0 || !!(e.cqBare && e.cqBare()),   /* (claude/underwell3, Daniel 10-07: her STINGER is her weak spot - a blow on it, wherever it is (e.cqBare: the hands ask the blow's box), and her body while the fire SCORCHES her) */                                             // soaked out of her burrow, on her back off her wall (doused), rearing from a broken grab (claude/welltown3); her STUCK STINGER (claude/welltown5)
   paladinboss: e => pbOpen(e),                                               // THE PALADIN (claude/litchurch): his light starved, he FALTERS on one knee - open
+  hourglassking: e => hkOpen(e) || e.mode === 'turn',                      // THE HOURGLASS KING (claude/buriedcity): stalled by a sand-gate pulled as his glass runs low, or turning his glass over (whole)
   hawkmistress: e => hmOpen(e),                                              // THE HAWK-MISTRESS (claude/ksar): the hawk wheeled off by a gong or blinded by a flash - she whistles it back, open
   huntmaster: e => hnOpen(e),                                               // THE GOBLIN HUNTMASTER (claude/rootway): his own gold arrow struck home (a weak point broken, or a stagger), or caught in his own cage
   greatdrill: e => drillHittable(e),                                         // THE GREAT DRILL (claude/minecart): a CONSTRUCT whose cab is ALWAYS hittable (B13/B14, Daniel 10-07) - only its told ward after a jam turns a blow, so only a blow on the ward is greed; the jam (a routed ore cart in its gears) pays x2 in its own code
@@ -131,7 +132,7 @@ export const OPEN_RULE = {
    blows is the answer, not greed: no reprisal (claude/burnvillage2: and no chip either - he is a duelist on FULL_DAMAGE) */
 export const NO_GREED = new Set(['pyromancer']);
 /* (claude/minecart) THE GREAT DRILL is on OWN_WARD: its number is its own (src/great-drill.js takeBlow: the cab ALWAYS takes a whole blow - B13/B14, Daniel 10-07 - x2 jammed, nothing while warded); greed is still counted */
-export const OWN_WARD = new Set(['greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
+export const OWN_WARD = new Set(['hourglassking', 'greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   mother: 'her body is armoured to every blade already (ARMOURED); the heart node is her opening and it is not the boss',

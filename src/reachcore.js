@@ -52,6 +52,13 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     if (L.underwell) for (const m of [...(L.nests || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     /* THE SKY ROAD (src/sky-road.js, claude/skyroad): THE RIDERS' LOFT opens on the four kite cloths the level lays down: done, like the old nest (tools/skyroad.mjs proves it is a lock) */
     if (L.skyroad) for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+    /* THE BURIED CITY (src/buried-city.js, claude/buriedcity): its grid is every sand room DRAINED (the hands write the sand in at load), so a drain-to-pass room is
+       done already; a FILL-TO-CROSS room counts as full (its lever is on the lip before it: shut it and walk over), a RIDE room as a stair of rungs three rows
+       apart (shut its gate and the sand carries you up), and THE CLOCKWORK VAULT opens on the five gears the level lays down (the plain fill: legs only) */
+    if (L.buriedcity) {
+      for (const [x0, x1, y0, y1] of (L.sandSolid || [])) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * W + x; if (g[i] === T.AIR || g[i] === T.SPIKE || g[i] === T.ONEWAY) g[i] = T.SOFT; }
+      for (const [x0, x1, y0, y1] of (L.sandRungs || [])) for (const y of [...Array(Math.max(0, Math.ceil((y1 - 1 - y0) / 3))).keys()].map(k => y1 - 2 - 3 * k).filter(y => y > y0).concat(y0)) for (let x = x0; x <= x1; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }   /* (and the full sand's top: where the ride ends) */
+      for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) g[y * W + m.x] = T.AIR; }
     /* THE ROOTWAY (src/rootway.js, claude/rootway): a HOIST is one blow on its cleat (or one arrow struck back through its rope) and what it drops STAYS - a span
        across its gap, a cage as a 2x2 step where it lands - so both count as done; THE TROPHY LOFT opens on the four tags the level lays down (tools/rootway.mjs proves
        each required hoist is a lock). A boss cage is winched back up: not footing. The plain fill: legs only */

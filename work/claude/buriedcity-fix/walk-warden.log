@@ -1,0 +1,8 @@
+buriedcity warden s1 L38 (337hp, rainOfSpears+spearDance+javelin, 3 flasks, heart charm): BOSS 0 deaths, 332s, 15 kills, 5 hits, walked 96%, arrivals 100% 100% 100% 77%, measured 96% of the route
+    sections: #0 lost 0% heal 0% (0 drinks) 0d 0h 3k 70s | #1 lost 0% heal 0% (0 drinks) 0d 0h 3k 84s | #2 lost 0% heal 0% (0 drinks) 0d 0h 5k 87s | #3 lost 28% heal 4% (0 drinks) 0d 5h 4k 87s | #4 lost 0% heal 0% (0 drinks) 0d 0h 0k 3s
+    hit by (nearest foe, hits/%hp): construct* 5/28%
+    elite duels: construct/SHIELDED@292 WON 10.3s 100->100%, construct/BURNING@389 WON 8.3s 100->100%, construct/UNSTOPPABLE@483 lost 24s 100->100%
+
+LEVEL WALK  (campaign level, typical build, profile human+first, 1 runs, 1 min)  target: 1-2 deaths a first run, arrive < 50%
+level      hero     L runs deaths(haz/elite) arrive%(mean/min)  lost%/sec  drinks  kills  secs  walked  meas  end            vs target
+buriedcity warden  38    1    0.0(0.0/0.0)              94/77          7     0.0     15   332     96%   96%  boss           MISS: deaths 0.0 < 1, arrive 94% >= 50

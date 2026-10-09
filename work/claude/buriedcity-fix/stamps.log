@@ -1,0 +1,62 @@
+=== level1-pilot.mjs buriedcity --write
+buriedcity (knight, fresh save, 3 runs summed): 9 hits taken, 3 deaths, 0 kills, walked 100% of the waypoints, 105 lifts (32834 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-buriedcity\docs\level1-pilot.json
+errors []
+exit 0
+=== level1-pilot.mjs buriedcity --curve --write
+buriedcity (knight, fresh save, 3 runs summed): 9 hits taken, 3 deaths, 0 kills, walked 100% of the waypoints, 105 lifts (32834 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-buriedcity\docs\level1-curve.json
+errors []
+exit 0
+=== mash-bot.mjs --level buriedcity --write
+buriedcity: level hash changed: carried the boss row(s) of the old hash (re-run the boss to refresh them: node tools/mash-bot.mjs <id> --write)
+buriedcity LEVEL L38 knight: lowest hp 0%, hp lost 701%, deaths 7, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 47 lifts (15 HELD: put back by a room it could not finish), 22 blows taken
+buriedcity LEVEL L38 warden: lowest hp 0%, hp lost 701%, deaths 7, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 46 lifts (15 HELD: put back by a room it could not finish), 16 blows taken
+buriedcity LEVEL L38 pyro: lowest hp 0%, hp lost 294%, deaths 2, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 46 lifts, 15 blows taken
+wrote docs/mash-bot.json
+errors []
+exit 0
+=== mash-bot.mjs buriedcity --write
+buriedcity BOSS expected L38 knight#1: DEAD 31.3s, hero lost 100%, boss left 98%, 12/664 blows
+buriedcity BOSS expected L38 knight#2: DEAD 31.3s, hero lost 100%, boss left 98%, 12/664 blows
+buriedcity BOSS expected L38 warden#1: DEAD 40.2s, hero lost 100%, boss left 91%, 21/1162 blows
+buriedcity BOSS expected L38 warden#2: DEAD 40.2s, hero lost 100%, boss left 91%, 21/1162 blows
+buriedcity BOSS expected L38 pyro#1: DEAD 41.7s, hero lost 100%, boss left 88%, 73/1223 blows
+buriedcity BOSS expected L38 pyro#2: DEAD 41.7s, hero lost 100%, boss left 88%, 73/1223 blows
+wrote docs/mash-bot.json
+errors []
+exit 0
+=== buried-city-levers.mjs
+ok  knight  phase 1 lever W walk  {"ph":1,"phNow":1,"banks":false,"side":"W","mode":"walk","frames":139,"at":[527.83,30,true],"dx":3.1,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 1 lever E walk  {"ph":1,"phNow":1,"banks":false,"side":"E","mode":"walk","frames":139,"at":[560.17,30,true],"dx":3.1,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 2 lever W walk  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"walk","frames":141,"at":[527.83,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 2 lever W wall  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 2 lever E walk  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"walk","frames":141,"at":[560.17,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 2 lever E wall  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 3 lever W walk  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"walk","frames":143,"at":[527.85,30,true],"dx":3.4,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 3 lever W wall  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 3 lever E walk  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"walk","frames":143,"at":[560.15,30,true],"dx":3.4,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  knight  phase 3 lever E wall  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 1 lever W walk  {"ph":1,"phNow":1,"banks":false,"side":"W","mode":"walk","frames":139,"at":[527.83,30,true],"dx":3.1,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 1 lever E walk  {"ph":1,"phNow":1,"banks":false,"side":"E","mode":"walk","frames":139,"at":[560.17,30,true],"dx":3.1,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 2 lever W walk  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"walk","frames":141,"at":[527.83,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 2 lever W wall  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 2 lever E walk  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"walk","frames":141,"at":[560.17,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 2 lever E wall  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 3 lever W walk  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"walk","frames":143,"at":[527.85,30,true],"dx":3.4,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 3 lever W wall  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 3 lever E walk  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"walk","frames":143,"at":[560.15,30,true],"dx":3.4,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  warden  phase 3 lever E wall  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 1 lever W walk  {"ph":1,"phNow":1,"banks":false,"side":"W","mode":"walk","frames":123,"at":[527.82,30,true],"dx":2.5,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 1 lever E walk  {"ph":1,"phNow":1,"banks":false,"side":"E","mode":"walk","frames":123,"at":[560.18,30,true],"dx":2.5,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 2 lever W walk  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"walk","frames":125,"at":[527.81,30,true],"dx":2.5,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 2 lever W wall  {"ph":2,"phNow":2,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 2 lever E walk  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"walk","frames":125,"at":[560.19,30,true],"dx":2.5,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 2 lever E wall  {"ph":2,"phNow":2,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 3 lever W walk  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"walk","frames":127,"at":[527.83,30,true],"dx":2.8,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 3 lever W wall  {"ph":3,"phNow":3,"banks":true,"side":"W","mode":"wall","frames":241,"at":[527.31,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 3 lever E walk  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"walk","frames":127,"at":[560.17,30,true],"dx":2.8,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+ok  pyro    phase 3 lever E wall  {"ph":3,"phNow":3,"banks":true,"side":"E","mode":"wall","frames":241,"at":[560.69,30,true],"dx":3,"lit":true,"stalled":true,"kingMode":"stall","open":3.98}
+buried-city-levers: 30 pulls green - knight/warden/pyro walk to and pull both levers in all three phases (and from against the wall), the levers lit while his glass is low
+exit 0
+ALLDONE
