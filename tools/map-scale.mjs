@@ -42,7 +42,7 @@ for (let i = 0; i < nodes.length; i++) { const n = nodes[i], p = plates.get(n.id
     if (over(p, nodeBox(m), 0)) bad.push(n.id + ': its board is over node ' + m.id);
     if (over(p, plates.get(m.id), 0)) bad.push(n.id + ' / ' + m.id + ': boards overlap');
     if (over(p, signBox(m), 0)) otherSign++; }
-  for (const r of lms) if (over(p, r, 0)) lmHits++; }
+  for (const r of lms) if (over(p, r, 0)) { lmHits++; notes.push('(landmark ' + r.of + ' under board ' + n.id + ')'); } }
 if (lmHits) bad.push(lmHits + ' board(s) over a landmark critter');
 if (otherSign) notes.push(otherSign + ' board(s) lie over a NEIGHBOUR\'s signpost (a prop, 10x12; listed, not a failure)');
 let softTotal = 0, worst = 0;
@@ -70,7 +70,7 @@ try {
 } finally { pg.close(); }
 
 /* KNOWN RESIDUALS (frozen; may only shrink): the info card (208x54) plus the neighbours' boards leave no free spot for these two boards in the crowded Stormhold / Sporewood corners, so they sit beside their own node/signpost. tools/map-plates-solve.mjs minimises them; a move of a node there should re-run it. */
-const KNOWN = [/^storm: /, /^spore: /, /^[0-9]+ board.s. over a landmark critter/];
+const KNOWN = [/^1 board.s. over a landmark critter/];   /* ratchet (Daniel 10-09, one-line boards): the ONE left is Undercrown's board touching the Highcrown castle art, which stands on top of that node; a count above 1 fails */
 for (let i = bad.length - 1; i >= 0; i--) if (KNOWN.some(r => r.test(bad[i]))) notes.push('KNOWN RESIDUAL ' + bad.splice(i, 1)[0]);
-if (bad.length) { console.error('map-scale FAIL (' + bad.length + '):\n  ' + bad.join('\n  ')); process.exit(1); }
+if (bad.length) { console.error('map-scale FAIL (' + bad.length + '):\n  ' + bad.join('\n  ')); console.error(notes.filter(n => n.startsWith("(landmark")).join(" ")); process.exit(1); }
 console.log('map-scale ok: ' + nodes.length + ' boards clear of nodes, signs, landmarks and each other; ' + notes.join('; '));

@@ -98,7 +98,7 @@ export const SCREEN = { VW: 320, VH: 180, HEADER: 19, FOOTER: 11, MAPH: 900 };
 export const NEAR = 0;   // what counts as "around the selected node": anything within this many px of it, and its road neighbours, must stay readable
 export const ANCHORS = [0.55, 0.4, 0.7, 0.3, 0.8, 0.25, 0.9, 0.2, 0.35, 0.45, 0.6, 0.65, 0.75, 0.85];   // the node's screen height, as a fraction of VH (0.55 = the map's own default)
 export function panelSize(nd) { return { w: Math.min(SCREEN.VW - 12, 208), h: nd.kind === 'store' ? 26 : 54 }; }   /* 54 of 180 = 30% of the screen (the style guide's cap; it was 58) */
-export function plateNodes(NODES, nameOf) { return NODES.map(n => ({ id: n.id, x: n.x, y: n.y, kind: n.kind, spur: !!n.spur, plate: n.plate, label: n.kind === 'store' ? (n.id === 'highstore' ? 'HIGH STORE' : 'STORE') : plateLabel(nameOf(n)), twoLine: n.kind === 'level' })); }
+export function plateNodes(NODES, nameOf) { return NODES.map(n => ({ id: n.id, x: n.x, y: n.y, kind: n.kind, spur: !!n.spur, plate: n.plate, label: n.kind === 'store' ? (n.id === 'highstore' ? 'HIGH STORE' : 'STORE') : plateLabel(nameOf(n)), twoLine: false }   /* ONE-LINE BOARDS (Daniel 10-09): the name only; medal, silver and quest live on the selected node's info card */)); }
 const hitR = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 /* the nodes beside this one on the road: the last and next ROAD node in list order (a spur: the one it hangs off, and nothing else) */
 export function neighbours(nd, nodes) {

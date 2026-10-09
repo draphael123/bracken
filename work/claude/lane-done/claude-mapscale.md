@@ -12,13 +12,8 @@ Branch claude/mapscale off claude/fontpair. Shots: work/claude/mapscale/before-*
 ## Checks (alone, port 8783)
 map-grammar, map-spacing, class-spurs, level-reach, modulepreload, dangling-paths, fonts, map-footer, map-scale: green. textfit hints,mapcard,menu,hud: green after the banner fix (mapcard re-run alone green; others green before it). No full suite run.
 
-## Reds / residuals
-- map-scale carries a frozen KNOWN RESIDUAL list: Stormhold's board sits on its own node/signpost, Sporewood's on its own signpost, 3 boards touch a landmark critter - the crowded corner leaves no spot while the card also stays clear. Shrinking the card further or allowing a stripless one-line board there would fix it.
-- Info cards still lie over ~171 non-neighbour boards in total (worst 8): only road neighbours + the node are guaranteed clear. The fixed compass still overlaps boards at the right edge (not touched).
-- Board paths over roads not avoided (roads are not in the layout).
-- Info-card thumbnail is still the postcard (not a real level thumbnail); map first-frame black left to TITLE-SCENE.
-
-## QUESTIONS FOR DANIEL
-1. "Hero 2x": built as everything on the map at 1 buffer px per art px (the hero already was); making hero/nodes literally 2x would break node spacing. OK? (rec: yes)
-2. Drop the medal/silver/quest strip from non-selected boards (one-line boards would clear the residuals and most card overlaps)? Built: kept strips.
-3. Plate names lose "THE" - fine?
+## Update (Daniel 10-09 answers)
+- Boards are ONE LINE (name only); the medal/silver/quest strip is gone from the map, it lives on the selected node's info card. Table re-solved (tools/map-plates-solve.mjs). KNOWN RESIDUAL list ratcheted to ONE: Undercrown's board touches the Highcrown castle art (the castle stands on that node). Stormhold/Sporewood residuals are gone.
+- "THE" dropped on map boards only; the info card, level intro cards and lists keep the full name. 1 buffer px per art px accepted.
+- Checks alone: map-scale, map-grammar, map-spacing, class-spurs, level-reach, map-footer green; textfit hints,menu,hud,mapcard green (COLLIDE 0).
+- Still true: cards lie over ~122 non-neighbour boards total (worst 7); compass overlaps right-edge boards; roads not avoided; postcard thumbnail; first frame black is TITLE-SCENE's.

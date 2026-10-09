@@ -4702,7 +4702,7 @@ function drawMap() {
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
     const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : plateLabel(LEVELS[nd.level].name);
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
-    const twoLine = !!p && !lk;
+    const twoLine = false;   /* (one-line boards: the strip is on the info card) */
     const pl = plateAt.get(nd.id), tw = pl.w, th = twoLine ? pl.h : Math.min(10, pl.h);   /* (a place you cannot enter yet is a one-line board; the layout kept room for the two-line one) */
     const lx = pl.x + pl.w / 2, ly = pl.y;
     /* A BOARD PUSHED AWAY FROM ITS NODE points back at it. On a crowded road the long names get shoved wherever there is room,
@@ -4716,16 +4716,6 @@ function drawMap() {
     g.fillStyle = lk ? '#2a2634' : '#4e3520'; g.fillRect(bx0 + 1, by0 + 1, tw - 2, th - 2);
     if (!lk) { g.fillStyle = '#6e4d2c'; g.fillRect(bx0 + 1, by0 + 1, tw - 2, 1); }
     text(lbl, bx0 + Math.round(tw / 2), by0 + 2, lk ? '#b4b4c4' : here ? UI.title : UI.text, 'center', 6);
-    if (twoLine) { // one strip: medal, silver taken, quest
-      let bx = bx0 + 4; const by = by0 + 11;
-      if (p.medal) MPX.fillDisc(g, bx + 2, by + 2, 2, MEDAL_COL[p.medal]); else MPX.strokeRing(g, bx + 2, by + 2, 2, '#8a8478');
-      bx += 8;
-      const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length;
-      for (let i = 0; i < 3; i++) { g.fillStyle = i < sv ? UI.silver : 'rgba(255,255,255,0.16)'; g.fillRect(bx + i * 4, by + 1, 3, 3); }
-      bx += 14;
-      g.fillStyle = p.quest ? '#8fd160' : 'rgba(255,255,255,0.16)'; g.fillRect(bx, by + 1, 3, 3); bx += 6;
-      if (p.cleared) { g.fillStyle = '#8fd160'; g.fillRect(bx0 + tw - 7, by, 2, 4); g.fillRect(bx0 + tw - 6, by + 3, 4, 2); g.fillRect(bx0 + tw - 4, by, 2, 4); }
-    }
   }
   g.restore(); g.__mapWorld = false;   /* (from here on it is the screen's own: the frame, header, card and footer are not allowed off the edge) */
   // parchment frame + compass
