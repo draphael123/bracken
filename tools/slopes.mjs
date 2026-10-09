@@ -194,7 +194,7 @@ const newProbe = (tileAt, ftx, fty, feetY, w) => aheadTile(tileAt, ftx, fty, fee
   /* claude/oreroad2 (lane): THE ORE ROAD gets a real slope too now (the spoil heap's ramp, Daniel's backlog) - it is
      excluded from the old-vs-new comparison above for the same reason THE SUNKEN CARAVAN is (levelHasSlopes, line 163):
      a level with any slope tile in it has no old-mover baseline to agree with in the first place */
-  ok(sloped.every(id => id === 'caravan' || id === 'oreroad' || id === 'fair' || id === 'welltown' || id === 'glasssea' || id === 'minecart'), `the only levels with slopes in them are the ones built for them (${sloped.join(' ') || 'none'})`);
+  ok(sloped.every(id => id === 'fallingtower' || id === 'caravan' || id === 'oreroad' || id === 'fair' || id === 'welltown' || id === 'glasssea' || id === 'minecart'), `the only levels with slopes in them are the ones built for them (the falling tower's buckled floors since claude/fallingtower2: THE LEAN) (${sloped.join(' ') || 'none'})`);
   ok(bad === 0, `every frame of every body identical to today's moveBody (${bad} frames differ)`);
   if (firstBad) out.push('    first: ' + JSON.stringify(firstBad).slice(0, 500));
 }

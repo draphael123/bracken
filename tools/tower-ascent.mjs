@@ -103,7 +103,7 @@ assert.ok(checks[0] > TOWER.SKY + 1 && checks[0] <= TOWER.SKY + 8, "the last che
      them over - all but the cistern, which is water and stepping stones from wall to wall. */
   assert.ok(n('tome') >= 8, "THE TOMES are still the tower's own foe: " + n('tome'));
   const perFloor = L.towerFloors.map(f => L.ents.filter(e => e.t === 'tome' && e.y >= f.top && e.y < f.bot).length);
-  assert.ok(perFloor.every((k, i) => k >= 1 || L.towerFloors[i].name === 'THE BURST CISTERN'), 'on every floor with flat ground: ' + perFloor.join(','));
+  assert.ok(perFloor.every((k, i) => k >= 1 || L.towerFloors[i].name === 'THE ALCHEMY LAB'), 'on every floor with flat ground (the burst cistern is THE ALCHEMY LAB since claude/fallingtower2): ' + perFloor.join(','));
   // AND BOTH NEW FLOORS ARE LOAD-BEARING. Take the rule away and the fill stops at it.
   const noFlip = floodReach({ ...L, glyphBridges: [] }, T, { rides: true });
   assert.ok(!noFlip.jumpNear(40, F['THE READING ROOM'].top + 9), 'without the flip the gallery is out of reach');

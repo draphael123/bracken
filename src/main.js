@@ -53,6 +53,7 @@ import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-bos
 import { attackPose } from './attack-animation.js'; import * as CM from './commit.js';   /* WEIGHT (Daniel 10-02): COMMITMENT + STAMINA - the commit, the held buffer, the bar's rules (src/commit.js) */
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
+import { ftUpdate, ftMover, ftDraw, FT2 } from './tower-fall2.js';   /* THE FALLING TOWER 2 (claude/fallingtower2): debris on told shadows, burning books, spills, the tilting vault, the outer face, the snap */
 import { crumbleStep, crackMarks } from './tower-collapse.js'; import * as FTW from './redraw/fallen_tower.js';   /* THE FALLING TOWER's FAILING STONE (docs/briefs/falling-tower-rework.md) */
 import {bakeCoastalFoe} from './coastal-foes.js';
 import {drawClimbCues} from './haunted-coast.js';
@@ -9084,7 +9085,7 @@ function updatePlayer(dt) {
   if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
-  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * heroRunMul(hero(), P.ground) /* heavy on his feet, not in the air (reaper, geomancer): the levels' gaps are measured for the knight's jump; quicker pyro, slower paladin - src/hero-move.js HERO_RUN */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + MOVE.SPRINT_BONUS * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
+  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : P.syrupT > 0 && P.ground ? FT2.syrup.cap : RUN * heroRunMul(hero(), P.ground) /* heavy on his feet, not in the air (reaper, geomancer): the levels' gaps are measured for the knight's jump; quicker pyro, slower paladin - src/hero-move.js HERO_RUN */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + MOVE.SPRINT_BONUS * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
   /* UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down"): walking up a dune the legs cap at 0.6 of a run on a steep slope, 0.8 on a gentle one, and down it they run a little free (1.1). Walking only - the slide (below) keeps its own speeds. */
   const slopeK = SLOPES_ON && P.ground && move && !P.swim ? footSlope(tileAt, P) : 0, capW = slopeK ? cap * (slopeRise(slopeK) === move ? (slopeGrade(slopeK) === 1 ? UPHILL.steep : UPHILL.gentle) : UPHILL.down) : cap;
@@ -9352,7 +9353,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (FAIR && L.haystacks) { const hz = L.haystacks.find(z => tx >= z[0] && tx <= z[1]); if (hz) { FAIR.sq[hz[0]] = 1; SFX.hayRustle(); } }
     if (L.grid[i] === T.BOUNCER && !(FAIR && L.awnings && L.awnings.some(a => tx >= a.x0 && tx <= a.x1 && ty === a.row))) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
   }
-  if (P.ground && !P.onMover && L.scree && !P.dead) for (const z of L.scree) if (Math.abs(P.y - z.y * TS) < 2 && P.x >= z.x0 * TS && P.x < (z.x1 + 1) * TS) { const sp = P.block ? 24 : 70; P.x += z.dir * sp * dt; P.screeT = (P.screeT || 0) - dt; if (P.screeT <= 0) { P.screeT = 0.12; dust(P.x - z.dir * 4, P.y, 1); if (Math.random() < 0.5) SFX.step(); } }
+  if (P.ground && !P.onMover && L.scree && !P.dead) for (const z of L.scree) if (Math.abs(P.y - z.y * TS) < 2 && P.x >= z.x0 * TS && P.x < (z.x1 + 1) * TS) { const sp = P.block ? 24 : (z.sp ?? 70); P.x += z.dir * sp * dt; P.screeT = (P.screeT || 0) - dt; if (P.screeT <= 0) { P.screeT = 0.12; dust(P.x - z.dir * 4, P.y, 1); if (Math.random() < 0.5) SFX.step(); } }
   if (P.ground && P.groundTile === T.SHELF) { // shelf fungus snaps under a standing weight
     for (const tx of [Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)]) { const ty = Math.floor((P.y + 1) / TS); const i = ty * LW + tx; if (L.grid[i] !== T.SHELF) continue; if ((shelfT[i] || 0) < 0) continue; shelfT[i] = (shelfT[i] || 0) + dt; if (shelfT[i] > 0.4 && Math.random() < dt * 20) parts.push({ x: tx * TS + Math.random() * 16, y: ty * TS + 5, vx: 0, vy: 30, life: 0.3, max: 0.3, col: '#d9a55b', size: 1, grav: 200 }); if (shelfT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; shelfT[i] = -4; SFX.crack(); burst(tx * TS + 8, ty * TS + 4, 8, L.looseRock ? ['#8a8a96', '#4a4a56'] : ['#d9a55b', '#8a5a32'], 60, 0.5); if (L.dark) { shakeCam(3); SFX.rumble(); for (let k = 0; k < 4; k++) parts.push({ x: tx * TS + Math.random() * 48 - 16, y: ty * TS - 100 - Math.random() * 40, vx: 0, vy: 40, life: 0.9, max: 0.9, col: '#5a5a66', size: 2, grav: 500 }); } } }
   }
@@ -10250,7 +10251,8 @@ function onDeck(x, y) { const R = L.roll; if (!R) return false;
   const tx = x / TS; if (tx < R.x0 || tx > R.x1 || (R.not || []).some(([a, b]) => tx >= a && tx <= b + 1)) return false;
   return !(L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && y / TS >= y0 && y / TS <= y1 + 1.5); }
 const heeling = () => !!(roll && roll.state === 'heel' && roll.k > 0.5);
-function seaTilt() { if (!roll || !L || !L.roll || SET.reduceMotion) return 0; return roll.dir * (L.roll.heel || 0.05) * roll.k * (1 - seaCalm()); }
+function seaTilt() { if (L && L.ft2 && !SET.reduceMotion) return bossActive || (P && P.carpet) || chaseView() ? 0 : -(L.ft2.leanShown || 0) * Math.PI / 180;   /* (claude/fallingtower2) THE TOWER LEANS: half a degree a fallen floor, the frame going over with it (none in his sky, none on his stair) */
+  if (!roll || !L || !L.roll || SET.reduceMotion) return 0; return roll.dir * (L.roll.heel || 0.05) * roll.k * (1 - seaCalm()); }
 /* THE HORIZON GOES OVER WITH HER. The frame already rolls with her heel; the far sea rolls half as far again, and rocks a little with
    every swell under her the rest of the time, so the horizon is never a ruled line on a storm deck. */
 function stormHorizon() { if (SET.reduceMotion || !L) return 0; const per = (L.swell && L.swell.period) || 3.8; return seaTilt() * 0.5 + Math.sin(time * Math.PI * 2 / per) * 0.014 * (1 - seaCalm()); }
@@ -13696,7 +13698,7 @@ let DESERT_END = null;
 function desertEndArt() { if (DESERT_END) return DESERT_END; const A = cvArt(), one = c => (Array.isArray(c) ? c[0] : c);
   return (DESERT_END = { sky: DZ.bakeDesertSky(VH), far: DZ.bakeFarMesas(320, 70), mid: DZ.bakeMidDunes(480, 80), wagon: A.wagon[0], skull: one(A.bones.skull), tree: A.deadTree }); }
 function drawMageTiles(cx, cy) {
-  if(L.fallingTower)drawDeckBreaks(g,L,cx,cy,time);
+  if(L.fallingTower){drawDeckBreaks(g,L,cx,cy,time);if(L.ft2)ftDraw(g,L,P,cx,cy,time,(s,x,y,col,al,z)=>text(s,x,y,col,al||'center',z||6),movers);}   /* (fallingtower2) */
   if (!MG || !L.mage) return; const A = ma(), S = A.skins; if (!S) return;
   const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(LW - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(0, Math.floor(cy / TS)), ty1 = Math.min(LH - 1, Math.floor((cy + VH) / TS) + 1);
   const lip = (x, y) => { g.fillStyle = 'rgba(236,224,255,0.55)'; g.fillRect(x, y, TS, 1); g.fillStyle = 'rgba(236,224,255,0.2)'; g.fillRect(x, y + 1, TS, 1); };
@@ -17990,6 +17992,10 @@ function updateAscent(dt){
   crash:(f,y)=>{shakeCam(4);if(Math.abs(y*TS-P.y)<VH)SFX.stone();},
   warn:f=>{shakeCam(3);SFX.rumble&&SFX.rumble();if(!f.last)number(P.x,P.y-40,f.name+' GOES DOWN BEHIND YOU','#ff9a5c');}});
  updateCrumbles(dt);
+ if(L.ft2)ftUpdate(L,P,dt,{time,grid:L.grid,W:LW,T,standable:t=>t===T.SOLID||isOneWay(t)||(t>=20&&t<=25),solid:t=>t===T.SOLID||t===T.PORT||t===T.CRATE,busy:miniActive||bossActive,
+  hurt:(x,d,blow)=>damagePlayer(x,d,{unblockable:blow!=='chest',name:{debris:'FALLING STONE',flare:'THE BURNING BOOKS',chest:'A SLIDING CHEST',lightning:'THE LIGHTNING'}[blow]||'THE TOWER'}),
+  fall:()=>{damagePlayer(P.x,1,{unblockable:true,pct:SV.HAZARD.pct,name:'THE DROP'});if(!P.dead&&P.hp>0)hazardBack();},
+  say:(x,y,s,col)=>number(x,y,s,col),callout:s=>callout(s),sound:k=>(SFX[k]||SFX.stone)(),shake:n=>shakeCam(n),push:dx=>{moveBody(P,dx,0,false);},dust:(x,y,n)=>dust(x,y,n)});   /* (fallingtower2) src/tower-fall2.js */
  updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();dcBank();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.sanctum){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();for(const c of chases)if(c.sp.id==='towerscroll')chaseReset(c.st);   /* THE RISING DARK stays on the stair (claude/towerscroll) */}});
  /* THE SECOND DOOR: through it the carpet is left behind, the sky goes warm, and the last walk of the world is on sand */
  updateSanctum(L,P,dt,{leave:out=>{burst(out.x,out.y,26,['#e0b050','#ffe9b0','#8a5a1a'],150,.9,0,2);
@@ -25986,6 +25992,7 @@ function updateMovers(dt) {
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
     if ((m.kind === 'hexvine' || m.kind === 'haycart') && updateFieldsMover(m, dt)) continue;   /* THE HEXED FIELDS */
     if (m.mage && updateMageMover(m, dt)) continue;
+    if (m.ft2) { ftMover(L, m, dt, time); continue; }   /* (fallingtower2) THE OBSERVATORY's telescope and THE SNAP's chunk */
     if (m.leRaft) { const ox = m.x, oy = m.y; if (LEH) LEH.raftMover(m, dt); m.dx = m.x - ox; m.dy = m.y - oy; continue; }   /* THE LANTERN-EATER's raft: out on its water (src/lantern-eater-hands.js) */   /* THE MAGE'S FOLLY: the books and the lanes (a planet is a wheel, and falls through to the wheel) */
     if (m.windlass && WTH && WTH.bucket(m, dt)) continue;
     if (m.gorge && RGH && RGH.basket(m, dt)) continue; if (m.sky && SKY && SKY.mover(m, dt)) continue;   /* THE SKY ROAD: THE GREAT KITE REEL's cage */   /* THE RED GORGE: a basket rides up its shaft only while the water runs past its wheel */   /* THE WELL TOWN: THE GREAT WELL's bucket goes only where a windlass sends it */
@@ -27762,7 +27769,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const m of movers) {
     if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
     if (m.kind === 'galhorse') { if (!m.broken && L.galRing && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.galRing, m.i); continue; }   /* (claude/fairfix5) the gallopers, on their poles */
-    if (m.leRaft) continue;   /* (the raft is drawn by its hands: LEH.drawBack) */
+    if (m.leRaft || m.ft2) continue;   /* (the raft is drawn by its hands: LEH.drawBack; the falling tower's telescope and chunk by ftDraw) */
     if (m.debris || m.mplank) continue;   /* (claude/redgorge2: the rapids' timbers and the dam's are drawn by their hands) */
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
