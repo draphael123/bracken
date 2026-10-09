@@ -1,0 +1,200 @@
+== THEATRE (488 columns, route 622 tiles): CLEARS THE BAR
+  ok   flat       7% of the route is long flat empty runs (<=30%), 9% is long level ground (<=60%); longest 30 / 39 columns
+  ok   bands      8 height bands on the route (>=5), 62% of the width offers a second height (>=40%)
+  ok   mechanics  10 gadget kinds (>=5), 4 in 3+ places (>=3): spotlampx10 flylockx9 mv:flyx9 stagetrapx3 flatwinchx2 cueleverx1 startrapx1 marionettex1
+  ok   music      theatre; boss room puppeteer
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     5 checkpoints, one per 124 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    2.11 encounters a screen (0.8-2.5; 39 encounters, 3.3 foes a screen), 1 empty screens = 6% (<=30%)
+  ok   slopes     no slope tiles
+  ok   ranged     13 ranged foes: archer,drunk
+  ok   roles      4 foe roles (>=3): heavyx3 meleex42 rangedx13 supportx3
+  ok   unlocks    0 collectible kinds [], 2 interactive kinds [flatwinch,cuelever], 0 declared in L.unlocks
+  ok   pilot      21 blows taken by a fresh level-1 knight (1 deaths, walked 100%) (>=2), 94 lifts
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero pyro lowest hp 2%, 0 deaths, walked 100%, 5 rides, 0 pulls, 32 lifts
+  ok   ruleFight  32 of 39 designed encounters stand where the rule is active (>=2; rule state from darkZones, rigBands)
+  ok   curve      act 4 (THE OLD KINGDOM): a level-1 knight lost 147% health a run, 1 deaths in 3 runs (band 120-600%, 1-12 deaths)
+  ok   route      route spans 30 rows, 50 tiles back, 10 branches/pockets (>=2)
+== FAIR (672 columns, route 667 tiles): CLEARS THE BAR
+  ok   flat       0% of the route is long flat empty runs (<=30%), 11% is long level ground (<=60%); longest 18 / 34 columns
+  ok   bands      5 height bands on the route (>=5), 43% of the width offers a second height (>=40%)
+  ok   mechanics  15 gadget kinds (>=5), 5 in 3+ places (>=3): ticketx11 gtargetx5 carouselx4 mv:swingx4 strikerx3 arr:crumblesx2 arr:carouselsx2 mv:carhorsex1
+  ok   music      harvestfair; boss room wickerqueen
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     5 checkpoints, one per 133 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    1.32 encounters a screen (0.8-2.5; 35 encounters, 1.6 foes a screen), 4 empty screens = 16% (<=30%)
+  ok   slopes     83 slope cells: drawn (diagonal tiles, guard: (L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID))
+  ok   ranged     8 ranged foes: drunk,archer,wickerman
+  ok   roles      5 foe roles (>=3): heavyx8 meleex21 rangedx8 runnerx6 supportx2
+  ok   unlocks    0 collectible kinds [], 1 interactive kinds [pushblock], 3 declared in L.unlocks
+  ok   pilot      43 blows taken by a fresh level-1 knight (0 deaths, walked 100%) (>=2), 86 lifts
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero knight lowest hp 0%, 4 deaths, walked 100%, 15 rides, 0 pulls, 37 lifts
+  ok   ruleFight  8 of 35 designed encounters stand where the rule is active (>=2; rule state from crumbles, carousels)
+  ok   curve      act 4 (THE OLD KINGDOM): a level-1 knight lost 370% health a run, 3 deaths in 3 runs (band 120-600%, 1-12 deaths)
+  ok   route      route spans 16 rows, 0 tiles back, 10 branches/pockets (>=2)
+== CANAL (452 columns, route 446 tiles): CLEARS THE BAR
+  ok   flat       0% of the route is long flat empty runs (<=30%), 0% is long level ground (<=60%); longest 19 / 19 columns
+  ok   bands      7 height bands on the route (>=5), 57% of the width offers a second height (>=40%)
+  ok   mechanics  7 gadget kinds (>=5), 4 in 3+ places (>=3): lanternpostx10 locksluicex5 swingcapx4 foghornx3 stopwinchx1 mv:bargex1 mv:liftx1
+  ok   music      canal; boss room lanterneater
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     3 checkpoints, one per 149 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    2.25 encounters a screen (0.8-2.5; 37 encounters, 3.3 foes a screen), 1 empty screens = 6% (<=30%)
+  ok   slopes     no slope tiles
+  ok   ranged     11 ranged foes: archer
+  ok   roles      5 foe roles (>=3): heavyx14 meleex7 rangedx11 runnerx18 supportx3
+  ok   unlocks    0 collectible kinds [], 0 interactive kinds [], 5 declared in L.unlocks
+  ok   pilot      89 blows taken by a fresh level-1 knight (14 deaths, walked 100%) (>=2), 113 lifts
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero knight lowest hp 0%, 6 deaths, walked 100%, 7 rides, 0 pulls, 33 lifts, HELD in a room it could not finish (7 lifts put back)
+  ok   ruleFight  37 of 37 designed encounters stand where the rule is active (>=2; rule state from rigBands, pools)
+  ok   curve      the level changed since its curve row (re-run node tools/level1-pilot.mjs canal --curve)
+  ok   route      route spans 24 rows, 0 tiles back, 7 branches/pockets (>=2)
+== WELLTOWN (704 columns, route 689 tiles): CLEARS THE BAR
+  ok   flat       0% of the route is long flat empty runs (<=30%), 31% is long level ground (<=60%); longest 19 / 63 columns
+  ok   bands      10 height bands on the route (>=5), 59% of the width offers a second height (>=40%)
+  ok   mechanics  7 gadget kinds (>=5), 3 in 3+ places (>=3): skinwellx11 mudwallx5 oilfirex3 windlassx2 djwindlassx2 cisternx1 mv:liftx1
+  ok   music      welltown; boss room djinn
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     6 checkpoints, one per 115 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    1.48 encounters a screen (0.8-2.5; 40 encounters, 2.3 foes a screen), 6 empty screens = 22% (<=30%)
+  ok   slopes     4 slope cells: drawn (diagonal tiles, guard: (L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID))
+  ok   ranged     19 ranged foes: archer,gobmage
+  ok   roles      3 foe roles (>=3): meleex32 rangedx19 runnerx11
+  ok   unlocks    1 collectible kinds [stray], 0 interactive kinds [], 7 declared in L.unlocks
+  ok   pilot      42 blows taken by a fresh level-1 knight (4 deaths, walked 100%) (>=2), 137 lifts
+  ok   mash       boss holds (0/6 mash wins); mini holds (0/6 mash wins); level: best mash hero knight lowest hp 0%, 1 deaths, walked 100%, 1 rides, 0 pulls, 60 lifts, HELD in a room it could not finish (11 lifts put back)
+  ok   ruleFight  13 of 40 designed encounters stand where the rule is active (>=2; rule state from mudWalls, casters)
+  ok   curve      act 5 (THE DESERT): a level-1 knight lost 240% health a run, 6 deaths in 3 runs (band 150-700%, 2-12 deaths)
+  ok   route      route spans 39 rows, 0 tiles back, 9 branches/pockets (>=2)
+== REDGORGE (144 columns, route 387 tiles): CLEARS THE BAR
+  ok   flat       0% of the route is long flat empty runs (<=30%), 0% is long level ground (<=60%); longest 0 / 0 columns
+  ok   bands      43 height bands on the route (>=5), 94% of the width offers a second height (>=40%)
+  ok   mechanics  10 gadget kinds (>=5), 3 in 3+ places (>=3): waterwheelx4 mv:liftx4 arr:ropesx3 sluicex2 mv:debrisx1 mleverx1 mv:mplankx1 jamx1
+  ok   music      redgorge; boss room matriarch
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     3 checkpoints, one per 129 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    a tall level: not measured
+  ok   slopes     no slope tiles
+  ok   ranged     12 ranged foes: slinger
+  ok   roles      4 foe roles (>=3): heavyx3 meleex22 rangedx12 runnerx12
+  ok   unlocks    1 collectible kinds [stray], 1 interactive kinds [sluice], 6 declared in L.unlocks
+  ok   pilot      27 blows taken by a fresh level-1 knight (6 deaths, walked 100%) (>=2), 69 lifts
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero knight lowest hp 0%, 3 deaths, walked 100%, 6 rides, 0 pulls, 42 lifts
+  ok   ruleFight  37 of 37 designed encounters stand where the rule is active (>=2; rule state from gusts, channels, jams, ropes, ents:sluice)
+  ok   curve      act 5 (THE DESERT): a level-1 knight lost 286% health a run, 3 deaths in 3 runs (band 150-700%, 2-12 deaths)
+  ok   route      route spans 197 rows, 0 tiles back, 13 branches/pockets (>=2)
+== UNDERWELL (692 columns, route 748 tiles): CLEARS THE BAR
+  ok   flat       0% of the route is long flat empty runs (<=30%), 47% is long level ground (<=60%); longest 18 / 80 columns
+  ok   bands      10 height bands on the route (>=5), 49% of the width offers a second height (>=40%)
+  ok   mechanics  8 gadget kinds (>=5), 4 in 3+ places (>=3): sconcex12 skinwellx10 nestplugx7 oilfirex3 arr:ropesx2 greatlampx1 fountainx1 qwindlassx1
+  ok   music      underwell; boss room cisternqueen
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     5 checkpoints, one per 150 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    1.42 encounters a screen (0.8-2.5; 37 encounters, 2.5 foes a screen), 3 empty screens = 12% (<=30%)
+  ok   slopes     no slope tiles
+  ok   ranged     5 ranged foes: slinger
+  ok   roles      3 foe roles (>=3): meleex54 rangedx5 runnerx5
+  ok   unlocks    1 collectible kinds [stray], 0 interactive kinds [], 7 declared in L.unlocks
+  ok   pilot      48 blows taken by a fresh level-1 knight (7 deaths, walked 100%) (>=2), 120 lifts
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero knight lowest hp 0%, 15 deaths, walked 100%, 0 rides, 0 pulls, 53 lifts, HELD in a room it could not finish (45 lifts put back)
+  ok   ruleFight  5 of 37 designed encounters stand where the rule is active (>=2; rule state from ropes, pools)
+  ok   curve      act 5 (THE DESERT): a level-1 knight lost 269% health a run, 3 deaths in 3 runs (band 150-700%, 2-12 deaths)
+  ok   route      route spans 45 rows, 11 tiles back, 7 branches/pockets (>=2)
+== SKYROAD (460 columns, route 420 tiles): CLEARS THE BAR
+  ok   flat       18% of the route is long flat empty runs (<=30%), 25% is long level ground (<=60%); longest 26 / 29 columns
+  ok   bands      11 height bands on the route (>=5), 42% of the width offers a second height (>=40%)
+  ok   mechanics  8 gadget kinds (>=5), 3 in 3+ places (>=3): ventx14 sunstonex5 mastx3 arr:crumblesx1 cloakx1 sundiscx1 loftx1 mv:liftx1
+  ok   music      skyroad; boss room rocphoenix
+  ok   secrets    2 silver/relic off the route (>=2)
+  ok   checks     4 checkpoints, one per 105 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    1.38 encounters a screen (0.8-2.5; 22 encounters, 1.7 foes a screen), 4 empty screens = 25% (<=30%)
+  ok   slopes     no slope tiles
+  ok   ranged     5 ranged foes: archer,rockgoblin
+  ok   roles      5 foe roles (>=3): heavyx4 meleex12 rangedx5 runnerx4 supportx2
+  ok   unlocks    1 collectible kinds [stray], 0 interactive kinds [], 5 declared in L.unlocks
+  ok   pilot      21 blows taken by a fresh level-1 knight (0 deaths, walked 100%) (>=2), 51 lifts
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero warden lowest hp 28%, 0 deaths, walked 100%, 1 rides, 0 pulls, 23 lifts
+  ok   ruleFight  21 of 22 designed encounters stand where the rule is active (>=2; rule state from crumbles, clouds, skyThermals, ents:horn)
+  ok   curve      the level changed since its curve row (re-run node tools/level1-pilot.mjs skyroad --curve)
+  ok   route      route spans 43 rows, 0 tiles back, 2 branches/pockets (>=2)
+== GLASSSEA (648 columns, route 634 tiles): CLEARS THE BAR
+  ok   flat       0% of the route is long flat empty runs (<=30%), 22% is long level ground (<=60%); longest 19 / 30 columns
+  ok   bands      6 height bands on the route (>=5), 42% of the width offers a second height (>=40%)
+  ok   mechanics  5 gadget kinds (>=5), 4 in 3+ places (>=3): gscampfirex12 gscrackx12 gsmirrorx8 gsheapx7 colmirrorx2
+  ok   music      glasssea; boss room colossus
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     4 checkpoints, one per 159 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    1.60 encounters a screen (0.8-2.5; 41 encounters, 2.0 foes a screen), 5 empty screens = 20% (<=30%)
+  ok   slopes     46 slope cells: drawn (diagonal tiles, guard: (L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID))
+  ok   ranged     11 ranged foes: slinger
+  ok   roles      4 foe roles (>=3): heavyx5 meleex32 rangedx11 runnerx4
+  ok   unlocks    1 collectible kinds [stray], 0 interactive kinds [], 3 declared in L.unlocks
+  ok   pilot      33 blows taken by a fresh level-1 knight (3 deaths, walked 100%) (>=2), 95 lifts
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero knight lowest hp 33%, 0 deaths, walked 100%, 0 rides, 0 pulls, 51 lifts
+  ok   ruleFight  41 of 41 designed encounters stand where the rule is active (>=2; rule state from sun)
+  ok   curve      act 5 (THE DESERT): a level-1 knight lost 207% health a run, 3 deaths in 3 runs (band 150-700%, 2-12 deaths)
+  ok   route      route spans 27 rows, 0 tiles back, 3 branches/pockets (>=2)
+== MINECART (1000 columns, route 967 tiles): MISSES THE BAR: pilot, mash
+  ok   flat       6% of the route is long flat empty runs (<=30%), 38% is long level ground (<=60%); longest 36 / 68 columns
+  ok   bands      5 height bands on the route (>=5), 59% of the width offers a second height (>=40%)
+  ok   mechanics  9 gadget kinds (>=5), 7 in 3+ places (>=3): mcgobcartx10 mccrusherx8 mcgapx6 mcpointsx6 mcrockx5 mcbeamx3 mcgatex3 drillpointsx1
+  ok   music      mineworks; boss room greatdrill
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     6 checkpoints, one per 161 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    1.15 encounters a screen (0.8-2.5; 46 encounters, 1.2 foes a screen), 4 empty screens = 10% (<=30%)
+  ok   slopes     84 slope cells: drawn (diagonal tiles, guard: (L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID))
+  ok   ranged     18 ranged foes: tippler,archer,gobmage
+  ok   roles      4 foe roles (>=3): heavyx3 meleex24 rangedx18 runnerx3
+  ok   unlocks    1 collectible kinds [stray], 0 interactive kinds [], 2 declared in L.unlocks
+  FAIL pilot      the level changed since its pilot ran (hash b8d78a140878 now f3159662c4b1): re-run node tools/level1-pilot.mjs minecart --write
+  FAIL mash       the level changed since the mash bot ran: re-run node tools/mash-bot.mjs minecart --level minecart --write
+  WARN ruleFight  the rule's state is not in the level data (no rule arrays): not measured   [REPORT-ONLY for minecart: see REPORT_ONLY in tools/level-quality.mjs]
+  ok   curve      no curve row (node tools/level1-pilot.mjs minecart --curve)
+  ok   route      route spans 15 rows, 0 tiles back, 2 branches/pockets (>=2)
+== KSAR (628 columns, route 614 tiles): CLEARS THE BAR
+  ok   flat       8% of the route is long flat empty runs (<=30%), 26% is long level ground (<=60%); longest 48 / 59 columns
+  ok   bands      6 height bands on the route (>=5), 46% of the width offers a second height (>=40%)
+  ok   mechanics  7 gadget kinds (>=5), 5 in 3+ places (>=3): ksgongx11 kskegx7 kskegsx5 ksbarricadex3 ksflasksx3 kswinchx1 ksvaultx1
+  ok   music      ksar; boss room hawkmistress
+  ok   secrets    2 silver/relic off the route (>=2)
+  ok   checks     5 checkpoints, one per 123 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  ok   density    1.75 encounters a screen (0.8-2.5; 42 encounters, 2.4 foes a screen), 2 empty screens = 8% (<=30%)
+  ok   slopes     no slope tiles
+  ok   ranged     18 ranged foes: slinger,sapper
+  ok   roles      4 foe roles (>=3): heavyx7 meleex22 rangedx18 runnerx11
+  ok   unlocks    1 collectible kinds [stray], 0 interactive kinds [], 4 declared in L.unlocks
+  ok   pilot      35 blows taken by a fresh level-1 knight (10 deaths, walked 100%) (>=2), 86 lifts
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero warden lowest hp 23%, 0 deaths, walked 100%, 0 rides, 0 pulls, 52 lifts
+  ok   ruleFight  42 of 42 designed encounters stand where the rule is active (>=2; rule state from alarms, sun)
+  ok   curve      act 5 (THE DESERT): a level-1 knight lost 433% health a run, 9 deaths in 3 runs (band 150-700%, 2-12 deaths)
+  ok   route      route spans 19 rows, 0 tiles back, 5 branches/pockets (>=2)
+== ROOTWAY (460 columns, route 417 tiles): MISSES THE BAR: density, pilot, mash
+  ok   flat       0% of the route is long flat empty runs (<=30%), 18% is long level ground (<=60%); longest 6 / 24 columns
+  ok   bands      7 height bands on the route (>=5), 46% of the width offers a second height (>=40%)
+  ok   mechanics  6 gadget kinds (>=5), 4 in 3+ places (>=3): arr:hoistsx11 hoistx9 mv:growcapx8 ventx4 loftx1 mv:swingx1
+  ok   music      rootway; boss room boss3
+  ok   secrets    3 silver/relic off the route (>=2)
+  ok   checks     4 checkpoints, one per 104 route tiles (>=90)
+  ok   encounters a designed encounter in every 200 columns
+  FAIL density    3.06 encounters a screen (0.8-2.5; 49 encounters, 4.3 foes a screen), 0 empty screens = 0% (<=30%)
+  ok   slopes     no slope tiles
+  ok   ranged     21 ranged foes: spitcap,archer
+  ok   roles      4 foe roles (>=3): heavyx7 meleex32 rangedx21 runnerx9
+  ok   unlocks    1 collectible kinds [stray], 0 interactive kinds [], 3 declared in L.unlocks
+  FAIL pilot      the level changed since its pilot ran (hash d1084c7215b6 now ba7ef42e6796): re-run node tools/level1-pilot.mjs rootway --write
+  FAIL mash       the level changed since the mash bot ran: re-run node tools/mash-bot.mjs rootway --level rootway --write
+  ok   ruleFight  25 of 49 designed encounters stand where the rule is active (>=2; rule state from hoists)
+  ok   curve      the level changed since its curve row (re-run node tools/level1-pilot.mjs rootway --curve)
+  ok   route      route spans 24 rows, 0 tiles back, 6 branches/pockets (>=2)
+
+2 level(s) miss the quality bar (docs/LEVEL-QUALITY.md).
