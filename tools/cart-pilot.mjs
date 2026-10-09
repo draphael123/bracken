@@ -54,12 +54,13 @@ function makeCartPilot(BK, plan) {
     const brk = (M.breaks || []).find(b => Math.abs(b.row - row) <= 1 && col >= b.x0 - 10 && col <= b.x1 + 1);
     if (brk) { boost = true; why = 'pump: the rail breaks'; }
     /* THE GAP AHEAD on this line: its lip and its width (a points gap the plan wants open is a drop, not a gap; a ramp's pit is flown) */
+    let lipNear = false, lipX = 0;
     if (p.ground && !ramp) { let lip = -1, w = 0;
       for (let d = 0; d <= 14; d++) { const c = ahead(d * TS + 6); if (floorAt(c, row) < 0) { lip = c; break; } }
       if (lip >= 0) { while (w < 16 && floorAt(lip + w, row) < 0 && floorAt(lip + w, row + 1) < 0 && floorAt(lip + w, row + 2) < 0) w++;
         const opened = M.points.some(pt => pt.state === 'open' && (plan.points || {})[pt.id] === 'open' && lip >= pt.x0 && lip <= pt.x1 + 1 && pt.prow === row);
         const lowFloor = floorAt(lip, row + 3) >= 0 || floorAt(lip, row + 4) >= 0 || floorAt(lip + 1, row + 3) >= 0;
-        const dx = lip * TS - p.x;
+        const dx = lip * TS - p.x; lipNear = dx < 70 && w >= 7; lipX = lip * TS;
         if (!opened && !(lowFloor && w > 6)) { if (w >= 7) { boost = true; why = 'pump for a gap of ' + w; } if (dx < 7) { jump = true; why = 'jump a gap of ' + w; airBoost = w >= 7; } } } }
     if (!p.ground && (airBoost || (ramp && p.vy < 200))) boost = true; if (p.ground && !jump) airBoost = false;
     /* CRUSHERS and GATES on this line ahead: go only if it will be clear while I pass */
@@ -75,11 +76,11 @@ function makeCartPilot(BK, plan) {
     /* BEAMS: duck under */
     for (const b of M.beams) { if (b.row !== row) continue; const x0 = b.x0 * TS - 26, x1 = (b.x1 + 1) * TS + 6; if (p.x > x0 && p.x < x1) { duck = true; why = 'duck'; } }
     /* RUNES and THROWN MARKS on this line ahead: change pace off them */
-    for (const r of M.runes) { if (Math.abs(r.y - p.y) > 10 || r.t < 0) continue; const at = p.x + v * r.t; if (Math.abs(at - r.x) < 26 && r.x > p.x - 10) { const fast = p.x + Math.min(230, v + 130 * r.t) * r.t; if (fast > r.x + 30) { boost = true; why = 'pump past rune'; } else if (r.x - p.x < 60) { if (r.t < 0.5) jump = true; else { brake = true; boost = false; } why = 'rune'; } } }
+    for (const r of M.runes) { if (Math.abs(r.y - p.y) > 10 || r.t < 0) continue; const at = p.x + v * r.t; if (Math.abs(at - r.x) < 26 && r.x > p.x - 10) { const fast = p.x + Math.min(230, v + 130 * r.t) * r.t; if (fast > r.x + 30) { boost = true; why = 'pump past rune'; } else if (r.x - p.x < 60) { if (lipNear && v >= 215) { boost = true; if (lipX - p.x <= 46) { jump = true; airBoost = true; } why = 'rune on the lip: jump it early'; } else if (r.t < 0.5) jump = true; else { brake = true; boost = false; } why = why.startsWith('rune on') ? why : 'rune'; } } }   /* (a rune on a deep gap's lip at full pump: no braking - take off early, in the last 46 px, over the rune and the gap) */
     for (const o of (M.lobs || [])) { if (o.t <= 0 || Math.abs(o.ty - p.y) > 10) continue; const at = p.x + v * o.t; if (Math.abs(at - o.tx) < 30 && o.tx > p.x - 10) { const fast = p.x + Math.min(230, v + 130 * o.t) * o.t; if (fast > o.tx + 34 && !brk) { boost = true; why = 'pump past the mark'; } else { brake = true; boost = false; why = 'brake off the mark'; } } }
     /* FOES: strike what is near; RAM what stands on the line at full pump (jump it if I cannot get the pace up) */
     if (plan.fight) { const e = BK.enemies().filter(q => q.alive && !q.boss && Math.abs(q.y - p.y) < 20 && q.x - p.x > -6 && q.x - p.x < 40).sort((a, b) => a.x - b.x)[0];
-      if (e && atkCd <= 0 && !(e.mcCart && e.mcCart.foreman)) { p.face = 1; BK.press('atk'); atkCd = 18; why = 'strike ' + (e.t); } }
+      if (e && atkCd <= 0 && !(e.mcCart && e.mcCart.foreman) && !jump && !lipNear && !airBoost) { p.face = 1; BK.press('atk'); atkCd = 18; why = 'strike ' + (e.t); } }   /* (never a blow on the lip of a gap: a swing's recovery can eat the jump) */
     const onLine = BK.enemies().find(q => q.alive && !q.boss && !q.mcCart && q.t !== 'bat' && q.t !== 'tippler' && Math.abs(q.y - p.y) < 6 && q.x - p.x > 4 && q.x - p.x < 140);
     if (onLine && p.ground) { if (v >= 196 || onLine.x - p.x > 40) { if (!brake) boost = true; why = 'ram ' + onLine.t; } else if (onLine.x - p.x < 26) jump = true; }
     /* THE FOREMAN's cart ahead on my line: pump and ram it (again after every bounce) */

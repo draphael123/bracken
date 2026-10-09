@@ -44,6 +44,7 @@ import { pacing } from './pacing.mjs';
 import { campaignLevel, levelOverride } from './boss-level.mjs';
 import { openRetry } from './boss-run.mjs';
 import { beatenBeforeIn, tonicsAt, charmAt } from '../src/campaign-kit.js';
+import { CART_PILOT, ROUTE_PLAN } from './cart-pilot.mjs';   /* (claude/deeprails2) THE DEEP RAILS is ridden, not walked: its hands are the cart pilot's */
 const DEPTH = depthsOf(LEVELS), BYID = Object.fromEntries(LEVELS.map(l => [l.id, l]));
 export const TARGET = { deathsLo: 1, deathsHi: 2, arriveHp: 50 };
 /* the woods beaten before id (its ancestors on the gate chain) */
@@ -139,6 +140,8 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   const S=[sec()],arrivals=[];const deathLog=[],trace=[];const stucks=[];let miniT=0,cardT=0,miniHp=null,resumeTo=null,resumeAt=false,resumes=0,secStart=0;let ri=0,riBest=0,riSince=0,lastProg=0,frames=0,end='frames',stuck=null,deaths=0,levelups=0;
   const st0=BK.stats(),d00=st0.deaths,k00=st0.kills,hit00=BK.hitsTaken;let kPrev=k00,hPrev=hit00,dPrev=d00,wasDead=false;
   let bot=makeBot(BK),jumpX=null;
+  ${CART_PILOT}
+  const CP=BK.L&&BK.L.minecart?makeCartPilot(BK,${JSON.stringify({ ...ROUTE_PLAN, fight: true })}):null;   /* (claude/deeprails2) IN THE CART: the cart pilot's hands (pump, brake, the points, the ramp, the ram, the lift) take the keys over the walker's */
   /* A PLAYER STEERS HIS FALL ONTO A PAD (the hands only ever hold the way on, so a hop off one lily pad sailed past the next into the marsh): falling, with a floating pad or raft ahead of where the jump began and under him, he leans onto its middle */
   const steer=sd=>{const p=BK.P;if(p.ground||p.onMover){jumpX=p.x;return;}if(p.swim||p.climb||!(p.vy>0)||!sd)return;let best=null,bd=1e9;for(const m of BK.movers()){if(m.gone||(m.sink||0)>0.55||(m.kind!=='pad'&&m.kind!=='raft'))continue;const cx=m.x+(m.w||16)/2,dy=m.y-p.y,dx=cx-p.x;if(dy<-2||dy>5*TS||Math.abs(dx)>4*TS)continue;if(jumpX!==null&&(cx-jumpX)*sd<12)continue;if(Math.abs(dx)<bd){bd=Math.abs(dx);best=dx;}}if(best===null)return;BK.keys.left=best<-3;BK.keys.right=best>3;};
   /* --from=X (a DEBUG start, not a first run: claude/levelpilot): put him on the route at column X to read one stretch without walking to it */
@@ -166,7 +169,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     if(BK.state!=='play'){end=BK.state==='win'?'gate':'state:'+BK.state;break;}
     const heldTop=heldNow();const p=BK.P;let gi=Math.min(R.length-1,ri+1);for(let k=gi+1;k<=Math.min(R.length-1,ri+3);k++){if(Math.abs(feet(k)-feet(gi))<2*TS&&Math.sign(R[k][0]-R[gi][0])===Math.sign(R[gi][0]*TS+8-p.x))gi=k;else break;}let wx=R[gi][0];   /* AIM ONE TO THREE NODES ON, along the same floor and the same way: the hands stop at their goal (a goal on a lily pad or a ledge lip is a stop in the water), and a goal further on, on a tall level, is on another floor */
     if(perc)perc.apply();
-    try{const riding=p.onMover&&(p.onMover.moving||p.onMover.returning);if(riding)lastProg=frames;   /* ON A RIDE (a ferry, a raft, a lift): stand and let it carry him */
+    if(CP){if(!(p.dead>0))CP.step();lastProg=frames;}else try{const riding=p.onMover&&(p.onMover.moving||p.onMover.returning);if(riding)lastProg=frames;   /* ON A RIDE (a ferry, a raft, a lift): stand and let it carry him */
       const de=c.duel&&!riding&&!(p.dead>0)?WD.duelPick(BK,duelE,{floor:oneFloor,dir:Math.sign(wx*TS+8-p.x)||p.face||1,no:duelNo,frame:frames,pools:BK.L.pools,waterHurts:BK.L.waterHurts}):null;
       if(de!==duelE){if(duelE)duelEnd(!duelE.alive);if(de&&duelPend&&duelPend.e===de&&frames-duelPend.f<300){duelE=de;duelT=0;duelHp=de.hp;duelRow=duelPend.row;duelPend=null;}else if(de){if(duelPend){const pr=duelPend.row;pr.secs=Math.round((duelPend.f-pr.f0)/6)/10;pr.won=false;pr.hpEnd=pr.hp0;delete pr.f0;duelPend=null;}duelE=de;duelT=0;duelHp=de.hp;duelRow={t:de.t,affix:de.affix||null,at:[Math.floor(de.x/TS),Math.floor(de.y/TS)],f0:frames,hp0:Math.round(100*Math.max(0,p.hp)/(p.maxHp||100))};duels.push(duelRow);}}
       if(duelE){duelT++;if(duelE.hp<duelHp){duelHp=duelE.hp;duelT=0;}if(duelT>1200||frames-(duelRow?duelRow.f0:frames)>5400){duelNo.set(duelE,frames+1800);duelEnd(false);}}

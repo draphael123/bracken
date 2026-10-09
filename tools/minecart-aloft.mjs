@@ -3,9 +3,10 @@
    NODE (no page):
      A  EVERY TRESTLE BENT STANDS ON SOMETHING   from each RAIL deck cell the leg runs down through air to the first solid / ledge (<= 40 rows), or off the bottom of the level: it never ends in the air
      B  EVERY LAMP POST STANDS ON A RAIL BED       src/redraw/minecart_art.js lampPlan(): a SOLID or RAIL cell under it, four cells of air over it, never at a gadget; and its wire runs to a post 6 tiles on that stands too
-     C  EVERY LIP LAMP STANDS ON THE LIP           both lamps of each boost gap stand on a solid / rail cell (the last tile before the gap, the first after it), air over them
+     C  EVERY LIP LAMP STANDS ON THE LIP           both lamps of each pump gap stand on a solid / rail cell (the last tile before the gap, the first after it), air over them; a LAUNCH
+                                                   RAMP's kicker stands on its lip and its pit has a landing (claude/deeprails2)
      D  EVERY GATE, CRUSHER AND POINTS LEVER STANDS ON ITS LINE   a solid / rail cell under the gate's posts, under both of a crusher's ends, under a lever's mast (a HANGING lever hangs under a solid / rail cell)
-     E  THE DRILL'S ARENA                          the chute hangs from solid roof; the points mast stands on the solid floor line; every lane's cells are RAIL over air
+     E  THE DRILL'S ARENA                          (GREAT DRILL 2: the endless tunnel) a solid roof over it and a solid floor line under it, every lane's cells RAIL over air the whole width
    PAGE (PORT=<yours> node tools/minecart-aloft.mjs --page):
      F  IT IS NOT THE CRAG'S DUSK SKY             stills at eight places along the line: almost no pixel is sky (blue / dusk purple, bright); the picture is dark, warm, with lit lamps
      G  THE LANDMARKS ARE THERE                    the smelter's orange chimney glow reaches the right of the picture from the cave-in on (and not in the yard), the bore's mouth from the exam on
@@ -31,7 +32,8 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); 
   ok(plan.length > 40 && !bad.length, plan.length + ' lamp posts, every one on a rail bed with clear air over it' + (bad.length ? ': ' + bad.slice(0, 6).join('; ') : '')); }
 /* C */
 { const bad = []; for (const g of L.mcBoost) for (const [lx, side] of [[g.x0 - 1, 'lip'], [g.x1 + 1, 'far lip']]) { if (!stands(at(lx, g.row))) bad.push(side + ' ' + lx + ',' + g.row + ' is ' + at(lx, g.row)); if (at(lx, g.row - 1) !== T.AIR) bad.push(side + ' ' + lx + ' has no air over it'); }
-  ok(L.mcBoost.length === 6 && !bad.length, L.mcBoost.length + ' boost gaps, both lamps of each on a lip' + (bad.length ? ': ' + bad.join('; ') : '')); }
+  const gaps = L.mcBoost.filter(g => !g.ramp); for (const r of L.mcRamps || []) { if (!stands(at(r.x, r.row)) || at(r.x, r.row - 1) !== T.AIR) bad.push('ramp ' + r.x + ' has no lip'); if (!stands(at(r.x1 + 1, r.row))) bad.push('ramp ' + r.x + ' has no landing'); }
+  ok(gaps.length >= 6 && !bad.length, gaps.length + ' pump gaps, both lamps of each on a lip; ' + (L.mcRamps || []).length + ' ramp(s) on a lip with a landing' + (bad.length ? ': ' + bad.join('; ') : '')); }
 /* D */
 { const bad = [];
   for (const g of L.mcGates) for (const dx of [-1, 0, 1]) if (!stands(at(g.x + dx, g.row))) bad.push('gate ' + g.id + ' post ' + (g.x + dx) + ' on ' + at(g.x + dx, g.row));
@@ -40,11 +42,10 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); 
   for (const p of L.mcPoints) { const x = p.x; if (p.hang) { if (!stands(at(x, p.row - 1)) && !stands(at(x, p.row - 2)) && !stands(at(x, p.row - 3))) bad.push('hung lever ' + p.id + ' hangs from ' + at(x, p.row - 1)); } else if (!stands(at(x, p.row)) && !stands(at(x, p.row + 1))) bad.push('lever ' + p.id + ' on ' + at(x, p.row)); }
   ok(!bad.length, L.mcGates.length + ' gates, ' + L.mcCrushers.length + ' crushers, ' + L.mcBeams.length + ' beams, ' + L.mcPoints.length + ' levers, every one stands on its line' + (bad.length ? ': ' + bad.slice(0, 8).join('; ') : '')); }
 /* E */
-{ const A = L.arena.drill, S = { W: 22, lanes: [0, 3, 6], ceil: 10, points: 12, chute: 19 }, bad = [];
-  if (!(at(A.sx + S.chute, A.F - S.ceil - 1) === T.SOLID)) bad.push('the chute hangs from ' + at(A.sx + S.chute, A.F - S.ceil - 1));
-  if (!(at(A.sx + S.points, A.F) === T.SOLID)) bad.push('the points mast stands on ' + at(A.sx + S.points, A.F));
+{ const A = L.arena.drill, { DRILL_STAGE: S } = await import('../src/great-drill.js'), bad = [];
+  for (let x = A.sx; x < A.sx + S.W; x++) { if (at(x, A.F - S.ceil - 1) !== T.SOLID) bad.push('the roof at ' + x + ' is ' + at(x, A.F - S.ceil - 1)); if (at(x, A.F) !== T.SOLID) bad.push('the floor at ' + x + ' is ' + at(x, A.F)); }
   for (const ln of S.lanes) if (ln) for (let x = A.sx; x < A.sx + S.W; x++) if (at(x, A.F - ln) !== T.RAIL) bad.push('lane ' + ln + ' cell ' + x + ' is ' + at(x, A.F - ln));
-  ok(!bad.length, "the drill's arena: the chute from the roof, the mast on the floor, the lines laid" + (bad.length ? ': ' + bad.slice(0, 4).join('; ') : '')); }
+  ok(!bad.length, "the drill's arena: a roof over it, a floor under it, the lines laid the whole width (" + S.W + ')' + (bad.length ? ': ' + bad.slice(0, 4).join('; ') : '')); }
 
 if (process.argv.includes('--page')) {
   const { openPage } = await import('./cdp.mjs');

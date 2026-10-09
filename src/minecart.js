@@ -40,14 +40,14 @@ export const MC = {
   cruise: 150, boost: 230, accUp: 260, accCruise: 220, brake: 340,
   crawl: 50,            /* (deeprails2) a held brake takes the cart down to this and no further: the cart never stops and never backs (Daniel 10-09: always forward) */
   ramV: 200,            /* at or over this pace the cart RAMS what is on its line ahead (a goblin, a goblin cart from behind, the foreman's cart); under it, a bump */
-  ramDmg: 60, bumpDmg: 10, bumpBack: 40,
+  ramDmg: 60, bumpDmg: 12, bumpBack: 40,
   fallCost: 0.27,       /* a fall outside an exam: this share of max health, and back on the rail ~1.5 s behind (A10 amended) */
   retryBack: 128,       /* px behind the lip a fall puts you back (room to pump up to speed again) */
-  crashDmg: 16, crashCd: 0.7, wallDmg: 18,
-  crushDmg: 30, rockDmg: 22, beamDmg: 18, gateDmg: 18,
-  arrowDmg: 13, arrowV: 230, runeDmg: 18, runeT: 1.25, runeR: 15,
+  crashDmg: 18, crashCd: 0.7, wallDmg: 20,   /* (deeprails2, on the main road at L13: every hit about a quarter heavier - the walker arrived at its stations with ~60%, the target is under 50) */
+  crushDmg: 34, rockDmg: 26, beamDmg: 22, gateDmg: 22,
+  arrowDmg: 16, arrowV: 230, runeDmg: 22, runeT: 1.25, runeR: 15,
   archerTell: 0.7, archerCd: 2.1, casterTell: 0.6, casterCd: 2.8,
-  throwTell: 0.75, throwT: 1.0, throwCd: 2.8, throwDmg: 16, throwR: 16,   /* A THROW off a ledge (deeprails2): told ('!' and the arm back), then a pick lobbed at where your cart WILL be (a mark on the rail) - brake short of it, or pump past */
+  throwTell: 0.75, throwT: 1.0, throwCd: 2.8, throwDmg: 20, throwR: 16,   /* A THROW off a ledge (deeprails2): told ('!' and the arm back), then a pick lobbed at where your cart WILL be (a mark on the rail) - brake short of it, or pump past */
   rampV0: 300, rampK: 0.5,   /* a ramp's launch: vy = -(rampV0 + rampK * pace): a cruising launch flies ~7 tiles, a pumped one ~12 (tools/minecart.mjs measures the lava ramp) */
   breakV: 170, breakLead: 56, breakLag: 0.05,   /* THE RAIL BREAKS (deeprails2): the break runs up the line behind you at breakV from breakLead px back - a cruising cart (150) is caught, a pumping one gets away */
   foremanRams: 3, foremanPace: 120, foremanArmour: 0.35,   /* THE FOREMAN (the exam's elite): three rams take his cart apart; a blade dents it (x0.35, a told clank) */
@@ -191,7 +191,7 @@ export function buildMinecart({ painter, T, TS }) {
     sign(196, t - 1, 'FORK: HIGH LINE IS QUICK, WITH ORE AND ARROWS. STRIKE THE POINTS FOR LOW: CRUSHERS, A GATE.');
     lever('forkA', 199, t, 202, 213, t, 'set', { label: 'HIGH: QUICK, ORE, ARROWS / LOW: CRUSHERS, A GATE' });
     ore(220, t - 3); foe('bat', 233, t - 4, { squad: 'forkABat' }); ore(234, t - 3); foe('bat', 219, t - 4, { squad: 'forkABat2' });
-    foe('archer', 243, t - 1, { squad: 'forkAArcher' });
+    foe('archer', 243, t - 1, { squad: 'forkAArcher' }); foe('archer', 228, t - 1, { squad: 'forkAArcher2' });   /* (two on the dark high line: their lamps are all you see of them - pump and ram, or strike) */
     crusher('forkA', 214, B, 2.4, 0.9, 0.6); crusher('forkA2', 228, B, 2.2, 0.8, 1.5);
     gate('forkA', 238, B, 3.2, 1.5, 0); }
   ground(263, 279, B); ground(308, 313, B); rail(253, 262, B - 3);
@@ -271,7 +271,7 @@ export function buildMinecart({ painter, T, TS }) {
   station(637);                                                             /* STATION FOUR (on foot, past the wreck) */
   sign(639, B - 1, 'THE WRECK. ON FOOT THROUGH THE YARD: A CART WAITS AT ITS END.');
   block(645, 662, B - 2, B - 1);             /* THE LOADING DECK: two up (a fight on footing - a big platform) */
-  foe('sapper', 652, B - 3, { squad: 'wkSapper' }); foe('brute', 667, B - 1, { squad: 'wkBrute' });
+  foe('sapper', 652, B - 3, { squad: 'wkSapper' }); foe('brute', 660, B - 3, { squad: 'wkBrute' }); foe('sapper', 669, B - 1, { squad: 'wkSapper2' });   /* (the brute holds the deck's far edge: the fight is up on the platform) */
   block(655, 660, B - 7, B - 7); foe('archer', 658, B - 8, { squad: 'wkArcher' });   /* an archer on the yard's gantry over the deck */
   ent('coin', 648, B - 3); ent('coin', 650, B - 3); ore(661, B - 5);
   ent('mccart', FOOT[0].board, B - 1, {});                                  /* the cart that waits at the yard's end: walk into it */
@@ -283,6 +283,7 @@ export function buildMinecart({ painter, T, TS }) {
   ground(677, 715, B); rail(700, 712, B - 3);
   tell(695, 722, 'A GATE: WATCH ITS GAUGE');
   gate('w', 722, B, 3.0, 1.3, 0.4);                                         /* THE TIMED GATE: its gauge says when */
+  thrower(690, 714, B - 7, { squad: 'wkThrow' });                          /* A THROWER over the crusher run: brake for a beat and his pick finds you (the remix: two timings at once) */
   /* THE WORKS' EXAM: the pump gap under the tippler is a REAL DEATH, told, with a bat in the jump */
   tell(714, 736, 'DEEP GAP: PUMP AND JUMP');
   ground(716, 735, B);
@@ -319,7 +320,7 @@ export function buildMinecart({ painter, T, TS }) {
   sign(785, t8 - 1, 'THE FLOODED RUN. EVERY GAP HERE IS DEEP.'); foe('bat', 796, t8 - 6, { squad: 'exBat0' });
   rail(787, 812, t8); rail(787, 812, B);
   lever('exam', 789, t8, 791, 797, t8, 'open', { label: 'HIGH: A CRUSHER / LOW: A GATE - THEN THE DEEP GAP' });
-  rider('archer', 790, B, 40, { squad: 'exPair' }); rider('gobmage', 791, B, 110, { squad: 'exPair' });   /* the pair on the low line, ahead */
+  rider('archer', 790, B, 40, { squad: 'exPair', pace: 160 }); rider('gobmage', 791, B, 110, { squad: 'exPair' });   /* the pair on the low line, ahead (the archer at his own pace: pump past him, or he is under you at the deep gap's lip) */
   crusher('ex', 800, t8, 2.4, 0.9, 0.3); gate('ex', 806, B, 2.8, 1.2, 0.2);
   beam(798, 799, B);
   tell(790, 813, 'DEEP GAP, RUNE ON LIP');
