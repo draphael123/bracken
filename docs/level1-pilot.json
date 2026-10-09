@@ -168,14 +168,14 @@
   "bare": true
  },
  "buriedcity": {
-  "hash": "0a7a27141cad",
+  "hash": "8a82a66a2e07",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 14,
+  "hits": 9,
   "deaths": 3,
   "kills": 0,
-  "lifts": 98,
+  "lifts": 105,
   "walked": 100,
   "bare": true
  }

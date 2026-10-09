@@ -108,3 +108,121 @@ The warden's deaths are mostly THE TIME SLIP and the sand stream. In the probe t
 - The trap hall is a real death in the exam: is it told enough?
 - Identity against Mage's Folly: greybox art only (src/redraw/buried_city_art.js). It still needs a Sonnet art pass and a real track.
 - level-quality's crumble places count `x0 / 16` on tile columns (SYSTEM_ARRAYS reads `it.x0 / TS`). That is why the crumbles are spread so far apart: a quirk of the tool, not changed here.
+
+## FIX PASS (2026-10-09, after the BCREVIEW: scratch/review-buriedcity.md)
+- **The merge:** origin/master (batch80) was merged by hand. The city and the king sit beside the rootway, minecart, huntmaster and greatdrill rows.
+- **The level order:** THE BURIED CITY stays APPENDED after minecart in LEVELS. The merge had put it before rootway, which would have moved two indices.
+
+### M1 - the king's levers, every phase
+- **The banks:** `HK_STAGE.banks` changed from [[0,5],[34,39]] to [[0,2],[37,39]].
+- **One source:** `hourglass-king-hands.js bank()` now reads `HK_STAGE.banks`.
+- **Phase three:** the banks also stand in phase three, for the case where a run of blows takes him past phase two between his moves.
+- **New check:** `tools/buried-city-levers.mjs` (a page check, in tools/check.mjs) uses real keys.
+  - Knight, warden and pyro each walk eight tiles to each lever and press E while his glass is low.
+  - It runs in all three phases, and with the hero held into the wall or the bank.
+  - Result: **30/30 stall**.
+- **M5:** the throne-room levers GLOW gold while his glass is low and a pull will stall him (`HGK.leversLit`). The nearer lever is ringed, with PULL over it and the guide's arrow on it.
+
+### THE KING RE-MEASURED (WITH FLASKS, profile human, L38, 12 seeds/hero)
+With the levers back he was **36/36**. Tuning runs (slipR untouched):
+
+| setting | knight | warden | pyro | all |
+|---|---|---|---|---|
+| as shipped (1750 hp, cap 0.13) + M1 | 12/12 | 12/12 | 12/12 | 100% |
+| 2200 hp, blows x1.25 | 6/12 | 11/12 | 11/12 | 78% |
+| pend 34, gear 22, stream 36, 2300 hp | 7/12 | 12/12 | 10/12 | 81% |
+| + openCap 0.11 | 4/12 | 12/12 | 10/12 | 72% |
+| pend 38, stream 28 | 5/12 | 12/12 | 9/12 | 72% |
+| 2400 hp | 5/12 | 11/12 | 10/12 | 72% |
+| 2500 hp | 4/12 | 10/12 | 7/12 | 58% |
+| 2450 hp | 3/12 | 10/12 | 7/12 | 56% |
+| **2425 hp (SHIPPED)** | **2/12** | **11/12** | **9/12** | **61%** |
+
+- **Shipped numbers:** hp 2425, openCap 0.11. Blows: pend 38, gear 22, stream 28, slip 30, hour 33, pour 8.
+- **DRY (human+dry, 12 seeds):** 1/12, 6/12, 6/12 = 36%.
+- **MASH (boss):** 0/6. He is left at 98% by the knight, 91% by the warden, 88% by the pyro.
+- **Why the knight lags:** a per-move ledger (S.hurt) shows the knight takes the GEAR and the SAND STREAM at two to seven times the warden's rate. Both were cut, and the pendulum (taken alike by every hero) was raised. The knight's bot still loses most fights.
+- **Noise:** runs at the same seeds swing about 15 points (2400 hp = 72%, 2450 hp = 56%).
+
+### M3 - the trap hall: taught, then lethal
+- **The teach:** THE FOUNDRY'S FLOOR-GATE, a new `yard` room.
+  - Columns 405-407, lever at 403, sign at 400: "AN OPEN FLOOR-GATE IS A DROP. SHUT IT AND THE SAND BRIDGES IT."
+  - Open on a fresh load. The drop is three rows onto the foundry floor. It costs 27% (never the last point) and puts you back on the lip, with a told line.
+  - Shut, the sand bridges it.
+- **The real hall, open, is drawn as a VOID:** it darkens to black under the lips and sand falls away into it.
+  - Lamps stand on its lips at 451 and 466: RED while open, GOLD once shut.
+  - Its sign moved from 446 to 450, on the lip side of the lever.
+  - It is still a real death in the exam: the knight's walker fell twice.
+- **CP3** moved from 410 to 437 (out of the shaft), so a trap-hall death costs the squad, not the shaft ride again.
+
+### M4 - weight
+- **New elites:** the constructs at 295 (the halls) and 388 (the quarter, with the drift behind him) are ELITES, joining the one at 486.
+- **Found and fixed: the elite construct was never real.**
+  - The construct was not in main.js's ELITE table, so `elite: true` stood up a plain construct.
+  - The throne's warden at 486 was never an elite in game, and its gate at 493 never shut.
+  - Fix: ELITE.construct is now 'THE BRASS WARDEN' (hp x1.4; `mod`, because its moves are src/construct.js), with its own dispatch line.
+  - Its affixes are SHIELDED, BURNING and UNSTOPPABLE.
+  - Elite lab: mash 0/3, human 4/6. The knight times out on the SHIELDED front with his hero at 72%.
+- **Construct numbers:** hp 105 to 160, poke 21 to 28, sweep 25 to 34.
+- **Foe weight:** drowned foeHit 3.8 to 4.6, scorpion foeHit 3.4 to 4.2.
+- **Cut:**
+  - scorpions at 110, 171, 232 and 289;
+  - drowned at 284 (your "285"), 400 and 443;
+  - slingers at 114 and 196.
+- **The construct at 193 is now a drowned.** tools/buried-city.mjs holds any one type to 35%, and with three elite constructs it was at 37%.
+- **CP2** moved from 280 to 300.
+- **Checkpoint gaps:** checkpoint-gaps is green, and the city is off the A10b report list.
+
+### SMALLER
+- **Granary:** the shelf ends at 131 (it dead-ended at 132), and the door is a row taller (133,22). The door glints once the sand is full.
+- **Spike cellar:** its stakes are drawn.
+- **The quarter's well:** the two-wide gap at 364-365 had nine-row walls, so a fall in was a soft-lock. It now has a beam at 33 and a step at 37.
+- **The door construct at 370 is awake.** Wound down, it never woke for a hero standing on the tower over it.
+- **The walker's hands** now shut the foundry's floor-gate (walkHint plus a glint).
+- **M2 (the open-desert sky) is NOT a one-line switch.**
+  - The sky, the clouds and the far/mid dune layers are drawn by main.js's backdrop chain, after BCH.drawBack.
+  - `L.dark` brings the whole dark-room lighting with it.
+  - Left for the art lane (review section 6, item 1).
+- **level-quality crumble units: NOT CHANGED, reported.**
+  - The unit table tried was TILE_X0 = crumbles, winds, heaps, pits and carousels, measured on every level's built arrays.
+  - `--all` was run before and after (work/claude/buriedcity-fix/lq-before.log and lq-after.log).
+  - The table only ever raises place counts, so it makes the check more lenient.
+  - It flips witchlight's verdict: its 'mechanics' fail goes away. Mage, oreroad and skyroad counts also rise.
+  - Reverted, per the rule.
+
+### THE LEVEL, MEASURED (walker L38, typical build, human+first, 1 seed)
+
+| hero | deaths | arrive % (mean / min) |
+|---|---|---|
+| knight | 2 (both THE FALL, in the trap hall) | 89 / 56 |
+| warden | 0 (after the well fix) | 100 / 77 |
+| pyro | 0 | 99 / 96 |
+
+- The elite duels are mostly won at 100% hp: the L38 walker's skills still beat the squads. **Arrival is still over 50%: MISSED.**
+- **Pilot (L1 knight, re-stamped):** 9 hits, 3 deaths, 105 lifts.
+- **Curve:** a new row is stamped (docs/level1-curve.json).
+- **Mash, LEVEL then BOSS:** in the level all three heroes die (lowest hp 0%); the boss is 0/6. Both stamped.
+
+### CHECKS (green)
+- **Level checks:** buried-city (164), buried-city-levers (30), level-quality gate (CLEARS), curve-gate, mash-gate, elites (full, with the construct row).
+- **Checkpoint checks:** checkpoint-gaps, checkpoints, checkpoint-stand.
+- **Placement checks:** signs, killzones, deadends, floaters, collectables, spawns, keys, architecture, sprinkle-cap.
+- **Foe checks:** goblin-lint, one-new-foe, tells, answer-tags, threat-holes, skins.
+- **Boss and audio checks:** boss-greed, boss-music, boss-read, audio-assets.
+- **Infrastructure checks:** hint-shown, death-cost, dangling-paths, comments, homepaths, map-spacing, map-grammar.
+- **RED, not this lane:** tools/stuck.mjs runtime fails on THE ROOTWAY (master's level). It failed on two runs, at a different spot each time (rw-larder, then rw-cellar-span): a flake on the loaded machine. Its static half and every bc- spot are green.
+- **Not run:** the full suite. The machine is out of memory, and another suite was running.
+
+## QUESTIONS FOR DANIEL (rec first; the rec is what is built)
+1. **The knight wins the king 2/12 with flasks; the warden 11/12.** It is in band at 61%, with no hero at 0.
+   - Rec: keep it, and give the bot lane the per-move ledger (the knight's bot eats the gear and the stream).
+   - Alt: slow the gear (gearV 165 to 140) and widen the stream's tell for everyone, then retune hp up.
+2. **Dry, the king is 36%.**
+   - Rec: keep it. The flask band (B6 amended) is the target.
+3. **The walker still arrives at 77-100%.**
+   - Rec: leave the rest to the act-5 sweep. The exam elites now exist, but the L38 skills kill them in 4-10 s.
+   - Alt: elite hp x2. The elite lab's knight already times out at x2.
+4. **The cut list.** There is no drowned at 285: I cut the one at 284. I also cut the reviewer's scorpion at 289 and drowned at 400 (the reviewer's plan).
+   - Rec: keep.
+5. **The crumble unit fix flips witchlight's verdict** (more lenient), so it is not applied.
+   - Rec: the tool lane applies it, together with a look at witchlight.
