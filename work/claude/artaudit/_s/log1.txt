@@ -1,0 +1,18 @@
+desktop wrote title-noaudio-banner
+desktop wrote title-after-key
+desktop wrote saves
+state after enter slots
+desktop wrote controls-page
+state controls
+desktop wrote credits-1
+desktop wrote credits-2
+desktop wrote credits-3
+desktop wrote credits-4
+desktop wrote sound-test
+desktop wrote practice
+desktop wrote coop-pick
+desktop wrote heropick-knight
+desktop wrote heropick-warden
+desktop wrote heropick-pyro
+desktop wrote hero-trial-prompt
+desktop wrote after-straight-to-map

@@ -1,0 +1,28 @@
+79 hint messages read out of src/main.js
+  scope hints             79 screens  2.0s
+  scope bestiary         260 screens  18.4s
+  scope store            672 screens  11.3s
+  scope tree             185 screens  19.8s
+  scope pick               3 screens  1.1s
+  scope trial              7 screens  3.5s
+  scope erase              5 screens  1.6s
+  scope opening            4 screens  0.3s
+  scope press              1 screens  0.1s
+  scope mapcard           43 screens  70.8s
+  scope death              7 screens  4.4s
+  scope results            1 screens  8.2s
+  scope card              59 screens  5.3s
+  scope slots             10 screens  0.3s
+  scope practice           8 screens  0.2s
+  scope talk[knight]     673 screens  169.3s
+  scope bossjump          63 screens  23.9s
+  scope menu              18 screens  18.0s
+  scope settings         149 screens  8.3s
+  scope soundtest        121 screens  8.1s
+  scope credits           10 screens  10.2s
+  scope hud               12 screens  6.9s
+  scope talk[warden]     673 screens  227.4s
+
+TEXTFIT SCOPE "boss" FAILED after 481s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+
+TEXTFIT SCOPE "plates" FAILED after 481s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms

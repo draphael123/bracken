@@ -1,0 +1,4 @@
+Error: Input.dispatchKeyEvent did not answer within 15000ms
+    at Timeout._onTimeout (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-artaudit/tools/cdp.mjs:43:71)
+    at listOnTimeout (node:internal/timers:635:17)
+    at process.processTimers (node:internal/timers:571:7)
