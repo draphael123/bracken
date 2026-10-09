@@ -101,7 +101,8 @@ export function bakeHerHawk(pose) {
   else if (pose === 2) { body(1); wing(6); fillPoly(g, [[cx - 2, cy - 1], [cx + 6, cy - 1], [cx + 9, cy + 3], [cx - 7, cy + 4]], HH.b); }
   else if (pose === 3) { body(2, '#ff4a3a'); fillPoly(g, [[cx - 6, cy], [cx + 4, cy - 1], [cx - 12, cy - 9]], HH.B); line(g, cx - 12, cy - 9, cx - 3, cy, HH.d); fillPoly(g, [[cx - 4, cy + 1], [cx + 2, cy + 1], [cx - 9, cy - 6]], HH.b); for (let k = 0; k < 3; k++) rect(g, cx + 4 + k, cy + 3, 1, 4, HH.beak); }
   else if (pose === 4) { body(-1, '#ffffff'); wing(9, 2); wing(-4); px(g, cx + 4, cy - 8, '#ffffff'); px(g, cx - 5, cy - 9, '#ffffff'); px(g, cx + 9, cy - 7, '#ffffff'); }
-  else if (pose === 5) { const p = canvas(1, 1); ellipse(g, cx, cy + 2, 4.6, 5.6, HH.b); ellipse(g, cx + 1, cy + 3, 3, 3.6, HH.breast); for (const by of [cy + 2, cy + 4, cy + 6]) { px(g, cx, by, HH.bar); px(g, cx + 2, by, HH.bar); } fillPoly(g, [[cx - 3, cy - 1], [cx - 6, cy + 8], [cx - 1, cy + 9]], HH.B); fillPoly(g, [[cx - 3, cy + 6], [cx - 6, cy + 13], [cx - 3, cy + 13]], HH.tail); ellipse(g, cx + 3, cy - 4, 2.6, 2.4, HH.B); rect(g, cx + 2, cy - 6, 3, 1, '#f0e6d0'); px(g, cx + 5, cy - 5, HH.eye); px(g, cx + 5, cy - 4, HH.d); line(g, cx + 6, cy - 4, cx + 8, cy - 3, HH.beak); rect(g, cx - 1, cy + 7, 1, 4, HH.beak); rect(g, cx + 2, cy + 7, 1, 4, HH.beak); px(g, cx + 1, cy + 11, HH.jess); px(g, cx, cy + 12, HH.bell); }
+  else if (pose === 5 || pose === 7) { const p = canvas(1, 1); ellipse(g, cx, cy + 2, 4.6, 5.6, HH.b); ellipse(g, cx + 1, cy + 3, 3, 3.6, HH.breast); for (const by of [cy + 2, cy + 4, cy + 6]) { px(g, cx, by, HH.bar); px(g, cx + 2, by, HH.bar); } fillPoly(g, [[cx - 3, cy - 1], [cx - 6, cy + 8], [cx - 1, cy + 9]], HH.B); fillPoly(g, [[cx - 3, cy + 6], [cx - 6, cy + 13], [cx - 3, cy + 13]], HH.tail); ellipse(g, cx + 3, cy - 4, 2.6, 2.4, HH.B); rect(g, cx + 2, cy - 6, 3, 1, '#f0e6d0'); px(g, cx + 5, cy - 5, HH.eye); px(g, cx + 5, cy - 4, HH.d); line(g, cx + 6, cy - 4, cx + 8, cy - 3, HH.beak); rect(g, cx - 1, cy + 7, 1, 4, HH.beak); rect(g, cx + 2, cy + 7, 1, 4, HH.beak); px(g, cx + 1, cy + 11, HH.jess); px(g, cx, cy + 12, HH.bell); line(g, cx, cy + 11, cx - 2, cy + 17, HH.jess); line(g, cx + 2, cy + 11, cx + 5, cy + 16, HH.jess); px(g, cx + 5, cy + 16, HH.bell);
+    if (pose === 7) { ellipse(g, cx + 3, cy - 4, 3.1, 2.9, '#8a2a22'); rect(g, cx + 1, cy - 7, 5, 1, '#c8483a'); rect(g, cx + 1, cy - 4, 5, 1, '#d9b04a'); px(g, cx + 5, cy - 5, '#5a1814'); px(g, cx + 5, cy - 4, '#5a1814'); line(g, cx + 3, cy - 7, cx + 1, cy - 11, HH.jess); px(g, cx + 1, cy - 11, '#c8281e'); px(g, cx + 2, cy - 10, '#e8dcb8'); line(g, cx - 1, cy - 4, cx - 3, cy - 2, '#5a1814'); } }
   else { body(2); wing(4, 1); wing(3, 4); px(g, cx + 9, cy - 5, '#ff4a3a'); }
   outline(c, '#1b1626'); return { c, ax: cx, ay: cy };
 }
@@ -123,6 +124,22 @@ const POSES = {
   recover: { lean: 2, dip: 3, legs: 'knee', front: 'gloveDown', back: 'kneeHand' },
   sleep:   { lean: 3, dip: 14, legs: 'sit', front: 'fold', back: 'fold', head: 'down' },
   hurt:    { lean: -3, dip: 1, legs: 'wide', front: 'flail', back: 'flail', head: 'turn' },
+  /* KEYFRAMED WINDUPS (claude/ksar2 part B): each told move is two or three poses the hands step through by how far into the tell she is */
+  lashCoil:  { lean: -4, dip: 1, legs: 'wide', front: 'gloveHigh', back: 'whipLow' },          /* the lash: the whip drawn back low, the loop gathered */
+  snareWind: { lean: -3, dip: 0, legs: 'wide', front: 'point', back: 'whipOver' },             /* the snare: the loop swung over her head, her glove pointing where it will fly */
+  snareCast: { lean: 4, dip: 1, legs: 'lunge', front: 'gloveBack', back: 'whipHigh' },          /* the cast: the arm out long, the whip snaking away */
+  fanDraw:   { lean: 1, dip: 2, legs: 'knee', front: 'gloveBack', back: 'fan0' },               /* the knife fan: the hand to the bandolier, three blades half out */
+  fanHold:   { lean: -1, dip: 1, legs: 'wide', front: 'gloveHigh', back: 'fan' },              /* ...the three splayed in her fingers, high / mid / low */
+  fanThrow:  { lean: 3, dip: 1, legs: 'lunge', front: 'gloveBack', back: 'openFwd' },          /* ...and thrown: the hand open, empty */
+  kegSet:    { lean: 3, dip: 1, legs: 'kickBack', front: 'gloveHigh', back: 'hip' },           /* the keg kick: weight on the back foot, the front foot drawn back */
+  kegKick:   { lean: -5, dip: 1, legs: 'kickFwd', front: 'flail', back: 'flail' },             /* ...and swung through, arms flung back for the balance */
+  leapCrouch:{ lean: 2, dip: 5, legs: 'crouch', front: 'gloveBack', back: 'flail' },           /* the leap: coiled low... */
+  leapAir:   { lean: 1, dip: -1, legs: 'tuck', front: 'gloveUp', back: 'flail' },              /* ...and in the air, knees up */
+  whistleA:  { lean: 0, dip: 0, legs: 'idle', front: 'gloveHigh', back: 'lips' },              /* the whistle: two fingers to the lips */
+  whistleB:  { lean: -1, dip: 0, legs: 'idle', front: 'gloveHigh', back: 'pointFwd', head: 'up' },   /* ...and the arm thrown out to send the hawk */
+  tauntA:    { lean: 2, dip: 1, legs: 'wide', front: 'glove', back: 'beckon' },                /* her idle: a beckoning hand ('come on') */
+  tauntB:    { lean: -1, dip: 0, legs: 'idle', front: 'glove', back: 'hip' },                  /* ...the chin up, her hand on her hip */
+  stroke:    { lean: 0, dip: 0, legs: 'idle', front: 'glove', back: 'stroke' },                /* ...and a smoothing hand to the hawk on her glove */
 };
 export const MISTRESS_POSES = Object.keys(POSES);
 export function bakeMistress(name) {
@@ -130,10 +147,10 @@ export function bakeMistress(name) {
   const hipY = fy - 12 + dip, hipX = cx, shY = hipY - 12 + (dip > 8 ? 4 : 0), shX = cx + lean * 0.7, headY = shY - 6, headX = shX + (P.head === 'down' ? 1 : 0.6);
   const L2 = (x0, y0, x1, y1, col, th = 2) => { const dx = x1 - x0, dy = y1 - y0, n = Math.max(Math.abs(dx), Math.abs(dy)); for (let i = 0; i <= n; i++) { const t = n ? i / n : 0, x = Math.round(x0 + dx * t), y = Math.round(y0 + dy * t); rect(g, x, y, th, th, col); } };
   /* legs */
-  const legs = { idle: [[-2, 0, 0], [2, 0, 0]], walkA: [[-4, 0, 3], [3, -1, -2]], walkB: [[-3, -1, -1], [4, 0, 3]], wide: [[-5, 0, 0], [5, 0, 0]], lunge: [[-7, 0, -1], [6, 0, 3]], knee: [[-5, 0, 0], [4, -4, 2]], sit: [[-5, 0, 6], [4, -3, 8]] }[P.legs];
-  const leg = (dx, kneeUp, foot, back) => { const kx = hipX + dx * 0.6 + (foot ? foot * 0.2 : 0), ky = hipY + 5 + kneeUp, fx = hipX + dx + foot * 0.4, fyy = P.legs === 'sit' ? fy - 2 : fy - 1 + (kneeUp < -2 ? kneeUp : 0) * 0;
+  const legs = { idle: [[-2, 0, 0], [2, 0, 0]], walkA: [[-4, 0, 3], [3, -1, -2]], walkB: [[-3, -1, -1], [4, 0, 3]], wide: [[-5, 0, 0], [5, 0, 0]], lunge: [[-7, 0, -1], [6, 0, 3]], knee: [[-5, 0, 0], [4, -4, 2]], sit: [[-5, 0, 6], [4, -3, 8]], kickBack: [[-4, 0, 0], [3, -3, -10, 5]], kickFwd: [[-6, 0, -1], [5, -2, 13, 4]], tuck: [[-3, -6, -1, 6], [3, -7, 2, 7]], crouch: [[-6, -3, -2], [5, -4, 4]] }[P.legs];
+  const leg = (dx, kneeUp, foot, back, lift = 0) => { const kx = hipX + dx * 0.6 + (foot ? foot * 0.2 : 0), ky = hipY + 5 + kneeUp, fx = hipX + dx + foot * 0.4, fyy = (P.legs === 'sit' ? fy - 2 : fy - 1) - lift;
     L2(hipX + dx * 0.2, hipY + 2, kx, ky, back ? '#3a1410' : '#6a2a1e', 3); L2(kx, ky, fx, fyy - 3, back ? '#1a0e08' : HMC.boot, 3); rect(g, fx - 1, fyy - 3, 5, 3, back ? '#1a0e08' : HMC.boot); rect(g, fx - 1, fyy - 3, 5, 1, back ? '#3a2616' : HMC.bootHi); };
-  leg(...legs[0].slice(0, 1), legs[0][1], legs[0][2], true); leg(legs[1][0], legs[1][1], legs[1][2], false);
+  leg(legs[0][0], legs[0][1], legs[0][2], true, legs[0][3] || 0); leg(legs[1][0], legs[1][1], legs[1][2], false, legs[1][3] || 0);
   /* the long coat: a trapezoid from shoulders to the knees with a split skirt and a gold hem */
   const top = shY - 1, bot = hipY + 4 + (dip > 8 ? -1 : 0), wsh = 5, wbt = 6;
   fillPoly(g, [[shX - wsh, top], [shX + wsh, top], [hipX + wbt + lean * 0.3, bot], [hipX - wbt, bot]], HMC.coat);
@@ -153,12 +170,20 @@ export function bakeMistress(name) {
   /* arms: the GLOVED arm (her hawk's) is the near arm; the other is the back arm with the whip or the knife */
   const sh = [shX + 2, shY + 1], bk = [shX - 3, shY + 1];
   const hand = (x, y, col) => { rect(g, x - 1, y - 1, 3, 3, col); };
-  const gl = k => { const t = { glove: [sh[0] + 4, sh[1] + 6], gloveUp: [sh[0] + 8, sh[1] - 2], gloveHigh: [sh[0] + 6, sh[1] - 10], gloveBack: [sh[0] - 7, sh[1] + 5], gloveDown: [sh[0] + 4, sh[1] + 10], fold: [sh[0] + 3, sh[1] + 8], flail: [sh[0] + 7, sh[1] - 5] }[k] || [sh[0] + 4, sh[1] + 6];
+  const gl = k => { const t = { glove: [sh[0] + 4, sh[1] + 6], gloveUp: [sh[0] + 8, sh[1] - 2], gloveHigh: [sh[0] + 6, sh[1] - 10], gloveBack: [sh[0] - 7, sh[1] + 5], point: [sh[0] + 11, sh[1] + 1], gloveDown: [sh[0] + 4, sh[1] + 10], fold: [sh[0] + 3, sh[1] + 8], flail: [sh[0] + 7, sh[1] - 5] }[k] || [sh[0] + 4, sh[1] + 6];
     L2(sh[0], sh[1], (sh[0] + t[0]) / 2 + (k === 'gloveUp' ? 2 : 0), (sh[1] + t[1]) / 2 + 1, HMC.coat, 3); L2((sh[0] + t[0]) / 2, (sh[1] + t[1]) / 2 + 1, t[0], t[1], HMC.leather, 3); rect(g, t[0] - 2, t[1] - 2, 5, 5, HMC.glove); rect(g, t[0] - 2, t[1] - 2, 5, 1, HMC.gloveHi); px(g, t[0], t[1], HMC.stud); px(g, t[0] - 2, t[1] + 2, HMC.stud); rect(g, t[0] - 2, t[1] + 3, 5, 1, HMC.leather); return t; };
-  const arm = k => { const t = { hip: [bk[0] - 1, bk[1] + 7], whipBack: [bk[0] - 8, bk[1] - 10], whipFwd: [bk[0] + 16, bk[1] + 3], knifeLow: [bk[0] + 4, bk[1] + 9], knifeBack: [bk[0] - 7, bk[1] + 6], knifeFwd: [bk[0] + 17, bk[1] + 4], lips: [headX + 2, headY + 5 + hd], kneeHand: [bk[0] + 3, bk[1] + 11], fold: [bk[0] + 4, bk[1] + 8], flail: [bk[0] - 8, bk[1] - 3] }[k] || [bk[0], bk[1] + 7];
+  const arm = k => { const t = { hip: [bk[0] - 1, bk[1] + 7], whipBack: [bk[0] - 8, bk[1] - 10], whipFwd: [bk[0] + 16, bk[1] + 3], knifeLow: [bk[0] + 4, bk[1] + 9], knifeBack: [bk[0] - 7, bk[1] + 6], knifeFwd: [bk[0] + 17, bk[1] + 4], lips: [headX + 2, headY + 5 + hd], kneeHand: [bk[0] + 3, bk[1] + 11], fold: [bk[0] + 4, bk[1] + 8], flail: [bk[0] - 8, bk[1] - 3], whipLow: [bk[0] - 7, bk[1] + 9], whipOver: [bk[0] - 2, bk[1] - 13], whipHigh: [bk[0] + 17, bk[1] - 2], fan0: [bk[0] + 4, bk[1] + 6], fan: [bk[0] + 6, bk[1] - 4], openFwd: [bk[0] + 16, bk[1] + 1], pointFwd: [bk[0] + 14, bk[1] - 3], beckon: [bk[0] + 12, bk[1] + 3], stroke: [sh[0] + 5, sh[1] + 5] }[k] || [bk[0], bk[1] + 7];
     L2(bk[0], bk[1], (bk[0] + t[0]) / 2, (bk[1] + t[1]) / 2 + 1, HMC.coatLo, 3); L2((bk[0] + t[0]) / 2, (bk[1] + t[1]) / 2 + 1, t[0], t[1], HMC.coatLo, 3); hand(t[0], t[1], HMC.skin);
     if (k === 'whipBack') { line(g, t[0], t[1], t[0] - 2, t[1] - 4, HMC.whip); line(g, t[0] - 2, t[1] - 4, t[0] + 3, t[1] - 8, HMC.whip); circle(g, t[0] + 3, t[1] - 8, 2, HMC.whip); }
     if (k === 'whipFwd') { line(g, t[0], t[1], t[0] + 6, t[1] + 2, HMC.whip); }
+    if (k === 'whipLow') { circle(g, t[0] - 1, t[1] + 3, 3, HMC.whip); circle(g, t[0] - 1, t[1] + 3, 1.5, HMC.coatLo); line(g, t[0], t[1], t[0] - 6, t[1] + 6, HMC.whip); }
+    if (k === 'whipOver') { circle(g, t[0], t[1] - 5, 4, HMC.whip); circle(g, t[0], t[1] - 5, 2, '#c89870'); line(g, t[0], t[1] - 1, t[0] - 7, t[1] - 4, HMC.whip); px(g, t[0] + 4, t[1] - 8, '#e8e0c0'); }
+    if (k === 'whipHigh') { line(g, t[0], t[1], t[0] + 5, t[1] - 2, HMC.whip); px(g, t[0] + 6, t[1] - 3, '#e8e0c0'); }
+    if (k === 'fan0') { for (let i = 0; i < 3; i++) { rect(g, t[0] - 1 + i * 2, t[1] - 3 - (i & 1), 2, 3, HMC.ivory); rect(g, t[0] + i * 2, t[1] - 5 - (i & 1), 1, 2, HMC.steelHi); } }
+    if (k === 'fan') { for (const [dx, dy] of [[9, -9], [11, -1], [9, 7]]) { line(g, t[0] + 1, t[1], t[0] + dx, t[1] + dy, HMC.steel, 1); px(g, t[0] + dx, t[1] + dy, HMC.steelHi); px(g, t[0] + dx - 1, t[1] + dy + (dy < 0 ? 1 : dy > 3 ? -1 : 0), HMC.steelLo); } rect(g, t[0] - 2, t[1] - 1, 3, 3, HMC.ivory); }
+    if (k === 'openFwd') { for (let i = 0; i < 3; i++) px(g, t[0] + 3 + i, t[1] + i - 2, HMC.skin); line(g, t[0] - 6, t[1] + 1, t[0] - 11, t[1] + 1, '#fff0d0'); line(g, t[0] - 6, t[1] - 2, t[0] - 10, t[1] - 3, '#c9d1dc'); }
+    if (k === 'pointFwd') { line(g, t[0], t[1], t[0] + 5, t[1] - 1, HMC.skin, 1); px(g, t[0] + 6, t[1] - 1, HMC.skin); }
+    if (k === 'beckon') { px(g, t[0] + 2, t[1] - 2, HMC.skin); px(g, t[0] + 3, t[1] - 3, HMC.skin); px(g, t[0] + 3, t[1] - 4, HMC.skin); px(g, t[0] + 2, t[1] - 4, HMC.skin); px(g, t[0] + 1, t[1] + 2, HMC.gloveHi); }
     if (k.startsWith('knife')) { const f = k === 'knifeFwd' ? 1 : k === 'knifeBack' ? -1 : 0.4; const kx = t[0] + Math.round(f * 11), ky = t[1] - (k === 'knifeBack' ? 7 : k === 'knifeFwd' ? 1 : 3);
       rect(g, t[0] - 1, t[1] - 1, 3, 3, HMC.ivory); line(g, t[0] + 1, t[1], kx, ky, HMC.steel, 1); line(g, t[0] + 1, t[1] - 1, kx - 1, ky - 1, HMC.steelHi, 1); px(g, kx, ky - 1, HMC.steelHi); px(g, kx + 1, ky, HMC.steelLo); }
     return t; };
@@ -184,5 +209,5 @@ export async function sheetItems() {
   const CB = await import('./caravan_bandits.js'), DF2A = await import('./desert_foes2.js'), out = [];
   const cu = CB.bakeCutthroat(), sl = CB.bakeSlinger(), sh = DF2A.bakeShieldGuard(), dy = DF2A.bakeDynamiter();
   for (const [b, s] of [[cu, bakeKsarBlade(cu)], [cu, bakeGongLookout(cu)], [cu, bakeWhipApprentice(cu)], [sh, bakeShieldSentry(sh)], [dy, bakeSmokeThrower(dy)], [sl, bakeWallSlinger(sl)]]) out.push(...b.R.slice(0, 5), ...s.R.slice(0, 5));
-  out.push(...bakeHawk().R); for (let i = 0; i < 7; i++) out.push(bakeHerHawk(i).c); out.push(...MISTRESS_POSES.map(bakeMistress)); return out;
+  out.push(...bakeHawk().R); for (let i = 0; i < 8; i++) out.push(bakeHerHawk(i).c); out.push(...MISTRESS_POSES.map(bakeMistress)); return out;
 }

@@ -143,6 +143,7 @@ export function buildGlassSea({ painter, T, TS }) {
   crack('pulseA', 172, 180, B, { soft: true });
   bed('pulseA', 182, B - 2, [...span(174, 175, B), ...span(178, 179, B)], { label: 'THE GLASS STEPS', fuseT: 0.3, crumbleT: 0.25, pulse: true });
   decor.push({ kind: 'heap', x: 182, y: B - 1 });
+  block(172, 180, B - 13, B - 13); decor.push({ kind: 'spire', x: 171, y: B - 1, top: B - 13 }); shadeBox(171, 181, B - 12, B - 1);   /* (claude/ksar2, THE SUN v2) a spire's high overhang (out of any jump's reach) over the rocking mirror's pit: the TEACH is learnt in shade (a retry at the rhythm is never a drain to death) */
   sign(167, B - 1, 'A ROCKING MIRROR. TURN IT: THE GLASS HOLDS ONLY WHILE THE BEAM DOES.');
 
   // ================= 3. THE BONE CROSSING (196-295): SET PIECE ONE - THE SUN-MIRROR BRIDGE (REQUIRED) =================
@@ -155,6 +156,7 @@ export function buildGlassSea({ painter, T, TS }) {
   mirror('bridge', 224, B - 2, ['sky', '\\', '/']); source('bridge', 224, B - 3, 'S', 'sun');
   sentinel(221, B - 1, 'mirrorGuard', { face: -1 }); sentinel(227, B - 1, 'mirrorGuard', { face: -1 });   /* two sentinels: one before the mirror, one on the lip behind it */
   sign(217, B - 1, 'THE BONE CROSSING. TURN THE MIRROR: THE BEAM FUSES A ROAD.');
+  skiff(228, B - 1);   /* (claude/ksar2) THE SUN v2 - more shade: a bone skiff on the near lip before the crossing (the rule walk is 4 s now) */
   crack('crossing', 230, 241, B);
   bed('bridge', 243, B - 2, span(230, 241, B), { label: 'THE BRIDGE', walk: true });
   ground(242, 295, B);

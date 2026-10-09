@@ -8,11 +8,16 @@
 // brake), THE STRONGROOM (five seals), the whip apprentice's lash (reach, and a pull), the glint and the 10 s nudge (STUCK_HANDS.ksar), and the drawing
 // (GREYBOX shapes until the art pass). The courtyard's gongs and flasks are the same rule: a hero's ring or flash there goes to THE HAWK-MISTRESS
 // (ctx.bossRing / ctx.bossFlash, src/hawk-mistress-hands.js).
+// (claude/ksar2) THE LONGER KSAR's verbs: THE TORCH (src/carry-throw.js kind 'torch': E takes one from a rack, ATTACK throws it in the told arc; where it lies it
+// BURNS: a REED screen burns away, a raised bridge's ROPE burns and the bridge falls across its chasm, a POWDER TRAIL catches and its fire runs to its keg, a set keg
+// lights), the ARCHER NESTS (a flask's flash blinds a nest's slinger longer), the RAIDER LINES (a gong calls riders down a rope off a tower - a blade on its post
+// cuts it: the rope is gone, its riders fall), and THE ROOFTOP SHAFTS (the Hawk-Mistress's roofs: the spikes bite, the updraft throws you out).
 // main.js calls: reset, on, update, hold, world, evs, onHit, interact, smokeStep, noSun, drawWorld, drawOver, drawHud, read, handsState, arcOf.
 import * as CT from './carry-throw.js';
 import { CUTTHROAT } from './desert-foes.js';
 import { HAWK } from './ksar-foes.js';
 import * as SET from './redraw/ksar_set.js';
+import * as P2 from './redraw/ksar_props2.js';
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 
@@ -24,9 +29,12 @@ import { STUCK_HANDS } from './stuck-spots.js';
    haulCd: s between hauls; refill: s a stack takes to put one back */
 export const KS = { hum: 4, muster: 3.2, callV: 82, sight: 150, sightY: 40, runV: 96, strikeT: 1.0, patrolV: 30, kegFuse: 0.9, kickFuse: 1.1, chainFuse: 0.45,
   kegR: 64, breakR: 62, chainR: 150, kegDmg: 60, kegHero: 28, flashR: 84, stunR: 52, stunT: 1.6, smokeR: 44, smokeT: 6, potDmg: 10, lashReach: 62, pull: 170,
-  brakeR: 3, dropT: 1.1, haulCd: 0.32, refill: 8, gongR: 20, takeR: 18, stoneDmg: 22, drillV: 40, drillCd: 0.5, holeEvery: 0.9, holeTell: 0.45, holeDmg: 14 };   /* THE MURDER HOLES: while the gatehouse is manned, a stone every holeEvery s on a hero at the gate or in its passage (told: dust and a mark, holeTell s) */
+  brakeR: 3, dropT: 1.1, haulCd: 0.32, refill: 8, gongR: 20, takeR: 18, stoneDmg: 22, drillV: 40, drillCd: 0.5, holeEvery: 0.9, holeTell: 0.45, holeDmg: 14,
+  shaftPct: 0.25, updraftV: 360, updraftVx: 110,
+  torchBurn: 4, torchR: 22, torchDmg: 12, reedBurn: 0.9, ropeBurn: 0.8, trailV: 70, nestStun: 4.5, rideV: 150, raidGap: 0.7 };   /* (claude/ksar2) THE TORCH (a lying torch burns torchBurn s; it sets fire torchR px round it), the reed screen's and the rope's burn, the trail's fire (px/s), a blinded nest, the raiders' ride */   /* (claude/ksar2) THE ROOFTOP SHAFTS: the spikes' bite (a quarter of the bar, A10), the updraft's throw up and across */   /* THE MURDER HOLES: while the gatehouse is manned, a stone every holeEvery s on a hero at the gate or in its passage (told: dust and a mark, holeTell s) */
 CT.addKind('keg', { aims: { low: { vx: 70, vy: -120 }, mid: { vx: 125, vy: -190 }, high: { vx: 95, vy: -300 } }, g: 700, r: 4, ring: 12, dots: 14 });
 CT.addKind('flask', { aims: { low: { vx: 110, vy: -130 }, mid: { vx: 170, vy: -210 }, high: { vx: 120, vy: -330 } }, g: 640, r: 3, ring: 10, dots: 14 });
+/* (the torch is src/carry-throw.js's own kind 'torch' - the Underwell's, so a THROW game-wide reuses one row) */
 const FORT = new Set(['ksarblade', 'gonglookout', 'whipapprentice', 'shieldsentry', 'smokethrower', 'wallslinger']);
 
 export function makeKsarHands(ctx) {
@@ -46,15 +54,19 @@ export function makeKsarHands(ctx) {
       K = { L, said: {}, clock: 0, gongs: (L.gongs || []).map(g => ({ ...g, cut: false, hum: 0, ring: 0, rungBy: '' })), barricades: (L.barricades || []).map(b => ({ ...b, broken: false })),
         setKegs: (L.setKegs || []).map(k => ({ ...k, st: 'set', t: 0 })), weak: (L.weak || []).map(([x, y]) => ({ x, y, broken: false })), gate: L.gate ? { ...L.gate, notch: 0, pinned: false, dropT: 0, cd: 0 } : null,
         vault: (L.vaultDoors || []).map(v => ({ ...v, open: false })),
+        reeds: (L.reeds || []).map(r => ({ ...r, st: 'whole', t: 0 })), ropes: (L.ropeBridges || []).map(r => ({ ...r, st: 'raised', t: 0 })),
+        trails: (L.trails || []).map(r => ({ ...r, st: 'dry', a: 0, b: 0 })), raids: (L.raidLines || []).map(r => ({ ...r, cut: false, sent: 0, q: [] })),
         n: { rings: 0, heroRings: 0, cuts: 0, calls: 0, alarms: 0, lookoutRuns: 0, lookoutRings: 0, sentryRings: 0, shrieks: 0, kegsThrown: 0, flasksThrown: 0, blasts: 0, chainBlasts: 0, kicks: 0, broken: 0,
           flashes: 0, stuns: 0, blinds: 0, smokes: 0, hauls: 0, braked: 0, drops: 0, pinned: 0, pulls: 0, nudges: 0, hidden: 0 } };
     }
     K.stacks = (K.L.stacks || []).map(s => ({ ...s, left: s.n, t: 0 }));
     K.items = []; K.smokes = []; K.fx = []; K.drops = []; K.holeT = 0; K.glint = null; K.stalls = {}; K.stallKey = null; K.arc = null;
+    for (const r of K.reeds) if (r.st === 'burning') r.st = 'whole'; for (const r of K.ropes) if (r.st === 'burning') r.st = 'raised'; for (const t of K.trails) if (t.st === 'lit') t.st = 'dry';
+    for (const r of K.raids) { r.sent = 0; r.q = []; } K.L.zipLines = (K.L.zipLines || []).filter(z => !(z.raid && K.raids.some(r => r.cut && r.id === z.id)));   /* a cut raider line stays cut */
     for (const g of K.gongs) { g.hum = 0; g.ring = 0; if (g.arena) g.cut = false; }   /* (fix pass) the courtyard's gongs hang again for a new attempt at her */
     for (const k of K.setKegs) if (k.st === 'lit') k.st = 'set';
     if (K.gate && !K.gate.pinned) K.gate.notch = 0;
-    for (const pp of ctx.players) { if (pp.carry && (pp.carry.t === 'kskeg' || pp.carry.t === 'ksflask')) pp.carry = null; pp.ksPullK = 0; }
+    for (const pp of ctx.players) { if (pp.carry && (pp.carry.t === 'kskeg' || pp.carry.t === 'ksflask' || pp.carry.t === 'kstorch')) pp.carry = null; pp.ksPullK = 0; pp.ksLift = null; }
     bindFoes();
     /* THE FORT'S LIGHTS (the set's plan: torches, braziers, hung lamps, the beacon): the game blooms each; a respawn re-places them */
     if (!K.plan) K.plan = SET.plan(K.L, T()); { const arr = ctx.lights ? ctx.lights() : null; if (arr) { for (let i = arr.length - 1; i >= 0; i--) if (arr[i].ksar) arr.splice(i, 1); for (const l of K.plan.lights) arr.push({ x: l.wx, y: l.wy - (l.kind === 'brazier' ? 18 : l.kind === 'torch' ? 14 : 4), r: l.r, torch: true, bare: true, warm: true, ksar: true }); } }
@@ -66,7 +78,7 @@ export function makeKsarHands(ctx) {
     for (const e of ctx.enemies()) { if (!e.alive || e.ks || e.hmGuard) continue; const k = e.xpKey != null ? parseInt(e.xpKey, 10) : -1, src = k >= 0 ? K.L.ents[k] : null;
       if (!src || (!src.ks && e.t !== 'hawkscout')) continue;
       if (e.t === 'hawkscout') continue;
-      e.ks = { role: src.ks, post: e.x, gong: src.gong || null, patrol: src.patrol ? [src.patrol[0] * ts + 8, src.patrol[1] * ts + 8] : null, st: src.asleep || src.ks === 'reserve' ? 'asleep' : src.ks === 'gatehouse' ? 'room' : 'post', t: 0, hp: e.hp, dir: e.face || -1 }; }
+      e.ksNest = !!src.nest; e.ks = { role: src.ks, post: e.x, gong: src.gong || null, patrol: src.patrol ? [src.patrol[0] * ts + 8, src.patrol[1] * ts + 8] : null, st: src.asleep || src.ks === 'reserve' ? 'asleep' : src.ks === 'gatehouse' ? 'room' : 'post', t: 0, hp: e.hp, dir: e.face || -1 }; }
   }
   const gongOf = id => K.gongs.find(g => g.id === id);
   const gx = g => g.x * TS() + 8, gy = g => (g.y + 1) * TS();
@@ -86,6 +98,8 @@ export function makeKsarHands(ctx) {
     if (by === 'hero') { if (once('ringHero') || called > 1) number(x, y - 56, called ? 'YOU RING IT: EVERY BANDIT IN EARSHOT COMES' : 'NO ONE IN EARSHOT ANSWERS', '#ffd36b'); }
     else if (by === 'bandit' && (once('ringBandit') || K.clock - (K.ringSaid || -9) > 6)) { K.ringSaid = K.clock; number(ctx.hero().x, ctx.hero().y - 40, 'THE GONG! THEY ARE CALLED', '#ff9a5c'); }
     if (g.arena && by === 'hero' && ctx.bossRing) ctx.bossRing(g);
+    for (const r of K.raids) if (r.gong === g.id && !r.cut && !r.sent) { r.sent = 1; for (let i = 0; i < r.n; i++) r.q.push(i * KS.raidGap); K.n.raidCalls = (K.n.raidCalls || 0) + 1;
+      if (once('raid') || K.clock - (K.raidSaid || -9) > 8) { K.raidSaid = K.clock; number(r.line.x1, r.line.y1 - 40, 'RAIDERS ON THE LINE! CUT ITS POST', '#ff9a5c'); } }
     return 'rung';
   }
   H.ringGong = (id, by) => ring(gongOf(id), by || 'guard');
@@ -137,6 +151,9 @@ export function makeKsarHands(ctx) {
     const q = e.ks, P = ctx.hero(), ts = TS();
     if (e.hp < q.hp - 0.01) { q.hp = e.hp; if (q.st === 'asleep') { q.st = q.role === 'lookout' ? 'post' : 'fight'; if (q.role === 'lookout') startRun(e); } else if (q.role === 'lookout' && (q.st === 'post' || q.st === 'patrol')) startRun(e); }
     q.hp = e.hp; if (q.mark > 0) q.mark -= dt;
+    if (e.ksRide) { const R0 = e.ksRide, z = R0.z; if (R0.r.cut) { e.ksRide = null; e.vy = 60; q.st = 'fight'; } else { R0.k = Math.min(1, R0.k + KS.rideV * dt / Math.hypot(z.x1 - z.x0, z.y1 - z.y0));
+        e.x = z.x0 + (z.x1 - z.x0) * R0.k; e.y = z.y0 + (z.y1 - z.y0) * R0.k + 12; e.vx = 0; e.vy = 0; e.face = Math.sign(z.x1 - z.x0) || -1; if (e.st) { e.st.x = e.x; e.st.y = e.y; e.st.face = e.face; } e.mode = 'walk';
+        if (R0.k >= 1) { e.ksRide = null; q.st = 'fight'; ctx.dust(e.x, e.y, 4); } return true; } }
     if (e.ksStun > 0) { e.ksStun -= dt; fall(e, dt); e.vx = 0; return true; }
     switch (q.st) {
       case 'asleep': fall(e, dt); e.vx = 0; e.mode = 'sleep'; return true;
@@ -186,14 +203,14 @@ export function makeKsarHands(ctx) {
 
   /* ---------- THE THROW: kegs and flasks ---------- */
   const solidPx = (x, y, falling) => { const ts = TS(), t = ctx.cellGet(Math.floor(x / ts), Math.floor(y / ts)); return t === T().SOLID || (falling && ctx.standable(Math.floor(x / ts), Math.floor(y / ts)) && (y % ts) < 6); };
-  const isItem = q => !!(q && (q.t === 'kskeg' || q.t === 'ksflask'));
+  const isItem = q => !!(q && (q.t === 'kskeg' || q.t === 'ksflask' || q.t === 'kstorch'));
   const held = P => (P && isItem(P.carry) ? P.carry : null);
   const handAt = P => ({ x: P.x + (P.face || 1) * 6, y: P.y - 18 });
   const foeAtPx = (x, y) => ctx.enemies().find(e => e.alive && !e.harmless && Math.abs(e.x - x) < (e.w || 10) / 2 + 3 && y > e.y - (e.h || 14) - 2 && y < e.y + 2) || null;
   const hawkAtPx = (x, y) => (ctx.bossHawk ? (() => { const k = ctx.bossHawk(); return k && Math.hypot(k.x - x, k.y - y) < 16 ? k : null; })() : null);
   H.arcOf = P => { const q = held(P); if (!q) return null; const h = handAt(P), v = CT.launchOf(q.thrKind, P, ctx.keys ? ctx.keys() : {});
     return CT.predictArc(q.thrKind, h.x, h.y, v, solidPx, { stopAt: (x, y) => foeAtPx(x, y) || hawkAtPx(x, y) || null }); };
-  const newItem = (P, kind) => ({ t: kind === 'keg' ? 'kskeg' : 'ksflask', thrKind: kind, state: 'held', holder: P, x: P.x, y: P.y - 18, vx: 0, vy: 0, fuse: 0, noClimb: kind === 'keg', hurtWas: P.hurt > 0,
+  const newItem = (P, kind) => ({ t: kind === 'keg' ? 'kskeg' : kind === 'torch' ? 'kstorch' : 'ksflask', thrKind: kind, state: 'held', holder: P, x: P.x, y: P.y - 18, vx: 0, vy: 0, fuse: 0, burnT: 0, noClimb: kind !== 'flask', hurtWas: P.hurt > 0,
     launch: PP => CT.launchOf(kind, PP, ctx.keys ? ctx.keys() : {}) });
   function stepItems(dt) {
     for (const q of K.items) {
@@ -201,8 +218,10 @@ export function makeKsarHands(ctx) {
         if (!P || P.dead || P.carry !== q) { if (P && P.carry === q) P.carry = null; if (P && P.dead) { q.state = 'gone'; continue; } q.state = 'lie'; q.holder = null; continue; }
         const h = handAt(P); q.x = h.x; q.y = h.y;
         if (P.hurt > 0 && !q.hurtWas) { P.carry = null; q.state = 'lie'; q.holder = null; q.x = P.x; q.y = P.y; if (once('dropped')) number(P.x, P.y - 34, 'A BLOW: YOU DROP IT', '#ff9a5c'); }
-        q.hurtWas = P.hurt > 0; continue; }
-      if (q.state === 'fly') { if (!q.counted) { q.counted = 1; if (q.thrKind === 'keg') K.n.kegsThrown++; else K.n.flasksThrown++; } q.holder = null;
+        q.hurtWas = P.hurt > 0; if (q.thrKind === 'torch') ignite(q.x, q.y + 12, 12, 'held');   /* a torch in the hand lights what it touches: a trail, a reed screen, a rope */
+        continue; }
+      if (q.state === 'burn') { q.burnT -= dt; ignite(q.x, q.y, KS.torchR, 'torch'); if (Math.random() < dt * 20) ctx.burst(q.x, q.y - 6, 1, ['#ffd36b', '#ff6a2a'], 30, 0.4); if (q.burnT <= 0) q.state = 'gone'; continue; }
+      if (q.state === 'fly') { if (!q.counted) { q.counted = 1; if (q.thrKind === 'keg') K.n.kegsThrown++; else if (q.thrKind === 'torch') K.n.torchesThrown = (K.n.torchesThrown || 0) + 1; else K.n.flasksThrown++; } q.holder = null;
         const px = q.x, py = q.y, k = CT.KINDS[q.thrKind]; CT.stepArc(q, dt, k.g);
         const hitFoe = foeAtPx(q.x, q.y), hitHawk = hawkAtPx(q.x, q.y);
         if (hitFoe || hitHawk) { land(q); continue; }
@@ -216,6 +235,8 @@ export function makeKsarHands(ctx) {
   }
   function land(q) { q.vx = 0; q.vy = 0;
     if (q.thrKind === 'flask') { q.state = 'gone'; flash(q.x, q.y); return; }
+    if (q.thrKind === 'torch') { q.state = 'burn'; q.burnT = KS.torchBurn; ctx.sfx.puff && ctx.sfx.puff(); const f = foeAtPx(q.x, q.y); if (f) { ctx.hurtFoe(f, KS.torchDmg); f.burn = Math.max(f.burn || 0, 2.5); }
+      ignite(q.x, q.y, KS.torchR, 'torch'); return; }
     q.state = 'fuse'; q.fuse = KS.kegFuse; ctx.sfx.thud ? ctx.sfx.thud() : ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.hiss && ctx.sfx.hiss(); }
   /* THE BLAST: foes and heroes in it, the brick in reach, the next keg in reach (a CHAIN) */
   function blast(x, y, from) {
@@ -226,6 +247,8 @@ export function makeKsarHands(ctx) {
     for (const b of K.barricades) { if (b.broken) continue; let near = false; for (let cy = b.y0; cy <= b.y1 && !near; cy++) for (let cx = b.x0; cx <= b.x1; cx++) if (Math.hypot(cx * ts + 8 - x, cy * ts + 8 - y) < KS.breakR) { near = true; break; }
       if (near) { b.broken = true; K.n.broken++; for (let cy = b.y0; cy <= b.y1; cy++) for (let cx = b.x0; cx <= b.x1; cx++) { ctx.cellOpen(cx, cy); ctx.burst(cx * ts + 8, cy * ts + 8, 4, ['#b08a5a', '#7a5a3a', '#e0c090'], 70, 0.7); }
         number(x, y - 40, 'THE BRICK GIVES: THE ARCH IS OPEN', '#8fd160'); } }
+    for (const r of K.reeds) if (r.st === 'whole' && nearCells(r, x, y, KS.breakR)) burnReed(r);
+    for (const t of K.trails) if (t.st === 'dry' && Math.abs(y - (t.y + 1) * ts) < 30 && x > t.x0 * ts - 30 && x < (t.x1 + 1) * ts + 30) lightTrail(t, x);
     for (const w of K.weak) if (!w.broken && Math.hypot(w.x * ts + 8 - x, w.y * ts + 8 - y) < KS.breakR) { w.broken = true; ctx.cellOpen(w.x, w.y); ctx.burst(w.x * ts + 8, w.y * ts + 4, 5, ['#b08a5a', '#7a5a3a'], 60, 0.6); if (once('roofHole')) number(x, y - 40, 'THE ROOF IS HOLED: A CELLAR UNDER IT', '#ffd36b'); }
     for (const k of K.setKegs) if (k.st === 'set' && Math.hypot(k.x * ts + 8 - x, (k.y + 1) * ts - 6 - y) < KS.chainR) { k.st = 'lit'; k.t = KS.chainFuse; k.by = 'chain'; }
     for (const q of K.items) if (q.thrKind === 'keg' && (q.state === 'lie') && Math.hypot(q.x - x, q.y - y) < KS.chainR * 0.5) { q.state = 'fuse'; q.fuse = KS.chainFuse; }
@@ -234,9 +257,37 @@ export function makeKsarHands(ctx) {
   function flash(x, y) { K.n.flashes++; ctx.sfx.flash ? ctx.sfx.flash() : ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(x, y - 6, 18, ['#ffffff', '#fff6c8', '#d8e8f0'], 110, 0.5); K.fx.push({ k: 'flash', x, y, t: 0.35 });
     for (const e of ctx.enemies()) { if (!e.alive) continue; const d = Math.hypot(e.x - x, e.y - 6 - y);
       if (e.t === 'hawkscout' && d < KS.flashR) { e.ksBlindNew = HAWK.blind; K.n.blinds++; if (once('blindScout')) number(e.x, e.y - 20, 'THE FLASH BLINDS THE HAWK', '#ffd36b'); }
+      else if (e.ks && e.ksNest && d < KS.flashR) { e.ksStun = KS.nestStun; K.n.stuns++; K.n.nestsBlind = (K.n.nestsBlind || 0) + 1; if (once('nest')) number(e.x, e.y - 24, 'THE NEST IS BLIND', '#ffd36b'); }
       else if (e.ks && d < KS.stunR) { e.ksStun = KS.stunT; K.n.stuns++; } }
     K.smokes.push({ x, y: y - 10, r: KS.smokeR * 0.7, t: KS.smokeT * 0.6, t0: KS.smokeT * 0.6 });
     if (ctx.bossFlash) ctx.bossFlash(x, y); }
+  /* (claude/ksar2) FIRE: a burning torch (lying, or in the hand) sets alight what is within r px - a reed screen, a raised bridge's rope, a powder trail, a set keg */
+  const nearCells = (b, x, y, r) => { const ts = TS(); for (let cy = b.y0; cy <= b.y1; cy++) for (let cx = b.x0; cx <= b.x1; cx++) if (Math.hypot(cx * ts + 8 - x, cy * ts + 8 - y) < r) return true; return false; };
+  function burnReed(r) { r.st = 'burning'; r.t = KS.reedBurn; K.n.reedsBurnt = (K.n.reedsBurnt || 0) + 1; ctx.sfx.puff && ctx.sfx.puff(); if (once('reed')) number((r.x0 + 0.5) * TS(), r.y0 * TS() - 20, 'THE REED CATCHES', '#ff9a5c'); }
+  function lightTrail(t, x) { const ts = TS(), c = Math.max(t.x0, Math.min(t.x1, Math.floor(x / ts))); t.st = 'lit'; t.a = c * ts + 8; t.b = c * ts + 8; K.n.trailsLit = (K.n.trailsLit || 0) + 1; ctx.sfx.hiss && ctx.sfx.hiss();
+    if (once('trail')) number(x, (t.y + 1) * ts - 30, 'THE TRAIL CATCHES: THE FIRE RUNS', '#ff9a5c'); }
+  function ignite(x, y, r, by) { const ts = TS();
+    for (const q of K.reeds) if (q.st === 'whole' && nearCells(q, x, y, r)) burnReed(q);
+    for (const q of K.ropes) if (q.st === 'raised' && nearCells({ x0: q.x, x1: q.x, y0: q.y0, y1: q.y1 }, x, y, r + 4)) { q.st = 'burning'; q.t = KS.ropeBurn; ctx.sfx.puff && ctx.sfx.puff(); if (once('rope')) number(q.x * ts, q.y0 * ts - 20, 'THE ROPE BURNS', '#ff9a5c'); }
+    for (const t of K.trails) if (t.st === 'dry' && Math.abs(y - ((t.y + 1) * ts - 4)) < Math.max(14, r * 0.6) && x > t.x0 * ts - 6 && x < (t.x1 + 1) * ts + 6) lightTrail(t, x);
+    if (by === 'torch') for (const k of K.setKegs) if (k.st === 'set' && !k.caged && Math.hypot(k.x * ts + 8 - x, (k.y + 1) * ts - 8 - y) < r) { k.st = 'lit'; k.t = KS.kickFuse; k.by = 'kick'; K.n.kicks++; ctx.sfx.hiss && ctx.sfx.hiss(); } }
+  function stepFire(dt) { const ts = TS();
+    for (const r of K.reeds) if (r.st === 'burning') { r.t -= dt; if (Math.random() < dt * 30) ctx.burst((r.x0 + Math.random() * (r.x1 - r.x0 + 1)) * ts, (r.y0 + Math.random() * (r.y1 - r.y0 + 1)) * ts, 1, ['#ff9a3c', '#ffd36b', '#3a2a12'], 50, 0.5);
+      if (r.t <= 0) { r.st = 'burnt'; for (let y = r.y0; y <= r.y1; y++) for (let x = r.x0; x <= r.x1; x++) { ctx.cellOpen(x, y); ctx.burst(x * ts + 8, y * ts + 8, 3, ['#3a2a12', '#8a6a3a'], 40, 0.6); } number((r.x0 + 0.5) * ts, r.y0 * ts - 20, 'THE REED BURNS AWAY', '#8fd160'); } }
+    for (const r of K.ropes) if (r.st === 'burning') { r.t -= dt; if (Math.random() < dt * 25) ctx.burst(r.x * ts + 8, r.y0 * ts, 1, ['#ff9a3c', '#ffd36b'], 40, 0.4);
+      if (r.t <= 0) { r.st = 'down'; K.n.bridgesBurnt = (K.n.bridgesBurnt || 0) + 1; for (let y = r.y0; y <= r.y1; y++) ctx.cellOpen(r.x, y); const [x0, x1, row] = r.span; for (let x = x0; x <= x1; x++) { ctx.cellSet(x, row, T().ONEWAY); ctx.burst(x * ts + 8, row * ts, 3, ['#8a6a3a', '#c9a060'], 50, 0.5); }
+        ctx.sfx.thud && ctx.sfx.thud(); ctx.shake(3); number((x0 + x1) / 2 * ts, row * ts - 30, 'THE ROPE BURNS THROUGH: THE BRIDGE FALLS ACROSS', '#8fd160'); } }
+    for (const t of K.trails) if (t.st === 'lit') { t.a = Math.max(t.x0 * ts, t.a - KS.trailV * dt); t.b = Math.min((t.x1 + 1) * ts, t.b + KS.trailV * dt); if (Math.random() < dt * 30) ctx.burst(t.b, (t.y + 1) * ts - 2, 1, ['#ffd36b', '#ff6a2a'], 40, 0.3);
+      if (t.b >= (t.x1 + 1) * ts && t.a <= t.x0 * ts) { t.st = 'burnt'; } if (t.b >= t.x1 * ts + 4) { const k = K.setKegs.find(q => q.id === t.keg); if (k && k.st === 'set') { k.st = 'lit'; k.t = KS.chainFuse; k.by = 'trail'; } } } }
+  /* THE RAIDER LINES: riders spawned at the top, one every raidGap s while the queue holds; a blade on the post at the foot cuts the rope (the rope leaves L.zipLines) */
+  function stepRaids(dt) { const ts = TS();
+    for (const r of K.raids) { if (r.cut) continue;
+      for (let i = 0; i < r.q.length; i++) r.q[i] -= dt;
+      while (r.q.length && r.q[0] <= 0) { r.q.shift(); const z = r.line, e = ctx.spawnFoe ? ctx.spawnFoe({ t: 'cutthroat', x: Math.floor(z.x0 / ts), y: Math.floor((z.y0 + 12) / ts) - 1, face: -1, cnSkin: 'ksarblade' }) : null;
+        if (e) { e.ks = { role: 'post', post: z.x1, gong: null, patrol: null, st: 'ride', t: 0, hp: e.hp, dir: -1 }; e.ksRide = { z, r, k: 0 }; K.n.raiders = (K.n.raiders || 0) + 1; } } } }
+  function cutLine(r) { r.cut = true; r.q = []; K.n.linesCut = (K.n.linesCut || 0) + 1; const i = (K.L.zipLines || []).indexOf(r.line); if (i >= 0) K.L.zipLines.splice(i, 1);
+    ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(r.post.x * TS() + 8, (r.post.y + 1) * TS() - 22, 10, ['#d9b36a', '#8a6a3a'], 60, 0.6); number(r.post.x * TS() + 8, (r.post.y + 1) * TS() - 50, 'THE LINE IS CUT: NO RAIDER RIDES IT', '#8fd160'); }
+  H.cutLine = id => { const r = K && K.raids.find(q => q.id === id); if (r && !r.cut) cutLine(r); };
   /* THE SMOKE THROWER's pot (main.js's bombs, a 'smoke' one): it flies as his stick does and bursts in SMOKE where it lands - a knock, and a cloud */
   H.smokeStep = (b, dt) => { if (!K) return false; const ts = TS();
     b.vy += 700 * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.fuse -= dt;
@@ -261,8 +312,8 @@ export function makeKsarHands(ctx) {
     if (g) { if (ring(g, 'hero') === 'rung') ctx.burst(gx(g), gy(g) - 26, 8, ['#ffd36b', '#e0b060'], 50, 0.5); return true; }
     const st = K.stacks.find(s => Math.abs(s.x * ts + 8 - P.x) <= KS.takeR && Math.abs((s.y + 1) * ts - P.y) <= 18);
     if (st) { if (st.left <= 0) { number(st.x * ts + 8, st.y * ts - 20, st.kind === 'keg' ? 'THE STACK IS EMPTY: WAIT' : 'THE RACK IS EMPTY: WAIT', '#9aa39a'); return true; }
-      st.left--; st.t = KS.refill; const q = newItem(P, st.kind); K.items.push(q); P.carry = q; ctx.sfx.clank && ctx.sfx.clank();
-      if (once('take' + st.kind)) number(P.x, P.y - 34, st.kind === 'keg' ? 'A POWDER KEG: ATTACK THROWS IT - UP LOBS, DOWN TOSSES SHORT' : 'A FLASH FLASK: ATTACK THROWS IT', '#ffd36b'); return true; }
+      st.left--; st.t = st.kind === 'torch' ? 3 : KS.refill; const q = newItem(P, st.kind); K.items.push(q); P.carry = q; ctx.sfx.clank && ctx.sfx.clank();
+      if (once('take' + st.kind)) number(P.x, P.y - 34, st.kind === 'keg' ? 'A POWDER KEG: ATTACK THROWS IT - UP LOBS, DOWN TOSSES SHORT' : st.kind === 'torch' ? 'A TORCH: ATTACK THROWS IT - FIRE EATS REED AND ROPE' : 'A FLASH FLASK: ATTACK THROWS IT', '#ffd36b'); return true; }
     const G = K.gate; if (G && Math.abs(G.winch[0] * ts + 8 - P.x) <= 28 && Math.abs((G.winch[1] + 1) * ts - P.y) <= 18) { haul(P); return true; }
     const v = K.vault.find(q => !q.open && Math.abs(q.x * ts + 8 - P.x) <= 30 && P.y > q.y0 * ts && P.y <= (q.y1 + 2) * ts);
     if (v) { if (ctx.questGot() >= v.seals) openVault(v); else number(P.x, P.y - 34, 'THE STRONGROOM WANTS FIVE CARAVAN SEALS', '#9aa39a'); return true; }
@@ -285,6 +336,27 @@ export function makeKsarHands(ctx) {
     for (let y = G.y0; y <= G.y1; y++) { const open = y > G.y1 - G.notch; const occupied = ctx.players.some(pp => !pp.dead && Math.abs(pp.x - (G.x * ts + 8)) < 14 && pp.y > y * ts && pp.y - 14 < (y + 1) * ts);
       if (open) ctx.cellSet(G.x, y, T().AIR); else if (!occupied) ctx.cellSet(G.x, y, T().SOLID); } }
 
+  /* ---------- THE ROOFTOP SHAFTS (claude/ksar2: the Hawk-Mistress's roofs, L.shafts): spiked shafts between the roofs, and a HOT UPDRAFT in each. A hero who falls
+     in is bitten by the spikes (KS.shaftPct of the bar, A10 - never a death) and the updraft throws him up and onto the nearer roof's edge: no soft-lock. A foe
+     that falls in is set back on the lip ---------- */
+  function shafts(dt) {
+    const L = K.L; if (!L.shafts || !L.shafts.length) return; const ts = TS();
+    for (const pp of ctx.players) { if (pp.dead) { pp.ksLift = null; continue; }
+      const sh = L.shafts.find(q => pp.x > q.x0 * ts - 2 && pp.x < (q.x1 + 1) * ts + 2), top = sh ? sh.top * ts : 0;
+      if (pp.ksLift) { const q = pp.ksLift; q.t -= dt; const roofY = q.top;
+        if (pp.y > roofY - 34 && !q.over) { pp.vy = Math.min(pp.vy, -KS.updraftV); pp.ground = false; pp.vx = q.dir * 24; if (Math.random() < dt * 30) ctx.burst(pp.x + (Math.random() - 0.5) * 12, pp.y, 1, ['#ff9a3c', '#ffd36b'], 40, 0.4); }
+        else { q.over = true; pp.vx = q.dir * KS.updraftVx; if ((q.dir > 0 ? pp.x > q.edge + 12 : pp.x < q.edge - 12) || pp.ground) pp.ksLift = null; }
+        if (q.t <= 0) pp.ksLift = null; continue; }
+      if (sh && pp.y > top + 10) {
+        const mid = (sh.x0 + sh.x1 + 1) / 2 * ts, dir = pp.x < mid ? -1 : 1, edge = dir < 0 ? sh.x0 * ts : (sh.x1 + 1) * ts;
+        pp.ksLift = { dir, edge, top, t: 1.6, over: false }; K.n.shaftFalls = (K.n.shaftFalls || 0) + 1; pp.hmSnare = null;
+        ctx.asPlayer(pp, () => ctx.hurtHero(pp.x, 1, { unblockable: true, noKnock: true, name: 'THE SHAFT', pct: KS.shaftPct }));
+        ctx.burst(pp.x, (sh.bottom + 1) * ts - 4, 16, ['#ff9a3c', '#ffd36b', '#fff1c8'], 120, 0.6); ctx.sfx.puff && ctx.sfx.puff();
+        if (once('updraft') || K.clock - (K.liftSaid || -9) > 6) { K.liftSaid = K.clock; number(pp.x, top - 30, 'THE SPIKES BITE - THE UPDRAFT THROWS YOU UP', '#ff9a5c'); } } }
+    for (const e of ctx.enemies()) { if (!e.alive || e.noGrav) continue; const sh = L.shafts.find(q => e.x > q.x0 * ts && e.x < (q.x1 + 1) * ts);
+      if (sh && e.y > sh.top * ts + 10) { const mid = (sh.x0 + sh.x1 + 1) / 2 * ts, d = e.x < mid ? -1 : 1; e.x = d < 0 ? sh.x0 * ts - 10 : (sh.x1 + 1) * ts + 10; e.y = sh.top * ts; e.vy = 0; if (e.st) { e.st.x = e.x; e.st.y = e.y; } } }
+  }
+  H.lifted = pp => !!(pp && pp.ksLift);
   /* ---------- EVERY FRAME ---------- */
   H.update = dt => {
     if (!K) return; K.clock += dt; const ts = TS(), P0 = ctx.hero();
@@ -293,16 +365,18 @@ export function makeKsarHands(ctx) {
     for (const s of K.stacks) if (s.left < s.n) { s.t -= dt; if (s.t <= 0) { s.left++; s.t = KS.refill; } }
     for (const s of K.smokes) s.t -= dt; K.smokes = K.smokes.filter(s => s.t > 0);
     for (const f of K.fx) f.t -= dt; K.fx = K.fx.filter(f => f.t > 0);
-    stepItems(dt);
+    stepItems(dt); stepFire(dt); stepRaids(dt);
+    shafts(dt);
     /* A BLADE ON A GONG CUTS ITS ROPE; A BLOW ON A SET KEG LIGHTS IT */
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.atk >= 0)) return; const hb = ctx.attackBox(); if (!hb) return;
       for (const g of K.gongs) if (!g.cut && ctx.overlap(hb, { l: gx(g) - 10, r: gx(g) + 10, t: gy(g) - 46, b: gy(g) - 6 })) cut(g);
-      for (const k of K.setKegs) if (k.st === 'set' && ctx.overlap(hb, { l: k.x * ts - 2, r: k.x * ts + 18, t: (k.y + 1) * ts - 16, b: (k.y + 1) * ts })) { k.st = 'lit'; k.t = KS.kickFuse; k.by = 'kick'; K.n.kicks++; ctx.sfx.hiss && ctx.sfx.hiss();
+      for (const r of K.raids) if (!r.cut && ctx.overlap(hb, { l: r.post.x * ts + 2, r: r.post.x * ts + 14, t: (r.post.y + 1) * ts - 30, b: (r.post.y + 1) * ts })) cutLine(r);
+      for (const k of K.setKegs) if (k.st === 'set' && !k.caged && ctx.overlap(hb, { l: k.x * ts - 2, r: k.x * ts + 18, t: (k.y + 1) * ts - 16, b: (k.y + 1) * ts })) { k.st = 'lit'; k.t = KS.kickFuse; k.by = 'kick'; K.n.kicks++; ctx.sfx.hiss && ctx.sfx.hiss();
         number(k.x * ts + 8, k.y * ts - 18, 'THE FUSE IS LIT: GET CLEAR', '#ff6b6b'); } });
     /* A FLAME LIGHTS POWDER: an ember, a fire on the floor, at a set keg or a lying one */
     if (ctx.flames) { const fl = ctx.flames(); if (fl.length) { for (const k of K.setKegs) if (k.st === 'set' && fl.some(f => Math.abs(f.x - (k.x * ts + 8)) < 12 && Math.abs(f.y - ((k.y + 1) * ts - 6)) < 14)) { k.st = 'lit'; k.t = KS.kickFuse; k.by = 'kick'; K.n.kicks++; ctx.sfx.hiss && ctx.sfx.hiss(); }
       for (const q of K.items) if (q.thrKind === 'keg' && q.state === 'lie' && fl.some(f => Math.abs(f.x - q.x) < 12 && Math.abs(f.y - (q.y - 6)) < 14)) { q.state = 'fuse'; q.fuse = KS.kickFuse; } } }
-    for (const k of K.setKegs) if (k.st === 'lit') { k.t -= dt; if (k.t <= 0) { k.st = 'spent'; blast(k.x * ts + 8, (k.y + 1) * ts - 6, k.by === 'chain' ? 'chain' : 'kick'); } }
+    for (const k of K.setKegs) if (k.st === 'lit') { k.t -= dt; if (k.t <= 0) { k.st = 'spent'; blast(k.x * ts + 8, (k.y + 1) * ts - 6, k.by === 'chain' ? 'chain' : k.by === 'trail' ? 'trail' : 'kick'); } }
     /* THE GATE: braked, a raised gate drops a notch at a time until it is pinned */
     const G = K.gate; if (G) { G.cd = Math.max(0, G.cd - dt);
       if (!G.pinned && G.notch > 0 && braked()) { G.dropT -= dt; if (G.dropT <= 0) { G.dropT = KS.dropT; G.notch--; K.n.drops++; setGate(); ctx.sfx.clank && ctx.sfx.clank(); if (P0 && Math.abs(P0.x - G.x * ts) < 300) number(G.x * ts, G.y0 * ts - 20, 'THE BRAKE BITES: THE GATE DROPS', '#ff9a5c'); } } }
@@ -342,6 +416,20 @@ export function makeKsarHands(ctx) {
       if (K.items.some(i => i.thrKind === 'keg' && i.state === 'fuse')) return here(ta.x0 - 9, 20, null, 1);
       if (q && q.thrKind === 'keg') return here(ta.x0 - 6, 20, 'atk', 1);
       if (st && st.left > 0) return here(st.x, st.y, 'talk', 1); }
+    /* (claude/ksar2) THE LONGER KSAR's locks: a torch at the reeds, a keg carried to each wall of the powder run, a torch at the raised bridge, a torch onto the trail,
+       a torch into the alley's first keg (the chain to its arch), UP at the line to the roofs */
+    const q0 = held(P), tk = q0 && q0.thrKind === 'torch' ? q0 : null, kg = q0 && q0.thrKind === 'keg' ? q0 : null, stackAt = id => K.stacks.find(s2 => s2.id === id);
+    const fuse = () => K.items.some(i => (i.thrKind === 'keg' && i.state === 'fuse') || (i.thrKind === 'torch' && (i.state === 'burn' || i.state === 'fly')));
+    const torchFor = (rackId, throwAt, row) => { if (tk) return here(throwAt, row, 'atk', 1); const r2 = stackAt(rackId); if (q0) return here(throwAt, row, 'talk', 1); return r2 && r2.left > 0 ? here(r2.x, r2.y, 'talk', 1) : Object.assign(here(r2 ? r2.x : throwAt, row, null, 1), { r: 14 }); };
+    const rA = K.reeds.find(q => q.id === 'reedA'); if (rA && rA.st === 'whole' && c > 584 && c < 600) return fuse() ? Object.assign(here(593, 33, null, 1), { r: 14 }) : torchFor('reedTorches', 594, 33);
+    for (const [wid, sid, from] of [['runA', 'runKegs', 646], ['runB', 'runKegs2', 660]]) { const w = K.barricades.find(b => b.id === wid); if (!w || w.broken || c < from - 6 || c > w.x0) continue;
+      if (fuse()) return Object.assign(here(w.x0 - 9, 33, null, 1), { r: 14 }); if (kg) return Object.assign(here(w.x0 - 4, 33, 'atk', 1), { r: 14 }); const s2 = stackAt(sid); return Object.assign(here(s2.x, s2.y, 'talk', 1), { r: 14 }); }   /* (resume 2) the zip line from the terrace lands him PAST the first stack (8 tiles off): the stack in reach from 14 tiles, as the player walks back for it */
+    const rp = K.ropes.find(q => q.id === 'rope'); if (rp && rp.st === 'raised' && c > 666 && c < 674) return fuse() || rp.st === 'burning' ? Object.assign(here(670, 31, null, 1), { r: 14 }) : torchFor('bridgeTorches', 672, 31);
+    const tr = K.trails.find(q => q.id === 'trail'), tw = K.barricades.find(b => b.id === 'trailWall'); if (tr && tw && !tw.broken && c > 682 && c < 697) return tr.st !== 'dry' ? Object.assign(here(684, 33, null, 1), { r: 14 }) : tk ? here(688, 33, null, 1) : torchFor('trailTorches', 688, 33);
+    const aa = K.barricades.find(b => b.id === 'alleyArch'); if (aa && !aa.broken && c > 702 && c < 777) { const a0 = K.setKegs.find(k => k.alley && k.st === 'set'), lit = K.setKegs.some(k => k.alley && k.st === 'lit');
+      return lit ? Object.assign(here(705, 33, null, 1), { r: 14 }) : a0 ? here(a0.x - 1, a0.y, 'atk', 1) : null; }
+    if (aa && aa.broken && c >= 781 && c <= 789 && P.y > 18 * ts && P.y <= 34.5 * ts) return { x: 786 * ts + 8, y: P.y, key: 'jump', face: 1 };   /* THE TOWER'S STAIR: its boards overlap at column 786 - a player stands there and jumps straight up through the next (the walker read the zigzag STUCK from its foot) */
+    if (c >= 789 && c <= 795 && P.y < 17 * ts) return here(795, 15, 'up', 1);
     return null; };
 
   /* ---------- THE GLINT AND THE NUDGE (the route list: src/stuck-spots.js STUCK_HANDS.ksar) ---------- */
@@ -350,6 +438,9 @@ export function makeKsarHands(ctx) {
     if (kind === 'gate') return K.gate ? (K.gate.pinned ? 'open' : braked() ? 'braked' : 'free') : '';
     if (kind === 'arch') { const b = K.barricades.find(q => q.id === id); return b ? (b.broken ? 'broken' : 'whole') : ''; }
     if (kind === 'vault') { const v = K.vault.find(q => q.id === id); return v ? (v.open ? 'open' : ctx.questGot() >= v.seals ? 'due' : 'shut') : ''; }
+    if (kind === 'reed') { const r = K.reeds.find(q => q.id === id); return r ? (r.st === 'burnt' ? 'burnt' : 'whole') : ''; }
+    if (kind === 'rope') { const r = K.ropes.find(q => q.id === id); return r ? (r.st === 'down' ? 'down' : 'raised') : ''; }
+    if (kind === 'line') { const r = K.raids.find(q => q.id === id); return r ? (r.cut ? 'cut' : 'hung') : ''; }
     return ''; };
   H.handsState = n => (K ? handsState(n) : '');
   const stall = (P, dt) => { if (!P || P.dead) return; const ts = TS();
@@ -365,18 +456,28 @@ export function makeKsarHands(ctx) {
     /* THE SET (src/redraw/ksar_set.js): the walls, the huts, the awnings, the landmarks, the dressing and the lights; then the rule's pieces */
     const V = { g, cx, cy, vw, vh: ctx.VH(), time, L, T: T() }; if (!K.plan) K.plan = SET.plan(L, T());
     SET.paintWorld(V, K.plan);
+    for (const q of (L.shafts || [])) P2.drawShaft(V, q, time);   /* (part B) the flue, its grate and spikes, the updraft: shimmer + rising grit */
     for (const b of K.barricades) { if (b.broken || !inX(b.x0 * ts)) continue; SET.drawArch(V, b);
       if (held(P) && held(P).thrKind === 'keg' || K.setKegs.some(k => k.st !== 'spent' && Math.abs(k.x - b.x0) < 6)) { const p = 0.5 + 0.5 * Math.sin(time * 6); g.strokeStyle = 'rgba(255,107,107,' + (0.4 + 0.4 * p).toFixed(2) + ')'; g.strokeRect(R(b.x0 * ts - 2 - cx), R(b.y0 * ts - 2 - cy), (b.x1 - b.x0 + 1) * ts + 4, (b.y1 - b.y0 + 1) * ts + 4); } }
     const G = K.gate; if (G && inX(G.x * ts, 200)) { SET.drawGate(V, G, braked()); const wx = R(G.winch[0] * ts + 8 - cx), wy = R((G.winch[1] + 1) * ts - cy);
       if (!G.pinned) ctx.text(braked() ? 'BRAKE' : 'FREE', wx - 14, wy - 40, braked() ? '#ff9a5c' : '#ffd36b', 'center', 5); }
     for (const v of K.vault) { if (v.open || !inX(v.x * ts)) continue; SET.drawVault(V, v, ctx.questGot()); }
+    /* (part B) THE LONGER KSAR's pieces, drawn (src/redraw/ksar_props2.js): reed screens, the raised bridge and its rope, the powder trail, the nests, the raider lines' rigs, the teach lines' posts, the rubble of a blown arch, the tower's stair and the crowns */
+    P2.drawTowerStair(V, time); P2.crowns(V); for (const b of K.barricades) if (b.broken && inX(b.x0 * ts)) P2.drawRubble(V, b); for (const z of (L.zipLines || [])) P2.drawZipRig(V, z);
+    const torchHeld = !!(held(P) && held(P).thrKind === 'torch');
+    for (const r of K.reeds) { if (!inX(r.x0 * ts)) continue; P2.drawReeds(V, r, r.st, r.st === 'burning' ? Math.max(0, Math.min(1, 1 - r.t / KS.reedBurn)) : r.st === 'burnt' ? 1 : 0, time, torchHeld); }
+    for (const r of K.ropes) { if (!inX(r.x * ts, 160)) continue; P2.drawRopeBridge(V, r, r.st, r.st === 'burning' ? Math.max(0, Math.min(1, 1 - r.t / KS.ropeBurn)) : 0, time, torchHeld); }
+    for (const t of K.trails) { if (!inX(t.x0 * ts, 200)) continue; P2.drawTrail(V, t, time); }
+    for (const n of (L.nests || [])) { if (!inX(n.x0 * ts)) continue; const blind = ctx.enemies().some(e => e.alive && e.nest && e.ksStun > 0 && e.x >= n.x0 * ts - 8 && e.x <= (n.x1 + 1) * ts + 8); P2.drawNest(V, n, blind, time); }
+    for (const r of K.raids) { if (!inX(r.post.x * ts, 200)) continue; const near = !!(P && !r.cut && Math.abs(P.x - (r.post.x * ts + 8)) < 90); P2.drawRaidRig(V, r, time, near);
+      if (near) ctx.text('CUT', R(r.post.x * ts + 8 - cx), R((r.post.y + 1) * ts - 56 - cy), '#ffd36b', 'center', 5); }
     /* THE GONGS: the set draws each (a cut one lies cracked); near you its EARSHOT is a bracket on the floor; rung, NOISE RINGS go out from it */
     for (const q of K.gongs) { const x = R(gx(q) - cx), y = R(gy(q) - cy); if (!inX(gx(q), q.ear * ts)) continue;
       SET.drawGong(V, q); if (q.bridge) SET.drawBridge(V, q);
       if (!q.cut && P && Math.abs(P.x - gx(q)) < q.ear * ts && Math.abs(P.y - gy(q)) < q.earY * ts) { g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; const l = R(gx(q) - q.ear * ts - cx), r2 = R(gx(q) + q.ear * ts - cx);
         g.fillRect(l, y - 1, 2, -8); g.fillRect(r2, y - 1, 2, -8); for (let xx = l; xx < r2; xx += 12) g.fillRect(xx, y - 1, 4, 1); g.globalAlpha = 1; }
       if (q.ring > 0) { const k = 1 - q.ring / 1.4; g.strokeStyle = 'rgba(255,211,107,' + (0.8 * (1 - k)).toFixed(2) + ')'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { const rr = (k + i * 0.18) % 1 * q.ear * ts; g.beginPath(); g.arc(x, y - (q.great ? 38 : 24), rr, Math.PI, Math.PI * 2); g.stroke(); } g.lineWidth = 1; } }
-    for (const s of K.stacks) { if (!inX(s.x * ts)) continue; SET.drawStack(V, s); }
+    for (const s of K.stacks) { if (!inX(s.x * ts)) continue; if (s.kind !== 'torch') SET.drawStack(V, s); else P2.drawTorchStack(V, s, time); }   /* (part B) the torch rack: src/redraw/ksar_props2.js */
     /* THE SET KEGS AND THE CHAIN: a dotted fuse-line keg to keg and on to the arch (the chain shows its target before it goes) */
     const live = K.setKegs.filter(k => k.st !== 'spent');
     for (let i = 0; i < live.length; i++) { const k = live[i], x = R(k.x * ts + 8 - cx), y = R((k.y + 1) * ts - cy); if (!inX(k.x * ts, 200)) continue;
@@ -386,7 +487,7 @@ export function makeKsarHands(ctx) {
       if (tx != null) { g.fillStyle = k.st === 'lit' ? '#ff9a3c' : 'rgba(255,211,107,0.55)'; const off = (time * 20) % 6; for (let xx = x + 8 + off; xx < tx - cx - 6; xx += 6) g.fillRect(R(xx), y - 3, 2, 1); }
       if (k.st === 'lit') { g.strokeStyle = '#ff6b6b'; g.beginPath(); g.arc(x, y - 6, KS.kegR * (0.6 + 0.4 * Math.sin(time * 12)), 0, Math.PI * 2); g.stroke(); } }
     /* WHAT IS CARRIED, THROWN, LYING OR FIZZING */
-    for (const q of K.items) { if (!inX(q.x)) continue; drawThing(V, q.thrKind, R(q.x), R(q.y + (q.state === 'held' ? 6 : 0)), time, q.state === 'fuse');
+    for (const q of K.items) { if (!inX(q.x)) continue; drawThing(V, q.thrKind, R(q.x), R(q.y + (q.state === 'held' ? 6 : 0)), time, q.state === 'fuse' || q.state === 'burn', q.state);
       if (q.state === 'fuse') { g.strokeStyle = '#ff6b6b'; g.beginPath(); g.arc(R(q.x - cx), R(q.y - 6 - cy), KS.kegR, 0, Math.PI * 2); g.stroke(); } }
     /* THE FORT'S MEN: asleep (Z), called (a gong over his head), running for his gong (a red !), striking it; a lookout's sightline */
     for (const e of ctx.enemies()) { if (!e.alive || !e.ks || !inX(e.x)) continue; const x = R(e.x - cx), y = R(e.y - cy), q = e.ks;
@@ -399,7 +500,7 @@ export function makeKsarHands(ctx) {
       if (d.t > 0) { g.fillStyle = Math.floor(time * 14) % 2 ? '#ff6b6b' : '#fff6e0'; g.fillRect(x - 6, fy - 2, 12, 2); } else { g.fillStyle = '#8a7a6a'; g.fillRect(x - 3, R(d.y - cy) + R(-d.t * 300), 6, 6); } }
     if (K.glint && K.glint.show) drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), vw, ctx.VH(), time);
   };
-  function drawThing(V, kind, x, y, time, lit) { if (kind === 'keg') SET.drawKeg(V, x, y, lit, time); else SET.drawFlask(V, x, y); }
+  function drawThing(V, kind, x, y, time, lit, state) { if (kind === 'keg') { SET.drawKeg(V, x, y, lit, time); if (lit) P2.kegSparks(V, x, y, time, true); } else if (kind === 'torch') P2.drawTorchItem(V, x, y, time, state === 'burn' ? 'burn' : state === 'fly' ? 'fly' : 'held'); else SET.drawFlask(V, x, y); }
   /* OVER EVERYTHING: the told arc of what is in your hand, the smoke, the blasts and flashes, the hawks' shrieks */
   H.drawOver = (g, cx, cy, time) => { if (!K) return; const P = ctx.hero(), R0 = Math.round;
     for (const s of K.smokes) { const k = Math.min(1, s.t / 1.2), x = R0(s.x - cx), y = R0(s.y - cy); for (let i = 0; i < 7; i++) { const a = i * 0.9 + time * 0.4, rr = s.r * (0.55 + 0.25 * Math.sin(time + i));
@@ -408,14 +509,16 @@ export function makeKsarHands(ctx) {
       if (f.k === 'blast') { g.globalAlpha = Math.min(1, f.t * 3); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, KS.kegR * (1 - f.t), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       else if (f.k === 'flash') { g.globalAlpha = Math.min(1, f.t * 3); g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y - 6, KS.flashR * (1 - f.t * 1.5), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       else if (f.k === 'shriek') { g.strokeStyle = 'rgba(255,107,107,' + (f.t).toFixed(2) + ')'; for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(x, y, (1 - f.t) * 60 + i * 10, 0, Math.PI * 2); g.stroke(); } } }
-    const q = held(P); if (q && !P.dead) { K.arc = H.arcOf(P); CT.drawArc(g, K.arc, cx, cy, time, q.thrKind === 'keg' ? '#ff9a3c' : '#e8f4ff'); } else K.arc = null;
+    const q = held(P); if (q && !P.dead) { K.arc = H.arcOf(P); CT.drawArc(g, K.arc, cx, cy, time, q.thrKind === 'keg' ? '#ff9a3c' : q.thrKind === 'torch' ? '#ffb84a' : '#e8f4ff'); } else K.arc = null;
   };
   /* THE HUD: the sun meter is the desert's (main.js); the drawn rule state is in the world */
-  H.drawBack = (g, cx, cy, vw, vh, time, dy) => { SET.drawBack(g, cx, cy, vw, vh, time, dy); if (K && K.L.arena) SET.drawCourtyard({ g, cx, cy, vw, vh, time, L: K.L, T: T(), noGlow: true }, K.L.arena); };   /* her courtyard's back wall is backdrop (the arena's ledges and floor are tiles over it) */   /* the fort's far skyline and the Hawk Tower on the horizon */
+  H.drawBack = (g, cx, cy, vw, vh, time, dy) => { SET.drawBack(g, cx, cy, vw, vh, time, dy); if (K && K.L.arena) { const V0 = { g, cx, cy, vw, vh, time, L: K.L, T: T(), noGlow: true }; SET.drawCourtyard(V0, K.L.arena); P2.drawRoofTops(V0, K.L.arena); } };   /* her courtyard's back wall is backdrop (the arena's ledges and floor are tiles over it) */   /* the fort's far skyline and the Hawk Tower on the horizon */
+  H.drawKeep = (g, cx, cy, vw, vh, time, dy) => { if (K) P2.drawKeep(g, cx, cy, vw, vh, time, dy); };   /* (part B) the keep on the horizon over the souq: main.js draws it AFTER the far dunes (before it was behind them) */
   H.drawHud = () => false;   /* (the sun meter is main.js's own: the desert's) */
   H.read = () => K && { n: { ...K.n }, gongs: K.gongs.map(g => ({ id: g.id, cut: g.cut, hum: +g.hum.toFixed(2) })), gate: K.gate && { notch: K.gate.notch, pinned: K.gate.pinned, braked: braked() },
     arches: K.barricades.map(b => ({ id: b.id, broken: b.broken })), kegs: K.setKegs.map(k => k.st), stacks: K.stacks.map(s => ({ id: s.id, left: s.left })), smokes: K.smokes.length,
     items: K.items.map(q => ({ t: q.thrKind, st: q.state, x: R(q.x), y: R(q.y) })), glint: K.glint && K.glint.key, lastNudge: K.lastNudge || null,
+    reeds: K.reeds.map(r => r.st), ropes: K.ropes.map(r => r.st), trails: K.trails.map(t => t.st), raids: K.raids.map(r => ({ id: r.id, cut: r.cut, sent: r.sent })),
     foes: ctx.enemies().filter(e => e.alive && e.ks).map(e => ({ t: e.cnSkin, role: e.ks.role, st: e.ks.st, x: R(e.x / 16), y: R(e.y / 16) })), vault: K.vault.map(v => v.open) };
   return H;
 }

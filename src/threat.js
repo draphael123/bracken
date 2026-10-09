@@ -151,7 +151,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, o
   matriarch: 6, mlever: 0,
   /* THE BANDIT KSAR (claude/ksar): THE HAWK SCOUT is a vulture's marked stoop (a 2) whose shriek sends the lookouts running: a 2.5. THE HAWK-MISTRESS is a boss: a 6. The gongs, keg stacks,
      flask racks, set kegs, bricked arches, the winch and the strongroom fight nobody */
-  hawkscout: 2.5, hawkmistress: 6, ksgong: 0, kskegs: 0, ksflasks: 0, kskeg: 0, ksbarricade: 0, kswinch: 0, ksvault: 0,
+  hawkscout: 2.5, hawkmistress: 6, ksgong: 0, kskegs: 0, ksflasks: 0, kskeg: 0, ksbarricade: 0, kswinch: 0, ksvault: 0, kstorches: 0, ksreeds: 0, ksropebridge: 0, ksline: 0,
   /* THE LIT CHURCH (claude/litchurch): THE PALADIN is a boss: a 6. The lamps, fires, bellows, the key desk, the grates and the reliquary fight nobody */
   acolyte: 1.5,   /* (claude/litchurch) the runner's body: he does not fight - he relights (a support and a runner) */
   paladinboss: 6, lclamp: 0, lcsource: 0, lcbellows: 0, lcdesk: 0, lcgrate: 0, lcreliquary: 0,

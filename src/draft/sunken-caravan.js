@@ -187,6 +187,8 @@ export function buildSunkenCaravan(T) {
   ent('check', ax0 - 3, on(ax0 - 3));                                                              // B6: one outside the arena walls
   ent('sign', sections.rim + 2, on(sections.rim + 2), { text: 'THE GROUND IS MOVING.' });
   ent('awning', marks.rimshade - 2, on(marks.rimshade - 2), { torn: true });                          // a torn lean-to on the rim
+  /* (claude/ksar2) THE SUN v2 - MORE SHADE: the drain is stronger and the level rule's walk is 4 s (was 5), so a lean-to stands in each stretch that ran over it */
+  for (const x of [20, 62, 123, 285, 441]) ent('awning', x, on(x), { torn: true });
   for (const dx of [8, 20, 32]) ent('wagon', ax0 + dx, on(ax0 + dx), { wreck: true });              // the three wrecks: the places to make THE OPENING
   /* THE RIM'S OVERHANG (Daniel, 2026-09-23) - THE ONE PIECE OF SHADE THE WORM CANNOT TAKE. The hollow's shade used to be
      the three wrecks and nothing else, and phase 2 SMASHES every wreck it sticks in (src/dune-worm.js), so past phase 2

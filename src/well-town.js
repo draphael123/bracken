@@ -231,7 +231,7 @@ export function buildWellTown({ painter, T, TS }) {
   house(401, 420, 24); boards(401, 405, 18);                                  /* a lower terrace, and a chimney ledge over it (a hop up from house E) */
   skin(404, 17);                                                              /* WATER-SKIN FOUR: up on the chimney ledge */
   thief(413, 23, 'terrace'); bowman(418, 23, 'terrace'); awn(413, 23, true);
-  ground(421, 425, 26);
+  ground(421, 425, 26);   awn(424, 25, true);   /* (claude/ksar2) THE SUN v2: the rule walk is 4 s now - a torn awning on the step down to the Kasbah street */
 
   // ================= 7. THE KASBAH (426-521): the exam, the dry cistern, the courtyard =================
   const K = 28;                                                               /* the Kasbah street's floor row */

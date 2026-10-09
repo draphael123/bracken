@@ -63,7 +63,7 @@ const low = new Map(); for (const k of R.seen) { const [x, y] = k.split(',').map
 const route = []; for (let x = 8; x < ax0 * TS; x += 4) { const tx = Math.floor(x / TS), cy = low.get(tx); if (cy === undefined) continue; const t = at(tx, cy); route.push([x, isSlope(t) ? cy * TS + heightAt(t, x - tx * TS) : (cy + 1) * TS]); }
 const shaded = (x, y) => inShade(Z, x, y - 1) || roofShade((tx, ty) => at(tx, ty), x, y - 14, t => t === T.SOLID);
 const st = sunStretches(route, shaded), shadeCount = (() => { let n = 0, was = false; for (const [x, y] of route) { const s = shaded(x, y); if (s && !was) n++; was = s; } return n; })();
-ok(st[0].s <= SUN.maxWalk, `THE SUN: ${shadeCount} shades along the road; the longest walk in the open is ${st[0].s.toFixed(1)} s (columns ${Math.round(st[0].x0 / TS)}-${Math.round(st[0].x1 / TS)}), the rule ${SUN.maxWalk} s; next ${st.slice(1, 4).map(s => s.s.toFixed(1)).join(', ')}`);
+ok(st[0].s <= SUN.maxWalk, `THE SUN: ${shadeCount} shades along the road; the longest walk in the open is ${st[0].s.toFixed(1)} s (columns ${Math.round(st[0].x0 / TS)}-${Math.round(st[0].x1 / TS)}), the rule ${SUN.maxWalk} s; next ${st.slice(1, 4).map(s => s.s.toFixed(1)).join(', ')}${st.filter(q => q.s > SUN.maxWalk).length ? ' - OVER: ' + st.filter(q => q.s > SUN.maxWalk).map(q => Math.round(q.x0 / TS) + '-' + Math.round(q.x1 / TS) + ' ' + q.s.toFixed(1)).join(', ') : ''}`);
 // ================= RULES S =================
 const placed = L.ents.filter(e => e.placed);
 ok(placed.length >= 5 && placed.every(e => e.why), `S1: ${placed.length} foes placed where they make the ground harder (${[...new Set(placed.map(e => e.t))].join(', ')}), each with its reason`);

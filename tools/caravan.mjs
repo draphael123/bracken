@@ -7,7 +7,7 @@
 // usage: node tools/caravan.mjs     exit 1 on any failure
 import { install } from './node-canvas.mjs';
 install();   // sunstroke.js reads SHADE_OF from the art module, which imports the art helpers
-const { SUN, sunStep, roofShade, shadeZones, inShade, sunStretches, vultureShade } = await import('../src/sunstroke.js');
+const { SUN, sunStep, walkCost, roofShade, shadeZones, inShade, sunStretches, vultureShade } = await import('../src/sunstroke.js'); const { readFileSync } = await import('node:fs');
 const { QS, qsStep, qsPatchAt } = await import('../src/quicksand.js');
 const { WORM, WORM_TELLS, WORM_MOVES, newWorm, wormStep, wormTouchable, wormHurt, wormTake, wormOpen, wormPlated } = await import('../src/dune-worm.js');
 const { T } = await import('../src/level.js');
@@ -16,32 +16,39 @@ let fails = 0; const log = s => console.log(s), ok = (c, m) => { log((c ? '  ok 
 const DT = 1 / 60;
 
 // ================= SUNSTROKE =================
+/* (claude/ksar2) THE SUN v2 (Daniel 10-08: "exposure DRAINS hp steadily - no stun, no flinch - stronger than today"): the same properties held at the same
+   strictness - told before it harms, shade resets it at once, it never creeps over a run of allowed walks, it BUILDS the longer you stay, its stage is said
+   before it climbs, a moment's shade starts it again - but the harm is a DRAIN (a share of max health a second) and not ticks of a blow. Changed by design
+   (said in the lane report): a walk the level rule allows now costs a small toll (it used to cost nothing), and the rule's walk is shorter (4 s, was 5) */
 log('SUNSTROKE');
 { const s = { v: 0 }; let t = 0, swimAt = null, hurtAt = null;
-  while (t < 20 && hurtAt === null) { const r = sunStep(s, DT, false); t += DT; if (swimAt === null && r.swim > 0) swimAt = t; if (r.hurt) hurtAt = t; }
-  ok(swimAt > 3 && hurtAt > swimAt + 3, `open sun from cool: the view starts to swim at ${swimAt.toFixed(1)} s, the first ${SUN.dmg} damage at ${hurtAt.toFixed(1)} s - the warning comes ${(hurtAt - swimAt).toFixed(1)} s before the harm`);
+  while (t < 20 && hurtAt === null) { const r = sunStep(s, DT, false); t += DT; if (swimAt === null && r.swim > 0) swimAt = t; if (r.drain > 0) hurtAt = t; }
+  ok(swimAt >= 0.9 && hurtAt >= 1.9 && hurtAt >= swimAt + 0.9, `open sun from cool: the hero heats from the first step, the view swims at ${swimAt.toFixed(1)} s, the drain starts at ${hurtAt.toFixed(1)} s - told ${(hurtAt - swimAt).toFixed(1)} s before the harm, and a dash shade to shade under ${hurtAt.toFixed(1)} s is free`);
+  while (t < 20) { sunStep(s, DT, false); t += DT; }
   let c = 0; while (s.v > 0) { sunStep(s, DT, true); c += DT; }
   ok(c <= SUN.cool + 0.05, `shade cools it from full in ${c.toFixed(1)} s: a stop, not a rest`);
-  const w = { v: 0 }; let hurt = 0, swim = 0; for (let k = 0; k < SUN.maxWalk / DT; k++) { const r = sunStep(w, DT, false); hurt += r.hurt; swim = Math.max(swim, r.swim); }
-  ok(hurt === 0 && swim > 0, `the longest walk the level rule allows (${SUN.maxWalk} s of sun) hurts nothing but swims the view (${(swim * 100).toFixed(0)}%): walking shade to shade is safe, and it tells you`);
+  { const q = { v: 1 }; ok(sunStep(q, DT, true).drain === 0, 'in the shade the drain stops at once, whatever the meter still says'); }
+  const w = { v: 0 }; let hurt = 0, swim = 0; for (let k = 0; k < SUN.maxWalk / DT; k++) { const r = sunStep(w, DT, false); hurt += r.drain; swim = Math.max(swim, r.swim); }
+  ok(hurt > 0 && hurt <= 0.06 && swim > 0 && Math.abs(hurt - walkCost(SUN.maxWalk)) < 0.002, `the longest walk the level rule allows (${SUN.maxWalk} s of sun) costs a small toll (${(hurt * 100).toFixed(1)}% of the bar, at most 6%) and swims the view (${(swim * 100).toFixed(0)}%): walking shade to shade is cheap, and it tells you`);
   // repeated: the longest walk, 1.5 s of shade, over and over - does it creep up?
-  const r2 = { v: 0 }; let h2 = 0; for (let k = 0; k < 20; k++) { for (let i = 0; i < SUN.maxWalk / DT; i++) h2 += sunStep(r2, DT, false).hurt; for (let i = 0; i < 1.5 / DT; i++) sunStep(r2, DT, true); }
-  ok(h2 === 0, `twenty stretches of ${SUN.maxWalk} s sun with only 1.5 s of shade between: ${h2} damage (it does not creep)`);
-  /* THE SUN, MORE PUNISHING (Daniel, 2026-09-25; docs/briefs/caravan-ruins-bandits.md): six seconds to full, and at full the harm
-     BUILDS - 3, then 5, then 8 a tick, a tick a second - and the stage is said (sunStep's stage, drawn on the HUD) before each tick */
-  ok(SUN.fill === 6 && SUN.cool === 1.2 && SUN.maxWalk <= 5.2, `the sun fills in ${SUN.fill} s (was 9), shade still cools it in ${SUN.cool} s, and the level rule is a walk of ${SUN.maxWalk} s (was 7.5)`);
-  const b = { v: 0 }, ticks = [], stageAt = []; let tt = 0, fullAt = null;
-  for (; tt < SUN.fill + 6; tt += DT) { const r = sunStep(b, DT, false); if (b.v >= 1 && fullAt === null) fullAt = tt; if (r.hurt) { ticks.push([r.hurt, +(tt - fullAt).toFixed(2)]); stageAt.push(r.stage); } }
-  const want = [3, 5, 8, 8, 8];
-  ok(ticks.slice(0, 5).map(t => t[0]).join() === want.join() && ticks.every((t, i) => !i || Math.abs(t[1] - ticks[i - 1][1] - SUN.hurtEvery) < 0.05),
-    `six seconds out at full: the ticks go ${ticks.map(t => t[0] + '@' + t[1] + 's').join(', ')} - it BUILDS the longer you stay (the rule: 3, then 5, then 8 a second)`);
-  { const s3 = { v: 0 }, seen = new Set(); let prevStage = 0, toldFirst = true;
-    for (let k = 0; k < (SUN.fill + 4) / DT; k++) { const r = sunStep(s3, DT, false); if (r.hurt && r.hurt !== SUN.build[Math.max(0, prevStage - 1)]) toldFirst = false; prevStage = r.hurt ? r.stage : r.stage; if (r.stage) seen.add(r.stage); }
-    ok(seen.size === 3 && toldFirst, `the HUD's stage (${[...seen].join(', ')}) says which tick is coming before it lands: it is told building (C1)`); }
-  { const s4 = { v: 0 }; for (let k = 0; k < (SUN.fill + 3.2) / DT; k++) sunStep(s4, DT, false);   /* three ticks in: the next is an 8 */
+  const r2 = { v: 0 }; let h2 = 0; for (let k = 0; k < 20; k++) { for (let i = 0; i < SUN.maxWalk / DT; i++) h2 += sunStep(r2, DT, false).drain; for (let i = 0; i < 1.5 / DT; i++) sunStep(r2, DT, true); }
+  ok(Math.abs(h2 - 20 * hurt) < 0.01, `twenty stretches of ${SUN.maxWalk} s sun with only 1.5 s of shade between: ${(h2 * 100).toFixed(1)}% = twenty single tolls (it does not creep)`);
+  ok(SUN.fill === 5 && SUN.cool === 1.2 && SUN.maxWalk <= 4, `the sun fills in ${SUN.fill} s (v1: 6), shade still cools it in ${SUN.cool} s, and the level rule is a walk of ${SUN.maxWalk} s (v1: 5)`);
+  /* IT BUILDS: the drain grows the longer you stay, to its full rate */
+  const b = { v: 0 }, rates = []; for (let tt = 0; tt < SUN.fill + 6; tt += DT) rates.push(sunStep(b, DT, false).rate);
+  const at = sec => rates[Math.min(rates.length - 1, Math.round(sec / DT))];
+  ok(at(2.5) > 0 && at(2.5) < at(4) && at(4) < at(SUN.fill + 1) && at(SUN.fill + 1) >= 0.04 && rates.every((r, i) => !i || r >= rates[i - 1] - 1e-9),
+    `out in it the drain BUILDS: ${(at(2.5) * 100).toFixed(1)}%/s at 2.5 s, ${(at(4) * 100).toFixed(1)}% at 4 s, ${(at(SUN.fill + 1) * 100).toFixed(1)}% at full - never less the longer you stay`);
+  ok(walkCost(10) >= 0.25 && walkCost(10) <= 0.4, `STRONGER THAN v1: ten seconds out from cool cost ${(walkCost(10) * 100).toFixed(0)}% of the bar (v1: 16 hp - under a tenth of a campaign-level hero)`);
+  { const s3 = { v: 0 }, order = []; for (let k = 0; k < (SUN.fill + 2) / DT; k++) { const r = sunStep(s3, DT, false); if (r.stage !== (order[order.length - 1] ?? 0)) order.push(r.stage); if (r.drain > 0 && r.stage === 0) order.push('untold'); }
+    ok(order.join() === '1,2,3', `the HUD's stage climbs ${order.join(' > ')} as the drain grows, and no drain is untold (C1)`); }
+  { const s4 = { v: 0 }; for (let k = 0; k < (SUN.fill + 2) / DT; k++) sunStep(s4, DT, false); const before = sunStep(s4, DT, false).rate;
     for (let k = 0; k < 0.2 / DT; k++) sunStep(s4, DT, true);                                          /* a fifth of a second of shade (a vulture passing over) */
-    let first = 0; for (let k = 0; k < 3 / DT && !first; k++) first = sunStep(s4, DT, false).hurt;
-    ok(first === SUN.build[0], `a moment's shade takes it off full and the build starts again: the next tick after it is ${first}, not 8`); } }
+    const after = sunStep(s4, DT, false).rate;
+    ok(after < before, `a moment's shade takes it off full: the drain after it is ${(after * 100).toFixed(1)}%/s, not ${(before * 100).toFixed(1)}%`); }
+  /* NO BLOW: the drain comes straight off the bar (main.js sunDrain) - never through damagePlayer, so no flinch, no knock, no mercy window, no cancelled swing */
+  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), fn = (src.match(/function sunDrain\([^)]*\) \{[^\n]*\}/) || [''])[0];
+    ok(fn && !/damagePlayer|P\.hurt|P\.inv|vx|vy/.test(fn) && /die\(/.test(fn) && !/name: 'SUNSTROKE'/.test(src), 'the drain is no blow: main.js sunDrain takes health and names THE SUN if it kills - no damagePlayer, no hurt pose, no invulnerability, no knock'); } }
 { // shade zones: an awning and a wagon placed as ents, and a rock overhang
   const L = { ents: [{ t: 'awning', x: 10, y: 21 }, { t: 'wagon', x: 30, y: 21 }], shade: [[800, 900, 300, 353]] };
   const Z = shadeZones(L), foot = 22 * 16;

@@ -33,7 +33,7 @@ import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, t
 import { makeLesserDjinnHands } from './lesser-djinn-hands.js'; import * as LDA from './redraw/lesser_djinn_art.js'; let LDH = null;   /* (claude/djinn3) THE LESSER DJINN: the will-o'-the-wisp's AI (the ember wisp's, cold) under the Djinn's skins - sand a pour makes mud, fire a pour douses */
 import { makeMysticHands } from './bandit-mystic-hands.js'; import * as MYA from './redraw/mystic_art.js'; let MYH = null;   /* (claude/djinn2) THE BANDIT MYSTICS: the goblin mage's AI under men's skins - casters, and lamp-bearers whose light wards (src/bandit-mystic.js) */
 import * as DF2 from './desert-foes2.js'; import { makeDesertFoes2Hands } from './desert-foes2-hands.js'; import * as DF2A from './redraw/desert_foes2.js'; let DF2H = null; const DF2_CORPSE = { firescorpion: 6, venomscorpion: 6, shieldguard: 4, dynamiter: 4, powderboy: 4, banditmystic: 6, lampbearer: 6, sanddjinn: 5, firedjinn: 5, oilscorpion: 6, dustscorpion: 6, thirstscorpion: 6, spitscorpion: 6, oilthief: 4, cisternbat: 0, drowneddead: 6, glassscorpion: 6, shardthrower: 6, nighthunter: 6, glasssentinel: 4 }; const isDyn = e => e.cnSkin === 'dynamiter' || e.cnSkin === 'powderboy' || e.cnSkin === 'oilthief' || e.cnSkin === 'smokethrower';   /* (claude/underwell2: THE OIL THIEF is the dynamite bandit's machine too - he keeps his distance and throws a FLASK of lamp oil: b.flask) */   /* (claude/variety: THE POWDER MONKEY is the dynamite bandit's AI under a sailor's jersey) */   /* the frame each reskin lies in (src/redraw/desert_foes2.js) */ const DYN = { near: 44, far: 120, dy: 60, tell: 0.7, cd: 2.4, flight: 0.65, fuse: 1.0, ring: 36 };   /* THE DYNAMITE BANDIT: lights between near and far px, holds it TELL s, it flies FLIGHT s and lies FUSE s in a RING px (explode's 36) */   /* THE DESERT'S SECOND CAST (claude/desertfoes): the fire and venom scorpions, the sandworm, the gorge's dynamite bandit and shield guard */
-import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */
+import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */ import { makeSunHands } from './sun-hands.js'; let SUNH = null;   /* (claude/ksar2) THE SUN v2, game-wide: the drain, the drawn shade, the heat, the HUD sun */
 import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';   /* THE DUNE WORM, the caravan's boss (docs/briefs/dune-worm.md), and the storm he calls into his hollow */
 import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import * as CR from './redraw/caravan_ruins.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
@@ -2340,7 +2340,7 @@ function spawnEnt(e) {
       case 'paladinboss': { const a = PBH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* THE PALADIN (src/paladin-boss.js): in THE LIT CHURCH's sanctuary; his fight is made here */
       case 'lclamp': case 'lcsource': case 'lcbellows': case 'lcdesk': case 'lcgrate': case 'lcreliquary': break;   /* THE LIT CHURCH's lamps, fires, bellows, key desk, grates and reliquary: src/lit-church-hands.js */   /* THE HAWK-MISTRESS (src/hawk-mistress.js): in the Ksar's courtyard; her fight is made here */
       case 'hawkscout': { const st = KSF.newHawk((e.x0 ?? e.x - 30) * TS + 8, (e.x1 ?? e.x + 30) * TS + 8, py); st.face = e.face || 1; enemies.push({ ...base, t: 'hawkscout', w: KSF.HAWK.w, h: KSF.HAWK.h, hp: EHP.hawkscout, noGrav: true, x: st.x, y: st.y, mode: st.mode, st }); break; }   /* THE HAWK SCOUT (src/ksar-foes.js): the Ksar's one new foe */
-      case 'ksgong': case 'kskegs': case 'ksflasks': case 'kskeg': case 'ksbarricade': case 'kswinch': case 'ksvault': case 'ksbridge': break;   /* THE BANDIT KSAR's gongs, keg stacks, flask racks, set kegs, bricked arches, winch and strongroom: src/ksar-hands.js reads them from L */
+      case 'ksgong': case 'kskegs': case 'ksflasks': case 'kskeg': case 'ksbarricade': case 'kswinch': case 'ksvault': case 'ksbridge': case 'kstorches': case 'ksreeds': case 'ksropebridge': case 'ksline': break;   /* THE BANDIT KSAR's gongs, keg stacks, flask racks, set kegs, bricked arches, winch and strongroom: src/ksar-hands.js reads them from L */
       case 'greatdrill': { const a = GDH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* THE GREAT DRILL (src/great-drill.js): its fight is made here */
       case 'mcpoints': case 'mcgobcart': case 'mccrusher': case 'mcgate': case 'mcrock': case 'mcbeam': case 'mcgap': case 'drillpoints': case 'oretip': break;   /* THE DEEP RAILS' gadgets: src/minecart-hands.js / src/great-drill-hands.js read them from L */
       case 'fogknight': { const a = FKH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }   /* THE FOG KNIGHT (src/fog-knight.js): at the Towpath's end; his fight is made here */
@@ -9829,6 +9829,9 @@ const hallSealed = e => hallHolds(L.arena, bossActive, e, boss);
 /* SPIKES AND WATER HAND YOU BACK (src/survival.js): to the last safe footing - never footing beside spikes (spikesBy), never a mover - and say what it cost, twice a save */
 const spikesBy = (x, y) => { const c0 = Math.floor((x - 14) / TS), c1 = Math.floor((x + 14) / TS), r0 = Math.floor((y - 24) / TS), r1 = Math.floor(y / TS) + 1; for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) if (tileAt(c, r) === T.SPIKE) return true; return false; };
 function hazardSay() { if ((PROG.hazTold || 0) < 2) { PROG.hazTold = (PROG.hazTold || 0) + 1; hintT = 4.5; hintMsg = 'SPIKES AND DEEP WATER COST A QUARTER OF YOUR HEALTH, AND PUT YOU BACK ON SAFE GROUND.'; } }
+/* (claude/ksar2) THE SUN'S DRAIN (src/sun-hands.js): health straight off the bar - no blow, so no flinch, no knock, no hurt pose, no mercy window and no swing
+   cancelled. It kills (THE SUN) when it takes the last of it. The drain is a share of max health (src/sunstroke.js drainRate), as a hazard's is: past the difficulty and armour chain */
+function sunDrain(n) { if (P.dead || !(n > 0)) return; P.hp = Math.max(0, P.hp - n); if (P.hp <= 0) die({ name: 'THE SUN', red: false, rule: '' }); }
 function hazardBack() { const s = P.safe; if (!s || s.L !== L || (MG && P.flip)) return; P.x = s.x; P.y = s.y; if (bossActive && boss && boss.t === 'windcaller' && L.arena && L.arena.safe && P.x > L.arena.x0 && P.x < L.arena.x1) { P.x = callerFallX(P.x); P.y = L.arena.floor; }   /* (claude/windcaller3) HIS THORNS HAND YOU BACK TO A FLOOR, never to a ledge's end with the gust still blowing off it - that was a second thorn, and a third */ P.vx = 0; P.vy = 0; P.onMover = null; P.ground = true; hazardSay(); }
 const spikeBite = (tx, name) => { const d = L.bellDeck, t = d && !P.dead ? bellPitThrow(d, P.x, P.y, c => ![1, 2].some(k => { const q = tileAt(c, d.deck - k); return q === T.SOLID || q === T.PORT; })) : null;
   if (!t && !P.dead && SV.spikeRule(L, P.x, TS) === 'death' && !SET.invincible && !(window.BK && window.BK.god)) { die({ name: name || 'THE SPIKES', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; return; }   /* IN AN EXAM THE SPIKES KILL (src/survival.js; told as you walk in) */
@@ -20871,22 +20874,26 @@ function caravanReset() {
   CV = null; if (!L || !L.caravan) return;
   const ws = props.filter(p => p.t === 'awningwinch');   /* the camp's, and THE HOLLOW WINCH (the worm's trap) */
   CV = { zones: shadeZones(L), winch: ws.find(p => !p.hollow) || null, winches: ws, swim: 0, burnT: 0, shaded: false, storm: null, stormNow: null, gustAcc: 0 };
-  for (const pp of players) pp.sun = { v: 0 };
+  if (!SUNH) SUNH = makeSunHands({ get players() { return players; }, hero: () => P, asPlayer: (p, fn) => asPlayer(p, fn), TS, sfx: SFX, VW: () => VW, VH: () => VH, calm: () => !!SET.reduceMotion,
+    shaded: pp => !CV || state !== 'play' || cvShaded(pp.x, pp.y, pp.h || 14, pp.probe), zones: () => (CV ? CV.zones.filter(z => z[1] - z[0] < 60 * TS).concat(cvCanopies()) : []),
+    drain: n => sunDrain(n), god: () => !!(SET.invincible || (window.BK && window.BK.god) || (L && L.trial)), number: (x, y, t, c) => number(x, y, t, c), part: p => parts.push(p),
+    standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), solid: (tx, ty) => isSolid(tx, ty) });
+  SUNH.reset();   /* (claude/ksar2) every hero cool, the drawn shade's footprints measured again */
   for (const w of ws) { w.k = 1; w.out = 1; w.cd = 0; }
   L.gateOpen = false;   /* a retry is a fresh fight: the gate across the hollow is shut until he is dead again */
-  if (window.BK) Object.assign(window.BK, { caravan: () => CV });
+  if (window.BK) Object.assign(window.BK, { caravan: () => CV, sunHands: () => SUNH });
 }
 const cvCanopies = () => (CV && CV.winches || []).filter(w => w.canopy && w.k >= 0.95).map(w => { const c = w.canopy; return [c.x0 * TS, (c.x1 + 1) * TS, c.row * TS, LH * TS]; });   /* every great awning that is rolled OUT is shade */
 await LS.step('misc3');
 const inHollowStorm = x => !!(CV && CV.storm && L.arena && x > L.arena.x0 && x < L.arena.x1);   /* THE SUN GOES IN under the worm's storm, and only in his hollow */
-function cvShaded(x, y, h) {
+function cvShaded(x, y, h, probe) {   /* (probe: the drawn shimmer asks per floor top - no vulture's moving shadow) */
   if (inShade(CV.zones, x, y - 1)) return true;
   if (inHollowStorm(x)) return true;
   if (GSH && GSH.noSun(x)) return true;
   if (KSH && KSH.noSun(x)) return true;   /* (claude/ksar) THE BANDIT KSAR: the Hawk-Mistress's courtyard is shade (the sun is the desert's backdrop on the way) */   /* (claude/glasssea) THE GLASS SEA: past the obelisk the sun is down (the cold is src/glass-sea-hands.js's) */
   if (inShade(cvCanopies(), x, y - 1)) return true;
   if (roofShade(tileAt, x, y - h, t => t === T.SOLID)) return true;
-  for (const e of enemies) if (e.alive && e.t === 'vulture' && e.st && inShade([vultureShade(e, e.st.groundY)], x, y - 1)) return true;   /* the thing hunting you is the thing that cools you */
+  if (!probe) for (const e of enemies) if (e.alive && e.t === 'vulture' && e.st && inShade([vultureShade(e, e.st.groundY)], x, y - 1)) return true;   /* the thing hunting you is the thing that cools you */
   return false;
 }
 function updateCaravan(dt) {
@@ -20903,14 +20910,9 @@ function updateCaravan(dt) {
     if (w.k < 0.05 && w.canopy && !w.hollow) { CV.burnT -= dt; if (CV.burnT <= 0) { CV.burnT = SUN.hurtEvery;
       for (const e of enemies) if (e.alive && CV_BANDITS.has(e.t) && e.x > w.canopy.x0 * TS && e.x < (w.canopy.x1 + 1) * TS) { hurtEnemy(e, 6, e.x, false); number(e.x, e.y - 22, 'SUNSTROKE', '#ff9a5c'); } } } }
   /* THE SUN */
-  for (const pp of players) { if (!pp.sun) pp.sun = { v: 0 };
-    if (pp.dead || state !== 'play') continue;
-    const sh = cvShaded(pp.x, pp.y, pp.h || 14); if (pp === P) CV.shaded = sh;
-    const r = sunStep(pp.sun, dt, sh);
-    if (pp === P) { CV.swim = r.swim; CV.stage = r.stage; }
-    /* IT BUILDS, AND IT SAYS SO (C1): each tick at full is a sizzle a step higher than the last - 3, then 5, then 8 - and the HUD
-       names the stage the next one will be (drawCaravanHud) */
-    if (r.hurt) { if (pp === P && SFX.sunBurn) SFX.sunBurn(SUN.build.indexOf(r.hurt) + 1); asPlayer(pp, () => damagePlayer(P.x, r.hurt, { unblockable: true, noKnock: true, name: 'SUNSTROKE' })); } }
+  /* (claude/ksar2) THE SUN v2 (src/sun-hands.js): the meter for every hero, and the DRAIN straight off the bar - no blow, no flinch, no mercy window -
+     a share of max health a second that grows with the meter; the sizzle and the '-n' once a beat; the step-out warning */
+  if (state === 'play' && SUNH) { SUNH.update(dt); const r = SUNH.last; CV.shaded = r ? r.shaded : true; CV.swim = r ? r.swim : 0; CV.stage = r ? r.stage : 0; }
   /* QUICKSAND: it holds you and slows you; a jump heaves you up it, and at the surface a jump takes you out */
   for (const pp of players) asPlayer(pp, () => { if (P.dead) return;
     const q = qsPatchAt(L, P.x, P.y); if (!q && !P.qsDepth) return;
@@ -21025,7 +21027,10 @@ function drawCaravanHud() {
   { const strip = (sx, sy, sw, sh) => { g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(sx, sy, sw, sh, 2); g.fill(); hudRects.push([sx, sy, sw, sh]); };   /* THE STATUS ROWS sit on a strip, not on the picture */
     strip(2, y - 5, 98, 15); if ((WTH && WTH.on()) || (RGH && RGH.on())) strip(2, y + 10, 74, 14); }
   g.drawImage(A.ui.sun[k], x - 14, y - 3); g.drawImage(A.ui.meter, x, y);
-  g.fillStyle = v >= 1 ? '#ff5a3c' : v >= SUN.swimAt ? '#ff9a4c' : '#ffd36b'; g.fillRect(x + 1, y + 2, Math.round(42 * v), 3);
+  if (SUNH) SUNH.drawHud(g, x - 8, y + 3, time); else g.drawImage(A.ui.sun[k], x - 14, y - 3);   /* (claude/ksar2) THE HUD SUN: a disc that fills with the meter, its rays pulsing while it drains */
+  g.drawImage(A.ui.meter, x, y);
+  g.fillStyle = stg >= 3 ? '#ff3a2a' : stg === 2 ? '#ff6a3c' : stg === 1 ? '#ff9a4c' : '#ffd36b'; g.fillRect(x + 1, y + 2, Math.round(42 * v), 3);
+  g.fillStyle = 'rgba(255,241,200,0.7)'; g.fillRect(x + 1 + Math.round(42 * SUN.drainAt), y + 1, 1, 5);   /* where the drain starts */
   if (WTH && WTH.on()) hudEnvR = Math.max(hudEnvR, WTH.drawHud(g, P) || 0);
   if (RGH && RGH.on()) hudEnvR = Math.max(hudEnvR, RGH.drawHud(g, P) || 0);   /* THE RED GORGE: the flood's clock, under the sun */   /* THE WELL TOWN: the skin's sips, under the sun */
   { /* THE STATUS, AS AN ICON by the meter (a parasol in the shade, a bolt in the storm, a flame as the sun builds, a pip a stage, faster and redder as it climbs); the words only come as a toast when it CHANGES */
@@ -25565,6 +25570,7 @@ KSH = makeKsarHands({ get L() { return L; }, lights: () => lights, get players()
   moveFoe: (e, dx) => { moveBody(e, dx, 0, false); if (e.st) e.st.x = e.x; }, moveFoeY: (e, dy) => { const r = moveBody(e, 0, dy, false); if (r && (r.ground || r.hitY)) e.vy = 0; if (e.st) e.st.y = e.y; },
   keys: () => keys, questGot: () => straysGot.size, questN: () => questOf().n,
   flames: () => embers.concat(fires),   /* (a flame lights powder: the pyromancer's embers and every fire on the floor) */
+  spawnFoe: o => { const n0 = enemies.length; spawnEnt(o); return enemies[n0] || null; },   /* (claude/ksar2) THE RAIDER LINES: a gong calls riders down a rope */
   bossRing: g => { if (HMH) HMH.onRing(g); }, bossFlash: (x, y) => { if (HMH) HMH.onFlash(x, y); }, bossHawk: () => (HMH && bossActive ? HMH.hawk() : null) });
 /* THE WINCHMASTER's ROCKS (claude/winch5, src/winch-rocks.js): a rock off his loaded skip, thrown, shatters his ore (winchRockWorld) */
 WRK = makeWinchRocks({ on: () => !!(L && L.arena && L.arena.boss === 'winchmaster'), P: () => P, keys: () => keys, boss: () => (boss && boss.t === 'winchmaster' && boss.alive && bossActive ? boss : null),
@@ -28413,6 +28419,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
   else drawCastleBack(cx, cy);
+  if (L.ksar && KSH && KSH.on()) KSH.drawKeep(g, cx, cy, VW, VH, time, bgDY(cy));   /* (claude/ksar2 part B) THE KEEP over the souq, in front of the far dunes */
   if (GDH && GDH.on()) GDH.drawBack(g, cx, cy, time);   /* THE GREAT DRILL: its bore running past (it was an if/else ahead of the backdrop chain: with the boss asleep it skipped every backdrop in the level - claude/minecartart) */
   SEA.seaFar(g, cx, cy, VW, VH, time);   /* a sea level's far water: under the haze and the depth, so they sink into it */
   if (L.leviathan) { drawLeviathan(cx, cy); if (KRS.sky > 0.01) { g.fillStyle = 'rgba(6,10,14,' + (KRS.sky * 0.5).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }   /* THE DROWNED CAUSEWAY: the thing on the horizon, and the storm it brings */
@@ -29612,6 +29619,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (RGH && RGH.on()) RGH.drawOver(g, cx, cy, time);   /* THE RED GORGE: spray, dust in the rim's light, heat at the rim (src/redraw/redgorge_props.js) */
   if (UWH && UWH.on()) UWH.drawOver(g, cx, cy, time);   /* THE UNDERWELL: the dust scorpion's grit in your eyes */
   if (GCH && GCH.on()) GCH.drawOver(g, cx, cy, time);
+  if (CV && SUNH && state === 'play' && !(L.shade || []).some(z => z[0] <= 0 && z[1] >= LW * TS - 1)) { SUNH.drawGround(g, cx, cy, time); SUNH.drawHero(g, cx, cy, time); }   /* (claude/ksar2) THE SUN v2: the shade's footprints, the shimmer, the hero heating, the step-out warning (a level the sun never reaches says so with one shade box: none of it) */
   if (GSH && GSH.on()) GSH.drawOver(g, cx, cy, time);   /* THE GLASS SEA: the night's dark, a hole for every fire */
   if (COH && COH.on()) COH.drawOver(g, cx, cy, time); if (HNH && HNH.on()) HNH.drawOver(g, cx, cy, time);   /* THE GOBLIN HUNTMASTER: his arrows (gold and red), the poisoned floor, the hoist-drop shot's shadow */   /* THE GLASS COLOSSUS: the lance's line, the rings, the shards, the wave, and the read */
   if (MTH && MTH.on()) MTH.drawOver(g, cx, cy, time);
