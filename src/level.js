@@ -2080,6 +2080,7 @@ function hangingVillage() {
   for (const [x, y] of [[42, 8], [54, 11], [65, 8]]) ent('lantern', x, y, { dark: true, perch: true, owl: true }); // a dark lantern on each perch: light it and the perch is denied
   vine(48, 12, 19); vine(61, 11, 19); // two vines from the floor up to the links
   ent('deco', 38, 19, { kind: 'stone', v: 0 }); ent('deco', 70, 19, { kind: 'cairn' });
+  const CROWN_BOUGH = [22, 88, 3];   /* the dead pine's great bough across the top of the crown (drawn by src/hanging-village.js drawCrown): ropes, chains and festoons hang off it */
   /* THE CROWN HOIST, PAID OFF: one stone and it lifts you level with her middle perch. At half blood she cuts its rope (updateOwl, ropeGo) */
   hoist('crown', 57, 19, 11, 56, 1, { topRow: 5, arena: true }); ent('load', 65, 19, { kind: 'stone', hoist: 'crown' }); ent('load', 67, 19, { kind: 'stone', hoist: 'crown' });
   ent('sign', 6, 19, { text: 'THE HOIST LIFTS YOU TO HER PERCH. SHE WILL NOT SUFFER IT FOR LONG.' });
@@ -2104,6 +2105,7 @@ function hangingVillage() {
   return {
     hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, crumbles,
     bridges: [{ x: 50, x1: 56, y: tops.t3 }],   /* THE CLIFF HALL's own rope (src/main.js L.bridges/updateCutter): whole every attempt, cut by the ambush's cutter, hauled back once you step off it */
+    hangers: [CROWN_BOUGH],   /* (claude/owl2) what a HUNG thing may hang from that is not rock: the crown pine's bough [x0, x1, row] - her perch lamps hang on chains off it (tools/floaters.mjs) */
     vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'hangingvillage', night: false, glowNight: true,   /* "Dark Shrine Loop" by qubodup, CC0 - THE HANGING VILLAGE's own theme, benching town (audio/CREDITS.txt) */
     /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its
@@ -2114,7 +2116,7 @@ function hangingVillage() {
        rookery's dovecote, the lantern stair's lamps, the root arch over the Web Hole, and the crown's dead pine with a limb or a rope to every ledge */
     hvLandmarks: { ropewalk: [24, 62, 93], mill: [104, 58, 79], dovecote: [80, 51], rootArch: [64, 76, 107],
       lanterns: [4, 9, 14, 19, 24, 29].map(n => [92 - 1.5 * n, (606 - 6 * n - 14) / 16]),
-      crown: { trunk: 57, bough: [22, 88, 3], ledges: [[24, 26, 17], [84, 86, 17], [29, 31, 14], [79, 81, 14], [34, 36, 11], [74, 76, 11], [40, 44, 9], [51, 56, 12], [63, 67, 9], [47, 48, 11], [60, 61, 10], [70, 71, 11]] } },
+      crown: { trunk: 57, bough: CROWN_BOUGH, ledges: [[24, 26, 17], [84, 86, 17], [29, 31, 14], [79, 81, 14], [34, 36, 11], [74, 76, 11], [40, 44, 9], [51, 56, 12], [63, 67, 9], [47, 48, 11], [60, 61, 10], [70, 71, 11]] } },
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', hall: true, haze: 'rgba(236,214,180,0.08)',   /* (the Scree Path's purple haze was copied here byte for byte) */ grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone: [], scree: [], snowLine: 52,
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],

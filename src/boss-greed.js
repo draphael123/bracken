@@ -50,7 +50,7 @@ import { wardenOpen as graveOpen } from './grave-warden.js';
 import { rocEyrieOpen } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad) */
 
 export const GREED = {
-  chipBy: { queen: 1, herald: 0.2, cisternqueen: 0.5 },   /* (claude/burnvillage2, Daniel 10-07: THE PYROMANCER is off the chip - FULL_DAMAGE, below) */   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
+  chipBy: { queen: 1, herald: 0.2, cisternqueen: 0.5, owl: 0.4 },   /* (claude/owl2, B15: THE OWL REEVE off the twentieth - wherever she passes at your height she takes 0.4 of a blow, a duelist's trade; her lamp crash x2, src/main.js owlTake) */   /* (claude/burnvillage2, Daniel 10-07: THE PYROMANCER is off the chip - FULL_DAMAGE, below) */   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
                            // drones are up) and is not chipped: at a twentieth - and at a quarter, and at a half - the human-speed bot lost her 2-3 of 3 (it won
                            // 2 of 3 before; the mash bot never beat her). Her greed reprisal stands. THE PYROMANCER takes a quarter: blows are what open him
                            // (each heats him), and at a twentieth the bot won 1 of 3 (3 of 3 before), at a quarter 2 of 3. THE TIDE HERALD takes a fifth (he took

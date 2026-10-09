@@ -196,6 +196,73 @@ function bakeFace(L, z) {
 }
 function faceOf(L, z) { const k = z.look + ':' + z.y0; if (!FACE.has(k) || FACE.get(k).L !== L) FACE.set(k, { L, c: bakeFace(L, z) }); return FACE.get(k).c; }
 
+/* THE CROWN, REDRAWN (claude/owl2, Daniel 10-08: "make the crown look much better"). The top of the village at night: a moonlit sky over the
+   other hanging villages' trees and the rooftops of this one far below; the great dead pine the Reeve roosts in - bark, knots, broken limbs,
+   a bough with moss and dead needles, a limb or a rope to every ledge, and a chain off a limb to each of her three perch lamps (they hung from
+   nothing: they stood on posts that did not reach the planks); the village's own dressing - festoons of paper lanterns slung under the bough -
+   and feathers and dead needles drifting down through it all. Scenery only: no footing, no foe. */
+const CROWN_SKY = [[0, '#0e1028'], [0.45, '#1e2046'], [0.78, '#3a3060'], [1, '#6a4660']];
+function drawCrown(g, L, crown, cx, cy, time, VW, VH) {
+  const R = Math.round, { trunk, bough, ledges } = crown, TX = trunk * T + 8, BY = bough[2] * T, FL = 20 * T, SKYB = 24 * T;
+  const sy0 = Math.max(0, R(-cy)), sy1 = Math.min(VH, R(SKYB - cy)); if (sy1 <= sy0) return;
+  /* THE SKY: a night gradient fixed to the crown (it does not slide with the camera much), stars that twinkle, and the moon */
+  const gr = g.createLinearGradient(0, R(-60 - cy * 0.3), 0, R(FL - cy)); for (const [k, c] of CROWN_SKY) gr.addColorStop(k, c); g.fillStyle = gr; g.fillRect(0, sy0, VW, sy1 - sy0);
+  const rnd = mulberry(4417); for (let k = 0; k < 70; k++) { const sx = R(((rnd() * 2400 - cx * 0.08) % (VW + 40) + VW + 40) % (VW + 40)) - 20, syy = R(rnd() * 260 - 40 - cy * 0.15), tw = 0.5 + 0.5 * Math.sin(time * (1.5 + rnd() * 2) + k);
+    if (syy < sy0 || syy > Math.min(sy1, R(FL - 70 - cy))) continue; g.globalAlpha = 0.35 + 0.55 * tw * (k % 3 ? 0.7 : 1); g.fillStyle = k % 7 ? '#dfe4ff' : '#ffe8c0'; g.fillRect(sx, syy, k % 9 ? 1 : 2, k % 9 ? 1 : 2); }
+  g.globalAlpha = 1;
+  { const mx = R(VW * 0.74 - (cx - 40 * T) * 0.03), my = R(54 - cy * 0.22); if (my > -40) {
+    for (const [r, a] of [[46, 0.05], [34, 0.07], [24, 0.1]]) { g.globalAlpha = a; g.fillStyle = '#c8d4ff'; g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill(); }
+    g.globalAlpha = 1; g.fillStyle = '#e8ecf4'; g.beginPath(); g.arc(mx, my, 13, 0, 7); g.fill(); g.fillStyle = '#c8cedc'; g.beginPath(); g.arc(mx + 4, my - 3, 3, 0, 7); g.fill(); g.beginPath(); g.arc(mx - 5, my + 4, 2, 0, 7); g.fill(); g.beginPath(); g.arc(mx + 2, my + 7, 1.5, 0, 7); g.fill();
+    g.fillStyle = '#fbfcff'; g.fillRect(mx - 9, my - 6, 2, 3); } }
+  /* THE OTHER TREES: far great trunks with their own villages - planks, huts, lit windows - in silhouette against the moon */
+  { const par = 0.3, base = R(FL + 40 - cy * 0.8); for (let k = 0; k < 6; k++) { const wx = 120 + k * 260 + (k % 2) * 70, x = R(wx - cx * par) % (VW + 300); const X = x < -150 ? x + VW + 300 : x;
+    g.fillStyle = '#1a1830'; g.fillRect(X - 12, sy0, 24, base - sy0); g.fillStyle = '#221e3a'; g.fillRect(X - 12, sy0, 5, base - sy0);
+    for (let j = 0; j < 3; j++) { const py = base - 60 - j * 70 - (k % 3) * 14; if (py < sy0 - 30) continue; const w = 54 + ((k + j) % 3) * 12, side = (k + j) % 2 ? 1 : -1, px0 = side > 0 ? X - 8 : X - w + 8;
+      g.fillStyle = '#16142a'; g.fillRect(px0, py, w, 3); g.fillRect(px0 + 6, py - 16, 18, 16); fillPoly(g, [[px0 + 3, py - 16], [px0 + 15, py - 26], [px0 + 27, py - 16]], '#16142a');
+      g.fillStyle = '#ffcf70'; g.globalAlpha = 0.55 + 0.25 * Math.sin(time * 2 + k + j); g.fillRect(px0 + 12, py - 11, 3, 4); g.globalAlpha = 1;
+      g.strokeStyle = '#2c2846'; g.lineWidth = 1; g.beginPath(); g.moveTo(px0 + 1, py); g.lineTo(px0 + 1, py - 34); g.moveTo(px0 + w - 1, py); g.lineTo(px0 + w - 1, py - 34); g.stroke(); } } }
+  /* THIS VILLAGE'S ROOFTOPS, far below the crown: gables, chimneys and lit windows past the edge of the boards */
+  { const par = 0.55, y0 = R(FL - 4 - cy); const rr = mulberry(911); let x = -((cx * par) % 46) - 46;
+    for (let k = 0; x < VW + 46; k++) { const w = 26 + ((rr() * 20) | 0), h = 10 + ((rr() * 12) | 0), top = y0 - h; g.fillStyle = k % 2 ? '#24203a' : '#2a2442'; g.fillRect(R(x), top, w, h + 4);
+      fillPoly(g, [[R(x) - 2, top], [R(x + w / 2), top - 8 - ((rr() * 4) | 0)], [R(x + w) + 2, top]], k % 2 ? '#2e2a48' : '#342e50');
+      if (rr() < 0.4) { g.fillStyle = '#24203a'; g.fillRect(R(x + w * 0.7), top - 10, 3, 8); }
+      if (rr() < 0.7) { g.fillStyle = '#ffcf70'; g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 1.7 + k); g.fillRect(R(x + 5 + rr() * (w - 12)), top + 3, 2, 3); g.globalAlpha = 1; }
+      x += w + 4 + ((rr() * 10) | 0); } }
+  /* THE DEAD PINE: the trunk, barked and knotted, broken limbs on it */
+  const tx = R(TX - cx), by = R(BY - cy), fy = R(21 * T - cy);
+  g.fillStyle = '#3e3228'; g.fillRect(tx - 12, by - 30, 24, fy - by + 30); g.fillStyle = '#54443a'; g.fillRect(tx - 10, by - 30, 6, fy - by + 30); g.fillStyle = '#2c241c'; g.fillRect(tx + 7, by - 30, 5, fy - by + 30);
+  for (let y = BY - 26; y < 20 * T; y += 9) { const k = (y * 7) % 5; g.fillStyle = '#2a221a'; g.fillRect(tx - 9 + k * 3, R(y - cy), 1, 6 + (k % 3)); g.fillStyle = '#665446'; g.fillRect(tx - 6 + ((k + 2) % 5) * 3, R(y - cy) + 2, 1, 3); }
+  for (const [ky, kx] of [[90, -3], [170, 4], [236, -5]]) { const y = R(BY + ky - cy); g.fillStyle = '#2a2018'; g.beginPath(); g.ellipse(tx + kx, y, 3, 4, 0, 0, 7); g.fill(); g.fillStyle = '#5e4c3c'; g.fillRect(tx + kx - 1, y - 1, 2, 1); }
+  g.strokeStyle = '#3e3228'; g.lineWidth = 3; for (const [ly, dir, len] of [[120, 1, 22], [200, -1, 18], [60, -1, 14]]) { const y = R(BY + ly - cy); g.beginPath(); g.moveTo(tx + dir * 10, y); g.lineTo(tx + dir * (10 + len), y - len * 0.6); g.stroke(); } g.lineWidth = 1;
+  g.fillStyle = '#4a5a3a'; g.fillRect(tx - 12, R(BY + 140 - cy), 4, 18); g.fillStyle = '#5e7046'; g.fillRect(tx - 12, R(BY + 146 - cy), 2, 9);
+  /* THE BOUGH: thick, barked, mossed, twigged, with dead needles - the beam everything in the room hangs from */
+  const bx0 = R(bough[0] * T - cx), bx1 = R(bough[1] * T - cx), bw = bx1 - bx0;
+  g.fillStyle = '#3e3228'; g.fillRect(bx0, by - 6, bw, 11); g.fillStyle = '#54443a'; g.fillRect(bx0, by - 6, bw, 3); g.fillStyle = '#2a221a'; g.fillRect(bx0, by + 4, bw, 1);
+  for (let x = bough[0] * T + 6; x < bough[1] * T; x += 13) { const sx = R(x - cx), k = (x / 13) % 4; if (sx < -20 || sx > VW + 20) continue; g.fillStyle = '#2a221a'; g.fillRect(sx, by - 3 + (k % 2), 4 + k, 1);
+    if (k === 1) { g.strokeStyle = '#3e3228'; g.beginPath(); g.moveTo(sx, by - 6); g.lineTo(sx - 3, by - 13); g.lineTo(sx - 6, by - 15); g.stroke(); g.fillStyle = '#7a5a30'; g.fillRect(sx - 8, by - 17, 3, 2); g.fillRect(sx - 4, by - 15, 2, 2); }
+    if (k === 3) { g.fillStyle = '#6a7a52'; g.fillRect(sx - 2, by + 5, 1, 4 + ((x >> 4) % 5)); g.fillRect(sx + 1, by + 5, 1, 2 + ((x >> 3) % 4)); }
+    if (k === 2 && (x >> 5) % 2) { g.fillStyle = '#8a6a3a'; g.fillRect(sx - 1, by - 8, 5, 2); g.fillStyle = '#a07a40'; g.fillRect(sx, by - 9, 2, 1); } }
+  g.fillStyle = '#3e3228'; for (const [ex, dir] of [[bx0, -1], [bx1, 1]]) { fillPoly(g, [[ex, by - 6], [ex + dir * 16, by - 2], [ex, by + 5]], '#3e3228'); }
+  /* A LIMB OR A ROPE TO EVERY LEDGE (the ledges were stone floating in the sky, the review B9) */
+  for (const [lx0, lx1, ly] of ledges) { const Y = ly * T + 4, X0 = lx0 * T + 3, X1 = (lx1 + 1) * T - 4;
+    if (Math.abs((lx0 + lx1) / 2 - trunk) < 9) { g.strokeStyle = '#3e3228'; g.lineWidth = 5; g.beginPath(); g.moveTo(tx, R(Y + 30 - cy)); g.lineTo(R((X0 + X1) / 2 - cx), R(Y + 2 - cy)); g.stroke(); g.strokeStyle = '#54443a'; g.lineWidth = 1; g.beginPath(); g.moveTo(tx, R(Y + 28 - cy)); g.lineTo(R((X0 + X1) / 2 - cx), R(Y - cy)); g.stroke(); }
+    else { for (const rx of [X0, X1]) { g.fillStyle = '#9a8460'; g.fillRect(R(rx - cx), by + 4, 1, R(Y - BY) - 4); g.fillStyle = '#c8b088'; for (let y = BY + 10; y < Y; y += 6) g.fillRect(R(rx - cx), R(y - cy), 1, 2); g.fillStyle = '#3e3228'; g.fillRect(R(rx - cx) - 1, by + 3, 3, 2); } } }
+  /* HER PERCH LAMPS HANG: a short limb down off the bough over each, and a chain from it to the lamp's ring (src/main.js draws the lamp) */
+  for (const e of L.ents) if (e.t === 'lantern' && e.perch) { const x = R(e.x * T + 8 - cx), top = R((e.y + 1) * T - 37 - cy), lb = by + 14;
+    g.strokeStyle = '#3e3228'; g.lineWidth = 3; g.beginPath(); g.moveTo(x - 7, by + 2); g.lineTo(x, lb); g.stroke(); g.lineWidth = 1; g.fillStyle = '#2a221a'; g.fillRect(x - 1, lb - 1, 3, 3);
+    for (let y = lb + 2; y < top; y += 4) { g.fillStyle = (y >> 2) & 1 ? '#8a8476' : '#5f5a52'; g.fillRect(x - ((y >> 2) & 1 ? 0 : 1), y, (y >> 2) & 1 ? 1 : 3, 3); } }
+  /* THE VILLAGE'S DRESSING: festoons of paper lanterns slung under the bough, swaying */
+  for (const [fx0, fx1, sag] of [[25 * T, 38 * T, 26], [72 * T, 86 * T, 30], [44 * T, 50 * T, 14]]) { const x0 = R(fx0 - cx), x1 = R(fx1 - cx); if (x1 < -10 || x0 > VW + 10) continue;
+    const sw = Math.sin(time * 0.9 + fx0) * 2, pt = u => [x0 + (x1 - x0) * u, by + 5 + Math.sin(u * Math.PI) * (sag + sw)];
+    g.strokeStyle = '#8a7656'; g.beginPath(); for (let u = 0; u <= 1.001; u += 0.05) { const [x, y] = pt(u); u ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+    const n = Math.max(3, Math.round((x1 - x0) / 26)); for (let i = 1; i < n; i++) { const [x, y] = pt(i / n), c = ['#e88a4a', '#e8c25a', '#d8604a'][i % 3], X = R(x), Y = R(y);
+      g.globalAlpha = 0.18; g.fillStyle = c; g.beginPath(); g.arc(X, Y + 5, 8, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#2a2018'; g.fillRect(X, Y, 1, 2); g.fillStyle = c; g.fillRect(X - 2, Y + 2, 5, 6); g.fillStyle = '#fff0c0'; g.fillRect(X - 1, Y + 3, 2, 3); g.fillStyle = '#2a2018'; g.fillRect(X - 2, Y + 8, 5, 1); } }
+  /* FEATHERS AND DEAD NEEDLES drifting down through the crown */
+  for (let k = 0; k < 14; k++) { const sp = 10 + (k % 5) * 4, X = R(((k * 173 + time * (6 + k % 3 * 4) - cx * 0.9) % (VW + 40) + VW + 40) % (VW + 40)) - 20, Y = R(((k * 97 + time * sp) % (FL - 20 + 40)) - 20 - cy), sway = R(Math.sin(time * 1.3 + k) * 4);
+    if (Y < sy0 || Y > R(FL - cy)) continue;
+    if (k % 3) { g.fillStyle = '#e8dcc0'; g.fillRect(X + sway, Y, 3, 1); g.fillStyle = '#8a7a66'; g.fillRect(X + sway + (Math.sin(time * 1.3 + k) > 0 ? 3 : -1), Y, 1, 1); }
+    else { g.fillStyle = '#8a6a3a'; g.fillRect(X + sway, Y, 2, 1); g.fillRect(X + sway + 1, Y + 1, 1, 1); } }
+}
 /* THE LANDMARKS: what makes each floor a PLACE you would tell someone to meet you at. Drawn every frame over the face, culled
    to the view, behind the tiles. They are scenery: nothing here is footing or a foe. */
 function drawLandmarks(g, L, cx, cy, time, VW, VH) {
@@ -235,14 +302,7 @@ function drawLandmarks(g, L, cx, cy, time, VW, VH) {
       g.lineWidth = 1; g.strokeStyle = '#d8d0c088'; for (let k = 0; k < 6; k++) { g.beginPath(); g.moveTo(R(X0 + 20 - cx), R(Y - 70 - cy)); g.lineTo(R(X0 + 20 + k * 22 - cx), R(Y - 96 + (k % 2) * 10 - cy)); g.stroke(); } } }
   /* THE CROWN: the great dead pine the Reeve roosts in. A trunk up the middle, a bough across the top, and a limb or a rope to every
      ledge in the room - the ledges were stone floating in the sky (the review, B9) */
-  if (lm.crown) { const { trunk, bough, ledges } = lm.crown, TX = trunk * T + 8, BY = bough[2] * T;
-    if (on(bough[0] * T - 40, 0, bough[1] * T + 40, 24 * T)) {
-      g.fillStyle = '#4a3c30'; g.fillRect(R(TX - 10 - cx), R(BY - cy), 20, 21 * T - BY); g.fillStyle = '#5e4c3c'; g.fillRect(R(TX - 8 - cx), R(BY - cy), 5, 21 * T - BY);
-      g.fillStyle = '#3a2e24'; for (let y = BY + 6; y < 20 * T; y += 11) g.fillRect(R(TX - 10 - cx) + (y % 3) * 4, R(y - cy), 3, 5);
-      g.fillStyle = '#4a3c30'; g.fillRect(R(bough[0] * T - cx), R(BY - 4 - cy), (bough[1] - bough[0]) * T, 8); g.fillStyle = '#5e4c3c'; g.fillRect(R(bough[0] * T - cx), R(BY - 4 - cy), (bough[1] - bough[0]) * T, 2);
-      for (const [lx0, lx1, ly] of ledges) { const Y = ly * T + 4, X0 = lx0 * T + 3, X1 = (lx1 + 1) * T - 4;
-        if (Math.abs((lx0 + lx1) / 2 - trunk) < 9) { g.strokeStyle = '#4a3c30'; g.lineWidth = 4; g.beginPath(); g.moveTo(R(TX - cx), R(Y + 30 - cy)); g.lineTo(R((X0 + X1) / 2 - cx), R(Y + 2 - cy)); g.stroke(); g.lineWidth = 1; }
-        else { g.fillStyle = '#b09a70'; for (const rx of [X0, X1]) g.fillRect(R(rx - cx), R(BY - cy), 1, Y - BY); } } } }
+  if (lm.crown && on(lm.crown.bough[0] * T - 400, -200, lm.crown.bough[1] * T + 400, 24 * T)) drawCrown(g, L, lm.crown, cx, cy, time, VW, VH);   /* (claude/owl2: the crown, redrawn) */
 }
 
 /* THE WHOLE BACK: each floor's face where the camera is, then the landmarks. Called from drawWorld in src/main.js, after the far
