@@ -1,0 +1,17 @@
+mage practiced knight s1 L30: timeout 240s left 7% taken 274 rt420 mis12 greed24
+mage practiced knight s2 L30: win 219.6s left 0% taken 320 rt416 mis10 greed24
+mage practiced warden s1 L30: win 133.8s left 0% taken 177 rt416 mis16 greed13
+mage practiced warden s2 L30: win 131.5s left 0% taken 149 rt407 mis12 greed16
+mage practiced pyro s1 L30: win 100.9s left 0% taken 183 rt415 mis10 greed14
+mage practiced pyro s2 L30: death 62.7s left 66% taken 244 rt419 mis5 greed8
+fields:mini practiced knight s1 L27: death 31.3s left 30% taken 305 rt394 mis3 greed5
+fields:mini practiced knight s2 L27: win 36s left 0% taken 289 rt402 mis0 greed5
+fields:mini practiced warden s1 L27: death 35.9s left 0% taken 226 rt417 mis0 greed3
+fields:mini practiced warden s2 L27: win 28.4s left 0% taken 57 rt419 mis2 greed3
+fields:mini practiced pyro s1 L27: win 45.4s left 0% taken 93 rt394 mis1 greed7
+fields:mini practiced pyro s2 L27: win 39.5s left 0% taken 25 rt394 mis0 greed7
+
+BOSS RATES  profile human  (12 fights, 5 min)
+row                 L  practiced kn/wa/py        band
+mage               30  1/2 2/2 1/2 = 67%         HIGH +7
+fields:mini        27  1/2 1/2 2/2 = 67%         LOW -3
