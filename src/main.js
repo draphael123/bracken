@@ -5654,7 +5654,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
   if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('TAKE THE TRIAL FIRST?', VW / 2, VH / 2, UI.text, 'center'); wrap('a short practice yard for this hero. nothing in it can hurt you.', VW - 32, 6).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 14 + i * BODY_LH, UI.dim, 'center', 6));   /* (one 64-letter line ran off both sides: two lines; textfit trial) */
     text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 38, UI.sel, 'center', 6); return; }
-  text('CHOOSE YOUR HERO', VW / 2, 8, UI.title, 'center', 12);
+  text('CHOOSE YOUR HERO', VW / 2, 3, UI.title, 'center', 12);
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '100 health'],
     pyro: ['staff and fire, no shield', 'heat banks into THE PYRE', '80 health', 'HARDER'],
     paladin: ['maul and holy light', 'slow, heavy, a ward', '120 health'],
@@ -5662,11 +5662,13 @@ function drawHeroPick() { const PICK = NEW_PICK;
     reaper: ['a greatsword: slow, and it cuts them ALL', 'his ward banks what it stops', '95 health', 'HARDER'],
     warden: ['a spear: everything at its point', 'C PLANTS IT: a charge dies on it', '100 health'],
     geomancer: ['a tall staff and the stone under her', 'HOLD X: A FAULT LINE', '95 health'] };
-  const n = PICK.length, cw = Math.floor((VW - 12 - (n - 1) * 3) / n), top = 24, ch = 52, pickSets = {};   /* (ch 62 -> 52: the move preview and a three-line loop need the ten pixels) */
-  PICK.forEach((h, k) => { const x = 6 + k * (cw + 3), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
-    g.fillStyle = sel ? 'rgba(30,40,30,0.8)' : 'rgba(20,18,28,0.8)'; g.fillRect(x, top, cw, ch);
-    heroBanner(h, x, top, cw, ch, sel);
-    if (sel) { g.strokeStyle = UI.sel; g.lineWidth = 1; g.strokeRect(x + 0.5, top + 0.5, cw - 1, ch - 1); }
+  /* THE ROW (Daniel 2026-10-09: portraits, not banners): each hero stands on the floor line in his OWN idle frames at one integer scale (2x). The one
+     you are looking at steps forward and is lit; the rest stand back, dimmed, and still breathe. Name and a one-line role are under each. */
+  const ROLE = { knight: 'sword, shield', pyro: 'staff and fire', paladin: 'maul and ward', pirate: 'cutlass, pistol', reaper: 'greatsword', warden: 'spear, reach', geomancer: 'staff and stone' };
+  const n = PICK.length, cw = Math.floor((VW - 24) / n), rx = Math.floor((VW - cw * n) / 2), floorY = 74, pickSets = {}, wide = cw >= 70;
+  g.fillStyle = 'rgba(201,178,124,0.22)'; g.fillRect(8, floorY, VW - 16, 1);
+  PICK.forEach((h, k) => { const x = rx + k * cw, mid = x + Math.round(cw / 2), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
+    TCH.hit(x, 14, cw, floorY + 24 - 14, () => { if (heroPick.i === k) confirmPress = true; else { heroPick.i = k; heroPickAt = time; SFX.ui(); } initAudio(); });   /* a tap picks; a tap on the one picked takes him */
     const set = h === 'pyro' ? preview('pick:pyro', () => bakePyro(PYRO_SETS.bracken))
       : h === 'paladin' ? preview('pick:paladin', () => bakePaladin({}))
       : h === 'pirate' ? preview('pick:pirate', () => bakeFreebooter({}))
@@ -5675,29 +5677,29 @@ function drawHeroPick() { const PICK = NEW_PICK;
       : h === 'geomancer' ? preview('pick:geomancer', () => bakeGeomancer({}))
       : preview('pick:knight', () => bakeKnight({}));
     pickSets[h] = set;
-    const fr = set.R.idle[Math.floor(time * 4) % set.R.idle.length], sc = sel ? 1.6 : 1.4;
-    g.globalAlpha = sel ? 1 : 0.7;
-    g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 8 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
+    const lift = sel ? 4 : 0, fr = set.R.idle[Math.floor(time * 4 + k) % set.R.idle.length], fw = fr.width * 2, fh = fr.height * 2;
+    if (sel) { g.fillStyle = 'rgba(168,224,110,0.08)'; g.fillRect(x + 4, floorY - 60, cw - 8, 62); g.fillStyle = UI.sel; g.fillRect(mid - 16, floorY, 32, 2); }
+    else { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(mid - 11, floorY, 22, 1); }
+    g.globalAlpha = sel ? 1 : 0.5;
+    g.drawImage(fr, 0, 0, fr.width, fr.height, mid - Math.round(fw / 2), floorY - lift - fh, fw, fh);
     g.globalAlpha = 1;
-    /* THE NAME STAYS ON THE SCREEN (2026-09-24, POLISH): a name is wider than its 41-pixel card (DEATH KNIGHT is ~70), so the last card's
-       name ran off the right edge. Its centre is held in far enough that the whole name is drawn; the stagger keeps it off its neighbours. */
-    { const nm = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER' }[h] || H.name, nw = textW(nm, 6);
-      const lab = nw > 60 ? nm.split(' ') : [nm], lc = sel ? UI.title : '#7a7a84';   /* (DEATH KNIGHT is ~70 wide: two stacked lines instead of a name pushed against the edge) */
-      lab.forEach((ln, li) => { const lw = textW(ln, 6); text(ln, Math.max(2 + lw / 2, Math.min(VW - 2 - lw / 2, x + cw / 2)), top + ch + 3 + (k % 2 ? 7 : 0) + li * 7, lc, 'center', 6); }); }
+    /* THE NAME STAYS ON THE SCREEN: with many cards a name is wider than its card (DEATH KNIGHT is ~70), so a narrow card stacks it and holds its centre in from the edge */
+    { const nm = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER' }[h] || H.name, nsz = wide ? 8 : 6, nw = textW(nm, nsz);
+      const lab = nw > cw - 4 ? nm.split(' ') : [nm], lc = sel ? UI.title : UI.dim, ny = floorY + 3 + (!wide && k % 2 ? 7 : 0);
+      lab.forEach((ln, li) => { const lw = textW(ln, nsz); text(ln, Math.max(2 + lw / 2, Math.min(VW - 2 - lw / 2, mid)), ny + li * (nsz + 1), lc, 'center', nsz); });
+      if (wide) text(fitText(ROLE[h] || '', cw - 6, 6), mid, floorY + 13, sel ? UI.text : UI.dim, 'center', 6); }
   });
-  // and the words, for the one you are looking at, where there is room for them: the name, THE LOOP under it (HERO_LOOP,
-  // the one sentence that is how this hero is played, where a player looks first), then the stats under that. A row of
-  // the small hand every eight pixels (BODY_LH: seven of glyph and one of air), and the footer is at VH - 19.
-  { const h = PICK[heroPick.i], H = HEROES.find(q => q.id === h), y0 = top + ch + 20;   /* (seven cards: every other name drops a line, so GEOMANCER and DEATH KNIGHT stop running into their neighbours) */
+  // and the words, for the one you are looking at, under the row: THE LOOP (HERO_LOOP, the one sentence that is how this hero is played), then the stats.
+  // A row of the small hand every eight pixels (BODY_LH: seven of glyph and one of air), and the footer is at VH - 19.
+  { const h = PICK[heroPick.i], y0 = floorY + 24;
     /* THE SIGNATURE MOVE, LOOPING: a window on the right of the words plays the hero's own move on a training post (src/ability-preview.js, pure draw); the words keep the left */
     const SIG = { knight: ['risingCut', 'RISING CUT'], pyro: ['emberFlare', 'EMBER FLARE'], paladin: ['lightLance', 'LIGHT LANCE'], pirate: ['grapeshot', 'GRAPESHOT'], reaper: ['harvestMoon', 'HARVEST MOON'], warden: ['skewer', 'SKEWER'], geomancer: ['faultLine', 'FAULT LINE'] }[h], hs = pickSets[h];
-    const PVW = 86, PVX = VW - PVW - 6, PVY = y0 - 2, TX = Math.round((PVX - 4) / 2);
+    const PVW = 86, PVX = VW - PVW - 6, PVY = 94, TX = Math.round((PVX - 4) / 2);
     if (SIG && hs) { drawAbilityPreview(g, PVX, PVY, PVW, 50, { id: SIG[0], hero: h, t: time - heroPickAt, idle: hs.R.idle, atk: hs.R.atk || hs.R.idle, icon: null }); g.strokeStyle = 'rgba(201,178,124,0.5)'; g.lineWidth = 1; g.strokeRect(PVX + 0.5, PVY + 0.5, PVW - 1, 49); text(SIG[1], PVX + PVW / 2, PVY + 53, UI.dim, 'center', 6); }
-    text(H.name, TX, y0, UI.title, 'center');
-    const loop = wrap(HERO_LOOP[h], PVX - 16, 6); loop.forEach((ln, i) => text(ln, TX, y0 + 9 + i * BODY_LH, UI.text, 'center', 6));
+    const loop = wrap(HERO_LOOP[h], PVX - 16, 6); loop.forEach((ln, i) => text(ln, TX, y0 + i * BODY_LH, UI.text, 'center', 6));
     /* HARDER rides on the end of the last line, not a line of its own: with a two-line loop the Pyromancer's fourth line landed on the footer */
     const body = LINES[h].filter(ln => ln !== 'HARDER'), hard = body.length < LINES[h].length;
-    body.forEach((ln, i) => { const yy = y0 + 12 + (loop.length + i) * BODY_LH;
+    body.forEach((ln, i) => { const yy = y0 + 3 + (loop.length + i) * BODY_LH;
       if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(TX - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
       else text(ln, TX, yy, UI.dim, 'center', 6); }); }
   text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
@@ -29882,7 +29884,7 @@ function drawTitle(cx, cy) {
   /* (the second purple wash is gone: three multiplies over the same picture took the sun, the fire and the
      gate's stone down to one flat value, and the game's own levels are not that grey) */
   drawTitleColumn();
-  const gx = 36, gy = VH - 132; g.drawImage(PROP.gate, gx, gy, 120, 130);
+  const gx = 24, gy = VH - 132; g.drawImage(PROP.gate, gx, gy, 120, 130);
   /* THE TORCHES BESIDE THE GATE STAND ON THE GROUND. Their post was drawn 22 high from gy+60 and stopped at
      gy+82, twenty-eight pixels short of the floor line at VH-22, so both of them hung in the air beside the
      arch - the one thing tools/light-support.mjs checks on every level, on the one screen it never sees. */
@@ -29895,7 +29897,7 @@ function drawTitle(cx, cy) {
   g.fillStyle = '#2a2230'; g.fillRect(0, VH - 22, VW, 22); for (let x = 0; x < VW; x += 16) g.drawImage(TILE.top['00'][(x / 16) % 4], x, VH - 22);
   g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(110,90,140,0.5)'; g.fillRect(0, VH - 22, VW, 22); g.globalCompositeOperation = 'source-over';
   // the campfire, and the knight warming his hands at it
-  { const fx = 150, fy = VH - 22, fl = Math.floor(time * 9) % 3;
+  { const fx = 138, fy = VH - 22, fl = Math.floor(time * 9) % 3;
     g.globalCompositeOperation = 'lighter'; const gl = g.createRadialGradient(fx, fy - 6, 2, fx, fy - 6, 46 + Math.sin(time * 11) * 2); gl.addColorStop(0, 'rgba(255,170,90,0.42)'); gl.addColorStop(1, 'rgba(255,120,60,0)'); g.fillStyle = gl; g.fillRect(fx - 50, fy - 56, 100, 70); g.globalCompositeOperation = 'source-over';
     g.drawImage(PROP.campfire[fl], fx - 7, fy - 13);
     for (let i = 0; i < 7; i++) { const ph = (time * 0.8 + i / 7) % 1, sx = fx + Math.sin(i * 3.1 + time * 2) * 4 * ph + (i % 3 - 1) * 2, sy = fy - 10 - ph * 44; g.globalAlpha = (1 - ph) * 0.9; g.fillStyle = ph < 0.4 ? '#ffd36b' : '#ff9a5c'; g.fillRect(Math.round(sx), Math.round(sy), 1, 1); } g.globalAlpha = 1;
@@ -29929,7 +29931,7 @@ function drawTransition() {
     if (state === 'title') titleSince = time;
     if (state === 'menu') menuSince = time;
     const quiet = transPrev === null || OVERLAY_STATES.has(state) || OVERLAY_STATES.has(transPrev);
-    if (!quiet) { transT = 1; transKind = state === 'play' ? 'iris' : 'fade'; }
+    if (!quiet) { transT = state === 'map' ? 0.62 : 1; transKind = state === 'play' ? 'iris' : 'fade'; }   /* (the map comes up out of a DIM, not out of black: its first frame is already the map, 38% under the fade - claude/titlescene) */
     transPrev = state;
   }
   if (transT <= 0) return;
@@ -30465,33 +30467,39 @@ function render() {
   }
   if (state === 'title' && pressCard) { TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); }); TC.drawPressText(g, text, UI, time, VW, VH, 1, touchOn); }   /* THE CARD: only its own words while it is up (the sign and the menu wait off screen, and are not drawn) */
   if (state === 'title' && !pressCard) {
-    /* THE BOARD HANGS OVER THE PICTURE, NOT UNDER THE MENU. Centred on VW/2 with the menu board 138 wide on the
-       right, the sign and its line ran in behind the panel and the subtitle was half-covered. It is centred on the
-       picture instead, and it swings a little on its post the way a hung sign does. */
+    /* THE TITLE IS ONE SCENE (claude/titlescene, 2026-10-09). The sign hangs across the top of the picture, whole (it ran off the
+       left edge), with the tagline CARVED INTO ITS OWN FOOT instead of floating on the art; the menu is a wayside board on two posts
+       that stands on the same road as the camp, so it belongs to the picture, not pasted over it; the camp moved left to make
+       room, so the board covers neither the gate nor the knight. No footer: the board says what you can pick. */
     const since = pressCard ? 0 : Math.max(0, time - titleSince), e = easeOutBack(Math.min(1, since / 0.7));
     if (pressAt !== null && !pressCard && time - pressAt < 0.4) TC.drawPressText(g, text, UI, time, VW, VH, Math.max(0, 1 - (time - pressAt) / 0.4), touchOn);
-    const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(10 - (1 - e) * 70 + sway);
-    const lw = 196, lh = Math.round(PROP.plank.height * 1.4), tcx = Math.round((VW - 146) / 2), lx = Math.round(tcx - lw / 2);
+    const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(2 - (1 - e) * 70 + sway);
+    const lw = 192, lh = 38, tcx = Math.round(VW / 2), lx = Math.round(tcx - lw / 2);
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
-    text('BRACKEN', tcx + 2, ly + 14, '#3a2214', 'center', 22); text('BRACKEN', tcx, ly + 12, UI.gold, 'center', 22);
+    text('BRACKEN', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second BRACKEN 2px off it is what textfit calls a collision) */
     // a glint runs along the letters every few seconds
     { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
-    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; text('a knight, a wood, a mountain', tcx, ly + 40, UI.text, 'center', 6); g.globalAlpha = 1; }
-    // the menu, on its own board to the right of the picture
-    { const items = titleItems(), mw = 138, mx = VW - mw - 8, mh = items.length * 13 + 24, my = Math.min(74, VH - 16 - mh);
+    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a knight, a wood, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
+    // the menu: a board on two posts, standing on the road to the right of the camp
+    { const items = titleItems(), n = items.length, RH = Math.min(11, Math.floor(96 / n)), mw = 126, mx = VW - mw - 16, mh = n * RH + 20, my = VH - 22 - 8 - mh;
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 160);   /* (160: at 140 a sliver of the board showed at the right edge while the press card was up) */
-      panel(mx + ox, my, mw, mh);
-      const want = my + 6 + titleI * 13; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
-      g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, mw - 8, 12); g.fillStyle = UI.sel; g.fillRect(mx + ox + 4, Math.round(titleBarY) - 2, 2, 12);
-      items.forEach((k, i) => { TCH.hit(mx + ox + 4, my + 4 + i * 13, mw - 8, 13, () => { titleI = i; confirmPress = true; initAudio(); }); const sel = i === titleI, yy = my + 6 + i * 13, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
-        g.globalAlpha = a; text(k, mx + ox + 16 + (sel ? 2 : 0), yy, sel ? UI.title : UI.dim, 'left'); g.globalAlpha = 1;
-        if (sel) { const bob = Math.round(Math.sin(time * 6) * 1.5), cxs = mx + ox + 8 + bob; g.fillStyle = '#c9d1dc'; g.fillRect(cxs, yy + 3, 5, 1); g.fillStyle = '#e0b040'; g.fillRect(cxs + 5, yy + 1, 1, 5); g.fillStyle = '#7a4a2a'; g.fillRect(cxs + 6, yy + 3, 2, 1); } });
+      const bx = mx + ox, by0 = my + mh;
+      for (const px of [bx + 12, bx + mw - 17]) { const ph = VH - 22 - by0 + 2;
+        g.fillStyle = '#3a2214'; g.fillRect(px, by0 - 2, 5, ph); g.fillStyle = '#5c3a1d'; g.fillRect(px + 1, by0 - 2, 3, ph); g.fillStyle = '#6a4626'; g.fillRect(px + 1, by0 - 2, 1, ph);
+        g.fillStyle = '#3a2214'; g.fillRect(px - 1, VH - 25, 7, 3); }
+      g.fillStyle = '#2a1a0e'; g.fillRect(bx, my, mw, mh); g.fillStyle = '#5c3a1d'; g.fillRect(bx + 1, my + 1, mw - 2, mh - 2); g.fillStyle = '#8a6a3a'; g.fillRect(bx + 1, my + 1, mw - 2, 1);
+      g.fillStyle = '#14101e'; g.fillRect(bx + 3, my + 3, mw - 6, mh - 6); g.fillStyle = '#2a1a0e'; g.fillRect(bx + 3, my + 3, mw - 6, 1); g.fillRect(bx + 3, my + 3, 1, mh - 6);
+      g.fillStyle = '#c9b27c'; for (const [nx, ny] of [[2, 2], [mw - 3, 2], [2, mh - 3], [mw - 3, mh - 3]]) g.fillRect(bx + nx, my + ny, 1, 1);   /* the four nails */
+      const y0 = my + 7, want = y0 + titleI * RH; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
+      g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(bx + 5, Math.round(titleBarY) - 1, mw - 10, RH - 1); g.fillStyle = UI.sel; g.fillRect(bx + 5, Math.round(titleBarY) - 1, 2, RH - 1);
+      items.forEach((k, i) => { TCH.hit(bx + 4, y0 + i * RH - 1, mw - 8, RH, () => { titleI = i; confirmPress = true; initAudio(); }); const sel = i === titleI, yy = y0 + i * RH, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
+        g.globalAlpha = a; text(k, bx + 17 + (sel ? 2 : 0), yy, sel ? UI.title : UI.dim, 'left'); g.globalAlpha = 1;
+        if (sel) { const bob = Math.round(Math.sin(time * 6) * 1.5), cxs = bx + 9 + bob; g.fillStyle = '#c9d1dc'; g.fillRect(cxs, yy + 3, 5, 1); g.fillStyle = '#e0b040'; g.fillRect(cxs + 5, yy + 1, 1, 5); g.fillStyle = '#7a4a2a'; g.fillRect(cxs + 6, yy + 3, 2, 1); } });
       // what waits in the save you would continue
       const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sv[lv.id] && sv[lv.id].cleared).length : 0;
-      g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(mx + ox + 6, my + mh - 14, mw - 12, 1);
+      g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(bx + 8, my + mh - 13, mw - 16, 1);
       text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
-        mx + ox + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
-    if (since > 1.2) text(touchOn ? 'tap an item' : 'ARROWS choose   Z or X enter   ESC settings', VW / 2, 169, UI.dim, 'center', 6);
+        bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 
   if (state === 'slots') drawSlots();

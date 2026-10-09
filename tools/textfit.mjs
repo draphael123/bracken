@@ -34,7 +34,7 @@ import { openPage, ROOT } from './cdp.mjs';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'mapcard', 'death', 'results', 'card', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -180,6 +180,7 @@ async function pageTextFit(input) {
   /* UI POLISH B (claude/uiscreens, 2026-10-06): the first-run opening's four panels, the PRESS ANY KEY card, the map's info card on every node (with the fullest save, the widest numbers),
      the death card for every kind of killer (the longest names), and the level-complete card. */
   if (want('opening')) { BK.ui.openingStart(); for (let i = 0; i < 4; i++) frame('opening #' + i, () => { BK.state = 'opening'; BK.ui.opening.i = i; BK.ui.opening.t = 1; }, { settle: 2 }); BK.state = 'title'; await yieldNow(); }
+  if (want('title')) { frame('title scene', () => { BK.state = 'title'; BK.ui.pressCard = false; }, { settle: 120 }); BK.state = 'title'; await yieldNow(); }   /* THE TITLE SCENE (claude/titlescene): the sign, its tagline and the menu board, every line measured */
   if (want('press')) { frame('press card', () => { BK.state = 'title'; BK.ui.pressCard = true; }, { settle: 3 }); BK.ui.pressCard = false; BK.state = 'title'; await yieldNow(); }
   if (want('mapcard')) { const pr = BKT.PROG, keep = JSON.stringify(pr);
     for (const [l] of campaign) { pr[l.id] = { cleared: true, medal: 3, silver: 7, best: 3599, gold: 999, total: 999, quest: true, noHit: true, iron: true, allGold: true }; }
