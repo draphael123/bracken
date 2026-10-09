@@ -32,19 +32,19 @@ try { for (const h of heroes) {
      for(n=0;n<60*12&&!(Math.abs(m().y-hi*TS)<2);n++){quiet();BK.sim(1);}
      for(let i=0;i<60&&!(P().ground&&!P().onMover&&on(hi));i++){clear();k.right=true;quiet();BK.sim(1);}clear();settle(10);out.scope=on(hi)&&P().x>45*TS;}
     // ---- FACE ----
-    {const O=F.outer,crown=L.towerFloors[6],sill=crown.bot-3;BK.tp(58,sill-1);settle(30);out.faceStart=on(sill);let got=0;
+    {const O=F.outer,crown=L.towerFloors[6],sill=crown.bot;BK.tp(14,sill-1);settle(30);walkTo(10*TS+8);out.faceStart=on(sill)&&P().x<12*TS;let got=0;
      /* a player reads the flags: he waits for the wind to drop before a jump, and if a gust or a strike costs him a plank he climbs on from where he is */
      let best=-1,tries=0;for(;tries<40&&best<O.ledges.length-1;tries++){const c=O.ledges.findIndex(q=>on(q[2])&&P().x>q[0]*TS-2&&P().x<(q[0]+q[1])*TS+2);best=Math.max(best,c);const T=O.ledges[c+1];if(!T)break;
-       const near=(T[0]*TS+T[1]*TS/2)>P().x?1:-1,cur=c>=0?O.ledges[c]:null,lip=cur?(near>0?(cur[0]+cur[1])*TS-6:cur[0]*TS+6):(near>0?(O.x0+6)*TS-6:P().x);
+       const near=(T[0]*TS+T[1]*TS/2)>P().x?1:-1,cur=c>=0?O.ledges[c]:null,lip=cur?(near>0?(cur[0]+cur[1])*TS-6:cur[0]*TS+6):(near>0?P().x:(O.x1+1)*TS+6);
        walkTo(lip);for(let w=0;w<240&&F.rt.gust.st!=='calm';w++){quiet();BK.sim(1);}hop(T);}
      got=O.ledges.findIndex(q=>on(q[2])&&P().x>q[0]*TS-2&&P().x<(q[0]+q[1])*TS+2)+1;out.tries=tries;
      out.face=got;out.faceN=O.ledges.length;}
     // ---- SNAP ----
     {const ch=()=>BK.movers().find(q=>q.role==='chunk'),top=F.outer.ledges[F.outer.ledges.length-1];
-     walkTo(top[0]*TS+6);clear();k.left=true;k.jump=true;BK.press('jump');for(let i=0;i<90&&P().onMover!==ch();i++){quiet();BK.sim(1);if(i>18)k.jump=false;}clear();out.chunk=P().onMover===ch();
+     const tw=ch().x>P().x?1:-1;walkTo(tw>0?(top[0]+top[1])*TS-6:top[0]*TS+6);clear();k[tw>0?'right':'left']=true;k.jump=true;BK.press('jump');for(let i=0;i<90&&P().onMover!==ch();i++){quiet();BK.sim(1);if(i>18)k.jump=false;}clear();out.chunk=P().onMover===ch();
      for(let i=0;i<60*8&&!(F.rt.snap.st==='done');i++){quiet();BK.sim(1);}out.snap=F.rt.snap.st;settle(10);
-     walkTo(ch().x+8);clear();k.jump=true;BK.press('jump');let minY=P().y;out.tr=[];for(let i=0;i<90;i++){quiet();k.left=i>=8;BK.sim(1);minY=Math.min(minY,P().y);if(i%3===0)out.tr.push([i,Math.round(P().x),Math.round(P().y),P().ground?1:0,P().onMover?1:0]);if(i>18)k.jump=false;if(i>6&&P().ground&&!P().onMover)break;}out.minY=Math.round(minY);clear();settle(6);   /* (up first, then over: the parapet is a slab with the crown's air under it) */
-     out.parapet=on(L.skyRow+1)&&P().x<44*TS;out.end=[Math.round(P().x),Math.round(P().y),L.skyRow,!!P().onMover];walkTo(37*TS);out.ringX=Math.round(P().x/TS);}
+     const pd=28*TS>ch().x+ch().w/2?1:-1;walkTo(pd>0?ch().x+ch().w-8:ch().x+8);clear();k.jump=true;BK.press('jump');let minY=P().y;out.tr=[];for(let i=0;i<90;i++){quiet();k[pd>0?'right':'left']=i>=8;BK.sim(1);minY=Math.min(minY,P().y);if(i%3===0)out.tr.push([i,Math.round(P().x),Math.round(P().y),P().ground?1:0,P().onMover?1:0]);if(i>18)k.jump=false;if(i>6&&P().ground&&!P().onMover)break;}out.minY=Math.round(minY);clear();settle(6);   /* (up first, then over: the parapet is a slab with the crown's air under it) */
+     out.parapet=on(L.skyRow+1)&&P().x>=28*TS-4&&P().x<44*TS;out.end=[Math.round(P().x),Math.round(P().y),L.skyRow,!!P().onMover];walkTo(37*TS);out.ringX=Math.round(P().x/TS);}
     S.speed=sp0;return out;})()`, 900000);
   rows.push(r); console.log(JSON.stringify(r)); } } finally { pg.close(); }
 for (const r of rows) {

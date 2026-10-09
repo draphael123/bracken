@@ -25,7 +25,7 @@ export const FT2 = {
   flare: { period: 4.4, smoulder: 1.1, burn: 1.0, dmg: 10, h: 26 },
   syrup: { cap: 40 },
   tilt: { level: 1.2, tell: 0.9, lean: 2.8, sp: 46, chestSp: 64, chestDmg: 12, chestW: 14 },
-  gust: { first: 2.0, calm: 3.4, tell: 1.3, blow: 1.6, push: 70 },
+  gust: { first: 2.0, calm: 3.4, tell: 1.3, blow: 1.6, push: 52 },   /* (the face is eight tiles wide: a gust shoves, it does not throw you off it unbraced in one) */
   bolt: { first: 3.0, every: 4.6, tell: 1.3, half: 12, dmg: 18 },
   scope: { period: 7.0, w: 40, hold: 0.2 },
   snap: { tell: 1.4, secs: 2.8 },
@@ -149,6 +149,7 @@ export function ftDraw(g, L, P, cx, cy, time, T, movers) {
   for (const z of F.syrup || []) { const x0 = Math.round(z.x0 * TS - cx), w = (z.x1 - z.x0 + 1) * TS, y = Math.round(z.row * TS - cy); if (x0 > VW || x0 + w < 0 || y < -20 || y > VH + 20) continue;
     g.fillStyle = C.syrup[0]; g.fillRect(x0, y - 2, w, 3); g.fillStyle = C.syrup[1]; g.fillRect(x0 + 1, y - 2, w - 2, 1); for (let i = 0; i < w; i += 7) { const ph = (time * 1.4 + i * 0.13) % 1; g.fillStyle = C.syrup[2]; g.fillRect(x0 + i + 2, y - 3 - Math.round(ph * 4), 1, 1); } }
   for (const [tx, ty] of F.fizz || []) { const x = Math.round(tx * TS - cx), y = Math.round(ty * TS - cy); if (x < -20 || x > VW + 20 || y < -30 || y > VH + 30) continue;
+    g.fillStyle = '#2e2a3a'; g.fillRect(x, y, 16, 16); g.fillStyle = '#4a4458'; g.fillRect(x, y + 4, 16, 1);   /* the stone the fizz spilled on (over the engine's springy-cap tile) */
     g.fillStyle = C.fizz[0]; g.fillRect(x, y, 16, 4); g.fillStyle = C.fizz[1]; g.fillRect(x + 1, y, 14, 2); for (let i = 0; i < 3; i++) { const ph = (time * 2 + i * 0.33) % 1; g.fillStyle = C.fizz[2]; g.fillRect(x + 3 + i * 5, y - Math.round(ph * 10), 2, 2); } }
   // ---- THE TREASURY'S FLOOR: the gold on it, the arrows of its lean, the chests ----
   if (F.tilt) { const Z = F.tilt, Tq = R.tilt, y = Math.round(Z.row * TS - cy), x0 = Math.round(Z.x0 * TS - cx), x1 = Math.round((Z.x1 + 1) * TS - cx);

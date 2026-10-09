@@ -25,7 +25,9 @@ assert.deepEqual(order, ['teach', 'gallery', 'stair', 'landing', 'deck', 'crown'
    under his spells, and they stand in the stair tower */
 assert.ok(C.some(c => c.kind === 'spiral') && C.filter(c => c.kind === 'spiral').every(c => c.x0 >= L.spiral.x0 && c.x1 <= L.spiral.x1), 'the spiral stair has failing steps, and they are in the spiral stair');
 assert.equal(floorOf(C.find(c => c.kind === 'teach').row).name, 'THE LIBRARY STACKS', 'the rule is taught on the first floor');
-assert.ok(C.filter(c => c.kind === 'stair').length >= 5 && new Set(C.filter(c => c.kind === 'stair').map(c => c.chain)).size === 1, 'the failing stair is one chain of five or more');
+/* (claude/fallingtower2, a DESIGN CHANGE - Daniel's 'every floor its own trick': THE OBSERVATORY's telescope is the stair's middle) the failing stair is TWO short
+   chains, one under the telescope and one over it - a single chain would fail the steps over it while you ride. Four or more steps, each chain failing from its foot */
+assert.ok(C.filter(c => c.kind === 'stair').length >= 4 && new Set(C.filter(c => c.kind === 'stair').map(c => c.chain)).size === 2 && L.moversExtra.some(m => m.role === 'scope'), 'the failing stair is two chains of four or more steps round the telescope');
 for (const c of C) for (let x = c.x0; x <= c.x1; x++) assert.notEqual(at(x, c.row), T.AIR, c.kind + ': a failing section is built as floor');
 // ---- SAFE (C5): under every section that is not the way on, footing within reach that does not hurt, and the climb back ----
 const deadly = (x, y) => (L.pools || []).some(p => p.deadly && x * 16 >= p.x0 && x * 16 < p.x1 && y * 16 >= p.y - 16 && y * 16 <= p.bottom);

@@ -76,7 +76,8 @@ assert.ok(F.flares.length >= 2 && F.flares.every(q => L.towerFloors[0].top <= q.
   const r = rig({ x: 30 * TS, y: lib.bot * TS }); L.towerFloors[0].done = L.towerFloors[1].done = true; r.step(); assert.equal(F.lean, 2 * FT2.lean.perFloor, 'the tower does not lean as its floors fall'); L.towerFloors[0].done = L.towerFloors[1].done = false; }
 // ---- OUTSIDE ----
 { const O = F.outer; assert.ok(O && O.ledges.length >= 7 && O.ledges.every(([x0, len, row]) => at(x0, row) === T.PLANK), 'no outer face of planks');
-  const crown = L.towerFloors[6]; assert.ok(at(TOWER.X1 + 1, crown.bot - 4) === T.AIR && at(TOWER.X1 + 2, crown.bot - 4) === T.AIR, 'no breach in the crown\'s east wall');
+  const crown = L.towerFloors[6]; assert.ok(at(TOWER.X0 - 1, crown.bot - 2) === T.AIR && at(TOWER.X0 - 2, crown.bot - 2) === T.AIR && at(TOWER.X0 - 2, crown.bot) === T.SOLID, 'no breach in the crown west wall, or no sill under it');
+  for (let y = 6; y <= 12; y++) assert.equal(at(O.x0 + 2, y), T.SOLID, 'the outer face cut the desert sand at row ' + y);
   const [lx, llen, lrow] = O.ledges[3], r = rig({ x: (lx + 2) * TS, y: lrow * TS });
   let tellAt = -1, blowAt = -1; r.run(20, () => { const G = F.rt.gust; if (G.st === 'tell' && tellAt < 0) tellAt = r.log.t; if (G.st === 'blow' && r.log.push !== 0) { blowAt = r.log.t; return true; } });
   assert.ok(tellAt >= 0 && blowAt - tellAt >= FT2.gust.tell - 0.05 && r.log.calls.some(([, s]) => /WIND/.test(s)), 'the wind shoves without its tell: ' + [tellAt, blowAt]);
@@ -90,7 +91,7 @@ assert.ok(F.flares.length >= 2 && F.flares.every(q => L.towerFloors[0].top <= q.
   ftMover(L, m, 1 / 60, s.log.t);
   assert.ok(tellT >= 0 && rideT - tellT >= FT2.snap.tell - 0.05 && s.log.calls.some(([, c]) => /BREAKS IN TWO/.test(c)), 'the snap goes untold');
   assert.ok(Math.abs(m.x - ch.bx) < 1 && Math.abs(m.y - ch.by) < 1, 'the chunk does not carry you to the parapet: ' + [m.x, m.y, ch.bx, ch.by]);
-  assert.ok(m.y / TS - (TOWER.SKY + 1) <= 2 && ch.bx / TS - 43 <= 1, 'from where the chunk stops, the parapet is not a step up'); }
+  assert.ok(m.y / TS - (TOWER.SKY + 1) <= 2 && Math.abs((ch.bx + ch.w) / TS - 28) <= 1, 'from where the chunk stops, the parapet is not a step up'); }
 // ---- REACH: the outside is the way ----
 { const ring = L.ents.find(e => e.t === 'ringdoor'), R = floodReach(L, T, { rides: true });
   assert.ok(R.jumpNear(ring.x, ring.y), 'the fill does not climb to his ring');

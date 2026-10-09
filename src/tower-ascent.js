@@ -25,6 +25,11 @@
 //                                        room rights itself and drops you on the gallery. (L.mage must stay set: MG is
 //                                        what makes a glyph turn the room over - main.js setFlip, the glyph prop.)
 //   rows 266-299 1 THE LIBRARY STACKS    shelves to the ceiling, a plank stair between them; the TOMES are met here
+// FALLING TOWER 2 (claude/fallingtower2, Daniel 10-08; src/tower-fall2.js): THE COLLAPSE CHASES YOU (faster floors, debris on told shadows, cracks up
+// the walls), EVERY FLOOR ITS OWN TRICK (the library's books burn; the orrery cage is THE OBSERVATORY - its dome turns, its telescope is a ride; the
+// burst cistern is THE ALCHEMY LAB - syrup slows, fizz throws, stones four wide; over the bell frame THE TREASURY's floor tilts and its chests slide),
+// THE TOWER LEANS (half a degree a fallen floor; the library floor buckled), and the crown's stair is gone: out through THE BREACH onto THE OUTER
+// FACE in the storm (wind, lightning, the drop) and up to THE SNAP - the wall's broken crown carries you across to the parapet and his ring.
 // FAILING STONE (src/tower-collapse.js, docs/briefs/falling-tower-rework.md): cracked sections that count 3-2-1 under your weight and go,
 // then come back. Taught on the library stair, the way down into the orrery pit, its failing stair, the pendulum's first landing,
 // the Sexton's bell deck, and one ledge in four of the crown's last climb.
@@ -300,28 +305,32 @@ export function buildTowerAscent({ painter, T, TS }) {
   // ---- 7. THE OPEN CROWN. The roof is gone. Broken ledges up the last floor to the parapet, and the carpet. ----
   { const F = floors[6];
     spine(F, 12);
-    /* (fallingtower2) THE STAIR IS GONE above its first tier: the crown's inside is open air to the parapet, and the way on is OUT - through a
-       BREACH in the east wall onto THE OUTER FACE (scaffolding in the storm, between the tower and his stair tower), and at its top THE SNAP */
-    for (const [x0, len, row] of F.tiers.slice(1)) rect(x0, x0 + len - 1, row, row, T.AIR);
-    F.tiers.length = 1;   /* (claude/archmage3, Daniel 10-04: "remove the ice section") its every fourth ledge was the Sunspire's CRYSTAL - pale blue glass that crazed
+    /* (fallingtower2) THE STAIR IS GONE: the crown's inside is open air to the parapet, and the way on is OUT - through a
+       BREACH in the WEST wall onto THE OUTER FACE (planks in the storm, over the world's edge), and at its top THE SNAP */
+    for (const [x0, len, row] of F.tiers) rect(x0, x0 + len - 1, row, row, T.AIR);
+    F.tiers.length = 0;   /* (all of it: the crown's inside is one broken floor, walked west to the breach) */   /* (claude/archmage3, Daniel 10-04: "remove the ice section") its every fourth ledge was the Sunspire's CRYSTAL - pale blue glass that crazed
                        under you, the one piece of ice in the live tower. It is the crown's own slate now; the failing stone below is the crown's hazard */
     /* THE CROWN IS BREAKING UP (use 6 of the failing stone, the last climb before the sky): one ledge in four is failing stone on a
        shorter count. The rule at its hardest, where the tower is most gone - and a fall is one tier, never the floor. */
-    { const O = { x0: 62, x1: 77, y0: SKY + 1, drop: F.bot + 4 }, [tx0, tlen, trow] = F.tiers[0];
-      rect(X1 + 1, X1 + 2, trow - 4, trow - 1, T.AIR);                   /* THE BREACH: the wall blown out over the first tier's end */
-      rect(O.x0, O.x1, 0, O.drop + 4, T.AIR);                            /* the open air between the two towers, and THE DROP under it */
-      rect(X1 + 1, X1 + 2, SKY - 4, SKY + 2, T.AIR);                     /* the wall's top is broken off where the chunk will go */
-      rect(X1 - 2, O.x0 + 6, trow, trow, T.SOLID);                       /* the breach's sill, out onto the face */
-      O.ledges = [[63, 6, trow - 3], [70, 7, trow - 6], [63, 6, trow - 9], [70, 7, trow - 12], [63, 6, trow - 15], [70, 7, trow - 18], [63, 6, trow - 21], [70, 7, trow - 24], [63, 6, trow - 27]];
+    /* THE OUTER FACE IS ON THE WEST: the tower's west face, over the world's own edge (between the Falling Tower and his stair tower, east, is his
+       stair tower's rock - tools/tower-chase.mjs). The crown's floor runs west to THE BREACH in the west wall; the wall's top is its sill; the face
+       is open air from the merlons down to THE DROP, planks pegged into the stone up it, and at its top the wall's broken crown is THE CHUNK */
+    { const O = { x0: 1, x1: X0 - 4, y0: SKY - 4, drop: F.bot + 4 }, flr = F.bot;
+      rect(X0 - 3, X0 - 1, flr - 4, flr - 1, T.AIR);                    /* THE BREACH: the wall blown out at the crown's floor (its foot is the sill) */
+      rect(O.x0, O.x1, SKY - 4, O.drop + 4, T.AIR);                      /* the open air over the world's edge, and THE DROP under it (the desert's sand is far over it, untouched) */
+      rect(X0 - 3, X0 - 1, SKY - 4, SKY + 5, T.AIR);                     /* the wall's top is broken off where the chunk sits */
+      O.ledges = [[6, 3, flr - 3], [2, 3, flr - 6], [6, 3, flr - 9], [2, 3, flr - 12], [6, 3, flr - 15], [2, 3, flr - 18], [6, 3, flr - 21], [2, 3, flr - 24], [6, 3, flr - 27]];
       for (const [x0, len, row] of O.ledges) ledge(x0, len, row, T.PLANK);
-      F.outerLedges = O.ledges; ft.outer = O;
-      ent('sign', X1 - 3, trow - 1, { text: 'THE STAIR IS GONE: OUT THROUGH THE BREACH AND UP THE OUTER FACE.' }); ent('sign', X1 + 4, trow - 1, { text: 'THE FLAGS SHOW THE WIND. A PALE COLUMN IS LIGHTNING.' });
-      { const [x0, len, row] = O.ledges[7]; ent('check', x0 + (len >> 1), row - 1); }   /* the last checkpoint before the sky: up the outer face, out of his fight's sight */
-      for (const [t, j] of [['apprentice', 2], ['armour', 5]]) { const [x0, len, row] = O.ledges[j]; foe(t, x0 + (len >> 1), row - 1, { face: -1 }); }
-      /* THE SNAP: the loose chunk of the crown over the top of the face - stand on it and the tower breaks in two, and it carries you across to the parapet */
-      const top = O.ledges[O.ledges.length - 1], ax = (X1 - 3) * TS, ay = (SKY + 2) * TS, bx = 44 * TS, by = (SKY + 2) * TS;   /* (it comes to rest level with where it broke off: the parapet a row over it) */
-      ft.movers.push({ kind: 'ft2', ft2: true, role: 'chunk', ax, ay, bx, by, lift: 10, x: ax, y: ay, w: 6 * TS, h: 22 });
-      ft.rigBands.push([44, X1 + 2, SKY + 2, SKY + 2]); void top; }
+      /* THE CROWN BREAKING UP (the failing stone's last use, its hardest): one plank of the face is cracked and goes on a short count - a fall is one plank */
+      { const [x0, len, row] = O.ledges[5]; crumbles.push({ x0, x1: x0 + len - 1, row, count: 2.5, kind: 'crown' }); }
+      ft.outer = O;
+      ent('sign', X0 + 2, flr - 1, { text: 'THE STAIR IS GONE: OUT THROUGH THE BREACH AND UP THE OUTER FACE.' }); ent('sign', X0 - 3, flr - 1, { text: 'THE FLAGS SHOW THE WIND. A PALE COLUMN IS LIGHTNING.' });
+      { const [x0, len, row] = O.ledges[8]; ent('check', x0 + 1, row - 1); }   /* the last checkpoint before the sky: up the outer face, out of his fight's sight */
+      for (const [t, j] of [['apprentice', 3], ['armour', 6]]) { const [x0, len, row] = O.ledges[j]; foe(t, x0 + (len >> 1), row - 1, { face: 1 }); }
+      /* THE SNAP: the wall's broken crown over the top of the face - stand on it and the tower breaks in two, and it carries you across to the parapet */
+      const top = O.ledges[O.ledges.length - 1], ax = (X0 - 3) * TS, ay = (SKY + 4) * TS, bx = 22 * TS, by = (SKY + 2) * TS;   /* (it comes to rest a row under the parapet's end) */
+      ft.movers.push({ kind: 'ft2', ft2: true, role: 'chunk', ax, ay, bx, by, lift: 14, x: ax, y: ay, w: 6 * TS, h: 22 });
+      ft.rigBands.push([X0 - 3, 27, SKY + 2, SKY + 4]); void top; }
     rect(28, 43, SKY + 1, SKY + 1, T.SOLID);                              /* THE PARAPET WALK, three over the last tier: the carpet waits over it */
     ent('check', 30, F.bot - 1); ent('sign', 26, F.bot - 1, { text: 'THE CROWN. THE ROOF IS GONE. HIS RING STANDS OPEN ON THE PARAPET: HE WENT THROUGH IT.' });
     /* THE LAST CHECKPOINT BEFORE HIM IS ON THE CROWN'S LAST CLIMB, two tiers under the parapet (round 2, docs/briefs/falling-tower-round2.md
@@ -334,6 +343,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     const who = ['imp', 'apprentice', 'bat', 'armour', 'tome', 'apprentice', 'haunt', 'imp', 'tome', 'bat', 'armour'];
     F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row));
     for (const [t, x, y] of [['tome', 30, F.bot - 6], ['haunt', 40, F.bot - 12], ['bat', 24, F.bot - 18]]) foe(t, x, y);   /* the open crown's air: the flyers keep to its floor (tower-flyers) */
+    for (const [t, x] of [['armour', 26], ['apprentice', 18]]) foe(t, x, F.bot - 1, { face: 1 });   /* and its broken floor, walked west to the breach, is held */
   }
   /* THE SEAMS between floors, where a screen was empty: books over the cistern's poison, the gallery's top, the loft's floor, the crown's parapet */
   for (const [t, x, y] of [['tome', 28, floors[4].bot - 6], ['tome', 42, floors[4].bot - 7], ['tome', 26, floors[3].top + 3], ['broom', 50, floors[3].top + 2], ['turret', 14, floors[3].bot - 1],

@@ -21,8 +21,8 @@ export const STUCK = {
     { id: 'ft-orrery-b', zone: [94, 84, 99, 86], at: [98, 86], off: { orrery: 'B' }, line: "THE ORRERY'S OUTER WORLD IS THE WAY ON UP" },
     /* (claude/fallingtower2) THE OBSERVATORY'S TELESCOPE (the failing stair's middle), THE BREACH out of the crown, and THE SNAP's loose chunk */
     { id: 'ft-scope', zone: [36, 205, 48, 213], mover: { role: 'scope' }, off: { role: 'scope' }, glint: 'stall', line: 'THE TELESCOPE SWINGS UP TO THE NEXT LANDING' },
-    { id: 'ft-breach', zone: [44, 76, 59, 83], at: [61, 80], glint: 'stall', line: 'THE STAIR IS GONE: THE BREACH IN THE WALL IS THE WAY' },
-    { id: 'ft-chunk', zone: [56, 50, 70, 56], mover: { role: 'chunk' }, off: { role: 'chunk' }, line: 'THE LOOSE CHUNK OF THE CROWN IS THE WAY ACROSS' },
+    { id: 'ft-breach', zone: [12, 76, 40, 83], at: [10, 81], glint: 'stall', line: 'THE STAIR IS GONE: THE BREACH IN THE WALL IS THE WAY' },
+    { id: 'ft-chunk', zone: [1, 52, 9, 57], mover: { role: 'chunk' }, off: { role: 'chunk' }, line: 'THE LOOSE CHUNK OF THE CROWN IS THE WAY ACROSS' },
   ],
   welltown: [   /* (claude/djinn2) THE BINDING WORKS: down the old well, down the sluice to the conduit, and the sealed door to his hall (claude/djinn3: the bellows vent between, and 40 columns on) */
     { id: 'wt-old-well', zone: [498, 18, 522, 27], at: [520, 29], glint: 'stall', line: 'THE OLD WELL IS THE WAY ON: DOWN ITS ROPE' },

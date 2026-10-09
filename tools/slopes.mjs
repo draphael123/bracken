@@ -320,7 +320,7 @@ function walkAcross(Y, dir, dt, extra = {}) {
 // ================= 3. THE REACH RULE =================
 {
   out.push('THE REACH RULE (src/reach-slopes.js)');
-  const passthrough = LEVELS.filter(l => !(l.hidden && !l.secret)).slice(0, QUICK ? 3 : 27).every(lv => { const L = lv.build(); return slopeReachGrid(L, T) === L; });
+  const passthrough = LEVELS.filter(l => !(l.hidden && !l.secret)).slice(0, QUICK ? 3 : 27).every(lv => { const L = lv.build(); return levelHasSlopes(L.grid) || slopeReachGrid(L, T) === L; });   /* (claude/fallingtower2: the Falling Tower is in the first 27 and has slopes now - its buckled floors; a level WITH slopes is not one this asks about) */
   ok(passthrough, 'a level with no slopes comes back as the same object: reachcore sees today\'s grid');
   /* PHASE 2 (docs/slopes-integration.md §5). src/reachcore.js now wraps its own level in slopeReachGrid on the first
      line of floodReach, and tools/caravan-level.mjs and tools/draft-level.mjs ALREADY wrapped theirs before calling it,
