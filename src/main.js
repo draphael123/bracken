@@ -174,7 +174,7 @@ import * as GHD from './great-hound.js';   /* THE GREAT HOUND's own rules (claud
 import { bakeHoundMaster } from './redraw/hunt.js';
 import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_F } from './redraw/prince.js';
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
-import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN } from './level.js';
+import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS } from './level.js';
 import { floodReach } from './reachcore.js';
 import { updateMageChase, drawRingDoor, inSpiral, newStairFx, updateStairFx, drawStairFx, drawOrrery, ORRERY as STAIR_ORRERY } from './spiral-chase.js';
 import { drawActs as drawMageActs } from './archmage-acts.js';   /* (claude/archmage3) THE UNDEAD ARCHMAGE's ward, and his phase changes, drawn */   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
@@ -288,6 +288,8 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
     for (const lv of LEVELS) if (!lv.hidden && PROG[lv.id] && PROG[lv.id].cleared) d[lv.id] = 1;
     if (PROG.charm) PROG.charmOf[h] = PROG.charm; }
+  /* THE UNBURIED FIELD'S BANNERS (claude/unburiedsecret): the road used to open on a silver medal at the Witchlight Stair. A save that had it open (silver or better there, or the field cleared) keeps it - once, so a fresh profile that earns silver later still needs its banners */
+  if (!PROG.bannerMig) { PROG.bannerMig = 1; const w = PROG.witchlight || {}; if ((w.medal || 0) >= 2 || (PROG.unburied && PROG.unburied.cleared)) PROG.fieldOpen = 1; }
   /* a secret wood cleared before secret woods counted: credit it to the hero carrying the save, once */
   for (const lv of LEVELS) if (lv.secret && PROG[lv.id] && PROG[lv.id].cleared && !Object.values(PROG.done || {}).some(dd => dd && dd[lv.id])) { const hh = PROG.hero || 'knight'; PROG.done[hh] = PROG.done[hh] || {}; PROG.done[hh][lv.id] = 1; }
   /* THE LEVEL CAME TO BE XP (xpVersion 1). A hero's level was the woods he had walked; it is his XP now (src/xp.js). Every hero keeps
@@ -1774,6 +1776,7 @@ const swimQ = [], darkQ = [];
    of turning to mush between them. Treading is always the eased angle chasing zero: upright at rest. */
 const SWIM_TILT_MAX = Math.PI / 2, SWIM_TILT_STEP = Math.PI / 12, SWIM_TILT_EASE = 10;
 let silvers = []; // the three silver coins of the level: { x, y, i, got }
+let lostBanners = [];   /* THE LOST BANNER of this level, if it hides one (claude/unburiedsecret): { x, y, id, got, ph }; owned ones are PROG.lostBanners[id] */
 let marks = new Set(); // world changes that persist through death: 'tree:x' felled, 'pool:x0' drained, 'cat:x' wrecked, 'ferry:x0' paid, 'cage:x' opened
 function resetPools() { for (const p of (L.pools || [])) if (p.y0 !== undefined) { p.y = p.y0; p.shallow = p.shallow0; p.depth = p.depth0; p.draining = false; p.dry = false; p.frogDry = false; } } /* a pond the King drained is full again on the retry */
 // re-apply the persistent world changes to a freshly restored grid; true if any tile changed
@@ -2101,12 +2104,13 @@ function* loadLevelG(i) {
   if (miniDone && L.mini && L.mini.gate !== undefined && !L.unburied) { for (let ty = 0; ty < LH; ty++) { const j = ty * LW + L.mini.gate; if (L.grid[j] === T.PORT) L.grid[j] = T.AIR; } }
   grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); mending = []; marks = new Set(); straysGot = new Set(); strayLast = null; for (const p of (L.pools || [])) { p.y0 = p.y; p.shallow0 = p.shallow; p.depth0 = p.depth; } tileSpr = new Array(LW * LH).fill(null); resolveTiles();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
-  acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
+  acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = []; lostBanners = [];
   for (const e of L.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
     if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
     if (e.t === 'sign') signs.push({ x: px, y: py, text: e[hero()] || e.text }); // a sign speaks to the hero reading it
     if (e.t === 'silver') silvers.push({ x: px, y: py - 6, i: silvers.length, got: false, ph: Math.random() * 6 });
+    if (e.t === 'lostbanner') lostBanners.push({ x: px, y: py - 8, id: e.id, got: !!(PROG.lostBanners || {})[e.id], ph: Math.random() * 6 });
     if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
     if (e.t === 'gate') gate = { x: px, y: py };
   }
@@ -4221,7 +4225,15 @@ const MEDAL_RANK = { bronze: 1, silver: 2, gold: 3 };
 const medalMet = (id, rank) => { const p = PROG[id]; return !!(p && (p.medal || 0) >= rank); };
 const opensLocked = lv => { const o = lv.opensOn; if (!o) return false; if (PROG[lv.id] && PROG[lv.id].cleared) return false; if (o.time) { const b = (PROG[o.level] || {}).best; return !(b !== undefined && b !== null && b <= o.time); }   /* a TIME threshold: the junction's best clear must be at or under it (seconds), independent of its medal times */
   if (!o.medal) return !(PROG[o.level] && PROG[o.level].cleared); return !medalMet(o.level, MEDAL_RANK[o.medal] || o.medal); };   /* NO medal named = open once the junction level is CLEARED (any time): the class levels' own roads (Daniel 10-07: a silver-time gate left THE BURNING VILLAGE unreachable on the map in a normal run) */
-const levelLocked = lv => !godMode() && (!!lv.locked || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
+/* THE UNBURIED FIELD IS A SECRET (claude/unburiedsecret, Daniel 10-08): no medal opens it. THREE LOST BANNERS do - one hidden off the road in each of THE HEXED FIELDS,
+   THE BURIAL CAVERNS and THE WITCHLIGHT STAIR (PROG.lostBanners[levelId], saved per profile). A save that already opened or cleared the field keeps it (PROG.fieldOpen,
+   set once by progDefaults' bannerMig, and `cleared` as always). */
+const bannersOwned = () => Object.keys(LOST_BANNERS).filter(id => (PROG.lostBanners || {})[id]).length;
+const bannersLocked = lv => !!lv.secretBanners && bannersOwned() < Object.keys(LOST_BANNERS).length && !PROG.fieldOpen && !(PROG[lv.id] && PROG[lv.id].cleared);
+function takeLostBanner(b) { b.got = true; PROG.lostBanners = PROG.lostBanners || {}; PROG.lostBanners[b.id] = 1; const n = bannersOwned(), all = n >= Object.keys(LOST_BANNERS).length; saveProgress();
+  { const cr = ['booDrift', 'haunt', 'bellow'].find(k => typeof SFX[k] === 'function'); if (cr) SFX[cr](); else SFX.sting(); } number(b.x, b.y - 18, 'LOST BANNER ' + n + '/' + Object.keys(LOST_BANNERS).length, '#c9463d'); burst(b.x, b.y, 10, ['#8f2f28', '#c9463d', '#5a1a18'], 50, 0.7, -24, 1); ringAt(b.x, b.y, 18, '#c9463d', 0.5);
+  if (all) { hintMsg = 'THE FIELD REMEMBERS'; hintT = 6; number(b.x, b.y - 32, 'THE FIELD REMEMBERS', '#c8b6ff'); } }
+const levelLocked = lv => !godMode() && (!!lv.locked || (bannersLocked(lv) && !q.get('unlock')) || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
 
 // ---------- world map ----------
 // Five sheets stacked into one tall canvas: the Desert on top, then the road inland, the coast, the crags, the wood at the
@@ -4298,7 +4310,7 @@ const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l 
   { id: 'witchlight', kind: 'level', level: LEVELS.findIndex(l => l.id === 'witchlight'), x: 159, y: 43, plate: 'below', name: 'THE WITCHLIGHT STAIR' },   /* the road up the tower hill, between the caverns and the Folly (batch 4c) */
   { id: 'mage', kind: 'level', level: LEVELS.findIndex(l => l.id === 'mage'), x: 208, y: 64, plate: 'left', name: "THE MAGE'S FOLLY" },
   { id: 'fallingtower', kind: 'level',level:LEVELS.findIndex(l=>l.id==='fallingtower'),x: 260, y: 34, plate: 'above',name:'THE FALLING TOWER'},
-  { id: 'unburied', kind: 'level', level: LEVELS.findIndex(l => l.id === 'unburied'), x: 142, y: 47, spur: true, name: 'THE UNBURIED FIELD' }]; /* (y 47: claude/mapspace left it at y 43, exactly level with the Witchlight junction, so the walkable branch's up/down had no side to point at; above the junction is full of plates now, so it hangs just below it and DOWN walks onto it) */   /* the Death Knight's class level, a side road off THE WITCHLIGHT STAIR (map-redesign §4.2). APPENDED LAST so every older node keeps its index (saves) */   /* the tower on the hill over the fields: the road climbs to it */   /* the farms under the Archmage's hill: on the road, past Waymeet's spur */   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
+  { id: 'unburied', kind: 'level', level: LEVELS.findIndex(l => l.id === 'unburied'), x: 142, y: 47, spur: true, ghost: true, name: 'THE UNBURIED FIELD' }]; /* (y 47: claude/mapspace left it at y 43, exactly level with the Witchlight junction, so the walkable branch's up/down had no side to point at; above the junction is full of plates now, so it hangs just below it and DOWN walks onto it) */   /* the Death Knight's class level, a side road off THE WITCHLIGHT STAIR (map-redesign §4.2). APPENDED LAST so every older node keeps its index (saves) */   /* the tower on the hill over the fields: the road climbs to it */   /* the farms under the Archmage's hill: on the road, past Waymeet's spur */   /* the hunt, the quarry pass, the frostfell and the sky ship are gone from the road (their builders are benched) */
 /* WAYMEET, REDRAWN (map-redesign §6, 2b). The old polyline walked out to Waymeet and back over the same two points -
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
@@ -4324,7 +4336,7 @@ const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.
 /* THE SPUR OFF A JUNCTION, if it declares one (opensOn.level === nd.id). Any future class level just declares its
    own opensOn and this finds it - nothing here names 'burning' or 'unburied'. The Undercrown has no
    opensOn (it gates on needsKills, unchanged), so they are never returned here and stay panel-only. */
-const spurAt = id => NODES.find(n => n.spur && n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].opensOn && LEVELS[n.level].opensOn.level === id);
+const spurAt = id => NODES.find(n => n.spur && n.kind === 'level' && LEVELS[n.level] && ((LEVELS[n.level].opensOn && LEVELS[n.level].opensOn.level === id) || LEVELS[n.level].spurOf === id) && !nodeSecret(n));   /* (a secret spur nobody has earned is not a spur yet: no step onto it, no tip) */
 const spurReqText = lv => { const o = lv.opensOn; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
   const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();
   return 'BEAT ' + nm + ' IN ' + fmt(t) + ' TO OPEN THIS ROAD'; };
@@ -4334,6 +4346,7 @@ const spurTip = lv => { const o = lv.opensOn, p = PROG[o.level] || {}, j = NODES
 const raiseTip = nd => { mapTip.id = nd.id; mapTip.t = 6; };
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
+let ghostPathT = 0, ghostT0 = null;   /* how much of the Unburied Field's ghost-path has drawn itself (0..1; PROG.fieldPathDrawn once seen whole) */
 /* A LEVEL THAT LEADS ON (LEVELS leadsTo, claude/archmage3: THE FALLING TOWER's portal takes you to the desert): won, the map puts you on the next node of the road, not back on this one */
 const leadOn = li => { const to = LEVELS[li] && LEVELS[li].leadsTo, k = to ? LEVELS.findIndex(l => l.id === to) : -1; return k >= 0 && NODES.some(n => n.level === k) && !(LEVELS[k].needs && !(PROG[LEVELS[k].needs] && PROG[LEVELS[k].needs].cleared)) ? k : li; };
 function gotoLevelNode(li) { const k = NODES.findIndex(n => n.level === li); map.node = Math.max(0, k); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id; }
@@ -4509,7 +4522,7 @@ function mapPos() { const nd = NODES[map.node];
 const secretHost = lv => lv && (lv.needsTime ? lv.needsTime.id : lv.needsKills ? lv.needsKills.id : null);
 const secretShown = nd => { const h = nd.kind === 'level' ? secretHost(LEVELS[nd.level]) : null;
   return !!(h && (PROG[h] || {}).cleared); };
-const nodeSecret = nd => nd.kind === 'level' && !!LEVELS[nd.level].hidden && nodeLocked(nd) && !secretShown(nd);
+const nodeSecret = nd => nd.kind === 'level' && ((!!LEVELS[nd.level].hidden && nodeLocked(nd) && !secretShown(nd)) || (!!LEVELS[nd.level].secretBanners && nodeLocked(nd)));   /* (the Unburied Field before its three banners: not a node at all, only drawMap's dim spot) */
 // AND WHAT IT ASKS FOR, in one line. The kill gate is said as a FRACTION of whatever is in there,
 // because that is how it is stored and how it survives the garrison being retuned under it.
 function secretWants(lv) {
@@ -4547,13 +4560,13 @@ function mapGo(dir) {
    Returns true when it handled the press, so updateMap's difficulty toggle does not also fire on that keypress. */
 function branchStep(dir) {
   const nd = NODES[map.node];
-  if (nd.spur) { const lv = nd.kind === 'level' ? LEVELS[nd.level] : null, o = lv && lv.opensOn; if (!o) return false;
+  if (nd.spur) { const lv = nd.kind === 'level' ? LEVELS[nd.level] : null, o = lv && (lv.opensOn || (lv.spurOf && { level: lv.spurOf })); if (!o) return false;
     const j = NODES.find(n => n.id === o.level); if (!j || dir !== (nd.y < j.y ? 1 : -1)) return false;   /* only the direction back the way in: the opposite of the one that led here */
     map.node = NODES.indexOf(j); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
     PROG.mapNode = map.node; PROG.mapNodeId = j.id; SFX.uiSel(); return true; }
   const child = spurAt(nd.id); if (!child) return false;
   if (dir !== (child.y < nd.y ? -1 : 1)) return false;
-  if (nodeLocked(child)) { SFX.buzz(); raiseTip(child); return true; }   /* the requirement text is drawn continuously at this junction (drawMap); no popup to lose */
+  if (nodeLocked(child)) { SFX.buzz(); if (LEVELS[child.level].opensOn) raiseTip(child); return true; }   /* the requirement text is drawn continuously at this junction (drawMap); no popup to lose */
   map.node = NODES.indexOf(child); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
   PROG.mapNode = map.node; PROG.mapNodeId = child.id; SFX.uiSel(); return true;
 }
@@ -4624,6 +4637,15 @@ function drawMap() {
        chimney and Waymeet's rooftops are the only fires on the map worth a wisp, so this is three or four
        particle spawns a frame at most, using the same drifting-puff particle the store already had. */
     for (const id of ['store', 'highstore', 'chandler', 'waymeet']) { const sn = nd(id); if (sn && Math.random() < (id === 'waymeet' ? 0.35 : 0.5)) parts.push({ x: sn.x + (id === 'waymeet' ? -6 : 3) + camX, y: sn.y - (id === 'waymeet' ? 14 : 22) + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); } }
+  /* THE UNBURIED FIELD, A SECRET (claude/unburiedsecret): before its three banners it is a DIM UNMARKED SPOT in the hills - no path, no node, no lock, no tip, nothing to press.
+     Once it is open a faint GHOST-PATH draws itself from the Witchlight Stair to it (once; PROG.fieldPathDrawn remembers) and it is a node like any spur. */
+  for (const nd of NODES) { if (!nd.ghost) continue;
+    if (nodeSecret(nd)) { ghostPathT = 0; ghostT0 = null; g.globalAlpha = 0.2; g.fillStyle = '#120c1c'; g.beginPath(); g.ellipse(nd.x, nd.y, 6, 3, 0, 0, 7); g.fill(); g.globalAlpha = 0.12 + 0.05 * Math.sin(time * 1.3); g.fillStyle = '#c8b6ff'; g.fillRect(nd.x - 1, nd.y - 1, 2, 1); g.globalAlpha = 1; continue; }
+    const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === LEVELS[nd.level].spurOf)); if (!jn) continue;
+    if (PROG.fieldPathDrawn) ghostPathT = 1; else { if (ghostT0 === null) ghostT0 = time; ghostPathT = Math.min(1, (time - ghostT0) / 3); if (ghostPathT >= 1) { PROG.fieldPathDrawn = 1; saveProgress(); } }
+    const dx = nd.x - jn.x, dy = nd.y - jn.y, len = Math.hypot(dx, dy) || 1, upto = len * ghostPathT;
+    for (let d = 7; d < Math.min(len - 6, upto); d += 4) { g.globalAlpha = 0.32 + 0.16 * Math.sin(time * 3 + d); g.fillStyle = '#c8b6ff'; g.fillRect(Math.round(jn.x + dx * d / len), Math.round(jn.y + dy * d / len), 2, 2); }
+    if (ghostPathT < 1) { g.globalAlpha = 0.8; g.fillStyle = '#ffffff'; g.fillRect(Math.round(jn.x + dx * upto / len), Math.round(jn.y + dy * upto / len), 2, 2); } g.globalAlpha = 1; }
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;               /* it is not on the map until you have earned it */
     TCH.hit(nd.x - 13, nd.y - Math.round(mapCamY) - 15, 26, 28, () => mapTap(nd));
@@ -25639,6 +25661,7 @@ function updateProps(dt) {
   if (embers.length) updateEmbers(dt);
   if (meteors.length || fireRings.length || lanceBeams.length || moons.length) updateSkillFx(dt);
   for (const s of silvers) if (!s.got && !P.dead && !SET.invincible && Math.abs(s.x - P.x) < 13 && Math.abs(s.y - (P.y - 7)) < 15) { s.got = true; const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].silver = (PROG[id].silver || 0) | (1 << s.i); saveProgress(); const n = silvers.filter(q => q.got).length; SFX.medal(); SFX.sting(); number(s.x, s.y - 18, 'SILVER ' + n + '/' + silvers.length, '#dfe8ff'); burst(s.x, s.y, 12, ['#dfe8ff', '#ffffff'], 60, 0.6, -30, 1); ringAt(s.x, s.y, 20, '#dfe8ff', 0.4); slowT = 0.3; }
+  for (const b of lostBanners) if (!b.got && !P.dead && Math.abs(b.x - P.x) < 14 && Math.abs(b.y - (P.y - 7)) < 20) takeLostBanner(b);   /* THE THREE LOST BANNERS (claude/unburiedsecret) */
   for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || callerCalm())) continue; const G = gustNow(z), on = G.on, soon = G.tell >= 0, zd = G.dir;
     if (z.told) { const near = !P.dead && P.x > z.x0 - 260 && P.x < z.x1 + 260 && P.y > z.y0 - 120 && P.y < z.y1 + 120; if (soon && !z.rose && near) { z.rose = true; SFX.gustRise(); } if (!soon) z.rose = false; }   /* THE TOLD GUST's whistle, once a build-up, heard before you are in it */
     if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y <= z.y1 + 4) { if (!z.current) { windFx.dir = zd; windFx.on = on; windFx.soon = !on && soon; windFx.k = z.k || 1; windFx.t = 0.2; }
@@ -28204,6 +28227,10 @@ function drawWorld(cx, cy, showPlayer) {
   if (gate) g.drawImage(PROP.gate, gate.x - 24 - cx, gate.y - 52 - cy);
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10 && ((time * 0.7 + a.ph) % 3) < 0.18) { const gx = Math.round(a.x - cx) + 2, gy = Math.round(a.y - 4 + Math.sin(time * 4 + a.ph) * 1.5 - cy) - 4; g.fillStyle = '#fff6c8'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); } // a glint now and then
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
+  for (const b of lostBanners) if (b.x > cx - 16 && b.x < cx + VW + 16) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy), sw = Math.round(Math.sin(time * 2.2 + b.ph) * 1.2); g.globalAlpha = b.got ? 0.3 : 1;   /* a torn standard on a broken pole (claude/unburiedsecret) */
+    if (!b.got) { g.globalAlpha = 0.18 + 0.1 * Math.sin(time * 3 + b.ph); g.fillStyle = '#c9463d'; g.beginPath(); g.arc(bx, by - 2, 12, 0, 7); g.fill(); g.globalAlpha = 1; }
+    g.fillStyle = '#5c3a1d'; g.fillRect(bx - 1, by - 8, 2, 16); g.fillStyle = '#3a2214'; g.fillRect(bx - 1, by + 7, 2, 1);
+    g.fillStyle = '#8f2f28'; g.fillRect(bx + 1, by - 8, 8 + sw, 3); g.fillRect(bx + 1, by - 5, 7 + sw, 3); g.fillRect(bx + 1, by - 2, 4 + sw, 2); g.fillStyle = '#5a1a18'; g.fillRect(bx + 8 + sw, by - 6, 1, 2); g.fillRect(bx + 4 + sw, by, 1, 2); g.fillStyle = '#c9463d'; g.fillRect(bx + 3, by - 7, 2, 1); g.globalAlpha = 1; }
   for (const s of silvers) if (s.x > cx - 12 && s.x < cx + VW + 12) { if (s.got) { g.globalAlpha = 0.22; g.drawImage(PROP.silverBig[0], s.x - 6 - cx, Math.round(s.y - 7) - cy); g.globalAlpha = 1; } else { g.globalAlpha = 0.28 + 0.16 * Math.sin(time * 5 + s.ph); g.fillStyle = '#dfe8ff'; g.beginPath(); g.arc(Math.round(s.x - cx), Math.round(s.y - 2 - cy), 11, 0, 7); g.fill(); g.globalAlpha = 1; g.drawImage(PROP.silverBig[Math.floor(time * 6 + s.ph) % 4], s.x - 6 - cx, Math.round(s.y - 7 + Math.sin(time * 4 + s.ph) * 1.5) - cy); } }
   for (const b of bossBodies) { const k = Math.min(1, b.t / b.dur), shake = Math.round((1 - k) * 3 * Math.sin(b.t * 60)), flash = k < 0.6 && Math.floor(b.t * 10) % 2 === 0;
     drawSet(b.set, null, b.frame, b.x - cx + shake, b.y - cy + Math.round(k * k * 10), b.face, flash, b.big, b.big * (1 - 0.18 * k), 1 - Math.max(0, (k - 0.65) / 0.35), b.face * k * 0.45);
@@ -30781,7 +30808,7 @@ if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start
 if (q.get('chase') === 'demo') { chaseDemo(q.get('hero')); }   /* THE PLAYTEST CHASE DEMO: ?chase=demo[&hero=<id>] (docs/PLAYTEST.md), never saved */
 window.BK.levelJump = (id, h, campaign) => levelJump(id, h, campaign); Object.defineProperty(window.BK, 'campaignTag', { get: () => campaignTag });
 window.BK.villageWater = { levelTime: v => { if (v !== undefined) levelTime = v; return levelTime; }, arc: () => P.carry && P.carry.t === 'vbucket' ? waterArc(P.carry) : null, ward: e => pyroWard(e) };   /* (claude/burnvillage2) tools/village-water.mjs: the level's clock the town's blaze runs on, a carried water's told arc */
-window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.mapTip = () => ({ id: mapTip.id, t: mapTip.t, lines: mapTip.id ? spurTip(LEVELS[NODES.find(n => n.id === mapTip.id).level]) : null }); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
+window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.banners = () => ({ owned: Object.keys(LOST_BANNERS).filter(id => (PROG.lostBanners || {})[id]), live: lostBanners.map(b => ({ id: b.id, x: b.x, y: b.y, got: b.got })), all: bannersOwned() >= Object.keys(LOST_BANNERS).length, pickup: id => { const b = lostBanners.find(q => q.id === id); if (b && !b.got) takeLostBanner(b); return !!b; } }); window.BK.mapGhost = () => ({ shown: ghostPathT, done: !!PROG.fieldPathDrawn }); window.BK.mapTip = () => ({ id: mapTip.id, t: mapTip.t, lines: mapTip.id ? spurTip(LEVELS[NODES.find(n => n.id === mapTip.id).level]) : null }); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)), secret: NODES.map(n => !!nodeSecret(n)), ghost: NODES.map(n => !!n.ghost) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();

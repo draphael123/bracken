@@ -142,6 +142,19 @@ for (const r of REGIONS) for (const n of r.nodes) { if (!n.spur || !r.path.lengt
   assert(stub > SPUR_MIN && stub < SPUR_MAX, r.name + ': ' + n.id + ' is ' + stub.toFixed(1) + 'px off its junction, wanted ' + SPUR_MIN + '-' + SPUR_MAX);
   if (next !== undefined) assert(next > stub * 1.15, r.name + ': ' + n.id + "'s next-nearest road point (" + next.toFixed(1) + 'px) is too close to its stub (' + stub.toFixed(1) + 'px) — the NODE_AT junction can flip under a later polyline edit'); }
 
+// 6b. A SECRET SPUR IS A DEFINED STATE (claude/unburiedsecret: THE UNBURIED FIELD). A node flagged ghost is drawn as a dim unmarked spot with NO baked stub and NO
+//    locked tip until its banners are owned, then a ghost-path is drawn from its junction: so it must (a) be a spur of a level that declares secretBanners and names
+//    its junction (spurOf) as a real road node of the SAME region, (b) have no opensOn (a medal road would draw a tip), (c) sit clear of the road - the dim spot may
+//    not read as road or sit under another node - and (d) be the ONLY kind of node that is ghost (no level quietly hides itself this way).
+for (const r of REGIONS) for (const n of r.nodes) { const lv = LEVELS[n.level];
+  if (!n.ghost) { assert(!(lv && lv.secretBanners), n.id + ' declares secretBanners but its node is not ghost: the map would draw a stub and a tip to a secret'); continue; }
+  assert(n.spur, n.id + ': a ghost node must be a spur');
+  assert(lv && lv.secretBanners && lv.spurOf && !lv.opensOn, n.id + ': a ghost node needs a level with secretBanners + spurOf and no opensOn');
+  const jn = r.nodes.find(q => q.id === lv.spurOf && !q.spur); assert(jn, n.id + ': its junction ' + lv.spurOf + ' is not a road node of the same region');
+  const gap = Math.hypot(jn.x - n.x, jn.y - n.y); assert(gap >= 8 && gap <= 25, n.id + ': ghost-path from the junction is ' + gap.toFixed(1) + 'px, wanted 8-25');
+  const nearest = Math.min(...r.path.map(p => Math.hypot(p[0] - n.x, p[1] - n.y))); assert(nearest >= 8, n.id + ': the dim spot is ' + nearest.toFixed(1) + 'px from the road - it would read as road');
+  for (const q of r.nodes) if (q !== n && !q.spur) assert(Math.hypot(q.x - n.x, q.y - n.y) >= 12, n.id + ': the dim spot sits under node ' + q.id); }
+
 // 7. mapToSaved's LEGACY EXCLUSION LIST NAMES REAL NODES. It reconciles an old numeric PROG.mapNode save against
 //    nodes added since by dropping the ones that would shift the index — an id in that list which is no longer
 //    in NODES is dead weight nobody will notice; a node added since without being added there is the failure

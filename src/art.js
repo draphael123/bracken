@@ -2278,7 +2278,7 @@ export function bakeWorldMap(w, h, regions, connectors) { const [c, g] = canvas(
     /* THE SPURS. An optional level hangs OFF the road on a short dashed branch instead of standing in it, so that a
        glance at the map says which way is on and which way is a choice. The junction is the nearest point of this
        region's own road; the dashes are laid by hand because a pixel map has no business with setLineDash. */
-    for (const nd of (r.nodes || [])) { if (!nd.spur || !r.path || !r.path.length) continue;
+    for (const nd of (r.nodes || [])) { if (!nd.spur || nd.ghost || !r.path || !r.path.length) continue;   /* (a ghost spur - THE UNBURIED FIELD, a secret - has no baked stub: main.js draws its ghost-path once it is open) */
       let j = r.path[0]; for (const p of r.path) if (Math.hypot(p[0] - nd.x, p[1] - nd.y) < Math.hypot(j[0] - nd.x, j[1] - nd.y)) j = p;
       const dx = nd.x - j[0], dy = nd.y - j[1], len = Math.hypot(dx, dy) || 1;
       for (let d = 3; d < len - 2; d += 5) { const px0 = r.x + j[0] + dx * d / len, py0 = r.y + j[1] + dy * d / len;

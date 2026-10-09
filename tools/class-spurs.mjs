@@ -16,7 +16,7 @@ try {
   const r = await pg.evalp(`(async()=>{
     const {LEVELS} = await import('/src/level.js');
     const idx = id => LEVELS.findIndex(l=>l.id===id);
-    const wipe = () => { for (const id of ['stockade','burning','witchlight','unburied']) delete BKT.PROG[id]; };
+    const wipe = () => { for (const id of ['stockade','burning','witchlight','unburied']) delete BKT.PROG[id]; delete BKT.PROG.lostBanners; delete BKT.PROG.fieldOpen; BKT.PROG.bannerMig = 1; };
     /* THE JUMP TO A NODE. gotoLevelNode(levelIndex) runs off the game's own 'return to map' path (BK.load then a
        confirm off gameover), so this is not a shortcut invented for the test - it is the same door the game uses
        every time a level ends, and it leaves PROG.mapNodeId set to the node's own id (main.js's gotoLevelNode). */
@@ -53,9 +53,16 @@ try {
     press('ArrowUp');
     out.migOpen = BKT.PROG.mapNodeId;
 
-    // MIGRATION 2: a save that already holds silver (or better) on the parent opens the never-played spur at once
+    // THE UNBURIED FIELD IS NOT A MEDAL ROAD ANY MORE (claude/unburiedsecret): a gold medal on the Witchlight Stair does nothing, the field is a SECRET
+    // (a dim spot, no step, no tip - tools/unburied-secret.mjs has the full state table); the three lost banners open it, and the press then walks it.
     wipe();
     BKT.PROG.witchlight = { cleared: true, medal: 3 };
+    out.wGoldAt = goTo('witchlight');
+    press('ArrowDown');
+    out.wGold = BKT.PROG.mapNodeId;
+    wipe();
+    BKT.PROG.witchlight = { cleared: true, medal: 1 };
+    BKT.PROG.lostBanners = { fields: 1, burial: 1, witchlight: 1 };
     out.wAt = goTo('witchlight');
     press('ArrowDown')   /* claude/mapspace moved the Unburied Field BELOW its junction (map y 47 vs the Witchlight Stair's 43): down walks onto it, up walks back */;
     out.wOpen = BKT.PROG.mapNodeId;
@@ -80,10 +87,11 @@ try {
   assert.equal(r.migAt, 'stockade', 'gotoLevelNode did not land on the Stockade for the migration case');
   assert.equal(r.migOpen, 'burning', 'an old save that already cleared the Burning Village was re-locked by the new medal rule');
   assert.equal(r.wAt, 'witchlight', 'gotoLevelNode did not land on the Witchlight Stair');
-  assert.equal(r.wOpen, 'unburied', 'a save already holding silver on the Witchlight Stair did not open the Unburied Field at once');
+  assert.equal(r.wGold, 'witchlight', 'a gold medal on the Witchlight Stair opened the Unburied Field: the medal rule is gone, only the three lost banners open it');
+  assert.equal(r.wOpen, 'unburied', 'a save holding the three lost banners did not open the Unburied Field');
   assert.equal(r.wBack, 'witchlight', 'pressing back off the Unburied Field did not return to the Witchlight Stair');
   assert.equal(r.bronzeAt, 'stockade', 'gotoLevelNode did not land on the Stockade for the bronze case');
   assert.equal(r.bronzeTry, 'stockade', 'a Stockade clear with no sub-5:00 time opened the Burning Village (the time is what opensOn asks for)');
   assert.deepEqual(pg.errors, []);
-  console.log('Class-level side roads: walkable from their junction, shut until the Stockade is beaten in under 5:00 (the Witchlight Stair under its silver medal), open after, and both migration cases (an old cleared spur, an already-silver parent) stay open with no extra step.');
+  console.log('Class-level side roads: walkable from their junction, shut until the Stockade is beaten in under 5:00 (the Unburied Field is a banner-gated secret, tools/unburied-secret.mjs), open after, and the old-cleared-spur migration stays open with no extra step.');
 } finally { pg.close(); }

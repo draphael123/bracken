@@ -7730,6 +7730,11 @@ function follyLibrary(L0, ret) {
    while belonging in the middle of the road. If you are writing anything that asks "which level comes before this
    one", READ `needs`, NEVER THE ROW ABOVE. Two tools did it the other way and measured six of 28 levels against a
    level they do not follow (tools/curve.mjs, tools/one-new-foe.mjs; docs/AGENT-HANDOFF.md, EXPENSIVE LESSONS). */
+/* THE THREE LOST BANNERS (claude/unburiedsecret): torn regimental standards of the battle nobody buried, one in each of THE HEXED FIELDS, THE BURIAL CAVERNS
+   and THE WITCHLIGHT STAIR, off the main route in a nook every hero reaches on base moves (tools/unburied-secret.mjs proves it). Together they open THE UNBURIED FIELD.
+   One clearly commented ent per level, added here so the levels' own builders (other lanes edit them) are untouched; src/main.js picks the pickup up. */
+const withBanner = (build, id, x, y) => (...a) => { const L = build(...a); L.ents.push({ t: 'lostbanner', id, x, y }); return L; };
+export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [249, 76] };
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: "FELL THE PINE FOR A BRIDGE. THE QUEEN'S STING STICKS IN WOOD.", build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -7768,9 +7773,9 @@ export const LEVELS = [
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'causeway' },   /* the causeway again: Stormwreck Harbor is out of the campaign (Daniel, 2026-09-20: 'it offers nothing new') */
   { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
   /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
-  { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: theHexedFields, needs: 'fair' },
+  { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: withBanner(theHexedFields, 'fields', ...LOST_BANNERS.fields), needs: 'fair' },
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
-  { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'LIGHT THE GAS. THE DEAD WILL NOT RISE IN ITS LIGHT.', build: ()=>burialCaverns({painter,T,TS}), needs: 'fields' },
+  { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'LIGHT THE GAS. THE DEAD WILL NOT RISE IN ITS LIGHT.', build: withBanner(()=>burialCaverns({painter,T,TS}), 'burial', ...LOST_BANNERS.burial), needs: 'fields' },
   { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'witchlight' },   /* (batch 4c: the Witchlight Stair is the road up to it now) */
   { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. CRACKED STONE GOES AFTER THREE BEATS, AND HIS DARK RISES UP HIS STAIR UNDER YOU.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage', leadsTo: 'caravan' },   /* (claude/archmage3, Daniel 10-04) beating him, his portal TAKES YOU TO THE DESERT: the map walks you on into THE SUNKEN CARAVAN (main.js, the win card) */
   /* THE BURNING VILLAGE (batch 5): the Pyromancer's class level, off the Stockade on the road to Sporewood. Appended here, not
@@ -7783,7 +7788,7 @@ export const LEVELS = [
   { id: 'burning', name: 'THE BURNING VILLAGE', sub: 'the goblins came down the road', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT. GET THE VILLAGE OUT.', build: ()=>buildBurningVillage({painter,T,TS}), needs: 'stockade', classFor: 'pyro', opensOn: { level: 'stockade', time: 300 } },
   /* THE WITCHLIGHT STAIR (batch 4c): the run up the tower's hill between the Burial Caverns and the Folly. Appended, like the
      village, so no index moves; the Folly needs it now */
-  { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: ()=>buildWitchlight({painter,T,TS}), needs: 'burial' },
+  { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: withBanner(()=>buildWitchlight({painter,T,TS}), 'witchlight', ...LOST_BANNERS.witchlight), needs: 'burial' },
   /* THE ORE ROAD (2026-09-23): the castle's supply line, a cableway over the gorge between Stormhold and Highcrown. Appended so no
      index moves; Highcrown needs it now */
   { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: 'skyroad' },   /* (claude/skyroad: THE SKY ROAD comes between it and Gale Moor now - Daniel 10-03, "right after Gale Moor") */
@@ -7791,7 +7796,7 @@ export const LEVELS = [
      Appended so no index moves; brief .claude/briefs/unburied-field.md, gate on hero 'reaper' via coinNeeds: 'unburied'
      in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
      that is Lane B's, per the Lane C report. */
-  { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS,grow}), needs: 'witchlight', classFor: 'reaper', opensOn: { level: 'witchlight', medal: 'silver' } },
+  { id: 'unburied', name: 'THE UNBURIED FIELD', sub: 'a battle nobody buried', rule: 'THE DEAD RISE WHEN A BANNER STANDS. CUT THE BEARERS OR FIGHT THE CROWD.', build: ()=>buildUnburiedField({painter,T,TS,grow}), needs: 'witchlight', classFor: 'reaper', spurOf: 'witchlight', secretBanners: true }   /* a SECRET (claude/unburiedsecret): no silver-medal rule; the three lost banners open it (src/main.js bannersLocked), the map shows a dim unmarked spot until then */,
   /* THE SUNKEN CARAVAN (lane Q, 2026-09-24): the first level of the desert, through the gold hole the Undead Archmage leaves when
      he falls. Appended so no index moves (the map's nodes and the saves count by index); brief .claude/briefs/sunken-caravan.md
      as amended by docs/briefs/sunken-caravan-amendments.md. Its boss, THE DUNE WORM, lives in the hollow at its end (claude/duneworm, docs/briefs/dune-worm.md) */
