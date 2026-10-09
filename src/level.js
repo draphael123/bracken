@@ -7088,6 +7088,11 @@ function theDrownedCauseway() {
   ent('check', 561, R - 1);
   sign(551, R - 1, 'THE ROAD GOES OUT INTO THE SEA AND STOPS. THE WATER AT THE END OF IT IS BREATHING.');
   coins([517, 23], [525, 23], [547, 23], [556, 23]);
+  /* THE TRIBUTE (claude/kraken2 art, Daniel's Q3: the premise taught in the world, and the approach that sets him up, B8): for a hundred years the
+     goblins left the deep its due on the last stones of the road. The table stands empty, the chest open, and a post with a mask on it that
+     nobody has fed. The sign says whose road this is now */
+  deco('tributeCairn', 557, R - 1, { v: 1 }); deco('tributeCairn', 563, R - 1);
+  sign(559, R - 1, 'THE GOBLINS PAID THE DEEP FOR A HUNDRED YEARS. THE SEA HAS COME TO COLLECT.');
 
   // ---------------- 8. THE KRAKEN'S REACH (x 566-609). The end of the road, and what lives off the end of it. ----------------
   block(566, 609, R, R + 1); for (let x = 567; x < 609; x += 8) block(x, x + 1, R + 2, 39);
@@ -7095,7 +7100,11 @@ function theDrownedCauseway() {
   ent('knell', 569, 19);
   block(584, 584, 22, 23); block(585, 589, 21, 23); block(590, 590, 22, 23);   /* the shrine plinth */
   ent('knell', 587, 20);   /* and the shrine's own bell: the tower's is thirty strides from where its head comes up */
-  block(597, 598, 23, 23); block(599, 606, 22, 23); for (let x = 599; x <= 606; x++) set(x, 21, T.PLANK);   /* the wreck she came in on */
+  block(597, 598, 23, 23);   /* the seaward waystone's pier */
+  /* THE WRECK SHE CAME IN ON, beached against the end of the road (claude/kraken2: it stood over the fourth arm's hole at 601, so that arm came up
+     THROUGH its hull, and a slam at a hero on its deck lay inside it, out of every blade's reach - the live fight could not be won). Its step,
+     its hull and its deck; he smashes it flat when he comes up against the end of the road for the last stage (src/main.js krakenWreck), and a new fight lays it again */
+  block(603, 603, 23, 23); block(604, 609, 22, 23); for (let x = 604; x <= 609; x++) set(x, 21, T.PLANK);
   deco('waystone', 583, R - 1); deco('waystone', 597, 22, { v: 1 });   /* on pier columns: the sea takes the road between the piers, never over one */
   block(610, W - 1, 0, 39);
   ent('kraken', 604, 20);   /* on the wreck's deck: it is in the sea past the end of the road until it wakes */
@@ -7157,7 +7166,7 @@ function theDrownedCauseway() {
     weather: [{ x0: 0, x1: 510 * TS, kind: 'rain' }, { x0: 510 * TS, x1: 99999, kind: 'mist' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'shore' }],
     arena: { x0: 566 * TS, x1: 610 * TS, floor: R * TS, y0: 4 * TS, trigger: 574 * TS, wallL: 565, wallR: 610, boss: 'kraken', music: 'kraken', tint: '#203a38', tintA: 0.12, fx: 'motes',
-      tower: 569 * TS + 8, plinth: [585 * TS, 590 * TS], stones: [583 * TS + 8, 597 * TS + 8], holes: [[578, 580], [594, 595]], rest: 604 * TS },   /* rest: where he is, out in the sea past the last stone - never a body on the road */
+      tower: 569 * TS + 8, plinth: [585 * TS, 590 * TS], stones: [583 * TS + 8, 597 * TS + 8], holes: [[578, 580], [594, 595]], wreck: [603, 609], rest: 604 * TS },   /* rest: where he is, out in the sea past the last stone - never a body on the road */
   };
 }
 

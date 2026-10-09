@@ -1,0 +1,24 @@
+== mash level
+causeway: level hash changed: carried the boss row(s) of the old hash (re-run the boss to refresh them: node tools/mash-bot.mjs <id> --write)
+causeway LEVEL L22 knight: lowest hp 0%, hp lost 497%, deaths 4, walked 100% of waypoints, 0 rides {}, 2 pulls, 4 boarding lifts, 41 lifts (3 HELD: put back by a room it could not finish), 31 blows taken
+causeway LEVEL L22 warden: lowest hp 0%, hp lost 706%, deaths 7, walked 100% of waypoints, 0 rides {}, 2 pulls, 1 boarding lifts, 41 lifts (12 HELD: put back by a room it could not finish), 50 blows taken
+causeway LEVEL L22 pyro: lowest hp 0%, hp lost 456%, deaths 4, walked 100% of waypoints, 1 rides {"vmover":1}, 3 pulls, 2 boarding lifts, 43 lifts (14 HELD: put back by a room it could not finish), 45 blows taken
+wrote docs/mash-bot.json
+errors []
+-- exit 0
+== mash boss
+causeway BOSS expected L22 knight#1: DEAD 55.6s, hero lost 100%, boss left 90%, 5/1814 blows
+causeway BOSS expected L22 knight#2: DEAD 53.1s, hero lost 100%, boss left 85%, 5/1726 blows
+causeway BOSS expected L22 warden#1: DEAD 67.3s, hero lost 100%, boss left 82%, 11/2353 blows
+causeway BOSS expected L22 warden#2: DEAD 67.3s, hero lost 100%, boss left 82%, 11/2354 blows
+causeway BOSS expected L22 pyro#1: DEAD 65.2s, hero lost 100%, boss left 72%, 13/2270 blows
+causeway BOSS expected L22 pyro#2: DEAD 65.2s, hero lost 100%, boss left 72%, 13/2270 blows
+wrote docs/mash-bot.json
+errors []
+-- exit 0
+== curve
+causeway (knight, fresh save, 3 runs summed): 59 hits taken, 8 deaths, 9 kills, walked 100% of the waypoints, 116 lifts (35597 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-kraken2\docs\level1-curve.json
+errors []
+-- exit 0
+STAMPDONE

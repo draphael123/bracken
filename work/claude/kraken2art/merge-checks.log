@@ -1,0 +1,22 @@
+== kraken-reach
+knight  lies 127 cut 127 limp 2 roots 11 drawn pts 4687  fails 0
+warden  lies 127 cut 127 limp 2 roots 11 drawn pts 4687  fails 0
+pyro    lies 127 cut 127 limp 2 roots 11 drawn pts 4687  fails 0
+kraken-reach: every arm, every phase, on reachable drawn road - ok
+== mark-integrity
+boss huntmaster     huntmaster|aimTell            !   seen 4, landed 4, posed 4/4 (px 393-686)
+boss huntmaster     huntmaster|volleyTell         !   seen 3, landed 3, posed 3/3 (px 388-669)
+boss greatdrill     (no marked windup seen in 40 s)
+
+1 PHANTOM(S):
+  undeadmage|markTell: PHANTOM POSE: the windup is drawn the same as the mode before it (0 px differ at most)
+== boss-greed
+{"wood":{"t":"queen","bossActive":true,"openShut":false,"heroShut":40,"roomShut":40,"heroRun":400,"heroBroken":60,"openOpen":true,"heroOpen":80,"greedBegan":4,"markUp":true,"hurtAfter":0.72,"hurt":14,"farMin":218.75534020561827,"hurtFar":0,"greedInOpen":false,"burn4s":12},"hurricane":{"t":"captain","bossActive":true,"openShut":false,"heroShut":16,"roomShut":40,"heroRun":160,"heroBroken":60,"openOpen":true,"heroOpen":80,"greedBegan":4,"markUp":true,"hurtAfter":0.72,"hurt":7,"farMin":220,"hurtFar":0,"greedInOpen":false,"burn4s":14},"lamplit":{"t":"tollmaster","bossActive":true,"openShut":false,"heroShut":2,"roomShut":28,"heroRun":20,"heroBroken":42,"openOpen":true,"heroOpen":80,"greedBegan":4,"markUp":true,"hurtAfter":0.72,"hurt":20,"farMin":220,"hurtFar":0,"greedInOpen":false,"burn4s":0},"spire":{"t":"abbot","bossActive":true,"openShut":false,"heroShut":2,"roomShut":40,"heroRun":20,"heroBroken":60,"openOpen":true,"heroOpen":80,"greedBegan":4,"markUp":true,"hurtAfter":0.72,"hurt":25,"farMin":219.5,"hurtFar":0,"greedInOpen":false,"burn4s":0},"theatre":{"t":"puppeteer","bossActive":true,"openShut":false,"heroShut":2,"roomShut":2,"heroRun":20,"heroBroken":3,"openOpen":true,"heroOpen":32,"greedBegan":4,"markUp":true,"hurtAfter":0.72,"hurt":13,"farMin":220,"hurtFar":0,"greedInOpen":false,"burn4s":7},"underleaf":{"t":"grandmother","bossActive":true,"openShut":false,"heroShut":2,"roomShut":40,"heroRun":20,"heroBroken":60,"openOpen":true,"heroOpen":40,"greedBegan":4,"markUp":true,"hurtAfter":0.72,"hurt":7,"farMin":219.70868924522256,"hurtFar":0,"greedInOpen":false,"burn4s":0},"burning":{"t":"pyromancer","bossActive":true,"openShut":false,"heroShut":40,"roomShut":40,"heroRun":260,"heroBroken":60,"openOpen":true,"heroOpen":60,"burn4s":12},"bosunMini":{"t":"bosun","heroBlow":2,"heroOpen":40,"greedBegan":4,"miniHit":34,"plainHit":26}}
+boss-greed: 43 bosses and 14 minis have a rule or a reason; the chip, the room's blow, the opening, the poise break, the own ward, the no-opening boss, the told reprisal, the burn and the mini all hold
+== blow-tags
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

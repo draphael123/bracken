@@ -1,0 +1,9 @@
+causeway: level hash changed: the old LEVEL row is dropped (it measured other data); re-run: node tools/mash-bot.mjs <id> --level <id> --write
+causeway BOSS expected L20 knight#1: DEAD 55.7s, hero lost 100%, boss left 84%, 6/1752 blows
+causeway BOSS expected L20 knight#2: DEAD 55.7s, hero lost 100%, boss left 84%, 6/1752 blows
+causeway BOSS expected L20 warden#1: DEAD 67.4s, hero lost 100%, boss left 83%, 11/2410 blows
+causeway BOSS expected L20 warden#2: DEAD 56.7s, hero lost 100%, boss left 86%, 9/1990 blows
+causeway BOSS expected L20 pyro#1: DEAD 60.2s, hero lost 100%, boss left 73%, 13/2119 blows
+causeway BOSS expected L20 pyro#2: DEAD 60.2s, hero lost 100%, boss left 73%, 13/2119 blows
+wrote docs/mash-bot.json
+errors []

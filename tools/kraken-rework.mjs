@@ -43,7 +43,7 @@ try {
    out.open.lookFree=look(false);out.open.lookCaused=look(true);
    /* the tower bell knells him once a stage; after that only the shrine's */
    const breathe=()=>{hush(e);e.mode='breath';e.modeT=9;e.knellHit=false;for(const q of BK.props())if(q.t==='knell')q.cool=0;};
-   /* (a bell struck stops the world a beat - hitstop - so each is given ten frames) */breathe();BK.krakRing(0);BK.sim(10);out.open.tower1=e.mode;breathe();BK.krakRing(0);BK.sim(10);out.open.tower2=e.mode;breathe();BK.krakRing(1);BK.sim(10);out.open.shrine=e.mode;
+   /* (a bell struck stops the world a beat - hitstop - and since claude/kraken2 its ring travels out to him (0.35 s) and knells him on arrival, so each is given forty frames) */breathe();BK.krakRing(0);BK.sim(40);out.open.tower1=e.mode;breathe();BK.krakRing(0);BK.sim(40);out.open.tower2=e.mode;breathe();BK.krakRing(1);BK.sim(40);out.open.shrine=e.mode;
    /* and the maw is reached: at its floor stage 2 turns, the spear and two new arms come */
    hush(e);e.hp=e.stageFloor;for(let i=0;i<600&&e.mode!=='stride3';i++)BK.sim(1);hush(e);out.open.maw=e.stage;
    const rg=()=>e.arms.filter(a=>a.regrown&&!a.severed);out.open.spear=e.arms.some(a=>a.spear&&!a.severed);out.open.regrown=rg().length;
@@ -56,7 +56,7 @@ try {
    /* seaward of the arm that has you, it still drags you on out to sea - not back to the arm */hold();P.x=a.bx+40;const x1=P.x;BK.sim(30);out.hit.draggedPast=Math.round(P.x-x1);
    hold();BK.sim(1);BK.press('dodge');BK.sim(3);out.hit.rolled=e.mode!=='held';
    hold();let f=0;for(;f<300&&e.mode==='held';f++)BK.sim(1);out.hit.heldS=+(f/60).toFixed(2);
-   hush(e);stand(569*TS+8);P.y=20*TS;/* up on the tower, out of its way: a sweep that lands stops the world a beat */const b=e.arms.find(q=>!q.severed&&q.st==='idle');e.armI=b.i;b.st='lower';e.sweepFrom=A.x0+20;e.sweepTo=A.x1-20;e.mode='sweepTell';e.modeT=0;for(let i=0;i<30&&e.mode!=='sweep';i++)BK.sim(1);let n=0;while(e.mode==='sweep'&&n<200){BK.sim(1);n++;}out.hit.sweepS=+(n/60).toFixed(2);}
+   hush(e);stand(569*TS+8);P.y=20*TS;/* up on the tower, out of its way: a sweep that lands stops the world a beat */const b=e.arms.find(q=>!q.severed&&q.st==='idle');e.armI=b.i;b.st='lower';/* from the bare road's end, where every sweep starts now (claude/kraken2: it rides up over the stone it meets, so one started inside the tower's footing came up over the hero standing on it) */const re=BKT.krkRoadEnds?BKT.krkRoadEnds():[A.x0+20,A.x1-20];e.sweepFrom=re[0];e.sweepTo=re[1];e.mode='sweepTell';e.modeT=0;for(let i=0;i<30&&e.mode!=='sweep';i++)BK.sim(1);let n=0;while(e.mode==='sweep'&&n<200){BK.sim(1);n++;}out.hit.sweepS=+(n/60).toFixed(2);}
   /* ---- THE INK (stage 2): told first, then a band of the road dark for ~3.5 s - never the hero's own tile, wherever he goes ---- */
   {const e=boot(),A=BK.L.arena,fl=A.floor,P=BK.P;out.ink={};stand(575*TS);
    e.T.ink=0;BK.sim(60);out.ink.stage1=!!(e.inkTell>0||e.inkT>0);
@@ -77,7 +77,8 @@ try {
   assert.equal(T.after, 2, 'the tide took a section');
   assert(T.hits >= 1 && T.swept, 'caught where it came: hit and swept');
   assert(T.carried > 20, 'the flooded road carries you out (' + T.carried + ' px)');
-  assert.equal(T.underCut, 0, 'an arm under the tide was cut');
+  /* B15 (Daniel 10-08, claude/kraken2): under the tide an arm takes B15's floor - a told fraction (UNDER THE TIDE), never nothing and never a whole cut */
+  assert(T.underCut > 0 && T.underCut <= Math.ceil(T.dryCut * 0.45), 'an arm under the tide took ' + T.underCut + ' of a dry ' + T.dryCut + ' (B15: a fraction, never nothing)');
   assert(T.dryCut > 0, 'an arm out of the tide could not be cut');
   assert.equal(T.rungTo, 1, 'a knell bell pushes the tide back a section');
   assert(T.line > T.stone, 'the tide takes the waystone the spear sticks in');

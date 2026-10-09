@@ -1,0 +1,5 @@
+causeway LEVEL L20 knight: lowest hp 0%, hp lost 333%, deaths 3, walked 100% of waypoints, 1 rides {"vmover":1}, 4 pulls, 2 boarding lifts, 48 lifts (18 HELD: put back by a room it could not finish), 31 blows taken
+causeway LEVEL L20 warden: lowest hp 0%, hp lost 500%, deaths 5, walked 100% of waypoints, 1 rides {"vmover":1}, 2 pulls, 2 boarding lifts, 37 lifts (12 HELD: put back by a room it could not finish), 36 blows taken
+causeway LEVEL L20 pyro: lowest hp 0%, hp lost 330%, deaths 3, walked 100% of waypoints, 1 rides {"vmover":1}, 2 pulls, 2 boarding lifts, 47 lifts (25 HELD: put back by a room it could not finish), 34 blows taken
+wrote docs/mash-bot.json
+errors []

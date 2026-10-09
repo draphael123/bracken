@@ -431,7 +431,7 @@ for (const m of ['scuttleTell', 'poundTell', 'flaskTell']) HARD_TELLS.add('homun
 for (const m of ['whirlTell', 'gulpTell']) HARD_TELLS.add('drownedking|' + m);   /* THE MAELSTROM and DROWNED BREATH: a current and a burst, and no shield is in either */
 HARD_TELLS.add('herald|glideTell');   /* THE TIDE HERALD'S GLIDE ends in his low sweep: gone from, never guarded */
 HARD_TELLS.add('drownedking|ramTell'); HARD_TELLS.add('drownedking|diveTell');   /* THE DROWNED KING'S CHARGE AND FALL: gone across, never guarded */
-for (const m of ['grabTell', 'sweepTell', 'rakeTell', 'hurlTell', 'jetTell', 'geyserTell', 'lungeTell', 'roarTell', 'rollTell']) HARD_TELLS.add('kraken|' + m);   /* THE RAKE is HIGH in red: an arm that size turns on no shield either */   /* THE KRAKEN's red marks */   /* THE OWL REEVE'S SKIM: talons at ankle height, dodged or jumped, never guarded */
+for (const m of ['grabTell', 'sweepTell', 'rakeTell', 'hurlTell', 'jetTell', 'geyserTell', 'lungeTell', 'roarTell', 'rollTell', 'waveTell', 'shakeTell', 'biteTell']) HARD_TELLS.add('kraken|' + m);   /* (claude/kraken2: THE WAVE, the shaken ramp, the beak in the climb) */   /* THE RAKE is HIGH in red: an arm that size turns on no shield either */   /* THE KRAKEN's red marks */   /* THE OWL REEVE'S SKIM: talons at ankle height, dodged or jumped, never guarded */
 /* AND EVERY RED MARK IN src/marks.js, the table the screen draws from: the hand list above predates it and stays as it was. An elite's own moves are '*|mode', and answer for whatever creature is the elite */
 for (const [k, v] of Object.entries(MARK)) if (v === '!!') HARD_TELLS.add(k);
 { const has = HARD_TELLS.has.bind(HARD_TELLS); HARD_TELLS.has = k => has(k) || has('*|' + String(k).slice(String(k).indexOf('|') + 1)); }

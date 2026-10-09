@@ -1,0 +1,33 @@
+ ok  syntax             0ms  4 files parse
+ ok  tells            746ms  the mark over every windup on the screen comes from this table (src/marks.js, 803 rows).
+ ok  map-grammar      275ms  The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every
+ ok  haunted-coast    552ms  Five coastal attack tells, range counters, no mini or gate on the last mile, flooded hold and four Lamplit rop
+ ok  haunted-coast-runtime 46630ms  Three new foes, roof chains, flooded hold and a last mile with no mini on it work in game.
+ ok  sea-requests     621ms  Sea: permanent tentacles across all phases, block/dodge wave responses, half Deep breath drain, no Tollmaster 
+ ok  sea-runtime   710050ms  Kraken final blow: reflected water, bell and cargo all trigger defeat.
+ ok  boss-openings 1150941ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"c
+FAIL normal-health 371087ms  Node.js v24.19.0
+ ok  boss-fight-end1123091ms  Every one of 55 boss and mini fights (41 bosses, 14 minis) ends when its boss dies.
+ ok  kraken-rework 199520ms  The Kraken, reworked: the tide rises, sweeps, carries, hides his arms, and goes back to the bells; stage 2 has
+ ok  kraken-reach  345427ms  kraken-reach: every arm, every phase, on reachable drawn road - ok
+ ok  finishers      58331ms  25 common foes broken with a beat and stood open; each of 7 heroes finished a broken sworn sword with one pres
+ ok  weak-bosses   103478ms  weak-bosses: OK
+ ok  level-jump    184870ms  ok  level-jump  ?level=theatre&hero=pyro lands in play at the entrance, at full health, no god mode; run to th
+ ok  boss-greed    232272ms  boss-greed: 41 bosses and 14 minis have a rule or a reason; the chip, the room's blow, the opening, the poise 
+ ok  mash-gate     293379ms  mash-gate: 41 campaign levels hold the mash gate (1 with parts report-only for their boss waves: fallingtower 
+ ok  corpses       274567ms  ok  corpses  every reskinned foe's hurt frame and body are drawn in its own skin
+ ok  boss-read       6964ms  boss-read: ok (turned / auto / beats / wired)
+ ok  blow-tags       3630ms  blow-tags: ok (28 boss hooks get the tag; no boolean plunge gate; throw / reflect / riposte tagged; 8 keys, wo
+
+---- normal-health ----
+file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-kraken2/tools/cdp.mjs:77
+    if (!ready) throw new Error('the fresh lab page did not initialize');
+                      ^
+
+Error: the fresh lab page did not initialize
+    at Object.reload (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-kraken2/tools/cdp.mjs:77:23)
+    at async file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-kraken2/tools/normal-health.mjs:18:3
+
+Node.js v24.19.0
+
+1 check(s) failed.

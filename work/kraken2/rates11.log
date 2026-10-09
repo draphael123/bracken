@@ -1,0 +1,22 @@
+causeway practiced knight s2 L20: win 229.1s left 0% taken 243 rt405 mis6 greed7
+causeway practiced knight s3 L20: win 126.1s left 0% taken 250 rt402 mis2 greed6
+causeway practiced knight s1 L20: death 109.3s left 8% taken 265 rt422 mis6 greed11
+causeway practiced knight s5 L20: death 128.7s left 2% taken 265 rt413 mis3 greed12
+causeway practiced knight s4 L20: win 129.7s left 0% taken 200 rt402 mis4 greed11
+causeway practiced knight s6 L20: win 145.5s left 0% taken 208 rt406 mis4 greed13
+causeway practiced warden s1 L20: win 107.3s left 0% taken 162 rt410 mis5 greed6
+causeway practiced warden s2 L20: win 154.5s left 0% taken 256 rt403 mis4 greed12
+causeway practiced warden s3 L20: death 121.2s left 5% taken 265 rt410 mis7 greed7
+causeway practiced warden s4 L20: win 130.4s left 0% taken 149 rt401 mis5 greed14
+causeway practiced warden s5 L20: death 71.7s left 70% taken 265 rt401 mis2 greed6
+causeway practiced warden s6 L20: death 116.1s left 9% taken 265 rt405 mis4 greed15
+causeway practiced pyro s1 L20: win 113.4s left 0% taken 151 rt416 mis4 greed11
+causeway practiced pyro s2 L20: win 117.2s left 0% taken 101 rt397 mis6 greed10
+causeway practiced pyro s3 L20: win 94.2s left 0% taken 187 rt413 mis4 greed7
+causeway practiced pyro s4 L20: win 106.4s left 0% taken 122 rt402 mis2 greed13
+causeway practiced pyro s5 L20: win 115.3s left 0% taken 84 rt417 mis6 greed10
+causeway practiced pyro s6 L20: win 125.5s left 0% taken 123 rt401 mis4 greed9
+
+BOSS RATES  profile human  (18 fights, 6 min)
+row                 L  practiced kn/wa/py        band
+causeway           20  4/6 3/6 6/6 = 72%         HIGH +12
