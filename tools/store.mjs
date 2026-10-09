@@ -25,7 +25,7 @@ const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 
 /* ---------- A. the rules ---------- */
 {
-  const ids = [...main.matchAll(/\{ id: '([a-z]+)', name: '([A-Z]+)', items: [A-Za-z_\[\]]+, key: (?:'[a-z]+'|null), owned: '[a-z]+'/g)].map(m => m[1]);
+  const ids = [...main.matchAll(/\{ id: '([a-z]+)', name: '([A-Z]+)', items: [A-Za-z_\[\]]+, key: (?:'[a-z]+'|null), owned: '[A-Za-z]+'/g)].map(m => m[1]);
   assert.deepEqual(ids, S.TAB_IDS, 'main.js STORE_TABS and src/store.js TABS disagree: ' + ids + ' vs ' + S.TAB_IDS);
   assert.deepEqual(S.TAB_IDS.slice(0, 5), ['heroes', 'skins', 'weapons', 'charms', 'skills'], "Daniel's five tabs come first, in order");
   for (const [k, e] of Object.entries(S.ENTRIES)) assert.ok(S.TAB_IDS.includes(e.tab), 'entry ' + k + ' opens a tab that does not exist: ' + e.tab);
