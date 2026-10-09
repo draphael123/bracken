@@ -14,6 +14,12 @@ import { uwX, UW_SPILL, UW_RES } from './underwell.js';   /* (claude/underwell3)
 const uwSpot = s => ({ ...s, ...(s.zone ? { zone: [uwX(s.zone[0]), s.zone[1], uwX(s.zone[2]), s.zone[3]] } : {}), ...(s.steps ? { steps: s.steps.map(uwSpot) } : {}),
   ...(s.at ? { at: [uwX(s.at[0]), s.at[1]] } : {}), ...(s.is && /^fire\.\d+$/.test(s.is[0]) ? { is: ['fire.' + uwX(+s.is[0].slice(5)), s.is[1]] } : {}) });
 export const STUCK = {
+  /* STORMHOLD's THREE TOWER ROPES (claude/zipline; src/zipline.js): after ten seconds on the deck, the rope's handle glints and the guide names it */
+  storm: [
+    { id: 'sh-rope-1', zone: [40, 20, 47, 23], at: [47, 22], dy: 6, glint: 'stall', line: "THE GATE WATCH'S ROPE IS THE WAY DOWN TO THE BARBICAN" },
+    { id: 'sh-rope-2', zone: [300, 19, 303, 21], at: [302, 20], dy: 6, glint: 'stall', line: "THE BELL WATCH'S ROPE IS THE WAY DOWN TO THE INNER GATE" },
+    { id: 'sh-rope-3', zone: [529, 20, 530, 22], at: [530, 21], dy: 6, glint: 'stall', line: "THE WALL WATCH'S ROPE IS THE WAY DOWN TO THE BRIDGE GATE" },
+  ],
   /* THE FALLING TOWER'S ORRERY LOFT (claude/archmage3; src/spiral-chase.js): the next world round on each wheel glints (m.next, kept by updateStairFx) from
      the gallery's landing and the board step (wheel A), and from the pier (wheel B) - never while you ride that wheel */
   fallingtower: [
@@ -93,7 +99,7 @@ export const STUCK = {
     { id: 'ul-brass', zone: [90, 2, 170, 45], steps: [
       { zone: [96, 2, 124, 17], at: [112, 6], done: ['key', 112, 6, 'got'], line: 'THE BRASS KEY HANGS ON THE HOIST BEAM' },
       { zone: [90, 18, 170, 45], at: [122, 33], done: ['key', 112, 6, 'got'], line: 'THE BRASS KEY IS IN THE MILL: FIND ITS DOOR' },
-      { zone: [96, 18, 170, 45], at: [157, 33], when: ['key', 112, 6, 'got'], done: ['lockgate', 157, 33, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
+      { zone: [96, 18, 170, 45], at: [157, 33], done: ['lockgate', 157, 33, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
     { id: 'ul-iron', zone: [140, 2, 345, 45], steps: [
       { zone: [140, 2, 196, 17], at: [188, 8], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS ON THE ROOD BEAM' },
       { zone: [175, 18, 345, 45], at: [278, 33], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS IN THE CHURCH: FIND ITS DOOR' },
@@ -202,7 +208,10 @@ export const STUCK = {
     { id: 'rw-high-cleat', zone: [225, 20, 238, 26], steps: [
       { at: [238, 19], done: ['hoist', 238, 19, 'on'], line: 'THE CLEAT IS HIGH: GROW THE BUD UNDER IT, THEN JUMP AND STRIKE' } ] },
     { id: 'rw-bud-hunter', zone: [256, 17, 268, 22], at: [267, 22], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
-    { id: 'rw-lookout', zone: [296, 12, 303, 18], at: [312, 15], glint: 'stall', done: ['hoist', 312, 15, 'on'], line: 'THE SPAN HANGS ON THE LOOKOUT\'S ROPE' },
+    { id: 'rw-gantry-rope', zone: [276, 11, 281, 13], at: [279, 13], dy: 6, glint: 'stall', line: "THE HUNTERS' TROPHY LINE IS THE WAY OVER THE WELL" },
+    { id: 'rw-gantry-cage', zone: [269, 12, 275, 18], at: [271, 18], done: ['hoist', 271, 18, 'on'], line: 'CUT THE CAGE DOWN: IT IS A STEP UP TO THE GANTRY' },   /* (claude/ziproot) THE HUNTERS' GANTRY */
+    { id: 'rw-bud-ledge', zone: [291, 17, 296, 22], at: [295, 22], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },
+    { id: 'rw-lookout', zone: [299, 12, 303, 18], at: [312, 15], glint: 'stall', done: ['hoist', 312, 15, 'on'], line: 'THE SPAN HANGS ON THE LOOKOUT\'S ROPE' },
     { id: 'rw-lean-2', zone: [330, 12, 340, 18], at: [339, 18], line: 'A BUD ON THE LIP LEANS OUT OVER THE GAP' },
   ],
   canal: [

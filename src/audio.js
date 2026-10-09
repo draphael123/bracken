@@ -338,6 +338,8 @@ export const SFX = {
   tink() { tone('triangle', 2400, 2250, 0.05, 0.07); tone('sine', 3600, 3500, 0.09, 0.03, 0.005); noise(0.03, 0.06, 5200, 2); },   /* a pick on rock: small and bright */
   cartRoll() { noise(0.18, 0.05, 260, 0.9); tone('square', 70, 64, 0.12, 0.025); },   /* iron wheels on the rail */
   ratchet() { tone('square', 1300, 1100, 0.02, 0.04); noise(0.02, 0.05, 3000, 2); },   /* a winch's pawl, one click */
+  zipCatch() { tone('square', 900, 600, 0.05, 0.07); noise(0.09, 0.09, 2400, 1.4); tone('sawtooth', 220, 330, 0.18, 0.05, 0.03); },   /* THE ZIP LINE (src/zipline.js): the grip snaps onto the rope, the wheel bites and takes up */
+  zipWhine() { tone('sawtooth', 1500, 1750, 0.11, 0.022); noise(0.1, 0.04, 3600, 3); },   /* and the pulley's thin whine, while he rides */
   sackThud() { noise(0.12, 0.12, 300, 0.7); tone('sine', 110, 60, 0.1, 0.08); },   /* a sack of ore put down */
   parry() { file('parry', 0.5) || tone('square', 1200, 1900, 0.08, 0.16); },
   /* THE KNIGHT'S PERFECT GUARD: a clang that rings like a bell - the steel knock high and bright, and two long clean partials over it.
