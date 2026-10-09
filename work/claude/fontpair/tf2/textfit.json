@@ -1,0 +1,39 @@
+{
+ "issues": [],
+ "stats": {
+  "frames": 8842,
+  "texts": 87361,
+  "screens": {
+   "hint": 79,
+   "talk": 4038,
+   "bestiary": 260,
+   "store": 672,
+   "tree": 185,
+   "pick": 3,
+   "trial": 7,
+   "erase": 5,
+   "opening": 4,
+   "press": 1,
+   "mapcard": 43,
+   "death": 7,
+   "level": 1,
+   "card": 30,
+   "card2": 28,
+   "coop": 1,
+   "slots": 10,
+   "practice": 8,
+   "bossjump": 63,
+   "menu": 18,
+   "settings": 84,
+   "controls": 7,
+   "rebind": 53,
+   "coophelp": 4,
+   "soundtest": 121,
+   "credits": 11,
+   "hud": 12,
+   "boss": 3072,
+   "popup": 15
+  }
+ },
+ "shots": []
+}

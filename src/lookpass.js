@@ -245,7 +245,7 @@ function annotate(f) {
   const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(src, 0, 0, c.width, c.height);
   g.lineWidth = 2;
   for (const q of f._low) { g.strokeStyle = 'rgba(255,40,40,0.95)'; g.beginPath(); g.moveTo(q.sx * S + 2, q.sy * S - 2); g.lineTo((q.sx + TS) * S - 2, q.sy * S - 2); g.stroke(); }
-  g.font = '12px monospace';
+  g.font = '12px "Silkscreen", "Press Start 2P"';
   for (const cr of f.creatures) { const bad = cr.bad; if (!bad && !cr.boss) continue;
     g.strokeStyle = bad ? '#ff40ff' : '#40ff80'; g.strokeRect(cr.box[0] * S - 3, cr.box[1] * S - 3, (cr.box[2] - cr.box[0] + 1) * S + 6, (cr.box[3] - cr.box[1] + 1) * S + 6);
     g.fillStyle = bad ? '#ff40ff' : '#40ff80'; g.fillText(cr.t + ' p75 dE ' + cr.p75, cr.box[0] * S, cr.box[1] * S - 6); }

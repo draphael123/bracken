@@ -231,7 +231,7 @@ export function makeRedGorgeHands(ctx) {
   };
   /* THE FLOOD on the HUD, under the sun's meter: the clock to the horn, the horn, the torrent */
   H.drawHud = (g, P) => {
-    if (!RG || !P) return; const x = 22, y = 64;
+    if (!RG || !P) return; const x = 22, y = 66;
     const col = RG.phase === 'horn' ? (Math.floor(ctx.time() * 8) % 2 ? '#ff6b6b' : '#fff6e0') : RG.phase === 'flood' ? '#7ab8e8' : '#c9b27c';
     drawIcon(g, RG.phase === 'horn' ? 'horn' : RG.phase === 'flood' ? 'flood' : 'dry', x - 12, y - 1, col);
     const k = RG.phase === 'dry' ? 1 - Math.max(0, RG.t) / GORGE.dry : RG.phase === 'horn' ? 1 : Math.max(0, RG.t) / GORGE.run;

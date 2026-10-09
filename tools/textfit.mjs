@@ -264,7 +264,13 @@ async function pageTextFit(input) {
   if (want('hud')) for (const h of HEROES) { toPlay(campaign.findIndex(([l]) => l.id === 'waymeet') >= 0 ? campaign.find(([l]) => l.id === 'waymeet')[1] : 0, h);
     frame('hud [' + h + '] meters full', () => { BK.state = 'play'; Object.assign(P, { resolve: 100, heat: 100, full: true, light: 100, harvest: 100, plunder: 100, loaded: true }); window.BK.PROG.tonics = 3; });
     frame('hud [' + h + '] swimming, no air', () => { BK.state = 'play'; Object.assign(P, { swim: true, breath: 0 }); });
-    P.swim = false; await yieldNow(); }
+    /* HUD-SLIM: the PLATE HUD is the opt-in (the default is MINIMAL, measured above): the same frames with it on, and the minimal one hurt and winded */
+    BK.SET.hud = 'full'; P.swim = false;
+    frame('hud [' + h + '] PLATE meters full', () => { BK.state = 'play'; Object.assign(P, { resolve: 100, heat: 100, full: true, light: 100, harvest: 100, plunder: 100, loaded: true }); window.BK.PROG.tonics = 3; });
+    frame('hud [' + h + '] PLATE swimming, no air', () => { BK.state = 'play'; Object.assign(P, { swim: true, breath: 0 }); });
+    BK.SET.hud = 'minimal'; P.swim = false;
+    frame('hud [' + h + '] minimal hurt and winded', () => { BK.state = 'play'; Object.assign(P, { hp: Math.max(1, P.maxHp * 0.4), st: 0 }); });
+    P.hp = P.maxHp; P.st = P.maxSt; await yieldNow(); }
 
   /* THE BOSS PLATES, every boss and mini fight in the campaign: its name, its health and any meter of its own, at the foot of the
      screen - the band under VH - 40 only, so the fights' own world captions (the long run, 'boss') are not asked here. In the suite. */
