@@ -29121,7 +29121,7 @@ function drawWorld(cx, cy, showPlayer) {
         const targetTilt = mv ? Math.max(-SWIM_TILT_MAX, Math.min(SWIM_TILT_MAX, Math.atan2(P.face * P.vy, P.face * P.vx))) : 0;
         P.swimTiltA = (P.swimTiltA || 0) + (targetTilt - (P.swimTiltA || 0)) * Math.min(1, SWIM_TILT_EASE / 60);
         swimRot = Math.round(P.swimTiltA / SWIM_TILT_STEP) * SWIM_TILT_STEP; }
-      else if (!P.ground) { [key, frame] = airPose(P, K.R); }   /* the arc, with a take-off where the hero has one (hero-poses.js) */
+      else if (!P.ground) { P.nearFloor = P.vy > 140 && solidish(Math.floor(P.x / TS), Math.floor((P.y + 7) / TS)); [key, frame] = airPose(P, K.R); }   /* (nearFloor: art only - the BRACE a beat before the ground, claude/herokeys) the arc, with a take-off where the hero has one (hero-poses.js) */
       else if (isPyro() && P.emberUp && K.R.ward) { key = P.ducking ? 'ward' : 'cast'; frame = Math.floor(time * 12) % 2; }   /* THE EMBER FLARE: palm out while the window is open (the crouch's palm when she is down, the cast's when she tapped and let go) */
       else if (CRB && CRB.pose(K.R)) { [key, frame] = CRB.pose(K.R); }   /* KNEEL / SENSE / HARVEST (src/crouch-b.js): the crouch at work */
       else if (P.ducking || (keys.down && Math.abs(P.vx) < 10)) { key = 'crouch'; const ca = CA && P.ducking ? CA.crouchPose(K.R) : null; if (ca) [key, frame] = ca; }   /* the pose is the hurt box: crouched is DUCK_H tall (src/duck.js) */

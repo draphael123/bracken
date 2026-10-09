@@ -309,6 +309,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : k === 'n' ? WL(KP.s) : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
   outline(c, OUT);
   gearAura(c, gearMask, (plume | 0) * 2 + (dy | 0) + (dx | 0) + 8);
+  { const W0 = sword || staff || maul || spear || stave || cutlass || greatsword || scythe;   /* WHERE THE BLADE WAS DRAWN (hand, tip), kept for the smear pass: the arc between two beats is read off these, not guessed */
+    if (W0) { const hd = arm ? [arm[2] + dx, arm[3] + dy] : [W0[0] + dx, W0[1] + dy]; c.wp = { p: [hd[0], hd[1] + top], t: [W0[2] + dx, W0[3] + dy + top] }; } }
   { const lr = LEGS[legs] || LEGS.stand; c.feet = top + BY + 11 + legsDy + lr.reduce((n, r, i) => /[^.]/.test(r) ? i : n, 0); }   /* THE ROW HIS BOOTS STAND ON, kept for tools/crouch-feet.mjs: a crouch drawn on the standing legs cut short floats */
   return c;
 }
@@ -350,7 +352,7 @@ function comboArcs(sh, key, len, extra = {}) {
     f({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], ...wp(2, -4, 2 + s(4), -4 - s(10)), plume: 1 }),
   ];
   const T = [
-    f({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 1], ...wp(-3, 1, -3 + s(10), 1), plume: 1 }),
+    f({ dx: -2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 1], ...wp(-3, 1, -3 + s(10), 1), plume: 1 }),
     f({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], ...wp(4, 1, 4 + s(12), 1), plume: 2 }),
     f({ dx: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 1], ...wp(5, 1, 5 + s(13), 2), plume: 2 }),
     f({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], ...wp(3, 3, 3 + s(9), 3 + s(5)), plume: 0 }),
@@ -375,9 +377,35 @@ function comboArcs(sh, key, len, extra = {}) {
    The new cuts can then travel overhead; the low blow bends at the knees and keeps its edge at ankle height. */
 const ATTACK_HEADROOM = 24;
 function padHeroFrames(F) {
-  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
+  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.wp) out.wp = { p: [c.wp.p[0], c.wp.p[1] + ATTACK_HEADROOM], t: [c.wp.t[0], c.wp.t[1] + ATTACK_HEADROOM] }; if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
   for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(c => c ? pad(c) : c) : pad(F[key]);
 }
+/* THE SMEAR (claude/herokeys, Daniel 10-09 art direction: "a rotated sprite, not drawn frames"). A swing is a blade at one angle in one beat and another in the
+   next; between them the eye wants the ARC. For each strike beat of a hero's light chain and heavy, the blade's drawn hand and tip are read off the beat
+   before (c.wp, kept by the frame bakers) and the sector the blade swept is filled in hard pixels: a bright core against the blade, a checker dither behind
+   it, a sparse dither at the tail, tapering to a crescent - only onto EMPTY pixels, so it never covers a body or a weapon, and never farther out than the
+   blade itself reaches (the attack boxes are data and were never matched to the drawn frame: nothing here moves one). A near-straight thrust gets two
+   speed lines along the line the point travelled instead. ART ONLY: no timer, box, cost or cancel window reads any of this. */
+const SMEAR_COL = { steel: ['#ffffff', '#d4def5', '#7f95c0'], gold: ['#fff6c8', '#ffd36b', '#d9a02c'], fire: ['#fff6c8', '#ffb23e', '#ff7a3c'], blood: ['#eef4fa', '#d65a68', '#8a2030'], stone: ['#fff0c0', '#e0b050', '#8f7a52'] };
+function smearBeat(cur, prev, cols, o = {}) {
+  if (!cur || !prev || !cur.wp || !prev.wp) return;
+  const g = cur.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); const W2 = cur.width, H2 = cur.height, img = g.getImageData(0, 0, W2, H2), d = img.data;
+  const [hx, hy] = cur.wp.p, [tx, ty] = cur.wp.t, gx = prev.wp.t[0] + (hx - prev.wp.p[0]), gy = prev.wp.t[1] + (hy - prev.wp.p[1]);
+  const L = Math.hypot(tx - hx, ty - hy); if (L < 6) return;
+  const ac = Math.atan2(ty - hy, tx - hx); let dl = Math.atan2(gy - hy, gx - hx) - ac; while (dl > Math.PI) dl -= 2 * Math.PI; while (dl < -Math.PI) dl += 2 * Math.PI;
+  const maxA = (o.max || 80) * Math.PI / 180; if (Math.abs(dl) > maxA) dl = Math.sign(dl) * maxA;
+  const put = (x, y, col) => { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= W2 || y >= H2 || d[(y * W2 + x) * 4 + 3]) return; g.fillStyle = col; g.fillRect(x, y, 1, 1); d[(y * W2 + x) * 4 + 3] = 255; };
+  if (Math.abs(dl) >= 12 * Math.PI / 180) {
+    const steps = Math.ceil(Math.abs(dl) * L * 0.75);
+    for (let i = 0; i <= steps; i++) { const k = i / steps, a = ac + dl * k, r0 = L * (0.34 + 0.46 * k), r1 = L * (1 - 0.08 * k);
+      for (let r = r0; r <= r1; r += 0.5) { const x = hx + Math.cos(a) * r, y = hy + Math.sin(a) * r, xi = Math.round(x), yi = Math.round(y), rim = r > r1 - 1.1 || i === steps;
+        const col = rim ? cols[2] : k < 0.3 ? cols[0] : k < 0.65 ? ((xi + yi) & 1 ? cols[0] : cols[1]) : ((xi + yi) & 1 ? null : cols[1]); if (col) put(x, y, col); } } }
+  else {   /* a thrust has no arc: two speed lines laid along the shaft, either side of it, brightest at the point */
+    const ux = (tx - hx) / L, uy = (ty - hy) / L, nx = -uy, ny = ux;
+    for (const off of [-2, 2]) for (let r = L * 0.5; r <= L * 0.97; r++) if (Math.round(r) % 3 !== 2) put(hx + ux * r + nx * off, hy + uy * r + ny * off, r > L * 0.78 ? cols[0] : r > L * 0.64 ? cols[1] : cols[2]); }
+}
+/* the strike beats are the second and third frames of a chain and the second of a heavy; each reads the beat before it */
+function smearPass(F, cols) { for (const [key, beats] of [['atk', [1, 2]], ['atkB', [1, 2]], ['atkC', [1, 2]], ['heavy', [1, 2]], ['air', [1, 2]]]) { const a = F[key]; if (Array.isArray(a)) for (const i of beats) smearBeat(a[i], a[i - 1], cols, i === 2 ? { max: 55 } : {}); } }
 function storeFrames(card, knight, mode) {
   const F = {};
   if (mode !== 'atk' && mode !== 'weaponIcon') F.idle = card.idle();
@@ -454,7 +482,7 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
     idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume]) => KF({ dy, hy, sho, plume, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 3, sh[1] + 7 - dy] }))),
     atk: () => ([
       () => (// 0 anticipation: sword drawn back over the shoulder, body leans away
-      KF({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], sword: [sh[0] - 1, sh[1] - 4, sh[0] - 7, sh[1] - 10], plume: 1 })),
+      KF({ dx: -2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 4], sword: [sh[0] - 1, sh[1] - 4, sh[0] - 7, sh[1] - 10], plume: 1 })),
       () => (// 1 swing: blade straight out, body lunges
       KF({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 13, sh[1] + 1], plume: 2 })),
       () => (// 2 extended: blade angled down-forward, weight forward
@@ -590,6 +618,7 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
       KF({ top, wide: 10, dx: 3, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], sword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 9], plume: 0,
         bits: [[sh[0] + 14 - BX, sh[1] + 9 - BY, '#ffffff'], [sh[0] + 15 - BX, sh[1] + 8 - BY, '#fff6c8'], [sh[0] + 13 - BX, sh[1] + 8 - BY, '#fff6c8']] })]; }
   knightKitPoses(F, KF, sh);
+  smearPass(F, SMEAR_COL.steel);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -1582,6 +1611,7 @@ function pyroFrame(o = {}) {
   if (sparks) for (const [x, y, k] of sparks) put(x, y + dy, k);   /* loose sparks, over everything */
   outline(c, OUT);
   gearAura(c, gearMask, (cowl | 0) * 2 + (dy | 0) + (lean | 0) + 8);
+  if (staff) { const hd = arm ? [arm[2], arm[3] + dy] : [staff[0], staff[1] + dy]; c.wp = { p: [hd[0], hd[1] + headroom], t: [staff[2], staff[3] + dy + headroom] }; }   /* (see knightFrame: the blade's own hand and tip, for the smear pass) */
   c.feet = headroom + Math.max(...feet.map(f => f[1])) + dy;   /* the row her boots stand on (tools/crouch-feet.mjs) */
   return c;
 }
@@ -1811,7 +1841,7 @@ export function bakePyro(skin = {}, previewOnly = false) {
   const card = {
     idle: () => ((previewOnly === 'icon' ? ([[0, 0], [0, 0], [1, 0], [1, 1], [1, 1], [0, 1], [0, 0], [0, -1]]).slice(0, 1) : ([[0, 0], [0, 0], [1, 0], [1, 1], [1, 1], [0, 1], [0, 0], [0, -1]])).map(([sit, trail], i) => pyroFrame({ sit, trail, staff: [17, 18, 19, 5], arm: [16, 11 + sit, 17, 11 + sit], flame: [0, 1, 2, 3, 1, 0, 3, 2][i], flick: i === 4 ? 1 : 0, cowl: 0 }))),
     atk: () => ([
-      () => (pyroFrame({ lean: -1, feet: [[10, 18], [16, 18]], staff: [3, 11, 16, 10], arm: [15, 10, 13, 11], arm2: [11, 10, 9, 11], cowl: 0 })),
+      () => (pyroFrame({ lean: -1, sit: 1, feet: [[10, 18], [16, 18]], staff: [3, 11, 16, 10], arm: [15, 10, 13, 11], arm2: [11, 10, 9, 11], cowl: 0 })),
       () => (pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [9, 11, 25, 10], arm: [16, 10, 20, 10], arm2: [12, 10, 15, 11], cowl: 1, flare: [26, 10, false] })),
       () => (pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [10, 11, 26, 10], arm: [16, 10, 21, 10], arm2: [12, 10, 16, 11], cowl: 1, flare: [27, 10, true], flick: 1 })),
       () => (pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [8, 13, 21, 8], arm: [16, 10, 18, 11], cowl: 0 })),
@@ -1945,6 +1975,7 @@ export function bakePyro(skin = {}, previewOnly = false) {
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'staff', { pyro: true });
   pyroKitPoses(F, up);
+  smearPass(F, SMEAR_COL.fire);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2261,7 +2292,7 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
     idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume], i) => { const lag = breathLag(i);
       return knightFrame({ dy, hy, sho, plume, cutlass: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 7 + lag - dy], pistol: holster(), bits: flap([1], dy, lag, 'b', 'B') }); })),
     atk: () => ([
-      () => (knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 3], cutlass: [sh[0] - 1, sh[1] - 3, sh[0] - 6, sh[1] - 7], pistol: holster(), plume: 1 })),
+      () => (knightFrame({ dx: -1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 3], cutlass: [sh[0] - 1, sh[1] - 3, sh[0] - 6, sh[1] - 7], pistol: holster(), plume: 1 })),
       () => (knightFrame({ dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 4], cutlass: [sh[0] + 3, sh[1] - 4, sh[0] + 9, sh[1] - 6], pistol: holster(), plume: 2 })),
       () => (knightFrame({ dx: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], cutlass: [sh[0] + 4, sh[1] - 1, sh[0] + 12, sh[1] + 1], pistol: holster(), plume: 2 })),
       () => (knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], cutlass: [sh[0] + 4, sh[1] + 2, sh[0] + 10, sh[1] + 7], pistol: holster(1), plume: 0 })),
@@ -2361,6 +2392,7 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
       knightFrame({ ...knee, plume: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1]], pistol: [sh[0] + 5, sh[1], sh[0] + 12, sh[1] - 1], bits: [[21, 6, '#fff6c8'], [22, 6, '#ffd36b'], [21, 5, '#ffd36b']] })]; }
   directionalPoses(F, 'cutlass', { extra: { pistol: holster() } });
   pirateKitPoses(F, sh, holster, carry);
+  smearPass(F, SMEAR_COL.steel);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2406,7 +2438,7 @@ export function bakeReaper(skin = {}, previewOnly = false) {
       return knightFrame({ dy, hy, sho, plume, arm: [sh[0], sh[1], sh[0] - 1, sh[1] + 3 - Math.max(0, dy)], greatsword: [sh[0] - 3, sh[1] + 3 - Math.max(0, dy), sh[0] + 12, sh[1] + 6 + lag - dy],
         bits: [...flap([3, 4], dy, lag, 'r', 'r'), ...(i === 6 ? [[4, 3 + hy, 'k'], [5, 3 + hy, 'k']] : [])] }); })),
     atk: () => ([
-      () => (knightFrame({ dx: -1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], greatsword: [sh[0] - 3, sh[1] + 2, sh[0] - 11, sh[1] - 6], plume: 1 })),
+      () => (knightFrame({ dx: -1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], greatsword: [sh[0] - 3, sh[1] + 2, sh[0] - 11, sh[1] - 6], plume: 1 })),
       () => (knightFrame({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 4], greatsword: [sh[0] + 2, sh[1] - 4, sh[0] + 3, sh[1] - 16], plume: 2 })),
       /* THE ART GROWS TO MEET THE BOX (2026-09-24, Daniel: "lengthen the art"). The swathe's live frame drew its blade to sh+17 on a 34-wide
          canvas, so the point was CUT OFF at the frame's edge, and the blow landed ~9 px past the steel anyone could see. Now the frame is
@@ -2515,6 +2547,7 @@ export function bakeReaper(skin = {}, previewOnly = false) {
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'greatsword', { scale: 1.22 });
   reaperKitPoses(F, sh);
+  smearPass(F, SMEAR_COL.blood);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2578,7 +2611,7 @@ export function bakeWarden(skin = {}, previewOnly = false) {
       arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1 - Math.max(0, dy)],
       spear: rest(-dy), bits: flap([3, 4], dy, breathLag(i), 'b', 'B') }))),
     atk: () => ([
-      () => (thrust(sh[0] - 6, sh[1] + 1, sh[0] + 8, sh[1] + 1, { dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 4, sh[1] + 1], plume: 1 })),
+      () => (thrust(sh[0] - 6, sh[1] + 1, sh[0] + 8, sh[1] + 1, { dx: -2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 4, sh[1] + 1], plume: 1 })),
       () => (thrust(sh[0] + 2, sh[1], 45, sh[1], { dx: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1]], plume: 2 })),
       () => (thrust(sh[0] + 5, sh[1], 57, sh[1], { dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 6, sh[1]], plume: 2 })),
       () => (thrust(sh[0] + 2, sh[1] + 2, 39, sh[1] + 2, { dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], plume: 0 })),
@@ -2752,6 +2785,7 @@ export function bakeWarden(skin = {}, previewOnly = false) {
       knightFrame({ wide: 38, dx: 2, dy: 3, legs: 'wide', plume: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 3], spear: [sh[0] - 2, sh[1] + 4, 59, sh[1] + 2] })]; }
   directionalPoses(F, 'spear', {});
   wardenKitPoses(F, sh, WIDE);
+  smearPass(F, SMEAR_COL.steel);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2841,7 +2875,7 @@ export function bakePaladin(skin = {}, previewOnly = false) {
   const card = {
     idle: () => ((previewOnly === 'icon' ? (BREATH).slice(0, 1) : (BREATH)).map(([dy, hy, sho, plume], i) => knightFrame({ dy, hy, sho, plume, maul: [sh[0] + 3, sh[1] + 1, sh[0] + 8, sh[1] + 9 - dy], bits: flap([3, 4], dy, breathLag(i), 'b', 'B') }))),
     atk: () => ([
-      () => (knightFrame({ dx: -2, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 8], plume: 1 })),
+      () => (knightFrame({ dx: -2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 4], maul: [sh[0] - 2, sh[1] - 3, sh[0] - 7, sh[1] - 8], plume: 1 })),
       () => (// drawn back over the shoulder
       knightFrame({ dx: 0, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 4], maul: [sh[0] + 1, sh[1] - 3, sh[0] + 5, sh[1] - 8], plume: 2 })),
       () => (// up and over
@@ -2943,6 +2977,7 @@ export function bakePaladin(skin = {}, previewOnly = false) {
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'maul', {});
   paladinKitPoses(F, sh);
+  smearPass(F, SMEAR_COL.gold);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -4371,7 +4406,7 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   const card = {
     idle: () => ((previewOnly === 'icon' ? BREATH.slice(0, 1) : BREATH).map(([dy, hy, sho, plume]) => knightFrame({ dy, hy, sho, plume, ...guard(-dy) }))),
     atk: () => ([
-      () => knightFrame({ dx: -1, legs: 'wide', arm: [X, Y, X - 1, Y - 3], arm2: [OFF[0], OFF[1], X - 3, Y - 1], stave: [X + 2, Y + 4, X - 7, Y - 10], plume: 1 }),
+      () => knightFrame({ dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 1, Y - 3], arm2: [OFF[0], OFF[1], X - 3, Y - 1], stave: [X + 2, Y + 4, X - 7, Y - 10], plume: 1 }),
       () => knightFrame({ wide: WIDE, dx: 1, legs: 'runC', arm: [X, Y, X + 2, Y - 4], arm2: [OFF[0], OFF[1], X - 1, Y - 2], stave: [X - 2, Y + 2, X + 7, Y - 12], plume: 2 }),
       () => knightFrame({ wide: WIDE, dx: 2, legs: 'runC', arm: [X, Y, X + 5, Y], arm2: [OFF[0], OFF[1], X + 1, Y], stave: [X - 3, Y - 1, X + 15, Y + 2], plume: 2, bits: [o(18, 4, M), o(18, 0, M)] }),
       () => knightFrame({ wide: WIDE, dx: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 2], arm2: [OFF[0], OFF[1], X, Y + 2], stave: [X - 2, Y - 3, X + 13, Y + 7], plume: 0 }),
@@ -4488,6 +4523,7 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
   F.blast = [TK({ dy: -2, legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y - 8], arm2: [OFF[0], OFF[1], X - 4, Y - 8], stave: [X - 8, Y - 9, X + 8, Y - 10], plume: 1 }),
     TK({ wide: 4, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 3], arm2: [OFF[0], OFF[1], X - 5, Y + 2], stave: [X + 8, Y + 9, X + 8, Y - 9], plume: 2, glow: [X + 8, Y - 6], bits: [o(6, 9, D), o(10, 9, D), o(4, 9, M), o(12, 9, M)] })];
   geoKitPoses(F, sh);
+  smearPass(F, SMEAR_COL.stone);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
