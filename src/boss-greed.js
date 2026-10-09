@@ -91,7 +91,7 @@ export const OPEN_RULE = {
   bellcrab: e => e.phase === 3 || e.open > 0,                                // a stone on his crown, or out of the bell
   drownedking: e => e.open > 0,
   harbormaster: e => e.open > 0,
-  closedhelm: e => e.open > 0,                                               // the ward down (it is a NO anywhere else already)
+  closedhelm: e => e.open > 0 || e.mode === 'cutRec' || e.mode === 'thrustRec' || e.mode === 'grabMiss' || e.mode === 'brandRec',   // the ward down; (claude/crusader) or bent over a spent blow - main.js CRUS_SPENT, whole not x2
   prince: e => e.mode === 'buried' || e.mode === 'reel' || e.bare > 0,
   strawking: e => e.open > 0,
   burieddead: e => e.open > 0,

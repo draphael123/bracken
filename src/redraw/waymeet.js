@@ -12,6 +12,9 @@
 //           7 bash tell (crouched behind the shield)  8 bash (lunging, shield first)
 //           9 judgement tell (sword straight up)  10 judgement (knelt, sword into the ground)
 //           11 BROKEN (the ward is down: flung open, shield wide, head back)  12 death (knelt, head bowed)  13 hurt
+//           (claude/crusader) 14 cut anticipation  15 cut glint  16 cut recovery  17 thrust anticipation  18 thrust glint  19 thrust recovery
+//           20 delayed overhead (coiled)  21 its glint  22 grab tell  23 grab lunge  24 grab hold  25 grab hurl  26 grab missed
+//           27 holy brand tell  28 brand (in the floor)  29 follow-up tell  30 its glint
 //   canvas 100x100   anchor ax 44, ay 92   figure ~64 px feet to crest
 //
 // bakeLancer(red)  THE SERJEANT — a mounted man-at-arms on a barded horse: kettle-helmed, blue surcoat, heater shield,
@@ -61,7 +64,7 @@ export function bakePaladinBoss() {
   const C = { S: '#eef2f6', s: '#bcc6d2', d: '#848fa2', D: '#4f5768', y: '#f2cc58', Y: '#b08a2c', w: '#f7f2e4', w2: '#d6cdb6',
     b: '#3d5eb0', B: '#253b7c', k: '#2c4690', K: '#1b2a5e', blade: '#f4f8ff', edge: '#9fb0ca', glow: '#fff3b0', grip: '#5a3a22' };
   const frame = o => {
-    const { lean = 0, dy = 0, fl = [8, 0], bl = [-7, 0], hand = [4, 16], a = 1.2, L = 28, shield = [9, 16], shW = 1, cape = 0, tilt = 0, bowed = 0, kneel = false, shLow = false, glow = false } = o;
+    const { lean = 0, dy = 0, fl = [8, 0], bl = [-7, 0], hand = [4, 16], a = 1.2, L = 28, shield = [9, 16], shW = 1, cape = 0, tilt = 0, bowed = 0, kneel = false, shLow = false, glow = false, glint = false, noSword = false } = o;
     const [c, g] = canvas(W, H);
     const hx = CX + lean * 0.35, hy = G - 26 + dy, sx = CX + lean, sy = G - 46 + dy;
     const P = (pts, k) => fillPoly(g, pts, C[k]);
@@ -86,6 +89,9 @@ export function bakePaladinBoss() {
     const [ex, ey] = ik(sx - 5, sy + 3, hX, hY, 11, 11, -1);
     limb(g, sx - 5, sy + 3, ex, ey, 6, 5, C.D); limb(g, ex, ey, hX, hY, 5, 4, C.d);
     const sword = () => {
+      /* (claude/crusader) THE GRAB: the sword is let hang at his hip (a scabbard's line and the cross) and the hand is OPEN, fingers out */
+      if (noSword) { line(g, hx - 2, hy + 1, hx - 9, hy + 16, C.D); line(g, hx - 1, hy + 1, hx - 8, hy + 16, C.K); limb(g, hx - 4, hy - 1, hx + 1, hy + 2, 2, 2, C.y);
+        circle(g, hX, hY, 2.6, C.s); for (let i = -1; i <= 1; i++) line(g, hX + 1, hY + i * 1.6, hX + 4, hY + i * 2.2, C.s); return; }
       const ca = Math.cos(a), sa = Math.sin(a), tx = hX + ca * L, ty = Math.min(G + 1, hY + sa * L), nx = -sa, ny = ca;
       if (glow) { g.globalAlpha = 0.55; limb(g, hX + ca * 4, hY + sa * 4, tx, ty, 7, 4, C.glow); g.globalAlpha = 1; }
       P([[hX + ca * 4 + nx * 1.6, hY + sa * 4 + ny * 1.6], [tx - ca * 3 + nx * 1.4, ty - sa * 3 + ny * 1.4], [tx, ty], [tx - ca * 3 - nx * 1.4, ty - sa * 3 - ny * 1.4], [hX + ca * 4 - nx * 1.6, hY + sa * 4 - ny * 1.6]], 'blade');
@@ -94,6 +100,9 @@ export function bakePaladinBoss() {
       limb(g, hX - ca * 3, hY - sa * 3, hX + ca * 2, hY + sa * 2, 2, 2, C.grip);
       circle(g, hX - ca * 4, hY - sa * 4, 1.6, C.y);                                                /* the pommel */
       circle(g, hX, hY, 2.3, C.s);                                                                  /* the gauntlet */
+      /* (claude/crusader) THE GLINT: the edge goes white along its length and a four-point star stands on the point - one held frame */
+      if (glint) { line(g, hX + ca * 5 + nx, hY + sa * 5 + ny, tx - ca * 2 + nx, ty - sa * 2 + ny, '#ffffff'); const gx = Math.round(tx - ca * 4), gy = Math.round(ty - sa * 4);
+        for (let k = -3; k <= 3; k++) { px(g, gx + k, gy, '#ffffff'); px(g, gx, gy + k, '#ffffff'); } px(g, gx - 1, gy - 1, '#ffffff'); px(g, gx + 1, gy + 1, '#ffffff'); px(g, gx + 1, gy - 1, '#ffffff'); px(g, gx - 1, gy + 1, '#ffffff'); }
     };
     if (o.swordBack) sword();
     // THE BODY: breastplate, then the tabard over it, the sun on his chest and the gold belt
@@ -154,6 +163,41 @@ export function bakePaladinBoss() {
     frame({ lean: -6, dy: 5, fl: [12, 0], bl: [-8, 0], hand: [8, 22], a: 2.3, L: 26, shield: [-13, 22], shLow: true, cape: 4, tilt: -2, swordBack: true }),
     /* 12 */ frame({ dy: 15, kneel: true, fl: [9, 0], bl: [-6, 0], hand: [10, 12], a: 1.52, L: 30, shield: [-10, 24], shLow: true, bowed: 3 }),
     /* 13 */ frame({ lean: -5, dy: 2, fl: [9, 0], bl: [-9, 0], hand: [3, 18], a: 1.9, L: 27, shield: [5, 15], cape: 3, tilt: -2 }),
+    /* (claude/crusader) THE SOULS WIND-UPS: every blow is weight back -> a held pose -> THE GLINT -> the swing -> a recovery you can punish,
+       and every move its own silhouette. 14 the cut's anticipation (the weight going back, the blade coming up past the shoulder) */
+    /* 14 */ frame({ lean: -2, dy: 1, fl: [10, 0], bl: [-9, 0], hand: [-1, 2], a: -2.4, L: 30, shield: [9, 14], cape: 1, swordBack: true }),
+    /* 15 the cut, GLINTING (3 + the glint) */
+    frame({ lean: -3, fl: [11, 0], bl: [-10, 0], hand: [-3, -8], a: -2.05, L: 30, shield: [8, 14], cape: 2, tilt: -1, swordBack: true, glint: true }),
+    /* 16 the cut's RECOVERY: bent over the blade, its point in the dirt in front of him */
+    frame({ lean: 6, dy: 4, fl: [15, 0], bl: [-12, 0], hand: [12, 16], a: 1.25, L: 30, shield: [2, 20], shLow: true, cape: 2, tilt: 1, bowed: 2 }),
+    /* 17 the thrust's anticipation: the hips turn away, the point comes back */
+    frame({ lean: -1, dy: 1, fl: [10, 0], bl: [-10, 0], hand: [-4, 10], a: -0.2, L: 30, shield: [4, 12], cape: 1 }),
+    /* 18 the thrust, GLINTING (5 + the glint) */
+    frame({ lean: -2, dy: 3, fl: [11, 0], bl: [-11, 0], hand: [-8, 15], a: -0.05, L: 30, shield: [2, 12], cape: 2, glint: true }),
+    /* 19 the thrust's RECOVERY: over-reached, the arm still out and the point dropping */
+    frame({ lean: 7, dy: 3, fl: [16, 0], bl: [-13, 0], hand: [13, 13], a: 0.3, L: 30, shield: [-1, 16], shLow: true, cape: 4, bowed: 1 }),
+    /* 20 THE DELAYED OVERHEAD, coiled: sat low, the blade cocked back flat behind his helm, the shield up in front of his face */
+    frame({ lean: -6, dy: 5, fl: [12, 0], bl: [-12, 0], hand: [-4, -6], a: -2.8, L: 28, shield: [10, 2], cape: 3, tilt: -2, bowed: 1, swordBack: true }),
+    /* 21 the delayed overhead, GLINTING */
+    frame({ lean: -6, dy: 5, fl: [12, 0], bl: [-12, 0], hand: [-4, -6], a: -2.8, L: 28, shield: [10, 2], cape: 3, tilt: -2, bowed: 1, swordBack: true, glint: true }),
+    /* 22 THE GRAB, told: down low and wide, the sword let hang, the open hand drawn back */
+    frame({ lean: -3, dy: 7, fl: [14, 0], bl: [-14, 0], hand: [-11, 12], shield: [-2, 18], shLow: true, cape: 3, bowed: 2, noSword: true }),
+    /* 23 the grab's LUNGE: everything forward, the hand out flat */
+    frame({ lean: 9, dy: 3, fl: [18, 0], bl: [-15, 1], hand: [18, 6], shield: [0, 17], shLow: true, cape: 5, noSword: true }),
+    /* 24 the HOLD: stood up tall, the hand straight up over his head (the hero is drawn in it) */
+    frame({ lean: -1, dy: -1, fl: [8, 0], bl: [-9, 0], hand: [7, -22], shield: [10, 18], shLow: true, cape: 1, tilt: -2, bowed: -2, noSword: true }),
+    /* 25 the HURL: bent double, the hand thrown down to the floor in front of him */
+    frame({ lean: 8, dy: 6, fl: [15, 0], bl: [-12, 0], hand: [16, 22], shield: [2, 18], shLow: true, cape: 4, bowed: 3, noSword: true }),
+    /* 26 he GRASPS AIR: carried on past it, off balance, the hand empty */
+    frame({ lean: 10, dy: 4, fl: [12, 2], bl: [-16, 0], hand: [14, 14], shield: [-6, 18], shLow: true, cape: 5, tilt: 2, bowed: 2, noSword: true }),
+    /* 27 HOLY BRAND, told: the sword reversed in both hands, raised high, point down, lit */
+    frame({ dy: -2, fl: [8, 0], bl: [-8, 0], hand: [10, -22], a: 1.57, L: 28, shield: [-6, 20], shLow: true, tilt: -1, bowed: -2, glow: true }),
+    /* 28 the BRAND: driven into the floor, wide-legged, the blade still lit */
+    frame({ lean: 3, dy: 7, fl: [12, 0], bl: [-11, 0], hand: [12, 10], a: 1.57, L: 30, shield: [-7, 20], shLow: true, cape: 2, bowed: 2, glow: true }),
+    /* 29 THE FOLLOW-UP, told: the blade brought straight back across his body for the backhand */
+    frame({ lean: 1, dy: 1, fl: [11, 0], bl: [-9, 0], hand: [9, -2], a: -0.9, L: 30, shield: [3, 16], cape: 2 }),
+    /* 30 the follow-up, GLINTING */
+    frame({ lean: 1, dy: 1, fl: [11, 0], bl: [-9, 0], hand: [9, -2], a: -0.9, L: 30, shield: [3, 16], cape: 2, glint: true }),
   ];
   return pack(finish(F, 'paladin'), CX, G, 24, 52);
 }

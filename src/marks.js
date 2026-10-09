@@ -165,7 +165,7 @@ export const MARK = {
   'cisternqueen|chargeTell': '!!', 'cisternqueen|climbTell': '', 'cisternqueen|diveTell': '', 'cisternqueen|flickTell': '!', 'cisternqueen|floodTell': '', 'cisternqueen|grabTell': '!!',
   'cisternqueen|lanceTell': '!!', 'cisternqueen|lungeTell': '!!', 'cisternqueen|pinTell': '!!', 'cisternqueen|pincerTell': '!', 'cisternqueen|pounceTell': '!!', 'cisternqueen|slamTell': '!!',
   'cisternqueen|snap2Tell': '!', 'cisternqueen|snapTell': '!', 'cisternqueen|spitTell': '!', 'cisternqueen|sslamTell': '!!', 'cisternqueen|strikeTell': '!!', 'cisternqueen|sweepHighTell': '!!',
-  'cisternqueen|sweepLowTell': '!!', 'cisternqueen|tidalTell': '!!', 'cisternqueen|waveTell': '!!', 'clinger|dropTell': '!!', 'closedhelm|bashTell': '!!', 'closedhelm|cutTell': '!',
+  'cisternqueen|sweepLowTell': '!!', 'cisternqueen|tidalTell': '!!', 'cisternqueen|waveTell': '!!', 'clinger|dropTell': '!!', 'closedhelm|bashTell': '!!', 'closedhelm|brandTell': '!!', 'closedhelm|cutTell': '!', 'closedhelm|delayTell': '!', 'closedhelm|followTell': '!', 'closedhelm|grabTell': '!!',
   'closedhelm|judgeTell': '!', 'closedhelm|leapTell': '!!', 'closedhelm|oathTell': '!!', 'closedhelm|radianceTell': '!!', 'closedhelm|thrustTell': '!', 'colossus|crackTell': '!!',
   'colossus|lanceTell': '!!', 'colossus|quakeTell': '!!', 'colossus|shakeTell': '!!', 'colossus|shardTell': '!', 'colossus|stompTell': '!!', 'colossus|sweepTell': '!!',
   'colossus|waveTell': '!!', 'corpse|cutTell': '!', 'corpse|riseTell': '', 'courtier|clawTell': '!', 'crab|lungeTell': '!', 'crab|pinchTell': '!',
@@ -474,6 +474,7 @@ export const ANSWER = {
   'masterpiece|swatTell': 'block', 'masterpiece|stompTell': 'dodge', 'masterpiece|reachTell': 'duck',
   'burieddead|novaTell': 'dodge', 'burieddead|throwTell': 'block', 'burieddead|bodyTell': 'dodge',   /* THE BURIED DEAD's three untold windups (claude/bossmarks): the poison nova is a ring on the floor (high ground is safe, nothing turns it); the thrown body is a blockable blow that lands where you stood; the body slam lands red on the marked ellipse and nothing turns it */
   'strawking|forkTell': 'block', 'strawking|slamTell': 'block', 'strawking|sweepTell': 'jump', 'strawking|baleTell': 'jump', 'strawking|lanternTell': 'dodge', 'strawking|leapTell': 'dodge',   /* THE SCARECROW KING (claude/bossmarks): fork and slam a shield turns; the sweep and the rolled bale go along the floor; the thrown lantern and his leap are spots to leave */
+  'closedhelm|grabTell': 'dodge', 'closedhelm|brandTell': 'jump',   /* (claude/crusader) CRUSADER'S GRAB: a hand no shield stops - roll through it; HOLY BRAND: the fire runs along the floor - over it */
   'closedhelm|leapTell': 'dodge',   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP: his whole weight on the red ring, unblockable - be off it when he lands (and he lands open) */
   /* (ELITES2) every elite kind its own two moves (src/main.js updateElite<Kind>) and the THORNED affix's spines: what the player does */
   '*|ekRiposteTell': 'block', '*|ekThornsTell': 'dodge',
@@ -699,6 +700,7 @@ export const HEIGHT = {
   'masterpiece|swatTell': 'low', 'masterpiece|stompTell': 'low', 'masterpiece|reachTell': 'high',   /* THE PUPPETEER (claude/puppeteer): the whip high and the reach go over a ducking hero */
   'burieddead|novaTell': 'low', 'burieddead|throwTell': 'low', 'burieddead|bodyTell': 'low',
   'strawking|forkTell': 'low', 'strawking|slamTell': 'low', 'strawking|sweepTell': 'low', 'strawking|baleTell': 'low', 'strawking|lanternTell': 'low', 'strawking|leapTell': 'low',
+  'closedhelm|grabTell': 'low', 'closedhelm|brandTell': 'low',   /* (claude/crusader) the grab takes a ducked hero too; the brand's fire is ON the floor: ducking is no answer */
   'closedhelm|leapTell': 'low',   /* (claude/sweep2 gap-closer) THE PALADIN'S LEAP lands on the floor: ducking under it is no answer */
   /* (ELITES2) every elite kind its own two moves (src/main.js updateElite<Kind>) and the THORNED affix's spines: low reaches the floor, high goes over a duck */
   '*|ekRiposteTell': 'low', '*|ekThornsTell': 'low',
