@@ -70,7 +70,7 @@ export async function openPage(opts = {}) {
     await send('Page.navigate', { url });
     let ready = false;
     /* waits on the CONDITION with a wall-clock deadline: 120 x 100 ms was ~12 s of polls when the page answered at once, and a loaded machine's boot (six lanes, 2026-10) took longer than that */
-    for (const until = Date.now() + 90000; Date.now() < until && !ready;) {
+    for (const until = Date.now() + (+process.env.LAB_BOOT_MS || 90000); Date.now() < until && !ready;) {   /* LAB_BOOT_MS: a longer deadline on a machine at 100% (claude/ksar2: ten lanes, most reloads timed out) */
       ready = await evalp('performance.timeOrigin !== ' + JSON.stringify(previousOrigin) + ' && location.href === ' + JSON.stringify(url) + ' && !window.__labReloading && typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false);
       if (!ready) await sleep(100);
     }
