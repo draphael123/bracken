@@ -465,6 +465,7 @@ export function drawCanalFog(st, g, H, cx, cy, VW, VH, time) {
   const b = st.barge; hole(b.x + 10 - cx, b.y - 30 - cy, R.lampLit(st) ? R.RIG.bargeR : 16);   /* (claude/canal4: dimmed, an ember) */
   for (const [x0, x1] of st.D.moon || []) { const mx = (x0 + x1 + 1) / 2 * TS - cx; if (mx < -60 || mx > VW + 60) continue; for (let yy = 0; yy < 8; yy++) hole(mx, (14 + yy) * TS - cy, 34 - yy * 2); }   /* the moon down its shaft */
   for (const c of st.carriers || []) hole(c.x - cx, c.y - 20 - cy, R.RIG.carryR);   /* (claude/canalfix) a lamplighter's lantern */
+  for (const e of H.enemies()) { if (e.x < cx - 30 || e.x > cx + VW + 30 || e.y < cy - 40 || e.y > cy + VH + 40) continue; if (engagedFoe(st, H, e)) e.litUntil = time + 1.5; if (e.litUntil > time) hole(e.x - cx, e.y - (e.h || 12) / 2 - cy, 22); }   /* (it stays lit while its bolt is in the air)*/   /* (claude/tunnelfix) a foe at his work is lit (no-hidden-hits) */
   fg.globalCompositeOperation = 'source-over';
   /* THE THEATRE, lit, ahead through the fog the whole way: a warm glow low in the fog at the screen's far side, stronger the nearer you come */
   const k = Math.min(1, Math.max(0, cx / (360 * TS))), gx = VW * 0.86, gy = VH * 0.42, gr = fg.createRadialGradient(gx, gy, 4, gx, gy, 90 + 60 * k);
@@ -518,6 +519,10 @@ function tunnelReads(st, g, cx, cy, VW, time) {
 /* A CANAL FOE'S OWN MARKS (drawn before the body): a grindylow under the water is its ripples - and its shadow, in a lantern's light */
 export function drawCanalFoeFx(st, g, H, e, cx, cy, time) {
   if (e.t !== 'grindylow') return; const s = surfaceAt(st, H, e.x); if (!s) return; const x = Math.round(e.x - cx), y = Math.round(s.y - cy);
+  { const b = st.barge;   /* (claude/tunnelfix) AT HER HULL IT SURFACES BESIDE HER AND TAKES HOLD OF THE GUNWALE: two green hands over the lip at her end, told before it can reach a hero on her deck */
+    if (b && !e.aboard && (e.mode === 'boardTell' || ((e.mode === 'rippleTell' || e.mode === 'grab') && e.edge && e.edge.barge))) { const west = e.x < b.x + b.w / 2, hx0 = Math.round((west ? b.x : b.x + b.w - 8) - cx), hy0 = Math.round(b.y - cy), tell = e.mode !== 'grab';
+      g.fillStyle = '#2a4a34'; g.fillRect(hx0, hy0 - 3, 8, 3); g.fillStyle = '#3e6a4a'; g.fillRect(hx0, hy0 - 2, 8, 2);
+      for (let q = 0; q < 4; q++) { const fx = hx0 + q * 2 + (west ? 0 : 1), lift = tell && Math.floor(time * 10 + q) % 2 ? 1 : 0; g.fillStyle = '#5e9a6a'; g.fillRect(fx, hy0 - 6 - lift, 1, 4); g.fillStyle = '#e8f8c8'; g.fillRect(fx, hy0 - 7 - lift, 1, 1); } } }
   if (e.mode === 'rippleTell') { const k = 1 - Math.max(0, e.modeT) / F.GRIND.tell; g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#c8ffe0'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.ellipse(x, y, 4 + q * 5 + k * 4, 1.5 + q, 0, 0, Math.PI * 2); g.stroke(); } }
   else if (e.mode === 'lurk' || e.mode === 'dunk') { if (litAt(st, e.x, s.y - 8)) { g.globalAlpha = 0.35; g.fillStyle = '#1e3a28'; g.beginPath(); g.ellipse(x, y + 7, 7, 3, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#e8f8c8'; g.fillRect(x + 1, y + 5, 1, 1); g.fillRect(x + 4, y + 5, 1, 1); g.globalAlpha = 1; } }
 }
@@ -529,6 +534,16 @@ export function drawCanalWater(st, g, H, cx, cy, VW, VH, time) {
   const wis = H.enemies().filter(e => e.alive && e.t === 'willowisp' && Math.abs(e.x - cx - VW / 2) < VW).map(e => ({ x: e.x, k: 1 }));
   CP.drawWater(g, st, H.L().pools || [], cx, cy, VW, VH, time, lan, wis); }
 export const canalFoeShown = e => e.t !== 'grindylow' || F.grindylowUp(e);
+/* (claude/tunnelfix, Daniel 10-08: "I take damage from enemies I cannot see") THE RULE: NO FOE HURTS YOU WHILE IT IS NOT DRAWN (tools/no-hidden-hits.mjs). Two halves:
+   - IN THE LEGGING TUNNEL'S DARK A MAN SEES ONLY WHAT IS LIT, AS THE WATCHMEN DO: a bargee on the ledge does not hook an unlit hero (her lantern dimmed). darkBlind(st, e, P)
+   - A FOE AT HIS WORK IS LIT: one that is winding up, drawing a bow, at his blow, or within a blade's length of a hero carries a glimmer through the fog and the dark (a hole in it,
+     the size of the man), so what is about to hit you is always on the picture. engagedFoe(st, H, e). Unseen it stays: a foe asleep, or far off, or one that has not seen you */
+export const darkBlind = (st, e, P) => !!st && !!P && R.tunnelAt(st, e.x) && !litAt(st, P.x, P.y - 8);
+const WORKING = /Tell$|^(hook|haft|swipe|strike|slam|lunge|dash|leap|loose|shoot|aim|draw|flare|grab|ripple|deck|charge|swing|throw|cast|bite|snap)/i;
+export function engagedFoe(st, H, e) {
+  if (!e.alive || e.harmless || e.gone > 0 || e.waiting || e.t === 'willowisp' || (F.CANAL_FOES.has(e.t) && !F.grindylowUp(e)) || (e.boarder && foeHidden(e))) return false;
+  if (e.draw > 0 || e.loose > 0 || (typeof e.mode === 'string' && WORKING.test(e.mode))) return true;
+  let near = false; H.eachHero(P => { if (!P.dead && Math.abs(P.x - e.x) < 72 && Math.abs(P.y - e.y) < 60) near = true; }); return near; }
 
 /* the rooms behind the tiles (src/redraw/canal_props.js paintRoom): the warehouse, the mill, Jenny's door */
 /* (claude/canalfix3) the canal's sign: an iron plaque, not a wooden board */
