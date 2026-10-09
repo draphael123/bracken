@@ -45,10 +45,10 @@ export const CARAVAN_PIECES = [
   ...P(`#waydown @gate Fx8 L2 L2 Fx4 L1 L1 Fx4 L2 L2 Fx6 @awning1 Fx4 R1 R1 Fx3 L1 L1 @house1 Fx8 R2 R2 Fx2 L2 L2 Fx6`),                 // down from lvl 6 to 0
   ...P(`#road Fx4 @wagon1 Fx6 R2 R2 Fx3 L2 L2 Fx6 @leadwagon Fx8 R1 R1 @house2 Fx7 L1 L1 Fx4 R2 Fx2 R1 Fx2 L1 L2 Fx5 @wagon3 Fx6 L1 Fx4 R1 @towerA Fx9 R2 R2 Fx2 L2 L2`),
   ...P(`#oxline Fx6 QSx3 Fx4 @oxwreck R2 R2 Fx2 L2 L2 Fx4 QSx3 Fx4 @ribcage Fx3 QSx8 Fx3 Fx5 R1 R1 Fx3 L1 L1 QSx3 Fx1 @house3 Fx7 R2 Fx2 L2 Fx2`),
-  ...P(`#dunesea R1 R1 R1 Fx3 L1 L1 Fx3 R2 R2 R2 Fx2 L2 L2 @arch Fx8 L2 Fx3 @slide R1 R1 R1 R1 R1 Fx3 L1 L1 L1 L1 L1 QSx3 @landing Fx5 R2 Fx3 L2 Fx2 L1 Fx4`),
-  ...P(`#camp Fx4 R2 Fx2 L2 @winch Fx4 Fx30 @tent Fx8 R1 Fx3 L1 Fx4 L2 @towngate Fx6`),
-  ...P(`#sinking Fx4 QSx3 @isle1 Fx3 QSx3 Fx4 @towerB Fx7 Fx3 @caravanserai Fx7 Fx3 @towerC Fx7 Fx4 QSx3 @isle2 Fx3 QSx3 Fx3 R1 Fx4 L1 Fx3 @house5 Fx7 Fx4`),
-  ...P(`#rim Fx4 QSx3 @isle3 Fx3 QSx3 Fx4 @towerD Fx7 Fx3 QSx3 @isle4 Fx3 QSx3 @exland Fx4 @rimshade R1 R1 Fx3 L1 L2 Fx6 @lintel Fx6 L1 L1 L1 L1 Fx10 #arena Fx40`),
+  ...P(`#dunesea R1 R1 R1 Fx2 @slide1 L1 L1 L1 QSx5 Fx1 R1 R1 R1 R1 Fx1 L2 L2 @arch Fx8 L2 Fx1 @slide R1 R1 R1 R1 R1 R1 R1 R1 R1 R1 Fx1 L1 L1 L1 L1 L1 L1 L1 L1 L1 L1 QSx5 @landing Fx3 R2 Fx1 L2 L1 Fx2`),   /* (claude/caravan2) THE DUNE SLIDES: the first dune's foot is a five-tile pit (the teach); THE LONG SLIDE is a big hill now (ten rows, Daniel: "big hills you slide down for jumps") and its foot's pit is five (the test); the crest before the arch keeps its height (the stray on the lintel is a jump from it) */
+  ...P(`#camp Fx4 R2 Fx2 L2 @winch Fx4 Fx18 QSx3 Fx9 @tent Fx8 R1 Fx3 L1 Fx4 L2 @towngate Fx6`),
+  ...P(`#sinking Fx4 QSx3 @isle1 QSx3 QSx3 Fx4 @towerB Fx7 Fx3 @caravanserai Fx7 Fx3 @towerC Fx7 Fx4 QSx3 @isle2 Fx3 QSx3 R1 R1 @slide3 Fx1 L1 L1 QSx6 Fx1 @house5 Fx7 Fx4`),
+  ...P(`#rim Fx4 QSx3 @isle3 Fx3 QSx3 Fx4 @towerD Fx7 Fx3 QSx3 @isle4 Fx3 QSx3 @exland Fx4 @rimshade R1 R1 R1 @slide4 Fx1 L1 L1 L1 QSx5 Fx2 @lintel Fx6 L1 L1 L1 L1 Fx10 #arena Fx11 QSx3 Fx13 QSx3 Fx10`),
 ];
 export function buildSunkenCaravan(T) {
   const base = CARAVAN_BASE, H = CARAVAN_H;
@@ -82,6 +82,18 @@ export function buildSunkenCaravan(T) {
      should use sand platforms or more appropriate terrain"). Everything else the level lays in T.PLANK or T.ONEWAY is
      ground - sandstone, rock or ruin - and L.ledgeKit = 'desert' (src/sunken-caravan.js) says so. */
   const timberPlanks = [], timber = (x0, x1, y) => timberPlanks.push([x0, x1, y, y]);
+  /* (claude/caravan2, Daniel 10-09: "remove the logs" - nothing roped, nothing hanging, nothing floating) THE WRECKAGE AND THE ROCK THAT STANDS ON THE SAND:
+     a SLAB of the old road's sandstone lying on the quicksand (one row over its surface: it CRACKS under you and goes in - L.crumbles, src/tower-collapse.js -
+     and comes back), a SANDSTONE SHELF on its own pier of rock (L.rockZones skins both as rock), a half-buried WAGON BED sinking in the quicksand
+     (an ent 'pad' with wreck: true - it goes down under your weight and floats back, as the marsh's lily pads do) and the camp's cargo (crates) */
+  const crumbles = [], slabs = [], duneSlides = [];
+  const slab = (x0, x1) => { const r = top(x0) - 1; for (let x = x0; x <= x1; x++) set(x, r, T.SOLID); crumbles.push({ x: x0, x0, x1, row: r, kind: 'slab' }); slabs.push([x0, x1, r, r]); };
+  const shelf = (x0, x1, up, pier) => { const r = top(x0) - up; for (let x = x0; x <= x1; x++) set(x, r, T.SOLID); for (let y = r + 1; y < top(pier); y++) set(pier, y, T.SOLID); slabs.push([x0, x1, r, r], [pier, pier, r, top(pier) - 1]); };
+  const bed = x => ent('pad', x, on(x), { big: true, wreck: true });   /* a half-buried wagon bed on the quicksand (main.js draws it, sinks it under you)*/
+  /* THE DUNE SLIDES (claude/caravan2, Daniel 10-09: "big hills you slide down for jumps"): hold DOWN on the steep face (src/slopes.js slideStep, the game's own
+     slide) and the speed carries a jump at the foot over a pit a running jump falls into. L.duneSlides = [{ id, crest, foot, gap: [c0, c1], use }] in columns:
+     the hook the game-wide SLOPE MOMENTUM lane absorbs (scratch/brief-slopemomentum.md), and what tools/caravan-slides.mjs drives every hero over */
+  const duneSlide = (id, crest, foot, g0, g1, use) => duneSlides.push({ id, x: crest, crest, foot, gap: [g0, g1], use });
   // ---- THE RUINS: laid stone (L.masonry), their insides rooms (L.interiors 'ruin') and shade, the garrison kept off them (L.calm) ----
   const masonry = [], facades = [], interiors = [], calm = [], roofs = {};
   /* A TOWER, w wide and h rows tall on its column's ground: two walls and a roof, a door at the foot of each wall (you walk through it
@@ -106,6 +118,7 @@ export function buildSunkenCaravan(T) {
     facades.push([x0, x0, g - 3, g - 1, 'ruindoor'], [x1, x1, g - 3, g - 1, 'ruindoor']);
     for (let y = roof - crown[0]; y < roof; y++) set(x0, y, T.SOLID); for (let y = roof - crown[1]; y < roof; y++) set(x1, y, T.SOLID);
     set(x0 + 2 + (x0 % 3), roof, T.AIR);                                                                          /* a hole in its roof where the beams went */
+    for (let x = x0 + 1; x <= x1 - 1; x++) set(x, g - 3, T.ONEWAY);   /* (claude/caravan2) and its upper floor, half gone: a ledge three rows up you jump through, and the roof's hole over it - the house has a second height (and a third, its roof) */
     masonry.push([x0, x1, roof - Math.max(...crown), g - 1, 'ruin']); interiors.push([x0 + 1, x1 - 1, roof + 1, g - 1, 'ruin']); calm.push([x0 - 1, x1 + 1, roof - 4, g]);
     shade.push([(x0 + 1) * TS, x1 * TS, (roof + 1) * TS, g * TS + 1]); roofs[name] = { x0, x1, row: roof }; };
   /* A WALL WITH ITS LINTEL STILL ON: two piers drawn behind the play (L.facades: the road runs between them, not into them) and the
@@ -114,6 +127,14 @@ export function buildSunkenCaravan(T) {
     for (let x = x0; x <= x1; x++) set(x, r, T.SOLID); set(x0 + 1, r - 1, T.SOLID); set(x1, r - 1, T.SOLID);   /* and a course of it still over the ends */
     masonry.push([x0, x1, r - 1, r, 'ruin']); facades.push([x0, x0, r + 1, g - 1, 'ruin'], [x1, x1, r + 1, g - 1, 'ruin']);
     shade.push([x0 * TS, (x1 + 1) * TS, r * TS, g * TS + 1]); calm.push([x0 - 1, x1 + 1, r - 4, g]); };
+  /* (claude/caravan2) THE OLD TOWN'S WALL-WALKS: the top course of a ruined wall, three rows over the road on its piers (drawn behind the play: L.facades,
+     held as a lintel is - tools/architecture.mjs B9, a pier at least every eight tiles), so the road has a second height through the town: walk under it in its
+     shade (and out of a slinger's arc), or jump up at its end and walk the top over what is fighting on the sand. Laid stone (L.masonry 'ruin'): the
+     ruin's own ashlar, never a plank. The garrison keeps off and under it (L.calm) */
+  const wallWalk = (x0, x1) => { const g = top(x0), r = g - 3; for (let x = x0; x <= x1; x++) { if (top(x) !== g) throw new Error('wall-walk ' + x0 + '-' + x1 + ' is not on a flat at ' + x); set(x, r, T.SOLID); }
+    const piers = [x0]; for (let x = x0 + 8; x < x1; x += 8) piers.push(x); piers.push(x1); for (const p of piers) facades.push([p, p, r + 1, g - 1, 'ruin']);
+    masonry.push([x0, x1, r, r, 'ruin']); shade.push([x0 * TS, (x1 + 1) * TS, r * TS, g * TS + 1]); calm.push([x0, x1, r - 4, g]); walls.push([x0, x1, r]); };
+  const walls = [];
   /* A RUIN FACE behind the play: a wall of the old town standing in the dunes, nothing you touch (on a flat, so it stands on sand) */
   const face = (x0, x1, h) => { const g = top(x0); facades.push([x0, x1, g - h, g - 1, 'ruin']); };
   lintel(marks.gate + 2, marks.gate + 7);                                   // THE OLD TOWN'S GATE: you start in its shade, and step out into the sun
@@ -124,7 +145,7 @@ export function buildSunkenCaravan(T) {
   tower('towerD', marks.towerD, 14, { crown: [2, 3] });                     // THE LAST TOWER, over the exam on the rim
   lintel(marks.lintel, marks.lintel + 5);                                   // the rim's last shade before the hollow: THE FIRST KNIFE holds it
   lintel(marks.towngate, marks.towngate + 5);                               // THE TOWN GATE, out of the camp and into the ruined town
-  face(marks.landing + 1, marks.landing + 4, 4); face(marks.tent + 1, marks.tent + 5, 5); face(marks.arch + 2, marks.arch + 5, 3);   // the old town's walls, behind the play
+  face(marks.landing, marks.landing + 2, 4); face(marks.tent + 1, marks.tent + 5, 5); face(marks.arch + 2, marks.arch + 5, 3);   // the old town's walls, behind the play
 
   // ---- 1 THE WAY DOWN: the standard, the rule taught, the lone awning ----
   /* THE CHECKPOINTS ARE SPACED, NOT SPRINKLED (RULES S4, 2026-09-25): 40 to 72 route tiles apart - 72 because src/level.js
@@ -138,41 +159,49 @@ export function buildSunkenCaravan(T) {
   // ---- 2 THE CARAVAN ROAD ----
   ent('wagon', marks.wagon1 + 3, on(marks.wagon1 + 3));
   { const x = marks.leadwagon; ent('wagon', x + 3, on(x + 3), { lead: true });                 // THE LEAD WAGON: its tipped bed is a ledge
-    for (let i = 0; i < 4; i++) set(x + 1 + i, top(x) - 3, T.PLANK); timber(x + 1, x + 4, top(x) - 3); ent('silver', x + 3, top(x) - 7);   // a silver over the bed: up on the wagon, then a jump
+    shelf(x + 1, x + 4, 3, x + 1); ent('silver', x + 3, top(x) - 7);   // (claude/caravan2) the wagon's sandstone shelf on its pier (was a plank in the air), a silver over it: up, then a jump
     }
   ent('wagon', marks.wagon3 + 3, on(marks.wagon3 + 3)); ent('check', sections.road - 5, on(sections.road - 5)); ent('check', marks.wagon3 - 4, on(marks.wagon3 - 4));
   // ---- 3 THE OX LINE: bones, the first quicksand, THE GREAT RIBCAGE ----
   const firm = x => { while (cols[x] && cols[x].t === 'QS') x++; return x; };
   for (const dx of [2, 16, 30]) { const x = firm(sections.oxline + dx); ent('deco', x, on(x), { kind: dx === 16 ? 'ribs' : 'skull' }); }
   ent('wagon', marks.oxwreck - 2, on(marks.oxwreck - 2), { wreck: true });   /* (its checkpoint at the ox line's head went: nineteen tiles from the ribcage's, RULES S4) */
-  { const x0 = marks.ribcage, x1 = x0 + 13, spine = top(x0) - 7;                                 // ribs up both ends, the spine across
-    for (const rx of [x0, x0 + 1, x1 - 1, x1]) for (let y = spine + 1; y < top(rx); y++) set(rx, y, T.NET);
-    for (let x = x0; x <= x1; x++) set(x, spine, T.ONEWAY);
-    for (const px0 of [x0 + 5, x0 + 9]) moversExtra.push({ kind: 'swing', px: px0 * TS + 8, py: (spine + 1) * TS, arm: 56, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: px0 === x0 + 5 ? 0 : 1.6 });
-    shade.push([x0 * TS, (x1 + 1) * TS, spine * TS, top(x0) * TS + 1]);                          // its shade
-    ent('silver', x0 + 7, spine - 1); ent('check', x0 - 2, on(x0 - 2)); }
+  /* THE QUICKSAND TAUGHT (A4): the ox line's first pit, alone, a sign at its lip and nobody to fight - failing it costs a few hops */
+  ent('sign', sections.oxline + 4, on(sections.oxline + 4), { text: 'QUICKSAND HOLDS YOU. JUMP, AND KEEP JUMPING.' }); calm.push([sections.oxline + 2, sections.oxline + 12, 0, H]);
+  /* THE SINKING WAGONS (claude/caravan2: the GREAT RIBCAGE's ribs were ladders, its spine a plank and its ropes swung planks over the basin - Daniel's photo,
+     "the logs"): the basin is crossed on what the caravan left in it - a half-buried WAGON BED that goes under you, then a SLAB of the road that cracks, then
+     the far shore, where a SANDWORM keeps the sand and its dome drives you back toward the quicksand, under a VULTURE (the test: the rule while you fight).
+     The ribcage itself is bones on the sand now (dressing, the landmark), not something to climb */
+  { const x0 = marks.ribcage; bed(x0 + 6); slab(x0 + 9, x0 + 10); ent('check', x0 - 2, on(x0 - 2));
+    ent('deco', x0 + 1, on(x0 + 1), { kind: 'ribs' }); ent('deco', x0 + 14, on(x0 + 14), { kind: 'ribs' });
+    ent('awning', x0, on(x0), { torn: true }); ent('awning', x0 + 12, on(x0 + 12), { torn: true }); }   /* the spine's shade went with it: a torn lean-to at each shore (the sun rule's walk) */
   // ---- 4 THE DUNE SEA: the arch, THE LONG SLIDE ----
   { const x0 = marks.arch, r = top(x0); for (let x = x0 - 3; x <= x0 + 7; x++) set(x, r - 4, T.SOLID);   /* reaching back over the slope, a jump from the crest */   // THE ARCH: a sandstone lintel 4 rows up - shade under it (roofShade) -
     ent('deco', x0, on(x0), { kind: 'archPillar', behind: true }); ent('deco', x0 + 7, on(x0 + 7), { kind: 'archPillar', behind: true });   // - on two pillars drawn BEHIND the road (solid ones walled it off)
     ent('stray', x0 + 3, r - 5);
     ent('wagon', sections.dunesea + 4, on(sections.dunesea + 4), { wreck: true }); }               // a wreck on the first crest: shade between the ribcage and the arch                                                                                                          // a stray on top: a two-row jump from the crest before it
-  { const x0 = marks.slide; ent('sign', x0 - 2, on(x0 - 2), { text: 'DOWN ON A SLOPE AND YOU SLIDE. JUMP AT THE BOTTOM AND THE SAND WILL NOT HAVE YOU.' });
-    ent('silver', x0 + 5 + 1, top(x0 + 6) - 3); ent('check', marks.arch + 1, on(marks.arch + 1));
-    ent('wagon', marks.landing + 3, on(marks.landing + 3), { wreck: true }); }                         // the wreck the slide jump lands by: shade after the long dune
+  { const s1 = marks.slide1; ent('sign', s1 - 2, on(s1 - 2), { text: 'HOLD DOWN AND SLIDE THE DUNE. JUMP AT ITS FOOT: THE SAND WILL NOT HAVE YOU.' }); duneSlide('teach', s1 - 1, s1 + 2, s1 + 3, s1 + 7, 'teach: a pit a running jump falls into'); }
+  { const x0 = marks.slide; ent('sign', x0 - 2, on(x0 - 2), { text: 'THE LONG DUNE. SLIDE IT FOR THE SPEED, AND MIND WHO WAITS AT THE FOOT.' }); duneSlide('long', x0 + 10, x0 + 20, x0 + 21, x0 + 25, 'test: a big hill, the pit, and an ambusher where you land'); ent('awning', x0 + 10, on(x0 + 10), { torn: true });   /* a torn lean-to on the crest: shade before the long run down */
+    ent('silver', x0 + 8, top(x0 + 8) - 3); ent('check', marks.arch + 1, on(marks.arch + 1));
+    ent('wagon', marks.landing + 1, on(marks.landing + 1), { wreck: true }); }                         // the wreck the slide jump lands by: shade after the long dune
   // ---- 5 THE TRADERS' CAMP: the winch, the great awning, the tent and its relic ----
   { const x0 = marks.winch, yard = [x0 + 6, x0 + 30];
     ent('winch', x0 + 2, on(x0 + 2), { canopy: { x0: yard[0], x1: yard[1], row: top(x0) - 5 } });                        // THE AWNING WINCH (F5): rolls the canopy out over the yard
     ent('deco', yard[0], on(yard[0]), { kind: 'canopyPost', behind: true }); ent('deco', yard[1], on(yard[1]), { kind: 'canopyPost', behind: true });   // its posts, drawn behind (B9)
     for (const [cx, hgt] of [[yard[0] + 5, 1], [yard[0] + 6, 2], [yard[0] + 14, 1], [yard[0] + 20, 2], [yard[0] + 21, 1]]) for (let y = top(cx) - hgt; y < top(cx); y++) set(cx, y, T.CRATE);   // the cargo, stacked: steps
-    for (let x = yard[0] + 9; x <= yard[0] + 12; x++) set(x, top(x) - 3, T.PLANK); timber(yard[0] + 9, yard[0] + 12, top(yard[0] + 9) - 3);                                      // a market stall's board
+    for (const [cx, hgt] of [[yard[0] + 11, 1], [yard[0] + 12, 2]]) for (let y = top(cx) - hgt; y < top(cx); y++) set(cx, y, T.CRATE);   // (claude/caravan2) a market stall's cargo (its board was a plank in the air)
+    slab(yard[0] + 17, yard[0] + 17);   // THE YARD'S QUICKSAND (claude/caravan2: the rule while you fight, A5) and a slab of the road lying on it
     ent('awning', x0 - 3, on(x0 - 3)); ent('awning', marks.tent + 10, on(marks.tent + 10)); ent('check', x0, on(x0));
-    const t0 = marks.tent; for (let i = 0; i < 5; i++) set(t0 + i, top(t0) - 3, T.PLANK); timber(t0, t0 + 4, top(t0) - 3); ent('relic', t0 + 2, top(t0) - 4);   // the trader's platform, the relic on it
+    const t0 = marks.tent; shelf(t0, t0 + 4, 3, t0); ent('relic', t0 + 2, top(t0) - 4);   // the trader's shelf of rock on its pier (claude/caravan2: it was a plank in the air), the relic (a silver vault) on it
     ent('sign', x0 + 4, on(x0 + 4), { text: 'THE CAMP WINCH ROLLS THE GREAT AWNING OUT. ROLL IT BACK AND THEY BURN.' }); }
   // ---- 6 THE SINKING WAY: wagon tops over the quicksand, THE SINKING CARAVANSERAI ----
-  for (const q of qs.filter(q => q.x0 >= sections.sinking * TS && q.x1 <= sections.rim * TS)) { const a = q.x0 / TS, b = q.x1 / TS; if (b - a >= 5) { const mid = Math.floor((a + b) / 2) - 1; for (let i = 0; i < 3; i++) set(mid + i, q.y / TS - 2, T.PLANK); timber(mid, mid + 2, q.y / TS - 2); ent('wagon', mid + 1, q.y / TS, { sunk: true }); } }   // a sunk wagon's top to stand on
+  /* (claude/caravan2) THE SUNKEN WAGONS: the first island is gone under the sand - nine tiles of quicksand under the first twin tower's slinger, crossed on a
+     wagon bed that sinks and a slab that cracks (the remix: both at once, under fire). THE THIRD SLIDE (slide3) runs down into six tiles of it with a wagon
+     bed in the middle: hop the bed, or carry the slide's speed over the lot */
+  { const i1 = marks.isle1; bed(i1); slab(i1 + 4, i1 + 5); const s3 = marks.slide3; bed(s3 + 5); duneSlide('beds', s3, s3 + 2, s3 + 3, s3 + 8, 'remix: over a run of wagon beds, or onto one'); }
   /* THE ISLANDS (2026-09-25): three firm tiles between two three-tile pits, a jump each way (RULES S2), a sunk wagon's roof showing on
      each (dressing, not a wagon's lee: it is under the sand to its eaves) */
-  for (const k of ['isle1', 'isle2', 'isle3', 'isle4']) ents.push({ t: 'deco', x: marks[k] + 1, y: on(marks[k] + 1), kind: 'wagonSunk', v: 1 });
+  for (const k of ['isle2', 'isle3', 'isle4']) ents.push({ t: 'deco', x: marks[k] + 1, y: on(marks[k] + 1), kind: 'wagonSunk', v: 1 });
   { const x0 = marks.caravanserai, g = top(x0), roof = g - 9;                                      // a stone tower, sunk: walls, a door, a floor inside, the roof
     for (let x = x0; x <= x0 + 6; x++) for (let y = roof; y < g; y++) set(x, y, T.SOLID);
     for (let x = x0 + 1; x <= x0 + 5; x++) for (let y = roof + 1; y < g; y++) set(x, y, T.AIR);
@@ -186,6 +215,7 @@ export function buildSunkenCaravan(T) {
   const ax0 = sections.arena, ax1 = ax0 + 39, floor = top(ax0);
   ent('check', ax0 - 3, on(ax0 - 3));                                                              // B6: one outside the arena walls
   ent('sign', sections.rim + 2, on(sections.rim + 2), { text: 'THE GROUND IS MOVING.' });
+  { const s4 = marks.slide4; duneSlide('exam', s4, s4 + 3, s4 + 4, s4 + 8, 'exam: the last dune before the hollow, the First Knife past it'); }
   ent('awning', marks.rimshade - 2, on(marks.rimshade - 2), { torn: true });                          // a torn lean-to on the rim
   for (const dx of [8, 20, 32]) ent('wagon', ax0 + dx, on(ax0 + dx), { wreck: true });              // the three wrecks: the places to make THE OPENING
   /* THE RIM'S OVERHANG (Daniel, 2026-09-23) - THE ONE PIECE OF SHADE THE WORM CANNOT TAKE. The hollow's shade used to be
@@ -201,6 +231,8 @@ export function buildSunkenCaravan(T) {
   shade.push([ovL * TS, (ovR + 1) * TS, ovRow * TS, floor * TS + 1]);                              /* said as a rect too, so a tool with no tileAt still sees it */
   const arena = { x0: ax0 * TS, x1: (ax1 + 1) * TS, floor: floor * TS, trigger: (ax0 + 5) * TS, wallL: ax0 - 1, wallR: ax1 + 1, boss: 'duneworm', music: 'boss2', tint: '#e2bb7a', tintA: 0.1, fx: 'sand' };
 
+  /* (claude/caravan2) THE WALL-WALKS, where the road runs flat through what is left of the town */
+  for (const [a, b] of [[63, 75], [88, 93], [127, 135], [marks.ribcage + 12, marks.ribcage + 18], [marks.winch + 4, marks.winch + 10], [marks.winch + 28, marks.winch + 33], [marks.ribcage - 4, marks.ribcage + 2], [marks.towngate + 6, marks.towngate + 9], [marks.towerC + 7, marks.towerC + 10]]) wallWalk(a, b);
   // ---- PLACED, NOT CROWDED (RULES S1, 2026-09-25): each of these is a foe and the ground making one problem together, and the build
   //      keeps them where they are (placed: true). The garrison below is the crowd between them ----
   const onRoof = (r, dx) => ({ x: dx === undefined ? (r.hatch && r.hatch[0] <= r.x0 + 2 ? r.x1 - 1 : r.x0 + 1) : r.x0 + dx, y: r.row - 1 });   /* no dx: the end of the roof away from its hatch */
@@ -215,9 +247,16 @@ export function buildSunkenCaravan(T) {
     ['ambusher', { x: marks.isle2 + 1, y: on(marks.isle2 + 1) }, 'on the island between the two pits past the town: you land on him'],
     ['ambusher', { x: marks.exland + 1, y: on(marks.exland + 1) }, 'THE EXAM: at the landing of the last tower\'s second pit, under the slinger'],
   ];
+  /* THE SANDWORMS (claude/caravan2, Daniel 10-09: "the mini sand worms must appear" - they never did: no row ever put one in the caravan). The Dune Worm's
+     small kin (src/desert-foes2.js, the proven machine), each on a bed of firm sand (bed: [c0, c1]) where it makes the ground harder - B8, the approach
+     sets him up: you meet his ripple and his dome before you meet him */
+  const WORMS = [[70, [64, 76], 'roadWorm', 'THE CARAVAN ROAD: the first hump in the sand runs at you in the sun, by the first wagon\'s lee'], [marks.ribcage + 16, [marks.ribcage + 12, marks.ribcage + 19], 'basinWorm', 'the sinking wagons\' far shore: its dome drives you back toward the quicksand'], [marks.arch + 4, [marks.arch + 1, marks.arch + 7], 'archWorm', 'under the arch\'s shade: the one cool spot on the dune sea is its bed']];
+  for (const [x, b, squad, why] of WORMS) ent('sandworm', x, on(x), { placed: true, why, squad, bed: b });
+  S1.push(['vulture', { x: marks.ribcage + 8, y: top(marks.ribcage + 8) - 8 }, 'circles the sinking wagons: its dive comes while the bed under you goes down']);
   for (const [t, p, why] of S1) ent(t, p.x, p.y, { placed: true, why, face: -1 });
   for (let i = 0; i < 10; i++) ent('coin', roofs.towerB.x0 + 1 + (i % 5), roofs.towerB.row - 2 - Math.floor(i / 5));   /* THE HARD ROAD PAYS (S7): the rooftop route starts on the tallest roof in the town */
-  ent('stray', roofs.towerA.x0 + 4, roofs.towerA.row - 1);                                                                /* and the watchtower's top keeps a stray (it was on the dune crest past the lead wagon) */
+  ent('stray', roofs.towerA.x0 + 4, roofs.towerA.row - 1);
+  ent('silver', roofs.towerC.x0 + 3, roofs.towerC.row - 3);   /* (claude/caravan2) the ribcage's spine silver went with the spine: up on the second twin tower's roof now, past its slinger - off the road, up the tower's ledges */                                                                /* and the watchtower's top keeps a stray (it was on the dune crest past the lead wagon) */
   // ---- THE GARRISON (a draft of the level's GARRISON row, placed so it can be measured): ~4 a screen, 3 in the first ----
   const ROSTER = { waydown: ['scorpion', 'cutthroat'], road: ['scorpion', 'cutthroat', 'vulture', 'scorpion'], oxline: ['cutthroat', 'scorpion', 'vulture', 'cutthroat'],
     dunesea: ['vulture', 'scorpion', 'cutthroat', 'vulture'], camp: ['cutthroat', 'scorpion', 'cutthroat', 'scorpion'], sinking: ['cutthroat', 'scorpion', 'vulture', 'cutthroat'], rim: ['scorpion', 'cutthroat', 'cutthroat', 'vulture'] };
@@ -230,7 +269,7 @@ export function buildSunkenCaravan(T) {
     for (let i = 0; i < n; i++) { let x = w0 + 3 + Math.floor(i * 20 / n); while (x < w0 + 23 && !standOK(x)) x++; if (x >= w0 + 23) continue;
       const t = ROSTER[sec][k++ % ROSTER[sec].length]; ent(t, x, t === 'vulture' ? top(x) - 7 : on(x)); busy.add(x); } }
 
-  return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors, masonry, facades, calm, roofs, sections, marks, arena, quicksand: qs, shade, timberPlanks,
+  return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors, masonry, facades, calm, roofs, sections, marks, arena, quicksand: qs, shade, timberPlanks, crumbles, slabs, duneSlides, walls,
     draft: true, palette: { set: 'desert' }, rule: 'THE SUN', lengthCols: ax0 };
 }
 /* for tools/draft-level.mjs (tools/caravan-level.mjs is this level's own, older check; both must pass) */

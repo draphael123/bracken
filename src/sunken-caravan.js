@@ -31,6 +31,9 @@ export function buildCaravan({ T, TS }) {
   const top = x => { for (let y = 0; y < H; y++) if (at(x, y) !== T.AIR && at(x, y) !== T.PLANK && at(x, y) !== T.ONEWAY && at(x, y) !== T.NET) return y; return H; };
   /* 1. THE SHADE, said once as rects: shadeZones reads the wagons and awnings off the ents, and adds the draft's own L.shade */
   L.shadeArt = (L.shade || []).slice();   /* the shade no prop's art paints (the ribcage, the caravanserai, the overhang): main.js tints these */
+  /* (claude/caravan2) THE HOLLOW'S MIDDLE WRECK goes FIRST (section 6 says why): taken out after the shade was read, its lee stayed as an invisible
+     patch of shade in the middle of his hollow, where nothing on the screen cast it */
+  L.ents = L.ents.filter(e => !(e.t === 'wagon' && e.wreck && L.arena && e.x === L.arena.x0 / TS + 20));
   L.shade = shadeZones(L);
   /* 2. the draft's roster out (the GARRISON row puts the level's crowd down) */
   L.ents = L.ents.filter(e => !DRAFT_FOES.has(e.t) || e.placed);   /* ...but the ones the draft PLACES (e.placed: RULES S1, a foe where it makes the ground harder) stay where they are */
@@ -61,7 +64,17 @@ export function buildCaravan({ T, TS }) {
   L.quest = { n: 3, item: 'coffer', name: "TRADER'S COFFER", done: "THE CARAVAN'S TAKINGS ARE FOUND", thanks: "THE TRADER'S THANKS" };
   /* 5. the trader's tent: its cache held the veil (relics are cut, Daniel 10-02): the draft's relic is a 'vault' marker now, and pays a silver (src/relics.js) */
   for (const e of L.ents) if (e.t === 'relic') e.t = 'vault';
-  /* 6. THE HOLLOW: THE DUNE WORM's arena (docs/briefs/dune-worm.md). Forty tiles, entered from the left (RULES I).
+  /* 6. THE HOLLOW: THE DUNE WORM's arena (docs/briefs/dune-worm.md; REWORKED by claude/caravan2 - the awning and its winch are gone,
+       the ledges are the opening now: scratch/brief-caravan2.md part B). Forty tiles, entered from the left (RULES I).
+       +2..+8   the rim's overhang (the draft's): the one shade he can never take, and no ledge rises under it (L.arena.stoneAvoid)
+       +8, +32  two wagon wrecks: dressing and sun-shade
+       +11..+13, +27..+29  THE HOLLOW'S QUICKSAND (the draft's QS columns, src/quicksand.js's rules): it holds you while his ripple runs, so a
+                ledge on the far side of it is a choice - wade (and mash out) or go round
+       THE RISING LEDGES (src/dune-worm.js WORM.LEDGE): two slabs of the old town's sandstone up at once (three in phase two), rising out of his
+                sand at random fair spots with a told rise and sinking after a while - footing, SHADE, and THE OPENING: his breach under
+                one hits his head on it (stunned). They keep off the overhang and the gate (stoneAvoid)
+       +37      the level's GATE: it ends the level after his death (L.gateAfterBoss), not before
+     (the old notes, kept for the history:) +12 THE HOLLOW WINCH and +14..+26 THE GREAT SHADE it rolled out, the opening claude/duneworm built -
        +2..+8   the rim's overhang (the draft's): the one shade he can never take
        +8, +32  two wagon wrecks: dressing and sun-shade. The greybox's middle wreck at +20 goes - the awning stands there now
        +12      THE HOLLOW WINCH (the level's machine, F5, a second time) and +14..+26 THE GREAT SHADE it rolls out, 5 rows up on
@@ -72,13 +85,12 @@ export function buildCaravan({ T, TS }) {
      The worm sleeps under the middle of it and wakes when you cross the trigger. His music is boss2 (the greybox's: no desert
      track in audio/, and nothing is downloaded - see the lane report). */
   L.hollow = L.arena; L.arena.music = 'duneworm';   /* "Negev Fight Loop" from "Desert Calmness and Fighting (Orchestral)" by Dizzy Crow, CC0, converted WAV -> OGG (audio/CREDITS.txt) */
-  { const ax0 = L.arena.x0 / TS, ax1 = L.arena.wallR - 2, gy = top(ax1) - 1, floorRow = L.arena.floor / TS;
+  { const ax0 = L.arena.x0 / TS, ax1 = L.arena.wallR - 2, gy = top(ax1) - 1;
     L.ents = L.ents.filter(e => !(e.t === 'deco' && (e.kind === 'wagon' || e.kind === 'wagonSunk') && e.x === ax0 + 20));
     L.ents.push({ t: 'gate', x: ax1, y: gy });
-    L.ents.push({ t: 'awningwinch', x: ax0 + 12, y: top(ax0 + 12) - 1, hollow: true, canopy: { x0: ax0 + 14, x1: ax0 + 26, row: floorRow - 5 } });
-    L.ents.push({ t: 'deco', x: ax0 + 14, y: top(ax0 + 14) - 1, kind: 'canopyPost', behind: true }, { t: 'deco', x: ax0 + 26, y: top(ax0 + 26) - 1, kind: 'canopyPost', behind: true });
     L.ents.push({ t: 'duneworm', x: ax0 + 20, y: top(ax0 + 20) - 1, face: -1 });
-    L.ents.push({ t: 'sign', x: ax0 - 6, y: top(ax0 - 6) - 1, text: 'HE COMES UP UNDER YOU. WIND THE SHADE OUT AND LET HIM COME UP INTO IT.' });
+    L.ents.push({ t: 'sign', x: ax0 - 6, y: top(ax0 - 6) - 1, text: 'HIS HIDE TURNS BLADES. LET HIM COME UP UNDER A LEDGE: HE HITS HIS HEAD.' });
+    L.arena.stoneAvoid = [[(ax0 + 1) * TS, (ax0 + 10) * TS], [(ax1 - 3) * TS, (ax1 + 2) * TS]];   /* no ledge rises under the rim's overhang or at the gate */
     L.gateAfterBoss = true; }
   /* 7. THE TRADERS' YARD: the ambush room (RULES Q), the camp's flat under the great awning. The winch stands inside it on
      purpose: wind the awning in and the looters are in the sun with you. The looters are bandits since 2026-09-25 (no goblins): two
@@ -95,13 +107,14 @@ export function buildCaravan({ T, TS }) {
     const archRow = (() => { for (let y = 0; y < H; y++) if (at(m.arch, y) === T.SOLID) return y; return 0; })();
     const cs = m.caravanserai, csRoof = (() => { for (let y = 0; y < H; y++) if (at(cs, y) === T.SOLID) return y; return 0; })();
     const ov = L.hollow.wallL + 3, ovRow = (() => { for (let y = 0; y < H; y++) if (at(ov, y) === T.SOLID) return y; return 0; })();
-    L.rockZones = [[m.arch - 3, m.arch + 7, archRow, archRow], [ov - 1, ov + 5, ovRow, ovRow]];   /* the caravanserai is laid stone since 2026-09-25, like the town it stands in (L.masonry, the draft's) */
+    L.rockZones = [[m.arch - 3, m.arch + 7, archRow, archRow], [ov - 1, ov + 5, ovRow, ovRow]].concat(L.slabs || []);   /* (claude/caravan2) and every slab and shelf of the old road's sandstone the draft lays (L.slabs): rock, not timber */   /* the caravanserai is laid stone since 2026-09-25, like the town it stands in (L.masonry, the draft's) */
     /* AND IT IS A ROOM: the tower's inside gets a back wall (drawRoomPaint 'caravanserai' in main.js), so it reads as a place you
        climb through - door, shelf, shelf, hatch - and not as posts against the sky. The same rect is the reverb and the no-grass rule */
     L.interiors = (L.interiors || []).concat([[cs + 1, cs + 5, csRoof + 1, top(cs - 1) - 1, 'caravanserai']]); }
   L.music = 'caravan';   /* "Desert Theme - 8bit Chiptune Theme" by Wolfgang_, CC0, converted WAV -> OGG - THE SUNKEN CARAVAN's own level track, benching musBeach (audio/CREDITS.txt) */
   L.ambient = [{ x0: 0, x1: 99999, kind: 'wind' }];
   L.sun = true; L.caravan = true;
+  L.caravanCrumbles = true;   /* (claude/caravan2) main.js's desert hands step L.crumbles here (THE SLABS on the quicksand); no other desert level has them */
   L.ledgeKit = 'desert';   /* main.js: ONEWAY/PLANK art picked per tile (ruin lintel / rock shelf / sandstone lip), real timber (L.timberPlanks, the draft's) kept as wood - any desert level can set this, not just this one */
   L.base = CARAVAN_BASE;
   return L;

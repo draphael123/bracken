@@ -80,97 +80,129 @@ log('QUICKSAND');
 
 // ================= THE DUNE WORM =================
 log('THE DUNE WORM (logic and fight rules, not balance)');
-const ARENA = { x0: 0, x1: 40 * 16, floorY: 20 * 16 };
+const ARENA = { x0: 0, x1: 40 * 16, floorY: 20 * 16, avoid: [[2 * 16, 9 * 16]] };
 ok((ARENA.x1 - ARENA.x0) / 16 <= 44, `A7: the arena is ${(ARENA.x1 - ARENA.x0) / 16} tiles`);
-/* THE ROLLED-OUT SHADE (docs/briefs/dune-worm.md): the hollow's awning spans CANOPY while it is out. A scripted fighter.
-   policy 'bait': wind the awning out (walk to the winch, strike, wait the roll), stand under it through the ripple and move off
-   the breach LATE. 'open': the same awning out, but fight in the open sand as far from it as it can. 'rolledIn': stand under the
-   awning's span with it ROLLED IN (never wound). All three: walk at RUN, swing (14 a blow, one per 0.35 s) at anything touchable in
-   reach, get out of a lunge's landing and a swallow's pit, mash out of a pull. Counts what hits it. */
-const CANOPY = [14 * 16, 27 * 16], WINCH_X = 12 * 16 + 8, ROLL = 1.2;
-function fight(policy) {
-  const W = newWorm(ARENA, 320); let px = policy === 'open' ? 60 : 170, t = 0, swingT = 0, pulled = 0;
-  let aw = policy === 'rolledIn' ? 0 : 1, rollT = 0;   /* the awning: 1 out, 0 in; rollT counts a wind in progress */
-  const st = { opens: 0, frees: 0, hitsTaken: 0, tells: new Set(), maxUntouch: 0, windows: [], stormAt: null, decoyBulged: 0, realBulged: 0, winds: 0 };
-  let lastTouch = wormTouchable(W), runLen = 0, air = 0;
-  const mid = (CANOPY[0] + CANOPY[1]) / 2, far = ARENA.x1 - 60;
-  while (t < 240 && W.hp > 0) {
+/* THE RISING STONES (claude/caravan2, Daniel 10-09: "invulnerable except when he hits his head on a ledge"). A scripted fighter.
+   policy 'bait': when the ripple comes, stand at the near end of a standing stone (under its edge) and move off the locked spot LATE;
+   'open': the same fighter in a hollow where NO stone stands (it goes round him and cuts at everything up out of the sand); 'mash': it stands its ground and swings at
+   anything up out of the sand. All three: walk at RUN, swing (14 a blow, one per 0.35 s) at anything touchable in reach, get out of a
+   lunge's landing and a swallow's pit, mash out of a pull, jump the low blows, and take the breath behind him. Counts what hits it. */
+const LG = WORM.LEDGE;
+function fight(policy, seed = 7) {
+  let s0 = seed; const rng = () => (s0 = (s0 * 16807) % 2147483647) / 2147483647;
+  const W = newWorm(ARENA, 320); let px = 170, t = 0, swingT = 0, pulled = 0;
+  const st = { stuns: 0, frees: 0, wards: 0, hitsTaken: 0, tells: new Set(), maxHidden: 0, stormAt: null, decoyBulged: 0, realBulged: 0, dealt: 0, swings: 0, rises: 0, risesNear: 0, maxLive: [0, 0], liveOver: 0, wardBlocked: 0 };
+  let hiddenRun = 0, air = 0;
+  const far = ARENA.x1 - 60;
+  while (t < 300 && W.hp > 0) {
     let tx = px; const real = W.ripples.find(r => r.real), committed = real && real.commit;
-    if (policy === 'bait' && aw === 0 && rollT <= 0 && W.mode !== 'tangled' && !committed) tx = WINCH_X - 6;                   // the awning is down: wind it first
-    else if (W.mode === 'tangled' || (wormTouchable(W) && W.mode !== 'lunge')) tx = W.mode === 'tangled' || W.mode === 'spitTell' || W.mode === 'sweepTell' ? W.x - 14 : W.x - (W.face || 1) * 14;   /* (claude/duneworm2) his plates face you: round him to the hide behind them; tangled or reared, from anywhere */                                   // go and hit it
-    else if (committed) { const away = Math.abs(px - real.tx) > 1 ? Math.sign(px - real.tx) : (px < (ARENA.x0 + ARENA.x1) / 2 ? 1 : -1); tx = px + away * 40; }   // LATE: off the locked spot
-    else if (W.mode === 'rippleTell' || W.mode === 'under' || W.mode === 'dive') tx = policy === 'open' ? far : policy === 'bait' && aw < 1 ? WINCH_X - 6 : mid;
-    if (W.mode === 'lungeTell' || W.mode === 'lunge') tx = px + (px >= W.lungeTo ? 1 : -1) * 70;                            // off the shadow
-    if ((W.mode === 'swallowTell' || W.mode === 'swallow') && W.pit) tx = px + (px >= W.pit.x ? 1 : -1) * 80;               // out of the pit
-    if (policy === 'open') tx = Math.max(CANOPY[1] + 30, tx);   /* it keeps to the open sand past the awning, whatever it is doing */
+    const ups = W.ledges.filter(l => l.state === 'up');
+    if (W.mode === 'stunned') tx = W.x - 14;                                                                   // his head is on the stone: in, and cut
+    else if (committed) { const away = Math.abs(px - real.tx) > 1 ? Math.sign(px - real.tx) : (px < (ARENA.x0 + ARENA.x1) / 2 ? 1 : -1); tx = px + away * 40; if (policy === 'open' && W.ledges.some(l => tx > l.x0 - 20 && tx < l.x1 + 20)) tx = px - away * 40; }   // LATE: off the locked spot (the open fighter, away from a stone)
+    else if (W.mode === 'rippleTell' || W.mode === 'under' || W.mode === 'dive') {
+      if (policy === 'bait' && ups.length) { const l = ups.reduce((a, b) => Math.abs((a.x0 + a.x1) / 2 - px) < Math.abs((b.x0 + b.x1) / 2 - px) ? a : b); tx = px < (l.x0 + l.x1) / 2 ? l.x0 + 6 : l.x1 - 6; }   // under the stone's edge
+      else if (policy === 'open') { let best = far, bd = -1; for (let x = ARENA.x0 + 40; x < ARENA.x1 - 40; x += 16) { const d = Math.min(...W.ledges.map(l => Math.max(l.x0 - x, x - l.x1)), 999); if (d > bd) { bd = d; best = x; } } tx = best; } }
+    else if (policy !== 'mash' && wormTouchable(W) && W.mode !== 'lunge') tx = W.x - (W.face || 1) * 14;          // up out of the sand: round him (the breath goes the way he faces)
+    if (W.mode === 'breathTell' || W.mode === 'breath') tx = W.x - (W.breathFace || 1) * 18;                    // the breath: behind him
+    if (W.mode === 'lungeTell' || W.mode === 'lunge') tx = px + (px >= W.lungeTo ? 1 : -1) * 70;               // off the shadow
+    if ((W.mode === 'swallowTell' || W.mode === 'swallow') && W.pit) tx = px + (px >= W.pit.x ? 1 : -1) * 80;   // out of the pit
+    if (policy === 'open' && !committed && !/^(lunge|swallow)/.test(W.mode)) { const near = W.ledges.find(l => tx > l.x0 - 40 && tx < l.x1 + 40); if (near) tx = tx < (near.x0 + near.x1) / 2 ? near.x0 - 41 : near.x1 + 41; }   /* it keeps off the stones, whatever it is doing */
+    if (policy === 'mash') tx = W.mode === 'lungeTell' || W.mode === 'lunge' || W.mode === 'swallowTell' || W.mode === 'swallow' || committed ? tx : px;
     const step = Math.max(-92 * DT, Math.min(92 * DT, tx - px)); px = Math.max(ARENA.x0 + 8, Math.min(ARENA.x1 - 8, px + (pulled > 0 ? 0 : step)));
-    /* the winch: struck from beside it, it rolls the awning out over ROLL s */
-    if (policy === 'bait' && aw === 0 && rollT <= 0 && Math.abs(px - WINCH_X) < 12) { rollT = ROLL; st.winds++; }
-    if (rollT > 0) { rollT -= DT; if (rollT <= 0) aw = 1; }
-    const ev = wormStep(W, { px, py: ARENA.floorY, pGround: true, canopy: aw === 1 ? CANOPY : null }, DT);
+    if (policy === 'open' && !committed && !/^(lunge|swallow)/.test(W.mode)) for (const l of W.ledges) if (px > l.x0 - 40 && px < l.x1 + 40) px = px < (l.x0 + l.x1) / 2 && l.x0 - 40 > ARENA.x0 + 8 ? l.x0 - 40 : l.x1 + 40;   /* (a scripted policy, not a body: it is never by a stone) */
+    if (policy === 'open') { W.ledges = []; W.ledgeT = 99; }   /* THE OPEN SAND: a hollow where no stone stands - everything he does, and nothing opens him */
+    const ev = wormStep(W, { px, py: ARENA.floorY, pGround: true, rng }, DT);
     for (const e of ev) {
       if (e.t === 'tell') st.tells.add(e.what);
-      if (e.t === 'open') { st.opens++; aw = 0; rollT = 0; }   /* the awning comes down off its rollers onto him */
+      if (e.t === 'open') st.stuns++;
       if (e.t === 'free') st.frees++;
+      if (e.t === 'ward') st.wards++;
+      if (e.t === 'ledgeRise') { st.rises++; if (Math.abs((e.l.x0 + e.l.x1) / 2 - px) < LG.w / 2 + 8) st.risesNear++; }
       if (e.t === 'stormOn') st.stormAt = t;
       if (e.t === 'pull') { px += Math.sign(e.toX - px) * e.v * DT; pulled = 0.25; }   /* (it mashes out: pulled for a moment, then free) */
       const low = e.t === 'hit' && (e.what === 'sweep' || e.what === 'wave');   /* the tail (there and back) and THE CRASH's waves: low, along the floor */
       if (low && Math.abs((e.box[0] + e.box[1]) / 2 - px) < 40 && air <= 0) air = 0.5;   /* coming: a jump (0.5 s off the floor) */
       if (low && air > 0) continue;
+      if (e.t === 'hit' && e.blockable) continue;   /* the breath: a ! - the fighter's shield takes it (the page's bot is held to it with real keys) */
       if (e.t === 'hit' && e.box && px >= e.box[0] && px <= e.box[1] && ARENA.floorY - 1 >= e.box[2] && ARENA.floorY - 14 <= e.box[3]) { st.hitsTaken++; (st.hitBy ||= []).push(e.what + '@' + t.toFixed(1) + ' px ' + px.toFixed(0) + ' box ' + e.box.map(v => v.toFixed(0)).join('/') + ' mode ' + W.mode); }
     }
     if (W.mode === 'rippleTell') for (const r of W.ripples) if (r.commit) { if (r.real && r.bulge) st.realBulged++; if (!r.real && r.bulge) st.decoyBulged++; }
+    { const live = W.ledges.filter(l => l.state === 'rise' || l.state === 'up').length, ph = W.phase2 ? 1 : 0; st.maxLive[ph] = Math.max(st.maxLive[ph], live); if (live > (W.phase2 ? LG.keep2 : LG.keep)) st.liveOver++; }
     pulled = Math.max(0, pulled - DT); air = Math.max(0, air - DT);
-    swingT -= DT; if (swingT <= 0 && Math.abs(W.x - px) < 26 && wormTouchable(W)) { wormHurt(W, 14, px); swingT = 0.35; }
-    const now = wormTouchable(W); if (now === lastTouch) runLen += DT; else { if (!lastTouch) st.maxUntouch = Math.max(st.maxUntouch, runLen); else st.windows.push(runLen); runLen = DT; lastTouch = now; }
+    swingT -= DT; if (swingT <= 0 && Math.abs(W.x - px) < 26 && wormTouchable(W)) { st.dealt += wormHurt(W, 14); st.swings++; swingT = 0.35; }
+    if (!wormTouchable(W)) { hiddenRun += DT; st.maxHidden = Math.max(st.maxHidden, hiddenRun); } else hiddenRun = 0;
     t += DT; }
-  st.time = t; st.hp = W.hp; return st;
+  st.time = t; st.hp = W.hp; st.noLedgeMax = W.noLedgeMax; st.wardBlocked = W.wardBlocked; return st;
 }
-const bait = fight('bait'), open = fight('open'), rolledIn = fight('rolledIn');
-ok(['ripple', 'spit', 'lunge', 'swallow', 'sweep'].every(k => bait.tells.has(k)), `A1/A3: five told attacks (the tail since claude/duneworm2), and every one fired in the fight (${[...bait.tells].join(', ')})`);
-ok(WORM.CHAIN[0] === 'ripple', 'the signature (the ripple and its breach) is first in the chain');
-ok(WORM_TELLS.every(m => m.endsWith('Tell')) && WORM_TELLS.length === 5, 'A2: the five windups are modes that end in Tell (main.js windingUp() sounds them)');
-{ const W0 = newWorm(ARENA, 320), timers = Object.entries(W0).filter(([k, v]) => /^(t|i|hp|hitMult|lungeFrom|lungeTo|tangles)$/.test(k));
-  ok(timers.length === 7 && timers.every(([, v]) => typeof v === 'number' && Number.isFinite(v)), 'A3: every timer and count the machine reads is a number at spawn (' + timers.map(([k, v]) => k + '=' + v).join(' ') + ')'); }
-ok(Math.max(bait.maxUntouch, open.maxUntouch) <= 2.0, `A5: the longest stretch it cannot be hit is ${Math.max(bait.maxUntouch, open.maxUntouch).toFixed(2)} s (the rule: about two)`);
-const minWin = Math.min(...bait.windows, ...open.windows);
-ok(minWin >= 0.5, `A6: every untouchable stretch is followed by an open one, the shortest ${minWin.toFixed(2)} s`);
-ok(bait.opens >= 3 && open.opens === 0 && rolledIn.opens === 0, `THE OPENING IS CAUSED: baiting the breach under the rolled-out shade tangled it ${bait.opens} times (${bait.winds} winds of the winch); fighting in open sand ${open.opens}; under the awning ROLLED IN ${rolledIn.opens}`);
-ok(bait.frees === bait.opens || bait.frees === bait.opens - 1, `every tangle ends: it tears free and dives (${bait.frees} of ${bait.opens})`);
+const bait = fight('bait'), open = fight('open'), mash = fight('mash');
+ok(['ripple', 'breath', 'lunge', 'swallow', 'sweep'].every(k => bait.tells.has(k)), `A1/A3: five told attacks (THE SAND BREATH in the spit's place since claude/caravan2), and every one fired in the fight (${[...bait.tells].join(', ')})`);
+ok(WORM.CHAIN[0] === 'ripple' && !WORM.CHAIN.includes('spit') && !WORM_MOVES.includes('spit'), 'the signature (the ripple and its breach) is first in the chain, and the spit is gone from it (the breath replaces it)');
+ok(WORM_TELLS.every(m => m.endsWith('Tell')) && WORM_TELLS.length === 5 && WORM_TELLS.includes('breathTell'), 'A2: the five windups are modes that end in Tell (main.js windingUp() sounds them)');
+{ const W0 = newWorm(ARENA, 320), timers = Object.entries(W0).filter(([k, v]) => /^(t|i|hp|hitMult|lungeFrom|lungeTo|stuns|ward|ledgeT|noLedgeT)$/.test(k));
+  ok(timers.length === 10 && timers.every(([, v]) => typeof v === 'number' && Number.isFinite(v)), 'A3: every timer and count the machine reads is a number at spawn (' + timers.map(([k, v]) => k + '=' + v).join(' ') + ')'); }
+ok(Math.max(bait.maxHidden, open.maxHidden) <= 2.0, `he fights all the time: the longest he is out of sight under the sand is ${Math.max(bait.maxHidden, open.maxHidden).toFixed(2)} s (about two)`);
+ok(bait.stuns >= 3 && open.stuns === 0 && mash.stuns === 0, `THE OPENING IS CAUSED: baiting the breach under a standing stone stunned him ${bait.stuns} times; with no stone up ${open.stuns}; standing and swinging ${mash.stuns}`);
+ok(bait.frees === bait.stuns || bait.frees === bait.stuns - 1, `every stun ends: he shakes free and dives (${bait.frees} of ${bait.stuns})`);
+ok(bait.wards === bait.frees, `B3: every opening ends in a told ward (${bait.wards} wards for ${bait.frees} stuns)`);
+ok(open.hp === WORM.hp && mash.hp === WORM.hp && open.swings > 20 && mash.swings > 20, `HIS HIDE (Daniel's B15 exception): ${open.swings} blows in the open sand and ${mash.swings} stood-and-mashed blows took NOTHING (${WORM.hp - open.hp} / ${WORM.hp - mash.hp})`);
+ok(bait.hp === 0 && bait.time < 300, `the stones are the fight: the baiter kills him in ${bait.time.toFixed(0)} s (scripted bots: a shape, not a balance)`);
 ok(bait.stormAt !== null, `phase 2: the storm is called at ${bait.stormAt?.toFixed(0)} s (the world brings the gusts in; the machine only says when)`);
 ok(bait.realBulged > 0 && bait.decoyBulged === 0, 'phase 2 decoys never bulge at the commit: only the real ripple rises (readable, late)');
-ok(bait.hp === 0 && (open.hp > 0 || open.time > bait.time * 1.3), `the opening matters: the baiter kills it in ${bait.time.toFixed(0)} s, the open-sand fighter ${open.hp > 0 ? 'has not in ' + open.time.toFixed(0) + ' s (' + open.hp + ' hp left)' : 'takes ' + open.time.toFixed(0) + ' s'} (scripted bots: a shape, not a balance)`);
-ok(bait.hitsTaken + open.hitsTaken === 0, `a bot that moves off each tell as it is shown takes ${bait.hitsTaken + open.hitsTaken} hits: every red attack has a clean answer in time`);
+ok(bait.hitsTaken + open.hitsTaken === 0, `a bot that moves off each tell as it is shown takes ${bait.hitsTaken + open.hitsTaken} hits: every attack has a clean answer in time`);
 if (bait.hitBy || open.hitBy) console.log('    ', JSON.stringify({ bait: bait.hitBy, open: open.hitBy }));
-{ let seed = 7; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   /* WITH DICE: the three surfaced moves in a fresh order each round, and still nothing untouchable past about two seconds */
-  const W = newWorm(ARENA, 320), orders = []; let last = null, run = 0, worst = 0;
-  for (let t = 0; t < 200; t += DT) { wormStep(W, { px: 100, py: ARENA.floorY, pGround: false, canopy: null, rng }, DT); if (W.order && W.order !== last) { orders.push(W.order.join(' ')); last = W.order; }
-    if (!wormTouchable(W)) run += DT; else { worst = Math.max(worst, run); run = 0; } }
-  ok(orders.length > 5 && orders.every(o => o.split(' ').sort().join() === 'lunge,spit,swallow,sweep,sweep') && new Set(orders).size >= 3 && worst <= 2.05, 'with the world dice, every round is all four of spit, lunge, swallow and the tail (twice) between the ripples, in ' + new Set(orders).size + ' different orders over ' + orders.length + ' rounds; longest untouchable ' + worst.toFixed(2) + ' s'); }
-/* HE GUARDS BY ANGLE (claude/duneworm2, design standard B11/B13): up out of the sand he can always be hurt from the right side - his plates turn
-   the front, the hide behind them and the reared belly take it whole - and the only time nothing lands is under the sand, where he is attacking */
-{ const W = newWorm(ARENA, 320); W.mode = 'surfaced'; W.x = 300; W.face = 1;
-  const front = wormTake(W, 330), back = wormTake(W, 270), centre = wormTake(W, 302); W.mode = 'spitTell'; const rearF = wormTake(W, 330); W.mode = 'sweepTell'; const tailF = wormTake(W, 330);
-  W.mode = 'spit'; W.face = -1; const flipF = wormTake(W, 270), flipB = wormTake(W, 330);
-  ok(front === 0 && centre === 0 && back === 1 && rearF === 1 && tailF === 1 && flipF === 0 && flipB === 1 && wormPlated({ ...W, mode: 'surfaced', face: 1 }, 330),
-    `his plates turn the front (${front}, dead centre ${centre}), the hide behind them takes it whole (${back}); reared to spit or to sweep his belly is bare (${rearF}, ${tailF}); turned round, so is the guard (${flipF} / ${flipB})`); }
-{ let seed = 11; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647; const W = newWorm(ARENA, 320); let up = 0, all = 0, idle = 0;
-  for (let t = 0; t < 200; t += DT) { wormStep(W, { px: 200 + Math.sin(t) * 120, py: ARENA.floorY, pGround: true, canopy: null, rng }, DT); all += DT; if (wormTouchable(W)) up += DT; else if (!/Tell$/.test(W.mode) && W.mode !== 'under') idle += DT; }
-  ok(up / all >= 0.45 && idle === 0, `B13 no waiting room: he is up and hittable from behind ${(up / all * 100).toFixed(0)}% of the fight, and every moment he is out of reach is a tell he is running (${idle.toFixed(2)} s otherwise)`); }
-{ const T0 = { rippleTrack: 1.0, rippleCommit: 0.45, surfaced: 1.2, spitTell: 0.7, spit: 0.35, lungeTell: 0.7, lunge: 0.9, swallowTell: 0.9, swallow: 1.8, under: 0.4, dive: 0.5, breachT: 0.35 };   /* claude/duneworm's beats */
-  const sum = o => Object.keys(T0).reduce((a, k) => a + o[k], 0), k = sum(WORM) / sum(T0), tells = WORM_TELLS.filter(m => m !== 'rippleTell').map(m => [m, WORM[m]]);
-  ok(k >= 0.84 && k <= 0.92 && tells.every(([, v]) => v >= 0.5) && WORM.rippleTrack + WORM.rippleCommit >= 0.5 && WORM.rippleCommit >= 0.45 && WORM.sweepTell >= 0.5,
-    `A LITTLE FASTER: his beats run at ${(k * 100).toFixed(0)}% of claude/duneworm's (${((1 - k) * 100).toFixed(0)}% faster) and every tell is still >= 0.5 s (${tells.map(([m, v]) => m + ' ' + v).join(', ')}; the ripple ${(WORM.rippleTrack + WORM.rippleCommit).toFixed(2)})`); }
+/* THE STONES: how many, where, how long, and never none for long */
+ok(bait.maxLive[0] === LG.keep && bait.maxLive[1] === LG.keep2 && bait.liveOver === 0 && open.liveOver === 0, `THE STONES: ${bait.maxLive[0]} up at once in phase one, ${bait.maxLive[1]} in phase two (the arena changes, B5), never more`);
+ok(bait.risesNear === 0 && mash.risesNear === 0 && bait.rises > 6, `a stone never rises under the hero (${bait.rises + mash.rises} rises, ${bait.risesNear + mash.risesNear} under her)`);
+{ const worst = Math.max(bait.noLedgeMax, mash.noLedgeMax);
+  ok(worst <= LG.gapCap && LG.rise >= 0.9, `never zero stones for long: the longest the hollow stood with none up was ${worst.toFixed(2)} s (cap ${LG.gapCap} s, the brief 6-8), and every stone is told rising for ${LG.rise} s first`); }
+{ let s1 = 3; const rng = () => (s1 = (s1 * 16807) % 2147483647) / 2147483647; const W = newWorm(ARENA, 320); let inAvoid = 0, offEdge = 0, lives = [];
+  for (let t = 0; t < 240; t += DT) for (const e of wormStep(W, { px: 100 + (t * 37) % 400, py: ARENA.floorY, pGround: false, rng }, DT)) if (e.t === 'ledgeRise') { const l = e.l; lives.push(l.life);
+    if (ARENA.avoid.some(([a, b]) => l.x1 > a && l.x0 < b)) inAvoid++; if (l.x0 < ARENA.x0 + LG.edge || l.x1 > ARENA.x1 - LG.edge || (l.x0 - ARENA.x0) % 16) offEdge++; }
+  ok(inAvoid === 0 && offEdge === 0 && new Set(lives.map(v => v.toFixed(1))).size > 3 && Math.min(...lives) >= LG.life[0] && Math.max(...lives) <= LG.life[1],
+    `random fair spots: ${lives.length} stones over 240 s, none in the overhang or the gate's columns (${inAvoid}), all on whole tiles clear of the walls (${offEdge} off), standing ${Math.min(...lives).toFixed(1)}-${Math.max(...lives).toFixed(1)} s on the dice`); }
+/* THE STUN, the ward, and the stone it cracks */
+{ const W = newWorm(ARENA, 320); W.ledges = [{ id: 1, x0: 300, x1: 348, state: 'up', t: 20, life: 20 }]; W.ledgeId = 1; W.mode = 'under'; W.t = 0; W.i = 0;
+  let open = null, onTop = 0, under = 0, free = false, wardEv = null, sunk = false;
+  for (let t = 0; t < 8 && !free; t += DT) for (const e of wormStep(W, { px: 320, py: ARENA.floorY, pGround: true }, DT)) {
+    if (e.t === 'hit' && e.what === 'breach') { if (ARENA.floorY - 48 - 1 >= e.box[2]) onTop++; if (ARENA.floorY - 1 >= e.box[2]) under++; }
+    if (e.t === 'open') open = e; if (e.t === 'free') free = true; if (e.t === 'ward') wardEv = e; if (e.t === 'ledgeSink' && e.cracked) sunk = true; }
+  const stunT = WORM.stunned, take = []; W.mode = 'stunned'; take.push(wormTake(W)); W.mode = 'surfaced'; take.push(wormTake(W)); W.mode = 'under'; take.push(wormTake(W));
+  ok(open && open.ledge === 1 && onTop === 0 && under > 0 && free && wardEv && sunk && W.ward > 0 && stunT >= 2.5,
+    `his breach under a standing stone: HE HITS HIS HEAD ON IT - stunned ${stunT} s (the gold read), the column stops under the stone (a hero standing ON it is never reached: ${onTop}; under it: ${under} frames), then he shakes free into a ${WORM.ward} s ward and the cracked stone sinks`);
+  ok(take[0] === WORM.stunMult && WORM.stunMult >= 1.5 && take[1] === 0 && take[2] === 0, `a blow is worth x${take[0]} stunned (B15: openings pay 1.5-2x), x${take[1]} up out of the sand otherwise, x${take[2]} through it`);
+  /* IN THE WARD a breach under a stone stuns nothing */
+  W.ledges = [{ id: 2, x0: 300, x1: 348, state: 'up', t: 20, life: 20 }]; W.mode = 'under'; W.t = 0; W.i = 0; let stun2 = 0, warded = 0;
+  for (let t = 0; t < 2.5; t += DT) for (const e of wormStep(W, { px: 320, py: ARENA.floorY, pGround: true }, DT)) { if (e.t === 'open') stun2++; if (e.t === 'warded') warded++; }
+  ok(stun2 === 0 && warded === 1, `B3: in the ward his breach under a stone opens nothing (${stun2} stuns) and says so (${warded} 'warded')`); }
+/* THE SAND BREATH: told '!', blockable, a cone in front of him along the floor - and nothing behind him */
+{ const W = newWorm(ARENA, 320); W.mode = 'under'; W.t = 0; W.i = 1; W.order = WORM_MOVES.slice(); let tell = null, front = 0, behind = 0, block = true, maxW = 0;
+  for (let t = 0; t < 4 && !(tell && W.mode === 'dive'); t += DT) for (const e of wormStep(W, { px: 380, py: ARENA.floorY, pGround: true }, DT)) { if (e.t === 'tell') tell = e;
+    if (e.t === 'hit' && e.what === 'breath') { if (380 >= e.box[0] && 380 <= e.box[1]) front++; if (290 >= e.box[0] && 290 <= e.box[1]) behind++; if (!e.blockable || e.mark !== '!') block = false; maxW = Math.max(maxW, e.box[1] - e.box[0]); } }
+  ok(tell && tell.what === 'breath' && tell.mark === '!' && WORM.breathTell >= 0.6 && front > 0 && behind === 0 && block && maxW >= 100,
+    `THE SAND BREATH: told ! for ${WORM.breathTell} s, a cone ${maxW.toFixed(0)} px out of his mouth that reaches a hero in front (${front} frames) and never one behind him (${behind}); a shield takes it`); }
+/* HIS KILL ATTACKS, SLOWER (Daniel: "comes out too fast"), and LESS DAMAGE across his moves (-25%) */
+{ const old = { lungeTell: 0.6, swallowTell: 0.8 }, oldD = { breach: 41, lunge: 41, bite: 41, sweep: 46, wave: 37 };
+  ok(WORM.lungeTell >= old.lungeTell * 1.5 - 1e-9 && WORM.swallowTell >= old.swallowTell * 1.5 - 1e-9, `his kill attacks are told longer: the lunge's coil ${WORM.lungeTell} s (was ${old.lungeTell}), the sinkhole ${WORM.swallowTell} s (was ${old.swallowTell}) - +50%`);
+  ok(Object.entries(oldD).every(([k, v]) => Math.abs(WORM.dmg[k] - v * 0.75) <= 1) && WORM.dmg.breath <= 20, `-25% across his moves: ${Object.entries(oldD).map(([k, v]) => k + ' ' + v + '->' + WORM.dmg[k]).join(', ')}; the breath ${WORM.dmg.breath} (one blast, where the spit was a fan of 9s)`);
+  const beats = ['rippleTrack', 'rippleCommit', 'surfaced', 'lunge', 'swallow', 'under', 'dive', 'breachT', 'sweepTell', 'sweep', 'sweepBack'], duneworm2 = { rippleTrack: 0.88, rippleCommit: 0.45, surfaced: 1.0, lunge: 0.8, swallow: 1.6, under: 0.35, dive: 0.44, breachT: 0.3, sweepTell: 0.65, sweep: 0.45, sweepBack: 0.38 };
+  ok(beats.every(k => WORM[k] === duneworm2[k]), 'every other beat of his is claude/duneworm2\'s, unchanged (' + beats.map(k => k + ' ' + WORM[k]).join(', ') + ')'); }
+{ let seed = 7; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   /* WITH DICE: the four surfaced moves in a fresh order each round */
+  const W = newWorm(ARENA, 320), orders = []; let last = null;
+  for (let t = 0; t < 400; t += DT) { wormStep(W, { px: 100, py: ARENA.floorY, pGround: false, rng }, DT); if (W.order && W.order !== last) { orders.push(W.order.join(' ')); last = W.order; } }
+  ok(orders.length > 5 && orders.every(o => o.split(' ').sort().join() === 'breath,lunge,swallow,sweep,sweep') && new Set(orders).size >= 3, 'with the world dice, every round is all four of the breath, lunge, swallow and the tail (twice) between the ripples, in ' + new Set(orders).size + ' different orders over ' + orders.length + ' rounds'); }
+{ let seed = 11; const rng = () => (seed = (seed * 16807) % 2147483647) / 2147483647; const W = newWorm(ARENA, 320); let idle = 0;
+  for (let t = 0; t < 200; t += DT) { wormStep(W, { px: 200 + Math.sin(t) * 120, py: ARENA.floorY, pGround: true, rng }, DT); if (!wormTouchable(W) && !/Tell$/.test(W.mode) && W.mode !== 'under' && W.mode !== 'lunge') idle += DT; }
+  ok(idle === 0, `no waiting room (B13): every moment he is out of sight is a tell he is running, a blow or the beat under the sand between them (${idle.toFixed(2)} s otherwise) - and the stones, the way to hurt him, are always rising`); }
 { const W = newWorm(ARENA, 320); W.mode = 'under'; W.t = 0; W.i = 7; W.order = WORM_MOVES.slice(); let tell = null, hit = 0, jumped = 0;
-  const px = 250; for (let t = 0; t < 4 && !(tell && W.mode === 'dive'); t += DT) for (const e of wormStep(W, { px, py: ARENA.floorY, pGround: true, canopy: null }, DT)) { if (e.t === 'tell') tell = e; if (e.t === 'hit' && e.what === 'sweep' && px >= e.box[0] && px <= e.box[1]) hit++; if (e.t === 'hit' && e.what === 'sweep' && ARENA.floorY - 40 < e.box[2]) jumped++; }
+  const px = 250; for (let t = 0; t < 4 && !(tell && W.mode === 'dive'); t += DT) for (const e of wormStep(W, { px, py: ARENA.floorY, pGround: true }, DT)) { if (e.t === 'tell') tell = e; if (e.t === 'hit' && e.what === 'sweep' && px >= e.box[0] && px <= e.box[1]) hit++; if (e.t === 'hit' && e.what === 'sweep' && ARENA.floorY - 40 < e.box[2]) jumped++; }
   ok(tell && tell.what === 'sweep' && tell.mark === '!!' && Math.abs(tell.x - px) >= 60 && hit > 0 && jumped > 0, `THE TAIL: told !! ${tell ? Math.abs(tell.x - px).toFixed(0) : '?'} px past you, it crosses you along the floor (${hit} frames on you) and is low enough to jump (its box tops out ${WORM.sweepH} px up)`); }
 { const W = newWorm(ARENA, 320); W.mode = 'under'; W.t = 0; W.i = 7; W.order = WORM_MOVES.slice(); const px = 250; let pass = 0, on = false, modes = new Set();   /* THE TAIL GOES THERE AND BACK: two crossings */
-  for (let t = 0; t < 5 && !(modes.has('sweepBack') && W.mode === 'dive'); t += DT) { let now = false; for (const e of wormStep(W, { px, py: ARENA.floorY, pGround: true, canopy: null }, DT)) if (e.t === 'hit' && e.what === 'sweep' && px >= e.box[0] && px <= e.box[1]) now = true; if (now && !on) pass++; on = now; modes.add(W.mode); }
+  for (let t = 0; t < 5 && !(modes.has('sweepBack') && W.mode === 'dive'); t += DT) { let now = false; for (const e of wormStep(W, { px, py: ARENA.floorY, pGround: true }, DT)) if (e.t === 'hit' && e.what === 'sweep' && px >= e.box[0] && px <= e.box[1]) now = true; if (now && !on) pass++; on = now; modes.add(W.mode); }
   ok(pass === 2 && modes.has('sweepBack'), 'THE TAIL crosses you twice, out to his head and back (' + pass + ' crossings): jump it, and again'); }
 { const W = newWorm(ARENA, 320); W.mode = 'lunge'; W.t = WORM.lunge; W.lungeFrom = 100; W.lungeTo = 300; const near = 300 + 60; let waves = 0, hitNear = 0;   /* THE CRASH: where the lunge comes down */
-  for (let t = 0; t < 2.5; t += DT) for (const e of wormStep(W, { px: 600, py: ARENA.floorY, pGround: true, canopy: null }, DT)) if (e.t === 'hit' && e.what === 'wave') { waves = Math.max(waves, W.waves.length); if (near >= e.box[0] && near <= e.box[1] && e.box[2] >= ARENA.floorY - 20) hitNear++; }
+  for (let t = 0; t < 2.5; t += DT) for (const e of wormStep(W, { px: 600, py: ARENA.floorY, pGround: true }, DT)) if (e.t === 'hit' && e.what === 'wave') { waves = Math.max(waves, W.waves.length); if (near >= e.box[0] && near <= e.box[1] && e.box[2] >= ARENA.floorY - 20) hitNear++; }
   ok(waves === 2 && hitNear > 0, 'THE CRASH: his lunge comes down and two low waves run out along the sand (' + waves + '), reaching a hero who only stepped off the shadow: jump them'); }
-{ const W = newWorm(ARENA, 320); ok(wormTake(W) === 0 && wormHurt(W, 50) === 0, 'under the sand a blow does nothing (wormTake 0)'); W.mode = 'tangled'; W.hitMult = WORM.tangledMult; ok(wormTake(W) === 2 && wormOpen(W), 'tangled in the canvas, a blow is worth double'); }
+{ const W = newWorm(ARENA, 320); ok(wormTake(W) === 0 && wormHurt(W, 50) === 0, 'under the sand a blow does nothing (wormTake 0)'); W.mode = 'stunned'; W.hitMult = WORM.stunMult; ok(wormTake(W) === WORM.stunMult && wormOpen(W) && !wormPlated(W), 'stunned on the stone, a blow is worth x' + WORM.stunMult + ', and his hide turns nothing'); }
 
 // ================= THE DESERT FOES (src/desert-foes.js) =================
 log('THE DESERT FOES: every attack told, a quarter-second reaction answers it, ignoring it hurts');

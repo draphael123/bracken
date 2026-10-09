@@ -937,6 +937,10 @@ Object.assign(SFX, {
   wormHiss() { noise(0.7, 0.2, 2400, 0.7); tone('sawtooth', 90, 60, 0.6, 0.1); },   /* THE LUNGE TELL: the coil drawing back, sand hissing off it */
   wormSink() { noise(0.9, 0.18, 260, 0.35); tone('sine', 180, 50, 0.8, 0.12); for (let i = 0; i < 4; i++) noise(0.06, 0.1, 1200, 0.8, 0.15 + i * 0.16); },   /* THE SWALLOW TELL: the sand running away downward */
   wormTail() { noise(0.55, 0.2, 520, 0.5); noise(0.4, 0.12, 2000, 0.9, 0.12); tone('sawtooth', 60, 120, 0.45, 0.12); },   /* THE TAIL TELL (claude/duneworm2): sand pouring off something rising behind you, and a rattle */
+  wormBreath() { noise(0.9, 0.36, 700, 0.5); noise(0.7, 0.2, 2600, 0.9, 0.05); tone('sawtooth', 80, 50, 0.7, 0.14); },   /* (claude/caravan2) THE SAND BREATH: a roar of sand out of his throat */
+  wormStun() { noise(0.25, 0.42, 1400, 0.6); tone('square', 160, 60, 0.2, 0.16); tone('sine', 70, 40, 0.5, 0.2, 0.04); for (let i = 0; i < 3; i++) tone('sine', 900 + i * 220, 1200 + i * 220, 0.08, 0.05, 0.18 + i * 0.1); },   /* (claude/caravan2) HIS HEAD ON THE LEDGE: stone on bone, and the ringing after */
+  stoneRise() { noise(1.0, 0.18, 220, 0.3); tone('sawtooth', 48, 62, 0.9, 0.1); for (let i = 0; i < 4; i++) noise(0.05, 0.08, 900, 0.7, 0.2 + i * 0.2); },   /* (claude/caravan2) A LEDGE RISES out of the sand: a grinding rumble a second long */
+  stoneSink() { noise(0.6, 0.14, 260, 0.35); tone('sawtooth', 60, 40, 0.5, 0.08); },
   wormTangle() { for (let i = 0; i < 5; i++) noise(0.05, 0.22, 3400 - i * 300, 1.1, i * 0.04); tone('square', 900, 300, 0.14, 0.06); SFX.clank(); },   /* the awning tearing off its rollers */
   stormChant() { pad('sawtooth', 330, 392, 0.4, 0.06, 0, 1400); pad('sine', 990, 1320, 0.4, 0.04, 0.05, 3000); noise(0.4, 0.06, 600, 0.5); },
   mastHum(k = 0) { pad('sawtooth', 70 + k * 150, 110 + k * 260, 0.34, 0.025 + 0.04 * k, 0, 700 + 1800 * k); noise(0.05, 0.04 + 0.1 * k, 3800, 1.3); },   /* (claude/roc2) THE ROC's masts charging: a hum that climbs with the charge, and the crackle on the iron */
