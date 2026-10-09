@@ -248,4 +248,13 @@ ok(readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8').includes("k
 ok(L.music === 'ksar' && A.music === 'hawkmistress' && readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8').includes('  ksar() {') && L.ambient[0].kind === 'ksar', 'the level plays its own bed and its own ambient');
 ok(HAWK.blind >= 2 && HAWK.cd > 0, 'the hawk scout: a flash blinds it, it rests between stoops');
 ok(readFileSync(new URL('./one-new-foe.mjs', import.meta.url), 'utf8').includes("ksar: ['hawkscout']"), 'one-new-foe pins the Ksar\'s one new foe: the hawk scout');
+/* THE SHARED DRAIN (src/drain.js, A13): the sun uses it and the Long Water's breath will - a drain is hp off the bar through take(), nothing else (no stagger, flinch or mercy) */
+{ const { makeDrains } = await import('../src/drain.js'); const hero = { hp: 200, maxHp: 200 }, ghost = { hp: 200, maxHp: 200 }, beats = []; let took = 0;
+  const D = makeDrains({ players: () => [hero, ghost], take: (pp, k) => { pp.hp -= k; took += pp === hero ? k : 0; }, god: pp => pp === ghost, onBeat: (pp, k, src) => beats.push([src.id, k]) });
+  D.set(hero, 'sun', 0.05, { name: 'THE SUN' }); D.set(ghost, 'sun', 0.05); for (let i = 0; i < 61; i++) D.step(1 / 30);
+  ok(took === 20 && hero.hp === 180 && ghost.hp === 200, 'a drain takes its share of MAX hp a second (5% x 2 s of 200 = 20), and a god-moded hero none (' + took + ')');
+  ok(beats.length === 2 && beats.every(b => b[0] === 'sun' && b[1] === 10), 'a drain beats once a second with the hp it took that beat (the tick visuals hook)');
+  ok(Object.keys(hero).every(k => ['hp', 'maxHp', 'drains'].includes(k)), 'a drain touches nothing on the hero but hp (through take) and its own sources: no stagger, knock, hurt or mercy window');
+  D.set(hero, 'breath', 0.02); ok(Math.abs(D.rate(hero) - 0.07) < 1e-9 && D.sources(hero).length === 2, 'two sources stack (the sun and the breath)');
+  D.stop(hero, 'sun'); ok(D.sources(hero).map(q => q.id).join() === 'breath', 'a stop ends one source'); D.clear(hero); ok(D.rate(hero) === 0, 'a clear ends them all'); }
 console.log('ksar: ' + n + ' checks ok');

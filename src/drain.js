@@ -4,13 +4,17 @@
 // caller's `take` (main.js sunDrain: P.hp down, die() naming the source if it was the last of it) - never through damagePlayer, so no knock, no hurt pose,
 // no invulnerability window, no cancelled swing. Pure of the DOM; the visuals and the HUD are hooks.
 //
-//   const D = makeDrains({ take(pp, n, src), god(), onBeat(pp, n, src), beat })
+//   const D = makeDrains({ players(), take(pp, n, src), god(pp), onBeat(pp, n, src), beat })
+//                            players() = the heroes to drain (an array, read each step); take = the caller takes n whole hp off pp (and names src on a death);
+//                            god(pp) = true skips him (his part-taken resets); beat = seconds between onBeat calls (default 1)
 //   D.set(pp, id, rate, o)   start (or re-rate) a source: rate = share of max health a second (0.03 = 3%/s); o = { name, col, ...anything the HUD wants }
 //   D.stop(pp, id)           stop it (its part-taken fraction is dropped: a stop is a stop)
 //   D.step(dt)               every hero, every source: accumulate, take whole hp, and once a `beat` (1 s) call onBeat(pp, hpTakenThatBeat, src)
 //                            - the TICK VISUALS hook (a '-n', a sizzle, a gasp)
 //   D.sources(pp)            [{ id, rate, name, col, ... }] - the HUD METER hook (what drains him now, and how hard)
 //   D.rate(pp)               the summed rate on him now
+//   D.clear(pp)              stop every source on him (a respawn, a level change)
+//   e.g. THE LONG WATER's breath: D.set(pp, 'breath', 0.04, { name: 'OUT OF BREATH', col: '#7fd0ff' }) while under with an empty bar, D.stop(pp, 'breath') on surfacing
 export function makeDrains({ players, take, god = () => false, onBeat = () => {}, beat = 1 }) {
   const D = {};
   const map = pp => pp.drains || (pp.drains = new Map());

@@ -8006,7 +8006,7 @@
   }
  },
  "glasssea": {
-  "hash": "814cbd58f018",
+  "hash": "d60e3fa99613",
   "boss": {
    "boss": "colossus",
    "wins": 0,
@@ -8107,19 +8107,19 @@
    ]
   },
   "carried": {
-   "from": "20355d1b686a",
+   "from": "814cbd58f018",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 2,
+    "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 199,
-    "hits": 16,
+    "hpLostPct": 184,
+    "hits": 17,
     "walked": 100,
-    "lifts": 52,
+    "lifts": 50,
     "held": 1,
     "duels": 0,
     "boardLifts": 0,
@@ -8127,17 +8127,17 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 12753,
-    "kills": 8,
+    "frames": 12579,
+    "kills": 9,
     "heroLevel": 34
    },
    "warden": {
-    "deaths": 2,
+    "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 204,
-    "hits": 12,
+    "hpLostPct": 188,
+    "hits": 14,
     "walked": 100,
-    "lifts": 51,
+    "lifts": 50,
     "held": 1,
     "duels": 0,
     "boardLifts": 0,
@@ -8145,15 +8145,15 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 12746,
-    "kills": 8,
+    "frames": 12632,
+    "kills": 7,
     "heroLevel": 34
    },
    "pyro": {
-    "deaths": 2,
+    "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 215,
-    "hits": 17,
+    "hpLostPct": 171,
+    "hits": 15,
     "walked": 100,
     "lifts": 51,
     "held": 1,
@@ -8163,8 +8163,8 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 12701,
-    "kills": 9,
+    "frames": 12619,
+    "kills": 8,
     "heroLevel": 34
    }
   }
