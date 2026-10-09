@@ -880,6 +880,7 @@ export const ALLOWED_DECORATIONS = {
     "brokenArch",
     "drownedTree",
     "fencePosts",
+    "tributeCairn",
     "figurehead",
     "fishCottage",
     "fishTrap",

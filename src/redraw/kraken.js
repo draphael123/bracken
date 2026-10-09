@@ -126,9 +126,9 @@ function bioDots(B, x0, x1, y0, y1, seed, want, gap, col, dim) {
   return out; }
 function barnacleCrown(B, x0, x1, seed, cols = [KP.barn, KP.barnD, KP.suckC], reach = 14) {
   let top = 1e9; const tops = []; for (let x = x0; x <= x1; x++) { let y = 0; while (y < B.h && !B.get(x, y)) y++; tops[x] = y; top = Math.min(top, y); }
-  for (let x = x0; x < x1; x += 2 + Math.floor(hsh(x, 4, seed) * 3)) { const y = tops[x]; if (y >= B.h - 2 || y > top + reach) continue;
-    const h = 2 + Math.floor(hsh(x, 5, seed) * 3);
-    for (let q = 0; q < h; q++) { const w = h - q > 2 ? 3 : h - q > 1 ? 2 : 1; for (let k = 0; k < w; k++) B.set(x + k - (w > 2 ? 1 : 0), y - q, q === h - 1 ? cols[0] : (k === 0 ? cols[1] : q === 0 ? cols[1] : cols[0])); }
+  for (let x = x0; x < x1; x += 2 + Math.floor(hsh(x, 4, seed) * 2)) { const y = tops[x]; if (y >= B.h - 2 || y > top + reach) continue;
+    const h = 3 + Math.floor(hsh(x, 5, seed) * 4);
+    for (let q = 0; q < h; q++) { const w = h - q > 3 ? 4 : h - q > 2 ? 3 : h - q > 1 ? 2 : 1; for (let k = 0; k < w; k++) B.set(x + k - (w > 2 ? 1 : 0), y - q, q === h - 1 ? cols[0] : (k === 0 ? cols[1] : q === 0 ? cols[1] : cols[0])); }
     B.set(x, y - h + 1, cols[2]); } }
 
 // ---------- THE HEAD ----------
@@ -187,8 +187,8 @@ export function bakeKrakenArms() {
   const S = buf(26, 26); blob(S, 13, 13, 11, 11); for (let y = 6; y < 21; y++) for (let x = 6; x < 21; x++) { const d = Math.hypot(x + 0.5 - 13, y + 0.5 - 13); if (d < 7) S.set(x, y, d < 3 ? KP.ink : d < 5 ? KP.suckD : KP.suck); }
   /* THE LURE-LIGHTS (claude/kraken2 art): a deep-sea angler's bait on a stalk, set along the back of each arm; three bulbs (dark, lit, flaring)
      and the dots of cold light that run between them. The stalk is laid by the draw (it follows the arm); the bulbs and dots are here. */
-  const bulb = [0, 1, 2].map(k => { const B = buf(9, 9), cl = [[KP.bioDD, KP.bioDD, KP.d1], [KP.bioD, KP.bio, KP.bioDD], ['#f4fff6', KP.bio, KP.bioD]][k];
-    for (let y = 0; y < 9; y++) for (let x = 0; x < 9; x++) { const d = Math.hypot(x - 4, y - 4); if (d <= 1.6) B.set(x, y, cl[0]); else if (d <= 2.7) B.set(x, y, cl[1]); else if (d <= 3.4 && k > 0) B.set(x, y, cl[2]); }
+  const bulb = [0, 1, 2].map(k => { const B = buf(7, 7), cl = [[KP.bioDD, KP.bioDD, KP.d1], [KP.bioD, KP.bio, KP.bioDD], ['#f4fff6', KP.bio, KP.bioD]][k];
+    for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++) { const d = Math.hypot(x - 3, y - 3); if (d <= 1.0) B.set(x, y, cl[0]); else if (d <= 1.9) B.set(x, y, cl[1]); else if (d <= 2.6 && k > 0) B.set(x, y, cl[2]); }
     return toCanvas(B, false); });
   const dot = [0, 1].map(k => { const B = buf(3, 3); B.set(1, 1, k ? KP.bio : KP.bioD); B.set(0, 1, k ? KP.bioD : KP.bioDD); B.set(1, 0, k ? KP.bioD : KP.bioDD); return toCanvas(B, false); });
   return { seg, segW, rim, suck, tip, tipW: whiten(tip), stump: toCanvas(S), bulb, dot };
@@ -349,7 +349,7 @@ export function bakeKrakenFar() {
     for (let k = 0; k < 14; k++) { const sx = 40 + ((hsh(k, 3, 9) * 110) | 0); let y0 = 0; while (y0 < WL && !B.get(sx, y0)) y0++; const len = 6 + ((hsh(k, 5, 2) * 16) | 0);
       for (let y = y0 + 2; y < Math.min(WL, y0 + len); y++) if (B.get(sx, y) && (y + k) % 3) B.set(sx, y, '#3f5751'); }
     /* THE BARNACLE CROWN, on the crest of the dome: pale in the storm-dark, the one part of him that is old stone */
-    barnacleCrown(B, cx - 50, cx + 0, 5, ['#8a9a8e', '#566459', '#26302c'], 12);
+    barnacleCrown(B, cx - 50, cx + 0, 5, ['#a4b4a6', '#6a7a6e', '#26302c'], 14);
     B.set(bxm + 10, bym + 15, '#b4bcae'); B.set(bxm + 14, bym + 11, '#6a7a72');   /* the hook's point catches the light */
     frames.push(toCanvas(B, false)); eyes.push([e1, e2]); mouth.push([bxm + 4, bym + 2 + op * 4]); marks.push(mk); }
   return { frames, eyes, mouth, marks, wl: WL, w: W, h: H };
@@ -499,6 +499,42 @@ export function bakeFencePosts() {
   const W = 34, H = 18, B = buf(W, H);
   for (const x of [3, 16, 29]) for (let y = 3 + (x % 3); y < 18; y++) { B.set(x, y, '#6e604e'); B.set(x + 1, y, '#4e4438'); }
   for (let x = 3; x <= 30; x++) { B.set(x, 7 + Math.round(Math.sin(x * 0.4)), '#3a3430'); if (hsh(x, 1, 7) < 0.3) B.set(x, 8 + Math.round(Math.sin(x * 0.4)), ST.weed); }
+  return toCanvas(B);
+}
+// THE TRIBUTE (claude/kraken2 art, Daniel's Q3 - the premise in the world): for a hundred years the goblins left the deep its due on the
+// last stones of the road, and the tribute stopped. v0 THE TABLE: a stone slab on two piers, a bowl on its side, a chest standing open and
+// empty, three coins where the rest rolled, weed up the legs. v1 THE POST: a driftwood post with a goblin mask nailed to it, a crossbar of
+// hung bones that no wind has moved lately, and a strip of faded red cloth. Nothing on either is taken: it is simply not being brought.
+export function bakeTribute(v = 0) {
+  const W = v ? 22 : 40, H = v ? 40 : 26, B = buf(W, H);
+  const stone = ['#3a3e3c', '#565c58', '#7a8078', '#9aa096'], gold = ['#a8822a', '#e0b84a', '#fff0a8'], wood = ['#3e2a1c', '#6a4a2e', '#8a6844'], iron = '#3a3a42';
+  if (!v) {
+    for (const x0 of [4, 29]) for (let y = 12; y < H; y++) for (let x = x0; x < x0 + 7; x++) B.set(x, y, hsh(x, y, 3) < 0.3 ? stone[1] : x === x0 ? stone[0] : x === x0 + 6 ? stone[0] : stone[2 - (y % 7 === 0 ? 1 : 0)]);
+    for (let y = 9; y < 13; y++) for (let x = 1; x < 39; x++) B.set(x, y, y === 9 ? stone[3] : y === 12 ? stone[0] : hsh(x, y, 4) < 0.25 ? stone[1] : stone[2]);
+    for (let x = 5; x < 36; x += 3) B.set(x, 13, ST.weed);   for (let y = 14; y < 24; y += 2) { B.set(5, y, ST.weed); B.set(31, y + 1, ST.weed); }
+    // the chest, open and empty: lid back, its inside dark, an iron band
+    for (let y = 3; y < 9; y++) for (let x = 20; x < 30; x++) B.set(x, y, y === 3 || x === 20 || x === 29 ? wood[0] : y < 6 ? '#16100c' : wood[(x + y) % 5 === 0 ? 2 : 1]);
+    for (let x = 20; x < 30; x++) { B.set(x, 8, wood[0]); } B.set(24, 7, iron); B.set(25, 7, iron);
+    for (let y = 0; y < 4; y++) for (let x = 21; x < 29; x++) if (y < 3) B.set(x, y, y === 0 ? wood[0] : wood[1]);   /* the lid, standing */
+    B.set(22, 1, iron); B.set(27, 1, iron);
+    // the bowl, tipped, and what rolled out of it
+    for (let y = 6; y < 9; y++) for (let x = 7; x < 15; x++) { const d = Math.hypot(x - 11, (y - 8) * 2.2); if (d < 4.5) B.set(x, y, d > 3.4 ? stone[0] : y < 7 ? '#2a1c14' : '#8a6a3a'); }
+    for (const [x, y] of [[16, 8], [33, 8], [36, 8]]) { B.set(x, y, gold[1]); B.set(x + 1, y, gold[0]); B.set(x, y - 1, gold[2]); }
+    for (let x = 14; x < 19; x++) B.set(x, 8, x % 2 ? gold[0] : null);
+  } else {
+    for (let y = 6; y < H; y++) for (let x = 9; x < 13; x++) B.set(x, y, x === 9 ? wood[0] : x === 12 ? wood[0] : (y + x) % 5 === 0 ? wood[2] : wood[1]);
+    for (let x = 2; x < 20; x++) { B.set(x, 11, wood[0]); B.set(x, 12, wood[1]); }
+    // the mask: a goblin's face in grey bone, nailed on, hollow-eyed
+    for (let y = 16; y < 25; y++) for (let x = 7; x < 15; x++) { const dx = (x - 10.5) / 4, dy = (y - 20) / 4.6; if (dx * dx + dy * dy < 1) B.set(x, y, dy < -0.3 ? '#cfc8b0' : dx * dx + dy * dy > 0.7 ? '#8a8472' : '#b4ae98'); }
+    for (const x of [8, 12]) { B.set(x, 19, '#16100c'); B.set(x + 1, 19, '#16100c'); B.set(x, 20, '#16100c'); }
+    B.set(10, 22, '#16100c'); B.set(11, 22, '#16100c'); B.set(6, 17, '#b4ae98'); B.set(15, 17, '#b4ae98'); B.set(5, 16, '#b4ae98'); B.set(16, 16, '#b4ae98');   /* the ears */
+    // bones on strings, hanging still
+    for (const [x, len] of [[3, 7], [7, 5], [15, 6], [18, 8]]) { for (let y = 13; y < 13 + len; y++) B.set(x, y, '#5a4a38'); B.set(x, 13 + len, '#d8d2bc'); B.set(x, 14 + len, '#d8d2bc'); B.set(x + 1, 14 + len, '#8a8472'); }
+    // the red cloth, faded to rust, tied at the top and gone limp
+    for (let y = 7; y < 15; y++) { B.set(13, y, y % 3 ? '#8a3a30' : '#6a2a24'); if (y < 12) B.set(14, y, '#7a3028'); }
+    B.set(10, 5, wood[0]); B.set(11, 5, wood[1]); B.set(10, 4, wood[1]);
+    for (let y = 33; y < 38; y += 2) { B.set(9, y, ST.weed); B.set(12, y + 1, ST.weed); }
+  }
   return toCanvas(B);
 }
 // THE TIDE BELL: a bronze bell gone green, hung in a stone frame. Strike it and the causeway's tide turns on your word. 24x34

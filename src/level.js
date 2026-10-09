@@ -6966,6 +6966,11 @@ function theDrownedCauseway() {
   ent('check', 561, R - 1);
   sign(551, R - 1, 'THE ROAD GOES OUT INTO THE SEA AND STOPS. THE WATER AT THE END OF IT IS BREATHING.');
   coins([517, 23], [525, 23], [547, 23], [556, 23]);
+  /* THE TRIBUTE (claude/kraken2 art, Daniel's Q3: the premise taught in the world, and the approach that sets him up, B8): for a hundred years the
+     goblins left the deep its due on the last stones of the road. The table stands empty, the chest open, and a post with a mask on it that
+     nobody has fed. The sign says whose road this is now */
+  deco('tributeCairn', 557, R - 1, { v: 1 }); deco('tributeCairn', 563, R - 1);
+  sign(559, R - 1, 'THE GOBLINS PAID THE DEEP FOR A HUNDRED YEARS. THE SEA HAS COME TO COLLECT.');
 
   // ---------------- 8. THE KRAKEN'S REACH (x 566-609). The end of the road, and what lives off the end of it. ----------------
   block(566, 609, R, R + 1); for (let x = 567; x < 609; x += 8) block(x, x + 1, R + 2, 39);
