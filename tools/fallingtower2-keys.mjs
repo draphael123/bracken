@@ -36,7 +36,7 @@ try { for (const h of heroes) {
      /* a player reads the flags: he waits for the wind to drop before a jump, and if a gust or a strike costs him a plank he climbs on from where he is */
      let best=-1,tries=0;for(;tries<40&&best<O.ledges.length-1;tries++){const c=O.ledges.findIndex(q=>on(q[2])&&P().x>q[0]*TS-2&&P().x<(q[0]+q[1])*TS+2);best=Math.max(best,c);const T=O.ledges[c+1];if(!T)break;
        const near=(T[0]*TS+T[1]*TS/2)>P().x?1:-1,cur=c>=0?O.ledges[c]:null,lip=cur?(near>0?(cur[0]+cur[1])*TS-6:cur[0]*TS+6):(near>0?P().x:(O.x1+1)*TS+6);
-       walkTo(lip);for(let w=0;w<240&&F.rt.gust.st!=='calm';w++){quiet();BK.sim(1);}hop(T);}
+       walkTo(lip);const cr=()=>(L.crumbles||[]).some(q=>q.st==='count'&&Math.abs(P().y-q.row*TS)<3&&P().x>q.x0*TS-4&&P().x<(q.x1+1)*TS+4);for(let w=0;w<240&&F.rt.gust.st!=='calm'&&!cr();w++){clear();if(F.rt.gust.st==='blow')k[F.rt.gust.dir>0?'left':'right']=true;quiet();BK.sim(1);if(Math.abs(P().x-lip)>10)walkTo(lip,30);}clear();hop(T);}   /* (it leans into a gust it waits out; on a cracked plank it does not wait) */
      got=O.ledges.findIndex(q=>on(q[2])&&P().x>q[0]*TS-2&&P().x<(q[0]+q[1])*TS+2)+1;out.tries=tries;
      out.face=got;out.faceN=O.ledges.length;}
     // ---- SNAP ----

@@ -79,7 +79,7 @@ try {
    {const A=BK.ambushes()[0];out.amb=[A.st,A.leader&&A.leader.t,!!(A.leader&&A.leader.elite)];const K=BK.keys;let lo=9e9,hi=0;
     for(const d of ['right','left'])for(let i=0;i<200;i++){K[d]=true;K.jump=i%20<10;if(i%20===0)BK.press('jump');BK.sim(1);lo=Math.min(lo,BK.P.x);hi=Math.max(hi,BK.P.x);K[d]=false;}K.jump=false;
     out.held=[Math.floor(lo/16)>A.wallL,Math.floor(hi/16)<A.wallR];for(const e of A.foes||[])if(e.alive&&e.elite)BKT.hurtEnemy(e,9999,e.x-10,false);BK.sim(120);out.ambDone=A.st;}
-   const st=C.filter(c=>c.chain).sort((a,b)=>b.row-a.row);BK.tp(st[0].x0+2,st[0].row-1);BK.sim(20);out.race=[st.map(c=>c.st).join()];
+   const st0=C.filter(c=>c.chain).sort((a,b)=>b.row-a.row),st=st0.filter(c=>c.chain===st0[0].chain);   /* (claude/fallingtower2: the stair is two chains round the telescope - the race is the one under it) */BK.tp(st[0].x0+2,st[0].row-1);BK.sim(20);out.race=[st.map(c=>c.st).join()];
    const fell=new Set();for(let i=0;i<60*(1.8+1.1*st.length)+30;i++){BK.sim(1);st.forEach((c,k)=>{if(c.st==='down')fell.add(k);});}out.race.push(fell.size===st.length,row());BK.sim(60*6);out.race.push(st.map(c=>c.st).join());
    const ld=C.find(c=>c.kind==='landing');BK.tp(ld.x0+2,ld.row-1);BK.sim(5);out.landing=[ld.st,ld.t];
    /* a death: every section whole again */

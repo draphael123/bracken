@@ -343,7 +343,7 @@ export function buildTowerAscent({ painter, T, TS }) {
     const who = ['imp', 'apprentice', 'bat', 'armour', 'tome', 'apprentice', 'haunt', 'imp', 'tome', 'bat', 'armour'];
     F.tiers.forEach(([x0, len, row], j) => put(who[j % who.length], x0, len, row));
     for (const [t, x, y] of [['tome', 30, F.bot - 6], ['haunt', 40, F.bot - 12], ['bat', 24, F.bot - 18]]) foe(t, x, y);   /* the open crown's air: the flyers keep to its floor (tower-flyers) */
-    for (const [t, x] of [['armour', 26], ['apprentice', 18]]) foe(t, x, F.bot - 1, { face: 1 });   /* and its broken floor, walked west to the breach, is held */
+    for (const [t, x] of [['armour', 26], ['apprentice', 18], ['apprentice', 40], ['armour', 50]]) foe(t, x, F.bot - 1, { face: 1 });   /* and its broken floor, walked west to the breach, is held */
   }
   /* THE SEAMS between floors, where a screen was empty: books over the cistern's poison, the gallery's top, the loft's floor, the crown's parapet */
   for (const [t, x, y] of [['tome', 28, floors[4].bot - 6], ['tome', 42, floors[4].bot - 7], ['tome', 26, floors[3].top + 3], ['broom', 50, floors[3].top + 2], ['turret', 14, floors[3].bot - 1],

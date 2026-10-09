@@ -25,7 +25,7 @@ export const FT2 = {
   flare: { period: 4.4, smoulder: 1.1, burn: 1.0, dmg: 10, h: 26 },
   syrup: { cap: 40 },
   tilt: { level: 1.2, tell: 0.9, lean: 2.8, sp: 46, chestSp: 64, chestDmg: 12, chestW: 14 },
-  gust: { first: 2.0, calm: 3.4, tell: 1.3, blow: 1.6, push: 52 },   /* (the face is eight tiles wide: a gust shoves, it does not throw you off it unbraced in one) */
+  gust: { first: 2.0, calm: 3.4, tell: 1.3, blow: 1.6, push: 52, footing: 0.35 },   /* (the face is eight tiles wide: a gust shoves, it does not throw you off it unbraced in one) */
   bolt: { first: 3.0, every: 4.6, tell: 1.3, half: 12, dmg: 18 },
   scope: { period: 7.0, w: 40, hold: 0.2 },
   snap: { tell: 1.4, secs: 2.8 },
@@ -89,7 +89,7 @@ export function ftUpdate(L, P, dt, c) {
   if (F.outer) { const O = F.outer, G = R.gust, B = R.bolt, K = FT2.gust, Kb = FT2.bolt; G.t -= dt; B.t -= dt;
     if (G.t <= 0) { if (G.st === 'calm') { G.st = 'tell'; G.t = K.tell; G.dir = Math.random() < 0.5 ? -1 : 1; if (outside) { c.sound('whoosh'); c.callout(G.dir < 0 ? 'WIND FROM THE EAST: BRACE' : 'WIND FROM THE WEST: BRACE'); } }
       else if (G.st === 'tell') { G.st = 'blow'; G.t = K.blow; } else { G.st = 'calm'; G.t = K.calm; } }
-    if (G.st === 'blow' && outside) c.push(G.dir * K.push * (P.block ? 0.4 : 1) * dt);
+    if (G.st === 'blow' && outside) c.push(G.dir * K.push * (P.ground ? K.footing : 1) * (P.block ? 0.4 : 1) * dt);   /* (feet on a plank brace against it: the jump is when it takes you) */
     if (B.t <= 0) { if (B.st === 'wait') { const ledge = outside ? (O.ledges || []).filter(([x0, len, row]) => row * TS >= P.y - 3 * TS - 4 && row * TS <= P.y + 4).sort((a, b) => Math.abs((a[0] + a[1] / 2) * TS - P.x) - Math.abs((b[0] + b[1] / 2) * TS - P.x))[0] : null;
         if (ledge) { B.st = 'tell'; B.t = Kb.tell; B.x = Math.max(ledge[0] * TS + 8, Math.min((ledge[0] + ledge[1]) * TS - 8, P.x)); B.y = ledge[2] * TS; c.sound('rumble'); } else B.t = 0.5; }
       else if (B.st === 'tell') { B.st = 'flash'; B.t = 0.25; c.sound('heavy'); c.shake(3); if (!P.dead && Math.abs(P.x - B.x) < Kb.half + 5 && P.y > B.y - 40 && P.y <= B.y + 4) c.hurt(B.x, Kb.dmg, 'lightning'); }
