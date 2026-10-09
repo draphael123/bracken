@@ -31,11 +31,12 @@ export function makeBuriedCityHands(ctx) {
     const fresh = !K || K.L !== L;
     if (fresh) K = { L, said: {}, clock: 0, wheel: { turns: 0, cd: 0, done: false }, vault: (L.vaultDoors || []).map(v => ({ ...v, open: false })),
       n: { pulls: 0, opens: 0, shuts: 0, fills: 0, drains: 0, lifts: 0, jams: 0, turns: 0, nudges: 0, risen: 0, full: 0, kingPulls: 0 } };
+    /* the cells under each room's sand AS BUILT: taken once on a fresh load (the grid is every room drained then) - a respawn's grid still holds the sand */
+    if (fresh) K.bases = Object.fromEntries((L.rooms || []).map(r => [r.id, Array.from({ length: r.full }, (_, k) => { const y = r.floor - 1 - k, row = []; for (let x = r.x0; x <= r.x1; x++) row.push(ctx.cellGet(x, y)); return row; })]));
     K.rooms = (L.rooms || []).map(r => { const keep = !fresh && r.great && K.wheel.done;
-      return { ...r, level: keep ? 0 : r.init === 'full' ? r.full : 0, gate: keep ? 'open' : r.init === 'full' || r.id === 'lowerbulb' ? 'shut' : 'open', rows: -1, cd: 0, moving: 0, base: null, said: false }; });
+      return { ...r, level: keep ? 0 : r.init === 'full' ? r.full : 0, gate: keep ? 'open' : r.init === 'full' || r.id === 'lowerbulb' ? 'shut' : 'open', rows: -1, cd: 0, moving: 0, base: K.bases[r.id], said: false }; });
     if (!fresh && !K.wheel.done) K.wheel.turns = 0;
-    for (const r of K.rooms) { r.base = []; for (let k = 0; k < r.full; k++) { const y = r.floor - 1 - k, row = []; for (let x = r.x0; x <= r.x1; x++) row.push(ctx.cellGet(x, y)); r.base.push(row); }
-      if (r.trap) r.plate = []; write(r, true); }
+    for (const r of K.rooms) { if (r.great && !fresh && !K.wheel.done) r.drain = 0; write(r, true); }
     K.waiting = (L.ents || []).map((e, k) => ({ e, k })).filter(q => q.e.sandWait && H.waits(q.e));
     K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = []; K.leverFx = {};
     for (const pp of ctx.players) pp.bcJam = 0;
