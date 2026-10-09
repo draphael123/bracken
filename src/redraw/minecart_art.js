@@ -3,6 +3,7 @@
 // mouth - and THE GREAT DRILL (its machine, bit, gears, cab, bore lining, chute, points mast). src/minecart-hands.js and src/great-drill-hands.js keep every hit box, timing, tell and cell;
 // they hand this file the numbers and it draws. Everything is plain fillRect pixel art on the screen (no per-frame allocation beyond a few gradients).
 import { MP, glow, lampSprite, hash } from './minecart_backdrop.js';
+import { canvas } from '../px.js';
 const R = Math.round;
 const rc = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 const add = (g, fn) => { g.globalCompositeOperation = 'lighter'; fn(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; };
@@ -296,4 +297,13 @@ export function lampPlan(L, cellGet, T, x0c, x1c) {
   const posts = new Map(); for (const [a, b, row] of L.mcTrack) for (let x = Math.max(a + 1, x0c - 8); x <= Math.min(b - 1, x1c + 8); x++) { if (x % 6 !== 0) continue; const t0 = cellGet(x, row); if (!(t0 === T.SOLID || t0 === T.RAIL)) continue;
     let clear = true; for (let k = 1; k <= 4 && clear; k++) if (cellGet(x, row - k) !== T.AIR) clear = false; if (!clear || gx.some(([p0, p1]) => x >= p0 && x <= p1)) continue; posts.set(x + ',' + row, [x, row]); }
   return [...posts.values()].map(([x, row]) => [x, row, posts.has((x + 6) + ',' + row)]);
+}
+
+/* THE BESTIARY CARD (batch80 integ-2): the machine drawn once, whole, and shrunk to a card - the Great Drill draws itself live (src/great-drill-hands.js), so the bestiary had no sprite for it
+   (textfit: "Cannot read properties of null (reading 'R')" on the BOSSES tab). Same shape as the Lantern-Eater's card. */
+export function bakeDrillCard() {
+  const [big, bg] = canvas(200, 130);
+  drill(bg, 140, 30, 120, 72, 64, 44, { x: 34, t: 44, w: 52, h: 26 }, false, false, false, 0, 1);
+  const [c, g] = canvas(80, 52); g.imageSmoothingEnabled = false; g.drawImage(big, 0, 0, 200, 130, 0, 0, 80, 52);
+  return { R: [c], L: [c], w: 76, h: 48 };
 }
