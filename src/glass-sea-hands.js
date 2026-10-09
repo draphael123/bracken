@@ -9,7 +9,8 @@
 // main.js calls: reset, on, update, interact, noSun, slide, hold, fear, onDeath, drawBack, drawWorld, drawOver, drawHud, read.
 // Every teaching line goes through ctx.number with a line listed in src/hint-lines.js.
 import { trace, makeOpaque } from './light.js';
-import { isSlope, slopeGrade, SLIDE } from './slopes.js';
+import { isSlope, slopeGrade, SLIDE, slideKeepAt } from './slopes.js';
+import { RIDE_MOVE } from './hero-move.js';   /* (claude/reachcore) the slick glass's numbers, one copy: src/reach-hero.js slides on them too */
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import * as GSA from './redraw/glasssea_art.js';
@@ -22,7 +23,7 @@ import { shelfTile } from './redraw/glasssea_tiles.js';
    spew = s between skitters out of a boiling crack (max alive from one); fall = the crack's blow; daz = s a glass scorpion stays dazzled; patch = the shard patch
    (s, tiles, the blow, its cd); slide = a glass slope's extra slide (px/s/s, and its cap over the hill's own top speed) */
 export const GS = { fuseT: 1.2, crumbleT: 1.0, fireR: 4, holdR: 6, boilV: 190, boilDmg: 9, boilCd: 0.7, boilRows: 5, spew: 2.2, spewMax: 3, spewNear: 16, fallDmg: 20,
-  daz: 2.6, patchT: 8, patchW: 2, patchDmg: 5, patchCd: 0.6, slideAcc: 120, slideCap: 1.3, retrace: 0.2, turnR: 22, turnY: 22 };
+  daz: 2.6, patchT: 8, patchW: 2, patchDmg: 5, patchCd: 0.6, slideAcc: RIDE_MOVE.GLASS_SLIDE_ACC, slideCap: RIDE_MOVE.GLASS_SLIDE_CAP, retrace: 0.2, turnR: 22, turnY: 22 };
 /* THE COLD (the sun meter's twin, by night): fill = s from warm to full away from fire; cool = s of firelight from full to warm; at full a tick every s, building */
 export const COLD = { fill: 6, cool: 1.2, hurtEvery: 1, build: [3, 5, 8] };   /* (the sun meter's own fill: SUN.fill 6 s) */
 const DIRWORD = { E: 'EAST', W: 'WEST', N: 'UP', S: 'DOWN' };
@@ -122,7 +123,7 @@ export function makeGlassSeaHands(ctx) {
   /* (claude/slickslope, Daniel 10-07 "this jump can't be beat by the geomancer") THE MOMENTUM IS KEPT: slopes.js slideStep bled anything over the hill's top speed at 400 px/s/s,
      so the extra below came to ~5 px/s and a glass slide ran as a sand one. slideKeep tells slideStep the ceiling the glass keeps; the build is slow (slideAcc) so a LONG slide
      carries more than a short one (tools/glasssea-slide.mjs measures it per hero) */
-  H.slideKeep = (P, kind) => (GSx && kind && P.x >= (GSx.L.glassFrom || 0) * TS() ? GS.slideCap : 1);
+  H.slideKeep = (P, kind) => (GSx ? slideKeepAt(GSx.L, P.x, kind) : 1);   /* (claude/reachcore: the one copy is src/slopes.js slideKeepAt - main.js and the reach model ask it directly) */
   H.slide = (P, ss, kind, dt) => { const max = slopeGrade(kind) === 1 ? SLIDE.maxSteep : SLIDE.maxGentle; if (!GSx || !ss.sliding || !kind || P.x < (GSx.L.glassFrom || 0) * TS()) return; const s = Math.sign(ss.vx) || 0; if (!s) return;
     ss.vx += s * GS.slideAcc * dt; const cap = max * GS.slideCap; if (Math.abs(ss.vx) > cap) ss.vx = s * cap; if (!P.gsSlid) { P.gsSlid = 1; GSx.n.slides++; } };
 
