@@ -231,9 +231,11 @@ export function strike(BK, h, e, f) {
 /* (claude/windcaller3) THE WINDCALLER'S LEDGE IS NARROW: a spot the hands would stand on beside him that is off the end of the ledge they share with him is
    kept on it (a step off it is the thorns, or the floor, and the climb again). Any other walk - down to him, to an updraft - is left as it is. */
 /* (claude/windcaller3) and no ROLL that ends off his ledge or in the thorns: a roll on the summit is a step you cannot take back */
-function callerNoRoll(BK, dir) { const W = BK.callerWind && BK.callerWind(), P = BK.P; if (!W) return false; const to = P.x + dir * 56;
+function callerNoRoll(BK, dir) { const W = BK.callerWind && BK.callerWind(), P = BK.P; if (!W) return false; const to = P.x + dir * 96;   /* (a roll and its skid carry ~90 px, not 56: a pyro rolled off the lip into the thorns from 76 px out) */
   for (const [x0, x1, row] of W.ledges) if (P.ground && Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 2 && P.x <= (x1 + 1) * 16 + 2) return to < x0 * 16 + 6 || to > (x1 + 1) * 16 - 6;
   return !(W.safe || []).some(([a, b]) => to >= a * 16 + 8 && to <= (b + 1) * 16 - 8); }
+/* (claude/windcaller3) ANY roll the hands would make in his fight - a red mark rolled late, a hard tell - that ends off his ledge or in the thorns is not made */
+function callerRollBad(BK) { const b = BK.boss, P = BK.P, K = BK.keys || {}; if (!b || b.t !== 'windcaller' || !b.alive || !BK.bossActive) return false; return callerNoRoll(BK, K.left ? -1 : K.right ? 1 : (P.face || 1)); }
 function callerKeep(BK, e, x) { const W = BK.callerWind && BK.callerWind(), P = BK.P; if (!W || !P.ground) return x;
   for (const [x0, x1, row] of W.ledges) { const on = q => q.x >= x0 * 16 - 2 && q.x <= (x1 + 1) * 16 + 2 && Math.abs(q.y - row * 16) < 6; if (on(P) && on(e)) return Math.max(x0 * 16 + 6, Math.min((x1 + 1) * 16 - 6, x)); }
   return x; }
@@ -505,11 +507,11 @@ function rollWhenDue(BK, press0) {
   if (now > w.until || !e.alive) { P.labRollWant = null; return; }
   const winding = e.greedT > 0 || (BK.windingUp && BK.windingUp(e)), left = e.greedT > 0 ? e.greedT : (typeof e.modeT === 'number' && e.modeT > 0 ? e.modeT : 0);
   if (winding && left > ROLL_LATE) return;
-  P.labRollWant = null; if (now - (e.labRollT ?? -9) < 0.7) return; e.labRollT = now; P.labRollT = now; press0.call(BK, 'dodge');
+  P.labRollWant = null; if (now - (e.labRollT ?? -9) < 0.7) return; if (callerRollBad(BK)) return; e.labRollT = now; P.labRollT = now; press0.call(BK, 'dodge');
 }
 export async function bossLab(BK, opts = {}) {
   const previous = BK.manualSimulation, press0 = BK.press, sim0 = BK.sim, step0 = BK.step;
-  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
+  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : press0.call(BK, k);
   LABP = profileOf(opts.profile ?? BK.labProfile);   /* (BK.labProfile: a page-wide default a measuring tool sets - tools/boss-level.mjs openLevelPage sets the standard) */   /* opts.profile: 'legacy' (or none) = the old bot exactly; 'human' = the boss standard; '+first' = a first attempt */
   /* WITH EYES (a perceiving profile) the world steps one frame at a time: the hands decide on what was SEEN, the seen state comes off, the world steps, and what is seen now goes back on */
   const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } if (OBS && ROWBOSS) OBS(BK, ROWBOSS, HUMAN_H); } return r; };   /* (OBS: opts.observe, a watcher called after every world frame on the real state - tools/boss-read-audit.mjs) */
@@ -1937,7 +1939,10 @@ async function runbossLab(BK, opts) {
         else if (P.labHop && !P.ground) { goal = null; strike = false; k[P.labHop > 0 ? 'right' : 'left'] = true; }   /* over the thorn strip: keep going */
         else if (W && P.ground && (W.on || W.tell >= 0.75) && W.ledges.some(([x0, x1, row]) => Math.abs(P.y - row * 16) < 4 && P.x >= x0 * 16 - 4 && P.x <= (x1 + 1) * 16 + 4)) { goal = null; strike = false; P.labRide = null; if (SHIELDED(h)) { k.block = true; P.face = Math.sign(boss.x - P.x) || P.face; } else k.down = true; }   /* ON HIS LEDGE THE GUST WALKS YOU OFF: brace through it (C held, or crouched), and fight in the still */
         else if (P.labRide && (!P.ground || f - P.labRide.f < 30)) { goal = null; strike = false; const R = P.labRide, cxl = R.lg ? (R.lg[0] + R.lg[1] + 1) * 8 : null, rising = P.vy < 0 && P.y > (R.lg ? R.lg[2] * 16 : 0);   /* riding: hold toward the ledge, and over it steer to its middle */
-          if (cxl === null || rising || (cxl - P.x) * R.dir > 10) k[R.dir > 0 ? 'right' : 'left'] = true; else if ((P.x - cxl) * R.dir > 10) k[R.dir > 0 ? 'left' : 'right'] = true; }
+          const vc = W.vents.slice().sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0], inCol = vc && Math.abs(P.x - vc.x) < (vc.w || 12), low = R.lg && P.y > R.lg[2] * 16 + 20;   /* (claude/windcaller3) STAY IN THE COLUMN WHILE IT LIFTS YOU: drifted out of the updraft low (a bolt dropped you back into it), the gust carries you short, over the thorns */
+          if (rising && low && inCol && P.vx * R.dir > 40) k[R.dir > 0 ? 'left' : 'right'] = true;
+          else if (rising && low && inCol) {}
+          else if (cxl === null || rising || (cxl - P.x) * R.dir > 10) k[R.dir > 0 ? 'right' : 'left'] = true; else if ((P.x - cxl) * R.dir > 10) k[R.dir > 0 ? 'left' : 'right'] = true; }
         else if (open || !up || !W) { P.labRide = null; goal = boss.x; strike = P.ground || open; }   /* (no swing in the air over his summit: an air cut hangs you, and the gust takes you off the ledge) */
         else { P.labRide = null;
           const floorOf = x => (W.safe || []).find(([a, b]) => x >= a * 16 - 4 && x <= (b + 1) * 16 + 4) || null;
@@ -1969,6 +1974,8 @@ async function runbossLab(BK, opts) {
       /* THE WINDCALLER'S HOWL (claude/bosswave1: his fall is now his only opening): HE CALLS THE WIND is told, and a player braces through it -
          DOWN held on the ground (every hero has it; block is the same brace) - and he falls */
       if (boss.t === 'windcaller' && (boss.mode === 'howlTell' || boss.mode === 'howl') && P.ground) { strike = false; goal = null; k.left = k.right = false; k.down = true; }
+      /* (claude/windcaller3) HIS BLAST (red, HE GATHERS THE WIND): no guard and no brace holds it - read late as a player reads it (the profile's reaction), the hands step back out of it */
+      if (boss.t === 'windcaller' && boss.mode === 'blastTell' && Math.abs(P.x - boss.x) < 96 && Math.abs(P.y - boss.y) < 34 && 0.75 - boss.modeT >= (LABP.rtMode || 410) / 1000) { strike = false; goal = null; const away = Math.sign(P.x - boss.x) || boss.blastDir || 1; k.left = away < 0; k.right = away > 0; k.block = false; k.down = false; }
       /* THE RAM'S CHARGE (claude/bosswave1: a charge that finds you stops on you and dazes nothing): rolled through as it arrives, so it runs on into the wall */
       else if (boss.t === 'ram' && (boss.mode === 'charge' || toldRun(['lower', 'rear'])) && Math.abs(boss.x - P.x) < 72 && (boss.x - P.x) * (boss.vx || 0) < 0 && !(P.dodge > 0)) { strike = false; k.block = false; k[boss.x > P.x ? 'right' : 'left'] = true; BK.press('dodge'); }
       else if (boss.t === 'ram' && (boss.mode === 'lower' || boss.mode === 'rear')) strike = false;   /* (his head goes down: no swing started that would still be running when he comes) */
@@ -2331,7 +2338,7 @@ export function chaseClimb(BK, m, o = {}) {
 export async function eliteLab(BK, o) {
   const lvm = await import('./level.js'); const press0 = BK.press, sim0 = BK.sim, step0 = BK.step, previous = BK.manualSimulation;
   if (o.mode === 'human') { HUMAN_H = o.hero;
-    BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
+    BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : press0.call(BK, k);
     BK.sim = n => { rollWhenDue(BK, press0); return sim0.call(BK, n); }; BK.step = n => { rollWhenDue(BK, press0); return step0.call(BK, n); }; }
   BK.manualSimulation = true;
   try {
@@ -2367,7 +2374,7 @@ export async function eliteLab(BK, o) {
    given, runs first and may take the frame (returns true: its keys stand). Nothing else calls it: the legacy bot and every lab row are as they were. */
 export function labDuelFrame(BK, h, e, f, prof, pre) {
   const press0 = BK.press, h0 = HUMAN_H, p0 = LABP; HUMAN_H = h; LABP = profileOf(prof || 'human');
-  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && !humanRollOk(BK)) ? undefined : press0.call(BK, k);
+  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : press0.call(BK, k);
   try { rollWhenDue(BK, press0); if (pre && pre(BK, h, e, f)) return { defend: 0, swing: 0, pre: true }; return labBotFrame(BK, h, e, f); }
   finally { BK.press = press0; HUMAN_H = h0; LABP = p0; }
 }

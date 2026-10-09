@@ -16001,6 +16001,9 @@ function updateWindcaller(e, dt) {
     case 'cast': { e.castT -= dt; e.howlT -= dt; e.stoneT = (e.stoneT === undefined ? 5 : e.stoneT) - dt; e.wallT = (e.wallT === undefined ? 8 : e.wallT) - dt;
       const close = Math.abs(P.x - e.x) < 36 && Math.abs(P.y - e.y) < 30; if (e.castT <= 0.35 && !close) e.castFlash = Math.max(e.castFlash, 0.05);   /* THE BOLT IS TOLD: his staff comes up a third of a second before it flies - and never point-blank (beside him he holds it: step back and he throws) */
       if (e.castT <= 0 && close) e.castT = 0.3;
+      /* (claude/windcaller3) HIS BLAST: stood beside him on his ledge he does not throw - he gathers the wind in his hands (red: no shield holds it, and no brace) and blows you off it; step back out of it or go over it */
+      e.blastCd = Math.max(0, (e.blastCd ?? 2) - dt); e.closeT = Math.abs(P.x - e.x) < CALLER_BLAST_R && Math.abs(P.y - e.y) < 30 && !P.galeRide ? (e.closeT || 0) + dt : 0;
+      if (e.closeT >= CALLER_BLAST_WAIT[ph - 1] && e.blastCd <= 0 && !P.dead) { e.closeT = 0; e.mode = 'blastTell'; e.modeT = CALLER_BLAST_TELL; e.blastDir = Math.sign(P.x - e.x) || e.face || 1; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); number(e.x, e.y - 34, 'HE GATHERS THE WIND', '#bfe6f5'); SFX.gustRise(); SFX.callerChant(); break; }
       else if (e.castT <= 0 && !P.dead && !P.galeRide) { e.castT = CALLER_CAST[ph - 1]; const a = Math.atan2((P.y - 8) - (e.y - 14), P.x - e.x);
         seeds.push({ x: e.x + Math.cos(a) * 12, y: e.y - 14 + Math.sin(a) * 12, vx: Math.cos(a) * 150, vy: Math.sin(a) * 150, dead: false, life: 3.4, bolt: true, owner: e, dmg: CALLER_BOLT_DMG });   /* (claude/sweep1: owner - his bolts are his blows, BOSS_HIT) */
         e.castFlash = 0.25; SFX.callerBlast(); }
@@ -16009,7 +16012,7 @@ function updateWindcaller(e, dt) {
       if (e.modeT <= 0) {
         if (P.dead || P.galeRide) e.modeT = 0.5;
         else if (e.howlT <= 0) { e.howlT = ph >= 2 ? 9 : 11; e.mode = 'howlTell'; e.modeT = 1.1; number(e.x, e.y - 30, 'HE CALLS THE WIND', '#bfe6f5'); SFX.callerChant(); SFX.gasp(); }
-        else if (e.stoneT <= 0 && !(Math.abs(P.x - e.x) < 72 && Math.abs(P.y - e.y) < 30)) { e.stoneT = ph >= 2 ? 5.5 : 8; e.mode = 'stoneTell';   /* (the standing stone is for a hero off his ledge, never thrown point-blank along it) */ number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.85; number(e.x, e.y - 30, 'HE LIFTS A STONE', '#9aa39a'); SFX.callerChant(); SFX.stone(); }
+        else if (e.stoneT <= 0 && !(Math.abs(P.x - e.x) < 72 && Math.abs(P.y - e.y) < 30)) { e.stoneT = ph >= 2 ? 5.5 : 8; e.mode = 'stoneTell';   /* (the standing stone is for a hero off his ledge, never thrown point-blank along it) */ number(e.x, e.y - e.h - 24, '!!', '#ff6b6b');   /* (claude/windcaller3) A STANDING STONE IS NOT TURNED ON A SHIELD: red, jump it or roll under it */ e.modeT = 0.85; number(e.x, e.y - 30, 'HE LIFTS A STONE', '#9aa39a'); SFX.callerChant(); SFX.stone(); }
         else if (e.wallT <= 0 && ph >= 2) { e.wallT = 9; e.mode = 'wallTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.9; number(e.x, e.y - 30, 'THE MOOR GOES WHITE', '#e8f0f8'); SFX.gasp(); }
         else e.modeT = castLen * 0.5; }
       break; }
@@ -16021,9 +16024,13 @@ function updateWindcaller(e, dt) {
       if (Math.random() < dt * 40) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 34 - Math.random() * 10, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#9aa39a' : '#c9a0ff', size: 2, grav: -20 });
       if (e.modeT <= 0) { e.mode = 'stone'; e.modeT = 0.4; SFX.throwWhoosh(); shakeCam(3);
         const a = Math.atan2((P.y - 10) - (e.y - 30), P.x - e.x);
-        seeds.push({ x: e.x + Math.cos(a) * 16, y: e.y - 30 + Math.sin(a) * 16, vx: Math.cos(a) * 210, vy: Math.sin(a) * 210, g: 260, life: 3, menhir: true, dmg: DMG.rock }); }
+        seeds.push({ x: e.x + Math.cos(a) * 16, y: e.y - 30 + Math.sin(a) * 16, vx: Math.cos(a) * 210, vy: Math.sin(a) * 210, g: 260, life: 3, menhir: true, noBlock: true, dmg: CALLER_STONE_DMG }); }
       break; }
     case 'stone': if (e.modeT <= 0) toCast(); break;
+    case 'blastTell': { if (Math.random() < dt * 50) { const a = Math.random() * 6.283; parts.push({ x: e.x + Math.cos(a) * 26, y: e.y - 14 + Math.sin(a) * 18, vx: -Math.cos(a) * 60, vy: -Math.sin(a) * 50, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 }); }
+      if (e.modeT <= 0) { e.mode = 'blast'; e.modeT = 0.35; SFX.gust(); SFX.buzz(); shakeCam(3); for (let i = 0; i < 18; i++) parts.push({ x: e.x + e.blastDir * 10, y: e.y - 4 - Math.random() * 28, vx: e.blastDir * (220 + Math.random() * 160), vy: (Math.random() - 0.5) * 40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#e8f0f8' : '#bfe6f5', size: 2, grav: 0 });
+        if (!P.dead && !P.galeRide && (P.x - e.x) * e.blastDir > -8 && Math.abs(P.x - e.x) < CALLER_BLAST_R + 12 && Math.abs(P.y - e.y) < 34) { const r = damagePlayer(e.x, CALLER_BLAST_DMG, { unblockable: true, who: e, name: 'HIS BLAST' }); if (r === 'hit') { P.vx = e.blastDir * 260; P.vy = -200; P.ground = false; P.onMover = null; number(P.x, P.y - 30, 'BLOWN OFF', '#bfe6f5'); } } } break; }
+    case 'blast': if (e.modeT <= 0) { e.blastCd = CALLER_BLAST_CD[ph - 1]; toCast(castLen * 0.6); e.castT = 0.5; } break;
     case 'wallTell': { // THE WHITE WALL: the gale drives a curtain of hail down the moor, and there is one gap in it
       if (Math.random() < dt * 60) parts.push({ x: camX + Math.random() * VW, y: camY + Math.random() * VH, vx: -200, vy: 40, life: 0.3, max: 0.3, col: '#e8f0f8', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'wall'; e.modeT = 2.6; e.wallX = A.x1 + 30; e.wallGap = P.y - 8; SFX.buzz(); shakeCam(2); } break; }
@@ -16064,7 +16071,8 @@ const CALLER_RISE = 150;   /* px/s he rises on the wind (phase three, off the le
    an opening (B3, s); the gale home's tell (s); the storm's crumble (s of cracking before the east ledge goes); his guard while he steps or is warded
    (B15: never below 0.4); x CALLER_OPEN_MUL in an opening; a bolt sent back counts as UP CLOSE within CALLER_NEAR px and a ledge's height */
 const CALLER_P2 = 0.66, CALLER_P3 = 0.33, CALLER_CAST = [2.6, 2.2, 1.8], CALLER_STEP_V = 150, CALLER_WARD = 3, CALLER_GALE_TELL = 1.3, CALLER_CRUMBLE = 2.2,
-  CALLER_GUARD = 0.4, CALLER_OPEN_MUL = 2, CALLER_NEAR = 120, CALLER_BOLT_DMG = 18, CALLER_LEDGE_SHOVE = 170;   /* (his bolt: the casters' 20 was tuned for one thrown at you on open ground) */
+  CALLER_GUARD = 0.4, CALLER_OPEN_MUL = 2, CALLER_NEAR = 120, CALLER_BOLT_DMG = 22, CALLER_STONE_DMG = 28, CALLER_LEDGE_SHOVE = 170,
+  CALLER_BLAST_R = 46, CALLER_BLAST_WAIT = [1.4, 1.1, 0.9], CALLER_BLAST_TELL = 0.75, CALLER_BLAST_CD = [5, 4, 3.5], CALLER_BLAST_DMG = 22;   /* (claude/windcaller3) HIS BLAST: how near, how long you stand there before he gathers it, its tell, its rest a phase, what it costs */   /* (his bolt: the casters' 20 was tuned for one thrown at you on open ground) */
 /* HIS OPENING IS THE FALL (claude/bosswave1; claude/windcaller3): open only when he is DOWN - knocked off his ledge by his own bolt sent back up close
    or by his own howl braced through - both the big fall (the one a mash never earns). On his ledge he is a duelist (callerTake): whole, but he steps away. */
 const CALLER_FALL = 3.4, CALLER_FALL_TAKE = 0.16, CALLER_FALL_BIG = 4.6, CALLER_FALL_TAKE_BIG = 0.10;   /* s he lies on the safe floor (>= 3 s open: boss-openings), or until that share of his blood has gone in it; the BOLT's fall is the big one */
@@ -24608,8 +24616,8 @@ function updateEnemies(dt) {
   }
   for (const s of seeds) if (s.menhir && !s.dead) { // his stone: it tumbles, and where it lands it breaks
     if (isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) { s.dead = true; burst(s.x, s.y, 16, ['#9aa39a', '#c9d1dc', '#5a6470'], 90, 0.7); SFX.stone(); shakeCam(4);
-      if (!P.dead && Math.abs(P.x - s.x) < 20 && Math.abs(P.y - s.y) < 24) damagePlayer(s.x, DMG.rock, { up: true }); }
-    else if (!P.dead && Math.abs(P.x - s.x) < 13 && Math.abs((P.y - 10) - s.y) < 18) { s.dead = true; damagePlayer(s.x, DMG.rock); burst(s.x, s.y, 12, ['#9aa39a', '#c9d1dc'], 80, 0.5); }
+      if (!P.dead && Math.abs(P.x - s.x) < 20 && Math.abs(P.y - s.y) < 24) damagePlayer(s.x, s.dmg || DMG.rock, { up: true, unblockable: !!s.noBlock }); }
+    else if (!P.dead && Math.abs(P.x - s.x) < 13 && Math.abs((P.y - 10) - s.y) < 18) { s.dead = true; damagePlayer(s.x, s.dmg || DMG.rock, { unblockable: !!s.noBlock }); burst(s.x, s.y, 12, ['#9aa39a', '#c9d1dc'], 80, 0.5); }
   }
   for (const s of seeds) if (s.glaive && !s.dead) { // it flies flat and stops where he aimed it
     if ((s.vx > 0 && s.x >= s.stopX) || (s.vx < 0 && s.x <= s.stopX)) { s.vx = 0; s.stuck = true; }
