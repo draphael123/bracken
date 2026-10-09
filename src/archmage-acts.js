@@ -11,7 +11,7 @@
 //              HIS RINGS GATHER AND FREEZE: THE ICE REALM (ice)   six of his rings circle in on him and frost over, white
 //              HIS DARK SURGES UP THE SKY: THE POISON REALM (poison)   his stair's rising dark comes up the screen, the mire's green on its surface
 //            and when you come out of a realm it SHATTERS (e.shatter): its colour breaks into shards across the screen.
-import { MAGE, mageOpen } from './undead-mage.js';
+import { MAGE, mageOpen, mageSoft } from './undead-mage.js';
 import { REALM } from './mage-realms.js';
 
 const WARD = { rx: 19, ry: 30, lift: 26, runes: 10 };
@@ -19,7 +19,9 @@ const WARD = { rx: 19, ry: 30, lift: 26, runes: 10 };
 const seeded = (seed, n) => { let s = seed >>> 0 || 1; const out = []; for (let i = 0; i < n; i++) { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; out.push(s / 4294967296); } return out; };
 
 /* the ward is up: not open, not between two places, not asleep, and not in a realm (a realm draws its own ward: src/mage-realms.js) */
-export const wardUp = e => !!(e && e.alive && !e.realm && !mageOpen(e) && !['sleep', 'blinkOut', 'blinkIn'].includes(e.mode));
+export const wardUp = e => !!(e && e.alive && !e.realm && !mageOpen(e) && !mageSoft(e) && !['sleep', 'blinkOut', 'blinkIn'].includes(e.mode));
+/* (claude/fallingtower2) the word a turned blow says: the ANSWER (send his own spell back), or that his told ward still holds after an opening */
+export const turnWord = e => e && e.wardHold > 0 ? 'WARD HOLDS' : 'SEND IT BACK';
 
 export function drawActs(g, e, cx, cy, time, T) {
   if (!e || !e.alive) return; const VW = g.canvas.width, VH = g.canvas.height;
@@ -63,7 +65,10 @@ export function drawActs(g, e, cx, cy, time, T) {
     g.restore();
     if (hit > 0) { const hx = Math.round((e.wardHitX ?? e.x) - cx), hy = Math.round((e.wardHitY ?? e.y - WARD.lift) - cy), R = 4 + (1 - hit) * 18;   /* the ripple from where it struck */
       g.strokeStyle = 'rgba(255,255,255,' + (0.9 * hit).toFixed(2) + ')'; g.beginPath(); g.arc(hx, hy, R, 0, Math.PI * 2); g.stroke();
-      if (T) T('WARDED', x, y - WARD.ry - 10 - Math.round((1 - hit) * 8), Math.floor(time * 12) % 2 ? '#ffffff' : '#a8e8c8', 6); } }
+      if (T) T(turnWord(e), x, y - WARD.ry - 10 - Math.round((1 - hit) * 8), Math.floor(time * 12) % 2 ? '#ffffff' : '#a8e8c8', 6); } }
+  // ---- HIS SOFT WINDOWS (claude/fallingtower2): going into a portal, channelling the skulls or the orrery - the shell is down, a dashed gold line round him and the word ----
+  if (mageSoft(e)) { g.save(); g.strokeStyle = Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff0c0'; g.setLineDash([3, 3]); g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, WARD.rx, WARD.ry, 0, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); g.restore();
+    if (T) T('STRIKE HIM', x, y - WARD.ry - 10, '#ffd36b', 6); }
   // ---- THE WARD SHATTERING as an opening takes it down, and HIM OPEN ----
   if (e.wardDropT > 0) { const k = 1 - e.wardDropT / MAGE.ward.dropT;
     for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + 0.3, d = WARD.rx + k * 46, sx = Math.round(x + Math.cos(a) * d), sy = Math.round(y + Math.sin(a) * d * 1.3 + 30 * k * k);

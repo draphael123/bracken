@@ -11,7 +11,7 @@ import { botShouldDrink } from './survival.js';   /* THE FLASK (claude/survival)
 import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
-import { boneGaps as mageBoneGaps, MAGE as UMAGE, orbitWorlds as mageOrbitWorlds } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
+import { boneGaps as mageBoneGaps, MAGE as UMAGE, orbitWorlds as mageOrbitWorlds, reflectable as mageReflectable } from './undead-mage.js';   /* (claude/archmage2b) the Undead Archmage's bone storm, for the carpet bot */   /* THE SPIRAL STAIR's flights, for chaseClimb (undead4) */
 import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for the carpet bot (undead4) */
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
@@ -791,10 +791,10 @@ async function runbossLab(BK, opts) {
           else if(r.glow){const s4=Math.sign(((A.y0+A.floor)/2-py)*(rx/d))||1;   /* across the line, toward the middle of the sky */vx+=(-ry/d)*1.5*s4+rx/d*0.4;vy+=(rx/d)*1.5*s4+ry/d*0.4;threat=true;}}
         let block=false;
         for(const q of boss.shots||[]){const rx=P.x-q.x,ry=py-q.y,d=Math.hypot(rx,ry);if(d>(q.kind==='hand'?120:130))continue;
+          /* (claude/fallingtower2) EVERY SHOT OF HIS CAN BE STRUCK BACK now (the skulls and the orrery are not shots) - the bot swings at one in its reach about two in three (a human hand, decided once a shot); otherwise it guards or dodges as ever */
+          if(mageReflectable(q)&&!boss.realm&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;continue;}}
           if(q.kind==='hand'){const hs=Math.hypot(q.vx,q.vy)||1,nx=-q.vy/hs,ny=q.vx/hs,s3=((P.x-q.x)*nx+(py-q.y)*ny)>=0?1:-1;vx+=(nx*s3+(P.x-q.x)/d*0.6)*1.8;vy+=(ny*s3+(py-q.y)/d*0.6)*1.8;threat=true;if(d<26&&P.st>20)BK.press('dodge');continue;}   /* across its line: it turns slower than the carpet does */
           if(q.kind==='orb'){away(q.x,q.y,80,2);continue;}
-          /* (claude/archmage3, Daniel 10-05) HIS FIREBOLT CAN BE STRUCK BACK - home, it breaks his ward: the bot swings at one in its reach (a human hand: it tries about two in three, decided once a bolt), and otherwise guards or dodges it as ever */
-          if(q.kind==='fire'&&!q.echo&&!q.reflected&&!boss.realm&&!(boss.wardHold>0)&&!(boss.open>0)){q.botTry??=Math.random()<0.65;const ahead=(q.x-P.x)*Math.sign(-q.vx||1)<0;if(q.botTry&&Math.abs(q.x-P.x)<LAB_REACH[h]*0.85&&Math.abs(q.y-py)<16&&P.atk<0&&P.st>=8){P.face=Math.sign(q.x-P.x)||P.face;BK.press('atk');swings++;void ahead;continue;}}
           const sp=Math.hypot(q.vx,q.vy)||1,closing=(rx*q.vx+ry*q.vy)/sp;if(closing<0)continue;
           if((SHIELDED(h)||(h==='warden'&&DEFLECT_TAP(f)))&&d<46&&q.kind!=='orb'){block=true;P.face=Math.sign(q.x-P.x)||P.face;continue;}
           const nx=-q.vy/sp,ny=q.vx/sp,s2=(rx*nx+ry*ny)>=0?1:-1;vx+=nx*s2*1.4;vy+=ny*s2*1.4;threat=true;if(d<24&&P.st>20&&!(P.dodge>0))BK.press('dodge');}   /* and the dash's i-frames through the one that is about to land */

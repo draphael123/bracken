@@ -12,7 +12,8 @@
 // usage: node tools/undead-moves.mjs
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
-import { updateUndeadMage, MAGE, boneSkulls, boneGaps, pullV, orbitWorlds, scriptBand, scriptHits, mageOpen, staffTip, reflectable } from '../src/undead-mage.js';
+import { updateUndeadMage, MAGE, boneSkulls, boneGaps, pullV, orbitWorlds, scriptBand, scriptHits, mageOpen, staffTip, reflectable, mageSoft } from '../src/undead-mage.js';
+import { GREED, OPEN_RULE } from '../src/boss-greed.js';
 import { wardUp } from '../src/archmage-acts.js';
 import { REALM } from '../src/mage-realms.js';
 import { readFileSync } from 'node:fs';
@@ -128,7 +129,7 @@ assert.ok(MAGE.tell.orbit >= 1 && MAGE.tell.script >= 1, 'a new move is told for
   assert.ok(Math.hypot(q.x - tx, q.y - ty) < 6, 'his bolt does not leave the head of his staff: ' + [q.x, q.y, tx, ty]);
   q.x = r.P.x + 10; q.y = r.P.y - 8; r.log.strike = { l: r.P.x - 4, r: r.P.x + 30, t: r.P.y - 30, b: r.P.y + 2 }; r.step(); r.log.strike = null;
   assert.ok(q.reflected && r.log.says.includes('STRUCK BACK'), 'a blow that meets his firebolt does not strike it back');
-  r.run(2, () => mageOpen(r.e)); assert.ok(r.e.mode === 'reflected' && mageOpen(r.e) && r.log.says.some(m => /BREAKS HIS WARD/.test(m)), 'his own bolt struck back does not break his ward: ' + r.e.mode);
+  r.run(2, () => mageOpen(r.e)); assert.ok(r.e.mode === 'reflected' && mageOpen(r.e) && r.log.says.some(m => /STAGGERS HIM/.test(m)), 'his own bolt struck back does not stagger him: ' + r.e.mode);
   assert.ok(!r.log.hits.some(h => h.blow === 'fire' && r.log.t > 0), 'the struck-back bolt hurt you');
   r.run(MAGE.openT + 0.3, () => !mageOpen(r.e)); r.step(); assert.ok(r.e.wardHold > 0, 'after the opening his ward does not HOLD (the told anti-spam ward)');
   r.e.shots.push({ x: r.e.x - 40, y: r.e.y - 26, vx: 200, vy: 0, a: 0, sp: 200, r: 5, dmg: 14, kind: 'fire', col: '#fff', t: 3, reflected: true }); r.run(0.5);
@@ -137,11 +138,23 @@ assert.ok(MAGE.tell.orbit >= 1 && MAGE.tell.script >= 1, 'a new move is told for
   const r = rig({ hp: Math.floor(HP * 0.3) }); r.e.enraged = true; r.e.stage2 = true; at(r, 'mark'); r.run(1, () => r.e.mode === 'markWait'); r.e.wardHold = 9;
   r.P.x = r.e.deathMark ? r.e.deathMark.x + 120 : r.P.x; r.run(MAGE.markFuse + 0.2, () => !r.e.deathMark); r.run(1.5);
   assert.ok(r.log.t > 0 && r.e.mode !== 'markWait' && !mageOpen(r.e) && !r.log.hits.some(h => h.blow === 'mark'), 'a mark missed while his ward holds leaves him stuck in ' + r.e.mode + ' (or opens him)'); }
-{ const e = rig().e; assert.ok(!reflectable({ kind: 'ice' }) && !reflectable({ kind: 'fire', echo: true }) && !reflectable({ kind: 'bent' }), 'something other than his own firebolt can be struck back'); }
+/* FALLING TOWER 2 (claude/fallingtower2, Daniel 10-08 - a deliberate design change, his call): EVERY projectile of his can be struck back (his echo's
+   too) - the skulls and the orrery's worlds are not shots and nothing turns them; each one struck home STAGGERS him (his opening). Outside his openings
+   he is INVULNERABLE (chipBy 0: Daniel's explicit B15 exception, him only) except his SOFT windows - into a portal, channelling skulls or orrery - x1 */
+{ for (const kind of ['fire', 'ice', 'orb', 'hand', 'bent', 'trap']) { assert.ok(reflectable({ kind }) && reflectable({ kind, echo: true }), kind + ' cannot be struck back');
+    const r = rig(); r.run(0.5); r.e.mode = 'hover'; r.e.modeT = 9; r.e.shots = [{ x: r.P.x + 10, y: r.P.y - 8, vx: -150, vy: 0, a: Math.PI, sp: 150, r: 5, dmg: 10, kind, col: '#fff', t: 4 }];
+    r.log.strike = { l: r.P.x - 4, r: r.P.x + 30, t: r.P.y - 30, b: r.P.y + 2 }; r.step(); r.log.strike = null; assert.ok(r.e.shots[0] && r.e.shots[0].reflected, kind + ': a blow that meets it does not strike it back');
+    r.run(3, () => mageOpen(r.e)); assert.ok(r.e.mode === 'reflected', kind + ' struck back does not stagger him: ' + r.e.mode); assert.ok(!r.log.hits.length, kind + ': the struck-back shot hurt you'); }
+  assert.ok(!reflectable({ kind: 'feed' }) && !reflectable({ kind: 'fire', reflected: true }), 'a ring feed, or a shot already struck, can be struck back');
+  assert.equal(GREED.chipBy.undeadmage, 0, 'outside his openings he is not invulnerable (Daniel 10-08: SEND IT BACK is the answer)');
+  for (const m of ['stepTell', 'decoyTell', 'boneTell', 'boneWait', 'orbitTell', 'orbitWait']) assert.ok(mageSoft({ alive: true, mode: m }) && OPEN_RULE.undeadmage({ alive: true, mode: m }) && !mageOpen({ alive: true, mode: m }), m + ' is not one of his soft windows (x1)');
+  for (const m of ['hover', 'fireTell', 'iceTell', 'markWait', 'scriptTell', 'bendTell', 'blinkOut', 'realmTell']) assert.ok(!mageSoft({ alive: true, mode: m }) && !OPEN_RULE.undeadmage({ alive: true, mode: m, hp: 1, hp0: 2 }), m + ' lets a blade through');
+  assert.ok(mageSoft({ alive: true, mode: 'blinkOut', ringBlink: true }), 'his ring-to-ring blink (into a portal) is not soft');
+  assert.ok(!mageSoft({ alive: true, mode: 'boneWait', realm: {} }), 'in a realm a soft window opened his ward'); }
 { /* LESS HECTIC LATE: no echo in his last stage, no spells in pairs */
   const r = rig({ hp: Math.floor(HP * 0.3) }); r.e.enraged = true; r.e.stage2 = true; at(r, 'fire'); let tells = 0, last = '';
   r.run(3, () => { if (/Tell$/.test(r.e.mode) && r.e.mode !== last) tells++; last = r.e.mode; return r.e.shots.some(q => q.kind === 'fire'); }); r.run(0.05);
   assert.ok(!/Tell$/.test(r.e.mode) && !(r.e.echoes || []).length, 'in his last stage he still casts in pairs, or his echo still repeats: ' + r.e.mode); }
-console.log('ok  undead-moves  (Daniel 10-05) his firebolt struck back breaks his ward (then it HOLDS, told); only that bolt can be; bolts leave his staff head; his last stage one windup at a time');
+console.log('ok  undead-moves  (fallingtower2) EVERY shot of his struck back staggers him (then his ward HOLDS, told); invulnerable otherwise but his soft windows (portal, skulls, orrery); bolts leave his staff head; his last stage one windup at a time');
 console.log('ok  undead-moves  (archmage3) his orrery (told ' + MAGE.tell.orbit + ' s, worlds round him, safe between orbits) and the grave script (told ' + MAGE.tell.script + ' s, every line but a dark one, twice from stage 2); his ward up by default, down and shattered when open, flared and sounded when it turns a blow; three phase changes, each its own set piece and a breather');
 console.log('ok  undead-moves  bone storm (told ' + MAGE.tell.bone + ' s, ' + MAGE.bone.n + ' skulls, gaps shown, flown out of untouched, sat in hit; changes every cycle), phylactery echo (stage 2, ' + MAGE.echo.delay + ' s after, from where he cast), grave pull (stage 3 only, told ' + MAGE.tell.pull + ' s, ' + MAGE.pull.v + ' px/s for ' + MAGE.pull.secs + ' s, the void hurts and throws you out)');

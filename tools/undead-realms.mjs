@@ -67,6 +67,14 @@ const intoRealm = (k) => { const r = rig({ hp: Math.floor(HP * REALM.at[k]), e: 
 assert.ok(REALM.w + 24 <= 640, 'a realm is wider than the zoomed screen: ' + REALM.w);
 // ---- FIRE ----
 const fireOut = {};
+/* THE FIRE ROOM FIXED (claude/fallingtower2, Daniel 10-08): an ARRIVAL GRACE - nothing burns and nothing is cast for REALM.fire.grace s; the first
+   thing that can land on you comes after the grace AND its own full tell; the wall's tell HISSES as it starts (its vents drawn), the tiles' too */
+{ const g = intoRealm(0), G = g.e.realm; assert.ok(REALM.fire.grace >= 1.5, 'the fire room has no arrival grace'); const t0 = g.log.t;
+  g.run(REALM.fire.grace - 0.05); assert.ok(!g.log.hits.length && !g.log.tells.some(([t]) => t > t0) && G.ph === 'wait' && !G.wall && !g.e.shots.length, 'something burns or is cast in the fire room\'s arrival grace');
+  let first = -1; g.run(12, () => { if (g.log.hits.length || g.e.shots.length || G.wall || G.ph === 'burn') { first = g.log.t - t0; return true; } });
+  assert.ok(first >= REALM.fire.grace + Math.min(REALM.fire.tell, REALM.fire.wallTell, REALM.bolt.tellFire) - 0.05, 'the first thing in the fire room lands before the grace and its tell: ' + first.toFixed(2));
+  const w = intoRealm(0); w.run(14, () => w.e.mode === 'wallTell'); assert.ok(w.e.mode === 'wallTell' && (w.log.sounds || []).some(([t, k]) => k === 'hiss' && Math.abs(t - w.log.t) < 0.05), 'the fire wall\'s tell does not hiss as it starts');
+  fireOut.grace = REALM.fire.grace; fireOut.first = +first.toFixed(2); }
 { const r = intoRealm(0); const P = r.P, R = r.e.realm, b = MR.realmBox(r.e, A);
   /* TOLD: 30 s standing in the middle of it, every blow after its tell */
   P.x = (b.x0 + b.x1) / 2; P.y = (b.y0 + b.y1) / 2; r.run(30);

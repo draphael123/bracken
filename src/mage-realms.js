@@ -34,7 +34,9 @@ export const REALM = {
   openT: 3.0, openMul: 1.5,   /* the opening: this long, at x1.5 (claude/archmage4: was x2 through his hall's MAGE.openMul - the three realms' openings were about 40% of what the human bot dealt him) */
   rest: 6,                  /* seconds in his hall after a realm before the next can be torn */
   bolt: { v: 150, fire: 14, ice: 12, tellFire: 0.9, tellIce: 0.9 },
-  fire: { n: 7, tell: 1.0, burn: 0.8, every: 3.4, dmg: 16, wallTell: 1.0, wallV: 120, wallH: 64, track: 45, trackBack: 140, wallDmg: 18, cast: 2.4,
+  fire: { n: 7, grace: 2.0, tell: 1.2, burn: 0.8, every: 3.6, dmg: 16, wallTell: 1.4, wallV: 120, wallH: 64, track: 45, trackBack: 140, wallDmg: 18, cast: 2.4,
+    /* (claude/fallingtower2, Daniel 10-08 'the fire room'): grace - an ARRIVAL GRACE, nothing burns or is cast while you get your bearings; the tile tell
+       and the wall tell are longer and HISS as they start (the wall's vents glow where it will rise: drawRealmFx) */
     patterns: [[0, 2, 4, 6], [1, 3, 5], [0, 1, 2], [4, 5, 6], [0, 3, 6], [1, 2, 4, 5], [2, 3, 4]] },
   ice: { n: 7, crack: 0.9, fallV: 380, every: 1.7, regrow: 3.0, dmg: 14, drift: 42, grip: 0.3, cast: 2.4, len: 20,
     home: 40, homeV: 240, hitW: 22 },   /* claude/archfix (Daniel: "easier to hit him with"): an icicle struck within home px of him falls ONTO him (it homes at homeV), and it breaks his shell anywhere within hitW of his middle */
@@ -64,7 +66,7 @@ export const realmFloor = e => e && e.realm && e.realm.i + 1 < REALM.at.length ?
 export function enterRealm(e, A, P, c) {
   const i = e.realmN || 0, kind = REALM.kinds[i], R = { kind, i, t: 0, A };
   const b = realmBox(null, A);
-  if (kind === 'fire') Object.assign(R, { tiles: [], ph: 'wait', phT: 1.6, pat: 0, lit: [], wall: null, castT: 1.4, nextWall: true });
+  if (kind === 'fire') Object.assign(R, { graceT: REALM.fire.grace, tiles: [], ph: 'wait', phT: 1.6, pat: 0, lit: [], wall: null, castT: 1.4, nextWall: true });
   if (kind === 'ice') { const n = REALM.ice.n; R.icicles = []; for (let k = 0; k < n; k++) { const x = b.x0 + (k + 0.5) * REALM.w / n; R.icicles.push({ x, x0: x, st: 'hang', t: 0, y: 0 }); }
     Object.assign(R, { dropT: 1.4, castT: 1.8, goX: b.x1 - 90, goT: 2.5 }); }
   if (kind === 'poison') Object.assign(R, { mire: A.floor - 26, mire0: A.floor - 26, burnT: 0, vent: { x: b.x0 + REALM.w * 0.72 }, sporeT: 2.2, castT: 1.2, exposedT: 0, spores: [], clouds: [], drain: false });
@@ -105,7 +107,7 @@ export function updateRealm(e, dt, c) {
     if (spell === 'fire') { e.shots.push({ x: hx, y: hy, vx: Math.cos(a) * B.v, vy: Math.sin(a) * B.v, a, sp: B.v, r: 5, dmg: B.fire, kind: 'fire', col: '#ff9b49', t: 4 }); c.sound('mageBolt'); }
     else { for (let k = -2; k <= 2; k++) { const q = a + k * 0.3; e.shots.push({ x: hx, y: hy, vx: Math.cos(q) * 120, vy: Math.sin(q) * 120, a: q, sp: 120, r: 4, dmg: B.ice, kind: 'ice', col: '#9be2ff', t: 4 }); } c.sound('hiss'); } };
   /* HIS TELLS in a realm are his fight's (fireTell, iceTell) and the realm's own (wallTell, sporeTell) */
-  const tell = (mode, T, say, hard) => { e.mode = mode; e.modeT = T; c.say(say, hard); };
+  const tell = (mode, T, say, hard) => { e.mode = mode; e.modeT = T; c.say(say, hard); if (mode === 'wallTell') c.sound('hiss'); };   /* (fallingtower2: the wall HISSES as its vents light) */
   const casting = /Tell$/.test(e.mode);
   if (casting) { e.face = Math.sign(P.x - e.x) || e.face;
     if (e.modeT <= 0) { const m = e.mode; e.mode = 'rhover'; e.modeT = 0.4;
@@ -114,8 +116,9 @@ export function updateRealm(e, dt, c) {
       else if (m === 'sporeTell') { for (const s of R.spores) R.clouds.push({ x: s.x, y: s.y, r: REALM.poison.sporeR, t: REALM.poison.sporeLife }); R.spores = []; c.sound('hiss'); } } }
   // ---------------------------------------------------------------- FIRE
   if (R.kind === 'fire') { const F = REALM.fire, tw = REALM.w / F.n;
+    if (R.graceT > 0) { R.graceT -= dt; e.face = Math.sign(P.x - e.x) || e.face; return; }   /* THE ARRIVAL GRACE (fallingtower2): a safe beat - nothing burns, nothing is cast */
     R.phT -= dt;
-    if (R.ph === 'wait' && R.phT <= 0) { R.lit = F.patterns[R.pat++ % F.patterns.length]; R.ph = 'tell'; R.phT = F.tell; c.sound('charge'); }
+    if (R.ph === 'wait' && R.phT <= 0) { R.lit = F.patterns[R.pat++ % F.patterns.length]; R.ph = 'tell'; R.phT = F.tell; c.sound('charge'); c.sound('hiss'); }
     else if (R.ph === 'tell' && R.phT <= 0) { R.ph = 'burn'; R.phT = F.burn; R.burnHit = false; c.sound('heavy'); }
     else if (R.ph === 'burn') { const k = Math.floor((P.x - b.x0) / tw);
       if (!R.burnHit && !P.dead && R.lit.includes(k)) { R.burnHit = true; hurtBy(c, P.x, py, F.dmg, true, 'pillar'); }
@@ -217,6 +220,10 @@ export function drawRealmFx(g, e, cx, cy, time, P, T) {   /* P: the hero (the fi
       g.fillStyle = 'rgba(201,70,61,0.85)'; g.fillRect(tx + 1, py0, w, flr - py0);
       g.fillStyle = 'rgba(255,155,73,0.9)'; g.fillRect(tx + 8, py0, w - 14, flr - py0);
       g.fillStyle = 'rgba(255,233,176,0.9)'; for (let y = py0; y < flr; y += 7) g.fillRect(tx + 14 + Math.round(Math.sin(time * 20 + y) * 4), y, w - 28, 3); }
+    if (e.mode === 'wallTell' && e.alive) { const d = e.face || 1, vx = Math.round(e.x + d * 20 - cx), vy = Math.round((P ? P.y - 8 : e.y - 20) - cy), h = F.wallH / 2, k = 1 - Math.max(0, e.modeT) / F.wallTell, on = Math.floor(time * 14) % 2;   /* THE WALL'S TELL (fallingtower2): a column of VENTS glowing where it will rise, at your height, brighter as it comes */
+      g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,155,73,' + (0.12 + 0.25 * k).toFixed(2) + ')'; g.fillRect(vx - 8, vy - h, 16, h * 2); g.globalCompositeOperation = 'source-over';
+      for (let j = -h + 4; j < h; j += 8) { g.fillStyle = '#2a1008'; g.fillRect(vx - 5, vy + j, 10, 4); g.fillStyle = on ? '#ffd36b' : '#ff6b2c'; g.fillRect(vx - 4, vy + j + 1, Math.max(1, Math.round(8 * k)), 2); }
+      if (T) T('FIRE WALL: OVER OR UNDER', vx, vy - h - 10, on ? '#ffe9b0' : '#ff9b49'); }
     const W = R.wall; if (W) { const x = Math.round(W.x - cx), y = Math.round(W.y - cy), h = F.wallH / 2;
       /* COMING BACK it is another thing: white-hot gold, not red, with arrows on it the way it runs (claude/archfix) */
       const CW = W.back ? ['#ffb020', '#ffe46b', '#ffffff'] : ['#c9463d', '#ff9b49', '#ffe9b0'];

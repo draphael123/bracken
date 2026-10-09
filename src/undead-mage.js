@@ -66,6 +66,14 @@
 //   THE STAFF: every bolt leaves the HEAD OF HIS STAFF (MAGE.staff), pointed at you in his cast pose (src/redraw/lich.js), not his fist.
 //   HIS PHASES       each realm he tears is its own told set piece, a breather with nothing cast: THE SKY CRACKS (fire), HIS RINGS GATHER AND
 //                    FREEZE (ice), HIS DARK SURGES UP THE SKY: THE POISON REALM (poison) - and the realm SHATTERS when you come out of it (src/archmage-acts.js)
+// FALLING TOWER 2 (claude/fallingtower2, Daniel 10-08: "the boss is way too hard" - his design, all picked):
+//   SEND IT BACK     EVERY projectile he fires can be STRUCK BACK with any blow - his fire, frost, poison orbs, the death hand, bent and trapped
+//                    bolts, his echo's - EXCEPT THE SKULLS (bone storm) and THE ORRERY's worlds (nothing turns those). Home, it STAGGERS him: his
+//                    opening (mode 'reflected', the gold ring + timer, x2) and then the told ward that holds (MAGE.reflect.hold).
+//   HIS WARD         !! B15 EXCEPTION, DANIEL'S EXPLICIT CALL (10-08), FOR HIM ONLY: outside an opening he is INVULNERABLE (GREED.chipBy.undeadmage = 0),
+//                    not the ~0.4x floor every other boss keeps. A turned blow clanks and says the answer: SEND IT BACK (src/archmage-acts.js).
+//                    EXCEPT (mageSoft, full x1 blows): while he GOES INTO A PORTAL (his step / decoy into his entry ring,
+//                    his ring-to-ring blink) and while he CHANNELS THE SKULLS or THE ORRERY (their tells and while he holds them).
 import { canvas, flipX, whiten } from './px.js';
 import { drawDesertOval } from './sanctum.js';
 import { REALM, OPEN as REALM_OPEN, realmDue, enterRealm, updateRealm } from './mage-realms.js';   /* HIS SPELL REALMS at 75/50/25% (claude/undead3) */
@@ -103,7 +111,7 @@ export const MAGE = {
   /* (Daniel 10-05) THE STAFF'S HEAD in his cast pose, from his anchor (px, facing right): every bolt leaves it. THE STRUCK-BACK BOLT: its speed home,
      how hard it turns after him, how near it must come; and the told ward that HOLDS this long after every opening (nothing breaks it again yet) */
   staff: { dx: 20, dy: 51 },
-  reflect: { v: 260, turn: 4, r: 18, hold: 3.5 },   /* (archmage4: the told hold 3.0 -> 3.5 s) */
+  reflect: { v: 260, turn: 4, r: 18, hold: 3.5, openT: 2.2 },   /* (fallingtower2: openT - the STAGGER a struck-back shot gives; every shot of his can be struck back now, so it is shorter than his other openings - tuned WITH FLASKS to 60-70%, his 2800 stands) */   /* (archmage4: the told hold 3.0 -> 3.5 s) */
   late: { shots: 3 },   /* his last stage: no new spell while this many of his bolts are in the air */
   /* THE TRAP: how high over you the ring opens, and its drop - a column of bolts, three and then five, fanned so a side-step clears them */
   trapUp: 70, trapN: [3, 5, 5], trapFan: 0.16,
@@ -113,12 +121,12 @@ export const MAGE = {
   stage2: 0.7, ringW: 12, ringH: 17, stepNear: 56, ringStay: 0.5, spareLife: 3.2, stayMul: 1.6, breachT: 3.0, beside: 30,
 };
 const TELL = { fire: 'fireTell', ice: 'iceTell', storm: 'stormTell', poison: 'poisonTell', hand: 'handTell', mark: 'markTell', step: 'stepTell', bend: 'bendTell', decoy: 'decoyTell', trap: 'trapTell', bone: 'boneTell', pull: 'pullTell', orbit: 'orbitTell', script: 'scriptTell' };
-const SAY = { fireTell: 'FIRE: GUARD OR FLY', iceTell: 'FROST: FLY ACROSS IT', stormTell: 'LIGHTNING: LEAVE THE MARK', poisonTell: 'POISON: KEEP OUT OF THE CLOUD', handTell: 'DEATH: OUT-FLY THE HAND', markTell: 'THE DEATH MARK: FLY OUT OF THE RING',
+const SAY = { fireTell: 'FIRE: STRIKE IT BACK', iceTell: 'FROST: STRIKE A LANCE BACK', stormTell: 'LIGHTNING: LEAVE THE MARK', poisonTell: 'POISON: STRIKE AN ORB BACK', handTell: 'DEATH: STRIKE THE HAND BACK', markTell: 'THE DEATH MARK: FLY OUT OF THE RING',
   stepTell: 'HE OPENS A RING BY YOU', bendTell: 'HIS BOLTS BEND THROUGH THE RINGS', decoyTell: 'TWO RINGS: ONLY ONE HOLDS THE DESERT', trapTell: 'A RING OVER YOU: GET OUT FROM UNDER',
-  boneTell: 'BONE STORM: FLY OUT THROUGH A GAP', pullTell: 'THE GRAVE PULLS: FLY AGAINST IT', orbitTell: 'HIS ORRERY: KEEP BETWEEN ITS ORBITS', scriptTell: 'THE GRAVE SCRIPT: FLY TO THE DARK LINE' };
+  boneTell: 'BONE STORM: FLY OUT - OR STRIKE HIM AS HE CHANNELS', pullTell: 'THE GRAVE PULLS: FLY AGAINST IT', orbitTell: 'HIS ORRERY: KEEP BETWEEN ITS ORBITS - HE CHANNELS, STRIKE HIM', scriptTell: 'THE GRAVE SCRIPT: FLY TO THE DARK LINE' };
 /* (claude/archmage3) THE LINES SAID IN THE HINT BOX, not dropped: his two new moves and his three phase changes are told in WORDS as well as marks and sound
    (main.js's say hands these to callout(); number() would drop them) */
-export const CALLED = new Set(['HIS OWN FIRE BREAKS HIS WARD', SAY.orbitTell, SAY.scriptTell, ...Object.values(MAGE.trans).map(T => T.say)]);
+export const CALLED = new Set(['HIS OWN SPELL STAGGERS HIM', SAY.orbitTell, SAY.scriptTell, ...Object.values(MAGE.trans).map(T => T.say)]);
 /* the ring moves - the ones that open a ring, and so never come straight out of one (a step comes out casting a spell, not a ring) */
 const RINGED = new Set(['step', 'bend', 'decoy', 'trap']);
 export const RING_COL = { rim: '#6fe08a', rimL: '#c8ffd8', fire: '#ff9b49', flare: '#ffffff' };
@@ -126,7 +134,11 @@ export const mageOpen = e => e.mode === 'gather' || e.mode === 'breached' || e.m
 /* HIS WARD CAN BE BROKEN NOW: not open, not holding after an opening, not in a realm, not between two places */
 export const wardBreakable = e => !!(e && e.alive && !mageOpen(e) && !(e.wardHold > 0) && !e.realm && !['sleep', 'wake', 'blinkOut', 'blinkIn', 'realmTell'].includes(e.mode));
 /* THE BOLT THAT CAN BE STRUCK BACK: his own firebolt (not his echo's, not one already struck) */
-export const reflectable = q => q.kind === 'fire' && !q.echo && !q.reflected;
+export const RETURNABLE = new Set(['fire', 'ice', 'orb', 'hand', 'bent', 'trap']);   /* (fallingtower2: every shot of his; the skulls and the orrery's worlds are not shots, and nothing turns them) */
+export const reflectable = q => !!q && RETURNABLE.has(q.kind) && !q.reflected;
+/* HIS SOFT WINDOWS (fallingtower2, Daniel's B15 exception): going into a portal, channelling the skulls or the orrery - a blow lands whole (x1) */
+export const SOFT = new Set(['stepTell', 'decoyTell', 'boneTell', 'boneWait', 'orbitTell', 'orbitWait']);   /* (NOT his realm tear: that is a set piece and a breather, warded - open, it was half his health in one tear for the human bot) */
+export const mageSoft = e => !!(e && e.alive && !e.realm && (SOFT.has(e.mode) || (e.mode === 'blinkOut' && e.ringBlink)));
 /* WHERE HIS BOLTS LEAVE: the head of his staff */
 export const staffTip = e => [e.x + (e.face || 1) * MAGE.staff.dx, e.y - MAGE.staff.dy];   /* (and a realm's opening: scorched, shattered, vented) */
 export const mageSpeed = e => e.enraged ? MAGE.fast : 1;
@@ -264,11 +276,11 @@ export function updateUndeadMage(e, dt, c) {
     q.t -= dt;
     /* STRUCK BACK (Daniel 10-05): a blow that meets his firebolt sends it home; home, it breaks his ward - or rings off it while it holds */
     if (reflectable(q) && !e.realm && c.strike) { const b = c.strike(); if (b && q.x > b.l - q.r && q.x < b.r + q.r && q.y > b.t - q.r - 8 && q.y < b.b + q.r) {
-      q.reflected = true; q.t = 3; q.hit = false; q.col = '#e8fff0'; const a = Math.atan2(e.y - 26 - q.y, e.x - q.x); q.a = a; q.vx = Math.cos(a) * MAGE.reflect.v; q.vy = Math.sin(a) * MAGE.reflect.v; say('STRUCK BACK', false); sound('crack'); } }
+      q.reflected = true; q.t = 3; q.hit = false; q.col = '#e8fff0'; const a = Math.atan2(e.y - 26 - q.y, e.x - q.x); q.a = a; q.vx = Math.cos(a) * MAGE.reflect.v; q.vy = Math.sin(a) * MAGE.reflect.v; q.kind0 = q.kind; say('STRUCK BACK', false); sound('crack'); } }
     if (q.reflected) { const want = Math.atan2(e.y - 26 - q.y, e.x - q.x); let d = want - q.a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
       q.a += Math.max(-MAGE.reflect.turn * dt, Math.min(MAGE.reflect.turn * dt, d)); q.vx = Math.cos(q.a) * MAGE.reflect.v; q.vy = Math.sin(q.a) * MAGE.reflect.v; q.x += q.vx * dt; q.y += q.vy * dt;
       if (Math.hypot(q.x - e.x, q.y - (e.y - 26)) < MAGE.reflect.r) { q.t = 0; q.gone = true;
-        if (wardBreakable(e)) { e.mode = 'reflected'; e.modeT = MAGE.openT; e.open = MAGE.openT; e.deathMark = null; e.chained = false; e.fireRing = null; say('HIS OWN FIRE BREAKS HIS WARD', true); sound('crack'); sound('sting'); }
+        if (wardBreakable(e)) { if (e.mode === 'boneWait') e.bones = null; if (e.mode === 'orbitWait') e.orbit = null; e.mode = 'reflected'; e.modeT = MAGE.reflect.openT; e.open = MAGE.reflect.openT; e.deathMark = null; e.chained = false; e.fireRing = null; say('HIS OWN SPELL STAGGERS HIM', true); sound('crack'); sound('sting'); }
         else { e.wardHitT = MAGE.ward.hitT; e.wardHitX = q.x; e.wardHitY = q.y; sound('aegis'); } }
       continue; }
     if (q.kind === 'hand') {   /* it turns toward you at a limited rate: a hard turn on the carpet leaves it behind */
@@ -311,7 +323,7 @@ export function updateUndeadMage(e, dt, c) {
     const dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy); if (d > 2) { e.x += dx / d * Math.min(d, sp * dt); e.y += dy / d * Math.min(d, sp * dt); }
     e.y += Math.sin(e.anim * 2.3) * 6 * dt; e.face = Math.sign(P.x - e.x) || 1;
     const crowded = Math.hypot(P.x - e.x, py - (e.y - 20)) < 34 && e.blinkT < MAGE.blinkEvery - 3;
-    if ((e.blinkT <= 0 || crowded) && e.modeT <= 0.2 && !(e.noBlink > 0)) { [e.teleX, e.teleY] = blinkTo(e, P, box, rnd); e.mode = 'blinkOut'; e.modeT = 0.55 / k; e.blinkT = e.enraged ? MAGE.blinkEnraged : MAGE.blinkEvery; say('TELEPORT', false);
+    if ((e.blinkT <= 0 || crowded) && e.modeT <= 0.2 && !(e.noBlink > 0)) { [e.teleX, e.teleY] = blinkTo(e, P, box, rnd); e.mode = 'blinkOut'; e.modeT = 0.55 / k; e.blinkT = e.enraged ? MAGE.blinkEnraged : MAGE.blinkEvery; say('TELEPORT', false); e.ringBlink = mageStage(e) >= 3;
       if (mageStage(e) >= 3) pair(e, e.x, e.y - 24, e.teleX, e.teleY - 24, e.modeT + 0.3)[1].flare = true;   /* RING TO RING: his blink is a pair of rings now, and its exit works both ways too */
       return; }
     if (e.modeT <= 0) { if (e.enraged && (e.bones || e.orbit || e.script || e.shots.filter(q => q.kind !== 'feed' && !q.reflected).length >= MAGE.late.shots)) { e.modeT = 0.2; return; }   /* (Daniel 10-05: less hectic late - the last spell's things clear first) */
