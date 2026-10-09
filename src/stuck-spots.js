@@ -189,6 +189,14 @@ export const STUCK_HANDS = {
     { id: 'ks-store', zone: [386, 14, 446, 25], steps: [ { key: 'storeKeg', is: ['arch.storeArch', 'whole'], at: [400, 24], line: 'A KEG CHAIN ON THE ROOF: A BLOW LIGHTS THE FIRST' } ] },
     { id: 'ks-cellar', zone: [417, 26, 430, 31], steps: [ { key: 'cellar', at: [420, 28], glint: 'stall', line: 'THE LEDGES LEAD BACK UP THROUGH THE HOLE' } ] },
     { id: 'ks-vault', zone: [562, 26, 583, 34], steps: [ { key: 'vault', is: ['vault.strongroom', 'due'], at: [575, 33], line: 'THE STRONGROOM: FIVE SEALS OPEN IT' } ] },
+    /* (claude/ksar2) THE LONGER KSAR: the reed screen, the powder run's two walls, the raised bridge, the trail's wall, the alley's arch, the line to her roofs */
+    { id: 'ks-reeds', zone: [586, 26, 600, 34], steps: [ { key: 'reeds', is: ['reed.reedA', 'whole'], at: [590, 33], line: 'A REED SCREEN: TAKE A TORCH AND THROW IT' } ] },
+    { id: 'ks-runA', zone: [641, 26, 651, 34], steps: [ { key: 'runA', is: ['arch.runA', 'whole'], at: [642, 33], line: 'A BRICKED WALL: CARRY A KEG TO IT' } ] },
+    { id: 'ks-runB', zone: [652, 26, 665, 34], steps: [ { key: 'runB', is: ['arch.runB', 'whole'], at: [655, 33], line: 'A BRICKED WALL: CARRY A KEG TO IT' } ] },
+    { id: 'ks-rope', zone: [666, 26, 681, 34], steps: [ { key: 'rope', is: ['rope.rope', 'raised'], at: [669, 31], line: 'THE BRIDGE IS RAISED: A TORCH BURNS ITS ROPE' } ] },
+    { id: 'ks-trail', zone: [682, 26, 698, 34], steps: [ { key: 'trail', is: ['arch.trailWall', 'whole'], at: [685, 33], line: 'A POWDER TRAIL: A TORCH LIGHTS IT' } ] },
+    { id: 'ks-alley', zone: [703, 26, 778, 34], steps: [ { key: 'alley', is: ['arch.alleyArch', 'whole'], at: [718, 33], line: 'A KEG CHAIN DOWN THE ALLEY: A BLOW LIGHTS THE FIRST' } ] },
+    { id: 'ks-line', zone: [789, 10, 796, 17], steps: [ { key: 'line', at: [795, 15], glint: 'stall', line: 'THE LINE TO HER ROOFS: UP TAKES ITS HANDLE' } ] },
   ],
   /* THE GLASS SEA (claude/glasssea): every mirror the route needs glints until its beam does its work (src/glass-sea-hands.js handsState: bed.<id> sand/fused,
      crack.<id> held/boils, mirror.<id> its notch); the slide gap and the Sunken Head's holds glint as places (the glow marks the holds) */

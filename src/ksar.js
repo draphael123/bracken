@@ -27,8 +27,8 @@
 //   584-623  THE COURTYARD         BOSS     THE HAWK-MISTRESS (src/hawk-mistress.js stageHawkMistress)
 import { stageHawkMistress, HM_STAGE } from './hawk-mistress.js';
 
-export const KSAR = { W: 628, H: 46, base: 34, wall: 28 };
-export const SECTIONS = [['THE CARAVAN ROAD', 0], ['THE OUTER WALLS', 72], ['THE GATE WINCH', 232], ['THE SOUQ YARD', 273], ['THE POWDER STORE', 358], ['THE HAWK TOWER ROOFS', 446], ['THE COURTYARD', 584]];
+export const KSAR = { W: 862, H: 46, base: 34, wall: 28 };
+export const SECTIONS = [['THE CARAVAN ROAD', 0], ['THE OUTER WALLS', 72], ['THE GATE WINCH', 232], ['THE SOUQ YARD', 273], ['THE POWDER STORE', 358], ['THE HAWK TOWER ROOFS', 446], ['THE POWDER QUARTER', 584], ['THE KEG ALLEY', 705], ['THE LINE TO THE ROOFS', 790], ['THE ROOFTOPS', 812]];
 export const RULE = 'THE FORT ANSWERS ITS GONGS: A RUNG GONG CALLS EVERY BANDIT IN EARSHOT, AND A CUT ROPE SILENCES IT.';
 /* each verb's arc (tile columns) - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/ksar.mjs */
 export const ARCS = {
@@ -249,12 +249,85 @@ export function buildKsar({ painter, T, TS }) {
   awning(460, 464, 13, 19); awning(472, 475, 13, 19); shadeBox(485, 489, 16, 18); shadeBox(497, 520, 18, 20); awning(533, 537, 15, 21);   /* the roofs: awnings, the parapet, the high ledge's shade (the hut and the tower are roofed) */
   shadeBox(576, 583, 26, B - 1);                                                 /* the shaft to the courtyard door */
 
+  // ================= (claude/ksar2) THE LONGER KSAR: THE POWDER QUARTER, THE KEG ALLEY, THE LINE TO THE ROOFS (584-811) =================
+  /* Daniel 10-08 (scratch/brief-ksar2.md A5): NEW BOMB SECTIONS - a powder-store run (carry kegs to blow walls), flash flasks against archer nests, a chain-reaction
+     keg alley as an exam; TORCH THROWING on src/carry-throw.js (a torch burns REED, a ROPE, lights a POWDER TRAIL - each a new passage); ZIP LINES with purpose
+     (src/zipline.js: a teach line off the archers' terrace, RAIDER LINES the fort's men ride down when a gong calls them - CUT the rope at its anchor and no one
+     comes, the cut-the-rope remix - and the line from the hawk tower's twin down to the boss rooftops' door).
+     THE TORCH's arc (kind 'torch', src/carry-throw.js) and verbs are src/ksar-hands.js's (burn: reeds, ropes, trails, a set keg, a foe) */
+  const torches = (id, x, y) => { stacks.push({ id, x, y, kind: 'torch', n: 2 }); ent('kstorches', x, y, { id }); };
+  const reeds = [], ropeBridges = [], trails = [], raidLines = [], zipLines = [], nests = [], chasms = [];
+  const reed = (id, x0, x1, y0, y1) => { block(x0, x1, y0, y1); reeds.push({ id, x0, x1, y0, y1 }); ent('ksreeds', x0, y1, { id }); };
+  const lineRope = (x0, r0, x1, r1, o) => { const z = Object.assign({ x0: x0 * TS + 8, y0: (r0 + 1) * TS - 22, x1: x1 * TS + 8, y1: (r1 + 1) * TS - 12 }, o || {}); zipLines.push(z); return z; };   /* rows are the FEET rows at each end: the rope's high end hangs a reach over the lip you take it from (you ride off the lip, not along the floor), its low end sets you down on the floor */
+  const raid = (id, x0, r0, x1, r1, gong, n) => { const z = lineRope(x0, r0, x1, r1, { id, raid: true }); raidLines.push({ id, gong, n, line: z, post: { x: x1, y: r1 } }); ent('ksline', x1, r1, { id }); return z; };
+  ground(576, 811, B);
+  // ---- 8. THE POWDER QUARTER (584-703): TORCHES TAUGHT SAFE, FLASKS ON THE NESTS, THE POWDER RUN, THE RAISED BRIDGE, THE TRAIL ----
+  sign(586, B - 1, 'THE POWDER QUARTER. THE FORT KEEPS ITS FIRE HERE.');
+  torches('reedTorches', 590, B - 1);
+  sign(592, B - 1, 'A TORCH: E TAKES ONE, ATTACK THROWS IT. FIRE EATS REED.');
+  block(596, 606, 22, 27); reed('reedA', 599, 600, 28, B - 1); decor.push({ kind: 'hut', x0: 596, x1: 606, y: 22, floor: B });   /* THE REED SCREEN under the store's eave: no way over, fire through it (TORCH TAUGHT, no foe) */
+  /* THE ARCHER NESTS: a terrace climbed under two nests of slingers; a FLASK's flash blinds a nest (they stand stunned, KS.nestStun) */
+  stack('nestFlasks', 609, B - 1, 'flask', 2);
+  sign(607, B - 1, "ARCHER NESTS OVER THE CLIMB: A FLASK'S FLASH BLINDS A NEST.");
+  boards(610, 614, 31); boards(613, 617, 29); block(617, 640, 27, B - 1);   /* the terrace (its walk is row 26) */
+  for (const [x0, x1] of [[622, 625], [632, 635]]) { block(x0, x1, 21, 21); nests.push({ x0, x1, y: 21 }); slinger(x0 + 2, 20, 'nest' + x0, { face: -1, nest: true }); }   /* the nests: a slinger in each, five rows over the terrace */
+  sentry(628, 26, 'terraceSentry', null, { ks: 'post', face: -1 }); blade(637, 26, 'terraceSentry', { face: -1 });   /* a shield on the narrow walk under the nests */
+  /* THE TEACH LINE: a rope off the terrace's end down to the street - a miss is only a drop (ZIP LINES taught safe) */
+  sign(638, 26, 'A ROPE: UP TAKES ITS HANDLE, JUMP LETS GO.');
+  lineRope(640.5, 26, 648, B - 1);
+  // THE POWDER RUN: two bricked walls, a keg stack before each - CARRY a keg to the wall (it is too far to throw from the stack)
+  stack('runKegs', 642, B - 1, 'keg', 3);
+  sign(644, B - 1, 'THE POWDER RUN: CARRY A KEG TO THE WALL, THEN THROW.');
+  block(649, 653, 22, 26); barricade('runA', 651, 651, 27, B - 1);
+  blade(656, B - 1, 'runGuard', { face: -1 }); smoke(659, B - 1, 'runGuard', { face: -1 });
+  stack('runKegs2', 655, B - 1, 'keg', 2);
+  block(663, 667, 22, 26); barricade('runB', 665, 665, 27, B - 1);
+  // THE RAISED BRIDGE: a chasm too wide to jump under a low beam; the bridge stands raised on the far lip on its rope - a thrown TORCH burns the rope, it falls across
+  torches('bridgeTorches', 669, 31);
+  block(668, 673, 32, B - 1); sign(670, 31, 'THE BRIDGE IS RAISED ON A ROPE: A THROWN TORCH BURNS IT DOWN.');
+  air(674, 680, B, B + 2); for (let x = 674; x <= 680; x++) set(x, B + 3, T.SPIKE); chasms.push([674, 680, B]);   /* the chasm (spikes: a hurt, A10) */
+  block(674, 680, 26, 26);                                                       /* the low beam over it: no jump crosses seven tiles under it */
+  block(681, 681, 27, B - 1); ropeBridges.push({ id: 'rope', x: 681, y0: 27, y1: B - 1, span: [674, 680, B] }); ent('ksropebridge', 681, B - 1, { id: 'rope' });   /* the bridge, raised: timber cells on the far lip */
+  // THE POWDER TRAIL: a keg behind iron bars beside a bricked wall - nothing reaches it but fire along the trail (a torch lights it, held or thrown)
+  torches('trailTorches', 685, B - 1);
+  sign(686, B - 1, 'A POWDER TRAIL: A TORCH LIGHTS IT, AND THE FIRE RUNS TO THE KEG.');
+  block(694, 701, 22, 26); barricade('trailBars', 695, 695, 27, B - 1); kegAt('trailKeg', 696, B - 1, { caged: true }); barricade('trailWall', 697, 698, 27, B - 1);
+  trails.push({ id: 'trail', x0: 687, x1: 696, y: B - 1, keg: 'trailKeg' });
+  ent('check', 702, B - 1);                                                      /* CHECKPOINT SIX, past the quarter */
+  // ---- 9. THE KEG ALLEY (705-789): THE EXAM - a CHAIN of kegs down an alley full of the fort's men, raiders on a line off the tower, a broken floor ----
+  sign(706, B - 1, 'THE KEG ALLEY: THE FLOOR IS BROKEN - A FALL IS THE END.');
+  torches('alleyTorches', 708, B - 1);
+  gong('alley', 711, B - 1, { ear: 30, earY: 8 });
+  lookout(716, B - 1, 'alleyLookout', 'alley', { patrol: [714, 722], face: -1 });
+  for (const [i, x] of [718, 726, 734, 742, 750, 758, 766, 774].entries()) kegAt('a' + i, x, B - 1, { chain: true, alley: true });
+  blade(728, B - 1, 'alleyA', { face: -1 }); whip(731, B - 1, 'alleyA', { face: -1 });
+  drop(737, 739);                                                                /* THE FIRST BREAK: a fall to the wadi (the exam's death, A10) */
+  sentry(746, B - 1, 'alleyB', null, { ks: 'post', face: -1 }); blade(749, B - 1, 'alleyB', { face: -1 });
+  boards(754, 758, 29); slinger(756, 28, 'alleyLedge', { face: -1 });
+  drop(763, 765);                                                                /* THE SECOND BREAK */
+  smoke(769, B - 1, 'alleyC', { face: -1 }); blade(771, B - 1, 'alleyC', { face: -1 });
+  block(775, 780, 23, 26); barricade('alleyArch', 777, 778, 27, B - 1);           /* THE ALLEY'S END: bricked - only a blast opens it (the chain's last keg) */
+  /* THE TOWER: the hawk tower's twin over the alley's end - its RAIDER LINE runs down into the alley; when the alley gong rings two raiders ride it in. CUT THE ROPE
+     at its anchor (a blade on the post) and the line is gone - no one comes (the CUT remix) */
+  block(790, 795, 16, B - 1);
+  for (let i = 0; i < 8; i++) boards(i % 2 ? 786 : 783, i % 2 ? 789 : 786, 31 - i * 2);   /* the stair up the tower's west face: two-row steps, side to side */
+  raid('alleyRaid', 790, 15, 759, B - 1, 'alley', 2);
+  sign(757, B - 1, 'A RAIDER LINE: A BLADE ON ITS POST CUTS IT.');
+  // ---- 10. THE LINE TO THE ROOFS (796-811): the rope from the tower top over the last chasm to the rooftops' door ----
+  drop(796, 803);
+  sign(794, 15, 'THE LINE TO HER ROOFS: UP TAKES IT.');
+  lineRope(795.5, 15, 807, B - 1, { speed: 200 });   /* (from the tower lip: the first column past it is the chasm) */
+  ent('check', 808, B - 1);                                                      /* CHECKPOINT SEVEN, at the rooftops' door (after the exam and the line) */
+  shadeBox(584, 589, 30, B - 1);
+  /* THE SHADE (THE SUN v2: no walk on the route over SUN.maxWalk): awnings over the alley's squads and gong, the stair's lee, the tower top's parapet awning, the landing's */
+  awning(700, 704, 28, B); awning(710, 714, 28, B); awning(727, 731, 28, B); awning(745, 749, 28, B); shadeBox(754, 758, 30, B - 1); awning(768, 772, 28, B); shadeBox(781, 789, 27, B - 1);
+  awning(783, 786, 18, 31); awning(791, 795, 11, 16); awning(805, 809, 28, B); awning(668, 672, 26, 32); awning(683, 687, 28, B); awning(48, 52, 28, B); awning(61, 65, 25, B); awning(428, 432, 19, 25);
   // ================= THE HAWK-MISTRESS's COURTYARD (src/hawk-mistress.js) =================
-  const AX = 584;
+  const AX = 812;
   const stage = stageHawkMistress({ set, block, ent, air }, T, TS, AX, B);
   ground(AX, AX + HM_STAGE.W - 1, B);
   block(AX + HM_STAGE.W, W - 1, 0, H - 1);
-  stage.carve(); gongs.push(...stage.gongs); stacks.push(...stage.racks);   /* the courtyard's gongs and flask racks are the level's (src/ksar-hands.js rings, cuts and hands them out) */
+  stage.carve(); gongs.push(...stage.gongs); stacks.push(...stage.racks); const shafts = stage.shafts;   /* (claude/ksar2) THE ROOFTOP SHAFTS (src/ksar-hands.js: the spikes bite, the updraft throws you up) */   /* the courtyard's gongs and flask racks are the level's (src/ksar-hands.js rings, cuts and hands them out) */
   ent('gate', AX + HM_STAGE.W - 2, B - 1);
 
   /* the rule's gadgets the level tools read as ents are placed above (ksgong, kskegs, ksflasks, kskeg, ksbarricade, kswinch, ksvault) */
@@ -263,7 +336,7 @@ export function buildKsar({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
     ksar: true, caravan: true,   /* caravan: the desert's hands in main.js (the bandits' machines, the sand and stone skins, THE SUN: the act's backdrop - the courtyard is shade, src/ksar-hands.js noSun) */
-    gongs, stacks, setKegs, racks, barricades, weak, gate, decor, vaultDoors, breaches, drops,
+    gongs, stacks, setKegs, racks, barricades, weak, gate, decor, vaultDoors, breaches, drops, shafts, reeds, ropeBridges, trails, raidLines, zipLines, nests, chasms,
     /* THE FORT HITS HARD (fix pass, review MUST 2: weight, not hazards): a fort man's blow x this, on top of the act's tier (src/foe-react.js) - a blade's cut is ~12% of a
        campaign-level hero, a shield's bash ~12%: every one a 1v1 threat (main.js damagePlayer0 reads L.foeHit by cnSkin). A slinger's stone is KS.stoneDmg */
     foeHit: { ksarblade: 3.6, gonglookout: 2.6, whipapprentice: 3.6, shieldsentry: 3.0, smokethrower: 2.2 },

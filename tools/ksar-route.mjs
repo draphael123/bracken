@@ -54,6 +54,7 @@ try {
       const leap = (from, to) => { for (let a = 0; a < 3; a++) { walk(from - 2, { tol: 3 }); settle(); clear(); let n = 0; while (P().x < from * TS + 12 && n++ < 120) { k.right = true; tick(1); }
           k.jump = true; BK.press('jump'); for (let j = 0; j < 80; j++) { k.right = true; k.jump = j < 26; tick(1); if (j > 6 && P().ground) break; } clear(); tick(3); if (col() >= to) return true; }
         DBG.push('leap ' + from + '>' + to + ' failed at ' + col() + ',' + feet()); return false; };
+      const ride = () => { clear(); for (let j = 0; j < 40 && !P().zip; j++) { k.up = true; BK.press('up'); tick(1); } clear(); DBG.push('zip ' + !!P().zip); for (let j = 0; j < 240 && (P().zip || !P().ground); j++) tick(1); settle(); };   /* (claude/ksar2) UP takes a rope's handle; ride it to its foot */
       const face = d => { clear(); k[d > 0 ? 'right' : 'left'] = true; tick(1); clear(); tick(1); P().face = d; };
       const press = (key, d) => { settle(); if (d) face(d); BK.press(key); tick(8); clear(); tick(4); };
       const gong = id => K().gongs.find(g => g.id === id);
@@ -73,6 +74,25 @@ try {
             cutGong('bridge'); DBG.push('bridge ' + K().n.bridges); walk(533); cutGong('roofC'); walk(557, { tol: 3 }); settle(); press('talk', 1); DBG.push('keg in hand ' + !!(P().carry && P().carry.thrKind)); walk(554, { tol: 3, noFight: true }); press('atk', 1);
             waitFor(() => K().barricades.find(b => b.id === 'towerArch').broken, 240, { noFight: true }); DBG.push('tower door ' + K().barricades.find(b => b.id === 'towerArch').broken); if (!K().barricades.find(b => b.id === 'towerArch').broken) return false;
             walk(574); walk(581); settle(); DBG.push('the door ' + col() + ',' + feet()); return col() >= 579 && feet() === 33; }, [581, 33]],
+        /* (claude/ksar2) THE LONGER KSAR: a torch at the reeds, up under the nests, the teach rope, two kegs carried to the powder run's walls, a torch at the raised bridge,
+           a torch along the trail; the keg alley's chain kicked and stood clear of, its breaks leapt; the tower's stair and the line to her roofs */
+        ['the powder quarter: the reeds, the nests, the run, the bridge, the trail', [581, 33], () => {
+            const arch = id => K().barricades.find(b => b.id === id), take = x => { walk(x, { tol: 3 }); settle(); press('talk', 1); }, throwIt = (x, d = 1, aim) => { walk(x, { tol: 3 }); settle(); face(d); if (aim) k[aim] = true; BK.press('atk'); tick(4); clear(); tick(10); };
+            take(590); DBG.push('torch ' + !!(P().carry && P().carry.thrKind === 'torch')); throwIt(594); waitFor(() => K().reeds[0] === 'burnt' || BK.ksar().reeds[0].st === 'burnt', 240, { noFight: true }); DBG.push('reeds ' + BK.ksar().reeds[0].st);
+            if (BK.ksar().reeds[0].st !== 'burnt') return false;
+            walk(609); hop(611, 30, 1); hop(614, 28, 1); hop(616, 26, 1); walk(640, { tol: 3 }); settle(); ride(); DBG.push('off the rope ' + col() + ',' + feet());
+            take(642); throwIt(647); waitFor(() => arch('runA').broken, 200, { noFight: true }); DBG.push('runA ' + arch('runA').broken); if (!arch('runA').broken) return false;
+            take(655); throwIt(661); waitFor(() => arch('runB').broken, 200, { noFight: true }); DBG.push('runB ' + arch('runB').broken); if (!arch('runB').broken) return false;
+            walk(666); hop(668, 31, 1); take(669); throwIt(672); waitFor(() => BK.ksar().ropes[0].st === 'down', 240, { noFight: true }); DBG.push('rope ' + BK.ksar().ropes[0].st); if (BK.ksar().ropes[0].st !== 'down') return false;
+            walk(684); take(685); walk(690, { noFight: true }); waitFor(() => BK.ksar().trails[0].st !== 'dry', 60); walk(683, { noFight: true }); waitFor(() => arch('trailWall').broken, 400, { noFight: true }); DBG.push('trail wall ' + arch('trailWall').broken + ' trail ' + BK.ksar().trails[0].st + ' carry ' + (P().carry ? P().carry.thrKind : '-') + ' broken ' + K().barricades.filter(b => b.broken).map(b => b.id).join('+'));
+            if (!arch('trailWall').broken) return false; if (P().carry) { press('talk', 1); } walk(702); return col() >= 700 && feet() === 33; }, [702, 33]],
+        ['the keg alley: the chain, the breaks, the tower, the line to her roofs', [702, 33], () => {
+            const arch = id => K().barricades.find(b => b.id === id);
+            walk(716, { tol: 3 }); for (let i = 0; i < 3 && K().setKegs.find(q => q.alley).st === 'set'; i++) press('atk', 1); walk(704, { noFight: true });
+            waitFor(() => arch('alleyArch').broken, 900); DBG.push('alley chain ' + K().setKegs.filter(q => q.alley).map(q => q.st[0]).join('') + ' arch ' + arch('alleyArch').broken); if (!arch('alleyArch').broken) return false;
+            walk(735); leap(736, 740); walk(761); leap(762, 766); walk(782);
+            hop(784, 30, 1); for (const r of [28, 26, 24, 22, 20, 18, 16]) hop(786, r, 0); hop(789, 15, 1); walk(795, { tol: 3 }); settle(); DBG.push('tower top ' + col() + ',' + feet());
+            ride(); DBG.push('the line ' + col() + ',' + feet()); walk(808); return col() >= 806 && feet() === 33; }, [808, 33]],
       ];
       let lifts = [], retries = 0;
       for (const [name, foot, plan, end] of LEGS) {

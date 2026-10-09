@@ -1334,14 +1334,14 @@ async function runbossLab(BK, opts) {
         const HH=BK.hawkMistressHands(),S=HH&&HH.show(),KSX=BK.ksar?BK.ksar():null;
         if(f===0||!P.labHmMem)P.labHmMem={};
         const gongs=KSX?KSX.gongs.filter(g=>g.arena).map(g=>({id:g.id,x:g.x*16+8,cut:g.cut,hum:g.hum})):[],racks=KSX?KSX.stacks.filter(q=>q.arena).map(q=>({id:q.id,x:q.x*16+8,n:q.left})):[];
-        const pl=S?hmPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,carry:!!(P.carry&&P.carry.t==='ksflask')},e:boss,S,gongs,racks,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHmMem}):{gx:null,face:P.face};
+        const pl=S?hmPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,carry:!!(P.carry&&P.carry.t==='ksflask'),snared:!!P.hmSnare,lifted:!!(P.ksLift||P.hmCarry)},e:boss,S,gongs,racks,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHmMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.talk){P.face=pl.face||P.face;if(P.labTalkF===undefined||f-P.labTalkF>12){BK.press('talk');P.labTalkF=f;}}
-        if(pl.down&&P.ground)k.down=true;   /* (the knight's low guard under her lash) */if(pl.atk&&(P.atk<0||P.carry)){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(pl.down&&P.ground)k.down=true;if(pl.up)k.up=true;   /* (the knight's low guard under her lash; (claude/ksar2) a duck under a high knife, a rising cut at the hawk) */if(pl.atk&&(P.atk<0||P.carry)){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(hmOpen(boss)&&!wasOpen)opened++;wasOpen=hmOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:hmOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }

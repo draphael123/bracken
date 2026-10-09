@@ -44,7 +44,7 @@ export function findCatch(L, P, up, downHeld) {
   let best = null, bd = 1e9;
   for (const z of (L.zipLines || [])) {
     if (z === P.zipSkip && !up) continue;   /* the rope he just kicked off, or dropped from: not by touch until he has landed or gone away from it */
-    if (!up && (P.ground || downHeld || z.snap)) continue;   /* by touch only in the air, and never a frayed one: that is taken on purpose (UP) */
+    if (!up && (P.ground || downHeld || z.snap || z.raid)) continue;   /* (claude/ksar2) a RAIDER LINE (src/ksar-hands.js) is taken on purpose too: a jump up the tower's stair must not catch it */   /* by touch only in the air, and never a frayed one: that is taken on purpose (UP) */
     if (!inReach(z, P)) continue;
     const d = Math.abs(lineY(z, P.x) - (P.y - 12)); if (d < bd) { bd = d; best = z; }
   }

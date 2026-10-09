@@ -342,7 +342,7 @@ export function paintWorld(V, plan0) {
 
 /* HER COURTYARD (the arena; arena.hm = { sx, R }): a shaded ashlar back wall with pilasters and a wall walk under the merlons, her hawk relief over the middle, the two guard doors, banners, perches */
 export function drawCourtyard(V, A) {
-  if (!A || !A.hm) return; const { sx, R: Rr } = A.hm, x0 = sx * TS, x1 = (sx + 40) * TS, y0 = (Rr - 18) * TS, fl = Rr * TS; if (!vis(V, x0, x1, 0)) return;
+  if (!A || !A.hm) return; const { sx, R: Rr } = A.hm, x0 = sx * TS, x1 = (sx + 46) * TS, y0 = (Rr - 18) * TS, fl = Rr * TS; if (!vis(V, x0, x1, 0)) return;
   const xa = Math.max(x0, V.cx - 40), xb = Math.min(x1, V.cx + V.vw + 40);
   box(V, xa, y0, xb - xa, fl - y0, '#4a4640');   /* the wall in shade */
   for (let y = y0; y < fl; y += 11) { const r = (y - y0) / 11 | 0, off = (r & 1) * 14; box(V, xa, y + 10, xb - xa, 1, '#35332e'); for (let x = Math.floor((xa - off) / 28) * 28 + off; x < xb; x += 28) if (x >= xa) box(V, x, y, 1, 11, '#35332e'); }
@@ -352,7 +352,7 @@ export function drawCourtyard(V, A) {
   const mx = (x0 + x1) / 2; put(V, P.bakeHawkRelief(), mx - 36, fl - 104);
   for (const q of [0.14, 0.3, 0.7, 0.86]) { const bx = Math.round(x0 + (x1 - x0) * q); for (let c = 0; c < 14; c++) { const sw = Math.round(Math.sin(V.time * 2.2 + c * 0.5 + bx) * (c / 14) * 1.4); box(V, bx + c, y0 + 24 + sw, 1, 54 + (c % 2) * 2, c < 1 ? '#6a1e1e' : '#a8302a'); box(V, bx + c, y0 + 76 + sw, 1, 2, '#d8b050'); } box(V, bx - 1, y0 + 22, 16, 2, '#d9b04a');
     for (let r = 0; r < 7; r++) for (let c = 0; c < 8; c++) if (HAWK_EMBLEM[r][c] === 'b') box(V, bx + 3 + c, y0 + 38 + r, 1, 1, '#1b1626'); }
-  for (const dx of [(sx + 2) * TS + 8, (sx + 37) * TS + 8]) { box(V, dx - 14, fl - 40, 28, 40, '#35332e'); box(V, dx - 12, fl - 38, 24, 38, '#1d1218'); box(V, dx - 10, fl - 42, 20, 3, '#6a665c'); box(V, dx - 8, fl - 44, 16, 3, '#78746a'); box(V, dx - 6, fl - 46, 12, 3, '#8a867a');   /* an arch */
+  for (const dx of [(sx + 2) * TS + 8, (sx + 43) * TS + 8]) { box(V, dx - 14, fl - 40, 28, 40, '#35332e'); box(V, dx - 12, fl - 38, 24, 38, '#1d1218'); box(V, dx - 10, fl - 42, 20, 3, '#6a665c'); box(V, dx - 8, fl - 44, 16, 3, '#78746a'); box(V, dx - 6, fl - 46, 12, 3, '#8a867a');   /* an arch */
     box(V, dx - 10, fl - 34, 20, 34, '#4a3020'); for (let k = 0; k < 4; k++) box(V, dx - 10 + k * 5, fl - 34, 1, 34, '#3a2014'); box(V, dx - 10, fl - 24, 20, 2, '#3a3a42'); box(V, dx - 10, fl - 10, 20, 2, '#3a3a42'); box(V, dx + 5, fl - 18, 3, 3, '#d9b04a'); }
   for (const px0 of [(sx + 9) * TS + 8, (sx + 30) * TS + 8]) put(V, P.bakePerch(Math.floor(V.time * 0.7 + px0) & 1), px0 - 13, fl - 30);
 }

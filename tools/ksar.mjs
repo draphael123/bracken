@@ -33,7 +33,7 @@ ok(lv.rule === RULE && src.includes('// THE RULE: ' + lv.rule), 'the rule line i
 ok(/GONG/.test(lv.rule) && /CALLS EVERY BANDIT IN EARSHOT/.test(lv.rule) && /CUT ROPE SILENCES IT/.test(lv.rule), 'the rule line names the verb and what it does (calls / silences)');
 /* THE ARCS */
 for (const v of ['cut', 'ring', 'throw']) ok(ARCS[v].teach && ARCS[v].test && ARCS[v].remix && ARCS[v].exam, 'the ' + v + ' is taught, tested, remixed and examined');
-ok(SECTIONS.length === 7 && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'six sections and the courtyard, in order');
+ok(SECTIONS.length === 10 && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]) && SECTIONS[SECTIONS.length - 1][1] * TS === L.arena.x0, 'nine sections and the rooftops, in order (claude/ksar2: the powder quarter, the keg alley and the line to the roofs added before her)');
 /* REQUIRED: RING (the gate winch) */
 const G = L.gate; ok(G && G.notches >= 3, 'the gate winch has a portcullis of notches');
 for (let y = G.y0; y <= G.y1; y++) ok(at(G.x, y) === T.SOLID, 'the portcullis is shut as laid (' + G.x + ',' + y + ')');
@@ -51,7 +51,7 @@ ok(sign(G.winch[0] - 6, G.winch[0], /E HAULS IT/), 'a sign at the winch says E H
 const arch = L.barricades.find(b => b.id === 'storeArch'); ok(arch, 'the powder store has its bricked arch');
 ok(arch.y1 - arch.y0 + 1 >= 7, 'the arch stands ' + (arch.y1 - arch.y0 + 1) + ' rows over the roof: no jump goes over it');
 for (let x = arch.x0; x <= arch.x1; x++) ok(at(x, arch.y1 + 1) === T.SOLID, 'the arch stands on the roof (' + x + ')');
-const chain = L.setKegs.filter(k => k.chain).sort((a, b) => a.x - b.x); ok(chain.length >= 4, 'the store\'s keg chain: ' + chain.length + ' kegs');
+const chain = L.setKegs.filter(k => k.chain && !k.alley).sort((a, b) => a.x - b.x); ok(chain.length >= 4, 'the store\'s keg chain: ' + chain.length + ' kegs');
 for (let i = 1; i < chain.length; i++) ok((chain[i].x - chain[i - 1].x) * TS <= KS.chainR, 'each keg of the chain is in reach of the one before (' + chain[i - 1].x + ' > ' + chain[i].x + ')');
 ok(Math.hypot((arch.x0 * TS + 8) - (chain[chain.length - 1].x * TS + 8), (arch.y1 * TS + 8) - ((chain[chain.length - 1].y + 1) * TS - 6)) < KS.breakR, 'the chain\'s last keg breaks the arch');
 ok(sign(chain[0].x - 8, chain[0].x, /A BLOW LIGHTS A KEG/), 'a sign at the store says A BLOW LIGHTS A KEG');
@@ -80,12 +80,12 @@ for (let y = 0; y < ta.y0; y++) if (y >= ta.y0 - 5) ok(at(ta.x0, y) === T.SOLID,
 ok(!L.setKegs.some(k => { for (let cy = ta.y0; cy <= ta.y1; cy++) for (let cx = ta.x0; cx <= ta.x1; cx++) if (Math.hypot(cx * TS + 8 - (k.x * TS + 8), cy * TS + 8 - ((k.y + 1) * TS - 6)) < KS.breakR) return true; return false; }), 'no set keg\'s blast reaches the tower door: only a THROWN keg opens it');
 ok(L.stacks.some(s => s.kind === 'keg' && s.x < ta.x0 && ta.x0 - s.x <= 6) && sign(ta.x0 - 6, ta.x0, /THROWN KEG/), 'a keg stack and a sign (A THROWN KEG) stand before the tower door');
 /* (MUST 4) THE CLIMAX, THEN A CHECKPOINT: CUT (the bridge), RING (the roof-three gong over the tower's squad), THROW (the door) between checkpoint four and five */
-const cpx = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), c4 = cpx[cpx.length - 2], c5 = cpx[cpx.length - 1];
+const cpx = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), c4 = cpx.filter(x => x < 505).pop(), c5 = cpx.find(x => x > 560);   /* (claude/ksar2) the checkpoints that bracket the roofs' climax (more come after it now) */
 ok(c4 < bg.x && c5 > ta.x1 && L.gongs.some(g => !g.bridge && !g.arena && g.x > bx1 && g.x < ta.x0), 'the climax (bridge gong ' + bg.x + ', a gong on roof three, the tower door ' + ta.x0 + ') sits between checkpoint ' + c4 + ' and checkpoint ' + c5 + ' (after it)');
 ok(L.ents.filter(e => e.ks === 'reserve' && e.x > bx1 && e.x < ta.x0).length >= 3, 'the hawk tower\'s squad sleeps in its hut on roof three (a ring calls them)');
 /* (MUST 2) THE FORT HITS HARD: weight, not hazards; the post kegs cut to a dozen */
 ok(['ksarblade', 'whipapprentice', 'shieldsentry'].every(k => L.foeHit[k] >= 1.8) && L.foeHit.gonglookout >= 1.5, 'the fort\'s men hit hard (L.foeHit ' + JSON.stringify(L.foeHit) + ')');
-ok(L.setKegs.length <= 14, 'set kegs: ' + L.setKegs.length + ' (the chain and a few by the squads - not a keg at every post)');
+ok(L.setKegs.filter(k => !k.alley && !k.caged).length <= 14 && L.setKegs.filter(k => !k.chain && !k.caged).length <= 8, 'set kegs: ' + L.setKegs.length + ' - the store chain, the keg alley chain, the caged keg on the trail, and a few by the squads (' + L.setKegs.filter(k => !k.chain && !k.caged).length + ') - not a keg at every post');
 /* THE GONG RULE IN THE HANDS (a fake world: the grid, the men, a hero) */
 const grid = L.grid.slice(), P = { x: 30 * TS, y: 34 * TS, face: 1, dead: false, hp: 100, hurt: 0, ground: true, w: 10, h: 18 };
 const men = L.ents.map((e, i) => ({ e, i })).filter(({ e }) => e.ks).map(({ e, i }) => ({ t: e.t, cnSkin: e.cnSkin, x: e.x * TS + 8, y: (e.y + 1) * TS, alive: true, hp: 30, face: e.face || -1, xpKey: i + '.0', vy: 0 }));
@@ -131,6 +131,45 @@ for (let i = 1; i < stops.length; i++) ok(stops[i] - stops[i - 1] >= 90 && stops
 ok(cps[cps.length - 1] * TS < L.arena.x0 && L.arena.x0 / TS - cps[cps.length - 1] < 12, 'a checkpoint stands at the courtyard door');
 ok(L.ents.filter(e => e.t === 'stray' && e.kind === 'caravanseal').length === 5 && L.quest.n === 5, 'five caravan seals, and the quest counts five');
 ok(L.ents.filter(e => e.t === 'silver').length <= 3 && L.vaultDoors.length === 1 && L.vaultDoors[0].seals === 5, 'silver at most 3; the strongroom wants the five seals');
+/* (claude/ksar2) THE LONGER KSAR: each new verb REQUIRED where it stands - THE TORCH (the reed screen, the raised bridge, the trail), THE CARRIED KEG (the powder run's
+   walls), THE CHAIN (the keg alley's arch), THE FLASK (the nests), THE ZIP LINE (the line over the last chasm), THE CUT ROPE (the raider line) */
+{ const solidRow = (x0, x1, y) => { for (let x = x0; x <= x1; x++) if (at(x, y) !== T.SOLID) return false; return true; }, sk = (x, y) => (b => Math.hypot(b.x * TS + 8 - x, (b.y + 1) * TS - 6 - y));
+  const blastReaches = b => L.setKegs.some(k => { for (let cy = b.y0; cy <= b.y1; cy++) for (let cx = b.x0; cx <= b.x1; cx++) if (Math.hypot(cx * TS + 8 - (k.x * TS + 8), cy * TS + 8 - ((k.y + 1) * TS - 6)) < KS.breakR) return true; return false; });
+  const r = L.reeds.find(q => q.id === 'reedA'); ok(r && solidRow(r.x0, r.x1, r.y0 - 1) && r.y1 - r.y0 + 1 >= 6 && !blastReaches(r), 'THE REED SCREEN: six rows of reed under an eave - no way over, no set keg reaches it: a TORCH burns it (required)');
+  ok(L.stacks.some(s => s.kind === 'torch' && s.x < r.x0 && r.x0 - s.x <= 12) && sign(r.x0 - 12, r.x0, /FIRE EATS REED/), 'a torch rack and a sign (FIRE EATS REED) before the reed screen: the torch taught safe (no foe between)');
+  ok(!L.ents.some(e => (e.ks || e.t === 'hawkscout') && e.x > r.x0 - 14 && e.x < r.x1), 'the torch is taught where failure is cheap: no foe at the reeds');
+  for (const id of ['runA', 'runB']) { const w = L.barricades.find(b => b.id === id), st = L.stacks.filter(s => s.kind === 'keg' && s.x < w.x0).sort((a, b) => b.x - a.x)[0];
+    ok(w && solidRow(w.x0 - 1, w.x1 + 1, w.y0 - 1) && w.y1 - w.y0 + 1 >= 6 && !blastReaches(w) && st && w.x0 - st.x >= 7 && w.x0 - st.x <= 12, 'THE POWDER RUN, wall ' + id + ': under its eave, no set keg reaches it, its stack ' + (w.x0 - st.x) + ' tiles back - too far to throw: CARRY a keg (required)'); }
+  const rb = L.ropeBridges[0], [sx0, sx1, srow] = rb.span; let open = true; for (let x = sx0; x <= sx1; x++) open = open && at(x, srow) === T.AIR;
+  ok(rb && sx1 - sx0 + 1 >= 7 && open && solidRow(sx0, sx1, srow - 8) && at(rb.x, rb.y1) === T.SOLID && L.stacks.some(s => s.kind === 'torch' && s.x < sx0 && sx0 - s.x <= 6), 'THE RAISED BRIDGE: a chasm of ' + (sx1 - sx0 + 1) + ' under a low beam (no jump crosses it), the bridge standing raised on the far lip, a torch rack on the near: a thrown TORCH burns its rope (required)');
+  const tr = L.trails[0], tk = L.setKegs.find(k => k.id === tr.keg), tw = L.barricades.find(b => b.id === 'trailWall'), bars = L.barricades.find(b => b.id === 'trailBars');
+  ok(tk && tk.caged && bars && bars.x0 < tk.x && tw.x0 > tk.x && tr.x1 >= tk.x && tr.x0 < bars.x0 && solidRow(bars.x0, tw.x1, tw.y0 - 1) && Math.hypot((tw.x0 * TS + 8) - (tk.x * TS + 8), 0) < KS.breakR, 'THE POWDER TRAIL: its keg caged behind bars beside the bricked wall (no blade, no throw reaches it), the trail running to it: a TORCH lights the trail (required)');
+  const alley = L.setKegs.filter(k => k.alley).sort((a, b) => a.x - b.x), aa = L.barricades.find(b => b.id === 'alleyArch');
+  ok(alley.length >= 6 && alley.every((k, i) => !i || (k.x - alley[i - 1].x) * TS <= KS.chainR) && Math.hypot(aa.x0 * TS + 8 - (alley[alley.length - 1].x * TS + 8), 0) < KS.breakR && solidRow(aa.x0 - 1, aa.x1 + 1, aa.y0 - 1), 'THE KEG ALLEY: ' + alley.length + ' kegs, each in reach of the last; the last breaks the bricked arch under its eave: the CHAIN opens it');
+  const ad = L.drops.filter(([x0]) => x0 > alley[0].x && x0 < aa.x0); ok(ad.length >= 2 && sign(alley[0].x - 14, alley[0].x, /A FALL IS THE END/), 'the alley is an exam: ' + ad.length + ' breaks in its floor are deaths (A10), told by a sign at its mouth');
+  ok(ad.every(([x0, x1]) => foeNear(x0, x1, 8).length > 0), 'a foe at each break in the alley floor: ' + ad.map(([x0, x1]) => foeNear(x0, x1, 8).map(e => e.cnSkin || e.t).join('+')).join(' | '));
+  const rl = L.raidLines[0], z = rl.line; ok(rl && L.zipLines.includes(z) && L.gongs.some(g => g.id === rl.gong) && L.ents.some(e => e.ks === 'lookout' && e.gong === rl.gong) && z.y0 < z.y1 && sign(rl.post.x - 4, rl.post.x + 4, /A BLADE ON ITS POST CUTS IT/),
+    'THE RAIDER LINE: off the tower into the alley, its gong raced for by a lookout, its post signed A BLADE ON ITS POST CUTS IT (the CUT remix)');
+  const ns = L.ents.filter(e => e.nest); ok(ns.length >= 2 && ns.every(e => L.nests.some(n => e.x >= n.x0 && e.x <= n.x1)) && L.stacks.some(s => s.kind === 'flask' && s.x < ns[0].x && ns[0].x - s.x <= 16) && KS.nestStun >= 3, 'THE ARCHER NESTS: ' + ns.length + ' slingers in nests over the climb, a flask rack before them, a flash blinds a nest ' + KS.nestStun + ' s');
+  const zs = L.zipLines.filter(q => !q.raid).sort((a, b) => a.x0 - b.x0), teach = zs[0], last = zs[zs.length - 1];
+  ok(teach && !L.drops.some(([x0, x1]) => x1 * TS >= teach.x0 && x0 * TS <= teach.x1) && sign(Math.floor(teach.x0 / TS) - 3, Math.floor(teach.x0 / TS), /UP TAKES/), 'THE ZIP LINE taught safe: a rope off the terrace to the street, nothing deadly under it, a sign at its handle (UP TAKES...)');
+  const ld = L.drops.find(([x0, x1]) => x0 * TS >= last.x0 && x1 * TS < last.x1); ok(last && ld && ld[1] - ld[0] + 1 >= 7 && last.x1 < L.arena.x0 && L.arena.x0 - last.x1 < 8 * TS && cps.some(x => x * TS > last.x1 && x * TS < L.arena.x0),
+    'THE LINE TO HER ROOFS: from the tower top over a ' + (ld ? ld[1] - ld[0] + 1 : 0) + '-tile chasm (no jump) to the rooftops\' door, a checkpoint at its foot: the ZIP LINE is required');
+  /* the hands: a torch's fire, the trail, the raiders and the cut */
+  const g2 = L.grid.slice(), W3 = L.W, spawned = [], P2 = { x: 594 * TS, y: 34 * TS, face: 1, dead: false, hp: 100, hurt: 0, ground: true, w: 10, h: 18, atk: -1 };
+  const ctx2 = Object.assign({}, ctx, { L: Object.assign({}, L, { zipLines: L.zipLines.slice() }), players: [P2], hero: () => P2, enemies: () => spawned, cellGet: (x, y) => g2[y * W3 + x], cellSet: (x, y, t) => { g2[y * W3 + x] = t; }, cellOpen: (x, y) => { g2[y * W3 + x] = T.AIR; },
+    standable: (x, y) => g2[y * W3 + x] === T.SOLID || g2[y * W3 + x] === T.ONEWAY, spawnFoe: o => { const e = { t: o.t, cnSkin: o.cnSkin, x: o.x * TS + 8, y: (o.y + 1) * TS, alive: true, hp: 30, face: -1, vy: 0 }; spawned.push(e); return e; } });
+  const H2 = makeKsarHands(ctx2); H2.reset(); const K2 = H2.state();
+  K2.items.push({ t: 'kstorch', thrKind: 'torch', state: 'fly', x: (r.x0 - 1) * TS + 8, y: 30 * TS, vx: 60, vy: 0, burnT: 0, counted: 1 });
+  for (let i = 0; i < 180; i++) H2.update(1 / 60); ok(K2.reeds[0].st === 'burnt' && g2[30 * W3 + r.x0] === T.AIR, 'a torch thrown at the reed screen burns it away: the way is open');
+  K2.items.push({ t: 'kstorch', thrKind: 'torch', state: 'burn', x: (tr.x0 + 1) * TS, y: (tr.y + 1) * TS - 2, vx: 0, vy: 0, burnT: 4, counted: 1 });
+  for (let i = 0; i < 600; i++) H2.update(1 / 60); ok(K2.trails[0].st !== 'dry' && K2.barricades.find(b => b.id === 'trailWall').broken, 'a torch on the trail: the fire runs to the caged keg and the wall blows');
+  K2.items.push({ t: 'kstorch', thrKind: 'torch', state: 'fly', x: (rb.x - 2) * TS, y: 31 * TS, vx: 80, vy: 0, burnT: 0, counted: 1 });
+  for (let i = 0; i < 240; i++) H2.update(1 / 60); let down = true; for (let x = sx0; x <= sx1; x++) down = down && g2[srow * W3 + x] === T.ONEWAY; ok(K2.ropes[0].st === 'down' && down, 'a torch at the raised bridge: its rope burns through and it falls across the chasm');
+  H2.ringGong(rl.gong, 'bandit'); for (let i = 0; i < 120; i++) { H2.update(1 / 60); for (const e of spawned) H2.hold(e, 1 / 60); }
+  ok(spawned.length === rl.n && spawned.some(e => e.ksRide || e.ks.st === 'fight'), 'the alley gong rung: ' + spawned.length + ' raiders ride the line in');
+  for (let i = 0; i < 200; i++) H2.update(1 / 60); H2.cutLine(rl.id); ok(K2.raids[0].cut && !ctx2.L.zipLines.includes(z), 'a blade on its post cuts the raider line: the rope is gone (no one rides it, the hero neither)');
+  const s0 = spawned.length; H2.ringGong(rl.gong, 'hero'); for (let i = 0; i < 120; i++) H2.update(1 / 60); ok(spawned.length === s0, 'a cut line brings no more raiders'); }
 /* THE DESERT'S SUN: no walk on the route over SUN.maxWalk out of the shade */
 const pts = pacing(lv).route.filter(([x]) => x * TS < L.arena.x0), walk = []; for (let i = 0; i + 1 < pts.length; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], m = Math.max(1, Math.abs(x1 - x0)); for (let k = 0; k < m; k++) walk.push([x0 + Math.sign(x1 - x0) * k, k < m / 2 ? y0 : y1]); }
 const shaded = (x, y) => { const px = x * TS + 8, py = (y + 1) * TS; if (L.shade.some(([x0, x1, y0, y1]) => px >= x0 && px <= x1 && py - 2 >= y0 && py - 2 <= y1)) return true; for (let d = 1; d <= SUN.roof; d++) if (at(x, y - d) === T.SOLID) return true; return false; };
@@ -161,7 +200,42 @@ const hero = [{ x: Gm.x0 + 60, y: Gm.floorY, ground: true, alive: true, air: fal
   e.mode = 'lashTell'; ok(!HM.guarded(e, 470, 300, false), 'not in her tells: committed, every blow lands'); }
 ok(HM.HM.openT >= 3 && HM.HM.wardT >= 2.5 && HM.HM.wardT <= 3.5, 'openings >= 3 s, the ward ~3 s');
 const movesOf = ph => new Set(HM.CYCLES[ph].flat());
-ok(movesOf(2).has('call') && !movesOf(1).has('call') && movesOf(3).has('dive') && !movesOf(2).has('dive'), 'one new told move a phase: the call (phase two), the hawk\'s dive (phase three)');
+/* (claude/ksar2) ONE NEW TOLD MOVE OF HERS A PHASE (B5): the snare (one), the knife fan (two), the keg kick (three); the hawk's rake from the start and its
+   snatch from phase two; the call (her guard: the arena's change) from phase two */
+for (const p of [1, 2, 3]) { const nw = HM.NEW_MOVES[p]; ok(movesOf(p).has(nw) && (p === 1 || !movesOf(p - 1).has(nw)), 'phase ' + p + "'s new move of hers: " + nw); }
+ok(movesOf(1).has('rake') && !movesOf(1).has('snatch') && movesOf(2).has('snatch') && movesOf(2).has('call') && !movesOf(1).has('call'), "the hawk's two told attacks: the rake (from phase one) and the snatch (from phase two); the call from phase two");
+ok(!Object.values(HM.CYCLES).flat(2).includes('dive'), "the old hawk's dive is the rake now (a told line, not a straight stoop)");
+/* THE ROOFTOPS: three roofs, two spiked shafts between them (a jump for every hero), the updraft's floor under each */
+{ const sh = L.shafts || []; ok(sh.length === 2, 'the arena is the fort\'s roofs with ' + sh.length + ' shafts between them');
+  for (const q of sh) { let open = true; for (let x = q.x0; x <= q.x1; x++) { for (let y = q.top - 18; y <= q.bottom; y++) open = open && at(x, y) === T.AIR; open = open && at(x, q.bottom + 1) === T.SOLID; }
+    ok(open && q.x1 - q.x0 + 1 <= 3 && q.x1 - q.x0 + 1 >= 2, 'shaft ' + q.x0 + '-' + q.x1 + ': ' + (q.x1 - q.x0 + 1) + ' wide (a plain jump), ' + (q.bottom - q.top + 1) + ' deep to a floor (the spikes; the updraft throws you out - never a death)');
+    ok(at(q.x0 - 1, q.top) === T.SOLID && at(q.x1 + 1, q.top) === T.SOLID, 'shaft ' + q.x0 + ': a roof at its height on each side'); }
+  ok(KS.shaftPct >= 0.2 && KS.shaftPct <= 0.3 && KS.updraftV >= 300, 'a fall in costs ' + Math.round(KS.shaftPct * 100) + '% (A10) and the updraft throws you up at ' + KS.updraftV + ' px/s'); }
+/* HER NEW MOVES AND THE HAWK'S, in the fake world */
+{ const G2 = HM.geom(A, TS), at2 = { x: G2.roofs[1][0] + 60, y: G2.floorY }, mk2 = (m, hx) => { const e = { x: at2.x, y: G2.floorY, hp: 1000, maxHp: 1000, alive: true, face: -1, mode: 'recover', modeT: 0, open: 0 }; const S = HM.newFight(G2); S.hawk.x = e.x; S.hawk.y = G2.floorY - HM.HM.hawkAlt; S.script = [m]; S.step = 0; return { e, S, hero: [{ x: hx ?? e.x - 50, y: G2.floorY, ground: true, alive: true }] }; };
+  const run = (e, S, hero, c2, secs) => { for (let i = 0; i < secs * 60; i++) HM.stepHawkMistress(e, S, 1 / 60, hero, c2); };
+  const base = (o = {}) => Object.assign({}, c, { hit: () => true }, o);
+  { const { e, S, hero } = mk2('snare'); let dir = null; run(e, S, hero, base({ snare: d => { dir = d; return true; } }), 1.2); ok(dir !== null && S.n.snared === 1, 'THE WHIP SNARE: told (!!), it wraps a hero in reach and hands him to the yank'); }
+  { const { e, S, hero } = mk2('fan'); const seen = []; run(e, S, hero, base({ knife: k => { if (!seen.includes(k.key)) seen.push(k.key + ':' + k.ht); return null; } }), 2.5); const hts = new Set(seen.map(s => s.split(':')[1]));
+    ok(S.n.knives === 3 && hts.size >= 2, 'THE KNIFE FAN: three knives at their heights (' + seen.map(s => s.split(':')[1]).filter((v, i, a) => a.indexOf(v) === i).join(', ') + ')'); }
+  { const { e, S, hero } = mk2('keg'); let struck = false; run(e, S, hero, base({ keg: K => (!struck && Math.abs(K.x - hero[0].x) < 20 ? (struck = true, 'struck') : null) }), 4);
+    ok(struck && S.n.kegsBack === 1 && S.n.kegOpens === 1, 'THE KEG KICK: struck back, it rolls home and blows under her: OPEN (' + S.n.kegOpens + ')'); }
+  { const { e, S, hero } = mk2('keg'); run(e, S, hero, base({ keg: () => null }), 5); ok(S.n.kegOpens === 0 && !S.keg, 'a keg nobody strikes back opens nothing (it blows where it rolls)'); }
+  { const { e, S, hero } = mk2('rake'); let tried = 0; run(e, S, hero, base({ hawkAt: () => (S.hawk.mode === 'rake' && ++tried > 3 ? 'struck' : null) }), 2.5);
+    ok(S.n.flinches === 1 && S.n.opens === 1, 'THE RAKE DIVE: struck mid-dive, the hawk FLINCHES and is sent off - she whistles it back: OPEN'); }
+  { const { e, S, hero } = mk2('rake'); run(e, S, hero, base({ hawkAt: () => (S.hawk.mode === 'rake' ? 'blocked' : null) }), 2.5); ok(S.n.flinches === 1 && S.n.opens === 1, 'the rake turned on a shield: it flinches, she is open'); }
+  { const { e, S, hero } = mk2('rake'); run(e, S, hero, base({ hawkAt: () => null }), 3); ok(S.n.flinches === 0 && S.n.opens === 0, 'a rake stepped off opens nothing'); }
+  { const { e, S, hero } = mk2('snatch'); let carried = null; run(e, S, hero, base({ hawkAt: () => (S.hawk.mode === 'drop' ? 'hit' : null), carry: x => { carried = x; } }), 2.5);
+    ok(carried !== null && G2.shafts.some(([a, b]) => carried > a && carried < b), 'THE SNATCH: a caught hero is carried over a shaft and let go (x ' + Math.round(carried) + ')'); }
+  { const { e, S, hero } = mk2('snatch'); run(e, S, hero, base({ hawkAt: () => (S.hawk.mode === 'drop' ? 'struck' : null) }), 2.5); ok(S.n.flinches === 1 && S.n.opens === 1, 'the snatch struck as it drops: it flinches, she is open'); }
+  { const { e, S } = mk2('lash'); const far = [{ x: G2.roofs[0][0] + 40, y: G2.floorY, ground: true, alive: true }]; e.mode = 'walk'; e.modeT = 3; S.script = ['lash']; let leapt = false, inShaft = false;
+    for (let i = 0; i < 6 * 60; i++) { HM.stepHawkMistress(e, S, 1 / 60, far, base({ hit: () => false })); if (e.mode === 'leap') leapt = true; if (e.mode !== 'leap' && HM.overShaft(G2, e.x, 4)) inShaft = true; }
+    ok(leapt && HM.roofOf(G2, e.x) === 0 && !inShaft, 'she LEAPS the shaft after a hero on another roof and lands on his roof - never standing over a shaft (B12)'); }
+  const hsrc = readFileSync(new URL('../src/hawk-mistress-hands.js', import.meta.url), 'utf8');
+  ok(HM.HM.floor >= 0.4 && (hsrc.match(/return dmg \* HM\.floor;/g) || []).length === 2 && !/return 0; *}\s*\n\s*if \(HMM\.hmOpen/.test(hsrc), 'B15: her ward and her gauntlet turn a blow to ' + HM.HM.floor + 'x - never wholly');
+  const bot = (o) => HM.hmPlan(Object.assign({ e: mk2('lash').e, S: mk2('lash').S, gongs: [], racks: [], reach: 26, t: 9, mem: {}, rng: () => 0.99, v2: true }, o));
+  { const m = mk2('lash'); const o = HM.hmPlan({ P: { x: G2.shafts[0][0] - 6, y: G2.floorY, face: 1, ground: true, atk: -1 }, e: Object.assign(m.e, { x: G2.roofs[1][0] + 70, mode: 'walk' }), S: m.S, gongs: [], racks: [], reach: 26, t: 9, mem: {}, v2: true }); ok(o.jump, 'the bot JUMPS a shaft at its lip (' + o.why + ')'); }
+  { const m = mk2('lash'), mem = {}, q = t => HM.hmPlan({ P: { x: m.e.x - 40, y: G2.floorY, face: 1, ground: true, atk: -1, snared: true }, e: m.e, S: m.S, gongs: [], racks: [], reach: 26, t, mem, v2: true }); q(9); ok(q(9.5).jump, 'the bot jumps free of a snare (a beat late)'); void bot; } }
 for (const [m, v] of Object.entries(HM.MOVES)) { ok(MARK['hawkmistress|' + m] === v.mark, 'her ' + m + ' mark is src/marks.js\'s (' + v.mark + ')'); if (v.answer) ok(ANSWER['hawkmistress|' + m] === v.answer, 'her ' + m + ' answer is src/marks.js\'s'); }
 ok(MARK['hawkscout|diveTell'] === '!!', 'the hawk scout\'s stoop is a !! (src/marks.js)');
 ok(typeof OPEN_RULE.hawkmistress === 'function' && FULL_DAMAGE.hawkmistress, 'src/boss-greed.js: her opening (OPEN_RULE) and a duelist\'s full damage (FULL_DAMAGE; greed still counts)');
