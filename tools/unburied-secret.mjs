@@ -108,4 +108,4 @@ try {
   assert.ok(r.stub.plain >= 3 && r.stub.ghost === 0, 'the baked map must draw a dashed stub to a plain spur and NONE to a ghost (secret) spur: ' + JSON.stringify(r.stub));
   assert.deepEqual(pg.errors, []);
   console.log('The Unburied Field is a secret: ' + Object.keys(r.heroes).length + ' heroes take all three banners in the real loop; fresh save = dim spot, no path, no tip; 2/3 locked; 3/3 opens + toast + ghost-path; migrated saves keep it.');
-} finally { pg.close(); }
+} finally { await pg.close(); }
