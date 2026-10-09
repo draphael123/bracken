@@ -53,8 +53,8 @@ try {
        out.swing={took:+(h0-g.hp).toFixed(1),mode:g.mode,blows:(BK.log||[]).filter(q=>q.k==='dmgE'&&q.t==='gargoyle').length};}
       /* a plunge onto his back */
       {calm();const P=BK.P;P.onMover=null;P.ground=false;P.x=g.x;P.y=g.y-g.h-56;P.vy=0;const h0=g.hp;BK.log=[];keep();
-       key('keydown','ArrowDown');BK.sim(6);key('keydown','x');BK.sim(1);key('keyup','x');let i=0;for(;i<40;i++){keep();BK.sim(1);if(g.hp<h0)break;}key('keyup','ArrowDown');
-       const L=(BK.log||[]).filter(q=>q.k==='dmgE'&&q.t==='gargoyle');out.plunge={took:+(h0-g.hp).toFixed(1),plungeBlow:L.some(q=>q.plunge&&q.hp<q.hp0&&q.blow),mode:g.mode};
+       key('keydown','ArrowDown');BK.sim(6);key('keydown','x');BK.sim(1);key('keyup','x');let i=0;for(;i<60&&g.mode==='stunned';i++){keep();BK.sim(1);}key('keyup','ArrowDown');
+       const L=(BK.log||[]).filter(q=>q.k==='dmgE'&&q.t==='gargoyle');out.plunge={took:+(h0-g.hp).toFixed(1),plungeBlow:L.some(q=>q.plunge&&q.hp<q.hp0),mode:g.mode,ward:+(g.wardT||0).toFixed(2)};
        for(let k=0;k<200&&(P.windRide||!P.ground);k++){keep();BK.sim(1);}}
       /* a stomp: a plain fall onto his back */
       {if(g.mode!=='stunned')smash(low()[2]);calm();const P=BK.P;P.onMover=null;P.ground=false;P.x=g.x;P.y=g.y-g.h-40;P.vy=60;const h0=g.hp;keep();
@@ -73,7 +73,7 @@ try {
     ok(r.smash.mode === 'stunned' && r.smash.broken, hero + ': a slab left late puts him through it onto the spikes, stunned');
     ok(r.shards.n >= 3 && r.shards.atSlab && r.shards.left === 0 && r.shards.goneIn <= 2 && r.shards.lastAbove <= 24, hero + ': THE SLAB\'S PIECES are the world\'s: thrown where it broke, fallen to the spikes and shattered (none rides with him): ' + JSON.stringify(r.shards));
     ok(r.swing.took > 0, hero + ': ON THE SPIKES a swing from the air (X) lands: ' + JSON.stringify(r.swing));
-    ok(r.plunge.took > 0 && (r.plunge.plungeBlow || hero === 'pyro'), hero + ': ON THE SPIKES a plunge (down + X) lands - it was the 0 that pogoed you off him (the pyromancer\x27s is THE FIREDROP, an ember thrown down: it lands): ' + JSON.stringify(r.plunge));
+    ok(r.plunge.took >= GARG.stompDmg && r.plunge.plungeBlow && r.plunge.mode !== 'stunned' && r.plunge.ward > 0, hero + ': ON THE SPIKES a plunge (down + X) onto his back IS THE STOMP (' + GARG.stompDmg + ', he tears free, warded) - it was a 0, then a 10-20 pogo that lost you the stomp (the pyromancer FIREDROP ember may land on top of it): ' + JSON.stringify(r.plunge));
     ok(r.stomp.took >= GARG.stompDmg * 0.9 && r.stomp.mode !== 'stunned' && Math.abs(r.stomp.ward - GARG.ward) < 0.2, hero + ': and the stomp is still the big one (' + GARG.stompDmg + '), tears him free, WARDED ' + GARG.ward + ' s: ' + JSON.stringify(r.stomp));
     ok(!r.ward || (r.ward.mode !== 'crash' && r.ward.ward > 0), hero + ': while the ward holds the rune does not turn him over: ' + JSON.stringify(r.ward));
     ok(r.wardAfter === 0 && r.stunEnd.mode !== 'stunned' && Math.abs(r.stunEnd.secs - GARG.stun) < 0.4 && Math.abs(r.stunEnd.ward - GARG.ward) < 0.2, hero + ': the stun runs out after ' + GARG.stun + ' s into the same ward, and the ward lifts: ' + JSON.stringify(r.stunEnd) + ' after ' + r.wardAfter);
