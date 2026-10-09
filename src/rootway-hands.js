@@ -11,7 +11,7 @@
 import * as RWW from './redraw/rootway_world.js';   /* THE ROOTWAY's world art (the art pass): the machines, the furniture, the chasms' mist, the spore drops, what holds every ledge up */
 export const HOIST = { g: 900, vmax: 520, crush: 30, cageDmg: 16, caged: 1.0, winch: 8, winchV: 60, hunterFall: 8, daze: 1.8, dropTell: 0.45, under: 28 };
 export const HUNTER = { hp: 26, w: 10, h: 16, walk: 46, keep: 24, jabAt: 34, jabTell: 0.42, jab: 0.16, jabReach: 30, jabDmg: 10, lungeAt: 96, lungeFar: 200, lungeTell: 0.55, lunge: 0.42, lungeV: 230, lungeDmg: 12, recover: 0.5, cd: 1.3, lungeCd: 2.4 };
-export const LOOKOUT = { respawn: 4 };
+export const LOOKOUT = { respawn: 4, sight: 320 };   /* (rootwayfix, Daniel 10-09: the scout saw 230 px; the checkpoint is 272 px from his post, so a hero there saw a gap, no scout and no arrow - he sees from the checkpoint now) */
 
 export function makeRootwayHands(ctx) {
   const TS = ctx.TS, H = {};
@@ -34,7 +34,7 @@ export function makeRootwayHands(ctx) {
     /* the hunters on their hoists, and the lookout's scout */
     for (const e of ctx.enemies()) { if (!e.alive) continue;
       if (e.t === 'trophyhunter' && e.st && e.st.hang) { const h = hs.get(e.st.hang); if (h && h.state === 'hang') h.hunter = e; else { e.st.hang = null; e.st.mode = 'fall'; e.noGrav = false; } }
-      if (e.t === 'archer') { const d = (lv.hoists || []).find(q => q.post && Math.abs(q.post[0] * TS + 8 - e.x) < 3 * TS && Math.abs((q.post[1] + 1) * TS - e.y) < 2 * TS); if (d) e.rwLookout = d.id; } }
+      if (e.t === 'archer') { const d = (lv.hoists || []).find(q => q.post && Math.abs(q.post[0] * TS + 8 - e.x) < 3 * TS && Math.abs((q.post[1] + 1) * TS - e.y) < 2 * TS); if (d) { e.rwLookout = d.id; e.sight = LOOKOUT.sight; } } }
     if (S.loft && S.loft.open) for (const v of (lv.vaultDoors || [])) for (let y = v.y0; y <= v.y1; y++) for (let x = v.x0; x <= v.x1; x++) ctx.cellSet(x, y, ctx.T.AIR);
   };
   H.load = () => { S = null; H.reset(); };
@@ -101,7 +101,7 @@ export function makeRootwayHands(ctx) {
     /* THE LOOKOUT IS MANNED: if its scout falls before its span is down, another takes the post (never a soft-lock) */
     for (const h of S.hs.values()) { const d = h.d; if (!d.post || h.state !== 'hang') continue;
       if (ctx.enemies().some(e => e.alive && e.rwLookout === h.id)) { S.lookT = 0; continue; }
-      S.lookT += dt; if (S.lookT >= LOOKOUT.respawn) { S.lookT = 0; const got = ctx.spawn({ t: 'archer', x: d.post[0], y: d.post[1], face: -1, cnSkin: 'gobscout' }); for (const e of got) e.rwLookout = h.id; S.n.lookouts++;
+      S.lookT += dt; if (S.lookT >= LOOKOUT.respawn) { S.lookT = 0; const got = ctx.spawn({ t: 'archer', x: d.post[0], y: d.post[1], face: -1, cnSkin: 'gobscout' }); for (const e of got) { e.rwLookout = h.id; e.sight = LOOKOUT.sight; } S.n.lookouts++;
         ctx.number(d.post[0] * TS + 8, d.post[1] * TS - 10, 'ANOTHER SCOUT TAKES THE POST', '#ff9a5c'); } }
   };
 

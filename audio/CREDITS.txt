@@ -283,8 +283,10 @@ THE BANDIT KSAR (2026-10-07, claude/ksar art pass, Daniel's pick; he approved th
   Credit: "Desert Loop" by iamoneabe (OpenGameArt.org), CC0. Changes: mono; encoded to OGG Vorbis q4 (64 s, loops).
 
 THE ROOTWAY (2026-10-07, claude/rootway, Daniel approved the download):
-- rootway.ogg = "Lanterns in the Hollowed Forest" (the loop version) by Tsorthan Grove, CC0 (public domain; credited all the same) - https://opengameart.org/content/lanterns-in-the-hollowed-forest - THE ROOTWAY's level track.
-  Changes: mono; encoded to OGG Vorbis (72 kbps). The Huntmaster keeps his composed-in-code theme (boss3).
+- rootway.ogg = "Forest Whisper Theme" (Forest Whisper.ogg, the loop) by Cleyton Kauffman, CC0 (public domain; credited all the same) - https://opengameart.org/content/forest-whisper-theme (licence read on the track page 2026-10-09: "CC0"; page notice "Music by Cleyton Kauffman - soundcloud.com/cleytonkauffman").
+  Changes: mono; gain +7.3 dB with a -1 dBFS limiter (integrated -24.2 LUFS, as the other level tracks); encoded to OGG Vorbis q4. The earlier "Lanterns in the Hollowed Forest" copy (rootway.ogg) is replaced; canal.ogg keeps the Lanterns track.
+- huntmaster.ogg = "Call to War" (call_to_war.wav) by Umplix, CC0 (public domain; credited all the same) - https://opengameart.org/content/call-to-war (licence read on the track page 2026-10-09: "CC0", snare and horn samples, a battle theme) - THE GOBLIN HUNTMASTER's fight (replaces the shared composed boss3 in his arena).
+  Changes: the 9.5 s opening plays once (TRACK_INTRO), then the 62 s body loops (31 bars at 120 bpm, cut on the beat before the track's ending tail); mono; gain -1.6 dB with a -1 dBFS limiter (integrated -15.5 LUFS, as winchmaster.ogg); encoded to OGG Vorbis q4.
 
 THE LIT CHURCH (2026-10-08, claude/churchart, Daniel's picks; he approved the download and both licences were re-read on the pages today):
 - litchurch.ogg = "Cathedral" by Umplix, CC0 (public domain, credited all the same) - https://opengameart.org/content/cathedral-0 - THE LIT CHURCH's level track (the church only; THE PALADIN's fight has the next one).

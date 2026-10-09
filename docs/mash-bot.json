@@ -8343,7 +8343,7 @@
   }
  },
  "rootway": {
-  "hash": "269d8b9e4e46",
+  "hash": "d133df87a09a",
   "boss": {
    "boss": "huntmaster",
    "wins": 0,
@@ -8443,22 +8443,16 @@
     }
    ]
   },
-  "carried": {
-   "from": "d1084c7215b6",
-   "parts": [
-    "boss"
-   ]
-  },
   "level": {
    "knight": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 200,
-    "hits": 17,
+    "hpLostPct": 211,
+    "hits": 19,
     "walked": 100,
     "lifts": 30,
-    "held": 6,
-    "duels": 2,
+    "held": 9,
+    "duels": 3,
     "boardLifts": 6,
     "rides": 7,
     "pulls": 0,
@@ -8466,15 +8460,15 @@
      "growcap": 7
     },
     "machines": true,
-    "frames": 15976,
+    "frames": 19576,
     "kills": 7,
     "heroLevel": 4
    },
    "warden": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 178,
-    "hits": 18,
+    "hpLostPct": 165,
+    "hits": 17,
     "walked": 100,
     "lifts": 26,
     "held": 6,
