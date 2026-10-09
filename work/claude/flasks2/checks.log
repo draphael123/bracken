@@ -1,0 +1,145 @@
+=== STORE_WRITE=1 node tools/store.mjs
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: main.js STORE_TABS and src/store.js TABS disagree: heroes,skins,weapons,charms,skills,smith,music,practice vs heroes,skins,weapons,charms,skills,smith,flasks,music,practice
++ actual - expected
+
+  [
+    'heroes',
+    'skins',
+    'weapons',
+    'charms',
+    'skills',
+    'smith',
+-   'flasks',
+    'music',
+    'practice'
+  ]
+
+    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-flasks2/tools/store.mjs:29:10
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:643:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'heroes',  'skins',
+    'weapons', 'charms',
+    'skills',  'smith',
+    'music',   'practice'
+  ],
+  expected: [
+    'heroes',   'skins',
+    'weapons',  'charms',
+    'skills',   'smith',
+    'flasks',   'music',
+    'practice'
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+=== exit 1 STORE_WRITE=1 node tools/store.mjs
+=== node tools/store.mjs
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: main.js STORE_TABS and src/store.js TABS disagree: heroes,skins,weapons,charms,skills,smith,music,practice vs heroes,skins,weapons,charms,skills,smith,flasks,music,practice
++ actual - expected
+
+  [
+    'heroes',
+    'skins',
+    'weapons',
+    'charms',
+    'skills',
+    'smith',
+-   'flasks',
+    'music',
+    'practice'
+  ]
+
+    at file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-flasks2/tools/store.mjs:29:10
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:643:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'heroes',  'skins',
+    'weapons', 'charms',
+    'skills',  'smith',
+    'music',   'practice'
+  ],
+  expected: [
+    'heroes',   'skins',
+    'weapons',  'charms',
+    'skills',   'smith',
+    'flasks',   'music',
+    'practice'
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
+=== exit 1 node tools/store.mjs
+=== node tools/survival.mjs
+{"spike":{"spike":[249,13],"stand":[243,13],"lost":27,"max":100,"want":27,"back":true,"safe":{"x":3896,"y":224},"at":[3896,224],"dead":false,"safeBy":[3896,224]},"spikeArmour":{"spike":[249,13],"stand":[243,13],"lost":27,"max":100,"want":27,"back":true,"safe":{"x":3896,"y":224},"at":[3896,224],"dead":false,"safeBy":[3896,224]},"water":{"pool":true,"lost":27,"want":27,"back":true,"dead":false},"exam":{"spike":[560,27],"dead":true,"killer":"THE SPIKES","told":1},"flask":{"start":1,"max":1,"drank":true,"after":2,"maxUp":3,"api":true,"rooted":true,"heal":35,"want":35,"swallowF":30,"swallowWant":30,"done":true,"spill":{"spent":1,"healed":0,"drinking":false},"key":true,"auto":{"flasks":3,"hp":20},"empty":false},"dry":{"shrine":{"lit":true,"hp":40,"flasks":2,"st":true},"again":0,"r":{"hp":50,"flasks":1,"at":true},"rLife":0,"death":{"hp":100,"max":100,"flasks":3},"heart":12,"heartWant":12,"kill":3},"brk":{"cpS2":true,"prompt":true,"tap":{"broken":false,"flasks":3},"broke":{"broken":true,"frames":60,"want":60,"flasks":4,"max":3,"cpS1":true,"told":true},"relight":{"lit":false,"cpS1":true},"walkPast":true,"death":{"x":true,"flasks":4,"still":true},"preBlock":"the pre-boss shrine stays","preBroken":false,"fightBlock":"not in a boss fight","mended":true},"stam":{"rate":89.9999999999999,"max":100}}
+SURVIVAL: flask +35 at frame 30, committed, spills, U/LT/phone; shrines dry, death full, R carries, heart +12, charm +3.
+SURVIVAL2: one flask (smith: 3), a shrine gives one a life, a death all; BREAK held 60 f -> 4/3, checkpoint back, walks past, pre-boss and fight refused; stamina 90.0/s.
+SURVIVAL: hazards 27/100 (armoured 27/100), water 27, both hand back; the exam kills and is told; 1 exam span(s), none untold.
+=== exit 0 node tools/survival.mjs
+=== node tools/leveling.mjs
+  curve L1..50: 1:330 5:3380 10:9270 16:17610 20:23880 24:30620 25:32380 30:41530 32:45350 40:61500 50:83400
+  card L24 even (8/8/8): +112 hp +144 st +16 dmg (old +88/+120/+14); all-vigor: +240 hp
+  skill ranks 2+3 for every ability of every hero: 86230 gold (knight alone 14930)
+  bank stake on death: bank 1k 125, 2k 300, 5k 300
+Leveling: the curve to fifty never rises, the card beats the old growth evenly spread and caps at 25, ten milestones (L5-L20 small, L25-L50 big) each offer two untaken perks and one of the hero own kit (ranks to 5), thresholds fire at 10 and 20 picks, the card counts the levels to the next perk, the soft cap halves at E+3 and fifths at E+6, a third slot at 16 (three at most; an old fourth is unslotted, not lost), a new game owns one hero and co-op opens with the second, old saves keep heroes, co-op and a free respec.
+=== exit 0 node tools/leveling.mjs
+=== node tools/hint-shown.mjs
+hint-shown source: 1560 number() literals the filter drops: 672 routed to the hint box, 888 old silent flavour (none new)
+hint-shown OK: HE IS OPEN, STRIKE ITS LEVER, THE FIRE IS OUT - GO, THE GOBLIN QUEEN: OPEN and a counted line are drawn in the page; a flavour line is not
+=== exit 0 node tools/hint-shown.mjs
+=== node tools/level-jump.mjs
+  marsh campaign: L3 114hp shieldThrow gear[] tonics 1 charm null flasks 1 tag "CAMPAIGN L3 - THE KNIGHT"
+  causeway campaign: L22 249hp swordOfRealm+groundSlam+lunge gear[heart,wind,edge,edge2,edge3,mail,plate] tonics 5 charm heart flasks 3 tag "CAMPAIGN L22 - THE KNIGHT"
+ok  level-jump  ?level=theatre&hero=pyro lands in play at the entrance, at full health, no god mode; run to the gate, the save is byte-identical; a bad id starts nothing
+=== exit 0 node tools/level-jump.mjs
+=== node tools/textfit.mjs
+79 hint messages read out of src/main.js
+  scope hints             79 screens  8.4s
+  scope bestiary         260 screens  23.0s
+  scope store            768 screens  46.1s
+  scope tree             185 screens  23.5s
+  scope pick               3 screens  3.5s
+  scope trial              7 screens  14.7s
+  scope erase              5 screens  3.9s
+  scope opening            4 screens  0.2s
+  scope press              1 screens  0.2s
+  scope mapcard           43 screens  72.5s
+  scope death              7 screens  2.8s
+  scope results            1 screens  3.7s
+  scope card              59 screens  8.1s
+  scope slots             10 screens  2.7s
+  scope practice           8 screens  0.4s
+  scope bossjump          63 screens  15.8s
+  scope menu              18 screens  8.9s
+  scope settings         148 screens  10.3s
+  scope soundtest        121 screens  4.7s
+  scope credits           11 screens  1.8s
+  scope hud               30 screens  8.4s
+
+TEXTFIT SCOPE "boss" FAILED after 481s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+
+TEXTFIT SCOPE "plates" FAILED after 487s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+
+TEXTFIT SCOPE "talk[knight]" FAILED after 487s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+
+TEXTFIT SCOPE "talk[warden]" FAILED after 487s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+=== exit 1 node tools/textfit.mjs
+ALLDONE

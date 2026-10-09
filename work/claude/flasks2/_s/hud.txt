@@ -1,0 +1,10 @@
+    hudShow(); flaskRowEnd = 4; flaskRowRect = null; if (flaskN) { const fm = SV.flaskMax(PROG), fn = P.flasks | 0, dt0 = 1 / 60;   /* THE FLASK ROW (claude/flasks2, Daniel 10-08: "the number of flasks isn't clear - the abilities cover it up"): its OWN row under the health and stamina bars (y 20-28, HUD-SLIM's slot), the skill slots never over it (x >= 70, y <= 20). A bottle a flask - full red, drunk an empty glass, OVER the max (a broken shrine's) gold - and the count beside them. It FLASHES when flasks come back (a shrine, a death, a buy) and SHAKES RED when one is spilled */
+      if (flaskHud.last >= 0 && fn > flaskHud.last && state === 'play') flaskHud.flashT = Math.max(flaskHud.flashT, 0.8); flaskHud.last = fn;
+      const sh = flaskHud.spillT > 0 ? Math.round(Math.sin(time * 70) * 2 * Math.min(1, flaskHud.spillT / 0.3)) : 0, R = F2.rowLayout(fn, fm, { x: 4 + sh, y: 20, numW: inkW('0', TYPE.label) });
+      if (hudMin) hudStrip(R.x, R.y, R.w, R.h); else hudRects.push([R.x, R.y, R.w, R.h]);   /* a strip behind it in the MINIMAL HUD: never floating on the scene */
+      for (const b of R.bottles) g.drawImage(b.kind === 'over' ? PROP.hudFlaskGold : b.kind === 'full' ? PROP.hudFlask : PROP.hudFlaskEmpty, b.x, b.y);
+      text(R.num.s, R.num.x, R.num.y - 1, flaskHud.spillT > 0 ? '#ff6b6b' : fn > fm ? '#ffd36b' : fn ? '#fff6e0' : '#9aa39a', 'left', TYPE.label, HS);
+      if (flaskHud.flashT > 0) { g.globalAlpha = Math.min(1, flaskHud.flashT) * 0.55; g.fillStyle = '#fff6c8'; g.fillRect(R.x, R.y, R.w, R.h); g.globalAlpha = 1; }
+      if (flaskHud.spillT > 0) { g.globalAlpha = Math.min(1, flaskHud.spillT * 2) * 0.45; g.fillStyle = '#ff3030'; g.fillRect(R.x, R.y, R.w, R.h); g.globalAlpha = 1; }
+      if (state === 'play') { flaskHud.flashT = Math.max(0, flaskHud.flashT - dt0); flaskHud.spillT = Math.max(0, flaskHud.spillT - dt0); }
+      flaskRowEnd = R.x + R.w + 1; flaskRowRect = [R.x - sh, R.y, R.w, R.h]; }

@@ -66,7 +66,7 @@ export const MINOR_PERKS = [
  { id: 'climber', name: 'CLIMBER', what: 'ROPES AND VINES: A QUARTER FASTER', minor: true },
  { id: 'buffer', name: 'BUFFER', what: 'A PRESS IS KEPT A LITTLE LONGER', minor: true },
  { id: 'rest', name: 'BREATHER', what: 'STAMINA WAITS A FIFTH LESS TO RETURN', minor: true },
- { id: 'tonic', name: 'RICH FLASK', what: 'A FLASK HEALS 45%, NOT 35%', minor: true },
+ { id: 'tonic', name: 'SECOND DRAUGHT', what: 'A FLASK ALSO REFILLS YOUR STAMINA', minor: true },   /* (claude/flasks2, Daniel 10-09: RICH FLASK folded into the store's POTENCY tiers - the card is a non-heal flask perk now; a save that took RICH FLASK keeps this pick, same id) */
  { id: 'grit', name: 'GRIT', what: 'AFTER A HIT YOU ARE SAFE A MOMENT LONGER', minor: true },
 ];
 /* THE HERO'S OWN: at every milestone ONE of the three is the hero's (the third, marked). Two per hero, alternating by milestone, and each pick adds

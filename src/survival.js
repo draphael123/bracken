@@ -15,7 +15,7 @@
 //                  IN AN EXAM (L.examSpans, tile columns [x0, x1]) or a wood with L.fallRule === 'death', SPIKES ARE A REAL DEATH. Never untold:
 //                  the exam says so as you walk in, and tools/survival.mjs fails a span that has no hurt spikes before it to teach them.
 
-export const FLASK = { base: 1, extraMax: 2, heal: 0.35, richHeal: 0.45, drinkT: 0.45, swallowAt: 0.3 };   /* GAME seconds: at the default game speed (0.6) the drink is 0.75 s on the clock, the swallow at 0.5 s */
+export const FLASK = { base: 1, extraMax: 3, heal: 0.35, richHeal: 0.45, drinkT: 0.45, swallowAt: 0.3 };   /* GAME seconds: at the default game speed (0.6) the drink is 0.75 s on the clock, the swallow at 0.5 s */
 /* (claude/survival2, Daniel 10-07 A10b, after playing the pilot Marsh) ONE flask to start; the smith's EXTRA FLASK makes two more (PROG.flaskUp
    0..extraMax -> max 3). A SHRINE REACHED gives back ONE (once a shrine a life); a DEATH gives back ALL (to max); a BROKEN shrine gives +1 that may
    stand over the max until it is drunk (a death keeps a flask over the max that was not drunk: max(held, max)). */
@@ -24,7 +24,7 @@ export const flaskMax = prog => FLASK.base + Math.max(0, Math.min(FLASK.extraMax
 export const shrineRefill = (held, max) => Math.max(held | 0, Math.min(max, (held | 0) + 1));
 /* a death: all of them back, and a broken shrine's extra that was not drunk stays */
 export const deathRefill = (held, max) => Math.max(held | 0, max);
-export const flaskHeal = (maxHp, rich) => Math.max(1, Math.round(maxHp * (rich ? FLASK.richHeal : FLASK.heal)));
+export const flaskHeal = (maxHp, rich) => Math.max(1, Math.round(maxHp * (typeof rich === 'number' ? rich : rich ? FLASK.richHeal : FLASK.heal)));   /* (claude/flasks2) rich: the heal share itself (src/flasks2.js healPct), or the old true/false */
 
 export const HEART_PCT = 0.12;
 export const heartHeal = maxHp => Math.max(1, Math.round(maxHp * HEART_PCT));

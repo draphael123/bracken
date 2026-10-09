@@ -1,0 +1,84 @@
+=== STORE_WRITE=1 node tools/store.mjs
+ONE STORE: rules, six doors (map V/Q, wood Q, pause Store/Skills, four keepers) open the one store, fights refuse it, TAB/E/Q tabs, stock gated by progress (golden table), two old saves open intact, buying works, browsing is free.
+=== exit 0 STORE_WRITE=1 node tools/store.mjs
+=== node tools/store.mjs
+ONE STORE: rules, six doors (map V/Q, wood Q, pause Store/Skills, four keepers) open the one store, fights refuse it, TAB/E/Q tabs, stock gated by progress (golden table), two old saves open intact, buying works, browsing is free.
+=== exit 0 node tools/store.mjs
+=== TEXTFIT_PAGES=1 TEXTFIT_SCOPE_TIMEOUT=1500 node tools/textfit.mjs
+79 hint messages read out of src/main.js
+  scope hints             79 screens  2.4s
+  scope bestiary         260 screens  10.6s
+  scope store            768 screens  12.9s
+  scope tree             185 screens  4.0s
+  scope pick               3 screens  0.9s
+  scope trial              7 screens  2.0s
+  scope erase              5 screens  0.7s
+  scope opening            4 screens  0.1s
+  scope press              1 screens  0.0s
+  scope mapcard           43 screens  27.2s
+  scope death              7 screens  1.4s
+  scope results            1 screens  2.9s
+  scope card              59 screens  5.5s
+  scope slots             10 screens  2.6s
+  scope practice           8 screens  0.3s
+  scope bossjump          63 screens  9.7s
+  scope menu              18 screens  4.5s
+  scope settings         148 screens  5.8s
+  scope soundtest        121 screens  6.2s
+  scope credits           11 screens  1.8s
+  scope hud               30 screens  11.6s
+  scope boss            1590 screens  140.9s
+  scope plates          1272 screens  116.8s
+  scope talk[knight]     673 screens  96.5s
+  scope talk[warden]     673 screens  112.9s
+  scope talk[pyro]       673 screens  69.7s
+  scope talk[paladin]    673 screens  78.9s
+  scope talk[pirate]     673 screens  75.9s
+  scope talk[reaper]     673 screens  92.9s
+  scope bossfix          225 screens  35.2s
+
+== OVERFLOW (13)
+  main.js:5091    store map [knight] tab1 #1                                   "BRACKEN BLUE" +16px  (x84)
+  main.js:5091    store map [knight] tab1 #8                                   "BLACK KNIGHT" +14px  (x12)
+  main.js:5091    store map [knight] tab1 #9                                   "VIOLET KNIGHT" +16px  (x12)
+  main.js:5091    store map [knight] tab1 #11                                  "MARSH GREEN" +12px  (x12)
+  main.js:5091    store map [knight] tab1 #12                                  "ROSE KNIGHT" +8px  (x12)
+  main.js:5091    store map [knight] tab1 #13                                  "CRIMSON GUARD" +23px  (x12)
+  main.js:5091    store map [knight] tab1 #15                                  "FROST PLATE" +7px  (x12)
+  main.js:5091    store map [knight] tab5 #1                                   "HEART OF OAK" +13px  (x96)
+  main.js:5091    store map [knight] tab6 #1                                   "EXTRA FLASK I" +16px  (x96)
+  main.js:5091    store map [knight] tab7 #1                                   "STAGE SELECT" +12px  (x24)
+  main.js:5091    store map [knight] tab8 #1                                   "THE HERO'S TRIAL" +30px  (x12)
+  main.js:24920   boss fight welltown arena                                    "E: DRINK" +24px  (x24)
+  main.js:24920   boss fight underwell arena                                   "E: POUR" +20px  (x30)
+
+== COVERS (2)
+  main.js:30311   talk fallingtower sign@34,300 [knight] page 1/1              "CRACKED STONE COUNTS DOWN UNDER YOU - 3, 2, 1 - AND" lines 3
+  main.js:30311   talk fair sign@405,12 [knight] page 1/1                      "THE HAYLOFT. SHOW 12 TICKETS." lines 2
+
+== COLLIDE (20)
+  main.js:5061    store map [knight] tab0 #0                                   "PRACTICE" x "THE KNIGHT" (main.js:5091)  (x84)
+  main.js:5061    store map [knight] tab1 #0                                   "PRACTICE" x "BRACKEN BLUE" (main.js:5091)  (x96)
+  main.js:5061    store map [knight] tab1 #8                                   "PRACTICE" x "BLACK KNIGHT" (main.js:5091)  (x12)
+  main.js:5061    store map [knight] tab1 #9                                   "PRACTICE" x "VIOLET KNIGHT" (main.js:5091)  (x12)
+  main.js:5061    store map [knight] tab1 #10                                  "PRACTICE" x "RIVER BLUE" (main.js:5091)  (x12)
+  main.js:5061    store map [knight] tab1 #11                                  "PRACTICE" x "MARSH GREEN" (main.js:5091)  (x12)
+  main.js:5061    store map [knight] tab1 #12                                  "PRACTICE" x "ROSE KNIGHT" (main.js:5091)  (x12)
+  main.js:5061    store map [knight] tab1 #13                                  "PRACTICE" x "CRIMSON GUARD" (main.js:5091)  (x12)
+  main.js:5061    store map [knight] tab1 #14                                  "PRACTICE" x "VERDANT" (main.js:5091)  (x12)
+  main.js:5061    store map [knight] tab1 #15                                  "PRACTICE" x "FROST PLATE" (main.js:5091)  (x12)
+  main.js:5061    store map [knight] tab1 #16                                  "PRACTICE" x "SHADOW" (main.js:5091)  (x24)
+  main.js:5061    store map [knight] tab2 #0                                   "PRACTICE" x "STEEL" (main.js:5091)  (x108)
+  main.js:5061    store map [knight] tab3 #0                                   "PRACTICE" x "NONE" (main.js:5091)  (x84)
+  main.js:5061    store map [knight] tab5 #0                                   "PRACTICE" x "HEART OF OAK" (main.js:5091)  (x108)
+  main.js:5061    store map [knight] tab6 #0                                   "PRACTICE" x "EXTRA FLASK I" (main.js:5091)  (x108)
+  main.js:5061    store map [knight] tab7 #0                                   "PRACTICE" x "STAGE SELECT" (main.js:5091)  (x36)
+  main.js:5061    store map [knight] tab8 #0                                   "PRACTICE" x "THE HERO'S TRIAL" (main.js:5091)  (x24)
+  main.js:5061    tree [knight] tab0 #0                                        "PRACTICE" x "EMPTY" (main.js:4987)  (x185)
+  main.js:2793    boss fight marsh arena                                       "THE WAY IS OPEN" x "FELLED BY A TRAP" (main.js:30661)  (x2)
+  main.js:2794    boss fight marsh arena                                       "THE IRONBACK" x "LOOK FOR THE TRAP BEFORE YOU STEP" (main.js:30661)
+
+8956 screens drawn, 100970 strings measured, 933s. OVERFLOW 13  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 2  COLLIDE 20  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+38 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-flasks2\audits\readability\textfit
+=== exit 0 TEXTFIT_PAGES=1 TEXTFIT_SCOPE_TIMEOUT=1500 node tools/textfit.mjs
+ALLDONE

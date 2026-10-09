@@ -13,7 +13,7 @@
  *      golden table in tools/store-stock.json (the stock the three rooms and the equip board always had).
  *   G. OLD SAVES: two seeded saves (a batch50-era one and a version-0 one with bought skills and training) open the store with
  *      everything they owned and everything they could buy, through every entry.
- *   H. BUYING STILL WORKS (a skin, an edge, an extra flask - the old tonic line, an ability) and BROWSING COSTS NOTHING: the whole save and the slot's text are
+ *   H. BUYING STILL WORKS (a skin, an edge, an extra flask - the old tonic line, on the FLASKS tab since claude/flasks2, an ability) and BROWSING COSTS NOTHING: the whole save and the slot's text are
  *      byte-identical after every entry, every tab and every row has been looked at.
  */
 import assert from 'node:assert/strict';
@@ -25,7 +25,7 @@ const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 
 /* ---------- A. the rules ---------- */
 {
-  const ids = [...main.matchAll(/\{ id: '([a-z]+)', name: '([A-Z]+)', items: [A-Za-z_\[\]]+, key: (?:'[a-z]+'|null), owned: '[a-z]+'/g)].map(m => m[1]);
+  const ids = [...main.matchAll(/\{ id: '([a-z]+)', name: '([A-Z]+)', items: [A-Za-z_\[\]]+, key: (?:'[a-z]+'|null), owned: '[A-Za-z]+'/g)].map(m => m[1]);
   assert.deepEqual(ids, S.TAB_IDS, 'main.js STORE_TABS and src/store.js TABS disagree: ' + ids + ' vs ' + S.TAB_IDS);
   assert.deepEqual(S.TAB_IDS.slice(0, 5), ['heroes', 'skins', 'weapons', 'charms', 'skills'], "Daniel's five tabs come first, in order");
   for (const [k, e] of Object.entries(S.ENTRIES)) assert.ok(S.TAB_IDS.includes(e.tab), 'entry ' + k + ' opens a tab that does not exist: ' + e.tab);
@@ -165,7 +165,7 @@ for(const [name,old] of Object.entries(SEEDS)){
   if(!open(how)){rec.problems.push(how+': did not open');continue;}
   const R=BK.ui.storeRows();rec.entries[how]=JSON.stringify(R);
   /* EVERYTHING IT OWNED is owned, and what it wore is worn; EVERYTHING IT COULD BUY is buyable; what was locked is locked */
-  for(const t of R){const tabName=t.id==='skills'?null:t.id;if(!tabName)continue;const ownedKey={heroes:'heroes',skins:'skins',weapons:'swords',charms:'charms',smith:'items',music:'music',practice:null}[t.id];
+  for(const t of R){const tabName=t.id==='skills'?null:t.id;if(!tabName)continue;const ownedKey={heroes:'heroes',skins:'skins',weapons:'swords',charms:'charms',smith:'items',flasks:'flaskItems',music:'music',practice:null}[t.id];
    for(const k of t.rows){const had=ownedKey&&old[ownedKey]&&old[ownedKey][k.id];const wearKey={heroes:'hero',skins:'skin',weapons:'sword',charms:'charm',music:'menu'}[t.id];
     if(k.id==='none'||(t.id==='smith'&&k.id==='tonic')||t.id==='practice')continue;
     if(had&&!(k.state==='owned'||k.state==='equipped'))rec.problems.push(how+': '+t.id+'/'+k.id+' was owned, shows '+k.state);
@@ -185,7 +185,7 @@ for(const [name,old] of Object.entries(SEEDS)){
 /* H. buying still works, from the map */
 localStorage.clear();localStorage.setItem('bracken.progress.0',JSON.stringify(SEEDS.batch50));BK.loadSlot(0);BK.applyUpgrades();BK.state='map';BK.load(0);
 {const P=BKT.PROG,buy=(tab,id)=>{BK.ui.storeOpen('map',tab);const t=BK.ui.storeRows().find(q=>q.id===tab);BK.ui.storeI=t.rows.findIndex(k=>k.id===id);BK.step(2);const c=P.coins;BK.press('confirm');BK.sim(1);BK.press('pause');BK.sim(2);return c-P.coins;};
- out.buy={skin:buy('skins','purple'),edge:buy('smith','edge2'),tonic:buy('smith','tonic'),weapon:buy('weapons','ember'),own:{purple:!!P.skins.purple,edge2:!!P.items.edge2,ember:!!P.swords.ember,flaskUp:P.flaskUp,skin:P.skin},
+ out.buy={skin:buy('skins','purple'),edge:buy('smith','edge2'),tonic:buy('flasks','tonic'),weapon:buy('weapons','ember'),own:{purple:!!P.skins.purple,edge2:!!P.items.edge2,ember:!!P.swords.ember,flaskUp:P.flaskUp,skin:P.skin},
   locked:buy('smith','mail'),mail:!!P.items.mail};
  BK.ui.storeOpen('map','skills');BK.ui.treeTab=0;const ns0=BKT.treeNodes(),ix=ns0.findIndex(n=>n.active&&!(P.skillOwned.knight||{})[n.id]&&n.level<=BKT.heroLevel()&&n.price<=P.coins);BK.ui.treeI=ix;const n0=ns0[ix],c0=P.coins;BK.step(2);BK.press('confirm');BK.sim(1);out.buy.skill=[c0-P.coins===n0.price,!!P.skillOwned.knight[n0.id]];}
 out.errors=[];return out;})()`);

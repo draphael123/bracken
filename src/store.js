@@ -28,6 +28,7 @@ export const TABS = [
   { id: 'charms',   name: 'CHARMS' },
   { id: 'skills',   name: 'SKILLS' },
   { id: 'smith',    name: 'SMITH' },
+  { id: 'flasks',   name: 'FLASKS' },   /* (claude/flasks2) the flask's count, potency and perks: src/flasks2.js */
   { id: 'music',    name: 'MUSIC' },
   { id: 'practice', name: 'PRACTICE' },
 ];

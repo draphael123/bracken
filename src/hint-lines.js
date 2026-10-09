@@ -21,6 +21,8 @@ export const CALL_LINES = new Set([
   'THE BELL IS SWINGING', 'IT IS NOT UNDER THE BELL', 'IT RAISES STONE', 'THE GUARDIAN WAKES FULLY', 'THE STAIR GOES OUT FROM UNDER HIM', 'THE OFFERING COMES DOWN',
   /* claude/survival2: the manual flask and the exam spikes (src/main.js drinkFlask, shrine break, SV.examAt) - routed so the player can see them */
   'NO FLASKS', 'FULL', 'SPILLED', 'SHRINE BROKEN  +1 FLASK', 'THE SPIKES KILL HERE',
+  /* claude/flasks2: STEADY HAND kept the flask through a blow (src/main.js spillFlask) */
+  'STEADY HAND',
   /* claude/slide: the first slope a hero stands on */
   'HOLD DOWN TO SLIDE: FEET FIRST',
   /* claude/weight: the bar hit 0 - EXHAUSTED (src/commit.js): no roll and no guard until it is back to 30% */

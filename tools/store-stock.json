@@ -375,13 +375,74 @@
     "silver": false,
     "needs": "mage",
     "feat": null
-   },
+   }
+  ]
+ },
+ {
+  "id": "flasks",
+  "rows": [
    {
     "id": "tonic",
     "price": 150,
     "silver": false,
     "needs": null,
     "feat": null
+   },
+   {
+    "id": "extra2",
+    "price": 300,
+    "silver": false,
+    "needs": null,
+    "feat": "flask:extra2"
+   },
+   {
+    "id": "extra3",
+    "price": 450,
+    "silver": false,
+    "needs": null,
+    "feat": "flask:extra3"
+   },
+   {
+    "id": "rich",
+    "price": 200,
+    "silver": false,
+    "needs": null,
+    "feat": "flask:rich"
+   },
+   {
+    "id": "distilled",
+    "price": 400,
+    "silver": false,
+    "needs": null,
+    "feat": "flask:distilled"
+   },
+   {
+    "id": "sunlight",
+    "price": 500,
+    "silver": false,
+    "needs": null,
+    "feat": "flask:sunlight"
+   },
+   {
+    "id": "quick",
+    "price": 250,
+    "silver": false,
+    "needs": null,
+    "feat": "flask:quick"
+   },
+   {
+    "id": "steady",
+    "price": 300,
+    "silver": false,
+    "needs": null,
+    "feat": "flask:steady"
+   },
+   {
+    "id": "blessing",
+    "price": 250,
+    "silver": false,
+    "needs": null,
+    "feat": "flask:blessing"
    }
   ]
  },

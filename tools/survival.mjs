@@ -43,7 +43,7 @@ assert.ok(spans >= 1, 'no wood marks an exam span');
   const P = { hp: 10, maxHp: 100, ground: true }, c = { P, state: 'play', flask: () => ({ label: 'FLASK 3', key: 'flask' }) };
   assert.deepEqual(ctxButton(c), { label: 'FLASK 3', key: 'flask', dim: false }, 'the phone shows the flask'); }
 assert.equal(SV.killHeal({ charm: true, bloodDrawn: true, bloodletter: true }), 5, 'kill heals cap at 5'); assert.equal(SV.killHeal({ charm: true }), 3);
-assert.equal(SV.flaskMax({}), 1); assert.equal(SV.flaskMax({ flaskUp: 9 }), 3);   /* (survival2: one to start, max three) */
+assert.equal(SV.flaskMax({}), 1); assert.equal(SV.flaskMax({ flaskUp: 9 }), 4);   /* (survival2: one to start; claude/flasks2: EXTRA FLASK I, II and the hidden III - max four) */
 assert.equal(SV.shrineRefill(0, 3), 1); assert.equal(SV.shrineRefill(3, 3), 3); assert.equal(SV.shrineRefill(4, 3), 4); assert.equal(SV.deathRefill(0, 3), 3); assert.equal(SV.deathRefill(4, 3), 4);
 assert.equal(STAM.regen, Math.round(75 * SV.STAM_REGEN_MUL), 'stamina regen is not ~20% faster than 75 (Daniel 10-08: x1.2)');
 { const m = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); assert.equal(m.split('keys.talk = true').length - 1, 1, 'keys.talk (the BREAK hold) must be set only by a person key (and the pad held list): a bot never breaks a shrine'); } assert.equal(SV.flaskHeal(200), 70); assert.equal(SV.heartHeal(200), 24);
