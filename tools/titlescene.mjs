@@ -29,6 +29,9 @@ try {
   const o = await pg.evalp(`(()=>{ BK.ui.titleI = BK.ui.titleItems().indexOf('OPTIONS'); BK.press('confirm'); BK.step(3); const sub = BK.ui.titleItems(); const opened = BK.ui.titleOpts; BK.press('pause'); BK.sim(2); BK.step(2); return { sub, opened, closed: !BK.ui.titleOpts, on: BK.ui.titleItems()[BK.ui.titleI] }; })()`);
   assert.deepEqual(o.sub, ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'BACK'], 'OPTIONS opens SETTINGS, SOUND TEST, CONTROLS, BACK');
   assert.ok(o.opened && o.closed && o.on === 'OPTIONS', 'ESC closes the list and rests on OPTIONS: ' + JSON.stringify(o));
+  const e2 = await pg.evalp(`(()=>{ BK.ui.titleOpts = false; BK.ui.titleI = 0; BK.press('pause'); BK.step(3); const opened = BK.ui.titleOpts, st = BK.state, sub = BK.ui.titleItems(); BK.press('pause'); BK.sim(2); BK.step(2); return { opened, st, sub, closed: !BK.ui.titleOpts, st2: BK.state }; })()`);
+  assert.ok(e2.opened && e2.st === 'title' && e2.sub.includes('BACK'), 'ESC on the title top level opens the OPTIONS list (not Settings directly): ' + JSON.stringify(e2));
+  assert.ok(e2.closed && e2.st2 === 'title', 'ESC again closes the OPTIONS list and stays on the title: ' + JSON.stringify(e2));
   console.log('ok  options        OPTIONS groups SETTINGS / SOUND TEST / CONTROLS under one row of a six-row board; ESC closes it');
 
   /* ---- 2. THE HERO PICK ---- */
