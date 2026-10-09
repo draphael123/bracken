@@ -144,6 +144,19 @@ export function makeHawkMistressHands(ctx) {
       snareTell: 'lashTell', snare: 'lash', fanTell: 'cutTell', fan: 'cut', kegTell: 'feint', rakeTell: 'whistle', hawkGrabTell: 'whistle', leap: 'walkA' };
     let pose = POSE[m] || (m === 'walk' ? (Math.floor(time * 6 + e.x * 0.05) & 1 ? 'walkA' : 'walkB') : 'guard');
     if (m === 'walk' && !(Math.abs(e.vx || 0) > 4)) pose = 'guard';
+    /* (claude/ksar2 part B) KEYFRAMED WINDUPS: each told move steps through its poses by how far into the tell she is; an idle with personality when she is standing off */
+    const kk = (T) => Math.max(0, Math.min(1, 1 - (e.modeT || 0) / T));
+    if (m === 'lashTell' || m === 'markLashTell') pose = kk(m === 'lashTell' ? HM.lashTell : HM.markLashTell) < 0.5 ? 'lashCoil' : 'lashTell';
+    else if (m === 'snareTell') pose = kk(HM.snareTell) < 0.3 ? 'lashCoil' : 'snareWind';
+    else if (m === 'snare') pose = 'snareCast';
+    else if (m === 'fanTell') pose = kk(HM.fanTell) < 0.4 ? 'fanDraw' : 'fanHold';
+    else if (m === 'fan') pose = ((HM.fanGap * 3 + 0.1 - (e.modeT || 0)) % HM.fanGap) < 0.09 ? 'fanThrow' : 'fanHold';
+    else if (m === 'kegTell') pose = kk(HM.kegTell) < 0.7 ? 'kegSet' : 'kegKick';
+    else if (m === 'recover' && S.keg && Math.abs(S.keg.x - e.x) < 46 && (e.modeT || 0) > 0.2) pose = 'kegKick';
+    else if (m === 'callTell' || m === 'rakeTell' || m === 'hawkGrabTell' || m === 'diveTell') pose = kk(m === 'callTell' ? HM.callTell : m === 'rakeTell' ? HM.rakeTell : HM.snatchTell) < 0.55 ? 'whistleA' : 'whistleB';
+    else if (m === 'whistle') pose = (time % 1.5) < 1.05 ? 'whistleA' : 'whistleB';
+    else if (m === 'leap') { const Lp = S.leap; pose = Lp && Lp.t / HM.leapT < 0.16 ? 'leapCrouch' : 'leapAir'; }
+    else if (m === 'walk' && pose === 'guard' && S.hawk && S.hawk.mode === 'home') { const ph = (time + e.x * 0.01) % 7; pose = ph < 3.6 ? 'guard' : ph < 4.4 ? 'tauntA' : ph < 5.2 ? 'tauntB' : ph < 6.4 ? 'stroke' : 'guard'; }   /* her idle: beckons, chin up, strokes the hawk on her glove */
     if (flash && pose !== 'sleep') pose = 'hurt';
     const i = MS.names.indexOf(pose), set = flash ? MS.white : MS, spr = (f > 0 ? set.R : set.L)[i];
     g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(x - 10, y - 1, 20, 2); g.globalAlpha = 1;
@@ -166,8 +179,8 @@ export function makeHawkMistressHands(ctx) {
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'hawkmistress') return; const G = S.G;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', k = S.hawk;
     /* THE HAWK: a hawk over her (wings beating), blinded it flaps with white stars, home it sits on her glove; its shadow on the floor when it spots or dives */
-    { const hx = R(k.x - cx), hy = R(k.y - cy); if (!HW) HW = [0, 1, 2, 3, 4, 5, 6].map(i => KSA.bakeHerHawk(i)); const wing = Math.floor(time * (k.mode === 'blind' ? 14 : 7)) & 1;
-      const pose = k.mode === 'home' ? 5 : k.mode === 'blind' ? 4 : k.mode === 'dive' || k.mode === 'low' ? 3 : k.mode === 'diveTell' || k.mode === 'spot' ? 6 : k.mode === 'wheel' || k.mode === 'return' ? 2 : wing;
+    { const hx = R(k.x - cx), hy = R(k.y - cy); if (!HW) HW = [0, 1, 2, 3, 4, 5, 6, 7].map(i => KSA.bakeHerHawk(i)); const wing = Math.floor(time * (k.mode === 'blind' ? 14 : 7)) & 1;
+      const pose = k.mode === 'home' ? 7 : k.mode === 'blind' ? 4 : k.mode === 'dive' || k.mode === 'low' ? 3 : k.mode === 'diveTell' || k.mode === 'spot' ? 6 : k.mode === 'wheel' || k.mode === 'return' ? 2 : wing;
       S.hawkF = k.x > (S.hawkLastX ?? k.x) + 0.2 ? 1 : k.x < (S.hawkLastX ?? k.x) - 0.2 ? -1 : (S.hawkF || (e.face || 1)); S.hawkLastX = k.x; const hf = k.mode === 'home' ? (e.face || 1) : S.hawkF, H0 = HW[pose], bob = k.mode === 'circle' ? R(Math.sin(time * 3) * 1) : 0;
       if (hf > 0) g.drawImage(H0.c, hx - H0.ax, hy - H0.ay + bob); else { g.save(); g.translate(hx, 0); g.scale(-1, 1); g.drawImage(H0.c, -H0.ax, hy - H0.ay + bob); g.restore(); }
       if (k.mode === 'blind') for (let i = 0; i < 3; i++) { const a = time * 7 + i * 2.1; g.fillStyle = '#ffffff'; g.fillRect(hx + R(Math.cos(a) * 9), hy - 10 + R(Math.sin(a) * 3), 2, 2); }

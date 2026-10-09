@@ -27716,6 +27716,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.unburied && SET.parallax !== 'off') UW.drawFort(g, cx, cy, VW, VH, time);   /* THE CHAPEL-FORT, on its hill: small and far from the first screen, growing as you come (src/redraw/unburied_chapel.js) */
   drawCastleBack(cx, cy); drawLayer(BG.mid, 0.3, VH - 140, cx, cy); } }
   else drawCastleBack(cx, cy);
+  if (L.ksar && KSH && KSH.on()) KSH.drawKeep(g, cx, cy, VW, VH, time, bgDY(cy));   /* (claude/ksar2 part B) THE KEEP over the souq, in front of the far dunes */
   if (GDH && GDH.on()) GDH.drawBack(g, cx, cy, time);   /* THE GREAT DRILL: its bore running past (it was an if/else ahead of the backdrop chain: with the boss asleep it skipped every backdrop in the level - claude/minecartart) */
   SEA.seaFar(g, cx, cy, VW, VH, time);   /* a sea level's far water: under the haze and the depth, so they sink into it */
   if (L.leviathan) { drawLeviathan(cx, cy); if (KRS.sky > 0.01) { g.fillStyle = 'rgba(6,10,14,' + (KRS.sky * 0.5).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }   /* THE DROWNED CAUSEWAY: the thing on the horizon, and the storm it brings */

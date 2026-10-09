@@ -122,12 +122,14 @@ export function buildKsar({ painter, T, TS }) {
   /* THE SHIELD SENTRY, PLANTED before gong three (he rings it himself on the alarm): go round him - over the ledge, or a jump - to its rope */
   sentry(180, WW - 1, 'g3Sentry', 'g3', { face: -1 }); gong('g3', 183, WW - 1, { ear: 20 });
   /* THE THIRD BREACH and THE WHIP APPRENTICE on its far lip: his lash pulls you a step toward him - into the rubble */
+  sign(185, WW - 1, 'HIS LASH PULLS YOU INTO THE RUBBLE: KILL HIM, OR ROLL FREE.');   /* (resume 2) told: the walker died in these spikes untold */
   breach(189, 191);
   whip(194, WW - 1, 'wallWhip', { face: -1 }); smoke(199, WW - 1, 'wallWhip');
   decor.push({ kind: 'banner', x: 205, y: WW - 1 });
   /* THE FOURTH BREACH, under the great gong's tower: a shield on its far lip (his shove is a step back into it) and a slinger on the merlon over him */
+  sign(211, WW - 1, 'A SHIELD SHOVES YOU BACK INTO THE SPIKES: STRIKE, DO NOT WAIT ON THE LIP.');
   breach(214, 216);
-  sentry(219, WW - 1, 'gongFoot', null, { ks: 'post', face: -1 }); boards(223, 225, 25); slinger(224, 24, 'gongFootSling', { face: -1 });
+  sentry(222, WW - 1, 'gongFoot', null, { ks: 'post', face: -1 });   /* (resume 2) three tiles further from the lip: the shove no longer drops you back into the spikes while you fight him */ boards(223, 225, 25); slinger(224, 24, 'gongFootSling', { face: -1 });
 
   // ================= 3. THE GATE WINCH (232-272): SET PIECE ONE - RING THE GREAT GONG TO EMPTY THE GATEHOUSE (REQUIRED) =================
   /* THE GREAT GONG on its tower (a three-row hop off the walk); the HIGH WALK runs east from it over the yard to the gatehouse; the yard below */
@@ -170,6 +172,7 @@ export function buildKsar({ painter, T, TS }) {
   block(356, 445, 25, H - 1);                                                    /* the terrace and the store's long roof (row 25) */
   decor.push({ kind: 'minaret', x: 366, y: 24, top: 8 });
   /* THE TERRACE: its runner and the second souq gong (CUT under pressure) */
+  sentry(386, 24, 'terraceElite', null, { ks: 'post', face: -1, elite: true });   /* (resume 2) WEIGHT on the terrace (difficulty v2: a squad or an elite at a platforming moment - the terrace's ledges and the stair's top) */
   lookout(372, 24, 'terraceLookout', 'terrace', { patrol: [362, 376], face: -1 });
   boards(358, 363, 16); slinger(360, 15, 'minaretSling', { face: -1 });          /* the minaret's balcony and its slinger */
   hut(382, 388, 19, 25); blade(384, 24, 'terraceHut', { ks: 'reserve', face: -1 }); blade(386, 24, 'terraceHut', { ks: 'reserve', face: 1 });   /* the terrace's guard hut: its sleepers answer the terrace gong */
@@ -289,6 +292,7 @@ export function buildKsar({ painter, T, TS }) {
   block(674, 680, 22, 26);                                                       /* the store's low overhang over it: no jump crosses seven tiles under it, and its top is out of reach (no way over) */
   block(681, 681, 27, B - 1); ropeBridges.push({ id: 'rope', x: 681, y0: 27, y1: B - 1, span: [674, 680, B] }); ent('ksropebridge', 681, B - 1, { id: 'rope' });   /* the bridge, raised: timber cells on the far lip */
   // THE POWDER TRAIL: a keg behind iron bars beside a bricked wall - nothing reaches it but fire along the trail (a torch lights it, held or thrown)
+  sentry(683, B - 1, 'bridgeElite', null, { ks: 'post', face: -1, elite: true });   /* (resume 2) WEIGHT at the platforming moment: the far lip's champion, waiting where the bridge lands */
   torches('trailTorches', 685, B - 1);
   sign(686, B - 1, 'A POWDER TRAIL: A TORCH LIGHTS IT, AND THE FIRE RUNS TO THE KEG.');
   block(694, 701, 22, 26); barricade('trailBars', 695, 695, 27, B - 1); kegAt('trailKeg', 696, B - 1, { caged: true }); barricade('trailWall', 697, 698, 27, B - 1);

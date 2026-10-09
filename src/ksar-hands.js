@@ -17,6 +17,7 @@ import * as CT from './carry-throw.js';
 import { CUTTHROAT } from './desert-foes.js';
 import { HAWK } from './ksar-foes.js';
 import * as SET from './redraw/ksar_set.js';
+import * as P2 from './redraw/ksar_props2.js';
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 
@@ -422,7 +423,7 @@ export function makeKsarHands(ctx) {
     const torchFor = (rackId, throwAt, row) => { if (tk) return here(throwAt, row, 'atk', 1); const r2 = stackAt(rackId); if (q0) return here(throwAt, row, 'talk', 1); return r2 && r2.left > 0 ? here(r2.x, r2.y, 'talk', 1) : Object.assign(here(r2 ? r2.x : throwAt, row, null, 1), { r: 14 }); };
     const rA = K.reeds.find(q => q.id === 'reedA'); if (rA && rA.st === 'whole' && c > 584 && c < 600) return fuse() ? Object.assign(here(593, 33, null, 1), { r: 14 }) : torchFor('reedTorches', 594, 33);
     for (const [wid, sid, from] of [['runA', 'runKegs', 646], ['runB', 'runKegs2', 660]]) { const w = K.barricades.find(b => b.id === wid); if (!w || w.broken || c < from - 6 || c > w.x0) continue;
-      if (fuse()) return Object.assign(here(w.x0 - 9, 33, null, 1), { r: 14 }); if (kg) return here(w.x0 - 4, 33, 'atk', 1); const s2 = stackAt(sid); return here(s2.x, s2.y, 'talk', 1); }
+      if (fuse()) return Object.assign(here(w.x0 - 9, 33, null, 1), { r: 14 }); if (kg) return Object.assign(here(w.x0 - 4, 33, 'atk', 1), { r: 14 }); const s2 = stackAt(sid); return Object.assign(here(s2.x, s2.y, 'talk', 1), { r: 14 }); }   /* (resume 2) the zip line from the terrace lands him PAST the first stack (8 tiles off): the stack in reach from 14 tiles, as the player walks back for it */
     const rp = K.ropes.find(q => q.id === 'rope'); if (rp && rp.st === 'raised' && c > 666 && c < 674) return fuse() || rp.st === 'burning' ? Object.assign(here(670, 31, null, 1), { r: 14 }) : torchFor('bridgeTorches', 672, 31);
     const tr = K.trails.find(q => q.id === 'trail'), tw = K.barricades.find(b => b.id === 'trailWall'); if (tr && tw && !tw.broken && c > 682 && c < 697) return tr.st !== 'dry' ? Object.assign(here(684, 33, null, 1), { r: 14 }) : tk ? here(688, 33, null, 1) : torchFor('trailTorches', 688, 33);
     const aa = K.barricades.find(b => b.id === 'alleyArch'); if (aa && !aa.broken && c > 702 && c < 777) { const a0 = K.setKegs.find(k => k.alley && k.st === 'set'), lit = K.setKegs.some(k => k.alley && k.st === 'lit');
@@ -455,39 +456,28 @@ export function makeKsarHands(ctx) {
     /* THE SET (src/redraw/ksar_set.js): the walls, the huts, the awnings, the landmarks, the dressing and the lights; then the rule's pieces */
     const V = { g, cx, cy, vw, vh: ctx.VH(), time, L, T: T() }; if (!K.plan) K.plan = SET.plan(L, T());
     SET.paintWorld(V, K.plan);
-    for (const q of (L.shafts || [])) { const x0 = q.x0 * ts, x1 = (q.x1 + 1) * ts; if (!inX(x0, 40)) continue; const by = (q.bottom + 1) * ts;
-      /* SPIKES at the foot of the shaft, and its HOT UPDRAFT: heat lines rising, the air lit orange */
-      g.globalAlpha = 0.28; g.fillStyle = '#ff7a2a'; g.fillRect(R(x0 - cx), R(q.top * ts - cy), x1 - x0, by - q.top * ts); g.globalAlpha = 1;
-      for (let x = x0; x < x1; x += 6) { g.fillStyle = '#8a8478'; g.beginPath(); g.moveTo(R(x - cx), R(by - cy)); g.lineTo(R(x + 3 - cx), R(by - 9 - cy)); g.lineTo(R(x + 6 - cx), R(by - cy)); g.fill(); g.fillStyle = '#d8d0c0'; g.fillRect(R(x + 3 - cx), R(by - 9 - cy), 1, 2); }
-      for (let i = 0; i < 6; i++) { const hx = x0 + 4 + ((i * 13) % (x1 - x0 - 8)), hy = by - ((time * 70 + i * 23) % (by - q.top * ts + 30)); g.globalAlpha = 0.55; g.fillStyle = i % 2 ? '#ffd36b' : '#fff1c8'; g.fillRect(R(hx + Math.sin(time * 6 + i) * 2 - cx), R(hy - cy), 1, 5); }
-      g.globalAlpha = 1; }
+    for (const q of (L.shafts || [])) P2.drawShaft(V, q, time);   /* (part B) the flue, its grate and spikes, the updraft: shimmer + rising grit */
     for (const b of K.barricades) { if (b.broken || !inX(b.x0 * ts)) continue; SET.drawArch(V, b);
       if (held(P) && held(P).thrKind === 'keg' || K.setKegs.some(k => k.st !== 'spent' && Math.abs(k.x - b.x0) < 6)) { const p = 0.5 + 0.5 * Math.sin(time * 6); g.strokeStyle = 'rgba(255,107,107,' + (0.4 + 0.4 * p).toFixed(2) + ')'; g.strokeRect(R(b.x0 * ts - 2 - cx), R(b.y0 * ts - 2 - cy), (b.x1 - b.x0 + 1) * ts + 4, (b.y1 - b.y0 + 1) * ts + 4); } }
     const G = K.gate; if (G && inX(G.x * ts, 200)) { SET.drawGate(V, G, braked()); const wx = R(G.winch[0] * ts + 8 - cx), wy = R((G.winch[1] + 1) * ts - cy);
       if (!G.pinned) ctx.text(braked() ? 'BRAKE' : 'FREE', wx - 14, wy - 40, braked() ? '#ff9a5c' : '#ffd36b', 'center', 5); }
     for (const v of K.vault) { if (v.open || !inX(v.x * ts)) continue; SET.drawVault(V, v, ctx.questGot()); }
-    /* (claude/ksar2) THE LONGER KSAR's pieces (greybox: plain shapes, for the art lane): reed screens, the raised bridge and its rope, the powder trail, the nests, the raider lines' posts */
-    for (const r of K.reeds) { if (r.st === 'burnt' || !inX(r.x0 * ts)) continue; const x0 = R(r.x0 * ts - cx), y0 = R(r.y0 * ts - cy), w = (r.x1 - r.x0 + 1) * ts, h = (r.y1 - r.y0 + 1) * ts;
-      g.fillStyle = r.st === 'burning' ? '#8a4a1a' : '#b8a060'; g.fillRect(x0, y0, w, h); for (let x = 0; x < w; x += 3) { g.fillStyle = (x / 3) % 2 ? '#8a7a40' : '#d8c080'; g.fillRect(x0 + x, y0, 1, h); }
-      g.fillStyle = '#6a5030'; g.fillRect(x0, y0 + 6, w, 2); g.fillRect(x0, y0 + h - 10, w, 2); if (held(P) && held(P).thrKind === 'torch') { g.strokeStyle = 'rgba(255,154,60,0.7)'; g.strokeRect(x0 - 2, y0 - 2, w + 4, h + 4); } }
-    for (const r of K.ropes) { if (!inX(r.x * ts, 160)) continue; if (r.st !== 'down') { const x = R(r.x * ts - cx), y0 = R(r.y0 * ts - cy), h = (r.y1 - r.y0 + 1) * ts;
-        g.fillStyle = r.st === 'burning' ? '#7a4a20' : '#8a6a3a'; g.fillRect(x, y0, ts, h); for (let y = 0; y < h; y += 6) { g.fillStyle = '#5a4020'; g.fillRect(x, y0 + y, ts, 1); }
-        g.strokeStyle = r.st === 'burning' ? '#ff9a3c' : '#c9b27c'; g.beginPath(); g.moveTo(x + 8, y0 + 2); g.lineTo(x + 18, y0 - 18); g.stroke(); g.fillStyle = '#4a3020'; g.fillRect(x + 16, y0 - 22, 4, 26 + h); } }
-    for (const t of K.trails) { if (!inX(t.x0 * ts, 200)) continue; const y = R((t.y + 1) * ts - 2 - cy);
-      for (let x = t.x0 * ts; x < (t.x1 + 1) * ts; x += 3) { const burnt = t.st !== 'dry' && x >= t.a && x <= t.b; g.fillStyle = burnt ? (t.st === 'lit' && Math.abs(x - t.b) < 10 ? '#ffd36b' : '#2a1a10') : '#4a4038'; g.fillRect(R(x - cx), y, 2, 2); } }
-    for (const n of (L.nests || [])) { if (!inX(n.x0 * ts)) continue; const x0 = R(n.x0 * ts - cx), y = R(n.y * ts - cy), w = (n.x1 - n.x0 + 1) * ts; g.fillStyle = '#6a5030'; g.fillRect(x0, y - 14, 3, 14); g.fillRect(x0 + w - 3, y - 14, 3, 14); g.fillStyle = 'rgba(184,160,96,0.8)'; g.fillRect(x0, y - 8, w, 6); }
-    for (const r of K.raids) { if (!inX(r.post.x * ts, 200)) continue; const x = R(r.post.x * ts + 8 - cx), y = R((r.post.y + 1) * ts - cy); g.fillStyle = '#4a3020'; g.fillRect(x - 2, y - 30, 4, 30); g.fillStyle = '#8b8378'; g.fillRect(x - 4, y - 32, 8, 3);
-      if (r.cut) { g.strokeStyle = '#c9b27c'; g.beginPath(); g.moveTo(x, y - 30); g.lineTo(x - 6, y - 14); g.stroke(); const z = r.line; g.beginPath(); g.moveTo(R(z.x0 - cx), R(z.y0 - cy)); g.lineTo(R(z.x0 - cx) - 4, R(z.y0 - cy) + 26); g.stroke(); }
-      else if (P && Math.abs(P.x - (r.post.x * ts + 8)) < 90) ctx.text('CUT', x, y - 38, '#ffd36b', 'center', 5); }
+    /* (part B) THE LONGER KSAR's pieces, drawn (src/redraw/ksar_props2.js): reed screens, the raised bridge and its rope, the powder trail, the nests, the raider lines' rigs, the teach lines' posts, the rubble of a blown arch, the tower's stair and the crowns */
+    P2.drawTowerStair(V, time); P2.crowns(V); for (const b of K.barricades) if (b.broken && inX(b.x0 * ts)) P2.drawRubble(V, b); for (const z of (L.zipLines || [])) P2.drawZipRig(V, z);
+    const torchHeld = !!(held(P) && held(P).thrKind === 'torch');
+    for (const r of K.reeds) { if (!inX(r.x0 * ts)) continue; P2.drawReeds(V, r, r.st, r.st === 'burning' ? Math.max(0, Math.min(1, 1 - r.t / KS.reedBurn)) : r.st === 'burnt' ? 1 : 0, time, torchHeld); }
+    for (const r of K.ropes) { if (!inX(r.x * ts, 160)) continue; P2.drawRopeBridge(V, r, r.st, r.st === 'burning' ? Math.max(0, Math.min(1, 1 - r.t / KS.ropeBurn)) : 0, time, torchHeld); }
+    for (const t of K.trails) { if (!inX(t.x0 * ts, 200)) continue; P2.drawTrail(V, t, time); }
+    for (const n of (L.nests || [])) { if (!inX(n.x0 * ts)) continue; const blind = ctx.enemies().some(e => e.alive && e.nest && e.ksStun > 0 && e.x >= n.x0 * ts - 8 && e.x <= (n.x1 + 1) * ts + 8); P2.drawNest(V, n, blind, time); }
+    for (const r of K.raids) { if (!inX(r.post.x * ts, 200)) continue; const near = !!(P && !r.cut && Math.abs(P.x - (r.post.x * ts + 8)) < 90); P2.drawRaidRig(V, r, time, near);
+      if (near) ctx.text('CUT', R(r.post.x * ts + 8 - cx), R((r.post.y + 1) * ts - 56 - cy), '#ffd36b', 'center', 5); }
     /* THE GONGS: the set draws each (a cut one lies cracked); near you its EARSHOT is a bracket on the floor; rung, NOISE RINGS go out from it */
     for (const q of K.gongs) { const x = R(gx(q) - cx), y = R(gy(q) - cy); if (!inX(gx(q), q.ear * ts)) continue;
       SET.drawGong(V, q); if (q.bridge) SET.drawBridge(V, q);
       if (!q.cut && P && Math.abs(P.x - gx(q)) < q.ear * ts && Math.abs(P.y - gy(q)) < q.earY * ts) { g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; const l = R(gx(q) - q.ear * ts - cx), r2 = R(gx(q) + q.ear * ts - cx);
         g.fillRect(l, y - 1, 2, -8); g.fillRect(r2, y - 1, 2, -8); for (let xx = l; xx < r2; xx += 12) g.fillRect(xx, y - 1, 4, 1); g.globalAlpha = 1; }
       if (q.ring > 0) { const k = 1 - q.ring / 1.4; g.strokeStyle = 'rgba(255,211,107,' + (0.8 * (1 - k)).toFixed(2) + ')'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { const rr = (k + i * 0.18) % 1 * q.ear * ts; g.beginPath(); g.arc(x, y - (q.great ? 38 : 24), rr, Math.PI, Math.PI * 2); g.stroke(); } g.lineWidth = 1; } }
-    for (const s of K.stacks) { if (!inX(s.x * ts)) continue; if (s.kind !== 'torch') { SET.drawStack(V, s); continue; }
-      const x = R(s.x * ts + 8 - cx), y = R((s.y + 1) * ts - cy); g.fillStyle = '#3a2a1a'; g.fillRect(x - 8, y - 4, 16, 4); g.fillStyle = '#6a4a2a'; g.fillRect(x - 6, y - 10, 12, 6);   /* a brazier of torches */
-      for (let i = 0; i < s.left; i++) { const tx = x - 4 + i * 6; g.fillStyle = '#7a5a30'; g.fillRect(tx, y - 20, 2, 12); g.fillStyle = Math.floor(time * 10 + i) % 2 ? '#ffd36b' : '#ff6a2a'; g.fillRect(tx - 1, y - 24, 4, 4); } }
+    for (const s of K.stacks) { if (!inX(s.x * ts)) continue; if (s.kind !== 'torch') SET.drawStack(V, s); else P2.drawTorchStack(V, s, time); }   /* (part B) the torch rack: src/redraw/ksar_props2.js */
     /* THE SET KEGS AND THE CHAIN: a dotted fuse-line keg to keg and on to the arch (the chain shows its target before it goes) */
     const live = K.setKegs.filter(k => k.st !== 'spent');
     for (let i = 0; i < live.length; i++) { const k = live[i], x = R(k.x * ts + 8 - cx), y = R((k.y + 1) * ts - cy); if (!inX(k.x * ts, 200)) continue;
@@ -497,7 +487,7 @@ export function makeKsarHands(ctx) {
       if (tx != null) { g.fillStyle = k.st === 'lit' ? '#ff9a3c' : 'rgba(255,211,107,0.55)'; const off = (time * 20) % 6; for (let xx = x + 8 + off; xx < tx - cx - 6; xx += 6) g.fillRect(R(xx), y - 3, 2, 1); }
       if (k.st === 'lit') { g.strokeStyle = '#ff6b6b'; g.beginPath(); g.arc(x, y - 6, KS.kegR * (0.6 + 0.4 * Math.sin(time * 12)), 0, Math.PI * 2); g.stroke(); } }
     /* WHAT IS CARRIED, THROWN, LYING OR FIZZING */
-    for (const q of K.items) { if (!inX(q.x)) continue; drawThing(V, q.thrKind, R(q.x), R(q.y + (q.state === 'held' ? 6 : 0)), time, q.state === 'fuse' || q.state === 'burn');
+    for (const q of K.items) { if (!inX(q.x)) continue; drawThing(V, q.thrKind, R(q.x), R(q.y + (q.state === 'held' ? 6 : 0)), time, q.state === 'fuse' || q.state === 'burn', q.state);
       if (q.state === 'fuse') { g.strokeStyle = '#ff6b6b'; g.beginPath(); g.arc(R(q.x - cx), R(q.y - 6 - cy), KS.kegR, 0, Math.PI * 2); g.stroke(); } }
     /* THE FORT'S MEN: asleep (Z), called (a gong over his head), running for his gong (a red !), striking it; a lookout's sightline */
     for (const e of ctx.enemies()) { if (!e.alive || !e.ks || !inX(e.x)) continue; const x = R(e.x - cx), y = R(e.y - cy), q = e.ks;
@@ -510,7 +500,7 @@ export function makeKsarHands(ctx) {
       if (d.t > 0) { g.fillStyle = Math.floor(time * 14) % 2 ? '#ff6b6b' : '#fff6e0'; g.fillRect(x - 6, fy - 2, 12, 2); } else { g.fillStyle = '#8a7a6a'; g.fillRect(x - 3, R(d.y - cy) + R(-d.t * 300), 6, 6); } }
     if (K.glint && K.glint.show) drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), vw, ctx.VH(), time);
   };
-  function drawThing(V, kind, x, y, time, lit) { if (kind === 'keg') SET.drawKeg(V, x, y, lit, time); else if (kind === 'torch') { const g = V.g, X = Math.round(x - V.cx), Y = Math.round(y - V.cy); g.fillStyle = '#7a5a30'; g.fillRect(X - 1, Y - 12, 2, 12); g.fillStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#ff6a2a'; g.fillRect(X - 2, Y - 16, 4, 5); } else SET.drawFlask(V, x, y); }
+  function drawThing(V, kind, x, y, time, lit, state) { if (kind === 'keg') { SET.drawKeg(V, x, y, lit, time); if (lit) P2.kegSparks(V, x, y, time, true); } else if (kind === 'torch') P2.drawTorchItem(V, x, y, time, state === 'burn' ? 'burn' : state === 'fly' ? 'fly' : 'held'); else SET.drawFlask(V, x, y); }
   /* OVER EVERYTHING: the told arc of what is in your hand, the smoke, the blasts and flashes, the hawks' shrieks */
   H.drawOver = (g, cx, cy, time) => { if (!K) return; const P = ctx.hero(), R0 = Math.round;
     for (const s of K.smokes) { const k = Math.min(1, s.t / 1.2), x = R0(s.x - cx), y = R0(s.y - cy); for (let i = 0; i < 7; i++) { const a = i * 0.9 + time * 0.4, rr = s.r * (0.55 + 0.25 * Math.sin(time + i));
@@ -522,7 +512,8 @@ export function makeKsarHands(ctx) {
     const q = held(P); if (q && !P.dead) { K.arc = H.arcOf(P); CT.drawArc(g, K.arc, cx, cy, time, q.thrKind === 'keg' ? '#ff9a3c' : q.thrKind === 'torch' ? '#ffb84a' : '#e8f4ff'); } else K.arc = null;
   };
   /* THE HUD: the sun meter is the desert's (main.js); the drawn rule state is in the world */
-  H.drawBack = (g, cx, cy, vw, vh, time, dy) => { SET.drawBack(g, cx, cy, vw, vh, time, dy); if (K && K.L.arena) SET.drawCourtyard({ g, cx, cy, vw, vh, time, L: K.L, T: T(), noGlow: true }, K.L.arena); };   /* her courtyard's back wall is backdrop (the arena's ledges and floor are tiles over it) */   /* the fort's far skyline and the Hawk Tower on the horizon */
+  H.drawBack = (g, cx, cy, vw, vh, time, dy) => { SET.drawBack(g, cx, cy, vw, vh, time, dy); if (K && K.L.arena) { const V0 = { g, cx, cy, vw, vh, time, L: K.L, T: T(), noGlow: true }; SET.drawCourtyard(V0, K.L.arena); P2.drawRoofTops(V0, K.L.arena); } };   /* her courtyard's back wall is backdrop (the arena's ledges and floor are tiles over it) */   /* the fort's far skyline and the Hawk Tower on the horizon */
+  H.drawKeep = (g, cx, cy, vw, vh, time, dy) => { if (K) P2.drawKeep(g, cx, cy, vw, vh, time, dy); };   /* (part B) the keep on the horizon over the souq: main.js draws it AFTER the far dunes (before it was behind them) */
   H.drawHud = () => false;   /* (the sun meter is main.js's own: the desert's) */
   H.read = () => K && { n: { ...K.n }, gongs: K.gongs.map(g => ({ id: g.id, cut: g.cut, hum: +g.hum.toFixed(2) })), gate: K.gate && { notch: K.gate.notch, pinned: K.gate.pinned, braked: braked() },
     arches: K.barricades.map(b => ({ id: b.id, broken: b.broken })), kegs: K.setKegs.map(k => k.st), stacks: K.stacks.map(s => ({ id: s.id, left: s.left })), smokes: K.smokes.length,
