@@ -286,7 +286,7 @@ export function buildKsar({ painter, T, TS }) {
   torches('bridgeTorches', 669, 31);
   block(668, 673, 32, B - 1); sign(670, 31, 'THE BRIDGE IS RAISED ON A ROPE: A THROWN TORCH BURNS IT DOWN.');
   air(674, 680, B, B + 2); for (let x = 674; x <= 680; x++) set(x, B + 3, T.SPIKE); chasms.push([674, 680, B]);   /* the chasm (spikes: a hurt, A10) */
-  block(674, 680, 26, 26);                                                       /* the low beam over it: no jump crosses seven tiles under it */
+  block(674, 680, 22, 26);                                                       /* the store's low overhang over it: no jump crosses seven tiles under it, and its top is out of reach (no way over) */
   block(681, 681, 27, B - 1); ropeBridges.push({ id: 'rope', x: 681, y0: 27, y1: B - 1, span: [674, 680, B] }); ent('ksropebridge', 681, B - 1, { id: 'rope' });   /* the bridge, raised: timber cells on the far lip */
   // THE POWDER TRAIL: a keg behind iron bars beside a bricked wall - nothing reaches it but fire along the trail (a torch lights it, held or thrown)
   torches('trailTorches', 685, B - 1);
@@ -300,6 +300,7 @@ export function buildKsar({ painter, T, TS }) {
   gong('alley', 711, B - 1, { ear: 30, earY: 8 });
   lookout(716, B - 1, 'alleyLookout', 'alley', { patrol: [714, 722], face: -1 });
   for (const [i, x] of [718, 726, 734, 742, 750, 758, 766, 774].entries()) kegAt('a' + i, x, B - 1, { chain: true, alley: true });
+  boards(720, 724, 30); boards(687, 692, 30); boards(767, 772, 30);   /* (claude/ksar2) a second height over the quarter's street and the alley (level-quality bands): a hop up off the kegs' floor */
   blade(728, B - 1, 'alleyA', { face: -1 }); whip(731, B - 1, 'alleyA', { face: -1 });
   drop(737, 739);                                                                /* THE FIRST BREAK: a fall to the wadi (the exam's death, A10) */
   sentry(746, B - 1, 'alleyB', null, { ks: 'post', face: -1 }); blade(749, B - 1, 'alleyB', { face: -1 });
@@ -321,7 +322,7 @@ export function buildKsar({ painter, T, TS }) {
   shadeBox(584, 589, 30, B - 1);
   /* THE SHADE (THE SUN v2: no walk on the route over SUN.maxWalk): awnings over the alley's squads and gong, the stair's lee, the tower top's parapet awning, the landing's */
   awning(700, 704, 28, B); awning(710, 714, 28, B); awning(727, 731, 28, B); awning(745, 749, 28, B); shadeBox(754, 758, 30, B - 1); awning(768, 772, 28, B); shadeBox(781, 789, 27, B - 1);
-  awning(783, 786, 18, 31); awning(791, 795, 11, 16); awning(805, 809, 28, B); awning(668, 672, 26, 32); awning(683, 687, 28, B); awning(48, 52, 28, B); awning(61, 65, 25, B); awning(428, 432, 19, 25);
+  awning(783, 786, 18, 31); awning(791, 795, 11, 16); awning(805, 809, 28, B); awning(668, 672, 26, 32); awning(683, 687, 28, B); awning(48, 52, 28, B); awning(188, 195, 21, 28); awning(61, 65, 25, B); awning(428, 432, 19, 25);
   // ================= THE HAWK-MISTRESS's COURTYARD (src/hawk-mistress.js) =================
   const AX = 812;
   const stage = stageHawkMistress({ set, block, ent, air }, T, TS, AX, B);

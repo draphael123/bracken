@@ -30,7 +30,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/hawk-mistress-hands.js binds it). hmPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const HM = {
-  hp: 2200, w: 16, h: 30, markH: 48, floor: 0.4,
+  hp: 2850, w: 16, h: 30, markH: 48, floor: 0.4,
   openMul: 2.0, openCap: 0.12, openT: 3.6, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80, flinchT: 0.35,
   p2: 0.6, p3: 0.25,
   walk: 70, keep: 50, turn: 0.35, gap: [0.5, 0.42, 0.36],
