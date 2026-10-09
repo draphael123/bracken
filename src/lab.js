@@ -1107,7 +1107,9 @@ async function runbossLab(BK, opts) {
         if(P.windRide){ /* the wind has it: nothing to do */ }
         else if(P.flip){ /* under a slab: walk to its middle */ const s0=P.flareSlab;if(s0&&Math.abs(cen(s0)-P.x)>6)k[cen(s0)>P.x?'right':'left']=true; }
         else if(m==='stunned'){ /* HE IS ON THE SPIKES: over him, and down onto his back. A slab over him is stepped off its nearer end first */
-          if(on&&boss.x>on.x-4&&boss.x<on.x+on.w+4){const l=boss.x-on.x,r=on.x+on.w-boss.x;k[l<r?'left':'right']=true;} else if(Math.abs(dx)>3)k[dx>0?'right':'left']=true; }
+          if(on&&boss.x>on.x-4&&boss.x<on.x+on.w+4){const l=boss.x-on.x,r=on.x+on.w-boss.x;k[l<r?'left':'right']=true;} else if(Math.abs(dx)>3)k[dx>0?'right':'left']=true;
+          /* (claude/witchfix, Daniel 10-08: on the spikes EVERY blow lands) coming down over his back a player PLUNGES - it lands, he pogoes off it and comes down again */
+          if(!on&&!P.ground&&P.vy>15&&!P.plunge&&Math.abs(dx)<18&&boss.y-boss.h-P.y>-10&&boss.y-boss.h-P.y<60){k.down=true;BK.press('atk');swings++;} }
         else if(!on){ /* in the air (a jump, or off the lip): over a slab, steer onto it */
           const to=P.labTo&&!P.labTo.broken&&P.labTo.y>P.y-60?P.labTo:null,s0=to||slabs.filter(q=>q.y>P.y+2).sort((a,b)=>Math.abs(cen(a)-P.x)-Math.abs(cen(b)-P.x))[0];if(s0&&(P.vy>-60||P.labJump>0)&&Math.abs(cen(s0)-P.x)>4)k[cen(s0)>P.x?'right':'left']=true;else if(!s0&&P.ground)k.right=true; }
         else {

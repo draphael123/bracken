@@ -16,7 +16,7 @@ import { newPushBlock, updatePushBlock, PB } from './push-blocks.js';   /* PUSHA
 import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/queue_bosses.js';
 import * as WHF from './gargoyle-whelp.js';   /* THE GARGOYLE WHELP: its numbers, frames and art (docs/briefs/witchlight-whelps.md) */
 import * as CNB from './redraw/canal_backdrop.js'; import * as CFA from './redraw/canal_foes_art.js'; import * as CNH from './canal-hands.js'; import * as CNF from './canal-foes.js'; import * as UCS from './redraw/undercrown_skins.js'; import * as VSK from './redraw/variety_skins.js';   /* (claude/goblinsweep) THE UNDERCROWN's navvy, bone-chucker, timberman and mine warden: the goblins' AI in skins that are not goblins */   /* THE FOG CANAL (docs/briefs/fog-canal.md): its hands on the game, and its two new foes (the grindylow, the will-o'-the-wisp) */
-import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost, gargStomped, stepBall, drawBall, RUNE, runeStep, drawRune } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
+import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost, gargStomped, stepBall, drawBall, RUNE, runeStep, drawRune, slabShards, stepShards as stepSlabShards, drawShards as drawSlabShards } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
 import { WIND, windZoneAt, onSpikes, windCatch, windStep, windBite, stompOn, drawWinds } from './spike-winds.js';   /* THE SPIKED MOAT AND ITS WINDS (the battlements and the Gargoyle's room) */
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake, hedgeAnswered, HEDGE, stepRoots, drawRoots, rootOut } from './hedge-warden.js';
 import { SEXTON, updateSexton as stepSexton, sextonFrame, sextonTake, sextonHover, bellPitThrow } from './sexton.js'; import { bakeSexton } from './redraw/sexton.js';   /* THE SEXTON, the Falling Tower's mini (docs/briefs/falling-tower-rework.md) */
@@ -7099,7 +7099,7 @@ function wardedDamage(e, dmg, blow) {   /* (blow: the hero's blow that dealt it 
   if (e.t === 'winchmaster') { const k = winchTake(e); dmg = Math.max(1, Math.round(dmg * k));   /* THE WINCHMASTER: double while the jammed drum has him down on his ledge - and HALF while his drum runs (round four), told over him */
     if (k < 1 && !(e.chipSaid > 0)) { e.chipSaid = WINCH.chipSay; number(e.x, e.y - (e.h || 36) - 14, 'THE IRON TAKES HALF: JAM HIS DRUM', '#9aa39a'); } }
   if (e.t === 'whelp') dmg = WHF.whelpTake(e, dmg);   /* THE WHELP IS STONE: nothing but a stomp while it is stuck on the spikes (last, so no finisher gets round it) */
-  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE IS STONE: nothing but a stomp while he lies stunned on the spikes (gate-gargoyle.js) */
+  if (e.t === 'gargoyle') dmg = gargTake(e, dmg);   /* THE GATE GARGOYLE IS STONE off the spikes; ON them every blow lands (Daniel 10-08, claude/witchfix: gate-gargoyle.js) */
   return dmg;
 }
 /* THE TURNED BLOW (claude/sweep1, src/boss-read.js, design-standard B10): a blow that meets a boss or a mini and takes nothing clanks, flashes and says a word */
@@ -17823,6 +17823,7 @@ const gargSlabs = () => movers.filter(m => m.arena && m.slab);
 function breakSlab(m) { m.broken = true; m.brokenT = m.arena ? gargRegrowT(boss && boss.t === 'gargoyle' ? boss : null) : (m.regrow || 4); for (const p of (players || [P])) if (p.onMover === m) { p.onMover = null; p.ground = false; p.vy = Math.max(p.vy, 40); }
   if (m.arena) { const back = gargKeepFooting(gargSlabs()); if (back) { burst(back.x + back.w / 2, back.y + 4, 12, ['#c8a0ff', '#8e86a4'], 50, 0.5); SFX.zap(); } }   /* never fewer than GARG.minLive stand */
   if (P.flareSlab === m) { P.flareSlab = null; P.flareT = 0; if (P.flip) setFlip(false, true); }
+  (L.shards = L.shards || []).push(...slabShards(m));   /* (claude/witchfix) ITS PIECES ARE THE WORLD'S: they fall and shatter where it broke, never on his sprite */
   burst(m.x + m.w / 2, m.y + 4, 26, ['#6a6280', '#8e86a4', '#1b1626', '#c8a0ff'], 120, 0.9, 400, 2); SFX.crack(); SFX.stone(); shakeCam(m.arena ? 7 : 3); number(m.x + m.w / 2, m.y - 16, m.arena ? 'THE SLAB BREAKS' : 'THE LEDGE BREAKS', '#c8a0ff'); }
 /* THE SPIKED MOAT AND ITS WINDS (src/spike-winds.js is the rule): the slabs a ride may end on, the fall, the stomp, the ride */
 const windSlabs = z => (z && z.arena ? gargSlabs().filter(m => !m.broken) : []);
@@ -17842,6 +17843,7 @@ function stompStone(e) {
   if (z && !P.dead) { windCatch(P, z, 'stomp', windSlabs(z)); SFX.gust(); } }
 /* once a frame (from updateMovers): every hero's ride, and every broken slab or ledge coming back */
 function windWorld(dt) {
+  if (L.shards && L.shards.length) L.shards = stepSlabShards(L.shards, dt, { solid: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return isSolid(tx, ty) || tileAt(tx, ty) === T.SPIKE; }, pop: (x, y) => burst(x, y - 2, 5, ['#6a6280', '#8e86a4', '#9a9aa4'], 60, 0.35, 300, 1) });   /* (claude/witchfix) A BROKEN SLAB'S PIECES fall and shatter */
   for (const pp of (players || [P])) asPlayer(pp, () => { const k = P.windRide; if (k && (P.dead || windStep(P, dt, windSlabs(k.z)))) { if (P.dead) P.windRide = null; else number(P.x, P.y - 26, 'BACK UP', '#e0f4ff'); } });
   for (const m of movers) if (m.broken && (m.arena || m.brittle)) { m.brokenT -= dt; if (m.brokenT <= 0) { m.broken = false; burst(m.x + m.w / 2, m.y + 4, 12, ['#c8a0ff', '#8e86a4'], 50, 0.5); SFX.zap(); } }   /* A BROKEN SLAB comes back */
 }
@@ -28477,7 +28479,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawCarpetWorld(g,L,P,cx,cy,time);drawSextonFx(cx,cy);drawMinerPicks(g,cx,cy);{const wm=boss&&boss.t==='winchmaster'&&boss.alive?boss:null;if(wm)drawWinchFx(g,wm,winchC(wm),cx,cy,time);}{const gw=enemies.find(q=>q.t==='gravewarden'&&q.alive);if(gw)drawGraveWarden(g,gw,cx,cy,time,(L.mini||L.arena).floor);}{const ab=boss&&boss.t==='abbot'&&boss.alive?boss:null;if(ab&&L.arena)drawFalseAbbot(g,ab,cx,cy,time,L.arena.floor);}if(L.witch&&(L.mini||L.arena))drawHedgeWarden(g,enemies.find(q=>q.t==='hedgewarden'),hedgeBraziers(),cx,cy,time,(L.mini||L.arena).floor);drawUndeadMage(g,boss?.t==='undeadmage'?boss:null,cx,cy,time);if(boss?.t==='undeadmage'){drawRealmFx(g,boss,cx,cy,time,P,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));drawTear(g,boss,cx,cy,time);drawMageActs(g,boss,cx,cy,time,(s,x,y,col,z)=>text(s,x,y,col,'center',z||6));}for(const q of enemies)if(q.t==='magechase'&&q.alive)drawUndeadMage(g,q,cx,cy,time);if(L.arena?.carpet&&boss?.t==='undeadmage'&&!mageRealm())drawStormWalls(g,L.arena,boss.squeeze||0,cx,cy,time,VW,VH);
   if (L.witch) drawRoots(g, L.hedgeRoots, L.witch, cx, cy, time);   /* THE ROOTS crawling, THE ROOTED GARDEN's braziers and its shivering hedges (hedge-warden.js) */
   if(L.witch&&L.arena&&L.arena.rune)drawRune(g,L.arena.rune,cx,cy,time);   /* (claude/bosswave2) THE RUNE COLUMN in his arena */
-  if(L.witch)drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P);
+  if(L.witch){drawGargoyleWorld(g,boss&&boss.t==='gargoyle'?boss:null,cx,cy,time,P,text);drawSlabShards(g,L.shards,cx,cy);}   /* (claude/witchfix: the read's words, and the broken slabs' pieces falling) */
   if(L.winds)drawWinds(g,L,P,cx,cy,time,VW,VH);   /* the wells in the spiked moat, and the wind round a hero it carries */
   drawBuriedDead(g,boss?.t==='burieddead'?boss:null,L.arena,cx,cy,time,L.gasVents);
   drawWarden(g,boss?.t==='harbormaster'?boss:null,L.arena,cx,cy,time);

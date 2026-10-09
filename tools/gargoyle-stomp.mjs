@@ -48,7 +48,9 @@ ok(!L.ents.some(e => e.t === 'vent' && e.x >= x0 && e.x <= x1), 'no rune columns
   const teach = wh.find(e => cr.some(m => Math.abs(m.x + 1 - e.x) <= 3 && m.y > e.y && m.x < b0 + 25)); ok(!!teach, 'TAUGHT first: a whelp over a cracked ledge above a shallow trench of spikes, at the section\'s start'); }
 // 3. the rules
 ok(GARG.stomps >= 4 && GARG.stomps <= 6 && GARG.stompDmg * GARG.stomps >= GARG.hp && GARG.regrow <= 5 && GARG.regrowP2 <= 6, 'the numbers: ' + GARG.stomps + ' stomps of ' + GARG.stompDmg + ', regrow ' + GARG.regrow + '/' + GARG.regrowP2 + ' s, stun ' + GARG.stun + ' s');
-ok(G.gargTake({ mode: 'hover' }, 50) === 0 && G.gargTake({ mode: 'stunned' }, 50) === 0 && G.gargTake({ mode: 'stunned', stompNow: 82 }, 50) === 82 && G.gargTake({ mode: 'hover', stompNow: 82 }, 50) === 0, 'HE IS STONE: nothing but a stomp, and that only while he is stunned');
+/* (claude/witchfix, Daniel 10-08: on the spikes EVERY blow lands - his call, an exception to B15 for him only) This asked 'nothing but a stomp, and that
+   only while he is stunned': the same four calls at the same strictness - the stunned blade is now exactly GARG.openMul of itself, the rest unchanged */
+ok(G.gargTake({ mode: 'hover' }, 50) === 0 && G.gargTake({ mode: 'stunned' }, 50) === 50 * GARG.openMul && G.gargTake({ mode: 'stunned', stompNow: 82 }, 50) === 82 && G.gargTake({ mode: 'hover', stompNow: 82 }, 50) === 0, 'HE IS STONE off the spikes: nothing, not even a stomp - and ON them every blow lands (x' + GARG.openMul + '), the stomp its own');
 ok(WHF.whelpTake({ mode: 'perch' }, 30) === 0 && WHF.whelpTake({ mode: 'landed' }, 30) === 0 && WHF.whelpTake({ mode: 'stuck' }, 30) === 0 && WHF.whelpTake({ mode: 'stuck', stompNow: 28 }, 30) === 28, 'SO IS A WHELP: nothing but a stomp, and that only while it is stuck on the spikes');
 ok(markOf({ t: 'gargoyle', mode: 'breathTell' }) === '!' && G.gargFrame({ mode: 'breathTell' }) !== G.gargFrame({ mode: 'hover', anim: 0 }), 'THE FIRE BREATH is told: a yellow mark (a shield takes it) and a pose of its own');
 if (SW) ok(SW.windBite({ maxHp: 100, hp: 100 }) === 20 && SW.windBite({ maxHp: 100, hp: 5 }) === 4, 'ONE bite: a fifth of his health, never the last point');
@@ -100,7 +102,7 @@ try {
     out.errors=(window.__errs||[]).slice(0,3);return out;})()`, 600000);
   console.log(JSON.stringify(r));
   ok(r.wake.active, 'he wakes when you come onto his slabs: ' + JSON.stringify(r.wake));
-  ok(r.stoneHover === 0 && r.stoneStunned === 0, 'INVULNERABLE: a blade and a burn take ' + r.stoneHover + ' while he hovers and ' + r.stoneStunned + ' while he lies stunned');
+  ok(r.stoneHover === 0 && r.stoneStunned >= 40 * GARG.openMul, 'INVULNERABLE off the spikes, EVERY BLOW on them (claude/witchfix, Daniel 10-08; it was 0 both ways): a blade and a burn take ' + r.stoneHover + ' while he hovers and ' + r.stoneStunned + ' while he lies stunned');
   ok(r.smash.broken && r.smash.seen.includes('crash') && r.smash.mode === 'stunned' && Math.abs(r.smash.dy) <= 4, 'a slab LEFT LATE: he smashes through it and lands STUNNED ON THE SPIKES: ' + JSON.stringify(r.smash));
   ok(r.stomp.took === GARG.stompDmg, 'THE STOMP takes ' + r.stomp.took + ' (GARG.stompDmg ' + GARG.stompDmg + ')');
   ok(r.stomp.rode && r.stomp.why === 'stomp' && r.stomp.landed === 'slab' && r.stomp.bite === 0 && r.stomp.secs < 4, 'after the stomp THE WIND carries you up to a slab, without a bite: ' + JSON.stringify(r.stomp));

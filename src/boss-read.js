@@ -59,7 +59,7 @@ export const TURN_WORD = {
   kraken: 'NOT THE BODY',                                   // the body is out at sea: cut the arms on the road
   /* ACT III (claude/sweep3) */
   archmage: e => e.mode === 'ward' ? 'THE RUNES HOLD' : e.mode === 'blink' || e.mode === 'change' || e.mode === 'wake' ? TURN.NOT_THERE : e.stage === 2 ? 'REACH HIM' : TURN.WARDED,   // the runes take it; in a room he has written, the way through the room is the opening
-  gargoyle: TURN.STONE,                                     // stone until he lies on the spikes
+  gargoyle: e => (e.wardT > 0 ? TURN.WARDED : 'DROP HIM ON THE SPIKES'),   // (claude/witchfix, Daniel 10-08) stone until he lies on the spikes - the word names the verb; WARDED just after
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
   hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'HER GAUNTLET'),   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
