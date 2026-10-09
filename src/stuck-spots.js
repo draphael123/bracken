@@ -172,6 +172,20 @@ export const STUCK = {
    The order is the order of the old nextThing list: the first spot with a step that fits wins. Append a level's spots; do not reorder. */
 const WHOLE = [0, 0, 999, 999];
 export const STUCK_HANDS = {
+  /* THE BURIED CITY (claude/buriedcity): every sand room the route needs glints until its state is the one the route wants (src/buried-city-hands.js handsState:
+     room.<id> full / empty / filling / draining, wheel.great open / shut, vault.<id>); the climb out of the lower bulb's pit glints after a stall */
+  buriedcity: [
+    { id: 'bc-first', zone: [44, 26, 56, 34], steps: [ { key: 'firstLever', is: ['room.first', 'full'], at: [51, 33], line: 'THE ROOM IS FULL TO ITS DOOR: ITS SAND-GATE LEVER' } ] },
+    { id: 'bc-granary', zone: [117, 18, 133, 34], steps: [ { key: 'granaryLever', is: ['room.granary', 'empty'], rows: [27, 34], at: [121, 33], line: 'THE WAY ON IS HIGH: THE GRANARY\'S SAND-GATE' } ] },
+    { id: 'bc-cellar', zone: [200, 26, 212, 34], steps: [ { key: 'cellarLever', is: ['room.cellar', 'empty'], at: [208, 33], line: 'STAKES ACROSS THE CELLAR: ITS SAND-GATE' } ] },
+    { id: 'bc-bulb', zone: [238, 22, 248, 30], steps: [ { key: 'bulbLever', is: ['room.upperbulb', 'full'], at: [245, 29], line: 'THE UPPER HALL IS FULL: ITS SAND-GATE' } ] },
+    { id: 'bc-pit', zone: [260, 30, 276, 40], steps: [ { key: 'bulbUp', at: [273, 30], glint: 'stall', line: 'THE LEDGES LEAD UP OUT OF THE PIT' } ] },
+    { id: 'bc-wheel', zone: [303, 18, 317, 34], steps: [ { key: 'greatWheel', is: ['wheel.great', 'shut'], at: [313, 33], line: 'THE GREAT SAND-GATE: ITS WHEEL' } ] },
+    { id: 'bc-quarter', zone: [317, 19, 372, 41], steps: [ { key: 'quarterClimb', at: [367, 30], glint: 'stall', line: 'THE OLD STREET\'S DOOR IS PAST THE TOWER: OVER THE HOUSES' } ] },
+    { id: 'bc-shaft', zone: [419, 18, 433, 42], steps: [ { key: 'shaftLever', is: ['room.shaft', 'empty'], rows: [36, 42], at: [423, 41], line: 'THE WAY ON IS HIGH: THE SHAFT\'S SAND-GATE' } ] },
+    { id: 'bc-trap', zone: [440, 24, 452, 30], steps: [ { key: 'trapLever', is: ['room.trap', 'empty'], at: [449, 29], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' } ] },
+    { id: 'bc-vault', zone: [496, 30, 507, 35], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [503, 34], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
+  ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
      and the climbs over the towers on the walk and out of the store's cellar glint after a stall */
   ksar: [
