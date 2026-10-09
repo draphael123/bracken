@@ -12,8 +12,8 @@ try {
     const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const P0=BKT.PROG,h=${JSON.stringify(h)};BKT.setHeroLevel(h,${lvl});P0.skillOwned=P0.skillOwned||{};P0.loadouts=P0.loadouts||{};P0.skillOwned[h]={};P0.loadouts[h]=[];if(P0.talents)P0.talents[h]={};
       BK.setHero(h);BK.reset({fresh:true});BK.applyUpgrades();const why={};
       const row=(await BK.bossLab({bosses:['rootway'],heroes:[h],maxSecs:240,healthMode:'normal',seed:${s},profile:'human',modes:true,onFrame:async o=>{why[o.why]=(why[o.why]||0)+1;}})).rows[0]||{};
-      const R=BK.huntmaster().read(),RW=BK.rootway().read();return {rw:RW&&RW.n,hs:RW&&RW.hoists.filter(q=>/^hm/.test(q.id)).map(q=>q.id+":"+q.state).join(" "),out:row.outcome,secs:row.secs,left:row.hpLeftPct,taken:row.health&&Math.round(row.health.damageTaken),maxHp:BK.P.maxHp,n:R&&R.n,hurt:R&&R.hurt,ph:R&&R.ph,why:Object.entries(why).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>k+':'+v).join(', ')};})()`, 900000);
+      const R=BK.huntmaster().read(),RW=BK.rootway().read(),SN=BK.snares&&BK.snares()?BK.snares().read().n:null;return {sn:SN,rw:RW&&RW.n,hs:RW&&RW.hoists.filter(q=>/^hm/.test(q.id)).map(q=>q.id+":"+q.state).join(" "),out:row.outcome,secs:row.secs,left:row.hpLeftPct,taken:row.health&&Math.round(row.health.damageTaken),maxHp:BK.P.maxHp,n:R&&R.n,hurt:R&&R.hurt,ph:R&&R.ph,why:Object.entries(why).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>k+':'+v).join(', ')};})()`, 900000);
     console.log(h + ' s' + s + ' L' + lvl + ': ' + r.out + ' ' + r.secs + 's left ' + r.left + '% taken ' + r.taken + '/' + r.maxHp + ' ph' + r.ph);
-    console.log('   n ' + JSON.stringify(r.n)); console.log('   hurt ' + JSON.stringify(r.hurt)); console.log('   why ' + r.why); console.log('   rw ' + JSON.stringify(r.rw) + ' ' + r.hs);
+    console.log('   n ' + JSON.stringify(r.n)); console.log('   snares ' + JSON.stringify(r.sn)); console.log('   hurt ' + JSON.stringify(r.hurt)); console.log('   why ' + r.why); console.log('   rw ' + JSON.stringify(r.rw) + ' ' + r.hs);
   }
 } finally { pg.close(); }

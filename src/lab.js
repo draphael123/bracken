@@ -1424,7 +1424,7 @@ async function runbossLab(BK, opts) {
         const greed=BK.greed?BK.greed.count(boss):0;
         const buds=BK.movers().filter(m=>m.kind==='growcap'&&m.x>A.x0-20&&m.x<A.x1).map(m=>({x:m.x+m.w/2,top:m.y0-m.rise,grown:m.k>0.9}));
         const cleats=RW?RW.bossHoists().map(q=>({id:q.id,x:q.x,up:q.up,cx:q.cleat[0]*16+8})):[];
-        const pl=hnPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0},e:boss,R:HH&&HH.read(),A,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',buds,cleats,t:f/60,rng:Math.random,mem:P.labHmMem,greed,eyes:!!LABP.v2});
+        const pl=hnPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,busy:h==='warden'?(P.blastT||0)+(P.deflectRec||0):0,snare:P.snare||0},e:boss,R:HH&&HH.read(),shots:BK.seeds().filter(s=>!s.dead&&!s.reflected&&s.owner&&s.owner.hmAdd).map(s=>(s.labId=s.labId||(P.labSeedN=(P.labSeedN||0)+1),{id:s.labId,x:s.x,y:s.y,vx:s.vx||0,vy:s.vy||0})),A,reach:LAB_REACH[h],shield:SHIELDED(h),deflect:h==='warden',buds,cleats,t:f/60,rng:Math.random,mem:P.labHmMem,greed,eyes:!!LABP.v2});
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}

@@ -13,22 +13,27 @@
 //   EVERY BUD WALL IS FOUR ROWS: a grown cap stands level with its top (no jump climbs four rows; the reach fill rides a bud to its top row).
 //   The rope, the cleat and the drop line are drawn (src/rootway-hands.js drawWorld): a dotted plumb line to where the load will land.
 //
-// FIVE SECTIONS (columns; rows: smaller is higher). The route climbs from row 42 (the fungus floor) to row 18 (the canopy).
-//     0-96   THE ROOT CELLAR       TEACH both     a root wall and its bud; a span over a cheap pit; fungus foes
-//    96-196  THE GREAT ROOTS       TEST           a leaning cap over a root gap; a cage over two scouts; THE TROPHY-HUNTER (the new foe); a span over a real gap
-//   196-296  THE HOIST YARD        REMIX          SET PIECE A, THE TROPHY LARDER (three cages drop onto three stumps: a stair); a cleat you GROW a cap to reach;
-//                                                 a hunter hanging over the bud you must grow
-//   296-386  THE CANOPY LOOKOUT    EXAM           SET PIECE B, THE LOOKOUT (strike the scout's arrow back through the rope: the span drops); a leaning cap under
-//                                                 fire; the arena door
-//   386-447  THE HUNTMASTER'S STAND  THE BOSS     src/huntmaster.js
+// FIVE NAMED AREAS (claude/rootway2, Daniel 2026-10-09: "concept not bad, could use some work" - the level was repetitive; each area now has its own character, A8/A4).
+// Columns; rows: smaller is higher. The route climbs from row 42 (the fungus floor) to row 18 (the canopy).
+//     0-96   THE ROOT CELLAR       TEACH    dark, under the fungus line, lit by spore glow: a bud against a root wall (safe), a span over a cheap pit (the hoist taught)
+//    96-196  THE HOLLOW TRUNK      TEST     a vertical climb up the inside of a hollow trunk: buds against root shelves, Sporewood's SPRING CAP, the LEANING CAP across the shaft;
+//                                           the goblins hold the knothole (an elite); out on the bough, THE TROPHY LINE taught (optional)
+//   196-303  THE HUNTERS' GANTRY  REMIX    the hoists remixed with the zip lines: THE TROPHY LARDER (three cages, a stair), the high cleat (grow a cap to reach it), a hunter over
+//                                           your bud, THE GANTRY (a cage for a step, the trophy line over the well)
+//   303-360  THE CANOPY SNARES     TEACH THE BOSS  his archers on root ledges (THE LOOKOUT: strike the arrow back through the rope), his JAW TRAPS (jump them or throw a pod),
+//                                           his NETS (roll through), the leaning cap over a real fall
+//   360-388  THE TROPHY LODGE      EXAM     his lodge: the section exam (an elite among traps and a net), the shrine, his door
+//   388-447  THE HUNTMASTER'S STAND  THE BOSS  src/huntmaster.js
 //   447-459  the road out          to KINGSWOOD
 export const ROOTWAY = { W: 460, H: 48, floor: 18, arena: [388, 446] };
-export const SECTIONS = [['THE ROOT CELLAR', 0, 96], ['THE GREAT ROOTS', 96, 196], ['THE HOIST YARD', 196, 296], ['THE CANOPY LOOKOUT', 296, 386], ["THE HUNTMASTER'S STAND", 386, 460]];
+export const SECTIONS = [['THE ROOT CELLAR', 0, 96], ['THE HOLLOW TRUNK', 96, 196], ["THE HUNTERS' GANTRY", 196, 303], ['THE CANOPY SNARES', 303, 360], ['THE TROPHY LODGE', 360, 388], ["THE HUNTMASTER'S STAND", 388, 460]];   /* (claude/rootway2, Daniel 10-09: five named areas, each its own character, then the stand) */
 /* each mechanic's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/rootway.mjs and the brief */
 export const ARCS = {
-  cap: { teach: [20, 36], develop: [96, 116], twist: [228, 270], exam: [330, 352] },        /* the root wall; the leaning cap; the cap to the cleat + the hunter's bud; the leaning cap under fire */
-  hoist: { teach: [44, 62], develop: [120, 182], twist: [196, 270], exam: [296, 314] },     /* the span over the pit; the cage on the scouts + the span over the gap; the larder + the high cleat; the lookout */
+  cap: { teach: [20, 36], develop: [100, 150], twist: [228, 270], exam: [330, 352] },        /* the root wall; the trunk (buds, the spring cap, the lean); the cap to the cleat + the hunter's bud; the leaning cap over the fall */
+  hoist: { teach: [44, 62], develop: [196, 240], twist: [240, 300], exam: [296, 314] },     /* the span over the pit; the larder; the high cleat + the gantry; the lookout */
   arrow: { teach: [296, 314], exam: [388, 446] },                                             /* the lookout (struck back through the rope); the Huntmaster's gold arrows */
+  snare: { teach: [312, 332], develop: [350, 360], exam: [360, 388] },                        /* (claude/rootway2) the jaw traps and the net on the canopy road; the net at the last cap; the lodge exam - then he sets them himself */
+  zip: { teach: [163, 186], exam: [276, 292] },                                               /* the trophy line off the bough (optional); the gantry's (required) */
 };
 
 export function buildRootway({ painter, T, TS }) {
@@ -44,7 +49,7 @@ export function buildRootway({ painter, T, TS }) {
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
   const deco = (x, y, kind, v) => ent('deco', x, y, { kind, v: v || 0 });
   const tag = (x, y) => ent('stray', x, y, { kind: 'tag' });            /* A TROPHY TAG: the quest (L.quest) - the hunters' bone tags */
-  const caps = [], hoists = [], decor = [], vaultDoors = [], zips = [];
+  const caps = [], hoists = [], decor = [], vaultDoors = [], zips = [], podCaps = [], jaws = [], nets = [];   /* (claude/rootway2: the spore pods' caps, the jaw traps and the nets - src/hunt-pods.js, src/snares.js) */
   /* A TROPHY LINE (src/zipline.js, claude/ziproot): from the deck at column x0 (standing row top) down to column x1 (landing floor row endRow); the rope hangs 12 px over the feet at each end */
   const rope = (x0, top, x1, endRow, groundRow) => ({ x0: x0 * TS + 8, y0: top * TS - 12, x1: x1 * TS + 8, y1: endRow * TS - 12, posts: [[x0 * TS + 8, top * TS - 12, top * TS], [x1 * TS + 8, endRow * TS - 12, groundRow * TS]] });
   /* A BUD (Sporewood's sprout, the same mover): `row` is the ground row it sits on; it spans columns x..x+1 */
@@ -97,40 +102,44 @@ export function buildRootway({ painter, T, TS }) {
   ent('check', 92, 34);                                                           /* CHECKPOINT ONE */
   deco(96, 34, 'gobPennant', 0);                                                  /* the first goblin mark */
 
-  // ================= 2. THE GREAT ROOTS (96-196): TEST - the leaning cap, a cage on the scouts, THE TROPHY-HUNTER, a span over a real gap =================
-  sign(98, 34, 'SOME BUDS LEAN AS THEY GROW. STOP ON ONE AT THE EDGE AND IT CARRIES YOU OVER.');
-  well(105, 114, 35, 45);                                                         /* a root gap ten wide; root shelves up its near wall */
-  bud(103, 35, { rise: 16, lean: 160, growT: 1.6 }); ent('rockfall', 101, 0, { spore: true, every: 2.8, tell: 0.9 });   /* (a spore drop on the lip where you wait for the cap to lean) */                              /* THE LEANING CAP: it sets you down by the far root */
-  ground(115, 128, 35); plank(117, 126, 32);
-  foe('lurker', 120, 34, 'rootLurk'); foe('spitcap', 121, 31, 'rootLurk', { perch: true, face: -1 });   /* (FIX PASS: a spitcap on the root over the landing spits at you as the leaning cap carries you over) */
-  /* A TROPHY CAGE over two goblin SCOUTS on the root floor below: strike its cleat from the root above and it crushes them (or fight them) */
-  ground(129, 158, 38);
-  hoist('scoutCage', { x: 139, top: 23, hang: 30, cleat: [127, 34], load: 'cage', land: [138, 36] });
-  sign(124, 34, 'A CAGE HANGS OVER THEM. CUT IT DOWN ON THEIR HEADS.');
-  foe('archer', 138, 37, 'scouts', { face: -1 }); foe('archer', 139, 37, 'scouts', { face: -1 });   /* (both under the cage's two columns) */
-  deco(131, 37, 'trophyRack'); coins([133, 36], [144, 36]);
-  /* THE TROPHY-HUNTER (the one new foe): he rides a hoist down onto you as you pass under - cut its cleat first and he falls dazed */
-  plank(143, 151, 35);
-  /* THE TROPHY LINE, TAUGHT (claude/ziproot): the root over the scouts' road has a hunters' line from its east end down to the floor - UP takes the handle, the line carries you down. A miss costs a drop to the road, nothing else; trophies hang along it */
-  zips.push(rope(125,32,134,38,38)); sign(121,31,"A TROPHY LINE. UP TAKES THE HANDLE; IT CARRIES YOU DOWNHILL. JUMP LETS GO, DOWN DROPS."); coins([127,32],[129,33],[131,34]);
-  hoist('hunterA', { x: 154, top: 24, hang: 32, cleat: [148, 37], load: 'hunter' }); foe('trophyhunter', 154, 32, 'hoistA', { face: -1, hang: 'hunterA' });
-  sign(146, 37, 'A HUNTER RIDES THE HOIST. CUT ITS ROPE AND HE FALLS.'); ent('rockfall', 152, 0, { spore: true, every: 2.9, tell: 0.9 });
-  tag(157, 37);                                                                   /* TROPHY TAG ONE, where he hung */
-  ground(159, 172, 35); plank(161, 170, 32); foe('archer', 166, 31, 'rootSpit', { perch: true, face: -1 });   /* (FIX PASS: a ranged foe over the road - fire from above that a blade on the floor does not reach, v2) */
-  foe('spitcap', 168, 34, 'rootSpit', { face: -1 }); foe('shield', 164, 34, 'rootSpit', { face: -1 }); glow(162, 34); /* (FIX PASS: heavier, v2) */
-  /* A SPAN OVER A REAL GAP: nine wide, a well under it */
-  well(173, 181, 35, 45);
-  hoist('gapSpan', { x: 177, top: 23, hang: 29, cleat: [171, 34], load: 'span', span: [173, 181, 35] }); ent('rockfall', 169, 0, { spore: true, every: 2.7, tell: 0.9 });
-  ground(182, 190, 35); ground(191, 206, 32);
-  /* THE GREAT ROOTS' EXAM (FIX PASS, v2 recipe 4): the goblins hold the far side of the span - a SHIELD on the landing, a TROPHY-HUNTER who lunges at you as you
-     step off it (knockback by a well), a SCOUT on the root step over them; the checkpoint after them */
-  sign(166, 34, 'THE GOBLINS HOLD THE FAR SIDE. DROP THE SPAN, THEN CROSS UNDER THEIR BOW.');
-  foe('shield', 184, 34, 'gapGuard', { face: -1 }); foe('trophyhunter', 188, 34, 'gapGuard', { face: -1 }); foe('archer', 191, 31, 'gapGuard', { perch: true, face: -1 });
-  deco(185, 34, 'warnPost', 0); coins([184, 33], [187, 33]);
+  // ================= 2. THE HOLLOW TRUNK (96-196): the bud TESTED - a climb up the inside of a great hollow trunk (claude/rootway2, Daniel 10-09) =================
+  /* In at its foot, up its insides, out at THE KNOTHOLE near its top: a bud against a root shelf (four rows - no jump), Sporewood's SPRING CAP (hold jump: it throws you up
+     through a root plank), a bud on the plank against the high shelf, and the LEANING CAP across the shaft to the knothole's ledge. Every miss is a fall to a shelf or the
+     hollow's floor (cheap: the climb again). The fungus is still thick down here and thins as you climb; spore pods and puffballs in the dark (L.darkZones) */
+  sign(98, 34, 'THE HOLLOW TRUNK. THE CAPS GROW INTO STEPS: CLIMB ITS INSIDES TO THE KNOTHOLE.');
+  block(103, 110, 0, 31);                                                         /* the trunk's west wall: in at its foot (rows 32-34) */
+  ground(105, 150, 35);                                                           /* the hollow's floor */
+  block(111, 150, 0, 6);                                                          /* the trunk goes on up over you */
+  block(151, 156, 0, H - 1); air(151, 156, 16, 19);                               /* its east wall, and THE KNOTHOLE near its top */
+  glow(108, 34); glow(119, 34); glow(131, 34); deco(114, 34, 'sporePod'); deco(124, 34, 'tinyCap', 1); deco(136, 34, 'mushroom', 1);
+  ent('puffball', 121, 34); foe('sporeling', 116, 34, 'trunkFloor', { face: -1 }); foe('weaver', 129, 34, 'trunkFloor', { face: -1 });
+  ent('vent', 126, 34, { period: 4.5, on: 1.6, h: 96, phase: 1 }); coins([126, 31], [126, 29]);                          /* a puff of spores up to a few coins (a lift to nowhere: the way is the caps) */
+  /* TIER ONE: a bud against the first root shelf, four rows up */
+  bud(140, 35); block(142, 150, 31, 32);
+  foe('lurker', 148, 30, 'trunkShelf');                                           /* (v2: a foe where the cap sets you down) */
+  /* TIER TWO: SPOREWOOD's SPRING CAP on the shelf - land on it and HOLD JUMP: it throws you up through the root plank (a plain bounce falls a row short) */
+  set(143, 30, T.BOUNCER); sign(146, 30, 'A SPRING CAP. LAND ON IT AND HOLD JUMP: IT THROWS YOU HIGH.'); coins([143, 27], [142, 25]);
+  plank(134, 141, 24); foe('spitcap', 138, 23, 'trunkShelf', { face: -1 }); ent('rockfall', 137, 7, { spore: true, every: 2.8, tell: 0.9 });   /* (spores shed from the trunk's insides where you land) */
+  /* TIER THREE: a bud on the plank's end against the high shelf (four rows) */
+  bud(134, 24); block(111, 133, 20, 21); foe('spider', 122, 7, 'trunkHigh', { perch: true, drop: 180 }); foe('spitcap', 115, 19, 'trunkHigh', { face: 1 });
+  tag(112, 19);                                                                   /* TROPHY TAG ONE, at the high shelf's back (off the road: a step aside) */
+  /* TIER FOUR: THE LEANING CAP across the shaft to the knothole's ledge (ten wide: no jump) - the first real test of the lean, over the plank and the floor */
+  bud(132, 20, { rise: 16, lean: 160, growT: 1.6 }); sign(127, 19, 'THIS CAP LEANS. STOP ON IT AT THE EDGE AND IT CARRIES YOU ACROSS.');
+  block(144, 150, 20, 21); ent('rockfall', 147, 7, { spore: true, every: 2.9, tell: 0.9 });
+  /* THE HOLLOW TRUNK's EXAM (v2 recipe 4): the goblins hold the knothole - a SHIELD CAPTAIN on the ledge the leaning cap sets you down on (level.js ELITES, gate 157:
+     a knock-back is a fall into the shaft, cheap but the climb again), a TROPHY-HUNTER in the knothole behind him, a bow on the bough outside */
+  foe('shield', 147, 19, 'knothole', { face: -1 }); foe('trophyhunter', 154, 19, 'knothole', { face: -1 }); foe('archer', 161, 19, 'knothole', { face: -1 });
+  sign(145, 19, 'THE GOBLINS HOLD THE KNOTHOLE. THE WAY OUT IS THROUGH THEM.');
+  /* OUT ON THE BOUGH: root steps down to the road (four rows each), and THE TROPHY LINE, TAUGHT (claude/ziproot): from the bough's deck down to the road - UP takes the
+     handle, the line carries you down. Optional (the steps walk down); a miss costs nothing; no foe at its landing */
+  ground(157, 162, 20); plank(163, 168, 20); ground(167, 170, 24); ground(171, 174, 28); ground(175, 190, 32);
+  zips.push(rope(168, 20, 186, 32, 32)); sign(164, 19, 'A TROPHY LINE. UP TAKES THE HANDLE; IT CARRIES YOU DOWNHILL. JUMP LETS GO, DOWN DROPS.'); coins([171, 21], [175, 23], [179, 25]);
+  deco(158, 19, 'gobPennant', 1); deco(176, 31, 'trophyRack'); glow(188, 31);
+  ground(191, 206, 32);
   ent('check', 193, 31);                                                          /* CHECKPOINT TWO */
   plank(196, 205, 29); foe('archer', 201, 28, 'larderGallery', { face: 1 }); ent('vent', 198, 31, { period: 4.5, on: 1.6, h: 70, phase: 2 }); coins([199, 28], [203, 28]);   /* a vent up to the larder's gallery */
 
-  // ================= 3. THE HOIST YARD (196-296): REMIX - THE TROPHY LARDER, a cleat you grow a cap to reach, a hunter over your bud =================
+  // ================= 3. THE HUNTERS' GANTRY (196-303): REMIX - the hoists and the zip lines: THE TROPHY LARDER, a cleat you grow a cap to reach, a hunter over your bud, THE GANTRY =================
   /* SET PIECE A, THE TROPHY LARDER: three stumps in a fungus pit, rising four rows each - no jump climbs from one to the next - and a cage hangs over the
      east half of each. Cut a cage down and it lands on its stump as a half-step: stump, cage, next stump, cage, the far lip. All three ropes tie off on the near lip */
   sign(198, 31, 'THE TROPHY LARDER. CUT THE CAGES DOWN ONTO THE STUMPS: THEY MAKE A STAIR.'); ent('rockfall', 203, 0, { spore: true, every: 2.8, tell: 0.9 }); ent('rockfall', 213, 0, { spore: true, every: 3.1, tell: 0.9 });
@@ -162,7 +171,7 @@ export function buildRootway({ painter, T, TS }) {
      hangs from a gantry five rows over the road - no jump reaches it - and a CAGE hangs over the road at its foot: cut it down and it lands on a root stump as a two-row step (stump, cage, gantry, ledge).
      UP takes the handle and the line carries you over the well to the ledge, where the hunt holds the landing; the ledge's bud grows you up the root wall to the road. A miss is a
      fall into the well (a shelf stair up its near wall, A10). The bow on the bough over the road covers the line. */
-  sign(270,18,"THE HUNTERS' GANTRY. CUT THE CAGE DOWN FOR A STEP, THEN UP THE STEP: THE TROPHY LINE CARRIES YOU OVER THE WELL.");
+  sign(270,18,"THE HUNTERS' GANTRY. CUT THE CAGE DOWN FOR A STEP: THE TROPHY LINE CARRIES YOU OVER THE WELL.");
   air(281, 290, 0, 26); ground(281, 290, 27); plank(281, 282, 24); plank(281, 282, 21);                                                             /* the well, and root shelves up its near wall (a fall costs the climb) */
   hoist('gantry', { x: 275, top: 9, hang: 13, cleat: [271,18], load: 'cage', land: [274,16] });
   ground(273, 275, 18);                                                            /* a root stump under the cage's place: one row up from the road (a step), and the cage lands on it - road, stump, cage, gantry: 1 + 2 + 2 rows, nothing taller than a jump */
@@ -176,7 +185,9 @@ export function buildRootway({ painter, T, TS }) {
   ent('check', 299, 18);                                                          /* CHECKPOINT THREE */
   deco(278, 13, 'hangCage', 0);
 
-  // ================= 4. THE CANOPY LOOKOUT (296-386): THE EXAM =================
+  // ================= 4. THE CANOPY SNARES (303-360): the Huntmaster's moves TAUGHT in his own branches (claude/rootway2, B8: the approach sets him up) =================
+  /* his archers on root ledges (the lookout: strike the arrow back), his JAW TRAPS on the bough (jump them, or take a SPORE POD and throw it on one - src/snares.js, src/hunt-pods.js),
+     his NETS coiled in the branches (they drop as you pass under: roll through) - each met here, where it is cheap, before he uses it on you. The exam's gaps are real falls */
   /* SET PIECE B, THE LOOKOUT: a scout on a lookout across a chasm eight wide; the bridge span hangs on a hoist whose tie-off runs down past his
      post to a cleat no blade reaches. Strike his arrow back: it flies home through the rope and the span drops. (If he falls, another takes the post) */
   sign(302, 18, 'HE CANNOT MISS FROM THERE. STRIKE HIS ARROW BACK: IT FLIES HOME THROUGH THE ROPE.');
@@ -189,19 +200,28 @@ export function buildRootway({ painter, T, TS }) {
   plank(314, 318, 16); decor.push({ kind: 'lookout', x0: 313, x1: 319, y: 16 });
   hoist('lookout', { x: 308, top: 8, hang: 13, cleat: [312, 15], load: 'span', span: [304, 311, 19], arrow: true, post: [316, 15] });
   foe('archer', 316, 15, 'lookout', { face: -1, lookout: true });
-  coins([314, 17], [318, 17]); tag(338, 18); plank(322, 336, 16); ent('rockfall', 320, 0, { spore: true, every: 2.6, tell: 0.9 });                                      /* TROPHY TAG THREE: past the lookout, on the root road */
-  foe('shield', 328, 18, 'roadGuard', { face: -1 }); foe('trophyhunter', 334, 18, 'roadGuard', { face: -1 }); foe('archer', 322, 15, 'roadGuard', { perch: true, face: -1 });   /* (FIX PASS: a bow on the root over the road) */
+  coins([314, 17], [318, 17]); tag(338, 18); plank(322, 336, 16);                                      /* TROPHY TAG THREE: past the lookout, on the root road */
+  /* THE SNARES, TAUGHT: a pod cap, two jaw traps on the root road (jump them, or spring one with a pod), then a NET coiled under the root over the road */
+  podCaps.push([313, 19]); jaws.push([320, 19], [325, 19]); sign(318, 18, 'JAW TRAPS. JUMP THEM - OR TAKE A POD (E) AND THROW IT ON ONE: IT SNAPS ON NOTHING.');
+  nets.push({ x0: 329, x1: 331, row: 19, top: 17 }); sign(327, 18, 'A NET HANGS OVER THE ROAD. WHEN IT CREAKS, ROLL THROUGH IT.');
+  foe('shield', 334, 18, 'roadGuard', { face: -1 }); foe('trophyhunter', 337, 18, 'roadGuard', { face: -1 }); foe('archer', 323, 15, 'roadGuard', { perch: true, face: -1 });   /* (a bow on the root ledge over the traps: v2, a foe at the platforming moment) */   /* (FIX PASS: a bow on the root over the road) */
   /* the leaning cap over a gap, under a scout's fire from a perch past it */
   chasm(341, 350, 19); ent('rockfall', 337, 0, { spore: true, every: 2.9, tell: 0.9 });                                                            /* THE EXAM's last gap: no floor (A10 amended) */
   bud(339, 19, { rise: 16, lean: 160, growT: 1.6 });
   ground(351, 387, 19);
-  plank(355, 359, 15); foe('archer', 357, 14, 'perchBow', { perch: true, face: -1 }); foe('archer', 366, 18, 'perchBow', { face: -1 });   /* (FIX PASS: two bows on the cap's ride: a hit knocks you off it) */
+  plank(355, 359, 15); foe('archer', 357, 14, 'lastCap', { perch: true, face: -1 }); foe('archer', 366, 18, 'lastCap', { face: -1 });   /* (FIX PASS: two bows on the cap's ride: a hit knocks you off it) */
   foe('spitcap', 362, 18, 'lastCap', { face: -1 }); foe('trophyhunter', 354, 18, 'lastCap', { face: -1 });   /* (FIX PASS: a hunter where the last leaning cap sets you down, by the chasm) */                               /* the last of the fungus */
   /* THE TROPHY LOFT (the vault): the hunters' store in a hollow root over the road - four tags open its door (E at it): a silver */
   block(364, 372, 8, 13); air(365, 371, 9, 12); plank(373, 376, 13); plank(377, 379, 16);
   for (let y = 9; y <= 12; y++) set(372, y, T.SOLID); vaultDoors.push({ x0: 372, x1: 372, y0: 9, y1: 12 });
   ent('loft', 374, 12); ent('silver', 366, 12); tag(376, 12);                        /* TROPHY TAG FOUR: on the loft's step */
-  foe('shield', 374, 18, 'doorGuard', { face: -1 }); foe('archer', 379, 18, 'doorGuard', { face: -1 });
+  nets.push({ x0: 357, x1: 359, row: 19, top: 16 });                             /* (a net under the bow's perch where the last cap sets you down) */
+  // ================= 5. THE TROPHY LODGE (360-388): his lodge - trophies, skins, his horn on the wall - THE SECTION EXAM, the shrine, then his stand =================
+  sign(361, 18, 'THE TROPHY LODGE. HIS TROPHIES ON THE WALLS - AND HIS SNARES ON THE FLOOR.'); deco(362, 18, 'trophyRack'); deco(370, 18, 'skullTotem'); deco(383, 18, 'boneChime');
+  /* THE EXAM (v2 recipe 4): a SHIELD CAPTAIN (level.js ELITES) on the lodge floor between two jaw traps, a net over him, a bow on the loft's step - every one of the Huntmaster's
+     tools at once, a pod cap at the lodge door to spring them; THE SHRINE after (checkpoint four, the stand's door) */
+  podCaps.push([363, 19]); jaws.push([368, 19], [379, 19]); nets.push({ x0: 374, x1: 376, row: 19, top: 14 });
+  foe('shield', 372, 18, 'lodgeExam', { face: -1 }); foe('trophyhunter', 376, 18, 'lodgeExam', { face: -1 }); foe('archer', 378, 15, 'lodgeExam', { perch: true, face: -1 });
   ent('rockfall', 381, 0, { spore: true, every: 2.7, tell: 0.9 });
   sign(381, 18, "THE HUNTMASTER'S STAND. HIS GOLD ARROWS COME BACK TO HIM. HIS RED ONES DO NOT.");
   ent('check', 384, 18);                                                          /* CHECKPOINT FOUR: the door */
@@ -221,11 +241,14 @@ export function buildRootway({ painter, T, TS }) {
   const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'huntmaster', music: 'boss3', tint: '#c89040', tintA: 0.06,
     start: [A0 + 6, FL - 1], huntmaster: true, perches: [[A0 + 4, A0 + 10, FL - 4], [A1 - 10, A1 - 4, FL - 4]] };
   ent('gate', 456, FL - 1);
+  /* (claude/rootway2) THE STAND's POD CAPS: a ripe spore pod at each wall (E takes it, ATTACK throws it - src/hunt-pods.js): on him, his long stagger; on a jaw trap he set, it springs it */
+  podCaps.push([A0 + 1, FL], [A1 - 1, FL]);
 
   const START = { x: 3, y: 41 };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: caps,
-    arena, gateAfterBoss: true, rootway: true, hoists, decor, vaultDoors, zipLines: zips, ropes: zips,
+    arena, gateAfterBoss: true, rootway: true, podCaps, jaws, nets, hoists,
+    dark: 0.01, darkZones: [{ x0: 0, x1: 102 * TS, y0: 0, y1: H * TS, dark: 0.55, name: 'THE ROOT CELLAR' }, { x0: 103 * TS, x1: 157 * TS, y0: 21 * TS, y1: H * TS, dark: 0.35, name: 'THE HOLLOW TRUNK' }],   /* (claude/rootway2) the cellar under the fungus line is DARK - its spore glow is its light; the trunk's foot is dim */ decor, vaultDoors, zipLines: zips, ropes: zips,
     squadBands: [{ lo: 400, hi: 459, spots: 0, why: "THE HUNTMASTER'S STAND: columns 386-459 are his arena and the road out - no squad stands in a boss arena (as the sky road)" }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* four checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */
