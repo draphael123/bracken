@@ -77,7 +77,7 @@ export const OPEN_RULE = {
   frog: e => H.frogOpen(e),                                                  // dazed, croaking, in the mud
   chief: e => e.mode === 'planted',                                          // his club in the ground
   king: e => e.mode === 'held' || e.open > 0,                                // held in a cage (his crown turns everything else already)
-  ram: e => H.ramOpen(e),                                                    // into the wall, or off his leap
+  ram: e => H.ramOpen(e),                                                    // (claude/scree2) STUNNED under a fold overhang he was lured beneath, or into the wall off a dodged charge (src/ram-lord.js)
   owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned',   // (claude/bosswave1) down on the boards only: lampT open in the air made a lit lamp a free window
   abbot: e => abbotOpen(e),                                                  // the bell has him down
   windcaller: e => H.callerOpen(e),                                          // (claude/bosswave1) FALLEN only: his bolt sent back, or his howl braced through
@@ -152,6 +152,7 @@ export const FULL_DAMAGE = {
   roc: 'Daniel 10-06 (claude/roc2): "you can jump on the gliding platforms / thermals and actually hit her, so she does not need to be invulnerable by default" - a beast, always hittable, guarding by HEIGHT (src/roc-eyrie.js take: whole and a little more from the air the level gives, GUARDS LOW from the floor); her plunge and her nest are x1.5',
   greathound: 'Daniel 10-07 (claude/hound): "too difficult simply because he is invincible outside of very small windows ... he should not be invincible" - a beast duelist (B11/B13): always hit for real, his jaws turn part of a blow into his face (GO ROUND), whole from behind or above; his skid and his whine are bonus openings x1.5 (src/great-hound.js)',
   grandmother: 'Daniel 10-08 (claude/underleaf2, scratch/brief-underleaf2.md): "off the x0.05 chip" - always hittable, keyed FROM BEHIND (B11/B13/B14): her front turns a blade (SHE HEARD YOU), her back takes it whole, x2 while she lashes at a lure (a thrown pot, a struck bell-pull), x1.5 in her rap; a told ward after each (src/hush-hands.js granTake)',
+  ram: 'a beast duelist (design standard B11, claude/scree2 - Daniel 10-08 "the boss could be better"): always hittable, his HORNS GUARD BY ANGLE (a blow from the front at his height is turned: GO ROUND; from behind, the flank or above it lands); his openings - the cliff dropped on him (x2) and the wall (x1.5) - pay in src/ram-lord.js, and a told ward follows each',
   matriarch: 'a beast duelist (design standard B11): always hittable, her talons GUARD BY ANGLE (a blow from the front at her height is turned; from behind or above it lands); her openings pay x1.6 in her own code (claude/redgorge2)',
   pyromancer: 'Daniel 10-07 (claude/burnvillage2): "the PYROMANCER boss must NEVER be invulnerable: some fire resistance is fine, but he takes real damage normally (B11/B13)" - a hero-turned-boss duelist: a blow lands whole, he READS a run (the third light blow is turned, a heavy goes through) and no burn takes on him (FIREPROOF); water STUNS him x2, then his told steam ward (src/village-water.js)',
 };

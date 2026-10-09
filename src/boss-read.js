@@ -32,7 +32,7 @@ export const TURN = {
 /* B11: the duelists, and the way each one guards. 'front' = his face side ('GO ROUND' beats it from behind); 'wall' = from behind or from above (claude/keyscore); 'high' = a low blow or one from
    the air beats it; 'low' = a blow from the air beats it. A boss is here ONLY if his header says he is a duelist. */
 export const GUARD = {
-  ram: 'front',      // THE RAM LORD: his horns are his guard - from behind he is a beast like any other (claude/sweep1)
+  ram: 'horns',      // THE RAM LORD: his horns are his guard - from behind, the flank or ABOVE (a jump cut, a plunge) he is a beast like any other (claude/sweep1; claude/scree2: 'horns' = 'front' + the air)
   chief: 'front',    // THE GOBLIN CHIEFTAIN: the shield on his arm - round it, or wait for his club in the ground (claude/sweep1)
   cisternqueen: 'front',   // THE CISTERN QUEEN: her raised claws on the floor - round her (claude/sweep3, Daniel 10-06: never fully invulnerable)
   /* (claude/keyscore, B13 CHIP SWEEP - Daniel 10-05: no waiting-room invulnerability) 'wall' = his front is a wall: a blow from behind him OR from above him
@@ -52,7 +52,7 @@ export const TURN_WORD = {
   golem: TURN.STONE,
   mother: TURN.ARMOURED,
   king: 'THE CROWN',                                        // only a cage brings his head down
-  ram: (e, fromX) => behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
+  ram: (e, fromX) => e.ward > 0 || behind(e, fromX) ? TURN.WARDED : TURN.ROUND,   /* (claude/scree2: his ward after an opening) */
   chief: (e, fromX) => behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   frog: 'THE HIDE',
   windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : TURN.WARDED,
@@ -140,7 +140,7 @@ const COL = '#d8e2ee', RING = '#eef4ff';
 export function makeBossRead(api) {
   const said = new WeakMap();
   const wordOf = (e, fromX) => { const w = TURN_WORD[e.t]; if (typeof w === 'function') return w(e, fromX); if (w) return w;
-    const g = GUARD[e.t]; return g === 'front' ? TURN.ROUND : g === 'high' ? TURN.HIGH : g === 'low' ? TURN.LOW : TURN.WARDED; };
+    const g = GUARD[e.t]; return g === 'front' || g === 'horns' ? TURN.ROUND : g === 'high' ? TURN.HIGH : g === 'low' ? TURN.LOW : TURN.WARDED; };
   function turned(e, fromX, word, o) {
     if (!e) return false; const t = api.time(); if (said.get(e) === t) return true; said.set(e, t);
     const dir = Math.sign(fromX - e.x) || 1, hx = e.x + dir * Math.min(14, (e.w || 20) / 2), hy = e.y - (e.h || 20) * 0.55;
@@ -164,6 +164,6 @@ export function makeBossRead(api) {
     drawKey(g, e, cx, cy, t) { const r = keyOf(e); if (!r || !e || !e.alive) return false; const at = glyphAt(r.key, e), hot = e.keyFlash !== undefined && t - e.keyFlash < 0.3;
       return drawKeyGlyph(g, r.key, Math.round(at.x - cx), Math.round(at.y - cy), t, hot ? 1.4 : 1); },
     beats(e, fromX, air, low) { const g = e && GUARD[e.t]; if (!g || !e.alive) return false;
-      return g === 'front' ? behind(e, fromX) : g === 'wall' ? behind(e, fromX) || !!air : g === 'high' ? !!(air || low) : g === 'low' ? !!air : false; },
+      return g === 'front' ? behind(e, fromX) : g === 'wall' ? behind(e, fromX) || !!air : g === 'horns' ? behind(e, fromX) || !!air : g === 'high' ? !!(air || low) : g === 'low' ? !!air : false; },
   };
 }

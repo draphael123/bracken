@@ -202,5 +202,17 @@
   "lifts": 98,
   "walked": 100,
   "bare": true
+ },
+ "scree": {
+  "hash": "8147146cccda",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 52,
+  "deaths": 9,
+  "kills": 36,
+  "lifts": 138,
+  "walked": 100,
+  "bare": true
  }
 }

@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { LEVELS } from '../src/level.js';
+import * as RLD from '../src/ram-lord.js';   /* (claude/scree2) updateRam asks src/ram-lord.js for his fold's overhangs, his ward and his pace */
 
 const L = LEVELS.find(l => l.id === 'scree').build();
 const A = L.arena;
@@ -32,6 +33,7 @@ const ctx = {
   damagePlayer: () => 'hit', number: noop, dust: noop, sparks: noop, shakeCam: noop, zoomKick: noop,
   SFX: new Proxy({}, { get: () => noop }),
   DMG: new Proxy({}, { get: () => 10 }),
+  RLD, bossActive: false, ramCtx: () => ({ say: noop, sfx: noop }),   /* (claude/scree2) the charge runs outside a live fight here: no overhang step */
 };
 /* claude/bosswave1 made the daze a module const above updateRam: read its real values from main.js so the slice can see them */
 const dz = /const RAM_DAZE = ([\d.]+), RAM_DAZE_TAKE = ([\d.]+)/.exec(main); assert(dz, 'RAM_DAZE consts found in main.js');

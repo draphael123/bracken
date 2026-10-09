@@ -16,7 +16,7 @@ t = 3; log.length = 0; assert.ok(!BR.auto(ram, 140, { hp: 310, mode: 'pace', bro
 assert.ok(!BR.auto(ram, 140, { hp: 300, mode: 'charge', broken: 0 }), 'a blow that moved him off his mode is not turned');
 assert.ok(!BR.auto({ ...ram, mode: 'sleep' }, 140, { hp: 300, mode: 'sleep', broken: 0 }), 'a sleeping boss is not turned');
 assert.strictEqual(log.length, 0);
-assert.strictEqual(GUARD.ram, 'front'); assert.ok(BR.beats(ram, 60) && !BR.beats(ram, 140), "the ram's horns: beaten from behind only");
+assert.strictEqual(GUARD.ram, 'horns'); assert.ok(BR.beats(ram, 60) && !BR.beats(ram, 140) && BR.beats(ram, 140, true), "the ram's horns (claude/scree2, Daniel's brief: flank/behind/above land): beaten from behind or from the air, never from his front on the ground");
 assert.ok(!BR.beats({ t: 'golem', x: 0, face: 1, alive: true }, -50), 'a boss not in GUARD is never beaten by angle');
 assert.strictEqual(BR.wordOf({ t: 'golem' }, 0), TURN.STONE); assert.strictEqual(BR.wordOf({ t: 'nobody' }, 0), TURN.WARDED);
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');

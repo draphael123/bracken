@@ -16,6 +16,8 @@ import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/unde
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
+import { chaseScree } from './scree-chase.js';
+import { reliefScree } from './scree-relief.js';   /* the Scree Path's knolls, ledges and road overhangs (claude/scree2) */   /* THE ROCKSLIDE CHASE (claude/scree2) */
 import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
@@ -1409,7 +1411,7 @@ function screePath() {
   // room's own size - the player CAUSES it by choosing which side to stand on when he lowers his head. A bank of
   // loose scree is stacked against the west wall (313): his crash always shakes rock down (updateRam, main.js),
   // and a ram baited into THIS wall buries himself deeper for it - a caused opening, not a waited one.
-  ent('sign', 307, 7, { text: 'THE RAM LORD TURNS STEEL. CUT HIM WHEN A GREEN RING SHOWS: AFTER A WALL OR LEAP.' });
+  ent('sign', 307, 7, { text: 'HIS HORNS TURN STEEL: GO ROUND HIM. WHEN HE STANDS UNDER AN OVERHANG, KNOCK OUT ITS PROP.' });   /* (claude/scree2: the reworked Ram Lord - src/ram-lord.js) */
   ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 341, 8, { kind: 'foldGate' });
   ent('deco', 313, 8, { kind: 'cairn' }); ent('deco', 341, 8, { kind: 'cairn' });
   for (const x of [314, 315, 316]) ent('deco', x, 8, { kind: 'stone', v: x % 3 }); // THE SCREE BANK: banked loose stone against the west wall
@@ -1418,11 +1420,11 @@ function screePath() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: -1, duskLen: 1, music: 'theme4', night: false, glowNight: false,
-    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
+    duskStart: -1, duskLen: 1, music: 'mountain', night: false, glowNight: false,
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#6a5642', dirtL: '#80694e', dirtD: '#3e3226',   /* (claude/scree2: warm earth, not the cold blue-grey) */ canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'foothills' }],   /* its OWN bed (claude/scree2, A8): gusts, sheep bells, trickling scree, a far rockfall, a hawk - src/audio.js */
     arena: { x0: 312 * TS, x1: 342 * TS, floor: 9 * TS, trigger: 315 * TS, wallL: 311, wallR: 343, boss: 'ram', music: 'ramlord', tint: '#6a4a7a', tintA: 0.12, fx: 'dust', bank: -1 },   /* bank: -1 - the loose scree is banked against the LOW (west, x0) wall (A11) */
   }
   // ---- 4b. THE ROPEWAY: the gorge proper. A swing, a rope lift, the old mill's sails, another swing; harpies on the wind, rocks off the cliff, a ladder out of the bottom. ----
@@ -1431,7 +1433,7 @@ function screePath() {
   GA.ent('sign', 256, 18, { text: 'RIDE THE LIFT, THEN THE MILL SAILS, THEN THE CABLE SWING. NOTHING STAYS STILL.' });
   GA.plat(260, 17, 3); GA.plat(264, 16, 2); GA.plat(268, 16, 3); // stone steps off the cliff top: two up, never more than two across
   GA.R.ropes = [{ x0: 279 * TS + 8, y0: 6 * TS + 4, x1: 305 * TS + 8, y1: 6 * TS + 4, posts: [[279 * TS + 8, 6 * TS + 4, 19 * TS], [305 * TS + 8, 6 * TS + 4, 19 * TS]] }]; // the ropeway cable the swing hangs from
-  GA.R.moversExtra.push({ kind: 'lift', x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
+  GA.R.moversExtra.push({ kind: 'lift', ropeway: true, x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
   GA.plat(276, 12, 2);
   GA.block(279, 283, 19, 23); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on an arch: the gorge floor runs under it
   for (let i = 0; i < 4; i++) GA.R.moversExtra.push({ kind: 'wheel', px: 281 * TS + 8, py: 19 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
@@ -1483,18 +1485,19 @@ function screePath() {
   B.coins([68, 17], [71, 17], [77, 18], [84, 17], [88, 17], [100, 17], [103, 17], [96, 18]);
   B.ent('check', 106, 19);
   const RD = B.done();
-  // ---- 5c. THE GLASS QUARRY: where the hill folk took the glass out of the crag, and what grew back in it ----
+  // ---- 5c. THE STONE QUARRY: where the hill folk cut the ochre stone for their walls and bothies (claude/scree2, Daniel 10-08 "too many ice blocks": it was
+  // THE GLASS QUARRY, a seam of the cut Suncatcher's crystal floor - blue-white glass in the foothills. Now cut blocks, a derrick, a worked face) ----
   const Q = grow(RD, RD, 436, 44);
   Q.block(436, 479, 9, 27);
-  for (let x = 447; x <= 469; x++) Q.set(x, 9, T.CRYST);      // the seam: his floor, and the half of the room that burns
   Q.ent('check', 438, 8);
-  Q.ent('sign', 442, 8, { text: 'THE GLASS QUARRY. THE HIGH ROAD GOES OVER THE SEAM; THE LOW ONE GOES THROUGH.' });
-  // the stagings the quarrymen left: the cold road over his seam, and never more than three tiles a hop
+  Q.ent('sign', 442, 8, { text: 'THE OLD QUARRY. THE HIGH ROAD GOES OVER THE CUT; THE LOW ONE GOES THROUGH IT.' });
+  Q.ent('deco', 445, 8, { kind: 'quarryFace' }); Q.ent('deco', 448, 8, { kind: 'quarryBlocks', v: 0 }); Q.ent('deco', 463, 8, { kind: 'derrick' }); Q.ent('deco', 470, 8, { kind: 'quarryBlocks', v: 1 }); Q.ent('deco', 477, 8, { kind: 'quarryBlocks', v: 2 });   /* the quarry's own: a worked face, cut blocks with the chisel's marks, the derrick that lifts them */
+  // the stagings the quarrymen left: the high road over the cut, and never more than three tiles a hop
   Q.plat(445, 6, 3); Q.plat(450, 5, 3); Q.plat(455, 4, 3); Q.plat(460, 4, 3); Q.plat(465, 5, 3); Q.plat(470, 6, 3);
   Q.coins([446, 5], [451, 4], [461, 3], [466, 4], [471, 5], [443, 8], [473, 8]);
   Q.ent('deco', 439, 8, { kind: 'stone' }); Q.ent('deco', 474, 8, { kind: 'stone', v: 1 });
   Q.ent('deco', 444, 8, { kind: 'cairn' }); Q.ent('silver', 456, 3);
-  // ---- THE QUARRY EXAM (S3, the audit's plan 3): the dead crystal floor lives with the level's own rule under pressure -
+  // ---- THE QUARRY EXAM (S3, the audit's plan 3): the quarry floor lives with the level's own rule under pressure -
   // a scree chute down the low road, a loose ledge over it, broken stone at its foot, a rockfall on a count, and a goat
   // charging down it. Checkpoint 438 stands before it (above); the fold's stile at the gully's end stands outside it.
   Q.R.scree.push({ x0: 452, x1: 458, y: 9, dir: 1 });
@@ -1503,7 +1506,7 @@ function screePath() {
   Q.ent('rockfall', 456, 4, { every: 2.6 });
   Q.ent('goat', 449, 9, { face: 1 });                          // charges down the chute ahead of you
   /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
-  return reworkScree(Q.done(), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js */
+  return reliefScree(chaseScree(reworkScree(Q.done(), T), T, grow), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js; then THE ROCKSLIDE CHASE (claude/scree2): the old scree steps repainted as a hillside run and 96 columns grown in after them - src/scree-chase.js */
 ;
 }
 
@@ -8004,7 +8007,7 @@ const REVIEW = {
   kings: L => { const R = rv(L); R.ent('check', 153, 21); R.ent('check', 405, 20);
     L.tints = [[-24, 14, [150, 90, 200], 0.12], [-24, 40, [230, 150, 70], 0.15]];   /* THE SEAM (claude/sporeseam): the fungus violet still on the first screens, warming into the autumn amber, so the cut from Sporewood is a fade */
     for (const [x, k, v] of [[1, 'sporePod', 0], [3, 'mushroom', 0], [5, 'tinyCap', 1], [8, 'moss', 0], [14, 'tinyCap', 2], [16, 'mushroom', 1], [24, 'moss', 1], [31, 'tinyCap', 0]]) R.ent('deco', x, 19, { kind: k, v }); },   /* moved with the Knights' Road (+48 at 85) and the Hanging Roots (+42 at 191) */
-  scree: L => { rv(L).ent('check', 330, 18); },
+  scree: L => {},   /* (the slope's checkpoint at 330 is gone with the slope: claude/scree2's rockslide chase has its shrines before and after it, src/scree-chase.js) */
   // the sappers' tunnel was the busiest 38 tiles in the busiest level: the brute and one sapper go, and it is a
   // held breath between the walls instead of another fight
   stockade: L => { L.ents = L.ents.filter(e => !((e.t === 'brute' && e.x === 372 && e.y >= 21) || (e.t === 'sapper' && e.x === 368 && e.y >= 21))); },
@@ -8531,7 +8534,7 @@ const ELITES = {
   stockade: [['brute', 302, 19, { gate: 317 }]],
   spore: [['shield', 412, 13, { gate: 430 }]],
   kings: [['brute', 433, 20]],
-  scree: [['troll', 409, 18, { gate: 414 }]],   /* 409: at 403 he stood a tile from the checkpoint at 404 - the landing (level review, 2026-09-24) */
+  scree: [['troll', 505, 18, { gate: 510 }]],   /* (claude/scree2: +96, the rockslide chase grew in before him) 409: at 403 he stood a tile from the checkpoint at 404 - the landing (level review, 2026-09-24) */
   hanging: [['shield', 85, 107]],
   /* THE MONASTERY keeps the Temple Guardian in its hall, so neither of its two holds a gate. Both stand on a floor the
      level walks the LENGTH of, and neither stands at the trapdoor either end of it: a crag troll loose in the
