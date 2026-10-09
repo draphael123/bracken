@@ -106,7 +106,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('doorway', 23, 35, { id: 'hearth-far', to: 'hearth-back', kind: 'goblin' });
   ent('sign', 12, 35, { text: 'THIS DOOR IS ON THE LATCH. STAND IN A DOORWAY AND PRESS E.' });
   ent('torch', 11, 35); ent('check', 29, 35);
-  ent('sprig', 31, 35, { face: -1 }); ent('shield', 36, 35, { face: -1 });
+  ent('sprig', 31, 35, { face: -1 }); ent('shield', 33, 35, { face: -1 });
   coins([6, 34], [10, 34], [28, 34], [33, 33], [37, 34]);
   // THE GATE WATCH: two rope ladders in a switchback, a landing between them, and a Scalder over the upper one.
   // The landing is out of his reach: that is the lesson (step off the ladder when the pot tips).
@@ -114,14 +114,15 @@ export function stormholdTown({ painter, T, TS }) {
   plat(T1.x0, T1.top, T1.x1 - T1.x0 + 1);   // the top deck
   plat(41, 30, 5);                          // the landing
   ladder(46, 30, 35); ladder(41, 23, 30);   // up the east side to the landing, up the west side to the deck: the rope leaves from the east edge, clear of the ladder's top
-  ent('sprig', 44, 29, { face: -1 });
+  ent('shield', 44, 29, { face: -1 });   /* STORMTOUGH: a guard on the five-wide landing between the ladders - the pot over one, his shield on the other */
   ent('scalder', 41, 22, { face: 1, post: [41, 41] });
   ent('key', 44, 22, { kind: 'brass' }); ent('brazier', 40, 22);
-  ent('sign', 39, 35, { text: 'THE GATE WATCH HOLDS THE BRASS KEY. WHEN THE POT TIPS, GET OFF THE LADDER.' });
+  ent('sign', 41, 35, { text: 'THE GATE WATCH HOLDS THE BRASS KEY. WHEN THE POT TIPS, GET OFF THE LADDER.' });
   coins([43, 29], [45, 29], [46, 26], [45, 22]);
   ent('sign', 46, 22, { text: 'A ROPE RUNS DOWN TO THE GATE. UP TAKES THE HANDLE, JUMP LETS GO, DOWN DROPS.' });   /* THE ZIP LINE's one lesson (src/zipline.js): the verb, at the first rope, where a miss is a drop to the road */
   roof(56, 60, 31);   // a shut cottage beside the tower's rope (it ends on the road now, so the rope runs clear over the cottage's west end)
   ent('deco', 52, 35, { kind: 'lanternPost' }); ent('archer', 58, 28, { face: -1 });
+  ent('harpy', 68, 30);   /* STORMTOUGH: a flyer through the rope's arc */
   ent('sprig', 72, 35, { face: -1 }); ent('hound', 60, 35, { face: -1 }); ent('hound', 66, 35, { face: -1 }); ent('check', 76, 35);   /* the gate's dogs, loose on the road */
   coins([54, 34], [58, 34], [64, 34], [70, 34], [74, 34]);
   // THE BARBICAN: the wall's gatehouse, sealed from the band to the arch; the brass gate in its passage
@@ -148,6 +149,8 @@ export function stormholdTown({ painter, T, TS }) {
   ent('doorway', 168, 31, { id: 'smithy-far', to: 'smithy-back', kind: 'goblin' });
   plat(171, 29, 3); plat(172, 27, 2);
   ent('archer', 146, 24, { face: 1 }); ent('stormshaman', 162, 24, { face: -1 });
+  /* STORMTOUGH: the Square's squad - a shield wall on the street, a hound loose behind it, a second bowman on the roof road */
+  ent('shield', 121, 31, { face: -1 }); ent('hound', 140, 31, { face: -1 }); ent('archer', 156, 24, { face: -1 });
   ent('silver', 140, 23); coins([142, 24], [148, 24], [152, 23], [156, 24], [160, 24], [166, 24], [170, 24]);
   ent('shield', 146, 31, { face: -1 }); ent('hearthgob', 151, 31, { face: -1 }); ent('brute', 162, 31, { face: -1 }); ent('sapper', 176, 31, { face: -1 }); ent('check', 173, 31);
   ent('sign', 170, 31, { text: 'THE ROOFS ARE A ROAD. UP THE LEAN-TO.' });
@@ -161,6 +164,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('doorway', 204, 31, { id: 'tan-far', to: 'tan-back', kind: 'goblin' });
   ent('hearthgob', 199, 31, { face: -1 });
   roof(210, 222, 27);   // a forge house
+  ent('shield', 196, 31, { face: -1 }); ent('hound', 206, 31, { face: -1 });   /* STORMTOUGH: the forge's guard and its dog */
   ent('brute', 214, 31, { face: -1 }); ent('sapper', 220, 31, { face: -1 }); ent('brazier', 208, 31);
   ent('check', 190, 31);
   coins([184, 30], [194, 30], [202, 30], [212, 30], [218, 30], [224, 30]);
@@ -183,6 +187,7 @@ export function stormholdTown({ painter, T, TS }) {
   for (const [x0, top] of [[230, 31], [234, 29], [239, 30], [243, 29], [248, 30]]) { block(x0, x0 + 1, top, 43); ent('chimpot', x0 + 1, top - 1); }   // up-hops are two tiles, drops three
   ladder(228, 32, 43); for (const [lx, top] of [[232, 31], [236, 29], [241, 30], [245, 29], [252, 32]]) ladder(lx, top, 43);   // a rope ladder down every shaft
   ent('sweep', 234, 28, { face: -1 }); ent('sweep', 243, 28, { face: -1 });
+  ent('harpy', 238, 25); ent('harpy', 249, 25);   /* STORMTOUGH: flyers through the chimney hops - the up-hop is the moment they strike */
   ent('deco', 227, 31, { kind: 'lanternPost' }); ent('deco', 254, 31, { kind: 'lanternPost' });
   ent('sign', 225, 31, { text: 'THE SPAN IS DOWN: CLIMB THE STACKS. EVERY SHAFT HAS A LADDER.' }); ent('check', 223, 31);
   coins([232, 28], [235, 27], [240, 28], [244, 27], [246, 27], [251, 29], [237, 40], [246, 40]);
@@ -214,12 +219,14 @@ export function stormholdTown({ painter, T, TS }) {
   ent('sign', 294, 31, { text: 'THE BELL WATCH HOLDS THE IRON KEY. IN BY THE ARCH, OR OVER THE ROOFS.' });
   ent('check', 274, 31); coins([270, 28], [275, 26], [279, 26], [286, 24], [290, 24], [299, 27], [300, 24], [298, 20]);
   // the close: a churchyard under the tower, the east house and its archer, and the inner wall
-  facades.push([315, 337, 24, 31, 'townrow']);
+  facades.push([315, 321, 24, 31, 'townrow'], [332, 337, 24, 31, 'townrow']);   /* (STORMTOUGH: not over the breach at 322-331 - the zipline commit left 16 cells of housefront standing on nothing at 326-327, tools/architecture.mjs) */
   for (const [x, v] of [[312, 0], [318, 1], [334, 2]]) ent('deco', x, 31, { kind: 'grave', v });
   ent('deco', 336, 31, { kind: 'yew', v: 1 });
   roof(306, 314, 27); ent('archer', 311, 24, { face: -1 });
+  ent('hound', 278, 31, { face: -1 }); ent('archer', 288, 24, { face: -1 });   /* STORMTOUGH: a dog on the street and a bowman on the second roof, the tower's approach */
   ent('check', 306, 31); ent('shield', 320, 31, { face: -1 }); ent('sprig', 336, 31, { face: -1 }); ent('pike', 316, 31, { face: -1 }); ent('rockgoblin', 334, 31, { face: -1 });
   coins([316, 30], [338, 30]);
+  ent('shield', 343, 31, { face: -1 });   /* STORMTOUGH (ELITES.storm): the inner gate's captain, stood on the far bank of the breach where the rope sets you down */
   /* THE BREACH IN THE CLOSE (claude/zipline, Daniel 10-08: a zip line ON THE ROUTE): ten columns of the street are gone - a spiked cut too wide for any jump (6). Taken the way the Gate Watch taught
      (a rope off a tower deck, where a miss was a drop to the road), the Bell Watch's rope is the way over: key in hand, UP at its handle on the belfry deck, and the line carries you across and sets you down
      by the inner gate. A fall is the street's spikes (a bite, and back to the last safe ground: the hazard rule); a hero who misses the rope part-way and drops has the same. The reach model knows the rope (src/reachcore.js). */
@@ -249,7 +256,8 @@ export function stormholdTown({ painter, T, TS }) {
   ent('winch', 393, 29, { gate: 399, gy0: 26, gy1: 29, drop: true, hold: 6 });
   ent('sign', 390, 29, { text: 'THE KEEP GATE. STRIKE THE WINCH AND IT DROPS ON WHAT IS UNDER IT.' });
   ent('check', 388, 29);
-  ent('pike', 405, 29, { face: -1 }); ent('pike', 411, 29, { face: -1 }); ent('shield', 417, 29, { face: -1 });
+  ent('pike', 405, 29, { face: -1 }); ent('pike', 411, 29, { face: -1 }); ent('shield', 417, 29, { face: -1 }); ent('stormshaman', 421, 29, { face: -1 });   /* STORMTOUGH: a shaman behind the pike wall */
+  ent('shield', 363, 29, { face: -1 });
   ent('torch', 404, 29); ent('deco', 422, 29, { kind: 'banner', v: 0 });
   // THE ARCH IS A LINTEL, NOT A PIER: nothing stands under it (the pikes and the winch's drop both need the yard clear),
   // so it carries on the two town fronts either side, in reach at every row it occupies (tools/architecture.mjs SPAN).
@@ -265,6 +273,7 @@ export function stormholdTown({ painter, T, TS }) {
   ent('sign', 431, 29, { text: 'THE WAY ON IS OVER THE CURTAIN WALL. DOWN, THEN UP ITS FACE.' });
   ent('check', 446, 43);
   ent('sprig', 450, 43, { face: -1 }); ent('sapper', 458, 43, { face: -1 }); ent('shield', 470, 43, { face: -1 }); ent('sprig', 478, 43, { face: -1 });
+  ent('harpy', 447, 38); ent('archer', 484, 43, { face: -1 });   /* STORMTOUGH: a flyer over the rubble and a bowman behind the gate's captain */
   coins([445, 42], [453, 40], [460, 42], [468, 42], [476, 42], [484, 42]);
   // the face: the masons' scaffold still stands against the wall, so the climb zig-zags between its boards and the
   // wall's own sills, two rows a step. A Scalder on the hoarding over the wall's sills: the wall side is poured on, the
@@ -282,6 +291,8 @@ export function stormholdTown({ painter, T, TS }) {
   // the wall-walk: two wall towers with a bowman on each, and the shield-wall on the walk (ELITES.storm holds its gate at 523)
   block(508, 510, 27, 28); block(517, 519, 27, 28); masonry.push([508, 510, 27, 28], [517, 519, 27, 28]);
   ent('archer', 509, 26, { face: -1 }); ent('archer', 518, 26, { face: -1 });
+  ent('archer', 528, 24, { face: -1 });   /* STORMTOUGH: on the Wall Watch's landing, covering the upper ladder */
+  ent('shield', 513, 28, { face: -1 }); ent('hearthgob', 522, 28, { face: -1 });   /* STORMTOUGH: the wall-walk's shield and a hand on the way to the Watch */
   ent('check', 503, 28);
   coins([505, 27], [512, 27], [515, 27], [521, 27]);
   // THE WALL WATCH: timber, on the wall's east end; a switchback like the Gate Watch, a Scalder over the upper ladder
@@ -351,7 +362,8 @@ export function stormholdTown({ painter, T, TS }) {
     return { x0: x0 + 1, x1: x1 - 1, y0: y + 1, y1: fy - 1, door: drs.length ? drs[0] : null, door2: drs.length > 1 ? drs[1] : null, seed: x0, stone: true }; }).filter(h => h.y1 >= h.y0 + 1);
 
   return {
-    watchtowers, structures: [...watchtowers.filter(t => t.kind === 'timber'), scaffold], zipLines, ropes: zipLines,
+    watchtowers, structures: [...watchtowers.filter(t => t.kind === 'timber'), scaffold], zipLines, ropes: zipLines, noDoorKeys: true,   /* STORMTOUGH: every key hangs in a tower - the play bot's stall answer 'go and find a door' (src/playtest.js) walked the level walker back to the hearth house, 3000 frames a lap */
+   
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 35 }, pools: [], falls: [], moversExtra: [], interiors, bridges, houses, masonry, facades, masonryKit: 'limestone', climbLook: true,
     calm: [[39, 48, 21, 35], [295, 304, 18, 31], [487, 500, 27, 43], [523, 531, 20, 28]],   /* the climbs carry their own authored encounters: the garrison stays off them (F4: a climb, then a fight) */
     playtestSections: STORM_TOWN.SECTIONS,

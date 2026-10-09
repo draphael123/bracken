@@ -117,17 +117,17 @@
   "lostPct": 393
  },
  "storm": {
-  "hash": "da3d03dee8de",
+  "hash": "64712a95a1d8",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 4,
+  "hits": 2,
   "deaths": 0,
-  "kills": 12,
-  "lifts": 170,
+  "kills": 11,
+  "lifts": 155,
   "walked": 100,
   "bare": true,
-  "lostPct": 25
+  "lostPct": 14
  },
  "crown": {
   "hash": "72b39b51eba5",

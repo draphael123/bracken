@@ -66,7 +66,7 @@ export const AFFIX_AT = {
   'hanging|shield': 'SWIFT', 'hanging|brute#amb': 'UNSTOPPABLE',
   'spire|troll': 'WARDING', 'spire|goat': 'SUMMONER', 'spire|troll#amb': 'SWIFT',
   'moor|goat': 'SWIFT', 'moor|troll': 'UNSTOPPABLE', 'moor|goat#amb': 'WARDING',
-  'storm|pike': 'SHIELDED', 'storm|pike#amb': 'UNSTOPPABLE',
+  'storm|pike': 'SHIELDED', 'storm|pike#amb': 'UNSTOPPABLE', 'storm|shield#1': 'SWIFT', 'storm|brute#1': 'THORNED', 'storm|brute#2': 'UNSTOPPABLE', 'storm|shield#2': 'WARDING', 'storm|shield#3': 'SUMMONER',   /* (claude/stormtough: the Road's, the Square's, Smoke Row's, the Close's far bank, the gorge's) */
   'crown|heavy': 'UNSTOPPABLE', 'crown|hearthgob': 'BURNING', 'crown|brute#amb': 'WARDING',
   'longwater|tideguard': 'SHIELDED', 'longwater|tideguard#amb': 'SWIFT',
   'reef|tideguard': 'VENOMOUS',
