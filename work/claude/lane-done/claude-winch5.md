@@ -59,3 +59,9 @@ back up bare/whole, retreat-in-stagger re-plates, rock during plating, P2 re-pla
 5. Opening purses: a stagger pays at most 12% of him, a jam 15% (the first run: one stagger took 80%). Rec: keep.
 6. Hero spread with flasks k 8 / w 6 / p 5 of 10; dry 13% - he leans hard on flasks. OK per B6?
 7. "Cutting a line" (brief item 2) was not added as a new move; he fights riders with REVERSE, THE HOOK, SEND, SPILL.
+
+## Resumed: music + sign (10-08 night)
+- MUSIC: "Boss Battle #8 Metal" by nene - licence on the page read: CC0. Downloaded opening (9.6 s) + loop (51 s) wavs, joined, mono, Vorbis q4 -> audio/winchmaster.ogg (588 KB), TRACK_INTRO 9.6 s (opening once, then the loop). Wired in TRACKS, MUSIC_CREDITS(+ROW), src/credits.js CC_BY row, audio/CREDITS.txt. The composed chase stays in src/boss-music.js unplayed; winchmaster dropped from NO_FILE_BY_DESIGN (audio-assets) and from the synth list in tools/boss-music.mjs.
+- SIGN: 'HIS ORE TURNS A BLADE. THROW A ROCK FROM A LOADED SKIP. A LOADED BUCKET JAMS HIS DRUM.' (the longer suggested wording ran 3 lines; signs allows 2).
+- Re-stamped: oreroad LEVEL mash row then BOSS row (still 0/6), level1-curve oreroad row. No pilot row exists for oreroad.
+- Green alone: audio-assets, boss-music, soundtest, textfit (8520 screens, all zero), signs, ore-road, mash-gate, curve-gate (remaining stale rows are other levels, pre-existing). audio-assets --decode (browser) timed out/flaky under load (Failed to fetch on unrelated files); static pass green, ffmpeg decoded the ogg.

@@ -281,3 +281,7 @@ THE SKY ROAD (2026-10-06, claude/skyroad, Daniel's picks; the files were fetched
 THE BANDIT KSAR (2026-10-07, claude/ksar art pass, Daniel's pick; he approved the download):
 - ksar.ogg = "Desert Loop" by iamoneabe, CC0 (public domain, credited all the same) - https://opengameart.org/content/desert-loop - THE BANDIT KSAR's level track (the fort only; THE HAWK-MISTRESS's fight keeps her composed theme).
   Credit: "Desert Loop" by iamoneabe (OpenGameArt.org), CC0. Changes: mono; encoded to OGG Vorbis q4 (64 s, loops).
+
+THE WINCHMASTER (2026-10-08, claude/winch5; Daniel approved the download):
+- winchmaster.ogg = "Boss Battle #8 Metal" by nene, CC0 (public domain, credited all the same) - https://opengameart.org/content/boss-battle-8-metal - his fight (the opening, 9.6 s, plays once, then the 51 s loop).
+  Credit: "Boss Battle #8 Metal" by nene (OpenGameArt.org), CC0. Changes: opening + loop joined; mono; encoded to OGG Vorbis q4.
