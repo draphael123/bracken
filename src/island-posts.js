@@ -4,6 +4,7 @@
    drawn by src/route-art.js). This is the same kit for the other BUILT places: at each end of every board run of an island made of boards only, a post is
    set down to the first thing under it, if that is within MAX_DROP rows. No tile changes: the route, the walker and the mash rows are untouched.
    What it cannot reach (open sky or a deep void under the board) stays in tools/solid-islands.mjs's table for the level's own lane. */
+import { addForestSupports } from './forest-supports.js';
 export const MAX_DROP = 16;
 const HOVER = 6;   /* rows of air under a laid wall / stone stub that a stilt may cover */
 const DROP = { fields: 24, lamplit: 20 };   /* the Hexed Fields: its planks ride up in the dead trees, twenty rows over the stubble */
@@ -32,6 +33,7 @@ export function islandsOf(L, T) {
 }
 
 export function addIslandPosts(L, id, T) {
+  addForestSupports(L, id, T, islandsOf);   /* the forest and crag levels: their own kit (src/forest-supports.js) */
   if (!POST_LEVELS.has(id) || !L || !L.grid) return L;
   const MAX = DROP[id] || MAX_DROP, W = L.W, H = L.H, g = L.grid, boards = new Set([T.ONEWAY, T.PLANK]);
   const have = new Set((L.routeSupports || []).map(p => p.x + ',' + p.y)); if (!L.routeSupports) L.routeSupports = [];

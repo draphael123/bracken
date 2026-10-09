@@ -21,9 +21,7 @@ import { islandsOf } from '../src/island-posts.js';
 const NATURAL = 'organic ledge art that grows where it stands (logs in the canopy, caps, reeds, rock slabs): the forest/crag convention, checked by screenshot 2026-10-08; the complaint is BUILT places';
 const OWNED = (lane, n) => [n, 'owned by ' + lane + ', fixing tonight (2026-10-08): TEMPORARY'];
 export const ALLOW = {
-  wood: [25, NATURAL], marsh: [14, NATURAL], stockade: [25, NATURAL], spore: [31, NATURAL], kings: [103, NATURAL], scree: [55, NATURAL], hanging: [37, NATURAL], moor: [25, NATURAL],
-  skyroad: [19, NATURAL + ' (sky road: floating slabs are the level)'], rootway: [17, NATURAL + ' (root-shelf caps)'], glasssea: [29, 'floating glass shards are the Glass Sea (theme, screenshot-checked)'],
-  witchlight: [32, 'floating stone blocks round the witch spire are the level (theme, screenshot-checked); the lane may add chains/runes'],
+  wood: [25, NATURAL], marsh: [14, NATURAL], stockade: [25, NATURAL], spore: [31, NATURAL], kings: [103, NATURAL], /* scree hanging moor skyroad rootway glasssea witchlight: 0 - every slab stands on its own drawn kit (src/forest-supports.js) */
   spire: OWNED('spire', 90), flotilla: OWNED('flotilla', 2), hurricane: OWNED('hurricane', 17), crown: OWNED('crown', 53), ksar: OWNED('ksar', 25), oreroad: OWNED('winch/oreroad', 11),
   fair: [4, 'stage-roof and slide islands of the fairground: the rest are drawn rides/stalls (src/fair-*.js, six spots screenshot-checked); listed for the fair lane'],
   minecart: [1, 'one rail pair at 960-981: listed for the minecart lane'],
