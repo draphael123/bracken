@@ -60,7 +60,7 @@ Best potency owned counts; the card's RICH FLASK adds +10 (max 60%). Max flasks 
 | IV | The Mage's Folly (mage) | 30 | 1x35% | 0/3 3/3 2/3 = 56% (knight 0) | 3x45% quick | 0/3 3/3 3/3 = 67% (knight 0) |
 | V | The Red Gorge (redgorge) | 35 | 1x35% | 3/3 1/3 3/3 = 78% | 3x45% quick | 3/3 3/3 3/3 = 100% |
 Read: the kit moves rates UP (warden on kings/redgorge, pyro on mage); four of five representative bosses already sit above the 60-70% band
-even BARE at n=3, so the per-act FLASK RETUNE lanes should re-measure with  (the default now) at 6+ seeds. Not retuned here (per brief).
+even BARE at n=3, so the per-act FLASK RETUNE lanes should re-measure with --flasks=kit (the default now) at 6+ seeds. Not retuned here (per brief).
 Raw: work/claude/flasks2/boss-{bare,kit}.{log,json} (rows carry flasks0/heal0 - the kit was applied: 2/2/3/3/3 flasks, 40/40/40/45/45%).
 
 ## Checks
@@ -73,10 +73,11 @@ Raw: work/claude/flasks2/boss-{bare,kit}.{log,json} (rows carry flasks0/heal0 - 
 - Test edits (design changes, not weakened): survival flaskMax max 3 -> 4; leveling 'sinks' reads the FLASKS tab's three count lines;
   store buys EXTRA FLASK I on 'flasks' and its tab regex reads camelCase owned keys; level-jump wants flasksAt(id, d, beaten).
 
-## - None in the checks run. Boss rows above band (see table) are a tuning signal for the retune lanes, not a red of this lane.
+## REDS
+- None in the checks run. Boss rows above band (see table) are a tuning signal for the retune lanes, not a red of this lane.
 - Not run here (40-min suite, low-memory PC): the full suite, level pilots/mash (no level hash changed: the finds are placed at load).
 - The mage knight 0/3 is the same bare and kit (a hero-specific gap, not flasks).
-REDS
+- Depends on claude/hudslim (merged in): if hudslim is dropped, the flask row must be re-slotted into master's old HUD layout.
 
 ## QUESTIONS FOR DANIEL (built the rec in each case)
 1. Potency tiers 40/45/50 + the card's RICH FLASK +10 (so up to 60%). Rec: keep the card perk (built). Alt: fold the card perk into the store.
