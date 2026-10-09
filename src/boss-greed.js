@@ -50,7 +50,7 @@ import { wardenOpen as graveOpen } from './grave-warden.js';
 import { rocEyrieOpen } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad) */
 
 export const GREED = {
-  chipBy: { queen: 1, herald: 0.2, cisternqueen: 0.5, owl: 0.4, homunculus: 0.4 },   /* (claude/homunculus, B15: the jar turns a blow at 0.4 outside the bare window) */   /* (claude/owl2, B15: THE OWL REEVE off the twentieth - wherever she passes at your height she takes 0.4 of a blow, a duelist's trade; her lamp crash x2, src/main.js owlTake) */   /* (claude/burnvillage2, Daniel 10-07: THE PYROMANCER is off the chip - FULL_DAMAGE, below) */   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
+  chipBy: { queen: 1, herald: 0.2, cisternqueen: 0.5, owl: 0.4, homunculus: 0.4, windcaller: 1 },   /* (claude/windcaller3, Daniel 10-08: THE WINDCALLER is a duelist up on his ledge - whole, his own defence (main.js callerTake: he steps away, his ward) - and his greed still counts) */   /* (claude/homunculus, B15: the jar turns a blow at 0.4 outside the bare window) */   /* (claude/owl2, B15: THE OWL REEVE off the twentieth - wherever she passes at your height she takes 0.4 of a blow, a duelist's trade; her lamp crash x2, src/main.js owlTake) */   /* (claude/burnvillage2, Daniel 10-07: THE PYROMANCER is off the chip - FULL_DAMAGE, below) */   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
                            // drones are up) and is not chipped: at a twentieth - and at a quarter, and at a half - the human-speed bot lost her 2-3 of 3 (it won
                            // 2 of 3 before; the mash bot never beat her). Her greed reprisal stands. THE PYROMANCER takes a quarter: blows are what open him
                            // (each heats him), and at a twentieth the bot won 1 of 3 (3 of 3 before), at a quarter 2 of 3. THE TIDE HERALD takes a fifth (he took
@@ -80,7 +80,7 @@ export const OPEN_RULE = {
   ram: e => H.ramOpen(e),                                                    // (claude/scree2) STUNNED under a fold overhang he was lured beneath, or into the wall off a dodged charge (src/ram-lord.js)
   owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned',   // (claude/bosswave1) down on the boards only: lampT open in the air made a lit lamp a free window
   abbot: e => abbotOpen(e),                                                  // the bell has him down
-  windcaller: e => H.callerOpen(e),                                          // (claude/bosswave1) FALLEN only: his bolt sent back, or his howl braced through
+  windcaller: e => H.callerOpen(e),                                          // (claude/bosswave1) FALLEN only: his bolt sent back UP CLOSE (claude/windcaller3), or his howl braced through
   lance: e => H.lanceOpen(e),                                                // committed: planted, thrusting, reeling
   gqueen: e => H.gqOpen(e),                                                  // pinned, or her plate off
   herald: e => e.mode === 'mired' || e.mode === 'reel',

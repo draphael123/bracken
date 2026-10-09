@@ -4218,22 +4218,30 @@ function galeMoor() {
   ent('check', o + 5, 12); ent('flagpost', o + 7, 12);
   ent('sign', o + 3, 12, { text: 'HE CALLS THE WIND AT YOU. HOLD C THROUGH HIS HOWL AND HIS OWN WIND FAILS HIM.' });
 
-  /* ==== THE SUMMIT (655-702): three standing stones and two ledges. The shaman blinks between them and throws the sky at
-     you. You walk in off the landing, from the west (RULES I: an arena is entered from the left). ==== */
+  /* ==== THE SUMMIT (655-702), THE WINDCALLER 3 (claude/windcaller3, scratch/brief-windcaller3.md, Daniel 10-08): THE WIND IS THE FIGHT.
+     A thorn strip across the summit floor (A10: a fall costs 27% and hands you back to the last safe footing) between three safe floors - the
+     west lip you walk in on (HOME, where his gale throws you), the FALL STONE in the middle (a running jump over the thorns from the lip), nothing east. Over it two WIDE high ledges he stands
+     on, six rows up: no hero jumps that (51 px). Two UPDRAFTS, one on the lip and one on the fall stone, blow only while the summit's TOLD GUST
+     blows (the flags lift and it whistles, the moor's own tell) - ride one up and the gust carries you off its top and DOWNWIND onto a ledge:
+     the lip's updraft goes east to the west ledge; the fall stone's goes west to the west ledge or east to the east ledge, whichever way it blows.
+     Phase one the gust blows one way (east), phase two it alternates (read the flags), phase three it comes faster and the east ledge falls.
+     You walk in off the landing, from the west (RULES I: an arena is entered from the left). ==== */
   o = 655; section('summit', 'THE SUMMIT', o, o + 47, null);
   block(o, o + 47, 13, 29);
-  pillar(o + 6, 12, 12); pillar(o + 8, 10, 12); pillar(o + 22, 4, 12); pillar(o + 37, 8, 12);
-  plat(o + 15, 7, 2); plat(o + 30, 6, 2);
-  ent('vent', o + 18, 12, { period: 100, on: 100, h: 108, wind: true, w: 18 }); ent('vent', o + 33, 12, { period: 100, on: 100, h: 94, wind: true, w: 18 });   /* always on: the question is never WHEN, only where */
-  gust(o + 1, o + 46, 0, 13, { period: 5, on: 2.2, alt: true, k: 1.5, arena: true });
-  ent('flagpost', o + 5, 12); ent('flagpost', o + 41, 12);
-  ent('windcaller', o + 22, 3);
-  ent('sign', o + 10, 12, { text: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR BLOCK ONE BACK TO KNOCK HIM DOWN.', pyro: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE ONE BACK WITH YOUR STAFF TO DROP HIM.', paladin: 'THE SHAMAN BLINKS AND THROWS BOLTS. STRIKE OR AEGIS ONE BACK TO KNOCK HIM DOWN.' });
+  spikes(o + 10, o + 11, 12); spikes(o + 28, o + 44, 12);   /* the thorns: a strip a jump clears between the lip (o+1..9) and the fall stone (o+12..27) - so neither floor is ever a dead end - and the field east of it to the wall */
+  plat(o + 8, 7, 8); plat(o + 26, 7, 8);                   /* THE WEST LEDGE and THE EAST LEDGE: six rows over the floor, each with one end (the west both ends) over safe ground (a drop off that end is a way down) */
+  const gale = { gale: true, wind: true, w: 12, h: 104, lift: 270 };   /* (gale: it blows with the summit's gust and only then - main.js callerGustNow) */
+  ent('vent', o + 3, 12, gale); ent('vent', o + 21, 12, Object.assign({}, gale));
+  gust(o + 1, o + 45, 0, 13, { period: 5, on: 2.2, dir: 1, shove: 240, air: true, arena: true, galeArena: true });   /* in the AIR only: on a ledge it never walks you off (his howl does that) */
+  ent('flagpost', o + 7, 12); ent('flagpost', o + 24, 12); ent('flagpost', o + 14, 6); ent('flagpost', o + 32, 6);
+  ent('windcaller', o + 11, 6);
+  ent('sign', o + 5, 12, { text: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. BLOCK HIS BOLT BACK UP CLOSE TO DROP HIM.', pyro: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. STRIKE HIS BOLT BACK UP CLOSE TO DROP HIM.', paladin: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. AEGIS HIS BOLT BACK UP CLOSE TO DROP HIM.' });
   ent('gate', o + 45, 12);
-  const roosts = [[o + 8, 9], [o + 22, 3], [o + 37, 7], [o + 15, 6], [o + 30, 5]];   /* where he stands: a stone's top, a ledge */
-  const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 8) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust' };
+  const roosts = [[o + 11, 6], [o + 29, 6]];   /* where he stands: the middle of each ledge (the east one falls in phase three) */
+  const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 6) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust',
+    home: (o + 1) * TS + 8, safe: [[o + 1, o + 9], [o + 12, o + 27]], ledges: [[o + 8, o + 15, 7], [o + 26, o + 33, 7]], crumble: 1 };   /* (home: where his gale sets you down; safe: the floors you can stand on, in tiles; crumble: the ledge that falls in phase three) */
 
-  for (const e of L.ents) if (e.t === 'vent' && e.wind && !e.crevice) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto (a crevice keeps its own throw) */
+  for (const e of L.ents) if (e.t === 'vent' && e.wind && !e.crevice && !e.gale) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto (a crevice keeps its own throw; the summit's gale updrafts are measured to their ledges) */
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra: movers, gusts, hags, stone, roosts, thermals: true,
     duskStart: -1, duskLen: 1, music: 'northumberland', night: false, glowNight: false,   /* "The Fair Flower of Northumberland" by Spring Spring, CC0 - GALE MOOR's own theme, benching adventure (audio/CREDITS.txt) */

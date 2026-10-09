@@ -15,7 +15,7 @@
 
 // THE HONESTY LIST. A windup whose blow is not thrown by the creature at all - the Forgemaster does not
 // strike you, he HURLS A CART, and the cart is a mover that does its own unblockable damage somewhere else.
-export const THROWN = new Set(['updateForgemaster|hurlTell', 'updateForgemaster|dragTell',
+export const THROWN = new Set(['updateWindcaller|stoneTell', 'updateForgemaster|hurlTell', 'updateForgemaster|dragTell',
   'updateGrandmother|knellTell',    /* (claude/underleaf2) THE GRANDMOTHER's KNELL: the handbell throws a ring along the boards both ways (src/hush-hands.js granKnell) - no shield turns it, jump it */
   'updateTippler|heaveTell',        /* THE TIPPLER heaves the bar and a SKIP OF ORE goes over: falling rock, thrown by nobody, and no shield turns it */
   'updateCaptain|shootTell',        // capShoot: a shot seed, unblockable
@@ -276,8 +276,8 @@ export const MARK = {
   'wickerqueen|ringTell': '!!', 'wickerqueen|stabTell': '!!', 'wickerqueen|sweepHighTell': '!!', 'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!', 'wickerqueen|thrustLowTell': '!!',
   'wickerqueen|tossTell': '!!', 'wight|graspTell': '!!', 'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!',
   'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|spillTell': '!!', 'winchmaster|sweepTell': '!!',
-  'winchmaster|tossTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|howlTell': '', 'windcaller|lightningTell': '!!', 'windcaller|stoneTell': '!',
-  'windcaller|twisterTell': '!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'winchmaster|tossTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|blastTell': '!!', 'windcaller|galeTell': '!', 'windcaller|howlTell': '',
+  'windcaller|stoneTell': '!!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 

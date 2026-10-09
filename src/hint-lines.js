@@ -19,6 +19,8 @@ export const CALL_LINES = new Set([
   /* claude/monastery2: THE TEMPLE GUARDIAN reworked (src/temple-guardian.js LINES) - its keys, its ward, its blocks, its toll */
   'THE NOTE STAGGERS IT: CUT IT', 'THE STONE STAGGERS IT: CUT IT', 'IT WARDS ITSELF', 'IT RAISES STONE: TAKE ONE (INTERACT)', 'ATTACK THROWS THE STONE', 'IT HURLS ITS STONE', 'THE BELLS SWING',
   'THE BELL IS SWINGING', 'IT IS NOT UNDER THE BELL', 'IT RAISES STONE', 'THE GUARDIAN WAKES FULLY', 'THE STAIR GOES OUT FROM UNDER HIM', 'THE OFFERING COMES DOWN',
+  /* claude/windcaller3: THE WINDCALLER 3 - the phases change the wind, his blast, his step away, the gale home, the falling ledge, and his opening */
+  'THE WIND TURNS: READ THE FLAGS', 'THE STORM: THE EAST LEDGE GIVES', 'HE GATHERS THE WIND: STEP BACK', 'HE STEPS AWAY', 'HE BLOWS YOU HOME', 'THE GALE TAKES YOU HOME', 'THE LEDGE FALLS', 'HIS OWN BOLT: HE FALLS - CUT HIM',
   /* claude/survival2: the manual flask and the exam spikes (src/main.js drinkFlask, shrine break, SV.examAt) - routed so the player can see them */
   'NO FLASKS', 'FULL', 'SPILLED', 'SHRINE BROKEN  +1 FLASK', 'THE SPIKES KILL HERE',
   /* claude/flasks2: STEADY HAND kept the flask through a blow (src/main.js spillFlask) */
