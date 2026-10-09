@@ -73,6 +73,10 @@ try {
   const m = await pg.evalp(`(()=>{
     const out = {};
     BK.ui.pressCard = true; BK.ui.pressCard = false; /* the card and its walk-in are over (an earlier key in this run took the card down; the walk-in would swallow the next press) */ BK.state = 'title'; BK.step(0);
+    /* OPTIONS (Daniel 10-09): SETTINGS / SOUND TEST / CONTROLS are no longer top-level rows; they are one OPTIONS row away. Same strictness: top level has OPTIONS and none of the three, the list under it has all three. */
+    const top = BK.ui.titleItems();
+    out.oneOptionsRow = top.includes('OPTIONS') && !top.includes('SETTINGS') && !top.includes('SOUND TEST') && !top.includes('CONTROLS');
+    BK.ui.titleI = top.indexOf('OPTIONS'); BK.press('confirm'); BK.sim(1);
     const items = BK.ui.titleItems();
     out.hasEntry = items.includes('SOUND TEST');
     out.keepsSettings = items.includes('SETTINGS');
@@ -84,7 +88,8 @@ try {
     return out;
   })()`, 30000);
   console.log(JSON.stringify(m));
-  assert.ok(m.hasEntry, 'the title screen menu has a SOUND TEST item: ' + JSON.stringify(m));
+  assert.ok(m.oneOptionsRow, 'the title screen menu groups SETTINGS / SOUND TEST / CONTROLS under one OPTIONS row: ' + JSON.stringify(m));
+  assert.ok(m.hasEntry, 'the OPTIONS list has a SOUND TEST item: ' + JSON.stringify(m));
   assert.ok(m.keepsSettings, 'and SETTINGS is still there too: ' + JSON.stringify(m));
   assert.ok(m.opensSoundTest, 'choosing it opens the Sound Test: ' + JSON.stringify(m));
   assert.ok(m.backGoesToTitle, 'and ESC from it returns to the title screen, not a menu it never opened: ' + JSON.stringify(m));

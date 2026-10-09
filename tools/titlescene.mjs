@@ -23,6 +23,14 @@ try {
   assert.ok(menu.every(m => m.size === menu[0].size), 'the menu is one size');
   console.log('ok  title          sign + tagline + ' + menu.length + ' menu items all whole on screen, tagline clear of the board, one menu size, no footer');
 
+  /* ---- 1b. OPTIONS (Daniel 10-09): SETTINGS + SOUND TEST + CONTROLS are ONE row; the board has six rows; the list under OPTIONS holds the three and BACK ---- */
+  assert.equal(t.items.length, 6, 'the title board is six rows: ' + t.items.join('|'));
+  assert.ok(t.items.includes('OPTIONS') && !t.items.some(k => ['SETTINGS', 'SOUND TEST', 'CONTROLS'].includes(k)), 'one OPTIONS row, the three are not top-level: ' + t.items.join('|'));
+  const o = await pg.evalp(`(()=>{ BK.ui.titleI = BK.ui.titleItems().indexOf('OPTIONS'); BK.press('confirm'); BK.step(3); const sub = BK.ui.titleItems(); const opened = BK.ui.titleOpts; BK.press('pause'); BK.step(3); return { sub, opened, closed: !BK.ui.titleOpts, on: BK.ui.titleItems()[BK.ui.titleI] }; })()`);
+  assert.deepEqual(o.sub, ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'BACK'], 'OPTIONS opens SETTINGS, SOUND TEST, CONTROLS, BACK');
+  assert.ok(o.opened && o.closed && o.on === 'OPTIONS', 'ESC closes the list and rests on OPTIONS: ' + JSON.stringify(o));
+  console.log('ok  options        OPTIONS groups SETTINGS / SOUND TEST / CONTROLS under one row of a six-row board; ESC closes it');
+
   /* ---- 2. THE HERO PICK ---- */
   const h = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); const out = []; const { VW, VH } = BK.view;
     for (let i = 0; i < 3; i++) { BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = i; BK.step(6);

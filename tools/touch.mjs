@@ -82,7 +82,12 @@ try {
     // every box is a real size for a thumb (at least 30 CSS px tall) and on screen
     const th = await E('BK.touch.hitBoxes().map(h => { const [x0, y0] = BK.touch.gameToClient(h.x, h.y), [x1, y1] = BK.touch.gameToClient(h.x + h.w, h.y + h.h); return { w: x1 - x0, h: y1 - y0, x: x0, y: y0 }; })');
     ok(th.every(r => r.h >= 12 && r.x >= 0 && r.x + r.w <= 844 && r.y >= 0 && r.y + r.h <= 390), 'a title tap box is off screen or sliver-thin: ' + JSON.stringify(th[0]));
-    const i = items.indexOf('SETTINGS'); ok(i >= 0, 'no SETTINGS on the title');
+    ok(!items.includes('SETTINGS') && !items.includes('SOUND TEST') && !items.includes('CONTROLS'), 'SETTINGS / SOUND TEST / CONTROLS sit under OPTIONS, not on the title: ' + items.join('|'));
+    const oi = items.indexOf('OPTIONS'); ok(oi >= 0, 'no OPTIONS on the title');
+    await gameTap(oi);
+    const sub = await E('BK.ui.titleItems()'), subHits = await E('BK.touch.hitBoxes()');
+    ok(sub.includes('SETTINGS') && subHits.length === sub.length, 'the OPTIONS list drew ' + subHits.length + ' tap boxes for ' + sub.join('|'));
+    const i = sub.indexOf('SETTINGS'); ok(i >= 0, 'no SETTINGS under OPTIONS');
     await gameTap(i);
     ok(await E('BK.state') === 'menu', 'a tap on SETTINGS did not open Settings (state ' + await E('BK.state') + ')');
   });
@@ -128,6 +133,7 @@ try {
   });
   await section('save-slots', async () => {
     await sleep(600);
+    if (await E('BK.ui.titleOpts')) { const sub = await E('BK.ui.titleItems()'); await gameTap(sub.indexOf('BACK')); await sleep(300); }   /* (Back out of Settings lands on the OPTIONS list; BACK on that list is the title) */
     const items = await E('BK.ui.titleItems()'), i = items.findIndex(k => k === 'NEW GAME' || k === 'CHOOSE A SAVE'); ok(i >= 0, 'no save item on the title: ' + items.join('|'));
     await gameTap(i);
     ok(await E('BK.state') === 'slots', 'a tap on ' + items[i] + ' did not open the save slots (' + await E('BK.state') + ')');
