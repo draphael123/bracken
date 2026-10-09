@@ -46,7 +46,10 @@ export function buildSkyRoad({ painter, T, TS }) {
      within three columns; in the game the column runs SKY's overshoot higher, so you crest and drift onto them). src: null (natural), 'stone:id', 'disc:id' */
   const thermal = (x, foot, top, src, o) => ent('vent', x, foot, Object.assign({ thermal: true, h: (foot + 1 - top) * TS, w: 20, lift: 150, src: src || null }, o || {}));
   /* a sun-warmed PINNACLE in a chasm, just over the cloud sea, with a thermal off it */
-  const pinnacle = (x, top, src, o) => { rock(x - 1, x + 1, SEA - 2); thermal(x, SEA - 3, top, src, o); };
+  /* (claude/skyroad2, Daniel 10-08 "I got stuck here in the Sky Road": a disc-road pinnacle after the disc's sun had moved off it) A FOOTING WHOSE ONLY WAY OUT IS ONE
+     THERMAL's AIR (L.airOnly: its tiles, the row a hero stands on, the thermal's column) is never the cloud sea's "last solid footing" while that air is dead -
+     the updraft threw you back onto the dead pinnacle you had just dropped off, for ever. tools/skyroad-stuck.mjs finds every such footing and holds this list to it */
+  const airOnly = [], pinnacle = (x, top, src, o) => { rock(x - 1, x + 1, SEA - 2); thermal(x, SEA - 3, top, src, o); if (src) airOnly.push({ x0: x - 1, x1: x + 1, row: SEA - 3, vent: x }); };
   const stone = (x, y, id) => ent('sunstone', x, y, { id });
   /* A CLOUD BANK over columns c0..c1: clouds `w` columns wide, `gap` columns apart, drifting `speed` px/s (east +) - its shadow on a thermal's foot kills it */
   const cloudBank = (c0, c1, w, gap, speed, phase) => clouds.push({ x0: c0 * TS, x1: (c1 + 1) * TS, w: w * TS, gap: gap * TS, speed, phase: (phase || 0) * TS });
@@ -71,7 +74,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   plank(55, 61, 46);                                                            /* a ledge over the sand under mesa B */
   rock(70, 104, 34); air(70, 99, 39, 42);                                       /* MESA B, and THE WIND CAVE under its top: in off thermal two's column at its west face (a pocket, coins) */
   ent('coin', 80, 42); ent('coin', 86, 42); ent('coin', 92, 42); ent('deco', 96, 42, { kind: 'bones' });
-  plank(76, 84, 31); rock(88, 91, 32);                                                            /* the station's lookout boards over the mesa top */
+  plank(76, 84, 31); rock(88, 91, 32); air(88, 91, 39, 42);                                       /* the station's lookout boards over the mesa top (claude/skyroad2: the winch block no longer seals the wind cave's east half - its two coins and the bones sat in a pocket nobody could reach) */
 
   // ================= 2. THE RIDERS' STATION (104-190): the cloak, the stone, THE GREAT KITE REEL =================
   ent('check', 72, 33);                                                         /* CHECKPOINT ONE: the station's west gate */
@@ -108,6 +111,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   plank(228, 232, 10); foe('rockgoblin', 231, 9, 'kitePlatform', { face: -1, cnSkin: 'gobslinger' }); cloth(228, 9);   /* a hanging kite platform: a slinger, and a cloth */
   decor.push({ kind: 'kiteplat', x: 229, y: 10 });
   rock(220, 222, 30); ent('silver', 221, 29); decor.push({ kind: 'nest', x: 221, y: 29 });   /* the low roost under roost two: a nest, SILVER TWO (a dead end; R2 takes you back up) */
+  airOnly.push({ x0: 220, x1: 222, row: 29, vent: 226 }, { x0: 223, x1: 224, row: 43, vent: 226 });   /* (claude/skyroad2) the low roost and the shelf's end under it: R2's air is their only way out */
   rock(234, 237, 13);                                                           /* THE SPIRE: rock to the cloud sea - no glide from roost two goes under it; only R2's air carries you over (roost two's stone is a lock) */
   pinnacle(242, 14);                                                            /* R3 */
   rock(248, 251, 19); foe('horn', 250, 18, 'roostHorn', { face: -1 });          /* ROOST FOUR: the hornblower who calls the riders */
@@ -165,7 +169,7 @@ export function buildSkyRoad({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [{ kind: 'lift', sky: 'reel', x: 149 * TS, y: 26 * TS, y0: 26 * TS, y1: 14 * TS, w: 32, h: 8, speed: 0 }],
     arena, gateAfterBoss: true,
     squadBands: [{ lo: 400, hi: 599, spots: 0, why: "THE ROC'S EYRIE: columns 400-459 are her arena - no squad stands in a boss arena (as the canal and the theatre)" }],
-    skyroad: true, cloudSea: SEA * TS, clouds, crumbles, vaultDoors, decor, reel, nest,
+    skyroad: true, cloudSea: SEA * TS, clouds, crumbles, airOnly, vaultDoors, decor, reel, nest,
     skyThermals: L.ents.filter(e => e.t === 'vent' && e.thermal).map(e => ({ x0: e.x - 2, x1: e.x + 2 })),   /* the rule's places, for tools/rule-state.mjs (not named L.thermals: main.js reads that as the pyro's fire updrafts) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* four checkpoints (Daniel: fewer); src/level.js checkpoints() must not fill between them */

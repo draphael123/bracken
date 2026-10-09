@@ -172,7 +172,7 @@ export function makeLanternEaterHands(ctx) {
       g.globalAlpha = 0.5 + 0.4 * pulse; g.fillStyle = '#ff6b6b'; const jx = show.jaws.x - cx, sx = show.snap.x - cx; g.fillRect(R(Math.min(jx, sx)), dy - 12, R(Math.abs(sx - jx)), 1); g.globalAlpha = 1; }   /* the line of its lunge */
     /* THE SWELL told: red lines along the deck from where it comes, then the swell humping the deck */
     if (show.swell) { const s = show.swell, x = R(s.x - cx);
-      if (s.st === 'tell') { const k = 1 - Math.max(0, e.modeT) / (e.modeLen || 1), len = 40 + 120 * k; g.globalAlpha = 0.4 + 0.45 * pulse * k; g.fillStyle = '#ff6b6b'; g.fillRect(s.dir > 0 ? x : x - R(len), dy - 14, R(len), 1); g.fillRect(s.dir > 0 ? x : x - R(len), dy + 3, R(len), 1); g.globalAlpha = 1; }
+      if (s.st === 'tell') { const k = 1 - Math.max(0, e.modeT) / (e.modeLen || 1), len = 40 + 120 * k; if (e.mode === 'swellTell') LA.drawBoil(g, x, sf, 16, k, time);   /* (claude/batch80, mark-integrity: the windup is a body: the water boils where the swell starts, growing, while it is told) */ g.globalAlpha = 0.4 + 0.45 * pulse * k; g.fillStyle = '#ff6b6b'; g.fillRect(s.dir > 0 ? x : x - R(len), dy - 14, R(len), 1); g.fillRect(s.dir > 0 ? x : x - R(len), dy + 3, R(len), 1); g.globalAlpha = 1; }
       else LA.drawSwell(g, x, dy, sf, s.dir, time); }
     /* THE COPIES of your light it bites at, dimmed */
     for (const d of show.decoys) LA.drawDecoy(g, d.x - cx, sf, d.t, time);

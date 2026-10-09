@@ -58,7 +58,7 @@ export const TURN_WORD = {
   windcaller: e => e.mode === 'blink' || e.mode === 'appear' || e.mode === 'gone' ? TURN.NOT_THERE : TURN.WARDED,
   grandmother: e => (e.alpha !== undefined && e.alpha < 0.35) || e.mode === 'vanish' ? TURN.NOT_THERE : TURN.WARDED,
   winchmaster: 'IRON',                                      // his plate: jam his drum
-  greathound: TURN.WARDED,
+  greathound: TURN.ROUND,                                   // (claude/hound) his jaws turn part of a blow into his face: go round, or come down on him
   queen: 'THE SWARM',                                       // her drones close over her
   /* (claude/sweep2) ACT II */
   captain: TURN.ROUND,                                      // (claude/keyscore, B13) on his wave or on his feet his front is a wall: round him or over him (was ON THE WAVE: wait for the beach)
@@ -72,6 +72,8 @@ export const TURN_WORD = {
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
   hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'HER GAUNTLET'),   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
   lanterneater: e => (e.mode === 'open' ? TURN.WARDED : ['gulpTell', 'huntTell'].includes(e.mode) && e.part === 'lure' ? 'TOO LOW' : ['jaws', 'snapTell'].includes(e.mode) ? 'TOO HIGH' : TURN.WARDED),   // (claude/lanterneater) B14 keys: its lure HIGH, its gums LOW - the word names the wrong height (src/lantern-eater.js KEY_WORD)
+  /* (claude/rootway) THE GOBLIN HUNTMASTER: the bow across him guards his front between moves (GO ROUND, or from a jump); in his ward after an opening, HE GUARDS */
+  huntmaster: (e, fromX) => e.ward > 0 ? 'HE GUARDS' : behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   roc: e => e.ward > 0 ? TURN.WARDED : TURN.LOW,           // (claude/roc2) THE ROC: her feathers' ward after an opening; else her talons guard low - strike her from the air (src/roc-eyrie.js)
 };
 /* ==== B14, VULNERABILITY KEYS (claude/keyscore, design-standard B14; scratch/audit-keys.md section 2): ONE TABLE FOR "WHICH OF MY ATTACKS OPENS HIM".

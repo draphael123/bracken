@@ -28,7 +28,7 @@ export const CURVE_BANDS = {
    tools/curve-gate.mjs (and level-quality for a gated level); a listed level that is back in its band fails too - take it out, as MASH_REPORT_ONLY.
    Each entry: what it measured, and which way it misses. */
 export const CURVE_REPORT_ONLY = {
-  underleaf: 'act 2: 45% lost, 0 deaths - EASY for act II (floor 70%)',
+  /* (claude/underleafroad, 10-08: underleaf is act I now - the road puts it between Kingswood and the Scree Path - and its 45% lost / 0 deaths is inside act I's band) */
   storm: 'act 2: 26% lost, 0 deaths - EASY for act II (floor 70%): the level-1 pilot is lifted past most of it',
   undercrown: 'act 2: 345% lost, 9 deaths - over the act II death ceiling (6)',
   longwater: 'act 3: 63% lost, 0 deaths - EASY for act III (floor 100%, 1 death)',

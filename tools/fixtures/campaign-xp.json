@@ -8,10 +8,10 @@
    "clear": 272
   },
   "marsh": {
-   "run": 722,
-   "foeXp": 392,
+   "run": 747,
+   "foeXp": 410,
    "bossXp": 173,
-   "clear": 235
+   "clear": 246
   },
   "stockade": {
    "run": 752,
@@ -30,12 +30,6 @@
    "foeXp": 616,
    "bossXp": 336,
    "clear": 370
-  },
-  "underleaf": {
-   "run": 1036,
-   "foeXp": 558,
-   "bossXp": 255,
-   "clear": 335
   },
   "scree": {
    "run": 1288,
@@ -109,6 +103,12 @@
    "bossXp": 641,
    "clear": 516
   },
+  "underleaf": {
+   "run": 1036,
+   "foeXp": 558,
+   "bossXp": 255,
+   "clear": 335
+  },
   "deep": {
    "run": 2076,
    "foeXp": 1140,
@@ -122,10 +122,10 @@
    "clear": 592
   },
   "causeway": {
-   "run": 1692,
-   "foeXp": 860,
+   "run": 1857,
+   "foeXp": 978,
    "bossXp": 488,
-   "clear": 516
+   "clear": 587
   },
   "harbor": {
    "run": 2177,
@@ -200,16 +200,16 @@
    "clear": 658
   },
   "theatre": {
-   "run": 1441,
-   "foeXp": 708,
+   "run": 1603,
+   "foeXp": 824,
    "bossXp": 450,
-   "clear": 425
+   "clear": 494
   },
   "canal": {
-   "run": 1217,
-   "foeXp": 548,
+   "run": 1329,
+   "foeXp": 628,
    "bossXp": 450,
-   "clear": 329
+   "clear": 377
   },
   "welltown": {
    "run": 1610,
@@ -218,16 +218,40 @@
    "clear": 379
   },
   "redgorge": {
-   "run": 1155,
-   "foeXp": 450,
+   "run": 1290,
+   "foeXp": 546,
    "bossXp": 525,
-   "clear": 270
+   "clear": 328
   },
   "underwell": {
-   "run": 1162,
-   "foeXp": 458,
+   "run": 1450,
+   "foeXp": 664,
    "bossXp": 521,
-   "clear": 275
+   "clear": 398
+  },
+  "skyroad": {
+   "run": 626,
+   "foeXp": 220,
+   "bossXp": 318,
+   "clear": 132
+  },
+  "glasssea": {
+   "run": 1247,
+   "foeXp": 510,
+   "bossXp": 533,
+   "clear": 306
+  },
+  "ksar": {
+   "run": 1399,
+   "foeXp": 614,
+   "bossXp": 540,
+   "clear": 368
+  },
+  "rootway": {
+   "run": 835,
+   "foeXp": 434,
+   "bossXp": 228,
+   "clear": 260
   }
  }
 }

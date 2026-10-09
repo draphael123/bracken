@@ -16,7 +16,7 @@ import { OUT } from '../art.js';
 const KP = { d0: '#170b16', d1: '#2a1224', m0: '#421c36', m1: '#5e2a44', l0: '#7c3c50', l1: '#9c5a60', hi: '#bf8272', mottle: '#caa08a',
   suck: '#e6c2a6', suckD: '#a86e66', suckC: '#5a2e36', barn: '#d8d2bc', barnD: '#8a8472', scar: '#c99a86',
   eyeW: '#efe29a', eyeY: '#e8b83a', iris: '#d8781c', irisD: '#8a3a10', pupil: '#120810', glint: '#ffffff', glaze: '#9aa0a0',
-  beak: '#2a2226', beakM: '#4a3e40', beakL: '#7a6a64', mouth: '#5a1422', tongue: '#9a3a4a', ink: '#161018' };
+  bio: '#5fe6cc', bioD: '#2a8f86', bioDD: '#17504f', beak: '#2a2226', beakM: '#4a3e40', beakL: '#7a6a64', mouth: '#5a1422', tongue: '#9a3a4a', ink: '#161018' };
 const RAMP = [KP.d0, KP.d1, KP.m0, KP.m1, KP.l0, KP.l1, KP.hi];
 
 // ---------- a colour buffer ----------
@@ -72,6 +72,11 @@ const skin = (seed, scale = 1) => (x, y, u, v, k, col) => {
 function eye(B, ex, ey, r, state) {
   // the socket: a rim of dark flesh lifted off the head
   blob(B, ex, ey, r + 3, r + 2, { bias: -0.12 });
+  if (state === 'ward') { /* THE WARD: the lid drawn down over a dull coal, a grey film across it - the eye he has shut on you */
+    for (let y = Math.floor(ey - r * 0.75); y <= Math.ceil(ey + r * 0.75); y++) for (let x = Math.floor(ex - r); x <= Math.ceil(ex + r); x++) { const u = (x + 0.5 - ex) / r, v = (y + 0.5 - ey) / (r * 0.75); if (u * u + v * v > 1) continue; B.set(x, y, v < -0.1 ? KP.m0 : v < 0.45 ? '#3a2a30' : '#5a4448'); }
+    for (let x = -r; x <= r; x++) { B.set(ex + x, Math.round(ey - 1 + Math.abs(x) * 0.12), KP.d0); if (Math.abs(x) < r - 2 && x % 3 === 0) B.set(ex + x, ey + 1, '#9aa39a'); }
+    for (let x = -3; x <= 3; x++) B.set(ex + x, ey + 2, '#8a5a24');   /* the coal under the lid */
+    return; }
   if (state === 'shut' || state === 'blink') { for (let x = -r; x <= r; x++) { const yy = Math.round(ey + Math.abs(x) * 0.18 * (state === 'shut' ? -1 : 1)); B.set(ex + x, yy, KP.d0); B.set(ex + x, yy + 1, KP.m1); }
     if (state === 'shut') for (const s of [-1, 1]) for (let q = 1; q < 4; q++) B.set(ex + s * (r + q), ey - q, KP.d0);   /* clenched */
     return; }
@@ -94,18 +99,37 @@ function eye(B, ex, ey, r, state) {
 // a black hook with a pale ridge along its top and a glint on the point, and a shorter lower jaw under it
 function beak(B, bx, by, s, open) {
   const oy = open * 8 * s;
-  const up = [[bx - 7 * s, by - 7 * s], [bx + 4 * s, by - 11 * s], [bx + 12 * s, by - 8 * s], [bx + 17 * s, by - 1 * s], [bx + 18 * s, by + 6 * s], [bx + 14 * s, by + 10 * s], [bx + 12 * s, by + 3 * s], [bx + 4 * s, by + 1 * s], [bx - 6 * s, by + 1 * s]];
+  const up = [[bx - 7 * s, by - 7 * s], [bx + 4 * s, by - 11 * s], [bx + 12 * s, by - 8 * s], [bx + 17 * s, by - 2 * s], [bx + 19 * s, by + 5 * s], [bx + 18 * s, by + 13 * s], [bx + 14 * s, by + 17 * s], [bx + 13 * s, by + 9 * s], [bx + 12 * s, by + 3 * s], [bx + 4 * s, by + 1 * s], [bx - 6 * s, by + 1 * s]];
   const lo = [[bx - 5 * s, by + 3 * s + oy * 0.4], [bx + 9 * s, by + 4 * s + oy], [bx + 8 * s, by + 9 * s + oy], [bx - 3 * s, by + 8 * s + oy * 0.5]];
   if (open > 0.1) poly(B, [[bx - 5 * s, by], [bx + 12 * s, by + 2 * s], [bx + 9 * s, by + 5 * s + oy], [bx - 3 * s, by + 5 * s + oy * 0.5]], (x, y) => ((x + y) % 5 === 0 ? KP.tongue : KP.mouth));
   poly(B, lo, (x, y) => (y < by + 4.5 * s + oy ? KP.beakM : KP.beak));
   poly(B, up, () => KP.beak);
   for (let i = 0; i <= 16; i++) { const t = i / 16, x = bx - 5 * s + t * 21 * s, y = by - 7.5 * s - Math.sin(t * Math.PI * 0.9) * 3 * s + t * t * 9 * s; B.set(x, y, t > 0.7 ? KP.beakL : KP.beakM); }
-  B.set(bx + 16 * s, by + 6 * s, '#d8d0c8'); B.set(bx + 3 * s, by - 8 * s, '#b0a498');
+  B.set(bx + 15 * s, by + 15 * s, '#d8d0c8'); B.set(bx + 16 * s, by + 12 * s, KP.beakL); B.set(bx + 3 * s, by - 8 * s, '#b0a498');
 }
 function poly(B, pts, pick) { let y0 = 1e9, y1 = -1e9; for (const p of pts) { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
   for (let y = Math.floor(y0); y < Math.ceil(y1); y++) { const sy = y + 0.5, xs = [];
     for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; if ((a[1] <= sy) !== (b[1] <= sy)) xs.push(a[0] + (sy - a[1]) / (b[1] - a[1]) * (b[0] - a[0])); }
     xs.sort((a, b) => a - b); for (let i = 0; i + 1 < xs.length; i += 2) for (let x = Math.ceil(xs[i] - 0.5); x < Math.ceil(xs[i + 1] - 0.5); x++) B.set(x, y, pick(x, y)); } }
+
+// BIOLUMINESCENT MARKINGS and the BARNACLE CROWN (claude/kraken2 art): the sea's own lamps on the mantle, and the crust that grew on a thing
+// that has lived under the Long Water for a hundred years. Marks are placed inside the shape (never on the rim), the same relative spots
+// every pose, and returned so the draw can pulse them; the crown stands on the crest of whatever dome is drawn between x0 and x1.
+function bioDots(B, x0, x1, y0, y1, seed, want, gap, col, dim) {
+  const out = [];
+  for (let t = 0; t < 1200 && out.length < want; t++) {
+    const x = Math.round(x0 + hsh(t, 1, seed) * (x1 - x0)), y = Math.round(y0 + hsh(t, 2, seed) * (y1 - y0));
+    if (!B.get(x, y) || !B.get(x - 3, y) || !B.get(x + 3, y) || !B.get(x, y - 3) || !B.get(x, y + 3)) continue;
+    if (out.some(([ox, oy]) => Math.hypot(ox - x, oy - y) < gap)) continue;
+    out.push([x, y, hsh(t, 3, seed) > 0.72 ? 2 : 1]); }
+  for (const [x, y, r] of out) { B.set(x, y, col); B.set(x + 1, y, col); B.set(x, y + 1, dim); if (r > 1) { B.set(x + 1, y + 1, col); B.set(x - 1, y, dim); B.set(x + 2, y, dim); } else B.set(x + 1, y + 1, dim); }
+  return out; }
+function barnacleCrown(B, x0, x1, seed, cols = [KP.barn, KP.barnD, KP.suckC], reach = 14) {
+  let top = 1e9; const tops = []; for (let x = x0; x <= x1; x++) { let y = 0; while (y < B.h && !B.get(x, y)) y++; tops[x] = y; top = Math.min(top, y); }
+  for (let x = x0; x < x1; x += 2 + Math.floor(hsh(x, 4, seed) * 3)) { const y = tops[x]; if (y >= B.h - 2 || y > top + reach) continue;
+    const h = 2 + Math.floor(hsh(x, 5, seed) * 3);
+    for (let q = 0; q < h; q++) { const w = h - q > 2 ? 3 : h - q > 1 ? 2 : 1; for (let k = 0; k < w; k++) B.set(x + k - (w > 2 ? 1 : 0), y - q, q === h - 1 ? cols[0] : (k === 0 ? cols[1] : q === 0 ? cols[1] : cols[0])); }
+    B.set(x, y - h + 1, cols[2]); } }
 
 // ---------- THE HEAD ----------
 // One creature, drawn at three sizes by the same hand: `s` scales everything, so the bestiary gets the same animal as the fight.
@@ -125,6 +149,10 @@ function headInto(B, X, Y, s, o) {
   /* THE FACE HAS TO READ UNDER THAT DOME: an eye the size of a cartwheel and a beak like a ship's prow */
   eye(B, Math.round(X + 24 * s), Math.round(Y - 24 * s + dy), Math.max(2, Math.round(13 * s)), o.eye || 'open');
   beak(B, X + 32 * s + (o.thrust || 0) * s, Y - 2 * s + dy, s * 1.55, o.open || 0);
+  { const mk = bioDots(B, X - 50 * s, X - 2 * s, Y - 64 * s + dy, Y - 6 * s + dy, 11, Math.round(5 + 16 * s), Math.max(3.5, 7 * s), KP.bio, KP.bioD);
+    /* the brow carries a line of them, the way an anglerfish's flank does */
+    for (let i = 0; i < 5; i++) { const x = Math.round(X + (8 + i * 6) * s), y = Math.round(Y + (-41 - Math.sin(i * 0.9) * 2) * s + dy); if (B.get(x, y)) B.set(x, y, i % 2 ? KP.bio : KP.bioD); }
+    barnacleCrown(B, Math.round(X - 46 * s), Math.round(X - 2 * s), 3, [KP.barn, KP.barnD, KP.suckC], Math.round(14 * s)); }
   if (o.gasp) for (const [gx, gy] of [[-30, -10], [-34, -4], [-28, 2]]) { const x = Math.round(X + gx * s), y = Math.round(Y + gy * s + dy); B.set(x, y, KP.d0); B.set(x + 1, y, KP.d0); B.set(x, y + 1, KP.m0); }   /* THE BREATH: the gill slits under the mantle, open */
   if (o.stars) for (const [sx, sy] of [[8, -70], [26, -76], [40, -64]]) { const x = Math.round(X + sx * s), y = Math.round(Y + sy * s + dy); B.set(x, y, '#fff6c8'); for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) B.set(x + ox, y + oy, '#e6b94a'); }
   if (o.water) for (let x = 0; x < B.w; x++) for (let y = Math.round(Y - 16 * s); y < B.h; y++) B.a[y * B.w + x] = null;   /* EMERGE: only what is over the water (canvas row 80 is the sea), and the eye just clear of it */
@@ -157,7 +185,19 @@ export function bakeKrakenArms() {
   const T = buf(20, 20); tube(T, bez([3, 16], [3, 4], [16, 2], [14, 11], 12, 3, 1), { side: -1 }); const tip = toCanvas(T);
   // a cut arm: the stump, pale meat and a black bead of ink in the middle of it
   const S = buf(26, 26); blob(S, 13, 13, 11, 11); for (let y = 6; y < 21; y++) for (let x = 6; x < 21; x++) { const d = Math.hypot(x + 0.5 - 13, y + 0.5 - 13); if (d < 7) S.set(x, y, d < 3 ? KP.ink : d < 5 ? KP.suckD : KP.suck); }
-  return { seg, segW, rim, suck, tip, tipW: whiten(tip), stump: toCanvas(S) };
+  /* THE LURE-LIGHTS (claude/kraken2 art): a deep-sea angler's bait on a stalk, set along the back of each arm; three bulbs (dark, lit, flaring)
+     and the dots of cold light that run between them. The stalk is laid by the draw (it follows the arm); the bulbs and dots are here. */
+  const bulb = [0, 1, 2].map(k => { const B = buf(9, 9), cl = [[KP.bioDD, KP.bioDD, KP.d1], [KP.bioD, KP.bio, KP.bioDD], ['#f4fff6', KP.bio, KP.bioD]][k];
+    for (let y = 0; y < 9; y++) for (let x = 0; x < 9; x++) { const d = Math.hypot(x - 4, y - 4); if (d <= 1.6) B.set(x, y, cl[0]); else if (d <= 2.7) B.set(x, y, cl[1]); else if (d <= 3.4 && k > 0) B.set(x, y, cl[2]); }
+    return toCanvas(B, false); });
+  const dot = [0, 1].map(k => { const B = buf(3, 3); B.set(1, 1, k ? KP.bio : KP.bioD); B.set(0, 1, k ? KP.bioD : KP.bioDD); B.set(1, 0, k ? KP.bioD : KP.bioDD); return toCanvas(B, false); });
+  return { seg, segW, rim, suck, tip, tipW: whiten(tip), stump: toCanvas(S), bulb, dot };
+}
+// THE EYE IN THE CLIMB (claude/kraken2 art): the one he wears over the stones at the end of the road, 2x the size of the head's. 38x30, centre (19, 15).
+//   open (GOLD, bar pupil, the iris ringed in orange), ward (lidded, grey-filmed, a coal under it), shut (the lid and its clench)
+export function bakeKrakenEye() {
+  const mk = st => { const B = buf(38, 30); eye(B, 19, 15, 12, st); return toCanvas(B); };
+  return { open: mk('open'), ward: mk('ward'), shut: mk('shut'), cx: 19, cy: 15 };
 }
 // THE BESTIARY'S KRAKEN: the same head at half size, with three arms up out of the sea round it
 export function bakeKraken() {
@@ -258,29 +298,44 @@ export function bakeLeviathan(v = 0) {
 //   returns { frames, eyes: per frame [[x, y, r], [x, y, r]], mouth: per frame [x, y], wl }
 const SIL = ['#0c1414', '#111c1b', '#172321', '#1d2a28', '#243330', '#2c3d39', '#3a4c46'];
 export function bakeKrakenFar() {
-  const W = 180, H = 112, WL = 106, frames = [], eyes = [], mouth = [];
+  const W = 180, H = 112, WL = 106, frames = [], eyes = [], mouth = [], marks = [];
+  /* KEYFRAMES, not code boxes (claude/kraken2 art): each of his big moves has its own wound-up body, held through the tell and the blow.
+       0 rest  1 CHARGE  2 FIRE  3 REAR  4 STUNG   (the old five: gameplay indexes them)
+       5 INK    hunched down over his own siphon, arms drawn in, the sac swollen: he is about to black the road out
+       6 SLAM   the road-side arms hauled up over the dome, the body leaning back: the one that comes down is the one over your head
+       7 SWEEP  leaning at the road, the road-side arms thrown out low and wide: the rake is in the arm that is lowest
+       8 ROAR   mantle flared, beak wide, every arm up: the double roar that is cut to one wave for a melee hero on the ramp */
   const pose = [
     { hx: 0, hy: 0, lean: 0, open: 0.1, arms: 0, shut: false },
     { hx: 6, hy: -6, lean: -0.1, open: 0.8, arms: 0.2, shut: false },
     { hx: -10, hy: 4, lean: 0.12, open: 1, arms: -0.2, shut: false },
     { hx: 3, hy: -8, lean: -0.16, open: 0.5, arms: 1, shut: false },
-    { hx: 10, hy: 2, lean: 0.05, open: 0.3, arms: 0.6, shut: true }];
+    { hx: 10, hy: 2, lean: 0.05, open: 0.3, arms: 0.6, shut: true },
+    { hx: 2, hy: 7, lean: 0.12, open: 0.15, arms: -0.4, ink: true, squash: 0.88 },
+    { hx: 1, hy: -3, lean: -0.1, open: 0.3, arms: 0, armL: 1.55, armR: 0.35 },
+    { hx: -5, hy: 4, lean: 0.16, open: 0.3, arms: 0, armL: 0.1, sweep: true, armR: 0.5 },
+    { hx: 4, hy: -5, lean: -0.14, open: 1, arms: 0.95, flare: true }];
   for (const p of pose) { const B = buf(W, H), cx = 92 + p.hx, cy = 62 + p.hy;
     /* the arms first, behind: four of them up out of the sea round it, curling */
-    const up = p.arms;
     for (const [bx, top, dir, r0] of [[30, 20, -1, 7], [52, 8, -1, 8], [134, 10, 1, 8], [158, 26, 1, 7]]) {
-      const tx = bx + dir * (10 + up * 14), ty = top - up * 16;
+      const up = dir < 0 && p.armL !== undefined ? p.armL : dir > 0 && p.armR !== undefined ? p.armR : p.arms;
+      let tx = bx + dir * (10 + up * 14), ty = top - up * 16; if (p.sweep && dir < 0) { tx = bx - 34 - (bx < 40 ? 4 : 0); ty = top + 34 - (bx > 40 ? 6 : 0); }
       tube(B, bez([bx, WL + 4], [bx - dir * 14, WL - 40], [tx + dir * 24, ty + 30], [tx, ty], 22, r0, 1.4), { ramp: SIL, suckers: false });
       tube(B, bez([tx, ty], [tx + dir * 8, ty - 8], [tx + dir * 14, ty + 2], [tx + dir * 8, ty + 8], 6, 1.6, 1), { ramp: SIL, suckers: false }); }
     /* the mantle, leaning back from the face, and the face turned at the road */
-    blob(B, cx - 14, cy - 12, 34, 40, { tilt: -0.4 + p.lean, pear: 0.2, ramp: SIL });
+    const sq = p.squash || 1, fl = p.flare ? 1.16 : 1;
+    blob(B, cx - 14, cy - 12 + (1 - sq) * 18, 34 * fl, 40 * sq * (p.flare ? 1.04 : 1), { tilt: -0.4 + p.lean, pear: 0.2, ramp: SIL });
     blob(B, cx + 12, cy + 16, 30, 22, { tilt: 0.1, ramp: SIL, bias: 0.05 });
-    blob(B, cx + 14, cy + 2, 22, 7, { tilt: 0.12, ramp: SIL, bias: -0.15 });   /* the brow over both eyes */
-    /* the beak, down at the water: open wide, and a dark mouth behind it */
+    if (p.ink) blob(B, cx - 32, cy + 12, 10, 9, { ramp: SIL, bias: 0.1 });   /* the siphon, swollen with it */
+    blob(B, cx + 14, cy + 2 - (p.flare ? 3 : 0), 22, 7, { tilt: 0.12, ramp: SIL, bias: -0.15 });   /* the brow over both eyes */
+    /* the beak, down at the water: open wide, and a dark mouth behind it - a hooked one, its tip come down past the lower jaw */
     const bxm = cx + 30, bym = cy + 30, op = p.open;
     if (op > 0.2) blob(B, bxm - 2, bym + 2 + op * 3, 9, 4 + op * 5, { ramp: ['#060909', '#0a0f0f', '#0e1414'] });
-    poly(B, [[bxm - 10, bym - 5], [bxm + 4, bym - 7], [bxm + 12, bym - 1], [bxm + 8, bym + 4], [bxm - 6, bym + 1]], () => '#080c0c');
+    poly(B, [[bxm - 10, bym - 5], [bxm + 4, bym - 7], [bxm + 12, bym - 2], [bxm + 15, bym + 5], [bxm + 14, bym + 13], [bxm + 10, bym + 16], [bxm + 9, bym + 9], [bxm + 8, bym + 4], [bxm - 6, bym + 1]], () => '#080c0c');
     poly(B, [[bxm - 8, bym + 3 + op * 7], [bxm + 6, bym + 4 + op * 8], [bxm + 2, bym + 8 + op * 8], [bxm - 6, bym + 6 + op * 6]], () => '#0a1010');
+    /* the lamps on his mantle: cold teal, a ring of them over the dome and a line along the brow. Dim in the bake; the draw pulses them */
+    const mk = bioDots(B, cx - 52, cx + 2, cy - 60, cy - 6, 11, 17, 8.5, '#2b8f86', '#195552');
+    for (let i = 0; i < 6; i++) { const x = cx + 4 + i * 5, y = cy - 12 + Math.round(Math.sin(i * 0.8) * 2) - (p.flare ? 3 : 0); if (B.get(x, y)) { B.set(x, y, i % 2 ? '#2b8f86' : '#195552'); mk.push([x, y, 1]); } }
     /* the sockets, black: the draw lights them */
     const e1 = [cx + 22, cy + 10, 6], e2 = [cx + 2, cy + 8, 4];
     for (const [ex, ey, er] of [e1, e2]) for (let y = -er; y <= er; y++) for (let x = -er - 1; x <= er + 1; x++) if ((x * x) / ((er + 1) * (er + 1)) + (y * y) / (er * er * (p.shut ? 0.12 : 0.7)) <= 1) B.set(ex + x, ey + y, '#040606');
@@ -293,8 +348,11 @@ export function bakeKrakenFar() {
     /* the sea running off it in sheets: pale streaks down the dome */
     for (let k = 0; k < 14; k++) { const sx = 40 + ((hsh(k, 3, 9) * 110) | 0); let y0 = 0; while (y0 < WL && !B.get(sx, y0)) y0++; const len = 6 + ((hsh(k, 5, 2) * 16) | 0);
       for (let y = y0 + 2; y < Math.min(WL, y0 + len); y++) if (B.get(sx, y) && (y + k) % 3) B.set(sx, y, '#3f5751'); }
-    frames.push(toCanvas(B, false)); eyes.push([e1, e2]); mouth.push([bxm + 4, bym + 2 + op * 4]); }
-  return { frames, eyes, mouth, wl: WL, w: W, h: H };
+    /* THE BARNACLE CROWN, on the crest of the dome: pale in the storm-dark, the one part of him that is old stone */
+    barnacleCrown(B, cx - 50, cx + 0, 5, ['#8a9a8e', '#566459', '#26302c'], 12);
+    B.set(bxm + 10, bym + 15, '#b4bcae'); B.set(bxm + 14, bym + 11, '#6a7a72');   /* the hook's point catches the light */
+    frames.push(toCanvas(B, false)); eyes.push([e1, e2]); mouth.push([bxm + 4, bym + 2 + op * 4]); marks.push(mk); }
+  return { frames, eyes, mouth, marks, wl: WL, w: W, h: H };
 }
 // WHAT IT THROWS OUT OF THE WRECK FIELD. A cargo crate (16x16: planks, iron corners, weed on it, the merchant's mark) and a
 // section of mast (64x20: the spar, its bands, a coil of line and the rag of a sail) that lands across a break in the road.
