@@ -16,6 +16,7 @@
 // column decides the floor; the edges of the body do not catch on the rock at the top of a slope, and walking
 // uphill, the feet are lifted to the surface; walking downhill they are snapped down to it, so nothing hops.
 import { T, TS } from './level.js';
+import { RIDE_MOVE } from './hero-move.js';
 
 export const SLOPE = { R1: 20, L1: 21, R2A: 22, R2B: 23, L2A: 24, L2B: 25 };
 export const SLOPE_NAMES = { 20: 'SLOPE_R1', 21: 'SLOPE_L1', 22: 'SLOPE_R2A', 23: 'SLOPE_R2B', 24: 'SLOPE_L2A', 25: 'SLOPE_L2B' };
@@ -216,6 +217,11 @@ export function footSlope(tileAt, b) { const sl = slopeInColumn(tileAt, b.x, b.y
    slideStep(s, dt, {kind, ground, down, move}) -> mutates s = { vx, sliding, carry } and returns it. `kind` is the slope
    under the foot (0 on flat). The caller skips its own walk/friction for the frame while s.sliding or s.carry is set. */
 export const SLIDE = { acc: 700, maxSteep: 180, maxGentle: 140, flatFric: 150, airFric: 50, endSpeed: 60 };   /* tuned in tools/slopes.mjs: the leap out of a steep slide ~+70% on a full-run jump, not a new traversal verb */
+/* THE KEEP CEILING, ONE COPY (claude/reachcore): the 'keep' slideStep is handed on a slope at x px of level L. main.js asks this every frame and
+   src/reach-hero.js asks the same function, so the reach model can never slide on a number the game has stopped using. Today: the Glass Sea's slick
+   glass (from L.glassFrom on) keeps RIDE_MOVE.GLASS_SLIDE_CAP; every other slope SLIDE_KEEP. A game-wide slope momentum changes it HERE (and only here) */
+export const SLIDE_KEEP = 1;
+export function slideKeepAt(L, xPx, kind) { if (!kind) return 1; return L && L.glassFrom !== undefined && xPx >= L.glassFrom * TS ? RIDE_MOVE.GLASS_SLIDE_CAP : SLIDE_KEEP; }
 export function slideStep(s, dt, { kind, ground, down, jumped, keep }) {   /* keep (claude/slickslope): a multiplier on the hill's top speed up to which a speed the hill did not give (THE GLASS SEA's slick glass, src/glass-sea-hands.js) is KEPT, not bled; 1 = every other level, unchanged */
   if (ground && kind && down) {
     const dirDown = -slopeRise(kind), max = slopeGrade(kind) === 1 ? SLIDE.maxSteep : SLIDE.maxGentle;

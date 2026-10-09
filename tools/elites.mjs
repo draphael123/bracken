@@ -6,6 +6,7 @@
 // elite's death, by any means, is main.js's eliteWatch, which asks only whether the elite is still alive.
 //   node tools/elites.mjs              every level
 //   node tools/elites.mjs wood,marsh   only those
+//   REACH_HERO=<knight|warden|pyro|paladin|pirate|reaper|geomancer> node tools/elites.mjs  runs it with that hero's own legs (src/reachcore.js opts.hero, claude/reachcore; tools/reach-heroes.mjs sweeps them all)
 // FAILS when an elite stands in a boss, mini or ambush room, on nothing, out of reach, too near its own gate; when a
 // gate cannot be reached, can be walked round, or covers a checkpoint, sign, door, key or collectable; or when a level
 // with no mini has no gated elite (a level still being rebuilt is listed as pending, not failed).
@@ -30,7 +31,7 @@ for (const lv of LEVELS) {
   const near = (R, x, y) => { for (let dy = -2; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (R.seen.has((x + dx) + ',' + (y + dy))) return true; return false; };
   const rooms = [A, L.mini].filter(Boolean).map(Q => [Q.x0 / TS - 1, Q.x1 / TS + 1, Q.y0 !== undefined ? Q.y0 / TS - 1 : Q.floor / TS - 16, Q.floor / TS + 2])
     .concat((L.ambushes || []).map(Q => [Q.wallL - 1, Q.wallR + 1, (Q.y0 !== undefined ? Q.y0 : Q.row - 9) - 1, Q.row + 2]));
-  const open = floodReach(L, T, { rides: true });
+  const open = floodReach(L, T, { rides: true, hero: process.env.REACH_HERO });
   if (NO_KEEPER.has(lv.id)) { /* no gatekeeper wanted */ }
   else if (!els.length && !L.mini) out.push('no mini and no elite holding a gate');
   else if (!L.mini && !els.some(e => e.gate !== undefined)) out.push('no mini, and no elite here holds a gate');
@@ -47,7 +48,7 @@ for (const lv of LEVELS) {
     const G = eliteGate(L, e.gate, e.y);
     if (Math.abs(e.gate - e.x) < 5) out.push(tag + ' is ' + Math.abs(e.gate - e.x) + ' tiles from its gate: no room to fight in front of it');
     const grid = L.grid.slice(); for (let y = G.top; y <= G.bot; y++) grid[y * L.W + G.col] = T.SOLID; if (G.sill >= 0) grid[G.sill * L.W + G.col] = T.SOLID;
-    const shut = floodReach({ ...L, grid }, T, { rides: true });
+    const shut = floodReach({ ...L, grid }, T, { rides: true, hero: process.env.REACH_HERO });
     if (!near(shut, e.x, e.y)) out.push(tag + ' cannot be reached with its gate @' + e.gate + ' shut');
     /* THE GATE HOLDS when most of what lies past it (on the side away from the elite) is only reached through it. The boss
        room is the first thing asked; where the model cannot see into it (a ride, a canopy), the ground past the gate is */

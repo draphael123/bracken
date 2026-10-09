@@ -25,7 +25,8 @@ import { crumbleStart as crumbleStartAt, crumbleBreak as crumbleBreakAt } from '
 import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
 import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed stone */
 import * as SLD from './slide.js';   /* THE BUTT-SLIDE (claude/slide): the hit, the bounce, the dust of down held on a slope */
-import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, aheadTile, slopeRise, slopeGrade } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
+import { MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK as sprintKOf } from './hero-move.js';   /* THE HEROES' BASE MOVEMENT, one copy (claude/reachcore): src/reach-hero.js reads it too */
+import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, slideKeepAt, aheadTile, slopeRise, slopeGrade } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
 import { makeLesserDjinnHands } from './lesser-djinn-hands.js'; import * as LDA from './redraw/lesser_djinn_art.js'; let LDH = null;   /* (claude/djinn3) THE LESSER DJINN: the will-o'-the-wisp's AI (the ember wisp's, cold) under the Djinn's skins - sand a pour makes mud, fire a pour douses */
 import { makeMysticHands } from './bandit-mystic-hands.js'; import * as MYA from './redraw/mystic_art.js'; let MYH = null;   /* (claude/djinn2) THE BANDIT MYSTICS: the goblin mage's AI under men's skins - casters, and lamp-bearers whose light wards (src/bandit-mystic.js) */
@@ -335,8 +336,8 @@ setHeardHook(markHeard);
 const musicUnlocked = name => !!(PROG.heardMusic && PROG.heardMusic[name]);
 
 // ---------- tuning ----------
-const RUN = 92, GRAV = 1000, JUMPV = -320, POGO = -330;
-const AWNING_LAUNCH = 0.82;   /* (claude/fairfix5) THE HARVEST FAIR's springy awnings throw you 0.82 of a rick's launch: -328 / -394 held / -459 plunged (54 / 78 / 105 px) */
+const { RUN, GRAV, JUMPV } = MOVE, POGO = -330;   /* (claude/reachcore) the base movement lives in src/hero-move.js: the reach model flies the same numbers */
+const AWNING_LAUNCH = SPRING_MOVE.AWNING;   /* (claude/fairfix5) THE HARVEST FAIR's springy awnings throw you 0.82 of a rick's launch: -328 / -394 held / -459 plunged (54 / 78 / 105 px) */
 /* EARTHSHAKER's 'from a height', 2026-09-24: it was prevVy > 250, and the fall is capped at 270 - so every full jump on flat ground
    (it lands at ~270) was a free, costless quake that staggered the boss, and the lab's Hurricane went 57s -> 33s on it alone.
    A flat jump peaks JUMPV^2/2G = 51 px up; this asks for 72 (four and a half tiles): off a ledge, or down from one. */
@@ -7660,7 +7661,7 @@ function endPin(pulled) {
    held there for PERCH_WIN with nothing falling. Press jump or dodge in that window and she kicks off the shaft
    higher than his rebound ever carried him (PERCH_KICK, against POGO's 330); let it run out and she slides down off
    the point and lands. Same button, same drop, opposite verb: he is thrown off it, she stays on it and decides. ==== */
-const PERCH_WIN = 0.34, PERCH_KICK = -430;
+const { PERCH_WIN, PERCH_KICK } = WARDEN_SPEAR;   /* (src/hero-move.js: the reach model flies them too) */
 /* ==== BUT NOT OVER A DROP: THERE SHE VAULTS. A point that goes in does not spring back out - into something standing on
    the ground. A wasp over a pond has no ground under it to be held down on, and a perch on it was a stop in mid-air with
    nothing ahead but the water: she could not cross a single pit the knight crosses off the backs of the wasps. So when the
@@ -7671,7 +7672,7 @@ const PERCH_WIN = 0.34, PERCH_KICK = -430;
    springing. HOLD JUMP as the point goes in and she goes higher (VAULT_HIGH against VAULT_LOW). The two heights are
    sized against his POGO: the low one under it, the held one only a little over, so a crossing built for his bounce is
    a crossing for her vault and she does not get over anything his bounce could not. ==== */
-const VAULT_LOW = -300, VAULT_HIGH = -345, VAULT_FWD = 110, VAULT_CARRY = 0.28, FOOT_ROWS = 2;
+const { VAULT_LOW, VAULT_HIGH, VAULT_FWD, VAULT_CARRY, FOOT_ROWS } = WARDEN_SPEAR;   /* (src/hero-move.js) */
 function footUnder(e) {
   const hw = Math.max(2, (e.w || 8) / 2 - 1), ty0 = Math.floor((e.y + 1) / TS);
   for (let ty = ty0; ty <= ty0 + FOOT_ROWS; ty++) for (const px of [e.x - hw, e.x, e.x + hw]) { const t = tileAt(Math.floor(px / TS), ty); if (isSolid(Math.floor(px / TS), ty) || isOneWay(t)) return true; }
@@ -8899,7 +8900,7 @@ function updatePlayer(dt) {
      and the first jump or step she buffers is spent kicking off it rather than on the move it usually buys. */
   if (P.perch > 0) {
     P.perch -= dt; P.vx = 0; P.vy = 0; P.ground = false;
-    if (P.jbuf > 0 || P.dbuf > 0) { P.jbuf = 0; P.dbuf = 0; P.perch = 0; P.vy = PERCH_KICK; P.vx = -P.face * 60; P.canCut = true;
+    if (P.jbuf > 0 || P.dbuf > 0) { P.jbuf = 0; P.dbuf = 0; P.perch = 0; P.vy = PERCH_KICK; P.vx = -P.face * WARDEN_SPEAR.PERCH_BACK; P.canCut = true;
       P.airJump = 0; P.airRolled = false; P.dashedAir = false; P.airDashN = 0;   /* she leaves the shaft with her air back */
       SFX.pJump(); dust(P.x, P.y, 5); squash(0.78, 1.28, 0.12); number(P.x, P.y - 30, 'OFF THE SHAFT', '#8fd160'); }
     else if (P.perch <= 0) { P.perch = 0; P.canCut = true; P.vy = 60; }   /* she slides down off the point */
@@ -9078,23 +9079,23 @@ function updatePlayer(dt) {
   P.gustT = Math.max(0, (P.gustT || 0) - dt);
   // A RUN YOU HAVE TO EARN: hold one direction for most of a second and the legs open up. It shows: dust off
   // the heels and streaks off the shoulders when it kicks in.
-  const sprinting = (P.runT || 0) > 1.1 && !P.block && !P.jet && !wading && !spored;   /* it carries through a jump: momentum is not lost in the air */
-  const sprintK = sprinting ? Math.min(1, ((P.runT || 0) - 1.1) / 0.6) : 0;   // it comes in over half a second, not in one frame
+  const sprinting = (P.runT || 0) > MOVE.SPRINT_AFTER && !P.block && !P.jet && !wading && !spored;   /* it carries through a jump: momentum is not lost in the air */
+  const sprintK = sprinting ? sprintKOf(P.runT || 0) : 0;   // it comes in over half a second, not in one frame
   if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
-  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * (isReaper() && P.ground ? 0.8 : isGeo() && P.ground ? 0.92 : 1) /* heavy on his feet, not in the air: the levels' gaps are measured for the knight's jump */ * (PROG.charm === 'swift' ? 1.12 : 1) * (isPyro() ? 1.15 : isPaladin() ? 0.9 : 1) * (1 + 0.15 * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
+  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : RUN * heroRunMul(hero(), P.ground) /* heavy on his feet, not in the air (reaper, geomancer): the levels' gaps are measured for the knight's jump; quicker pyro, slower paladin - src/hero-move.js HERO_RUN */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + MOVE.SPRINT_BONUS * sprintK)) + (P.gustT > 0 && !P.ground ? 150 : 0); // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
   /* UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down"): walking up a dune the legs cap at 0.6 of a run on a steep slope, 0.8 on a gentle one, and down it they run a little free (1.1). Walking only - the slide (below) keeps its own speeds. */
   const slopeK = SLOPES_ON && P.ground && move && !P.swim ? footSlope(tileAt, P) : 0, capW = slopeK ? cap * (slopeRise(slopeK) === move ? (slopeGrade(slopeK) === 1 ? UPHILL.steep : UPHILL.gentle) : UPHILL.down) : cap;
   if (move && !groundAtk) {
-    const acc = P.swim ? 900 : P.ground ? (onSlick ? 260 : 1000) : 700;   /* ICE: 360 and a brake of 150 read as a sticky floor, not a slide */
-    if (Math.abs(P.vx) > capW && Math.sign(P.vx) === move) P.vx = move * Math.max(capW, Math.abs(P.vx) - 400 * dt);
+    const acc = P.swim ? MOVE.ACC_SWIM : P.ground ? (onSlick ? MOVE.ACC_SLICK : MOVE.ACC_GROUND) : MOVE.ACC_AIR;   /* ICE: 360 and a brake of 150 read as a sticky floor, not a slide */
+    if (Math.abs(P.vx) > capW && Math.sign(P.vx) === move) P.vx = move * Math.max(capW, Math.abs(P.vx) - MOVE.OVER_BLEED * dt);
     else { P.vx += move * acc * dt; if (Math.abs(P.vx) > capW) P.vx = move * capW; }
     if (!attacking && !(P.faceLock > 0)) P.face = move;   /* THE CAROUSEL holds his facing for a moment after it turns him (src/mummer.js CAROUSEL.lock) */
     if (P.ground) P.airHang = false;
   } else if (!dodging) {
-    const fr = P.ground ? (groundAtk ? 1600 : onSlick ? 70 : 1100) : 200;
+    const fr = P.ground ? (groundAtk ? MOVE.FRIC_ATTACK : onSlick ? MOVE.FRIC_SLICK : MOVE.FRIC_GROUND) : MOVE.FRIC_AIR;
     const s = Math.sign(P.vx); P.vx -= s * fr * dt; if (Math.sign(P.vx) !== s) P.vx = 0;
   }   else if (P.dash > 0 && !P.swim) { const s = Math.sign(P.vx) || P.face; P.vx = s * Math.max(Math.min(cap, Math.abs(P.vx)), Math.abs(P.vx) - 400 * dt); }   /* THE DODGE CARRIES as the dash did: its pace bleeds off to a run, held or not */
 else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);   /* HER STEP CARRIES (claude/wardenkit): the pace it was given, held to its end (STEP_PACE) */
@@ -9179,7 +9180,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
   if (P.jbufStash > 0) { P.jbuf = P.jbufStash; P.jbufStash = 0; }
   if (jumpHeld) P.jbuf = jumpHeld;   /* (the up-key jump held for its grace: it is still asked for next frame) */
-  if (!keys.jump && P.canCut && P.vy < -110 && !P.plunge) P.vy = -110;
+  if (!keys.jump && P.canCut && P.vy < MOVE.JUMP_CUT && !P.plunge) P.vy = MOVE.JUMP_CUT;
 
   const cutOut = dodging && P.dash > 0 && P.atk < 0 && dashCutNow();   /* X EARLY IN THE DODGE is the dash attack: it is the one thing that ends it */
   if (P.abuf > 0 && !stunned && !P.plunge && (!dodging || cutOut) && !P.aegis && !P.warding && !(P.deflectRec > 0) && !rushing()) {   /* (a sweep that met nothing is a beat she cannot swing in) */
@@ -9262,13 +9263,13 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (P.whirlFree > 0) P.whirlFree = Math.max(0, P.whirlFree - dt);   /* the stroke that broke the Drowned King's current keeps you out of it a moment */
   if (P.soot > 0) P.soot = Math.max(0, P.soot - dt);   // the black water runs off the lens
   if (!P.climb && !P.swim) { // THE ARC: light at the apex, heavier coming down, heaviest if you ask for it
-    const rising = P.vy < 0, apex = Math.abs(P.vy) < 62 && !P.ground;
-    const fast = !P.ground && keys.down && !P.plunge && P.vy > -40 && !(P.sandSlide && P.sandSlide.carry) ? 2.1 : 1; // FAST FALL: ask for the ground and it comes
-    const gk = P.plunge ? 1.6 : apex ? 0.62 : rising ? 1 : 1.2 * fast;
+    const rising = P.vy < 0, apex = Math.abs(P.vy) < MOVE.APEX_VY && !P.ground;
+    const fast = !P.ground && keys.down && !P.plunge && P.vy > -40 && !(P.sandSlide && P.sandSlide.carry) ? MOVE.FAST_FALL_G : 1; // FAST FALL: ask for the ground and it comes
+    const gk = P.plunge ? 1.6 : apex ? MOVE.APEX_G : rising ? 1 : MOVE.FALL_G * fast;
     P.vy += GRAV * dt * gk;
     if (apex && !P.hangFx) { P.hangFx = true; } else if (!apex) P.hangFx = false;
   }
-  const maxFall = P.plunge ? 340 : (!P.ground && keys.down && P.vy > 0 && !(P.sandSlide && P.sandSlide.carry) ? 380 : 270); if (P.vy > maxFall) P.vy = maxFall; // FAST FALL gets its own ceiling, or the cap eats it
+  const maxFall = P.plunge ? 340 : (!P.ground && keys.down && P.vy > 0 && !(P.sandSlide && P.sandSlide.carry) ? MOVE.MAX_FAST_FALL : MOVE.MAX_FALL); if (P.vy > maxFall) P.vy = maxFall; // FAST FALL gets its own ceiling, or the cap eats it
   if (GS > 0 && SKY && SKY.on()) SKY.player(dt, P, !!keys.jump);   /* THE SKY ROAD: THE RIDER'S CLOAK (hold jump as you fall: glide) and THE CLOUD SEA's updraft */
   { // crag rock faces: hold into the rock while airborne to cling and slide slowly; jump to kick up and away
     const dir = keys.left ? -1 : keys.right ? 1 : 0, tx = Math.floor((P.x + dir * 6) / TS), ty = Math.floor((P.y - 8) / TS);
@@ -9284,7 +9285,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (GS > 0 && SLOPES_ON && !P.swim && !P.climb && !(MCH && MCH.riding(P))) { const ss = P.sandSlide || (P.sandSlide = { vx: 0, sliding: false, carry: false });
     const kind = P.ground ? footSlope(tileAt, P) : 0, owned = ss.sliding || ss.carry;
     if (P.hurt > 0 || dodging) { ss.sliding = false; ss.carry = false; }
-    else if (kind || owned) { if (!owned) ss.vx = P.vx; slideStep(ss, dt, { kind, ground: P.ground, down: keys.down, jumped: P.jumpT === time, keep: GSH && GSH.on() ? GSH.slideKeep(P, kind) : 1 }); if (ss.sliding || ss.carry) P.vx = ss.vx; else if (owned) P.vx = ss.vx; } }
+    else if (kind || owned) { if (!owned) ss.vx = P.vx; slideStep(ss, dt, { kind, ground: P.ground, down: keys.down, jumped: P.jumpT === time, keep: slideKeepAt(L, P.x, kind) }); if (ss.sliding || ss.carry) P.vx = ss.vx; else if (owned) P.vx = ss.vx; } }
   if (GS > 0 && P.sandSlide && GSH && GSH.on() && SLOPES_ON && P.ground) { const k0 = footSlope(tileAt, P); if (k0) GSH.slide(P, P.sandSlide, k0, dt); if (P.sandSlide.sliding) P.vx = P.sandSlide.vx; }   /* (claude/glasssea) THE SLICK GLASS: a glass slope's slide runs faster */
   if (P.sandSlide) SLD.buttUpdate({ P, ss: P.sandSlide, dt, time, enemies, box, overlap, poiseMax, swordDmg, hurtEnemy, knockFoe, SFX, dust, parts, shakeCam, hitstop, sparks, lowParts: SET.parts === 'low' });   /* THE BUTT-SLIDE's hit, dust and bounce */
   if (SLOPES_ON && P.ground && !P.slideTold?.[hero()] && !(P.hurt > 0)) { const fs0 = footSlope(tileAt, P); if (fs0) { P.slideTold = P.slideTold || {}; P.slideTold[hero()] = 1; PROG.slideTold = PROG.slideTold || {}; if (!PROG.slideTold[hero()]) { PROG.slideTold[hero()] = 1; saveProgress(); number(P.x, P.y - 30, 'HOLD DOWN TO SLIDE: FEET FIRST', '#e8dcb4'); } } }   /* TEACH IT once per hero per save, the first time he stands on a slope */
@@ -9323,9 +9324,9 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     for (const dx of [-3, 3, -5, 5]) { const hx = Math.floor((P.x + dx) / TS), hy = Math.floor((P.y - P.h - 1) / TS);
       if (!isSolid(hx, hy) && !isSolid(hx, hy + 1)) { P.x += dx; P.vy = Math.min(P.vy, -120); break; } }
   }
-  if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = SET.assist ? 0.2 : 0.1; P.kicked = false; }
+  if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE; P.kicked = false; }
   else if (r.hitY) P.vy = 0;
-  if (!P.ground && wasGround) P.coyote = SET.assist ? 0.2 : 0.1; // (a mover counts: walking off a raft used to give no grace at all)
+  if (!P.ground && wasGround) P.coyote = SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE; // (a mover counts: walking off a raft used to give no grace at all)
   if (GS > 0 && !P.ground && P.vy >= 0) for (const m of movers) { if (m.broken) continue;
     if (prevY <= m.y + 1 + Math.max(0, m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; }
   }
@@ -9337,7 +9338,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
      on it at a run and let go of the keys sailed off the far side of it into the river (and a pyro landing on its lip
      still did at a third of her pace). Let go and you come down on the bud; steer, and the air carries you to the stage. */
   if (P.ground && !wasGround && P.onMover && P.onMover.spring && !(P.onMover.cd > 0) && !P.dead) {
-    const m = P.onMover; P.onMover = null; P.ground = false; P.coyote = 0; P.jbuf = 0; P.plunge = false; P.canCut = false; P.vy = -420; P.vx = 0;
+    const m = P.onMover; P.onMover = null; P.ground = false; P.coyote = 0; P.jbuf = 0; P.plunge = false; P.canCut = false; P.vy = SPRING_MOVE.BUD; P.vx = 0;
     m.cd = 1; m.fired = 0.35; squash(0.7, 1.35, 0.14); SFX.budSpring(); ringAt(m.x + m.w / 2, m.y0 + 3, 22, '#dff7c8', 0.35);
     burst(m.x + m.w / 2, m.y0, 10, ['#ffd0dc', '#dff7c8', '#eefaff'], 70, 0.4); dust(P.x, P.y, 3);
   }
@@ -9345,7 +9346,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
   if (!P.ground) P.fallV = Math.max(P.fallV || 0, P.vy);
   if (P.ground && !wasGround && P.groundTile === T.BOUNCER) { // springy cap
-    const plunged = P.plunge; P.ground = false; P.vy = plunged ? -560 : keys.jump ? -480 : -400;
+    const plunged = P.plunge; P.ground = false; P.vy = plunged ? SPRING_MOVE.BOUNCE_PLUNGED : keys.jump ? SPRING_MOVE.BOUNCE_HELD : SPRING_MOVE.BOUNCE;
     { const atx = Math.floor(P.x / TS), aty = Math.floor((P.y + 2) / TS), aw = FAIR && L.awnings ? L.awnings.find(a => atx >= a.x0 && atx <= a.x1 && aty === a.row) : null;   /* (claude/fairfix5) A FAIR AWNING: springy canvas, a lower launch than a rick; a TEARING one rips */
       if (aw) { P.vy *= AWNING_LAUNCH; P.awningAt = aw; SFX.puff(); if (aw.tear) { const c = (L.crumbles || []).find(q => q.kind === 'awning' && q.x0 === aw.x0 && q.row === aw.row); if (c && c.st === 'whole') { c.st = 'count'; c.t = c.count; c.shown = 1; } } } } P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, FAIR ? ['#dcb44e', '#f4d878', '#a8802c'] : ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
     const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (FAIR && L.haystacks) { const hz = L.haystacks.find(z => tx >= z[0] && tx <= z[1]); if (hz) { FAIR.sq[hz[0]] = 1; SFX.hayRustle(); } }
@@ -9378,7 +9379,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // a mover or a charm pushed you over the line, which is exactly why the speed read as inconsistent. And it
   // was thrown away the instant your feet left the ground, so a jump taken at a run landed at a walk. It
   // counts a fraction of your own top speed now, and it is kept (not grown) while you are in the air.
-  if (Math.abs(P.vx) > RUN * 0.86) { if (P.ground) P.runT = (P.runT || 0) + dt; } else P.runT = 0; P.ashT = Math.max(0, (P.ashT || 0) - dt);
+  if (Math.abs(P.vx) > RUN * MOVE.SPRINT_HOLD) { if (P.ground) P.runT = (P.runT || 0) + dt; } else P.runT = 0; P.ashT = Math.max(0, (P.ashT || 0) - dt);
   if (P.ground && Math.abs(P.vx) > 90 && Math.sign(P.vx) !== P.face && !dodging) { if (Math.random() < dt * 30) dust(P.x + P.face * 3, P.y, 1); SFX.skid(); } // turning at a run: the boots skid
   if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); if (L.hush) { noiseAt(P.x, P.y, groundVol() * (P.block ? 0.4 : 1), null); footMark(); } } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
