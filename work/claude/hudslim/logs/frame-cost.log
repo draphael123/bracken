@@ -1,0 +1,2 @@
+wood, 120 frames in play: 0 read-backs; view change: 18 + 9 canvases (a level load makes 731); theatre, 25 s: 1 canvases
+frame cost: no read-back in play, a view change re-bakes only the backdrop, the theatre keeps its trimmed blocks.

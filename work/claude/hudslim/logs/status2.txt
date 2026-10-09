@@ -1,0 +1,10 @@
+tells 0
+floaters 0
+frame-cost 0
+render-layers 0
+mark-integrity 0
+shake-mode 0
+store-ui 0
+save-slots 0
+level-complete 0
+ALLDONE

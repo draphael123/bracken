@@ -1,0 +1,14 @@
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+const WT = process.argv[2], OUT = process.argv[3] + '/'; mkdirSync(OUT, { recursive: true });
+const { openPage } = await import(pathToFileURL(WT + '/tools/cdp.mjs').href);
+const pg = await openPage({ audio: true, fonts: true });
+await pg.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
+const E = (e, t = 300000) => pg.evalp(e, t);
+const shot = async n => { const r = await pg.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(OUT + n + '.png', Buffer.from(r.result.data, 'base64')); console.log('wrote', n); };
+await new Promise(r => setTimeout(r, 1500));
+await E('BK.manualSimulation=true;BK.step(5)');
+await E(`(async()=>{const {xpFloor}=await import('/src/xp.js');const {LEVELS}=await import('/src/level.js');BK.setHero('knight');BK.reset({fresh:true});BKT.PROG.xp.knight=xpFloor(40);BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.sim(10);BK.god=true;BK.step(2);for(const e of BK.enemies()) if(!e.mini&&e!==BK.boss)e.alive=false;const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+3,Math.round(A.floor/16)-1)})()`);
+await E('for(let i=0;i<300;i++)BK.sim(1)'); await E('BK.step(120)'); await E('(()=>{BK.boss.mode="wake";BK.boss.modeT=1.0;})()');
+console.log(await E('JSON.stringify([BK.boss.mode,BK.boss.modeT])')); await E('BK.step(3)'); await shot('boss-intro');
+await pg.close();
