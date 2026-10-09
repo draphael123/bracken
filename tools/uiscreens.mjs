@@ -78,7 +78,8 @@ try {
   assert.ok(mc.some(s => /^NOT WALKED$|^BEST /.test(s)), 'best (or not walked)');
   assert.ok(mc.filter(s => /^\d+:\d\d$/.test(s)).length >= 3, 'the three medal times: ' + mc.join(' / '));
   assert.ok(mc.some(s => /^QUEST (OPEN|DONE)$/.test(s)), 'the quest, said in words, not "OPEN"');
-  assert.ok(mc.some(s => /abandoned/.test(s)) && mc.some(s => /goes down$/.test(s)), 'a long blurb is paged, both halves reach the screen over time: ' + mc.join(' / '));
+  /* (claude/mapscale, Daniel 10-09: a blurb is ONE whole line that fits - no paging, no cut sentence; the Fair's reads whole in a single frame) */
+  assert.ok(mc.some(s => /^abandoned mid-festival, at sundown$/i.test(s)), 'the blurb is one whole line, not cut and not paged: ' + mc.join(' / '));
   console.log('ok  map card       recommended level, best, three medal times, quest in words, a paged blurb');
   assert.deepEqual(pg.errors, [], 'no page errors'); console.log('ok  console        no page errors');
 } finally { await pg.close(); }
