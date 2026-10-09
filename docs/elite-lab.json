@@ -495,9 +495,28 @@
      24.6
     ]
    }
+  },
+  "construct": {
+   "level": "buriedcity",
+   "affix": "SHIELDED",
+   "ehp": 469,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 4,
+    "secs": [
+     25.3,
+     25.3,
+     46.7,
+     39.8
+    ]
+   }
   }
  },
- "stamp": "359e70171cdf",
+ "stamp": "750e75e6d0d0",
  "heroes": [
   "knight",
   "warden",

@@ -2838,7 +2838,7 @@ const ELITE = {
   scorpion: { name: 'THE OLD STINGER', own: true, hp: 11 },
   cutthroat: { name: 'THE FIRST KNIFE', own: true, hp: 7.4 },   /* THE SUNKEN CARAVAN's rim (2026-09-25, the goblin archer's place): the looters' best blade */
   gaffer: { name: 'THE DECK FOREMAN', own: true, hp: 6.5 },   /* THE ORE ROAD's captain: hp 1.3 (2 at x3) because 44 x the room's own multiplier was a minute-long fight in a room rule Q wants over in thirty seconds */
-  construct: { name: 'THE BRASS WARDEN', own: true, mod: true },   /* THE BURIED CITY's section exams (claude/buriedcity fix pass M4: the halls 295, the quarter 388, the throne street 486): its poke and sweep are its own (src/construct.js), the elite adds the body, the guard, the leash, the gate and the purse - before this row a construct marked elite stood up a plain construct */
+  construct: { name: 'THE BRASS WARDEN', hp: 1.4, own: true, mod: true },   /* THE BURIED CITY's section exams (claude/buriedcity fix pass M4: the halls 295, the quarter 388, the throne street 486): its poke and sweep are its own (src/construct.js), the elite adds the body, the guard, the leash, the gate and the purse - before this row a construct marked elite stood up a plain construct */
   boarder: { name: 'THE BOARDING MASTER', hp: 10, own: true }, hedgeknight: { name: 'A HEDGE KNIGHT CHAMPION', own: true, hp: 5.5 }, heavy: { name: "THE KING'S CHAMPION", own: true, hp: 2.3 },
 };
 /* big: HALF AS BIG AGAIN, body and all. At 1.2 an elite was a goblin with a gold edge; at 1.5 it stands a head over the crowd it leads.
