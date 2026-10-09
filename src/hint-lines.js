@@ -10,6 +10,10 @@ import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
   /* claude/burnvillage2: THROW WATER and THE PYROMANCER's stun and steam ward (src/village-water.js) - routed so the player can see them */
   'STUNNED', 'HE WARDS IN STEAM', 'THE JUG', 'THE BUCKET', 'PUT OUT',
+  /* claude/underleaf2: UNDERLEAF's sound tools and THE GRANDMOTHER's rework (src/hush-hands.js LINES) */
+  'STRUCK FROM BEHIND, A SLEEPER DIES WITHOUT A SOUND', 'A LIGHT IN THE STREET: THE CACHE IS BARRED', 'THE STREET SLEPT: THE CACHE OPENS',
+  'THE STREET IS AWAKE: ITS GATE IS DOWN. GO BY THE ROOFS', 'THE BELLMAN RINGS: THE STREET WAKES', 'THE BONE KEY FALLS', 'THE BELL TOLLS: NOTHING HERE IS HEARD',
+  'HER BACK: CUT IT', 'SHE KICKS THE CANDLES OVER', 'THE BOARDS CREAK UNDER YOU', 'SHE RINGS FOR THE VILLAGE', 'THE KNELL: JUMP THE BOARDS', 'THE CHIMES ARE LOST IN THE BELL',
   /* claude/survival2: the manual flask and the exam spikes (src/main.js drinkFlask, shrine break, SV.examAt) - routed so the player can see them */
   'NO FLASKS', 'FULL', 'SPILLED', 'SHRINE BROKEN  +1 FLASK', 'THE SPIKES KILL HERE',
   /* claude/slide: the first slope a hero stands on */
@@ -44,7 +48,7 @@ export const CALL_LINES = new Set([
   'IT FALLS - FINISH IT', 'IT SKIDS: HIT IT', 'IT LANDS: HIT IT', 'IT WHINES: HIT IT', 'INTO THE LANTERN: HIT IT', 'PINNED: HIT IT', 'ON THE GROUND: HIT IT',
   'DAZED: HIT HIM', 'SCALDED: HIT HIM', 'STUCK: JUMP ON IT', 'STRIKE ITS LEVER', 'STRIKE IT AGAIN', 'KILL THE PUPS FAST', 'THE BOUGHS: GET CLEAR', 'HIS WARD: HE SHAKES IT OFF', 'THE IRON TAKES HALF: JAM HIS DRUM',
   /* claude/bosswave1: the boss wave's earned openings, told (src/main.js, src/boss-greed.js OPEN_RULE) */
-  'HE FALLS: CUT HIM', 'HE RISES ON THE WIND', 'SHE RAPS THE FLOOR: CUT HER', 'NOTHING THERE: CUT HER', 'HE SHAKES IT OFF', 'IT GATHERS ITS GLASS', 'IT SHAKES IT OFF', 'HE GATHERS HIMSELF', 'THE GATE HAS HIM: CUT HIM', 'HE DRAGS HIMSELF OUT', 'THE RUNE TURNS HIM OVER', 'THE GRATE COMES DOWN ON HER',   /* (claude/bosswave2) a mini's opening shut after a third of him (src/boss-greed.js miniCap) */
+  'HE FALLS: CUT HIM', 'HE RISES ON THE WIND', 'SHE RAPS THE FLOOR: CUT HER', 'HE SHAKES IT OFF', 'IT GATHERS ITS GLASS', 'IT SHAKES IT OFF', 'HE GATHERS HIMSELF', 'THE GATE HAS HIM: CUT HIM', 'HE DRAGS HIMSELF OUT', 'THE RUNE TURNS HIM OVER', 'THE GRATE COMES DOWN ON HER',   /* (claude/bosswave2) a mini's opening shut after a third of him (src/boss-greed.js miniCap) */
   'STUNG: HIS ARMS LIE STILL', 'BEHIND HER GUARD: BRING A GUN TO BEAR', 'THE COLD TAKES YOUR FIRE: A CANDLE AT THE WALL',
   /* the ones that say what to do about a hazard */
   'THE ROD: JUMP', 'LOW: JUMP IT', 'JUMP THE FLOCK', 'FROM BOTH WALLS: JUMP', 'JUMP! AND KEEP JUMPING', 'GET CLEAR', 'GET ABOVE THE ROOTS - AND THE SPORES',

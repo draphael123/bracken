@@ -208,17 +208,17 @@
   "lostPct": 114
  },
  "underleaf": {
-  "hash": "d2069f293fd9",
+  "hash": "e5cf1d597a9b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 8,
+  "hits": 12,
   "deaths": 0,
-  "kills": 5,
-  "lifts": 114,
+  "kills": 20,
+  "lifts": 116,
   "walked": 100,
   "bare": true,
-  "lostPct": 55
+  "lostPct": 88
  },
  "deep": {
   "hash": "f26c65d342aa",

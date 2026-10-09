@@ -19,7 +19,8 @@ export const THROW_KIND = {
   // (src/village-water.js SPLASH). Its told arc is src/carry-throw.js KINDS.jug (UP lobs, DOWN tosses short), the same numbers it flies on.
   jug: { vx: 190, vy: -150, g: 600, respawn: 2, hitSmall: 1, hitFire: 3, carrySpeed: 80, carrySpeedSwim: 56 },
   // barrel: { vx: 120, vy: -160, g: 640, respawn: 4, hitSmall: 2, hitFire: 2, carrySpeed: 46, carrySpeedSwim: 44 },
-  // pot:    { vx: 170, vy: -190, g: 600, respawn: 2, hitSmall: 1, hitFire: 1, carrySpeed: 62, carrySpeedSwim: 56 },
+  // (claude/underleaf2) UNDERLEAF's POT: light, a noise where it breaks (src/hush-hands.js); its told arc is src/carry-throw.js KINDS.pot
+  pot: { vx: 175, vy: -185, g: 600, respawn: 4, hitSmall: 1, hitFire: 2, carrySpeed: 76, carrySpeedSwim: 54 },
   // rock:   { vx: 140, vy: -150, g: 700, respawn: 5, hitSmall: 3, hitFire: 1, carrySpeed: 50, carrySpeedSwim: 46 },
   // THE HANGING VILLAGE's hoist loads (2026-09-28, the ropewalk teaching pass): a coil, a sack or a stone thrown at
   // a hoist's well. Only vx/vy/g/carrySpeed are ever READ for it (src/main.js's updateHoists reuses the load's own

@@ -98,10 +98,13 @@ export const STUCK = {
       { zone: [140, 2, 196, 17], at: [188, 8], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS ON THE ROOD BEAM' },
       { zone: [175, 18, 345, 45], at: [278, 33], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS IN THE CHURCH: FIND ITS DOOR' },
       { zone: [175, 18, 345, 45], at: [336, 33], when: ['key', 188, 8, 'got'], done: ['lockgate', 336, 33, 'open'], line: 'THE IRON GATE WANTS THE KEY YOU CARRY' } ] },
-    { id: 'ul-bone', zone: [210, 2, 475, 45], glint: 'stall', steps: [
-      { zone: [210, 2, 258, 17], at: [250, 9], done: ['key', 250, 9, 'got'], line: "THE BONE KEY IS ON THE MASTER'S DESK" },
-      { zone: [340, 18, 470, 45], at: [356, 33], done: ['key', 250, 9, 'got'], line: 'THE BONE KEY IS IN THE SCHOOL: FIND ITS DOOR' },
-      { zone: [340, 18, 475, 45], at: [469, 33], when: ['key', 250, 9, 'got'], done: ['lockgate', 469, 33, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
+    /* (claude/underleaf2) THE ONE REQUIRED THROW: the bone key hangs on the school's bell-cote - its nail glints from the roof (and the chimney pots
+       by the ladder), the key where it falls, then the gate. (A street gate the alarm drops is glinted and nudged by src/hush-hands.js itself: it is
+       not there in a fresh street, so it is no route-list spot) */
+    { id: 'ul-bone', zone: [337, 2, 475, 45], steps: [
+      { zone: [345, 18, 400, 33], ats: [[378, 22], [355, 27]], done: ['keynail', 378, 22, 'down'], line: 'THE BONE KEY HANGS ON THE BELL-COTE' },
+      { zone: [345, 18, 470, 45], at: [378, 27], when: ['keynail', 378, 22, 'down'], done: ['key', 378, 27, 'got'], line: 'THE BONE KEY FELL ON THE SCHOOL ROOF' },
+      { zone: [340, 18, 475, 45], at: [469, 33], when: ['key', 378, 27, 'got'], done: ['lockgate', 469, 33, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
   ],
   burning: [
     { id: 'bn-fallen-house', zone: [200, 22, 232, 30], ats: [[227, 25], [208, 23]], line: 'TOO HIGH TO JUMP: WATER, OR THE ROOFS' },

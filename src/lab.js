@@ -1592,7 +1592,7 @@ async function runbossLab(BK, opts) {
       /* THE GUN FOR HER GUARD: a deck gun on her own deck, cold, inside the arena - the nearest one to the bot */
       const gunT = boss.t === 'quarter' && boss.guard ? BK.props().filter(q => q.t === 'cannon' && q.deck && !(q.cool > 0) && Math.abs(q.y - boss.y) < 30 && q.x > A.x0 - 16 && q.x < A.x1 + 16)
         .sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || null : null;
-      const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && ad < 90;
+      const tell = boss.mode && /Tell$/.test(boss.mode) && boss.mode !== 'stanceTell' && !(boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'lureTell')) && ad < 90;   /* (claude/underleaf2: her LISTEN throws no blow - stand still; her lash at a lure goes at the sound, not at you) */
       /* THE SHOULDER is no Tell by the time it reaches you: it is the rush itself, and it is answered as it arrives */
       const rushing = ((boss.mode === 'rush' || (boss.t === 'masthead' && boss.mode === 'sail')) && ad < 46) || (boss.t === 'master' && boss.mode === 'charge' && ad < 64 && (boss.x - P.x) * boss.vx < 0);   /* THE HOUND MASTER's charge is no Tell by the time it reaches you either */   /* THE RAM is answered as it arrives, like the shoulder */
       /* whatever is thrown and about to arrive - rubble, spit, a shot - is taken on the shield */
@@ -1953,6 +1953,25 @@ async function runbossLab(BK, opts) {
           else goal = bl.x + (boss.x > bl.x ? -20 : 20);                          /* wait on the far side, so his chain hauls him under it */
           if (P.labJump > 0) { P.labJump--; k.jump = true; }
         } else { goal = boss.x; strike = true; } }
+      /* THE GRANDMOTHER (claude/underleaf2, B14 keyed FROM BEHIND): her front turns a blade, so a player MAKES her back - he strikes a bell-pull whose
+         chime rings on her far side (or lobs a pot over her), and cuts her back while she lashes at the sound; in her told ward he stands off; when she
+         listens he stands still (the branch below). Nothing is rung or thrown for the bot: a real swing at the cord, a real pot taken and thrown. */
+      else if (boss.t === 'grandmother' && BK.hushHands && BK.hushHands() && !['listenTell', 'listen', 'sleep', 'wake'].includes(boss.mode)) {
+        const side = Math.sign(P.x - boss.x) || -1, back = -(boss.face || 1), behind = side === back;
+        const knell = BK.hushHands().knells().some(q => Math.abs(q.x - P.x) < 36 && (P.x - q.x) * q.dir > 0);   /* HER KNELL runs the boards at you: jumped as it comes, as a player jumps a wave he can see */
+        if (knell || P.labKnell > 0) { if (knell && P.ground && !(P.labKnell > 0)) { BK.press('jump'); P.labKnell = 16; } if (P.labKnell > 0) { P.labKnell--; k.jump = true; } goal = null; strike = false; }
+        else if (boss.mode === 'rap') { goal = boss.x; strike = true; }
+        else if (boss.mode === 'turned') { if (behind) { goal = boss.x; strike = true; } else { goal = boss.x + back * 20; strike = false; } }   /* round to her back if the lure went the wrong way */
+        else if (boss.ward > 0 || boss.mode === 'lureTell' || boss.mode === 'lash') { goal = boss.x + side * 70; strike = false; }
+        else if (P.carry && P.carry.t === 'npot') { strike = false; goal = boss.x + side * 42;
+          if (ad >= 28 && ad <= 60 && P.ground && P.atk < 0 && !['lureTell', 'lash', 'turned'].includes(boss.mode)) { P.face = -side; k.left = k.right = false; k.up = true; goal = null; BK.press('atk'); } }   /* LOBBED over her head (UP held): it breaks well behind her, and she turns her back on you to go for it */
+        else { const pulls = BK.props().filter(p => p.t === 'granpull' && !(p.cd > 0) && !p.jangle);
+          const pull = pulls.find(p => Math.sign(p.x - boss.x) === side && Math.sign(p.chimeX - boss.x) === -side && Math.abs(p.x - boss.x) > 44 && Math.abs(p.x - boss.x) < 150);   /* (near enough that her back is a few strides away when she turns) */
+          const pot = BK.props().filter(p => p.t === 'npot' && p.state === 'rest' && Math.abs(p.y - P.y) < 20 && Math.abs(p.x - boss.x) > 50).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+          if (pull) { const at = pull.x - Math.sign(pull.x - boss.x) * -12; goal = at; strike = false;
+            if (Math.abs(P.x - at) < 8 && P.ground && P.atk < 0 && boss.mode === 'walk') { P.face = Math.sign(pull.x - P.x) || P.face; k.left = k.right = false; goal = null; BK.press('atk'); } }
+          else if (pot && Math.abs(pot.x - P.x) < 140) { goal = pot.x; strike = false; if (Math.abs(pot.x - P.x) < 10 && P.ground && !P.carry) BK.press('talk'); }
+          else { goal = boss.x + side * 80; strike = false; } } }
       else if (boss.t === 'troll') { goal = boss.x; strike = true;
         /* THE HILL TROLL: his stones drop from a hook a player jumps to strike - when he walks under one, the bot drops it, as a player at that hook would */
         const st = BK.props().find(q => q.t === 'weight' && q.crane && q.state === 'hang' && Math.abs(q.x - boss.x) < 12); if (st) { st.state = 'fall'; st.fy = st.y + st.len; st.vy = 0; } }
@@ -2011,7 +2030,9 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'ram' && (boss.mode === 'lower' || boss.mode === 'rear')) strike = false;   /* (his head goes down: no swing started that would still be running when he comes) */
       /* THE GRANDMOTHER LISTENS (claude/bosswave1: her rap and her feel turned are her openings now): SHE IS LISTENING is told, and a player stands
          still and silent through it - no step, no swing - and she raps the floor, open */
-      else if (boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'listen')) { strike = false; goal = null; k.left = k.right = false; }
+      else if (boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'listen')) { strike = false; goal = null; k.left = k.right = false;   /* (claude/underleaf2) a rug in a stride or two: onto it while she gathers herself (the boards carry a breath; the rug does not) */
+        const rug = boss.mode === 'listenTell' ? (BK.L.rugs || []).map(([a, b]) => ((a + b + 1) / 2) * 16).filter(x => Math.abs(x - P.x) < 56).sort((a, b) => Math.abs(a - P.x) - Math.abs(b - P.x))[0] : undefined;
+        if (rug !== undefined && Math.abs(rug - P.x) > 20) goal = rug; }
       /* and his twister walks the heather toward him: a player keeps out of its way (it lifts and cuts whatever it touches), on the side away from it */
       else if (boss.t === 'windcaller' && boss.twister && boss.mode !== 'fallen' && Math.abs(P.x - boss.twister.x) < 70) { strike = false; goal = boss.twister.x + (Math.sign(P.x - boss.twister.x) || 1) * 90; }
       /* THE CHIP AND THE GREED REPRISAL (claude/combat3, src/boss-greed.js): outside an opening a hero's blow on a boss is a twentieth, and
@@ -2142,7 +2163,7 @@ async function runbossLab(BK, opts) {
          P.st untouched, so it was never a stamina question - the ward was ripped down by this check, not run dry. Excluded here, not
          removed: every OTHER stuck state (the spring, a jump held with no ground contact) never sets P.warding, so this still catches
          them exactly as before. */
-      if (f % 30 === 0) { const stuck = !P.warding && !(LABP.v2 && MA && MA.wait) && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
+      if (f % 30 === 0) { const stuck = !P.warding && !(LABP.v2 && MA && MA.wait) && !(boss.t === 'grandmother' && ['listenTell', 'listen', 'turned', 'lureTell', 'lash'].includes(boss.mode)) && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
         P.labStuckF = stuck ? (P.labStuckF || 0) + 1 : 0; P.labStuckX = P.x; P.labStuckHp = boss.hp; }
       /* HOLDING JUMP DOWN FOREVER IS ITS OWN STUCK STATE (found chasing this same herald-pirate check, claude/botfix
          follow-up): this used to set k.jump = true directly, with nothing to ever let it go again while P.labStuckF
