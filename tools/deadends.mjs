@@ -7,6 +7,7 @@
 // RULES-LEVELS-AND-BOSSES.md is the rule.
 //   node tools/deadends.mjs            every level
 //   node tools/deadends.mjs <id> -v    one level, with what was looked at and skipped (open water, too small, a door)
+//   REACH_HERO=<knight|warden|pyro|paladin|pirate|reaper|geomancer> node tools/deadends.mjs  runs it with that hero's own legs (src/reachcore.js opts.hero, claude/reachcore; tools/reach-heroes.mjs sweeps them all)
 import { LEVELS, T } from '../src/level.js';
 import { findDeadEnds } from '../src/deadends.js';
 
@@ -14,7 +15,7 @@ const want = process.argv[2] && !process.argv[2].startsWith('-') ? process.argv[
 let total = 0, unpaid = 0, levels = 0;
 for (const lv of LEVELS) {
   if ((lv.hidden && !lv.secret) || (want && lv.id !== want)) continue;
-  const L = lv.build(), r = findDeadEnds(L, T); levels++;
+  const L = lv.build(), r = findDeadEnds(L, T, { hero: process.env.REACH_HERO }); levels++;
   const owed = r.pockets.filter(p => !p.paid);
   total += r.pockets.length; unpaid += owed.length;
   console.log('== ' + lv.id + ': ' + r.pockets.length + ' dead end' + (r.pockets.length === 1 ? '' : 's') + (owed.length ? ', ' + owed.length + ' WITH NOTHING AT THE END' : '') + (r.why ? ' (' + r.why + ')' : ''));

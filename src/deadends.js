@@ -29,7 +29,7 @@ export const LOOT = new Set(['silver', 'stray', 'vault', 'key', 'mend']);
 export function findDeadEnds(L, T, opts = {}) {
   const MIN = opts.min || DEADEND_MIN;
   const W = L.W, H = L.H, N = W * H, ents = L.ents || [];
-  const R = floodReach(L, T, { rides: true });
+  const R = floodReach(L, T, { rides: true, hero: opts.hero });   /* (opts.hero: tools/deadends.mjs per hero, claude/reachcore; the build passes none) */
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;

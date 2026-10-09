@@ -9,7 +9,7 @@
                        across the way on
      E  LOST THINGS    a silver, checkpoint, gate or quest item the reach model cannot get to
    Each finding is printed with its level, place and what is there. Without --strict it exits 0 (a report); with --strict it
-   fails on A, B and E (the ones that are always a bug). C and D need an eye: some are deliberate. */
+   fails on A, B and E (the ones that are always a bug). C and D need an eye: some are deliberate. REACH_HERO=<hero> runs it with that hero's own legs (src/reachcore.js opts.hero, claude/reachcore). */
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 
@@ -19,7 +19,7 @@ const STAND = new Set([...SOLIDISH, T.ONEWAY, T.PLANK, T.SHELF, T.RAIL, T.CRYST,
 const NAME = Object.fromEntries(Object.entries(T).map(([k, v]) => [v, k]));
 export function audit(L) {
   const W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
-  const R = floodReach(L, T, { rides: true }), reached = (x, y) => R.seen.has(x + ',' + y);
+  const R = floodReach(L, T, { rides: true, hero: process.env.REACH_HERO }), reached = (x, y) => R.seen.has(x + ',' + y);
   const out = [];
   // A + B: the ropes, column by column
   for (let x = 0; x < W; x++) {

@@ -22,7 +22,7 @@
    (% of max, gross), healing used (drinks + small heals: hearts, kill heals), deaths, hits, kills; time; stuck spots; the share of the route measured. TARGETS (brief-levelsweep v2):
    a first run = 1-2 deaths; arrive at each checkpoint under ~50% health.
      PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--deaths=8]
-        [--jobs=1] [--profile=human+first|human|none] [--level=N] [--tonics=N] [--charm=heart|iron|none] [--json=out.json] [--strict]
+        [--jobs=1] [--profile=human+first|human|none] [--level=N] [--tonics=N] [--charm=heart|iron|none] [--json=out.json] [--strict] [--reach-hero (the route in each hero's own legs, claude/reachcore)]
         [--trace=x0-x1] (a frame log while the hero is between those columns)
    V2 HANDS (claude/walkerhands):
    - AN ELITE IS A DUEL (src/walk-duel.js + src/lab.js labDuelFrame): the elite on his floor (footing all the way, a row and a bit) within 9 tiles ahead /
@@ -50,10 +50,10 @@ export const TARGET = { deathsLo: 1, deathsHi: 2, arriveHp: 50 };
 export const beatenBefore = id => beatenBeforeIn(LEVELS, id);   /* (src/campaign-kit.js: the same kit the playtest jump ?level=<id>&campaign=1 gives) */
 export { tonicsAt, charmAt };
 /* THE ROUTE: tools/pacing.mjs's main route (the reach fill's movement graph, start to gate), every node: [x, y] = the column and the BODY row (feet at (y+1)*16) */
-export const routeOf = lv => pacing(lv).route.map(([x, y]) => [x, y]);
+export const routeOf = (lv, hero) => pacing(lv, { hero }).route.map(([x, y]) => [x, y]);   /* hero (claude/reachcore, --reach-hero): the route the hero's OWN legs reach (src/reachcore.js opts.hero); none = the shared fill, as before */
 export function walkCfg(id, hero, seed, o = {}) {
   const lv = BYID[id]; if (!lv) throw Error('no such level ' + id);
-  const d = DEPTH[id] ?? 1, lvl = o.level ?? campaignLevel(id), route = routeOf(lv);
+  const d = DEPTH[id] ?? 1, lvl = o.level ?? campaignLevel(id), route = routeOf(lv, o.reachHero ? hero : undefined);
   return { id, hero, seed, lvl, depth: d, beaten: beatenBefore(id), tonics: o.tonics ?? tonicsAt(d), charm: o.charm === undefined ? charmAt(d) : o.charm,
     profile: o.profile ?? 'human+first', strict: !!o.strict, trace: o.trace || null, traceFrom: o.traceFrom || 0, traceN: o.traceN || 400, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, from: o.from ?? null, duel: o.duel ?? true, mini: o.mini ?? true, route };
 }
@@ -247,7 +247,7 @@ if (process.argv[1] && /level-walk\.mjs$/.test(process.argv[1])) {
   const ids = args.filter(a => !a.startsWith('-')).flatMap(a => a.split(',')).filter(Boolean);
   if (!ids.length) { console.log('usage: PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--jobs=1] [--json=out.json]'); process.exit(2); }
   const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 2), jobs = Math.max(1, +opt('jobs', 1)), OUT = opt('json', '');
-  const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null, traceFrom: +opt('tracefrom', 0), traceN: +opt('tracen', 400), from: opt('from', '') ? +opt('from') : null, duel: opt('duel', '1') !== '0', mini: opt('mini', '1') !== '0' };
+  const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), reachHero: args.includes('--reach-hero'), trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null, traceFrom: +opt('tracefrom', 0), traceN: +opt('tracen', 400), from: opt('from', '') ? +opt('from') : null, duel: opt('duel', '1') !== '0', mini: opt('mini', '1') !== '0' };
   if (opt('tonics', null) !== null) o.tonics = +opt('tonics'); if (opt('charm', null) !== null) o.charm = opt('charm') === 'none' ? null : opt('charm');
   const cfgs = []; for (const id of ids) for (const h of heroes) for (let s = 1; s <= seeds; s++) cfgs.push(walkCfg(id, h, s, o));
   const t0 = Date.now(), rows = await runWalks(cfgs, { jobs, onRow: (r, all) => { console.log(line(r)); if (r.trace) console.log('    trace: ' + r.trace.join(' ')); if (OUT) writeFileSync(OUT, JSON.stringify(all, null, 1)); } });

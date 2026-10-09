@@ -13,11 +13,12 @@
 //     last solid footing you stood on (never a crumbling span or a mover). Never an untold death.
 // Every capital line it says goes through ctx.number with a line listed in src/hint-lines.js.
 import { DISC } from './sky-road.js';
+import { RIDE_MOVE } from './hero-move.js';
 import * as SKW from './redraw/skyroad_world.js';   /* THE SKY ROAD's rule, drawn (claude/skyroadart) */
 import * as SKD from './redraw/skyroad_dress.js';
 
 export const THERMAL = { lift: 150, glideLift: 205, over: 40, crest: 26, fadeIn: 0.8, fadeOut: 0.45, warn: 1.2 };
-export const GLIDE = { fall: 40 };
+export const GLIDE = { fall: RIDE_MOVE.GLIDE_FALL };   /* (claude/reachcore) one copy, src/hero-move.js: the reach model glides on it too */
 export const CATCH = { dmg: 14, below: 2 };                          /* rows under the cloud sea's top at which the updraft has you */
 export const SNATCH = { t: 1.5, climb: 46, drift: 64, mash: 0.25, cd: 3 };   /* s she holds you, px/s up and out, s each press takes off, s before she dives again */
 export const RIDER = { hp: 16, ride: 22, sight: 190, tell: 0.7, speed: 250, over: 34, dmg: 12, cd: 2.4, sink: 46, rise: 90, walk: 52, reach: 24, kickTell: 0.45, kickDmg: 9, kickCd: 1.1, w: 14, h: 14 };
