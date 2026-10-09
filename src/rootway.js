@@ -174,7 +174,7 @@ export function buildRootway({ painter, T, TS }) {
      hangs from a gantry five rows over the road - no jump reaches it - and a CAGE hangs over the road at its foot: cut it down and it lands on a root stump as a two-row step (stump, cage, gantry, ledge).
      UP takes the handle and the line carries you over the well to the ledge, where the hunt holds the landing; the ledge's bud grows you up the root wall to the road. A miss is a
      fall into the well (a shelf stair up its near wall, A10). The bow on the bough over the road covers the line. */
-  sign(270,18,"THE HUNTERS' GANTRY. CUT THE CAGE DOWN FOR A STEP: THE TROPHY LINE CARRIES YOU OVER THE WELL.");
+  sign(270,18,"THE GANTRY. CUT THE CAGE DOWN FOR A STEP: THE TROPHY LINE CARRIES YOU OVER THE WELL.");
   air(281, 290, 0, 26); ground(281, 290, 27); plank(281, 282, 24); plank(281, 282, 21);                                                             /* the well, and root shelves up its near wall (a fall costs the climb) */
   hoist('gantry', { x: 275, top: 9, hang: 13, cleat: [271,18], load: 'cage', land: [274,16] });
   ground(273, 275, 18);                                                            /* a root stump under the cage's place: one row up from the road (a step), and the cage lands on it - road, stump, cage, gantry: 1 + 2 + 2 rows, nothing taller than a jump */

@@ -34,7 +34,7 @@ try {
   /* THE LOOKOUT: an arrow struck back through the rope */
   const lo=hz('lookout');BK.seeds().push({x:312*16+8,y:15*16+4,vx:200,vy:-20,dead:false,life:2,arrow:true,reflected:true,g:0});BK.sim(3);for(let i=0;i<90;i++)BK.sim(1);out.lookout={state:lo.state,cells:[304,308,311].map(x=>cell(x,19))};
   /* (the fix pass) A DEATH KEEPS THE ROAD YOU OPENED: the grid is rebuilt on a respawn, and the span that stays down is laid again (a bridge over the exam's fall) */
-  BK.god=false;P.hp=0;let back=false;for(let i=0;i<600&&!back;i++){BK.sim(1);back=i>30&&!(P.dead>0)&&P.hp>0;}BK.sim(10);out.respawn={back,state:BK.rootway().hoist('lookout').state,cells:[304,308,311].map(x=>cell(x,19)),cellar:[53,60].map(x=>cell(x,38))};BK.god=true;
+  BK.tp(303,18);BK.god=false;BK.damagePlayer(P.x + 20, 9999);let back=false;for(let i=0;i<600&&!back;i++){BK.sim(1);back=i>30&&!(P.dead>0)&&P.hp>0;}BK.sim(10);out.respawn={back,state:BK.rootway().hoist('lookout').state,cells:[304,308,311].map(x=>cell(x,19)),cellar:[53,60].map(x=>cell(x,38))};BK.god=true;
   return out;})()`, 300000);
   ok(r.bud.state === 'up' && r.bud.k > 0.9 && r.bud.feet < 38.2, 'a bud grows under a hero who stops on it, and stands him level with the root wall ' + JSON.stringify(r.bud));
   ok(r.span.state === 'down' && r.span.cells.every(c => c === 2), 'a blow on the cleat drops the span across the pit: a bridge of one-way cells ' + JSON.stringify(r.span));
@@ -92,6 +92,17 @@ try {
   ok(t.red === false || t.red === null, 'a red arrow is not turned by a blade');
   ok(t.caught, 'a cage cut down on him on his perch CATCHES him');
   console.log('  read', JSON.stringify(t.read));
+  /* THE LOOKOUT HORN (claude/rootwayfix, Daniel 10-09): the first time the scout sights the hero - each life, until his span is down - ONE horn + told word + bow drawn; every hero */
+  for (const hero of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer']) {
+    const h = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.setHero('${hero}');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='rootway'));BK.state='play';BK.god=true;BK.sim(20);
+      const P=BK.P,RW=BK.rootway();for(const e of BK.enemies())if(!e.rwLookout)e.alive=false;
+      BK.tp(285,18);BK.sim(30);const far=RW.horns();
+      BK.tp(299,18);BK.sim(5);const sc=BK.enemies().find(e=>e.rwLookout);let drew=0;for(let i=0;i<200;i++){BK.sim(1);if(sc&&sc.draw>0)drew++;}const first=RW.horns();
+      BK.tp(303,18);BK.sim(120);const stay=RW.horns();
+      BK.tp(285,18);BK.sim(5);BK.tp(299,18);BK.sim(60);const again=RW.horns();
+      BK.tp(303,18);BK.god=false;BK.damagePlayer(P.x + 20, 9999);let back=false;for(let i=0;i<600&&!back;i++){BK.sim(1);back=i>30&&!(P.dead>0)&&P.hp>0;}BK.god=true;BK.sim(10);BK.tp(299,18);BK.sim(150);const life2=RW.horns();
+      return {far,first,stay,again,life2,drew};})()`, 300000);
+    ok(h.far === 0 && h.first === 1 && h.stay === 1 && h.again === 1 && h.life2 === 2 && h.drew > 0, 'the lookout horn, ' + hero + ': silent out of sight, ONE blast on first sight from the checkpoint, none again that life, again the next life, his bow drawn ' + JSON.stringify(h)); }
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
   if (pg.errors.length) bad++;
 } finally { pg.close(); }
