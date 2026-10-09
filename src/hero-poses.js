@@ -78,6 +78,7 @@ export const POSE_CYCLE = { whirl: 30 };   /* WHIRLWIND: the blade out ahead, be
 export function airPose(P, frames) {
   if (P.vy < -250 && frames.takeoff && P.airArt > 0) return ['takeoff', 0];
   if (Math.abs(P.vy) < 55 && frames.apex) return ['apex', 0];
+  if (P.nearFloor && P.vy > 140 && frames.land && frames.land.length >= 3) return ['land', 2];   /* THE BRACE (claude/herokeys, art only): the knees give a beat BEFORE the ground, so the fall does not pop into the landing's impact */
   return P.vy < 0 ? ['jump', P.vy < -150 ? 0 : 1] : ['fall', P.vy > 220 ? 1 : 0];
 }
 /* THE LANDING. A set with three landing frames plays impact, settle, stand over P.landArt (art time only, set with the gameplay
