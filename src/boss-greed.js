@@ -131,7 +131,7 @@ export const OPEN_RULE = {
    blows is the answer, not greed: no reprisal (claude/burnvillage2: and no chip either - he is a duelist on FULL_DAMAGE) */
 export const NO_GREED = new Set(['pyromancer']);
 /* (claude/minecart) THE GREAT DRILL is on OWN_WARD: its number is its own (src/great-drill.js takeBlow: the cab ALWAYS takes a whole blow - B13/B14, Daniel 10-07 - x2 jammed, nothing while warded); greed is still counted */
-export const OWN_WARD = new Set(['greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
+export const OWN_WARD = new Set(['greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   mother: 'her body is armoured to every blade already (ARMOURED); the heart node is her opening and it is not the boss',

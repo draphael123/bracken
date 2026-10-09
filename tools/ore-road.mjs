@@ -418,18 +418,20 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   ok(!opened && w.e.at === 0, 'THE OPENING IS CAUSED: a minute of him left alone, sending and hooking, and he never once goes down or leaves his drum'); }
 /* ---- THE JAM AND THE CIRCUIT: A -> B -> C -> A, and each time the line into the next housing is driven into it */
 { const w = world(); w.run(0.3);
-  ok(winchTake(w.e) === 0.5 && !winchOpen(w.e), 'ROUND FOUR: on a housing, his drum running, a blow on him lands at HALF (and no jump reaches him)');
+  ok(WM.winchArmoured(w.e) && winchTake(w.e) === WINCH.armourMul && WINCH.armourMul >= 0.4 && WINCH.armourMul < 1 && !winchOpen(w.e), 'ROUND SEVEN: on a housing he wakes in his ORE ARMOUR, and a blade on him lands at ' + WINCH.armourMul + ' - B15\'s floor, never nothing (and no jump reaches him)');
   const order = [];
   for (let k = 0; k < 3; k++) { const at0 = w.e.at, q = w.H[at0];
     ok(winchJam(w.e, w.c), `THE OPENING at ${q.name}: a loaded bucket ridden into his drum jams it`);
-    ok(winchTake(w.e) === 1, 'ROUND FOUR: and the moment the drum jams the half is off - thrown off the housing he takes blows as they come');
+    ok(winchTake(w.e) === 1 && !WM.winchArmoured(w.e), 'and the moment the drum jams his ore is shaken off - thrown off the housing he takes blows as they come');
     w.run(WINCH.thrownT + 0.05); ok(w.e.mode === 'downed' && Math.abs(w.e.y - q.ledgeY) < 1 && Math.abs(w.e.x - q.ledgeX) < 1, 'he goes off the housing onto its ledge, DOWNED');
     ok(winchTake(w.e) === 2 && winchOpen(w.e) && !winchJam(w.e, w.c), 'and takes double while he is down (a second jam does nothing)');
     w.run(WINCH.downT + WINCH.tell.letgo + WINCH.swingT / 2); const nx = w.H[(at0 + 1) % 3].homeX, mid = (w.e.x - q.ledgeX) * (nx - q.ledgeX);
     ok(w.e.mode === 'swing' && mid > 0 && Math.abs(w.e.x - q.ledgeX) < Math.abs(nx - q.ledgeX), 'half way through the swing he is on the cable between the ledge and the next housing');
-    w.run(WINCH.swingT / 2 + 0.1); done(w);
+    w.run(WINCH.swingT / 2 + 0.1);
     const n = w.H[w.e.at]; order.push(n.id);
-    ok(w.e.mode === 'stalk' && w.e.at === (at0 + 1) % 3 && Math.abs(w.e.y - n.topY) < 1, `then he takes the cable and swings on to ${n.name}`);
+    ok(w.e.mode === 'plating' && w.e.at === (at0 + 1) % 3 && Math.abs(w.e.y - n.topY) < 1 && w.log.some(q => q[0] === 'say' && /PACKS ORE/.test(q[1])), `then he takes the cable and swings on to ${n.name} - and PACKS ORE ROUND HIMSELF there, told`);
+    w.run(WINCH.plateT + 0.05); done(w);
+    ok(w.e.mode === 'stalk' && WM.winchArmoured(w.e) && winchTake(w.e) === WINCH.armourMul, 'and works it plated');
     ok(n.ln.dir === n.sense, `and drives the ${n.ln.id} line INTO it`); }
   ok(order.join('') === 'BCA', 'the circuit is A -> B -> C -> A: ' + order.join(' -> '));
   ok(w.H[1].ln.dir === w.H[1].sense, 'and back on the Great Drum, the high line has been turned round from the Tail Wheel toward the Head Frame, where he goes next'); }
@@ -475,12 +477,12 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
 /* ---- ROUND THREE, A10: ENRAGED HE LEAPS - told (the crouch, HE CROUCHES TO LEAP, a ring on the housing he will land on), to the
    housing you are up on, and the landing hurts you there; in phase one he never leaps */
 { const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = 999; w.run(30); done(w); ok(!w.modes.has('leapTell') && w.e.at === 0, 'phase one: thirty seconds on the Great Drum and not one leap');
-  const w2 = world(); w2.run(0.3); w2.e.revCd = w2.e.sendCd = w2.e.hookCd = w2.e.leverCd = 999; w2.e.qMark = -1e9; w2.e.hp = w2.e.maxHp * 0.45; w2.upOn = 2; w2.c.P.x = w2.H[2].homeX + 4; w2.c.P.y = w2.H[2].topY;
+  const w2 = world(); w2.run(0.3); w2.e.revCd = w2.e.sendCd = w2.e.hookCd = w2.e.leverCd = 999; w2.e.qMark = -1e9; w2.e.hp = w2.e.maxHp * 0.45; w2.e.armour = false; w2.upOn = 2; w2.c.P.x = w2.H[2].homeX + 4; w2.c.P.y = w2.H[2].topY;
   let t0 = null, tl = null, ring = false; for (let t = 0; t < (WINCH.leapEvery + 3) * 60; t++) { w2.step(); if (w2.e.mode === 'leapTell' && t0 === null) t0 = t; if (w2.e.mode === 'leapTell' && w2.e.leapTo === 2) ring = true; if (w2.e.mode === 'leap' && tl === null) tl = t; if (tl !== null && w2.e.mode !== 'leap') break; }
   done(w2);
   ok(t0 !== null && tl !== null && (tl - t0) / 60 >= WINCH.tell.leap - 0.02 && ring, `phase two: he crouches ${((tl - t0) / 60).toFixed(2)} s with the ring on the Tail Wheel (where you are), then leaps`);
   ok(w2.e.at === 2 && w2.log.some(q => q[0] === 'hit' && q[1] === 'HIS LANDING' && q[3] === true), 'and lands on the Tail Wheel, and the landing hurts you there (no shield turns it)');
-  const w3 = world(); w3.run(0.3); w3.e.qMark = -1e9; w3.e.hp = w3.e.maxHp * 0.45; w3.e.leapCd = 0; w3.e.cd = 0; w3.c.P.x = 9999; w3.run(0.1); ok(w3.e.mode === 'leapTell' && w3.e.leapTo === 1, 'with you on no housing, he leaps on to the next one'); }
+  const w3 = world(); w3.run(0.3); w3.e.qMark = -1e9; w3.e.hp = w3.e.maxHp * 0.45; w3.e.armour = false; w3.e.leapCd = 0; w3.e.cd = 0; w3.c.P.x = 9999; w3.run(0.1); ok(w3.e.mode === 'leapTell' && w3.e.leapTo === 1, 'with you on no housing, he leaps on to the next one'); }
 /* ---- NO LEDGE IS A DEAD END: the low line runs into the Great Drum only while he is on it, and back to the deck otherwise */
 { const w = world(); w.run(0.3); ok(w.H[0].ln.dir === 1, 'on the Great Drum the low line runs into it');
   w.e.hp = w.e.qMark - w.e.maxHp * (WINCH.retreat + 0.01); w.run(WINCH.tell.letgo + WINCH.swingT + 0.3); ok(w.e.at === 1 && w.H[0].ln.dir === -1, "on the Head Frame it runs back to the deck: a hero on the Great Drum's ledge rides home");
@@ -500,8 +502,8 @@ const done = w => { for (const m of w.modes) EVERY.add(m); };
   ok(H.every(q => q.ln.len > WINCH.sendR * 4), 'SEND: every line is long enough to send a bucket down, and there is air over all of it to be in'); }
 /* ---- ROUND FOUR (Daniel, 2026-09-28): HALF UNLESS JAMMED, PHASE TWO RUSTS HIS SKIPS, AND HIS ROOM IS LIT */
 { const msrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-  ok(WINCH.chipMul === 0.5 && /if \(e\.t === 'winchmaster'\) \{ const k = winchTake\(e\); dmg = Math\.max\(1, Math\.round\(dmg \* k\)\)/.test(msrc), 'HALF DAMAGE UNLESS HIS DRUM IS JAMMED: every blow on him (and burn, through wardedDamage) is scaled by winchTake - half while his drum runs');
-  ok(/k < 1 && !\(e\.chipSaid > 0\)[^\n]*THE IRON TAKES HALF: JAM HIS DRUM/.test(msrc), 'and it is TOLD: a halved blow says THE IRON TAKES HALF: JAM HIS DRUM over him (at most every ' + WINCH.chipSay + ' s)');
+  ok(WINCH.armourMul >= 0.4 && /if \(e\.t === 'winchmaster'\) \{ const k = winchTake\(e\); dmg = winchPurse\(e, Math\.max\(1, Math\.round\(dmg \* k\)\)\)/.test(msrc) && typeof WM.winchPurse === 'function', 'ROUND SEVEN, ORE ARMOUR (and an opening has a PURSE, openCap ' + WINCH.openCap + ' / jamCap ' + WINCH.jamCap + '): every blow on him (and burn, through wardedDamage) is scaled by winchTake - ' + WINCH.armourMul + ' while he is plated (B15), whole bare');
+  ok(/k < 1 && blow\) BR\.turned\(e, P\.x, [^\n]*'ORE: THROW IT'/.test(msrc), 'and it is TOLD: a blade on his ore CLANKS and says ORE: THROW IT over him (B10, src/boss-read.js) - every blow, not the first');
   const rust = WM.winchRust, e1 = { alive: true, phase: 1 }, e2 = { alive: true, phase: 2 }, idx = [...Array(9).keys()];
   ok(typeof rust === 'function' && idx.every(i => !rust(e1, i)), 'PHASE TWO RUSTS HIS SKIPS: in phase one none of them is rust');
   ok(typeof rust === 'function' && idx.filter(i => rust(e2, i)).join() === '1,4,7' && !rust({ alive: false, phase: 2 }, 1) && !rust(null, 1), 'from half health every third skip of his is (skips 1, 4, 7 - never two together round a loop), and none once he is dead');
@@ -593,18 +595,81 @@ const toFoot = w => { w.e.hp = w.e.maxHp * 0.24; w.run(WINCH.tell.descend + WINC
   ok(BY_HAND['winchmaster|wrenchTell'] === '!' && ['descendTell', 'whirlTell', 'rideTell'].every(t => BY_HAND['winchmaster|' + t] === '!!'), 'the marks: THE WRENCH a yellow ! (the shield turns it), the descent, THE HOOK SWUNG and his skip a red !!');
   const ans = P3.map(t => (ANSWER || {})['winchmaster|' + t]);
   ok(ans.includes('dodge') && ans.includes('block') && ans.every(a => ['block', 'dodge', 'jump', 'duck'].includes(a)), 'and the answer tags: phase three asks for a dodge and a block (' + P3.map((t, i) => t + ' ' + ans[i]).join(', ') + ')'); }
+/* ---- ROUND SEVEN (Daniel, 2026-10-08, scratch/brief-winchmaster5.md; claude/winch5): ORE ARMOUR, THE ROCK, THE STAGGER, THE WARD */
+{ const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = w.e.tossCd = 999; const at0 = w.e.at, q = w.H[at0];
+  ok(WM.winchArmoured(w.e) && w.log.some(q2 => q2[0] === 'say' && /ORE ARMOUR/.test(q2[1])), 'ORE ARMOUR: he wakes plated, and says what breaks it');
+  const r = WM.winchRock(w.e, w.c);
+  ok(r === 'shatter' && w.e.mode === 'thrown' && !WM.winchArmoured(w.e) && !WM.winchJammed(w.e) && w.log.some(q2 => q2[0] === 'say' && /ORE SHATTERS/.test(q2[1])), 'A THROWN ROCK SHATTERS IT: his plates gone, he is knocked off his housing (told) - and his drum is not jammed');
+  w.run(WINCH.thrownT + 0.05); done(w);
+  ok(w.e.mode === 'stagger' && winchOpen(w.e) && Math.abs(w.e.y - q.ledgeY) < 1 && Math.abs(w.e.x - q.ledgeX) < 1, 'he lands on his own ledge, where you are: STAGGERED - open');
+  ok(winchTake(w.e) === WINCH.staggerMul && WINCH.staggerMul >= 1.5 && WINCH.staggerMul <= 2 && !winchJam(w.e, w.c), `and a blade lands x${WINCH.staggerMul} (B15: 1.5-2x), and nothing jams a drum he is not on`);
+  const x0 = w.e.x; let still = true; for (let t = 0; t < (WINCH.staggerT - 0.1) * 60; t++) { w.step(); if (Math.abs(w.e.x - x0) > 0.5) still = false; }
+  const g = recG(); WM.drawWinchFx(g, w.e, w.c, 0, 0, 0.05); const gold = g.calls.filter(c2 => c2[0] === '#ffd36b').length;
+  ok(still && w.e.mode === 'stagger' && gold >= 30, `STAGGER MEANS STILL (B4): ${(WINCH.staggerT - 0.1).toFixed(1)} s and he has not moved; drawn OPEN - a gold ring round him and a clock over him (${gold} rects)`);
+  w.run(0.15);
+  ok(w.e.ward > 0 && w.e.mode === 'letgo' && w.log.some(q2 => q2[0] === 'say' && /WARDED/.test(q2[1])) && winchTake(w.e) === WINCH.armourMul && WM.winchRock(w.e, w.c) === 'warded', 'B3: then he gathers himself, WARDED (told): a blade at the floor, and a rock is turned - no chain-lock');
+  const g2 = recG(); WM.drawWinchFx(g2, w.e, w.c, 0, 0, 0.05); ok(g2.calls.filter(c2 => c2[0] === '#d8e2ee').length >= 20, 'and the ward is drawn: a pale shell round him');
+  w.run(WINCH.tell.letgo + WINCH.swingT + 0.2); done(w);
+  ok(w.e.at === at0 && w.e.mode !== 'plating' && !WM.winchArmoured(w.e), 'he hauls himself back up onto the SAME housing (less than a quarter of him gone), still bare');
+  w.run(WINCH.wardT); ok(!(w.e.ward > 0) && winchTake(w.e) === 1 && WM.winchRock(w.e, w.c) === 'hit', 'and once his ward is out, BARE: every blade lands whole (B11) - a rock is only a rock');
+  w.run(30); ok(!WM.winchArmoured(w.e) && w.e.at === at0, 'phase one: bare on the same housing he stays bare (thirty seconds) - his ore comes back on the NEXT housing');
+  /* a quarter gone in the stagger: he retreats instead, and packs ore on the next housing */
+  const w2 = world(); w2.run(0.3); w2.e.revCd = w2.e.sendCd = w2.e.hookCd = w2.e.leverCd = w2.e.tossCd = 999; WM.winchRock(w2.e, w2.c); w2.run(WINCH.thrownT + 0.05);
+  w2.e.hp = w2.e.qMark - w2.e.maxHp * (WINCH.retreat + 0.01); w2.run(WINCH.staggerT + WINCH.tell.letgo + WINCH.swingT + 0.3);
+  ok(w2.e.at === (at0 + 1) % 3 && w2.e.mode === 'plating', 'a quarter of him gone while he was staggered: HE RETREATS to the next housing, and packs ore there');
+  /* a rock while he packs it breaks what is there */
+  w2.run(0.2); ok(w2.e.mode === 'plating' && WM.winchRock(w2.e, w2.c) === 'shatter', 'a rock thrown while he packs his ore shatters what is there');
+  /* phase two plates him more often */
+  const w3 = world(); w3.run(0.3); w3.e.revCd = w3.e.sendCd = w3.e.hookCd = w3.e.leverCd = w3.e.tossCd = 999; w3.e.qMark = -1e9; w3.e.hp = w3.e.maxHp * 0.45; w3.c.P.x = 9999;
+  WM.winchRock(w3.e, w3.c); let plated = false; for (let t = 0; t < (WINCH.staggerT + WINCH.wardT + WINCH.rearmP2 + 12) * 60; t++) { w3.step(); if (w3.e.mode === 'plating') plated = true; w3.e.revCd = w3.e.sendCd = w3.e.hookCd = w3.e.leverCd = w3.e.tossCd = 999; }
+  ok(plated && WM.winchArmoured(w3.e), `PHASE TWO PLATES HIM MORE OFTEN: bare ${WINCH.rearmP2} s on his drums and he packs his ore again`);
+  const w4 = world(); w4.run(0.3); w4.e.revCd = w4.e.sendCd = w4.e.hookCd = w4.e.leverCd = w4.e.tossCd = 999; w4.e.qMark = -1e9; w4.e.hp = w4.e.maxHp * 0.45; w4.c.P.x = 9999; w4.run(20); done(w4);
+  ok(!w4.modes.has('leapTell') && w4.e.at === 0, 'phase two, PLATED HE HOLDS HIS DRUM: twenty seconds in his ore and not one leap (bare, he leaps - proved in ROUND THREE)');
+  const w5 = world(); w5.run(0.3); w5.e.revCd = w5.e.sendCd = w5.e.hookCd = w5.e.leverCd = w5.e.tossCd = 999; WM.winchRock(w5.e, w5.c); w5.run(WINCH.thrownT + 0.05);
+  let paid = 0; for (let i = 0; i < 40 && w5.e.mode === 'stagger'; i++) { paid += WM.winchPurse(w5.e, 30); w5.step(); }
+  ok(paid <= Math.ceil(w5.e.maxHp * WINCH.openCap) + 1 && w5.e.mode !== 'stagger' && WINCH.openCap <= 0.2, `AN OPENING IS NEVER THE WHOLE FIGHT: a stagger pays out ${paid} of his ${w5.e.maxHp} (openCap ${WINCH.openCap}) and the blow that empties it ends it`);
+  ok(WM.winchRock({ ...w.e, phase: 3, mode: 'foot', armour: false, ward: 0 }, w.c) === 'hit' && !WM.winchArmoured({ phase: 3, armour: true, mode: 'foot' }), 'phase three: no ore on foot - a rock is only a rock'); }
+/* ---- ORE TOSS (!!, phase one): at a rider in range, told, a ring where it lands; it takes one who stays, misses one who steps out */
+{ const mk = () => { const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = 999; w.e.tossCd = 0; w.ride = { h: 0, dist: 160 }; w.e.cd = 0; return w; };
+  const w = mk(); let tell = 0; for (let f = 0; f < 900 && w.e.mode !== 'toss'; f++) { w.step(); if (w.e.mode === 'tossTell') tell++; }
+  const g = recG(); WM.drawWinchFx(g, w.e, w.c, 0, 0, 0.05); const red = g.calls.filter(c2 => c2[0] === '#ff6b6b').length;
+  ok(tell / 60 >= WINCH.tell.toss - 0.03 && !!w.e.toss && Math.abs(w.e.toss.tx - w.c.P.x) < 1 && red >= 20 && w.log.some(q => q[0] === 'say' && q[1] === 'ORE TOSS'), `ORE TOSS: told ${(tell / 60).toFixed(2)} s (said, the chunk in his hand), thrown at where the rider will be, and a red ring there while it flies (${red} rects)`);
+  w.run(WINCH.tossT + 0.1); done(w); ok(w.log.some(q => q[0] === 'hit' && q[1] === 'ORE TOSS' && q[3] === true), 'it takes a rider who stays in the ring - no shield turns it');
+  const w2 = mk(); for (let t = 0; t < 300 && w2.e.mode !== 'toss'; t++) w2.step(); w2.ride.dist += WINCH.tossR + 6; w2.run(WINCH.tossT + 0.1);
+  ok(!w2.log.some(q => q[0] === 'hit' && q[1] === 'ORE TOSS'), 'and misses one who stepped out of the ring as it came');
+  const w3 = world(); w3.run(0.3); w3.e.revCd = w3.e.sendCd = w3.e.hookCd = w3.e.leverCd = 999; w3.e.tossCd = 0; w3.upOn = 0; w3.c.P.x = w3.H[0].px0 + 6; w3.c.P.y = w3.H[0].topY; w3.e.cd = 0; w3.run(3);
+  ok(!w3.modes.has('tossTell'), 'never at a hero up on his housing with him (the bar and the hook are for there)'); }
+/* ---- SPILL (!!, phase two): a loaded high-line skip over you is tipped, told by a red strip under it, and its ore comes down */
+{ const mk = (ph) => { const w = world(); w.run(0.3); w.e.revCd = w.e.sendCd = w.e.hookCd = w.e.leverCd = w.e.tossCd = w.e.leapCd = 999; if (ph === 2) { w.e.qMark = -1e9; w.e.hp = w.e.maxHp * 0.45; } w.ride = { h: 0, dist: 260 };
+    const sk = { x: 0, y: 150 }; w.c.skipOver = (x) => { sk.x = x; return { x, y: sk.y, id: sk }; }; w.c.skipAt = id => (id ? { x: id.x, y: id.y } : null); w.e.cd = 0; return w; };
+  const w = mk(2); let tell = 0; for (let f = 0; f < 900 && w.e.mode !== 'spill'; f++) { w.step(); w.e.leapCd = 999; if (w.e.mode === 'spillTell') tell++; }
+  const rocks = w.log.filter(q => q[0] === 'rock' && q[2] > 100 && q[2] < 160); done(w);
+  ok(tell / 60 >= WINCH.tell.spill - 0.03 && rocks.length === 3 && w.log.some(q => q[0] === 'say' && /TIPS A SKIP/.test(q[1])), `SPILL: told ${(tell / 60).toFixed(2)} s (said, a red strip down from the skip), then that skip's ore comes down (${rocks.length} rocks, the room's own falling rock)`);
+  const w1 = mk(1); w1.run(20); ok(!w1.modes.has('spillTell'), 'and only in phase two (one new move a phase)'); }
+/* ---- THE CHAIN SWEEP (!!, phase three): the hook dragged low across his floor - it takes a hero standing on it, misses one in the air */
+{ const put = (w, dx) => { w.c.P.x = w.e.x + dx; w.c.P.y = FL[0].y; w.c.P.ground = true; };
+  const w = p3(); toFoot(w); w.e.wrenchCd = w.e.whirlCd = 999; w.e.sweepCd = 0; w.e.cd = 0; put(w, -66); let tell = 0; for (let f = 0; f < 900 && w.e.mode !== 'sweep'; f++) { w.step(); if (w.e.mode === 'sweepTell') tell++; }
+  w.run(WINCH.sweepT + 0.1); done(w);
+  ok(tell / 60 >= WINCH.tell.sweep - 0.03 && w.log.some(q => q[0] === 'hit' && q[1] === 'THE CHAIN SWEEP' && q[3] === true), `THE CHAIN SWEEP: told ${(tell / 60).toFixed(2)} s (a red line along his floor to ${WINCH.sweepR} px), and it takes a hero standing on it, out of the swung hook's reach`);
+  const w2 = p3(); toFoot(w2); w2.e.wrenchCd = w2.e.whirlCd = 999; w2.e.sweepCd = 0; w2.e.cd = 0; put(w2, -66); for (let t = 0; t < 300 && w2.e.mode !== 'sweep'; t++) w2.step(); w2.c.P.y -= 40; w2.c.P.ground = false; w2.run(WINCH.sweepT + 0.1);
+  ok(!w2.log.some(q => q[0] === 'hit' && q[1] === 'THE CHAIN SWEEP'), 'and misses a hero who jumped it'); }
+/* ---- NO MOVE OVER ~35% OF HIS CYCLE (the brief): a rider coming at him on his line for a minute, every move left to its own clock */
+{ const w = world(); w.run(0.3); const n = {}; let last = null, all = 0;
+  for (let t = 0; t < 60 * 60; t++) { w.ride = { h: 0, dist: 150 + 60 * Math.sin(t / 97) }; w.step(); if (w.e.mode !== last) { last = w.e.mode; if (last.endsWith('Tell')) { n[last] = (n[last] || 0) + 1; all++; } } }
+  const top = Object.entries(n).sort((a, b) => b[1] - a[1])[0];
+  ok(all >= 12 && top[1] / all <= 0.36, 'NO ONE MOVE OVER ~35% OF HIS CYCLE: a rider on his line for a minute - ' + Object.entries(n).map(([k, v]) => k.replace('Tell', '') + ' ' + Math.round(100 * v / all) + '%').join(', ')); }
 /* ---- A1/A2/A3/A8, read off the files */
 { const wsrc = readFileSync(new URL('../src/winchmaster.js', import.meta.url), 'utf8'), msrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const { BY_HAND, MARK } = await import('../src/marks.js');
   const tells = [...new Set([...wsrc.matchAll(/begin\(e, '([a-z]+)'|can\.push\('([a-z]+)'\)/g)].map(m => (m[1] || m[2]) + 'Tell'))].sort();
-  ok(tells.join() === 'descendTell,hookTell,leapTell,leverTell,reverseTell,rideTell,sendTell,whirlTell,wrenchTell', 'A1: NINE TOLD ATTACKS (the leap is phase two\'s; the descent, the hook swung, the wrench and the ride are phase three\'s, round six), each a named Tell with its own say: ' + tells.join(', '));
+  ok(tells.join() === 'descendTell,hookTell,leapTell,leverTell,reverseTell,rideTell,sendTell,spillTell,sweepTell,tossTell,whirlTell,wrenchTell', 'A1: TWELVE TOLD ATTACKS (the leap is phase two\'s; the descent, the hook swung, the wrench and the ride are phase three\'s, round six; ORE TOSS, SPILL and THE CHAIN SWEEP one a phase, round seven), each a named Tell with its own say: ' + tells.join(', '));
   ok(tells.every(t => ('winchmaster|' + t) in BY_HAND) && !Object.keys(BY_HAND).some(k => k.startsWith('winchmaster|') && !tells.includes(k.split('|')[1])), 'and every one has a mark row (and there is no row for an attack he no longer has)');
-  ok(BY_HAND['winchmaster|leverTell'] === '!' && ['sendTell', 'hookTell', 'leapTell'].every(t => BY_HAND['winchmaster|' + t] === '!!') && BY_HAND['winchmaster|reverseTell'] === '', 'on his drums exactly one blow a shield turns (the brake bar, yellow), the rest it does not (red), and a quiet reverse');
+  ok(BY_HAND['winchmaster|leverTell'] === '!' && ['sendTell', 'hookTell', 'leapTell', 'tossTell', 'spillTell'].every(t => BY_HAND['winchmaster|' + t] === '!!') && BY_HAND['winchmaster|reverseTell'] === '', 'on his drums exactly one blow a shield turns (the brake bar, yellow), the rest it does not (red: the send, the hook, the leap, ORE TOSS, SPILL), and a quiet reverse');
   ok(!MARK || !('winchmaster|cutTell' in MARK), 'the mark table the screen reads no longer shows a cut he does not make');
   ok(/e\.t === 'winchmaster' && typeof e\.mode === 'string' && e\.mode\.endsWith\('Tell'\)/.test(msrc), 'A2: every Tell of his is in windingUp(), so every windup is heard off screen');
-  const frames = ['descendTell', 'descend', 'foot', 'whirlTell', 'whirl', 'wrenchTell', 'wrench', 'bitten', 'rideTell', 'ride', 'leapTell', 'leap', 'stalk', 'leverTell', 'lever', 'reverseTell', 'reverse', 'sendTell', 'send', 'hookTell', 'hook', 'thrown', 'downed', 'letgo', 'swing', 'sleep', 'wake'];
+  const frames = ['descendTell', 'descend', 'foot', 'whirlTell', 'whirl', 'wrenchTell', 'wrench', 'bitten', 'rideTell', 'ride', 'leapTell', 'leap', 'stalk', 'leverTell', 'lever', 'reverseTell', 'reverse', 'sendTell', 'send', 'hookTell', 'hook', 'thrown', 'downed', 'letgo', 'swing', 'sleep', 'wake', 'plating', 'stagger', 'tossTell', 'toss', 'spillTell', 'spill', 'sweepTell', 'sweep'];
   ok(frames.every(m => winchFrame({ mode: m }) >= 0 && winchFrame({ mode: m }) <= 12), 'the frame table answers every mode from his 13-frame sheet (0-12)');
-  const need = ['hookTell', 'hook', 'leverTell', 'lever', 'sendTell', 'send', 'reverseTell', 'reverse', 'thrown', 'downed', 'letgo', 'swing'];
+  const need = ['hookTell', 'hook', 'leverTell', 'lever', 'sendTell', 'send', 'reverseTell', 'reverse', 'thrown', 'downed', 'letgo', 'swing', 'plating', 'stagger', 'tossTell', 'toss', 'spillTell', 'spill', 'sweepTell', 'sweep'];
   const never = need.filter(m => !EVERY.has(m));
   ok(!never.length, 'A3: EVERY ATTACK FORCED AND FIRED in the scenarios above' + (never.length ? ' - NEVER ' + never.join(', ') : ''));
   const wiring = { EHP: /winchmaster:WINCH\.hp/, DMG: /winchSend:WINCH\.dmg\.send/, COLS: /winchmaster:\['#/, spawn: /case 'winchmaster':/, update: /updateWinchBoss\(e, dt\)/, frame: /frame = winchFrame\(e\)/,

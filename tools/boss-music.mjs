@@ -57,7 +57,7 @@ const grab = async (name, loops) => {
 const fmt = e => e.kind + ':' + e.type + ':' + (e.f === null ? '' : Math.round(e.f * 10) / 10);
 const results = {};
 const MAXGAP = { drownedking: 3 };   /* (the Bandit King's 6/8 has a drum or a tek on every eighth but the second) */   /* the dirge is in 6/8: its beats are three eighths apart, and the drone and choir ring across the gap */
-for (const name of ['lanterneater', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'banditking', 'banditking:p2', 'cisternqueen', 'cisternqueen:p2', 'cisternqueen:p3', 'gorgecrab', 'djinn', 'djinn:p2', 'djinn:p3']) {
+for (const name of ['lanterneater', 'archmage', 'goblinroyal', 'drownedking', 'gargoyle', 'banditking', 'banditking:p2', 'cisternqueen', 'cisternqueen:p2', 'cisternqueen:p3', 'gorgecrab', 'djinn', 'djinn:p2', 'djinn:p3']) {
   const { S, len, ev } = await grab(name, 2);
   const tonal = ev.filter(e => e.kind === 'osc'), T0 = Math.min(...tonal.map(e => e.t)) - 1e-6, first = tonal.filter(e => e.t >= T0 && e.t < T0 + len - 1e-6), sec = tonal.filter(e => e.t >= T0 + len - 1e-6 && e.t < T0 + 2 * len - 1e-6);
   assert.ok(first.length > 150, name + ': only ' + first.length + ' notes in a loop');

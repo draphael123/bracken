@@ -296,3 +296,7 @@ THE SCREE PATH (2026-10-08, claude/scree2, Daniel approved the download):
 - mountain.ogg = "Mountain Theme Loop" (mountain_in_game.ogg) by beardalaxy, CC0 (public domain; credited all the same, the author appreciates it) - https://opengameart.org/content/mountain-theme-loop - THE SCREE PATH's level track.
   Changes: gain +3.5 dB with a -2 dBFS limiter, re-encoded to OGG Vorbis q5 (stereo, loop untouched).
 - ramlord.ogg = "Heavy Boss Battle 1" by MintoDog, CC0 - https://opengameart.org/node/183631 - the Ram Lord (see BOSSES above).
+
+THE WINCHMASTER (2026-10-08, claude/winch5; Daniel approved the download):
+- winchmaster.ogg = "Boss Battle #8 Metal" by nene, CC0 (public domain, credited all the same) - https://opengameart.org/content/boss-battle-8-metal - his fight (the opening, 9.6 s, plays once, then the 51 s loop).
+  Credit: "Boss Battle #8 Metal" by nene (OpenGameArt.org), CC0. Changes: opening + loop joined; mono; encoded to OGG Vorbis q4.

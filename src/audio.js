@@ -14,6 +14,7 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   burning: './audio/burning.mp3', pyroboss: './audio/pyroboss.ogg', minicharge: './audio/minicharge.ogg', monastery: './audio/monastery.ogg', northumberland: './audio/northumberland.mp3', windcaller: './audio/windcaller.ogg', hangingvillage: './audio/hangingvillage.ogg', sporewood: './audio/sporewood.mp3', duneworm: './audio/duneworm.ogg', lance: './audio/lance.ogg', caravan: './audio/caravan.ogg', monasterygolem: './audio/monasterygolem.ogg',
   redgorge: './audio/redgorge.ogg',
   skyroad: './audio/skyroad.ogg', rootway: './audio/rootway.ogg',   /* THE ROOTWAY (claude/rootway): "Lanterns in the Hollowed Forest" by Tsorthan Grove, CC0 (audio/CREDITS.txt) */ rocphoenix: './audio/rocphoenix.ogg', underwell: './audio/underwell.ogg',   /* THE UNDERWELL (claude/underwellart, Daniel's pick): "Ossuary 6 - Air" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
+  winchmaster: './audio/winchmaster.ogg',   /* THE WINCHMASTER (claude/winch5, Daniel approved the download 10-08): "Boss Battle #8 Metal" by nene, CC0 (audio/CREDITS.txt) - his fight; the composed mine-cart chase it replaced stays in src/boss-music.js unplayed */
   ksar: './audio/ksar.ogg',   /* THE BANDIT KSAR (claude/ksar art pass, Daniel's pick): "Desert Loop" by iamoneabe, CC0 (audio/CREDITS.txt) - the level track; THE HAWK-MISTRESS keeps her composed theme */
   litchurch: './audio/litchurch.ogg', paladin: './audio/paladin.ogg',   /* THE LIT CHURCH (claude/churchart, Daniel's picks 10-08): "Cathedral" by Umplix, CC0 - the level track; "Church combat" by Centurion_of_war, CC-BY 4.0 - THE PALADIN's fight (audio/CREDITS.txt) */
   glasssea: './audio/glasssea.ogg',   /* THE GLASS SEA (claude/glasssea art pass, Daniel's pick): "Eastern Arctic Dubstep" by VishwaJai (credited Vishwa Jay), CC0 (audio/CREDITS.txt) - the level track; THE GLASS COLOSSUS keeps his own theme composed in code (src/boss-music.js) */
@@ -469,7 +470,7 @@ export function loopCopy(ctx, b, len, dest, at, first, off = 0) {
 const TRACK_LAYER = { deep: { file: 'deepdread', gain: 0.5 } };
 // AN INTRO, THEN THE LOOP (claude/welltown-fix): a file that is an intro and then a seamless loop names where the loop begins (s). The first
 // pass plays the whole file; every pass after it starts there. welltown.ogg = Dizzy Crow's Negev-Desert-Intro (7.000 s) + Negev-Desert-Loop.
-export const TRACK_INTRO = { welltown: 7.0, puppeteer: 34.135 };   /* (claude/puppeteer2: 'Dissonant Waltz' plays its opening once, then loops 34.135 s to its end at 234.239 s - a 200.1 s loop on the waltz's return) */
+export const TRACK_INTRO = { welltown: 7.0, winchmaster: 9.6, puppeteer: 34.135 };   /* (claude/puppeteer2: 'Dissonant Waltz' plays its opening once, then loops 34.135 s to its end at 234.239 s - a 200.1 s loop on the waltz's return) */
 let layerFor = null;
 function addLayer(name) {
   const L = TRACK_LAYER[name]; if (!L || !ac || currentTrack !== name || !trackG || trackG === layerFor || !trackBuf[L.file]) return;
@@ -1643,7 +1644,7 @@ export const AMBIENT_SOURCES = { foothills: ['synth:wind-gusts', 'synth:sheep-be
 // trimmed to what fits and the pack/parenthetical detail stays in audio/CREDITS.txt, the full record.
 /* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
    (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
-export const MUSIC_CREDITS_ROW = { mountain: '"Mountain Theme" — beardalaxy', rootway: '"Hollowed Forest" — T. Grove', glasssea: '"Arctic Dubstep" — Vishwa Jay', underwell: '"Ossuary 6" — K. MacLeod, CC-BY', matriarch: 'Volatile Reaction MacLeod CC-BY', skyroad: '"Bring Me The Sky" Buckley CC-BY', rocphoenix: '"Phoenix" — S. Buckley, CC-BY', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
+export const MUSIC_CREDITS_ROW = { mountain: '"Mountain Theme" — beardalaxy', rootway: '"Hollowed Forest" — T. Grove', glasssea: '"Arctic Dubstep" — Vishwa Jay', underwell: '"Ossuary 6" — K. MacLeod, CC-BY', matriarch: 'Volatile Reaction MacLeod CC-BY', skyroad: '"Bring Me The Sky" Buckley CC-BY', rocphoenix: '"Phoenix" — S. Buckley, CC-BY', winchmaster: '"Boss Battle #8 Metal" — nene', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
 export const MUSIC_CREDITS = {
   undeadmage: '"Colossal Boss Battle Theme" — Matthew Pablo, CC-BY',   /* (claude/archmage2b) the Undead Archmage: CC-BY 3.0, matthewpablo.com - credited in full on the credits page and in audio/CREDITS.txt */
   puppeteer: '"Dissonant Waltz" — Yubatake, CC-BY',   /* (claude/puppeteer2: CC-BY 4.0, credited here, on the credits page and in audio/CREDITS.txt) */
@@ -1695,6 +1696,7 @@ export const MUSIC_CREDITS = {
   redgorge: '"Old Road" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/',   /* (claude/redgorge-fix: the credit EXACTLY as the licence asks; the Sound Test row trims it to fit, the credits page and audio/CREDITS.txt carry it whole) */
   litchurch: '"Cathedral" — Umplix, CC0',   /* (claude/churchart: CC0, credited all the same) */
   paladin: '"Church combat" — Centurion_of_war, CC-BY',   /* (claude/churchart: CC-BY, credit required) */
+  winchmaster: '"Boss Battle #8 Metal" — nene, CC0',   /* (claude/winch5: CC0, credited all the same) */
   ksar: '"Desert Loop" — iamoneabe, CC0',   /* (claude/ksar art pass: CC0, credited all the same) */
   glasssea: '"Eastern Arctic Dubstep" — Vishwa Jay',   /* (claude/glasssea art pass: CC0 - Daniel asked for the credit anyway: the composer is VishwaJai on OpenGameArt, credited as Vishwa Jay) */
   gorgecrab: '"The Great Red Crab" — BRACKEN',
