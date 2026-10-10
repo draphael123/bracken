@@ -275,6 +275,7 @@ export function makeWellTownHands(ctx) {
   };
   /* THE SKIN on the HUD, under the sun meter: a drop a sip, and what E does now (FILL, POUR, DRINK; a deep well's bucket says WIND) */
   const VERB_COL = { FILL: '#e8f4f8', 'POUR IN': '#8fd160', POUR: '#8fd160', DRINK: '#7ab8e8', WIND: '#ffd36b', EMPTY: '#ff9a5c' };
+  H.verbWord = P => { const v = P && !P.dead && H.verbNow(P); return v ? (v.verb === 'EMPTY' ? 'FILL AT A WELL' : v.verb === 'WIND' ? 'STRIKE THE WINDLASS' : 'E: ' + v.verb) : ''; };   /* (batch83 integ: main.js widens the HUD strip under it - textfit-full OVERFLOW 'E: DRINK' +24px) */
   H.drawHud = (g, P) => {
     if (!WT || !P) return; const sk = skinOf(P), x = 22, y = 66;
     drawIcon(g, 'drop', x - 12, y - 1, '#7ab8e8');

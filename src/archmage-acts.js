@@ -68,7 +68,7 @@ export function drawActs(g, e, cx, cy, time, T) {
       if (T) T(turnWord(e), x, y - WARD.ry - 10 - Math.round((1 - hit) * 8), Math.floor(time * 12) % 2 ? '#ffffff' : '#a8e8c8', 6); } }
   // ---- HIS SOFT WINDOWS (claude/fallingtower2): going into a portal, channelling the skulls or the orrery - the shell is down, a dashed gold line round him and the word ----
   if (mageSoft(e)) { g.save(); g.strokeStyle = Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff0c0'; g.setLineDash([3, 3]); g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, WARD.rx, WARD.ry, 0, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); g.restore();
-    if (T) T('STRIKE HIM', x, y - WARD.ry - 10, '#ffd36b', 6); }
+    if (T && x > 40 && x < VW - 40 && y - WARD.ry - 10 > 12 && y - WARD.ry - 10 < VH - 12) T('STRIKE HIM', x, y - WARD.ry - 10, '#ffd36b', 6); }   /* (batch83 integ: not when he is off the screen - textfit-full OFFSCREEN in the Sexton's fight) */
   // ---- THE WARD SHATTERING as an opening takes it down, and HIM OPEN ----
   if (e.wardDropT > 0) { const k = 1 - e.wardDropT / MAGE.ward.dropT;
     for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + 0.3, d = WARD.rx + k * 46, sx = Math.round(x + Math.cos(a) * d), sy = Math.round(y + Math.sin(a) * d * 1.3 + 30 * k * k);

@@ -21177,7 +21177,7 @@ function drawCaravanHud() {
     g.globalAlpha = 0.12 * sw; g.fillStyle = '#fff1c8'; for (let y = 0; y < VH; y += 6) { const o = Math.sin(time * 7 + y * 0.3) * 3 * sw; g.fillRect(Math.round(o), y, VW, 2); } g.globalAlpha = 1; }
   const x = 22, y = 52, k = v >= 1 ? 3 : v >= SUN.swimAt ? 2 : v > 0.2 ? 1 : 0;
   { const strip = (sx, sy, sw, sh) => { g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(sx, sy, sw, sh, 2); g.fill(); hudRects.push([sx, sy, sw, sh]); };   /* THE STATUS ROWS sit on a strip, not on the picture */
-    strip(2, y - 5, 98, 15); if ((WTH && WTH.on()) || (RGH && RGH.on())) strip(2, y + 10, 74, 14); }
+    strip(2, y - 5, 98, 15); if ((WTH && WTH.on()) || (RGH && RGH.on())) strip(2, y + 10, Math.max(74, WTH && WTH.on() && WTH.verbWord ? 61 + 6 * WTH.verbWord(P).length + 2 : 0), 14); }
   g.drawImage(A.ui.sun[k], x - 14, y - 3); g.drawImage(A.ui.meter, x, y);
   if (SUNH) SUNH.drawHud(g, x - 8, y + 3, time); else g.drawImage(A.ui.sun[k], x - 14, y - 3);   /* (claude/ksar2) THE HUD SUN: a disc that fills with the meter, its rays pulsing while it drains */
   g.drawImage(A.ui.meter, x, y);
