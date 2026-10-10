@@ -2453,6 +2453,7 @@ function theMonastery() {
   for (let x = 38; x <= 41; x++) set(x, 33, T.AIR);                  // (the old landing: the wheel's pivot is the way up now)
   air(35, 45, 36, 37); spikes(38, 40, 37); masonry.push([35, 45, 38, 38]);   // the roof's WELL, sunk two rows under the crawl, a thorn pit in its floor
   wheel(37, 42, 35, 1, 'b');                                          // pivot 42-44@35 (a jump off the well floor); its stair 40-42@33 (over the pit) or 44-45@33; the trapdoor 3 rows over either
+  set(46, 32, T.AIR);   /* (batch82 integ) the wall's corner over the a-stair's last board: with the wheel turned the board at 46,33 had rock a row over it (tools/monk-machines.mjs, monastery3-beats: a hero stands one tile tall) */
   ent('troll', 41, 32, { face: 1 });                                 // on the stair (a hill troll: heavy, not an elite - the well is under the Abbot's floor, and an elite never stands that near a boss room)
   ent('sign', 46, 35, { text: 'THE LAST WHEEL. STRIKE IT WITH ONE OF THEM ON ITS STAIR AND IT GOES OUT FROM UNDER HIM.' }); set(46, 34, T.AIR); set(46, 33, T.AIR);   /* (batch81 integ: the sign stands in the crawl, one tile under the roof - a notch over it, or its board runs through the ceiling: pixels) */
 
@@ -4236,7 +4237,7 @@ function galeMoor() {
   ent('flagpost', o + 7, 12); ent('flagpost', o + 24, 12); ent('flagpost', o + 14, 6); ent('flagpost', o + 32, 6);
   ent('windcaller', o + 11, 6);
   ent('sign', o + 5, 12, { text: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. BLOCK HIS BOLT BACK UP CLOSE TO DROP HIM.', pyro: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. STRIKE HIS BOLT BACK UP CLOSE TO DROP HIM.', paladin: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. AEGIS HIS BOLT BACK UP CLOSE TO DROP HIM.' });
-  ent('gate', o + 45, 12);
+  ent('gate', o + 26, 12);   /* (batch82 integ: was o + 45, behind seventeen tiles of thorns the level ends before anyone could cross - boss dead is the win - so tools/relics.mjs's fill (and the way arrow) pointed at an exit nobody can walk to; it stands on the fall stone's far end now, on the floor the fight is fought on) */
   const roosts = [[o + 11, 6], [o + 29, 6]];   /* where he stands: the middle of each ledge (the east one falls in phase three) */
   const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 6) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust',
     home: (o + 1) * TS + 8, safe: [[o + 1, o + 9], [o + 12, o + 27]], ledges: [[o + 8, o + 15, 7], [o + 26, o + 33, 7]], crumble: 1 };   /* (home: where his gale sets you down; safe: the floors you can stand on, in tiles; crumble: the ledge that falls in phase three) */
@@ -7092,7 +7093,7 @@ function theDrownedCauseway() {
      goblins left the deep its due on the last stones of the road. The table stands empty, the chest open, and a post with a mask on it that
      nobody has fed. The sign says whose road this is now */
   deco('tributeCairn', 557, R - 1, { v: 1 }); deco('tributeCairn', 563, R - 1);
-  sign(559, R - 1, 'THE GOBLINS PAID THE DEEP FOR A HUNDRED YEARS. THE SEA HAS COME TO COLLECT.');
+  sign(560, R - 1, 'THE GOBLINS PAID THE DEEP FOR A HUNDRED YEARS. THE SEA HAS COME TO COLLECT.');
 
   // ---------------- 8. THE KRAKEN'S REACH (x 566-609). The end of the road, and what lives off the end of it. ----------------
   block(566, 609, R, R + 1); for (let x = 567; x < 609; x += 8) block(x, x + 1, R + 2, 39);

@@ -251,7 +251,7 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
      the few stretches nothing uses: a headstone on the barrow, a cross in each of the first craters, spears and a shield where
      the charge broke, the tower crew's banner in the dirt. Scenery only: deco collides with nothing. */
   for (const [kind, x, y, v] of [['fieldGrave', 85, G - 2, 0], ['fieldGrave', 11, G + 1, 1], ['crookedCross', 54, G + 1, 1], ['bones', 28, G + 4, 0], ['brokenSpears', 136, G, 1],
-    ['bones', 204, G + 5, 1], ['stuckShield', 244, G, 0], ['fallenBanner', 254, G, 0], ['oldStandard', 260, G, 0]]) ent('deco', x, y, { kind, v });
+    ['bones', 204, G + 5, 1], ['stuckShield', 244, G, 0], ['fallenBanner', 254, G, 0], ['oldStandard', 262, G, 0]]) ent('deco', x, y, { kind, v });
   /* THE REWORK'S SCENERY (2026-09-24): planted pikes and broken shields where the lines held and broke, a mangonel and a ram the siege
      left, the barrows the dead went into, and the two armies' colours - the order's red on the west of the field, the host's slate
      grey on the east, and both where they met. Scenery only: deco collides with nothing, and the crows sit on all of it. */

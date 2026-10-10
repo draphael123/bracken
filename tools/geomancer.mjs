@@ -139,8 +139,9 @@ try {
       const swam=P().swim;P().st=P().maxSt;BK.press('dodge');let bur=0,dg=0;for(let i=0;i<30;i++){BK.sim(1);bur|=!!P().geoBurrow;dg=Math.max(dg,P().dodge||0);}const swim={swam,bur:!!bur,dodged:dg>0};
       __geo([]);BK.press('jump');BK.keys.jump=true;BK.sim(14);const up=!P().ground;P().st=P().maxSt;BK.press('dodge');let b2=0;for(let i=0;i<30;i++){BK.sim(1);b2|=!!P().geoBurrow;}BK.keys.jump=false;
       return {swim,air:{up,bur:!!b2}}})()`);
-  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), i = src.indexOf('function magePlayer('), j = src.indexOf('\nfunction ', i + 10);
-    out.dodges.ceiling = { found: i > 0, dodges: /P\.dodge = /.test(src.slice(i, j)), burrows: /geoBurrow/.test(src.slice(i, j)) }; }
+  /* (batch82 integ, claude/witchfix) magePlayer is gone: a hero turned over on the ceiling runs his OWN updatePlayer (flipPlayer), so the ceiling dodge IS the ordinary roll there, and the burrow line must be gated off while gravity is flipped (GS < 0) */
+  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), i = src.indexOf('function flipPlayer('), j = src.indexOf('\nfunction ', i + 10), b = (src.match(/const burrow = ([^\n;]*);/) || ['', ''])[1];
+    out.dodges.ceiling = { found: i > 0 && !/function magePlayer\(/.test(src), dodges: /updatePlayer\(/.test(src.slice(i, j)), burrows: !/GS < 0/.test(b) }; }
   /* THE REAL LEVELS: the first three of the campaign */
   out.levels = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const ids=LEVELS.map((l,i)=>[l.id,i]).filter(([id])=>!/^trial|^practice|^draft/.test(id)).slice(0,3);const rows=[];
     for(const [id,i] of ids){__geo(['stoneStep'],false,i);const L=BK.L,W=L.W,H=L.H;const g0=Array.from(L.grid);let tried=0,inside=0,raised=0;
