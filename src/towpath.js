@@ -102,6 +102,8 @@ export function buildTowpath({ painter, T, TS }) {
   sworn(42, 37, 'theBank', { face: -1 });
   decor.push({ kind: 'milestone', x: 26, y: 37 + O }, { kind: 'willow', x: 30, y: 37 + O });
   boards(27, 34, 35);   /* (the willow's bough over the bank: a second height) */
+  /* THE HURT-SPIKE TEACH (survival, Daniel 10-09: the last lock's exam kills on spikes, so the spikes are met first where they only HURT): two iron spikes in the bank path before the first lock - a bite costs a quarter of the bar and hands you back to the last safe footing; a hop clears them (coins arc over, the willow's bough is the way round) */
+  for (const x of [36, 37]) set(x, 37, T.SPIKE); coins([35, 35], [36, 34], [37, 34], [38, 35]);
 
   // ================= 1. THE MILL-POND LOCK (40-95): TEACH - onto the punt, strike the paddle, ride up =================
   /* the lower gate (col 47) stands open at the low water; the chamber (48-55) is a mill pond's lock: its low water only wets you (shallow - the teach), its
