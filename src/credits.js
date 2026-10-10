@@ -10,7 +10,9 @@ export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the li
   ['undeadmage', 'Colossal Boss Battle Theme', 'Matthew Pablo', 'CC-BY 3.0', 'creativecommons.org/licenses/by/3.0'],   /* THE UNDEAD ARCHMAGE (claude/archmage2b): matthewpablo.com */
   ['puppeteer', 'Dissonant Waltz', 'Yubatake', 'CC-BY 4.0', 'creativecommons.org/licenses/by/4.0'],   /* THE PUPPETEER's fight (claude/puppeteer2, Daniel's pick 10-02) */
   /* THE RED GORGE (claude/redgorge-fix, Daniel 10-02): Kevin MacLeod asks for this credit word for word - the page shows it whole, a line at a time */
-  ['rootway', 'Lanterns in the Hollowed Forest', 'Tsorthan Grove', 'CC0', 'https://opengameart.org/content/lanterns-in-the-hollowed-forest', ['"Lanterns in the Hollowed Forest"', 'by Tsorthan Grove (OpenGameArt.org)', 'CC0: public domain, credited all the same', 'opengameart.org/content/lanterns-in-the-hollowed-forest']],   /* THE ROOTWAY's level track (claude/rootway, Daniel's pick 10-07) */
+  ['canal', 'Lanterns in the Hollowed Forest', 'Tsorthan Grove', 'CC0', 'https://opengameart.org/content/lanterns-in-the-hollowed-forest', ['"Lanterns in the Hollowed Forest"', 'by Tsorthan Grove (OpenGameArt.org)', 'CC0: public domain, credited all the same', 'opengameart.org/content/lanterns-in-the-hollowed-forest']],   /* THE FOG CANAL's track (the Rootway had its own copy until claude/rootwayfix) */
+  ['rootway', 'Forest Whisper Theme', 'Cleyton Kauffman', 'CC0', 'https://opengameart.org/content/forest-whisper-theme', ['"Forest Whisper Theme" by Cleyton Kauffman', '(OpenGameArt.org)', 'CC0: public domain, credited all the same', 'opengameart.org/content/forest-whisper-theme']],
+  ['huntmaster', 'Call to War', 'Umplix', 'CC0', 'https://opengameart.org/content/call-to-war', ['"Call to War" by Umplix', '(OpenGameArt.org)', 'CC0: public domain, credited all the same', 'opengameart.org/content/call-to-war']],   /* THE GOBLIN HUNTMASTER's fight (claude/rootwayfix, Daniel 10-09) */   /* THE ROOTWAY's level track (claude/rootway, Daniel's pick 10-07) */
   ['mountain', 'Mountain Theme Loop', 'beardalaxy', 'CC0', 'https://opengameart.org/content/mountain-theme-loop', ['"Mountain Theme Loop"', 'by beardalaxy (OpenGameArt.org)', 'CC0: public domain, credited all the same', 'opengameart.org/content/mountain-theme-loop']],   /* THE SCREE PATH's level track (claude/scree2, Daniel 10-08) */
   ['ramlord', 'Heavy Boss Battle 1', 'MintoDog', 'CC0', 'https://opengameart.org/node/183631', ['"Heavy Boss Battle 1"', 'by MintoDog (OpenGameArt.org)', 'CC0: public domain, credited all the same', 'opengameart.org/node/183631']],   /* THE RAM LORD's theme (claude/scree2) */
   ['skyroad', 'Bring Me The Sky', 'Scott Buckley', 'CC-BY 4.0', 'https://www.scottbuckley.com.au/library/bring-me-the-sky/', ['"Bring Me The Sky" by Scott Buckley', 'released under CC-BY 4.0.', 'www.scottbuckley.com.au']],
@@ -26,11 +28,11 @@ export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the li
   ['redgorge', 'Old Road', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Old Road" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],
 ];
 /* the one composer a few credit lines spell two ways (MUSIC_CREDITS is kept short to fit the Sound Test row) */
-const ALIAS = { Spring: 'Spring Spring', Centurion: 'Centurion_of_war', 'trad., Spring': 'Spring Spring', cynicm: 'cynicmusic', 'C. Kauffman': 'CleytonKauffman' };
+const ALIAS = { Spring: 'Spring Spring', Centurion: 'Centurion_of_war', 'trad., Spring': 'Spring Spring', cynicm: 'cynicmusic', 'C. Kauffman': 'CleytonKauffman', 'Cleyton Kauffman': 'CleytonKauffman' };   /* (batch81 integ: a CC0 credit line reads '- Name, CC0': the licence is not part of the composer, or the credits page listed 'Umplix, CC0' beside 'Umplix' and clipped it) */
 export const composers = credits => {
   const seen = new Map();
   for (const line of Object.values(credits)) {
-    const m = /—\s*(.+?)(?:\s*\(CC-BY\)|,\s*CC-BY)?$/.exec(line); if (!m) continue;
+    const m = /—\s*(.+?)(?:\s*\(CC-BY\)|,\s*CC-BY|,\s*CC0)?$/.exec(line); if (!m) continue;
     let who = ALIAS[m[1].trim()] || m[1].trim(); if (who === 'BRACKEN') continue;   /* made for the game: no outside credit */
     seen.set(who.toLowerCase(), who);
   }

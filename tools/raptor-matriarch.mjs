@@ -35,7 +35,7 @@ ok(A && A.boss === 'matriarch' && L.ents.some(e => e.t === 'matriarch'), 'THE RE
 { const bad = Object.entries(RM.MOVES).filter(([m, v]) => BY_HAND['matriarch|' + m] !== v.mark); ok(!bad.length, 'every told move wears its mark in src/marks.js (' + Object.keys(RM.MOVES).length + ' rows)' + (bad.length ? ': ' + JSON.stringify(bad) : '')); }
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), greed = readFileSync(new URL('../src/boss-greed.js', import.meta.url), 'utf8');
 ok(/matriarch: e => matOpen\(e\)/.test(greed) && /FULL_DAMAGE = \{[\s\S]*?matriarch:/.test(greed), 'boss-greed knows her openings (OPEN_RULE) and that she is a duelist (FULL_DAMAGE: no chip; greed still counts)');
-ok(/case 'matriarch': \{ const a = MTH\.spawnBoss/.test(main) && /MTH\.take\(e, dmg\)/.test(main) && /MTH\.interact\(P\)/.test(main), 'main.js spawns her, routes blows through her guard, and lets E work her levers');
+ok(/case 'matriarch': \{ const a = MTH\.spawnBoss/.test(main) && /MTH\.take\(e, dmg(, tag)?\)/.test(main) && /MTH\.interact\(P\)/.test(main), 'main.js spawns her, routes blows through her guard, and lets E work her levers');
 
 /* ---------- THE PURE FIGHT ---------- */
 const dt = 1 / 60;

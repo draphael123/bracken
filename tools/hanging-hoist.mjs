@@ -19,6 +19,7 @@ import { LEVELS, T, TS } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { QUIET } from '../src/marks.js';
 import { THROW_KIND } from '../src/throwables.js';
+import { duckBox } from '../src/duck.js';
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const L = LEVELS.find(l => l.id === 'hanging').build();
@@ -120,7 +121,7 @@ const o0 = src.indexOf('function lightOwlLamp'), o1 = src.indexOf('// The Forgem
 function owlBox(phase, lamp) {
   const noop = () => {}; let seed = 7; const rnd = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296;
   const A = { x0: 20 * 16, x1: 90 * 16, floor: 20 * 16 }, H = { hoist: 'crown', arena: true, x: 57 * 16, wheelX: 916, wheelY: 90, hs: { state: 'rest' } };
-  const c = { L: { arena: A, perches: [[42, 9], [54, 12], [65, 9]] }, props: lamp ? [lamp] : [], movers: [H], TS: 16, enemies: [], P: { x: 30 * 16, y: 320, dead: false }, seeds: [], hits: [], cuts: [], flash: 0,
+  const c = { L: { arena: A, perches: [[42, 9], [54, 12], [65, 9]] }, props: lamp ? [lamp] : [], movers: [H], TS: 16, enemies: [], P: { x: 30 * 16, y: 320, w: 10, h: 14, dead: false }, duckBox, seeds: [], hits: [], cuts: [], flash: 0,
     SFX: new Proxy({}, { get: () => noop }), number: noop, burst: noop, ringAt: noop, dust: noop, shakeCam: noop, zoomKick: noop, sparks: noop, parts: [], camX: 0, VW: 320, DMG: new Proxy({}, { get: () => 10 }), EHP: { spider: 10 }, COLS: { owl: [] } };
   c.damagePlayer = (...a) => c.hits.push(a); c.cutHoist = m => { c.cuts.push(m); m.hs.state = 'cut'; };
   c.Math = Object.create(Math); c.Math.random = rnd; vm.createContext(c); vm.runInContext(src.slice(o0, o1), c);

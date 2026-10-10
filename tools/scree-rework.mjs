@@ -24,3 +24,5 @@ for (const e of R.ents.filter(e => e.rework)) { const t = at(e.x, e.y + 1); if (
 ok(true, 'every foe the rework adds stands on footing');
 console.log(fails ? `\n${fails} scree rework check(s) FAILED` : '\nall scree rework checks pass');
 process.exit(fails ? 1 : 0);
+/* SAVE BITS (coordinator, batch81): the silvers keep master's save indices - #0 the miller's (master 333,15, now 339,13 on the high ledges), #1 the hamlet's chimney (85), #2 the quarry's (master 456, +96 for the chase = 552) */
+{ const sv = R.ents.filter(e => e.t === 'silver'); ok(sv.length === 3 && Math.abs(sv[0].x - 333) <= 10 && sv[1].x === 85 && sv[2].x === 552, 'scree silver save indices changed: ' + JSON.stringify(sv.map(e => [e.x, e.y]))); }

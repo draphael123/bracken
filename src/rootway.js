@@ -162,7 +162,7 @@ export function buildRootway({ painter, T, TS }) {
      hangs from a gantry five rows over the road - no jump reaches it - and a CAGE hangs over the road at its foot: cut it down and it lands on a root stump as a two-row step (stump, cage, gantry, ledge).
      UP takes the handle and the line carries you over the well to the ledge, where the hunt holds the landing; the ledge's bud grows you up the root wall to the road. A miss is a
      fall into the well (a shelf stair up its near wall, A10). The bow on the bough over the road covers the line. */
-  sign(270,18,"THE HUNTERS' GANTRY. CUT THE CAGE DOWN FOR A STEP, THEN UP THE STEP: THE TROPHY LINE CARRIES YOU OVER THE WELL.");
+  sign(270,18,"THE GANTRY. CUT THE CAGE DOWN FOR A STEP: THE TROPHY LINE CARRIES YOU OVER THE WELL.");
   air(281, 290, 0, 26); ground(281, 290, 27); plank(281, 282, 24); plank(281, 282, 21);                                                             /* the well, and root shelves up its near wall (a fall costs the climb) */
   hoist('gantry', { x: 275, top: 9, hang: 13, cleat: [271,18], load: 'cage', land: [274,16] });
   ground(273, 275, 18);                                                            /* a root stump under the cage's place: one row up from the road (a step), and the cage lands on it - road, stump, cage, gantry: 1 + 2 + 2 rows, nothing taller than a jump */
@@ -171,7 +171,7 @@ export function buildRootway({ painter, T, TS }) {
   air(291, 296, 19, 22); ground(291, 296, 23);                                          /* THE LEDGE a storey under the far lip, and the root wall to the road (the ledge's bud, flush against it) */
   bud(295,23);
   zips.push(rope(279,14,292,23,23));                                               /* the trophy line: gantry to ledge (the hero's feet = rope + 12) */
-  foe('trophyhunter', 294, 22, 'yardExam', { face: -1 }); deco(291,22,'warnPost',0); glow(293,22);   /* THE LANDING: the hunter holds the ledge and a bow covers the line (difficulty v2: a foe at the landing) */
+  foe('trophyhunter', 294, 22, 'yardExam', { face: -1, perch: true }); deco(291,22,'warnPost',0); glow(293,22);   /* THE LANDING: the hunter holds the ledge and a bow covers the line (difficulty v2: a foe at the landing) */
   coins([284,13],[287,14],[290,16]);                                               /* a trail of trophies along the line */
   ent('check', 299, 18);                                                          /* CHECKPOINT THREE */
   deco(278, 13, 'hangCage', 0);
@@ -218,7 +218,7 @@ export function buildRootway({ painter, T, TS }) {
   hoist('hmM', { x: Math.floor((A0 + A1) / 2), top: 0, hang: FL - 7, cleat: [Math.floor((A0 + A1) / 2) - 3, FL - 4], load: 'cage', boss: true });
   hoist('hmR', { x: A1 - 6, top: 0, hang: FL - 9, cleat: [A1 - 12, FL - 4], load: 'cage', boss: true });
   ent('huntmaster', A1 - 14, FL - 1, { face: -1 });
-  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'huntmaster', music: 'boss3', tint: '#c89040', tintA: 0.06,
+  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 4) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'huntmaster', music: 'huntmaster', tint: '#c89040', tintA: 0.06,
     start: [A0 + 6, FL - 1], huntmaster: true, perches: [[A0 + 4, A0 + 10, FL - 4], [A1 - 10, A1 - 4, FL - 4]] };
   ent('gate', 456, FL - 1);
 
@@ -236,7 +236,7 @@ export function buildRootway({ painter, T, TS }) {
       { kind: 'loft', opens: 'THE TROPHY LOFT (a silver)', hud: 'THE TROPHY LOFT OPENS' },
       { kind: 'hoists', opens: 'its load: a span lands across its gap (a bridge), a cage lands as a step, a hunter falls', hud: 'THE HOIST DROPS WHAT IT HOLDS' },
     ],
-    music: 'rootway',   /* "Lanterns in the Hollowed Forest" by Tsorthan Grove, CC0 (audio/CREDITS.txt); the Huntmaster keeps his composed boss3 */
+    music: 'rootway',   /* "Forest Whisper Theme" by Cleyton Kauffman, CC0 (audio/CREDITS.txt); the Huntmaster has his own: "Call to War" by Umplix, CC0 */
     ambient: [{ x0: 0, x1: 99999, kind: 'rootway' }],   /* its own bed (src/audio.js rootway): the air inside a great tree - leaves, timber, lanterns, spore pops, a far hide-drum */
     weather: [{ x0: 0, x1: 180 * TS, kind: 'spore' }],
     palette: { sky: [[64, 96, 112], [196, 168, 120]], noNear: true, noFg: true, near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(150,130,120,0.18)', grass: '#5a8a3a', grassL: '#8ac050', grassD: '#34562a', dirt: '#4a3a30', dirtL: '#5e4a3a', dirtD: '#33261e', canopy: ['#2a1f38', '#4e3a50', '#8a5a3a', '#c88a3a'] },

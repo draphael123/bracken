@@ -44,9 +44,9 @@ for (const m of L.moversExtra.filter(q => q.kind === 'punt')) { const k = D.lock
   ok(ents('tppaddle').some(p => p.lock === k.id && p.x >= k.x0 && p.x <= k.x1 + 1 && Math.abs(p.x + 0.5 - end) <= 2), 'punt ' + k.id + ': a paddle in reach of its end');
   ok(ents('tppaddle').some(p => p.lock === k.id && p.x < k.x0), 'punt ' + k.id + ': a paddle on the near side (a punt that rides away comes back)'); }
 ok(L.rigBands.length === L.moversExtra.filter(q => q.kind === 'punt').length, 'every punt is a ride for the reach model');
-/* the exam's irons, and no spike outside it */
-let spikes = 0, spikesOut = 0; for (let y = 0; y < L.H; y++) for (let x = 0; x < L.W; x++) if (at(x, y) === T.SPIKE) { spikes++; if (!L.examSpans.some(s => x >= s[0] && x <= s[1])) spikesOut++; }
-ok(spikes > 0 && spikesOut === 0, 'the old gate irons are in the exam only');
+/* the exam's irons, and no spike outside it - but the HURT-SPIKE TEACH (survival, Daniel 10-09: the exam's spikes kill, so they are met first where they only hurt): at most four spike tiles, on the bank path before the first lock (columns < 47) */
+let spikes = 0, spikesOut = 0, teachSpikes = 0; for (let y = 0; y < L.H; y++) for (let x = 0; x < L.W; x++) if (at(x, y) === T.SPIKE) { spikes++; if (!L.examSpans.some(s => x >= s[0] && x <= s[1])) { if (x < 47) teachSpikes++; else spikesOut++; } }
+ok(spikes > teachSpikes && spikesOut === 0 && teachSpikes >= 1 && teachSpikes <= 4, 'the old gate irons are in the exam only (bar the hurt-spike teach before the first lock): ' + JSON.stringify({ spikes, teachSpikes, spikesOut }));
 /* SHRINES */
 /* (claude/towpath fix, review M1d - Daniel's standing rec: a third shrine, after the basin's exam. The route between them is checkpoint-gaps' to measure in walked
    tiles: >= 80 between two shrines unless the second is the boss's door; the first stands 140-260 from the start; the last before him) */

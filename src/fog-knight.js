@@ -79,7 +79,7 @@ export function stageFogKnight(W, T, TS, sx, R, O = 10) {
     ent('fogknight', sx + S.him, R - 1, { face: -1 });
   };
   const arena = { x0: sx * TS, x1: ex * TS, floor: (R + O) * TS, trigger: (sx + 3) * TS, wallL: sx - 1, wallR: ex, boss: 'fogknight', music: 'fogknight',
-    tint: '#5a6a78', tintA: 0.08, start: [sx + 2, R - 1 + O], y0: (R - 18 + O) * TS, y1: (R + 1 + O) * TS, fk: { sx, R: R + O } };
+    tint: '#5a6a78', tintA: 0.08, start: [sx + 4, R - 1 + O], y0: (R - 18 + O) * TS, y1: (R + 1 + O) * TS, fk: { sx, R: R + O } };
   return { arena, carve, pools, bridges, lamps, locks };
 }
 /* the arena in world px */

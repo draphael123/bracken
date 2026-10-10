@@ -13,7 +13,7 @@ export const OVERHANGS = [   // [prop column, feet row, side (the way its line r
   [499, 18, 1],   // REMIX: the gorge bank's elite troll (505) - the section's exam
   [543, 8, 1],    // the quarry exam: the chute's goat and thrower
 ];
-export const TEACH_SIGN = [247, 13, 'A DRY-STONE PROP HOLDS THAT OVERHANG UP. KNOCK IT OUT WHEN SOMETHING STANDS UNDER IT.'];
+export const TEACH_SIGN = [259, 13, 'A DRY-STONE PROP HOLDS THAT OVERHANG UP. KNOCK IT OUT WHEN SOMETHING STANDS UNDER IT.'];
 /* [x0, x1, top row] solid relief: knolls of two rows (the route climbs two and comes down two) */
 export const KNOLLS = [[23, 24, 19], [25, 28, 18], [29, 29, 19], [46, 47, 19], [48, 51, 18], [52, 52, 19], [91, 92, 19], [93, 96, 18], [97, 97, 19]];
 /* [x, row, len] stone ledges: the second height */
@@ -40,9 +40,14 @@ export function reliefScree(R, T) {
   for (const [x, lo, hi] of LIFTS) R.moversExtra.push({ kind: 'lift', x: x * 16, y: (lo - 1) * 16, y0: (lo - 1) * 16, y1: (hi - 1) * 16, w: 32, h: 8, speed: 30, quarry: true });
   /* the hamlet's chimney silver stays OFF the road: the roof road now runs at its old ledge, so it sits a hop higher */
   for (const e of R.ents) if (e.t === 'silver' && e.x === 85 && e.y === 14) { e.y = 11; set(85, 12, T.ONEWAY); set(86, 12, T.ONEWAY); }
+  /* (batch81 integ, curve-gate: a level-1 knight died 7-11 times in 3 pilot runs; the death positions of every run named the same few foes) THE HARPY hovering over the gully's perch dived at a hero on the ground 8 tiles off, and the chase's harpy over the 396-397 pit dived at the jumper: both gone (the density test keeps its count with the sprigs below) */
+  R.ents = R.ents.filter(e => !(e.t === 'harpy' && ((e.x === 210 && e.y === 3) || (e.x === 402 && e.y === 13))));
+  for (const [x, y] of [[204, 13], [404, 19]]) R.ents.push({ t: 'sprig', x, y, face: -1 });
   R.ents.push({ t: 'sign', x: TEACH_SIGN[0], y: TEACH_SIGN[1], text: TEACH_SIGN[2] });
   /* THE LOOSE ROCK, by place (the rule's state: tools/rule-state.mjs reads L.looseRock as places, main.js only asks that it is there) */
   const loose = []; for (let y = 0; y < R.H; y++) for (let x = 0; x < W; x++) if (at(x, y) === T.SHELF) { const g = loose.find(q => q.y === y && x - q.x1 <= 2); if (g) g.x1 = x; else loose.push({ x0: x, x1: x, y }); }
   R.looseRock = loose.length ? loose.map(q => ({ x0: q.x0 * 16, x1: (q.x1 + 1) * 16, y: q.y })) : true;   /* (in px, like every rule array the tools read) */
+  /* SAVE-BIT ORDER (batch81 integ): a save marks silvers by their index in the entity list. Live master had [miller 333,15 | hamlet 85 | quarry 456+96]; the miller's silver now lies on the high ledges (339,13) and must be silver #0 again, so every old bit points at the same pickup (tools/scree-rework.mjs asserts it) */
+  { const k = R.ents.findIndex(e => e.t === 'silver' && e.x === 339 && e.y === 13), f = R.ents.findIndex(e => e.t === 'silver'); if (k > f) R.ents.splice(f, 0, R.ents.splice(k, 1)[0]); }
   return R;
 }

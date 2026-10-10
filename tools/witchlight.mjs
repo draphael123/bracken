@@ -101,7 +101,7 @@ assert.equal(markOf({ t: 'broom', mode: 'sweepTell' }), '!', 'the broom\'s sweep
 const src = readFileSync(new URL('../src/level.js', import.meta.url), 'utf8');
 { const at0 = src.indexOf('const GARRISON = {'); assert.ok(!src.slice(at0, at0 + 20000).includes('\n  witchlight: [['), 'no GARRISON row: its creatures are authored'); }
 assert.ok(!(L.calm || []).length, 'no calm');
-const NOT = new Set(['sign', 'check', 'coin', 'deco', 'silver', 'vent', 'mover', 'glyph', 'gate', 'hedgewarden', 'gargoyle', 'heart', 'coffer', 'stray', 'key', 'shrine', 'stal', 'mend']);
+const NOT = new Set(['sign', 'check', 'coin', 'deco', 'silver', 'vent', 'mover', 'glyph', 'gate', 'hedgewarden', 'gargoyle', 'heart', 'coffer', 'stray', 'key', 'shrine', 'stal', 'mend', 'lostbanner']);
 const foes = L.ents.filter(e => !NOT.has(e.t));
 for (const e of L.encounters) assert.ok(e.n >= 3 && e.n <= 5, e.name + ' is 3-5 strong: ' + e.n);
 for (const [name, [a, b]] of Object.entries(WL.PLACES)) if (name !== 'top') assert.ok(L.encounters.some(e => e.x0 >= a - 2 && e.x0 <= b), name + ' has an encounter');

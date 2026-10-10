@@ -52,30 +52,30 @@
   "lostPct": 51
  },
  "kings": {
-  "hash": "28f85bc660e1",
+  "hash": "11a3b329f288",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 25,
-  "deaths": 3,
-  "kills": 29,
-  "lifts": 114,
+  "hits": 14,
+  "deaths": 2,
+  "kills": 20,
+  "lifts": 121,
   "walked": 100,
   "bare": true,
-  "lostPct": 201
+  "lostPct": 131
  },
  "scree": {
-  "hash": "8147146cccda",
+  "hash": "4d6dfb7103da",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 56,
-  "deaths": 11,
-  "kills": 39,
-  "lifts": 132,
+  "hits": 38,
+  "deaths": 5,
+  "kills": 43,
+  "lifts": 138,
   "walked": 100,
   "bare": true,
-  "lostPct": 482
+  "lostPct": 301
  },
  "hanging": {
   "hash": "18fa441395de",
@@ -91,17 +91,17 @@
   "lostPct": 112
  },
  "spire": {
-  "hash": "b455d76a59e9",
+  "hash": "6ce8f1c0eb8b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 15,
-  "deaths": 1,
-  "kills": 19,
-  "lifts": 108,
+  "hits": 21,
+  "deaths": 0,
+  "kills": 27,
+  "lifts": 99,
   "walked": 100,
   "bare": true,
-  "lostPct": 105
+  "lostPct": 122
  },
  "moor": {
   "hash": "49537d2fb3cd",
@@ -533,43 +533,43 @@
   "lostPct": 546
  },
  "rootway": {
-  "hash": "44838b01d6fc",
+  "hash": "936c53495fc3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 19,
+  "hits": 22,
   "deaths": 0,
-  "kills": 37,
-  "lifts": 84,
+  "kills": 35,
+  "lifts": 78,
   "walked": 100,
   "bare": true,
-  "lostPct": 64
+  "lostPct": 62
  },
  "church": {
-  "hash": "46c49bf8f4ae",
+  "hash": "d58ae4a4c416",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 21,
-  "deaths": 11,
-  "kills": 3,
-  "lifts": 80,
+  "hits": 18,
+  "deaths": 5,
+  "kills": 5,
+  "lifts": 77,
   "walked": 100,
   "bare": true,
-  "lostPct": 486
+  "lostPct": 304
  },
  "towpath": {
-  "hash": "43ba3fec92c0",
+  "hash": "c08e9f288a6b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 30,
-  "deaths": 8,
-  "kills": 2,
-  "lifts": 59,
+  "deaths": 7,
+  "kills": 4,
+  "lifts": 57,
   "walked": 100,
   "bare": true,
-  "lostPct": 340
+  "lostPct": 322
  },
  "buriedcity": {
   "hash": "8a82a66a2e07",

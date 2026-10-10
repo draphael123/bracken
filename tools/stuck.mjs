@@ -87,6 +87,7 @@ console.log('stuck (static) OK: ' + okc.length + ' checks - ' + Object.values(ST
 if (process.argv.includes('--static')) process.exit(0);
 
 /* ---------------- RUNTIME ---------------- */
+/* (batch81 integ) THE FOES ARE CLEARED at each spot: this holds a hero still for 11 s and asks the GUIDE to nudge. A trophyhunter or an archer in reach knocks the held hero out of the spot's zone between teleports, which restarts the stall clock - the guide is not what failed (a different spot failed on every run, with a foe within 160 px each time; with none, 117 of 117 twice). */
 /* (claude/archmage3) a level chase (THE FALLING TOWER's rising dark) is held at its start while a hero is held at a spot: it would throw a stalled hero up off the
    orrery loft's pier at about 9 s, before the 10 s nudge - which is the chase working, not the guide failing (the guide is what this checks) */
 const { openPage } = await import('./cdp.mjs');
@@ -98,7 +99,7 @@ try {
     const p = standPoint(L, zone, targets); plan.push({ id, spot: sp.id, step0: steps[0] === sp ? null : steps[0], p, line: s.line || sp.line, key: sp.id + (sp.steps ? '#0' : '') }); } }
   R = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});const out=[];const plan=${JSON.stringify(plan)};
     let cur=null; for(const q of plan){ const li=LEVELS.findIndex(l=>l.id===q.id); if(cur!==q.id){BK.load(li);BK.state='play';BK.god=true;BK.sim(30);cur=q.id;}
-      BK.state='play';BK.god=true;BKT.guide.reset(q.id);BK.uiHud.hint('',0);BK.tp(q.p[0],q.p[1]);BK.P.vx=0;BK.P.vy=0;BK.sim(2);
+      BK.state='play';BK.god=true;BKT.guide.reset(q.id);BK.uiHud.hint('',0);BK.enemies().length=0;BK.tp(q.p[0],q.p[1]);BK.P.vx=0;BK.P.vy=0;BK.sim(2);
       const g0=BKT.guide.read();let said=null;for(let i=0;i<1300&&said===null;i++){if(i%10===0){BK.tp(q.p[0],q.p[1]);BK.P.vx=0;BK.P.vy=0;if(BK.chase&&BK.chase.on())BK.chase.reset();}BK.sim(1);const t=BKT.hintNow;if(t&&t.msg===q.line)said=i;}
       const g=BKT.guide.read();const way=BKT.guide.target(false);out.push({p:q.p,at:[Math.round(BK.P.x/16),Math.round(BK.P.y/16)],spot:q.spot,key:g.key,want:q.key,said,line:g.lastNudge,nudges:g.nudges,targets:g.targets.length,way:!!way,g0:g0.key}); } return out;})()`, 900000);
 } finally { pg.close(); }

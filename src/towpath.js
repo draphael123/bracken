@@ -102,6 +102,8 @@ export function buildTowpath({ painter, T, TS }) {
   sworn(42, 37, 'theBank', { face: -1 });
   decor.push({ kind: 'milestone', x: 26, y: 37 + O }, { kind: 'willow', x: 30, y: 37 + O });
   boards(27, 34, 35);   /* (the willow's bough over the bank: a second height) */
+  /* THE HURT-SPIKE TEACH (survival, Daniel 10-09: the last lock's exam kills on spikes, so the spikes are met first where they only HURT): two iron spikes in the bank path before the first lock - a bite costs a quarter of the bar and hands you back to the last safe footing; a hop clears them (coins arc over, the willow's bough is the way round) */
+  for (const x of [36, 37]) set(x, 37, T.SPIKE); coins([35, 35], [36, 34], [37, 34], [38, 35]);
 
   // ================= 1. THE MILL-POND LOCK (40-95): TEACH - onto the punt, strike the paddle, ride up =================
   /* the lower gate (col 47) stands open at the low water; the chamber (48-55) is a mill pond's lock: its low water only wets you (shallow - the teach), its
@@ -213,7 +215,7 @@ export function buildTowpath({ painter, T, TS }) {
   for (let x = 268; x <= 279; x++) set(x, 26, T.SPIKE);
   boards(269, 273, 21); boards(275, 279, 24);   /* (two ledges over the irons: a jump off the bank, a jump down to the culvert's lip) */
   paddle(266, 16, 'X', { dark: true });   /* (review M3b: in the fog under an UNLIT lamp - the paddle is found only in a light: the lantern lit, or the lamp struck) */
-  sign(265, 16, 'THE LAST LOCK. DRAINED, ITS BED IS THE OLD GATE IRONS.');
+  sign(268, 16, 'THE LAST LOCK. DRAINED, ITS BED IS THE OLD GATE IRONS.');
   block(280, 284, 14, 22); air(280, 284, 23, 25); block(280, 284, 26, 26);   /* the east wall over THE CULVERT (rows 23-25) into Y */
   interiors.push([280, 284, 23 + O, 25 + O, 'tpCulvert']);
   watchman(282, 13, 'xRim', { face: -1 });

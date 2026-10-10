@@ -4327,7 +4327,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
   { id: 'reef', kind: 'level', level: LEVELS.findIndex(l => l.id === 'reef'), x: 233, y: 130, plate: 'below', name: 'THE SHIPWRECK REEF' },
   { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 271, y: 96, plate: 'right', name: 'THE CHANDLER' },
   { id: 'flotilla', kind: 'level', level: LEVELS.findIndex(l => l.id === 'flotilla'), x: 218, y: 55, plate: 'left', name: 'THE FLOTILLA' },
-  { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 132, y: 26, plate: 'above', name: 'THE HURRICANE DECK' },
+  { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 135, y: 26, plate: 'above', name: 'THE HURRICANE DECK' },
   { id: 'lamplit', kind: 'level', level: LEVELS.findIndex(l => l.id === 'lamplit'), x: 43, y: 45, plate: 'left', name: 'THE LAMPLIT STREET' },
   { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 51, y: 94, plate: 'left', name: 'THE DEEP' },
   { id: 'keep', kind: 'level', level: LEVELS.findIndex(l=>l.id==='keep'), x: 127, y: 84, plate: 'right', name: 'THE UNDERWATER KEEP' },
@@ -4344,7 +4344,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
    entry now sits at x=260 too, directly under Highcrown, so that connector is short and near-vertical like
    every other seam on the map. LONGWATER stays the first stop; the entry->longwater leg is the only thing that
    changed, and it clears every later segment (verified, no self-crossing). */
-const COAST_PATH = [[260,172], [158,154], [169,118], [233,130], [250,110], [271,96], [249,70], [218,55], [172,41], [132,26], [90,26], [43,45], [43,71], [51,94], [127,84], [128,114], [26,98], [27,25], [140,8]];
+const COAST_PATH = [[260,172], [158,154], [169,118], [233,130], [250,110], [271,96], [249,70], [218,55], [172,41], [135,26], [90,26], [43,45], [43,71], [51,94], [127,84], [128,114], [26,98], [27,25], [140,8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 25, y: 153, plate: 'above', name: 'WAYMEET' },
   { id: 'towpath', kind: 'level', level: LEVELS.findIndex(l => l.id === 'towpath'), x: 41, y: 153, plate: 'left', name: 'THE TOWPATH' },   /* THE TOWPATH (claude/towpath): the bridge level between WAYMEET and THE FOG CANAL, in road order (map-grammar) */
@@ -5548,7 +5548,7 @@ function drawBestiary() {
   const b = list[bestI], r = PROG.beasts && PROG.beasts[b.t], seen = !!(r && r.seen);
   const px = 112, pw = VW - px - 6, py = 18, ph = VH - 32;
   board(px, py, pw, ph, '#8fd160', undefined, false, 'parchment');   /* the beast's page */
-  const set = SPR[b.t] || (b.t === 'bandit' ? SPR.banditArcher : THF.foeSet({ t: b.t === 'flyman' ? 'archer' : 'gobpriest', flyman: b.t === 'flyman', prompter: b.t === 'prompter' })); const c = set.R[0]; const sc = c.width > 26 ? 1 : c.width > 18 ? 2 : 3; const cxp = px + 30, cyp = py + 26;
+  const set = SPR[b.t] || (b.t === 'paladinboss' ? SPR.closedhelm /* (batch81 integ: THE PALADIN is drawn live by src/paladin-boss-hands.js and had no card: the bestiary borrows the Crusader's plate until the art pass) */ : b.t === 'bandit' ? SPR.banditArcher : THF.foeSet({ t: b.t === 'flyman' ? 'archer' : 'gobpriest', flyman: b.t === 'flyman', prompter: b.t === 'prompter' })); const c = set.R[0]; const sc = c.width > 26 ? 1 : c.width > 18 ? 2 : 3; const cxp = px + 30, cyp = py + 26;
   if (!seen) g.globalAlpha = 0.25;
   { const nF = set.R.length, fr = seen ? Math.floor(time * (nF > 6 ? 4 : 7)) % nF : 0; const pace = seen ? Math.sin(time * 1.1) * 8 : 0, face = !seen ? 1 : (Math.cos(time * 1.1) >= 0 ? 1 : -1); const bob = seen && (b.t === 'wasp' || b.t === 'drone' || b.t === 'harpy' || b.t === 'queen') ? Math.round(Math.sin(time * 5) * 2) : 0; drawSet(set, null, fr, cxp + pace - (c.width / 2 - set.ax) * sc, cyp + bob + (set.ay - c.height / 2) * sc, face, !seen, sc, sc); }
   g.globalAlpha = 1;
@@ -7310,11 +7310,12 @@ function greedHit(e, fromX, blow) {
       PROG.chipTold = (PROG.chipTold || 0) + 1; if (PROG.chipTold <= 2) { hintT = 4.5; hintMsg = 'A CLANK OR A SCRATCH MEANS THE WRONG BLOW. GO ROUND, OR HIT HIM IN HIS OPENING.'; } } }
   if (e.angleHit !== time && !(P.atk >= 0 && CM.swingTotal(hero(), P) > GB.GREED.tell) && GB.noteGreed(e, time, isB, isM)) SFX.tell(true);   /* (a blow round his guard is the right blow: no greed, claude/sweep1) */
 }
-function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');   /* (claude/keyscore, B14 + THE PYRO BUG) pl: a PLUNGE BY ITS TAG - the pyromancer's FIREDROP is hurtAs('plunge', ..., false): the boolean is the hero's own body, the tag is the blow. Every boss hook below gets the tag (tools/blow-tags.mjs) */
+function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
+  /* (claude/keyscore, B14 + THE PYRO BUG) pl: a PLUNGE BY ITS TAG - the pyromancer's FIREDROP is hurtAs('plunge', ..., false): the boolean is the hero's own body, the tag is the blow. Every boss hook below gets the tag (tools/blow-tags.mjs) */
   if (e.elite && EK) { const kd = EK.take(e, dmg, fromX, plunge, blow); if (kd === false) return; dmg = kd; }   /* (ELITES2) an elite's GUARD BY ANGLE (a light cut off his front turned, a heavy through at half) and the riposte into his opening: src/elite-kit.js */
   if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }
   if (WMH && e.t === 'wickerman') { dmg = WMH.take(e, dmg); if (!dmg) return; }   /* (claude/fairfix6) THE WICKER MAN: whole in its fire, a scratch on the standing wicker */
@@ -25309,7 +25310,7 @@ function updateEnemies(dt) {
           /* THE COMBINE: this horn's own pack, woken where it stands behind the gate - not the generic camp squad */
           if (e.pack) for (const p of e.pack) { const hx = e.x + p.dx, hy = p.y; enemies.push({ x: hx, y: hy, vx: 0, vy: 0, face: 1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0, t: 'hound', w: 12, h: 7, hp: EHP.hound, speed: 105, timer: 0, air: false }); burst(hx, hy - 6, 5, COLS.hound, 40, 0.4); }
         } } else if (e.horn && !e.rafters && !e.blown) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
-      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < 230 && Math.abs(e.y - P.y) < (e.juggler ? FK.JUGGLER.dy : e.bandit ? 150 : 70)) && !P.dead && !(e.trialSt && e.trialSt.done) && !(e.fogSight && !CNH.litAt(CANAL, P.x, P.y - 8)) && !(e.tpSight && TPH && TPH.on() && !TPH.seen(e, P));   /* (THE FOG CANAL, e.fogSight: in the fog he sees only a lit hero) */   /* a trial's archer puts the bow down when his gate is up */
+      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < (e.sight || 230) && Math.abs(e.y - P.y) < (e.juggler ? FK.JUGGLER.dy : e.bandit ? 150 : 70)) && !P.dead && !(e.trialSt && e.trialSt.done) && !(e.fogSight && !CNH.litAt(CANAL, P.x, P.y - 8)) && !(e.tpSight && TPH && TPH.on() && !TPH.seen(e, P));   /* (THE FOG CANAL, e.fogSight: in the fog he sees only a lit hero) */   /* a trial's archer puts the bow down when his gate is up */
       const watched = e.juggler && fairWatched(e); e.juggling = watched; if (watched && e.draw > 0) { e.draw = 0; e.timer = Math.max(e.timer, FK.JUGGLER.rethrow); }   /* (claude/fairfix3) THE KNIFE JUGGLER KEEPS THE FAIR'S RULE: looked at, he juggles (a draw in hand goes back up into the air); at a turned back he throws */
       if (near) e.face = Math.sign(d) || e.face;
       e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt);

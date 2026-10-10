@@ -1340,9 +1340,9 @@ function screePath() {
   
   ent('sign', 4, 19, { text: 'THE SCREE PATH. THE HILL TAKES THE CARELESS.' });
   wall(18, 19); wall(30, 19); wall(44, 19); ent('deco', 26, 19, { kind: 'fence', v: 0 }); ent('deco', 40, 19, { kind: 'fence', v: 1 });
-  ent('goat', 36, 19, { face: -1 }); ent('harpy', 50, 14);
+  ent('harpy', 50, 14);
   coins([12, 17], [24, 18], [40, 18], [48, 17]);
-  ent('sign', 22, 19, { text: 'AN OLD FLEECE LIES SOMEWHERE UP THE HILL, IF YOU CAN FIND IT.' });
+  ent('sign', 20, 19, { text: 'AN OLD FLEECE LIES SOMEWHERE UP THE HILL, IF YOU CAN FIND IT.' });
   ent('check', 58, 19);
 
   // ---- 2. The terraces: three steps up the hill, a rockfall, the first stray ----
@@ -1364,7 +1364,7 @@ function screePath() {
   ent('deco', 150, 13, { kind: 'mill' });
   for (let i = 0; i < 4; i++) movers.push({ kind: 'wheel', px: 150 * TS + 8, py: 13 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
   plat(156, 6, 4); coins([157, 5], [159, 5]);
-  plat(162, 8, 3); plat(167, 9, 3); plat(172, 10, 3); ent('archer', 168, 8, { face: -1 }); ent('harpy', 162, 3);
+  plat(162, 8, 3); plat(167, 9, 3); plat(172, 10, 3); ent('sprig', 168, 13, { face: -1 });   /* (batch81 integ: the archer on the stair's top shot across 14 tiles at the gully perch - 1 death in 3 on every pilot run; a sprig on the ground keeps the count) */ ent('harpy', 162, 3);
   coins([163, 7], [168, 7], [173, 9]);
   wall(128, 13); wall(140, 13); ent('goat', 134, 13, { face: -1 }); ent('thorn', 138, 13, { face: -1 }); ent('sprig', 160, 13, { face: -1 });
   ent('sign', 124, 13, { text: 'RIDE THE MILL SAILS UP TO THE RIDGE AND ITS SILVER, OR KEEP LOW WITH THE TROLLS.' });
@@ -1462,7 +1462,7 @@ function screePath() {
   G.ent('sign', 188, 13, { text: 'OCHRE ROCK WITH HANDHOLDS CLIMBS: HOLD INTO IT TO CLING, JUMP TO KICK UP.' });
   G.ent('sign', 184, 13, { text: 'THE GULLY WIND PULLS YOU BACK. WAIT FOR THE LULL, THEN JUMP.' });
   G.ent('deco', 181, 13, { kind: 'stone', v: 0 }); G.ent('deco', 186, 13, { kind: 'cairn' }); G.ent('deco', 205, 13, { kind: 'stone', v: 2 }); G.ent('deco', 211, 13, { kind: 'cairn' });
-  G.ent('rockfall', 193, 5, { every: 2.4 }); G.ent('harpy', 187, 8); G.ent('harpy', 212, 9);
+  G.ent('rockfall', 193, 5, { every: 3.6 }); G.ent('harpy', 187, 8); G.ent('harpy', 212, 9);
   G.R.stone.push([200, 200, 13, 13], [208, 208, 13, 13]); G.block(200, 200, 13, 13); G.block(208, 208, 13, 13);
   G.ent('goat', 203, 13, { face: -1 }); G.ent('goat', 206, 13, { face: 1 }); G.ent('sprig', 184, 13, { face: -1 }); G.ent('troll', 209, 13, { face: -1 });
   G.plat(202, 11, 2); G.plat(205, 9, 3); G.coins([206, 8]); // a perch over the goat pen
@@ -1505,7 +1505,7 @@ function screePath() {
   for (const x of [459, 460]) Q.set(x, 9, T.SPIKE);           // broken stone where the chute lets you off: two tiles, never more
   for (const x of [454, 455]) Q.set(x, 7, T.SHELF);           // a loose ledge over the chute, between the low road and the high stagings
   Q.ent('rockfall', 456, 4, { every: 2.6 });
-  Q.ent('goat', 449, 9, { face: 1 });                          // charges down the chute ahead of you
+  Q.ent('goat', 449, 8, { face: 1 });                          // charges down the chute ahead of you
   /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
   return reliefScree(chaseScree(reworkScree(Q.done(), T), T, grow), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js; then THE ROCKSLIDE CHASE (claude/scree2): the old scree steps repainted as a hillside run and 96 columns grown in after them - src/scree-chase.js */
 ;
@@ -2454,7 +2454,7 @@ function theMonastery() {
   air(35, 45, 36, 37); spikes(38, 40, 37); masonry.push([35, 45, 38, 38]);   // the roof's WELL, sunk two rows under the crawl, a thorn pit in its floor
   wheel(37, 42, 35, 1, 'b');                                          // pivot 42-44@35 (a jump off the well floor); its stair 40-42@33 (over the pit) or 44-45@33; the trapdoor 3 rows over either
   ent('troll', 41, 32, { face: 1 });                                 // on the stair (a hill troll: heavy, not an elite - the well is under the Abbot's floor, and an elite never stands that near a boss room)
-  ent('sign', 46, 35, { text: 'THE LAST WHEEL. STRIKE IT WITH ONE OF THEM ON ITS STAIR AND IT GOES OUT FROM UNDER HIM.' });
+  ent('sign', 46, 35, { text: 'THE LAST WHEEL. STRIKE IT WITH ONE OF THEM ON ITS STAIR AND IT GOES OUT FROM UNDER HIM.' }); set(46, 34, T.AIR); set(46, 33, T.AIR);   /* (batch81 integ: the sign stands in the crawl, one tile under the roof - a notch over it, or its board runs through the ceiling: pixels) */
 
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
   // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in
@@ -8107,7 +8107,7 @@ const GARRISON = {
   marsh: [['hopper', 5], ['spit', 4], ['archer', 3], ['thorn', 3], ['turtle', 3], ['heronfoe', 3]],   // 46 was thirteen under the level before it
   spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2], ['thorn', 2], ['spider', 1]],   // eight kinds was the thinnest roster in the wood
   moor: [['goat', 4], ['rockgoblin', 3], ['harpy', 3], ['kite', 3], ['troll', 1], ['sailer', 2]],   /* twenty-three over NINE HUNDRED AND NINETY-SIX columns; sixteen over seven hundred and three, after the cut (docs/briefs/gale-moor-rework.md): the same density */
-  scree: [['harpy', 4], ['goat', 4], ['rockgoblin', 3], ['troll', 1]],
+  scree: [['harpy', 2], ['goat', 1], ['rockgoblin', 2]],
   hanging: [['snuffer', 3], ['rockgoblin', 4]],   /* 'cutter' dropped (2026-09-28, coordinator follow-up on claude/hanging2): the sprinkler cannot
      put a cutter anywhere near a rope, so every one it placed was the exact GAP the design audit named - a foe with nothing to cut. The
      hand-placed cutter in THE CLIFF HALL ambush keeps its own bridge instead (see AMBUSH.hanging below). thirty-four creatures over eight
