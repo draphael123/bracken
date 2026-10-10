@@ -5,7 +5,7 @@
    A (node) the movement graph finds, for every lockgate on the route whose key stands off the floor, a way route -> key and back onto the route,
             and the zigzag stair's top from its foot;
    B (page, short walks from the spot - not the whole level):
-        1 THE KEY UP A TOWER: Stormhold from col 37, the brass key (44,22) behind a net and a plank, a scalder on the net's top - the walk fetches it ("subs"
+        1 THE KEY UP A TOWER: Stormhold from col 285, the IRON key (299,20) four rows above the road (batch83 integ: stormtough's relayout put the brass key ON the road's own tower deck - the route climbs it, keyFirst takes it, no side trip - so the test is re-aimed at the iron key, which is still an off-floor key on a real side trip; same strictness) - the walk fetches it ("subs"
           has a key trip with got = true);
         2 THE ZIGZAG STAIR (484-499, rows 29-43), foes removed to read the footwork alone: the hero is at the top (route node >= 93);
         3 OUT OF A CHIMNEY SLOT: Pyro from col 219 falls into a slot (or jumps clear) and is past col 258 within 3000 frames - the net climb works;
@@ -30,10 +30,10 @@ for (const g of L.ents.filter(e => e.t === 'lockgate')) {
 const foot = G.settle(486, 43), top = G.settle(493, 28); ok(foot >= 0 && top >= 0 && G.path(foot, v => v === top), 'the zigzag stair: no way from its foot to its top in the graph');
 /* B: short page walks */
 const W = (o, id = 'storm', hero = 'knight') => walkCfg(id, hero, 1, { stuck: 1500, ...o });
-const rows = await runWalks([W({ from: 37, frames: 4400 }), W({ from: 481, frames: 3000, nofoes: [470, 520] }), W({ from: 219, frames: 3000 }, 'storm', 'pyro'), W({ from: 376, frames: 2600 })], { jobs: 1 });
+const rows = await runWalks([W({ from: 285, frames: 3000 }), W({ from: 481, frames: 3000, nofoes: [470, 520] }), W({ from: 219, frames: 3000 }, 'storm', 'pyro'), W({ from: 376, frames: 2600 })], { jobs: 1 });
 const [kr, sr, pr, wr] = rows;
 for (const r of rows) if (!r || r.err) fails.push('a walk failed: ' + (r && r.err));
-if (kr && !kr.err) { const t = (kr.subs || []).find(s => s.kind === 'key' && s.got); ok(t, '1 the brass key was not fetched (subs ' + JSON.stringify((kr.subs || []).map(s => [s.kind, s.key, s.ok, s.got, s.secs])) + ')'); console.log('  1 key: ' + (t ? 'got in ' + t.secs + ' s' : 'NO')); }
+if (kr && !kr.err) { const t = (kr.subs || []).find(s => s.kind === 'key' && s.got); ok(t, '1 the iron key was not fetched (subs ' + JSON.stringify((kr.subs || []).map(s => [s.kind, s.key, s.ok, s.got, s.secs])) + ')'); console.log('  1 key: ' + (t ? 'got in ' + t.secs + ' s' : 'NO')); }
 if (sr && !sr.err) { ok(sr.walked >= 78, '2 the zigzag stair was not climbed (walked ' + sr.walked + '%, the top is node 93 of 120 = 78%)'); console.log('  2 stair: walked ' + sr.walked + '%'); }
 if (pr && !pr.err) { ok(pr.walked >= 38, '3 out of the chimney slots: the walk stalled (walked ' + pr.walked + '%; col 258 is node 46 of 120 = 38%)'); console.log('  3 slots: walked ' + pr.walked + '%'); }
 if (wr && !wr.err) { ok(wr.walked >= 60, '4 the kennel winch: the walk did not pass col 410 (walked ' + wr.walked + '%; node 72 of 120 = 60%)'); console.log('  4 winch: walked ' + wr.walked + '%'); }

@@ -119,7 +119,7 @@ export function buildRootway({ painter, T, TS }) {
   bud(139, 35); block(141, 150, 31, 34);
   /* TIER TWO: a second bud on the shelf against the next one up (four rows), and the root plank west off it */
   bud(143, 31); block(145, 150, 27, 30); foe('trophyhunter', 148, 26, 'trunkShelf', { face: -1 });   /* (v2: a weighty foe where the cap sets you down - his lunge throws you back down the shaft) */
-  foe('lurker', 142, 30, 'trunkShelf');
+  foe('lurker', 142, 26, 'trunkShelf');   /* (batch83 integ: on the plank, the squad's one floor with the hunter - was a row-30 ledge below) */
   /* SPOREWOOD's SPRING CAPS on the hollow's floor (the climb's side-show: a bounce up a coin column under the high shelf - hold jump and they throw you higher) */
   set(116, 35, T.BOUNCER); set(117, 35, T.BOUNCER); coins([116, 31], [117, 29], [116, 28]);
   plank(134, 144, 27); foe('spider', 136, 9, 'trunkShelf', { perch: true, drop: 200 }); ent('rockfall', 138, 7, { spore: true, every: 2.8, tell: 0.9 });   /* (spores shed from the trunk's insides where you land) */

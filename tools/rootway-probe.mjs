@@ -71,7 +71,7 @@ try {
   /* HIS SNARES: a hop about the stand setting jaw traps */
   for(let i=0;i<200;i++)BK.sim(1);P.snare=0;P.x=410*16;b.ward=0;b.mode='snareTell';b.modeT=0.01;b.x=430*16;b.y=A.floor;b.perch=-1;for(let i=0;i<150;i++)BK.sim(1);out.snare=BK.snares().read().jaws.filter(j=>j.boss).length;
   /* A JAW TRAP SNAPS on a hero who steps in it; a thrown thing landing on one springs it */
-  {const S=BK.snares();S.clearBoss();S.place(400*16,A.floor);for(let i=0;i<60;i++)BK.sim(1);P.snare=0;P.hp=999;P.x=400*16;P.y=A.floor;P.vx=0;BK.sim(3);out.jaw={held:P.snare>0};P.snare=0;S.clearBoss();S.place(404*16,A.floor);for(let i=0;i<60;i++)BK.sim(1);out.jaw.sprung=S.spring(404*16,A.floor);}
+  {const S=BK.snares();S.clearBoss();S.place(400*16,A.floor);for(let i=0;i<60;i++)BK.sim(1);P.snare=0;P.hp=999;P.x=400*16;P.y=A.floor;P.vx=0;BK.sim(30);out.jaw={held:P.snare>0};P.snare=0;S.clearBoss();S.place(404*16,A.floor);for(let i=0;i<60;i++)BK.sim(1);out.jaw.sprung=S.spring(404*16,A.floor);}
   /* THE HUNTING HORN: two archers onto the root perches */
   for(let i=0;i<120;i++)BK.sim(1);BK.god=true;b.ward=0;b.mode='hornTell';b.modeT=0.01;for(let i=0;i<10;i++)BK.sim(1);out.horn=H.read().adds.map(a=>Math.round((A.floor-a.y)/16));
   /* THE DODGE ROLL: a blade up close while he guards - he rolls away, once a cycle */

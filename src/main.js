@@ -4321,7 +4321,7 @@ const CRAG_NODES = [
    self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
    no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
    relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
-const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,109], [239,80], [267,55], [260,26]];   /* (claude/deeprails2: THE DEEP RAILS on the road between the Ore Road and Stormhold) */   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
+const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,109], [239,80], [264,55], [260,26]];   /* (batch83 integ: Stormhold vertex on its node 264,55) (claude/deeprails2: THE DEEP RAILS on the road between the Ore Road and Stormhold) */   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 158, y: 154, plate: 'right', name: 'THE LONG WATER' },

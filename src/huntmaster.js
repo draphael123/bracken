@@ -23,7 +23,7 @@ import * as RWA from './redraw/rootway_art.js';   /* THE HUNTMASTER's pose paint
 // The read (B10): gold glint + a yellow ! = strike it back; a red trail + a red !! = get out of its way; a pale rope ball + !! = roll through it.
 // main.js calls makeHuntmaster(ctx): spawnBoss, owns, on, update, take, caught (a boss cage landed), podHit (a thrown pod), drawBoss, drawOver, barName, end, read, fight.
 export const HM = {
-  hp: 720, w: 14, h: 26, markH: 44,
+  hp: 1080, w: 14, h: 26, markH: 44,
   p2: 0.7, p3: 0.38,
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
