@@ -25,7 +25,9 @@ assert.deepEqual(order, ['teach', 'gallery', 'stair', 'landing', 'deck', 'crown'
    under his spells, and they stand in the stair tower */
 assert.ok(C.some(c => c.kind === 'spiral') && C.filter(c => c.kind === 'spiral').every(c => c.x0 >= L.spiral.x0 && c.x1 <= L.spiral.x1), 'the spiral stair has failing steps, and they are in the spiral stair');
 assert.equal(floorOf(C.find(c => c.kind === 'teach').row).name, 'THE LIBRARY STACKS', 'the rule is taught on the first floor');
-assert.ok(C.filter(c => c.kind === 'stair').length >= 5 && new Set(C.filter(c => c.kind === 'stair').map(c => c.chain)).size === 1, 'the failing stair is one chain of five or more');
+/* (claude/fallingtower2, a DESIGN CHANGE - Daniel's 'every floor its own trick': THE OBSERVATORY's telescope is the stair's middle) the failing stair is TWO short
+   chains, one under the telescope and one over it - a single chain would fail the steps over it while you ride. Four or more steps, each chain failing from its foot */
+assert.ok(C.filter(c => c.kind === 'stair').length >= 4 && new Set(C.filter(c => c.kind === 'stair').map(c => c.chain)).size === 2 && L.moversExtra.some(m => m.role === 'scope'), 'the failing stair is two chains of four or more steps round the telescope');
 for (const c of C) for (let x = c.x0; x <= c.x1; x++) assert.notEqual(at(x, c.row), T.AIR, c.kind + ': a failing section is built as floor');
 // ---- SAFE (C5): under every section that is not the way on, footing within reach that does not hurt, and the climb back ----
 const deadly = (x, y) => (L.pools || []).some(p => p.deadly && x * 16 >= p.x0 && x * 16 < p.x1 && y * 16 >= p.y - 16 && y * 16 <= p.bottom);
@@ -77,7 +79,7 @@ try {
    {const A=BK.ambushes()[0];out.amb=[A.st,A.leader&&A.leader.t,!!(A.leader&&A.leader.elite)];const K=BK.keys;let lo=9e9,hi=0;
     for(const d of ['right','left'])for(let i=0;i<200;i++){K[d]=true;K.jump=i%20<10;if(i%20===0)BK.press('jump');BK.sim(1);lo=Math.min(lo,BK.P.x);hi=Math.max(hi,BK.P.x);K[d]=false;}K.jump=false;
     out.held=[Math.floor(lo/16)>A.wallL,Math.floor(hi/16)<A.wallR];for(const e of A.foes||[])if(e.alive&&e.elite)BKT.hurtEnemy(e,9999,e.x-10,false);BK.sim(120);out.ambDone=A.st;}
-   const st=C.filter(c=>c.chain).sort((a,b)=>b.row-a.row);BK.tp(st[0].x0+2,st[0].row-1);BK.sim(20);out.race=[st.map(c=>c.st).join()];
+   const st0=C.filter(c=>c.chain).sort((a,b)=>b.row-a.row),st=st0.filter(c=>c.chain===st0[0].chain);   /* (claude/fallingtower2: the stair is two chains round the telescope - the race is the one under it) */BK.tp(st[0].x0+2,st[0].row-1);BK.sim(20);out.race=[st.map(c=>c.st).join()];
    const fell=new Set();for(let i=0;i<60*(1.8+1.1*st.length)+30;i++){BK.sim(1);st.forEach((c,k)=>{if(c.st==='down')fell.add(k);});}out.race.push(fell.size===st.length,row());BK.sim(60*6);out.race.push(st.map(c=>c.st).join());
    const ld=C.find(c=>c.kind==='landing');BK.tp(ld.x0+2,ld.row-1);BK.sim(5);out.landing=[ld.st,ld.t];
    /* a death: every section whole again */

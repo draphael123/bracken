@@ -194,7 +194,7 @@ const newProbe = (tileAt, ftx, fty, feetY, w) => aheadTile(tileAt, ftx, fty, fee
   /* claude/oreroad2 (lane): THE ORE ROAD gets a real slope too now (the spoil heap's ramp, Daniel's backlog) - it is
      excluded from the old-vs-new comparison above for the same reason THE SUNKEN CARAVAN is (levelHasSlopes, line 163):
      a level with any slope tile in it has no old-mover baseline to agree with in the first place */
-  ok(sloped.every(id => id === 'caravan' || id === 'oreroad' || id === 'fair' || id === 'welltown' || id === 'glasssea' || id === 'minecart'), `the only levels with slopes in them are the ones built for them (${sloped.join(' ') || 'none'})`);
+  ok(sloped.every(id => id === 'fallingtower' || id === 'caravan' || id === 'oreroad' || id === 'fair' || id === 'welltown' || id === 'glasssea' || id === 'minecart'), `the only levels with slopes in them are the ones built for them (the falling tower's buckled floors since claude/fallingtower2: THE LEAN) (${sloped.join(' ') || 'none'})`);
   ok(bad === 0, `every frame of every body identical to today's moveBody (${bad} frames differ)`);
   if (firstBad) out.push('    first: ' + JSON.stringify(firstBad).slice(0, 500));
 }
@@ -320,7 +320,7 @@ function walkAcross(Y, dir, dt, extra = {}) {
 // ================= 3. THE REACH RULE =================
 {
   out.push('THE REACH RULE (src/reach-slopes.js)');
-  const passthrough = LEVELS.filter(l => !(l.hidden && !l.secret)).slice(0, QUICK ? 3 : 27).every(lv => { const L = lv.build(); return slopeReachGrid(L, T) === L; });
+  const passthrough = LEVELS.filter(l => !(l.hidden && !l.secret)).slice(0, QUICK ? 3 : 27).every(lv => { const L = lv.build(); return levelHasSlopes(L.grid) || slopeReachGrid(L, T) === L; });   /* (claude/fallingtower2: the Falling Tower is in the first 27 and has slopes now - its buckled floors; a level WITH slopes is not one this asks about) */
   ok(passthrough, 'a level with no slopes comes back as the same object: reachcore sees today\'s grid');
   /* PHASE 2 (docs/slopes-integration.md §5). src/reachcore.js now wraps its own level in slopeReachGrid on the first
      line of floodReach, and tools/caravan-level.mjs and tools/draft-level.mjs ALREADY wrapped theirs before calling it,

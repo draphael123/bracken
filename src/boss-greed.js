@@ -30,7 +30,7 @@ import { abbotOpen } from './false-abbot.js';
 import { gargOpen } from './gate-gargoyle.js';
 import { winchOpen } from './winchmaster.js';
 import { wormOpen } from './dune-worm.js';
-import { mageOpen } from './undead-mage.js';
+import { mageOpen, mageSoft } from './undead-mage.js';
 import { pupOpen } from './puppeteer.js';
 import { wqOpen } from './wicker-queen.js';
 import { leOpen } from './lantern-eater.js';   /* THE LANTERN-EATER (claude/lanterneater) */
@@ -49,8 +49,10 @@ import { brOpen, bkOpen } from './unburied-foes.js';
 import { wardenOpen as graveOpen } from './grave-warden.js';
 import { rocEyrieOpen } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad) */
 
+/* (claude/fallingtower2) THE UNDEAD ARCHMAGE IS ON chipBy 0: INVULNERABLE outside his openings and soft windows - Daniel's EXPLICIT B15 EXCEPTION
+   (10-08, him only: every projectile of his can be struck back, and that is the answer). Every other boss keeps the resistance floor. */
 export const GREED = {
-  chipBy: { queen: 1, herald: 0.2, cisternqueen: 0.5, owl: 0.4, homunculus: 0.4, windcaller: 1 },   /* (claude/windcaller3, Daniel 10-08: THE WINDCALLER is a duelist up on his ledge - whole, his own defence (main.js callerTake: he steps away, his ward) - and his greed still counts) */   /* (claude/homunculus, B15: the jar turns a blow at 0.4 outside the bare window) */   /* (claude/owl2, B15: THE OWL REEVE off the twentieth - wherever she passes at your height she takes 0.4 of a blow, a duelist's trade; her lamp crash x2, src/main.js owlTake) */   /* (claude/burnvillage2, Daniel 10-07: THE PYROMANCER is off the chip - FULL_DAMAGE, below) */   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
+  chipBy: { undeadmage: 0, queen: 1, herald: 0.2, cisternqueen: 0.5, owl: 0.4, homunculus: 0.4, windcaller: 1 },   /* (claude/windcaller3, Daniel 10-08: THE WINDCALLER is a duelist up on his ledge - whole, his own defence (main.js callerTake: he steps away, his ward) - and his greed still counts) */   /* (claude/homunculus, B15: the jar turns a blow at 0.4 outside the bare window) */   /* (claude/owl2, B15: THE OWL REEVE off the twentieth - wherever she passes at your height she takes 0.4 of a blow, a duelist's trade; her lamp crash x2, src/main.js owlTake) */   /* (claude/burnvillage2, Daniel 10-07: THE PYROMANCER is off the chip - FULL_DAMAGE, below) */   /* (claude/sweep3: the Cistern Queen's shell gives at half - up on her wall, or burning (x hotMul): Daniel 10-06, never fully invulnerable) */   // THE FIRST BOSS TEACHES IT: the Hornet Queen (Kingswood, the game's first fight) keeps her own swarm rule (a blow lands at 0.45 while two
                            // drones are up) and is not chipped: at a twentieth - and at a quarter, and at a half - the human-speed bot lost her 2-3 of 3 (it won
                            // 2 of 3 before; the mash bot never beat her). Her greed reprisal stands. THE PYROMANCER takes a quarter: blows are what open him
                            // (each heats him), and at a twentieth the bot won 1 of 3 (3 of 3 before), at a quarter 2 of 3. THE TIDE HERALD takes a fifth (he took
@@ -96,7 +98,7 @@ export const OPEN_RULE = {
   strawking: e => e.open > 0,
   burieddead: e => e.open > 0,
   archmage: e => e.open > 0,
-  undeadmage: e => mageOpen(e),
+  undeadmage: e => mageOpen(e) || mageSoft(e),   // (claude/fallingtower2) his openings (x2) - and his SOFT windows (x1): into a portal, channelling the skulls or the orrery
   pyromancer: e => e.open > 0,                                               // overheated, venting
   gargoyle: e => gargOpen(e),                                                // stunned on the spikes (only a stomp lands anyway)
   winchmaster: e => winchOpen(e),                                            // the jammed drum has him down

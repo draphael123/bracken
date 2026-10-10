@@ -238,5 +238,17 @@
   "lifts": 105,
   "walked": 100,
   "bare": true
+ },
+ "fallingtower": {
+  "hash": "3238f24f505f",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 69,
+  "deaths": 11,
+  "kills": 21,
+  "lifts": 161,
+  "walked": 100,
+  "bare": true
  }
 }
