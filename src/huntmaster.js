@@ -41,7 +41,7 @@ export const HM = {
   rollAt: 30, roll: 0.42, rollDist: 92, rollAfter: 2.5,
   leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 4, leapCd: 1,
   backV: 340, backDmg: 14, reflectR: 16, strikeR: 30,
-  cageDmg: 20, openMul: 1.5, maskMul: 2, stagLong: 2.4, hitCap: 3, blowRef: 15, maxBlows: 4, stagT: 1.4, softCap: 1, caughtT: 2.4, ward: 3, wardMul: 0.4, guardMul: 0.4,
+  cageDmg: 20, openMul: 1.5, maskMul: 2, stagLong: 3.1, hitCap: 3, blowRef: 15, maxBlows: 4, stagT: 1.4, softCap: 1, caughtT: 2.4, ward: 3, wardMul: 0.4, guardMul: 0.4,
 };
 /* each cycle is a list; the phase's new move joins at its turn (k % n). 'horn' is once a phase (a second one reads as 'aim') */
 const CYCLE = {

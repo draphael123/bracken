@@ -33,6 +33,9 @@ for (const f of fs.readdirSync(src).filter(f => f.endsWith('.js'))) {
       if (c === ',' && depth === 1) { parts.push(cur); cur = ''; continue; } cur += c; }
     parts.push(cur); const t = parts[2]; if (t === undefined) continue;
     const line = s.slice(0, mm.index).split('\n').length;
+    /* (batch83 integ) a CONSTANT LINE ARRAY named *_LINE or *_LINES (const RAM_LINE = ['..', '..'], said as number(x, y, RAM_LINE[i], ..)) is a number() source too: its literals count */
+    for (const id of t.matchAll(/(?<![\w$.])([A-Z][A-Z0-9_]*_LINES?)\s*\[/g)) { const own = new RegExp('(?:const|let|var)\\s+' + id[1] + '\\s*=\\s*\\[([^\\]]*)\\]'); let body = own.exec(s); if (!body) for (const g of fs.readdirSync(src).filter(g => g.endsWith('.js'))) { body = own.exec(fs.readFileSync(path.join(src, g), 'utf8')); if (body) break; }
+      if (body) for (const lit of body[1].matchAll(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g)) { const txt = lit[1] ?? lit[2]; if (!txt.includes('${') && drops(txt)) found.push(['src/' + f, line, txt]); } }
     for (const lit of t.matchAll(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g)) { const txt = lit[1] ?? lit[2] ?? lit[3]; if (!txt.includes('${') && drops(txt)) found.push(['src/' + f, line, txt]); }
   }
 }
