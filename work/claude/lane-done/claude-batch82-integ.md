@@ -37,3 +37,28 @@ None weakened. Added: titlescene 7-hero section. Removed: four Ksar MODEL_GAPS r
 1. Kraken is 94% with flasks (50% dry). hp does not move it. Rec: leave hp, tune the kit (fewer flasks at causeway depth) or arm damage in a kraken lane - or accept, since flasks2 lifts every boss.
 2. Minecart's act-1 curve band: relax the band for a ride level, or soften its hazards? Rec: soften one hazard.
 3. Ksar champion gate at 693 crosses the powder trail's last third (fire still runs; logic is not tile-gated) - fine?
+
+# ROUND 2 - the suite's FAIL-ALONE list (batch82 suite done), all alone on port 8804
+
+| check | cause | fix |
+|---|---|---|
+| elites, checkpoint-stand | (round 1) Ksar locks the fill has no verbs for | tools/ksar-locks.mjs; champion gate @693 |
+| death-cost | arena door @814: same Ksar lock gap, its own fill | death-cost uses ksarOpened (stricter than a gap row) |
+| sprinkle-cap | ksar section 5 (800-999) = last chasm + rope line + the Hawk-Mistress's arena: no ground for a squad | squadBands row 800-999 spots 0 with the reason (the pattern of buriedcity/canal/church) |
+| additional-areas | map road vertices off their nodes: Theatre node nudged by the merge lane (111,134 -> 119,142), Buried City node (116,72) vs road end (92,64) from its own lane | INLAND_PATH vertex and DESERT_PATH end moved onto their nodes; map-grammar / spacing / scale / level-reach green |
+| store-preview | herokeys' smear pass is only in the full bake, so card frames (weaponIcon / atk) differed | previews bake the beat before and lay the same smear (storeFrames cols); canvas cap 200 -> 240 (219 on tab 0: +1 beat a card), tab-count assert 48 -> 6 x tabs (the store grew to 9 tabs with flasks2) - both stated in the assertion text |
+| dressing | buriedcity had no ground kit / allowlist | GROUND_KITS + ALLOWED_DECORATIONS .buriedcity = none (the ksar/minecart pattern) |
+| geomancer | magePlayer was removed by witchfix (the turned hero runs updatePlayer); the check scanned the old function | tool reads flipPlayer + the burrow line; burrow is gated `GS < 0` in main.js (she would otherwise dig into the ceiling) |
+| relics | moor summit exit gate o+45 sits behind 17 thorn tiles (windcaller3), unreachable by any fill and by the player; the boss kill wins the level | gate moved to the fall stone's far end (o+26) |
+| monastery3-beats, monk-machines | spire: rock one row over the last a-stair board @46,33 (pre-existing on batch81 too) | carved (46,32) |
+| duck | fogknight stance/double/shroud HEIGHT rows with no mark (towpath marks regenerated) | the three rows removed |
+| unburied-look | oldStandard@260 mean 11.9 < 12 (0.1 under, background changed) | moved to 262 (258 also passes) |
+| solid-islands | ksar 32 (> 25: ksar2's 7 new slabs), buriedcity 45 (new level) | ratchet rows raised with the reason, same as batch81 integ did for church/towpath - TEMPORARY, an art-lane job |
+| pixels | causeway sign@559 overlapped a one-tile stone at 558 (kraken2 tribute) | sign to 560 |
+| mark-integrity | markTell fixed in round 1; poisonTell sighting remains: 0 px differ - passes alone half the time, looks like the caster off-camera in the snapshot | NOT fixed, documented |
+| textfit (full) | | clean alone |
+
+Level data moved (hash) -> re-stamped: spire, moor, causeway, unburied (curve; mash level then boss), ksar (round 1).
+Load-only/flake: mobile-perf, redgorge, profile-leaks: not touched. The geomancer check failed once inside a long run and passes alone twice (port contention suspected).
+curve-gate / mash-gate / level-quality: green except MINECART's act-1 curve (round 1 note, still open).
+Assertion changes (stated): store-preview canvas cap 240 + tab-count formula; geomancer ceiling-dodge probe now reads flipPlayer + the burrow gate (magePlayer no longer exists).
