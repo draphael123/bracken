@@ -116,7 +116,7 @@ export function buildLitChurch({ painter, T, TS }) {
   /* THE NARTHEX's lesson: a priest by a LIT lamp over a grate - snuff it (a blow) and he is weaker; the grate wakes */
   lamp('narthex', 52, NF - 1, 'narthex', 'lamp', { lit: true });
   priest(54, NF - 1, 'narthex'); grate(47, NF, 'narthex');
-  sign(42, NF - 1, 'A LIT ROOM MAKES THE PRIESTS STRONG. A BLOW SNUFFS A LAMP.');
+  sign(47, NF - 1, 'A LIT ROOM MAKES THE PRIESTS STRONG. A BLOW SNUFFS A LAMP.');
   room('narthex', 'THE NARTHEX', 45, NF - 5, 55, NF - 1);
   /* THE NAVE (cols 56-151, rows 29-45): under the gallery's floor (row 28); pews (low boards), pillars with their capitals (ledges), the triforium (a balcony
      along the north side, rows 38-39), the pulpit, two standing lamps, the grates */
