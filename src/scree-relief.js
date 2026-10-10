@@ -47,5 +47,7 @@ export function reliefScree(R, T) {
   /* THE LOOSE ROCK, by place (the rule's state: tools/rule-state.mjs reads L.looseRock as places, main.js only asks that it is there) */
   const loose = []; for (let y = 0; y < R.H; y++) for (let x = 0; x < W; x++) if (at(x, y) === T.SHELF) { const g = loose.find(q => q.y === y && x - q.x1 <= 2); if (g) g.x1 = x; else loose.push({ x0: x, x1: x, y }); }
   R.looseRock = loose.length ? loose.map(q => ({ x0: q.x0 * 16, x1: (q.x1 + 1) * 16, y: q.y })) : true;   /* (in px, like every rule array the tools read) */
+  /* SAVE-BIT ORDER (batch81 integ): a save marks silvers by their index in the entity list. Live master had [miller 333,15 | hamlet 85 | quarry 456+96]; the miller's silver now lies on the high ledges (339,13) and must be silver #0 again, so every old bit points at the same pickup (tools/scree-rework.mjs asserts it) */
+  { const k = R.ents.findIndex(e => e.t === 'silver' && e.x === 339 && e.y === 13), f = R.ents.findIndex(e => e.t === 'silver'); if (k > f) R.ents.splice(f, 0, R.ents.splice(k, 1)[0]); }
   return R;
 }
