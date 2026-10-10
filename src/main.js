@@ -361,7 +361,7 @@ const plungeDmg = () => Math.round((isPyro() ? PYRO_PLUNGE_DMG : PLUNGE_DMG) * (
    tongue 25 -> 20, the Chieftain's body/stomp/sweep/grab 25/35/20/20 -> 20/28/16/16 (a hero of ~110 health, committed to his swings, died in 4-5 of them:
    the human bot won 14-38% of their fights). AND THEIR HEALTH (220 / 280 / 400 -> 105 / 180 / 215): with taps no longer breaking them (poise from
    heavies only) and a committed hero landing a third fewer blows in their short windows, the bot ended fights with half of them left */
-const DMG = { wormBreach: DWM.WORM.dmg.breach, wormSpit: DWM.WORM.dmg.spit, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, wormSweep: DWM.WORM.dmg.sweep, wormWave: DWM.WORM.dmg.wave, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroCut:9, pyroThird:12, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroBellows:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 26, bellSlam: 34, bellPressure: 24, bellCharge: 32, bellSnip: 18, bellLeap: 24, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 26, homScurry: 34, homDive: 32, homSlam: 34, homFlask: 28, homPuddle: 9 /* (claude/sweep3: 16 / 22 / 20 / 22 / 18 / 6 - the standard bot won 12/12 at L29) */, archBolt: 14, archRend: 20, archCrush: 20, archBook: 10, /* (claude/sweep3: 18 / 24 / 24 / 12 - the standard bot won 1/12 at L29, band 50-60%) */ archGlyph: 8, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 42, ploughGoad: 30, ploughHead: 30, ploughFurrow: 38 /* (claude/sweep3: 22 / 16 / 16 / 20 - the standard bot won 11/12 at L26) */, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 26, krakSweep: 22, krakGrip: 6, krakDrag: 24, krakTide: 14, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, scalderPour: 16, scalderLadle: 9, temperShove: 6, temperQuench: 20,
+const DMG = { wormBreach: DWM.WORM.dmg.breach, wormBreath: DWM.WORM.dmg.breath, wormLunge: DWM.WORM.dmg.lunge, wormBite: DWM.WORM.dmg.bite, wormSweep: DWM.WORM.dmg.sweep, wormWave: DWM.WORM.dmg.wave, sanctumFire:14, winchSend:WINCH.dmg.send, winchLever:WINCH.dmg.lever, minerPick:16, abbot:ABBOT.dmg.censer, abbotChain:ABBOT.dmg.cast, abbotProcess:ABBOT.dmg.process, abbotKnell:ABBOT.dmg.knell, tome:TOME.dmg, hedgewarden:18, gravewarden:20, pyroCut:9, pyroThird:12, squareFire:5, burngob:14, emberwisp:10, pyroEmber:7, pyroBellows:14, pyroVent:12, beamFall:16, backdraft:18, bonegob:14, boneSkull:16, undeadmage:20, burieddead:24,zombie:12, husk:16, huskGas:10, apprentice:12, apprenticeEmber:14, harbormaster: 20, familiar:18, lanternshade:14, bonecorsair:16, boneCleave:22, tidemarauder:18, tideRake:24, bellcrab: 20, bellguard: 16, bellClaw: 26, bellSlam: 34, bellPressure: 24, bellCharge: 32, bellSnip: 18, bellLeap: 24, bellHook: 16, bellKnell: 20, palOath: 26, palRadiance: 22, topiary: 14, armour: 18, piece: 6, broom: 8, mimic: 16, imp: 12, turret: 12, vatGob: 10, homSwipe: 26, homScurry: 34, homDive: 32, homSlam: 34, homFlask: 28, homPuddle: 9 /* (claude/sweep3: 16 / 22 / 20 / 22 / 18 / 6 - the standard bot won 12/12 at L29) */, archBolt: 14, archRend: 20, archCrush: 20, archBook: 10, /* (claude/sweep3: 18 / 24 / 24 / 12 - the standard bot won 1/12 at L29, band 50-60%) */ archGlyph: 8, famSwipe: 24, famSlam: 22, famSpit: 12, scarecrow: 14, rook: 8, farmhand: 14, pumpkin: 16, pumpkinBite: 10, marshlight: 8, hauntFork: 12, boo: 12, ploughCharge: 42, ploughGoad: 30, ploughHead: 30, ploughFurrow: 38 /* (claude/sweep3: 22 / 16 / 16 / 20 - the standard bot won 11/12 at L26) */, thresher: 18, strawSweep: 22, strawFork: 14, strawSlam: 20, strawBale: 16, strawLantern: 18, strawLeap: 18, strawFire: 6, krakSlam: 26, krakSweep: 22, krakGrip: 6, krakDrag: 24, krakTide: 14, krakHurl: 22, krakSurge: 8, krakSnap: 18, krakBeak: 26, krakRoar: 16, krakRoll: 16, krakJet: 18, krakOrb: 12, krakGeyser: 20, krakBarrel: 12, krakChest: 34, krakCrate: 18, krakRake: 20, feelerLash: 14, rimeFrost: 16, rimeSpire: 18, rimeShard: 11, rimeClaw: 16, rimeHail: 16, splash: 20, trollSwat: 26, trollSlam: 28, trollStone: 30, mastSlash: 16, mastRam: 18, mastDrop: 22, mastBoom: 16, heavyGrab: 16, watchSweep: 14, helmRush: 18, kingAnchor: 20, quarterRiposte: 22, wardenRubble: 14, weaverReel: 8, strikerChain: 12, propTimber: 14, swornCut: 18, hedgeSwing: 26, hedgeLeap: 22, runnerStab: 7, temperCut: 13, scalderPour: 16, scalderLadle: 9, temperShove: 6, temperQuench: 20,
   owlSkim: 26,   /* THE OWL REEVE'S SKIM: talons along the boards at ankle height, no shield turns it */
   owlCone: 24, owlOil: 22, owlBurn: 10,   /* (claude/owl2) THE BOUGH SHAKE's falling cones and shingles; THE LAMP DROP's oil splash, and a second in its burning strip */
   helmCut: 21, helmStamp: 18, helmGrab: 22, palCut: 24, palThrust: 20, palBash: 26, palJudge: 22, lancerCharge: 24, lancerSwipe: 16, lancerCut: 16, drunkLob: 10, flyTool: 14, flyBag: 22, drunkStool: 14, drunkBottle: 12, drunkGlass: 8,
@@ -2230,7 +2230,7 @@ function spawnEnt(e) {
         /* THE COMBINE (tower + gate): the hounds this horn wakes when it sounds, as offsets from him */
         pack: e.pack ? e.pack.map(p => ({ dx: p.dx * TS, y: (p.y + 1) * TS })) : null }); if (e.juggler) Object.assign(enemies[enemies.length - 1], { juggler: true, w: 10, h: 22 }); if (e.bandit) Object.assign(enemies[enemies.length - 1], { bandit: true, w: 10, h: 22 }); break;   /* THE KNIFE JUGGLER (the Harvest Fair, claude/fairfix2): the archer's draw and loose, a man's body, knives for arrows */
       case 'hopper': { const col = e.color || 'green'; enemies.push({ ...base, t: 'hopper', color: col, w: 8, h: 6, hp: HOP[col].hp, timer: 0.5 + Math.random(), air: false }); break; }
-      case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0 }); break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
+      case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0, wreck: !!e.wreck });   /* wreck (claude/caravan2): THE SUNKEN CARAVAN's half-buried wagon bed on the quicksand - it sinks under you like a pad and drops you into the sand at the bottom */ break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
       case 'sapper': enemies.push({ ...base, t: 'sapper', w: 8, h: 12, hp: EHP.sapper, speed: 62, fuse: 0, fleeT: 0 }); break;
       case 'brute': enemies.push({ ...base, t: 'brute', w: 12, h: 16, hp: EHP.brute, speed: 20, mode: 'walk', modeT: 0 }); break;
       case 'cutlass': enemies.push({ ...base, t: 'cutlass', w: 10, h: 18, hp: EHP.cutlass, speed: 42, mode: 'walk', modeT: 0, cd: 0.8 }); break;
@@ -5355,7 +5355,7 @@ const BEASTS = [
   { t: 'undeadmage', name: 'THE UNDEAD ARCHMAGE',sub:'the last spell outlives him',desc:'Fought from the carpet in his burning hall. Guard or fly from fire and ice, leave the lightning mark, keep out of the poison, out-fly the death hand. A DEATH MARK that finds no one comes back on him. His RINGS work both ways: dodge through the one he opens by you and come out beside him, open. Of two rings, only one holds the desert. Burning, he fights ring to ring. At three quarters, half and a quarter he tears a portal into a realm of his spells - fire, ice, poison - where his ward holds until you find its opening. His BONE STORM rings you with skulls: fly out through a gap. Wounded, his ECHO casts each spell twice; burning, THE GRAVE drags your carpet toward its void. His WARD turns every blow until an opening breaks it. His ORRERY swings worlds round him; his GRAVE SCRIPT burns every line of the sky but one.'},
   { t: 'burieddead', name: 'THE BURIED DEAD',sub:'the whole grave wakes',desc:'Jump the marked slam or climb a grave shelf. Guard the arm sweep. Follow the moving shadow, then leave the bright crack before he erupts. Cut down the zombies he calls. Wait on a ledge or far off and he throws a lit skull: guard it. When the earth cracks in a line towards you the GRAVE HANDS follow it: jump them, or stand in the light of a burning vent, where the dead cannot rise. Light a vent under him and the gas opens him. At half health his slam reaches farther, more dead answer, and his GRAVE BREATH puts out every fire in the room, yours too: take fire again from the candles at the walls.' },
   { t: 'corpse', name: 'THE FALLEN', sub: 'the battle is still being fought', desc: 'A soldier of a war nobody buried. It lies where it fell until a banner stands over it, then it gets up and cuts - guard it. Cut down under a banner it only falls again: strike it while it lies there, or burn it, and it stays down.' },
-  { t: 'duneworm', name: 'THE DUNE WORM', sub: 'the caravan\'s grave keeps its keeper', desc: 'He hunts under the hollow\'s sand: a ripple runs at you and bursts up where it locks - step off it late. Up, he spits sand (a shield takes it), lunges where his shadow falls, opens the sand under you (jump, and keep jumping), and sweeps his tail along the floor from behind you: jump it. His crown plates turn a blow from the front - go round him, or cut his belly as he rears. Wind the awning out and let him come up INTO it: tangled, he takes double. At half he calls the storm.' },
+  { t: 'duneworm', name: 'THE DUNE WORM', sub: 'the caravan\'s grave keeps its keeper', desc: 'He hunts under the hollow\'s sand: a ripple runs at you and bursts up where it locks - step off it late. Up, he blasts sand from his mouth (a shield takes it), coils and lunges where his shadow falls, opens the sand under you (jump, and keep jumping), and sweeps his tail along the floor: jump it. His hide turns every blade. Ledges of the old town rise from his sand: stand by one when he comes and he hits his head on it - stunned, he can be cut. At half he calls the storm.' },
   { t: 'scorpion', name: 'THE DUNE SCORPION', sub: 'two answers in one shell', desc: 'Up close it lifts a claw - a yellow mark, and a shield turns it. Stand a little further off and the tail comes up over its back instead - a red mark, and nothing turns that: step out of it, then walk in and cut while the tail comes down.' },
   { t: 'sandgob', name: 'THE SAND GOBLIN', sub: 'a mound with eyes', desc: 'Buried, it is only sand and two eyes, and a blade goes straight through it. Walk past and it rises with the sand pouring off - that is the tell - and cuts twice with a knife a shield turns. Then it goes under and comes up again ahead of you.' },
   { t: 'banditmystic', name: 'THE BANDIT MYSTIC', sub: 'he chants to free it', desc: 'A man of the Gang Leader\'s band in the dust-red robe of the old waterworks\' keepers, hooded and wrapped to the eyes, a sun with a shackle through it stitched on his chest. The mystics went under the Kasbah to the binding works and chant at the seals to free what is bound at the bottom of the well. He keeps his distance: a fist of sand held out is a SAND BOLT (a yellow mark - strike it back, or take it on a shield), both hands up is a rune of sand under your feet (a red mark: step off it). A blow while he winds up throws him off.' },
@@ -7374,7 +7374,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'masthead' && (e.mode === 'tangled' || e.mode === 'reel')) dmg = Math.round(dmg * 1.5);
   if ((e.t === 'burieddead'||e.t === 'harbormaster') && e.open > 0) dmg=Math.round(dmg*1.3);
   if (e.t === 'gravewarden' && graveOpen(e)) dmg = Math.round(dmg * GRAVE_W.kneelMul);
-  if (e.t === 'duneworm' && e.st) { const k = DWM.wormTake(e.st, fromX, tag); if (!k) { if (DWM.wormPlated(e.st, fromX)) dwPlated(e, fromX); return; } if (k > 1) { dmg = Math.round(dmg * k); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 6); } }   /* THE DUNE WORM: the blade goes through sand; his crown plates turn a blow from the front (GO ROUND, claude/duneworm2); from behind or on his reared belly it lands whole; tangled in the awning he takes double (THE OPENING) */
+  if (e.t === 'duneworm' && e.st) { const k = DWM.wormTake(e.st); if (!k) { if (DWM.wormHide(e.st)) dwHide(e, fromX); return; } dmg = Math.round(dmg * k); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 6); }   /* (claude/caravan2) HIS HIDE: nothing lands unless his head is on a ledge (STUNNED, x1.5) - Daniel's B15 exception; a blow on him up out of the sand clanks and says HIDE TOO THICK */   /* THE DUNE WORM: the blade goes through sand; his crown plates turn a blow from the front (GO ROUND, claude/duneworm2); from behind or on his reared belly it lands whole; tangled in the awning he takes double (THE OPENING) */
   if (e.t === 'sandworm' && e.st && !DF2.sandwormTouchable(e.st)) return;   /* THE SANDWORM under its ripple: the blade goes through sand (claude/desertfoes) */
   if (e.t === 'sandgob' && e.st && !DF.sandGobTouchable(e.st)) return;   /* THE SAND GOBLIN under its mound: the blade goes through sand */
   if (e.t === 'ambusher' && e.st && !DF.ambusherTouchable(e.st)) return;   /* THE SAND-CLOAKED AMBUSHER under his cloak: the same */
@@ -10168,7 +10168,7 @@ function bossEnd(e) {
       for (const q of enemies) if (q.alive && q.lanceBow) { q.alive = false; smoke(q.x, q.y - 6, 6, 8); }   /* his bowmen throw down their bows and are gone */
       e.bowCall = null;
       SFX.bellow(); SFX.heavy(); SFX.crack(); say('THE BRIDGE IS YOURS', '#ffd36b'); break; }
-    case 'duneworm': { shakeCam(12); zoomKick(1.16, 0.7); rumble(160, 0.9); if (CV) { CV.storm = null; CV.stormNow = null; }   /* the storm was his: it goes with him */
+    case 'duneworm': { shakeCam(12); zoomKick(1.16, 0.7); rumble(160, 0.9); if (CV) { CV.storm = null; CV.stormNow = null; } dwClearStones();   /* (claude/caravan2) his ledges sink with him */   /* the storm was his: it goes with him */
       for (let i = 0; i < 40; i++) parts.push({ x: x + (Math.random() - 0.5) * 80, y: floor - 2, vx: (Math.random() - 0.5) * 160, vy: -60 - Math.random() * 150, life: 1.4, max: 1.4, col: ['#e2bb7a', '#f2d79c', '#bf8f63'][(Math.random() * 3) | 0], size: 2, grav: 420 });
       dust(x - 30, floor, 12); dust(x + 30, floor, 12); SFX.boreRoar(); say('THE SAND LIES STILL', '#ffd36b'); break; }
     case 'mother': { shakeCam(10); zoomKick(1.18, 0.8); say('THE WOOD BREATHES AGAIN', '#8fd160'); break; }
@@ -21001,6 +21001,8 @@ function cvTile(x, y, t) {
   return true;
 }
 function caravanReset() {
+  if (L && L.caravanCrumbles && L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); else crumbleInit(L); }   /* (claude/caravan2) THE SLABS on the quicksand are whole again on every attempt */
+  dwClearStones();   /* (claude/caravan2) the Dune Worm's ledges go back under the sand on every attempt */
   CV = null; if (!L || !L.caravan) return;
   const ws = props.filter(p => p.t === 'awningwinch');   /* the camp's, and THE HOLLOW WINCH (the worm's trap) */
   CV = { zones: shadeZones(L), winch: ws.find(p => !p.hollow) || null, winches: ws, swim: 0, burnT: 0, shaded: false, storm: null, stormNow: null, gustAcc: 0 };
@@ -21013,7 +21015,7 @@ function caravanReset() {
   L.gateOpen = false;   /* a retry is a fresh fight: the gate across the hollow is shut until he is dead again */
   if (window.BK) Object.assign(window.BK, { caravan: () => CV, sunHands: () => SUNH });
 }
-const cvCanopies = () => (CV && CV.winches || []).filter(w => w.canopy && w.k >= 0.95).map(w => { const c = w.canopy; return [c.x0 * TS, (c.x1 + 1) * TS, c.row * TS, LH * TS]; });   /* every great awning that is rolled OUT is shade */
+const cvCanopies = () => (CV && CV.winches || []).filter(w => w.canopy && w.k >= 0.95).map(w => { const c = w.canopy; return [c.x0 * TS, (c.x1 + 1) * TS, c.row * TS, LH * TS]; }).concat(dwStoneShade());   /* (claude/caravan2) and every ledge standing in the Dune Worm's hollow: THE SHADE HOOK (claude/ksar2's shared sun drain reads cvShaded and this list) */   /* every great awning that is rolled OUT is shade */
 await LS.step('misc3');
 const inHollowStorm = x => !!(CV && CV.storm && L.arena && x > L.arena.x0 && x < L.arena.x1);   /* THE SUN GOES IN under the worm's storm, and only in his hollow */
 function cvShaded(x, y, h, probe) {   /* (probe: the drawn shimmer asks per floor top - no vulture's moving shadow) */
@@ -21044,8 +21046,10 @@ function updateCaravan(dt) {
   /* (claude/ksar2) THE SUN v2 (src/sun-hands.js): the meter for every hero, and the DRAIN straight off the bar - no blow, no flinch, no mercy window -
      a share of max health a second that grows with the meter; the sizzle and the '-n' once a beat; the step-out warning */
   if (state === 'play' && SUNH) { SUNH.update(dt); const r = SUNH.last; CV.shaded = r ? r.shaded : true; CV.swim = r ? r.swim : 0; CV.stage = r ? r.stage : 0; }
+  if (L.caravanCrumbles && L.crumbles && L.crumbles.length && state === 'play') updateCrumbles(dt);   /* (claude/caravan2) THE SLABS lying on the quicksand: stand on one and it cracks, three beats, and goes in (src/tower-collapse.js) */
   /* QUICKSAND: it holds you and slows you; a jump heaves you up it, and at the surface a jump takes you out */
   for (const pp of players) asPlayer(pp, () => { if (P.dead) return;
+    if (P.onMover) { P.qsDepth = 0; return; }   /* (claude/caravan2) on a wagon bed lying on the quicksand you are on the bed, not in the sand - until it goes under */
     const q = qsPatchAt(L, P.x, P.y); if (!q && !P.qsDepth) return;
     const jp = P.jbuf > 0; if (jp) P.jbuf = 0;
     const move = keys.left ? -1 : keys.right ? 1 : 0, was = P.qsDepth || 0;
@@ -21141,6 +21145,16 @@ function drawCaravan(cx, cy) {
     g.globalAlpha = 0.35; g.fillStyle = DZ.DESERT.shadeD; g.beginPath(); g.ellipse(gx, gy - 1, 14, 3, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
     if (s.mode === 'watch') { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; g.lineWidth = 1; g.beginPath(); g.moveTo(gx - 4, gy - 5); g.lineTo(gx + 4, gy + 1); g.moveTo(gx + 4, gy - 5); g.lineTo(gx - 4, gy + 1); g.stroke(); } }
 }
+/* A HALF-BURIED WAGON BED on the quicksand (claude/caravan2, greybox art - the art lane redraws it): boards and an iron band, the tilt of a bed that has gone
+   in at one end, a wheel's rim out of the sand; lower as it sinks, and its lip goes dark when it is about to go under */
+function cvWreckBed(m, cx, cy) {
+  const x = Math.round(m.x) - cx, y = Math.round(m.y) - cy, w = m.w, k = m.sink || 0;
+  g.fillStyle = ART.OUT; g.fillRect(x - 1, y - 1, w + 2, 7); g.fillRect(x + w - 6, y - 5, 7, 6);
+  g.fillStyle = '#8a6440'; g.fillRect(x, y, w, 5); g.fillStyle = '#a8805a'; for (let i = 0; i < w; i += 8) g.fillRect(x + i, y, 7, 2);
+  g.fillStyle = '#5a3e26'; g.fillRect(x + w - 5, y - 4, 4, 4); g.fillStyle = '#6a6e78'; g.fillRect(x + 4, y + 1, 1, 4); g.fillRect(x + w - 9, y + 1, 1, 4);   /* the tailboard up, two iron bands */
+  g.strokeStyle = ART.OUT; g.lineWidth = 2; g.beginPath(); g.arc(x + 8, y + 7, 6, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); g.strokeStyle = '#7a5a3a'; g.lineWidth = 1; g.beginPath(); g.arc(x + 8, y + 7, 6, Math.PI * 1.05, Math.PI * 1.95); g.stroke();   /* a wheel's rim out of the sand */
+  if (k > 0.45 && Math.floor(time * 10) % 2) { g.fillStyle = 'rgba(255,107,107,0.6)'; g.fillRect(x, y - 2, w, 1); }   /* about to go under: its lip flashes */
+}
 /* THE SWIM AND THE METER: the view swims before anything hurts, and the meter says how long you have */
 let sunPrev = null, hudEnvR = 0;   /* the sun's last status (a CHANGE is the only time it is said in words), and the right edge of the water/flood row (the toast zone starts past it) */
 function drawCaravanHud() {
@@ -21169,69 +21183,105 @@ function drawCaravanHud() {
     if (st) { const on = Math.floor(time * (3 + 3 * stg)) % 2 === 0;
       UIH.drawIcon(g, st.icon, x + 48, y - 1, st.stage && !on ? '#fff1c8' : st.col);
       if (st.stage) for (let i = 0; i < 3; i++) { g.fillStyle = i < stg ? (on || i < stg - 1 ? st.col : '#fff1c8') : 'rgba(40,20,10,0.5)'; g.fillRect(x + 60 + i * 5, y + 1, 3, 5); } } }
-  drawDuneStorm();
+  drawDuneStorm(); drawDuneGrit();
 }
 
 /* ================= THE DUNE WORM (src/dune-worm.js is the fight, pure and proved in tools/caravan.mjs; docs/briefs/dune-worm.md is
-   the design; this is only his hands) =================
-   He sleeps under the hollow until you cross into it. Then, round and round: THE RIPPLE runs at you and bursts up where it locks
-   (!!), he comes up and SPITS (!), COILS and LUNGES where his shadow falls (!!), and opens a SINKHOLE under you (!!). THE OPENING
-   (A11) is THE ROLLED-OUT SHADE: his breach under the hollow's awning comes up INTO it - tangled, double damage - and the awning
-   comes down off its rollers onto him, so it is wound out again at THE HOLLOW WINCH every time. At half (A10) he calls THE STORM
-   into his hollow: the sun goes in, gusts on a counted warning shove you along the sand (hold block to brace), and every ripple
-   brings a false one. Touching him never hurts (the touch rule): only his blows do. */
+   the design, reworked by claude/caravan2 from Daniel's 10-09 playtest; this is only his hands) =================
+   He sleeps under the hollow until you cross into it. Then, round and round: THE RIPPLE runs at you and bursts up where it locks (!!), he
+   comes up and BLASTS SAND from his mouth (!), COILS and LUNGES where his shadow falls (!!), opens a SINKHOLE under you (!!), and sweeps his
+   TAIL along the floor (!!). HIS HIDE turns every blade (Daniel's B15 exception: a clank and HIDE TOO THICK). THE OPENING is THE RISING
+   LEDGES: slabs of the old town's sandstone that rise out of his sand at random fair spots (told: dust and a grinding rumble for a second),
+   stand a while and sink - two up at once, three in phase two. Stand by one when the ripple comes and leave the spot late: his breach comes
+   up under the ledge and HE HITS HIS HEAD ON IT - stunned, gold ring and timer bar, x1.5 - then a told ward (WARDED). A standing ledge is
+   footing (a one-way shelf, rock shelf tiles) and SHADE (cvCanopies). At half (A10) he calls THE STORM into his hollow: the sun goes in,
+   gusts on a counted warning shove you along the sand (hold block to brace), and every ripple brings a false one. Touching him never hurts
+   (the touch rule): only his blows do. */
 SPR.duneworm = DFA.bakeDuneWorm(); SPR.dunewormRipple = DFA.bakeDuneWormRipple();
-const DW_SAY = { rippleTell: ['THE SAND MOVES', '#ff6b6b'], spitTell: ['HE RISES TO SPIT', '#ffd36b'], lungeTell: ['HE COILS', '#ff6b6b'], swallowTell: ['THE SAND GIVES WAY', '#ff6b6b'] };
-const DW_SOUND = { ripple: 'wormRipple', spit: 'wormGurgle', lunge: 'wormHiss', swallow: 'wormSink', sweep: 'wormTail' };
-const DW_DMG = { breach: DMG.wormBreach, lunge: DMG.wormLunge, bite: DMG.wormBite, sweep: DMG.wormSweep, wave: DMG.wormWave }, DW_NAME = { breach: 'THE BREACH', lunge: 'THE LUNGE', bite: 'THE SWALLOW', sweep: 'THE TAIL', wave: 'THE CRASH' };
-const dwHollowWinch = () => (CV && CV.winches || []).find(w => w.hollow) || null;
-/* the awning over the hollow as [x0, x1] px, only while it is rolled OUT: the machine's canopy */
-function dwCanopy() { const w = dwHollowWinch(); if (!w || !w.canopy || w.k < 0.95) return null; return [w.canopy.x0 * TS, (w.canopy.x1 + 1) * TS]; }
+const DW_SAY = { rippleTell: ['THE SAND MOVES', '#ff6b6b'], breathTell: ['HE DRAWS BREATH', '#ffd36b'], lungeTell: ['HE COILS TO LUNGE', '#ff6b6b'], swallowTell: ['THE SAND GIVES WAY', '#ff6b6b'] };
+const DW_SOUND = { ripple: 'wormRipple', breath: 'wormGurgle', lunge: 'wormHiss', swallow: 'wormSink', sweep: 'wormTail' };
+const DW_DMG = { breach: DMG.wormBreach, breath: DMG.wormBreath, lunge: DMG.wormLunge, bite: DMG.wormBite, sweep: DMG.wormSweep, wave: DMG.wormWave }, DW_NAME = { breach: 'THE BREACH', breath: 'THE SAND BREATH', lunge: 'THE LUNGE', bite: 'THE SWALLOW', sweep: 'THE TAIL', wave: 'THE CRASH' };
+/* THE ARENA HE IS TOLD: the hollow, and where no ledge may rise (the rim's overhang, the gate: L.arena.stoneAvoid, src/sunken-caravan.js) */
+const dwArena = () => { const A = L.arena; return { x0: A.x0, x1: A.x1, floorY: A.floor, avoid: A.stoneAvoid || [] }; };
+/* THE LEDGES AS TILES: a standing ledge is a row of one-way rock shelf (footing), WORM.LEDGE.rows over the floor; up it goes into the grid, down
+   it comes out again (grid0's own cell: the hollow's air). Every cell it ever set is kept on L, so a retry or a death puts the hollow back */
+const dwStoneRow = () => Math.round(L.arena.floor / TS) - DWM.WORM.LEDGE.rows;
+function dwStoneTiles(l, on) {
+  const r = dwStoneRow(), c0 = Math.round(l.x0 / TS), c1 = Math.round(l.x1 / TS) - 1, S = LEDGE_SETS.rockShelf; if (!L.dwStones) L.dwStones = new Set();
+  for (let c = c0; c <= c1; c++) { const i = r * LW + c;
+    if (on) { L.grid[i] = T.ONEWAY; tileSpr[i] = S ? (c === c0 ? S.ledgeL : c === c1 ? S.ledgeR : S.ledge[c % S.ledge.length]) : null; L.dwStones.add(i); }
+    else { L.grid[i] = grid0[i]; tileSpr[i] = null; L.dwStones.delete(i); } }
+}
+function dwClearStones() { if (!L || !L.dwStones || !grid0) return; for (const i of L.dwStones) { L.grid[i] = grid0[i]; tileSpr[i] = null; } L.dwStones.clear(); }
+/* THE LEDGES AS SHADE: a standing ledge shades the sand under it (the sun drain is off there: cvCanopies hands these to the shade) */
+function dwStoneShade() { const b = boss && boss.t === 'duneworm' && boss.alive && boss.st ? boss.st : null; if (!b) return [];
+  return DWM.wormLedges(b).filter(l => l.state === 'up').map(l => DWM.ledgeBox(b, l)); }
 const dwShown = e => !['sleep', 'under', 'rippleTell', 'swallowTell', 'lunge'].includes(e.mode);   /* under the sand, or in the air on his arc: drawn by drawDuneWormFx */
 const dwFrame = e => { const F = DFA.DW_F; switch (e.mode) {
   case 'wake': return e.modeT > 0.8 ? F.surface : F.surfaced;
-  case 'breach': return F.breach; case 'tangled': return F.tangled; case 'spitTell': return F.spitTell; case 'spit': return F.spit;
+  case 'breach': return F.breach; case 'stunned': return F.tangled; case 'breathTell': return F.spitTell; case 'breath': return F.spit;   /* (claude/caravan2: the stun wears the old head-down 'tangled' frame and the breath the spit's - the art lane redraws them, see the lane report) */
   case 'lungeTell': return F.lungeTell; case 'swallow': return F.swallow; case 'sweepTell': return F.hurt; case 'sweep': case 'sweepBack': return F.surfaced;
   case 'surfaced': return e.modeT > 1.0 ? F.surface : e.hurtT > 0 ? F.hurt : F.surfaced;
   case 'dive': return e.modeT > 0.25 ? F.dive : F.surface; }
   return F.surfaced; };
 function updateDuneWormBoss(e, dt) {
   const A = L.arena; if (!A || !e.alive) return;
-  e.hurtT = Math.max(0, (e.hurtT || 0) - dt); e.dwSaidT = Math.max(0, (e.dwSaidT || 0) - dt);
+  e.hurtT = Math.max(0, (e.hurtT || 0) - dt); e.dwSaidT = Math.max(0, (e.dwSaidT || 0) - dt); e.dwRiseSaid = Math.max(0, (e.dwRiseSaid || 0) - dt);
+  if (P.dwGrit > 0) P.dwGrit = Math.max(0, P.dwGrit - dt);
   if (e.mode === 'sleep') return;
   /* HE WAKES: bossStart puts him in 'wake' for the name card - he heaves up out of the middle of the hollow and roars - and then the machine has him */
   if (e.mode === 'wake') { e.modeT -= dt; if (e.modeT > 0) return;
-    e.st = DWM.newWorm({ x0: A.x0, x1: A.x1, floorY: A.floor }, e.x); e.st.hp = e.hp; e.st.maxHp = e.maxHp;
-    PROG.dwTold = (PROG.dwTold || 0) + 1; if (PROG.dwTold <= 3) { hintT = 5; hintMsg = 'HE COMES UP UNDER YOU. STAND IN THE SHADE, STEP OFF LATE: HE SURFACES INTO THE CANVAS.'; } }
-  const W = e.st || (e.st = DWM.newWorm({ x0: A.x0, x1: A.x1, floorY: A.floor }, e.x)); W.hp = e.hp; W.maxHp = e.maxHp;
-  if (e.burn > 0 && !DWM.wormTouchable(W)) e.burn = 0;   /* (claude/duneworm2) THE SAND SMOTHERS IT: a burn goes out when he goes under (it went on ticking through the sand, at a twentieth under the old chip - whole now that his plates are his ward) */
+    dwClearStones(); e.st = DWM.newWorm(dwArena(), e.x); e.st.hp = e.hp; e.st.maxHp = e.maxHp;
+    PROG.dwTold = (PROG.dwTold || 0) + 1; if (PROG.dwTold <= 3) { hintT = 5; hintMsg = 'HIS HIDE TURNS EVERY BLADE. STAND BY A RISING LEDGE AND STEP OFF LATE: HE HITS HIS HEAD.'; } }
+  const W = e.st || (e.st = DWM.newWorm(dwArena(), e.x)); W.hp = e.hp; W.maxHp = e.maxHp;
+  if (e.burn > 0 && !DWM.wormOpen(W)) e.burn = 0;   /* THE SAND SMOTHERS IT, AND HIS HIDE SHEDS IT: a burn only takes while his head is on the stone */
   const onSand = !P.dead && P.ground && Math.abs(P.y - A.floor) < 3;
-  const evs = DWM.wormStep(W, { px: P.x, py: P.y, pGround: onSand, canopy: dwCanopy(), rng: Math.random }, dt);   /* his dice: how long he stays down, and the order of his three surfaced moves each round */
+  const evs = DWM.wormStep(W, { px: P.x, py: P.y, pGround: onSand, rng: Math.random }, dt);   /* his dice: how long he stays down, the order of his surfaced moves each round, and where a ledge rises */
   e.x = W.x; e.y = W.y; e.mode = W.mode; e.modeT = W.t; e.face = W.face; e.vx = 0; e.vy = 0;
   if (W.phase2 && e.phase !== 2) e.phase = 2;   /* the tick every enemy runs sees it and gives the turn its beat (enrageBeat) */
   if (e.mode !== e.dwWas) { e.dwHit = false; e.dwWas = e.mode; }
+  const fy = A.floor;
   for (const v of evs) {
-    if (v.t === 'tell') { const sy = DW_SAY[v.what + 'Tell']; if (sy) number(v.x !== undefined ? v.x : e.x, A.floor - 40, sy[0], sy[1]); cvS(DW_SOUND[v.what]);
-      if (v.what === 'ripple') dust(e.x, A.floor, 6); if (v.what === 'swallow') { dust(v.x, A.floor, 10); rumble(80, 0.5); } if (v.what === 'sweep') { number(v.x, A.floor - 40, 'HIS TAIL: JUMP IT, AND AGAIN', '#ff6b6b'); dust(v.x, A.floor, 8); } continue; }
-    if (v.t === 'open') { const w = dwHollowWinch(); if (w) { w.out = 0; w.k = 0; w.cd = 0.4; }   /* the awning comes down off its rollers onto him */
-      cvS('wormTangle'); shakeCam(6); zoomKick(1.08, 0.3); number(e.x, e.y - 72, 'TANGLED IN THE SHADE', '#8fd160');
-      burst(e.x, e.y - 50, 24, ['#e3d2a8', '#b8463a', '#b9a57e'], 120, 0.8); continue; }
-    if (v.t === 'turn') { SFX.clank(); dust(e.x - e.face * 10, A.floor, 6); dust(e.x + e.face * 10, A.floor, 4); shakeCam(2); continue; }   /* (claude/duneworm2) HE TURNS his plates to you: the scrape of them, and sand thrown off him */
-    if (v.t === 'free') { number(e.x, e.y - 72, 'HE TEARS FREE', '#ffd36b'); burst(e.x, e.y - 50, 10, ['#e3d2a8', '#b8463a'], 80, 0.5); continue; }
+    if (v.t === 'tell') { const sy = DW_SAY[v.what + 'Tell']; if (sy) number(v.x !== undefined ? v.x : e.x, fy - 40, sy[0], sy[1]); cvS(DW_SOUND[v.what]);
+      if (v.what === 'ripple') dust(e.x, fy, 6); if (v.what === 'swallow') { dust(v.x, fy, 10); rumble(80, 0.5); } if (v.what === 'sweep') { number(v.x, fy - 40, 'HIS TAIL: JUMP IT, AND AGAIN', '#ff6b6b'); dust(v.x, fy, 8); }
+      if (v.what === 'lunge') { cvS('wormRipple'); dust(e.x - 10, fy, 6); dust(e.x + 10, fy, 6); }   /* HIS KILL ATTACK is told twice over: the hiss and the sand churning round the coil */
+      continue; }
+    /* THE LEDGES: a told rise (the sand cracks and heaves, a grinding rumble, A LEDGE RISES), footing and shade while it stands, dust as it goes */
+    if (v.t === 'ledgeRise') { const l = v.l, mx = (l.x0 + l.x1) / 2; cvS('stoneRise'); for (let x = l.x0 + 4; x < l.x1; x += 10) dust(x, fy, 4);
+      if (!(e.dwRiseSaid > 0)) { e.dwRiseSaid = 3; number(mx, fy - 30, 'A LEDGE RISES', '#e8d0a0'); } continue; }
+    if (v.t === 'ledgeUp') { dwStoneTiles(v.l, true); for (let x = v.l.x0 + 4; x < v.l.x1; x += 10) dust(x, fy - DWM.WORM.LEDGE.rows * TS, 2); continue; }
+    if (v.t === 'ledgeSink') { dwStoneTiles(v.l, false); cvS('stoneSink'); for (let x = v.l.x0 + 4; x < v.l.x1; x += 10) dust(x, fy, 3);
+      if (v.cracked) { burst((v.l.x0 + v.l.x1) / 2, fy - DWM.WORM.LEDGE.rows * TS + 8, 14, ['#c9a46a', '#8a6a48', '#e8d0a0'], 90, 0.7); number((v.l.x0 + v.l.x1) / 2, fy - 64, 'THE LEDGE CRACKS', '#e8d0a0'); } continue; }
+    if (v.t === 'ledgeGone') continue;
+    if (v.t === 'open') { cvS('wormStun'); shakeCam(7); zoomKick(1.08, 0.3); hitstop(0.08); number(e.x, e.y - 76, 'HIS HEAD HITS THE LEDGE', '#ffd36b'); number(e.x, e.y - 66, 'STUNNED: CUT HIM', '#ffd36b');
+      burst(e.x, fy - (DWM.WORM.LEDGE.rows - 1) * TS, 22, ['#c9a46a', '#8a6a48', '#fff1c8'], 120, 0.8); continue; }
+    if (v.t === 'turn') { dust(e.x - e.face * 10, fy, 6); dust(e.x + e.face * 10, fy, 4); shakeCam(2); continue; }   /* he turns to face you: sand thrown off him */
+    if (v.t === 'free') { number(e.x, e.y - 72, 'HE SHAKES IT OFF', '#ffd36b'); burst(e.x, e.y - 50, 10, ['#e3d2a8', '#b8463a'], 80, 0.5); continue; }
+    if (v.t === 'ward') { SFX.clank(); number(e.x, e.y - 84, 'WARDED', '#c9b0e0'); ringAt(e.x, e.y - 40, 30, '#c9b0e0', 0.5); continue; }   /* B3: THE WARD after every opening, told */
+    if (v.t === 'warded') { SFX.clank(); number(v.x, fy - 64, 'WARDED: NOT YET', '#c9b0e0'); continue; }   /* a breach under a ledge in the ward: he shoulders up past it */
+    if (v.t === 'wardEnd') continue;
     if (v.t === 'stormOn') { CV.storm = newStorm([1, -1, -1, 1]); CV.stormNow = null; CV.gustAcc = 0; number(e.x, e.y - 76, 'HE CALLS THE STORM', '#ff9a5c'); cvS('gust'); continue; }
     if (v.t === 'pull') { if (!onSand) continue;   /* THE SWALLOW: the sand runs to his mouth - off your feet (a jump) it has nothing to pull */
       e.pullAcc += Math.sign(v.toX - P.x) * v.v * dt; const st = Math.trunc(e.pullAcc); if (st) { e.pullAcc -= st; moveBody(P, st, 0, false); }
-      if (!e.pullSaid) { e.pullSaid = true; number(P.x, P.y - 26, 'JUMP! AND KEEP JUMPING', '#ffd36b'); } if (Math.random() < dt * 20) dust(P.x, A.floor, 1); continue; }
+      if (!e.pullSaid) { e.pullSaid = true; number(P.x, P.y - 26, 'JUMP! AND KEEP JUMPING', '#ffd36b'); } if (Math.random() < dt * 20) dust(P.x, fy, 1); continue; }
     if (v.t !== 'hit' || P.dead) continue;
-    if (v.what === 'spit') { cvS('wormSpit'); for (const sh of v.shots) seeds.push({ x: sh.x, y: sh.y, vx: sh.vx, vy: sh.vy, g: sh.g, dead: false, life: 2.2, shot: true, dmg: DMG.wormSpit, wormGrit: true, from: e }); continue; }
-    if (v.what === 'breach') { cvS('wormBreach'); shakeCam(5); burst(e.x, A.floor - 20, 22, ['#e2bb7a', '#f2d79c', '#bf8f63'], 140, 0.7); dust(e.x - 14, A.floor, 6); dust(e.x + 14, A.floor, 6); }
+    if (v.what === 'breach') { cvS('wormBreach'); shakeCam(5); burst(e.x, fy - 20, 22, ['#e2bb7a', '#f2d79c', '#bf8f63'], 140, 0.7); dust(e.x - 14, fy, 6); dust(e.x + 14, fy, 6); }
+    if (v.what === 'breath' && !e.dwBreathSaid) { e.dwBreathSaid = true; cvS('wormBreath'); shakeCam(2); }
     if (e.dwHit) continue;
     const [l, r, t, b] = v.box; if (!overlap({ l, r, t, b }, box(P))) continue;
     e.dwHit = true;
+    if (v.what === 'breath') {   /* THE SAND BREATH: a ! - a shield facing him takes it; landed, it is GRIT IN YOUR EYES (the view goes sand-blind a moment) */
+      const hp0 = P.hp; damagePlayer(v.from !== undefined ? v.from : e.x, DW_DMG.breath, { who: e, name: DW_NAME.breath });
+      if (P.hp < hp0) { P.dwGrit = DWM.WORM.breathBlind; number(P.x, P.y - 30, 'GRIT IN YOUR EYES', '#e8d0a0'); } continue; }
     damagePlayer(v.what === 'sweep' || v.what === 'wave' ? (l + r) / 2 : e.x, DW_DMG[v.what] || DMG.wormBite, { unblockable: true, up: v.what === 'breach', who: e, name: DW_NAME[v.what] || 'THE SWALLOW' });
   }
   if (e.mode !== 'swallow') e.pullSaid = false;
+  if (e.mode !== 'breath') e.dwBreathSaid = false;
   if (e.mode === 'lunge' && Math.random() < dt * 30) parts.push({ x: e.x, y: e.y - 6, vx: (Math.random() - 0.5) * 40, vy: 30, life: 0.5, max: 0.5, col: '#f2d79c', size: 1, grav: 300 });   /* sand streaming off him in the air */
+  /* THE BREATH IN THE AIR: sand pouring out of his mouth along the cone (what hurts is what is drawn, C1) */
+  if (e.mode === 'breath' && !SET.reduceMotion) for (let k = 0; k < 4; k++) { const f = W.breathFace || 1, d = Math.random() * DWM.WORM.breathReach * (W.breathK || 0);
+    parts.push({ x: e.x + f * (8 + d), y: fy - 46 + d * 0.3 + (Math.random() - 0.5) * 10, vx: f * (160 + Math.random() * 80), vy: 40 + Math.random() * 40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#e2bb7a' : '#f2d79c', size: 2, grav: 120 }); }
+  if (e.mode === 'breathTell' && Math.random() < dt * 24) { const f = W.breathFace || 1; parts.push({ x: e.x + f * (30 + Math.random() * 30), y: fy - 30 - Math.random() * 20, vx: -f * 90, vy: -10, life: 0.3, max: 0.3, col: '#f2d79c', size: 1, grav: 0 }); }   /* drawn IN: the sand runs into his throat */
   /* THE STORM (phase two, his hollow only): on src/desert-rules.js's clock - calm, a counted WARN, a GUST - it shoves the hero along the sand at
      WORM.gust px/s; holding block braces (STORM.brace of it). The keel stone halves it, as it does every wind in the game */
   if (CV.storm) { const was = CV.stormNow ? CV.stormNow.phase : 'calm', S = CV.stormNow = stormStep(CV.storm, dt);
@@ -21241,13 +21291,32 @@ function updateDuneWormBoss(e, dt) {
       CV.gustAcc += drift * dt; const st = Math.trunc(CV.gustAcc); if (st) { CV.gustAcc -= st; moveBody(P, st, 0, false); }
       if (Math.random() < dt * 14) dust(P.x - S.dir * 6, P.y, 1); } }
 }
+/* A LEDGE RISING OR SINKING (the standing ones are tiles): the slab of rock shelf at its height, clipped at the sand so it comes up out of it,
+   and the two short piers under it; a rising one cracks the sand first. Standing ones get their piers here too (nothing floats: the slab
+   stands on them) */
+function dwLedges(W, cx, cy, fy) {
+  const S = LEDGE_SETS.rockShelf, LG = DWM.WORM.LEDGE, h = LG.rows * TS;
+  for (const l of DWM.wormLedges(W)) { const x0 = Math.round(l.x0 - cx), w = l.x1 - l.x0; if (x0 > VW || x0 + w < 0) continue;
+    const k = l.state === 'rise' ? 1 - Math.max(0, l.t) / LG.rise : l.state === 'sink' ? Math.max(0, l.t) / LG.sink : 1, top = fy - Math.round(h * k);
+    g.save(); g.beginPath(); g.rect(x0 - 2, 0, w + 4, fy); g.clip();
+    g.fillStyle = ART.OUT; for (const px of [x0 + 3, x0 + w - 8]) g.fillRect(px - 1, top + TS - 1, 7, fy - top - TS + 1);   /* the piers (outline) */
+    g.fillStyle = '#a8804e'; for (const px of [x0 + 3, x0 + w - 8]) g.fillRect(px, top + TS, 5, fy - top - TS);
+    g.fillStyle = '#c9a46a'; for (const px of [x0 + 3, x0 + w - 8]) g.fillRect(px, top + TS, 1, fy - top - TS);
+    if (l.state !== 'up') { if (S) for (let c = 0; c < w / TS; c++) g.drawImage(c === 0 ? S.ledgeL : c === w / TS - 1 ? S.ledgeR : S.ledge[c % S.ledge.length], x0 + c * TS, top);
+      else { g.fillStyle = '#b48a56'; g.fillRect(x0, top, w, 6); } }
+    g.restore();
+    if (l.state === 'rise') { const blink = Math.floor(time * 10) % 2; g.strokeStyle = blink ? '#ffd36b' : '#fff1c8'; g.lineWidth = 1; g.beginPath();   /* THE TELL: the sand cracks along where it comes up */
+      for (let x = x0; x < x0 + w; x += 6) { g.moveTo(x, fy - 1); g.lineTo(x + 3, fy - 3); g.lineTo(x + 6, fy - 1); } g.stroke(); }
+    if (l.state === 'up' && l.t < 1.5 && Math.floor(time * 8) % 2) { g.fillStyle = 'rgba(40,24,10,0.5)'; g.fillRect(x0, fy - h + 6, w, 1); } }   /* about to go: it shudders a line of shadow under it */
+}
 /* WHAT IS UNDER THE SAND, AND WHAT IS IN THE AIR: the ripple (a travelling hump; a rising, cracking dome once it has locked), the sinkhole,
-   the lunge's shadow on the sand and its arc of rings, and the green ring every opening wears. The mark over a windup he makes under the
-   sand is pushed here (the sprite's own is pushed by the draw loop when he is up) */
+   the lunge's shadow on the sand and its arc of rings, the ledges, the breath, the stun's gold read and the ward's shell. The mark over a
+   windup he makes under the sand is pushed here (the sprite's own is pushed by the draw loop when he is up) */
 function dwGround(e, cx, cy, marks = true) {
   const A = L.arena, W = e.st, fy = Math.round(A.floor - cy);
   if (e.mode === 'sleep') { const x = Math.round(e.x - cx), k = Math.sin(time * 1.3); g.globalAlpha = 0.5; drawSet(SPR.dunewormRipple, null, 0, x + k * 6, fy, 1, false, 0.7, 0.5); g.globalAlpha = 1; return; }
   if (!W) return;
+  dwLedges(W, cx, cy, fy);
   if (e.mode === 'rippleTell') for (const r of W.ripples) { const x = Math.round(r.x - cx);
     drawSet(SPR.dunewormRipple, null, r.bulge ? 2 : Math.floor(time * 8) % 2, x, fy, r.v < 0 ? -1 : 1, false, r.bulge ? 1.8 : 1.6, r.bulge ? 1.8 : 1.4);   /* drawn big: it is his signature's tell, and the mark rides well clear of it */
     if (marks) tellQ.push({ txt: markOf(e) || '!!', x, y: fy - 44, col: '#ff6b6b', a: 1 }); }
@@ -21256,10 +21325,20 @@ function dwGround(e, cx, cy, marks = true) {
     if (e.mode === 'swallowTell' && marks) tellQ.push({ txt: markOf(e) || '!!', x, y: fy - 40, col: '#ff6b6b', a: 1 }); }
   if ((e.mode === 'lungeTell' || e.mode === 'lunge') && W.lungeTo !== undefined) { const x = Math.round(W.lungeTo - cx), k = 0.5 + 0.5 * Math.sin(time * 14);   /* HIS SHADOW marks where he lands (C3) */
     g.globalAlpha = 0.35 + 0.2 * k; g.fillStyle = DZ.DESERT.shadeD; g.beginPath(); g.ellipse(x, fy - 1, 22, 4, 0, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 1, 24, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-  if (e.mode === 'tangled') { const k = 0.5 + 0.5 * Math.sin(time * 10), x = Math.round(e.x - cx); g.globalAlpha = 0.45 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 30 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
-    /* THE SHARED OPEN READ (design standard B10): the gold ring, and a bar over him that runs out with the tangle */
-    const q = Math.max(0, Math.min(1, e.modeT / DWM.WORM.tangled)); g.fillStyle = ART.OUT; g.fillRect(x - 21, fy - 90, 42, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 20, fy - 89, Math.round(40 * q), 3); }
+    g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 1, 24, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    if (e.mode === 'lungeTell') { const q = Math.max(0, Math.min(1, 1 - e.modeT / DWM.WORM.lungeTell)); g.fillStyle = '#ff6b6b'; g.fillRect(x - 12, fy + 3, Math.round(24 * q), 2); } }   /* the coil's count, under his shadow: it runs out as he springs */
+  if (e.mode === 'stunned') { const k = 0.5 + 0.5 * Math.sin(time * 10), x = Math.round(e.x - cx); g.globalAlpha = 0.45 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 30 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    /* THE SHARED OPEN READ (design standard B10): the gold ring, and a bar over him that runs out with the stun; stars round his head */
+    const q = Math.max(0, Math.min(1, e.modeT / DWM.WORM.stunned)); g.fillStyle = ART.OUT; g.fillRect(x - 21, fy - 90, 42, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 20, fy - 89, Math.round(40 * q), 3);
+    for (let s = 0; s < 3; s++) { const a = time * 5 + s * 2.1; g.fillStyle = s % 2 ? '#fff1c8' : '#ffd36b'; g.fillRect(Math.round(x + Math.cos(a) * 14) - 1, Math.round(fy - 58 + Math.sin(a) * 4) - 1, 3, 3); } }
+  if (W.ward > 0 && dwShown(e)) { const x = Math.round(e.x - cx), k = 0.5 + 0.5 * Math.sin(time * 12);   /* THE WARD (B3/B10): a shell of running sand over his hide, pale violet */
+    g.globalAlpha = 0.3 + 0.25 * k; g.strokeStyle = '#c9b0e0'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 38, 22 + k * 2, 42, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    if (Math.random() < 0.5) parts.push({ x: e.x + (Math.random() - 0.5) * 36, y: A.floor - 70 + Math.random() * 60, vx: 0, vy: 40, life: 0.4, max: 0.4, col: '#c9b0e0', size: 1, grav: 0 }); }
+  if (e.mode === 'breathTell' || e.mode === 'breath') { const f = W.breathFace || 1, mx = Math.round(e.x - cx + f * 10), my = fy - 48;   /* THE BREATH: his throat glows as he draws it in; then the cone, out along the floor */
+    if (e.mode === 'breathTell') { const q = 1 - Math.max(0, e.modeT) / DWM.WORM.breathTell; g.globalAlpha = 0.4 + 0.5 * q; g.fillStyle = '#ffb060'; g.beginPath(); g.arc(mx, my, 3 + 4 * q, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+      g.globalAlpha = 0.18 + 0.2 * q; g.fillStyle = '#e2bb7a'; g.beginPath(); g.moveTo(mx, my); g.lineTo(mx + f * DWM.WORM.breathReach, fy - DWM.WORM.breathH); g.lineTo(mx + f * DWM.WORM.breathReach, fy); g.lineTo(mx, my + 6); g.closePath(); g.fill(); g.globalAlpha = 1; }   /* where it will go: a faint cone on the sand */
+    else { const reach = DWM.WORM.breathReach * (W.breathK || 0); g.globalAlpha = 0.55; g.fillStyle = '#e2bb7a'; g.beginPath(); g.moveTo(mx, my - 3); g.lineTo(mx + f * reach, fy - DWM.WORM.breathH); g.lineTo(mx + f * reach, fy); g.lineTo(mx, my + 8); g.closePath(); g.fill();
+      g.globalAlpha = 0.35; g.fillStyle = '#fff1c8'; g.beginPath(); g.moveTo(mx, my); g.lineTo(mx + f * reach, fy - DWM.WORM.breathH * 0.6); g.lineTo(mx + f * reach, fy - 10); g.closePath(); g.fill(); g.globalAlpha = 1; } }
   if ((e.mode === 'sweepTell' || e.mode === 'sweep' || e.mode === 'sweepBack') && W.tailX !== undefined) dwTail(e, W, cx, fy, marks);
   for (const w of W.waves || []) { const x = Math.round(w.x - cx); drawSet(SPR.dunewormRipple, null, Math.floor(time * 10) % 2, x, fy, w.v < 0 ? -1 : 1, false, 0.8, 1.1);   /* THE CRASH: a wave of sand running out along the floor (claude/duneworm2) */
     if (Math.random() < 0.6) parts.push({ x: w.x, y: L.arena.floor - 3, vx: Math.sign(w.v) * 40 + (Math.random() - 0.5) * 30, vy: -50 - Math.random() * 40, life: 0.35, max: 0.35, col: '#f2d79c', size: 1, grav: 300 }); }
@@ -21276,11 +21355,19 @@ function dwTail(e, W, cx, fy, marks) {
   if (Math.random() < 0.5) parts.push({ x: W.tailX + (Math.random() - 0.5) * 10, y: L.arena.floor - 4, vx: (Math.random() - 0.5) * 60 + (tell ? 0 : dir * 60), vy: -60 - Math.random() * 50, life: 0.4, max: 0.4, col: '#f2d79c', size: 1, grav: 300 });
   if (tell && marks) tellQ.push({ txt: markOf(e) || '!!', x: tx, y: fy - 44, col: '#ff6b6b', a: 1 });
 }
-/* A BLOW HIS PLATES TURNED (claude/duneworm2, design standard B10: a turned blow always CLANKS, flashes and says a short word) */
-function dwPlated(e, fromX) { const s = Math.sign(fromX - e.x) || e.face || 1;
-  SFX.clank(); sparks(e.x + s * 12, e.y - 52, s, 5); ringAt(e.x + s * 8, e.y - 50, 14, '#fff3b0', 0.22); hitstop(0.03);
-  if (!(e.dwSaidT > 0)) { e.dwSaidT = 1.2; number(e.x, e.y - 80, 'GO ROUND', '#fff3b0');
-    PROG.dwPlateTold = (PROG.dwPlateTold || 0) + 1; if (PROG.dwPlateTold <= 3) { hintT = 4.5; hintMsg = 'HIS CROWN PLATES TURN A BLOW FROM THE FRONT. GO ROUND HIM, OR CUT HIS BELLY AS HE REARS.'; } } }
+/* A BLOW HIS HIDE TURNED (claude/caravan2, Daniel's B15 exception; design standard B10: a turned blow always CLANKS, flashes and says a short
+   word - here what beats it: HIDE TOO THICK, and the way in: MAKE HIM HIT A LEDGE) */
+function dwHide(e, fromX) {
+  BR.turned(e, fromX, 'HIDE TOO THICK');
+  if (!(e.dwSaidT > 0)) { e.dwSaidT = 1.2; number(e.x, e.y - 70, 'MAKE HIM HIT A LEDGE', '#fff3b0');
+    PROG.dwHideTold = (PROG.dwHideTold || 0) + 1; if (PROG.dwHideTold <= 3) { hintT = 4.5; hintMsg = 'HIS HIDE IS TOO THICK. STAND BY A LEDGE AS THE SAND COMES: HE COMES UP UNDER IT AND HITS HIS HEAD.'; } } }
+/* GRIT IN YOUR EYES (THE SAND BREATH landed): the view goes sand-blind at the edges for a moment, and clears */
+function drawDuneGrit() {
+  const k = P && P.dwGrit > 0 ? Math.min(1, P.dwGrit / DWM.WORM.breathBlind) : 0; if (!k) return;
+  const R = g.createRadialGradient(VW / 2, VH / 2, 30, VW / 2, VH / 2, VW * 0.6); R.addColorStop(0, 'rgba(226,187,122,0)'); R.addColorStop(0.5, 'rgba(200,160,100,' + (0.35 * k).toFixed(3) + ')'); R.addColorStop(1, 'rgba(150,110,60,' + (0.85 * k).toFixed(3) + ')');
+  g.fillStyle = R; g.fillRect(0, 0, VW, VH);
+  if (!SET.reduceMotion) { g.fillStyle = 'rgba(242,215,156,' + (0.5 * k).toFixed(3) + ')'; for (let i = 0; i < 40; i++) { const x = (i * 97 + time * 300) % VW, y = (i * 53 + time * 40) % VH; g.fillRect(Math.round(x), Math.round(y), 2, 1); } }
+}
 function drawDuneWormFx(e, cx, cy) {
   dwGround(e, cx, cy);
   if (e.mode !== 'lunge' || !e.st) return;
@@ -26891,6 +26978,8 @@ function updateMovers(dt) {
     if (m.kind === 'pad') { // sinks while stood on, floats back up when left
       const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt));   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */
       if (m.cd > 0) m.cd -= dt; if (m.fired > 0) m.fired -= dt;   /* a bud that has just thrown you is a plain pad for a second: land back on it and it sinks like any other */ m.y = m.y0 + m.sink * 16; m.dy = m.y - oldY;
+      if (m.wreck && on && m.sink > 0.72) { P.onMover = null; P.ground = false; number(P.x, P.y - 24, 'THE BED GOES UNDER', '#e8d0a0'); }   /* (claude/caravan2) THE WAGON BED GOES UNDER: off it you are in the quicksand (jump, and keep jumping) */
+      if (m.wreck && on && m.sink > 0.15 && Math.random() < dt * 8) parts.push({ x: m.x + Math.random() * m.w, y: m.y0 + 2, vx: 0, vy: -16, life: 0.35, max: 0.35, col: '#e2bb7a', size: 1, grav: 60 });   /* sand, not water, round a sinking bed */
       if (on && m.sink > 0.15 && Math.random() < dt * 6) parts.push({ x: m.x + Math.random() * m.w, y: m.y0 + 2, vx: 0, vy: -20, life: 0.3, max: 0.3, col: '#bfe6f5', size: 1, grav: 0 });
     } else if (m.kind === 'drift') { // rides the current against you and wraps around
       m.x -= m.speed * dt; if (m.x + m.w * 0.5 < m.x0) { m.x = m.x1; if (P.onMover === m) P.onMover = null; m.dx = 0; continue; }
@@ -28677,6 +28766,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (m.kind === 'pushblock' && FAIR) { FAW.drawBale(g, Math.round(m.x) - cx, Math.round(m.y) - cy); continue; }   /* (claude/fairfix5) the fair's push block is a hay bale */
     if (m.kind === 'pushblock') { const bx = Math.round(m.x) - cx, by = Math.round(m.y) - cy;   /* a block of the level's own ground tile (backlog #12): it is baked fresh per palette (bakeAll), so it always matches the set it stands in, with a mortar line round it so it still reads as a loose object and not the floor */
       g.drawImage(TILE.dirt[0], bx, by); g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, m.w - 1, m.h - 1); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(bx + 1.5, by + 1.5, m.w - 3, m.h - 3); continue; }
+    if (m.kind === 'pad' && m.wreck) { cvWreckBed(m, cx, cy); continue; }   /* (claude/caravan2) THE SUNKEN CARAVAN's half-buried wagon bed */
     if (m.kind === 'pad' && m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2;
       if (t < 0.8 && m.sink < 0.55 && !(m.cd > 0)) { const k = t / 0.8; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#dff7c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 12.5, Math.round(m.y0) - cy + 4.5, 12 + k * 14, 2.5 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the ripple every couple of seconds: the bud is breathing, and you can see it from three pads off */
       g.drawImage(PROP.padSpring[m.sink > 0.55 ? 2 : m.cd > 0 ? 1 : 0], x, Math.round(m.y) - 5 - cy); }

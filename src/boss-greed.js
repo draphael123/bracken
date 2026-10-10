@@ -101,7 +101,7 @@ export const OPEN_RULE = {
   gargoyle: e => gargOpen(e),                                                // stunned on the spikes (only a stomp lands anyway)
   winchmaster: e => winchOpen(e),                                            // the jammed drum has him down
   bloodknight: e => bkOpen(e),                                               // the blade stuck in the floor, or reeling from his broken ward (claude/dk3: his openings pay x1.6; he is on FULL_DAMAGE, below - the chip never applies, greed still counts)
-  duneworm: e => !!(e.st && wormOpen(e.st)),                                 // tangled in the awning
+  duneworm: e => !!(e.st && wormOpen(e.st)),                                 // (claude/caravan2) stunned, his head on a ledge
   wickerqueen: e => wqOpen(e),                                               // burning, or alight from her own fire (claude/fairfix5: >= 3 s, x1.2)
   puppeteer: e => pupOpen(e),
   matriarch: e => matOpen(e),                                                // THE RAPTOR MATRIARCH (claude/redgorge2): thrown by a narrow pillar, stunned off her dive, tangled in a cut bridge - and her beats (the skid, the rake's breath)

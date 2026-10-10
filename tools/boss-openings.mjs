@@ -19,8 +19,9 @@
                        DEATH KNIGHT's ward-break, renamed THE REAPER and benched, is asked in Node by tools/unburied-fights.mjs)
      THE WINDCALLER    brace through his howl (the guard key held on the ground): his own wind fails him and he falls, open; the
                        same howl left to blow walks you to the wall and opens nothing (Gale Moor rework, 2026-09-25)
-     THE DUNE WORM     wind the hollow's awning out and let his breach come up under it: he comes up INTO the canvas, tangled, and
-                       the awning comes down; the same breach in the open sand, or under the awning rolled IN, opens nothing (2026-09-25)
+     THE DUNE WORM     (claude/caravan2) stand by one of his rising ledges and leave the spot late: his breach comes up under it and he hits his
+                       head on it - stunned; the ledge he hit cracks and sinks; the same breach in the open sand, or under a ledge in his ward
+                       after a stun, opens nothing
      THE SEXTON        make him rush you across a counting plank: it breaks under his charge and he is caught in the bell pit (2026-09-25)
      THE DIVING BELL   let a ballast stone go over the valve on his crown: he vents, open; every attack of his left alone keeps the shell
                        shut, and the rack sets its stone back (the Deep rework, docs/briefs/deep-rework-2.md)
@@ -171,15 +172,16 @@ try {
    const left=howl(false),held=howl(true);b.mode='cast';b.modeT=9;b.hits=0;const castOpen=BK.bossOpen(b);out.windcaller={left,held,castOpen};}
 
   /* THE DUNE WORM: one breach, three ways. The hero stands where it will lock and leaves LATE (after the commit), as a player baits it */
-  {const b=boot('caravan');const A=BK.L.arena;const w=BK.caravan().winches.find(q=>q.hollow);
+  {const b=boot('caravan');const A=BK.L.arena;
    for(let i=0;i<200&&(b.mode==='wake'||!b.st);i++)BK.sim(1);
-   const mid=(w.canopy.x0+w.canopy.x1+1)*8,open=A.x1-90;
-   const breach=(x,rolled)=>{w.out=w.k=rolled;w.cd=0;const W=b.st;W.mode='under';W.t=0;W.i=0;W.ripples=[];let tangled=0,left=false,opened=0;
-     for(let f=0;f<60*5;f++){BK.P.hp=BK.P.maxHp;if(!left){BK.P.x=x;BK.P.y=A.floor;BK.P.vx=0;}
-       if(!left&&W.mode==='rippleTell'&&W.ripples.some(r=>r.real&&r.commit)){left=true;BK.P.x=x+60;}
-       BK.sim(1);if(b.mode==='tangled')tangled++;if(BK.bossOpen(b))opened++;if(W.mode==='dive'||W.mode==='surfaced'&&tangled===0&&f>60)break;}
-     return {tangled:+(tangled/60).toFixed(1),open:+(opened/60).toFixed(1),awning:w.out,mode:b.mode};};
-   out.worm={openSand:breach(open,1),rolledIn:breach(mid,0),rolledOut:breach(mid,1)};}
+   const lx=A.x0+20*16,open=A.x1-90;
+   /* one breach: ledge = a ledge standing at lx..lx+48 (the hero at its edge) or none; ward = his ward still on */
+   const breach=(x,ledge,ward)=>{const W=b.st;W.ledgeT=999;W.ledges=ledge?[{id:77,x0:lx,x1:lx+48,state:'up',t:30,life:30}]:[];W.ward=ward?3:0;W.mode='under';W.t=0;W.i=0;W.ripples=[];let stunned=0,left=false,opened=0;
+     for(let f=0;f<60*5;f++){BK.P.hp=BK.P.maxHp;if(!left){BK.P.x=x;BK.P.y=A.floor;BK.P.vx=0;}if(ward)W.ward=Math.max(W.ward,1);
+       if(!left&&W.mode==='rippleTell'&&W.ripples.some(r=>r.real&&r.commit)){left=true;BK.P.x=x-60;}
+       BK.sim(1);if(b.mode==='stunned')stunned++;if(BK.bossOpen(b))opened++;if(W.mode==='dive'||W.mode==='surfaced'&&stunned===0&&f>60)break;}
+     const l=W.ledges.find(q=>q.id===77);return {stunned:+(stunned/60).toFixed(1),open:+(opened/60).toFixed(1),ledge:l?l.state:'gone',mode:b.mode};};
+   out.worm={openSand:breach(open,false,false),warded:breach(lx+10,true,true),ledge:breach(lx+10,true,false)};b.st.ward=0;}
   /* THE SEXTON (the Falling Tower's mini): his rush over WHOLE planks is only a rush; over a COUNTING plank it breaks it and he is caught in the bell pit */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='fallingtower'));BK.state='play';BK.god=true;const D=BK.L.bellDeck;BK.tp(43,D.deck+2);BK.sim(120);
    const s=BK.enemies().find(e=>e.alive&&e.t==='sexton');if(!s)return{error:'no sexton',mini:BK.miniActive};const planks=BK.L.crumbles.filter(c=>c.kind==='deck');
@@ -343,10 +345,10 @@ try {
   assert.ok(r.windcaller.held.fell, 'A11: braced through his howl, his own wind fails him and he falls, open: ' + JSON.stringify(r.windcaller));
   assert.ok(r.windcaller.held.open >= 3, 'the fall is his opening, and it lasts 3 s or more left alone (the boss rule; claude/bosswave1): ' + JSON.stringify(r.windcaller));
   assert.ok(r.windcaller.castOpen === false, 'casting on his stone he is NOT open (claude/bosswave1: callerOpen counted his casting as open - the mash bot beat him 4/6): ' + JSON.stringify(r.windcaller));
-  assert.equal(r.worm.openSand.tangled, 0, 'THE DUNE WORM: a breach in the open sand opens nothing: ' + JSON.stringify(r.worm));
-  assert.equal(r.worm.rolledIn.tangled, 0, 'a breach under his awning ROLLED IN opens nothing: ' + JSON.stringify(r.worm));
-  assert.ok(r.worm.rolledOut.tangled >= 2.4 && r.worm.rolledOut.open >= 2.4, 'a breach under the awning rolled OUT comes up into it: tangled and open, the window: ' + JSON.stringify(r.worm));
-  assert.equal(r.worm.rolledOut.awning, 0, 'and the awning comes down onto him: it has to be wound out again: ' + JSON.stringify(r.worm));
+  assert.equal(r.worm.openSand.stunned, 0, 'THE DUNE WORM: a breach in the open sand opens nothing: ' + JSON.stringify(r.worm));
+  assert.equal(r.worm.warded.stunned, 0, 'a breach under a ledge in his ward (B3) opens nothing: ' + JSON.stringify(r.worm));
+  assert.ok(r.worm.ledge.stunned >= 2.4 && r.worm.ledge.open >= 2.4, 'a breach under a standing ledge hits his head on it: stunned and open, the window: ' + JSON.stringify(r.worm));
+  assert.ok(r.worm.ledge.ledge !== 'up', 'and the ledge he hit cracks and goes down: the next one rises somewhere else: ' + JSON.stringify(r.worm));
   assert.equal(r.sexton.whole.open, 0, 'THE SEXTON: a rush over whole planks opens nothing: ' + JSON.stringify(r.sexton));
   assert.ok(r.sexton.counting.open > 2, 'a rush over a counting plank breaks it and he is caught in the bell pit, open: ' + JSON.stringify(r.sexton));
   for (const [m, op] of Object.entries(r.bell.alone)) assert.equal(op, 0, 'A11: THE DIVING BELL left alone through ' + m + ' keeps his shell shut: ' + JSON.stringify(r.bell));

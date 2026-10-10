@@ -1156,44 +1156,45 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=boss.mode,ball0=(boss.balls||[]).length;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(P.windRide&&P.windRide.why==='fall'&&P.windRide.t<0.05?'SPIKES after '+m0:ball0>(boss.balls||[]).length&&P.hp<was?'FIREBALL':m0,Math.max(0,was-P.hp));if(P.dead)falls++;if(opts.onFrame)await opts.onFrame({boss,P,f,h});
         if(f%600===599)await yieldNow();continue;
       }
-      /* THE DUNE WORM, played as his hollow teaches it (docs/briefs/dune-worm.md). With the awning DOWN, wind it (to THE HOLLOW WINCH, strike it);
-         with it OUT, wait under it while the ripple tracks, and when it COMMITS - a human beat later, 0.2 s - get off the locked spot, so he comes
-         up INTO the canvas; cut him while he is up, twice as hard tangled. Every red tell is walked off (the lunge's shadow, the sinkhole - jumped
-         out of while it pulls); his spit is taken on a shield, or got behind. In the storm a gust is braced for with block. It reads the REAL
-         ripple only at the commit, where a player reads the bulge: before it both look the same and it follows neither. */
+      /* THE DUNE WORM, played as his hollow teaches it (docs/briefs/dune-worm.md, reworked by claude/caravan2). HIS HIDE TURNS EVERY BLADE: the
+         only way in is a LEDGE. While the ripple tracks, it goes and stands under the edge of the nearest standing ledge; when it COMMITS - a
+         human beat later, 0.2 s - it gets off the locked spot, so he comes up under the stone and hits his head on it; STUNNED, it cuts him.
+         It does not cut his hide outside a stun (a player told HIDE TOO THICK stops). Every red tell is walked off (the lunge's shadow, the
+         sinkhole - jumped out of while it pulls); his sand breath is taken on a shield, or got behind. Held in quicksand it mashes jump. In
+         the storm a gust is braced for with block. It reads the REAL ripple only at the commit, where a player reads the bulge. */
       if(boss.t==='duneworm'){
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=false;
-        const W=boss.st,m=boss.mode,cv=BK.caravan?BK.caravan():null,wn=cv&&cv.winches?cv.winches.find(q=>q.hollow):null;
-        const can=wn&&wn.canopy?[wn.canopy.x0*TS+8,(wn.canopy.x1+1)*TS-8]:null,out=!!(wn&&wn.k>=0.95),mid=can?(can[0]+can[1])/2:(A.x0+A.x1)/2;
-        const reach=LAB_REACH[h]+(boss.w||30)/2,dx=boss.x-P.x,side=Math.sign(dx)||1,touch=!!W&&['breach','tangled','surfaced','spitTell','spit','lungeTell','swallow','dive','sweepTell','sweep'].includes(m);
-        const rest=P.labRest;let gx=null,swing=false,brace=false,wind=false;
-        /* (claude/duneworm2) A HUMAN'S BEAT ON EVERY READ: the lunge's shadow, the sinkhole, the spit and the crash's waves are answered 0.25 s after
-           they show (the breach's commit already waited 12 frames; these were answered on the frame they began), and a low blow is jumped at a
-           distance a hand judges (18-64 px, a fresh guess each time) - not on the frame-perfect one */
+        const W=boss.st,m=boss.mode,cv=BK.caravan?BK.caravan():null,mid=(A.x0+A.x1)/2;
+        const reach=LAB_REACH[h]+(boss.w||30)/2,dx=boss.x-P.x,side=Math.sign(dx)||1;
+        const rest=P.labRest;let gx=null,swing=false,brace=false;
+        /* A HUMAN'S BEAT ON EVERY READ: the lunge's shadow, the sinkhole, the breath and the crash's waves are answered 0.25 s after they show, and a
+           low blow is jumped at a distance a hand judges (18-64 px, a fresh guess each time) - not on the frame-perfect one */
         if(P.dwM!==m){P.dwM=m;P.dwMF=f;} const seen=(f-P.dwMF)>=15;
         if(P.dwJ===undefined||(!P.dwLow&&P.ground))P.dwJ=18+Math.random()*46;
         const real=W&&W.ripples.find(r=>r.real&&r.commit);
         const G=cv&&cv.stormNow&&cv.stormNow.phase==='gust'?cv.stormNow.dir:0;   /* in a gust, the way the arrow points */
+        const ups=W?(W.ledges||[]).filter(l=>l.state==='up'):[];
         if(real){ P.dwSeen=P.dwSeen||f; if(f-P.dwSeen>=12){ const away=G||Math.sign(P.x-real.tx)||(P.x<mid?-1:1),room=(away>0?A.x1-P.x:P.x-A.x0)>60?away:-away;
             gx=real.tx+room*48; if(Math.abs(P.x-real.tx)<22&&P.ground&&!(P.dodge>0)&&P.st>20){k[room>0?'right':'left']=true;BK.press('dodge');} } }
         else P.dwSeen=0;
         if(gx===null&&(m==='swallow'||(m==='swallowTell'&&seen))&&W&&W.pit){ const away=Math.sign(P.x-W.pit.x)||(P.x<mid?1:-1),room=(away>0?A.x1-P.x:P.x-A.x0)>70?away:-away; gx=W.pit.x+room*70;
             if(m==='swallow'&&Math.abs(P.x-W.pit.x)<50&&P.ground){BK.press('jump');P.labJump=12;} }
-        if(gx===null&&(m==='lunge'||(m==='lungeTell'&&seen))&&W){ const away=Math.sign(W.lungeTo-W.lungeFrom)||Math.sign(P.x-W.x)||1,room=(away>0?A.x1-P.x:P.x-A.x0)>70?away:-away; if(Math.abs(P.x-W.lungeTo)<76)gx=W.lungeTo+room*84; }   /* (claude/duneworm2: and clear of THE CRASH his landing throws out - it was 52/60, inside the waves' first beat) */   /* on, the way he is coming: away from the shadow AND from him */
-        if(gx===null&&(m==='spit'||(m==='spitTell'&&seen))&&Math.abs(dx)<160){ if(SHIELDED(h)){k.block=true;P.face=side;}else if(h==='warden'){k.block=DEFLECT_TAP(f);P.face=side;}else gx=boss.x+side*24; }   /* the fan lands 35-145 px in front of him: shield it, or be behind him */
-        /* (claude/duneworm2) THE TAIL: it sweeps along the floor from past you to his head - jump it as it comes */
-        { const lows=[];if((m==='sweep'||m==='sweepBack')&&W&&typeof W.tailX==='number'){lows.push([W.tailX,W.tailX-(P.dwTail??W.tailX)]);P.dwTail=W.tailX;}else P.dwTail=undefined;   /* (and THE CRASH's waves off his lunge) */
-          for(const w of (W&&W.waves)||[])if(w.t<=0.9-0.25)lows.push([w.x,w.v]);   /* (a wave is answered a human beat after it shows) */P.dwLow=lows.length>0;if(gx===null&&W&&(W.waves||[]).some(w=>Math.abs(w.x-P.x)<90))gx=P.x;   /* the crash still running: no walking into it */
+        if(gx===null&&(m==='lunge'||(m==='lungeTell'&&seen))&&W){ const away=Math.sign(W.lungeTo-W.lungeFrom)||Math.sign(P.x-W.x)||1,room=(away>0?A.x1-P.x:P.x-A.x0)>70?away:-away; if(Math.abs(P.x-W.lungeTo)<76)gx=W.lungeTo+room*84; }   /* on, the way he is coming: away from the shadow AND from him, clear of THE CRASH */
+        if(gx===null&&(m==='breath'||(m==='breathTell'&&seen))&&W){ const bf=W.breathFace||1,inFront=Math.sign(P.x-boss.x)===bf&&Math.abs(dx)<170;   /* THE SAND BREATH: in front of him it is the shield, or out of its reach, or round behind him */
+          if(inFront){ if(SHIELDED(h)){k.block=true;P.face=-bf;}else if(h==='warden'){k.block=DEFLECT_TAP(f);P.face=-bf;}else gx=Math.abs(dx)<60?boss.x-bf*26:boss.x+bf*(170); } }
+        /* THE TAIL: it sweeps along the floor from past you to his head - jump it as it comes (and THE CRASH's waves off his lunge) */
+        { const lows=[];if((m==='sweep'||m==='sweepBack')&&W&&typeof W.tailX==='number'){lows.push([W.tailX,W.tailX-(P.dwTail??W.tailX)]);P.dwTail=W.tailX;}else P.dwTail=undefined;
+          for(const w of (W&&W.waves)||[])if(w.t<=0.9-0.25)lows.push([w.x,w.v]);P.dwLow=lows.length>0;if(gx===null&&W&&(W.waves||[]).some(w=>Math.abs(w.x-P.x)<90))gx=P.x;   /* the crash still running: no walking into it */
           P.dwNear=(m==='sweepTell'&&boss.modeT<0.3)||lows.some(([x,v])=>{const td=P.x-x;return Math.abs(td)<100&&(Math.sign(td)===Math.sign(v)||Math.abs(td)<14);});   /* a low one coming: no swing to be caught in */
           if(P.ground&&!(P.labJump>0)&&lows.some(([x,v])=>{const td=P.x-x;return Math.abs(td)<P.dwJ&&(Math.sign(td)===Math.sign(v)||Math.abs(td)<14);})){BK.press('jump');P.labJump=14;} }
         if(gx===null&&!k.block){
-          if(m==='tangled'||(touch&&!rest)){const bare=m==='tangled'||m==='spitTell'||m==='sweepTell',fc=(W&&W.face)||1,st=Math.max(12,Math.min(LAB_STAND[h]||14,reach-6)),behind=Math.sign(P.x-boss.x)===-fc&&Math.abs(P.x-boss.x)>=6;
-            gx=bare?boss.x-side*st:boss.x-fc*st;swing=!rest&&(bare||behind);}   /* (claude/duneworm2) HIS CROWN PLATES FACE YOU: go round him and cut the hide behind them; tangled, or reared (the belly bared), from anywhere */
-          else if(wn&&!out&&wn.out===0&&!(wn.cd>0.2)){gx=wn.x-(P.x<wn.x?10:-10);wind=true;}
-          else if(m==='rippleTell'||m==='under'||m==='dive'||m==='sleep'||m==='wake')gx=out?mid:P.x;
+          if(m==='stunned'&&!rest){const st=Math.max(12,Math.min(LAB_STAND[h]||14,reach-6));gx=boss.x-side*st;swing=true;}   /* HIS HEAD ON THE LEDGE: in, and cut */
+          else if((m==='rippleTell'||m==='under'||m==='dive'||m==='surfaced'||m==='sleep'||m==='wake')&&ups.length){   /* BAIT: under the near edge of the nearest standing ledge (on the floor, not on top) */
+            const l=ups.reduce((a,b)=>Math.abs((a.x0+a.x1)/2-P.x)<=Math.abs((b.x0+b.x1)/2-P.x)?a:b);gx=P.x<(l.x0+l.x1)/2?l.x0+10:l.x1-10;}
           else gx=P.x; }
-        if(wind&&Math.abs(wn.x-P.x)<16&&P.atk<0&&P.ground){P.face=Math.sign(wn.x-P.x)||P.face;BK.press('atk');swings++;}
-        { const Gq=BK.greed;if(P.dwNear)swing=false;if(Gq&&swing&&m!=='tangled'&&Gq.count(boss)>=Gq.limit(boss)-1)swing=false;   /* (claude/duneworm2) a blow short of his greed, as a player counts it; and out of the ring when it closes */
+        if(P.qsDepth>0&&f%4===0)BK.press('jump');   /* HELD IN THE QUICKSAND: jump, and keep jumping (src/quicksand.js) */
+        if(P.ground&&P.y<A.floor-8&&!real&&m!=='stunned'&&f%30===0){k.down=true;BK.press('jump');}   /* up on a ledge's top: drop back down through it to the sand (a one-way shelf) */
+        { const Gq=BK.greed;if(P.dwNear)swing=false;if(Gq&&swing&&m!=='stunned'&&Gq.count(boss)>=Gq.limit(boss)-1)swing=false;   /* a blow short of his greed, as a player counts it; and out of the ring when it closes */
           if(Gq&&boss.greedT>0&&Math.abs(dx)<(Gq.reach||60)+(boss.w||30)/2+18){gx=boss.x-side*((Gq.reach||60)+(boss.w||30)/2+30);swing=false;} }
         const S=cv&&cv.stormNow;if(S&&S.phase==='gust'&&P.ground&&!real&&!(m==='swallow'||m==='swallowTell'||m==='lunge'||m==='lungeTell')&&!swing){brace=true;}
         if(brace&&(h==='knight'||h==='paladin'||h==='reaper'||h==='warden'||h==='pirate'))k.block=true;
@@ -1201,7 +1202,7 @@ async function runbossLab(BK, opts) {
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(swing&&!k.block&&P.atk<0&&Math.abs(dx)<=reach&&Math.abs(boss.y-P.y)<70){P.face=side;if(dx>0)k.left=false;else k.right=false;BK.press('atk');swings++;}
         const was=P.hp,m0=m;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));
-        { const op=!!(boss.st&&boss.st.mode==='tangled'); if(op&&!wasOpen)opened++; wasOpen=op; }
+        { const op=!!(boss.st&&boss.st.mode==='stunned'); if(op&&!wasOpen)opened++; wasOpen=op; }
         if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:wasOpen});if(P.dead)falls++;if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='burieddead'){

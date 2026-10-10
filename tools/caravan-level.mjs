@@ -44,12 +44,18 @@ ok(Math.max(checks[0], ...gaps) <= 100 && checks.some(x => x < ax0 && x >= ax0 -
 // B2: nothing in the air
 const standT = t => t === T.SOLID || t === T.ONEWAY || t === T.PLANK || t === T.NET || isSlope(t);
 const flyers = new Set(['vulture', 'silver', 'coin']);
-const floating = L.ents.filter(e => !flyers.has(e.t) && !standT(at(e.x, e.y + 1)) && !isSlope(at(e.x, e.y)));
+/* (claude/caravan2) A WAGON BED LIES ON THE QUICKSAND (an ent 'pad' with wreck: true over a quicksand column): the sand is what it stands on */
+const onQS = e => e.t === 'pad' && e.wreck && L.quicksand.some(q => e.x * TS >= q.x0 && e.x * TS < q.x1 && q.y / TS === e.y + 1);
+const floating = L.ents.filter(e => !flyers.has(e.t) && !standT(at(e.x, e.y + 1)) && !isSlope(at(e.x, e.y)) && !onQS(e));
 ok(floating.length === 0, `B2: nothing stands in the air (${floating.length}: ${floating.slice(0, 4).map(e => e.t + '@' + e.x + ',' + e.y).join(' ')})`);
 // A7: the arena
-const arenaFlat = [...Array(40).keys()].every(i => at(ax0 + i, L.arena.floor / TS) === T.SOLID && at(ax0 + i, L.arena.floor / TS - 1) === T.AIR);
+/* (claude/caravan2, Daniel 10-09 B6: QUICKSAND IN THE ARENA) every column of the hollow is level: sand at the floor's row, or a quicksand pit whose
+   surface IS the floor's row (one row deep, on rock) - nothing higher, nothing lower; and there are patches of it to make choices with */
+const fr = L.arena.floor / TS, arenaQS = L.quicksand.filter(q => q.x0 / TS >= ax0 && q.x1 / TS <= ax0 + 40);
+const inQS = x => arenaQS.some(q => x >= q.x0 / TS && x < q.x1 / TS && q.y / TS === fr);
+const arenaFlat = [...Array(40).keys()].every(i => at(ax0 + i, fr - 1) === T.AIR && (at(ax0 + i, fr) === T.SOLID || (inQS(ax0 + i) && at(ax0 + i, fr) === T.AIR && at(ax0 + i, fr + 1) === T.SOLID)));
 const wrecks = L.ents.filter(e => e.t === 'wagon' && e.wreck && e.x >= ax0 && e.x < ax0 + 40);
-ok(arenaFlat && wrecks.length === 3, `A7: the hollow is 40 tiles of level sand with ${wrecks.length} wrecks in it (the places to make THE OPENING)`);
+ok(arenaFlat && wrecks.length === 3 && arenaQS.length >= 2 && arenaQS.every(q => q.x0 / TS >= ax0 + 10), `A7: the hollow is 40 tiles of level ground - sand and ${arenaQS.length} quicksand patches at the floor's own height (${arenaQS.map(q => (q.x0 / TS - ax0) + '..' + (q.x1 / TS - 1 - ax0)).join(', ')}), clear of the overhang - with ${wrecks.length} wrecks for dressing and shade (the opening is the worm's rising ledges now, src/dune-worm.js)`);
 // quicksand sits on pits
 const qsOK = L.quicksand.every(q => { for (let x = q.x0 / TS; x < q.x1 / TS; x++) if (at(x, q.y / TS) !== T.AIR || at(x, q.y / TS + 1) !== T.SOLID) return false; return true; });
 ok(qsOK, `${L.quicksand.length} quicksand patches, each over its one-row pit (${L.quicksand.map(q => (q.x1 - q.x0) / TS).join('/')} tiles)`);
@@ -71,9 +77,15 @@ ok(placed.length >= 5 && placed.every(e => e.why), `S1: ${placed.length} foes pl
    carrying the road over it (the ribcage's spine, seven rows up, a plank) within eight rows; its width is the jump. Quicksand punishes a miss here: it holds
    you in the sun */
 const carried = (x, y) => { for (let yy = y - 8; yy < y; yy++) { const t = at(x, yy); if (t === T.ONEWAY || t === T.PLANK || t === T.SOLID) return true; } return false; };
-const jumps = L.quicksand.map(q => ({ x: q.x0 / TS, w: (q.x1 - q.x0) / TS, carried: [...Array((q.x1 - q.x0) / TS).keys()].every(i => carried(q.x0 / TS + i, q.y / TS)) })).filter(j => !j.carried);
-const fair = jumps.filter(j => j.w >= 2.5 && j.w <= 3.0), over = jumps.filter(j => j.w > 3.0);
-ok(fair.length >= 6 && fair.length >= 2 && !over.length, `S2: ${fair.length} jumps of 2.5-3.0 tiles on the road, every one over quicksand (a miss holds you in the sun); ${over.length} over 3.0${over.length ? ' (' + over.map(j => j.x + ':' + j.w).join(' ') + ')' : ''}; ${L.quicksand.length - jumps.length} basin(s) the road is carried over`);
+/* (claude/caravan2) A BASIN CROSSED ON WHAT LIES IN IT: a wagon bed (a pad: x-0.5 .. x+1.5) or a slab one row over the sand (L.crumbles) is footing in the pit, and
+   the pit's jump is the widest hop between them (and the shores). A DUNE SLIDE's pit (L.duneSlides' gap at its foot) is the slide-jump's, and may be wider than a
+   running jump - never over five: tools/caravan-slides.mjs drives every hero over each one with real keys (a plain jump falls in, the slide-jump clears it) */
+const rests = [...L.ents.filter(e => e.t === 'pad' && e.wreck).map(e => [e.x - 0.5, e.x + 1.5]), ...(L.crumbles || []).map(c => [c.x0, c.x1 + 1])];
+const hopOf = (a, b) => { const fs = rests.filter(([p, q]) => q > a && p < b).sort((u, v) => u[0] - v[0]); let at0 = a, w = 0; for (const [p, q] of fs) { w = Math.max(w, p - at0); at0 = Math.max(at0, q); } return Math.max(w, b - at0); };
+const slideGap = x => (L.duneSlides || []).some(s => s.gap[0] === x);
+const jumps = L.quicksand.map(q => ({ x: q.x0 / TS, w: hopOf(q.x0 / TS, q.x1 / TS), basin: rests.some(([p, q2]) => q2 > q.x0 / TS && p < q.x1 / TS), carried: [...Array((q.x1 - q.x0) / TS).keys()].every(i => carried(q.x0 / TS + i, q.y / TS)) })).filter(j => !j.carried && j.x * TS < L.arena.x0);
+const fair = jumps.filter(j => j.w >= 2.5 && j.w <= 3.0), over = jumps.filter(j => j.w > 3.0 && !(slideGap(j.x) && j.w <= 5)), slid = jumps.filter(j => slideGap(j.x));
+ok(fair.length >= 6 && fair.length >= 2 && !over.length && slid.length >= 3, `S2: ${fair.length} jumps of 2.5-3.0 tiles on the road, every one over quicksand (a miss holds you in the sun); ${over.length} over 3.0${over.length ? ' (' + over.map(j => j.x + ':' + j.w).join(' ') + ')' : ''} that is not a dune slide's; ${slid.length} slide-jumps of ${slid.map(j => j.w).join('/')} (L.duneSlides); ${jumps.filter(j => j.basin).length} basin(s) crossed on wagon beds and slabs`);
 /* S3 + S4: THE EXAM IS THE RIM, and the checkpoints are spaced */
 const rim = L.sections.rim, exam = checks.filter(x => x > rim + 2 && x < ax0 - 6), door = checks.find(x => x >= rim - 2 && x <= rim + 2);
 const examFoes = placed.filter(e => e.x >= rim && e.x < ax0), examJumps = fair.filter(j => j.x >= rim && j.x < ax0);
