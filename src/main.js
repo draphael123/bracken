@@ -5522,7 +5522,7 @@ function drawBestiary() {
   const b = list[bestI], r = PROG.beasts && PROG.beasts[b.t], seen = !!(r && r.seen);
   const px = 112, pw = VW - px - 6, py = 18, ph = VH - 32;
   g.fillStyle = 'rgba(20,16,30,0.85)'; g.fillRect(px, py, pw, ph); g.strokeStyle = '#8fd160'; g.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
-  const set = SPR[b.t] || (b.t === 'bandit' ? SPR.banditArcher : THF.foeSet({ t: b.t === 'flyman' ? 'archer' : 'gobpriest', flyman: b.t === 'flyman', prompter: b.t === 'prompter' })); const c = set.R[0]; const sc = c.width > 26 ? 1 : c.width > 18 ? 2 : 3; const cxp = px + 30, cyp = py + 26;
+  const set = SPR[b.t] || (b.t === 'paladinboss' ? SPR.closedhelm /* (batch81 integ: THE PALADIN is drawn live by src/paladin-boss-hands.js and had no card: the bestiary borrows the Crusader's plate until the art pass) */ : b.t === 'bandit' ? SPR.banditArcher : THF.foeSet({ t: b.t === 'flyman' ? 'archer' : 'gobpriest', flyman: b.t === 'flyman', prompter: b.t === 'prompter' })); const c = set.R[0]; const sc = c.width > 26 ? 1 : c.width > 18 ? 2 : 3; const cxp = px + 30, cyp = py + 26;
   if (!seen) g.globalAlpha = 0.25;
   { const nF = set.R.length, fr = seen ? Math.floor(time * (nF > 6 ? 4 : 7)) % nF : 0; const pace = seen ? Math.sin(time * 1.1) * 8 : 0, face = !seen ? 1 : (Math.cos(time * 1.1) >= 0 ? 1 : -1); const bob = seen && (b.t === 'wasp' || b.t === 'drone' || b.t === 'harpy' || b.t === 'queen') ? Math.round(Math.sin(time * 5) * 2) : 0; drawSet(set, null, fr, cxp + pace - (c.width / 2 - set.ax) * sc, cyp + bob + (set.ay - c.height / 2) * sc, face, !seen, sc, sc); }
   g.globalAlpha = 1;

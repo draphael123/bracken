@@ -27,11 +27,11 @@ export const CC_BY = [   /* [MUSIC_CREDITS key, track, composer, licence, the li
   ['redgorge', 'Old Road', 'Kevin MacLeod', 'CC-BY 4.0', 'http://creativecommons.org/licenses/by/4.0/', ['"Old Road" Kevin MacLeod (incompetech.com)', 'Licensed under Creative Commons:', 'By Attribution 4.0 License', 'http://creativecommons.org/licenses/by/4.0/']],
 ];
 /* the one composer a few credit lines spell two ways (MUSIC_CREDITS is kept short to fit the Sound Test row) */
-const ALIAS = { Spring: 'Spring Spring', Centurion: 'Centurion_of_war', 'trad., Spring': 'Spring Spring', cynicm: 'cynicmusic', 'C. Kauffman': 'CleytonKauffman' };
+const ALIAS = { Spring: 'Spring Spring', Centurion: 'Centurion_of_war', 'trad., Spring': 'Spring Spring', cynicm: 'cynicmusic', 'C. Kauffman': 'CleytonKauffman', 'Cleyton Kauffman': 'CleytonKauffman' };   /* (batch81 integ: a CC0 credit line reads '- Name, CC0': the licence is not part of the composer, or the credits page listed 'Umplix, CC0' beside 'Umplix' and clipped it) */
 export const composers = credits => {
   const seen = new Map();
   for (const line of Object.values(credits)) {
-    const m = /—\s*(.+?)(?:\s*\(CC-BY\)|,\s*CC-BY)?$/.exec(line); if (!m) continue;
+    const m = /—\s*(.+?)(?:\s*\(CC-BY\)|,\s*CC-BY|,\s*CC0)?$/.exec(line); if (!m) continue;
     let who = ALIAS[m[1].trim()] || m[1].trim(); if (who === 'BRACKEN') continue;   /* made for the game: no outside credit */
     seen.set(who.toLowerCase(), who);
   }
