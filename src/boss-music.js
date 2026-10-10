@@ -403,7 +403,7 @@ function djinn(i, delay, variant, env) {
     if (s % 2 === 1) pluck(env, 'sine', [1560, 1880, 1400, 2100][(bar + s) % 4], 0.12, 0.06 * g, delay, { to: 1150 }); }
 }
 
-// (THE BURIED CITY has no synth bed: 'Loopable Dungeon Ambience' by JaggedStone is its file, claude/buriedcity music pass; THE HOURGLASS KING below keeps his composed theme)
+// (THE BURIED CITY has no synth bed: 'Loopable Dungeon Ambience' by JaggedStone (Aron Elal) is its file, claude/buriedcity music pass; THE HOURGLASS KING below keeps his composed theme)
 // ---------------------------------------------------------------- THE HOURGLASS KING (claude/buriedcity, his composed theme: three phases)
 // D minor (harmonic: D E F G A Bb C#), 4/4 at 92 (eighth = 0.326 s), 16 bars = 42 s. THE KING'S HOUR: a PENDULUM BASS swinging D - A every beat (his sceptre),
 // a heavy ESCAPEMENT CLACK on one and three (a low thud with a click), a brass CHORALE (a detuned saw pair, slow) climbing the minor and falling back, and a

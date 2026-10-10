@@ -15,7 +15,7 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   redgorge: './audio/redgorge.ogg',
   skyroad: './audio/skyroad.ogg', rootway: './audio/rootway.ogg', huntmaster: './audio/huntmaster.ogg',   /* THE ROOTWAY (claude/rootwayfix, Daniel 10-09: its own music): "Forest Whisper Theme" by Cleyton Kauffman, CC0; THE HUNTMASTER: "Call to War" by Umplix, CC0 (audio/CREDITS.txt) */ rocphoenix: './audio/rocphoenix.ogg', underwell: './audio/underwell.ogg',   /* THE UNDERWELL (claude/underwellart, Daniel's pick): "Ossuary 6 - Air" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
   winchmaster: './audio/winchmaster.ogg',   /* THE WINCHMASTER (claude/winch5, Daniel approved the download 10-08): "Boss Battle #8 Metal" by nene, CC0 (audio/CREDITS.txt) - his fight; the composed mine-cart chase it replaced stays in src/boss-music.js unplayed */
-  buriedcity: './audio/buriedcity.ogg',   /* THE BURIED CITY (claude/buriedcity music pass, Daniel approved the download 10-09): "Loopable Dungeon Ambience" by JaggedStone, CC0 (audio/CREDITS.txt) - the level track; THE HOURGLASS KING keeps his composed theme */
+  buriedcity: './audio/buriedcity.ogg',   /* THE BURIED CITY (claude/buriedcity music pass, Daniel approved the download 10-09): "Loopable Dungeon Ambience" by JaggedStone (Aron Elal), CC0 (audio/CREDITS.txt) - the level track; THE HOURGLASS KING keeps his composed theme */
   ksar: './audio/ksar.ogg',   /* THE BANDIT KSAR (claude/ksar art pass, Daniel's pick): "Desert Loop" by iamoneabe, CC0 (audio/CREDITS.txt) - the level track; THE HAWK-MISTRESS keeps her composed theme */
   litchurch: './audio/litchurch.ogg', paladin: './audio/paladin.ogg',   /* THE LIT CHURCH (claude/churchart, Daniel's picks 10-08): "Cathedral" by Umplix, CC0 - the level track; "Church combat" by Centurion_of_war, CC-BY 4.0 - THE PALADIN's fight (audio/CREDITS.txt) */
   glasssea: './audio/glasssea.ogg',   /* THE GLASS SEA (claude/glasssea art pass, Daniel's pick): "Eastern Arctic Dubstep" by VishwaJai (credited Vishwa Jay), CC0 (audio/CREDITS.txt) - the level track; THE GLASS COLOSSUS keeps his own theme composed in code (src/boss-music.js) */
@@ -1749,7 +1749,7 @@ export const MUSIC_CREDITS = {
   litchurch: '"Cathedral" — Umplix, CC0',   /* (claude/churchart: CC0, credited all the same) */
   paladin: '"Church combat" — Centurion_of_war, CC-BY',   /* (claude/churchart: CC-BY, credit required) */
   winchmaster: '"Boss Battle #8 Metal" — nene, CC0',   /* (claude/winch5: CC0, credited all the same) */
-  buriedcity: '"Loopable Dungeon Ambience" — JaggedStone, CC0',   /* (claude/buriedcity music pass: CC0, credited all the same) */
+  buriedcity: '"Loopable Dungeon Ambience" — JaggedStone (Aron Elal), CC0',   /* (claude/buriedcity music pass: CC0, credited all the same) */
   ksar: '"Desert Loop" — iamoneabe, CC0',   /* (claude/ksar art pass: CC0, credited all the same) */
   glasssea: '"Eastern Arctic Dubstep" — Vishwa Jay',   /* (claude/glasssea art pass: CC0 - Daniel asked for the credit anyway: the composer is VishwaJai on OpenGameArt, credited as Vishwa Jay) */
   gorgecrab: '"The Great Red Crab" — BRACKEN',
