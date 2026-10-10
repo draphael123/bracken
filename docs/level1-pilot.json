@@ -144,14 +144,14 @@
   "bare": true
  },
  "minecart": {
-  "hash": "ad73fd7be795",
+  "hash": "4032e2c3a12e",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
-  "deaths": 3,
-  "kills": 45,
-  "lifts": 26,
+  "hits": 42,
+  "deaths": 5,
+  "kills": 66,
+  "lifts": 28,
   "walked": 100,
   "bare": true
  },

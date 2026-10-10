@@ -22,14 +22,19 @@ try {
       const P = () => BK.P, k = BK.keys, out = [];
       const clear = () => { k.left = k.right = k.jump = k.down = k.up = k.atk = false; };
       for (const p of BK.L.mcPoints) if (p.req) BK.minecart().setPoints(p.id, 'set');
-      for (const g of BK.L.mcBoost) for (const [boost, early] of [[false, 0], [true, 0], [true, 8]]) {   /* (fix pass, review MF4: a boosted jump pressed 8 px EARLY must clear too - the gap is 8 wide now) */
+      for (const g of BK.L.mcBoost.filter(q => !q.ramp)) for (const [boost, early] of [[false, 0], [true, 0], [true, 8]]) {   /* (fix pass, review MF4: a boosted jump pressed 8 px EARLY must clear too - the gap is 8 wide now) */
         BK.tp(g.x0 - 14, g.row - 1); P().vx = 0; P().vy = 0; BK.minecart().cart(P()).v = boost ? 230 : 150; clear(); BK.sim(3);
         let n = 0; while (P().x < g.x0 * TS - 4 - early && n++ < 300) { clear(); k.right = boost; BK.sim(1); }
         BK.press('jump'); let landed = null; for (let j = 0; j < 90; j++) { k.jump = true; k.right = boost; BK.sim(1); if (j > 5 && P().ground) { landed = Math.floor(P().x / TS); break; } if (P().y > (g.row + 5) * TS) break; }
         clear(); out.push({ gap: g.x0, w: g.x1 - g.x0 + 1, boost, early, cleared: landed !== null && landed > g.x1, landed });
         BK.sim(30); }
+      /* (claude/deeprails2) THE LAUNCH RAMPS: ridden off the lip with no jump - a cruising cart falls short into the pit, a pumped one clears it */
+      for (const r of BK.L.mcRamps || []) for (const boost of [false, true]) {
+        BK.tp(r.x - 16, r.row - 1); P().vx = 0; P().vy = 0; BK.minecart().cart(P()).v = boost ? 230 : 150; clear(); BK.sim(3);
+        let landed = null; for (let j = 0; j < 260; j++) { clear(); k.right = boost; BK.sim(1); if (P().x > (r.x + 2) * TS && P().ground) { landed = Math.floor(P().x / TS); break; } if (P().y > (r.row + 4) * TS) break; }
+        clear(); out.push({ gap: r.x + 1, w: r.w, boost, early: 0, ramp: true, cleared: landed !== null && landed > r.x1, landed }); BK.sim(30); }
       return out; })()`, 600000);
-    for (const x of r) { const ok = x.boost ? x.cleared : !x.cleared; if (!ok) bad++; console.log((ok ? 'ok  ' : 'BAD ') + 'gap ' + x.gap + ' (' + x.w + ' wide) ' + (x.boost ? 'boosted' + (x.early ? ' (' + x.early + ' px early)' : '') : 'cruising') + ': ' + (x.cleared ? 'cleared, landed ' + x.landed : 'fell in')); }
+    for (const x of r) { const ok = x.boost ? x.cleared : !x.cleared; if (!ok) bad++; console.log((ok ? 'ok  ' : 'BAD ') + (x.ramp ? 'RAMP pit ' : 'gap ') + x.gap + ' (' + x.w + ' wide) ' + (x.boost ? 'boosted' + (x.early ? ' (' + x.early + ' px early)' : '') : 'cruising') + ': ' + (x.cleared ? 'cleared, landed ' + x.landed : 'fell in')); }
     console.log(bad ? 'THE BOOST GAPS ARE WRONG' : 'every boost gap: a cruising jump falls in, a boosted one clears');
   } else for (const hero of heroes) {
     await pg.reload();

@@ -129,7 +129,7 @@ export function crumble(g, x0, x1, y, time, seed) {
 }
 /* THE CART'S SPEEDOMETER: an iron half-dial on a bracket, a brass-ringed face with its ticks (the CRUISE tick pale, the BOOST tick gold), a copper needle on a rivet, a lamp
    in the housing that burns amber on a boost and blue when the cart is slowed. k 0..1 the speed up the dial, kc where cruise sits, mode 'boost' | 'cruise' | 'brake' | 'stopped'. */
-export function speedo(g, x, y, k, kc, mode, time) {
+export function speedo(g, x, y, k, kc, mode, time, kr) {
   const rim = 14;
   rc(g, x - 17, y + 1, 35, 4, MP.i1); rc(g, x - 17, y + 1, 35, 1, MP.i3); rc(g, x - 17, y + 4, 35, 1, MP.i0); for (const bx of [x - 15, x + 14]) rc(g, bx, y + 2, 2, 2, MP.i5);   /* the bracket and its bolts */
   for (let dy = -rim; dy <= 0; dy++) { const hw = Math.floor(Math.sqrt(rim * rim - dy * dy + 0.5)); rc(g, x - hw, y + dy, hw * 2 + 1, 1, dy < -rim + 2 ? MP.i4 : MP.i2); }       /* the housing's iron */
@@ -137,6 +137,7 @@ export function speedo(g, x, y, k, kc, mode, time) {
   for (let a = 0; a <= 20; a++) { const aa = Math.PI + a / 20 * Math.PI; rc(g, x + Math.cos(aa) * (rim - 1), y + Math.sin(aa) * (rim - 1), 1, 1, MP.go1); }                  /* the brass ring */
   for (let a = 0; a <= 8; a++) { const aa = Math.PI + a / 8 * Math.PI, c = a === 8 ? MP.go3 : Math.abs(a / 8 - kc) < 0.07 ? MP.i5 : MP.i3, r0 = a % 4 === 0 || a === 8 ? 8 : 9;
     for (let r = r0; r <= 11; r++) rc(g, x + Math.cos(aa) * r, y + Math.sin(aa) * r, 1, 1, c); }                                                                         /* the ticks */
+  if (kr !== undefined) { const aa = Math.PI + kr * Math.PI; for (let r = 7; r <= 12; r++) rc(g, x + Math.cos(aa) * r, y + Math.sin(aa) * r, 1, 1, '#ff6b6b'); }   /* (deeprails2) THE RAM tick: at or past it the cart rams */
   const na = Math.PI + Math.max(0, Math.min(1, k)) * Math.PI, nc = mode === 'boost' ? MP.go3 : mode === 'brake' ? '#7fc4e0' : MP.l3;
   for (let r = 1; r <= 10; r++) { rc(g, x + Math.cos(na) * r, y + Math.sin(na) * r + 1, 1, 1, MP.i0); } for (let r = 1; r <= 10; r++) rc(g, x + Math.cos(na) * r, y + Math.sin(na) * r, 1, 1, r > 6 ? nc : MP.l1);   /* the needle, its shadow under it */
   rc(g, x - 1, y - 2, 3, 3, MP.i4); rc(g, x, y - 1, 1, 1, MP.i5);                                                                                                           /* the rivet it turns on */
@@ -302,8 +303,164 @@ export function lampPlan(L, cellGet, T, x0c, x1c) {
 /* THE BESTIARY CARD (batch80 integ-2): the machine drawn once, whole, and shrunk to a card - the Great Drill draws itself live (src/great-drill-hands.js), so the bestiary had no sprite for it
    (textfit: "Cannot read properties of null (reading 'R')" on the BOSSES tab). Same shape as the Lantern-Eater's card. */
 export function bakeDrillCard() {
-  const [big, bg] = canvas(200, 130);
-  drill(bg, 140, 30, 120, 72, 64, 44, { x: 34, t: 44, w: 52, h: 26 }, false, false, false, 0, 1);
-  const [c, g] = canvas(80, 52); g.imageSmoothingEnabled = false; g.drawImage(big, 0, 0, 200, 130, 0, 0, 80, 52);
+  const [big, bg] = canvas(260, 130);   /* (GREAT DRILL 2: the rig, its goblin in the cab, its bit) */
+  rig(bg, 12, [118, 70, 22], 6, { jam: false, ward: false, hurt: false, rev: false, spray: null, moving: false, scroll: 0, plateW: 62, plateH: 40, cabIn: 30, cabW: 30, cabH: 40, stackX: 150, ph: 1 }, 0);
+  const [c, g] = canvas(80, 52); g.imageSmoothingEnabled = false; g.drawImage(big, 0, 0, 260, 130, 0, 0, 80, 40);
   return { R: [c], L: [c], w: 76, h: 48 };
+}
+
+/* ================= DEEP RAILS 2 (claude/deeprails2): the hero's cart redrawn, the new set pieces ================= */
+/* THE HERO'S CART: a real mine cart - a riveted iron tub, flared, with a thick rolled rim; two spoked wheels that turn with the pace; brake shoes that throw sparks.
+   part 'back': the back wall and the dark inside (drawn BEFORE the hero, so he sits IN it); 'front': the front wall over his legs, the rim, the wheels; 'whole' / 'empty'
+   both (a parked cart, a wreck). x, y: the rail under its middle. duck: 1 when he is down in the tub (the front rim comes up a pixel) */
+export function heroCart(g, x, y, face, v, braking, duck, time, part) {
+  x = R(x); y = R(y);
+  const W = 12, top = y - 11, rimY = top + (duck ? -1 : 0);
+  const back = part === 'back' || part === 'whole' || part === 'empty', front = part === 'front' || part === 'whole' || part === 'empty';
+  if (back) { rc(g, x - W + 1, top - 3, W * 2 - 2, 4, MP.i1); rc(g, x - W + 1, top - 3, W * 2 - 2, 1, MP.i3);   /* the far rim, behind him */
+    rc(g, x - W + 2, top, W * 2 - 4, 6, '#0c0a0e'); rc(g, x - W + 2, top, W * 2 - 4, 1, MP.i0); }                /* the dark inside of the tub */
+  if (!front) return;
+  /* the tub: flared sides (wider at the rim), riveted iron plates, a rust bloom */
+  for (let i = 0; i < 7; i++) { const hw = W - (i > 4 ? i - 4 : 0); rc(g, x - hw, rimY + 2 + i, hw * 2, 1, i < 1 ? MP.i4 : i < 4 ? MP.i3 : MP.i2); }
+  rc(g, x - W - 1, rimY, W * 2 + 2, 3, MP.i1); rc(g, x - W - 1, rimY, W * 2 + 2, 1, MP.i5); rc(g, x - W - 1, rimY + 2, W * 2 + 2, 1, MP.i0);   /* the rolled rim */
+  for (const px of [x - 9, x - 3, x + 3, x + 9]) { rc(g, px, rimY + 4, 1, 1, MP.i5); rc(g, px, rimY + 7, 1, 1, MP.i4); }                        /* rivets */
+  rc(g, x - 1, rimY + 3, 1, 5, MP.i1);                                                                                                    /* the plate seam */
+  rc(g, x + 5 * face, rimY + 6, 3, 2, MP.t3); rc(g, x - 8 * face, rimY + 5, 2, 1, MP.t3);                                                  /* rust */
+  rc(g, x - W - 3, y - 6, 3, 2, MP.i2); rc(g, x + W, y - 6, 3, 2, MP.i2);                                                                 /* the couplings */
+  /* the wheels: spoked, turning with the pace; the brake shoe on the rear one */
+  const a = time * (v || 0) / 4.5;
+  for (const wx of [x - 7, x + 7]) { rc(g, wx - 4, y - 5, 8, 6, '#0c0a0a'); rc(g, wx - 3, y - 6, 6, 8, '#0c0a0a'); rc(g, wx - 3, y - 5, 6, 1, MP.i3);
+    for (let s = 0; s < 2; s++) { const sa = a + s * Math.PI / 2; rc(g, wx + R(Math.cos(sa) * 2.4), y - 2 + R(Math.sin(sa) * 2.4), 1, 1, MP.i4); rc(g, wx - R(Math.cos(sa) * 2.4), y - 2 - R(Math.sin(sa) * 2.4), 1, 1, MP.i4); }
+    rc(g, wx, y - 2, 1, 1, MP.i5); }
+  if (braking) { const bx = x - 7 * face; rc(g, bx - face * 5, y - 4, 2, 4, MP.l2); add(g, () => { g.globalAlpha = 0.7; g.drawImage(glow(8, '255,190,90'), bx - face * 5 - 8, y - 10); });   /* the shoe biting, glowing */
+    for (let i = 0; i < 3; i++) { const t = (time * 9 + i * 0.33) % 1; rc(g, bx - face * (6 + t * 14), y - 1 - t * 6 + (i - 1) * 2, 1, 1, i === 1 ? MP.l3 : MP.go2); } }
+  if (part === 'empty') { rc(g, x - 8, rimY - 1, 3, 2, MP.cu1); rc(g, x + 2, rimY - 2, 4, 3, '#3e2e26'); }
+}
+/* THE FOREMAN'S ARMOURED CART: a squat iron wagon, plated, a ram's beak at the back (facing you), a lamp on a pole - a plate dented a ram (rams 0..3); stunned: it rocks */
+export function armourCart(g, x, y, time, v, rams, stun) {
+  x = R(x + (stun ? (Math.floor(time * 30) % 2 ? 1 : -1) : 0)); y = R(y);
+  rc(g, x - 16, y - 16, 32, 13, MP.i0); rc(g, x - 15, y - 15, 30, 11, MP.i2); rc(g, x - 15, y - 15, 30, 1, MP.i4);
+  for (let i = 0; i < 3; i++) { const px = x - 15 + i * 10, dent = i < (rams || 0); rc(g, px + 1, y - 13, 8, 7, dent ? MP.i1 : MP.i3); rc(g, px + 1, y - 13, 8, 1, dent ? MP.i2 : MP.i5); if (dent) { rc(g, px + 3, y - 10, 3, 2, MP.i0); rc(g, px + 6, y - 12, 1, 3, MP.i0); } }
+  for (let i = -13; i <= 13; i += 4) rc(g, x + i, y - 5, 1, 1, MP.i5);
+  rc(g, x - 21, y - 11, 5, 5, MP.i3); rc(g, x - 23, y - 10, 2, 3, MP.i4); rc(g, x - 21, y - 11, 5, 1, MP.i5);   /* the ram's beak, at the back */
+  rc(g, x + 12, y - 30, 1, 15, MP.t2); rc(g, x + 10, y - 33, 5, 4, MP.l1); rc(g, x + 11, y - 32, 3, 2, MP.l3); add(g, () => { g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 6); g.drawImage(glow(14, '255,120,40'), x - 2, y - 45); });
+  rc(g, x - 16, y - 19, 32, 3, HAZ[0]); for (let i = 0; i < 32; i += 6) rc(g, x - 16 + i, y - 19, 3, 3, HAZ[1]);   /* its hazard rail */
+  const a = time * (v || 0) / 5; for (const wx of [x - 10, x, x + 10]) { rc(g, wx - 3, y - 4, 6, 5, '#0c0a0a'); rc(g, wx + R(Math.cos(a) * 1.5), y - 2, 1, 1, MP.i4); }
+}
+/* A RAIL THAT BREAKS: rotten sleepers, a sagging rail; `shaking` when the break is close behind it */
+export function rottenRail(g, sx, sy, seed, shaking) { const j = shaking ? (hash(seed, 3) & 1 ? 1 : 0) : 0;
+  rc(g, sx, sy - 2 + j, 16, 2, MP.t1); rc(g, sx + 2 + (seed % 3), sy + j, 4, 3, MP.t0); rc(g, sx + 10, sy + j, 3, 2, MP.t2);
+  rc(g, sx, sy - 3 + j, 16, 1, MP.i2); rc(g, sx + (hash(seed, 9) % 12), sy - 3 + j, 2, 1, MP.t3);   /* the rail, rust-bitten */
+  if (hash(seed, 5) % 3 === 0) { rc(g, sx + 7, sy - 2, 1, 4, MP.r0); rc(g, sx + 8, sy + 1, 1, 2, MP.r0); } }
+export function railDebris(g, x, y, t, seed) { const a = Math.max(0, 1 - t / 1.2); g.globalAlpha = a; rc(g, x - 5 + (seed % 5), y - 2, 7, 2, MP.t2); rc(g, x - 3, y + 2, 4, 2, MP.t1); rc(g, x + 2, y - 4, 5, 1, MP.i2); g.globalAlpha = 1; }
+export function breakFront(g, x, y, time) { add(g, () => { g.globalAlpha = 0.35; g.drawImage(glow(14, '255,190,120'), x - 14, y - 16); }); for (let i = 0; i < 5; i++) { const t = (time * 3 + i * 0.2) % 1; rc(g, x + (i - 2) * 3, y + t * 30, 2, 2, i & 1 ? MP.t2 : MP.r4); } }
+/* A THROWER'S LEDGE: a shelf of rock with a lip, a timber prop under it */
+export function ledge(g, x, w, y, seed) { rc(g, x, y, w, 16, MP.r2); rc(g, x, y, w, 2, MP.r5); rc(g, x, y + 15, w, 1, MP.r0); for (let i = 3; i < w; i += 9) rc(g, x + i, y + 4 + (hash(seed, i) % 7), 3, 2, MP.r3);
+  rc(g, x + R(w / 2) - 1, y + 16, 3, 18, MP.t2); rc(g, x + R(w / 2) - 1, y + 16, 1, 18, MP.t3); }
+/* A BUFFER STOP: a timber block on iron, with a hazard face (soft: the line's end at the lift - a plain stop) */
+export function buffer(g, x, y, soft, time) { rc(g, x + 2, y - 14, 12, 14, MP.t1); rc(g, x + 2, y - 14, 12, 2, MP.t3); rc(g, x, y - 12, 4, 8, MP.i3); rc(g, x, y - 12, 4, 1, MP.i5);
+  if (!soft) for (let i = 0; i < 12; i += 4) rc(g, x + 2 + i, y - 10, 2, 6, HAZ[0]);
+  const on = Math.floor(time * 3) % 2; rc(g, x + 6, y - 19, 4, 4, on ? '#ff6b6b' : '#5a1a14'); if (on) add(g, () => { g.globalAlpha = 0.6; g.drawImage(glow(10, '255,80,60'), x - 2, y - 27); }); }
+/* THE LIFT: its shaft (two iron guides and a counterweight chain), the cage where the mover is */
+export function liftShaft(g, x, w, yTop, yBot, cageY, time) { for (const gx of [x - 3, x + w + 1]) { rc(g, gx, yTop - 30, 2, yBot - yTop + 30, MP.i2); rc(g, gx, yTop - 30, 1, yBot - yTop + 30, MP.i4); }
+  rc(g, x - 6, yTop - 34, w + 12, 5, MP.t2); rc(g, x - 6, yTop - 34, w + 12, 1, MP.t4); rc(g, x + R(w / 2) - 5, yTop - 40, 10, 6, MP.i3);   /* the head frame and its wheel */
+  if (cageY !== null) { rc(g, x + R(w / 2), yTop - 34, 1, Math.max(0, cageY - yTop + 6), MP.i3);
+    rc(g, x, cageY - 22, w, 1, MP.i4); for (let i = 0; i <= w; i += 6) rc(g, x + i, cageY - 22, 1, 22, MP.i3); rc(g, x, cageY - 1, w, 2, MP.i4); } }
+/* A LAUNCH RAMP's kicker on the lip: iron plates up on blocks, chevrons that flash as you near */
+export function kicker(g, x, y, flash, time) { for (let i = 0; i < 12; i++) rc(g, x - 24 + i * 2, y - 1 - R(i * 0.6), 2, 2 + R(i * 0.6), i > 9 ? MP.i4 : MP.i3);
+  rc(g, x - 2, y - 9, 3, 9, MP.t2); for (let i = 0; i < 3; i++) rc(g, x - 20 + i * 6, y - 4 - i * 2, 3, 1, flash ? MP.go3 : MP.go1); }
+/* THE FLOOD: black water under the trestles, a cold sheen and slow rings */
+export function flood(g, x0, x1, y, vh, time) { if (y > vh) return; const a = Math.max(-16, x0), b = Math.max(a, x1); rc(g, a, y, b - a, vh - y + 4, '#05080c');
+  for (let i = a - (((a % 12) + 12) % 12); i < b; i += 12) { const w = 6 + R(3 * Math.sin(time * 1.3 + i * 0.07)); rc(g, i, y, w, 1, '#1e3446'); if ((Math.floor(i / 12) + Math.floor(time * 2)) % 7 === 0) rc(g, i + 3, y + 3, 4, 1, '#14283a'); } }
+/* THE LAVA in the glow cavern's pit: a bright crust, a pulse, and its light up the walls */
+export function lava(g, x0, x1, y, vh, time) { const a = Math.max(-20, x0), b = x1; if (b < -20 || y > vh) return; rc(g, a, y, b - a, vh - y + 4, '#5a1206');
+  for (let i = a; i < b; i += 6) { const k = 0.5 + 0.5 * Math.sin(time * 2.4 + i * 0.13); rc(g, i, y + R(2 * Math.sin(time + i)), 6, 2, k > 0.6 ? MP.l3 : MP.l2); rc(g, i + 2, y + 4, 3, 2, MP.l1); }
+  add(g, () => { g.globalAlpha = 0.45 + 0.1 * Math.sin(time * 3); const gl = glow(40, '255,110,40'); for (let i = a; i < b; i += 48) g.drawImage(gl, i - 16, y - 50); }); }
+/* A LOB: the thrown pick (a turning head and haft) or the foreman's bomb (a lit fuse); its MARK where it will land (a ring that closes, red at the end) */
+export function lobbed(g, x, y, bomb, time) { if (bomb) { rc(g, x - 3, y - 3, 6, 6, '#1a1612'); rc(g, x - 2, y - 3, 3, 1, '#5a5a5a'); rc(g, x + 2, y - 5, 1, 2, MP.t3); if (Math.floor(time * 20) % 2) rc(g, x + 2, y - 6, 1, 1, MP.l3); return; }
+  const a = time * 14; rc(g, x - 1, y - 1, 2, 2, MP.t3); rc(g, x + R(Math.cos(a) * 4), y + R(Math.sin(a) * 4), 2, 2, MP.i4); rc(g, x - R(Math.cos(a) * 3), y - R(Math.sin(a) * 3), 1, 1, MP.t2); }
+export function lobMark(g, x, y, r, k, time) { const rr = R(r * (1.6 - 0.6 * k)), col = k > 0.75 ? (Math.floor(time * 16) % 2 ? '#ff6b6b' : '#ffd36b') : '#ffd36b'; g.strokeStyle = col; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, rr, 3, 0, 0, Math.PI * 2); g.stroke();
+  rc(g, x - 1, y - 8, 2, 4, col); rc(g, x - 1, y - 3, 2, 1, col); }
+
+/* ================= GREAT DRILL 2 (claude/deeprails2): THE ENDLESS TUNNEL and THE RIG ================= */
+/* THE TUNNEL: one seamless loop (Daniel 10-09: "no half-moving scenery") - the rock over the roof, the far wall at half pace, the timber ribs and their lamps, the floor, and
+   the three lines (the LOW on the floor, the MID and HIGH on iron brackets off the ribs), every near thing running past at the same `scroll`. Drawn edge to edge, x0..x1 */
+export function tunnel(g, x0, x1, yCeil, yFloor, vh, scroll, laneYs, highDown, time) {
+  const w = x1 - x0; if (w <= 0) return; g.save(); g.beginPath(); g.rect(x0, 0, w, vh); g.clip();
+  rc(g, x0, 0, w, vh, MP.r0);
+  /* the rock over the roof and under the floor: courses of broken block, near pace */
+  const off = scroll % 48, far = (scroll * 0.5) % 64;
+  for (const [ya, yb] of [[0, yCeil], [yFloor, vh + 4]]) { for (let y = ya; y < yb; y += 8) { const row = Math.floor((y - ya) / 8); for (let x = x0 - 48 - ((off + row * 13) % 24); x < x1 + 24; x += 24) { rc(g, x, y, 23, 7, row & 1 ? MP.r2 : MP.r1); rc(g, x, y, 23, 1, MP.r3); } } }
+  /* the far wall inside the tunnel: dark rock with ore flecks, at half pace */
+  rc(g, x0, yCeil, w, yFloor - yCeil, '#0e0a0c');
+  for (let x = x0 - 64 - far; x < x1 + 64; x += 64) { for (let k = 0; k < 5; k++) { const hx = x + ((k * 37) % 60), hy = yCeil + 10 + ((k * 23) % Math.max(10, yFloor - yCeil - 20)); rc(g, hx, hy, 9, 5, '#171217'); rc(g, hx + 2, hy + 1, 2, 1, k % 2 ? MP.cu1 : MP.go1); } }
+  for (let y = yCeil + 6; y < yFloor; y += 11) rc(g, x0, y, w, 1, '#16101a');
+  /* the ribs: a timber set every 48 px, cap and braces, a lamp on every other one - near pace */
+  for (let x = x0 - 48 - off, i = 0; x < x1 + 48; x += 48, i++) { const k = Math.floor((x + scroll) / 48);
+    rc(g, x, yCeil, 7, yFloor - yCeil, MP.t2); rc(g, x, yCeil, 1, yFloor - yCeil, MP.t4); rc(g, x + 6, yCeil, 1, yFloor - yCeil, MP.t0); for (let y = yCeil + 8; y < yFloor; y += 17) rc(g, x + 2, y, 3, 1, MP.t1);
+    rc(g, x - 5, yCeil, 17, 4, MP.t3); rc(g, x - 5, yCeil, 17, 1, MP.t5); rc(g, x - 4, yCeil + 4, 3, 8, MP.t1); rc(g, x + 8, yCeil + 4, 3, 8, MP.t1);
+    for (let l = 1; l < 3; l++) { if (l === 2 && highDown) continue; const ly = laneYs[l]; rc(g, x + 6, ly + 1, 9, 2, MP.i2); rc(g, x + 6, ly + 1, 9, 1, MP.i4); rc(g, x + 13, ly + 3, 2, 5, MP.i2); }   /* the brackets the high lines hang on */
+    if ((((k % 2) + 2) % 2) === 0) { const ly = yCeil + 22; rc(g, x + 7, ly - 2, 5, 1, MP.i3); g.drawImage(lampSprite(true), x + 11, ly - 1); add(g, () => { g.globalAlpha = 0.85; g.drawImage(glow(34, '255,160,64'), x + 14 - 34, ly + 4 - 34); }); } }
+  /* the floor's lip and the three lines: sleepers running at the near pace, the iron along them */
+  rc(g, x0, yFloor, w, 2, MP.r4); rc(g, x0, yFloor, w, 1, MP.r6);
+  for (let i = 0; i < 3; i++) { const y = laneYs[i]; if (i === 2 && highDown) { fallenHigh(g, x0, w, yCeil, yFloor, time); continue; }
+    for (let x = x0 - 16 - (scroll % 16); x < x1 + 16; x += 16) { rc(g, x + 1, y - 1, 7, 3, MP.t1); rc(g, x + 1, y - 1, 7, 1, MP.t3); }
+    rc(g, x0, y - 3, w, 1, MP.i4); rc(g, x0, y - 2, w, 1, MP.i2); }
+  g.restore();
+}
+/* THE RIG (Daniel 10-09: "a goblin driving a conventional drill rig"): its REAR faces you at rx (screen x) and its body runs on to the right - the gear housing low on the
+   LOW line (an open panel, three bare red cogs, a striped ram plate), a deck at the MID line, the CAB on the deck (an amber window, the goblin driver looking back at you,
+   a roof lamp), the engine block and its smokestack (smoke), the tracks and road wheels under all of it, and the conical BIT on the front drilling the rock face ahead.
+   o: { jam, ward, hurt, rev, spray: { lane, on, k } | null, moving, scroll, plateW, plateH, cabIn, cabW, ph } */
+export function rig(g, rx, lanes, ceilY, o, time) {
+  const L0 = lanes[0], L1 = lanes[1], L2 = lanes[2], flash = o.hurt ? '#ffffff' : null, pw = o.plateW, ph = o.plateH, ci = o.cabIn, cw = o.cabW, bodyR = rx + 170, top = L1 - (o.cabH || 40);   /* (its roof under the HIGH line: that line runs on over it to the stack) */
+  /* the rock face it is boring into, and its spoil flying back */
+  rc(g, bodyR + 66, ceilY - 40, 400, L0 - ceilY + 80, MP.r1); for (let y = ceilY; y < L0 + 30; y += 9) rc(g, bodyR + 66 + ((y * 7) % 8), y, 400, 1, MP.r2);
+  for (let i = 0; i < 8; i++) { const t = (time * 2.2 + i * 0.125) % 1; rc(g, bodyR + 60 - t * 40 + ((i * 13) % 20), (L1 + L0) / 2 - 20 + ((i * 29) % 40) - t * 10 + t * t * 30, 3, 2, i % 3 ? MP.r5 : MP.go1); }
+  /* the tracks under the whole rig: a run of links that turns while it drives, road wheels in it */
+  const tOff = o.moving ? (o.scroll * 1.0) % 8 : 0;
+  rc(g, rx + 8, L0 - 14, bodyR - rx + 20, 14, '#14121a'); for (let x = rx + 8 - tOff; x < bodyR + 28; x += 8) rc(g, Math.max(rx + 8, x), L0 - 14, 3, 14, '#2c2a34');
+  rc(g, rx + 8, L0 - 14, bodyR - rx + 20, 1, MP.i4); for (let x = rx + 22; x < bodyR + 20; x += 26) { rc(g, x - 6, L0 - 11, 12, 10, MP.i2); rc(g, x - 1, L0 - 7, 2, 2, MP.i5); const a = o.moving ? time * 8 : 0; rc(g, x + R(Math.cos(a) * 3), L0 - 6 + R(Math.sin(a) * 3), 1, 1, MP.i4); }
+  /* the engine block and boiler (the body), riveted, a hazard flank */
+  const bx = rx + ci + cw;
+  rc(g, bx, top, bodyR - bx, L0 - 14 - top, flash || '#2e2c34'); rc(g, bx, top, bodyR - bx, 3, MP.i4);
+  for (let y = top + 9; y < L0 - 16; y += 15) { rc(g, bx, y, bodyR - bx, 2, '#1c1a22'); rc(g, bx, y + 2, bodyR - bx, 1, '#46444e'); for (let x = bx + 4; x < bodyR - 4; x += 12) rc(g, x, y + 4, 2, 2, MP.i5); }
+  for (let x = bx + 6; x < bodyR - 8; x += 8) for (let k = 0; k < 6; k++) rc(g, x + k, L0 - 22 + (k >> 1), 1, 5 - (k >> 1), ((x - bx) / 8 & 1) ? HAZ[0] : HAZ[1]);
+  /* the smokestack up through the roof, and its smoke (it puffs harder in P3) */
+  const sx = rx + (o.stackX || 150) - 2; rc(g, sx, ceilY - 6, 14, top - ceilY + 6, '#1e1c24'); rc(g, sx, ceilY - 6, 2, top - ceilY + 6, MP.i4); rc(g, sx - 3, top - 4, 20, 5, '#26242c'); rc(g, sx - 3, top - 4, 20, 1, MP.i4);
+  for (let i = 0; i < (o.ph === 3 ? 6 : 4); i++) { const t = (time * 0.9 + i * 0.22) % 1; g.fillStyle = 'rgba(70,64,74,' + (0.55 * (1 - t)).toFixed(2) + ')'; g.fillRect(R(sx + 3 + Math.sin(time * 2 + i) * 4 - t * 30), R(ceilY + 4 + t * 20), 9 + R(t * 10), 7 + R(t * 6)); }
+  /* the BIT on the front: a big fluted cone, its spiral turning, its teeth biting the face */
+  const by = (L1 + L0) / 2 - 6, bh = 26, bl = 66, bf = bodyR;
+  rc(g, bf - 6, by - bh - 4, 10, bh * 2 + 8, '#2a2830'); rc(g, bf - 6, by - bh - 4, 10, 1, MP.i5);
+  g.fillStyle = flash || '#9aa4b4'; g.beginPath(); g.moveTo(bf + 4, by - bh); g.lineTo(bf + 4 + bl, by); g.lineTo(bf + 4, by + bh); g.closePath(); g.fill();
+  g.save(); g.beginPath(); g.moveTo(bf + 4, by - bh); g.lineTo(bf + 4 + bl, by); g.lineTo(bf + 4, by + bh); g.closePath(); g.clip();
+  const spin = o.jam ? 0 : (time * 60) % 10; for (let i = -2; i < bl / 10 + 2; i++) { const xx = bf + 4 + i * 10 + spin; g.fillStyle = '#4a5260'; g.fillRect(R(xx), by - bh, 4, bh * 2); g.fillStyle = '#d8e0ec'; g.fillRect(R(xx) + 4, by - bh, 1, bh * 2); }
+  g.restore(); if (!o.jam) add(g, () => { g.globalAlpha = 0.6; g.fillStyle = '#ffd890'; for (let i = 0; i < 6; i++) g.fillRect(R(bf + bl - 2 + ((i * 5 + time * 90) % 14)), R(by - 8 + ((i * 7) % 16)), 2, 1); });
+  /* the GEAR HOUSING on the LOW line: an iron box, an open panel with three bare red cogs (jammed: grey-brown, smoking), the striped RAM PLATE on its rear face */
+  rc(g, rx, L0 - ph, pw, ph - 12, flash || '#3a3844'); rc(g, rx, L0 - ph, pw, 2, MP.i4);
+  rc(g, rx + 3, L0 - ph + 4, 40, ph - 18, '#0e0a0c'); rc(g, rx + 2, L0 - ph + 3, 42, 1, MP.i3);
+  for (let i = 0; i < 3; i++) { const gx = rx + 10 + i * 13, gy = L0 - ph / 2 - 5 + (i & 1 ? 3 : -2), a = o.jam ? 0.25 * i : time * (3 - i * 0.4) * (i & 1 ? -1 : 1); cog(g, gx, gy, 6, a, o.jam ? '#6a4a3a' : '#c0302a', o.jam ? '#8a6a5a' : '#e8604a', o.jam); }
+  if (o.jam) { add(g, () => { g.globalAlpha = 0.5; g.drawImage(glow(26, '255,200,80'), rx + 23 - 26, L0 - ph / 2 - 5 - 26); }); for (let i = 0; i < 5; i++) { g.fillStyle = 'rgba(200,200,200,0.45)'; g.fillRect(rx + 4 + ((i * 11 + R(time * 30)) % 36), L0 - ph - ((i * 7 + R(time * 40)) % 30), 4, 4); } }
+  else add(g, () => { g.globalAlpha = 0.22 + 0.1 * Math.sin(time * 5); g.drawImage(glow(22, '255,70,50'), rx + 23 - 22, L0 - ph / 2 - 5 - 22); });
+  rc(g, rx - 4, L0 - ph + 4, 4, ph - 16, MP.i3); for (let y = L0 - ph + 4; y < L0 - 12; y += 6) rc(g, rx - 4, y, 4, 3, HAZ[0]);   /* the ram plate */
+  /* its reverse lamps (white, flashing on the tell) and the exhaust the sparks come out of */
+  const rv = o.rev && Math.floor(time * 10) % 2; for (const ly of [L0 - ph + 2, L1 + 2]) { rc(g, rx - 2, ly, 3, 3, rv ? '#ffffff' : '#5a5a66'); if (rv) add(g, () => { g.globalAlpha = 0.8; g.drawImage(glow(16, '255,255,255'), rx - 17, ly - 15); }); }
+  rc(g, rx + 4, L1 - 2, 8, 6, MP.i1); rc(g, rx + 2, L1 - 1, 3, 4, MP.i3);
+  /* the DECK at the MID line, and the CAB on it (over the MID and HIGH lines): armoured plate, an amber window, the goblin driver looking back over his shoulder at you */
+  rc(g, rx, L1, pw, L0 - ph - L1 + 1, '#2a2830'); rc(g, rx, L1, pw, 1, MP.i4);
+  const cx0 = rx + ci, ct = L1 - (o.cabH || 40), ch = L1 - ct;
+  rc(g, cx0, ct, cw, ch, flash || '#5a4a3c'); rc(g, cx0, ct, cw, 2, '#8a7660'); rc(g, cx0, ct, 2, ch, '#7a6650'); rc(g, cx0 + cw - 2, ct, 2, ch, '#2a2018');
+  for (let y = ct + 27; y < ct + ch - 3; y += 6) { rc(g, cx0 + 2, y, cw - 4, 1, '#2a2018'); rc(g, cx0 + 3, y + 2, 1, 1, MP.i5); rc(g, cx0 + cw - 5, y + 2, 1, 1, MP.i5); }
+  rc(g, cx0 + 3, ct + 5, cw - 6, 17, '#0e0a10'); rc(g, cx0 + 4, ct + 6, cw - 8, 15, o.jam ? '#ffd36b' : '#e0a040'); rc(g, cx0 + 4, ct + 6, cw - 8, 2, '#f8d890');
+  const gm = cx0 + R(cw / 2) - 2, look = Math.sin(time * 1.3) > 0.6 ? 1 : 0;   /* the goblin: green head, a rusty helm, red eyes looking back (left) at you, a snarl; his hands on the levers */
+  rc(g, gm - 5, ct + 11, 10, 9, '#4a7a30'); rc(g, gm - 5, ct + 11, 10, 1, '#6aa048'); rc(g, gm - 8, ct + 13, 3, 2, '#4a7a30'); rc(g, gm - 6, ct + 9, 12, 3, '#6a3a1a'); rc(g, gm - 6, ct + 9, 12, 1, '#a0602a');
+  rc(g, gm - 4 - look, ct + 14, 2, 2, '#ff4030'); rc(g, gm - look, ct + 14, 2, 2, '#ff4030'); rc(g, gm - 4, ct + 18, 6, 1, '#101010'); rc(g, gm - 3, ct + 17, 1, 1, '#e8e0c0'); rc(g, gm, ct + 17, 1, 1, '#e8e0c0');
+  rc(g, gm + 5, ct + 18, 4, 2, '#4a7a30'); rc(g, gm + 8, ct + 15, 1, 6, MP.i4);   /* a hand on the lever */
+  rc(g, cx0 + 3, ct + 5, 2, 17, '#14101a'); rc(g, cx0 + cw - 5, ct + 5, 2, 17, '#14101a');
+  rc(g, cx0 + 4, ct - 5, cw - 8, 5, '#2a2018'); rc(g, cx0 + 4, ct - 5, cw - 8, 1, '#8a7660'); rc(g, gm - 3, ct - 9, 6, 5, MP.i2); rc(g, gm - 2, ct - 8, 4, 3, '#fff0b0');
+  add(g, () => { g.globalAlpha = 0.6; g.drawImage(glow(30, '255,220,140'), gm - 30, ct - 7 - 30); });
+  if (o.ward) { g.fillStyle = 'rgba(200,216,232,0.5)'; g.fillRect(cx0 - 2, ct - 2, cw + 4, ch + 4); for (let i = 0; i < 4; i++) rc(g, cx0 - 2, ct + i * R(ch / 4), cw + 4, 2, 'rgba(240,248,255,0.8)'); }
+  /* THE SPARK SPRAY: a jet out of the exhaust down its line */
+  if (o.spray && o.spray.on) { const y = lanes[o.spray.lane] - 12; add(g, () => { g.globalAlpha = 0.5; g.drawImage(glow(28, '255,170,60'), rx - 40, y - 28); });
+    for (let i = 0; i < 26; i++) { const t = (time * 3 + i / 26) % 1, xx = rx - t * 150, yy = y + Math.sin(i * 7.3 + time * 20) * (4 + t * 10); rc(g, xx, yy, 2, 1, i % 3 ? MP.l3 : MP.go2); } }
 }

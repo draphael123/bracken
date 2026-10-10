@@ -335,9 +335,13 @@ export const STUCK_HANDS = {
   /* THE DEEP RAILS (claude/minecart): the levers the route needs glint until they are SET (src/minecart-hands.js handsState: points.<id> open / set); the first
      boost gap glints after a stall (a cart that keeps falling in) */
   minecart: [
-    { id: 'mc-boost', zone: [44, 18, 70, 31], steps: [ { key: 'yardGap', at: [61, 27], glint: 'stall', line: 'A LONG GAP: HOLD RIGHT TO BOOST BEFORE THE LIP' } ] },
+    { id: 'mc-boost', zone: [44, 18, 70, 31], steps: [ { key: 'yardGap', at: [61, 27], glint: 'stall', line: 'A LONG GAP: HOLD RIGHT TO PUMP BEFORE THE LIP' } ] },
     { id: 'mc-yard', zone: [112, 18, 152, 31], steps: [ { key: 'yardPts', is: ['points.yard', 'open'], at: [125, 25], line: 'THE POINTS LEVER: THE LOW LINE IS FALLEN IN' } ] },
     { id: 'mc-cavein', zone: [524, 20, 555, 31], steps: [ { key: 'caveinPts', is: ['points.cavein', 'open'], at: [538, 26], line: 'THE POINTS LEVER UP TOP: THE LOW LINE IS GOING' } ] },
+    /* (claude/deeprails2) the lava ramp (a cart that keeps falling short), the lift (a hero on foot at its foot), the foreman (a cart that keeps bumping him) */
+    { id: 'mc-ramp', zone: [596, 26, 626, 40], steps: [ { key: 'lavaRamp', at: [614, 36], glint: 'stall', line: 'THE RAMP: PUMP HARD BEFORE ITS LIP' } ] },
+    { id: 'mc-lift', zone: [756, 18, 784, 38], steps: [ { key: 'lift', at: [766, 36], glint: 'stall', line: 'THE LIFT: STAND ON THE CAGE AND RIDE IT UP' } ] },
+    { id: 'mc-foreman', zone: [821, 22, 869, 31], steps: [ { key: 'foreman', at: [850, 29], glint: 'stall', line: 'THE FOREMAN: PUMP TO FULL, THEN RAM HIS CART' } ] },
   ],
   /* THE SUNKEN CARAVAN (claude/caravan2, design standard A6): the route's needs glint after a stall - the first quicksand's far lip, the wagon bed in the
      sinking basin, and the crest of each REQUIRED dune slide (src/draft/sunken-caravan.js L.duneSlides: the teach, the big dune, the exam's) */
