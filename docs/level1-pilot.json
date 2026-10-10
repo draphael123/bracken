@@ -132,14 +132,14 @@
   "bare": true
  },
  "rootway": {
-  "hash": "936c53495fc3",
+  "hash": "bcecbe519d8c",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 23,
+  "hits": 38,
   "deaths": 0,
-  "kills": 38,
-  "lifts": 78,
+  "kills": 41,
+  "lifts": 88,
   "walked": 100,
   "bare": true
  },

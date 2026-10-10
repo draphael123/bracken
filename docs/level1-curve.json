@@ -403,17 +403,17 @@
   "lostPct": 268
  },
  "caravan": {
-  "hash": "2e8fd6ce410e",
+  "hash": "1a74f306b337",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 12,
-  "deaths": 6,
-  "kills": 9,
-  "lifts": 102,
+  "hits": 19,
+  "deaths": 4,
+  "kills": 16,
+  "lifts": 95,
   "walked": 100,
   "bare": true,
-  "lostPct": 258
+  "lostPct": 203
  },
  "fair": {
   "hash": "fd51c55d8516",
@@ -533,17 +533,17 @@
   "lostPct": 499
  },
  "rootway": {
-  "hash": "936c53495fc3",
+  "hash": "bcecbe519d8c",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 22,
+  "hits": 35,
   "deaths": 0,
-  "kills": 35,
-  "lifts": 78,
+  "kills": 42,
+  "lifts": 88,
   "walked": 100,
   "bare": true,
-  "lostPct": 62
+  "lostPct": 123
  },
  "church": {
   "hash": "d58ae4a4c416",
@@ -585,16 +585,16 @@
   "lostPct": 170
  },
  "minecart": {
-  "hash": "ad73fd7be795",
+  "hash": "4032e2c3a12e",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
+  "hits": 41,
   "deaths": 4,
-  "kills": 47,
-  "lifts": 7,
+  "kills": 66,
+  "lifts": 25,
   "walked": 100,
   "bare": true,
-  "lostPct": 223
+  "lostPct": 353
  }
 }
