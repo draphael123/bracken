@@ -71,7 +71,7 @@ export const AFFIX_AT = {
   'longwater|tideguard': 'SHIELDED', 'longwater|tideguard#amb': 'SWIFT',
   'reef|tideguard': 'VENOMOUS',
   'ksar|shield': 'SHIELDED',   /* (batch82 integ: the Ksar's bridge champion, the far lip's planted shield at col 683 - ksar2 placed it without an affix) */
-  'rootway|shield#1': 'WARDING', 'rootway|shield#2': 'SHIELDED',
+  'rootway|shield#1': 'WARDING', 'rootway|shield#2': 'SHIELDED', 'rootway|shield#3': 'WARDING',
   'flotilla|boarder': 'SWIFT', 'flotilla|boarder#amb': 'SHIELDED',
   'hurricane|boarder': 'SUMMONER', 'hurricane|cutlass': 'SWIFT', 'hurricane|cutlass#amb': 'WARDING',
   'lamplit|watch': 'WARDING', 'lamplit|watch#amb': 'SHIELDED',

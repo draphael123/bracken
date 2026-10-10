@@ -31,8 +31,12 @@ const noHoist = id => floodReach({ ...L, hoists: L.hoists.filter(h => h.id !== i
 const noBud = x => floodReach({ ...L, moversExtra: L.moversExtra.filter(m => m !== budAt(x)) }, T);
 ok(!!budAt(29) && !at(ent('check', 92), noBud(29)), 'the root wall bud is a lock: without it the cellar ends at the wall (the first REQUIRED use)');
 ok(!at(ent('check', 92), noHoist('cellarSpan')), 'the cellar span is a lock: without it the pit stops the road');
-ok(!!budAt(103) && !at(ent('check', 193), noBud(103)), 'the leaning cap over the root gap is a lock');
-ok(!at(ent('check', 193), noHoist('gapSpan')), 'the gap span is a lock');
+/* THE HOLLOW TRUNK (claude/rootway2): its climb is four required uses - the bud against the first shelf, the SPRING CAP, the bud on the plank, the LEANING CAP to the knothole */
+for (const [x, what] of [[139, 'the bud against the first root shelf'], [143, 'the bud against the second shelf'], [134, 'the bud on the plank against the high shelf'], [132, 'the leaning cap across the shaft']]) ok(!!budAt(x) && !at(ent('check', 193), noBud(x)), 'THE HOLLOW TRUNK: ' + what + ' is a lock');
+{ const caps = []; for (let i = 0; i < L.grid.length; i++) if (L.grid[i] === T.BOUNCER) caps.push((i % L.W) + ',' + Math.floor(i / L.W)); ok(caps.includes('20,41') && caps.includes('116,35') && caps.includes('117,35'), 'SPOREWOOD SPRING CAPS: one taught in the cellar, two on the trunk floor ' + caps.join(' '));
+  const g = L.grid.slice(); for (const k of caps) { const [x, y] = k.split(',').map(Number); g[y * L.W + x] = T.AIR; } ok(at(ent('check', 384), floodReach({ ...L, grid: g }, T)), 'the spring caps are a side-show, not a lock: the road climbs without them (the buds are its verb)'); }
+{ const r = floodReach({ ...L, START: { x: 120, y: 34 } }, T); ok(at({ x: 147, y: 22 }, r) && r.seen.has('104,34'), 'THE HOLLOW TRUNK: from its floor the fill climbs it all again and walks back out its foot (a fall costs the climb, never a soft-lock)');
+  const g = (x, y) => L.grid[y * L.W + x], open = []; for (let x = 111; x <= 150; x++) if (![...Array(L.H).keys()].some(y => y > 21 && g(x, y) === T.SOLID)) open.push(x); ok(!open.length, 'THE HOLLOW TRUNK: every column inside it has its floor ' + open.join(',')); }
 for (const id of ['larder1', 'larder2', 'larder3']) ok(!at(ent('check', 299), noHoist(id)), 'THE TROPHY LARDER: cage ' + id.slice(-1) + ' is a lock (without it the stair has a four-row step)');
 ok(!at(ent('check', 299), noHoist('highCleat')), 'the high cleat\'s span is a lock');
 ok(!!budAt(267) && !at(ent('check', 299), noBud(267)), 'the hunter\'s bud is a lock (the root wall past it is four rows)');
@@ -66,7 +70,7 @@ const strikeFrom = (r, h, buds) => { const [cx, cy] = h.cleat, top = (cy - 1) * 
   const cx = h.cleat[0] * TS + 8, yAt = by - 5 + (py - (by - 5)) * (bx - cx) / (bx - px);   /* the arrow struck back flies straight at his chest (owner.y - 5) */
   ok(yAt > (h.cleat[1] - 2) * TS && yAt < (h.cleat[1] + 3) * TS && cx > px && cx < bx, 'an arrow struck back from the lip crosses the rope at the cleat (y ' + Math.round(yAt) + ')'); }
 /* EVERY WELL BEFORE THE EXAM IS CHEAP: from its floor the fill gets back to the near lip, and never to the far one (with its span not dropped) */
-for (const [x0, x1, lip, bottom, id] of [[105, 114, 35, 45, null], [173, 181, 35, 45, 'gapSpan'], [247, 255, 23, 35, 'highCleat'], [53, 60, 38, 42, 'cellarSpan'], [207, 224, 32, 45, 'larder1'], [281, 290, 19, 27, 'gantry']]) {
+for (const [x0, x1, lip, bottom, id] of [[247, 255, 23, 35, 'highCleat'], [53, 60, 38, 42, 'cellarSpan'], [207, 224, 32, 45, 'larder1'], [281, 290, 19, 27, 'gantry']]) {
   const Lw = { ...L, hoists: L.hoists.filter(h => !id || !h.id.startsWith(id.replace(/\d$/, ''))), moversExtra: L.moversExtra.filter(m => !m.lean || Math.abs(m.x / TS - x0) > 4), START: { x: x0 + 2, y: bottom - 1 } };
   const r = floodReach(Lw, T); ok(r.seen.has((x0 - 1) + ',' + (lip - 1)) && !r.seen.has((x1 + 1) + ',' + (lip - 1)) && ![...r.seen].some(k => { const [x, y] = k.split(',').map(Number); return x > x1 + 1 && x < x1 + 30 && y < lip; }), 'the well at ' + x0 + '-' + x1 + ': from its floor, back up to the near lip only'); }
 /* THE EXAM's GAPS ARE REAL FALLS (A10 amended): open air from the lip to the world's last row in every column; a warning post on the near lip; the sign before
