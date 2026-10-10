@@ -104,17 +104,17 @@
   "lostPct": 122
  },
  "moor": {
-  "hash": "49537d2fb3cd",
+  "hash": "60b52ca57d01",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 61,
-  "deaths": 3,
-  "kills": 25,
-  "lifts": 114,
+  "hits": 56,
+  "deaths": 5,
+  "kills": 26,
+  "lifts": 117,
   "walked": 100,
   "bare": true,
-  "lostPct": 393
+  "lostPct": 353
  },
  "storm": {
   "hash": "64712a95a1d8",
@@ -403,17 +403,17 @@
   "lostPct": 352
  },
  "caravan": {
-  "hash": "a58a91e52616",
+  "hash": "2e8fd6ce410e",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 63,
-  "deaths": 3,
-  "kills": 12,
-  "lifts": 81,
+  "hits": 12,
+  "deaths": 6,
+  "kills": 9,
+  "lifts": 102,
   "walked": 100,
   "bare": true,
-  "lostPct": 198
+  "lostPct": 258
  },
  "fair": {
   "hash": "fd51c55d8516",
@@ -520,17 +520,17 @@
   "lostPct": 294
  },
  "ksar": {
-  "hash": "9cf6f7b4937e",
+  "hash": "56d2003723a6",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 36,
-  "deaths": 11,
-  "kills": 10,
-  "lifts": 134,
+  "hits": 38,
+  "deaths": 10,
+  "kills": 12,
+  "lifts": 143,
   "walked": 100,
   "bare": true,
-  "lostPct": 546
+  "lostPct": 499
  },
  "rootway": {
   "hash": "936c53495fc3",
@@ -583,5 +583,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 170
+ },
+ "minecart": {
+  "hash": "ad73fd7be795",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 24,
+  "deaths": 4,
+  "kills": 47,
+  "lifts": 7,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 223
  }
 }
