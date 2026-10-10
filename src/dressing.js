@@ -1070,3 +1070,5 @@ GROUND_KITS.minecart={density:0,kinds:[]};   /* THE MINE WORKS (claude/minecartm
 ALLOWED_DECORATIONS.minecart=[];
 GROUND_KITS.church={density:0,kinds:[]};   /* THE LIT CHURCH (claude/churchart): cut stone, flags, bone-niched crypt and turf under a roof - nothing is sprinkled; its dressing is src/redraw/church_set.js (read off the grid and the level's own decor) */
 ALLOWED_DECORATIONS.church=[];
+GROUND_KITS.towpath={density:0,kinds:[]};   /* THE TOWPATH (claude/towpath, batch81 integ): a river road of locks, a mill and a wheel - nothing is sprinkled; its dressing is the level's own decor rows */
+ALLOWED_DECORATIONS.towpath=[];

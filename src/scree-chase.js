@@ -85,8 +85,8 @@ export function chaseScree(R0, T, grow) {
   G.ent('sign', 264, 13, { text: 'THE WHOLE HILL IS LOOSE. WHEN IT COMES DOWN, RUN WITH IT AND DO NOT STOP.' });
   G.ent('sign', 332, 14, { text: 'LOW: THE CHUTE IS QUICK AND ENDS IN A DROP. HIGH: THE LEDGES ARE SLOW AND SAFE.' });
   G.ent('check', BANK + 1, 18);   /* THE SHRINE AFTER IT, on the bank */
-  /* the miller's silver at the ridge's end now (its last ledges were over the cut-away slope) */
-  for (const e of R0.ents) if (e.t === 'silver' && e.x === 333 && e.y === 15) { e.x = 303; e.y = 10; }
+  /* the miller's silver lay at 333,15 - inside the hill the chase cut away, so it was dropped (the relics check: a former relic cache pays a silver within 15 tiles of 335,15). It lies on the HIGH LEDGES now, the safe line's prize; still silver #0, so a save's bit 1<<0 points at the same pickup */
+  G.ent('silver', 339, 13); { const s0 = R.ents.pop(), k = R.ents.findIndex(e => e.t === 'silver'); R.ents.splice(k < 0 ? R.ents.length : k, 0, s0); }
   /* COINS ON BOTH LINES: the chute pays for its risk */
   const coins = [[270, 13], [283, 14], [287, 14], [297, 15], [308, 16], [312, 16], [324, 16], [331, 14], [338, 17], [347, 18], [351, 18], [358, 19], [360, 19], [364, 16], [337, 13], [347, 13], [357, 14], [375, 19], [389, 19], [401, 19], [409, 17], [417, 18], [428, 20], [431, 20]];
   for (const [x, y] of coins) G.ent('coin', x, y);

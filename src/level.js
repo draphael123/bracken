@@ -1505,7 +1505,7 @@ function screePath() {
   for (const x of [459, 460]) Q.set(x, 9, T.SPIKE);           // broken stone where the chute lets you off: two tiles, never more
   for (const x of [454, 455]) Q.set(x, 7, T.SHELF);           // a loose ledge over the chute, between the low road and the high stagings
   Q.ent('rockfall', 456, 4, { every: 2.6 });
-  Q.ent('goat', 449, 9, { face: 1 });                          // charges down the chute ahead of you
+  Q.ent('goat', 449, 8, { face: 1 });                          // charges down the chute ahead of you
   /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
   return reliefScree(chaseScree(reworkScree(Q.done(), T), T, grow), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js; then THE ROCKSLIDE CHASE (claude/scree2): the old scree steps repainted as a hillside run and 96 columns grown in after them - src/scree-chase.js */
 ;
