@@ -62,7 +62,7 @@ if (lv) {
   ok(/MASKWRIGHT/.test(lv.name) && /LIGHT/.test(lv.rule || ''), 'the level is not named, or its rule does not say the light');
   const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), nodes = src.slice(src.indexOf('const INLAND_NODES'), src.indexOf('const INLAND_PATH'));
   const ids = [...nodes.matchAll(/id: '([a-z]+)', kind: 'level'/g)].map(m => m[1]);
-  ok(ids.indexOf('canal') === ids.indexOf('waymeet') + 1 && ids.indexOf('theatre') === ids.indexOf('canal') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1, 'the map does not run Waymeet, the canal, the theatre, the fair: ' + ids.join(','));
+  ok(ids.indexOf('towpath') === ids.indexOf('waymeet') + 1 && ids.indexOf('canal') === ids.indexOf('towpath') + 1 && ids.indexOf('theatre') === ids.indexOf('canal') + 1 && ids.indexOf('fair') === ids.indexOf('theatre') + 1, 'the map does not run Waymeet, the towpath, the canal, the theatre, the fair: ' + ids.join(','));
   { const au = readFileSync(new URL('../src/audio.js', import.meta.url), 'utf8');
     ok(L.music === 'theatre' && existsSync(new URL('../audio/theatre.ogg', import.meta.url)) && au.includes("theatre: './audio/theatre.ogg'") && !au.includes('function scheduleTheatre(') && au.includes('export function theatreAct(') && au.includes("theatre: '\"Apparitions Ball\" "), 'the theatre does not play its own recorded track (audio/theatre.ogg, "Apparitions Ball" by Bobjt, credited; claude/theatre3) with its acts still told (theatreAct)'); }
   ok(existsSync(new URL('../docs/briefs/maskwright-theatre.md', import.meta.url)), 'the brief (docs/briefs/maskwright-theatre.md) is not committed');
