@@ -13,6 +13,7 @@
 import { LEVELS, T, eliteGate } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { readFileSync } from 'fs';
+import { ksarOpened } from './ksar-locks.mjs';
 
 const PENDING = new Set(['ksar', 'minecart']);   /* minecart (claude/minecart, batch80): THE DEEP RAILS is all cart with goblin archers/casters on carts and no mini or gated elite - the same design call for Daniel as ksar/glasssea (its boss is the Great Drill) */   /* ksar (claude/ksar, batch79): built with no mini and no elite - the same design call for Daniel as glasssea (its boss is the Hawk-Mistress; a gatekeeper elite is a call for him) */   /* glasssea (claude/glasssea, batch75): built with no mini and no elite either - the same design call for Daniel (see the batch75 status). skyroad (claude/skyroad): built with no mini and no elite - a gatekeeper is a design call for Daniel, listed pending until one lands. A level being rebuilt goes in here, and comes out of it when its elites land */
 const NO_KEEPER = new Set(['underleaf', 'burial', 'undercrown']);   /* undercrown: Daniel cut its Overman mini (2026-09-21), and its route has no gate an elite should hold */   /* Daniel's call, not a gap: UNDERLEAF's Bellringer mini was cut after a playtest (2026-09-17). It is the secret stealth village - you choose when it wakes - and nothing on its street holds a gate */
@@ -21,6 +22,7 @@ const NO_KEEPER = new Set(['underleaf', 'burial', 'undercrown']);   /* undercrow
    level of sand and pits that the plain fill leaves at column 47. The gate and the elite are asked about the level WITH its rule solved - every bed (but the
    vault's optional stair) fused to glass - the way a player who has turned the mirrors sees it. The gate is still shut on top of that, so it must hold. */
 function solvedRule(L) {
+  if (L.ksar) return ksarOpened(L);   /* THE KSAR's winch, arches, walls, reeds and bridge are verbs the fill has none for: asked with the rule done, the gates the elite holds are laid on top and must still hold (tools/ksar-locks.mjs) */
   if (!L.glasssea || !L.beds) return L;
   const grid = L.grid.slice();
   for (const b of L.beds) { if (/vault/i.test(b.id)) continue; for (const [x, y] of b.tiles) grid[y * L.W + x] = T.SOLID; }

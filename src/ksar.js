@@ -291,7 +291,7 @@ export function buildKsar({ painter, T, TS }) {
   block(674, 680, 22, 26);                                                       /* the store's low overhang over it: no jump crosses seven tiles under it, and its top is out of reach (no way over) */
   block(681, 681, 27, B - 1); ropeBridges.push({ id: 'rope', x: 681, y0: 27, y1: B - 1, span: [674, 680, B] }); ent('ksropebridge', 681, B - 1, { id: 'rope' });   /* the bridge, raised: timber cells on the far lip */
   // THE POWDER TRAIL: a keg behind iron bars beside a bricked wall - nothing reaches it but fire along the trail (a torch lights it, held or thrown)
-  sentry(683, B - 1, 'bridgeElite', null, { ks: 'post', face: -1, elite: true });   /* (resume 2) WEIGHT at the platforming moment: the far lip's champion, waiting where the bridge lands */
+  sentry(683, B - 1, 'bridgeElite', null, { ks: 'post', face: -1, elite: true, gate: 693 });   /* (resume 2) WEIGHT at the platforming moment: the far lip's champion, waiting where the bridge lands */
   torches('trailTorches', 685, B - 1);
   sign(686, B - 1, 'A POWDER TRAIL: A TORCH LIGHTS IT, AND THE FIRE RUNS TO THE KEG.');
   block(694, 701, 22, 26); barricade('trailBars', 695, 695, 27, B - 1); kegAt('trailKeg', 696, B - 1, { caged: true }); barricade('trailWall', 697, 698, 27, B - 1);

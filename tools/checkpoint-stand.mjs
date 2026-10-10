@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { carpetBox } from '../src/carpet.js';
+import { ksarOpened } from './ksar-locks.mjs';   /* the Ksar's winch, arches, walls, reeds and rope bridge opened as the verbs open them: the fill has none (claude/batch82-integ) */
 
 const ACROSS = 5, VW = 320, VH = 180, TS = 16, SPRITE = 32;
 /* GAPS IN THE MODEL, each with its reason. Not levels that are wrong: rides the fill cannot follow with a shorter jump. */
@@ -23,7 +24,6 @@ const MODEL_GAPS = {
   wood: [[510, 8, 'the wasp pogo over the last pit: the fill has no landing lower than a jump starts, so it never comes down off a wasp (its twin at 453,14 was thinned out with the rest, claude/checkpoints 2026-09-29)']],
   glasssea: [[165, 33, "the reach fill has no SLIDE: THE GLASS SEA's whole first section is the 6-tile slide gap (run down the glass dune at the sprint, jump at the lip - every hero falls in with a plain run jump and clears it with the slide, measured per hero with real keys by tools/glasssea-slide.mjs), and the fill stops at column 47 for a 5- or 6-column jump alike; every checkpoint past it is a model gap, not a level fault"], [300, 33, 'the same slide gap'], [446, 33, 'the same slide gap'], [548, 33, 'the same slide gap (the alpha hunter checkpoint, claude/elitegates)'], [600, 30, 'the same slide gap']],
   oreroad: [[470, 12, "a real breakable wall (src/breakable-walls.js) stands solid at column 468, between THE DRUM YARD's fight and this checkpoint, until struck - the fill has no pick, so it can never get past it. A player does: tools/ore-exam.mjs pins the wall is there and opens for real, and it resets on death (wallsMendAll), so the checkpoint stays genuinely gated by it every attempt"]],
-  ksar: [[276, 33, "a LOCK the fill has no verb for (tools/ksar.mjs and tools/ksar-route.mjs pin them: every hero walks the route with the verbs): THE GATE WINCH portcullis at column 257 stands solid until the great gong is rung and the winch cranked (src/ksar-hands.js), so the fill stops at column 256"], [392, 24, "a LOCK the fill has no verb for (tools/ksar.mjs and tools/ksar-route.mjs pin them: every hero walks the route with the verbs): the same portcullis (column 257): the fill never comes past THE GATE WINCH"], [489, 18, "a LOCK the fill has no verb for (tools/ksar.mjs and tools/ksar-route.mjs pin them: every hero walks the route with the verbs): THE POWDER STORE's BRICKED ARCH (storeArch, columns 443-444) is solid until a thrown keg blasts it: the fill has no keg (it reaches 489 with the arch open)"], [581, 33, "a LOCK the fill has no verb for (tools/ksar.mjs and tools/ksar-route.mjs pin them: every hero walks the route with the verbs): THE HAWK TOWER's BRICKED ARCH (towerArch, columns 560-561) is solid until a thrown keg blasts it: the fill has no keg (it reaches 581 and the arena door with the arch open)"]],
   church: [[82, 18, "THE BROKEN LOFT (cols 97-105): nine columns of the gallery floor are gone and the only way over is THE KEY DESK's told gust (E holds a chord, a wind blows west along the gallery) - a ride the fill has no verb for (tools/pacing.mjs and src/lit-church.js L.reachGusts model it; tools/lit-church.mjs pins it: all seven heroes walk the route with base movement, this checkpoint on it)"]],
 };
 /* THE RULE BITES: a made-up flight arena with a lantern under its floor, one far below it, one inside it */
@@ -36,13 +36,13 @@ export const seenFromFlight = (L, e) => { const A = L.arena; if (!A || !A.carpet
   assert(!seenFromFlight(L, { x: 31, y: 56 }), 'one six rows under the floor fails'); assert(!seenFromFlight({ arena: { ...L.arena, carpet: false } }, { x: 31, y: 50 }), 'a standing arena is checkpoints.mjs\'s business'); }
 
 const bad = [], built = {}; let n = 0;
-for (const lv of LEVELS) { const L = built[lv.id] = lv.build(), R = floodReach(L, T, { rides: true, across: ACROSS, hero: process.env.REACH_HERO });
+for (const lv of LEVELS) { const L = built[lv.id] = lv.build(), R = floodReach(ksarOpened(L), T, { rides: true, across: ACROSS, hero: process.env.REACH_HERO });
   for (const e of L.ents.filter(e => e.t === 'check')) { n++;
     const v = seenFromFlight(L, e); if (v) bad.push(`${lv.id} @${e.x},${e.y}: ${v}`);
     const stood = [-1, 0, 1].some(dx => R.seen.has(R.key(e.x + dx, e.y)));
     if (!stood && !(MODEL_GAPS[lv.id] || []).some(([x, y]) => x === e.x && y === e.y)) bad.push(`${lv.id} @${e.x},${e.y}: the fill with a real jump (${ACROSS} columns) never stands here`); } }
 const stale = Object.entries(MODEL_GAPS).flatMap(([id, list]) => list.filter(([x, y]) => { const L = built[id]; if (!L || !L.ents.some(e => e.t === 'check' && e.x === x && e.y === y)) return true;
-  const R = floodReach(L, T, { rides: true, across: ACROSS, hero: process.env.REACH_HERO }); return [-1, 0, 1].some(dx => R.seen.has(R.key(x + dx, y))); }).map(([x, y]) => id + ' @' + x + ',' + y));
+  const R = floodReach(ksarOpened(L), T, { rides: true, across: ACROSS, hero: process.env.REACH_HERO }); return [-1, 0, 1].some(dx => R.seen.has(R.key(x + dx, y))); }).map(([x, y]) => id + ' @' + x + ',' + y));
 assert.equal(stale.length, 0, stale.length + ' MODEL_GAPS entr(y/ies) forgive nothing - delete them from tools/checkpoint-stand.mjs: ' + stale.join(', '));
 assert.equal(bad.length, 0, bad.length + ' checkpoint(s) nobody can stand at:\n  ' + bad.join('\n  '));
 console.log(`ok  checkpoint-stand   ${n} checkpoints in ${LEVELS.length} levels: every one stood at with a real jump (${ACROSS} columns, not 6; ${Object.values(MODEL_GAPS).flat().length} gaps in the model listed), none in view of a flight arena.`);
