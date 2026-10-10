@@ -59,6 +59,30 @@ try {
   }
   console.log('ok  hero pick      ' + h.out.length + ' portraits move, every hero named on one line under a clear heading, RIGHT picks, portraits are tap boxes');
 
+  /* ---- 2b. ALL SEVEN HEROES (batch82 integ): the row is laid by one function of how many cards there are; with every hero unlocked it must still sit whole,
+     name every hero without two names or roles on one another, give every portrait a tap box, and RIGHT must walk all seven and wrap ---- */
+  const seven = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true });
+    const P = await import(new URL('./src/progression.js', location.href).href); const keep = P.DEFAULT_HEROES.slice(); P.DEFAULT_HEROES.length = 0; P.DEFAULT_HEROES.push('knight', 'warden', 'geomancer', 'pyro', 'paladin', 'pirate', 'reaper');
+    const out = [], walk = [], { VW, VH } = BK.view;
+    for (let i = 0; i < 7; i++) { BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = i; BK.step(6); window.__textRec = []; BK.step(1);
+      out.push((window.__textRec || []).filter(x => x.kind === 'text').map(x => ({ s: x.s, x0: x.x0, y0: x.y0, w: x.w, h: x.h }))); window.__textRec = null; }
+    BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 0; BK.step(2); for (let i = 0; i < 7; i++) { BK.press('right'); BK.step(3); walk.push(BK.ui.heroPickI); }
+    BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 0; BK.step(3); const boxes = BK.touch.hitBoxes ? BK.touch.hitBoxes() : null;
+    const took = []; for (const i of [3, 5, 6]) { BK.reset({ fresh: true }); BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = i; BK.step(2); BK.press('confirm'); BK.step(3); took.push(i + ':' + BK.hero()); }
+    P.DEFAULT_HEROES.length = 0; P.DEFAULT_HEROES.push(...keep); return { out, walk, boxes, took, VW, VH }; })()`);
+  const NAMES = /^(KNIGHT|WARDEN|GEOMANCER|PYRO|PALADIN|PIRATE|DEATH|KNIGHT)$/;
+  seven.out.forEach((rec, i) => {
+    for (const x of rec) assert.ok(x.x0 >= 0 && x.x0 + x.w <= seven.VW && x.y0 + x.h <= seven.VH, 'seven, pick ' + i + ': on the screen, whole: ' + x.s);
+    const lab = rec.filter(x => NAMES.test(x.s));
+    assert.ok(lab.length >= 7, 'seven, pick ' + i + ': all seven heroes are named (' + lab.length + '): ' + lab.map(x => x.s).join('/'));
+    for (let a = 0; a < lab.length; a++) for (let b = a + 1; b < lab.length; b++) { const p = lab[a], q = lab[b];
+      assert.ok(p.x0 + p.w <= q.x0 || q.x0 + q.w <= p.x0 || p.y0 + p.h <= q.y0 || q.y0 + q.h <= p.y0, 'seven, pick ' + i + ': names ' + p.s + ' and ' + q.s + ' overlap'); }
+    const title = rec.find(x => x.s === 'CHOOSE YOUR HERO'); assert.ok(title && title.y0 + title.h <= 20, 'seven, pick ' + i + ': the heading is clear of the row'); });
+  assert.deepEqual(seven.took, ['3:pyro', '5:pirate', '6:reaper'], 'confirm takes the portrait under the cursor: ' + seven.took);
+  assert.deepEqual(seven.walk, [1, 2, 3, 4, 5, 6, 0], 'RIGHT walks all seven and wraps: ' + seven.walk);
+  if (seven.boxes && seven.boxes.length) { const rows = seven.boxes.filter(b => b.y <= 20 && b.h >= 50 && b.w > 20 && b.w < 200); assert.ok(rows.length >= 7, 'seven portraits are seven tap boxes (' + rows.length + ')'); }
+  console.log('ok  hero pick x7   all seven heroes named without overlap, on the screen, RIGHT walks them and wraps, seven tap boxes');
+
   /* ---- 3. THE MAP'S FIRST FRAME ---- */
   const m = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true });
     const lum = () => { const v = BK.view, c = v.buf.getContext('2d').getImageData(0, 0, v.VW, v.VH).data; let s = 0; for (let i = 0; i < c.length; i += 4) s += c[i] * 0.3 + c[i + 1] * 0.59 + c[i + 2] * 0.11; return s / (c.length / 4); };
