@@ -10,7 +10,7 @@
 // The Huntmaster's thrown net (src/huntmaster.js) is his own projectile; what it does to a hero it catches is NET.hold, the same rule.
 // ctx: L(), TS, players(), asPlayer(p, fn), damage(x, d, o) -> 'hit' | 'blocked' | false, number(x, y, txt, col), burst(...), sfx, time()
 // Every capital line goes through ctx.number with a line listed in src/hint-lines.js.
-export const JAW = { dmg: 8, hold: 0.9, w: 10, springR: 18, arm: 0.6, reset: 6, life: 16 };
+export const JAW = { dmg: 10, hold: 0.9, w: 10, springR: 18, arm: 0.6, reset: 6, life: 16 };
 export const NET = { tell: 0.55, w: 44, dmg: 3, hold: 1.2, reset: 5, under: 30, fall: 0.18 };
 
 export function makeSnares(ctx) {

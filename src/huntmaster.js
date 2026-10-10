@@ -27,7 +27,7 @@ export const HM = {
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
   gap: [0.8, 0.7, 0.6],
-  arrowV: 290, redV: 250, arrowDmg: 9, redDmg: 12, poisonTick: 4, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
+  arrowV: 290, redV: 250, arrowDmg: 10, redDmg: 12, poisonTick: 4, poisonEvery: 0.5, poisonFor: 1.6, poisonT: 3, poisonR: 18, fan: 0.14,
   /* THE NET THROW: a told throw (netTell), a slow lobbed net you ROLL THROUGH; caught = held `net` s and a HEAVY ARROW on its way (heavyTell) */
   netTell: 0.7, netV: 200, netLift: -150, netG: 260, netR: 13, net: 1.1, netDmg: 3, heavyTell: 0.42, heavyV: 330, heavyDmg: 14,
   /* THE SNARES: a told crouch, then hops about the stand dropping JAW TRAPS (src/snares.js) - at most snareMax set at once */
