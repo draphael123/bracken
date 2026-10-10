@@ -113,7 +113,7 @@ export function buildRootway({ painter, T, TS }) {
   block(111, 150, 0, 6);                                                          /* the trunk goes on up over you */
   block(151, 156, 0, H - 1); air(151, 156, 19, 22);                               /* its east wall, and THE KNOTHOLE near its top */
   glow(108, 34); glow(119, 34); glow(131, 34); deco(114, 34, 'sporePod'); deco(124, 34, 'tinyCap', 1); deco(136, 34, 'mushroom', 1);
-  ent('puffball', 121, 34); foe('sporeling', 116, 34, 'trunkFloor', { face: -1 }); foe('weaver', 129, 34, 'trunkFloor', { face: -1 });
+  ent('puffball', 121, 34); foe('sporeling', 112, 34, 'trunkFloor', { face: -1 }); foe('weaver', 129, 34, 'trunkFloor', { face: -1 });
   ent('vent', 126, 34, { period: 4.5, on: 1.6, h: 96, phase: 1 }); coins([126, 31], [126, 29]);                          /* a puff of spores up to a few coins (a lift to nowhere: the way is the caps) */
   /* TIER ONE: a bud against the first root shelf, four rows up */
   bud(139, 35); block(141, 150, 31, 34);

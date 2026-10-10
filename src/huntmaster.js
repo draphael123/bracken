@@ -6,8 +6,9 @@ import * as RWA from './redraw/rootway_art.js';   /* THE HUNTMASTER's pose paint
 // standing) - the great bow across him turns a blow from his FRONT at his height to HM.guardMul (B15: never totally shut, the clank says GO ROUND); from
 // BEHIND, from the AIR (a jump, a plunge) or while he draws, throws, blows or sets a trap he takes it whole. No chip (src/boss-greed.js FULL_DAMAGE).
 // HIS OPENING (B10/B14): SEND HIS OWN GOLD ARROW HOME (strike it back) or HIT HIM WITH A THROWN SPORE POD (src/hunt-pods.js) and he STAGGERS LONG -
-//   HM.stagLong s, gold OPEN ring + timer, he drops off his perch, he stands still (B4) - so you can cross the stand to him. But only THREE BLOWS' WORTH lands (HM.hitCap x HM.blowRef: the pips)
-//   land (x HM.openMul, x HM.maskMul once the mask is broken); the next one ends it and his told WARD follows (B3: HM.ward s, a pale ring, HE GUARDS - blows
+//   HM.stagLong s, gold OPEN ring + timer, he drops off his perch, he stands still (B4) - so you can cross the stand to him. But only THREE BLOWS' WORTH lands (HM.hitCap x HM.blowRef
+//   of damage, never more than HM.maxBlows blows: the three pips empty as they land; x HM.openMul, x HM.maskMul once the mask is broken); the blow that fills it
+//   lands what is left, he is up out of it, and his told WARD follows (B3: HM.ward s, a pale ring, HE GUARDS - blows
 //   at HM.wardMul, B15). A parry (the warden's sweep) turns the arrow home softly: a short stagger (HM.stagT, HM.softCap blows).
 //   The first gold arrow home in each phase also breaks that phase's weak point - P1 the QUIVER STRAP (his volleys lose an arrow), P2 the BRACER (his draw
 //   slows), P3 the TROPHY MASK (his openings pay HM.maskMul).
