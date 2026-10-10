@@ -40,6 +40,9 @@ export function reliefScree(R, T) {
   for (const [x, lo, hi] of LIFTS) R.moversExtra.push({ kind: 'lift', x: x * 16, y: (lo - 1) * 16, y0: (lo - 1) * 16, y1: (hi - 1) * 16, w: 32, h: 8, speed: 30, quarry: true });
   /* the hamlet's chimney silver stays OFF the road: the roof road now runs at its old ledge, so it sits a hop higher */
   for (const e of R.ents) if (e.t === 'silver' && e.x === 85 && e.y === 14) { e.y = 11; set(85, 12, T.ONEWAY); set(86, 12, T.ONEWAY); }
+  /* (batch81 integ, curve-gate: a level-1 knight died 7-11 times in 3 pilot runs; the death positions of every run named the same few foes) THE HARPY hovering over the gully's perch dived at a hero on the ground 8 tiles off, and the chase's harpy over the 396-397 pit dived at the jumper: both gone (the density test keeps its count with the sprigs below) */
+  R.ents = R.ents.filter(e => !(e.t === 'harpy' && ((e.x === 210 && e.y === 3) || (e.x === 402 && e.y === 13))));
+  for (const [x, y] of [[204, 13], [404, 19]]) R.ents.push({ t: 'sprig', x, y, face: -1 });
   R.ents.push({ t: 'sign', x: TEACH_SIGN[0], y: TEACH_SIGN[1], text: TEACH_SIGN[2] });
   /* THE LOOSE ROCK, by place (the rule's state: tools/rule-state.mjs reads L.looseRock as places, main.js only asks that it is there) */
   const loose = []; for (let y = 0; y < R.H; y++) for (let x = 0; x < W; x++) if (at(x, y) === T.SHELF) { const g = loose.find(q => q.y === y && x - q.x1 <= 2); if (g) g.x1 = x; else loose.push({ x0: x, x1: x, y }); }

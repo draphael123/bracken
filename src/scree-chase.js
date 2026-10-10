@@ -21,11 +21,11 @@ export const TRIGGER = 268, CHECK_BEFORE = 262;
    The columns between spans are open to the bottom: PITS (real deaths, told). */
 export const SPANS = [
   [265, 276, 14, 'rock'],     // THE CREST: the start line, the front behind it
-  [277, 290, 15, 'scree'],    // the first run: it carries you
-  /* pit 291-292 */
+  [277, 292, 15, 'scree'],    // the first run: it carries you (batch81 integ: no pit at the chase's start - the first run ran to 290 and a two-tile pit at 291-292 killed the bot at 293 in most runs; the first pit is now 318-319)
+  /* (no pit 291-292 now) */
   [293, 302, 16, 'rock'],     // a rock off the cliff ahead, on its count
-  [303, 316, 17, 'scree'],
-  /* pit 317-319 */
+  [303, 317, 17, 'scree'],
+  /* pit 318-319 (was 317-319: the bot fell short of the three-wide ones too often - batch81 integ) */
   [320, 328, 17, 'rock'],
   [329, 333, 15, 'rock'],     // a step up: jump it
   /* THE FORK: the LOW CHUTE under, the HIGH LEDGES over it (SHELVES, below) */
@@ -34,8 +34,8 @@ export const SPANS = [
   [354, 362, 20, 'scree'],
   /* pit 363-365: the chute's price */
   [366, 384, 20, 'rock'],     // THE BOULDER FIELD: two rocks off the cliff, ahead
-  [385, 394, 20, 'scree'],
-  /* pit 395-397 */
+  [385, 395, 20, 'scree'],
+  /* pit 396-397 (was 395-397) */
   [398, 404, 20, 'rock'],
   [405, 412, 18, 'rock'],     // a ledge up
   [413, 422, 19, 'scree'],
@@ -53,14 +53,14 @@ export const BROKEN = [[344, 18], [354, 19], [423, 20]];
 /* AND THE REST OF THE ROAD KEEPS ITS DENSITY (tools/scree-rework.mjs: >= 3.2 foes a screen): four screens grew in, so six more where the road was thin - a
    thrower on the ropeway's high ledge and an archer on its last step (foes at platforming moments: you are on the sails or the swing), a harpy over the lift,
    a sprig in the pasture, a ram on the windmill rise, a thrower on the quarry floor [type, x, y] */
-export const ROAD_FOES = [['sprig', 56, 19], ['goat', 160, 13], ['harpy', 462, 5], ['rockgoblin', 470, 11], ['archer', 481, 13], ['rockgoblin', 540, 8]];
+export const ROAD_FOES = [['sprig', 14, 19], ['sprig', 44, 19], ['sprig', 56, 19], ['sprig', 66, 19], ['harpy', 462, 5], ['rockgoblin', 470, 11], ['archer', 481, 13], ['rockgoblin', 540, 8]];
 export const FOES = [['harpy', 289, 10], ['harpy', 324, 11], ['harpy', 340, 9], ['rockgoblin', 348, 13], ['goat', 376, 19], ['harpy', 402, 13], ['rockgoblin', 410, 17]];
 /* ROCKS OFF THE CLIFF, AHEAD (told: the red mark on the fall line pulses as the next one works loose; only while on screen) [x, every s] */
 export const ROCKS = [[298, 2.4], [339, 2.2], [349, 2.6], [372, 2.3], [380, 2.7], [408, 2.5]];
 export const CHASE = {
   id: 'rockslide', name: 'THE ROCKSLIDE', axis: 'x', dir: 1, look: 'scree', say: 'THE HILL COMES DOWN: RUN!', music: 'boss2',
-  trigger: TRIGGER * 16, end: BANK * 16 + 2, gap0: 120,
-  curve: [[0, 110], [950, 122, 'THE HILL QUICKENS'], [1950, 132, 'THE WHOLE SLOPE IS COMING']],   /* a hero walks the hill at ~92 px/s (faster down a scree run): the front is faster, so it is ON HIM - the rubber band slows it under him (min/slow), so a hero who keeps going is never caught and one who stops for a second is */
+  trigger: TRIGGER * 16, end: BANK * 16 + 2, gap0: 150,
+  curve: [[0, 98], [950, 114, 'THE HILL QUICKENS'], [1950, 128, 'THE WHOLE SLOPE IS COMING']],   /* a hero walks the hill at ~92 px/s (faster down a scree run): the front is faster, so it is ON HIM - the rubber band slows it under him (min/slow), so a hero who keeps going is never caught and one who stops for a second is */
   lead: 1.6, accel: 120, rubber: { min: 64, max: 200, slow: 0.5, catch: 1.4 },   /* slowed under him it is 55-66 px/s: the slowest walker (the reaper) still pulls away */
   contact: 'hurt', dmg: 30, hold: 0.9, autoscroll: true, show: 44, showKeep: 0.4, glow: 260, band: true,   /* show: the camera keeps the front on the screen behind you (never at the cost of 40% of the view ahead) */
   zone: [X0 * 16, (BANK + 1) * 16, 12 * 16, 27 * 16],   /* a hero on the miller's ridge over the crest (rows 1-11) is not on the hill: the start line waits for one on it */

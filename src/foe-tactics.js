@@ -43,7 +43,7 @@ export const SPRINKLE = {
 export const PLAN = {
   marsh: [['hopper', 'archer'], ['thorn', 'spit', 'archer']],
   spore: [['sporeling', 'weaver'], ['thorn', 'spitcap']],
-  scree: [['goat', 'rockgoblin'], ['troll']],
+  scree: [['goat', 'rockgoblin'], ['sapper']],
   hanging: [['rockgoblin', 'snuffer']],
   spire: [['rockgoblin', 'gobpriest', 'gobmage'], ['sentry', 'gobpriest']],
   moor: [['goat', 'rockgoblin'], ['troll']],

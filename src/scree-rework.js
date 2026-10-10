@@ -17,9 +17,9 @@ export const SCREE = {
   GULLY: [238, 243, 17],
   ROCKFALL: [[118, 4, 2.7], [196, 4, 2.3], [274, 4, 2.5]],     // more rock off the cliff over the low road
   FOES: [
-    ['rockgoblin', 135, 11], ['rockgoblin', 146, 11], ['javelin', 140, 9], ['sapper', 158, 13], ['sprig', 124, 17],   // THE TERRACES
+    ['rockgoblin', 135, 11], ['sprig', 146, 11], ['javelin', 140, 9], ['sapper', 158, 13], ['sprig', 124, 17],   // THE TERRACES
     ['sentry', 104, 19],                                                                                                // the hamlet's end
-    ['rockgoblin', 212, 13], ['sentry', 200, 13], ['sapper', 252, 13],                                                   // the rise, the cairns
+    ['sprig', 212, 13], ['sentry', 200, 13], ['sapper', 252, 13],                                                   // the rise, the cairns
     ['rockgoblin', 284, 12], ['goat', 296, 15], ['goat', 309, 16], ['shield', 316, 17],                                   // THE SCREE SLOPE
     ['rockgoblin', 431, 8], ['sentry', 466, 4],                                                                          // the wall, the quarry
   ],
