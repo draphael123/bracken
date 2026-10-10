@@ -190,7 +190,7 @@ export function makeBot(BK) {
          deck, and the way to it is the tower's own ladders. So a shut gate whose key is outdoors sends the bot to the KEY -
          to the nearest ladder that rises from where it stands, up it, and along the deck - and not to a door. */
       const ahead = shut || props.find(p => p.t === 'lockgate' && !p.open && p.x > P.x - 40 && p.x - P.x < 400 && !props.some(q => q.t === 'key' && q.got && q.kind === p.needs));   /* a tower key is worth walking back for from further off than a door */
-      if (ahead && !tick.climbKey) { const k = props.find(p => p.t === 'key' && !p.got && p.kind === ahead.needs && !(L.interiors || []).some(([x0, x1, y0, y1]) => p.x >= x0 * TS && p.x <= (x1 + 1) * TS && p.y >= (y0 - 1) * TS && p.y <= (y1 + 2) * TS));
+      if (ahead && !tick.climbKey && !tick.noKeyWalk) { const k = props.find(p => p.t === 'key' && !p.got && p.kind === ahead.needs && !(L.interiors || []).some(([x0, x1, y0, y1]) => p.x >= x0 * TS && p.x <= (x1 + 1) * TS && p.y >= (y0 - 1) * TS && p.y <= (y1 + 2) * TS));
         if (k) tick.climbKey = k; }
       if (tick.climbKey) tick.climbKey = props.find(p => p.t === 'key' && p.kind === tick.climbKey.kind) || null;   /* a death rebuilds the props: hold the key by its kind, not by an object that is gone */
       if (tick.climbKey && tick.climbKey.got) { tick.climbKey = null; tick.ladderX = undefined; }
@@ -198,7 +198,7 @@ export function makeBot(BK) {
         if (Math.abs(k.y + 6 - P.y) < 20) { goalX = k.x; tick.ladderX = undefined; }
         else if (!P.climb) { let lx, bd = 1e9; for (let x = kx - 10; x <= kx + 10; x++) if (at(x, fy - 1) === T.NET && at(x, fy - 2) === T.NET) { const q = Math.abs(x * TS + 8 - P.x); if (q < bd) { bd = q; lx = x; } }
           tick.ladderX = lx; goalX = lx !== undefined ? lx * TS + 8 : k.x; } }
-      if (!tick.seek && !tick.climbKey && !L.noDoorKeys && (shut || still > 60) && doorCd <= 0) {
+      if (!tick.seek && !tick.climbKey && !L.noDoorKeys && !tick.noKeyWalk && (shut || still > 60) && doorCd <= 0) {   /* (tick.noKeyWalk: the walker fetches the off-floor key itself - claude/walkerctl - and the hands do not go looking for a door) */
         let d = null, bd = 1e9;
         for (const p of props) { if (p.t !== 'doorway' || p.lock || (tick.used && tick.used.has(p.id))) continue;
           const q = Math.abs(p.x - P.x); if (q < bd) { bd = q; d = p; } }
@@ -360,7 +360,7 @@ export function makeBot(BK) {
     if (tap > 0) { tapT++; if (tapT === 1) { keys.left = keys.right = false; } if (tapT === 3) { keys.left = dir < 0; keys.right = dir > 0; tap = 0; } }
 
     // drop through a ledge if the goal is a long way below
-    if (P.ground && still > 70 && at(fx, fy) === T.ONEWAY && [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].some(k => foot(fx, fy + k)) && !(L.zipLines && L.zipLines.some(z => !z.snap && Math.abs(Math.min(z.x0, z.x1) - P.x) < 5 * TS && Math.abs(z.y0 - P.y) < 3 * TS))) keys.down = true;   /* (claude/stormtough: not off the deck that holds a rope's high end - the rope IS the way down; the walker dropped through Stormhold's first deck to the road, 3000 frames a lap) */   /* (never through a bridge over a fall with no floor: claude/rootway fix pass) */
+    if (!tick.noDrop && P.ground && still > 70 && at(fx, fy) === T.ONEWAY && [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].some(k => foot(fx, fy + k)) && !(L.zipLines && L.zipLines.some(z => !z.snap && Math.abs(Math.min(z.x0, z.x1) - P.x) < 5 * TS && Math.abs(z.y0 - P.y) < 3 * TS))) keys.down = true;   /* (claude/stormtough: not off the deck that holds a rope's high end - the rope IS the way down; the walker dropped through Stormhold's first deck to the road, 3000 frames a lap) */   /* (never through a bridge over a fall with no floor: claude/rootway fix pass) */
 
     // A CREATURE UNDER YOU WHILE YOU ARE FALLING IS A STEP. Plunge on it and you bounce, and four wasps
     // over a pit is a bridge - which is the whole middle of Bracken Wood and every pogo chain after it.
