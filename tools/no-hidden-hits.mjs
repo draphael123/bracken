@@ -21,7 +21,7 @@ const FOES = +opt('foes', 8), ONLY = opt('levels', '') ? opt('levels', '').split
 const pg = await openPage({ audio: false, fonts: false, seed: 1008 });
 let bad = 0;
 /* FOUND BY THIS CHECK, NOT THE CANAL'S, reported and left to the level's owner (never silently passed: each prints KNOWN every run). Remove a line when it is fixed. */
-const KNOWN = new Set(['undercrown|shardling|shed']);
+const KNOWN = new Set(['undercrown|shardling|shed', 'hurricane|petrel|dive', 'marsh|hopper|sit']);   /* (batch81 integ: the sample is drawn from the seeded stream, so the merge moved it onto two more of the same kind: a diving storm petrel on the Hurricane Deck and a sitting marsh hopper beside the hero draw nothing the oracle can see on some frames. Neither level changed in this batch; both are the level owners' - see the report) */
 try {
   const res = await pg.evalp(`(async()=>{
     const { LEVELS, T } = await import('/src/level.js'); const TS = 16; const ONLY = ${JSON.stringify(ONLY)}, FOES = ${FOES}, TUNNEL = ${!has('no-tunnel')}, TUNNEL_ONLY = ${has('tunnel-only')};
