@@ -4310,7 +4310,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
   { id: 'reef', kind: 'level', level: LEVELS.findIndex(l => l.id === 'reef'), x: 233, y: 130, plate: 'below', name: 'THE SHIPWRECK REEF' },
   { id: 'chandler', kind: 'store', shop: 'shopSea', needs: 'reef', x: 271, y: 96, plate: 'right', name: 'THE CHANDLER' },
   { id: 'flotilla', kind: 'level', level: LEVELS.findIndex(l => l.id === 'flotilla'), x: 218, y: 55, plate: 'left', name: 'THE FLOTILLA' },
-  { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 132, y: 26, plate: 'above', name: 'THE HURRICANE DECK' },
+  { id: 'hurricane', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hurricane'), x: 135, y: 26, plate: 'above', name: 'THE HURRICANE DECK' },
   { id: 'lamplit', kind: 'level', level: LEVELS.findIndex(l => l.id === 'lamplit'), x: 43, y: 45, plate: 'left', name: 'THE LAMPLIT STREET' },
   { id: 'deep', kind: 'level', level: LEVELS.findIndex(l => l.id === 'deep'), x: 51, y: 94, plate: 'left', name: 'THE DEEP' },
   { id: 'keep', kind: 'level', level: LEVELS.findIndex(l=>l.id==='keep'), x: 127, y: 84, plate: 'right', name: 'THE UNDERWATER KEEP' },
@@ -4327,7 +4327,7 @@ const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l
    entry now sits at x=260 too, directly under Highcrown, so that connector is short and near-vertical like
    every other seam on the map. LONGWATER stays the first stop; the entry->longwater leg is the only thing that
    changed, and it clears every later segment (verified, no self-crossing). */
-const COAST_PATH = [[260,172], [158,154], [169,118], [233,130], [250,110], [271,96], [249,70], [218,55], [172,41], [132,26], [90,26], [43,45], [43,71], [51,94], [127,84], [128,114], [26,98], [27,25], [140,8]];
+const COAST_PATH = [[260,172], [158,154], [169,118], [233,130], [250,110], [271,96], [249,70], [218,55], [172,41], [135,26], [90,26], [43,45], [43,71], [51,94], [127,84], [128,114], [26,98], [27,25], [140,8]];
 /* WAYMEET IS THE ROAD INLAND'S OWN TOWN: a new area, not a stop on the coast. It sits on a spur of its own at the foot of the road, and the road does not wait on it */
 const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l => l.id === 'waymeet'), x: 25, y: 153, plate: 'above', name: 'WAYMEET' },
   { id: 'towpath', kind: 'level', level: LEVELS.findIndex(l => l.id === 'towpath'), x: 41, y: 153, plate: 'left', name: 'THE TOWPATH' },   /* THE TOWPATH (claude/towpath): the bridge level between WAYMEET and THE FOG CANAL, in road order (map-grammar) */
