@@ -7235,11 +7235,12 @@ function greedHit(e, fromX, blow) {
       PROG.chipTold = (PROG.chipTold || 0) + 1; if (PROG.chipTold <= 2) { hintT = 4.5; hintMsg = 'A CLANK OR A SCRATCH MEANS THE WRONG BLOW. GO ROUND, OR HIT HIM IN HIS OPENING.'; } } }
   if (e.angleHit !== time && !(P.atk >= 0 && CM.swingTotal(hero(), P) > GB.GREED.tell) && GB.noteGreed(e, time, isB, isM)) SFX.tell(true);   /* (a blow round his guard is the right blow: no greed, claude/sweep1) */
 }
-function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');   /* (claude/keyscore, B14 + THE PYRO BUG) pl: a PLUNGE BY ITS TAG - the pyromancer's FIREDROP is hurtAs('plunge', ..., false): the boolean is the hero's own body, the tag is the blow. Every boss hook below gets the tag (tools/blow-tags.mjs) */
+function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
   if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
+  /* (claude/keyscore, B14 + THE PYRO BUG) pl: a PLUNGE BY ITS TAG - the pyromancer's FIREDROP is hurtAs('plunge', ..., false): the boolean is the hero's own body, the tag is the blow. Every boss hook below gets the tag (tools/blow-tags.mjs) */
   if (e.elite && EK) { const kd = EK.take(e, dmg, fromX, plunge, blow); if (kd === false) return; dmg = kd; }   /* (ELITES2) an elite's GUARD BY ANGLE (a light cut off his front turned, a heavy through at half) and the riposte into his opening: src/elite-kit.js */
   if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }
   if (WMH && e.t === 'wickerman') { dmg = WMH.take(e, dmg); if (!dmg) return; }   /* (claude/fairfix6) THE WICKER MAN: whole in its fire, a scratch on the standing wicker */
