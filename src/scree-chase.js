@@ -91,7 +91,7 @@ export function chaseScree(R0, T, grow) {
   const coins = [[270, 13], [283, 14], [287, 14], [297, 15], [308, 16], [312, 16], [324, 16], [331, 14], [338, 17], [347, 18], [351, 18], [358, 19], [360, 19], [364, 16], [337, 13], [347, 13], [357, 14], [375, 19], [389, 19], [401, 19], [409, 17], [417, 18], [428, 20], [431, 20]];
   for (const [x, y] of coins) G.ent('coin', x, y);
   /* DRESSING: boulders already down the hill, dead thorn on the crest, a cairn at the fork */
-  for (const [x, y, kind, v] of [[271, 13, 'stone', 0], [296, 15, 'stone', 1], [326, 16, 'deadTree', 0], [333, 14, 'cairn', 0], [370, 19, 'stone', 2], [378, 19, 'stone', 0], [383, 19, 'deadTree', 1], [400, 19, 'stone', 1], [410, 17, 'stone', 2]]) G.ent('deco', x, y, { kind, v });
+  for (const [x, y, kind, v] of [[271, 13, 'stone', 0], [296, 15, 'stone', 1], [326, 16, 'deadTree', 0], [333, 14, 'cairn', 0], [367, 19, 'stone', 2], [378, 19, 'stone', 0], [383, 19, 'deadTree', 1], [400, 19, 'stone', 1], [410, 17, 'stone', 2]]) G.ent('deco', x, y, { kind, v });
   R.slide = null;   /* the old once-a-save boulder front (main.js updateSlide) is gone from this level: the engine runs the chase */
   R.chases = [{ ...CHASE }];
   R.screeChase = { x0: X0, x1: X1, bank: BANK, span: SPAN };

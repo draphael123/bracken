@@ -1342,7 +1342,7 @@ function screePath() {
   wall(18, 19); wall(30, 19); wall(44, 19); ent('deco', 26, 19, { kind: 'fence', v: 0 }); ent('deco', 40, 19, { kind: 'fence', v: 1 });
   ent('harpy', 50, 14);
   coins([12, 17], [24, 18], [40, 18], [48, 17]);
-  ent('sign', 22, 19, { text: 'AN OLD FLEECE LIES SOMEWHERE UP THE HILL, IF YOU CAN FIND IT.' });
+  ent('sign', 20, 19, { text: 'AN OLD FLEECE LIES SOMEWHERE UP THE HILL, IF YOU CAN FIND IT.' });
   ent('check', 58, 19);
 
   // ---- 2. The terraces: three steps up the hill, a rockfall, the first stray ----
@@ -2454,7 +2454,7 @@ function theMonastery() {
   air(35, 45, 36, 37); spikes(38, 40, 37); masonry.push([35, 45, 38, 38]);   // the roof's WELL, sunk two rows under the crawl, a thorn pit in its floor
   wheel(37, 42, 35, 1, 'b');                                          // pivot 42-44@35 (a jump off the well floor); its stair 40-42@33 (over the pit) or 44-45@33; the trapdoor 3 rows over either
   ent('troll', 41, 32, { face: 1 });                                 // on the stair (a hill troll: heavy, not an elite - the well is under the Abbot's floor, and an elite never stands that near a boss room)
-  ent('sign', 46, 35, { text: 'THE LAST WHEEL. STRIKE IT WITH ONE OF THEM ON ITS STAIR AND IT GOES OUT FROM UNDER HIM.' });
+  ent('sign', 46, 35, { text: 'THE LAST WHEEL. STRIKE IT WITH ONE OF THEM ON ITS STAIR AND IT GOES OUT FROM UNDER HIM.' }); set(46, 34, T.AIR); set(46, 33, T.AIR);   /* (batch81 integ: the sign stands in the crawl, one tile under the roof - a notch over it, or its board runs through the ceiling: pixels) */
 
   // ---- MORE GOING ON. Every floor used to be a stair up one side and a walk to a wall on the other. ----
   // SIDE ROUTES: a goat path of boards up the side the main stair does not use, through a small trapdoor in

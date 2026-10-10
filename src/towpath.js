@@ -215,7 +215,7 @@ export function buildTowpath({ painter, T, TS }) {
   for (let x = 268; x <= 279; x++) set(x, 26, T.SPIKE);
   boards(269, 273, 21); boards(275, 279, 24);   /* (two ledges over the irons: a jump off the bank, a jump down to the culvert's lip) */
   paddle(266, 16, 'X', { dark: true });   /* (review M3b: in the fog under an UNLIT lamp - the paddle is found only in a light: the lantern lit, or the lamp struck) */
-  sign(265, 16, 'THE LAST LOCK. DRAINED, ITS BED IS THE OLD GATE IRONS.');
+  sign(268, 16, 'THE LAST LOCK. DRAINED, ITS BED IS THE OLD GATE IRONS.');
   block(280, 284, 14, 22); air(280, 284, 23, 25); block(280, 284, 26, 26);   /* the east wall over THE CULVERT (rows 23-25) into Y */
   interiors.push([280, 284, 23 + O, 25 + O, 'tpCulvert']);
   watchman(282, 13, 'xRim', { face: -1 });

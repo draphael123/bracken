@@ -13,7 +13,7 @@ export const OVERHANGS = [   // [prop column, feet row, side (the way its line r
   [499, 18, 1],   // REMIX: the gorge bank's elite troll (505) - the section's exam
   [543, 8, 1],    // the quarry exam: the chute's goat and thrower
 ];
-export const TEACH_SIGN = [247, 13, 'A DRY-STONE PROP HOLDS THAT OVERHANG UP. KNOCK IT OUT WHEN SOMETHING STANDS UNDER IT.'];
+export const TEACH_SIGN = [259, 13, 'A DRY-STONE PROP HOLDS THAT OVERHANG UP. KNOCK IT OUT WHEN SOMETHING STANDS UNDER IT.'];
 /* [x0, x1, top row] solid relief: knolls of two rows (the route climbs two and comes down two) */
 export const KNOLLS = [[23, 24, 19], [25, 28, 18], [29, 29, 19], [46, 47, 19], [48, 51, 18], [52, 52, 19], [91, 92, 19], [93, 96, 18], [97, 97, 19]];
 /* [x, row, len] stone ledges: the second height */
