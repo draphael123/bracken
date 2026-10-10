@@ -4362,7 +4362,7 @@ const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l 
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
    moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
-const INLAND_PATH = [[140,176], [25,153], [41,153], [41,122], [111,134], [130,115], [93,86], [124,83], [159,43], [208,64], [260,34]];   /* (claude/towpath fix, review M6: the towpath a road vertex a hop east of Waymeet; canal, theatre and fair re-spaced so every plate is clear) */
+const INLAND_PATH = [[140,176], [25,153], [41,153], [41,122], [119,142], [130,115], [93,86], [124,83], [159,43], [208,64], [260,34]];   /* (claude/towpath fix, review M6: the towpath a road vertex a hop east of Waymeet; canal, theatre and fair re-spaced so every plate is clear) */
 /* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
    levels is in LEVELS yet, and a node whose level index is -1 crashes nodeLocked's LEVELS[-1] on the map's first
    frame (§8). This is geometry and a seam only: the entry point the desert's own road will start from one day, and
@@ -4377,7 +4377,7 @@ DESERT_NODES.push({ id: 'redgorge', kind: 'level', level: LEVELS.findIndex(l => 
 DESERT_NODES.push({ id: 'glasssea', kind: 'level', level: LEVELS.findIndex(l => l.id === 'glasssea'), x: 60, y: 130, plate: 'left', name: 'THE GLASS SEA' });   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE */
 DESERT_NODES.push({ id: 'ksar', kind: 'level', level: LEVELS.findIndex(l => l.id === 'ksar'), x: 40, y: 92, plate: 'left', name: 'THE BANDIT KSAR' });
 DESERT_NODES.push({ id: 'buriedcity', kind: 'level', level: LEVELS.findIndex(l => l.id === 'buriedcity'), x: 116, y: 72, plate: 'above', name: 'THE BURIED CITY' });   /* THE BURIED CITY (claude/buriedcity, the greybox): the main road past THE BANDIT KSAR, the old road on under the dunes */   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA, on the old road into the Buried City */
-const DESERT_PATH = [[274, 174], [248, 138], [190, 150], [170, 136], [140, 156], [136, 120], [60, 130], [40, 92], [92, 64]];   /* (claude/ksar: on to THE BANDIT KSAR) (claude/redgorge: on to THE RED GORGE) */
+const DESERT_PATH = [[274, 174], [248, 138], [190, 150], [170, 136], [140, 156], [136, 120], [60, 130], [40, 92], [116, 72]];   /* (claude/ksar: on to THE BANDIT KSAR) (claude/redgorge: on to THE RED GORGE) */
 const NODES = WOOD_NODES.map(n => ({ ...n, y: n.y + WOOD_Y })).concat(CRAG_NODES.map(n => ({ ...n, y: n.y + CRAG_Y })), COAST_NODES.map(n => ({ ...n, y: n.y + COAST_Y })), INLAND_NODES.map(n => ({ ...n, y: n.y + INLAND_Y })), DESERT_NODES.map(n => ({ ...n, y: n.y + DESERT_Y })));
 const PATH = WOOD_PATH.map(([x, y]) => [x, y + WOOD_Y]).concat([[40, 200 + CRAG_Y]], CRAG_PATH.map(([x, y]) => [x, y + CRAG_Y]), COAST_PATH.map(([x, y]) => [x, y + COAST_Y]), INLAND_PATH.map(([x, y]) => [x, y + INLAND_Y]), DESERT_PATH.map(([x, y]) => [x, y + DESERT_Y]));
 const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.y)<Math.hypot(PATH[best][0]-n.x,PATH[best][1]-n.y)?i:best,0));

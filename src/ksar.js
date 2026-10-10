@@ -351,7 +351,7 @@ export function buildKsar({ painter, T, TS }) {
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,
-    squadBands: [{ lo: 600, hi: 799, spots: 0, why: "THE HAWK-MISTRESS'S COURTYARD: columns 584-623 are her arena - no squad stands in a boss arena (her guard comes down in phase two)" }],
+    squadBands: [{ lo: 800, hi: 999, spots: 0, why: "THE LINE TO HER ROOFS and THE HAWK-MISTRESS'S COURTYARD: columns 796-803 are the last chasm (the rope line carries you over it), 804-811 the rooftops' door and its checkpoint, 812-861 her arena - no squad stands in a boss arena or on a rope ride, and the exam before it (the keg alley, 705-789) is the section's fight" }, { lo: 600, hi: 799, spots: 0, why: "THE HAWK-MISTRESS'S COURTYARD: columns 584-623 are her arena - no squad stands in a boss arena (her guard comes down in phase two)" }],
     unlocks: [
       { kind: 'ksgong', opens: 'a call: every bandit in its earshot leaves his post for it (the gatehouse squad off the winch\'s brake); cut, it is silent for good', hud: 'THE GONG CALLS THEM / THE ROPE IS CUT: THE GONG IS SILENT' },
       { kind: 'kskegs', opens: 'a powder keg in the hand: thrown, it blasts the bricked arches open and sets off the store\'s chain', hud: 'POWDER KEGS: E TAKES ONE, ATTACK THROWS IT' },

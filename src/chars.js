@@ -406,12 +406,13 @@ function smearBeat(cur, prev, cols, o = {}) {
 }
 /* the strike beats are the second and third frames of a chain and the second of a heavy; each reads the beat before it */
 function smearPass(F, cols) { for (const [key, beats] of [['atk', [1, 2]], ['atkB', [1, 2]], ['atkC', [1, 2]], ['heavy', [1, 2]], ['air', [1, 2]]]) { const a = F[key]; if (Array.isArray(a)) for (const i of beats) smearBeat(a[i], a[i - 1], cols, i === 2 ? { max: 55 } : {}); } }
-function storeFrames(card, knight, mode) {
+function storeFrames(card, knight, mode, cols) {
   const F = {};
   if (mode !== 'atk' && mode !== 'weaponIcon') F.idle = card.idle();
   if (mode === true || mode === 'atk' || mode === 'weaponIcon') F.atk = card.atk();
   if (knight && F.idle && F.idle[2]) { const g = F.idle[2].getContext('2d'); g.fillStyle = '#dfe8ff'; g.fillRect(BX + 4, BY + 4, 1, 1); }
   padHeroFrames(F);
+  smearPass(F, cols);   /* the same arc the full bake lays on the strike beats, or the card's frames would differ from the game's (claude/herokeys) */
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
   return { R: F };
 }
@@ -491,9 +492,9 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
       KF({ dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], sword: [sh[0] + 2, sh[1] + 4, sh[0] + 6, sh[1] + 11], plume: 0 })),
       () => (// 4 settle
       KF({ legs: 'stand', sword: rest(), plume: 0 }))
-    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i > 1) || (previewOnly === 'atk' && i > 2) ? null : make()))
   };
-  if (previewOnly) return storeFrames(card, true, previewOnly);
+  if (previewOnly) return storeFrames(card, true, previewOnly, SMEAR_COL.steel);
   const F = {
     idle: card.idle(),   /* the point stays in the turf - by one pixel: at +9 it was three under the ground line */
     // run: body bobs, sword arm pumps
@@ -1846,9 +1847,9 @@ export function bakePyro(skin = {}, previewOnly = false) {
       () => (pyroFrame({ lean: 2, trail: 2, feet: [[9, 18], [17, 18]], staff: [10, 11, 26, 10], arm: [16, 10, 21, 10], arm2: [12, 10, 16, 11], cowl: 1, flare: [27, 10, true], flick: 1 })),
       () => (pyroFrame({ lean: 1, feet: [[10, 18], [16, 18]], staff: [8, 13, 21, 8], arm: [16, 10, 18, 11], cowl: 0 })),
       () => (pyroFrame({ staff: up(), arm: hand, cowl: 0 }))
-    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i > 1) || (previewOnly === 'atk' && i > 2) ? null : make()))
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly);
+  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.fire);
   const F = {
     /* HER BREATH: the shoulders and the cowl settle a pixel while the hem and the boots stay where they stand, the robe
        swings a beat behind them, and the fire in the cage licks a new way on every beat. The staff is planted at a lean
@@ -2297,9 +2298,9 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
       () => (knightFrame({ dx: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 1], cutlass: [sh[0] + 4, sh[1] - 1, sh[0] + 12, sh[1] + 1], pistol: holster(), plume: 2 })),
       () => (knightFrame({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], cutlass: [sh[0] + 4, sh[1] + 2, sh[0] + 10, sh[1] + 7], pistol: holster(1), plume: 0 })),
       () => (knightFrame({ cutlass: rest(), pistol: holster(), plume: 0 }))
-    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i > 1) || (previewOnly === 'atk' && i > 2) ? null : make()))
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly);
+  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.steel);
   const F = {
     /* HIS BREATH: the hat and the feather ride it, the coat tail hangs a beat behind, and the cutlass point dips after the hand */
     idle: card.idle(),
@@ -2446,9 +2447,9 @@ export function bakeReaper(skin = {}, previewOnly = false) {
       () => (knightFrame({ wide: 8, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 19, sh[1] - 1], plume: 2 })),
       () => (knightFrame({ wide: 8, dx: 2, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], greatsword: [sh[0] + 4, sh[1] + 1, sh[0] + 14, sh[1] + 7], plume: 0 })),   /* (widened too: its point was cut off at the old edge) */
       () => (knightFrame({ greatsword: rest(), plume: 0 }))
-    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i > 1) || (previewOnly === 'atk' && i > 2) ? null : make()))
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly);
+  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.blood);
   const F = {
     /* HIS BREATH: the pauldrons lift, the torn surcoat drags a beat behind, the long point sinks after the hands, and once
        in the cycle the green in the helm goes out and comes back. The point is held a pixel short so it clears the frame. */
@@ -2616,9 +2617,9 @@ export function bakeWarden(skin = {}, previewOnly = false) {
       () => (thrust(sh[0] + 5, sh[1], 57, sh[1], { dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 6, sh[1]], plume: 2 })),
       () => (thrust(sh[0] + 2, sh[1] + 2, 39, sh[1] + 2, { dx: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], plume: 0 })),
       () => (knightFrame({ legs: 'stand', spear: rest(), plume: 0 }))
-    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i > 1) || (previewOnly === 'atk' && i > 2) ? null : make()))
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly);
+  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.steel);
   const F = {
     idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) =>
@@ -2884,9 +2885,9 @@ export function bakePaladin(skin = {}, previewOnly = false) {
       knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], maul: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 9], plume: 0 })),
       () => (// the head in the ground
       knightFrame({ maul: rest(), plume: 0 }))
-    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 1) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make()))
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i > 1) || (previewOnly === 'atk' && i > 2) ? null : make()))
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly);
+  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.gold);
   const F = {
     /* HIS BREATH: the head of the maul never leaves the ground - only the haft moves, with his hands - and the tabard below
        his belt gathers and falls a beat behind his chest */
@@ -4411,9 +4412,9 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
       () => knightFrame({ wide: WIDE, dx: 2, legs: 'runC', arm: [X, Y, X + 5, Y], arm2: [OFF[0], OFF[1], X + 1, Y], stave: [X - 3, Y - 1, X + 15, Y + 2], plume: 2, bits: [o(18, 4, M), o(18, 0, M)] }),
       () => knightFrame({ wide: WIDE, dx: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 2], arm2: [OFF[0], OFF[1], X, Y + 2], stave: [X - 2, Y - 3, X + 13, Y + 7], plume: 0 }),
       () => knightFrame({ legs: 'stand', ...guard(), plume: 0 }),
-    ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 2) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make())),
+    ].map((make, i) => (previewOnly === 'weaponIcon' && i > 2) || (previewOnly === 'atk' && i > 2) ? null : make())),
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly);
+  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.stone);
   const F = {
     idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) =>

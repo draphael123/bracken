@@ -18,6 +18,7 @@ import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
+import { ksarOpened } from './ksar-locks.mjs';   /* the Ksar's verbs (winch, arches, rope bridge) opened: the fill has none */
 import { migrateProgress, loadProgress } from '../src/progression.js';
 import { doorSpot, standing, cleanBundle, drop, normalizeDeathCost, freshDeathCost, DC_VERSION } from '../src/death-cost.js';
 
@@ -51,7 +52,7 @@ const MODEL_GAPS = { wood: [[510, 8]], oreroad: [[470, 12]], glasssea: [[600, 30
 /* (claude/moor2: the moor's landing is walked now - the kite ride that hid it is gone) */
 /* ---- 3. EVERY ARENA'S DOOR IS STANDING ROOM THE FILL REACHES (a boss never carries one) ---- */
 { const misses = [], skipped = []; let n = 0;
-  for (const lv of LEVELS) { const L = lv.build(), R = floodReach(L, T, { rides: true, across: 5, hero: process.env.REACH_HERO }), W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
+  for (const lv of LEVELS) { const L = lv.build(), R = floodReach(ksarOpened(L), T, { rides: true, across: 5, hero: process.env.REACH_HERO }), W = L.W, H = L.H, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : L.grid[y * W + x];
     const solid = (x, y) => { const t = at(x, y); return t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.CLIMB || t === T.SOFT || t === T.ICE || t === T.WEB; };
     const spike = (x, y) => at(x, y) === T.SPIKE;
     for (const [name, A] of [['arena', L.arena], ['mini', L.mini]]) { if (!A) continue; n++;

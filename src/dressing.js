@@ -1073,3 +1073,5 @@ GROUND_KITS.church={density:0,kinds:[]};   /* THE LIT CHURCH (claude/churchart):
 ALLOWED_DECORATIONS.church=[];
 GROUND_KITS.towpath={density:0,kinds:[]};   /* THE TOWPATH (claude/towpath, batch81 integ): a river road of locks, a mill and a wheel - nothing is sprinkled; its dressing is the level's own decor rows */
 ALLOWED_DECORATIONS.towpath=[];
+GROUND_KITS.buriedcity={density:0,kinds:[]};   /* THE BURIED CITY (claude/buriedcity, batch82 integ): sand over a drowned city's stone, brass and gear - nothing grows or is sprinkled; its dressing is the level's own decor rows and src/redraw (no placed decoration) */
+ALLOWED_DECORATIONS.buriedcity=[];
