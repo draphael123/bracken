@@ -168,24 +168,24 @@
   "bare": true
  },
  "church": {
-  "hash": "46c49bf8f4ae",
+  "hash": "d58ae4a4c416",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
-  "deaths": 9,
-  "kills": 8,
-  "lifts": 82,
+  "hits": 21,
+  "deaths": 10,
+  "kills": 4,
+  "lifts": 80,
   "walked": 100,
   "bare": true
  },
  "towpath": {
-  "hash": "1c732904e0da",
+  "hash": "c08e9f288a6b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 29,
-  "deaths": 8,
+  "hits": 34,
+  "deaths": 7,
   "kills": 1,
   "lifts": 58,
   "walked": 100,
@@ -204,14 +204,14 @@
   "bare": true
  },
  "scree": {
-  "hash": "3aff1dfa6cc5",
+  "hash": "13812bfffa56",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 44,
-  "deaths": 6,
-  "kills": 36,
-  "lifts": 132,
+  "hits": 35,
+  "deaths": 4,
+  "kills": 54,
+  "lifts": 127,
   "walked": 100,
   "bare": true
  }
