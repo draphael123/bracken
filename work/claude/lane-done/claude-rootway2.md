@@ -88,3 +88,11 @@ NOT run: the full suite, boss-openings (the whole-roster tool; its Huntmaster ro
 - THE HUNTMASTER's new poses (src/redraw/rootway_art.js paintHuntmaster; borrowed poses for now): the NET swing and throw, the HEAVY ARROW draw (a black broadhead), the HORN
   to his mouth, the SNARE crouch + hop + set, the KNIFE FLURRY (three cuts), the DODGE ROLL; the three gold pips over the timer; the horn's archers arriving on the perches.
 - Music: rootwayfix's two tracks stand (Forest Whisper Theme / Call to War).
+
+## FOLLOW-UP (Daniel's answers 10-09, via the coordinator)
+- THE LONG STAGGER = about 4 REAL seconds: stagLong (and the cage's caughtT) 3.75 -> **2.4 game s** (speed 0.6). rootway-probe asserts 2.2-2.6.
+- Kept the three-blows'-worth cap (max 4). Knife-flurry trigger 46 -> **40 px** (helps the knight).
+- Re-measured WITH FLASKS, 12 seeds: with the new stagger at hp 940 it fell to 47% (2/12, 7/12, 8/12); hp only retuned: 820 -> 56%; **hp 720 -> knight 5/12, warden 8/12, pyro 11/12 = 67% (in band)**,
+  fights K 103-195 s (mean 149), W 68-161 (124), P 85-105 (93). DRY (human+dry, 6 seeds): 0/6, 2/6, 3/6 = 28%. Mash BOSS re-stamped: 0/6 (boss left 53-73%).
+  The level's hash did not move (boss-only change): only the boss row re-stamped. rootway-probe green, mash-gate green, level-quality CLEARS.
+- Accepted as built: spring caps optional, four shrines, the horn's archers fall back after 15 s, walker weight later (cellar/trunk).

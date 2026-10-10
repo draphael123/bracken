@@ -8350,16 +8350,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/76",
-     "dead:100/76"
+     "dead:100/53",
+     "dead:100/53"
     ],
     "warden": [
-     "dead:100/74",
-     "dead:100/74"
+     "dead:100/65",
+     "dead:100/65"
     ],
     "pyro": [
-     "dead:100/84",
-     "dead:100/84"
+     "dead:100/73",
+     "dead:100/73"
     ]
    },
    "rows": [
@@ -8368,11 +8368,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 123.5,
+     "secs": 82.3,
      "hpLostPct": 100,
-     "bossLeftPct": 76,
-     "landed": 25,
-     "swings": 4675,
+     "bossLeftPct": 53,
+     "landed": 37,
+     "swings": 3044,
      "reprisalPct": 2,
      "chip": []
     },
@@ -8381,11 +8381,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 123.5,
+     "secs": 82.3,
      "hpLostPct": 100,
-     "bossLeftPct": 76,
-     "landed": 25,
-     "swings": 4675,
+     "bossLeftPct": 53,
+     "landed": 37,
+     "swings": 3044,
      "reprisalPct": 2,
      "chip": []
     },
@@ -8394,11 +8394,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 123.7,
+     "secs": 82.7,
      "hpLostPct": 100,
-     "bossLeftPct": 74,
-     "landed": 31,
-     "swings": 4675,
+     "bossLeftPct": 65,
+     "landed": 38,
+     "swings": 3078,
      "reprisalPct": 2,
      "chip": []
     },
@@ -8407,11 +8407,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 123.7,
+     "secs": 82.7,
      "hpLostPct": 100,
-     "bossLeftPct": 74,
-     "landed": 31,
-     "swings": 4675,
+     "bossLeftPct": 65,
+     "landed": 38,
+     "swings": 3078,
      "reprisalPct": 2,
      "chip": []
     },
@@ -8420,11 +8420,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 115.9,
+     "secs": 73.6,
      "hpLostPct": 100,
-     "bossLeftPct": 84,
-     "landed": 22,
-     "swings": 4469,
+     "bossLeftPct": 73,
+     "landed": 32,
+     "swings": 2734,
      "reprisalPct": 3,
      "chip": []
     },
@@ -8433,11 +8433,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 115.9,
+     "secs": 73.6,
      "hpLostPct": 100,
-     "bossLeftPct": 84,
-     "landed": 22,
-     "swings": 4469,
+     "bossLeftPct": 73,
+     "landed": 32,
+     "swings": 2734,
      "reprisalPct": 3,
      "chip": []
     }
