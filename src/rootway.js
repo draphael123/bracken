@@ -171,7 +171,7 @@ export function buildRootway({ painter, T, TS }) {
   air(291, 296, 19, 22); ground(291, 296, 23);                                          /* THE LEDGE a storey under the far lip, and the root wall to the road (the ledge's bud, flush against it) */
   bud(295,23);
   zips.push(rope(279,14,292,23,23));                                               /* the trophy line: gantry to ledge (the hero's feet = rope + 12) */
-  foe('trophyhunter', 294, 22, 'yardExam', { face: -1 }); deco(291,22,'warnPost',0); glow(293,22);   /* THE LANDING: the hunter holds the ledge and a bow covers the line (difficulty v2: a foe at the landing) */
+  foe('trophyhunter', 294, 22, 'yardLanding', { face: -1 }); deco(291,22,'warnPost',0); glow(293,22);   /* THE LANDING: the hunter holds the ledge and a bow covers the line (difficulty v2: a foe at the landing) */
   coins([284,13],[287,14],[290,16]);                                               /* a trail of trophies along the line */
   ent('check', 299, 18);                                                          /* CHECKPOINT THREE */
   deco(278, 13, 'hangCage', 0);
