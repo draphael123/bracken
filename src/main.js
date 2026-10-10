@@ -4294,9 +4294,9 @@ const CRAG_NODES = [
   { id: 'spire', kind: 'level', level: 7, x: 149, y: 71, plate: 'above', name: 'THE MONASTERY' },   /* the Sunspire and its Roc went in the monastery rework; the map had not heard */
   { id: 'moor', kind: 'level', level: 8, x: 191, y: 90, plate: 'below', name: 'GALE MOOR' },
   { id: 'skyroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'skyroad'), x: 268, y: 140, plate: 'below', name: 'THE SKY ROAD' },   /* THE SKY ROAD (claude/skyroad): on the main road after GALE MOOR, before THE ORE ROAD (Daniel 10-03) */
-  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 281, y: 111, plate: 'below', name: 'THE ORE ROAD' },   /* (claude/deeprails2: 8 down, its plate under it - room for THE DEEP RAILS on the road above it) */
-  { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 237, y: 81, plate: 'leftup', name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart; claude/deeprails2, Daniel 10-09): ON THE ROAD, between THE ORE ROAD and STORMHOLD - down into the mine and up into the hold */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
-  { id: 'storm', kind: 'level', level: 9, x: 270, y: 55, plate: 'right', name: 'STORMHOLD' },   /* (claude/deeprails2: 6 right, its plate on the right - the road comes up to it from THE DEEP RAILS) */
+  { id: 'oreroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'oreroad'), x: 281, y: 109, plate: 'below', name: 'THE ORE ROAD' },   /* (claude/deeprails2: its plate under it now - room for THE DEEP RAILS on the road after it) */
+  { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 239, y: 80, plate: 'above', board: 'DEEP RAILS', name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart; claude/deeprails2, Daniel 10-09): ON THE ROAD, between THE ORE ROAD and STORMHOLD - down into the mine and up into the hold */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
+  { id: 'storm', kind: 'level', level: 9, x: 267, y: 55, plate: 'right', name: 'STORMHOLD' },   /* (claude/deeprails2: the road comes up to it from THE DEEP RAILS) */
   { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, plate: 'below', name: 'HIGHCROWN' },
   { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 276, y: 8, plate: 'above', spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
 ];
@@ -4304,7 +4304,7 @@ const CRAG_NODES = [
    self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
    no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
    relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
-const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,111], [237,81], [270,55], [260,26]];   /* (claude/deeprails2: THE DEEP RAILS on the road between the Ore Road and Stormhold) */   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
+const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,109], [239,80], [267,55], [260,26]];   /* (claude/deeprails2: THE DEEP RAILS on the road between the Ore Road and Stormhold) */   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 158, y: 154, plate: 'right', name: 'THE LONG WATER' },
@@ -4745,7 +4745,7 @@ function drawMap() {
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
-    const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : LEVELS[nd.level].name;
+    const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : nd.board || LEVELS[nd.level].name;   /* (nd.board: the short board name, src/map-plates.js) */
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     const twoLine = !!p && !lk;
     const tw = Math.max(lbl.length * 6 + 10, twoLine ? 44 : 0), th = twoLine ? 17 : 10;
