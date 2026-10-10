@@ -132,14 +132,14 @@
   "bare": true
  },
  "rootway": {
-  "hash": "d133df87a09a",
+  "hash": "936c53495fc3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 20,
+  "hits": 23,
   "deaths": 0,
-  "kills": 34,
-  "lifts": 79,
+  "kills": 38,
+  "lifts": 78,
   "walked": 100,
   "bare": true
  },
@@ -180,13 +180,13 @@
   "bare": true
  },
  "towpath": {
-  "hash": "43ba3fec92c0",
+  "hash": "1c732904e0da",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 34,
+  "hits": 29,
   "deaths": 8,
-  "kills": 0,
+  "kills": 1,
   "lifts": 58,
   "walked": 100,
   "bare": true
@@ -204,14 +204,14 @@
   "bare": true
  },
  "scree": {
-  "hash": "8147146cccda",
+  "hash": "3aff1dfa6cc5",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 52,
-  "deaths": 9,
+  "hits": 44,
+  "deaths": 6,
   "kills": 36,
-  "lifts": 138,
+  "lifts": 132,
   "walked": 100,
   "bare": true
  }

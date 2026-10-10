@@ -43,7 +43,7 @@ ok((L.zipLines || []).length === 2 && !at(ent('check', 299), noZip(1)), 'THE GAN
 ok(at(ent('check', 299), noZip(0)), 'the first trophy line (the taught one over the scouts) is a lesson, not a lock: the road walks under it');
 { const z = L.zipLines[0], g = (x, y) => L.grid[y * L.W + x]; ok(g(Math.floor(z.x1 / TS), Math.floor((z.y1 + 12) / TS)) === T.SOLID && g(Math.floor(z.x0 / TS), Math.floor((z.y0 + 12) / TS)) === T.ONEWAY, 'the taught line runs from a root deck (one-way) to the floor under its foot'); }
 { const z = L.zipLines[1], g = (x, y) => L.grid[y * L.W + x]; ok(g(Math.floor(z.x1 / TS), Math.floor((z.y1 + 12) / TS)) === T.SOLID && g(Math.floor(z.x0 / TS), Math.floor((z.y0 + 12) / TS)) === T.ONEWAY, 'the gantry line runs from the gantry deck to the ledge floor');
-  ok(L.ents.some(e => /^(trophyhunter|shield|archer)$/.test(e.t) && e.squad === 'yardLanding' && e.x > 285 && Math.abs(e.x * TS - z.x1) < 6 * TS), 'a foe holds the landing of the route line (difficulty v2)');
+  ok(L.ents.some(e => /^(trophyhunter|shield|archer)$/.test(e.t) && e.squad === 'yardExam' && e.x > 285 && Math.abs(e.x * TS - z.x1) < 6 * TS), 'a foe holds the landing of the route line (difficulty v2)');
   ok(!L.ents.some(e => e.squad && Math.abs(e.x * TS - (L.zipLines[0].x1)) < 3 * TS && e.y * TS > L.zipLines[0].y1 - 40 && e.y * TS < L.zipLines[0].y1 + 40), 'no foe stands at the TAUGHT line landing (a miss costs a drop, not a death)'); }
 ok(!at(ent('check', 384), noHoist('lookout')), 'THE LOOKOUT\'s span is a lock');
 ok(!!budAt(339) && !at(ent('check', 384), noBud(339)), 'the last leaning cap is a lock');
