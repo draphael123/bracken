@@ -108,14 +108,14 @@
   "bare": true
  },
  "glasssea": {
-  "hash": "fa078de9f03f",
+  "hash": "f0255d0dda14",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 39,
+  "hits": 25,
   "deaths": 6,
-  "kills": 29,
-  "lifts": 100,
+  "kills": 32,
+  "lifts": 105,
   "walked": 100,
   "bare": true
  },
@@ -216,14 +216,14 @@
   "bare": true
  },
  "oreroad": {
-  "hash": "ab423b5df398",
+  "hash": "8a3c779e7c8e",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 19,
-  "deaths": 4,
+  "hits": 16,
+  "deaths": 3,
   "kills": 27,
-  "lifts": 43,
+  "lifts": 45,
   "walked": 100,
   "bare": true
  },

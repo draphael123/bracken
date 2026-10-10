@@ -6041,7 +6041,7 @@
   }
  },
  "oreroad": {
-  "hash": "79af3269dee9",
+  "hash": "8a3c779e7c8e",
   "boss": {
    "boss": "winchmaster",
    "wins": 0,
@@ -6142,71 +6142,71 @@
    ]
   },
   "carried": {
-   "from": "34c3d716f6ad",
+   "from": "79af3269dee9",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 3,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 312,
-    "hits": 15,
+    "hpLostPct": 308,
+    "hits": 12,
     "walked": 100,
-    "lifts": 25,
+    "lifts": 22,
     "held": 0,
     "duels": 0,
-    "boardLifts": 18,
-    "rides": 9,
-    "pulls": 0,
-    "ridden": {
-     "bucket": 9
-    },
-    "machines": true,
-    "frames": 16833,
-    "kills": 11,
-    "heroLevel": 10
-   },
-   "warden": {
-    "deaths": 4,
-    "minHpPct": 0,
-    "hpLostPct": 397,
-    "hits": 18,
-    "walked": 100,
-    "lifts": 26,
-    "held": 3,
-    "duels": 1,
-    "boardLifts": 8,
+    "boardLifts": 9,
     "rides": 6,
     "pulls": 0,
     "ridden": {
      "bucket": 6
     },
     "machines": true,
-    "frames": 13715,
-    "kills": 13,
-    "heroLevel": 10
+    "frames": 12882,
+    "kills": 20,
+    "heroLevel": 12
+   },
+   "warden": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 187,
+    "hits": 8,
+    "walked": 100,
+    "lifts": 23,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 9,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "bucket": 2
+    },
+    "machines": true,
+    "frames": 9159,
+    "kills": 14,
+    "heroLevel": 12
    },
    "pyro": {
     "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 424,
-    "hits": 14,
+    "hpLostPct": 243,
+    "hits": 12,
     "walked": 100,
-    "lifts": 25,
+    "lifts": 22,
     "held": 0,
     "duels": 0,
-    "boardLifts": 19,
-    "rides": 8,
+    "boardLifts": 5,
+    "rides": 3,
     "pulls": 0,
     "ridden": {
-     "bucket": 8
+     "bucket": 3
     },
     "machines": true,
-    "frames": 16748,
-    "kills": 13,
-    "heroLevel": 10
+    "frames": 8747,
+    "kills": 12,
+    "heroLevel": 12
    }
   }
  },
@@ -8015,7 +8015,7 @@
   }
  },
  "glasssea": {
-  "hash": "fa078de9f03f",
+  "hash": "f0255d0dda14",
   "boss": {
    "boss": "colossus",
    "wins": 0,
@@ -8116,53 +8116,17 @@
    ]
   },
   "carried": {
-   "from": "20355d1b686a",
+   "from": "fa078de9f03f",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 2,
-    "minHpPct": 0,
-    "hpLostPct": 293,
-    "hits": 36,
-    "walked": 100,
-    "lifts": 51,
-    "held": 4,
-    "duels": 1,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 16237,
-    "kills": 5,
-    "heroLevel": 34
-   },
-   "warden": {
     "deaths": 9,
     "minHpPct": 0,
-    "hpLostPct": 904,
-    "hits": 85,
-    "walked": 100,
-    "lifts": 51,
-    "held": 22,
-    "duels": 7,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 24714,
-    "kills": 7,
-    "heroLevel": 34
-   },
-   "pyro": {
-    "deaths": 7,
-    "minHpPct": 0,
-    "hpLostPct": 732,
-    "hits": 82,
+    "hpLostPct": 907,
+    "hits": 90,
     "walked": 100,
     "lifts": 50,
     "held": 22,
@@ -8172,9 +8136,45 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 24518,
+    "frames": 26987,
+    "kills": 13,
+    "heroLevel": 37
+   },
+   "warden": {
+    "deaths": 9,
+    "minHpPct": 0,
+    "hpLostPct": 907,
+    "hits": 93,
+    "walked": 100,
+    "lifts": 51,
+    "held": 22,
+    "duels": 7,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 25804,
+    "kills": 9,
+    "heroLevel": 37
+   },
+   "pyro": {
+    "deaths": 8,
+    "minHpPct": 0,
+    "hpLostPct": 810,
+    "hits": 85,
+    "walked": 100,
+    "lifts": 50,
+    "held": 22,
+    "duels": 7,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 25085,
     "kills": 8,
-    "heroLevel": 34
+    "heroLevel": 37
    }
   }
  },

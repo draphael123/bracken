@@ -377,17 +377,17 @@
   "lostPct": 217
  },
  "oreroad": {
-  "hash": "79af3269dee9",
+  "hash": "8a3c779e7c8e",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
-  "deaths": 2,
-  "kills": 26,
-  "lifts": 53,
+  "hits": 20,
+  "deaths": 4,
+  "kills": 20,
+  "lifts": 44,
   "walked": 100,
   "bare": true,
-  "lostPct": 157
+  "lostPct": 214
  },
  "unburied": {
   "hash": "08498834c072",
@@ -507,17 +507,17 @@
   "lostPct": 135
  },
  "glasssea": {
-  "hash": "fa078de9f03f",
+  "hash": "f0255d0dda14",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 39,
+  "hits": 26,
   "deaths": 6,
-  "kills": 29,
-  "lifts": 100,
+  "kills": 30,
+  "lifts": 104,
   "walked": 100,
   "bare": true,
-  "lostPct": 291
+  "lostPct": 294
  },
  "ksar": {
   "hash": "9cf6f7b4937e",
