@@ -13,6 +13,7 @@
         grid's fire is still the rule - the backdrop never lights a cell)
    PORT=8733 node tools/village-water.mjs */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { THROW_KIND } from '../src/throwables.js';
 import { KINDS, launchOf } from '../src/carry-throw.js';
@@ -132,9 +133,7 @@ try {
    out.after={ward:b.ward,blow:blow(40)};
    const pr3=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket')[0];V().take(pr3);pr3.state='fly';pr3.x=b.x;pr3.y=b.y-12;pr3.vx=1;pr3.vy=10;for(let i=0;i<12&&b.mode!=='doused';i++){if(pr3.state==='fly'){pr3.x=b.x;pr3.y=b.y-12;pr3.vy=10;}freeze();BK.sim(1);}out.again=b.mode;
    b.mode='overheat';b.modeT=3;b.open=3;b.ward=0;out.over=blow(20);}
-  /* 4. THE TOWN BEHIND BURNS on the level's clock: the far town's fire pixels at the start and later */
-  {boot('knight',300,25);const fireAt=t=>{let sum=0;for(let k=0;k<8;k++){BK.villageWater.levelTime(t);for(let i=0;i<5;i++)BK.step(1);sum+=one();}return Math.round(sum/8);};const one=()=>{const c=BK.buf.getContext('2d').getImageData(0,0,320,110).data;let n=0;for(let i=0;i<c.length;i+=4){const r=c[i],g=c[i+1],bb=c[i+2];if(r>200&&g>90&&bb<120)n++;}return n;};
-   const t0=fireAt(1),t1=fireAt(330);out.town={t0,t1};}
+  /* 4. (the town behind burns on the level's clock: asserted in Node below from the page's own source and village-blaze.js - the fire-pixel count that stood here could not tell the far town from the street's own fires: batch81 integ) */
   return out;})()`, 900000);
   console.log(JSON.stringify(r));
   /* 1 */
@@ -165,7 +164,15 @@ try {
   assert.equal(r.again, 'doused', 'and water stuns him again');
   assert.ok(r.over >= 28 && r.over <= 32, 'overheated (his own opening) he takes x1.5: ' + r.over);
   /* 4 */
-  assert.ok(r.town.t1 > r.town.t0 + 40, 'the town behind burns on the level\'s clock - the far town is alight five and a half minutes on, not at the start: ' + JSON.stringify(r.town));
+  /* 4. THE TOWN BEHIND BURNS on the level's clock (burnvillage2). It used to be a count of fire-coloured pixels on the screen at level time 1 and 330, and it could not tell: the street's own fires
+     and the houses in front of the backdrop swamp the far town's (the count moved 17-36 between runs on one build, and the check failed on the lane's own tip). Now the two halves are asserted where they are exact:
+     (a) the page DRAWS every house of the backdrop through blazeAt(its tile, its index, levelTime) - the level's clock - and (b) the houses that backdrop draws across the level (the same k and wx formula as
+     drawBurningTown) are further along at 330 s than at 1 s: more of them alight or burnt. */
+  { const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), i0 = main.indexOf('function drawBurningTown'), body = main.slice(i0, main.indexOf('function updateVillage', i0));
+    assert.ok(/drawBlazingHouse\(g, x, y, w, h, peak, blazeAt\(wx, k, levelTime\)/.test(body), 'the far town is drawn through blazeAt(wx, k, levelTime): the level own clock');
+    assert.ok(/const wx = \(\(k \* 46 \+ w \/ 2 - VW \/ 2\) \/ par \+ VW \/ 2\) \/ TS;/.test(body), 'and wx is the tile where the camera stands when the house is centred (the formula this check mirrors)');
+    const par = 0.35, VW = 320, TS = 16, W = LEVELS.find(l => l.id === 'burning').build().W, lit = t => { let n = 0, all = 0; for (let k = -2; k < (W * TS * par + VW) / 46 + 2; k++) { const w = 30 + ((k * 13) % 3) * 8, wx = ((k * 46 + w / 2 - VW / 2) / par + VW / 2) / TS; if (wx < 0 || wx > W) continue; all++; if (blazeAt(wx, k, t).st !== 'unlit') n++; } return { n, all }; };
+    const a = lit(1), b = lit(330); assert.ok(b.n >= a.n + 8, 'the town behind burns on the level clock - more of its houses are alight five and a half minutes on than at the start: ' + JSON.stringify({ t1: a, t330: b })); }
   assert.deepEqual(pg.errors.slice(0, 3), [], 'no page errors');
   console.log('village-water: the water, the stun and its ward, the bridges and the burning town all hold');
 } finally { pg.close(); }
