@@ -43,10 +43,12 @@ export const composers = credits => {
 /* THE TYPE (claude/fontpair): the two faces the whole game is written in, both under the SIL Open Font License 1.1 (fonts/OFL-*.txt) */
 export const FONT_CREDITS = [['Press Start 2P', 'Cody "CodeMan38" Boisclair', 'display: titles and names'], ['Silkscreen', 'Jason Kottke', 'body: menus, signs, numbers']];
 export const FONT_LICENCE = 'SIL OFL 1.1 (OFL): scripts.sil.org/OFL';
+/* THE RECORDED SOUND EFFECTS (claude/sfx, Daniel 10-11): CC0 packs, credited as a courtesy beside the composers - the exact packs and links are in audio/CREDITS.txt */
+export const SFX_CREDIT_NAMES = ['Kenney', 'rubberduck', 'StumpyStrust'];
 export const CCBY_PER = 2;
 export const CREDIT_ROWS = 8;
 export function creditPages(credits) {
-  const names = composers(credits), per = CREDIT_ROWS * 2, pages = [];
+  const names = [...new Set([...composers(credits), ...SFX_CREDIT_NAMES])].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())), per = CREDIT_ROWS * 2, pages = [];
   for (let i = 0; i < CC_BY.length; i += CCBY_PER) pages.push({ kind: 'ccby', items: CC_BY.slice(i, i + CCBY_PER), last: i + CCBY_PER >= CC_BY.length });
   for (let i = 0; i < names.length; i += per) pages.push({ kind: 'names', names: names.slice(i, i + per) });
   pages.push({ kind: 'fonts' });
