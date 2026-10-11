@@ -34,7 +34,7 @@ import { openPage, ROOT } from './cdp.mjs';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -257,6 +257,10 @@ async function pageTextFit(input) {
     BK.state = 'soundtest'; BK.soundCat = 0; const fxStarts = BK.soundFxPages();
     for (let p = 0; p < fxStarts.length; p++) frame('soundtest effects page #' + p, () => { BK.state = 'soundtest'; BK.soundCat = 0; BK.soundI = fxStarts[p]; }, { settle: 20 });
     await yieldNow(); }
+  /* WHAT'S NEW (title menu, docs/updates.json): the top of the list, a middle page and the end */
+  if (want('whatsnew')) { toPlay(0, 'knight'); await BK.WN.loadUpdates();
+    for (const sc of [0, 6, 99]) frame('whatsnew scroll ' + sc, () => { BK.state = 'whatsnew'; BK.wnScroll = sc; }, { settle: 20 });
+    BK.state = 'title'; await yieldNow(); }
   /* THE CREDITS (title menu, src/credits.js): the CC-BY page and every page of composers */
   if (want('credits')) { toPlay(0, 'knight');
     for (let p = 0; p < BK.creditPageCount(); p++) frame('credits page #' + p, () => { BK.state = 'credits'; BK.creditsPage = p; }, { settle: 20 });

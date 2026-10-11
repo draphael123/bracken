@@ -1,0 +1,57 @@
+[
+  {
+    "date": "2026-10-11",
+    "batch": 85,
+    "lines": [
+      "New hero: the Berserker",
+      "Four heroes are free to start with now",
+      "67 recorded sound effects"
+    ]
+  },
+  {
+    "date": "2026-10-11",
+    "batch": 84,
+    "lines": [
+      "Deep Rails redrawn, with new 'Machines' music",
+      "Falling Tower redrawn: drink flasks on the carpet, the Archmage casts with his staff",
+      "Caravan redrawn, with a new route through the upper ruins",
+      "Rootway redrawn, and the Lookout is easier to read",
+      "New flask art, and 18 tight jumps eased",
+      "The Crusader has new poses, and heroes dance"
+    ]
+  },
+  {
+    "date": "2026-10-10",
+    "batch": 83,
+    "lines": [
+      "Caravan 2, with the Dune Worm",
+      "Falling Tower 2, with the Archmage",
+      "Rootway 2, with the Huntmaster",
+      "Deep Rails 2 on the main road, with the Great Drill",
+      "Walking controls feel better"
+    ]
+  },
+  {
+    "date": "2026-10-10",
+    "batch": 82,
+    "lines": [
+      "New font and a slimmer HUD",
+      "A new title scene and a bigger map",
+      "Flasks 2: a drinking animation, potency, and the SECOND DRAUGHT",
+      "Hero keys, and boss tells shown as poses",
+      "Kraken 2, Ksar 2, the Crusader and the Buried City"
+    ]
+  },
+  {
+    "date": "2026-10-09",
+    "batch": 81,
+    "lines": [
+      "Lit Church, with the Paladin",
+      "Towpath, with the Fog Knight",
+      "Underleaf 2, Scree 2, Owl 2 and Monastery 2",
+      "Winchmaster 5, with new music",
+      "Zip lines in Stormhold and the Rootway",
+      "A scout horn, new Rootway music, elite gates, the Homunculus and a pilot barge"
+    ]
+  }
+]
