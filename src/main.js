@@ -117,6 +117,7 @@ import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from '
 import * as SV from './survival.js'; import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
+import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
@@ -9739,7 +9740,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
 }
 
 // ---------- boss: the Hornet Queen ----------
-let titleI = 0, titleBarY = null;
+let titleI = 0, titleBarY = null, titleWas = false, titleMusicFor = null;   /* (claude/titleregion: the title's music is set on entering the title and when the region changes, not every frame) */
 const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {}).cleared);
 /* OPTIONS (Daniel 10-09): SETTINGS, SOUND TEST and CONTROLS are one row, OPTIONS, that opens its own short list on the same board (BACK closes it). The board is sized for the top
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
@@ -27404,7 +27405,7 @@ function update(dt) {
     edCam.x = Math.max(0, Math.min(LW * TS - VW, edCam.x)); edCam.y = Math.max(0, Math.min(LH * TS - VH, edCam.y));
     edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
   }
-  if (state === 'title') { ambient.set('forest'); if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < TC.PART_S + TC.WALK_S) { if (anyPress && time - pressAt > 0.15) { pressAt = time - 9; titleSince = time - 1; } /* the fronds are parting and he is walking in: a press now skips ahead, and is not also a menu choice */ } else if (pausePress && !titleOpts) { titleOpts = true; titleI = 0; SFX.ui(); pausePress = false; }   /* (Daniel 10-09: ESC on the title top level opens the OPTIONS list, not Settings; ESC / BACK closes it) */
+  if (state === 'title') { ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < TC.PART_S + TC.WALK_S) { if (anyPress && time - pressAt > 0.15) { pressAt = time - 9; titleSince = time - 1; } /* the fronds are parting and he is walking in: a press now skips ahead, and is not also a menu choice */ } else if (pausePress && !titleOpts) { titleOpts = true; titleI = 0; SFX.ui(); pausePress = false; }   /* (Daniel 10-09: ESC on the title top level opens the OPTIONS list, not Settings; ESC / BACK closes it) */
     else {
       const items = titleItems();
       if (titleOpts && (pausePress || atkPress)) { titleOpts = false; titleI = Math.max(0, titleTop().indexOf('OPTIONS')); SFX.ui(); pausePress = false; atkPress = false; }   /* (ESC / X closes the OPTIONS list, as BACK does) */
@@ -30852,13 +30853,23 @@ function dismissPress() { if (!pressCard) return; pressCard = false; pressAt = t
 /* THE FAR COUNTRY ON THE TITLE SCREEN IS YOUR OWN. A new save and a save twenty woods deep looked at the same
    ridge: now the horizon carries what you have been through - the crags, then the sea, then the haunted country
    inland - and the picture ages with the campaign. */
-function titleRegion() {
-  const done = id => !!(PROG[id] && PROG[id].cleared);
-  if (['fields', 'mage', 'burial', 'witchlight', 'fallingtower', 'waymeet'].some(done)) return 'inland';
-  if (['reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor', 'longwater'].some(done)) return 'coast';
-  if (['scree', 'hanging', 'spire', 'moor', 'storm', 'crown'].some(done)) return 'crag';
-  return 'wood';
-}
+/* (claude/titleregion) THE REGION THE LAST-PLAYED SLOT HAS REACHED. PROG is that slot (loadSlot keeps 'bracken.slot' as the last played), read only: src/title-region.js
+   answers from the cleared flags. Cached on the count of cleared woods so the road is not walked sixty times a second. */
+let TITLE_RG = 'forest', TITLE_RG_KEY = null;
+function titleRegion() { let n = 0; for (const lv of LEVELS) if (PROG[lv.id] && PROG[lv.id].cleared) n++;
+  const key = slot + ':' + n; if (key !== TITLE_RG_KEY) { TITLE_RG_KEY = key; try { TITLE_RG = TR.regionAt(LEVELS, id => !!(PROG[id] && PROG[id].cleared)); } catch { TITLE_RG = 'forest'; } }
+  return TITLE_RG; }
+/* the far peaks' own dressing: the sea, the dead country, or the plain crags (the rumour-faded one is the wood and the marsh before the road has left them) */
+const horizonStyle = rg => rg === 'coast' ? 'coast' : rg === 'inland' ? 'inland' : (rg === 'forest' || rg === 'marsh' || rg === 'fungus') ? 'wood' : 'crag';
+/* THE REGION'S BACKDROP LAYERS, baked once each (and again only if the view's height changes): the sky, the far ridge and the near layer are the ones its own woods use. */
+const TITLE_LAYERS = {};
+function titleLayers(rid) { const key = rid + ':' + VH; if (TITLE_LAYERS[key]) return TITLE_LAYERS[key]; const R = TR.regionById(rid);
+  const sky = { dusk: () => BG.skyDusk, crag: () => ART.bakeSkyCrag(VH), night: () => ART.bakeSkyNight(VH), storm: () => RFT.bakeSkyStorm(VH), sea: () => LWT.bakeSkySea(VH), teal: () => ART.bakeSkyTeal(VH), fields: () => FW.bakeSkyFields(VH), desert: () => DZ.bakeDesertSky(VH) }[R.sky];
+  const far = { wood: () => ART.bakeFar(320, 90, 1), crag: () => ART.bakeFarCrags(320, 90, 1), sea: () => LWT.bakeFarSea(320, 90, 1), town: () => TWN.bakeFarTown(320, 90, 1), fields: () => FW.bakeFarFields(320, 90, 1), mesas: () => DZ.bakeFarMesas(320, 70) }[R.far];
+  const near = { wood: () => ART.bakeNear(640, 300, 3), marsh: () => ART.bakeNear(640, 300, 3, ['#1f4a3a', '#2a5e46', '#3a7a55', '#4f9a68']), mushroom: () => ART.bakeNearMushrooms(640, 300, 3), crag: () => ART.bakeNearCrag(640, 300, 3), shore: () => LWT.bakeNearShore(640, 300, 3), town: () => TWN.bakeYardsTown(640, 300, 3), fields: () => FW.bakeNearFields(640, 300, 3), dunes: () => DZ.bakeMidDunes(480, 80) }[R.near];
+  return (TITLE_LAYERS[key] = { R, sky: sky(), far: far(), near: near(), sun: R.sky !== 'night' && R.sky !== 'storm' }); }
+/* THE TITLE'S MUSIC: the region's own track, only once the slot has heard it (so the title never unlocks a Sound Test row), and never over a menu track the player bought. The wood is the title as it was (null). */
+function titleTrack() { const R = TR.regionById(titleRegion()); if (R.id === 'forest' || menuTrack() !== 'select') return null; return musicUnlocked(R.music) ? R.music : null; }
 function bakeHorizon(region = 'crag') {
   const W = 480, H = 96, [c, hg] = canvas(W, H), rnd = mulberry(4242);
   const ridge = (base, amp, col, rim, step) => { hg.fillStyle = col; hg.beginPath(); hg.moveTo(0, H); let y = base;
@@ -30944,18 +30955,18 @@ function drawTitleBracken() {
   }
 }
 function drawTitle(cx, cy) {
-  { const rg = titleRegion(); if (HORIZON_REGION !== rg) { HORIZON = bakeHorizon(rg); HORIZON_REGION = rg; } }
-  g.drawImage(BG.skyDusk, 0, 0, 1, VH, 0, 0, VW, VH);
-  g.drawImage(BG.sun, Math.round(VW * 0.62), 46);
+  const TL = titleLayers(titleRegion()); { const hs = horizonStyle(TL.R.id); if (HORIZON_REGION !== hs) { HORIZON = bakeHorizon(hs); HORIZON_REGION = hs; } }
+  g.drawImage(TL.sky, 0, 0, 1, VH, 0, 0, VW, VH);
+  if (TL.sun) g.drawImage(BG.sun, Math.round(VW * 0.62), 46);
   // a few long clouds lit from under
   for (let i = 0; i < 4; i++) { const x = ((time * (3 + i) + i * 97) % (VW + 120)) - 60, y = 26 + i * 11; g.globalAlpha = 0.28; g.fillStyle = '#ffb8a0'; g.fillRect(Math.round(x), y, 46 - i * 6, 2); g.fillStyle = '#8a6a98'; g.fillRect(Math.round(x) + 6, y + 2, 34 - i * 5, 2); g.globalAlpha = 1; }
-  g.globalAlpha = 0.9; drawLayer(BG.far, 0.15, VH - 90, time * 6, LH * TS - VH); g.globalAlpha = 1;
-  g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(120,80,140,0.45)'; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
+  g.globalAlpha = 0.9; drawLayer(TL.far, 0.15, VH - TL.far.height, time * 6, LH * TS - VH); g.globalAlpha = 1;
+  g.globalCompositeOperation = 'multiply'; g.fillStyle = TL.R.wash; g.fillRect(0, 0, VW, VH); g.globalCompositeOperation = 'source-over';
   drawTitleCrows();
   g.drawImage(HORIZON, -70, VH - 140);
   // the Sunspire glints now and then
   { const k = (time % 5) / 5; if (k < 0.12) { g.globalAlpha = Math.sin(k / 0.12 * Math.PI) * 0.8; g.fillStyle = '#ffffff'; g.fillRect(232, VH - 139 + Math.round(k * 200), 2, 5); g.globalAlpha = 1; } }
-  drawLayer(BG.near, 0.55, VH - 300, 40 + time * 3, LH * TS - VH);
+  drawLayer(TL.near, 0.55, VH - TL.near.height, 40 + time * 3, LH * TS - VH);
   /* (the second purple wash is gone: three multiplies over the same picture took the sun, the fire and the
      gate's stone down to one flat value, and the game's own levels are not that grey) */
   drawTitleColumn();
@@ -30983,11 +30994,12 @@ function drawTitle(cx, cy) {
       g.fillRect(Math.round(fx + Math.sin(i * 2.1 + time * 0.8 + ph * 3) * (4 + ph * 14)), Math.round(fy - 16 - ph * 62), 2 + Math.round(ph * 3), 2 + Math.round(ph * 2)); }
     g.globalAlpha = 1;
     { const w = TC.walkIn(pressCard && state === 'title' ? -1 : pressAt === null ? null : time - pressAt, fx + 20, -1);   /* he is simply there unless the card ran: then he walks in from the left after the fronds part */
-      if (w.x > -30) drawSet(K, w.walking ? 'run' : 'idle', Math.floor(time * (w.walking ? 10 : 4.5)), Math.round(w.x), fy, w.face, false); }
+      if (w.x > -30) { const dn = K.R.dance && K.R.dance.length ? (time - titleSince + 9) % 9 : 0;   /* (claude/titleregion) the slot's own hero (K is his frames, skin and gear), and every nine seconds he dances for two */
+        if (!w.walking && dn > 6.8) drawSet(K, 'dance', Math.floor((dn - 6.8) * 10), Math.round(w.x), fy, w.face, false); else drawSet(K, w.walking ? 'run' : 'idle', Math.floor(time * (w.walking ? 10 : 4.5)), Math.round(w.x), fy, w.face, false); } }
     /* AND THE ONES YOU HAVE WON STAND WITH HIM. The camp was one knight however far the save had got; every class
        you own is at the fire now, so the title screen shows the roster - and the empty ground shows who is missing. */
     { const seats = [[-40, 1], [-62, 1], [34, -1], [-84, 1], [-106, 1]];   /* all of them on the open ground: the menu board takes the right of the picture, and two of the old seats sat behind it */
-      PICK.filter(h => h !== 'knight' && PROG.heroes && PROG.heroes[h]).slice(0, seats.length).forEach((h, i) => {
+      PICK.filter(h => h !== hero() && PROG.heroes && PROG.heroes[h]).slice(0, seats.length).forEach((h, i) => {
         const [dx, face] = seats[i], set = preview('titlecamp:' + h + ':' + gearNow(h), () => heroSet(null, null, false, h));
         drawSet(set, 'idle', Math.floor(time * 4.5 + i * 3), fx + dx, fy, face, false); }); } }
   drawTitleBracken();
@@ -31003,6 +31015,7 @@ const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'rebind', 'coophelp'
 function drawTransition() {
   const dt = Math.min(1, Math.max(0, time - transLast)); transLast = time;
   if (state !== transPrev) {
+    if (transPrev === 'title' && state !== 'title') titleWas = false;
     if (state === 'title') titleSince = time;
     if (state === 'menu') menuSince = time;
     const quiet = transPrev === null || OVERLAY_STATES.has(state) || OVERLAY_STATES.has(transPrev);
@@ -31846,7 +31859,7 @@ window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
     get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
-    get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get titleOpts() { return titleOpts; }, set titleOpts(v) { titleOpts = !!v; },
+    get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleRegion: () => titleRegion(), titleTrack: () => titleTrack(), titleTop: () => titleTop(), get titleOpts() { return titleOpts; }, set titleOpts(v) { titleOpts = !!v; },
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
     openMenu: from => openMenu(from), pollPad: () => pollGamepad(), get settingsTab() { return settingsTab; }, set settingsTab(v) { settingsTab = v; }, menuRows: () => menuItems(), settings: () => SET, readSettings: raw => readSettings(raw),   /* (tools/settings-tabs.mjs) */
