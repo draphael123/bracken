@@ -45,7 +45,7 @@ export function makeDrillHands(ctx) {
       ramV: MC.ramV,
       arena: k => { if (k === 'highDown') { highLine(false); ctx.shake(7); const G = S.G; for (let x = G.x0 + 20; x < G.x1; x += 24) ctx.burst(x, G.laneY[2], 6, ['#6b5a48', '#8a7660', '#2a2119'], 90, 0.7); } },
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
-      music: ph => { BOSS_PHASE.greatdrill = ph; if (ctx.music) ctx.music(ph > 1 ? 'greatdrill:p' + ph : 'greatdrill'); },
+      music: ph => { BOSS_PHASE.greatdrill = ph; if (ctx.music) ctx.music('greatdrill');   /* (the file plays through all three phases: the synth's ':p2' / ':p3' voicings are not played) */ },
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
           const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(bx[0], d, { who: e, name, unblockable: !o.blockable, noKnock: true })); if (P.hp < hp0) any = true; }); return any; },

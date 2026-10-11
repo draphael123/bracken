@@ -306,3 +306,7 @@ THE SCREE PATH (2026-10-08, claude/scree2, Daniel approved the download):
 THE WINCHMASTER (2026-10-08, claude/winch5; Daniel approved the download):
 - winchmaster.ogg = "Boss Battle #8 Metal" by nene, CC0 (public domain, credited all the same) - https://opengameart.org/content/boss-battle-8-metal - his fight (the opening, 9.6 s, plays once, then the 51 s loop).
   Credit: "Boss Battle #8 Metal" by nene (OpenGameArt.org), CC0. Changes: opening + loop joined; mono; encoded to OGG Vorbis q4.
+
+THE GREAT DRILL (2026-10-10, claude/deeprailsart; Daniel approved the download):
+- greatdrill.ogg = "Machines" (machines_loop.flac, the loop version) by Tsorthan Grove, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://opengameart.org/content/machines - THE GREAT DRILL's fight (licence read on the track page 2026-10-10: "CC-BY 4.0").
+  Credit: "Machines" by Tsorthan Grove (OpenGameArt.org), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes: gain +3.5 dB with a -1 dBFS limiter (integrated -15.2 LUFS, as the other boss tracks), encoded to OGG Vorbis q4 stereo (76.7 s, loops).
