@@ -2419,6 +2419,31 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
     const D = hp('wide', 1, [sh[0] + 2, sh[1] - 2, sh[0] + 8, sh[1] - 6], [sh[0] - 2, sh[1] - 2, sh[0] - 7, sh[1] - 4], 2);
     const hop = hp('jump2', -2, [sh[0] + 2, sh[1] - 5, sh[0] + 8, sh[1] - 11], [sh[0] - 2, sh[1] - 5, sh[0] - 7, sh[1] - 9], 1);
     F.dance = holdFrames([[A, 2], [B, 2], [hop, 1], [C, 2], [D, 2], [hop, 1]]); }
+  /* HIS OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE SEA-LEGS, his idle solo: a roll-and-sway on the boards with the
+     pistol spun over the brim, the cutlass swung behind the back and caught the other side, a heel-and-toe, and the hat tipped.
+     dance3 = THE BROADSIDE, a boss down: the pistol fired at the sky (a white flash and the smoke), the cutlass tossed up and
+     caught, a leap with both arms up, and a deep sweep of the hat to the deck. He always has both hands busy. */
+  { const kf = o => knightFrame({ plume: 0, pistol: holster(), cutlass: rest(), ...o });
+    const fl = (x, y) => [[x - BX, y - BY, '#ffffff'], [x - BX - 1, y - BY, '#ffd36b'], [x - BX + 1, y - BY, '#ffd36b'], [x - BX, y - BY - 1, '#ffd36b'], [x - BX, y - BY + 1, '#ffd36b']];
+    const hx = sh[0] + 3, hy0 = sh[1] - 2;
+    const sway = (l, dx, pl) => kf({ legs: l, dx, plume: pl, cutlass: carry() });
+    const spinTop = v => kf({ arm: [sh[0], sh[1], hx, hy0 - 3], pistol: [hx, hy0 - 3, hx + v[0], hy0 - 3 + v[1]], cutlass: carry(), plume: 1 });
+    const behind = kf({ legs: 'wide', dx: -1, arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 2], cutlass: [sh[0] - 3, sh[1] + 2, sh[0] - 9, sh[1] - 3], plume: 2 });
+    const across = kf({ legs: 'wide', dx: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], cutlass: [sh[0] + 4, sh[1] + 1, sh[0] + 12, sh[1] - 4], plume: 1 });
+    const tipHat = kf({ hy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 2], pistol: [sh[0] + 2, sh[1] - 2, sh[0] + 3, sh[1] - 7], plume: 2 });
+    F.dance2 = holdFrames([[kf({ plume: 1 }), 2], [sway('run2', -1, 1), 2], [sway('run4', 1, 2), 2], [sway('run2', -1, 1), 2], [sway('run4', 1, 2), 2],
+      [spinTop([4, 2]), 2], [spinTop([0, 5]), 2], [spinTop([-4, 2]), 2], [spinTop([0, -4]), 2], [spinTop([4, 2]), 2],
+      [behind, 3], [across, 3], [kf({ legs: 'runC', dx: 1, plume: 2, cutlass: carry(1) }), 2], [kf({ legs: 'run5', dy: 1, plume: 1, cutlass: carry() }), 2],
+      [tipHat, 4], [kf({ plume: 1 }), 2]]);
+    const gun = (o = {}) => kf({ legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 5], pistol: [sh[0] + 3, sh[1] - 5, sh[0] + 5, sh[1] - 12], cutlass: carry(), plume: 2, ...o });
+    const toss = kf({ legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 3], cutlass: [sh[0] + 1, sh[1] - 7, sh[0] + 5, sh[1] - 12], pistol: [sh[0] + 2, sh[1] - 3, sh[0] + 4, sh[1] - 8], plume: 1 });
+    const catchF = kf({ legs: 'wide', dy: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 3], cutlass: [sh[0] + 4, sh[1] - 3, sh[0] + 10, sh[1] - 9], plume: 2 });
+    const leap = kf({ legs: 'jump', dy: -3, sho: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], cutlass: [sh[0] + 3, sh[1] - 3, sh[0] + 8, sh[1] - 11], pistol: [sh[0] - 2, sh[1] - 3, sh[0] - 6, sh[1] - 11], plume: 2 });
+    const sweep1 = kf({ dy: 1, hy: 1, arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 3], pistol: [sh[0] + 5, sh[1] + 3, sh[0] + 9, sh[1] + 6], cutlass: carry(1), plume: 2 });
+    const sweep2 = kf({ dy: 2, hy: 2, sho: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 6, sh[1] + 5], pistol: [sh[0] + 6, sh[1] + 5, sh[0] + 10, sh[1] + 8], cutlass: carry(2), plume: 2 });
+    F.dance3 = holdFrames([[kf({ plume: 1 }), 1], [gun(), 2], [gun({ bits: fl(sh[0] + 5, sh[1] - 11) }), 2], [gun({ bits: [[sh[0] + 5 - BX, sh[1] - 12 - BY, '#ffffff'], [sh[0] + 6 - BX, sh[1] - 11 - BY, '#cfcfcf'], [sh[0] + 8 - BX, sh[1] - 11 - BY, '#9a9a9a']] }), 2],
+      [toss, 2], [catchF, 2], [kf({ legs: 'crouch', legsDy: 3, dy: 4, cutlass: carry(2), plume: 2 }), 2], [leap, 3], [kf({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], cutlass: [sh[0] + 3, sh[1] - 3, sh[0] + 8, sh[1] - 11], plume: 0 }), 2],
+      [sweep1, 3], [sweep2, 6], [sweep1, 2], [kf({ plume: 1 }), 2]]); }
   /* HIS SLUMP: he sits down on the boards. The cutlass is not held at all - it is stuck in the planking beside him,
      which is where a man puts a sword he has finished with - the pistol hangs off the other hand, and the brim of
      the tricorne is down over his face. */
