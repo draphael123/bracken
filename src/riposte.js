@@ -55,7 +55,7 @@ export const PARRY_LOOK = {
   warden:    { look: 'SPEAR DEFLECT', input: 'tap C as the blow lands',        col: '#dff0d8' },
   berserker: { look: 'AXE BRACE',   input: 'tap C as the blow lands',          col: '#ff9a5c' },
   paladin:   { look: 'LIGHT-WARD',  input: 'raise the aegis (hold C) as the blow lands', col: '#fff6c8' },
-  pyro:      { look: 'FLAME-CATCH', input: 'DOWN as the blow lands (the ember flare)', col: '#ff9a5c' },
+  pyro:      { look: 'FLAME-CATCH', input: 'hold DOWN as the blow winds up (the ember flare opens after 0.3 s)', col: '#ff9a5c' },
   geomancer: { look: 'STONE-SKIN',  input: 'raise the rune-ward (hold C) as the blow lands', col: '#c8bca8' },
   pirate:    { look: 'CUTLASS BIND', input: 'tap C as the blow lands',        col: '#ffd34a' },
   reaper:    { look: 'BLADE BIND',  input: 'let go of the blood ward (C) as the blow lands', col: '#ffd0d0' },

@@ -30,8 +30,8 @@ try {
       BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();BK.load(0);BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');
       const L=BK.L;for(let x=2;x<60;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;BK.tp(10,21);BK.sim(60);const P=BK.P;P.hp=P.maxHp;P.inv=0;P.st=P.maxSt;P.face=1;P.combo=0;P.riposteT=0;P.mixedT=0;P.mixN=0;P.mixLast=null;
       return foes.map(([t,dx,o])=>{BK.spawnEnt({t,x:(P.x+dx)/16,y:21,...(o||{})});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;e.elT=99;return e;});};
-    /* the hero's answer, by input: hold (C down n frames before), tap (C tapped n frames before), down (down pressed n frames before), release (C held, let go n frames before) */
-    window.__answer=(how,n)=>{const K=BK.keys;if(how==='hold'){K.block=true;BK.sim(n);}else if(how==='tap'){K.block=true;BK.sim(1);K.block=false;BK.sim(n);}else if(how==='down'){K.down=true;BK.sim(1);K.down=false;BK.sim(n);}else if(how==='release'){K.block=true;BK.sim(45);K.block=false;BK.sim(n);}};
+    /* the hero's answer, by input: hold (C down n frames before), tap (C tapped n frames before), down (down HELD until the flare opens - claude/crouchfix - then n frames before the blow), release (C held, let go n frames before) */
+    window.__answer=(how,n)=>{const K=BK.keys;if(how==='hold'){K.block=true;BK.sim(n);}else if(how==='tap'){K.block=true;BK.sim(1);K.block=false;BK.sim(n);}else if(how==='down'){K.down=true;let hh=0;while(!(BK.ember&&BK.ember()&&BK.ember().flare)&&hh<60){BK.sim(1);hh++;}K.down=false;BK.sim(n);}else if(how==='release'){K.block=true;BK.sim(45);K.block=false;BK.sim(n);}};
     window.__parry=(h,foeT,red,foeO)=>{const R=BK.riposte();for(const how of ['hold','tap','down','release'])for(let n=0;n<=24;n++){const [e]=__set(h,[[foeT,16,foeO]]);const P=BK.P;R.resetStats();__answer(how,n);P.inv=0;P.hurt=0;
         const hp0=P.hp,res=BKT.damagePlayer(P.x+14,10,red?{unblockable:true}:{});BK.keys.block=false;BK.keys.down=false;
         if(red){if(R.stats.tooStrong>0)return {how,n,res,lost:hp0-P.hp,parries:R.stats.parries,too:R.stats.tooStrong};continue;}

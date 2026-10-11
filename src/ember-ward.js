@@ -3,8 +3,12 @@
 // down every tuning lever (heat drain, singe, chip, cooldown) and chose a different thing: a TIMED FLARE.
 //
 //   THE INPUT SPLIT. Every hero ducks (src/duck.js): down HELD on the ground is the plain duck, a high blow goes over her - that is her
-//   sustained guard and it is unchanged. A PRESS of down (the key going down, not the key being down) is the FLARE: a ~0.25 s burst of
-//   fire round her. Down held on and on flares once, at the press; to flare again, let go and press.
+//   sustained guard and it is unchanged. (claude/crouchfix, Daniel 10-11: a bare press flared by accident on every duck, so the flare is
+//   now a SHORT HOLD.) Down held on the ground, stood still, for EMBER.hold (~0.3 s) is the FLARE: a ~0.25 s burst of fire round her.
+//   One flare per hold; to flare again, let go and hold again. A shorter hold is just the duck. Down + jump (drop through a board),
+//   down + swing (the low sweep) and down + a way (walking) never count toward the hold. THE PARRY ON THE BEAT: the flare window is
+//   still her parry (claude/riposte: a blow caught in it is a PARRY -> RIPOSTE); only its opening moved. A windup tells for 0.4 s or
+//   more, so she holds down at the tell and the window opens ~0.3 s later, over the blow. The mistime rules are unchanged.
 //   - A BLOW CAUGHT IN THE WINDOW (a yellow blow of any height, or a yellow projectile inside her reach) is CANCELLED, its attacker is
 //     SCORCHED (the game's own burn: f.burn) and she GAINS HEAT (EMBER.heat on P.heat, the bar the ember, the jet and the pyre run on).
 //     The flare is spent on the one blow, and cannot be pressed again for EMBER.spent.
@@ -21,6 +25,7 @@ export const EMBER = {
   window: 0.25,       // THE FLARE: this long from the press
   rec: 0.5,           // THE MISTIME: rooted, exposed and unable to flare this long
   exposed: 1.5,       // ...and a blow that lands in it costs this much more
+  hold: 0.3,          // THE HOLD: down held on the ground this long opens the flare (a shorter hold is the plain duck)
   spent: 0.3,         // after a catch: this long before the next press can flare
   heat: 22,           // HEAT (P.heat, 0-100) a caught blow or projectile gives
   burn: 1.6,          // the burn the attacker takes, seconds
@@ -47,8 +52,11 @@ export function makeEmberWard(api) {
   function update(dt, keys, { stunned, dodging, attacking, thrown }) {
     const p = P();
     p.emberRec = Math.max(0, (p.emberRec || 0) - dt); p.emberSpent = Math.max(0, (p.emberSpent || 0) - dt); p.emberFlash = Math.max(0, (p.emberFlash || 0) - dt); p.emberFizz = Math.max(0, (p.emberFizz || 0) - dt);
-    const press = !!keys.down && !p.emberDownWas; p.emberDownWas = !!keys.down;
     const can = !!(p.ground && !p.climb && !p.cling && !p.swim && !p.dead && !p.plunge && !attacking && !dodging && !stunned && !(p.hurt > 0) && !p.jet && !p.fly && !thrown && !p.pinning);
+    /* THE HOLD (claude/crouchfix): the clock runs while down is held, she is stood still on the ground and asks nothing else of down */
+    const holding = !!keys.down && can && !keys.jump && !keys.atk && !keys.left && !keys.right && !attacking;
+    p.emberHold = holding ? (p.emberHold || 0) + dt : 0; if (!holding) p.emberFired = false;
+    const press = holding && p.emberHold >= EMBER.hold && !p.emberFired; if (press) p.emberFired = true;   /* once per hold */
     const dry = wet(p);
     if (p.emberUp && (!can || dry)) { if (dry && can) douse(p); else { p.emberUp = false; p.emberT = 0; } }   /* WATER PUTS IT OUT; a blow or a swing ends it with no penalty of its own */
     else if (press && can && !p.emberUp && !(p.emberRec > 0) && !(p.emberSpent > 0)) {
@@ -137,6 +145,6 @@ export function makeEmberWard(api) {
   }
 
   /* FOR THE TOOLS (BK.ember) */
-  const read = () => { const p = P(); return { flare: !!p.emberUp, up: !!p.emberUp, t: p.emberT || 0, rec: p.emberRec || 0, spent: p.emberSpent || 0, window: EMBER.window, wet: wet(p), flash: p.emberFlash || 0, stats: { ...stats } }; };
+  const read = () => { const p = P(); return { flare: !!p.emberUp, up: !!p.emberUp, t: p.emberT || 0, hold: p.emberHold || 0, holdNeeded: EMBER.hold, rec: p.emberRec || 0, spent: p.emberSpent || 0, window: EMBER.window, wet: wet(p), flash: p.emberFlash || 0, stats: { ...stats } }; };
   return { update, settle, takes, guardTakes, catchSeeds, exposed, draw, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
 }
