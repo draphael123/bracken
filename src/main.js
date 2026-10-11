@@ -208,6 +208,7 @@ import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscr
 import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames, the flask bottles and icons */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
+import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
 // ---------- display ----------
@@ -4687,6 +4688,7 @@ function updateMap(dt) {
     if (coopShown()) { coopWant = null; if (coop()) coopEnd(); const [mx, my] = mapPos(); number(mx, my - 16, 'CO-OP OFF', '#9aa39a'); SFX.ui(); }
     else { coopPickFrom = 'map'; coopPick = { i: 0, ally: false }; state = 'coop'; SFX.uiSel(); }
   }
+  if (skill2Press && !map.walking) ONL.open();   /* ONLINE CO-OP: G on the map (the touch pill ONLINE) opens the same board as the title row; the board holds its own gate (coopOk) */
   if (pausePress) { state = 'title'; SFX.ui(); }
   PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id;
   { const [, py] = mapPos(); const sit = !map.walking && NODES[map.node], want = Math.max(0, Math.min(MAPH - VH, py - VH * (sit ? mapPanelFor(sit).anchor : 0.55))); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
@@ -4696,7 +4698,7 @@ let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
-function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF'), x: VW - 4, right: true }]; }
+function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF') + '  G ONLINE', x: VW - 4, right: true }]; }
 /* THE MAP'S LANDMARK CRITTERS (the Queen over her wood, the frog, the chief...) at the map's own pixel size. They were boss sprites drawn at 0.42-0.75 of their size: a fractional
    scale on a pixel sprite, so every one smeared against the hero and the hut. Now each is shrunk by a WHOLE factor (the nearest to the height it should stand: about a hero) with the
    block-vote downsample (src/map-pixel.js), outlined, and drawn 1:1. A cleared place's critter goes grey (never see-through). */
@@ -6037,8 +6039,9 @@ function padIntoPlayer(gp, st, p) {
 function pollGamepad() {
   const gps = padsNow();
   const used = padRawTick(gps);   /* the tab shoulders and a button being chosen for an action */
-  if (coop() && players[1] && !players[1].ai && gps.length) padIntoPlayer(gps[0], pad2, players[1]);
-  const gp = coop() ? gps[1] : gps[0];
+  const far = coop() && players[1] && !players[1].ai && ONL.remote();   /* ONLINE CO-OP: an online guest's keys are player two's hands (src/online.js), not the first pad */
+  if (far) ONL.intoPlayer(players[1]); else if (coop() && players[1] && !players[1].ai && gps.length) padIntoPlayer(gps[0], pad2, players[1]);
+  const gp = coop() && !far ? gps[1] : gps[0];
   if (!gp) return;
   const now = padState(gp, 'pad1');
   if (used) { pad.prev = now; return; }
@@ -6119,6 +6122,10 @@ const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: ()
   press: touchPressName, skillOn: i => !!skillAt(i), skillInfo: touchSkillInfo, phoneMode: v => { PHONE_MODE = v; }, verb: touchVerbNow, ctx: touchCtxNow, autoFace: touchAutoFace,
   speed: () => (P ? Math.abs(P.vx || 0) : 0), padUsed: () => padLast, touched: () => { padLast = false; } });
 const touchOn = TCH.on, touchZones = () => TCH.allButtons();
+/* ONLINE CO-OP (src/online.js): what the host's half may read and do. arm() is the co-op pick's own confirm (coopWant; in a wood he stands up beside player one, as the
+   pause menu's pick does); drop() is the pause menu's 'co-op off'. The save, the map and the unlocks are this page's own - the guest's page never runs the game. */
+ONL.init({ buf, state: () => state, paused: () => state === 'menu' && menuKind === 'pause', coopOk: () => coopOk(), initAudio: () => initAudio(), art: h => heroPreviewSet(h).R.idle[0], heroName: () => HERO_SHORT[hero()] || String(hero()).toUpperCase(), nameOf: h => HERO_SHORT[h] || String(h).toUpperCase(), roster: () => coopPickList().map(h => ({ id: h, name: HERO_SHORT[h] || String(h).toUpperCase() })), drop: () => { coopWant = null; if (coop()) coopEnd(); },
+  arm: h => { coopWant = { hero: h, ally: false }; if ((state === 'play' || (state === 'menu' && menuFrom === 'play')) && L && !L.trial && !L.shop && !rushOn() && !coop()) { coopStart(h, false); const p2 = players[1]; if (p2) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p2, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); } } else if (state === 'title' || state === 'coop') state = 'map'; } });
 Object.assign(SETTING_TIPS, TCH.tips);
 {
   if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
@@ -9823,7 +9830,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'CREDITS']); };
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'CREDITS']); };
 const titleItems = () => titleOpts ? ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'BACK'] : titleTop();
 /* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
    these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
@@ -27539,6 +27546,7 @@ function update(dt) {
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'PRACTICE') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPickFrom = 'title'; coopPick = { i: 0, ally: false }; state = 'coop'; }
+        else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); ONL.open(); }   /* ONLINE CO-OP (src/online.js): its own board - host (the same co-op gate) or join with a code */
         else if (k === 'THE EDITOR') edEnter();
         else if (k === 'OPTIONS') { titleOpts = true; titleI = 0; }
         else if (k === 'BACK') { titleOpts = false; titleI = Math.max(0, titleTop().indexOf('OPTIONS')); }
