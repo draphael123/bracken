@@ -325,17 +325,17 @@
   "lostPct": 377
  },
  "mage": {
-  "hash": "931d0e0bc1cb",
+  "hash": "f96dbf989ba7",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 18,
+  "hits": 14,
   "deaths": 3,
-  "kills": 8,
-  "lifts": 139,
+  "kills": 4,
+  "lifts": 138,
   "walked": 100,
   "bare": true,
-  "lostPct": 161
+  "lostPct": 170
  },
  "fallingtower": {
   "hash": "3238f24f505f",
