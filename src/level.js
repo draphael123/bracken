@@ -16,6 +16,7 @@ import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/unde
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
 import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
+import { applyReachGaps, GAPS } from './reach-gaps.js';
 import { chaseScree } from './scree-chase.js';
 import { reliefScree } from './scree-relief.js';   /* the Scree Path's knolls, ledges and road overhangs (claude/scree2) */   /* THE ROCKSLIDE CHASE (claude/scree2) */
 import {hauntedCoast} from './haunted-coast.js';
@@ -8006,6 +8007,14 @@ for (const lv of LEVELS) {
       for (const e of out.ents) if (e.t === from && !e.boss && !e.mini && ++n % every === 0 && !e.pogo && !e.fat && !lesson(e)) { e.t = to; e.mixed = from; delete e.sleeper; if (to === 'crow') { e.speed = 90; e.wake = 260; } } }
     return out; };
   lv.build.mixed = true;
+}
+
+/* THE GAPS PASS (claude/gaps): the frame-perfect crossings REACHCORE's per-hero model found, closed on the finished levels - src/reach-gaps.js */
+for (const lv of LEVELS) {
+  if (!GAPS[lv.id] || !lv.build || lv.build.gapped) continue;
+  const build = lv.build;
+  lv.build = (...a) => applyReachGaps(lv.id, build(...a), T);
+  lv.build.gapped = true; lv.build.mixed = build.mixed;
 }
 
 // THE REVIEW PASS (2026-09-11). Each wood's fixes from the level review, laid on the finished level in its
