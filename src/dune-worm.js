@@ -34,7 +34,7 @@
 // rises at the commit (only the real one bulges: readable, late), and a THIRD stone stands in the hollow (the arena changes, B5).
 
 export const WORM = {
-  hp: 2150,       /* (claude/caravan2: every blow outside the stun is nothing now, so his health is what the stuns pay for - tuned WITH FLASKS) */
+  hp: 2800,       /* (claude/easethree: was 2150; with the blows -25% and the stones wider/longer: 67% with flasks) (claude/caravan2: every blow outside the stun is nothing now, so his health is what the stuns pay for - tuned WITH FLASKS) */
   rippleSpeed: 170, rippleTrack: 0.88, rippleCommit: 0.45, commitSpeed: 215,
   breachR: 14, breachH: 60, breachT: 0.3,
   stunned: 3.0, stunMult: 1.5,                    /* THE OPENING: his head on the stone. B15: openings pay 1.5-2x */
@@ -55,7 +55,7 @@ export const WORM = {
   turn: 0.5,      /* s a hero may stand behind him while he is up before he TURNS to face her (a beast does not hold still to be read) */
   phase2: 0.5,
   /* claude/caravan2: -25% across his moves (Daniel: "less damage"), the spit's clot becomes the breath's one blast */
-  dmg: { breach: 31, breath: 18, lunge: 31, bite: 31, sweep: 35, wave: 28 },
+  dmg: { breach: 23, breath: 13, lunge: 23, bite: 23, sweep: 27, wave: 22 },
   /* THE STORM IN THE HOLLOW: a gust's push along the sand, px/s (the pyramid's is 150, src/desert-rules.js; at 100 an unbraced hero goes
      about ten tiles, and walking INTO it gets you nowhere - braced (holding block), under one tile) */
   gust: 100,
@@ -63,7 +63,7 @@ export const WORM = {
      a told rise of `rise` s, `life` s standing (on the dice, inside the range), `sink` s going down. A new one rises `every` s after one
      goes, at a random slot `edge` px clear of each wall, `clear` px clear of the hero (never up under him) and `apart` px clear of another
      stone. The longest the hollow may stand with NO stone up is `gapCap` s (the brief: 6-8) */
-  LEDGE: { w: 48, rows: 3, rise: 1.0, sink: 0.7, life: [11, 15], keep: 2, keep2: 3, every: 1.2, edge: 64, clear: 44, apart: 24, gapCap: 6 },
+  LEDGE: { w: 64, rows: 3, rise: 1.0, sink: 0.7, life: [15, 19], keep: 2, keep2: 3, every: 0.9, edge: 64, clear: 44, apart: 24, gapCap: 6 },
   CHAIN: ['ripple', 'breath', 'ripple', 'lunge', 'ripple', 'swallow', 'ripple', 'sweep', 'ripple', 'sweep'],   // the signature leads, and comes round every other turn. WITH DICE (world.rng) the five between
                                                                                          // the ripples come in a fresh order every round: all four moves every round, the tail twice (A3), never the same rhythm twice
 };
