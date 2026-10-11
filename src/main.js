@@ -199,6 +199,7 @@ import * as MPX from './map-pixel.js'; import { MAP_BLURB } from './map-blurbs.j
 import * as MCARD from './map-card.js';   /* THE MAP CARD'S POSTCARD (claude/uiscreens) */
 import * as OP from './opening-panels.js';   /* THE FIRST-RUN OPENING (claude/uiscreens): four illustrated panels before the first hero pick */
 import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscreens): the wood closed over the picture, the fronds part, the knight walks in */
+import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames, the flask bottles and icons */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 
@@ -702,7 +703,7 @@ function regear() { /* a level-up crossed a tier, or the setting flipped: bake t
   if (K && K.gearT !== gearNow(hero())) { applySkin(); if (players.length > 1) players[0].set = K; }
   for (const p of players.slice(1)) if (p.set && p.set.gearT !== gearNow(p.hero)) { const wasH = PROG.hero; PROG.hero = p.hero; try { p.set = heroSet(PROG.skin, PROG.sword); } finally { PROG.hero = wasH; } } }
 function heroSet(skinId, swordId, previewOnly = false, h = hero(), tier = previewOnly ? 0 : gearNow(h)) { const sk = skinById(skinId); const pal = h === 'pyro' ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal;   /* the skin dresses the hero; the weapon's palette goes to the weapon alone (chars.js withWeapon) */
-  const set = withGear(tier, () => withWeapon((swordId && swordId.pal ? swordId : swordById(swordId)).pal, () => h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : bakeKnight(pal, false, previewOnly))); set.gearT = tier; return set; }
+  const set = withGear(tier, () => withWeapon((swordId && swordId.pal ? swordId : swordById(swordId)).pal, () => h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : bakeKnight(pal, false, previewOnly))); set.gearT = tier; return previewOnly ? set : FA.addDrink(set, h); }   /* (claude/flasks2art) the five drink frames of this hero, baked off his own idle */
 function applyUpgrades() { const growth = grow(hero(), heroLevel()); P.maxHp = growth.hp + (PROG.items.heart ? 25 : 0); P.maxSt = growth.stamina + (PROG.items.wind ? 30 : 0);
   GEO_K.life = GEO_LIFE0 * (1 + 0.04 * prk('gstone')); GEO_K.ward.perfect = GEO_PERFECT0 + 0.012 * prk('gward'); }   /* (LEVELING2: LASTING STONE, WIDE RUNE - the hero's own, read where her kit reads its numbers) */
 let statFlash = 0; // the HUD plate flashes when a rank lands
@@ -993,9 +994,7 @@ function* bakeAllG(pal = {}) {   /* the same bake as a generator: it yields a st
     hudFlask: outline(fromGrid(['..c..', '..c..', '.rrr.', 'rrrrr', 'rLrrr', '.rrr.'], { c: '#c9d1dc', r: '#c9463d', L: '#ff9a9a' }, 1), ART.OUT),
     hudFlaskEmpty: outline(fromGrid(['..c..', '..c..', '.g.g.', 'g...g', 'g...g', '.ggg.'], { c: '#6a6a7a', g: '#5a5468' }, 1), ART.OUT),   /* (claude/flasks2) a drunk flask: the empty glass, not a faint full one */
     hudFlaskGold: outline(fromGrid(['..c..', '..c..', '.yyy.', 'yyyyy', 'yLyyy', '.yyy.'], { c: '#fff6c8', y: '#e0a830', L: '#fff2a0' }, 1), ART.OUT),   /* a flask OVER the max (a broken shrine's) */
-    flaskIcons: { rich: outline(fromGrid(['..c..', '..c..', '.rrr.', 'rrrrr', 'rLrrr', '.rrr.'], { c: '#ffd36b', r: '#a8302a', L: '#ff9a5c' }, 1), ART.OUT), distilled: outline(fromGrid(['..c..', '..c..', '.rrr.', 'rrrrr', 'rLrrr', '.rrr.'], { c: '#dfe8ff', r: '#d04a6a', L: '#ffd0e0' }, 1), ART.OUT), sunlight: outline(fromGrid(['y.c.y', '..c..', '.yyy.', 'yyyyy', 'yLyyy', '.yyy.'], { c: '#fff6c8', y: '#ffd34a', L: '#ffffff' }, 1), ART.OUT),
-      quick: outline(fromGrid(['....c..', '....c..', 'w..rrr.', '.wrrrrr', 'w.rLrrr', '...rrr.'], { c: '#c9d1dc', r: '#c9463d', L: '#ff9a9a', w: '#fff6e0' }, 1), ART.OUT), steady: outline(fromGrid(['.b.b.', '.b.b.', 'bbbbb', 'bbbbb', '.bbbb', '..bb.'], { b: '#c9a070' }, 1), ART.OUT), blessing: outline(fromGrid(['..y..', '.yyy.', '..s..', '.sss.', '.sss.', 'sssss'], { y: '#ffd36b', s: '#9a9aa8' }, 1), ART.OUT),
-      hidden: outline(fromGrid(['.ggg.', 'g...g', '...g.', '..g..', '.....', '..g..'], { g: '#8a8a9a' }, 1), ART.OUT) },   /* THE FLASKS TAB's lines (an art pass will redraw them) */
+    flaskIcons: FA.ICONS, hudFlaskTier: FA.HUD_TIER,   /* THE FLASKS TAB's icons and the HUD row's bottles by potency (src/flask-art.js, claude/flasks2art) */
     lock: outline(fromGrid(['.SSS.', 'S...S', 'SSSSS', 'SSySS', 'SSSSS'], { S: '#8b8378', y: '#e0b040' }, 1), ART.OUT),
   });
   PROP.town = { longTable: [0, 1].map(v => TWN.bakeLongTable(v)), bench: TWN.bakeBench(), hearth: TWN.bakeHearth(), caskRack: TWN.bakeCaskRack(), mugShelf: TWN.bakeMugShelf(),
@@ -5138,7 +5137,7 @@ function drawStore() {
   const iconOf = k => k.id === 'none' ? null
     : tab.key === 'skin' ? skinPreview(k, true).R.idle[0]
     : tab.key === 'sword' ? weaponPreview(k, true).R.atk[1]
-    : k.practice ? PORTAL_ICON : tab.flasks ? (k.hiddenRow ? PROP.flaskIcons.hidden : k.count ? TONIC_ICON : PROP.flaskIcons[k.id] || TONIC_ICON) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
+    : k.practice ? PORTAL_ICON : tab.flasks ? (k.hiddenRow ? PROP.flaskIcons.hidden : PROP.flaskIcons[k.id] || TONIC_ICON) : k.id === 'tonic' ? TONIC_ICON : (k.id === 'heart' || k.id === 'vigour') ? PROP.heart : k.id === 'shieldThrow' ? SHIELD_ICON : k.id === 'groundSlam' ? SLAM_ICON : k.id === 'risingCut' ? RISE_ICON
     : k.active ? skillIcon(k.id)   /* EVERY HERO'S ABILITIES SHOW THEIR OWN ICON IN THE STORE (Daniel, 2026-09-26: "can the store have icons for the abilities") - it only knew the Pyromancer's set, so the rest showed a bolt */
     : PYRO_ICONS[k.id] ? PYRO_ICONS[k.id] : GEO_ICONS[k.id] ? GEO_ICONS[k.id]
     : PROP.charm[k.id] ? PROP.charm[k.id] : PROP.bolt;
@@ -6603,7 +6602,7 @@ function drinkTick(dt) {
   if (P.hp < P.drinkHp) { P.drinkT = 0; if (!P.drunk) spillFlask(); return; }   /* a blow ends the drink: before the swallow it is spilled */
   P.drinkT = Math.max(0, P.drinkT - dt); P.rootT = Math.max(P.rootT || 0, 0.05); P.vx = 0;
   const el = drinkT0() - P.drinkT, sw = swallowT0();
-  if (P.corked && el >= sw * 0.3) { P.corked = false; SFX.cork(); flaskHud.spills.push({ cork: true, x: P.x + P.face * 4, y: P.y - F2.mouthOf(hero()).dy + 2, vx: P.face * 30, vy: -110, rot: 0, t: 0 }); }   /* the cork pops */
+  if (P.corked && el >= sw * 0.3) { P.corked = false; SFX.cork(); flaskHud.spills.push({ cork: true, x: P.x + P.face * ((FA.SPEC[hero()] || FA.SPEC.knight).C[0] - 16), y: P.y - (46 - (FA.SPEC[hero()] || FA.SPEC.knight).C[1]) - 9, vx: P.face * 30, vy: -110, rot: 0, t: 0 }); }   /* the cork pops */
   while (P.gulps < F2.GULPS.length && el >= sw * F2.GULPS[P.gulps]) { P.gulps++; SFX.glug(); }   /* two gulps */
   if (!P.drunk && el >= sw) { P.drunk = true; const h = SV.flaskHeal(P.maxHp, F2.healPct(PROG)); P.hp = Math.min(P.maxHp, P.hp + h); if (perk('tonic')) P.st = P.maxSt;   /* SECOND DRAUGHT (the card, claude/flasks2 10-09): the swallow refills the stamina too */ P.drinkHp = P.hp; SFX.mend(); flaskHud.glowT = 0.7;
     motes(P.x, P.y - 10, 14, 8, ['#8fd160', '#c8f0a0', '#fff6e0']); ringAt(P.x, P.y - 10, 16, '#8fd160', 0.35); number(P.x, P.y - 30, '+' + h, '#8fd160'); }   /* the heal: a green glow rising */
@@ -6613,24 +6612,27 @@ function spillFlask() {
   if (F2.owned(PROG, 'steady')) { P.flasks = (P.flasks | 0) + 1; number(P.x, P.y - 34, 'STEADY HAND', '#ffd36b'); SFX.ui(); return; }
   const away = P.vx ? Math.sign(P.vx) : -P.face;   /* the way the blow threw him */
   flaskHud.spills.push({ x: P.x + P.face * 4, y: P.y - 18, vx: away * 70 + (Math.random() - 0.5) * 20, vy: -150, rot: 0, t: 0 });
-  number(P.x, P.y - 34, 'SPILLED', '#ff6b6b'); SFX.puff(); flaskHud.spillT = 0.6; P.drinkSpills = (P.drinkSpills | 0) + 1;
+  number(P.x, P.y - 34, 'SPILLED', '#ff6b6b'); SFX.puff(); flaskHud.spillT = 0.6; flaskHud.spillFrameT = 0.28; P.drinkSpills = (P.drinkSpills | 0) + 1;
 }
 function spillsTick(dt) {
+  if (flaskHud.spillFrameT > 0) flaskHud.spillFrameT = Math.max(0, flaskHud.spillFrameT - dt); const sp = flaskHud.splashes; if (sp && sp.length) { for (const q of sp) q.t += dt; flaskHud.splashes = sp.filter(q => q.t < 0.3); }
   for (const s of flaskHud.spills) { s.t += dt; s.vy += 520 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.rot += dt * (s.cork ? 18 : 12) * Math.sign(s.vx || 1);
     if (s.t > 0.12 && s.vy > 0 && (isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS)) || s.t > 1.6)) { s.dead = true;
-      if (!s.cork) { burst(s.x, s.y - 2, 14, ['#c9463d', '#ff9a9a', '#e04848', '#c8e8f0'], 80, 0.45); SFX.splash(); } } }
+      if (!s.cork) { burst(s.x, s.y - 2, 14, ['#c9463d', '#ff9a9a', '#e04848', '#c8e8f0'], 80, 0.45); SFX.splash(); (flaskHud.splashes || (flaskHud.splashes = [])).push({ x: s.x, y: s.y, t: 0 }); } } }
   if (flaskHud.spills.length) flaskHud.spills = flaskHud.spills.filter(s => !s.dead);
 }
 /* the flask in his hand: at his chest to uncork, up to his MOUTH (per hero: F2.MOUTH) and tipped back for the two gulps, then down. The spilled
    flasks and corks in flight, and the green glow of the heal */
 function drawFlaskDrink(cx, cy) {
   for (const s of flaskHud.spills) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy);
-    if (s.cork) { g.fillStyle = '#9a6a34'; g.fillRect(x - 1, y - 1, 2, 2); continue; }
-    g.save(); g.translate(x, y); g.rotate(s.rot); g.drawImage(TONIC_ICON, -3, -4); g.restore(); }
+    const q = Math.abs(Math.floor(s.rot / 1.57)) & 3;   /* tumbling in quarter turns: drawn frames, never a rotated sprite */
+    if (s.cork) { g.drawImage(FA.CORK[q], x - 2, y - 2); continue; }
+    const fl = FA.FLIGHT[q]; g.drawImage(fl, x - (fl.width >> 1), y - (fl.height >> 1)); }
+  for (const q of flaskHud.splashes || []) { const f = FA.SPLASH[Math.min(2, Math.floor(q.t / 0.1))]; g.drawImage(f, Math.round(q.x - cx) - (f.width >> 1), Math.round(q.y - cy) - f.height); }
   if (flaskHud.glowT > 0 && !P.dead) { const k = flaskHud.glowT / 0.7, x = Math.round(P.x - cx), y = Math.round(P.y - cy);
     g.globalAlpha = 0.35 * k; g.fillStyle = '#8fd160'; g.fillRect(x - 7, y - 28 - Math.round(10 * (1 - k)), 14, 28); g.globalAlpha = 0.6 * k; g.fillStyle = '#c8f0a0';
     for (let i = 0; i < 4; i++) { const yy = y - ((time * 40 + i * 9) % 34); g.fillRect(x - 6 + i * 4, yy, 1, 2); } g.globalAlpha = 1; }
-  if (!(P.drinkT > 0) || P.dead) return;
+  if (!(P.drinkT > 0) || P.dead || (K.R.drink && !((hero() === 'knight' && thrown) || (isWarden() && wardJav)))) return;   /* the hero's own frames hold the flask (FA.drinkFrames); this overlay is the fallback for a set without them */
   const ph = F2.drinkPhase(drinkT0() - P.drinkT, { drinkT: drinkT0(), swallowAt: swallowT0() }), M = F2.mouthOf(hero());
   const hx = P.x - cx + P.face * (M.dx + 3 * (1 - ph.lift)), hy = P.y - cy - (9 + (M.dy - 9) * ph.lift);
   g.save(); g.translate(Math.round(hx), Math.round(hy)); g.rotate(-P.face * ph.tip * 2.1); g.drawImage(TONIC_ICON, -3, -4);
@@ -29174,7 +29176,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.fillStyle = '#5c3a1d'; g.fillRect(bx - 1, by - 8, 2, 16); g.fillStyle = '#3a2214'; g.fillRect(bx - 1, by + 7, 2, 1);
     g.fillStyle = '#8f2f28'; g.fillRect(bx + 1, by - 8, 8 + sw, 3); g.fillRect(bx + 1, by - 5, 7 + sw, 3); g.fillRect(bx + 1, by - 2, 4 + sw, 2); g.fillStyle = '#5a1a18'; g.fillRect(bx + 8 + sw, by - 6, 1, 2); g.fillRect(bx + 4 + sw, by, 1, 2); g.fillStyle = '#c9463d'; g.fillRect(bx + 3, by - 7, 2, 1); g.globalAlpha = 1; }
   for (const f of flaskFinds) if (!f.got && f.px > cx - 12 && f.px < cx + VW + 12) { const bob = Math.round(Math.sin(time * 3 + f.px) * 2), x = Math.round(f.px - cx), y = Math.round(f.py - cy) + bob; g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); g.globalAlpha = 1;
-    g.drawImage(f.id === 'sunlight' ? PROP.flaskIcons.sunlight : f.id === 'steady' ? PROP.flaskIcons.steady : PROP.hudFlaskGold, x - 3, y - 4); if (Math.floor(time * 4 + f.px) % 5 === 0) { g.fillStyle = '#fff6c8'; g.fillRect(x + 3, y - 5, 1, 1); } }   /* (claude/flasks2) a hidden flask find: a gold glint, bobbing */
+    const fa = FA.FIND_ART[f.id] || PROP.hudFlaskGold; g.drawImage(fa, x - (fa.width >> 1), y - (fa.height >> 1)); const gk = Math.floor(time * 6 + f.px) % 9; if (gk < 3) g.drawImage(FA.GLINT[gk], x + 1, y - 7); }   /* (claude/flasks2) a hidden flask find: a gold glint, bobbing */
   for (const s of silvers) if (s.x > cx - 12 && s.x < cx + VW + 12) { if (s.got) { g.globalAlpha = 0.22; g.drawImage(PROP.silverBig[0], s.x - 6 - cx, Math.round(s.y - 7) - cy); g.globalAlpha = 1; } else { g.globalAlpha = 0.28 + 0.16 * Math.sin(time * 5 + s.ph); g.fillStyle = '#dfe8ff'; g.beginPath(); g.arc(Math.round(s.x - cx), Math.round(s.y - 2 - cy), 11, 0, 7); g.fill(); g.globalAlpha = 1; g.drawImage(PROP.silverBig[Math.floor(time * 6 + s.ph) % 4], s.x - 6 - cx, Math.round(s.y - 7 + Math.sin(time * 4 + s.ph) * 1.5) - cy); } }
   for (const b of bossBodies) { const k = Math.min(1, b.t / b.dur), shake = Math.round((1 - k) * 3 * Math.sin(b.t * 60)), flash = k < 0.6 && Math.floor(b.t * 10) % 2 === 0;
     drawSet(b.set, null, b.frame, b.x - cx + shake, b.y - cy + Math.round(k * k * 10), b.face, flash, b.big, b.big * (1 - 0.18 * k), 1 - Math.max(0, (k - 0.65) / 0.35), b.face * k * 0.45);
@@ -29710,6 +29712,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.flourishT > 0) P.flourishT -= 1 / 60; if (P.atk >= 0) P.recPose = [key, frame];
       P.lastFace = P.face; if (P.skidT > 0) P.skidT -= 1 / 60;
       let dFace = P.face, dY = 0;
+      if (K.R.drink && !P.dead && !((hero() === 'knight' && thrown) || (isWarden() && wardJav))) { if (P.drinkT > 0) { key = 'drink'; frame = FA.DRINK_FRAME[F2.drinkPhase(drinkT0() - P.drinkT, { drinkT: drinkT0(), swallowAt: swallowT0() }).ph] | 0; } else if (flaskHud.spillFrameT > 0) { key = 'drink'; frame = FA.DRINK_FRAME.spill; } }   /* (claude/flasks2art) THE DRINK'S OWN FRAMES: uncork, two gulps, lower (green rim), and the spill */
       if (P.dance > 0 && K.R.dance) { key = 'dance'; frame = Math.floor(P.dance * 10) % K.R.dance.length; }   /* the hero's OWN dance (chars.js F.dance) */
       else if (P.dance > 0) { const DANCE = [['idle', 0, 1], ['crouch', 0, 1], ['jump', 0, 1], ['land', 0, 1], ['block', 0, 1], ['idle', 2, 1],
           ['idle', 0, -1], ['crouch', 0, -1], ['jump', 1, -1], ['land', 0, -1], ['run', 2, -1], ['run', 5, 1]];
@@ -31321,7 +31324,7 @@ function render() {
       if (flaskHud.last >= 0 && fn > flaskHud.last && state === 'play') flaskHud.flashT = Math.max(flaskHud.flashT, 0.8); flaskHud.last = fn;
       const sh = flaskHud.spillT > 0 ? Math.round(Math.sin(time * 70) * 2 * Math.min(1, flaskHud.spillT / 0.3)) : 0, R = F2.rowLayout(fn, fm, { x: 4 + sh, y: 20, numW: inkW('0', TYPE.label) });
       if (hudMin) hudStrip(R.x, R.y, R.w, R.h); else hudRects.push([R.x, R.y, R.w, R.h]);   /* a strip behind it in the MINIMAL HUD: never floating on the scene */
-      for (const b of R.bottles) g.drawImage(b.kind === 'over' ? PROP.hudFlaskGold : b.kind === 'full' ? PROP.hudFlask : PROP.hudFlaskEmpty, b.x, b.y);
+      for (const b of R.bottles) g.drawImage(b.kind === 'over' ? PROP.hudFlaskGold : b.kind === 'full' ? PROP.hudFlaskTier[FA.tierOf(F2.healPct(PROG))] : PROP.hudFlaskEmpty, b.x, b.y);
       text(R.num.s, R.num.x, R.num.y - 1, flaskHud.spillT > 0 ? '#ff6b6b' : fn > fm ? '#ffd36b' : fn ? '#fff6e0' : '#9aa39a', 'left', TYPE.label, HS);
       if (flaskHud.flashT > 0) { g.globalAlpha = Math.min(1, flaskHud.flashT) * 0.55; g.fillStyle = '#fff6c8'; g.fillRect(R.x, R.y, R.w, R.h); g.globalAlpha = 1; }
       if (flaskHud.spillT > 0) { g.globalAlpha = Math.min(1, flaskHud.spillT * 2) * 0.45; g.fillStyle = '#ff3030'; g.fillRect(R.x, R.y, R.w, R.h); g.globalAlpha = 1; }

@@ -1,0 +1,12 @@
+flasks2 exit=0 168s
+survival exit=0 43s
+hud-default exit=0 42s
+textfit exit=0 29s
+store-ui exit=1 15s
+store-preview exit=1 31s
+skins exit=0 48s
+weapon-skins exit=1 16s
+pixels exit=0 69s
+mobile-perf exit=0 73s
+herokeys-after exit=0 75s
+done

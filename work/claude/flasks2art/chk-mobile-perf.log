@@ -1,0 +1,12 @@
+boot: BK up at 29.0 s (title 29.0 s) under 4x CPU throttle
+boot main-thread busy: 13844 ms
+boot steps (ms): modules 7053, hero 950, art1 619, art2 554, art3 797, art4 135, art5 905, art6 56, art7 217, art8 159, art9 68, sub 761, sub 27, sub 12, sub 3, sub 4, sub 1, tiles 0, sub 5, sub 33, sub 499, sub 17, sub 25, props 84, sky 1493, misc1 571, misc2 1141, misc3 1518, l_build 259, sub 39, sub 1, sub 29, sub 21, sub 2, sub 6, l_bake 0, sub 24, sub 36, sub 139, sub 32, sub 30, l_bake 128, l_bake 305, l_deep 102, l_rest 1069, final 92
+page: {"coarse":true,"dpr":2.625,"cv":"1201x541","set":{"parallax":"near","touchInit":1}}
+structure: {"mp":0.649741,"tl":true,"tlw":2402,"pre":382,"desync":true}
+  title     {"scene":"title","fps":45.8,"p95":66.7,"worst":116.6,"busyMsPerFrame":1.8,"scriptMs":1.5}
+  map       {"scene":"map","fps":46,"p95":66.7,"worst":133.5,"busyMsPerFrame":3.2,"scriptMs":2.7}
+  wood      {"scene":"wood","fps":58.4,"p95":16.8,"worst":49.9,"busyMsPerFrame":10.9,"scriptMs":10.1}
+  welltown  {"scene":"welltown","fps":49.1,"p95":33.6,"worst":199.9,"busyMsPerFrame":5.4,"scriptMs":5}
+  redgorge  {"scene":"redgorge","fps":54.9,"p95":33.2,"worst":83.4,"busyMsPerFrame":6.3,"scriptMs":5.9}
+input: {"firstMs":248.2,"stickMs":0}
+mobile perf: inside the budget at 4x CPU on a 915x412 phone.
