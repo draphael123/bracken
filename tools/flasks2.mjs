@@ -70,7 +70,7 @@ const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
   /* the drink, phase by phase */
   { const Tm = { drinkT: 0.45, swallowAt: 0.3 }, ph = [0, 0.05, 0.12, 0.2, 0.29, 0.31, 0.44].map(t => F2.drinkPhase(t, Tm).ph);
     assert.deepEqual(ph, ['uncork', 'uncork', 'gulp1', 'gulp2', 'gulp2', 'lower', 'lower'], 'the drink phases: ' + ph); }
-  assert.deepEqual(Object.keys(F2.MOUTH).sort(), ['geomancer', 'knight', 'paladin', 'pirate', 'pyro', 'reaper', 'warden'], 'a mouth for all seven heroes');
+  assert.deepEqual(Object.keys(F2.MOUTH).sort(), ['berserker', 'geomancer', 'knight', 'paladin', 'pirate', 'pyro', 'reaper', 'warden'], 'a mouth for all eight heroes');
 }
 /* ---------- B. the hidden finds are reachable ---------- */
 const BLOCK = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.SOFT, T.ICE, T.CRYST]);

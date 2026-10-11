@@ -29,6 +29,7 @@ export const BZ = {
   brace: { live: 0.3, rec: 0.28, won: 0.1, st: 10, stagger: 0.7, back: 1.2 },
   roll: { t: 0.28, speed: 250, shove: 200, stagger: 0.55, dmg: 0.4 },
   axe: { st: 18, vx: 300, vy: -10, g: 600, flat: 0.5, dmg: 1.3, haft: 1.33, lost: 5, pick: 14, recall: 420 },
+  perk: { rage: 1, brace: 1 },                        /* LEVELING2's hero perks (STOKED, STOUT BRACE): main.js applyUpgrades sets these from the card; 1 = none */
   poise: { heavy: 30, bossMul: 1.4, rage: 1.25, one: 0.5 },
   /* WEIGHT (claude/weight, scratch/brief-weight.md) lands later: his row of its commit table, for src/commit.js to read - recovery added after
      each verb's art (s), the roll's cost and grace, and the brace's own commitment. Light like the knight's, his heavy a beat longer. */
@@ -44,7 +45,7 @@ export function makeBerserker(api) {
   const P = () => api.P, T = () => api.tal();
   const clampRage = p => { p.rage = Math.max(0, Math.min(100, p.rage || 0)); };
   const raging = p => (p.rage || 0) >= BZ.rage.high || p.frenzyT > 0;
-  function gain(p, n, why) { if (!(n > 0) || p.frenzyT > 0) return; const was = (p.rage || 0) >= 100; p.rage = Math.min(100, (p.rage || 0) + n);
+  function gain(p, n, why) { if (!(n > 0) || p.frenzyT > 0) return; n *= BZ.perk.rage; const was = (p.rage || 0) >= 100; p.rage = Math.min(100, (p.rage || 0) + n);
     if (why === 'dealt') stats.rageDealt += n; else if (why === 'taken') stats.rageTaken += n;
     if (!was && p.rage >= 100) { api.meterReady('#ff4a3a'); api.teach('full'); } }
   const fight = p => { p.bzFightT = api.time; };
@@ -84,7 +85,7 @@ export function makeBerserker(api) {
   const armoured = () => { const p = P(); return p.frenzyT > 0 || (T().unflinch && (p.rage || 0) >= BZ.rage.high) || p.bzIronT > 0; };
 
   /* ---- THE BRACE ---- */
-  function brace(p) { if (!api.spend(BZ.brace.st)) { api.tired(); return; } p.braceT = BZ.brace.live * (T().braceLong ? 4 / 3 : 1); p.braceRec = 0; p.braceHit = false; p.vx = 0; stats.braces++;
+  function brace(p) { if (!api.spend(BZ.brace.st)) { api.tired(); return; } p.braceT = BZ.brace.live * BZ.perk.brace * (T().braceLong ? 4 / 3 : 1); p.braceRec = 0; p.braceHit = false; p.vx = 0; stats.braces++;
     api.SFX.bzBrace && api.SFX.bzBrace(); api.squash(1.08, 0.94, 0.08); api.teach('brace'); }
   /* A BLOW LANDING ON HIM (main.js damagePlayer0): 'blocked', 'half' or null. ONE blow: the brace drops the moment it has taken one */
   function braceTakes(fromX, dmg, unblockable, foe) { const p = P(); if (!(p.braceT > 0)) return null;

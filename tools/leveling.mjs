@@ -71,7 +71,7 @@ check('early milestones', () => {
     assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); }
   assert.equal(PR.PERKS.length + PR.MINOR_PERKS.length >= 16, true); assert.equal(PR.MINOR_PERKS.length >= 8, true);
   /* the hero's own is a different hand per hero, and every id of every hero is unique */
-  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 14);
+  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 16);   /* (berserkerport: two a hero, eight heroes) */
   assert.equal(PR.levelsToPerk(0), 5); assert.equal(PR.levelsToPerk(7), 3); assert.equal(PR.levelsToPerk(20), 5); assert.equal(PR.levelsToPerk(49), 1); assert.equal(PR.levelsToPerk(50), null);
   assert.deepEqual(PR.techniquesArriving('knight', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [10, 20, 30]);   /* the technique hook: empty, ready, and L20/L30 untouched */
 });

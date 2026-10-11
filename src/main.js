@@ -717,7 +717,7 @@ function regear() { /* a level-up crossed a tier, or the setting flipped: bake t
 function heroSet(skinId, swordId, previewOnly = false, h = hero(), tier = previewOnly ? 0 : gearNow(h)) { const sk = skinById(skinId); const pal = h === 'pyro' ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal;   /* the skin dresses the hero; the weapon's palette goes to the weapon alone (chars.js withWeapon) */
   const set = withGear(tier, () => withWeapon((swordId && swordId.pal ? swordId : swordById(swordId)).pal, () => h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : h === 'berserker' ? bakeBerserkerHero(WARD_SETS[sk.id] || {}, previewOnly) : bakeKnight(pal, false, previewOnly))); set.gearT = tier; return previewOnly ? set : FA.addDrink(set, h); }   /* (claude/flasks2art) the five drink frames of this hero, baked off his own idle */
 function applyUpgrades() { const growth = grow(hero(), heroLevel()); P.maxHp = growth.hp + (PROG.items.heart ? 25 : 0); P.maxSt = growth.stamina + (PROG.items.wind ? 30 : 0);
-  GEO_K.life = GEO_LIFE0 * (1 + 0.04 * prk('gstone')); GEO_K.ward.perfect = GEO_PERFECT0 + 0.012 * prk('gward'); }   /* (LEVELING2: LASTING STONE, WIDE RUNE - the hero's own, read where her kit reads its numbers) */
+  GEO_K.life = GEO_LIFE0 * (1 + 0.04 * prk('gstone')); GEO_K.ward.perfect = GEO_PERFECT0 + 0.012 * prk('gward'); BZ_K.perk.rage = 1 + 0.04 * prk('bzstoke'); BZ_K.perk.brace = 1 + 0.04 * prk('bzstout'); }   /* (LEVELING2: LASTING STONE, WIDE RUNE - the hero's own, read where her kit reads its numbers) */
 let statFlash = 0; // the HUD plate flashes when a rank lands
 // THE BEAM A ROPE IS TIED TO. 16x6: a squared timber with an iron ring under it and a lashing round the ring.
 function bakeRopeBeam() {
@@ -5784,7 +5784,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
     berserker: ['two hand axes, no shield', 'C BRACES ONE BLOW INTO RAGE', '105 health'] };
   /* THE ROW (Daniel 2026-10-09: portraits, not banners): each hero stands on the floor line in his OWN idle frames at one integer scale (2x). The one
      you are looking at steps forward and is lit; the rest stand back, dimmed, and still breathe. Name and a one-line role are under each. */
-  const ROLE = { knight: 'sword, shield', pyro: 'staff and fire', paladin: 'maul and ward', pirate: 'cutlass, pistol', reaper: 'greatsword', warden: 'spear, reach', geomancer: 'staff and stone', berserker: 'axes and rage' };
+  const ROLE = { knight: 'sword, kite', pyro: 'staff and fire', paladin: 'maul and ward', pirate: 'cutlass, pistol', reaper: 'greatsword', warden: 'spear, reach', geomancer: 'staff, stone', berserker: 'axes, rage' };
   const n = PICK.length, cw = Math.floor((VW - 24) / n), rx = Math.floor((VW - cw * n) / 2), floorY = 74, pickSets = {}, wide = cw >= 70;
   g.fillStyle = 'rgba(201,178,124,0.22)'; g.fillRect(8, floorY, VW - 16, 1);
   PICK.forEach((h, k) => { const x = rx + k * cw, mid = x + Math.round(cw / 2), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
