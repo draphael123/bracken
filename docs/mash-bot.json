@@ -1383,7 +1383,7 @@
   }
  },
  "spire": {
-  "hash": "75b9a91f86af",
+  "hash": "f752dda491b2",
   "boss": {
    "boss": "abbot",
    "wins": 0,
@@ -1583,7 +1583,7 @@
    ]
   },
   "carried": {
-   "from": "6ce8f1c0eb8b",
+   "from": "75b9a91f86af",
    "parts": [
     "boss",
     "mini"
