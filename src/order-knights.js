@@ -198,7 +198,7 @@ export function installOrder(api) {
     if (p.dead || ad > 280 || dy > 80 || e.sleeper && !e.woke) { e.vx = 0; }
     else { e.face = Math.sign(d) || e.face;
       let dir = ad > keep + 6 ? e.face : (e.t === 'oathmage' && ad < 60) ? -e.face : 0;
-      if (dir && logAhead(e, dir)) { e.okAtLog = (e.okAtLog || 0) + dt; if (e.okAtLog < 1.6) dir = 0; } else if (!e.okOnLog) e.okAtLog = 0;   /* (he waits at the trunk a beat for you to come to his swing, then climbs over) */
+      if (dir && logAhead(e, dir)) { e.okAtLog = (e.okAtLog || 0) + dt; if (e.okAtLog < 3.2) dir = 0; } else if (!e.okOnLog) e.okAtLog = 0;   /* (he waits at the trunk a beat for you to come to his swing, then climbs over) */
       if (dir && !floorAt(e, dir)) dir = 0;
       e.vx = dir * e.speed * (dir === -e.face ? 0.8 : 1); }
     api.body(e, dt);
