@@ -20,10 +20,14 @@ LS.bootDone();   /* the boot bar index.html put up is the game's: the guest page
 const q = new URLSearchParams(location.search), code = NET.cleanCode(q.get('join'));
 let SET = {}; try { SET = JSON.parse(localStorage.getItem('bracken.settings') || '{}') || {}; } catch {}   /* READ ONLY */
 const binds = CTL.cleanBinds(SET.binds), KT = CTL.keysTable(binds), PT = CTL.padTable(binds, 'pad1');
+/* THE GUEST'S VOLUME is remembered under its OWN key, never in a save (the guest page writes nothing else) */
+const VOL_KEY = 'bracken.onlineVol';
+function loadVol() { try { const v = parseFloat(localStorage.getItem(VOL_KEY)); if (v >= 0 && v <= 1) return v; } catch {} return 0.8; }
+function saveVol(v) { try { localStorage.setItem(VOL_KEY, String(v)); } catch {} }
 const isKey = (e, list) => list.includes(e.key) || list.includes(e.code);
 const HELD = ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance', 'talk'];
 
-const G = { phase: 'start', code, err: '', roster: [], hero: null, hostHero: '', rtt: 0, hostState: '', paused: false, menu: false, sent: 0, frames: 0, vol: 0.8, why: '' };
+const G = { phase: 'start', code, err: '', roster: [], hero: null, hostHero: '', rtt: 0, hostState: '', paused: false, menu: false, sent: 0, frames: 0, vol: loadVol(), art: {}, why: '' };
 let link = null, net = null, stream = null;
 
 /* ===== the page ===== */
@@ -142,6 +146,7 @@ async function connect() {
 }
 function onMsg(m) {
   if (m.t === 'roster') { G.roster = Array.isArray(m.heroes) ? m.heroes : []; G.hostHero = m.host || ''; G.phase = 'pick'; render(); }
+  else if (m.t === 'art') { G.art = m.art && typeof m.art === 'object' ? m.art : {}; if (G.phase === 'pick' || G.phase === 'waitgo') render(); }
   else if (m.t === 'go') { G.hero = m.hero; G.phase = 'play'; render(); flush(true); }
   else if (m.t === 'st') { G.hostState = m.s; G.paused = !!m.paused; showBanner(); }
   else if (m.t === 'pong') { G.rtt = Math.round(performance.now() - m.t0); if (link) link.send({ t: 'rtt', ms: G.rtt }); stripView(); }
@@ -177,12 +182,12 @@ function render() {
     parts.push(UI.el('div.code', code), UI.el('p', P === 'finding' ? 'ASKING THE MATCHMAKER FOR THE GAME...' : P === 'linking' ? 'OPENING A DIRECT LINK TO THE HOST...' : 'SAYING HELLO...'), UI.el('p.dim', 'you play player two in the host\'s game; your own save is never touched'), UI.row(UI.el('button', 'CANCEL', backHome)));
   } else if (P === 'pick' || P === 'waitgo') {
     parts.push(UI.el('p', 'PICK YOUR HERO'), UI.el('p.dim', 'from the host\'s heroes' + (G.hostHero ? ' (the host plays ' + G.hostHero + ')' : '')));
-    const r = UI.row(); for (const h of G.roster) r.appendChild(UI.el('button' + (h.id === G.roster[0].id ? '.sel' : ''), h.name, () => pick(h.id)));
+    const r = UI.row(); for (const h of G.roster) r.appendChild(heroButton(h, h.id === G.roster[0].id));
     parts.push(r); if (P === 'waitgo') parts.push(UI.el('p.ok', 'JOINING...'));
     parts.push(UI.el('p.dim', keysLine()), UI.row(UI.el('button', 'LEAVE', leave)));
   } else if (P === 'play') {   /* the menu */
     const vol = UI.el('input'); vol.type = 'range'; vol.min = 0; vol.max = 100; vol.value = Math.round(G.vol * 100); vol.id = 'olvol'; vol.style.cssText = 'width:200px;letter-spacing:0;font-size:12px';
-    vol.addEventListener('input', () => { G.vol = vol.value / 100; video.volume = G.vol; video.muted = G.vol === 0 ? true : false; });
+    vol.addEventListener('input', () => { G.vol = vol.value / 100; saveVol(G.vol); video.volume = G.vol; video.muted = G.vol === 0 ? true : false; });
     parts.push(UI.el('p', 'PLAYER TWO: ' + (nameOf(G.hero))), UI.el('p.dim', 'PING ' + (G.rtt || '?') + ' MS'), UI.el('h2', 'HOST SOUND'), UI.row(vol),
       UI.el('p.dim', keysLine()), UI.row(UI.el('button.sel', 'BACK TO THE GAME', toggleMenu), UI.el('button', 'LEAVE THE GAME', leave)));
   } else if (P === 'ended') {
@@ -190,6 +195,17 @@ function render() {
     parts.push(UI.el('p.bad', t), UI.el('p', w), UI.row(UI.el('button.sel', 'TRY AGAIN', () => location.reload()), UI.el('button', 'BACK TO MY GAME', backHome)));
   }
   board.set(...parts);
+}
+/* A HERO CARD on the pick: the host's baked idle frame, pixelated at a whole number of SCREEN pixels per art pixel (about 96 css px tall), with the name as text under it */
+function heroButton(h, sel) {
+  const b = UI.el('button' + (sel ? '.sel.hero' : '.hero'), h.name, () => pick(h.id)), a = G.art && G.art[h.id];
+  if (a && typeof a.png === 'string' && a.png.startsWith('data:image/png') && a.w > 0 && a.h > 0) {
+    const dpr = Math.max(1, Math.min(3, devicePixelRatio || 1)), S = Math.max(1, Math.floor(96 * dpr / a.h)), img = new Image();
+    img.src = a.png; img.alt = ''; img.draggable = false; img.className = 'heroart';
+    img.style.width = a.w * S / dpr + 'px'; img.style.height = a.h * S / dpr + 'px';
+    b.insertBefore(img, b.firstChild);
+  }
+  return b;
 }
 const nameOf = h => { const r = G.roster.find(x => x.id === h); return r ? r.name : String(h || '').toUpperCase(); };
 function keysLine() { const L = a => CTL.labelFor(binds, 'kb', a, 1); return 'YOUR OWN KEYS: ' + L('left') + '/' + L('right') + ' MOVE, ' + L('jump') + ' JUMP, ' + L('atk') + ' ATTACK, ' + L('dodge') + ' DODGE, ESC MENU'; }
@@ -202,6 +218,6 @@ function showBanner() {
   const s = G.phase === 'play' && !G.menu ? (G.paused ? 'HOST PAUSED' : G.hostState === 'map' ? 'HOST IS ON THE MAP' : G.hostState && G.hostState !== 'play' ? 'HOST IS IN THE MENUS' : '') : '';
   banner.textContent = s; banner.style.display = s ? '' : 'none';
 }
-window.BKGUEST = { state: () => ({ ...G, banner: banner.style.display === 'none' ? '' : banner.textContent, videoW: video.videoWidth, videoH: video.videoHeight, vol: video.volume, muted: video.muted, audio: !!(stream && stream.getAudioTracks().length), held: heldNow(), geo: { ...geo }, css: { w: parseFloat(video.style.width), h: parseFloat(video.style.height), r: getComputedStyle(video).imageRendering } }), pick, leave, toggleMenu, touch: TCH, video };
+window.BKGUEST = { state: () => ({ ...G, banner: banner.style.display === 'none' ? '' : banner.textContent, videoW: video.videoWidth, videoH: video.videoHeight, vol: video.volume, muted: video.muted, audio: !!(stream && stream.getAudioTracks().length), held: heldNow(), volSaved: G.vol, geo: { ...geo }, css: { w: parseFloat(video.style.width), h: parseFloat(video.style.height), r: getComputedStyle(video).imageRendering } }), pick, leave, toggleMenu, touch: TCH, video };
 connect();
 render();

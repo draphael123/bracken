@@ -10,7 +10,10 @@
 //   5. the guest's TOUCH buttons drive player two (the game's own touch layer, on the guest page)
 //   6. host pause shows HOST PAUSED on the guest; the guest has a latency readout and a volume that works
 //   7. a guest DISCONNECT drops player two cleanly (local co-op's drop-out: one player, coopWant off, the wood goes on) and the room waits
-//   8. the guest's own save (all of its localStorage) is byte-for-byte untouched, and the guest page never ran the game (no window.BK)
+//   8. the guest's own save (all of its localStorage EXCEPT the one key bracken.onlineVol, his remembered stream volume, which has its own
+//      key and is never part of a save) is byte-for-byte untouched, and the guest page never ran the game
+//   9. POLISH (Daniel 10-11): the board opens from the MAP with G (same gate); the guest's volume is remembered under bracken.onlineVol and
+//      comes back on a rejoin; the guest's hero pick shows the host's baked idle frames, pixelated at a whole-number scale (no window.BK)
 //   node tools/online-coop.mjs          (PORT for the page server; the relay goes on ONLINE_RELAY or PORT+1)
 import { openPage } from './cdp.mjs';
 import { startStub } from './online-stub.mjs';
@@ -53,9 +56,17 @@ try {
   ok(/SECOND HERO/.test(lockedBoard) && !/HOST A GAME/.test(lockedBoard), '1: the locked board says why and offers no HOST button');
   ok(/JOIN/.test(lockedBoard), '1: JOIN a friend is offered even when locked (the guest needs no hero of his own)');
   await H('document.querySelector("#olhost button:last-child").click()');
+  // 9a. the MAP key (G) opens the same board, with the same gate
+  const mapKeyBoard = async () => { await H('(()=>{BK.state="map";return true})()'); await sleep(300); await key(host, 'g', 'keyDown'); await key(host, 'g', 'keyUp'); await until(host, 'document.getElementById("olhost") && document.getElementById("olhost").style.display !== "none" && document.getElementById("olhost").innerText.length > 0', 8000, 'the online board from the map key'); return H('document.getElementById("olhost").innerText'); };
+  const mapLocked = await mapKeyBoard();
+  ok(/ONLINE CO-OP/.test(mapLocked) && /SECOND HERO/.test(mapLocked) && !/HOST A GAME/.test(mapLocked), '9: G on the map opens the online board, locked with one hero (same gate)');
+  await H('[...document.querySelectorAll("#olhost button")].find(b=>b.textContent==="BACK").click()');
 
   // ---- 2. hosting, the code, the link, joining ----
   await H('BK.PROG.heroes.warden = true');
+  const mapOpen = await mapKeyBoard();
+  ok(/HOST A GAME/.test(mapOpen) && /JOIN/.test(mapOpen), '9: with 2+ heroes the map key offers HOST A GAME and JOIN');
+  await H('[...document.querySelectorAll("#olhost button")].find(b=>b.textContent==="BACK").click()');
   await H('BKONLINE.open()');
   await H('[...document.querySelectorAll("#olhost button")].find(b=>b.textContent==="HOST A GAME").click()');
   const code = await until(host, 'BKONLINE.debug().sess && BKONLINE.debug().sess.phase === "waiting" && BKONLINE.debug().sess.code', 15000, 'the room to open');
@@ -67,6 +78,12 @@ try {
   const roster = await Gu('BKGUEST.state().roster.map(r=>r.id)');
   ok(roster.includes('knight') && roster.includes('warden') && !roster.includes('pyro'), '2: the guest picks from the HOST\'s roster (knight + warden), not his own (pyro): ' + roster);
   ok((await H('BKONLINE.debug().sess.phase')) === 'picking', '2: the host sees player two picking');
+  // 9c. the host's baked hero art on the pick screen: one pixelated image per hero, a whole number of screen pixels per art pixel, names still text
+  const art = await until(guest, '(()=>{const im=[...document.querySelectorAll("#olguest button.hero img")];return im.length===BKGUEST.state().roster.length&&im.every(i=>i.complete&&i.naturalWidth>0)?im.map(i=>({nw:i.naturalWidth,nh:i.naturalHeight,w:parseFloat(i.style.width),h:parseFloat(i.style.height),r:getComputedStyle(i).imageRendering,dpr:devicePixelRatio})):null})()', 15000, 'the hero art on the guest pick');
+  ok(art.length === roster.length && art.every(a => a.r === 'pixelated'), '9: the guest pick shows one pixelated image per roster hero: ' + art.length);
+  ok(art.every(a => { const s = a.w * a.dpr / a.nw; return Math.abs(s - Math.round(s)) < 0.01 && Math.abs(a.h * a.dpr / a.nh - s) < 0.01 && s >= 1; }), '9: ...each at a whole number of screen pixels per art pixel: ' + JSON.stringify(art.map(a => a.w * a.dpr / a.nw)));
+  ok(await Gu('[...document.querySelectorAll("#olguest button.hero")].every(b=>/^[A-Z ]+$/.test(b.textContent))'), '9: ...and the names stay as text');
+  ok(await Gu('(()=>{const c=document.querySelector("#olguest .ob");return c.scrollWidth<=c.clientWidth+1})()'), '9: the pick card fits its box');
   await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.textContent==="WARDEN").click()');
   await until(guest, 'BKGUEST.state().phase === "play"', 10000, 'the guest to be in');
   ok((await H('BK.state')) === 'map', '2: the host, on the title, goes on to the map with player two armed');
@@ -142,6 +159,7 @@ try {
   await Gu('BKGUEST.toggleMenu()');
   const vol = await Gu('(()=>{const v=document.getElementById("olvol");v.value=30;v.dispatchEvent(new Event("input"));return BKGUEST.video.volume})()');
   ok(Math.abs(vol - 0.3) < 0.01, '6: the guest\'s volume sets the host sound\'s level: ' + vol);
+  ok((await Gu('localStorage.getItem("bracken.onlineVol")')) === '0.3', '9: the volume is written under its own key, bracken.onlineVol');
   await Gu('BKGUEST.toggleMenu()');
 
   // ---- 7. the guest goes: player two drops out cleanly ----
@@ -155,8 +173,13 @@ try {
   ok(host.errors.length === errs0, '7: no page error on the host when he went: ' + host.errors.slice(errs0).join(' | '));
 
   // ---- 8. the guest's save ----
-  const after = await guest.evalp(`(()=>{const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);o[k]=localStorage.getItem(k);}return JSON.stringify(o);})()`);
-  ok(after === before, '8: the guest\'s whole localStorage (his save, slot and settings) is untouched');
+  /* DESIGN CHANGE (10-11): the guest's remembered volume lives under its own key, so the identical-storage assertion excludes exactly that one key and nothing else */
+  const after = await guest.evalp(`(()=>{const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k==='bracken.onlineVol')continue;o[k]=localStorage.getItem(k);}return JSON.stringify(o);})()`);
+  ok(after === before, "8: the guest's whole localStorage except bracken.onlineVol (his save, slot and settings) is untouched");
+  // 9b. the remembered volume comes back on a rejoin
+  await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY, '!!window.BKGUEST');
+  await until(guest, 'BKGUEST.state().phase === "pick"', 25000, 'the guest to rejoin');
+  ok(Math.abs((await Gu('BKGUEST.state().volSaved')) - 0.3) < 0.001, "9: a rejoin remembers the guest's volume (0.3)");
   ok(guest.errors.length === 0, '8: no page error on the guest: ' + guest.errors.slice(0, 2).join(' | '));
   await H('BKONLINE.end()');
 } catch (e) { fails.push('aborted: ' + String(e && e.message || e).split('\n')[0]); }

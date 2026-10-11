@@ -109,6 +109,7 @@ function guestArrives(my, link) {
   const opened = () => {
     my.phase = 'picking'; my.last = performance.now(); roomView();
     link.send({ t: 'roster', v: 1, heroes: api.roster(), host: api.heroName() });
+    sendArt(link);
     startMedia(my, link);
   };
   if (link.open) opened(); else link.onOpen = opened;
@@ -126,6 +127,13 @@ function onMsg(my, link, m) {
     api.arm(h); link.send({ t: 'go', hero: h });
     closeBoard(); chipView();
   } else if (m.t === 'bye') dropGuest(my, 'LEFT');
+}
+/* THE ROSTER'S FACES, once on join: each hero's baked idle preview frame (the picture the host's own co-op pick draws) as a small PNG data URL with its size.
+   The guest shows them pixelated at a whole-number scale; the names stay text. A frame that cannot be read is left out (that hero shows his name alone). */
+function sendArt(link) {
+  const art = {};
+  for (const h of api.roster()) { try { const f = api.art(h.id); if (!f || !f.width) continue; const c = document.createElement('canvas'); c.width = f.width; c.height = f.height; c.getContext('2d').drawImage(f, 0, 0); art[h.id] = { w: f.width, h: f.height, png: c.toDataURL('image/png') }; } catch {} }
+  link.send({ t: 'art', v: 1, art });
 }
 /* THE GUEST GOES: player two drops out exactly as local co-op's does (coopWant off, coopEnd), and the room waits for him again */
 function dropGuest(my, why) {

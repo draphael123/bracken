@@ -4656,6 +4656,7 @@ function updateMap(dt) {
     if (coopShown()) { coopWant = null; if (coop()) coopEnd(); const [mx, my] = mapPos(); number(mx, my - 16, 'CO-OP OFF', '#9aa39a'); SFX.ui(); }
     else { coopPickFrom = 'map'; coopPick = { i: 0, ally: false }; state = 'coop'; SFX.uiSel(); }
   }
+  if (skill2Press && !map.walking) ONL.open();   /* ONLINE CO-OP: G on the map (the touch pill ONLINE) opens the same board as the title row; the board holds its own gate (coopOk) */
   if (pausePress) { state = 'title'; SFX.ui(); }
   PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id;
   { const [, py] = mapPos(); const sit = !map.walking && NODES[map.node], want = Math.max(0, Math.min(MAPH - VH, py - VH * (sit ? mapPanelFor(sit).anchor : 0.55))); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
@@ -4665,7 +4666,7 @@ let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
-function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF'), x: VW - 4, right: true }]; }
+function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF') + '  G ONLINE', x: VW - 4, right: true }]; }
 /* THE MAP'S LANDMARK CRITTERS (the Queen over her wood, the frog, the chief...) at the map's own pixel size. They were boss sprites drawn at 0.42-0.75 of their size: a fractional
    scale on a pixel sprite, so every one smeared against the hero and the hut. Now each is shrunk by a WHOLE factor (the nearest to the height it should stand: about a hero) with the
    block-vote downsample (src/map-pixel.js), outlined, and drawn 1:1. A cleared place's critter goes grey (never see-through). */
@@ -6088,7 +6089,7 @@ const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: ()
 const touchOn = TCH.on, touchZones = () => TCH.allButtons();
 /* ONLINE CO-OP (src/online.js): what the host's half may read and do. arm() is the co-op pick's own confirm (coopWant; in a wood he stands up beside player one, as the
    pause menu's pick does); drop() is the pause menu's 'co-op off'. The save, the map and the unlocks are this page's own - the guest's page never runs the game. */
-ONL.init({ buf, state: () => state, paused: () => state === 'menu' && menuKind === 'pause', coopOk: () => coopOk(), initAudio: () => initAudio(), heroName: () => HERO_SHORT[hero()] || String(hero()).toUpperCase(), nameOf: h => HERO_SHORT[h] || String(h).toUpperCase(), roster: () => coopPickList().map(h => ({ id: h, name: HERO_SHORT[h] || String(h).toUpperCase() })), drop: () => { coopWant = null; if (coop()) coopEnd(); },
+ONL.init({ buf, state: () => state, paused: () => state === 'menu' && menuKind === 'pause', coopOk: () => coopOk(), initAudio: () => initAudio(), art: h => heroPreviewSet(h).R.idle[0], heroName: () => HERO_SHORT[hero()] || String(hero()).toUpperCase(), nameOf: h => HERO_SHORT[h] || String(h).toUpperCase(), roster: () => coopPickList().map(h => ({ id: h, name: HERO_SHORT[h] || String(h).toUpperCase() })), drop: () => { coopWant = null; if (coop()) coopEnd(); },
   arm: h => { coopWant = { hero: h, ally: false }; if ((state === 'play' || (state === 'menu' && menuFrom === 'play')) && L && !L.trial && !L.shop && !rushOn() && !coop()) { coopStart(h, false); const p2 = players[1]; if (p2) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p2, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); } } else if (state === 'title' || state === 'coop') state = 'map'; } });
 Object.assign(SETTING_TIPS, TCH.tips);
 {

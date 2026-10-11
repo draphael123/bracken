@@ -142,3 +142,19 @@ None. No existing test was changed. `tools/cdp.mjs` gained an optional `opts.arg
    so the guest page writes nothing at all.
 5. **Own signalling later?** Rec: only if the free broker proves flaky in practice. online-net.js is the one file to swap (a Vercel
    function + short-lived codes, as the original brief had). Built: PeerJS broker (Daniel 10-10).
+
+## POLISH (Daniel approved 10-11): map entry, remembered guest volume, hero art on the guest pick
+1. **OPEN FROM THE MAP.** G on the map (or the touch pill ONLINE) calls `ONL.open()`, the same board as the title row, with the same gate (`coopOk()`: locked with the co-op words until 2+ heroes). Hooks, all commented ONLINE CO-OP: `src/main.js` updateMap (`skill2Press` -> `ONL.open()`), the map footer now reads `F CO-OP ON  G ONLINE` (desktop), and `src/touch.js` ACTIONS.map gained `['skill2','ONLINE']`. G was unused on the map. Mid-session it reopens the room card (ONL.open already handles that).
+2. **GUEST VOLUME REMEMBERED** under its own key `bracken.onlineVol` (try/catch, in `src/online-guest.js`), never in a save; the guest page still writes nothing else.
+3. **HERO ART ON THE GUEST PICK.** The host sends one `art` message right after the roster (once per join): per hero `{w,h,png}`, the baked idle frame 0 of the same preview set the host's own co-op pick draws (`main.js` ONL.init gained `art: h => heroPreviewSet(h).R.idle[0]`). The guest pick shows each as a card (image above the name), `image-rendering: pixelated`, at an integer number of screen pixels per art pixel (about 96 css px tall); names stay text. A hero whose frame cannot be read just shows the name.
+- STUN-only unchanged (no TURN). `src/online-net.js` untouched (still the only PeerJS file).
+
+### ASSERTION CHANGE (a stated design change)
+`tools/online-coop.mjs` step 8 ("the guest's whole localStorage is untouched") now **excludes exactly one key, `bracken.onlineVol`**, from both sides of the comparison (the `before` snapshot never had it). Everything else (save, slot, settings) must still be byte-identical. New assertions (step 9): G opens the board locked with one hero and offering HOST A GAME + JOIN with 2+; the pick shows one pixelated image per roster hero at an integer scale with text names and a card that fits; the volume lands under `bracken.onlineVol` ('0.3'); a rejoin remembers it. Nothing else weakened. (The test's old "click `button:last-child`" on the gate boards actually hits JOIN, a no-op; I left it and used a BACK-by-text click only in my new steps.)
+
+### CHECKS (PORT 8825, one at a time)
+online-coop GREEN (with the new step 9); touch GREEN; save-slots GREEN; uiscreens GREEN (no page errors); textfit mapcard,title,menu --strict GREEN (65 screens, 1248 strings, all fault counts 0; the map footer fits); node --check on main.js, touch.js, online.js, online-guest.js, online-ui.js, tools/online-coop.mjs clean. The online DOM boards are not canvas text, so textfit cannot see them; the check asserts the guest pick card has no horizontal overflow.
+
+### QUESTIONS (rec first)
+1. On a phone the map footer text is unchanged (the touch pills carry ONLINE). Want a visible G ONLINE hint for touch too? Rec: no, the pill is the hint.
+2. The art is 1x-ish (idle frame is ~50-90 px tall, so scale 1 on a normal screen). Rec: keep; add a bigger hero card only if the pick screen feels sparse on a phone.

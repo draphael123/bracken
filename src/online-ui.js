@@ -13,6 +13,8 @@ const CSS = `
 .olx input{font:20px/1 "Press Start 2P",monospace;width:7.2em;text-align:center;text-transform:uppercase;background:#0b0912;color:#ffd36b;border:2px solid #8a6a3a;padding:8px;margin:5px;letter-spacing:4px}
 .olx .code{font:34px/1.2 "Press Start 2P",monospace;color:#ffd36b;letter-spacing:8px;margin:6px 0}
 .olx .link{font-size:12px;color:#8fd160;word-break:break-all;background:#0b0912;padding:6px;border:1px solid #3a2a16;-webkit-user-select:all;user-select:all}
+.olx button.hero{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;min-width:84px}
+.olx button.hero img{image-rendering:pixelated;display:block}
 .olx .row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center}
 .olchip{position:fixed;left:8px;bottom:8px;z-index:19;font:11px/1.3 "Press Start 2P",monospace;color:#e8dcc0;background:rgba(20,16,30,.78);border:2px solid #5c3a1d;padding:5px 7px;display:flex;gap:8px;align-items:center;pointer-events:auto}
 .olchip b{color:#ffd36b;font-weight:400}.olchip .ok{color:#8fd160}.olchip .bad{color:#ff9a5c}
