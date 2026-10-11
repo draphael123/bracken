@@ -51,7 +51,8 @@ try {
       assert.equal(r.parry.res, 'blocked', h + ': the parried blow is turned');
       assert(r.parry.win > 0 && r.parry.win <= 0.6, h + ': the riposte window opens (~0.6 s): ' + r.parry.win);
       assert(r.parry.hold > 0, h + ': the common foe stands reeling (rpHold ' + r.parry.hold + ')');
-      assert(r.ratio >= 1.8 && r.ratio <= (h === 'knight' ? 3.8 : 2.7), h + ': the riposte cut lands ~2x the plain first cut, paid once (the knight: his heavy x1.5 on top) (' + r.rip + ' vs ' + r.plain + ')');
+      /* (claude/berserker2, Daniel 10-11) THE BERSERKER'S RIPOSTE IS THE CROSS-CHOP - his run's finisher (x1.5) on top, as the knight's is his heavy third cut; and his plain first cut is a quick flurry chop (x0.85) - so his bound is the knight's */
+      assert(r.ratio >= 1.8 && r.ratio <= (h === 'knight' || h === 'berserker' ? 3.8 : 2.7), h + ': the riposte cut lands ~2x the plain first cut, paid once (the knight and the berserker: their finisher x1.5 on top) (' + r.rip + ' vs ' + r.plain + ')');
       assert(r.red && r.red.res === 'hit' && r.red.parries === 0 && r.red.lost > 0, h + ': a RED blow met on the beat is not parried - it lands, and says TOO STRONG (' + JSON.stringify(r.red) + ')'); }
   }
   if (WANT.includes('elite')) {
