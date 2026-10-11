@@ -1984,6 +1984,25 @@ export function bakePyro(skin = {}, previewOnly = false) {
     const d = jig({ lean: 2, trail: 3, sit: 1, hemW: 13, feet: [[12, 17], [15, 18]], arm2: [11, 11, 12, 13], flame: 4, flick: 1 });
     const e = jig({ bell: 2, dy: -1, hemW: 12, feet: [[11, 17], [15, 16]], arm2: [11, 10, 9, 6], palm: [8, 5], flame: 0, sparks: [[7, 2, 'y']] });
     F.dance = holdFrames([[a, 2], [b, 2], [c, 2], [d, 2], [e, 1]]); }
+  /* HER OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE JUGGLE, her long-idle solo: three sparks lit one at a time in the free
+     palm and kept up between palm and cage in a slow arc, her weight rocking heel to heel under the hem, the cage flaring each time one
+     lands in it. dance3 = THE PYRE TURN, a boss down: the staff comes off the turf, goes round her head in a full circle with the hem
+     flying and the cowl thrown back, and is brought down on the ground with a burst of fire; she stands in it with both arms open. */
+  { const st = (o = {}) => pyroFrame({ staff: [17, 18, 18, 2], arm: [16, 11, 17, 12], cowl: 0, ...o });
+    const lo = [11, 10, 13, 12], hi = [11, 10, 14, 9];
+    F.dance2 = holdFrames([[st({ arm2: lo, palm: [14, 11], feet: [[10, 18], [15, 18]] }), 2], [st({ arm2: hi, sparks: [[14, 7, 'y']], flame: 1, lean: -1, feet: [[10, 18], [15, 18]] }), 2],
+      [st({ arm2: lo, sparks: [[14, 4, 'y'], [11, 2, 'r']], flame: 2, bell: 1, feet: [[11, 17], [16, 18]] }), 2], [st({ arm2: hi, sparks: [[16, 3, 'y'], [13, 5, 'r']], flame: 3, bell: 2, dy: -1, hemW: 12, feet: [[11, 17], [15, 16]] }), 2],
+      [st({ arm2: [11, 10, 12, 8], sparks: [[17, 1, 'y'], [9, 3, 'r'], [14, 2, 'y']], flame: 3, flick: 1, lean: 1, feet: [[11, 18], [16, 18]] }), 2],
+      [st({ arm2: hi, sparks: [[10, 4, 'y'], [16, 5, 'y']], flame: 4, flick: 1, bell: 1, feet: [[12, 18], [15, 18]] }), 2], [st({ arm2: lo, sparks: [[14, 8, 'y']], flame: 4, lean: 1, trail: 1, hemW: 12, feet: [[12, 17], [16, 18]] }), 2],
+      [st({ arm2: lo, palm: [14, 11], flame: 1, sit: 1, feet: [[10, 18], [15, 18]] }), 2], [st({ arm2: hi, sparks: [[13, 6, 'r'], [15, 4, 'y']], flame: 2, lean: -1, feet: [[10, 18], [15, 18]] }), 2],
+      [st({ arm2: lo, flame: 3, flick: 1, bell: 1, feet: [[11, 18], [15, 18]] }), 2], [F.idle[0], 2]]);
+    const sp = (stf, a, a2, o = {}) => pyroFrame({ staff: stf, arm: a, arm2: a2, cowl: 2, bell: 2, hemW: 13, feet: [[9, 18], [17, 18]], ...o });
+    const t1 = sp([6, 3, 22, 1], [15, 9, 17, 3], [11, 9, 10, 3], { lean: -1, flick: 1 }), t2 = sp([9, 4, 25, 8], [16, 10, 20, 8], [12, 10, 16, 8], { lean: 2, trail: 2, flare: [26, 8, true] }),
+      t3 = sp([12, 14, 18, 3], [16, 11, 18, 8], [12, 11, 14, 8], { lean: 3, trail: 3, dy: -1, feet: [[10, 17], [17, 17]] }), t4 = sp([12, 4, 3, 10], [14, 9, 10, 7], [11, 9, 7, 8], { lean: -2, trail: -2, dy: -1, feet: [[10, 17], [16, 17]] }),
+      t5 = sp([9, 3, 5, 18], [14, 10, 8, 13], [11, 10, 7, 14], { lean: -3, trail: -3, hemW: 14, flare: [4, 19, true] });
+    const slam = pyroFrame({ lean: 2, trail: 2, sit: 2, feet: [[9, 18], [17, 18]], staff: [10, 14, 20, 19], arm: [16, 11, 19, 15], arm2: [12, 11, 15, 16], cowl: 1, flare: [21, 19, true], sparks: [[22, 16, 'y'], [20, 14, 'r'], [24, 18, 'y']] });
+    const open = pyroFrame({ bell: 2, hemW: 14, staff: [17, 18, 18, 2], arm: [16, 11, 21, 7], arm2: [11, 11, 6, 7], cowl: 2, flame: 4, flick: 1, sparks: [[22, 4, 'y'], [5, 4, 'y'], [18, 0, 'r']] });
+    F.dance3 = holdFrames([[st({ flame: 1 }), 1], [t1, 2], [t2, 2], [t3, 2], [t4, 2], [t5, 2], [t1, 2], [t2, 2], [t3, 1], [t4, 1], [t5, 1], [slam, 3], [open, 3], [pyroFrame({ bell: 2, hemW: 14, staff: [17, 18, 18, 2], arm: [16, 11, 21, 7], arm2: [11, 11, 6, 7], cowl: 2, flame: 3, sparks: [[23, 3, 'y'], [5, 3, 'r']] }), 4], [F.idle[0], 2]]); }
   /* HER SLUMP: the staff turned over. She holds it by the foot with the cage down by her boots, so the one bright
      thing she owns is guttering in the dirt - the flame stands up out of the cage wherever the cage is - and she is
      sunk into her own robe (sit drops the shoulders and the cowl while the hem stays on the ground). */
