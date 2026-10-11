@@ -136,9 +136,25 @@ export function buildSunkenCaravan(T) {
   const walls = [];
   /* A RUIN FACE behind the play: a wall of the old town standing in the dunes, nothing you touch (on a flat, so it stands on sand) */
   const face = (x0, x1, h) => { const g = top(x0); facades.push([x0, x1, g - h, g - 1, 'ruin']); };
+  /* THE VIADUCT (claude/caravan2art): laid stone at one row over [x0, x1] (a span never comes near the sand: >= 6 rows of air under it, out of the overhang rule), a pier drawn
+     behind the play at both ends and every <= 6 tiles (tools/architecture.mjs B9 / solid-islands), and gap = a collapsed bay [a, b] left out (a jump of 2). The road runs under it. */
+  const viaducts = [], deckCalm = [];   /* deckCalm is handed to the level with calm, but the draft's own roster (inCalm: columns only) does not see it */
+  const viaduct = (x0, x1, row, gap) => { const hold = [];
+    for (let x = x0; x <= x1; x++) { if (gap && x >= gap[0] && x <= gap[1]) continue; if (top(x) - row < 6) throw new Error('viaduct ' + x0 + '-' + x1 + ' is too near the sand at ' + x); set(x, row, T.SOLID); hold.push(x); }
+    masonry.push([x0, x1, row, row, 'ruin']);
+    const piers = new Set([x0, x1]); for (let x = x0 + 6; x < x1; x += 6) piers.add(x); if (gap) { piers.add(gap[0] - 1); piers.add(gap[1] + 1); }
+    const flat = x => hold.includes(x) && cols[x] && cols[x].t === 'F' && !(cols[x - 1] && cols[x - 1].t === 'QS') && !(cols[x + 1] && cols[x + 1].t === 'QS');   /* a pier stands on firm FLAT sand: never a slope tile, never the lip of a pit */
+    const placed = new Set();
+    for (const p of piers) { let q = null; for (let d = 0; d <= 4 && q === null; d++) for (const s of d ? [-d, d] : [0]) if (flat(p + s) && !placed.has(p + s)) { q = p + s; break; }
+      if (q === null) continue; placed.add(q);   /* no firm flat near (a pit, a slope): the deck is held by the roof it ends on */ facades.push([q, q, row + 1, top(q) - 1, 'ruin']); }
+    deckCalm.push([x0, x1, row - 4, row]);   /* the sprinkler puts the garrison on the sand under it, not on the deck (it takes the highest floor of a column) */
+    viaducts.push([x0, x1, row]); };
   lintel(marks.gate + 2, marks.gate + 7);                                   // THE OLD TOWN'S GATE: you start in its shade, and step out into the sun
-  house('house1', marks.house1); house('house2', marks.house2, { crown: [1, 0] }); house('house3', marks.house3 + 0, { crown: [2, 0] }); house('house5', marks.house5, { crown: [1, 2] });
-  tower('towerA', marks.towerA + 1, 12, { crown: [2, 4] });                 // THE WATCHTOWER, alone at the end of the caravan road
+  /* (claude/caravan2art) THE UPPER RUIN ROUTE (Daniel accepted, 10-10; level-quality's multi-height share): three of the old town's houses are climbable (a doorway at each
+     foot, ledges up inside, a hatch onto the roof - the tower idiom) and a ruined VIADUCT of laid stone runs between their roofs at row 20, eight rows over the sand (no overhang
+     shade: the high road is the sunny road). Built supports every few tiles (L.facades), a collapsed span to jump, every hero up with base movement (tower ledges are 2 rows). */
+  tower('house1', marks.house1, 10, { crown: [0, 1] }); tower('house2', marks.house2, 8, { crown: [0, 1] }); tower('house3', marks.house3 + 0, 10, { crown: [2, 0] }); house('house5', marks.house5, { crown: [1, 2] });
+  tower('towerA', marks.towerA + 1, 12, { crown: [0, 1] });                 // THE WATCHTOWER, alone at the end of the caravan road
   tower('towerB', marks.towerB, 12, { crown: [3, 0] });                     // THE TWIN TOWERS of the ruined town, the caravanserai between them:
   tower('towerC', marks.towerC, 8, { crown: [0, 1] });                      //   B's roof (12), the caravanserai's (9) and C's (8: its top fell) are THE ROOFTOP ROUTE, three tiles apart. C's far corner is one course high, so its roof is a way on (hop it and drop to the road) - at six it walled the roof's end, and the play bot died of the sun against it three times
   tower('towerD', marks.towerD, 14, { crown: [2, 3] });                     // THE LAST TOWER, over the exam on the rim
@@ -230,6 +246,16 @@ export function buildSunkenCaravan(T) {
   for (let x = ovL; x <= ovR; x++) set(x, ovRow, T.SOLID);
   ent('deco', ovL, on(ovL), { kind: 'archPillar', behind: true }); ent('deco', ovR, on(ovR), { kind: 'archPillar', behind: true });
   shade.push([ovL * TS, (ovR + 1) * TS, ovRow * TS, floor * TS + 1]);                              /* said as a rect too, so a tool with no tileAt still sees it */
+  /* (claude/caravan2art) THE VIADUCT, laid now the houses and towers have their roofs: house1's roof (row 20) east over the road to house2's, on to the Watchtower's wall (its
+     roof is two rows up: a hop), house3's roof east and west over the ox line's far end and the dune sea's foot. */
+  { const R = roofs.house1.row; if (roofs.house2.row !== R || roofs.house3.row !== R) throw new Error('the viaduct needs the three roofs level');
+    viaduct(roofs.house1.x1 + 1, roofs.house2.x0 - 1, R, [marks.house1 + 36, marks.house1 + 37]);   /* one collapsed bay to jump */
+    viaduct(roofs.house2.x1 + 1, roofs.towerA.x0 - 1, R);
+    viaduct(roofs.towerA.x1 + 1, roofs.towerA.x1 + 15, roofs.towerA.row);   /* and on east from the Watchtower's roof, over the ox line's first pit: the viaduct's far end */
+    viaduct(roofs.house3.x1 + 1, roofs.house3.x1 + 13, R);
+    viaduct(roofs.house3.x0 - 19, roofs.house3.x0 - 1, R);
+    ent('sign', marks.house1 - 2, on(marks.house1 - 2), { text: 'THE OLD TOWN KEPT A HIGH ROAD. CLIMB THE HOUSE: ITS ROOF IS A BRIDGE.' });   /* optional: the road under it is the whole level, this one pays coin and gives the sun back */
+    for (const x of [58, 66, 74, 82, 90, 98, 116, 124, 132, 140, 238, 242, 214, 218, 222, 156, 160, 164]) { const v = viaducts.find(v => x >= v[0] && x <= v[1]); if (v) ents.push({ t: 'coin', x, y: v[2] - 1 }); } }   /* THE HARD ROAD PAYS (S7) */
   const arena = { x0: ax0 * TS, x1: (ax1 + 1) * TS, floor: floor * TS, trigger: (ax0 + 5) * TS, wallL: ax0 - 1, wallR: ax1 + 1, boss: 'duneworm', music: 'boss2', tint: '#e2bb7a', tintA: 0.1, fx: 'sand' };
 
   /* (claude/caravan2) THE WALL-WALKS were tried here (63-75, 88-93, 127-135, the basin's shores, the camp, past the town gate and the second twin tower) to
@@ -255,6 +281,7 @@ export function buildSunkenCaravan(T) {
      sets him up: you meet his ripple and his dome before you meet him */
   const WORMS = [[70, [64, 76], 'roadWorm', 'THE CARAVAN ROAD: the first hump in the sand runs at you in the sun, by the first wagon\'s lee'], [marks.ribcage + 16, [marks.ribcage + 12, marks.ribcage + 19], 'basinWorm', 'the sinking wagons\' far shore: its dome drives you back toward the quicksand'], [marks.arch + 4, [marks.arch + 1, marks.arch + 7], 'archWorm', 'under the arch\'s shade: the one cool spot on the dune sea is its bed']];
   for (const [x, b, squad, why] of WORMS) ent('sandworm', x, on(x), { placed: true, why, squad, bed: b });
+  S1.push(['cutthroat', { x: 70, y: roofs.house1.row - 1 }, 'THE VIADUCT (claude/caravan2art): the high road is not empty - a looter holds its long run in the sun, a cutthroat you meet head on']);
   S1.push(['vulture', { x: marks.ribcage + 8, y: top(marks.ribcage + 8) - 8 }, 'circles the sinking wagons: its dive comes while the bed under you goes down']);
   /* (claude/caravan2) FOES AT PLATFORMING MOMENTS (brief-levelsweep v2): a vulture over the third slide's wagon beds and one over the exam's slide pit - its dive comes as you leave the dune */
   S1.push(['vulture', { x: marks.slide3 + 5, y: top(marks.slide3 + 5) - 8 }, 'over the third slide\'s wagon beds: its dive comes while you hop a sinking bed'], ['vulture', { x: marks.slide4 + 6, y: top(marks.slide4 + 6) - 8 }, 'over the exam\'s slide pit: its dive comes as you leave the dune']);
@@ -273,7 +300,7 @@ export function buildSunkenCaravan(T) {
     for (let i = 0; i < n; i++) { let x = w0 + 3 + Math.floor(i * 20 / n); while (x < w0 + 23 && !standOK(x)) x++; if (x >= w0 + 23) continue;
       const t = ROSTER[sec][k++ % ROSTER[sec].length]; ent(t, x, t === 'vulture' ? top(x) - 7 : on(x)); busy.add(x); } }
 
-  return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors, masonry, facades, calm, roofs, sections, marks, arena, quicksand: qs, shade, timberPlanks, crumbles, slabs, duneSlides, walls,
+  return { W, H, grid, ents, START: { x: 6, y: on(6) }, pools: [], falls: [], moversExtra, interiors, masonry, facades, calm: calm.concat(deckCalm), roofs, sections, marks, arena, quicksand: qs, shade, timberPlanks, crumbles, slabs, duneSlides, walls, viaducts,
     draft: true, palette: { set: 'desert' }, rule: 'THE SUN', lengthCols: ax0 };
 }
 /* for tools/draft-level.mjs (tools/caravan-level.mjs is this level's own, older check; both must pass) */
