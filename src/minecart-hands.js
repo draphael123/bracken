@@ -407,6 +407,8 @@ export function makeMinecartHands(ctx) {
   /* THE HERO'S CART (deeprails2: redrawn - a real iron tub, the hero sitting IN it): its back wall and inside behind him, its front over his legs; the wheels turn with
      the pace, sparks fly off them on the brake, it leans on a jump */
   const tilt = P => Math.max(-0.28, Math.min(0.28, (P.ground ? 0 : P.vy / 900)));
+  /* THE RIDERS SIT IN THEIR TUBS (claude/deeprailsart): the tub's front wall, drawn after the foes so it hides their legs (src/redraw/minecart_art.js tubFront) */
+  H.drawRiderFronts = (g, cx, cy) => { if (!M) return; for (const c of M.carts) { if (c.state === 'gone' || c.ledge || c.foreman || !c.e || !c.e.alive) continue; MCA.tubFront(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob'); } };
   H.drawCartBack = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); g.save(); g.translate(R(P.x - cx), R(P.y - cy + 1)); g.rotate(tilt(P)); MCA.heroCart(g, 0, 0, P.face || 1, c.v, !!c.braking, 0, time, 'back'); g.restore(); };
   H.drawCart = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); g.save(); g.translate(R(P.x - cx), R(P.y - cy + 1)); g.rotate(tilt(P)); MCA.heroCart(g, 0, 0, P.face || 1, c.v, !!c.braking, P.ducking ? 1 : 0, time, 'front'); g.restore();
     MCA.prowLamp(g, R(P.x - cx), R(P.y - cy + 1), P.face || 1, time); };

@@ -63,6 +63,13 @@ const wallTile = z => once('wall' + z, () => { const S = 192, [c, g] = mk(S, S),
   for (let i = 0; i < 9; i++) { const x = 8 + ((r() * (S - 24)) | 0), y = 8 + ((r() * (S - 24)) | 0); rc(g, x, y, 7, 4, MP.r0); rc(g, x + 1, y - 1, 5, 1, MP.r0); rc(g, x + 1, y + 4, 5, 1, MP.r1); rc(g, x + 1, y + 1, 2, 1, V[1]); rc(g, x + 4, y + 2, 1, 1, MP.go2); }
   return c; });
 
+/* A LONG-PERIOD BLOTCH over the wall (claude/deeprailsart, Daniel 10-10: "the pattern like scrolling looks a little bit weird"): the 192 px wall tile repeated visibly. This 320 x 256 layer
+   of broad lighter and darker bands rides the same plane, so the pair only repeats every 960 x 768 px. */
+const blotchTile = () => once('blotch', () => { const W = 320, H = 256, [c, g] = mk(W, H), r = mulberry(9917);
+  for (let i = 0; i < 26; i++) { const w = 40 + ((r() * 120) | 0), h = 14 + ((r() * 50) | 0), x = (r() * W) | 0, y = (r() * H) | 0, dark = r() < 0.6; g.fillStyle = dark ? 'rgba(0,0,0,0.30)' : 'rgba(150,130,170,0.10)';
+    for (const ox of [0, -W]) for (const oy of [0, -H]) g.fillRect(x + ox, y + oy, w, h); }
+  return c; });
+
 /* the glittering spots on the wall (world positions inside the wall tile, twinkled in the draw): [x, y, kind] */
 const GLINTS = once('glints', () => { const r = mulberry(4417), a = []; for (let i = 0; i < 26; i++) a.push([(r() * 192) | 0, (r() * 192) | 0, r() < 0.5 ? 0 : 1, r() * 6.28]); return a; });
 
@@ -192,6 +199,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
   /* 1. the wall */
   { const k = 0.7, wallAt = zz => { const pat = once('wallpat' + zz, () => g.createPattern(wallTile(zz), 'repeat')); pat.setTransform(new DOMMatrix().translate(-Math.round(cx * k), -Math.round(cy * k))); return pat; };
     g.fillStyle = wallAt(z); g.fillRect(0, 0, VW, VH);
+    { const bp = once('blotchpat', () => g.createPattern(blotchTile(), 'repeat')); bp.setTransform(new DOMMatrix().translate(-Math.round(cx * k) + 77, -Math.round(cy * k) + 31)); g.fillStyle = bp; g.fillRect(0, 0, VW, VH); }
     /* an area's edge is a blend, not a cut: across 14 columns either side of it the next area's rock fades in */
     for (const e of ZONE_EDGES) { const d = (tx - e) / 14; if (d > -1 && d < 1) { const al = d < 0 ? 0.5 + 0.5 * d : 0.5 - 0.5 * d; if (al > 0.01) { g.globalAlpha = al; g.fillStyle = wallAt(d < 0 ? zoneOf(e) : zoneOf(e - 1)); g.fillRect(0, 0, VW, VH); } break; } }
     g.globalAlpha = 1;
@@ -220,15 +228,15 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
   /* 3. the timber frames and the lantern strings on the wall's plane */
   { const k = 0.7, per = 128, spr = frameTile(), i0 = Math.floor(cx * k / per) - 1, i1 = Math.floor((cx * k + VW) / per) + 1;
     const fy = -Math.round(cy * k) % 192;
-    for (let i = i0; i <= i1; i++) { if (z === 3 || (z === 1 && hash(i, 9) % 2 === 0) || (hash(i, 9) % 4 === 0 && z !== 4)) continue; const x = Math.round(i * per - cx * k); for (let yy = fy - 192; yy < VH; yy += 192) g.drawImage(spr, x, yy); }
+    for (let i = i0; i <= i1; i++) { if (z === 3 || (z === 1 && hash(i, 9) % 2 === 0) || (hash(i, 9) % 4 === 0 && z !== 4)) continue; const x = Math.round(i * per + (hash(i, 13) % 33) - 16 - cx * k); for (let yy = fy - 192; yy < VH; yy += 192) g.drawImage(spr, x, yy); }
     /* lantern strings between frames: a sag of lamps hung from the cap beams (y of the cap in the tile = 38) */
     g.globalCompositeOperation = 'lighter';
-    for (let i = i0; i <= i1; i++) { const x0 = Math.round(i * per - cx * k) + 9, x1 = x0 + per - 9;
+    for (let i = i0; i <= i1; i++) { const jt = j_ => (hash(j_, 13) % 33) - 16, x0 = Math.round(i * per + jt(i) - cx * k) + 9, x1 = Math.round((i + 1) * per + jt(i + 1) - cx * k);
       for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; if (hash(i, 2) % 3 === 0 || z === 1 || z === 3) continue;
         const n = 6; for (let j = 1; j < n; j++) { const t = j / n, lx = x0 + (x1 - x0) * t, sag = Math.sin(t * Math.PI) * 9 + Math.sin(time * 1.1 + i + j) * 0.6, ly = y0 + sag; const lit = (hash(i * 7 + j, 4) % 11) > 0;
           g.globalAlpha = lit ? 0.95 + 0.1 * Math.sin(time * 6 + i * 3 + j) : 0; if (lit) g.drawImage(glow(32, '255,160,64'), Math.round(lx) - 32, Math.round(ly) - 26); } } }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-    for (let i = i0; i <= i1; i++) { const x0 = Math.round(i * per - cx * k) + 9, x1 = x0 + per - 9;
+    for (let i = i0; i <= i1; i++) { const jt = j_ => (hash(j_, 13) % 33) - 16, x0 = Math.round(i * per + jt(i) - cx * k) + 9, x1 = Math.round((i + 1) * per + jt(i + 1) - cx * k);
       for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; if (hash(i, 2) % 3 === 0 || z === 1 || z === 3) continue;
         g.fillStyle = MP.i1; const n = 6; let px0 = x0, py0 = y0; for (let j = 1; j <= n; j++) { const t = j / n, lx = x0 + (x1 - x0) * t, ly = y0 + Math.sin(t * Math.PI) * 9 + (j < n ? Math.sin(time * 1.1 + i + j) * 0.6 : 0); const steps = Math.max(1, Math.round(Math.abs(lx - px0))); for (let s = 0; s < steps; s++) g.fillRect(Math.round(px0 + (lx - px0) * s / steps), Math.round(py0 + (ly - py0) * s / steps), 1, 1); px0 = lx; py0 = ly; if (j < n) { const lit = (hash(i * 7 + j, 4) % 11) > 0; g.drawImage(lampSprite(lit), Math.round(lx) - 3, Math.round(ly)); } } } } }
   /* 4. THE GOBLIN WORKS: scaffolds, in the goblins' stretch and again in the crusher works, on the wall's plane */

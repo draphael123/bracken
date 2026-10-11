@@ -46,3 +46,7 @@ glow" FAIL - IDENTICAL FAILS ON MASTER ce20a08d, they predate the areas redesign
 
 ## textfit / mobile-perf
 mobile-perf: inside the budget at 4x CPU. textfit ran to the end (its last scopes boss/hud/bossfix/talk printed no overflow) but I kept only the last five lines, so its verdict line was not captured: re-run it in the integ suite.
+
+## DANIEL'S LIVE NOTES (10-10, via the coordinator)
+1. Scrolling pattern: the 192 px wall tile repeated visibly. Added a 320x256 long-period blotch layer on the same plane (combined repeat 960x768) and jittered the timber frames (+-16 px, lamp strings re-anchored to them). All scrolling was already whole-pixel (Math.round); the 0.7 parallax rounds in a 1,1,0 step - unchanged. NOT done: the drill tunnel loop (src/redraw/minecart_art.js tunnel) was not re-varied.
+2. Goblins in carts: the riders stood in front of their tub with their legs over its body. The tub's front wall is now drawn over them (MCA.tubFront, MCH.drawRiderFronts, one hook in main.js before the quarry-stone line) so they sit IN it. The Great Drill driver (in its cab window) and the Foreman were left untouched as instructed.

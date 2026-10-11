@@ -160,6 +160,18 @@ export function tub(g, x, y, kind, time, v) {
   if (kind === 'ore') { for (let i = 0; i < 6; i++) { rc(g, x - 9 + i * 3 + (i & 1), y - 15 + (i % 3), 3, 4, i % 2 ? MP.cu1 : '#8a5a38'); } rc(g, x - 6, y - 15, 2, 1, MP.go3); rc(g, x + 2, y - 14, 2, 1, MP.cu3); rc(g, x + 6, y - 16, 2, 1, MP.go2); }
   const a = time * (v || 0) / 6; for (const wx of [x - 6, x + 6]) { rc(g, wx - 3, y - 3, 6, 3, '#0c0a0a'); rc(g, wx - 3, y - 3, 6, 1, MP.i2); rc(g, wx - 1 + R(Math.cos(a) * 1.5), y - 2, 2, 1, MP.i4); rc(g, wx, y - 2 + (Math.sin(a) > 0.7 ? 1 : 0), 1, 1, MP.i5); }   /* the wheels, their hubs turning */
 }
+/* THE TUB'S FRONT WALL, drawn OVER its rider (claude/deeprailsart, Daniel 10-10: "the goblin sprite looks really odd in it"): the goblin stood in front of his tub with his legs
+   across its body. The tub's side is now drawn again after the foes, so he sits IN it - his legs behind the plate, his body above the rim. */
+export function tubFront(g, x, y, kind) {
+  x = R(x); y = R(y);
+  const hull = kind === 'caster' ? '#3a2a44' : '#5a3224', hullL = kind === 'caster' ? '#6a4a80' : '#8a5030';
+  rc(g, x - 11, y - 11, 22, 10, DARK); rc(g, x - 10, y - 10, 20, 8, hull); rc(g, x - 10, y - 10, 20, 1, hullL);
+  for (let i = -8; i <= 6; i += 5) rc(g, x + i, y - 9, 1, 7, DARK);
+  rc(g, x - 11, y - 11, 22, 1, MP.i4); rc(g, x - 11, y - 5, 22, 1, MP.i3); rc(g, x - 11, y - 11, 1, 10, MP.i3); rc(g, x + 10, y - 11, 1, 10, MP.i2);
+  for (const rx of [x - 9, x - 3, x + 3, x + 9]) rc(g, rx, y - 8, 1, 1, MP.i5);
+  if (kind !== 'caster') { rc(g, x - 10, y - 8, 2, 3, '#cfc3a4'); }
+  rc(g, x - 11, y - 2, 22, 1, DARK);
+}
 /* the hero's cart has a headlamp: a lantern on the prow, with a soft beam ahead */
 export function prowLamp(g, x, y, face, time) { const lx = x + face * 12; rc(g, lx - 1, y - 12, 3, 2, MP.i2); rc(g, lx - 1, y - 14, 3, 3, MP.l2); rc(g, lx, y - 14, 1, 1, MP.l3); add(g, () => { g.globalAlpha = 0.5; g.drawImage(glow(26, '255,190,90'), lx - 26, y - 38); }); }
 
