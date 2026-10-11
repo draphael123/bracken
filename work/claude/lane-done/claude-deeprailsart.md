@@ -33,7 +33,7 @@ the gap (src/minecart-hands.js), not the end. Also the crusher's blow 34 -> 18 (
   Great Drill 0/1211 blows, dead in 27-36 s.
 
 ## CHECKS
-pixels (n/a: no tools/pixels.mjs on master), dressing, solid-islands, signs, minecart (259), minecart-aloft (static all ok; --page: F "dark and warm" and G "smelter
+pixels (n/a: no pixels tool on master), dressing, solid-islands, signs, minecart (259), minecart-aloft (static all ok; --page: F "dark and warm" and G "smelter
 glow" FAIL - IDENTICAL FAILS ON MASTER ce20a08d, they predate the areas redesign: their criteria want every stop warm and under luma 90; mine are the same or better at
 24/150, still red at 215 (cold drift by design), 800/925), minecart-route (all legs ok, 3 heroes ride), audio-assets, boss-music, corpses, mash-gate, curve-gate
 (minecart not listed), level-quality minecart: only `curve` red (270% > 250). textfit / mobile-perf: see the bottom.

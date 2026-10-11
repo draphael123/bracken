@@ -218,7 +218,7 @@ export const CALL_LINES = new Set([
   /* claude/rootway2: THE HUNTMASTER's new moves and his long stagger (src/huntmaster.js), the goblins' snares (src/snares.js) and the spore pod (src/hunt-pods.js) */
   'HIS NET: ROLL THROUGH IT', 'THE HEAVY ARROW', 'HE SETS HIS SNARES', 'THE HUNTING HORN', 'HIS KNIFE', 'THE POD BURSTS IN HIS FACE: HE STAGGERS', 'HE IS OPEN: THREE BLOWS, THEN HE GUARDS', 'HE SETS HIS SNARES: JUMP THEM, OR THROW A POD ON THEM',
   'THE HORN CALLS HIS BOWS: CUT THEM OFF THE PERCHES', 'NETTED: STRUGGLE FREE', 'THROUGH THE NET', 'THE TRAP SNAPS ON NOTHING', 'A JAW TRAP: JUMP IT, OR THROW SOMETHING ON IT', 'THE TRAP HAS YOU: STRUGGLE', 'A NET: ROLL THROUGH IT', 'NETTED',
-  'A SPORE POD: ATTACK THROWS IT', 'A BLOW: YOU DROP THE POD', 'HIS BOWS FALL BACK',
+  'A SPORE POD: ATTACK THROWS IT', 'A BLOW: YOU DROP THE POD', 'HIS BOWS FALL BACK', 'THE POD CUTS THE ROPE',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
