@@ -1,0 +1,228 @@
+{
+ "keys": [
+  "x0",
+  "x1",
+  "dome",
+  "flares",
+  "syrup",
+  "fizz",
+  "tilt",
+  "outer",
+  "lean",
+  "floors",
+  "leanShown",
+  "rt"
+ ],
+ "x0": 12,
+ "x1": 59,
+ "floors": [
+  {
+   "top": 266,
+   "bot": 300,
+   "theme": "shelf",
+   "debris": true
+  },
+  {
+   "top": 230,
+   "bot": 264,
+   "theme": "stone",
+   "debris": false
+  },
+  {
+   "top": 194,
+   "bot": 228,
+   "theme": "brass",
+   "debris": true
+  },
+  {
+   "top": 158,
+   "bot": 192,
+   "theme": "stone",
+   "debris": true
+  },
+  {
+   "top": 122,
+   "bot": 156,
+   "theme": "stone",
+   "debris": true
+  },
+  {
+   "top": 86,
+   "bot": 120,
+   "theme": "stone",
+   "debris": true
+  },
+  {
+   "top": 50,
+   "bot": 84,
+   "theme": "stone",
+   "debris": false
+  }
+ ],
+ "flares": [
+  {
+   "x0": 39,
+   "x1": 47,
+   "row": 288,
+   "phase": 0,
+   "st": "smoulder",
+   "hit": false
+  },
+  {
+   "x0": 32,
+   "x1": 41,
+   "row": 279,
+   "phase": 2.2,
+   "st": "idle"
+  }
+ ],
+ "syrup": [
+  {
+   "x0": 37,
+   "x1": 41,
+   "row": 141
+  },
+  {
+   "x0": 26,
+   "x1": 30,
+   "row": 132
+  }
+ ],
+ "fizz": [
+  [
+   19,
+   150
+  ]
+ ],
+ "dome": {
+  "x0": 35,
+  "x1": 59,
+  "row": 194
+ },
+ "tilt": {
+  "x0": 13,
+  "x1": 57,
+  "row": 102,
+  "chests": [
+   22,
+   36,
+   46
+  ]
+ },
+ "outer": {
+  "x0": 1,
+  "x1": 8,
+  "drop": 88,
+  "y0": 46,
+  "ledges": [
+   [
+    6,
+    3,
+    81
+   ],
+   [
+    2,
+    3,
+    78
+   ],
+   [
+    6,
+    3,
+    75
+   ],
+   [
+    2,
+    3,
+    72
+   ],
+   [
+    6,
+    3,
+    69
+   ],
+   [
+    2,
+    3,
+    66
+   ],
+   [
+    6,
+    3,
+    63
+   ],
+   [
+    2,
+    3,
+    60
+   ],
+   [
+    6,
+    3,
+    57
+   ]
+  ]
+ },
+ "movers": [
+  {
+   "role": "scope",
+   "x": 592,
+   "y": 3392,
+   "w": 40,
+   "px": 834.9662145605494,
+   "py": 3433.0617481914624
+  },
+  {
+   "role": "chunk",
+   "x": 144,
+   "y": 864,
+   "w": 96,
+   "ax": 144,
+   "bx": 352,
+   "ay": 864,
+   "by": 832
+  }
+ ],
+ "start": {
+  "x": 20,
+  "y": 299
+ },
+ "H": 306,
+ "W": 110,
+ "towerFloors": [
+  {
+   "top": 266,
+   "bot": 300,
+   "front": null
+  },
+  {
+   "top": 230,
+   "bot": 264,
+   "front": null
+  },
+  {
+   "top": 194,
+   "bot": 228,
+   "front": null
+  },
+  {
+   "top": 158,
+   "bot": 192,
+   "front": null
+  },
+  {
+   "top": 122,
+   "bot": 156,
+   "front": null
+  },
+  {
+   "top": 86,
+   "bot": 120,
+   "front": null
+  },
+  {
+   "top": 50,
+   "bot": 84,
+   "front": null
+  }
+ ]
+}

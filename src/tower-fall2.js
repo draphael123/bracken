@@ -114,76 +114,156 @@ export function ftMover(L, m, dt, time) {
   m.dx = m.x - ox; m.dy = m.y - oy; return true;
 }
 // ---------------------------------------------------------------- drawing (world space; g the canvas, cx/cy the camera, T(s, x, y, col, align, size) main.js's text)
-const C = { shadow: 'rgba(10,6,14,', grit: '#a8987c', flame: ['#c9463d', '#ff9b49', '#ffe9b0'], syrup: ['#3a6a2a', '#6fbf4a', '#b8f08a'], fizz: ['#7a2a6a', '#e070c0', '#ffd0f0'], gold: ['#8a6a1a', '#e0b040', '#fff0a0'], brass: ['#5a4420', '#b08a3a', '#e6c46a'] };
+// (claude/ft2art, 2026-10-10: the art pass over the greybox - ART ONLY: every position, size and state below is what the rules above set)
+const C = { shadow: 'rgba(10,6,14,', grit: '#a8987c', flame: ['#c9463d', '#ff9b49', '#ffe9b0'], syrup: ['#2a4a1e', '#3a6a2a', '#6fbf4a', '#b8f08a'], fizz: ['#7a2a6a', '#e070c0', '#ffd0f0'], gold: ['#8a6a1a', '#e0b040', '#fff0a0'], brass: ['#3a2e1c', '#5a4420', '#b08a3a', '#e6c46a'],
+  stone: ['#2a2638', '#4a4458', '#726a8a', '#9a92b4'], wood: ['#2a1a0e', '#4a2c18', '#7a4a28', '#a8703c'], iron: '#1c1a24', paper: '#e8dcc0', spine: ['#8a2a2a', '#2a4a7a', '#6a6a2a', '#5a2a6a', '#2a6a4a', '#8a5a1a'] };
+const R_ = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+const hsh = (a, b = 0) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+/* a hard-pixel line (no antialiasing), w px thick */
+function seg(g, x0, y0, x1, y1, col, w = 1) { x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1); const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); g.fillStyle = col;
+  for (let i = 0; i <= n; i++) g.fillRect(Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), w, w); }
+/* a crack: a jagged run from (x0, y0) to (x1, y1), its kinks set by a seed, with a branch every third kink */
+function crack(g, x0, y0, x1, y1, seed, amp, col, branchCol) { const n = Math.max(3, Math.round(Math.hypot(x1 - x0, y1 - y0) / 9)); let px = x0, py = y0;
+  for (let i = 1; i <= n; i++) { const t = i / n, nx = x0 + (x1 - x0) * t + (i === n ? 0 : (hsh(seed, i) - 0.5) * 2 * amp), ny = y0 + (y1 - y0) * t; seg(g, px, py, nx, ny, col);
+    if (branchCol && i % 3 === 0) seg(g, nx, ny, nx + (hsh(seed, i + 40) < 0.5 ? -1 : 1) * 5, ny + 4, branchCol); px = nx; py = ny; } }
+/* a cog: square teeth round a hub (no rotation of a sprite: the teeth step) */
+function cog(g, x, y, r, col, hi, ph) { R_(g, col, x - r + 1, y - r + 1, r * 2 - 1, r * 2 - 1); for (let i = 0; i < 8; i++) { if ((i + ph) % 2) continue; const a = i * Math.PI / 4; R_(g, col, Math.round(x + Math.cos(a) * (r + 1)) - 1, Math.round(y + Math.sin(a) * (r + 1)) - 1, 3, 3); }
+  R_(g, '#1c1a24', x - 1, y - 1, 3, 3); R_(g, hi, x - r + 1, y - r + 1, r, 1); }
+function stoneChunk(g, x, ry, w, h) { R_(g, C.stone[0], x - w, ry - h, w * 2, h); R_(g, C.stone[1], x - w + 1, ry - h + 1, w * 2 - 2, h - 2); R_(g, C.stone[3], x - w + 1, ry - h, w - 2, 1); R_(g, C.stone[2], x - w + 1, ry - h + 1, 3, 2);
+  R_(g, C.stone[0], x - 1, ry - h + 2, 1, h - 4); R_(g, C.stone[0], x - w + 3, ry - 3, w - 2, 1); R_(g, C.stone[3], x + w - 5, ry - h + 2, 2, 1); }
 export function ftDraw(g, L, P, cx, cy, time, T, movers) {
   const F = L && L.ft2; if (!F || !F.rt) return; const R = F.rt, VW = g.canvas.width, VH = g.canvas.height;
   const on = (x, y, m = 64) => x > cx - m && x < cx + VW + m && y > cy - m && y < cy + VH + m;
-  // ---- THE CRACKS UP THE WALLS: from the floor going down toward the floor you are on, along both inner walls ----
+  // ---- THE CRACKS UP THE WALLS: jagged and branching, a dark seam under a hot one, grit trickling off them; from the floor going down toward the floor you are on ----
   for (const fl of L.towerFloors || []) { if (fl.front === null || fl.front === undefined) continue; const y0 = fl.front * TS, y1 = Math.max(fl.top - 40, 0) * TS;
-    for (const wx of [F.x0 * TS, (F.x1 + 1) * TS]) { let x = wx, y = y0; g.strokeStyle = '#ffb070'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(x - cx), Math.round(y - cy));
-      for (let i = 0; y > y1 && i < 60; i++) { y -= 14; x = wx + (((i * 37 + Math.floor(fl.front)) % 9) - 4) * (wx === F.x0 * TS ? 1 : -1) + (wx === F.x0 * TS ? 4 : -4); g.lineTo(Math.round(x - cx), Math.round(y - cy)); }
-      g.stroke(); } }
-  // ---- DEBRIS: the shadow on the ledge (darker and wider as it comes), the grit trickling, the stone falling ----
+    if (y0 < cy - 20 || y1 > cy + VH + 20) continue;
+    for (const wx of [F.x0 * TS, (F.x1 + 1) * TS]) { const inw = wx === F.x0 * TS ? 1 : -1, sd = Math.floor(fl.front) + (inw < 0 ? 17 : 0);
+      const ya = Math.round(Math.min(y0, cy + VH + 20) - cy), yb = Math.round(Math.max(y1, cy - 20) - cy), xs = Math.round(wx - cx) + inw * 5;
+      crack(g, xs + 1, ya, xs + 1, yb, sd, 5, '#12151e', null);
+      crack(g, xs, ya, xs, yb, sd, 5, '#ffb070', '#c9463d');
+      g.fillStyle = C.grit; for (let i = 0; i < 5; i++) g.fillRect(xs + inw * ((i * 3) % 7), Math.round(ya - 8 - ((time * 40 + i * 31) % Math.max(10, ya - yb))), 1, 2); } }
+  // ---- DEBRIS: the shadow on the ledge (darker and wider as it comes), the grit trickling, the stone falling, and the rubble where it fell ----
   for (const d of R.debris) { if (!on(d.x, d.y, 200)) continue; const x = Math.round(d.x - cx), y = Math.round(d.y - cy);
     if (d.st === 'tell' || d.st === 'fall') { const k = d.st === 'fall' ? 1 : 1 - d.t / FT2.debris.tell, w = Math.round(8 + 8 * k);
       g.fillStyle = C.shadow + (0.35 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - w, y - 2, w * 2, 3); g.fillRect(x - w + 3, y - 3, w * 2 - 6, 1);
+      g.fillStyle = C.shadow + (0.25 + 0.3 * k).toFixed(2) + ')'; for (let i = -w + 2; i < w - 2; i += 4) g.fillRect(x + i, y - 4 - (i & 1), 2, 1);   /* (the shadow's ragged lip) */
       if (Math.floor(time * 8) % 2) { g.fillStyle = '#ff6b6b'; g.fillRect(x - 1, y - 9, 2, 4); g.fillRect(x - 1, y - 4, 2, 1); }   /* the red mark: nothing turns it */
-      if (d.st === 'tell') { g.fillStyle = C.grit; for (let i = 0; i < 4; i++) { const yy = Math.round(d.top - cy + ((time * 90 + i * 23) % Math.max(8, d.y - d.top))); g.fillRect(x - 3 + (i * 3) % 7, yy, 1, 2); } } }
+      if (d.st === 'tell') { g.fillStyle = C.grit; for (let i = 0; i < 4; i++) { const yy = Math.round(d.top - cy + ((time * 90 + i * 23) % Math.max(8, d.y - d.top))); g.fillRect(x - 3 + (i * 3) % 7, yy, 1, 2); }
+        const ty0 = Math.round(d.top - cy); R_(g, '#12151e', x - 5, ty0, 10, 2); R_(g, '#12151e', x - 2, ty0 + 2, 4, 1); R_(g, C.grit, x - 4 + (((time * 6) | 0) % 5), ty0 + 2, 1, 1); } }   /* (the crack in the ceiling it comes out of) */
     if (d.st === 'fall') { const ry = Math.round(d.ry - cy);
-      if (d.kind === 'shelf') { g.fillStyle = '#4a2c18'; g.fillRect(x - 10, ry - 8, 20, 8); g.fillStyle = '#7a4a28'; g.fillRect(x - 10, ry - 8, 20, 2); for (let i = 0; i < 5; i++) { g.fillStyle = ['#8a2a2a', '#2a4a7a', '#6a6a2a', '#5a2a6a', '#2a6a4a'][i]; g.fillRect(x - 9 + i * 4, ry - 6, 3, 5); } }
-      else if (d.kind === 'brass') { g.fillStyle = C.brass[0]; g.fillRect(x - 8, ry - 9, 16, 9); g.fillStyle = C.brass[1]; g.fillRect(x - 7, ry - 8, 14, 3); g.fillStyle = C.brass[2]; g.fillRect(x - 5, ry - 7, 4, 1); }
-      else { g.fillStyle = '#4a4458'; g.fillRect(x - 8, ry - 10, 16, 10); g.fillStyle = '#726a8a'; g.fillRect(x - 7, ry - 10, 12, 3); g.fillStyle = '#2a2638'; g.fillRect(x - 8, ry - 2, 16, 2); } } }
-  // ---- THE OBSERVATORY'S DOME, TURNING: its ribs over the shaft, the slit going round, and the moonbeam through it sweeping the stair ----
+      g.fillStyle = 'rgba(168,152,124,0.35)'; for (let i = 1; i <= 3; i++) g.fillRect(x - 1 + (i % 2) * 2, ry - 10 - i * 5, 1, 4);   /* its trail of grit */
+      if (d.kind === 'shelf') { R_(g, C.wood[0], x - 11, ry - 9, 22, 10); R_(g, C.wood[2], x - 10, ry - 9, 20, 2); R_(g, C.wood[1], x - 10, ry - 7, 20, 7);
+        for (let i = 0; i < 5; i++) { R_(g, C.spine[i], x - 9 + i * 4, ry - 6, 3, 5); R_(g, C.paper, x - 9 + i * 4, ry - 6, 1, 1); }
+        R_(g, C.wood[3], x - 11, ry - 2, 2, 3); R_(g, C.paper, x + 12, ry - 14 + (((time * 20) | 0) % 3), 4, 3); R_(g, C.paper, x - 15, ry - 8 + (((time * 17) | 0) % 3), 3, 3); }   /* a plank, the books, loose pages falling beside */
+      else if (d.kind === 'brass') { R_(g, C.brass[0], x - 9, ry - 10, 18, 10); R_(g, C.brass[2], x - 8, ry - 9, 16, 8); R_(g, C.brass[3], x - 7, ry - 9, 6, 2); cog(g, x, ry - 5, 3, C.brass[1], C.brass[3], ((time * 12) | 0) & 1); R_(g, C.brass[0], x + 4, ry - 12, 2, 3); R_(g, C.brass[0], x - 8, ry - 12, 2, 3); }   /* a clock's wheel-plate, its teeth */
+      else stoneChunk(g, x, ry, 8, 10); }
+    if (d.st === 'land') { const k = Math.max(0, d.t / 0.5);
+      if (d.kind === 'shelf') { R_(g, C.wood[1], x - 9, y - 3, 8, 3); R_(g, C.wood[2], x - 9, y - 3, 8, 1); R_(g, C.wood[1], x + 2, y - 2, 7, 2); for (let i = 0; i < 4; i++) R_(g, C.spine[i], x - 7 + i * 4, y - 5 - (i % 2), 3, 3); R_(g, C.paper, x + 6, y - 5, 4, 3); R_(g, C.paper, x - 12, y - 2, 3, 2); }
+      else if (d.kind === 'brass') { R_(g, C.brass[1], x - 8, y - 4, 16, 4); R_(g, C.brass[2], x - 7, y - 4, 7, 1); cog(g, x + 3, y - 4, 2, C.brass[2], C.brass[3], 0); R_(g, C.brass[3], x - 10, y - 2, 2, 2); }
+      else { R_(g, C.stone[1], x - 8, y - 4, 16, 4); R_(g, C.stone[3], x - 6, y - 4, 6, 1); R_(g, C.stone[2], x - 11, y - 2, 3, 2); R_(g, C.stone[2], x + 9, y - 3, 3, 3); R_(g, C.stone[0], x - 2, y - 3, 1, 3); }
+      g.fillStyle = 'rgba(168,152,124,' + (0.45 * k).toFixed(2) + ')'; for (let i = 0; i < 4; i++) g.fillRect(x - 10 + i * 6 + Math.round((1 - k) * (i - 1.5) * 6), y - 6 - Math.round((1 - k) * 8) - (i % 2), 3, 2); } }
+  // ---- THE OBSERVATORY'S DOME, TURNING: ribbed brass over the shaft, its slit going round (stars in it), and the moonbeam through it sweeping the stair ----
   if (F.dome) { const D = F.dome, x0 = Math.round(D.x0 * TS - cx), x1 = Math.round((D.x1 + 1) * TS - cx), y = Math.round(D.row * TS - cy), w = x1 - x0, mx = (x0 + x1) / 2;
-    if (x1 > 0 && x0 < VW && y > -80 && y < VH + 40) { const a = (time * 0.35) % (Math.PI * 2), slit = mx + Math.cos(a) * w * 0.42, front = Math.sin(a) > 0;
-      g.strokeStyle = '#5a4420'; g.lineWidth = 2; g.beginPath(); g.ellipse(mx, y + 4, w / 2, 26, 0, Math.PI, 0); g.stroke(); g.lineWidth = 1;
-      for (let i = 1; i < 6; i++) { const rx = mx + Math.cos(a + i * 1.05) * w * 0.45; if (Math.sin(a + i * 1.05) > 0) { g.fillStyle = '#4a3a1c'; g.fillRect(Math.round(rx), y - 18, 2, 22); } }   /* its ribs, coming round */
-      if (front) { g.fillStyle = '#0a0c18'; g.fillRect(Math.round(slit) - 7, y - 22, 14, 26); g.fillStyle = '#e8ecff'; g.fillRect(Math.round(slit) - 1, y - 18, 2, 2);   /* THE SLIT, with a star in it */
-        g.save(); g.globalAlpha = 0.10; g.fillStyle = '#c8d8ff'; g.beginPath(); g.moveTo(slit - 6, y + 4); g.lineTo(slit + 6, y + 4); g.lineTo(slit + 60 + Math.cos(a) * 80, y + 220); g.lineTo(slit - 60 + Math.cos(a) * 80, y + 220); g.closePath(); g.fill(); g.restore(); } } }   /* the moonbeam */
-  // ---- THE BURNING BOOKS ----
-  for (const q of F.flares || []) { const x0 = Math.round(q.x0 * TS - cx), x1 = Math.round((q.x1 + 1) * TS - cx), y = Math.round(q.row * TS - cy); if (x1 < -20 || x0 > VW + 20 || y < -40 || y > VH + 40) continue;
-    for (let x = x0 + 4; x < x1 - 4; x += 12) { g.fillStyle = '#4a2c18'; g.fillRect(x, y - 5, 8, 5); g.fillStyle = '#8a2a2a'; g.fillRect(x + 1, y - 5, 3, 4); g.fillStyle = '#2a4a7a'; g.fillRect(x + 4, y - 4, 3, 3); }   /* the piles of books */
-    if (q.st === 'smoulder') { const k = Math.sin(time * 18) * 0.5 + 0.5; g.fillStyle = 'rgba(255,107,44,' + (0.25 + 0.3 * k).toFixed(2) + ')'; g.fillRect(x0, y - 6, x1 - x0, 6); g.fillStyle = '#ffd36b'; for (let x = x0 + 6; x < x1; x += 9) g.fillRect(x + Math.round(Math.sin(time * 9 + x) * 2), y - 8 - ((time * 30 + x) % 10), 1, 2); if (T) T('!!', Math.round((x0 + x1) / 2), y - 20, '#ff6b6b', 'center', 8); }
-    if (q.st === 'burn') for (let x = x0; x < x1; x += 3) { const h = Math.round(FT2.flare.h * (0.6 + 0.4 * Math.sin(time * 20 + x * 0.7))); g.fillStyle = C.flame[0]; g.fillRect(x, y - h, 3, h); g.fillStyle = C.flame[1]; g.fillRect(x, y - Math.round(h * 0.7), 2, Math.round(h * 0.7)); g.fillStyle = C.flame[2]; g.fillRect(x, y - Math.round(h * 0.35), 1, Math.round(h * 0.35)); } }
-  // ---- THE SPILLS ----
+    if (x1 > 0 && x0 < VW && y > -80 && y < VH + 40) { const a = (time * 0.35) % (Math.PI * 2), slit = mx + Math.cos(a) * w * 0.42, front = Math.sin(a) > 0, hw = w / 2;
+      for (let i = 0; i <= 40; i++) { const t = Math.PI * i / 40, ex = Math.round(mx + Math.cos(t) * hw), ey = Math.round(y + 4 - Math.sin(t) * 26);   /* the rim: a brass band, stepped */
+        R_(g, C.brass[0], ex - 1, ey - 1, 3, 3); R_(g, C.brass[2], ex, ey, 1, 1); if (i % 5 === 0) R_(g, C.brass[3], ex, ey - 1, 2, 2); }
+      for (let i = 0; i < 6; i++) { const ra = a + i * 1.05, c = Math.cos(ra), s = Math.sin(ra); if (s <= 0) continue; const rx = mx + c * hw * 0.92;   /* a rib: it curves up to the crown */
+        for (let yy = -22; yy <= 4; yy += 2) { const t = (yy + 22) / 26, bx = Math.round(mx + (rx - mx) * Math.sqrt(Math.max(0, 1 - Math.pow(1 - t, 2)))); R_(g, C.brass[1], bx, y + yy, 2, 2); if (s > 0.5) R_(g, C.brass[2], bx, y + yy, 1, 1); } }
+      if (front) { const sx = Math.round(slit); R_(g, '#0a0c18', sx - 8, y - 22, 16, 26); R_(g, C.brass[0], sx - 9, y - 22, 1, 26); R_(g, C.brass[0], sx + 8, y - 22, 1, 26);   /* THE SLIT, between two rails, stars in it */
+        for (let i = 0; i < 5; i++) R_(g, i === 2 ? '#ffffff' : '#c8d8ff', sx - 6 + ((i * 7) % 12), y - 20 + ((i * 11) % 22), 1, 1);
+        g.save(); g.globalAlpha = 0.10; g.fillStyle = '#c8d8ff'; g.beginPath(); g.moveTo(slit - 6, y + 4); g.lineTo(slit + 6, y + 4); g.lineTo(slit + 60 + Math.cos(a) * 80, y + 220); g.lineTo(slit - 60 + Math.cos(a) * 80, y + 220); g.closePath(); g.fill(); g.restore();   /* the moonbeam */
+        g.fillStyle = 'rgba(232,240,255,0.55)'; for (let i = 0; i < 6; i++) { const t = ((time * 0.4 + i / 6) % 1); g.fillRect(Math.round(slit + (Math.cos(a) * 80) * t + (i - 3) * 8 * t), Math.round(y + 8 + t * 200), 1, 1); } } } }   /* (dust turning in it) */
+  // ---- THE BURNING BOOKS: piles of them on the plank tiers; a smoulder (glow, smoke, a hiss), then the flare ----
+  for (const q of F.flares || []) { const x0 = Math.round(q.x0 * TS - cx), x1 = Math.round((q.x1 + 1) * TS - cx), y = Math.round(q.row * TS - cy); if (x1 < -20 || x0 > VW + 20 || y < -50 || y > VH + 40) continue;
+    for (let x = x0 + 3, i = 0; x < x1 - 6; x += 12, i++) { const hh = hsh(q.x0 + i, 3);
+      R_(g, C.wood[0], x - 1, y - 7, 11, 7); R_(g, C.spine[i % 6], x, y - 3, 9, 3); R_(g, C.paper, x + 1, y - 2, 7, 1); R_(g, C.spine[(i + 2) % 6], x + 1, y - 6, 8, 3); R_(g, C.gold[1], x + 2, y - 5, 1, 1); R_(g, C.gold[1], x + 6, y - 5, 1, 1);
+      if (hh > 0.45) { R_(g, C.paper, x - 4, y - 2, 4, 2); R_(g, '#b8a888', x - 3, y - 2, 2, 1); R_(g, C.spine[(i + 4) % 6], x - 5, y - 1, 1, 1); } }   /* (a book fallen open) */
+    if (q.st === 'smoulder') { const k = Math.sin(time * 18) * 0.5 + 0.5; g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,107,44,' + (0.14 + 0.2 * k).toFixed(2) + ')'; g.fillRect(x0 - 2, y - 10, x1 - x0 + 4, 10); g.globalCompositeOperation = 'source-over';
+      g.fillStyle = 'rgba(255,107,44,' + (0.25 + 0.3 * k).toFixed(2) + ')'; g.fillRect(x0, y - 6, x1 - x0, 6); g.fillStyle = '#ffd36b'; for (let x = x0 + 6; x < x1; x += 9) g.fillRect(x + Math.round(Math.sin(time * 9 + x) * 2), y - 8 - ((time * 30 + x) % 10), 1, 2);
+      g.fillStyle = 'rgba(70,64,76,0.55)'; for (let x = x0 + 8; x < x1; x += 15) { const t = (time * 0.8 + x * 0.07) % 1; g.fillRect(x + Math.round(Math.sin(time * 3 + x) * 3), Math.round(y - 12 - t * 26), 2, 2); }   /* smoke */
+      if (T) T('!!', Math.round((x0 + x1) / 2), y - 20, '#ff6b6b', 'center', 8); }
+    if (q.st === 'burn') { g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,150,70,0.16)'; g.fillRect(x0 - 4, y - FT2.flare.h - 10, x1 - x0 + 8, FT2.flare.h + 10); g.globalCompositeOperation = 'source-over';
+      for (let x = x0; x < x1; x += 4) { const h = Math.round(FT2.flare.h * (0.55 + 0.45 * Math.sin(time * 20 + x * 0.7)));   /* tongues, stepped to a point */
+        g.fillStyle = C.flame[0]; g.fillRect(x, y - h, 4, h); g.fillRect(x + 1, y - h - 2, 2, 2); g.fillStyle = C.flame[1]; g.fillRect(x + 1, y - Math.round(h * 0.75), 2, Math.round(h * 0.75)); g.fillStyle = C.flame[2]; g.fillRect(x + 1, y - Math.round(h * 0.35), 1, Math.round(h * 0.35)); }
+      g.fillStyle = '#ffe9b0'; for (let i = 0; i < 6; i++) g.fillRect(x0 + (((i * 41 + time * 50) | 0) % Math.max(8, x1 - x0)), Math.round(y - FT2.flare.h - ((time * 60 + i * 13) % 18)), 1, 1); } }   /* sparks (and burnt pages) off it */
+  // ---- THE SPILLS: syrup pooled with a rolled edge, drips and slow bubbles; the fizz foaming over its stone ----
   for (const z of F.syrup || []) { const x0 = Math.round(z.x0 * TS - cx), w = (z.x1 - z.x0 + 1) * TS, y = Math.round(z.row * TS - cy); if (x0 > VW || x0 + w < 0 || y < -20 || y > VH + 20) continue;
-    g.fillStyle = C.syrup[0]; g.fillRect(x0, y - 2, w, 3); g.fillStyle = C.syrup[1]; g.fillRect(x0 + 1, y - 2, w - 2, 1); for (let i = 0; i < w; i += 7) { const ph = (time * 1.4 + i * 0.13) % 1; g.fillStyle = C.syrup[2]; g.fillRect(x0 + i + 2, y - 3 - Math.round(ph * 4), 1, 1); } }
-  for (const [tx, ty] of F.fizz || []) { const x = Math.round(tx * TS - cx), y = Math.round(ty * TS - cy); if (x < -20 || x > VW + 20 || y < -30 || y > VH + 30) continue;
-    g.fillStyle = '#2e2a3a'; g.fillRect(x, y, 16, 16); g.fillStyle = '#4a4458'; g.fillRect(x, y + 4, 16, 1);   /* the stone the fizz spilled on (over the engine's springy-cap tile) */
-    g.fillStyle = C.fizz[0]; g.fillRect(x, y, 16, 4); g.fillStyle = C.fizz[1]; g.fillRect(x + 1, y, 14, 2); for (let i = 0; i < 3; i++) { const ph = (time * 2 + i * 0.33) % 1; g.fillStyle = C.fizz[2]; g.fillRect(x + 3 + i * 5, y - Math.round(ph * 10), 2, 2); } }
-  // ---- THE TREASURY'S FLOOR: the gold on it, the arrows of its lean, the chests ----
+    R_(g, C.syrup[0], x0 + 1, y - 1, w - 2, 2); R_(g, C.syrup[1], x0, y - 3, w, 3); R_(g, C.syrup[2], x0 + 2, y - 3, w - 4, 1); R_(g, C.syrup[0], x0 - 1, y - 1, 1, 1); R_(g, C.syrup[0], x0 + w, y - 1, 1, 1);
+    for (let i = 5; i < w - 6; i += 13) { const ph = (time * 0.7 + i * 0.11) % 1, dl = 2 + Math.round(ph * 4); R_(g, C.syrup[1], x0 + i, y, 1, dl); R_(g, C.syrup[3], x0 + i, y + dl, 1, 1); }   /* drips off the lip */
+    for (let i = 0; i < w; i += 9) { const ph = (time * 1.1 + i * 0.13) % 1, by = y - 4 - Math.round(ph * 5); if (ph < 0.8) { R_(g, C.syrup[3], x0 + i + 3, by, 2, 2); R_(g, '#e8ffd0', x0 + i + 3, by, 1, 1); } } }
+  for (const [tx, ty] of F.fizz || []) { const x = Math.round(tx * TS - cx), y = Math.round(ty * TS - cy); if (x < -20 || x > VW + 20 || y < -40 || y > VH + 30) continue;
+    R_(g, '#2e2a3a', x, y, 16, 16); R_(g, '#4a4458', x, y + 4, 16, 1);   /* the stone the fizz spilled on (over the engine's springy-cap tile) */
+    R_(g, C.fizz[0], x, y, 16, 4); R_(g, C.fizz[1], x + 1, y, 14, 2);
+    for (let i = 0; i < 5; i++) { const bx = x + 1 + i * 3, bh = 1 + ((i * 5 + ((time * 6) | 0)) % 3); R_(g, C.fizz[1], bx, y - bh, 3, bh + 1); R_(g, C.fizz[2], bx + 1, y - bh, 1, 1); }   /* the foam head, heaving */
+    for (let i = 0; i < 4; i++) { const ph = (time * 1.9 + i * 0.27) % 1; R_(g, C.fizz[2], x + 2 + i * 4 + Math.round(Math.sin(time * 5 + i) * 1.5), y - 4 - Math.round(ph * 14), 2, 2); }
+    g.fillStyle = 'rgba(224,112,192,0.14)'; g.fillRect(x - 1, y - 22, 18, 18); }
+  // ---- THE TREASURY'S FLOOR: gold in heaps and loose, glints, the arrows of its lean, the chests (leaning into the slide) ----
   if (F.tilt) { const Z = F.tilt, Tq = R.tilt, y = Math.round(Z.row * TS - cy), x0 = Math.round(Z.x0 * TS - cx), x1 = Math.round((Z.x1 + 1) * TS - cx);
     if (y > -40 && y < VH + 40) { const dir = Tq.st === 'lean' ? Tq.dir : Tq.st === 'tell' ? Tq.dir : 0, run = (time * 50) % 16;
-      g.fillStyle = C.gold[1]; for (let x = x0 + 4; x < x1; x += 11) { const off = Math.round(dir * Tq.k * ((time * 40 + x) % 9)); g.fillRect(x + off, y - 2, 3, 2); g.fillStyle = C.gold[2]; g.fillRect(x + off + 1, y - 3, 1, 1); g.fillStyle = C.gold[1]; }
+      for (let x = x0 + 4, i = 0; x < x1; x += 11, i++) { const off = Math.round(dir * Tq.k * ((time * 40 + x) % 9)), big = hsh(i, 9) > 0.7;
+        R_(g, C.gold[0], x + off, y - 2, 4, 2); R_(g, C.gold[1], x + off, y - 3, 3, 1); R_(g, C.gold[2], x + off + 1, y - 3, 1, 1);
+        if (big) { R_(g, C.gold[0], x + off - 2, y - 4, 8, 4); R_(g, C.gold[1], x + off - 1, y - 6, 6, 2); R_(g, C.gold[2], x + off, y - 6, 2, 1); }   /* a heap */
+        if (((time * 2 + i * 0.37) % 2.2) < 0.12) { R_(g, '#ffffff', x + off + 1, y - 7, 1, 3); R_(g, '#ffffff', x + off, y - 6, 3, 1); } }   /* a glint */
       if (dir) { g.fillStyle = Tq.st === 'tell' ? (Math.floor(time * 10) % 2 ? '#ffffff' : '#ffd36b') : '#ffd36b'; for (let x = x0 + 8; x < x1 - 8; x += 48) { const ax = Math.round(x + dir * run); for (let j = 0; j < 4; j++) { g.fillRect(ax - dir * j, y + 4 - j, 1, 1); g.fillRect(ax - dir * j, y + 4 + j, 1, 1); } } }
-      for (const ch of R.chests) { const x = Math.round(ch.x - cx); g.fillStyle = '#4a2c18'; g.fillRect(x - 7, y - 10, 14, 10); g.fillStyle = '#7a4a28'; g.fillRect(x - 7, y - 10, 14, 3); g.fillStyle = C.gold[1]; g.fillRect(x - 7, y - 7, 14, 1); g.fillRect(x - 1, y - 8, 2, 3);
-        if (Math.abs(ch.vx) > 20) { g.fillStyle = '#ff6b6b'; g.fillRect(x - 1, y - 18, 2, 4); g.fillRect(x - 1, y - 13, 2, 1); } } } }
-  // ---- THE OUTER FACE: the drop, the rain (leaning with the tower), the wind, the lightning ----
+      for (const ch of R.chests) { const x = Math.round(ch.x - cx), lean = Math.abs(ch.vx) > 20 ? Math.sign(ch.vx) : 0;
+        R_(g, C.wood[0], x - 8, y - 11, 16, 11); R_(g, C.wood[1], x - 7, y - 8, 14, 8); R_(g, C.wood[2], x - 7 + lean, y - 11, 14, 3); R_(g, C.wood[3], x - 6 + lean, y - 11, 5, 1);   /* the chest, its lid */
+        R_(g, C.iron, x - 7, y - 7, 14, 1); R_(g, C.iron, x - 6, y - 11, 1, 11); R_(g, C.iron, x + 5, y - 11, 1, 11); R_(g, C.gold[1], x - 1, y - 8, 2, 3); R_(g, C.iron, x, y - 7, 1, 1);   /* straps and a gold lock */
+        R_(g, C.gold[1], x - 5 + lean, y - 12, 4, 1); R_(g, C.gold[2], x + 1 + lean, y - 12, 2, 1);   /* coin lipping over the lid */
+        if (lean) { R_(g, C.gold[1], x - lean * 10, y - 2, 2, 2); R_(g, C.gold[2], x - lean * 13, y - 1, 1, 1); }   /* it sheds as it slides */
+        if (Math.abs(ch.vx) > 20) { g.fillStyle = '#ff6b6b'; g.fillRect(x - 1, y - 20, 2, 4); g.fillRect(x - 1, y - 15, 2, 1); } } } }
+  // ---- THE OUTER FACE: the abyss (far spires lit by the flashes), the rain (leaning with the tower), the wind, the lashed planks and their lamps, the lightning ----
   if (F.outer) { const O = F.outer, x0 = Math.round(O.x0 * TS - cx), x1 = Math.round((O.x1 + 1) * TS - cx), yd = Math.round(O.drop * TS - cy);
-    if (x1 > 0 && x0 < VW) { const G = R.gust, B = R.bolt;
+    if (x1 > 0 && x0 < VW) { const G = R.gust, B = R.bolt, lit = B.st === 'flash';
       for (let i = 0; i < 6; i++) { g.fillStyle = 'rgba(4,4,10,' + (0.15 + i * 0.12).toFixed(2) + ')'; g.fillRect(x0, yd - 24 + i * 8, x1 - x0, 8); }
       g.fillStyle = '#04040a'; g.fillRect(x0, yd + 24, x1 - x0, Math.max(0, VH - yd - 24));   /* THE DROP: black */
+      if (yd < VH) { const sp = lit ? '#2a2a46' : '#0e0e1c', fog = lit ? 'rgba(120,130,170,0.35)' : 'rgba(60,64,96,0.22)';   /* what is far below: spires, and cloud */
+        for (let i = 0; i < 5; i++) { const sx = x0 + 6 + i * Math.round((x1 - x0 - 12) / 5) + ((i * 13) % 9), sh = 26 + ((i * 29) % 40), sy = yd + 70; if (sy > VH + 10) continue; R_(g, sp, sx, sy - sh, 5 + (i % 2) * 2, sh + 30); R_(g, sp, sx + 1, sy - sh - 4, 3, 4); if (lit) R_(g, '#f0e8c0', sx + 2, sy - sh + 6, 1, 1); }
+        for (let i = 0; i < 4; i++) { const cyy = yd + 40 + i * 34 + Math.round(Math.sin(time * 0.4 + i) * 3); if (cyy > VH) continue; g.fillStyle = fog; g.fillRect(x0, cyy, x1 - x0, 6); g.fillRect(x0 + 8 + i * 5, cyy - 3, 40, 3); } }
       if (T && P && inOuter(F, P) && yd < VH) T('THE DROP', Math.round((x0 + x1) / 2), yd + 10, '#9a8aa8', 'center', 6);
       const lean = (F.lean || 0) * 0.05 + (G.st === 'blow' ? G.dir * 0.5 : 0);
-      g.fillStyle = 'rgba(160,170,200,0.35)'; for (let i = 0; i < 40; i++) { const s = Math.sin(i * 91.7) * 43758.5, r = s - Math.floor(s), rx = x0 + ((r * 997 + time * 40 * lean * 10) % (x1 - x0) + (x1 - x0)) % (x1 - x0), ry = ((time * 260 + r * 900) % (VH + 20)) - 10; g.fillRect(Math.round(rx), Math.round(ry), 1, 5); }
-      if (G.st === 'tell' || G.st === 'blow') { const k = G.st === 'blow' ? 1 : 1 - G.t / FT2.gust.tell; g.fillStyle = 'rgba(220,230,255,' + (0.25 + 0.4 * k).toFixed(2) + ')';
-        for (let i = 0; i < 14; i++) { const yy = ((i * 53 + 17) % VH), xx = ((time * 260 * G.dir + i * 97) % (x1 - x0) + (x1 - x0)) % (x1 - x0) + x0; g.fillRect(Math.round(xx), yy, Math.round(10 + 14 * k), 1); }
+      g.fillStyle = 'rgba(160,170,200,0.35)'; for (let i = 0; i < 40; i++) { const s = Math.sin(i * 91.7) * 43758.5, r = s - Math.floor(s), rx = x0 + ((r * 997 + time * 40 * lean * 10) % (x1 - x0) + (x1 - x0)) % (x1 - x0), ry = ((time * 260 + r * 900) % (VH + 20)) - 10; g.fillRect(Math.round(rx), Math.round(ry), 1, 4 + (i % 3)); }
+      for (const [lx, len, row] of O.ledges || []) { const lxs = Math.round(lx * TS - cx), w = len * TS, ly = Math.round(row * TS - cy); if (ly < -30 || ly > VH + 30) continue;
+        for (let n = 0; n < len; n++) { R_(g, C.wood[0], lxs + n * TS + 7, ly + 3, 1, 1); R_(g, C.wood[3], lxs + n * TS + 2, ly + 1, 1, 1); R_(g, C.wood[3], lxs + n * TS + 11, ly + 1, 1, 1); }   /* nail heads, wet */
+        R_(g, '#6a5a48', lxs - 1, ly + 1, 1, 8); R_(g, '#6a5a48', lxs + w, ly + 1, 1, 8); R_(g, '#9a8a68', lxs - 2, ly + 4, 3, 1); R_(g, '#9a8a68', lxs + w - 1, ly + 4, 3, 1);   /* the lashings, and the frayed rope ends */
+        if (((row / 3) | 0) % 2 === 0) { const lamp = lxs + (lx < (O.x0 + O.x1) / 2 ? w - 4 : 3), fl = 0.8 + 0.2 * Math.sin(time * 9 + row);   /* a storm-lantern on every other scaffold: a pool of light to read the dark by */
+          R_(g, C.iron, lamp, ly - 10, 3, 1); R_(g, '#ffd36b', lamp, ly - 9, 3, 3); R_(g, '#fff0b0', lamp + 1, ly - 8, 1, 1); R_(g, C.iron, lamp, ly - 6, 3, 1);
+          g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,190,90,' + (0.10 * fl).toFixed(3) + ')'; g.fillRect(lamp - 14, ly - 22, 31, 26); g.fillStyle = 'rgba(255,190,90,' + (0.12 * fl).toFixed(3) + ')'; g.fillRect(lamp - 7, ly - 15, 17, 14); g.globalCompositeOperation = 'source-over'; } }
+      if (G.st === 'tell' || G.st === 'blow') { const k = G.st === 'blow' ? 1 : 1 - G.t / FT2.gust.tell, streak = 'rgba(220,230,255,' + (0.25 + 0.4 * k).toFixed(2) + ')'; g.fillStyle = streak;
+        for (let i = 0; i < 14; i++) { const yy = ((i * 53 + 17) % VH), xx = ((time * 260 * G.dir + i * 97) % (x1 - x0) + (x1 - x0)) % (x1 - x0) + x0; g.fillStyle = streak; g.fillRect(Math.round(xx), yy, Math.round(10 + 14 * k), 1); if (i % 3 === 0) { g.fillStyle = 'rgba(180,170,150,0.7)'; g.fillRect(Math.round(xx) + 3 * G.dir, yy - 2 + (i % 2) * 4, 2, 1); } }   /* (grit and a torn page in it) */
         if (T && inOuter(F, P)) T(G.dir < 0 ? '<<< WIND' : 'WIND >>>', Math.round((x0 + x1) / 2), 24, Math.floor(time * 8) % 2 ? '#ffffff' : '#c8d8ff', 'center', 8); }
-      for (const [lx, len, row] of O.ledges || []) { const fx = Math.round((lx + (lx < (O.x0 + O.x1) / 2 ? 0 : len - 1)) * TS - cx) + 6, fy = Math.round(row * TS - cy);   /* a flag on every scaffold: it streams the way the wind will blow */
-        if (fy < -30 || fy > VH + 10) continue; g.fillStyle = '#6a5a48'; g.fillRect(fx, fy - 18, 1, 18); const d = G.st === 'calm' ? 0.3 : G.dir, wav = Math.round(Math.sin(time * (G.st === 'calm' ? 3 : 14)) * 1.5);
-        g.fillStyle = '#c9463d'; g.fillRect(d > 0 ? fx + 1 : fx - 7, fy - 18 + wav, 7, 4); }
+      for (const [lx, len, row] of O.ledges || []) { const fx = Math.round((lx + (lx < (O.x0 + O.x1) / 2 ? 0 : len - 1)) * TS - cx) + 6, fy = Math.round(row * TS - cy);   /* a flag on every scaffold: it streams the way the wind will blow, in scallops */
+        if (fy < -30 || fy > VH + 10) continue; g.fillStyle = '#6a5a48'; g.fillRect(fx, fy - 18, 1, 18); R_(g, C.brass[3], fx - 1, fy - 19, 3, 1); const d = G.st === 'calm' ? 0.3 : G.dir, sp = G.st === 'calm' ? 3 : 14;
+        for (let i = 0; i < 7; i++) { const wav = Math.round(Math.sin(time * sp + i * 0.9) * (G.st === 'calm' ? 0.6 : 1.6)), xx = d > 0 ? fx + 1 + i : fx - 1 - i; g.fillStyle = i % 3 === 2 ? '#8a2a2a' : '#c9463d'; g.fillRect(xx, fy - 18 + wav + (G.st === 'calm' ? Math.round(i * 0.4) : 0), 1, 4 - (i > 4 ? 1 : 0)); } }
       if (B.st === 'tell' || B.st === 'flash') { const bx = Math.round(B.x - cx), by = Math.round(B.y - cy), k = B.st === 'flash' ? 1 : 1 - B.t / FT2.bolt.tell;
-        g.fillStyle = B.st === 'flash' ? '#ffffff' : 'rgba(220,230,255,' + (0.12 + 0.25 * k).toFixed(2) + ')'; g.fillRect(bx - FT2.bolt.half, B.st === 'flash' ? 0 : by - 140, FT2.bolt.half * 2, B.st === 'flash' ? by : 140);
-        if (B.st === 'tell') { g.fillStyle = Math.floor(time * 12) % 2 ? '#ffffff' : '#c8d8ff'; g.fillRect(bx - FT2.bolt.half, by - 1, FT2.bolt.half * 2, 1); if (T) T('!!', bx, by - 22, '#ff6b6b', 'center', 8); } } } }
+        if (B.st === 'tell') { g.fillStyle = 'rgba(220,230,255,' + (0.12 + 0.25 * k).toFixed(2) + ')'; g.fillRect(bx - FT2.bolt.half, by - 140, FT2.bolt.half * 2, 140);   /* the pale column on the plank it will strike */
+          g.fillStyle = Math.floor(time * 12) % 2 ? '#ffffff' : '#c8d8ff'; g.fillRect(bx - FT2.bolt.half, by - 1, FT2.bolt.half * 2, 1); for (let i = 0; i < 5; i++) g.fillRect(bx - FT2.bolt.half + 2 + i * 5, by - 3 - (((time * 12 + i * 2) % 4) | 0), 1, 2);   /* (the air crackling over it) */
+          if (T) T('!!', bx, by - 22, '#ff6b6b', 'center', 8); }
+        else { g.fillStyle = 'rgba(220,230,255,0.22)'; g.fillRect(bx - FT2.bolt.half, 0, FT2.bolt.half * 2, by);   /* the strike: a forked bolt down the column, a scorch where it lands */
+          crack(g, bx, 0, bx, by, Math.floor(time * 8), 7, '#c8d8ff', '#c8d8ff'); crack(g, bx + 1, 0, bx + 1, by, Math.floor(time * 8), 7, '#ffffff', null);
+          g.fillStyle = '#ffffff'; g.fillRect(bx - FT2.bolt.half, by - 2, FT2.bolt.half * 2, 2); g.fillStyle = '#12101a'; g.fillRect(bx - 7, by - 1, 14, 1); } } } }
   // ---- THE TELESCOPE AND THE CHUNK ----
   for (const m of movers || []) { if (!m.ft2) continue; const x = Math.round(m.x - cx), y = Math.round(m.y - cy); if (x < -260 || x > VW + 260 || y < -260 || y > VH + 260) continue;
     if (m.role === 'scope') { const px = Math.round(m.px - cx), py = Math.round(m.py - cy), ex = x + m.w / 2;
-      g.strokeStyle = C.brass[0]; g.lineWidth = 7; g.beginPath(); g.moveTo(px, py); g.lineTo(ex, y + 4); g.stroke(); g.strokeStyle = C.brass[1]; g.lineWidth = 4; g.stroke(); g.lineWidth = 1;   /* the tube */
-      g.fillStyle = '#3a2e1c'; g.fillRect(px - 8, py - 4, 16, 12); g.fillStyle = C.brass[2]; g.fillRect(px - 3, py - 2, 6, 6);   /* its mount */
-      g.fillStyle = C.brass[0]; g.fillRect(x, y, m.w, 6); g.fillStyle = C.brass[2]; g.fillRect(x, y, m.w, 2);   /* the eyepiece platform */
-      const k = Math.cos(m.ang - (m.a0 + m.a1) / 2) ; void k; }
-    if (m.role === 'chunk') { const S = R.snap, tip = Math.round(m.tip || 0);
-      g.fillStyle = '#3a3448'; g.fillRect(x, y + tip, m.w, 22); g.fillStyle = '#5a5470'; g.fillRect(x, y + tip, m.w, 3); g.fillStyle = '#2a2638'; for (let i = 8; i < m.w; i += 16) g.fillRect(x + i, y + 4 + tip, 1, 16);
-      g.fillStyle = '#4a4458'; g.fillRect(x + 4, y - 10 + tip, 9, 10); g.fillRect(x + m.w - 13, y - 10 + tip, 9, 10);   /* its merlons */
-      if (S.st === 'wait') { g.strokeStyle = Math.floor(time * 6) % 2 ? '#ffd36b' : '#ffffff'; g.beginPath(); g.moveTo(x - 2, y + 22); g.lineTo(x + 6, y + 10); g.lineTo(x + 2, y); g.stroke(); if (T && P && Math.abs(P.y - m.y) < 120 && Math.abs(P.x - (m.x + m.w / 2)) < 160) T('LOOSE: STEP ON IT', x + m.w / 2, y - 22, '#ffd36b', 'center', 6); }   /* the crack it will go on */ } }
+      R_(g, C.stone[0], px - 12, py + 6, 24, 8); R_(g, C.stone[1], px - 11, py + 6, 22, 2); R_(g, C.brass[1], px - 7, py - 6, 14, 14); R_(g, C.brass[2], px - 6, py - 5, 12, 2);   /* its pier and the mount */
+      seg(g, px, py, ex, y + 4, C.brass[0], 8); seg(g, px, py, ex, y + 4, C.brass[2], 5); seg(g, px, py - 1, ex, y + 3, C.brass[3], 1);   /* the tube: dark, brass, a hot edge */
+      for (const t of [0.25, 0.55, 0.85]) { const bx = Math.round(px + (ex - px) * t), by = Math.round(py + (y + 4 - py) * t); R_(g, C.brass[0], bx - 4, by - 4, 8, 8); R_(g, C.gold[1], bx - 3, by - 3, 6, 6); R_(g, C.brass[1], bx - 2, by - 2, 4, 4); }   /* bands */
+      cog(g, px, py + 1, 4, C.brass[2], C.brass[3], ((time * 3) | 0) & 1);   /* the cog that turns it */
+      R_(g, C.iron, px - 2, py + 14, 1, 10 + Math.round(Math.sin(time * 2) * 1.5)); R_(g, C.stone[2], px - 4, py + 24 + Math.round(Math.sin(time * 2) * 1.5), 5, 4);   /* the counterweight on its chain */
+      R_(g, C.brass[0], x, y, m.w, 6); R_(g, C.brass[2], x, y, m.w, 2); R_(g, C.brass[3], x + 1, y, m.w - 2, 1);   /* the eyepiece platform */
+      for (let i = 4; i < m.w; i += 10) R_(g, C.brass[1], x + i, y - 5, 1, 5); R_(g, C.brass[2], x + 4, y - 5, m.w - 8, 1);   /* its rail */
+      R_(g, '#e8f0ff', Math.round(ex) - 1, y + 3, 2, 2); if ((((time * 3) | 0) % 4) === 0) { R_(g, '#ffffff', Math.round(ex) - 3, y + 4, 6, 1); R_(g, '#ffffff', Math.round(ex), y + 1, 1, 6); } }   /* the lens, with its glint */
+    if (m.role === 'chunk') { const S = R.snap, tip = Math.round(m.tip || 0), w = m.w, top = y + tip;
+      R_(g, '#2a2638', x, top, w, 22); R_(g, '#3a3448', x + 1, top + 1, w - 2, 20);   /* THE CHUNK: courses of ashlar... */
+      for (let c = 0; c < 3; c++) { const yy = top + 3 + c * 7; R_(g, '#252b3a', x + 1, yy, w - 2, 1); for (let b = 0; b < w; b += 16) R_(g, '#252b3a', x + b + (c % 2 ? 8 : 0), yy + 1, 1, 6); }
+      R_(g, '#5a5470', x, top, w, 3); R_(g, '#7a7498', x + 2, top, w - 4, 1);
+      for (let i = 0; i < w; i += 8) { const th = 2 + Math.round(hsh(i, 5) * 5); R_(g, '#2a2638', x + i, top + 22, 8, th); R_(g, '#3a3448', x + i + 1, top + 22, 5, Math.max(1, th - 2)); }   /* ...and the torn underside, in teeth */
+      R_(g, C.iron, x + 20, top + 22, 2, 9); R_(g, C.iron, x + w - 24, top + 22, 2, 7); R_(g, '#6a5a48', x + 20, top + 28, 2, 1);   /* snapped timber and iron hanging from it */
+      for (const mx of [x + 4, x + w - 13]) { R_(g, '#4a4458', mx, y - 10 + tip, 9, 10); R_(g, '#6a6480', mx, y - 10 + tip, 9, 2); R_(g, '#2a2638', mx + 3, y - 4 + tip, 1, 4); }   /* its merlons */
+      R_(g, '#4a4458', x + w / 2 - 3, y - 5 + tip, 6, 5);
+      if (S.st === 'wait') { crack(g, x - 2, y + 24, x + 2, y - 2, 11, 3, Math.floor(time * 6) % 2 ? '#ffd36b' : '#ffffff', null); if (T && P && Math.abs(P.y - m.y) < 120 && Math.abs(P.x - (m.x + m.w / 2)) < 160) T('LOOSE: STEP ON IT', x + m.w / 2, y - 22, '#ffd36b', 'center', 6); }   /* the crack it will go on */
+      if (S.st === 'tell') { const k = 1 - S.t / FT2.snap.tell, hh = Math.round(40 + 220 * k);   /* THE SNAP, TOLD: the tower splits - a crack runs up and down the face behind you */
+        crack(g, x + 2, top + 10, x - 2, top - hh, 21, 5, '#ffe9b0', '#ffb070'); crack(g, x + 2, top + 10, x + 6, top + 10 + hh, 22, 5, '#ffe9b0', '#ffb070');
+        g.fillStyle = C.grit; for (let i = 0; i < 6; i++) g.fillRect(x + (i * 17) % w, top + 22 + (((time * 70 + i * 19) % 40) | 0), 2, 2); }
+      if (S.st === 'ride') { g.fillStyle = 'rgba(120,112,150,0.5)'; for (let i = 0; i < 8; i++) { const t = (time * 1.6 + i / 8) % 1; g.fillRect(x + ((i * 23) % w), Math.round(top + 24 + t * 70), 2 + (i % 2), 2); }   /* it sheds as it goes: rubble falling away under it */
+        R_(g, '#ffe9b0', x - 3, top - 40, 1, 60); } } }
 }

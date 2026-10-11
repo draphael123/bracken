@@ -6070,7 +6070,7 @@ const touchPressName = k => { initAudio(); anyPress = true; padLast = false;
   else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true; else if (k === 'flask') flaskPress = true;
   else if (k === 'left') leftPress = true; else if (k === 'right') rightPress = true; else if (k === 'up') upPress = true; else if (k === 'down') downPress = true; };
 /* WHAT INTERACT WOULD DO NOW (src/touch-interact.js reads the same reach tests the keyboard path does) */
-const touchCtxObj = () => ({ P, state, props, talkers, L, enemies, flask: () => (P.flasks | 0) > 0 && P.hp < P.maxHp && !(P.drinkT > 0) && P.ground ? { label: 'FLASK ' + P.flasks, key: 'flask', dim: P.hp > P.maxHp * 0.6 } : null, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
+const touchCtxObj = () => ({ P, state, props, talkers, L, enemies, flask: () => (P.flasks | 0) > 0 && P.hp < P.maxHp && !(P.drinkT > 0) && (P.ground || P.carpet) ? { label: 'FLASK ' + P.flasks, key: 'flask', dim: P.hp > P.maxHp * 0.6 } : null, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
   doorOpen: pr => !pr.mirror || FK.mirrorDoorOpen(L, pr, P), ferryOwes: () => { const fm = movers.find(mv => mv.ferry); return !!(fm && !fm.paid && !fm.free && fm.toll); } });
 const touchVerbNow = () => interactVerb(touchCtxObj());
 /* THE SECOND CONTEXTUAL BUTTON (a lane fills it: BK.touchCtx.push(c => ... ? { label: 'THROW', key: 'throw' } : null), see src/touch-interact.js) */
@@ -6598,7 +6598,7 @@ function tryDrink() {
   if (state !== 'play' || !P || P.dead || P.down > 0 || (L && L.trial) || P.drinkT > 0) return false;
   if (!((P.flasks | 0) > 0)) { SFX.buzz(); number(P.x, P.y - 30, 'NO FLASKS', '#9aa39a'); return false; }
   if (P.hp >= P.maxHp) { SFX.buzz(); number(P.x, P.y - 30, 'FULL', '#9aa39a'); return false; }
-  if (!P.ground || P.swim || P.climb || P.plunge || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || CM.committed(P) || P.carry) { SFX.buzz(); return false; }
+  if (!(P.ground || P.carpet) || P.swim || P.climb || P.plunge || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || CM.committed(P) || P.carry) { SFX.buzz(); return false; }   /* (claude/ft2art: the carpet HOVERS, still - the Archmage's whole fight is flown, and a flask that only worked on foot made 'with flasks' dry there) */
   const T = F2.drinkTimes(PROG, SV.FLASK);
   P.flasks--; P.drinkDur = T.drinkT; P.swallowAt = T.swallowAt; P.drinkT = T.drinkT; P.drunk = false; P.gulps = 0; P.corked = true; P.drinkHp = P.hp; P.block = false; P.vx = 0; P.dance = 0; SFX.ui(); PROG.drinkTold = Math.max(PROG.drinkTold || 0, 2);
   flaskHud.levelDrinks++; return true;
@@ -18595,7 +18595,7 @@ function drawRealmBanner(xpRow,cy){const m=mageRealm();if(!m)return;const q=real
  g.globalAlpha=1;m.realm.bannerDrawn=open?'open':q.text;}
 function updateUndeadMage(e,dt){
  e.hp0??=e.maxHp;const A=L.arena,box=e.realm?realmBox(e,A):carpetBox(A,e.squeeze||0);
- stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,
+ stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,unsay:()=>{if(LICH_CALLED.has(hintMsg)||/^(FIRE|ICE|STORM|BONE|HIS|THE GRAVE)/.test(hintMsg||''))hintT=0;},
   hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP',skull:'THE BONE STORM',void:'THE GRAVE',world:'HIS ORRERY',script:'THE GRAVE SCRIPT',pillar:'THE BURNING FLOOR',firewall:'HIS FIRE WALL',icicle:'AN ICICLE',mire:'THE MIRE'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
   /* THROUGH HIS TEAR, AND BACK: a flash and a snap - a portal is not a flight */
   pull:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.45);shakeCam(7);zoomKick(1.14,.5);SFX.mageBolt?SFX.mageBolt():SFX.leap();burst(P.x,P.y-8,28,C,160,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;number(P.x,P.y-40,REALM.name[kind],C[0]);},
@@ -18625,17 +18625,18 @@ function chaseView(){return !!(L&&L.spiral&&P&&!P.carpet&&!P.dead&&inSpiral(L.sp
 function carpetPlayer(dt){
  for(const k of ['inv','grace','hurt','stFlash','sqT'])P[k]=Math.max(0,(P[k]||0)-dt);P.hpShown+=(P.hp-P.hpShown)*Math.min(1,dt*6);
  const ax=(keys.right?1:0)-(keys.left?1:0),ay=(keys.down?1:0)-((keys.up||keys.jump)?1:0);
+ drinkTick(dt);const drinking=P.drinkT>0;   /* THE FLASK ON THE CARPET (claude/ft2art): it hangs still while he drinks; a blow before the swallow spills it (drinkTick) */
  P.dodgeCd=Math.max(0,(P.dodgeCd||0)-dt);P.stDelay=Math.max(0,P.stDelay-dt);CM.staminaTick(P,dt);
- if(dodgePress&&P.dodgeCd<=0&&!P.winded&&spend(dodgeCost())){P.dodge=0.22;P.dodgeCd=0.55;P.inv=Math.max(P.inv,0.3);P.vx=(ax||P.face)*300;P.vy=ay*260;SFX.pDodge();}
+ if(dodgePress&&!drinking&&P.dodgeCd<=0&&!P.winded&&spend(dodgeCost())){P.dodge=0.22;P.dodgeCd=0.55;P.inv=Math.max(P.inv,0.3);P.vx=(ax||P.face)*300;P.vy=ay*260;SFX.pDodge();}
  const sky=skyBox();
  P.carpet.grip=mageRealm()&&boss.realm.kind==='ice'?REALM.ice.grip:1;   /* THE ICE REALM: the cold takes the carpet's grip */
  if(P.dodge>0){P.dodge-=dt;ghosts.push({x:P.x,y:P.y,face:P.face,life:0.2,frame:0});P.x=Math.max(sky.x0,Math.min(sky.x1,P.x+P.vx*dt));P.y=Math.max(sky.y0,Math.min(sky.y1,P.y+P.vy*dt));}
- P.block=!!keys.block&&P.atk<0&&!(P.dodge>0);
- if(!(P.dodge>0))stepCarpet(P,{ax:P.block?ax*0.5:ax,ay:P.block?ay*0.5:ay},dt,sky);
+ P.block=!!keys.block&&P.atk<0&&!(P.dodge>0)&&!drinking;
+ if(drinking){P.vx=0;P.vy=0;P.carpet.t+=dt;}else if(!(P.dodge>0))stepCarpet(P,{ax:P.block?ax*0.5:ax,ay:P.block?ay*0.5:ay},dt,sky);
  if(ax&&!P.block)P.face=ax;P.anim+=dt;P.ground=false;P.swim=false;P.climb=false;
  P.abuf=Math.max(0,(P.abuf||0)-dt);
  {const m=mageRealm(),hb=m&&attackBox();if(hb)strikeRealm(m,hb,P.hitSet,{box:realmBox(m,L.arena),say:(t,h)=>number(P.x,P.y-40,t,h?'#ff6b6b':'#bce8fa'),sound:k=>(SFX[k]||SFX.charge)()});}   /* A REALM'S OPENING is struck on the realm: an icicle, the vent */
- if(P.abuf>0&&P.atk<0){P.abuf=0;if(spend((isPaladin()?28:sword().cost))){P.atk=0;P.hitSet.clear();SFX.pSlash();P.swingMul=1;P.heavySwing=false;}}
+ if(P.abuf>0&&P.atk<0&&!drinking){P.abuf=0;if(spend((isPaladin()?28:sword().cost))){P.atk=0;P.hitSet.clear();SFX.pSlash();P.swingMul=1;P.heavySwing=false;}}
  if(P.atk>=0){P.atk+=dt*(isPaladin()?0.56:1);if(P.atk>0.3)P.atk=-1;}
  {const hb=attackBox();if(hb)for(const e of enemies){if(!e.alive||P.hitSet.has(e)||e.gone>0||!overlap(hb,box(e)))continue;P.hitSet.add(e);openBefore(e);hurtAs(meleeBlow(false),e,swingDmg(e),P.x,false);swordEffect(e);if(isPaladin())gainLight(8);}}
  for(const a of acorns)if(!a.got&&Math.abs(a.x-P.x)<12&&Math.abs(a.y-(P.y-7))<14)collectAcorn(a);
