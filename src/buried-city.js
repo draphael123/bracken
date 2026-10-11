@@ -345,8 +345,8 @@ export function buildBuriedCity({ painter, T, TS }) {
     wheel: { ...WHEEL }, arenaLevers: stage.levers, vaultDoors, decor, sandSolid, sandRungs, crumbles, quicksand, plats, lamps,
     /* THE CITY HITS HARD (difficulty v2: weight, not numbers of foes): a blow x this on top of the act's tier, by skin (main.js damagePlayer0 reads L.foeHit) */
     knockHazards: [],   /* (claude/knockinto: the city's killing hazards - the stakes, the trap hall's open drop - are tiles and a drop the shared helper reads already; the foes that can be thrown stand by them: the halls' drowned, the trap lip's drowned. The construct is too heavy to throw - KNOCK_SKIP) */
-    foeHit: { sanddrowned: 4.6, sandslinger: 1.8, brassscorpion: 4.2 },
-    foeHp: { sanddrowned: 2.8, sandslinger: 2.0, brassscorpion: 2.8 },
+    foeHit: { sanddrowned: 5.4, sandslinger: 2.3, brassscorpion: 4.8 },   /* (claude/buriedcity2: the L40 walker arrived 73-97% - drowned 4.6 -> 5.4, slinger 1.8 -> 2.3, scorpion 4.2 -> 4.8) */
+    foeHp: { sanddrowned: 3.2, sandslinger: 2.2, brassscorpion: 3.0 },
     alarms: ROOMS.map(r => ({ x0: r.x0, x1: r.x1 })).concat(CHUTES.flatMap(c => Object.values(c.to).map(t => ({ x0: t.x0 - 4, x1: t.x1 + 4 })))),   /* THE RULE'S STATE for tools/rule-state.mjs: the sand rooms and the falls are where the rule is live */
     sun: SUN.map(z => ({ ...z })), shade, shadeArt: shade,   /* THE DESERT'S SUN on the dunes and in the shafts only (the city is under its roof): src/buried-city-hands.js sunAt */
     noSkyRays: true,   /* (the sky's rays are the dunes' and the shafts' only: src/redraw/buried_city_backdrop.js draws the shafts' light) */

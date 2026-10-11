@@ -224,7 +224,7 @@ export function makeBuriedCityHands(ctx) {
     const r0 = roomOf('first'); if (r0 && r0.level > 2 && c > 50 && c < 62) return here(58, 36, r0.gate === 'shut' ? 'talk' : null, 1, { r: 10 });
     const g = roomOf('granary'); if (g && c > 139 && c < 156 && feet > 25) { if (g.gate === 'open') return here(144, 36, 'talk', 1); return Object.assign(here(Math.min(155, Math.max(146, Math.round(c))), sandTopRow(g) - 1, null, 1), { r: 40, wait: true }); }
     /* THE SINKING STREET: across it to the chain by the arch, pull it, and ride the street down */
-    const st = roomOf('street'); if (st && st.level > 0.05 && c > 194 && c < 234) { const d = deckRow(st); return here(232, d - 1, st.gate === 'shut' ? 'talk' : null, 1, { r: 12, wait: st.gate === 'open' }); }
+    const st = roomOf('street'); if (st && st.level > 0.05 && c > 194 && c < 234) { const d = deckRow(st), fr = feet >= d - 6 && feet <= d - 1 ? feet : d - 1; return here(232, fr, st.gate === 'shut' ? 'talk' : null, 1, { r: 42, wait: st.gate === 'open' }); }   /* (r 42: the walker heeds a hint only within r tiles - the chain is across the street) */
     const ce = roomOf('cellar'); if (ce && c > 236 && c < 246 && ce.level < ce.full - 0.05) return here(242, 38, ce.gate === 'open' ? 'talk' : null, 1, { r: 10, wait: ce.gate === 'shut' });
     const ub = roomOf('upperbulb'); if (ub && ub.level > 2 && c > 270 && c < 282) return here(278, 32, ub.gate === 'shut' ? 'talk' : null, 1, { r: 10, wait: ub.gate === 'open' });
     /* THE SAND-FALL: swing it onto the wall, wait for the heap, swing it back, climb */
