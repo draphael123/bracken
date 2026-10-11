@@ -1,6 +1,6 @@
 // tools/dance-sheet.mjs — ONE CAPTURE SHEET OF ALL SEVEN DANCES (dances lane, 2026-09-29): a row a hero, every distinct drawing of his
 // dance in the order it plays, blown up, on the plain bracken skin - and a second block of the same seven in a different skin
-// (--skin=<id>, default black), so the sheet shows the dance is baked into the skins too.  node tools/dance-sheet.mjs  ->  work/dances/'+KEY+'.png
+// (--skin=<id>, --key=dance|dance2|dance3, --heroes=a,b)  ->  work/dances/<key>.png
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { openPage, ROOT } from './cdp.mjs';
 import { join } from 'node:path';
