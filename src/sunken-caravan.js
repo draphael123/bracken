@@ -111,6 +111,18 @@ export function buildCaravan({ T, TS }) {
     /* AND IT IS A ROOM: the tower's inside gets a back wall (drawRoomPaint 'caravanserai' in main.js), so it reads as a place you
        climb through - door, shelf, shelf, hatch - and not as posts against the sky. The same rect is the reverb and the no-grass rule */
     L.interiors = (L.interiors || []).concat([[cs + 1, cs + 5, csRoof + 1, top(cs - 1) - 1, 'caravanserai']]); }
+  /* (claude/caravan2art) THE WRECKAGE AND THE ROCK (Daniel 10-09: the logs go, caravan wreckage + rock stand on the sand instead): visual dressing, never data the level
+     measures (L.wreckage is not in L.ents), set on firm FLAT sand clear of every door, sign and shelf. kind = a bake in src/redraw/caravan2_art.js bakeWreckage(). And THE GREAT
+     RIBCAGE (src/redraw/desert2.js) arching behind the sinking wagons' basin: a landmark, nothing to climb (L.ribcages: x column, y the sand's first solid row). */
+  { const gt = x => { let y = H - 1; while (y > 0 && at(x, y) !== T.AIR) y--; return y + 1; };   /* the SAND's first row: under a viaduct's deck too */
+    const kinds = ['rockPile', 'crateStack', 'brokenWheel', 'rockPile', 'tornCanvas', 'crateStack'], busy = L.ents.filter(e => ['sign', 'check', 'standard', 'winch', 'relic', 'vault', 'stray', 'silver', 'awningwinch', 'gate'].includes(e.t)).map(e => e.x);
+    const inMasonry = x => (L.masonry || []).some(z => x >= z[0] - 1 && x <= z[1] + 1 && z[3] >= gt(x) - 2) || (L.facades || []).some(z => x >= z[0] - 1 && x <= z[1] + 1 && z[4] !== 'ruin');
+    const firm = x => x > 4 && x < W - 4 && at(x, gt(x)) === T.SOLID && [-2, -1, 1, 2].every(d => gt(x + d) === gt(x) && at(x + d, gt(x + d)) === T.SOLID) && !inMasonry(x) && !busy.some(b => Math.abs(b - x) < 3)
+      && !(L.quicksand || []).some(q => x * TS > q.x0 - 2 * TS && x * TS < q.x1 + 2 * TS) && !(L.arena && x >= L.arena.x0 / TS - 6);
+    L.wreckage = []; let k = 0;
+    for (let x = 12; x < (L.arena ? L.arena.x0 / TS - 8 : W); x += 12 + (k % 3) * 2) { let c = null; for (let d = 0; d <= 6 && c === null; d++) for (const s of d ? [d, -d] : [0]) if (firm(x + s)) { c = x + s; break; }
+      if (c === null) continue; L.wreckage.push({ kind: kinds[k % kinds.length], v: (k >> 1) & 1, x: c, y: gt(c) }); busy.push(c); k++; x = Math.max(x, c); }
+    const rx = L.marks.ribcage + 7; L.ribcages = [{ x: rx, y: gt(L.marks.ribcage + 3) }]; }
   L.music = 'caravan';   /* "Desert Theme - 8bit Chiptune Theme" by Wolfgang_, CC0, converted WAV -> OGG - THE SUNKEN CARAVAN's own level track, benching musBeach (audio/CREDITS.txt) */
   L.ambient = [{ x0: 0, x1: 99999, kind: 'wind' }];
   L.sun = true; L.caravan = true;

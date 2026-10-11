@@ -152,10 +152,10 @@ function wrapCloth(g, x, y) {
   line(g, x - 15, y - 6, x - 24, y + 4, CANVAS_D[1], 2);                                                               // and one down his back
   for (const [rx, ry] of [[x + 8, y - 16], [x - 10, y - 14], [x + 18, y - 2]]) { line(g, rx, ry, rx + 3, ry - 3, '#7a5232'); px(g, rx + 3, ry - 4, '#9c6d43'); }   // splinters of the roller
 }
-export const DW_F = { surfaced: 0, spitTell: 1, spit: 2, breach: 3, tangled: 4, dive: 5, lungeTell: 6, swallow: 7, surface: 8, dead: 9, hurt: 10 };
+export const DW_F = { surfaced: 0, spitTell: 1, spit: 2, breach: 3, tangled: 4, dive: 5, lungeTell: 6, swallow: 7, surface: 8, dead: 9, hurt: 10, stunned: 11, breathTell: 12, breath: 13 };   /* (claude/caravan2art) 11 STUNNED (head against the ledge), 12 BREATH TELL (rear + inhale), 13 BREATH (jaws wide) */
 export function bakeDuneWorm() {
   const W = 72, H = 84, gy = 82, cx = 30;
-  const F = frames(W, H, 11, (g, f) => {
+  const F = frames(W, H, 14, (g, f) => {
     if (f === 0) { const [hx, hy] = wormNeck(g, cx, gy - 4, 46, 0.2); wormHead(g, hx + 2, hy - 6, 0, false); duneFoot(g, cx, gy, 22, 6); }                                // surfaced
     if (f === 1) { const [hx, hy] = wormNeck(g, cx, gy - 4, 50, -0.6); wormHead(g, hx - 2, hy - 8, 0.7, true); duneFoot(g, cx, gy, 22, 6); }                            // SPRAY TELL: reared back, throat lit
     if (f === 2) { const [hx, hy] = wormNeck(g, cx, gy - 4, 44, 0.9); wormHead(g, hx + 6, hy - 4, 1, true); duneFoot(g, cx, gy, 22, 6);                                 // SPRAY: thrust, wide
@@ -177,6 +177,27 @@ export function bakeDuneWorm() {
       for (let i = 0; i < 9; i++) { const x = cx - 26 + i * 6, y = gy - 5 - Math.sin(i / 8 * Math.PI) * 5, r = 6 + i * 0.4; ellipse(g, x, y, 4, r * 0.6, DW.hd); ellipse(g, x - 0.5, y - 0.5, 3.4, r * 0.55, DW.h); px(g, Math.round(x - 2), Math.round(y - r * 0.5), DW.H); }
       wormHead(g, cx + 30, gy - 8, 0.45, false, false); rect(g, cx + 28, gy - 12, 8, 1, DW.hD); duneFoot(g, cx - 26, gy, 10, 3); }
     if (f === 10) { const [hx, hy] = wormNeck(g, cx, gy - 4, 44, -0.35); wormHead(g, hx - 3, hy - 5, 0.5, false); duneFoot(g, cx, gy, 22, 6); }   // hurt: recoiling
+    if (f === 11) { // STUNNED (claude/caravan2art): he came up under the ledge and hit his head - the neck folded short, ring on ring, the crown squashed flat against the rock,
+      // the jaw hanging slack, three dazed eyes, grit shaken off the stone onto his plates
+      for (let i = 0; i < 4; i++) { const y = gy - 6 - i * 6; ellipse(g, cx + (i % 2) * 2, y, 16 - i, 4.4, DW.hd); ellipse(g, cx + (i % 2) * 2, y - 1, 15.5 - i, 3.8, DW.h); rect(g, cx - 10 + (i % 2) * 2, y - 4, 10, 1, DW.H); ellipse(g, cx + 6 + (i % 2) * 2, y - 1, 4, 3, DW.belly); }
+      const hx = cx + 3, hy = gy - 34;
+      ellipse(g, hx, hy, 15, 8.5, DW.h); ellipse(g, hx - 2, hy - 2, 11, 5.5, DW.H); rect(g, hx - 12, hy - 8, 26, 2, DW.plate);                                    // the crown, squashed wide and flat
+      fillPoly(g, [[hx - 4, hy + 4], [hx + 14, hy + 5], [hx + 13, hy + 14], [hx - 6, hy + 10]], DW.hd);                                                    // the lower jaw, slack
+      fillPoly(g, [[hx + 3, hy + 4], [hx + 13, hy + 4], [hx + 12, hy + 9], [hx + 3, hy + 7]], DW.mouth);
+      for (let t = 0; t < 4; t++) px(g, hx + 4 + t * 3, hy + 5, DW.tooth);
+      for (let k = 0; k < 3; k++) { px(g, hx - 5 + k * 5, hy - 1, DW.daze); px(g, hx - 5 + k * 5, hy, DW.hD); }                                           // the dazed eyes
+      for (let k = 0; k < 9; k++) px(g, hx - 14 + k * 3 + (k % 2), hy - 11 - (k % 3), k % 2 ? DW.sandL : DW.sand);                                       // grit and chips shaken off the stone
+      duneFoot(g, cx, gy, 26, 8); }
+    if (f === 12) { // BREATH TELL: rear back and draw it in - the neck bowed away, the throat swollen and lit, sand streaming into the mouth
+      const [hx, hy] = wormNeck(g, cx, gy - 4, 50, -0.7); wormHead(g, hx - 2, hy - 8, 0.55, true);
+      ellipse(g, hx + 4, hy + 6, 8, 6, DW.belly); ellipse(g, hx + 4, hy + 7, 6, 4, DW.throat); px(g, hx + 4, hy + 6, DW.throatL);                           // the throat sac, filling and hot
+      for (let i = 0; i < 6; i++) { line(g, hx + 20 + i * 2, hy - 6 + i * 2, hx + 15 + i * 2, hy - 2 + i, i % 2 ? DW.sandL : DW.sand); }                 // sand drawn in at the lips
+      duneFoot(g, cx, gy, 22, 6); }
+    if (f === 13) { // BREATH: the neck lunged forward and low, the jaws wide, the throat white-hot - the blast itself is the grains drawn live
+      const [hx, hy] = wormNeck(g, cx, gy - 4, 38, 1.0); wormHead(g, hx + 8, hy + 2, 1, true);
+      ellipse(g, hx + 17, hy + 4, 3, 3, DW.throatL); px(g, hx + 17, hy + 4, '#fff6e0');
+      for (let i = 0; i < 6; i++) px(g, hx + 22 + i * 2, hy + 1 + (i % 3) * 2, i % 2 ? DW.sandL : DW.sand);
+      duneFoot(g, cx, gy, 22, 6); }
   });
   return pack(F, cx, H, 30, 60);
 }

@@ -250,5 +250,17 @@
   "lifts": 161,
   "walked": 100,
   "bare": true
+ },
+ "caravan": {
+  "hash": "9db50628f66d",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 9,
+  "deaths": 4,
+  "kills": 9,
+  "lifts": 93,
+  "walked": 100,
+  "bare": true
  }
 }
