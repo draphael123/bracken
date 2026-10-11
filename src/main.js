@@ -18584,7 +18584,7 @@ function drawRealmBanner(xpRow,cy){const m=mageRealm();if(!m)return;const q=real
  g.globalAlpha=1;m.realm.bannerDrawn=open?'open':q.text;}
 function updateUndeadMage(e,dt){
  e.hp0??=e.maxHp;const A=L.arena,box=e.realm?realmBox(e,A):carpetBox(A,e.squeeze||0);
- stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,
+ stepUndeadMage(e,dt,{P,box,A,rnd:Math.random,unsay:()=>{if(LICH_CALLED.has(hintMsg)||/^(FIRE|ICE|STORM|BONE|HIS|THE GRAVE)/.test(hintMsg||''))hintT=0;},
   hit:(x,y,d,hard,blow)=>{const r=damagePlayer(x,d,{unblockable:hard,who:e,blow:({fire:'FIREBOLT',ice:'ICE LANCE',storm:'THE STORM',orb:'POISON',hand:'THE DEATH HAND',mark:'THE DEATH MARK',bent:'BENT BOLT',trap:'RING TRAP',skull:'THE BONE STORM',void:'THE GRAVE',world:'HIS ORRERY',script:'THE GRAVE SCRIPT',pillar:'THE BURNING FLOOR',firewall:'HIS FIRE WALL',icicle:'AN ICICLE',mire:'THE MIRE'})[blow]});if(P.carpet)knockCarpet(P,x,y,r==='hit'?230:120);return r;},
   /* THROUGH HIS TEAR, AND BACK: a flash and a snap - a portal is not a flight */
   pull:kind=>{const C=REALM.col[kind];flash=Math.max(flash,.45);shakeCam(7);zoomKick(1.14,.5);SFX.mageBolt?SFX.mageBolt():SFX.leap();burst(P.x,P.y-8,28,C,160,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;number(P.x,P.y-40,REALM.name[kind],C[0]);},

@@ -240,6 +240,10 @@ function stepNew(e, dt, c, py) {
   if (e.orbit) { const O = e.orbit; O.cd = Math.max(0, O.cd - dt);
     if (O.live) { O.t += dt; if (O.t >= MAGE.orbit.secs) e.orbit = null;
       else if (!P.dead && O.cd <= 0) for (const [x, y] of orbitWorlds(O)) if (Math.hypot(P.x - x, py - y) < MAGE.orbit.r + 8) { O.cd = MAGE.orbit.cd; c.hit(x, y, MAGE.dmg.world, true, 'world'); break; } } }
+  /* A CAST THAT ENDED TAKES ITS OVERLAY WITH IT (claude/ft2art, Daniel 10-10: 'the text and the red line still appear after I hit him'): a stagger / opening / blink that
+     breaks his windup left the unfired script's lines (and the skulls', worlds', void's tell) drawn, with nothing coming. Told things live only in their own windup. */
+  { const m = e.mode; if (e.script && m !== 'scriptTell' && !(e.script.flash > 0)) e.script = null;
+    if (e.bones && !e.bones.live && m !== 'boneTell') e.bones = null; if (e.orbit && !e.orbit.live && m !== 'orbitTell') e.orbit = null; if (e.void && !e.void.live && m !== 'pullTell') e.void = null; }
   if (e.script && e.script.flash > 0) { e.script.flash -= dt; if (e.script.flash <= 0 && e.mode !== 'scriptTell') e.script = null; }
   if (e.void) { const V = e.void; V.cd = Math.max(0, V.cd - dt);
     if (V.live) { V.t += dt; if (V.t >= MAGE.pull.secs) { e.void = null; return; }
@@ -280,7 +284,7 @@ export function updateUndeadMage(e, dt, c) {
     if (q.reflected) { const want = Math.atan2(e.y - 26 - q.y, e.x - q.x); let d = want - q.a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
       q.a += Math.max(-MAGE.reflect.turn * dt, Math.min(MAGE.reflect.turn * dt, d)); q.vx = Math.cos(q.a) * MAGE.reflect.v; q.vy = Math.sin(q.a) * MAGE.reflect.v; q.x += q.vx * dt; q.y += q.vy * dt;
       if (Math.hypot(q.x - e.x, q.y - (e.y - 26)) < MAGE.reflect.r) { q.t = 0; q.gone = true;
-        if (wardBreakable(e)) { if (e.mode === 'boneWait') e.bones = null; if (e.mode === 'orbitWait') e.orbit = null; e.mode = 'reflected'; e.modeT = MAGE.reflect.openT; e.open = MAGE.reflect.openT; e.deathMark = null; e.chained = false; e.fireRing = null; say('HIS OWN SPELL STAGGERS HIM', true); sound('crack'); sound('sting'); }
+        if (wardBreakable(e)) { if (e.mode === 'boneWait') e.bones = null; if (e.mode === 'orbitWait') e.orbit = null; if (c.unsay) c.unsay(); e.mode = 'reflected'; e.modeT = MAGE.reflect.openT; e.open = MAGE.reflect.openT; e.deathMark = null; e.chained = false; e.fireRing = null; say('HIS OWN SPELL STAGGERS HIM', true); sound('crack'); sound('sting'); }
         else { e.wardHitT = MAGE.ward.hitT; e.wardHitX = q.x; e.wardHitY = q.y; sound('aegis'); } }
       continue; }
     if (q.kind === 'hand') {   /* it turns toward you at a limited rate: a hard turn on the carpet leaves it behind */
@@ -381,9 +385,19 @@ export function updateUndeadMage(e, dt, c) {
   /* (no more spells IN PAIRS when he burns - Daniel 10-05: "the end of the fight throws too much at you at once") */
   e.chained = false; e.mode = 'hover'; e.modeT = MAGE.hover / k;
 }
+/* HIS CASTS ARE STAFF CASTS (claude/ft2art, Daniel 10-10: 'he looks like he punches'): the tell's wind-up is the staff HOISTED in both hands, its head in
+   the spell's colour; for the last STRIKE_S of the tell it is the RELEASE (the staff pointed, a glint at its head); and the release is held a beat after the
+   cast as the follow-through. The same timings - only which frame shows when. */
+const STRIKE_S = 0.35, FOLLOW_S = 0.22;
+const WIND_OF = { fireTell: 'fire', bendTell: 'fire', trapTell: 'fire', wallTell: 'fire', iceTell: 'ice', stormTell: 'storm', markTell: 'storm', poisonTell: 'poison', sporeTell: 'poison', handTell: 'death', boneTell: 'bone', orbitTell: 'orbit', scriptTell: 'rune', pullTell: 'void' };
 export function undeadFrame(e, F) {
   if (e.hurtT > 0) return F.hurt;
-  return ({ fireTell: F.fire, iceTell: F.ice, stormTell: F.storm, poisonTell: F.poison, handTell: F.death, markTell: F.storm, markWait: F.death, stepTell: F.blinkOut, bendTell: F.fire, decoyTell: F.blinkOut, trapTell: F.fire, boneTell: F.down, boneWait: F.down, orbitTell: F.wide, orbitWait: F.wide, scriptTell: F.write, pullTell: F.clutch, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wallTell: F.fire, sporeTell: F.poison, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
+  const rel = { fire: F.fire, ice: F.ice, storm: F.storm, poison: F.poison, death: F.death, bone: F.plant, orbit: F.orbit, rune: F.rune, void: F.void };
+  const w = WIND_OF[e.mode];
+  if (w) return e.modeT > STRIKE_S ? F.wind[w] : rel[w];
+  if (e.mode === 'markWait') return F.death; if (e.mode === 'boneWait') return F.plant; if (e.mode === 'orbitWait') return F.orbit;
+  if (e.mode === 'hover' && e.spell && WIND_OF[TELL[e.spell]] && MAGE.hover / mageSpeed(e) - e.modeT < FOLLOW_S && e.modeT > 0) return rel[WIND_OF[TELL[e.spell]]];   /* the follow-through: the release held a beat */
+  return ({ stepTell: F.blinkOut, decoyTell: F.blinkOut, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
     ?? (e.enraged ? F.enraged[Math.floor(e.anim * 4) % 2] : F.idle[Math.floor(e.anim * 2.5) % 2]);
 }
 /* ONE RING: the desert inside it, and a rim of sparks in his green - the bolt's colour when a bolt is coming through it, and bright and

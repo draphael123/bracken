@@ -50,3 +50,18 @@ signs, tells, boss-read, corpses, fallingtower2-keys (7 heroes), archmage-folly,
 2. He is 97% with flasks (78% dry) at L33: the FLASK RETUNE SWEEP should raise him ~30 points - his invulnerability outside openings
    stays; REC: more/longer fire-room and realm pressure rather than health.
 3. Sounds for the tower (creak, wind bed, snap) still unmade.
+
+## ROUND 2 - Daniel's live notes (10-10): the glitchy fill-the-area spell, and "he punches"
+1. **GLITCH FIXED (src/undead-mage.js, src/main.js)** - cause: a blow that sends his own bolt home staggers him (`reflected`) mid-windup;
+   the GRAVE SCRIPT's lines (every band red-lined, runes drawn) were only cleared when it fired, so the unfired script stayed drawn at full
+   strength until his next cast, with the banner still up. Now told things live only in their own windup: the script, and the unfired
+   skulls / orrery / void tells, are dropped the frame the mode leaves their tell, and the stagger drops the banner (`c.unsay`).
+   Test: tools/archmage-interrupt.mjs (in check.mjs). Negative control with the fix disabled: the script survives the stagger (after:true);
+   fixed: cleared the same frame (script, bone storm, orrery). No timing or damage touched. mark-integrity and untold-told green.
+2. **PUNCH FIXED (src/redraw/lich.js, undeadFrame)** - cause: the storm cast raised a bare far fist with an orb, and my first-round
+   hand-poses (wide/down/write/clutch) were empty-hand too (replaced). Now EVERY cast is a staff cast: wind-up = the staff hoisted in both
+   hands, head in the spell's colour (9 frames, one a spell); release (last 0.35 s of the tell, the same timing) = the staff pointed with a
+   hard-pixel glint at the head (bone storm: the staff driven into the floor, dust; script: a rune hangs off the staff); then the release is
+   held 0.22 s as follow-through. Sheet: work/claude/ft2art/archmage-poses2.png (before: archmage-poses.png / master).
+   Checks re-run green: tower-ascent, fallingtower2, undead-moves, tells, boss-read, archmage-folly, archmage-room, untold-told,
+   mark-integrity (the earlier poisonTell flake did not recur), corpses.
