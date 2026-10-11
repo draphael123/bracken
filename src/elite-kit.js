@@ -178,7 +178,7 @@ export function installEliteKit(api) {
   /* IS HE GUARDING: on his feet and not committed - standing about, walking, or in the WINDUP of a move (he holds his weapon up
      while he tells it). In the blow and its recovery he is open; thrown, broken or stunned by his own failed move he is open (a heavy blow's little stagger does not drop it). A SHIELDED one's front is up
      through his blows and recoveries too: only his back, a sweep, a plunge or his broken poise get past it. */
-  const guarding = e => !!e.alive && !(e.broken > 0) && !(e.knock > 0) && !(e.frozen > 0) && !(e.ekStunT > 0) &&
+  const guarding = e => !!e.alive && !(e.broken > 0) && !(e.knock > 0) && !(e.frozen > 0) && !(e.ekStunT > 0) && !(e.rpOpenT > 0) &&   /* (claude/riposte: parried, his guard is down for the riposte) */
     (e.affix === 'SHIELDED' || !e.elBack || /Tell$/.test(e.mode || ''));
   /* A BLOW ON HIM (main.js hurtEnemy0, before anything else reads it): false means it is TURNED.
      GUARD BY ANGLE (design-standard B11): a hero's light cut (a cut, a rising cut, a dash cut) off his guarded front is turned - the clank,

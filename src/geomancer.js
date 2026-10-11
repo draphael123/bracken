@@ -223,7 +223,8 @@ export function makeGeomancer(api) {
     api.number(x, y - 20, how, col);
     if (tal('shrapnel')) burstShards(x, y, P.face, 4); }   /* SHRAPNEL: what is left of it flies at them */
   function wardParry(foe) { const P = api.P, [b] = wardBoxes(), x = (b.l + b.r) / 2, y = b.t + 10;
-    if (foe) { foe.stagger = Math.max(foe.stagger || 0, api.lcBig(foe) ? 0.35 : 1.1); foe.flash = 0.2; if (!foe.maxHp) foe.vx = Math.sign(foe.x - P.x) * 160; }   /* (the Knight's own stagger: the blow bounces, that is all) */
+    if (api.parried) { api.parried(foe); if (foe && !foe.maxHp && !foe.mini && !foe.elite) foe.vx = Math.sign(foe.x - P.x) * 160; }   /* (claude/riposte) STONE-SKIN on the beat: the shared parry -> riposte (src/riposte.js) */
+    else if (foe) { foe.stagger = Math.max(foe.stagger || 0, api.lcBig(foe) ? 0.35 : 1.1); foe.flash = 0.2; if (!foe.maxHp) foe.vx = Math.sign(foe.x - P.x) * 160; }   /* (the Knight's own stagger: the blow bounces, that is all) */
     const was = empowered(); P.geoEmpT = api.time + WD.emp;
     api.number(x, y - 14, was ? 'EMPOWERED AGAIN' : 'EMPOWERED', STONE.rune); api.hitstop(0.08); api.ringAt(x, y + 6, 18, STONE.rune, 0.3); api.sparks(x, y, P.face, 8);
     gainTremor(GEO.tremor.perfect); api.noteParry && api.noteParry(); P.geoBeatT = api.time; }   /* (geoBeatT: her yard asks whether THIS blow was on the beat) */

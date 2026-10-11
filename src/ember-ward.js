@@ -90,7 +90,7 @@ export function makeEmberWard(api) {
   function caught(p, f, kind) {
     p.emberUp = false; p.emberT = 0; p.emberSpent = EMBER.spent; p.emberFlash = 0.3; stats[kind === 'seed' ? 'melted' : 'caught']++;
     api.SFX.emberFlare(); api.hitstop(0.06); api.zoomKick(1.03, 0.15); api.ringAt(p.x, p.y - 8, EMBER.R + 8, '#ffffff', 0.28); api.ringAt(p.x, p.y - 8, EMBER.R, '#ff9a5c', 0.22);
-    api.flame(p.x, p.y - 8, 9, 10, 80, 2); api.noteParry();
+    api.flame(p.x, p.y - 8, 9, 10, 80, 2); api.noteParry(); if (api.parried) api.parried(f);   /* (claude/riposte) THE FLAME-CATCH: the shared parry -> riposte (f: the blow's owner; null for a melted seed) */
     api.gainHeat(EMBER.heat);
     if (f && f.alive) { f.burn = Math.max(f.burn || 0, EMBER.burn); f.heatOwner = p; f.flash = 0.15; api.flame(f.x, f.y - (f.h || 12) / 2, 8, 6, 60, 2); }
   }

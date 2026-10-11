@@ -734,6 +734,86 @@ function knightKitPoses(F, KF, sh) {
   const high = { top, dy: -1, legs: 'wide', hy: -1, sho: 1, ...S(0, -8, 1, -20) };
   F.realm = [KF({ ...high, plume: 1, bits: halo.slice(0, 1) }), KF({ ...high, plume: 2, bits: [...halo, o(-1, -24, C), o(3, -24, C)] }),
     KF({ top, wide: 6, dx: 2, dy: 1, legs: 'runC', ...S(4, 1, 15, 8), plume: 2, bits: [o(16, 8, G), o(17, 8, W)] })];
+  riposteKit(F, 'knight', KF, { X, Y, OFF });
+}
+
+/* THE PARRY AND THE RIPOSTE, ON THE BODY (claude/riposteart, Daniel 2026-10-11; src/riposte.js is the rule, this is its art). Two keys on every hero:
+   F.parry - two frames, the CATCH the moment the blow lands on the beat (a gold star where the guard met it), then the hold: each hero's own look
+             (the knight's shield, the warden's turned shaft, the berserker's crossed axes, the paladin's aegis, the pyromancer's palm and flare,
+             the geomancer's stone skin, the freebooter's bound cutlass, the death knight's blade held up in both hands).
+   F.ripo  - three frames, the STRIKE out of the parry: the STEP-IN with the weapon drawn back, the CUT or THRUST (a flash of gold at the point), the FOLLOW-THROUGH.
+   Built on each hero's own rig with the same headroom as his kit poses; played by main.js off P.rpPoseT / P.swingRiposte (art only: no box, timer or cost reads them). */
+function riposteKit(F, hero, K, c) {
+  const top = ATTACK_HEADROOM, M = o => K({ top, ...o }), { X, Y, OFF } = c;
+  const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
+  const W = '#ffffff', C = '#fff6c8', G = '#ffd36b';
+  const star = (x, y, big) => [o(x, y, W), o(x - 1, y, C), o(x + 1, y, C), o(x, y - 1, C), o(x, y + 1, C), ...(big ? [o(x - 2, y, G), o(x + 2, y, G), o(x, y - 2, G), o(x, y + 2, G)] : [])];
+  const flash = (x, y) => [o(x, y, W), o(x + 1, y, C), o(x + 2, y, G), o(x, y - 1, G), o(x, y + 1, G), o(x - 1, y - 2, C), o(x - 1, y + 2, C)];
+  switch (hero) {
+    case 'knight': {
+      const back = { sword: [X - 3, Y + 2, X - 9, Y + 7] };
+      F.parry = [M({ dx: -1, dy: 1, legs: 'wide', shield: true, ...back, plume: 2, bits: [...star(11, 1, true)] }),
+        M({ dy: 0, legs: 'wide', shield: true, ...back, plume: 1, bits: [o(10, -2, C), o(11, 3, C)] })];
+      F.ripo = [M({ wide: 4, dx: 1, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y - 2], sword: [X - 3, Y - 2, X - 10, Y - 10], plume: 2 }),
+        M({ wide: 12, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 5, Y - 1], sword: [X + 5, Y - 1, X + 20, Y - 3], plume: 2, bits: flash(21, -3) }),
+        M({ wide: 8, dx: 3, dy: 2, legs: 'wide', arm: [X, Y, X + 4, Y + 4], sword: [X + 4, Y + 4, X + 14, Y + 10], plume: 0, bits: [o(15, 10, C), o(16, 9, G)] })];
+      break; }
+    case 'warden': {
+      const WIDE = c.WIDE;
+      F.parry = [M({ wide: WIDE, dx: -1, legs: 'wide', arm: [X, Y, X + 3, Y - 3], spear: [X - 5, Y + 8, X + 11, Y - 11], plume: 1, bits: star(8, -7, true) }),
+        M({ wide: WIDE, dx: 0, legs: 'wide', arm: [X, Y, X + 3, Y - 2], spear: [X - 3, Y + 5, X + 15, Y - 5], plume: 2, bits: [o(10, -3, C), o(13, -6, G)] })];
+      F.ripo = [M({ wide: WIDE + 8, dx: -2, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y + 2], spear: [X - 9, Y + 3, X + 8, Y + 4], plume: 1 }),
+        M({ wide: WIDE + 20, dx: 4, dy: 2, legs: 'runC', arm: [X, Y, X + 6, Y + 1], spear: [X + 2, Y + 1, 56, Y + 2], plume: 2, bits: flash(38, 2) }),
+        M({ wide: WIDE + 14, dx: 3, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 3], spear: [X, Y + 3, 46, Y + 6], plume: 0, bits: [o(28, 6, C), o(30, 5, G)] })];
+      break; }
+    case 'paladin': {
+      F.parry = [M({ dx: -1, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X + 3, Y + 3], maul: [X + 5, Y + 8, X + 6, Y - 7], glow: [X + 6, Y - 11], plume: 2,
+          bits: [...star(11, -1, true), o(10, -7, G), o(12, 5, G), o(13, 1, C), o(11, 9, C)] }),
+        M({ dy: 0, legs: 'wide', arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X + 3, Y + 3], maul: [X + 5, Y + 8, X + 6, Y - 7], glow: [X + 6, Y - 11], plume: 1, bits: [o(11, -6, G), o(12, 2, C), o(11, 8, G)] })];
+      F.ripo = [M({ wide: 6, dx: 0, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X - 1, Y - 4], arm2: [OFF[0], OFF[1], X - 3, Y - 3], maul: [X - 2, Y - 6, X - 9, Y - 16], plume: 2 }),
+        M({ wide: 12, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 5, Y - 1], arm2: [OFF[0], OFF[1], X + 3, Y + 1], maul: [X + 5, Y - 1, X + 19, Y + 3], plume: 2, bits: flash(21, 3) }),
+        M({ wide: 8, dx: 3, dy: 2, legs: 'land', arm: [X, Y, X + 4, Y + 4], arm2: [OFF[0], OFF[1], X + 2, Y + 5], maul: [X + 4, Y + 5, X + 11, Y + 15], plume: 0, bits: [o(12, 16, C), o(14, 16, G), o(10, 16, C), o(9, 17, G), o(16, 17, G)] })];
+      break; }
+    case 'pirate': {
+      const hol = c.holster;
+      F.parry = [M({ wide: 4, dx: -1, legs: 'wide', arm: [X, Y, X + 4, Y - 1], cutlass: [X + 4, Y - 1, X + 11, Y - 9], pistol: hol(), plume: 2, bits: star(9, -6, true) }),
+        M({ wide: 4, legs: 'wide', arm: [X, Y, X + 4, Y - 1], cutlass: [X + 4, Y - 1, X + 10, Y - 8], pistol: hol(), plume: 1, bits: [o(9, -5, C), o(11, -8, G)] })];
+      F.ripo = [M({ wide: 6, dx: -1, legs: 'wide', arm: [X, Y, X - 2, Y + 1], cutlass: [X - 2, Y + 1, X - 9, Y - 2], pistol: hol(), plume: 1 }),
+        M({ wide: 14, dx: 4, dy: 1, legs: 'run1', arm: [X, Y, X + 6, Y - 1], cutlass: [X + 6, Y - 1, X + 20, Y - 2], pistol: hol(), plume: 2, bits: flash(21, -2) }),
+        M({ wide: 10, dx: 3, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 2], cutlass: [X + 4, Y + 2, X + 14, Y + 6], pistol: hol(), plume: 0, bits: [o(15, 6, C), o(16, 5, G)] })];
+      break; }
+    case 'reaper': {
+      const lit = [[4, 3, '#dfffc0'], [5, 3, '#dfffc0']], RED = '#c0283a', PINK = '#ff6b6b';
+      F.parry = [M({ dx: -1, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 2, Y - 1], greatsword: [X + 3, Y + 5, X + 7, Y - 13], plume: 2, bits: [...lit, ...star(9, -6, true)] }),
+        M({ dy: 0, legs: 'wide', arm: [X, Y, X + 3, Y - 1], arm2: [OFF[0], OFF[1], X + 2, Y], greatsword: [X + 3, Y + 5, X + 6, Y - 12], plume: 1, bits: [...lit, o(8, -4, C), o(8, -9, G)] })];
+      F.ripo = [M({ wide: 8, dx: 0, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X - 2, Y - 3], arm2: [OFF[0], OFF[1], X - 4, Y - 2], greatsword: [X - 3, Y - 4, X - 14, Y - 11], plume: 2, bits: lit }),
+        M({ wide: 16, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 5, Y - 1], arm2: [OFF[0], OFF[1], X + 3, Y + 1], greatsword: [X + 5, Y - 1, X + 22, Y + 1], plume: 2, bits: [...lit, ...flash(24, 1), o(14, 4, RED), o(18, 5, PINK)] }),
+        M({ wide: 12, dx: 3, dy: 2, legs: 'wide', arm: [X, Y, X + 4, Y + 4], arm2: [OFF[0], OFF[1], X + 2, Y + 5], greatsword: [X + 4, Y + 5, X + 16, Y + 13], plume: 0, bits: [...lit, o(17, 13, PINK), o(15, 14, RED)] })];
+      break; }
+    case 'geomancer': {
+      const MS = '#8c8a7e', D = '#c9b27c', A = '#e8a83a', stone = [[3, 4, MS], [6, 5, D], [4, 8, MS], [7, 9, MS], [2, 10, D], [8, 6, MS]];
+      F.parry = [M({ dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 2], arm2: [OFF[0], OFF[1], X + 3, Y + 3], stave: [X + 6, Y + 11, X + 6, Y - 10], glow: [X + 6, Y - 7], plume: 2, bits: [...stone, ...star(11, 0, true)] }),
+        M({ legs: 'wide', arm: [X, Y, X + 4, Y + 2], arm2: [OFF[0], OFF[1], X + 3, Y + 3], stave: [X + 6, Y + 11, X + 6, Y - 10], glow: [X + 6, Y - 7], plume: 1, bits: [...stone, o(10, -2, A), o(10, 5, D)] })];
+      F.ripo = [M({ wide: 8, dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 2, Y + 2], arm2: [OFF[0], OFF[1], X - 3, Y + 3], stave: [X - 9, Y + 4, X + 4, Y + 1], plume: 1 }),
+        M({ wide: 14, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 6, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y], stave: [X - 3, Y + 2, X + 18, Y - 1], glow: [X + 18, Y - 2], plume: 2, bits: [...flash(21, -1), o(18, 4, MS), o(20, 3, D)] }),
+        M({ wide: 10, dx: 3, dy: 2, legs: 'wide', arm: [X, Y, X + 4, Y + 3], arm2: [OFF[0], OFF[1], X + 3, Y + 4], stave: [X + 1, Y + 5, X + 13, Y + 9], plume: 0, bits: [o(14, 9, MS), o(15, 8, D)] })];
+      break; }
+    case 'berserker': {
+      const { lead, off } = c, R = '#ff6b4a';
+      F.parry = [M({ dx: -1, dy: 1, legs: 'wide', ...lead(5, -1, 11, -9, 1), ...off(3, 1, 11, -6, -1), plume: 2, bits: star(10, -6, true) }),
+        M({ legs: 'wide', ...lead(5, -1, 10, -8, 1), ...off(3, 1, 10, -5, -1), plume: 1, bits: [o(10, -4, C), o(12, -8, G)] })];
+      F.ripo = [M({ wide: 6, dx: 0, dy: 1, legs: 'wide', ...lead(-1, -4, -6, -12, 1), ...off(-3, 0, -9, -7, -1), plume: 2 }),
+        M({ wide: 12, dx: 3, dy: 1, legs: 'runC', ...lead(6, -2, 14, 3, 1), ...off(-2, -2, -8, -9, -1), plume: 2, bits: [...flash(17, 3), o(12, 6, R)] }),
+        M({ wide: 8, dx: 3, dy: 2, legs: 'wide', ...lead(4, 5, 9, 12, 1), ...off(-3, 1, -8, -5, -1), plume: 0, bits: [o(10, 12, C), o(12, 11, G)] })];
+      break; }
+    case 'pyro': {
+      F.parry = [K({ top, lean: -1, sit: 1, staff: c.up(0, 1), arm: [16, 10, 20, 10], arm2: [11, 11, 14, 12], flare: [21, 10, true], cowl: 0, sparks: [[23, 8, 'y'], [24, 11, 'y'], [22, 13, 'r'], [22, 7, 'r']] }),
+        K({ top, sit: 1, staff: c.up(0, 1), arm: [16, 10, 19, 10], arm2: [11, 11, 14, 12], palm: [20, 10], cowl: 0, flick: 1 })];
+      F.ripo = [K({ top, lean: -2, sit: 1, feet: [[9, 18], [15, 18]], staff: [4, 12, 18, 9], arm: [16, 11, 14, 10], arm2: [11, 11, 10, 11], cowl: 2, bell: 1 }),
+        K({ top, lean: 3, trail: 3, feet: [[8, 18], [18, 18]], staff: [12, 11, 28, 11], arm: [17, 10, 23, 11], arm2: [13, 10, 17, 11], cowl: 2, flare: [29, 11, true], flick: 1, sparks: [[30, 9, 'y'], [31, 12, 'r'], [27, 9, 'y']] }),
+        K({ top, lean: 2, trail: 2, sit: 1, feet: [[9, 18], [17, 18]], staff: [11, 13, 25, 15], arm: [16, 11, 20, 13], cowl: 0, sparks: [[26, 15, 'y'], [27, 14, 'r']] })];
+      break; }
+  }
 }
 
 // ---------- enemies ----------
@@ -1714,6 +1794,7 @@ function pyroKitPoses(F, up) {
       sparks: [[2, -3, 'r'], [3, -1, 'y'], [1, 4, 'r'], [30, 4, 'y'], [31, -1, 'r'], [4, 9, 'y'], [29, 10, 'r'], [2, 14, 'y'], [31, 15, 'r'], [13, -6, 'y'], [17, -5, 'r']] }),
     P({ sit: 2, hemW: 13, staff: [17, 20, 18, 4], arm: [16, 12, 17, 10], arm2: [11, 12, 16, 11], cowl: 1,
       sparks: [[4, 2, 'r'], [28, 5, 'y'], [8, 9, 'y'], [26, 12, 'r'], [3, 15, 'r'], [30, 16, 'y']] })];
+  riposteKit(F, 'pyro', P, { X: 19, Y: 13, OFF: [13, 13], up });
 }
 /* EVERY ABILITY HAS A BODY: THE PALADIN'S BOUGHT ACTIVES (lane P, 2026-09-24). Divine Shield played beside an idle paladin, Holy
    Charge drew the dodge roll, Hammer Leap the plain jump, and Consecrate, Spear of Light and Blessed Hammer all shared MEND's hand-up
@@ -1770,6 +1851,7 @@ function paladinKitPoses(F, sh) {
   F.wrath = [K({ dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y - 3], arm2: [OFF[0], OFF[1], X - 5, Y - 3], maul: [X - 3, Y - 3, X - 13, Y - 9], plume: 1 }),
     K({ wide: 6, dx: 2, dy: 1, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 6, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y], maul: [X + 6, Y - 1, X + 17, Y - 3], glow: [X + 19, Y - 3], plume: 2, bits: fire }),
     K({ dy: 1, legs: 'wide', hy: -1, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 2, Y - 1], maul: [X + 3, Y - 2, X + 6, Y - 9], plume: 2, bits: fire.slice(0, 6) })];
+  riposteKit(F, 'paladin', K, { X, Y, OFF });
 }
 /* EVERY ABILITY HAS A BODY: THE FREEBOOTER'S BOUGHT ACTIVES (lane P, 2026-09-24). THE BLACK SPOT and KEELHAUL played beside an idle
    freebooter; GRAPESHOT and BROADSIDE shared the one pistol shot, and RUM and BOARDING PARTY the grapnel cast. Each now has frames
@@ -1826,6 +1908,7 @@ function pirateKitPoses(F, sh, holster, carry) {
   F.seas = [K({ wide: 2, dx: -2, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y - 4], cutlass: [X - 3, Y - 4, X - 11, Y - 12], pistol: holster(), plume: 2 }),
     K({ wide: 22, dx: 2, dy: 2, legs: 'wide', sho: 1, arm: [X, Y, X + 6, Y + 3], cutlass: [X + 6, Y + 3, X + 17, Y + 7], pistol: holster(), plume: 1, bits: [...sea(X + 9, 4), a(X + 12, Y - 1, SPR), a(X + 18, Y - 2, FOAM), a(X + 15, Y - 4, SPR)] }),
     K({ wide: 24, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 5, Y + 1], cutlass: [X + 5, Y + 1, X + 13, Y + 4], pistol: holster(), plume: 2, bits: [...sea(X + 12, 6), a(X + 16, Y - 3, FOAM), a(X + 22, Y - 1, SPR), a(X + 20, Y - 5, FOAM)] })];
+  riposteKit(F, 'pirate', K, { X, Y, OFF, holster });
 }
 /* EVERY ABILITY HAS A BODY: THE DEATH KNIGHT'S BOUGHT ACTIVES (lane P, 2026-09-24). BLOOD BOIL and GRAVECALL played beside an idle
    death knight, and GRAVE TIDE, UNHOLY GROUND, DEATH COIL and DEATH GRIP all shared the one RAISE cast with SUMMON SKELETON - which
@@ -1885,6 +1968,7 @@ function reaperKitPoses(F, sh) {
   F.reap = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 4, Y - 5], arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 1], greatsword: [X - 4, Y - 5, X - 16, Y - 15], plume: 1 }),
     K({ wide: 12, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 6, Y - 2], arm2: [OFF[0], OFF[1], X + 4, Y - 1], greatsword: [X + 6, Y - 2, X + 20, Y + 9], plume: 2, bits: ARC }),
     K({ dx: -1, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 2, Y - 2], plume: 2, bits: [...lit, a(X + 4, Y - 4, LIT), a(X + 6, Y - 6, GRN), a(X + 8, Y - 9, DGRN), a(X + 3, Y - 3, GRN)] })];
+  riposteKit(F, 'reaper', K, { X, Y, OFF });
 }
 export function bakePyro(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, PYRO_PAL, skin);
@@ -2982,6 +3066,7 @@ function wardenKitPoses(F, sh, WIDE) {
     KF({ wide: WIDE + 4, dx: -1, legs: 'wide', arm: [X, Y, X - 2, Y + 2], arm2: [OFF[0], OFF[1], X - 3, Y + 2], spear: [X - 3, Y + 2, X + 22, Y + 1], plume: 2, bits: [o(6, 1, G), o(12, 1, G)] }),
     KF({ wide: WIDE + 6, dx: -2, dy: 1, sho: -1, legs: 'wide', arm: [X, Y, X - 3, Y + 2], arm2: [OFF[0], OFF[1], X - 4, Y + 2], spear: [X - 4, Y + 2, X + 25, Y + 1], plume: 0,
       bits: [o(8, 1, G), o(14, 1, C), o(20, 1, G)] })];
+  riposteKit(F, 'warden', KF, { X, Y, OFF, WIDE });
 }
 // HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.
 export function bakeBale() {
@@ -4930,6 +5015,7 @@ function bzKitPoses(F, sh) {
   /* AXE STORM: a hatchet from the belt flung underhand, then another overhand - the fan comes out of his arm */
   F.bzStorm = [KF({ dx: -1, legs: 'wide', ...lead(-2, 3, -6, -5), arm2: [OFF[0], OFF[1], X - 2, Y + 6], plume: 1, bits: [o(-2, 7, '#8c8a7e')] }),
     KF({ wide: 6, dx: 2, legs: 'runC', ...lead(4, -1, 8, -9), arm2: [OFF[0], OFF[1], X + 7, Y - 2], plume: 2, bits: [o(10, -4, W2), o(12, -2, W2), o(11, 0, W2)] })];
+  riposteKit(F, 'berserker', KF, { X, Y, OFF, lead, off });
 }
 /* EVERY ABILITY HAS A BODY: THE GEOMANCER'S NINE (src/hero-poses.js plays them; tools/ability-poses.mjs holds her to it). Every
    one is told by what the STAVE does - and every spell begins with the butt going into the ground, so most of them start there. */
@@ -4966,6 +5052,7 @@ function geoKitPoses(F, sh) {
   /* AVALANCHE: both arms up and the stave held flat at the sky, the hood thrown back - then brought down and the butt hammered in */
   F.gAval = [KF({ dy: -2, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 3, Y - 10], arm2: [OFF[0], OFF[1], X - 4, Y - 10], stave: [X - 7, Y - 12, X + 6, Y - 13], plume: 2, bits: [o(-4, -18, M), o(4, -20, M), o(9, -17, M)] }),
     KF({ dy: 3, legs: 'crouch', arm: [X, Y, X + 4, Y], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 6, Y + 9, X + 5, Y - 8], plume: 0, bits: [o(3, 9, D), o(9, 9, D), o(1, 8, M), o(11, 8, M), o(5, -14, A)] })];
+  riposteKit(F, 'geomancer', KF, { X, Y, OFF });
 }
 
 // THE BELLMAN (UNDERLEAF 2, claude/underleaf2) - the blind night-watchman: a long watch-coat, a wide hat, a cloth over his eyes, a brass EAR

@@ -20,7 +20,7 @@ export function fightJs({ r, way, h, s, profile, flasks }, secs = 240) {
     P0.flaskItems=${JSON.stringify(fk)};P0.flaskUp=${fkN};
     BK.setHero(h);BK.reset({fresh:true});BK.applyUpgrades();const maxHp=BK.P.maxHp,flasks0=BK.P.flasks,heal0=BK.flaskHealPct?BK.flaskHealPct():null;
     const r=(await BK.bossLab({bosses:[${JSON.stringify(id)}],heroes:[h],maxSecs:${secs},healthMode:'normal',seed:${s},profile:${JSON.stringify(prof)}${built ? ',skills:true' : ''}${fl ? ',mini:true' : ''}})).rows[0]||{};
-    return {maxHp,kit,flasks0,heal0,drank:r.health&&r.health.drinks,outcome:r.outcome||r.skipped,boss:r.boss,secs:r.secs,bossLeft:r.hpLeftPct,taken:r.health?Math.round(r.health.damageTaken):null,opened:r.opened,swings:r.swings,eyes:r.eyes,casts:r.skillCasts};})()` };
+    return {maxHp,kit,flasks0,heal0,drank:r.health&&r.health.drinks,outcome:r.outcome||r.skipped,boss:r.boss,secs:r.secs,bossLeft:r.hpLeftPct,taken:r.health?Math.round(r.health.damageTaken):null,opened:r.opened,swings:r.swings,eyes:r.eyes,casts:r.skillCasts,rp:BK.riposte?(q=>({par:q.parries,open:q.boss,warded:q.bossWarded,openHits:q.bossOpenHits,pips:q.pips,pipsMax:q.pipsMax,verbs:q.verbs}))(BK.riposte().stats):null};})()` };
 }
 /* a page, tried three times: under a loaded machine a first navigate can miss its 15 s */
 export async function openRetry() { let e0; for (let i = 0; i < 3; i++) { try { return await openPage({ audio: false, fonts: false }); } catch (e) { e0 = e; await new Promise(r => setTimeout(r, 3000)); } } throw e0; }
@@ -36,4 +36,4 @@ export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {
   return out;
 }
 export const line = x => x.row + ' ' + x.way + ' ' + x.hero + ' s' + x.seed + ' L' + x.lvl + ': ' + (x.err ? 'ERR ' + x.err : x.outcome + ' ' + x.secs + 's left ' + x.bossLeft + '% taken ' + x.taken
-  + (x.eyes ? ' rt' + x.eyes.rtMean + ' mis' + x.eyes.misreads + ' greed' + x.eyes.greeds : '') + (x.casts ? ' casts ' + JSON.stringify(x.casts) : ''));
+  + (x.eyes ? ' rt' + x.eyes.rtMean + ' mis' + x.eyes.misreads + ' greed' + x.eyes.greeds : '') + (x.casts ? ' casts ' + JSON.stringify(x.casts) : '') + (x.rp ? ' rp ' + JSON.stringify(x.rp) : ''));   /* (claude/riposte) the parries, the boss's riposte openings and the mix-up chain's pips and verbs */

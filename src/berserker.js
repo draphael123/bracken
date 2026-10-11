@@ -96,7 +96,8 @@ export function makeBerserker(api) {
       return null; }   /* A RED BLOW IS NEVER TURNED: it finds him whole (IRON BRACE: at half) */
     stats.braced++; p.braceRec = BZ.brace.won; p.braceHit = true; p.parryT = 0.22; fight(p);   /* (on the beat by its nature: the clock every hero's answer sets, so a foe that reels from an answer reels from it - main.js palOpened) */
     gain(p, BZ.rage.brace, 'brace');
-    if (foe) { foe.stagger = Math.max(foe.stagger || 0, foe.maxHp ? 0.35 : BZ.brace.stagger * (T().braceBack ? 1.6 : 1)); foe.flash = 0.18;
+    if (api.parried) api.parried(foe);   /* (claude/riposte) THE AXE BRACE: a brace that takes a blow took it on the beat (it is live BZ.brace.live, about the shared tap beat) - the shared parry -> riposte */
+    if (foe) { if (!api.parried) { foe.stagger = Math.max(foe.stagger || 0, foe.maxHp ? 0.35 : BZ.brace.stagger * (T().braceBack ? 1.6 : 1)); foe.flash = 0.18; }
       if (!foe.maxHp && !foe.mini) { foe.vx = Math.sign(foe.x - p.x) * (T().braceBack ? 230 : 120); if (T().braceBack) { foe.vy = Math.min(foe.vy || 0, -120); foe.knock = Math.max(foe.knock || 0, BZ.brace.back); } } }
     api.SFX.bzBraced && api.SFX.bzBraced(); api.hitstop(0.08); api.shakeCam(3, -p.face * 2); api.zoomKick(1.04, 0.16);
     api.ringAt(p.x + p.face * 8, p.y - 12, 16, '#ff6b4a', 0.3); api.sparks(p.x + p.face * 8, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BRACED IT', '#ff9a5c');

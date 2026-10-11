@@ -28,7 +28,7 @@ export function broke(e, now) { OPEN.breaks++; e.brokeAt = now; e.brokeFor = e.b
 
 /* REELING OPEN: back off its guard, head down, swaying on its heels - for the whole break, and settling as it comes to */
 export function staggerPose(o, e, now) {
-  const left = Math.max(0, e.broken || 0), full = Math.max(0.5, e.brokeFor || left || 1), k = Math.min(1, left / 0.25, (now - (e.brokeAt ?? now) + 0.05) / 0.12);
+  const left = Math.max(0, e.broken || 0, e.rpHold || 0), full = Math.max(0.5, e.brokeFor || left || 1), k = Math.min(1, left / 0.25, (now - ((e.broken > 0 ? e.brokeAt : e.rpAt) ?? now) + 0.05) / 0.12);   /* (claude/riposte: PARRIED reels the same way - e.rpHold, src/riposte.js) */
   const sway = Math.sin(now * 5.2 + (e.x || 0) * 0.13);
   o.rot = (o.rot || 0) - (e.face || 1) * OPEN.lean * k + sway * 0.05 * k;
   o.dx -= (e.face || 1) * Math.round(2 * k); o.sy *= 1 - 0.06 * k; o.sx *= 1 + 0.03 * k;
