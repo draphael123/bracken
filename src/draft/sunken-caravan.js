@@ -252,7 +252,7 @@ export function buildSunkenCaravan(T) {
     viaduct(roofs.house1.x1 + 1, roofs.house2.x0 - 1, R, [marks.house1 + 36, marks.house1 + 37]);   /* one collapsed bay to jump */
     viaduct(roofs.house2.x1 + 1, roofs.towerA.x0 - 1, R);
     viaduct(roofs.towerA.x1 + 1, roofs.towerA.x1 + 15, roofs.towerA.row);   /* and on east from the Watchtower's roof, over the ox line's first pit: the viaduct's far end */
-    viaduct(roofs.house3.x1 + 1, roofs.house3.x1 + 13, R);
+    viaduct(roofs.house3.x1 + 1, roofs.house3.x1 + 9, R);   /* stops short of the first dune: its crest is a column the slide tools probe from the top */
     viaduct(roofs.house3.x0 - 19, roofs.house3.x0 - 1, R);
     ent('sign', marks.house1 - 2, on(marks.house1 - 2), { text: 'THE OLD TOWN KEPT A HIGH ROAD. CLIMB THE HOUSE: ITS ROOF IS A BRIDGE.' });   /* optional: the road under it is the whole level, this one pays coin and gives the sun back */
     for (const x of [58, 66, 74, 82, 90, 98, 116, 124, 132, 140, 238, 242, 214, 218, 222, 156, 160, 164]) { const v = viaducts.find(v => x >= v[0] && x <= v[1]); if (v) ents.push({ t: 'coin', x, y: v[2] - 1 }); } }   /* THE HARD ROAD PAYS (S7) */

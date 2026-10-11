@@ -21137,6 +21137,8 @@ function drawCaravan(cx, cy) {
   /* THE SHADE THE LEVEL CASTS (the ribcage, the caravanserai, the overhangs): the one violet, the same everywhere */
   g.fillStyle = DZ.DESERT.shade;
   for (const z of (L.shadeArt || [])) { if (z[1] < cx || z[0] > cx + VW) continue; g.globalAlpha = 0.22; g.fillRect(Math.round(z[0] - cx), Math.round(z[2] - cy), z[1] - z[0], z[3] - z[2]); }
+  /* (claude/caravan2art) THE SHADE UNDER THE DUNE WORM'S LEDGES, drawn where it is (the sun drain is off in it: cvCanopies) in the one violet */
+  for (const z of dwStoneShade()) { if (z[1] < cx || z[0] > cx + VW) continue; g.globalAlpha = 0.26; g.fillRect(Math.round(z[0] - cx), Math.round(z[2] - cy), z[1] - z[0], z[3] - z[2]); }
   g.globalAlpha = 1;
   /* (claude/caravan2art) THE DUNE SLIDES: the wind's ripples combed into each steep face (baked from the level's own slope tiles) */
   { const C2 = A.c2; if (!C2.ripples) C2.ripples = (L.duneSlides || []).map(d => C2A.bakeSlideRipples(L.grid, LW, LH, TS, d.crest, d.foot)).filter(Boolean);
