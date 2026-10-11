@@ -67,6 +67,7 @@ import {whirlInit,updateWhirlpools,drawWhirlpools,strikeLever,whirlKey} from './
 import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js';
 import {bakeBellcrab,bakeBellguard,bakeBellcrabOut,bakeBellShell,BELL,BELL_OUT_F,bellOutFrame} from './bellcrab.js';
 import * as DH from './deep-holds.js';
+import * as WN from './whatsnew.js';   /* WHAT'S NEW on the title board (docs/updates.json) */
 import { creditPages, CC_BY, FONT_CREDITS, FONT_LICENCE } from './credits.js';   /* THE MUSIC CREDITS page: every outside composer, the CC-BY tracks with their licence */
 import { lanceSupport, LANCE_SUPPORT, gateHas, gateCatch, gateStep, drawLanceGate } from './lance-support.js';   /* THE QUEEN'S BOWS: the archers he calls to the end lookouts (docs/briefs/lance-support.md) */
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
@@ -1646,6 +1647,7 @@ let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
 // the existing one inside Settings. Back ('pause') has to land wherever it was opened - the title screen itself for
 // the new entry, the Settings list (as it always has) for the old one - so this remembers which door it came in.
 let soundFrom = 'menu';
+let wnScroll = 0, wnLimit = 0; WN.loadUpdates();   /* WHAT'S NEW: the first row shown, and the last first-row (set by the drawing) */
 let creditsPage = 0;   /* the title's CREDITS: which page (src/credits.js) */
 let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false, earned = 0;
 /* THE HERO'S FEET, DOWN THE SCREEN (look-and-feel review, 2026-09-26): on flat ground the follow camera used to hold them at
@@ -9745,7 +9747,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ['OPTIONS', 'CREDITS']); };
+  return base.concat(['LOCAL CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'CREDITS']); };
 const titleItems = () => titleOpts ? ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'BACK'] : titleTop();
 /* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
    these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
@@ -27425,6 +27427,7 @@ function update(dt) {
         else if (k === 'SOUND TEST') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'title'; }
         else if (k === 'CONTROLS') { controlsFrom = 'title'; state = 'controls'; }
         else if (k === 'CREDITS') { creditsPage = 0; state = 'credits'; }
+        else if (k === "WHAT'S NEW") { wnScroll = 0; WN.markSeen(); state = 'whatsnew'; }
       }
       }
     }
@@ -27455,6 +27458,11 @@ function update(dt) {
   if (state === 'coop') { updateCoopPick(); return; }
   if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'bossjump') { updateBossJump(); return; }
+  if (state === 'whatsnew') { const step = 5;
+    if (upPress || leftPress) { wnScroll = Math.max(0, wnScroll - 1); SFX.ui(); } if (downPress || rightPress) { wnScroll = Math.min(wnLimit, wnScroll + 1); SFX.ui(); }
+    if (confirmPress) { if (wnScroll >= wnLimit) { state = 'title'; SFX.menuClose(); } else { wnScroll = Math.min(wnLimit, wnScroll + step); SFX.ui(); } }
+    if (pausePress || atkPress) { state = 'title'; SFX.menuClose(); }
+    return; }
   if (state === 'credits') { const n = creditPages(MUSIC_CREDITS).length;
     if (leftPress || upPress) { creditsPage = (creditsPage + n - 1) % n; SFX.ui(); } if (rightPress || downPress || confirmPress) { creditsPage = (creditsPage + 1) % n; SFX.ui(); }
     if (pausePress) { state = 'title'; SFX.menuClose(); }
@@ -30636,6 +30644,19 @@ function fxPages(colW, rows) {
   return pages;
 }
 /* THE CREDITS (title menu): page 1 the CC-BY music in full, then every outside composer, two columns a page. Pure layout in src/credits.js. */
+function drawWhatsNew() {
+  g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
+  const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h, UI.border, 'parchment');
+  text("WHAT'S NEW", VW / 2, y + 6, UI.title, 'center', TYPE.head);
+  const rs = WN.rows((s, mw) => wrap(s, mw, 6), w - 24), top = y + 22, RH = 8, vis = Math.max(3, Math.floor((h - 22 - 24) / RH));
+  wnLimit = Math.max(0, rs.length - vis); wnScroll = Math.min(wnScroll, wnLimit);
+  if (!rs.length) text('nothing to report yet', VW / 2, top + 6, UI.dim, 'center', 6);
+  let yy = top;
+  for (let i = wnScroll; i < rs.length && yy + RH <= y + h - 22; i++) { const r = rs[i]; if (r.kind === 'head') { if (r.gap && i > wnScroll && yy + RH * 2 <= y + h - 22) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
+  if (wnScroll > 0) text('^', x + w - 10, top, UI.dim, 'right', 6);
+  if (wnScroll < wnLimit) text('v', x + w - 10, y + h - 30, UI.dim, 'right', 6);
+  text(wnScroll < wnLimit ? 'UP/DOWN scroll  Z more  ESC back' : 'UP/DOWN scroll  Z or ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);
+}
 function drawCredits() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h, UI.border, 'parchment');
@@ -30999,7 +31020,7 @@ function drawTitle(cx, cy) {
 // SCREEN TRANSITIONS. Every change of screen comes up out of the dark instead of cutting, and a level opens
 // on an iris round the knight. Opening a pause menu or a talk box is not a change of screen.
 let transT = 0, transKind = 'fade', transPrev = null, transLast = 0, menuSince = 0;
-const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'rebind', 'coophelp', 'soundtest', 'credits', 'bossjump', 'herocard', 'practice', 'win', 'gameover']);
+const OVERLAY_STATES = new Set(['menu', 'talk', 'controls', 'rebind', 'coophelp', 'soundtest', 'credits', 'whatsnew', 'bossjump', 'herocard', 'practice', 'win', 'gameover']);
 function drawTransition() {
   const dt = Math.min(1, Math.max(0, time - transLast)); transLast = time;
   if (state !== transPrev) {
@@ -31580,7 +31601,7 @@ function render() {
       const y0 = my + 7, want = y0 + titleI * RH; titleBarY = titleBarY === null ? want : titleBarY + (want - titleBarY) * 0.3;
       g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(bx + 5, Math.round(titleBarY) - 1, mw - 10, RH - 1); g.fillStyle = UI.sel; g.fillRect(bx + 5, Math.round(titleBarY) - 1, 2, RH - 1);
       items.forEach((k, i) => { TCH.hit(bx + 4, y0 + i * RH - 1, mw - 8, RH, () => { titleI = i; confirmPress = true; initAudio(); }); const sel = i === titleI, yy = y0 + i * RH, a = Math.max(0, Math.min(1, (since - 0.45 - i * 0.07) / 0.2));
-        g.globalAlpha = a; text(k, bx + 17 + (sel ? 2 : 0), yy, sel ? UI.title : UI.dim, 'left'); g.globalAlpha = 1;
+        g.globalAlpha = a; { const wn = k === "WHAT'S NEW", lab = wn && WN.newestDate() ? k + ' ' + WN.shortDate(WN.newestDate()) : k; text(wn ? fitText(lab, mw - 17 - 14, 6) : k, bx + 17 + (sel ? 2 : 0), yy + (wn ? 1 : 0), sel ? UI.title : UI.dim, 'left', wn ? 6 : undefined); if (wn && WN.hasNew()) { g.fillStyle = SET.reduceMotion || Math.floor(time * 2) % 2 ? '#ff9a5c' : '#ffd36b'; g.fillRect(bx + mw - 12, yy + 1, 4, 4); } } g.globalAlpha = 1;
         if (sel) { const bob = Math.round(Math.sin(time * 6) * 1.5), cxs = bx + 9 + bob; g.fillStyle = '#c9d1dc'; g.fillRect(cxs, yy + 3, 5, 1); g.fillStyle = '#e0b040'; g.fillRect(cxs + 5, yy + 1, 1, 5); g.fillStyle = '#7a4a2a'; g.fillRect(cxs + 6, yy + 3, 2, 1); } });
       // what waits in the save you would continue
       const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sv[lv.id] && sv[lv.id].cleared).length : 0;
@@ -31602,6 +31623,7 @@ function render() {
   if (state === 'menu') drawMenu();
   if (state === 'soundtest') drawSoundTest();
   if (state === 'credits') drawCredits();
+  if (state === 'whatsnew') drawWhatsNew();
   if (state === 'bossjump') drawBossJump();
   if (state === 'controls') drawControls();
   if (state === 'rebind') CTL.drawRebind(uiCtx(), rebindS, SET.binds);
@@ -31785,6 +31807,7 @@ window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel, loadG: loadLevelG, loadThen,   /* the loading screen, for tools/loading-screen.mjs */
   /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
      hunting for the up/down flags press() does not carry. */
+  get wnScroll() { return wnScroll; }, set wnScroll(v) { wnScroll = v; }, WN,
   get creditsPage() { return creditsPage; }, set creditsPage(v) { creditsPage = v; }, creditPageCount: () => creditPages(MUSIC_CREDITS).length,
   get soundCat() { return soundCat; }, set soundCat(v) { soundCat = v; }, get soundI() { return soundI; }, set soundI(v) { soundI = v; }, musicUnlocked,
   /* EFFECTS' page starts (drawSoundTest's own fxPages, see there): a full-width row for a too-wide id makes pages an

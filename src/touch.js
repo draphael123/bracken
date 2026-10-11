@@ -38,7 +38,7 @@ export const TOUCH_TIPS = {
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const FONT = '"Silkscreen", "Press Start 2P"';   /* the body face of the strict pair (main.js FONT) */
 /* states where a tap anywhere means "go on" (a card, a line of talk, a result): there is nothing to aim at */
-const TAP_ANY = new Set(['talk', 'intro', 'win', 'victory', 'gameover', 'rushover', 'rushwin', 'credits', 'coophelp', 'herocard']);
+const TAP_ANY = new Set(['talk', 'intro', 'win', 'victory', 'gameover', 'rushover', 'rushwin', 'credits', 'whatsnew', 'coophelp', 'herocard']);
 /* states where a held stick direction repeats like a held key (the lists that do not repeat themselves) */
 const REPEAT = new Set(['menu', 'store', 'title', 'slots', 'bestiary', 'soundtest', 'heropick', 'coop', 'practice', 'controls', 'rebind']);
 /* what the pill buttons say in a state with no play buttons: [the press, the label] - the first is the main one */
