@@ -1747,7 +1747,7 @@ export const MUSIC_CREDITS = {
   deep: '"Underwater II" — C. Kauffman', underleaf: '"Mossy Grotto" — Tarush Singhal', mineworks: '"At Work" — HorrorPen (CC-BY)',
   deepdread: '"The Abyss" — Umplix',
   rootway: '"Forest Whisper Theme" — Cleyton Kauffman, CC0',   /* (claude/rootwayfix: CC0 - credited all the same) */
-  greatdrill: '"Machines" — Tsorthan Grove, CC-BY 4.0',   /* (claude/deeprailsart) */
+  greatdrill: '"Machines" — Tsorthan Grove, CC-BY',   /* (claude/deeprailsart) */
   huntmaster: '"Call to War" — Umplix, CC0',   /* (claude/rootwayfix: CC0 - credited all the same) */
   skyroad: '"Bring Me The Sky" by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au',   /* (claude/skyroad: the credit as the licensor asks) */
   rocphoenix: '"Phoenix" by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au',
