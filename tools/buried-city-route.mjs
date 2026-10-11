@@ -53,6 +53,7 @@ try {
           clear(); tick(3); if (feet() === row && P().ground) return true; }
         DBG.push('hop ' + from + '>' + row + ' failed at ' + col() + ',' + feet()); return feet() === row; };
       const face = d => { clear(); k[d > 0 ? 'right' : 'left'] = true; tick(1); clear(); tick(1); P().face = d; };
+      const leap = d => { settle(); clear(); k[d > 0 ? 'right' : 'left'] = true; k.jump = true; BK.press('jump'); for (let j = 0; j < 70; j++) { tick(1); if (j > 22) k.jump = false; if (j > 4 && P().ground) break; } clear(); tick(2); };   /* a running jump over a gap (the halls' stakes) */
       const press = (key, d) => { settle(); if (d) face(d); BK.press(key); tick(8); clear(); tick(4); };
       const room = id => K().rooms.find(r => r.id === id);
       const full = id => room(id).level >= room(id).full - 0.05, empty = id => room(id).level <= 0.05;
@@ -70,7 +71,7 @@ try {
             DBG.push('street ' + room('street').level.toFixed(1) + ' at ' + col() + ',' + feet()); walk(240); return col() >= 238 && feet() === 38; }, [240, 38]],
         ['THE SPIKE CELLAR: shut its gate, wait for the fill, walk over', [240, 38], () => { if (!lever(242, 'cellar', 'shut')) return false; waitFor(() => full('cellar'), 900); walk(270); walk(276); return col() >= 274 && feet() === 32; }, [276, 32]],
         ['THE HOURGLASS: open the upper hall, it runs into the lower; the halls exam in the sun', [276, 32], () => { if (!lever(278, 'upperbulb', 'open')) return false; waitFor(() => empty('upperbulb') && full('lowerbulb'), 900);
-            DBG.push('bulbs ' + room('upperbulb').level.toFixed(1) + '/' + room('lowerbulb').level.toFixed(1)); walk(320); walk(321, { tol: 3 }); hop(322, 32, 1); walk(334); return col() >= 332 && feet() === 32; }, [334, 32]],
+            DBG.push('bulbs ' + room('upperbulb').level.toFixed(1) + '/' + room('lowerbulb').level.toFixed(1)); walk(322, { tol: 3 }); leap(1); walk(334); return col() >= 332 && feet() === 32; }, [334, 32]],
         ['THE SAND-FALL: swing it onto the wall, let it pile, swing it back, climb to the arch', [334, 32], () => { walk(345, { tol: 3 }); if (!swing(345, 'sluice', 'wall')) return false; waitFor(heapFull, 900);
             if (!swing(366, 'sluice', 'grate')) return false; walk(369, { tol: 3 }); hop(369, 40, 1); walk(372, { tol: 3 }); hop(372, 38, 1); walk(375, { tol: 3 }); hop(375, 36, 1); walk(377, { tol: 3 }); hop(377, 34, 1); walk(402); return col() >= 400 && feet() === 36; }, [402, 36]],
         ['THE GREAT SAND-GATE: three turns, the quarter drains, over the ruins', [402, 36], () => { for (let i = 0; i < 6 && !K().wheel.done; i++) { walk(405, { tol: 3 }); press('talk', 1); tick(30); }
