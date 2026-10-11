@@ -28644,7 +28644,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.buriedcity && BCH && BCH.on()) BCH.drawBack(g, cx, cy, VW, VH, time);   /* THE BURIED CITY (claude/buriedcity, greybox): the Hourglass Tower far off under the sand roof */
   if (L.ksar && KSH && KSH.on()) KSH.drawBack(g, cx, cy, VW, VH, time, bgDY(cy));   /* THE BANDIT KSAR (claude/ksar art pass): the fort's skyline and the Hawk Tower on the horizon (src/redraw/ksar_set.js drawBack) */
   if (L.glasssea && GSH && GSH.on()) GSH.drawBack(g, cx, cy, time);   /* THE GLASS SEA (claude/glasssea art pass): its own sky by the hour, the far glass dunes, the Colossus on the horizon (src/redraw/glasssea_art.js) - the greybox's hook sat inside the L.dark branch and never ran */
-  else if (L.dark) { const P0 = L.palette || {};
+  else if (L.dark && !L.minecart) { const P0 = L.palette || {};   /* (claude/deeprailsart: the Deep Rails has dark ZONES, not a dark room: its own backdrop, src/redraw/minecart_backdrop.js, draws - it had been swallowed by this branch since DEEP RAILS 2 set dark: 0.01) */
     /* THE HURRICANE is dark, but it is not a room: her murk was a wall of wrecks, which is a fleet. Her own sky goes down under a
        storm-dark wash and the sea is drawn over it, so the dark is weather and not a back wall */
     if (BG.storm) { g.fillStyle = 'rgba(18,22,28,0.55)'; g.fillRect(0, 0, VW, VH); if (SET.parallax !== 'off') SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() }); g.fillStyle = 'rgba(18,22,28,0.3)'; g.fillRect(0, 0, VW, VH); }
