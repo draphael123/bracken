@@ -27,7 +27,7 @@ export async function openPage(opts = {}) {
   if (served !== mine) { if (server) server.kill(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
   const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
   /* THE PROFILE IS THROWN AWAY: browser-profile.mjs makes it, kills the browser tree and removes it on close, on a failed start and on exit */
-  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'look'), chrome = run.child;
+  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look'), chrome = run.child;
   const dbg = await run.devtoolsPort();
   try {
   let wsUrl = null;

@@ -490,6 +490,7 @@
 <link rel="modulepreload" href="./src/zipline.js">
 <!-- modulepreload:end -->
 <script type="module" src="./src/loading-screen.js"></script>
-<script type="module" src="./src/main.js"></script>
+<!-- ONLINE CO-OP (src/online-guest.js): a page opened with ?join=CODE is a GUEST. It never runs the game (src/main.js), so the guest's own save is never read or written: it shows the host's picture and sends his keys back. -->
+<script type="module">if (/[?&]join=/i.test(location.search)) import('./src/online-guest.js'); else import('./src/main.js').catch(e => { const b = document.getElementById('boot'); if (b) { b.textContent = 'ERROR: ' + (e && e.message); b.style.color = '#ff7a6b'; } throw e; });</script>
 </body>
 </html>

@@ -60,6 +60,7 @@ export function initAudio() {
   }).catch(() => {});
 }
 export const ready = () => !!ac;
+export const audioTap = () => (ac && master ? { ac, master } : null);   /* ONLINE CO-OP (src/online.js): the whole mix, tapped into a MediaStreamDestination for the guest */
 export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (sfxGain) sfxGain.gain.value = vol; }
 export function setSfxFiles(v) { sfxFiles = !!v; }
 /* CHARACTER VOICES OFF: no recorded grunt, shout, cry or laugh from anyone - every one of them has a non-vocal fallback */
