@@ -2607,6 +2607,25 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     const bow1 = grip(2, { hy: 1, plume: 2, bits: lit(1) });
     const bow2 = grip(3, { hy: 2, sho: 1, plume: 2, bits: lit(2) });
     F.dance = holdFrames([[turn, 2], [lift, 3], [plant, 3], [stand, 3], [bow1, 3], [bow2, 6], [bow1, 2], [stand, 3]]); }
+  /* HIS OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE VIGIL, his idle solo: the blade hauled up to rest across the
+     shoulder, turned slowly in both fists to read the other edge, the point brought round and set; the helm turns to look each way
+     with the lights flaring on the look. dance3 = THE REAPING, a boss down: the greatsword swung up behind him and brought round
+     in one wide low cut that nobody is left to meet, then driven point-down with the green in the helm blazing, held, and let burn down. */
+  { const lit = (hy, c = '#dfffc0') => [[4, 3 + hy, c], [5, 3 + hy, c]];
+    const g = (hx, hy2, tx, ty, o = {}) => knightFrame({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], greatsword: [sh[0] + hx, sh[1] + hy2, sh[0] + tx, sh[1] + ty], ...o });
+    const shoulder = g(1, -2, -6, -9, { legs: 'wide', dx: -1, plume: 1, bits: lit(0) });
+    const read1 = g(2, -2, 8, -6, { plume: 2, bits: lit(0) }), read2 = g(2, -2, 9, 1, { plume: 1, bits: lit(0) }), read3 = g(2, -1, 7, 6, { plume: 2, bits: lit(0) });
+    const setP = g(3, -1, 4, 14, { dy: 1, legs: 'wide', plume: 2, bits: lit(0) });
+    const look = (hy, c) => g(3, -1, 4, 14, { dy: 1, hy, plume: 1, bits: lit(hy, c) });
+    F.dance2 = holdFrames([[knightFrame({ greatsword: [sh[0] + 1, sh[1] + 2, sh[0] + 4, sh[1] + 12], arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 2], plume: 1 }), 2], [shoulder, 4], [read1, 2], [read2, 2], [read3, 2], [read2, 2], [read1, 2], [shoulder, 3],
+      [g(2, -1, 8, -2, { legs: 'wide', plume: 2, bits: lit(0) }), 3], [setP, 3], [look(0, '#dfffc0'), 3], [look(1, '#ffffff'), 2], [look(0, '#7fd06a'), 3], [look(-1, '#ffffff'), 2], [look(0, '#dfffc0'), 3], [F.idle[7], 2]]);
+    const back = g(-1, -3, -8, -9, { legs: 'wide', dx: -2, plume: 1, bits: lit(0) });
+    const top = g(2, -4, 4, -9, { legs: 'wide', dy: -1, sho: 1, plume: 2, bits: lit(0, '#ffffff') });
+    const cutA = g(4, 0, 11, 4, { legs: 'runC', dx: 1, plume: 2, bits: lit(0) }), cutB = g(5, 3, 11, 12, { legs: 'runC', dx: 2, dy: 1, plume: 2, bits: lit(1) });
+    const drive = g(3, 1, 4, 15, { dy: 1, legs: 'wide', plume: 2, bits: [...lit(0, '#ffffff'), [10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38'], [8, 15, '#5a4e38'], [16, 15, '#5a4e38']] });
+    const blaze = (c, hy = 0) => g(3, -1, 4, 14, { dy: 1, hy, plume: 1, bits: [...lit(hy, c), [3, 3 + hy, '#7fd06a'], [6, 3 + hy, '#7fd06a'], [4, 2 + hy, '#7fd06a'], [5, 2 + hy, '#7fd06a']] });
+    F.dance3 = holdFrames([[F.idle[7], 1], [back, 3], [top, 3], [cutA, 2], [cutB, 2], [g(5, 4, 11, 13, { legs: 'wide', dx: 2, dy: 1, plume: 2, bits: lit(1) }), 2], [back, 2], [top, 2], [cutA, 1], [cutB, 2], [drive, 3],
+      [blaze('#ffffff'), 3], [blaze('#dfffc0', 1), 3], [blaze('#7fd06a', 1), 3], [blaze('#dfffc0'), 2], [F.idle[7], 2]]); }
   /* HIS SLUMP: the greatsword is neither planted nor carried - it is DRAGGED, hanging off one hand with the point
      out in the dirt behind him, and both lights in the helm are gone out. His fidget leans on the blade standing
      up in front of him; this is the same blade given up on, lying the other way. */
