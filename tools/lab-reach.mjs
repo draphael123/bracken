@@ -10,7 +10,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
-const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer'];
+const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker'];
 const BOSSES = ['wood', 'kings', 'spire', 'crown', 'reef', 'flotilla', 'hurricane', 'waymeet', 'undercrown'];   /* the default bossLab roster, minus 'deep': the King swims and is played by a special-cased branch, not the generic stand */
 
 const pg = await openPage({ audio: false, fonts: false });

@@ -19,16 +19,16 @@ import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
 const F = 1 / 60, TOL = 1;   /* frames */
-const HEROES = ['knight', 'warden', 'pyro', 'geomancer', 'paladin', 'pirate', 'reaper'];
+const HEROES = ['knight', 'warden', 'pyro', 'geomancer', 'paladin', 'pirate', 'reaper', 'berserker'];   /* (THE BERSERKER, claude/berserker 2026-10-04: src/commit.js COMMIT.berserker) */
 /* recovery added after the art (s): light, third, up/sweep, heavy (the freebooter's heavy is his pistol: the whole shot is 0.45 s) */
 /* WEIGHT-T (coordinator 10-04): the brief's recoveries x0.6, its rolls x0.9, the bar's regen 75 after 0.3 s, a 0.26 s roll grace, the shield 6 + 0.4 x the blow (cap 25), exhausted 0.6 s to 20% - tuned against the human-speed bot (the lane report has both sets) */
 const REC = { pirate: [0.06, 0.084, 0.06, null], knight: [0.084, 0.12, 0.084, 0.15], warden: [0.084, 0.12, 0.084, 0.132], pyro: [0.084, 0.12, 0.084, 0.15],
-  geomancer: [0.096, 0.132, 0.096, 0.168], paladin: [0.102, 0.132, 0.102, 0.18], reaper: [0.102, 0.132, 0.102, 0.18] };
-const LIGHT_TOTAL = { pirate: 0.29, knight: 0.40, warden: 0.40, pyro: 0.40, geomancer: 0.42, paladin: 0.65, reaper: 0.98 };
-const DK_WARD_CUT = 0.25, PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3 };
-const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25 }, STEP_BACK = 15, DELAY_F = 18;   /* the regen's delay, 0.3 s */
-const SKILL = { knight: 'whirlwind', warden: 'skewer', pyro: 'flameRing', geomancer: 'boulder', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'harvestMoon' };
-const MASH_MAX = { knight: 12, warden: 12, pyro: 12, geomancer: 12, paladin: 11, pirate: 15, reaper: 7 };   /* 6 s of attack pressed every frame: the built numbers + 1 (measured 11/11/11/11/10 (paladin at 22)/14/6; the knight did 13 in FOUR seconds before) */
+  geomancer: [0.096, 0.132, 0.096, 0.168], paladin: [0.102, 0.132, 0.102, 0.18], reaper: [0.102, 0.132, 0.102, 0.18], berserker: [0.084, 0.12, 0.084, 0.162] };
+const LIGHT_TOTAL = { pirate: 0.29, knight: 0.40, warden: 0.40, pyro: 0.40, geomancer: 0.42, paladin: 0.65, reaper: 0.98, berserker: 0.37 };   /* (his chop's art runs at BZ.swing.base 1.06: 0.283 s + 0.084) */
+const DK_WARD_CUT = 0.25, PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3, berserker: 0.26 };
+const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25, berserker: 22 }, STEP_BACK = 15, DELAY_F = 18;   /* the regen's delay, 0.3 s */
+const SKILL = { knight: 'whirlwind', warden: 'skewer', pyro: 'flameRing', geomancer: 'boulder', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'harvestMoon', berserker: 'bzSpin' };
+const MASH_MAX = { knight: 12, warden: 12, pyro: 12, geomancer: 12, paladin: 11, pirate: 15, reaper: 7, berserker: 12 };   /* 6 s of attack pressed every frame: the built numbers + 1 (measured 11/11/11/11/10 (paladin at 22)/14/6; the knight did 13 in FOUR seconds before) */
 const ONLY = process.argv.find(a => a.startsWith('--only=')); const only = ONLY ? ONLY.slice(7).split(',') : null;
 
 const pg = await openPage({ audio: false, fonts: false });
@@ -48,7 +48,9 @@ try {
   for (const h of HEROES) {
     if (only && !only.includes(h)) continue;
     for (const verb of VERBS) for (const it of INTS) {
-      if (verb === 'heavy' && h === 'pirate' && it === 'c') continue;   /* his C while the pistol smokes is the blast's own (blastT), unchanged */
+      if (verb === 'third' && h === 'berserker') continue;   /* HIS RUN GOES ON ONLY WHILE THE CHOPS LAND: against the air there is no third (tools/berserker.mjs 'chain' holds his third against a foe) */
+      if (verb === 'heavy' && h === 'pirate' && it === 'c') continue;
+      if (verb === 'third' && h === 'berserker') continue;   /* HIS RUN GOES ON ONLY WHILE THE CHOPS LAND: against the air there is no third (tools/berserker.mjs 'chain' holds his third against a foe) */   /* his C while the pistol smokes is the blast's own (blastT), unchanged */
       const r = await pg.evalp(`(()=>{const h=${JSON.stringify(h)},verb=${JSON.stringify(verb)},it=${JSON.stringify(it)},sk=${JSON.stringify(SKILL[h])};
         __prep(h,20);const P=BK.P,K=BK.keys;
         /* start the verb; t0 = the frame its swing (or landing) begins, artEnd = the frame its art ends */
@@ -71,7 +73,7 @@ try {
           else if(it==='jump'&&!P.ground&&P.vy<0)acted=f;
           else if(it==='attack'&&P.atk>=0&&(prevAtk<0||P.atk<prevAtk))acted=f;
           else if(it==='skill'&&P.cds&&P.cds[cdKey]>0)acted=f;
-          else if(it==='c'&&(P.block||P.aegis||P.warding||P.geoGuard||P.parryW>0||P.deflectT>0||(h==='pyro'&&st0-P.st>=30)))acted=f;
+          else if(it==='c'&&(P.block||P.aegis||P.warding||P.geoGuard||P.parryW>0||P.deflectT>0||P.braceT>0||(h==='pyro'&&st0-P.st>=30)))acted=f;
           prevAtk=P.atk;__full();f=f0;
         }
         K.block=false;

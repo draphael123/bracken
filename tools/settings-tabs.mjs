@@ -33,7 +33,7 @@ assert.equal(tabOf('Difficulty'), 'gameplay'); assert.equal(tabOf('Sound test'),
 { const pyro = cardRows({ hero: 'pyro' }), names = pyro.map(r => r[0]);
   const ward = pyro.find(r => r[0] === 'ember flare'); assert(ward && /TAP DOWN/.test(ward[1]), 'the Pyromancer\'s card has an EMBER FLARE row: TAP DOWN'); assert(pyro.find(r => r[0] === 'weak guard' && /HOLD DOWN/.test(r[1])), 'and the weak guard: HOLD DOWN');
   assert(!names.includes('block'), 'her card no longer lists C as block'); assert(pyro.find(r => /EMBER/.test(r[1]) && r[0] === 'ember / jet'), 'C is her ember and jet');
-  for (const h of ['knight', 'warden', 'paladin', 'pirate', 'reaper', 'geomancer']) { const r = cardRows({ hero: h }); assert(r.find(x => x[0] === 'crouch' && /HOLD DOWN/.test(x[1])), h + ' has the universal duck on the card'); assert(!r.find(x => x[0] === 'ember flare'), h + ' has no ember flare'); }
+  for (const h of ['knight', 'warden', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker']) { const r = cardRows({ hero: h }); assert(r.find(x => x[0] === 'crouch' && /HOLD DOWN/.test(x[1])), h + ' has the universal duck on the card'); assert(!r.find(x => x[0] === 'ember flare'), h + ' has no ember flare'); }
   const b = emptyBinds(); setSlot(b, 'kb', 'jump', 0, 'i'); setSlot(b, 'kb', 'block', 0, 'o'); setSlot(b, 'kb', 'down', 0, 'k');
   const rows = cardRows({ hero: 'knight', binds: b }); assert(/^I \//.test(rows.find(r => r[0] === 'jump')[1]), 'the card shows the chosen jump key'); assert(/HOLD O/.test(rows.find(r => r[0] === 'block')[1]), 'and the chosen C');
   assert(/TAP K/.test(cardRows({ hero: 'pyro', binds: b }).find(r => r[0] === 'ember flare')[1]), 'and the ember flare follows the crouch key'); }

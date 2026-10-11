@@ -24,6 +24,7 @@ export const COMMIT = {   /* WEIGHT-T (10-04): the brief's numbers x0.6, measure
   geomancer: { light: 0.096, third: 0.132, up: 0.096, heavy: 0.168 }, /* the fault line */
   paladin:   { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
   reaper:    { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
+  berserker: { light: 0.084, third: 0.12, up: 0.084, heavy: 0.162 },   /* THE BERSERKER (claude/berserker): his 10-04 numbers x0.6 like everyone's (WEIGHT-T) - light like the knight's, the cross-chop a beat longer */
 };
 /* THE LIGHT SWING'S PRICE for the heroes whose swing is not their sword's (the rest pay sword().cost): the freebooter 9 -> 10 (brief) */
 export const SWING_COST = { paladin: 22, pirate: 10, reaper: 23 };   /* the paladin 28 -> 22 (10-04, with STAM.busyRegenBy: 0/8 -> 4/8 of eight boss fights on the human bot; 6/8 before WEIGHT) */
@@ -95,9 +96,9 @@ export const STAM = {
   stepFree: true, stepDelay: 0.2,   /* THE WARDEN'S BACK-STEP is spacing, not a roll: it keeps the regen running, with a 0.2 s delay */
 };
 /* THE ROLL: what it costs and how long it is untouchable. Heavy heroes roll heavier (Daniel 10-02, Q4). WEIGHT-T: the brief's x0.9 */
-export const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25 };
+export const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25, berserker: 22 };   /* (berserker 24 x0.9) */
 export const STEP_BACK_COST = 15;   /* the warden's back-step (it was 13) */
-export const ROLL_LEN = { knight: 0.30, warden: 0.18, pyro: 0.34, geomancer: 0.30, pirate: 0.30, paladin: 0.30, reaper: 0.32 };
+export const ROLL_LEN = { knight: 0.30, warden: 0.18, pyro: 0.34, geomancer: 0.30, pirate: 0.30, paladin: 0.30, reaper: 0.32, berserker: 0.28 };   /* (THE BERSERKER's shoulder roll: short) */
 export const ROLL_SHAVE_CAP = 4;    /* the most the shaves (level ranks, LIGHT STEP) take off a roll's base cost */
 /* AN INVULNERABLE DASH (Lunge, Cinder Step, Holy Charge, Boarding Party, Harrier) follows the roll's rules: its grace is the roll's share of
    it, never more than the roll's, and it costs at least the hero's roll + 4 */
@@ -137,7 +138,7 @@ export const blockCost = (dmg, steady = 0) => Math.round(Math.min(STAM.blockCap,
 /* may a guard (shield, aegis, ward, rune-ward) be RAISED? */
 export const guardOk = P => !P.winded;
 /* regen is paused while he is committed (the whole recovery, window and all), rolling or holding a guard */
-export const regenPaused = P => P.atk >= 0 || (STAM.pauseRecovery && (P.atkRec || 0) > 0) || (P.dodge > 0 && !(STAM.stepFree && (P.dodgeMax || 0) <= 0.2)) || !!P.block || !!P.aegis || !!P.warding || !!P.geoGuard;
+export const regenPaused = P => P.atk >= 0 || (STAM.pauseRecovery && (P.atkRec || 0) > 0) || (P.dodge > 0 && !(STAM.stepFree && (P.dodgeMax || 0) <= 0.2)) || !!P.block || !!P.aegis || !!P.warding || !!P.geoGuard || (P.braceT || 0) > 0 || (P.braceRec || 0) > 0;   /* (THE BERSERKER's brace and its beat: a guard of his own) */
 
 /* ONE FRAME OF THE BAR (every player-update path calls this instead of its own regen line). `extra` multiplies the regen
    (the venom's slow); `hold` is true where regen must wait anyway (a live plunge chain). */

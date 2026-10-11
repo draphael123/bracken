@@ -32,7 +32,7 @@ const highs = Object.keys(HEIGHT).filter(k => HEIGHT[k] === 'high');
 /* the blows Daniel named (2026-09-29): arrows, bolts, the Lance's high thrust - and the low sweep beside it that is still jumped */
 for (const [k, v] of [['archer|draw', 'high'], ['crossbow|aim', 'high'], ['lance|thrustTell', 'high'], ['lance|sweepTell', 'low']]) if (HEIGHT[k] !== v) bad.push(`${k}: HEIGHT ${HEIGHT[k]}, not ${v}`);
 
-const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer'];
+const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker'];
 const pg = await openPage({ audio: false, fonts: false });
 let R;
 try {
