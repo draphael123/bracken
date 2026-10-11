@@ -2,12 +2,9 @@
 // 12 levels: a jump that only a take-off from the very edge lands (a toe on the lip), because the old levels' four-wide gaps were a hair past what the slower legs carry.
 // Each is closed here by the smallest change - a ledge a tile longer, a pit a tile narrower, a step a row lower - so EVERY hero (the 7, base movement) crosses with a
 // margin of more than 2 px past a hand's slack. Applied to the FINISHED level (after every grow, like src/scree-rework.js), so no build coordinate moves.
-// tools/reach-gaps.mjs checks the table and prints each edge's margin per hero.
-// The EDGES list is what the gate holds: [level, 'from>to'] - the crossing every hero must make with more than MARGIN px to spare.
-export const MARGIN = 2;
-const STAND = new Set([1, 2]);   // (rock, one-way) - a copied column keeps its source tile
-
-export const EDGES = [];   // filled below, one line per fix, next to the fix
+// The gate is tools/reach-heroes.mjs (in check.mjs): its KNOWN list is empty but for witchlight's, so a crossing that goes frame-perfect again fails there.
+// Margins (px past a hand's slack, per hero) are in work/claude/lane-done/claude-gaps.md. Two things learned: a ceiling over the take-off caps the jump (Scree's
+// ridge ledges sat on row 3 under the map's top: LOWERED, not narrowed; the Monastery's corridor under the low floor), and a NET is footing, so a rope can be widened.
 
 export const GAPS = {
   /* THE SCREE PATH, the ridge road's three stepping ledges (218-220 > 224-226 > 230-232 > 236-238): each landing ledge a tile longer toward the one before, gaps 3 -> 2 */
