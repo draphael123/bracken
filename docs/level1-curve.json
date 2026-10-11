@@ -1,29 +1,29 @@
 {
  "wood": {
-  "hash": "7d879286331a",
+  "hash": "46a26d2fe1dc",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
-  "deaths": 0,
-  "kills": 36,
-  "lifts": 96,
+  "hits": 28,
+  "deaths": 5,
+  "kills": 41,
+  "lifts": 87,
   "walked": 100,
   "bare": true,
-  "lostPct": 69
+  "lostPct": 215
  },
  "marsh": {
-  "hash": "a0cb1f611ceb",
+  "hash": "064de4159658",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 33,
-  "deaths": 1,
-  "kills": 30,
-  "lifts": 90,
+  "hits": 45,
+  "deaths": 3,
+  "kills": 36,
+  "lifts": 86,
   "walked": 100,
   "bare": true,
-  "lostPct": 195
+  "lostPct": 275
  },
  "stockade": {
   "hash": "c88404798755",
@@ -377,17 +377,17 @@
   "lostPct": 217
  },
  "oreroad": {
-  "hash": "8a3c779e7c8e",
+  "hash": "22d06c9289d8",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 20,
+  "hits": 24,
   "deaths": 4,
-  "kills": 20,
-  "lifts": 44,
+  "kills": 21,
+  "lifts": 46,
   "walked": 100,
   "bare": true,
-  "lostPct": 214
+  "lostPct": 225
  },
  "unburied": {
   "hash": "339823434226",
