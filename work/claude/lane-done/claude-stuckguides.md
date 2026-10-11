@@ -30,11 +30,11 @@ tools/stuck.mjs: ONE harness fix (runtime part only): before each spot's telepor
 | crown | 6 | 7 | portcullis winch, ward gate key + gate, pit bucket, pit hoist, keep winch, hall iron key + gate (chapel keys were the old spot) |
 | causeway | 2 | 3 | the first tide bell, the chapel tide bell (the boom bell was the old spot) |
 
-Total: 130 spots added over 20 levels.
+Total: 128 spots added (100 in the 14 zero-guide levels, 28 in the 6 one-spot levels).
 
 ## Checks (PORT 8843, one at a time)
 - `node tools/stuck.mjs --static`: OK (2398 checks, 277 steps in 250 spots over 37 levels).
-- Page probe (tools/stuck.mjs runtime, a hero held 11 s at each spot, filtered to the 20 touched levels in three batches): all 130 spots nudge, glint and feed the way arrow. The probe found and I fixed four zone overlaps (spore buds 250/257, fields barn bucket/bale, witchlight rune columns and wind/slab zones).
+- Page probe (a hero held 11 s at each spot, filtered to the touched levels in batches): every spot in the touched levels (129 incl. the old ones) nudges, glint and feed the way arrow. The probe found and I fixed four zone overlaps (spore buds 250/257, fields barn bucket/bale, witchlight rune columns and wind/slab zones).
 - `node tools/hint-shown.mjs`: OK. `node tools/deadends.mjs`: 264 dead ends, all pay.
 - `node tools/textfit.mjs`: ran to the end (8 min); no new text on any screen (nudges are hint-box lines <= 62 chars), only the tail was kept.
 - Route pilot: `level-walk marsh,spore --heroes=knight --seeds=1` ran clean (no crash). The bot reports STUCK on spore at route nodes 56,11 / 205,13 / 384,14 / 488,19 (bot limit: it cannot stand still on a bud). I added the cap-52 cap to the vent spot and widened the 477 bud to the Mother's door in answer; 384,14 (the pillars) has no growcap/mover to point at and is not guided.
