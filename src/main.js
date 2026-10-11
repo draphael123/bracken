@@ -117,6 +117,9 @@ import { POGO_CHAIN, bounce as pogoBounce, firedropSpares } from './pogo-chain.j
 import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL, xpTier, xpSoftCap, softCapMul, xpCap, LV_MAX } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
+import * as BAR from './barriers.js';   /* THE BARRIERS BY REGION (claude/barriers): the gate, the boss seal, the lock plate - art only */
+import * as EG from './exit-gates.js';   /* THE EXIT GATES BY REGION (claude/exitgates): art only */
+const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
 import * as SV from './survival.js'; import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
@@ -262,6 +265,7 @@ const q = new URLSearchParams(location.search);
 const SET = { ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'minimal', hudV2: 1, filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: 0.6, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
 const TIER = { church: 2.0, rootway: 0.52, minecart: 1.2, skyroad: 1.12, welltown: 2.45, redgorge: 2.5, glasssea: 2.55, ksar: 2.6, towpath: 1.9, buriedcity: 2.65, caravan: 2.4, unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75, underwell: 2.47 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
+const portSpr = n => BAR.gate(curId(), n) || TILE.port[((n % 2) + 2) % 2];   /* a gate column's tile: the region's own (src/barriers.js), the iron portcullis in the storm */
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
 // you have not set; from the pause menu it sets the wood you are in.
@@ -1254,7 +1258,7 @@ function resolveTiles() {
       if (tileAt(x, y + 1) === T.AIR) { let d = 1; while (d < 16 && tileAt(x, y + d) === T.AIR) d++;
         const h = d * TS - 4; if (h > 6) decor.push({ k: 'stem', bg: true, x: x * TS, y: y * TS + 12, c: bakeStem(h, x * 31 + y) }); }
     }
-    else if (t === T.PORT) s = TILE.port[(x + y) % 2];
+    else if (t === T.PORT) s = portSpr(x + y);
     else if (t === T.SHELF) s = shelfSpr((rnd() * 6) | 0);   /* THE SCREE PATH's loose rock is the shelf in stone */
     else if (t === T.CRYST) s = TILE.cryst[litRow(y) ? 1 : 0][Math.max(0, Math.min(2, crackAt[y * LW + x] || 0))];
     else if (t === T.PLANK) { const l = tileAt(x - 1, y) === T.PLANK, r = tileAt(x + 1, y) === T.PLANK;
@@ -1852,7 +1856,7 @@ function openGate(col, y0 = 0, y1 = LH - 1, mark = false) { const ys = [];
   for (let ty = y0; ty <= y1; ty++) { const i = ty * LW + col; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; if (mark) destroyed.add(i); ys.push(ty); } }
   if (!ys.length) return; resolveTiles(); gateFx.push({ col, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift(); }
 function updateGateFx(dt) { for (const f of gateFx) { f.t += dt;
-    if (f.closing && f.t >= f.dur && !f.landed) { f.landed = true; f.ys.forEach((ty, k) => { const i = ty * LW + f.col; if (L.grid[i] !== T.AIR) tileSpr[i] = f.spr ? f.spr[k] : TILE.port[(ty + f.col) % 2]; });
+    if (f.closing && f.t >= f.dur && !f.landed) { f.landed = true; f.ys.forEach((ty, k) => { const i = ty * LW + f.col; if (L.grid[i] !== T.AIR) tileSpr[i] = f.spr ? f.spr[k] : portSpr(ty + f.col); });
       const bx = f.col * TS + 8, by = (Math.max(...f.ys) + 1) * TS; dust(bx, by, 6); shakeCam(2.5); SFX.gateLand(); } }
   gateFx = gateFx.filter(f => f.t < f.dur + 0.02); }
 // HOW A GATE OPENS, said over it in pictures (never words): a winch's gate has a crank over it and a rope run from
@@ -2125,7 +2129,7 @@ function drawTrialStep() { const st = L.trial.find(q => P.x / TS >= q.x0 - 1 && 
 function drawGateFx(cx, cy) { for (const f of gateFx) { const top = Math.min(...f.ys), bot = Math.max(...f.ys), h = (bot - top + 1) * TS, x = f.col * TS - cx;
     if (x < -TS || x > VW) continue; const k = Math.min(1, f.t / f.dur), off = f.closing ? -h * (1 - k * k) : -h * (k * k * (3 - 2 * k));
     g.save(); g.beginPath(); g.rect(x, top * TS - cy, TS, h); g.clip();
-    f.ys.forEach((ty, k) => g.drawImage(f.spr ? f.spr[k] : TILE.port[(ty + f.col) % 2], x, Math.round(ty * TS - cy + off)));
+    f.ys.forEach((ty, k) => g.drawImage(f.spr ? f.spr[k] : portSpr(ty + f.col), x, Math.round(ty * TS - cy + off)));
     g.restore(); } }
 function openGateCol(col) { openGate(col, 0, LH - 1, true); }
 function applyWorld() { let ch = false;
@@ -2147,7 +2151,7 @@ function* loadLevelG(i) {
   if (typeof P !== 'undefined' && P) { P.flatT = 0; P.slideOn = false; }   /* a slide and its bounce do not follow you through a door */
   hintT = 0;   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
-  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
+  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; BAR.prime(LEVELS[i].id); trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
   SLOPES_ON = levelHasSlopes(L.grid);   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
@@ -2169,7 +2173,7 @@ function* loadLevelG(i) {
     if (e.t === 'silver') silvers.push({ x: px, y: py - 6, i: silvers.length, got: false, ph: Math.random() * 6, ...(e.offer ? { y0: py - 6, hung: !marks.has('offer:' + e.x + ',' + e.y), y: marks.has('offer:' + e.x + ',' + e.y) ? py - 6 : py - 6 - e.offer * TS, key: 'offer:' + e.x + ',' + e.y } : {}) });   /* (claude/monastery2) THE MONKS' OFFERING: a silver hung in its basket over a belfry, let down when its bell is struck */
     if (e.t === 'lostbanner') lostBanners.push({ x: px, y: py - 8, id: e.id, got: !!(PROG.lostBanners || {})[e.id], ph: Math.random() * 6 });
     if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
-    if (e.t === 'gate') gate = { x: px, y: py };
+    if (e.t === 'gate') { gate = { x: px, y: py }; EG.prime(LEVELS[i].id); }   /* (bake this region's landmark now, at load, never on a frame) */
   }
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
   total += (L.veins || []).reduce((a, v) => a + (v.coins || 0), 0);   /* THE ORE ROAD's seams: what they spill is counted like a crate's */
@@ -2767,7 +2771,7 @@ function ambushShut(A) {
   for (const [col, top, bot] of A.cols) {
     for (const e of enemies) if (e.alive && Math.floor(e.x / TS) === col && e.y > top * TS && e.y <= (bot + 1) * TS + 2) e.x += (col === A.wallL ? 1 : -1) * TS;   /* nothing is left standing inside a gate */
     for (let ty = top; ty <= bot; ty++) if (L.grid[ty * LW + col] === T.AIR) A.shut.push([ty * LW + col, T.AIR]);
-    const sill = (bot + 1) * LW + col; if (AMB_THRU.has(L.grid[sill])) { A.shut.push([sill, L.grid[sill]]); L.grid[sill] = T.PORT; tileSpr[sill] = TILE.port[(bot + 1 + col) % 2]; }
+    const sill = (bot + 1) * LW + col; if (AMB_THRU.has(L.grid[sill])) { A.shut.push([sill, L.grid[sill]]); L.grid[sill] = T.PORT; tileSpr[sill] = portSpr(bot + 1 + col); }
     closeGate(col, top, bot); dust(col * TS + 8, (bot + 1) * TS, 8); }
   resolveTiles();
 }
@@ -2824,7 +2828,7 @@ function ambushCarts(A) {
 /* A SHUT GATE STAYS SHUT: a cart run into it, a bomb or a quake can knock a bar out, and the room lays it back the same frame */
 function ambushHold(A) {
   let n = 0;
-  for (const [i] of (A.shut || [])) if (L.grid[i] !== T.PORT) { L.grid[i] = T.PORT; tileSpr[i] = TILE.port[((i / LW | 0) + i % LW) % 2]; destroyed.delete(i); n++; }
+  for (const [i] of (A.shut || [])) if (L.grid[i] !== T.PORT) { L.grid[i] = T.PORT; tileSpr[i] = portSpr((i / LW | 0) + i % LW); destroyed.delete(i); n++; }
   if (n) resolveTiles();
 }
 function ambushRun(A, dt) {
@@ -9970,7 +9974,7 @@ function miniEnd(e) {
    was a wooden palisade on the tower's stone; a level that skins its stone ('fallen') raises that stone instead. */
 function setWallAt(col, solid, floorY) { const top = floorY / TS - 6, bot = floorY / TS - 1, was = L.wallWas || (L.wallWas = new Map());
   for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col;
-    if (solid) { if (!was.has(i)) was.set(i, [L.grid[i], tileSpr[i]]); if (L.grid[i] === T.SOLID) continue; L.grid[i] = T.SOLID; tileSpr[i] = L.fallingTower ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen[(ty + col) % 3] : TILE.palisade[(ty + col) % 3]; }
+    if (solid) { if (!was.has(i)) was.set(i, [L.grid[i], tileSpr[i]]); if (L.grid[i] === T.SOLID) continue; L.grid[i] = T.SOLID; tileSpr[i] = L.fallingTower ? (FALLEN_SKINS || (FALLEN_SKINS = FTW.bakeFallenSkins())).fallen[(ty + col) % 3] : BAR.seal(curId(), ty + col, 'mini'); }
     else { const w = was.get(i); was.delete(i); if (w) { L.grid[i] = w[0]; tileSpr[i] = w[1]; } else { L.grid[i] = T.AIR; tileSpr[i] = null; } } } }
 function setWall(col, solid) {
   const A = L.arena;
@@ -9984,10 +9988,10 @@ function setWall(col, solid) {
      AI (src/winchmaster.js is untouched). */
   const sealed = A.boss === 'winchmaster' && col === A.wallL;
   const top = sealed ? 0 : A.floor / TS - 6, bot = A.floor / TS - 1;
-  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? ((L.arena.boss === 'chief' || L.arena.boss === 'master') ? TILE.palisade[(ty + col) % 3] : L.arena.boss === 'suncatcher' ? (TILE.ice || (TILE.ice = bakeIceTile())) : L.arena.boss === 'ram' ? TILE.ochreWall[(ty + col) % 3] : (L.arena.boss === 'lance' || L.arena.boss === 'roc' || L.arena.boss === 'golem' || L.arena.boss === 'prince' || L.arena.boss === 'duneworm') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? TILE.port[(ty + col) % 2] : TILE.vine[(ty + col) % 4]) : null; }
+  for (let ty = top; ty <= bot; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? ((L.arena.boss === 'chief' || L.arena.boss === 'master') ? TILE.palisade[(ty + col) % 3] : L.arena.boss === 'suncatcher' ? (TILE.ice || (TILE.ice = bakeIceTile())) : L.arena.boss === 'ram' ? TILE.ochreWall[(ty + col) % 3] : (L.arena.boss === 'lance' || L.arena.boss === 'roc' || L.arena.boss === 'golem' || L.arena.boss === 'prince') ? TILE.drystone[(ty + col) % 3] : L.arena.boss === 'gqueen' ? portSpr(ty + col) : BAR.seal(curId(), ty + col, L.arena.boss)) : null; }
   // her hall is shut by portcullises, and you see them come down: both doors, with the clang, when she wakes
   if (solid && L.arena.boss === 'gqueen') { const ys = []; for (let ty = top; ty <= bot; ty++) ys.push(ty); const spr = ys.map(ty => tileSpr[ty * LW + col]); for (const ty of ys) tileSpr[ty * LW + col] = null; gateFx.push({ col, ys, t: 0, dur: 0.3, closing: true, spr }); SFX.gateDrop(); }
-  if (L.arena.boss === 'mother') for (let ty = 0; ty < L.arena.floor / TS - 6; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? TILE.vine[(ty + col) % 4] : null; }
+  if (L.arena.boss === 'mother') for (let ty = 0; ty < L.arena.floor / TS - 6; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? BAR.seal(curId(), ty + col, 'mother') : null; }
 }
 function bossStart() {
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; } if (bossZooms(boss.t)) setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
@@ -23232,7 +23236,7 @@ function resetCastle() {
   for (const pr of props) if (pr.t === 'weight') { pr.state = 'hang'; pr.hitE = null; pr.hitP = false; pr.vy = 0; } // the counterweights are wound back up
   for (const pr of props) if (pr.t === 'support') { pr.broken = false; pr.hp = 4; pr.regrowT = 0; pr.creakT = 0; if (pr.saved) pr.saved.clear(); } // and her pillars stand again
   gqPillarsStand(); // and her pillars stand again, the rubble gone (docs/briefs/queen-pillars.md)
-  for (const e of (L.ents || [])) if (e.t === 'winch' && !e.drop) for (let ty = e.gy0; ty <= e.gy1; ty++) { const i = ty * LW + e.gate; if (L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = TILE.port[(ty + e.gate) % 2]; } }
+  for (const e of (L.ents || [])) if (e.t === 'winch' && !e.drop) for (let ty = e.gy0; ty <= e.gy1; ty++) { const i = ty * LW + e.gate; if (L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = portSpr(ty + e.gate); } }
   // the Queen's hall goes back as it was: gallery floor, roof and all, and the rubble she brought down is gone
   if (L.arena && L.arena.boss === 'gqueen') { const A = L.arena; L.galleryDown = false; L.windowsOut = false; A.holeOpen = false;
     for (const i of (A.laid || [])) { L.grid[i] = T.AIR; grid0[i] = T.AIR; tileSpr[i] = null; } A.laid = [];
@@ -24592,7 +24596,7 @@ function drawSevers(cx, cy) {
   }
 }
 function ringBell(b) {
-  if (b.section) { b.rung = true; raiseAlarm(b.section); return; } b.rung = true; b.liftT = 6; SFX.thunder(); SFX.clank(); shakeCam(4); number(b.x, b.y - 30, 'THE GATE DROPS', '#ff6b6b'); for (let ty = 0; ty < LH; ty++) { const i = ty * LW + b.gate; if (ty >= 15 && ty <= 19 && L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = TILE.port[(ty + b.gate) % 2]; } } burst(b.gate * TS + 8, 17 * TS, 10, ['#7c8797', '#c9d1dc'], 60, 0.5); }
+  if (b.section) { b.rung = true; raiseAlarm(b.section); return; } b.rung = true; b.liftT = 6; SFX.thunder(); SFX.clank(); shakeCam(4); number(b.x, b.y - 30, 'THE GATE DROPS', '#ff6b6b'); for (let ty = 0; ty < LH; ty++) { const i = ty * LW + b.gate; if (ty >= 15 && ty <= 19 && L.grid[i] === T.AIR) { L.grid[i] = T.PORT; tileSpr[i] = portSpr(ty + b.gate); } } burst(b.gate * TS + 8, 17 * TS, 10, ['#7c8797', '#c9d1dc'], 60, 0.5); }
 
 // ---------- boss: the Mother Cap ----------
 // THE ROOT KNOT: the same living knot opens each window; it never summons another creature.
@@ -29052,7 +29056,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.globalAlpha = 0.3 + 0.15 * Math.sin(time * 4); g.fillStyle = '#ffd34a'; g.beginPath(); g.arc(xx, yy - 4, 15, 0, 7); g.fill(); g.globalAlpha = 1;
       { const ic = big2(PROP.keyIcon[pr.kind] || PROP.keyIcon.brass); g.drawImage(ic, xx - (ic.width >> 1), yy - 4 - (ic.height >> 1)); } }
     else if (pr.t === 'lockgate') { const xx = Math.round(pr.x - cx), yy = Math.round(pr.y - cy);
-      if (!pr.open) { g.drawImage(PROP.lockPlate, xx - 6, yy - pr.h * TS / 2 - 6);
+      if (!pr.open) { g.drawImage(BAR.plate(curId()) || PROP.lockPlate, xx - 6, yy - pr.h * TS / 2 - 6);
         if (Math.abs(P.x - pr.x) < 44) { const k = hasKey(pr.needs); text(k ? 'IT TURNS' : 'LOCKED', Math.max(26, Math.min(VW - 26, xx)), Math.max(3, Math.min(VH - 10, yy - pr.h * TS / 2 - 20)), k ? '#8fd160' : '#ff9a5c', 'center', 6, 'outline'); } } }
     else if (pr.t === 'ringdoor') { const xx = pr.x - cx, yy = pr.y - cy; if (xx > -40 && xx < VW + 40 && yy > -60 && yy < VH + 60) drawRingDoor(g, xx, yy, time, pr.on ?? 1); }
     else if (pr.t === 'doorway' && pr.mirror) { if (FK.mirrorDoorOpen(L, pr, P)) FKD.drawMirrorDoor(g, pr, cx, cy, time, text); }   /* the door in the glass: there only while a true mirror shows it */
@@ -29334,7 +29338,8 @@ function drawWorld(cx, cy, showPlayer) {
   for (const s of shrines) { if (s.broken) { g.globalAlpha = 0.5; g.drawImage(shPair[0], s.x - 10 - cx, s.y - 34 - cy); g.globalAlpha = 1; g.fillStyle = '#1b1626'; const bx = Math.round(s.x - cx), by = Math.round(s.y - cy); for (const [dx, dy, w, h] of [[-1, -30, 2, 6], [0, -24, 2, 5], [-2, -19, 2, 6], [-1, -13, 2, 5], [-8, -2, 4, 2], [5, -2, 3, 2], [9, -1, 2, 1]]) g.fillRect(bx + dx, by + dy, w, h); continue; }   /* (survival2) A BROKEN SHRINE: dark, split down the middle, rubble at its foot */
     if (s === breakAt && (hintT <= 0 || P.breakT > 0)) { const k = Math.min(1, (P.breakT || 0) / SV.SHRINE.breakHold), key = padLast ? 'UP' : TCH.on ? 'TALK' : String(KEYS.talk[0] || 'E').toUpperCase(); text('HOLD ' + key + ': BREAK THE SHRINE', s.x - cx, s.y - 60 - cy, k > 0 ? '#ff9a5c' : '#c8c0b0', 'center', 6); text('+1 FLASK, NO CHECKPOINT', s.x - cx, s.y - 52 - cy, '#9aa39a', 'center', 6); if (k > 0) { g.fillStyle = '#3a3444'; g.fillRect(Math.round(s.x - 16 - cx), Math.round(s.y - 44 - cy), 32, 2); g.fillStyle = '#ff9a5c'; g.fillRect(Math.round(s.x - 16 - cx), Math.round(s.y - 44 - cy), Math.round(32 * k), 2); } }   /* the told prompt, and the hold filling */
     g.drawImage(shPair[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
-  if (gate) g.drawImage(PROP.gate, gate.x - 24 - cx, gate.y - 52 - cy);
+  if (gate) { let nr = 1e9; for (const p of (players || [P])) if (Math.abs(p.y - gate.y) < 90) nr = Math.min(nr, Math.abs(p.x - gate.x));   /* (EG: the landmark of this region, lantern dark until you near it; the trigger above is untouched) */
+    EG.draw(g, EG.kindOf(LEVELS[levelIndex].id), gate.x, gate.y, cx, cy, time, nr, !!(L.arena && !escape && !L.sandWalk && !L.gateOpen), gate.eg || (gate.eg = {}), EGSFX); }
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10 && ((time * 0.7 + a.ph) % 3) < 0.18) { const gx = Math.round(a.x - cx) + 2, gy = Math.round(a.y - 4 + Math.sin(time * 4 + a.ph) * 1.5 - cy) - 4; g.fillStyle = '#fff6c8'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); } // a glint now and then
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
   for (const s of silvers) if (s.y0 !== undefined && !s.got && s.x > cx - 12 && s.x < cx + VW + 12) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#3a2a1c'; g.fillRect(x, y - 60, 1, 50); g.fillStyle = '#6a4a2c'; g.fillRect(x - 6, y - 10, 12, 8); g.fillStyle = '#8a6640'; g.fillRect(x - 6, y - 10, 12, 1); g.fillRect(x - 6, y - 6, 12, 1); }   /* THE OFFERING's basket and rope */
