@@ -42,7 +42,7 @@ export function makeHuntPods(ctx) {
     ctx.number(P.x, P.y - 34, 'A SPORE POD: ATTACK THROWS IT', POD.col);
     if (!ctx.told()) { ctx.tell(); ctx.hint('E TAKES A SPORE POD. ATTACK THROWS IT - UP LOBS, DOWN TOSSES SHORT. IT SPRINGS A JAW TRAP; ON THE HUNTMASTER IT STAGGERS HIM.'); }
     return true; };
-  const burstAt = (x, y) => { ctx.burst(x, y - 4, 10, ['#8ac050', '#c8f08a', '#e8ffd0'], 70, 0.6); ctx.sfx.puff ? ctx.sfx.puff() : null; const k = ctx.spring(x, y); W.n.sprung += k; };
+  const burstAt = (x, y) => { W.burstFx && W.burstFx(x, y); ctx.burst(x, y - 4, 10, ['#8ac050', '#c8f08a', '#e8ffd0'], 70, 0.6); ctx.sfx.puff ? ctx.sfx.puff() : null; const k = ctx.spring(x, y); W.n.sprung += k; };
   W.update = dt => {
     const P = ctx.P();
     for (const c of caps) if (!c.ripe) { c.t -= dt; if (c.t <= 0) c.ripe = true; }
@@ -55,6 +55,7 @@ export function makeHuntPods(ctx) {
       if (q.state === 'fly') { if (!q.counted) { q.counted = true; W.n.thrown++; } q.holder = null;
         const k = CT.KINDS.pod, px = q.x, py = q.y; CT.stepArc(q, dt, k.g);
         const e = target(q.x, q.y);
+        if (!e && ctx.rope && ctx.rope(q.x, q.y)) { q.state = 'gone'; burstAt(q.x, q.y); continue; }   /* (claude/rootway2art) it snags a rope: the lookout's tie-off */
         if (e) { q.state = 'gone'; burstAt(q.x, q.y);
           if (e === ctx.boss()) { W.n.bossHits++; ctx.onBoss(e, q.x); } else { W.n.foeHits++; ctx.hurtFoe(e, POD.dmg, q.x); } continue; }
         if (ctx.solidPx(q.x + Math.sign(q.vx) * k.r, py, false) && !ctx.solidPx(px, py, false)) { q.state = 'gone'; burstAt(px, py); continue; }
@@ -67,17 +68,29 @@ export function makeHuntPods(ctx) {
     arc = held(P) && !P.dead ? arcFor(P, CT.aimOf('pod', P.face || 1, ctx.keys ? ctx.keys() : {}).aim) : null;
   };
   W.read = () => ({ caps: W.caps(), held: W.held(), flying: items.filter(q => q.state === 'fly').length, n: { ...W.n } });
-  /* THE READ: a pod cap with its ripe pod (a pale-green glow that breathes), E: A POD over the one in reach, the pod in hand and its told arc */
+  /* THE READ (the art pass, claude/rootway2art): a POD CAP is a root-palette spring cap on a stalk (rose flesh, cream gills) with a RIPE POD held under its lip - a green seed-pod with pale veins and a
+     lit seam, breathing; taken, the cap shows a bud growing back. E: A POD over the one in reach; the pod in hand sits above the fist, a spore dripping off it; where it bursts a ring of spore
+     puffs opens and rises. The told arc is GREEN when the throw will hit him or spring a trap (an opening, the style guide's meaning), a cool white when it will not. */
+  const bursts = W.bursts = W.bursts || [];
+  W.burstFx = (x, y) => { bursts.push({ x, y, t: 0 }); if (bursts.length > 6) bursts.shift(); };
   W.draw = (g, cx, cy, time) => {
-    if (!W.on()) return; const R2 = R;
+    if (!W.on()) { bursts.length = 0; return; } const R2 = R, rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+    const pod = (x, y, p) => { rc(x - 4, y - 2, 9, 7, '#2c4a22'); rc(x - 3, y - 3, 7, 1, '#2c4a22'); rc(x - 3, y + 5, 7, 1, '#2c4a22');   /* the pod: a seed-case, outlined */
+      rc(x - 3, y - 2, 7, 7, '#5a8a3a'); rc(x - 2, y - 2, 4, 2, '#8ac050'); rc(x - 2, y - 3 + 1, 2, 1, '#c8f08a'); rc(x, y - 1, 1, 6, '#34562a'); rc(x - 3, y + 2, 7, 1, '#34562a');   /* lit top-left, a seam, a band */
+      rc(x - 1, y + 5, 3, 1, '#c8f08a'); if (p) { g.globalAlpha = 0.25 + 0.3 * p; rc(x - 6, y - 5, 13, 13, POD.col); g.globalAlpha = 1; } };
     for (const c of caps) { const x = R2(c.x - cx), y = R2(c.y - cy); if (x < -30 || x > 2000) continue;
-      g.fillStyle = '#4a3a50'; g.fillRect(x - 1, y - 7, 3, 7); g.fillStyle = '#8a5a7a'; g.fillRect(x - 6, y - 10, 13, 3); g.fillStyle = '#c88ab0'; g.fillRect(x - 5, y - 11, 11, 1);
-      if (c.ripe) { const p = 0.5 + 0.5 * Math.sin(time * 4 + c.x * 0.1); g.globalAlpha = 0.3 + 0.3 * p; g.fillStyle = POD.col; g.fillRect(x - 5, y - 19, 11, 9); g.globalAlpha = 1;
-        g.fillStyle = '#5a8a3a'; g.fillRect(x - 3, y - 17, 7, 6); g.fillStyle = '#c8f08a'; g.fillRect(x - 2, y - 17, 3, 2); g.fillStyle = '#34562a'; g.fillRect(x - 3, y - 12, 7, 1); }
-      else { const k = 1 - Math.max(0, c.t) / POD.regrow; g.fillStyle = '#5a8a3a'; g.fillRect(x - 1, y - 11 - R2(4 * k), 3, R2(4 * k) + 1); } }
-    if (near && ctx.text) ctx.text('E: A POD', R2(near.x - cx), R2(near.y - cy) - 26, POD.col, 'center');
-    for (const q of items) { const x = R2(q.x - cx), y = R2(q.y - cy); g.fillStyle = '#34562a'; g.fillRect(x - 3, y - 3, 7, 6); g.fillStyle = '#8ac050'; g.fillRect(x - 2, y - 2, 5, 4); g.fillStyle = '#e8ffd0'; g.fillRect(x - 1, y - 2, 2, 1); }
-    if (arc) CT.drawArc(g, arc, cx, cy, time, arc.land && (arc.land.hit || trapNear(arc.land)) ? '#ffd36b' : '#c8ccd4');
+      rc(x - 1, y - 8, 4, 8, '#3a2a40'); rc(x - 1, y - 8, 1, 8, '#6a5078'); rc(x - 3, y - 1, 8, 2, '#3a2a40');   /* the stalk and its foot */
+      rc(x - 7, y - 12, 15, 5, '#7a2a5a'); rc(x - 6, y - 14, 13, 3, '#b04878'); rc(x - 4, y - 15, 9, 1, '#e07aa0'); rc(x - 3, y - 14, 3, 1, '#ffc0d4'); rc(x - 7, y - 8, 15, 1, '#e8dcc0'); for (let k = -6; k < 7; k += 2) rc(x + k, y - 7, 1, 1, '#a88860');   /* the cap: flesh, a lit crown, cream gills */
+      if (c.ripe) { const p = 0.5 + 0.5 * Math.sin(time * 4 + c.x * 0.1); pod(x, y - 7 + R2(p), p); }
+      else { const k = 1 - Math.max(0, c.t) / POD.regrow, h = R2(5 * k); rc(x - 1, y - 7, 3, h + 1, '#8ac050'); if (h > 2) rc(x - 2, y - 7 + (h > 3 ? 1 : 0), 5, 2, '#5a8a3a'); } }
+    if (near && ctx.text) ctx.text('E: A POD', R2(near.x - cx), R2(near.y - cy) - 28, POD.col, 'center');
+    for (const q of items) { const x = R2(q.x - cx), y = R2(q.y - cy); pod(x, y - 3, q.state === 'held' ? 0.5 + 0.5 * Math.sin(time * 6) : 0);
+      if (Math.floor(time * 8 + q.x) % 3 === 0) rc(x + 1, y + 4 + (Math.floor(time * 16) % 4), 1, 1, '#c8f08a'); }   /* a spore drips off it */
+    /* the burst: a ring of spore puffs opening out and drifting up, dithered at its rim */
+    for (let i = bursts.length - 1; i >= 0; i--) { const b = bursts[i]; b.t += 1 / 60; if (b.t > 0.7) { bursts.splice(i, 1); continue; } const k = b.t / 0.7, x = R2(b.x - cx), y = R2(b.y - cy), r = 3 + R2(15 * Math.sqrt(k));
+      g.globalAlpha = 0.8 * (1 - k); for (let a = 0; a < 12; a++) { const ang = a * 0.5236, px = x + R2(Math.cos(ang) * r), py = y - 4 + R2(Math.sin(ang) * r * 0.6) - R2(8 * k); rc(px - 1, py - 1, a & 1 ? 3 : 2, a & 1 ? 3 : 2, a % 3 === 0 ? '#e8ffd0' : a % 3 === 1 ? '#c8f08a' : '#8ac050'); }
+      g.globalAlpha = 0.5 * (1 - k); for (let a = 0; a < 8; a++) rc(x - 6 + a * 2, y - 2 - R2(k * 14) - (a & 1) * 3, 1, 1, '#ffffff'); g.globalAlpha = 1; }
+    if (arc) CT.drawArc(g, arc, cx, cy, time, arc.land && (arc.land.hit || trapNear(arc.land)) ? '#8fd160' : '#c8ccd4');
   };
   return W;
 }

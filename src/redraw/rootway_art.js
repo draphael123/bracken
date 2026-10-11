@@ -72,9 +72,14 @@ export function paintHuntmaster(g, o) {
   const Rf = (dx, dy, w, h, col) => { g.fillStyle = col; g.fillRect(f > 0 ? X + dx : X - dx - w, Y + dy, w, h); };
   const Pf = (dx, dy, col) => Rf(dx, dy, 1, 1, col);
   const drawn = /^(aim|volley|split|hoist)Tell$/.test(m), loose = m === 'loose', knifeUp = m === 'slashTell', cut = m === 'slash';
-  const crouch = m === 'leapTell' || m === 'land' || m === 'caught' || (o.perch >= 0 && !drawn && !loose && !knifeUp && !cut);
-  const air = m === 'leap', stag = m === 'open', walk = m === 'walk' || m === 'recover' || m === 'wake', step = walk ? Math.floor(t * 7) % 2 : 0;
-  const down = crouch ? 5 : 0, lean = stag ? -3 : drawn ? 1 : 0, bob = walk && step ? 1 : 0, ly = air ? -3 : 0;   /* the body's drop, lean and bounce */
+  /* THE NEW MOVES' OWN POSES (claude/rootway2art): the net's whirl and throw, the heavy arrow, the horn, the snare crouch / hop / set, the knife flurry, the dodge roll, the fall off the perch.
+     o.k = how far through the told windup (0..1); o.cut = which of the flurry's three cuts */
+  const netSwing = m === 'netSwing', netThrow = m === 'netThrow', heavy = m === 'heavyDraw', hornB = m === 'hornBlow', snC = m === 'snareCrouch', snH = m === 'snareHop', snS = m === 'snareSet',
+    flT = m === 'flurryTell', flC = m === 'flurry', K = Math.max(0, Math.min(1, o.k == null ? 1 : o.k));
+  if (m === 'roll') return paintRoll(g, o, X, Y, f, K, t);
+  const crouch = m === 'leapTell' || m === 'land' || m === 'caught' || snC || snS || (o.perch >= 0 && !drawn && !loose && !knifeUp && !cut);
+  const air = m === 'leap' || snH || (m === 'open' && !!o.fall), stag = m === 'open', walk = m === 'walk' || m === 'recover' || m === 'wake', step = walk ? Math.floor(t * 7) % 2 : 0;
+  const down = crouch ? 5 : flT ? 2 : heavy ? 1 : 0, lean = stag ? -3 : drawn ? 1 : netSwing ? -3 : netThrow ? 3 : heavy ? 2 : flT ? 2 : flC ? 2 + (o.cut || 0) : hornB ? -1 : 0, bob = walk && step ? 1 : 0, ly = air ? -3 : 0;   /* the body's drop, lean and bounce */
   const oy = -down + bob + ly;
   if (o.hurt) g.globalAlpha = 0.6;
   /* THE QUIVER on its strap, behind him (P1's weak point): whole, or hanging by one buckle with the strap cut and the arrows spilling */
@@ -84,7 +89,7 @@ export function paintHuntmaster(g, o) {
   const lt = oy - 8;
   if (air) { Rf(-5, lt, 4, 4, HK.skinD); Rf(1, lt + 1, 4, 4, HK.skinD); Rf(-6, lt + 4, 3, 2, HK.leatherD); Rf(3, lt + 5, 3, 2, HK.leatherD); }
   else if (crouch) { Rf(-7, lt, 5, 3, HK.skinD); Rf(2, lt, 5, 3, HK.skinD); Rf(-8, lt + 3, 3, -(lt + 3) - 2, HK.skinD); Rf(6, lt + 3, 3, -(lt + 3) - 2, HK.skinD); Rf(-9, -2, 5, 2, HK.leatherD); Rf(5, -2, 6, 2, HK.leatherD); }
-  else { const a = walk ? (step ? 2 : -2) : 0; Rf(-5 + a, lt, 3, -lt - 2, HK.skinD); Rf(2 - a, lt, 3, -lt - 2, HK.skinD); Rf(-6 + a, -2, 5, 2, HK.leatherD); Rf(1 - a, -2, 5, 2, HK.leatherD); }
+  else { const a = walk ? (step ? 2 : -2) : -(heavy ? 4 : (flT || flC || netThrow) ? 3 : 0); Rf(-5 + a, lt, 3, -lt - 2, HK.skinD); Rf(2 - a, lt, 3, -lt - 2, HK.skinD); Rf(-6 + a, -2, 5, 2, HK.leatherD); Rf(1 - a, -2, 5, 2, HK.leatherD); }
   /* the torso: a leather jerkin, a fur mantle, a belt with the skinning knife's sheath */
   Rf(-6 + lean, oy - 22, 12, 14, HK.leather); Rf(-6 + lean, oy - 22, 12, 2, HK.leatherL); Rf(-6 + lean, oy - 9, 12, 2, HK.leatherD); Rf(-6 + lean, oy - 10, 12, 1, HK.cord);
   Rf(-3 + lean, oy - 8, 2, 5, HK.leatherD); Rf(-2 + lean, oy - 4, 1, 2, HK.knife);   /* the sheath */
@@ -107,7 +112,52 @@ export function paintHuntmaster(g, o) {
   const bracer = (ax, ay) => { if (!wk[2]) { Rf(ax, ay, 4, 4, '#8a6a48'); Rf(ax, ay, 4, 1, '#c9a060'); Pf(ax + 1, ay + 2, HK.iron); Pf(ax + 3, ay + 2, HK.iron); } else { Rf(ax, ay, 4, 4, '#5a4230'); Pf(ax + 1, ay + 1, HK.iron); Rf(ax + 2, ay, 1, 3, HK.leatherD); Pf(ax + 3, ay + 3, HK.cord); Pf(ax + 4, ay + 4, HK.cord); Pf(ax + 4, ay + 5, HK.cord); } };
   const bowLimb = (cxB, cyB, half, belly, col) => { for (let q = -half; q <= half; q++) { const xo = Math.round(belly * Math.sqrt(Math.max(0, 1 - (q * q) / (half * half)))) - belly; Rf(cxB + xo, cyB + q, 2, 1, Math.abs(q) % 6 === 0 ? HK.bowL : col); } Rf(cxB - belly, cyB - half - 1, 2, 2, HK.bone); Rf(cxB - belly, cyB + half, 2, 2, HK.bone); };
   const bx = lean + 4, ay = oy - 18;
-  if (drawn || loose) {
+  const jaw = (jx, jy, wink) => { Rf(jx, jy, 13, 2, HK.iron); Rf(jx, jy, 13, 1, '#5a5258'); Rf(jx - 1, jy - 4, 3, 4, '#7a727c'); Rf(jx + 11, jy - 4, 3, 4, '#7a727c');   /* the plate and the two open jaws, teeth up */
+    for (let q = 1; q < 12; q += 2) Pf(jx + q, jy - 2 - (q === 1 || q === 11 ? 3 : 0), '#c8ccd4'); Rf(jx - 1, jy - 5, 1, 1, '#c8ccd4'); Rf(jx + 13, jy - 5, 1, 1, '#c8ccd4'); if (wink && Math.floor(t * 8) % 2) Rf(jx + 5, jy - 5, 3, 2, '#ff6b6b'); };
+  if (netSwing || netThrow) {
+    /* THE NET: swung round over his head, its weights flying wider as it speeds (a told windup); then flung out - the arm out, the cords streaming from the open hand, the follow-through down */
+    bowLimb(-9, oy - 15, 10, 3, HK.bow); Rf(bx + 1, ay + 1, 6, 3, HK.skin);
+    if (netSwing) { const cxn = bx + 2, cyn = ay - 24, r = 3 + Math.round(8 * K), ph = Math.floor(t * 14) % 8; Rf(bx - 2, ay - 20, 3, 19, HK.skin); Rf(bx - 3, ay - 22, 5, 3, HK.skinL);
+      for (let i = 0; i < 16; i++) { const a = ph * 0.785 + i * 0.3927, nx = cxn + Math.round(Math.cos(a) * r), ny = cyn + Math.round(Math.sin(a) * r * 0.45), W = i % 4 === 0; if (W) { Rf(nx, ny, 2, 2, HK.bone); Pf(nx + 1, ny + 1, HK.iron); } else Pf(nx, ny, HK.cord); }
+      for (let i = 0; i < 4; i++) { const a = ph * 0.785 + i * 1.5708, nx = cxn + Math.round(Math.cos(a) * r * 0.5), ny = cyn + Math.round(Math.sin(a) * r * 0.22); Pf(nx, ny, '#8a7648'); }
+      Pf(cxn, cyn + 2, HK.cord); Pf(cxn, cyn + 3, HK.cord); }
+    else { const lo = K > 0.5 ? 4 : 0; Rf(bx, ay - 5 + lo, 14, 3, HK.skin); Rf(bx + 13, ay - 7 + lo, 3, 5, HK.skinL); for (let i = 0; i < 5; i++) Pf(bx + 16 + i * 2, ay - 5 + lo + (i & 1) - (i >> 1), HK.cord); Pf(bx + 24, ay - 7 + lo, HK.bone); Pf(bx + 24, ay - 3 + lo, HK.bone); }
+  } else if (heavy) {
+    /* THE HEAVY ARROW: feet planted wide, the great bow bent hard, a black-shafted BROADHEAD drawn to the cheek, the arm trembling */
+    const sh = K > 0.6 ? Math.round(Math.sin(t * 60)) : 0, cyB = ay + 1 + sh, cxB = bx + 14, sx = cxB - 6 - Math.round(10 * K);
+    Rf(bx, cyB - 1, cxB - bx, 3, HK.skin); bracer(bx + 3, cyB - 2); bowLimb(cxB, cyB, 15, 7, HK.bow);
+    for (let q = -15; q <= 15; q++) Rf(Math.round(cxB - 6 + (sx - (cxB - 6)) * (1 - Math.abs(q) / 15)), cyB + q, 1, 1, HK.string);
+    for (let q = 0; q < 22; q++) Rf(sx + q, cyB, 1, 1, '#2a2018');
+    Rf(sx + 22, cyB - 3, 2, 7, '#1a1214'); Rf(sx + 24, cyB - 2, 2, 5, '#1a1214'); Rf(sx + 26, cyB - 1, 2, 3, '#1a1214'); Pf(sx + 28, cyB, '#ff6b6b'); Pf(sx + 22, cyB - 3, HK.red); Pf(sx + 22, cyB + 3, HK.red);   /* the broadhead: black, a red edge, barbed */
+    Rf(sx, cyB - 2, 4, 2, '#3a1418'); Rf(sx, cyB + 1, 4, 2, '#3a1418'); Rf(sx - 2, cyB - 1, 4, 3, HK.skin);
+  } else if (hornB) {
+    /* THE HORN: raised from his chest to his mouth as the tell runs, his head thrown back, the bell lifting; the other hand fisted at his hip */
+    const up = Math.min(1, K * 2.4), low = Math.round((1 - up) * 9), mx = hx + 5, my = hy + 10 + low;
+    Rf(bx - 2, oy - 24 - Math.round(7 * up), 3, 9 + Math.round(7 * up), HK.skin); Rf(bx + 1, ay + 3, 4, 3, HK.skin);
+    for (let i = 0; i < 15; i++) { const th = 2 + (i >> 2), hxp = mx + i, hyp = my - Math.floor(i * (0.3 + 0.25 * up)); Rf(hxp, hyp - th + 1, 1, th, i % 5 === 4 ? HK.boneD : HK.bone); Pf(hxp, hyp - th + 1, '#fff6e0'); }
+    const be = my - Math.floor(14 * (0.3 + 0.25 * up)); Rf(mx + 14, be - 5, 2, 8, HK.amber); Pf(mx + 14, be - 5, '#ffd8a0'); Rf(mx + 15, be - 3, 1, 5, '#2a1a12');   /* the bell, amber-rimmed */
+    Rf(mx - 1, my - 1, 2, 3, HK.leatherD);   /* the mouthpiece band */
+    bowLimb(-9, oy - 15, 10, 3, HK.bow);
+  } else if (snC || snH || snS) {
+    /* THE SNARES: a crouch with a jaw trap held open in both hands (told), the hop with it swung out ahead, the set - one hand to the floor */
+    bowLimb(-9, oy - 15, 10, 3, HK.bow);
+    if (snS) { Rf(bx, oy - 5, 9, 3, HK.skin); Rf(bx + 8, oy - 4, 3, 4, HK.skinL); }
+    else if (snH) { Rf(bx, ay + 2, 9, 3, HK.skin); jaw(bx + 7, ay + 8, false); }
+    else { Rf(bx, ay + 3, 8, 3, HK.skin); Rf(bx + 1, ay + 6, 8, 3, HK.skin); jaw(bx + 7, ay + 9, true); }
+  } else if (flT || flC) {
+    /* THE KNIFE FLURRY: coiled low (the blade reversed behind him, the free hand clawing - and a white glint on the blade on the beat), then three cuts: down, back up, and a lunging stab */
+    bowLimb(-9, oy - 15, 10, 3, HK.bow);
+    if (flT) { Rf(bx - 5, ay + 1, 6, 3, HK.skin); Rf(bx - 14, ay - 2, 10, 2, Math.floor(t * 12) % 2 ? '#ffffff' : HK.knife); Rf(bx - 5, ay - 3, 3, 4, HK.leatherD); Rf(bx + 2, ay - 2, 7, 3, HK.skin); Pf(bx + 9, ay - 3, HK.skinL); Pf(bx + 9, ay + 1, HK.skinL); }
+    else { const c = o.cut || 0, ar = o.hurt ? 0.6 : 1; Rf(bx + 1, ay - 2, 5, 3, HK.skinD);
+      if (c === 0) { Rf(bx, ay - 6, 4, 6, HK.skin); for (let i = 0; i < 15; i++) Rf(bx + 3 + i, ay - 6 + Math.round(i * 0.8), 2, 2, i > 11 ? '#ffffff' : HK.knife); g.globalAlpha = ar * 0.5; for (let i = 0; i < 15; i++) Rf(bx + 2 + i, ay - 11 + Math.round(i * 0.5), 1, 5, '#e8f4ff'); }
+      else if (c === 1) { Rf(bx, ay + 2, 8, 3, HK.skin); for (let i = 0; i < 15; i++) Rf(bx + 8 + i, ay + 4 - Math.round(i * 0.7), 2, 2, i > 11 ? '#ffffff' : HK.knife); g.globalAlpha = ar * 0.5; for (let i = 0; i < 15; i++) Rf(bx + 7 + i, ay + 7 - Math.round(i * 0.45), 1, 5, '#e8f4ff'); }
+      else { Rf(bx, ay - 4, 10, 3, HK.skin); Rf(bx + 10, ay - 4, 18, 2, HK.knife); Rf(bx + 24, ay - 4, 4, 2, '#ffffff'); Rf(bx + 9, ay - 6, 2, 6, HK.leatherD); g.globalAlpha = ar * 0.45; Rf(bx + 12, ay - 8, 16, 1, '#e8f4ff'); Rf(bx + 12, ay - 1, 16, 1, '#e8f4ff'); }
+      g.globalAlpha = ar; }
+  } else if (m === 'open' && o.fall) {
+    /* OFF HIS PERCH AND FALLING: both arms flung up, the mask thrown back, the bow gone loose */
+    Rf(bx - 4, ay - 14, 3, 14, HK.skin); Rf(bx + 4, ay - 16, 3, 14, HK.skin); bowLimb(-9, oy - 15, 10, 3, HK.bow);
+    for (const sx of [-9, 10]) Pf(sx + lean, oy - 34 + Math.round(Math.sin(t * 14 + sx)), HK.goldL);
+  } else if (drawn || loose) {
     /* THE DRAW: the arm out, the great bow held forward bent, the string to his cheek, the arrow nocked (gold: aimed, volley; red: split, hoist) */
     const up = m === 'hoistTell', red = m === 'splitTell' || m === 'hoistTell', k = loose ? 0 : Math.max(0, Math.min(1, o.draw ?? 1));
     const cyB = ay + 1 - (up ? 7 : 0), cxB = bx + 13;
@@ -130,6 +180,26 @@ export function paintHuntmaster(g, o) {
     /* THE GUARD (walking, standing, recovering, leaping, perched): the great bow held across his front, the arm bent to it */
     const gx = bx + 6; Rf(bx - 1, ay + 1, 7, 4, HK.skin); bracer(bx + 1, ay + 1);
     bowLimb(gx + 2, oy - 17, 14, 4, HK.bow); Rf(gx - 2, oy - 31, 1, 29, HK.string);
+  }
+  g.globalAlpha = 1;
+}
+/* THE DODGE ROLL: a dive (shoulder down, the head tucked), then a BALL of him - the fur mantle, the quiver's bump, the bow's tips - turned in four redrawn quarters, a puff of dust behind, then up out of it */
+function paintRoll(g, o, X, Y, f, K, t) {
+  const Rf = (dx, dy, w, h, col) => { g.fillStyle = col; g.fillRect(f > 0 ? X + dx : X - dx - w, Y + dy, w, h); }, Pf = (dx, dy, col) => Rf(dx, dy, 1, 1, col);
+  if (o.hurt) g.globalAlpha = 0.6;
+  const q = Math.floor(K * 6) % 4;
+  for (let i = 0; i < 3; i++) { Rf(-12 - i * 6, -3 - (i & 1), 4 - i, 3 - (i > 1 ? 1 : 0), '#c9b27c'); Pf(-14 - i * 6, -6 - i, '#e8dcc0'); }   /* the dust he kicks up */
+  if (K < 0.2 || K > 0.82) {   /* the dive in, the rise out: crouched low, the head forward, the bow across */
+    const up = K > 0.82 ? 6 : 0;
+    Rf(-7, -8 - up, 14, 8, HK.leather); Rf(-8, -10 - up, 14, 4, HK.fur); Rf(-4, -15 - up, 8, 6, HK.skin); Rf(-2, -16 - up, 6, 5, HK.bone); Pf(0, -13 - up, HK.amber); Pf(3, -13 - up, HK.amber);
+    Rf(-5, -2, 4, 2, HK.leatherD); Rf(3, -2, 5, 2, HK.leatherD); Rf(-12, -13 - up, 4, 8, HK.leatherD); Rf(5, -9 - up, 8, 2, HK.bow);
+  } else {   /* the ball */
+    const cy = -9, R2 = 8;
+    for (let dy = -R2; dy <= R2; dy++) { const hw = Math.round(Math.sqrt(R2 * R2 - dy * dy)); Rf(-hw, cy + dy, hw * 2 + 1, 1, dy < -4 ? HK.furL : dy > 4 ? HK.leatherD : HK.leather); }
+    const spots = [[[-5, -4], [4, 3], [-2, 6]], [[3, -6], [-5, 1], [5, 5]], [[5, -2], [-4, 5], [-1, -7]], [[-1, -6], [6, 1], [-6, -1]]][q];
+    for (const [sx, sy] of spots) { Rf(sx - 1, cy + sy, 3, 2, HK.bone); Pf(sx, cy + sy, '#2a1a12'); }   /* a bead, a tooth, a skull on the belt coming round */
+    Rf(-3, cy - 7, 6, 3, HK.skin); Rf(-2, cy - 8, 5, 2, HK.bone);   /* the tucked head with its mask */
+    Rf(-R2 - 2, cy - 2, 3, 6, HK.leatherD); Rf(R2 - 1, cy - 4, 3, 2, HK.bow); Rf(-R2, cy + 4, 3, 2, HK.bow);
   }
   g.globalAlpha = 1;
 }

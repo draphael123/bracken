@@ -49,14 +49,14 @@ const topOf = (x, y) => at(x, y) === T.SOLID && at(x, y - 1) !== T.SOLID;
   }
   ok(bad.length === 0, 'every cleat is set into a root wall or stands on a post to a solid top (' + plan.cleats.filter(c => c.post > 0).length + ' on raised posts: ' + plan.cleats.filter(c => c.post > 0).map(c => c.id).join(', ') + ')' + (bad.length ? ': ' + bad.join('; ') : '')); }
 /* C */
-{ const FLOOR = new Set(['leaves', 'bonescrap', 'rack', 'lantern']), WALL = new Set(['peg', 'nailhide', 'skullnail']);
+{ const FLOOR = new Set(['leaves', 'bonescrap', 'rack', 'lantern', 'glowcap', 'snarepost', 'skinrack', 'lodgebeam']), WALL = new Set(['peg', 'nailhide', 'skullnail']);
   const bad = [], ex = L.ents.filter(e => ['sign', 'check', 'loft', 'silver', 'stray', 'gate'].includes(e.t));
   for (const it of plan.items) { const tx = Math.floor(it.x / 16), ty = Math.round(it.y / 16);
     if (FLOOR.has(it.k)) { const a = at(tx, ty), b = at(tx, ty - 1);
       if (!(a === T.SOLID || a === T.ONEWAY) || b !== T.AIR) bad.push(it.k + '@' + tx + ',' + ty + ' not on a top');
       if (it.k !== 'lantern' && ex.some(e => Math.abs(e.x - tx) <= 1 && Math.abs(e.y - (ty - 1)) <= 1)) bad.push(it.k + '@' + tx + ',' + ty + ' on an entity');
       if (plan.chasms.some(c => tx >= c.x0 - 2 && tx <= c.x1 + 2)) bad.push(it.k + '@' + tx + ',' + ty + ' at a chasm lip');
-    } else if (it.k === 'hair') { if (at(tx, ty - 1) !== T.ONEWAY && at(Math.floor((it.x + 8) / 16), ty - 1) !== T.ONEWAY) bad.push('hair@' + tx + ',' + ty + ' hangs from nothing');
+    } else if (it.k === 'hair' || it.k === 'sporevine') { if (at(tx, ty - 1) !== T.ONEWAY && at(Math.floor((it.x + 8) / 16), ty - 1) !== T.ONEWAY) bad.push(it.k + '@' + tx + ',' + ty + ' hangs from nothing');
     } else if (WALL.has(it.k)) { const wx = it.side < 0 ? Math.floor(it.x / 16) : Math.floor(it.x / 16) - 1, wy = Math.floor((it.y + 4) / 16); if (at(wx, wy) !== T.SOLID) bad.push(it.k + '@' + wx + ',' + wy + ' is not on a wall');
     } else bad.push('unknown kind ' + it.k); }
   ok(bad.length === 0, plan.items.length + ' dressing items, every one held up (' + [...new Set(plan.items.map(i => i.k))].length + ' kinds, ' + plan.lights.length + ' lights)' + (bad.length ? ': ' + bad.slice(0, 8).join('; ') : '')); }

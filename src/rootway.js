@@ -205,7 +205,7 @@ export function buildRootway({ painter, T, TS }) {
   foe('archer', 316, 15, 'lookout', { face: -1, lookout: true });
   coins([314, 17], [318, 17]); tag(338, 18); plank(322, 336, 16);                                      /* TROPHY TAG THREE: past the lookout, on the root road */
   /* THE SNARES, TAUGHT: a pod cap, two jaw traps on the root road (jump them, or spring one with a pod), then a NET coiled under the root over the road */
-  podCaps.push([313, 19]); jaws.push([320, 19], [325, 19]); sign(318, 18, 'JAW TRAPS. JUMP THEM - OR TAKE A POD (E) AND THROW IT ON ONE: IT SNAPS ON NOTHING.');
+  podCaps.push([300, 19], [313, 19]); jaws.push([320, 19], [325, 19]); sign(318, 18, 'JAW TRAPS. JUMP THEM - OR TAKE A POD (E) AND THROW IT ON ONE: IT SNAPS ON NOTHING.');
   nets.push({ x0: 329, x1: 331, row: 19, top: 17 }); sign(327, 18, 'A NET HANGS OVER THE ROAD. WHEN IT CREAKS, ROLL THROUGH IT.');
   foe('shield', 334, 18, 'roadGuard', { face: -1 }); foe('trophyhunter', 337, 18, 'roadGuard', { face: -1 }); foe('archer', 323, 15, 'roadGuard', { perch: true, face: -1 });   /* (a bow on the root ledge over the traps: v2, a foe at the platforming moment) */   /* (FIX PASS: a bow on the root over the road) */
   /* the leaning cap over a gap, under a scout's fire from a perch past it */

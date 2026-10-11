@@ -55,23 +55,42 @@ export function makeSnares(ctx) {
     }
   };
   S.read = () => ({ jaws: S.jaws.map(j => ({ x: j.x, y: j.y, state: j.state, boss: !!j.boss })), nets: S.nets.map(n => ({ x: n.x, y: n.y, w: n.w, state: n.state, t: n.t })), n: { ...S.n } });
-  /* THE READ: open jaws with a winking red glint (set), a dull pair (arming, sprung); a coiled net in the branches, its shadow and its drop */
+  /* THE READ (the art pass, claude/rootway2art): a JAW TRAP is iron - a plate and a pin and a chain to a peg, two toothed jaws that stand open (set: the trigger plate pale, a red glint winking in the
+     teeth), lie half-raised and dull (arming: a puff of dust under them), or are shut on nothing (sprung: a spark). A NET is a rolled coil of cord and bone weights hung in the bough over the way (the
+     bough creaks and its shadow is a DITHERED decal on the floor when it tells), then a real net - a lattice, knots at the crossings, weights on the hem - falls and lies over the ground. */
+  const JAWP = { open: [[-7, -2], [-8, -5], [-8, -8], [-7, -11], [-5, -13]], half: [[-7, -2], [-7, -4], [-6, -6], [-4, -7], [-2, -8]], shut: [[-7, -2], [-6, -4], [-5, -6], [-3, -7], [-1, -8]] };
   S.draw = (g, cx, cy, time) => {
-    for (const j of S.jaws) { const x = R(j.x - cx), y = R(j.y - cy); if (x < -20 || x > 2000) continue;
-      g.fillStyle = '#2a2224'; g.fillRect(x - 6, y - 1, 12, 1);   /* the chain plate */
-      if (j.state === 'set' || j.state === 'arming') { const a = j.state === 'arming' ? 0.55 : 1; g.globalAlpha = a;
-        g.fillStyle = '#5a5258'; g.fillRect(x - 7, y - 3, 3, 2); g.fillRect(x + 4, y - 3, 3, 2); g.fillStyle = '#9a929c'; for (let k = -6; k <= 5; k += 2) g.fillRect(x + k, y - 4 - (k === -6 || k === 4 ? 1 : 0), 1, 2);
-        g.fillStyle = '#c8ccd4'; g.fillRect(x - 6, y - 5, 1, 1); g.fillRect(x + 5, y - 5, 1, 1); g.globalAlpha = 1;
-        if (j.state === 'set' && Math.floor(time * 4 + j.x) % 3 === 0) { g.fillStyle = '#ff6b6b'; g.fillRect(x - 1, y - 6, 2, 2); } }
-      else { g.fillStyle = '#5a5258'; g.fillRect(x - 3, y - 6, 6, 5); g.fillStyle = '#9a929c'; g.fillRect(x - 3, y - 6, 6, 1); }
+    const rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+    const jaws = (x, y, pose, dull) => { const pts = JAWP[pose];
+      for (const s of [-1, 1]) for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], n = Math.max(Math.abs(bx - ax), Math.abs(by - ay)) || 1;
+        for (let k = 0; k <= n; k++) { const px = x + s * Math.round(ax + (bx - ax) * k / n) - (s > 0 ? 1 : 0), py = y + Math.round(ay + (by - ay) * k / n); rc(px, py, 2, 2, dull ? '#6a646c' : '#8a8490'); rc(px + (s > 0 ? 1 : 0), py, 1, 1, dull ? '#8a8490' : '#c8ccd4'); } }
+      for (const s of [-1, 1]) for (let i = 1; i < pts.length; i++) { const [ax, ay] = pts[i], tx = x + s * ax + (s > 0 ? 1 : -1); rc(tx, y + ay + 1, 1, 2, dull ? '#a8a8b0' : '#f0f0f8'); }   /* the teeth, pointing in */ };
+    for (const j of S.jaws) { const x = R(j.x - cx), y = R(j.y - cy); if (x < -24 || x > 2000) continue;
+      rc(x - 8, y - 2, 17, 2, '#2a2224'); rc(x - 8, y - 2, 17, 1, '#5a5258'); rc(x - 6, y - 1, 1, 1, '#c8ccd4'); rc(x + 6, y - 1, 1, 1, '#c8ccd4');   /* the plate and its rivets */
+      rc(x + 9, y - 1, 3, 1, '#3a2a22'); rc(x + 12, y - 4, 2, 4, '#5a3c26'); rc(x + 12, y - 4, 1, 4, '#8a6a48');   /* the chain to its peg */
+      if (j.state === 'set' || j.state === 'arming') { const arming = j.state === 'arming'; jaws(x, y, arming ? 'half' : 'open', arming);
+        rc(x - 2, y - 3, 5, 1, arming ? '#8a7a5a' : '#e8c878');   /* the trigger plate, pale */
+        if (arming) { g.globalAlpha = 0.6; rc(x - 10, y - 1, 3, 1, '#c9b27c'); rc(x + 8, y - 2, 2, 1, '#c9b27c'); g.globalAlpha = 1; }
+        else if (Math.floor(time * 4 + j.x) % 3 === 0) { rc(x - 1, y - 9, 2, 2, '#ff6b6b'); rc(x - 1, y - 10, 2, 1, '#ffb0a0'); } }
+      else { jaws(x, y, 'shut', true); if (j.lvl && j.armT > JAW.reset - 0.25) { rc(x - 1, y - 11, 1, 1, '#ffffff'); rc(x + 2, y - 10, 1, 1, '#ffe8a0'); rc(x - 4, y - 10, 1, 1, '#ffffff'); } }
     }
     for (const n of S.nets) { const x = R(n.x - cx), y = R(n.y - cy), top = R(n.top - cy), hw = R(n.w / 2); if (x < -60 || x > 2000) continue;
-      if (n.state === 'hang' || n.state === 'tell') { const sh = n.state === 'tell' ? (Math.floor(time * 16) % 2 ? 1 : 0) : 0;
-        g.strokeStyle = '#8a7a5a'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, top - 40); g.lineTo(x, top); g.stroke();
-        g.fillStyle = '#6a5a3a'; g.fillRect(x - 9 + sh, top, 18, 7); g.fillStyle = '#c9b27c'; for (let k = -8; k < 9; k += 3) g.fillRect(x + k + sh, top + 1 + (k & 1), 1, 5);
-        if (n.state === 'tell') { g.globalAlpha = 0.25 + 0.3 * (1 - n.t / NET.tell); g.fillStyle = '#1a1210'; g.fillRect(x - hw, y - 2, hw * 2, 2); g.globalAlpha = 1; g.fillStyle = '#ff6b6b'; if (sh) g.fillRect(x - hw, y - 3, hw * 2, 1); } }
-      else { const k = n.state === 'fall' ? 1 - n.t / NET.fall : 1, ny = R(top + (y - top) * k);
-        g.strokeStyle = '#c9b27c'; g.globalAlpha = 0.85; for (let i = -hw; i <= hw; i += 5) { g.beginPath(); g.moveTo(x + i, ny - 22); g.lineTo(x + i + 3, ny); g.stroke(); } for (let r = ny - 20; r <= ny; r += 5) { g.beginPath(); g.moveTo(x - hw, r); g.lineTo(x + hw, r); g.stroke(); } g.globalAlpha = 1; }
+      const knot = (kx, ky) => { rc(kx, ky, 1, 1, '#f0e0b0'); };
+      if (n.state === 'hang' || n.state === 'tell') { const tell = n.state === 'tell', sh = tell ? (Math.floor(time * 16) % 2 ? 1 : 0) : 0, sw = tell ? 0 : Math.round(Math.sin(time * 1.2 + n.x) * 0.6);
+        rc(x + sw, top - 40, 1, 40, '#8a7a5a');   /* the rope up into the bough */
+        rc(x - 10 + sh + sw, top, 21, 8, '#5a4a30'); rc(x - 10 + sh + sw, top, 21, 1, '#8a7a5a'); rc(x - 10 + sh + sw, top + 7, 21, 1, '#33281a');   /* the coil: cord wound on itself */
+        for (let k = -9; k < 10; k += 3) { rc(x + k + sh + sw, top + 1, 1, 6, '#c9b27c'); rc(x + k + 1 + sh + sw, top + 2 + (k & 1), 1, 3, '#e8dcc0'); }
+        rc(x - 11 + sh + sw, top + 5, 2, 4, '#e8dcc0'); rc(x + 10 + sh + sw, top + 5, 2, 4, '#e8dcc0'); rc(x - 11 + sh + sw, top + 5, 1, 1, '#fff6e0'); rc(x + 10 + sh + sw, top + 5, 1, 1, '#fff6e0');   /* the bone weights hung off its ends */
+        if (tell) { const k = 1 - n.t / NET.tell, rows = k > 0.5 ? 3 : 2; g.globalAlpha = 0.55 + 0.3 * k; for (let r2 = 0; r2 < rows; r2++) for (let xx = -hw; xx < hw; xx++) if (((xx + r2) & 1) === 0) rc(x + xx, y - 1 - r2, 1, 1, '#1a1210');   /* the creak's shadow: a dithered decal on the ground, deepening */
+          g.globalAlpha = 1; if (Math.floor(time * 12) % 2) { rc(x - hw, y - 1, 2, 1, '#e8685a'); rc(x + hw - 2, y - 1, 2, 1, '#e8685a'); } } }
+      else { const k = n.state === 'fall' ? 1 - n.t / NET.fall : 1, ny = R(top + (y - top) * k), open = n.state === 'fall';
+        if (open) { /* in the air: a spread lattice, the hem weighted, the cord it falls on streaming up */
+          g.globalAlpha = 0.95; for (let i = -hw; i <= hw; i += 5) rc(x + i, ny - 20, 1, 20, '#c9b27c'); for (let r2 = ny - 20; r2 <= ny; r2 += 5) rc(x - hw, r2, hw * 2 + 1, 1, '#c9b27c'); for (let i = -hw; i <= hw; i += 5) for (let r2 = ny - 20; r2 <= ny; r2 += 5) knot(x + i, r2); g.globalAlpha = 1;
+          for (let i = -hw; i <= hw; i += 11) rc(x + i - 1, ny, 3, 3, '#e8dcc0'); }
+        else { /* lying over the ground: a low heap of mesh, its hem weights out at the edges */
+          g.globalAlpha = 0.9; for (let r2 = 0; r2 < 3; r2++) { const yy = y - 1 - r2 * 2, w2 = hw - r2 * 4; for (let i = -w2; i <= w2; i += 1) if (((i + r2 * 2) % 4 + 4) % 4 !== 3) rc(x + i, yy, 1, 1, '#c9b27c'); }
+          for (let i = -hw + 2; i <= hw - 2; i += 6) knot(x + i, y - 3); g.globalAlpha = 1;
+          rc(x - hw - 1, y - 3, 3, 3, '#e8dcc0'); rc(x + hw - 1, y - 3, 3, 3, '#e8dcc0'); rc(x - hw - 1, y - 3, 1, 1, '#fff6e0'); rc(x + hw - 1, y - 3, 1, 1, '#fff6e0'); } }
     }
   };
   return S;

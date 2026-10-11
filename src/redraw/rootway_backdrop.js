@@ -10,6 +10,7 @@
 //   CANOPY   a fringe of leaf-mass at the top of the frame when the camera is high in the tree
 // Every static picture is baked ONCE per tone (cold / mid / warm; a frame crossfades two); a frame is a handful of drawImage calls.   drawBackdrop(g, cx, cy, VW, VH, L, time, dY, dusk)
 import { mulberry } from '../px.js';
+import { drawAreaBack } from './rootway_areas.js';   /* the five areas' own back walls (claude/rootway2art) */
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return [c, g]; };
 const rc = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
@@ -119,6 +120,8 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, dusk) {
         const [a, b, ff] = tones(k), T = TONE[ff > 0.5 ? b : a]; g.strokeStyle = mix(T.lmB, '#c8a870', 0.45); g.lineWidth = 1; g.beginPath(); g.moveTo(px + 0.5, py); g.lineTo(px + sw + 0.5, py + ch); g.stroke();
         const cxm = px + sw, cyy = py + ch; g.fillStyle = mix(T.lmB, '#000000', 0.25); g.fillRect(Math.round(cxm - 8), Math.round(cyy), 16, 18); g.fillStyle = T.lmL; g.fillRect(Math.round(cxm - 8), Math.round(cyy), 16, 2); g.fillRect(Math.round(cxm - 8), Math.round(cyy + 16), 16, 2); for (let q = -6; q <= 6; q += 4) g.fillRect(Math.round(cxm + q), Math.round(cyy), 1, 18);
         g.fillStyle = 'rgba(255,190,100,0.5)'; g.fillRect(Math.round(cxm - 1), Math.round(cyy + 7), 3, 4); } } }
+  /* THE AREAS' OWN BACK WALLS: the cellar's cave, the trunk's bark lining, the gantry's scaffolds, the snares' boughs, the lodge's hall (src/redraw/rootway_areas.js) */
+  drawAreaBack(g, cx, cy, VW, VH, time);
   /* the low haze of the forest floor and the warm air over it */
   { const [a, b, f] = tones(k), T0 = TONE[a], T1 = TONE[b], hz = T0.haze.split(',').map((v, i) => Math.round(lerp(+v, +T1.haze.split(',')[i], f))).join(','); const gr = g.createLinearGradient(0, base - 40, 0, VH); gr.addColorStop(0, 'rgba(' + hz + ',0)'); gr.addColorStop(1, 'rgba(' + hz + ',0.36)'); g.fillStyle = gr; g.fillRect(0, base - 40, VW, VH - base + 40); }
   /* LIGHT SHAFTS through the canopy (additive): the higher, the warmer and the stronger */
