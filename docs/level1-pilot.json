@@ -274,5 +274,17 @@
   "lifts": 97,
   "walked": 100,
   "bare": true
+ },
+ "crown": {
+  "hash": "2eecb57b32ac",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 52,
+  "deaths": 5,
+  "kills": 75,
+  "lifts": 217,
+  "walked": 100,
+  "bare": true
  }
 }
