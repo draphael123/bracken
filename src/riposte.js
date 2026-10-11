@@ -130,7 +130,7 @@ export function makeRiposte(api) {
   function payoff(e, dmg, blow) {
     if (!(dmg > 0) || !e.alive) return dmg;
     if (bossLike(e)) { if (e.rpOpenT > 0 && blow) { stats.bossOpenHits++; return Math.round(dmg * PARRY.bossMul); } return dmg; }
-    if (e.rpOpenT > 0 && has(blow, 'riposte')) { e.rpOpenT = 0; stats.ripostes++;
+    if (e.rpOpenT > 0 && has(blow, 'riposte')) { e.rpOpenT = 0; e.rpPaidAt = t(); stats.ripostes++;
       if (e.elite && (e.ekRipN = (e.ekRipN || 0) + 1) >= PARRY.eliteBreakN && !(e.broken > 0)) { e.ekRipN = 0; stats.eliteBreaks++; api.breakPoise(e); }
       api.ring(e.x, e.y - (e.h || 16) / 2, 18, '#fff6c8', 0.25); api.hitstop(0.05); return Math.round(dmg * PARRY.mul); }
     return dmg;
