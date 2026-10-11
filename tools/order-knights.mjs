@@ -51,7 +51,7 @@ if (WANT.includes('table')) {
   for (const [k, T] of Object.entries(OC.TWISTS)) ok(OC.ORDER_MARKS[{ timber: 'timberTell', channel: 'shoveTell', rust: 'rustTell' }[k]] === T.mark, 'twist ' + k + ' marks ' + T.mark + ' as its table says');
   /* the guard layer */
   const ore = { t: 'oathlance', okPlate: 2, face: 1, alive: true };
-  ok(orderGuard(ore, 10, 'light', false, 20, 'light').turn === 'ORE' && orderGuard(ore, 10, 'light', false, -20, 'light').turn === 'ORE', 'ORE: a light cut is turned from either side');
+  ok(orderGuard(ore, 10, 'light', false, 20, 'light').dmg === 4 && orderGuard(ore, 10, 'light', false, -20, 'light').word === 'ORE' && ore.okPlate === 2, 'ORE: a light cut only chips the ore (x0.4, ORE) from either side, and cracks nothing');
   const hv = orderGuard(ore, 10, 'heavy', false, 20, 'heavy'); ok(hv.dmg === 5 && ore.okPlate === 1 && hv.word === 'CRACKED', 'ORE: a heavy cracks a plate and goes in at half');
   orderGuard(ore, 10, 'light', false, 20, ['light', 'riposte']); ok(ore.okPlate === 0 && orderGuard(ore, 10, 'light', false, 20, 'light') === null, 'ORE: a riposte cracks the last; then the elite guard decides');
   const mg = { t: 'oathmage', face: 1, ekSide: 1, alive: true };
@@ -116,7 +116,7 @@ if (WANT.some(w => w !== 'table')) {
       ok(r.antiAir === 'tell', 'THE LANCER: a hero over him -> the told upward thrust (rule b)');
       ok(r.catch === 'tell' && r.caught >= 1, 'THE BRUTE: a hero in the air before him -> the told CATCH, and he throws (rule d)');
       ok(r.mauKnock === 0 && r.plainKnock > 0 && r.mauKnock === r.unsKnock && r.mauKnockBroken === r.unsKnockBroken, 'THE BRUTE stands like an UNSTOPPABLE elite: a heavy that throws a plain elite brute (' + r.plainKnock + ') does not move him, broken or not as the affix (' + r.mauKnockBroken + '/' + r.unsKnockBroken + ')');
-      ok(r.oreLight === 0 && r.orePlate1 === 2 && r.oreHeavy > 0 && r.orePlate2 === 1, 'THE ORE: a light cut is turned (ORE), a heavy cracks a plate and goes in');
+      ok(r.oreLight <= 4 && r.orePlate1 === 2 && r.oreHeavy > 0 && r.orePlate2 === 1, 'THE ORE: a light cut is turned off his guarded front or chips the ore (' + r.oreLight + '), a heavy cracks a plate and goes in (' + r.oreHeavy + ')');
       ok(r.castTell && r.interrupted === 'castBroken' && r.mageHit > 0, 'THE BATTLE MAGE: struck in his cast he is INTERRUPTED (his opening)');
       ok(r.wardFront === 0 && r.wardBack > 0, 'THE BATTLE MAGE: a shot off his front is WARDED, from behind it lands');
     }

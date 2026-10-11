@@ -8,7 +8,7 @@
 //   - his anti-plunge POSE from src/foe-react.js REACT_AIR (scratch/brief-combat2.md section 4's update): the Duelist GUARDS HIGH (a), the
 //     Lancer thrusts UP (b), the Brute CATCHES and throws (d); the Battle Mage wards spells instead
 //   - his CHAPTER's signature moves (SIG_RUN) and his LEVEL's twist (TWIST_RUN): the moves the level's rule gives him
-//   - two guard rules src/elite-kit.js asks this file about (orderGuard): THE ORE CHAPTER's plates (a light blade turned from any side; a heavy,
+//   - two guard rules src/elite-kit.js asks this file about (orderGuard): THE ORE CHAPTER's plates (a light blade only chips them, x0.4, from any side; a heavy,
 //     a riposte or a throw cracks one) and THE BATTLE MAGE's ward (a shot turned off his front; a dash goes through)
 // main.js keeps only commented hooks (search 'claude/order'). The windups' marks are src/marks.js BY_HAND rows (ORDER_MARKS below): a module
 // foe's windups are if-chains the tells audit cannot follow, and every one of his is written down there.
@@ -36,7 +36,7 @@ export const K = {
   snare: { tell: 0.8, half: 20, dmg: 6, hold: 0.8, rec: 0.3, max: 170, cd: 7 },
   mud: { tell: 0.8, half: 26, life: 4.5, rec: 0.35, max: 170, cd: 8 },                            // THE BOG CHAPTER
   snuff: { tell: 0.6, r: 220, regrow: 4.0, cd: 10 },                                              // THE ORE CHAPTER
-  plate: { pips: 2, through: 0.5 },
+  plate: { pips: 2, through: 0.5, chip: 0.4 },
 };
 /* WHICH MOVES A BODY HAS, in the order he reaches for them (a twist first, then his chapter's, then his own; never the same move twice running
    when another is ready). */
@@ -56,7 +56,7 @@ export function orderGuard(e, dmg, k, fromAbove, dx, blow) {
   const has = v => blow === v || (Array.isArray(blow) && blow.includes(v));
   if (e.okPlate > 0) {   /* THE ORE CHAPTER: ORE-PLATED all round. The key is weight - a heavy, a riposte, a thrown thing - and it cracks a plate */
     if (k === 'heavy' || has('riposte') || has('throw')) { e.okPlate--; e.okPlateCd = K.snuff.regrow; return { dmg: Math.max(1, Math.round(dmg * K.plate.through)), word: e.okPlate > 0 ? 'CRACKED' : 'ORE BROKEN', col: '#e0a050' }; }
-    if (k === 'light' || k === 'rise' || k === 'dash' || k === 'sweep' || k === 'shot' || fromAbove) return { turn: 'ORE', col: '#e0a050' };
+    if (k === 'light' || k === 'rise' || k === 'dash' || k === 'sweep' || k === 'shot' || fromAbove) return { dmg: Math.max(1, Math.round(dmg * K.plate.chip)), word: 'ORE', col: '#e0a050', clank: true };   /* a light blade only CHIPS the ore (design-standard B15's floor: never a wall), with a clank and the word; his front still GUARDS by angle as every elite's */
   }
   if (e.t === 'oathmage' && !(e.ekStunT > 0) && (k === 'shot' || has('shot')) && Math.sign(dx) === (e.ekSide || e.face || 1)) return { turn: 'WARDED', col: '#c8a0ff' };   /* HIS WARD: shots off his front (a dash goes through it - the key he teaches) */
   return null;

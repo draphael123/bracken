@@ -192,7 +192,7 @@ export function installEliteKit(api) {
     const k = kindOf(blow), fromAbove = plunge || (Array.isArray(blow) ? blow.includes('plunge') : blow === 'plunge'), blade = !fromAbove && (k === 'light' || k === 'rise' || k === 'dash' || k === 'heavy');   /* (claude/knockinto) A PLUNGE IS NEVER A BLADE HERE: it does not count toward the mash (a THORNED one's spines), whatever else its tag says */
     { const og = orderGuard(e, dmg, k, fromAbove, (fromX ?? e.x) - e.x, blow);   /* (claude/order) THE ORE PLATES turn a light blade from any side (a heavy, a riposte or a throw cracks one); THE BATTLE MAGE's ward turns a shot off his front */
       if (og && og.turn) { e.ekClank = 0.12; e.ekTurnedN = (e.ekTurnedN || 0) + 1; say(e, og.turn, og.col, 0.8); api.turned(e); return false; }
-      if (og && og.dmg !== undefined) { dmg = og.dmg; if (og.word) say(e, og.word, og.col, 1.1); } }
+      if (og && og.dmg !== undefined) { dmg = og.dmg; if (og.word) say(e, og.word, og.col, 1.1); if (og.clank) { e.ekClank = 0.12; api.sfx('clank'); } } }
     if (dmg > 0 && blade && !(e.broken > 0)) {
       const now = api.time();
       if (k !== 'heavy') { if (!(now - (e.ekCutAt ?? -99) < K.mashWindow)) e.ekCuts = 0; e.ekCutAt = now; e.ekCuts = (e.ekCuts || 0) + 1;
