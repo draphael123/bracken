@@ -9,15 +9,18 @@
 //    5 poison tell (a green orb in the hand)           6 death tell (both hands out, black-green) - the hand, the mark
 //    7 blink out (coming apart in bands)               8 blink in (gathering)
 //    9 OPEN: re-gathering after the mark came back on him (slumped, the eyes and the staff gone dim)
-//   10, 11 enraged float (the flame crown)             12 dead (the robe fallen in, the skull on it)   13 hurt (LAST)
+//   10, 11 enraged float (the flame crown)             12 dead (the robe fallen in, the skull on it)
+//   13 RECOIL (his own bolt came home: head thrown back, the staff flung wide, sparks)   14 WIDE (both arms out, the orrery's worlds in his hands)
+//   15 DOWN (both hands low, palms to the floor: the skulls come up)   16 WRITE (one hand scribing the grave script in the air)
+//   17 CLUTCH (hunched, both hands pulled in: the void)   18 hurt (LAST)    (claude/ft2art: 13-17 are the tells-as-poses of his new moves)
 //   canvas 60x68   anchor ax 30, ay 66   pack w/h 16x40
 import { canvas, rect, fillPoly, line, circle, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
 
-export const UNDEADMAGE_F = { idle: [0, 1], fire: 2, ice: 3, storm: 4, poison: 5, death: 6, blinkOut: 7, blinkIn: 8, open: 9, enraged: [10, 11], dead: 12, hurt: 13 };
+export const UNDEADMAGE_F = { idle: [0, 1], fire: 2, ice: 3, storm: 4, poison: 5, death: 6, blinkOut: 7, blinkIn: 8, open: 9, enraged: [10, 11], dead: 12, recoil: 13, wide: 14, down: 15, write: 16, clutch: 17, hurt: 18 };
 const ROBE = ['#1e1a2a', '#2e2840', '#463c5c', '#5e5278'], ROT = '#3e4a30', BONE = ['#6e6a58', '#a8a48c', '#d9d6c0', '#f0eedc'];
 const GREEN = ['#1f6a3a', '#3fe08a', '#8fffb0', '#e0ffe8'], WOOD = ['#2a2019', '#4a3a2c', '#6a5540'];
-const SPELL = { fire: ['#c9463d', '#ff9b49', '#ffe0a0'], ice: ['#3a7aa0', '#9be2ff', '#ffffff'], storm: ['#6a60c0', '#c8c4ff', '#ffffff'], poison: ['#3a6a1a', '#8fd160', '#d8ffb0'], death: ['#0a100a', '#2a4a2a', '#8fffb0'] };
+const SPELL = { fire: ['#c9463d', '#ff9b49', '#ffe0a0'], ice: ['#3a7aa0', '#9be2ff', '#ffffff'], storm: ['#6a60c0', '#c8c4ff', '#ffffff'], poison: ['#3a6a1a', '#8fd160', '#d8ffb0'], death: ['#0a100a', '#2a4a2a', '#8fffb0'], orbit: ['#6a4a1c', '#b08a3a', '#f4dc8a'], bone: ['#6e6a58', '#d9d6c0', '#ffffff'], rune: ['#1f6a3a', '#8fffb0', '#e0ffe8'], void: ['#2a1250', '#7a4ad8', '#d8c8ff'] };
 
 function flame(g, x, y, h, ph, cols) {   /* a lick of fire: three tongues, the colours stepping up the middle */
   for (let i = -1; i <= 1; i++) { const hh = h - Math.abs(i) * 2 + ((ph + i * 2) % 3 === 0 ? 1 : 0);
@@ -57,6 +60,13 @@ function mage(o) {
   else if (P === 'raise') { arm(ax + 6, sy + 1, stx - 1, sy - 6); arm(ax - 6, sy + 1, ax - 10, sy - 14, orb); }
   else if (P === 'both') { arm(ax + 6, sy + 2, ax + 13, sy + 6); arm(ax - 4, sy + 3, ax + 7, sy + 13, orb); }   /* the staff pointed, the far hand dark with it */
   else if (P === 'slump') { arm(ax + 6, sy + 3, stx - 2, sy + 16); arm(ax - 6, sy + 3, ax - 6, sy + 19); }
+  else if (P === 'wide') { arm(ax + 6, sy + 2, ax + 23, sy - 3, orb); arm(ax - 6, sy + 2, ax - 23, sy - 3, orb); }   /* ARMS OUT: a world in each hand */
+  else if (P === 'down') { arm(ax + 6, sy + 3, ax + 18, sy + 18); arm(ax - 6, sy + 3, ax - 18, sy + 18); for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) rect(g, ax + sx * (16 + k * 2) - 1, sy + 21 + (k % 2), 2, 2, SPELL.bone[1]); }   /* PALMS TO THE FLOOR: bone dust standing off it */
+  else if (P === 'write') { arm(ax + 6, sy + 1, ax + 21, sy - 7, orb); arm(ax - 6, sy + 3, ax - 8, sy + 16);
+    for (const [x, y, w, h] of [[ax + 24, sy - 16, 6, 1], [ax + 26, sy - 16, 1, 7], [ax + 24, sy - 10, 6, 1], [ax + 29, sy - 14, 1, 4]]) rect(g, x, y, w, h, GREEN[2]);   /* a rune hangs where his finger was */ }
+  else if (P === 'clutch') { arm(ax + 6, sy + 3, ax + 2, sy + 13, orb); arm(ax - 6, sy + 3, ax - 3, sy + 12, orb); rect(g, ax - 1, sy + 9, 3, 3, SPELL.void[0]); rect(g, ax, sy + 10, 1, 1, SPELL.void[2]); }   /* HUNCHED: the void gathers in his chest */
+  else if (P === 'recoil') { arm(ax + 6, sy + 1, ax + 17, sy - 13); arm(ax - 6, sy + 3, ax - 15, sy + 6);
+    for (const [x, y] of [[ax + 15, sy - 20], [ax - 14, sy - 14], [ax + 20, sy - 2], [ax - 20, sy + 1]]) { rect(g, x, y, 2, 2, '#e8fff0'); rect(g, x + 1, y - 2, 1, 1, GREEN[1]); } }   /* sparks off him: his own bolt, home */
   // ---- THE HOOD AND THE SKULL ----
   const hx = ax + (o.headX || 0), hy = sy - 3 + (o.headY || 0);
   fillPoly(g, [[hx - 8, hy + 2], [hx - 6, hy - 11], [hx + 1, hy - 14], [hx + 7, hy - 9], [hx + 8, hy + 2], [hx + 4, hy + 4], [hx - 5, hy + 4]], ROBE[0]);
@@ -99,6 +109,11 @@ export function bakeUndeadMage() {
     mage({ ph: 0, pose: 'slump', dim: true, sink: 3, headY: 3, headX: -1, lean: 1, jaw: 2 }),
     mage({ ph: 1, flame: true }), mage({ ph: 2, flame: true, sink: 1 }),
     dead(),
+    mage({ ph: 0, pose: 'recoil', headX: -3, headY: -1, jaw: 4, lean: -1, staffX: 8, staffY: -3, sink: 2 }),
+    mage({ ph: 1, pose: 'wide', spell: 'orbit', headY: -1, staffX: -1 }),
+    mage({ ph: 2, pose: 'down', spell: 'bone', headY: 1, jaw: 1, sink: 2 }),
+    mage({ ph: 0, pose: 'write', spell: 'rune', headX: 2 }),
+    mage({ ph: 1, pose: 'clutch', spell: 'void', headX: 1, headY: 2, sink: 3, jaw: 2 }),
     mage({ ph: 1, headX: -2, headY: -1, jaw: 3, lean: -1 }),
   ].map(c => outline(c, OUT));
   const W = F.map(c => whiten(c));
