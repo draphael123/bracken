@@ -1712,10 +1712,18 @@ const REC = {
   mend: { p: 'r_chime', v: 0.3, r: 0.9, layer: 1 }, aegis: { p: 'r_chime', v: 0.25, r: 1.3 },
   rattle: { p: 'r_rattle', v: v => 0.28 * (v ?? 1) }, haft: { p: 'r_haft', v: 0.35 }, tipRing: { p: 'r_ring', v: 0.25, r: 1.2 }, braceSet: { p: 'r_latch', v: 0.35 },
   hornBlast: { p: 'r_horn', v: 0.5 }, hornDraw: { p: 'r_hornD', v: 0.35 },
+  // PART 3 (claude/sfx3): each boss's bell is its own pool at its own pitch. Kenney Impact Sounds impactBell_heavy (CC0) + impactGlass_medium; the tell stays a high double-ring.
+  seaBell: { p: 'r_bellA', v: 0.5, r: 0.8 }, tollBell: { p: 'r_bellB', v: 0.55, r: 0.5 }, mummerBell: { p: 'r_bellC', v: 0.3, r: 1.9, g: () => ['mbellRec', 0.12] },
+  priestBell: { p: 'r_bellB', v: 0.4, r: 1.15 }, priestBellTell: { p: 'r_bellC', v: 0.3, r: 2.4, layer: 1 }, golemChime: { p: 'r_glassC', v: 0.4, r: 0.85, layer: 1 },
+  // casters: the Archmage's rune/cast and the Wicker Queen's fires get takes of their own
+  archmage: { p: 'r_archF', v: 0.4, r: 0.85, layer: 1 }, mageRune: { p: 'r_archF', v: 0.4, r: 1.1, layer: 1 }, wqBurn: { p: 'r_wqF', v: 0.35, r: 1.25, layer: 1 }, wqAlight: { p: 'r_wqF', v: 0.45, r: 0.7, layer: 1 },
+  // the Huntmaster's horn is the same horn a fifth lower (set in SFX.hornDrawLow/hornBlastLow below)
+  hornBlastLow: { p: 'r_horn', v: 0.55, r: 0.7 }, hornDrawLow: { p: 'r_hornD', v: 0.4, r: 0.7 },
   // creature cries that were synth though the creature kits had spare takes
   snort: { p: 'vo_ogre_alert', v: 0.18, r: 1.5, voc: 1, g: () => ['snortRec', 0.1] }, screech: { p: 'vo_scream', v: 0.22, r: 1.35, voc: 1 }, caw: { p: 'amb_gull', v: 0.25, r: 0.8, g: () => ['caw', 0.35] },
   bark: { p: 'vo_bark', v: 0.3, voc: 1 }, yelp: { p: 'vo_bark', v: 0.26, r: 1.55, voc: 1 }, boreRoar: { p: 'roar', v: 0.45, r: 0.5 }, mawRoar: { p: 'roar', v: 0.4, r: 0.7 }, queenShriek: { p: 'vo_scream', v: 0.3, r: 1.05, voc: 1 }, croak: { p: 'croak', v: 0.3 },
 };
+SFX.hornBlastLow = function () { return SFX.hornBlast(); }; SFX.hornDrawLow = function () { return SFX.hornDraw(); };   /* synth fallback = the ordinary horn */
 export const RECORDED_SFX = Object.keys(REC);
 for (const [name, c] of Object.entries(REC)) {
   const orig = SFX[name]; if (typeof orig !== 'function') continue;

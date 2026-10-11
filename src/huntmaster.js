@@ -90,7 +90,7 @@ export function makeHuntmaster(ctx) {
     if (F.i >= F.list.length) { F.cyc++; F.n.cycles++; const L2 = CYCLE[F.ph]; F.list = L2[F.cyc % L2.length].slice(); F.i = 0; F.leapUsed = false; F.rollUsed = false; }
     let k = F.list[F.i++];
     if (k === 'leap') { if (F.leapUsed || !F.perches.length) k = 'aim'; else { F.leapUsed = true; return tell(e, 'leapTell', HM.leapTell); } }
-    if (k === 'horn') { if (F.horned[F.ph] || !F.perches.length) k = 'aim'; else { F.horned[F.ph] = true; F.n.horns++; ctx.sfx.hornDraw && ctx.sfx.hornDraw(); return tell(e, 'hornTell', HM.hornTell); } }
+    if (k === 'horn') { if (F.horned[F.ph] || !F.perches.length) k = 'aim'; else { F.horned[F.ph] = true; F.n.horns++; (ctx.sfx.hornDrawLow || ctx.sfx.hornDraw) && (ctx.sfx.hornDrawLow || ctx.sfx.hornDraw)(); return tell(e, 'hornTell', HM.hornTell); } }
     if (k === 'snare') { if (!ctx.snares || trapsUp() >= HM.snareMax || e.perch >= 0) k = 'aim'; else { F.n.snares++; return tell(e, 'snareTell', HM.snareTell); } }
     if (k === 'net') { F.n.nets++; return tell(e, 'netTell', HM.netTell); }
     if (k === 'hoist') { const cg = cageOver(P); if (!cg) k = 'aim'; else { F.hoist = cg.id; F.hoistX = cg.x; F.n.hoistShots++; return tell(e, 'hoistTell', HM.hoistTell); } }
@@ -166,7 +166,7 @@ export function makeHuntmaster(ctx) {
       case 'netTell': e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { throwNet(e); set(e, 'loose', HM.loose); } break;
       case 'loose': if (e.modeT <= 0) { if (F.punish) { F.punish = false; tell(e, 'heavyTell', HM.heavyTell); } else after(e); } break;
       case 'hoistTell': e.face = Math.sign(F.hoistX - e.x) || e.face; if (e.modeT <= 0) { if (ctx.rw) ctx.rw.cutHoist(F.hoist); ctx.sfx.bow ? ctx.sfx.bow() : ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); F.hoist = null; set(e, 'loose', HM.loose); } break;
-      case 'hornTell': if (e.modeT <= 0) { ctx.sfx.hornBlast && ctx.sfx.hornBlast(); callAdds(e); set(e, 'loose', HM.loose * 2); } break;
+      case 'hornTell': if (e.modeT <= 0) { (ctx.sfx.hornBlastLow || ctx.sfx.hornBlast) && (ctx.sfx.hornBlastLow || ctx.sfx.hornBlast)(); callAdds(e); set(e, 'loose', HM.loose * 2); } break;
       case 'snareTell': if (e.modeT <= 0) { F.snareK = 0; snareHop(e, P); } break;
       case 'snareHop': { const f = e.sh, k = Math.min(1, 1 - e.modeT / HM.snareHop); e.x = f.x0 + (f.x1 - f.x0) * k; e.y = floorY() - Math.sin(k * Math.PI) * 26;
         if (e.modeT <= 0) { e.x = f.x1; e.y = floorY(); if (ctx.snares) { ctx.snares.place(e.x, floorY()); F.n.trapsSet++; } ctx.sfx.clank && ctx.sfx.clank(); ctx.dust(e.x, e.y, 4);

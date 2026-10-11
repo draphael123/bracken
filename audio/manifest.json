@@ -783,5 +783,32 @@
   "audio/sfx/r_zap_0.ogg",
   "audio/sfx/r_zap_1.ogg",
   "audio/sfx/r_zap_2.ogg"
+ ],
+ "r_bellA": [
+  "audio/sfx/r_bellA_0.ogg",
+  "audio/sfx/r_bellA_1.ogg"
+ ],
+ "r_bellB": [
+  "audio/sfx/r_bellB_0.ogg",
+  "audio/sfx/r_bellB_1.ogg"
+ ],
+ "r_bellC": [
+  "audio/sfx/r_bellC_0.ogg",
+  "audio/sfx/r_bellC_1.ogg"
+ ],
+ "r_glassC": [
+  "audio/sfx/r_glassC_0.ogg",
+  "audio/sfx/r_glassC_1.ogg",
+  "audio/sfx/r_glassC_2.ogg"
+ ],
+ "r_archF": [
+  "audio/sfx/r_archF_0.ogg",
+  "audio/sfx/r_archF_1.ogg",
+  "audio/sfx/r_archF_2.ogg"
+ ],
+ "r_wqF": [
+  "audio/sfx/r_wqF_0.ogg",
+  "audio/sfx/r_wqF_1.ogg",
+  "audio/sfx/r_wqF_2.ogg"
  ]
 }
