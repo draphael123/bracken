@@ -72,14 +72,14 @@
   "bare": true
  },
  "unburied": {
-  "hash": "ee27e7e8f837",
+  "hash": "339823434226",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 29,
-  "deaths": 3,
-  "kills": 29,
-  "lifts": 87,
+  "hits": 49,
+  "deaths": 6,
+  "kills": 35,
+  "lifts": 102,
   "walked": 100,
   "bare": true
  },
