@@ -40,3 +40,7 @@ Not green and not this lane: tools/mobile-perf.mjs "map ran at 22.6 fps (budget 
    it kinder, add an awning on the long run.
 2. The viaduct stops 4 tiles short of the first dune because tools probe the crest column from the top. Rec (built): fine.
 3. Quicksand "teach -> exam" is told by signs + the encounters (10-09), not by a tint; rec: leave, or a deeper tint in the exam's pits (art only).
+
+## Finish pass (10-10 late)
+- Resumed after the failed session: committed the leftover work (ledge shade drawn under the Dune Worm's ledges; viaduct east of house3 shortened to 9 so it stops short of the first dune crest; caravan added to level-quality GATE), then re-stamped pilot, curve, mash level and mash boss rows. level-quality: CARAVAN CLEARS (multi-height 42%, curve 170% / 3 deaths, 5 checkpoints). curve-gate and mash-gate green.
+- Re-ran all of caravan, caravan-level, caravan-slides, caravan-worms, solid-islands, dressing, signs, corpses, reach-heroes, level-reach, textfit --strict: green (textfit showed one COLLIDE/OVERDRAWN on boss_fight_hanging_mini once, a flake: clean on rerun, not this lane). mobile-perf green this run (the earlier 22.6 fps was machine load). There is no tools/pixels.mjs in this tree; pixel checks run inside caravan.mjs and headless floats.
