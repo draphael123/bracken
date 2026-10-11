@@ -111,11 +111,10 @@ function stoneFill(g, d, wx0, wy0, o) {   /* coursed stone in world space: 8 px 
 }
 function districtDetail(g, d, o, x, y, wx0, wy0) {
   const K = o.d;
-  if (K === 'bazaar' && o.depth > 0) {   /* painted plaster over brick: a band of colour, flaked back in patches to the brick under it */
+  if (K === 'bazaar' && o.depth > 0) {   /* painted plaster: a band of colour across it */
     const band = (y % 6) === 2 ? d.paint[hash(x >> 3, y) % 3] : null;
-    for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const wx = wx0 + xx, wy = wy0 + yy, n = vn(wx, wy, 8) * 0.65 + vn(wx + 60, wy + 20, 3) * 0.35;
-      if (false) { void n; }
-      else { if (band && yy >= 5 && yy < 11) px(g, xx, yy, (yy === 5 || yy === 10) ? d.paint[0] === band ? '#1e4a48' : '#6a2a20' : band); else if ((wy & 7) === 7) px(g, xx, yy, '#6e5640'); } } }
+    for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const wy = wy0 + yy;
+      { if (band && yy >= 5 && yy < 11) px(g, xx, yy, (yy === 5 || yy === 10) ? d.paint[0] === band ? '#1e4a48' : '#6a2a20' : band); else if ((wy & 7) === 7) px(g, xx, yy, '#6e5640'); } } }
   if (K === 'halls' && o.depth > 0 && (y & 3) === 0) { for (let xx = 0; xx < 16; xx++) { px(g, xx, 5, d.inlay); px(g, xx, 6, '#7a5a20'); if (xx % 4 === 1) px(g, xx, 4, '#f0d070'); } }
   if (K === 'sluice') { const wet = vn(wx0, wy0, 11); if (o.depth > 0) for (let xx = 0; xx < 16; xx++) if ((hash(wx0 + xx, 9) % 5) < 2) { const l = 3 + hash(wx0 + xx, 2) % 9; for (let yy = 0; yy < l; yy++) px(g, xx, yy, yy < l - 1 ? '#34584a' : '#4a7a64'); }
     if (hash(x, y) % 6 === 0 && o.depth > 0) { rect(g, 3, 4, 10, 8, '#6a5230'); rect(g, 3, 4, 10, 1, '#d0a848'); rect(g, 3, 11, 10, 1, '#4a3418'); for (const [bx, by] of [[4, 5], [11, 5], [4, 10], [11, 10]]) px(g, bx, by, '#f0d070'); rect(g, 6, 6, 4, 4, '#3a2a14'); void wet; } }

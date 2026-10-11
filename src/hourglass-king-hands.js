@@ -8,6 +8,7 @@
 // main.js calls: spawnBoss, owns, on, update, take, drawBack, drawBoss, drawOver, barName, end, read, show, clear, onLever.
 import * as HKM from './hourglass-king.js';
 import { BOSS_PHASE } from './boss-music.js';
+import * as SET from './redraw/buried_city_set.js';
 import * as DG from './redraw/buried_city_cast.js';   /* (claude/bc2art: the king and his cog are the city's own drawings now) */
 const { HK } = HKM;
 
@@ -85,8 +86,8 @@ export function makeHourglassKingHands(ctx) {
 
   /* ---------- DRAWING (GREYBOX: the desert_glass.js king, his glass by its level) ---------- */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
-    /* THE THRONE: a high-backed seat of sandstone at the back of the room */
-    const tx = R(G.x0 + 20 * ctx.TS + 8 - cx), ty = R(G.floorY - cy); g.globalAlpha = 0.5; g.fillStyle = '#6a4a2a'; g.fillRect(tx - 18, ty - 70, 36, 70); g.fillStyle = '#9a7040'; g.fillRect(tx - 22, ty - 30, 44, 6); g.globalAlpha = 1;
+    /* THE THRONE: a high-backed seat of lapis stone on a stepped dais, gilded, a crown of gears over its back and the glass inset in it (src/redraw/buried_city_set.js) */
+    SET.drawThrone({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.x0 + 20 * ctx.TS + 8, G.floorY);
     /* phase three's pours: two steady columns from the broken roof */
     if (S.ph === 3) for (const x of G.pours) { const sx = R(x - HK.pourW / 2 - cx); g.globalAlpha = 0.75; g.fillStyle = '#e2bb7a'; g.fillRect(sx, R(G.roofY - cy), HK.pourW, R(G.floorY - G.roofY)); g.globalAlpha = 1;
       g.fillStyle = '#fff0c8'; for (let i = 0; i < 4; i++) g.fillRect(sx + 3 + i * 5, R(G.roofY + ((time * 160 + i * 37) % (G.floorY - G.roofY)) - cy), 1, 6); }

@@ -2,7 +2,7 @@
 // each baked once into a seamless strip and blitted at its own parallax, and the landmark drawn live:
 //   1. THE BACK WALL    big coursed blocks of cold blue-black stone with the odd carved relief (parallax 0.5)
 //   2. THE FAR ARCADE   a colonnade of the buried city: columns, voussoir arches, dark bays with a farther arch in them, faded banners, a niche with a lamp's glow (0.3)
-//   3. THE HOURGLASS TOWER (0.035: it drifts a few hundred pixels across the whole level and grows as you near the throne at its foot): a brass frame of four pillars, a
+//   3. THE HOURGLASS TOWER (parallax 0.035: it drifts a few hundred pixels across the whole level and grows as you near the throne at its foot): a brass frame of four pillars, a
 //      toothed crown that turns, a collar on the neck, the glass (two bulbs, a lit edge, a streak of light) and THE SAND running in it - the level's clock: its upper bulb
 //      empties as you go, a thread falls through the neck, the lower bulb heaps; warm light from the sand against the cold stone
 //   4. THE ROOF'S UNDERSIDE a ceiling band of sand with buried rooftops and beams, grains sifting from its cracks (0.6)

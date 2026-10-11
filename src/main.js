@@ -28887,7 +28887,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (HIDE.back) { g.fillStyle = HIDE.back; g.fillRect(0, 0, VW, VH); }   /* (claude/unburied4) BK.hide.back = a colour: the backdrop as one flat colour, so tools/unburied-aloft.mjs can see what stands in front of the sky */
   drawFacades(cx, cy);
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) {
-    if (st === 'church') continue;   /* THE LIT CHURCH paints its own far walls (src/redraw/church_set.js drawBackdrop); the shared brick room would cover them */
+    if (st === 'church' || (L.buriedcity && String(st).startsWith('bc'))) continue;   /* (claude/bc2art: THE BURIED CITY's rooms are its own backdrop - src/redraw/buried_city_backdrop.js - not the shared plank room) */   /* THE LIT CHURCH paints its own far walls (src/redraw/church_set.js drawBackdrop); the shared brick room would cover them */
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0) continue;
     drawRoom(st, sx, sy, w, h, x0, y0);

@@ -264,3 +264,21 @@ export function drawArch(V, d) { const l = d.x0 * TS + 4, w = (d.x1 - d.x0 + 1) 
 /* THE KING'S STATUE on its plinth: base = the ground's row px, wx = the centre */
 export function drawKingStatue(V, wx, base, h) { if (!vis(V, wx - 30, wx + 30)) return; put(V, kingStatue(h), wx - 28, base - (h * 16 + 6));
   const tt = V.time, top = base - (h * 16 + 6) + 4 + 26; dot(V.g, R(wx - V.cx), R(top - V.cy), (Math.sin(tt * 2.2) > 0) ? '#fff4c0' : '#e8c45c'); }   /* (the glass in his chest catching the lamps) */
+
+/* ---------------------------------------------------------------- THE THRONE (the king's room): a high-backed seat of lapis-black stone on a stepped dais, gilded, a gear-crowned arched back with a glass inset, braziers' light on it */
+export function throneSpr() {
+  return once('throne', () => { const [c, g] = mk(72, 96), cx = 36, L = ['#14122a', '#201e3c', '#2e2c52', '#403e70', '#5a5890'];
+    for (let k = 0; k < 3; k++) { const w = 34 - k * 6, y = 96 - 5 * (k + 1); rc(g, cx - w, y, w * 2, 5, L[1 + (k & 1)]); rc(g, cx - w, y, w * 2, 1, L[4]); rc(g, cx - w, y + 4, w * 2, 1, L[0]); rc(g, cx - w, y, w * 2, 1, '#d8aa40'); for (let x = cx - w + 3; x < cx + w - 2; x += 6) dot(g, x, y + 2, L[0]); }   /* the dais, three steps, a gilded lip */
+    const bx0 = cx - 17, bw = 34;   /* the high back: an arch */
+    for (let y = 8; y < 81; y++) { const arch = y < 30 ? Math.round(bw / 2 * Math.sqrt(Math.max(0, 1 - Math.pow((30 - y) / 22, 2)))) : bw / 2; if (arch <= 0) continue;
+      for (let x = -arch; x < arch; x++) { const u = (x + arch) / (2 * arch); dot(g, cx + x, y, L[u < 0.1 ? 4 : u < 0.4 ? 3 : u < 0.75 ? 2 : u < 0.92 ? 1 : 0]); if (hash(cx + x, y) % 19 === 0) dot(g, cx + x, y, L[0]); } }
+    for (let y = 10; y < 80; y++) { const arch = y < 30 ? Math.round(bw / 2 * Math.sqrt(Math.max(0, 1 - Math.pow((30 - y) / 22, 2)))) : bw / 2; dot(g, cx - arch, y, '#d8aa40'); dot(g, cx + arch - 1, y, '#8a6a20'); }   /* the gilt edge */
+    for (let k = 0; k < 14; k++) { const a = Math.PI * (k / 13), x = cx + Math.cos(a) * 14, y = 30 - Math.sin(a) * 19; rc(g, x - 1, y - 1, 3, 3, '#d8aa40'); dot(g, x - 1, y - 1, '#f6dc80'); }   /* a ring of gilt studs round the arch */
+    gearAt(g, cx, 11, 6, 10, '#c49a38', '#f6dc80', '#5a4014'); gearAt(g, cx - 14, 17, 4, 7, '#a07a28', '#f6dc80', '#5a4014'); gearAt(g, cx + 14, 17, 4, 7, '#a07a28', '#f6dc80', '#5a4014');   /* the crown of gears over the back */
+    rc(g, cx - 5, 28, 10, 20, '#e0b858'); rc(g, cx - 4, 29, 8, 18, '#1a1626'); rc(g, cx - 4, 29, 1, 18, '#6a7a90'); g.fillStyle = '#e6bc68'; g.beginPath(); g.moveTo(cx - 3, 46); g.lineTo(cx + 3, 46); g.lineTo(cx + 1, 40); g.lineTo(cx - 1, 40); g.closePath(); g.fill(); rc(g, cx - 2, 30, 4, 2, '#e6bc68');   /* the glass inset: the city's hour, in his seat */
+    rc(g, cx - 23, 56, 9, 6, L[2]); rc(g, cx - 23, 56, 9, 1, '#d8aa40'); rc(g, cx - 23, 62, 9, 14, L[1]); rc(g, cx + 14, 56, 9, 6, L[1]); rc(g, cx + 14, 56, 9, 1, '#d8aa40'); rc(g, cx + 14, 62, 9, 14, L[0]);   /* the arms, ending in brass knobs */
+    for (const x of [cx - 20, cx + 18]) { gearAt(g, x, 54, 3, 6, '#c49a38', '#f6dc80', '#5a4014'); }
+    rc(g, cx - 15, 62, 30, 14, L[1]); rc(g, cx - 15, 62, 30, 2, '#d8aa40'); rc(g, cx - 15, 74, 30, 2, L[0]); for (let x = cx - 12; x < cx + 12; x += 6) { rc(g, x, 66, 3, 6, L[2]); dot(g, x, 66, L[4]); }   /* the seat, a cushion's worth of gilt */
+    return c; });
+}
+export function drawThrone(V, wx, floorY) { if (!vis(V, wx - 40, wx + 40)) return; put(V, throneSpr(), wx - 36, floorY - 96 + 1); glow(V, wx, floorY - 40, 60, 0.18, '255,190,100'); }

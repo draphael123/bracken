@@ -156,7 +156,7 @@ function deckHouse(w, rows, k) {   /* a house front standing on the street: a fl
 }
 function minaretStub(w, rows) {   /* a broken minaret stub: glazed bands, a gold ring, a ragged top with brick showing */
   return once('ms' + w + '.' + rows, () => { const H = rows * TS, [c, g] = mk(w, H);
-    for (let y = 0; y < H; y++) for (let x = 0; x < w; x++) { const band = (y >> 3) & 1; let col = band ? ((Math.abs(((x + y) % 8) - 4) < 2) ? '#e8d4a4' : '#c4442c') : ((x % 4 < 2) ? '#2a8a98' : '#1c6672'); if ((y & 7) === 0) col = '#d8aa40'; else if ((y & 7) === 7) col = '#3a2a10'; dot(g, x, y, col); }
+    for (let y = 0; y < H; y++) for (let x = 0; x < w; x++) { const band = (y >> 3) & 1; let col = band ? ((Math.abs(((x + y) % 8) - 4) < 2) ? '#e8d4a4' : '#1c6672') : ((x % 4 < 2) ? '#2a8a98' : '#1c6672'); if ((y & 7) === 0) col = '#d8aa40'; else if ((y & 7) === 7) col = '#3a2a10'; dot(g, x, y, col); }
     for (let x = 0; x < w; x++) { const cut = hash(x, 4) % 6; rc(g, x, 0, 1, cut, '#00000000'); g.clearRect(x, 0, 1, cut); if (cut > 0) dot(g, x, cut, '#8e5a40'); if (cut > 1) dot(g, x, cut + 1, '#5a382c'); }
     rc(g, 0, 0, 1, H, '#0e2a30'); rc(g, w - 1, 0, 1, H, '#9ae4e4'); return c; });
 }
