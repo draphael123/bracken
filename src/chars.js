@@ -3078,6 +3078,24 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     const lit2 = up({ legs: 'wide', dy: -1, plume: 0, glow: [sh[0], sh[1] - 13], bits: rays(3) });
     const strain = up({ legs: 'wide', dy: 0, hy: 1, plume: 2, glow: [sh[0], sh[1] - 13], bits: rays(2) });
     F.dance = holdFrames([[F.idle[0], 2], [chest, 2], [up({ dy: -1, plume: 1 }), 2], [held, 2], [lit1, 3], [lit2, 3], [strain, 2], [lit2, 3], [lit1, 2], [across, 2]]); }
+  /* HIS OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE VESPER, his idle solo: the maul set head-down before him, both
+     gauntlets on the haft, down on a knee with the helm bowed, and a thread of light climbing the haft while he keeps it - then up,
+     the maul taken to the shoulder. dance3 = THE HALLOWED STROKE, a boss down: the maul swung up and round overhead with the glow
+     on its head, brought down hard so the light runs out along the ground either side, and the arms flung up open to it. */
+  { const rays = (r, y = 15) => { const cx = sh[0] - BX, cy = y - BY, b = []; for (let i = 2; i <= 2 + r; i++) b.push([cx - i - 3, cy, '#fff6c8'], [cx + i + 3, cy, '#fff6c8']); b.push([cx + 2, cy - 1, '#ffe9a0'], [cx - 2, cy - 1, '#ffe9a0']); return b; };
+    const M = (hx, hy2, bx, by, tx, ty, o = {}) => knightFrame({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], maul: [sh[0] + bx, sh[1] + by, sh[0] + tx, sh[1] + ty], ...o });
+    const thread = y => [[sh[0] + 3 - BX, y - BY, '#fff6c8']];
+    const set1 = M(2, 1, 2, 0, 3, 8, { plume: 1 }), kn = (d, hy, o = {}) => M(2, 0, 2, -1, 3, 7 - d, { dy: 4 + d, hy, legs: 'crouch', plume: 0, ...o });
+    const onS = M(1, -1, 0, 2, -4, -9, { legs: 'wide', dx: -1, plume: 2 });
+    F.dance2 = holdFrames([[F.idle[0], 2], [set1, 3], [kn(0, 0), 3], [kn(0, 1, { bits: thread(16) }), 3], [kn(1, 2, { bits: [...thread(14), ...thread(12)] }), 4], [kn(1, 2, { bits: [...thread(12), ...thread(9)], glow: [sh[0] + 2, sh[1] - 2] }), 4],
+      [kn(0, 1, { glow: [sh[0] + 2, sh[1] - 2] }), 3], [kn(0, 0), 2], [set1, 3], [onS, 4], [M(2, 0, 2, 0, 4, 6, { legs: 'wide', plume: 2 }), 2], [F.idle[0], 2]]);
+    const back = M(-1, -3, -2, -3, -6, -10, { legs: 'wide', dx: -2, plume: 1 }), top = M(3, -5, 3, -4, 3, -10, { legs: 'wide', dy: -1, plume: 2, glow: [sh[0] + 3, sh[1] - 11] });
+    const swingF = M(4, 0, 4, 0, 11, 5, { legs: 'runC', dx: 2, plume: 2, glow: [sh[0] + 11, sh[1] + 5] });
+    const slam = M(3, 3, 3, 3, 5, 12, { dy: 1, legs: 'wide', plume: 2, glow: [sh[0] + 5, sh[1] + 12], bits: rays(3, 15) });
+    const slam2 = M(3, 3, 3, 3, 5, 12, { dy: 1, legs: 'wide', plume: 0, glow: [sh[0] + 5, sh[1] + 12], bits: rays(6, 15) });
+    const open = knightFrame({ legs: 'wide', dy: -1, plume: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 6], maul: [sh[0] + 3, sh[1] - 2, sh[0] + 3, sh[1] - 9], glow: [sh[0] + 3, sh[1] - 11], bits: rays(2, 4) });
+    F.dance3 = holdFrames([[F.idle[0], 1], [back, 3], [top, 2], [M(2, -3, 1, -2, -6, -9, { legs: 'wide', dx: -1, plume: 2, glow: [sh[0] - 5, sh[1] - 9] }), 2], [swingF, 2], [slam, 3], [slam2, 3], [slam, 2],
+      [M(3, 0, 3, 0, 4, 2, { legs: 'wide', dy: 1, plume: 1 }), 2], [top, 3], [open, 4], [top, 2], [F.idle[0], 2]]); }
   /* HIS SLUMP: he goes down on his knees over the maul, both gauntlets on the haft and the head of it in the
      ground, helm bowed to it - a man at a grave, not a man in a fight. There is no glow anywhere on him: the light
      is the one thing this hero always has, and the card is where he has not got it. */
