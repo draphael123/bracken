@@ -112,7 +112,7 @@ export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
                          the DEATH KNIGHT, over a body he has not drawn, draws it
      'left'/'right'  - the death knight walks to a body within CRB_WALK px (health or blood not full)
      null            - nothing: it is not calm, or there is nothing to do */
-export const CRB_CALM = 130, CRB_TELL = 220, CRB_LOW = 50, CRB_LOOK = 0.5, CRB_EVERY = 8, CRB_WALK = 64;
+export const CRB_CALM = 130, CRB_TELL = 220, CRB_LOW = 50, CRB_LOOK = 0.5, CRB_EVERY = 8, CRB_WALK = 64, CRB_WALK_HOLY = 160;
 export function crouchCalm(BK) { const P = BK.P;
   if (!P.ground || P.swim || P.climb || P.dead || P.atk >= 0 || P.dodge > 0 || (P.hurt || 0) > 0 || (BK.L.pools || []).some(q => !q.dry && P.x > q.x0 && P.x < q.x1 && P.y > q.y + 1 && (q.bottom === undefined || P.y <= q.bottom + 4))) return false;
   for (const e of BK.enemies()) { if (!e.alive || e.harmless || crouchHiding(e)) continue; const ad = Math.abs(e.x - P.x), dy = Math.abs(e.y - P.y);
@@ -122,7 +122,10 @@ export function crouchBPlan(BK, h) {
   if (h !== 'paladin' && h !== 'geomancer' && h !== 'reaper') return null; const C = BK.crouchB && BK.crouchB(); if (!C) return null;
   const P = BK.P; P.crbF = (P.crbF || 0) + 1;
   if (!crouchCalm(BK)) { P.crbLook = 0; return null; }
-  if (h === 'paladin') return (P.light || 0) < (C.praying ? 100 : CRB_LOW) ? 'down' : null;
+  if (h === 'paladin') { if ((P.light || 0) >= (C.praying ? 100 : CRB_LOW)) return null;
+    if (C.holy) return 'down';   /* (claude/crouchfix) he kneels only BY A HOLY LIGHT (src/crouch-b.js HOLY): by one, kneel; a light within CRB_WALK_HOLY, walk to it; else nothing */
+    let b = null; for (const q of C.lights || []) if (Math.abs(q.x - P.x) < CRB_WALK_HOLY && (!b || Math.abs(q.x - P.x) < Math.abs(b.x - P.x))) b = q;
+    return b ? (b.x > P.x ? 'right' : 'left') : null; }
   if (h === 'geomancer') { if (P.crbLook > 0) { P.crbLook--; return 'down'; }
     if (P.crbF - (P.crbLookAt ?? -1e9) > CRB_EVERY * 60) { P.crbLookAt = P.crbF; P.crbLook = Math.round(CRB_LOOK * 60); return 'down'; } return null; }
   if ((P.hp >= P.maxHp && (P.harvest || 0) >= 100) || !C.bodies.length) return null;

@@ -116,6 +116,7 @@ export function makeLitChurchHands(ctx) {
 
   /* ---------- THE FLAME IN YOUR HAND ---------- */
   const fires = () => K.sources.map(s => ({ x: px(s), y: py(s), src: s })).concat(K.lamps.filter(l => l.lit && l.kind !== 'rood').map(l => ({ x: px(l), y: py(l), lamp: l })));
+  H.holyLights = () => (K ? fires().map(f => ({ x: f.x, y: f.y })) : []);   /* (claude/crouchfix) every flame that burns - the paladin kneels at them to fill his Light (src/crouch-b.js HOLY) */
   const near = (P, x, y, r) => Math.abs(P.x - x) <= r && P.y > y - 40 && P.y < y + 20;
   H.interact = P => {
     if (!K || P.dead) return false;
