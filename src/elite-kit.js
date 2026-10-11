@@ -188,7 +188,7 @@ export function installEliteKit(api) {
      Then the riposte into his broken poise. (Fire, a throw, a hazard: no guard - the guard is for blades.) */
   const kindOf = b => Array.isArray(b) ? (b.includes('heavy') ? 'heavy' : b.includes('sweep') ? 'sweep' : b.includes('plunge') ? 'plunge' : b[0]) : b;
   function take(e, dmg, fromX, plunge, blow) {
-    const k = kindOf(blow), blade = !plunge && (k === 'light' || k === 'rise' || k === 'dash' || k === 'heavy');
+    const k = kindOf(blow), fromAbove = plunge || (Array.isArray(blow) ? blow.includes('plunge') : blow === 'plunge'), blade = !fromAbove && (k === 'light' || k === 'rise' || k === 'dash' || k === 'heavy');   /* (claude/knockinto) A PLUNGE IS NEVER A BLADE HERE: it does not count toward the mash (a THORNED one's spines), whatever else its tag says */
     if (dmg > 0 && blade && !(e.broken > 0)) {
       const now = api.time();
       if (k !== 'heavy') { if (!(now - (e.ekCutAt ?? -99) < K.mashWindow)) e.ekCuts = 0; e.ekCutAt = now; e.ekCuts = (e.ekCuts || 0) + 1;

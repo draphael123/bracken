@@ -269,3 +269,96 @@ export function installReact(board, TOKENS, api) {
   }
   return { frame, pre, hold, guards, tier, draw, act: () => ACT, REACT };
 }
+
+/* ===================================================================================================================================
+   ANTI-PLUNGE REACTIONS - THE SHARED API (claude/knockinto, scratch/brief-combat2.md section 4 + its '!! UPDATE', Daniel 10-11).
+   No invisible or generic aura: every answer to a plunge is a POSE you can read and has a counter or a punish window. Four of the five
+   kinds live here (e, DRAWN SPIKES, is src/anti-plunge.js: the body's own spines). Per the update they go ONLY to the new BROKEN ORDER
+   bodies (scratch/brief-elite-order.md: the Duelist a, the Lancer b, the Brute d) and to the SPITTER's sidestep (c, the one live use);
+   'PLUNGE THE HELM' and the plate family stay as they are (a plunge comes over THEIR guard), the wasp and the sprig stay pogo food.
+     a GUARDS HIGH    (armoured, knightly) weapon/shield overhead while a hero is above him: a plunge CLANKS and bounces the hero up,
+                      no damage either way, 'GUARDS HIGH' (B10/B11). Counter: go low (a sweep) or go round.
+     b ANTI-AIR       (spearmen, lancers, brutes) a hero above him -> a TOLD upward thrust (a yellow !); plunge into it and it lands;
+                      bait it, land beside, punish the RECOVERY (e.aaOpen).
+     c SIDESTEP       (small and nimble) a plunge coming down on it -> it hops aside (if the step is safe), then is OFF BALANCE a beat:
+                      a quick follow-up is rewarded (main.js offBalance: broken, so a common foe can be finished).
+     d CATCH + THROW  (big brutes only, rare) a told grab (a red !!) plucks a hero out of the air and throws him - by knock-into's rule for
+                      a hero: never into an untold death (safeThrowDir picks the side whose landing is not a drop or the spikes; neither:
+                      he is set down, not thrown).
+   Each tick is called from the foe's own update (main.js), holds its state on the foe (e.ra* / e.aa* / e.ss* / e.ct*, never e.mode - no
+   new tell-table rows until a body uses it; the order knights add theirs to src/marks.js with their bodies) and asks for the world:
+     api: { say(e, txt, col), sfx(name), safeStep(x, y), offBalance(e, secs), hitHero(hero, e, dmg, o), throwHero(hero, vx, vy, e),
+            deathAt(x, y) -> bool (a drop or the spikes at x, from y down) }
+   tools/anti-plunge.mjs drives all four against a stub world (and the spitter's in the page).
+   =================================================================================================================================== */
+export const REACT_AIR = {
+  above: { dx: 22, dy: 130 },                                                   // a hero 'above' a foe: within dx (+ half its width), up to dy over its head
+  guardsHigh: { raise: 0.15, bounce: -240, word: 'GUARDS HIGH', col: '#c9d1dc' },
+  antiAir: { tell: 0.45, thrust: 0.18, rec: 0.75, reach: 44, dmg: 14, cd: 1.8 },
+  sidestep: { see: 100, hop: 22, t: 0.2, off: 0.6, cd: 2.2 },
+  catchThrow: { tell: 0.55, grab: 0.2, reach: 26, vx: 230, vy: -250, dmg: 10, cd: 3.5, rec: 0.9 },
+};
+export const heroAbove = (e, h, o = REACT_AIR.above) => !!h && !h.dead && Math.abs(h.x - e.x) < o.dx + (e.w || 12) / 2 && h.y < e.y - (e.h || 16) + 2 && e.y - h.y < o.dy;
+export const plungingAt = (e, h, o) => heroAbove(e, h, o) && !!h.plunge && (h.vy || 0) >= 0;
+const firstOf = (heroes, f) => { for (const h of heroes || []) if (h && f(h)) return h; return null; };
+
+/* a: GUARDS HIGH. tick: the guard goes up over his head while a hero is above (a pose: e.raHigh 0..1). hit: from the plunge hit loop -
+   true = the plunge is TURNED (the caller stops there: no damage to him, the hero bounced) */
+export function guardsHighTick(e, heroes, dt) {
+  const G = REACT_AIR.guardsHigh, up = !(e.broken > 0) && !(e.stagger > 0.3) && !!firstOf(heroes, h => heroAbove(e, h));
+  e.raHigh = Math.max(0, Math.min(1, (e.raHigh || 0) + (up ? dt : -dt) / G.raise)); return e.raHigh;
+}
+export function guardsHigh(e, hero, api) {
+  const G = REACT_AIR.guardsHigh; if (!((e.raHigh || 0) >= 1) || e.broken > 0) return false;
+  hero.vy = G.bounce; hero.plunge = false; hero.ground = false; if ('canCut' in hero) hero.canCut = false;
+  api.sfx('clank'); api.say(e, G.word, G.col); e.raTurned = (e.raTurned || 0) + 1; return true;
+}
+/* b: THE ANTI-AIR THRUST. e.aa: 'tell' (the yellow !, said once) -> 'thrust' (a column over his head hits a hero in it) -> 'rec' (OPEN:
+   e.aaOpen > 0, the punish). true while it has the body */
+export function antiAirTick(e, heroes, dt, api) {
+  const A = REACT_AIR.antiAir; e.aaCd = Math.max(0, (e.aaCd || 0) - dt); e.aaOpen = Math.max(0, (e.aaOpen || 0) - dt);
+  if (!e.aa) { if (e.aaCd > 0 || e.broken > 0 || e.stagger > 0) return false; const h = firstOf(heroes, q => heroAbove(e, q)); if (!h) return false;
+    e.aa = 'tell'; e.aaT = A.tell; api.say(e, '!', '#ffd36b'); api.sfx('charge'); return true; }
+  if (e.broken > 0 || e.stagger > 0.3) { e.aa = null; e.aaCd = A.cd; return false; }   /* knocked out of it */
+  e.aaT -= dt; e.vx = 0;
+  if (e.aa === 'tell' && e.aaT <= 0) { e.aa = 'thrust'; e.aaT = A.thrust; e.aaHit = false; api.sfx('slash'); }
+  else if (e.aa === 'thrust') { if (!e.aaHit) for (const h of heroes || []) if (h && !h.dead && Math.abs(h.x - e.x) < (e.w || 12) / 2 + 6 && h.y < e.y - (e.h || 16) + 4 && e.y - (e.h || 16) - h.y < A.reach) { e.aaHit = true; api.hitHero(h, e, A.dmg, { up: true }); }
+    if (e.aaT <= 0) { e.aa = 'rec'; e.aaT = A.rec; e.aaOpen = A.rec; } }
+  else if (e.aa === 'rec' && e.aaT <= 0) { e.aa = null; e.aaCd = A.cd; }
+  return true;
+}
+/* c: THE SIDESTEP. A plunge coming down on it: a hop aside (only where the step is safe - never off a ledge or into the spikes), then
+   OFF BALANCE (api.offBalance). true while it hops (the caller skips its own AI that frame) */
+export function sidestepTick(e, heroes, dt, api) {
+  const S = REACT_AIR.sidestep; e.ssCd = Math.max(0, (e.ssCd || 0) - dt);
+  if (e.ssT > 0) { e.ssT -= dt; const k = 1 - Math.max(0, e.ssT) / S.t; e.x = e.ssFrom + (e.ssTo - e.ssFrom) * k; e.ssLift = Math.sin(Math.PI * k) * 5;
+    if (e.ssT <= 0) { e.ssT = 0; e.ssLift = 0; e.x = e.ssTo; api.offBalance(e, S.off); } return true; }
+  if (e.ssCd > 0 || e.broken > 0 || e.stagger > 0 || !e.alive) return false;
+  const h = firstOf(heroes, q => plungingAt(e, q, { dx: REACT_AIR.above.dx, dy: S.see })); if (!h) return false;
+  const away = Math.sign(e.x - h.x) || -(e.face || 1);
+  for (const d of [away, -away]) { const to = e.x + d * S.hop;
+    if (api.safeStep(to, e.y) && api.safeStep(e.x + d * S.hop * 0.5, e.y)) { e.ssFrom = e.x; e.ssTo = to; e.ssT = S.t; e.ssCd = S.cd; e.ssN = (e.ssN || 0) + 1; api.sfx('hop'); return true; } }
+  e.ssCd = 0.4; return false;   /* cornered: no step - the plunge lands (and the family table's own answer, if any, stands) */
+}
+/* d: CATCH + THROW. The told grab (a red !!: no shield turns a hand), then the window: a hero in the air in front of / over him is caught
+   and thrown to the safe side. e.ctOpen > 0 after a miss (the punish) */
+export function safeThrowDir(e, hero, api) {
+  const C = REACT_AIR.catchThrow, pref = Math.sign(hero.x - e.x) || (e.face || 1);
+  for (const d of [pref, -pref]) { const land = e.x + d * C.vx * 0.55; if (!api.deathAt(land, e.y - 8)) return d; }
+  return 0;
+}
+export function catchThrowTick(e, heroes, dt, api) {
+  const C = REACT_AIR.catchThrow; e.ctCd = Math.max(0, (e.ctCd || 0) - dt); e.ctOpen = Math.max(0, (e.ctOpen || 0) - dt);
+  const inReach = h => !!h && !h.dead && !h.ground && Math.abs(h.x - e.x) < C.reach + (e.w || 12) / 2 && h.y < e.y && e.y - h.y < (e.h || 16) + 30;
+  if (!e.ct) { if (e.ctCd > 0 || e.broken > 0 || e.stagger > 0) return false; const h = firstOf(heroes, inReach); if (!h) return false;
+    e.ct = 'tell'; e.ctT = C.tell; api.say(e, '!!', '#ff6b6b'); api.sfx('roar'); return true; }
+  if (e.broken > 0 || e.stagger > 0.3) { e.ct = null; e.ctCd = C.cd; return false; }
+  e.ctT -= dt; e.vx = 0;
+  if (e.ct === 'tell' && e.ctT <= 0) { e.ct = 'grab'; e.ctT = C.grab; }
+  else if (e.ct === 'grab') { const h = firstOf(heroes, inReach);
+    if (h) { const d = safeThrowDir(e, h, api); e.ct = 'rec'; e.ctT = C.rec * 0.6; e.ctN = (e.ctN || 0) + 1; api.hitHero(h, e, C.dmg, { grab: true });
+      if (d) api.throwHero(h, d * C.vx, C.vy, e); else api.throwHero(h, 0, -120, e); }
+    else if (e.ctT <= 0) { e.ct = 'rec'; e.ctT = C.rec; e.ctOpen = C.rec; } }
+  else if (e.ct === 'rec' && e.ctT <= 0) { e.ct = null; e.ctCd = C.cd; }
+  return true;
+}
