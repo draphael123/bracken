@@ -14,8 +14,8 @@
 // foe's windups are if-chains the tells audit cannot follow, and every one of his is written down there.
 import { BODY, CHAPTERS, ORDER_AT, TWISTS, SIG, TYPES, isKnightT, skinOf, ORDER, ORDER_MARKS } from './order-chapters.js';
 import { kindOf } from './exit-gates.js';
+import * as OA from './redraw/order_art.js';
 import { guardsHighTick, guardsHigh, antiAirTick, catchThrowTick } from './foe-react.js';
-import { fromGrid, outline, flipX, whiten, shade } from './px.js';
 
 export const is = e => !!e && isKnightT(e.t);
 const SOFT = '#ffd36b', HARD = '#ff6b6b';
@@ -63,89 +63,20 @@ export function orderGuard(e, dmg, k, fromAbove, dx, blow) {
 }
 export const unmovedBody = e => is(e) && !!BODY[e.t].unmoved;
 
-/* ============================ THE ART (placeholder: the Sonnet art lane redraws every frame, see the lane report) ============================
-   8 frames a body, facing right, feet on the last row: 0-1 walk, 2 the windup, 3 the blow, 4 the recovery (his opening), 5 and 6 his body's
-   own (the duelist: the lunge drawn back, his GUARD HIGH; the brute: the sweep drawn back, the CATCH; the lancer: the lance couched, the
-   UPWARD thrust; the mage: the blade drawn back, the blade), 7 HURT (last: main.js HAS_HURT reads the last frame). */
-const GW = 32, GH = 28, CX = 13;
-const grid = () => Array.from({ length: GH }, () => Array(GW).fill('.'));
-const put = (r, x, y, ch) => { if (y >= 0 && y < GH && x >= 0 && x < GW) r[y][x] = ch; };
-const box = (r, x, y, w, h, ch) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) put(r, x + i, y + j, ch); };
-const ln = (r, x0, y0, x1, y1, ch) => { const n = Math.max(1, Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) put(r, Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), ch); };
-function knight(r, big, step, lean = 0, helmBack = false) {
-  const w = big ? 12 : 10, x0 = CX - (w >> 1), top = big ? 7 : 8, hx = CX - 3 + lean;
-  /* legs */
-  const lw = big ? 3 : 2, lg = [[x0 + 1, x0 + w - 1 - lw], [x0 + 2 + step, x0 + w - 2 - lw - step]][step ? 1 : 0];
-  for (const lx of lg) { box(r, lx, GH - 7, lw, 6, 'S'); box(r, lx, GH - 7, lw, 1, 'D'); box(r, lx - (lx < CX ? 1 : 0), GH - 1, lw + 1, 1, 'D'); }
-  /* torso: plate under a surcoat of the chapter's cloth, a trim belt */
-  box(r, x0 + lean, top + 6, w, 9, 'S'); box(r, x0 + lean, top + 6, w, 1, 's');
-  box(r, x0 + 2 + lean, top + 7, w - 4, 9, 'c'); box(r, x0 + 2 + lean, top + 15, w - 4, 1, 'C'); box(r, x0 + 2 + lean, top + 11, w - 4, 1, 't');
-  box(r, CX - 1 + lean, top + 8, 2, 2, 'D');   /* the broken milestone on his chest */
-  box(r, x0 - 1 + lean, top + 6, 2, 3, 'D'); box(r, x0 + w - 1 + lean, top + 6, 2, 3, 'D');   /* pauldrons */
-  /* the great helm: one slit, his chapter's light in it */
-  const hy = top - (big ? 1 : 0), hw = big ? 8 : 7; box(r, hx + (helmBack ? -1 : 0), hy, hw, 6, 'S'); box(r, hx + (helmBack ? -1 : 0), hy, hw, 1, 's');
-  box(r, hx + 1 + (helmBack ? -1 : 0), hy + 2, hw - 2, 1, 'k'); put(r, hx + hw - 2 + (helmBack ? -1 : 0), hy + 2, 'e'); put(r, hx + hw - 3 + (helmBack ? -1 : 0), hy + 2, 'e');
-  box(r, hx + 2, hy - 1, 3, 1, 'c');   /* a crest of the chapter's cloth */
-}
-const blade = (r, x0, y0, x1, y1) => { ln(r, x0, y0, x1, y1, 'b'); put(r, x0, y0, 't'); };
-const shield = (r, x, y) => { box(r, x, y, 4, 7, 'S'); box(r, x, y, 4, 1, 't'); box(r, x, y + 6, 4, 1, 't'); box(r, x + 1, y + 2, 2, 3, 'c'); };
-const maulAt = (r, hx, hy, tx, ty) => { ln(r, hx, hy, tx, ty, 'w'); box(r, tx - 2, ty - 2, 5, 4, 'm'); box(r, tx - 2, ty - 2, 5, 1, 's'); };
-const lance = (r, x0, y0, x1, y1) => { ln(r, x0, y0, x1, y1, 'w'); put(r, x1, y1, 'b'); const dx = Math.sign(x1 - x0), dy = Math.sign(y1 - y0); put(r, x1 - dx, y1 - dy, 'b'); put(r, x1 - dx - dy, y1 - dy + dx, 't'); put(r, x1 - dx + dy, y1 - dy - dx, 't'); };
-const focus = (r, x, y, big) => { box(r, x - (big ? 1 : 0), y - (big ? 1 : 0), big ? 3 : 2, big ? 3 : 2, 'f'); put(r, x, y, 'F'); };
-function frames(t) {
-  const out = [], big = t === 'oathmaul';
-  const F = (fn, step = 0, lean = 0, back = false) => { const r = grid(); knight(r, big, step, lean, back); fn(r); out.push(r.map(a => a.join(''))); };
-  if (t === 'oathblade') {
-    F(r => { shield(r, CX + 4, 13); blade(r, CX + 2, 16, CX + 6, 8); }, 0);                    /* 0-1 walk: shield before him, sword up */
-    F(r => { shield(r, CX + 4, 14); blade(r, CX + 2, 17, CX + 6, 9); }, 1);
-    F(r => { shield(r, CX + 4, 13); blade(r, CX - 3, 9, CX - 9, 2); }, 0, -1);                  /* 2 THE CUT, TOLD: the sword back over his shoulder */
-    F(r => { shield(r, CX + 2, 14); blade(r, CX + 6, 14, CX + 16, 15); }, 1, 1);                /* 3 the cut, through */
-    F(r => { shield(r, CX + 3, 15); blade(r, CX + 5, 18, CX + 10, 25); }, 0, 1);                /* 4 recovery: point down (open) */
-    F(r => { shield(r, CX + 4, 13); blade(r, CX - 2, 15, CX - 10, 15); }, 1, -1);               /* 5 THE LUNGE, TOLD: drawn back low */
-    F(r => { box(r, CX - 6, 2, 13, 2, 'S'); box(r, CX - 6, 2, 13, 1, 't'); blade(r, CX + 4, 12, CX + 8, 5); }, 0);   /* 6 GUARDS HIGH: the shield over his helm */
-  } else if (t === 'oathmaul') {
-    F(r => maulAt(r, CX + 4, 16, CX - 5, 6), 0);                                               /* 0-1 walk: the maul on his shoulder */
-    F(r => maulAt(r, CX + 4, 17, CX - 5, 7), 1);
-    F(r => maulAt(r, CX + 2, 13, CX + 1, 1), 0, -1);                                           /* 2 THE SLAM, TOLD: overhead */
-    F(r => maulAt(r, CX + 5, 15, CX + 14, 22), 1, 2);                                          /* 3 the blow, down in front */
-    F(r => maulAt(r, CX + 5, 17, CX + 14, 25), 0, 2);                                          /* 4 STUCK: the head in the floor */
-    F(r => maulAt(r, CX - 2, 17, CX - 11, 20), 1, -1);                                         /* 5 THE SWEEP, TOLD: drawn back low */
-    F(r => { box(r, CX - 7, 6, 2, 6, 'S'); box(r, CX + 6, 6, 2, 6, 'S'); maulAt(r, CX - 3, 20, CX - 10, 24); }, 0);   /* 6 THE CATCH: both hands up and open */
-  } else if (t === 'oathlance') {
-    F(r => lance(r, CX + 5, 22, CX + 7, 1), 0);                                                /* 0-1 walk: the lance upright */
-    F(r => lance(r, CX + 5, 23, CX + 7, 2), 1);
-    F(r => lance(r, CX + 2, 14, CX - 12, 12), 0, -1);                                          /* 2 THE THRUST, TOLD: drawn right back */
-    F(r => lance(r, CX - 2, 14, CX + 18, 14), 1, 1);                                           /* 3 the thrust */
-    F(r => lance(r, CX + 4, 16, CX + 16, 24), 0, 1);                                           /* 4 recovery / dazed: point in the dirt */
-    F(r => lance(r, CX - 4, 15, CX + 18, 16), 1, 2);                                           /* 5 THE CHARGE: couched, low */
-    F(r => lance(r, CX + 2, 22, CX + 2, 0), 0);                                                /* 6 THE ANTI-AIR THRUST: straight up */
-  } else {
-    F(r => { blade(r, CX - 2, 16, CX - 6, 22); focus(r, CX + 6, 14); }, 0);                     /* 0-1 walk: sword low, the focus in his hand */
-    F(r => { blade(r, CX - 2, 17, CX - 6, 23); focus(r, CX + 6, 15); }, 1);
-    F(r => { blade(r, CX - 2, 16, CX - 6, 22); ln(r, CX + 4, 13, CX + 8, 8, 'S'); focus(r, CX + 9, 6, true); }, 0, -1);   /* 2 THE CAST, TOLD: the focus raised and burning */
-    F(r => { blade(r, CX - 2, 16, CX - 6, 22); ln(r, CX + 4, 13, CX + 10, 12, 'S'); focus(r, CX + 11, 12, true); }, 1, 1);  /* 3 cast: thrown out */
-    F(r => { blade(r, CX - 1, 18, CX + 3, 24); focus(r, CX + 4, 18); }, 0, 1);                 /* 4 recovery */
-    F(r => { blade(r, CX - 3, 10, CX - 9, 4); focus(r, CX + 6, 15); }, 0, -1);                  /* 5 THE BLADE, TOLD */
-    F(r => { blade(r, CX + 5, 13, CX + 14, 14); focus(r, CX - 2, 15); }, 1, 1);                 /* 6 the blade */
-  }
-  { const r = grid(); knight(r, big, 0, -1, true); if (t === 'oathblade') shield(r, CX + 2, 16); out.push(r.map(a => a.join(''))); }   /* 7 HURT: helm snapped back */
-  return out;
-}
-const palOf = ch => { const p = (CHAPTERS[ch] || CHAPTERS.forest).pal;
-  return { S: p.plate, s: shade(p.plate, 0.25), D: p.dark, k: '#11141a', e: p.eye, c: p.cloth, C: p.clothDk, t: p.trim, b: '#dfe6ee', w: '#6a4a2c', m: shade(p.plate, -0.2), f: p.eye, F: '#ffffff' }; };
-/* one set: { R, L, white, ax, ay, w, h } as every SPR set (the anchor is his feet at the body's centre column) */
-export function bakeSet(t, chapter) {
-  const pal = palOf(chapter), fr = frames(t).map(rows => outline(fromGrid(rows, pal, 1)));
-  const R = fr, L = fr.map(flipX), white = fr.map(c => whiten(c));
-  return { R, L, white: { R: white, L: white.map(flipX) }, ax: CX + 1, ay: GH, w: BODY[t].w, h: BODY[t].h };
-}
-/* the base sheets (a knight with no chapter: the forest's grey-green) */
+/* ============================ THE ART (claude/orderart) ============================
+   Painted in src/redraw/order_art.js: one painter, four bodies, the chapter palette (src/order-chapters.js CHAPTERS.pal) and what the chapter wears (PROPS there),
+   so a later chapter is a palette row plus a props entry. 12 frames a body, facing right, feet on the anchor: 0-1 walk, 2 the windup, 3 the blow, 4 the recovery
+   (his opening), 5 and 6 his body's own (the duelist: the lunge drawn back, his GUARD HIGH; the brute: the sweep drawn back, the CATCH; the lancer: the lance
+   couched, the UPWARD thrust; the mage: the blade drawn back, the blade), 7 TEETER, 8 INTERRUPTED, 9 DEATH, 10 CORPSE, 11 HURT (last: main.js HAS_HURT reads it).
+   The hit box is the body's, as it was; the sprite is drawn at x1 (main.js bigF/bodyK) now it is painted at the size he is struck at. */
+export const bakeSet = (t, chapter) => { const C = CHAPTERS[chapter] || CHAPTERS.forest; return OA.bakeKnight(t, C, C.id, BODY[t]); };
+export const bakeCardFor = t => { const C = CHAPTERS.forest; return OA.bakeCard(t, C, C.id, BODY[t]); };   /* the bestiary portrait, in the road's own grey-green */
 export const bakeBase = () => Object.fromEntries(TYPES.map(t => [t, bakeSet(t, 'forest')]));
 const MODE_FRAME = {
   oathblade: { cutTell: 2, cut: 3, cutRec: 4, lungeTell: 5, lunge: 3, lungeRec: 4, shoveTell: 2, shove: 3, shoveRec: 4 },
   oathmaul: { slamTell: 2, slam: 3, slamStuck: 4, sweepTell: 5, sweep: 3, sweepRec: 4, woodStuck: 4, timberTell: 2, timber: 3 },
-  oathlance: { thrustTell: 2, thrust: 3, thrustRec: 4, chargeTell: 5, charge: 5, chargeEnd: 4, dazed: 4, teeter: 4, rustTell: 6, rust: 4 },
-  oathmage: { castTell: 2, cast: 3, castRec: 4, castBroken: 7, bladeTell: 5, blade: 6, bladeRec: 4 },
+  oathlance: { thrustTell: 2, thrust: 3, thrustRec: 4, chargeTell: 5, charge: 5, chargeEnd: 4, dazed: 8, teeter: 7, rustTell: 6, rust: 4 },
+  oathmage: { castTell: 2, cast: 3, castRec: 4, castBroken: 8, bladeTell: 5, blade: 6, bladeRec: 4 },
 };
 export function frameOf(e) {
   const m = String(e.mode || ''), own = MODE_FRAME[e.t] || {};
@@ -177,7 +108,7 @@ export function installOrder(api) {
     const C = CHAPTERS[chapter] || CHAPTERS.forest, skin = ent.cnSkin || skinOf(ent.t, chapter);
     const sig = (row ? row.sig : ent.sig || C.moves).filter(m => SIG[m]);
     const m = { ...base, t: ent.t, w: b.w, h: b.h, hp: Math.round((EHP[ent.t] || b.hp) * (row ? row.hp : ent.hpK || 1)), speed: b.speed, mode: 'walk', modeT: 0, cd: 0,
-      okChapter: chapter, okSig: sig, okTwist: row ? row.twist : (ent.twist || null), cnSkin: skin, okCd: {}, okFx: { bolts: [], mud: [], rust: [] },
+      okChapter: chapter, okSig: sig, okTwist: row ? row.twist : (ent.twist || null), cnSkin: skin, okCd: {}, okFx: { bolts: [], mud: [], rust: [], snares: [], chips: [], sparks: [] },
       eliteName: ent.eliteName || (C.title + ' ' + b.name) };
     if (sig.includes('plate')) m.okPlate = K.plate.pips;
     const spr = api.spr(); if (!spr[skin]) spr[skin] = bakeSet(ent.t, chapter);   /* his chapter's skin, baked the first time one is put down (he dies in it: main.js reskinSet) */
@@ -330,7 +261,7 @@ export function installOrder(api) {
       case 'castTell': e.vx = 0; e.face = Math.sign(p.x - e.x) || e.face;
         if (e.hp < (e.okCastHp ?? e.hp)) { e.mode = 'castBroken'; e.modeT = K.cast.broken; e.ekStunT = Math.max(e.ekStunT || 0, K.cast.broken); api.mark(e, 'INTERRUPTED', '#8fd160'); S('crack'); e.okMark = null; break; }
         if (Math.random() < dt * 20) api.part({ x: e.x + e.face * 10, y: e.y - e.h - 2, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.3, max: 0.3, col: C.pal.eye, size: 1, grav: 0 });
-        if (e.modeT <= 0) { e.mode = 'cast'; e.modeT = 0.12; const ang = Math.atan2((p.y - 10) - (e.y - e.h * 0.6), p.x - e.x); e.okFx.bolts.push({ x: e.x + e.face * 10, y: e.y - e.h * 0.6, vx: Math.cos(ang) * K.cast.v, vy: Math.sin(ang) * K.cast.v, life: K.cast.life, by: e, col: C.pal.eye }); S('bow'); } break;
+        if (e.modeT <= 0) { e.mode = 'cast'; e.modeT = 0.12; const ang = Math.atan2((p.y - 10) - (e.y - e.h * 0.6), p.x - e.x); e.okFx.bolts.push({ x: e.x + e.face * 10, y: e.y - e.h * 0.6, vx: Math.cos(ang) * K.cast.v, vy: Math.sin(ang) * K.cast.v, life: K.cast.life, by: e, col: C.pal.eye, ch: C.id }); S('bow'); } break;
       case 'cast': e.vx = 0; if (e.modeT <= 0) { e.mode = 'castRec'; e.modeT = K.cast.rec; } break;
       case 'castRec': e.vx = 0; if (e.modeT <= 0) finish(e); break;
       case 'castBroken': e.vx = 0; if (e.modeT <= 0) finish(e, K.every * 0.8); break;
@@ -348,7 +279,7 @@ export function installOrder(api) {
       case 'snare': case 'mud': case 'rust': e.vx = 0; if (e.modeT <= 0) { const id = e.mode; e.mode = id + 'Rec'; e.modeT = id === 'rust' ? 0.4 : K[id].rec; e.okCd[id] = id === 'rust' ? tw.n.every : K[id].cd; } break;
       case 'snareRec': case 'mudRec': case 'rustRec': e.vx = 0; if (e.modeT <= 0) finish(e); break;
       /* THE ORE CHAPTER: THE SNUFF (quiet: no blow - the lamp goes out, and in the dark his ore grows back) */
-      case 'snuffTell': e.vx = 0; if (e.modeT <= 0) { const L0 = e.okLamp; if (L0 && L0.lit) { L0.lit = false; L0.hits = 0; e.okFx.dark = L0; api.mark(e, 'DARK', '#e0a050'); S('hiss'); api.sparks(L0.x, L0.y - 8, e.face, 6); } e.okCd.snuff = K.snuff.cd; e.mode = 'snuffRec'; e.modeT = 0.3; } break;
+      case 'snuffTell': e.vx = 0; if (e.modeT <= 0) { const L0 = e.okLamp; if (L0 && L0.lit) { L0.lit = false; L0.hits = 0; e.okFx.dark = L0; api.mark(e, 'DARK', '#e0a050'); S('hiss'); api.sparks(L0.x, L0.y - 8, e.face, 6); e.okFx.sparks.push({ x: L0.x, y: L0.y - 8, t: 0 }); } e.okCd.snuff = K.snuff.cd; e.mode = 'snuffRec'; e.modeT = 0.3; } break;
       case 'snuffRec': e.vx = 0; if (e.modeT <= 0) finish(e); break;
       /* THE TWISTS. WOOD - TIMBER (red): the pine comes down along the strip; it lies there, and a sweep or a slam swung across it STICKS */
       case 'timberTell': e.vx = 0; if (Math.random() < dt * 10) api.part({ x: e.x - e.face * 4, y: e.y - e.h - 6, vx: 0, vy: 30, life: 0.5, max: 0.5, col: '#3f7a48', size: 1, grav: 60 });
@@ -374,7 +305,7 @@ export function installOrder(api) {
   function fireFloor(e, id) {
     const M = e.okMark; e.okMark = null; if (!M) return; const p = P(), tw = e.okTwist && TWISTS[e.okTwist];
     const inIt = !p.dead && Math.abs(p.x - M.x) < M.half + 4 && p.y > M.y - 40 && p.y <= M.y + 6;
-    if (id === 'snare') { S('crack'); for (let k = -2; k <= 2; k++) api.part({ x: M.x + k * 6, y: M.y - 2, vx: 0, vy: -60, life: 0.35, max: 0.35, col: '#5a8a3a', size: 2, grav: 200 });
+    if (id === 'snare') { S('crack'); e.okFx.snares.push({ x: M.x, y: M.y, t: 0.5 }); for (let k = -2; k <= 2; k++) api.part({ x: M.x + k * 6, y: M.y - 2, vx: 0, vy: -60, life: 0.35, max: 0.35, col: '#5a8a3a', size: 2, grav: 200 });
       if (inIt) { const res = api.hit(e, K.snare.dmg, { unblockable: true, blow: 'the briar snare' }); if (res === 'hit') { e.okFx.snare = { x: p.x, t: K.snare.hold }; api.mark(e, 'ROOTED', '#8fd160'); } } }
     if (id === 'mud') { S('squelch'); e.okFx.mud.push({ x0: M.x - M.half, x1: M.x + M.half, y: M.y, life: K.mud.life }); }
     if (id === 'rust') { S('crack'); e.okFx.rust.push({ x0: M.x - M.half, x1: M.x + M.half, y: M.y, life: 1.6 });
@@ -385,6 +316,7 @@ export function installOrder(api) {
     const L0 = e.okFx && e.okFx.log; if (!L0 || e.okTwist !== 'timber') return false;
     const a = Math.min(e.x, e.x + e.face * (reach + e.w / 2)), b = Math.max(e.x, e.x + e.face * (reach + e.w / 2));
     if (L0.x1 < a || L0.x0 > b || Math.abs(L0.y - e.y) > 12 || (e.x > L0.x0 && e.x < L0.x1)) return false;
+    const bx = Math.max(L0.x0 + 4, Math.min(L0.x1 - 4, e.x + e.face * (reach * 0.8 + e.w / 2))); (L0.cuts || (L0.cuts = [])).push(bx); for (let i = 0; i < 6; i++) e.okFx.chips.push({ x: bx, y: L0.y - 8, vx: (Math.random() - 0.5) * 90, vy: -60 - Math.random() * 70, life: 0.7, i: i % 3 });
     e.mode = 'woodStuck'; e.modeT = TWISTS.timber.n.stuck; api.mark(e, 'STUCK IN WOOD', '#8fd160'); S('thud'); api.shake(2); return true;
   }
 
@@ -405,6 +337,9 @@ export function installOrder(api) {
       for (const r of F.rust) r.life -= dt; F.rust = F.rust.filter(r => r.life > 0);
       if (F.snare) { F.snare.t -= dt; if (F.snare.t > 0 && !p.dead) { p.x = F.snare.x; p.vx = 0; } else F.snare = null; }
       if (F.log) F.log.t += dt;
+      for (const s of F.snares) s.t -= dt; F.snares = F.snares.filter(s => s.t > 0);
+      for (const s of F.sparks) s.t += dt; F.sparks = F.sparks.filter(s => s.t < 0.45);
+      for (const c of F.chips) { c.life -= dt; c.vy += 380 * dt; c.x += c.vx * dt; c.y += c.vy * dt; } F.chips = F.chips.filter(c => c.life > 0);
       /* the ORE in the dark grows back, a plate every K.snuff.regrow (RE-PLATED); light the lamp again and it stops */
       if (e.alive && e.okSig && e.okSig.includes('plate')) { if (F.dark && F.dark.lit) F.dark = null;
         if (F.dark && e.okPlate < K.plate.pips && !(e.broken > 0)) { e.okPlateCd = (e.okPlateCd ?? K.snuff.regrow) - dt; if (e.okPlateCd <= 0) { e.okPlate++; e.okPlateCd = K.snuff.regrow; api.say(e, 'RE-PLATED', '#e0a050', 1.2); S('clank'); } } } }
@@ -412,32 +347,44 @@ export function installOrder(api) {
     p.okSlowed = slowed || (p.okSlowed && p.syrupT > 0);
   }
 
-  /* ---- WHAT HE SHOWS beside his sprite and plate ---- */
+  /* ---- WHAT HE SHOWS beside his sprite and plate: the baked FX of src/redraw/order_art.js (bakeFx), drawn here, never baked per frame ---- */
+  const tile = (g, spr, x0, x1, fy, up, fr) => {   /* a strip of floor: a left cap, tiles of the body, a right cap */
+    const w = Math.round(x1 - x0); if (w < 14) return; const cw = spr.l.width, mid = spr.mid[fr % spr.mid.length], mw = mid.width;
+    g.drawImage(spr.l, Math.round(x0), fy - up); g.drawImage(spr.r, Math.round(x0) + w - cw, fy - up);
+    for (let xx = cw; xx < w - cw; xx += mw) { const sw = Math.min(mw, w - cw - xx); g.drawImage(mid, 0, 0, sw, mid.height, Math.round(x0) + xx, fy - up, sw, mid.height); } };
   function draw(g, e, cx, cy) {
-    const C = chapterOf(e), F = e.okFx || {}, x = Math.round(e.x - cx), y = Math.round(e.y - cy), f = e.face || 1, t = now();
-    /* a told patch on the floor: its colour and its word's (red where nothing turns it) */
+    const C = chapterOf(e), F = e.okFx || {}, fx = OA.bakeFx(), x = Math.round(e.x - cx), y = Math.round(e.y - cy), f = e.face || 1, t = now(), ph = Math.floor(t * 3) % 2;
+    /* a told patch on the floor: its colour and its word's (red where nothing turns it); the briars sprout in it as it fills */
     if (e.alive && e.okMark && /Tell$/.test(e.mode || '')) { const M = e.okMark, k = Math.min(1, M.t / Math.max(0.2, e.okTell0 || 0.7)), red = ORDER_MARKS[e.mode] === '!!';
-      api.tellBar(Math.round(M.x - M.half - cx), Math.round(M.x + M.half - cx), Math.round(M.y - cy), M.kind === 'timber' ? 6 : 4, k, red ? HARD : C.col, 0.7 + 0.3 * Math.sin(t * 18)); }
-    for (const m of F.mud || []) { const a = Math.min(1, m.life); g.globalAlpha = 0.85 * a; g.fillStyle = '#4a3a22'; g.fillRect(Math.round(m.x0 - cx), Math.round(m.y - cy) - 3, Math.round(m.x1 - m.x0), 3); g.fillStyle = '#7a6238'; for (let xx = m.x0 + 3; xx < m.x1; xx += 7) g.fillRect(Math.round(xx - cx), Math.round(m.y - cy) - 4, 3, 1); g.globalAlpha = 1; }
-    for (const r of F.rust || []) { g.globalAlpha = Math.min(1, r.life); g.fillStyle = '#9a5230'; g.fillRect(Math.round(r.x0 - cx), Math.round(r.y - cy) - 2, Math.round(r.x1 - r.x0), 2); g.fillStyle = '#c07048'; for (let xx = r.x0 + 2; xx < r.x1; xx += 5) g.fillRect(Math.round(xx - cx), Math.round(r.y - cy) - 3, 2, 1); g.globalAlpha = 1; }
-    if (F.log) { const L0 = F.log, k = Math.min(1, L0.t / 0.25), x0 = Math.round(L0.x0 - cx), w = Math.round(L0.x1 - L0.x0), fy = Math.round(L0.y - cy);
-      if (k >= 1) { g.fillStyle = '#1b1626'; g.fillRect(x0 - 1, fy - 8, w + 2, 9); g.fillStyle = '#6a4a2a'; g.fillRect(x0, fy - 7, w, 7); g.fillStyle = '#8a6a3c'; g.fillRect(x0, fy - 7, w, 2); g.fillStyle = '#c49a5c'; g.fillRect(L0.f > 0 ? x0 : x0 + w - 3, fy - 7, 3, 7); g.fillStyle = '#3f7a48'; for (let xx = 4; xx < w; xx += 9) g.fillRect(x0 + xx, fy - 9, 3, 2); }
-      else { g.strokeStyle = '#6a4a2a'; g.lineWidth = 5; g.beginPath(); const bx = L0.f > 0 ? x0 : x0 + w, ang = (1 - k) * Math.PI / 2; g.moveTo(bx, fy - 3); g.lineTo(bx + L0.f * Math.cos(ang) * w, fy - 3 - Math.sin(ang) * w); g.stroke(); g.lineWidth = 1; } }
-    for (const b of F.bolts || []) { g.fillStyle = '#1b1626'; g.fillRect(Math.round(b.x - cx) - 3, Math.round(b.y - cy) - 2, 6, 4); g.fillStyle = b.col; g.fillRect(Math.round(b.x - cx) - 2, Math.round(b.y - cy) - 1, 4, 2); g.fillStyle = '#ffffff'; g.fillRect(Math.round(b.x - cx), Math.round(b.y - cy) - 1, 1, 1); }
+      api.tellBar(Math.round(M.x - M.half - cx), Math.round(M.x + M.half - cx), Math.round(M.y - cy), M.kind === 'timber' ? 6 : 4, k, red ? HARD : C.col, 0.7 + 0.3 * Math.sin(t * 18));
+      if (e.mode === 'snareTell') { const sp = fx.snare[k < 0.4 ? 0 : k < 0.8 ? 1 : 2]; for (let q = -1; q <= 1; q++) g.drawImage(sp, Math.round(M.x - cx) - 15 + q * 26, Math.round(M.y - cy) - 19); } }
+    for (const m of F.mud || []) { g.globalAlpha = Math.min(1, m.life); tile(g, fx.mud, m.x0 - cx, m.x1 - cx, Math.round(m.y - cy), 5, ph); g.globalAlpha = 1; }
+    for (const r of F.rust || []) { g.globalAlpha = Math.min(1, r.life); tile(g, { l: fx.rust.mid[0], r: fx.rust.mid[1], mid: fx.rust.mid }, r.x0 - cx, r.x1 - cx, Math.round(r.y - cy), 4, ph);
+      for (let xx = r.x0 + 4, i = 0; xx < r.x1 - 4; xx += 11, i++) g.drawImage(fx.rust.flake[i % 3], Math.round(xx - cx), Math.round(r.y - cy) - 6 - Math.round((1.6 - Math.min(1.6, r.life)) * 5)); g.globalAlpha = 1; }
+    for (const s of F.snares || []) { g.globalAlpha = Math.min(1, s.t * 3); for (let q = -1; q <= 1; q++) g.drawImage(fx.snare[2], Math.round(s.x - cx) - 15 + q * 26, Math.round(s.y - cy) - 19); g.globalAlpha = 1; }
+    if (F.snare) { const pp = P(); g.drawImage(fx.snare[2], Math.round(F.snare.x - cx) - 15, Math.round(pp.y - cy) - 19); }   /* the held hero in his cage */
+    if (F.log) { const L0 = F.log, k = Math.min(1, L0.t / 0.25), w = Math.round(L0.x1 - L0.x0), tr = OA.trunkFor(w), fy = Math.round(L0.y - cy), bx = Math.round((L0.f > 0 ? L0.x0 : L0.x1) - cx);
+      g.save(); g.translate(bx, fy); if (L0.f < 0) g.scale(-1, 1); g.rotate(-(1 - k * k) * Math.PI / 2 * (k >= 1 ? 0 : 1)); g.drawImage(tr.c, -tr.ox, -tr.oy); g.restore();
+      for (const cutX of L0.cuts || []) g.drawImage(fx.wood.gash, Math.round(cutX - cx) - 3, fy - 9); }
+    for (const c of F.chips || []) g.drawImage(fx.wood.chips[c.i], Math.round(c.x - cx), Math.round(c.y - cy));
+    for (const s of F.sparks || []) g.drawImage(fx.snuff[Math.min(4, Math.floor(s.t / 0.09))], Math.round(s.x - cx) - 9, Math.round(s.y - cy) - 9);
+    for (const b of F.bolts || []) { const spr = fx.bolt[b.back ? 'back' : (b.ch || 'back')][Math.floor(t * 14) % 2]; g.save(); g.translate(Math.round(b.x - cx), Math.round(b.y - cy)); g.rotate(Math.atan2(b.vy, b.vx)); g.drawImage(spr, -7, -7); g.restore(); }
     if (!e.alive) return;
-    if (e.okVine && e.okVine.len > 0) { const x1 = Math.round(e.x + f * (e.w / 2 + e.okVine.len) - cx), vy = y - 6; g.fillStyle = '#1b1626'; g.fillRect(Math.min(x, x1), vy - 1, Math.abs(x1 - x), 3); g.fillStyle = '#3f7a48'; g.fillRect(Math.min(x, x1), vy, Math.abs(x1 - x), 1); g.fillStyle = '#bdb597'; for (let xx = Math.min(x, x1) + 2; xx < Math.max(x, x1); xx += 6) g.fillRect(xx, vy - 1, 1, 1); }
-    if (e.mode === 'cutTell' && e.modeT <= K.cut.glint) { const gx = x - f * 10, gy = y - Math.round(e.h * 1.3); g.fillStyle = '#fff6e0'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); g.fillStyle = SOFT; g.fillRect(gx - 1, gy - 1, 3, 3); }   /* THE PARRY BEAT: his blade glints */
-    if (e.okPlate > 0) { for (let i = 0; i < e.okPlate; i++) { g.fillStyle = '#1b1626'; g.fillRect(x - 7 + i * 10, y - Math.round(e.h * 0.95) - 1, 5, 4); g.fillStyle = '#b09a5a'; g.fillRect(x - 6 + i * 10, y - Math.round(e.h * 0.95), 3, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 6 + i * 10, y - Math.round(e.h * 0.95), 1, 1); } }   /* his ORE plates, one stud each */
+    if (e.okVine && e.okVine.len > 0) { const len = Math.round(e.okVine.len + e.w / 2), n = Math.ceil(len / 12), vy = y - 8;
+      g.save(); g.translate(x, vy); g.scale(f, 1); for (let i = 0; i < n; i++) g.drawImage(fx.vine.seg[(Math.floor(t * 14) + i) % 2], i * 12, -5); g.drawImage(fx.vine.tip, len - 4, -7); g.restore(); }
   }
-  /* HIS CHAPTER'S BANNER ON THE GATE HE HOLDS (drawn over the gate's own tiles, which are the region's barrier look: src/barriers.js) */
+  /* WHAT GOES OVER HIS SPRITE (main.js draws this right after it): the duelist's parry GLINT on the blade's point, and the ORE plates on his pauldrons (whole or cracked) */
+  function drawOver(g, e, dx0, dy0, frame, ps) {
+    if (!e.alive) return; const fx = OA.bakeFx(), f = (ps && ps.face) || e.face || 1, M = OA.META[e.t] && OA.META[e.t][frame], t = now();
+    if (e.mode === 'cutTell' && e.modeT <= K.cut.glint && M && M.glintAt) g.drawImage(fx.glint[Math.floor(t * 30) % 2], Math.round(dx0 + f * (M.glintAt[0] - OA.AX)) - 9, Math.round(dy0 + (M.glintAt[1] - OA.AY)) - 9);
+    if (e.okPlate !== undefined && e.okSig && e.okSig.includes('plate') && M && M.pauld) [M.pauld.f, M.pauld.n].forEach((pp, i) => g.drawImage(i < e.okPlate ? fx.stud.whole : fx.stud.cracked, Math.round(dx0 + f * (pp[0] - OA.AX)) - 4, Math.round(dy0 + (pp[1] - OA.AY)) - 4));
+  }
+  /* HIS CHAPTER'S BANNER ON THE GATE HE HOLDS (drawn over the gate's own tiles, which are the region's barrier look: src/barriers.js): baked once a chapter, five sway phases */
+  const BANNERS = {};
   function drawBanner(g, e, cx, cy, TS2) {
     const G = e.G; if (!G || !e.shut || !e.shut.length) return; const C = chapterOf(e), t = now();
-    const x = Math.round(G.col * TS2 + 8 - cx), y = Math.round(Math.max(G.top, G.bot - 1) * TS2 - cy) - 4,   /* hung at a man's chest on the gate's face, where you meet it */ sway = Math.round(Math.sin(t * 2 + G.col) * 1);
-    g.fillStyle = '#1b1626'; g.fillRect(x - 7, y - 2, 14, 3); g.fillStyle = '#6a4a2c'; g.fillRect(x - 6, y - 1, 12, 1);   /* the pole */
-    g.fillStyle = '#1b1626'; g.fillRect(x - 6 + sway, y, 12, 17); g.fillStyle = C.pal.cloth; g.fillRect(x - 5 + sway, y + 1, 10, 13); g.fillStyle = C.pal.clothDk; g.fillRect(x - 5 + sway, y + 12, 10, 2);
-    g.fillRect(x - 5 + sway, y + 14, 3, 2); g.fillRect(x + 2 + sway, y + 14, 3, 2);   /* the swallowtail */
-    g.fillStyle = C.pal.trim; g.fillRect(x - 5 + sway, y + 1, 10, 1); g.fillRect(x - 5 + sway, y + 1, 1, 13); g.fillRect(x + 4 + sway, y + 1, 1, 13);
-    g.fillStyle = '#c9c4b8'; g.fillRect(x - 2 + sway, y + 4, 4, 7); g.fillStyle = C.pal.cloth; g.fillRect(x - 2 + sway, y + 7, 2, 1); g.fillRect(x + sway, y + 6, 1, 1);   /* THE BROKEN MILESTONE, cracked across */
+    const fr = BANNERS[C.id] || (BANNERS[C.id] = OA.bakeBanner(C.pal)), sw = Math.round(Math.sin(t * 1.7 + G.col) * 2 + Math.sin(t * 4.3 + G.col * 2) * 0.4) + 2;
+    g.drawImage(fr[Math.max(0, Math.min(4, sw))], Math.round(G.col * TS2 + 8 - cx) - 13, Math.round(Math.max(G.top, G.bot - 1) * TS2 - cy) - 7);   /* hung at a man's chest on the gate's face, where you meet it */
   }
-  return { is, spawn, walk, elite, plunge, world, draw, drawBanner, frameOf, orderGuard, K, ORDER, stats };
+  return { is, spawn, walk, elite, plunge, world, draw, drawOver, drawBanner, frameOf, orderGuard, K, ORDER, stats };
 }

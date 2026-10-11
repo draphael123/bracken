@@ -15,8 +15,8 @@ try {
       const v=BK.view,c=document.createElement('canvas');c.width=v.buf.width*3;c.height=v.buf.height*3;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(v.buf,0,0,c.width,c.height);return c.toDataURL('image/png');})()`);
     save(id, url);
   }
-  const sheet = await pg.evalp(`(()=>{const T=['oathblade','oathmaul','oathlance','oathmage'],CH=['thorn','bog','ore'],S=4,W=34*S,H=30*S;
-    const c=document.createElement('canvas');c.width=8*W+120;c.height=T.length*CH.length*H;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#5a6a7a';g.fillRect(0,0,c.width,c.height);g.font='bold 14px monospace';
+  const sheet = await pg.evalp(`(()=>{const T=['oathblade','oathmaul','oathlance','oathmage'],CH=['thorn','bog','ore'],S=2,W=92*S,H=72*S;
+    const c=document.createElement('canvas');c.width=12*W+120;c.height=T.length*CH.length*H;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#5a6a7a';g.fillRect(0,0,c.width,c.height);g.font='bold 14px monospace';
     let row=0;for(const t of T)for(const ch of CH){const s=BK.SPR[t+'_'+ch]||BK.SPR[t];g.fillStyle='#fff';g.fillText(t,4,row*H+20);g.fillText(ch+(BK.SPR[t+'_'+ch]?'':' (base)'),4,row*H+38);
       s.R.forEach((f,i)=>g.drawImage(f,120+i*W,row*H,f.width*S,f.height*S));row++;}
     return c.toDataURL('image/png');})()`);
