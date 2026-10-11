@@ -1,0 +1,9 @@
+82 hint messages read out of src/main.js
+  scope store            768 screens  5.2s
+  scope hud               30 screens  3.7s
+
+== ERROR (1)
+                  store map [knight] tab0 #0                                   "Cannot set properties of undefined (setting 'drink')"
+
+798 screens drawn, 21186 strings measured, 9s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 1
+0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-flasks2art\audits\readability\textfit

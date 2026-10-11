@@ -84,7 +84,7 @@ export function drinkFrames(idle, hero) {
 
 /* THE SET GETS THE FIVE: R.drink and L.drink, and their white flashes (so a hit on a drinking hero flashes like any frame). Called from main.js heroSet */
 export function addDrink(set, hero) {
-  const idle = set && set.R && set.R.idle && set.R.idle[0]; if (!idle) return set;
+  const idle = set && set.R && set.L && set.white && set.white.R && set.white.L && set.R.idle && set.R.idle[0]; if (!idle) return set;
   const R = drinkFrames(idle, hero), L = R.map(flipX), WR = R.map(c => whiten(c)), WL = WR.map(flipX);
   set.R.drink = R; set.L.drink = L; set.white.R.drink = WR; set.white.L.drink = WL; if (set.bare) addDrink(set.bare, hero); return set;
 }
