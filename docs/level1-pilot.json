@@ -250,5 +250,17 @@
   "lifts": 161,
   "walked": 100,
   "bare": true
+ },
+ "hanging": {
+  "hash": "5d99f57af11e",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 19,
+  "deaths": 2,
+  "kills": 27,
+  "lifts": 96,
+  "walked": 100,
+  "bare": true
  }
 }
