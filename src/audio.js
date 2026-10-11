@@ -330,6 +330,18 @@ export const SFX = {
   // THE NEW QUESTIONS GET THEIR OWN SOUNDS. A move you have to read should be a move you can hear coming.
   enGarde() { file('imp_steel', 0.16, 1.45); tone('triangle', 1760, 1740, 0.36, 0.06); tone('sine', 2640, 2600, 0.3, 0.035, 0.02); noise(0.1, 0.07, 5200, 2.2); },   /* a blade held out, ringing: she is offering it */
   riposte() { file('parry', 0.34, 1.15); file('swish', 0.28, 1.25); tone('square', 1900, 2700, 0.04, 0.12); tone('sine', 3300, 2900, 0.22, 0.07, 0.02); noise(0.08, 0.26, 3800, 0.9, 0.05); tone('sawtooth', 720, 170, 0.13, 0.09, 0.06); },   /* the bind, and the point coming through it */
+  /* (claude/riposteart) THE PARRY'S OWN VOICE, per hero: a short layer under the parry sound his branch already played (the recorded pools the disk has - imp_steel, imp_steelH, imp_stone, imp_wood - with a synth under each),
+     so eight parries are not one clang: the knight's high ting off the shield rim, the warden's ash shaft turning, the berserker's two axes meeting, the paladin's aegis bell, the pyromancer's flare catching,
+     the geomancer's stone skin, the freebooter's cutlasses scraping, the death knight's blade bound low. */
+  parryTone(who) { switch (who) {
+    case 'warden': file('imp_wood', 0.3, 1.3); tone('triangle', vary(1500), 900, 0.1, 0.05); noise(0.05, 0.1, 3200, 1.4); break;
+    case 'berserker': file('imp_steelH', 0.4, 0.8); tone('sine', 110, 60, 0.2, 0.14); noise(0.08, 0.16, 700, 0.6); break;
+    case 'paladin': bell(1175, 0.5, 0.06); bell(1760, 0.4, 0.03, 0.02); file('r_chime', 0.16, 1.5); break;
+    case 'pyro': noise(0.2, 0.16, 2600, 1.0); tone('sawtooth', 380, 900, 0.14, 0.05); tone('sine', 140, 70, 0.2, 0.1); noise(0.25, 0.14, 900, 0.7, 0.02); break;
+    case 'geomancer': file('imp_stone', 0.3, 0.95); tone('sine', 90, 55, 0.28, 0.12); noise(0.1, 0.12, 500, 0.6); break;
+    case 'pirate': file('imp_steel', 0.2, 1.9); tone('square', vary(2600), 1900, 0.05, 0.05); noise(0.06, 0.12, 4200, 1.3); noise(0.14, 0.08, 3000, 2, 0.04); break;
+    case 'reaper': file('imp_steelH', 0.35, 0.62); tone('sine', 70, 40, 0.45, 0.16); tone('triangle', vary(260), 120, 0.2, 0.07); noise(0.2, 0.14, 380, 0.6); break;
+    default: file('imp_steel', 0.18, 1.6); tone('sine', 2093, 2080, 0.3, 0.06); } },
   shoulder() { file('stone', 0.2, 0.7); noise(0.32, 0.22, 360, 0.5); tone('sawtooth', 96, 58, 0.3, 0.12); tone('square', vary(1300), 900, 0.04, 0.05, 0.07); tone('square', vary(1250), 880, 0.04, 0.05, 0.19); },   /* a man in plate starting to run */
   anchorSwing() { file('swish', 0.36, 0.55); file('imp_steelH', 0.18, 0.62); noise(0.48, 0.24, 250, 0.6); tone('sine', 110, 52, 0.42, 0.15); for (let i = 0; i < 5; i++) tone('square', vary(2200 - i * 180), 1400, 0.03, 0.03, 0.05 + i * 0.06); noise(0.2, 0.15, 900, 0.8, 0.26); },   /* the chain paying out, and the iron going round */
   rubble() { file('imp_stone', 0.34, 0.9); file('stone', 0.22, 1.15); noise(0.36, 0.3, 680, 0.5); for (let i = 0; i < 4; i++) noise(0.05, 0.12, vary(1800), 2, 0.05 + i * 0.07); tone('sine', 88, 48, 0.22, 0.12); },   /* a shovel of broken floor */

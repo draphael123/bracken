@@ -110,7 +110,7 @@ import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRel
 import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
 import { installTactics, braceHit } from './foe-tactics.js'; import { installReact } from './foe-react.js'; import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';
-import { makeRiposte, PARRY as RP_K, verbOf as rpVerbOf } from './riposte.js';   /* (claude/riposte) THE UNIVERSAL PARRY -> RIPOSTE, THE POISE BAR's openings, THE MIX-UP CHAIN (src/riposte.js) */   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
+import { makeRiposte, PARRY as RP_K, PARRY_ART as RP_ART, verbOf as rpVerbOf } from './riposte.js';   /* (claude/riposte) THE UNIVERSAL PARRY -> RIPOSTE, THE POISE BAR's openings, THE MIX-UP CHAIN (src/riposte.js) */   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
 import { POGO_CHAIN, bounce as pogoBounce, firedropSpares } from './pogo-chain.js';   /* OFF THEIR HEADS: one rebound for every hero, the stomp a pogo too (src/pogo-chain.js) */   /* EXECUTIONS: a broken common foe is finished, each hero his own way (src/finishers.js) */   /* THE COMBAT PASS, PART 2: held wind-ups, reactive waiting, the brute's cover, the squad hook (src/foe-tactics.js) */   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
 import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL, xpTier, xpSoftCap, softCapMul, xpCap, LV_MAX } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
@@ -1492,6 +1492,9 @@ function drawCoopHud() {
   else { bar(x0 + 27, y0 + 5, 38, 4, p.hp / p.maxHp, p.hp > p.maxHp * 0.3 ? '#e04848' : '#ff7a6b', p.hpShown / p.maxHp);
     text(String(Math.max(0, Math.ceil(p.hp))), x0 + 68, y0 + 4, '#fff6e0', 'left', 6); }
   text(fitText(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), w - 10, 6), x0 + 5, y0 + 12, UI.dim, 'left', 6);
+  if (RP.chainOf(p) > 0 && !(p.down > 0)) { const tw = 5 * 6 + 3, tx = x0 + w - tw;   /* (claude/riposteart) P2's MIX-UP pips, on a tab hung under the plate's right end (the same gems as the HUD's) */
+    board(tx, y0 + h - 1, tw + 2, 9, UI.border, 'rgba(10,8,20,0.5)', true); if (typeof hudRects !== 'undefined' && hudRects) hudRects.push([tx, y0 + h - 1, tw + 4, 11]);
+    RP.drawPips(g, p, tx + 3, y0 + h + 2, !!SET.reduceMotion); }
 }
 /* THE END OF THE ROAD. Nothing after THE MAGE'S FOLLY needs anything, so the archmage's tower is the campaign's
    last wood, and winning it in co-op is what the VICTORY card answers. */
@@ -6361,11 +6364,7 @@ function guardEarlySay() { if (hero() !== 'knight' || !lessonAt('parry') || hint
 /* THE RIPOSTE WINDOW, ON HIM: a gold ring round the sword hand that closes as the window does, and a glint running up the blade */
 function drawRiposteGlint(cx, cy) {
   const col = RP.glintCol(P, hero()); if (!col) return;   /* (claude/riposte) every hero's riposte window, on him (the art lane: a glint per weapon) */
-  const k = Math.min(1, P.riposteT / RP_K.window), x = Math.round(P.x - cx) + P.face * 7, y = Math.round(P.y - cy) - 12;
-  g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1;
-  g.beginPath(); g.arc(x, y, 6 + 12 * k, 0, 7); g.stroke();
-  g.globalAlpha = 0.9; g.fillStyle = '#ffffff'; const gy = y - 2 - Math.floor((1 - k) * 10) % 6; g.fillRect(x - 1, gy, 3, 1); g.fillRect(x, gy - 1, 1, 3);
-  g.restore(); }
+  RP.drawGlint(g, P, hero(), Math.round(P.x - cx), Math.round(P.y - cy), P.face, Math.min(1, P.riposteT / RP_K.window)); }   /* (claude/riposteart) the hand's ring and the glint along THIS hero's weapon, in his colour (src/riposte.js PARRY_ART) */
 /* THE PARRY GOES OFF: a star of light off the edge of the shield, a second ring twice the size, and a breath of white */
 function parryBurst() { const x = P.x + P.face * 10, y = P.y - 9;
   streaks(x, y, 12, ['#ffffff', '#fff6e0', '#ffd36b'], 240); ringAt(x, y, 34, '#ffd36b', 0.42);
@@ -7346,10 +7345,15 @@ const BR = makeBossRead({ time: () => time, clank: () => SFX.clank(), sparks: (x
 /* (claude/riposte) THE UNIVERSAL PARRY -> RIPOSTE (src/riposte.js): one timing, one payoff, one foe reaction; the poise bar's break and verb; the mix-up chain */
 const RP = makeRiposte({ time: () => time, P: () => P, isBoss: e => e === boss, poiseMax: e => poiseMax(e), breakPoise: e => rpBreak(e, 'GUARD BROKEN'), lean: (e, n) => rpLean(e, n), openOf: e => GB.openOf(e),
   tokenRelease: e => tokenRelease(TK, e, 'parried'), number: (x, y, s, c) => number(x, y, s, c), ring: (x, y, r, c, l) => ringAt(x, y, r, c, l), sparks: (x, y, d, n) => sparks(x, y, d, n),
-  sfx: (k, n) => { if (k === 'chime') { if (SFX.mixPip) SFX.mixPip(n); } else if (SFX[k]) SFX[k](); }, hitstop: t => hitstop(t), lessonHint: k => lessonHint(k), perfectWindow: () => perfectWindow(), squash: (a, b, t) => squash(a, b, t) });
+  sfx: (k, n) => { if (k === 'chime') { if (SFX.mixPip) SFX.mixPip(n); } else if (SFX[k]) SFX[k](); }, hitstop: t => hitstop(t), lessonHint: k => lessonHint(k), perfectWindow: () => perfectWindow(), squash: (a, b, t) => squash(a, b, t), still: () => !!SET.reduceMotion, parryFx: () => rpParryFx() });
 function rpBreak(e, word) { const m = poiseMax(e); if (!m || e.broken > 0 || !e.alive) return; e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
   number(e.x, e.y - e.h - 20, word || 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); breakBeat(e); }
 function rpLean(e, n) { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) rpBreak(e, 'BROKEN'); }
+/* (claude/riposteart) THE PARRY'S FLASH, every hero: a ring and a star of his colour at the weapon hand, a breath of gold over his body (P.rpTintT, drawn in the player pass), a short screen flash
+   (only with flashes on and motion allowed), and the layer of sound that is HIS (SFX.parryTone) under the parry sound his branch already played */
+function rpParryFx() { const A = RP_ART[hero()] || RP_ART.knight, x = P.x + P.face * 8, y = P.y - 10;
+  ringAt(x, y, 16, A.flash, 0.22); ringAt(x, y, 8, '#ffffff', 0.14); streaks(x, y, 6, ['#ffffff', A.flash, '#ffd36b'], 150); P.rpTintT = 0.09;
+  if (SET.flashes && !SET.reduceMotion) killFlash = Math.max(killFlash, 0.02); if (SFX.parryTone) SFX.parryTone(A.sound); }
 const rpCut = () => P.riposteT > 0 || (!!P.swingRiposte && P.atk >= 0);   /* (claude/riposte) the riposte cut itself leans on the bar (P.riposteT is spent the moment it starts) */
 /* (claude/riposte) IS THE HERO'S ANSWER ON THE BEAT RIGHT NOW? - asked only to say TOO STRONG when a red blow (or a bolt) meets it */
 function rpAnswerUp() { return hero() === 'knight' ? !!P.block && (P.blockT || 0) < perfectWindow() : isPaladin() ? !!P.aegis && time - (P.aegisUpT ?? -9) < perfectWindow() : isPirate() ? P.parryW > 0
@@ -7548,7 +7552,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'frog' && e.mode === 'idle') { e.idleHits = (e.idleHits || 0) + 1; if (e.idleHits >= 2) { e.idleHits = 0; e.mode = 'hopAway'; e.modeT = 0.2; } }
   if (e.t === 'frog' && pl && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 2 && e.mode === 'idle') { e.headHits = 0; e.mode = 'hopAway'; e.modeT = 0.1; } }
   /* THE FAMILY TABLE (above POISE_HEAVY): the right tool bites, the wrong one glances. After every boss's own gate, and never on one */
-  let glance = false, wheel = false, mixed = false; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
+  let glance = false, wheel = false; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
   { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
     if (fam) { const keyed = fam.key.some(v => blowHas(blow, v));
       if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time;
@@ -7561,7 +7565,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
          LANDS - and it wheels on you, guard up, and shoulders you off. Going round buys one cut; going through (a heavy blow, or a
          sweep under it, until its bar breaks) buys all of them. */
       if (fam === FAMILY.guard && !keyed && !e.disarmed && blowHas(blow, 'light') && e.t !== 'heavy' && e.face && Math.sign(fromX - e.x) === -e.face && !foeOpen(e) && !windingUp(e)) wheel = true; } }   /* (never mid-windup: turning a blow already coming would aim it at you) */
-  if (P.mixedT > time && blow && dmg > 0 && !glance && e.alive && !e.harmless && !(e.xpRole || e.mini || e === boss) && e.t !== 'dummy') { dmg = Math.round(dmg * 1.5); mixedUp(e); mixed = true; }   /* MIXED UP: three verbs, and the next one that lands puts it down */
+  /* (claude/riposteart) MIXED UP is FOLDED INTO THE MIX-UP CHAIN (src/riposte.js MIX.word): the old parallel bonus - three verbs in 4 s, the next blow x1.5 and a break - is gone; the chain's third pip says the word */
   /* HERO COMBOS: each hero's own two moves, used in the right order, land harder than either alone */
   dmg = RP.payoff(e, dmg, blow);   /* (claude/riposte) THE RIPOSTE: x2 into a parried foe or elite (the knight's OPENED UP folded in - his cut is heavy on top), x1.5 into a boss's riposte opening */
   if (dmg > 0 && tag && !glance && e.alive && !e.harmless && !P.jetHit) { RP.landed(P, rpVerbOf(tag, rpSkillBlow())); dmg = Math.round(dmg * RP.chainMul(P)); }   /* (claude/riposte) THE MIX-UP CHAIN: a landed verb, and its pips */
@@ -7586,7 +7590,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg, blow, tag) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg, blow, tag), raw0, !!blow);
   if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   greedHit(e, fromX, blow);
-  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = mixed ? Math.max(e.stagger || 0, 1.1) : hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;   /* (MIXED UP's long stagger outlasts the blow's own) */
+  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -7736,21 +7740,8 @@ function meterReady(col) { SFX.lightFull(); ringAt(P.x, P.y - 10, 22, col, 0.4);
 const verbs = [];
 function noteVerb(v) {
   verbs.push({ v, t: time }); while (verbs.length > 8) verbs.shift();
-  const kinds = new Set(verbs.filter(q => time - q.t < 4).map(q => q.v));
-  if (kinds.size >= 3 && time - (P.varietyAt || -9) > 3) { P.varietyAt = time; P.mixedT = time + 2.5; ringAt(P.x, P.y - 10, 12, '#8fd160', 0.22); }   /* ARMED: the next blow that lands says it (mixedUp) */
 }
-/* MIXED UP, ON THE FOE. It was a meter multiplier and a word over the hero that the word filter never let show, so three different
-   verbs in four seconds changed nothing anybody could see. Now the NEXT BLOW THAT LANDS on an ordinary creature or an elite (never a
-   boss or a mini: their windows are their own) after the third verb lands half as hard again and puts it down - its bar broken if it
-   carries one, a long stagger and a lost windup if it does not - under MIXED UP. A glancing blow does not spend it. */
-function mixedUp(e) {
-  P.mixedT = 0;
-  const m = poiseMax(e);
-  if (m && !(e.broken > 0)) { e.broken =e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken); breakBeat(e); }
-  else { flinch(e); e.vx = 0; }   /* (the long stagger is laid on after the blow's own, in hurtEnemy0) */
-  number(e.x, e.y - (e.h || 16) - 26, 'MIXED UP', '#8fd160'); ringAt(e.x, e.y - (e.h || 16) / 2, 24, '#8fd160', 0.4); ringAt(e.x, e.y - (e.h || 16) / 2, 12, '#dfffa0', 0.25);
-  burst(e.x, e.y - (e.h || 16) / 2, 12, ['#8fd160', '#dfffa0', '#fff6e0'], 90, 0.45, -40, 1); SFX.riposte(); hitstop(0.06); zoomKick(1.04, 0.16);
-}
+/* (claude/riposteart) MIXED UP, ON THE FOE, is gone: it is the MIX-UP CHAIN's third pip now (src/riposte.js), with no parallel bonus and no break of its own. */
 function varietyMul() {
   const recent = verbs.filter(q => time - q.t < 4); if (recent.length < 2) return 1;
   const n = new Set(recent.map(q => q.v)).size; return n >= 3 ? 1.5 : n === 2 ? 1.15 : recent.length >= 4 ? 0.6 : 0.85;
@@ -9178,7 +9169,7 @@ function updatePlayer(dt) {
     }
   }
   P.block = !!keys.block && (P.ground || P.swim) && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && CM.guardOk(P) && !thrown && !rushing() && hero() === 'knight' && !knightWinding();   /* WEIGHT: not while EXHAUSTED (a bar of 1 used to raise it) */   /* THE HEAVY CUT's price: no shield while the sword is up */
-  P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); if (P.ground) P.airRolled = false;
+  P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); P.rpPoseT = Math.max(0, (P.rpPoseT || 0) - dt); P.rpTintT = Math.max(0, (P.rpTintT || 0) - dt); if (P.ground) P.airRolled = false;
   if (isPyro() && P.jet && !P.ground && tal('updraft')) P.vy = Math.min(P.vy, 45); // UPDRAFT: the jet holds her up
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
     const j = jetBox();
@@ -24888,7 +24879,7 @@ function poseOf(e, wind) {
   if (e.jeerT > 0) o.dy -= Math.round(Math.abs(Math.sin(e.jeerT * 13)) * 3);
   if (e.mk && e.mode === 'cartwheel' && e.mk.cart) { o.rot = (o.rot || 0) + (1 - e.mk.cart.t / TMK.MASK.cart.t) * Math.PI * 2 * (e.mk.cart.dir || 1); o.dy -= 8; }   /* (claude/theatre4) THE COMEDY's cartwheel */
   if (PUPH && PM.isPuppet(e) && PUPH.slump(e)) { o.dy += 3; o.sy *= 0.93; o.rot = (o.rot || 0) + (e.face || 1) * 0.1; }   /* (claude/theatre4) SLACK, IT SLUMPS: a hittable puppet sags on its strings */
-  if ((e.broken > 0 || e.rpHold > 0) && !e.xpRole && !e.mini && e !== boss && !(e.floored > time)) staggerPose(o, e, time);   /* (claude/riposte: and PARRIED - the shared recoil, until the art lane gives a kind its own) */   /* BROKEN, IT STANDS OPEN: reeling back off its guard for the whole break (src/poise-break.js) */
+  if ((e.broken > 0 || e.rpHold > 0) && !e.xpRole && !e.mini && e !== boss && !(e.floored > time)) (e.broken > 0 ? staggerPose : RP.parriedPose)(o, e, time);   /* (claude/riposteart: PARRIED has its own keyed recoil - snap, rebound, stagger, come-to - src/riposte.js parriedPose; BROKEN keeps the slump) */   /* BROKEN, IT STANDS OPEN: reeling back off its guard for the whole break (src/poise-break.js) */
   if (GOBLINISH.has(e.t) && e.hp0 && e.hp < e.hp0 * 0.35 && !wind && Math.floor(time * 24) % 3 === 0) o.dx += Math.floor(time * 48) % 2 ? 1 : -1;
   /* THE HILL TROLL'S POSES: he rears up tall to slam, squats into the floor as it lands, leans out to tear a stone down, and lies flat under one */
   if (e.hill) { const m = e.mode, f = e.face || 1;
@@ -29720,6 +29711,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (e.alive && (HEAVY.has(e.t) || e.t === 'closedhelm' || e.t === 'hedgeknight' || e.t === 'golem' || e.t === 'forgemaster') && Math.abs(e.vx) > 6) { if (e.lastF !== undefined && frame !== e.lastF && Math.random() < 0.8) dust(e.x - (e.face || 1) * 4, e.y, e.maxHp ? 3 : 2); e.lastF = frame; } }
     g.globalAlpha = 1;
     { const bl = e === boss || bossActive || miniActive; if (openCommon(e, bl)) drawOpen(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 6, time, finishReady(e, P, bl)); }   /* OPEN: the stars over a broken foe, closing in and going white when the next blow will finish it (src/poise-break.js, src/finishers.js) */
+    if (e.rpOpenT > 0 && e.alive) RP.drawParried(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 7);   /* (claude/riposteart) a parried foe's riposte window, over its head */
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl' || e.mode === 'galeTell')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
     const windMark = wind ? markOf(e) : '';
     if (windMark) tellQ.push({ txt: windMark, x: e.x - cx, y: e.y - (e.markH || e.h) - 12 - cy, col: windMark === '!!' ? '#ff6b6b' : '#ffd36b', a: 1, lane: laneOf(tellKey(e)) });   /* (the lane: the DUCK or the JUMP mark beside it, src/marks.js HEIGHT) */   /* drawn last of all: drawTells(). THE MARK OVER A WINDUP IS THE TABLE'S (src/marks.js, written and checked by tools/tells.mjs): it used to be a yellow ! over every windup in the game, over every red !! slam and over a priest's rite that strikes nobody */
@@ -29824,10 +29816,12 @@ function drawWorld(cx, cy, showPlayer) {
       else if (hero() === 'knight' && knightWinding() && K.R.windup) { key = 'windup'; frame = Math.max(0, cutStage(P.atkHeld || 0) - 1); }   /* THE HEAVY CUT: the sword up over the shield, a frame a stage */
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
+      else if (P.atk >= 0 && P.swingRiposte && K.R.ripo && P.ground && !P.swingKind) { key = 'ripo'; frame = RP.ripoFrame(P); }   /* (claude/riposteart) THE RIPOSTE STRIKE out of the parry: the step-in, the cut or thrust with its gold flash, the follow-through - each hero's own weapon */
       else if (P.atk >= 0 && CA && CA.atkPose(K.R)) { [key, frame] = CA.atkPose(K.R); }   /* THE SHIELD TRIP and THE LOW POKE, from the crouch (src/crouch-a.js) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
-      else if (P.atkRec > 0 && P.recPose && P.ground && !(P.flourishT > 0)) { [key, frame] = P.recPose;
+      else if (P.atkRec > 0 && P.recPose && P.ground && !(P.flourishT > 0 && !P.swingRiposte)) { [key, frame] = P.recPose;
         if (!P.heavy && K.R.follow && (key === 'atk' || key === 'atkB' || key === 'atkC') && P.atkRecMax > 0) { key = 'follow'; frame = P.atkRec / P.atkRecMax > 0.5 ? 0 : 1; } }   /* FOLLOW-THROUGH (heroanim): the spent weapon carried on, then back to guard, inside the same recovery (art only) */   /* WEIGHT: the recovery holds the swing's last pose (a recover pose per hero is an optional art lane) */
+      else if (P.rpPoseT > 0 && K.R.parry && !P.dodge && !P.swim) { key = 'parry'; frame = RP.parryFrame(P); }   /* (claude/riposteart) THE PARRY POSE: the catch the moment the blow lands on the beat, then the hold - each hero's own look */
       else if (kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* EVERY ABILITY HAS A BODY (hero-poses.js): the active that just fired, in a pose of its own - DISARM's hook among them, which borrowed the combo's backhand */
       else if (isWarden() && wardPose()) { const wp = wardPose(); key = wp[0]; frame = wp[1]; }   /* THE WARDEN'S BOUGHT ACTIVES (wardenKit) */
       else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
@@ -29849,7 +29843,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (CRB && CRB.pose(K.R)) { [key, frame] = CRB.pose(K.R); }
       else if (CRC && CRC.pose(K.R)) { [key, frame] = CRC.pose(K.R); }   /* WORKING UP (src/crouch-c.js): the axes ground together */   /* KNEEL / SENSE / HARVEST (src/crouch-b.js): the crouch at work */
       else if (P.ducking || (keys.down && Math.abs(P.vx) < 10)) { key = 'crouch'; const ca = CA && P.ducking ? CA.crouchPose(K.R) : null; if (ca) [key, frame] = ca; }   /* the pose is the hurt box: crouched is DUCK_H tall (src/duck.js) */
-      else if (P.flourishT > 0 && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
+      else if (P.flourishT > 0 && !P.swingRiposte && K.R.atkC && Math.abs(P.vx) < 10 && P.ground) { key = 'atkC'; frame = 3; }
       else if (P.skidT > 0 && K.R.skid) key = 'skid';
       else if (Math.abs(P.vx) < 40 && landPose(P, K.R)) { [key, frame] = landPose(P, K.R); }   /* impact, settle, stand where the hero has three (hero-poses.js) */
       else if (P.fidgetT > 0 && K.R.fidget && Math.abs(P.vx) <= 10) { key = 'fidget'; frame = Math.max(0, Math.min(K.R.fidget.length - 1, K.R.fidget.length - Math.ceil(P.fidgetT / 0.1))); }   /* left standing, each of them has a small business of their own (the clock is in update) */
@@ -29880,6 +29874,7 @@ function drawWorld(cx, cy, showPlayer) {
       P.lastKey = key; P.lastFrame = frame;   /* remembered for the audits (tools/audit-hitboxes.mjs), as e.lastFrame is for a creature */
       drawWarm('rim', KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, swimRot, P.x, P.y - 10);
       drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1, swimRot);
+      if (P.rpTintT > 0 && SET.flashes && !SET.reduceMotion) drawTinted(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, swimRot, (RP_ART[hero()] || RP_ART.knight).flash, 0.5 * Math.min(1, P.rpTintT / 0.09));   /* (claude/riposteart) the parry's gold flash, on the body */
       if (MCH && MCH.riding(P)) MCH.drawCart(g, P, cx, cy, time);   /* THE DEEP RAILS: he rides in a tub */
       if (key === 'plunge' && hero() === 'knight' && !P.swim && !P.flip && DOWN_STRIKE.knight) drawPokeStreak(cx, cy, DOWN_STRIKE.knight);
       if (key === 'windup' && hero() === 'knight') drawCutGlint(cx, cy);

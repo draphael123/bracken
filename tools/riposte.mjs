@@ -93,7 +93,7 @@ try {
   if (WANT.includes('chain')) {
     out.chain = await pg.evalp(`(()=>{const [e]=__set('knight',[['zombie',20]]);const P=BK.P,R=BK.riposte(),o={};const hit=v=>{const h0=e.hp;BKT.hurtAs(v,e,100,P.x,false);e.stagger=0;e.broken=0;e.poiseCd=9;return h0-e.hp;};
       o.mash=[];for(let i=0;i<8;i++){hit('light');o.mash.push(R.chainOf(P));BK.sim(10);}
-      o.mix=[];o.dmg=[];for(const v of ['light','heavy','sweep','rise','plunge','dash','shot','light']){o.dmg.push(hit(v));o.mix.push(R.chainOf(P));BK.sim(10);}
+      R.resetStats();o.mix=[];o.dmg=[];o.word=[];for(const v of ['light','heavy','sweep','rise','plunge','dash','shot','light']){o.dmg.push(hit(v));o.mix.push(R.chainOf(P));o.word.push(R.stats.mixedUp);BK.sim(10);}
       o.repeat=(hit('light'),R.chainOf(P));
       P.inv=0;P.hurt=0;BKT.damagePlayer(P.x+14,10,{});o.afterHit=R.chainOf(P);
       hit('light');hit('heavy');o.before=R.chainOf(P);BK.sim(200);o.idle=R.chainOf(P);
@@ -104,6 +104,10 @@ try {
     assert(c.mash.every(n => n === 0), 'a mash (one verb, over and over) adds no pip: ' + c.mash);
     assert.deepEqual(c.mix.slice(0, 7), [0, 1, 2, 3, 4, 5, 5], 'each new verb adds a pip, five at most: ' + c.mix);
     assert(c.dmg[6] > c.dmg[0] * 1.25, 'five pips: about +30% damage (' + c.dmg + ')');
+    /* (claude/riposteart, A STATED DESIGN CHANGE: MIXED UP is FOLDED INTO THE CHAIN. It was a parallel bonus - three different verbs in 4 s and the NEXT blow landed x1.5 and broke a common foe - beside the
+       chain's own +6% a pip. That bonus is gone: three verbs mixed are now just three pips (+18%), and the chain says MIXED UP, once, as the third pip lands.) */
+    assert(Math.max(...c.dmg) <= 135, 'no parallel MIXED UP bonus: no blow lands x1.5 over the chain (' + c.dmg + ')');
+    assert.deepEqual(c.word.slice(0, 5), [0, 0, 0, 1, 1], 'the chain says MIXED UP once, at the third pip: ' + c.word);
     assert.equal(c.repeat, 5, 'repeating a verb neither adds nor removes');
     assert.equal(c.afterHit, 0, 'a blow taken resets the chain');
     assert(c.before === 1 && c.idle === 0, 'three seconds without landing one resets it');
