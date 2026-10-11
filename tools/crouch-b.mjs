@@ -1,7 +1,9 @@
 // tools/crouch-b.mjs — PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin's KNEEL IN PRAYER, the geomancer's EARTH SENSE and
 // the death knight's BLOOD HARVEST (src/crouch-b.js), each the universal duck plus a twist. On flat Stockade floor, with the hero held
 // where he stands, this fails when:
-//   - THE PALADIN: down held does not pray (after KNEEL.settle), his LIGHT does not fill at KNEEL.rate a second (empty to full in 4 s),
+//   - THE PALADIN (claude/crouchfix: AT A HOLY LIGHT ONLY, src/crouch-b.js HOLY - the test lays a brazier at his feet): down held there does not pray
+//     (after KNEEL.settle), his LIGHT does not fill at KNEEL.rate a second, or it fills with no holy light within HOLY.R (a brazier five tiles off, a tipped
+//     one, none at all), or he is not the plain duck there; the bot does not kneel at one or walk to one four tiles off,
 //     it fills while he stands or walks, the pose is not his kneel, the kneel is not the duck (hurt box DUCK_H, the armour's high swing
 //     still goes over), or he is not EXPOSED (a topiary's low swipe must still find him, and the hit must break the prayer)
 //   - THE GEOMANCER: down held does not show a buried dead man inside SENSE.R (and one outside it is shown), it wakes or hurts him (a
@@ -40,7 +42,9 @@ try {
     if (!spot) return { err: 'no flat floor' };
     const K = BK.keys, none = () => { for (const k of ['left', 'right', 'up', 'down', 'jump', 'block', 'atk']) K[k] = false; };
     const clear = () => { for (const e of BK.enemies()) e.alive = false; for (const s of BK.seeds()) s.dead = true; };
-    const home = () => { clear(); none(); BK.god = true; BK.tp(spot[0], spot[1]); BK.sim(40); BK.god = false; const P = BK.P; P.hp = P.maxHp; P.vx = 0; P.hurt = 0; P.face = 1; P.light = 0; P.harvest = 0; BK.sim(30); BK.crouchBReset(); };
+    const mine = [];   /* the holy lights this test laid (claude/crouchfix) */
+    const holy = (dx, o = {}) => { const q = { t: 'brazier', x: spot[0] * 16 + 8 + dx, y: BK.P.y, lit: true, tipped: false, ...o }; BK.props().push(q); mine.push(q); return q; };
+    const home = () => { for (const q of mine) { const i = BK.props().indexOf(q); if (i >= 0) BK.props().splice(i, 1); } mine.length = 0; clear(); none(); BK.god = true; BK.tp(spot[0], spot[1]); BK.sim(40); BK.god = false; const P = BK.P; P.hp = P.maxHp; P.vx = 0; P.hurt = 0; P.face = 1; P.light = 0; P.harvest = 0; BK.sim(30); BK.crouchBReset(); };
     const hold = () => { BK.P.vx = 0; BK.P.x = spot[0] * 16 + 8; BK.P.inv = 0; };
     const C = () => BK.crouchB();
     const box = () => { const b = BK.duck().box; return b.b - b.t; };
@@ -57,7 +61,7 @@ try {
       none(); f.alive = false; return { t, lost: Math.round(lost), firstLoss, prayBefore, prayAfterHit, lightAtHit, wardUp, drawAtHit, ducked: BK.duck().ducked }; };
 
     // ================= THE PALADIN =================
-    { home(); const P = BK.P, r = {}; P.light = 0;
+    { home(); holy(0); const P = BK.P, r = {}; P.light = 0;
       K.down = true; BK.sim(Math.round(${KNEEL.settle} * 60) - 2); r.lightSettle = P.light; r.prayingEarly = C().praying;
       BK.sim(60); r.l1 = P.light; BK.sim(60); r.l2 = P.light; r.praying = C().praying; r.box = box(); r.aegis = !!P.aegis; r.block = !!P.block;
       BK.step(2); r.pose = P.lastKey;
@@ -65,8 +69,14 @@ try {
       K.down = false; P.light = 30; BK.sim(60); r.stood = P.light;
       K.down = true; K.right = true; BK.sim(60); r.walked = P.light; r.walkPray = C().praying; none(); BK.sim(10);
       out.pal = r; }
-    out.palLow = fight('topiary', 2, 8, { light: 0, stopAt: k => false });
-    out.palHigh = fight('armour', 2, 6, { light: 0, stopAt: k => false });
+    /* NOT BY A HOLY LIGHT: five tiles off, tipped, unlit-and-none: the plain duck - no prayer, no light, no kneel pose, still the duck */
+    { const R2 = {}; const trial = (name, lay) => { home(); lay(); const P = BK.P; P.light = 0; K.down = true; BK.sim(240); const c = C(); R2[name] = { light: P.light, praying: c.praying, kneelT: c.kneelT, holy: !!c.holy, box: box() }; BK.step(2); R2[name].pose = P.lastKey; K.down = false; BK.sim(10); };
+      trial('none', () => {}); trial('far', () => holy(80)); trial('tipped', () => holy(0, { tipped: true })); trial('unlit', () => holy(0, { lit: false })); trial('edge', () => holy(40));
+      trial('near', () => holy(24)); trial('shrine', () => { const q = { x: spot[0] * 16 + 8 + 20, y: BK.P.y, lit: false }; BK.shrines().push(q); mine.push({ t: 'shrine', _s: q }); });
+      for (const q of BK.shrines().slice()) if (q.x === spot[0] * 16 + 8 + 20) BK.shrines().splice(BK.shrines().indexOf(q), 1);
+      out.palElse = R2; }
+    out.palLow = fight('topiary', 2, 8, { light: 0, pre: () => holy(0), stopAt: k => false });
+    out.palHigh = fight('armour', 2, 6, { light: 0, pre: () => holy(0), stopAt: k => false });
 
     // ================= THE GEOMANCER =================
     setUp('geomancer');
@@ -114,8 +124,10 @@ try {
     // ================= THE BOT (src/lab.js crouchBPlan): calm, each does it; with a foe near, none does =================
     { const { crouchBPlan, crouchBKeys } = await import('/src/lab.js'); out.bot = {};
       const drive = (h, n) => { let planned = 0; for (let k = 0; k < n; k++) { none(); if (crouchBKeys(BK, crouchBPlan(BK, h))) planned++; BK.sim(1); } none(); return planned; };
-      setUp('paladin'); home(); BK.P.light = 10; out.bot.pal = { planned: drive('paladin', 240), light: Math.round(BK.P.light) };
-      home(); BK.P.light = 10; BK.spawnFoe({ t: 'topiary', x: spot[0] + 3, y: spot[1], face: -1 }); out.bot.palNear = { planned: drive('paladin', 30), light: Math.round(BK.P.light) };
+      setUp('paladin'); home(); holy(0); BK.P.light = 10; out.bot.pal = { planned: drive('paladin', 240), light: Math.round(BK.P.light) };
+      home(); holy(-64); BK.P.light = 10; { const x0 = BK.P.x; out.bot.palWalk = { planned: drive('paladin', 420), light: Math.round(BK.P.light), walked: Math.round(BK.P.x - x0) }; }
+      home(); BK.P.light = 10; out.bot.palNone = { planned: drive('paladin', 120), light: Math.round(BK.P.light) };
+      home(); holy(0); BK.P.light = 10; BK.spawnFoe({ t: 'topiary', x: spot[0] + 3, y: spot[1], face: -1 }); out.bot.palNear = { planned: drive('paladin', 30), light: Math.round(BK.P.light) };
       setUp('geomancer'); home(); out.bot.geo = { planned: drive('geomancer', 60), senses: C().stats.senses };
       setUp('reaper'); home(); { const [s] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 3, y: spot[1], face: -1 }); s.hp = 1; BK.combat2().strike(s, 'light', 99); BK.sim(20); }
       BK.P.hp = BK.P.maxHp - 30; BK.P.harvest = 0; const x0 = BK.P.x; out.bot.dk = { planned: drive('reaper', 150), harvests: C().stats.harvests, walked: Math.round(BK.P.x - x0) }; }
@@ -138,7 +150,12 @@ else {
   const rate = Pa.l2 - Pa.l1;
   if (!(Math.abs(rate - KNEEL.rate) < 2)) bad.push(`paladin: his light filled ${rate.toFixed(1)} a second kneeling (want ${KNEEL.rate})`);
   if (!(Pa.l4 >= 99.9)) bad.push(`paladin: four and a half seconds on his knees from empty did not fill his light (${Pa.l4.toFixed(1)})`);
-  if (!Pa.praying) bad.push('paladin: down held did not pray');
+  if (!Pa.praying) bad.push('paladin: down held by a holy light did not pray');
+  for (const [k, W] of Object.entries(R.palElse)) { const should = k === 'near' || k === 'shrine';
+    if (should) { if (!(W.light >= 99) || !W.praying || W.pose !== 'kneel') bad.push('paladin: by a ' + k + ' light he did not pray: ' + JSON.stringify(W)); }
+    else { if (W.light > 0 || W.praying || W.kneelT > 0 || W.holy) bad.push('paladin: with ' + k + ' he still prayed: ' + JSON.stringify(W)); if (W.pose === 'kneel') bad.push('paladin: with ' + k + ' he was drawn kneeling'); }
+    if (W.box !== DUCK_H) bad.push('paladin: with ' + k + ' the kneel is not even the plain duck (box ' + W.box + ')'); }
+
   if (Pa.box !== DUCK_H) bad.push(`paladin: the kneel is not the duck (hurt box ${Pa.box}, DUCK_H ${DUCK_H})`);
   if (Pa.aegis || Pa.block) bad.push('paladin: a guard stood up while he knelt');
   if (Pa.pose !== 'kneel') bad.push(`paladin: praying, he is drawn as '${Pa.pose}', not his kneel`);
@@ -185,6 +202,8 @@ else {
   // ---- THE BOT ----
   const Bt = R.bot;
   if (!(Bt.pal.planned > 60) || !(Bt.pal.light > 50)) bad.push(`bot: calm with his light low, the paladin did not kneel for it: ${JSON.stringify(Bt.pal)}`);
+  if (!(Bt.palWalk.walked < -20) || !(Bt.palWalk.light > 50)) bad.push(`bot: the paladin did not walk to a holy light four tiles off and kneel there: ${JSON.stringify(Bt.palWalk)}`);
+  if (Bt.palNone.light > 10 || Bt.palNone.planned > 0) bad.push(`bot: with no holy light near the paladin planned to kneel: ${JSON.stringify(Bt.palNone)}`);
   if (Bt.palNear.planned > 0) bad.push(`bot: the paladin knelt with a topiary three tiles off: ${JSON.stringify(Bt.palNear)}`);
   if (!(Bt.geo.senses > 0)) bad.push(`bot: calm, the geomancer did not look: ${JSON.stringify(Bt.geo)}`);
   if (!(Bt.dk.harvests > 0) || !(Bt.dk.walked > 20)) bad.push(`bot: the death knight did not walk to the body three tiles off and draw it: ${JSON.stringify(Bt.dk)}`);
@@ -197,4 +216,4 @@ else {
   }
 }
 assert.deepEqual(bad, [], 'the crouch twists (part B):\n  ' + bad.join('\n  '));
-console.log('the crouch twists hold: the paladin kneels and his light fills 25 a second, exposed to a low blow that breaks it; the geomancer\'s sense shows a buried dead man and a breakable wall inside six tiles and nothing outside, wakes nothing and lingers its after-glow; the death knight draws 7 health and 12 blood from a body in 0.6 s, once, and a broken draw pays nothing; each is still the duck, and the knight, the warden and the pyromancer are untouched');
+console.log('the crouch twists hold: the paladin kneels by a holy light only (a shrine, a lit brazier, ...) and his light fills 30 a second there, exposed to a low blow that breaks it; the geomancer\'s sense shows a buried dead man and a breakable wall inside six tiles and nothing outside, wakes nothing and lingers its after-glow; the death knight draws 7 health and 12 blood from a body in 0.6 s, once, and a broken draw pays nothing; each is still the duck, and the knight, the warden and the pyromancer are untouched');

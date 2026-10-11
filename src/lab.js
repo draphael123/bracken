@@ -88,15 +88,19 @@ export function duckNow(BK, h, e) { const D = BK.duck && BK.duck(), P = BK.P; if
                in water or off her feet - then she does what she did before (the roll)
    The duck (duckNow) is left as it was: a HIGH yellow blow is still ducked early, and ducked is warded - it goes over her for nothing. */
 export const EMBER_LATE = 0.1, EMBER_HOT = 70, EMBER_HOLD = 0.45;
+/* (claude/crouchfix) THE FLARE IS A HOLD NOW: down held EMBER.hold (0.3 s) opens the window, so every lead the bot had is that much longer - it holds down
+   EMBER_LEAD = EMBER_LATE + the hold before the blow lands, and keeps holding until the window is open */
+export const EMBER_LEAD = EMBER_LATE + 0.3;
 export const emberReady = (BK, h) => { if (h !== 'pyro' || !BK.ember) return false; const W = BK.ember(), P = BK.P; return !!W && !(W.rec > 0) && !(W.spent > 0) && !W.wet && P.ground && !P.swim && !P.dead; };   /* (the flare: not in a mistime's recovery, not in the beat after a catch) */
 export function emberPlan(BK, h, e) {
   if (!emberReady(BK, h)) return null; const P = BK.P, W = BK.ember();
   if (W.up && W.t < EMBER_HOLD) return 'raise';
+  if (W.hold > 0 && !W.up) return 'raise';   /* (a hold begun is held through: let go and it was only a duck) */
   if (e && e.alive && Math.abs(e.x - P.x) < 80 + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 40 && BK.markOf(e) === '!') {
-    if (BK.telling(e) || /Tell$/.test(e.mode || '')) return typeof e.modeT !== 'number' || e.modeT <= EMBER_LATE || W.up ? 'raise' : 'wait';   /* (a boss's windup is its ...Tell mode) */
+    if (BK.telling(e) || /Tell$/.test(e.mode || '')) return typeof e.modeT !== 'number' || e.modeT <= EMBER_LEAD || W.up ? 'raise' : 'wait';   /* (a boss's windup is its ...Tell mode) */
     if (W.up && W.t < 0.9 && e.blowMode && e.mode === e.blowMode) return 'raise'; }
   return BK.seeds().some(s => !s.dead && !s.reflected && !s.noBlock && !s.unblockable && !s.chain && (s.x - P.x) * (s.vx || 0) < 0 && Math.abs(s.y - (P.y - 6)) < 22
-    && Math.abs(s.x - P.x) < 18 + Math.max(10, Math.abs(s.vx || 0) * EMBER_LATE)) ? 'raise' : null; }
+    && Math.abs(s.x - P.x) < 18 + Math.max(10, Math.abs(s.vx || 0) * EMBER_LEAD)) ? 'raise' : null; }
 export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
 /* THE CROUCH TWISTS, PART B, in the hands (claude/crouchb, src/crouch-b.js). Each is a crouch that leaves the hero exposed, so the bot
    only ever does it when it is CALM (crouchCalm): nothing that can hurt him within CRB_CALM px on his level, nothing telling within
@@ -108,7 +112,7 @@ export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
                          the DEATH KNIGHT, over a body he has not drawn, draws it
      'left'/'right'  - the death knight walks to a body within CRB_WALK px (health or blood not full)
      null            - nothing: it is not calm, or there is nothing to do */
-export const CRB_CALM = 130, CRB_TELL = 220, CRB_LOW = 50, CRB_LOOK = 0.5, CRB_EVERY = 8, CRB_WALK = 64;
+export const CRB_CALM = 130, CRB_TELL = 220, CRB_LOW = 50, CRB_LOOK = 0.5, CRB_EVERY = 8, CRB_WALK = 64, CRB_WALK_HOLY = 160;
 export function crouchCalm(BK) { const P = BK.P;
   if (!P.ground || P.swim || P.climb || P.dead || P.atk >= 0 || P.dodge > 0 || (P.hurt || 0) > 0 || (BK.L.pools || []).some(q => !q.dry && P.x > q.x0 && P.x < q.x1 && P.y > q.y + 1 && (q.bottom === undefined || P.y <= q.bottom + 4))) return false;
   for (const e of BK.enemies()) { if (!e.alive || e.harmless || crouchHiding(e)) continue; const ad = Math.abs(e.x - P.x), dy = Math.abs(e.y - P.y);
@@ -118,7 +122,10 @@ export function crouchBPlan(BK, h) {
   if (h !== 'paladin' && h !== 'geomancer' && h !== 'reaper') return null; const C = BK.crouchB && BK.crouchB(); if (!C) return null;
   const P = BK.P; P.crbF = (P.crbF || 0) + 1;
   if (!crouchCalm(BK)) { P.crbLook = 0; return null; }
-  if (h === 'paladin') return (P.light || 0) < (C.praying ? 100 : CRB_LOW) ? 'down' : null;
+  if (h === 'paladin') { if ((P.light || 0) >= (C.praying ? 100 : CRB_LOW)) return null;
+    if (C.holy) return 'down';   /* (claude/crouchfix) he kneels only BY A HOLY LIGHT (src/crouch-b.js HOLY): by one, kneel; a light within CRB_WALK_HOLY, walk to it; else nothing */
+    let b = null; for (const q of C.lights || []) if (Math.abs(q.x - P.x) < CRB_WALK_HOLY && (!b || Math.abs(q.x - P.x) < Math.abs(b.x - P.x))) b = q;
+    return b ? (b.x > P.x ? 'right' : 'left') : null; }
   if (h === 'geomancer') { if (P.crbLook > 0) { P.crbLook--; return 'down'; }
     if (P.crbF - (P.crbLookAt ?? -1e9) > CRB_EVERY * 60) { P.crbLookAt = P.crbF; P.crbLook = Math.round(CRB_LOOK * 60); return 'down'; } return null; }
   if ((P.hp >= P.maxHp && (P.harvest || 0) >= 100) || !C.bodies.length) return null;
@@ -1613,10 +1620,10 @@ async function runbossLab(BK, opts) {
         if(!ride&&P.ground&&ballCome&&!highD&&!floorD&&!toGap){const ahead=(ballCome.x-P.x)*Math.sign(ballCome.x-P.x),held=f-(P.labSwingF??-999)>=48;
           if(held||ahead<60){striking=true;swing=null;gx=P.x;face=Math.sign(ballCome.x-P.x)||face;}   /* hold the blade and face it */
           /* a human's hand, not a machine's: where he begins the blow is his own for each ball (0-44 px off, deterministic - the row's dice are left alone); the window is 6-32 */
-          const tgt=ballCome.labTgt??(ballCome.labTgt=((ballCome.n||0)*37+h.length*11)%45);
+          const tgt=(ballCome.labTgt??(ballCome.labTgt=((ballCome.n||0)*37+h.length*11)%45))+(h==='pyro'?150*0.3:0);   /* (the pyro's flare opens 0.3 s after she holds down: she starts that much sooner) */
           if(!ballCome.labTried&&h==='pyro'&&ahead<=tgt&&!(P.labFlare>0)){k.down=true;P.labFlare=30;ballCome.labTried=true;}   /* the ember flare */
           else if(!ballCome.labTried&&h!=='pyro'&&held&&ahead<=tgt&&P.atk<0){P.face=face;BK.press('atk');swings++;P.labSwingF=f;ballCome.labTried=true;}}
-        if(P.labFlare>0)P.labFlare--;
+        if(P.labFlare>0){P.labFlare--;if(h==='pyro')k.down=true;}   /* (the flare is a hold: down stays down for the 0.3 s that opens it) */
         if(!ride&&P.ground&&ballNear&&!(striking&&!ballNear.labTried)){BK.press('jump');P.labJump=16;}   /* (claude/fairfix3) her wicker ball: over it (when he is not meeting it, or his blow went wide) */
         if(!ride&&P.ground&&sweepK==='low'&&q.mode==='sweep'&&Math.abs(sFront-P.x)<34){BK.press('jump');P.labJump=16;}   /* her low sweep: over each pass */
         if(P.labJump>0){P.labJump--;k.jump=true;}

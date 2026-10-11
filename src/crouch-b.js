@@ -3,9 +3,13 @@
 // (src/duck.js - DOWN held on the ground, stood still: the hurt box drops to DUCK_H and a high blow goes over) with something
 // more while the hero stays down, and each leaves him EXPOSED - a duck is no guard (P.ducking is false while he blocks), so a
 // low blow finds him and a hit (P.hurt) stands him up and breaks it off.
-//   THE PALADIN - KNEEL IN PRAYER: down and still for KNEEL.settle s, and his LIGHT fills KNEEL.rate a second (empty to full in
-//     four seconds, a soft gold glow and a chant while it does). It is the whole bar of JUDGEMENT for four seconds on his knees
-//     with no guard - bought between fights, never inside one.
+//   THE PALADIN - KNEEL IN PRAYER, AT A HOLY LIGHT (claude/crouchfix, Daniel 10-11: kneeling anywhere was a chore between fights): down and
+//     still for KNEEL.settle s WITHIN HOLY.R px (two tiles) OF A HOLY LIGHT, and his LIGHT fills KNEEL.rate a second (empty to full in
+//     about three and a half seconds, a soft gold glow and a chant while it does). Anywhere else the kneel is the plain duck: no prayer,
+//     no glow, no chant. WHICH LIGHTS COUNT is one table, HOLY, below: a shrine, a lit brazier, a candle or candelabra, the grand candle,
+//     and whatever api.extraHoly() adds (the Lit Church's lit lamps and its votive stands, so the sanctuary's lamps feed his Light too -
+//     LIT CHURCH 2 hooks in there). The light he is near glows and pulses gold (stronger while he kneels); the chant and the pooled
+//     gold are only for a prayer that is filling. It is the whole bar of JUDGEMENT on his knees with no guard - bought between fights.
 //   THE GEOMANCER - EARTH SENSE: down, and what hides in the ground near her SHOWS - a buried dead man, a sand-cloak under his
 //     mound, a lurker, a pumpkin, an assassin in his shadow, a breakable wall - within SENSE.R px (eight tiles), outlined and
 //     pulsing for as long as she stays down and SENSE.after s after. A pulse sounds when something new is found. No damage and
@@ -19,8 +23,17 @@
 // level's. BK.crouchB() reads it for tools/crouch-b.mjs and the bot (src/lab.js crouchBPlan).
 export const KNEEL = {
   settle: 0.3,        // down and still this long before the prayer takes
-  rate: 25,           // LIGHT a second while he prays: 0 -> 100 in 4 s
+  rate: 30,           // LIGHT a second while he prays: 0 -> 100 in 3.3 s (was 25: a little faster, since he must now walk to a light)
   chantEvery: 0.9,    // the chant's beat
+};
+/* WHAT IS A HOLY LIGHT (claude/crouchfix): the one table. R: how near he must be (px, 2 tiles; |dy| up to dy). shrines: any shrine that is not broken.
+   props: prop type -> is it burning. deco: the dressing kinds that are a flame (the church's and the keeps' candles). The Lit Church's lit lamps
+   and sources come in through api.extraHoly() ([{ x, y }] in world px, the light's foot) */
+export const HOLY = {
+  R: 32, dy: 36,
+  shrines: true,
+  props: { brazier: p => p.lit !== false && !p.tipped, grancandle: p => !p.fallen },
+  deco: new Set(['candelabra', 'candle']),
 };
 export const SENSE = {
   R: 128,             // px from her: eight tiles (Daniel, 2026-09-30: was six, 96)
@@ -41,7 +54,7 @@ const HIDE_MODES = { buried: 1, hide: 1, lurk: 1, shut: 1, under: 1 };
 const HIDERS = new Set(['zombie', 'husk', 'pumpkin', 'feeler', 'lurker', 'sweep', 'assassin', 'gar', 'mimic', 'sandgob', 'ambusher']);
 export const hiding = e => !!(e && e.alive && !e.maxHp && !e.mini && HIDERS.has(e.t) && (HIDE_MODES[e.mode] || (e.st && HIDE_MODES[e.st.mode]) || (e.gone || 0) > 0.5));
 const TEACH = {
-  paladin: ['kneelTold', 'KNEEL: HOLD DOWN AND STAY STILL, AND YOUR LIGHT FILLS. NO GUARD WHILE YOU PRAY.'],
+  paladin: ['kneelTold', 'KNEEL BY A SHRINE OR A FLAME: HOLD DOWN, STAY STILL, AND YOUR LIGHT FILLS.'],
   geomancer: ['senseTold', 'EARTH SENSE: HOLD DOWN, AND WHAT HIDES IN THE GROUND NEAR YOU SHOWS ITSELF.'],
   reaper: ['harvestTold', 'BLOOD HARVEST: CROUCH OVER A BODY. IT GIVES UP HEALTH AND BLOOD, ONCE.'],
 };
@@ -55,14 +68,23 @@ export function makeCrouchB(api) {
 
   function teach(h) { const [k, msg] = TEACH[h]; const PROG = api.PROG;
     if ((PROG[k] || 0) >= 2 || taughtIn === api.levelIndex + ':' + h) return; taughtIn = api.levelIndex + ':' + h; PROG[k] = (PROG[k] || 0) + 1; api.hint(msg); }
+  /* ALL THE HOLY LIGHTS IN THE LEVEL, as [{ x, y, kind }] (x centre, y the foot) - read from the world every call, so a lamp lit or a brazier tipped counts at once */
+  function holyLights() { const out = [];
+    if (HOLY.shrines) for (const s of api.shrines()) if (!s.broken) out.push({ x: s.x, y: s.y, kind: 'shrine' });
+    for (const q of api.props()) { const ok = HOLY.props[q.t]; if (ok && ok(q)) out.push({ x: q.x, y: q.y, kind: q.t }); }
+    for (const d of api.deco()) if (HOLY.deco.has(d.kind) && d.c) out.push({ x: d.x + d.c.width / 2, y: d.y + d.c.height, kind: d.kind });
+    for (const x of (api.extraHoly ? api.extraHoly() : [])) out.push({ x: x.x, y: x.y, kind: 'lamp' });
+    return out; }
+  /* THE NEAREST HOLY LIGHT WITHIN REACH of the hero, or null */
+  function holyNear(p) { let best = null, bd = 1e9; for (const l of holyLights()) { const dx = Math.abs(l.x - p.x); if (dx <= HOLY.R && Math.abs(l.y - p.y) <= HOLY.dy && dx < bd) { bd = dx; best = l; } } return best; }
   const foesNear = (p, r) => api.enemies.some(e => e.alive && !e.harmless && !hiding(e) && Math.abs(e.x - p.x) < r && Math.abs(e.y - p.y) < 80);
 
   /* ---- THE PALADIN: KNEEL IN PRAYER ---- */
   function kneel(dt, p) {
-    const light = p.light || 0;
-    if (!p.ducking) { if (p.kneelT > KNEEL.settle) api.SFX.kneelRise && api.SFX.kneelRise(); p.kneelT = 0; p.chantT = 0;
-      /* THE TEACH: his light is low and nothing is near - the first time, say what kneeling does */
-      calmT = light < 50 && p.ground && !p.dead && !foesNear(p, 200) ? calmT + dt : 0; if (calmT > 1.5) teach('paladin'); return; }
+    const light = p.light || 0, hl = p.dead ? null : holyNear(p); p.holyLight = hl;
+    if (!p.ducking || !hl) { if (p.kneelT > KNEEL.settle) api.SFX.kneelRise && api.SFX.kneelRise(); p.kneelT = 0; p.chantT = 0;
+      /* THE TEACH: his light is low, he is by a holy light and nothing hostile is near - the first time, say what kneeling does there */
+      calmT = hl && !p.ducking && light < 50 && p.ground && !p.dead && !foesNear(p, 200) ? calmT + dt : 0; if (calmT > 1.5) teach('paladin'); return; }
     p.kneelT = (p.kneelT || 0) + dt; calmT = 0;
     if (p.kneelT < KNEEL.settle) return;
     if (light < 100) {
@@ -128,6 +150,13 @@ export function makeCrouchB(api) {
   /* DRAWN (after the hero): his prayer's glow; what her sense has shown, outlined and pulsing; the draw going out of a body */
   function draw(g, cx, cy) {
     const p = P(), h = api.hero(), t = api.time;
+    if (h === 'paladin' && p.holyLight && !p.dead) {   /* THE LIGHT HE IS NEAR glows and pulses gold: faintly as he walks up, strongly while he kneels, a thread to him while the prayer fills */
+      const l = p.holyLight, x = Math.round(l.x - cx), y = Math.round(l.y - cy) - 8, kn = p.ducking ? 1 : 0, filling = kn && p.kneelT >= KNEEL.settle && (p.light || 0) < 100;
+      const pulse = 0.5 + 0.5 * Math.sin(t * (filling ? 7 : 4)), R = 9 + 4 * pulse + (kn ? 3 : 0);
+      g.globalAlpha = (kn ? 0.22 : 0.11) + 0.1 * pulse; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, R, 0, Math.PI * 2); g.fill();
+      g.globalAlpha = (kn ? 0.5 : 0.25) * (0.6 + 0.4 * pulse); g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y, Math.max(2, R * 0.4), 0, Math.PI * 2); g.fill();
+      if (filling) { g.globalAlpha = 0.5; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, y); g.lineTo(Math.round(p.x - cx), Math.round(p.y - cy) - 8); g.stroke(); }   /* the light drawn across to him */
+      g.globalAlpha = 1; }
     if (h === 'paladin' && p.ducking && p.kneelT >= KNEEL.settle) {   /* A SOFT GLOW round him, brighter as the light fills */
       const k = Math.min(1, (p.kneelT - KNEEL.settle) / 0.4), f = (p.light || 0) / 100, x = Math.round(p.x - cx), y = Math.round(p.y - cy);
       g.globalAlpha = k * (0.1 + 0.08 * f + 0.04 * Math.sin(t * 5)); g.fillStyle = '#fff6c8'; g.beginPath(); g.ellipse(x, y - 6, 12 + 2 * f, 10 + 2 * f, 0, Math.PI, 0); g.fill();
@@ -144,10 +173,11 @@ export function makeCrouchB(api) {
     if (h === 'reaper' && p.harvBody) { const b = p.harvBody, k = Math.min(1, p.harvT / HARVEST.time), x = Math.round(b.x - cx), y = Math.round(b.y - cy) - 3;   /* the draw, filling round the body */
       g.globalAlpha = 0.8; g.strokeStyle = '#c0283a'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 7, -Math.PI / 2, -Math.PI / 2 + 6.283 * k); g.stroke(); g.globalAlpha = 1; }
   }
-  function clear() { seen.clear(); taughtIn = null; calmT = 0; }
+  function clear() { seen.clear(); P().holyLight = null; taughtIn = null; calmT = 0; }
   /* FOR THE TOOLS (BK.crouchB) */
-  const read = () => { const p = P(); return { hero: api.hero(), ducking: !!p.ducking, kneelT: p.kneelT || 0, praying: api.hero() === 'paladin' && !!p.ducking && (p.kneelT || 0) >= KNEEL.settle, light: p.light || 0,
+  const read = () => { const p = P(); return { hero: api.hero(), ducking: !!p.ducking, holy: p.holyLight ? { kind: p.holyLight.kind, x: Math.round(p.holyLight.x), y: Math.round(p.holyLight.y) } : null, holyCount: holyLights().length, kneelT: p.kneelT || 0, praying: api.hero() === 'paladin' && !!p.ducking && (p.kneelT || 0) >= KNEEL.settle, light: p.light || 0,
     senseT: p.senseT || 0, seen: [...seen.keys()].map(k => k.x0 !== undefined ? { wall: true, x0: k.x0, y0: k.y0 } : { t: k.t, x: Math.round(k.x), y: Math.round(k.y), mode: k.mode }),
+    lights: holyLights().filter(l => Math.abs(l.x - p.x) < 200 && Math.abs(l.y - p.y) < HOLY.dy).map(l => ({ kind: l.kind, x: Math.round(l.x), y: Math.round(l.y) })),
     harvT: p.harvT || 0, drawing: !!p.harvBody, bodies: api.bodies.filter(b => !b.drained && b.life > 0).map(b => ({ x: Math.round(b.x), y: Math.round(b.y), life: +b.life.toFixed(1) })), stats: { ...stats } }; };
   return { update, pose, draw, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
 }
