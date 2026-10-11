@@ -128,7 +128,17 @@ const x0of = v => v * 3;
 
 export const timberTile = (zone, l, r, v) => timber(zone, l, r, v);   /* a landed span's cells are not in the tile sheet (cellSet clears them), so the world draws them (src/redraw/rootway_world.js drawLandedSpan) */
 // ================================ THE HOOK ================================
+/* THE SPRING CAP (claude/rootway2art): Sporewood's bounce cap in the root's own palette - rose flesh in the cellar, amber higher up, cream gills, a lit crown and pale spots; squash = the same cap pressed flat */
+export function springCap(x, squash) {
+  const zone = zoneOf(x), fl = zone === 0 ? ['#7a2a5a', '#b04878', '#e07aa0', '#ffc0d4'] : ['#8a4a14', '#d08a24', '#f6c050', '#fff0a8'];
+  return once('spring' + zone + (squash ? 's' : ''), () => { const [c, g] = canvas(16, 16), top = squash ? 4 : 1, hh = squash ? 5 : 7;
+    for (let dy = 0; dy < hh; dy++) { const k = dy / (hh - 1), w = Math.round(squash ? 7.5 + 0.5 * k : 4 + 4 * Math.sin(Math.min(1, (dy + 1) / (hh * 0.7)) * Math.PI / 2)); rect(g, 8 - w, top + dy, w * 2, 1, dy === 0 ? fl[3] : dy < 2 ? fl[2] : dy < hh - 2 ? fl[1] : fl[0]); }
+    rect(g, 3, top + 1, 4, 1, fl[3]); px2(g, 5, top + 3, fl[3]); px2(g, 10, top + 2, fl[3]); px2(g, 11, top + 4, fl[3]);
+    rect(g, squash ? 0 : 1, top + hh, squash ? 16 : 14, 1, '#f0dcb0'); for (let k = squash ? 1 : 2; k < (squash ? 15 : 14); k += 2) px2(g, k, top + hh + 1, '#a88860');
+    if (!squash) { rect(g, 6, top + hh + 2, 4, 4, '#c8b88a'); rect(g, 6, top + hh + 2, 1, 4, '#efe0b8'); }
+    return c; }); }
 export function rootTile(t, x, y, at, T, L) {
+  if (t === T.BOUNCER) return springCap(x, false);
   const open = (dx, dy) => { const v = at(x + dx, y + dy); return v === T.AIR || v === T.NET; };
   const zone = zoneOf(x);
   if (t === T.ONEWAY) {

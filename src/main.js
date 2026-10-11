@@ -9507,7 +9507,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     { const atx = Math.floor(P.x / TS), aty = Math.floor((P.y + 2) / TS), aw = FAIR && L.awnings ? L.awnings.find(a => atx >= a.x0 && atx <= a.x1 && aty === a.row) : null;   /* (claude/fairfix5) A FAIR AWNING: springy canvas, a lower launch than a rick; a TEARING one rips */
       if (aw) { P.vy *= AWNING_LAUNCH; P.awningAt = aw; SFX.puff(); if (aw.tear) { const c = (L.crumbles || []).find(q => q.kind === 'awning' && q.x0 === aw.x0 && q.row === aw.row); if (c && c.st === 'whole') { c.st = 'count'; c.t = c.count; c.shown = 1; } } } } P.canCut = false; P.plunge = false; SFX.leap(); squash(plunged ? 0.6 : 0.7, plunged ? 1.5 : 1.35, 0.14); burst(P.x, P.y, plunged ? 12 : 6, FAIR ? ['#dcb44e', '#f4d878', '#a8802c'] : ['#c9463d', '#ff9a9a'], plunged ? 80 : 50, 0.3); if (plunged) { number(P.x, P.y - 24, 'SPRING', '#ff9a9a'); SFX.pPogo(); }
     const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 2) / TS); const i = ty * LW + tx; if (FAIR && L.haystacks) { const hz = L.haystacks.find(z => tx >= z[0] && tx <= z[1]); if (hz) { FAIR.sq[hz[0]] = 1; SFX.hayRustle(); } }
-    if (L.grid[i] === T.BOUNCER && !(FAIR && L.awnings && L.awnings.some(a => tx >= a.x0 && tx <= a.x1 && ty === a.row))) { tileSpr[i] = TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
+    if (L.grid[i] === T.BOUNCER && !(FAIR && L.awnings && L.awnings.some(a => tx >= a.x0 && tx <= a.x1 && ty === a.row))) { tileSpr[i] = L.rootway ? RWT.springCap(tx, true) : TILE.bouncer[1]; setTimeout(() => { if (L.grid[i] === T.BOUNCER) tileSpr[i] = TILE.bouncer[0]; }, 180); }
   }
   if (P.ground && !P.onMover && L.scree && !P.dead) for (const z of L.scree) if (Math.abs(P.y - z.y * TS) < 2 && P.x >= z.x0 * TS && P.x < (z.x1 + 1) * TS) { const sp = P.block ? 24 : (z.sp ?? 70); P.x += z.dir * sp * dt; P.screeT = (P.screeT || 0) - dt; if (P.screeT <= 0) { P.screeT = 0.12; dust(P.x - z.dir * 4, P.y, 1); if (Math.random() < 0.5) SFX.step(); } }
   if (P.ground && P.groundTile === T.SHELF) { // shelf fungus snaps under a standing weight
@@ -29859,6 +29859,7 @@ function drawWorld(cx, cy, showPlayer) {
     SEA.seaHoles(hole);   /* and a sea level's own lights, where its far water drew them this frame */
     for (const e of enemies) if (e.t === 'angler' && e.alive) hole(e.x - cx, e.y - 10 - cy, e.mode === 'biteTell' ? 44 : 26); // and an angler carries its own
     if (UWH && UWH.on()) UWH.holes(hole, cx, cy);
+    if (RWH && RWH.on() && RWH.holes) RWH.holes(hole, cx, cy);   /* THE ROOTWAY (claude/rootway2art): the cellar's spore glows and the trunk foot's caps are holes in its dark */
     if (MCH && MCH.on()) MCH.holes(hole, cx, cy, dg);   /* (claude/deeprails2) THE DARK DRIFT: the cart's headlamp cone, the goblins' lanterns, every lever's and crusher's lamp */
     if (LCH && LCH.on()) LCH.holes(hole, cx, cy);   /* THE LIT CHURCH: every lit lamp, every fire, the flame in your hand */   /* THE UNDERWELL: every lit torch, burning cell, burning nest, the great lamp and the candle niches is a hole in its dark */
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));

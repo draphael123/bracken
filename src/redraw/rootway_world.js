@@ -12,6 +12,7 @@
 // planRoot(L, T) -> { chasms, supports, items, lights, drops, cleats, pulleys }  (cached on the level)
 import { canvas, rect, px, outline, mulberry } from '../px.js';
 import { ZONE, zoneOf, hash, timberTile } from './rootway_tiles.js';
+import { areaLights, HORN_X } from './rootway_areas.js';
 
 const TS = 16, OUTC = '#1c1214';
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
@@ -58,6 +59,35 @@ const SPR = {
       rect(g, x, y, 1, th, C.barkM); rect(g, x, y, 1, 1, C.barkH); rect(g, x, y + th - 1, 1, 1, C.barkD); if ((x + v) % 4 === 0) rect(g, x, y + 1, 1, th - 2, C.bark); }
     for (let x = 0; x < w; x++) { const t = x / (w - 1); const y = h - 1; rect(g, x, y, 1, 1, C.barkD); }
     for (let k = 0; k < 3; k++) { const fx = 3 + ((k * 7 + v * 3) % (w - 5)); rect(g, fx, h - 3, 1, 3, C.bark); } return outline(c, OUTC); },
+  /* THE SNARE POST (the canopy snares' warning, claude/rootway2art): a bark stake with an open jaw trap's iron nailed up on it, a skull on top and a red rag streaming - the goblins' mark that a trap is set ahead */
+  snarePost(v) { const [c, g] = canvas(18, 32);
+    rect(g, 7, 7, 4, 25, C.bark); rect(g, 7, 7, 1, 25, C.barkL); rect(g, 10, 7, 1, 25, C.barkD); rect(g, 4, 30, 10, 2, C.barkD); rect(g, 4, 30, 10, 1, C.barkM);
+    rect(g, 3, 20, 12, 2, C.iron); rect(g, 3, 20, 12, 1, C.ironL); for (const [x, y] of [[3, 19], [2, 18], [2, 17], [3, 16], [4, 15]]) { P(g, x, y, C.ironL); P(g, x + 1, y, C.iron); } for (const [x, y] of [[14, 19], [15, 18], [15, 17], [14, 16], [13, 15]]) { P(g, x, y, C.ironL); P(g, x - 1, y, C.iron); }
+    for (const x of [4, 6, 11, 13]) P(g, x, 17, '#f0f0f8');   /* the teeth, bright */
+    ell(g, 9, 4, 3, 3, C.bone); rect(g, 7, 5, 5, 2, C.bone); P(g, 8, 4, '#2a1a12'); P(g, 10, 4, '#2a1a12'); rect(g, 8, 7, 3, 1, C.boneD); P(g, 9, 0, '#fff6e0');
+    for (let k = 0; k < 6; k++) rect(g, 11 + k, 8 + ((k + (v || 0)) >> 1 & 1), 1, 3, k & 1 ? C.red : C.redL); rect(g, 11, 8, 6, 1, C.redD);   /* the red rag */
+    return outline(c, OUTC); },
+  /* a glowing cap cluster: the cellar's and the trunk foot's own light, three tones (teal, violet, rose) */
+  glowCap(v) { const [c, g] = canvas(14, 11), t = [['#2a6a60', '#4ac0aa', '#b8fff0'], ['#5a2a7a', '#a860d8', '#f0c8ff'], ['#7a2a50', '#d85a98', '#ffc0e0']][v % 3];
+    const cap = (x, y, r) => { ell(g, x, y, r, Math.max(1, r - 1), t[0]); ell(g, x, y - 1, r - 1, Math.max(1, r - 2), t[1]); P(g, x - 1, y - 2, t[2]); P(g, x, y - 2, t[2]); };
+    rect(g, 3, 6, 1, 5, '#cdb8a0'); rect(g, 8, 5, 1, 6, '#cdb8a0'); rect(g, 11, 8, 1, 3, '#cdb8a0'); cap(3, 5, 3); cap(8, 3, 4); cap(11, 6, 2); rect(g, 0, 10, 14, 1, t[0]); return outline(c, OUTC); },
+  /* a spore vine: a thin stem hanging from a ledge with glowing bulbs */
+  sporeVine(n) { const [c, g] = canvas(8, n);
+    for (let y = 0; y < n; y++) P(g, 3 + (y % 6 < 3 ? 0 : 1), y, y % 5 === 4 ? '#6a5a98' : '#2c1e44');
+    for (let y = 8; y < n - 2; y += 10) { const x = 3 + (y % 6 < 3 ? 0 : 1); ell(g, x, y, 2, 2, '#58b0a0'); P(g, x - 1, y - 1, '#c8fff0'); P(g, x, y + 2, '#2a6a60'); }
+    return c; },
+  /* THE HORN MOUNT: a plaque, the great horn curved over a beast's skull, a cord and a red tassel (the lodge's) */
+  hornMount() { const [c, g] = canvas(40, 36);
+    rect(g, 1, 1, 38, 24, '#2a170c'); rect(g, 1, 1, 38, 1, '#7a5226'); rect(g, 1, 24, 38, 1, '#150c08'); for (let x = 3; x < 38; x += 8) { P(g, x, 3, C.cord); P(g, x, 22, C.cord); }
+    for (let a = 0; a < 30; a++) { const t = a / 29, ang = 0.3 + t * 2.5, x = 20 + Math.cos(Math.PI - ang) * 15 * (1 - t * 0.35), y = 13 - Math.sin(ang) * 8 * (1 - t * 0.3), th = Math.max(1, 4 - Math.round(t * 3)); rect(g, Math.round(x), Math.round(y - th / 2), 1, th, a % 8 === 7 ? C.boneD : C.bone); }
+    rect(g, 3, 10, 3, 6, '#ff9a3c'); P(g, 3, 10, '#ffd8a0'); ell(g, 26, 18, 5, 4, C.bone); P(g, 24, 19, '#2a1a12'); P(g, 28, 19, '#2a1a12'); rect(g, 20, 25, 1, 8, C.cord); rect(g, 19, 33, 3, 3, C.red);
+    return outline(c, OUTC); },
+  /* a lodge beam: a squared bark post, lashed, the lodge's own */
+  lodgeBeam() { const [c, g] = canvas(10, 44); rect(g, 1, 0, 8, 44, '#4a2a14'); rect(g, 1, 0, 2, 44, '#7a5226'); rect(g, 7, 0, 2, 44, '#1a0e08'); for (let y = 4; y < 42; y += 11) { rect(g, 0, y, 10, 3, C.cord); rect(g, 0, y, 10, 1, '#f0e0b0'); P(g, 2, y + 1, C.barkD); P(g, 6, y + 1, C.barkD); }
+    rect(g, 0, 40, 10, 4, '#33200f'); return outline(c, OUTC); },
+  /* a SKIN RACK: a tall frame, a hide pegged out on it, a spear leant beside (the lodge's) */
+  skinRack() { const [c, g] = canvas(24, 30); rect(g, 3, 2, 2, 28, C.bark); rect(g, 19, 2, 2, 28, C.bark); rect(g, 3, 2, 1, 28, C.barkL); rect(g, 2, 2, 20, 2, C.barkM); rect(g, 2, 2, 20, 1, C.barkH); rect(g, 2, 24, 20, 2, C.barkM);
+    fillHide(g, 5, 5, 14, 19, C.hide, C.hideD); for (const [x, y] of [[5, 5], [18, 5], [5, 23], [18, 23]]) P(g, x, y, C.cord); rect(g, 22, 8, 1, 22, C.barkL); P(g, 22, 7, C.bone); P(g, 22, 6, '#fff6e0'); return outline(c, OUTC); },
   /* leaf litter */
   leaves(z, v) { const [c, g] = canvas(14, 5), cols = z < 2 ? ['#5a3a48', '#8a5a58', '#3a2a40'] : z < 3 ? ['#8a5a28', '#c8883a', '#5a3a1a'] : ['#c8883a', '#e8b050', '#8a5a28'];
     const r = mulberry(v * 13 + z); for (let i = 0; i < 9; i++) { const x = (r() * 12) | 0, y = 1 + ((r() * 3) | 0); rect(g, x, y, 2, 1, cols[i % 3]); P(g, x + 1, y - 1, cols[(i + 1) % 3]); } rect(g, 0, 4, 14, 1, cols[2]); return c; },
@@ -98,6 +128,9 @@ export function decoOf(e) {
     case 'hangCage': return [spr('gibbet'), true];
     case 'skullPile': return [spr('skullPile', e.v || 0), true];
     case 'rootDecor': return [spr('rootDecor', e.v || 0), true];
+    case 'hornMount': return [spr('hornMount'), true];
+    case 'skinRack': return [spr('skinRack'), true];
+    case 'lodgeBeam': return [spr('lodgeBeam'), true];
   }
   return null;
 }
@@ -161,9 +194,15 @@ export function planRoot(L, T) {
     items.push({ k: ['peg', 'nailhide', 'skullnail'][(h >>> 9) % 3], x: eL ? x * TS : (x + 1) * TS, y: y * TS + 2, side: eL ? -1 : 1, z: zoneOf(x), v: (h >>> 13) & 3 }); }
   /* UNDER: root hair and moss hanging from the underside of a ledge over open air */
   for (let y = 2; y < H - 3; y++) for (let x = 2; x < W - 2; x++) { if (tt(x, y) !== T.ONEWAY || !air(x, y + 1) || !air(x, y + 2)) continue; const h = hash(x * 5 + 9, y * 11 + 1); if (h % 100 > 22) continue;
-    items.push({ k: 'hair', x: x * TS + 3 + (h % 9), y: y * TS + 10, n: 8 + (h >>> 8) % 10, z: zoneOf(x), ph: (h >>> 3) % 100 }); }
+    items.push({ k: zoneOf(x) === 0 || (x > 110 && x < 152 && y > 20) ? 'sporevine' : 'hair', x: x * TS + 3 + (h % 9), y: y * TS + 10, n: 10 + (h >>> 8) % 12, z: zoneOf(x), ph: (h >>> 3) % 100 }); }
+  /* THE AREAS' OWN DRESSING (claude/rootway2art): glowing caps on the cellar's and the trunk foot's floors, a snare post before every trap on the canopy snares, skin racks and a beam in the lodge */
+  { for (let y = 24; y < H - 2; y++) { let lg = -99; for (let x = 2; x < 150; x++) { if (!(x < 100 || (x > 111 && x < 151 && y > 28)) || !standable(tt(x, y)) || !air(x, y - 1) || inChasm(x) || x - lg < 6 || nearEnt(x, y)) continue; const h = hash(x * 11 + 3, y * 5 + 1); if (h % 100 > 9) continue; lg = x; items.push({ k: 'glowcap', x: x * TS + 8, y: y * TS, v: (h >>> 9) % 3, z: 0, ph: (h >>> 3) % 100 }); } } }
+  { const post = (x, row, v) => { for (let y = row - 2; y <= row + 2; y++) if (standTop(x, y) || (tt(x, y) === T.ONEWAY && air(x, y - 1))) { items.push({ k: 'snarepost', x: x * TS + 8, y: y * TS, v, z: 3 }); return; } };
+    for (const [jx, row] of (L.jaws || [])) post(jx - 4, row, jx & 1); for (const n of (L.nets || [])) post(n.x0 - 4, n.row, n.x0 & 1); }
+  for (const x of [390, 445]) { for (let y = 16; y <= 19; y++) if (standTop(x, y)) { items.push({ k: 'skinrack', x: x * TS + 8, y: y * TS, v: 0, z: 4 }); break; } }   /* (two racks at the hall's ends: nothing in the stand itself - the cleat posts are the hoists')*/
   items.sort((a, b) => a.x - b.x);
   for (const it of items) if (it.k === 'lantern') lights.push({ x: it.x + 0, y: it.y - 20, r: 40, a: 0.3, c: '255,200,110', fl: 0.5 });
+  lights.push(...areaLights(L, T));   /* the areas' own lights: the cellar's spore glows, the trunk's foot, the lodge's lamps (src/redraw/rootway_areas.js) */
   for (const d of (L.decor || [])) if (d.kind === 'larder') { for (const lx of [d.x0 * TS + 12, (d.x1 + 1) * TS - 12]) lights.push({ x: lx, y: d.y * TS + 24, r: 56, a: 0.34, c: '255,190,100', fl: 0.7 }); }
   return (L.__rwPlan = { chasms, supports, items, lights, drops, cleats, pulleys, solid });
 }
@@ -321,6 +360,13 @@ export function drawDress(g, cx, cy, VW, time, plan) {
       case 'peg': { g.fillStyle = C.barkD; g.fillRect(sx + (it.side > 0 ? -7 : 0), sy, 7, 4); g.fillStyle = C.barkL; g.fillRect(sx + (it.side > 0 ? -7 : 0), sy, 7, 1); g.fillStyle = C.bone; g.fillRect(sx + (it.side > 0 ? -9 : 7), sy - 1, 2, 3); g.fillStyle = C.cord; g.fillRect(sx + (it.side > 0 ? -5 : 2), sy - 1, 2, 6); break; }
       case 'nailhide': { const hx = sx + (it.side > 0 ? -9 : 0); fillHide(g, hx, sy, 9, 12, C.hide, C.hideD); g.fillStyle = C.iron; g.fillRect(hx + 1, sy, 1, 1); g.fillRect(hx + 7, sy, 1, 1); break; }
       case 'skullnail': { const hx = sx + (it.side > 0 ? -7 : 0); g.fillStyle = C.bone; g.fillRect(hx, sy, 7, 6); g.fillRect(hx + 1, sy - 1, 5, 1); g.fillStyle = '#2a1a12'; g.fillRect(hx + 1, sy + 2, 2, 2); g.fillRect(hx + 4, sy + 2, 2, 2); g.fillStyle = C.boneD; g.fillRect(hx + 2, sy + 5, 3, 1); break; }
+      case 'glowcap': { const s = spr('glowCap', it.v), p = 0.5 + 0.5 * Math.sin(time * 1.6 + it.ph); g.drawImage(s, sx - 7, sy - s.height + 1);
+        g.save(); g.globalCompositeOperation = 'lighter'; glow(g, sx, sy - 5, 14, 0.14 + 0.1 * p, it.v === 0 ? '90,230,200' : it.v === 1 ? '200,110,240' : '240,120,180'); g.restore(); break; }
+      case 'snarepost': { const s = spr('snarePost', it.v); g.drawImage(s, sx - 9, sy - s.height + 1); break; }
+      case 'skinrack': { const s = spr('skinRack'); g.drawImage(s, sx - 12, sy - s.height + 1); break; }
+      case 'lodgebeam': { const s = spr('lodgeBeam'); g.drawImage(s, sx - 5, sy - s.height + 1); break; }
+      case 'sporevine': { const s = spr('sporeVine', it.n), sw = wind(it.ph); g.save(); g.translate(sx, sy); g.transform(1, 0, sw * 0.1, 1, 0, 0); g.drawImage(s, 0, 0);
+        g.globalCompositeOperation = 'lighter'; for (let y = 8; y < it.n - 2; y += 10) glow(g, 3 + (y % 6 < 3 ? 0 : 1), y, 8, 0.16 + 0.08 * Math.sin(time * 2 + it.ph + y), '110,240,215'); g.restore(); break; }
       case 'hair': { const s = hairSpr(it.n), sw = wind(it.ph); g.save(); g.translate(sx, sy); g.transform(1, 0, sw * 0.14, 1, 0, 0); g.drawImage(s, 0, 0); g.restore(); break; }
     } }
   g.save(); g.globalCompositeOperation = 'lighter';

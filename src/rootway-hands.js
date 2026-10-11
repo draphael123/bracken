@@ -163,6 +163,8 @@ export function makeRootwayHands(ctx) {
   /* ---------- DRAWING (the Rootway's art pass: src/redraw/rootway_world.js draws every machine; this keeps the state and the geometry) ---------- */
   const R = Math.round;
   const dots = (g, x, y0, y1, col) => { g.fillStyle = col; for (let y = y0; y < y1; y += 5) g.fillRect(x, y, 1, 2); };
+  /* the dark pass: a hole for each of the areas' spore lights, so the cellar's and the trunk's foot glow in their dark (art only: src/redraw/rootway_areas.js areaLights) */
+  H.holes = (hole, cx, cy) => { const lv = L(); if (!lv || !lv.rootway) return; const plan = RWW.planRoot(lv, ctx.T); for (const l of plan.lights) if (l.hole && l.x > cx - 80 && l.x < cx + 640 + 80) hole(l.x - cx, l.y - cy, l.hole, 0.85); };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L(), plan = RWW.planRoot(lv, ctx.T); plan.solid = (x, y) => x < 0 || y < 0 || x >= lv.W || y >= lv.H || lv.grid[y * lv.W + x] === ctx.T.SOLID;
     RWW.drawChasms(g, cx, cy, VW, VH, time, plan);                  /* the exam's floorless gaps: a mist into a dark with no bottom */
