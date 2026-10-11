@@ -101,7 +101,7 @@ export function makeBuriedCityHands(ctx) {
   function unburyIn(x0, x1, r) { const l = x0 * TS() - 2, rr = (x1 + 1) * TS() + 2;
     for (const pp of ctx.players) if (!pp.dead && pp.x > l && pp.x < rr) unbury(pp, false, r);
     for (const e of ctx.enemies()) if (e.alive && !e.noGrav && !e.boss && e.x > l && e.x < rr) unbury(e, true, r); }
-  function jam(e, r) { if (!(e.bcJam > 0)) { K.n.jams++; if (once('jam')) number(e.x, e.y - 34, 'SAND IN ITS GEARS: IT IS JAMMED', '#8fd160'); } e.bcJam = BCS.jamT; }
+  function jam(e, r) { if (!(e.bcJam > 0)) { K.n.jams++; const P0 = ctx.hero(); if (P0 && Math.abs(P0.x - e.x) < 260 && Math.abs(P0.y - e.y) < 120 && once('jam')) number(e.x, e.y - 34, 'SAND IN ITS GEARS: IT IS JAMMED', '#8fd160'); } e.bcJam = BCS.jamT; }   /* (told once, and only where you can see it: the trap hall's fall holds its construct from the first frame) */
   H.world = (e, s, w) => { if (e.t === 'construct') w.jam = e.bcJam > 0 ? e.bcJam : 0; };
   /* a JAMMED construct takes a blow twice over (told once) */
   H.takeConstruct = (e, dmg) => { if (e.st && e.st.mode === 'jammed') { if (!e.bcJamSaid) { e.bcJamSaid = 1; number(e.x, e.y - 30, 'JAMMED: IT CANNOT GUARD', '#8fd160'); } return dmg * BCS.jamMul; } return dmg; };

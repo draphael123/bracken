@@ -47,10 +47,11 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
 /* THE HOURGLASS TOWER: glass bulbs in a brass frame; its upper bulb empties as you near the throne (k = how far along) - the city's hour running out */
 function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1) {
   const k = Math.max(0, Math.min(1, cx / Math.max(1, levelW - VW)));
-  const sc = 0.8 + k * 0.7, x = R(VW * 0.82 - cx * 0.035 + 40), w = R(70 * sc), top = R(VH * 0.12 - k * 20), neck = R(top + 120 * sc), bot = R(top + 240 * sc);
+  const sc = 0.8 + k * 0.5, x = R(VW * 0.82 - cx * 0.035 + 40), w = R(56 * sc), top = R(VH * 0.14), bot = R(top + VH * (0.55 + k * 0.2)), neck = R((top + bot) / 2);   /* (it fits the view: the whole glass, nearer and taller as you go) */
   const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha * 0.85;
   g.fillStyle = PAL.glass;   /* the two bulbs */
   g.beginPath(); g.moveTo(x - w / 2, top); g.lineTo(x + w / 2, top); g.lineTo(x + 4, neck); g.lineTo(x + w / 2, bot); g.lineTo(x - w / 2, bot); g.lineTo(x - 4, neck); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(220,240,250,0.45)'; g.lineWidth = 1; g.stroke();
   g.fillStyle = PAL.sand;   /* the sand: the upper bulb empties (k), the lower fills */
   const ut = top + (neck - top) * Math.min(0.95, 0.15 + k * 0.8), uw = (w / 2) * (1 - (ut - top) / (neck - top));
   g.beginPath(); g.moveTo(x - uw, ut); g.lineTo(x + uw, ut); g.lineTo(x + 3, neck); g.lineTo(x - 3, neck); g.closePath(); g.fill();
