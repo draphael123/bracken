@@ -9,3 +9,10 @@
 - scratch/release.sh --deploy: refuses unless origin/claude/<batch> docs/updates.json has an entry for that batch number
   (date, 3-6 lines), via new scratch/whatsnew-guard.mjs. scratch/ is not in the repo: edited in place.
 - The coordinator adds the entry at merge time: {"date":"YYYY-MM-DD","batch":N,"lines":[...]} at the TOP of the array.
+
+## Checks (port 8823)
+- green: whatsnew (new), textfit whatsnew,title,menu --strict (0 problems), uiscreens, hud-default, titlescene, modulepreload --write (402 modules).
+- titlescene.mjs: the board-row pin 'six rows' is now seven (the new row; the OPTIONS-grouping intent is unchanged).
+- mobile-perf: FAILED on 3 runs, including the MAP (24 fps) and wood (4.8 fps) - the PC was saturated by other lanes' suites; the
+  change only runs in the title/whatsnew states. Re-run it alone at release (known load-sensitive).
+- touch not seen to finish (machine load); the new state is in TAP_ANY (tap = Z) and has the default BACK pill.
