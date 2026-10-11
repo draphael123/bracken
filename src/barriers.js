@@ -35,6 +35,9 @@ export const TABLE = {
 };
 /* A BOSS'S OWN TOUCH, where it is obvious (boss id -> seal look; baked like any other). */
 export const BOSS_SEAL = { queen: 'combwall', puppeteer: 'curtain', wickerqueen: 'wicker', pyromancer: 'charstakes', duneworm: 'sandfall' };
+/* A LEVEL'S OWN SEAL inside its region (Daniel 10-11: the inland yew hedge suits the churchyard and the fields, not the Archmage's tower or
+   the Paladin's church - those two take the black iron slab). A boss's own touch still wins. */
+export const LEVEL_SEAL = { mage: 'ironslab', church: 'ironslab' };
 
 /* ---- bake helpers (clamped: nothing can land at y < 0 or off the tile) ---- */
 const R = (g, x, y, w, h, col, W = S, H = S) => { x |= 0; y |= 0; w |= 0; h |= 0; if (x < 0) { w += x; x = 0; } if (y < 0) { h += y; y = 0; } if (x + w > W) w = W - x; if (y + h > H) h = H - y; if (w <= 0 || h <= 0) return; g.fillStyle = col; g.fillRect(x, y, w, h); };
@@ -218,7 +221,8 @@ export function prime(levelId) { setFor(kindOf(levelId)); }
 /** The gate tile for (x + y) of a T.PORT cell; null = keep the original portcullis (storm). */
 export function gate(levelId, n) { const s = setFor(kindOf(levelId)).gate; return s ? s[mod(n, GATE_N)] : null; }
 /** The boss-room / mini wall tile for (y + x); `boss` may add its own touch. */
-export function seal(levelId, n, boss) { const k = kindOf(levelId), b = boss && bossSeal(k, boss); return (b || setFor(k).seal)[mod(n, SEAL_N)]; }
+export function seal(levelId, n, boss) { const k = kindOf(levelId), b = (boss && bossSeal(k, boss)) || levelSeal(k, levelId); return (b || setFor(k).seal)[mod(n, SEAL_N)]; }
+const levelSeal = (kind, id) => { const look = LEVEL_SEAL[id]; if (!look) return null; const S2 = setFor(kind), key = 'lvl:' + id; return S2.boss[key] || (S2.boss[key] = Array.from({ length: SEAL_N }, (_, i) => SEAL[look](i))); };
 /** The key gate's lock plate; null = keep the original. */
 export function plate(levelId) { return setFor(kindOf(levelId)).plate; }
 /** For the sheet and the checks: every sprite this file can bake. */
