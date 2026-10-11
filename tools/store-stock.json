@@ -50,6 +50,13 @@
     "silver": true,
     "needs": null,
     "feat": null
+   },
+   {
+    "id": "berserker",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": null
    }
   ]
  },
