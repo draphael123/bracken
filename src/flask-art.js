@@ -19,6 +19,7 @@ export const SPEC = {
   warden:     { head: [10, 20, 29, 35], S: [17, 38], C: [20, 38], M: [17, 35], sleeve: [13, 38], glove: [14, 35] },
   paladin:    { head: [10, 20, 29, 34], S: [17, 38], C: [20, 38], M: [19, 34], sleeve: [12, 38], glove: [18, 37] },
   geomancer:  { head: [10, 19, 29, 36], S: [17, 39], C: [19, 39], M: [18, 35], sleeve: [14, 38], glove: [16, 34] },
+  berserker:  { head: [11, 19, 28, 35], S: [17, 38], C: [20, 38], M: [18, 34], sleeve: [19, 38], glove: [20, 38] },   /* (berserkerport: bare face and a mane, so the head box starts a row higher; his sleeve and glove are both his own skin) */
 };
 
 const GLASS = '#c9d1dc', RED = '#c9463d', HI = '#ff9a9a', CORK_COL = '#9a6a34', EMPTY = '#8a96a8', GREEN = '#8fd160';

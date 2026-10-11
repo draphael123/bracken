@@ -327,7 +327,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : k === 'n' ? WL(KP.s) : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
   outline(c, OUT);
   gearAura(c, gearMask, (plume | 0) * 2 + (dy | 0) + (dx | 0) + 8);
-  { const W0 = sword || staff || maul || spear || stave || cutlass || greatsword || scythe;   /* WHERE THE BLADE WAS DRAWN (hand, tip), kept for the smear pass: the arc between two beats is read off these, not guessed */
+  { const W0 = sword || staff || maul || spear || stave || cutlass || greatsword || scythe || axe;   /* WHERE THE BLADE WAS DRAWN (hand, tip), kept for the smear pass: the arc between two beats is read off these, not guessed */
     if (W0) { const hd = arm ? [arm[2] + dx, arm[3] + dy] : [W0[0] + dx, W0[1] + dy]; c.wp = { p: [hd[0], hd[1] + top], t: [W0[2] + dx, W0[3] + dy + top] }; } }
   { const lr = LEGS[legs] || LEGS.stand; c.feet = top + BY + 11 + legsDy + lr.reduce((n, r, i) => /[^.]/.test(r) ? i : n, 0); }   /* THE ROW HIS BOOTS STAND ON, kept for tools/crouch-feet.mjs: a crouch drawn on the standing legs cut short floats */
   return c;
@@ -4780,7 +4780,7 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
       () => KF({ legs: 'stand', ...guard(), plume: 0 }),
     ].map((make, i) => (previewOnly === 'weaponIcon' && i !== 2) || (previewOnly === 'atk' && i !== 1 && i !== 2) ? null : make())),
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly);
+  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.steel);
   const F = {
     idle: card.idle(),
     run: [['run1', -1, 0], ['run2', 0, 1], ['run3', 1, 2], ['run4', 0, 1], ['run5', -1, 0], ['run6', 0, 1]].map(([l, dy, k], i) =>   /* the axes pumped low at his sides like fists */
@@ -4833,6 +4833,26 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
   { const beat = (k) => KF({ wide: 4, legs: k % 2 ? 'wide' : 'runC', dy: k % 2, plume: k % 3, ...lead(2, -6 + (k % 2), 6, -13 + (k % 2)), ...off(-2, -6 + (k % 2), -6, -13 + (k % 2)),
       bits: k % 2 ? [o(0, -14, '#ffffff'), o(-2, -15, '#fff6c8'), o(2, -15, '#fff6c8'), o(0, -16, '#fff6c8')] : [o(-6, 9, D), o(6, 9, D)] });
     F.dance = holdFrames([0, 1, 2, 3, 4, 5].map(k => [beat(k), 2])); }
+  /* HIS OTHER TWO DANCES (berserkerport, 2026-10-11). dance2 = THE WHETSTONE, his idle solo: down on one knee, an axe laid across it, a stone
+     dragged down the edge (sparks off it) and the edge tried on his thumb, the mane over his face; then up, and the axe spun back into his fist.
+     dance3 = THE WAR CRY, a boss down: both axes flung up, head back, the roar, the heads crashed together over him, then driven into the turf
+     either side of him and the fur shaken out. */
+  { const kn = (o2 = {}) => KF({ dy: 2, legs: 'kneel', hy: 1, ...lead(4, 4, 11, 4, -1), arm2: [OFF[0], OFF[1], X + 6, Y + 3], ...o2 });
+    const spark = n => n ? [o(8, 2, '#ffd36b'), o(10, 1, '#fff6c8'), o(12, 3, '#ffd36b')] : [o(9, 2, '#fff6c8')];
+    const stone = [o(6, 2, '#8c8a7e'), o(7, 2, '#a8a696')];
+    const thumb = KF({ dy: 2, legs: 'kneel', hy: 2, ...lead(4, 4, 10, 3, -1), arm2: [OFF[0], OFF[1], X + 5, Y + 2], bits: [o(5, 1, '#fff6c8')], plume: 1 });
+    F.dance2 = holdFrames([[F.idle[0], 2], [KF({ dy: 1, legs: 'wide', ...lead(3, 3, 9, 2, -1), ...off(-4, 4, -10, 0), plume: 1 }), 2], [kn({ bits: stone, plume: 0 }), 2],
+      [kn({ bits: [...stone, ...spark(0)], plume: 1 }), 2], [kn({ bits: [...stone, ...spark(1)], plume: 2 }), 2], [kn({ bits: [o(6, 4, '#8c8a7e'), ...spark(0)], plume: 1 }), 2],
+      [kn({ bits: [o(9, 5, '#8c8a7e'), ...spark(1)], plume: 0 }), 2], [kn({ bits: [...stone, ...spark(1)], plume: 2 }), 2], [thumb, 4], [thumb, 2],
+      [KF({ dy: 1, legs: 'wide', sho: 1, ...lead(3, -2, 7, -10), ...off(-4, 4, -10, 0), plume: 2, bits: [o(9, -11, '#ffffff')] }), 2], [KF({ dy: 1, legs: 'wide', ...guard(1), plume: 1 }), 2], [F.idle[0], 2]]); }
+  { const roar = (up, extra = {}) => KF({ dy: -up, legs: 'wide', sho: 1, hy: -1, ...lead(5, -7, 11, -15), ...off(-5, -7, -11, -15), plume: 2, bits: [o(2, -4, R), o(4, -5, R), o(5, -3, R), o(0, -5, R)], ...extra });
+    const cross = (k) => KF({ dy: k ? 1 : 0, legs: 'wide', ...lead(2, -7, k ? -2 : 4, -15), ...off(-2, -7, k ? 2 : -4, -15), plume: k ? 1 : 2, bits: k ? [o(0, -17, '#ffffff'), o(-2, -16, '#fff6c8'), o(2, -16, '#fff6c8'), o(0, -19, '#fff6c8')] : [] });
+    const plant = (d) => KF({ dy: 2 + d, legs: 'wide', ...lead(5, 4, 8, 11, -1), ...off(-5, 4, -8, 11, -1), plume: 0, bits: d ? [o(7, 11, D), o(10, 11, D), o(-7, 11, D), o(-10, 11, D)] : [o(8, 11, D), o(-8, 11, D)] });
+    F.dance3 = holdFrames([[F.idle[0], 1], [KF({ dy: 1, legs: 'wide', ...lead(2, -2, 6, -9), ...off(-2, -2, -6, -9), plume: 1 }), 2], [roar(0), 2], [roar(1), 2], [roar(0, { hy: -2 }), 3], [roar(1), 2],
+      [cross(0), 2], [cross(1), 3], [cross(0), 2], [cross(1), 3], [plant(0), 2], [plant(1), 3], [KF({ dy: 1, legs: 'stand', sho: 1, ...lead(4, 3, 9, 10, -1), ...off(-4, 3, -9, 10, -1), plume: 2 }), 2], [KF({ dy: 1, legs: 'stand', ...lead(4, 3, 9, 10, -1), ...off(-4, 3, -9, 10, -1), plume: 1, hy: 1 }), 3], [F.idle[0], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch). A = the
+     lead axe spent, carried on low past the target, body one pixel forward, the mane still flying; B = it coming back to guard, the weight settling. */
+  F.follow = [KF({ dx: 1, dy: 1, legs: 'wide', ...lead(5, 5, 11, 11, -1), ...off(-4, 4, -10, 0), plume: 1 }), KF({ dy: 1, legs: 'stand', ...lead(3, 3, 7, -3), ...off(-3, 4, -9, 0), plume: 0 })];
   /* HIS SLUMP: the axes hanging from slack fists, heads in the dirt, the mane fallen over his face */
   { const sag = d => KF({ dy: 1 + d, hy: 2, sho: -1, legs: 'stand', plume: 0, ...lead(1, 5, 3, 9, -1), ...off(-3, 5, -4, 9, -1) });
     F.slump = [sag(0), sag(1)]; }
@@ -4864,6 +4884,7 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
   F.bzThrow = [TK({ dx: -1, legs: 'wide', ...lead(3, 2, 6, -7), ...off(-5, -5, -9, -11), plume: 1 }),
     TK({ wide: 6, dx: 2, legs: 'runC', ...lead(2, 3, 6, -6), arm2: [OFF[0], OFF[1], X + 6, Y - 3], plume: 2 })];
   bzKitPoses(F, sh);
+  smearPass(F, SMEAR_COL.steel);   /* the strike beats get their arc (claude/herokeys): the lead axe's hand and head are kept as c.wp */
   if (ONEAXE) F.atkB = F.atk;   /* ONE-HANDED: no off chop - the lead axe cuts every blow of the run */
   const RR = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);

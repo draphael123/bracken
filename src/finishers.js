@@ -21,6 +21,7 @@ export const FINISH = {
   paladin:   { name: 'SMITTEN',     col: '#ffe6a0', sfx: ['hammerfall', 'heavy'], sig: 'light' },   /* the maul comes down in light, and the light is his */
   geomancer: { name: 'SHATTERED',   col: '#e0a040', sfx: ['crack', 'heavy'],     sig: 'shards' },   /* stone on it: it goes to pieces, amber */
   warden:    { name: 'SKEWERED',    col: '#8fd160', sfx: ['tipRing', 'heavy'],   sig: 'point' },    /* the point through it, and it rings */
+  berserker: { name: 'CLEAVED',     col: '#ff9a5c', sfx: ['heavy', 'clank'],     sig: 'cleave' },   /* (berserkerport) both axes down through it: sparks off the heads and the red of his rage */
 };
 export const FIN = { reach: 34, rise: 26, stop: 0.14, zoom: 1.14, inv: 0.45, heal: 3, done: 0, byHero: {} };
 
@@ -45,6 +46,7 @@ export function finishFoe(e, P, api) {
   else if (f.sig === 'coins') { api.burst(cx, cy, 10, ['#ffd34a', '#fff6c8'], 100, 0.5, 300, 1); if (api.coins) api.coins(e); }
   else if (f.sig === 'light') { api.ringAt(cx, cy, 46, '#ffe6a0', 0.45); if (api.light) api.light(8); }
   else if (f.sig === 'shards') api.burst(cx, cy, 16, ['#e0a040', '#8a6030', '#fff0c0'], 140, 0.5, 320, 2);
+  else if (f.sig === 'cleave') { api.burst(cx, cy, 14, ['#ff9a5c', '#fff6e0', '#c0602e'], 130, 0.4, 200, 2); api.sparks(cx, cy, P.face || 1, 6); }
   else if (f.sig === 'point') { api.ringAt(cx, cy, 20, '#8fd160', 0.35); api.sparks(cx, cy, -(P.face || 1), 8); }
   P.inv = Math.max(P.inv || 0, FIN.inv); if (P.hp > 0 && api.heal) api.heal(FIN.heal);
   e.finished = true; FIN.done++; FIN.byHero[h] = (FIN.byHero[h] || 0) + 1;

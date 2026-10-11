@@ -149,6 +149,6 @@ export const GULPS = [0.5, 0.82];
    are the art lane's (a Sonnet pass): this is the placement the overlay uses until then. */
 export const MOUTH = {
   knight: { dx: 3, dy: 21 }, pyro: { dx: 3, dy: 21 }, paladin: { dx: 3, dy: 22 }, pirate: { dx: 3, dy: 21 },
-  reaper: { dx: 4, dy: 25 }, warden: { dx: 3, dy: 21 }, geomancer: { dx: 3, dy: 21 },
+  reaper: { dx: 4, dy: 25 }, warden: { dx: 3, dy: 21 }, geomancer: { dx: 3, dy: 21 }, berserker: { dx: 3, dy: 22 },
 };
 export const mouthOf = h => MOUTH[h] || MOUTH.knight;
