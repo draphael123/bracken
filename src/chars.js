@@ -2856,6 +2856,26 @@ export function bakeWarden(skin = {}, previewOnly = false) {
       return knightFrame({ legs: k % 4 === 0 ? 'stand' : k % 2 ? 'runC' : 'wide', dy: k % 4 === 2 ? 1 : 0, plume: k % 3,
         arm: [sh[0], sh[1], hx, hy0], spear: [hx, hy0, Math.round(hx + 11 * Math.cos(th)), Math.round(hy0 - 9 * Math.sin(th))] }); });
     F.dance = holdFrames(TW.map(f => [f, 1])); }
+  /* HER OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE SENTRY'S DRILL, her idle solo: the spear brought to the shoulder
+     at the slope, a short stab at the empty air twice, shifted to the low guard, and a heel-turn with the haft crossing her body to
+     stand at the ordered-arms in the turf. dance3 = THE SPEARS RAISED, a boss down: both fists up, the spear straight over her head
+     and held to the light, the glint run up the shaft, and then thrown high a hand's width and caught, planted point-down with a stamp. */
+  { // (S below: arm hand offset, spear base offset, spear tip offset)
+    const S = (hx, hy2, bx, by, tx, ty, o = {}) => knightFrame({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], spear: [sh[0] + bx, sh[1] + by, sh[0] + tx, sh[1] + ty], ...o });
+    const gl = (x, y) => [[x - BX, y - BY, '#ffffff'], [x - BX - 1, y - BY + 1, '#fff6c8'], [x - BX + 1, y - BY + 1, '#fff6c8'], [x - BX, y - BY - 1, '#fff6c8']];
+    const slope = S(2, 0, -5, 6, 9, -7, { legs: 'wide', plume: 1 });
+    const stab0 = S(3, -1, -3, 1, 11, -1, { legs: 'runC', dx: 1, plume: 2 }), stab1 = S(5, -1, 0, 0, 13, -1, { legs: 'runC', dx: 2, plume: 2 });
+    const low = S(3, 2, -4, 6, 11, 8, { legs: 'wide', dy: 1, plume: 1 });
+    const cross = S(2, -1, 9, -9, -3, 6, { legs: 'run2', plume: 2 });
+    const ord = S(2, 1, 4, 14, 5, -1, { plume: 1 });
+    F.dance2 = holdFrames([[S(2, 2, 1, 2, 3, 12, { plume: 1 }), 2], [slope, 4], [S(2, 0, -3, 4, 10, -8, { legs: 'wide', plume: 2 }), 2], [stab0, 2], [stab1, 2], [stab0, 2], [slope, 2], [stab0, 2], [stab1, 2], [stab0, 2],
+      [low, 3], [S(3, 1, -4, 4, 11, 4, { legs: 'wide', plume: 2 }), 2], [cross, 3], [S(2, -1, 8, -10, -2, 5, { legs: 'run4', plume: 1 }), 2], [ord, 4], [F.idle[7], 2]]);
+    const up = (o = {}) => S(3, -3, 4, 8, 4, -11, { plume: 2, ...o });
+    const hold = up({ legs: 'wide', dy: -1, sho: 1, bits: gl(sh[0] + 4, sh[1] - 11) });
+    const thrown = S(2, -3, 4, -6, 5, -12, { legs: 'jump', dy: -2, plume: 2, bits: gl(sh[0] + 5, sh[1] - 12) });
+    const caught = S(3, 1, 4, 13, 3, -1, { legs: 'crouch', legsDy: 3, dy: 3, plume: 2 });
+    const stamp = S(3, 1, 4, 15, 4, 0, { dy: 1, legs: 'wide', plume: 2, bits: [[10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38']] });
+    F.dance3 = holdFrames([[F.idle[7], 1], [S(3, -1, 4, 8, 5, -4, { legs: 'wide', plume: 1 }), 2], [up(), 2], [hold, 3], [up({ bits: gl(sh[0] + 4, sh[1] - 8) }), 2], [hold, 3], [S(2, -2, 4, 2, 5, -9, { legs: 'wide', dy: -1, plume: 1 }), 2], [thrown, 3], [up({ dy: -1, legs: 'jump2' }), 1], [caught, 2], [stamp, 4], [ord, 3], [F.idle[7], 2]]); }
   /* HER SLUMP: she puts it DOWN. The spear is laid out on the ground at her boots and her hands are empty, which is
      the one thing in this game she never does - the brim goes down, the shoulders sag, and the longest line on the
      card is lying flat. */
