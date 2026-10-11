@@ -54,6 +54,7 @@ export function makeRootwayHands(ctx) {
       return true; }
     h.state = 'fall'; h.vy = 0;
     if (how === 'arrow') ctx.number(d.cleat[0] * TS + 8, d.cleat[1] * TS - 20, 'THE ARROW CUTS THE ROPE', '#8fd160');
+    else if (how === 'pod') ctx.number(d.cleat[0] * TS + 8, d.cleat[1] * TS - 20, 'THE POD CUTS THE ROPE', '#8fd160');
     else if (!d.boss && once('cut:' + d.load)) ctx.number(d.cleat[0] * TS + 8, d.cleat[1] * TS - 20, 'THE HOIST DROPS WHAT IT HOLDS', '#ffd36b');
     return true;
   }
@@ -82,9 +83,13 @@ export function makeRootwayHands(ctx) {
   H.update = dt => { H.lookHorn(dt, ctx.players()[0]);
     if (!S) return; const P = ctx.players()[0];
     /* AN ARROW STRUCK BACK cuts the rope of an `arrow` hoist it flies through (THE LOOKOUT) */
+    /* (claude/rootway2art, Daniel 10-10: "this jump is not crossable", twice) FORGIVING: ANY arrow of the lookout's scout that is struck back cuts the rope - it need not thread a 10 px gap; and any struck-back
+       arrow within a screen of the cleat is turned onto it (an owner-less arrow, or one the scout's death left homeless) */
     for (const s of ctx.seeds()) { if (s.dead || !s.reflected || !s.arrow) continue;
-      for (const h of S.hs.values()) { const d = h.d; if (!d.arrow || h.state !== 'hang') continue; const cx = d.cleat[0] * TS + 8;
-        if (Math.abs(s.x - cx) < 10 && s.y > (d.cleat[1] - 2) * TS && s.y < (d.cleat[1] + 3) * TS) cut(h, 'arrow'); } }
+      for (const h of S.hs.values()) { const d = h.d; if (!d.arrow || h.state !== 'hang') continue; const cx = d.cleat[0] * TS + 8, cyy = (d.cleat[1] + 0.5) * TS;
+        if (s.owner && s.owner.rwLookout === h.id) { cut(h, 'arrow'); continue; }
+        if (Math.abs(s.x - cx) < 320 && Math.abs(s.y - cyy) < 160 && !s.rwSteer) { s.rwSteer = true; const dx = cx - s.x, dy = cyy - s.y, m = Math.hypot(dx, dy) || 1, sp = Math.max(200, Math.hypot(s.vx, s.vy)); s.vx = dx / m * sp; s.vy = dy / m * sp; }
+        if (Math.abs(s.x - cx) < 14 && s.y > (d.cleat[1] - 2) * TS && s.y < (d.cleat[1] + 3) * TS) cut(h, 'arrow'); } }
     for (const h of S.hs.values()) { const d = h.d;
       if (h.state === 'fall') { h.vy = Math.min(HOIST.vmax, h.vy + HOIST.g * dt); h.ly += h.vy * dt;
         const target = d.load === 'span' ? (d.span[2] + 1) * TS : d.land ? (d.land[1] + 2) * TS : null;
@@ -113,6 +118,12 @@ export function makeRootwayHands(ctx) {
     if (Math.abs(P.x - e.x) < (e.sight || 230) && Math.abs(P.y - e.y) < 70) { h.sighted = true; S.n.horns = (S.n.horns || 0) + 1; ctx.sfx.scouthorn && ctx.sfx.scouthorn();
       ctx.number(e.x, e.y - e.h - 18, 'THE SCOUT SEES YOU', '#ff9a5c'); ctx.burst(e.x, e.y - 12, 8, ['#ffd36b', '#ff9a5c', '#e8dcc0'], 70, 0.5); e.draw = Math.max(e.draw || 0, 0.6); e.timer = Math.max(e.timer || 0, 0.6); } } };
 
+  /* (claude/rootway2art) A THROWN POD THAT SNAGS THE LOOKOUT'S ROPE (src/hunt-pods.js asks every frame it flies): the tie-off from its pulley to the cleat, or the line down to the load, within a pod's width. */
+  const segD = (px, py, ax, ay, bx, by) => { const vx = bx - ax, vy = by - ay, l2 = vx * vx + vy * vy || 1, t = Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / l2)); return Math.hypot(px - (ax + vx * t), py - (ay + vy * t)); };
+  H.podRope = (x, y) => { if (!S) return false;
+    for (const h of S.hs.values()) { const d = h.d; if (!d.arrow || h.state !== 'hang') continue; const px = d.x * TS, py = d.top * TS + 4, cx = d.cleat[0] * TS + 8, cyy = d.cleat[1] * TS + 6;
+      if (segD(x, y, px, py, cx, cyy) < 20 || segD(x, y, px, py, loadX(d), h.ly - TS) < 18 || (Math.abs(x - cx) < 16 && Math.abs(y - cyy) < 22)) return cut(h, 'pod'); }
+    return false; };
   /* ---------- A BLOW ON A CLEAT ---------- */
   H.strike = hb => { if (!S || !hb) return; for (const h of S.hs.values()) { const d = h.d; if (d.arrow || h.state !== 'hang') continue; if (ctx.overlap(hb, cleatBox(d))) cut(h, 'blade'); } };
   /* ---------- E AT THE LOFT: the tags ---------- */
@@ -189,6 +200,11 @@ export function makeRootwayHands(ctx) {
       /* A3: where it will land - a dotted plumb line from what hangs */
       if (h.state === 'hang' && d.load !== 'hunter') { const to = d.load === 'span' ? d.span[2] * TS : d.land ? d.land[1] * TS : lv.arena ? (d.boss ? lv.arena.floor : ly) : ly; dots(g, lxs, ly + 2, R(to - cy), 'rgba(255,233,160,0.45)'); }
       if (h.state === 'hang' && d.load === 'hunter') dots(g, lxs, ly + 2, ly + 6 * TS, 'rgba(255,154,92,0.35)');
+      if (h.state === 'hang' && d.arrow) { const sc = ctx.enemies().find(q => q.alive && q.rwLookout === h.id), Pp = ctx.players()[0];   /* THE LOOKOUT: the target is the rope's tie-off; with his bow drawn, his arrow's path (amber) and the way you strike it back to the rope (gold) are dotted */
+        const tx = ccx, ty = ccy - 14; g.fillStyle = Math.floor(time * 6) % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(tx - 1, ty - 7, 3, 1); g.fillRect(tx - 1, ty + 7, 3, 1); g.fillRect(tx - 8, ty - 1, 1, 3); g.fillRect(tx + 6, ty - 1, 1, 3);
+        if (sc && Pp && !Pp.dead && ((sc.draw || 0) > 0 || h.sighted) && Math.abs(Pp.x - sc.x) < 340) { const ax = R(sc.x - cx), ay = R(sc.y - 12 - cy), bx = R(Pp.x - cx), by = R(Pp.y - 14 - cy);
+          const line = (x0, y0, x1, y1, col) => { g.fillStyle = col; const n = Math.max(1, Math.floor(Math.hypot(x1 - x0, y1 - y0) / 6)); for (let i = 0; i <= n; i += 1) if ((i + Math.floor(time * 8)) % 2 === 0) g.fillRect(R(x0 + (x1 - x0) * i / n), R(y0 + (y1 - y0) * i / n), 2, 2); };
+          line(ax, ay, bx, by, 'rgba(255,154,92,0.7)'); line(bx, by, tx, ty, 'rgba(255,211,107,0.5)'); } }
       /* the load */
       if (d.load === 'span' && h.state !== 'down') { const w = loadW(d), x0 = R(lx - w / 2 - cx), y = ly - TS; RWW.drawSpanLoad(g, x0, y, w, false, time); }
       else if (d.load === 'span') { const w = loadW(d), x0 = R(d.span[0] * TS - cx), y = R(d.span[2] * TS - cy); RWW.drawLandedSpan(g, d.span, cx, cy, time); RWW.drawSpanLoad(g, x0, y, w, true, time); }

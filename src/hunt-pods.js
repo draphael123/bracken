@@ -55,6 +55,7 @@ export function makeHuntPods(ctx) {
       if (q.state === 'fly') { if (!q.counted) { q.counted = true; W.n.thrown++; } q.holder = null;
         const k = CT.KINDS.pod, px = q.x, py = q.y; CT.stepArc(q, dt, k.g);
         const e = target(q.x, q.y);
+        if (!e && ctx.rope && ctx.rope(q.x, q.y)) { q.state = 'gone'; burstAt(q.x, q.y); continue; }   /* (claude/rootway2art) it snags a rope: the lookout's tie-off */
         if (e) { q.state = 'gone'; burstAt(q.x, q.y);
           if (e === ctx.boss()) { W.n.bossHits++; ctx.onBoss(e, q.x); } else { W.n.foeHits++; ctx.hurtFoe(e, POD.dmg, q.x); } continue; }
         if (ctx.solidPx(q.x + Math.sign(q.vx) * k.r, py, false) && !ctx.solidPx(px, py, false)) { q.state = 'gone'; burstAt(px, py); continue; }

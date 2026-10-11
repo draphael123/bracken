@@ -25847,7 +25847,7 @@ SNR = makeSnares({ L: () => L, TS, players: () => players || [P], asPlayer: (p, 
 HPD = makeHuntPods({ L: () => L, P: () => P, keys: () => keys, boss: () => (boss && boss.t === 'huntmaster' && boss.alive && bossActive ? boss : null), enemies: () => enemies,
   solidPx: (x, y, falling) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS), t = tileAt(tx, ty); return isSolid(tx, ty) || (!!falling && (isOneWay(t) || t === T.PLANK) && (y % TS) < 6); },
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sfx: SFX, hint: m => { hintMsg = m; hintT = 6; }, told: () => (PROG.podTold || 0) > 1, tell: () => { PROG.podTold = (PROG.podTold || 0) + 1; },
-  onBoss: (e, x) => (HNH ? HNH.podHit(e, x) : null), hurtFoe: (e, d, x) => hurtAs('throw', e, d, x, false), spring: (x, y) => (SNR ? SNR.spring(x, y) : 0), traps: () => (SNR ? SNR.read().jaws : []) });
+  onBoss: (e, x) => (HNH ? HNH.podHit(e, x) : null), hurtFoe: (e, d, x) => hurtAs('throw', e, d, x, false), spring: (x, y) => (SNR ? SNR.spring(x, y) : 0), rope: (x, y) => (RWH && RWH.podRope ? RWH.podRope(x, y) : false), traps: () => (SNR ? SNR.read().jaws : []) });
 /* THE LIT CHURCH's HANDS (claude/litchurch, src/lit-church-hands.js) and THE PALADIN's (src/paladin-boss-hands.js) */
 LCH = makeLitChurchHands({ boss: () => boss, get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(),
