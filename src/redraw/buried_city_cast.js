@@ -1,0 +1,238 @@
+// src/redraw/buried_city_cast.js - THE BURIED CITY's CAST, drawn (claude/bc2art, the art pass). The 10-08 greybox wore recoloured caravan sheets ("the sprites are terrible"). Now each is its own
+// drawing on the same CONTRACT as the machine it replaces (every frame faces RIGHT, L is the flip; one canvas per sprite; ax = the body's centre column; ay = the row under the lowest
+// pixel, frames SETTLED to it; w/h = the hit box), so every tell, every hurt frame and every box is where its AI expects it:
+//   bakeSandDrowned()    THE SAND-DROWNED   (the ambusher's 8 frames: 0 BURIED | 1 RISING | 2,3 walk | 4 CUT TELL | 5 CUT | 6 BURROWING | 7 hurt) - a bleached dead citizen in rotted wrap and
+//                        the gilded collar of the court, teal pinpricks for eyes, sand trickling from the jaw and the sleeves, a rusted knife
+//   bakeSandSlinger()    THE SAND-FOLK SLINGER (the slinger's 7: 0 stand | 1,2 WHIRL | 3 LOOSE | 4 KICK TELL | 5 KICK | 6 hurt) - a lean man of the city's last folk: dust-blue tunic, teal headwrap,
+//                        brass goggles pushed up, a sand veil, wrapped boots, a sling
+//   bakeBrassScorpion()  THE BRASS SCORPION (the scorpion's 7: 0,1 walk | 2 CLAW TELL | 3 CLAW | 4 STING TELL | 5 STING | 6 hurt) - plated brass with rivets, a cog in its back and a winding key,
+//                        piston rods in the tail, an amber eye
+//   bakeConstruct()      THE CLOCKWORK CONSTRUCT (6: 0 idle | 1 walk | 2 POKE TELL | 3 POKE | 4 WOUND DOWN | 5 hurt) - brass guard with a CLOCK-FACE head (the hands at twelve while it keeps its round,
+//                        drooping when it is wound down), a window on its escapement (an anchor and a wheel) in the chest, pauldrons, a winding key, a halberd
+//   bakeHourglassKing(level)  THE HOURGLASS KING (14: 0 idle | 1,2 walk | 3 STREAM TELL | 4 STREAM | 5 GEAR TELL | 6 GEAR | 7 SLIP TELL | 8 SLIP | 9 PENDULUM TELL | 10 PENDULUM | 11 OPEN | 12 TURNING | 13 hurt)
+//                        - lapis robes with a gilded hem, brass pauldrons and a fan collar, a crown of gears, a mask with amber eyes, the hourglass in a brass frame on his chest (sand by level), a
+//                        pendulum sceptre; every pose keyframed
+//   bakeCog()            the brass cog he throws
+import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten } from '../px.js';
+import { OUT } from '../art.js';
+
+function pack(frames, ax, ay, w, h) {
+  const R = frames, L = frames.map(c => flipX(c)), white = frames.map(c => whiten(c)), whiteL = white.map(c => flipX(c));
+  return { R, L, white: { R: white, L: whiteL }, ax, ay, w, h };
+}
+function settleFrame(c) { const g = c.getContext('2d'), img = g.getImageData(0, 0, c.width, c.height), d = img.data; let low = -1;
+  for (let y = c.height - 1; y >= 0 && low < 0; y--) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3]) { low = y; break; }
+  const n = c.height - 1 - low; if (low < 0 || n === 0) return c; g.clearRect(0, 0, c.width, c.height); g.putImageData(img, 0, n); return c; }
+const frames = (W, H, n, fn) => Array.from({ length: n }, (_, f) => { const [c, g] = canvas(W, H); fn(g, f); outline(c, OUT); return settleFrame(c); });
+const thick = (g, x0, y0, x1, y1, col, w = 2) => { const v = Math.abs(y1 - y0) > Math.abs(x1 - x0); for (let k = 0; k < w; k++) line(g, x0 + (v ? k : 0), y0 + (v ? 0 : k), x1 + (v ? k : 0), y1 + (v ? 0 : k), col); };
+const blade = (g, hx, hy, tx, ty, bend, col, colL) => { const dx = tx - hx, dy = ty - hy, L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+  for (let t = 0; t <= 1.001; t += 0.06) { const b = Math.sin(t * Math.PI) * bend, x = hx + dx * t + nx * b, y = hy + dy * t + ny * b; px(g, x, y, col); if (t < 0.7) px(g, x + nx, y + ny, t < 0.35 ? col : colL); } px(g, tx, ty, colL); };
+
+// ================= THE SAND-DROWNED =================
+const DR = { bone: '#d6cbac', boneL: '#efe8d0', boneD: '#a89c7c', wrap: '#bfb292', wrapL: '#dccfa8', wrapD: '#8c8064', rot: '#4a3e2c', dark: '#16100c', teal: '#6ad8c8', tealL: '#d0fff6', gold: '#d8aa40', goldL: '#f6dc80', goldD: '#8a6a20',
+  sand: '#e2bb7a', sandL: '#f4dba0', sandD: '#b98c58', steel: '#a2a6ac', steelL: '#f0f4f8', rust: '#8a5a3a', rustD: '#5a3a24' };
+export function bakeSandDrowned() {
+  const W = 34, H = 30, cx = 14, gy = 28;
+  const head = (g, x, y, drop = 0) => {
+    ellipse(g, x, y, 3.4, 3.6, DR.bone); px(g, x - 2, y - 2, DR.boneL); px(g, x - 3, y, DR.boneL); rect(g, x - 2, y + 2, 5, 1, DR.boneD); px(g, x + 3, y + 1, DR.boneD);   /* a skull's face, the cheek hollow */
+    rect(g, x - 2, y - 1, 2, 2, DR.dark); rect(g, x + 1, y - 1, 2, 2, DR.dark); px(g, x - 1, y - 1, DR.teal); px(g, x + 2, y - 1, DR.teal); px(g, x - 1, y - 2 + 1, DR.tealL);   /* sockets, a teal pinprick in each */
+    rect(g, x - 1, y + 2 + drop, 3, 1 + (drop ? 1 : 0), DR.dark);   /* the jaw slack */
+    px(g, x, y + 4 + drop, DR.sand); px(g, x, y + 5 + drop, DR.sandD);   /* sand running from the mouth */
+    ellipse(g, x - 0.5, y - 2.6, 4.2, 2.3, DR.wrap); px(g, x - 3, y - 3, DR.wrapL); px(g, x + 2, y - 4, DR.wrapD); px(g, x + 1, y - 3, DR.rot);   /* the rotted head-wrap */
+    line(g, x - 4, y - 1, x - 7, y + 3, DR.wrap); px(g, x - 7, y + 4, DR.wrapD); px(g, x - 8, y + 5, DR.rot); };   /* its tail, hanging like weed */
+  const body = (g, x, y, legs, lean = 0) => { const [a, b] = legs;
+    rect(g, x - 2 + a, y + 10, 2, 2, DR.boneD); rect(g, x + 1 + b, y + 10, 2, 2, DR.boneD); rect(g, x - 3 + a, y + 11, 3, 1, DR.wrapD); rect(g, x + 1 + b, y + 11, 3, 1, DR.wrapD);   /* bare shins, bound feet */
+    fillPoly(g, [[x - 3 + lean, y], [x + 3 + lean, y], [x + 5, y + 10], [x - 5, y + 10]], DR.wrap);   /* the shroud */
+    line(g, x - 2 + lean, y + 1, x - 4, y + 9, DR.wrapL); line(g, x + 3 + lean, y + 2, x + 4, y + 9, DR.wrapD); line(g, x - 3, y + 4, x + 3, y + 6, DR.wrapD); line(g, x - 3, y + 7, x + 4, y + 8, DR.wrapD);
+    rect(g, x - 1 + lean, y + 3, 3, 3, DR.rot); px(g, x - 1 + lean, y + 3, DR.boneD); px(g, x + 1 + lean, y + 4, DR.boneD); px(g, x + lean, y + 5, DR.boneD);   /* ribs showing through a tear */
+    rect(g, x - 4 + lean, y - 1, 9, 2, DR.gold); rect(g, x - 4 + lean, y - 1, 9, 1, DR.goldL); px(g, x - 1 + lean, y, DR.goldD); px(g, x + 2 + lean, y - 1, DR.rot); px(g, x + 3 + lean, y, DR.rot);   /* the gilded collar of the court, broken */
+    for (let i = -5; i <= 5; i += 2) { px(g, x + i, y + 10 + ((i + 5) % 4 === 0 ? 1 : 0), DR.wrapD); } px(g, x + 5, y + 8, DR.sand); px(g, x + 6, y + 9, DR.sandD); px(g, x - 5, y + 9, DR.sand); };   /* the hem in rags; sand spilling from it */
+  const arm = (g, x0, y0, x1, y1) => { line(g, x0, y0, x1, y1, DR.bone); px(g, x1, y1, DR.boneD); px(g, x1 + 1, y1 + (y1 > y0 ? 1 : -1), DR.bone); px(g, (x0 + x1) / 2, (y0 + y1) / 2 + 1, DR.wrap); };   /* a bone-thin arm in a wrap, a clawed hand */
+  const knife = (g, hx, hy, tx, ty) => { rect(g, hx - 1, hy - 1, 2, 2, DR.rustD); blade(g, hx, hy, tx, ty, 1.5, DR.steel, DR.rust); };
+  const mound = (g, x, h) => { fillPoly(g, [[x - 12, gy], [x - 6, gy - h], [x + 6, gy - h], [x + 12, gy]], DR.sand); rect(g, x - 6, gy - h, 12, 1, DR.sandL); for (let i = 0; i < 6; i++) px(g, x - 10 + i * 4, gy - 1, DR.sandD); };
+  const F = frames(W, H, 8, (g, f) => {
+    if (f === 0) { mound(g, cx, 4); rect(g, cx - 6, gy - 11, 1, 6, DR.bone); px(g, cx - 6, gy - 12, DR.boneL); px(g, cx - 7, gy - 12, DR.bone); px(g, cx - 5, gy - 12, DR.bone);   /* BURIED: a bone hand reaching up from the mound */
+      ellipse(g, cx + 2, gy - 5, 3.2, 2.2, DR.wrap); rect(g, cx, gy - 5, 2, 1, DR.dark); px(g, cx + 1, gy - 5, DR.teal); px(g, cx + 3, gy - 5, DR.teal); rect(g, cx - 1, gy - 8, 6, 1, DR.gold); return; }   /* and the wrapped crown of the head, two teal eyes, a glint of gold */
+    if (f === 1) { body(g, cx, gy - 12, [0, 0], 1); head(g, cx + 1, gy - 15, 1); mound(g, cx, 5);   /* RISING: the sand pouring off the shroud */
+      for (let i = 0; i < 8; i++) { px(g, cx - 6 + i * 2, gy - 16 + (i % 4) * 3, DR.sandL); px(g, cx - 5 + i * 2, gy - 12 + (i % 3) * 3, DR.sand); } return; }
+    if (f === 6) { mound(g, cx, 5); fillPoly(g, [[cx - 11, gy - 5], [cx - 4, gy - 11], [cx + 6, gy - 10], [cx + 11, gy - 5]], DR.wrap);   /* BURROWING: the shroud thrown over, going down */
+      line(g, cx - 4, gy - 11, cx + 6, gy - 10, DR.wrapL); for (let i = 0; i < 5; i++) px(g, cx - 8 + i * 4, gy - 6, DR.wrapD); rect(g, cx - 3, gy - 10, 4, 1, DR.gold); return; }
+    const by = gy - 12;
+    if (f === 7) { body(g, cx - 1, by + 1, [0, 0], -1); head(g, cx - 2, by - 3, 1); arm(g, cx + 2, by + 3, cx + 4, by + 8); knife(g, cx + 4, by + 8, cx + 7, by + 11); return; }   /* hurt: rocked back, the knife drooping */
+    const legs = f === 2 ? [0, 1] : f === 3 ? [1, 0] : [0, 0];
+    body(g, cx, by, legs, f === 4 ? -1 : 0); head(g, cx + 1 + (f === 5 ? 1 : 0), by - 4, f === 4 ? 1 : 0);
+    if (f === 4) { arm(g, cx + 2, by + 2, cx + 1, by - 6); knife(g, cx + 1, by - 6, cx - 2, by - 12); px(g, cx - 2, by - 13, DR.steelL); px(g, cx - 3, by - 12, DR.steelL); px(g, cx - 1, by - 12, DR.steelL); }   /* CUT TELL: the knife up, a glint on its tip */
+    else if (f === 5) { arm(g, cx + 3, by + 3, cx + 8, by + 3); knife(g, cx + 8, by + 3, cx + 15, by + 5); for (let i = 0; i < 4; i++) px(g, cx + 9 + i * 2, by - 1 + i, DR.steelL); }   /* CUT: out and across */
+    else { arm(g, cx + 3, by + 3, cx + 4, by + 8); knife(g, cx + 4, by + 8, cx + 8, by + 10); arm(g, cx - 3, by + 3, cx - 5, by + 9); }   /* held low */
+  });
+  return pack(F, cx, H, 12, 18);
+}
+
+// ================= THE SAND-FOLK SLINGER =================
+const SF = { skin: '#b88a62', skinD: '#8a6240', tunic: '#6c7c98', tunicL: '#90a2bc', tunicD: '#44506a', wrapT: '#3a8a8a', wrapTL: '#62b4aa', wrapTD: '#1e5a5c', veil: '#d2c29a', veilD: '#a8986e', brass: '#d0a438', brassL: '#f6dc80', brassD: '#7a5c18',
+  glass: '#9ad8e0', belt: '#6a4a28', pants: '#8a7a5c', pantsD: '#5e5038', bind: '#dccfa8', cord: '#7a5a38', pouch: '#8a5a32', stone: '#8a8278', stoneL: '#bab2a4', blur: '#dce4f0', eye: '#161210' };
+export function bakeSandSlinger() {
+  const W = 36, H = 32, cx = 14, gy = 30;
+  const head = (g, x, y) => { ellipse(g, x, y, 3.2, 3.4, SF.skin); px(g, x - 3, y + 1, SF.skinD);
+    rect(g, x - 3, y + 1, 7, 3, SF.veil); rect(g, x - 3, y + 3, 7, 1, SF.veilD); px(g, x + 3, y + 2, SF.veil);   /* the sand veil over the mouth */
+    ellipse(g, x - 0.5, y - 2.2, 4.2, 2.3, SF.wrapT); px(g, x - 3, y - 3, SF.wrapTL); px(g, x - 1, y - 4, SF.wrapTL); rect(g, x - 4, y - 1, 8, 1, SF.wrapTD);   /* the teal headwrap */
+    line(g, x - 4, y - 2, x - 6, y + 2, SF.wrapT); px(g, x - 6, y + 3, SF.wrapTD);   /* its tail */
+    rect(g, x + 1, y - 1, 2, 1, SF.eye); px(g, x + 2, y - 1, SF.glass);   /* the eyes */
+    rect(g, x + 1, y - 4, 3, 2, SF.brass); px(g, x + 2, y - 4, SF.glass); px(g, x + 1, y - 4, SF.brassL); };   /* the goggles, pushed up on the wrap: a brass rim, a lens */
+  const body = (g, x, y, legs) => { const [a, b] = legs;
+    rect(g, x - 3, y, 6, 7, SF.tunic); rect(g, x - 3, y, 6, 1, SF.tunicL); rect(g, x + 2, y + 1, 1, 6, SF.tunicD); rect(g, x - 3, y + 4, 6, 1, SF.belt); px(g, x - 1, y + 4, SF.brass);
+    line(g, x - 3, y + 2, x + 2, y + 6, SF.tunicD); px(g, x - 2, y + 6, SF.veil); rect(g, x - 3, y + 6, 6, 1, SF.veilD);   /* a patched hem */
+    rect(g, x + 3, y + 4, 2, 3, SF.pouch); px(g, x + 3, y + 4, SF.brassL);   /* the bag of stones */
+    rect(g, x - 3 + a, y + 7, 2, 4, SF.pants); rect(g, x + 1 + b, y + 7, 2, 4, SF.pants); rect(g, x - 3 + a, y + 9, 3, 2, SF.bind); rect(g, x + 1 + b, y + 9, 3, 2, SF.bind); px(g, x - 3 + a, y + 10, SF.pantsD); px(g, x + 1 + b, y + 10, SF.pantsD); };   /* wrapped boots */
+  const sling = (g, hx, hy, ox, oy, loaded) => { line(g, hx, hy, ox, oy, SF.cord); rect(g, ox - 1, oy - 1, 3, 2, SF.pouch); if (loaded) px(g, ox, oy - 1, SF.stone); };
+  const F = frames(W, H, 7, (g, f) => {
+    const by = gy - 11;
+    if (f === 6) { body(g, cx - 1, by + 1, [0, 0]); head(g, cx - 2, by - 3); sling(g, cx + 2, by + 3, cx + 3, by + 9, false); return; }
+    if (f === 4 || f === 5) {
+      const b = 0; rect(g, cx - 3, by + 7, 2, 4, SF.pants); rect(g, cx - 3, by + 9, 3, 2, SF.bind);
+      rect(g, cx - 3, by, 6, 7, SF.tunic); rect(g, cx - 3, by, 6, 1, SF.tunicL); rect(g, cx - 3, by + 4, 6, 1, SF.belt); head(g, cx + (f === 4 ? -1 : 1), by - 4);
+      if (f === 4) { rect(g, cx + 1 + b, by + 5, 4, 2, SF.pants); rect(g, cx + 4, by + 7, 2, 2, SF.bind); }
+      else { rect(g, cx + 1, by + 6, 7, 2, SF.pants); rect(g, cx + 8, by + 5, 2, 3, SF.bind); px(g, cx + 10, by + 6, SF.bindL || SF.bind); }
+      sling(g, cx - 3, by + 2, cx - 5, by + 8, false); return; }
+    body(g, cx, by, f === 0 ? [0, 0] : [0, 1]); head(g, cx + 1, by - 4);
+    if (f === 0) sling(g, cx + 3, by + 2, cx + 5, by + 9, true);
+    else if (f === 1 || f === 2) { line(g, cx + 2, by + 1, cx + 3, by - 7, SF.skin);
+      for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; px(g, cx + 3 + Math.cos(a) * 7, by - 9 + Math.sin(a) * 2.6, SF.blur); }
+      if (f === 1) sling(g, cx + 3, by - 7, cx - 4, by - 10, true); else sling(g, cx + 3, by - 7, cx + 10, by - 8, true); }
+    else if (f === 3) { line(g, cx + 2, by + 1, cx + 8, by - 3, SF.skin); line(g, cx + 8, by - 3, cx + 16, by - 5, SF.cord); rect(g, cx + 16, by - 6, 2, 2, SF.pouch); }
+  });
+  return pack(F, cx, H, 10, 16);
+}
+
+// ================= THE BRASS SCORPION =================
+const BS = { a: '#c29a44', A: '#e2bc68', d: '#8a6420', D: '#4e3810', l: '#f6e49a', leg: '#6a6258', legL: '#9a9288', barb: '#c4ccd4', barbD: '#5a626a', red: '#e04030', redL: '#ff8a5c', eye: '#ffb040', eyeL: '#fff0b0', rivet: '#fff0b0', key: '#d6ccb0', cog: '#5a4630', cogL: '#9a7c48', rod: '#a0a0ac' };
+export function bakeBrassScorpion() {
+  const W = 34, H = 20, gy = 18;
+  const body = (g, dy = 0) => { for (let s = 0; s < 4; s++) { const x = 11 + s * 4; ellipse(g, x, gy - 5 + dy, 3.4, 2.6, s % 2 ? BS.a : BS.A); rect(g, x - 2, gy - 8 + dy, 3, 1, BS.l); px(g, x + 2, gy - 4 + dy, BS.d); px(g, x - 1, gy - 6 + dy, BS.rivet); }   /* plated segments, riveted */
+    for (let s = 0; s < 4; s++) px(g, 13 + s * 4, gy - 5 + dy, BS.D);   /* the seams */
+    ellipse(g, 26, gy - 5 + dy, 3.6, 2.8, BS.A); rect(g, 24, gy - 8 + dy, 4, 1, BS.l); px(g, 27, gy - 7 + dy, BS.eye); px(g, 28, gy - 7 + dy, BS.eye); px(g, 27, gy - 8 + dy, BS.eyeL);   /* the amber lens eyes */
+    rect(g, 10, gy - 3 + dy, 18, 1, BS.d);
+    rect(g, 15, gy - 10 + dy, 3, 2, BS.cog); px(g, 16, gy - 11 + dy, BS.cogL); px(g, 15, gy - 10 + dy, BS.cogL); px(g, 17, gy - 10 + dy, BS.cogL); px(g, 16, gy - 9 + dy, BS.D);   /* a cog turning in its back */
+    rect(g, 19, gy - 11 + dy, 1, 3, BS.key); rect(g, 18, gy - 12 + dy, 3, 1, BS.key); };   /* its winding key */
+  const legs = (g, ph) => { for (let i = 0; i < 4; i++) { const x = 12 + i * 4, k = (i + ph) % 2 ? 1 : -1; line(g, x, gy - 4, x - 2 + k, gy - 1, BS.leg); px(g, x - 1 + k * 0, gy - 3, BS.legL); px(g, x - 2 + k, gy - 1, BS.D); } };
+  const claw = (g, ox, oy, open) => { line(g, 27, gy - 5, ox - 3, oy, BS.a); px(g, ox - 3, oy, BS.rivet); ellipse(g, ox, oy, 2.6, 1.8, BS.A); px(g, ox - 1, oy - 1, BS.l); line(g, ox + 1, oy - 1, ox + 4, oy - 1 - open, BS.barb); line(g, ox + 1, oy + 1, ox + 4, oy + 1 + open, BS.barbD); px(g, ox + 3, oy, BS.D); };
+  const tail = (g, cock, strike, lit) => { let x = 8, y = gy - 6; const pts = [];
+    for (let s = 0; s < 5; s++) { const a = Math.PI * (0.95 - s * (0.18 + cock * 0.05) - strike * s * 0.1); x += Math.cos(a) * 3.2; y -= Math.abs(Math.sin(a)) * (2.6 + cock * 1.2); pts.push([x, y]); }
+    pts.forEach(([tx, ty], i) => { if (i > 0) line(g, pts[i - 1][0], pts[i - 1][1], tx, ty, BS.rod); ellipse(g, tx, ty, 1.9 - i * 0.12, 1.7 - i * 0.1, i % 2 ? BS.a : BS.A); if (i % 2 === 0) px(g, tx, ty - 1, BS.rivet); });   /* segments on piston rods */
+    const [bx, by] = pts[4]; line(g, bx, by, bx + 2 + strike * 2, by + 2, lit ? BS.red : BS.barb); px(g, bx + 2 + strike * 2, by + 2, lit ? BS.redL : BS.barbD); if (lit) { px(g, bx + 2, by + 1, BS.redL); px(g, bx + 3 + strike * 2, by + 2, BS.redL); } };
+  const F = frames(W, H, 7, (g, f) => {
+    const dy = f === 6 ? 1 : 0;
+    tail(g, f === 4 ? 1 : f === 5 ? 0.6 : 0.35, f === 5 ? 1 : 0, f === 4 || f === 5);
+    legs(g, f === 1 ? 1 : 0); body(g, dy);
+    if (f === 2) claw(g, 30, gy - 11, 2); else if (f === 3) claw(g, 32, gy - 6, 0); else claw(g, 30, gy - 6, f === 6 ? 2 : 1);
+  });
+  return pack(F, 18, H, 16, 9);
+}
+
+// ================= THE CLOCKWORK CONSTRUCT =================
+const CK = { brass: '#c09040', brassL: '#e8bc68', brassD: '#8a5e28', brassDD: '#5a3a14', iron: '#5e564c', ironL: '#8a8274', ironD: '#3a342c', face: '#f0e8d0', faceD: '#c8bea0', hand: '#2a2018', lens: '#ffd36b', lensL: '#fff1c0', lensOff: '#4a463e', key: '#d6ccb0', keyD: '#8a8270', blade: '#c9d1dc', bladeL: '#f0f4f8', haft: '#6e4a2c', win: '#1a1410', gear: '#e8c45c', gearD: '#9a7a24', rivet: '#fff0b0' };
+export function bakeConstruct() {
+  const W = 34, H = 26, gy = 24, cx = 15;
+  /* the clock-face head: a brass bezel round a pale face, ticks at the quarters, hands (at twelve while it keeps its round; slumped to the lower left when wound down) */
+  const head = (g, x, y, lit = true) => { circle(g, x, y, 4, CK.brass); circle(g, x, y, 3, lit ? CK.face : CK.faceD); px(g, x - 3, y - 3, CK.brassL); px(g, x - 2, y - 4, CK.brassL); px(g, x + 3, y + 3, CK.brassD); px(g, x + 2, y + 4, CK.brassD);
+    px(g, x, y - 3, CK.hand); px(g, x + 3, y, CK.hand); px(g, x, y + 3, CK.hand); px(g, x - 3, y, CK.hand);
+    if (lit) { line(g, x, y, x, y - 2, CK.hand); line(g, x, y, x + 2, y, CK.hand); px(g, x + 1, y - 1, CK.lens); px(g, x + 2, y - 1, CK.lensL); }   /* hands at twelve and three; a lit lens at the pivot */
+    else { line(g, x, y, x - 2, y + 1, CK.hand); line(g, x, y, x - 1, y + 2, CK.hand); }
+    rect(g, x - 1, y - 6, 3, 2, CK.brassD); px(g, x, y - 6, CK.brassL); };   /* the bell on top */
+  const torso = (g, x, y, bend = 0, lit = true) => { rect(g, x - 4 + bend, y, 8, 9, CK.brass); rect(g, x - 4 + bend, y, 8, 1, CK.brassL); rect(g, x - 4 + bend, y + 8, 8, 1, CK.brassD); rect(g, x + 3 + bend, y + 1, 1, 7, CK.brassD);
+    rect(g, x - 2 + bend, y + 2, 5, 5, CK.win); px(g, x - 2 + bend, y + 2, CK.ironL);   /* a window on the works */
+    px(g, x + bend, y + 3, lit ? CK.gear : CK.gearD); px(g, x - 1 + bend, y + 4, lit ? CK.gear : CK.gearD); px(g, x + 1 + bend, y + 4, lit ? CK.gear : CK.gearD); px(g, x + bend, y + 5, lit ? CK.gear : CK.gearD); px(g, x + bend, y + 4, CK.win);   /* the escape wheel */
+    px(g, x - 2 + bend, y + 6, CK.ironL); px(g, x + 2 + bend, y + 6, CK.ironL); line(g, x - 2 + bend, y + 6, x + 2 + bend, y + 6, CK.ironL);   /* the anchor */
+    px(g, x - 4 + bend, y + 1, CK.rivet); px(g, x + 3 + bend, y + 1, CK.rivet);
+    rect(g, x - 6, y + 2, 2, 3, CK.key); px(g, x - 7, y + 3, CK.key); px(g, x - 7, y + 1, CK.keyD); px(g, x - 6, y + 1, CK.keyD); px(g, x - 7, y + 5, CK.keyD); line(g, x - 5, y + 5, x - 5, y + 8, CK.ironD); };   /* the winding key in its back */
+  const shoulder = (g, x, y) => { circle(g, x, y, 2.4, CK.brass); px(g, x - 1, y - 2, CK.brassL); px(g, x + 1, y + 1, CK.brassD); };
+  const legs = (g, x, y, ph) => { const a = [0, 2, -2][ph], b = -a; rect(g, x - 3 + a, y, 2, 8, CK.iron); rect(g, x + 1 + b, y, 2, 8, CK.iron); px(g, x - 3 + a, y, CK.ironL); px(g, x + 1 + b, y, CK.ironL); rect(g, x - 4 + a, y + 2, 3, 2, CK.brass); rect(g, x + b, y + 2, 3, 2, CK.brass); px(g, x - 4 + a, y + 2, CK.brassL); px(g, x + b, y + 2, CK.brassL); rect(g, x - 4 + a, y + 7, 4, 2, CK.ironD); rect(g, x + b, y + 7, 4, 2, CK.ironD); };
+  const arm = (g, x0, y0, x1, y1) => { thick(g, x0, y0, x1, y1, CK.brass, 2); px(g, x1, y1, CK.brassD); px(g, (x0 + x1) / 2, (y0 + y1) / 2, CK.rivet); };
+  const halberd = (g, hx, hy, tx, ty) => { thick(g, hx, hy, tx, ty, CK.haft, 1); const a = Math.atan2(ty - hy, tx - hx), bx = Math.cos(a), by = Math.sin(a);
+    fillPoly(g, [[tx - by * 3, ty + bx * 3], [tx + by * 3, ty - bx * 3], [tx + bx * 8, ty + by * 8]], CK.blade); line(g, tx, ty, tx + bx * 7, ty + by * 7, CK.bladeL); px(g, tx - bx, ty - by, CK.brass); };
+  const F = frames(W, H, 6, (g, f) => {
+    const hip = gy - 8;
+    if (f === 4) { legs(g, cx, hip + 1, 0); torso(g, cx + 2, hip - 9, 5, false); head(g, cx + 10, hip - 5, false); shoulder(g, cx + 6, hip - 6);
+      arm(g, cx - 1, hip - 6, cx - 6, hip - 1); halberd(g, cx - 6, hip - 1, cx - 12, hip + 4); return; }
+    const ph = f === 1 ? 1 : (f === 2 || f === 3) ? 2 : 0, dy = f === 5 ? 2 : 0, bend = f === 5 ? -3 : 0;
+    legs(g, cx, hip + dy, ph); torso(g, cx, hip - 9 + dy, bend); head(g, cx + 1 + bend, hip - 13 + dy); shoulder(g, cx + 4 + bend, hip - 7 + dy);
+    const sh = [cx + 4 + bend, hip - 6 + dy];
+    if (f === 2) { arm(g, ...sh, cx - 7, hip - 4); halberd(g, cx - 7, hip - 4, cx - 15, hip - 7); }
+    else if (f === 3) { arm(g, ...sh, cx + 14, hip - 9); halberd(g, cx + 14, hip - 9, cx + 24, hip - 8); }
+    else { arm(g, ...sh, cx + 4, hip - 1 + dy); halberd(g, cx + 4, hip - 1 + dy, cx + 6, hip + 9 + dy); }
+  });
+  return pack(F, cx, H, 10, 16);
+}
+
+// ================= THE HOURGLASS KING =================
+const HK = { robe: '#34408a', robeD: '#222a66', robeDD: '#161c48', robeL: '#5668b8', robeLL: '#7c8cd8', trim: '#d8aa40', trimL: '#f6dc80', trimD: '#8a6a20', brass: '#c09040', brassL: '#e8bc68', brassD: '#8a5e28', brassDD: '#5a3a14',
+  mask: '#dccfa8', maskL: '#f4ecd0', maskD: '#a89a74', skin: '#c9a97a', glass: '#cfe3f0', glassL: '#f2faff', glassD: '#7a98b0', sand: '#e6bc68', sandL: '#f8dc90', sandD: '#bf8f4c', ghost: 'rgba(150,170,230,0.42)', red: '#e04030', redL: '#ff8a5c', eye: '#ffd36b', eyeL: '#fff4c0', dark: '#161018' };
+/* the hourglass in its brass frame, at the chest: level 0 full upper bulb, 1 half, 2 near-empty (a thread still falling) */
+function hourglassChest(g, x, y, level) {
+  circle(g, x, y + 6, 8, HK.brassD); circle(g, x, y + 6, 7, HK.brass);   /* the frame: a brass ring */
+  px(g, x - 6, y + 1, HK.brassL); px(g, x - 5, y, HK.brassL); px(g, x, y - 1, HK.brassL);
+  fillPoly(g, [[x - 5, y + 1], [x + 5, y + 1], [x + 2, y + 6], [x + 5, y + 11], [x - 5, y + 11], [x - 2, y + 6]], HK.glass);
+  px(g, x - 4, y + 2, HK.glassL); px(g, x - 4, y + 3, HK.glassL); px(g, x - 3, y + 9, HK.glassD);
+  const up = level === 0 ? 4 : level === 1 ? 2 : 0, low = level === 0 ? 1 : level === 1 ? 3 : 5;
+  if (up > 0) for (let k = 0; k < up; k++) { const w = 4 - Math.floor(k * 0.6); rect(g, x - w, y + 2 + (4 - up) + k, w * 2 + 1, 1, k === 0 ? HK.sandL : HK.sand); }
+  if (level === 2) { px(g, x, y + 6, HK.sandL); px(g, x, y + 5, HK.sand); }
+  for (let k = 0; k < low; k++) { const w = Math.min(4, k + 1); rect(g, x - w, y + 11 - k, w * 2 + 1, 1, k === low - 1 ? HK.sandL : HK.sand); }
+  px(g, x - 6, y + 6, HK.brassDD); px(g, x + 6, y + 6, HK.brassDD); rect(g, x - 1, y + 5, 3, 1, HK.brassL);
+  for (const [dx, dy] of [[-6, 3], [6, 3], [-6, 9], [6, 9]]) px(g, x + dx, y + dy, HK.trimL);   /* rivets */
+}
+export function bakeHourglassKing(sandLevel = 0) {
+  const W = 60, H = 72, gy = 70;   /* (12 rows taller than the greybox king: the fan collar and the crown of gears stand over his head) */
+  const legs = (g, x, y, ph) => { const a = [0, 2, -2][ph] || 0, b = -a; thick(g, x - 4, y, x - 4 + a, y + 16, HK.robeD, 5); thick(g, x + 4, y, x + 4 + b, y + 16, HK.robeD, 5);
+    rect(g, x - 7 + a, y + 15, 5, 2, HK.brassD); rect(g, x + 2 + b, y + 15, 5, 2, HK.brassD); rect(g, x - 7 + a, y + 15, 5, 1, HK.brassL); rect(g, x + 2 + b, y + 15, 5, 1, HK.brassL);
+    px(g, x - 4 + a, y + 10, HK.trim); px(g, x + 4 + b, y + 10, HK.trim); };
+  const robe = (g, x, y, bend = 0, invert = false) => {
+    fillPoly(g, [[x - 11 + bend, y], [x + 11 + bend, y], [x + 9, y + 22], [x - 9, y + 22]], HK.robe);
+    fillPoly(g, [[x - 9 + bend, y + 1], [x + 9 + bend, y + 1], [x + 7, y + 8], [x - 7, y + 8]], HK.robeL);
+    line(g, x - 8 + bend, y + 2, x - 6, y + 21, HK.robeLL); line(g, x + 8 + bend, y + 2, x + 7, y + 21, HK.robeDD); line(g, x - 3, y + 14, x - 4, y + 21, HK.robeD); line(g, x + 4, y + 14, x + 5, y + 21, HK.robeD);   /* pleats */
+    rect(g, x - 10, y + 19, 20, 3, HK.trim); rect(g, x - 10, y + 19, 20, 1, HK.trimL); rect(g, x - 10, y + 21, 20, 1, HK.trimD); for (let k = -9; k < 10; k += 3) { px(g, x + k, y + 20, HK.trimD); }   /* the gilded hem, a run of knots */
+    rect(g, x - 2 + bend, y - 1, 5, 2, HK.trim);   /* the clasp at the throat */
+    hourglassChest(g, x + bend, y + (invert ? 14 : 4), sandLevel); };
+  const shoulders = (g, x, y, bend = 0) => { for (const s of [-1, 1]) { ellipse(g, x + s * 11 + bend, y + 1, 4.6, 3.6, HK.brass); px(g, x + s * 11 + bend - 2, y - 1, HK.brassL); px(g, x + s * 11 + bend - 1, y - 2, HK.brassL); px(g, x + s * 11 + bend + 2, y + 3, HK.brassD);
+    circle(g, x + s * 11 + bend, y + 1, 1.6, HK.brassDD); px(g, x + s * 11 + bend, y + 1, HK.eye); } };   /* brass pauldrons, a gear on each */
+  const head = (g, x, y) => {
+    fillPoly(g, [[x - 9, y - 2], [x - 6, y - 9], [x + 6, y - 9], [x + 9, y - 2], [x + 5, y + 3], [x - 5, y + 3]], HK.robeD); line(g, x - 8, y - 3, x - 5, y - 8, HK.robeL);   /* the fan collar behind the head */
+    ellipse(g, x, y, 4.2, 4.6, HK.mask); px(g, x - 3, y - 2, HK.maskL); px(g, x - 3, y, HK.maskL); rect(g, x + 2, y - 1, 2, 4, HK.maskD); rect(g, x - 2, y + 3, 5, 2, HK.trim); px(g, x, y + 5, HK.trimD);   /* the mask, a gilded beard */
+    rect(g, x - 3, y - 1, 3, 1, HK.dark); rect(g, x + 1, y - 1, 3, 1, HK.dark); px(g, x - 2, y - 1, HK.eye); px(g, x + 2, y - 1, HK.eye); px(g, x - 2, y - 1, HK.eyeL); rect(g, x, y + 1, 1, 2, HK.maskD);   /* slits, amber eyes, the nose */
+    rect(g, x - 5, y - 6, 11, 2, HK.trim); rect(g, x - 5, y - 6, 11, 1, HK.trimL); px(g, x - 6, y - 5, HK.trimD);   /* the circlet */
+    for (const [dx, dy, r] of [[-5, -9, 2.4], [0, -11, 3], [5, -9, 2.4]]) { circle(g, x + dx, y + dy, r, HK.brass); px(g, x + dx - 1, y + dy - 1, HK.brassL); px(g, x + dx, y + dy, HK.brassDD); for (let a = 0; a < 6; a++) px(g, x + dx + Math.cos(a * 1.05) * (r + 1), y + dy + Math.sin(a * 1.05) * (r + 1), HK.brassD); } };   /* the crown of gears */
+  const arm = (g, x0, y0, x1, y1) => { thick(g, x0, y0, x1, y1, HK.robe, 4); thick(g, x0 - 1, y0, x1 - 1, y1, HK.robeL, 1); rect(g, x1 - 2, y1 - 1, 5, 2, HK.brass); px(g, x1 - 2, y1 - 1, HK.brassL); px(g, x1, y1 + 2, HK.skin); px(g, x1 + 1, y1 + 2, HK.skin); };   /* a sleeve, a brass cuff, a hand */
+  const sceptre = (g, hx, hy, tx, ty) => { thick(g, hx, hy, tx, ty, HK.brass, 2); px(g, hx, hy, HK.brassL); circle(g, tx, ty, 3, HK.brass); circle(g, tx, ty, 1.4, HK.brassDD); px(g, tx - 1, ty - 2, HK.brassL); px(g, tx, ty, HK.eye); };   /* the pendulum: a rod and a heavy bob */
+  const F = frames(W, H, 14, (g, f) => {
+    const cx = 28, hip = gy - 24;
+    if (f === 11) { legs(g, cx, hip, 0); robe(g, cx, hip - 22, 0); shoulders(g, cx, hip - 22); head(g, cx + 1, hip - 30);   /* OPEN / STALLED: the glass empty, frozen mid-gesture */
+      arm(g, cx + 9, hip - 20, cx + 15, hip - 26); arm(g, cx - 9, hip - 18, cx - 15, hip - 22); sceptre(g, cx + 15, hip - 26, cx + 20, hip - 34);
+      for (const [dx, dy] of [[6, -38], [12, -34], [0, -42], [16, -40], [-6, -40]]) { px(g, cx + dx, hip + dy, HK.eye); px(g, cx + dx + 1, hip + dy, HK.eyeL); } return; }
+    if (f === 12) { const bx = cx, o = 12;   /* TURNING OVER: tumbling, legs kicked up, the head near the ground */
+      thick(g, bx - 5, 16 + o, bx - 8, 4 + o, HK.robeD, 5); thick(g, bx + 5, 16 + o, bx + 9, 5 + o, HK.robeD, 5); rect(g, bx - 11, 1 + o, 5, 2, HK.brassD); rect(g, bx + 6, 2 + o, 5, 2, HK.brassD);
+      fillPoly(g, [[bx - 10, 14 + o], [bx + 10, 14 + o], [bx + 8, 38 + o], [bx - 8, 38 + o]], HK.robe); fillPoly(g, [[bx - 8, 15 + o], [bx + 8, 15 + o], [bx + 6, 26 + o], [bx - 6, 26 + o]], HK.robeL); rect(g, bx - 9, 14 + o, 18, 3, HK.trim);
+      hourglassChest(g, bx, 20 + o, sandLevel); head(g, bx + 2, gy - 6); arm(g, bx - 8, 18 + o, bx - 14, 30 + o); arm(g, bx + 8, 18 + o, bx + 14, 30 + o); return; }
+    const ph = f === 1 ? 1 : f === 2 ? 2 : 0, dy = f === 13 ? 2 : 0, bend = f === 13 ? -3 : 0;
+    legs(g, cx, hip + dy, ph); robe(g, cx, hip - 22 + dy, bend); shoulders(g, cx, hip - 22 + dy, bend); head(g, cx + 1 + bend, hip - 30 + dy);
+    const sh = [cx + 9 + bend, hip - 20 + dy], lh = [cx - 9 + bend, hip - 18 + dy];
+    if (f === 3) { arm(g, ...sh, cx + 6, hip - 40); sceptre(g, cx + 6, hip - 40, cx + 2, hip - 52); arm(g, ...lh, cx - 10, hip - 10); }
+    else if (f === 4) { arm(g, ...sh, cx + 4, hip - 38); sceptre(g, cx + 4, hip - 38, cx + 4, hip - 50); rect(g, cx + 1, hip - 50, 6, 46, HK.glassL); rect(g, cx + 2, hip - 50, 1, 46, HK.sandL); arm(g, ...lh, cx - 10, hip - 10); }
+    else if (f === 5) { arm(g, ...sh, cx + 4, hip - 30); arm(g, ...lh, cx - 12, hip - 8); }
+    else if (f === 6) { arm(g, ...sh, cx + 20, hip - 12); circle(g, cx + 24, hip - 10, 3, HK.brass); for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) px(g, cx + 24 + Math.cos(a) * 4, hip - 10 + Math.sin(a) * 4, HK.brassD); arm(g, ...lh, cx - 10, hip - 10); }
+    else if (f === 7) { arm(g, ...sh, cx + 12, hip - 8); arm(g, ...lh, cx - 12, hip - 8); rect(g, cx - 14, hip - 24, 28, 24, HK.ghost); }
+    else if (f === 8) { arm(g, ...sh, cx + 16, hip - 2); arm(g, ...lh, cx - 8, hip - 14); }
+    else if (f === 9) { arm(g, ...sh, cx + 14, hip - 30); arm(g, ...lh, cx - 10, hip - 10); sceptre(g, cx + 14, hip - 30, cx + 20, hip - 20); }
+    else if (f === 10) { arm(g, ...sh, cx + 4, hip + 2); arm(g, ...lh, cx - 10, hip - 10); sceptre(g, cx + 4, hip + 2, cx + 16, hip + 8); }
+    else if (f === 13) { arm(g, ...sh, cx + 14, hip - 4 + dy); arm(g, ...lh, cx - 12, hip - 2 + dy); }
+    else { arm(g, ...sh, cx + 8, hip - 4 + dy); arm(g, ...lh, cx - 10, hip - 10 + dy); sceptre(g, cx + 8, hip - 4 + dy, cx + 10, hip + 12 + dy); }   /* idle: the pendulum hangs at his side */
+  });
+  return pack(F, 28, H, 22, 38);
+}
+export function bakeCog() {
+  const F = [];
+  for (let f = 0; f < 2; f++) { const [c, g] = canvas(14, 14);
+    for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + (f ? Math.PI / 8 : 0); rect(g, Math.round(7 + Math.cos(a) * 5.4) - 1, Math.round(7 + Math.sin(a) * 5.4) - 1, 2, 2, HK.brassD); }   /* the teeth */
+    circle(g, 7, 7, 5, HK.brass); px(g, 4, 4, HK.brassL); px(g, 5, 3, HK.brassL); px(g, 3, 5, HK.brassL); circle(g, 7, 7, 2.4, HK.brassDD); circle(g, 7, 7, 1, HK.dark); px(g, 7, 7, HK.eye);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + (f ? 0.4 : 0); px(g, Math.round(7 + Math.cos(a) * 3.6), Math.round(7 + Math.sin(a) * 3.6), HK.brassD); }
+    F.push(outline(c, OUT)); }
+  return F;
+}

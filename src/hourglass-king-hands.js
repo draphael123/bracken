@@ -8,7 +8,7 @@
 // main.js calls: spawnBoss, owns, on, update, take, drawBack, drawBoss, drawOver, barName, end, read, show, clear, onLever.
 import * as HKM from './hourglass-king.js';
 import { BOSS_PHASE } from './boss-music.js';
-import * as DG from './redraw/desert_glass.js';
+import * as DG from './redraw/buried_city_cast.js';   /* (claude/bc2art: the king and his cog are the city's own drawings now) */
 const { HK } = HKM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), swing: s => (s.slash || s.tell)(), gear: s => (s.ratchet || s.clank || s.slash)(),
