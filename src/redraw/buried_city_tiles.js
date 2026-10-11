@@ -114,8 +114,7 @@ function districtDetail(g, d, o, x, y, wx0, wy0) {
   if (K === 'bazaar' && o.depth > 0) {   /* painted plaster over brick: a band of colour, flaked back in patches to the brick under it */
     const band = (y % 6) === 2 ? d.paint[hash(x >> 3, y) % 3] : null;
     for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const wx = wx0 + xx, wy = wy0 + yy, n = vn(wx, wy, 8) * 0.65 + vn(wx + 60, wy + 20, 3) * 0.35;
-      if (n > 0.72) { const r = wy >> 3, cc = (wx + (r & 1) * 4) >> 3; let col = ['#5a382c', '#4e3024', '#664034'][hash(cc, r) % 3]; if ((wy & 7) === 7 || ((wx + (r & 1) * 4) & 7) === 7) col = '#2e1a12'; px(g, xx, yy, col); }
-      else if (n > 0.68) px(g, xx, yy, '#a88c68');
+      if (false) { void n; }
       else { if (band && yy >= 5 && yy < 11) px(g, xx, yy, (yy === 5 || yy === 10) ? d.paint[0] === band ? '#1e4a48' : '#6a2a20' : band); else if ((wy & 7) === 7) px(g, xx, yy, '#6e5640'); } } }
   if (K === 'halls' && o.depth > 0 && (y & 3) === 0) { for (let xx = 0; xx < 16; xx++) { px(g, xx, 5, d.inlay); px(g, xx, 6, '#7a5a20'); if (xx % 4 === 1) px(g, xx, 4, '#f0d070'); } }
   if (K === 'sluice') { const wet = vn(wx0, wy0, 11); if (o.depth > 0) for (let xx = 0; xx < 16; xx++) if ((hash(wx0 + xx, 9) % 5) < 2) { const l = 3 + hash(wx0 + xx, 2) % 9; for (let yy = 0; yy < l; yy++) px(g, xx, yy, yy < l - 1 ? '#34584a' : '#4a7a64'); }

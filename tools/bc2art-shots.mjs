@@ -1,6 +1,6 @@
 // tools/bc2art-shots.mjs - THE BURIED CITY's art pass in the real page (claude/bc2art): `node tools/bc2art-shots.mjs [name:x:y[:sim] ...]` (x, y in tiles; y = the row to drop in from).
 // No arguments = the whole level, a shot per section (SET=all), plus sheet.png (a contact sheet, 2 wide). Not in the suite: pictures are for eyes. PORT from the environment.
-// env: SHOTS=work/claude/shots/bc2art (default), SCALE=1 (the sheet's cell scale), ONLY=a,b (names), DEBUG=1 (keeps the HUD), SIM=70, SUN=1.
+// env: CROP=x0,y0,w,h,k (a zoom of the 320x180 frame at k x), SHOTS=work/claude/shots/bc2art (default), SCALE=1 (the sheet's cell scale), ONLY=a,b (names), DEBUG=1 (keeps the HUD), SIM=70, SUN=1.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
@@ -17,8 +17,10 @@ try {
     const i = LEVELS.findIndex(l => l.id === 'buriedcity'); const res = []; const sim0 = ${+(process.env.SIM || 70)};
     for (const [name, xs, ys, sims] of ${JSON.stringify(want)}) {
       BK.load(i); BK.start(); BK.god = true; ${process.env.DEBUG ? '' : "try { BK.SET.hud = 'minimal'; } catch (e) {}"} BK.sim(420);
-      BK.tp(+xs, +ys); for (let k = 0; k < (+sims || sim0); k++) BK.step(1);
-      const c = document.createElement('canvas'); c.width = 640; c.height = 360; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360);
+      BK.tp(+xs, +ys); for (let k = 0; k < (+sims || sim0); k++) BK.step(1); ${process.env.DEBUG ? '' : 'BK.sim(300);'} BK.step(1);
+      const crop = ${JSON.stringify((process.env.CROP || '').split(',').map(Number))}; const c = document.createElement('canvas'); let g;
+      if (crop.length === 5) { c.width = crop[2] * crop[4]; c.height = crop[3] * crop[4]; g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, crop[0], crop[1], crop[2], crop[3], 0, 0, c.width, c.height); }
+      else { c.width = 640; c.height = 360; g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360); }
       res.push([name, c.toDataURL('image/png'), Math.round(BK.P.x / 16), Math.round(BK.P.y / 16)]); }
     return res; })()`);
   r.forEach(([name, d, x, y]) => { writeFileSync(join(out, name + '.png'), Buffer.from(d.split(',')[1], 'base64')); console.log(name, 'at', x, y); });

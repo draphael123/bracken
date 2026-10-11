@@ -14,8 +14,10 @@
 // main.js calls: on, reset, update, interact, waits, world, takeConstruct, drawWorld, drawOver, drawStructure, noSun, read, state, walkHint, handsState.
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
+import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js';
 
 export const BCS = { dropBite: 0.27, leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2, fallBeat: 130, fallPad: 4 };
+const SAND = SET.SAND; SAND.loose = SAND.loose || 'rgba(232,204,138,0.45)';
 const RULE_SAID = { first: 1, granary: 1, street: 1, cellar: 1, upperbulb: 1, yard: 1, shaft: 1, trap: 1 };   /* the rooms whose lever says what it does there, on the first look */
 
 export function makeBuriedCityHands(ctx) {
@@ -57,6 +59,7 @@ export function makeBuriedCityHands(ctx) {
     K.chutes = (L.chutes || []).map(c => ({ ...c, to: JSON.parse(JSON.stringify(c.to)), at: c.at, heap: {}, cd: 0, said: false }));
     for (const c of K.chutes) for (const [tk, t] of Object.entries(c.to)) if (t.kind === 'mound') { c.heap[tk] = { h: 0, rows: 0 }; heapWrite(c, tk, t, 0, true); }
     K.waiting = (L.ents || []).map((e, k) => ({ e, k })).filter(q => q.e.sandWait && H.waits(q.e));
+    { const arr = ctx.lights ? ctx.lights() : null; if (arr) { for (let i = arr.length - 1; i >= 0; i--) if (arr[i].bc) arr.splice(i, 1); for (const lp of (L.lamps || [])) arr.push({ x: lp.x * TS() + 8, y: lp.y * TS() + (lp.kind === 'brazier' ? 2 : 4), r: lp.kind === 'brazier' ? 64 : 44, torch: true, bare: true, warm: true, bc: true }); } }   /* (the lamps are lights the game blooms) */
     K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = []; K.leverFx = {};
     for (const pp of ctx.players) { pp.bcJam = 0; pp.bcFall = 0; }
     if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { buriedCity: () => K, buriedCityHands: () => H, walkHint: () => H.walkHint(ctx.hero()) });
@@ -260,121 +263,97 @@ export function makeBuriedCityHands(ctx) {
     const C = K.stalls[r.key] = K.stalls[r.key] || newStall(); if (r.key !== K.stallKey) { K.stallKey = r.key; C.t = 0; C.best = 1e9; }
     if (stallTick(C, Math.hypot(P.x - t.x, P.y - t.y), dt, K.clock, false)) { K.n.nudges++; K.lastNudge = r.line; K.glint.show = true; ctx.number(P.x, P.y - 34, r.line, '#ffe9a0'); } };
 
-  /* ---------- DRAWING (PLACEHOLDER: the Sonnet art pass replaces the shapes; the reads - sand, streams, slots, falls, gauges, OPEN/SHUT - stay) ---------- */
+  /* ---------- DRAWING (claude/bc2art, the art pass: src/redraw/buried_city_set.js - sand, light, decor, the arch - and src/redraw/buried_city_rule.js - the rule's pieces; the reads - sand,
+     streams, slots, falls, gauges, OPEN / SHUT - are unchanged) ---------- */
   const R = Math.round;
-  const SAND = { body: '#c9a464', dark: '#a27c42', top: '#e8cc8a', loose: 'rgba(232,204,138,0.45)', stream: 'rgba(226,196,130,0.85)', slot: '#2a1c10' };
-  H.drawBack = () => {};   /* (the backdrop and the Hourglass Tower are src/redraw/buried_city_backdrop.js's now) */
-  /* THE CITY'S FOOTING KINDS (L.structures 'bc*', main.js drawStructures): what holds each ledge up - corbels, poles, brackets */
+  const view = (g, cx, cy, time) => ({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time, L: K.L, T: T() });
+  H.drawBack = () => {};   /* (the backdrop and the Hourglass Tower are src/redraw/buried_city_backdrop.js's) */
+  /* THE CITY'S FOOTING KINDS (L.structures 'bc*', main.js drawStructures): what holds each ledge up - stepped corbels, a stall's poles, a pipe's brackets, a drum's rubble */
   H.drawStructure = (g, kind, l, r, t, b) => {
-    if (kind === 'bcAwning') { g.fillStyle = '#6a4a2a'; g.fillRect(R(l + 1), R(t), 2, R(b - t)); g.fillRect(R(r - 3), R(t), 2, R(b - t)); return true; }
-    if (kind === 'bcPipe') { g.fillStyle = '#7a5a2a'; for (const x of [l + 4, r - 6]) { g.fillRect(R(x), R(t + 4), 2, 6); g.fillRect(R(x - 2), R(t + 10), 6, 2); } return true; }
-    if (kind === 'bcBalcony' || kind === 'bcLintel' || kind === 'bcDrum') { g.fillStyle = '#8a6a44'; for (const x of [l + 2, r - 6]) { g.fillRect(R(x), R(t + 4), 4, 3); g.fillRect(R(x + 1), R(t + 7), 2, 3); }
-      g.globalAlpha = 0.35; g.fillStyle = '#5a4026'; g.fillRect(R(l + 3), R(t + 10), 2, R(Math.max(0, b - t - 10))); g.fillRect(R(r - 5), R(t + 10), 2, R(Math.max(0, b - t - 10))); g.globalAlpha = 1; return true; }
+    const post = (x, y0, y1, w, a, hi, lo) => { g.fillStyle = a; g.fillRect(R(x), R(y0), w, R(y1 - y0)); g.fillStyle = hi; g.fillRect(R(x), R(y0), 1, R(y1 - y0)); g.fillStyle = lo; g.fillRect(R(x + w - 1), R(y0), 1, R(y1 - y0)); };
+    if (kind === 'bcAwning') { post(l + 1, t + 6, b, 3, '#6a4a2a', '#a07a44', '#3a2812'); post(r - 4, t + 6, b, 3, '#6a4a2a', '#a07a44', '#3a2812');
+      for (const x of [l + 1, r - 4]) { g.fillStyle = '#c49a38'; g.fillRect(R(x) - 1, R(t + 3), 5, 3); g.fillStyle = '#f0d070'; g.fillRect(R(x) - 1, R(t + 3), 5, 1); g.fillStyle = '#2a1c10'; g.fillRect(R(x), R(b - 3), 3, 3); }
+      g.fillStyle = '#d0b27a'; for (let k = 0; k < 3; k++) { g.fillRect(R(l + 4 + k), R(t + 8 + k * 2), 1, 1); g.fillRect(R(r - 5 - k), R(t + 8 + k * 2), 1, 1); } return true; }   /* (poles with brass finials; a tie of rope) */
+    if (kind === 'bcPipe') { for (const x of [l + 4, r - 7]) { post(x, t + 5, t + 22, 3, '#4a4458', '#8a849a', '#22202c'); g.fillStyle = '#8a6820'; g.fillRect(R(x) - 2, R(t + 5), 7, 2); g.fillStyle = '#e0b858'; g.fillRect(R(x) - 2, R(t + 5), 7, 1); g.fillStyle = '#b0aabf'; g.fillRect(R(x) + 1, R(t + 12), 1, 1); g.fillRect(R(x) + 1, R(t + 18), 1, 1);
+        g.globalAlpha = 0.4; post(x, t + 22, b, 3, '#3a3446', '#6a647a', '#16141c'); g.globalAlpha = 1; } return true; }   /* (iron straps on the wall, bolted; the strut runs on into the dark) */
+    if (kind === 'bcBalcony' || kind === 'bcLintel') { for (const [x, s] of [[l, 1], [r - 8, -1]]) { g.fillStyle = '#8a6c48'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 8), 7, 3); g.fillRect(R(x + (s > 0 ? 1 : 1)), R(t + 11), 5, 3); g.fillRect(R(x + (s > 0 ? 1 : 2)), R(t + 14), 3, 3);   /* the corbel, stepped */
+        g.fillStyle = '#c8aa72'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 8), 7, 1); g.fillRect(R(x + 1), R(t + 11), 5, 1); g.fillStyle = '#3e2c1a'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 10), 7, 1); g.fillRect(R(x + 1), R(t + 13), 5, 1);
+        g.globalAlpha = 0.5; post(x + 2, t + 17, b, 4, '#6e5638', '#a88a5c', '#2a1e14'); g.globalAlpha = 1; } return true; }   /* (and the wall's pilaster under it, fading into the dark) */
+    if (kind === 'bcDrum') { for (const x of [l + 1, r - 12]) { for (let k = 0; k < 3; k++) { g.fillStyle = k & 1 ? '#8a7048' : '#a48a5c'; g.fillRect(R(x + k), R(b - 6 - k * 5), 11 - k * 2, 5); g.fillStyle = '#d8c088'; g.fillRect(R(x + k), R(b - 6 - k * 5), 11 - k * 2, 1); g.fillStyle = '#3e2c1a'; g.fillRect(R(x + k), R(b - 2 - k * 5), 11 - k * 2, 1); }
+        g.fillStyle = '#d8b472'; g.fillRect(R(x - 2), R(b - 3), 15, 3); g.fillStyle = '#f4dc9c'; g.fillRect(R(x - 2), R(b - 3), 15, 1); } return true; }   /* (the drum rests on broken blocks, the dune drifted round them) */
     return false; };
   H.drawWorld = (g, cx, cy, time) => {
-    if (!K) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), L = K.L;
+    if (!K) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), L = K.L, V = view(g, cx, cy, time);
     const vis = (x0, x1) => x1 * ts - cx > -64 && x0 * ts - cx < vw + 64;
-    /* THE LIGHT IN THE SHAFTS: a pale column where the roof has fallen in (the art pass gives it dust and a lit floor) */
-    for (const z of (L.sun || [])) { if (z.x0 < 38 || !vis(z.x0, z.x1 + 1)) continue; const l = z.x0 * ts - cx, w = (z.x1 - z.x0 + 1) * ts;
-      const gr = g.createLinearGradient(0, -cy, 0, vh); gr.addColorStop(0, 'rgba(255,236,170,0.28)'); gr.addColorStop(1, 'rgba(255,236,170,0.08)'); g.fillStyle = gr; g.fillRect(R(l), 0, w, vh);
-      g.fillStyle = 'rgba(255,246,210,0.5)'; for (let i = 0; i < 6; i++) { const mx = l + ((i * 37 + time * 6) % Math.max(4, w)), my = ((i * 53 + time * 14) % vh); g.fillRect(R(mx), R(my), 1, 1); } }
+    /* THE LIGHT IN THE SHAFTS: slanted god-rays, drifting dust, a lit patch where they reach the floor */
+    for (const z of (L.sun || [])) { if (z.x0 < 38 || !vis(z.x0, z.x1 + 1)) continue; if (z.floor === undefined) { let fy = 1; const mx = (z.x0 + z.x1) >> 1; while (fy < L.H - 1 && ctx.cellGet(mx, fy) === T().AIR) fy++; z.floor = fy; } SET.drawShaft(V, z, z.floor); }
     /* THE DECOR: spires, the sinkhole's lip, stalls, houses, domes, the great gate's grille; and (B8) THE KING everywhere - his head in the dune, his statues, his mural, his court */
-    for (const d of (L.decor || [])) { const x0 = (d.x0 ?? d.x) * ts - cx; if (x0 > vw + 64 || ((d.x1 ?? d.x) + 1) * ts - cx < -64) continue;
-      if (d.kind === 'spire') { g.fillStyle = '#b0885a'; g.fillRect(R(d.x * ts + 4 - cx), R((d.y + 1 - d.h) * ts - cy), 8, d.h * ts); g.fillStyle = '#8a6438'; g.fillRect(R(d.x * ts + 4 - cx), R((d.y + 1 - d.h) * ts - cy), 2, d.h * ts); }
-      else if (d.kind === 'awning' || d.kind === 'stall') { g.fillStyle = d.kind === 'stall' ? '#7a3a2a' : '#b8a070'; g.fillRect(R(d.x0 * ts - cx), R(d.y * ts - cy), (d.x1 - d.x0 + 1) * ts, 4);
-        if (d.kind === 'stall') { g.fillStyle = '#c8a050'; for (let x = d.x0 * ts; x < (d.x1 + 1) * ts; x += 8) g.fillRect(R(x - cx), R(d.y * ts - cy + 4), 4, 3); } }
-      else if (d.kind === 'house' || d.kind === 'dome') { g.globalAlpha = 0.35; g.fillStyle = '#7a5a36'; g.fillRect(R(d.x0 * ts - cx), R((d.y - 6) * ts - cy), (d.x1 - d.x0 + 1) * ts, 6 * ts); g.globalAlpha = 1;
-        if (d.kind === 'dome') { g.fillStyle = '#b89060'; g.beginPath(); g.arc(R((d.x0 + d.x1 + 1) / 2 * ts - cx), R(d.y * ts - cy), (d.x1 - d.x0 + 1) * ts / 2, Math.PI, 0); g.fill(); } }
-      else if (d.kind === 'greatgate' || d.kind === 'grate') { g.fillStyle = '#3a2a18'; g.fillRect(R(d.x0 * ts - cx), R(d.y * ts - cy), (d.x1 - d.x0 + 1) * ts, 4); g.fillStyle = '#8a6a3a'; for (let x = d.x0 * ts; x < (d.x1 + 1) * ts; x += 4) g.fillRect(R(x - cx), R(d.y * ts - cy), 2, 4); }
-      else if (d.kind === 'arch') { const l = d.x0 * ts - cx + 4, r = (d.x1 + 1) * ts - cx - 4, t = d.y0 * ts - cy, b = (d.y1 + 1) * ts - cy; g.strokeStyle = '#d0a860'; g.lineWidth = 3; g.beginPath(); g.moveTo(R(l), R(b)); g.lineTo(R(l), R(t + 14)); g.quadraticCurveTo(R((l + r) / 2), R(t - 6), R(r), R(t + 14)); g.lineTo(R(r), R(b)); g.stroke(); g.lineWidth = 1;
-        g.fillStyle = '#ffd36b'; g.fillRect(R((l + r) / 2 - 3), R(t - 2), 6, 6); }
-      else if (d.kind === 'kinghead' || d.kind === 'kingstatue') { drawKing(g, d.x * ts + 8 - cx, (d.y + 1) * ts - cy, d.kind === 'kinghead' ? 0 : d.h, time); }
-      else if (d.kind === 'mural') { const l = d.x0 * ts - cx, w = (d.x1 - d.x0 + 1) * ts, t = d.y * ts - cy; g.fillStyle = 'rgba(70,46,24,0.55)'; g.fillRect(R(l), R(t - 40), w, 44); g.strokeStyle = '#c89a50'; g.strokeRect(R(l) + 0.5, R(t - 40) + 0.5, w - 1, 43);
-        drawKing(g, l + w / 2, t + 2, 3, time, 0.8); g.fillStyle = '#8a6a44'; for (let i = 0; i < 5; i++) g.fillRect(R(l + 10 + i * 14 + (i > 2 ? 40 : 0)), R(t - 6), 6, 8); }   /* (the city kneels to him) */
-      else if (d.kind === 'courtiers') { for (let x = d.x0; x <= d.x1; x += 4) { const bx = x * ts + 8 - cx, by = (d.y + 1) * ts - cy; g.fillStyle = '#9a8a6a'; g.fillRect(R(bx - 4), R(by - 9), 8, 9); g.fillRect(R(bx - 2), R(by - 13), 5, 4); g.fillStyle = '#c8b890'; g.fillRect(R(bx - 4), R(by - 9), 8, 1); } }
-      else if (d.kind === 'relief') { const l = d.x0 * ts - cx, w = (d.x1 - d.x0 + 1) * ts, t = d.y * ts - cy; g.fillStyle = 'rgba(60,40,20,0.5)'; g.beginPath(); g.moveTo(R(l + w / 2), R(t - 30)); g.lineTo(R(l + w - 8), R(t + 10)); g.lineTo(R(l + 8), R(t + 10)); g.closePath(); g.fill();
-        g.fillStyle = '#4ab0a0'; g.fillRect(R(l + w / 2 - 3), R(t - 4), 6, 5); }   /* (the next road: THE SEALED PYRAMID, a scarab on its seal) */
-      else if (d.kind === 'sinkhole') { g.fillStyle = 'rgba(40,24,10,0.35)'; g.fillRect(R(d.x0 * ts - cx), R(23 * ts - cy), (d.x1 - d.x0 + 1) * ts, 3); } }
-    /* THE LAMPS: oil lamps and braziers (placeholder glows: the art pass gives them their holders and the warm light) */
-    for (const lp of (L.lamps || [])) { const x = lp.x * ts + 8 - cx, y = lp.y * ts + 8 - cy; if (x < -40 || x > vw + 40) continue;
-      g.globalAlpha = 0.18 + 0.05 * Math.sin(time * 6 + lp.x); g.fillStyle = '#ffb050'; g.beginPath(); g.arc(R(x), R(y), lp.kind === 'brazier' ? 22 : 16, 0, 7); g.fill(); g.globalAlpha = 1;
-      g.fillStyle = lp.kind === 'brazier' ? '#5a3a1a' : '#8a6a3a'; g.fillRect(R(x - 3), R(y), 6, 4); g.fillStyle = '#ffd36b'; g.fillRect(R(x - 1), R(y - 3), 3, 3); }
+    for (const d of (L.decor || [])) { const x0 = (d.x0 ?? d.x) * ts - cx; if (x0 > vw + 80 || ((d.x1 ?? d.x) + 1) * ts - cx < -80) continue;
+      if (d.kind === 'spire') SET.drawSpire(V, d);
+      else if (d.kind === 'awning') SET.drawTornCanopy(V, d);
+      else if (d.kind === 'stall') SET.drawStall(V, d);
+      else if (d.kind === 'house') SET.drawHouse(V, d);
+      else if (d.kind === 'dome') SET.drawDome(V, d);
+      else if (d.kind === 'greatgate') { const gr = roomOf('great'), tn = K.wheel.done ? 1 : K.wheel.turns / (L.wheel.turns || 3) * 0.7; RUL.drawGrate(V, d.x0 * ts, (d.x1 - d.x0 + 1) * ts, d.y * ts, tn, !!(gr && K.wheel.done && gr.level > 0)); }
+      else if (d.kind === 'grate') { const c = chuteOf('sluice'); RUL.drawGrate(V, d.x0 * ts, (d.x1 - d.x0 + 1) * ts, d.y * ts, 0, !!(c && c.at === 'grate')); }
+      else if (d.kind === 'arch') SET.drawArch(V, { ...d, down: d.x0 < 300 });
+      else if (d.kind === 'kinghead') SET.drawKingHead(V, d.x * ts + 8, (d.y + 1) * ts);
+      else if (d.kind === 'kingstatue') SET.drawKingStatue(V, d.x * ts + 8, (d.y + 1) * ts, d.h);
+      else if (d.kind === 'mural') SET.drawMural(V, d);
+      else if (d.kind === 'courtiers') SET.drawCourtiers(V, d);
+      else if (d.kind === 'relief') SET.drawRelief(V, d);
+      else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d); }
+    /* THE LAMPS: oil lamps and wall braziers, warm light against the sand's cold shadow */
+    for (const lp of (L.lamps || [])) SET.drawLamp(V, lp);
     /* THE SAND ROOMS */
     for (const r of K.rooms) {
       const l = r.x0 * ts - cx, w = (r.x1 - r.x0 + 1) * ts; if (l > vw + 16 || l + w < -16) continue;
-      const n = sandRows(r), topY = (r.floor - n) * ts - cy, bot = r.floor * ts - cy, frac = r.level - n;
-      /* THE SPIKE CELLAR's stakes: pale iron points on its floor - the sand covers them */
-      if (r.spikes) { const sy = r.spikes * ts - cy; for (let x = r.x0; x <= r.x1; x++) for (let k = 0; k < 3; k++) { const bx = x * ts - cx + 2 + k * 5; g.fillStyle = '#3a3038'; g.fillRect(R(bx), R(sy + 10), 4, 6); g.fillStyle = '#c8c0b8'; g.fillRect(R(bx + 1), R(sy + 4), 2, 8); g.fillStyle = '#f0ece4'; g.fillRect(R(bx + 1), R(sy + 2), 1, 3); } }
+      const n = sandRows(r), topW = (r.floor - n) * ts, topY = topW - cy, botW = r.floor * ts, bot = botW - cy, frac = r.level - n;
       /* THE TRAP HALL OPEN is a VOID: it darkens to nothing under the lips, sand falls away into it - the end; THE FOUNDRY'S floor-gate (the teach) shows its floor */
       if (r.trap && r.gate === 'open' && n < r.full) { const y0 = (r.floor - r.full) * ts - cy, yb = r.teach ? bot + ts : vh + 40;
         if (!r.teach) { const gr = g.createLinearGradient(0, Math.max(y0, topY), 0, yb); gr.addColorStop(0, 'rgba(20,10,4,0.55)'); gr.addColorStop(0.45, 'rgba(8,4,2,0.9)'); gr.addColorStop(1, 'rgba(0,0,0,1)'); g.fillStyle = gr; g.fillRect(R(l), R(Math.max(y0, topY)), w, R(yb - Math.max(y0, topY)));
           g.fillStyle = 'rgba(226,196,130,0.5)'; for (let i = 0; i < 7; i++) { const sx = l + 6 + ((i * 37) % Math.max(8, w - 12)), sy = y0 + ((time * 140 + i * 53) % Math.max(20, yb - y0)); g.fillRect(R(sx), R(sy), 1, 7); } }
-        else { g.fillStyle = '#1e140c'; g.fillRect(R(l), R(y0), w, R(bot + ts - y0)); g.fillStyle = SAND.dark; g.fillRect(R(l), R(bot + ts - 3), w, 3); } }
-      if (n > 0) { g.fillStyle = SAND.body; g.fillRect(R(l), R(topY), w, R(bot - topY)); g.fillStyle = SAND.dark; for (let y = topY + 6; y < bot; y += 9) g.fillRect(R(l), R(y), w, 1);
-        g.fillStyle = SAND.top; g.fillRect(R(l), R(topY), w, 2); }
+        else { g.fillStyle = '#1e140c'; g.fillRect(R(l), R(y0), w, R(bot + ts - y0)); g.fillStyle = '#3a2a18'; for (let y = y0 + 4; y < bot; y += 8) g.fillRect(R(l), R(y), w, 1); g.fillStyle = SAND.dark; g.fillRect(R(l), R(bot + ts - 3), w, 3); } }
+      if (n > 0) SET.sandBody(V, r.x0 * ts, topW, w, botW);
       if (frac > 0.02 && n < r.full && !r.deck) { g.fillStyle = SAND.loose; g.fillRect(R(l), R(topY - frac * ts), w, R(frac * ts)); }   /* the loose row rising */
-      /* THE SINKING STREET: the street on the sand - its paving, the house fronts on it, the minaret stub, the dome (placeholders: the art pass draws the street) */
-      if (r.deck) { const d = deckRow(r), dy = d * ts - cy; g.fillStyle = '#8a6440'; g.fillRect(R(l), R(dy), w, ts); g.fillStyle = '#c09060'; g.fillRect(R(l), R(dy), w, 2); g.fillStyle = '#6a4a2a'; for (let x = r.x0; x <= r.x1; x += 2) g.fillRect(R(x * ts - cx), R(dy + 6), 1, 8);
-        for (const [t, a, b, dy0, dy1] of r.deck) { const xl = a * ts - cx, xw = (b - a + 1) * ts, yt = (d + dy0) * ts - cy;
-          if (t === 'ONEWAY') { g.globalAlpha = 0.6; g.fillStyle = '#7a5434'; g.fillRect(R(xl), R(yt + 4), xw, R(dy - yt - 4)); g.globalAlpha = 1; g.fillStyle = '#5a3a20'; for (let x = xl + 6; x < xl + xw - 6; x += 12) g.fillRect(R(x), R(yt + 8), 5, 7); g.fillStyle = '#a07a4a'; g.fillRect(R(xl - 2), R(yt), xw + 4, 4); }
-          else if (dy1 - dy0 >= 1) { g.fillStyle = '#b09060'; g.fillRect(R(xl), R(yt), xw, (dy1 - dy0 + 1) * ts); g.fillStyle = '#d0b080'; g.fillRect(R(xl), R(yt), xw, 2); }
-          else { g.fillStyle = '#b89060'; g.beginPath(); g.arc(R(xl + xw / 2), R(dy), xw / 2, Math.PI, 0); g.fill(); } }
-        if (r.moving > 0) { g.fillStyle = SAND.stream; for (const sx of [l + 2, l + w - 4]) for (let i = 0; i < 3; i++) g.fillRect(R(sx), R(dy + ((time * 90 + i * 9) % 26)), 2, 4); } }
-      /* the streams from the roof while it fills */
-      if (r.gate === 'shut' && r.pour && r.level < r.full) for (let x = r.x0 + 3; x <= r.x1 - 1; x += 5) { const sx = x * ts + 6 - cx; let y0 = (r.floor - r.full - 2) * ts - cy; for (let yy = r.floor - r.full - 1 - deckUp(r); yy > 0 && ctx.cellGet(x, yy) !== T().SOLID; yy--) y0 = yy * ts - cy;
-        const ye = r.deck ? (deckRow(r) - deckUp(r) + 1) * ts - cy : topY - frac * ts; if (ye > y0) { g.fillStyle = SAND.stream; g.fillRect(R(sx), R(y0), 3, R(ye - y0)); g.fillStyle = '#fff0c8'; g.fillRect(R(sx + 1), R(y0 + ((time * 120 + x * 13) % Math.max(8, ye - y0))), 1, 4); } }
-      /* the floor-gate: a slot that runs while it drains (THE HOURGLASS: a neck into the next hall) */
-      if (r.gate === 'open' && r.level > 0) { const sx = l + w / 2 - 12; g.fillStyle = SAND.slot; g.fillRect(R(sx), R(bot - 2), 24, 3); g.fillStyle = SAND.stream; for (let i = 0; i < 4; i++) g.fillRect(R(sx + 3 + i * 6), R(bot - 2 + ((time * 60 + i * 5) % 6)), 2, 3); }
-      if (r.trap) { const shut = r.gate === 'shut'; g.fillStyle = shut ? '#5a4024' : '#140c06'; g.fillRect(R(l), R(bot), w, shut ? ts : 3); if (shut) { g.fillStyle = '#8a6a3a'; for (let x = 0; x < w; x += 8) g.fillRect(R(l + x), R(bot), 1, ts); } }
-      /* the lamps at the trap hall's lips: RED while its floor-gate is open (a fall is the end), GOLD once it is shut */
-      for (const lc of (r.lamps || [])) { const lx = lc * ts + 8 - cx, ly = (r.floor - r.full) * ts - cy, col = r.gate === 'open' ? '#ff5a3a' : '#ffd36b';
-        g.fillStyle = '#3a2a18'; g.fillRect(R(lx - 1), R(ly - 22), 2, 22); g.fillStyle = '#5a4024'; g.fillRect(R(lx - 3), R(ly - 26), 6, 5);
-        g.globalAlpha = 0.22 + 0.08 * Math.sin(time * 5 + lc); g.fillStyle = col; g.beginPath(); g.arc(R(lx), R(ly - 23), 14, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = col; g.fillRect(R(lx - 2), R(ly - 25), 4, 3); }
-      if (r.great && K.wheel.done && r.level > 0) { g.globalAlpha = 0.6; g.fillStyle = SAND.stream; const gx = (r.x0 + r.x1) / 2 * ts - cx; g.fillRect(R(gx - 30), R(bot - 3), 60, 6); g.globalAlpha = 1; }
+      /* THE SINKING STREET: the street on the sand - one baked set (paving, house fronts, a minaret stub, a squat dome), the sand streaming off its ends while it moves */
+      if (r.deck) RUL.drawDeck(V, r.deck, deckRow(r), r.x0 * ts, w, r.moving, time);
+      /* the streams from the roof while it fills: out of ragged holes */
+      if (r.gate === 'shut' && r.pour && r.level < r.full) for (let x = r.x0 + 3; x <= r.x1 - 1; x += 5) { const sx = x * ts + 6; let y0 = (r.floor - r.full - 2) * ts; for (let yy = r.floor - r.full - 1 - deckUp(r); yy > 0 && ctx.cellGet(x, yy) !== T().SOLID; yy--) y0 = yy * ts;
+        const ye = r.deck ? (deckRow(r) - deckUp(r) + 1) * ts : topW - frac * ts; if (ye > y0) { RUL.drawStream(V, sx, y0, ye, time); RUL.drawRoofHole(V, sx + 1, y0); } }
+      /* the floor-gate: a brass housing with a slot that runs while it drains (THE HOURGLASS: a neck into the next hall) */
+      if (!r.trap && !r.great && (r.levers || []).length) RUL.drawGateSlot(V, (r.x0 + r.x1 + 1) / 2 * ts, botW, r.gate === 'open', r.gate === 'open' && r.level > 0);
+      if (r.trap) RUL.drawTrapFloor(V, r.x0 * ts, w, botW, r.gate === 'shut');
+      /* the lamps at the trap hall's lips: RED while its floor-gate is open (a fall is the end), GOLD once it is shut - an iron post with a glass lantern */
+      for (const lc of (r.lamps || [])) { const lx = lc * ts + 8 - cx, ly = (r.floor - r.full) * ts - cy, open = r.gate === 'open', col = open ? '#ff5a3a' : '#ffd36b', hi = open ? '#ffb090' : '#fff4c0';
+        g.fillStyle = '#2a2634'; g.fillRect(R(lx - 1), R(ly - 22), 2, 22); g.fillStyle = '#8a849a'; g.fillRect(R(lx - 1), R(ly - 22), 1, 22); g.fillStyle = '#3a3446'; g.fillRect(R(lx - 4), R(ly - 28), 8, 3); g.fillRect(R(lx - 4), R(ly - 21), 8, 2); g.fillStyle = '#1a1620'; g.fillRect(R(lx - 3), R(ly - 25), 6, 4); g.fillStyle = col; g.fillRect(R(lx - 2), R(ly - 25), 4, 4); g.fillStyle = hi; g.fillRect(R(lx - 2), R(ly - 25), 1, 2);
+        SET.glow(V, lc * ts + 8, (r.floor - r.full) * ts - 23, 22, 0.32 + 0.08 * Math.sin(time * 5 + lc), open ? '255,90,58' : '255,200,100'); }
     }
     /* THE SAND-FALLS: the crack, the chute (a brass trough angled to where it lands), the fall, the heaps */
     for (const c of K.chutes) {
       for (const [tk, t] of Object.entries(c.to)) if (t.kind === 'mound') { const hp = c.heap[tk]; if (!hp || !hp.rows) continue;
-        for (const [j, a, b] of t.rungs) if (j <= hp.rows && vis(a, b + 1)) { g.fillStyle = SAND.body; g.fillRect(R(a * ts - cx), R((t.floor - j) * ts - cy), (b - a + 1) * ts, ts); g.fillStyle = SAND.top; g.fillRect(R(a * ts - cx), R((t.floor - j) * ts - cy), (b - a + 1) * ts, 2); } }
+        for (const [j, a, b] of t.rungs) if (j <= hp.rows && vis(a, b + 1)) RUL.drawHeapRung(V, a, b, (t.floor - j) * ts); }
       const t = c.to[c.at], B = fallBox(c); if (!vis(Math.min(c.x, t.x0) - 2, Math.max(c.x, t.x1) + 3)) continue;
-      const cxp = c.x * ts + 8 - cx, ry = (c.roof + 1) * ts - cy, mx = (t.x0 + t.x1 + 1) / 2 * ts - cx;
-      g.fillStyle = '#3a2410'; g.fillRect(R(cxp - 8), R(ry - 4), 16, 4);   /* the crack */
-      g.strokeStyle = '#c89a40'; g.lineWidth = 5; g.beginPath(); g.moveTo(R(cxp), R(ry + 2)); g.lineTo(R(mx), R(ry + 12)); g.stroke(); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(cxp), R(ry)); g.lineTo(R(mx), R(ry + 10)); g.stroke();   /* THE CHUTE: from the crack to where it lands */
-      const fy = ry + 12, fb = Math.min(vh + 40, B.b - cy), fw = (t.x1 - t.x0 + 1) * ts - 4;
-      g.globalAlpha = 0.85; g.fillStyle = SAND.stream; g.fillRect(R(mx - fw / 2), R(fy), R(fw), R(Math.max(0, fb - fy))); g.globalAlpha = 1;
-      g.fillStyle = '#fff0c8'; for (let i = 0; i < 6; i++) g.fillRect(R(mx - fw / 2 + 2 + (i * 7) % Math.max(4, fw - 4)), R(fy + ((time * 200 + i * 41) % Math.max(10, fb - fy))), 1, 6);
-      g.fillStyle = 'rgba(232,204,138,0.6)'; g.fillRect(R(mx - fw / 2 - 4), R(fb - 3), R(fw + 8), 3);   /* the splash where it lands */
+      const cxp = c.x * ts + 8, ry = (c.roof + 1) * ts, mx = (t.x0 + t.x1 + 1) / 2 * ts, fw = (t.x1 - t.x0 + 1) * ts - 4, fy = ry + 12, fb = Math.min(ctx.L.H * ts + 40, B.b);
+      RUL.drawCrack(V, cxp, ry); RUL.drawChute(V, cxp, ry + 3, mx - cxp, 9, true); RUL.drawFall(V, mx, fy, fb, fw, time);
     }
     /* THE LEVERS and their GAUGES (A3: the room's level, OPEN / SHUT; a chute lever names where its fall lands). M5: the throne room's levers GLOW gold while his glass is low */
     const kl = kingLever(ctx.hero());
     for (const lv of levers()) { const x = px(lv.x) - cx, y = (lv.row + 1) * ts - cy; if (x < -40 || x > vw + 40) continue;
-      if (lv.chain) { g.strokeStyle = '#6a6a72'; g.beginPath(); g.moveTo(R(x), R(y - (lv.chain + 1) * ts)); g.lineTo(R(x), R(y - 10)); g.stroke(); for (let k = 0; k < lv.chain; k++) { g.fillStyle = '#9a9aa6'; g.fillRect(R(x - 1), R(y - 14 - k * ts), 3, 3); } }
       const r = lv.r, open = r ? r.gate === 'open' : lv.chute ? lv.chute.at === Object.keys(lv.chute.to)[1] : false, fx = K.fx.find(f => f.kind === 'pull' && Math.abs(f.x - px(lv.x)) < 2);
       if (lv.arena && kl) { const near = kl.arena === lv.arena; g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 10); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(R(x), R(y - 8), near ? 18 : 13, 0, 7); g.fill(); g.globalAlpha = 1;
         if (near) { g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(R(x), R(y - 8), 21 + 3 * Math.sin(time * 8), 0, 7); g.stroke(); g.lineWidth = 1; ctx.text('PULL', R(x), R(y - 34), '#ffd36b', 'center', 5); } }
-      g.fillStyle = lv.chute ? '#6a4a1a' : '#4a3a2a'; g.fillRect(R(x - 4), R(y - 4), 8, 4); g.strokeStyle = lv.arena ? '#ffd36b' : lv.chute ? '#e0b050' : '#c8a060'; g.lineWidth = 2; g.beginPath(); g.moveTo(R(x), R(y - 3)); const a = (open || (fx && fx.t > 0.25)) ? 0.9 : -0.9; g.lineTo(R(x + Math.sin(a) * 12), R(y - 3 - Math.cos(a) * 12)); g.stroke(); g.lineWidth = 1;
-      g.fillStyle = '#e8c070'; g.fillRect(R(x + Math.sin(a) * 12 - 2), R(y - 3 - Math.cos(a) * 12 - 2), 4, 4);
-      if (r) { const k = r.full ? r.level / r.full : 0; g.fillStyle = '#1b1626'; g.fillRect(R(x + 8), R(y - 20), 5, 18); g.fillStyle = SAND.top; g.fillRect(R(x + 9), R(y - 3 - 16 * k), 3, R(16 * k)); ctx.text(open ? 'OPEN' : 'SHUT', R(x + 10), R(y - 26), open ? '#8fd160' : '#ffb060', 'center', 4); }
-      if (lv.chute) { const tk = lv.chute.at; ctx.text(tk === 'wall' ? 'TO THE WALL' : tk === 'hall' ? 'INTO THE HALL' : tk === 'grate' ? 'TO THE GRATE' : 'ON THE LIP', R(x), R(y - 26), '#ffd36b', 'center', 4); }
+      const thrown = open || (fx && fx.t > 0.25), tk = lv.chute ? lv.chute.at : null, tt = lv.chute ? lv.chute.to[tk] : null;
+      RUL.drawLever(V, { x: px(lv.x), y: (lv.row + 1) * ts, kind: lv.arena ? 'arena' : lv.chute ? 'chute' : 'gate', open: thrown, chain: lv.chain, k: r && r.full ? r.level / r.full : 0, dir: tt ? ((tt.x0 + tt.x1 + 1) / 2 * ts > px(lv.x) ? 1 : -1) : 1 });
+      if (r) ctx.text(open ? 'OPEN' : 'SHUT', R(x + 12), R(y - 30), open ? '#8fd160' : '#ffb060', 'center', 4);
+      if (lv.chute) ctx.text(tk === 'wall' ? 'TO THE WALL' : tk === 'hall' ? 'INTO THE HALL' : tk === 'grate' ? 'TO THE GRATE' : 'ON THE LIP', R(x), R(y - 42), '#ffd36b', 'center', 4);
       if (fx) { g.globalAlpha = fx.t * 2; g.strokeStyle = fx.ok ? '#ffd36b' : '#9aa39a'; g.beginPath(); g.arc(R(x), R(y - 8), 14 + (0.5 - fx.t) * 20, 0, 7); g.stroke(); g.globalAlpha = 1; } }
     /* THE GREAT SAND-GATE's wheel: its turns told on it */
-    { const W = L.wheel; if (W) { const x = px(W.x) - cx, y = (W.row + 1) * ts - cy - 14; if (x > -40 && x < vw + 40) { g.strokeStyle = '#8a6a3a'; g.lineWidth = 3; g.beginPath(); g.arc(R(x), R(y), 11, 0, 7); g.stroke(); g.lineWidth = 1;
-      const a0 = K.wheel.turns * 2.1 + (K.wheel.cd > 0 ? (BCS.wheelCd - K.wheel.cd) * 3 : 0); for (let i = 0; i < 4; i++) { const a = a0 + i * Math.PI / 2; g.strokeStyle = '#c8a060'; g.beginPath(); g.moveTo(R(x), R(y)); g.lineTo(R(x + Math.cos(a) * 11), R(y + Math.sin(a) * 11)); g.stroke(); }
-      g.fillStyle = '#4a3a2a'; g.fillRect(R(x - 3), R(y + 8), 6, 6); ctx.text(K.wheel.done ? 'OPEN' : K.wheel.turns + '/' + (W.turns || 3), R(x), R(y - 20), K.wheel.done ? '#8fd160' : '#ffd36b', 'center', 5); } } }
+    { const W = L.wheel; if (W) { const wx = px(W.x), wy = (W.row + 1) * ts - 14, x = wx - cx, y = wy - cy; if (x > -40 && x < vw + 40) { const a0 = K.wheel.turns * 2.1 + (K.wheel.cd > 0 ? (BCS.wheelCd - K.wheel.cd) * 3 : 0);
+      RUL.drawWheel(V, wx, wy, K.wheel.turns, W.turns || 3, a0, K.wheel.done); ctx.text(K.wheel.done ? 'OPEN' : K.wheel.turns + '/' + (W.turns || 3), R(x), R(y - 22), K.wheel.done ? '#8fd160' : '#ffd36b', 'center', 5); } } }
     /* THE CLOCKWORK VAULT's door: a brass face with five gear sockets (the ones carried, lit) */
-    for (const v of K.vault) { if (v.open) continue; const x = v.x * ts - cx, y = v.y0 * ts - cy; if (x < -40 || x > vw + 40) continue; g.fillStyle = '#9a7a3a'; g.fillRect(R(x), R(y), ts, (v.y1 - v.y0 + 1) * ts);
-      const got = ctx.questGot(); for (let i = 0; i < v.gears; i++) { g.fillStyle = i < got ? '#ffd36b' : '#3a2a18'; g.fillRect(R(x + 5), R(y + 3 + i * 5), 6, 3); } }
+    for (const v of K.vault) { if (v.open) continue; if (v.x * ts - cx < -40 || v.x * ts - cx > vw + 40) continue; RUL.drawVault(V, v.x, v.y0, v.y1 - v.y0 + 1, v.gears, ctx.questGot(), time); }
   };
-  /* THE HOURGLASS KING, carved (B8): his statues, his head in the dune, the figure on his mural - a crown of gears, an hourglass for a heart (placeholder) */
-  function drawKing(g, x, y, h, time, sc = 1) {
-    const s = sc, hh = h ? h * 16 * s : 0;
-    if (h) { g.fillStyle = '#8a7048'; g.fillRect(R(x - 9 * s), R(y - 6 * s), R(18 * s), R(6 * s)); }   /* the plinth */
-    const by = y - (h ? 6 * s : 0), top = by - (h ? hh - 6 * s : 14 * s);
-    g.fillStyle = '#b09060'; g.fillRect(R(x - 6 * s), R(top + 10 * s), R(12 * s), R(Math.max(4, by - top - 10 * s)));   /* the body */
-    g.fillStyle = '#c8a870'; g.fillRect(R(x - 4 * s), R(top + 2 * s), R(8 * s), R(8 * s));   /* the head */
-    g.fillStyle = '#ffd36b'; for (let i = 0; i < 3; i++) g.fillRect(R(x - 4 * s + i * 3 * s), R(top - 1 * s), R(2 * s), R(3 * s));   /* the crown of gears */
-    const gy = top + 13 * s; g.fillStyle = '#3a2a18'; g.fillRect(R(x - 3 * s), R(gy), R(6 * s), R(8 * s)); g.fillStyle = '#e2bb7a'; g.fillRect(R(x - 2 * s), R(gy + 4 * s + ((time * 2) % 1) * s), R(4 * s), R(3 * s));   /* the glass in his chest */
-  }
   /* the route glint over everything */
   H.drawOver = (g, cx, cy, time) => { if (!K || !K.glint || !K.glint.show) return; drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), ctx.VW(), ctx.VH(), time); };
   H.drawHud = () => false;
