@@ -33,7 +33,12 @@ No shutters or other door barriers exist (`doorway needs` = 0; town `door` props
 Boss touches (BOSS_SEAL): queen = honeycomb wax wall; puppeteer = red stage curtain; wickerqueen = wicker; pyromancer = charred stakes with embers; duneworm = sand curtain (was drystone). Kept as before (already themed): chief/master palisade, suncatcher ice, ram ochre wall, lance/roc/golem/prince drystone, gqueen portcullis (storm = original, so unchanged).
 
 ## Checks (PORT 8834, sequential)
-See bottom (filled by the run).
+- pixels (headless floats): ok, 46 levels, 2963 sprites
+- mark-integrity: ok
+- boss-fight-end: ok, 60 of 60 (46 bosses, 14 minis) end on the boss's death (seals open)
+- elites: ok, 77 elites, every gate opens onto the route; gate-openers --static: ok (27); gate-alpha: ok
+- modulepreload: ok, 403 modules listed (+1: src/barriers.js); index.html regenerated
+- no text changed, so textfit not needed; collision/timing/hash code not touched (main.js diff = sprite lookups only)
 
 ## Shots (work/claude/shots/barriers/)
 `sheet.png` (all ten regions: gate 2x6, seal 2x6, plate; the old portcullis/vine and the five boss touches). In-game: `<level>-gate-closed|open[-screen].png` (kings, hanging, harbor, burial, waymeet: mini gate shut then lifted; marsh/oreroad/storm/wood/welltown: static or none), `<level>-seal-closed|open[-screen].png` for wood, marsh, kings, hanging, oreroad, storm, harbor, waymeet, burial, welltown. Limitation: the arena camera is locked 8 px outside wallL, so in play a seal is only a thin edge strip; several in-game crops frame the wrong spot (the tool, not the art). The sheet is the reliable picture. tools: barriers-inventory.mjs, barriers-sheet.mjs, barriers-shots.mjs.
