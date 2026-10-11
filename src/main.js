@@ -36,7 +36,8 @@ import * as DF2 from './desert-foes2.js'; import { makeDesertFoes2Hands } from '
 import { SUN, sunStep, roofShade, shadeZones, inShade, vultureShade } from './sunstroke.js';   /* its rule */ import { makeSunHands } from './sun-hands.js'; let SUNH = null;   /* (claude/ksar2) THE SUN v2, game-wide: the drain, the drawn shade, the heat, the HUD sun */
 import { qsPatchAt, qsGameStep } from './quicksand.js';
 import * as DWM from './dune-worm.js'; import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';   /* THE DUNE WORM, the caravan's boss (docs/briefs/dune-worm.md), and the storm he calls into his hollow */
-import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import * as CR from './redraw/caravan_ruins.js'; import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
+import * as DZ from './redraw/desert.js'; import * as DZ2 from './redraw/desert2.js'; import * as DFA from './redraw/desert_foes.js'; import * as CB from './redraw/caravan_bandits.js'; import * as CR from './redraw/caravan_ruins.js'; import * as C2A from './redraw/caravan2_art.js';   /* (claude/caravan2art) THE SUNKEN CARAVAN's art pass: the wagon beds, the slabs, the wreckage, the worm's breath, ward and grit */
+import { bakeSandSlopes } from './redraw/slopes.js';   /* THE SLOPES ENGINE (docs/slopes-integration.md): moveBody below picks between these two */
 import {updateUndeadMage as stepUndeadMage,drawUndeadMage,bakeUndeadMage,smallerFamiliar,UNDEADMAGE_F,undeadFrame,MAGE as LICH,mageOpen,mageSoft,CALLED as LICH_CALLED} from './undead-mage.js';
 import {REALM,realmBox,realmWarded,realmFloor,strikeRealm,drawRealm,drawRealmFx,drawTear,realmCue,realmWardHit} from './mage-realms.js';   /* THE UNDEAD ARCHMAGE'S SPELL REALMS (claude/undead3) */
 import {poolTraps} from './deadly-water.js'; void poolTraps;
@@ -20973,6 +20974,7 @@ function cvArt() {
   CVART = { wagon: [DZ.bakeWagonWreck(0), DZ.bakeWagonWreck(1)], awning: [DZ.bakeAwning(0), DZ.bakeAwning(1)], bones: B, cargo: C, scrub: [DZ.bakeScrub(0), DZ.bakeScrub(1)],
     deadTree: DZ.bakeDeadTree(), standard: DZ.bakeStandard(), qs: DZ.bakeQuicksand(), pillar: DZ2.bakeArchPillar(), winch: DZ2.bakeWinch(), canopy: DZ2.bakeCanopy(), ui: DZ2.bakeUI(),
     sand: bakeSandSlopes(), rock: DZ.bakeRockSlopes(), ruin: CR.bakeRuinTiles() };
+  CVART.c2 = { qs: C2A.bakeQuicksandTiles(), beds: C2A.bakeWagonBeds(), slabs: C2A.bakeSlabs(), wreck: C2A.bakeWreckage(), ribs: DZ2.bakeGreatRibcage(), ripples: null };   /* (claude/caravan2art) */
   return CVART;
 }
 /* THE DRESSING (the deco table in spawnEnt reads this): [canvas, stands, frames] like every other kind */
@@ -21010,6 +21012,9 @@ function cvTile(x, y, t) {
      now and then, and the sun-bleached, bitten top course wherever the stone meets the sky */
   if (t === T.SOLID && (L.masonry || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3])) { const R = A.ruin, up = tileAt(x, y - 1);
     tileSpr[i] = up === T.SOLID ? ((x * 5 + y * 3) % 7 === 0 ? R.crack[x % 2] : R.block[h]) : R.top[h]; return true; }
+  /* (claude/caravan2art) THE ROAD'S SLABS lying on the quicksand: a cut slab with its crack and its drift, an end tile where the slab ends (L.slabs) */
+  if (t === T.SOLID) { const sl = (L.slabs || []).find(z => x >= z[0] && x <= z[1] && y === z[2]);
+    if (sl) { const K = A.c2.slabs; tileSpr[i] = sl[0] === sl[1] ? K.S : x === sl[0] ? K.L : x === sl[1] ? K.R : K.M; return true; } }
   const rock = (L.rockZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]), S = rock ? A.rock : A.sand;
   if (isSlope(t)) { tileSpr[i] = S[t][h]; return true; }
   if (t !== T.SOLID) return false;
@@ -21059,6 +21064,11 @@ function updateCaravan(dt) {
     /* ROLL IT BACK AND THEY BURN: the looters working the yard are not desert creatures, and the sun takes them too */
     if (w.k < 0.05 && w.canopy && !w.hollow) { CV.burnT -= dt; if (CV.burnT <= 0) { CV.burnT = SUN.hurtEvery;
       for (const e of enemies) if (e.alive && CV_BANDITS.has(e.t) && e.x > w.canopy.x0 * TS && e.x < (w.canopy.x1 + 1) * TS) { hurtEnemy(e, 6, e.x, false); number(e.x, e.y - 22, 'SUNSTROKE', '#ff9a5c'); } } } }
+  /* (claude/caravan2art) SAND SPRAY while a hero slides a dune, and a lip of grains blowing off each crest in view */
+  if (!SET.reduceMotion && state === 'play') { for (const pp of players) { const ss = pp.sandSlide; if (ss && ss.sliding && !pp.dead && Math.random() < dt * 40) { const d = -Math.sign(ss.vx || 1);
+      parts.push({ x: pp.x + d * 6, y: pp.y - 1, vx: d * (30 + Math.random() * 50), vy: -30 - Math.random() * 40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#e2bb7a' : '#f2d79c', size: Math.random() < 0.3 ? 2 : 1, grav: 220 }); } }
+    for (const d of L.duneSlides || []) { const wx = d.crest * TS; if (Math.abs(wx - P.x) > VW * 0.6 || Math.random() > dt * 6) continue; let ty = 0; for (let y = 0; y < LH; y++) if (tileAt(d.crest, y) !== T.AIR) { ty = y; break; }
+      parts.push({ x: wx + 8, y: ty * TS + 1, vx: 26 + Math.random() * 18, vy: -6 - Math.random() * 10, life: 0.9, max: 0.9, col: '#f2d79c', size: 1, grav: 18 }); } }
   /* THE SUN */
   /* (claude/ksar2) THE SUN v2 (src/sun-hands.js): the meter for every hero, and the DRAIN straight off the bar - no blow, no flinch, no mercy window -
      a share of max health a second that grows with the meter; the sizzle and the '-n' once a beat; the step-out warning */
@@ -21137,10 +21147,16 @@ function drawCaravan(cx, cy) {
   /* THE SHADE THE LEVEL CASTS (the ribcage, the caravanserai, the overhangs): the one violet, the same everywhere */
   g.fillStyle = DZ.DESERT.shade;
   for (const z of (L.shadeArt || [])) { if (z[1] < cx || z[0] > cx + VW) continue; g.globalAlpha = 0.22; g.fillRect(Math.round(z[0] - cx), Math.round(z[2] - cy), z[1] - z[0], z[3] - z[2]); }
+  /* (claude/caravan2art) THE SHADE UNDER THE DUNE WORM'S LEDGES, drawn where it is (the sun drain is off in it: cvCanopies) in the one violet */
+  for (const z of dwStoneShade()) { if (z[1] < cx || z[0] > cx + VW) continue; g.globalAlpha = 0.26; g.fillRect(Math.round(z[0] - cx), Math.round(z[2] - cy), z[1] - z[0], z[3] - z[2]); }
   g.globalAlpha = 1;
+  /* (claude/caravan2art) THE DUNE SLIDES: the wind's ripples combed into each steep face (baked from the level's own slope tiles) */
+  { const C2 = A.c2; if (!C2.ripples) C2.ripples = (L.duneSlides || []).map(d => C2A.bakeSlideRipples(L.grid, LW, LH, TS, d.crest, d.foot)).filter(Boolean);
+    for (const r of C2.ripples) { const sx = r.x0 - cx; if (sx > VW || sx + r.c.width < 0) continue; g.drawImage(r.c, Math.round(sx), Math.round(r.y0 - cy)); } }
   /* THE QUICKSAND: it turns in on itself */
   const qf = Math.floor(time * 5) % A.qs.length;
-  for (const q of (L.quicksand || [])) { if (q.x1 < cx || q.x0 > cx + VW) continue; for (let x = q.x0; x < q.x1; x += TS) g.drawImage(A.qs[qf], Math.round(x - cx), Math.round(q.y - cy)); }
+  for (const q of (L.quicksand || [])) { if (q.x1 < cx || q.x0 > cx + VW) continue; const Q = A.c2.qs;   /* (claude/caravan2art) its own mouth at each end, a whirl in the middle (C2A.bakeQuicksandTiles) */
+    for (let x = q.x0; x < q.x1; x += TS) { const set = q.x1 - q.x0 <= TS ? Q.M : x === q.x0 ? Q.L : x + TS >= q.x1 ? Q.R : Q.M; g.drawImage(set[qf], Math.round(x - cx), Math.round(q.y - cy)); } }
   /* THE WINCHES AND THEIR GREAT AWNINGS (the camp's, and the hollow's) */
   for (const w of CV.winches) { g.drawImage(A.winch, Math.round(w.x - A.winch.width / 2 - cx), Math.round(w.y - A.winch.height - cy));
     const c = w.canopy; if (c && w.k > 0.02) { const x0 = c.x0 * TS, x1 = (c.x1 + 1) * TS, len = (x1 - x0) * w.k, y = c.row * TS;
@@ -21164,13 +21180,10 @@ function drawCaravan(cx, cy) {
 }
 /* A HALF-BURIED WAGON BED on the quicksand (claude/caravan2, greybox art - the art lane redraws it): boards and an iron band, the tilt of a bed that has gone
    in at one end, a wheel's rim out of the sand; lower as it sinks, and its lip goes dark when it is about to go under */
-function cvWreckBed(m, cx, cy) {
-  const x = Math.round(m.x) - cx, y = Math.round(m.y) - cy, w = m.w, k = m.sink || 0;
-  g.fillStyle = ART.OUT; g.fillRect(x - 1, y - 1, w + 2, 7); g.fillRect(x + w - 6, y - 5, 7, 6);
-  g.fillStyle = '#8a6440'; g.fillRect(x, y, w, 5); g.fillStyle = '#a8805a'; for (let i = 0; i < w; i += 8) g.fillRect(x + i, y, 7, 2);
-  g.fillStyle = '#5a3e26'; g.fillRect(x + w - 5, y - 4, 4, 4); g.fillStyle = '#6a6e78'; g.fillRect(x + 4, y + 1, 1, 4); g.fillRect(x + w - 9, y + 1, 1, 4);   /* the tailboard up, two iron bands */
-  g.strokeStyle = ART.OUT; g.lineWidth = 2; g.beginPath(); g.arc(x + 8, y + 7, 6, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); g.strokeStyle = '#7a5a3a'; g.lineWidth = 1; g.beginPath(); g.arc(x + 8, y + 7, 6, Math.PI * 1.05, Math.PI * 1.95); g.stroke();   /* a wheel's rim out of the sand */
-  if (k > 0.45 && Math.floor(time * 10) % 2) { g.fillStyle = 'rgba(255,107,107,0.6)'; g.fillRect(x, y - 2, w, 1); }   /* about to go under: its lip flashes */
+function cvWreckBed(m, cx, cy) {   /* (claude/caravan2art) baked art (src/redraw/caravan2_art.js): three sink states; the warning is a row of dithered red pixels along the lip, not a bar */
+  const x = Math.round(m.x) - cx, y = Math.round(m.y) - cy, w = m.w, k = m.sink || 0, B = cvArt().c2.beds, st = k > 0.72 ? 2 : k > 0.3 ? 1 : 0;
+  g.drawImage(B[st], x - 3 - 1, y - (8 + st) - 1);
+  if (k > 0.45 && Math.floor(time * 10) % 2) { g.fillStyle = '#ff6b6b'; for (let i = 0; i < w; i += 2) g.fillRect(x + i, y - 1, 1, 1); }   /* about to go under: its lip flashes */
 }
 /* THE SWIM AND THE METER: the view swims before anything hurts, and the meter says how long you have */
 let sunPrev = null, hudEnvR = 0;   /* the sun's last status (a CHANGE is the only time it is said in words), and the right edge of the water/flood row (the toast zone starts past it) */
@@ -21236,7 +21249,7 @@ function dwStoneShade() { const b = boss && boss.t === 'duneworm' && boss.alive 
 const dwShown = e => !['sleep', 'under', 'rippleTell', 'swallowTell', 'lunge'].includes(e.mode);   /* under the sand, or in the air on his arc: drawn by drawDuneWormFx */
 const dwFrame = e => { const F = DFA.DW_F; switch (e.mode) {
   case 'wake': return e.modeT > 0.8 ? F.surface : F.surfaced;
-  case 'breach': return F.breach; case 'stunned': return F.tangled; case 'breathTell': return F.spitTell; case 'breath': return F.spit;   /* (claude/caravan2: the stun wears the old head-down 'tangled' frame and the breath the spit's - the art lane redraws them, see the lane report) */
+  case 'breach': return F.breach; case 'stunned': return F.stunned; case 'breathTell': return F.breathTell; case 'breath': return F.breath;   /* (claude/caravan2: the stun wears the old head-down 'tangled' frame and the breath the spit's - the art lane redraws them, see the lane report) */
   case 'lungeTell': return F.lungeTell; case 'swallow': return F.swallow; case 'sweepTell': return F.hurt; case 'sweep': case 'sweepBack': return F.surfaced;
   case 'surfaced': return e.modeT > 1.0 ? F.surface : e.hurtT > 0 ? F.hurt : F.surfaced;
   case 'dive': return e.modeT > 0.25 ? F.dive : F.surface; }
@@ -21316,9 +21329,6 @@ function dwLedges(W, cx, cy, fy) {
   for (const l of DWM.wormLedges(W)) { const x0 = Math.round(l.x0 - cx), w = l.x1 - l.x0; if (x0 > VW || x0 + w < 0) continue;
     const k = l.state === 'rise' ? 1 - Math.max(0, l.t) / LG.rise : l.state === 'sink' ? Math.max(0, l.t) / LG.sink : 1, top = fy - Math.round(h * k);
     g.save(); g.beginPath(); g.rect(x0 - 2, 0, w + 4, fy); g.clip();
-    g.fillStyle = ART.OUT; for (const px of [x0 + 3, x0 + w - 8]) g.fillRect(px - 1, top + TS - 1, 7, fy - top - TS + 1);   /* the piers (outline) */
-    g.fillStyle = '#a8804e'; for (const px of [x0 + 3, x0 + w - 8]) g.fillRect(px, top + TS, 5, fy - top - TS);
-    g.fillStyle = '#c9a46a'; for (const px of [x0 + 3, x0 + w - 8]) g.fillRect(px, top + TS, 1, fy - top - TS);
     if (l.state !== 'up') { if (S) for (let c = 0; c < w / TS; c++) g.drawImage(c === 0 ? S.ledgeL : c === w / TS - 1 ? S.ledgeR : S.ledge[c % S.ledge.length], x0 + c * TS, top);
       else { g.fillStyle = '#b48a56'; g.fillRect(x0, top, w, 6); } }
     g.restore();
@@ -21349,13 +21359,12 @@ function dwGround(e, cx, cy, marks = true) {
     const q = Math.max(0, Math.min(1, e.modeT / DWM.WORM.stunned)); g.fillStyle = ART.OUT; g.fillRect(x - 21, fy - 90, 42, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 20, fy - 89, Math.round(40 * q), 3);
     for (let s = 0; s < 3; s++) { const a = time * 5 + s * 2.1; g.fillStyle = s % 2 ? '#fff1c8' : '#ffd36b'; g.fillRect(Math.round(x + Math.cos(a) * 14) - 1, Math.round(fy - 58 + Math.sin(a) * 4) - 1, 3, 3); } }
   if (W.ward > 0 && dwShown(e)) { const x = Math.round(e.x - cx), k = 0.5 + 0.5 * Math.sin(time * 12);   /* THE WARD (B3/B10): a shell of running sand over his hide, pale violet */
-    g.globalAlpha = 0.3 + 0.25 * k; g.strokeStyle = '#c9b0e0'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 38, 22 + k * 2, 42, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    C2A.drawWardShell(g, x, fy - 38, 22 + k * 2, 42, time);   /* (claude/caravan2art) a shell of walking pixels, not a ring */
     if (Math.random() < 0.5) parts.push({ x: e.x + (Math.random() - 0.5) * 36, y: A.floor - 70 + Math.random() * 60, vx: 0, vy: 40, life: 0.4, max: 0.4, col: '#c9b0e0', size: 1, grav: 0 }); }
-  if (e.mode === 'breathTell' || e.mode === 'breath') { const f = W.breathFace || 1, mx = Math.round(e.x - cx + f * 10), my = fy - 48;   /* THE BREATH: his throat glows as he draws it in; then the cone, out along the floor */
-    if (e.mode === 'breathTell') { const q = 1 - Math.max(0, e.modeT) / DWM.WORM.breathTell; g.globalAlpha = 0.4 + 0.5 * q; g.fillStyle = '#ffb060'; g.beginPath(); g.arc(mx, my, 3 + 4 * q, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
-      g.globalAlpha = 0.18 + 0.2 * q; g.fillStyle = '#e2bb7a'; g.beginPath(); g.moveTo(mx, my); g.lineTo(mx + f * DWM.WORM.breathReach, fy - DWM.WORM.breathH); g.lineTo(mx + f * DWM.WORM.breathReach, fy); g.lineTo(mx, my + 6); g.closePath(); g.fill(); g.globalAlpha = 1; }   /* where it will go: a faint cone on the sand */
-    else { const reach = DWM.WORM.breathReach * (W.breathK || 0); g.globalAlpha = 0.55; g.fillStyle = '#e2bb7a'; g.beginPath(); g.moveTo(mx, my - 3); g.lineTo(mx + f * reach, fy - DWM.WORM.breathH); g.lineTo(mx + f * reach, fy); g.lineTo(mx, my + 8); g.closePath(); g.fill();
-      g.globalAlpha = 0.35; g.fillStyle = '#fff1c8'; g.beginPath(); g.moveTo(mx, my); g.lineTo(mx + f * reach, fy - DWM.WORM.breathH * 0.6); g.lineTo(mx + f * reach, fy - 10); g.closePath(); g.fill(); g.globalAlpha = 1; } }
+  if (e.mode === 'breathTell' || e.mode === 'breath') { const f = W.breathFace || 1, mx = Math.round(e.x - cx + f * 14), my = fy - 40;   /* THE BREATH (claude/caravan2art): the sprite draws the swollen throat and the jaws; here, a dithered decal on the floor where it will go, then the blast as grains (src/redraw/caravan2_art.js) */
+    if (e.mode === 'breathTell') { const q = 1 - Math.max(0, e.modeT) / DWM.WORM.breathTell, n = Math.round(DWM.WORM.breathReach / 6);
+      g.fillStyle = Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff1c8'; for (let i = 0; i < n; i++) if (i / n <= 0.35 + 0.65 * q && i % 2 === 0) g.fillRect(mx + f * (6 + i * 6), fy - 1, 3, 1); }   /* the told cone: a dotted line of the sand's own light along the floor, growing as he draws breath */
+    else C2A.drawSandBreath(g, mx, my, f, DWM.WORM.breathReach, W.breathK || 0, fy, DWM.WORM.breathH, time); }
   if ((e.mode === 'sweepTell' || e.mode === 'sweep' || e.mode === 'sweepBack') && W.tailX !== undefined) dwTail(e, W, cx, fy, marks);
   for (const w of W.waves || []) { const x = Math.round(w.x - cx); drawSet(SPR.dunewormRipple, null, Math.floor(time * 10) % 2, x, fy, w.v < 0 ? -1 : 1, false, 0.8, 1.1);   /* THE CRASH: a wave of sand running out along the floor (claude/duneworm2) */
     if (Math.random() < 0.6) parts.push({ x: w.x, y: L.arena.floor - 3, vx: Math.sign(w.v) * 40 + (Math.random() - 0.5) * 30, vy: -50 - Math.random() * 40, life: 0.35, max: 0.35, col: '#f2d79c', size: 1, grav: 300 }); }
@@ -21381,6 +21390,7 @@ function dwHide(e, fromX) {
 /* GRIT IN YOUR EYES (THE SAND BREATH landed): the view goes sand-blind at the edges for a moment, and clears */
 function drawDuneGrit() {
   const k = P && P.dwGrit > 0 ? Math.min(1, P.dwGrit / DWM.WORM.breathBlind) : 0; if (!k) return;
+  C2A.drawGrit(g, VW, VH, k, time); return;   /* (claude/caravan2art) the ordered-dither vignette: the radial gradient below is the old greybox */
   const R = g.createRadialGradient(VW / 2, VH / 2, 30, VW / 2, VH / 2, VW * 0.6); R.addColorStop(0, 'rgba(226,187,122,0)'); R.addColorStop(0.5, 'rgba(200,160,100,' + (0.35 * k).toFixed(3) + ')'); R.addColorStop(1, 'rgba(150,110,60,' + (0.85 * k).toFixed(3) + ')');
   g.fillStyle = R; g.fillRect(0, 0, VW, VH);
   if (!SET.reduceMotion) { g.fillStyle = 'rgba(242,215,156,' + (0.5 * k).toFixed(3) + ')'; for (let i = 0; i < 40; i++) { const x = (i * 97 + time * 300) % VW, y = (i * 53 + time * 40) % VH; g.fillRect(Math.round(x), Math.round(y), 2, 1); } }
@@ -28574,7 +28584,20 @@ function bakeBarnWall(tw, th, seed) { const W = tw * TS, H = th * TS, rnd = mulb
   for (let x = 0; x < W; x += 22) { const y = H - 14 + Math.floor(rnd() * 3); q.fillStyle = '#8a7340'; q.fillRect(x, y, 20, H - y); q.fillStyle = '#b09256'; q.fillRect(x, y, 20, 2); q.fillStyle = '#6a5a30'; q.fillRect(x + 6, y + 3, 1, H - y - 3); q.fillRect(x + 13, y + 3, 1, H - y - 3); }
   for (let k = 0; k < Math.max(2, tw / 12); k++) { const x = Math.floor(rnd() * (W - 20)), y = Math.floor(H * 0.2 + rnd() * H * 0.45); q.fillStyle = '#ff7a2c'; q.fillRect(x, y, 1, 8 + Math.floor(rnd() * 10)); q.fillStyle = '#7a2a14'; q.fillRect(x + 1, y + 2, 1, 6); }
   return c; }
+/* (claude/caravan2art) THE SUNKEN CARAVAN BEHIND THE PLAY: THE GREAT RIBCAGE arching over the sinking wagons' basin (a landmark, nothing to climb), the wreckage and rock
+   that stands on the sand (L.wreckage: [{ kind, v, x, y }], visual only), and the Dune Worm's rising ledges' piers (the slab itself is a tile) */
+function drawCaravanBack(cx, cy) {
+  const A = cvArt().c2;
+  for (const rb of L.ribcages || []) { const im = A.ribs, sx = Math.round(rb.x * TS + 8 - im.width / 2 - cx), sy = Math.round(rb.y * TS + 2 - im.height - cy); if (sx > VW || sx + im.width < 0) continue; g.drawImage(im, sx, sy); }
+  for (const wr of L.wreckage || []) { const im = A.wreck[wr.kind], img = Array.isArray(im) ? im[(wr.v || 0) % im.length] : im; if (!img) continue;
+    const sx = Math.round(wr.x * TS + 8 - img.width / 2 - cx), sy = Math.round(wr.y * TS + 3 - img.height - cy); if (sx > VW || sx + img.width < 0) continue; g.drawImage(img, sx, sy); }
+  if (boss && boss.t === 'duneworm' && boss.alive && boss.st && L.arena) { const fy = Math.round(L.arena.floor - cy), LG = DWM.WORM.LEDGE, h = LG.rows * TS;
+    for (const l of DWM.wormLedges(boss.st)) { const x0 = Math.round(l.x0 - cx), w = l.x1 - l.x0; if (x0 > VW || x0 + w < 0) continue;
+      const k = l.state === 'rise' ? 1 - Math.max(0, l.t) / LG.rise : l.state === 'sink' ? Math.max(0, l.t) / LG.sink : 1, top = fy - Math.round(h * k);
+      g.save(); g.beginPath(); g.rect(x0 - 2, 0, w + 4, fy); g.clip(); C2A.drawLedgePiers(g, x0, w, top, fy, TS); g.restore(); } }
+}
 function drawFacades(cx, cy) {
+  if (L.caravan) drawCaravanBack(cx, cy);
   if (HIDE.facades === true) return;
   for (const f of (L.facades || [])) { const [x0, x1, y0, y1, kind, o] = f; if (HIDE.facades && HIDE.facades.includes(kind)) continue;   /* (claude/unburied4: a list of kinds hides just those) */
     const sx = Math.round(x0 * TS - cx), sy = Math.round(y0 * TS - cy), w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
