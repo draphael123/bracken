@@ -32,11 +32,24 @@ function makeCartPilot(BK, plan) {
     if (jumpHold > 0) { jumpHold--; k.jump = true; }
     if (go) k.right = true;
   }
+  /* THE FOREMAN's LOOP (src/foreman.js): what a player reads - his mode (the brake sparks, the !, the red shoes), the gap between his cart and mine */
+  function foreman(p) { const F = MCH.foreman(), S = F.S, G = S.G, FM = { driftV: 72, ramV: 250, ramT: 0.5, halfW: 15 }, fx = G.x0 + S.R, dx = fx - p.x, low = Math.abs(p.y - G.lowY) < 6, hold = gx => { if (gx < p.x - 6) k.left = true; else if (gx > p.x + 6) k.right = true; };
+    if (!p.ground) { if (jumpHold > 0) { jumpHold--; k.jump = true; } if (dropT > 0) { dropT--; k.down = true; } why = 'foreman: in the air'; return; }
+    if (!low) { if (S.ward <= 0 && Math.abs(dx) < 10 && S.mode !== 'ram' && S.mode !== 'ramTell') { k.down = true; BK.press('jump'); dropT = 6; why = 'foreman: drop on him'; } else hold(fx); return; }
+    for (const o of (MCH.state().lobs || [])) { if (o.t <= 0 || Math.abs(o.tx - p.x) > 34) continue; k.left = true; why = 'foreman: off the mark'; return; }
+    if (S.mode === 'ramTell' || S.mode === 'ram') { const reach = FM.ramV * FM.ramT + FM.halfW + 34; if (dx < 60 && jumpHold <= 0) { BK.press('jump'); jumpHold = 26; why = 'foreman: up from the ram'; } else if (dx < reach) { k.left = true; why = 'foreman: brake from the ram'; } if (jumpHold > 0) { jumpHold--; k.jump = true; } return; }
+    if (S.mode === 'drift' && S.ward <= 0 && dx > (S.dv || 72) * 0.5 - 8 && dx < (S.dv || 72) * 0.5 + 2 && jumpHold <= 0) { BK.press('jump'); jumpHold = 26; why = 'foreman: jump on him'; }
+    if (jumpHold > 0) { jumpHold--; k.jump = true; }
+    if (S.mode === 'drift' || S.mode === 'driftTell') { hold(Math.min(p.x, fx - 30)); why = why.startsWith('foreman: jump') ? why : 'foreman: wait for him'; return; }
+    hold(S.ward > 0 ? G.x0 + 90 : Math.min(G.x0 + 150, fx - 90)); why = 'foreman: hold'; }
   pilot.step = () => {
     const p = P(), M = MCH.state(), now = typeof BK.time === 'function' ? BK.time() : BK.time; clear(); why = 'cruise';
     if (!M || p.dead) return;
     talkCd = Math.max(0, talkCd - 1); atkCd = Math.max(0, atkCd - 1);
     const f = MCH.footAt ? MCH.footAt(p.x) : null; if (f) { onFoot(p, f); return; }
+    /* (deeprails3) THE FOREMAN: on his cart, strike him; in his loop, ride his shuttle - jump on him as he drops back, brake out of his ram, off his pick's mark */
+    if (p.mcBoard) { if (atkCd <= 0) { p.face = 1; BK.press('atk'); atkCd = 14; } why = 'aboard: strike'; return; }
+    if (MCH.foremanOn && MCH.foremanOn() && MCH.treadmill(p)) { foreman(p); return; }
     const col = Math.floor(p.x / TS), row = Math.round(p.y / TS), v = MCH.cart(p).v, ahead = d => Math.floor((p.x + d) / TS);
     let brake = false, boost = false, jump = false, duck = false, drop = false;
     /* THE LINE WANTED HERE */
@@ -84,7 +97,10 @@ function makeCartPilot(BK, plan) {
     const onLine = BK.enemies().find(q => q.alive && !q.boss && !q.mcCart && q.t !== 'bat' && q.t !== 'tippler' && Math.abs(q.y - p.y) < 6 && q.x - p.x > 4 && q.x - p.x < 140);
     if (onLine && p.ground) { if (v >= 196 || onLine.x - p.x > 40) { if (!brake) boost = true; why = 'ram ' + onLine.t; } else if (onLine.x - p.x < 26) jump = true; }
     /* THE FOREMAN's cart ahead on my line: pump and ram it (again after every bounce) */
-    for (const c of M.carts) { if (!c.foreman || c.state !== 'roll' || Math.abs(c.y - p.y) > 6 || c.x < p.x) continue; if (c.x - p.x < 260 && !(brake && why.startsWith('brake off'))) { boost = true; brake = false; why = 'ram the foreman'; } }
+    /* (deeprails3) A CHOP COMING DOWN ACROSS MY LINE - the perched goblin, the rider with the hook: duck it */
+    for (const c of M.carts) { if (!(c.perch || c.swing) || !(c.tell > 0 || c.chopT > 0) || !c.e.alive) continue; const ly = c.line ? c.line * TS : c.y + 3 * TS; if (Math.abs(ly - p.y) > 6) continue; const d = c.x - p.x; if (d > -26 && d < 90) { duck = true; why = 'duck the chop'; } }
+    /* A LEAPING GOBLIN's SHADOW on my line: off it (brake), as off a thrown mark */
+    for (const sh of (M.shadows || [])) { if (Math.abs(sh.y - p.y) > 10) continue; const at = p.x + v * sh.t; if (Math.abs(at - sh.x) < 24 && sh.x > p.x - 10) { brake = true; boost = false; why = 'brake off his landing'; } }
     /* the goblin carts on my line ahead: ram them at pump, or jump into them */
     for (const c of M.carts) { if (c.state !== 'roll' || c.foreman || c.ledge || Math.abs(c.y - p.y) > 6) continue; if (c.x - p.x > 0 && c.x - p.x < 120) { if (v >= 196) { boost = true; why = 'ram the cart'; } else if (c.x - p.x < 30 && p.ground) { jump = true; why = 'into the cart'; } else boost = true; } }
     if (drop) { k.down = true; BK.press('jump'); dropT = 6; jumpHold = 0; }
@@ -97,4 +113,4 @@ function makeCartPilot(BK, plan) {
   return pilot;
 }`;
 /* THE PLAN THE ROUTE PILOT RIDES (every required lever SET; the risky lines optional by plan) */
-export const ROUTE_PLAN = { points: { yard: 'set', cavein: 'set', exam: 'set' }, lines: [[492, 552, 27]] };
+export const ROUTE_PLAN = { points: { yard: 'set', cavein: 'set', exam: 'set', yardSw: 'set', driftSw: 'set', worksSw: 'set', examSw: 'set' }, lines: [[492, 552, 27]] };   /* (deeprails3: and every SWITCH's bridge laid) */

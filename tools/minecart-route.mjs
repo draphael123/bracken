@@ -42,6 +42,7 @@ try {
       const { LEVELS } = await import('/src/level.js'); const TS = 16;
       ${CART_PILOT}
       BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true }); if (${lvl} > 0) { if (!(window.BKT && BKT.setHeroLevel)) throw new Error("no BKT.setHeroLevel: --lvl would be ignored"); BKT.setHeroLevel(${JSON.stringify(hero)}, ${lvl}); BK.reset({ fresh: true }); BK.applyUpgrades && BK.applyUpgrades(); }   /* (fix pass: it called BK.setHeroLevel, which does not exist - every --lvl ride so far was a level-1 hero) */
+      if (!${foes}) { BKT.PROG.minecart = Object.assign(BKT.PROG.minecart || {}, { mini: true }); }   /* (deeprails3) no foes: THE FOREMAN (the mini) counts as beaten - his gate opens at load, as for a player who has beaten him */
       BK.load(LEVELS.findIndex(l => l.id === 'minecart')); BK.state = 'play'; BK.god = ${god}; BK.sim(5);
       if (!${foes}) for (const e of BK.enemies()) if (!e.boss) { e.alive = false; e.mcWait = false; }
       const P = () => BK.P, k = BK.keys, pilot = makeCartPilot(BK, ${JSON.stringify({ ...ROUTE_PLAN, fight: true })});

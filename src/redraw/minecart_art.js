@@ -215,7 +215,7 @@ export function boreBack(g, x0, w, yCeil, yFloor, off, laneYs, highDown, time) {
     rc(g, rx, yCeil, 7, yFloor - yCeil, MP.t2); rc(g, rx, yCeil, 1, yFloor - yCeil, MP.t4); rc(g, rx + 6, yCeil, 1, yFloor - yCeil, MP.t0); for (let y = yCeil + 8; y < yFloor; y += 17) rc(g, rx + 2, y, 3, 1, MP.t1);   /* the rib */
     rc(g, rx - 4, yCeil, 15, 3, MP.t3); rc(g, rx - 4, yCeil, 15, 1, MP.t5); rc(g, rx - 3, yCeil + 3, 3, 7, MP.t1); rc(g, rx + 7, yCeil + 3, 3, 7, MP.t1);   /* the cap and its braces */
     if (((x / 32) | 0) % 2 === 0) { const ly = yCeil + 30; rc(g, rx + 7, ly - 2, 5, 1, MP.i3); g.drawImage(lampSprite(true), rx + 11, ly - 1); add(g, () => { g.globalAlpha = 0.9; g.drawImage(glow(34, '255,160,64'), rx + 14 - 34, ly + 4 - 34); }); } }   /* a bracketed lamp on every other rib */
-  for (let i = 0; i < 3; i++) { const y = laneYs[i]; if (i === 2 && highDown) { fallenHigh(g, x0, w, yCeil, yFloor, time); continue; }
+  for (let i = 0; i < laneYs.length; i++) { const y = laneYs[i]; if (i === 2 && highDown) { fallenHigh(g, x0, w, yCeil, yFloor, time); continue; }
     for (let x = -16; x < w + 16; x += 16) { rc(g, x0 + x - (off % 16) + 1, y - 1, 6, 3, MP.t1); rc(g, x0 + x - (off % 16) + 1, y - 1, 6, 1, MP.t3); }   /* the sleepers, running */
     rc(g, x0, y - 3, w, 1, MP.i4); rc(g, x0, y - 2, w, 1, MP.i2); }
   g.restore();
@@ -397,12 +397,13 @@ export function lobMark(g, x, y, r, k, time) { const rr = R(r * (1.6 - 0.6 * k))
 /* ================= GREAT DRILL 2 (claude/deeprails2): THE ENDLESS TUNNEL and THE RIG ================= */
 /* THE TUNNEL: one seamless loop (Daniel 10-09: "no half-moving scenery") - the rock over the roof, the far wall at half pace, the timber ribs and their lamps, the floor, and
    the three lines (the LOW on the floor, the MID and HIGH on iron brackets off the ribs), every near thing running past at the same `scroll`. Drawn edge to edge, x0..x1 */
-export function tunnel(g, x0, x1, yCeil, yFloor, vh, scroll, laneYs, highDown, time) {
+export function tunnel(g, x0, x1, yCeil, yFloor, vh, scroll, laneYs, highDown, time, wet) {   /* (deeprails3) laneYs may be TWO lines (THE FOREMAN's loop); wet: black water under the floor, not rock */
   const w = x1 - x0; if (w <= 0) return; g.save(); g.beginPath(); g.rect(x0, 0, w, vh); g.clip();
   rc(g, x0, 0, w, vh, MP.r0);
   /* the rock over the roof and under the floor: courses of broken block, near pace */
   const off = scroll % 48, far = (scroll * 0.5) % 64;
-  for (const [ya, yb] of [[0, yCeil], [yFloor, vh + 4]]) { for (let y = ya; y < yb; y += 8) { const row = Math.floor((y - ya) / 8); for (let x = x0 - 48 - ((off + row * 13) % 24); x < x1 + 24; x += 24) { rc(g, x, y, 23, 7, row & 1 ? MP.r2 : MP.r1); rc(g, x, y, 23, 1, MP.r3); } } }
+  if (wet) { rc(g, x0, yFloor + 2, w, vh - yFloor + 4, '#05080c'); for (let x = x0 - 48 - off; x < x1 + 48; x += 48) { rc(g, x + 2, yFloor + 2, 4, vh - yFloor, MP.t1); rc(g, x + 2, yFloor + 2, 1, vh - yFloor, MP.t3); } for (let i = x0 - (scroll % 12); i < x1; i += 12) rc(g, i, yFloor + 26, 6 + R(3 * Math.sin(time * 1.3 + (i + scroll) * 0.07)), 1, '#1e3446'); }   /* THE FLOODED RUN under the loop: trestle legs in black water */
+  for (const [ya, yb] of (wet ? [[0, yCeil]] : [[0, yCeil], [yFloor, vh + 4]])) { for (let y = ya; y < yb; y += 8) { const row = Math.floor((y - ya) / 8); for (let x = x0 - 48 - ((off + row * 13) % 24); x < x1 + 24; x += 24) { rc(g, x, y, 23, 7, row & 1 ? MP.r2 : MP.r1); rc(g, x, y, 23, 1, MP.r3); } } }
   /* the far wall inside the tunnel: dark rock with ore flecks, at half pace */
   rc(g, x0, yCeil, w, yFloor - yCeil, '#0e0a0c');
   for (let x = x0 - 64 - far; x < x1 + 64; x += 64) { for (let k = 0; k < 5; k++) { const hx = x + ((k * 37) % 60), hy = yCeil + 10 + ((k * 23) % Math.max(10, yFloor - yCeil - 20)); rc(g, hx, hy, 9, 5, '#171217'); rc(g, hx + 2, hy + 1, 2, 1, k % 2 ? MP.cu1 : MP.go1); } }
@@ -411,7 +412,7 @@ export function tunnel(g, x0, x1, yCeil, yFloor, vh, scroll, laneYs, highDown, t
   for (let x = x0 - 48 - off, i = 0; x < x1 + 48; x += 48, i++) { const k = Math.floor((x + scroll) / 48);
     rc(g, x, yCeil, 7, yFloor - yCeil, MP.t2); rc(g, x, yCeil, 1, yFloor - yCeil, MP.t4); rc(g, x + 6, yCeil, 1, yFloor - yCeil, MP.t0); for (let y = yCeil + 8; y < yFloor; y += 17) rc(g, x + 2, y, 3, 1, MP.t1);
     rc(g, x - 5, yCeil, 17, 4, MP.t3); rc(g, x - 5, yCeil, 17, 1, MP.t5); rc(g, x - 4, yCeil + 4, 3, 8, MP.t1); rc(g, x + 8, yCeil + 4, 3, 8, MP.t1);
-    for (let l = 1; l < 3; l++) { if (l === 2 && highDown) continue; const ly = laneYs[l]; rc(g, x + 6, ly + 1, 9, 2, MP.i2); rc(g, x + 6, ly + 1, 9, 1, MP.i4); rc(g, x + 13, ly + 3, 2, 5, MP.i2); }   /* the brackets the high lines hang on */
+    for (let l = 1; l < laneYs.length; l++) { if (l === 2 && highDown) continue; const ly = laneYs[l]; rc(g, x + 6, ly + 1, 9, 2, MP.i2); rc(g, x + 6, ly + 1, 9, 1, MP.i4); rc(g, x + 13, ly + 3, 2, 5, MP.i2); }   /* the brackets the high lines hang on */
     if ((((k % 2) + 2) % 2) === 0) { const ly = yCeil + 22; rc(g, x + 7, ly - 2, 5, 1, MP.i3); g.drawImage(lampSprite(true), x + 11, ly - 1); add(g, () => { g.globalAlpha = 0.85; g.drawImage(glow(34, '255,160,64'), x + 14 - 34, ly + 4 - 34); }); } }
   /* the floor's lip and the three lines: sleepers running at the near pace, the iron along them */
   rc(g, x0, yFloor, w, 2, MP.r4); rc(g, x0, yFloor, w, 1, MP.r6);
@@ -476,3 +477,17 @@ export function rig(g, rx, lanes, ceilY, o, time) {
   if (o.spray && o.spray.on) { const y = lanes[o.spray.lane] - 12; add(g, () => { g.globalAlpha = 0.5; g.drawImage(glow(28, '255,170,60'), rx - 40, y - 28); });
     for (let i = 0; i < 26; i++) { const t = (time * 3 + i / 26) % 1, xx = rx - t * 150, yy = y + Math.sin(i * 7.3 + time * 20) * (4 + t * 10); rc(g, xx, yy, 2, 1, i % 3 ? MP.l3 : MP.go2); } }
 }
+
+/* ---------------- DEEP RAILS 3 (claude/deeprails3) - greybox shapes for the Sonnet art pass ---------------- */
+/* A LOW ROOF over the line: the rock's underside, a timber lintel along it and props (under it the cart cannot jump) */
+export function lowRoof(g, x0, x1, y, time, seed) { rc(g, x0, y - 6, x1 - x0, 6, MP.r2); rc(g, x0, y - 1, x1 - x0, 1, MP.r0); rc(g, x0, y, x1 - x0, 4, MP.t2); rc(g, x0, y, x1 - x0, 1, MP.t4); rc(g, x0, y + 3, x1 - x0, 1, MP.t0);
+  for (let x = x0 + 4; x < x1 - 2; x += 22) { rc(g, x, y + 4, 3, 3, MP.t1); } }
+/* A PERCH: a roof timber over the line, a goblin stands on it */
+export function perchBeam(g, x0, x1, y) { rc(g, x0 - 4, y, x1 - x0 + 8, 5, MP.t3); rc(g, x0 - 4, y, x1 - x0 + 8, 1, MP.t5); rc(g, x0 - 4, y + 4, x1 - x0 + 8, 1, MP.t0); for (const px_ of [x0 - 4, x1 + 2]) { rc(g, px_, y - 40, 2, 40, MP.t2); } }
+/* A SWITCH's BRIDGE: laid (a deck of planks and the rail) or OUT (two broken ends, a hanging plank, nothing between) */
+export function bridge(g, x, w, y, set, time) { if (set) { for (let i = 0; i < w; i += 4) rc(g, x + i, y + 1, 3, 3, MP.t2); rc(g, x, y - 3, w, 1, MP.i4); rc(g, x, y - 2, w, 1, MP.i2); return; }
+  for (const [ex, d] of [[x, 1], [x + w, -1]]) { for (let k = 0; k < 4; k++) rc(g, ex + d * k * 3 - (d < 0 ? 3 : 0), y + 1 + k * 2, 3, 2, MP.t2); rc(g, ex - (d < 0 ? 6 : 0), y - 3, 6, 1, MP.i2); }
+  const sw = R(Math.sin(time * 2) * 2); rc(g, x + 6 + sw, y + 4, 2, 14, MP.t1); rc(g, x + w - 8 - sw, y + 6, 2, 10, MP.t1);
+  if (Math.floor(time * 4) % 2) { rc(g, x, y - 1, 2, 2, '#ff6b6b'); rc(g, x + w - 2, y - 1, 2, 2, '#ff6b6b'); } }
+/* THE FOREMAN BRACED: spikes up along his cart's lid (k 0..1 how far up) */
+export function fmSpikes(g, x, y, k, time) { const h = R(2 + 5 * k); for (let i = -14; i <= 14; i += 4) { rc(g, x + i, y - h, 1, h, MP.i5); rc(g, x + i - 1, y - 1, 3, 1, MP.i3); } }
