@@ -341,6 +341,7 @@ export const SFX = {
   // the bog wight: cold air where a mouth should be
   wightTouch() { pad('sine', 320, 140, 0.7, 0.07, 0, 1200, 0.14); noise(0.5, 0.1, 700, 0.6); tone('sine', 90, 60, 0.6, 0.06, 0.05); },
   swingUp(k) { const r = 1 + Math.min(3, k) * 0.09; noise(0.07, 0.16, 1500 * r, 1.1); tone('triangle', 620 * r, 300 * r, 0.06, 0.05); }, // the run of blows climbs
+  mixPip(n) { const f = 784 * Math.pow(2, (2 * Math.min(5, n || 1)) / 12); tone('triangle', f, f, 0.07, 0.07); tone('sine', f * 2, f * 2, 0.05, 0.025, 0.02); },   /* (claude/riposte) THE MIX-UP CHAIN: a pip, a whole tone higher each (src/riposte.js) */
   coin() { tone('triangle', 1046, 1046, 0.07, 0.11); tone('triangle', 1568, 1568, 0.13, 0.085, 0.045); tone('sine', 3136, 3136, 0.06, 0.03); noise(0.03, 0.035, 4200, 2.5); },
   clank() { file('clang', 0.5) || (tone('square', 1500, 900, 0.05, 0.18), tone('sine', 2300, 2100, 0.16, 0.14), noise(0.05, 0.2, 3200)); },
   /* THE ORE ROAD AT WORK (docs/briefs/ore-road-mine-life.md): what you hear before you see it. No vary() in any of them: vary rolls

@@ -172,7 +172,7 @@ export function install(helpers) { H = helpers || {}; }
    opening ends (capStep, every frame). MINI_OWN_CAP already cap their own windows the same way, in their own code. */
 export const MINI_CAP = 1 / 3;
 export const MINI_OWN_CAP = new Set(['greathound', 'homunculus', 'gangleader']);
-const ruleOpen = e => { if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true; const r = OPEN_RULE[e.t]; if (!r) return null; try { return !!r(e); } catch { return null; } };
+const ruleOpen = e => { if (e.rpOpenT > 0) return true;   /* (claude/riposte) a parry's short told opening (src/riposte.js) */ if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true; const r = OPEN_RULE[e.t]; if (!r) return null; try { return !!r(e); } catch { return null; } };
 const capped = e => !!e && e.xpRole === 'mini' && !MINI_OWN_CAP.has(e.t);
 /* dmg: what his own code made of a hero's blow; raw: the blow before it. Returns what comes off the bar. say(e) tells the shut. */
 export function miniCap(e, dmg, raw, say) {
@@ -190,7 +190,8 @@ export function capStep(e) { if (!capped(e) || (e.capLeft === undefined && !e.ca
 /* IS HE OPEN? true / false for a boss or mini with a rule, null for anything else (the boss lab's own fallback then answers) */
 export function openOf(e) {
   if (!e) return null;
-  if (e.capShut && capped(e)) return false;   /* (claude/bosswave2) a mini who has given a third of himself to this opening has gathered himself: shut until it ends */
+  if (e.capShut && capped(e)) return false;
+  if (e.rpOpenT > 0) return true;   /* (claude/riposte) a parry's short told opening (src/riposte.js): no chip, no greed, x1.5 */   /* (claude/bosswave2) a mini who has given a third of himself to this opening has gathered himself: shut until it ends */
   if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true;   /* (claude/bosswave1) a mini on the chip is open only in his own told opening: broken he is stood still, not opened - the
      mash bot broke them with taps and a spear held out, and took the Serjeant and the Great Hound in those breaks */
   const r = OPEN_RULE[e.t]; if (!r) return null;
