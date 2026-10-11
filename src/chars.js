@@ -4618,6 +4618,27 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
       if (glow) b.push(o(4, -13, '#fff6c8'), o(3, -12, '#fff6c8'), o(5, -12, '#fff6c8'));
       return knightFrame({ wide: 8, legs, dy, plume, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 3, Y + 9, X + 3, Y - 10], bits: b }); };
     F.dance = holdFrames([0, 1, 2, 3, 4, 5].map(k => [ring(k, k % 3 === 2 ? 1 : 0, k % 2 ? 'wide' : 'runC', k % 3, k % 2 === 0), 2])); }
+  /* HER OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE CAIRN, her idle solo: the stave struck upright, and one stone after
+     another lifts out of the turf, turns in the air before her and is set down on the last, until a little cairn of three stands at her
+     boots; she looks at it with her head on one side and knocks it flat with the butt. dance3 = THE UPHEAVAL, a boss down: the stave
+     driven down, and stones thrown up out of the ground on both sides in two columns that hang at the top, the geode blazing - and
+     the arms spread as they fall. */
+  { const st = (o2 = {}) => knightFrame({ wide: 8, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 3, Y + 9, X + 3, Y - 10], ...o2 });
+    const blk = (x, y, w, col) => { const b = []; for (let i = 0; i < w; i++) for (let j = 0; j < w; j++) b.push(o(x + i, y + j, col)); return b; };
+    const floor = Y + 9 - Y;   /* the row the stave's butt is on, relative */
+    const c1 = blk(7, floor - 2, 3, M), c2 = blk(7, floor - 4, 3, D).slice(0, 0), c2b = blk(8, floor - 4, 2, D), c3 = blk(8, floor - 6, 2, A);
+    const glow = [o(4, -13, '#fff6c8'), o(3, -12, '#fff6c8'), o(5, -12, '#fff6c8')];
+    F.dance2 = holdFrames([[F.idle[0], 2], [st({ dy: 1, legs: 'wide' }), 2], [st({ bits: blk(8, floor - 8, 3, M) }), 2], [st({ bits: blk(8, floor - 6, 3, M), hy: 1 }), 2], [st({ bits: c1, plume: 1 }), 2],
+      [st({ bits: [...c1, ...blk(9, floor - 9, 2, D)], hy: 1 }), 2], [st({ bits: [...c1, ...c2b], plume: 1 }), 2], [st({ bits: [...c1, ...c2b, ...blk(9, floor - 10, 2, A)], hy: 1, legs: 'wide' }), 2],
+      [st({ bits: [...c1, ...c2b, ...c3, ...glow], plume: 2 }), 3], [st({ bits: [...c1, ...c2b, ...c3], hy: 1 }), 4], [st({ bits: [...c1, ...c2b, ...c3], hy: 1, sho: 1 }), 3],
+      [st({ dx: 1, legs: 'runC', stave: [X + 4, Y + 7, X + 6, Y + 11], bits: [...c1, ...c2b] }), 2], [st({ legs: 'wide', dy: 1, plume: 2, bits: [...blk(8, floor - 1, 2, M), ...blk(11, floor - 1, 2, D), ...blk(6, floor - 1, 2, A)] }), 3], [F.idle[0], 2]]);
+    const col = (h, w) => [...blk(-6, floor - h, 3, D), ...blk(-9, floor - h + 4, 2, M), ...blk(-4, floor - h + 7, 2, A), ...blk(11, floor - h - 1, 3, A), ...blk(14, floor - h + 3, 2, M), ...blk(10, floor - h + 6, 2, D)].filter(b => b[1] >= 1 - BY + 0);
+    const slam = st({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 3], arm2: [OFF[0], OFF[1], X + 3, Y + 5], stave: [X + 3, Y + 11, X + 3, Y - 6], bits: [...blk(-5, floor - 2, 2, D), ...blk(12, floor - 2, 2, M)] });
+    const up1 = st({ dy: -1, legs: 'jump2', arm: [X, Y, X + 5, Y - 5], arm2: [OFF[0], OFF[1], X - 4, Y - 5], bits: col(5), plume: 2 });
+    const up2 = st({ dy: -1, legs: 'jump2', arm: [X, Y, X + 5, Y - 6], arm2: [OFF[0], OFF[1], X - 4, Y - 6], bits: [...col(9), ...glow], plume: 2 });
+    const up3 = st({ legs: 'wide', arm: [X, Y, X + 5, Y - 6], arm2: [OFF[0], OFF[1], X - 4, Y - 6], bits: [...col(11), ...glow], plume: 0 });
+    F.dance3 = holdFrames([[F.idle[0], 1], [st({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y - 4], arm2: [OFF[0], OFF[1], X + 3, Y - 3], stave: [X + 3, Y + 2, X + 3, Y - 12] }), 2], [slam, 3], [up1, 2], [up2, 2], [up3, 4], [up2, 2],
+      [st({ legs: 'wide', arm: [X, Y, X + 5, Y - 5], arm2: [OFF[0], OFF[1], X - 4, Y - 5], bits: col(6), plume: 1 }), 2], [st({ dy: 1, legs: 'wide', bits: [...blk(-5, floor - 1, 2, D), ...blk(12, floor - 1, 2, M)] }), 3], [F.idle[0], 2]]); }
   /* HER SLUMP: the stave planted and her weight hung on it, the hood down */
   { const lean = (d, hy) => knightFrame({ dy: 1 + d, hy, sho: -1, legs: 'stand', plume: 0, arm: [X, Y, X + 4, Y - 2 + d], arm2: [OFF[0], OFF[1], X + 3, Y + d], stave: [X + 5, Y + 9, X + 5, Y - 7] });
     F.slump = [lean(0, 2), lean(1, 3)]; }
