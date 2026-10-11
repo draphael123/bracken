@@ -25,11 +25,23 @@ export const MP = {
 
 /* the zone of the line (DEEP RAILS 2, claude/deeprails2 - the areas): 0 THE LAMP YARD, 1 THE DARK DRIFT, 2 THE GOBLIN LINE, 3 THE GLOW CAVERN (the lava's light),
    4 THE WRECK + THE CRUSHER WORKS + THE LIFT, 5 THE FLOODED RUN (a cold cast off the water), 6 the smelter and the bore */
+const ZONE_EDGES = [171, 310, 472, 625, 786, 900];
 export const zoneOf = tx => tx < 171 ? 0 : tx < 310 ? 1 : tx < 472 ? 2 : tx < 625 ? 3 : tx < 786 ? 4 : tx < 900 ? 5 : 6;
 
 /* ---------------- THE WALL: one 192 x 192 seamless tile of dark rock ---------------- */
-const wallTile = () => once('wall', () => { const S = 192, [c, g] = mk(S, S), r = mulberry(7741);
-  rc(g, 0, 0, S, S, MP.r1);
+/* THE AREAS' OWN WALLS (claude/deeprailsart): the same rock, seven strata palettes, one a zone - the yard's slate-violet, the drift's cold black-blue, the goblin line's moss,
+   the cavern's ember, the works' slate iron, the flooded run's teal, the smelter's char; and each its own vein colour (copper, ore, lava, water-green) */
+export const WALLK = [
+  [MP.r0, MP.r1, MP.r2, MP.r3, MP.r4, MP.r5, MP.r6],
+  ['#04050a', '#080a12', '#0d1120', '#141a30', '#1d2646', '#2a3560', '#3a4880'],
+  ['#060a05', '#0b1409', '#12200d', '#1b3014', '#27441d', '#365c28', '#4a7a35'],
+  ['#0c0405', '#1a0808', '#2c0f0c', '#431811', '#612415', '#853419', '#b04a1e'],
+  ['#06080b', '#0d1117', '#171d27', '#232c3a', '#34405a', '#4a5a7c', '#647aa0'],
+  ['#030a0b', '#071314', '#0d2325', '#14393b', '#1d5254', '#2a6e6e', '#3c8c88'],
+  ['#0a0504', '#170a08', '#2a1210', '#401c14', '#5c2a1a', '#7e3c20', '#a85428']];
+const VEINK = [[MP.cu0, MP.cu1, MP.cu2], [MP.cu0, '#2a5a8a', '#6aa8e8'], ['#2a4a0c', '#5a8a1c', '#a8d838'], ['#6a1a06', '#d8561c', '#ffb040'], [MP.cu0, MP.cu1, MP.cu2], ['#0a3a3a', '#1f8a80', '#6af0dc'], ['#6a2a06', '#c8661c', '#ffa040']];
+const wallTile = z => once('wall' + z, () => { const S = 192, [c, g] = mk(S, S), r = mulberry(7741), W = WALLK[z] || WALLK[0], V = VEINK[z] || VEINK[0];
+  rc(g, 0, 0, S, S, W[1]);
   /* raw rock face: rows of broken blocks of every width and tone, a lit top edge and a dark joint, faults running through */
   for (let y = 0; y < S;) { const h = 7 + ((r() * 9) | 0); let x = -((r() * 20) | 0);
     while (x < S) { const w = 10 + ((r() * 26) | 0), t = r(), col = t < 0.18 ? MP.r3 : t < 0.5 ? MP.r2 : t < 0.8 ? MP.r1 : MP.r0;
@@ -44,11 +56,18 @@ const wallTile = () => once('wall', () => { const S = 192, [c, g] = mk(S, S), r 
   for (let i = 0; i < 40; i++) { const x = (r() * S) | 0, y = (r() * S) | 0; rc(g, x, y, 2, 1, MP.r5); rc(g, (x + 1) % S, (y + 1) % S, 1, 1, MP.r0); }
   /* ORE VEINS: two diagonals that wrap the tile - verdigris copper, with gold flecks along them */
   const vein = (x0, y0, dx, dy, len, thick, seed) => { const rr = mulberry(seed); let x = x0, y = y0; for (let k = 0; k < len; k++) { x += dx + (rr() < 0.3 ? (rr() < 0.5 ? -1 : 1) : 0); y += dy;
-      for (let t = 0; t < thick; t++) { const px_ = ((x + t) % S + S) % S, py = ((y) % S + S) % S; rc(g, px_, py, 1, 1, t === 0 ? MP.cu0 : t === thick - 1 ? MP.cu1 : MP.cu1); if (rr() < 0.18) rc(g, px_, py, 1, 1, MP.cu2); }
+      for (let t = 0; t < thick; t++) { const px_ = ((x + t) % S + S) % S, py = ((y) % S + S) % S; rc(g, px_, py, 1, 1, t === 0 ? V[0] : t === thick - 1 ? V[1] : V[1]); if (rr() < 0.18) rc(g, px_, py, 1, 1, V[2]); }
       if (rr() < 0.10) { const fx = ((x + 1) % S + S) % S, fy = (y % S + S) % S; rc(g, fx, fy, 2, 2, MP.go1); rc(g, fx, fy, 1, 1, MP.go2); } } };
   vein(10, 6, 1, 1, 150, 3, 11); vein(150, 10, -1, 1, 120, 2, 12); vein(80, 120, 1, 1, 100, 2, 13);
   /* cavities: little dark pockets with a glint in them */
-  for (let i = 0; i < 9; i++) { const x = 8 + ((r() * (S - 24)) | 0), y = 8 + ((r() * (S - 24)) | 0); rc(g, x, y, 7, 4, MP.r0); rc(g, x + 1, y - 1, 5, 1, MP.r0); rc(g, x + 1, y + 4, 5, 1, MP.r1); rc(g, x + 1, y + 1, 2, 1, MP.cu1); rc(g, x + 4, y + 2, 1, 1, MP.go2); }
+  for (let i = 0; i < 9; i++) { const x = 8 + ((r() * (S - 24)) | 0), y = 8 + ((r() * (S - 24)) | 0); rc(g, x, y, 7, 4, MP.r0); rc(g, x + 1, y - 1, 5, 1, MP.r0); rc(g, x + 1, y + 4, 5, 1, MP.r1); rc(g, x + 1, y + 1, 2, 1, V[1]); rc(g, x + 4, y + 2, 1, 1, MP.go2); }
+  return c; });
+
+/* A LONG-PERIOD BLOTCH over the wall (claude/deeprailsart, Daniel 10-10: "the pattern like scrolling looks a little bit weird"): the 192 px wall tile repeated visibly. This 320 x 256 layer
+   of broad lighter and darker bands rides the same plane, so the pair only repeats every 960 x 768 px. */
+const blotchTile = () => once('blotch', () => { const W = 320, H = 256, [c, g] = mk(W, H), r = mulberry(9917);
+  for (let i = 0; i < 26; i++) { const w = 40 + ((r() * 120) | 0), h = 14 + ((r() * 50) | 0), x = (r() * W) | 0, y = (r() * H) | 0, dark = r() < 0.6; g.fillStyle = dark ? 'rgba(0,0,0,0.30)' : 'rgba(150,130,170,0.10)';
+    for (const ox of [0, -W]) for (const oy of [0, -H]) g.fillRect(x + ox, y + oy, w, h); }
   return c; });
 
 /* the glittering spots on the wall (world positions inside the wall tile, twinkled in the draw): [x, y, kind] */
@@ -123,6 +142,53 @@ const boreMouth = () => once('bore', () => { const W = 110, H = 100, [c, g] = mk
   const r = mulberry(88); for (let i = 0; i < 44; i++) { const x = 4 + ((r() * 100) | 0), h = 1 + ((r() * 5) | 0); rc(g, x, 90 - h, 3, h, r() < 0.4 ? MP.r5 : MP.r4); }
   return c; });
 
+/* ---------------- THE HEAD FRAME: the lift's winding tower, 96 x 160, transparent (the landmark of THE WORKS and the flooded run) ---------------- */
+const headFrame = () => once('headframe', () => { const W = 96, H = 160, [c, g] = mk(W, H);
+  const beam = (x0, y0, x1, y1, w) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); rc(g, x, y, w, w, MP.i3); rc(g, x, y, w, 1, MP.i5); rc(g, x + w - 1, y, 1, w, MP.i1); } };
+  beam(10, 156, 44, 16, 5); beam(84, 156, 50, 16, 5); beam(14, 120, 80, 120, 4); beam(20, 80, 74, 80, 3);
+  beam(14, 156, 76, 122, 2); beam(80, 156, 22, 122, 2); beam(24, 120, 66, 82, 2); beam(70, 120, 28, 82, 2);   /* cross bracing */
+  rc(g, 40, 10, 16, 8, MP.i3); rc(g, 40, 10, 16, 1, MP.i5); rc(g, 40, 17, 16, 1, MP.i1);   /* the top beam */
+  g.strokeStyle = MP.i3; g.lineWidth = 3; g.beginPath(); g.arc(48.5, 30.5, 13, 0, 6.2832); g.stroke(); g.strokeStyle = MP.i5; g.lineWidth = 1; g.beginPath(); g.arc(48.5, 30.5, 14.5, 0, 6.2832); g.stroke();   /* the sheave */
+  rc(g, 46, 28, 5, 5, MP.i1); rc(g, 47, 29, 2, 2, MP.i5);
+  rc(g, 36, 30, 1, 126, MP.i2); rc(g, 60, 30, 1, 126, MP.i2);   /* the two ropes */
+  rc(g, 30, 120, 36, 22, MP.i1); rc(g, 30, 120, 36, 2, MP.i4); rc(g, 30, 140, 36, 2, MP.i0); for (let x = 33; x < 64; x += 6) rc(g, x, 124, 2, 14, MP.i2);   /* the cage, hung */
+  return c; });
+
+/* the areas' features, on the wall's plane (so they ride with the rock behind the line) */
+function zoneDress(g, cx, cy, VW, VH, tx, z, time) {
+  const k = 0.7;
+  /* THE DARK DRIFT: eyes in the dark - they only show where the headlamp's cone (or a goblin's lantern) opens it */
+  if (z === 1 || (tx > 150 && tx < 330)) { const j0 = Math.floor(cx * k / 190) - 1, j1 = Math.floor((cx * k + VW) / 190) + 1;
+    for (let j = j0; j <= j1; j++) { if (hash(j, 41) % 3 !== 0) continue; const ex = Math.round(j * 190 + 10 + hash(j, 42) % 160 - cx * k), ey = Math.round(24 + hash(j, 43) % 150 - cy * k);
+      if (Math.floor(time * 0.8 + j * 1.7) % 6 === 0) continue;   /* a blink */
+      g.fillStyle = '#d4ff58'; g.fillRect(ex, ey, 2, 1); g.fillRect(ex + 6, ey, 2, 1); g.fillStyle = '#6a8a20'; g.fillRect(ex, ey + 1, 2, 1); g.fillRect(ex + 6, ey + 1, 2, 1); } }
+  /* THE GLOW CAVERN: lava falls from the open roof, and embers on the draught */
+  if (tx > 440 && tx < 660) { const a = Math.max(0, Math.min(1, Math.min(tx - 440, 660 - tx) / 30));
+    for (const col of [500, 547, 592]) { const x = Math.round(col * TS * k - cx * k + VW / 2 - VW / 2 * k) - 5; if (x < -40 || x > VW + 40) continue;
+      const yb = VH - 30 + (col % 7);
+      g.globalAlpha = a; rc(g, x - 2, 0, 14, yb, MP.r1); rc(g, x - 2, 0, 1, yb, WALLK[3][0]);
+      for (let yy = 0; yy < yb; yy += 2) { const ph = (Math.floor(yy / 2) + Math.floor(time * 16)) % 4; rc(g, x + 1, yy, 8, 2, ph === 0 ? MP.l3 : ph === 1 ? MP.l2 : ph === 2 ? MP.l2 : MP.l1); rc(g, x + 3, yy, 4, 2, ph === 0 ? '#fff6d0' : MP.l3); }
+      rc(g, x - 4, yb, 18, 3, MP.l1); rc(g, x - 1, yb - 2, 12, 2, MP.l2);   /* where it lands */
+      g.globalCompositeOperation = 'lighter'; g.globalAlpha = a * 0.55; g.drawImage(glow(60, '255,110,30'), x + 4 - 60, Math.round(yb * 0.5) - 60); g.drawImage(glow(40, '255,150,50'), x + 4 - 40, yb - 40);
+      g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
+    g.globalCompositeOperation = 'lighter';
+    for (let e = 0; e < 14; e++) { const t = (time * (0.12 + (e % 4) * 0.04) + e * 0.37) % 1, ex = Math.round((hash(e, 61) % VW) + Math.sin(time + e) * 6), ey = Math.round(VH - t * VH);
+      g.globalAlpha = a * (1 - t) * 0.8; g.fillStyle = e % 2 ? MP.l2 : MP.l3; g.fillRect(ex, ey, 1, 1 + (e & 1)); }
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
+  /* THE WORKS AND THE FLOODED RUN: the lift's head frame stands over them; the flood drips and sheens cold */
+  if (tx > 680 && tx < 900) { const a = Math.max(0, Math.min(1, Math.min(tx - 680, 900 - tx) / 40)), f = 0.5;
+    const sx = Math.round(VW / 2 + (758 * TS - cx - VW / 2) * f) - 48, sy = Math.round(VH - 150 + (cy - 420) * -0.06);
+    g.globalAlpha = a; g.drawImage(headFrame(), sx, sy);
+    /* its beacon, red, on the top beam */
+    if (Math.floor(time * 1.6) % 2) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = a; g.fillStyle = '#ff4a3a'; g.fillRect(sx + 46, sy + 6, 4, 3); g.drawImage(glow(20, '255,60,40'), sx + 48 - 20, sy + 8 - 20); g.globalCompositeOperation = 'source-over'; }
+    g.globalAlpha = 1; }
+  if (tx > 770 && tx < 915) { const a = Math.max(0, Math.min(1, Math.min(tx - 770, 915 - tx) / 24));
+    for (let i = 0; i < 16; i++) { const t = (time * (0.5 + (i % 5) * 0.09) + hash(i, 5) % 100 / 100) % 1, x = Math.round((hash(i, 6) % (VW - 4)) + 2), y = Math.round(t * t * VH);
+      g.globalAlpha = a * 0.7; g.fillStyle = '#9af0e4'; g.fillRect(x, y, 1, 3); g.fillStyle = '#e8fffa'; g.fillRect(x, y, 1, 1); }
+    g.globalCompositeOperation = 'lighter'; const gr = g.createLinearGradient(0, VH, 0, VH * 0.55); gr.addColorStop(0, 'rgba(60,170,170,' + (0.2 * a).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(60,170,170,0)'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
+}
+
 /* ---------------- THE FRAME ---------------- */
 const dim = (cy) => Math.min(0.5, 0.04 + Math.max(0, cy) / 840 * 0.4);
 const zoneTint = [[255, 150, 60, 0.06], [30, 30, 60, 0.1], [90, 150, 60, 0.08], [255, 90, 30, 0.14], [255, 120, 50, 0.07], [60, 110, 170, 0.1], [255, 90, 30, 0.11]];   /* (deeprails2: the drift colder and darker, the goblin line greener, the cavern's lava, the flood's cold) */
@@ -131,7 +197,12 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
   const tx = Math.floor((cx + VW / 2) / TS), z = zoneOf(tx), Z = zoneTint[z];
   rc(g, 0, 0, VW, VH, '#0b0809');
   /* 1. the wall */
-  { const k = 0.7, pat = once('wallpat', () => g.createPattern(wallTile(), 'repeat')); pat.setTransform(new DOMMatrix().translate(-Math.round(cx * k), -Math.round(cy * k))); g.fillStyle = pat; g.fillRect(0, 0, VW, VH);
+  { const k = 0.7, wallAt = zz => { const pat = once('wallpat' + zz, () => g.createPattern(wallTile(zz), 'repeat')); pat.setTransform(new DOMMatrix().translate(-Math.round(cx * k), -Math.round(cy * k))); return pat; };
+    g.fillStyle = wallAt(z); g.fillRect(0, 0, VW, VH);
+    { const bp = once('blotchpat', () => g.createPattern(blotchTile(), 'repeat')); bp.setTransform(new DOMMatrix().translate(-Math.round(cx * k) + 77, -Math.round(cy * k) + 31)); g.fillStyle = bp; g.fillRect(0, 0, VW, VH); }
+    /* an area's edge is a blend, not a cut: across 14 columns either side of it the next area's rock fades in */
+    for (const e of ZONE_EDGES) { const d = (tx - e) / 14; if (d > -1 && d < 1) { const al = d < 0 ? 0.5 + 0.5 * d : 0.5 - 0.5 * d; if (al > 0.01) { g.globalAlpha = al; g.fillStyle = wallAt(d < 0 ? zoneOf(e) : zoneOf(e - 1)); g.fillRect(0, 0, VW, VH); } break; } }
+    g.globalAlpha = 1;
     /* the ore's glitter: copper and gold sparkle on and off */
     for (const [gx, gy, kind, ph] of GLINTS) { const on = Math.sin(time * (1.4 + kind * 0.7) + ph); if (on < 0.45) continue;
       const bx = (((gx - cx * k) % 192) + 192) % 192, by = (((gy - cy * k) % 192) + 192) % 192;
@@ -157,21 +228,23 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
   /* 3. the timber frames and the lantern strings on the wall's plane */
   { const k = 0.7, per = 128, spr = frameTile(), i0 = Math.floor(cx * k / per) - 1, i1 = Math.floor((cx * k + VW) / per) + 1;
     const fy = -Math.round(cy * k) % 192;
-    for (let i = i0; i <= i1; i++) { if (hash(i, 9) % 4 === 0 && z !== 4) continue; const x = Math.round(i * per - cx * k); for (let yy = fy - 192; yy < VH; yy += 192) g.drawImage(spr, x, yy); }
+    for (let i = i0; i <= i1; i++) { if (z === 3 || (z === 1 && hash(i, 9) % 2 === 0) || (hash(i, 9) % 4 === 0 && z !== 4)) continue; const x = Math.round(i * per + (hash(i, 13) % 33) - 16 - cx * k); for (let yy = fy - 192; yy < VH; yy += 192) g.drawImage(spr, x, yy); }
     /* lantern strings between frames: a sag of lamps hung from the cap beams (y of the cap in the tile = 38) */
     g.globalCompositeOperation = 'lighter';
-    for (let i = i0; i <= i1; i++) { const x0 = Math.round(i * per - cx * k) + 9, x1 = x0 + per - 9;
-      for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; if (hash(i, 2) % 3 === 0) continue;
+    for (let i = i0; i <= i1; i++) { const jt = j_ => (hash(j_, 13) % 33) - 16, x0 = Math.round(i * per + jt(i) - cx * k) + 9, x1 = Math.round((i + 1) * per + jt(i + 1) - cx * k);
+      for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; if (hash(i, 2) % 3 === 0 || z === 1 || z === 3) continue;
         const n = 6; for (let j = 1; j < n; j++) { const t = j / n, lx = x0 + (x1 - x0) * t, sag = Math.sin(t * Math.PI) * 9 + Math.sin(time * 1.1 + i + j) * 0.6, ly = y0 + sag; const lit = (hash(i * 7 + j, 4) % 11) > 0;
           g.globalAlpha = lit ? 0.95 + 0.1 * Math.sin(time * 6 + i * 3 + j) : 0; if (lit) g.drawImage(glow(32, '255,160,64'), Math.round(lx) - 32, Math.round(ly) - 26); } } }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-    for (let i = i0; i <= i1; i++) { const x0 = Math.round(i * per - cx * k) + 9, x1 = x0 + per - 9;
-      for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; if (hash(i, 2) % 3 === 0) continue;
+    for (let i = i0; i <= i1; i++) { const jt = j_ => (hash(j_, 13) % 33) - 16, x0 = Math.round(i * per + jt(i) - cx * k) + 9, x1 = Math.round((i + 1) * per + jt(i + 1) - cx * k);
+      for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; if (hash(i, 2) % 3 === 0 || z === 1 || z === 3) continue;
         g.fillStyle = MP.i1; const n = 6; let px0 = x0, py0 = y0; for (let j = 1; j <= n; j++) { const t = j / n, lx = x0 + (x1 - x0) * t, ly = y0 + Math.sin(t * Math.PI) * 9 + (j < n ? Math.sin(time * 1.1 + i + j) * 0.6 : 0); const steps = Math.max(1, Math.round(Math.abs(lx - px0))); for (let s = 0; s < steps; s++) g.fillRect(Math.round(px0 + (lx - px0) * s / steps), Math.round(py0 + (ly - py0) * s / steps), 1, 1); px0 = lx; py0 = ly; if (j < n) { const lit = (hash(i * 7 + j, 4) % 11) > 0; g.drawImage(lampSprite(lit), Math.round(lx) - 3, Math.round(ly)); } } } } }
   /* 4. THE GOBLIN WORKS: scaffolds, in the goblins' stretch and again in the crusher works, on the wall's plane */
   if (z === 2 || z === 4 || z === 5) { const k = 0.7, per = 330, i0 = Math.floor(cx * k / per) - 1, i1 = Math.floor((cx * k + VW) / per) + 1;
     for (let i = i0; i <= i1; i++) { const h = hash(i, 71), x = Math.round(i * per + 60 + (h % 80) - cx * k), y = Math.round(40 + (h % 3) * 26 - cy * k + Math.floor(cy * k / 192) * 192 * 0); if (x < -160 || x > VW) continue;
       g.drawImage(worksSprite(h % 2), x, ((y % 200) + 200) % 200 - 30); } }
+  /* 5b. EACH AREA'S OWN FEATURE (claude/deeprailsart): eyes in the drift, lava falls in the cavern, the lift's head frame, the flood's drips */
+  zoneDress(g, cx, cy, VW, VH, tx, z, time);
   /* 6. depth, and the zone's own cast of light */
   { const a0 = dim(cy), a1 = dim(cy + VH); const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(6,4,3,' + a0.toFixed(3) + ')'); gr.addColorStop(1, 'rgba(6,4,3,' + a1.toFixed(3) + ')'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }
   g.fillStyle = 'rgba(' + Z[0] + ',' + Z[1] + ',' + Z[2] + ',' + Z[3] + ')'; g.fillRect(0, 0, VW, VH);

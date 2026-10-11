@@ -44,7 +44,7 @@ export const MC = {
   fallCost: 0.27,       /* a fall outside an exam: this share of max health, and back on the rail ~1.5 s behind (A10 amended) */
   retryBack: 128,       /* px behind the lip a fall puts you back (room to pump up to speed again) */
   crashDmg: 18, crashCd: 0.7, wallDmg: 20,   /* (deeprails2, on the main road at L13: every hit about a quarter heavier - the walker arrived at its stations with ~60%, the target is under 50) */
-  crushDmg: 34, rockDmg: 26, beamDmg: 22, gateDmg: 22,
+  crushDmg: 18, rockDmg: 26, beamDmg: 22, gateDmg: 22,
   arrowDmg: 16, arrowV: 230, runeDmg: 22, runeT: 1.25, runeR: 15,
   archerTell: 0.7, archerCd: 2.1, casterTell: 0.6, casterCd: 2.8,
   throwTell: 0.75, throwT: 1.0, throwCd: 2.8, throwDmg: 20, throwR: 16,   /* A THROW off a ledge (deeprails2): told ('!' and the arm back), then a pick lobbed at where your cart WILL be (a mark on the rail) - brake short of it, or pump past */

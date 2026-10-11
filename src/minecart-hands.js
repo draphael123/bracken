@@ -255,10 +255,11 @@ export function makeMinecartHands(ctx) {
         ctx.sfx.heavy && ctx.sfx.heavy(); ctx.shake(3); ctx.burst(lip, r.row * ts - 2, 10, ['#ffd36b', '#ff9a3c', '#8a919c'], 90, 0.4); (sayOk('ramp') && ctx.number(P.x, P.y - 40, c.v >= MC.boost - 20 ? 'FLY!' : 'NOT ENOUGH PUMP!', c.v >= MC.boost - 20 ? '#ffd36b' : '#ff9a5c')); } }
     /* A FALL: in an EXAM it is the end (the game's own fall); elsewhere a share of health and back on the rail, MC.retryBack behind the lip (or, off a rail that
        broke, back before the break with the rail relaid) */
-    if (!P.dead && P.y > ((Lv.mcFall || [])[Math.max(0, Math.min(Lv.W - 1, Math.floor(P.x / ts)))] || 36) * ts && P.vy > 0) { const col = P.x / ts, exam = (Lv.mcExam || []).some(([a, b]) => col >= a && col <= b + 1) || ctx.chaseRunning();
+    if (!P.dead && P.y > ((Lv.mcFall || [])[Math.max(0, Math.min(Lv.W - 1, Math.floor(P.x / ts)))] || 36) * ts && P.vy > 0) { const col = P.x / ts, gapAt = (Lv.mcBoost || []).find(b => !b.ramp && col >= b.x0 - 2 && col <= b.x1 + 3 && ctx.chaseRunning()), exam = (Lv.mcExam || []).some(([a, b]) => col >= a && col <= b + 1) || (ctx.chaseRunning() && !gapAt);
       if (!exam && c.lastGround) { const lip = c.lastGround.x, br = M.breaks.find(b => b.started && col >= b.x0 - 1 && col <= b.x1 + 2);
         let back = c.hist.slice().reverse().find(h => h.x <= lip - MC.retryBack) || c.hist[0] || c.lastGround;
         if (br) { relay(br); back = { x: (br.x0 - 5) * ts + 8, y: br.row * ts }; }
+        if (gapAt) back = { x: (gapAt.x1 + 3) * ts + 8, y: gapAt.row * ts };
         M.n.falls++; ctx.hurtHero(P.x, Math.round(P.maxHp * MC.fallCost), { unblockable: true, name: 'THE DROP', noKnock: true });
         if (!P.dead && P.hp > 0) { place(P, back.x, back.y); (sayOk('fall') && ctx.number(P.x, P.y - 34, 'A FALL COSTS YOU: PUMP BEFORE A LONG GAP', '#ff9a5c')); } } }
     /* THE CRUSHERS */
@@ -406,6 +407,8 @@ export function makeMinecartHands(ctx) {
   /* THE HERO'S CART (deeprails2: redrawn - a real iron tub, the hero sitting IN it): its back wall and inside behind him, its front over his legs; the wheels turn with
      the pace, sparks fly off them on the brake, it leans on a jump */
   const tilt = P => Math.max(-0.28, Math.min(0.28, (P.ground ? 0 : P.vy / 900)));
+  /* THE RIDERS SIT IN THEIR TUBS (claude/deeprailsart): the tub's front wall, drawn after the foes so it hides their legs (src/redraw/minecart_art.js tubFront) */
+  H.drawRiderFronts = (g, cx, cy) => { if (!M) return; for (const c of M.carts) { if (c.state === 'gone' || c.ledge || c.foreman || !c.e || !c.e.alive) continue; MCA.tubFront(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob'); } };
   H.drawCartBack = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); g.save(); g.translate(R(P.x - cx), R(P.y - cy + 1)); g.rotate(tilt(P)); MCA.heroCart(g, 0, 0, P.face || 1, c.v, !!c.braking, 0, time, 'back'); g.restore(); };
   H.drawCart = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); g.save(); g.translate(R(P.x - cx), R(P.y - cy + 1)); g.rotate(tilt(P)); MCA.heroCart(g, 0, 0, P.face || 1, c.v, !!c.braking, P.ducking ? 1 : 0, time, 'front'); g.restore();
     MCA.prowLamp(g, R(P.x - cx), R(P.y - cy + 1), P.face || 1, time); };
