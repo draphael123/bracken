@@ -255,10 +255,11 @@ export function makeMinecartHands(ctx) {
         ctx.sfx.heavy && ctx.sfx.heavy(); ctx.shake(3); ctx.burst(lip, r.row * ts - 2, 10, ['#ffd36b', '#ff9a3c', '#8a919c'], 90, 0.4); (sayOk('ramp') && ctx.number(P.x, P.y - 40, c.v >= MC.boost - 20 ? 'FLY!' : 'NOT ENOUGH PUMP!', c.v >= MC.boost - 20 ? '#ffd36b' : '#ff9a5c')); } }
     /* A FALL: in an EXAM it is the end (the game's own fall); elsewhere a share of health and back on the rail, MC.retryBack behind the lip (or, off a rail that
        broke, back before the break with the rail relaid) */
-    if (!P.dead && P.y > ((Lv.mcFall || [])[Math.max(0, Math.min(Lv.W - 1, Math.floor(P.x / ts)))] || 36) * ts && P.vy > 0) { const col = P.x / ts, exam = (Lv.mcExam || []).some(([a, b]) => col >= a && col <= b + 1) || ctx.chaseRunning();
+    if (!P.dead && P.y > ((Lv.mcFall || [])[Math.max(0, Math.min(Lv.W - 1, Math.floor(P.x / ts)))] || 36) * ts && P.vy > 0) { const col = P.x / ts, gapAt = (Lv.mcBoost || []).find(b => !b.ramp && col >= b.x0 - 2 && col <= b.x1 + 3 && ctx.chaseRunning()), exam = (Lv.mcExam || []).some(([a, b]) => col >= a && col <= b + 1) || (ctx.chaseRunning() && !gapAt);
       if (!exam && c.lastGround) { const lip = c.lastGround.x, br = M.breaks.find(b => b.started && col >= b.x0 - 1 && col <= b.x1 + 2);
         let back = c.hist.slice().reverse().find(h => h.x <= lip - MC.retryBack) || c.hist[0] || c.lastGround;
         if (br) { relay(br); back = { x: (br.x0 - 5) * ts + 8, y: br.row * ts }; }
+        if (gapAt) back = { x: (gapAt.x1 + 3) * ts + 8, y: gapAt.row * ts };
         M.n.falls++; ctx.hurtHero(P.x, Math.round(P.maxHp * MC.fallCost), { unblockable: true, name: 'THE DROP', noKnock: true });
         if (!P.dead && P.hp > 0) { place(P, back.x, back.y); (sayOk('fall') && ctx.number(P.x, P.y - 34, 'A FALL COSTS YOU: PUMP BEFORE A LONG GAP', '#ff9a5c')); } } }
     /* THE CRUSHERS */
