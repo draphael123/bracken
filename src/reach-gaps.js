@@ -13,7 +13,7 @@ export const GAPS = {
   /* THE SCREE PATH, the ridge road's three stepping ledges (218-220 > 224-226 > 230-232 > 236-238): each landing ledge a tile longer toward the one before, gaps 3 -> 2 */
   scree: c => { c.fill(217, 238, 3, 3, c.T.AIR); c.ledge(218, 220, 4); c.ledge(223, 226, 4); c.ledge(229, 232, 4); c.ledge(235, 238, 4); },
   /* THE HANGING VILLAGE, the rope net (103-104) to the rock lip (99): the lip a tile out */
-  hanging: c => { c.col(99, 100, 38); },
+  hanging: c => { c.col(103, 102, 38); },
   /* THE MONASTERY, the stair slab (60,138) back to the corridor floor (50-57, row 137) under the low floor: the corridor a tile longer */
   spire: c => { c.ledge(58, 59, 137); },
   /* HIGHCROWN: the scaffold 166-168 > the wall block 173 (gap 4); the scaffold 139 from the rampart block 131-135 (gap 3, up 1) */
