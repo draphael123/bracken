@@ -541,5 +541,247 @@
   "audio/sfx/swish_10.ogg",
   "audio/sfx/swish_11.ogg",
   "audio/sfx/swish_12.ogg"
+ ],
+ "r_boing": [
+  "audio/sfx/r_boing_0.ogg",
+  "audio/sfx/r_boing_1.ogg",
+  "audio/sfx/r_boing_2.ogg"
+ ],
+ "r_bossDown": [
+  "audio/sfx/r_bossDown_0.ogg",
+  "audio/sfx/r_bossDown_1.ogg",
+  "audio/sfx/r_bossDown_2.ogg"
+ ],
+ "r_buzz": [
+  "audio/sfx/r_buzz_0.ogg",
+  "audio/sfx/r_buzz_1.ogg",
+  "audio/sfx/r_buzz_2.ogg"
+ ],
+ "r_chain": [
+  "audio/sfx/r_chain_0.ogg",
+  "audio/sfx/r_chain_1.ogg",
+  "audio/sfx/r_chain_2.ogg"
+ ],
+ "r_charge": [
+  "audio/sfx/r_charge_0.ogg",
+  "audio/sfx/r_charge_1.ogg",
+  "audio/sfx/r_charge_2.ogg"
+ ],
+ "r_check": [
+  "audio/sfx/r_check_0.ogg",
+  "audio/sfx/r_check_1.ogg",
+  "audio/sfx/r_check_2.ogg"
+ ],
+ "r_chime": [
+  "audio/sfx/r_chime_0.ogg",
+  "audio/sfx/r_chime_1.ogg",
+  "audio/sfx/r_chime_2.ogg",
+  "audio/sfx/r_chime_3.ogg"
+ ],
+ "r_close": [
+  "audio/sfx/r_close_0.ogg",
+  "audio/sfx/r_close_1.ogg",
+  "audio/sfx/r_close_2.ogg"
+ ],
+ "r_coin": [
+  "audio/sfx/r_coin_0.ogg",
+  "audio/sfx/r_coin_1.ogg",
+  "audio/sfx/r_coin_2.ogg",
+  "audio/sfx/r_coin_3.ogg"
+ ],
+ "r_creak": [
+  "audio/sfx/r_creak_0.ogg",
+  "audio/sfx/r_creak_1.ogg",
+  "audio/sfx/r_creak_2.ogg"
+ ],
+ "r_dodge": [
+  "audio/sfx/r_dodge_0.ogg",
+  "audio/sfx/r_dodge_1.ogg",
+  "audio/sfx/r_dodge_2.ogg",
+  "audio/sfx/r_dodge_3.ogg"
+ ],
+ "r_door": [
+  "audio/sfx/r_door_0.ogg",
+  "audio/sfx/r_door_1.ogg",
+  "audio/sfx/r_door_2.ogg"
+ ],
+ "r_equip": [
+  "audio/sfx/r_equip_0.ogg",
+  "audio/sfx/r_equip_1.ogg",
+  "audio/sfx/r_equip_2.ogg"
+ ],
+ "r_fire": [
+  "audio/sfx/r_fire_0.ogg",
+  "audio/sfx/r_fire_1.ogg"
+ ],
+ "r_gate": [
+  "audio/sfx/r_gate_0.ogg",
+  "audio/sfx/r_gate_1.ogg",
+  "audio/sfx/r_gate_2.ogg"
+ ],
+ "r_haft": [
+  "audio/sfx/r_haft_0.ogg",
+  "audio/sfx/r_haft_1.ogg",
+  "audio/sfx/r_haft_2.ogg",
+  "audio/sfx/r_haft_3.ogg"
+ ],
+ "r_hiss": [
+  "audio/sfx/r_hiss_0.ogg",
+  "audio/sfx/r_hiss_1.ogg",
+  "audio/sfx/r_hiss_2.ogg",
+  "audio/sfx/r_hiss_3.ogg"
+ ],
+ "r_hornD": [
+  "audio/sfx/r_hornD_0.ogg",
+  "audio/sfx/r_hornD_1.ogg"
+ ],
+ "r_horn": [
+  "audio/sfx/r_horn_0.ogg",
+  "audio/sfx/r_horn_1.ogg"
+ ],
+ "r_jump": [
+  "audio/sfx/r_jump_0.ogg",
+  "audio/sfx/r_jump_1.ogg",
+  "audio/sfx/r_jump_2.ogg",
+  "audio/sfx/r_jump_3.ogg"
+ ],
+ "r_latch": [
+  "audio/sfx/r_latch_0.ogg",
+  "audio/sfx/r_latch_1.ogg",
+  "audio/sfx/r_latch_2.ogg",
+  "audio/sfx/r_latch_3.ogg"
+ ],
+ "r_levelStart": [
+  "audio/sfx/r_levelStart_0.ogg",
+  "audio/sfx/r_levelStart_1.ogg",
+  "audio/sfx/r_levelStart_2.ogg"
+ ],
+ "r_medal": [
+  "audio/sfx/r_medal_0.ogg",
+  "audio/sfx/r_medal_1.ogg",
+  "audio/sfx/r_medal_2.ogg"
+ ],
+ "r_open": [
+  "audio/sfx/r_open_0.ogg",
+  "audio/sfx/r_open_1.ogg",
+  "audio/sfx/r_open_2.ogg"
+ ],
+ "r_puff": [
+  "audio/sfx/r_puff_0.ogg",
+  "audio/sfx/r_puff_1.ogg",
+  "audio/sfx/r_puff_2.ogg"
+ ],
+ "r_rankUp": [
+  "audio/sfx/r_rankUp_0.ogg",
+  "audio/sfx/r_rankUp_1.ogg",
+  "audio/sfx/r_rankUp_2.ogg"
+ ],
+ "r_rattle": [
+  "audio/sfx/r_rattle_0.ogg",
+  "audio/sfx/r_rattle_1.ogg",
+  "audio/sfx/r_rattle_2.ogg",
+  "audio/sfx/r_rattle_3.ogg"
+ ],
+ "r_ring": [
+  "audio/sfx/r_ring_0.ogg",
+  "audio/sfx/r_ring_1.ogg",
+  "audio/sfx/r_ring_2.ogg"
+ ],
+ "r_rumble": [
+  "audio/sfx/r_rumble_0.ogg",
+  "audio/sfx/r_rumble_1.ogg",
+  "audio/sfx/r_rumble_2.ogg"
+ ],
+ "r_slash": [
+  "audio/sfx/r_slash_0.ogg",
+  "audio/sfx/r_slash_1.ogg",
+  "audio/sfx/r_slash_2.ogg",
+  "audio/sfx/r_slash_3.ogg",
+  "audio/sfx/r_slash_4.ogg"
+ ],
+ "r_spellT": [
+  "audio/sfx/r_spellT_0.ogg",
+  "audio/sfx/r_spellT_1.ogg",
+  "audio/sfx/r_spellT_2.ogg"
+ ],
+ "r_spell": [
+  "audio/sfx/r_spell_0.ogg",
+  "audio/sfx/r_spell_1.ogg",
+  "audio/sfx/r_spell_2.ogg",
+  "audio/sfx/r_spell_3.ogg"
+ ],
+ "r_splash": [
+  "audio/sfx/r_splash_0.ogg",
+  "audio/sfx/r_splash_1.ogg",
+  "audio/sfx/r_splash_2.ogg",
+  "audio/sfx/r_splash_3.ogg",
+  "audio/sfx/r_splash_4.ogg"
+ ],
+ "r_squelch": [
+  "audio/sfx/r_squelch_0.ogg",
+  "audio/sfx/r_squelch_1.ogg",
+  "audio/sfx/r_squelch_2.ogg",
+  "audio/sfx/r_squelch_3.ogg"
+ ],
+ "r_sting": [
+  "audio/sfx/r_sting_0.ogg",
+  "audio/sfx/r_sting_1.ogg",
+  "audio/sfx/r_sting_2.ogg"
+ ],
+ "r_stones": [
+  "audio/sfx/r_stones_0.ogg",
+  "audio/sfx/r_stones_1.ogg",
+  "audio/sfx/r_stones_2.ogg",
+  "audio/sfx/r_stones_3.ogg"
+ ],
+ "r_strike": [
+  "audio/sfx/r_strike_0.ogg",
+  "audio/sfx/r_strike_1.ogg",
+  "audio/sfx/r_strike_2.ogg",
+  "audio/sfx/r_strike_3.ogg"
+ ],
+ "r_tellB": [
+  "audio/sfx/r_tellB_0.ogg",
+  "audio/sfx/r_tellB_1.ogg",
+  "audio/sfx/r_tellB_2.ogg",
+  "audio/sfx/r_tellB_3.ogg"
+ ],
+ "r_tellS": [
+  "audio/sfx/r_tellS_0.ogg",
+  "audio/sfx/r_tellS_1.ogg",
+  "audio/sfx/r_tellS_2.ogg"
+ ],
+ "r_thud": [
+  "audio/sfx/r_thud_0.ogg",
+  "audio/sfx/r_thud_1.ogg",
+  "audio/sfx/r_thud_2.ogg",
+  "audio/sfx/r_thud_3.ogg"
+ ],
+ "r_tick": [
+  "audio/sfx/r_tick_0.ogg",
+  "audio/sfx/r_tick_1.ogg",
+  "audio/sfx/r_tick_2.ogg"
+ ],
+ "r_uiSel": [
+  "audio/sfx/r_uiSel_0.ogg",
+  "audio/sfx/r_uiSel_1.ogg",
+  "audio/sfx/r_uiSel_2.ogg",
+  "audio/sfx/r_uiSel_3.ogg"
+ ],
+ "r_wave": [
+  "audio/sfx/r_wave_0.ogg",
+  "audio/sfx/r_wave_1.ogg",
+  "audio/sfx/r_wave_2.ogg",
+  "audio/sfx/r_wave_3.ogg"
+ ],
+ "r_win": [
+  "audio/sfx/r_win_0.ogg",
+  "audio/sfx/r_win_1.ogg",
+  "audio/sfx/r_win_2.ogg"
+ ],
+ "r_zap": [
+  "audio/sfx/r_zap_0.ogg",
+  "audio/sfx/r_zap_1.ogg",
+  "audio/sfx/r_zap_2.ogg"
  ]
 }

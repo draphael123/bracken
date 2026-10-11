@@ -1688,6 +1688,48 @@ Object.assign(SFX, {
   realmWave(big) { tone('triangle', vary(big ? 500 : 800), vary(big ? 1400 : 1600), big ? 0.25 : 0.14, big ? 0.06 : 0.035); noise(big ? 0.25 : 0.12, 0.08, 3500, 1); },
   riseBite() { SFX.clank(); tone('sine', 150, 60, 0.16, 0.2); noise(0.08, 0.18, 1400, 0.8); },
 });
+// ---------- RECORDED TAKES OVER THE SYNTH (claude/sfx) ----------
+// Each name below plays a take from its recorded pool when the pool has loaded and sfxFiles is on; otherwise (pool still
+// loading, sfxFiles OFF, voices OFF for a cry) the synth above plays exactly as before. { layer } plays the take AND the synth.
+// p pool, v volume, r rate (or a function of the call's arguments), ui = menu bus, g = [gate key, seconds], voc = a creature cry (obeys voices-off), when = skip the take for some heroes.
+// Packs (all CC0): Kenney RPG Audio / Interface Sounds / Digital Audio / Music Jingles; rubberduck '80 CC0 RPG SFX' + '40 CC0 water, splash and slime SFX';
+// StumpyStrust 'Their Coming (generic horn sound)'. The cries are the creature kits already in the manifest. Credits: audio/CREDITS.txt + src/credits.js.
+const notPaly = () => heroVoice !== 'paladin';
+const REC = {
+  pJump: { p: 'r_jump', v: 0.34, when: () => notPaly() && heroVoice !== 'pyro' }, jump: { p: 'r_boing', v: 0.22 },
+  pDodge: { p: 'r_dodge', v: 0.42, when: () => notPaly() && heroVoice !== 'reaper' }, dodge: { p: 'r_dodge', v: 0.36, r: 1.1 }, leap: { p: 'r_dodge', v: 0.4, r: 0.75 },
+  charge: { p: 'r_charge', v: 0.2 }, foeSlash: { p: 'r_slash', v: 0.32 }, throwWhoosh: { p: 'swish', v: 0.4, r: 0.85 },
+  coin: { p: 'r_coin', v: 0.3 }, coinUp: { p: 'r_coin', v: 0.3, r: k => 1 + Math.min(k || 0, 12) * 0.035 },
+  thud: { p: 'r_thud', v: 0.55 }, geoThud: { p: 'r_thud', v: 0.6, r: 0.7 }, golemStomp: { p: 'r_thud', v: 0.5, r: 0.55, layer: 1 },
+  splash: { p: 'r_splash', v: 0.5 }, waveCrash: { p: 'r_wave', v: 0.45 }, squelch: { p: 'r_squelch', v: 0.4 }, puff: { p: 'r_puff', v: 0.35 }, hiss: { p: 'r_hiss', v: 0.3 }, buzz: { p: 'r_buzz', v: 0.22 },
+  uiSel: { p: 'r_uiSel', v: 0.5, ui: 1 }, menuOpen: { p: 'r_open', v: 0.5, ui: 1 }, menuClose: { p: 'r_close', v: 0.5, ui: 1 }, equip: { p: 'r_equip', v: 0.5, ui: 1 }, rankUp: { p: 'r_rankUp', v: 0.45, ui: 1 },
+  tell: { p: b => b ? 'r_tellB' : 'r_tellS', v: b => b ? 0.34 : 0.28, g: b => [b ? 'tellB' : 'tell', 0.12] }, strikeTell: { p: 'r_strike', v: 0.3 },
+  mageRuneTell: { p: 'r_spellT', v: 0.34 }, mageBoltTell: { p: 'r_spell', v: 0.3, r: 1.3 }, priestCenserTell: { p: 'r_chain', v: 0.3, r: 1.1 }, wqSickleTell: { p: 'r_charge', v: 0.3, r: 1.3 }, wqLashTell: { p: 'r_dodge', v: 0.3, r: 1.4, layer: 1 },
+  sting: { p: 'r_sting', v: 0.4 }, medal: { p: 'r_medal', v: 0.38 }, check: { p: 'r_check', v: 0.38 }, win: { p: 'r_win', v: 0.42 }, levelStart: { p: 'r_levelStart', v: 0.4 }, bossDown: { p: 'r_bossDown', v: 0.4, layer: 1 }, judgement: { p: 'r_bossDown', v: 0.3, r: 0.8, layer: 1 },
+  zap: { p: 'r_zap', v: 0.3 }, spark: { p: 'r_zap', v: 0.22, r: 1.6 }, stormZap: { p: 'r_zap', v: 0.3, r: 0.85 }, mageBolt: { p: 'r_spell', v: 0.38 },
+  golemShatter: { p: 'r_stones', v: 0.5, layer: 1 }, rumble: { p: 'r_rumble', v: 0.5, layer: 1 }, geoQuake: { p: 'r_rumble', v: 0.5, layer: 1 }, pyreBoom: { p: 'r_fire', v: 0.4, layer: 1 },
+  ropeHaul: { p: 'r_creak', v: 0.35, r: 0.9 }, gateDrop: { p: 'r_gate', v: 0.5 }, gateLift: { p: 'r_chain', v: 0.4, r: 0.8 }, gateOpen: { p: 'r_door', v: 0.4 },
+  mend: { p: 'r_chime', v: 0.3, r: 0.9, layer: 1 }, aegis: { p: 'r_chime', v: 0.25, r: 1.3 },
+  rattle: { p: 'r_rattle', v: v => 0.28 * (v ?? 1) }, haft: { p: 'r_haft', v: 0.35 }, tipRing: { p: 'r_ring', v: 0.25, r: 1.2 }, braceSet: { p: 'r_latch', v: 0.35 },
+  hornBlast: { p: 'r_horn', v: 0.5 }, hornDraw: { p: 'r_hornD', v: 0.35 },
+  // creature cries that were synth though the creature kits had spare takes
+  snort: { p: 'vo_ogre_alert', v: 0.18, r: 1.5, voc: 1, g: () => ['snortRec', 0.1] }, screech: { p: 'vo_scream', v: 0.22, r: 1.35, voc: 1 }, caw: { p: 'amb_gull', v: 0.25, r: 0.8, g: () => ['caw', 0.35] },
+  bark: { p: 'vo_bark', v: 0.3, voc: 1 }, yelp: { p: 'vo_bark', v: 0.26, r: 1.55, voc: 1 }, boreRoar: { p: 'roar', v: 0.45, r: 0.5 }, mawRoar: { p: 'roar', v: 0.4, r: 0.7 }, queenShriek: { p: 'vo_scream', v: 0.3, r: 1.05, voc: 1 }, croak: { p: 'croak', v: 0.3 },
+};
+export const RECORDED_SFX = Object.keys(REC);
+for (const [name, c] of Object.entries(REC)) {
+  const orig = SFX[name]; if (typeof orig !== 'function') continue;
+  SFX[name] = function (...a) {
+    const pool = typeof c.p === 'function' ? c.p(...a) : c.p;
+    if (ac && sfxFiles && (!c.when || c.when()) && (clips[pool] || []).some(Boolean) && !(!voicesOn && c.voc)) {
+      if (c.g) { const [k, s] = c.g(...a); if (!gate(k, s)) return; }
+      const v = typeof c.v === 'function' ? c.v(...a) : c.v, r = typeof c.r === 'function' ? c.r(...a) : (c.r || 1);
+      if (c.voc ? voice(pool, v, r) : file(pool, v, r, c.ui ? uiGain : null)) { if (c.layer) return orig.apply(this, a); return; }
+    }
+    return orig.apply(this, a);
+  };
+}
+
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'skyroad', 'rootway', 'huntmaster', 'greatdrill', 'rocphoenix', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'mountain', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'glasssea', 'gorgecrab', 'matriarch', 'undeadmage', 'lanterneater'];
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'mineworks', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon', 'glassday', 'glassnight', 'ksar', 'towpath', 'rootway', 'litchurch', 'foothills', 'buriedcity'];
