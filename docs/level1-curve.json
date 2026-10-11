@@ -299,17 +299,17 @@
   "lostPct": 345
  },
  "fields": {
-  "hash": "679c5bc3cd1b",
+  "hash": "9bbe759e073b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 25,
-  "deaths": 2,
-  "kills": 20,
-  "lifts": 157,
+  "hits": 35,
+  "deaths": 7,
+  "kills": 14,
+  "lifts": 145,
   "walked": 100,
   "bare": true,
-  "lostPct": 213
+  "lostPct": 314
  },
  "burial": {
   "hash": "c84122b2f9ce",
