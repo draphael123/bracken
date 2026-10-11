@@ -778,6 +778,8 @@ export const HEIGHT = {
 // THE COMMON FOES WHOSE HARM IS NOT A TOLD WINDUP (touch, a lunge from hiding, a latch, a burst, a gust), and what the player does
 // about each. EMPTY, and tools/answer-tags.mjs keeps it so (the combat pass, part 2: Daniel's "no untold hits"): the 24 that were
 // here - the lurker's lunge, the hound's leap, the sapper's bomb and the rest - each wind up on a mark now and answer in ANSWER.
+/* (claude/order) THE BROKEN ORDER's answers: a yellow ! is blocked (or PARRIED - the duelist's cut is the lesson), a red !! is dodged; only the duelist's LUNGE runs at chest height (duck under it) - the rest reach the floor */
+for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) if (v) { ANSWER[t + '|' + m] = v === '!' ? 'block' : 'dodge'; HEIGHT[t + '|' + m] = m === 'lungeTell' ? 'high' : 'low'; }
 export const UNTOLD = {};
 // THE COMMON FOLK THAT NEVER HARM YOU AT ALL: no blow, so nothing to tell and nothing to answer.
 export const HARMLESS = new Set(['folk', 'sentry', 'squirrel', 'dummy', 'acolyte']);   // townsfolk, a bell-runner, a pickpocket (it is a thief underneath: see thief|snatchTell), a straw man

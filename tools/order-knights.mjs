@@ -107,8 +107,11 @@ if (WANT.some(w => w !== 'table')) {
         { const P=__arena('knight');const e=__knight('oathlance',24,{sig:['plate']});e.elT=99;BK.sim(1);P.x=e.x-20;const h0=e.hp;C.strike(e,'light',10);o.oreLight=h0-e.hp;o.orePlate1=e.okPlate;const h1=e.hp;C.strike(e,'heavy',10);o.oreHeavy=h1-e.hp;o.orePlate2=e.okPlate; }
         { const P=__arena('knight');BK.god=true;const e=__knight('oathmage',90);e.elT=0;let cast=false;for(let i=0;i<240&&!cast;i++){P.x=e.x-110;BK.sim(1);if(e.mode==='castTell')cast=true;} o.castTell=cast;const h0=e.hp;BK.sim(4);e.ekStunT=0;P.x=e.x+20;e.ekSide=-1;C.strike(e,'light',8);let im=null;for(let i=0;i<60&&!im;i++){BK.sim(1);if(e.mode==='castBroken')im=e.mode;}o.interrupted=im||e.mode;o.mageHit=h0-e.hp;
           const f=__knight('oathmage',60);f.elT=99;f.face=-1;f.ekSide=-1;BK.sim(1);P.x=f.x-30;const h2=f.hp;C.strike(f,'shot',8);o.wardFront=h2-f.hp;P.x=f.x+30;const h3=f.hp;C.strike(f,'shot',8);o.wardBack=h3-f.hp; }
+        { let got=false; for(let lead=1;lead<=9&&!got;lead++){ const P=__arena('knight');const R=BK.riposte();R.resetStats();const e=__knight('oathblade',30);e.elT=0;let pressed=false;
+            for(let i=0;i<240;i++){P.x=e.x-30;P.face=1;if(e.mode==='cutTell'&&e.modeT<=lead/60&&!pressed){BK.keys.block=true;pressed=true;}BK.sim(1);if(R.stats.parries>0){got=true;o.parryLead=lead;o.rpHold=+(e.rpHold||0).toFixed(2);break;}if(e.mode==='cutRec')break;}BK.keys.block=false; } o.parried=got; }
         return o;})()`);
       console.log('  ' + JSON.stringify(r));
+      ok(r.parried && r.rpHold > 0, 'THE DUELIST TEACHES THE PARRY: his CUT met with the shield on the beat is PARRIED and he reels (' + r.parryLead + ' frames before the blow)');
       ok(r.raHigh >= 1 && r.bladeHp === 0 && r.turned >= 1, 'THE DUELIST GUARDS HIGH: his shield up with a hero over him, a plunge turned, no damage (rule a)');
       ok(r.antiAir === 'tell', 'THE LANCER: a hero over him -> the told upward thrust (rule b)');
       ok(r.catch === 'tell' && r.caught >= 1, 'THE BRUTE: a hero in the air before him -> the told CATCH, and he throws (rule d)');
