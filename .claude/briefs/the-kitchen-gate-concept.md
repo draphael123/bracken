@@ -26,3 +26,12 @@ CASTLE'S SMITH / ARMOURER (his forge in the bailey's armoury; slag + beam kept) 
 bot (greed punish + harder hits per the combat pass). NOTE: the mountain's V1 "forge-master" boss idea needs a different
 boss so they don't duplicate.
 MUSIC: real downloaded level track (Daniel picks) + synth boss theme. All NEW-LEVEL-CHECKLIST rules; mash bot must lose.
+
+## UPDATE 2026-10-08 (Daniel interview, coordinator) - SUPERSEDES the road line, the crag-climb move and the Forgemaster note above
+ROAD: ... Queen's Forge -> THE UNDERCROWN -> THE KITCHEN GATE -> HIGHCROWN. The level STARTS UNDERGROUND (you come up out of the
+Undercrown into the castle's cellars). STRUCTURE: 1 THE UNDERCELLARS (root cellars, ice house, wine vaults, well shaft; the cold
+store's carcass rail = the safe MEAT-HOOK teach; a supply-cart chute shows where the Ore Road's deliveries come down) -> 2 THE SPIT HALL
+(rotating spits teach + test) -> 3 THE GREASE KITCHENS (grease slides, cauldron steam, the FIRE set piece along the grease trails) ->
+4 THE FEAST HALL (exam: hooks + spits + grease + the Butcher) -> 5 GRUBBAG'S TABLE (boss as designed). Then Highcrown opens up the
+kitchen stair into the lower bailey. Highcrown's old CRAG CLIMB is CUT (not moved). The Forgemaster leaves Highcrown for THE QUEEN'S
+FORGE (scratch/concept-forge.md). Spice vault pays SILVER (no relic). Rules: design-standard B1-B15, difficulty v2.
