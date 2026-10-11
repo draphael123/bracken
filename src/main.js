@@ -4219,17 +4219,25 @@ const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reach
 const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
 /* A HERO'S OWN DANCE (dances lane, 2026-09-29): the frames are the set's own (K.R.dance, baked in chars.js for every hero and so for every
    skin), the jingle is the hero's own (SFX.dance). An automatic dance (after a boss, or a long idle) plays whole turns for about two and a half seconds and stops. */
-function danceStart(auto) {
-  const n = (K.R.dance || []).length || 12;
+/* WHICH DANCE (heroanim lane, 2026-10-10): a hero has three (chars.js F.dance / F.dance2 / F.dance3) and the moment picks. A boss down is the FLOURISH
+   (dance3, or the salute for variety); a long idle is the hero's solo (dance2); the emote key cycles all three; the victory card shows dance. */
+function danceKeyFor(ctx) {
+  const R = K.R, has = k => R[k] && R[k].length; let k = 'dance';
+  if (ctx === 'boss') k = (P.bossN = (P.bossN | 0) + 1) % 3 === 0 ? 'dance' : 'dance3';   /* (no Math.random: the sim's rolls stay where they were) */ else if (ctx === 'idle') k = 'dance2';
+  else { P.danceN = P.danceN === undefined ? 0 : (P.danceN + 1) % 3;   /* the first press is the salute (dance), then the solo, then the flourish */ k = ['dance', 'dance2', 'dance3'][P.danceN]; }
+  return has(k) ? k : 'dance'; }
+function danceStart(auto, ctx) {
+  P.danceKey = danceKeyFor(ctx);
+  const n = (K.R[P.danceKey] || K.R.dance || []).length || 12;
   P.dance = 0.0001; P.danceLoop = 0; P.danceMax = auto ? Math.ceil(2.4 / (n / 10)) * (n / 10) + 0.1 : 0; P.fidgetT = 0; P.idleT = 0; P.idleLongT = 0;
-  SFX.dance(hero());
+  SFX.dance(hero(), P.danceKey === 'dance2' ? 1 : P.danceKey === 'dance3' ? 2 : 0);
 }
 /* THE ARENA OPENS: every hero still on his feet gives a turn of his own dance, as soon as his hands are still. */
 let bossWasActive = false;
 function danceAfterBoss() {
   const ended = bossWasActive && !bossActive && state === 'play' && !rushOn() && L.arena && enemies.some(e => e.t === L.arena.boss && !e.alive);
   bossWasActive = bossActive;
-  if (ended) for (const pp of players) if (upright(pp)) pp.danceCue = 8;
+  if (ended) for (const pp of players) if (upright(pp)) { pp.danceCue = 8; pp.danceCtx = 'boss'; }
 }
 function winLevel() {
   for (const p of players) p.total = addScore(p.total || freshScore(), p.score);   /* this wood goes onto the run's running total, for the victory card */
@@ -8687,13 +8695,13 @@ function updatePlayer(dt) {
      It never holds a hero: nothing here sets a timer that a move does not clear, so it cannot block a fight's end or the walk-out. */
   { const dn = keys.dance && !P.danceWas; P.danceWas = !!keys.dance;
     const busy = !P.ground || P.dead || keys.left || keys.right || keys.jump || keys.atk || keys.dodge || keys.block || P.hurt > 0 || P.atk >= 0 || P.dodge > 0 || P.climb || P.swim || P.carry;
-    if (dn && !busy && Math.abs(P.vx) < 20) { if (P.dance > 0) { P.dance = 0; P.danceMax = 0; SFX.uiSel(); } else danceStart(false); }
+    if (dn && !busy && Math.abs(P.vx) < 20) { if (P.dance > 0) { P.dance = 0; P.danceMax = 0; SFX.uiSel(); } else danceStart(false, 'key'); }
     if (P.danceCue > 0) { P.danceCue -= dt; if (keys.left || keys.right || keys.jump || keys.dodge || P.dead || state !== 'play') P.danceCue = 0;
-      else if (!(P.dance > 0) && !busy && Math.abs(P.vx) < 20) { P.danceCue = 0; danceStart(true); } }
+      else if (!(P.dance > 0) && !busy && Math.abs(P.vx) < 20) { P.danceCue = 0; danceStart(true, P.danceCtx || 'boss'); P.danceCtx = null; } }
     if (P.dance > 0) { if (busy) { P.dance = 0; P.danceMax = 0; } else { P.dance += dt; P.vx = 0;
-      const n = (K.R.dance || []).length || 12, lp = Math.floor(P.dance * 10 / n);
+      const n = (K.R[P.danceKey || 'dance'] || K.R.dance || []).length || 12, lp = Math.floor(P.dance * 10 / n);
       if (P.danceMax > 0 && P.dance >= P.danceMax) { P.dance = 0; P.danceMax = 0; }
-      else if (lp !== P.danceLoop) { P.danceLoop = lp; if (lp > 0) SFX.dance(hero()); } } } }
+      else if (lp !== P.danceLoop) { P.danceLoop = lp; if (lp > 0) SFX.dance(hero(), P.danceKey === 'dance2' ? 1 : P.danceKey === 'dance3' ? 2 : 0); } } } }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
   if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(38)) { cdSet('fireWall'); kitPose(P, 'wall', 0.4); P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 2.5, delay: i * 0.08, own: true });   /* (claude/herokit) 31 stamina, 3 s -> 38, 2.5 s: the highest damage a second in the game */ SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(CM.dashCost('pyro', 25))) { cdSet('cinderStep');  P.dodge = 0.3; P.dodgeInv = CM.dashInv(0.3); P.vx = P.face * 320; P.inv = Math.max(P.inv, CM.dashInv(0.3));   /* WEIGHT (10-03): 25 -> 28, grace 0.4 -> 0.2 s */ P.cinderT = 0.3; kitPose(P, 'cinder', 0.3); streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); for (let i = 0; i < 3; i++) fires.push({ x: P.x - P.face * i * 14, y: P.y, life: 1.6, delay: 0, own: true }); SFX.throwWhoosh(); number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
@@ -9360,7 +9368,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? 0.24 : 0.34) : 1) * (P.heavy && !isReaper() ? 0.72 : 1);   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
       if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }
       if (P.heavy && hero() === 'knight' && P.cutStage === 3 && !P.cutQuaked && was < 0.2 && P.atk >= 0.2 && (P.ground || P.swim)) { P.cutQuaked = true; cutQuake(); }   /* THE KNOCKDOWN's blade into the floor */   /* the blade goes into the ground, and the ground answers */
-      if (P.atk > lim) { P.atkRec = CM.recoveryFor(hero(), { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut });   /* WEIGHT: the swing is seen through (src/commit.js COMMIT) */ if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
+      if (P.atk > lim) { P.atkRec = CM.recoveryFor(hero(), { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut }); P.atkRecMax = P.atkRec;   /* WEIGHT: the swing is seen through (src/commit.js COMMIT) */ if (!P.heavy && P.ground && (P.combo || 0) % 3 === 0) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
         P.recSwing = P.atkRec > 0;   /* (claude/dkhero) this recovery is a SWING's: the Death Knight's ward may cut its end */
         P.atk = -1; P.heavy = false; P.cutStage = 0; P.swingEndT = time; } }
     /* ==== AND THE RUN-THROUGH TRAVELS. It did not: measured in the page, holding the swing and letting it go moved her
@@ -9552,7 +9560,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     else if (P.fidgetT > 0) { P.fidgetT -= dt; if (P.fidgetT <= 0) { P.fidgetT = 0; P.idleT = 0; P.fidgetWait = 7 + Math.random() * 6; } }
     else if ((P.idleT = (P.idleT || 0) + dt) > (P.fidgetWait || 4) && K.R.fidget) P.fidgetT = K.R.fidget.length * 0.1;
     /* A LONG IDLE is a dance, not another fidget: half a minute of standing about in no danger, and the hero gives his own dance one turn */
-    if (calm) { if ((P.idleLongT = (P.idleLongT || 0) + dt) > 30 && K.R.dance) danceStart(true); } else P.idleLongT = 0; }
+    if (calm) { if ((P.idleLongT = (P.idleLongT || 0) + dt) > 30 && K.R.dance) danceStart(true, 'idle'); } else P.idleLongT = 0; }
 
   /* THE BELL PIT'S THROW, carried: its sideways half waits until you are up past the deck, or the joist you rise beside stops it (pitThrow) */
   if (P.pitCarry) { P.pitCarry.t -= dt; if (L.bellDeck && P.y < L.bellDeck.deck * TS - 2 && !P.dead) P.vx = P.pitCarry.vx; if (P.pitCarry.t <= 0 || (P.ground && P.y <= L.bellDeck.deck * TS)) P.pitCarry = null; }
@@ -29678,7 +29686,8 @@ function drawWorld(cx, cy, showPlayer) {
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0 && CA && CA.atkPose(K.R)) { [key, frame] = CA.atkPose(K.R); }   /* THE SHIELD TRIP and THE LOW POKE, from the crouch (src/crouch-a.js) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
-      else if (P.atkRec > 0 && P.recPose && P.ground && !(P.flourishT > 0)) { [key, frame] = P.recPose; }   /* WEIGHT: the recovery holds the swing's last pose (a recover pose per hero is an optional art lane) */
+      else if (P.atkRec > 0 && P.recPose && P.ground && !(P.flourishT > 0)) { [key, frame] = P.recPose;
+        if (!P.heavy && K.R.follow && (key === 'atk' || key === 'atkB' || key === 'atkC') && P.atkRecMax > 0) { key = 'follow'; frame = P.atkRec / P.atkRecMax > 0.5 ? 0 : 1; } }   /* FOLLOW-THROUGH (heroanim): the spent weapon carried on, then back to guard, inside the same recovery (art only) */   /* WEIGHT: the recovery holds the swing's last pose (a recover pose per hero is an optional art lane) */
       else if (kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* EVERY ABILITY HAS A BODY (hero-poses.js): the active that just fired, in a pose of its own - DISARM's hook among them, which borrowed the combo's backhand */
       else if (isWarden() && wardPose()) { const wp = wardPose(); key = wp[0]; frame = wp[1]; }   /* THE WARDEN'S BOUGHT ACTIVES (wardenKit) */
       else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
@@ -29713,7 +29722,7 @@ function drawWorld(cx, cy, showPlayer) {
       P.lastFace = P.face; if (P.skidT > 0) P.skidT -= 1 / 60;
       let dFace = P.face, dY = 0;
       if (K.R.drink && !P.dead && !((hero() === 'knight' && thrown) || (isWarden() && wardJav))) { if (P.drinkT > 0) { key = 'drink'; frame = FA.DRINK_FRAME[F2.drinkPhase(drinkT0() - P.drinkT, { drinkT: drinkT0(), swallowAt: swallowT0() }).ph] | 0; } else if (flaskHud.spillFrameT > 0) { key = 'drink'; frame = FA.DRINK_FRAME.spill; } }   /* (claude/flasks2art) THE DRINK'S OWN FRAMES: uncork, two gulps, lower (green rim), and the spill */
-      if (P.dance > 0 && K.R.dance) { key = 'dance'; frame = Math.floor(P.dance * 10) % K.R.dance.length; }   /* the hero's OWN dance (chars.js F.dance) */
+      if (P.dance > 0 && K.R.dance) { const dl = K.R[P.danceKey || 'dance'] ? (P.danceKey || 'dance') : 'dance'; key = dl; frame = SET.reduceMotion ? Math.floor(K.R[dl].length * 0.4) : Math.floor(P.dance * 10) % K.R[dl].length; }   /* (Reduce motion: one held pose of it) */   /* the hero's OWN dance (chars.js F.dance) */
       else if (P.dance > 0) { const DANCE = [['idle', 0, 1], ['crouch', 0, 1], ['jump', 0, 1], ['land', 0, 1], ['block', 0, 1], ['idle', 2, 1],
           ['idle', 0, -1], ['crouch', 0, -1], ['jump', 1, -1], ['land', 0, -1], ['run', 2, -1], ['run', 5, 1]];
         const bt = P.dance * 4.2, step = DANCE[Math.floor(bt) % DANCE.length], ph = bt % 1;

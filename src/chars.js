@@ -580,6 +580,40 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
     const bow1 = at({ dy: 1, hy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], sword: [sh[0] + 2, sh[1] + 1, sh[0] + 4, sh[1] + 8], plume: 2 });
     const bow2 = at({ dy: 2, hy: 2, sho: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], sword: [sh[0] + 3, sh[1] + 2, sh[0] + 5, sh[1] + 8], plume: 2 });
     F.dance = holdFrames([[ready, 2], [draw, 2], [up, 3], [upGlint, 2], [up, 2], [present, 3], [upGlint, 2], [bow1, 2], [bow2, 4], [bow1, 2]]); }
+  /* HIS OTHER TWO DANCES (heroanim lane, 2026-10-10). The salute above is the victory card's and the H key's; these are his two
+     other moods, and both are drill. dance2 = THE KATA, for a long idle: nobody is watching and he runs the old forms alone, guard,
+     high cut, forward cut, low cut, shield up and the bash, and ends sheathed-on-the-turf with his head bowed over the hilt.
+     dance3 = THE FLOURISH, for a boss down: the blade thrown round overhead in a full turn, planted, then the thrust to the sky
+     with the shield up and a hop off both boots. Every pose is the sword or the shield: nobody else here drills. */
+  { const at = (o = {}) => KF({ legs: 'stand', plume: 0, ...o });
+    const ar = (hx, hy2, tx, ty, o = {}) => at({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], sword: [sh[0] + hx, sh[1] + hy2, sh[0] + tx, sh[1] + ty], ...o });
+    const gl = (x, y) => [[x - BX, y - BY, '#ffffff'], [x - BX - 1, y - BY + 1, '#fff6c8'], [x - BX + 1, y - BY + 1, '#fff6c8'], [x - BX, y - BY - 1, '#fff6c8']];
+    const guard = ar(4, -1, 12, -4, { shield: true, legs: 'wide', dx: 1, plume: 1 });
+    const back = ar(-1, -4, -7, -10, { legs: 'wide', dx: -2, plume: 1 });
+    const cutF = ar(4, 1, 13, 1, { legs: 'runC', dx: 1, plume: 2 });
+    const cutFg = ar(4, 1, 13, 1, { legs: 'runC', dx: 1, plume: 2, bits: gl(sh[0] + 13, sh[1] + 1) });
+    const cutLow = ar(3, 3, 11, 8, { legs: 'runC', dx: 2, plume: 2 });
+    const hi = ar(3, -1, 3, -11, { plume: 2 });
+    const hiBack = ar(1, -3, -5, -9, { legs: 'wide', dx: -1, plume: 1 });
+    const hiCut = ar(4, -2, 11, 4, { legs: 'runC', dx: 1, plume: 2 });
+    const shieldUp = at({ shield: true, legs: 'wide', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 2, sh[1] + 7], plume: 1 });
+    const bash = at({ shield: true, legs: 'runC', dx: 2, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 2, sh[1] + 7], plume: 2 });
+    const plantTwo = ar(3, 3, 4, 11, { dy: 1, hy: 1, plume: 2 });
+    const bowHilt = ar(3, 3, 4, 11, { dy: 2, hy: 2, sho: 1, plume: 2 });
+    F.dance2 = holdFrames([[at({ sword: rest(), plume: 1 }), 2], [guard, 3], [back, 3], [cutF, 2], [cutFg, 2], [ar(4, 1, 8, 4, { legs: 'runC', dx: 1, plume: 1 }), 2], [guard, 2],
+      [hiBack, 3], [hiCut, 2], [cutLow, 3], [guard, 2], [shieldUp, 3], [bash, 2], [shieldUp, 2], [plantTwo, 3], [bowHilt, 5], [plantTwo, 2], [at({ sword: rest(), plume: 1 }), 2]]);
+    const o1 = ar(5, -2, 9, -9, { legs: 'wide', plume: 1 }), o2 = ar(3, -2, 3, -12, { plume: 2 }), o3 = ar(2, -2, -4, -10, { legs: 'wide', dx: -1, plume: 2 }),
+      o4 = ar(1, 0, -7, -3, { legs: 'wide', dx: -2, plume: 2 }), o5 = ar(1, 3, -5, 9, { dx: -1, plume: 2 });
+    const bigHi = ar(3, -2, 3, -12, { top: 0, hy: -1, sho: 1, plume: 2, bits: gl(sh[0] + 3, sh[1] - 12) });
+    const leap = at({ legs: 'jump', dy: -3, sho: 1, shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 2], sword: [sh[0] + 3, sh[1] - 2, sh[0] + 3, sh[1] - 12], plume: 2, bits: gl(sh[0] + 3, sh[1] - 12) });
+    const touch = at({ legs: 'land', dy: 2, shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], sword: [sh[0] + 3, sh[1] - 1, sh[0] + 3, sh[1] - 11], plume: 0 });
+    const hold = at({ shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], sword: [sh[0] + 3, sh[1] - 1, sh[0] + 3, sh[1] - 11], plume: 1, bits: gl(sh[0] + 3, sh[1] - 11) });
+    F.dance3 = holdFrames([[at({ sword: rest(), plume: 1 }), 1], [o1, 2], [o2, 2], [o3, 2], [o4, 2], [o5, 2], [o1, 2], [o2, 2], [o3, 1], [o4, 1], [o5, 2], [plantTwo, 3],
+      [at({ legs: 'crouch', legsDy: 3, dy: 4, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], sword: [sh[0] + 3, sh[1] + 1, sh[0] + 3, sh[1] - 8], shield: true, plume: 2 }), 2], [leap, 2], [bigHi, 1], [touch, 2], [hold, 5], [at({ sword: rest(), plume: 1 }), 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [KF({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], sword: [sh[0] + 3, sh[1] + 4, sh[0] + 9, sh[1] + 11], plume: 1 }), KF({ dy: 1, legs: 'stand', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], sword: [sh[0] + 2, sh[1] + 3, sh[0] + 5, sh[1] + 10], plume: 0 })];
   /* HIS SLUMP. Not the hurt frame: nothing has hit him. The helm sinks into the shoulders, the shoulders themselves
      sag (sho below zero drops the outer pixels instead of lifting them), the kite hangs off a slack arm down by his
      knee, and the sword is not held so much as leant on, its point out in the turf in front of his boots. */
@@ -1954,6 +1988,29 @@ export function bakePyro(skin = {}, previewOnly = false) {
     const d = jig({ lean: 2, trail: 3, sit: 1, hemW: 13, feet: [[12, 17], [15, 18]], arm2: [11, 11, 12, 13], flame: 4, flick: 1 });
     const e = jig({ bell: 2, dy: -1, hemW: 12, feet: [[11, 17], [15, 16]], arm2: [11, 10, 9, 6], palm: [8, 5], flame: 0, sparks: [[7, 2, 'y']] });
     F.dance = holdFrames([[a, 2], [b, 2], [c, 2], [d, 2], [e, 1]]); }
+  /* HER OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE JUGGLE, her long-idle solo: three sparks lit one at a time in the free
+     palm and kept up between palm and cage in a slow arc, her weight rocking heel to heel under the hem, the cage flaring each time one
+     lands in it. dance3 = THE PYRE TURN, a boss down: the staff comes off the turf, goes round her head in a full circle with the hem
+     flying and the cowl thrown back, and is brought down on the ground with a burst of fire; she stands in it with both arms open. */
+  { const st = (o = {}) => pyroFrame({ staff: [17, 18, 18, 2], arm: [16, 11, 17, 12], cowl: 0, ...o });
+    const lo = [11, 10, 13, 12], hi = [11, 10, 14, 9];
+    F.dance2 = holdFrames([[st({ arm2: lo, palm: [14, 11], feet: [[10, 18], [15, 18]] }), 2], [st({ arm2: hi, sparks: [[14, 7, 'y']], flame: 1, lean: -1, feet: [[10, 18], [15, 18]] }), 2],
+      [st({ arm2: lo, sparks: [[14, 4, 'y'], [11, 2, 'r']], flame: 2, bell: 1, feet: [[11, 17], [16, 18]] }), 2], [st({ arm2: hi, sparks: [[16, 3, 'y'], [13, 5, 'r']], flame: 3, bell: 2, dy: -1, hemW: 12, feet: [[11, 17], [15, 16]] }), 2],
+      [st({ arm2: [11, 10, 12, 8], sparks: [[17, 1, 'y'], [9, 3, 'r'], [14, 2, 'y']], flame: 3, flick: 1, lean: 1, feet: [[11, 18], [16, 18]] }), 2],
+      [st({ arm2: hi, sparks: [[10, 4, 'y'], [16, 5, 'y']], flame: 4, flick: 1, bell: 1, feet: [[12, 18], [15, 18]] }), 2], [st({ arm2: lo, sparks: [[14, 8, 'y']], flame: 4, lean: 1, trail: 1, hemW: 12, feet: [[12, 17], [16, 18]] }), 2],
+      [st({ arm2: lo, palm: [14, 11], flame: 1, sit: 1, feet: [[10, 18], [15, 18]] }), 2], [st({ arm2: hi, sparks: [[13, 6, 'r'], [15, 4, 'y']], flame: 2, lean: -1, feet: [[10, 18], [15, 18]] }), 2],
+      [st({ arm2: lo, flame: 3, flick: 1, bell: 1, feet: [[11, 18], [15, 18]] }), 2], [F.idle[0], 2]]);
+    const sp = (stf, a, a2, o = {}) => pyroFrame({ staff: stf, arm: a, arm2: a2, cowl: 2, bell: 2, hemW: 13, feet: [[9, 18], [17, 18]], ...o });
+    const t1 = sp([6, 3, 22, 1], [15, 9, 17, 3], [11, 9, 10, 3], { lean: -1, flick: 1 }), t2 = sp([9, 4, 25, 8], [16, 10, 20, 8], [12, 10, 16, 8], { lean: 2, trail: 2, flare: [26, 8, true] }),
+      t3 = sp([12, 14, 18, 3], [16, 11, 18, 8], [12, 11, 14, 8], { lean: 3, trail: 3, dy: -1, feet: [[10, 17], [17, 17]] }), t4 = sp([12, 4, 3, 10], [14, 9, 10, 7], [11, 9, 7, 8], { lean: -2, trail: -2, dy: -1, feet: [[10, 17], [16, 17]] }),
+      t5 = sp([9, 3, 5, 18], [14, 10, 8, 13], [11, 10, 7, 14], { lean: -3, trail: -3, hemW: 14, flare: [4, 19, true] });
+    const slam = pyroFrame({ lean: 2, trail: 2, sit: 2, feet: [[9, 18], [17, 18]], staff: [10, 14, 20, 19], arm: [16, 11, 19, 15], arm2: [12, 11, 15, 16], cowl: 1, flare: [21, 19, true], sparks: [[22, 16, 'y'], [20, 14, 'r'], [24, 18, 'y']] });
+    const open = pyroFrame({ bell: 2, hemW: 14, staff: [17, 18, 18, 2], arm: [16, 11, 21, 7], arm2: [11, 11, 6, 7], cowl: 2, flame: 4, flick: 1, sparks: [[22, 4, 'y'], [5, 4, 'y'], [18, 0, 'r']] });
+    F.dance3 = holdFrames([[st({ flame: 1 }), 1], [t1, 2], [t2, 2], [t3, 2], [t4, 2], [t5, 2], [t1, 2], [t2, 2], [t3, 1], [t4, 1], [t5, 1], [slam, 3], [open, 3], [pyroFrame({ bell: 2, hemW: 14, staff: [17, 18, 18, 2], arm: [16, 11, 21, 7], arm2: [11, 11, 6, 7], cowl: 2, flame: 3, sparks: [[23, 3, 'y'], [5, 3, 'r']] }), 4], [F.idle[0], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [pyroFrame({ lean: 2, trail: 2, dy: 1, feet: [[9, 18], [17, 18]], staff: [11, 15, 22, 17], arm: [16, 11, 18, 14], arm2: [12, 11, 14, 14], cowl: 1 }), pyroFrame({ lean: 1, dy: 1, feet: [[10, 18], [16, 18]], staff: [11, 16, 17, 9], arm: [16, 11, 18, 12], cowl: 0 })];
   /* HER SLUMP: the staff turned over. She holds it by the foot with the cage down by her boots, so the one bright
      thing she owns is guttering in the dirt - the flame stands up out of the cage wherever the cage is - and she is
      sunk into her own robe (sit drops the shoulders and the cowl while the hem stays on the ground). */
@@ -2370,6 +2427,35 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
     const D = hp('wide', 1, [sh[0] + 2, sh[1] - 2, sh[0] + 8, sh[1] - 6], [sh[0] - 2, sh[1] - 2, sh[0] - 7, sh[1] - 4], 2);
     const hop = hp('jump2', -2, [sh[0] + 2, sh[1] - 5, sh[0] + 8, sh[1] - 11], [sh[0] - 2, sh[1] - 5, sh[0] - 7, sh[1] - 9], 1);
     F.dance = holdFrames([[A, 2], [B, 2], [hop, 1], [C, 2], [D, 2], [hop, 1]]); }
+  /* HIS OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE SEA-LEGS, his idle solo: a roll-and-sway on the boards with the
+     pistol spun over the brim, the cutlass swung behind the back and caught the other side, a heel-and-toe, and the hat tipped.
+     dance3 = THE BROADSIDE, a boss down: the pistol fired at the sky (a white flash and the smoke), the cutlass tossed up and
+     caught, a leap with both arms up, and a deep sweep of the hat to the deck. He always has both hands busy. */
+  { const kf = o => knightFrame({ plume: 0, pistol: holster(), cutlass: rest(), ...o });
+    const fl = (x, y) => [[x - BX, y - BY, '#ffffff'], [x - BX - 1, y - BY, '#ffd36b'], [x - BX + 1, y - BY, '#ffd36b'], [x - BX, y - BY - 1, '#ffd36b'], [x - BX, y - BY + 1, '#ffd36b']];
+    const hx = sh[0] + 3, hy0 = sh[1] - 2;
+    const sway = (l, dx, pl) => kf({ legs: l, dx, plume: pl, cutlass: carry() });
+    const spinTop = v => kf({ arm: [sh[0], sh[1], hx, hy0 - 3], pistol: [hx, hy0 - 3, hx + v[0], hy0 - 3 + v[1]], cutlass: carry(), plume: 1 });
+    const behind = kf({ legs: 'wide', dx: -1, arm: [sh[0], sh[1], sh[0] - 3, sh[1] + 2], cutlass: [sh[0] - 3, sh[1] + 2, sh[0] - 9, sh[1] - 3], plume: 2 });
+    const across = kf({ legs: 'wide', dx: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 1], cutlass: [sh[0] + 4, sh[1] + 1, sh[0] + 12, sh[1] - 4], plume: 1 });
+    const tipHat = kf({ hy: -1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 2], pistol: [sh[0] + 2, sh[1] - 2, sh[0] + 3, sh[1] - 7], plume: 2 });
+    F.dance2 = holdFrames([[kf({ plume: 1 }), 2], [sway('run2', -1, 1), 2], [sway('run4', 1, 2), 2], [sway('run2', -1, 1), 2], [sway('run4', 1, 2), 2],
+      [spinTop([4, 2]), 2], [spinTop([0, 5]), 2], [spinTop([-4, 2]), 2], [spinTop([0, -4]), 2], [spinTop([4, 2]), 2],
+      [behind, 3], [across, 3], [kf({ legs: 'runC', dx: 1, plume: 2, cutlass: carry(1) }), 2], [kf({ legs: 'run5', dy: 1, plume: 1, cutlass: carry() }), 2],
+      [tipHat, 4], [kf({ plume: 1 }), 2]]);
+    const gun = (o = {}) => kf({ legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 5], pistol: [sh[0] + 3, sh[1] - 5, sh[0] + 5, sh[1] - 12], cutlass: carry(), plume: 2, ...o });
+    const toss = kf({ legs: 'wide', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 3], cutlass: [sh[0] + 1, sh[1] - 7, sh[0] + 5, sh[1] - 12], pistol: [sh[0] + 2, sh[1] - 3, sh[0] + 4, sh[1] - 8], plume: 1 });
+    const catchF = kf({ legs: 'wide', dy: 1, arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 3], cutlass: [sh[0] + 4, sh[1] - 3, sh[0] + 10, sh[1] - 9], plume: 2 });
+    const leap = kf({ legs: 'jump', dy: -3, sho: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], cutlass: [sh[0] + 3, sh[1] - 3, sh[0] + 8, sh[1] - 11], pistol: [sh[0] - 2, sh[1] - 3, sh[0] - 6, sh[1] - 11], plume: 2 });
+    const sweep1 = kf({ dy: 1, hy: 1, arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 3], pistol: [sh[0] + 5, sh[1] + 3, sh[0] + 9, sh[1] + 6], cutlass: carry(1), plume: 2 });
+    const sweep2 = kf({ dy: 2, hy: 2, sho: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 6, sh[1] + 5], pistol: [sh[0] + 6, sh[1] + 5, sh[0] + 10, sh[1] + 8], cutlass: carry(2), plume: 2 });
+    F.dance3 = holdFrames([[kf({ plume: 1 }), 1], [gun(), 2], [gun({ bits: fl(sh[0] + 5, sh[1] - 11) }), 2], [gun({ bits: [[sh[0] + 5 - BX, sh[1] - 12 - BY, '#ffffff'], [sh[0] + 6 - BX, sh[1] - 11 - BY, '#cfcfcf'], [sh[0] + 8 - BX, sh[1] - 11 - BY, '#9a9a9a']] }), 2],
+      [toss, 2], [catchF, 2], [kf({ legs: 'crouch', legsDy: 3, dy: 4, cutlass: carry(2), plume: 2 }), 2], [leap, 3], [kf({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], cutlass: [sh[0] + 3, sh[1] - 3, sh[0] + 8, sh[1] - 11], plume: 0 }), 2],
+      [sweep1, 3], [sweep2, 6], [sweep1, 2], [kf({ plume: 1 }), 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], cutlass: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 10], pistol: holster(1), plume: 1 }), knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], cutlass: rest(1), pistol: holster(1), plume: 0 })];
   /* HIS SLUMP: he sits down on the boards. The cutlass is not held at all - it is stuck in the planking beside him,
      which is where a man puts a sword he has finished with - the pistol hangs off the other hand, and the brim of
      the tricorne is down over his face. */
@@ -2533,6 +2619,29 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     const bow1 = grip(2, { hy: 1, plume: 2, bits: lit(1) });
     const bow2 = grip(3, { hy: 2, sho: 1, plume: 2, bits: lit(2) });
     F.dance = holdFrames([[turn, 2], [lift, 3], [plant, 3], [stand, 3], [bow1, 3], [bow2, 6], [bow1, 2], [stand, 3]]); }
+  /* HIS OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE VIGIL, his idle solo: the blade hauled up to rest across the
+     shoulder, turned slowly in both fists to read the other edge, the point brought round and set; the helm turns to look each way
+     with the lights flaring on the look. dance3 = THE REAPING, a boss down: the greatsword swung up behind him and brought round
+     in one wide low cut that nobody is left to meet, then driven point-down with the green in the helm blazing, held, and let burn down. */
+  { const lit = (hy, c = '#dfffc0') => [[4, 3 + hy, c], [5, 3 + hy, c]];
+    const g = (hx, hy2, tx, ty, o = {}) => knightFrame({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], greatsword: [sh[0] + hx, sh[1] + hy2, sh[0] + tx, sh[1] + ty], ...o });
+    const shoulder = g(1, -2, -6, -9, { legs: 'wide', dx: -1, plume: 1, bits: lit(0) });
+    const read1 = g(2, -2, 8, -6, { plume: 2, bits: lit(0) }), read2 = g(2, -2, 9, 1, { plume: 1, bits: lit(0) }), read3 = g(2, -1, 7, 6, { plume: 2, bits: lit(0) });
+    const setP = g(3, -1, 4, 14, { dy: 1, legs: 'wide', plume: 2, bits: lit(0) });
+    const look = (hy, c) => g(3, -1, 4, 14, { dy: 1, hy, plume: 1, bits: lit(hy, c) });
+    F.dance2 = holdFrames([[knightFrame({ greatsword: [sh[0] + 1, sh[1] + 2, sh[0] + 4, sh[1] + 12], arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 2], plume: 1 }), 2], [shoulder, 4], [read1, 2], [read2, 2], [read3, 2], [read2, 2], [read1, 2], [shoulder, 3],
+      [g(2, -1, 8, -2, { legs: 'wide', plume: 2, bits: lit(0) }), 3], [setP, 3], [look(0, '#dfffc0'), 3], [look(1, '#ffffff'), 2], [look(0, '#7fd06a'), 3], [look(-1, '#ffffff'), 2], [look(0, '#dfffc0'), 3], [F.idle[7], 2]]);
+    const back = g(-1, -3, -8, -9, { legs: 'wide', dx: -2, plume: 1, bits: lit(0) });
+    const top = g(2, -4, 4, -9, { legs: 'wide', dy: -1, sho: 1, plume: 2, bits: lit(0, '#ffffff') });
+    const cutA = g(4, 0, 11, 4, { legs: 'runC', dx: 1, plume: 2, bits: lit(0) }), cutB = g(5, 3, 11, 12, { legs: 'runC', dx: 2, dy: 1, plume: 2, bits: lit(1) });
+    const drive = g(3, 1, 4, 15, { dy: 1, legs: 'wide', plume: 2, bits: [...lit(0, '#ffffff'), [10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38'], [8, 15, '#5a4e38'], [16, 15, '#5a4e38']] });
+    const blaze = (c, hy = 0) => g(3, -1, 4, 14, { dy: 1, hy, plume: 1, bits: [...lit(hy, c), [3, 3 + hy, '#7fd06a'], [6, 3 + hy, '#7fd06a'], [4, 2 + hy, '#7fd06a'], [5, 2 + hy, '#7fd06a']] });
+    F.dance3 = holdFrames([[F.idle[7], 1], [back, 3], [top, 3], [cutA, 2], [cutB, 2], [g(5, 4, 11, 13, { legs: 'wide', dx: 2, dy: 1, plume: 2, bits: lit(1) }), 2], [back, 2], [top, 2], [cutA, 1], [cutB, 2], [drive, 3],
+      [blaze('#ffffff'), 3], [blaze('#dfffc0', 1), 3], [blaze('#7fd06a', 1), 3], [blaze('#dfffc0'), 2], [F.idle[7], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], greatsword: [sh[0] + 3, sh[1] + 4, sh[0] + 10, sh[1] + 13], plume: 1 }), knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], greatsword: [sh[0] + 2, sh[1] + 3, sh[0] + 6, sh[1] + 14], plume: 0 })];
   /* HIS SLUMP: the greatsword is neither planted nor carried - it is DRAGGED, hanging off one hand with the point
      out in the dirt behind him, and both lights in the helm are gone out. His fidget leans on the blade standing
      up in front of him; this is the same blade given up on, lying the other way. */
@@ -2763,6 +2872,30 @@ export function bakeWarden(skin = {}, previewOnly = false) {
       return knightFrame({ legs: k % 4 === 0 ? 'stand' : k % 2 ? 'runC' : 'wide', dy: k % 4 === 2 ? 1 : 0, plume: k % 3,
         arm: [sh[0], sh[1], hx, hy0], spear: [hx, hy0, Math.round(hx + 11 * Math.cos(th)), Math.round(hy0 - 9 * Math.sin(th))] }); });
     F.dance = holdFrames(TW.map(f => [f, 1])); }
+  /* HER OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE SENTRY'S DRILL, her idle solo: the spear brought to the shoulder
+     at the slope, a short stab at the empty air twice, shifted to the low guard, and a heel-turn with the haft crossing her body to
+     stand at the ordered-arms in the turf. dance3 = THE SPEARS RAISED, a boss down: both fists up, the spear straight over her head
+     and held to the light, the glint run up the shaft, and then thrown high a hand's width and caught, planted point-down with a stamp. */
+  { // (S below: arm hand offset, spear base offset, spear tip offset)
+    const S = (hx, hy2, bx, by, tx, ty, o = {}) => knightFrame({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], spear: [sh[0] + bx, sh[1] + by, sh[0] + tx, sh[1] + ty], ...o });
+    const gl = (x, y) => [[x - BX, y - BY, '#ffffff'], [x - BX - 1, y - BY + 1, '#fff6c8'], [x - BX + 1, y - BY + 1, '#fff6c8'], [x - BX, y - BY - 1, '#fff6c8']];
+    const slope = S(2, 0, -5, 6, 9, -7, { legs: 'wide', plume: 1 });
+    const stab0 = S(3, -1, -3, 1, 11, -1, { legs: 'runC', dx: 1, plume: 2 }), stab1 = S(5, -1, 0, 0, 13, -1, { legs: 'runC', dx: 2, plume: 2 });
+    const low = S(3, 2, -4, 6, 11, 8, { legs: 'wide', dy: 1, plume: 1 });
+    const cross = S(2, -1, 9, -9, -3, 6, { legs: 'run2', plume: 2 });
+    const ord = S(2, 1, 4, 14, 5, -1, { plume: 1 });
+    F.dance2 = holdFrames([[S(2, 2, 1, 2, 3, 12, { plume: 1 }), 2], [slope, 4], [S(2, 0, -3, 4, 10, -8, { legs: 'wide', plume: 2 }), 2], [stab0, 2], [stab1, 2], [stab0, 2], [slope, 2], [stab0, 2], [stab1, 2], [stab0, 2],
+      [low, 3], [S(3, 1, -4, 4, 11, 4, { legs: 'wide', plume: 2 }), 2], [cross, 3], [S(2, -1, 8, -10, -2, 5, { legs: 'run4', plume: 1 }), 2], [ord, 4], [F.idle[7], 2]]);
+    const up = (o = {}) => S(3, -3, 4, 8, 4, -11, { plume: 2, ...o });
+    const hold = up({ legs: 'wide', dy: -1, sho: 1, bits: gl(sh[0] + 4, sh[1] - 11) });
+    const thrown = S(2, -3, 4, -6, 5, -12, { legs: 'jump', dy: -2, plume: 2, bits: gl(sh[0] + 5, sh[1] - 12) });
+    const caught = S(3, 1, 4, 13, 3, -1, { legs: 'crouch', legsDy: 3, dy: 3, plume: 2 });
+    const stamp = S(3, 1, 4, 15, 4, 0, { dy: 1, legs: 'wide', plume: 2, bits: [[10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38']] });
+    F.dance3 = holdFrames([[F.idle[7], 1], [S(3, -1, 4, 8, 5, -4, { legs: 'wide', plume: 1 }), 2], [up(), 2], [hold, 3], [up({ bits: gl(sh[0] + 4, sh[1] - 8) }), 2], [hold, 3], [S(2, -2, 4, 2, 5, -9, { legs: 'wide', dy: -1, plume: 1 }), 2], [thrown, 3], [up({ dy: -1, legs: 'jump2' }), 1], [caught, 2], [stamp, 4], [ord, 3], [F.idle[7], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], spear: [sh[0] - 3, sh[1] + 3, sh[0] + 12, sh[1] + 9], plume: 1 }), knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], spear: [sh[0] - 1, sh[1] + 4, sh[0] + 9, sh[1] + 1], plume: 0 })];
   /* HER SLUMP: she puts it DOWN. The spear is laid out on the ground at her boots and her hands are empty, which is
      the one thing in this game she never does - the brim goes down, the shoulders sag, and the longest line on the
      card is lying flat. */
@@ -2965,6 +3098,28 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     const lit2 = up({ legs: 'wide', dy: -1, plume: 0, glow: [sh[0], sh[1] - 13], bits: rays(3) });
     const strain = up({ legs: 'wide', dy: 0, hy: 1, plume: 2, glow: [sh[0], sh[1] - 13], bits: rays(2) });
     F.dance = holdFrames([[F.idle[0], 2], [chest, 2], [up({ dy: -1, plume: 1 }), 2], [held, 2], [lit1, 3], [lit2, 3], [strain, 2], [lit2, 3], [lit1, 2], [across, 2]]); }
+  /* HIS OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE VESPER, his idle solo: the maul set head-down before him, both
+     gauntlets on the haft, down on a knee with the helm bowed, and a thread of light climbing the haft while he keeps it - then up,
+     the maul taken to the shoulder. dance3 = THE HALLOWED STROKE, a boss down: the maul swung up and round overhead with the glow
+     on its head, brought down hard so the light runs out along the ground either side, and the arms flung up open to it. */
+  { const rays = (r, y = 15) => { const cx = sh[0] - BX, cy = y - BY, b = []; for (let i = 2; i <= 2 + r; i++) b.push([cx - i - 3, cy, '#fff6c8'], [cx + i + 3, cy, '#fff6c8']); b.push([cx + 2, cy - 1, '#ffe9a0'], [cx - 2, cy - 1, '#ffe9a0']); return b; };
+    const M = (hx, hy2, bx, by, tx, ty, o = {}) => knightFrame({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], maul: [sh[0] + bx, sh[1] + by, sh[0] + tx, sh[1] + ty], ...o });
+    const thread = y => [[sh[0] + 3 - BX, y - BY, '#fff6c8']];
+    const set1 = M(2, 1, 2, 0, 3, 8, { plume: 1 }), kn = (d, hy, o = {}) => M(2, 0, 2, -1, 3, 7 - d, { dy: 4 + d, hy, legs: 'crouch', plume: 0, ...o });
+    const onS = M(1, -1, 0, 2, -4, -9, { legs: 'wide', dx: -1, plume: 2 });
+    F.dance2 = holdFrames([[F.idle[0], 2], [set1, 3], [kn(0, 0), 3], [kn(0, 1, { bits: thread(16) }), 3], [kn(1, 2, { bits: [...thread(14), ...thread(12)] }), 4], [kn(1, 2, { bits: [...thread(12), ...thread(9)], glow: [sh[0] + 2, sh[1] - 2] }), 4],
+      [kn(0, 1, { glow: [sh[0] + 2, sh[1] - 2] }), 3], [kn(0, 0), 2], [set1, 3], [onS, 4], [M(2, 0, 2, 0, 4, 6, { legs: 'wide', plume: 2 }), 2], [F.idle[0], 2]]);
+    const back = M(-1, -3, -2, -3, -6, -10, { legs: 'wide', dx: -2, plume: 1 }), top = M(3, -5, 3, -4, 3, -10, { legs: 'wide', dy: -1, plume: 2, glow: [sh[0] + 3, sh[1] - 11] });
+    const swingF = M(4, 0, 4, 0, 11, 5, { legs: 'runC', dx: 2, plume: 2, glow: [sh[0] + 11, sh[1] + 5] });
+    const slam = M(3, 3, 3, 3, 5, 12, { dy: 1, legs: 'wide', plume: 2, glow: [sh[0] + 5, sh[1] + 12], bits: rays(3, 15) });
+    const slam2 = M(3, 3, 3, 3, 5, 12, { dy: 1, legs: 'wide', plume: 0, glow: [sh[0] + 5, sh[1] + 12], bits: rays(6, 15) });
+    const open = knightFrame({ legs: 'wide', dy: -1, plume: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 6], maul: [sh[0] + 3, sh[1] - 2, sh[0] + 3, sh[1] - 9], glow: [sh[0] + 3, sh[1] - 11], bits: rays(2, 4) });
+    F.dance3 = holdFrames([[F.idle[0], 1], [back, 3], [top, 2], [M(2, -3, 1, -2, -6, -9, { legs: 'wide', dx: -1, plume: 2, glow: [sh[0] - 5, sh[1] - 9] }), 2], [swingF, 2], [slam, 3], [slam2, 3], [slam, 2],
+      [M(3, 0, 3, 0, 4, 2, { legs: 'wide', dy: 1, plume: 1 }), 2], [top, 3], [open, 4], [top, 2], [F.idle[0], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], maul: [sh[0] + 3, sh[1] + 3, sh[0] + 8, sh[1] + 9], plume: 1 }), knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], maul: [sh[0] + 2, sh[1] + 2, sh[0] + 4, sh[1] + 8], plume: 0 })];
   /* HIS SLUMP: he goes down on his knees over the maul, both gauntlets on the haft and the head of it in the
      ground, helm bowed to it - a man at a grave, not a man in a fight. There is no glow anywhere on him: the light
      is the one thing this hero always has, and the card is where he has not got it. */
@@ -4487,6 +4642,31 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
       if (glow) b.push(o(4, -13, '#fff6c8'), o(3, -12, '#fff6c8'), o(5, -12, '#fff6c8'));
       return knightFrame({ wide: 8, legs, dy, plume, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 3, Y + 9, X + 3, Y - 10], bits: b }); };
     F.dance = holdFrames([0, 1, 2, 3, 4, 5].map(k => [ring(k, k % 3 === 2 ? 1 : 0, k % 2 ? 'wide' : 'runC', k % 3, k % 2 === 0), 2])); }
+  /* HER OTHER TWO DANCES (heroanim lane, 2026-10-10). dance2 = THE CAIRN, her idle solo: the stave struck upright, and one stone after
+     another lifts out of the turf, turns in the air before her and is set down on the last, until a little cairn of three stands at her
+     boots; she looks at it with her head on one side and knocks it flat with the butt. dance3 = THE UPHEAVAL, a boss down: the stave
+     driven down, and stones thrown up out of the ground on both sides in two columns that hang at the top, the geode blazing - and
+     the arms spread as they fall. */
+  { const st = (o2 = {}) => knightFrame({ wide: 8, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 3, Y + 9, X + 3, Y - 10], ...o2 });
+    const blk = (x, y, w, col) => { const b = []; for (let i = 0; i < w; i++) for (let j = 0; j < w; j++) b.push(o(x + i, y + j, col)); return b; };
+    const floor = Y + 9 - Y;   /* the row the stave's butt is on, relative */
+    const c1 = blk(7, floor - 2, 3, M), c2 = blk(7, floor - 4, 3, D).slice(0, 0), c2b = blk(8, floor - 4, 2, D), c3 = blk(8, floor - 6, 2, A);
+    const glow = [o(4, -13, '#fff6c8'), o(3, -12, '#fff6c8'), o(5, -12, '#fff6c8')];
+    F.dance2 = holdFrames([[F.idle[0], 2], [st({ dy: 1, legs: 'wide' }), 2], [st({ bits: blk(8, floor - 8, 3, M) }), 2], [st({ bits: blk(8, floor - 6, 3, M), hy: 1 }), 2], [st({ bits: c1, plume: 1 }), 2],
+      [st({ bits: [...c1, ...blk(9, floor - 9, 2, D)], hy: 1 }), 2], [st({ bits: [...c1, ...c2b], plume: 1 }), 2], [st({ bits: [...c1, ...c2b, ...blk(9, floor - 10, 2, A)], hy: 1, legs: 'wide' }), 2],
+      [st({ bits: [...c1, ...c2b, ...c3, ...glow], plume: 2 }), 3], [st({ bits: [...c1, ...c2b, ...c3], hy: 1 }), 4], [st({ bits: [...c1, ...c2b, ...c3], hy: 1, sho: 1 }), 3],
+      [st({ dx: 1, legs: 'runC', stave: [X + 4, Y + 7, X + 6, Y + 11], bits: [...c1, ...c2b] }), 2], [st({ legs: 'wide', dy: 1, plume: 2, bits: [...blk(8, floor - 1, 2, M), ...blk(11, floor - 1, 2, D), ...blk(6, floor - 1, 2, A)] }), 3], [F.idle[0], 2]]);
+    const col = (h, w) => [...blk(-6, floor - h, 3, D), ...blk(-9, floor - h + 4, 2, M), ...blk(-4, floor - h + 7, 2, A), ...blk(11, floor - h - 1, 3, A), ...blk(14, floor - h + 3, 2, M), ...blk(10, floor - h + 6, 2, D)].filter(b => b[1] >= 1 - BY + 0);
+    const slam = st({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 3], arm2: [OFF[0], OFF[1], X + 3, Y + 5], stave: [X + 3, Y + 11, X + 3, Y - 6], bits: [...blk(-5, floor - 2, 2, D), ...blk(12, floor - 2, 2, M)] });
+    const up1 = st({ dy: -1, legs: 'jump2', arm: [X, Y, X + 5, Y - 5], arm2: [OFF[0], OFF[1], X - 4, Y - 5], bits: col(5), plume: 2 });
+    const up2 = st({ dy: -1, legs: 'jump2', arm: [X, Y, X + 5, Y - 6], arm2: [OFF[0], OFF[1], X - 4, Y - 6], bits: [...col(9), ...glow], plume: 2 });
+    const up3 = st({ legs: 'wide', arm: [X, Y, X + 5, Y - 6], arm2: [OFF[0], OFF[1], X - 4, Y - 6], bits: [...col(11), ...glow], plume: 0 });
+    F.dance3 = holdFrames([[F.idle[0], 1], [st({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y - 4], arm2: [OFF[0], OFF[1], X + 3, Y - 3], stave: [X + 3, Y + 2, X + 3, Y - 12] }), 2], [slam, 3], [up1, 2], [up2, 2], [up3, 4], [up2, 2],
+      [st({ legs: 'wide', arm: [X, Y, X + 5, Y - 5], arm2: [OFF[0], OFF[1], X - 4, Y - 5], bits: col(6), plume: 1 }), 2], [st({ dy: 1, legs: 'wide', bits: [...blk(-5, floor - 1, 2, D), ...blk(12, floor - 1, 2, M)] }), 3], [F.idle[0], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ wide: 8, dx: 1, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X + 1, Y + 3], stave: [X - 2, Y - 1, X + 11, Y + 6], plume: 1 }), knightFrame({ wide: 8, dy: 1, arm: [X, Y, X + 3, Y], arm2: [OFF[0], OFF[1], X + 2, Y + 2], stave: [X + 3, Y + 8, X + 4, Y - 5], plume: 0 })];
   /* HER SLUMP: the stave planted and her weight hung on it, the hood down */
   { const lean = (d, hy) => knightFrame({ dy: 1 + d, hy, sho: -1, legs: 'stand', plume: 0, arm: [X, Y, X + 4, Y - 2 + d], arm2: [OFF[0], OFF[1], X + 3, Y + d], stave: [X + 5, Y + 9, X + 5, Y - 7] });
     F.slump = [lean(0, 2), lean(1, 3)]; }
