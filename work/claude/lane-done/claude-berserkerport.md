@@ -26,3 +26,19 @@ wood L3: berserker 2/2, knight 2/2. marsh L3: berserker 2/2, knight 1/2. He is n
 
 ## QUESTIONS FOR DANIEL (rec first)
 1. New-game pick now offers 4 free defaults (rec: yes, per week note). 2. Knight pick label changed to 'sword, kite' for width (rec: ok; alt shrink all roles).
+
+## TUNE (berserker vs knight, boss-rates --profile=human, kit flasks, practiced, campaign level, 12 seeds each)
+| boss (L) | knight | berserker before | after |
+|---|---|---|---|
+| wood (3) | 10/12 | 12/12 | no change |
+| marsh (3) | 11/12 | 12/12 | no change |
+| stockade (3) | 7/12 | 9/12 | no change |
+| spire (9) | 8/12 | 7/12 | no change |
+| caravan (34) | 10/12 | 9/12 | no change |
+| moor (10) | 10/12 | 11/12 | no change |
+| hurricane (19) | 12/12 | 11/12 | no change |
+| fallingtower (33) | 11/12 | 12/12 | no change |
+| welltown / buriedcity / church / skyroad / underwell | 12/12 each | 12/12 each | no change (saturated for both, uninformative) |
+Total over the 8 informative bosses: knight 79/96 (82%), berserker 83/96 (86%): +4 points; biggest single gap +2 wins (17 pts at n=12, within noise), and he is behind on 3 of 8. Never 0/N, never an outlier.
+Mash-bot as berserker: stockade boss timeout 100% left (x2), spire boss + mini dead (x2), stockade LEVEL 6 deaths: all loses. tools/berserker.mjs: ok.
+CHANGES: none. No number of his was touched, so hero-trials/leveling/commitment were not re-run (nothing changed since the port's green runs).
