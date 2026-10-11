@@ -10,7 +10,7 @@
 //     (P.flatT) with no way to act for the whole window, or is hit twice in one slide
 //   - A BOSS (a maxHp body) takes more than the chip (x0.05) or does not stop the hero
 //   - THE SPEED SCALE: a slow blow does as much as a fast one; a slide under the minimum speed hurts anything
-//   - THE PYROMANCER: a press of down on a slope opens the ember flare (the slide must win there), or the same press on the
+//   - THE PYROMANCER: down held (45 frames) on a slope opens the ember flare (the slide must win there), or the same press on the
 //     flat no longer does (tools/ember-flare.mjs is the full check of the flare)
 //   - THE POSE: any of the 7 heroes in any skin has no 'slide' pose, or its boots are off the standing hero's row, or ANY pixel
 //     of it is under the floor (the boot row + the one outline row)
@@ -88,10 +88,10 @@ try {
       out.slowHits = run(m.BUTT.minSpeed - 10).length; out.fastHits = run(m.BUTT.minSpeed + 40).length; }
     /* THE SPEED SCALE (the pure function) */
     if (m) { out.blow = [60, 70, 120, 180].map(v => m.slideBlow(v, 12)); out.minSpeed = m.BUTT.minSpeed; out.chip = m.BUTT.chip; }
-    /* THE PYROMANCER: a press of down on the slope is a slide, on the flat the flare */
+    /* THE PYROMANCER: down held on the slope is a slide, on the flat (held 0.3 s - claude/crouchfix) the flare */
     setUp('pyro'); clear();
-    { const on0 = free.find(r => r.on) || free[20]; BK.P.x = on0.x; BK.P.y = on0.y; BK.P.vx = 0; BK.sim(2); none(); BK.press('down'); BK.keys.down = true; let flare = 0, slide = 0; for (let f = 0; f < 30; f++) { BK.sim(1); if (BK.P.emberUp) flare++; if (BK.P.slideOn) slide++; } none(); out.pyroSlope = { flare, slide }; }
-    { BK.tp(flat[0], flat[1]); BK.sim(8); none(); BK.press('down'); BK.keys.down = true; let flare = 0; for (let f = 0; f < 12; f++) { BK.sim(1); if (BK.P.emberUp) flare++; } none(); out.pyroFlat = { flare }; }
+    { const on0 = free.find(r => r.on) || free[20]; BK.P.x = on0.x; BK.P.y = on0.y; BK.P.vx = 0; BK.sim(2); none(); BK.press('down'); BK.keys.down = true; let flare = 0, slide = 0; for (let f = 0; f < 45; f++) { BK.sim(1); if (BK.P.emberUp) flare++; if (BK.P.slideOn) slide++; } none(); out.pyroSlope = { flare, slide }; }
+    { BK.tp(flat[0], flat[1]); BK.sim(8); none(); BK.press('down'); BK.keys.down = true; let flare = 0; for (let f = 0; f < 45; f++) { BK.sim(1); if (BK.P.emberUp) flare++; } none(); out.pyroFlat = { flare }; }
     /* THE POSE: every hero, every skin */
     out.poses = [];
     for (const h of ['knight', 'warden', 'pirate', 'paladin', 'geomancer', 'reaper', 'pyro', 'berserker']) for (const s of BKT.skinIds()) {
