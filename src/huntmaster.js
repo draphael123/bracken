@@ -279,16 +279,18 @@ export function makeHuntmaster(ctx) {
     hoist: F.hoist || null, hoistX: F.hoistX, perches: F.perches, hits: F.e ? F.e.openHits || 0 : 0, hitCap: F.e ? F.e.hitCap || HM.hitCap : HM.hitCap, capLeft: F.e ? F.e.capLeft : 0, spent: !!F.e && hmOpen(F.e) && (F.e.capLeft <= 0.01 || (F.e.openHits || 0) >= HM.maxBlows), rollUsed: F.rollUsed, sinceOpen: F.sinceOpen };
 
   /* ---------- DRAWING (src/redraw/rootway_art.js paintHuntmaster draws him; the new moves borrow its poses until the art pass - the net, the horn and the traps drawn here) ---------- */
-  const POSE = { netTell: 'aimTell', heavyTell: 'aimTell', hornTell: 'aimTell', snareTell: 'leapTell', snareHop: 'leap', flurryTell: 'slashTell', flurry: 'slash', roll: 'leap', sleep: 'land' };
+  const POSE = { netTell: 'netSwing', heavyTell: 'heavyDraw', hornTell: 'hornBlow', snareTell: 'snareCrouch', snareHop: 'snareHop', flurryTell: 'flurryTell', flurry: 'flurry', roll: 'roll', sleep: 'land' };
+  const pm = { last: '', from: '' };   /* (the art pass, claude/rootway2art: what he did before this mode - the 'loose' after the net is the THROW, after the horn the BLOW) */
+  const POSE_T = () => ({ netTell: HM.netTell, heavyTell: HM.heavyTell, hornTell: HM.hornTell, snareTell: HM.snareTell, snareHop: HM.snareHop, flurryTell: HM.flurryTell, flurry: HM.flurryCut, roll: HM.roll, loose: HM.loose });
   H.drawBoss = (g, e, cx, cy, time) => {
     if (!F) return; const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, m = e.mode, open = hmOpen(e);
     const by = y - 24, dk = m === 'aimTell' ? HM.draw : m === 'volleyTell' ? HM.volleyDraw : m === 'splitTell' ? HM.splitDraw : m === 'heavyTell' ? HM.heavyTell : m === 'netTell' ? HM.netTell : m === 'hornTell' ? HM.hornTell : HM.hoistTell;
-    RWA.paintHuntmaster(g, { x, y, f, mode: POSE[m] || m, t: time, weak: F.weak, open, perch: e.perch, hurt: e.flash > 0, draw: Math.min(1, 1 - Math.max(0, e.modeT) / dk) });
-    if (m === 'netTell') { /* the NET in his off hand, swung: a pale coil of rope with its weights */ const sw = R(Math.sin(time * 14) * 3); g.fillStyle = '#6a5a3a'; g.fillRect(x - f * 10 - 5 + sw, y - 30, 10, 8); g.fillStyle = '#e8dcc0'; for (let k = 0; k < 10; k += 3) g.fillRect(x - f * 10 - 5 + sw + k, y - 29, 1, 6); g.fillStyle = '#8a8490'; g.fillRect(x - f * 10 - 6 + sw, y - 22, 2, 2); g.fillRect(x - f * 10 + 4 + sw, y - 22, 2, 2); }
-    if (m === 'hornTell') { /* THE HUNTING HORN to his mouth: a curled horn, and the breath rings when it sounds */ g.fillStyle = '#e8dcc0'; g.fillRect(x + f * 4 - (f < 0 ? 9 : 0), y - 24, 9, 3); g.fillStyle = '#b8a888'; g.fillRect(x + f * 12 - (f < 0 ? 4 : 0), y - 27, 4, 7);
+    if (m !== pm.last) { pm.from = pm.last; pm.last = m; }
+    const du = POSE_T()[m]; let pose = POSE[m] || m, pk = du ? 1 - Math.max(0, e.modeT) / du : 1;
+    if (m === 'loose' && pm.from === 'netTell') pose = 'netThrow'; else if (m === 'loose' && pm.from === 'hornTell') { pose = 'hornBlow'; pk = 1; }
+    RWA.paintHuntmaster(g, { x, y, f, mode: pose, k: pk, cut: F.cutK || 0, fall: m === 'open' && (e.vy || 0) > 30, t: time, weak: F.weak, open, perch: e.perch, hurt: e.flash > 0, draw: Math.min(1, 1 - Math.max(0, e.modeT) / dk) });
+    if (m === 'hornTell') { /* the breath rings of THE HUNTING HORN (the horn itself is in his hands: src/redraw/rootway_art.js) */
       const k = 1 - Math.max(0, e.modeT) / HM.hornTell; g.globalAlpha = 0.5 * k; g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.beginPath(); g.arc(x + f * 16, y - 24, 6 + 10 * k, -1, 1); g.stroke(); g.globalAlpha = 1; }
-    if (m === 'flurryTell' && Math.floor(time * 12) % 2) { g.fillStyle = '#ffd36b'; g.fillRect(x + f * 8 - 1, y - 28, 2, 2); }   /* the knife's glint before the flurry */
-    if (m === 'snareTell') { g.fillStyle = '#9a929c'; g.fillRect(x - 4, y - 14, 8, 3); g.fillStyle = '#ff6b6b'; if (Math.floor(time * 12) % 2) g.fillRect(x - 1, y - 16, 2, 2); }   /* a jaw trap in his hands */
     /* OPEN: the gold ring and its timer (B10), and the blows left in it (pips); CAUGHT: the cage's bars over him; THE WARD: a pale ring */
     if (open) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.45 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, by + 6, 20, 0, 7); g.stroke(); g.globalAlpha = 1;
       const kk = Math.max(0, e.open / (e.openT0 || HM.stagLong)); g.fillStyle = '#1b1626'; g.fillRect(x - 16, by - 20, 32, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 16, by - 20, R(32 * kk), 3);
