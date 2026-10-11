@@ -286,5 +286,17 @@
   "lifts": 217,
   "walked": 100,
   "bare": true
+ },
+ "reef": {
+  "hash": "c614482bd7ef",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 22,
+  "deaths": 3,
+  "kills": 4,
+  "lifts": 66,
+  "walked": 100,
+  "bare": true
  }
 }

@@ -156,17 +156,17 @@
   "lostPct": 242
  },
  "reef": {
-  "hash": "b3422bf51375",
+  "hash": "c614482bd7ef",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 26,
-  "deaths": 5,
-  "kills": 4,
-  "lifts": 70,
+  "hits": 14,
+  "deaths": 0,
+  "kills": 3,
+  "lifts": 72,
   "walked": 100,
   "bare": true,
-  "lostPct": 174
+  "lostPct": 79
  },
  "flotilla": {
   "hash": "33db89df5387",
