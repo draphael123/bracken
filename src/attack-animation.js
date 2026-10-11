@@ -1,4 +1,16 @@
 // THE POSE KEEPS THE BLOW'S TIME. This chooses art only; stamina, movement and live boxes remain in combat.
+/* THE ATTACK-ANIMATION BEAT TABLE (heroanim lane, 2026-10-10; art only, every window is combat's). Seconds on the swing clock P.atk -> the frame of
+   the hero's atk / atkB / atkC list (0 anticipation, 1 strike (smear), 2 extended, 3 recover, 4 settle); then the recovery clock (P.atkRec, set by
+   commit.js recoveryFor and kept in P.atkRecMax) plays K.R.follow: frame 0 in its first half, 1 in its second (a finisher's flourishT hold and a
+   heavy keep their own poses; an air swing has no recovery).
+     hero       0 -> 1   1 -> 2   2 -> 3   3 -> 4     recovery (s)   follow[0] = spent weapon carried low   follow[1] = back to guard
+     knight     .04      .10      .16      .24        .084 (.12 3rd)  blade low-forward, plume flying        blade down to the turf point
+     warden     .04      .10      .18      .24        .084 (.12)      spear swept low, point out front       spear drawn back to the slope
+     pyro       .04      .10      .18      .24        .084 (.12)      staff trailed low, hem swinging        staff up to her shoulder
+     paladin    .06      .10      .18      .25        .102 (.132)     maul head down-forward                 maul hauled to the hip
+     pirate     .03      .07      .15      .24        .06 (.084)      cutlass low, pistol still in the belt  cutlass to rest
+     reaper     .12      .15      .24      .28        .102 (.132)     greatsword dragged low and long        point set toward the ground
+     geomancer  .05      .10      .18      .25        .096 (.132)     stave swung across low                 butt set, stave upright */
 const LIGHT = {
   knight: [.04, .10, .16, .24], warden: [.04, .10, .18, .24],
   pyro: [.04, .10, .18, .24], paladin: [.06, .10, .18, .25],

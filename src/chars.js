@@ -610,6 +610,10 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
     const hold = at({ shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], sword: [sh[0] + 3, sh[1] - 1, sh[0] + 3, sh[1] - 11], plume: 1, bits: gl(sh[0] + 3, sh[1] - 11) });
     F.dance3 = holdFrames([[at({ sword: rest(), plume: 1 }), 1], [o1, 2], [o2, 2], [o3, 2], [o4, 2], [o5, 2], [o1, 2], [o2, 2], [o3, 1], [o4, 1], [o5, 2], [plantTwo, 3],
       [at({ legs: 'crouch', legsDy: 3, dy: 4, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], sword: [sh[0] + 3, sh[1] + 1, sh[0] + 3, sh[1] - 8], shield: true, plume: 2 }), 2], [leap, 2], [bigHi, 1], [touch, 2], [hold, 5], [at({ sword: rest(), plume: 1 }), 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [KF({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], sword: [sh[0] + 3, sh[1] + 4, sh[0] + 9, sh[1] + 11], plume: 1 }), KF({ dy: 1, legs: 'stand', arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], sword: [sh[0] + 2, sh[1] + 3, sh[0] + 5, sh[1] + 10], plume: 0 })];
   /* HIS SLUMP. Not the hurt frame: nothing has hit him. The helm sinks into the shoulders, the shoulders themselves
      sag (sho below zero drops the outer pixels instead of lifting them), the kite hangs off a slack arm down by his
      knee, and the sword is not held so much as leant on, its point out in the turf in front of his boots. */
@@ -2003,6 +2007,10 @@ export function bakePyro(skin = {}, previewOnly = false) {
     const slam = pyroFrame({ lean: 2, trail: 2, sit: 2, feet: [[9, 18], [17, 18]], staff: [10, 14, 20, 19], arm: [16, 11, 19, 15], arm2: [12, 11, 15, 16], cowl: 1, flare: [21, 19, true], sparks: [[22, 16, 'y'], [20, 14, 'r'], [24, 18, 'y']] });
     const open = pyroFrame({ bell: 2, hemW: 14, staff: [17, 18, 18, 2], arm: [16, 11, 21, 7], arm2: [11, 11, 6, 7], cowl: 2, flame: 4, flick: 1, sparks: [[22, 4, 'y'], [5, 4, 'y'], [18, 0, 'r']] });
     F.dance3 = holdFrames([[st({ flame: 1 }), 1], [t1, 2], [t2, 2], [t3, 2], [t4, 2], [t5, 2], [t1, 2], [t2, 2], [t3, 1], [t4, 1], [t5, 1], [slam, 3], [open, 3], [pyroFrame({ bell: 2, hemW: 14, staff: [17, 18, 18, 2], arm: [16, 11, 21, 7], arm2: [11, 11, 6, 7], cowl: 2, flame: 3, sparks: [[23, 3, 'y'], [5, 3, 'r']] }), 4], [F.idle[0], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [pyroFrame({ lean: 2, trail: 2, dy: 1, feet: [[9, 18], [17, 18]], staff: [11, 15, 22, 17], arm: [16, 11, 18, 14], arm2: [12, 11, 14, 14], cowl: 1 }), pyroFrame({ lean: 1, dy: 1, feet: [[10, 18], [16, 18]], staff: [11, 16, 17, 9], arm: [16, 11, 18, 12], cowl: 0 })];
   /* HER SLUMP: the staff turned over. She holds it by the foot with the cage down by her boots, so the one bright
      thing she owns is guttering in the dirt - the flame stands up out of the cage wherever the cage is - and she is
      sunk into her own robe (sit drops the shoulders and the cowl while the hem stays on the ground). */
@@ -2444,6 +2452,10 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
     F.dance3 = holdFrames([[kf({ plume: 1 }), 1], [gun(), 2], [gun({ bits: fl(sh[0] + 5, sh[1] - 11) }), 2], [gun({ bits: [[sh[0] + 5 - BX, sh[1] - 12 - BY, '#ffffff'], [sh[0] + 6 - BX, sh[1] - 11 - BY, '#cfcfcf'], [sh[0] + 8 - BX, sh[1] - 11 - BY, '#9a9a9a']] }), 2],
       [toss, 2], [catchF, 2], [kf({ legs: 'crouch', legsDy: 3, dy: 4, cutlass: carry(2), plume: 2 }), 2], [leap, 3], [kf({ legs: 'land', dy: 2, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], cutlass: [sh[0] + 3, sh[1] - 3, sh[0] + 8, sh[1] - 11], plume: 0 }), 2],
       [sweep1, 3], [sweep2, 6], [sweep1, 2], [kf({ plume: 1 }), 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], cutlass: [sh[0] + 3, sh[1] + 4, sh[0] + 8, sh[1] + 10], pistol: holster(1), plume: 1 }), knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], cutlass: rest(1), pistol: holster(1), plume: 0 })];
   /* HIS SLUMP: he sits down on the boards. The cutlass is not held at all - it is stuck in the planking beside him,
      which is where a man puts a sword he has finished with - the pistol hangs off the other hand, and the brim of
      the tricorne is down over his face. */
@@ -2626,6 +2638,10 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     const blaze = (c, hy = 0) => g(3, -1, 4, 14, { dy: 1, hy, plume: 1, bits: [...lit(hy, c), [3, 3 + hy, '#7fd06a'], [6, 3 + hy, '#7fd06a'], [4, 2 + hy, '#7fd06a'], [5, 2 + hy, '#7fd06a']] });
     F.dance3 = holdFrames([[F.idle[7], 1], [back, 3], [top, 3], [cutA, 2], [cutB, 2], [g(5, 4, 11, 13, { legs: 'wide', dx: 2, dy: 1, plume: 2, bits: lit(1) }), 2], [back, 2], [top, 2], [cutA, 1], [cutB, 2], [drive, 3],
       [blaze('#ffffff'), 3], [blaze('#dfffc0', 1), 3], [blaze('#7fd06a', 1), 3], [blaze('#dfffc0'), 2], [F.idle[7], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 4], greatsword: [sh[0] + 3, sh[1] + 4, sh[0] + 10, sh[1] + 13], plume: 1 }), knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 3], greatsword: [sh[0] + 2, sh[1] + 3, sh[0] + 6, sh[1] + 14], plume: 0 })];
   /* HIS SLUMP: the greatsword is neither planted nor carried - it is DRAGGED, hanging off one hand with the point
      out in the dirt behind him, and both lights in the helm are gone out. His fidget leans on the blade standing
      up in front of him; this is the same blade given up on, lying the other way. */
@@ -2876,6 +2892,10 @@ export function bakeWarden(skin = {}, previewOnly = false) {
     const caught = S(3, 1, 4, 13, 3, -1, { legs: 'crouch', legsDy: 3, dy: 3, plume: 2 });
     const stamp = S(3, 1, 4, 15, 4, 0, { dy: 1, legs: 'wide', plume: 2, bits: [[10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38']] });
     F.dance3 = holdFrames([[F.idle[7], 1], [S(3, -1, 4, 8, 5, -4, { legs: 'wide', plume: 1 }), 2], [up(), 2], [hold, 3], [up({ bits: gl(sh[0] + 4, sh[1] - 8) }), 2], [hold, 3], [S(2, -2, 4, 2, 5, -9, { legs: 'wide', dy: -1, plume: 1 }), 2], [thrown, 3], [up({ dy: -1, legs: 'jump2' }), 1], [caught, 2], [stamp, 4], [ord, 3], [F.idle[7], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], spear: [sh[0] - 3, sh[1] + 3, sh[0] + 12, sh[1] + 9], plume: 1 }), knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], spear: [sh[0] - 1, sh[1] + 4, sh[0] + 9, sh[1] + 1], plume: 0 })];
   /* HER SLUMP: she puts it DOWN. The spear is laid out on the ground at her boots and her hands are empty, which is
      the one thing in this game she never does - the brim goes down, the shoulders sag, and the longest line on the
      card is lying flat. */
@@ -3096,6 +3116,10 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     const open = knightFrame({ legs: 'wide', dy: -1, plume: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 6], maul: [sh[0] + 3, sh[1] - 2, sh[0] + 3, sh[1] - 9], glow: [sh[0] + 3, sh[1] - 11], bits: rays(2, 4) });
     F.dance3 = holdFrames([[F.idle[0], 1], [back, 3], [top, 2], [M(2, -3, 1, -2, -6, -9, { legs: 'wide', dx: -1, plume: 2, glow: [sh[0] - 5, sh[1] - 9] }), 2], [swingF, 2], [slam, 3], [slam2, 3], [slam, 2],
       [M(3, 0, 3, 0, 4, 2, { legs: 'wide', dy: 1, plume: 1 }), 2], [top, 3], [open, 4], [top, 2], [F.idle[0], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ dx: 1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], maul: [sh[0] + 3, sh[1] + 3, sh[0] + 8, sh[1] + 9], plume: 1 }), knightFrame({ dy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 2], maul: [sh[0] + 2, sh[1] + 2, sh[0] + 4, sh[1] + 8], plume: 0 })];
   /* HIS SLUMP: he goes down on his knees over the maul, both gauntlets on the haft and the head of it in the
      ground, helm bowed to it - a man at a grave, not a man in a fight. There is no glow anywhere on him: the light
      is the one thing this hero always has, and the card is where he has not got it. */
@@ -4639,6 +4663,10 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
     const up3 = st({ legs: 'wide', arm: [X, Y, X + 5, Y - 6], arm2: [OFF[0], OFF[1], X - 4, Y - 6], bits: [...col(11), ...glow], plume: 0 });
     F.dance3 = holdFrames([[F.idle[0], 1], [st({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y - 4], arm2: [OFF[0], OFF[1], X + 3, Y - 3], stave: [X + 3, Y + 2, X + 3, Y - 12] }), 2], [slam, 3], [up1, 2], [up2, 2], [up3, 4], [up2, 2],
       [st({ legs: 'wide', arm: [X, Y, X + 5, Y - 5], arm2: [OFF[0], OFF[1], X - 4, Y - 5], bits: col(6), plume: 1 }), 2], [st({ dy: 1, legs: 'wide', bits: [...blk(-5, floor - 1, 2, D), ...blk(12, floor - 1, 2, M)] }), 3], [F.idle[0], 2]]); }
+  /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
+     is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
+     B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
+  F.follow = [knightFrame({ wide: 8, dx: 1, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X + 1, Y + 3], stave: [X - 2, Y - 1, X + 11, Y + 6], plume: 1 }), knightFrame({ wide: 8, dy: 1, arm: [X, Y, X + 3, Y], arm2: [OFF[0], OFF[1], X + 2, Y + 2], stave: [X + 3, Y + 8, X + 4, Y - 5], plume: 0 })];
   /* HER SLUMP: the stave planted and her weight hung on it, the hood down */
   { const lean = (d, hy) => knightFrame({ dy: 1 + d, hy, sho: -1, legs: 'stand', plume: 0, arm: [X, Y, X + 4, Y - 2 + d], arm2: [OFF[0], OFF[1], X + 3, Y + d], stave: [X + 5, Y + 9, X + 5, Y - 7] });
     F.slump = [lean(0, 2), lean(1, 3)]; }
