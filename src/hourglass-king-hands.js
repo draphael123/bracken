@@ -93,7 +93,7 @@ export function makeHourglassKingHands(ctx) {
   };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     if (!SETS) SETS = [0, 1, 2].map(k => DG.bakeHourglassKing(k));
-    const k = S.glass / S.glassMax, lvl = HKM.hkOpen(e) ? 2 : k > 0.6 ? 0 : k > HK.lowAt ? 1 : 2, set = SETS[lvl], f = e.face || 1, m = e.mode, flash = (e.hurtT || 0) > 0;
+    const k = S.glass / S.glassMax, lvl = HKM.hkOpen(e) ? 2 : k > 0.6 + (HKM.lowOf(S.ph) - HK.lowAt) ? 0 : k > HKM.lowOf(S.ph) ? 1 : 2, set = SETS[lvl], f = e.face || 1, m = e.mode, flash = (e.hurtT || 0) > 0;
     const FR = { sleep: 0, wake: 0, recover: 0, streamTell: 3, gearTell: 5, slipTell: 7, slipRise: 8, pendTell: 9, pend: 10, hourTell: 3, stall: 11, turn: 12 };
     let fr = FR[m] ?? (m === 'walk' ? 1 + (Math.floor(time * 5) & 1) : 0); if (flash && m !== 'stall' && m !== 'turn') fr = 13;
     const arr = flash ? (f > 0 ? set.white.R : set.white.L) : (f > 0 ? set.R : set.L), spr = arr[fr];

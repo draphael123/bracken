@@ -299,18 +299,26 @@ export const STUCK_HANDS = {
   ],
   /* THE BURIED CITY (claude/buriedcity): every sand room the route needs glints until its state is the one the route wants (src/buried-city-hands.js handsState:
      room.<id> full / empty / filling / draining, wheel.great open / shut, vault.<id>); the climb out of the lower bulb's pit glints after a stall */
-  buriedcity: [
-    { id: 'bc-first', zone: [44, 26, 56, 34], steps: [ { key: 'firstLever', is: ['room.first', 'full'], at: [51, 33], line: 'THE ROOM IS FULL TO ITS DOOR: ITS SAND-GATE LEVER' } ] },
-    { id: 'bc-granary', zone: [117, 18, 133, 34], steps: [ { key: 'granaryLever', is: ['room.granary', 'empty'], rows: [27, 34], at: [121, 33], line: 'THE WAY ON IS HIGH: THE GRANARY\'S SAND-GATE' }, { key: 'granaryDoor', is: ['room.granary', 'full'], at: [133, 25], line: 'THE SAND IS AT THE DOOR: THE WAY ON IS EAST' } ] },   /* (fix pass: the door glints once the sand is full) */
-    { id: 'bc-cellar', zone: [200, 26, 212, 34], steps: [ { key: 'cellarLever', is: ['room.cellar', 'empty'], at: [208, 33], line: 'STAKES ACROSS THE CELLAR: ITS SAND-GATE' } ] },
-    { id: 'bc-bulb', zone: [238, 22, 248, 30], steps: [ { key: 'bulbLever', is: ['room.upperbulb', 'full'], at: [245, 29], line: 'THE UPPER HALL IS FULL: ITS SAND-GATE' } ] },
-    { id: 'bc-pit', zone: [260, 30, 276, 40], steps: [ { key: 'bulbUp', at: [273, 30], glint: 'stall', line: 'THE LEDGES LEAD UP OUT OF THE PIT' } ] },
-    { id: 'bc-wheel', zone: [303, 18, 317, 34], steps: [ { key: 'greatWheel', is: ['wheel.great', 'shut'], at: [313, 33], line: 'THE GREAT SAND-GATE: ITS WHEEL' } ] },
-    { id: 'bc-quarter', zone: [317, 19, 372, 41], steps: [ { key: 'quarterClimb', at: [367, 30], glint: 'stall', line: 'THE OLD STREET\'S DOOR IS PAST THE TOWER: OVER THE HOUSES' } ] },
-    { id: 'bc-yard', zone: [397, 36, 404, 42], steps: [ { key: 'yardLever', is: ['room.yard', 'empty'], at: [403, 41], line: 'AN OPEN FLOOR-GATE IS A DROP: ITS LEVER SHUTS IT' } ] },   /* (fix pass M3) */
-    { id: 'bc-shaft', zone: [419, 18, 433, 42], steps: [ { key: 'shaftLever', is: ['room.shaft', 'empty'], rows: [36, 42], at: [423, 41], line: 'THE WAY ON IS HIGH: THE SHAFT\'S SAND-GATE' } ] },
-    { id: 'bc-trap', zone: [440, 24, 452, 30], steps: [ { key: 'trapLever', is: ['room.trap', 'empty'], at: [449, 29], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' } ] },
-    { id: 'bc-vault', zone: [493, 29, 503, 33], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [497, 32], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
+  buriedcity: [   /* (claude/buriedcity2: the rework - grid rows; THE SINKING STREET, THE SAND-FALL and the trap hall's two levers are new) */
+    { id: 'bc-first', zone: [50, 29, 62, 37], steps: [ { key: 'firstLever', is: ['room.first', 'full'], at: [58, 36], line: 'THE ROOM IS FULL TO ITS DOOR: ITS SAND-GATE LEVER' } ] },
+    { id: 'bc-granary', zone: [138, 20, 156, 37], steps: [ { key: 'granaryLever', is: ['room.granary', 'empty'], rows: [28, 37], at: [144, 36], line: 'THE WAY ON IS HIGH: THE GRANARY\'S SAND-GATE' }, { key: 'granaryDoor', is: ['room.granary', 'full'], at: [156, 28], line: 'THE SAND IS AT THE DOOR: THE WAY ON IS EAST' } ] },
+    { id: 'bc-street', zone: [194, 20, 233, 39], steps: [ { key: 'streetChain', is: ['room.street', 'full'], at: [233, 28], line: 'THE STREET STANDS ON THE SAND: ITS GATE CHAIN IS BY THE ARCH' }, { key: 'streetArch', is: ['room.street', 'empty'], at: [235, 38], glint: 'stall', line: 'THE STREET IS DOWN: THE ARCH IS THE WAY ON' } ] },
+    { id: 'bc-cellar', zone: [236, 31, 246, 39], steps: [ { key: 'cellarLever', is: ['room.cellar', 'empty'], at: [242, 38], line: 'STAKES ACROSS THE CELLAR: ITS SAND-GATE' } ] },
+    { id: 'bc-bulb', zone: [270, 25, 282, 33], steps: [ { key: 'bulbLever', is: ['room.upperbulb', 'full'], at: [278, 32], line: 'THE UPPER HALL IS FULL: ITS SAND-GATE' } ] },
+    { id: 'bc-pit', zone: [294, 33, 310, 43], steps: [ { key: 'bulbUp', at: [308, 33], glint: 'stall', line: 'THE PIPES LEAD UP OUT OF THE PIT' } ] },
+    { id: 'bc-sluice', zone: [341, 26, 380, 43], steps: [
+      { key: 'sluiceSwing', is: ['sluice.sluice', 'swing'], at: [345, 42], line: 'THE ARCH IS HIGH: SWING THE SAND-FALL ONTO THE WALL' },
+      { key: 'sluicePile', is: ['sluice.sluice', 'pile'], at: [366, 42], glint: 'stall', line: 'LET THE SAND PILE UP UNDER THE ARCH, THEN SWING IT BACK' },
+      { key: 'sluiceBack', is: ['sluice.sluice', 'back'], at: [366, 42], line: 'THE HEAP IS UP: SWING THE FALL BACK OFF IT' },
+      { key: 'sluiceClimb', is: ['sluice.sluice', 'climb'], at: [379, 34], glint: 'stall', line: 'CLIMB THE HEAP TO THE ARCH' } ] },
+    { id: 'bc-wheel', zone: [396, 21, 411, 37], steps: [ { key: 'greatWheel', is: ['wheel.great', 'shut'], at: [405, 36], line: 'THE GREAT SAND-GATE: ITS WHEEL' } ] },
+    { id: 'bc-quarter', zone: [411, 22, 466, 44], steps: [ { key: 'quarterClimb', at: [461, 33], glint: 'stall', line: 'THE OLD STREET\'S DOOR IS PAST THE TOWER: OVER THE HOUSES' } ] },
+    { id: 'bc-yard', zone: [490, 37, 497, 45], steps: [ { key: 'yardLever', is: ['room.yard', 'empty'], at: [496, 44], line: 'AN OPEN FLOOR-GATE IS A DROP: ITS LEVER SHUTS IT' } ] },
+    { id: 'bc-shaft', zone: [513, 21, 526, 45], steps: [ { key: 'shaftLever', is: ['room.shaft', 'empty'], rows: [39, 45], at: [516, 44], line: 'THE WAY ON IS HIGH: THE SHAFT\'S SAND-GATE' } ] },
+    { id: 'bc-trap', zone: [533, 27, 546, 33], steps: [
+      { key: 'trapLever', is: ['trap.trap', 'gate'], at: [544, 32], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' },
+      { key: 'trapFeed', is: ['trap.trap', 'feed'], at: [538, 32], line: 'THE GATE IS SHUT: SWING THE SAND-FALL INTO THE HALL' } ] },
+    { id: 'bc-vault', zone: [598, 31, 610, 36], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [603, 35], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
   ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
      and the climbs over the towers on the walk and out of the store's cellar glint after a stall */

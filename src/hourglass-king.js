@@ -25,8 +25,8 @@
 // HUMAN bot (src/lab.js): it reads his glass and works the levers.
 
 export const HK = {
-  hp: 2425, w: 20, h: 38, markH: 56,
-  glass: 12, glass3: 8, lowAt: 0.48,   /* (resume pass: the low window 4.3 s -> 5.8 s - a melee hero has a lever to reach across the room, round his blows) */
+  hp: 3150, w: 20, h: 38, markH: 56,   /* (claude/buriedcity2: 2425 -> 3150 - after the flask lift and the riposte he was 100% WITH FLASKS (6/6 x3, dry 89, flask sweep 10-11); the brief's band is 60-70%: a first cut, the SONNET tune lane measures it) */
+  glass: 12, glass3: 8, lowAt: 0.48, lowAt3: 0.6,   /* (resume pass: the low window 4.3 s -> 5.8 s - a melee hero has a lever to reach across the room, round his blows. claude/buriedcity2, B12 (the review's 2a): phase three's cracked glass ran its low window in 3.8 s, under the 4.4 s from the room's centre to a lever - lowAt3 0.6 = 4.8 s) */
   openMul: 2.0, openCap: 0.11, openT: 4.0, wardT: 3.0, wardMul: 0.4, resist: 0.45, turnT: 1.4, turnMul: 1.0, dragV: 300, dragStop: 40, fullJam: 1.6,
   p2: 0.6, p3: 0.25,
   walk: 42, keep: 46, gap: [0.6, 0.5, 0.42],
@@ -36,7 +36,7 @@ export const HK = {
   slipTell: 1.0, slipR: 22, slipUp: 0.3,
   hourTell: 0.95, hourV: 210, hourH: 14,
   pourW: 22, pourTick: 0.5,
-  dmg: { pend: 38, gear: 22, stream: 28, slip: 30, hour: 33, pour: 8 },   /* (FIX PASS 10-09, after the levers came back in phases two and three (M1) he was 36/36 WITH FLASKS: hp 1750 -> 2425, openCap 0.13 -> 0.11, the pendulum (taken alike by every hero) up, the gear and the stream (the knight's bane: he ate twice the warden's) down - 12 seeds/hero, human: knight 2/12, warden 11/12, pyro 9/12 = 61%) */   /* (resume pass: 33% with flasks at 34/28/36/38/31 and 1900 hp - eased to the 60-70% band) */
+  dmg: { pend: 43, gear: 25, stream: 32, slip: 34, hour: 38, pour: 9 },   /* (claude/buriedcity2: +~13% with the hp, the first cut toward 60-70% with flasks) */   /* (FIX PASS 10-09, after the levers came back in phases two and three (M1) he was 36/36 WITH FLASKS: hp 1750 -> 2425, openCap 0.13 -> 0.11, the pendulum (taken alike by every hero) up, the gear and the stream (the knight's bane: he ate twice the warden's) down - 12 seeds/hero, human: knight 2/12, warden 11/12, pyro 9/12 = 61%) */   /* (resume pass: 33% with flasks at 34/28/36/38/31 and 1900 hp - eased to the 60-70% band) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
@@ -87,7 +87,8 @@ export function newFight(G) {
 }
 export const hPhase = e => (e.hp <= e.maxHp * HK.p3 ? 3 : e.hp <= e.maxHp * HK.p2 ? 2 : 1);
 export const hkOpen = e => !!e && e.mode === 'stall' && (e.open || 0) > 0;
-export const glassLow = S => !!S && S.glass <= S.glassMax * HK.lowAt;
+export const lowOf = ph => (ph === 3 ? HK.lowAt3 : HK.lowAt);   /* the share of his glass that is LOW (a pull stalls him), by phase */
+export const glassLow = S => !!S && S.glass <= S.glassMax * lowOf(S.ph);
 export const turning = e => !!e && e.mode === 'turn';
 const BLOWS = new Set(['pend', 'slipRise']);
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
