@@ -21,8 +21,8 @@ export const SPEC = {
   geomancer:  { head: [10, 19, 29, 36], S: [17, 39], C: [19, 39], M: [18, 35], sleeve: [14, 38], glove: [16, 34] },
 };
 
-const GLASS = '#c9d1dc', RED = '#c9463d', HI = '#ff9a9a', CORK = '#9a6a34', EMPTY = '#8a96a8', GREEN = '#8fd160';
-const BP = { w: GLASS, r: RED, L: HI, k: CORK, h: '#e8eef6', e: EMPTY };
+const GLASS = '#c9d1dc', RED = '#c9463d', HI = '#ff9a9a', CORK_COL = '#9a6a34', EMPTY = '#8a96a8', GREEN = '#8fd160';
+const BP = { w: GLASS, r: RED, L: HI, k: CORK_COL, h: '#e8eef6', e: EMPTY };
 const B = rows => outline(fromGrid(rows, BP, 1), OUT);
 /* the bottle in a fist: upright (neck up), tipped (neck down-left, base up-right), and the emptier one for the second gulp. Each canvas has a 1 px margin
    and outline, so a grid cell (cx, cy) sits at pixel (cx + 1, cy + 1) of it. */
