@@ -580,6 +580,36 @@ export function bakeKnight(skin = {}, bare = false, previewOnly = false) {
     const bow1 = at({ dy: 1, hy: 1, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], sword: [sh[0] + 2, sh[1] + 1, sh[0] + 4, sh[1] + 8], plume: 2 });
     const bow2 = at({ dy: 2, hy: 2, sho: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], sword: [sh[0] + 3, sh[1] + 2, sh[0] + 5, sh[1] + 8], plume: 2 });
     F.dance = holdFrames([[ready, 2], [draw, 2], [up, 3], [upGlint, 2], [up, 2], [present, 3], [upGlint, 2], [bow1, 2], [bow2, 4], [bow1, 2]]); }
+  /* HIS OTHER TWO DANCES (heroanim lane, 2026-10-10). The salute above is the victory card's and the H key's; these are his two
+     other moods, and both are drill. dance2 = THE KATA, for a long idle: nobody is watching and he runs the old forms alone, guard,
+     high cut, forward cut, low cut, shield up and the bash, and ends sheathed-on-the-turf with his head bowed over the hilt.
+     dance3 = THE FLOURISH, for a boss down: the blade thrown round overhead in a full turn, planted, then the thrust to the sky
+     with the shield up and a hop off both boots. Every pose is the sword or the shield: nobody else here drills. */
+  { const at = (o = {}) => KF({ legs: 'stand', plume: 0, ...o });
+    const ar = (hx, hy2, tx, ty, o = {}) => at({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], sword: [sh[0] + hx, sh[1] + hy2, sh[0] + tx, sh[1] + ty], ...o });
+    const gl = (x, y) => [[x - BX, y - BY, '#ffffff'], [x - BX - 1, y - BY + 1, '#fff6c8'], [x - BX + 1, y - BY + 1, '#fff6c8'], [x - BX, y - BY - 1, '#fff6c8']];
+    const guard = ar(4, -1, 12, -4, { shield: true, legs: 'wide', dx: 1, plume: 1 });
+    const back = ar(-1, -4, -7, -10, { legs: 'wide', dx: -2, plume: 1 });
+    const cutF = ar(4, 1, 13, 1, { legs: 'runC', dx: 1, plume: 2 });
+    const cutFg = ar(4, 1, 13, 1, { legs: 'runC', dx: 1, plume: 2, bits: gl(sh[0] + 13, sh[1] + 1) });
+    const cutLow = ar(3, 3, 11, 8, { legs: 'runC', dx: 2, plume: 2 });
+    const hi = ar(3, -1, 3, -11, { plume: 2 });
+    const hiBack = ar(1, -3, -5, -9, { legs: 'wide', dx: -1, plume: 1 });
+    const hiCut = ar(4, -2, 11, 4, { legs: 'runC', dx: 1, plume: 2 });
+    const shieldUp = at({ shield: true, legs: 'wide', sword: [sh[0] + 1, sh[1] + 2, sh[0] + 2, sh[1] + 7], plume: 1 });
+    const bash = at({ shield: true, legs: 'runC', dx: 2, sword: [sh[0] + 1, sh[1] + 2, sh[0] + 2, sh[1] + 7], plume: 2 });
+    const plantTwo = ar(3, 3, 4, 11, { dy: 1, hy: 1, plume: 2 });
+    const bowHilt = ar(3, 3, 4, 11, { dy: 2, hy: 2, sho: 1, plume: 2 });
+    F.dance2 = holdFrames([[at({ sword: rest(), plume: 1 }), 2], [guard, 3], [back, 3], [cutF, 2], [cutFg, 2], [ar(4, 1, 8, 4, { legs: 'runC', dx: 1, plume: 1 }), 2], [guard, 2],
+      [hiBack, 3], [hiCut, 2], [cutLow, 3], [guard, 2], [shieldUp, 3], [bash, 2], [shieldUp, 2], [plantTwo, 3], [bowHilt, 5], [plantTwo, 2], [at({ sword: rest(), plume: 1 }), 2]]);
+    const o1 = ar(5, -2, 9, -9, { legs: 'wide', plume: 1 }), o2 = ar(3, -2, 3, -12, { plume: 2 }), o3 = ar(2, -2, -4, -10, { legs: 'wide', dx: -1, plume: 2 }),
+      o4 = ar(1, 0, -7, -3, { legs: 'wide', dx: -2, plume: 2 }), o5 = ar(1, 3, -5, 9, { dx: -1, plume: 2 });
+    const bigHi = ar(3, -2, 3, -12, { top: 0, hy: -1, sho: 1, plume: 2, bits: gl(sh[0] + 3, sh[1] - 12) });
+    const leap = at({ legs: 'jump', dy: -3, sho: 1, shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 2], sword: [sh[0] + 3, sh[1] - 2, sh[0] + 3, sh[1] - 12], plume: 2, bits: gl(sh[0] + 3, sh[1] - 12) });
+    const touch = at({ legs: 'land', dy: 2, shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], sword: [sh[0] + 3, sh[1] - 1, sh[0] + 3, sh[1] - 11], plume: 0 });
+    const hold = at({ shield: true, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], sword: [sh[0] + 3, sh[1] - 1, sh[0] + 3, sh[1] - 11], plume: 1, bits: gl(sh[0] + 3, sh[1] - 11) });
+    F.dance3 = holdFrames([[at({ sword: rest(), plume: 1 }), 1], [o1, 2], [o2, 2], [o3, 2], [o4, 2], [o5, 2], [o1, 2], [o2, 2], [o3, 1], [o4, 1], [o5, 2], [plantTwo, 3],
+      [at({ legs: 'crouch', legsDy: 3, dy: 4, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], sword: [sh[0] + 3, sh[1] + 1, sh[0] + 3, sh[1] - 8], shield: true, plume: 2 }), 2], [leap, 2], [bigHi, 1], [touch, 2], [hold, 5], [at({ sword: rest(), plume: 1 }), 2]]); }
   /* HIS SLUMP. Not the hurt frame: nothing has hit him. The helm sinks into the shoulders, the shoulders themselves
      sag (sho below zero drops the outer pixels instead of lifting them), the kite hangs off a slack arm down by his
      knee, and the sword is not held so much as leant on, its point out in the turf in front of his boots. */

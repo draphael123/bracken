@@ -1,17 +1,18 @@
 // tools/dance-sheet.mjs — ONE CAPTURE SHEET OF ALL SEVEN DANCES (dances lane, 2026-09-29): a row a hero, every distinct drawing of his
 // dance in the order it plays, blown up, on the plain bracken skin - and a second block of the same seven in a different skin
-// (--skin=<id>, default black), so the sheet shows the dance is baked into the skins too.  node tools/dance-sheet.mjs  ->  work/dances/dances.png
+// (--skin=<id>, default black), so the sheet shows the dance is baked into the skins too.  node tools/dance-sheet.mjs  ->  work/dances/'+KEY+'.png
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { openPage, ROOT } from './cdp.mjs';
 import { join } from 'node:path';
 
-const HEROES = ['knight', 'pyro', 'pirate', 'reaper', 'warden', 'paladin', 'geomancer'];
+const HEROES = (process.argv.find(a => a.startsWith('--heroes=')) || '--heroes=knight,pyro,pirate,reaper,warden,paladin,geomancer').slice(9).split(',');
 const SKIN = (process.argv.find(a => a.startsWith('--skin=')) || '--skin=black').slice(7);
 const SC = 3;
+const KEY = (process.argv.find(a => a.startsWith('--key=')) || '--key=dance').slice(6);
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const url = await pg.evalp(`(()=>{const H=${JSON.stringify(HEROES)},skins=['bracken','${SKIN}'];
-    const rows=[];for(const sk of skins)for(const h of H){const s=BKT.heroSet(sk,undefined,false,h),R=s.R.dance,seq=[];let last=null;
+    const rows=[];for(const sk of skins)for(const h of H){const s=BKT.heroSet(sk,undefined,false,h),R=s.R['${KEY}'],seq=[];let last=null;
       for(const c of R){const d=c.toDataURL();if(d!==last){seq.push(c);last=d;}}   /* each drawing once, in the order it plays */
       rows.push({h,sk,seq});}
     const cw=Math.max(...rows.flatMap(r=>r.seq.map(c=>c.width)))*${SC}+6,ch=Math.max(...rows.flatMap(r=>r.seq.map(c=>c.height)))*${SC}+6,cols=Math.max(...rows.map(r=>r.seq.length)),LAB=84;
@@ -21,6 +22,6 @@ try {
       r.seq.forEach((f,k)=>{g.drawImage(f,LAB+k*cw+3,y+3,f.width*${SC},f.height*${SC});});});
     return c.toDataURL('image/png');})()`);
   const dir = join(ROOT, 'work', 'dances'); mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'dances.png'), Buffer.from(url.split(',')[1], 'base64'));
-  console.log('wrote work/dances/dances.png');
+  writeFileSync(join(dir, KEY === 'dance' ? 'dances.png' : KEY + '.png'), Buffer.from(url.split(',')[1], 'base64'));
+  console.log('wrote work/dances/'+KEY+'.png');
 } finally { pg.close(); }

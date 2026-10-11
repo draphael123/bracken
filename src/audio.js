@@ -1665,8 +1665,10 @@ Object.assign(SFX, {
      an emote left running): the knight's salute is a fanfare on the steel; the pyromancer's a run of sparks; the freebooter's a jig in
      six-eight; the death knight's two low tolls and a rising green chord; the geomancer's stones knocked out in a pattern; the
      warden's a whoosh and a spear-tip ring; the paladin's a swelling choir with a bell over it. */
-  dance(h) {
-    const T = (type, notes, dur, v, gap, at = 0) => notes.forEach((f, i) => tone(type, f, f, dur, v, at + i * gap));
+  /* v: 0 the victory phrase, 1 the idle solo (the same phrase a whole step down, softer: nobody is watching), 2 the boss-down flourish (a fourth up, one more turn of the line) */
+  dance(h, v = 0) {
+    const sh = v === 1 ? 0.89 : v === 2 ? 1.335 : 1, vol = v === 1 ? 0.6 : 1;
+    const T = (type, notes, dur, vv, gap, at = 0) => notes.forEach((f, i) => tone(type, f * sh, f * sh, dur, vv * vol, at + i * gap + (v === 2 ? 0.03 * i : 0)));
     if (h === 'pyro') { T('triangle', [523, 659, 784, 1047, 1319, 1047, 1319], 0.16, 0.1, 0.09); crackle(6, 0.05); noise(0.5, 0.05, 3400, 1.2, 0.5); }
     else if (h === 'pirate') { T('square', [392, 494, 587, 494, 587, 784, 587, 494, 392], 0.11, 0.06, 0.1); T('triangle', [196, 196, 196, 196], 0.14, 0.12, 0.225); }
     else if (h === 'reaper') { bell(147, 1.1, 0.16); bell(110, 1.3, 0.16, 0.55); pad('sawtooth', 110, 165, 1.1, 0.05, 0.6, 700); T('triangle', [220, 277, 330], 0.5, 0.06, 0.15, 0.75); }
