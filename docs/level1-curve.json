@@ -69,13 +69,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 44,
-  "deaths": 7,
-  "kills": 39,
-  "lifts": 125,
+  "hits": 40,
+  "deaths": 6,
+  "kills": 41,
+  "lifts": 139,
   "walked": 100,
   "bare": true,
-  "lostPct": 362
+  "lostPct": 325
  },
  "hanging": {
   "hash": "5d99f57af11e",
@@ -130,17 +130,17 @@
   "lostPct": 14
  },
  "crown": {
-  "hash": "2eecb57b32ac",
+  "hash": "72b39b51eba5",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 63,
+  "hits": 61,
   "deaths": 8,
-  "kills": 65,
-  "lifts": 223,
+  "kills": 86,
+  "lifts": 220,
   "walked": 100,
   "bare": true,
-  "lostPct": 484
+  "lostPct": 483
  },
  "longwater": {
   "hash": "8ce17bb1e629",
@@ -160,13 +160,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 14,
-  "deaths": 0,
-  "kills": 3,
-  "lifts": 72,
+  "hits": 27,
+  "deaths": 4,
+  "kills": 4,
+  "lifts": 68,
   "walked": 100,
   "bare": true,
-  "lostPct": 79
+  "lostPct": 175
  },
  "flotilla": {
   "hash": "33db89df5387",
