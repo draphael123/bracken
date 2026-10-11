@@ -28,7 +28,7 @@ try {
   assert.equal(newest, '11 OCT', 'the newest entry is 11 OCT, shown as ' + newest);
   assert.ok((await pg.evalp('BK.ui.titleTop()')).includes("WHAT'S NEW"), "the title board has the WHAT'S NEW row");
   let r = await pg.evalp(REC);
-  assert.ok(r.some(x => x.s === "WHAT'S NEW " + newest), "the row shows the newest date: " + r.map(x => x.s).join(' / '));
+  assert.ok(r.some(x => x.s === newest), "the row shows the newest date: " + r.map(x => x.s).join(' / '));
   assert.equal(await pg.evalp('BK.WN.hasNew()'), true, 'a dot until it is opened');
   const idx = await pg.evalp(`BK.ui.titleTop().indexOf("WHAT'S NEW")`);
   await pg.evalp(`(()=>{ BK.ui.titleI = ${idx}; return 1; })()`);
@@ -50,7 +50,7 @@ try {
   await pg.evalp('BK.step(5)');
   assert.equal(await pg.evalp('BK.state'), 'title', 'ESC goes back to the title');
   r = await pg.evalp(REC);
-  assert.ok(r.some(x => x.s === "WHAT'S NEW " + newest), 'the row is still there, dot gone');
+  assert.ok(r.some(x => x.s === newest), 'the row is still there, dot gone');
   assert.equal(await pg.evalp('BK.WN.hasNew()'), false, 'and the dot stays gone');
   /* a NEWER entry brings the dot back */
   await pg.evalp(`(()=>{ const W = BK.WN; W.setUpdates([{ date: '2026-12-31', batch: 99, lines: ['x'] }, ...W.getUpdates()]); return 1; })()`);
