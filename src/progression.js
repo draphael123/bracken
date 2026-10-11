@@ -80,7 +80,7 @@ export const HERO_PERKS = {
  reaper: [{ id: 'dward', name: 'BLOOD WARD', what: 'THE BLOOD WARD FILLS 12% FASTER' }, { id: 'dnova', name: 'DEEP DRAW', what: 'THE NOVA HEALS 10% MORE BLOOD' }],
  warden: [{ id: 'wdef', name: 'LONG TURN', what: 'THE DEFLECT WINDOW LASTS LONGER' }, { id: 'wrec', name: 'QUICK POLE', what: 'THE SHAFT RECOVERS 8% SOONER' }],
  geomancer: [{ id: 'gstone', name: 'HARD STONE', what: 'HER STONE STANDS A FIFTH LONGER' }, { id: 'gward', name: 'WIDE RUNE', what: 'THE RUNE-WARD PERFECT WINDOW GROWS' }],
- berserker: [{ id: 'bzstoke', name: 'STOKED', what: 'RAGE FILLS A FIFTH FASTER' }, { id: 'bzstout', name: 'STOUT BRACE', what: 'THE BRACE STANDS A FIFTH LONGER' }],   /* (berserkerport: rank 5 = +20%, 4% a rank like the geomancer's) */
+ berserker: [{ id: 'bzstoke', name: 'STOKED', what: 'RAGE FILLS A FIFTH FASTER' }, { id: 'bzstout', name: 'STOUT BRACE', what: 'TAKE IT: THE BEAT IS A FIFTH LONGER' }],   /* (berserkerport: rank 5 = +20%, 4% a rank like the geomancer's) */
 };
 export const ALL_HERO_PERKS = Object.values(HERO_PERKS).flat();
 export const heroPerkAt = (h, n) => { const l = HERO_PERKS[h]; return l ? l[Math.max(0, MILESTONES.indexOf(n)) % 2] : null; };

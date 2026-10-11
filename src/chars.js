@@ -4971,6 +4971,10 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
   bzKitPoses(F, sh);
   smearPass(F, SMEAR_COL.steel);   /* the strike beats get their arc (claude/herokeys): the lead axe's hand and head are kept as c.wp */
   if (ONEAXE) F.atkB = F.atk;   /* ONE-HANDED: no off chop - the lead axe cuts every blow of the run */
+  /* (claude/berserker2) HIS NEW KEYS, PLACEHOLDERS for the Sonnet barbarian lane (scratch/brief-berserker2.md 5): each borrows a frame list he already has until it is
+     drawn - the flurry's left and right chops, the CROSS-CHOP, both axes spinning in the air and under him in the plunge, TAKE IT on the crossed axes, the COIL, the POUNCE
+     (leap, then the committed landing) and THE WHETSTONE. (One-handed, the bare set borrows the same way: one axe in each.) */
+  Object.assign(F, { bzFlurryL: F.atk, bzFlurryR: F.atkB, bzCross: F.atkC, bzAirSpin: F.air, bzPlunge: F.plunge, bzTake: F.block, bzCoil: F.grind, bzPounce: F.dashAtk, bzPLand: F.land, bzWhet: F.grind });
   const RR = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);

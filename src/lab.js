@@ -61,7 +61,7 @@ export const WARDEN_TIP = 32;   /* (claude/herokit) the near-edge distance the w
    met nothing), never held - so wherever the hands sweep the Warden's shaft they set his brace. A full bar makes the same tap his FRENZY, which
    is exactly when a player would take it. DEFLECTS is who taps; BUSY_C is the beat each is spent after one that met nothing. */
 export const DEFLECTS = h => h === 'warden' || h === 'berserker';
-const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.braceT || 0) : 0;
+const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.pounceRec || 0) : 0;   /* (claude/berserker2: TAKE IT is held, so his guard up is not "busy" - tapping keeps it up) */
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
    the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */
