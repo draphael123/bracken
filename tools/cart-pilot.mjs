@@ -38,7 +38,7 @@ function makeCartPilot(BK, plan) {
     if (!low) { if (S.ward <= 0 && Math.abs(dx) < 10 && S.mode !== 'ram' && S.mode !== 'ramTell') { k.down = true; BK.press('jump'); dropT = 6; why = 'foreman: drop on him'; } else hold(fx); return; }
     for (const o of (MCH.state().lobs || [])) { if (o.t <= 0 || Math.abs(o.tx - p.x) > 34) continue; k.left = true; why = 'foreman: off the mark'; return; }
     if (S.mode === 'ramTell' || S.mode === 'ram') { const reach = FM.ramV * FM.ramT + FM.halfW + 34; if (dx < 60 && jumpHold <= 0) { BK.press('jump'); jumpHold = 26; why = 'foreman: up from the ram'; } else if (dx < reach) { k.left = true; why = 'foreman: brake from the ram'; } if (jumpHold > 0) { jumpHold--; k.jump = true; } return; }
-    if (S.mode === 'drift' && S.ward <= 0 && dx > (S.dv || 72) * 0.5 - 8 && dx < (S.dv || 72) * 0.5 + 2 && jumpHold <= 0) { BK.press('jump'); jumpHold = 26; why = 'foreman: jump on him'; }
+    if (S.mode === 'drift' && S.ward <= 0 && dx > (S.dv || 72) * 0.55 - 10 && dx < (S.dv || 72) * 0.55 + 4 && jumpHold <= 0) { BK.press('jump'); jumpHold = 26; why = 'foreman: jump on him'; }
     if (jumpHold > 0) { jumpHold--; k.jump = true; }
     if (S.mode === 'drift' || S.mode === 'driftTell') { hold(Math.min(p.x, fx - 30)); why = why.startsWith('foreman: jump') ? why : 'foreman: wait for him'; return; }
     hold(S.ward > 0 ? G.x0 + 90 : Math.min(G.x0 + 150, fx - 90)); why = 'foreman: hold'; }

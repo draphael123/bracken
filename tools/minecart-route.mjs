@@ -50,8 +50,8 @@ try {
       const legs = []; let frames = 0, cards = 0, lifts = 0; const maxHp = P().maxHp, trace = [];
       for (let i = 0; i < stations.length; i++) {
         const [sx, sy] = stations[i], goal = i + 1 < stations.length ? stations[i + 1][0] : door, f0 = frames, mc0 = JSON.parse(JSON.stringify(BK.minecart().read().n)), d0 = BK.stats().deaths; let dmg = {}, ok = false;
-        if (i > 0) { BK.tp(sx, sy); P().vx = 0; P().vy = 0; P().hp = P().maxHp; BK.sim(3); }
-        for (let f = 0; f < 60 * 70; f++) {
+        if (i > 0) { BK.tp(sx, sy); P().vx = 0; P().vy = 0; P().hp = P().maxHp; { const c = BK.minecart().cart(P()); c.hist = []; c.lastGround = null; c.v = 0; } BK.sim(3); }   /* (deeprails3: the cart forgets the leg before - a fall must not put it back there) */
+        for (let f = 0; f < 60 * 110; f++) {   /* (deeprails3: 110 s a leg - the exam leg holds THE FOREMAN's mini, 40-75 s) */
           if (BK.state === 'card') { BK.cardClose(); cards++; }
           pilot.step(); const hp0 = P().hp; BK.log = []; BK.sim(1); frames++;
           if (P().hp < hp0) { const h = (BK.log || []).filter(q => q.k === 'dmgP')[0]; const who = h ? (h.name || (h.by && (h.by.cnSkin || h.by.t)) || 'hazard') : 'other'; dmg[who] = (dmg[who] || 0) + Math.round(hp0 - P().hp); }

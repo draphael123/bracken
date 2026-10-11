@@ -171,7 +171,7 @@ ok([...kinds].every(t => ['archer', 'gobmage', 'tippler', 'miner', 'brute', 'sap
     FMG.stepForeman(S, e, 1 / 60, [h], C(x)); ok(x.hit === F.bumpDmg && x.bounce === 1 && !x.board, 'met in your cart on the LOW line he is a BUMP (armoured: it hurts you and throws you back)'); }
   { const { S, e } = mk(), x = {}; S.mode = 'ramTell'; S.mT = 0.01; S.R = 250; const h = { x: G.x0 + 250 - F.ramV * F.ramT - F.halfW - 40, y: G.lowY, prevY: G.lowY, vy: 0, ground: true, alive: true, riding: true, v: MC.cruise, pp: {} };
     for (let i = 0; i < 60; i++) FMG.stepForeman(S, e, 1 / 60, [h], C(x)); ok(!x.hit, 'his ram stops short of a cart braked back out of its reach'); }
-  { const { S, e } = mk(); S.mode = 'drift'; S.R = 160; const mem = {}, ask = t => FMG.foremanPlan({ P: { x: G.x0 + 128, y: G.lowY, ground: true, vy: 0, atk: -1, v: MC.cruise, lane: 0 }, S, rng: () => 0.9, mem, t });
+  { const { S, e } = mk(); S.mode = 'drift'; S.R = 160; const mem = {}, ask = t => FMG.foremanPlan({ P: { x: G.x0 + 118, y: G.lowY, ground: true, vy: 0, atk: -1, v: MC.cruise, lane: 0 }, S, rng: () => 0.9, mem, t });
     ask(1); const pl = ask(1.5); ok(pl.jump, 'the bot jumps on him as he drops back to it (' + pl.why + ')'); } }
 /* THE ON-FOOT STRETCHES (deeprails2) */
 ok(FOOT.length === 2 && FOOT.some(f => f.derail) && FOOT.some(f => !f.derail), 'two on-foot stretches: a derailment and a lift (Daniel 10-09)');

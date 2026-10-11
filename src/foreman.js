@@ -51,7 +51,7 @@ export function stepForeman(S, e, dt, heroes, c) {
   /* A LANDING ON HIS CART: from above (feet coming down through its top, over its width) - a STOMP, or BRACED while his spikes are up (the game's own head-stomp
      calls landOn first - src/main.js -> src/minecart-hands.js stomp; this catches a landing on the tub's rim beside him) */
   if (S.mode !== 'boarded' && S.mode !== 'lurchTell') for (const h of live) {
-    if (h.ground || !(h.vy > 0) || Math.abs(h.x - fx) > F.halfW + 3 || !(h.prevY <= G.topY + 3 && h.y >= G.topY - 1)) continue;
+    if (h.ground || !(h.vy > 0) || Math.abs(h.x - fx) > F.halfW + 4 || !(h.y >= G.topY - 30 && h.y <= G.topY + 4 && h.prevY <= G.topY + 4)) continue;   /* (coming down into his cart's space from above: his head to the tub's rim) */
     if (landOn(S, e, h, c)) break; }
   /* HIS CART AND YOURS ON THE LOW LINE: armoured - you bump off it (a RAM at full pump only chips it, x0.4); his own RAM hits harder */
   if (S.mode !== 'boarded' && S.mode !== 'lurchTell' && S.contactCd <= 0) for (const h of live) {
@@ -103,7 +103,7 @@ export function foremanPlan({ P, S, rng = Math.random, mem = {}, t, eyes = false
   /* HIS RAM: out of its reach (a brake) - or, close, up to the HIGH line */
   if ((S.mode === 'ramTell' || S.mode === 'ram') && late('ram' + S.n.ram)) { const reach = F.ramV * F.ramT + F.halfW + 34; if (dx < reach) { if (dx < 70 && P.ground) { out.jump = true; out.why = 'ram: up high'; } out.gx = fx - reach - 20; out.why = out.why || 'ram: brake'; } return out; }
   /* HIS DRIFT: hold the line under where he comes, and jump as he is a jump away (a stomp) */
-  if ((S.mode === 'drift' || S.mode === 'driftTell') && S.ward <= 0 && late('drift' + S.n.drift)) { out.gx = Math.min(P.x, fx - 30); const lead = (S.dv || F.driftV) * 0.5 + (mem.lead ?? (mem.lead = rng() * 10 - 5));
+  if ((S.mode === 'drift' || S.mode === 'driftTell') && S.ward <= 0 && late('drift' + S.n.drift)) { out.gx = Math.min(P.x, fx - 30); const lead = (S.dv || F.driftV) * 0.55 + (mem.lead ?? (mem.lead = rng() * 10 - 5));
     if (S.mode === 'drift' && P.ground && P.lane === 0 && dx > lead - 10 && dx < lead + 6 && !(mem['mj' + S.n.drift] ??= rng() < FOREMAN_PLAN.miss)) { out.jump = true; out.why = 'drift: jump on him'; } else out.why = 'drift: wait'; return out; }
   /* HIS PICK: off its mark (the hands' lob list is read by the lab) */
   if (mem.mark && Math.abs(mem.mark.x - P.x) < 34 && mem.mark.t > 0) { out.gx = mem.mark.x - 60; out.why = 'pick: brake off the mark'; return out; }
