@@ -68,7 +68,7 @@ export const LIM = {
 
 /* FOE ROLES. The game has no role field on a foe, so the roles are named here, by what the foe DOES to you; a foe not listed is MELEE. Keep the lists to kinds whose AI
    was read (a thrown or shot attack; a bomb or net; a heal/horn/banner/snuff; plate or a big swing; a fast chase or a grab). Add a kind when a lane builds one. */
-export const ROLES = {   /* (claude/order) THE BROKEN ORDER: the duelist, the brute and the lancer are heavies (plate, a shield or a reach); the battle mage casts */
+export const ROLES = {   /* (claude/order) THE ROAD WARDENS: the duelist, the brute and the lancer are heavies (plate, a shield or a reach); the battle mage casts */
   ranged: ['oathmage', 'archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder', 'skybolt', 'catapult', 'towertop', 'pyromancer', 'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest', 'wickerman', 'wallslinger', 'smokethrower'],   /* (claude/fairfix6) THE WICKER MAN bowls its own fire */   /* (claude/ksar) the wall slinger's stones, the smoke thrower's pots */
   support: ['bellman', 'barker', 'gobpriest', 'bannerbearer', 'horn', 'snuffer', 'priest', 'acolyte', 'merrowcaller', 'bearer'],
   heavy: ['oathblade', 'oathmaul', 'oathlance', 'heavy', 'brute', 'troll', 'golem', 'merrowbrute', 'tideguard', 'hedgeknight', 'armour', 'bloodknight', 'berserker', 'drownedknight', 'bellguard', 'holdfast', 'gaffer', 'barrowrider', 'shield', 'wickerman', 'shieldsentry', 'construct'],

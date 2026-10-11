@@ -140,7 +140,7 @@ export const BY_HAND = {
   'apprentice|grabTell': '!', 'apprentice|riseTell': '', 'apprentice|castTell': '!',   // same rise that strikes nobody, and the apprentice's ember (a seed a shield turns). They wore no mark: their rows were missing
 };
 
-/* (claude/order) THE BROKEN ORDER's four bodies (src/order-knights.js, by hand: module-file elites). Each body can enter every one of these windups - his own two, his
+/* (claude/order) THE ROAD WARDENS's four bodies (src/order-knights.js, by hand: module-file elites). Each body can enter every one of these windups - his own two, his
    chapter's, his level's twist - so each gets the whole list: a yellow ! where a shield turns the blow, a red !! where nothing does, none on THE SNUFF (no blow). */
 for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) BY_HAND[t + '|' + m] = v;
 
@@ -778,7 +778,7 @@ export const HEIGHT = {
 // THE COMMON FOES WHOSE HARM IS NOT A TOLD WINDUP (touch, a lunge from hiding, a latch, a burst, a gust), and what the player does
 // about each. EMPTY, and tools/answer-tags.mjs keeps it so (the combat pass, part 2: Daniel's "no untold hits"): the 24 that were
 // here - the lurker's lunge, the hound's leap, the sapper's bomb and the rest - each wind up on a mark now and answer in ANSWER.
-/* (claude/order) THE BROKEN ORDER's answers: a yellow ! is blocked (or PARRIED - the duelist's cut is the lesson), a red !! is dodged; only the duelist's LUNGE runs at chest height (duck under it) - the rest reach the floor */
+/* (claude/order) THE ROAD WARDENS's answers: a yellow ! is blocked (or PARRIED - the duelist's cut is the lesson), a red !! is dodged; only the duelist's LUNGE runs at chest height (duck under it) - the rest reach the floor */
 for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) if (v) { ANSWER[t + '|' + m] = v === '!' ? 'block' : 'dodge'; HEIGHT[t + '|' + m] = m === 'lungeTell' ? 'high' : 'low'; }
 export const UNTOLD = {};
 // THE COMMON FOLK THAT NEVER HARM YOU AT ALL: no blow, so nothing to tell and nothing to answer.

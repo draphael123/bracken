@@ -1,4 +1,4 @@
-// tools/order-knights.mjs - THE BROKEN ORDER DOES WHAT THE BRIEF SAYS (claude/order, scratch/brief-elite-order.md; src/order-chapters.js,
+// tools/order-knights.mjs - THE ROAD WARDENS DOES WHAT THE BRIEF SAYS (claude/order, scratch/brief-elite-order.md; src/order-chapters.js,
 // src/order-knights.js).
 //   table   (node) every ORDER_AT row names a real body, chapter, twist and built signature moves; one affix at most, and it fits the level;
 //           a twist is wired only on its own level and two levels of one region never share one; the level's ELITES row puts THAT knight

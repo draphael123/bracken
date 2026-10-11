@@ -92,6 +92,8 @@ if (WANT.some(w => w !== 'pure')) {
         { const [e]=__set('knight',[['sprig',14]]);e.face=1;C.strike(e,'light',1);o.lightWhy=e.kiWhy||null;o.lightKnock=+(e.knock||0).toFixed(2); }
         { const [e]=__set('knight',[['sprig',14]]);e.face=1;const P=BK.P;P.swingRiposte=true;P.atk=0;BKT.hurtAs('light',e,1,P.x,false);P.swingRiposte=false;o.riposte=__fly(e);o.ripWhy=e.kiWhy; }
         { const [e]=__set('knight',[['brute',14,{elite:true}]]);e.affix=null;e.face=1;const P=BK.P;e.broken=1.5;e.brokeAt=BK.time-1;P.heavySwing=true;P.heavy=false;P.atk=0;BKT.hurtAs('light',e,1,P.x,false);P.heavySwing=false;o.brokeWhy=e.kiWhy||null;o.brokeAfter=+(e.broken||0).toFixed(2);o.broke=__fly(e); }
+        { const [e]=__set('knight',[['brute',14,{elite:true}]]);e.affix='UNSTOPPABLE';e.face=1;const P=BK.P;e.broken=1.5;e.brokeAt=BK.time-1;P.heavySwing=true;P.heavy=false;P.atk=0;BKT.hurtAs('light',e,1,P.x,false);P.heavySwing=false;o.brokeUnsWhy=e.kiWhy||null;o.brokeUnsAfter=+(e.broken||0).toFixed(2);o.brokeUns=__fly(e); }
+        { const [e]=__set('knight',[['oathmaul',14,{elite:true}]]);e.affix=undefined;e.face=1;const P=BK.P;e.broken=1.5;e.brokeAt=BK.time-1;P.heavySwing=true;P.heavy=false;P.atk=0;BKT.hurtAs('light',e,1,P.x,false);P.heavySwing=false;o.brokeMaulWhy=e.kiWhy||null;o.brokeMaulAfter=+(e.broken||0).toFixed(2);o.brokeMaul=__fly(e); }
         { const [e]=__set('knight',[['sprig',14]]);e.face=1;C.strike(e,'light',1);e.broken=1.4;e.brokeAt=BK.time;const P=BK.P;P.heavySwing=true;P.heavy=false;P.atk=0;BKT.hurtAs('light',e,1,P.x,false);P.heavySwing=false;o.breakingBlowWhy=e.kiWhy||null;o.breakingKept=+(e.broken||0).toFixed(2); }
         { const [e]=__set('knight',[['soldier',14]]);e.face=-1;C.strike(e,'heavy',1);o.slideKvy=e.kvy;o.slideKv=Math.round(Math.abs(e.kvx||0));o.slide=__fly(e);o.slideWhy=e.kiWhy; }
         { const [e]=__set('knight',[['soldier',14]]);e.face=1;C.strike(e,'heavy',1);o.openKvy=e.kvy;o.openKv=Math.round(Math.abs(e.kvx||0));o.open=__fly(e); }
@@ -104,6 +106,7 @@ if (WANT.some(w => w !== 'pure')) {
       ok(r.lightWhy === null && r.lightKnock === 0, 'a plain light cut throws nothing (a shove, no flight)');
       ok(r.riposte > 60 && r.ripWhy === 'riposte', 'a RIPOSTE cut throws (' + r.riposte + ' px)');
       ok(r.brokeWhy === 'broke' && r.brokeAfter === 0 && r.broke > 5, 'the FINISHER-ON-BREAK throws a broken elite along the blow, spending the break (' + r.broke + ' px)');
+      ok(r.brokeUnsWhy === 'broke' && r.brokeUns > 5 && r.brokeMaulWhy === 'broke' && r.brokeMaul > 5, 'a BROKEN UNSTOPPABLE elite and the order BRUTE are thrown by the finisher-on-break (claude/orderart: ' + r.brokeUns + ' / ' + r.brokeMaul + ' px)');
       ok(r.breakingBlowWhy !== 'broke' && r.breakingKept > 0, 'the blow that BROKE him does not spend his opening');
       ok(r.slideKvy === 0 && r.openKvy < 0 && r.slideKv < r.openKv && r.slideWhy === 'heavy', 'a foe guarding toward the blow SLIDES - a heavy that does not break his guard (no lift, ' + r.slideKv + ' px/s vs ' + r.openKv + ' px/s open)');
     }

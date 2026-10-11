@@ -1,4 +1,4 @@
-// src/order-knights.js - THE BROKEN ORDER'S FOUR BODIES (claude/order, Daniel 2026-10-11, scratch/brief-elite-order.md). WHO they are, region by
+// src/order-knights.js - THE ROAD WARDENS'S FOUR BODIES (claude/order, Daniel 2026-10-11, scratch/brief-elite-order.md). WHO they are, region by
 // region and level by level, is src/order-chapters.js; this file is what they DO and (placeholder, for the Sonnet art lane) what they LOOK like.
 //
 // ELITE KINDS, NOT A PARALLEL SYSTEM. A knight is an ELITE (main.js ELITE row, eliteMake, the leash, the gate he holds, the purse) and his guard,

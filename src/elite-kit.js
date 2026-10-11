@@ -29,7 +29,7 @@
 //                   his affix intensifies (the fire faster, the venom longer, the second call, the ward wider, the spines sooner, the
 //                   swift tells shorter still).
 import { actOf } from './foe-react.js';
-import { orderGuard, unmovedBody } from './order-knights.js';   /* (claude/order) THE BROKEN ORDER's two guard rules (the ORE plates, the battle mage's ward) and the brute's poise (src/order-knights.js) */
+import { orderGuard, unmovedBody } from './order-knights.js';   /* (claude/order) THE ROAD WARDENS's two guard rules (the ORE plates, the battle mage's ward) and the brute's poise (src/order-knights.js) */
 
 export const AFFIX = {
   BURNING: { col: '#ff9a5c', what: 'a fire trail where he walks; water douses him' },

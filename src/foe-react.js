@@ -273,7 +273,7 @@ export function installReact(board, TOKENS, api) {
 /* ===================================================================================================================================
    ANTI-PLUNGE REACTIONS - THE SHARED API (claude/knockinto, scratch/brief-combat2.md section 4 + its '!! UPDATE', Daniel 10-11).
    No invisible or generic aura: every answer to a plunge is a POSE you can read and has a counter or a punish window. Four of the five
-   kinds live here (e, DRAWN SPIKES, is src/anti-plunge.js: the body's own spines). Per the update they go ONLY to the new BROKEN ORDER
+   kinds live here (e, DRAWN SPIKES, is src/anti-plunge.js: the body's own spines). Per the update they go ONLY to the new ROAD WARDENS
    bodies (scratch/brief-elite-order.md: the Duelist a, the Lancer b, the Brute d) and to the SPITTER's sidestep (c, the one live use);
    'PLUNGE THE HELM' and the plate family stay as they are (a plunge comes over THEIR guard), the wasp and the sprig stay pogo food.
      a GUARDS HIGH    (armoured, knightly) weapon/shield overhead while a hero is above him: a plunge CLANKS and bounces the hero up,

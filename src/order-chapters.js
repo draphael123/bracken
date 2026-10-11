@@ -1,4 +1,4 @@
-// src/order-chapters.js - THE BROKEN ORDER: WHO THE KNIGHTS ARE, REGION BY REGION AND LEVEL BY LEVEL (claude/order, Daniel 2026-10-11,
+// src/order-chapters.js - THE ROAD WARDENS: WHO THE KNIGHTS ARE, REGION BY REGION AND LEVEL BY LEVEL (claude/order, Daniel 2026-10-11,
 // scratch/brief-elite-order.md). PURE DATA: no page, no canvas, no main.js. src/order-knights.js runs the bodies; src/level.js reads ORDER_AT
 // to place them (knightRow); tools/order-knights.mjs holds this table to its rules.
 //
@@ -13,9 +13,8 @@
 // The order counts ONCE as the recurring foe (design-standard A9): a knight is not 'new' after the first one you meet.
 // A HOOK FOR LATER: ORDER.master names the order's last master, the boss of a later act (not built; nothing reads it yet).
 
-/* THE ORDER. 'THE ROAD WARDENS' was the brief's working name; a 'warden' is already a hero and a living-armour foe, so the rec is THE OATHBROKEN
-   (QUESTIONS FOR DANIEL). One line to rename: every plate and card reads ORDER.name / ORDER.short. */
-export const ORDER = { name: 'THE OATHBROKEN', short: 'OATHBROKEN', was: 'the knights who kept the road', master: 'THE LAST GRANDMASTER',
+/* THE ORDER. THE ROAD WARDENS (Daniel's pick, 10-11; the working title was THE OATHBROKEN). One line to rename: every plate and card reads ORDER.name / ORDER.short. */
+export const ORDER = { name: 'THE ROAD WARDENS', short: 'ROAD WARDEN', was: 'the knights who kept the road', master: 'THE LAST GRANDMASTER',
   sigil: 'a broken milestone' };
 
 /* THE FOUR BODIES. One AI each (src/order-knights.js BODY_RUN); the ent kind IS the body. `react` is his anti-plunge pose from
