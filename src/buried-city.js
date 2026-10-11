@@ -225,7 +225,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   shaft(316, 320, 25);
   air(323, 324, CO, CO + 1); set(323, CO + 2, T.SPIKE); set(324, CO + 2, T.SPIKE);
   sign(312, CO - 1, 'STAKES IN THE FLOOR: A HEAVY BLOW THROWS A FOE ONTO THEM.');
-  construct(318, CO - 1, 'hallsEnd', { elite: true });
+  construct(318, CO - 1, 'hallsEnd', { elite: true }); drowned(321, CO - 1, 'hallsEnd');   /* (and a drowned by the stakes: a heavy blow throws HIM onto them - INTO THE SPIKES; the construct is too heavy to throw) */
   rotten(311, 315, 28);                                                            /* a ROTTEN balcony over the halls' corridor */
   ent('check', 329, CO - 1); plat('beam', 326, 332, 28);                                                        /* CHECKPOINT TWO, after the halls' exam */
   ground(337, 340, LH); roof(337, 340, 27);                                        /* (the corridor's end drops to the sluice's door) */
@@ -292,7 +292,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   sign(543, TH - 1, 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: A FALL HERE IS THE END.');
   ent('sandchute', 538, TH - 1, { chute: 'trapfall' });
   ent('sandlever', 544, TH - 1, { room: 'trap' }); ent('sandlever', 562, TH - 1, { room: 'trap' });
-  construct(541, TH - 1, 'trapLip', { face: 1 });                                  /* THE EXAM's construct on the lip, in the fall (JAMMED while it holds him) */
+  construct(541, TH - 1, 'trapLip', { face: 1 }); drowned(543, TH - 1, 'trapLip');   /* THE EXAM's construct on the lip, in the fall (JAMMED while it holds him), and a drowned on the lip's edge: a heavy blow throws him OFF THE EDGE */
   ground(560, 629, TH); plat('balcony', 565, 569, 29); slinger(567, 28, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
   /* THE KING'S COURT: his kneeling courtiers (the drowned of his court, stone now), his statues, and THE THRONE'S WARDEN */
   decor.push({ kind: 'courtiers', x0: 563, x1: 579, y: TH - 1 }, { kind: 'kingstatue', x: 593, y: TH - 1, h: 9 }, { kind: 'kingstatue', x: 612, y: TH - 1, h: 9 });
@@ -344,6 +344,7 @@ export function buildBuriedCity({ painter, T, TS }) {
     chutes: CHUTES.map(c => ({ ...c, levers: c.levers.map(a => a.slice()), to: JSON.parse(JSON.stringify(c.to)), other: { ...c.other } })),
     wheel: { ...WHEEL }, arenaLevers: stage.levers, vaultDoors, decor, sandSolid, sandRungs, crumbles, quicksand, plats, lamps,
     /* THE CITY HITS HARD (difficulty v2: weight, not numbers of foes): a blow x this on top of the act's tier, by skin (main.js damagePlayer0 reads L.foeHit) */
+    knockHazards: [],   /* (claude/knockinto: the city's killing hazards - the stakes, the trap hall's open drop - are tiles and a drop the shared helper reads already; the foes that can be thrown stand by them: the halls' drowned, the trap lip's drowned. The construct is too heavy to throw - KNOCK_SKIP) */
     foeHit: { sanddrowned: 4.6, sandslinger: 1.8, brassscorpion: 4.2 },
     foeHp: { sanddrowned: 2.8, sandslinger: 2.0, brassscorpion: 2.8 },
     alarms: ROOMS.map(r => ({ x0: r.x0, x1: r.x1 })).concat(CHUTES.flatMap(c => Object.values(c.to).map(t => ({ x0: t.x0 - 4, x1: t.x1 + 4 })))),   /* THE RULE'S STATE for tools/rule-state.mjs: the sand rooms and the falls are where the rule is live */
