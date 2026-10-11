@@ -1,0 +1,14 @@
+== title-region
+ok  crag    hero pyro       track mountain   0.2ms/frame  -> crag.png
+ok  mine    hero paladin    track oreroad    0.5ms/frame  -> mine.png
+ok  storm   hero pirate     track stormhold  0.1ms/frame  -> storm.png
+ok  coast   hero reaper     track longwater  0.1ms/frame  -> coast.png
+ok  canal   hero knight     track canal      0.1ms/frame  -> canal.png
+ok  inland  hero warden     track fields     0.1ms/frame  -> inland.png
+ok  desert  hero geomancer  track welltown   0.1ms/frame  -> desert.png
+ok  10 regions, saves untouched, no page errors
+exit-title-region 0
+== modulepreload
+modulepreload: 401 modules listed, 1 reachable ones not yet in the list (budget 15).
+exit-modulepreload 0
+== titlescene
