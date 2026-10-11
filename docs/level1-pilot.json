@@ -252,14 +252,14 @@
   "bare": true
  },
  "caravan": {
-  "hash": "9db50628f66d",
+  "hash": "f01565ade95b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 9,
-  "deaths": 4,
-  "kills": 9,
-  "lifts": 93,
+  "hits": 10,
+  "deaths": 3,
+  "kills": 10,
+  "lifts": 92,
   "walked": 100,
   "bare": true
  }
