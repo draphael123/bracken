@@ -20,12 +20,12 @@ export const FOREMAN = {
   cols: [822, 852], low: 30, high: 27,   /* the loop: columns, and the two lines' rows */
   homeR: 290, minR: 34, maxR: 420,      /* his cart's place on the loop, px from its left edge: at home, the nearest a ram brings him, the farthest */
   driftTell: 0.4, driftV: 84, driftVs: [84, 112, 140], awayV: 120,   /* (his drift quickens with each stomp: told by its sparks and its pace) */
-  pickTell: 0.6, pickDmg: 24, pickT: 0.45, pick2: 0.3, picks: [1, 2, 3], cutoff: 0,          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */
+  pickTell: 0.6, pickDmg: 28, pickT: 0.45, pick2: 0.3, picks: [1, 2, 3], cutoff: 0,          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */
   ramTell: 0.8, ramV: 250, ramT: 0.5, ramHold: 0.45,
   boardT: 0.85, lurchTell: 0.75, wardT: 4.5, lurchVy: -300,
   stompK: 0.25, bracedK: 0.04,           /* a stomp takes this share of his health; a landing on him BRACED is turned (a clank, this much - B15) */
   armour: 0.4,                          /* B15: a blade from your cart */
-  bumpDmg: 14, ramDmg: 30, contactCd: 0.9, bumpBack: 56, ramBack: 84,
+  bumpDmg: 18, ramDmg: 38, contactCd: 0.9, bumpBack: 56, ramBack: 84,
   topDy: 15, halfW: 15,                 /* his cart's top (px over the rail) and half its width: the landing that is a STOMP */
   gap: [0.9, 0.7, 0.55],
   chain: { 0: ['pick', 'drift', 'pick', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'ram', 'drift'], 2: ['ram', 'pick', 'drift', 'pick', 'ram', 'drift'] },

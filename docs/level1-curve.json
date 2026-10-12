@@ -589,12 +589,12 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 42,
-  "deaths": 3,
-  "kills": 57,
+  "hits": 45,
+  "deaths": 5,
+  "kills": 61,
   "lifts": 30,
   "walked": 100,
   "bare": true,
-  "lostPct": 211
+  "lostPct": 247
  }
 }
