@@ -41,7 +41,7 @@ async function make(note) {
   if (!board) return;
   if (!made) { board.set(UI.el('h1', 'REPORT A BUG'), UI.el('p.bad', 'Could not build the report code.'), UI.row(UI.el('button.sel', 'CLOSE', () => close()))); return; }
   const ta = document.createElement('textarea'); ta.readOnly = true; ta.value = made.code; ta.rows = 6; ta.id = 'bugcode';
-  ta.style.cssText = 'width:min(480px,82vw);font:12px/1.4 monospace;background:#0b0912;color:#8fd160;border:1px solid #3a2a16;padding:6px;word-break:break-all;resize:none;user-select:all;-webkit-user-select:all';
+  ta.style.cssText = 'width:min(480px,82vw);font:12px/1.5 "Silkscreen","Press Start 2P",sans-serif;background:#0b0912;color:#8fd160;border:1px solid #3a2a16;padding:6px;word-break:break-all;resize:none;user-select:all;-webkit-user-select:all';
   const status = UI.el('p.ok', '');
   const done = async () => { const ok = await copy(made.code, ta); status.className = ok ? 'ok' : 'bad'; status.textContent = ok ? 'REPORT CODE COPIED.' : 'Could not copy by itself: select the code below and copy it.'; if (!ok) { ta.focus(); ta.select(); } };
   board.set(

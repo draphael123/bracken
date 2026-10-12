@@ -355,7 +355,7 @@ function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlo
   const raw = slotRaw(i);
   try { const res = loadProgress(localStorage, slotKey(i), raw, CAMP_IDS); loaded = res.progress; if (res.backup) SAFE.pruneBackups(localStorage, slotKey(i), res.backup); SAFE.keepLastGood(localStorage, slotKey(i), raw, CAMP_IDS); }
   catch (error) { const h = slotHealthOf(i); if (h.state === 'corrupt') SAFE.keepCorruptCopy(localStorage, slotKey(i), raw);
-    saveBlocked = h.state === 'corrupt' ? 'Slot ' + (i + 1) + ' is damaged (a copy is kept): CHOOSE A SAVE to restore or erase it' : error.message; loaded = migrateProgress(null).progress; console.warn('Save protected:', error.message); }
+    saveBlocked = h.state === 'corrupt' ? 'Slot ' + (i + 1) + ' is damaged (copy kept): open CHOOSE A SAVE' : error.message; loaded = migrateProgress(null).progress; console.warn('Save protected:', error.message); }
   for (const k in PROG) delete PROG[k]; Object.assign(PROG, loaded); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
 function eraseSlot(i) { try { if (slotHealthOf(i).state !== 'ok' && slotHealthOf(i).state !== 'empty') SAFE.keepCorruptCopy(localStorage, slotKey(i), slotRaw(i)); localStorage.removeItem(slotKey(i) + SAFE.LASTGOOD); SAFE.pruneBackups(localStorage, slotKey(i)); } catch {}
   try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
@@ -5595,7 +5595,7 @@ function drawSlots() {
     if (eraseAsk >= 0 || fixAsk >= 0) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
     text('SLOT ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
     { const hs = slotHealthOf(i);   /* A DAMAGED SLOT IS NOT AN EMPTY ONE: it says so, and Z opens what can be done about it */
-      if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   YOUR SAVE IS KEPT AS A COPY' : 'MADE BY A NEWER BRACKEN   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
+      if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   A COPY IS KEPT' : 'MADE BY A NEWER BRACKEN   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
     if (!p) { text('EMPTY', x + 100, y + 4, '#6a6a7a'); text('NEW GAME', x + 44, y + 17, sel ? '#8fd160' : '#4a5a4a', 'left', 6); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0), hid = p.hero || 'knight', hn = ((HEROES.find(q => q.id === hid) || {}).name || hid.toUpperCase()).replace(/^THE /, '');
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const gT = gearTier(slotLevel(p), SET.gear === false), K2 = preview('slot:' + (p.hero || 'knight') + ':' + (p.skin || 'bracken') + ':' + (p.sword || 'steel') + ':g' + gT, () => heroSet(p.skin || 'bracken', p.sword || 'steel', 'idle', p.hero || 'knight', gT)); void skin;
@@ -5614,7 +5614,7 @@ function drawSlots() {
     const hs = slotHealthOf(fixAsk), opts = fixOptions(fixAsk), bw = 236, bh = 40 + opts.length * 16, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
     board(bx, by, bw, bh, '#ff9a5c', undefined, false, 'iron');
     text('SLOT ' + (fixAsk + 1) + (hs.state === 'corrupt' ? ' IS CORRUPT' : ' IS A NEWER SAVE'), VW / 2, by + 7, '#ff9a5c', 'center');
-    text(fitName(hs.state === 'corrupt' ? 'A COPY OF IT IS KEPT. NOTHING IS ERASED UNTIL YOU SAY' : 'IT WAS MADE BY A NEWER BRACKEN. UPDATE THE GAME', bw - 14, 6), VW / 2, by + 21, UI.dim, 'center', 6);
+    text(fitName(hs.state === 'corrupt' ? 'A COPY IS KEPT. NOTHING IS ERASED YET' : 'MADE BY A NEWER BRACKEN. UPDATE IT', bw - 14, 6), VW / 2, by + 21, UI.dim, 'center', 6);
     opts.forEach((o, j) => { const w2 = 200, x2 = Math.round(VW / 2 - w2 / 2), y2 = by + 33 + j * 16, on = fixI === j;
       TCH.hit(x2, y2, w2, 14, () => { fixI = j; confirmPress = true; });
       board(x2, y2, w2, 14, on ? '#ffd36b' : '#5a6474', on ? 'rgba(70,56,30,0.95)' : 'rgba(30,26,44,0.95)', false, 'ledger');
@@ -31844,7 +31844,7 @@ function render() {
         bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 
-  if (state === 'title' && !pressCard) { const vl = WN.versionLine(BUILD.sha); if (vl) text(vl, 3, VH - 8, UI.dim, 'left', 6); }   /* the build, small (src/whatsnew.js versionLine) */
+  if (state === 'title' && !pressCard) { const vl = WN.versionLine(BUILD.sha); if (vl) text(vl, 5, VH - 8, UI.dim, 'left', 6); }   /* the build, small (src/whatsnew.js versionLine) */
   if (state === 'slots') drawSlots();
   if (state === 'bestiary') drawBestiary();
   if (state === 'map' || state === 'store') { for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x), Math.round(n.y), n.col, 'center'); } g.globalAlpha = 1; }
