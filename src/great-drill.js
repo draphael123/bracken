@@ -205,7 +205,7 @@ export function stepDrill(e, S, dt, heroes, c) {
 export function takeBlow(e, S, dmg, out = {}) {
   if (e.mode === 'sleep' || e.mode === 'wake') { out.word = 'ARMOURED'; return Math.round(dmg * DRILL.armour); }
   S.n.cab++;
-  if (drillOpen(e)) { const cap = Math.max(0, e.maxHp * DRILL.jamCap - S.openTaken), d = Math.min(dmg * DRILL.jamMul, cap); S.openTaken += d;
+  if (drillOpen(e)) { const cap = Math.max(0, e.maxHp * DRILL.jamCap - S.openTaken), d = Math.min(dmg * DRILL.jamMul, cap); S.openTaken += d; out.cap = 'jam';
     if (cap - d <= 0.01 && e.open > 0.3) { e.open = 0.3; out.word = 'IT FREES ITS GEARS'; } return d; }
   S.n.armoured++; if (S.ward > 0) S.n.warded++; out.word = S.ward > 0 ? 'PLATES UP' : 'ARMOURED: THROW ITS POINTS';
   return dmg * DRILL.armour;

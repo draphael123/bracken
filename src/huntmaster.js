@@ -263,15 +263,17 @@ export function makeHuntmaster(ctx) {
 
   /* A BLOW ON HIM: whole, except a blow from his FRONT at his height while he guards (B11/B15: x HM.guardMul, GO ROUND, or from the air), his ward x HM.wardMul (B3/B15);
      open, the first HM.hitCap blows pay x openMul and the next one ends it (the hit cap) */
-  H.take = (e, dmg, fromX, plunge) => { if (!F) return dmg; const P = ctx.hero();
+  H.take = (e, dmg, fromX, plunge) => { if (!F) return dmg; const P = ctx.hero(); F.counted = null;
     if (F.self) return dmg;
-    if (hmOpen(e)) { F.n.openDmg = (F.n.openDmg || 0) + dmg; F.n.openBlows = (F.n.openBlows || 0) + 1; e.openHits = (e.openHits || 0) + 1; const left = e.capLeft ?? (e.hitCap || HM.hitCap) * HM.blowRef, use = Math.min(dmg, Math.max(0, left)), d = use * (e.openMul || HM.openMul); e.capLeft = left - dmg;
+    if (hmOpen(e)) { F.n.openDmg = (F.n.openDmg || 0) + dmg; F.n.openBlows = (F.n.openBlows || 0) + 1; e.openHits = (e.openHits || 0) + 1; const left = e.capLeft ?? (e.hitCap || HM.hitCap) * HM.blowRef, use = Math.min(dmg, Math.max(0, left)), d = use * (e.openMul || HM.openMul); e.capLeft = left - dmg; F.counted = e;
       if (e.capLeft <= 0.01 || e.openHits >= HM.maxBlows) { e.open = 0; F.n.capped++; }   /* (THE HIT CAP is THREE BLOWS' WORTH (hitCap x blowRef of a blow): a heavy spear fills it in two and a bit, a quick sword in three, a light flame in four (never more than maxBlows) - the blow that fills it lands what is left, and he is up out of it; the ward follows) */
       return d; }
     if (e.ward > 0) { F.n.turned++; F.n.wardHits++; ctx.turned && ctx.turned(e, fromX, 'HE GUARDS'); return Math.max(1, Math.round(dmg * HM.wardMul)); }
     const frontal = (e.face || 1) * (fromX - e.x) > -2, air = !!plunge || (P && !P.ground) || (P && P.y < e.y - 14);
     if (GUARDS.has(e.mode) && frontal && !air) { F.n.turned++; F.n.guardHits++; ctx.turned && ctx.turned(e, fromX, 'GO ROUND'); if (once('round')) ctx.number(e.x, e.y - 60, 'HE GUARDS HIS FRONT: GO ROUND, OR FROM ABOVE', '#ffd36b'); return Math.max(1, Math.round(dmg * HM.guardMul)); }
     return dmg; };
+  /* A BLOW THAT GREW AFTER IT WAS COUNTED (d0 -> d1): the cap is three blows' worth of LANDED damage (capLeft x openMul), so growth is only what is left of it (claude/capsfix) */
+  H.fix = (e, d0, d1) => { if (!F || F.counted !== e) return d1; const mul = e.openMul || HM.openMul, room = Math.max(0, e.capLeft ?? 0) * mul, extra = Math.min(d1 - d0, room); e.capLeft = (e.capLeft ?? 0) - extra / mul; if (e.capLeft <= 0.01 && e.open) { e.open = 0; F.n.capped++; } return d0 + extra; };
   H.barName = e => 'THE GOBLIN HUNTMASTER' + (e.mode === 'caught' ? '  CAUGHT' : hmOpen(e) ? '  OPEN' : e.ward > 0 ? '  GUARDING' : '');
   H.end = () => { if (F) { F.arrows = []; F.pools = []; F.nets = []; for (const a of F.adds) if (a.alive) { a.alive = false; a.hp = 0; } F.adds = []; } if (ctx.snares) ctx.snares.clearBoss(); for (const pp of ctx.players) pp.hmPoison = 0; };
   H.read = () => F && { ph: F.ph, weak: { ...F.weak }, n: { ...F.n }, hurt: { ...F.hurt }, arrows: F.arrows.map(a => ({ id: a.id, kind: a.kind, x: a.x, y: a.y, vx: a.vx, vy: a.vy, back: a.back })), pools: F.pools.map(q => ({ x: q.x, t: q.t })),

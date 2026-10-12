@@ -7435,8 +7435,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   /* (claude/keyscore, B14 + THE PYRO BUG) pl: a PLUNGE BY ITS TAG - the pyromancer's FIREDROP is hurtAs('plunge', ..., false): the boolean is the hero's own body, the tag is the blow. Every boss hook below gets the tag (tools/blow-tags.mjs) */
   if (e.elite && EK) { const kd = EK.take(e, dmg, fromX, plunge, blow); if (kd === false) return; dmg = kd; }   /* (ELITES2) an elite's GUARD BY ANGLE (a light cut off his front turned, a heavy through at half) and the riposte into his opening: src/elite-kit.js */
   if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }
-  let wmD0 = 0;
-  if (WMH && e.t === 'wickerman') { dmg = WMH.take(e, dmg); if (!dmg) return; wmD0 = dmg; }   /* (claude/fairfix6) THE WICKER MAN: whole in its fire, a scratch on the standing wicker */
+  let capD0 = 0, capFix = null;   /* (claude/capsfix) the blow as the boss's own cap counted it, and that boss's fix: see the line before e.hp -= dmg */
+  if (WMH && e.t === 'wickerman') { dmg = WMH.take(e, dmg); if (!dmg) return; capD0 = dmg; capFix = WMH.fix; }   /* (claude/fairfix6) THE WICKER MAN: whole in its fire, a scratch on the standing wicker */
   if (LDH && e.cnSkin && LDH.owns(e)) { dmg = LDH.take(e, dmg); if (!dmg) return; }   /* (claude/djinn3) THE LESSER DJINN: a blade passes through sand, fire turns it - until a pour opens it (and no wisp's pop: it is cut whole) */
   else if (e.t === 'willowisp') { dmg = CNF.wispTake(e, dmg); if (!dmg) { SFX.zap && SFX.zap(); ringAt(e.x, e.y - 6, 14, '#a0ffd2', 0.4); return; } }   /* (claude/canalfix3) THE WISP: popped, an ember that re-forms once */   /* THE FOG CANAL: under the water nothing finds it; the ripple knocks it up; out of the water it takes double */
   if(e.behind)return;   /* (claude/fairfix3) a mummer riding a chair-o-plane's chair round the back of the mast */
@@ -7445,7 +7445,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if(e.t==='burieddead'&&(e.mode==='burrow'||e.mode==='eruptTell'))return;
   if(e.t==='familiar')dmg*=e.open>0?1.8:.6;
   if(e.t==='bellcrab') dmg*=e.phase===3?BELL.out.soft:e.open>0?BELL.openMul:BELL.shutMul;   /* shut, until a stone on his crown opens him; out of the bell, soft (src/bellcrab.js BELL) */
-  if (e.t === 'grandmother' && HUH && HUH.on()) { const k = HUH.granTake(e, fromX, blow, dmg, tag); if (!k) return; dmg = Math.round(dmg * k); }   /* (claude/underleaf2, B11/B14) THE GRANDMOTHER: she hears a blade from the front and turns it (SHE HEARD YOU); her BACK takes it whole - double while she lashes at a lure; her rap x1.5; her ward turns everything (src/hush-hands.js granTake) */
+  if (e.t === 'grandmother' && HUH && HUH.on()) { const k = HUH.granTake(e, fromX, blow, dmg, tag); if (!k) return; dmg = Math.round(dmg * k); capD0 = dmg; capFix = HUH.fix; }   /* (claude/underleaf2, B11/B14) THE GRANDMOTHER: she hears a blade from the front and turns it (SHE HEARD YOU); her BACK takes it whole - double while she lashes at a lure; her rap x1.5; her ward turns everything (src/hush-hands.js granTake) */
   if (L && L.hush && blow && HUH && HUH.sneakKill(e, fromX)) { dmg = Math.max(dmg, e.hp); HUH.killedSilently(e); }   /* (claude/underleaf2) QUIET PAYS: asleep, or the unwary Bellman, struck from behind - one silent blow */
   if (e === boss && !bossActive && e.mode === 'sleep' && L.arena && e.alive) { bossStart(); SFX.clank(); return; } // a sleeping boss is not a free kill: the blow wakes the fight
   /* B14, THE KEY (claude/keyscore, src/boss-read.js): ONE ask before the per-boss ladder. A boss or mini in a KEYED phase (KEY_ROWS) marks the right blow (e.keyHit, which his
@@ -7479,12 +7479,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'temperer' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 6); }   /* THE TEMPERER at his fire: both hands on the blade, his back to the room, and you are the reason he is standing there */
   if (e.t === 'lampreeve') dmg = reeveHurt(e, dmg, fromX, tag);   /* blind in the flare of the lamp you struck he takes the blow; out of it his wet coat takes most of it (claude/weakboss) */
   if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, pl, tag); if (kd === false) return; dmg = kd; }
-  if (e.t === 'huntmaster' && HNH) { dmg = HNH.take(e, dmg, fromX, pl, tag); if (!(dmg > 0)) return; }   /* THE GOBLIN HUNTMASTER (src/huntmaster.js): a duelist - whole, but his FRONT guarded while he stands (GO ROUND, or from above), nothing in his ward; x1.5 open, x2 behind the broken mask */
-  if (e.t === 'colossus' && COH) { dmg = COH.take(e, dmg, fromX, pl, tag); /* (claude/glasssea2, B14 keys audit: the plunge bonus goes by the blow's TAG - the pyro's firedrop is a plunge too; claude/keyscore: pl) */ if (!(dmg > 0)) return; }   /* THE GLASS COLOSSUS (src/glass-colossus.js takeBlow): its legs whole from a purse, its cracks x2 when open, everything else turned and told (its own ward: boss-greed OWN_WARD) */
-  if (e.t === 'greatdrill' && GDH) { dmg = GDH.take(e, dmg, tag); if (!(dmg > 0)) return; }   /* THE GREAT DRILL's cab: whole, x2 jammed, turned while warded */
+  if (e.t === 'huntmaster' && HNH) { dmg = HNH.take(e, dmg, fromX, pl, tag); if (!(dmg > 0)) return; capD0 = dmg; capFix = HNH.fix; }   /* THE GOBLIN HUNTMASTER (src/huntmaster.js): a duelist - whole, but his FRONT guarded while he stands (GO ROUND, or from above), nothing in his ward; x1.5 open, x2 behind the broken mask */
+  if (e.t === 'colossus' && COH) { dmg = COH.take(e, dmg, fromX, pl, tag); /* (claude/glasssea2, B14 keys audit: the plunge bonus goes by the blow's TAG - the pyro's firedrop is a plunge too; claude/keyscore: pl) */ if (!(dmg > 0)) return; capD0 = dmg; capFix = COH.fix; }   /* THE GLASS COLOSSUS (src/glass-colossus.js takeBlow): its legs whole from a purse, its cracks x2 when open, everything else turned and told (its own ward: boss-greed OWN_WARD) */
+  if (e.t === 'greatdrill' && GDH) { dmg = GDH.take(e, dmg, tag); if (!(dmg > 0)) return; capD0 = dmg; capFix = GDH.fix; }   /* THE GREAT DRILL's cab: whole, x2 jammed, turned while warded */
   if (e.mcCart && MCH) dmg = MCH.knock(e, dmg, pl);   /* (claude/minecart) a goblin on a cart: a blow that lands throws him off it; (claude/deeprails3) a PLUNGE onto THE FOREMAN boards his cart */
   if (e.t === 'strawking') { const sd = strawHurt(e, dmg, fromX, pl, tag); if (sd === false) return; dmg = sd; }
-  if (e.t === 'archmage') { const md = archHurt(e, dmg, fromX, blow, tag); if (md === false) return; dmg = md; }   /* THE MAGE'S FOLLY: nothing through the runes, twice when he is open, a third through the familiar's hide */
+  if (e.t === 'archmage') { const md = archHurt(e, dmg, fromX, blow, tag); if (md === false) return; dmg = md; capD0 = dmg; capFix = archFix; }   /* THE MAGE'S FOLLY: nothing through the runes, twice when he is open, a third through the familiar's hide */
   if (e.t === 'homunculus') dmg = homHurt(e, dmg, tag);   /* and the Homunculus takes its blows while it pants */   /* THE HEXED FIELDS: straw takes little that finds no opening */
   if (e.t === 'ploughman') dmg = e.open > 0 ? Math.round(dmg * 1.4) : Math.max(1, Math.round(dmg * 0.4));   /* (claude/weakboss: 1.8 and 0.6 were, and he stuck on his own) */   /* the plough takes the blows in front of him; heaving at his stuck share, nothing does */   /* an arm only lying on the road, the body only where the fight has opened it */
   if (e.t === 'masthead' && e.mode === 'sail') { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 50, 'THE SAIL TAKES IT', '#9aa39a'); return; }   /* under sail the canvas is in the way */
@@ -7635,7 +7635,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg, blow, tag) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg, blow, tag), raw0, !!blow);
   if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   greedHit(e, fromX, blow);
-  if (wmD0 > 0 && dmg > wmD0) dmg = WMH.fix(e, wmD0, dmg);   /* (claude/batch86) THE WICKER MAN'S FIRE CAP holds against what multiplies a blow after it was counted (the mix-up chain, the riposte x2, the finisher): the cap is on what LANDS */
+  if (capFix && dmg > capD0) dmg = capFix(e, capD0, dmg);   /* (claude/batch86, claude/capsfix) A BOSS'S OPENING CAP holds against what multiplies a blow after it was counted (the mix-up chain, the riposte x1.5, a broken foe, cutthroat / turncoat x2, the quake): the cap is on what LANDS. One fix per boss that counts early (Wicker Man, Grandmother, Huntmaster, Colossus, Great Drill, Archmage); the others count in wardedDamage, after every multiplier */
   const dpV = blow && tag ? rpVerbOf(tag, rpSkillBlow()) : null; if (blow && dmg > 0 && !glance && !P.jetHit) DP.gain(e, Math.min(dmg, Math.max(0, e.hp)), dpV, RP.chainOf(P));   /* (claude/damagepct) THE DAMAGE %: a landed hero blow adds its verb's weight of what it took (a burn, a hazard, a foe's fire add nothing) */
   const dpHeavy = !!P.heavy || dpV === 'heavy' || dpV === 'riposte' || dpV === 'plunge', dpP = dpBossLike(e) ? 0 : DP.pctOf(e);   /* (claude/damagepct) a boss's % only lengthens his break */
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy) * DP_stun(dpP, dpHeavy);   /* (claude/damagepct) the hitstun grows with the % (a light blow's a little, a heavy's a lot) */ e.sq = glance ? 0.06 : 0.16;
@@ -13904,13 +13904,19 @@ function archRide(e) { const m = movers.find(q => q.arm && q.first); if (!m) ret
 /* THE COUNTERWEIGHT BITES only while his arm comes down past it, low and on its side of the wheel: then it glows, and then a blow on it throws him */
 function archWeightLive(w) { const R = MG && MG.A, m = movers.find(q => q.arm && q.first); if (!R || !R.ride || !m || !w || w.down > 0) return false; const a = ((time * 2 * Math.PI / m.period + m.phase) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); return a > Math.PI * 0.5 && a < Math.PI * 1.1; }
 /* what a blow to him is worth: nothing while the runes stand; twice when he is open; a third of it through the familiar's hide */
+/* A BLOW THAT GREW AFTER archHurt COUNTED IT (d0 -> d1: the chain, the riposte, a broken foe, a talent): inside an opening only what the opening's cap has left (the eye a twelfth), and never past the stage's gate floor (claude/capsfix) */
+let archCapE = null;
+function archFix(e, d0, d1) { let extra = d1 - d0; const gate = archGate(e); if (gate > 0) extra = Math.min(extra, Math.floor(e.hp - gate) - d0);
+  if (archCapE === e) { const lim = e.maxHp * (e.fam ? 0.08 : 0.18); extra = Math.min(extra, Math.max(0, Math.floor(lim - (e.openTaken || 0)))); extra = Math.max(0, extra); e.openTaken = (e.openTaken || 0) + extra;
+    if (e.openTaken >= lim - 1) { e.open = 0; e.modeT = Math.min(e.modeT, 0.15); number(e.x, e.y - (e.fam ? 70 : 50), 'HE RECOVERS', MVIO[3]); } }
+  return d0 + Math.max(0, extra); }
 function archHurt(e, dmg, fromX, blow, tag) {
   const R = MG && MG.A;
   if (e.mode === 'change' || e.mode === 'swallow' || e.mode === 'blink' || e.mode === 'wake') { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); return false; }
   if (R && archRunesUp(R)) { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 46, 'THE RUNES HOLD', MVIO[2]); return false; }
   if (R && R.ride && e.stage === 2) { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); if (Math.random() < 0.3) number(e.x, e.y - 46, 'THE COUNTERWEIGHT', '#e0b050'); return false; }   /* on the orrery's arm: the counterweight brings him down, a blow does not */
-  let out = dmg;
-  if (e.open > 0) { sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 6); out = Math.round(dmg * (e.fam ? 3.2 : ARCH.openMul));
+  let out = dmg; archCapE = null;
+  if (e.open > 0) { archCapE = e; sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 6); out = Math.round(dmg * (e.fam ? 3.2 : ARCH.openMul));
     /* ONE OPENING IS ONE PIECE OF HIM: under a fifth of his health in the duel, a twelfth through the eye. A hero who hits hard
        ends the window sooner and waits for the next, so the fight is the same number of readings for everyone, not one lucky flurry */
     const cap = e.maxHp * (e.fam ? 0.08 : 0.18) - (e.openTaken || 0); out = Math.max(0, Math.min(out, Math.floor(cap)));
