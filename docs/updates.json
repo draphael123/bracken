@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-10-12",
+    "batch": 87,
+    "lines": [
+      "Buried City rebuilt, with a new Trap Hall",
+      "Deep Rails 3: duck, switch, fight the Foreman",
+      "The Road Wardens hold three roads",
+      "Lost? Stand still: glints show the way"
+    ]
+  },
+  {
     "date": "2026-10-11",
     "batch": 86,
     "lines": [
@@ -15,18 +25,18 @@
     "date": "2026-10-11",
     "batch": 85,
     "lines": [
-      "New hero: the Berserker, with two axes and a battle rage",
+      "New hero: the Berserker, two axes and a rage",
       "Four heroes are free to start with now",
-      "67 recorded sound effects, and real bells for the bell bosses",
+      "67 sound effects and real boss bells",
       "WHAT'S NEW on the title menu",
-      "The title screen changes with how far you have got"
+      "The title changes with your progress"
     ]
   },
   {
     "date": "2026-10-11",
     "batch": 84,
     "lines": [
-      "Deep Rails redrawn, with new 'Machines' music",
+      "Deep Rails redrawn, with new music",
       "Falling Tower redrawn: drink flasks on the carpet, the Archmage casts with his staff",
       "Caravan redrawn, with a new route through the upper ruins",
       "Rootway redrawn, and the Lookout is easier to read",
