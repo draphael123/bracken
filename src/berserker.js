@@ -31,7 +31,7 @@
 export const BZ = {
   hp: 105, dmg: 12,                                   /* base health (src/progression.js) and the chop's base damage (main.js swordDmg) */
   run: 1.0,                                           /* x RUN on foot: a quick man, not a heavy one */
-  swing: { base: 1.3, rage: 1.38, frenzy: 1.6, one: 0.8, haste: 1.1, cross: 0.82 },   /* P.atk runs at these multiples (the flurry is QUICK); the cross-chop finisher x cross */
+  swing: { base: 1.3, rage: 1.38, frenzy: 1.5, one: 0.8, haste: 1.1, cross: 0.82 },   /* P.atk runs at these multiples (the flurry is QUICK); the cross-chop finisher x cross */
   flurry: { run: 5, dmg: 0.85 },                      /* the run's length (the fifth is the CROSS-CHOP) and each quick chop's share of a full cut */
   rage: { dealt: 0.9, taken: 1.4, brace: 30, hitCap: 14, drainAfter: 2.5, drain: 9, high: 50, chain: 10, absorb: 1.2, absorbCap: 30 },   /* absorb: rage per hp the crossed axes take */
   frenzy: { t: 8, takeMul: 1.1, hideMul: 1.05, heal: 0.02, priceHeal: 0.05, cryR: 110, haste: 5, mist: 40, long: 3 },   /* heal: of every blow that lands (BLOOD PRICE: priceHeal) */
