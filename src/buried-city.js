@@ -372,11 +372,11 @@ export function buildBuriedCity({ painter, T, TS }) {
   sinker('exam', 726, 727, 12, 2, 'house');
   riser('exam', 723, 725, 13, 2, 'house'); riser('exam', 729, 731, 12, 2, 'dome'); riser('exam', 734, 735, 11, 2, 'house');
   /* THE COURTYARD (737-749) under a collapsed dome: its rim, its ribs down to the floor (row 32), the throne room's door in its east wall; THE COURTYARD'S
-     ELITE in the sun (his gate shuts the door till he falls), a slinger on a rib; shade only under the dome's broken shell */
+     ELITE in the sun before the door, a slinger on a rib; shade only under the dome's broken shell */
   ground(737, 738, 10); ground(739, 748, TH);
   plat('lintel', 740, 742, 15); plat('balcony', 745, 747, 19); plat('lintel', 740, 742, 23); plat('balcony', 745, 747, 27);
   decor.push({ kind: 'shell', x0: 737, x1: 749, y: 10 }); shadeBox(739, 741, 25, TH - 1);
-  construct(743, TH - 1, 'courtyard', { elite: true, gate: 747 }); slinger(746, 26, 'courtyardSling', { face: -1 });
+  construct(743, TH - 1, 'courtyard', { elite: true }); slinger(746, 26, 'courtyardSling', { face: -1 });
   ent('check', 748, TH - 1);                                                        /* CHECKPOINT FIVE, past the courtyard's exam, at the throne room's door */
 
   // ================= THE HOURGLASS KING's THRONE ROOM (src/hourglass-king.js), at the foot of the Hourglass Tower =================

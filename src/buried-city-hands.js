@@ -315,7 +315,10 @@ export function makeBuriedCityHands(ctx) {
       else if (d.kind === 'mural') SET.drawMural(V, d);
       else if (d.kind === 'courtiers') SET.drawCourtiers(V, d);
       else if (d.kind === 'relief') SET.drawRelief(V, d);
-      else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d); }
+      else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d);
+      else if (d.kind === 'shell') { const l = d.x0 * ts - cx, w = (d.x1 - d.x0 + 1) * ts, y = d.y * ts - cy, rr = w / 2;   /* (claude/buriedcity3, PLACEHOLDER) THE COURTYARD's collapsed dome: its broken ribs over the pit, glazed shards on them */
+        g.strokeStyle = '#2a8a98'; g.lineWidth = 3; for (const [a0, a1] of [[Math.PI, Math.PI * 1.32], [Math.PI * 1.7, Math.PI * 2]]) { g.beginPath(); g.arc(R(l + rr), R(y + rr * 0.9), rr, a0, a1); g.stroke(); } g.lineWidth = 1;
+        g.fillStyle = '#4cb4bc'; for (let i = 0; i < 6; i++) g.fillRect(R(l + 6 + i * w / 7), R(y + 6 + (i % 3) * 4), 4, 2); } }
     /* THE LAMPS: oil lamps and wall braziers, warm light against the sand's cold shadow */
     for (const lp of (L.lamps || [])) SET.drawLamp(V, lp);
     /* THE SAND ROOMS */

@@ -59,6 +59,9 @@ export const MOVES = {
   rainTell: { mark: '!!', answer: 'dodge', word: 'THE GLASS CRACKS', col: '#bfe6f5' }, slipTell: { mark: '!!', answer: 'dodge', word: 'HIS HOUR SLIPS BACK', col: '#b08cff' },
   hourTell: { mark: '!!', answer: 'jump' },
 };
+/* the lines said as variables (src/hint-lines.js routes them: SAY_LINES) - his new moves' words and the great glass's opening */
+export const GREAT_LINE = 'THE GREAT GLASS TURNS: THE SAND TAKES HIM - STRIKE';
+export const HK_SAY = [...Object.values(MOVES).map(m => m.word).filter(Boolean), GREAT_LINE];
 export const MOVE_NAME = { pend: 'HIS PENDULUM', gear: 'A BRASS GEAR', stream: 'THE SAND STREAM', surge: 'THE SAND SURGE', grasp: 'THE BURIAL GRASP', rain: 'THE GLASS RAIN', slip: 'THE TIME SLIP', hour: 'THE HOUR', pour: 'THE POURING SAND' };
 
 /* ---------- THE THRONE ROOM ---------- */
@@ -140,7 +143,7 @@ export function greatStruck(e, S, c) {
   if (S.ward > 0) { c.number(G.great, G.floorY - 70, 'HE GUARDS HIS GLASS: WAIT', '#9aa39a'); return 'ward'; }
   S.n.flips++; S.n.greatOpens++; S.great.cd = HK.great.cd + HK.great.openT; S.great.run = HK.great.openT;
   S.gears = []; S.waves = []; S.stream = null;
-  open(e, S, c, G.great, { t: HK.great.openT, cap: HK.great.openCap, dragV: HK.great.dragV, stop: 22, line: 'THE GREAT GLASS TURNS: THE SAND POURS UP AND TAKES HIM - STRIKE' });
+  open(e, S, c, G.great, { t: HK.great.openT, cap: HK.great.openCap, dragV: HK.great.dragV, stop: 22, line: GREAT_LINE });
   c.sound('rumble'); c.shake(6); c.fx('great', G.great, G.floorY); return 'flip';
 }
 
