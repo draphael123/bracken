@@ -9,6 +9,8 @@ import { TELL_LINES } from './minecart.js';
 import { FOREMAN_LINES } from './foreman.js';
 import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
+  /* claude/slope (batch88 integ): THE RUNNING SLIDE tip (src/run-slide.js), said once - routed so the player can see it */
+  'RUNNING SLIDE: LOW, AND UNDER HIGH BLOWS',
   /* claude/burnvillage2: THROW WATER and THE PYROMANCER's stun and steam ward (src/village-water.js) - routed so the player can see them */
   'STUNNED', 'HE WARDS IN STEAM', 'THE JUG', 'THE BUCKET', 'PUT OUT',
   /* claude/underleaf2: UNDERLEAF's sound tools and THE GRANDMOTHER's rework (src/hush-hands.js LINES) */

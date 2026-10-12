@@ -13969,9 +13969,10 @@ function archWeightLive(w) { const R = MG && MG.A, m = movers.find(q => q.arm &&
 /* what a blow to him is worth: nothing while the runes stand; twice when he is open; a third of it through the familiar's hide */
 /* A BLOW THAT GREW AFTER archHurt COUNTED IT (d0 -> d1: the chain, the riposte, a broken foe, a talent): inside an opening only what the opening's cap has left (the eye a twelfth), and never past the stage's gate floor (claude/capsfix) */
 let archCapE = null;
+function archRecovers(e) { e.open = 0; e.modeT = Math.min(e.modeT, 0.15); number(e.x, e.y - (e.fam ? 70 : 50), 'HE RECOVERS', MVIO[3]); }   /* (batch88) ONE say-so for both ways an opening closes: the blow count (archHurt) and the cap (archFix) */
 function archFix(e, d0, d1) { let extra = d1 - d0; const gate = archGate(e); if (gate > 0) extra = Math.min(extra, Math.floor(e.hp - gate) - d0);
   if (archCapE === e) { const lim = e.maxHp * (e.fam ? 0.08 : 0.18); extra = Math.min(extra, Math.max(0, Math.floor(lim - (e.openTaken || 0)))); extra = Math.max(0, extra); e.openTaken = (e.openTaken || 0) + extra;
-    if (e.openTaken >= lim - 1) { e.open = 0; e.modeT = Math.min(e.modeT, 0.15); number(e.x, e.y - (e.fam ? 70 : 50), 'HE RECOVERS', MVIO[3]); } }
+    if (e.openTaken >= lim - 1) archRecovers(e); }
   return d0 + Math.max(0, extra); }
 function archHurt(e, dmg, fromX, blow, tag) {
   const R = MG && MG.A;
@@ -13987,7 +13988,7 @@ function archHurt(e, dmg, fromX, blow, tag) {
     /* TWO CLEAN BLOWS AND HE RECOVERS (Daniel, 2026-09-29): an opening is a reading answered, not a free combo. A blow is the hero's own
        (a burn ticking on him is not one), and a sweep that finds him twice in a breath is one blow */
     if (out > 0 && blow && !e.fam && time - (e.openHitT ?? -9) > ARCH.hitGap) { e.openHits = (e.openHits || 0) + 1; e.openHitT = time; }
-    if (e.openTaken >= e.maxHp * (e.fam ? 0.08 : 0.18) - 1 || (!e.fam && e.openHits >= ARCH.openHits)) { e.open = 0; e.modeT = Math.min(e.modeT, 0.15); number(e.x, e.y - (e.fam ? 70 : 50), 'HE RECOVERS', MVIO[3]); }
+    if (e.openTaken >= e.maxHp * (e.fam ? 0.08 : 0.18) - 1 || (!e.fam && e.openHits >= ARCH.openHits)) archRecovers(e);
     if (out <= 0) return false; }
   else if (e.fam) { if ((PROG.mgHide || 0) < 2 && Math.random() < 0.25) { PROG.mgHide = (PROG.mgHide || 0) + 1; hintT = 3.5; hintMsg = 'THE HIDE TAKES LITTLE. THE EYE, WHEN THE HEAD COMES DOWN.'; } out = Math.max(1, Math.round(dmg * 0.3)); }
   /* THE NEXT ROOM IS A FLOOR UNDER HIS HEALTH: no blow takes him past a spell he has not cast yet */

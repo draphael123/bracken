@@ -3865,13 +3865,13 @@ function trialYard(hero) {
        THE FRENZY (a full bar, spent) */
     berserker: [
       ['third', 2, 'THE FLURRY: X FIVE TIMES, LEFT AXE, RIGHT AXE. LAND THEM ALL: THE FIFTH IS THE CROSS-CHOP.', [['dummy', 16], ['dummy', 20]], 'X x5'],
-      ['heavyblow', 2, 'HOLD X, LET GO: THE DOUBLE CHOP, BOTH AXES DOWN AT ONCE. IT BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
+      ['heavyblow', 2, 'HOLD X, LET GO: BOTH AXES DOWN AT ONCE. IT BREAKS A GUARD.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
       ['flash', 2, 'TAKE IT: RAISE THE AXES (C) AS HIS SWORD FLASHES. A PARRY: HE REELS. TWICE.', [['swornsword', 18]], 'LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : HOLD C AND TAKE IT AS RAGE. TWO RED !! : TOO STRONG, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
       ['dodge', 2, 'THE SHOULDER ROLL: TAP A WAY TWICE, OR V. IT KNOCKS THE SMALL ONES ASIDE. ROLL TWICE.', [], 'B, OR THE STICK TWICE'],
       ['axe', 2, 'UP+C HURLS THE OFF AXE. YOU FIGHT ONE-HANDED UNTIL YOU PICK IT UP. HIT THE STRAW TWICE.', [['dummy', 11]], 'UP+LB'],
       DASH, RISE, SWEEP,
-      ['meter', 1, 'BLOWS GIVEN AND TAKEN FILL RAGE. FULL, HOLD DOWN AND TAP C: THE FRENZY. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'DOWN + LB WITH A FULL BAR'],
+      ['meter', 1, 'BLOWS FILL RAGE. FULL: HOLD DOWN, TAP C, THE FRENZY.', [['dummy', 14], ['sprig', 20]], 'DOWN + LB WITH A FULL BAR'],
       SKILL],
   }[hero];
   const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
