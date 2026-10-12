@@ -35,6 +35,8 @@
                        the hero on the raft taking every blow, opens nothing
      THE LAMPREEVE, THE HEADLESS PLOUGHMAN, THE HOMUNCULUS (minis, claude/weakboss): strike the lamp he hoods / bait the plough into the
                        trough or the fence / make a trick miss you - each against the same thing left alone, in tools/weak-bosses.mjs
+     THE SCARAB MOTHER (claude/sealedpyramid) tread a trap's plate while she stands in its reach: the block PINS her, the darts STICK her, the stone FLIPS her - each open;
+                       a trap in her ward glances off; a minute of her with no plate trodden opens nothing
      THE CISTERN QUEEN wet her mound (a pour where she will come up): SLIPPED (claude/underwell3, Daniel 10-07 - was SOAKED); a pour down her wall from its ledge: ON HER BACK; her claw struck as it comes: REARING -
                        each open; E at her on the open floor pours nothing; a minute of her left alone opens nothing. THE GANG LEADER (a mini): his bottle
                        struck home sets him alight, open, a third of him a burning (claude/welltown3)
@@ -296,6 +298,21 @@ try {
    let open=0,hold=0,h1=b.hp,stomp=0;for(let i=0;i<60*60&&!(open>0&&!FMG.foremanOpen(F().S));i++){P.hp=P.maxHp;const S=F().S,dx=S.G.x0+S.R-P.x,dv=S.dv||72;
      if(!open&&S.mode==='drift'&&S.ward<=0&&P.ground&&dx>dv*0.55-10&&dx<dv*0.55+4){BK.press('jump');hold=26;}BK.keys.jump=hold-->0;BK.sim(1);if(FMG.foremanOpen(F().S)){if(!open)stomp=h1-b.hp;open+=1/60;}}
    BK.keys.jump=false;out.foreman={alone:+alone.toFixed(1),lostAlone:Math.round(lostAlone),open:+open.toFixed(1),stomp:Math.round(stomp),max:Math.round(F().e.maxHp0),ward:+F().S.ward.toFixed(1),lurch:F().S.n.lurch};}
+  /* THE SCARAB MOTHER (claude/sealedpyramid): a minute of her with the hero at the door (no plate trodden) opens nothing; staged in each trap's reach (a skid, as her charge leaves her) and the hero
+     walked onto its plate: the block PINS her, the darts STICK her, the stone (its plate up on the ledge) FLIPS her - each open 3 s or more; a trap in her ward after an opening glances off */
+  {const SMG=await import('/src/scarab-mother.js');BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='sealedpyramid'));BK.state='play';BK.god=true;const A=BK.L.arena;
+   BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(240);const SH=BK.scarabMotherHands(),S=()=>SH.show(),b=BK.enemies().find(e=>e.t==='scarabmother'),P=BK.P;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=S().G.x0+24;BK.sim(1);if(SMG.smOpen(b))alone+=1/60;}
+   const tread=(kind,plateX,plateY,fromX,herX)=>{const s=S();s.ward=0;s.charge=null;s.mound=null;b.mode='skid';b.modeT=1.2;b.x=herX;b.open=0;b.hp=b.maxHp*0.9;P.x=fromX;P.y=plateY;P.vx=0;P.vy=0;BK.sim(4);
+     const k=plateX<P.x?'left':'right';BK.keys[k]=true;for(let i=0;i<40&&Math.abs(P.x-plateX)>6;i++)BK.sim(1);BK.keys[k]=false;let open=0,got=null;for(let i=0;i<60*6&&!(open>0&&!SMG.smOpen(b));i++){P.hp=P.maxHp;BK.sim(1);if(SMG.smOpen(b)){open+=1/60;got=got||b.openKind;}}
+     return {kind:got,open:+open.toFixed(1),ward:+s.ward.toFixed(1),n:s.n.byKind[kind]};};
+   const G=S().G,blk=tread('block',(G.block.plate[0]+G.block.plate[1])/2,G.floorY,G.block.lure,(G.block.zone[0]+G.block.zone[1])/2);
+   const glance=(()=>{const s=S(),k0=s.n.glanced;b.mode='skid';b.modeT=1.2;b.x=(G.darts.zone[0]+G.darts.zone[1])/2;s.ward=2;P.x=G.darts.lure;P.y=G.floorY;BK.sim(10);BK.keys.right=true;for(let i=0;i<40&&Math.abs(P.x-(G.darts.plate[0]+G.darts.plate[1])/2)>6;i++)BK.sim(1);BK.keys.right=false;BK.sim(60);return {glanced:s.n.glanced-k0,open:SMG.smOpen(b)};})();
+   for(let i=0;i<60*6;i++){P.hp=P.maxHp;BK.sim(1);if(S().ward<=0&&!SMG.smOpen(b))break;}BK.sim(300);
+   const drt=tread('darts',(G.darts.plate[0]+G.darts.plate[1])/2,G.floorY,G.darts.lure,(G.darts.zone[0]+G.darts.zone[0]+64)/2);
+   for(let i=0;i<60*6;i++){P.hp=P.maxHp;BK.sim(1);if(S().ward<=0&&!SMG.smOpen(b))break;}BK.sim(300);
+   const stn=tread('stone',(G.stone.plate[0]+G.stone.plate[1])/2,G.stone.plateY,G.ledge.x1-10,G.x0+28*16);
+   out.scarabmother={alone:+alone.toFixed(1),block:blk,glance,darts:drt,stone:stn};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -400,6 +417,9 @@ try {
   assert.ok(r.greatdrill.open >= 3 && r.greatdrill.thrown >= 1, 'its chute points lever thrown did not jam it open for 3 s or more (the boss rule): ' + JSON.stringify(r.greatdrill));
   assert.ok(r.foreman.alone === 0 && r.foreman.lostAlone === 0, 'THE FOREMAN: a minute of him with nobody jumping on his cart opened him or took something off him: ' + JSON.stringify(r.foreman));
   assert.ok(r.foreman.stomp >= r.foreman.max * 0.25 && r.foreman.open >= 1.2 && r.foreman.lurch >= 1 && r.foreman.ward > 0, 'a jump onto his cart did not stomp a share of him, open him for the boarding, then lurch you off into a told brace: ' + JSON.stringify(r.foreman));
+  assert.ok(r.scarabmother.alone === 0, 'THE SCARAB MOTHER: a minute of her with no plate trodden opened her: ' + JSON.stringify(r.scarabmother));
+  for (const k of ['block', 'darts', 'stone']) assert.ok(r.scarabmother[k].kind === k && r.scarabmother[k].open >= 3 && r.scarabmother[k].ward > 0, 'THE SCARAB MOTHER: her in the ' + k + '\'s reach and its plate trodden did not open her (' + k + ') for 3 s or more, then ward her: ' + JSON.stringify(r.scarabmother));
+  assert.ok(r.scarabmother.glance.glanced >= 1 && !r.scarabmother.glance.open, 'THE SCARAB MOTHER: a trap in her ward opened her (B3: it must glance off): ' + JSON.stringify(r.scarabmother));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

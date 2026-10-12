@@ -29,7 +29,7 @@ export const TRAP_DARTS = { volley: 0.9, every: 0.15 };
 export const TRAP_STONE = { v: 170, vGreat: 150, vArena: 320, r: 14, dropT: 0.3 };
 export const TRAP_BLOCK = { fallT: 0.28, lie: 0.9, haul: 1.1 };
 export const TRAP_SHARE = { teach: 0.24, test: 0.34, exam: 0.5, boss: 0.22 };   /* a hero caught in a reach: a share of his bar (A10 amended: taught cheap, the exam dear; never untold - the click comes first) */
-export const PYS = { eliteShare: 0.3, eliteStagger: 2.4, stormPush: 64, grabSqueeze: 0.5, vaultR: 30, pairHalf: 0.5, linen: 3.2, linenMul: 1.5 };
+export const PYS = { eliteShare: 0.3, eliteStagger: 2.4, stormPush: 64, grabSqueeze: 0.5, vaultR: 30, pairHalf: 0.5, linen: 3.2, linenMul: 1.5, linenElite: 1.15 };
 
 export function makeSealedPyramidHands(ctx) {
   let K = null;
@@ -103,7 +103,7 @@ export function makeSealedPyramidHands(ctx) {
     for (const e of ctx.enemies()) { if (!e.alive || e.harmless) continue; if (!over(box, bodyBox(e))) continue; if (t.hitKeys.has(key + '|' + (e.xpKey || ctx.enemies().indexOf(e)))) continue;
       t.hitKeys.add(key + '|' + (e.xpKey || ctx.enemies().indexOf(e)));
       if (e.boss) { K.n.bossHit++; if (ctx.bossTrap) ctx.bossTrap(e, t.kind, t); continue; }
-      if (e.elite) { const dmg = Math.round((e.maxHp || e.hp) * PYS.eliteShare); ctx.hurtFoe(e, dmg, box.l); e.stagger = Math.max(e.stagger || 0, PYS.eliteStagger); K.n.eliteHit++; number(e.x, e.y - 30, 'HE TAKES ONLY A SHARE OF IT', '#ffd36b'); any = true; continue; }
+      if (e.elite) { const dmg = Math.round((e.maxHp || e.hp) * PYS.eliteShare); ctx.hurtFoe(e, dmg, box.l); e.stagger = Math.max(e.stagger || 0, PYS.eliteStagger); e.pyStagT = PYS.eliteStagger; K.n.eliteHit++; number(e.x, e.y - 30, 'HE TAKES ONLY A SHARE OF IT', '#ffd36b'); any = true; continue; }
       const hp = e.hp; ctx.hurtFoe(e, Math.max(hp + 1, 999), box.l); if (!e.alive) { K.n.killed++; any = true; if (once('killed' + t.id)) number(e.x, e.y - 30, 'THE TOMB KILLS ITS OWN', '#8fd160'); } }
     if (ctx.broodHit) ctx.broodHit(box);
     return any;
@@ -210,13 +210,13 @@ export function makeSealedPyramidHands(ctx) {
   }
 
   /* ---------- THE MUMMY ---------- */
-  H.world = (e, s, w) => { if (e.t !== 'mummy') return; if (e.burn > 0) { if (!e.pyLit) { e.pyLit = true; e.burn = Math.max(e.burn, PYS.linen); K.n.burned++; if (once('linen')) number(e.x, e.y - 30, 'ITS LINEN BURNS', '#ff9a5c'); } w.burning = e.burn; } else { e.pyLit = false; w.burning = 0; } };
+  H.world = (e, s, w) => { if (e.t !== 'mummy') return; if (e.burn > 0) { if (!e.pyLit) { e.pyLit = true; e.burn = Math.max(e.burn, PYS.linen); K.n.burned++; if (once('linen')) number(e.x, e.y - 30, 'ITS LINEN BURNS', '#ff9a5c'); } w.burning = e.elite ? 0 : e.burn; } else { e.pyLit = false; w.burning = 0; } };   /* (THE TOMB-WARDEN burns, and takes it half again, but an elite does not flail: he keeps coming) */
   H.onHit = (e, v, landed, P) => { if (e.t !== 'mummy' || !landed || P.dead) return;
     if (v.yank) { ctx.moveBody(P, -Math.sign(P.x - e.x || -v.yank) * MUMMY.yank, 0); }
     if (v.grab) { P.pyGrab = { e, t: MUMMY.hold, tick: PYS.grabSqueeze }; K.n.grabs++; number(P.x, P.y - 30, 'IT HAS YOU: STRIKE IT', '#ff6b6b'); } };
   /* a mummy struck lets go; burning, its linen takes a blow x PYS.linenMul */
   H.takeMummy = (e, dmg) => { for (const pp of ctx.players) if (pp.pyGrab && pp.pyGrab.e === e) { pp.pyGrab = null; K.n.torn++; number(pp.x, pp.y - 30, 'YOU TEAR LOOSE OF ITS GRIP', '#8fd160'); }
-    return e.burn > 0 ? dmg * PYS.linenMul : dmg; };
+    return e.burn > 0 ? dmg * (e.elite ? PYS.linenElite : PYS.linenMul) : dmg; };
   function stepGrabs(dt) { for (const pp of ctx.players) { const g = pp.pyGrab; if (!g) continue; const e = g.e;
       if (pp.dead || !e.alive || (e.st && e.st.mode === 'burning') || (g.t -= dt) <= 0) { pp.pyGrab = null; continue; }
       pp.x += ((e.x + (e.face || 1) * 9) - pp.x) * Math.min(1, dt * 6); pp.vx = 0; if (pp.vy < 0) pp.vy = 0;
@@ -237,6 +237,9 @@ export function makeSealedPyramidHands(ctx) {
     for (const q of K.darts) { q.x += q.dir * 420 * dt; q.t -= dt; } K.darts = K.darts.filter(q => q.t > 0 && (q.end - q.x) * q.dir > 0);
     for (const t of K.traps) stepTrap(t, dt);
     stepGrabs(dt);
+    /* THE DEAD DO NOT FLINCH: a blow staggers a mummy MUMMY.flinch s at most - a parry (the riposte's hold), a broken guard or a trap's weight more */
+    for (const e of ctx.enemies()) if (e.alive && e.t === 'mummy') { if (e.elite && e.burn > 0.4) e.burn = 0.4;   /* (THE TOMB-WARDEN's wrappings are oiled for the long dark: they smoulder, they do not catch - his exam is the block, not a torch) */
+      if (e.pyStagT > 0) e.pyStagT -= dt; else if (e.stagger > MUMMY.flinch && !(e.rpHold > 0) && !(e.broken > 0)) e.stagger = MUMMY.flinch; }
     stepStorm(P0, dt);
     /* THE FIRST LOOK at a thing: a line once (what it is) */
     if (P0 && !P0.dead) { const near = (x, y, r) => Math.abs(x - P0.x) < r && Math.abs(y - P0.y) < 80;
