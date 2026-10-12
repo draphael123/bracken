@@ -38,7 +38,8 @@ try {
   assert.equal(await pg.evalp('BK.WN.hasNew()'), false, 'opening it clears the dot');
   r = await pg.evalp(REC);
   assert.ok(r.some(x => x.s === newest), 'the newest date heads the list: ' + r.map(x => x.s).join(' / '));
-  assert.ok(r.some(x => /Road Wardens/.test(x.s)), 'and its lines are there');
+  /* (batch88) the pinned newest line moved from batch 87's Road Wardens line to batch 88's Berserker line; the newest date stays 12 OCT */
+  assert.ok(r.some(x => /Berserker reborn/.test(x.s)), 'and its lines are there');
   const { VW, VH } = await pg.evalp('BK.view');
   for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'inside the panel: ' + x.s + ' ' + JSON.stringify(x));
   /* scrolling: DOWN moves, and it never goes past the end */

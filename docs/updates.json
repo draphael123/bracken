@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-12",
+    "batch": 88,
+    "lines": [
+      "The Berserker reborn: two axes, Take It, Frenzy",
+      "Hills carry you: run downhill, jump further, slide",
+      "Wear foes down, then launch them (damage %)",
+      "Report a bug from the pause menu",
+      "The Foreman's spikes: time your stomp"
+    ]
+  },
+  {
+    "date": "2026-10-12",
     "batch": 87,
     "lines": [
       "Buried City rebuilt, with a new Trap Hall",
