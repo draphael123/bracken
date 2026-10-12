@@ -54,8 +54,157 @@ export const STUCK = {
     { id: 'ub-tower-ladder-2', zone: [334, 28, 346, 37], rows: [28, 37], at: [341, 33], glint: 'stall', done: ['drawbridge', 346, 23, 'used'], line: 'THE SIEGE TOWER STANDS AT THE WALL: ITS LADDER IS THE WAY UP' },
     { id: 'ub-drawbridge', zone: [338, 18, 348, 25], at: [346, 23], dy: -8, done: ['drawbridge', 346, 23, 'used'], line: 'THE DRAWBRIDGE IS TIED OFF: ITS ROPE HOLDS IT UP' },
   ],
+  /* (claude/stuckguides) WOOD: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  wood: [
+    { id: 'wd-pine-gap', zone: [417, 6, 438, 22], at: [435, 14], glint: 'stall', done: ['felltree', 435, 14, 'felled'], line: 'THE GREAT PINE AT THE GAP IS THE WAY ACROSS' },
+    { id: 'wd-pond-log', zone: [340, 4, 368, 20], ats: [[355, 12], [362, 12]], glint: 'stall', line: 'THE DRIFTING LOG IS THE WAY OVER THE POND' },
+    { id: 'wd-pine-hive', zone: [499, 0, 521, 16], at: [519, 6], glint: 'stall', done: ['felltree', 519, 6, 'felled'], line: 'THE PINE BY THE HIVE IS THE WAY ON' },
+  ],
+  /* (claude/stuckguides) MARSH: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  marsh: [
+    { id: 'ms-ferry', zone: [140, 10, 166, 22], ats: [[164, 17], [165, 17]], glint: 'stall', done: ['sluice', 165, 17, 'open'], line: 'THE FERRY CRANK AND THE SLUICE: ONE OF THEM IS THE WAY' },
+    { id: 'ms-vine-1', zone: [244, 4, 262, 20], at: [260, 13], glint: 'stall', line: 'A VINE HANGS OVER THE WATER: IT IS THE WAY ACROSS' },
+    { id: 'ms-vine-2', zone: [277, 4, 295, 20], at: [293, 13], glint: 'stall', line: 'THE NEXT VINE HANGS OVER THE WATER' },
+    { id: 'ms-grove-raft', zone: [372, 10, 392, 22], ats: [[391, 17], [390, 17]], glint: 'stall', done: ['sluice', 390, 17, 'open'], line: 'THE GROVE CRANK AND THE SLUICE: ONE OF THEM IS THE WAY' },
+  ],
+  /* (claude/stuckguides) SPORE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  spore: [
+    { id: 'sp-bud-37', zone: [23, 10, 41, 27], at: [37, 19], glint: 'stall', line: 'A BUD CAP RISES UNDER YOU: STAND ON IT' },
+    { id: 'sp-vent-58', zone: [46, 8, 64, 29], ats: [[58, 25], [52, 16], [56, 16]], glint: 'stall', line: 'THE VENT LIFTS YOU TO THE CAP THAT CARRIES YOU ON' },
+    { id: 'sp-cap-164', zone: [150, 0, 172, 14], ats: [[164, 6], [168, 6]], glint: 'stall', line: 'THE CAP IN THE CANOPY DRIFTS: RIDE IT' },
+    { id: 'sp-lean-177', zone: [163, 5, 181, 21], at: [177, 13], glint: 'stall', line: 'A LEANING CAP CARRIES YOU OVER THE GAP' },
+    { id: 'sp-lean-192', zone: [180, 5, 196, 21], at: [192, 13], glint: 'stall', line: 'THE NEXT LEANING CAP IS THE WAY OVER' },
+    { id: 'sp-bud-250', zone: [238, 4, 250, 21], at: [250, 13], glint: 'stall', line: 'THE SPORE BUDS GROW A STEP UNDER YOUR FEET' },
+    { id: 'sp-bud-257', zone: [253, 1, 263, 19], at: [257, 9], glint: 'stall', line: 'THE HIGH BUD LIFTS YOU TO THE LEDGE' },
+    { id: 'sp-vent-292', zone: [278, 5, 296, 21], at: [292, 13], glint: 'stall', line: 'THE VENT LIFTS WHOEVER STANDS IN IT' },
+    { id: 'sp-cap-313', zone: [298, 2, 328, 18], ats: [[313, 9], [318, 9]], glint: 'stall', line: 'THE FLOATING CAP CARRIES YOU OVER THE BOG' },
+    { id: 'sp-bud-345', zone: [331, 5, 349, 21], at: [345, 13], glint: 'stall', line: 'A LEANING CAP CARRIES YOU OVER' },
+    { id: 'sp-glowbuds', zone: [420, 10, 462, 28], ats: [[432, 24], [437, 24], [449, 21], [455, 17]], glint: 'stall', line: 'STRIKE THE GLOWBUDS: THEIR LIGHT WAKES THE CAPS' },
+    { id: 'sp-bud-477', zone: [465, 10, 489, 27], at: [477, 19], glint: 'stall', line: 'A BUD CAP RISES UNDER YOU: STAND ON IT' },
+  ],
+  /* (claude/stuckguides) FLOTILLA: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  flotilla: [
+    { id: 'fl-swing-29', zone: [14, 12, 34, 30], at: [29, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP BETWEEN THE SHIPS' },
+    { id: 'fl-swing-100', zone: [86, 12, 104, 32], at: [100, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP TO THE HULK' },
+    { id: 'fl-swing-108', zone: [104, 12, 120, 32], at: [108, 20], glint: 'stall', line: 'THE NEXT LINE SWINGS OVER THE GAP' },
+    { id: 'fl-plank', zone: [160, 14, 180, 32], at: [176, 21], glint: 'stall', done: ['plank', 176, 21, 'down'], line: 'THE PLANK BARS THE POWDER HOY: BRING IT DOWN, OR SWIM' },
+    { id: 'fl-flagship-gun', zone: [216, 14, 236, 32], at: [232, 24], glint: 'stall', done: ['cannon', 232, 24, 'fired'], line: "THE FLAGSHIP'S SIDE IS SHUT: THE GUN OPENS IT" },
+    { id: 'fl-swing-242', zone: [236, 12, 256, 30], at: [242, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP TO THE QUARTERDECK' },
+  ],
+  /* (claude/stuckguides) HURRICANE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  hurricane: [
+    { id: 'hu-bulkhead-208', zone: [186, 19, 212, 32], ats: [[194, 26], [208, 26]], glint: 'stall', done: ['bulkhead', 208, 26, 'open'], line: 'THE IRON BULKHEAD: THE GUN BEHIND YOU OPENS IT' },
+    { id: 'hu-pump-246', zone: [228, 12, 252, 30], at: [246, 19], glint: 'stall', line: 'THE PUMP BRAKE DRAINS THE HOLD' },
+    { id: 'hu-bulkhead-372', zone: [350, 19, 376, 32], ats: [[358, 26], [372, 26]], glint: 'stall', done: ['bulkhead', 372, 26, 'open'], line: 'THE IRON BULKHEAD: THE GUN BEHIND YOU OPENS IT' },
+    { id: 'hu-davit', zone: [462, 12, 486, 26], at: [481, 19], glint: 'stall', line: "THE DAVIT'S WINCH LOWERS HER BOAT TO THE FAR SHIP" },
+    { id: 'hu-pump-508', zone: [490, 14, 514, 30], at: [508, 23], glint: 'stall', line: 'THE PUMP BEAM SINKS THE OIL A WHILE' },
+    { id: 'hu-loosegun', zone: [572, 12, 618, 28], ats: [[586, 18], [614, 18]], glint: 'stall', line: 'THE LOOSE GUN BREAKS THE CARGO WALL AHEAD' },
+  ],
+  /* (claude/stuckguides) DEEP: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  deep: [
+    { id: 'dp-stone-start', zone: [6, 19, 40, 33], at: [16, 27], glint: 'stall', line: 'A STONE ON THE DECK: THE DEEP NEEDS WEIGHT' },
+    { id: 'dp-stone-55', zone: [14, 47, 44, 61], at: [26, 55], glint: 'stall', line: 'A STONE TO WALK THE BOTTOM: PICK IT UP' },
+    { id: 'dp-stone-81', zone: [12, 73, 42, 87], at: [24, 81], glint: 'stall', line: 'A STONE TO WALK THE BEDS: PICK IT UP' },
+    { id: 'dp-stone-129', zone: [16, 121, 44, 135], at: [30, 129], glint: 'stall', line: 'A STONE: THE PRISE WANT IT AS WELL' },
+  ],
+  /* (claude/stuckguides) KEEP: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  keep: [
+    { id: 'kp-lever-101', zone: [87, 48, 109, 62], at: [101, 58], glint: 'stall', line: 'A WHIRLPOOL DRINKS YOUR AIR: ITS LEVER STOPS IT' },
+    { id: 'kp-lever-153', zone: [139, 48, 161, 62], at: [153, 58], glint: 'stall', line: 'THE LIBRARY WHIRLPOOL: ITS LEVER STOPS IT' },
+    { id: 'kp-ballast-275', zone: [267, 48, 299, 62], at: [275, 58], glint: 'stall', line: 'THE CISTERN: A STONE SINKS YOU BELOW THE RED VENTS' },
+    { id: 'kp-lever-357', zone: [343, 48, 365, 62], at: [357, 58], glint: 'stall', line: 'THE BELL APPROACH WHIRLPOOL: ITS LEVER STOPS IT' },
+    { id: 'kp-lever-646', zone: [632, 48, 654, 62], at: [646, 58], glint: 'stall', line: 'THE LAST WHIRLPOOL: ITS LEVER IS NEAR THE KING DOOR' },
+  ],
+  /* (claude/stuckguides) WAYMEET: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  waymeet: [
+    { id: 'wm-drum', zone: [452, 27, 470, 41], at: [466, 35], glint: 'stall', line: 'THE PORTCULLIS DRUM HOLDS THE TOWER GATE' },
+    { id: 'wm-hod-hoist', zone: [558, 22, 590, 40], at: [575, 34], glint: 'stall', line: 'THE HOD-HOIST CARRIES YOU UP THE MASONS WALL' },
+    { id: 'wm-scaffold', zone: [598, 22, 628, 40], ats: [[613, 30], [615, 30]], glint: 'stall', line: 'THE SCAFFOLD BOARD SWAYS ACROSS: STEP ON IT' },
+  ],
+  /* (claude/stuckguides) UNDERCROWN: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  undercrown: [
+    { id: 'uc-timber-30-23', zone: [18, 14, 42, 28], at: [30, 23], glint: 'stall', done: ['timber', 30, 23, 'broken'], line: 'THE TIMBER SET: BRING THE ROOF DOWN, CLIMB THE MOUND' },
+    { id: 'uc-timber-62-33', zone: [48, 24, 90, 38], at: [62, 33], glint: 'stall', done: ['timber', 62, 33, 'broken'], line: 'THE TIMBER SET: BRING THE ROOF DOWN, CLIMB THE MOUND' },
+    { id: 'uc-timber-48-99', zone: [36, 90, 60, 104], at: [48, 99], glint: 'stall', done: ['timber', 48, 99, 'broken'], line: 'THE TIMBER SET OVER THE SPAN: CUT IT, CLIMB THE MOUND' },
+    { id: 'uc-timber-37-111', zone: [26, 104, 50, 116], at: [37, 111], glint: 'stall', done: ['timber', 37, 111, 'broken'], line: 'THE TIMBER SET: CUT IT, AND THE MOUND IS YOUR STEP' },
+    { id: 'uc-timber-59-111', zone: [52, 104, 70, 116], at: [59, 111], glint: 'stall', done: ['timber', 59, 111, 'broken'], line: 'THE CRACKED TIMBER SET: CUT IT, CLIMB THE MOUND' },
+    { id: 'uc-timber-44-140', zone: [34, 132, 58, 144], at: [44, 140], glint: 'stall', done: ['timber', 44, 140, 'broken'], line: 'THE LAST DRIFT: CUT THE TIMBER SET, CLIMB THE MOUND' },
+  ],
+  /* (claude/stuckguides) FIELDS: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  fields: [
+    { id: 'fd-trough-51', zone: [36, 24, 70, 38], at: [51, 33], glint: 'stall', line: 'THE TROUGH FEEDS THE VINE YOU NEED' },
+    { id: 'fd-sluice-106', zone: [92, 22, 124, 36], at: [106, 31], glint: 'stall', line: 'THE ORCHARD SLUICE GROWS THE VINES UP' },
+    { id: 'fd-bucket-131', zone: [118, 14, 146, 28], at: [131, 22], glint: 'stall', line: 'THE BUCKET FEEDS THE VINE UNDER THE BOUGH' },
+    { id: 'fd-furniture', zone: [338, 10, 392, 36], ats: [[357, 33], [362, 18], [364, 26], [366, 15], [387, 25]], glint: 'stall', line: 'THE HAUNTED FURNITURE CARRIES YOU UP' },
+    { id: 'fd-sails', zone: [408, 2, 440, 36], ats: [[422, 24], [422, 9]], glint: 'stall', line: 'THE MILL GEARS AND SAILS CARRY YOU UP AND OUT' },
+    { id: 'fd-bale', zone: [484, 8, 502, 34], at: [501, 23], glint: 'stall', line: 'THE HAUNTED BALE RISES IN THE BARN' },
+    { id: 'fd-bucket-507', zone: [504, 10, 516, 26], at: [507, 17], glint: 'stall', line: 'THE BUCKET FEEDS THE BALES: TIP IT' },
+    { id: 'fd-haycart', zone: [532, 20, 562, 36], at: [547, 28], glint: 'stall', line: 'THE HAY CART CARRIES YOU ACROSS THE FIELD' },
+    { id: 'fd-bucket-603', zone: [587, 17, 606, 35], at: [603, 27], glint: 'stall', line: 'THE ROAD HAS GONE: THE BUCKET GROWS THE VINES OVER' },
+    { id: 'fd-sluice-652', zone: [636, 23, 658, 39], at: [652, 33], glint: 'stall', line: 'THE CRYPT SLUICE GROWS THE VINES UP' },
+    { id: 'fd-headstone', zone: [654, 20, 674, 36], at: [663, 27], glint: 'stall', line: 'THE RISING HEADSTONE CARRIES YOU UP' },
+  ],
+  /* (claude/stuckguides) BURIAL: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  burial: [
+    { id: 'bu-candle-40', zone: [24, 14, 60, 26], ats: [[40, 21], [46, 22]], glint: 'stall', line: 'TAKE FIRE FROM THE CANDLE: THE GAS VENT BURNS WITH IT' },
+    { id: 'bu-candle-144', zone: [108, 14, 180, 28], ats: [[144, 21], [148, 22], [162, 22], [173, 22]], glint: 'stall', line: 'THE GRAVE CANDLE LIGHTS THE VAULT VENTS' },
+    { id: 'bu-coffins', zone: [186, 56, 235, 70], ats: [[193, 65], [203, 65], [208, 65]], glint: 'stall', line: 'THE RISING COFFINS ARE THE WAY OVER THE WATER' },
+    { id: 'bu-coffins-2', zone: [236, 56, 296, 70], ats: [[258, 65], [263, 65], [282, 65]], glint: 'stall', line: 'THE COFFINS AND THE CHAINS CARRY YOU ON' },
+    { id: 'bu-bridges', zone: [348, 24, 390, 70], ats: [[361, 66], [361, 52], [361, 38]], glint: 'stall', line: 'THE ROTTEN BRIDGES: THE CHAINS CLIMB OUT' },
+    { id: 'bu-candle-374', zone: [372, 14, 404, 26], ats: [[374, 21], [381, 22]], glint: 'stall', line: 'THE GRAVE CANDLE LIGHTS THE NEXT VENT' },
+    { id: 'bu-candle-405', zone: [405, 14, 458, 26], ats: [[405, 21], [424, 22], [435, 22]], glint: 'stall', line: 'THE GRAVE CANDLE LIGHTS THE VENTS AHEAD' },
+    { id: 'bu-candle-472', zone: [459, 14, 525, 26], ats: [[472, 21], [476, 22], [491, 22], [512, 21]], glint: 'stall', line: 'THE LAST CANDLES LIGHT THE VENTS UNDER THE DEAD' },
+  ],
+  /* (claude/stuckguides) MAGE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  mage: [
+    { id: 'mg-postern-rune', zone: [30, 32, 60, 42], at: [50, 39], glint: 'stall', line: 'THE POSTERN IS WARDED: THE RUNE ON THE POST OPENS IT' },
+    { id: 'mg-cases-1', zone: [64, 32, 92, 44], mover: {kind:'bookcase'}, glint: 'stall', line: 'THE SLIDING CASE IS THE WAY ACROSS THE FLOOR' },
+    { id: 'mg-vault-1', zone: [92, 28, 122, 42], steps: [
+      { at: [98, 39], done: ['lockrune', 98, 39, 'lit'], line: 'THE VAULT DOOR WANTS EVERY RUNE LIT' },
+      { at: [110, 35], done: ['lockrune', 110, 35, 'lit'], line: 'ONE RUNE ON THE VAULT DOOR IS STILL DARK' } ] },
+    { id: 'mg-cases-2', zone: [124, 32, 160, 44], mover: {kind:'bookcase'}, glint: 'stall', line: 'TWO CASES OVER THE PIT: RIDE ONE, HOP TO THE NEXT' },
+    { id: 'mg-lock-2', zone: [166, 26, 212, 42], steps: [
+      { at: [182, 39], done: ['lockrune', 182, 39, 'lit'], line: 'HIS OWN LOCK WANTS EVERY RUNE LIT' },
+      { at: [198, 30], done: ['lockrune', 198, 30, 'lit'], line: 'THE HIGH LOCK RUNE RIDES A STACK: THE LIBRARY RUNE LIFTS IT' },
+      { at: [205, 39], done: ['lockrune', 205, 39, 'lit'], line: 'ONE RUNE ON HIS LOCK IS STILL DARK' } ] },
+    { id: 'mg-shelves', zone: [216, 28, 272, 42], ats: [[230, 39], [255, 39]], glint: 'stall', line: 'THE LIBRARY RUNES LIFT WHOLE STACKS: RIDE THE BOOKS' },
+    { id: 'mg-weight-1', zone: [432, 30, 458, 44], at: [452, 39], glint: 'stall', done: ['gplate', 452, 39, 'open'], line: 'THE COUNTERWEIGHT RAISES THE GRATING: THEN RUN' },
+    { id: 'mg-cellar-key', zone: [410, 38, 440, 48], at: [427, 46], glint: 'stall', done: ['key', 427, 46, 'got'], line: 'THE BRASS KEY IS DOWN IN THE WINE CELLAR' },
+    { id: 'mg-orrery', zone: [520, 8, 568, 42], ats: [[540, 33], [550, 24], [561, 15]], glint: 'stall', line: "THE ORRERY'S PLANETS CARRY YOU UP TO THE DOOR" },
+    { id: 'mg-lockgate', zone: [566, 30, 590, 42], at: [590, 39], glint: 'stall', done: ['lockgate', 590, 39, 'open'], line: 'THE LOCKED GATE WANTS THE BRASS KEY YOU CARRY' },
+    { id: 'mg-glyph-1', zone: [596, 2, 646, 22], ats: [[607, 15], [642, 6]], glint: 'stall', line: 'A GLYPH TURNS THE ROOM OVER: STEP ON IT' },
+    { id: 'mg-glyph-2', zone: [647, 2, 696, 22], ats: [[651, 15], [680, 6]], glint: 'stall', line: 'THE NEXT GLYPH TURNS THE ROOM AGAIN' },
+    { id: 'mg-weight-2', zone: [716, 6, 742, 22], at: [738, 15], glint: 'stall', done: ['gplate', 738, 15, 'open'], line: 'THE LAST WEIGHT OPENS HIS DOOR' },
+  ],
+  /* (claude/stuckguides) WITCHLIGHT: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  witchlight: [
+    { id: 'wl-slab-22', zone: [8, 72, 34, 90], ats: [[22, 81], [28, 81]], glint: 'stall', line: 'THE DRIFTING SLAB CARRIES YOU ALONG THE STAIR' },
+    { id: 'wl-rune-40', zone: [34, 66, 50, 88], at: [40, 80], glint: 'stall', line: 'THE RUNE COLUMN LIFTS YOU WHILE IT GLOWS' },
+    { id: 'wl-arches-1', zone: [46, 68, 90, 86], ats: [[54, 77], [66, 77], [83, 77]], glint: 'stall', line: 'THE FLOATING ARCHES ARE THE WAY ACROSS' },
+    { id: 'wl-arches-2', zone: [91, 68, 134, 86], ats: [[88, 79], [97, 77], [111, 77], [123, 77]], glint: 'stall', line: 'THE NEXT ARCHES FLOAT ON TO THE GLYPH' },
+    { id: 'wl-glyph-1', zone: [136, 64, 170, 84], ats: [[147, 76], [169, 70]], glint: 'stall', line: 'THE GLYPH TURNS YOU OVER: WALK THE ROOF TO THE NEXT' },
+    { id: 'wl-glyph-2', zone: [171, 64, 195, 84], ats: [[173, 76], [194, 70]], glint: 'stall', line: 'THE NEXT GLYPH TURNS YOU OVER AGAIN' },
+    { id: 'wl-glyph-3', zone: [196, 64, 213, 84], ats: [[198, 76], [214, 70]], glint: 'stall', line: 'THE LAST GLYPH TURNS YOU OVER ONCE MORE' },
+    { id: 'wl-rune-226', zone: [214, 62, 229, 84], at: [226, 76], glint: 'stall', line: 'THE RUNE COLUMNS LIGHT ONE AFTER ANOTHER: RIDE ONE UP' },
+    { id: 'wl-rune-237', zone: [230, 48, 242, 70], at: [237, 62], glint: 'stall', line: 'THE NEXT RUNE COLUMN IS THE WAY UP' },
+    { id: 'wl-rune-247', zone: [243, 38, 256, 58], at: [247, 50], glint: 'stall', line: 'THE LAST RUNE COLUMN LIFTS YOU TO THE GARDEN' },
+    { id: 'wl-wind-1', zone: [362, 24, 396, 44], ats: [[375, 32], [383, 39]], glint: 'stall', line: 'THE WIND WELLS IN THE MOAT LIFT YOU OUT' },
+    { id: 'wl-wind-2', zone: [397, 24, 420, 44], ats: [[402, 39], [410, 39]], glint: 'stall', line: 'THE NEXT WIND WELLS LIFT YOU OUT OF THE MOAT' },
+    { id: 'wl-slabs-1', zone: [422, 14, 475, 44], ats: [[425, 27], [435, 26], [440, 28], [449, 28], [457, 28], [468, 26]], glint: 'stall', line: 'THE CRACKED SLABS GIVE WAY: KEEP MOVING' },
+    { id: 'wl-vent-483', zone: [476, 14, 498, 44], at: [483, 28], glint: 'stall', line: 'THE RUNE COLUMN LIFTS YOU OVER THE BATTLEMENT' },
+    { id: 'wl-slabs-2', zone: [499, 12, 538, 44], ats: [[501, 21], [524, 27], [533, 27]], glint: 'stall', line: 'THE SLABS ABOVE THE WIND ARE THE WAY ON' },
+    { id: 'wl-vent-541', zone: [539, 12, 562, 44], ats: [[541, 26], [549, 22]], glint: 'stall', line: 'THE LAST RUNE COLUMN LIFTS YOU TO THE STAIR TOP' },
+  ],
+  /* (claude/stuckguides) HARBOR: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  harbor: [
+    { id: 'hb-crane-1', zone: [176, 12, 200, 34], at: [193, 20], glint: 'stall', line: 'THE SALVAGE CRANE CARRIES YOU UP TO THE HIGH CARGO' },
+    { id: 'hb-crane-2', zone: [214, 12, 240, 34], at: [232, 20], glint: 'stall', line: 'THE SECOND SALVAGE CRANE CARRIES YOU ON' },
+    { id: 'hb-lift', zone: [718, 16, 742, 34], at: [735, 29], glint: 'stall', line: 'THE CARGO HALL LIFT SHORTENS THE CROSSING' },
+  ],
   causeway: [
     { id: 'cw-boom', zone: [421, 0, 478, 43], ats: [[479, 17], [464, 17]], glint: 'stall', line: 'THE BOOM LIFTS AT HIGH WATER: THE TOWER BELL TURNS THE TIDE' },
+    { id: 'cw-bell-first', zone: [4, 10, 38, 24], at: [18, 17], glint: 'stall', line: 'THE TIDE BELL TURNS THE TIDE: THE ROAD FOLLOWS IT' },
+    { id: 'cw-bell-chapel', zone: [262, 12, 300, 26], at: [281, 19], glint: 'stall', line: 'THE CHAPEL BELL IS A TIDE BELL TOO' },
   ],
   longwater: [
     { id: 'lw-bore-gate', zone: [318, 0, 361, 28], at: [362, 22], glint: 'stall', line: 'THE SEA GATE LIFTS AS THE BORE GOES BY: STAND ON A STONE' },
@@ -64,6 +213,12 @@ export const STUCK = {
   ],
   kings: [
     { id: 'kg-court-gate', zone: [568, 0, 584, 14], at: [583, 7], done: ['plate', 583, 7, 'down'], line: 'THE COURT GATE IS SHUT: STAND ON THE PLATE ON THE LEDGE' },   /* (claude/kingsgate) the plate stands ON its ledge now, and the nudge names the verb */
+    { id: 'kg-ram-lever-148', zone: [132, 13, 156, 27], at: [148, 21], glint: 'stall', done: ['lever', 148, 21, 'on'], line: 'THE LEVER SWINGS THE RAM ON WHAT STANDS BELOW IT' },
+    { id: 'kg-stands-357', zone: [344, 3, 364, 20], at: [357, 10], glint: 'stall', done: ['timber', 357, 10, 'broken'], line: 'THE HUNTING STANDS: THEIR CRACKED POSTS GIVE WAY' },
+    { id: 'kg-stands-393', zone: [380, 3, 400, 20], at: [393, 13], glint: 'stall', done: ['timber', 393, 13, 'broken'], line: 'THE NEXT HUNTING STAND HAS A CRACKED POST' },
+    { id: 'kg-stands-420', zone: [405, 6, 424, 22], at: [420, 15], glint: 'stall', done: ['timber', 420, 15, 'broken'], line: 'THE LAST HUNTING STAND HAS A CRACKED POST' },
+    { id: 'kg-ram-lever-426', zone: [425, 10, 446, 24], at: [426, 20], glint: 'stall', done: ['lever', 426, 20, 'on'], line: 'THE LEVER SWINGS THE RAM ON WHAT STANDS BELOW IT' },
+    { id: 'kg-ram-lever-554', zone: [536, 4, 557, 20], at: [554, 13], glint: 'stall', done: ['lever', 554, 13, 'on'], line: 'THE LEVER SWINGS THE RAM THAT GUARDS THE LAST ARCH' },
   ],
   theatre: [
     { id: 'th-hatch-rope', zone: [108, 26, 140, 34], at: [130, 28], line: 'A ROPE BY THE RACKS: CLIMB IT' },
@@ -126,9 +281,25 @@ export const STUCK = {
       { at: [714, 19], done: ['lockgate', 714, 19, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' },
       { at: [682, 19], done: ['key', 682, 19, 'got'], line: 'THE BRASS KEY IS ON THE ALTAR, BEYOND THE BONE GATE' },
       { at: [760, 19], done: ['lockgate', 760, 19, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
+    { id: 'cr-gate-winch', zone: [210, 55, 236, 68], at: [228, 63], glint: 'stall', line: 'THE PORTCULLIS WINCH HOLDS THE GATE UP A FEW BREATHS' },
+    { id: 'cr-ward', zone: [286, 55, 322, 68], steps: [
+      { at: [308, 63], done: ['key', 308, 63, 'got'], line: 'THE WARD GATE WANTS A KEY: A WATCHMAN CARRIES IT' },
+      { at: [322, 63], done: ['lockgate', 322, 63, 'open'], line: 'THE WARD GATE WANTS THE BRASS KEY YOU CARRY' } ] },
+    { id: 'cr-pit-bucket', zone: [396, 36, 430, 68], at: [412, 41], glint: 'stall', line: 'THE BUCKET ON ITS CHAIN CROSSES THE PIT' },
+    { id: 'cr-pit-hoist', zone: [432, 36, 458, 68], at: [450, 62], glint: 'stall', line: 'THE PIT HOIST CARRIES YOU UP OUT OF THE PIT' },
+    { id: 'cr-keep-winch', zone: [652, 55, 675, 68], at: [670, 63], glint: 'stall', line: 'THE KEEP GATE HANGS FROM ITS WINCH' },
+    { id: 'cr-hall', zone: [700, 55, 736, 68], steps: [
+      { at: [724, 63], done: ['key', 724, 63, 'got'], line: 'THE HALL GATE WANTS THE IRON KEY: THE HALL HOLDS IT' },
+      { at: [736, 63], done: ['lockgate', 736, 63, 'open'], line: 'THE HALL GATE WANTS THE IRON KEY YOU CARRY' } ] },
   ],
   oreroad: [
     { id: 'or-wall', zone: [446, 3, 467, 16], at: [468, 9], line: 'THE CRACKED WALL BARS THE LANDING' },
+    { id: 'or-skip-1', zone: [56, 30, 76, 42], at: [67, 36], glint: 'stall', line: 'THE ORE BUCKETS ARE THE ONLY FLOOR: STEP ON ONE' },
+    { id: 'or-skip-2', zone: [190, 15, 210, 28], at: [203, 21], glint: 'stall', line: 'THE CHUTE BUCKETS LEAVE FAST FROM THE TOP DECK' },
+    { id: 'or-skip-3', zone: [268, 28, 288, 40], at: [280, 34], glint: 'stall', line: 'THE BUCKETS CARRY YOU OVER THE BROKEN SPAN' },
+    { id: 'or-skip-4', zone: [340, 14, 360, 26], at: [352, 20], glint: 'stall', line: 'THE RUSTED BUCKETS GIVE WAY: STEP ON THE NEXT ONE' },
+    { id: 'or-skip-5', zone: [408, 6, 428, 18], at: [420, 12], glint: 'stall', line: 'THE SHAFT BUCKETS ARE THE WAY UP THE ORE SHAFT' },
+    { id: 'or-skip-6', zone: [472, 11, 490, 23], at: [483, 17], glint: 'stall', line: 'A BUCKET WITH SOMEONE IN IT STOPS THE DRUM' },
   ],
   lamplit: [
     { id: 'lp-stair', zone: [236, 8, 262, 22], at: [260, 21], line: 'THE ROOFS END HERE: THE WAY ON IS DOWN THE STAIR' },
@@ -143,6 +314,10 @@ export const STUCK = {
   ],
   hanging: [
     { id: 'hg-hoist', zone: [0, 80, 16, 100], mover: { hoist: 'rope', well: 2 }, line: 'THE HOIST: DROP A COIL IN THE WELL, THEN STAND ON IT' },
+    { id: 'hg-wheels', zone: [90, 58, 112, 84], ats: [[104, 75], [104, 68]], glint: 'stall', line: 'THE WATER WHEEL PADDLES CARRY YOU UP' },
+    { id: 'hg-hoist-mill', zone: [64, 56, 92, 68], mover: {hoist:'mill'}, glint: 'stall', line: 'THE MILL HOIST NEEDS A SACK IN ITS WELL' },
+    { id: 'hg-hoist-nest', zone: [52, 40, 76, 53], mover: {hoist:'nest'}, glint: 'stall', line: 'THE NEST HOIST NEEDS TWO SACKS IN ITS WELL' },
+    { id: 'hg-hoist-crown', zone: [46, 5, 70, 21], mover: {hoist:'crown'}, glint: 'stall', line: 'THE CROWN HOIST NEEDS A COIL IN ITS WELL' },
   ],
   spire: [
     { id: 'sp-baskets', zone: [14, 126, 34, 140], mover: { cw: 'cw0' }, line: 'THE BOOK-HOIST BASKETS CARRY YOU UP' },
@@ -163,6 +338,10 @@ export const STUCK = {
   ],
   stockade: [
     { id: 'sk-crank', zone: [118, 10, 141, 26], at: [138, 19], line: 'THE PALISADE HOLDS: FIND ITS CRANK' },
+    { id: 'sk-lift-2', zone: [420, 4, 449, 24], at: [443, 12], glint: 'stall', line: 'THE HORN TOWER LIFT TAKES YOU UP OR BACK DOWN' },
+    { id: 'sk-lift-1', zone: [360, 8, 388, 26], at: [378, 19], glint: 'stall', line: 'THE LIFT AT THE FOOT OF THE TOWER CARRIES YOU UP' },
+    { id: 'sk-crank-3', zone: [290, 10, 316, 26], at: [313, 19], glint: 'stall', line: 'THE LAST PALISADE GATE HAS A CRANK OF ITS OWN' },
+    { id: 'sk-crank-2', zone: [186, 10, 211, 26], at: [207, 19], glint: 'stall', line: 'THE SECOND CRANK WORKS THE NEXT PALISADE GATE' },
   ],
   /* GALE MOOR's WIND ROCKS and GOBLIN SCAFFOLDS (claude/moor2): the two crevices, the two gust shafts, and the half-built frame's rope until it is down */
   moor: [
