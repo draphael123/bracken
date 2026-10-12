@@ -161,14 +161,14 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' ? h : 'knight'; }
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' ? h : 'knight'; }   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
 export const SFX = {
   resetSteps() { stepN = 0; },   /* (claude/harness) the footstep count back to nought for a fresh body: every other step draws a Math.random (vary), so a lab fight inherited the last one's parity */
   pJump() { if (heroVoice === 'pyro') { if (Math.random() < 0.35) heroVo('jump', 0.28); noise(0.12, 0.13, 800, 0.5); tone('sine', vary(330), vary(560), 0.12, 0.07); crackle(2, 0.02); }
-    else { if (heroVoice === 'knight' && Math.random() < 0.18) heroVo('jump', 0.24); tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
+    else { if ((heroVoice === 'knight' || heroVoice === 'berserker') && Math.random() < 0.18) heroVo('jump', 0.24); tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
   pLand(surf) { if (heroVoice === 'pyro') { if (surf === 'water') { SFX.land('water'); return; } noise(0.09, 0.14, 520, 0.5); tone('sine', 150, 60, 0.08, 0.1); if (surf === 'wood' || surf === 'stone') file('land', 0.14, 1.25); return; }
     SFX.land(surf); tone('square', vary(1500), 1050, 0.04, 0.05); noise(0.04, 0.07, 3600, 1.4); },
   pStep(surf) { stepN++; if (heroVoice === 'reaper') { if (surf === 'water') { noise(0.06, 0.07, 800, 0.5); return; } noise(0.05, 0.05, 300, 0.5); tone('sine', 88, 48, 0.09, 0.12); if (stepN % 2) { tone('square', vary(900), 600, 0.04, 0.03); } return; }   /* the biggest man in the game walks like it */

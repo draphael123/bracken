@@ -27,7 +27,7 @@ try {
   assert.equal(t.items.length, 8, 'the title board is eight rows (six, the what-is-new row, and ONLINE CO-OP from claude/onlinecoop): ' + t.items.join('|'));
   assert.ok(t.items.includes('OPTIONS') && !t.items.some(k => ['SETTINGS', 'SOUND TEST', 'CONTROLS'].includes(k)), 'one OPTIONS row, the three are not top-level: ' + t.items.join('|'));
   const o = await pg.evalp(`(()=>{ BK.ui.titleI = BK.ui.titleItems().indexOf('OPTIONS'); BK.press('confirm'); BK.step(3); const sub = BK.ui.titleItems(); const opened = BK.ui.titleOpts; BK.press('pause'); BK.sim(2); BK.step(2); return { sub, opened, closed: !BK.ui.titleOpts, on: BK.ui.titleItems()[BK.ui.titleI] }; })()`);
-  assert.deepEqual(o.sub, ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'BACK'], 'OPTIONS opens SETTINGS, SOUND TEST, CONTROLS, BACK');
+  assert.deepEqual(o.sub, ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'REPORT A BUG', 'BACK'], 'OPTIONS opens SETTINGS, SOUND TEST, CONTROLS, REPORT A BUG, BACK');   /* (DELIBERATE DESIGN CHANGE, claude/shipfix, Daniel 10-11: REPORT A BUG is a row under OPTIONS, before BACK) */
   assert.ok(o.opened && o.closed && o.on === 'OPTIONS', 'ESC closes the list and rests on OPTIONS: ' + JSON.stringify(o));
   const e2 = await pg.evalp(`(()=>{ BK.ui.titleOpts = false; BK.ui.titleI = 0; BK.press('pause'); BK.step(3); const opened = BK.ui.titleOpts, st = BK.state, sub = BK.ui.titleItems(); BK.press('pause'); BK.sim(2); BK.step(2); return { opened, st, sub, closed: !BK.ui.titleOpts, st2: BK.state }; })()`);
   assert.ok(e2.opened && e2.st === 'title' && e2.sub.includes('BACK'), 'ESC on the title top level opens the OPTIONS list (not Settings directly): ' + JSON.stringify(e2));

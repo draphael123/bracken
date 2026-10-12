@@ -1,6 +1,6 @@
 // src/opening-panels.js - THE FIRST-RUN OPENING (claude/uiscreens, 2026-10-06): four illustrated panels shown once, on the first new save of a browser, before the hero pick.
 // The wood, the mountain, the road, the knight. Skippable at any point (X or ESC skips all; Z or RIGHT turns the page). Pure drawing: main.js owns the state.
-// THE WORDS ARE A FIRST DRAFT (the game has no written backstory): they promise nothing about the plot. Edit OPENING_LINES freely.
+// THE WORDS promise nothing about the plot (the game has no written backstory): four short lines, signed off. Edit OPENING_LINES freely.
 
 export const OPENING_LINES = [
   ['THE WOOD', 'the bracken has grown over the old road.', 'nobody walks it now.'],

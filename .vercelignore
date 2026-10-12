@@ -1,1 +1,15 @@
+# WHAT THE DEPLOY LEAVES OUT (claude/shipfix, 10-12): the game is index.html + src/ + audio/ + fonts/ + icons/ + sw.js + manifest + favicon, and the two data files it fetches.
+# Everything else is the workshop - design docs, the check suite, audits, the lanes' work - and a player (or a reviewer) has no business loading it.
+# Reachable on purpose: docs/updates.json (WHAT'S NEW), tools/fixtures/campaign-xp.json (the ?campaign=1 playtest jump). src/draft/ stays: levels import their geometry from it.
+# tools/deploy-surface.mjs asserts all of this against what src/ really fetches and imports.
 .claude/
+tools/*
+!tools/fixtures
+tools/fixtures/*
+!tools/fixtures/campaign-xp.json
+docs/*
+!docs/updates.json
+/work
+/audits
+src/benched
+/*.md
