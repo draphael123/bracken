@@ -288,9 +288,15 @@ export function makeSealedPyramidHands(ctx) {
   /* THE FOOTING KINDS (L.structures 'py*', main.js drawStructures): a carved corbel under a shelf; the robbers' walk on its posts */
   H.drawStructure = (g, kind, l, r, t, b) => {
     if (kind === 'pyShelf' || kind === 'pyCornice' || kind === 'pyLedge') { for (const x of [l + 1, r - 7]) { rect(g, x, t + 6, 6, 3, COL.stone); rect(g, x + 1, t + 9, 4, 3, COL.stone); rect(g, x + 2, t + 12, 2, 3, COL.stoneD); rect(g, x, t + 6, 6, 1, COL.stoneL);
-        g.globalAlpha = 0.35; rect(g, x + 1, t + 15, 4, Math.max(0, b - t - 15), COL.stoneD); g.globalAlpha = 1; } return true; }
+        rect(g, x + 2, t + 15, 2, 2, COL.stoneD); } return true; }   /* (a carved bracket keyed into the wall behind: no post to the floor - the wall carries it) */
     if (kind === 'pyWalk') { for (let x = l + 24; x < r - 8; x += 12 * 16) { rect(g, x, t + 6, 6, b - t - 6, COL.stoneD); rect(g, x, t + 6, 1, b - t - 6, COL.stone); rect(g, x - 3, t + 6, 12, 3, COL.stone); rect(g, x - 3, b - 4, 12, 4, COL.stoneD); } return true; }
     return false; };
+  /* THE TOMB'S ROOMS (L.interiors 'py*'): a coursed sandstone back wall, darker than the stone you stand on, its courses offset; each room its own cast (the gallery's
+     dust, the false tomb's gilding, the pits' green-black, the deep way's dark) - GREYBOX: the art lane paints the reliefs and the light */
+  const ROOM = { pyGallery: ['#4a3a28', '#3a2c1e', '#5a4832'], pyShafts: ['#43362a', '#33281e', '#54442f'], pyCorridor: ['#4a3a28', '#3a2c1e', '#6a5432'], pyFalseTomb: ['#4e3c26', '#3c2c1a', '#7a6034'], pyPits: ['#2e3428', '#22281e', '#3a4430'], pyDeep: ['#2e261e', '#221c16', '#3c3226'], pyAntechamber: ['#33302a', '#26221c', '#4a4232'] };
+  H.drawRoom = (g, st, sx, sy, w, h, x0, y0, time) => { const C = ROOM[st] || ROOM.pyGallery, ts = TS(); g.fillStyle = C[0]; g.fillRect(R(sx), R(sy), R(w), R(h));
+    g.fillStyle = C[1]; for (let k = 0; k * 8 < h; k++) { g.fillRect(R(sx), R(sy + k * 8 + 7), R(w), 1); for (let x = ((k + y0 * 2) % 2) * 12; x < w; x += 24) g.fillRect(R(sx + x), R(sy + k * 8), 1, 7); }
+    g.fillStyle = C[2]; for (let k = 0; k * 8 < h; k += 3) g.fillRect(R(sx), R(sy + k * 8), R(w), 1); };
   /* a SCARAB SEAL (stray kind 'scarabseal'): a green-glazed scarab on a gold disc */
   H.drawSeal = (g, x, y, time) => { const bob = Math.sin(time * 3 + x) * 2, cx0 = R(x), cy0 = R(y - 10 + bob);
     g.fillStyle = COL.gold; g.beginPath(); g.arc(cx0, cy0, 6, 0, 7); g.fill(); g.fillStyle = COL.goldL; g.fillRect(cx0 - 4, cy0 - 5, 3, 1);

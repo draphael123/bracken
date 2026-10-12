@@ -56,7 +56,7 @@ export const OPEN_NAME = { block: 'PINNED', darts: 'STUCK', stone: 'FLIPPED' };
 /* local columns (0..39), the floor's surface row R (a hero stands on R-1). THE BLOCK (its reach, its slot in the roof, its plate on the floor east of it), THE DART
    WALL (the east wall; its reach the east third, its plate west of it), THE ROLLING STONE (its niche in the west wall, its groove the floor, its plate on the
    middle LEDGE - one-way, three rows up: a hero on it is over the stone's road), the two PITS phase two cracks open at the walls, and her start */
-export const SM_STAGE = { W: 40, door: 6, roof: 18,
+export const SM_STAGE = { W: 40, door: 6, roof: 14,
   block: { zone: [9, 14], plate: [15, 16], lure: 17 }, darts: { zone: [25, 38], plate: [23, 24], lure: 22 }, stone: { home: 1, end: 38, plate: [17, 18] },
   ledges: [{ x0: 14, x1: 21, dy: 3 }], pits: [[3, 4], [35, 36]], mother: 30 };
 export function stageScarabMother(W, T, TS, sx, R) {
@@ -65,16 +65,15 @@ export function stageScarabMother(W, T, TS, sx, R) {
     air(sx, ex - 1, R - S.roof, R - 1);
     block(sx - 1, sx - 1, R - S.roof - 4, R - S.door - 1);   /* her west wall over the door you came in by (shut behind you) */
     block(ex, ex, R - S.roof - 4, R - 1);
-    air(sx + S.block.zone[0], sx + S.block.zone[1], R - S.roof - 2, R - S.roof - 1);   /* the block's slot in the roof */
     for (const l of S.ledges) for (let x = sx + l.x0; x <= sx + l.x1; x++) set(x, R - l.dy, T.ONEWAY);
-    ent('tplate', sx + S.block.plate[0], R - 1, { trap: 'smBlock' }); ent('tblock', sx + S.block.zone[0], R - S.roof - 1, { trap: 'smBlock' });
+    ent('tplate', sx + S.block.plate[0], R - 1, { trap: 'smBlock' }); ent('tblock', sx + S.block.zone[0], R - S.roof + 1, { trap: 'smBlock' });   /* (it hangs in the room's top on its chains: in view) */
     ent('tplate', sx + S.darts.plate[0], R - 1, { trap: 'smDarts' }); ent('dartwall', ex, R - 1, { trap: 'smDarts' });
     ent('tplate', sx + S.stone.plate[0], R - 4, { trap: 'smStone' }); ent('rollstone', sx + S.stone.home, R - 1, { trap: 'smStone' });
     ent('scarabmother', sx + S.mother, R - 1, { face: -1 });
   };
   const A = sx;
   const traps = [
-    { id: 'smBlock', kind: 'block', plates: [[A + S.block.plate[0], A + S.block.plate[1], R]], zone: [A + S.block.zone[0], A + S.block.zone[1], R - S.roof, R - 1], slot: [A + S.block.zone[0], A + S.block.zone[1], R - S.roof - 2, R - S.roof - 1], land: R - 1, reset: 4.0, arena: true, section: 'boss' },
+    { id: 'smBlock', kind: 'block', plates: [[A + S.block.plate[0], A + S.block.plate[1], R]], zone: [A + S.block.zone[0], A + S.block.zone[1], R - S.roof, R - 1], slot: [A + S.block.zone[0], A + S.block.zone[1], R - S.roof, R - S.roof + 1], land: R - 1, reset: 4.0, arena: true, section: 'boss' },
     { id: 'smDarts', kind: 'darts', plates: [[A + S.darts.plate[0], A + S.darts.plate[1], R]], zone: [A + S.darts.zone[0], A + S.darts.zone[1], R - 2, R - 1], wall: ex, dir: -1, rows: [R - 2, R - 1], reset: 4.0, arena: true, section: 'boss' },
     { id: 'smStone', kind: 'stone', plates: [[A + S.stone.plate[0], A + S.stone.plate[1], R - 3]], zone: [A + 3, A + S.stone.end, R - 2, R - 1], home: A + S.stone.home, end: A + S.stone.end, row: R, reset: 8.0, arena: true, section: 'boss' },
   ];

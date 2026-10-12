@@ -80,9 +80,9 @@ const TRAPS = [
    sinks and its mate rises; a TRAP BLOCK fallen on one is heavier than a hero; left alone, a pair goes back to its homes at half the pace. plate: the block whose
    top is a pale plate (a trap's mover plate). The last pair's mate runs in a shaft under the wall, out of reach (it rises only to AR - 4) */
 const PAIRS = [
-  { id: 'cw1', a: [180, G2, HL], b: [184, HL, G2], wheel: [182, HL - 23], teach: true },
-  { id: 'cw2', a: [206, G2, HL], b: [214, HL, CO], wheel: [210, HL - 22], plate: 'b' },
-  { id: 'cw3', a: [440, DP, AR], b: [442, AR, AR - 4], wheel: [441, DP - 4], plate: 'a' },
+  { id: 'cw1', a: [180, G2, HL], b: [184, HL, G2], wheel: [182, HL - 23], teach: true, ride: 'a' },
+  { id: 'cw2', a: [206, G2, HL], b: [214, HL, CO], wheel: [210, HL - 22], plate: 'b', ride: 'b' },
+  { id: 'cw3', a: [440, DP, AR], b: [442, AR, AR - 4], wheel: [441, DP - 4], plate: 'a', ride: 'a' },
 ];
 export const FALSE_WALLS = [{ id: 'falsedoor', x0: 326, x1: 327, y0: TB - 6, y1: TB - 1 }];
 /* WHERE A PLAYER'S HANDS GO (the walker's hints, src/sealed-pyramid-hands.js walkHint; src/stuck-spots.js names the same tiles): [column, the row he stands on] */
@@ -188,7 +188,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
   sign(259, WK - 1, 'THE GREAT STONE: TREAD ITS PLATE AND IT RUNS THE HALL\'S FLOOR - AND BREAKS WHAT IT MEETS.');
   decor.push({ kind: 'falsedoor', x0: 326, x1: 327, y0: TB - 6, y1: TB - 1 }, { kind: 'groove', x0: 250, x1: 325, y: TB - 1 });
   decor.push({ kind: 'sarcophagus', x: 274, y: TB - 1 }, { kind: 'sarcophagus', x: 288, y: TB - 1 }, { kind: 'sarcophagus', x: 312, y: TB - 1 }, { kind: 'falseking', x: 281, y: TB - 14 });
-  mummy(274, TB - 1, 'tombSquad', { face: -1 }); mummy(288, TB - 1, 'tombSquad'); mummy(312, TB - 1, 'tombSquad');
+  mummy(274, TB - 1, 'tombSquad', { face: -1 }); mummy(288, TB - 1, 'tombSquad'); mummy(312, TB - 1, 'tombSquad'); scarab(296, TB - 1, 'tombBrood');   /* (and a swarm out of the false king's own tomb) */
   jackal(282, WK - 1, 'tombWalk');
   ledge('shelf', 268, 271, WK - 3); ent('silver', 269, WK - 4);                                         /* A SILVER on the high shelf over the walk (off the route) */
   ledge('shelf', 290, 293, WK - 3); blower(291, WK - 4, 'tombBlower');
@@ -233,7 +233,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
   guard(415, DP - 1, 412, 418, 'wardenExam', { elite: true, gate: 426 });
   air(420, 422, DP, DP + 1); for (let x = 420; x <= 422; x++) set(x, DP + 2, T.SPIKE); decor.push({ kind: 'scarabpit', x0: 420, x1: 422, y: DP + 2 });
   ledge('shelf', 428, 431, DP - 3); blower(430, DP - 4, 'deepBlower'); seal(429, DP - 4); ledge('shelf', 423, 425, DP - 3);              /* SEAL FOUR, by the blower's shelf */
-  lamp(410, DP - 4); lamp(434, DP - 4);
+  lamp(410, DP - 4); lamp(434, DP - 4); lamp(453, AR - 8); lamp(490, AR - 8); lamp(471, AR - 12);   /* (and the antechamber's three braziers) */
   /* THE LAST SHAFT (RIDE UNDER IT): the landing's plate fires the dart wall across the shaft; the counterweight's own top is its second plate - ride it down
      unspent and the darts fly as you pass them */
   air(440, 441, DP - 5, DP - 1);   /* (over the block: the deep way ends at its shaft; its mate runs in a shaft under the wall, out of reach) */
@@ -250,11 +250,12 @@ export function buildSealedPyramid({ painter, T, TS }) {
   stage.carve(); interiors.push([AX, AX + SM_STAGE.W - 1, AR - SM_STAGE.roof, AR - 1, 'pyAntechamber']);
   for (const l of SM_STAGE.ledges) structures.push({ kind: 'pyLedge', x0: AX + l.x0, x1: AX + l.x1, top: AR - l.dy, floor: AR });
   ent('gate', AX + SM_STAGE.W - 2, AR - 1);
+  decor.push({ kind: 'dartholes', x: AX + SM_STAGE.W - 1, y0: AR - 2, y1: AR - 1 }, { kind: 'bones', x0: AX + 10, x1: AX + 13, y: AR - 1 }, { kind: 'bones', x0: AX + 30, x1: AX + 33, y: AR - 1 }, { kind: 'groove', x0: AX + 1, x1: AX + 38, y: AR - 1 }, { kind: 'eggs', x0: AX + 2, x1: AX + 6, y: AR - 1 });   /* (the antechamber's reaches scored, her eggs by her niche) */
 
   /* THE TRAPS, THE PAIRS AND THE FALSE DOOR as the hands want them (px where it moves) */
   const traps = TRAPS.map(t => JSON.parse(JSON.stringify(t))).concat(stage.traps);
   const moversExtra = [];
-  for (const p of PAIRS) for (const [role, [x, home, other]] of [['a', p.a], ['b', p.b]]) moversExtra.push({ kind: 'lift', pyr: p.id + role, pair: p.id, role, x: x * TS, y: home * TS, y0: home * TS, y1: other * TS, home: home * TS, top: Math.min(home, other) * TS, bot: Math.max(home, other) * TS, w: 32, h: 8, speed: 46, plate: p.plate === role, wheel: p.wheel, hidden: p.id === 'cw3' && role === 'b' });
+  for (const p of PAIRS) for (const [role, [x, home, other]] of [['a', p.a], ['b', p.b]]) moversExtra.push({ kind: 'lift', pyr: p.id + role, pair: p.id, role, x: x * TS, y: home * TS, y0: home * TS, y1: other * TS, home: home * TS, top: Math.min(home, other) * TS, bot: Math.max(home, other) * TS, w: 32, h: 8, speed: 46, plate: p.plate === role, wheel: p.wheel, hidden: p.id === 'cw3' && role === 'b', ride: p.ride === role });
   /* THE REACH MODEL (src/reachcore.js, L.sealedpyramid): a pit a block fills counts as filled, the false door as broken (the great stone is on the road before it) */
   const pitFill = traps.filter(t => t.fill).map(t => [t.zone[0], t.zone[1], t.land - 1, t.land]);
   const masonry = [[0, W - 1, 0, H - 1]];
@@ -263,7 +264,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
     arena: stage.arena, gateAfterBoss: true,
     sealedpyramid: true, caravan: true,   /* caravan: the desert's hands in main.js (the desert machines' runner: the mummy, the scarabs; the sand skins) */
     traps, pairs: PAIRS.map(p => ({ ...p })), falseWalls: FALSE_WALLS.map(w => ({ ...w })), pitFill, vaultDoors, decor, plats, lamps, quicksand, spots: JSON.parse(JSON.stringify(SPOTS)),
-    rigBands: moversExtra.filter(m => !m.hidden).map(m => [Math.floor(m.x / TS), Math.floor(m.x / TS) + 1, Math.floor(m.top / TS) - 1, Math.floor(m.bot / TS) - 1]),   /* (each reachable counterweight is a ride between its stops) */
+    rigBands: moversExtra.filter(m => m.ride).map(m => [Math.floor(m.x / TS), Math.floor(m.x / TS) + 1, Math.floor(m.top / TS) - 1, Math.floor(m.bot / TS) - 1]),   /* (each counterweight a hero RIDES is a ride between its stops: the first and last pairs' blocks that go down under you, the second's pale block that a trap's weight sends up - not their mates, which only move against a load) */
     /* THE TOMB HITS HARD (difficulty v2: weight, not numbers): a blow x this on top of the act's tier, by skin (main.js damagePlayer0 reads L.foeHit) */
     knockHazards: [],   /* (the scarab pits are spike tiles the shared helper reads already: the warden's pit, the pits' lips) */
     foeHit: { dartblower: 2.2, jackal: 4.4, scarab: 3.0 }, foeHp: { dartblower: 2.2, jackal: 2.6, scarab: 1.6 },
