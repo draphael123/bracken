@@ -64,13 +64,16 @@ export function makeDrillHands(ctx) {
     if (!S.told.cab && e.mode === 'idle' && S.t > 3) { S.told.cab = 1; ctx.number(GD.rearX(S) - 20, S.G.laneY[2] - 44, 'ITS CAB IS ARMOURED: JAM ITS GEARS', '#ffd36b'); }
   };
   /* A BLOW ON THE CAB */
-  H.take = (e, dmg) => { if (!S) return dmg; const o = {}; const d = GD.takeBlow(e, S, dmg, o);
+  H.take = (e, dmg) => { if (!S) return dmg; const o = {}; const d = GD.takeBlow(e, S, dmg, o); S.capKind = o.cap || null;
     if (o.word) { e.guardFx = 0.45; e.guardWord = o.word; }
     if (!GD.drillOpen(e)) { e.chipHit = ctx.time(); ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(GD.cabBox(S.G, S).l, S.G.laneY[1] - 20, 1, 4); }
     return d; };
+  /* A BLOW THAT GREW AFTER IT WAS COUNTED (d0 -> d1: the mix-up chain, the riposte, a talent): a jam pays only what its cap has left (claude/capsfix) */
+  H.fix = (e, d0, d1) => { if (!S || S.capKind !== 'jam') return d1; const room = Math.max(0, e.maxHp * GD.DRILL.jamCap - S.openTaken), extra = Math.min(d1 - d0, room); S.openTaken += extra; if (room - extra <= 0.01 && e.open > 0.3) { e.open = 0.3; e.guardFx = 0.45; e.guardWord = 'IT FREES ITS GEARS'; } return d0 + extra; };
   H.interact = () => false;   /* (GREAT DRILL 2: no points mast - the key is the ram) */
   H.barName = e => 'THE GREAT DRILL' + (e.mode === 'jammed' ? '  JAMMED' : S && S.ward > 0 ? '  PLATES UP' : '');
   H.end = e => { if (S) { S.ores = []; S.rocks = []; S.chute = null; S.spray = null; if (S.highDown) { S.highDown = false; highLine(true); } } BOSS_PHASE.greatdrill = 1; if (ctx.L) ctx.L.mcDrillDown = true; };
+  H.fight = () => S;   /* (tools/damage-caps.mjs: the fight's own counters) */
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, R: R(S.R), rear: R(GD.rearX(S)), ores: S.ores.map(o => ({ x: R(o.x), fly: o.fly })), chute: !!S.chute, rocks: S.rocks.length, spray: S.spray ? S.spray.lane : -1, ward: S.ward, n: { ...S.n }, hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING ---------- */

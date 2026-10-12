@@ -249,9 +249,10 @@ export function makeHushHands(ctx) {
   /* A PURSE AN OPENING (the minis' rule, src/boss-greed.js MINI_CAP, kept for her: one opening is never the whole fight): what her back or her rap
      can lose in one opening is GRAN.purse of her; the blow that empties it ends the opening - she knows where you are (her ward, told) */
   const purse = (e, dmg, k, frac) => { if (e.purseLeft === undefined) e.purseLeft = Math.max(1, Math.round(e.maxHp * (frac || GRAN.purse)));
-    const d = Math.round(dmg * k); if (d < e.purseLeft) { e.purseLeft -= d; return k; }
+    e.pursed = true; const d = Math.round(dmg * k); if (d < e.purseLeft) { e.purseLeft -= d; return k; }
     const out = e.purseLeft / Math.max(1, dmg); e.purseLeft = 0; e.modeT = 0; e.purseShut = true; return out; };
   H.granTake = (e, fromX, blow, dmg) => {
+    e.pursed = false;
     /* (every HIT on her comes through here - a sword, a spell, a jet, a shot; a burn's tick does not, and what is on her is on her) */
     if (e.mode === 'sleep' || e.mode === 'wake') return 1;
     if (e.ward > 0 || e.purseShut) { ctx.turned(e, fromX, 'WARDED'); H.n.warded++; return 0; }
@@ -265,6 +266,8 @@ export function makeHushHands(ctx) {
   /* A TURNED BLOW SETS NOTHING ALIGHT: what a parried hit's caller put on her (a pyro's flame) is taken off again (main.js updateGrandmother, each frame) */
   H.granUnburn = e => { if (e.parryAt !== undefined && ctx.time() - e.parryAt < 0.12 && (e.burn || 0) > (e.burnBefore || 0)) e.burn = e.burnBefore || 0; };
   /* an opening over (main.js granWard): the purse is full again for the next */
+  /* A BLOW THAT GREW AFTER IT WAS COUNTED (d0 -> d1: the mix-up chain, the riposte, a broken foe, a hero talent): the purse pays only what it has left, and the blow that empties it shuts the opening (the cap is on what LANDS, claude/capsfix) */
+  H.fix = (e, d0, d1) => { if (!e.pursed || e.purseLeft === undefined) return d1; const extra = Math.min(d1 - d0, Math.max(0, e.purseLeft)); e.purseLeft -= extra; if (e.purseLeft <= 0.5) { e.purseLeft = 0; e.modeT = 0; e.purseShut = true; } return d0 + extra; };
   H.granRefill = e => { e.purseLeft = undefined; e.purseShut = false; };
   /* a lure: she whirls to it and lashes - her back is yours. Only on her walk (a move once started is finished), never in her ward */
   H.granLure = (e, x, what) => {

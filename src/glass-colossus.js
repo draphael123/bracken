@@ -251,8 +251,8 @@ export function takeBlow(e, S, dmg, footY, plunge, out = {}) {
   if (e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'phase') { out.word = 'WARDED'; return 0; }
   if (S.ward > 0) { S.n.warded++; out.word = 'WARDED'; return 0; }
   const capLeft = () => Math.max(0, e.maxHp * COL.openCap - S.openTaken);
-  const opened = (mul) => { const d = Math.min(dmg * mul, capLeft()); S.openTaken += d; if (capLeft() <= 0.01 && e.open > 0.3) { e.open = 0.3; out.word = 'IT SEALS THE CRACK'; } return d; };
-  if (z === 'legs') { if (S.legPurse > 0) { const d = Math.min(dmg * COL.legMul, S.legPurse); S.legPurse -= d; S.n.leg += d; if (S.legPurse <= 0.01) { S.legPurse = 0; out.word = 'THE KNEE CRACKS GLAZE OVER: CLIMB'; } return d; }
+  const opened = (mul) => { const d = Math.min(dmg * mul, capLeft()); S.openTaken += d; out.cap = 'open'; if (capLeft() <= 0.01 && e.open > 0.3) { e.open = 0.3; out.word = 'IT SEALS THE CRACK'; } return d; };
+  if (z === 'legs') { if (S.legPurse > 0) { const d = Math.min(dmg * COL.legMul, S.legPurse); S.legPurse -= d; out.cap = 'leg'; S.n.leg += d; if (S.legPurse <= 0.01) { S.legPurse = 0; out.word = 'THE KNEE CRACKS GLAZE OVER: CLIMB'; } return d; }
     S.n.glazed++; out.word = S.n.glazed < 4 ? 'GLAZED: CLIMB TO ITS CRACKS' : 'GLAZED'; return 0; }
   if (z === 'chest' && e.mode === 'cracked') return opened(plunge ? COL.plungeMul : COL.openMul);
   if (z === 'top' && (e.mode === 'blazing' || e.mode === 'dazzled')) return opened(plunge ? COL.plungeMul : COL.openMul);

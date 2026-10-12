@@ -72,12 +72,18 @@ export function makeColossusHands(ctx) {
   H.interact = P => { if (!S || !ctx.bossActive || !A()) return false; const m = S.mirrors.find(q => Math.abs(q.x - P.x) <= 22 && Math.abs(S.G.floor - P.y) <= 20); if (!m) return false;
     const n = CG.turnMirror(S, m.i); ctx.sfx.clank && ctx.sfx.clank(); const told = 'THE MIRROR: ' + CG.NOTCH_WORD[n]; ctx.number(m.x, S.G.floor - 44, told, '#fff6c8'); return true; };
   /* A BLOW ON IT (src/glass-colossus.js takeBlow): the zone by the striker's feet */
-  H.take = (e, dmg, fromX, plunge) => { if (!S) return dmg; const P = ctx.hero(), o = {}; const d = CG.takeBlow(e, S, dmg, P.y, !!plunge, o);
+  H.take = (e, dmg, fromX, plunge) => { if (!S) return dmg; const P = ctx.hero(), o = {}; const d = CG.takeBlow(e, S, dmg, P.y, !!plunge, o); S.capKind = o.cap || null;
     if (o.word) { e.guardFx = 0.3; e.guardWord = o.word; e.guardY = P.y; }
     if (d <= 0) { e.chipHit = ctx.time(); ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(fromX + (Math.sign(e.x - fromX) || 1) * 10, P.y - 12, -(Math.sign(e.x - fromX) || 1), 4); }
     return d; };
+  /* A BLOW THAT GREW AFTER IT WAS COUNTED (d0 -> d1: the mix-up chain, the riposte, a talent): a crack's opening pays only what its cap has left, a knee only what its purse has (claude/capsfix) */
+  H.fix = (e, d0, d1) => { if (!S || !S.capKind) return d1; let extra = d1 - d0;
+    if (S.capKind === 'open') { extra = Math.min(extra, Math.max(0, e.maxHp * CG.COL.openCap - S.openTaken)); S.openTaken += extra; if (e.maxHp * CG.COL.openCap - S.openTaken <= 0.01 && e.open > 0.3) { e.open = 0.3; e.guardFx = 0.3; e.guardWord = 'IT SEALS THE CRACK'; } }
+    else { extra = Math.min(extra, Math.max(0, S.legPurse)); S.legPurse -= extra; S.n.leg += extra; if (S.legPurse <= 0.01) S.legPurse = 0; }
+    return d0 + extra; };
   H.barName = e => 'THE GLASS COLOSSUS' + (e.mode === 'cracked' ? '  CHEST CRACKED' : e.mode === 'blazing' ? '  SHOULDERS BLAZE' : e.mode === 'dazzled' ? '  DAZZLED' : S && S.ward > 0 ? '  WARDED' : '');
   H.end = e => { if (S) { S.rings = []; S.marks = []; S.wave = null; S.lance = null; S.crack = null; } BOSS_PHASE.colossus = 1; if (ctx.L) ctx.L.gsColossusDown = true; };
+  H.fight = () => S;   /* (tools/damage-caps.mjs: the fight's own counters) */
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, n: JSON.parse(JSON.stringify(S.n)), mirrors: S.mirrors.map(m => m.notch), ward: S.ward, legPurse: Math.round(S.legPurse), hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING (src/redraw/glass_colossus_art.js: its own body; the holds and the shelf-mirrors; the relayed light) ---------- */
