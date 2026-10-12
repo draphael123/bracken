@@ -34,7 +34,7 @@ export const BZ = {
   swing: { base: 1.3, rage: 1.38, frenzy: 1.5, one: 0.8, haste: 1.1, cross: 0.82 },   /* P.atk runs at these multiples (the flurry is QUICK); the cross-chop finisher x cross */
   flurry: { run: 5, dmg: 0.85 },                      /* the run's length (the fifth is the CROSS-CHOP) and each quick chop's share of a full cut */
   rage: { dealt: 0.9, taken: 1.4, brace: 30, hitCap: 14, drainAfter: 2.5, drain: 9, high: 50, chain: 10, absorb: 1.2, absorbCap: 30 },   /* absorb: rage per hp the crossed axes take */
-  frenzy: { t: 8, takeMul: 1.1, hideMul: 1.05, heal: 0.02, priceHeal: 0.05, cryR: 110, haste: 5, mist: 40, long: 3 },   /* heal: of every blow that lands (BLOOD PRICE: priceHeal) */
+  frenzy: { t: 8, takeMul: 1.25, hideMul: 1.1, heal: 0.025, priceHeal: 0.05, cryR: 110, haste: 5, mist: 40, long: 3 },   /* heal: of every blow that lands (BLOOD PRICE: priceHeal) */
   rend: { n: 4, decay: 2.5 },                         /* REND: the n-th frenzied blow on one foe cracks it (counts as a HEAVY); stacks fall off after decay s without one */
   take: { min: 0.25, chip: 0.1, beat: 1 },            /* TAKE IT: a tap holds it up min s; a blow on it costs him chip of it; beat x the shared tap beat */
   brace: { live: 0.3, rec: 0.28, won: 0.1, st: 10, stagger: 0.7, back: 1.2 },   /* (kept for the bots and old saves' readers: braceRec is never set now) */
