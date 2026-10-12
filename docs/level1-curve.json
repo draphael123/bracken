@@ -572,17 +572,17 @@
   "lostPct": 322
  },
  "buriedcity": {
-  "hash": "8a82a66a2e07",
+  "hash": "69eca98c1755",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 9,
+  "hits": 18,
   "deaths": 3,
-  "kills": 0,
-  "lifts": 105,
+  "kills": 6,
+  "lifts": 126,
   "walked": 100,
   "bare": true,
-  "lostPct": 170
+  "lostPct": 233
  },
  "minecart": {
   "hash": "4032e2c3a12e",

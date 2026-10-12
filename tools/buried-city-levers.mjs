@@ -21,13 +21,14 @@ try {
       for (const ph of [1, 2, 3]) for (const side of ['W', 'E']) for (const mode of (ph === 1 ? ['walk'] : ['walk', 'wall'])) {   /* (wall: held into the wall - in phases two and three the bank stops him by the lever) */
         BK.load(idx); BK.state = 'play'; BK.god = true; BK.sim(5);
         for (const e of BK.enemies()) if (!e.boss) e.alive = false;
-        BK.tp(540, 29); for (let i = 0; i < 240; i++) BK.sim(1);
+        const AH = BK.L.arena.hk;   /* (claude/buriedcity2: the throne room from the arena, not columns - the city was rebuilt round it) */
+        BK.tp(AH.sx + 16, AH.R - 1); for (let i = 0; i < 240; i++) BK.sim(1);
         const B = BK.boss, HH = BK.hourglassKingHands(), S = HH && HH.show();
         if (!B || !S) { out.push({ ph, side, mode, err: 'no king' }); continue; }
         for (const [p, k] of [[2, 0.5], [3, 0.2]]) if (ph >= p) { B.hp = B.maxHp * k; for (let i = 0; i < 900 && S.ph < p; i++) BK.sim(1); }   /* through phase two, as a fight goes */
         const sx = S.G.sx, lvc = sx + HK_STAGE.levers[side === 'W' ? 0 : 1], dir = side === 'W' ? -1 : 1;
         /* start on the floor eight tiles in from the lever, keep the king off you for the walk (he still runs his blows) */
-        BK.tp(lvc - dir * 8, 29); clear(); for (let i = 0; i < 20; i++) BK.sim(1);
+        BK.tp(lvc - dir * 8, AH.R - 1); clear(); for (let i = 0; i < 20; i++) BK.sim(1);
         S.glass = S.glassMax * 0.3; S.ward = 0; S.lowSaid = true; if (/Tell$|^pend|^slip|^stall|^turn/.test(B.mode)) { B.mode = 'walk'; B.modeT = 0.5; }
         let f = 0, at = null; const lx = lvc * TS + 8;
         for (; f < 360; f++) { clear(); const d = lx - P().x;
