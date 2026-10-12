@@ -27871,8 +27871,8 @@ function drawSet(set, key, frame, x, y, face, white, sx = 1, sy = 1, alpha = 1, 
   const c = pickFrame(white ? set.white : set, key, frame, face);
   const ax = face < 0 ? c.width - set.ax : set.ax;
   const rg = c.rgo && !white && BZK && set === K && BZK.raging() ? c.rgo : null;   /* (claude/bzart) THE RAGE STATE: red eyes and veins over the baked frame */
-  if (sx === 1 && sy === 1 && alpha === 1 && !rot) { g.drawImage(c, Math.round(x - ax), Math.round(y - set.ay)); if (rg) g.drawImage(rg, Math.round(x - ax), Math.round(y - set.ay)); return; }
-  g.save(); g.globalAlpha = alpha; g.translate(Math.round(x), Math.round(y)); if (rot) g.rotate(rot); g.scale(sx, sy); g.drawImage(c, -ax, -set.ay); if (rg) g.drawImage(rg, -ax, -set.ay); g.restore();
+  if (sx === 1 && sy === 1 && alpha === 1 && !rot) { g.drawImage(c, Math.round(x - ax), Math.round(y - set.ay)); if (rg) { const ox = Math.round(x - ax), oy = Math.round(y - set.ay); for (const [u, v, col] of rg) { g.fillStyle = col; g.fillRect(ox + u, oy + v, 1, 1); } } return; }
+  g.save(); g.globalAlpha = alpha; g.translate(Math.round(x), Math.round(y)); if (rot) g.rotate(rot); g.scale(sx, sy); g.drawImage(c, -ax, -set.ay); if (rg) for (const [u, v, col] of rg) { g.fillStyle = col; g.fillRect(-ax + u, -set.ay + v, 1, 1); } g.restore();
 }
 // THE TELL IS A COLOUR. A creature winding up used to strobe white every other frame, which is the same
 // signal as being hit and reads as neither. A wind-up wears an amber rim - one hue, one meaning, on every

@@ -146,7 +146,7 @@ let SPEARLESS = false;
 let ONEAXE = false;   /* THE BERSERKER's BARE set (his off axe is thrown): every frame, the lead axe only */   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
 function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null, axe = null, axe2 = null }) {
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
-  const BZ = BODY_REF === BZ_BODY, rgo = BZ ? canvas(W + wide, H + top) : null; if (rgo) { rgo[1].translate(0, top); px(rgo[1], BX + dx + 4, BY + dy + hy + 3, '#ff2a1a'); px(rgo[1], BX + dx + 5, BY + dy + hy + 3, '#c01c14'); }   /* (claude/bzart) his RAGE overlay: red eyes and veins, laid over him by drawSet while his rage is up */
+  const BZ = BODY_REF === BZ_BODY, rgo = BZ ? [[BX + dx + 4, top + BY + dy + hy + 3, '#ff2a1a'], [BX + dx + 5, top + BY + dy + hy + 3, '#c01c14']] : null;   /* (claude/bzart) his RAGE overlay: red eyes and veins, laid over him by drawSet while his rage is up */
   if (GEAR >= 1) gearCape(g, BX + dx, BY + dy, legs, plume, GEAR >= 4);   /* (tier 1+: behind everything, the body covers all but the strip at his back) */
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
@@ -162,7 +162,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   if (GEAR) gearFront(g, BX + dx, BY + dy, headTop(body.slice(0, 6)), hy, sho, body);
   if (kite && !kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* on the off arm across his front: under the sword arm, over the tabard */
   if (arm2) line(g, arm2[0] + dx, arm2[1] + dy, arm2[2] + dx, arm2[3] + dy, KP.S, 2);
-  if (BZ && arm2) bzArmInk(g, rgo[1], arm2, dx, dy);   /* THE OFF ARM, drawn only where an ability puts it to work (a throw, a cry): over the kite, under the sword arm */
+  if (BZ && arm2) bzArmInk(g, rgo, arm2, dx, dy, top);   /* THE OFF ARM, drawn only where an ability puts it to work (a throw, a cry): over the kite, under the sword arm */
   /* THE BERSERKER'S HAND AXES (claude/berserker). Given [hand x, hand y, head x, head y, side]: a short oak haft out of the fist (its knob two
      past the hand), and at the end a BEARDED HEAD - a blade three pixels out on the +side, longest at its lower horn, with a bright edge, and a
      stub of spike on the back. side +1 puts the edge forward when the axe is held up (and down when it is held out level). Only the head takes
@@ -181,7 +181,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     if (mine) { const tp = at(len + 1, 2); c.axeTip = [tp[0], tp[1] + top]; } };
   axeAt(ONEAXE ? null : axe2, false);
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
-  if (BZ && arm) bzArmInk(g, rgo[1], arm, dx, dy);
+  if (BZ && arm) bzArmInk(g, rgo, arm, dx, dy, top);
   const gearMask = GEAR >= 3 ? g.getImageData(0, 0, c.width, c.height) : null;   /* the hero so far - no weapon yet: the aura follows HIM */
   axeAt(axe, true);   /* (the lead axe over the lead arm's fist) */
   if (sword) {
@@ -330,7 +330,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   }
   if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : k === 'n' ? WL(KP.s) : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
   outline(c, OUT);
-  if (rgo) c.rgo = rgo[0];
+  if (rgo) c.rgo = rgo;
   gearAura(c, gearMask, (plume | 0) * 2 + (dy | 0) + (dx | 0) + 8);
   { const W0 = sword || staff || maul || spear || stave || cutlass || greatsword || scythe || axe;   /* WHERE THE BLADE WAS DRAWN (hand, tip), kept for the smear pass: the arc between two beats is read off these, not guessed */
     if (W0) { const hd = arm ? [arm[2] + dx, arm[3] + dy] : [W0[0] + dx, W0[1] + dy]; c.wp = { p: [hd[0], hd[1] + top], t: [W0[2] + dx, W0[3] + dy + top] }; } }
@@ -400,7 +400,7 @@ function comboArcs(sh, key, len, extra = {}) {
    The new cuts can then travel overhead; the low blow bends at the knees and keeps its edge at ankle height. */
 const ATTACK_HEADROOM = 24;
 function padHeroFrames(F) {
-  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.wp) out.wp = { p: [c.wp.p[0], c.wp.p[1] + ATTACK_HEADROOM], t: [c.wp.t[0], c.wp.t[1] + ATTACK_HEADROOM] }; if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.rgo) { const [ro, rg] = canvas(c.width, c.height + ATTACK_HEADROOM); rg.drawImage(c.rgo, 0, ATTACK_HEADROOM); out.rgo = ro; } if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
+  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.wp) out.wp = { p: [c.wp.p[0], c.wp.p[1] + ATTACK_HEADROOM], t: [c.wp.t[0], c.wp.t[1] + ATTACK_HEADROOM] }; if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.rgo) out.rgo = c.rgo.map(([x, y, col]) => [x, y + ATTACK_HEADROOM, col]); if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
   for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(c => c ? pad(c) : c) : pad(F[key]);
 }
 /* THE SMEAR (claude/herokeys, Daniel 10-09 art direction: "a rotated sprite, not drawn frames"). A swing is a blade at one angle in one beat and another in the
@@ -4849,8 +4849,8 @@ const BZ_PLUME = [
    w the garters, W the belt and the boots, y the iron studs. */
 const BZ_PAL = { n: '#e8e0c8', N: '#b8ab8a', s: '#f0c49c', S: '#d49a70', k: '#e2a77e', v: '#2a1a14', h: '#c0602e', H: '#7a3a1c', f: '#9a8466', F: '#5e4a36', p: '#3a6ab0', b: '#6a4a2a', B: '#4a3018', w: '#9a8a62', W: '#3e2e20', y: '#a8a8b0', r: '#c0602e' };
 /* (claude/bzart) THE BARBARIAN'S ARMS ARE PAINTED: a blue band of war-paint every third pixel along each bare arm, and (on the rage overlay) a vein between them */
-function bzArmInk(g, g2, a, dx, dy) { const x0 = a[0] + dx, y0 = a[1] + dy, x1 = a[2] + dx, y1 = a[3] + dy, n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0)));
-  for (let i = 1; i < n - 1; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); if (i % 3 === 1) px(g, x, y, KP.p); else if (i % 3 === 0) px(g2, x, y, '#d8301f'); } }
+function bzArmInk(g, rg, a, dx, dy, top) { const x0 = a[0] + dx, y0 = a[1] + dy, x1 = a[2] + dx, y1 = a[3] + dy, n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0)));
+  for (let i = 1; i < n - 1; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); if (i % 3 === 1) px(g, x, y, KP.p); else if (i % 3 === 0) rg.push([x, y + top, '#d8301f']); } }
 /* (claude/bzart) THE HATCHET, the off hand's: a short pale-ash haft with a red cord wound at the grip, and a small straight-bladed head of dark iron - no beard, no spike, a bright edge three long */
 function hatchetAt(g, spec, dx, dy) { const [x0, y0, x1, y1] = spec.slice(0, 4).map((v, i) => v + (i & 1 ? dy : dx)), side = spec[4] || 1;
   const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, len = Math.min(9, len0), ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay * side, qy = ax * side;
@@ -4968,7 +4968,7 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
      growling - two frames, the axes drawn across each other one way and back */
   F.grind = [0, 1].map(i => KF({ dy: 3, legs: 'crouch', legsDy: 3, hy: 1, ...lead(3, 1, 7 + i * 2, -7), ...off(-1, 2, 5 - i * 2, -7, -1), plume: i,
     bits: i ? [o(7, -9, '#ffd36b'), o(9, -10, '#fff6c8'), o(4, -10, '#ffd36b')] : [o(6, -9, '#fff6c8')] }));
-  const flip1 = c => { if (!c) return c; const o = flipX(c); if (c.rgo) o.rgo = flipX(c.rgo); return o; };
+  const flip1 = c => { if (!c) return c; const o = flipX(c); if (c.rgo) o.rgo = c.rgo.map(([x, y, col]) => [c.width - 1 - x, y, col]); return o; };
   const mirror = f => Array.isArray(f) ? f.map(flip1) : flip1(f);   /* (claude/bzart: his rage overlay turns with him) */
   directionalPoses(F, 'axe', { make: KF, extra: off(-4, 4, -10, 0) });   /* (the off axe kept at guard through the rising cut, the low sweep and the air up-slash) */
   const TK = f => KF({ top: ATTACK_HEADROOM, ...f });

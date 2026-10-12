@@ -16,7 +16,7 @@ try {
     const c=document.createElement('canvas');c.width=110+per*(cw+4);c.height=lines*(ch+4)+4;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
     g.fillStyle='#3a4a3a';g.fillRect(0,0,c.width,c.height);let y=2;g.font='12px monospace';
     for(const r of rows){for(let i=0;i<r.f.length;i++){if(i&&i%per===0)y+=ch+4;const x=110+(i%per)*(cw+4),f=r.f[i];
-        g.fillStyle=i%2?'#465a46':'#4e624e';g.fillRect(x,y,cw,ch);g.drawImage(f,0,0,f.width,f.height,x,y+ch-f.height*SC,f.width*SC,f.height*SC);if(r.rage&&f.rgo)g.drawImage(f.rgo,0,0,f.width,f.height,x,y+ch-f.height*SC,f.width*SC,f.height*SC);}
+        g.fillStyle=i%2?'#465a46':'#4e624e';g.fillRect(x,y,cw,ch);g.drawImage(f,0,0,f.width,f.height,x,y+ch-f.height*SC,f.width*SC,f.height*SC);if(r.rage&&f.rgo)for(const [u,v,col] of f.rgo){g.fillStyle=col;g.fillRect(x+u*SC,y+ch-f.height*SC+v*SC,SC,SC);}}
       g.fillStyle='#e8e2cc';g.fillText(r.k+' ('+r.f.length+')',4,y+ch/2);y+=ch+4;}
     return c.toDataURL();})()`);
   const out = join(ROOT, outArg || 'docs/berserker/frames.png'); mkdirSync(dirname(out), { recursive: true });
