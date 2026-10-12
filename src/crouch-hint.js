@@ -12,7 +12,7 @@ export const FIRST = {
   pyro: 'HOLD DOWN TO FLARE.',
   geomancer: 'HOLD DOWN: WHAT HIDES IN THE GROUND SHOWS.',
   reaper: 'HOLD DOWN OVER A BODY TO DRAW ITS BLOOD.',
-  berserker: 'HOLD DOWN TO COIL. A WAY AND LET GO: POUNCE. FULL RAGE: DOWN + C.',
+  berserker: 'DOWN TO COIL, A WAY, LET GO: POUNCE. FULL: DOWN+C.',
 };
 /* the flags the twists' own teaching lines leave: a hero who has one has been told */
 const TOLD = { knight: 'crouchTold_knight', warden: 'crouchTold_warden', pirate: 'crouchTold_pirate', paladin: 'kneelTold', geomancer: 'senseTold', reaper: 'harvestTold', berserker: 'pounceTold' };   /* (claude/berserker2: his crouch is THE COIL now; WORKING UP moved to his idle whetstone, workTold) */
