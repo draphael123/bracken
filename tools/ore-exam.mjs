@@ -68,7 +68,8 @@ console.log('\nFOLLOW-UP: TWIST THE TIP, DEVELOP THE BRAKE, FIVE-ORE VEINS, A CA
 
 /* ---- 0: the elites fix - the gate-holding heavy never stands within two tiles of a checkpoint (tools/elites.mjs's
    own "never at a landing" rule, RULES). This is what was red: a heavy at 455 stood one tile from the check at 454 */
-{ const heavy = L.ents.find(e => e.elite && e.t === 'heavy' && e.gate !== undefined);
+/* (claude/batch87, a stated design change) THE BROKEN ORDER replaced this heavy with THE ORE LANCE (src/order-chapters.js oreroad, replaces: 'heavy', at col 458, same gate) - the rule is about whoever holds the gate, so either body */
+{ const heavy = L.ents.find(e => e.elite && (e.t === 'heavy' || e.t === 'oathlance') && e.gate !== undefined);
   const nearCheck = heavy && L.ents.some(c => c.t === 'check' && Math.abs(c.x - heavy.x) <= 2 && Math.abs(c.y - heavy.y) <= 2);
   ok(!!heavy && !nearCheck, 'the drum yard\'s gate-holding heavy stands clear of every checkpoint' + (heavy ? ` (heavy@${heavy.x},${heavy.y})` : ' - no gated heavy found')); }
 
