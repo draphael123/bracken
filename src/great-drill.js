@@ -26,22 +26,22 @@
 export const DRILL_STAGE = { W: 30, lanes: [0, 3, 6], ceil: 10, chute: 12 };
 export const DRILL = {
   /* GREAT DRILL 3 NUMBERS (claude/deeprails3): a greybox pass - the Sonnet tune lane measures it WITH FLASKS (tools/boss-rates.mjs minecart --profile=human) */
-  hp: 2600, cruise: 150,
+  hp: 2400, cruise: 150,
   homeR: 290, minR: 150, maxR: 360,     /* the rig's rear face, px from the arena's left edge: at home, and the nearest a reverse brings it */
   plateW: 62, cabIn: 30, cabW: 30, plateH: 40, cabH: 40, stackX: 150,
-  contactDmg: 30, contactCd: 1.0, shove: 60,
+  contactDmg: 64, contactCd: 1.0, shove: 60,
   armour: 0.4,                          /* B15: outside the jam a blow on the cab takes this */
-  rockTell: 1.1, rockDmg: 30, rockW: 26,
-  revTell: 1.25, revV: 230, revT: 0.42, revHold: 0.4, revBack: 120, revDmg: 28,
-  oreFirst: 3.5, oreEvery: [8.0, 7.5, 7.0], chuteTell: 1.1, oreDmg: 18, oreFly: 300, orePull: 70,
+  rockTell: 1.1, rockDmg: 64, rockW: 26,
+  revTell: 1.25, revV: 230, revT: 0.42, revHold: 0.4, revBack: 120, revDmg: 62,
+  oreFirst: 3.5, oreEvery: [8.5, 8.0, 7.5], chuteTell: 1.1, oreDmg: 28, oreFly: 300, orePull: 70,
   leverLead: 230, leverReach: 30, leverDump: 0.45,   /* THE CHUTE'S POINTS LEVER: it rises this far ahead of you and comes down the tunnel at cruise; thrown, the chute dumps (this long) into its gears */
-  jamT: 4.6, jamMul: 2.0, jamCap: 0.2, wardT: 3.0, drift: 45,
-  dynTell: 0.5, dynFuse: 1.3, dynR: 24, dynDmg: 24,                    /* DYNAMITE: the arm back (told), then the stick's fuse on your line - it bursts where you are if you hold */
-  lungeTell: 1.0, lungeT: 0.45, lungeDmg: 26, lungeHead: 16,          /* THE SPIN-UP LUNGE: the whine, then its head down your line at head height (px over the line) */
-  chainTell: 0.9, chainFly: 0.3, chainT: 2.2, chainPull: 95, chainDmg: 10,   /* THE GRAPPLE CHAIN: the hook swings, flies; snagged, your cart is dragged at it this fast */
-  collapseTell: 1.25, collapseW: 30, collapseDmg: 28, collapseApart: 150,     /* ROOF COLLAPSE: two spots - where you will be if you hold, and this far ahead of it */
+  jamT: 4.2, jamMul: 2.3, jamCap: 0.15, wardT: 3.0, drift: 45,
+  dynTell: 0.5, dynFuse: 1.3, dynR: 24, dynDmg: 56,                    /* DYNAMITE: the arm back (told), then the stick's fuse on your line - it bursts where you are if you hold */
+  lungeTell: 1.0, lungeT: 0.45, lungeDmg: 60, lungeHead: 16,          /* THE SPIN-UP LUNGE: the whine, then its head down your line at head height (px over the line) */
+  chainTell: 0.9, chainFly: 0.3, chainT: 2.2, chainPull: 95, chainDmg: 20,   /* THE GRAPPLE CHAIN: the hook swings, flies; snagged, your cart is dragged at it this fast */
+  collapseTell: 1.25, collapseW: 30, collapseDmg: 62, collapseApart: 150,     /* ROOF COLLAPSE: two spots - where you will be if you hold, and this far ahead of it */
   phase2: 0.6, phase3: 0.3, phaseT: 2.0,
-  gap: [0.9, 0.75, 0.6],
+  gap: [0.3, 0.22, 0.15],
   chain: { 1: ['dynamite', 'reverse', 'rocks', 'dynamite', 'reverse', 'rocks'], 2: ['lunge', 'dynamite', 'chain', 'reverse', 'lunge', 'chain', 'dynamite'],
     3: ['collapse', 'chain', 'lunge', 'reverse', 'collapse', 'dynamite', 'lunge'] },
 };

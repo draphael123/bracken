@@ -19,15 +19,15 @@
 export const FOREMAN = {
   cols: [822, 852], low: 30, high: 27,   /* the loop: columns, and the two lines' rows */
   homeR: 290, minR: 34, maxR: 420,      /* his cart's place on the loop, px from its left edge: at home, the nearest a ram brings him, the farthest */
-  driftTell: 0.55, driftV: 72, driftVs: [72, 96, 120], awayV: 120,   /* (his drift quickens with each stomp: told by its sparks and its pace) */
-  pickTell: 0.75, pickDmg: 15, pick2: 0.45,          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */
-  ramTell: 0.95, ramV: 250, ramT: 0.5, ramHold: 0.45,
-  boardT: 0.85, lurchTell: 0.75, wardT: 3.0, lurchVy: -300,
+  driftTell: 0.4, driftV: 100, driftVs: [100, 135, 170], awayV: 120,   /* (his drift quickens with each stomp: told by its sparks and its pace) */
+  pickTell: 0.6, pickDmg: 26, pickT: 0.35, pick2: 0.25, picks: [1, 2, 3],          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */
+  ramTell: 0.8, ramV: 250, ramT: 0.5, ramHold: 0.45,
+  boardT: 0.55, lurchTell: 0.75, wardT: 4.5, lurchVy: -300,
   stompK: 0.25, bracedK: 0.04,           /* a stomp takes this share of his health; a landing on him BRACED is turned (a clank, this much - B15) */
   armour: 0.4,                          /* B15: a blade from your cart */
-  bumpDmg: 10, ramDmg: 20, contactCd: 0.9, bumpBack: 56, ramBack: 84,
+  bumpDmg: 15, ramDmg: 32, contactCd: 0.9, bumpBack: 56, ramBack: 84,
   topDy: 15, halfW: 15,                 /* his cart's top (px over the rail) and half its width: the landing that is a STOMP */
-  gap: [2.0, 1.7, 1.4],
+  gap: [0.9, 0.7, 0.55],
   chain: { 0: ['pick', 'drift', 'pick', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'ram', 'drift'], 2: ['ram', 'pick', 'drift', 'pick', 'ram', 'drift'] },
 };
 export const FOREMAN_LINES = { slows: 'HE SLOWS: JUMP ON HIM', slowsAgain: 'HE SLOWS', ram: '!! HE BRAKES HARD: RAM', stomp: 'STOMPED! STRIKE HIM', lurch: '!! HE LURCHES', braced: 'BRACED: HIS SPIKES ARE UP',
@@ -61,7 +61,7 @@ export function stepForeman(S, e, dt, heroes, c) {
     if (ram) S.n.rams++; else S.n.bumps++;
     c.hit(h, ram ? F.ramDmg : F.bumpDmg, ram ? "THE FOREMAN'S RAM" : "THE FOREMAN'S CART"); c.bounce(h, ram ? F.ramBack : F.bumpBack); break; }
   S.mT -= dt;
-  if (S.pick2 > 0) { S.pick2 -= dt; if (S.pick2 <= 0 && near) { c.lob(near); S.n.pick++; } }
+  if (S.pickQ && S.pickQ.length) { S.pickQ = S.pickQ.map(t => t - dt); while (S.pickQ.length && S.pickQ[0] <= 0) { S.pickQ.shift(); if (near) { c.lob(near); S.n.pick++; } } }   /* (a volley: the extra picks a beat apart, each at where you are by then) */
   const hr = near ? near.x - G.x0 : F.homeR - 160;
   switch (S.mode) {
     case 'idle': { const d = F.homeR - S.R; S.R += Math.sign(d) * Math.min(Math.abs(d), F.awayV * dt); S.cd -= dt; if (S.cd > 0 || !near) break;
@@ -73,7 +73,7 @@ export function stepForeman(S, e, dt, heroes, c) {
     case 'driftTell': if (S.mT <= 0) S.mode = 'drift'; break;
     case 'drift': S.R -= (S.dv || F.driftV) * dt; if (S.R <= Math.max(0, hr - 40)) { S.mode = 'away'; }   /* (he drops back all the way past you - even a cart held at the loop's back edge has him under it) */ break;
     case 'away': S.R += F.awayV * dt; if (S.R >= F.homeR) { S.R = F.homeR; S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)]; } break;
-    case 'pickTell': if (S.mT <= 0) { if (near) c.lob(near); if (S.stomps >= 1) S.pick2 = F.pick2;   /* (stomped once, he throws a second pick a beat after the first: off one mark, onto the next is a hit) */ S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.4; } break;
+    case 'pickTell': if (S.mT <= 0) { if (near) c.lob(near); S.pickQ = Array.from({ length: F.picks[Math.min(2, S.stomps)] }, (_, i) => F.pick2 * (i + 1)).slice(0, F.picks[Math.min(2, S.stomps)]);   /* (stomped once, he throws a second pick a beat after the first: off one mark, onto the next is a hit) */ S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.4; } break;
     case 'ramTell': if (S.mT <= 0) { S.mode = 'ram'; S.mT = F.ramT; c.sound('ram'); } break;
     case 'ram': S.R = Math.max(F.minR, S.R - F.ramV * dt); if (S.mT <= 0 || S.R <= F.minR) { S.mode = 'ramHold'; S.mT = F.ramHold; } break;
     case 'ramHold': if (S.mT <= 0) S.mode = 'away'; break;
