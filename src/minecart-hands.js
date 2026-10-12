@@ -106,7 +106,7 @@ export function makeMinecartHands(ctx) {
   const bounceBack = (c, px) => { c.bounce = Math.sqrt(2 * 700 * px); c.v = MC.crawl; };
 
   /* ---------- THE POINTS ---------- */
-  const leverBox = p => { const ts = TS(), x = p.x * ts + 8; return p.hang ? { l: x - 10, r: x + 10, t: p.row * ts - 4, b: p.row * ts + 14 } : { l: x - 10, r: x + 10, t: p.row * ts - 28, b: p.row * ts }; };
+  const leverBox = p => { const ts = TS(), x = p.x * ts + 8; if (p.sw) return { l: x - 18, r: x + 18, t: p.row * ts - 30, b: p.row * ts };   /* (deeprails4) a switch's whole stand takes the blow */ return p.hang ? { l: x - 10, r: x + 10, t: p.row * ts - 4, b: p.row * ts + 14 } : { l: x - 10, r: x + 10, t: p.row * ts - 28, b: p.row * ts }; };
   function throwLever(p, P, how) {
     if (p.flash > 0.25) return false;
     if (p.ore && ctx.questGot() < p.ore) { p.flash = 0.5; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(p.x * TS() + 8, p.row * TS() - 34, 'LOCKED: THE SMELTER WANTS 8 ORE', '#9aa39a'); return true; }
@@ -117,7 +117,7 @@ export function makeMinecartHands(ctx) {
     return true;
   }
   H.interact = P => { if (!M || !H.riding(P)) return false; const ts = TS();
-    const p = M.points.find(q => Math.abs(q.x * ts + 8 - P.x) <= MC.leverReach && (q.hang ? P.y - q.row * ts < 90 && P.y > q.row * ts : Math.abs(P.y - q.row * ts) <= 24));
+    const p = M.points.find(q => Math.abs(q.x * ts + 8 - P.x) <= (q.sw ? MC.swReach : MC.leverReach) && (q.hang ? P.y - q.row * ts < 90 && P.y > q.row * ts : Math.abs(P.y - q.row * ts) <= 24));
     return p ? throwLever(p, P, 'E') : false; };
 
   /* ---------- THE GOBLIN CARTS, THE THROWERS, THE FOREMAN ---------- */

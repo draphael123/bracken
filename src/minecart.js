@@ -60,6 +60,8 @@ export const MC = {
   swingTell: 0.6, swingT: 0.3, swingDmg: 16, swingCd: 2.4,      /* A RIDER WHO SWINGS IN: from the parallel line, his hook up (told), then down across your tub - duck it, or knock him off */
   leapTell: 0.55, leapT: 0.85, leapDmg: 18, leapLead: 40,        /* A GOBLIN WHO LEAPS: told ('!' and his shadow where he lands, ahead of where your cart will be), then he lands on your line */
   leverReach: 30,     /* px: E (or a blow) throws a lever this close */
+  swReach: 46,        /* (deeprails4, Daniel 10-12 'duck + switch too tight') a bridge SWITCH answers E this far off (and a blow lands on its whole stand): with the beam moved
+                         back and the bridge on, a cruising cart has ~0.9 s from the beam to the bridge (was ~0.3) */
   softCrash: 100,
   treadBack: 110, treadAcc: 560,   /* THE DRILL's tunnel: held brake drifts you back at most this fast; the pace eases this quick */
   hold: 1.2,            /* s: at the start and at a station the cart waits this long before it rolls off on its own (RIGHT goes at once) - the first tell is read standing */
@@ -88,13 +90,13 @@ export const rampFlight = v => { const vy = MC.rampV0 + MC.rampK * v; return v *
 export const MINE = { W: 1000, H: 52, base: 30 };
 export const SECTIONS = [['THE LAMP YARD', 0], ['THE DARK DRIFT', 171], ['THE GOBLIN LINE', 310], ['THE GLOW CAVERN', 472], ['THE WRECK', 625], ['THE CRUSHER WORKS', 676], ['THE LIFT', 758], ['THE FLOODED RUN', 786], ['THE SMELTER', 900], ['THE GREAT DRILL', 960]];
 /* THE ON-FOOT STRETCHES (Daniel 10-09: mostly cart, plus two short stretches on foot on big platforms): from x0 the hero is out of the cart, from board he is back in one */
-export const FOOT = [{ id: 'wreck', name: 'THE WRECK', x0: 632, board: 674, derail: true }, { id: 'lift', name: 'THE LIFT', x0: 761, board: 783 }];
+export const FOOT = [{ id: 'wreck', name: 'THE WRECK', x0: 632, board: 674, derail: true }, { id: 'lift', name: 'THE LIFT', x0: 763, board: 783 }];
 /* each mechanic's arc (columns): TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/minecart.mjs */
 export const ARCS = {
   points: { teach: [118, 160], test: [186, 256], remix: [538, 552], exam: [789, 800], boss: [960, 990] },   /* the fallen-in low line; fork A in the dark; the junction at speed in the cave-in; the exam's junction */
-  speed: { teach: [52, 112], test: [314, 338], remix: [592, 624], exam: [813, 877], boss: [960, 990] },     /* the pump gap and the first crusher; THE RAIL BREAKS; the lava ramp; the exam's deep gaps */
+  speed: { teach: [52, 112], test: [314, 338], remix: [592, 624], exam: [813, 882], boss: [960, 990] },     /* the pump gap and the first crusher; THE RAIL BREAKS; the lava ramp; the exam's deep gaps */
   combat: { teach: [76, 90], test: [340, 440], remix: [690, 750], exam: [822, 851], boss: [960, 990] },    /* the miner rammed; the thrower, the rider, the caster, the slow cart, the perched goblin; the works' swinging rider; THE FOREMAN (the mini) */
-  switch: { teach: [146, 160], test: [174, 188], remix: [748, 760], exam: [855, 868], boss: [960, 990] },   /* (deeprails3) DUCK + SWITCH under a low roof: the yard's tunnel, the dark, off the works' deep gap, over the flood; the drill's chute points */
+  switch: { teach: [143, 163], test: [172, 189], remix: [748, 763], exam: [857, 873], boss: [960, 990] },   /* (deeprails3) DUCK + SWITCH under a low roof: the yard's tunnel, the dark, off the works' deep gap, over the flood; the drill's chute points */
 };
 export const ARENA_X = 960;
 /* THE TELLS' LINES (review MF1): every tell() says one of these - five words or fewer (src/hint-lines.js routes them to the hint box) */
@@ -185,11 +187,11 @@ export function buildMinecart({ painter, T, TS }) {
     tell(106, 150, 'POINTS: STRIKE TO STAY HIGH');
     /* DUCK + SWITCH, TAUGHT (deeprails3, Daniel 10-10: "sections where you must DUCK under things and HIT SWITCHES, otherwise you fall"): in the tunnel's low roof a
        beam to duck, then a SWITCH - its bridge is out until it is struck (or E). Under the low roof the cart cannot jump the gap; a fall here is cheap (A10) */
-    tell(124, 147, 'DUCK, THEN STRIKE THE SWITCH');
-    lowRoof(146, 160, t);
-    beam(147, 148, t);
+    tell(124, 145, 'DUCK, THEN STRIKE THE SWITCH');
+    lowRoof(143, 163, t);
+    beam(145, 146, t);
     sign(143, t - 1, 'A SWITCH AHEAD: ITS BRIDGE IS OUT. DUCK THE BEAM, THEN STRIKE THE SWITCH (OR PRESS E).');
-    lever('yardSw', 151, t, 154, 159, t, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
+    lever('yardSw', 151, t, 156, 161, t, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
     sign(116, t - 1, 'POINTS AHEAD. STRIKE THE LEVER, OR PRESS E, TO SET THEM AND STAY HIGH.');
     lever('yard', 125, t, 128, 139, t, 'open', { label: 'THE LOW LINE IS FALLEN IN', retry: [118, t - 1], req: true });
     ground(122, 151, B - 1); fallIn(150, B - 1, [118, t - 1]);             /* under it: the low line (row 29) runs into the fall-in */
@@ -202,11 +204,11 @@ export function buildMinecart({ painter, T, TS }) {
   // ================= 2. THE DARK DRIFT (171-309), row 25: pitch dark - your headlamp's cone; fork A, the hidden lever =================
   B = 25;
   /* DUCK + SWITCH, TESTED (deeprails3): the same in the pitch dark - the beam and the switch show by their own lamps (src/minecart-hands.js holes) */
-  ground(173, 181, B); ground(188, 189, B); ent('coin', 184, B - 2); ent('coin', 185, B - 2);
-  tell(150, 177, 'DARK: DUCK, THEN THE SWITCH');
-  lowRoof(174, 188, B);
-  beam(177, 178, B);
-  lever('driftSw', 180, B, 182, 187, B, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
+  ground(173, 182, B); ground(189, 189, B); ent('coin', 184, B - 2); ent('coin', 185, B - 2);
+  tell(150, 174, 'DARK: DUCK, THEN THE SWITCH');
+  lowRoof(172, 189, B);
+  beam(174, 175, B);
+  lever('driftSw', 180, B, 183, 188, B, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
   { const t = rise(190, B, 4);                                              /* FORK A: up to the high line (row 21) */
     ground(198, 262, B);                                                    /* the low line under it */
     rail(198, 217, t); rail(222, 231, t); rail(240, 252, t);                /* the high line: a gap, then a PUMP GAP (miss it and you drop to the low line, at its gate), ore, bats in the jumps, an archer at the landing */
@@ -316,11 +318,11 @@ export function buildMinecart({ painter, T, TS }) {
   block(737, 742, B - 7, B - 7); foe('tippler', 740, B - 8, { squad: 'wTip' });
   foe('bat', 739, B - 4, { squad: 'wGapBat' });
   /* DUCK + SWITCH, REMIXED (deeprails3): off the deep gap, under the works' low roof - a beam, the switch, its bridge (a cheap fall: the exam is the gap) */
-  ground(744, 753, B); ground(760, 760, B);
-  tell(732, 761, 'BRIDGE OUT, THEN THE LIFT');
-  lowRoof(748, 760, B);
+  ground(744, 756, B);
+  tell(729, 763, 'BRIDGE OUT, THEN THE LIFT');
+  lowRoof(748, 763, B);
   beam(749, 750, B);
-  lever('worksSw', 752, B, 754, 759, B, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
+  lever('worksSw', 755, B, 757, 762, B, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
   /* A RIDER WHO SWINGS IN (deeprails3): a goblin on the parallel line alongside you, his hook up (told '!') - he swings it down across your tub: duck it, or knock him off first */
   rail(718, 734, B - 3); rider('miner', 718, B - 3, 6, { squad: 'wSwing', swing: true });
   crusher('w3', 728, B, 2.0, 0.7, 0.5);
@@ -328,8 +330,8 @@ export function buildMinecart({ painter, T, TS }) {
   rail(720, 734, B - 6); ore(724, B - 8); ent('silver', 730, B - 9); foe('bat', 727, B - 10, { squad: 'wHighBat' });
 
   // ================= 7. THE LIFT (758-785): ON FOOT - the line ends at a cage lift; up ten rows, a cart waits at the top =================
-  decor.push({ kind: 'buffer', x: 762, row: B, soft: true });               /* (the line's end: you step out - no crash) */
-  ground(761, 764, B);
+  decor.push({ kind: 'buffer', x: 764, row: B, soft: true });               /* (the line's end: you step out - no crash) */
+  ground(763, 764, B);
   ground(765, 767, B);                                                      /* (the cage rests on the yard floor: no pit under it) */
   ent('mover', 765, B, { len: 3, vert: true, rise: 10, period: 5.6 });      /* THE CAGE LIFT: down at the yard, up at the high line, and down again */
   decor.push({ kind: 'lift', x0: 765, x1: 767, y0: B - 10, y1: B });
@@ -359,25 +361,27 @@ export function buildMinecart({ painter, T, TS }) {
      places on it until he is down. His ARMOURED cart shuttles on your line ahead of you. JUMP ON HIS CART as he drops back (or as he rams
      you) and STOMP him - a third of him; he LURCHES you back into your own cart (the loop has no gap: never an untold death). Blades from your cart clank (x0.4) */
   tell(807, 830, 'THE FOREMAN: JUMP ON HIM');
-  ground(821, 861, B);   /* (one line in the loop: a high line over it caught every jump - the jump goes ON him) */
+  ground(821, 866, B);   /* (one line in the loop: a high line over it caught every jump - the jump goes ON him) */
   sign(821, B - 1, 'THE FOREMAN. HIS CART IS ARMOURED: JUMP ON IT AND STOMP HIM.');
   foe('brute', FM.cols[0] + Math.round(FM.homeR / TS), B - 1, { squad: 'foreman', mini: true, wKey: 'foreman', ride: { foreman: true, row: B, trig: 816, at: FM.cols[0] + Math.round(FM.homeR / TS), off: 0 } });
   ent('mcgobcart', FM.cols[0] + Math.round(FM.homeR / TS), B - 1, {});
   for (let y = B - 9; y <= B - 1; y++) set(FM.cols[1], y, T.PORT);        /* THE WAY ON: shut while he rides (his mini gate - src/main.js miniEnd opens it) */
+  /* STATION SIX (deeprails4, Daniel 10-12 live: 'redoing him after a later death is the pain'): RIGHT AFTER THE FOREMAN's gate - a death in the duck + switch exam,
+     the last deep gap or at the drill comes back here, never before him (it was at 903, past the exam: one shrine moved, not one added - A10b) */
+  station(854);
   /* DUCK + SWITCH, THE EXAM (deeprails3): out of his loop, under a low roof - a beam, the switch, its bridge over the black water (a REAL death here: told), then
      straight off it into the last deep gap: duck, switch, pump, jump */
-  tell(835, 870, 'DUCK, SWITCH, PUMP, JUMP');
-  lowRoof(855, 868, B);
-  beam(857, 858, B);
-  lever('examSw', 860, B, 862, 867, B, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
-  ground(868, 869, B);
-  boostGap(870, B);
-  ground(878, 899, B); rail(882, 894, B - 3);
-  foe('miner', 886, B - 1, { squad: 'exMiner' }); block(890, 894, B - 6, B - 6); foe('tippler', 892, B - 7, { squad: 'exTip' });
+  tell(835, 875, 'DUCK, SWITCH, PUMP, JUMP');
+  lowRoof(857, 873, B);
+  beam(859, 860, B);
+  lever('examSw', 865, B, 867, 872, B, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
+  ground(873, 874, B);
+  boostGap(875, B);
+  ground(883, 899, B); rail(885, 895, B - 3);
+  foe('miner', 890, B - 1, { squad: 'exMiner' }); block(890, 894, B - 6, B - 6); foe('tippler', 892, B - 7, { squad: 'exTip' });
 
   // ================= 9. THE SMELTER (900-959), row 30: 8 ore open its points (silver three); THE BORE =================
   ground(900, 914, B); ground(938, 959, B);
-  station(903);                                                             /* STATION SIX (after the exam) */
   tell(890, 912, 'THE SMELTER WANTS 8 ORE');
   sign(908, B - 1, 'THE SMELTER: CARRY 8 ORE AND ITS POINTS WILL OPEN.'); rail(900, 911, B - 3); foe('bat', 918, B - 5, { squad: 'smBat' });
   lever('smelter', 912, B, 915, 919, B, 'set', { ore: 8, label: 'THE SMELTER: 8 ORE OPEN THESE POINTS' });

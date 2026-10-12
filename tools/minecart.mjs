@@ -143,9 +143,17 @@ ok([...kinds].every(t => ['archer', 'gobmage', 'tippler', 'miner', 'brute', 'sap
     let pit = true; for (let x = p.x0; x <= p.x1; x++) for (let y = p.prow + 1; y < L.H; y++) if (stand(at(x, y))) pit = false; ok(pit, p.id + ': nothing under its bridge but the drop');
     ok(L.mcBeams.some(b => b.row === p.prow && b.x0 < p.x && p.x - b.x1 <= 5), p.id + ': a beam to duck just before its switch');
     ok(toldFor(p.x) || T_.some(t => t.x < p.x && t.at >= p.x - 6 && /SWITCH|BRIDGE/.test(t.text)), p.id + ': told before it');
+    /* (deeprails4, Daniel 10-12 'duck + switch timing too tight'): from the beam's far edge to the bridge is room to unduck and throw it - >= 0.6 s at cruise, and E
+       reaches a switch from MC.swReach (>= 44 px); a held brake (a crawl) is always more */
+    { const b = L.mcBeams.filter(q => q.row === p.prow && q.x1 < p.x).sort((q, r) => r.x1 - q.x1)[0], room = (p.x0 - (b.x1 + 1)) * TS;
+      ok(room / MC.cruise >= 0.6, p.id + ': ' + room + ' px (' + (room / MC.cruise).toFixed(2) + ' s at cruise) from its beam to its bridge'); }
     const exam = L.mcExam.some(([a, b]) => p.x0 >= a && p.x1 <= b); ok(p.x0 >= a3[0] ? exam : !exam, p.id + (exam ? ': in the exam - a fall is a REAL death (told)' : ': a fall here is cheap (A10)')); } }
+ok(MC.swReach >= 44 && MC.swReach > MC.leverReach, 'a SWITCH answers E from ' + MC.swReach + ' px (deeprails4: wider than a points lever)');
 /* THE FOREMAN (deeprails3: THE MINI, src/foreman.js) */
-{ const fm = L.ents.find(e => e.mini && e.ride && e.ride.foreman), M_ = L.mini, F = FMG.FOREMAN, G = FMG.geom(TS);
+{ { const st = L.ents.filter(e => e.t === 'check').map(e => e.x), F0 = FMG.FOREMAN.cols[1], ex = L.mcPoints.find(p => p.id === 'examSw');
+    ok(st.some(x => x > F0 && x <= F0 + 4 && x < ex.x - 6), 'a STATION right after the Foreman gate (' + F0 + '), before the exam duck + switch (deeprails4, Daniel 10-12): a later death never redoes him');
+    ok(!st.some(x => x > F0 + 4 && x < 960), 'and none between it and the drill (one shrine moved, not added: A10b)'); }
+ const fm = L.ents.find(e => e.mini && e.ride && e.ride.foreman), M_ = L.mini, F = FMG.FOREMAN, G = FMG.geom(TS);
   ok(fm && fm.t === 'brute' && M_ && M_.boss === 'brute' && M_.name === 'THE FOREMAN' && !fm.elite, 'THE FOREMAN is the level\'s MINI (a goblin captain - a brute - in an armoured cart), no longer an elite');
   ok(M_.x0 === G.x0 && M_.x1 === G.x1 && L.mcExam.some(([a, b]) => F.cols[0] >= a && F.cols[1] <= b), 'his loop (' + F.cols.join('-') + ') is the mini\'s room, inside the flooded run\'s exam');
   for (let x = F.cols[0]; x < F.cols[1]; x++) ok(at(x, F.low) === T.SOLID && [1, 2, 3, 4].every(d => at(x, F.low - d) === T.AIR), 'the loop at ' + x + ': its line solid (no gap: a lurch never drops you), nothing over it to catch a jump (the jump goes ON him)');
