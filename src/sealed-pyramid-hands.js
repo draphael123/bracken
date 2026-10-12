@@ -24,7 +24,7 @@ import { STUCK_HANDS } from './stuck-spots.js';
 import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';
 import { MUMMY } from './mummy.js';
 
-export const TRAP_DELAY = { block: 0.35, darts: 0.3, stone: 0.25 };
+export const TRAP_DELAY = { block: 0.25, darts: 0.3, stone: 0.25 };
 export const TRAP_DARTS = { volley: 0.9, every: 0.15 };
 export const TRAP_STONE = { v: 170, vGreat: 150, vArena: 320, r: 14, dropT: 0.3 };
 export const TRAP_BLOCK = { fallT: 0.28, lie: 0.9, haul: 1.1 };
@@ -122,7 +122,7 @@ export function makeSealedPyramidHands(ctx) {
     else if (t.kind === 'stone') stepStone(t, dt, speedUp);
   }
   function fire(t) { const d = t.def; t.st = 'firing'; t.hitKeys.clear(); K.n.fired++; K.n.byTrap[t.id] = (K.n.byTrap[t.id] || 0) + 1; t.key = t.id + ':' + K.n.fired;
-    if (t.kind === 'block') { t.vy = 0; t.phase = 'fall'; ctx.sfx.thud && ctx.sfx.thud(); }
+    if (t.kind === 'block') { t.vy = 300; t.phase = 'fall'; ctx.sfx.thud && ctx.sfx.thud(); }   /* (it is let go, not dropped: a block from the antechamber's high roof lands inside her stagger) */
     if (t.kind === 'darts') { t.volley = TRAP_DARTS.volley; t.dartT = 0; ctx.sfx.bow ? ctx.sfx.bow() : ctx.sfx.slash && ctx.sfx.slash(); }
     if (t.kind === 'stone') { t.phase = d.drop ? 'drop' : 'roll'; t.vis = true; t.y = d.drop ? (d.drop[0]) * TS() : d.row * TS(); t.vy = 0; ctx.sfx.boom ? ctx.sfx.boom() : ctx.sfx.thud && ctx.sfx.thud(); }
   }
@@ -131,7 +131,7 @@ export function makeSealedPyramidHands(ctx) {
     const d = t.def, ts = TS();
     if (t.phase === 'fall') {
       const m = d.on ? moverOf(d.on) : null, floor = m ? m.y : (d.land + 1) * ts;
-      t.vy += 2200 * dt; t.y += t.vy * dt;
+      t.vy += 3000 * dt; t.y += t.vy * dt;
       if (t.y + t.h >= floor) { t.y = floor - t.h; t.phase = 'lie'; t.t = d.on ? d.reset : TRAP_BLOCK.lie; ctx.shake(d.on ? 3 : 4); ctx.sfx.thud && ctx.sfx.thud(); ctx.burst(t.x + t.w / 2, floor, 10, ['#d8c8a0', '#a89070'], 70, 0.6);
         strike(t, { l: d.zone[0] * ts, r: (d.zone[1] + 1) * ts, t: t.y - 2, b: floor + 2 }, t.key, 'THE FALLING BLOCK');
         if (d.fill) { fill(t); t.phase = 'filled'; return; }
@@ -215,7 +215,7 @@ export function makeSealedPyramidHands(ctx) {
     if (v.yank) { ctx.moveBody(P, -Math.sign(P.x - e.x || -v.yank) * MUMMY.yank, 0); }
     if (v.grab) { P.pyGrab = { e, t: MUMMY.hold, tick: PYS.grabSqueeze }; K.n.grabs++; number(P.x, P.y - 30, 'IT HAS YOU: STRIKE IT', '#ff6b6b'); } };
   /* a mummy struck lets go; burning, its linen takes a blow x PYS.linenMul */
-  H.takeMummy = (e, dmg) => { for (const pp of ctx.players) if (pp.pyGrab && pp.pyGrab.e === e) { pp.pyGrab = null; K.n.torn++; number(pp.x, pp.y - 30, 'YOU TEAR FREE', '#8fd160'); }
+  H.takeMummy = (e, dmg) => { for (const pp of ctx.players) if (pp.pyGrab && pp.pyGrab.e === e) { pp.pyGrab = null; K.n.torn++; number(pp.x, pp.y - 30, 'YOU TEAR LOOSE OF ITS GRIP', '#8fd160'); }
     return e.burn > 0 ? dmg * PYS.linenMul : dmg; };
   function stepGrabs(dt) { for (const pp of ctx.players) { const g = pp.pyGrab; if (!g) continue; const e = g.e;
       if (pp.dead || !e.alive || (e.st && e.st.mode === 'burning') || (g.t -= dt) <= 0) { pp.pyGrab = null; continue; }

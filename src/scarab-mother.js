@@ -28,8 +28,8 @@ export const SM = {
   hp: 2900, w: 40, h: 24, markH: 44,
   openMul: 1.8, openCap: 0.1, openT: 3.4, wardT: 3.0, wardMul: 0.4, resist: 0.45, trapBite: { block: 0.035, darts: 0.02, stone: 0.04 },
   p2: 0.6, p3: 0.28,
-  walk: 40, back: 66, keep: 70, gap: [0.45, 0.35, 0.25],
-  chargeTell: 0.9, chargeV: 270, short: 56, skid: 0.75, dazed: 0.9,
+  walk: 40, back: 66, backT: 0.9, keep: 70, gap: [0.45, 0.35, 0.25],
+  chargeTell: 0.9, chargeV: 270, short: 56, skid: 0.95, dazed: 1.0,
   snapTell: 0.6, snapT: 0.22, snapR: 44, snapRange: 62,
   spitTell: 0.75, spitFly: 0.55, spitR: 16, puddleT: 2.4, puddleR: 18, puddleTick: 0.5,
   burrowTell: 1.0, burrowT: 1.2, burrowV: 150, burrowR: 24, burrowUp: 0.4,
@@ -159,7 +159,7 @@ function nextMove(e, S, P, c) {
   const m = S.script[S.step++], dx = P.x - e.x, ad = Math.abs(dx), G = S.G;
   e.face = Math.sign(dx) || e.face;
   switch (m) {
-    case 'charge': if (ad < SM.keep) { setMode(e, 'back', 1.2); return; } S.n.charges++; tell(e, S, c, 'chargeTell', SM.chargeTell); return;
+    case 'charge': if (ad < SM.keep) { setMode(e, 'back', SM.backT); return; } S.n.charges++; tell(e, S, c, 'chargeTell', SM.chargeTell); return;
     case 'snap': if (ad > SM.snapRange) { setMode(e, 'walk', 0.8); S.step--; if (ad > 160) { S.step++; } return; } S.n.snaps++; tell(e, S, c, 'snapTell', SM.snapTell); return;
     case 'spit': S.n.spits++; tell(e, S, c, 'spitTell', SM.spitTell); S.mark = { x: clampX(G, P.x), k: 'spit' }; return;
     case 'burrow': S.n.burrows++; tell(e, S, c, 'burrowTell', SM.burrowTell); return;

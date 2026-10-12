@@ -119,7 +119,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
   for (const [x0, x1, top] of [[24, 26, 22], [42, 44, 16]]) { air(x0, x1, top, top); quicksand.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: top * TS }); }   /* drifts on two steps: the storm piles the sand against the courses */
   sign(12, 25, 'THE STORM SHOVES YOU DOWN THE STEPS. HOLD BLOCK TO BRACE.');
   ledge('cornice', 3, 7, 25); ledge('cornice', 14, 18, 21); ledge('cornice', 27, 31, 17); ledge('cornice', 38, 42, 13);   /* broken courses: a cornice a man's reach over the steps (a second height up the face) */
-  jackal(30, 19, 'faceJackals'); jackal(36, 17, 'faceJackals');
+  jackal(30, 19, 'faceJackal1'); jackal(36, 17, 'faceJackal2');
   foe('vulture', 50, 8, 'faceVulture');
   ledge('cornice', 56, 60, 11); seal(58, 10);                                                            /* SEAL ONE, on a broken cornice of the summit (a climb off the route) */
   decor.push({ kind: 'capstone', x0: 62, x1: 66, y: 13 }, { kind: 'scarabrelief', x0: 71, x1: 75, y: 13 });   /* (B8) the first of HER: a scarab carved by the robbers' hole */
@@ -240,14 +240,14 @@ export function buildSealedPyramid({ painter, T, TS }) {
   ent('tplate', 436, DP - 1, { trap: 'shaft' }); ent('dartwall', 439, AR - 2, { trap: 'shaft' }); ent('tplate', 440, DP - 1, { trap: 'shaft', mover: 'cw3a' });
   sign(434, DP - 1, 'SPEND THE DART WALL FROM THE PLATE. THEN RIDE THE BLOCK DOWN UNDER IT.');
   decor.push({ kind: 'dartholes', x: 439, y0: AR - 3, y1: AR - 2 }, { kind: 'cwheel', x: 441, y: DP - 4 });
-  air(442, 451, AR - 4, AR - 1);
+  air(442, 451, AR - 4, AR - 1); interiors.push([442, 451, AR - 4, AR - 1, 'pyDeep']);
   ent('check', 448, AR - 1);                                                                             /* CHECKPOINT FOUR, before her (A10b) */
   decor.push({ kind: 'scarabrelief', x0: 446, x1: 451, y: AR - 3 });
 
   // ================= THE SCARAB MOTHER's ANTECHAMBER (src/scarab-mother.js), at the foot of the tomb =================
   const AX = 452;
   const stage = stageScarabMother({ set, block, ent, air }, T, TS, AX, AR);
-  stage.carve();
+  stage.carve(); interiors.push([AX, AX + SM_STAGE.W - 1, AR - SM_STAGE.roof, AR - 1, 'pyAntechamber']);
   for (const l of SM_STAGE.ledges) structures.push({ kind: 'pyLedge', x0: AX + l.x0, x1: AX + l.x1, top: AR - l.dy, floor: AR });
   ent('gate', AX + SM_STAGE.W - 2, AR - 1);
 

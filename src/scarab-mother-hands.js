@@ -63,7 +63,7 @@ export function makeScarabMotherHands(ctx) {
   H.update = (e, dt) => {
     if (!S || !e.alive) return; const Ar = A(); if (!Ar) return;
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, e.y - 70, 'THE SCARAB MOTHER, QUEEN OF THE BROOD', '#ffd36b'); }
-    if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 120, 'HER SHELL TURNS BLADES: LURE HER INTO A REACH AND TREAD ITS PLATE', '#ffd36b'); }
+    if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 120, 'LURE HER UNDER A TRAP, THEN TREAD ITS PLATE', '#ffd36b'); }
     SMM.stepScarabMother(e, S, dt, heroes(), world(e));
     e.phase = S.ph;
   };
