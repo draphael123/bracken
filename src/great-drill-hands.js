@@ -107,7 +107,7 @@ export function makeDrillHands(ctx) {
   };
   /* THE RIG: its rear (the gear housing, the gears, the deck and the cab with its goblin), its engine and stack, its tracks, the bit drilling the face ahead */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; const G = S.G, rx = R(GD.rearX(S) - cx), jam = GD.drillOpen(e), ward = S.ward > 0, lanes = G.laneY.map(v => R(v - cy));
-    MCA.rig(g, rx, lanes, R(G.ceilY - cy), { jam, ward, hurt: (e.hurtT || 0) > 0 || (e.flash || 0) > 0, rev: e.mode === 'revTell' || e.mode === 'reverse', spray: S.spray ? { lane: S.spray.lane, on: S.spray.on, k: S.spray.on ? 1 : 1 - S.spray.t / DRILL.sparkTell } : null,
+    MCA.rig(g, rx, lanes, R(G.ceilY - cy), { jam, ward, hurt: (e.hurtT || 0) > 0 || (e.flash || 0) > 0, rev: e.mode === 'revTell' || e.mode === 'reverse',
       moving: fighting() && !jam, scroll: S.scroll || 0, spray: null, plateW: DRILL.plateW, plateH: DRILL.plateH, cabIn: DRILL.cabIn, cabW: DRILL.cabW, cabH: DRILL.cabH, stackX: DRILL.stackX, ph: S.ph }, time);
     if (rx > -40 && rx < ctx.VW() + 40) txt('GEARS', rx + 8, lanes[0] + 10, jam ? '#ffd36b' : '#ff6b6b', 'center', 5); };
   /* OVER EVERYTHING: the tells (the reverse, the sparks' cone) and THE READ (the jam's outline and timer, the words) */

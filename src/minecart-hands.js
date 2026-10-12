@@ -229,7 +229,7 @@ export function makeMinecartHands(ctx) {
   H.foreman = () => (M && M.fm ? M.fm : null);
   function fmUnpin(pp, how) { if (!pp || !pp.mcBoard) return; const S = M.fm && M.fm.S, spot = pp.mcBoard.spotX; pp.mcBoard = null;
     ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return; const c = cartOf(P); P.ground = false; P.onMover = null;
-      if (how === 'lurch') { P.vy = FMG.FOREMAN.lurchVy; bounceBack(c, Math.max(0, P.x - spot)); c.v = MC.cruise; M.n.fmThrown = (M.n.fmThrown || 0) + 1; ctx.number(P.x, P.y - 34, 'THROWN OFF: BACK IN YOUR CART', '#8fd160'); }
+      if (how === 'lurch') { P.vy = FMG.FOREMAN.lurchVy; P.inv = Math.max(P.inv || 0, 0.8); bounceBack(c, Math.max(0, P.x - spot)); c.v = MC.cruise; M.n.fmThrown = (M.n.fmThrown || 0) + 1; ctx.number(P.x, P.y - 34, 'THROWN OFF: BACK IN YOUR CART', '#8fd160'); }
       else if (how === 'down') { P.vy = -200; c.v = MC.cruise; }
       if (S && how === 'jump') { S.n.jumpedOff++; c.v = MC.cruise; } }); }
   function fmStep(dt, P0) {
@@ -253,7 +253,7 @@ export function makeMinecartHands(ctx) {
         M.stomping = true; try { ctx.hitFoe(e, d); } finally { M.stomping = false; } ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.burst(cart.x, G.topY, 16, ['#ffd36b', '#ffffff', '#d89a5a'], 110, 0.5); },
       board: (h, off) => { h.pp.mcBoard = { off, spotX: S.board ? S.board.spotX : cart.x - 40 }; pinOn(h.pp); },
       release: (b, how) => { fmUnpin(b.pp, how); },
-      lob: h => ctx.asPlayer(h.pp, () => { const P = ctx.hero(); lob(cart, P, H.riding(P) ? P.vx : 0, "THE FOREMAN'S PICK", MC.throwDmg); }),
+      lob: h => ctx.asPlayer(h.pp, () => { const P = ctx.hero(); lob(cart, P, H.riding(P) ? P.vx : 0, "THE FOREMAN'S PICK", FMG.FOREMAN.pickDmg); }),
       number: (x, y, t, col) => ctx.number(x, y, t, col),
       sound: k => { const s = ctx.sfx; try { ({ stomp: () => { (s.heavy || s.thud)(); s.clank && s.clank(); }, clank: () => s.clank && s.clank(), brake: () => s.screech && s.screech(), tell: () => s.tell && s.tell(false), tellHard: () => s.tell && s.tell(true), ram: () => { (s.heavy || s.thud)(); s.screech && s.screech(); }, lurch: () => (s.heavy || s.thud)() }[k] || (() => {}))(); } catch {} },
       chip: (d, word) => { M.stomping = true; try { ctx.hitFoe(e, d); } finally { M.stomping = false; } fmWord(word); } }; }

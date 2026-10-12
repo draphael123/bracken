@@ -213,7 +213,7 @@ export function buildMinecart({ painter, T, TS }) {
     tell(176, 199, 'FORK: ORE UP, CRUSHERS DOWN');
     sign(196, t - 1, 'FORK: HIGH LINE IS QUICK, WITH ORE AND ARROWS. STRIKE THE POINTS FOR LOW: CRUSHERS, A GATE.');
     lever('forkA', 199, t, 202, 213, t, 'set', { label: 'HIGH: QUICK, ORE, ARROWS / LOW: CRUSHERS, A GATE' });
-    ore(220, t - 3); foe('bat', 233, t - 4, { squad: 'forkABat' }); ore(234, t - 3); foe('bat', 219, t - 4, { squad: 'forkABat2' });
+    ore(220, t - 3); foe('bat', 233, t - 4, { squad: 'forkABat' }); foe('bat', 206, t - 4, { squad: 'forkABat3' });   /* (deeprails3: a bat over the fork's first gap - the screen was empty) */ ore(234, t - 3); foe('bat', 219, t - 4, { squad: 'forkABat2' });
     foe('archer', 243, t - 1, { squad: 'forkAArcher' }); foe('archer', 228, t - 1, { squad: 'forkAArcher2' });   /* (two on the dark high line: their lamps are all you see of them - pump and ram, or strike) */
     crusher('forkA', 214, B, 2.4, 0.9, 0.6); crusher('forkA2', 228, B, 2.2, 0.8, 1.5);
     gate('forkA', 238, B, 3.2, 1.5, 0); }
@@ -303,6 +303,7 @@ export function buildMinecart({ painter, T, TS }) {
   // ================= 6. THE CRUSHER WORKS (676-757), row 37: REMIX - speed, and a rider pacing you =================
   tell(676, 698, 'TWO CRUSHERS, OFF THE BEAT');
   sign(677, B - 1, 'THE CRUSHER WORKS. EVERY CRUSHER HAS ITS BEAT.');
+  foe('miner', 688, B - 1, { squad: 'wkMiner' });                        /* (deeprails3) a miner on the line off the boarding: ram him at full pump (the ram remixed before the crushers) */
   crusher('w1', 698, B, 2.2, 0.8, 0); crusher('w2', 706, B, 2.2, 0.8, 1.1);   /* a pair, off the beat: one brake, one go */
   ground(677, 715, B); rail(700, 712, B - 3);
   tell(695, 722, 'A GATE: WATCH ITS GAUGE');
