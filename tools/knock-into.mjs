@@ -10,6 +10,7 @@
 //   anti     THE SPIKE GOBLIN bristles (told) with a hero over him and only then bites a plunge - unbristled he is plunged like anyone;
 //            a THORNED elite's plunge never counts toward his mash, lands while his spines are down, is SPIKED while they are up, and his
 //            spines draw on his body; THE SPITTER sidesteps a plunge and stands OFF BALANCE, and a cut then finishes it
+//   (claude/damagepct) the throw distance is the foe's DAMAGE % now: every foe here is set at 70% - the old fixed throw (tools/damage-pct.mjs asks the curve)
 // node tools/knock-into.mjs [pure,throw,hazard,anti]      (PORT from the environment)
 import assert from 'node:assert/strict';
 import * as KI from '../src/knock-into.js';
@@ -80,7 +81,7 @@ if (WANT.some(w => w !== 'pure')) {
         for(const x of (o.pit||[]))for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=0;
         L.pools=[];BK.fires().length=0;BK.props().length=0;BK.tp(10,21);BK.sim(60);const P=BK.P;P.hp=P.maxHp;P.inv=0;P.st=P.maxSt;P.face=1;P.combo=0;P.riposteT=0;
         BK.knockInto().reset();
-        return foes.map(([t,dx,eo])=>{BK.spawnEnt({t,x:(P.x+dx)/16,y:21,...(eo||{})});const e=BK.enemies().at(-1);e.hp=e.hp0=(eo&&eo.hp)||5000;e.cd=99;e.elT=99;e.face=-1;return e;});};
+        return foes.map(([t,dx,eo])=>{BK.spawnEnt({t,x:(P.x+dx)/16,y:21,...(eo||{})});const e=BK.enemies().at(-1);e.hp=e.hp0=(eo&&eo.hp)||5000;e.cd=99;e.elT=99;e.face=-1;e.dmgPct=o.pct!==undefined?o.pct:70;return e;});};   /* (claude/damagepct) THE THROW IS THE FOE'S DAMAGE % NOW (src/damage-pct.js): these foes stand at 70%, where a throw goes as far as the old fixed one did (knockMul ~1) - tools/damage-pct.mjs asks 0% (a shove) against a launch */
       window.__words=()=>BK.knockInto().stats.said.concat(BK.textLab.nums().map(n=>n.txt).filter(t=>typeof t==='string'));
       window.__fly=(e,n=90)=>{let maxK=0;const x0=e.x;for(let i=0;i<n;i++){BK.sim(1);if(e.alive)maxK=Math.max(maxK,Math.abs(e.x-x0));}return Math.round(maxK);};
       return 1;})()`);
