@@ -142,7 +142,7 @@ export function makeMinecartHands(ctx) {
     const cart = { e, row: FMG.FOREMAN.low, x, y, v: 0, off: 0, slow: 0, pace: 0, hold: true, ledge: false, foreman: true, perch: false, jumper: false, swing: false, line: 0, state: 'roll', cd: 1, tell: 0, vy: 0, id: M.carts.length, rams: 0, stun: 0, maxX: 1e9 };
     cart.hp0 = e.hp; e.cnSkin = 'foremancart'; M.carts.push(cart); e.mcCart = cart; e.mcWait = false; e.x = x;   /* (dr3art) his own skin, set here and not on the placed foe: the level hash covers the placed foes */ e.y = y - 6; e.vx = 0; e.vy = 0; e.face = -1; e.h = 30; e.maxHp0 = e.hp0 || e.hp; M.fm = { e, cart, S, scroll: 0, wordT: 0 }; }
   /* a lob: a pick (or the foreman's bomb) at where the hero's cart WILL be when it lands - its mark drawn on the rail (runeAt with MC.throwT) */
-  function lob(from, P, heroV, name, dmg, T = MC.throwT) { const pc = cartOf(P), gy = pc.lastGround ? pc.lastGround.y : P.y, tx = runeAt(P.x, heroV, T), tm = H.treadmill(P);
+  function lob(from, P, heroV, name, dmg, T = MC.throwT, off = 0) { const pc = cartOf(P), gy = pc.lastGround ? pc.lastGround.y : P.y, tx = runeAt(P.x, heroV, T) + off, tm = H.treadmill(P);
     M.lobs.push({ x0: from.x, y0: from.y - 14, x: from.x, y: from.y - 14, tx, ty: gy, t: T, t0: T, name, dmg, id: M.n.lobs++, bomb: name !== 'A THROWN PICK' && name !== "THE FOREMAN'S PICK", slide: tm ? tm.cruise : 0 });   /* (deeprails3: on a treadmill its mark is on the running rail - drawn sliding to where it lands) */ ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); }
   function stepCart(cart, P, dt) {
     const e = cart.e, pc = cartOf(P), heroV = H.riding(P) ? P.vx : 0, ts = TS();
@@ -255,7 +255,7 @@ export function makeMinecartHands(ctx) {
         M.stomping = true; try { ctx.hitFoe(e, d); } finally { M.stomping = false; } ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.burst(cart.x, G.topY, 16, ['#ffd36b', '#ffffff', '#d89a5a'], 110, 0.5); },
       board: (h, off) => { h.pp.mcBoard = { off, spotX: S.board ? S.board.spotX : cart.x - 40 }; pinOn(h.pp); },
       release: (b, how) => { fmUnpin(b.pp, how); },
-      lob: h => ctx.asPlayer(h.pp, () => { const P = ctx.hero(); lob(cart, P, H.riding(P) ? P.vx : 0, "THE FOREMAN'S PICK", FMG.FOREMAN.pickDmg, FMG.FOREMAN.pickT); }),
+      lob: (h, off = 0) => ctx.asPlayer(h.pp, () => { const P = ctx.hero(); lob(cart, P, H.riding(P) ? P.vx : 0, "THE FOREMAN'S PICK", FMG.FOREMAN.pickDmg, FMG.FOREMAN.pickT, off); }),
       number: (x, y, t, col) => ctx.number(x, y, t, col),
       sound: k => { const s = ctx.sfx; try { ({ stomp: () => { (s.heavy || s.thud)(); (s.stompClank || s.clank) && (s.stompClank || s.clank)(); }, clank: () => s.clank && s.clank(), brake: () => s.screech && s.screech(), tell: () => s.tell && s.tell(false), tellHard: () => s.tell && s.tell(true), ram: () => { (s.heavy || s.thud)(); s.screech && s.screech(); }, lurch: () => (s.heavy || s.thud)() }[k] || (() => {}))(); } catch {} },
       chip: (d, word) => { M.stomping = true; try { ctx.hitFoe(e, d); } finally { M.stomping = false; } fmWord(word); } }; }
