@@ -111,7 +111,7 @@ try {
    out.foes=res;}
   /* 2. THE PYROMANCER */
   {boot('knight');const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(150);const b=BK.boss;for(const e of BK.enemies())if(e!==b)e.alive=false;out.bossAlive=b.alive&&BK.bossActive;
-   const freeze=()=>{b.cd=99;b.vx=0;};const blow=(n,tag)=>{const h=b.hp;b.readN=0;b.readAt=-99;BKT.hurtAs(tag||'heavy',b,n,b.x-12,false);const d=h-b.hp;b.hp=h;return d;};
+   const freeze=()=>{b.cd=99;b.vx=0;};const blow=(n,tag)=>{const h=b.hp;b.readN=0;b.readAt=-99;BK.P.mixN=0;BK.P.mixLast=null;/* (claude/riposte: the mix-up chain multiplies a blow after a different verb - each measured blow starts it clean) */BKT.hurtAs(tag||'heavy',b,n,b.x-12,false);const d=h-b.hp;b.hp=h;return d;};
    /* NEVER INVULNERABLE: every mode of his kit, outside the ward, takes a hero's blow whole */
    const modes=['stalk','cutTell','cut','cutEnd','bellowsTell','bellows','emberTell','ember','hopCrouch','hop','land','ventTell','vent'];const whole={};
    for(const m of modes){b.mode=m;b.modeT=9;b.open=0;b.ward=0;whole[m]=blow(40);}b.mode='stalk';out.whole=whole;

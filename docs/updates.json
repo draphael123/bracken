@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-11",
+    "batch": 86,
+    "lines": [
+      "Online co-op: play with a friend over the internet",
+      "Parry and riposte for every hero, a poise bar on elites and bosses, and a mix-up chain",
+      "Knock foes into spikes, pits, water and fire",
+      "Every region has its own gates and exits",
+      "Paladin prays by holy lights; the Pyromancer holds DOWN to flare",
+      "Three too-hard bosses eased"
+    ]
+  },
+  {
+    "date": "2026-10-11",
     "batch": 85,
     "lines": [
       "New hero: the Berserker, with two axes and a battle rage",

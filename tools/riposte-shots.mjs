@@ -16,7 +16,7 @@ try {
       BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();BK.load(0);BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');
       const L=BK.L;for(let x=2;x<60;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;BK.tp(10,21);BK.sim(60);const P=BK.P;P.hp=P.maxHp;P.inv=0;P.st=P.maxSt;P.face=1;P.combo=0;P.riposteT=0;P.mixN=0;P.mixLast=null;
       return foes.map(([t,dx,o])=>{BK.spawnEnt({t,x:(P.x+dx)/16,y:21,...(o||{})});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;e.elT=99;return e;});};
-    window.__answer=(how,n)=>{const K=BK.keys;if(how==='hold'){K.block=true;BK.sim(n);}else if(how==='tap'){K.block=true;BK.sim(1);K.block=false;BK.sim(n);}else if(how==='down'){K.down=true;BK.sim(1);K.down=false;BK.sim(n);}else if(how==='release'){K.block=true;BK.sim(45);K.block=false;BK.sim(n);}};
+    window.__answer=(how,n)=>{const K=BK.keys;if(how==='hold'){K.block=true;BK.sim(n);}else if(how==='tap'){K.block=true;BK.sim(1);K.block=false;BK.sim(n);}else if(how==='down'){K.down=true;let hh=0;while(!(BK.ember&&BK.ember()&&BK.ember().flare)&&hh<60){BK.sim(1);hh++;}K.down=false;BK.sim(n);}else if(how==='release'){K.block=true;BK.sim(45);K.block=false;BK.sim(n);}};
     window.__crop=(label)=>{const v=BK.view,P=BK.P,z=v.z||1,sx=v.VW/2+(P.x-v.x-v.VW/2)*z,sy=v.VH/2+(P.y-v.y-v.VH/2)*z;
       const c=document.createElement('canvas');c.width=${CW};c.height=${CH};const g=c.getContext('2d');g.imageSmoothingEnabled=false;
       g.drawImage(v.buf,Math.round(sx-${CW / 2 - 14}),Math.round(sy-${CH - 10}),${CW},${CH},0,0,${CW},${CH});return {c,label:label+' '+P.lastKey+':'+P.lastFrame};};

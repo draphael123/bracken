@@ -11,7 +11,7 @@
                                or mid-jump (red, dodge) and turns you back over a breath later - never a fall to your death.
      3. PAIRED SPELLS          from his second stage, a red circle on you and a yellow one a stride aside, together; never in the
                                duel; never unanswerable - the far side is clear and a jump straight up clears both.
-     4. A SHORTER OPENING      two clean blows and he recovers, in a window of about two and a half seconds.
+     4. A SHORTER OPENING      three clean blows and he recovers, in a window of about three seconds (claude/easethree: was two blows in two and a half).
    And his health is what it was (no bloat).
    claude/folly3 (Daniel played him, 2026-09-29: "he is too easy"):
      5. THE MIRRORS            a new stage at 30%: the room put right, two images of him that cast with him - only his own tell
@@ -195,7 +195,7 @@ try {
     ok(p.cfg >= 0.8 && p.cfg <= 0.85 && gaps.length >= 3 && avg <= 4.25 && avg >= 3.6, 'the gaps between his casts are x' + p.cfg + ' (15-20% shorter): a bolt every ' + avg.toFixed(2) + ' s, tell to tell (4.77 on the base)');
     ok((p.tell || []).length > 0 && p.tell.every(t => t >= 0.79) && p.rendTell >= 0.84, 'and every tell is as long as it was: bolt ' + JSON.stringify(p.tell) + ', rend ' + p.rendTell); }
   // 4
-  ok(r.landed >= 1 && r.landed <= 2, 'an opening is two clean blows: ' + r.landed + ' landed before he recovered (' + r.openTook + ' taken, ' + r.openFrames + ' frames)');
+  ok(r.landed >= 1 && r.landed <= 3, 'an opening is three clean blows (claude/easethree: openHits 2 -> 3, the window 2.6/3.2 -> 3.0/3.5 s): ' + r.landed + ' landed before he recovered (' + r.openTook + ' taken, ' + r.openFrames + ' frames)');
   // 3
   ok(r.duelPairs === 0, 'no paired spells in the duel (stage one): ' + r.duelPairs);
   ok(r.pairTell === 'pairTell' && r.pair && r.pair.red === '#ff6b6b' && r.pair.yellow === '#ffd36b' && r.pair.onYou <= 2 && r.pair.gap >= 40, 'from the second stage he casts a pair: a red circle on you and a yellow one a stride aside (' + JSON.stringify(r.pair) + ')');
@@ -239,4 +239,4 @@ try {
   ok(!pg.errors.length, 'the page threw nothing: ' + JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
 if (fails.length) { console.log('\n' + fails.length + ' FAILED'); process.exit(1); }
-console.log('ok  archmage-folly   the ward fights back, the room attacks told, pairs from stage two, two blows an opening');
+console.log('ok  archmage-folly   the ward fights back, the room attacks told, pairs from stage two, three blows an opening');

@@ -63,9 +63,13 @@ export function makeWickerManHands(ctx) {
       return true; });
   };
   /* A BLOW ON IT: whole in its fire; a scratch on the standing wicker (told, once in a while) */
-  H.take = (e, dmg) => { const s = init(e), k = wmTake(s); if (k >= 1) { const d = wmBlow(s, dmg, e.hp0 || e.maxHp || WM.hp); if (s.mode === 'stamp') { e.mode = 'stamp'; ctx.callout('IT STAMPS ITS FIRE OUT'); ctx.sfx('stamp'); } return d; }
+  H.take = (e, dmg) => { const s = init(e), k = wmTake(s); s.hitOpen = k >= 1; if (k >= 1) { const d = wmBlow(s, dmg, e.hp0 || e.maxHp || WM.hp); if (s.mode === 'stamp') { e.mode = 'stamp'; ctx.callout('IT STAMPS ITS FIRE OUT'); ctx.sfx('stamp'); } return d; }
     H.n.scratches++; ctx.sparks(e); if (!(e.wmSaid > ctx.time())) { e.wmSaid = ctx.time() + 4; ctx.callout('THE WICKER SHRUGS IT OFF: STRIKE ITS FIRE BACK'); }
     return dmg * k; };
+  /* A BLOW THAT GREW AFTER IT WAS COUNTED (d0 -> d1: the mix-up chain, the riposte payoff, a finisher): in its fire the growth is only as much as the fire's cap has room for; outside it, left as it was */
+  H.fix = (e, d0, d1) => { const s = init(e); if (!s.hitOpen) return d1; const room = Math.max(0, WM.fireCap * (e.hp0 || e.maxHp || WM.hp) - (s.fireTaken || 0)), extra = Math.min(d1 - d0, room); s.fireTaken = (s.fireTaken || 0) + extra;
+    if (extra < d1 - d0 || room - extra <= 1e-6) { if (s.mode !== 'stamp') { s.mode = 'stamp'; s.t = WM.stampT; s.n.stamp++; s.capped = (s.capped || 0) + 1; e.mode = 'stamp'; ctx.callout('IT STAMPS ITS FIRE OUT'); ctx.sfx('stamp'); } }
+    return d0 + extra; };
   /* ITS FIRE, rolling: a ball of its own burning straw (white-ringed while it is in your reach to strike back) */
   H.drawBalls = (g, cx, cy, time) => {
     for (const b of H.balls) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy) - 5, rot = Math.floor(time * 12) % 4;

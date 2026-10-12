@@ -4702,7 +4702,7 @@ let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
-function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF') + '  G ONLINE', x: VW - 4, right: true }]; }
+function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF') + ' G ONLINE', x: VW - 4, right: true }]; }
 /* THE MAP'S LANDMARK CRITTERS (the Queen over her wood, the frog, the chief...) at the map's own pixel size. They were boss sprites drawn at 0.42-0.75 of their size: a fractional
    scale on a pixel sprite, so every one smeared against the hero and the hut. Now each is shrunk by a WHOLE factor (the nearest to the height it should stand: about a hero) with the
    block-vote downsample (src/map-pixel.js), outlined, and drawn 1:1. A cleared place's critter goes grey (never see-through). */
@@ -7309,7 +7309,7 @@ const KI = makeKnockInto({ time: () => time, knock: (e, dir, push, o) => knockFo
   number: (x, y, t, c) => number(x, y, t, c), smoke: (x, y) => smoke(x, y, 3, 8), sfx: k => { if (SFX[k]) SFX[k](); },
   world: () => ({ TS, LH, T, tile: (tx, ty) => tileAt(tx, ty), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), pools: L.pools || [], props, fires, extra: L.knockHazards || [], amphib: e => AMPHIB.has(e.t) }) });
 /* (claude/knockinto) THE ANTI-PLUNGE REACTIONS' WORLD (src/foe-react.js REACT_AIR): the spitter's sidestep uses say/sfx/safeStep/offBalance; the rest are for the order knights */
-const RA_API = { say: (e, t, c) => number(e.x, e.y - (e.h || 16) - 10, t, c), sfx: k => { if (k === 'hop') { if (SFX.hop) SFX.hop(); else if (SFX.puff) SFX.puff(); } else if (SFX[k]) SFX[k](); }, safeStep: (x, y) => tkApi.safeStep(x, y),
+const RA_API = { say: (e, t, c) => number(e.x, e.y - (e.h || 16) - 10, t, c), sfx: k => { if (k === 'hop') { SFX.hop ? SFX.hop() : SFX.puff && SFX.puff(); } else if (SFX[k]) SFX[k](); }, safeStep: (x, y) => tkApi.safeStep(x, y),
   offBalance: (e, secs) => { e.broken = Math.max(e.broken || 0, secs); e.offBalAt = time; e.vx = 0; e.guardT = 0; broke(e, time); tokenRelease(TK, e, 'broken'); number(e.x, e.y - (e.h || 16) - 20, 'OFF BALANCE', '#ffd36b'); dust(e.x, e.y, 4); },
   hitHero: (h, e, dmg, o) => asPlayer(h, () => damagePlayer(e.x, dmg, { who: e, up: !!(o && o.up), unblockable: !!(o && o.grab) })), throwHero: (h, vx, vy) => { h.vx = vx; h.vy = vy; h.ground = false; h.plunge = false; },
   deathAt: (x, y) => { const W = { TS, LH, T, tile: (tx, ty) => tileAt(tx, ty), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), pools: L.pools || [] }; for (let ty = Math.floor(y / TS); ty < LH; ty++) { const t = tileAt(Math.floor(x / TS), ty); if (t === T.SPIKE) return true; if (W.standable(Math.floor(x / TS), ty)) return false; } return true; } };
@@ -7415,7 +7415,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   /* (claude/keyscore, B14 + THE PYRO BUG) pl: a PLUNGE BY ITS TAG - the pyromancer's FIREDROP is hurtAs('plunge', ..., false): the boolean is the hero's own body, the tag is the blow. Every boss hook below gets the tag (tools/blow-tags.mjs) */
   if (e.elite && EK) { const kd = EK.take(e, dmg, fromX, plunge, blow); if (kd === false) return; dmg = kd; }   /* (ELITES2) an elite's GUARD BY ANGLE (a light cut off his front turned, a heavy through at half) and the riposte into his opening: src/elite-kit.js */
   if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }
-  if (WMH && e.t === 'wickerman') { dmg = WMH.take(e, dmg); if (!dmg) return; }   /* (claude/fairfix6) THE WICKER MAN: whole in its fire, a scratch on the standing wicker */
+  let wmD0 = 0;
+  if (WMH && e.t === 'wickerman') { dmg = WMH.take(e, dmg); if (!dmg) return; wmD0 = dmg; }   /* (claude/fairfix6) THE WICKER MAN: whole in its fire, a scratch on the standing wicker */
   if (LDH && e.cnSkin && LDH.owns(e)) { dmg = LDH.take(e, dmg); if (!dmg) return; }   /* (claude/djinn3) THE LESSER DJINN: a blade passes through sand, fire turns it - until a pour opens it (and no wisp's pop: it is cut whole) */
   else if (e.t === 'willowisp') { dmg = CNF.wispTake(e, dmg); if (!dmg) { SFX.zap && SFX.zap(); ringAt(e.x, e.y - 6, 14, '#a0ffd2', 0.4); return; } }   /* (claude/canalfix3) THE WISP: popped, an ember that re-forms once */   /* THE FOG CANAL: under the water nothing finds it; the ripple knocks it up; out of the water it takes double */
   if(e.behind)return;   /* (claude/fairfix3) a mummer riding a chair-o-plane's chair round the back of the mast */
@@ -7614,6 +7615,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg, blow, tag) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg, blow, tag), raw0, !!blow);
   if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   greedHit(e, fromX, blow);
+  if (wmD0 > 0 && dmg > wmD0) dmg = WMH.fix(e, wmD0, dmg);   /* (claude/batch86) THE WICKER MAN'S FIRE CAP holds against what multiplies a blow after it was counted (the mix-up chain, the riposte x2, the finisher): the cap is on what LANDS */
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
@@ -31974,7 +31976,7 @@ window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P
      assuming a fixed one. */
   soundFxPages: () => fxPages(((VW - 48) - 20) / 2, 10).map(p => p[0].i),
   riposte: () => RP,   /* (claude/riposte) tools/riposte.mjs */
-  knockInto: () => KI, raApi: () => RA_API,   /* (claude/knockinto) tools/knock-into.mjs, tools/anti-plunge.mjs */
+  knockInto: () => KI, raApi: () => RA_API,   /* (claude/knockinto) tools/knock-into.mjs */
   enemies: () => enemies, tokens: () => ({ board: TK, TOKENS, RX }), combat2: () => ({ OPEN, FIN, POGO_CHAIN, pogoChain: () => pogoChain, poiseMax: e => poiseMax(e), finishReady: e => finishReady(e, P, e === boss || bossActive || miniActive),
     strike: (e, blow = 'heavy', dmg = 1) => { const w = { hs: P.heavySwing, h: P.heavy, a: P.atk }; P.heavySwing = blow === 'heavy'; P.heavy = blow === 'heavy'; P.atk = Math.max(P.atk || 0, 0); try { openBefore(e); hurtAs(blow, e, dmg, P.x, false); } finally { P.heavySwing = w.hs; P.heavy = w.h; P.atk = w.a; } } }),   /* THE COMBAT PASS, PART 2, for its harnesses: the break and finisher counts, and one blow of a given kind struck at a foe from where the hero stands */ spawnFoe: e => { const n0 = enemies.length; spawnEnt(e); return enemies.slice(n0); },   /* put one creature down in the running level, for a harness (tools/drowned-knights.mjs) */ movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [], elites: () => enemies.filter(e => e.elite), ELITE,
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */

@@ -289,7 +289,7 @@ export function installReact(board, TOKENS, api) {
    new tell-table rows until a body uses it; the order knights add theirs to src/marks.js with their bodies) and asks for the world:
      api: { say(e, txt, col), sfx(name), safeStep(x, y), offBalance(e, secs), hitHero(hero, e, dmg, o), throwHero(hero, vx, vy, e),
             deathAt(x, y) -> bool (a drop or the spikes at x, from y down) }
-   tools/anti-plunge.mjs drives all four against a stub world (and the spitter's in the page).
+   tools/knock-into.mjs drives all four against a stub world (and the spitter's in the page).
    =================================================================================================================================== */
 export const REACT_AIR = {
   above: { dx: 22, dy: 130 },                                                   // a hero 'above' a foe: within dx (+ half its width), up to dy over its head

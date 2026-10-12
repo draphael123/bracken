@@ -40,7 +40,7 @@ document.body.appendChild(video);
 disp.style.zIndex = '2'; disp.style.background = 'transparent';
 const strip = UI.el('div.olchip'); strip.id = 'olstrip'; strip.style.display = 'none'; document.body.appendChild(strip);
 const banner = UI.el('div'); banner.id = 'olbanner';
-banner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:19;font:14px/1.3 "Press Start 2P",monospace;color:#ffd36b;background:rgba(20,16,30,.85);border:2px solid #5c3a1d;padding:8px 12px;display:none;pointer-events:none';
+banner.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:19;font:14px/1.3 "Press Start 2P",sans-serif;color:#ffd36b;background:rgba(20,16,30,.85);border:2px solid #5c3a1d;padding:8px 12px;display:none;pointer-events:none';
 document.body.appendChild(banner);
 let board = UI.board('olguest');
 video.addEventListener('resize', place); addEventListener('resize', place);
@@ -112,7 +112,7 @@ function pollPad() {
 
 /* THE PHONE: the game's own touch buttons, on this page's own canvas, writing into `tk` - the same layer, his own layout and size */
 const TCH = createTouch({ disp, dg: disp.getContext('2d'), q, SET, save: () => {}, geom: () => geo, state: () => (G.phase === 'play' && !G.menu ? 'play' : 'online'), keys: tk,
-  initAudio: () => unmute(), press: k => { if (k === 'pause') { toggleMenu(); return; } if (k !== 'confirm') presses.add(k); flush(); },
+  initAudio: () => unmute(), press: k => { if (k === 'pause') { toggleMenu(); return; } if (k !== 'confirm') presses.add(k); queueMicrotask(() => flush()); },   /* (claude/batch86) AFTER the touch layer has set the key it holds for this button: a press sent before its hold reaches the host as a jump with the key not down - a 7 px hop, the variable-jump cut */
   skillOn: i => i < 2, skillInfo: () => null, phoneMode: () => {}, verb: () => ({ verb: 'USE', key: 'talk' }), ctx: () => null, autoFace: () => {}, speed: () => 0, padUsed: () => false, touched: () => {} });
 place();
 
