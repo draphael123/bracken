@@ -1,0 +1,36 @@
+=== berserker
+{"flurry":{"combos":[1,2,3,4,5,6,1],"heavy":[false,false,false,false,true],"reach":[19,19,19,19,23],"spinL":17,"spinR":17},"cross":{"bz":{"most":100,"heavy":true,"hit":34}},"roll":{"shoved":26,"stag":
+FAIL
+  frenzy: HE NEVER KILLS HIMSELF - the frenzy's quarter killed him (or did not leave him on 1): {"frenzyT":11,"guard":false,"swing0":1.38,"swing":1.5,"lost20":18,"lostN":16,"hurt":false,"healed":3,"de
+exit 0
+=== riposte
+heroes geomancer {"plain":13,"parry":{"how":"hold","n":8,"res":"blocked","win":0.6,"hold":0.6,"open":0.6},"rip":32,"ratio":2.46,"held":true,"red":{"how":"hold","n":8,"res":"hit","lost":8,"parries":0,"
+heroes berserker {"plain":10,"parry":{"how":"hold","n":1,"res":"blocked","win":0.6,"hold":0.6,"open":0.6},"rip":36,"ratio":3.6,"held":true,"red":{"how":"hold","n":1,"res":"hit","lost":8,"parries":0,"t
+elite {"elite":true,"hold":0.35,"broken1":0,"hold2":0.35,"broken2":2.92,"d1":36,"d2":54,"breaks":1}
+boss {"stockade":{"t":"chief","res":"blocked","open":0.5,"bossOpen":true,"poiseMax":100,"openFrames":37,"ward":2.98,"blockT":0.03333333333333333,"res2":"blocked","par2":2,"reopen":0,"warded":1,"bar":t
+chain {"mash":[0,0,0,0,0,0,0,0],"mix":[0,1,2,3,4,5,5,5],"dmg":[100,106,112,118,124,130,130,130],"word":[0,0,0,1,1,1,1,1],"repeat":5,"afterHit":0,"before":1,"idle":0,"poise":{"bare":12,"five":15.6}}
+the riposte: teach, heroes, elite, boss, chain hold.
+exit 0
+=== ability-poses
+  ok   bzUnchained     own=[bzUnch]  bzUnch:0x14 bzUnch:1x16
+  ok   bzStorm         own=[bzStorm]  bzStorm:0x20 bzStorm:1x10
+SHARED POSES: warden harrier/poleSpring (vault)
+POSED DODGES: pyro cinderStep 15/15 frames drawn; paladin holyCharge 15/15 frames drawn; plain grace 19/36
+JUMP ARCS: knight air 7 [takeoff:0 jump:0 jump:1 apex:0 fall:0 fall:1 land:2] land 3; pyro air 7 [takeoff:0 jump:0 jump:1 apex:0 fall:0 fall:1 land:2] land 3; paladin air 7 [takeoff:0 jump:0 jump:1 ap
+ability poses: 69 of 69 actives have a body of their own; known debt 0
+exit 0
+=== dances
+ok  baked          8 heroes x 18 skins: every one has a dance of its own, R + L + white, at least 4 drawings
+ok  emote + idle   all 7: H starts the hero's own dance, a step or jump or H again ends it, and half a minute of standing about is a couple of seconds of it
+ok  after a boss   all 7 heroes dance as the arena opens (first at frame 15/15/15/15/15/15/15/15 after the kill) and every fight still ends
+ok  co-op          player two's key danced player two's own warden and left player one standing
+ok  dances         seven heroes, one dance each: baked in every skin, on H, after every boss, on a long idle, and never in the way
+exit 0
+=== mark-integrity
+boss fogknight      fogknight|lungeTell           !!  seen 3, landed 3, posed 3/3 (px 66-83)
+boss hourglassking  hourglassking|pendTell        !   seen 6, landed 6, posed 6/6 (px 166-278)
+boss hourglassking  hourglassking|gearTell        !!  seen 5, landed 4, posed 5/5 (px 101-106)
+boss hourglassking  hourglassking|streamTell      !!  seen 3, landed 3, posed 3/3 (px 653-666)
+
+every mark seen belongs to a windup that is drawn and lands.
+exit 0

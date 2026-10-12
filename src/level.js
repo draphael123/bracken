@@ -3860,18 +3860,18 @@ function trialYard(hero) {
       ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
-       straw that takes them), THE CROSS-CHOP (his held X), THE BRACE on the beat (C is his chest, never a shield: one blow, as rage), the marks
+       straw that takes them; claude/berserker2: a FLURRY of five, the fifth THE CROSS-CHOP), THE DOUBLE CHOP (his held X), TAKE IT on the beat (C: the crossed axes, a parry on the beat, rage off it), the marks
        (the brace takes a yellow one; a red one goes through it), THE SHOULDER ROLL, THE AXE THROW (UP+C, and then he must fetch it) and
        THE FRENZY (a full bar, spent) */
     berserker: [
-      ['third', 2, 'THE CHOPS: X, X, X. THE RUN GOES ON ONLY WHILE THEY LAND. THE THIRD BITES DEEP. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
-      ['heavyblow', 2, 'HOLD X, LET GO: THE CROSS-CHOP, BOTH AXES DOWN AT ONCE. IT BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
-      ['flash', 2, 'THE BRACE: TAP C AS HIS SWORD FLASHES. YOUR CHEST TAKES IT AS RAGE AND HE REELS. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
-      ['tells', 2, 'ONE YELLOW ! : THE BRACE TAKES IT. TWO RED !! : IT GOES THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['third', 2, 'THE FLURRY: X FIVE TIMES, LEFT AXE, RIGHT AXE. LAND THEM ALL: THE FIFTH IS THE CROSS-CHOP.', [['dummy', 16], ['dummy', 20]], 'X x5'],
+      ['heavyblow', 2, 'HOLD X, LET GO: THE DOUBLE CHOP, BOTH AXES DOWN AT ONCE. IT BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
+      ['flash', 2, 'TAKE IT: RAISE THE AXES (C) AS HIS SWORD FLASHES. A PARRY: HE REELS. TWICE.', [['swornsword', 18]], 'LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : HOLD C AND TAKE IT AS RAGE. TWO RED !! : TOO STRONG, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
       ['dodge', 2, 'THE SHOULDER ROLL: TAP A WAY TWICE, OR V. IT KNOCKS THE SMALL ONES ASIDE. ROLL TWICE.', [], 'B, OR THE STICK TWICE'],
       ['axe', 2, 'UP+C HURLS THE OFF AXE. YOU FIGHT ONE-HANDED UNTIL YOU PICK IT UP. HIT THE STRAW TWICE.', [['dummy', 11]], 'UP+LB'],
       DASH, RISE, SWEEP,
-      ['meter', 1, 'BLOWS GIVEN AND TAKEN FILL RAGE. FULL, TAP C: THE FRENZY. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
+      ['meter', 1, 'BLOWS GIVEN AND TAKEN FILL RAGE. FULL, HOLD DOWN AND TAP C: THE FRENZY. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'DOWN + LB WITH A FULL BAR'],
       SKILL],
   }[hero];
   const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
@@ -7954,7 +7954,7 @@ export const LEVELS = [
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
   { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
   { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'fault line, shield and quake', build: () => trialYard('geomancer'), hidden: true },
-  { id: 'trial_berserker', name: "THE BERSERKER'S TRIAL", sub: 'chops, brace and frenzy', build: () => trialYard('berserker'), hidden: true },
+  { id: 'trial_berserker', name: "THE BERSERKER'S TRIAL", sub: 'flurry, take it and frenzy', build: () => trialYard('berserker'), hidden: true },
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
      need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
   { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'theatre' },   /* (claude/theatre: the playhouse stands between Waymeet and the fair now) */

@@ -1,0 +1,31 @@
+stockade practiced berserker s1 L3: win 45.4s left 0% taken 96 rt402 mis0 greed11 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":60,"dash":1}}
+stockade practiced berserker s2 L3: death 72.8s left 12% taken 161 rt401 mis1 greed14 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":78}}
+stockade practiced berserker s3 L3: death 29.7s left 48% taken 161 rt403 mis1 greed4 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":28}}
+stockade practiced knight s1 L3: death 45.6s left 21% taken 154 rt412 mis0 greed10 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":44}}
+stockade practiced knight s2 L3: win 52.6s left 0% taken 142 rt409 mis3 greed9 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":61,"reflect":1}}
+stockade practiced knight s3 L3: death 38.8s left 28% taken 154 rt396 mis2 greed9 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":41}}
+towpath practiced berserker s1 L25: win 92.9s left 0% taken 413 rt422 mis5 greed16 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":16,"pipsMax":4,"verbs":{"sweep":35,"cut":47,"plunge":4}}
+towpath practiced berserker s2 L25: win 83.2s left 0% taken 301 rt422 mis6 greed11 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":9,"pipsMax":3,"verbs":{"sweep":15,"cut":80,"plunge":4}}
+towpath practiced berserker s3 L25: win 80.3s left 0% taken 265 rt429 mis2 greed11 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":9,"pipsMax":5,"verbs":{"sweep":11,"cut":62,"plunge":7}}
+towpath practiced knight s1 L25: win 90.6s left 0% taken 231 rt433 mis2 greed18 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":8,"pipsMax":2,"verbs":{"sweep":6,"cut":73,"riposte":1,"plunge":1,"dash":1}}
+towpath practiced knight s2 L25: win 70.6s left 0% taken 299 rt425 mis7 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":12,"pipsMax":4,"verbs":{"sweep":18,"cut":52,"plunge":2,"riposte":2,"dash":1}}
+towpath practiced knight s3 L25: win 61.6s left 0% taken 338 rt433 mis4 greed16 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":11,"pipsMax":4,"verbs":{"sweep":21,"cut":42,"dash":1,"plunge":7}}
+marsh practiced berserker s1 L3: win 11.7s left 0% taken 2 rt384 mis1 greed3 rp {"par":1,"open":1,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":9,"plunge":1}}
+marsh practiced berserker s2 L3: win 47.1s left 0% taken 130 rt399 mis3 greed8 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":6,"pipsMax":3,"verbs":{"cut":41,"plunge":4}}
+marsh practiced berserker s3 L3: win 19.8s left 0% taken 15 rt397 mis2 greed3 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":19}}
+marsh practiced knight s1 L3: win 18.9s left 0% taken 35 rt409 mis0 greed4 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"cut":13,"plunge":1}}
+marsh practiced knight s2 L3: win 20s left 0% taken 31 rt409 mis0 greed5 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":5,"pipsMax":4,"verbs":{"cut":14,"sweep":2,"plunge":2}}
+marsh practiced knight s3 L3: win 36.9s left 0% taken 115 rt404 mis2 greed6 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":3,"pipsMax":1,"verbs":{"cut":31,"plunge":3}}
+ksar practiced berserker s1 L39: win 81.3s left 0% taken 238 rt408 mis5 greed11 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":101}}
+ksar practiced berserker s2 L39: death 87.8s left 27% taken 521 rt417 mis7 greed6 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":75,"plunge":2}}
+ksar practiced berserker s3 L39: win 99s left 0% taken 338 rt411 mis5 greed10 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":103}}
+ksar practiced knight s1 L39: win 64.3s left 0% taken 386 rt409 mis5 greed13 rp {"par":4,"open":3,"warded":1,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":69}}
+ksar practiced knight s2 L39: death 60.3s left 32% taken 409 rt418 mis3 greed9 rp {"par":5,"open":2,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":46}}
+ksar practiced knight s3 L39: win 73.5s left 0% taken 46 rt417 mis3 greed16 rp {"par":3,"open":2,"warded":1,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":65}}
+
+BOSS RATES  profile human  flasks kit  (24 fights, 7 min)
+row                 L  practiced be/kn           band
+stockade            3  1/3 1/3 = 33%             LOW -17
+towpath            25  3/3 3/3 = 100%            HIGH +40
+marsh               3  3/3 3/3 = 100%            HIGH +40
+ksar               39  2/3 2/3 = 67%             HIGH +7

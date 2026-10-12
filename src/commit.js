@@ -24,7 +24,7 @@ export const COMMIT = {   /* WEIGHT-T (10-04): the brief's numbers x0.6, measure
   geomancer: { light: 0.096, third: 0.132, up: 0.096, heavy: 0.168 }, /* the fault line */
   paladin:   { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
   reaper:    { light: 0.102, third: 0.132, up: 0.102, heavy: 0.18 },
-  berserker: { light: 0.084, third: 0.12, up: 0.084, heavy: 0.162 },   /* THE BERSERKER (claude/berserker): his 10-04 numbers x0.6 like everyone's (WEIGHT-T) - light like the knight's, the cross-chop a beat longer */
+  berserker: { light: 0.06, third: 0.12, up: 0.084, heavy: 0.162 },   /* (claude/berserker2: THE FLURRY recovers quicker - 0.084 -> 0.06; its fifth, the cross-chop, keeps 'third') */   /* THE BERSERKER (claude/berserker): his 10-04 numbers x0.6 like everyone's (WEIGHT-T) - light like the knight's, the cross-chop a beat longer */
 };
 /* THE LIGHT SWING'S PRICE for the heroes whose swing is not their sword's (the rest pay sword().cost): the freebooter 9 -> 10 (brief) */
 export const SWING_COST = { paladin: 22, pirate: 10, reaper: 23 };   /* the paladin 28 -> 22 (10-04, with STAM.busyRegenBy: 0/8 -> 4/8 of eight boss fights on the human bot; 6/8 before WEIGHT) */

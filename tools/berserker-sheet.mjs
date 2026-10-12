@@ -9,14 +9,14 @@ const outArg = args.find(a => !a.startsWith('--'));
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const png = await pg.evalp(`(async()=>{const skin=${JSON.stringify(opt('skin', 'bracken'))},wp=${JSON.stringify(opt('weapon', 'steel'))};
-    const KEYS=${JSON.stringify(opt('keys', ''))}.split(',').filter(Boolean);const K=BKT.heroSet(skin,wp,false,'berserker'),SC=${+opt('scale', 3)},sets=[['',K.R],['BARE ',K.bare?K.bare.R:{}]];
-    const rows=[];for(const [tag,R] of sets)for(const k of Object.keys(R)){if(KEYS.length&&!KEYS.includes(k))continue;if(tag&&!['idle','atk','atkB','atkC','heavy','windup','air','bzThrow','block'].includes(k))continue;rows.push({k:tag+k,f:(Array.isArray(R[k])?R[k]:[R[k]]).filter(Boolean).filter((c,i,a)=>a.indexOf(c)===i)});}
+    const KEYS=${JSON.stringify(opt('keys', ''))}.split(',').filter(Boolean);const K=BKT.heroSet(skin,wp,false,'berserker'),SC=${+opt('scale', 3)},sets=[['',K.R],['RAGE ',K.R],['BARE ',K.bare?K.bare.R:{}],['BARE RAGE ',K.bare?K.bare.R:{}]].filter(([t])=>${JSON.stringify(opt('sets','main,rage,bare,barerage'))}.split(',').includes(t.trim().toLowerCase().replace(' ','')||'main'));
+    const rows=[];for(const [tag,R] of sets)for(const k of Object.keys(R)){if(KEYS.length&&!KEYS.includes(k))continue;if(tag.includes('BARE')&&!['idle','atk','atkB','atkC','heavy','windup','air','bzThrow','block','ripo'].concat(Object.keys(R).filter(x=>x.startsWith('bz')&&!/^bz(Roar|Spin|Harden|Cleave|Ramp|Shrug|Stand|Unch|Storm|Throw)$/.test(x))).includes(k))continue;if(tag.startsWith('RAGE')&&!['idle','bzFlurryL','bzCross','bzTake','bzCoil'].includes(k))continue;rows.push({rage:tag.includes('RAGE'),k:tag+k,f:(Array.isArray(R[k])?R[k]:[R[k]]).filter(Boolean).filter((c,i,a)=>a.indexOf(c)===i)});}
     const cw=Math.max(...rows.flatMap(r=>r.f.map(c=>c.width)))*SC, ch=Math.max(...rows.flatMap(r=>r.f.map(c=>c.height)))*SC, per=10;
     const lines=rows.reduce((n,r)=>n+Math.ceil(r.f.length/per),0);
     const c=document.createElement('canvas');c.width=110+per*(cw+4);c.height=lines*(ch+4)+4;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
     g.fillStyle='#3a4a3a';g.fillRect(0,0,c.width,c.height);let y=2;g.font='12px monospace';
     for(const r of rows){for(let i=0;i<r.f.length;i++){if(i&&i%per===0)y+=ch+4;const x=110+(i%per)*(cw+4),f=r.f[i];
-        g.fillStyle=i%2?'#465a46':'#4e624e';g.fillRect(x,y,cw,ch);g.drawImage(f,0,0,f.width,f.height,x,y+ch-f.height*SC,f.width*SC,f.height*SC);}
+        g.fillStyle=i%2?'#465a46':'#4e624e';g.fillRect(x,y,cw,ch);g.drawImage(f,0,0,f.width,f.height,x,y+ch-f.height*SC,f.width*SC,f.height*SC);if(r.rage&&f.rgo)for(const [u,v,col] of f.rgo){g.fillStyle=col;g.fillRect(x+u*SC,y+ch-f.height*SC+v*SC,SC,SC);}}
       g.fillStyle='#e8e2cc';g.fillText(r.k+' ('+r.f.length+')',4,y+ch/2);y+=ch+4;}
     return c.toDataURL();})()`);
   const out = join(ROOT, outArg || 'docs/berserker/frames.png'); mkdirSync(dirname(out), { recursive: true });

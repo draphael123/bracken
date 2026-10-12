@@ -30,7 +30,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 20 };   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18 };   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
    for the warden (stand 38, reach 40). The generic goal math (below, "desired") walks to boss.x +/- (LAB_STAND[h] +
@@ -62,7 +62,7 @@ export const WARDEN_TIP = 32;   /* (claude/herokit) the near-edge distance the w
    met nothing), never held - so wherever the hands sweep the Warden's shaft they set his brace. A full bar makes the same tap his FRENZY, which
    is exactly when a player would take it. DEFLECTS is who taps; BUSY_C is the beat each is spent after one that met nothing. */
 export const DEFLECTS = h => h === 'warden' || h === 'berserker';
-const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.braceT || 0) : 0;
+const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.pounceRec || 0) : 0;   /* (claude/berserker2: TAKE IT is held, so his guard up is not "busy" - tapping keeps it up) */
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
    the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */
@@ -2331,6 +2331,17 @@ async function runbossLab(BK, opts) {
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
       if (h === 'knight' && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
+      /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
+         the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
+         a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */
+      if (h === 'berserker' && BK.bz) { const Z = BK.bz() || {};
+        if (P.labBzCoil > 0) { P.labBzCoil--; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = k.up = k.jump = k.atk = k.block = false; k.down = true; P.face = P.labBzDir || P.face;
+          if (P.labBzCoil === 0) P.labBzRel = 2; }
+        else if (P.labBzRel > 0) { P.labBzRel--; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = k.up = k.jump = k.atk = k.block = false; k.down = false; k[(P.labBzDir || 1) > 0 ? 'right' : 'left'] = true; }
+        else if (!(Z.frenzyT > 0) && Z.rage >= 100 && P.ground && !tell && !rushing && ad < 150 && P.atk < 0 && !P.cWas && !(P.hurt > 0) && !(P.dodge > 0) && !(Z.braceRec > 0)) { strike = false; k.left = k.right = k.up = k.jump = k.atk = false; k.down = true; k.block = true; P.labBzFrenzied = f; }   /* the war cry: hold DOWN, press C */
+        else if (!(Z.frenzyT > 0) && P.ground && !tell && !rushing && ad > 110 && ad < 230 && Math.abs(boss.y - P.y) < 28 && P.atk < 0 && P.st >= 36 && !(P.hurt > 0) && !(P.dodge > 0) && !(Z.braceRec > 0) && !(Z.takeUp)
+          && f - (P.labBzPounceAt ?? -999) > 1500 && f - (P.labBzFrenzied ?? -999) > 40) {
+          P.labBzPounceAt = f; P.labBzDir = Math.sign(d) || P.face; P.labBzCoil = 38; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = false; k.down = true; } }
       // A BANKED PYRE IS FOR SPENDING: release the full heat meter toward a clear target between committed swings.
       if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
       /* A HAND CAUGHT ON A SPRING DOES NOT KNOW IT: nothing here has ever asked a bouncer a question, so a knockback that lands
