@@ -55,10 +55,22 @@ Opus built mechanics + boss AI and STOPPED before the 12-seed tune: a Sonnet ART
   Tell 'RAIDERS ALONGSIDE: RAM OR STRIKE'. Asserted.
 
 ## CHECKS (PORT 8868, one page run at a time)
-RESULTS_PLACEHOLDER
+GREEN (run): tools/minecart.mjs 434 ok (was 368; +66 new asserts - fixes, gears, sides, raiders; one changed: SECTIONS 10 -> 11 for THE TWIN LINES, stated) |
+minecart-route suite mode (probe: every pump gap, ramp and all 4 bridges-out under their roofs; knight base ride 7 legs, 0 failed, 192 s) | boss-openings (drill: alone 0, lever jam 4.2 s) |
+boss-read | tells (marks) | untold-told | stuck static + runtime (250 spots) | level-quality minecart CLEARS (density 29% empty after a bat in the exam's last gap; pilot, mash, curve) |
+checkpoint-gaps | deadends | collectables | killzones | spawns | signs (the twin lines' sign cut to 2 lines) | modulepreload (deeprails4_art.js listed) | solid-islands | one-new-foe.
+STAMPED LEVEL THEN BOSS at 8a6a7e76: docs/level1-pilot.json (244%/4 deaths), docs/level1-curve.json (act 2: 235%, 4 deaths; band 70-400/0-6), docs/mash-bot.json (level: every hero
+dies, 4-5 deaths; drill 0/6 dead 34 s; Foreman 0/6 dead 26 s).
+!! PENDING (the coordinator stopped page runs at 16:47, low memory - no PAGES OK came in the next 30 min): (a) RE-STAMP pilot + curve + mash (level then boss): the sign text change
+(46ffcd18) is in the level hash, the measured data is unchanged - commands: PORT=8868 node tools/level1-pilot.mjs minecart --write ; ... --curve ; node tools/mash-bot.mjs --level
+minecart --write ; node tools/mash-bot.mjs minecart --write. (b) page checks not yet run on the final tree: reach-heroes (8 heroes), boss-fight-end, corpses, mark-integrity,
+hint-shown (the new lines are routed in src/hint-lines.js), textfit (scoped hints,bestiary,boss), minecart-aloft, boss-openings/untold-told re-run after the twin lines.
+(c) the 3-seed spot below.
 
 ## 3-SEED BOSS SPOT (boss-rates minecart --ways=practiced --seeds=3 --profile=human, kit flasks, L13) - NOT TUNED (the Sonnet tune lane: 12 seeds)
-SPOT_PLACEHOLDER
+NOT RUN (pages stopped). One seed each, run during the build (knight L13): 1/1 win 161 s, 6 gears broken over the fight, 28% of the bot's blows on gears
+(knight 1 seed before the gate fix: 124 s). Command: PORT=8868 node tools/drill-gears.mjs --seeds=3 --jobs=1 (rates + the gears/body split per fight), then
+boss-rates minecart,minecart:mini --ways=practiced --seeds=3 --profile=human --jobs=1. Expect the drill above band (the gate adds work the bot does well) - the tune lane's.
 
 ## ART LIST FOR THE SONNET LANE (greybox now: src/redraw/deeprails4_art.js, minecart_art.js rig/tunnel, the hands' calls; pictures work/claude/shots/dr4/, tools/dr4-shots.mjs)
 1. THE GEAR TOWER (MCA.gearTower): four banks on a riveted mast up the rig's rear face - each its own look (a winch drum + chain for the CHAIN WINCH, a boom pivot for the
