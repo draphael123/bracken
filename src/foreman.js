@@ -9,7 +9,8 @@
 // THE KEY (design standard B14 'FROM ABOVE'): his cart is ARMOURED - a blade from your own cart clanks (x0.4, B15: never nothing, 'ARMOURED: JUMP ON HIM').
 // JUMP ONTO HIS CART (or plunge onto it) and you STOMP him: a third of him. You stand on his cart, he is OPEN (gold ring + timer, B10: blows whole)
 // until he answers with a told LURCH ('!! HE LURCHES', the cart rocks) that throws you back up and behind him - into your own cart, which rolled on under you
-// (never an untold death: the loop has no gap). Then a told ~3 s BRACE (B3: his lid's spikes up - landing on him is turned, 'BRACED'). Three good boardings win.
+// (never an untold death: the loop has no gap). Then a told BRACE (B3: his lid's spikes come up - a sound, '!! SPIKES UP: DO NOT LAND', the spikes drawn rising, SPIKES UP over his lid; his drift says 'SPIKES UP: WAIT'; 'SPIKES DOWN: JUMP ON HIM' when they drop).
+// A MISSED BOARDING (Daniel 10-12): landing on his cart's RIM once the spikes have risen (spikeRise s) costs the FULL BUMP and throws you back off the cart (to your own); fair for every hero - nothing to learn but to wait for SPIKES DOWN. Three good boardings win.
 // HIS MOVES (one at a time, every one told - sound + word + colour; the second boarding adds the ram, B5):
 //   DRIFT   HE SLOWS (0.5 s: brake sparks, the word) and drops back at you down the line - jump on him as he comes; met in the cart it is a BUMP (he is armoured)
 //   PICK    '!' and his arm back (0.75 s), then a pick lobbed at where YOUR cart will be - its mark on your rail: brake off it, pump past it, or jump
@@ -23,6 +24,7 @@ export const FOREMAN = {
   pickTell: 0.6, pickDmg: 28, pickT: 0.45, pick2: 0.3, picks: [1, 2, 3], cutoff: 0,          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */
   ramTell: 0.8, ramV: 250, ramT: 0.5, ramHold: 0.45,
   boardT: 0.85, lurchTell: 0.75, wardT: 4.5, lurchVy: -300,
+  spikeRise: 0.35, spikeDmg: 18, spikeBack: 70,   /* (MISSED BOARDING, Daniel 10-12) spikes are DEADLY once risen (spikeRise s after the ward starts - drawn, a sound, 'SPIKES UP'): the full bump (spikeDmg = bumpDmg) and thrown back spikeBack px */
   stompK: 0.25, bracedK: 0.04,           /* a stomp takes this share of his health; a landing on him BRACED is turned (a clank, this much - B15) */
   armour: 0.4,                          /* B15: a blade from your cart */
   bumpDmg: 18, ramDmg: 38, contactCd: 0.9, bumpBack: 56, ramBack: 84,
@@ -30,12 +32,13 @@ export const FOREMAN = {
   gap: [0.9, 0.7, 0.55],
   chain: { 0: ['pick', 'drift', 'pick', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'ram', 'drift'], 2: ['ram', 'pick', 'drift', 'pick', 'ram', 'drift'] },
 };
-export const FOREMAN_LINES = { slows: 'HE SLOWS: JUMP ON HIM', slowsAgain: 'HE SLOWS', ram: '!! HE BRAKES HARD: RAM', stomp: 'STOMPED! STRIKE HIM', lurch: '!! HE LURCHES', braced: 'BRACED: HIS SPIKES ARE UP',
+export const FOREMAN_LINES = { slows: 'HE SLOWS: JUMP ON HIM', slowsAgain: 'HE SLOWS', ram: '!! HE BRAKES HARD: RAM', stomp: 'STOMPED! STRIKE HIM', lurch: '!! HE LURCHES', braced: 'BRACED: HIS SPIKES ARE UP', spikesUp: '!! SPIKES UP: DO NOT LAND', spikesWait: 'SPIKES UP: WAIT', spikesDown: 'SPIKES DOWN: JUMP ON HIM', spiked: 'SPIKED! THROWN BACK',
   armour: 'ARMOURED: JUMP ON HIM', thrown: 'THROWN OFF: BACK IN YOUR CART', start: 'THE FOREMAN: JUMP ON HIS CART' };
 
 export function geom(TS = 16) { const F = FOREMAN; return { x0: F.cols[0] * TS, x1: F.cols[1] * TS, lowY: F.low * TS, highY: F.high * TS, topY: F.low * TS - F.topDy, TS }; }
+function raise(S, c) { S.ward = FOREMAN.wardT; S.n.raised++; c.number(foremanX(S), S.G.topY - 40, FOREMAN_LINES.spikesUp, '#ff6b6b'); c.sound('spikesUp'); }   /* HIS BRACE: told as it comes up (a sound, the word, the spikes rising through the lid) */
 export function newFight(G) { return { G, R: FOREMAN.homeR, mode: 'wait', mT: 0, cd: 1.2, i: 0, stomps: 0, ward: 0, contactCd: 0, board: null, t: 0, told: {},
-  n: { drift: 0, pick: 0, ram: 0, stomps: 0, braced: 0, bumps: 0, rams: 0, armoured: 0, open: 0, lurch: 0, thrown: 0, jumpedOff: 0 } }; }
+  n: { spiked: 0, raised: 0, drift: 0, pick: 0, ram: 0, stomps: 0, braced: 0, bumps: 0, rams: 0, armoured: 0, open: 0, lurch: 0, thrown: 0, jumpedOff: 0 } }; }
 export const foremanX = S => S.G.x0 + S.R;
 export const foremanOpen = S => !!S && (S.mode === 'boarded' || S.mode === 'lurchTell') && !!S.board;
 /* a hero's line on the loop: 0 LOW, 1 HIGH, -1 in the air */
@@ -44,7 +47,7 @@ export const laneOf = (G, y, tol = 6) => (Math.abs(y - G.lowY) <= tol ? 0 : Math
 /* ---------- ONE FRAME ----------  heroes: [{ x, y, prevY, vy, ground, alive, riding, v (the cart's pace), pp }]
    c: { hit(h, dmg, name), bounce(h, px), stomp(h, dmg, braced), board(h, off), release(h, how), lob(h), number(x, y, t, col), sound(k), chip(dmg, word) } */
 export function stepForeman(S, e, dt, heroes, c) {
-  const F = FOREMAN, G = S.G; S.t += dt; S.contactCd = Math.max(0, S.contactCd - dt); if (S.ward > 0) S.ward = Math.max(0, S.ward - dt);
+  const F = FOREMAN, G = S.G; S.t += dt; S.contactCd = Math.max(0, S.contactCd - dt); if (S.ward > 0) { S.ward = Math.max(0, S.ward - dt); if (S.ward === 0 && S.mode !== 'wait') { c.number(foremanX(S), S.G.topY - 40, FOREMAN_LINES.spikesDown, '#8fd160'); c.sound('spikesDown'); } }
   if (S.mode === 'wait' || !e.alive) return;
   const live = heroes.filter(h => h.alive), fx = foremanX(S);
   const near = live.slice().sort((a, b) => Math.abs(a.x - fx) - Math.abs(b.x - fx))[0];
@@ -66,7 +69,7 @@ export function stepForeman(S, e, dt, heroes, c) {
   switch (S.mode) {
     case 'idle': { const d = F.homeR - S.R; S.R += Math.sign(d) * Math.min(Math.abs(d), F.awayV * dt); S.cd -= dt; if (S.cd > 0 || !near) break;
       const ch = F.chain[Math.min(2, S.stomps)], name = ch[S.i % ch.length]; S.i++;
-      if (name === 'drift') { S.mode = 'driftTell'; S.mT = F.driftTell; S.n.drift++; S.dv = F.driftVs[Math.min(2, S.stomps)]; c.sound('brake'); c.number(fx, G.topY - 30, S.told.drift ? FOREMAN_LINES.slowsAgain : FOREMAN_LINES.slows, '#ffd36b'); S.told.drift = 1; }
+      if (name === 'drift') { S.mode = 'driftTell'; S.mT = F.driftTell; S.n.drift++; S.dv = F.driftVs[Math.min(2, S.stomps)]; c.sound('brake'); if (S.ward > 0) c.number(fx, G.topY - 30, FOREMAN_LINES.spikesWait, '#ff6b6b'); else c.number(fx, G.topY - 30, S.told.drift ? FOREMAN_LINES.slowsAgain : FOREMAN_LINES.slows, '#ffd36b'); S.told.drift = 1; }
       else if (name === 'pick') { S.mode = 'pickTell'; S.mT = F.pickTell; S.n.pick++; c.sound('tell'); }
       else { S.mode = 'ramTell'; S.mT = F.ramTell; S.n.ram++; c.sound('tellHard'); c.number(fx, G.topY - 30, FOREMAN_LINES.ram, '#ff6b6b'); }
       break; }
@@ -77,8 +80,8 @@ export function stepForeman(S, e, dt, heroes, c) {
     case 'ramTell': if (S.mT <= 0) { S.mode = 'ram'; S.mT = F.ramT; c.sound('ram'); } break;
     case 'ram': S.R = Math.max(F.minR, S.R - F.ramV * dt); if (S.mT <= 0 || S.R <= F.minR) { S.mode = 'ramHold'; S.mT = F.ramHold; } break;
     case 'ramHold': if (S.mT <= 0) S.mode = 'away'; break;
-    case 'boarded': if (!S.board) { S.mode = 'away'; S.ward = F.wardT; break; } if (S.mT <= 0) { S.mode = 'lurchTell'; S.mT = F.lurchTell; c.sound('tellHard'); c.number(fx, G.topY - 40, FOREMAN_LINES.lurch, '#ff6b6b'); } break;
-    case 'lurchTell': if (!S.board) { S.mode = 'away'; S.ward = F.wardT; break; } if (S.mT <= 0) { S.n.lurch++; c.release(S.board, 'lurch'); S.board = null; S.mode = 'away'; S.ward = F.wardT; c.sound('lurch'); } break;
+    case 'boarded': if (!S.board) { S.mode = 'away'; raise(S, c); break; } if (S.mT <= 0) { S.mode = 'lurchTell'; S.mT = F.lurchTell; c.sound('tellHard'); c.number(fx, G.topY - 40, FOREMAN_LINES.lurch, '#ff6b6b'); } break;
+    case 'lurchTell': if (!S.board) { S.mode = 'away'; raise(S, c); break; } if (S.mT <= 0) { S.n.lurch++; c.release(S.board, 'lurch'); S.board = null; S.mode = 'away'; raise(S, c); c.sound('lurch'); } break;
     default: S.mode = 'idle';
   }
   S.R = Math.max(S.mode === 'drift' ? 0 : F.minR, Math.min(F.maxR, S.R));
@@ -87,6 +90,7 @@ export function stepForeman(S, e, dt, heroes, c) {
    or, while his spikes are up, BRACED (turned: a clank, a sliver - B15). Returns 'board' | 'braced' | null */
 export function landOn(S, e, h, c) { const F = FOREMAN, G = S.G, fx = foremanX(S);
   if (!S || S.mode === 'wait' || S.mode === 'boarded' || S.mode === 'lurchTell' || !e.alive) return null;
+  if (S.ward > 0 && F.wardT - S.ward >= F.spikeRise) { S.n.spiked++; c.spiked(h, F.spikeDmg, "THE FOREMAN'S SPIKES"); c.number(fx, G.topY - 30, FOREMAN_LINES.spiked, '#ff6b6b'); c.sound('clank'); return 'spiked'; }   /* THE MISSED BOARDING: the full bump and thrown back - a landing on his rim while the spikes are up and drawn */
   if (S.ward > 0) { S.n.braced++; c.stomp(h, Math.max(1, Math.round(e.maxHp0 * F.bracedK)), true); c.number(fx, G.topY - 30, FOREMAN_LINES.braced, '#c8d8e8'); c.sound('clank'); return 'braced'; }
   S.n.stomps++; S.stomps++; S.mode = 'boarded'; S.mT = F.boardT; S.board = { pp: h.pp, off: Math.max(-F.halfW + 2, Math.min(-5, h.x - fx)), spotX: fx - 40 }; S.n.open++;
   c.board(h, S.board.off); c.stomp(h, Math.ceil(e.maxHp0 * F.stompK), false); c.number(fx, G.topY - 34, FOREMAN_LINES.stomp, '#ffd36b'); c.sound('stomp'); return 'board'; }
@@ -95,16 +99,16 @@ export function takeBlade(S, dmg, out = {}) { if (foremanOpen(S)) return dmg; ou
 
 /* ---------- THE BOT (src/lab.js, tools/cart-pilot.mjs): what a player sees, a quarter-second late (a tell misread one time in eight) ----------
    P: { x, y, ground, vy, atk, v (the cart's pace), lane (0 LOW, 1 HIGH, -1 air), boarded }; returns { gx (where to hold on the loop), jump, drop, atk, why } */
-export const FOREMAN_PLAN = { react: 0.25, miss: 0.12, early: 0.15 };
-export function foremanPlan({ P, S, rng = Math.random, mem = {}, t, eyes = false }) {
+export const FOREMAN_PLAN = { react: 0.25, miss: 0.12, early: 0.15, spikeMiss: 0.3 };   /* (spikeMiss: the share of his drifts, spikes UP, a player jumps on anyway - mistimed, or went for the stomp without looking) */
+export function foremanPlan({ P, S, rng = Math.random, mem = {}, t, eyes = false, react = null, missP = null }) {
   const F = FOREMAN, G = S.G, fx = foremanX(S), out = { gx: G.x0 + 120, why: '' }, dx = fx - P.x;
-  const late = k => { if (eyes) return true; if (!(k in mem)) { mem[k] = t + FOREMAN_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < FOREMAN_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
+  const late = k => { if (eyes) return true; if (!(k in mem)) { mem[k] = t + (react ? react() : FOREMAN_PLAN.react - 0.04 + rng() * 0.1); mem['m' + k] = rng() < (missP ?? FOREMAN_PLAN.miss); }   /* (react: the lab's human profile draws each read's delay - a person's reaction is 250-580 ms, not a free read) */ return t >= mem[k] && !mem['m' + k]; };
   if (P.boarded) { out.gx = null; if (P.atk < 0) out.atk = true; out.why = 'aboard: strike'; return out; }
 
   /* HIS RAM: out of its reach (a brake) - or, caught close, a jump (over him, or onto him) */
   if ((S.mode === 'ramTell' || S.mode === 'ram') && late('ram' + S.n.ram)) { const reach = F.ramV * F.ramT + F.halfW + 34; if (dx < reach) { if (dx < 70 && P.ground) { out.jump = true; out.why = 'ram: jump'; } out.gx = fx - reach - 20; out.why = out.why || 'ram: brake'; } return out; }
   /* HIS DRIFT: hold the line under where he comes, and jump as he is a jump away (a stomp) */
-  if ((S.mode === 'drift' || S.mode === 'driftTell') && S.ward <= 0 && late('drift' + S.n.drift)) { out.gx = null;   /* (hold where you are and let him come: no backing off, no steering in the air) */ const lead = (S.dv || F.driftV) * 0.55 + (mem.lead ?? (mem.lead = rng() * 10 - 5));
+  if ((S.mode === 'drift' || S.mode === 'driftTell') && (S.ward <= 0 || (mem['sp' + S.n.drift] ??= rng() < FOREMAN_PLAN.spikeMiss)) && late('drift' + S.n.drift)) { out.gx = null;   /* (hold where you are and let him come: no backing off, no steering in the air) */ const lead = (S.dv || F.driftV) * 0.55 + (mem.lead ?? (mem.lead = rng() * 10 - 5));
     if (S.mode === 'drift' && P.ground && P.lane === 0 && dx > lead - 10 && dx < lead + 6 && !(mem['mj' + S.n.drift] ??= rng() < FOREMAN_PLAN.miss)) { out.jump = true; out.why = 'drift: jump on him'; } else out.why = 'drift: wait'; return out; }
   /* HIS PICK: off its mark (the hands' lob list is read by the lab) */
   if (mem.mark && Math.abs(mem.mark.x - P.x) < 34 && mem.mark.t > 0) { out.gx = mem.mark.x - 60; out.why = 'pick: brake off the mark'; return out; }

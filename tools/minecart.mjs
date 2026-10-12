@@ -159,14 +159,21 @@ ok([...kinds].every(t => ['archer', 'gobmage', 'tippler', 'miner', 'brute', 'sap
   ok(F.chain[0].every(m => m !== 'ram') && F.chain[1].includes('ram'), 'the ram is his new move once he has been stomped (B5)');
   /* the fight, pure */
   const mk = () => { const S = FMG.newFight(G), e = { hp: 400, maxHp0: 400, alive: true }; S.mode = 'idle'; S.cd = 99; return { S, e }; };
-  const log = [], C = (x = {}) => ({ ramV: MC.ramV, ramDmg: MC.ramDmg, hit: (h, d) => (x.hit = (x.hit || 0) + d), bounce: () => (x.bounce = (x.bounce || 0) + 1), stomp: (h, d, br) => { x[br ? 'braced' : 'stomp'] = d; },
+  const log = [], C = (x = {}) => ({ ramV: MC.ramV, ramDmg: MC.ramDmg, hit: (h, d) => (x.hit = (x.hit || 0) + d), bounce: () => (x.bounce = (x.bounce || 0) + 1), stomp: (h, d, br) => { x[br ? 'braced' : 'stomp'] = d; }, spiked: (h, d) => (x.spiked = (x.spiked || 0) + d),
     board: () => (x.board = 1), release: (b, how) => (x.release = how), lob: () => (x.lob = 1), number: (a, b, t) => log.push(t), sound: () => {}, chip: d => (x.chip = d) });
   { const { S, e } = mk(), x = {}, fx = FMG.foremanX(S), h = { x: fx - 6, y: G.topY + 2, prevY: G.topY - 3, vy: 120, ground: false, alive: true, riding: true, v: MC.cruise, pp: {} };
     FMG.stepForeman(S, e, 1 / 60, [h], C(x)); ok(x.board && x.stomp === Math.ceil(400 * F.stompK) && S.mode === 'boarded' && FMG.foremanOpen(S), 'a hero landing on his cart from above BOARDS it: a stomp (' + x.stomp + ' of 400) and he is OPEN');
     ok(FMG.takeBlade(S, 10) === 10, 'while you stand on his cart a blade is whole');
     for (let i = 0; i < 200 && !x.release; i++) FMG.stepForeman(S, e, 1 / 60, [], C(x)); ok(x.release === 'lurch' && S.ward > 0 && log.includes(FMG.FOREMAN_LINES.lurch), 'then a told LURCH throws you off - back into your own cart - and he braces');
     const y = {}; FMG.stepForeman(S, e, 1 / 60, [{ ...h, x: FMG.foremanX(S) - 6 }], C(y)); ok(y.braced > 0 && !y.board && S.n.braced === 1, 'a landing on him while he is braced is turned (a clank, a sliver: B15)');
-    ok(FMG.takeBlade(S, 10) === Math.round(10 * F.armour), 'and a blade from the cart is x' + F.armour + ' again'); }
+    ok(FMG.takeBlade(S, 10) === Math.round(10 * F.armour), 'and a blade from the cart is x' + F.armour + ' again');
+    /* THE MISSED BOARDING (Daniel 10-12): once the spikes have RISEN (drawn, a sound, the word) a landing on his rim costs the full bump and throws you back */
+    ok(log.includes(FMG.FOREMAN_LINES.spikesUp), 'the spikes come up TOLD: ' + FMG.FOREMAN_LINES.spikesUp);
+    for (let i = 0; i < Math.ceil(F.spikeRise * 60) + 2; i++) FMG.stepForeman(S, e, 1 / 60, [], C({}));
+    const z = {}; FMG.stepForeman(S, e, 1 / 60, [{ ...h, x: FMG.foremanX(S) - 6 }], C(z)); ok(z.spiked === F.bumpDmg && F.spikeDmg === F.bumpDmg && !z.board && !z.braced && S.n.spiked === 1, 'a landing on his rim with the spikes up costs the FULL BUMP (' + z.spiked + ') and throws you back');
+    ok(F.spikeRise <= 0.5 && F.spikeBack > 0, 'the spikes are told ' + F.spikeRise + ' s before they bite');
+    S.mode = 'idle'; S.cd = 0; S.i = 2; log.length = 0; FMG.stepForeman(S, e, 1 / 60, [{ ...h, x: FMG.foremanX(S) - 60, y: G.lowY, prevY: G.lowY, vy: 0, ground: true }], C({})); ok(S.mode === 'driftTell' && log.includes(FMG.FOREMAN_LINES.spikesWait) && !log.includes(FMG.FOREMAN_LINES.slows), 'his drift with the spikes up says so (SPIKES UP: WAIT), not JUMP ON HIM');
+    for (let i = 0; i < Math.ceil(F.wardT * 60) + 5; i++) FMG.stepForeman(S, e, 1 / 60, [], C({})); ok(S.ward === 0 && log.includes(FMG.FOREMAN_LINES.spikesDown), 'and the spikes coming DOWN are told too'); }
   { const { S, e } = mk(), x = {}; const h = { x: FMG.foremanX(S) - 18, y: G.lowY, prevY: G.lowY, vy: 0, ground: true, alive: true, riding: true, v: MC.cruise, pp: {} };
     FMG.stepForeman(S, e, 1 / 60, [h], C(x)); ok(x.hit === F.bumpDmg && x.bounce === 1 && !x.board, 'met in your cart on the LOW line he is a BUMP (armoured: it hurts you and throws you back)'); }
   { const { S, e } = mk(), x = {}; S.mode = 'ramTell'; S.mT = 0.01; S.R = 250; const h = { x: G.x0 + 250 - F.ramV * F.ramT - F.halfW - 40, y: G.lowY, prevY: G.lowY, vy: 0, ground: true, alive: true, riding: true, v: MC.cruise, pp: {} };
