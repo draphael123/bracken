@@ -25,7 +25,7 @@ let api = null, sess = null, board = null, chip = null;
 /* THE FAR HANDS: what the guest holds now, and the one-shot presses waiting for the next frame */
 const R = { held: {}, prev: {}, press: new Set(), p: null };
 const HELD = ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance', 'talk'];
-const PRESS = ['jump', 'atk', 'dodge', 'throw', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'left', 'right', 'up', 'down'];
+const PRESS = ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'left', 'right', 'up', 'down'];
 const QUIET_RELEASE = 3000, QUIET_DROP = 8000;   // ms of nothing from the guest before his keys let go / before he is dropped
 
 export function init(a) {
@@ -197,7 +197,7 @@ function pump() {
   if (gap > 1000) my.last = now;   /* THIS page was busy (a wood loading blocks the thread for seconds): his messages are queued behind it, not missing - the quiet clock restarts */
   if (!remote()) R.press.clear();
   const l = my.link; if (!l || !l.open) { chipView(); return; }
-  l.send({ t: 'st', s: api.state(), paused: api.paused(), p2: my.hero });
+  l.send({ t: 'st', s: api.state(), paused: api.paused(), p2: my.hero, g: api.grab ? api.grab() : null });   /* g: the guest's GRAB / THROW touch button (claude/partnerthrow) */
   const quiet = performance.now() - my.last;
   if (quiet > QUIET_RELEASE) R.held = {};   /* a stalled link lets go of his keys: a hero does not run off a ledge on a held arrow nobody is holding */
   if (quiet > QUIET_DROP) { dropGuest(my, 'TIMED OUT'); return; }

@@ -21,7 +21,7 @@
 export const KB_ACTIONS = [
   { id: 'left', label: 'MOVE LEFT' }, { id: 'right', label: 'MOVE RIGHT' }, { id: 'up', label: 'UP / LOOK UP' }, { id: 'down', label: 'CROUCH / DOWN' },
   { id: 'jump', label: 'JUMP' }, { id: 'atk', label: 'ATTACK / HEAVY' }, { id: 'block', label: 'C: GUARD/ABILITY' }, { id: 'dodge', label: 'DODGE' },
-  { id: 'throw', label: 'SKILL ONE' }, { id: 'skill2', label: 'SKILL TWO' }, { id: 'flask', label: 'DRINK FLASK' }, { id: 'talk', label: 'TALK / READ' }, { id: 'map', label: 'MAP' },
+  { id: 'throw', label: 'SKILL ONE' }, { id: 'skill2', label: 'SKILL TWO' }, { id: 'flask', label: 'DRINK FLASK' }, { id: 'grab', label: 'GRAB / THROW' },   /* (claude/partnerthrow) lift your partner, throw him; throw what you carry */ { id: 'talk', label: 'TALK / READ' }, { id: 'map', label: 'MAP' },
   { id: 'talents', label: 'SKILLS MENU' }, { id: 'pause', label: 'PAUSE' }, { id: 'dance', label: 'EMOTE' },
 ];
 export const ACTION_IDS = KB_ACTIONS.map(a => a.id);
@@ -31,13 +31,13 @@ const PROFILE_IDS = PROFILES.map(p => p.id);
 /* THE DEFAULTS: the lists main.js's KEYS held before rebinding existed, word for word */
 export const KB_DEFAULT = {
   jump: ['z', 'Space', 'ArrowUp', 'w', 'k'], atk: ['x', 'j', 'Enter'], block: ['c', 'l'], dodge: ['v', 'Shift'],
-  throw: ['f', 'b'], skill2: ['g', 'n'], talk: ['e', 't'], flask: ['u', '1'],   /* THE FLASK (claude/survival, Daniel 10-07) */
+  throw: ['f', 'b'], grab: ['i'], skill2: ['g', 'n'],   /* GRAB: I (free: V is the dodge, Y is a common rebind) */ talk: ['e', 't'], flask: ['u', '1'],   /* THE FLASK (claude/survival, Daniel 10-07) */
   left: ['ArrowLeft', 'a'], right: ['ArrowRight', 'd'], down: ['ArrowDown', 's'], up: ['ArrowUp', 'w'], pause: ['Escape', 'p'], talents: ['q'], dance: ['h'], map: ['Tab'],
 };
 /* the pad's defaults: A jump, X swing, B dodge, Y skill one, RT skill two, LB/RB C, BACK the emote, START pause, the d-pad to move (the stick always moves too).
    skill three / four (L3, R3) have no menu row (the game has two skill slots) but keep their buttons. */
 /* (claude/survival) THE FLASK takes LT (6), which was talk's second button: talk keeps the d-pad's up */
-export const PAD_DEFAULT = { jump: [0], atk: [2], dodge: [1], throw: [3], skill2: [7], skill3: [10], skill4: [11], talk: [12], flask: [6], block: [4, 5], dance: [8], pause: [9],
+export const PAD_DEFAULT = { jump: [0], atk: [2], dodge: [1], throw: [3], skill2: [7], skill3: [10], skill4: [11], grab: [11], talk: [12],   /* GRAB: R3 (the fourth skill slot has no skill, so its press is free) */ flask: [6], block: [4, 5], dance: [8], pause: [9],
   left: [14], right: [15], up: [12], down: [13], map: [], talents: [] };
 const ALL_PAD_ACTIONS = Object.keys(PAD_DEFAULT);
 
@@ -133,7 +133,7 @@ export function padTable(binds, prof) {
 /* a pad's pressed state through a table: the same fields padState always returned, the stick still moving */
 export function padStateOf(gp, table) {
   const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), any = a => table[a].some(b), ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
-  return { jump: any('jump'), atk: any('atk'), dodge: any('dodge'), throw: any('throw'), skill2: any('skill2'), skill3: any('skill3'), skill4: any('skill4'), talk: any('talk'), flask: any('flask'), block: any('block'), dance: any('dance'),
+  return { jump: any('jump'), atk: any('atk'), dodge: any('dodge'), throw: any('throw'), grab: any('grab'), skill2: any('skill2'), skill3: any('skill3'), skill4: any('skill4'), talk: any('talk'), flask: any('flask'), block: any('block'), dance: any('dance'),
     pause: any('pause'), map: any('map'), talents: any('talents'), left: any('left') || ax < -0.5, right: any('right') || ax > 0.5, up: any('up') || ay < -0.5, down: any('down') || ay > 0.5 };
 }
 
@@ -185,6 +185,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     hero === 'reaper' ? ['his skill', kb('skill2') + ' (CHOSEN)', pd('skill2')] : ['skill two', kb('skill2') + ' (equipped)', pd('skill2')],
     ['talk', kb('talk') + ' (signs, folk)', pd('talk')],
     ['flask', kb('flask') + ' (A BLOW SPILLS IT)', pd('flask')],
+    ['grab', kb('grab') + ' (CO-OP: LIFT, THROW)', pd('grab')],   /* (claude/partnerthrow) */
     ['pause', kb('pause') + '   (MAP: ' + k1('map') + ')', pd('pause')],
     ['drop', k1('down') + '+' + k1('jump') + ' ON A LEDGE', pd('down') + '+' + pd('jump')],
     ['to shrine', 'R (NOT A DEATH)', '-'],
@@ -239,7 +240,7 @@ export function drawRebind(c, rb, binds) {
   { let sx = x + 8; PROFILES.forEach((p, k) => { const on = k === rb.prof, tw = textW(p.name, 6) + 8;
       g.fillStyle = on ? (rb.i === -1 ? 'rgba(143,209,96,0.3)' : 'rgba(255,211,107,0.18)') : 'rgba(255,255,255,0.05)'; g.fillRect(sx, y + 15, tw, 9);
       text(p.name, sx + tw / 2, y + 17, on ? UI.title : UI.dim, 'center', 6); sx += tw + 4; }); }
-  const top = y + 28, step = 8, colA = x + 118, colB = x + 178, cw = 56;
+  const top = y + 28, step = 7, colA = x + 118, colB = x + 178, cw = 56;
   KB_ACTIONS.forEach((a, i) => {
     const yy = top + i * step, sel = rb.i === i, bad = !!conf[a.id];
     if (sel) { g.fillStyle = 'rgba(143,209,96,0.13)'; g.fillRect(x + 4, yy - 1, w - 8, step); }
