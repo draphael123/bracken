@@ -528,7 +528,12 @@ export const STUCK_HANDS = {
     /* (claude/deeprails2) the lava ramp (a cart that keeps falling short), the lift (a hero on foot at its foot), the foreman (a cart that keeps bumping him) */
     { id: 'mc-ramp', zone: [596, 26, 626, 40], steps: [ { key: 'lavaRamp', at: [614, 36], glint: 'stall', line: 'THE RAMP: PUMP HARD BEFORE ITS LIP' } ] },
     { id: 'mc-lift', zone: [756, 18, 784, 38], steps: [ { key: 'lift', at: [766, 36], glint: 'stall', line: 'THE LIFT: STAND ON THE CAGE AND RIDE IT UP' } ] },
-    { id: 'mc-foreman', zone: [821, 22, 869, 31], steps: [ { key: 'foreman', at: [850, 29], glint: 'stall', line: 'THE FOREMAN: PUMP TO FULL, THEN RAM HIS CART' } ] },
+    { id: 'mc-foreman', zone: [821, 18, 852, 31], steps: [ { key: 'foreman', at: [836, 28], glint: 'stall', line: 'THE FOREMAN: JUMP ON HIS CART AS HE DROPS BACK' } ] },
+    /* (claude/deeprails3) THE SWITCHES: each glints until its bridge is laid (handsState points.<id>: open / set) */
+    { id: 'mc-yardSw', zone: [140, 18, 160, 31], steps: [ { key: 'yardSw', is: ['points.yardSw', 'open'], at: [151, 25], line: 'THE SWITCH: STRIKE IT, OR PRESS E - ITS BRIDGE IS OUT' } ] },
+    { id: 'mc-driftSw', zone: [171, 18, 188, 31], steps: [ { key: 'driftSw', is: ['points.driftSw', 'open'], at: [180, 24], line: 'THE SWITCH IN THE DARK: STRIKE IT AS YOU PASS' } ] },
+    { id: 'mc-worksSw', zone: [744, 28, 760, 40], steps: [ { key: 'worksSw', is: ['points.worksSw', 'open'], at: [752, 36], line: 'THE SWITCH: DUCK THE BEAM, THEN STRIKE IT' } ] },
+    { id: 'mc-examSw', zone: [853, 22, 868, 31], steps: [ { key: 'examSw', is: ['points.examSw', 'open'], at: [860, 29], line: 'THE SWITCH: STRIKE IT BEFORE THE BRIDGE' } ] },
   ],
   /* THE SUNKEN CARAVAN (claude/caravan2, design standard A6): the route's needs glint after a stall - the first quicksand's far lip, the wagon bed in the
      sinking basin, and the crest of each REQUIRED dune slide (src/draft/sunken-caravan.js L.duneSlides: the teach, the big dune, the exam's) */

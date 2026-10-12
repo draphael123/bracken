@@ -6,6 +6,7 @@
    old silent flavour, counted in tools/hint-shown-silent.txt so that no NEW dead line can be added (tools/hint-shown.mjs). */
 import { STUCK_HANDS } from './stuck-spots.js';
 import { TELL_LINES } from './minecart.js';
+import { FOREMAN_LINES } from './foreman.js';
 import { BK_LINES } from './unburied-foes.js';
 export const CALL_LINES = new Set([
   /* claude/burnvillage2: THROW WATER and THE PYROMANCER's stun and steam ward (src/village-water.js) - routed so the player can see them */
@@ -165,11 +166,13 @@ export const CALL_LINES = new Set([
   /* claude/caravan2 (batch83 merge: routed - hint-shown): THE DUNE WORM's ledges and hide, and the wagon bed sinking in the quicksand */
   'A LEDGE RISES', 'THE LEDGE CRACKS', 'HIS HEAD HITS THE LEDGE', 'STUNNED: CUT HIM', 'WARDED: NOT YET', 'MAKE HIM HIT A LEDGE', 'THE BED GOES UNDER',
   /* claude/deeprails2: DEEP RAILS 2 - the ram, the bump, the thrower, the foreman, the ramp, the on-foot stretches; GREAT DRILL 2 */
-  'THE FOREMAN: AN ARMOURED CART', 'A GOBLIN THROWER ON A LEDGE', 'RAMMED!', 'CRASH: PUMP TO RAM IT, OR JUMP IN', 'HIS CART IS WRECKED', 'RAMMED! ONE MORE', 'RAMMED! TWO MORE', 'TOO SLOW: PUMP, THEN RAM HIM',
-  'DERAILED! ON FOOT: A CART WAITS AHEAD', 'THE LINE ENDS: OUT, AND UP THE LIFT', 'INTO THE CART: ROLL ON', 'FLY!', 'NOT ENOUGH PUMP!', 'A BUMP: PUMP TO RAM, OR STRIKE OR JUMP', 'ARMOURED: RAM HIM',
-  'TOO SLOW: PUMP TO RAM IT', 'THE GREAT DRILL BORES ON AHEAD: CHASE IT', 'ITS CAB IS ARMOURED: JAM ITS GEARS', 'THE ORE JAMS ITS GEARS: STRIKE THE CAB', 'A LOADED ORE CART: PUMP AND RAM IT INTO ITS GEARS',
-  'ITS PLATES ARE UP: IT SHRUGS IT OFF', 'IT SHRUGS IT OFF', 'RAMMED: INTO ITS GEARS!', 'ITS PLATES ARE UP', 'IT CLEARS ITS GEARS: ITS PLATES ARE UP', 'IT GRINDS HOTTER: SPARKS DOWN YOUR LINE',
-  'IT CRACKS THE ROOF: OFF THE SHADOWS', '!! REVERSE', '!! IT BACKS AT YOU: BRAKE, OR JUMP UP', '!! IT BACKS AT YOU: BRAKE', '!! SPARKS: LOW', '!! SPARKS: MID', '!! SPARKS: HIGH', '!! SPARKS DOWN YOUR LINE: CHANGE LINE',
+  'A GOBLIN THROWER ON A LEDGE', 'RAMMED!', 'CRASH: PUMP TO RAM IT, OR JUMP IN', 
+  'DERAILED! ON FOOT: A CART WAITS AHEAD', 'THE LINE ENDS: OUT, AND UP THE LIFT', 'INTO THE CART: ROLL ON', 'FLY!', 'NOT ENOUGH PUMP!', 'A BUMP: PUMP TO RAM, OR STRIKE OR JUMP', 
+  /* claude/deeprails3: THE FOREMAN (the mini: src/foreman.js FOREMAN_LINES are routed below), the foes that come to your line, the switches */
+  /* claude/deeprails3: GREAT DRILL 3 - the chute's points lever, the dynamite, the lunge, the chain, the roof */ 'OFF THE LINE: THE HOOK SLIPS', 'CHAIN CUT', 'ITS OWN ORE IN ITS GEARS: STRIKE THE CAB', 'POINTS THROWN: ITS ORE GOES IN ITS GEARS', 'ORE! THROW ITS POINTS', 'ORE! ITS POINTS LEVER COMES: STRIKE IT, OR E', 'AN ORE CART: PUMP AND RAM IT INTO ITS GEARS', '!! SNAGGED: JUMP, OR STRIKE THE CHAIN', 'IT SPINS UP: DUCK ITS HEAD, CUT ITS CHAIN', '!! DYNAMITE', '!! DYNAMITE: OFF ITS LINE, OR BRAKE', '!! DUCK', '!! IT SPINS UP: DUCK IN YOUR TUB', '!! THE HOOK', '!! THE HOOK: JUMP, OR CHANGE LINE', '!! THE ROOF', '!! THE ROOF COMES DOWN: PUMP THROUGH, OR BRAKE', 'THE FOREMAN: JUMP ON HIS CART', 'A GOBLIN ON THE ROOF TIMBER', 'A GOBLIN READY TO LEAP', 'A GOBLIN WITH A HOOK ALONGSIDE', 'HE IS ON YOUR LINE: RAM HIM', 'KNOCKED OFF HIS BEAM', 'THROWN OFF: BACK IN YOUR CART',
+  'TOO SLOW: PUMP TO RAM IT', 'THE GREAT DRILL BORES ON AHEAD: CHASE IT', 'ITS CAB IS ARMOURED: JAM ITS GEARS', 'THE ORE JAMS ITS GEARS: STRIKE THE CAB', 
+  'ITS PLATES ARE UP: IT SHRUGS IT OFF', 'IT SHRUGS IT OFF', 'RAMMED: INTO ITS GEARS!', 'ITS PLATES ARE UP', 'IT CLEARS ITS GEARS: ITS PLATES ARE UP', 
+  'IT CRACKS THE ROOF: OFF THE SHADOWS', '!! REVERSE', '!! IT BACKS AT YOU: BRAKE, OR JUMP UP', '!! IT BACKS AT YOU: BRAKE',    
   'THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT',
   /* claude/glasssea: THE GLASS SEA's mirrors, beams, beds, cracks, night and cast (src/glass-sea-hands.js) and THE GLASS COLOSSUS (src/glass-colossus.js, src/glass-colossus-hands.js) */
   'FIRELIGHT WILL NOT FUSE SAND: IT WANTS THE SUN', 'THIS NOTCH IS STUCK: FIVE GLASS SHARDS FREE IT', 'DAZZLED: THE BEAM STUNS GLASS', 'FROZEN IN THE FIRELIGHT', 'IT SHATTERS: SHARDS IN THE SAND',
@@ -236,7 +239,7 @@ export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp =
 export const SAY_LINES = new Set(BK_LINES);
 /* (claude/minecart fix pass, review MF1) THE DEEP RAILS' TELLS - the cart's teaching, put in the hint box ~2.5 s ahead of what it tells - are data
    (src/minecart.js TELL_LINES, laid by tell() into L.mcTells and said through number() as a variable), so they are routed here, not as CALL_LINES */
-export const MC_TELL_LINES = new Set(TELL_LINES);
+export const MC_TELL_LINES = new Set([...TELL_LINES, ...Object.values(FOREMAN_LINES)]);   /* (claude/deeprails3: and THE FOREMAN's lines, said as variables by src/foreman.js) */
 export const isCallout = txt => typeof txt === 'string' && (CALL_LINES.has(txt) || SPOT_LINES.has(txt) || SAY_LINES.has(txt) || MC_TELL_LINES.has(txt) || CALL_COUNTS.some(r => r.test(txt)));
 /* what is drawn: the line, with the boss-name double space read as a colon ("THE GOBLIN QUEEN: OPEN") */
 export const calloutText = txt => txt.replace(/ {2,}/g, ': ');

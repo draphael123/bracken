@@ -42,6 +42,8 @@
      THE GOBLIN HUNTMASTER (THE ROOTWAY's stand)  strike his gold arrow back: it flies home, breaks his quiver strap, open; his arrows taken on a guard open nothing
      THE GREAT RED CRAB  shut the dam's gate, let a flood bank, release it while he is in the spillway: thrown on his back, open; a release with him
                        out of it opens nothing, and a minute of him with the floods running (gate open) opens nothing (claude/redgorge)
+     THE GREAT DRILL   (claude/deeprails3) throw its chute's points lever (the level's verb): its own ore jams its gears, open; left alone it opens nothing
+     THE FOREMAN       (claude/deeprails3, a mini) jump onto his cart as he drops back: a stomp, open while you stand on it; left alone nothing
      THE BARROW RIDER  strike him as he rides through and he is out of the saddle, open; a ride left alone opens nothing - and in
                        his second phase, the bones crawling back struck twice scatter, and he is open on foot; left alone he remounts */
 import assert from 'node:assert/strict';
@@ -279,6 +281,21 @@ try {
    quiet();b.x=G.tops.find(t=>t.id==='B2').cx;b.y=G.topY;b.mode='walk';b.modeT=4;pull();let wasted=0;for(let i=0;i<150;i++){P.hp=P.maxHp;P.x=lever;BK.sim(1);if(BIG.includes(b.mode))wasted=Math.max(wasted,b.open||0);}
    quiet();const n1=G.tops.find(t=>t.id==='N1');b.x=n1.l-30;b.y=G.floorY;b.mode='recover';b.modeT=5;pull();/* (claude/matriarch2: standing between moves - her quicker stalk reached the bank in the burst's 0.4 s; assertion unchanged) */let op=0,mode=null;for(let i=0;i<60*5;i++){P.hp=P.maxHp;P.x=lever;BK.sim(1);if(BIG.includes(b.mode)){mode=mode||b.mode;op=Math.max(op,b.open||0);}}
    out.matriarch={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:MH.read().n.wasted,mode,open:+op.toFixed(1)};}
+  /* THE GREAT DRILL 3 (claude/deeprails3, THE DEEP RAILS): a minute of it left alone - its chute's points lever let go by, every ore cart let pass at cruise - opens nothing;
+     its POINTS LEVER thrown (E beside it as it comes down the tunnel) dumps its own ore into its gears: JAMMED, open 3 s or more */
+  {const b=boot('minecart');const DH=BK.drillHands(),S=()=>DH.show(),P=BK.P;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;BK.sim(1);if(b.mode==='jammed')alone=Math.max(alone,b.open||0);b.hp=b.maxHp;}
+   let op=0;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;b.hp=b.maxHp;const lv=S().lever;if(lv&&!lv.thrown&&Math.abs(lv.x-P.x)<20)BK.press('talk');BK.sim(1);if(b.mode==='jammed'&&b.open>0)op+=1/60;}
+   for(let i=0;i<60*10&&b.mode==='jammed'&&b.open>0;i++){P.hp=P.maxHp;BK.sim(1);op+=1/60;}
+   out.greatdrill={alone:+alone.toFixed(1),open:+op.toFixed(1),thrown:S().n.thrown,levers:S().n.levers};}
+  /* THE FOREMAN (claude/deeprails3, THE DEEP RAILS' MINI - B14 'FROM ABOVE'): a minute of him with the hero riding his loop and never jumping on him takes nothing off him and
+     never opens him; a jump onto his cart as he drops back BOARDS him: the stomp takes its share and he is OPEN while you stand there, until his told lurch */
+  {const FMG=await import('/src/foreman.js');BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='minecart'));BK.state='play';BK.god=true;const M=BK.L.mini;
+   BK.tp(Math.round(M.trigger/16)+1,Math.round(M.floor/16)-1);BK.sim(150);const MH=BK.minecart(),F=()=>MH.foreman(),P=BK.P,b=F().e,hp0=b.hp;let alone=0;
+   for(let i=0;i<60*60;i++){P.hp=P.maxHp;BK.sim(1);if(FMG.foremanOpen(F().S))alone+=1/60;}const lostAlone=hp0-b.hp;
+   let open=0,hold=0,h1=b.hp,stomp=0;for(let i=0;i<60*60&&!(open>0&&!FMG.foremanOpen(F().S));i++){P.hp=P.maxHp;const S=F().S,dx=S.G.x0+S.R-P.x,dv=S.dv||72;
+     if(!open&&S.mode==='drift'&&S.ward<=0&&P.ground&&dx>dv*0.55-10&&dx<dv*0.55+4){BK.press('jump');hold=26;}BK.keys.jump=hold-->0;BK.sim(1);if(FMG.foremanOpen(F().S)){if(!open)stomp=h1-b.hp;open+=1/60;}}
+   BK.keys.jump=false;out.foreman={alone:+alone.toFixed(1),lostAlone:Math.round(lostAlone),open:+open.toFixed(1),stomp:Math.round(stomp),max:Math.round(F().e.maxHp0),ward:+F().S.ward.toFixed(1),lurch:F().S.n.lurch};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -379,6 +396,10 @@ try {
   assert.equal(r.matriarch.alone, 0, 'THE RAPTOR MATRIARCH: a minute of her with no lever pulled opened her: ' + JSON.stringify(r.matriarch));
   assert.ok(r.matriarch.wasted === 0 && r.matriarch.wastedN >= 1, 'a burst with her up on the rock opened her (or was not counted as wasted): ' + JSON.stringify(r.matriarch));
   assert.ok(r.matriarch.mode === 'staggered' && r.matriarch.open >= 3, 'a burst with her in the channel by a narrow pillar did not throw her open for 3 s or more (the boss rule): ' + JSON.stringify(r.matriarch));
+  assert.equal(r.greatdrill.alone, 0, 'THE GREAT DRILL: a minute of it left alone (its points lever let by, its ore carts met at cruise) jammed it: ' + JSON.stringify(r.greatdrill));
+  assert.ok(r.greatdrill.open >= 3 && r.greatdrill.thrown >= 1, 'its chute points lever thrown did not jam it open for 3 s or more (the boss rule): ' + JSON.stringify(r.greatdrill));
+  assert.ok(r.foreman.alone === 0 && r.foreman.lostAlone === 0, 'THE FOREMAN: a minute of him with nobody jumping on his cart opened him or took something off him: ' + JSON.stringify(r.foreman));
+  assert.ok(r.foreman.stomp >= r.foreman.max * 0.25 && r.foreman.open >= 1.2 && r.foreman.lurch >= 1 && r.foreman.ward > 0, 'a jump onto his cart did not stomp a share of him, open him for the boarding, then lurch you off into a told brace: ' + JSON.stringify(r.foreman));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));
 } finally { pg.close(); }

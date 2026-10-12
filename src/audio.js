@@ -951,6 +951,15 @@ Object.assign(SFX, {
   yelp() { tone('sawtooth', 700, 1400, 0.12, 0.14); noise(0.08, 0.15, 1800, 1.2, 0.04); },
   squelch() { noise(0.16, 0.28, 500, 0.5); tone('sine', 220, 50, 0.2, 0.18); },
   puff() { noise(0.3, 0.3, 900, 0.4); tone('triangle', 320, 70, 0.22, 0.12); },
+  /* DEEP RAILS 3 (claude/dr3art): the Great Drill's spin-up whine, its lunge, the chain's rattle, the dynamite's fuse, a stomp on the Foreman's iron lid, the switch's latch and the bridge swinging down.
+     Synth first; REC (below) lays the clips already on disk over them (clang, r_charge, r_chain, r_hiss, r_latch, r_creak - no new files) */
+  drillWhine() { tone('sawtooth', 200, 1500, 0.9, 0.09); tone('square', 100, 760, 0.9, 0.045, 0.05); noise(0.9, 0.12, 3200, 1.2, 0.1); },
+  drillLunge() { noise(0.45, 0.3, 2600, 0.9); tone('sawtooth', 1600, 480, 0.45, 0.12); tone('sine', 92, 40, 0.3, 0.18); },
+  chainRattle() { for (let i = 0; i < 7; i++) { tone('square', 1900 - i * 90, 900, 0.03, 0.06, i * 0.04); noise(0.04, 0.1, 3000, 1.5, i * 0.04); } },
+  fuseFizz() { noise(0.7, 0.14, 5200, 1.5); for (let i = 0; i < 6; i++) tone('square', 3000 + i * 230, 2200, 0.02, 0.04, i * 0.1); },
+  stompClank() { SFX.clank(); tone('sine', 150, 60, 0.3, 0.2); noise(0.18, 0.2, 500, 0.5); },
+  leverClunk() { tone('square', 260, 120, 0.08, 0.14); noise(0.06, 0.2, 1800, 1.1); tone('sine', 90, 50, 0.2, 0.14, 0.04); },
+  bridgeSwing(down) { noise(0.4, 0.14, 700, 0.6); tone('sawtooth', down ? 220 : 120, down ? 90 : 220, 0.4, 0.05); if (down) { tone('sine', 80, 38, 0.3, 0.22, 0.4); noise(0.2, 0.2, 500, 0.5, 0.4); } },
   chitter() { for (let i = 0; i < 4; i++) tone('square', 1700 + i * 200, 2300, 0.03, 0.05, i * 0.035); },
   hiss() { noise(0.22, 0.22, 3200, 0.6); },
   bleat() { tone('sawtooth', 520, 470, 0.14, 0.1); tone('sawtooth', 560, 500, 0.12, 0.08, 0.16); tone('square', 540, 480, 0.1, 0.05, 0.3); },
@@ -1749,6 +1758,9 @@ const REC = {
   archmage: { p: 'r_archF', v: 0.4, r: 0.85, layer: 1 }, mageRune: { p: 'r_archF', v: 0.4, r: 1.1, layer: 1 }, wqBurn: { p: 'r_wqF', v: 0.35, r: 1.25, layer: 1 }, wqAlight: { p: 'r_wqF', v: 0.45, r: 0.7, layer: 1 },
   // the Huntmaster's horn is the same horn a fifth lower (set in SFX.hornDrawLow/hornBlastLow below)
   hornBlastLow: { p: 'r_horn', v: 0.55, r: 0.7 }, hornDrawLow: { p: 'r_hornD', v: 0.4, r: 0.7 },
+  // DEEP RAILS 3 (claude/dr3art): clips already in the manifest laid over the synth
+  drillWhine: { p: 'r_charge', v: 0.3, r: 0.6, layer: 1 }, chainRattle: { p: 'r_chain', v: 0.4 }, fuseFizz: { p: 'r_hiss', v: 0.3, r: 1.7, layer: 1 }, stompClank: { p: 'clang', v: 0.5, layer: 1 },
+  leverClunk: { p: 'r_latch', v: 0.45 }, bridgeSwing: { p: 'r_creak', v: 0.35, r: 0.8, layer: 1 }, drillLunge: { p: 'r_rumble', v: 0.4, r: 1.3, layer: 1 },
   // creature cries that were synth though the creature kits had spare takes
   snort: { p: 'vo_ogre_alert', v: 0.18, r: 1.5, voc: 1, g: () => ['snortRec', 0.1] }, screech: { p: 'vo_scream', v: 0.22, r: 1.35, voc: 1 }, caw: { p: 'amb_gull', v: 0.25, r: 0.8, g: () => ['caw', 0.35] },
   bark: { p: 'vo_bark', v: 0.3, voc: 1 }, yelp: { p: 'vo_bark', v: 0.26, r: 1.55, voc: 1 }, boreRoar: { p: 'roar', v: 0.45, r: 0.5 }, mawRoar: { p: 'roar', v: 0.4, r: 0.7 }, queenShriek: { p: 'vo_scream', v: 0.3, r: 1.05, voc: 1 }, croak: { p: 'croak', v: 0.3 },

@@ -23,7 +23,8 @@ import { rocEyriePlan } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude
 import { matPlan, matOpen } from './raptor-matriarch.js';   /* THE RAPTOR MATRIARCH (claude/redgorge2): the bot reads her tells, the water and the levers off her own module */
 import { colPlan, colOpen } from './glass-colossus.js'; import { hmPlan, hmOpen } from './hawk-mistress.js'; import { hkPlan, hkOpen } from './hourglass-king.js'; import { fkPlan, fkOpen } from './fog-knight.js';   /* THE FOG KNIGHT (claude/towpath): the bot reads his stance, his tells, the double and the bridge off his own module */ import { pbPlan, pbOpen } from './paladin-boss.js';   /* THE PALADIN (claude/litchurch) */   /* THE HAWK-MISTRESS (claude/ksar): the bot reads her tells, the hawk, the runners and the courtyard's gongs and racks off her own module */   /* THE GLASS COLOSSUS (claude/glasssea): the bot reads its tells, the lance's end and the mirrors off its own module, turns the mirrors and climbs */
 import { hmPlan as hnPlan, hmOpen as hnOpen } from './huntmaster.js';   /* THE GOBLIN HUNTMASTER (claude/rootway): the bot reads his tells and his arrows off his own module; v2 strikes the gold ones back */
-import { drillPlan, drillOpen, laneOf as drillLane } from './great-drill.js';   /* THE GREAT DRILL (claude/minecart): the bot rides the treadmill - boost / brake to hold its place, jump / drop between the lines, E at the points mast */
+import { drillPlan, drillOpen, laneOf as drillLane } from './great-drill.js';
+import { foremanPlan, foremanOpen, laneOf as fmLane } from './foreman.js';   /* THE FOREMAN (claude/deeprails3, THE DEEP RAILS' mini): the bot rides his loop - holds its place, jumps on his cart as he drops back, brakes out of his ram, strikes him aboard */   /* THE GREAT DRILL (claude/minecart): the bot rides the treadmill - boost / brake to hold its place, jump / drop between the lines, E at the points mast */
 import { gorgeCrabPlan, crabOpen } from './gorge-crab.js';   /* THE GREAT RED CRAB (claude/redgorge): the bot reads his tells, the dam's water and his channel off his own module, and works the sluice gate */
 import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fairfix3) THE WICKER QUEEN's ribbon sweep, read off her own module */   /* THE PUPPETEER (claude/puppeteer): the bot reads the glowing strings, the tells and the batten off his own module */
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
@@ -1291,6 +1292,22 @@ async function runbossLab(BK, opts) {
         if(matOpen(boss)&&!wasOpen)opened++;wasOpen=matOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:matOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
+      if(boss.mcCart&&boss.mcCart.foreman){
+        /* THE FOREMAN (claude/deeprails3): src/foreman.js foremanPlan reads what a player sees - his brake sparks, his '!', his red shoes, a quarter-second late (some misread) - and rides:
+           RIGHT / LEFT hold its place on the loop, JUMP onto his cart as he drops back (a stomp), DOWN + JUMP off the HIGH line onto him, X while it stands on his cart */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const MH=BK.minecart(),F=MH&&MH.foreman(),S=F&&F.S;
+        if(f===0||!P.labFmMem)P.labFmMem={};
+        if(S){const lob=((MH.state()||{}).lobs||[]).find(o=>o.t>0&&Math.abs(o.tx-P.x)<40);P.labFmMem.mark=lob?{x:lob.tx,t:lob.t}:null;}
+        const pl=S?foremanPlan({P:{x:P.x,y:P.y,ground:P.ground,vy:P.vy,atk:P.atk,v:MH.cart(P).v,lane:P.ground?fmLane(S.G,P.y):-1,boarded:!!P.mcBoard},S,rng:Math.random,mem:P.labFmMem,t:f/60,eyes:!!LABP.v2}):{gx:null};
+        if(pl.drop&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){k.down=true;BK.press('jump');P.labJumpF=f;P.labDrop=6;}
+        else if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=26;}
+        if(P.labJump>0){P.labJump--;k.jump=true;} if(P.labDrop>0){P.labDrop--;k.down=true;}
+        if(pl.gx!=null&&Math.abs(pl.gx-P.x)>6)k[pl.gx>P.x?'right':'left']=true;
+        if(pl.atk&&P.atk<0){P.face=1;BK.press('atk');swings++;}
+        const fo=!!(S&&foremanOpen(S));if(fo&&!wasOpen)opened++;wasOpen=fo;
+        const was=P.hp,m0=S?S.mode:boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:fo,why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='greatdrill'){
         /* THE GREAT DRILL (claude/minecart): src/great-drill.js drillPlan reads what a player sees - its bore's line a quarter-second late (some misread), the roof's
            shadows, the ore carts and the chute, the points mast - and rides: RIGHT (boost) and LEFT (brake) hold its place on the treadmill, JUMP / DOWN + JUMP change
@@ -1298,12 +1315,13 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const DH=BK.drillHands(),S=DH&&DH.show();
         if(f===0||!P.labGdMem)P.labGdMem={};
-        const pl=S?drillPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,lane:P.ground?drillLane(S.G,P.y):-1,v:BK.minecart()?BK.minecart().cart(P).v:0},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,t:f/60,rng:Math.random,mem:P.labGdMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
+        const pl=S?drillPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,vy:P.vy,lane:P.ground?drillLane(S.G,P.y):-1,v:BK.minecart()?BK.minecart().cart(P).v:0,snagged:!!(S.snag&&S.snag.pp===P)},e:boss,S,reach:LAB_REACH[h],tip:h==='warden'?WARDEN_TIP:0,t:f/60,rng:Math.random,mem:P.labGdMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
         if(pl.drop&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){k.down=true;BK.press('jump');P.labJumpF=f;P.labDrop=6;}
         else if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=26;}
         if(P.labJump>0){P.labJump--;k.jump=true;} if(P.labDrop>0){P.labDrop--;k.down=true;}
         if(pl.gx!=null&&Math.abs(pl.gx-P.x)>6)k[pl.gx>P.x?'right':'left']=true;
         if(pl.boost){k.right=true;k.left=false;}   /* (GREAT DRILL 2: pump into the ore cart - the ram) */
+        if(pl.duck&&P.ground){k.down=true;k.left=k.right=false;}   /* (GREAT DRILL 3: duck in the tub under the spin-up lunge) */
         if(pl.talk&&(P.labTalkF===undefined||f-P.labTalkF>12)){BK.press('talk');P.labTalkF=f;}
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(drillOpen(boss)&&!wasOpen)opened++;wasOpen=drillOpen(boss);

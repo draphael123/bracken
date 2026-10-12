@@ -9,17 +9,18 @@
 //                                       (A10 amended: a share of health and back on the rail - or, in an EXAM, the end), the glint and the 10 s nudge
 //   interact(P)                         E at a lever throws it
 //   rider(e, dt)                        a goblin on a cart / a ledge: its machine is this file's while it rides (the cart, the draw, the shot) - main.js skips its own
-//   knock(e, dmg)                       a blow that lands on a rider throws him off his cart (the whole of his health); the foreman's cart turns it (x0.35)
+//   knock(e, dmg)                       a blow that lands on a rider throws him off his cart (the whole of his health); THE FOREMAN's armoured cart turns a blade to x0.4
+//                                       unless you stand on it (deeprails3, src/foreman.js takeBlade)
 //   reset()                             a load or a death: the points back to their default, the rails relaid, the goblins waiting, a fresh cart
 //   holes(hole, cx, cy, dg)             THE DARK DRIFT: the headlamp's cone, the goblins' lanterns
 //   drawWorld, drawCartBack, drawCart, drawHud, read, bakeOreIcon, handsState
 import { MC, cartSpeed, runeAt } from './minecart.js';
+import * as FMG from './foreman.js';   /* (deeprails3) THE FOREMAN, the mini: his fight is pure (src/foreman.js); these hands bind it - the loop, the pin on his cart, the draw */
 import * as MCA from './redraw/minecart_art.js';
 import { heightAt } from './slopes.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { resolve, newStall, stallTick, drawGlint } from './stuck-guide.js';
 
-const RAM_LINE = ['HIS CART IS WRECKED', 'RAMMED! ONE MORE', 'RAMMED! TWO MORE'];   /* (the foreman's count, as lines the hint box knows) */
 export function makeMinecartHands(ctx) {
   const txt = (s, x, ...a) => { if (!(x > -48 && x < ctx.VW() + 48)) return; ctx.text(s, x, ...a); };
   let M = null;   /* the level's live state */
@@ -30,7 +31,7 @@ export function makeMinecartHands(ctx) {
   /* ON FOOT (deeprails2): between a stretch's x0 and its board column the hero is out of the cart (positional, so a station inside it, a respawn or a tool all agree) */
   const footAt = x => { const Lv = L(); if (!Lv || !Lv.mcFoot) return null; const ts = TS(); return Lv.mcFoot.find(f => x >= f.x0 * ts && x < f.board * ts) || null; };
   H.footAt = footAt;
-  H.riding = pp => H.on() && !!pp && !pp.dead && !pp.swim && !pp.climb && !footAt(pp.x);
+  H.riding = pp => H.on() && !!pp && !pp.dead && !pp.swim && !pp.climb && !pp.mcBoard && !footAt(pp.x);   /* (deeprails3: on THE FOREMAN's cart he is out of his own - pp.mcBoard) */
   const cartOf = pp => pp.mcCart || (pp.mcCart = { v: 0, crashCd: 0, hist: [], lastGround: null, wasGround: true, crashT: 0, bounce: 0 });
   H.cart = pp => cartOf(pp);
 
@@ -49,10 +50,12 @@ export function makeMinecartHands(ctx) {
     for (const p of M.points) { p.state = p.dflt; layPoints(p); }
     for (const r of M.rocks) { r.armed = true; r.fallT = -1; r.done = false; }
     for (const b of M.breaks) relay(b);
-    M.carts = []; M.shots = []; M.runes = []; M.lobs = []; M.wrecks = []; M.told = {}; M.tellT = -9;   /* (a life: every tell ahead of you is told again) */
+    M.carts = []; M.shots = []; M.runes = []; M.lobs = []; M.wrecks = []; M.told = {}; M.tellT = -9; M.fm = null; M.shadows = [];   /* (a life: every tell ahead of you is told again) */
+    for (const pp of ctx.players) pp.mcBoard = null;
     /* THE GOBLINS WAIT: a placed foe whose ent says ride: {...} is put away (not alive) until you pass its trigger */
     const ents = M.L.ents;
     for (const e of ctx.enemies()) { const k = e.xpKey ? +String(e.xpKey).split('.')[0] : -1, src = k >= 0 ? ents[k] : null;
+      if (src && src.ride && e.alive && src.ride.foreman) { e.mcRide = src.ride; fmSpawn(e); continue; }   /* (deeprails3) THE FOREMAN waits in his cart from the start (the mini: the game finds him alive) */
       if (src && src.ride && e.alive) { e.mcRide = src.ride; e.mcWait = true; e.alive = false; e.mcSrcX = src.x; if (src.eliteName) e.eliteName = src.eliteName; } }
     for (const pp of ctx.players) { const c = cartOf(pp); c.v = 0; c.hist = []; c.lastGround = null; c.crashCd = 0; c.holdT = MC.hold; c.bounce = 0; c.foot = !!footAt(pp.x); c.prevX = pp.x; }   /* (the cart waits a beat at the start and at a station) */
   };
@@ -61,14 +64,15 @@ export function makeMinecartHands(ctx) {
 
   /* ---------- THE CART ---------- */
   const solidAt = (px, py) => { const t = ctx.cellGet(Math.floor(px / TS()), Math.floor(py / TS())); return t === ctx.T.SOLID || t === ctx.T.PORT || t === ctx.T.PALISADE || t === ctx.T.CRATE; };
-  H.treadmill = pp => (ctx.drillTread ? ctx.drillTread(pp) : null);
+  /* THE TREADMILL: the drill's tunnel, or (deeprails3) THE FOREMAN's loop while he rides - a hero inside it holds his place while the world runs past at cruise */
+  H.treadmill = pp => { const d = ctx.drillTread ? ctx.drillTread(pp) : null; if (d) return d; if (!fmLive() || !pp) return null; const G = M.fm.S.G; if (pp.x < G.x0 - 8 || pp.x > G.x1 + 8) return null; return { cruise: MC.cruise, x0: G.x0, x1: G.x1 }; };
   H.drive = (P, dt, keys) => {
     if (!H.riding(P)) return false;
     const c = cartOf(P), tm = H.treadmill(P);
     c.crashCd = Math.max(0, c.crashCd - dt); c.crashT = Math.max(0, c.crashT - dt);
     const stunned = (P.hurt > 0 && c.crashT > 0), grounded = P.ground || P.coyote > 0;
     const pump = !!keys.right && !keys.left && !stunned, brake = !!keys.left && !keys.right;
-    if (tm) { const want = brake ? tm.cruise - MC.treadBack : pump ? MC.boost : tm.cruise; c.v += Math.max(-MC.treadAcc * dt, Math.min(MC.treadAcc * dt, want - c.v)); }   /* THE TUNNEL: the world runs past at cruise - brake lets you drift back, pump pulls you ahead, let go and you hold */
+    if (tm) { const want = tm.drag ? tm.cruise + tm.drag : brake ? tm.cruise - MC.treadBack : pump ? MC.boost : tm.cruise;   /* (deeprails3: on the drill's chain the cart is dragged, whatever is held) */ c.v += Math.max(-MC.treadAcc * dt, Math.min(MC.treadAcc * dt, want - c.v)); }   /* THE TUNNEL: the world runs past at cruise - brake lets you drift back, pump pulls you ahead, let go and you hold */
     else if (grounded && c.holdT > 0 && !keys.right) { c.holdT -= dt; c.v = 0; }   /* WAITING at the start / a station: it rolls off on its own after MC.hold (RIGHT goes at once) */
     else if (grounded) { c.holdT = 0; c.v = cartSpeed(c.v, { boost: pump, brake }, dt); }
     else if (pump) c.v = Math.min(MC.boost, c.v + MC.accUp * 0.5 * dt); else if (brake) c.v = Math.max(MC.crawl, c.v - MC.brake * 0.5 * dt);   /* in the air the cart keeps its pace: a held pump or brake moves it at half the rate */
@@ -107,7 +111,8 @@ export function makeMinecartHands(ctx) {
     if (p.flash > 0.25) return false;
     if (p.ore && ctx.questGot() < p.ore) { p.flash = 0.5; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(p.x * TS() + 8, p.row * TS() - 34, 'LOCKED: THE SMELTER WANTS 8 ORE', '#9aa39a'); return true; }
     p.state = p.state === 'set' ? 'open' : 'set'; p.flash = 0.5; layPoints(p); M.n.throws++;
-    ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.stone && ctx.sfx.stone(); ctx.sparks(p.x * TS() + 8, p.row * TS() - 16, 1, 5);
+    if (p.sw) { ctx.sfx.leverClunk && ctx.sfx.leverClunk(); ctx.sfx.bridgeSwing && ctx.sfx.bridgeSwing(p.state === 'set'); ctx.sparks(p.x * TS() + 8, p.row * TS() - 16, 1, 4); }   /* (dr3art) the red-handled switch: a latch clunk, the span swinging */
+    else { ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.stone && ctx.sfx.stone(); ctx.sparks(p.x * TS() + 8, p.row * TS() - 16, 1, 5); }
     ctx.number(p.x * TS() + 8, p.row * TS() - 38, p.state === 'set' ? 'POINTS SET: STAY HIGH' : 'POINTS OPEN: DOWN TO THE LOW LINE', p.state === 'set' ? '#ffd36b' : '#bce8fa');
     return true;
   }
@@ -122,25 +127,32 @@ export function makeMinecartHands(ctx) {
     const ts = TS(), sp = e.mcRide, row = sp.row; let x;
     if (sp.at !== undefined) x = sp.at * ts + 8;
     else { x = P.x + (sp.off >= 0 ? Math.max(sp.off, 190) : Math.min(sp.off, -190)); if (surfaceY(x, row) === null) x = P.x + sp.off; }
-    const y = sp.ledge ? row * ts : surfaceY(x, row); if (y === null) return;
-    const cart = { e, row, x, y, v: sp.ledge || sp.foreman ? 0 : sp.slow || sp.pace || cartOf(P).v || MC.cruise, off: sp.off, slow: sp.slow || 0, pace: sp.pace || 0, hold: sp.at !== undefined, ledge: !!sp.ledge, foreman: !!sp.foreman,
-      state: sp.ledge ? 'ledge' : 'roll', cd: 0.9 + Math.random() * 0.5, tell: 0, vy: 0, id: M.carts.length, rams: 0, stun: 0, maxX: sp.foreman && e.gate !== undefined ? e.gate * ts - 26 : 1e9 };
-    cart.hp0 = e.hp; M.carts.push(cart); e.mcCart = cart; e.mcWait = false; e.alive = true; e.x = x; e.y = y - (cart.ledge ? 0 : 6); e.vx = 0; e.vy = 0; e.face = Math.sign(P.x - x) || -1;
-    if (!M.said['cart' + e.t + cart.ledge]) { M.said['cart' + e.t + cart.ledge] = 1; ctx.number(P.x, P.y - 40, cart.foreman ? 'THE FOREMAN: AN ARMOURED CART' : cart.ledge ? 'A GOBLIN THROWER ON A LEDGE' : e.t === 'gobmage' ? 'A GOBLIN CASTER ON A CART' : 'A GOBLIN ARCHER ON A CART', '#ffd36b'); }
-    if (!cart.ledge) ctx.sfx.rattle && ctx.sfx.rattle(1);
+    const still = sp.ledge || sp.perch || sp.jumper;   /* (deeprails3) a goblin on a roof timber, a goblin on a ledge who leaps: they stand where they are put */
+    const y = still ? row * ts : sp.foreman ? FMG.FOREMAN.low * ts : surfaceY(x, row); if (y === null) return;
+    const cart = { e, row, x, y, v: still || sp.foreman ? 0 : sp.slow || sp.pace || cartOf(P).v || MC.cruise, off: sp.off, slow: sp.slow || 0, pace: sp.pace || 0, hold: sp.at !== undefined, ledge: !!sp.ledge, foreman: !!sp.foreman,
+      perch: !!sp.perch, jumper: !!sp.jumper, swing: !!sp.swing, line: sp.line || 0,
+      state: sp.ledge ? 'ledge' : sp.perch ? 'perch' : sp.jumper ? 'jwait' : 'roll', cd: 0.9 + Math.random() * 0.5, tell: 0, vy: 0, id: M.carts.length, rams: 0, stun: 0, maxX: 1e9 };
+    cart.hp0 = e.hp; M.carts.push(cart); e.mcCart = cart; e.mcWait = false; e.alive = true; e.x = x; e.y = y - (still ? 0 : 6); e.vx = 0; e.vy = 0; e.face = Math.sign(P.x - x) || -1;
+    if (!M.said['cart' + e.t + cart.ledge + cart.perch + cart.jumper + cart.swing]) { M.said['cart' + e.t + cart.ledge + cart.perch + cart.jumper + cart.swing] = 1;
+      ctx.number(P.x, P.y - 40, cart.foreman ? 'THE FOREMAN: JUMP ON HIS CART' : cart.perch ? 'A GOBLIN ON THE ROOF TIMBER' : cart.jumper ? 'A GOBLIN READY TO LEAP' : cart.swing ? 'A GOBLIN WITH A HOOK ALONGSIDE' : cart.ledge ? 'A GOBLIN THROWER ON A LEDGE' : e.t === 'gobmage' ? 'A GOBLIN CASTER ON A CART' : 'A GOBLIN ARCHER ON A CART', '#ffd36b'); }
+    if (!still) ctx.sfx.rattle && ctx.sfx.rattle(1);
   }
+  /* (deeprails3) THE FOREMAN's cart, made at load: he waits in it on his loop (src/foreman.js mode 'wait') until the lead hero rides in */
+  function fmSpawn(e) { const ts = TS(), S = FMG.newFight(FMG.geom(ts)), x = FMG.foremanX(S), y = FMG.FOREMAN.low * ts;
+    const cart = { e, row: FMG.FOREMAN.low, x, y, v: 0, off: 0, slow: 0, pace: 0, hold: true, ledge: false, foreman: true, perch: false, jumper: false, swing: false, line: 0, state: 'roll', cd: 1, tell: 0, vy: 0, id: M.carts.length, rams: 0, stun: 0, maxX: 1e9 };
+    cart.hp0 = e.hp; e.cnSkin = 'foremancart'; M.carts.push(cart); e.mcCart = cart; e.mcWait = false; e.x = x;   /* (dr3art) his own skin, set here and not on the placed foe: the level hash covers the placed foes */ e.y = y - 6; e.vx = 0; e.vy = 0; e.face = -1; e.h = 30; e.maxHp0 = e.hp0 || e.hp; M.fm = { e, cart, S, scroll: 0, wordT: 0 }; }
   /* a lob: a pick (or the foreman's bomb) at where the hero's cart WILL be when it lands - its mark drawn on the rail (runeAt with MC.throwT) */
-  function lob(from, P, heroV, name, dmg) { const pc = cartOf(P), gy = pc.lastGround ? pc.lastGround.y : P.y, tx = runeAt(P.x, heroV, MC.throwT);
-    M.lobs.push({ x0: from.x, y0: from.y - 14, x: from.x, y: from.y - 14, tx, ty: gy, t: MC.throwT, t0: MC.throwT, name, dmg, id: M.n.lobs++, bomb: name !== 'A THROWN PICK' }); ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); }
+  function lob(from, P, heroV, name, dmg, T = MC.throwT, off = 0) { const pc = cartOf(P), gy = pc.lastGround ? pc.lastGround.y : P.y, tx = runeAt(P.x, heroV, T) + off, tm = H.treadmill(P);
+    M.lobs.push({ x0: from.x, y0: from.y - 14, x: from.x, y: from.y - 14, tx, ty: gy, t: T, t0: T, name, dmg, id: M.n.lobs++, bomb: name !== 'A THROWN PICK' && name !== "THE FOREMAN'S PICK", slide: tm ? tm.cruise : 0 });   /* (deeprails3: on a treadmill its mark is on the running rail - drawn sliding to where it lands) */ ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); }
   function stepCart(cart, P, dt) {
     const e = cart.e, pc = cartOf(P), heroV = H.riding(P) ? P.vx : 0, ts = TS();
     if (cart.state === 'gone') return;
+    if (cart.foreman) return;   /* (deeprails3) THE FOREMAN's cart is his fight's (fmStep) */
+    if (cart.state === 'perch' || cart.state === 'jwait' || cart.state === 'leap') { stepPerch(cart, P, dt, heroV); return; }
     if (cart.state === 'fall') { cart.vy += 900 * dt; cart.y += cart.vy * dt; cart.x += cart.v * dt; if (cart.y > ctx.LH() * ts) cart.state = 'gone'; if (e.alive && e.mcCart === cart) { e.x = cart.x; e.y = cart.y - 6; } return; }
     if (cart.state === 'ledge') { if (!e.alive || e.mcCart !== cart) { cart.state = 'gone'; return; } e.x = cart.x; e.y = cart.y; e.vx = 0; e.vy = 0; e.face = Math.sign(P.x - cart.x) || e.face; }
     else {
       if (cart.state === 'empty') { cart.v = Math.max(0, cart.v - 120 * dt); cart.emptyT = (cart.emptyT || 0) + dt; if (cart.emptyT > 2.5) { cart.state = 'gone'; ctx.burst(cart.x, cart.y - 4, 6, ['#5a6270', '#8a919c'], 40, 0.4); return; } }
-      else if (cart.foreman) { cart.stun = Math.max(0, cart.stun - dt);   /* THE FOREMAN: he holds until you come, then rolls on at his pace - and stops at his gate */
-        if (cart.stun > 0 || P.x < cart.x - 300) cart.v = 0; else cart.v = MC.foremanPace; if (cart.x >= cart.maxX) { cart.v = 0; cart.x = cart.maxX; } }
       else if (cart.hold && P.x + cart.off < cart.x - 4) cart.v = 0;
       else if (cart.slow) cart.v = cart.slow;
       else if (cart.pace) { cart.hold = false; cart.v = cart.pace; if (P.x - cart.x > 320) { cart.state = 'gone'; return; } }   /* A RIDER AT HIS OWN PACE: pump to catch him (behind you and out of sight, he pulls off) */
@@ -152,20 +164,46 @@ export function makeMinecartHands(ctx) {
       if (cart.state === 'empty' || !e.alive || e.mcCart !== cart) return;
       e.x = cart.x; e.y = cart.y - 6; e.vx = 0; e.vy = 0; e.face = Math.sign(P.x - cart.x) || e.face;
     }
+    /* (deeprails3) A RIDER WHO SWINGS IN: alongside on the parallel line, his hook up (told), then down across the line under him - a ducked tub is under it */
+    if (cart.swing) { const dx = P.x - cart.x; if (cart.stun > 0) { cart.tell = 0; e.mcTelling = false; return; }
+      if (cart.chopT > 0) { cart.chopT -= dt; chopAt(cart, cart.x - 22, cart.x + 22, MC.swingDmg, 'A SWINGING HOOK'); if (cart.chopT <= 0) { cart.cd = MC.swingCd; e.mcTelling = false; } return; }
+      if (cart.tell > 0) { cart.tell -= dt; e.mcTelling = true; if (cart.tell <= 0) { cart.chopT = MC.swingT; cart.hitDone = false; ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } return; }
+      cart.cd -= dt; if (cart.cd <= 0 && Math.abs(dx) < 40 && !P.dead && P.y > cart.y + 20) { cart.tell = MC.swingTell; ctx.sfx.tell && ctx.sfx.tell(false); } return; }
     /* ITS SHOT: told ('!' and the draw), then loosed */
     const dx = P.x - cart.x, inRange = Math.abs(dx) < (cart.ledge ? 230 : 250) && !P.dead && !(cart.ledge && dx > 20);
-    const tellT = cart.ledge || cart.foreman ? MC.throwTell : e.t === 'gobmage' ? MC.casterTell : MC.archerTell, cdT = cart.ledge || cart.foreman ? MC.throwCd : e.t === 'gobmage' ? MC.casterCd : MC.archerCd;
+    const tellT = cart.ledge ? MC.throwTell : e.t === 'gobmage' ? MC.casterTell : MC.archerTell, cdT = cart.ledge ? MC.throwCd : e.t === 'gobmage' ? MC.casterCd : MC.archerCd;
     if (cart.stun > 0) { cart.tell = 0; e.mcTelling = false; return; }
     if (cart.tell > 0) { cart.tell -= dt; e.mcTelling = true;
       if (cart.tell <= 0) { e.mcTelling = false; cart.cd = cdT;
         if (cart.ledge) lob(cart, P, heroV, 'A THROWN PICK', MC.throwDmg);
-        else if (cart.foreman) lob(cart, P, heroV, "THE FOREMAN'S BOMB", MC.throwDmg + 4);
         else if (e.t === 'gobmage') { const pc0 = cartOf(P), gy = pc0.lastGround ? pc0.lastGround.y : P.y; const rx = runeAt(P.x, heroV);
           M.runes.push({ x: rx, y: gy, t: MC.runeT, t0: MC.runeT, id: M.n.runes++ }); ctx.sfx.charge && ctx.sfx.charge(); }
         else { const fy = e.y - 7, ty = P.y - 8, lead = 0.45, tx = P.x + heroV * lead; const vx = (tx - cart.x) / lead, vy = (ty - fy) / lead - 0.5 * 300 * lead;
           M.shots.push({ x: cart.x, y: fy, vx, vy, g: 300, life: 2, dmg: MC.arrowDmg, name: 'A CART ARCHER', id: M.n.arrows++ }); ctx.sfx.bowShot ? ctx.sfx.bowShot() : ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } } }
-    else { cart.cd -= dt; if (cart.cd <= 0 && inRange && (!cart.foreman || dx < -30)) { cart.tell = tellT; ctx.sfx.tell && ctx.sfx.tell(false); } }
+    else { cart.cd -= dt; if (cart.cd <= 0 && inRange) { cart.tell = tellT; ctx.sfx.tell && ctx.sfx.tell(false); } }
   }
+  /* (deeprails3) A CHOP DOWN ACROSS THE LINE (the perched goblin's pick, the swinging rider's hook): any hero under it on the line below, not ducked in his tub, is hit
+     once a chop - the beam's own test (src/duck.js duckClears) */
+  function chopAt(cart, x0, x1, dmg, name) { if (cart.hitDone) return; const ly = cart.line ? cart.line * TS() : cart.y + 3 * TS(), cy = ly - 14;
+    for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || P.inv > 0 || cart.hitDone) return; const b = ctx.duckBox(P);
+      if (b.r > x0 && b.l < x1 && b.t < cy && b.b > cy - 8 && !ctx.duckClears(P, cy)) { cart.hitDone = true; ctx.hurtHero(cart.x, dmg, { name, noKnock: true }); } }); }
+  /* (deeprails3) THE GOBLIN ON A ROOF TIMBER (state 'perch') and THE GOBLIN WHO LEAPS ('jwait' -> 'leap', then he is a goblin on your line like any other) */
+  function stepPerch(cart, P, dt, heroV) { const e = cart.e, ts = TS();
+    if (!e.alive || e.mcCart !== cart) { cart.state = 'gone'; e.mcPose = null; return; }
+    if (cart.state === 'perch') { e.x = cart.x; e.y = cart.y; e.vx = 0; e.vy = 0; e.face = -1; const dx = cart.x - P.x;
+      e.mcPose = cart.chopT > 0 ? { sy: 0.9, rot: 0.25, dx: -1 } : cart.tell > 0 ? { sy: 1.07, rot: -0.14 } : { sy: 0.8, sx: 1.1 };   /* (dr3art) crouched on the timber, stood up to wind the pick, hunched over the chop */
+      if (cart.chopT > 0) { cart.chopT -= dt; chopAt(cart, cart.x - 26, cart.x + 6, MC.perchDmg, 'A GOBLIN ON A BEAM'); if (cart.chopT <= 0) { cart.spent = true; e.mcTelling = false; } return; }
+      if (cart.tell > 0) { cart.tell -= dt; e.mcTelling = true; if (cart.tell <= 0) { cart.chopT = MC.perchT; cart.hitDone = false; ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } return; }
+      if (!cart.spent && !P.dead && dx > -8 && dx < MC.perchReach) { cart.tell = MC.perchTell; ctx.sfx.tell && ctx.sfx.tell(false); } return; }
+    if (cart.state === 'jwait') { e.x = cart.x; e.y = cart.y; e.vx = 0; e.vy = 0; e.face = -1; e.mcPose = cart.tell > 0 ? { sy: 0.68, sx: 1.2 } : { sy: 0.84, sx: 1.1 };   /* (dr3art) crouched at the ledge's lip; a tight coil on the tell */
+      if (cart.tell > 0) { cart.tell -= dt; e.mcTelling = true; if (cart.tell <= 0) { const pc = cartOf(P), gy = pc.lastGround ? pc.lastGround.y : P.y;
+          cart.leap = { x0: cart.x, y0: cart.y, tx: Math.max(cart.x - 200, Math.min(cart.x + 40, runeAt(P.x, heroV, MC.leapT) + MC.leapLead)), ty: gy, t: MC.leapT }; cart.state = 'leap'; e.mcTelling = false; ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } return; }
+      if (!P.dead && cart.x - P.x < 230 && cart.x - P.x > 40) { cart.tell = MC.leapTell; ctx.sfx.tell && ctx.sfx.tell(false); const pc = cartOf(P), gy = pc.lastGround ? pc.lastGround.y : P.y;
+        M.shadows.push({ x: runeAt(P.x, heroV, MC.leapTell + MC.leapT) + MC.leapLead, y: gy, t: MC.leapTell + MC.leapT, t0: MC.leapTell + MC.leapT, cart }); } return; }
+    if (cart.state === 'leap') { const L0 = cart.leap; L0.t -= dt; const k = 1 - Math.max(0, L0.t) / MC.leapT; e.x = L0.x0 + (L0.tx - L0.x0) * k; e.y = L0.y0 + (L0.ty - L0.y0) * k - Math.sin(k * Math.PI) * 40; e.vx = 0; e.vy = 0; e.mcPose = { sy: 0.92, rot: 0.9 * Math.sin(k * Math.PI) };
+      if (L0.t <= 0) { e.x = L0.tx; e.y = L0.ty; cart.state = 'gone'; e.mcCart = null; e.mcPose = null; ctx.shake(3); ctx.dust(e.x, e.y, 6); ctx.dust(e.x - 8, e.y, 3); ctx.dust(e.x + 8, e.y, 3); ctx.sfx.thud && ctx.sfx.thud();
+        for (const pp of ctx.players) ctx.asPlayer(pp, () => { const H0 = ctx.hero(); if (H0.dead || H0.inv > 0) return; if (Math.abs(H0.x - e.x) < 14 && Math.abs(H0.y - e.y) < 20) ctx.hurtHero(e.x, MC.leapDmg, { name: 'A LEAPING GOBLIN', noKnock: true }); });
+        ctx.number(e.x, e.y - 30, 'HE IS ON YOUR LINE: RAM HIM', '#ffd36b'); } } }
   /* YOU AND A GOBLIN CART on the same line: landing in it TAKES it (the rider is thrown out); rolling into it at FULL PUMP RAMS it (deeprails2) - slower, a crash.
      THE FOREMAN's cart: a ram takes a third of him and throws you back a length to pump again; a bump hurts you */
   function meetCarts(P, dt) {
@@ -173,8 +211,8 @@ export function makeMinecartHands(ctx) {
     for (const cart of M.carts) { if (cart.state !== 'roll' && cart.state !== 'empty') continue;
       if (Math.abs(P.x - cart.x) > (cart.foreman ? 18 : 13) || Math.abs(P.y - cart.y) > 10) continue;
       const landed = P.ground && !pc.wasGround, falling = !P.ground && P.vy > 30;
-      if (cart.foreman && cart.state === 'roll') { if (P.x >= cart.x || pc.crashCd > 0 || pc.bounce > 0) continue; ramForeman(P, pc, cart); continue; }
-      if ((landed || falling) && !cart.foreman) { cart.state = 'gone'; M.n.taken++; const e = cart.e;
+      if (cart.foreman) continue;   /* (deeprails3: THE FOREMAN meets you in his own fight - src/foreman.js) */
+      if (landed || falling) { cart.state = 'gone'; M.n.taken++; const e = cart.e;
         if (e.alive && e.mcCart === cart) { ctx.killFoe(e); ctx.number(cart.x, cart.y - 30, 'THROWN OUT: THE CART IS YOURS', '#8fd160'); } else ctx.number(cart.x, cart.y - 30, 'INTO THE CART', '#8fd160');
         pc.v = Math.max(pc.v, cart.v, MC.cruise); ctx.sfx.clank && ctx.sfx.clank(); ctx.dust(P.x, P.y, 5); continue; }
       if (P.ground && pc.crashCd <= 0 && (P.x < cart.x) && pc.v > cart.v + 10) {
@@ -184,16 +222,55 @@ export function makeMinecartHands(ctx) {
         (sayOk('cartCrash', true) && ctx.number(P.x, P.y - 34, 'CRASH: PUMP TO RAM IT, OR JUMP IN', '#ff9a5c')); }
     }
   }
-  function ramForeman(P, pc, cart) { const e = cart.e;
-    if (pc.v >= MC.ramV) { M.n.rams++; M.n.foremanRams++; cart.rams++; cart.stun = 0.8; pc.crashCd = 0.4;
-      const d = Math.ceil((cart.hp0 || e.hp0 || e.hp) / MC.foremanRams) + 1;   /* (a third of what he rolled in with: no guard, no poise - a ram is the whole cart) */
-      if (e.hp - d <= 0) { M.ramming = true; try { ctx.killFoe(e); } finally { M.ramming = false; } } else { e.hp -= d; e.flash = 0.25; e.hurtT = 0.25; }
-      ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(cart.x - 10, cart.y - 10, 16, ['#5a6270', '#d89a5a', '#ffd36b', '#ffffff'], 120, 0.5);
-      ctx.number(cart.x, cart.y - 34, RAM_LINE[e.alive ? Math.max(1, Math.min(2, MC.foremanRams - cart.rams)) : 0], '#ffd36b');
-      bounceBack(pc, 70); if (!e.alive) { cart.state = 'fall'; cart.vy = -200; cart.v = 120; } }
-    else { M.n.bumps++; pc.crashCd = MC.crashCd; ctx.hurtHero(cart.x, MC.bumpDmg, { unblockable: true, name: "THE FOREMAN'S CART", noKnock: true }); ctx.sfx.clank && ctx.sfx.clank(); ctx.shake(2); bounceBack(pc, 56);
-      (sayOk('foremanBump', true) && ctx.number(P.x, P.y - 34, 'TOO SLOW: PUMP, THEN RAM HIM', '#ff9a5c')); } }
-
+  /* ---------- THE FOREMAN (deeprails3: THE DEEP RAILS' MINI - src/foreman.js is his fight; this is its world) ----------
+     His LOOP: once the lead hero is past the mini's trigger the stretch is a treadmill (H.treadmill) and the tunnel is drawn running past at cruise. A hero who
+     lands on his cart from above is PINNED on it (pp.mcBoard: out of his own cart, which rolls on under him - drawn at the spot he left it) until the lurch throws
+     him back into it, or he jumps off */
+  function fmLive() { return !!(M && M.fm && M.fm.e.alive && M.fm.S.mode !== 'wait' && !M.fm.done); }
+  H.foremanOn = () => fmLive();
+  H.foreman = () => (M && M.fm ? M.fm : null);
+  function fmUnpin(pp, how) { if (!pp || !pp.mcBoard) return; const S = M.fm && M.fm.S, spot = pp.mcBoard.spotX; pp.mcBoard = null;
+    ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return; const c = cartOf(P); P.ground = false; P.onMover = null;
+      if (how === 'lurch') { P.vy = FMG.FOREMAN.lurchVy; P.inv = Math.max(P.inv || 0, 0.8); bounceBack(c, Math.max(0, P.x - spot)); c.v = MC.cruise; M.n.fmThrown = (M.n.fmThrown || 0) + 1; ctx.number(P.x, P.y - 34, 'THROWN OFF: BACK IN YOUR CART', '#8fd160'); }
+      else if (how === 'down') { P.vy = -200; c.v = MC.cruise; }
+      if (S && how === 'jump') { S.n.jumpedOff++; c.v = MC.cruise; } }); }
+  function fmStep(dt, P0) {
+    const F = M.fm; if (!F) return; const { e, cart, S } = F, G = S.G, ts = TS();
+    if (!e.alive || F.done) { if (!F.done) { F.done = true; cart.state = 'fall'; cart.vy = -200; cart.v = 140; ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.burst(cart.x, cart.y - 10, 18, ['#5a6270', '#d89a5a', '#ffd36b', '#ffffff'], 120, 0.6); for (const pp of ctx.players) fmUnpin(pp, 'down'); }
+      if (cart.state === 'fall') { cart.vy += 900 * dt; cart.y += cart.vy * dt; cart.x += cart.v * dt; if (cart.y > ctx.LH() * ts) cart.state = 'gone'; } return; }
+    if (S.mode === 'wait') { cart.x = FMG.foremanX(S); e.x = cart.x; e.y = cart.y - 6; if (P0 && !P0.dead && P0.x >= (M.L.mini ? M.L.mini.trigger : G.x0 + 64) && H.riding(P0)) { S.mode = 'idle'; S.cd = 1.4; ctx.number(cart.x, cart.y - 40, 'THE FOREMAN: JUMP ON HIS CART', '#ffd36b'); } return; }
+    F.scroll += MC.cruise * dt; F.wordT = Math.max(0, F.wordT - dt);
+    /* a hero on his cart: jumped off (his own jump), or pinned where he stands on it */
+    for (const pp of ctx.players) if (pp.mcBoard) { if (pp.dead || pp.vy < -60) { if (S.board && S.board.pp === pp) S.board = null; fmUnpin(pp, pp.dead ? 'down' : 'jump'); } }
+    const heroes = ctx.players.map(pp => ({ x: pp.x, y: pp.y, prevY: pp.mcPrevY === undefined ? pp.y : pp.mcPrevY, vy: pp.vy, ground: !!pp.ground, alive: !pp.dead && !(pp.hp <= 0), riding: H.riding(pp), v: cartOf(pp).v, pp }));
+    if (!heroes.some(h => h.alive && h.x > G.x0 - 8 && h.x < G.x1 + 8)) { fmAfter(F); return; }   /* (nobody on his loop - a hero lifted past it by a tool: he waits) */
+    const c = fmC(F);
+    FMG.stepForeman(S, e, dt, heroes, c);
+    fmAfter(F); }
+  function fmC(F) { const { e, cart, S } = F, G = S.G;
+    return { ramV: MC.ramV, ramDmg: MC.ramDmg,
+      hit: (h, d, name) => ctx.asPlayer(h.pp, () => { if (!(ctx.hero().inv > 0)) ctx.hurtHero(cart.x, d, { unblockable: true, name, noKnock: true }); ctx.shake(3); ctx.sfx.clank && ctx.sfx.clank(); }),
+      bounce: (h, px) => { const pc = cartOf(h.pp); pc.crashCd = Math.max(pc.crashCd, 0.4); bounceBack(pc, px); pc.v = MC.cruise; },
+      stomp: (h, d, braced) => { if (braced) { ctx.asPlayer(h.pp, () => { const P = ctx.hero(); P.vy = -260; P.ground = false; }); M.stomping = true; try { ctx.hitFoe(e, d); } finally { M.stomping = false; } ctx.sparks(cart.x, G.topY, 1, 5); return; }
+        M.stomping = true; try { ctx.hitFoe(e, d); } finally { M.stomping = false; } ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.burst(cart.x, G.topY, 16, ['#ffd36b', '#ffffff', '#d89a5a'], 110, 0.5); },
+      board: (h, off) => { h.pp.mcBoard = { off, spotX: S.board ? S.board.spotX : cart.x - 40 }; pinOn(h.pp); },
+      release: (b, how) => { fmUnpin(b.pp, how); },
+      lob: (h, off = 0) => ctx.asPlayer(h.pp, () => { const P = ctx.hero(); lob(cart, P, H.riding(P) ? P.vx : 0, "THE FOREMAN'S PICK", FMG.FOREMAN.pickDmg, FMG.FOREMAN.pickT, off); }),
+      number: (x, y, t, col) => ctx.number(x, y, t, col),
+      sound: k => { const s = ctx.sfx; try { ({ stomp: () => { (s.heavy || s.thud)(); (s.stompClank || s.clank) && (s.stompClank || s.clank)(); }, clank: () => s.clank && s.clank(), brake: () => s.screech && s.screech(), tell: () => s.tell && s.tell(false), tellHard: () => s.tell && s.tell(true), ram: () => { (s.heavy || s.thud)(); s.screech && s.screech(); }, lurch: () => (s.heavy || s.thud)() }[k] || (() => {}))(); } catch {} },
+      chip: (d, word) => { M.stomping = true; try { ctx.hitFoe(e, d); } finally { M.stomping = false; } fmWord(word); } }; }
+  function fmAfter(F) { const { e, cart, S } = F;
+    if (S.board && S.board.pp && !S.board.pp.mcBoard) S.board = null;
+    cart.x = FMG.foremanX(S); cart.v = MC.cruise + (S.mode === 'drift' ? -(S.dv || FMG.FOREMAN.driftV) : S.mode === 'ram' ? -FMG.FOREMAN.ramV : S.mode === 'away' ? FMG.FOREMAN.awayV : 0);
+    e.x = cart.x; e.y = cart.y - 6; e.vx = 0; e.vy = 0; e.face = -1; e.mcTelling = S.mode === 'pickTell' || S.mode === 'ramTell' || S.mode === 'driftTell' || S.mode === 'lurchTell';
+    for (const pp of ctx.players) if (pp.mcBoard) pinOn(pp);
+    for (const pp of ctx.players) pp.mcPrevY = pp.y;
+  }
+  /* (deeprails3) THE GAME'S OWN HEAD-STOMP on THE FOREMAN (src/main.js, falling onto a foe's head): his fight takes it - a boarding, or BRACED */
+  H.stomp = (e, P) => { if (!fmLive() || M.fm.e !== e || P.mcBoard) return false; const F = M.fm, h = { x: P.x, y: P.y, vy: P.vy, pp: P };
+    const r = FMG.landOn(F.S, e, h, fmC(F)); if (r) fmAfter(F); return true; };
+  function pinOn(pp) { const F = M.fm; if (!F) return; const G = F.S.G; ctx.asPlayer(pp, () => { const P = ctx.hero(); P.x = F.cart.x + pp.mcBoard.off; P.y = G.topY; P.vy = 0; P.vx = 0; P.ground = true; P.coyote = 0.1; P.onMover = null; P.face = 1; }); }
+  function fmWord(word) { const F = M.fm; if (!F || F.wordT > 0 || !word) return; F.wordT = 1.2; F.e.guardFx = 0.45; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(F.cart.x - 8, F.cart.y - 14, 1, 4); ctx.number(F.cart.x, F.cart.y - 36, word, '#c8d8e8'); }
   /* ---------- ONE FRAME ---------- */
   H.update = dt => {
     if (!M || !H.on()) return; M.clock += dt; const ts = TS(), now = ctx.time();
@@ -204,6 +281,8 @@ export function makeMinecartHands(ctx) {
     if (P0 && !P0.dead) for (const e of ctx.enemies()) if (e.mcWait && e.mcRide && P0.x >= e.mcRide.trig * ts) { if (P0.x > (e.mcRide.trig + 30) * ts && e.mcRide.at === undefined) e.mcWait = false; else spawnCart(e, P0); }
     for (const cart of M.carts) stepCart(cart, P0, dt);
     M.carts = M.carts.filter(c => c.state !== 'gone');
+    fmStep(dt, P0);   /* (deeprails3) THE FOREMAN */
+    for (const sh of M.shadows) sh.t -= dt; M.shadows = M.shadows.filter(sh => sh.t > 0);
     /* arrows, runes, lobs */
     for (const s of M.shots) { s.vy += s.g * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
       if (ctx.cellGet(Math.floor(s.x / ts), Math.floor(s.y / ts)) === ctx.T.SOLID) s.life = 0;
@@ -234,7 +313,7 @@ export function makeMinecartHands(ctx) {
       else { ctx.sfx.clank && ctx.sfx.clank(); M.wrecks.push({ x: P.x, y: P.y - 6, vx: 0, vy: 0, a: 0, va: 0, t: 0, floor: P.y - 6, parked: true }); ctx.number(P.x, P.y - 40, 'THE LINE ENDS: OUT, AND UP THE LIFT', '#ffd36b'); } }
     else if (!f && was && P.x >= ((L().mcFoot || []).find(q => Math.abs(q.board * TS() - P.x) < 40) || { board: -1 }).board * TS()) { M.n.boards++; c.v = 0; c.holdT = 0.5; c.hist = []; ctx.sfx.clank && ctx.sfx.clank(); ctx.dust(P.x, P.y, 6); ctx.number(P.x, P.y - 40, 'INTO THE CART: ROLL ON', '#8fd160'); } }
   /* THE TELLS (review MF1): crossing a tell's column (and short of the place it can hurt) puts its line in the hint box - once a life, never over another */
-  function tells(P) { if (P.dead) return; const col = P.x / TS();
+  function tells(P) { if (P.dead || fmLive()) return; const col = P.x / TS();   /* (deeprails3: nothing is told over THE FOREMAN's fight - the tells past his loop wait for its end) */
     for (const t of M.L.mcTells || []) { if (M.told[t.id]) continue; if (col >= t.at) { M.told[t.id] = 1; continue; } if (col < t.x) break;
       if (M.clock - M.tellT < MC.tellGap) break; M.told[t.id] = 1; M.tellT = M.clock; M.n.tells = (M.n.tells || 0) + 1; ctx.number(P.x, P.y - 40, t.text, '#ffe9a0'); break; } }
   /* THE DRILL COMES (B8): from the rumble's column the roof shakes and dusts on a beat that quickens as you near the bore, a rumble under it */
@@ -294,9 +373,11 @@ export function makeMinecartHands(ctx) {
   H.rider = (e, dt) => !!(M && e.mcCart && e.mcCart.state !== 'gone' && e.mcCart.state !== 'fall');
   H.waiting = e => !!e.mcWait;
   /* A BLOW ON A RIDER: off his cart he goes (all of him). THE FOREMAN's armoured cart turns a blade to x0.35 (B10: a clank and the word); only the ram is whole */
-  H.knock = (e, dmg) => { if (!M || !e.mcCart || e.mcCart.state === 'empty' || e.mcCart.state === 'gone') return dmg; const cart = e.mcCart;
-    if (cart.foreman) { if (M.ramming) return dmg; e.guardFx = 0.4; ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x - 8, e.y - 14, 1, 4); (sayOk('foremanArmour', true) && ctx.number(e.x, e.y - 30, 'ARMOURED: RAM HIM', '#c8d8e8')); return Math.max(1, Math.round(dmg * MC.foremanArmour)); }
-    if (cart.ledge) return dmg;   /* (a thrower on his ledge is a goblin like any other) */
+  H.knock = (e, dmg, pl) => { if (!M || !e.mcCart || e.mcCart.state === 'empty' || e.mcCart.state === 'gone') return dmg; const cart = e.mcCart;
+    if (cart.foreman) { if (M.stomping || !M.fm) return dmg; if (pl && fmLive() && !ctx.hero().mcBoard && H.stomp(e, ctx.hero())) return dmg;   /* (a PLUNGE onto him boards him too - FROM ABOVE) */ const out = {}, d = FMG.takeBlade(M.fm.S, dmg, out); if (out.word) fmWord(out.word); else { e.flash = 0.2; ctx.sparks(e.x, e.y - 18, 1, 5); } return d; }   /* (deeprails3) whole while you stand on his cart; x0.4 with a clank and its word from anywhere else (B15) */
+    if (cart.perch && cart.state === 'perch') { cart.state = 'gone'; e.mcPose = null; M.n.knocked++; e.mcTelling = false; ctx.number(e.x, e.y - 22, 'KNOCKED OFF HIS BEAM', '#8fd160'); return Math.max(dmg, e.hp + 1); }
+    if (cart.jumper) return dmg;   /* (a goblin on his ledge, or in his leap, is a goblin like any other) */
+    if (cart.ledge || cart.state === 'jwait' || cart.state === 'leap') return dmg;   /* (a thrower on his ledge is a goblin like any other) */
     cart.state = 'empty'; M.n.knocked++; e.mcTelling = false; ctx.number(e.x, e.y - 22, 'KNOCKED OFF', '#8fd160'); M.n.caught += cart.pace ? 1 : 0; return Math.max(dmg, e.hp + 1); };
 
   /* ---------- THE DARK (deeprails2): the headlamp's cone ahead of the cart, and every goblin's lamp ---------- */
@@ -324,22 +405,37 @@ export function makeMinecartHands(ctx) {
     if (stallTick(C, Math.hypot(P.x - t.x, P.y - t.y), dt, M.clock, false)) { M.n.nudges = (M.n.nudges || 0) + 1; M.lastNudge = r.line; ctx.number(P.x, P.y - 34, r.line, '#ffe9a0'); } };
 
   /* ---------- DRAWING ---------- */
+  /* (deeprails3) THE FOREMAN: his armoured cart and him, and THE READ (B10): his tells (the brake sparks, the pick up, the red shoes of a ram, the lurch), OPEN while you
+     stand on his cart (a gold ring and the timer), BRACED (spikes up on his lid) after */
+  function drawForeman(g, c, cx, cy, time) { const F = M.fm, S = F ? F.S : null, x = R(c.x - cx), y = R(c.y - cy), mode = S ? S.mode : 'idle';
+    MCA.armourCart(g, c.x - cx, c.y - cy, time, c.v, S ? Math.min(3, S.stomps) : 0, mode === 'lurchTell' || mode === 'boarded');
+    if (!S || !c.e.alive) return; const blink = Math.floor(time * 12) % 2;
+    if (mode === 'driftTell' || mode === 'drift') { for (const wx of [x - 10, x + 10]) { g.fillStyle = blink ? '#ffd36b' : '#ff9a3c'; g.fillRect(wx - 1, y - 2, 2, 2); } if (mode === 'driftTell') txt('!', x, y - 50, blink ? '#ffd36b' : '#ffffff', 'center', 7); }
+    if (mode === 'pickTell') txt('!', x, y - 50, blink ? '#ff6b6b' : '#ffd36b', 'center', 7);
+    if (mode === 'ramTell' || mode === 'ram') { g.fillStyle = blink ? '#ff3b3b' : '#ff9a3c'; for (const wx of [x - 10, x, x + 10]) g.fillRect(wx - 3, y - 3, 6, 3); if (mode === 'ramTell') { const k = 1 - Math.max(0, S.mT) / FMG.FOREMAN.ramTell, sw = R(FMG.FOREMAN.ramV * FMG.FOREMAN.ramT); g.fillStyle = 'rgba(255,90,70,' + (0.1 + 0.18 * k).toFixed(2) + ')'; g.fillRect(x - sw - 16, y - 22, sw, 22); txt('!!', x, y - 50, blink ? '#ff6b6b' : '#ffffff', 'center', 7); } }
+    if (FMG.foremanOpen(S)) { const k = Math.max(0, S.mT) / (mode === 'boarded' ? FMG.FOREMAN.boardT : FMG.FOREMAN.lurchTell), on = 0.6 + 0.4 * Math.sin(time * 10); g.globalAlpha = on; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 24, 22, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+      if (mode === 'boarded') { g.fillStyle = '#1b1626'; g.fillRect(x - 18, y - 56, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, y - 56, R(36 * k), 3); txt('OPEN', x, y - 64, '#ffd36b', 'center', 5); }
+      else txt('!!', x, y - 60, blink ? '#ff6b6b' : '#ffffff', 'center', 7); } }
   H.drawWorld = (g, cx, cy, time) => { if (!M || !H.on()) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), now = ctx.time(), x0c = Math.floor(cx / ts) - 1, x1c = Math.ceil((cx + vw) / ts) + 1;
     /* THE FLOOD and THE LAVA under everything else on the line (deeprails2): black water under the trestles, the glow in the cavern's pit */
     for (const d of M.L.decor) { if (d.kind === 'flood' && d.x1 >= x0c && d.x0 <= x1c) MCA.flood(g, R(d.x0 * ts - cx), R((d.x1 + 1) * ts - cx), R(d.row * ts - cy), vh, time);
       else if (d.kind === 'lava' && d.x1 >= x0c && d.x0 <= x1c) MCA.lava(g, R(d.x0 * ts - cx), R((d.x1 + 1) * ts - cx), R(d.row * ts - cy), vh, time); }
+    /* (deeprails3) THE FOREMAN's LOOP: while he rides, the tunnel runs past at cruise edge to edge over the whole screen (the Great Drill's machinery) - nothing static of the
+       stretch is drawn over it (no half-moving scenery) */
+    const fmLoop = fmLive() && ctx.hero() && ctx.hero().x > M.fm.S.G.x0 - 40 && ctx.hero().x < M.fm.S.G.x1 + 40;
+    if (fmLoop) { const G = M.fm.S.G; MCA.tunnel(g, 0, vw, R((FMG.FOREMAN.high - 9) * ts - cy), R(G.lowY - cy), vh, M.fm.scroll, [R(G.lowY - cy)], false, time, true); }
     /* trestle bents under the elevated lines */
-    for (const [a, b, row] of M.L.mcTrestles) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x += 3) { if (ctx.cellGet(x, row) !== ctx.T.RAIL) continue; let yb = row + 1; while (yb < row + 40 && ctx.cellGet(x, yb) === ctx.T.AIR) yb++;
+    if (!fmLoop) for (const [a, b, row] of M.L.mcTrestles) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x += 3) { if (ctx.cellGet(x, row) !== ctx.T.RAIL) continue; let yb = row + 1; while (yb < row + 40 && ctx.cellGet(x, yb) === ctx.T.AIR) yb++;
       if (yb > row + 1) MCA.bent(g, R(x * ts + 6 - cx), R((row + 1) * ts - cy), R(yb * ts - cy), x + 3 <= b && ctx.cellGet(x + 3, row) === ctx.T.RAIL, x); }
     /* the rail along every line, on whatever stands there (sleepers and iron; laid up the ramps too) - a rail that breaks shows its cracks ahead of the break */
-    for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x++) { const t = ctx.cellGet(x, row); if (!(t === ctx.T.SOLID || t === ctx.T.RAIL || t === ctx.T.ONEWAY || (t >= 20 && t <= 25))) continue;
+    if (!fmLoop) for (const [a, b, row] of M.L.mcTrack) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x++) { const t = ctx.cellGet(x, row); if (!(t === ctx.T.SOLID || t === ctx.T.RAIL || t === ctx.T.ONEWAY || (t >= 20 && t <= 25))) continue;
       const sx = R(x * ts - cx), sy = R(row * ts - cy); if (t >= 20 && t <= 25) { MCA.slopeRail(g, sx, sy, t, heightAt); continue; } MCA.rail(g, sx, sy, x); }
     for (const b of M.breaks) { if (b.x1 < x0c || b.x0 > x1c) continue; const fr = b.started ? b.front : -1e9;
       for (let x = Math.max(b.x0, x0c); x <= Math.min(b.x1, x1c); x++) if (!b.broken.has(x)) MCA.rottenRail(g, R(x * ts - cx), R(b.row * ts - cy), x, b.started && (x * ts - fr) < 48);
       for (const d of b.debris) MCA.railDebris(g, R(d.x - cx), R(d.y - cy), d.t, d.x);
       if (b.started && fr > b.x0 * ts && fr < (b.x1 + 1) * ts) MCA.breakFront(g, R(fr - cx), R(b.row * ts - cy), time); }
     /* THE LANTERN STRINGS: a lamp post every sixth tile along the lines (none in the dark drift: its lamps are long out) */
-    for (const [x, row, nx] of MCA.lampPlan(M.L, ctx.cellGet, ctx.T, x0c, x1c)) { if (inDark(x * ts)) continue; MCA.lampPost(g, R(x * ts + 7 - cx), R(row * ts - cy), time, x, nx); }
+    for (const [x, row, nx] of MCA.lampPlan(M.L, ctx.cellGet, ctx.T, x0c, x1c)) { if (inDark(x * ts) || fmLoop) continue; MCA.lampPost(g, R(x * ts + 7 - cx), R(row * ts - cy), time, x, nx); }
     /* the decor: fall-ins, the roof over the hidden lever, the bore, the smelter's glow, the ledges, the buffers, the lift's cage */
     for (const d of M.L.decor) { if (d.kind === 'fallin') { const x = R(d.x * ts - cx), y = R((d.row - 2) * ts - cy); MCA.fallin(g, x, y, time); if (x > -40 && x < vw + 40) txt('FALLEN IN', x + 16, y - 6, '#ff9a5c', 'center', 5); }
       else if (d.kind === 'bore') { MCA.boreArch(g, R(d.x0 * ts - cx), (d.x1 - d.x0 + 1) * ts, R(d.row * ts - cy)); }
@@ -351,6 +447,8 @@ export function makeMinecartHands(ctx) {
       else if (d.kind === 'ledge') { const x = R(d.x0 * ts - cx); if (x < -100 || x > vw + 40) continue; MCA.ledge(g, x, (d.x1 - d.x0 + 1) * ts, R(d.row * ts - cy), d.x0); }
       else if (d.kind === 'buffer') { const x = R(d.x * ts - cx); if (x < -40 || x > vw + 40) continue; MCA.buffer(g, x, R(d.row * ts - cy), !!d.soft, time); }
       else if (d.kind === 'lift') { const x = R(d.x0 * ts - cx); if (x < -60 || x > vw + 60) continue; const mv = ctx.movers ? ctx.movers().find(m => m.vert && Math.abs(m.x - d.x0 * ts) < 4) : null; MCA.liftShaft(g, x, (d.x1 - d.x0 + 1) * ts, R(d.y0 * ts - cy), R(d.y1 * ts - cy), mv ? R(mv.y - cy) : null, time); }
+      else if (d.kind === 'lowroof') { const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx); if (x1 < -20 || x0 > vw + 20 || fmLoop) continue; MCA.lowRoof(g, x0, x1, R((d.row - 2) * ts - cy), time, d.x0); }
+      else if (d.kind === 'perch') { const x0 = R(d.x0 * ts - cx), x1 = R((d.x1 + 1) * ts - cx); if (x1 < -20 || x0 > vw + 20) continue; MCA.perchBeam(g, x0, x1, R(d.row * ts - cy)); }
       else if (d.kind === 'smelter') { const x = R(d.x * ts - cx), y = R(d.row * ts - cy); MCA.smelterHouse(g, x, y, time); if (x > -60 && x < vw + 60) txt('THE SMELTER', x, y - 56, '#ffb050', 'center', 5); } }
     /* THE RAMPS: a kicker on the lip, chevrons and its word as you near */
     { const Ph = ctx.hero(); for (const r of M.ramps) { const lx = (r.x + 1) * ts; if (lx < cx - 60 || lx > cx + vw + 60) continue; const near = Ph && lx - Ph.x > -4 && lx - Ph.x < 260;
@@ -363,12 +461,15 @@ export function makeMinecartHands(ctx) {
     for (const w of M.wrecks) { const x = R(w.x - cx), y = R(w.y - cy); if (x < -40 || x > vw + 40) continue; g.save(); g.translate(x, y); g.rotate(w.parked ? 0 : w.a); MCA.heroCart(g, 0, 6, 1, 0, false, 0, time, 'empty'); g.restore(); }
     /* THE POINTS: the lever (its disc's arrow) and the fork itself (set = rail; open = a chute down) */
     for (const p of M.points) { const lx = p.x * ts + 8; if (lx < cx - 40 || lx > cx + vw + 40) continue; const x = R(lx - cx), y = R(p.row * ts - cy), set = p.state === 'set', locked = p.ore && ctx.questGot() < p.ore;
-      const fl = p.flash > 0 && Math.floor(time * 20) % 2; const dy = MCA.lever(g, x, y, p.hang, set, locked, fl, time);
+      const fl = p.flash > 0 && Math.floor(time * 20) % 2; const dy = p.sw ? MCA.switchLever(g, x, y, set, fl, locked, time) : MCA.lever(g, x, y, p.hang, set, locked, fl, time);
       if (locked) txt('ORE ' + ctx.questGot() + '/' + p.ore, x, dy - 12, '#9aa39a', 'center', 5);
-      const Ph = ctx.hero(); if (p.req && !set && Ph && lx - Ph.x > -8 && lx - Ph.x < 300) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.strokeStyle = 'rgba(255,211,107,' + (0.5 + 0.5 * k).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, dy, 9 + 3 * k, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }
+      const Ph = ctx.hero(); if ((p.req || p.sw) && !set && Ph && lx - Ph.x > -8 && lx - Ph.x < 300) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.strokeStyle = 'rgba(255,211,107,' + (0.5 + 0.5 * k).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, dy, 9 + 3 * k, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }
       const fx0 = R(p.x0 * ts - cx), fw = (p.x1 - p.x0 + 1) * ts, fy = R(p.prow * ts - cy);
-      if (!set) { g.fillStyle = 'rgba(127,196,224,0.35)'; for (let i = 0; i < fw; i += 8) g.fillRect(fx0 + i, fy - 1, 4, 2); g.fillStyle = '#7fc4e0'; g.fillRect(fx0, fy - 6, 2, 8); g.fillRect(fx0 + fw - 2, fy - 6, 2, 8); }
+      if (p.sw) { const bk = (M.bk = M.bk || {}), q = bk[p.id] || (bk[p.id] = { set, at: -99 }); if (q.set !== set) { q.set = set; q.at = time; } const u = Math.min(1, Math.max(0, (time - q.at) / 0.55)), bkk = set ? u * u : 1 - Math.sqrt(u);   /* (dr3art) the span swings down about its hinge (falling: it speeds up) and is hauled back up when un-set */
+        MCA.bridge(g, fx0, fw, fy, set, time, bkk); if (set && time - q.at > 0.5 && time - q.at < 1.2) MCA.bridgeDust(g, fx0, fw, fy, (time - q.at - 0.5) / 0.7); if (!set && Ph && p.x0 * ts - Ph.x < 260 && p.x0 * ts - Ph.x > -8 && Math.floor(time * 4) % 2) txt('BRIDGE OUT', fx0 + R(fw / 2), fy - 30, '#ff6b6b', 'center', 5); }   /* (deeprails3) A SWITCH's bridge: out (broken ends, no deck) until it is struck */
+      else if (!set) { g.fillStyle = 'rgba(127,196,224,0.35)'; for (let i = 0; i < fw; i += 8) g.fillRect(fx0 + i, fy - 1, 4, 2); g.fillStyle = '#7fc4e0'; g.fillRect(fx0, fy - 6, 2, 8); g.fillRect(fx0 + fw - 2, fy - 6, 2, 8); }
       else { g.fillStyle = '#ffd36b'; g.fillRect(fx0, fy - 4, fw, 1); } }
+    if (fmLoop) for (const pp of ctx.players) if (pp.mcBoard && !pp.dead) { const ox = R(pp.mcBoard.spotX - cx), oy = R(M.fm.S.G.lowY - cy) - (Math.floor(time * 13) % 3 === 0 ? 1 : 0); MCA.cartStreaks(g, ox, oy, time); MCA.heroCart(g, ox, oy, 1, MC.cruise, false, 0, time, 'empty'); }   /* (deeprails3) your own cart, rolling on under you while you ride HIS */
     /* THE PUMP GAPS' LIPS: a real lamp on each lip and chevrons on the last sleepers - amber, RED where a fall is a death (an exam, the chase) - lit as you near */
     { const Ph = ctx.hero(); for (const bg of M.L.mcBoost || []) { if (bg.ramp) continue; const lx = bg.x0 * ts; if (lx < cx - 40 || lx > cx + vw + 40) continue; const x = R(lx - cx), y = R(bg.row * ts - cy);
         const deadly = (M.L.mcExam || []).some(([a, b]) => bg.x0 >= a && bg.x1 <= b) || (M.L.chases || []).some(ch => lx >= ch.trigger && lx <= ch.end);
@@ -395,20 +496,32 @@ export function makeMinecartHands(ctx) {
       const P = ctx.hero(); if (P && b.x0 * ts - P.x < 140 && b.x0 * ts > P.x - 4) { const fl = Math.floor(time * 8) % 2; txt('DUCK', x + w / 2, y + 22, fl ? '#ff6b6b' : '#ffd36b', 'center', 6); } }
     /* THE GOBLIN CARTS (drawn under their riders): the foreman's armoured one; none under a thrower on his ledge */
     for (const c of M.carts) { if (c.state === 'gone' || c.ledge) { if (c.ledge && c.state === 'ledge' && c.e.alive && c.e.mcTelling) txt('!', R(c.x - cx), R(c.y - 34 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7); continue; }
-      if (c.foreman) MCA.armourCart(g, c.x - cx, c.y - cy, time, c.v, c.rams, c.stun > 0); else MCA.tub(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob', time, c.v);
+      if (c.foreman) { drawForeman(g, c, cx, cy, time); continue; }
+      if (c.state === 'perch' || c.state === 'jwait' || c.state === 'leap') { if (c.state === 'perch' && c.e.alive) { const hx = R(c.e.x - cx) - 4, hy = R(c.e.y - cy) - 4; if (c.chopT > 0) MCA.perchPick(g, hx, hy, 'chop', 1 - c.chopT / MC.perchT); else if (c.tell > 0) MCA.perchPick(g, hx, hy, 'tell', 0); }
+        if (c.state === 'leap' && c.e.alive) MCA.leapTrail(g, R(c.e.x - cx), R(c.e.y - cy), -1);
+        if (c.e.alive && c.e.mcTelling) txt(c.perch ? '!' : '!', R(c.e.x - cx), R(c.e.y - 34 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7);
+        if (c.chopT > 0) { const ly = R((c.line ? c.line * ts : c.y + 3 * ts) - 14 - cy); g.fillStyle = 'rgba(255,107,107,0.55)'; g.fillRect(R(c.x - 26 - cx), ly - 2, 32, 3); } continue; }
+      MCA.tub(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob', time, c.v);
+      if (c.swing) { const ly = R(c.y + 3 * ts - 14 - cy), x = R(c.x - cx); MCA.swingHook(g, x, R(c.y - cy), R(c.y + 3 * ts - cy), c.chopT > 0 ? 'chop' : c.tell > 0 ? 'tell' : 'rest', c.chopT > 0 ? 1 - c.chopT / MC.swingT : 0, time); if (c.chopT > 0) { g.fillStyle = 'rgba(255,107,107,0.5)'; g.fillRect(x - 22, ly - 2, 44, 3); } }   /* (dr3art) a boom off his tub, a rope and a hook that swings down across the line */
       if (c.state === 'roll' && c.e.alive && c.e.mcTelling) txt('!', R(c.x - cx), R(c.y - 40 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7); }
+    for (const sh of M.shadows) { const k = 1 - sh.t / sh.t0, x = R(sh.x - cx), y = R(sh.y - cy); MCA.leapShadow(g, x, y, k, time); txt('!', x, y - 16, Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 6); }   /* (deeprails3) where a leaping goblin will land */
     /* arrows, runes, lobs (the lob's MARK on the rail where it will land) */
     for (const s of M.shots) { g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; const a = Math.atan2(s.vy, s.vx); g.beginPath(); g.moveTo(R(s.x - cx), R(s.y - cy)); g.lineTo(R(s.x - Math.cos(a) * 7 - cx), R(s.y - Math.sin(a) * 7 - cy)); g.stroke(); }
     for (const r of M.runes) { if (r.t < 0) continue; const k = 1 - r.t / r.t0, x = R(r.x - cx), y = R(r.y - cy); g.strokeStyle = Math.floor(time * 10) % 2 ? '#b48aff' : '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, MC.runeR, 3, 0, 0, Math.PI * 2); g.stroke();
       g.fillStyle = 'rgba(180,138,255,' + (0.2 + 0.4 * k).toFixed(2) + ')'; g.fillRect(x - R(MC.runeR * k), y - 2, R(MC.runeR * 2 * k), 2); txt('!', x, y - 14, '#b48aff', 'center', 6); }
-    for (const o of M.lobs) { if (o.t < -0.05) continue; const k = 1 - Math.max(0, o.t) / o.t0; MCA.lobMark(g, R(o.tx - cx), R(o.ty - cy), MC.throwR, k, time); MCA.lobbed(g, R(o.x - cx), R(o.y - cy), o.bomb, time); }
+    for (const o of M.lobs) { if (o.t < -0.05) continue; const k = 1 - Math.max(0, o.t) / o.t0; MCA.lobMark(g, R(o.tx + (o.slide || 0) * Math.max(0, o.t) - cx), R(o.ty - cy), MC.throwR, k, time); MCA.lobbed(g, R(o.x - cx), R(o.y - cy), o.bomb, time); }
     if (M.glint) drawGlint(g, R(M.glint.x - cx), R(M.glint.y - cy), vw, vh, time);
   };
   /* THE HERO'S CART (deeprails2: redrawn - a real iron tub, the hero sitting IN it): its back wall and inside behind him, its front over his legs; the wheels turn with
      the pace, sparks fly off them on the brake, it leans on a jump */
   const tilt = P => Math.max(-0.28, Math.min(0.28, (P.ground ? 0 : P.vy / 900)));
   /* THE RIDERS SIT IN THEIR TUBS (claude/deeprailsart): the tub's front wall, drawn after the foes so it hides their legs (src/redraw/minecart_art.js tubFront) */
-  H.drawRiderFronts = (g, cx, cy) => { if (!M) return; for (const c of M.carts) { if (c.state === 'gone' || c.ledge || c.foreman || !c.e || !c.e.alive) continue; MCA.tubFront(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob'); } };
+  H.drawRiderFronts = (g, cx, cy) => { if (!M) return; for (const c of M.carts) { if (c.state === 'gone' || c.ledge || !c.e || !c.e.alive) continue;
+    if (c.foreman) { const S = M.fm ? M.fm.S : null, mode = S ? S.mode : 'idle'; MCA.armourFront(g, c.x - cx, c.y - cy, ctx.time(), S ? Math.min(3, S.stomps) : 0, mode === 'lurchTell' || mode === 'boarded'); if (S && S.ward > 0) MCA.fmSpikes(g, R(c.x - cx), R(c.y - 15 - cy), Math.min(1, (FMG.FOREMAN.wardT - S.ward) / 0.35 + 0.05), ctx.time()); continue; }   /* (dr3art) HIS CART'S LID OVER HIM: he sits in it; the brace spikes come up through the lid */
+    MCA.tubFront(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob'); } };
+  /* (dr3art) THE FOREMAN'S POSE (src/redraw/deeprails3_art.js FOREMAN_F): main.js asks for his frame every draw - the tell poses are the readable part of his fight */
+  H.foremanFrame = e => { const S = M && M.fm && M.fm.e === e ? M.fm.S : null, F = MCA.FOREMAN_F; if (!S) return F.idle; if (S.ward > 0 || S.mode === 'boarded') return F.duck; const m = S.mode;
+    if (e.flash > 0.06 && m !== 'ramTell' && m !== 'pickTell' && m !== 'driftTell') return F.hurt; if (m === 'driftTell' || m === 'drift') return F.drift; if (m === 'pickTell') return F.pick; if (m === 'ramTell' || m === 'ram' || m === 'ramHold') return F.ram; if (m === 'lurchTell') return F.lurch; return F.idle; };
   H.drawCartBack = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); g.save(); g.translate(R(P.x - cx), R(P.y - cy + 1)); g.rotate(tilt(P)); MCA.heroCart(g, 0, 0, P.face || 1, c.v, !!c.braking, 0, time, 'back'); g.restore(); };
   H.drawCart = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); g.save(); g.translate(R(P.x - cx), R(P.y - cy + 1)); g.rotate(tilt(P)); MCA.heroCart(g, 0, 0, P.face || 1, c.v, !!c.braking, P.ducking ? 1 : 0, time, 'front'); g.restore();
     MCA.prowLamp(g, R(P.x - cx), R(P.y - cy + 1), P.face || 1, time); };

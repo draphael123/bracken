@@ -1,15 +1,20 @@
-// tools/minecart-route.mjs - THE DEEP RAILS RIDDEN END TO END WITH REAL KEYS (claude/minecart). Not in the suite: a route pilot. THE CART PILOT
+// tools/minecart-route.mjs - THE DEEP RAILS RIDDEN END TO END WITH REAL KEYS (claude/minecart). THE CART PILOT
 // (tools/cart-pilot.mjs) rides the level from the start to the drill's door: it boosts the long gaps, brakes for crushers, gates and rock, ducks the beams,
 // throws the points the plan wants (E), changes lines. A fresh save's hero (level 1, no skills).
 //   PORT=8707 node tools/minecart-route.mjs [heroes=knight,warden,pyro] [god=0|1] [foes=1|0] [--dbg]   (god=1 foes=0: base inputs only - can this hero ride it)
 // Each hero rides from each STATION in turn (a death or a lift puts the hand at the next station), and it prints per leg where it ended, the health left,
 // the damage by source, the falls, crashes and crushes; a hero who does not reach the door on a leg fails the tool.
 //   --lvl=N  the hero at level N (the campaign level: tools/boss-level.mjs says 11 here) - the brief-levelsweep v2 measure: first-run deaths, health at each station
-//   --probe  the boost-gap measure: at each of the level's boost gaps, a CRUISING jump at the lip must fall in, and a BOOSTED one must clear it.
+//   --probe  the boost-gap measure: at each of the level's boost gaps, a CRUISING jump at the lip must fall in, and a BOOSTED one must clear it; (deeprails3) at each
+//            switch's bridge left out, a pumped jump under its low roof must fall in.
+//   (no arguments: THE SUITE's run - claude/deeprails3 wired it, tools/check.mjs - the probe, then the knight's base-input ride, god on, no foes: deterministic. The
+//    batch83 flake was the foe rides at level 1 - a leg's 70 s ran out, and a hand put on a station kept the last leg's cart history (a fall sent it back there);
+//    both fixed here: 110 s a leg, the cart's history cleared on every station put. The foe rides stay a measure, run by hand with --lvl.)
 import { openPage } from './cdp.mjs';
 import { CART_PILOT, ROUTE_PLAN } from './cart-pilot.mjs';
 const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
-const heroes = (args[0] || 'knight,warden,pyro').split(','), god = args[1] === '1', foes = args[2] !== '0', dbg = process.argv.includes('--dbg'), probe = process.argv.includes('--probe'), lvl = +((process.argv.find(a => a.startsWith('--lvl=')) || '--lvl=0').slice(6));
+const suite = process.argv.length <= 2;
+const heroes = suite ? ['knight'] : (args[0] || 'knight,warden,pyro').split(','), god = suite || args[1] === '1', foes = !suite && args[2] !== '0', dbg = process.argv.includes('--dbg'), probe = suite || process.argv.includes('--probe'), lvl = +((process.argv.find(a => a.startsWith('--lvl=')) || '--lvl=0').slice(6));
 const pg = await openPage({ audio: false, fonts: false });
 let bad = 0; const summary = [];
 try {
@@ -21,7 +26,7 @@ try {
       for (const e of BK.enemies()) if (!e.boss) { e.alive = false; e.mcWait = false; }
       const P = () => BK.P, k = BK.keys, out = [];
       const clear = () => { k.left = k.right = k.jump = k.down = k.up = k.atk = false; };
-      for (const p of BK.L.mcPoints) if (p.req) BK.minecart().setPoints(p.id, 'set');
+      for (const p of BK.L.mcPoints) if (p.req || p.sw) BK.minecart().setPoints(p.id, 'set');   /* (deeprails3: and every switch's bridge laid) */
       for (const g of BK.L.mcBoost.filter(q => !q.ramp)) for (const [boost, early] of [[false, 0], [true, 0], [true, 8]]) {   /* (fix pass, review MF4: a boosted jump pressed 8 px EARLY must clear too - the gap is 8 wide now) */
         BK.tp(g.x0 - 14, g.row - 1); P().vx = 0; P().vy = 0; BK.minecart().cart(P()).v = boost ? 230 : 150; clear(); BK.sim(3);
         let n = 0; while (P().x < g.x0 * TS - 4 - early && n++ < 300) { clear(); k.right = boost; BK.sim(1); }
@@ -33,15 +38,21 @@ try {
         BK.tp(r.x - 16, r.row - 1); P().vx = 0; P().vy = 0; BK.minecart().cart(P()).v = boost ? 230 : 150; clear(); BK.sim(3);
         let landed = null; for (let j = 0; j < 260; j++) { clear(); k.right = boost; BK.sim(1); if (P().x > (r.x + 2) * TS && P().ground) { landed = Math.floor(P().x / TS); break; } if (P().y > (r.row + 4) * TS) break; }
         clear(); out.push({ gap: r.x + 1, w: r.w, boost, early: 0, ramp: true, cleared: landed !== null && landed > r.x1, landed }); BK.sim(30); }
+      /* (claude/deeprails3) THE SWITCHES' BRIDGES, out: under the low roof a PUMPED jump off the lip falls in - only the switch lays the way over */
+      for (const p of BK.L.mcPoints.filter(q => q.sw)) { BK.minecart().setPoints(p.id, 'open'); BK.tp(p.x0 - 4, p.prow - 1); P().vx = 0; P().vy = 0; BK.minecart().cart(P()).v = 230; clear(); BK.sim(3);
+        let n = 0; while (P().x < p.x0 * TS - 4 && n++ < 300) { clear(); k.right = true; BK.sim(1); }
+        BK.press('jump'); let landed = null; for (let j = 0; j < 90; j++) { k.jump = true; k.right = true; BK.sim(1); if (j > 3 && P().ground) { landed = Math.floor(P().x / TS); break; } if (P().y > (p.prow + 4) * TS) break; }
+        clear(); out.push({ gap: p.x0, w: p.x1 - p.x0 + 1, boost: false, early: 0, bridge: p.id, cleared: landed !== null && landed > p.x1, landed }); BK.minecart().setPoints(p.id, 'set'); BK.sim(30); }
       return out; })()`, 600000);
-    for (const x of r) { const ok = x.boost ? x.cleared : !x.cleared; if (!ok) bad++; console.log((ok ? 'ok  ' : 'BAD ') + (x.ramp ? 'RAMP pit ' : 'gap ') + x.gap + ' (' + x.w + ' wide) ' + (x.boost ? 'boosted' + (x.early ? ' (' + x.early + ' px early)' : '') : 'cruising') + ': ' + (x.cleared ? 'cleared, landed ' + x.landed : 'fell in')); }
+    for (const x of r) { const ok = x.boost ? x.cleared : !x.cleared; if (!ok) bad++; console.log((ok ? 'ok  ' : 'BAD ') + (x.ramp ? 'RAMP pit ' : x.bridge ? 'BRIDGE OUT (' + x.bridge + ', pumped, under its low roof) ' : 'gap ') + x.gap + ' (' + x.w + ' wide) ' + (x.bridge ? '' : x.boost ? 'boosted' + (x.early ? ' (' + x.early + ' px early)' : '') : 'cruising') + ': ' + (x.cleared ? 'cleared, landed ' + x.landed : 'fell in')); }
     console.log(bad ? 'THE BOOST GAPS ARE WRONG' : 'every boost gap: a cruising jump falls in, a boosted one clears');
-  } else for (const hero of heroes) {
+  } if (!probe || suite) for (const hero of heroes) {
     await pg.reload();
     const r = await pg.evalp(`(async()=>{
       const { LEVELS } = await import('/src/level.js'); const TS = 16;
       ${CART_PILOT}
       BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true }); if (${lvl} > 0) { if (!(window.BKT && BKT.setHeroLevel)) throw new Error("no BKT.setHeroLevel: --lvl would be ignored"); BKT.setHeroLevel(${JSON.stringify(hero)}, ${lvl}); BK.reset({ fresh: true }); BK.applyUpgrades && BK.applyUpgrades(); }   /* (fix pass: it called BK.setHeroLevel, which does not exist - every --lvl ride so far was a level-1 hero) */
+      if (!${foes}) { BKT.PROG.minecart = Object.assign(BKT.PROG.minecart || {}, { mini: true }); }   /* (deeprails3) no foes: THE FOREMAN (the mini) counts as beaten - his gate opens at load, as for a player who has beaten him */
       BK.load(LEVELS.findIndex(l => l.id === 'minecart')); BK.state = 'play'; BK.god = ${god}; BK.sim(5);
       if (!${foes}) for (const e of BK.enemies()) if (!e.boss) { e.alive = false; e.mcWait = false; }
       const P = () => BK.P, k = BK.keys, pilot = makeCartPilot(BK, ${JSON.stringify({ ...ROUTE_PLAN, fight: true })});
@@ -49,8 +60,8 @@ try {
       const legs = []; let frames = 0, cards = 0, lifts = 0; const maxHp = P().maxHp, trace = [];
       for (let i = 0; i < stations.length; i++) {
         const [sx, sy] = stations[i], goal = i + 1 < stations.length ? stations[i + 1][0] : door, f0 = frames, mc0 = JSON.parse(JSON.stringify(BK.minecart().read().n)), d0 = BK.stats().deaths; let dmg = {}, ok = false;
-        if (i > 0) { BK.tp(sx, sy); P().vx = 0; P().vy = 0; P().hp = P().maxHp; BK.sim(3); }
-        for (let f = 0; f < 60 * 70; f++) {
+        if (i > 0) { BK.tp(sx, sy); P().vx = 0; P().vy = 0; P().hp = P().maxHp; { const c = BK.minecart().cart(P()); c.hist = []; c.lastGround = null; c.v = 0; } BK.sim(3); }   /* (deeprails3: the cart forgets the leg before - a fall must not put it back there) */
+        for (let f = 0; f < 60 * 110; f++) {   /* (deeprails3: 110 s a leg - the exam leg holds THE FOREMAN's mini, 40-75 s) */
           if (BK.state === 'card') { BK.cardClose(); cards++; }
           pilot.step(); const hp0 = P().hp; BK.log = []; BK.sim(1); frames++;
           if (P().hp < hp0) { const h = (BK.log || []).filter(q => q.k === 'dmgP')[0]; const who = h ? (h.name || (h.by && (h.by.cnSkin || h.by.t)) || 'hazard') : 'other'; dmg[who] = (dmg[who] || 0) + Math.round(hp0 - P().hp); }
