@@ -504,7 +504,7 @@ export const STUCK_HANDS = {
   sealedpyramid: [
     { id: 'py-hole', zone: [46, 2, 75, 13], steps: [ { key: 'hole', at: [69, 13], glint: 'stall', line: 'THE ROBBERS\' HOLE IS THE WAY IN' } ] },
     { id: 'py-cw1', zone: [166, 24, 181, 29], steps: [ { key: 'cw1', is: ['cw.cw1', 'home'], at: [180, 29], line: 'THE STONE BLOCK ON ITS CHAIN: STAND ON IT AND RIDE IT DOWN' } ] },
-    { id: 'py-weigh', zone: [186, 30, 215, 39], steps: [ { key: 'weigh', is: ['cw.cw2', 'home'], at: [214, 39], line: 'THE PALE BLOCK IS A PLATE: TREAD IT AND THE TOMB WEIGHS DOWN THE OTHER' } ] },
+    { id: 'py-weigh', zone: [186, 30, 215, 39], steps: [ { key: 'weigh', is: ['cw.cw2', 'home'], at: [214, 39], line: 'THE PALE BLOCK IS A PLATE: TREAD IT, AND YOU GO UP' } ] },
     { id: 'py-great', zone: [250, 18, 325, 36], steps: [ { key: 'great', is: ['wall.falsedoor', 'shut'], at: [256, 29], line: 'THE GREAT STONE\'S PLATE IS ON THE ROBBERS\' WALK' },
       { key: 'door', is: ['wall.falsedoor', 'open'], at: [327, 36], glint: 'stall', line: 'THE STONE BROKE THE FALSE DOOR: THE WAY DOWN IS BEHIND IT' } ] },
     { id: 'py-pit2', zone: [348, 36, 357, 43], steps: [ { key: 'pit2', is: ['pit.pit2', 'open'], at: [353, 43], line: 'TOO WIDE TO JUMP: THE PLATE DROPS THE BLOCK INTO THE PIT' } ] },
