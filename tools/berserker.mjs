@@ -10,7 +10,7 @@
 //             held guard now: was the brace, ONE blow, then down); let go, the next blow is the full hit; a RED one is TOO STRONG and lands;
 //             out of stamina the guard breaks (half); and at 1 hp an absorbed blow leaves him on 1 - HE NEVER KILLS HIMSELF
 //   rage      dealing and taking damage fill it; out of combat it drains (down to the whetstone's half bar, which then holds it)
-//   frenzy    full rage + C is the FRENZY (not a guard): quicker chops, no flinch, x1.25 taken - and that quarter never kills him -,
+//   frenzy    full rage + DOWN+C is the FRENZY (a plain C is TAKE IT): quicker chops, no flinch, x1.25 taken - and that quarter never kills him -,
 //             HEAL ON HIT (~2.5% of what lands: was a heal per kill) and REND: four frenzied blows on one foe CRACK it, and that blow is a
 //             HEAVY (the beast family's key); no frenzy, no rend (a mash never cracks); the war cry quickens a partner (hasteT)
 //   throw     UP+C hurls the hatchet: one-handed until he walks over it (slower chops - the same moves: berserker2 lets him double-chop
@@ -65,7 +65,7 @@ try {
     __bz();e=__foe(16);BK.sim(2);for(let i=0;i<4;i++){P().st=P().maxSt;BK.press('atk');for(let f=0;f<20;f++){BK.sim(1);e.x=P().x+16;}}const dealt=P().rage;P().inv=0;BKT.damagePlayer(e.x,10,{who:e,unblockable:true});const took=P().rage-dealt;
     e.alive=false;P().rage=90;BK.sim(60*2);const r2s=P().rage;BK.sim(60*3);out.rage={dealt:Math.round(dealt),took:Math.round(took),after2s:Math.round(r2s),after5s:Math.round(P().rage)};
     /* frenzy */
-    __bz();P().rage=100;P().bzFightT=BK.time||0;const sm0=Z().swingMul;K.block=true;BK.sim(2);K.block=false;BK.sim(2);const fr=P().frenzyT,guard=Z().takeUp,smF=Z().swingMul;BK.sim(30);
+    __bz();P().rage=100;P().bzFightT=BK.time||0;const sm0=Z().swingMul;K.down=true;K.block=true;BK.sim(2);K.block=false;K.down=false;BK.sim(2);const fr=P().frenzyT,guard=Z().takeUp,smF=Z().swingMul;BK.sim(30);
     e=__foe(14);P().inv=0;const fz=P().frenzyT;P().frenzyT=0;let hpb=P().hp;BKT.damagePlayer(e.x,20,{who:e,unblockable:true});const lostN=hpb-P().hp;P().frenzyT=fz;P().inv=0;P().hurt=0;const hp3=P().hp;BKT.damagePlayer(e.x,20,{who:e,unblockable:true});const lostF=hp3-P().hp,hurtF=P().hurt>0;
     /* ... and the frenzy's quarter never kills him: left with exactly what the blow would take without it */
     P().inv=0;P().hurt=0;P().hp=lostN+1;BKT.damagePlayer(e.x,20,{who:e,unblockable:true});const hpSur=P().hp,deadSur=!!P().dead;P().hp=P().maxHp-30;
@@ -77,7 +77,7 @@ try {
       /* (a broken brute is finished by the next cut - the finisher - so his bar is held empty here: this is about the rend, not the poise) */
       const chop=n=>{for(let i=0;i<n;i++){P().st=P().maxSt;BK.press('atk');for(let f=0;f<18;f++){BK.sim(1);e.x=P().x+16;e.stagger=0;e.poise=0;e.poiseCd=99;if(e.keyHit!==undefined)keyT.add(e.keyHit);}}};
       BK.log=[];chop(6);BK.sim(40);const cold={cracks:Z().stats.cracks-c0,heavy:BK.log.filter(x=>x.k==='dmgE'&&x.e===e&&x.heavy).length,hits:BK.log.filter(x=>x.k==='dmgE'&&x.e===e).length};
-      P().rage=100;K.block=true;BK.sim(2);K.block=false;BK.sim(30);const fz=P().frenzyT;keyT.clear();BK.log=[];chop(9);
+      P().rage=100;K.down=true;K.block=true;BK.sim(2);K.block=false;K.down=false;BK.sim(30);const fz=P().frenzyT;keyT.clear();BK.log=[];chop(9);
       const L=BK.log.filter(x=>x.k==='dmgE'&&x.e===e);BK.log=null;out.rend={cold,fz,hits:L.length,heavy:L.filter(x=>x.heavy).length,cracks:Z().stats.cracks-c0,rends:Z().stats.rends-r0,keyed:keyT.size}; }
     /* throw */
     __bz();e=__foe(70);BK.sim(2);const sw2=Z().swingMul;P().st=P().maxSt;K.up=true;K.block=true;BK.sim(2);K.block=false;K.up=false;let hitA=false;for(let i=0;i<50;i++){BK.sim(1);hitA=hitA||e.hp<e.hp0;}
@@ -122,7 +122,7 @@ try {
         let st=T.find(s=>s.kind==='axe');go(st);for(let t=0;t<4&&!st.done;t++){P().face=1;P().st=P().maxSt;K.up=true;K.block=true;BK.sim(2);K.up=K.block=false;BK.sim(60);
           for(let f=0;f<240&&Z().oneHanded;f++){const a=Z().axe;if(!a)break;K.right=P().x<a.x-2;K.left=P().x>a.x+2;BK.sim(1);}K.left=K.right=false;BK.tp(st.x0+3,19);BK.sim(20);}
         out.yard.axe=!!st.done;out.yard.axeDbg={hits:Z().stats.axeHits,throws:Z().stats.throws,got:st.got||0,px:Math.round(P().x)};
-        st=T.find(s=>s.kind==='meter');go(st);BK.sim(10);const rg=P().rage;K.block=true;BK.sim(2);K.block=false;BK.sim(30);out.yard.meter=!!st.done;out.yard.meterRage=Math.round(rg);
+        st=T.find(s=>s.kind==='meter');go(st);BK.sim(10);const rg=P().rage;K.down=true;K.block=true;BK.sim(2);K.block=false;K.down=false;BK.sim(30);out.yard.meter=!!st.done;out.yard.meterRage=Math.round(rg);
         st=T.find(s=>s.kind==='flash');go(st);const e=foes(st)[0];let glintAt=-1,pressed=0;
         for(let f=0;f<60*60&&!st.done;f++){P().face=Math.sign(e.x-P().x)||1;P().st=P().maxSt;const gap=Math.abs(e.x-P().x);K.right=gap>30&&e.x>P().x;K.left=gap>30&&e.x<P().x;
           if(e.mode==='cutTell'&&e.glint){if(glintAt<0)glintAt=f;if(!pressed&&f-glintAt>=3){K.block=true;BK.sim(1);K.block=false;pressed=1;continue;}}else{glintAt=-1;pressed=0;}BK.sim(1);}
@@ -148,7 +148,7 @@ try {
   ok(r.rage.dealt > 10 && r.rage.took > 5, 'rage: dealing and taking did not fill it: ' + JSON.stringify(r.rage));
   ok(r.rage.after5s < r.rage.after2s && r.rage.after5s >= 45, 'rage: it should drain out of combat down to the whetstone\'s half bar: ' + JSON.stringify(r.rage));
   const Z = r.frenzy;
-  ok(Z.frenzyT > 5 && !Z.guard, 'frenzy: full rage + C did not start a frenzy: ' + JSON.stringify(Z));
+  ok(Z.frenzyT > 5 && !Z.guard, 'frenzy: full rage + DOWN+C did not start a frenzy: ' + JSON.stringify(Z));
   ok(Z.swing > Z.swing0 && !Z.hurt && Z.lost20 > Z.lostN, 'frenzy: not quicker / flinched / not x1.25 taken: ' + JSON.stringify(Z));
   ok(Z.hpSur === 1 && !Z.deadSur, 'frenzy: HE NEVER KILLS HIMSELF - the frenzy\'s quarter killed him (or did not leave him on 1): ' + JSON.stringify(Z));
   ok(Z.healed >= 1 && Z.healed <= Math.ceil(Z.dealtF * 0.03) + 1, 'frenzy: heal on hit should be ~2.5% of what lands: ' + JSON.stringify(Z));

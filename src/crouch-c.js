@@ -101,7 +101,7 @@ export function makeCrouchC(api) {
   /* THE LEAP'S OWN POSE, read before the air poses (main.js): the leap, then the committed landing */
   function leapPose(R) { const p = P(); if (api.hero() !== 'berserker') return null;
     if (p.pounceT > 0) { const k = R.bzPounce ? 'bzPounce' : R.dashAtk ? 'dashAtk' : null; return k ? [k, p.pounceT < 0.08 ? 0 : Math.min(R[k].length - 1, 1)] : null; }
-    if (p.pounceRec > 0 && p.ground) { const k = R.bzPLand ? 'bzPLand' : R.land ? 'land' : null; return k ? [k, 0] : null; }
+    if (p.pounceRec > 0 && p.ground) { const k = R.bzPLand ? 'bzPLand' : R.land ? 'land' : null; return k ? [k, p.pounceRec > 0.11 ? 0 : Math.min(1, R[k].length - 1)] : null; }   /* (claude/bzart: the heads in the turf, then the heave up) */
     return null; }
   /* DRAWN: a dull red heat on him while he is coiled */
   function draw(g, cx, cy) { const p = P(); if (api.hero() !== 'berserker' || !p.ducking || !((p.coilT || 0) >= COIL.settle)) return;

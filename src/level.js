@@ -3871,7 +3871,7 @@ function trialYard(hero) {
       ['dodge', 2, 'THE SHOULDER ROLL: TAP A WAY TWICE, OR V. IT KNOCKS THE SMALL ONES ASIDE. ROLL TWICE.', [], 'B, OR THE STICK TWICE'],
       ['axe', 2, 'UP+C HURLS THE OFF AXE. YOU FIGHT ONE-HANDED UNTIL YOU PICK IT UP. HIT THE STRAW TWICE.', [['dummy', 11]], 'UP+LB'],
       DASH, RISE, SWEEP,
-      ['meter', 1, 'BLOWS GIVEN AND TAKEN FILL RAGE. FULL, TAP C: THE FRENZY. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
+      ['meter', 1, 'BLOWS GIVEN AND TAKEN FILL RAGE. FULL, HOLD DOWN AND TAP C: THE FRENZY. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'DOWN + LB WITH A FULL BAR'],
       SKILL],
   }[hero];
   const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);

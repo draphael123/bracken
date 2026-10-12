@@ -83,7 +83,7 @@ export function makeBerserker(api) {
     if (p.bzRendE !== e || api.time - (p.bzRendAt ?? -99) > BZ.rend.decay) { p.bzRendE = e; p.bzRendN = 0; }
     p.bzRendAt = api.time; p.bzRendN = (p.bzRendN || 0) + 1; stats.rends++;
     if (p.bzRendN < BZ.rend.n) { api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || p.face, 2 + p.bzRendN); return false; }
-    p.bzRendN = 0; stats.cracks++;
+    p.bzRendN = 0; stats.cracks++; p.bzCrackE = e; p.bzCrackAt = api.time;   /* (claude/bzart) the CRACKED effect is drawn off these */
     api.number(e.x, e.y - (e.h || 16) - 18, 'CRACKED', '#ff9a5c'); api.ringAt(e.x, e.y - (e.h || 16) / 2, 18, '#ff6b4a', 0.3); api.SFX.crack && api.SFX.crack(); api.shakeCam(3, p.face * 2); api.hitstop(0.05);
     return true; }
   /* A CHOP THAT LANDED (main.js swingDmg): the chain goes on, and every fourth link of it pays THE CHAIN */
@@ -204,7 +204,7 @@ export function makeBerserker(api) {
     const cDown = keys.block && !p.cWas; p.cWas = !!keys.block;
     const free = !ctx.stunned && !ctx.dodging && !p.plunge && !ctx.attacking && !(p.blastT > 0) && !(p.charge > 0) && !p.dead && !(p.pounceT > 0) && !(p.pounceRec > 0);
     if (cDown && keys.up && free && !takeUp(p)) { if (p.bzAxe) { if (t.ret) recall(p); } else throwAxe(p); }   /* UP+C: the throw (THE RETURN: again, it comes back) */
-    else if (cDown && free && (p.ground || p.swim) && (p.rage || 0) >= 100 && !(p.frenzyT > 0)) frenzy(p, free);
+    else if (cDown && free && keys.down && (p.ground || p.swim) && (p.rage || 0) >= 100 && !(p.frenzyT > 0)) frenzy(p, free);   /* (claude/bzart, Daniel 10-11: THE FRENZY IS DOWN+C; a plain C at a full bar is TAKE IT) */
     else if (cDown && free && (p.ground || p.swim) && !takeUp(p)) { if (ctx.guardOk === false) { p.stFlash = 0.35; } else raise(p); }   /* (WINDED: no guard - claude/weight guardOk) */
     stepAxe(p, dt); rollStep(p);
     if (p.ground && !p.dead && p.bzFightT !== undefined && api.time - p.bzFightT > 6) p.bzUnbowedUsed = false;   /* UNBOWED is once a FIGHT: six quiet seconds and it is his again */
@@ -254,13 +254,31 @@ export function makeBerserker(api) {
       drawAxeAt(g, a.x - cx, a.y - cy, ang, false);
       if (a.state === 'lie' || a.state === 'stuck') { const k = 0.5 + 0.5 * Math.sin(api.time * 6); g.globalAlpha = 0.35 + 0.35 * k; g.fillStyle = '#fff6c8'; g.fillRect(Math.round(a.x - cx) + 2, Math.round(a.y - cy) - 4, 1, 1); g.fillRect(Math.round(a.x - cx) + 1, Math.round(a.y - cy) - 3, 3, 1); g.globalAlpha = 1; } }   /* THE GLINT: here it is - go and get it */
     for (const h of p.hatchets || []) drawAxeAt(g, h.x - cx, h.y - cy, h.spin, true);
+    if (api.isBz() && (p.rage || 0) >= BZ.rage.high && !p.dead && (p.ground || p.swim) && Math.random() < 0.06 * (p.frenzyT > 0 ? 2 : 1)) api.parts.push({ x: p.x + p.face * 6, y: p.y - 16, vx: p.face * (6 + Math.random() * 6), vy: -10 - Math.random() * 6, life: 0.7, max: 0.7, col: '#d8d4d0', size: 1, grav: -8 });   /* (claude/bzart) STEAM BREATH: raging, his breath smokes */
     if (p.frenzyT > 0) { const k = 0.5 + 0.5 * Math.sin(api.time * 14), x = Math.round(p.x - cx), y = Math.round(p.y - cy); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.16 + 0.1 * k; g.fillStyle = '#ff3a2a';
       g.beginPath(); g.ellipse(x, y - 11, 11 + 2 * k, 15 + 2 * k, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
-    /* REND: the notches on the foe he is cutting (placeholder: a red tick a stack over its head) */
-    const re = p.bzRendE; if (p.frenzyT > 0 && re && re.alive && (p.bzRendN || 0) > 0 && api.time - (p.bzRendAt ?? -99) <= BZ.rend.decay) { g.fillStyle = '#ff4a3a';
-      for (let i = 0; i < p.bzRendN; i++) g.fillRect(Math.round(re.x - cx) - 5 + i * 3, Math.round(re.y - cy) - (re.h || 16) - 6, 2, 3); }
+    /* REND (claude/bzart): the NOTCHES on the foe he is cutting - a stack is a diagonal gash cut into its body (dark, with a raw red edge and a bright nick), the next one further down
+       the flank, fading in the last half second of the stack's life; the fourth is the crack, below */
+    const re = p.bzRendE; if (p.frenzyT > 0 && re && re.alive && (p.bzRendN || 0) > 0 && api.time - (p.bzRendAt ?? -99) <= BZ.rend.decay) { const left = BZ.rend.decay - (api.time - p.bzRendAt), eh = re.h || 16, sd = Math.sign(p.x - re.x) || -p.face;
+      g.globalAlpha = Math.min(1, left * 2.5);
+      for (let i = 0; i < p.bzRendN; i++) { const x0 = Math.round(re.x - cx) + sd * Math.min(4, (re.w || 12) / 3) - 3 + i * 2, y0 = Math.round(re.y - cy) - eh + 3 + i * Math.max(2, Math.floor(eh / 5));
+        for (let k = 0; k < 4; k++) { g.fillStyle = '#2a0a08'; g.fillRect(x0 + k, y0 + k, 1, 1); g.fillStyle = '#ff4a3a'; g.fillRect(x0 + k + 1, y0 + k, 1, 1); }
+        g.fillStyle = '#ffd0b0'; g.fillRect(x0 + 3, y0 + 3, 1, 1); }
+      g.globalAlpha = 1; }
+    /* CRACKED (claude/bzart): the armour splits - a jagged crack runs across the foe from the blow, three shards of it fly off, and the foe's outline flares orange for a moment */
+    const ce = p.bzCrackE, ct = api.time - (p.bzCrackAt ?? -99); if (ce && ct >= 0 && ct < 0.55) { const eh = ce.h || 16, ex = Math.round(ce.x - cx), ey = Math.round(ce.y - cy) - Math.round(eh / 2), a = 1 - ct / 0.55;
+      g.globalAlpha = Math.min(1, a * 1.6);
+      const zig = [[0, -5], [1, -4], [0, -3], [2, -2], [1, -1], [3, 0], [2, 1], [4, 2], [3, 3], [4, 4]];
+      for (const [zx, zy] of zig) { g.fillStyle = '#2a0a08'; g.fillRect(ex - 2 + zx, ey + zy, 2, 1); g.fillStyle = zx % 2 ? '#ffd36b' : '#ff6b4a'; g.fillRect(ex - 2 + zx, ey + zy, 1, 1); }
+      for (let i = 0; i < 3; i++) { const dx = (i - 1) * (6 + ct * 40) + (i === 1 ? 0 : 0), dy = -ct * 26 + ct * ct * 70 * (i + 1) / 2; g.fillStyle = i === 1 ? '#fff6c8' : '#ff9a5c'; g.fillRect(ex + Math.round(dx), ey + Math.round(dy) - 2, 2, 2); }
+      g.globalAlpha = 1; }
     /* TAKE IT: the crossed axes' arc in front of him - bright on the beat (placeholder for the take-it frames) */
-    if (takeUp(p)) { const x = Math.round(p.x - cx) + p.face * 8, y = Math.round(p.y - cy) - 12, beat = onBeat(p); g.globalAlpha = beat ? 0.85 : 0.5; g.strokeStyle = beat ? '#ffd36b' : '#ff9a5c'; g.lineWidth = 1; g.beginPath(); if (p.face > 0) g.arc(x, y, 9, -1.2, 1.2); else g.arc(x, y, 9, Math.PI - 1.2, Math.PI + 1.2); g.stroke(); g.globalAlpha = 1; }
+    /* TAKE IT (claude/bzart): where the crossed axes bite there is a mark - held, a small orange cross of sparks that flickers; ON THE BEAT a gold-and-white starburst that grows for the beat's length (the parry) */
+    if (takeUp(p)) { const x = Math.round(p.x - cx) + p.face * 11, y = Math.round(p.y - cy) - 13, beat = onBeat(p), px1 = (u, v, col) => { g.fillStyle = col; g.fillRect(x + u * p.face - (p.face < 0 ? 1 : 0), y + v, 1, 1); };
+      if (beat) { const k = Math.min(1, (api.time - (p.bzTakeAt ?? api.time)) / Math.max(0.05, beatLen())), r = 2 + Math.round(k * 3);
+        px1(0, 0, '#ffffff'); for (let i = 1; i <= r; i++) { const c2 = i < 3 ? '#fff6c8' : '#ffd36b'; px1(i, 0, c2); px1(-i, 0, c2); px1(0, i, c2); px1(0, -i, c2); }
+        px1(r, r, '#ffd36b'); px1(-r, r, '#ffd36b'); px1(r, -r, '#ffd36b'); px1(-r, -r, '#ffd36b'); }
+      else if (Math.floor(api.time * 18) % 2) { px1(0, 0, '#ffb070'); px1(1, 0, '#ff9a5c'); px1(-1, 0, '#ff9a5c'); px1(0, 1, '#ff9a5c'); px1(0, -1, '#ff9a5c'); } }
     if (p.hardenT > 0 && Math.random() < 0.25) api.parts.push({ x: p.x + (Math.random() - 0.5) * 10, y: p.y - 6 - Math.random() * 14, vx: 0, vy: -8, life: 0.3, max: 0.3, col: '#8a5a3a', size: 1, grav: 0 });
     if (p.standT > 0) { g.globalAlpha = 0.25 + 0.15 * Math.sin(api.time * 10); g.strokeStyle = '#ff4a3a'; g.beginPath(); g.arc(Math.round(p.x - cx), Math.round(p.y - cy) - 12, 15, 0, 7); g.stroke(); g.globalAlpha = 1; } }
   function clear() { const p = P(); p.bzAxe = null; p.hatchets = []; p.braceT = 0; p.braceRec = 0; p.frenzyT = 0; p.spinT = 0; p.cleaveT = 0; p.rampT = 0; p.hardenT = 0; p.standT = 0; p.bzIronT = 0; p.bzUnbowedUsed = false; p.bzChainN = 0;
