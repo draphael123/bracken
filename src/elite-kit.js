@@ -29,6 +29,7 @@
 //                   his affix intensifies (the fire faster, the venom longer, the second call, the ward wider, the spines sooner, the
 //                   swift tells shorter still).
 import { actOf } from './foe-react.js';
+import { orderGuard, unmovedBody } from './order-knights.js';   /* (claude/order) THE ROAD WARDENS's two guard rules (the ORE plates, the battle mage's ward) and the brute's poise (src/order-knights.js) */
 
 export const AFFIX = {
   BURNING: { col: '#ff9a5c', what: 'a fire trail where he walks; water douses him' },
@@ -55,8 +56,8 @@ export const affixFits = (id, affix, ambush) => !!AFFIX[affix] && !(ambush && af
    The key is level|kind, or level|kind#n for the nth of that kind in the level by column. Edit only your own rows. */
 export const AFFIX_AT = {
   'church|gobmage': 'WARDING', 'church|husk#amb': 'THORNED',   /* (claude/litchurch) THE ARCHDEACON's ward over his clergy (kill him first); the sealed vault's grave captain grows bone spines at a mash */
-  'wood|shield': 'WARDING', 'wood|shield#amb': 'SHIELDED',
-  'marsh|thorn': 'THORNED', 'marsh|thorn#amb': 'VENOMOUS',
+  'wood|shield#amb': 'SHIELDED',   /* (claude/order: the gated warding shield captain at 147 is THE BRIAR MAUL now - src/order-chapters.js ORDER_AT; a knight's affix rides on his ent) */
+  'marsh|thorn#amb': 'VENOMOUS',   /* (claude/order: the far bank's thorned spike goblin is THE BOG BLADE now) */
   'stockade|brute': 'SUMMONER', 'stockade|archer#amb': 'SWIFT',
   'spore|shield': 'VENOMOUS', 'spore|shield#amb': 'THORNED',
   'kings|brute': 'UNSTOPPABLE', 'kings|archer#amb': 'WARDING',
@@ -84,7 +85,7 @@ export const AFFIX_AT = {
   'mage|armour': 'WARDING', 'mage|armour#amb': 'SHIELDED',
   'fallingtower|husk': 'VENOMOUS', 'fallingtower|apprentice#amb': 'WARDING',
   'witchlight|husk': 'SUMMONER', 'witchlight|armour': 'THORNED',
-  'oreroad|heavy': 'UNSTOPPABLE', 'oreroad|gaffer#amb': 'SWIFT',
+  'oreroad|gaffer#amb': 'SWIFT',   /* (claude/order: the drum yard's King's Champion is THE ORE LANCE now) */
   'minecart|brute': 'UNSTOPPABLE',   /* (claude/deeprails2) THE FOREMAN in his armoured cart: no blow throws him - only a ram dents it */
   'unburied|husk#amb': 'VENOMOUS',
   'fair|barker#1': 'WARDING', 'fair|barker#2': 'SUMMONER', 'fair|hobbyhorse': 'SWIFT',
@@ -189,6 +190,9 @@ export function installEliteKit(api) {
   const kindOf = b => Array.isArray(b) ? (b.includes('heavy') ? 'heavy' : b.includes('sweep') ? 'sweep' : b.includes('plunge') ? 'plunge' : b[0]) : b;
   function take(e, dmg, fromX, plunge, blow) {
     const k = kindOf(blow), fromAbove = plunge || (Array.isArray(blow) ? blow.includes('plunge') : blow === 'plunge'), blade = !fromAbove && (k === 'light' || k === 'rise' || k === 'dash' || k === 'heavy');   /* (claude/knockinto) A PLUNGE IS NEVER A BLADE HERE: it does not count toward the mash (a THORNED one's spines), whatever else its tag says */
+    { const og = orderGuard(e, dmg, k, fromAbove, (fromX ?? e.x) - e.x, blow);   /* (claude/order) THE ORE PLATES turn a light blade from any side (a heavy, a riposte or a throw cracks one); THE BATTLE MAGE's ward turns a shot off his front */
+      if (og && og.turn) { e.ekClank = 0.12; e.ekTurnedN = (e.ekTurnedN || 0) + 1; say(e, og.turn, og.col, 0.8); api.turned(e); return false; }
+      if (og && og.dmg !== undefined) { dmg = og.dmg; if (og.word) say(e, og.word, og.col, 1.1); if (og.clank) { e.ekClank = 0.12; api.sfx('clank'); } } }
     if (dmg > 0 && blade && !(e.broken > 0)) {
       const now = api.time();
       if (k !== 'heavy') { if (!(now - (e.ekCutAt ?? -99) < K.mashWindow)) e.ekCuts = 0; e.ekCutAt = now; e.ekCuts = (e.ekCuts || 0) + 1;
@@ -212,6 +216,6 @@ export function installEliteKit(api) {
   /* A BLOW OF HIS LANDED (main.js damagePlayer) */
   function landed(e) { if (e.affix === 'VENOMOUS') api.poison(e.ekRoused ? K.venomRoused : K.venomT); }
   /* NOTHING THROWS HIM (main.js knockFoe) */
-  const unmoved = e => e.affix === 'UNSTOPPABLE' && !(e.broken > 0);
+  const unmoved = e => (e.affix === 'UNSTOPPABLE' || unmovedBody(e)) && !(e.broken > 0);   /* (claude/order: and THE ORDER's brute, by his body) */
   return { K, AFFIX, key, tick, guarding, take, broke, landed, unmoved, tell, every, say };
 }

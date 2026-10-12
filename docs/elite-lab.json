@@ -533,9 +533,65 @@
      39.8
     ]
    }
+  },
+  "oathmaul": {
+   "level": "wood",
+   "affix": "WARDING",
+   "ehp": 144,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 9,
+    "wins": 5,
+    "secs": [
+     51,
+     51,
+     16,
+     16,
+     16
+    ]
+   }
+  },
+  "oathblade": {
+   "level": "marsh",
+   "affix": "VENOMOUS",
+   "ehp": 160,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 9,
+    "wins": 3,
+    "secs": [
+     17.1,
+     17.1,
+     17.1
+    ]
+   }
+  },
+  "oathlance": {
+   "level": "oreroad",
+   "affix": "SWIFT",
+   "ehp": 390,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 9,
+    "wins": 3,
+    "secs": [
+     27.2,
+     27.2,
+     27.2
+    ]
+   }
   }
  },
- "stamp": "848cc9ec3a5a",
+ "stamp": "46dd0e3d9865",
  "heroes": [
   "knight",
   "warden",

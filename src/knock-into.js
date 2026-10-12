@@ -106,9 +106,9 @@ export function makeKnockInto(api) {
     let wt = weightOf(e); const slide = !!o.guarded;
     if (slide) wt *= KNOCK.slide;
     if (why === 'riposte') push = Math.max(push, KNOCK.ripPush); else if (why === 'broke') push = Math.max(push, KNOCK.breakPush);
-    if (why === 'broke' && e.broken > 0) e.broken = 0;   /* the throw SPENDS the break: it flies now, not when the opening runs out */
     const was = { x: e.x, y: e.y };
     if (!api.knock(e, dir, push, { wt, slide })) return false;
+    if (why === 'broke' && e.broken > 0) e.broken = 0;   /* the throw SPENDS the break once it flies: spent AFTER the knock asks, so a BROKEN UNSTOPPABLE elite (and the order's brute) can be thrown (claude/orderart) */
     e.kiT = api.time() + KNOCK.live; e.kiWhy = why; e.kiFrom = was; e.kiBy = o.by || null; e.kiEdge = false; e.kiHz = null;
     stats.thrown++; if (slide) stats.slid++; stats.byWhy[why] = (stats.byWhy[why] || 0) + 1;
     return true;

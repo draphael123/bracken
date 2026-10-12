@@ -1,6 +1,7 @@
 import { VARIETY, TIDE_CRABS, varietyPass } from './variety-pass.js';   /* (claude/variety) the sea set's shock eel: every third eel in the Keep and the Deep */
 import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblinsweep) NO LIVING GOBLINS past the Goblin Queen: the sprinkled snuffers and the lawn's hound wear skins */
 import { THIN, CHECK_DROP } from './checkpoint-thin.js';
+import { knightRow } from './order-chapters.js';   /* (claude/order) THE ROAD WARDENS: who holds which exam (src/order-chapters.js ORDER_AT) */
 import { SPRINKLE, PLAN } from './foe-tactics.js';   /* THE SPRINKLE CUT: the halved rows and the designed encounters (see garrison()) */
 import {polishTower,buildTowerAscent} from './tower-ascent.js';
 import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER's flyers keep to its floors (round 3): the sprinkler asks it too (L.flatFlyers) */
@@ -8591,12 +8592,12 @@ const ELITES = {
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['corpse', 94, 21, { face: -1, risen: true }], ['husk', 129, 21, { face: -1 }], ['husk', 404, 21, { face: -1 }]],   /* (claude/burial2: a barrow soldier past the Candle Path's second pit, a husk under the Ossuary's shelves, and the husk on THE ROTTEN BRIDGES' pier) */   /* (the third husk holds THE ROTTEN BRIDGES' pier since 2026-09-24: 950 is a board now) (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
-  oreroad: [['heavy', 458, 12, { face: -1, gate: 472 }]],   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck. 458, not 455 (lane claude/oreroad2, THE ORE SHAFT rework): the checkpoint at 454 needs two tiles' clearance from him (elites, "never at a landing") */
+  oreroad: [knightRow('oreroad')],   /* (claude/order) THE ORE LANCE of the Ore Chapter holds the drum yard's gate (472) in the King's Champion's place - his ORE is the Winchmaster's key taught first (src/order-chapters.js ORDER_AT) */   /* was ['heavy', 458, 12, { face: -1, gate: 472 }]:   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck. 458, not 455 (lane claude/oreroad2, THE ORE SHAFT rework): the checkpoint at 454 needs two tiles' clearance from him (elites, "never at a landing") */
   witchlight: [['husk', 110, 76, { face: -1 }], ['armour', 300, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver (at 300 since the garden grew, claude/hedgewarden2) */
   fallingtower: [['husk', 52, 146, { face: -1 }]],   /* the cistern's husk over the poison: it sits ON the cistern's own first-tier husk, so it is UPGRADED, not added - one husk in the tower, and it is this one. Since the rework of 2026-09-25 (docs/briefs/falling-tower-rework.md) the tower's other two elites are gone into its named fights: the orrery's armour CAPTAINS THE ORRERY PIT (AMBUSH, below) and the bell loft's warden became THE SEXTON, its mini - an elite beside either would be back to back with it (rule Q). */
-  wood: [['shield', 147, 21, { gate: 157 }]],
+  wood: [knightRow('wood')],   /* (claude/order) THE BRIAR MAUL of the Thorn Chapter REPLACES the warding shield captain at 147 and holds his gate (157) - the first knight of the order you meet */
   rootway: [['shield', 147, 22, { face: -1, gate: 157 }], ['shield', 276, 18, { face: -1 }], ['shield', 372, 18, { face: -1 }]],   /* (claude/rootway2, Daniel 10-09: five areas - the HOLLOW TRUNK's exam holds the knothole (gate 157: the only way out of the trunk), the gantry's, and THE TROPHY LODGE's among the traps) */   /* (claude/stamina12, Daniel 10-08: stamina x1.4 -> x1.2 and the mash bot cleared the Rootway: the great roots' exam is the shield captain at the gap (checkpoint 193 after), the hoist yard's the shield at the yard's cages (checkpoint 290 after)) */
-  marsh: [['thorn', 98, 15, { gate: 105 }]],   /* (claude/levelpilot: on the stilts at 65/72, with both stilt archers shut in with him, he was the marsh's whole threat in one locked room; he holds the far bank of the archer island now, one on one with the water at your back - section one's exam, the checkpoint at 109 after it. An elite frog was tried here: the lab's human bot killed it in 1.8 s, no exam) */
+  marsh: [knightRow('marsh')],   /* (claude/order) THE BOG BLADE of the Bog Chapter REPLACES the thorned spike goblin on the far bank, the channel at your back, his gate 105 */   /* (claude/levelpilot: on the stilts at 65/72, with both stilt archers shut in with him, he was the marsh's whole threat in one locked room; he holds the far bank of the archer island now, one on one with the water at your back - section one's exam, the checkpoint at 109 after it. An elite frog was tried here: the lab's human bot killed it in 1.8 s, no exam) */
   stockade: [['brute', 302, 19, { gate: 317 }]],
   spore: [['shield', 412, 13, { gate: 430 }]],
   kings: [['brute', 433, 20]],
@@ -8636,7 +8637,8 @@ export function eliteGate(L, col, row) {
   return { col, top, bot, sill };
 }
 function elites(L, id) {
-  for (const [t, x, y, o] of ELITES[id] || []) {
+  for (let [t, x, y, o] of ELITES[id] || []) {
+    if (o && o.replaces) { const old = L.ents.findIndex(e => e.t === o.replaces && e.y === y && Math.abs(e.x - x) <= 3 && !e.mini && !e.boss && !e.elite); if (old >= 0) { const q = L.ents[old]; for (const k of ['enc', 'squad']) if (q[k] !== undefined && o[k] === undefined) o = { ...o, [k]: q[k] }; L.ents.splice(old, 1); } }   /* (claude/order) A KNIGHT REPLACES the elite whose place he takes (review-first2: replace, not add); he keeps its encounter */
     const was = L.ents.find(e => e.t === t && e.y === y && Math.abs(e.x - x) <= 3 && !e.mini && !e.boss && !e.elite);
     if (was) Object.assign(was, { x, elite: true }, o || {}); else L.ents.push(Object.assign({ t, x, y, face: -1, elite: true }, o || {}));
   }
