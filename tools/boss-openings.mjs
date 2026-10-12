@@ -397,7 +397,7 @@ try {
   assert.ok(r.matriarch.wasted === 0 && r.matriarch.wastedN >= 1, 'a burst with her up on the rock opened her (or was not counted as wasted): ' + JSON.stringify(r.matriarch));
   assert.ok(r.matriarch.mode === 'staggered' && r.matriarch.open >= 3, 'a burst with her in the channel by a narrow pillar did not throw her open for 3 s or more (the boss rule): ' + JSON.stringify(r.matriarch));
   assert.equal(r.greatdrill.alone, 0, 'THE GREAT DRILL: a minute of it left alone (its points lever let by, its ore carts met at cruise) jammed it: ' + JSON.stringify(r.greatdrill));
-  assert.ok(r.greatdrill.open >= 3 && r.greatdrill.thrown >= 1, 'its chute's points lever thrown did not jam it open for 3 s or more (the boss rule): ' + JSON.stringify(r.greatdrill));
+  assert.ok(r.greatdrill.open >= 3 && r.greatdrill.thrown >= 1, 'its chute points lever thrown did not jam it open for 3 s or more (the boss rule): ' + JSON.stringify(r.greatdrill));
   assert.ok(r.foreman.alone === 0 && r.foreman.lostAlone === 0, 'THE FOREMAN: a minute of him with nobody jumping on his cart opened him or took something off him: ' + JSON.stringify(r.foreman));
   assert.ok(r.foreman.stomp >= r.foreman.max * 0.25 && r.foreman.open >= 1.2 && r.foreman.lurch >= 1 && r.foreman.ward > 0, 'a jump onto his cart did not stomp a share of him, open him for the boarding, then lurch you off into a told brace: ' + JSON.stringify(r.foreman));
   assert.deepEqual(pg.errors, []);

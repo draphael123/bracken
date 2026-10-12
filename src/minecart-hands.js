@@ -422,7 +422,7 @@ export function makeMinecartHands(ctx) {
     /* (deeprails3) THE FOREMAN's LOOP: while he rides, the tunnel runs past at cruise edge to edge over the whole screen (the Great Drill's machinery) - nothing static of the
        stretch is drawn over it (no half-moving scenery) */
     const fmLoop = fmLive() && ctx.hero() && ctx.hero().x > M.fm.S.G.x0 - 40 && ctx.hero().x < M.fm.S.G.x1 + 40;
-    if (fmLoop) { const G = M.fm.S.G; MCA.tunnel(g, 0, vw, R((FMG.FOREMAN.high - 9) * ts - cy), R(G.lowY - cy), vh, M.fm.scroll, [R(G.lowY - cy), R(G.highY - cy)], false, time, true); }
+    if (fmLoop) { const G = M.fm.S.G; MCA.tunnel(g, 0, vw, R((FMG.FOREMAN.high - 9) * ts - cy), R(G.lowY - cy), vh, M.fm.scroll, [R(G.lowY - cy)], false, time, true); }
     /* trestle bents under the elevated lines */
     if (!fmLoop) for (const [a, b, row] of M.L.mcTrestles) for (let x = Math.max(a, x0c); x <= Math.min(b, x1c); x += 3) { if (ctx.cellGet(x, row) !== ctx.T.RAIL) continue; let yb = row + 1; while (yb < row + 40 && ctx.cellGet(x, yb) === ctx.T.AIR) yb++;
       if (yb > row + 1) MCA.bent(g, R(x * ts + 6 - cx), R((row + 1) * ts - cy), R(yb * ts - cy), x + 3 <= b && ctx.cellGet(x + 3, row) === ctx.T.RAIL, x); }

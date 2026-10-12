@@ -148,7 +148,7 @@ ok([...kinds].every(t => ['archer', 'gobmage', 'tippler', 'miner', 'brute', 'sap
 { const fm = L.ents.find(e => e.mini && e.ride && e.ride.foreman), M_ = L.mini, F = FMG.FOREMAN, G = FMG.geom(TS);
   ok(fm && fm.t === 'brute' && M_ && M_.boss === 'brute' && M_.name === 'THE FOREMAN' && !fm.elite, 'THE FOREMAN is the level\'s MINI (a goblin captain - a brute - in an armoured cart), no longer an elite');
   ok(M_.x0 === G.x0 && M_.x1 === G.x1 && L.mcExam.some(([a, b]) => F.cols[0] >= a && F.cols[1] <= b), 'his loop (' + F.cols.join('-') + ') is the mini\'s room, inside the flooded run\'s exam');
-  for (let x = F.cols[0]; x < F.cols[1]; x++) ok(at(x, F.low) === T.SOLID && at(x, F.high) === T.RAIL, 'the loop at ' + x + ': the LOW line solid (no gap: a lurch never drops you) and the HIGH line laid');
+  for (let x = F.cols[0]; x < F.cols[1]; x++) ok(at(x, F.low) === T.SOLID && [1, 2, 3, 4].every(d => at(x, F.low - d) === T.AIR), 'the loop at ' + x + ': its line solid (no gap: a lurch never drops you), nothing over it to catch a jump (the jump goes ON him)');
   ok([...Array(9)].every((_, i) => at(M_.gate, F.low - 1 - i) === T.PORT), 'the way on is shut while he rides (his gate at ' + M_.gate + ')');
   ok(T_.some(t => t.x < M_.trigger / TS && t.at >= F.cols[0] && /FOREMAN/.test(t.text)), 'he is told before his loop');
   ok(F.armour >= 0.4 && F.armour < 1, 'a blade from your cart takes x' + F.armour + ' (B15: never nothing)');

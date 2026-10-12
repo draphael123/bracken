@@ -4,17 +4,17 @@
 // (src/lab.js drives the keys; tools/cart-pilot.mjs rides him in the level).
 //
 // A GOBLIN FOREMAN IN AN ARMOURED ORE CART on an ENDLESS LOOPING STRETCH of THE FLOODED RUN (the Great Drill's treadmill: the world runs past at cruise, his cart and
-// yours hold their places on it): TWO LINES - YOUR LINE (LOW) and a HIGH LINE three rows up (one-way rail: jump up, down + jump to drop). He rides the LOW line, AHEAD
+// yours hold their places on it): ONE LINE (a high line over it caught every jump, so there is none: the jump goes ON him). He rides it AHEAD
 // of you, and SHUTTLES: he drops back at you (told: his brake shoes glow, HE SLOWS) and pulls ahead again; between his runs he throws.
 // THE KEY (design standard B14 'FROM ABOVE'): his cart is ARMOURED - a blade from your own cart clanks (x0.4, B15: never nothing, 'ARMOURED: JUMP ON HIM').
-// JUMP ONTO HIS CART (or drop onto it from the HIGH line) and you STOMP him: a third of him. You stand on his cart, he is OPEN (gold ring + timer, B10: blows whole)
+// JUMP ONTO HIS CART (or plunge onto it) and you STOMP him: a third of him. You stand on his cart, he is OPEN (gold ring + timer, B10: blows whole)
 // until he answers with a told LURCH ('!! HE LURCHES', the cart rocks) that throws you back up and behind him - into your own cart, which rolled on under you
 // (never an untold death: the loop has no gap). Then a told ~3 s BRACE (B3: his lid's spikes up - landing on him is turned, 'BRACED'). Three good boardings win.
 // HIS MOVES (one at a time, every one told - sound + word + colour; the second boarding adds the ram, B5):
 //   DRIFT   HE SLOWS (0.5 s: brake sparks, the word) and drops back at you down the line - jump on him as he comes; met in the cart it is a BUMP (he is armoured)
 //   PICK    '!' and his arm back (0.75 s), then a pick lobbed at where YOUR cart will be - its mark on your rail: brake off it, pump past it, or jump
-//   RAM     (from the first stomp) '!! HE BRAKES HARD' (0.95 s, red shoes, a screech), then he slams back down the line ~125 px: brake out of its reach, jump up to the
-//           HIGH line (he passes under you), or jump ON him as he comes (a boarding)
+//   RAM     (from the first stomp) '!! HE BRAKES HARD' (0.95 s, red shoes, a screech), then he slams back down the line ~125 px: brake out of its reach, or jump ON him
+//           as he comes (a boarding: he passes under you)
 // Numbers (a MINI, B6 amended 10-08): 75-85% WITH FLASKS knight/warden/pyro, 40-75 s, mash 0/6 (tools/boss-rates.mjs minecart:mini --profile=human).
 export const FOREMAN = {
   cols: [822, 852], low: 30, high: 27,   /* the loop: columns, and the two lines' rows */
@@ -70,7 +70,7 @@ export function stepForeman(S, e, dt, heroes, c) {
       else { S.mode = 'ramTell'; S.mT = F.ramTell; S.n.ram++; c.sound('tellHard'); c.number(fx, G.topY - 30, FOREMAN_LINES.ram, '#ff6b6b'); }
       break; }
     case 'driftTell': if (S.mT <= 0) S.mode = 'drift'; break;
-    case 'drift': S.R -= (S.dv || F.driftV) * dt; if (S.R <= Math.max(F.minR, hr - 40)) { S.mode = 'away'; } break;
+    case 'drift': S.R -= (S.dv || F.driftV) * dt; if (S.R <= Math.max(0, hr - 40)) { S.mode = 'away'; }   /* (he drops back all the way past you - even a cart held at the loop's back edge has him under it) */ break;
     case 'away': S.R += F.awayV * dt; if (S.R >= F.homeR) { S.R = F.homeR; S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)]; } break;
     case 'pickTell': if (S.mT <= 0) { if (near) c.lob(near); S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.4; } break;
     case 'ramTell': if (S.mT <= 0) { S.mode = 'ram'; S.mT = F.ramT; c.sound('ram'); } break;
@@ -80,7 +80,7 @@ export function stepForeman(S, e, dt, heroes, c) {
     case 'lurchTell': if (!S.board) { S.mode = 'away'; S.ward = F.wardT; break; } if (S.mT <= 0) { S.n.lurch++; c.release(S.board, 'lurch'); S.board = null; S.mode = 'away'; S.ward = F.wardT; c.sound('lurch'); } break;
     default: S.mode = 'idle';
   }
-  S.R = Math.max(F.minR, Math.min(F.maxR, S.R));
+  S.R = Math.max(S.mode === 'drift' ? 0 : F.minR, Math.min(F.maxR, S.R));
 }
 /* A HERO LANDS ON HIM FROM ABOVE (a stomp on his head, a plunge, a landing on his rim): BOARDED - the stomp takes a third of him and he is OPEN while you stand there -
    or, while his spikes are up, BRACED (turned: a clank, a sliver - B15). Returns 'board' | 'braced' | null */
@@ -99,9 +99,9 @@ export function foremanPlan({ P, S, rng = Math.random, mem = {}, t, eyes = false
   const F = FOREMAN, G = S.G, fx = foremanX(S), out = { gx: G.x0 + 120, why: '' }, dx = fx - P.x;
   const late = k => { if (eyes) return true; if (!(k in mem)) { mem[k] = t + FOREMAN_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < FOREMAN_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
   if (P.boarded) { out.gx = null; if (P.atk < 0) out.atk = true; out.why = 'aboard: strike'; return out; }
-  if (P.lane === 1 && P.ground) { out.drop = S.ward <= 0 && Math.abs(dx) < 10 && (S.mode === 'drift' || S.mode === 'idle' || S.mode === 'ramHold' || S.mode === 'away'); out.gx = fx; out.why = 'high: over him'; return out; }
-  /* HIS RAM: out of its reach (a brake) - or, close, up to the HIGH line */
-  if ((S.mode === 'ramTell' || S.mode === 'ram') && late('ram' + S.n.ram)) { const reach = F.ramV * F.ramT + F.halfW + 34; if (dx < reach) { if (dx < 70 && P.ground) { out.jump = true; out.why = 'ram: up high'; } out.gx = fx - reach - 20; out.why = out.why || 'ram: brake'; } return out; }
+
+  /* HIS RAM: out of its reach (a brake) - or, caught close, a jump (over him, or onto him) */
+  if ((S.mode === 'ramTell' || S.mode === 'ram') && late('ram' + S.n.ram)) { const reach = F.ramV * F.ramT + F.halfW + 34; if (dx < reach) { if (dx < 70 && P.ground) { out.jump = true; out.why = 'ram: jump'; } out.gx = fx - reach - 20; out.why = out.why || 'ram: brake'; } return out; }
   /* HIS DRIFT: hold the line under where he comes, and jump as he is a jump away (a stomp) */
   if ((S.mode === 'drift' || S.mode === 'driftTell') && S.ward <= 0 && late('drift' + S.n.drift)) { out.gx = Math.min(P.x, fx - 30); const lead = (S.dv || F.driftV) * 0.55 + (mem.lead ?? (mem.lead = rng() * 10 - 5));
     if (S.mode === 'drift' && P.ground && P.lane === 0 && dx > lead - 10 && dx < lead + 6 && !(mem['mj' + S.n.drift] ??= rng() < FOREMAN_PLAN.miss)) { out.jump = true; out.why = 'drift: jump on him'; } else out.why = 'drift: wait'; return out; }

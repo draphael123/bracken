@@ -356,10 +356,10 @@ export function buildMinecart({ painter, T, TS }) {
   boostGap(813, B); ore(818, B - 3);                                       /* (an ore on the pumped arc over the deep gap: a risk) */
   /* THE FOREMAN (deeprails3: THE DEEP RAILS' MINI - Daniel 10-10: 'a mini boss in another cart: you jump on it, it goes back and forth, an infinite repeating
      section until you complete it'). src/foreman.js: THE LOOP (822-851) - the Great Drill's treadmill: the world runs past at cruise, your cart and his hold their
-     places on it until he is down. His ARMOURED cart shuttles on the LOW line ahead of you; a HIGH line over it. JUMP ON HIS CART (or drop onto it from the HIGH
-     line) and STOMP him - a third of him; he LURCHES you back into your own cart (the loop has no gap: never an untold death). Blades from your cart clank (x0.4) */
+     places on it until he is down. His ARMOURED cart shuttles on your line ahead of you. JUMP ON HIS CART as he drops back (or as he rams
+     you) and STOMP him - a third of him; he LURCHES you back into your own cart (the loop has no gap: never an untold death). Blades from your cart clank (x0.4) */
   tell(807, 830, 'THE FOREMAN: JUMP ON HIM');
-  ground(821, 861, B); rail(FM.cols[0], FM.cols[1] - 1, FM.high, { noPosts: true });
+  ground(821, 861, B);   /* (one line in the loop: a high line over it caught every jump - the jump goes ON him) */
   sign(821, B - 1, 'THE FOREMAN. HIS CART IS ARMOURED: JUMP ON IT AND STOMP HIM.');
   foe('brute', FM.cols[0] + Math.round(FM.homeR / TS), B - 1, { squad: 'foreman', mini: true, wKey: 'foreman', ride: { foreman: true, row: B, trig: 816, at: FM.cols[0] + Math.round(FM.homeR / TS), off: 0 } });
   ent('mcgobcart', FM.cols[0] + Math.round(FM.homeR / TS), B - 1, {});
