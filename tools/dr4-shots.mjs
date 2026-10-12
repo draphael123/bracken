@@ -42,6 +42,8 @@ try {
     if (G.includes('rails')) {
       for (const [nm, id, x] of [['r1-yard-switch', 'yardSw', 151], ['r2-drift-switch', 'driftSw', 180], ['r3-works-switch', 'worksSw', 755], ['r4-exam-switch', 'examSw', 865]]) { MH.setPoints(id, 'open'); at(x - 9); full(nm); }
     }
+    if (G.includes('sides')) { at(788, 27); full('s1-twin-teach'); at(806, 27); full('s2-twin-test'); at(797, 30); full('s3-low-side-beam'); MH.setPoints('twinA', 'open'); at(789, 27); run(30); full('s4-side-switch-dropped'); MH.setPoints('twinA', 'set'); at(856, 27); full('s5-exam-fork'); }
+    if (G.includes('raiders')) { BK.tp(812, 29); MH.cart(BK.P).v = 150; for (let i = 0; i < 240; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); if (i % 4 === 0) BK.step(1); const c = MH.state().carts.find(q => q.raid && q.tell > 0); if (c) { BK.step(1); full('w' + (c.boarding ? 'b' : 't') + '-raider-' + (c.boarding ? 'boarding' : 'throw') + '-' + i); break; } } for (let i = 0; i < 300; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); const c = MH.state().carts.find(q => q.raid && q.tell > 0 && q.boarding); if (c) { BK.step(1); full('w2-raider-boarding'); break; } } BK.sim(40); BK.step(1); full('w3-after'); }
     /* the contact sheet */
     const cols = 3, cw = 600, ch = 340, rows = Math.ceil(res.length / cols), sc = document.createElement('canvas'); sc.width = cols * cw; sc.height = rows * (ch + 16); const sg = sc.getContext('2d'); sg.fillStyle = '#0b0910'; sg.fillRect(0, 0, sc.width, sc.height); sg.imageSmoothingEnabled = false;
     for (let i = 0; i < res.length; i++) { const im = new Image(); await new Promise(ok => { im.onload = ok; im.src = res[i][1]; }); const k = Math.min((cw - 8) / im.width, (ch - 4) / im.height), x = (i % cols) * cw + 4, y = Math.floor(i / cols) * (ch + 16);

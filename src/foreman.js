@@ -18,7 +18,7 @@
 //           as he comes (a boarding: he passes under you)
 // Numbers (a MINI, B6 amended 10-08): 75-85% WITH FLASKS knight/warden/pyro, 40-75 s, mash 0/6 (tools/boss-rates.mjs minecart:mini --profile=human).
 export const FOREMAN = {
-  cols: [822, 852], low: 30, high: 27,   /* the loop: columns, and the two lines' rows */
+  cols: [892, 922],   /* (deeprails4: +70, THE TWIN LINES before the flooded run) */ low: 30, high: 27,   /* the loop: columns, and the two lines' rows */
   homeR: 290, minR: 34, maxR: 420,      /* his cart's place on the loop, px from its left edge: at home, the nearest a ram brings him, the farthest */
   driftTell: 0.4, driftV: 84, driftVs: [84, 112, 140], awayV: 120,   /* (his drift quickens with each stomp: told by its sparks and its pace) */
   pickTell: 0.6, pickDmg: 28, pickT: 0.45, pick2: 0.3, picks: [1, 2, 3], cutoff: 0,          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */

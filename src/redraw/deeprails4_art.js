@@ -59,11 +59,7 @@ export function sideSwitch(g, x, y, up, flash, time) {
   rc(g, x - 1, y - 30, 3, 30, '#3a3844'); rc(g, x - 1, y - 30, 1, 30, MP.i4); rc(g, x - 4, y - 3, 9, 3, '#24222a');
   const a = up ? -0.9 : 0.9; g.save(); g.translate(R(x), R(y - 24)); g.rotate(a); rc(g, 0, -1, 12, 3, flash > 0 ? '#ffffff' : '#c8a040'); rc(g, 10, -2, 4, 5, '#e05a3a'); g.restore();
   rc(g, x - 3, y - 34, 7, 4, up ? '#8fd160' : '#5ab0ff'); add(g, () => { g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 6); g.drawImage(glow(10, up ? '140,220,100' : '90,170,255'), x - 10, y - 42); });
+  return y - 32;
 }
-/* A GOBLIN RAIDER'S CART alongside on the other line (RAIL RAIDERS): a battered open cart, a hook pole, a lantern; boarding: the plank out */
-export function raiderCart(g, x, y, state, time) {
-  rc(g, x - 13, y - 13, 26, 11, '#4a3020'); rc(g, x - 13, y - 13, 26, 2, '#7a5030'); rc(g, x - 12, y - 6, 24, 1, '#2a1a10');
-  for (const wx of [x - 8, x + 8]) { rc(g, wx - 3, y - 3, 6, 4, '#24222a'); rc(g, wx - 1, y - 2, 2, 2, MP.i4); }
-  rc(g, x + 10, y - 26, 1, 13, '#6a4a2a'); rc(g, x + 9, y - 28, 3, 3, '#ffd36b'); add(g, () => { g.globalAlpha = 0.5; g.drawImage(glow(14, '255,200,90'), x - 4, y - 41); });
-  if (state === 'plank') { rc(g, x - 30, y - 12, 18, 2, '#8a6a40'); rc(g, x - 30, y - 12, 18, 1, '#b08a50'); }
-}
+/* A RAIL RAIDER BOARDING (RAIL RAIDERS): the plank out of his tub toward your line (dir -1 up, +1 down), sliding out over the tell (k 0..1), a red line on its edge */
+export function raidPlank(g, x, y, dir, k) { const len = 8 + R(22 * k); g.save(); g.translate(x + 6, y - 12); g.rotate(dir * 0.9); rc(g, 0, -1, len, 3, '#8a6a40'); rc(g, 0, -1, len, 1, '#b08a50'); rc(g, len - 2, -1, 2, 3, '#ff6b6b'); g.restore(); }

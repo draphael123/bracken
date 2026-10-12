@@ -46,7 +46,7 @@ ok(MC.ramV > MC.cruise + 20 && MC.ramV < MC.boost, 'the RAM pace (' + MC.ramV + 
 ok(cartSpeed(MC.cruise, { boost: true }, 1) === MC.boost && cartSpeed(0, {}, 10) === MC.cruise, 'the cart: pump to ' + MC.boost + ', cruise at ' + MC.cruise);
 /* THE ARCS */
 for (const k of ['points', 'speed', 'combat', 'switch']) ok(['teach', 'test', 'remix', 'exam', 'boss'].every(s => ARCS[k][s]), 'the ' + k + ' arc is taught, tested, remixed, examined and in the boss');
-ok(SECTIONS.length === 10 && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'nine sections and the arena, in order');
+ok(SECTIONS.length === 11 && SECTIONS.find(s => s[0] === 'THE TWIN LINES') && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'ten sections (deeprails4: THE TWIN LINES went in before the flooded run) and the arena, in order');
 const sec = name => { const i = SECTIONS.findIndex(s => s[0] === name); return [SECTIONS[i][1], SECTIONS[i + 1][1]]; };
 /* THE AREAS (A8: dark and light stretches) */
 { const dz = (L.darkZones || [])[0], [d0, d1] = sec('THE DARK DRIFT'); ok(dz && dz.dark >= 0.8 && dz.x0 <= (d0 + 6) * TS && dz.x1 >= (d1 - 6) * TS && L.dark > 0, 'THE DARK DRIFT is pitch (dark ' + (dz && dz.dark) + ': the headlamp cone, src/minecart-hands.js holes)');
@@ -148,6 +148,26 @@ ok([...kinds].every(t => ['archer', 'gobmage', 'tippler', 'miner', 'brute', 'sap
     { const b = L.mcBeams.filter(q => q.row === p.prow && q.x1 < p.x).sort((q, r) => r.x1 - q.x1)[0], room = (p.x0 - (b.x1 + 1)) * TS;
       ok(room / MC.cruise >= 0.6, p.id + ': ' + room + ' px (' + (room / MC.cruise).toFixed(2) + ' s at cruise) from its beam to its bridge'); }
     const exam = L.mcExam.some(([a, b]) => p.x0 >= a && p.x1 <= b); ok(p.x0 >= a3[0] ? exam : !exam, p.id + (exam ? ': in the exam - a fall is a REAL death (told)' : ': a fall here is cheap (A10)')); } }
+/* SWITCH SIDES (deeprails4, Daniel 10-12): THE TWIN LINES - each stretch blocked on both sides (a LOW BEAM on the low line, DUCK; a GAP in the high line over it, JUMP);
+   a SIDE SWITCH (a points lever, the level's verb) drops you to the low line, the cart's jump puts you back up; some of it only one side's; teach -> test -> remix -> exam */
+{ const A = ARCS.sides; ok(A && A.teach[1] < A.test[0] && A.test[1] < A.remix[0] && A.remix[1] < A.exam[0], 'the sides arc runs teach -> test -> remix -> exam in order');
+  const HI = 27, LO = 30, twin = SECTIONS.find(q => q[0] === 'THE TWIN LINES')[1], end = SECTIONS.find(q => q[0] === 'THE FLOODED RUN')[1];
+  const splits = L.mcBeams.filter(b => b.row === LO && b.x0 >= twin && b.x0 < end), gapAt = x => !stand(at(x, HI)) && !stand(at(x, HI - 1)) && !stand(at(x, HI + 1));
+  ok(splits.length >= 3, splits.length + ' splits in the twin lines (teach, test, remix)');
+  for (const b of splits) { ok([b.x0, b.x1].every(gapAt) && stand(at(b.x0 - 4, HI)) && stand(at(b.x1 + 4, HI)), 'the split at ' + b.x0 + ': a GAP in the high line over the low line\'s BEAM (jump high, or duck low)');
+    ok(stand(at(b.x0, LO)) && stand(at(b.x0 - 3, LO)) && stand(at(b.x1 + 3, LO)), 'the split at ' + b.x0 + ': the low line runs on under it (a fall from the high gap lands on it)');
+    const sw = L.mcPoints.find(p => p.side && p.x < b.x0 && b.x0 - p.x <= 10); ok(sw && sw.dflt === 'set' && sw.prow === HI, 'the split at ' + b.x0 + ': a SIDE SWITCH before it on the high line (' + (sw && sw.id) + ': set - stay high; thrown - drop low)'); }
+  ok(splits.some(b => b.x0 >= A.teach[0] && b.x0 <= A.teach[1]) && splits.some(b => b.x0 >= A.test[0] && b.x0 <= A.test[1]) && splits.some(b => b.x0 >= A.remix[0] && b.x0 <= A.remix[1]), 'a split taught, tested and remixed');
+  ok(L.ents.some(e => e.t === 'sign' && e.x >= twin && e.x <= A.teach[1] && /TWIN|DUCK/.test(e.text)) && T_.some(t => t.x < A.teach[1] && t.at >= A.teach[0] && /JUMP/.test(t.text) && /DUCK/.test(t.text)), 'taught: a sign and a tell (jump high, duck low)');
+  const oreHi = L.ents.filter(e => e.t === 'stray' && e.x >= twin && e.x < end); ok(oreHi.length >= 1 && oreHi.every(e => (LO * TS - 51 - 26) > (e.y + 1) * TS && (HI * TS - 51 - 26) < (e.y + 1) * TS), 'ore only the HIGH side reaches (a jump off the high line takes it, the low line\'s cannot)');
+  ok(L.ents.some(e => (e.t === 'coin' || e.t === 'mend') && e.x >= twin && e.x < end && e.y === LO - 2), 'and the low side has its own (coins, a mend)');
+  /* THE EXAM'S SIDES: the flooded run's fork - high: a gap over the low beam, then a crusher; low: the beam, then a gate */
+  const xb = L.mcBeams.find(b => b.x0 >= A.exam[0] && b.x0 <= A.exam[1] && b.row === LO); ok(xb && gapAt(xb.x0) && L.mcCrushers.some(c => c.row === HI && c.x > xb.x1 && c.x - xb.x1 <= 6) && L.mcGates.some(g => g.row === LO && g.x > xb.x1 && g.x - xb.x1 <= 10), 'the exam\'s fork is a split too: high - a gap then a crusher, low - a beam then a gate'); }
+/* THE RAIL RAIDERS (deeprails4: CART COMBAT 3) - goblins in carts alongside on the other line: EXISTING foes, told throws and told boardings */
+{ const rr = L.ents.filter(e => e.ride && e.ride.raid); ok(rr.length >= 2 && rr.every(e => e.t === 'miner') && new Set(rr.map(e => e.ride.row)).size === 2, rr.length + ' raiders (existing goblin miners in carts), one on each line');
+  ok(MC.raidTell >= 0.6 && MC.boardTell >= 0.8 && MC.leapT >= 0.8, 'a raider\'s throw is told ' + MC.raidTell + ' s, his boarding ' + MC.boardTell + ' s + his leap ' + MC.leapT + ' s (his shadow on your rail)');
+  ok(/cart\.raid/.test(hands) && /M\.shadows\.push\(\{ x: runeAt\(P\.x, heroV, MC\.boardTell/.test(hands) && /A RAIDER'S PICK/.test(hands), 'he throws at your mark and boards onto your line (his shadow first)');
+  ok(T_.some(t => /RAIDERS/.test(t.text) && t.x < Math.min(...rr.map(e => e.ride.trig)) + 2), 'they are told before they come'); }
 ok(MC.swReach >= 44 && MC.swReach > MC.leverReach, 'a SWITCH answers E from ' + MC.swReach + ' px (deeprails4: wider than a points lever)');
 /* THE FOREMAN (deeprails3: THE MINI, src/foreman.js) */
 { { const st = L.ents.filter(e => e.t === 'check').map(e => e.x), F0 = FMG.FOREMAN.cols[1], ex = L.mcPoints.find(p => p.id === 'examSw');
