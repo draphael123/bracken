@@ -8539,7 +8539,7 @@
   }
  },
  "minecart": {
-  "hash": "f0590c485e63",
+  "hash": "587a35955634",
   "boss": {
    "boss": "greatdrill",
    "wins": 0,
@@ -8639,10 +8639,110 @@
     }
    ]
   },
+  "mini": {
+   "boss": "brute",
+   "wins": 0,
+   "fights": 6,
+   "byHero": {
+    "knight": [
+     "dead:100/80",
+     "dead:100/80"
+    ],
+    "warden": [
+     "dead:100/81",
+     "dead:100/81"
+    ],
+    "pyro": [
+     "dead:100/63",
+     "dead:100/63"
+    ]
+   },
+   "rows": [
+    {
+     "hero": "knight",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 36.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 80,
+     "landed": 54,
+     "swings": 1262,
+     "reprisalPct": 87,
+     "chip": []
+    },
+    {
+     "hero": "knight",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 36.8,
+     "hpLostPct": 100,
+     "bossLeftPct": 80,
+     "landed": 54,
+     "swings": 1262,
+     "reprisalPct": 87,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 37.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 81,
+     "landed": 22,
+     "swings": 1262,
+     "reprisalPct": 73,
+     "chip": []
+    },
+    {
+     "hero": "warden",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 37.1,
+     "hpLostPct": 100,
+     "bossLeftPct": 81,
+     "landed": 22,
+     "swings": 1262,
+     "reprisalPct": 73,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 1,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 48.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 63,
+     "landed": 99,
+     "swings": 1718,
+     "reprisalPct": 100,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 48.2,
+     "hpLostPct": 100,
+     "bossLeftPct": 63,
+     "landed": 99,
+     "swings": 1718,
+     "reprisalPct": 100,
+     "chip": []
+    }
+   ]
+  },
   "carried": {
-   "from": "4032e2c3a12e",
+   "from": "f0590c485e63",
    "parts": [
-    "boss"
+    "boss",
+    "mini"
    ]
   },
   "level": {
@@ -8706,105 +8806,6 @@
     "kills": 16,
     "heroLevel": 13
    }
-  },
-  "mini": {
-   "boss": "brute",
-   "wins": 0,
-   "fights": 6,
-   "byHero": {
-    "knight": [
-     "dead:100/81",
-     "dead:100/81"
-    ],
-    "warden": [
-     "dead:100/80",
-     "dead:100/80"
-    ],
-    "pyro": [
-     "dead:100/63",
-     "dead:100/63"
-    ]
-   },
-   "rows": [
-    {
-     "hero": "knight",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 36.2,
-     "hpLostPct": 100,
-     "bossLeftPct": 81,
-     "landed": 49,
-     "swings": 1182,
-     "reprisalPct": 84,
-     "chip": []
-    },
-    {
-     "hero": "knight",
-     "seed": 2,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 36.2,
-     "hpLostPct": 100,
-     "bossLeftPct": 81,
-     "landed": 49,
-     "swings": 1182,
-     "reprisalPct": 84,
-     "chip": []
-    },
-    {
-     "hero": "warden",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 36.6,
-     "hpLostPct": 100,
-     "bossLeftPct": 80,
-     "landed": 22,
-     "swings": 1182,
-     "reprisalPct": 71,
-     "chip": []
-    },
-    {
-     "hero": "warden",
-     "seed": 2,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 36.6,
-     "hpLostPct": 100,
-     "bossLeftPct": 80,
-     "landed": 22,
-     "swings": 1182,
-     "reprisalPct": 71,
-     "chip": []
-    },
-    {
-     "hero": "pyro",
-     "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 47.4,
-     "hpLostPct": 100,
-     "bossLeftPct": 63,
-     "landed": 96,
-     "swings": 1604,
-     "reprisalPct": 100,
-     "chip": []
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 47.4,
-     "hpLostPct": 100,
-     "bossLeftPct": 63,
-     "landed": 96,
-     "swings": 1604,
-     "reprisalPct": 100,
-     "chip": []
-    }
-   ]
   }
  },
  "church": {
