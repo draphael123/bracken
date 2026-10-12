@@ -40,3 +40,9 @@ Spec: scratch/brief-throw.md part 2 (CO-OP: grab your partner). Part 3 (ENEMIES:
 6. PART 3 (grab a staggered small foe)? Rec: no, knock-into covers it.
 7. Thrown-partner hits count as a hero blow on a boss (greed reprisal can start, a keyed boss turns it and names the key). Rec: keep - it is chipped like any blow outside an opening.
 8. The computer ALLY never grabs you (it can be grabbed, and wriggles free in 3 s). Rec: keep.
+
+## Regression results (PORT 8869, one page at a time)
+GREEN: partner-throw, online-coop (incl. new section 10), throwables, knock-into, touch, uiscreens (controls list / rebind page with the 17th row), combat-damage, attack-buffer, death-cost, dances (co-op).
+RED / NOT PROVEN: textfit - twice. First run: scope "boss" timed out at 480 s; second run (limit 1500 s): "Input.dispatchKeyEvent did not answer within 15000ms". Both while the PC was loaded by the BATCH88 suite / after the reboot - not a text overflow report, but the new words (co-op guide page-2 lines, the GRAB hint, controls-card row, rebind row) are UNCHECKED by textfit; rerun it on a quiet machine.
+Not run: damage-pct (no such file on master 4099648d), the full `npm run check` (hint-shown, comments, audio-assets, homepaths, dangling-paths, blow-tags were not run).
+online-coop section 10: the stream-AUDIO level could not be asserted (the host's wood is never silent: baseline peak 0.385); it asserts the guest stream has a live audio track and that the scream fires on the host (same master the stream taps).
