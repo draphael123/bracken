@@ -8001,7 +8001,7 @@ export const LEVELS = [
   { id: 'buriedcity', arc: 'the desert', name: 'THE BURIED CITY', sub: 'a city of the living, buried whole', rule: 'THE CITY\'S ROOMS FILL WITH SAND: PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES - AND CARRIES YOU.', build: () => buildBuriedCity({ painter, T, TS }), needs: 'ksar' },
   /* THE SEALED PYRAMID (claude/sealedpyramid, the OPUS GREYBOX, 2026-10-12; Daniel's concept interview 10-11): the tomb past THE BURIED CITY - a descent through galleries of
      traps and plates. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE SCARAB MOTHER (src/scarab-mother.js) is its boss */
-  { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'the tomb the robbers never came out of', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
+  { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'a tomb no robber left', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
