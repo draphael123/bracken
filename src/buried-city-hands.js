@@ -15,6 +15,7 @@
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js';
+import { makeFlip } from './buried-city-flip.js';   /* THE FLIP (claude/buriedcity3): the hourglasses you strike, the roofs they raise, THE SAND SEA */
 
 export const BCS = { dropBite: 0.27, leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2, fallBeat: 130, fallPad: 4 };
 const SAND = SET.SAND; SAND.loose = SAND.loose || 'rgba(232,204,138,0.45)';
@@ -23,6 +24,7 @@ const RULE_SAID = { first: 1, granary: 1, street: 1, cellar: 1, upperbulb: 1, ya
 export function makeBuriedCityHands(ctx) {
   let K = null;
   const H = {};
+  let FL = null;   /* THE FLIP (src/buried-city-flip.js), made on the first reset (it needs the hands' unburyIn) */
   const TS = () => ctx.TS, T = () => ctx.T;
   const once = k => { if (K.said[k]) return false; K.said[k] = 1; return true; };
   const number = (x, y, t, col) => ctx.number(x, y, t, col || '#ffd36b');   /* (every teaching line is a src/hint-lines.js line: tools/hint-shown.mjs reads these calls) */
@@ -61,8 +63,9 @@ export function makeBuriedCityHands(ctx) {
     K.waiting = (L.ents || []).map((e, k) => ({ e, k })).filter(q => q.e.sandWait && H.waits(q.e));
     { const arr = ctx.lights ? ctx.lights() : null; if (arr) { for (let i = arr.length - 1; i >= 0; i--) if (arr[i].bc) arr.splice(i, 1); for (const lp of (L.lamps || [])) arr.push({ x: lp.x * TS() + 8, y: lp.y * TS() + (lp.kind === 'brazier' ? 2 : 4), r: lp.kind === 'brazier' ? 64 : 44, torch: true, bare: true, warm: true, bc: true }); } }   /* (the lamps are lights the game blooms) */
     K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = []; K.leverFx = {};
+    if (!FL) FL = makeFlip({ ctx, number, once, unburyIn: (a, b, r) => unburyIn(a, b, r) }); FL.reset(K, fresh); H.flip = FL;
     for (const pp of ctx.players) { pp.bcJam = 0; pp.bcFall = 0; }
-    if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { buriedCity: () => K, buriedCityHands: () => H, walkHint: () => H.walkHint(ctx.hero()) });
+    if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { buriedCity: () => K, buriedCityHands: () => H, walkHint: () => H.walkHint(ctx.hero()), flipAll: () => FL && FL.flipAll(), flip: () => FL && FL.read() });
   };
   /* a placed foe under the sand (sandWait: a room id): it is not spawned while that room's sand is over it - the hands stand it up when it has gone */
   H.waits = e => { if (!e || !e.sandWait) return false; if (!K || K.L !== ctx.L) return true; const r = K.rooms && K.rooms.find(q => q.id === e.sandWait); if (!r) return true; return sandTopRow(r) <= e.y; };
@@ -148,6 +151,7 @@ export function makeBuriedCityHands(ctx) {
   H.interact = P => {
     if (!K || P.dead) return false; const ts = TS();
     const lv = levers().find(q => atLever(P, q)); if (lv) { pull(lv, P); return true; }
+    if (FL && FL.interact(P)) return true;   /* (claude/buriedcity3) E turns an hourglass too (a blow strikes it: src/buried-city-flip.js) */
     const W = K.L.wheel; if (W && Math.abs(px(W.x) - P.x) <= BCS.wheelR && Math.abs((W.row + 1) * ts - P.y) <= 18) { turnWheel(P); return true; }
     const v = K.vault.find(q => !q.open && Math.abs(q.x * ts + 8 - P.x) <= BCS.vaultR && P.y > q.y0 * ts && P.y <= (q.y1 + 2) * ts);
     if (v) { if (ctx.questGot() >= v.gears) openVault(v); else number(P.x, P.y - 34, 'THE CLOCKWORK VAULT WANTS FIVE GEARS', '#9aa39a'); return true; }
@@ -197,6 +201,7 @@ export function makeBuriedCityHands(ctx) {
     }
     for (const r of K.rooms) { const q = r.into && roomOf(r.into); if (q && q.level !== q._lv) { q._lv = q.level; q.moving = 0.6; write(q, false); } }
     stepFalls(dt);
+    if (FL) FL.update(dt);   /* THE FLIP: the glasses run, the roofs rise and sink, the banks run out, the dune falls flow up, THE SAND SEA swallows */
     /* THE DROWNED QUARTER's foes stand up out of the sand when it has gone off them */
     if (K.waiting.length) for (let i = K.waiting.length - 1; i >= 0; i--) { const q = K.waiting[i]; if (H.waits(q.e)) continue; K.waiting.splice(i, 1); K.n.risen++;
       const made = ctx.spawnEnt ? ctx.spawnEnt(q.e, q.k) : null; if (made) ctx.burst(made.x, made.y - 6, 10, ['#d8b070', '#a87a40'], 60, 0.6); }
@@ -244,7 +249,12 @@ export function makeBuriedCityHands(ctx) {
       if (tr.gate === 'open') return here(544, 32, 'talk', 1, { r: 10 });
       if (tf && tf.at !== 'hall') return here(538, 32, 'talk', -1, { r: 10 });
       return here(544, 32, null, 1, { r: 10, wait: true }); }
+    /* THE FLIP (claude/buriedcity3): before a glass the route needs - turn it (E); THE FALL running - into it, and it carries you to the high dune */
+    if (K.glasses) for (const gq of K.glasses) { const z = GLASS_ZONES[gq.id]; if (!z || c < z[0] || c > z[1] || feet < z[2] || feet > z[3]) continue;
+      if (gq.t <= 0) return here(gq.x, gq.y, 'talk', 1, { r: 12 });
+      if (gq.id === 'fall') { const f = K.dfalls[0]; if (f) return here(f.x1 + 2, f.top - 1, null, 1, { r: 20 }); } }
     return null; };
+  const GLASS_ZONES = { stair: [96, 107, 33, 36], bank: [306, 313, 29, 32], fall: [646, 659, 11, 15], chain1: [671, 681, 3, 7], chain2: [696, 699, 8, 11], exam: [711, 722, 9, 12] };   /* (grid rows: where a player stands before each glass) */
 
   /* ---------- THE GLINT AND THE NUDGE (the route list: src/stuck-spots.js STUCK_HANDS.buriedcity) ---------- */
   const handsState = name => { const [kind, id] = name.split('.');
@@ -252,6 +262,7 @@ export function makeBuriedCityHands(ctx) {
     if (kind === 'wheel') return K.wheel.done ? 'open' : 'shut';
     if (kind === 'vault') { const v = K.vault.find(q => q.id === id); return v ? (v.open ? 'open' : ctx.questGot() >= v.gears ? 'due' : 'shut') : ''; }
     if (kind === 'sluice') { const c = chuteOf(id); if (!c) return ''; const t = c.to.wall, full = c.heap.wall && c.heap.wall.rows >= heapMax(t); return !full ? (c.at === 'wall' ? 'pile' : 'swing') : c.at === 'wall' ? 'back' : 'climb'; }
+    if (kind === 'glass') return FL ? FL.state(id) : '';   /* (claude/buriedcity3) an hourglass: idle / running */
     if (kind === 'trap') { const r = roomOf(id); if (!r) return ''; if (r.level >= r.full - 0.05) return 'full'; return r.gate === 'open' ? 'gate' : !feeds(r) ? 'feed' : 'filling'; }
     return ''; };
   H.handsState = n => (K ? handsState(n) : '');
@@ -279,12 +290,14 @@ export function makeBuriedCityHands(ctx) {
     if (kind === 'bcBalcony' || kind === 'bcLintel') { for (const [x, s] of [[l, 1], [r - 8, -1]]) { g.fillStyle = '#8a6c48'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 8), 7, 3); g.fillRect(R(x + (s > 0 ? 1 : 1)), R(t + 11), 5, 3); g.fillRect(R(x + (s > 0 ? 1 : 2)), R(t + 14), 3, 3);   /* the corbel, stepped */
         g.fillStyle = '#c8aa72'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 8), 7, 1); g.fillRect(R(x + 1), R(t + 11), 5, 1); g.fillStyle = '#3e2c1a'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 10), 7, 1); g.fillRect(R(x + 1), R(t + 13), 5, 1);
         g.globalAlpha = 0.5; post(x + 2, t + 17, b, 4, '#6e5638', '#a88a5c', '#2a1e14'); g.globalAlpha = 1; } return true; }   /* (and the wall's pilaster under it, fading into the dark) */
+    if (kind === 'bcBuried') { g.fillStyle = '#6a4a30'; g.fillRect(R(l + 1), R(t + 10), R(r - l - 2), R(b - t - 10)); g.fillStyle = '#4a3220'; for (let y = t + 18; y < b; y += 8) g.fillRect(R(l + 1), R(y), R(r - l - 2), 1); g.fillStyle = '#2a1a10'; g.fillRect(R(l + 3), R(t + 22), 4, 6); g.fillRect(R(r - 7), R(t + 22), 4, 6); return true; }   /* (claude/buriedcity3) a building standing up out of THE SAND SEA: its walls go on down into the sand (placeholder) */
     if (kind === 'bcDrum') { for (const x of [l + 1, r - 12]) { for (let k = 0; k < 3; k++) { g.fillStyle = k & 1 ? '#8a7048' : '#a48a5c'; g.fillRect(R(x + k), R(b - 6 - k * 5), 11 - k * 2, 5); g.fillStyle = '#d8c088'; g.fillRect(R(x + k), R(b - 6 - k * 5), 11 - k * 2, 1); g.fillStyle = '#3e2c1a'; g.fillRect(R(x + k), R(b - 2 - k * 5), 11 - k * 2, 1); }
         g.fillStyle = '#d8b472'; g.fillRect(R(x - 2), R(b - 3), 15, 3); g.fillStyle = '#f4dc9c'; g.fillRect(R(x - 2), R(b - 3), 15, 1); } return true; }   /* (the drum rests on broken blocks, the dune drifted round them) */
     return false; };
   H.drawWorld = (g, cx, cy, time) => {
     if (!K) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), L = K.L, V = view(g, cx, cy, time);
     const vis = (x0, x1) => x1 * ts - cx > -64 && x0 * ts - cx < vw + 64;
+    if (FL) FL.draw(g, cx, cy, time);   /* THE FLIP's pieces (placeholder art): THE SAND SEA, the risers, the banks, the dune falls, the glasses and their gauges */
     /* THE LIGHT IN THE SHAFTS: slanted god-rays, drifting dust, a lit patch where they reach the floor */
     for (const z of (L.sun || [])) { if (z.x0 < 38 || !vis(z.x0, z.x1 + 1)) continue; if (z.floor === undefined) { let fy = 1; const mx = (z.x0 + z.x1) >> 1; while (fy < L.H - 1 && ctx.cellGet(mx, fy) === T().AIR) fy++; z.floor = fy; } SET.drawShaft(V, z, z.floor); }
     /* THE DECOR: spires, the sinkhole's lip, stalls, houses, domes, the great gate's grille; and (B8) THE KING everywhere - his head in the dune, his statues, his mural, his court */
@@ -358,6 +371,6 @@ export function makeBuriedCityHands(ctx) {
   H.drawOver = (g, cx, cy, time) => { if (!K || !K.glint || !K.glint.show) return; drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), ctx.VW(), ctx.VH(), time); };
   H.drawHud = () => false;
   H.read = () => K && { n: { ...K.n }, rooms: K.rooms.map(r => ({ id: r.id, level: +r.level.toFixed(2), gate: r.gate, rows: r.rows })), wheel: { ...K.wheel }, waiting: K.waiting.length, vault: K.vault.map(v => ({ id: v.id, open: v.open })),
-    chutes: K.chutes.map(c => ({ id: c.id, at: c.at, heap: Object.fromEntries(Object.entries(c.heap).map(([k, v]) => [k, v.rows])) })) };
+    chutes: K.chutes.map(c => ({ id: c.id, at: c.at, heap: Object.fromEntries(Object.entries(c.heap).map(([k, v]) => [k, v.rows])) })), flip: FL ? FL.read() : null };
   return H;
 }

@@ -498,6 +498,13 @@ export const STUCK_HANDS = {
       { key: 'trapLever', is: ['trap.trap', 'gate'], at: [544, 32], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' },
       { key: 'trapFeed', is: ['trap.trap', 'feed'], at: [538, 32], line: 'THE GATE IS SHUT: SWING THE SAND-FALL INTO THE HALL' } ] },
     { id: 'bc-vault', zone: [598, 31, 610, 36], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [603, 35], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
+    /* (claude/buriedcity3) THE FLIP: every glass the route needs glints until it is running (handsState glass.<id>: idle / running) */
+    { id: 'bc-stairglass', zone: [98, 28, 107, 37], steps: [ { key: 'stairGlass', is: ['glass.stair', 'idle'], at: [102, 36], line: 'A FALLEN HOUSE: STRIKE THE HOURGLASS BY IT' } ] },
+    { id: 'bc-bankglass', zone: [306, 26, 313, 33], steps: [ { key: 'bankGlass', is: ['glass.bank', 'idle'], at: [311, 32], line: 'A BANK OF SAND: STRIKE THE HOURGLASS' } ] },
+    { id: 'bc-fallglass', zone: [646, 8, 661, 18], steps: [ { key: 'fallGlass', is: ['glass.fall', 'idle'], at: [656, 14], line: 'STRIKE THE GLASS ON THE DOME, THEN RIDE THE FALL UP' } ] },
+    { id: 'bc-chain1', zone: [671, 1, 681, 8], steps: [ { key: 'chain1', is: ['glass.chain1', 'idle'], at: [678, 6], line: 'THE SAND SEA: STRIKE THE HOURGLASS AND THE ROOFS RISE' } ] },
+    { id: 'bc-chain2', zone: [695, 6, 700, 13], steps: [ { key: 'chain2', is: ['glass.chain2', 'idle'], at: [697, 11], line: 'THE SECOND HOURGLASS RAISES THE REST' } ] },
+    { id: 'bc-examglass', zone: [711, 6, 722, 13], steps: [ { key: 'examGlass', is: ['glass.exam', 'idle'], at: [719, 12], line: 'THE LAST HOURGLASS: STRIKE IT, THEN RUN' } ] },
   ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
      and the climbs over the towers on the walk and out of the store's cellar glint after a stall */

@@ -7998,7 +7998,7 @@ export const LEVELS = [
   { id: 'towpath', arc: 'the road inland', name: 'THE TOWPATH', sub: 'the river road out of Waymeet, lock by lock into the fog', rule: 'THE LOCKS LIFT THE WATER, AND THE WATER LIFTS YOU.', build: () => buildTowpath({ painter, T, TS }), needs: 'waymeet' },   /* THE TOWPATH (claude/towpath, the greybox, 2026-10-08): appended (saves count levels by index); in the road between WAYMEET and THE FOG CANAL by its needs */
   /* THE BURIED CITY (claude/buriedcity, the OPUS GREYBOX, 2026-10-08; Daniel's desert-arc concept 10-01, to today's rules): a city of the living buried whole under the dunes past
      THE BANDIT KSAR - its rooms fill with sand. APPENDED, so no index and no save moves. THE HOURGLASS KING (src/hourglass-king.js) is its boss; THE SEALED PYRAMID will need it */
-  { id: 'buriedcity', arc: 'the desert', name: 'THE BURIED CITY', sub: 'a city of the living, buried whole', rule: 'THE CITY\'S ROOMS FILL WITH SAND: PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES - AND CARRIES YOU.', build: () => buildBuriedCity({ painter, T, TS }), needs: 'ksar' },
+  { id: 'buriedcity', arc: 'the desert', name: 'THE BURIED CITY', sub: 'a city of the living, buried whole', rule: 'PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES AND CARRIES YOU. STRIKE AN HOURGLASS AND THE SAND RUNS BACKWARD.', build: () => buildBuriedCity({ painter, T, TS }), needs: 'ksar' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

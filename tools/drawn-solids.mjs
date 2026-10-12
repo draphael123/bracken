@@ -40,7 +40,7 @@ try {
         for(const c of K.chutes){c.at=c.other[c.at];}BK.sim(900);ph.push(scan('every chute swung'));
         for(const c of K.chutes){c.at=c.other[c.at];}BK.sim(300);ph.push(scan('every chute swung back'));
         /* the new verb (claude/buriedcity3): every hourglass flipped, run out, and sunk back */
-        if(K.flips&&BK.flipAll){BK.flipAll();BK.sim(240);ph.push(scan('every hourglass flipped'));BK.sim(2400);ph.push(scan('every flip run out'));}
+        if(K.glasses&&BK.flipAll){BK.flipAll();BK.sim(240);ph.push(scan('every hourglass flipped'));BK.sim(2400);ph.push(scan('every flip run out'));}
       }
       /* a death: the respawn puts every small room back as built */
       BK.respawn();BK.sim(60);ph.push(scan('after a respawn'));BK.sim(600);ph.push(scan('after a respawn, settled'));
