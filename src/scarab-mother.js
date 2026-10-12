@@ -145,7 +145,8 @@ export function stepScarabMother(e, S, dt, h, c) {
     case 'recover': case 'skid': case 'dazed': if (e.modeT <= 0) nextMove(e, S, P, c); return;
     case 'walk': {
       const d = P.x - e.x; e.face = Math.sign(d) || e.face;
-      if (Math.abs(d) > SM.keep + 20) e.x = clampX(G, e.x + Math.sign(d) * SM.walk * dt);
+      if (Math.abs(d) > (S.closeIn ? SM.snapRange - 14 : SM.keep + 20)) e.x = clampX(G, e.x + Math.sign(d) * SM.walk * (S.closeIn ? 1.6 : 1) * dt);
+      else if (S.closeIn) e.modeT = Math.min(e.modeT, 0);   /* (in reach: the snap comes now) */
       if (e.modeT <= 0) nextMove(e, S, P, c); return; }
     case 'back': {   /* she scuttles off to the far side to charge from it */
       const away = Math.sign(e.x - P.x) || -e.face; e.x = clampX(G, e.x + away * SM.back * dt); e.face = -away;
@@ -160,7 +161,9 @@ function nextMove(e, S, P, c) {
   e.face = Math.sign(dx) || e.face;
   switch (m) {
     case 'charge': if (ad < SM.keep) { setMode(e, 'back', SM.backT); return; } S.n.charges++; tell(e, S, c, 'chargeTell', SM.chargeTell); return;
-    case 'snap': if (ad > SM.snapRange) { setMode(e, 'walk', 0.8); S.step--; if (ad > 160) { S.step++; } return; } S.n.snaps++; tell(e, S, c, 'snapTell', SM.snapTell); return;
+    case 'snap': if (ad > SM.snapRange) { if (ad > 160 || (S.closeTries = (S.closeTries || 0) + 1) > 2) { S.closeTries = 0; S.closeIn = false; setMode(e, 'walk', 0.4); return; }   /* (too far, or she could not close: the snap is skipped) */
+        S.closeIn = true; setMode(e, 'walk', 1.4); S.step--; return; }   /* out of her jaws' reach: she closes first */
+      S.closeIn = false; S.closeTries = 0; S.n.snaps++; tell(e, S, c, 'snapTell', SM.snapTell); return;
     case 'spit': S.n.spits++; tell(e, S, c, 'spitTell', SM.spitTell); S.mark = { x: clampX(G, P.x), k: 'spit' }; return;
     case 'burrow': S.n.burrows++; tell(e, S, c, 'burrowTell', SM.burrowTell); return;
     case 'quake': { S.n.quakes++; tell(e, S, c, 'quakeTell', SM.quakeTell); const r = c.rng ? c.rng : Math.random, xs = [clampX(G, P.x)];
