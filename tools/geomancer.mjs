@@ -76,7 +76,7 @@ try {
     return {had,after:BK.geo().pieces().length,same:g0.every((v,i)=>v===L.grid[i])}})()`);
   /* FAULT LINE: foes are sprigs held where they are put (hp 5000, no swing), so what is measured is only the crack */
   out.heavy = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,G=()=>BK.geo(),FL=BK.geoK&&BK.geoK.fault;
-      const foe=(dx,t='sprig')=>{BK.spawnEnt({t,x:(P().x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;e.px=P().x+dx;return e;};
+      const foe=(dx,t='sprig')=>{BK.spawnEnt({t,x:(P().x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;e.biteCd=99;e.px=P().x+dx;return e;}   /* (biteCd: the sprig bites on its own clock, not cd - a bite mid-wind hurt her and cancelled the charge about half the runs) */;
       const hold=(es,n)=>{const pin=()=>es.forEach(e=>{if(e.px!==undefined&&!(e.vy<0)&&!e.geoAirT){e.x=e.px;e.vx=0;}});let len=0,lift=0;const y0=es.map(e=>e.y);
         const W=BK.geoK?BK.geoK.wind:0.5;K.atk=true;for(let i=0;i<90;i++){pin();BK.sim(1);if(n<1&&P().charge>=n*W)break;if(n>=1&&i>=45)break;}K.atk=false;   /* (n: how much of the wind to hold, 1 = all of it - it goes by itself at the full wind) */
         for(let i=0;i<80;i++){pin();BK.sim(1);for(const fl of G().faults?G().faults():[])len=Math.max(len,fl.len||0);es.forEach((e,k)=>lift=Math.max(lift,y0[k]-e.y));}
