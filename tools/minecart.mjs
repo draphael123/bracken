@@ -272,4 +272,37 @@ const hits = () => { const got = []; return { got, w: Object.assign(world([]), {
 { const { S, e } = fight(); S.chute = { x: G.x0 + 200, t: 0.6 }; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 120, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
   ask(5); const pl = ask(5.5); ok(/ore/.test(pl.why) && pl.drop, 'the bot drops to the LOW line to ram when the chute rattles with no lever left'); }
 ok(GD.DRILL.hp >= 1900 && GD.DRILL.jamCap >= 0.15, 'the drill\'s health is never lowered under the greybox floor (' + GD.DRILL.hp + ')');
+/* GREAT DRILL 4 (deeprails4, Daniel 10-12): THE GEARS - each bank drives one attack; break it and that attack is gone for the phase; the fight half gears, half body */
+{ const ids = p => GD.phaseGears(p).map(g => g.id).sort().join();
+  ok(GD.GEARS.length === 4 && new Set(GD.GEARS.flatMap(g => g.moves)).size === GD.GEARS.flatMap(g => g.moves).length, 'four gear banks, each driving its own attack(s): ' + GD.GEARS.map(g => g.id + '=' + g.moves.join('+')).join(', '));
+  ok(ids(1) === 'dyn,roof' && ids(2) === 'chain,dyn,lunge' && ids(3) === 'chain,dyn,lunge,roof', 'a phase shows the banks of the attacks it uses (P1 ' + ids(1) + ' / P2 ' + ids(2) + ' / P3 ' + ids(3) + ')');
+  ok([1, 2, 3].every(p => GD.gearsNeed(p) === Math.ceil(GD.phaseGears(p).length / 2)), 'its gears hold each phase line until HALF the phase\'s banks are broken');
+  ok(!GD.moveGear('reverse'), 'the reverse ram is the drive itself: no gear stops it');
+  /* every bank is reachable by every hero with base kit: a standing swing on its line (the knight's box, the shortest: y-28..y) or a jump off the line under it (apex 51 px) */
+  const { S } = fight(); GD.armGears(S); S.ph = 3; GD.armGears(S); const swing = (y) => ({ t: y - 28, b: y }), over = (a, b) => a.t < b.b && a.b > b.t;
+  for (const g of GD.GEARS) { const b = GD.gearBoxOf(G, S, g), st = GD.gearStand({ ...S, highDown: false }, g), stand = swing(G.laneY[st.lane]);
+    if (!st.jump) ok(over(stand, b), g.id + ': struck standing on the ' + GD.LANE_NAME[st.lane] + ' line');
+    else { ok(!over(stand, b) && over(swing(G.laneY[st.lane] - 30), b), g.id + ': out of a standing swing, struck from a JUMP off the ' + GD.LANE_NAME[st.lane] + ' line'); }
+    for (const l of [0, 1, 2]) if (l !== st.lane && !(st.jump && l === 0)) ok(!over(swing(G.laneY[l]), b) || (g.lane === l), g.id + ': a standing swing from the ' + GD.LANE_NAME[l] + ' line does not reach it (the choice is where you stand)'); }
+  { const g = GD.GEARS.find(k => k.id === 'roof'), st = GD.gearStand({ highDown: true }, g); ok(st.lane === 1 && st.jump && over(swing(G.laneY[1] - 51), GD.gearBoxOf(G, S, g)), 'P3 (the high line down): the roof winch is struck from a jump off the MID line'); }
+  ok(GD.gearBoxOf(G, S, GD.GEARS[0]).r - GD.DRILL.gearW <= GD.rearX(S) && GD.gearBoxOf(G, S, GD.GEARS[0]).l >= GD.rearX(S) - 22, 'the banks stand on its rear face, in front of where a hero on the LOW line is stopped (its contact)'); }
+{ const { S, e } = fight(), log = []; e.hp = 2400; e.maxHp = 2400; GD.armGears(S); S.cd = 0; S.i = 0;
+  ok(GD.hitGear(e, S, 'dyn', 30, world(log)) === 30 && !S.gears.dyn.broken, 'a blow on a gear takes it whole (no armour)');
+  const o = {}; GD.hitGear(e, S, 'dyn', 999, world(log), o); ok(S.gears.dyn.broken && o.broke && log.some(t => /DYNAMITE FEED BROKEN/.test(t)), 'a few blows and it breaks - and says which attack is gone');
+  ok(GD.drillOpen(e) && S.openKind === 'gear' && e.open >= 3 && log.some(t => /IT STALLS/.test(t)), 'a gear broken STALLS it: the shared open read, ' + e.open + ' s');
+  ok(GD.takeBlow(e, S, 10000) <= e.maxHp * GD.DRILL.gearStallCap + 1e-6, 'the stall has its own smaller purse (' + GD.DRILL.gearStallCap + ' of it)');
+  for (let i = 0; i < 400 && (GD.drillOpen(e) || S.ward > 0); i++) GD.stepDrill(e, S, 1 / 60, [], world(log));
+  let dyn = 0; S.oreT = 999; for (let i = 0; i < 60 * 40; i++) { GD.stepDrill(e, S, 1 / 60, [{ x: G.x0 + 60, y: G.laneY[0], ground: true, alive: true, lane: 0, v: 150 }], world([])); if (e.mode === 'dynTell') dyn++; }
+  ok(dyn === 0 && S.n.reverse + S.n.rocks > 3, 'its dynamite is GONE for the phase (40 s: ' + S.n.reverse + ' reverses, ' + S.n.rocks + ' rockfalls, no dynamite)'); }
+{ const { S, e } = fight(), log = []; e.hp = 2400; e.maxHp = 2400; GD.armGears(S); const fl = GD.gateFloor(S, e); e.hp = fl + 50; const out = {};
+  const d = GD.gateBlow(e, S, 200, out); ok(d === 50 && S.held === 150 && /HIT THE GEARS/.test(out.word), 'THE GEARS HOLD IT: a blow past the 60% line, its gears whole, stops at the line and the rest is HELD (B15: not lost) - "' + out.word + '"');
+  e.hp -= d; GD.stepDrill(e, S, 1 / 60, [], world(log)); ok(S.ph === 1, 'and the phase does not turn');
+  const o = {}; GD.hitGear(e, S, 'roof', 999, world(log), o); ok(!GD.gateShut(S) && o.release === 150 && S.pass === 150, 'one of its two banks broken: the gate opens and the held blows are passed');
+  ok(GD.takeBlow(e, S, 5) === 150 && S.pass === 0, 'the held blows land (THE DRIVE GIVES)'); e.hp -= 150; e.open = 0; e.mode = 'idle'; S.ward = 0; for (let i = 0; i < 4; i++) GD.stepDrill(e, S, 1 / 60, [], world(log));
+  ok(S.ph === 2 && GD.gateShut(S) && Object.keys(S.gears).sort().join() === 'chain,dyn,lunge' && !Object.values(S.gears).some(q => q.broken), 'the next phase bolts on new gears (the gate shut again)');
+  e.hp = GD.gateFloor(S, e) + 10; ok(GD.gateBlow(e, S, 100) === 10, 'the 30% line holds the same way'); }
+{ const { S, e } = fight(); e.hp = 2400; e.maxHp = 2400; S.ph = 3; S.highDown = true; GD.armGears(S); S.cd = 0; const seen = new Set(); for (let i = 0; i < 60 * 60; i++) { GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 60), world([])); seen.add(e.mode); if (e.mode === 'jammed') { e.open = 0; } }
+  ok(!seen.has('rockTell'), 'P3 never drops the boulders (its chain has the roof collapse)'); }
+{ const { S, e } = fight(); e.hp = 2400; e.maxHp = 2400; GD.armGears(S); const mem = {}, pl = GD.drillPlan({ P: { x: G.x0 + 60, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t: 5 });
+  ok(/gear dyn/.test(pl.why), 'the bot goes for a gear while its gears hold it (' + pl.why + ')'); }
 console.log('minecart: ' + n + ' checks ok');
