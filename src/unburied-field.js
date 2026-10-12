@@ -348,7 +348,9 @@ export function buildUnburiedField({ painter, T, TS, grow }) {
      the tomb lids on piers, the Rider's two cart beds on their chassis and wheels, the coin shelf over the crossing on a trestle, the toppled tower's two low decks on raking shores */
   R.structures.push(...[442, 445, 462, 465].map(x => ({ x0: x, x1: x, top: GEOM.G - 1, floor: GEOM.G + 1, kind: 'ubpierCold' })), ...[380, 384].map(x => ({ x0: x, x1: x, top: GEOM.G - 1, floor: GEOM.G + 1, kind: 'ubpier' })),
     ...[332, 346].map(x => ({ x0: x, x1: x + 2, top: GEOM.G - 1, floor: GEOM.G + 1, kind: 'ubcart' })), { x0: 106, x1: 110, top: 26, floor: GEOM.G + 5, kind: 'ubtrestle' },
-    { x0: 236, x1: 240, top: 34, floor: GEOM.G + 1, kind: 'ubprop' }, { x0: 241, x1: 245, top: 31, floor: GEOM.G + 1, kind: 'ubprop' });
+    { x0: 236, x1: 240, top: 34, floor: GEOM.G + 1, kind: 'ubprop' }, { x0: 241, x1: 245, top: 31, floor: GEOM.G + 1, kind: 'ubprop' },
+    /* NO FLOATING GEOMETRY (claude/unbfloat, Daniel 10-12): the two peg palisades that stood with their feet in the air over a trench, on a CAIRN OF HEADSTONES down to the trench floor (drawn only: the trench stays open), and the plank keyed into the first one's side on a stone corbel brace */
+    { x0: 104, x1: 105, top: G + 1, floor: 41, kind: 'ubheads' }, { x0: 154, x1: 155, top: G + 1, floor: 42, kind: 'ubheads' }, { x0: 101, x1: 104, top: 28, floor: 31, kind: 'ubbrace' });
   const R1 = Bp.done();
 
   // ---- 5b. THE BAILEY (c 364-435, final columns; claude/unburied4, Daniel's playtest 10-05) ----

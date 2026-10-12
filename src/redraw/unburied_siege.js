@@ -349,3 +349,34 @@ export function drawFarbankRubble(g, cx, cy, G, VW) {
   for (let i = 0; i < 9; i++) { const rx = x0 - 4 + i * 5, ry = y - 4 - ((i * 7) % 6), w = 7 + ((i * 3) % 6); g.fillStyle = i % 2 ? K.wood3 : K.wood2; g.fillRect(rx, ry, w, 4); g.fillStyle = K.wood5; g.fillRect(rx, ry, w, 1); }
   for (let i = 0; i < 4; i++) { g.fillStyle = K.wood4; g.fillRect(x0 + 2 + i * 8, y - 14 + (i % 2) * 3, 2, 10 - (i % 2) * 3); g.fillRect(x0 + 1 + i * 8, y - 15 + (i % 2) * 3, 4, 1); }
 }
+/* (claude/unbfloat, Daniel 10-12: "the Unburied Field has a lot of floating geometry") FOOTINGS - R.structures kinds drawn into main.js's drawStructures box (l..r px, t..b px):
+   'ubheads'  a CAIRN OF HEADSTONES under a palisade the volleys feed: slabs the host stacked in mortarless courses (mismatched, leaning, a carved cross or an arch on the outward ones) from the trench floor
+              up to the stakes' foot - the wall stood with its bottom hanging a few rows over the pit
+   'ubbrace'  a STONE CORBEL BRACE under a plank run that is keyed into a pillar's side and nothing else: a squared strut from the plank's far end down to the pillar, a moulded cap, an iron strap */
+export function drawHeadstoneCairn(g, l, r, t, b, seed = 0) {
+  const rr = rnd(seed * 31 + Math.round(l)), w = r - l, S = ['#2c282c', '#413d44', '#5b5762', '#7d7886', '#9a96a4'];
+  const n = Math.max(3, Math.round((b - t) / 11)), h = (b - t) / n;
+  for (let i = 0; i < n; i++) {
+    const y = Math.round(b - (i + 1) * h), yh = Math.round(h) + 1, inset = i === 0 ? 0 : i === n - 1 ? 2 : 1 + (i % 2);   /* a wider foot, a tapering stack, a squared top under the stakes */
+    let x = l + inset;
+    while (x < r - inset - 4) {
+      const sw = Math.min(r - inset - x, 9 + ((rr() * 8) | 0)), tone = (rr() * 3) | 0, lean = rr() < 0.3 ? 1 : 0;
+      rect(g, x, y + lean, sw - 1, yh - 1, S[1 + tone % 2 + (tone > 1 ? 1 : 0)]); rect(g, x, y + lean, sw - 1, 1, S[4]); rect(g, x + sw - 2, y + lean, 1, yh - 1, S[0]); rect(g, x, y + yh - 1, sw, 1, S[0]);
+      if (sw >= 11 && yh >= 9) {   /* an outward slab: its face still carved, a cross or a round-headed arch, worn */
+        const cx = x + (sw >> 1);
+        if (rr() < 0.5) { rect(g, cx - 1, y + 2 + lean, 2, yh - 5, S[3]); rect(g, cx - 3, y + 4 + lean, 6, 2, S[3]); }
+        else { rect(g, cx - 2, y + 3 + lean, 4, 1, S[3]); rect(g, cx - 3, y + 4 + lean, 1, yh - 6, S[3]); rect(g, cx + 2, y + 4 + lean, 1, yh - 6, S[3]); } }
+      x += sw; }
+    if (i % 2) for (let k = 0; k < 3; k++) px(g, l + 2 + ((rr() * (w - 4)) | 0), y + 1 + ((rr() * (yh - 2)) | 0), '#3f5a3a'); }   /* moss in the joints */
+  rect(g, l - 2, b - 4, w + 4, 4, S[1]); rect(g, l - 2, b - 4, w + 4, 1, S[3]);   /* the heaped spoil at its foot */
+  rect(g, l - 1, t, w + 2, 3, S[3]); rect(g, l - 1, t + 2, w + 2, 1, S[0]);        /* the capstone the palisade stands in */
+}
+export function drawStoneBrace(g, l, r, t, b, seed = 0) {
+  const S = ['#2e2a2c', '#4a4648', '#5a5658', '#7a7678'];
+  const pl = r - 16, ax = l + 5, ay = t + 3, bx = pl, by = b - 3;   /* (the box runs over the pillar's own column: the strut ends on its face) */   /* from the plank's far end down to the pillar's face */
+  for (let o = 0; o < 6; o++) line(g, ax, ay + o, bx, by + o, o < 1 ? S[3] : o < 5 ? S[2] : S[0]);   /* the strut: lit edge, body, dark underside */
+  for (let k = 1; k < 5; k++) { const x = Math.round(ax + (bx - ax) * k / 5), y = Math.round(ay + (by - ay) * k / 5); rect(g, x, y + 1, 1, 5, S[1]); }   /* its joints */
+  rect(g, l + 1, t, 11, 4, S[3]); rect(g, l + 1, t + 3, 11, 1, S[0]); rect(g, pl, b - 8, 5, 8, S[2]); rect(g, pl, b - 8, 1, 8, S[3]);   /* the moulded cap under the plank, the bearer in the pillar */
+  for (const [x, y] of [[l + 6, t + 6], [pl - 4, b - 9]]) { rect(g, x, y, 3, 3, '#3c3a46'); px(g, x + 1, y + 1, '#8a869a'); }   /* the iron straps' bolts */
+  void seed;
+}
