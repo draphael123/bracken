@@ -1448,9 +1448,9 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const HH=BK.hourglassKingHands(),S=HH&&HH.show();
         if(f===0||!P.labHkMem)P.labHkMem={};
-        const pl=S?hkPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,levers:S.G.levers,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHkMem}):{gx:null,face:P.face};
+        const pl=S?hkPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,qs:(P.qsDepth||0)>0},e:boss,S,levers:S.G.levers,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHkMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
-        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
+        if(pl.jump&&(P.ground||(P.qsDepth||0)>0)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;

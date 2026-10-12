@@ -9,7 +9,8 @@
 //                        piston rods in the tail, an amber eye
 //   bakeConstruct()      THE CLOCKWORK CONSTRUCT (6: 0 idle | 1 walk | 2 POKE TELL | 3 POKE | 4 WOUND DOWN | 5 hurt) - brass guard with a CLOCK-FACE head (the hands at twelve while it keeps its round,
 //                        drooping when it is wound down), a window on its escapement (an anchor and a wheel) in the chest, pauldrons, a winding key, a halberd
-//   bakeHourglassKing(level)  THE HOURGLASS KING (14: 0 idle | 1,2 walk | 3 STREAM TELL | 4 STREAM | 5 GEAR TELL | 6 GEAR | 7 SLIP TELL | 8 SLIP | 9 PENDULUM TELL | 10 PENDULUM | 11 OPEN | 12 TURNING | 13 hurt)
+  //   bakeHourglassKing(level)  THE HOURGLASS KING (20: 0 idle | 1,2 walk | 3 STREAM TELL | 4 STREAM | 5 GEAR TELL | 6 GEAR | 7 GRASP (was SLIP) | 8 SLIP | 9 PENDULUM TELL | 10 PENDULUM | 11 OPEN | 12 TURNING | 13 hurt
+//                        | claude/buriedcity3 GREYBOX: 14 SURGE TELL | 15 SURGE | 16 GRASP TELL | 17 RAIN TELL | 18 SLIP TELL | 19 SLIP STRIKE)
 //                        - lapis robes with a gilded hem, brass pauldrons and a fan collar, a crown of gears, a mask with amber eyes, the hourglass in a brass frame on his chest (sand by level), a
 //                        pendulum sceptre; every pose keyframed
 //   bakeCog()            the brass cog he throws
@@ -202,8 +203,21 @@ export function bakeHourglassKing(sandLevel = 0) {
     for (const [dx, dy, r] of [[-5, -9, 2.4], [0, -11, 3], [5, -9, 2.4]]) { circle(g, x + dx, y + dy, r, HK.brass); px(g, x + dx - 1, y + dy - 1, HK.brassL); px(g, x + dx, y + dy, HK.brassDD); for (let a = 0; a < 6; a++) px(g, x + dx + Math.cos(a * 1.05) * (r + 1), y + dy + Math.sin(a * 1.05) * (r + 1), HK.brassD); } };   /* the crown of gears */
   const arm = (g, x0, y0, x1, y1) => { thick(g, x0, y0, x1, y1, HK.robe, 4); thick(g, x0 - 1, y0, x1 - 1, y1, HK.robeL, 1); rect(g, x1 - 2, y1 - 1, 5, 2, HK.brass); px(g, x1 - 2, y1 - 1, HK.brassL); px(g, x1, y1 + 2, HK.skin); px(g, x1 + 1, y1 + 2, HK.skin); };   /* a sleeve, a brass cuff, a hand */
   const sceptre = (g, hx, hy, tx, ty) => { thick(g, hx, hy, tx, ty, HK.brass, 2); px(g, hx, hy, HK.brassL); circle(g, tx, ty, 3, HK.brass); circle(g, tx, ty, 1.4, HK.brassDD); px(g, tx - 1, ty - 2, HK.brassL); px(g, tx, ty, HK.eye); };   /* the pendulum: a rod and a heavy bob */
-  const F = frames(W, H, 14, (g, f) => {
+  const F = frames(W, H, 20, (g, f) => {
     const cx = 28, hip = gy - 24;
+    /* (claude/buriedcity3) HIS NEW MOVES' OWN POSES (B16, GREYBOX - the SONNET art lane finishes them): 14 SURGE TELL (sceptre high in both hands, crouched) | 15 SURGE
+       (the slam: bent, the sceptre's head on the floor) | 16 GRASP TELL (arms spread low, palms down, sand round his feet) | 17 RAIN TELL (the sceptre thrust straight up)
+       | 18 SLIP TELL (arms crossed over his glass, a violet glow) | 19 SLIP STRIKE (a long lunge, the sceptre level) */
+    if (f >= 14) { const dy = f === 14 ? 3 : f === 15 ? 4 : 0, bend = f === 15 ? 4 : f === 19 ? 5 : 0;
+      legs(g, cx, hip + dy, f === 19 ? 1 : 0); robe(g, cx, hip - 22 + dy, bend); shoulders(g, cx, hip - 22 + dy, bend); head(g, cx + 1 + bend, hip - 30 + dy);
+      const sh = [cx + 9 + bend, hip - 20 + dy], lh = [cx - 9 + bend, hip - 18 + dy];
+      if (f === 14) { arm(g, ...sh, cx + 3, hip - 46); arm(g, ...lh, cx - 3, hip - 46); sceptre(g, cx, hip - 46, cx - 6, hip - 58); }
+      else if (f === 15) { arm(g, ...sh, cx + 18, hip - 4); arm(g, ...lh, cx + 12, hip - 6); sceptre(g, cx + 16, hip - 6, cx + 24, hip + 18); for (const [ddx, ddy] of [[20, 20], [27, 19], [24, 16]]) px(g, cx + ddx, hip + ddy, HK.sandL); }
+      else if (f === 16) { arm(g, ...sh, cx + 20, hip); arm(g, ...lh, cx - 20, hip + 1); for (let k = -14; k <= 14; k += 4) { rect(g, cx + k, hip + 18 - (Math.abs(k) % 6), 2, 4 + (Math.abs(k) % 6), HK.sandL); } }
+      else if (f === 17) { arm(g, ...sh, cx + 6, hip - 50); arm(g, ...lh, cx - 8, hip - 44); sceptre(g, cx + 6, hip - 50, cx + 6, hip - 66); }
+      else if (f === 18) { arm(g, ...sh, cx - 4, hip - 14); arm(g, ...lh, cx + 5, hip - 12); for (let k = 0; k < 10; k++) { px(g, cx - 14 + (k * 7) % 28, hip - 44 + (k * 11) % 40, '#b08cff'); px(g, cx - 13 + (k * 5) % 26, hip - 40 + (k * 13) % 36, '#d8c4ff'); } }
+      else if (f === 19) { arm(g, ...sh, cx + 24, hip - 18); arm(g, ...lh, cx - 6, hip - 12); sceptre(g, cx + 24, hip - 18, cx + 30, hip - 19); for (let k = 0; k < 5; k++) px(g, cx - 10 - k * 3, hip - 30 + k * 4, '#b08cff'); }
+      return; }
     if (f === 11) { legs(g, cx, hip, 0); robe(g, cx, hip - 22, 0); shoulders(g, cx, hip - 22); head(g, cx + 1, hip - 30);   /* OPEN / STALLED: the glass empty, frozen mid-gesture */
       arm(g, cx + 9, hip - 20, cx + 15, hip - 26); arm(g, cx - 9, hip - 18, cx - 15, hip - 22); sceptre(g, cx + 15, hip - 26, cx + 20, hip - 34);
       for (const [dx, dy] of [[6, -38], [12, -34], [0, -42], [16, -40], [-6, -40]]) { px(g, cx + dx, hip + dy, HK.eye); px(g, cx + dx + 1, hip + dy, HK.eyeL); } return; }

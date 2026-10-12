@@ -74,7 +74,7 @@ try {
       /* (BURIED CITY 2, claude/buriedcity2: grid rows - the feet row is the row a hero stands in) */
       const LEGS = [
         ['the dunes and the sand stair: down into the city, drain the first room', [3, 24], () => { walk(56); if (!lever(58, 'first', 'open')) return false; waitFor(() => empty('first'), 900);
-            walk(100); if (!turn(102, 'stair')) return false; walk(103, { tol: 2 }); if (!jumpTo(105, 33)) return false; if (!jumpTo(109, 31)) return false; walk(112, { tol: 2 }); settle(); DBG.push('past the house ' + col() + ',' + feet()); return col() >= 112 && feet() === 36; }, [113, 36]],
+            walk(100); if (!turn(102, 'stair')) return false; walk(103, { tol: 2 }); if (!jumpTo(105, 33)) return false; if (!jumpTo(109, 31)) return false; walk(112, { tol: 2 }); settle(); DBG.push('past the house ' + col() + ',' + feet()); return col() >= 112 && feet() >= 33; }   /* (past the fallen house: on the street, or on the stall's awning the jump down lands on) */, [113, 36]],
         ['the bazaar: THE GRANARY - shut its gate, ride the sand up', [113, 36], () => { walk(140); walk(144, { tol: 3 }); if (!lever(144, 'granary', 'shut')) return false; walk(150, { noFight: true }); waitFor(() => full('granary'), 1200, { noFight: true });
             DBG.push('granary ' + room('granary').level.toFixed(1) + ' at ' + col() + ',' + feet()); walk(165); return col() >= 163 && feet() === 28; }, [165, 28]],
         ['THE SINKING STREET: across it to the arch, pull its chain, ride it down', [165, 28], () => { walk(196); walk(231); if (!lever(233, 'street', 'open')) return false; waitFor(() => empty('street'), 900, { noFight: true });

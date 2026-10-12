@@ -277,13 +277,42 @@ ok(!HKM.hkOpen(e) && S.ward > 0 && S.n.wards === 1, 'B3: the opening ends in a t
 ok(HKM.leverPulled(e, S, c, G.levers[1].x) === 'ward', 'a lever in his ward finds nothing (told)');
 /* one new told move a phase; each phase changes the arena */
 const mv = ph => new Set(HKM.CYCLES[ph].flat());
-ok([...mv(2)].filter(m => !mv(1).has(m)).join() === 'slip', 'phase two brings ONE new move: THE TIME SLIP');
-ok([...mv(3)].filter(m => !mv(1).has(m) && !mv(2).has(m)).join() === 'hour', 'phase three brings ONE new move: THE HOUR STRIKES');
-for (const m of ['pendTell', 'gearTell', 'streamTell', 'slipTell', 'hourTell']) ok(MARK['hourglassking|' + m] === HKM.MOVES[m].mark && ANSWER['hourglassking|' + m] === HKM.MOVES[m].answer, 'his ' + m + ' is told: ' + HKM.MOVES[m].mark + ' / ' + HKM.MOVES[m].answer);
+/* (claude/buriedcity3, DESIGN CHANGE - stated: Daniel 10-12 "boring + too easy", the brief asks 2-3+ more attacks + phase differences: B5's one-new-move-a-phase
+   becomes FOUR new told moves across the three phases, each its own pose and word; phases two and three each bring two) */
+ok([...mv(1)].sort().join() === 'gear,pend,stream,surge', 'phase one: the pendulum, the gear, the stream and THE SAND SURGE (new)');
+ok([...mv(2)].filter(m => !mv(1).has(m)).sort().join() === 'grasp,rain', 'phase two brings BURIAL GRASP and GLASS RAIN');
+ok([...mv(3)].filter(m => !mv(1).has(m) && !mv(2).has(m)).sort().join() === 'hour,slip', 'phase three brings THE TIME SLIP and THE HOUR');
+for (const m of ['surgeTell', 'graspTell', 'rainTell', 'slipTell']) ok(HKM.MOVES[m].word && HKM.MOVES[m].col, 'his new ' + m + ' is told with its own word and colour (' + HKM.MOVES[m].word + ')');
+{ const cast = readFileSync(new URL('../src/redraw/buried_city_cast.js', import.meta.url), 'utf8'), hands = readFileSync(new URL('../src/hourglass-king-hands.js', import.meta.url), 'utf8');
+  ok(cast.includes("frames(W, H, 20,") && /surgeTell: 14, graspTell: 16, rainTell: 17, slipTell: 18, slipStrike: 19/.test(hands), 'B16: each new move has its OWN windup pose (14 surge, 16 grasp, 17 rain, 18 slip, 19 the slip strike)'); }
+for (const m of ['pendTell', 'gearTell', 'streamTell', 'surgeTell', 'graspTell', 'rainTell', 'slipTell', 'hourTell']) ok(MARK['hourglassking|' + m] === HKM.MOVES[m].mark && ANSWER['hourglassking|' + m] === HKM.MOVES[m].answer, 'his ' + m + ' is told: ' + HKM.MOVES[m].mark + ' / ' + HKM.MOVES[m].answer);
 { const e3 = { ...e, mode: 'walk', modeT: 0.5, open: 0, hp: 590 }; const S3 = HKM.newFight(G); S3.ward = 0; c.bankOn = null; HKM.stepHourglassKing(e3, S3, 1 / 60, hero2, c);
   ok(S3.ph === 2 && c.bankOn === true, 'phase two changes the arena: the sand banks at the walls');
   e3.hp = 200; e3.mode = 'walk'; HKM.stepHourglassKing(e3, S3, 1 / 60, hero2, c); ok(S3.ph === 3 && S3.glassMax === HKM.HK.glass3, 'phase three: his glass cracks (it runs faster)');
   c.hits.length = 0; for (let i = 0; i < 40; i++) HKM.stepHourglassKing(e3, S3, 1 / 60, hero2, c); ok(c.hits.includes('THE POURING SAND'), 'phase three changes the arena: two steady pours from the broken roof'); }
+/* (claude/buriedcity3) THE NEW ARENA AND HIS NEW MOVES in the pure model: phase two's DRIFT (off while he stands open), THE GREAT HOURGLASS (phase three's big opening),
+   the dry gates in phase three, THE TIME SLIP's echo, THE BURIAL GRASP's hold */
+{ const mk = (hp, ph) => { const S0 = HKM.newFight(G), e0 = { t: 'hourglassking', x: (G.x0 + G.x1) / 2, y: G.floorY, hp, maxHp: 1000, alive: true, mode: 'walk', modeT: 0.5, face: -1, open: 0 }; S0.ward = 0; if (ph) { S0.ph = ph; if (ph === 3) S0.glassMax = HKM.HK.glass3; } return [e0, S0]; };
+  const c2 = { ...c, said: [], held: [], number(x, y, t) { this.said.push(t); }, hold(pp, s) { this.held.push(s); }, blocks() {}, banks() {} };
+  { const [e0, S0] = mk(1000); ok(HKM.greatStruck(e0, S0, c2) === 'early' && !HKM.hkOpen(e0), 'THE GREAT HOURGLASS will not turn before phase three (told)'); }
+  { const [e0, S0] = mk(500, 2); ok(!HKM.driftOn(e0, S0), 'phase two: the floor is firm between tides'); for (let i = 0; i < 60 * 8; i++) { HKM.stepHourglassKing(e0, S0, 1 / 60, hero2, c2); if (S0.tide.on) break; } e0.mode = 'walk'; ok(S0.tide.on && HKM.driftOn(e0, S0) && c2.said.includes('THE SAND RISES: UP ON A LEDGE'), 'phase two: THE SAND TIDE is told, then the floor is DRIFT');
+    S0.glass = S0.glassMax * HKM.lowOf(2) - 0.1; HKM.leverPulled(e0, S0, c2, G.levers[0].x); ok(HKM.hkOpen(e0) && !HKM.driftOn(e0, S0), 'a stall drains the drift while he stands open (B12: you can stand by him)'); }
+  { const [e0, S0] = mk(200, 3); ok(HKM.leverPulled(e0, S0, c2, G.levers[0].x) === 'dry' && c2.said.includes('THE GATES ARE DRY: TURN THE GREAT HOURGLASS'), 'phase three: the gates are dry - a pull says what to do instead');
+    e0.x = G.x0 + 60; ok(HKM.greatReady(S0) && HKM.greatStruck(e0, S0, c2) === 'flip' && HKM.hkOpen(e0) && S0.capNow === HKM.HK.great.openCap, 'phase three: STRIKE THE GREAT HOURGLASS - the sand pours up and takes him: his big opening (a ' + HKM.HK.great.openCap + ' share)');
+    for (let i = 0; i < 90; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, hero2, c2); ok(Math.abs(e0.x - G.great) <= 26 && e0.mode === 'stall', 'B12: the flow drags him to the great hourglass you struck (' + Math.round(e0.x - G.great) + ' px from it)');
+    ok(!HKM.driftOn(e0, S0), 'while it pours up the floor is firm');
+    ok(HKM.greatStruck(e0, S0, c2) === 'busy' || HKM.greatStruck(e0, S0, c2) === 'running', 'it cannot be turned again while it runs');
+    for (let i = 0; i < 60 * 6; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, hero2, c2); ok(!HKM.hkOpen(e0) && S0.ward > 0 && !HKM.greatReady(S0), 'B3: a told ward after it, and the great glass runs back down before it is ready again');
+    for (let i = 0; i < 60 * 12; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, hero2, c2); ok(HKM.greatReady(S0) || S0.ph === 3 && S0.great.cd === 0, 'and then it is ready again'); }
+  { const [e0, S0] = mk(200, 3); c2.hits = []; S0.script = ['slip']; S0.step = 0; e0.mode = 'walk'; e0.modeT = 0; const x0 = e0.x;
+    for (let i = 0; i < 150; i++) { HKM.stepHourglassKing(e0, S0, 1 / 60, [{ ...hero2[0], x: x0 + 120 }], c2); if (e0.mode === 'slipTell') break; }
+    e0.x = x0 + 80; const echo = S0.echo && S0.echo.x; ok(e0.mode === 'slipTell' && Math.abs(echo - x0) < 60, 'THE TIME SLIP: his echo stands where he was ~2 s ago (' + Math.round(echo - x0) + ' px)');
+    for (let i = 0; i < 70; i++) { HKM.stepHourglassKing(e0, S0, 1 / 60, [{ ...hero2[0], x: echo }], c2); if (e0.mode === 'slipRec') break; }
+    ok(Math.abs(e0.x - echo) < 2 && c2.hits.includes('THE TIME SLIP') && e0.mode === 'slipRec', 'he snaps back to the echo swinging - and stands a beat there (punish him)'); }
+  { const [e0, S0] = mk(500, 2); c2.hits = []; c2.hit = function (b, d, name) { this.hits.push(name); return true; }; S0.script = ['grasp']; S0.step = 0; e0.mode = 'walk'; e0.modeT = 0;
+    const me = [{ x: G.x0 + 100, y: G.floorY, ground: true, alive: true, air: false, pp: {} }];
+    for (let i = 0; i < 120; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, me, c2);
+    ok(c2.hits.includes('THE BURIAL GRASP') && c2.held.length > 0, 'THE BURIAL GRASP: caught on the sand, you are struck and HELD (jump or roll out)'); } }
 const hkSrc = readFileSync(new URL('../src/hourglass-king.js', import.meta.url), 'utf8') + readFileSync(new URL('../src/hourglass-king-hands.js', import.meta.url), 'utf8');
 ok(!/ctx.spawn(?!Boss)|enemies().push|enemies.push/.test(hkSrc), 'NO ADDS: the king summons nothing');
 ok(OPEN_RULE.hourglassking && OWN_WARD.has('hourglassking'), 'the greed rule knows his opening; his brass is his own ward (no x0.05 chip)');

@@ -25996,7 +25996,8 @@ BCH = makeBuriedCityHands({ get L() { return L; }, lights: () => lights, get pla
 HGK = makeHourglassKingHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b),
-  cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, music: n => { if (bossActive) music.play(n); } });
+  cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH && L.grid[y * LW + x] !== t) { cellSet(x, y, t); bcRetile(x, y); } }, music: n => { if (bossActive) music.play(n); },
+  atkBox: () => (P && P.atk >= 0 && !P.dead ? attackBox() : null), hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; } });   /* (claude/buriedcity3) a blow on THE GREAT HOURGLASS; his banks, drift and blocks are re-picked (bcRetile) */
 /* THE ROOTWAY'S HANDS (claude/rootway, src/rootway-hands.js) and THE GOBLIN HUNTMASTER (src/huntmaster.js): main.js owns the world; the modules own the hoists, the hunters, the loft and the Huntmaster */
 RWH = makeRootwayHands({ get L() { return L; }, TS, T, sfx: SFX, props: () => props, players: () => players || [P], enemies: () => enemies, seeds: () => seeds, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), overlap: (a, b) => overlap(a, b), box: e => box(e), boxOf: p => box(p),
@@ -26738,6 +26739,7 @@ function updateProps(dt) {
   if (talkPress && state === 'play' && !P.dead && HPD && HPD.on() && (HPD.held() || HPD.canTake()) && HPD.interact(P)) talkPress = false;   /* (claude/rootway2) E takes a spore pod off its cap (or sets one down) */
   if (talkPress && state === 'play' && !P.dead && WRK && WRK.on() && WRK.interact(P)) talkPress = false;   /* (claude/winch5) THE WINCHMASTER: E takes a rock off his skip (or sets one down) */   /* THE BANDIT KSAR: E rings a gong, takes a keg or a flask, sets one down, hauls the winch, opens the strongroom */
   if (talkPress && state === 'play' && !P.dead && BCH && BCH.on() && BCH.interact(P)) talkPress = false;
+  if (talkPress && state === 'play' && !P.dead && HGK && HGK.on() && HGK.interact(P)) talkPress = false;   /* (claude/buriedcity3) E at THE GREAT HOURGLASS (phase three) */
   if (talkPress && state === 'play' && !P.dead && COH && COH.on() && COH.interact(P)) talkPress = false;   /* THE GLASS COLOSSUS: E at a shelf-mirror turns it */
   if (talkPress && state === 'play' && !P.dead && GDH && GDH.on() && GDH.interact(P)) talkPress = false;   /* THE GREAT DRILL: E at the points mast */
   if (talkPress && state === 'play' && !P.dead && MCH && MCH.on() && MCH.interact(P)) talkPress = false;   /* THE DEEP RAILS: E at a lever throws the points */
