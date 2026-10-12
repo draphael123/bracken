@@ -7,7 +7,7 @@
 // top). It cannot model a mover, a swing or a gust, so a level that leans on those comes back ASSISTED and
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
 import { slopeReachGrid } from './reach-slopes.js';   /* THE SLOPES REACH RULE, one line inside floodReach below */
-import { heroJumps, slideSpeeds } from './reach-hero.js';
+import { heroJumps, slideSpeeds, hillSpeeds } from './reach-hero.js';
 import { MOVE } from './hero-move.js';   /* PER HERO (opts.hero, claude/reachcore): each hero's own jump, the run-up, the slide, the clearance over a gap */
 const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
 const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
@@ -252,7 +252,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
      behind him gives (a sprint only from a run long enough to earn it), a SLIDE's speed off a slope (slideStep, the Glass Sea's slick glass), and a
      landing over a GAP counts only with the centre a whole tile past the lip. A miss that only drops you back to where you started (or one row under
      it) is no gap: there the toe and the mantle are fair, as in play. Springs, buds, strikers and the water's leap keep the shared model (rides). */
-  const HJ = opts.hero ? heroJumps(opts.hero) : null, slid = HJ ? slideSpeeds(L0, T, opts.heroGlass) : null;   /* (opts.heroGlass: a fixture's own slick-glass numbers) */
+  const HJ = opts.hero ? heroJumps(opts.hero) : null, slid = HJ ? slideSpeeds(L0, T, opts.heroGlass) : null, hills = HJ && !opts.noHill ? hillSpeeds(L0, T, opts.hero) : null;   /* (claude/slope: a run down a hill's carry; opts.noHill: the model before it, for a probe) */   /* (opts.heroGlass: a fixture's own slick-glass numbers) */
   const slickAt = (x, y) => (L.slick || []).some(z => x >= z[0] && x <= z[1] && y + 1 === z[2]) || (!!L.iceLedges && at(x, y + 1) === T.CRYST);
   /* where you can take off from (x, y) going s: the centre at the edge of the floor (u, forward), and what a landing on (c, r) costs from there.
      THE CLEARANCE IS A HAND'S TIME, NOT A PIXEL (Daniel's "a tile clear of the lip, never a toe on it"): the take-off is the last pixel of the edge,
@@ -296,7 +296,8 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     else { const n = runway(x, y, s), run = HJ.run(n, slick), runs = [run];
       if (run.runT < SPRINT_FULL && sprintAt.has(x + ',' + y + ',' + s)) runs.push(HJ.run(24, slick));
       for (const rn of runs) ls.push({ f: HJ.fly(rn, capPx), v: rn.vx, walk: HJ.fly(HJ.walkOf(rn)), sprint: rn.runT >= SPRINT_FULL, kind: rn.runT >= SPRINT_FULL ? 'sprint' : 'run ' + n });
-      const sv = slid && (slid.get(key(x, y)) || []).find(q0 => q0.dir === s); if (sv) ls.push({ f: HJ.fly(HJ.slideOf(sv.v), capPx), v: sv.v, kind: 'slide' }); }
+      const sv = slid && (slid.get(key(x, y)) || []).find(q0 => q0.dir === s); if (sv) ls.push({ f: HJ.fly(HJ.slideOf(sv.v), capPx), v: sv.v, kind: 'slide' });
+      const hv = hills && (hills.get(key(x, y)) || []).find(q0 => q0.dir === s); if (hv) ls.push({ f: HJ.fly(HJ.hillOf(hv.v), capPx), v: hv.v, kind: 'hill' }); }
     return ls; };
   const headOf = (x, y, thrown) => { const up = thrown ? Math.floor(HJ.fly(thrown).rise / TSZ) : HJ.rise; let head = 0; while (head < up && !solid(at(x, y - 1 - head))) head++;
     return { up, head, capPx: head < up ? head * TSZ + 2 : Infinity, apexRow: y - Math.min(up, head) }; };

@@ -218,10 +218,28 @@ export function footSlope(tileAt, b) { const sl = slopeInColumn(tileAt, b.x, b.y
    under the foot (0 on flat). The caller skips its own walk/friction for the frame while s.sliding or s.carry is set. */
 export const SLIDE = { acc: 700, maxSteep: 180, maxGentle: 140, flatFric: 150, airFric: 50, endSpeed: 60 };   /* tuned in tools/slopes.mjs: the leap out of a steep slide ~+70% on a full-run jump, not a new traversal verb */
 /* THE KEEP CEILING, ONE COPY (claude/reachcore): the 'keep' slideStep is handed on a slope at x px of level L. main.js asks this every frame and
-   src/reach-hero.js asks the same function, so the reach model can never slide on a number the game has stopped using. Today: the Glass Sea's slick
-   glass (from L.glassFrom on) keeps RIDE_MOVE.GLASS_SLIDE_CAP; every other slope SLIDE_KEEP. A game-wide slope momentum changes it HERE (and only here) */
-export const SLIDE_KEEP = 1;
-export function slideKeepAt(L, xPx, kind) { if (!kind) return 1; return L && L.glassFrom !== undefined && xPx >= L.glassFrom * TS ? RIDE_MOVE.GLASS_SLIDE_CAP : SLIDE_KEEP; }
+   src/reach-hero.js asks the same function, so the reach model can never slide on a number the game has stopped using. The Glass Sea's slick
+   glass (from L.glassFrom on) keeps RIDE_MOVE.GLASS_SLIDE_CAP.
+   SLOPE MOMENTUM (claude/slope, Daniel 10-08 "make it work on EVERY slope"): every other slope keeps SLIDE_KEEP (1.3) - a slide keeps a speed it
+   came in with up to 1.3x the hill's own top, and a RUN down it builds to 1.3x the legs' cap (HILL_RUN below, main.js updatePlayer's walk). The
+   exceptions are the slide-only hills (slideOnly below: a REQUIRED dune slide - the Sunken Caravan's L.duneSlides, crest to foot - and the Glass Sea's
+   glass): there the RUN keeps the walk's free 1.1 and the slide is the answer, as built. (A dune slide's own slide keeps 1 too.) */
+export const SLIDE_KEEP = 1.3;
+const onDuneSlide = (L, xPx) => { const ds = L && L.duneSlides; if (!ds) return false; for (const d of ds) { const a = Math.min(d.crest, d.foot) * TS, b = (Math.max(d.crest, d.foot) + 1) * TS; if (xPx >= a && xPx < b) return true; } return false; };
+export function slideKeepAt(L, xPx, kind) { if (!kind) return 1; if (L && L.glassFrom !== undefined && xPx >= L.glassFrom * TS) return RIDE_MOVE.GLASS_SLIDE_CAP; return onDuneSlide(L, xPx) ? 1 : SLIDE_KEEP; }
+/* THE RUN DOWNHILL (claude/slope): the stick held DOWN a slope (not the DOWN key: that is the slide), the legs at their cap, and the hill adds
+   acc px/s/s (steep; half on a gentle one) up to the cap x hillTop's keep. Off the hill the extra is the hero's: on the flat it bleeds at flatBleed
+   (a jump at the foot still has most of it), and a jump carries it, bleeding at airBleed while the stick is held on (not OVER_BLEED's 400, which
+   took it in a frame or two). main.js and src/reach-hero.js both read this. */
+export const HILL_RUN = { acc: 90, flatBleed: 80, airBleed: 18, down: 1.1, off: false };   /* off: the run as it was before (a walk downhill's free 1.1, nothing carried) - a probe's 'before' (tools/slope-momentum.mjs) */
+/* the speed a run down this slope may build to: the legs' cap x the keep (never less than the free 1.1 a walk downhill always had) */
+export const hillTop = (L, xPx, kind, cap) => cap * (HILL_RUN.off || slideOnly(L, xPx) ? HILL_RUN.down : Math.max(HILL_RUN.down, slideKeepAt(L, xPx, kind)));
+/* A SLIDE-ONLY HILL: a required dune slide, and the Glass Sea's glass (its slide gap teaches the slide: tools/glasssea-slide.mjs A - with the glass's 1.3 a
+   pyromancer's run cleared it). There the run keeps the walk's free 1.1 and the slide is the answer, as built. */
+const slideOnly = (L, xPx) => onDuneSlide(L, xPx) || (!!L && L.glassFrom !== undefined && xPx >= L.glassFrom * TS);
+export const hillAcc = kind => HILL_RUN.acc * slopeGrade(kind);
+/* the bleed of a speed over the cap with the stick held on: the hill's carry (mo) bleeds slowly, anything else at the walk's own OVER_BLEED */
+export const hillBleed = (mo, ground, overBleed) => !mo ? overBleed : ground ? HILL_RUN.flatBleed : HILL_RUN.airBleed;
 export function slideStep(s, dt, { kind, ground, down, jumped, keep }) {   /* keep (claude/slickslope): a multiplier on the hill's top speed up to which a speed the hill did not give (THE GLASS SEA's slick glass, src/glass-sea-hands.js) is KEPT, not bled; 1 = every other level, unchanged */
   if (ground && kind && down) {
     const dirDown = -slopeRise(kind), max = slopeGrade(kind) === 1 ? SLIDE.maxSteep : SLIDE.maxGentle;

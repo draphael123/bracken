@@ -24,11 +24,11 @@ import { SEXTON, updateSexton as stepSexton, sextonFrame, sextonTake, sextonHove
 import { crumbleStart as crumbleStartAt, crumbleBreak as crumbleBreakAt } from './tower-collapse.js';   /* THE HEDGE WARDEN (batch 4c) */
 import { drawWitchTower, towerStep, stairProgress, drawWitchSky, drawWitchLandmarks, witchMotes, libraryBooks } from './witchlight.js';   /* THE WITCHLIGHT STAIR: its tower, its sky, its landmarks, its loose magic */
 import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed stone */
-import * as SLD from './slide.js';   /* THE BUTT-SLIDE (claude/slide): the hit, the bounce, the dust of down held on a slope */
+import * as SLD from './slide.js'; import * as RSL from './run-slide.js';   /* THE RUNNING SLIDE (claude/slope): down pressed at a run on the flat */   /* THE BUTT-SLIDE (claude/slide): the hit, the bounce, the dust of down held on a slope */
 import * as SCA from './scree-art.js';
 import * as RLD from './ram-lord.js';   /* THE RAM LORD, REWORKED (claude/scree2): a beast duelist, his horns guard his front; the fold's overhangs are his opening */   /* THE SCREE PATH's own stone: the quarry's blocks, derrick and face (claude/scree2) */
 import { MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK as sprintKOf } from './hero-move.js';   /* THE HEROES' BASE MOVEMENT, one copy (claude/reachcore): src/reach-hero.js reads it too */
-import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, slideKeepAt, aheadTile, slopeRise, slopeGrade } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
+import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, slideKeepAt, aheadTile, slopeRise, slopeGrade, hillTop, hillAcc, hillBleed } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
 import { makeLesserDjinnHands } from './lesser-djinn-hands.js'; import * as LDA from './redraw/lesser_djinn_art.js'; let LDH = null;   /* (claude/djinn3) THE LESSER DJINN: the will-o'-the-wisp's AI (the ember wisp's, cold) under the Djinn's skins - sand a pour makes mud, fire a pour douses */
 import { makeMysticHands } from './bandit-mystic-hands.js'; import * as MYA from './redraw/mystic_art.js'; let MYH = null;   /* (claude/djinn2) THE BANDIT MYSTICS: the goblin mage's AI under men's skins - casters, and lamp-bearers whose light wards (src/bandit-mystic.js) */
@@ -3278,7 +3278,7 @@ function elThrow(e, v, h, kind) { e.shot = { x: e.x + (e.face || 1) * (e.w / 2 +
 /* the thrown thing, a frame on: true the frame it reaches the hero (a ducked hero is DUCK_H tall, so a level throw goes over him) */
 function elShotStep(e, dt) { const s = e.shot; if (!s || s.gone) return false; s.x += s.vx * dt; s.t += dt;
   if (isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS)) || s.t > 1.6) { s.gone = true; dust(s.x, s.y, 2); return false; }
-  const top = P.y - (P.ducking ? 8 : 14);
+  const top = P.y - (P.ducking || P.lowSlide ? 8 : 14);
   if (!P.dead && Math.abs(P.x - s.x) < 7 && s.y >= top - 1 && s.y <= P.y + 1) { s.gone = true; return true; } return false; }
 /* THE MARK ON THE FLOOR UNDER YOU, where you stand as he winds up (in the air, the floor you will come down on) */
 function elMarkAt(e, half) { let fy = Math.floor(P.y / TS); for (let k = 0; k < 8 && !isSolid(Math.floor(P.x / TS), fy); k++) fy++; e.vol = { x: P.x, y: fy * TS, t: 0, ek: true, half: half || 24, x0: e.x }; }
@@ -6491,7 +6491,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
      that has already been measured against the ducked body (seedOver) and found him */
   /* THE EMBER FLARE (src/ember-ward.js): a blow that lands in her flare window - a high one too - is cancelled, its attacker scorched, and she gains heat; a red one breaks through */
   if (isPyro() && EMBER && P.emberUp) { const w = EMBER.takes(fromX, dmg, unblockable, who || updFoe); if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } }
-  if (!geo && P.ducking && blowHigh(who || updFoe, time)) { duckedUnder(fromX); return false; }
+  if (!geo && (P.ducking || P.lowSlide) && blowHigh(who || updFoe, time)) { duckedUnder(fromX); return false; }   /* (claude/slope: the running slide is as low) */
   if (isPyro() && EMBER && P.ducking) { if (EMBER.guardTakes(fromX, dmg, unblockable, who || updFoe, pierce) === 'half') dmg = Math.max(1, Math.ceil(dmg / 2)); }   /* HER WEAK PLAIN GUARD (down held after the flare): a yellow blow from the front costs half, no heat, no scorch */
   /* THE KNIGHT'S LOW GUARD (src/crouch-a.js): crouched, the shield low in front of him turns what did not go over him - no step back */
   if (CA && hero() === 'knight') { const w = CA.takes(fromX, dmg, unblockable && !low, who || updFoe, pierce);   /* (claude/ksar) a LOW red blow - the Hawk-Mistress's whip along the floor - wraps a standing shield, but one set low turns it */ if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } if (w === 'half') dmg = Math.ceil(dmg / 2); }
@@ -9368,10 +9368,19 @@ function updatePlayer(dt) {
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
   /* UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down"): walking up a dune the legs cap at 0.6 of a run on a steep slope, 0.8 on a gentle one, and down it they run a little free (1.1). Walking only - the slide (below) keeps its own speeds. */
   const slopeK = SLOPES_ON && P.ground && move && !P.swim ? footSlope(tileAt, P) : 0, capW = slopeK ? cap * (slopeRise(slopeK) === move ? (slopeGrade(slopeK) === 1 ? UPHILL.steep : UPHILL.gentle) : UPHILL.down) : cap;
+  /* SLOPE MOMENTUM (claude/slope, Daniel 10-08): run DOWN a slope at the legs' cap and the hill adds to it, up to src/slopes.js hillTop (1.3x on every slope but a
+     required dune slide). P.hillMo is that speed, the hero's own until he is back under his cap: on the flat and through a jump it bleeds slowly (hillBleed) */
+  const hillK = slopeK && slopeRise(slopeK) !== move ? slopeK : 0, hillMax = hillK ? hillTop(L, P.x, hillK, cap) : 0;
+  if (!hillK && Math.abs(P.vx) <= cap + 0.01) P.hillMo = false;
   if (move && !groundAtk) {
     const acc = P.swim ? MOVE.ACC_SWIM : P.ground ? (onSlick ? MOVE.ACC_SLICK : MOVE.ACC_GROUND) : MOVE.ACC_AIR;   /* ICE: 360 and a brake of 150 read as a sticky floor, not a slide */
-    if (Math.abs(P.vx) > capW && Math.sign(P.vx) === move) P.vx = move * Math.max(capW, Math.abs(P.vx) - MOVE.OVER_BLEED * dt);
+    if (Math.abs(P.vx) > capW && Math.sign(P.vx) === move) { if (!hillK || Math.abs(P.vx) > hillMax) P.vx = move * Math.max(hillK ? hillMax : capW, Math.abs(P.vx) - hillBleed(P.hillMo && !hillK, P.ground, MOVE.OVER_BLEED) * dt); }
     else { P.vx += move * acc * dt; if (Math.abs(P.vx) > capW) P.vx = move * capW; }
+    if (hillK && Math.sign(P.vx) === move && Math.abs(P.vx) >= capW - 0.01 && Math.abs(P.vx) < hillMax) { P.vx = move * Math.min(hillMax, Math.abs(P.vx) + hillAcc(hillK) * dt); P.hillMo = true; }
+    /* AND IT SHOWS: sand kicked up off his heels, and lines streaming off him the faster he goes (they carry into the jump) */
+    if (P.hillMo && Math.abs(P.vx) > cap * 1.04) { const k = Math.min(1, (Math.abs(P.vx) / cap - 1.04) / 0.22), sg = Math.sign(P.vx), lowP = SET.parts === 'low';
+      if (P.ground && Math.random() < dt * (lowP ? 6 : 14 + 22 * k)) parts.push({ x: P.x - sg * 5, y: P.y - 1, vx: -sg * (20 + 40 * k), vy: -22 - Math.random() * 26 * (0.5 + k), life: 0.32, max: 0.32, col: Math.random() < 0.5 ? '#c9b27c' : '#a8936a', size: Math.random() < 0.4 ? 2 : 1, grav: 120 });
+      if (Math.random() < dt * (lowP ? 4 : 8 + 18 * k)) parts.push({ x: P.x - sg * (4 + Math.random() * 4), y: P.y - 3 - Math.random() * 10, vx: -sg * (170 + 90 * k), vy: 0, life: 0.1 + 0.06 * k, max: 0.16, col: k > 0.6 ? '#fff6e0' : '#e8dcc0', size: 1, grav: 0, streak: true }); }
     if (!attacking && !(P.faceLock > 0)) P.face = move;   /* THE CAROUSEL holds his facing for a moment after it turns him (src/mummer.js CAROUSEL.lock) */
     if (P.ground) P.airHang = false;
   } else if (!dodging) {
@@ -9563,6 +9572,14 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   /* THE SAND SLIDE (docs/slopes-integration.md §2): hold DOWN on a slope and you go down it fast; jump at the foot and the air keeps
      most of it. The slide owns vx while it runs (the walk above is undone), exactly as tools/slopes.mjs's knight does. P.ground here
      is still last frame's footing. Only on a level with slopes (SLOPES_ON): every other level never enters this. */
+  /* THE RUNNING SLIDE (claude/slope, src/run-slide.js): DOWN pressed while running on the flat - low, under a high blow, a SWEEP into their legs. Before the sand slide:
+     a slope met this frame is the butt-slide's (DOWN held) or the hill's (let go) from this frame on */
+  if (GS > 0 && !P.dead) RSL.update({ P, dt, time, keys, move, run: MOVE.RUN, slopeAhead: SLOPES_ON && P.ground ? footSlope(tileAt, P) : 0,
+    busy: P.atk >= 0 || CM.inRecovery(P) || dodging || stunned || P.swim || P.climb || P.cling || P.block || P.aegis || P.warding || !!P.carry || P.plunge || P.fly || P.slideOn || !!P.onMover || !!(MCH && MCH.riding(P)) || P.jet,
+    spend, enemies, box, overlap, poiseMax, swordDmg, hurtAs, SFX, dust, parts, sparks, hitstop, lowParts: SET.parts === 'low', number,
+    trip: e => { if (e.glancedAt === time) return; const sk = P.swingKind, ct = P.caTrip, cp = P.caPoke; P.swingKind = 'sweep'; P.caTrip = P.caPoke = false; swingKindHit(e); P.swingKind = sk; P.caTrip = ct; P.caPoke = cp; },
+    seen: () => { PROG.rslTold = PROG.rslTold || {}; if (PROG.rslTold[hero()]) return true; PROG.rslTold[hero()] = 1; saveProgress(); return false; } });
+  else if (P.rsl > 0) RSL.end(P);
   if (GS > 0 && SLOPES_ON && !P.swim && !P.climb && !(MCH && MCH.riding(P))) { const ss = P.sandSlide || (P.sandSlide = { vx: 0, sliding: false, carry: false });
     const kind = P.ground ? footSlope(tileAt, P) : 0, owned = ss.sliding || ss.carry;
     if (P.hurt > 0 || dodging) { ss.sliding = false; ss.carry = false; }
@@ -29919,7 +29936,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
       else if (P.block || P.jet || P.aegis || P.warding || P.geoGuard || (isBz() && (P.braceT > 0 || P.braceRec > 0))) { key = isBz() && K.R.bzTake ? 'bzTake' : 'block'; frame = Math.floor(P.anim * 2) % 2; }
       else if (P.flatT > 0 && K.R.hurt) { key = 'hurt'; frame = Array.isArray(K.R.hurt) ? K.R.hurt.length - 1 : 0; }   /* ON HIS BACK: the heavy hit's last beat, held (src/slide.js) */
-      else if (P.slideOn && P.ground && K.R.slide) { key = 'slide'; frame = Math.floor(time * 9) % K.R.slide.length; }   /* THE BUTT-SLIDE: feet first, leaning back, the weapon tucked (chars.js F.slide) */
+      else if ((P.slideOn || P.rsl > 0) && P.ground && K.R.slide) { key = 'slide'; frame = Math.floor(time * 9) % K.R.slide.length; }   /* THE BUTT-SLIDE: feet first, leaning back, the weapon tucked (chars.js F.slide) */
       else if (P.climb || P.cling || P.zip) { key = 'climb'; frame = P.cling || P.zip ? 0 : Math.floor((P.climbA || 0) / 7) % 2; }
       else if (P.swim && !P.ground && K.R.swim) { const mv = Math.hypot(P.vx, P.vy) > 24; key = mv ? 'swim' : 'tread'; frame = Math.floor(time * (mv ? 9 : 5)) % K.R[key].length;   /* IN THE WATER: laid out and stroking when he is going somewhere (any way, not only sideways), upright and treading when he is not */
         const targetTilt = mv ? Math.max(-SWIM_TILT_MAX, Math.min(SWIM_TILT_MAX, Math.atan2(P.face * P.vy, P.face * P.vx))) : 0;
