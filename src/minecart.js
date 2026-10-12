@@ -403,7 +403,7 @@ export function buildMinecart({ painter, T, TS }) {
   beam(929, 930, B);
   lever('examSw', 935, B, 937, 942, B, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
   ground(943, 944, B);
-  boostGap(945, B);
+  boostGap(945, B); foe('bat', 949, B - 4, { squad: 'exGapBat' });   /* (deeprails4) a bat in the last deep gap's jump (the exam's last screen was empty) */
   ground(953, 969, B); rail(955, 965, B - 3);
   foe('miner', 960, B - 1, { squad: 'exMiner' }); block(960, 964, B - 6, B - 6); foe('tippler', 962, B - 7, { squad: 'exTip' });
 
