@@ -34,7 +34,7 @@ try {
       BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const L=BK.L;for(let x=2;x<50;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;
       BK.tp(10,21);BK.sim(30);for(const k in BK.keys)BK.keys[k]=false;const P=BK.P;P.hp=P.maxHp;P.inv=0;P.st=P.maxSt;P.face=1;P.rage=0;P.bzFightT=-99;};
     window.__LV=await import('/src/level.js');
-    window.__foe=(dx,t='sprig',hp=5000)=>{BK.spawnEnt({t,x:(BK.P.x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=hp;e.cd=99;return e;};
+    window.__foe=(dx,t='sprig',hp=5000)=>{BK.spawnEnt({t,x:(BK.P.x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=hp;e.cd=99;e.dmgPct=70;return e;};   /* (batch88 integ, as tools/knock-into.mjs) the knock-along of a pounce and the throw of a heavy are the foe's DAMAGE % now (claude/damagepct): these 5000-hp dummies never build one, so they stand at 70%, where it goes as far as the old fixed one; every assertion is unchanged */
     return 1})()`);
   const r = await pg.evalp(`(()=>{const out={},P=()=>BK.P,K=BK.keys,Z=()=>BK.bz(),C=()=>BK.crouchC();
     /* the flurry: five landed chops, the fifth the cross-chop */
