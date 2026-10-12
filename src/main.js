@@ -111,6 +111,7 @@ import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE,
 import { installTactics, braceHit } from './foe-tactics.js'; import { installReact } from './foe-react.js'; import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';
 import { makeKnockInto, throwWhy as kiWhy, guardedOf as kiGuarded, WORDS as KI_WORDS } from './knock-into.js'; import { COVER as RX_COVER, heroAbove as raAbove, sidestepTick as raSidestep } from './foe-react.js'; import * as AP from './anti-plunge.js';   /* (claude/knockinto) ANTI-PLUNGE: the THORNED elite's and the Spike Goblin's spines drawn on the body and told, the spitter's sidestep (src/anti-plunge.js, src/foe-react.js REACT_AIR) */   /* (claude/knockinto) KNOCK FOES INTO THE LEVEL: the throw along the blow, weight-scaled, and the hazard it lands in (src/knock-into.js) */
+import { makeDamagePct, stunMul as DP_stun, shoveMul as DP_shove } from './damage-pct.js';   /* (claude/damagepct) DAMAGE % STAGGER, Smash-style: every hero blow builds a foe's %, and the % weighs the shove, the hitstun and the throw (src/damage-pct.js) */
 import { makeRiposte, PARRY as RP_K, PARRY_ART as RP_ART, verbOf as rpVerbOf } from './riposte.js';   /* (claude/riposte) THE UNIVERSAL PARRY -> RIPOSTE, THE POISE BAR's openings, THE MIX-UP CHAIN (src/riposte.js) */   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
 import { POGO_CHAIN, bounce as pogoBounce, firedropSpares } from './pogo-chain.js';   /* OFF THEIR HEADS: one rebound for every hero, the stomp a pogo too (src/pogo-chain.js) */   /* EXECUTIONS: a broken common foe is finished, each hero his own way (src/finishers.js) */   /* THE COMBAT PASS, PART 2: held wind-ups, reactive waiting, the brute's cover, the squad hook (src/foe-tactics.js) */   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
@@ -3914,7 +3915,8 @@ function drawElitePlate(e, cx, cy, bigF) {
   g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, w + 2, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, w, 2); g.fillStyle = k > 0.34 ? '#e0b040' : '#ff6b6b'; g.fillRect(bx, by, Math.round(w * k), 2);
   { const nw = textW(e.eliteName || ELITE[e.t].name, 6); crown(bx - 7, by + 1); pip(bx - 7, by + 1); text(e.eliteName || ELITE[e.t].name, Math.max(nw / 2 + 2, Math.min(VW - nw / 2 - 2, x)), by - 9, '#ffd36b', 'center', 6); }   /* the name kept on the screen: a captain at the edge of the view was THE SHIELD CAPTAI */
   if (e.broken > 0 && e.ekOpenT > 0) { const ok = Math.max(0, Math.min(1, e.broken / e.ekOpenT)); g.fillStyle = ART.OUT; g.fillRect(bx - 1, by + 3, w + 2, 3); g.fillStyle = '#ffd36b'; g.fillRect(bx, by + 4, Math.round(w * ok), 1); }
-  else RP.drawPoiseBar(g, e, bx, by + 4, w);   /* (claude/riposte) THE POISE BAR, under his health */   /* OPEN: the gold timer under his bar */
+  else RP.drawPoiseBar(g, e, bx, by + 4, w);   /* (claude/riposte) THE POISE BAR, under his health */
+  DP.drawBeside(e, bx + w + 3, by - 2, VW);   /* (claude/damagepct) HIS DAMAGE %, beside his health (heat-coloured) */   /* OPEN: the gold timer under his bar */
   if (AF) { const t = '- ' + e.affix + ' -', tw = textW(t, 6); text(t, Math.max(tw / 2 + 2, Math.min(VW - tw / 2 - 2, x)), by + 7, AF, 'center', 6); }   /* THE FIRST KNIFE - SWIFT: the affix under the plate */
   if (e.ekSayT > 0 && e.ekSay) { const tw = textW(e.ekSay, 6); text(e.ekSay, Math.max(tw / 2 + 2, Math.min(VW - tw / 2 - 2, x)), by - 17, e.ekSayCol || '#ffd36b', 'center', 6); }   /* GUARD UP, GO ROUND, OPEN, ROUSED, DOUSED: over the plate, never a floating word */
 }
@@ -7110,7 +7112,7 @@ function addPoise(e, dmg, fromX, plunge) {
   if (thr('m', 0) && !P.jetHit && ((P.heavySwing && P.atk >= 0) || blowHas(e.blowNow, 'heavy'))) n *= 1.25;   /* MIGHT 10: HEAVY HAND - weight only, so a tap on a boss still fills nothing */
   if (!P.jetHit) n *= RP.chainMul(P);   /* (claude/riposte) THE MIX-UP CHAIN: its pips wear the bar faster by the same factor */
   e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5;
-  if (e.poise >= m) { e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
+  if (e.poise >= m) { e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; if (dpBossLike(e)) e.broken = DP.bossBreak(e, e.broken);   /* (claude/damagepct) A BOSS'S BREAK GROWS WITH HIS %: up to +50% (src/damage-pct.js breakMul), the % spent */ e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
     number(e.x, e.y - e.h - 20, 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); breakBeat(e); }
 }
 /* THE BREAK, SEEN AND HEARD. A poise break stood a creature still with a flickering bar over it, which at this size is the same picture
@@ -7230,12 +7232,9 @@ function deflectLesson() {
   PROG.turnSeen = (PROG.turnSeen || 0) + 1; saveProgress(); hintT = 4.5;
   hintMsg = 'TAP C ON THE BEAT: THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES. NEVER A RED ONE.';
 }
-function drawPoise(e, cx, cy) {
-  const m = poiseMax(e); if (!m) return; const w = Math.max(14, Math.min(40, (e.w || 12) + 6)), x = Math.round(e.x - w / 2 - cx), y = Math.round(e.y - (e.h || 16) - 10 - cy);
-  g.fillStyle = 'rgba(12,10,20,0.8)'; g.fillRect(x - 1, y - 1, w + 2, 4);
-  if (e.broken > 0) { g.fillStyle = Math.floor(time * 12) % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(x, y, w, 2); }
-  else { g.fillStyle = '#c9a040'; g.fillRect(x, y, Math.round(w * Math.min(1, (e.poise || 0) / m)), 2); }
-}
+/* (claude/damagepct) THE BAR OVER ITS HEAD IS THE DAMAGE % NOW: the number in its heat colour, the poise strip a thin underline under it (src/damage-pct.js drawOver) */
+function drawPoise(e, cx, cy) { const m0 = poiseMax(e); DP.drawOver(g, e, Math.round(e.x - cx), Math.round(e.y - (e.h || 16) - cy), m0 ? (e.poise || 0) / m0 : null); }
+
 /* KNOCKED INTO THE LEVEL. A heavy blow, a dash, the paladin's quake or a ring of fire throws a creature bodily for a moment -
    no legs under it - so the water, the spikes and the drop it lands in do the killing, and the kill still counts. */
 let hurtKnock = false;
@@ -7301,11 +7300,12 @@ function knockFoe(e, dir, push, o) {   /* (claude/knockinto) o: { wt, slide } fr
   if (!e.alive || e.maxHp || e.mini || e.slamming || e.mounted || KNOCK_SKIP.has(e.t)) return false;   /* a horse is not thrown across the road by a sword */
   e.slammed = false; e.thirdT = 0;   /* (a throw is the knight's third-cut throw only if the third cut marks it, after this) */
   const wt = o && o.wt !== undefined ? o.wt : POISE_HEAVY.has(e.t) || e.big ? 0.45 : 1;
-  e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt; e.kvy = o && o.slide ? 0 : Math.min(e.vy || 0, -150 * wt); e.bounced = false;   /* (claude/knockinto: a slide keeps to the floor) */   /* (bounced: it comes up off the floor once when it lands) */
+  const pk = o && o.k !== undefined ? o.k : 1, pl = o && o.lift !== undefined ? o.lift : 1;   /* (claude/damagepct) the foe's damage % (KI.throwFoe -> DP.throwAt): the speed and the arc */
+  e.knockAir = 0; e.knock = 0.45; e.kvx = dir * Math.max(150, push * 1.15) * wt * pk; e.kvy = o && o.slide ? 0 : Math.min(e.vy || 0, -150 * wt * pl); e.bounced = false; e.pctTumble = o && o.tumble ? time : 0;   /* (claude/knockinto: a slide keeps to the floor) */   /* (bounced: it comes up off the floor once when it lands) */
   return true;
 }
 /* (claude/knockinto) THE SHARED THROW + HAZARD HELPER: what every level already carries (tiles, pools, props, fires, L.knockHazards) */
-const KI = makeKnockInto({ time: () => time, knock: (e, dir, push, o) => knockFoe(e, dir, push, o), hurt: (e, dmg, x) => { e.slamming = true; try { hurtEnemy(e, dmg, x, false); } finally { e.slamming = false; } }, fullHp: e => fullHp(e),
+const KI = makeKnockInto({ time: () => time, knock: (e, dir, push, o) => knockFoe(e, dir, push, o), scale: (e, slide) => DP.throwAt(e, slide),   /* (claude/damagepct) */ hurt: (e, dmg, x) => { e.slamming = true; try { hurtEnemy(e, dmg, x, false); } finally { e.slamming = false; } }, fullHp: e => fullHp(e),
   number: (x, y, t, c) => number(x, y, t, c), smoke: (x, y) => smoke(x, y, 3, 8), sfx: k => { if (SFX[k]) SFX[k](); },
   world: () => ({ TS, LH, T, tile: (tx, ty) => tileAt(tx, ty), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), pools: L.pools || [], props, fires, extra: L.knockHazards || [], amphib: e => AMPHIB.has(e.t) }) });
 /* (claude/knockinto) THE ANTI-PLUNGE REACTIONS' WORLD (src/foe-react.js REACT_AIR): the spitter's sidestep uses say/sfx/safeStep/offBalance; the rest are for the order knights */
@@ -7370,7 +7370,9 @@ const BR = makeBossRead({ time: () => time, clank: () => SFX.clank(), sparks: (x
 const RP = makeRiposte({ time: () => time, P: () => P, isBoss: e => e === boss, poiseMax: e => poiseMax(e), breakPoise: e => rpBreak(e, 'GUARD BROKEN'), lean: (e, n) => rpLean(e, n), openOf: e => GB.openOf(e),
   tokenRelease: e => tokenRelease(TK, e, 'parried'), number: (x, y, s, c) => number(x, y, s, c), ring: (x, y, r, c, l) => ringAt(x, y, r, c, l), sparks: (x, y, d, n) => sparks(x, y, d, n),
   sfx: (k, n) => { if (k === 'chime') { if (SFX.mixPip) SFX.mixPip(n); } else if (SFX[k]) SFX[k](); }, hitstop: t => hitstop(t), lessonHint: k => lessonHint(k), perfectWindow: () => perfectWindow(), squash: (a, b, t) => squash(a, b, t), still: () => !!SET.reduceMotion, parryFx: () => rpParryFx() });
-function rpBreak(e, word) { const m = poiseMax(e); if (!m || e.broken > 0 || !e.alive) return; e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
+const DP = makeDamagePct({ time: () => time, fullHp: e => fullHp(e), bossLike: e => dpBossLike(e), text: (s, x, y, c, a, z, st) => text(s, x, y, c, a, z, st), textW: (s, z) => textW(s, z), still: () => !!SET.reduceMotion });   /* (claude/damagepct) */
+const dpBossLike = e => e === boss || e.xpRole === 'mini' || e.xpRole === 'boss' || !!e.mini;   /* (claude/damagepct) never thrown: his % lengthens his break */
+function rpBreak(e, word) { const m = poiseMax(e); if (!m || e.broken > 0 || !e.alive) return; e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; if (dpBossLike(e)) e.broken = DP.bossBreak(e, e.broken);   /* (claude/damagepct) his % lengthens it */ e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
   number(e.x, e.y - e.h - 20, word || 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); breakBeat(e); }
 function rpLean(e, n) { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) rpBreak(e, 'BROKEN'); }
 /* (claude/riposteart) THE PARRY'S FLASH, every hero: a ring and a star of his colour at the weapon hand, a breath of gold over his body (P.rpTintT, drawn in the player pass), a short screen flash
@@ -7616,7 +7618,9 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   greedHit(e, fromX, blow);
   if (wmD0 > 0 && dmg > wmD0) dmg = WMH.fix(e, wmD0, dmg);   /* (claude/batch86) THE WICKER MAN'S FIRE CAP holds against what multiplies a blow after it was counted (the mix-up chain, the riposte x2, the finisher): the cap is on what LANDS */
-  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy); e.sq = glance ? 0.06 : 0.16;
+  const dpV = blow && tag ? rpVerbOf(tag, rpSkillBlow()) : null; if (blow && dmg > 0 && !glance && !P.jetHit) DP.gain(e, Math.min(dmg, Math.max(0, e.hp)), dpV, RP.chainOf(P));   /* (claude/damagepct) THE DAMAGE %: a landed hero blow adds its verb's weight of what it took (a burn, a hazard, a foe's fire add nothing) */
+  const dpHeavy = !!P.heavy || dpV === 'heavy' || dpV === 'riposte' || dpV === 'plunge', dpP = dpBossLike(e) ? 0 : DP.pctOf(e);   /* (claude/damagepct) a boss's % only lengthens his break */
+  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy) * DP_stun(dpP, dpHeavy);   /* (claude/damagepct) the hitstun grows with the % (a light blow's a little, a heavy's a lot) */ e.sq = glance ? 0.06 : 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -7677,7 +7681,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     if (!glance && !P.jetHit && e.t !== 'wasp' && e.t !== 'spit' && e.t !== 'queen' && e.t !== 'ram' && e.t !== 'harpy') {   /* (the jet burns, it does not push) */
       // THE PUSH IS THE BLOW'S: a tap nudges, a heavy blow throws, and a heavy blow from below lifts them
       const push = plunge ? 30 : Math.min(210, 52 + dmg * 2.4) * (P.heavy ? 1.5 : 1);
-      e.vx = dir * push;
+      e.vx = dir * push * (dpBossLike(e) ? 1 : DP_shove(dpP));   /* (claude/damagepct) a low-% foe is nudged, a high-% one shoved */
       if (P.heavy && !e.maxHp && !(P.bashing && e.mini) && P.y > e.y - 4) { e.vy = Math.min(e.vy || 0, -110); }
       /* THE KNIGHT'S THIRD CUT THROWS, every knight's now and not only the talent's: where he finishes the run is the decision.
          A body it throws is MARKED (e.thirdT) for a moment, and what the throw ends in pays (thirdPay): a wall, the spikes, a drop,
@@ -24910,6 +24914,7 @@ function poseOf(e, wind) {
   if (e.mk && e.mode === 'cartwheel' && e.mk.cart) { o.rot = (o.rot || 0) + (1 - e.mk.cart.t / TMK.MASK.cart.t) * Math.PI * 2 * (e.mk.cart.dir || 1); o.dy -= 8; }   /* (claude/theatre4) THE COMEDY's cartwheel */
   if (PUPH && PM.isPuppet(e) && PUPH.slump(e)) { o.dy += 3; o.sy *= 0.93; o.rot = (o.rot || 0) + (e.face || 1) * 0.1; }   /* (claude/theatre4) SLACK, IT SLUMPS: a hittable puppet sags on its strings */
   if ((e.broken > 0 || e.rpHold > 0) && !e.xpRole && !e.mini && e !== boss && !(e.floored > time)) (e.broken > 0 ? staggerPose : RP.parriedPose)(o, e, time);   /* (claude/riposteart: PARRIED has its own keyed recoil - snap, rebound, stagger, come-to - src/riposte.js parriedPose; BROKEN keeps the slump) */   /* BROKEN, IT STANDS OPEN: reeling back off its guard for the whole break (src/poise-break.js) */
+  if (e.pctTumble > 0) DP.tumblePose(o, e, time);   /* (claude/damagepct) LAUNCHED at a high %: it turns over in the air until it lands */
   if (GOBLINISH.has(e.t) && e.hp0 && e.hp < e.hp0 * 0.35 && !wind && Math.floor(time * 24) % 3 === 0) o.dx += Math.floor(time * 48) % 2 ? 1 : -1;
   /* THE HILL TROLL'S POSES: he rears up tall to slam, squats into the floor as it lands, leans out to tear a stone down, and lies flat under one */
   if (e.hill) { const m = e.mode, f = e.face || 1;
@@ -25056,6 +25061,7 @@ function updateEnemies(dt) {
     if (e.hurtT > 0) e.hurtT -= dt;
     if (e.poiseCd > 0) e.poiseCd -= dt;
     if (e.poise > 0) { e.poiseT = (e.poiseT || 0) - dt; if (e.poiseT <= 0) e.poise = Math.max(0, e.poise - 14 * dt); }
+    if (e.dmgPct > 0) DP.tick(e, dt);   /* (claude/damagepct) out of combat its damage % runs down */
     /* PINNED: the Warden has it on the end of a spear. It stands exactly where the point put it - no walk, no swing, no
        turn - and it is let go when the time runs out. It is checked ABOVE every creature's own update, as BROKEN is,
        because anything checked below one is driven on again by that creature's next frame. */
@@ -29368,7 +29374,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (boss && boss.t === 'lance' && boss.alive && boss.bowCall) drawBowCall(boss.bowCall, cx, cy);   /* drawn whether he is on the screen or not: his bowman is coming to where YOU are */
   for (const e of enemies) {
     if (e.behind) continue;   /* (claude/fairfix3) round the back of the chair-o-plane: drawn small behind its mast (src/redraw/fair_newrides.js) */
-    if (e.alive && (e.poise > 0 || e.broken > 0) && !(e === boss || e.xpRole === 'mini' || (e.elite && Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110))) drawPoise(e, cx, cy);   /* the stagger bar over its head (claude/riposte: a boss's, a mini's and a near elite's is under their health instead) */
+    if (e.alive && (e.poise > 0 || e.broken > 0 || e.dmgPct >= 1) && !(e === boss || e.xpRole === 'mini' || (e.elite && Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110))) drawPoise(e, cx, cy);   /* the stagger bar over its head (claude/riposte: a boss's, a mini's and a near elite's is under their health instead) */
     if (e.alive && (e === boss || e.xpRole === 'mini')) RP.drawRead(g, e, cx, cy);   /* (claude/riposte) THE SHARED B10 READ for a riposte opening, a poise break, and the B3 ward after */
     if (e.alive && (e === boss || e.xpRole === 'mini') && BR.keyOf(e)) BR.drawKey(g, e, cx, cy, time);   /* B14 (claude/keyscore): HIS KEY, SHOWN - the per-key glyph over a keyed boss or mini (src/boss-read.js KEY_ROWS; none yet: the per-act key lanes add them) */
     if (e.alive && (e.rxGuard > 0 || e.rxVary || e.rxFlash > 0 || e.rxStamp > 0) && e.x > cx - 40 && e.x < cx + VW + 40) RX.draw(g, e, cx, cy, time);   /* told: a raised guard, a held or quick swing, a feint's stamp (src/foe-react.js) */
@@ -31976,7 +31982,7 @@ window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P
      assuming a fixed one. */
   soundFxPages: () => fxPages(((VW - 48) - 20) / 2, 10).map(p => p[0].i),
   riposte: () => RP,   /* (claude/riposte) tools/riposte.mjs */
-  knockInto: () => KI, raApi: () => RA_API,   /* (claude/knockinto) tools/knock-into.mjs */
+  knockInto: () => KI, raApi: () => RA_API, damagePct: () => DP,   /* (claude/damagepct) tools/damage-pct.mjs */   /* (claude/knockinto) tools/knock-into.mjs */
   enemies: () => enemies, tokens: () => ({ board: TK, TOKENS, RX }), combat2: () => ({ OPEN, FIN, POGO_CHAIN, pogoChain: () => pogoChain, poiseMax: e => poiseMax(e), finishReady: e => finishReady(e, P, e === boss || bossActive || miniActive),
     strike: (e, blow = 'heavy', dmg = 1) => { const w = { hs: P.heavySwing, h: P.heavy, a: P.atk }; P.heavySwing = blow === 'heavy'; P.heavy = blow === 'heavy'; P.atk = Math.max(P.atk || 0, 0); try { openBefore(e); hurtAs(blow, e, dmg, P.x, false); } finally { P.heavySwing = w.hs; P.heavy = w.h; P.atk = w.a; } } }),   /* THE COMBAT PASS, PART 2, for its harnesses: the break and finisher counts, and one blow of a given kind struck at a foe from where the hero stands */ spawnFoe: e => { const n0 = enemies.length; spawnEnt(e); return enemies.slice(n0); },   /* put one creature down in the running level, for a harness (tools/drowned-knights.mjs) */ movers: () => movers, seeds: () => seeds, corpses: () => corpses, waves: () => waves, respawnEnemies: () => spawnEntities(), ambushes: () => (L && L.ambushes) || [], elites: () => enemies.filter(e => e.elite), ELITE,
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */

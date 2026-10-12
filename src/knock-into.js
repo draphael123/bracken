@@ -97,7 +97,7 @@ export function deathBelow(x, y, W) {
 export const guardedOf = (e, fromX, cover, eliteGuard) => !(e.broken > 0) && (e.rxGuard > 0
   || ((cover.has(e.t) || (e.elite && eliteGuard && eliteGuard(e))) && Math.sign(fromX - e.x) === (e.ekSide || e.face || 1)));
 
-/* api: { time(), knock(e, dir, push, { wt, slide }), hurt(e, dmg, x), fullHp(e), number(x, y, txt, col), smoke(x, y), sfx(name), world(), log } */
+/* api: { time(), knock(e, dir, push, { wt, slide, k, lift, tumble }), scale(e, slide) -> { k, lift, tumble } (claude/damagepct: the foe's %), hurt(e, dmg, x), fullHp(e), number(x, y, txt, col), smoke(x, y), sfx(name), world(), log } */
 export function makeKnockInto(api) {
   const stats = { thrown: 0, slid: 0, into: {}, elitesBack: 0, edges: 0, byWhy: {}, said: [] };
   const say = (e, txt) => { api.number(e.x, e.y - (e.h || 16) - 10, txt, COL); stats.said.push(txt); if (stats.said.length > 24) stats.said.shift(); };
@@ -108,7 +108,10 @@ export function makeKnockInto(api) {
     if (why === 'riposte') push = Math.max(push, KNOCK.ripPush); else if (why === 'broke') push = Math.max(push, KNOCK.breakPush);
     if (why === 'broke' && e.broken > 0) e.broken = 0;   /* the throw SPENDS the break: it flies now, not when the opening runs out */
     const was = { x: e.x, y: e.y };
-    if (!api.knock(e, dir, push, { wt, slide })) return false;
+    /* (claude/damagepct) THE DISTANCE IS THE FOE'S DAMAGE %, no longer a fixed small/mid/brute throw: sc.k scales the speed (0% a shove, ~72% the old throw, 200% twice it and more),
+       sc.lift the arc, sc.tumble a launch that turns over in the air (src/damage-pct.js). The weight classes above still multiply it */
+    const sc = api.scale ? api.scale(e, slide) : null;
+    if (!api.knock(e, dir, push, { wt, slide, k: sc ? sc.k : 1, lift: sc ? sc.lift : 1, tumble: !!(sc && sc.tumble) })) return false;
     e.kiT = api.time() + KNOCK.live; e.kiWhy = why; e.kiFrom = was; e.kiBy = o.by || null; e.kiEdge = false; e.kiHz = null;
     stats.thrown++; if (slide) stats.slid++; stats.byWhy[why] = (stats.byWhy[why] || 0) + 1;
     return true;
