@@ -264,6 +264,8 @@ export function drawStructure(g, kind, l, r, t, b, seed) {
   if (kind === 'ubpierCold') return SG.drawPier(g, l, r, t, b, seed, true);
   if (kind === 'ubcart') return SG.drawCartFrame(g, l, r, t, b, seed);
   if (kind === 'ubprop') return SG.drawShores(g, l, r, t, b, seed);
+  if (kind === 'ubscaffold') return SG.drawScaffold(g, l, r, t, b, seed);
+  if (kind === 'ubheads') return SG.drawHeadstoneCairn(g, l, r, t, b, seed);   /* (claude/unbfloat) a cairn of headstones under a palisade over a pit */
 }
 export function bakeFacade(kind, tw, th, seed, o) {
   if (kind === 'ubtower') return SG.bakeTower();

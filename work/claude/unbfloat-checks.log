@@ -1,0 +1,34 @@
+ok   solid-islands | ok  solid-islands  every island of every level has a drawn support or a reasoned allowance
+FAIL level-quality |   ok   unlocks    0 collectible kinds [], 1 interactive kinds [pushblock], 0 declared in L.unlocks
+  ok   pilot      49 blows taken by a fresh level-1 knight (6 deaths, walked 100%) (>=2), 102 lifts
+  ok   mash       not gated (node tools/mash-bot.mjs unburied to measure)
+  ok   ruleFight  14 of 15 designed encounters stand where the rule is active (>=2; rule state from volleys, cavalry, ents:oilbarrel)
+  ok   curve      act 4 (THE OLD KINGDOM): a level-1 knight lost 336% health a run, 5 deaths in 3 runs (band 120-600%, 1-12 deaths)
+  ok   route      route spans 20 rows, 0 tiles back, 3 branches/pockets (>=2)
+
+1 level(s) miss the quality bar (docs/LEVEL-QUALITY.md).
+ok   mash-gate | mash-gate: 46 campaign levels hold the mash gate (1 with parts report-only for their boss waves: fallingtower mini)
+ok   stuck | stuck (runtime) OK: 122 spots - a hero held at each one for 11 s is nudged (the hint box shows the line), the glint targets read back, and the way arrow is handed its target
+ok   floaters | 3100 standing things checked (56 set down a row or more at load; 40 hung ones with no rock over them are left out). every one can be set down.
+FAIL architecture |   unburied    1 piece(s) of structure in the air, 3 cells
+      structure:ubbrace         3 cols  x 101-103  y 30-30
+
+60 levels, 441 built pieces declared; 2 grandfathered (harbor, waymeet). 1 level(s) with structure standing on nothing.
+ok   reach-heroes | ok  reach-heroes: 0 known crossings, nothing new
+ok   deadends-knight | 1 dead ends in 1 levels, and every one pays.
+ok   deadends-warden | 1 dead ends in 1 levels, and every one pays.
+ok   deadends-pyro | 1 dead ends in 1 levels, and every one pays.
+ok   deadends-paladin | 1 dead ends in 1 levels, and every one pays.
+ok   deadends-pirate | 1 dead ends in 1 levels, and every one pays.
+ok   deadends-reaper | 1 dead ends in 1 levels, and every one pays.
+ok   deadends-geomancer | 1 dead ends in 1 levels, and every one pays.
+ok   deadends-berserker | 1 dead ends in 1 levels, and every one pays.
+ok   unburied-aloft | ok  unburied-aloft  nothing in the field hangs in the air
+ok   unburied |       NOT SEEN HERE: the map spur (Lane B), and the music as heard (its track is asserted above); the look is tools/skins.mjs (forest kit), the fights tools/unburied-fights.mjs.
+ok   unburied-walk | errors []
+ok   unburied-look | ok  unburied-look  all 11 look checks hold
+ok   pixels | 46 levels, 2963 sprites. nothing in the air, through the ground or out of the water.
+ok   boss-fight-end | Every one of 60 boss and mini fights (46 bosses, 14 minis) ends when its boss dies.
+DONE
+
+(re-run after the brace fix, all green: solid-islands, unburied-footings, architecture, unburied-aloft, pixels, mash-gate; the architecture FAIL in the first pass was the brace's foot, fixed by running its box to the pillar column.)
