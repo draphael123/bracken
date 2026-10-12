@@ -2313,6 +2313,17 @@ async function runbossLab(BK, opts) {
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
       if (h === 'knight' && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
+      /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
+         the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
+         a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */
+      if (h === 'berserker' && BK.bz) { const Z = BK.bz() || {};
+        if (P.labBzCoil > 0) { P.labBzCoil--; strike = false; k.left = k.right = k.up = k.jump = k.atk = k.block = false; k.down = true; P.face = P.labBzDir || P.face;
+          if (P.labBzCoil === 0) P.labBzRel = 2; }
+        else if (P.labBzRel > 0) { P.labBzRel--; strike = false; k.left = k.right = k.up = k.jump = k.atk = k.block = false; k.down = false; k[(P.labBzDir || 1) > 0 ? 'right' : 'left'] = true; }
+        else if (!(Z.frenzyT > 0) && Z.rage >= 100 && P.ground && !tell && !rushing && ad < 150 && P.atk < 0 && !P.cWas && !(P.hurt > 0) && !(P.dodge > 0) && !(Z.braceRec > 0)) { strike = false; k.left = k.right = k.up = k.jump = k.atk = false; k.down = true; k.block = true; P.labBzFrenzied = f; }   /* the war cry: hold DOWN, press C */
+        else if (!(Z.frenzyT > 0) && P.ground && !tell && !rushing && ad > 70 && ad < 170 && Math.abs(boss.y - P.y) < 28 && P.atk < 0 && P.st >= 36 && !(P.hurt > 0) && !(P.dodge > 0) && !(Z.braceRec > 0) && !(Z.takeUp)
+          && f - (P.labBzPounceAt ?? -999) > 300 && f - (P.labBzFrenzied ?? -999) > 40 && (!(boss.mode) || boss.mode === 'walk' || boss.mode === 'idle' || boss.mode === 'rest' || open)) {
+          P.labBzPounceAt = f; P.labBzDir = Math.sign(d) || P.face; P.labBzCoil = 26; strike = false; k.left = k.right = false; k.down = true; } }
       // A BANKED PYRE IS FOR SPENDING: release the full heat meter toward a clear target between committed swings.
       if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
       /* A HAND CAUGHT ON A SPRING DOES NOT KNOW IT: nothing here has ever asked a bouncer a question, so a knockback that lands
