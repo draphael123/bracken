@@ -143,12 +143,12 @@ export function buildBuriedCity({ painter, T, TS }) {
   const glass = (id, x, y, dur) => glasses.push({ id, x, y, dur });
   const riser = (g, x0, x1, top, rows, kind, o) => { risers.push(Object.assign({ glass: g, x0, x1, top, rows, kind: kind || 'roof' }, o || {})); plats.push({ kind: kind || 'house', x0, x1, y: top, y1: top + rows - 1, riser: true }); };
   const sinker = (g, x0, x1, top, rows, kind) => { block(x0, x1, top, top + rows - 1); riser(g, x0, x1, top, rows, kind, { sinks: true }); plats[plats.length - 1].riser = false;
-    structures.push({ kind: 'bcBuried', x0, x1, top, floor: H - 1 - DY }); };
+    structures.push({ kind: 'bcBuried', x0, x1, top, floor: top + rows - 1 }); };
   const bank = (g, x0, x1, y0, y1) => banks.push({ glass: g, x0, x1, y0, y1 });
   const dfall = (g, x0, x1, top, bottom) => dfalls.push({ glass: g, x0, x1, top, bottom });
   const sea = (x0, x1, row, lethal) => seas.push({ x0, x1, row, lethal: !!lethal });
   /* a buried house's roof, a dome, a minaret stub standing up out of THE SAND SEA (its body runs down into the sand: a declared structure) */
-  const isle = (kind, x0, x1, top, rows) => { solidPlat(kind, x0, x1, top, top + rows - 1); structures.push({ kind: 'bcBuried', x0, x1, top, floor: H - 1 - DY }); };
+  const isle = (kind, x0, x1, top, rows) => { solidPlat(kind, x0, x1, top, top + rows - 1); structures.push({ kind: 'bcBuried', x0, x1, top, floor: top + rows - 1 }); };   /* (its frame is its own cells - tools/architecture.mjs: it stands on itself; the hands draw its walls on down into the sand) */
 
   // ================= 0. THE DUNES (0-47): the last of the sky, and the sinkhole down under the sand roof =================
   ground(0, 26, DU);
@@ -406,7 +406,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   for (const z of structures) { z.top += DY; z.floor += DY; } for (const p of plats) { p.y += DY; if (p.y1 !== undefined) p.y1 += DY; } for (const lp of lamps) lp.y += DY;
   for (const it of interiors) { it[2] += DY; it[3] += DY; } for (const v of vaultDoors) { v.y0 += DY; v.y1 += DY; }
   for (const q of glasses) q.y += DY; for (const r of risers) r.top += DY; for (const b of banks) { b.y0 += DY; b.y1 += DY; } for (const f of dfalls) { f.top += DY; f.bottom += DY; } for (const q of seas) q.row += DY;
-  const masonry = []; { const roofEnd = x => { let y = 0; while (y < H && L.grid[y * W + x] !== T.AIR) y++; return y; };
+  const masonry = []; { const roofEnd = x => { let y = 0; while (y < H && L.grid[y * W + x] === T.AIR) y++; while (y < H && L.grid[y * W + x] !== T.AIR) y++; return y; };   /* (claude/buriedcity3: past the open sky over a column, the first air under its roof - the dune over the throne room has sky over it now) */
     for (let x = 38; x < W; ) { if (x >= OUT.x0 && x <= OUT.x1) { x = OUT.x1 + 1; continue; } const y0 = roofEnd(x); let x1 = x; while (x1 + 1 < W && !(x1 + 1 >= OUT.x0 && x1 + 1 <= OUT.x1) && roofEnd(x1 + 1) === y0) x1++; if (y0 < H) masonry.push([x, x1, y0, H - 1]); x = x1 + 1; } }
   const START = { x: 3, y: DU - 1 + DY };
   return {

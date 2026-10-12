@@ -74,7 +74,7 @@ See RESULTS below.
 - reach-heroes (8 heroes, 0 misses), level-reach, deadends, stuck (static 2398 + runtime 250 spots, incl. 6 new glass spots), solid-islands, modulepreload, desert-rules (sun), tells, signs, checkpoints, checkpoint-stand, checkpoint-gaps (5 shrines 166/339/524/644/797; one DENSE note 506->621, pre-existing), elites (courtyard elite SWIFT), one-new-foe, goblin-lint, threat-holes, answer-tags, blow-tags, floaters, killzones, spawns, collectables, keys, relics, comments, homepaths, hint-shown: green.
 - **Re-stamped LEVEL then BOSS**: pilot 9 deaths / 3 runs (374% hp a run, act-5 band 150-700%), **mash level 0/3 clear, mash boss 0/6**. **level-quality buriedcity CLEARS** (gate-wide: every gated level clears).
 - Page: boss-read ok, untold-told ok, boss-fight-end (61 fights) ok, corpses ok, drawn-solids ok; boss-openings ran (table printed, tail showed no FAIL - re-run when pages are allowed); mark-integrity = the known undeadmage phantom only (not this lane).
-- **NOT RUN / NOT GREEN: textfit** timed out under the load (Runtime.evaluate > 480 s on talk[knight]) - re-run when PAGES OK. architecture prints "1 level with structure standing on nothing" (exit 0) - check it is not buriedcity's 'bcBuried'.
+- **NOT RUN / NOT GREEN: textfit** timed out under the load (Runtime.evaluate > 480 s on talk[knight]) - re-run when PAGES OK. architecture: was RED from this lane (bcBuried frames hung to the bottom of the sea; the masonry rect over the throne room started at the open sky) - fixed, green.
 
 ### 3-SEED BOSS SPOT (boss-rates practiced, profile human, flasks kit, L40, jobs=1; cut at 8 of 9 fights by the stop order)
 | | knight | warden | pyro | all |
