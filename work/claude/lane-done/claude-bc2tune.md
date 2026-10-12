@@ -23,4 +23,4 @@ Shipped: fights 100-140 s on the wins, deaths 80-135 s. Knight is the low hero (
 mash boss 0/6 (re-stamped docs/mash-bot.json, arena only; the level row untouched: no level data changed) | buried-city 221 green | boss-openings, boss-read, tells, untold-told, boss-fight-end (60 fights) green | mark-integrity: the one known phantom (undeadmage|markTell) | level-quality buriedcity CLEARS (curve 233%/3 deaths, mash held).
 
 ## QUESTIONS FOR DANIEL (rec first)
-1. Knight is the weakest hero at ~50% (warden 83%, pyro 75%). Rec: keep (the band is overall, no hero at 0). Alt: nerf the knight's low-window lever walk (HK.leverR) - not touched.
+1. Knight is the weakest hero at ~50% (warden 83%, pyro 75%). Rec: keep (the band is overall, no hero at 0). Alt: none cheap (the knight lever-walk is the bot's, not a number).
