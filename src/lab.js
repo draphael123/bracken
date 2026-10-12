@@ -1298,8 +1298,9 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const MH=BK.minecart(),F=MH&&MH.foreman(),S=F&&F.S;
         if(f===0||!P.labFmMem)P.labFmMem={};
-        if(S){const lob=((MH.state()||{}).lobs||[]).find(o=>o.t>0&&Math.abs(o.tx-P.x)<40);P.labFmMem.mark=lob?{x:lob.tx,t:lob.t}:null;}
-        const pl=S?foremanPlan({P:{x:P.x,y:P.y,ground:P.ground,vy:P.vy,atk:P.atk,v:MH.cart(P).v,lane:P.ground?fmLane(S.G,P.y):-1,boarded:!!P.mcBoard},S,rng:Math.random,mem:P.labFmMem,t:f/60,eyes:!!LABP.v2}):{gx:null};
+        const fmHuman=!!(LABP.v2&&LABP.perceive),fmRt=()=>{if(!fmHuman)return 0.25;const lo=LABP.rtMin,hi=LABP.rtMax,c=LABP.rtMode,u=Math.random(),F=(c-lo)/(hi-lo);return(u<F?lo+Math.sqrt(u*(hi-lo)*(c-lo)):hi-Math.sqrt((1-u)*(hi-lo)*(hi-c)))/1000;},fmMiss=fmHuman?(LABP.misread??0.12):0.12;   /* (the Foreman's bot SEES like the profile's human: a read is rtMin..rtMax late and sometimes misread - it had perfect eyes, so no pick or tell ever caught it) */
+        if(S){const seen=(P.labFmMem.seen=P.labFmMem.seen||{}),lob=((MH.state()||{}).lobs||[]).find(o=>{if(!(o.t>0&&Math.abs(o.tx-P.x)<40))return false;if(!(o.id in seen))seen[o.id]={at:f/60+fmRt(),miss:Math.random()<fmMiss};return !seen[o.id].miss&&f/60>=seen[o.id].at;});P.labFmMem.mark=lob?{x:lob.tx,t:lob.t}:null;}
+        const pl=S?foremanPlan({P:{x:P.x,y:P.y,ground:P.ground,vy:P.vy,atk:P.atk,v:MH.cart(P).v,lane:P.ground?fmLane(S.G,P.y):-1,boarded:!!P.mcBoard},S,rng:Math.random,mem:P.labFmMem,t:f/60,eyes:false,react:fmHuman?fmRt:null,missP:fmMiss}):{gx:null};
         if(pl.drop&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){k.down=true;BK.press('jump');P.labJumpF=f;P.labDrop=6;}
         else if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=26;}
         if(P.labJump>0){P.labJump--;k.jump=true;} if(P.labDrop>0){P.labDrop--;k.down=true;}

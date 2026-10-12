@@ -148,10 +148,10 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 43,
-  "deaths": 4,
+  "hits": 44,
+  "deaths": 5,
   "kills": 56,
-  "lifts": 32,
+  "lifts": 30,
   "walked": 100,
   "bare": true
  },
