@@ -13100,6 +13100,8 @@ function ma() {
 }
 /* ONE SAY PER THING: the first few times, the hint box tells you; after that the level trusts you */
 function mageHint(key, msg) { const k = 'mgHint' + key; if ((PROG[k] || 0) >= 2) return; PROG[k] = (PROG[k] || 0) + 1; hintT = 4.5; hintMsg = msg; }
+/* THE BURIED CITY re-picks a cell its hands wrote (and its eight neighbours: a tile's edges read them) from its own kit - src/redraw/buried_city_tiles.js bcTile (claude/buriedcity3) */
+const bcRetile = (x, y) => { if (!L || !L.buriedcity || !tileSpr) return; for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) { if (xx < 0 || yy < 0 || xx >= LW || yy >= LH) continue; const i = yy * LW + xx, t = L.grid[i]; if (t === T.AIR) { tileSpr[i] = null; continue; } if (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.SOFT) tileSpr[i] = BCT.bcTile(t, xx, yy, tileAt, T, L) || tileSpr[i]; } };
 const cellSet = (x, y, t) => { const i = y * LW + x; if (L.grid[i] !== t) { L.grid[i] = t; tileSpr[i] = null; } };
 function mageReset() {
   MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; P.windRide = null; if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
@@ -25988,7 +25990,7 @@ HMH = makeHawkMistressHands({ get L() { return L; }, get players() { return play
   spawnGuard: (x, y) => { const n0 = enemies.length; spawnEnt({ t: 'cutthroat', x: Math.floor(x / TS), y: Math.floor(y / TS) - 1, face: -1, cnSkin: 'ksarblade' }); return enemies[n0] || null; } });
 /* THE BURIED CITY's HANDS (claude/buriedcity, src/buried-city-hands.js) and THE HOURGLASS KING's (src/hourglass-king-hands.js): main.js owns the world; the modules own the sand, the levers, the gate, the vault, and him */
 BCH = makeBuriedCityHands({ get L() { return L; }, lights: () => lights, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
-  number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
+  number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH && L.grid[y * LW + x] !== t) { cellSet(x, y, t); bcRetile(x, y); } },   /* (claude/buriedcity3: THE INVISIBLE PLATFORMS - cellSet only clears a cell's picture and nothing re-picked it: a drained room's pipe shelf, the street's roofs, a respawned bulb were floor with no picture. The cell and its neighbours are re-picked now: tools/drawn-solids.mjs) */
   questGot: () => straysGot.size, bossLever: x => (HGK ? HGK.onLever(x) : 'busy'), kingLit: () => !!(HGK && HGK.leversLit()),
   spawnEnt: (e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) { enemies[i].xpKey = k + '.' + (i - n0); if (e.squad) enemies[i].squad = e.squad; } return enemies[n0] || null; } });
 HGK = makeHourglassKingHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
@@ -31960,7 +31962,7 @@ window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */
-  tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
+  tileSpr: () => tileSpr, resolve: () => resolveTiles(), respawn: () => respawn(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
   ember: () => EMBER ? EMBER.read() : null, emberReset: () => EMBER && EMBER.resetStats(), crouchA: () => CA ? CA.read() : null, crouchAReset: () => CA && CA.resetStats(),   /* THE CROUCH TWISTS, PART A (tools/crouch-a.mjs) */   /* THE EMBER WARD (tools/ember-flare.mjs) */
