@@ -356,7 +356,7 @@ export function buildMinecart({ painter, T, TS }) {
     ground(787, 856, LO);                                                    /* the low line: the yard floor (no pit: a fall from the high line is a drop, not a death) */
     rail(787, 797, HI); rail(801, 811, HI); rail(815, 838, HI); rail(842, 856, HI);   /* the high line, broken over each beam: gaps 798-800, 812-814, 839-841 */
     tell(776, 798, 'HIGH: JUMP. LOW: DUCK');
-    sign(787, HI - 1, 'THE TWIN LINES. HIGH LINE: GAPS - JUMP THEM. LOW LINE: BEAMS - DUCK THEM. THE SIDE SWITCH DROPS YOU LOW; JUMP TO GO BACK UP.');
+    sign(787, HI - 1, 'TWIN LINES. HIGH: JUMP THE GAPS. LOW: DUCK THE BEAMS. THE SWITCH DROPS YOU LOW.');
     lever('twinA', 790, HI, 792, 794, HI, 'set', { label: 'SET: STAY HIGH / OPEN: DROP TO THE LOW LINE', side: true });   /* TEACH: the side switch, then the first split */
     beam(798, 799, LO); for (const x of [792, 794, 796]) ent('coin', x, LO - 2);
     lever('twinB', 804, HI, 806, 808, HI, 'set', { label: 'SET: STAY HIGH / OPEN: DROP TO THE LOW LINE', side: true });   /* TEST: no sign; the ore is the high side's, the mend the low side's */
