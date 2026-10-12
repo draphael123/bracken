@@ -15,7 +15,7 @@
 // real jump in the game and fails if these numbers and the game's disagree.
 import { MOVE, RIDE_MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK } from './hero-move.js';
 import { POGO_CHAIN } from './pogo-chain.js';
-import { SLIDE, slideStep, slideKeepAt, isSlope, slopeRise, slopeGrade } from './slopes.js';
+import { SLIDE, slideStep, slideKeepAt, isSlope, slopeRise, slopeGrade, HILL_RUN, hillTop, hillAcc } from './slopes.js';
 
 const TS = 16, DT = MOVE.DT, MAX_DROP = 48, RUNWAY_MAX = 24;
 const cache = new Map();
@@ -53,7 +53,7 @@ export function flight(hero, launch, capPx = Infinity) {
       /* (the take-off frame's walk is still the ground's: main.js moves the legs before it reads the jump) */
       const air = i || launch.walkOff || launch.vy0 !== undefined, c0 = air ? cap : MOVE.RUN * heroRunMul(hero, true) * (1 + MOVE.SPRINT_BONUS * sk), a0 = air ? MOVE.ACC_AIR : launch.slick ? MOVE.ACC_SLICK : MOVE.ACC_GROUND;
       if (launch.slide) { vx -= SLIDE.airFric * DT; if (vx < 0) vx = 0; }
-      else if (vx > c0) vx = Math.max(c0, vx - MOVE.OVER_BLEED * DT);
+      else if (vx > c0) { if (!(launch.hill && !air)) vx = Math.max(c0, vx - (launch.hill ? HILL_RUN.airBleed : MOVE.OVER_BLEED) * DT); }   /* a run DOWN a hill (launch.hill) carries its speed: it bleeds slowly (src/slopes.js HILL_RUN) */
       else { vx += a0 * DT; if (vx > c0) vx = c0; }
       if (launch.fwd && i * DT < launch.fwdT && vx < launch.fwd) vx = launch.fwd;   /* the vault carries her on */
       /* the arc: the jump is held (no cut), light at the apex, heavier coming down */
@@ -119,6 +119,37 @@ export function slideSpeeds(L, T, glass = { acc: RIDE_MOVE.GLASS_SLIDE_ACC, cap:
   return out;
 }
 
+/* THE RUN DOWN A HILL (claude/slope, SLOPE MOMENTUM): the same chains slideSpeeds slides, RUN down instead - the stick held downhill, no DOWN - by this hero's
+   legs: in at his run (a walk downhill's free 1.1, no sprint: the least he arrives with), and the hill adds src/slopes.js hillAcc up to hillTop, frame by frame as
+   main.js's walk does; then on along the flat at the foot while the extra lasts (HILL_RUN.flatBleed). Map 'x,y' -> [{ dir, v }] of the speed leaving each cell. */
+export function hillSpeeds(L, T, hero) {
+  const W = L.W, H = L.H, g = L.grid, at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x], out = new Map();
+  const cap = MOVE.RUN * heroRunMul(hero, true);
+  const stand = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.CLIMB || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.CRYST;
+  const note = (x, y, dir, v) => { if (v <= cap + 0.5) return; const k = x + ',' + y; let a = out.get(k); if (!a) out.set(k, a = []); const e = a.find(q => q.dir === dir); if (e) e.v = Math.max(e.v, v); else a.push({ dir, v }); };
+  const nextSlope = (x, y, dir, rs) => { for (const dy of [0, 1]) { const t = at(x + dir, y + dy); if (isSlope(t) && slopeRise(t) === rs) return [x + dir, y + dy, t]; } return null; };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const t0 = at(x, y); if (!isSlope(t0)) continue;
+    const rs = slopeRise(t0), dir = -rs;
+    if ([0, -1].some(dy => { const t = at(x - dir, y + dy); return isSlope(t) && slopeRise(t) === rs; })) continue;
+    const chain = [[x, y, t0]]; for (let c = chain[0]; (c = nextSlope(c[0], c[1], dir, rs)) && chain.length < 400;) chain.push(c);
+    let px = dir > 0 ? x * TS : (x + 1) * TS - 0.01, idx = 0, v = cap * HILL_RUN.down;
+    for (let f = 0; f < 4000 && idx < chain.length; f++) {
+      const [cx, cy, kind] = chain[idx], top = hillTop(L, px, kind, cap);
+      if (v >= cap * HILL_RUN.down - 0.01 && v < top) v = Math.min(top, v + hillAcc(kind) * DT); else if (v > top) v = Math.max(top, v - MOVE.OVER_BLEED * DT);
+      px += dir * v * DT;
+      if (Math.floor(px / TS) !== cx) { note(cx, cy, dir, v); idx++; }
+    }
+    const [lx, ly] = chain[chain.length - 1];
+    for (let fx = lx + dir, n = 0; n < 12 && v > cap + 0.5; fx += dir, n++) {
+      if (!stand(at(fx, ly + 1)) || stand(at(fx, ly)) || isSlope(at(fx, ly + 1))) break;
+      for (let f = 0; f < 60 && Math.floor(px / TS) !== fx + dir; f++) { v = Math.max(cap, v - HILL_RUN.flatBleed * DT); px += dir * v * DT; }
+      note(fx, ly, dir, v);
+    }
+  }
+  return out;
+}
+
 /* THE HERO'S JUMPS as floodReach asks for them */
 const flyMemo = new WeakMap(), derived = new WeakMap();
 const derive = (l, k, f) => { let m = derived.get(l); if (!m) derived.set(l, m = {}); return m[k] || (m[k] = f(l)); };
@@ -132,6 +163,7 @@ export function heroJumps(hero) {
       fly: (launch, capPx = Infinity) => { let m = flyMemo.get(launch); if (!m) flyMemo.set(launch, m = new Map()); let r = m.get(capPx); if (!r) m.set(capPx, r = flight(hero, launch, capPx)); return r; },
       walkOf: launch => derive(launch, 'walk', l => ({ ...l, walkOff: true })), glideOf: launch => derive(launch, 'glide', l => ({ ...l, glide: true })),
       slideOf: v => memo('sl|' + Math.round(v), () => ({ slide: Math.round(v) })),
+      hillOf: v => memo('hl|' + Math.round(v), () => ({ vx: Math.round(v), hill: 1 })),   /* a run down a hill's carry (hillSpeeds) */
       /* WHAT THROWS HIM, as a launch: a springy tile (jump held; a Fair awning's share of it), a bud pad (no press, from a standstill in the air), a
          striker's pad (its own launch), a foe's head (the plunge's pogo - and the warden's spear: a VAULT forward over a drop, a PERCH and a kick back
          off it with footing under it). He comes onto it at his plain air pace. */
