@@ -350,9 +350,8 @@ export function drawFarbankRubble(g, cx, cy, G, VW) {
   for (let i = 0; i < 4; i++) { g.fillStyle = K.wood4; g.fillRect(x0 + 2 + i * 8, y - 14 + (i % 2) * 3, 2, 10 - (i % 2) * 3); g.fillRect(x0 + 1 + i * 8, y - 15 + (i % 2) * 3, 4, 1); }
 }
 /* (claude/unbfloat, Daniel 10-12: "the Unburied Field has a lot of floating geometry") FOOTINGS - R.structures kinds drawn into main.js's drawStructures box (l..r px, t..b px):
-   'ubheads'  a CAIRN OF HEADSTONES under a palisade the volleys feed: slabs the host stacked in mortarless courses (mismatched, leaning, a carved cross or an arch on the outward ones) from the trench floor
-              up to the stakes' foot - the wall stood with its bottom hanging a few rows over the pit
-   'ubbrace'  a STONE CORBEL BRACE under a plank run that is keyed into a pillar's side and nothing else: a squared strut from the plank's far end down to the pillar, a moulded cap, an iron strap */
+   'ubheads'  a CAIRN OF HEADSTONES under a palisade the volleys feed (and the plank keyed into its side): slabs the host stacked in mortarless courses (mismatched, leaning, a carved cross or an arch on the outward ones) from the trench floor
+              up to the stakes' foot - the wall stood with its bottom hanging a few rows over the pit */
 export function drawHeadstoneCairn(g, l, r, t, b, seed = 0) {
   const rr = rnd(seed * 31 + Math.round(l)), w = r - l, S = ['#2c282c', '#413d44', '#5b5762', '#7d7886', '#9a96a4'];
   const n = Math.max(3, Math.round((b - t) / 11)), h = (b - t) / n;
@@ -371,12 +370,16 @@ export function drawHeadstoneCairn(g, l, r, t, b, seed = 0) {
   rect(g, l - 2, b - 4, w + 4, 4, S[1]); rect(g, l - 2, b - 4, w + 4, 1, S[3]);   /* the heaped spoil at its foot */
   rect(g, l - 1, t, w + 2, 3, S[3]); rect(g, l - 1, t + 2, w + 2, 1, S[0]);        /* the capstone the palisade stands in */
 }
-export function drawStoneBrace(g, l, r, t, b, seed = 0) {
-  const S = ['#2e2a2c', '#4a4648', '#5a5658', '#7a7678'];
-  const pl = r - 16, ax = l + 5, ay = t + 3, bx = pl, by = b - 3;   /* (the box runs over the pillar's own column: the strut ends on its face) */   /* from the plank's far end down to the pillar's face */
-  for (let o = 0; o < 6; o++) line(g, ax, ay + o, bx, by + o, o < 1 ? S[3] : o < 5 ? S[2] : S[0]);   /* the strut: lit edge, body, dark underside */
-  for (let k = 1; k < 5; k++) { const x = Math.round(ax + (bx - ax) * k / 5), y = Math.round(ay + (by - ay) * k / 5); rect(g, x, y + 1, 1, 5, S[1]); }   /* its joints */
-  rect(g, l + 1, t, 11, 4, S[3]); rect(g, l + 1, t + 3, 11, 1, S[0]); rect(g, pl, b - 8, 5, 8, S[2]); rect(g, pl, b - 8, 1, 8, S[3]);   /* the moulded cap under the plank, the bearer in the pillar */
-  for (const [x, y] of [[l + 6, t + 6], [pl - 4, b - 9]]) { rect(g, x, y, 3, 3, '#3c3a46'); px(g, x + 1, y + 1, '#8a869a'); }   /* the iron straps' bolts */
+/* (claude/unbfloat, 2nd pass, Daniel 10-12: "platforms in the air, high up") 'ubscaffold': a SIEGE SCAFFOLD under a deck - square posts at both ends (and one between on a long run), X cross-bracing
+   in every bay, a cap beam the deck rests on, ties, the feet bedded in spoil. Every post is 6 px wide and runs the whole box, top to ground (tools/unburied-footings.mjs measures it). */
+export function drawScaffold(g, l, r, t, b, seed = 0) {
+  const w = r - l, xs = [l + 3, r - 9]; if (w >= 64) xs.splice(1, 0, Math.round((l + r) / 2) - 3);
+  for (const x of xs) { rect(g, x, t, 6, b - t, K.wood2); rect(g, x, t, 2, b - t, K.wood4); rect(g, x + 5, t, 1, b - t, K.wood0);
+    for (let y = t + 12; y < b - 4; y += 26) { rect(g, x - 1, y, 8, 2, K.iron1); px(g, x + 1, y, K.iron3); }
+    rect(g, x - 2, b - 5, 10, 5, K.peat3); rect(g, x - 2, b - 5, 10, 1, K.wet); }   /* the foot in the spoil */
+  const bay = Math.max(36, Math.round((b - t) / Math.max(1, Math.round((b - t) / 44))));
+  for (let i = 0; i + 1 < xs.length; i++) { const a = xs[i] + 3, c = xs[i + 1] + 3;
+    for (let y = t + 6; y + 20 < b - 4; y += bay) { const y2 = Math.min(b - 6, y + bay - 4); line(g, a, y, c, y2, K.wood3, 2); line(g, c, y, a, y2, K.wood3, 2); rect(g, a, y, c - a, 3, K.wood3); rect(g, a, y, c - a, 1, K.wood5); } }
+  rect(g, l, t, w, 6, K.wood3); rect(g, l, t, w, 1, K.wood6); rect(g, l, t + 5, w, 1, K.wood0);   /* the cap beam */
   void seed;
 }
