@@ -70,6 +70,7 @@ export const TURN_WORD = {
   gargoyle: e => (e.wardT > 0 ? TURN.WARDED : 'DROP HIM ON THE SPIKES'),   // (claude/witchfix, Daniel 10-08) stone until he lies on the spikes - the word names the verb; WARDED just after
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
+  scarabmother: e => (e.ward > 0 ? TURN.WARDED : e.mode === 'burrowed' ? 'UNDER THE SAND' : 'HER SHELL'),   // (claude/sealedpyramid) her shell takes most of a blow until a trap opens her (B15: x0.45, never nothing)
   hourglassking: e => (e.ward > 0 ? TURN.WARDED : 'HIS BRASS'),   // (claude/buriedcity) his brass takes most of a blow until a sand-gate stalls him (B15: x0.45, never nothing)
   hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'HER GAUNTLET'),
   paladinboss: e => (e.ward > 0 ? TURN.WARDED : 'HIS AEGIS'),   // (claude/litchurch) his aegis turns the front while he guards (and drinks the blow into his light): go round, or come down on him   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her

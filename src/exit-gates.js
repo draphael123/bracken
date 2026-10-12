@@ -32,7 +32,7 @@ export const KIND_OF = {
   longwater: 'coast', reef: 'coast', flotilla: 'coast', hurricane: 'coast', lamplit: 'coast', deep: 'coast', keep: 'coast', causeway: 'coast', harbor: 'coast',
   waymeet: 'canal', towpath: 'canal', canal: 'canal', theatre: 'canal', fair: 'canal',
   church: 'inland', fields: 'inland', burial: 'inland', witchlight: 'inland', mage: 'inland', fallingtower: 'inland', unburied: 'inland',
-  caravan: 'desert', welltown: 'desert', underwell: 'desert', redgorge: 'desert', glasssea: 'desert', ksar: 'desert', buriedcity: 'desert',
+  caravan: 'desert', welltown: 'desert', underwell: 'desert', redgorge: 'desert', glasssea: 'desert', ksar: 'desert', buriedcity: 'desert', sealedpyramid: 'desert',
 };
 export const DEFAULT = 'forest';
 export const KINDS = ['forest', 'marsh', 'fungus', 'crag', 'mine', 'storm', 'coast', 'canal', 'inland', 'desert'];

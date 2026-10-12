@@ -59,6 +59,12 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
       for (const [x0, x1, y0, y1] of (L.sandSolid || [])) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * W + x; if (g[i] === T.AIR || g[i] === T.SPIKE || g[i] === T.ONEWAY) g[i] = T.SOFT; }
       for (const [x0, x1, y0, y1] of (L.sandRungs || [])) for (const y of [...Array(Math.max(0, Math.ceil((y1 - 1 - y0) / 3))).keys()].map(k => y1 - 2 - 3 * k).filter(y => y > y0).concat(y0)) for (let x = x0; x <= x1; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }   /* (and the full sand's top: where the ride ends) */
       for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) g[y * W + m.x] = T.AIR; }
+    /* THE SEALED PYRAMID (src/sealed-pyramid.js, claude/sealedpyramid): THE GREAT STONE breaks THE FALSE DOOR (its plate is on the robbers' walk, on the road before
+       it), a pit a trap's block FILLS is footing (its plate stands before it), and THE SEALED TOMB opens on the four seals the level lays down - all three count as done,
+       like the gorge's jams (tools/sealed-pyramid.mjs proves each is a lock); the counterweights are rides (L.rigBands). The plain fill: legs only */
+    if (L.sealedpyramid) {
+      for (const m of [...(L.falseWalls || []), ...(L.vaultDoors || []).map(v => ({ x0: v.x, x1: v.x, y0: v.y0, y1: v.y1 }))]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+      for (const [x0, x1, y0, y1] of (L.pitFill || [])) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.SOLID; }
     /* THE ROOTWAY (src/rootway.js, claude/rootway): a HOIST is one blow on its cleat (or one arrow struck back through its rope) and what it drops STAYS - a span
        across its gap, a cage as a 2x2 step where it lands - so both count as done; THE TROPHY LOFT opens on the four tags the level lays down (tools/rootway.mjs proves
        each required hoist is a lock). A boss cage is winched back up: not footing. The plain fill: legs only */
