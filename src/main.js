@@ -110,7 +110,7 @@ import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRel
 import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
 import { installTactics, braceHit } from './foe-tactics.js'; import { installReact } from './foe-react.js'; import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';
-import { makeKnockInto, throwWhy as kiWhy, guardedOf as kiGuarded, WORDS as KI_WORDS } from './knock-into.js'; import { COVER as RX_COVER, heroAbove as raAbove, sidestepTick as raSidestep } from './foe-react.js'; import * as AP from './anti-plunge.js';   /* (claude/knockinto) ANTI-PLUNGE: the THORNED elite's and the Spike Goblin's spines drawn on the body and told, the spitter's sidestep (src/anti-plunge.js, src/foe-react.js REACT_AIR) */   /* (claude/knockinto) KNOCK FOES INTO THE LEVEL: the throw along the blow, weight-scaled, and the hazard it lands in (src/knock-into.js) */
+import { makeKnockInto, throwWhy as kiWhy, guardedOf as kiGuarded, WORDS as KI_WORDS } from './knock-into.js'; import { COVER as RX_COVER, heroAbove as raAbove, sidestepTick as raSidestep, REACT_AIR as RX_AIR } from './foe-react.js'; import * as AP from './anti-plunge.js'; import * as KA from './ki-art.js'; import { knockRows as kiRows } from './knock-data.js';   /* (claude/kifollow) the knock-into ART (spines, armed states, poses, entry FX: src/ki-art.js) and the per-act hazard DATA (src/knock-data.js) */   /* (claude/knockinto) ANTI-PLUNGE: the THORNED elite's and the Spike Goblin's spines drawn on the body and told, the spitter's sidestep (src/anti-plunge.js, src/foe-react.js REACT_AIR) */   /* (claude/knockinto) KNOCK FOES INTO THE LEVEL: the throw along the blow, weight-scaled, and the hazard it lands in (src/knock-into.js) */
 import { makeDamagePct, stunMul as DP_stun, shoveMul as DP_shove } from './damage-pct.js';   /* (claude/damagepct) DAMAGE % STAGGER, Smash-style: every hero blow builds a foe's %, and the % weighs the shove, the hitstun and the throw (src/damage-pct.js) */
 import { makeRiposte, PARRY as RP_K, PARRY_ART as RP_ART, verbOf as rpVerbOf } from './riposte.js';   /* (claude/riposte) THE UNIVERSAL PARRY -> RIPOSTE, THE POISE BAR's openings, THE MIX-UP CHAIN (src/riposte.js) */   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
@@ -2152,7 +2152,7 @@ function* loadLevelG(i) {
   if (typeof P !== 'undefined' && P) { P.flatT = 0; P.slideOn = false; }   /* a slide and its bounce do not follow you through a door */
   hintT = 0;   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
-  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; BAR.prime(LEVELS[i].id); trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
+  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
   SLOPES_ON = levelHasSlopes(L.grid);   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
@@ -3862,7 +3862,7 @@ function drawEliteKit(e, cx, cy) {
   const x = Math.round(e.x - cx), y = Math.round(e.y - cy), f = e.face || 1, h = e.h || 16, w = e.w || 12;
   if (e.broken > 0 && e.ekOpenT > 0) { g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.globalAlpha = 0.6 + 0.4 * Math.sin(time * 12); g.beginPath(); g.ellipse(x + 0.5, y - h / 2, w / 2 + 6, h / 2 + 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* OPEN: the gold ring (and its timer under the plate) */
   if (e.ekGuarding && Math.abs(P.x - e.x) < 140) { const gf = e.ekSide || f, gx = Math.round(e.x + gf * (w / 2 + 2) - cx), gy = Math.round(e.y - h - cy), gh = Math.round(h * 0.7); g.fillStyle = 'rgba(12,10,20,0.8)'; g.fillRect(gx - 2, gy + 1, 4, gh + 2); g.fillStyle = e.ekClank > 0 ? '#fff6e0' : e.affix === 'SHIELDED' ? '#e8eef6' : '#9aa3b0'; g.fillRect(gx - 1, gy + 2, 2, gh); }   /* HIS GUARD (by angle, src/elite-kit.js): a bar of steel across his front while he holds it - white on the cut it turns */
-  if (e.affix === 'THORNED') AP.drawSpines(g, x, y, w, h, AP.thornedBristle(e, time, EK.K), f, 'thorned', time, e.mode === 'ekThornsTell');   /* THE SPINES, DRAWN ON HIM (claude/knockinto: no dots orbiting him): they rise with every cut of a mash and shiver through the !! */
+  if (e.affix === 'THORNED') KA.drawSpinesK(g, x, y, w, h, AP.thornedBristle(e, time, EK.K), f, e.t, time, e.mode === 'ekThornsTell', e.mode === 'ekThorns');   /* (claude/kifollow) drawn spikes, keyed 0 / 1 / 2 / full + the FIRE frame, laid out per body (src/ki-art.js) */   /* THE SPINES, DRAWN ON HIM (claude/knockinto: no dots orbiting him): they rise with every cut of a mash and shiver through the !! */
   if (e.affix === 'BURNING' && !(e.ekDoused > 0) && Math.random() < 0.5) parts.push({ x: e.x + (Math.random() - 0.5) * w, y: e.y - Math.random() * h, vx: 0, vy: -40, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: 0 });
   if (e.ekReach > 0) { const x1 = Math.round(e.x + f * (w / 2 + e.ekReach) - cx), yy = e.ekReachLow ? y - 3 : y - Math.round(h * 0.5);   /* (the watch's hook goes out along the floor) */ g.fillStyle = ART.OUT; g.fillRect(Math.min(x, x1), yy - 1, Math.abs(x1 - x), 3); g.fillStyle = e.t === 'hopper' ? '#d86a7a' : '#8b6a2a'; g.fillRect(Math.min(x, x1), yy, Math.abs(x1 - x), 1); g.fillStyle = '#c9d1dc'; g.fillRect(x1 - 1, yy - 2, 3, 3); }   /* the pole's hook or the tongue, out */
   if (e.ekWave) { const W = e.ekWave, c0 = W.col || '#9ad0ff', c1 = W.top || '#e8f6ff'; g.fillStyle = c0; for (const wx of [W.l, W.r]) { const px0 = Math.round(wx - cx); g.fillRect(px0 - 4, Math.round(W.y - cy) - 6, 8, 6); g.fillStyle = c1; g.fillRect(px0 - 3, Math.round(W.y - cy) - 7, 6, 1); g.fillStyle = c0; } }   /* (the tide's water; a troll's ridge of rock, a cook's boil-over: W.col) */
@@ -5317,11 +5317,11 @@ const BEASTS = [
   { t: 'drownedknight', name: 'THE DROWNED KNIGHT', sub: 'the drowned court, still at arms', desc: 'He swims after you, slower than you, and it is the lunge that closes the gap: the blade drawn back, bubbles along its line, then a drive at where you WERE. Guard it and he is thrown back open. Three good cuts put him down.' },
   { t: 'whelp', name: 'GARGOYLE WHELP', sub: 'the gate gargoyle\'s brood', desc: 'Stone, and nothing you swing or shoot does more than spark off it. When it has seen you it crouches and SCREECHES, then dives at you and on down: take it and it shoves you off your feet, guard it and it clangs away. Let it dive through a cracked ledge into the spikes and it sticks there, stunned. Jump on it then - nothing else breaks it - and the wind of the moat lifts you back up. Out of its reach it spits one small fireball instead; a shield takes it.' },
   { t: 'drownedcaptain', name: 'THE DROWNED CAPTAIN', sub: 'he holds the door for his king', desc: 'The knights\' captain: a red plume in the water, a heavier blade. The lunge, and the blade raised over his crest for a CUT and a RETURN CUT - guard both, or be gone before the second. Kill him and his gate lifts.' },
-  { t: 'urchin', name: 'URCHIN', sub: 'spines in the water', desc: 'Drifts, then follows you when you swim near. Nothing but spines: there is no window in it. Go round, or kill it from a distance.' },
+  { t: 'urchin', name: 'URCHIN', sub: 'spines in the water', desc: 'Drifts, then follows you when you swim near. Its needles stand up as you close in: only a risen urchin stings. Go round, or kill it from a distance.' },
   { t: 'angler', name: 'ANGLER', sub: 'the light in the dark', desc: 'Hangs in the deep with its lure lit, and bites the length of its own body when you come close. The lure flares first: that is the tell. Everything it does is in a straight line, so be somewhere off it.' },
   { t: 'petrel', name: 'STORM PETREL', sub: 'off the wrecks', desc: 'Circles above and dives on a line at where you are, not where you will be. Walk out of the line, or take it out of the air.' },
   { t: 'puffer', name: 'PUFFERFISH', sub: 'small until it is not', desc: 'Drifts, harmless, until you come close: then it swells on a yellow mark and bursts a ring of spikes the shield can still hold. Hit it while it is flat and it goes flying, into whatever else is in the water.' },
-  { t: 'jelly', name: 'JELLYFISH', sub: 'a clock in the water', desc: 'Rises and sinks on its own slow cycle and stings anything it touches. It never chases and it never hides its clock: read the glow, and time your swim by it.' },
+  { t: 'jelly', name: 'JELLYFISH', sub: 'a clock in the water', desc: 'Rises and sinks on its own slow cycle and fans its tentacles at the bright end of it: that is when it stings. It never chases and it never hides its clock: read the glow.' },
   { t: 'lamprey', name: 'LAMPREY', sub: 'the breath thief', desc: 'Closes fast and latches on, and every second it holds you it takes a bite of your air, not your blood. It lets go on its own, but a dodge shakes it off at once.' },
   { t: 'manta', name: 'MANTA', sub: 'off the open water', desc: 'Skims the sea beside the deck and dives at whoever is standing on it. Her shadow runs ahead of her on the boards: watch the boards, not the sky.' },
   { t: 'reefmaw', name: 'THE REEFMAW', sub: 'a moray the length of a mast', desc: 'It has four holes and is only in one: bubbles say which. Its hide turns a blade while it lurks. When its bite hits coral instead of you, its jaw sticks fast: cut it then. The hole floods; then the tide goes out and it hauls itself onto the reef. Jump its lunge and it beaches itself, belly-up.' },
@@ -5331,7 +5331,7 @@ const BEASTS = [
   { t: 'heavy', name: 'HEAVY KNIGHT', sub: 'full plate', desc: 'Slow, and his plate turns most of a cut. A double mark is the overhead: get out from under it. A single mark is the sweep: a shield already up only turns it - he does not flinch - but raise it as it lands and he is rocked off balance. He is open while he drags his blade out of the floor, and a plunge finds the gaps in his helm. Hide behind your shield in front of him and he takes hold of it - a double mark, and the shield is no answer.' },
   { t: 'brute', name: 'BRUTE', sub: 'club goblin', desc: 'Two tells. A double mark is the overhead: it cannot be blocked, so dodge it. A single mark is the sweep, which the shield holds. Hit him while the club is raised or while he rests.' },
   { t: 'hound', name: 'WAR HOUND', sub: 'goblin dog', desc: 'Runs straight at you and leaps low at the last stride. Stomp it, swing as it lands, or put fire between you.' },
-  { t: 'grub', name: 'CAVE GRUB', sub: 'it glows because it burns', desc: 'A soft thing lit from inside. Touching it burns, so do not stomp it barefoot: cut it, or keep out of the arc of acid it spits when you stand off. It leaves its light behind for a moment when it dies.' },
+  { t: 'grub', name: 'CAVE GRUB', sub: 'it glows because it burns', desc: 'A soft thing lit from inside. Near you it beads and flares, and a flared grub burns on touch: cut it, or keep out of the arc of acid it spits when you stand off. It leaves its light behind for a moment when it dies.' },
   { t: 'rockgoblin', name: 'ROCK GOBLIN', sub: 'thrower in the dark', desc: 'Squat, patient, and armed with whatever the roof has dropped. It lobs a lit lantern that breaks into fire and light where it lands, which is a problem and a favour at once. Close the distance and it has nothing.' },
   { t: 'shardling', name: 'SHARDLING', sub: 'a knot of crystal that walks', desc: 'Easy to kill and a poor idea to kill from close. It bursts when it goes, and the burst does not care whose side anyone is on: put one next to a rock goblin and let it do the work.' },
   { t: 'fledgling', name: 'ROC FLEDGLING', sub: 'too big for the nest', desc: 'Turned out of the nest when it grew too big for it, and gone down the mountain into the ruins. It cannot fly yet. It waddles at you and rears back before it pecks, and a shield turns the beak.' },
@@ -7305,9 +7305,9 @@ function knockFoe(e, dir, push, o) {   /* (claude/knockinto) o: { wt, slide } fr
   return true;
 }
 /* (claude/knockinto) THE SHARED THROW + HAZARD HELPER: what every level already carries (tiles, pools, props, fires, L.knockHazards) */
-const KI = makeKnockInto({ time: () => time, knock: (e, dir, push, o) => knockFoe(e, dir, push, o), scale: (e, slide) => DP.throwAt(e, slide),   /* (claude/damagepct) */ hurt: (e, dmg, x) => { e.slamming = true; try { hurtEnemy(e, dmg, x, false); } finally { e.slamming = false; } }, fullHp: e => fullHp(e),
+const KI = makeKnockInto({ fx: (kind, e) => KA.entryFx(kind, e.x, Math.min(e.y, LH * TS - 2), { parts, ring: ringAt }), /* (claude/kifollow) the hazard's entry burst */ time: () => time, knock: (e, dir, push, o) => knockFoe(e, dir, push, o), scale: (e, slide) => DP.throwAt(e, slide),   /* (claude/damagepct) */ hurt: (e, dmg, x) => { e.slamming = true; try { hurtEnemy(e, dmg, x, false); } finally { e.slamming = false; } }, fullHp: e => fullHp(e),
   number: (x, y, t, c) => number(x, y, t, c), smoke: (x, y) => smoke(x, y, 3, 8), sfx: k => { if (SFX[k]) SFX[k](); },
-  world: () => ({ TS, LH, T, tile: (tx, ty) => tileAt(tx, ty), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), pools: L.pools || [], props, fires, extra: L.knockHazards || [], amphib: e => AMPHIB.has(e.t) }) });
+  world: () => ({ TS, LH, T, tile: (tx, ty) => tileAt(tx, ty), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), pools: L.pools || [], props, fires, extra: L.knockHazards || [], /* (claude/kifollow: set in loadLevel from src/knock-data.js) */ amphib: e => AMPHIB.has(e.t) }) });
 /* (claude/knockinto) THE ANTI-PLUNGE REACTIONS' WORLD (src/foe-react.js REACT_AIR): the spitter's sidestep uses say/sfx/safeStep/offBalance; the rest are for the order knights */
 const RA_API = { say: (e, t, c) => number(e.x, e.y - (e.h || 16) - 10, t, c), sfx: k => { if (k === 'hop') { SFX.hop ? SFX.hop() : SFX.puff && SFX.puff(); } else if (SFX[k]) SFX[k](); }, safeStep: (x, y) => tkApi.safeStep(x, y),
   offBalance: (e, secs) => { e.broken = Math.max(e.broken || 0, secs); e.offBalAt = time; e.vx = 0; e.guardT = 0; broke(e, time); tokenRelease(TK, e, 'broken'); number(e.x, e.y - (e.h || 16) - 20, 'OFF BALANCE', '#ffd36b'); dust(e.x, e.y, 4); },
@@ -7316,10 +7316,11 @@ const RA_API = { say: (e, t, c) => number(e.x, e.y - (e.h || 16) - 10, t, c), sf
 function hazardFoe(e) {
   const tx = Math.floor(e.x / TS); let why = null;
   if (tileAt(tx, Math.floor((e.y + 1) / TS)) === T.SPIKE || tileAt(tx, Math.floor((e.y - 4) / TS)) === T.SPIKE) why = 'IMPALED';
+  else if (KI.thrown(e) && !e.elite && KI.killRow(e)) why = 'THE LAVA';   /* (claude/kifollow) a killing L.knockHazards row (the Deep Rails' lava): only a THROWN foe, whose AI never walks in */
   else if (e.y > LH * TS + 8) why = 'OVER THE EDGE';
   else if (!AMPHIB.has(e.t)) for (const p of (L.pools || [])) if (!p.shallow && !p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6 && (p.bottom === undefined || e.y <= p.bottom + 8)) { why = 'DROWNED';   /* UNDER A POOL IS NOT IN IT: with no bottom to this test, every creature anywhere BELOW a pool's columns drowned - the Falling Tower's cistern poison 'drowned' the orrery pit's captain eighty rows under it on the first blow */   /* a turtle knocked into the river is home, not drowned */ burst(e.x, p.y, 10, ['#eefaff', '#bfe6f5'], 70, 0.5); SFX.splash(); break; }
   if (!why) return false;
-  const kiK = why === 'IMPALED' ? 'spikes' : why === 'DROWNED' ? 'water' : 'drop', third = e.thirdT > time, ki = KI.onKill(e, kiK, third);   /* (claude/knockinto) a THROWN foe: its word (INTO THE SPIKES...), and an elite is never killed by a throw (a share, and back at his post) */
+  const kiK = why === 'IMPALED' ? 'spikes' : why === 'DROWNED' ? 'water' : why === 'THE LAVA' ? 'lava' : 'drop', third = e.thirdT > time, ki = KI.onKill(e, kiK, third);   /* (claude/knockinto) a THROWN foe: its word (INTO THE SPIKES...), and an elite is never killed by a throw (a share, and back at his post) */
   if (ki.spared) return true;
   if (third) thirdPay(e, why === 'IMPALED' ? 'spikes' : why === 'DROWNED' ? 'water' : 'pit');   /* the knight's third cut put it there */
   if (ki.word !== null) number(e.x, Math.min(e.y, LH * TS) - (e.h || 16) - 10, ki.word || why, '#8fd160'); e.knock = 0; hurtEnemy(e, Math.max(1, e.hp) + 999, e.x + 1, false); return true;
@@ -9792,6 +9793,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
        hazard, or if it is throwing its BODY at you right now. Everything that fights with a weapon, a spell or a
        thrown thing does its damage with that, and touching it costs nothing - bosses included. Before this, 106
        kinds hurt on every touch, attacking or not: soldiers, casters, the Archmage, a squirrel. */
+    if (KA.ARMED.has(e.t) && !KA.armed(e)) continue;   /* (claude/kifollow) urchin / jelly / grub / marshlight hurt on touch ONLY while visibly armed - never an untold hurt */
     if (!TOUCH_ALWAYS.has(e.t) && !(BODY_BLOW.has(e.t) && bodyAttacking(e)) && !(e.drone && e.t === 'hopper')) continue;   /* (the Hornet Queen's drones keep their old touch: her fight is her own script) */
     const res = e.turncoat ? 'none' : damagePlayer(e.x, e.t === 'hopper' ? HOP[e.color || 'green'].dmg : e.pack ? 12 : (DMG[e.t] || 12), { who: e, unblockable: e.t === 'emberwisp' || (e.t === 'hound' && e.mode === 'leap') || e.t === 'bale' || e.t === 'crow' || e.t === 'boo' });   /* (part 2: a pouncing hound goes under the shield, a rolling bale bowls it over, a crow comes at the head over it and the shy dead through it - each told in red) */ if (e.t === 'emberwisp') e.recoil = 1.2;   /* THE WISP's touch is its blow, and nothing turns it */
     if (e.t === 'frog' && e.mode === 'leap') { if (res === 'hit') e.leapHit = true; else if (res === 'blocked') e.leapBlocked = true; }   /* (claude/firsthour) the landing found you, or your shield: updateFrog reads it when he comes down */
@@ -11413,7 +11415,7 @@ function updateReef(e, dt) {
   } else if (e.t === 'urchin') { grav = false; const pl = e.pool = reefHome(e);
     const top = pl ? pl.y + 8 : e.y - 40, bot = pl ? (pl.bottom || pl.y + 80) - 4 : e.y + 40;
     const chase = pl && P.swim && !P.dead && ad < 120 && dy < 80;
-    e.spin += dt; e.bristle = ad < 40 && dy < 34 ? 1 : 0;
+    e.spin += dt; e.bristle = ad < 40 && dy < 34 ? 1 : 0; KA.armUpdate(e, dt, P);   /* (claude/kifollow) the needles rise over 0.28 s - only a fully risen urchin stings */
     const tx = chase ? P.x : e.hx + Math.sin(e.spin * 0.5) * 26, ty = chase ? P.y - 8 : e.hy + Math.cos(e.spin * 0.7) * 18;
     e.vx += (Math.sign(tx - e.x) * (chase ? 34 : 16) - e.vx) * Math.min(1, dt * 1.6);
     e.vy += (Math.sign(ty - e.y) * (chase ? 30 : 14) - e.vy) * Math.min(1, dt * 1.6);
@@ -11435,7 +11437,7 @@ function updateReef(e, dt) {
   } else if (e.t === 'jelly') { grav = false; const pl = e.pool = reefHome(e);   /* JELLYFISH: a hazard more than a fighter - it drifts up and down on its own clock and stings on contact (the generic touch damage, not a windup), so the only tell it needs is the glow that says where in the cycle it is */
     const top = pl ? pl.y + 12 : e.y - 30, bot = pl ? (pl.bottom || pl.y + 80) - 8 : e.y + 30;
     e.cyc += dt; const k = (Math.sin(e.cyc / e.per * Math.PI * 2) + 1) / 2;
-    e.y = top + (bot - top) * k; e.alpha = 0.4 + 0.5 * Math.pow(Math.sin(e.cyc / e.per * Math.PI), 6);   /* the glow that says where in the cycle it is - the tell, since it never winds up an attack */
+    e.y = top + (bot - top) * k; e.alpha = 0.4 + 0.5 * Math.pow(Math.sin(e.cyc / e.per * Math.PI), 6); KA.armUpdate(e, dt, P);   /* (claude/kifollow) the glow IS the clock: tentacles fan with it, and only a fully fanned jelly stings */   /* the glow that says where in the cycle it is - the tell, since it never winds up an attack */
     e.x = e.hx + Math.sin(e.cyc * 0.3) * 6; e.vx = 0; e.vy = 0;
     return;
   } else if (e.t === 'angler') { grav = false; const pl = e.pool = reefHome(e);
@@ -12667,7 +12669,7 @@ function updateMarshlight(e, dt) {
       { let tx = e.hx; if (!P.dead && ad < 150) tx = e.x + (Math.sign(e.x - P.x) || 1) * 30; tx = Math.max(e.hx - 90, Math.min(e.hx + 90, tx)); e.x += (tx - e.x) * Math.min(1, dt * 0.9); e.y = e.hy + Math.sin(e.anim * 2.3) * 6; }
       if (!P.dead && Math.hypot(d, dy) < 30 && e.cd <= 0) { e.mode = 'flareTell'; e.modeT = 0.6; number(e.x, e.y - 14, '!', '#ffd36b'); }
   }
-  e.light.x = e.x; e.light.y = e.y;
+  e.light.x = e.x; e.light.y = e.y; KA.armUpdate(e, dt, P);   /* (claude/kifollow) the corona grows through the tell and stands full in the flare: that is the only touch that burns */
 }
 function updateHaunt(e, dt) {
   e.modeT -= dt; e.cd = (e.cd === undefined ? 1.5 : e.cd) - dt; if (e.hx === undefined) { e.hx = e.x; e.hy = e.y; }
@@ -16700,11 +16702,11 @@ function updateSweep(e, dt) {
 function updateGrub(e, dt) { // slow, fat, glowing: touching it burns, and it spits an arc of acid at you
   e.modeT -= dt; e.spitT -= dt; e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300; e.anim += dt;
   const d = P.x - e.x, ad = Math.abs(d), near = ad < 160 && Math.abs(e.y - P.y) < 50 && !P.dead;
-  let want = 0;
+  let want = 0; KA.armUpdate(e, dt, P);   /* (claude/kifollow) near you its acid beads and flares over 0.32 s - it burns only when flared */
   if (e.mode === 'spit') { want = 0; if (e.modeT <= 0) e.mode = 'crawl'; }
   else if (near && e.spitT <= 0) { e.mode = 'spit'; e.modeT = 0.6; e.spitT = 3.2; e.face = Math.sign(d) || e.face; const sx = e.x + e.face * 8, sy = e.y - 6, Tf = 0.9, G = 380, dx = P.x - sx, dy = (P.y - 8) - sy; seeds.push({ x: sx, y: sy, vx: Math.max(-160, Math.min(160, dx / Tf)), vy: dy / Tf - 0.5 * G * Tf, dead: false, life: 3, g: G, acid: true }); SFX.grubSpit(); number(e.x, e.y - e.h - 8, '!', '#ffd36b'); }
   else { if (e.timer === undefined || (e.timer -= dt) <= 0) { e.timer = 2 + Math.random() * 2; if (!near) e.face = Math.random() < 0.5 ? -1 : 1; } if (near) e.face = Math.sign(d) || e.face; want = e.face * e.speed; }
-  if (!P.dead && Math.abs(P.x - e.x) < 12 && P.y > e.y - 12 && P.y < e.y + 4 && !(e.touchT > 0)) { e.touchT = 0.8; damagePlayer(e.x, DMG.acid, { unblockable: true }); number(P.x, P.y - 24, 'IT BURNS', '#b8d878'); } e.touchT = Math.max(0, (e.touchT || 0) - dt);
+  if (KA.armed(e) && !P.dead && Math.abs(P.x - e.x) < 12 && P.y > e.y - 12 && P.y < e.y + 4 && !(e.touchT > 0)) { e.touchT = 0.8; damagePlayer(e.x, DMG.acid, { unblockable: true }); number(P.x, P.y - 24, 'IT BURNS', '#b8d878'); } e.touchT = Math.max(0, (e.touchT || 0) - dt);
   if (Math.random() < dt * 6) parts.push({ x: e.x + e.face * -6, y: e.y - 4, vx: 0, vy: -12, life: 0.5, max: 0.5, col: '#e8ff9a', size: 1, grav: 0 });
   e.vx += (want - e.vx) * Math.min(1, dt * 4);
   const ftx = Math.floor((e.x + Math.sign(e.vx || e.face) * 9) / TS), fty = Math.floor((e.y + 1) / TS);
@@ -24810,7 +24812,7 @@ function drawCritters(cx, cy) {
    time (spines, stings, the drifting lights). BODY_BLOW: creatures whose attack IS their body - the leap, the dive, the
    charge, the bite - and they hurt only while that attack is under way, never standing about or winding up. */
 const TOUCH_ALWAYS = new Set(['anvil', 'barrel', 'boiler', 'cargo', 'cargowall', 'cascade', 'catapult', 'deadfall', 'felltree', 'hammer', 'hexspill', 'hotplate', 'keg', 'loosegun', 'rockfall', 'scaffold', 'skybolt', 'sluice', 'weight', 'towertop', 'knell', 'rod', 'tbell', 'tidebell', 'pwheel', 'thresher', 'croppole', 'davit', 'flagpost', 'treehouse', 'throne', 'rack', 'glyph', 'gplate', 'rune', 'stormkite',
-  'urchin', 'thorn', 'jelly', 'wasp', 'marshlight', 'wisp', 'spit', 'grub']);   /* (the combat pass, part 2: the sporeling, the lurker, the hopper and the ember wisp hurt by a TOLD blow now - BODY_BLOW - and a touch of one standing about is nothing) */
+  'urchin', 'thorn', 'jelly', 'wasp', 'marshlight', 'grub']);   /* (claude/kifollow) the spitter is OFF this list (it hurts only by its seed); 'wisp' was never a creature (the canal's wisps are props). urchin / jelly / grub / marshlight stay on it but ONLY while ARMED (KA.armed: the needles up, the tentacles fanned, the acid flared, the corona out) - the touch gate below */   /* (the combat pass, part 2: the sporeling, the lurker, the hopper and the ember wisp hurt by a TOLD blow now - BODY_BLOW - and a touch of one standing about is nothing) */
 const BODY_BLOW = new Set(['frog', 'queen', 'ramlord', 'golem', 'hound', 'dog', 'badger', 'crow', 'kite', 'fledgling', 'gar', 'weaver', 'sailer', 'broom', 'mimic', 'familiar', 'topiary', 'sporeling', 'lurker', 'hopper', 'emberwisp', 'boo']);
 const BODY_MOVE = /charge|dive|lunge|pounce|swoop|leap|ram|butt|roll|dash|bite|sting|stomp|slam|rush|drop|tackle|sweep|hop|jump|peck|claw|trample|spin|buck|fly/i;
 const bodyAttacking = e => typeof e.mode === 'string' && !/Tell$|Wind$|Hang$|Up$|crouch|aim|rest|idle|wake|sleep|stun|winded|dazed|stuck|recover/i.test(e.mode) && BODY_MOVE.test(e.mode);
@@ -24914,6 +24916,7 @@ function poseOf(e, wind) {
   if (e.mk && e.mode === 'cartwheel' && e.mk.cart) { o.rot = (o.rot || 0) + (1 - e.mk.cart.t / TMK.MASK.cart.t) * Math.PI * 2 * (e.mk.cart.dir || 1); o.dy -= 8; }   /* (claude/theatre4) THE COMEDY's cartwheel */
   if (PUPH && PM.isPuppet(e) && PUPH.slump(e)) { o.dy += 3; o.sy *= 0.93; o.rot = (o.rot || 0) + (e.face || 1) * 0.1; }   /* (claude/theatre4) SLACK, IT SLUMPS: a hittable puppet sags on its strings */
   if ((e.broken > 0 || e.rpHold > 0) && !e.xpRole && !e.mini && e !== boss && !(e.floored > time)) (e.broken > 0 ? staggerPose : RP.parriedPose)(o, e, time);   /* (claude/riposteart: PARRIED has its own keyed recoil - snap, rebound, stagger, come-to - src/riposte.js parriedPose; BROKEN keeps the slump) */   /* BROKEN, IT STANDS OPEN: reeling back off its guard for the whole break (src/poise-break.js) */
+  KA.kiPose(o, e, time, !!SET.reduceMotion, RX_AIR.sidestep);   /* (claude/kifollow) the spitter's hop / wobble, a guarded foe's braced slide */
   if (e.pctTumble > 0) DP.tumblePose(o, e, time);   /* (claude/damagepct) LAUNCHED at a high %: it turns over in the air until it lands */
   if (GOBLINISH.has(e.t) && e.hp0 && e.hp < e.hp0 * 0.35 && !wind && Math.floor(time * 24) % 3 === 0) o.dx += Math.floor(time * 48) % 2 ? 1 : -1;
   /* THE HILL TROLL'S POSES: he rears up tall to slam, squats into the floor as it lands, leans out to tear a stone down, and lies flat under one */
@@ -25088,6 +25091,7 @@ function updateEnemies(dt) {
          squashes, skids a puff of dust off along the way it was going, and comes up off the floor a little before it settles - the
          heavy ones with a thud, and a nudge of the camera unless motion is reduced. Once: the second landing is the settle. */
       if (r && r.ground && e.kvy > 0) { e.kvy = 0;
+        if (e.pctTumble > 0 && kvy0 > 40) { e.tumDizzy = time + 0.6; e.pctTumble = 0; dust(e.x, e.y, 3); }   /* (claude/kifollow) a TUMBLE ends on the floor: it stops turning and sees stars for a beat */
         if (!e.bounced && kvy0 > 120) { e.bounced = true; const heavy = POISE_HEAVY.has(e.t) || !!e.big, dir = Math.sign(e.kvx) || e.face || 1;
           e.kvy = -Math.min(heavy ? 70 : 110, kvy0 * 0.3); e.sq = 0.16; dust(e.x, e.y, heavy ? 8 : 5);
           for (let i = 0; i < 4; i++) parts.push({ x: e.x + dir * (4 + i * 5), y: e.y - 1, vx: dir * (30 + i * 20), vy: -10 - i * 4, life: 0.28, max: 0.28, col: '#c9b27c', size: i < 2 ? 2 : 1, grav: 90 });
@@ -29603,7 +29607,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'whelp') frame = WHF.whelpFrame(e);
     else if (e.t === 'urchin') { frame = e.bristle ? 3 : Math.floor(e.anim * 3) % 3;
       const ux = Math.round(e.x - cx), uy = Math.round(e.y - cy); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 4 + e.x); g.fillStyle = '#8a84a0';
-      for (let a2 = 0; a2 < 8; a2++) { const an = a2 * Math.PI / 4 + e.spin * 0.2; g.fillRect(ux + Math.round(Math.cos(an) * 9) - 1, uy - 7 + Math.round(Math.sin(an) * 9) - 1, 2, 2); } g.globalAlpha = 1; }
+      for (let a2 = 0; a2 < 8 && !(e.arK > 0.2); a2++) { const an = a2 * Math.PI / 4 + e.spin * 0.2; g.fillRect(ux + Math.round(Math.cos(an) * 9) - 1, uy - 7 + Math.round(Math.sin(an) * 9) - 1, 2, 2); } g.globalAlpha = 1; }
     else if (e.t === 'angler') frame = e.mode === 'bite' ? 3 : e.mode === 'biteTell' ? 2 : Math.floor(e.anim * 3) % 2;
     else if (e.t === 'petrel') frame = e.mode === 'dive' ? 2 : e.mode === 'climb' ? 3 : Math.floor(e.anim * 8) % 2;
     else if (e.t === 'puffer') frame = (e.mode === 'burst' || e.mode === 'swellTell' || e.mode === 'deflate') ? (e.swell > 0.55 ? 3 : 2) : Math.floor(e.anim * 3) % 2;
@@ -29763,7 +29767,9 @@ function drawWorld(cx, cy, showPlayer) {
       g.globalAlpha = Math.min(1, e.mark) * k2; g.fillStyle = '#8fd160';
       g.fillRect(mx - 3, my, 7, 1); g.fillRect(mx, my - 3, 1, 7); g.fillRect(mx - 2, my - 2, 1, 1); g.fillRect(mx + 2, my - 2, 1, 1); g.fillRect(mx - 2, my + 2, 1, 1); g.fillRect(mx + 2, my + 2, 1, 1); g.globalAlpha = 1; }
     if (e.alive && e.t === 'archer' && e.horn && !e.blown && e.hornT > 0) drawHornTell(e, cx, cy);   /* the Stockade's rule, drawn */
-    if (e.alive && e.t === 'thorn' && e.brK > 0) AP.drawSpines(g, Math.round(e.x - cx), Math.round(e.y - cy), e.w || 12, e.h || 11, e.brK, e.face, 'thorn', time, e.brK >= 1);   /* (claude/knockinto) THE SPIKE GOBLIN's back spikes, up while a hero is over him */
+    if (e.alive && e.t === 'thorn' && e.brK > 0) KA.drawSpinesK(g, Math.round(e.x - cx), Math.round(e.y - cy), e.w || 12, e.h || 11, e.brK, e.face, 'thorn', time, e.brK >= 1, false);   /* (claude/kifollow) THREE drawn frames: nubs, half, full */
+    if (e.alive && KA.ARMED.has(e.t) && e.arK > 0) KA.drawArmed(g, e, Math.round(e.x - cx), Math.round(e.y - cy), time, !!SET.reduceMotion);   /* (claude/kifollow) the ARMED state, drawn: only a fully drawn one hurts */
+    if (e.alive && (e.pctTumble > 0 || e.kiSlide || e.ssT > 0 || e.tumDizzy > time || e.offBalAt !== undefined)) KA.drawKiExtras(g, e, Math.round(e.x - cx), Math.round(e.y - cy), time, !!SET.reduceMotion, cx, cy);   /* (claude/kifollow) tumble trail, guarded slide, hop dashes, the wobble's sweat */   /* (claude/knockinto) THE SPIKE GOBLIN's back spikes, up while a hero is over him */
     if (e.alive && e.elite) drawElitePlate(e, cx, cy, bigF);
     if (e.alive && e.vol) drawEliteVolley(e, cx, cy);
     if (e.alive && (e.rallyT > 0 || e.wallT > 0)) { const px2 = Math.round(e.x - cx - (e.w || 12) / 2) - 4, py2 = Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) + 2;   /* RALLIED (a red chevron) or BEHIND THE WALL (a grey shield), beside its head, clear of the marks */
