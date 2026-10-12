@@ -22,6 +22,8 @@ export const shortDate = (d) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(Str
 export const longDate = shortDate;
 export const readSeen = () => { try { return localStorage.getItem(SEEN_KEY) || ''; } catch { return ''; } };
 export const markSeen = () => { try { if (newestDate()) localStorage.setItem(SEEN_KEY, newestDate()); } catch {} };
+/* THE BUILD, SMALL ON THE TITLE (and in a bug report): 'BATCH 86 - 11 OCT', plus the short sha when the release stamped src/build.js */
+export const versionLine = (sha = '') => { const u = updates[0]; return u ? (u.batch ? 'BATCH ' + u.batch + ' - ' : '') + shortDate(u.date) + (sha ? ' ' + String(sha).slice(0, 7) : '') : ''; };
 export const hasNew = () => !!newestDate() && readSeen() < newestDate();
 /* the list as drawable rows: { kind:'head', s } for a date, { kind:'line', s } for a line; wrapFn(s, maxW) splits a long line */
 export const rows = (wrapFn, maxW) => {

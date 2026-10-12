@@ -2,7 +2,7 @@
   "id": "./",
   "name": "BRACKEN",
   "short_name": "BRACKEN",
-  "description": "A 16-bit platformer: a knight, a wood, a mountain.",
+  "description": "A pixel-art platformer: walk the road from the wood to the desert, and the bosses that hold it.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

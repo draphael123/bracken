@@ -1,3 +1,4 @@
+import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
@@ -68,6 +69,8 @@ import {bakeRouteLedges,drawRouteSupports,drawWorkPlatform} from './route-art.js
 import {bakeBellcrab,bakeBellguard,bakeBellcrabOut,bakeBellShell,BELL,BELL_OUT_F,bellOutFrame} from './bellcrab.js';
 import * as DH from './deep-holds.js';
 import * as WN from './whatsnew.js';   /* WHAT'S NEW on the title board (docs/updates.json) */
+import * as BUG from './bug-report.js'; import * as BUGUI from './bug-report-ui.js'; import { BUILD } from './build.js';   /* REPORT A BUG: a pasteable code (src/bug-report.js, tools/bug-decode.mjs); the console tap is installed by the first import below */
+import * as SAFE from './save-safety.js';   /* A SAVE IS NEVER LOST IN SILENCE: corrupt slots, backups, a full disk (src/save-safety.js) */
 import { creditPages, CC_BY, FONT_CREDITS, FONT_LICENCE } from './credits.js';   /* THE MUSIC CREDITS page: every outside composer, the CC-BY tracks with their licence */
 import { lanceSupport, LANCE_SUPPORT, gateHas, gateCatch, gateStep, drawLanceGate } from './lance-support.js';   /* THE QUEEN'S BOWS: the archers he calls to the end lookouts (docs/briefs/lance-support.md) */
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
@@ -124,7 +127,7 @@ import * as SV from './survival.js'; import * as F2 from './flasks2.js';   /* FL
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
-import { depthsOf } from './campaign-order.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
+import { depthsOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -289,6 +292,7 @@ if (q.get('fps') === '1') SET.fps = true;
 REC.init(location.search);   /* ?rec=1 on, ?rec=0 off (src/playrec.js) */   /* ?fps=1: the frame counter on, for a test on a real phone (not saved unless a setting is changed) */
 // Progress lives in one of five save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; let saveBlocked = ''; const SLOTS = 5; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
+let fixAsk = -1, fixI = 0;   /* the FIX IT menu over a damaged slot (CORRUPT): restore / export / erase / back */
 let eraseAsk = -1, eraseYes = false;   /* ERASE SLOT n? YES / NO: the slot being asked about (-1 = no question up), and whether YES is the one lit. It opens on NO. */
 /* LOCAL CO-OP is built further down (the players list, the pass, the shared camera, downed and revive). These four
    lines are up HERE because the hero's level and the save both have to ask about it, and both are written above it. */
@@ -307,6 +311,13 @@ try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slo
 let bossJumpOn = false;   /* THE PLAYTEST BOSS JUMP (docs/PLAYTEST.md): once a page has jumped into a fight it never writes a save - see saveProgress */
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
+/* A SAVE IS NEVER LOST IN SILENCE (claude/shipfix; src/save-safety.js). slotHealthOf: a slot's text judged - empty / ok / newer / corrupt - memoised on the text. */
+const CAMP_IDS = LEVELS.filter(l => !l.hidden).map(l => l.id);
+const slotRaw = i => { try { return localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); } catch { return null; } };
+const healthMemo = [];
+const slotHealthOf = i => { const raw = slotRaw(i), m = healthMemo[i]; if (m && m.raw === raw) return m.h; const h = SAFE.slotHealth(raw, CAMP_IDS); healthMemo[i] = { raw, h }; return h; };
+const slotKeys = () => Array.from({ length: SLOTS }, (_, j) => slotKey(j));
+let saveFail = '';   /* the last write that did not land ('SAVE FAILED - STORAGE FULL'), '' once one does: a banner shows it and every save retries */
 function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
   if (!PROG.perHero) { PROG.perHero = 1;                     /* the save's progress belongs to whoever was carrying it */
     const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
@@ -341,15 +352,21 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
    never asked for one. Every road into a slot (continue, boss rush, practice, local co-op, a fresh save) runs
    through here, so clearing it here is the one place that keeps the toggle honest across the switch. */
 function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlocked = ''; let loaded;
-  try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); loaded = loadProgress(localStorage, slotKey(i), raw, LEVELS.filter(l => !l.hidden).map(l => l.id)).progress; }
-  catch (error) { saveBlocked = error.message; loaded = migrateProgress(null).progress; console.warn('Save protected:', saveBlocked); }
+  const raw = slotRaw(i);
+  try { const res = loadProgress(localStorage, slotKey(i), raw, CAMP_IDS); loaded = res.progress; if (res.backup) SAFE.pruneBackups(localStorage, slotKey(i), res.backup); SAFE.keepLastGood(localStorage, slotKey(i), raw, CAMP_IDS); }
+  catch (error) { const h = slotHealthOf(i); if (h.state === 'corrupt') SAFE.keepCorruptCopy(localStorage, slotKey(i), raw);
+    saveBlocked = h.state === 'corrupt' ? 'Slot ' + (i + 1) + ' is damaged (a copy is kept): CHOOSE A SAVE to restore or erase it' : error.message; loaded = migrateProgress(null).progress; console.warn('Save protected:', error.message); }
   for (const k in PROG) delete PROG[k]; Object.assign(PROG, loaded); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
-function eraseSlot(i) { try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
+function eraseSlot(i) { try { if (slotHealthOf(i).state !== 'ok' && slotHealthOf(i).state !== 'empty') SAFE.keepCorruptCopy(localStorage, slotKey(i), slotRaw(i)); localStorage.removeItem(slotKey(i) + SAFE.LASTGOOD); SAFE.pruneBackups(localStorage, slotKey(i)); } catch {}
+  try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
 /* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
    coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
 function saveProgress() { if (saveBlocked || bossJumpOn) return; dcMirror(); const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
-  try { localStorage.setItem(slotKey(slot), JSON.stringify(PROG)); } catch {}
-  PROG.hero = was; }
+  let r; try { r = SAFE.safeSet(localStorage, slotKey(slot), JSON.stringify(PROG), slotKeys()); } catch (e) { r = { ok: false, full: false }; }
+  PROG.hero = was; saveWritten(r); }
+/* a write that did not land is TOLD (a banner at the foot of every screen, a toast in a level, a buzz the first time) and retried on the next save; one that lands clears it */
+function saveWritten(r) { if (r.ok) { saveFail = ''; return; } const first = !saveFail; saveFail = r.full ? 'SAVE FAILED - STORAGE FULL' : 'SAVE FAILED - COULD NOT WRITE';
+  if (first) { console.warn(saveFail, r.error || ''); try { SFX.buzz(); } catch {} } try { UIH.toastPush(toastQ, saveFail, 6); } catch {} }
 loadSlot(slot);
 /* THE SOUND TEST'S LOCK, the write side. audio.js calls this every time ANYTHING asks for a track by name - a level's
    own theme, a boss arena, a mini fight, a menu - never when the Sound Test itself is only being browsed (browsing
@@ -651,7 +668,7 @@ let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = ''; 
 window.BKT = { lights: () => lights, get PROG() { return PROG; }, krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
   /* THE HARNESS LEVEL (HARNESSCARD): a bot hero at level n is n XP-levels AND n card picks spread evenly (the migrated-save spread), the stats a real player who spent his picks has; xp alone reads a no-card hero (-8 hp a Vigor pick, -12 stamina an Endurance pick, -1 damage a Might). Tools only: a real player chooses his own picks. */
   setHeroLevel: (h, n) => { PROG.xp = PROG.xp || {}; PROG.card = PROG.card || {}; PROG.xp[h] = n > 0 ? xpFloor(n) : 0; PROG.card[h] = evenCard(n > 0 ? n : 0); return heroLevel(h); }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
-  skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPressName(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
+  skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, get saveFail() { return saveFail; }, saveNow: () => saveProgress(), eraseAskNow: () => eraseAsk, slotHealth: i => slotHealthOf(i), get fixAsk() { return fixAsk; }, get fixI() { return fixI; }, get bugSnapshot() { return bugSnapshot; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPressName(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
   damagePlayer: (x, d, o) => damagePlayer(x, d, o), hurtEnemy: (e, d, x, pl) => hurtEnemy(e, d, x, pl), hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), number: (x, y, t, c) => number(x, y, t, c), get guide() { return STK; }, get hintNow() { return { t: hintT, msg: hintMsg }; }, respawn: () => respawn(), fullHp: e => fullHp(e), risen: () => risen, bodies: () => bodies, acorns: () => acorns, heavyWind: () => heavyWind(),
   treeNodes: () => treeNodes(), get treeI() { return treeI; }, set treeI(v) { treeI = v; }, get treeMsg() { return treeMsg; }, get treeResetT() { return treeResetT; }, get talentsBackT() { return talentsBackT; }, get talentsBackWho() { return talentsBackWho; }, novas: () => novas, wardCap: () => wardCap(), raiseCue: () => raiseCue(), raisePips: () => raisePips(), heroSet: (s, w, p, h, t) => heroSet(s, w, p, h, t), regear: () => regear(), gearNow: h => gearNow(h), get gearHidden() { return SET.gear === false; }, set gearHidden(v) { SET.gear = v ? false : true; }, skinIds: () => SKINS.map(k => k.id) };   /* for the labs and the harnesses */
 /* THE PRACTICE YARD, from the store: a portal into the straw men and plain platforms, for trying a hero without a wood to lose */
@@ -1502,9 +1519,10 @@ function drawCoopHud() {
     board(tx, y0 + h - 1, tw + 2, 9, UI.border, 'rgba(10,8,20,0.5)', true); if (typeof hudRects !== 'undefined' && hudRects) hudRects.push([tx, y0 + h - 1, tw + 4, 11]);
     RP.drawPips(g, p, tx + 3, y0 + h + 2, !!SET.reduceMotion); }
 }
-/* THE END OF THE ROAD. Nothing after THE MAGE'S FOLLY needs anything, so the archmage's tower is the campaign's
-   last wood, and winning it in co-op is what the VICTORY card answers. */
-const CAMPAIGN_END = 'mage';
+/* THE END OF THE ROAD, FOR NOW. The card answers the LAST level of the main road (src/ending.js: the end of the gate chain), solo or co-op.
+   It used to be tied to 'mage' - THE MAGE'S FOLLY, the middle of five acts - and fired there in co-op only ('THE ARCHMAGE IS DOWN') while a solo
+   player's last level was just a win card. */
+const CAMPAIGN_END = roadEndId(LEVELS);
 const campaignDone = () => !!LEVELS[levelIndex] && LEVELS[levelIndex].id === CAMPAIGN_END;
 const scoreRows = s => [['foes', s.kills], ['hurt', s.dmg], ['gold', s.coins], ['revives', s.revives], ['turned', s.turns], ['deaths', s.deaths]];
 const coopName = p => (p.ai ? 'ALLY ' : p.n === 1 ? 'P1 ' : 'P2 ') + (HERO_SHORT[p.hero] || String(p.hero).toUpperCase());
@@ -1560,9 +1578,15 @@ function drawVictory() {
   const pw = Math.min(VW - 16, 268), px0 = Math.round((VW - pw) / 2);
   panel(px0, 6, pw, VH - 16, UI.border, 'ledger');
   const a = players[0], b = players[1];
-  text('VICTORY', VW / 2, 14, UI.gold, 'center', 12);
-  text('THE ARCHMAGE IS DOWN', VW / 2, 30, UI.text, 'center', 6);   /* short on purpose: a line this card cannot fit is a line it would CUT, and the flavour has the foot of the card */
-  if (!b) { text('Z  back to the map', VW / 2, VH - 20, UI.sel, 'center', 6); return; }
+  text('END OF THE ROAD', VW / 2, 14, UI.gold, 'center', 12);
+  text('- FOR NOW -', VW / 2, 30, UI.text, 'center', 6);   /* short on purpose: a line this card cannot fit is a line it would CUT */
+  if (!b) {   /* ALONE: the figures the save holds - the best run of each level on the road, added up */
+    const T = roadTally(PROG, LEVELS), row = (lab, val, col, y) => { text(lab, px0 + 14, y, UI.dim, 'left', 6); text(val, px0 + pw - 14, y, col, 'right', 6); };
+    row('road cleared', T.cleared + ' / ' + T.levels, '#fff6e0', 46); row('time (best runs)', fmt(T.time).replace(/\.\d$/, ''), '#fff6e0', 58); row('deaths (best runs)', String(T.deaths), T.deaths ? '#ff9a6b' : '#fff6e0', 70);
+    row('medals', 'G ' + T.medals[3] + '   S ' + T.medals[2] + '   B ' + T.medals[1], UI.gold, 82);
+    g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 96, pw - 12, 1); text('completion', VW / 2, 102, UI.dim, 'center', 6); text(T.pct + '%', VW / 2, 112, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 'center', 12);
+    text('MORE ROAD IS COMING', VW / 2, 138, UI.text, 'center', 6);
+    if (Math.floor(time * 2) % 2 === 0) text(touchOn ? 'TAP  back to the map' : 'Z  back to the map', VW / 2, VH - 20, UI.sel, 'center', 6); if (touchOn) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); return; }
   const L0 = px0 + 8, R0 = px0 + pw - 8, MID = px0 + pw / 2;
   text(fitText(coopName(a), pw / 2 - 16, 6), L0, 44, '#8fd160', 'left', 6);
   text(fitText(coopName(b), pw / 2 - 16, 6), R0, 44, b.ai ? '#c9a0ff' : '#8fd160', 'right', 6);
@@ -1578,7 +1602,7 @@ function drawVictory() {
   text(String(scoreOf(a.total)), L0, 114, UI.gold, 'left', 6);
   text(String(scoreOf(b.total)), R0, 114, UI.gold, 'right', 6);
   { const s = coopWinner('total'); text(s, VW / 2, 128, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 'center', fitSize(s, pw - 12, [12, 8, 6])); }   /* DEATH KNIGHT is a long name: the line drops a size rather than losing its end */
-  text('the wood is quieter for the two of you', VW / 2, 148, UI.dim, 'center', 6);
+  text('MORE ROAD IS COMING', VW / 2, 148, UI.dim, 'center', 6);
   if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, VH - 18, UI.sel, 'center', 6);
 }
 /* ==================== THE ALLY, for a player with no friend ====================
@@ -2148,6 +2172,7 @@ function loadLevel(i) { for (const _ of loadLevelG(i)); if (P) CM.clearCommit(P)
 const loadThen = (i, cont) => LS.drive(loadLevelG(i), cont, { heroes: [K, players && players[1] && players[1].set] });
 /* THE SAME LOAD AS A GENERATOR, for the loading screen (src/loading-screen.js drive()): it yields a step id after each stage and does no work of its own between them */
 function* loadLevelG(i) {
+  BUG.evlog('load ' + ((LEVELS[i] || {}).id || i));
   if (typeof P !== 'undefined' && P) { P.flatT = 0; P.slideOn = false; }   /* a slide and its bounce do not follow you through a door */
   hintT = 0;   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
@@ -4282,7 +4307,7 @@ function winLevel() {
   fogSave();
   PROG.done = PROG.done || {};
   const firstWalk = !heroDone()[LEVELS[levelIndex].id] && (!LEVELS[levelIndex].hidden || LEVELS[levelIndex].secret);   /* a secret wood is a wood: it pays its share like any other */
-  state = 'win'; SFX.win(); setTimeout(() => { if (state === 'win') SFX.medal(); }, 900);
+  BUG.evlog('level won: ' + LEVELS[levelIndex].id + ' ' + levelTime.toFixed(0) + 's, ' + deaths + ' deaths'); state = 'win'; SFX.win(); setTimeout(() => { if (state === 'win') SFX.medal(); }, 900);
   const id = LEVELS[levelIndex].id, p = PROG[id] || {};
   winPrevBest = p.best !== undefined && p.best !== null && !Number.isNaN(p.best) ? p.best : null;
   const ofAll = levelFoes || enemies.filter(e => !e.harmless).length;
@@ -5544,17 +5569,33 @@ function beastSlain(t) { const r = beastRec(t); r.seen = true; r.slain++; savePr
    were his level, and xpFloor gives it back. */
 const slotLevel = p => { const h = p.hero || 'knight', x = p.xp && p.xp[h]; return levelOfXp(x !== undefined ? x : xpFloor(Object.keys((p.done && p.done[h]) || {}).length)); };
 const slotRect = i => ({ x: 2, y: 14 + i * 30, w: 316, h: 28 });
+/* WHAT CAN BE DONE ABOUT A DAMAGED SLOT: put its last good copy back (when there is one), take the file, erase it (which asks), or leave it alone */
+function fixOptions(i) {
+  const hs = slotHealthOf(i), cands = hs.state === 'corrupt' ? SAFE.backupCandidates(localStorage, slotKey(i), CAMP_IDS) : [], o = [];
+  if (cands.length) o.push({ id: 'restore', label: 'RESTORE THE ' + cands[0].kind.toUpperCase(), cand: cands[0] });
+  o.push({ id: 'export', label: 'EXPORT THE FILE' }, { id: 'erase', label: 'ERASE THE SLOT' }, { id: 'back', label: 'BACK' });
+  return o;
+}
+function fixDo(i, o) {
+  if (o.id === 'back') { fixAsk = -1; SFX.ui(); return; }
+  if (o.id === 'erase') { fixAsk = -1; eraseAsk = i; eraseYes = false; SFX.ui(); return; }
+  if (o.id === 'export') { const raw = slotRaw(i); if (!raw) { slotMsg = 'nothing to export'; slotMsgT = 3; SFX.buzz(); return; }
+    try { const url = URL.createObjectURL(new Blob([raw], { type: 'text/plain' })), a = document.createElement('a'); a.href = url; a.download = 'bracken-slot-' + (i + 1) + '-damaged.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); slotMsg = 'file exported'; } catch { slotMsg = 'could not export'; } slotMsgT = 3; SFX.ui(); return; }
+  if (o.id === 'restore') { try { SAFE.restoreSlot(localStorage, slotKey(i), o.cand, i === 0 ? localStorage.getItem('bracken.progress') : null); healthMemo[i] = null; if (i === slot) loadSlot(i); slotMsg = 'slot ' + (i + 1) + ' restored (the damaged copy is kept)'; SFX.uiSel(); } catch (e) { slotMsg = 'restore failed: ' + e.message; SFX.buzz(); } slotMsgT = 4; fixAsk = -1; }
+}
 function drawSlots() {
   g.fillStyle = 'rgba(10,6,20,0.55)'; g.fillRect(0, 0, VW, VH);
   text('CHOOSE A SAVE', VW / 2, 2, UI.title, 'center', TYPE.head);
   const levels = LEVELS.filter(l => !l.hidden).length;
   for (let i = 0; i < SLOTS; i++) {
     const p = readSlot(i), { x, y, w, h } = slotRect(i), sel = i === slotI;
-    if (eraseAsk < 0) TCH.hit(x, y, w, h, () => { if (slotI === i) confirmPress = true; else { slotI = i; slotMsg = ''; SFX.ui(); } });
+    if (eraseAsk < 0 && fixAsk < 0) TCH.hit(x, y, w, h, () => { if (slotI === i) confirmPress = true; else { slotI = i; slotMsg = ''; SFX.ui(); } });
     if (sel) { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.globalAlpha = 1; }
     board(x, y, w, h, sel ? '#ffd36b' : '#8a7a5c', undefined, false, 'parchment');   /* a parchment slip a slot; the picked one is gilt */
-    if (eraseAsk >= 0) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
+    if (eraseAsk >= 0 || fixAsk >= 0) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
     text('SLOT ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
+    { const hs = slotHealthOf(i);   /* A DAMAGED SLOT IS NOT AN EMPTY ONE: it says so, and Z opens what can be done about it */
+      if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   YOUR SAVE IS KEPT AS A COPY' : 'MADE BY A NEWER BRACKEN   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
     if (!p) { text('EMPTY', x + 100, y + 4, '#6a6a7a'); text('NEW GAME', x + 44, y + 17, sel ? '#8fd160' : '#4a5a4a', 'left', 6); continue; }
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0), hid = p.hero || 'knight', hn = ((HEROES.find(q => q.id === hid) || {}).name || hid.toUpperCase()).replace(/^THE /, '');
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const gT = gearTier(slotLevel(p), SET.gear === false), K2 = preview('slot:' + (p.hero || 'knight') + ':' + (p.skin || 'bracken') + ':' + (p.sword || 'steel') + ':g' + gT, () => heroSet(p.skin || 'bracken', p.sword || 'steel', 'idle', p.hero || 'knight', gT)); void skin;
@@ -5568,6 +5609,17 @@ function drawSlots() {
     if (done) text('COMPLETE', x + w - 6, y + 17, '#8fd160', 'right', 6);
   }
   text(slotMsgT > 0 && slotMsg ? slotMsg : touchOn ? 'TAP a slot   ERASE to erase' : 'Z play  X erase  ESC back', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
+  if (fixAsk >= 0) {   /* A DAMAGED SLOT: what can be done about it */
+    g.fillStyle = 'rgba(6,4,12,0.78)'; g.fillRect(0, 0, VW, VH);
+    const hs = slotHealthOf(fixAsk), opts = fixOptions(fixAsk), bw = 236, bh = 40 + opts.length * 16, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
+    board(bx, by, bw, bh, '#ff9a5c', undefined, false, 'iron');
+    text('SLOT ' + (fixAsk + 1) + (hs.state === 'corrupt' ? ' IS CORRUPT' : ' IS A NEWER SAVE'), VW / 2, by + 7, '#ff9a5c', 'center');
+    text(fitName(hs.state === 'corrupt' ? 'A COPY OF IT IS KEPT. NOTHING IS ERASED UNTIL YOU SAY' : 'IT WAS MADE BY A NEWER BRACKEN. UPDATE THE GAME', bw - 14, 6), VW / 2, by + 21, UI.dim, 'center', 6);
+    opts.forEach((o, j) => { const w2 = 200, x2 = Math.round(VW / 2 - w2 / 2), y2 = by + 33 + j * 16, on = fixI === j;
+      TCH.hit(x2, y2, w2, 14, () => { fixI = j; confirmPress = true; });
+      board(x2, y2, w2, 14, on ? '#ffd36b' : '#5a6474', on ? 'rgba(70,56,30,0.95)' : 'rgba(30,26,44,0.95)', false, 'ledger');
+      text(fitName(o.label, w2 - 10, 6), x2 + w2 / 2, y2 + 4, on ? '#fff6e0' : UI.dim, 'center', 6); });
+  }
   if (eraseAsk >= 0) {   /* ERASE SLOT n? YES / NO - a save is gone for good, so one slip of the X key (or the ERASE pill) no longer does it */
     g.fillStyle = 'rgba(6,4,12,0.78)'; g.fillRect(0, 0, VW, VH);
     const bw = 200, bh = 70, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
@@ -5645,7 +5697,7 @@ const SETTING_TIPS = {
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk fills',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been (TAB)', 'Way-on arrow': 'an arrow on the way: STUCK = after 10s',
-  'Co-op': 'a friend on a pad, or the game', 'Co-op guide': 'how a second player joins',
+  'Co-op': 'a friend on a pad, or the game', 'Co-op guide': 'how a second player joins', 'Report a bug': 'a code to paste to the developer',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts and cries',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'HUD': 'minimal bars, or the plate',
@@ -5727,6 +5779,7 @@ function menuConfirm() {
   else if (k === 'Controls') { controlsFrom = 'menu'; state = 'controls'; SFX.uiSel(); }
   else if (k === 'Rebind keys') openRebind('menu');
   else if (k === 'Co-op guide') openCoopHelp('menu');
+  else if (k === 'Report a bug') openBugReport();
   else if (k === 'Reset controls') { if (menuMsg === 'press again to reset every key and button' && menuMsgT > 0) { CTL.resetAll(SET.binds); applyBinds(); saveSettings(); menuMsg = 'every key and button is back to its default'; menuMsgT = 3; SFX.ui(); } else { menuMsg = 'press again to reset every key and button'; menuMsgT = 3; SFX.ui(); } }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
   else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
@@ -6655,7 +6708,7 @@ function tryDrink() {
   if (!(P.ground || P.carpet) || P.swim || P.climb || P.plunge || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || CM.committed(P) || P.carry) { SFX.buzz(); return false; }   /* (claude/ft2art: the carpet HOVERS, still - the Archmage's whole fight is flown, and a flask that only worked on foot made 'with flasks' dry there) */
   const T = F2.drinkTimes(PROG, SV.FLASK);
   P.flasks--; P.drinkDur = T.drinkT; P.swallowAt = T.swallowAt; P.drinkT = T.drinkT; P.drunk = false; P.gulps = 0; P.corked = true; P.drinkHp = P.hp; P.block = false; P.vx = 0; P.dance = 0; SFX.ui(); PROG.drinkTold = Math.max(PROG.drinkTold || 0, 2);
-  flaskHud.levelDrinks++; return true;
+  flaskHud.levelDrinks++; BUG.evlog('flask drunk (' + P.flasks + ' left)'); return true;
 }
 function drinkTick(dt) {
   if (flaskPress) { flaskPress = false; tryDrink(); }
@@ -6872,7 +6925,7 @@ function die(killer) {
   if (P.dead) return;
   /* IN CO-OP HE GOES DOWN, NOT OUT - as long as somebody is still standing to come and get him (goDown) */
   if (coop() && !(P.down > 0) && players.some(q => q !== P && upright(q))) { goDown(killer); return; }
-  P.killer = killer || null;
+  P.killer = killer || null; BUG.evlog('died: ' + ((killer && killer.name) || '?') + ' @' + (P.x / TS).toFixed(0) + ',' + (P.y / TS).toFixed(0));
   P.dead = 1.2; deaths++; P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7, 0, 'hurt'); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
   burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9); deathCost(P, killer);
 }
@@ -9818,7 +9871,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     if (Math.abs(a.x - P.x) < 10 * (perk('magnet') ? 1.7 : 1) && Math.abs(a.y - (P.y - 7)) < 12 * (perk('magnet') ? 1.7 : 1)) { a.got = true; got++; dcGot(1); if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
       if (isPirate()) piratePurse(true); coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
-  dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); }
+  dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
   if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
@@ -9837,7 +9890,16 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
   return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'CREDITS']); };
-const titleItems = () => titleOpts ? ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'BACK'] : titleTop();
+/* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
+function bugSnapshot() {
+  const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
+  for (const [k, f] of [['df', 'difficulty'], ['sp', 'speed'], ['zm', 'zoom'], ['sc', 'scale'], ['hud', 'hud'], ['rm', 'reduceMotion'], ['fl', 'flashes'], ['as', 'assist'], ['ir', 'iron'], ['bt', 'bigText'], ['cs', 'colorSafe']]) S[k] = SET[f];
+  const pl = typeof P !== 'undefined' && P ? P : null;
+  return { v: { b: up.batch || 0, d: up.date || '', s: BUILD.sha || '' }, lv: lv ? lv.id : '', ln: lv ? lv.name : '', x: lv && pl ? +(pl.x / TS).toFixed(1) : 0, y: lv && pl ? +(pl.y / TS).toFixed(1) : 0, st: state, co: coop() ? 1 : 0, h: hero(),
+    hp: pl ? [Math.round(pl.hp), pl.maxHp] : [0, 0], fl: pl ? pl.flasks : 0, sl: slot, dfl: lv ? diffOf(lv.id) : '', dev: { w: innerWidth, h: innerHeight, r: +(devicePixelRatio || 1).toFixed(2), t: touchOn ? 1 : 0, ua: String(navigator.userAgent).replace(/^Mozilla\/5\.0 /, '').slice(0, 90) }, set: S };
+}
+function openBugReport() { SFX.uiSel(); BUGUI.open(bugSnapshot, () => {}); }
+const titleItems = () => titleOpts ? ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'REPORT A BUG', 'BACK'] : titleTop();
 /* THE EDITOR AND THE BOSS RUSH ARE PARKED, NOT DELETED (Daniel, 2026-09-23): "we need to work on the core game before working on
    these modes." They leave the title menu and every line of their code stays. `?modes=1` brings both back for testing. Do not add
    new bosses, tiles or terrain to either while this is true. */
@@ -9996,6 +10058,7 @@ function setWall(col, solid) {
   if (L.arena.boss === 'mother') for (let ty = 0; ty < L.arena.floor / TS - 6; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? BAR.seal(curId(), ty + col, 'mother') : null; }
 }
 function bossStart() {
+  BUG.evlog('boss start: ' + (boss && boss.t));
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; } if (bossZooms(boss.t)) setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true); arenaShut(L.arena, boss);   /* (claude/colossus3) the level's foes outside the walls are held there */
   if (boss.t === 'prince') number(boss.x, boss.y - 14, 'FORGOTTEN UNDER THE HILL', '#c9d1dc');   /* his subtitle, under the name */
@@ -27525,7 +27588,9 @@ function updateCamera(dt) {
   shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt);
 }
 
+let evState = state;
 function update(dt) {
+  if (state !== evState) { BUG.evlog('screen ' + evState + ' > ' + state); evState = state; }
   time += dt; if (REC.on || REC.msgT > 0) REC.frame(REC_CTX, dt);
   if (state !== 'play' || !isPyro()) SFX.jet(false);
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
@@ -27547,8 +27612,9 @@ function update(dt) {
       if (downPress) { titleI = (titleI + 1) % items.length; SFX.ui(); }
       if (menuTake()) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
-        if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
-        else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; }
+        if (['CONTINUE', 'BOSS RUSH', 'PRACTICE', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotI = slot; slotMsg = 'slot ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
+        else if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
+        else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'PRACTICE') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPickFrom = 'title'; coopPick = { i: 0, ally: false }; state = 'coop'; }
@@ -27557,6 +27623,7 @@ function update(dt) {
         else if (k === 'OPTIONS') { titleOpts = true; titleI = 0; }
         else if (k === 'BACK') { titleOpts = false; titleI = Math.max(0, titleTop().indexOf('OPTIONS')); }
         else if (k === 'SETTINGS') openMenu('title');
+        else if (k === 'REPORT A BUG') openBugReport();
         else if (k === 'SOUND TEST') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'title'; }
         else if (k === 'CONTROLS') { controlsFrom = 'title'; state = 'controls'; }
         else if (k === 'CREDITS') { creditsPage = 0; state = 'credits'; }
@@ -27567,6 +27634,11 @@ function update(dt) {
     return; }
   if (state === 'slots') {
     slotMsgT = Math.max(0, slotMsgT - dt);
+    if (fixAsk >= 0) {   /* the FIX IT list: up/down walk it, Z does the row, X or ESC leaves */
+      const opts = fixOptions(fixAsk); if (fixI >= opts.length) fixI = 0;
+      if (upPress || leftPress) { fixI = (fixI + opts.length - 1) % opts.length; SFX.ui(); } if (downPress || rightPress) { fixI = (fixI + 1) % opts.length; SFX.ui(); }
+      if (confirmPress) fixDo(fixAsk, opts[fixI]); else if (atkPress || pausePress) { fixAsk = -1; SFX.ui(); }
+      return; }
     if (eraseAsk >= 0) {   /* the question is up: arrows move between YES and NO, Z answers, X or ESC is NO */
       if (leftPress || rightPress || upPress || downPress) { eraseYes = !eraseYes; SFX.ui(); }
       if (confirmPress) { if (eraseYes) { eraseSlot(eraseAsk); slotMsg = 'slot ' + (eraseAsk + 1) + ' erased'; slotMsgT = 2; SFX.crack(); } else SFX.ui(); eraseAsk = -1; }
@@ -27576,8 +27648,9 @@ function update(dt) {
     if (downPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }   /* the five are rows, so DOWN and RIGHT both go on, UP and LEFT both go back */
     if (upPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (rightPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }
-    if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); if (state === 'heropick' && openingDue()) openingStart(); } // a new save chooses its hero
-    if (atkPress) { if (!readSlot(slotI)) { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else { eraseAsk = slotI; eraseYes = false; slotMsg = ''; SFX.ui(); } }
+    if (confirmPress && (slotHealthOf(slotI).state === 'corrupt' || slotHealthOf(slotI).state === 'newer')) { fixAsk = slotI; fixI = 0; SFX.ui(); }
+    else if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); if (state === 'heropick' && openingDue()) openingStart(); } // a new save chooses its hero
+    if (atkPress) { if (slotHealthOf(slotI).state === 'empty') { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else { eraseAsk = slotI; eraseYes = false; slotMsg = ''; SFX.ui(); } }
     if (pausePress) { state = 'title'; SFX.ui(); }
     return;
   }
@@ -27651,7 +27724,7 @@ function update(dt) {
     updateParticles(dt);
     return;
   }
-  if (state === 'win') { for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (coop() && campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play(menuTrack()); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* THE VICTORY CARD holds until it is dismissed: the end of a campaign is the one screen nobody should have to race */
   if (state === 'victory') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); return; }
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
@@ -31771,6 +31844,7 @@ function render() {
         bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 
+  if (state === 'title' && !pressCard) { const vl = WN.versionLine(BUILD.sha); if (vl) text(vl, 3, VH - 8, UI.dim, 'left', 6); }   /* the build, small (src/whatsnew.js versionLine) */
   if (state === 'slots') drawSlots();
   if (state === 'bestiary') drawBestiary();
   if (state === 'map' || state === 'store') { for (const n of nums) { g.globalAlpha = Math.min(1, n.life * 3); text(String(n.txt), Math.round(n.x), Math.round(n.y), n.col, 'center'); } g.globalAlpha = 1; }
@@ -31882,6 +31956,7 @@ function render() {
   if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
   drawTransition();
   if(saveBlocked){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
+  else if(saveFail){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text(saveFail,VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveFail.includes('FULL')?'FREE SPACE: ERASE AN OLD SLOT. IT RETRIES EVERY SAVE':'THE BROWSER REFUSED THE WRITE. IT RETRIES EVERY SAVE',VW-12,6),VW/2,VH-14,UI.text,'center',6);}
   if (window.BK && window.BK.sheet) {
     g.fillStyle = '#3a4a6a'; g.fillRect(0, 0, VW, VH);
     let x = 4; const row = (set, keys, y) => { for (const k of keys) { let c = k == null ? set.R : set.R[k]; const arr = Array.isArray(c) ? c : [c]; for (const f of arr) { g.drawImage(f, x, y, f.width * 2, f.height * 2); x += f.width * 2 + 4; } } };
@@ -32031,7 +32106,7 @@ window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
     get practiceI() { return practiceI; }, set practiceI(v) { practiceI = v; },
-    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
+    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleRegion: () => titleRegion(), titleTrack: () => titleTrack(), titleTop: () => titleTop(), get titleOpts() { return titleOpts; }, set titleOpts(v) { titleOpts = !!v; },
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
