@@ -70,7 +70,7 @@ SONNET tune lane (12-seed boss loops) follow. Ship rule: this level does not go 
   checkpoints, signs, elites, killzones, spawns, collectables, keys, architecture, one-new-foe, goblin-lint, threat-holes, sprinkle-cap, floaters,
   relics, comments, homepaths, tells, boss-read, answer-tags, blow-tags, skins, mash-gate, curve-gate, map-spacing, map-grammar, dressing, hint-shown: green.
 - **Page, whole game: boss-openings, boss-fight-end (60 fights), mark-integrity, untold-told (22 foes): green.**
-- dangling-paths: red only on tools/anti-plunge.mjs (cited by src/foe-react.js / main.js on batch86 - not this lane).
+- dangling-paths: red only on the anti-plunge check (cited by src/foe-react.js / main.js on batch86 - not this lane).
 - knock-into-exams lists "construct@318 EASED by spikes" - a false listing: the construct is in KNOCK_SKIP (never thrown); the throwable drowned
   by the halls' stakes and on the trap lip are the intended targets.
 
