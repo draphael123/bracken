@@ -88,10 +88,12 @@ export function makeSealedPyramidHands(ctx) {
       if (p.mover) { const m = moverOf(p.mover); if (!m) continue; for (const pp of ctx.players) if (!pp.dead && pp.onMover === m) out.push({ who: pp, hero: true, ride: !!p.ride, m }); continue; }
       const [x0, x1, row] = p;
       for (const pp of ctx.players) if (!pp.dead && pp.ground && !pp.onMover && onCells(pp, x0, x1, row)) out.push({ who: pp, hero: true });
-      for (const e of ctx.enemies()) if (heavy(e) && onCells(e, x0, x1, row)) out.push({ who: e, hero: false }); }
+      for (const e of ctx.enemies()) if (heavy(e) && onCells(e, x0, x1, row)) out.push({ who: e, hero: false });
+      /* (claude/pyramidboss) THE TOMB-KING's chamber: HE presses a plate he stands on (stone is heavy - not while he walks: he steps over them), and so does his thrown lid */
+      if (ctx.pressers) for (const b of ctx.pressers()) if (onCells(b, x0, x1, row)) out.push({ who: b.who, hero: false, boss: !!b.boss, lid: !!b.lid }); }
     return out; }
   function arm(t, by) {
-    const d = t.def, ts = TS(); t.st = 'armed'; t.t = TRAP_DELAY[t.kind]; K.n.presses++; if (!by.hero) K.n.byFoe++;
+    const d = t.def, ts = TS(); t.st = 'armed'; t.t = TRAP_DELAY[t.kind]; K.n.presses++; if (!by.hero) K.n.byFoe++; t.byBoss = by.boss ? by.who : null;   /* (claude/pyramidboss) a plate HE stands on fires on him */
     /* THE LAST SHAFT: its counterweight's own plate fires the darts as its rider comes level with them */
     if (by.ride && by.m && t.kind === 'darts') { const top = d.rows[0] * ts + 4; t.t = Math.max(0.2, (top - by.m.y) / Math.max(10, by.m.speed)); }
     const P0 = ctx.hero(); const near = P0 && Math.abs(P0.x - (d.zone[0] + d.zone[1]) * ts / 2) < 300 && Math.abs(P0.y - d.zone[3] * ts) < 160;
@@ -126,7 +128,8 @@ export function makeSealedPyramidHands(ctx) {
     const d = t.def, ts = TS();
     const press = pressedBy(t), now = press.length > 0, fresh = now && !t.pressed; t.pressed = now;
     const speedUp = d.arena && ctx.bossPhase && ctx.bossPhase() >= 3 ? 0.6 : 1;
-    if (t.st === 'ready') { if (fresh) arm(t, press[0]); return; }
+    if (t.st === 'ready') { if (d.tk && ctx.trapLive && !ctx.trapLive(d)) return;   /* (claude/pyramidboss) the burial chamber's traps are inert until THE TOMB-KING's phase two arms them */
+      if (fresh) arm(t, press.find(p => p.boss) || press[0]); return; }
     t.t -= dt;
     if (t.st === 'armed') { if (t.t > 0) return; fire(t); return; }
     if (t.kind === 'block') stepBlock(t, dt, speedUp);
@@ -137,6 +140,7 @@ export function makeSealedPyramidHands(ctx) {
     else if (t.kind === 'flood') stepFlood(t, dt);
   }
   function fire(t) { const d = t.def; t.st = 'firing'; t.hitKeys.clear(); K.n.fired++; K.n.byTrap[t.id] = (K.n.byTrap[t.id] || 0) + 1; t.key = t.id + ':' + K.n.fired;
+    if (t.byBoss && ctx.bossTrap) { const b = t.byBoss; t.byBoss = null; K.n.bossHit++; ctx.bossTrap(b, t.kind, t, 'plate'); }   /* (claude/pyramidboss) THE PLATE HE STANDS ON FIRES ON HIM - and on you, if you stand in its reach */
     if (t.kind === 'block') { t.vy = 300; t.phase = 'fall'; ctx.sfx.thud && ctx.sfx.thud(); }   /* (it is let go, not dropped: a block from the antechamber's high roof lands inside her stagger) */
     if (t.kind === 'darts') { t.volley = TRAP_DARTS.volley; t.dartT = 0; ctx.sfx.bow ? ctx.sfx.bow() : ctx.sfx.slash && ctx.sfx.slash(); }
     if (t.kind === 'stone') { t.phase = d.drop ? 'drop' : 'roll'; t.vis = true; t.y = d.drop ? (d.drop[0]) * TS() : d.row * TS(); t.vy = 0; ctx.sfx.boom ? ctx.sfx.boom() : ctx.sfx.thud && ctx.sfx.thud(); }

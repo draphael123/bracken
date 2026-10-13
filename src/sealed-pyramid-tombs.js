@@ -23,19 +23,26 @@
 //                                        squad; the water is the only way to the high door - REQUIRED), EXAM: THE BRASS WARDEN II guarding the crypt's sluice plate
 //   963-1006  THE KING'S STAIR           A14 PLATFORMING (its own exam): narrow courses over the scarab well, the old ones GIVE (crumble), the dart volley spent
 //                                        from a plate-course before the last run
-//   1007-1047 THE BURIAL CHAMBER         THE END ARENA SLOT (LANE B: the Tomb-King's Sarcophagus) - built to lane B's spec as a PLACEHOLDER: floor + two side ledges
-//                                        (the counterweight ledges on chains), a switch mount high on each wall, pale plates in the floor, two ceiling trap slots;
-//                                        today it holds the great sarcophagus (a prop) and the level's gate beyond its east door
+//   1007-1047 THE BURIAL CHAMBER         THE TOMB-KING'S SARCOPHAGUS's arena (claude/pyramidboss, LANE B: src/tomb-king.js): floor + two side ledges (on chains),
+//                                        a switch on each wall that swings its counterweight across the floor, three pale plates firing the chamber's traps
+//                                        (two ceiling blocks, two dart walls), four floor alcoves for his dead; the level's gate beyond its east door
 // ART IS PLACEHOLDER (readable shapes, src/sealed-pyramid-hands.js drawTombHalf): lane C draws the kit (work/claude/lane-done/claude-pyramidlevel.md ART list).
 
 /* THE ROWS of the second half (floors) */
 export const TH = { hall: 57, upper: 51, gas: 51, gasHi: 48, oil: 48, oilHi: 42, cistern: 48, lip: 42, crypt: 54, landing: 30, stair: 34, burial: 24, W: 1052 };
-/* THE ARENA SLOTS (lane B): MINI_SLOT is the Scarab Mother's lair (her antechamber, mid-level - today still the level's `arena`, see src/sealed-pyramid.js);
-   BOSS_SLOT is the burial chamber at the end (a placeholder room, its gate past its east door) */
+/* THE ARENA SLOTS: MINI_SLOT is the Scarab Mother's lair (her antechamber, mid-level) - since claude/pyramidboss she is the level's MINI there (L.mini; her east door
+   is its portcullis, L.mini.gate); BOSS_SLOT is the burial chamber at the end - THE TOMB-KING'S SARCOPHAGUS's arena (L.arena, src/tomb-king.js).
+   (claude/pyramidboss, LANE B) The side ledges came down to row 21 (three rows over the floor, a base jump: at row 17 no hero could reach them - src/reachcore.js
+   JUMP_UP 3). A SWITCH (a lever) on each wall at its ledge's end - struck from the ledge, or a jump from the floor under it - throws that side's COUNTERWEIGHT (a stone
+   on a chain from the roof at `anchor`) across the floor's near half (`sweep`). The three pale plates are the chamber's traps (plateTraps: the west block, the middle
+   plate's two dart walls, the east block; plateReach: where each fires - every plate stands before its reach). The two ceiling slots hold the blocks; four floor
+   ALCOVES his Grave Call raises the dead from; `king`: where he stands asleep (where the placeholder great sarcophagus stood) */
 export const MINI_SLOT = { sx: 452, R: 57, W: 40, eastDoor: { col: 492, y0: 51, y1: 56 }, check: 448 };
 export const BOSS_SLOT = { x0: 1007, x1: 1046, floor: 24, roof: 4, westDoor: { col: 1006, y0: 18, y1: 23 }, eastDoor: { col: 1047, y0: 18, y1: 23 }, gate: 1049, check: 1003,
-  ledges: [{ x0: 1009, x1: 1014, y: 17 }, { x0: 1039, x1: 1044, y: 17 }], switches: [{ x: 1008, y: 10 }, { x: 1045, y: 10 }], plates: [[1017, 1018], [1026, 1027], [1035, 1036]],
-  slots: [[1020, 1022], [1031, 1033]], sarcophagus: 1027 };
+  ledges: [{ x0: 1009, x1: 1014, y: 21 }, { x0: 1039, x1: 1044, y: 21 }],
+  switches: [{ x: 1008, y: 18, sweep: [1009, 1022], anchor: 1016 }, { x: 1045, y: 18, sweep: [1031, 1044], anchor: 1037 }],
+  plates: [[1017, 1018], [1026, 1027], [1035, 1036]], plateTraps: [['tkBlockW'], ['tkDartsW', 'tkDartsE'], ['tkBlockE']], plateReach: [[[1019, 1023]], [[1007, 1025], [1028, 1046]], [[1030, 1034]]],
+  slots: [[1019, 1023], [1030, 1034]], alcoves: [1012, 1021, 1032, 1041], king: 1032 };
 /* each new use's arc (tile columns) - read by tools/sealed-pyramid.mjs alongside the first half's ARCS */
 export const ARCS2 = {
   rise: { teach: [499, 510], test: [517, 556], remix: [562, 592], exam: [594, 610] },              /* THE TOMBS: the lid taught; the risen squad in the groove; the pair in the upper hall; the warden's tomb behind him */
@@ -61,8 +68,8 @@ export function buildTombHalf(B) {
   const tomb = (id, x, row, kind, wake, squad, o) => { tombs.push({ id, x, row, kind, wake, dy: 7 }); (kind === 'skel' ? skel : mummy)(x, row - 1, squad, Object.assign({ tombWait: id, face: -1 }, o || {})); };
   const vent = (x, y, phase) => gasVents.push({ x, y, phase, period: 3.4, hitT: 0, litT: 0 });
 
-  // ================= THE LAIR'S EAST DOOR: the way on past the Scarab Mother (her wall shuts it while she fights: L.arena.wallR) =================
-  air(MINI_SLOT.eastDoor.col, MINI_SLOT.eastDoor.col, MINI_SLOT.eastDoor.y0, MINI_SLOT.eastDoor.y1);
+  // ================= THE LAIR'S EAST DOOR: the way on past the Scarab Mother - her PORTCULLIS (claude/pyramidboss: L.mini.gate; her death lifts it) =================
+  for (let y = MINI_SLOT.eastDoor.y0; y <= MINI_SLOT.eastDoor.y1; y++) set(MINI_SLOT.eastDoor.col, y, T.PORT);
 
   // ================= 6. THE HALL OF THE DEAD (493-610): the tombs taught; the groove the risen walk; the upper hall; EXAM: THE BRASS WARDEN =================
   const HA = TH.hall, UP = TH.upper;
@@ -210,18 +217,29 @@ export function buildTombHalf(B) {
   air(1000, 1006, BU - 6, BU - 1); block(1000, 1006, BU, ST - 1); for (let x = 1000; x <= 1003; x++) set(x, ST, T.SOLID);
   ent('check', BOSS_SLOT.check, BU - 1);                                                                     /* CHECKPOINT TEN: before the burial chamber (A10b) */
 
-  // ================= 11. THE BURIAL CHAMBER (1007-1047): THE END ARENA SLOT (lane B) - a placeholder room =================
-  const S = BOSS_SLOT;
-  air(S.x0, S.x1, S.roof, S.floor - 1); interiors.push([S.x0, S.x1, S.roof, S.floor - 1, 'pyBurial']);
+  // ================= 11. THE BURIAL CHAMBER (1007-1047): THE TOMB-KING'S SARCOPHAGUS (claude/pyramidboss, LANE B: src/tomb-king.js) - the level's machine in one room =================
+  const S = BOSS_SLOT, F = S.floor;
+  air(S.x0, S.x1, S.roof, F - 1); interiors.push([S.x0, S.x1, S.roof, F - 1, 'pyBurial']);
   air(S.westDoor.col, S.westDoor.col, S.westDoor.y0, S.westDoor.y1); air(S.eastDoor.col, S.eastDoor.col, S.eastDoor.y0, S.eastDoor.y1);
-  for (const l of S.ledges) { ledge('ledge', l.x0, l.x1, l.y); decor.push({ kind: 'chains', x0: l.x0, x1: l.x1, y: l.y }); }
-  for (const s of S.switches) decor.push({ kind: 'switchmount', x: s.x, y: s.y });
-  for (const [x0, x1] of S.plates) decor.push({ kind: 'paleplate', x0, x1, y: S.floor });
-  for (const [x0, x1] of S.slots) { air(x0, x1, S.roof - 2, S.roof - 1); decor.push({ kind: 'ceilslot', x0, x1, y: S.roof - 2 }); }
-  decor.push({ kind: 'greatsarcophagus', x: S.sarcophagus, y: S.floor - 1 });
-  lamp(S.x0 + 4, S.roof + 6); lamp(S.x1 - 4, S.roof + 6); lamp(S.sarcophagus, S.roof + 3);
-  air(S.eastDoor.col + 1, TH.W - 2, S.floor - 6, S.floor - 1);
-  ent('gate', S.gate, S.floor - 1);                                                                          /* THE LEVEL'S GATE: it opens once THE SCARAB MOTHER is down (gateAfterBoss) - lane B moves the end here behind the new boss */
+  for (const l of S.ledges) { ledge('ledge', l.x0, l.x1, l.y); decor.push({ kind: 'chains', x0: l.x0, x1: l.x1, y: l.y }); }   /* the side ledges on their chains */
+  /* THE CHAMBER'S TRAPS (the level's own engine, src/sealed-pyramid-hands.js; `tk`: inert until his phase two arms them): the west and east blocks in their ceiling
+     slots, the middle plate's two dart walls (each fires its wall's side of the floor - the plate between them is clear of both) */
+  for (const [x0, x1] of S.slots) air(x0, x1, S.roof - 2, S.roof - 1);
+  const [pw, pm, pe] = S.plates, [sw, se] = S.slots;
+  traps.push({ id: 'tkBlockW', kind: 'block', plates: [[pw[0], pw[1], F]], zone: [sw[0], sw[1], S.roof, F - 1], slot: [sw[0], sw[1], S.roof - 2, S.roof - 1], land: F - 1, reset: 6.0, arena: true, tk: true, section: 'boss' });
+  traps.push({ id: 'tkBlockE', kind: 'block', plates: [[pe[0], pe[1], F]], zone: [se[0], se[1], S.roof, F - 1], slot: [se[0], se[1], S.roof - 2, S.roof - 1], land: F - 1, reset: 6.0, arena: true, tk: true, section: 'boss' });
+  traps.push({ id: 'tkDartsW', kind: 'darts', plates: [[pm[0], pm[1], F]], zone: [S.x0, pm[0] - 1, F - 2, F - 1], wall: S.westDoor.col, dir: 1, rows: [F - 2, F - 1], reset: 6.0, arena: true, tk: true, section: 'boss' });
+  traps.push({ id: 'tkDartsE', kind: 'darts', plates: [[pm[0], pm[1], F]], zone: [pm[1] + 1, S.x1, F - 2, F - 1], wall: S.eastDoor.col, dir: -1, rows: [F - 2, F - 1], reset: 6.0, arena: true, tk: true, section: 'boss' });
+  ent('tplate', pw[0], F - 1, { trap: 'tkBlockW' }); ent('tblock', sw[0], S.roof - 1, { trap: 'tkBlockW' }); ent('tplate', pe[0], F - 1, { trap: 'tkBlockE' }); ent('tblock', se[0], S.roof - 1, { trap: 'tkBlockE' });
+  ent('tplate', pm[0], F - 1, { trap: 'tkDartsW' }); ent('dartwall', S.westDoor.col, F - 1, { trap: 'tkDartsW' }); ent('dartwall', S.eastDoor.col, F - 1, { trap: 'tkDartsE' });
+  decor.push({ kind: 'dartholes', x: S.westDoor.col, y0: F - 2, y1: F - 1 }, { kind: 'dartholes', x: S.eastDoor.col, y0: F - 2, y1: F - 1 });
+  ent('tombking', S.king, F - 1, { face: -1 });                                                              /* HE STANDS ASLEEP where the placeholder great sarcophagus stood */
+  lamp(S.x0 + 4, S.roof + 6); lamp(S.x1 - 4, S.roof + 6); lamp(Math.round((S.x0 + S.x1) / 2), S.roof + 3);
+  air(S.eastDoor.col + 1, TH.W - 2, F - 6, F - 1);
+  ent('gate', S.gate, F - 1);                                                                                /* THE LEVEL'S GATE: it opens once THE TOMB-KING is down (gateAfterBoss) */
+  /* THE ARENA (L.arena): his walls shut both doors; `tk` hands src/tomb-king.js the chamber's fittings */
+  const arena = { x0: S.x0 * TS, x1: (S.x1 + 1) * TS, floor: F * TS, trigger: (S.x0 + 3) * TS, wallL: S.westDoor.col, wallR: S.eastDoor.col, boss: 'tombking', music: 'tombking',
+    tint: '#c8a040', tintA: 0.07, start: [S.x0 + 4, F - 1], y0: S.roof * TS, y1: (F + 1) * TS, tk: S };
 
-  return { traps, tombs, gasVents, crumble, pools };
+  return { traps, tombs, gasVents, crumble, pools, arena };
 }

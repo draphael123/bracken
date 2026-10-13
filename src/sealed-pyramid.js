@@ -40,10 +40,10 @@
 //   393-451  THE DEEP WAY          EXAM  THE TOMB-WARDEN (elite mummy) under a block with a scarab pit at his back; THE LAST SHAFT: spend its dart wall, then
 //                                  ride under it; THE SEALED TOMB (the vault)
 //   452-491  THE ANTECHAMBER       THE SCARAB MOTHER'S LAIR (src/scarab-mother.js stageScarabMother) - the tomb's own block, dart wall and rolling stone. MID-LEVEL
-//                                  since claude/pyramidlevel (MINI_SLOT): still the level's L.arena here (L.routePastBoss) until LANE B makes her a MINI
+//                                  since claude/pyramidlevel (MINI_SLOT); THE LEVEL'S MINI since claude/pyramidboss (L.mini: her east door its portcullis)
 // THE SECOND HALF (claude/pyramidlevel, 2026-10-13, Daniel "way too short"; src/sealed-pyramid-tombs.js): the way UP from her lair to the burial chamber -
 //   493-610  THE HALL OF THE DEAD, 611-735 THE EMBALMERS' GALLERY (gas), 736-862 THE OIL CHANNELS (fire), 863-962 THE FLOODED CRYPT (the sluices),
-//   963-1006 THE KING'S STAIR (A14 platforming), 1007-1047 THE BURIAL CHAMBER (BOSS_SLOT: lane B's new boss; a placeholder room today), the gate at 1049.
+//   963-1006 THE KING'S STAIR (A14 platforming), 1007-1047 THE BURIAL CHAMBER (BOSS_SLOT: THE TOMB-KING'S SARCOPHAGUS, src/tomb-king.js - claude/pyramidboss), the gate at 1049.
 //   The same rule: the gas jets, the oil channels and the sluices are TRAPS fired from PLATES; the tombs release the dead (mummies tread plates, the tomb guard does not).
 import { stageScarabMother, SM_STAGE } from './scarab-mother.js';
 import { buildTombHalf, TH, ARCS2, SECTIONS2, SPOTS2, MINI_SLOT, BOSS_SLOT } from './sealed-pyramid-tombs.js';
@@ -256,7 +256,6 @@ export function buildSealedPyramid({ painter, T, TS }) {
   const AX = 452;
   const stage = stageScarabMother({ set, block, ent, air }, T, TS, AX, AR);
   stage.carve(); interiors.push([AX, AX + SM_STAGE.W - 1, AR - SM_STAGE.roof, AR - 1, 'pyAntechamber']);
-  stage.arena.until = (AX + SM_STAGE.W) * TS;   /* (claude/pyramidlevel) the level goes on past her east door on her own floor: she wakes only inside her room (main.js bossStart) */
   for (const l of SM_STAGE.ledges) structures.push({ kind: 'pyLedge', x0: AX + l.x0, x1: AX + l.x1, top: AR - l.dy, floor: AR });
   /* (claude/pyramidlevel) her lair is MID-LEVEL now: the level's gate is at the far end (src/sealed-pyramid-tombs.js), her east door opens on THE HALL OF THE DEAD */
   decor.push({ kind: 'dartholes', x: AX + SM_STAGE.W - 1, y0: AR - 2, y1: AR - 1 }, { kind: 'bones', x0: AX + 10, x1: AX + 13, y: AR - 1 }, { kind: 'bones', x0: AX + 30, x1: AX + 33, y: AR - 1 }, { kind: 'groove', x0: AX + 1, x1: AX + 38, y: AR - 1 }, { kind: 'eggs', x0: AX + 2, x1: AX + 6, y: AR - 1 });   /* (the antechamber's reaches scored, her eggs by her niche) */
@@ -273,7 +272,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
   const masonry = [[0, W - 1, 0, H - 1]];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: SP.start - 1 }, pools: half.pools, gasVents: half.gasVents, crumble: half.crumble, tombs: half.tombs, slots: { mini: MINI_SLOT, boss: BOSS_SLOT }, falls: [], moversExtra, interiors, structures,
-    arena: stage.arena, gateAfterBoss: true, routePastBoss: true,   /* (claude/pyramidlevel) her lair is MID-LEVEL: the road goes on past it to the gate at the far end (tools/pacing.mjs, tools/level-walk.mjs hand her off as a mini) - LANE B: make her L.mini, the new boss L.arena in BOSS_SLOT, and drop this flag */
+    mini: stage.mini, arena: half.arena, gateAfterBoss: true,   /* (claude/pyramidboss, LANE B) THE SCARAB MOTHER is the level's MINI in her lair mid-level (MINI_SLOT: her east door is its portcullis); THE TOMB-KING'S SARCOPHAGUS is its boss in the burial chamber (BOSS_SLOT, src/tomb-king.js) - lane A's temporary arena.until and L.routePastBoss are gone */
     sealedpyramid: true, caravan: true,   /* caravan: the desert's hands in main.js (the desert machines' runner: the mummy, the scarabs; the sand skins) */
     traps, pairs: PAIRS.map(p => ({ ...p })), falseWalls: FALSE_WALLS.map(w => ({ ...w })), pitFill, vaultDoors, decor, plats, lamps, quicksand, spots: JSON.parse(JSON.stringify({ ...SPOTS, ...SPOTS2 })),
     rigBands: moversExtra.filter(m => m.ride).map(m => [Math.floor(m.x / TS), Math.floor(m.x / TS) + 1, Math.floor(m.top / TS) - 1, Math.floor(m.bot / TS) - 1]),   /* (each counterweight a hero RIDES is a ride between its stops: the first and last pairs' blocks that go down under you, the second's pale block that a trap's weight sends up - not their mates, which only move against a load) */

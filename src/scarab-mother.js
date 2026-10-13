@@ -24,8 +24,17 @@
 // NO ADDS beyond the brood (the brief). PURE: no DOM, no main.js. The world is a context `c` (src/scarab-mother-hands.js binds it). smPlan is the boss lab's
 // HUMAN bot (src/lab.js): it reads her tells, kills the brood and works THE RULE - it waits by a plate's far side, and treads it when she stops in the reach.
 
+/* (claude/pyramidboss, LANE B) SHE IS THE LEVEL'S MINI now (B6 minis: a duel, 75-85% with flasks, modest health - the Gang Leader's 1500): hp 2900 -> SM.hp; her opening
+   is capped at SM.openCap of her and a mini's opening at a third (src/boss-greed.js miniCap); no finisher one-shots a mini (main.js finishCut skips e.mini).
+   SHE GAINS TWO MOVES THAT ANSWER CROWDING (they come by WHERE YOU STAND, outside her cycles - so each phase still adds one move to her cycle, B5):
+     THE LEAP-SLAM ('!!' she crouches, a shadow on the platform you stand on and the floor shakes; she jumps and lands on it - get off it) - when you have stood on
+       the ledge SM.leap.ledge s, or in one spot SM.leap.camp s (cooldown SM.leap.cd)
+     THE BURROW-UP (phase two on: '!!' she digs in; a dust trail runs under you - the ledge too - then stops, a ring under you, and she ERUPTS straight up through it
+       to the ledge's height: step out of the ring) - when you have stood in one spot SM.erupt.camp s (cooldown SM.erupt.cd) */
 export const SM = {
-  hp: 2900, w: 40, h: 24, markH: 44,
+  hp: 1650, w: 40, h: 24, markH: 44,
+  leap: { tell: 0.85, air: 0.6, r: 30, perch: 0.5, drop: 0.3, ledge: 2.6, camp: 4.0, cd: 7.0 },
+  erupt: { tell: 0.8, run: 0.9, v: 170, fix: 0.45, up: 0.45, r: 22, camp: 3.5, cd: 8.0 },
   openMul: 1.8, openCap: 0.1, openT: 3.4, wardT: 3.0, wardMul: 0.4, resist: 0.45, trapBite: { block: 0.035, darts: 0.02, stone: 0.04 },
   p2: 0.6, p3: 0.28,
   walk: 40, back: 66, backT: 0.9, keep: 70, gap: [0.65, 0.55, 0.45],
@@ -36,7 +45,7 @@ export const SM = {
   quakeTell: 1.0, quakeFall: 0.6, quakeR: 15,
   brood: { every: 6.5, max: 3, speed: 72, seethe: 0.8, biteCd: 1.0, w: 10, h: 7 },
   reset3: 0.6,
-  dmg: { charge: 35, snap: 30, spit: 24, puddle: 8, burrow: 33, quake: 30, brood: 10 },
+  dmg: { charge: 35, snap: 30, spit: 24, puddle: 8, burrow: 33, quake: 30, brood: 10, leap: 32, erupt: 32 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]); ONE NEW MOVE A PHASE (B5) */
 export const CYCLES = {
@@ -48,8 +57,9 @@ export const CYCLES = {
 export const MOVES = {
   chargeTell: { mark: '!!', answer: 'jump' }, snapTell: { mark: '!', answer: 'block' }, spitTell: { mark: '!', answer: 'block' },
   burrowTell: { mark: '!!', answer: 'dodge' }, quakeTell: { mark: '!!', answer: 'dodge' },
+  leapTell: { mark: '!!', answer: 'dodge' }, eruptTell: { mark: '!!', answer: 'dodge' },   /* (claude/pyramidboss) the two that answer crowding */
 };
-export const MOVE_NAME = { charge: 'HER CHARGE', snap: 'HER MANDIBLES', spit: 'HER SPIT', puddle: 'THE BURNING SPIT', burrow: 'HER BURROW', quake: 'A FALLING STONE', brood: 'HER BROOD' };
+export const MOVE_NAME = { charge: 'HER CHARGE', snap: 'HER MANDIBLES', spit: 'HER SPIT', puddle: 'THE BURNING SPIT', burrow: 'HER BURROW', quake: 'A FALLING STONE', brood: 'HER BROOD', leap: 'HER LEAP-SLAM', erupt: 'HER BURROW-UP' };
 export const OPEN_NAME = { block: 'PINNED', darts: 'STUCK', stone: 'FLIPPED' };
 
 /* ---------- THE ANTECHAMBER ---------- */
@@ -69,7 +79,7 @@ export function stageScarabMother(W, T, TS, sx, R) {
     ent('tplate', sx + S.block.plate[0], R - 1, { trap: 'smBlock' }); ent('tblock', sx + S.block.zone[0], R - S.roof + 1, { trap: 'smBlock' });   /* (it hangs in the room's top on its chains: in view) */
     ent('tplate', sx + S.darts.plate[0], R - 1, { trap: 'smDarts' }); ent('dartwall', ex, R - 1, { trap: 'smDarts' });
     ent('tplate', sx + S.stone.plate[0], R - 4, { trap: 'smStone' }); ent('rollstone', sx + S.stone.home, R - 1, { trap: 'smStone' });
-    ent('scarabmother', sx + S.mother, R - 1, { face: -1 });
+    ent('scarabmother', sx + S.mother, R - 1, { face: -1, mini: true });   /* (claude/pyramidboss) THE LEVEL'S MINI, mid-level */
   };
   const A = sx;
   const traps = [
@@ -77,9 +87,11 @@ export function stageScarabMother(W, T, TS, sx, R) {
     { id: 'smDarts', kind: 'darts', plates: [[A + S.darts.plate[0], A + S.darts.plate[1], R]], zone: [A + S.darts.zone[0], A + S.darts.zone[1], R - 2, R - 1], wall: ex, dir: -1, rows: [R - 2, R - 1], reset: 4.0, arena: true, section: 'boss' },
     { id: 'smStone', kind: 'stone', plates: [[A + S.stone.plate[0], A + S.stone.plate[1], R - 3]], zone: [A + 3, A + S.stone.end, R - 2, R - 1], home: A + S.stone.home, end: A + S.stone.end, row: R, reset: 8.0, arena: true, section: 'boss' },
   ];
-  const arena = { x0: sx * TS, x1: ex * TS, floor: R * TS, trigger: (sx + 2) * TS, wallL: sx - 1, wallR: ex, boss: 'scarabmother', music: 'scarabmother',
+  /* (claude/pyramidboss) SHE IS THE LEVEL'S MINI (L.mini): her west wall shuts behind you (wallL), her east door is her portcullis (gate: the level carves its PORT
+     cells, src/sealed-pyramid-tombs.js) - her death lifts it and the road goes on up to the burial chamber */
+  const mini = { name: 'THE SCARAB MOTHER', x0: sx * TS, x1: ex * TS, floor: R * TS, trigger: (sx + 2) * TS, wallL: sx - 1, gate: ex, boss: 'scarabmother', music: 'scarabmother',
     tint: '#c8a040', tintA: 0.07, start: [sx + 2, R - 1], y0: (R - S.roof) * TS, y1: (R + 1) * TS, sm: { sx, R } };
-  return { arena, carve, traps };
+  return { mini, carve, traps };
 }
 /* the antechamber in world px, from the arena */
 export function geom(A, TS = 16) {
@@ -100,7 +112,8 @@ export function newFight(G) {
 }
 export const sPhase = e => (e.hp <= e.maxHp * SM.p3 ? 3 : e.hp <= e.maxHp * SM.p2 ? 2 : 1);
 export const smOpen = e => !!e && e.mode === 'open' && (e.open || 0) > 0;
-export const smHidden = e => !!e && (e.mode === 'burrowed');
+export const smHidden = e => !!e && (e.mode === 'burrowed' || e.mode === 'erupting');
+const AIRBORNE = new Set(['leap', 'perch', 'drop']);
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 const clampX = (G, x) => Math.max(G.x0 + 22, Math.min(G.x1 - 22, x));
 function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : 'tell'); }
@@ -112,7 +125,7 @@ export const inReach = (G, kind, x) => { const z = G[kind] && G[kind].zone; retu
 /* ---------- THE RULE ON HER (the hands call this when one of the antechamber's traps lands on her) ----------
    'open' (the opening) | 'ward' (her shell is shut: it glances off) | 'busy' (open already, burrowed, asleep) */
 export function trapped(e, S, c, kind) {
-  if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'die' || smHidden(e)) return 'busy';
+  if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'die' || smHidden(e) || AIRBORNE.has(e.mode)) return 'busy';
   if (smOpen(e)) return 'busy';
   if (S.ward > 0) { S.n.glanced++; c.number(e.x, e.y - 60, 'HER SHELL IS SHUT: THE TRAP GLANCES OFF', '#9aa39a'); return 'ward'; }
   S.charge = null; S.mound = null; S.n.opens++; S.n.byKind[kind] = (S.n.byKind[kind] || 0) + 1;
@@ -126,7 +139,12 @@ export function trapped(e, S, c, kind) {
    c.hit(box, dmg, name, o) -> landed   c.number(x, y, line, col)  c.mark(m)  c.sound(k)  c.fx(kind, x, y)  c.shake(n)  c.music(ph)  c.pits(on)  c.time()  c.rng() ---------- */
 export function stepScarabMother(e, S, dt, h, c) {
   const G = S.G, alive = h.filter(q => q.alive), P = alive.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];
-  e.modeT -= dt; e.y = G.floorY;
+  e.modeT -= dt; if (!AIRBORNE.has(e.mode)) e.y = G.floorY;
+  S.leapCd = (S.leapCd ?? 3) - dt; S.eruptCd = (S.eruptCd ?? 4) - dt;
+  /* WHERE YOU STAND, and for how long (the crowding her two new moves answer) */
+  { const onLedge = P.ground && Math.abs(P.y - G.ledge.y) < 6 && P.x > G.ledge.x0 - 6 && P.x < G.ledge.x1 + 6, k = onLedge ? 'L' : P.ground ? 'F' : null;
+    const D = S.dwell = S.dwell || { k: null, t: 0, x: 0 }; if (k) { if (k !== D.k || Math.abs(P.x - D.x) > 40) { D.k = k; D.t = 0; D.x = P.x; } else D.t += dt; } }
+  stepErupt(e, S, dt, P, c);
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
   stepGlob(S, dt, c); stepPuddles(S, dt, c); stepStones(S, dt, c);
@@ -155,6 +173,11 @@ export function stepScarabMother(e, S, dt, h, c) {
   stepMove(e, S, dt, P, c);
 }
 function nextMove(e, S, P, c) {
+  /* (claude/pyramidboss) CROWDING ANSWERED: off her cycle, by where you stand */
+  { const D = S.dwell || { t: 0 }, G = S.G;
+    if (S.leapCd <= 0 && ((D.k === 'L' && D.t >= SM.leap.ledge) || (D.k === 'F' && D.t >= SM.leap.camp))) { const ty = D.k === 'L' ? G.ledge.y : G.floorY, tx = D.k === 'L' ? Math.max(G.ledge.x0 + 16, Math.min(G.ledge.x1 - 16, P.x)) : clampX(G, P.x);
+      S.leapCd = SM.leap.cd; D.t = 0; S.n.leaps = (S.n.leaps || 0) + 1; S.leapQ = { x0: e.x, tx, ty, t: 0, key: 'leap' + (S.act + 1), ledge: D.k === 'L' }; e.face = Math.sign(tx - e.x) || e.face; tell(e, S, c, 'leapTell', SM.leap.tell); return; }
+    if (S.ph >= 2 && S.eruptCd <= 0 && D.t >= SM.erupt.camp) { S.eruptCd = SM.erupt.cd; D.t = 0; S.n.erupts = (S.n.erupts || 0) + 1; tell(e, S, c, 'eruptTell', SM.erupt.tell); return; } }
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; const set = CYCLES[S.ph]; S.script = set[S.cycle % set.length].slice(); S.step = 0; }
   const m = S.script[S.step++], dx = P.x - e.x, ad = Math.abs(dx), G = S.G;
   e.face = Math.sign(dx) || e.face;
@@ -192,10 +215,27 @@ function stepMove(e, S, dt, P, c) {
       if (e.modeT <= 0) { setMode(e, 'burrowUp', SM.burrowUp); c.hit([m.x - SM.burrowR, m.x + SM.burrowR, e.y - 40, e.y + 2], SM.dmg.burrow, MOVE_NAME.burrow, { key: m.key }); c.fx('erupt', m.x, G.floorY); c.shake(4); S.mound = null; } return; }
     case 'burrowUp': if (e.modeT <= 0) after(0.5); return;
     case 'quakeTell': if (e.modeT <= 0) { setMode(e, 'quake', 0.35); c.shake(6); c.sound('slam'); } return;
+    /* (claude/pyramidboss) THE LEAP-SLAM: the crouch (told: the shadow on your platform, the shake), the jump, the landing - on the ledge she perches, then drops off it */
+    case 'leapTell': if (e.modeT <= 0) { setMode(e, 'leap', SM.leap.air); c.sound('charge'); } else if (Math.random() < 0.08) c.shake(1); return;
+    case 'leap': { const q = S.leapQ; if (!q) { after(); return; } q.t = SM.leap.air - Math.max(0, e.modeT); const k = Math.min(1, q.t / SM.leap.air);
+      e.x = q.x0 + (q.tx - q.x0) * k; e.y = G.floorY + (q.ty - G.floorY) * k - Math.sin(k * Math.PI) * 70;
+      if (e.modeT <= 0) { e.x = q.tx; e.y = q.ty; c.shake(6); c.sound('thud'); c.fx('erupt', e.x, e.y); c.hit([e.x - SM.leap.r, e.x + SM.leap.r, e.y - 36, e.y + 2], SM.dmg.leap, MOVE_NAME.leap, { key: q.key });
+        if (q.ledge) setMode(e, 'perch', SM.leap.perch); else { S.leapQ = null; e.y = G.floorY; after(0.6); } } return; }
+    case 'perch': if (e.modeT <= 0) { S.dropQ = { x0: e.x, y0: e.y, tx: clampX(G, e.x + (e.x < (G.x0 + G.x1) / 2 ? 1 : -1) * 70), t: 0 }; S.leapQ = null; setMode(e, 'drop', SM.leap.drop); } return;
+    case 'drop': { const q = S.dropQ; if (!q) { e.y = G.floorY; after(); return; } const k = Math.min(1, 1 - Math.max(0, e.modeT) / SM.leap.drop); e.x = q.x0 + (q.tx - q.x0) * k; e.y = q.y0 + (G.floorY - q.y0) * k * k;
+      if (e.modeT <= 0) { e.y = G.floorY; S.dropQ = null; c.shake(3); after(0.5); } return; }
+    /* (claude/pyramidboss) THE BURROW-UP: she digs in, the trail runs under you (stepErupt), stops in a ring, and she erupts straight up through it */
+    case 'eruptTell': if (e.modeT <= 0) { setMode(e, 'erupting', SM.erupt.run + SM.erupt.fix); S.erupt = { x: e.x, fixed: false, key: 'erupt' + S.act }; c.fx('dig', e.x, e.y); c.sound('rumble'); } return;
+    case 'erupting': if (!S.erupt) { setMode(e, 'eruptUp', SM.erupt.up); return; } e.x = S.erupt.x; if (e.modeT <= 0) { const q = S.erupt; e.x = q.x; setMode(e, 'eruptUp', SM.erupt.up); c.shake(5); c.sound('slam'); c.fx('erupt', q.x, G.floorY);
+        c.hit([q.x - SM.erupt.r, q.x + SM.erupt.r, G.ledge.y - 30, G.floorY + 2], SM.dmg.erupt, MOVE_NAME.erupt, { key: q.key }); S.erupt = null; } return;
+    case 'eruptUp': if (e.modeT <= 0) after(0.5); return;
     case 'quake': if (e.modeT <= 0) after(0.4); return;
     default: setMode(e, 'walk', 0.5);
   }
 }
+/* (claude/pyramidboss) THE BURROW-UP's trail: it runs under the hero you are (the ledge too) for SM.erupt.run s, then it STOPS in a ring (told) SM.erupt.fix s before she comes up */
+function stepErupt(e, S, dt, P, c) { const q = S.erupt; if (!q || e.mode !== 'erupting') return; if (!q.fixed && e.modeT <= SM.erupt.fix) { q.fixed = true; c.sound('tellHard'); }
+  if (!q.fixed) { const d = P.x - q.x; q.x = clampX(S.G, q.x + Math.sign(d) * Math.min(Math.abs(d), SM.erupt.v * dt)); } }
 /* the glob she spits: an arc to its mark, then a burning puddle */
 function stepGlob(S, dt, c) { const q = S.glob; if (!q) return; q.t += dt; const k = Math.min(1, q.t / SM.spitFly); q.x = q.x0 + (q.tx - q.x0) * k;
   if (k >= 1) { c.hit([q.tx - SM.spitR, q.tx + SM.spitR, S.G.floorY - 30, S.G.floorY + 2], SM.dmg.spit, MOVE_NAME.spit, { blockable: true, key: q.key }); S.puddles.push({ x: q.tx, t: SM.puddleT, tick: 0, key: q.key }); c.fx('splash', q.tx, S.G.floorY); S.glob = null; } }
@@ -240,6 +280,12 @@ export function smPlan(s) {
   const safeX = x => { let q = clamp(x); for (let k = 0; k < 3; k++) for (const [hx, r] of hazards) if (Math.abs(q - hx) < r) q = clamp(q < hx ? hx - r - 4 : hx + r + 4); return q; };
   /* 0. OUT OF A PUDDLE, A SHADOW, THE MOUND */
   if (inHaz(P.x) && P.ground) { const [hx, r] = hazards.find(([x0, r0]) => Math.abs(P.x - x0) < r0); out.gx = safeX(P.x + (P.x < hx ? -r - 8 : r + 8)); if (S.mound && Math.abs(P.x - S.mound.x) < 30 && !s.noRoll) out.dodge = true; out.why = 'out of it'; return out; }
+  /* 0b. (claude/pyramidboss) HER TWO ANSWERS TO CROWDING: off the platform her leap's shadow is on; out of the burrow-up's ring once it stops under you */
+  if ((e.mode === 'leapTell' || e.mode === 'leap') && S.leapQ && seenFor('lp' + S.act)) { const q = S.leapQ, onL = P.ground && Math.abs(P.y - G.ledge.y) < 6;
+    if (q.ledge && onL) { out.gx = (P.x - G.ledge.x0 < G.ledge.x1 - P.x) ? G.ledge.x0 - 22 : G.ledge.x1 + 22; out.why = 'off the ledge: her leap'; return out; }
+    if (!q.ledge && !onL && Math.abs(P.x - q.tx) < SM.leap.r + 26) { out.gx = safeX(q.tx + (P.x < q.tx ? -1 : 1) * (SM.leap.r + 44)); if (e.mode === 'leap' && !s.noRoll && Math.abs(P.x - q.tx) < SM.leap.r + 6) out.dodge = true; out.why = 'out from under her leap'; return out; } }
+  if (S.erupt && S.erupt.fixed && Math.abs(P.x - S.erupt.x) < SM.erupt.r + 12 && seenFor('er' + S.act)) { const onL = P.ground && Math.abs(P.y - G.ledge.y) < 6;
+    out.gx = onL ? ((P.x - G.ledge.x0 < G.ledge.x1 - P.x) ? G.ledge.x0 - 22 : G.ledge.x1 + 22) : safeX(S.erupt.x + (P.x < S.erupt.x ? -1 : 1) * (SM.erupt.r + 26)); if (!s.noRoll && !onL && e.modeT < 0.2) out.dodge = true; out.why = 'out of the burrow-up\'s ring'; return out; }
   /* 1. THE BROOD at its feet: cut it down */
   const bb = S.brood.filter(b => b.alive).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   if (bb && Math.abs(bb.x - P.x) < 26 && !(e.mode === 'charge' && dx < 120)) { swing(bb.x); out.gx = P.x; out.down = false; out.why = 'cut the brood'; return out; }

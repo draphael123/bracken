@@ -36,7 +36,7 @@
 //   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
 //                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { sealedpyramid: 1, scarabmother: 1, hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { sealedpyramid: 1, scarabmother: 1, tombking: 1, hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -343,7 +343,7 @@ function cisternqueen(i, delay, variant, env) {
 // next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
 // PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
 // sweeps up under the stop (rising noise and a saw sliding up an octave).
-export const BOSS_PHASE = { scarabmother: 1, hourglassking: 1, gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
+export const BOSS_PHASE = { scarabmother: 1, tombking: 1, hourglassking: 1, gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
 const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
 const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
 const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
@@ -565,6 +565,7 @@ export const SYNTH_BOSS = {
   towpath: { step: TPM_STEP, total: TPM_LEN * TPM_BARSN, play: towpath }, fogknight: { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the greybox level bed and his theme */
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
   sealedpyramid: { step: SPM_STEP, total: SPM_LEN * SPM_BARSN, play: sealedpyramid }, scarabmother: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the greybox level bed and her theme */
+  tombking: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/pyramidboss) THE TOMB-KING: a PLACEHOLDER (the tomb theme) until lane C writes his own */
   hourglassking: { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the greybox level bed and his theme */   /* (claude/lanterneater) */
   greatdrill: { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
@@ -582,6 +583,7 @@ export const SYNTH_BOSS = {
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
   'fogknight:p2': { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight }, 'fogknight:p3': { step: FKM_STEP3, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the double, the shroud */
+  'tombking:p2': { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother }, 'tombking:p3': { step: SMM_STEP3, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/pyramidboss) placeholders: lane C */
   'scarabmother:p2': { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother }, 'scarabmother:p3': { step: SMM_STEP3, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the brood, the tomb shaking */
   'hourglassking:p2': { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking }, 'hourglassking:p3': { step: HKM_STEP3, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the sands rise, the glass cracks */
   'hawkmistress:p2': { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress }, 'hawkmistress:p3': { step: HMM_STEP3, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) her guard, the store burning */
